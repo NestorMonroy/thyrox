@@ -543,7 +543,27 @@ PM-THYROX:
 
 ## Recursos Avanzados
 
-Este skill incluye referencias a best practices de Anthropic para optimizar cómo trabajas:
+Este skill incluye referencias a best practices de Anthropic y convenciones de commit para optimizar cómo trabajas:
+
+### Commit Helper
+
+Consultar **`references/commit-helper.md`** cuando:
+- Necesitas hacer un commit
+- Quieres seguir Conventional Commits
+- Completaste una tarea y quieres documentar bien el cambio
+- Necesitas un template para commit específico
+
+**Cubre**: Tipos de commit, scopes, reglas, templates, best practices, integración con PM-THYROX.
+
+**Templates disponibles** en `templates/`:
+- `feature.template` - Nueva funcionalidad
+- `bugfix.template` - Corrección de errores
+- `refactor.template` - Reorganización de código
+- `documentation.template` - Cambios de documentación
+- `task-completion.template` - Completar tarea de PM-THYROX
+- `multiple-files.template` - Cambios en múltiples archivos
+
+---
 
 ### Prompting Optimization
 
