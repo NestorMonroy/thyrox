@@ -541,6 +541,46 @@ PM-THYROX:
 
 ---
 
+## Recursos Avanzados
+
+Este skill incluye referencias a best practices de Anthropic para optimizar cómo trabajas:
+
+### Prompting Optimization
+
+Consultar **`references/prompting-tips.md`** cuando:
+- Claude no entiende tus instrucciones correctamente
+- Necesitas mejor calidad en análisis complejos
+- Trabajas en tareas multi-paso y algo falla
+- Quieres mejorar consistencia de respuestas
+
+**Cubre**: Long-horizon reasoning, state management, context awareness, feedback específico.
+
+---
+
+### Skill Authoring
+
+Consultar **`references/skill-authoring.md`** cuando:
+- Necesitas crear un nuevo skill
+- Un skill crece demasiado (>500 líneas)
+- Quieres mejorar calidad de un skill existente
+- Necesitas decidir cómo estructurar contenido
+
+**Cubre**: Principios de design, progressive disclosure, naming conventions, evaluación.
+
+---
+
+### Long Context Documents
+
+Consultar **`references/long-context-tips.md`** cuando:
+- Trabajas con documentos >5,000 palabras
+- Necesitas traducir arc42 o docs técnicas grandes
+- Analizas build output o logs extensos
+- Validar cross-references en múltiples archivos
+
+**Cubre**: Data at top patterns, XML structuring, ground responses, mejores prácticas para docs grandes.
+
+---
+
 ## Troubleshooting
 
 **"ROADMAP.md is getting cluttered"**
