@@ -1,0 +1,77 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.sublime-project
+.sublime-workspace
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+.pytest_cache/
+
+# Claude Code
+.claude/tasks/
+.claude/plans/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Cache
+.cache/
+.eslintcache
+
+# Build artifacts
+*.o
+*.a
+*.so
+*.dylib
+
+# Platform-specific
+.env.production.local
+
+# Git worktrees
+.claude/worktrees/
+
+# Generated files
+CHANGELOG-auto.md
