@@ -1,7 +1,20 @@
+```yml
+Fecha inicio sesión: [YYYY-MM-DD-HH-mm-ss]
+Fecha fin sesión: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión: [1.0]
+Ejecutor: [Nombre]
+Issues tratados hoy: [N]
+Issues resueltos: [N]
+Issues en progreso: [N]
+Issues demorados: [N]
+Problemas encontrados: [N]
+Tiempo total sesión: [horas]
+Siguiente sesión: [YYYY-MM-DD-HH-mm-ss]
+```
+
 # Log de Ejecución - [Nombre del Proyecto/Tarea]
 
-Fecha inicio: [YYYY-MM-DD]
-Fecha última actualización: [YYYY-MM-DD HH:MM]
 Basado en: categorization-plan.md ([fecha del plan])
 
 ---
@@ -371,7 +384,25 @@ Pasos para validación completa:
 
 ---
 
-**Documento actualizado**: [YYYY-MM-DD HH:MM]
-**Autor**: [Nombre]
-**Estado del proyecto**: [En progreso / Completado]
-**Próximo documento**: final-report.md.template (cuando todos los lotes estén completos)
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Execution Log** (Log de Ejecución) es la tercera subsección de PHASE 7: TRACK (Incremental Correction). Su propósito es documentar el PROGRESO DIARIO durante la corrección de issues.
+>
+> **Objetivo:** Crear un registro vivo y actualizable del progreso, bloqueadores y métricas en tiempo real.
+>
+> **Estructura:**
+> - **Metadatos YAML** → Fecha inicio/fin, proyecto, ejecutor, conteos de issues, tiempo, próxima sesión
+> - **Estado General** → Progreso %, lotes completados, issues resueltos, tiempo invertido vs estimado, estado actual
+> - **Tabla de Tracking General** → Estado por lote (completado/en progreso/pendiente/bloqueado)
+> - **Detalles Por Lote** → LOTE-1, LOTE-2, ... con issues específicas y notas
+> - **Bloqueadores y Notas** → Issues que están detenidas y por qué
+> - **Cambios en Cronograma** → Si hay delays o aceleraciones
+> - **Registro de Cambios** → Historial de qué se actualizó cuándo
+>
+> **Diferencia crucial (PHASE 7: TRACK - Incremental Correction):**
+> - **analysis-phase.md** → Baseline: qué estaba roto
+> - **categorization-plan.md** → Plan: cómo vamos a corregir
+> - **execution-log.md** → Progreso: qué estamos corrigiendo AHORA
+> - **final-report.md** → Resultado: qué corregimos
+>
+> Este documento es el DASHBOARD VIVO: se actualiza constantemente durante la ejecución. Es la fuente de verdad para estado y progreso.

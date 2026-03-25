@@ -1,3 +1,15 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Tipo: fix
+Bug ID: [ID del bug, ej: BUG-456]
+Severidad: [Critical/High/Medium/Low]
+Reportado por: [Nombre]
+Corregido por: [Nombre]
+Archivos modificados: [N]
+Tests añadidos: [SI/NO]
+Verificado: [SI/NO]
+```
+
 fix(scope): short description of the bug fix
 
 Explain the bug:
@@ -27,3 +39,26 @@ fix(auth): handle null user in token validation
 fix(api): fix race condition in concurrent requests
 fix(build): correct broken reference in sphinx config
 fix(database): prevent null foreign key inserts
+
+---
+
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Bugfix Template** es un patrón de mensaje de commit para CORRECCIONES DE ERRORES en PHASE 6: EXECUTE. Su propósito es documentar QUÉ error se corrigió, POR QUÉ ocurrió, y CÓMO se arregló.
+>
+> **Objetivo:** Crear un registro detallado de correcciones para auditoría, comprensión de root cause, y prevención de regresiones.
+>
+> **Estructura:**
+> - **Metadatos YAML** → Fecha, tipo, Bug ID, severidad, reportado/corregido, archivos, tests, verificado
+> - **Título (72 caracteres)** → fix(scope): descripción breve
+> - **Explicación del bug** → QUÉ estaba roto, síntoma usuario, análisis root cause
+> - **Explicación del fix** → QUÉ se cambió, POR QUÉ funciona, edge cases, testing
+> - **Before/After** → Código o comportamiento anterior vs nuevo
+> - **Fixes** → Descripción, riesgo regresión, tipo testing
+>
+> **Diferencia crucial (PHASE 6: EXECUTE):**
+> - **feature.template** → Nueva funcionalidad
+> - **bugfix.template** → Corrección de error existente (con root cause)
+> - **refactor.template** → Mejora sin cambio funcional
+>
+> Cada fix debe documentar severidad y riesgo de regresión. Tests deben validar que el bug no vuelva.

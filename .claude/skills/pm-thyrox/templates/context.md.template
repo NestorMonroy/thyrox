@@ -1,3 +1,12 @@
+```yml
+Fecha documento: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión contexto: [1.0]
+Responsable: [Nombre]
+Sistemas externos: [N]
+Última actualización integración: [YYYY-MM-DD]
+```
+
 # Context: [PROJECT_NAME]
 
 ## Scope / Boundaries
@@ -136,11 +145,25 @@
 
 ## Siguiente Paso
 
-Una vez completado este documento y toda PHASE 2: ANALYZE:
-→ Pasar a PHASE 3: SOLUTION_STRATEGY
+Una vez completado este documento y toda PHASE 1: ANALYZE:
+→ Pasar a PHASE 2: SOLUTION_STRATEGY
 
 ---
 
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Context** (Contexto) es la séptima y final subsección de PHASE 1: ANALYZE. Su propósito es documentar DÓNDE se inserta el sistema en el ecosistema.
+>
+> **Objetivo:** Definir los límites del sistema (qué está dentro, qué fuera) y documentar las integraciones con sistemas externos.
+>
+> **Estructura:**
+> - **Scope/Boundaries** → Qué está dentro vs fuera del sistema
+> - **Business Context** → Sistemas externos desde perspectiva negocio
+> - **Technical Context** → Integraciones técnicas, protocolos, APIs
+>
+> **Diferencia crucial:**
+> - **Requirements** → QUÉ hace el sistema (funcionalidad interna)
+> - **Context** → DÓNDE se inserta (ecosistema externo)
+> - **Constraints** → QUÉ LIMITA sus integraciones
+>
+> Este documento cierra PHASE 1: ANALYZE y proporciona toda la información necesaria para PHASE 2: SOLUTION_STRATEGY.

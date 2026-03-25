@@ -1,3 +1,17 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Hash commit: [hash SHA-1 abreviado, ej: a1b2c3d]
+Autor: [Nombre]
+Proyecto: [Nombre del proyecto]
+Rama: [nombre-rama]
+Tipo cambio: [feature/fix/refactor/docs/test/chore]
+Scope: [Componente afectado]
+Tickets relacionados: [TICKET-1, TICKET-2]
+Archivos: [N]
+Tests: [SI/NO]
+Breaking change: [SI/NO]
+```
+
 # Commit Message Template - Conventional Commits
 # Formato: <type>(<scope>): <subject>
 #
@@ -103,3 +117,38 @@
 # Refs: #456
 #
 # ============================================================================
+
+---
+
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Commit Message Main Template** es la guía MAESTRA de CONVENTIONAL COMMITS para PHASE 6: EXECUTE. Su propósito es documentar CÓMO escribir mensajes de commit consistentes, trazables y útiles.
+>
+> **Objetivo:** Estandarizar mensajes de commit para facilitar:
+> - Auditoría de cambios (qué se hizo, cuándo, por quién)
+> - Generación automática de CHANGELOG
+> - Búsqueda y filtrado de commits
+> - Comprensión de historia del proyecto
+>
+> **Estructura (Conventional Commits):**
+> - **Type(Scope): Subject** → type: feat/fix/docs/refactor/test/chore, scope: área afectada, subject: <72 chars
+> - **Body** → QUÉ cambió, POR QUÉ, contexto adicional (opcional)
+> - **Footer** → Breaking changes, referencias a issues, co-autores (opcional)
+>
+> **Types permitidos:**
+> - **feat** → Nueva funcionalidad
+> - **fix** → Corrección de bug
+> - **docs** → Documentación
+> - **refactor** → Código (sin cambios funcionales)
+> - **test** → Tests
+> - **chore** → Build, config, dependencias
+> - **perf** → Performance
+> - **style** → Formato (espacios, puntuación)
+>
+> **Este template es MAESTRO porque:**
+> - Otros templates (feature.template, bugfix.template, etc.) heredan de esta estructura
+> - Proporciona instrucciones detalladas para cada sección
+> - Contiene ejemplos completos para todos los tipos de commits
+> - Sirve como referencia para developers
+>
+> Usar este template cuando necesites guía completa. Para tipos específicos, usa los templates especializados (feature.template, bugfix.template, etc.)

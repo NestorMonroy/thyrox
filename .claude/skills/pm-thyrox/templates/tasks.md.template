@@ -1,9 +1,19 @@
+```yml
+Fecha creación tareas: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Feature: [Nombre de la feature]
+Versión breakdown: [1.0]
+Creador tareas: [Nombre]
+Total tareas: [N]
+Dependencias críticas: [N]
+Fecha inicio prevista: [YYYY-MM-DD]
+Fecha fin prevista: [YYYY-MM-DD]
+Responsable implementación: [Nombre/equipo]
+```
+
 # Tasks: [Titulo del Proyecto/Feature]
 
 Basado en: design.md
-Fecha: YYYY-MM-DD
-Autor: [Nombre]
-Estado: Draft | Approved | In Progress | Completed
 
 ## Resumen
 
@@ -377,3 +387,25 @@ Si surgen preguntas durante implementacion, documentar aqui:
 |-------|---------|-------|
 | YYYY-MM-DD | Creacion inicial | [Nombre] |
 | YYYY-MM-DD | Ajuste TASK-005 | [Nombre] |
+
+---
+
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Tasks** (Tareas Específicas) es la tercera y final subsección de PHASE 4: STRUCTURE (Spec-Driven Development). Su propósito es documentar CÓMO técnicamente implementar el diseño.
+>
+> **Objetivo:** Descomponer el diseño en tareas atómicas, ejecutables paso a paso, con estimaciones y criterios de éxito claros.
+>
+> **Estructura:**
+> - **Resumen** → Total de tareas, estimación, fechas
+> - **Fases de Implementación** → Preparación, Core, Testing, Documentación
+> - **Tareas Específicas** → TASK-001, TASK-002, ... con comandos y criterios
+> - **Dependencias** → Qué tarea depende de cuál
+> - **Aprobación** → Validación de estimaciones y orden
+>
+> **Diferencia crucial (Spec-Driven):**
+> - **requirements.md** → QUÉ debe implementarse
+> - **design.md** → CÓMO arquitectónicamente
+> - **tasks.md** → CÓMO técnicamente, paso a paso, con comandos exactos
+>
+> Este documento es el puente entre el diseño (arquitectura) y la ejecución (developer ejecuta tareas). Cada tarea es atómica, independiente, y tiene criterios de éxito medibles.

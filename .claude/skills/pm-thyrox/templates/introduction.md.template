@@ -1,3 +1,11 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión análisis: [1.0]
+Autor: [Nombre]
+Estado: [Borrador/En revisión/Aprobado]
+```
+
 # Introduction and Goals: [PROJECT_NAME]
 
 ## Visión General
@@ -44,6 +52,15 @@ Una vez completado este documento:
 
 ---
 
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Introduction and Goals** (Introducción y Objetivos) es la primera subsección de PHASE 1: ANALYZE. Su propósito es establecer el contexto general del proyecto.
+>
+> **Objetivo:** Proporcionar una visión clara de qué es el sistema, por qué existe, para quién existe, y cuál es su objetivo general.
+>
+> **Diferencia crucial:**
+> - **Visión General** → QUÉ es el sistema y POR QUÉ existe
+> - **Requirements** → QUÉ debe hacer específicamente
+> - **Context** → DÓNDE se inserta en el ecosistema
+>
+> Esta subsección sientan las bases para todas las demás. Sin una introducción clara, el análisis de requisitos se vuelve confuso.

@@ -1,3 +1,12 @@
+```yml
+Fecha identificación: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión stakeholder map: [1.0]
+Responsable: [Nombre]
+Total stakeholders: [N]
+Última revisión: [YYYY-MM-DD]
+```
+
 # Stakeholders: [PROJECT_NAME]
 
 ## Matriz de Stakeholders
@@ -120,6 +129,20 @@ Una vez completado este documento:
 
 ---
 
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Stakeholders** (Partes Interesadas) es la cuarta subsección de PHASE 1: ANALYZE. Su propósito es identificar QUIÉN usa el sistema y QUÉ necesita de él.
+>
+> **Objetivo:** Documentar todos los roles/personas que interactúan con el sistema, sus necesidades, y sus relaciones con quality goals.
+>
+> **Estructura:**
+> - **Matriz rápida** → Vista general de todos los stakeholders
+> - **Descripción detallada** → Profundización en cada rol
+> - **Conflictos** → Resolver tensiones entre necesidades opuestas
+>
+> **Diferencia crucial:**
+> - **Requirements** → QUÉ debe hacer el sistema
+> - **Stakeholders** → QUIÉN lo usa y QUÉ NECESITA
+> - **Quality Goals** → QUÉ TAN BIEN satisface necesidades
+>
+> Cada stakeholder debe estar conectado explícitamente a quality goals. Los conflictos de intereses deben documentarse y resolverse.

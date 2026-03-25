@@ -1,8 +1,19 @@
-# Análisis Inicial de Issues - [Nombre del Proyecto/Tarea]
-
-Fecha: [YYYY-MM-DD]
+```yml
+Fecha análisis: [YYYY-MM-DD-HH-mm-ss]
 Proyecto: [Nombre del proyecto]
-Build analizado: [Comando de build ejecutado, ej: make html]
+Versión análisis: [1.0]
+Responsable: [Nombre]
+Total issues encontrados: [N]
+Severidad Critical: [N]
+Severidad High: [N]
+Severidad Medium: [N]
+Severidad Low: [N]
+Categorías identificadas: [N]
+Análisis completado: [SI/NO]
+Aprobado por: [Nombre]
+```
+
+# Análisis Inicial de Issues - [Nombre del Proyecto/Tarea]
 
 ---
 
@@ -235,6 +246,26 @@ Bajo:    [########] [Número] issues
 
 ---
 
-**Documento creado**: [YYYY-MM-DD HH:MM]
-**Autor**: [Nombre]
-**Próximo documento**: categorization-plan.md.template
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Analysis Phase** (Fase de Análisis) es la primera subsección de PHASE 7: TRACK (Incremental Correction). Su propósito es documentar el ANÁLISIS INICIAL de 100+ issues encontrados.
+>
+> **Objetivo:** Crear inventario completo y categorizado de todos los issues para planificar la corrección incremental.
+>
+> **Estructura:**
+> - **Metadatos YAML** → Fecha, proyecto, versión, responsable, conteos por severidad, categorías, aprobado
+> - **Resumen Ejecutivo** → Total de issues, categorías principales, severidad, estimación de esfuerzo
+> - **Build Output Completo** → Output exacto del build/análisis para auditoría
+> - **Categorización por Tipo** → Tabla con tipos, cantidad, porcentaje, ejemplos
+> - **Categorización por Severidad** → Tabla crítico/alto/medio/bajo
+> - **Top Issues** → Los más críticos para acción inmediata
+> - **Detalles Completos** → Listado exhaustivo de CADA issue
+> - **Notas Adicionales** → Contexto relevante
+>
+> **Diferencia crucial (PHASE 7: TRACK - Incremental Correction):**
+> - **analysis-phase.md** → Inventario inicial de TODO lo encontrado
+> - **categorization-plan.md** → Plan de cómo corregir
+> - **execution-log.md** → Progreso diario durante correcciones
+> - **final-report.md** → Resumen final de lo corregido
+>
+> Este documento es el BASELINE: documenta qué estaba roto ANTES de empezar a corregir. Sirve como referencia para medir progreso.

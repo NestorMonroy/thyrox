@@ -1,8 +1,20 @@
+```yml
+Fecha plan: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión categorización: [1.0]
+Planificador: [Nombre]
+Total issues a categorizar: [N]
+Categorías definidas: [N]
+Prioridades definidas: [N]
+Fecha inicio categorización: [YYYY-MM-DD]
+Fecha fin prevista: [YYYY-MM-DD]
+Responsable: [Nombre/equipo]
+Herramientas: [Sistema de tracking usado]
+```
+
 # Plan de Categorización - [Nombre del Proyecto/Tarea]
 
-Fecha: [YYYY-MM-DD]
 Basado en: analysis-phase.md ([fecha del análisis])
-Total de issues: [Número]
 
 ---
 
@@ -364,6 +376,27 @@ Si un lote falla críticamente:
 
 ---
 
-**Documento creado**: [YYYY-MM-DD HH:MM]
-**Autor**: [Nombre]
-**Próximo documento**: execution-log.md.template
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Categorization Plan** (Plan de Categorización) es la segunda subsección de PHASE 7: TRACK (Incremental Correction). Su propósito es crear un PLAN de cómo corregir los 100+ issues.
+>
+> **Objetivo:** Organizar issues en lotes priorizados para ejecución incremental y coordinada.
+>
+> **Estructura:**
+> - **Metadatos YAML** → Fecha, proyecto, versión, planificador, conteos, fechas, responsable, herramientas
+> - **Resumen Ejecutivo** → Estrategia elegida, número de lotes, tamaño promedio, orden, estimación, fechas
+> - **Estrategia de Categorización** → Criterio principal, razones, alternativas consideradas
+> - **Criterios de Agrupación** → Primario, secundario, terciario + lógica
+> - **Lotes Definidos** → LOTE-1, LOTE-2, ... con issues específicas
+> - **Dependencias Entre Lotes** → Qué lote depende de cuál
+> - **Estimación Detallada** → Por lote, por tipo de issue
+> - **Calendario de Ejecución** → Cuándo ejecutar cada lote
+> - **Aprobación** → Revisión y aprobación
+>
+> **Diferencia crucial (PHASE 7: TRACK - Incremental Correction):**
+> - **analysis-phase.md** → Inventario: QUÉ estaba roto
+> - **categorization-plan.md** → Plan: CÓMO vamos a corregir
+> - **execution-log.md** → Progreso: QUÉ vamos corrigiendo
+> - **final-report.md** → Resultado: QUÉ corregimos
+>
+> Este documento es el PLAN DE ATAQUE: convierte 100+ issues caóticas en lotes ordenados y ejecutables.

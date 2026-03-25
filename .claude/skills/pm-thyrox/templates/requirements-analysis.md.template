@@ -1,3 +1,13 @@
+```yml
+Fecha creación: [YYYY-MM-DD-HH-mm-ss]
+Fecha última actualización: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión requisitos: [1.0]
+Responsable análisis: [Nombre]
+Estado: [Incompleto/Completo/Validado]
+Requisitos totales: [N]
+```
+
 # Requirements Analysis: [PROJECT_NAME]
 
 ## Requisitos Generales (Level 1)
@@ -83,6 +93,19 @@ Una vez completado este documento:
 
 ---
 
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Requirements Analysis** (Análisis de Requisitos) es la segunda subsección de PHASE 1: ANALYZE. Su propósito es documentar QUÉ debe hacer el sistema.
+>
+> **Objetivo:** Especificar de forma clara, completa y verificable qué funcionalidades el sistema debe proporcionar.
+>
+> **Estructura de dos niveles:**
+> - **Level 1 (Requisitos Generales)** → QUÉ debe hacer (visión general)
+> - **Level 2 (Requisitos Específicos)** → CÓMO verificar que cumple (detalles técnicos)
+>
+> **Diferencia crucial:**
+> - **Requirements** → QUÉ hace el sistema (especificación)
+> - **Quality Goals** → QUÉ TAN BIEN lo hace (atributos de calidad)
+> - **Constraints** → QUÉ LIMITA su capacidad
+>
+> Cada requisito debe ser verificable, medible y trazable a stakeholders y quality goals.

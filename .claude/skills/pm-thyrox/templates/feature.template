@@ -1,3 +1,14 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Tipo: feature
+Feature: [Nombre corto]
+Ticket: [ID ticket, ej: PROJ-123]
+Autor: [Nombre]
+Branch: [nombre-rama]
+Archivos modificados: [N]
+Tests: [SI/NO]
+```
+
 feat(scope): short description under 72 chars
 
 Longer explanation of what this feature does and why it's needed.
@@ -20,3 +31,26 @@ feat(api): add user login endpoint
 feat(database): create subscription model
 feat(docs): add deployment guide
 feat(roadmap): complete Phase 2 authentication
+
+---
+
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Feature Template** es un patrón de mensaje de commit para NUEVAS FEATURES en PHASE 6: EXECUTE. Su propósito es documentar QUÉ feature se implementó y POR QUÉ.
+>
+> **Objetivo:** Crear un registro histórico claro de qué feature se agregó, justificación, y contexto para futuros desarrolladores.
+>
+> **Estructura:**
+> - **Metadatos YAML** → Fecha, tipo, ticket, autor, branch, archivos, tests
+> - **Título (72 caracteres)** → feat(scope): descripción breve
+> - **Descripción larga** → QUÉ se implementó y POR QUÉ
+> - **Detalles** → Implementación, enfoque, dependencias, testing
+> - **Related work** → Cierra qué, relacionado con qué, breaking changes
+>
+> **Diferencia crucial (PHASE 6: EXECUTE):**
+> - **feature.template** → Nueva funcionalidad agregada
+> - **bugfix.template** → Corrección de error existente
+> - **refactor.template** → Mejora sin cambio funcional
+> - **documentation.template** → Mejora de documentación
+>
+> Cada feature debe ser trazable a tickets/ROADMAP. Los breaking changes deben estar claramente marcados.

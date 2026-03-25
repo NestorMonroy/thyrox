@@ -1,3 +1,12 @@
+```yml
+Fecha creación: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión flujo: [1.0]
+Autor: [Nombre]
+Sistema: [Nombre/versión del sistema]
+Estado flujo: [Diseño/Implementado/En testing]
+```
+
 # Basic Usage: [PROJECT_NAME]
 
 ## Descripción Narrativa
@@ -155,6 +164,21 @@ Una vez completado este documento:
 
 ---
 
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Basic Usage** (Uso Básico / Operación del Sistema) es la quinta subsección de PHASE 1: ANALYZE. Su propósito es documentar CÓMO FUNCIONA EL SISTEMA desde la perspectiva operacional.
+>
+> **Objetivo:** Mostrar el flujo completo de operación, los pasos que toma el sistema, y cómo interactúan los componentes desde el punto de vista del usuario.
+>
+> **Estructura:**
+> - **Narrativa** → Descripción general de qué es y para qué sirve
+> - **Flujo principal** → Pasos secuenciales numerados
+> - **Modos de operación** → Variantes del flujo (happy path, edge cases)
+> - **Resultados** → Qué observa el usuario al final
+>
+> **Diferencia crucial:**
+> - **Requirements** → QUÉ debe hacer el sistema (especificación)
+> - **Basic Usage** → CÓMO funciona el sistema (operación)
+> - **Constraints** → QUÉ LIMITA su funcionamiento
+>
+> Este documento usa lenguaje simple, no técnico. Es fácil de entender para cualquier stakeholder.

@@ -1,3 +1,13 @@
+```yml
+Fecha estrategia: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión arquitectura: [1.0]
+Arquitecto: [Nombre]
+Stack versión: [ej: Python 3.11, Django 4.2, PostgreSQL 14]
+Validado por: [Nombre]
+Estado: [Propuesta/En revisión/Aprobado]
+```
+
 # Solution Strategy: [PROJECT_NAME]
 
 ## Key Ideas
@@ -230,11 +240,29 @@ How we respect it: Entire solution uses Java 17 + Spring ecosystem
 
 ## Siguiente Paso
 
-Una vez completado PHASE 3: SOLUTION_STRATEGY:
-→ Pasar a PHASE 4: STRUCTURE (especificaciones detalladas)
+Una vez completado PHASE 2: SOLUTION_STRATEGY:
+→ Pasar a PHASE 3: PLAN (especificaciones detalladas)
 
 ---
 
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Solution Strategy** (Estrategia de Solución) es la única subsección de PHASE 2. Su propósito es documentar CÓMO lograr los requisitos dentro de las limitaciones.
+>
+> **Objetivo:** Crear un plan arquitectónico completo que transforme los requisitos de PHASE 1 en decisiones implementables.
+>
+> **Estructura:**
+> - **Key Ideas** → Conceptos fundamentales (microservices, eventos, etc.)
+> - **Fundamental Decisions** → Decisiones arquitectónicas con alternativas evaluadas
+> - **Technology Stack** → Tecnologías específicas con versiones
+> - **Architecture Patterns** → Patrones estructurales, conductuales, estilos
+> - **Quality Goal Strategies** → CÓMO lograr cada quality goal
+> - **Constraint Adherence** → CÓMO respetar cada constraint
+>
+> **Diferencia crucial:**
+> - **PHASE 1: ANALYZE** → QUÉ debe hacer el sistema
+> - **PHASE 2: SOLUTION_STRATEGY** → CÓMO arquitectónicamente lograr qué
+> - **PHASE 3: PLAN** → QUÉ features implementamos
+> - **PHASE 4: STRUCTURE** → CÓMO técnicamente especificamos
+>
+> Este documento es el puente entre análisis (QUÉ) e implementación (CÓMO).

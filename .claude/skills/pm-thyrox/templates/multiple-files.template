@@ -1,3 +1,16 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Tipo: [feature/fix/refactor/etc]
+Cambios relacionados a: [Nombre/descripción]
+Autor: [Nombre]
+Total archivos: [N]
+Archivos agregados: [N]
+Archivos modificados: [N]
+Archivos eliminados: [N]
+Tests: [SI/NO]
+Coordinación con: [Nombres otros devs si aplica]
+```
+
 type(scope): short description
 
 Brief explanation of the change that spans multiple files.
@@ -40,3 +53,27 @@ feat(payments): add stripe integration (multiple services)
 refactor(structure): reorganize project directories
 fix(validation): improve error handling across apis
 chore(build): update dependencies and build config
+
+---
+
+## PROPÓSITO DE ESTA SUBSECCIÓN
+
+> **Multiple Files Template** es un patrón de mensaje de commit para CAMBIOS QUE AFECTAN MÚLTIPLES ARCHIVOS en PHASE 6: EXECUTE. Su propósito es documentar POR QUÉ se cambió en múltiples lugares y CÓMO están relacionados.
+>
+> **Objetivo:** Crear claridad cuando un cambio único requiere modificaciones distribuidas en varios archivos/componentes.
+>
+> **Estructura:**
+> - **Metadatos YAML** → Fecha, tipo, descripción, autor, conteos de archivos (agregados, modificados, eliminados), tests, coordinación
+> - **Título (72 caracteres)** → type(scope): descripción breve
+> - **Explicación breve** → QUÉ cambio se hizo
+> - **Archivos por tipo** → Database, API, Tests, Config, Docs (organizados por categoría)
+> - **POR QUÉ múltiples archivos** → Lógica de relación entre cambios
+> - **Testing** → Qué se testeó, áreas afectadas, integration testing
+> - **Deployment** → Pasos especiales si aplica
+>
+> **Diferencia crucial (PHASE 6: EXECUTE):**
+> - **feature.template** → Un cambio en un área
+> - **multiple-files.template** → Un cambio que afecta múltiples áreas
+> - Útil para: Migraciones, refactors globales, cambios arquitectónicos
+>
+> Documentar claramente la relación lógica entre los cambios distribuidos. Si múltiples devs coordinan, mencionarlos.
