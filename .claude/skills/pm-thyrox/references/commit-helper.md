@@ -4,6 +4,43 @@ Guía para crear commits siguiendo **Conventional Commits** en el proyecto THYRO
 
 ---
 
+## CUANDO HAGAS UN COMMIT, USA LOS TEMPLATES
+
+Ahora que necesites hacer un commit, haz esto:
+
+### Paso 1: Determina el tipo de cambio
+
+- ¿Nueva feature? → Usa **feature.template**
+- ¿Bug fix? → Usa **bugfix.template**
+- ¿Refactoring? → Usa **refactor.template**
+- ¿Documentación? → Usa **documentation.template**
+- ¿Completar tarea PM-THYROX entera? → Usa **task-completion.template**
+- ¿Múltiples archivos con cambios transversales? → Usa **multiple-files.template**
+- ¿Necesitas referencia completa? → Usa **commit-message-main.template**
+
+### Paso 2: Consulta el template
+
+```bash
+cat .claude/skills/pm-thyrox/templates/[template-nombre].template
+```
+
+### Paso 3: Completa el template
+
+Copia el contenido, llena los espacios en blanco, elimina comentarios innecesarios.
+
+### Paso 4: Haz el commit
+
+```bash
+git add [archivos]
+git commit -m "[contenido del template completado]"
+```
+
+---
+
+Claude te dirá cuál template usar según el tipo de cambio que hayas hecho.
+
+---
+
 ## Cuando Usar
 
 - Usuario pide hacer commit

@@ -545,23 +545,38 @@ PM-THYROX:
 
 Este skill incluye referencias a best practices de Anthropic y convenciones de commit para optimizar cómo trabajas:
 
-### Commit Helper
+### Commit Helper - CUANDO HAGAS UN COMMIT, USA LOS TEMPLATES
 
-Consultar **`references/commit-helper.md`** cuando:
-- Necesitas hacer un commit
-- Quieres seguir Conventional Commits
-- Completaste una tarea y quieres documentar bien el cambio
-- Necesitas un template para commit específico
+Después de completar trabajo y necesitar hacer commit:
 
-**Cubre**: Tipos de commit, scopes, reglas, templates, best practices, integración con PM-THYROX.
+**Paso 1: Determina tipo de cambio**
+- Nueva feature → **feature.template**
+- Bug fix → **bugfix.template**
+- Refactoring → **refactor.template**
+- Documentación → **documentation.template**
+- Completar tarea PM-THYROX → **task-completion.template**
+- Múltiples archivos → **multiple-files.template**
+- Referencia completa → **commit-message-main.template**
 
-**Templates disponibles** en `templates/`:
-- `feature.template` - Nueva funcionalidad
-- `bugfix.template` - Corrección de errores
-- `refactor.template` - Reorganización de código
-- `documentation.template` - Cambios de documentación
-- `task-completion.template` - Completar tarea de PM-THYROX
-- `multiple-files.template` - Cambios en múltiples archivos
+**Paso 2: Consulta el template**
+```bash
+cat .claude/skills/pm-thyrox/templates/[template-nombre].template
+```
+
+**Paso 3: Completa y commitea**
+```bash
+git add [archivos]
+git commit -m "[contenido del template completado]"
+```
+
+Consultar **`references/commit-helper.md`** para:
+- Explicación completa de Conventional Commits
+- Tipos válidos (feat, fix, docs, refactor, test, chore, perf)
+- Scopes THYROX-specific
+- Reglas esenciales (72 chars, NO emojis, imperativo)
+- Ejemplos prácticos
+- Best practices de commit
+- Integración con PM-THYROX
 
 ---
 
