@@ -541,33 +541,6 @@ PM-THYROX:
 
 ---
 
-## Prompting Best Practices
-
-PM-THYROX guía tu gestión de proyecto, pero **cómo interactúas con Claude** también importa.
-
-Para optimizar tus prompts cuando usas PM-THYROX:
-
-**Ver**: `/mnt/skills/anthropic-best-practices/`
-
-Recursos específicos:
-- **prompting-tips.md** - Cómo escribir mejores prompts para tareas complejas
-  - Long-horizon reasoning para análisis de features complejas
-  - State management con JSON para tracking de progress
-  - Feedback específico cuando necesitas ajustes
-  
-- **long-context-tips.md** - Cuando trabajas con documentos grandes
-  - Traducción de arc42 o documentación técnica grande
-  - Análisis de build output extenso
-  - Cross-reference validation en múltiples archivos
-
-**Relación con PM-THYROX**:
-- PM-THYROX estructura tu proyecto
-- anthropic-best-practices optimiza cómo comunicas con Claude
-
-Usar ambos para máxima efectividad.
-
----
-
 ## Troubleshooting
 
 **"ROADMAP.md is getting cluttered"**

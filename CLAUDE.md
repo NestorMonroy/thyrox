@@ -14,28 +14,6 @@ Este archivo contiene el contexto permanente para Claude Code en el proyecto THY
 
 ---
 
-## SKILLS DISPONIBLES
-
-Este proyecto tiene 2 skills complementarios:
-
-**1. PM-THYROX** (.claude/skills/pm-thyrox/)
-   - Propósito: Gestión de proyecto y workflow
-   - Usar cuando: Planifiques features, descompongas trabajo, trackees progreso
-   - Cubre: 5 fases (PLAN → STRUCTURE → DECOMPOSE → EXECUTE → TRACK)
-
-**2. anthropic-best-practices** (.claude/skills/anthropic-best-practices/)
-   - Propósito: Best practices de Anthropic para prompting y skills
-   - Usar cuando: Optimices prompts, crees skills, trabajes con documentos grandes
-   - Cubre: Prompting, skill authoring, long context
-
-**Cómo usarlos juntos**:
-- PM-THYROX: "Plan the payment feature"
-- Claude responde: Brainstorming + ROADMAP update
-- anthropic-best-practices: Consulta si prompts no dan resultado esperado
-- Claude responde: Técnicas para mejorar tu interacción
-
----
-
 ## OBJETIVO
 
 Crear un template reutilizable que permita:
