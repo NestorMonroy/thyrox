@@ -1,6 +1,25 @@
+```yml
+Tipo: Documentación Principal
+Categoría: Introducción al Proyecto
+Versión: 1.0
+Propósito: Presentación y descripción del proyecto THYROX
+Objetivo: Proporcionar visión general, características, estructura, y quick start
+Fecha actualización: 2026-03-25
+```
+
 # THYROX
 
 **Tracking Hierarchy Yield Roadmap Organization eXecution**
+
+## Propósito
+
+Presentación del template THYROX: un framework profesional para gestión y planificación de proyectos con Claude Code.
+
+> Objetivo: Que nuevos usuarios comprendan qué es THYROX, cómo funciona, y cómo comenzar a usarlo.
+
+---
+
+## Descripción General
 
 Un template profesional para gestión y planificación de proyectos con Claude Code, incluyendo documentación automática, changelog tracking y gestión de cambios.
 

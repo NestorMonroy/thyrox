@@ -1,4 +1,23 @@
+```yml
+Tipo: Contexto Persistente
+Categoría: Memoria del Proyecto
+Versión: 1.0
+Propósito: Contexto permanente para Claude Code en proyecto THYROX
+Objetivo: Proporcionar memoria compartida entre sesiones de Claude Code
+Fecha actualización: 2026-03-25
+```
+
 # CLAUDE.md - Contexto Persistente THYROX
+
+## Propósito
+
+Archivo de contexto persistente para Claude Code en el proyecto THYROX. Proporciona información crítica sobre estructura, convenciones, y estado actual.
+
+> Objetivo: Que Claude recuerde estructura, decisiones, y contexto del proyecto entre sesiones.
+
+---
+
+## Descripción
 
 Este archivo contiene el contexto permanente para Claude Code en el proyecto THYROX.
 
