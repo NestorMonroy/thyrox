@@ -1,8 +1,28 @@
+```yml
+Fecha plan: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión categorización: [1.0]
+Planificador: [Nombre]
+Total issues a categorizar: [N]
+Categorías definidas: [N]
+Prioridades definidas: [N]
+Fecha inicio categorización: [YYYY-MM-DD]
+Fecha fin prevista: [YYYY-MM-DD]
+Responsable: [Nombre/equipo]
+Herramientas: [Sistema de tracking usado]
+```
+
 # Plan de Categorización - [Nombre del Proyecto/Tarea]
 
-Fecha: [YYYY-MM-DD]
+## Propósito
+
+Documentar el plan de categorización de issues en lotes prioritarios. Estrategia de ejecución incremental.
+
+> Objetivo: Objetivo: Convertir 100+ issues caóticas en lotes ordenados y ejecutables.
+
+---
+
 Basado en: analysis-phase.md ([fecha del análisis])
-Total de issues: [Número]
 
 ---
 
@@ -361,9 +381,3 @@ Si un lote falla críticamente:
 
 **Comentarios**:
 [Cualquier comentario del revisor]
-
----
-
-**Documento creado**: [YYYY-MM-DD HH:MM]
-**Autor**: [Nombre]
-**Próximo documento**: execution-log.md.template

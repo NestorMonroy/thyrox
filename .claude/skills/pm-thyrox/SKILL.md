@@ -1,13 +1,27 @@
----
-name: pm-thyrox
-description: Project management workflow adapted from CCPM for THYROX template. Use this skill whenever the user wants to plan features, break down work, track progress, create PRDs, or manage project lifecycle. Make sure to use this when users say "plan this feature", "break it down", "what's next", "what's blocked", "create task", "mark done", "generate changelog", or any project planning activity. This is a spec-driven development approach using ROADMAP.md as the source of truth combined with Claude Code native task management.
----
+```yml
+Tipo: Skill Maestro
+Categoría: Project Management
+Versión: 1.0
+Nombre: pm-thyrox
+Descripción: Flujo de gestión de proyectos basado en CCPM para THYROX
+Propósito: Proporcionar metodología completa de gestión de proyectos usando 7 fases SDLC
+Objetivo: Que usuarios puedan planificar, descomponer, ejecutar y trackear proyectos
+Fecha actualización: 2026-03-25
+```
 
 # PM-THYROX: Project Management for THYROX Template
 
-A project management skill that adapts CCPM (Spec-driven development) principles for the THYROX template system. Unlike CCPM which requires GitHub Issues, PM-THYROX uses ROADMAP.md as the single source of truth, combined with Claude Code native task management and Git-based automation.
+## Propósito
+
+PM-THYROX es el skill maestro de gestión de proyectos que adapta principios CCPM (Spec-driven development) para el template THYROX. Proporciona una metodología estructurada en 7 fases SDLC.
+
+> Objetivo: Que usuarios puedan planificar features, descomponer trabajo, trackear progreso, crear PRDs, y manejar el ciclo de vida completo del proyecto.
 
 ---
+
+## Descripción General
+
+A project management skill that adapts CCPM (Spec-driven development) principles for the THYROX template system. Unlike CCPM which requires GitHub Issues, PM-THYROX uses ROADMAP.md as the single source of truth, combined with Claude Code native task management and Git-based automation.
 
 ## When to Use This Skill
 
@@ -62,7 +76,7 @@ Each phase updates the project's source of truth — no external tools required.
 
 This phase contains 7 subsections:
 
-1. **Introduction** (`introduction.md`)
+1. **Introduction** ([introduction.md](references/introduction.md))
    - Vision general del proyecto
    - Propósito y contexto
 
@@ -70,26 +84,26 @@ This phase contains 7 subsections:
    - Requisitos funcionales (Level 1 + Level 2)
    - Matriz de trazabilidad
 
-3. **Quality Goals** (`quality-goals.md`)
+3. **Quality Goals** ([quality-goals.md](references/quality-goals.md))
    - Priority 1, 2, 3
    - Quality attributes y scenarios
    - Trade-offs
 
-4. **Stakeholders** (`stakeholders.md`)
+4. **Stakeholders** ([stakeholders.md](references/stakeholders.md))
    - Matriz de roles y necesidades
    - Conflictos y resoluciones
    - Alineamiento con Quality Goals
 
-5. **Basic Usage** (`basic-usage.md`)
+5. **Basic Usage** ([basic-usage.md](references/basic-usage.md))
    - Cómo funciona el sistema operacionalmente
    - Flujo principal, modos de operación
    - Resultados observables
 
-6. **Constraints** (`constraints.md`)
+6. **Constraints** ([constraints.md](references/constraints.md))
    - Technical, Platform, Organizational, Regulatory, Business
    - Cómo guían la arquitectura
 
-7. **Context** (`context.md`)
+7. **Context** ([context.md](references/context.md))
    - Business Context (sistemas externos)
    - Technical Context (dependencias)
    - Diagrama de contexto

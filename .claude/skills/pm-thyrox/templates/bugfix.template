@@ -1,3 +1,15 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Tipo: fix
+Bug ID: [ID del bug, ej: BUG-456]
+Severidad: [Critical/High/Medium/Low]
+Reportado por: [Nombre]
+Corregido por: [Nombre]
+Archivos modificados: [N]
+Tests añadidos: [SI/NO]
+Verificado: [SI/NO]
+```
+
 fix(scope): short description of the bug fix
 
 Explain the bug:

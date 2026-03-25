@@ -1,8 +1,24 @@
+```yml
+Fecha especificación: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Feature: [Nombre de la feature]
+Versión spec: [1.0]
+Autor spec: [Nombre]
+Fecha inicio desarrollo: [YYYY-MM-DD]
+Fecha target entrega: [YYYY-MM-DD]
+Estado spec: [Borrador/Revisión/Congelada]
+Requisitos implementar: [N]
+```
+
 # Requirements: [Titulo del Proyecto/Feature]
 
-Fecha: YYYY-MM-DD
-Autor: [Nombre]
-Estado: Draft | Review | Approved
+## Propósito
+
+Documentar QUÉ debe implementarse en UNA feature específica. Los requisitos deben ser claros, verificables y con criterios de aceptación.
+
+> Objetivo: Objetivo: Crear especificación ejecutable que pueda ser pasada a diseñadores sin ambigüedad.
+
+---
 
 ## 1. Contexto
 

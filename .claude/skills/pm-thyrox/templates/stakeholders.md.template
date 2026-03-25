@@ -1,4 +1,21 @@
+```yml
+Fecha identificación: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión stakeholder map: [1.0]
+Responsable: [Nombre]
+Total stakeholders: [N]
+Última revisión: [YYYY-MM-DD]
+```
+
 # Stakeholders: [PROJECT_NAME]
+
+## Propósito
+
+Identificar QUIÉN usa el sistema y QUÉ necesita. Documentar roles, necesidades, y cómo se conectan con quality goals.
+
+> Objetivo: Asegurar que todas las necesidades de stakeholders estén documentadas y consideradas en el diseño.
+
+---
 
 ## Matriz de Stakeholders
 
@@ -119,7 +136,3 @@ Una vez completado este documento:
 → Pasar a `basic-usage.md`
 
 ---
-
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft

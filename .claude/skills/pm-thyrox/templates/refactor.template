@@ -1,3 +1,15 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Tipo: refactor
+Componente: [Nombre componente refactorizado]
+Razón: [Descripción breve por qué]
+Autor: [Nombre]
+Alcance: [Número de archivos/líneas afectadas]
+Tests pasando: [SI/NO]
+Performance impact: [Ninguno/Mejora/Degradación]
+Estimado esfuerzo: [horas]
+```
+
 refactor(scope): short description of refactoring
 
 Explain the reason for refactoring:

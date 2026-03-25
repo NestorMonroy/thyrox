@@ -1,3 +1,16 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Tipo: [feature/fix/refactor/etc]
+Cambios relacionados a: [Nombre/descripción]
+Autor: [Nombre]
+Total archivos: [N]
+Archivos agregados: [N]
+Archivos modificados: [N]
+Archivos eliminados: [N]
+Tests: [SI/NO]
+Coordinación con: [Nombres otros devs si aplica]
+```
+
 type(scope): short description
 
 Brief explanation of the change that spans multiple files.

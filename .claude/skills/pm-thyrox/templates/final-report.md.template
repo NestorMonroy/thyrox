@@ -1,8 +1,28 @@
+```yml
+Fecha inicio correcciones: [YYYY-MM-DD]
+Fecha fin correcciones: [YYYY-MM-DD]
+Proyecto: [Nombre del proyecto]
+Versión reporte: [1.0]
+Responsable proceso: [Nombre]
+Issues iniciales: [N]
+Issues resueltos: [N]
+Issues pendientes: [N]
+Tasa resolución: [%]
+Tiempo total: [días/horas]
+Budget utilizado: [horas/costo]
+Aprobado por: [Nombre]
+Estado final: [Completado/Parcial/Fallido]
+```
+
 # Reporte Final - [Nombre del Proyecto/Tarea]
 
-Fecha: [YYYY-MM-DD]
-Proyecto: [Nombre del proyecto]
-Período: [Fecha inicio] a [Fecha fin]
+## Propósito
+
+Documentar el resultado final de la corrección de issues. Resumen con lecciones aprendidas.
+
+> Objetivo: Objetivo: Crear registro permanente de qué se logró, qué no, y cómo mejorar para el futuro.
+
+---
 
 ---
 
@@ -425,7 +445,3 @@ make linkcheck
 - analysis-phase.md - [Fecha]
 - categorization-plan.md - [Fecha]
 - execution-log.md - [Fecha]
-
----
-
-**PROYECTO COMPLETADO** - [YYYY-MM-DD]

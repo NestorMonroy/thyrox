@@ -1,4 +1,21 @@
+```yml
+Fecha documento: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión contexto: [1.0]
+Responsable: [Nombre]
+Sistemas externos: [N]
+Última actualización integración: [YYYY-MM-DD]
+```
+
 # Context: [PROJECT_NAME]
+
+## Propósito
+
+Documentar DÓNDE se inserta el sistema en el ecosistema. Define límites (scope) e integraciones con sistemas externos.
+
+> Objetivo: Objetivo: Que todos entiendan los límites del sistema y cómo se conecta con el mundo externo.
+
+---
 
 ## Scope / Boundaries
 
@@ -136,11 +153,5 @@
 
 ## Siguiente Paso
 
-Una vez completado este documento y toda PHASE 2: ANALYZE:
-→ Pasar a PHASE 3: SOLUTION_STRATEGY
-
----
-
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft
+Una vez completado este documento y toda PHASE 1: ANALYZE:
+→ Pasar a PHASE 2: SOLUTION_STRATEGY

@@ -1,4 +1,20 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión análisis: [1.0]
+Autor: [Nombre]
+Estado: [Borrador/En revisión/Aprobado]
+```
+
 # Introduction and Goals: [PROJECT_NAME]
+
+## Propósito
+
+Establece el contexto general del proyecto. Define QUÉ es el sistema, POR QUÉ existe, PARA QUIÉN, y cuál es su objetivo general.
+
+> Objetivo: Proporcionar una visión clara que sienta las bases para todas las demás subsecciones del análisis.
+
+---
 
 ## Visión General
 
@@ -41,9 +57,3 @@ Este documento es el inicio de PHASE 2: ANALYZE. Las subsecciones que siguen son
 
 Una vez completado este documento:
 → Pasar a `requirements-analysis.md`
-
----
-
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft

@@ -1,4 +1,23 @@
+```yml
+Tipo: Contexto Persistente
+Categoría: Memoria del Proyecto
+Versión: 1.0
+Propósito: Contexto permanente para Claude Code en proyecto THYROX
+Objetivo: Proporcionar memoria compartida entre sesiones de Claude Code
+Fecha actualización: 2026-03-25
+```
+
 # CLAUDE.md - Contexto Persistente THYROX
+
+## Propósito
+
+Archivo de contexto persistente para Claude Code en el proyecto THYROX. Proporciona información crítica sobre estructura, convenciones, y estado actual.
+
+> Objetivo: Que Claude recuerde estructura, decisiones, y contexto del proyecto entre sesiones.
+
+---
+
+## Descripción
 
 Este archivo contiene el contexto permanente para Claude Code en el proyecto THYROX.
 
@@ -170,18 +189,18 @@ Crear PR con template automático que incluya:
 ### `.claude/`
 
 **context/** - Estado actual del proyecto
-- `project-state.md` - Contexto general
-- `decisions.md` - Decisiones arquitectónicas
+- [project-state.md](.claude/context/project-state.md) - Contexto general
+- [decisions.md](.claude/context/decisions.md) - Decisiones arquitectónicas
 
 **skills/** - Comandos personalizados
 - `changelog.md` - Generar CHANGELOG desde git log
-- `commit-convention.md` - Validar commits
+- [commit-convention.md](./commit-convention.md) - Validar commits
 
 **prds/** - Product Requirements Documents
-- `template.md` - Template para nuevas funcionalidades
+- [template.md](./template.md) - Template para nuevas funcionalidades
 
 **epics/** - Epics y task decomposition
-- Ejemplo: `example-epic/epic.md` + tasks
+- Ejemplo: [example-epic/epic.md](example-epic/epic.md) + tasks
 
 ### `docs/`
 

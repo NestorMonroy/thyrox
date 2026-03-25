@@ -1,4 +1,21 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión Quality Goals: [1.0]
+Autor: [Nombre]
+Período evaluación: [YYYY-MM-DD hasta YYYY-MM-DD]
+Metas definidas: [N]
+```
+
 # Quality Goals: [PROJECT_NAME]
+
+## Propósito
+
+Documentar QUÉ TAN BIEN debe el sistema cumplir sus requisitos, usando atributos de calidad con scenarios medibles.
+
+> Objetivo: Especificar atributos de calidad (performance, security, usability, etc.) priorizados en tres niveles (Critical, Important, Desirable).
+
+---
 
 ## Priority 1: Critical
 
@@ -84,7 +101,3 @@ Una vez completado este documento:
 → Pasar a `stakeholders.md`
 
 ---
-
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft

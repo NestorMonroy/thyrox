@@ -1,4 +1,22 @@
+```yml
+Fecha estrategia: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión arquitectura: [1.0]
+Arquitecto: [Nombre]
+Stack versión: [ej: Python 3.11, Django 4.2, PostgreSQL 14]
+Validado por: [Nombre]
+Estado: [Propuesta/En revisión/Aprobado]
+```
+
 # Solution Strategy: [PROJECT_NAME]
+
+## Propósito
+
+Documentar el plan arquitectónico completo. CÓMO lograr arquitectónicamente los requisitos dentro de las limitaciones.
+
+> Objetivo: Objetivo: Transformar requisitos de PHASE 1 en decisiones arquitectónicas ejecutables.
+
+---
 
 ## Key Ideas
 
@@ -230,11 +248,5 @@ How we respect it: Entire solution uses Java 17 + Spring ecosystem
 
 ## Siguiente Paso
 
-Una vez completado PHASE 3: SOLUTION_STRATEGY:
-→ Pasar a PHASE 4: STRUCTURE (especificaciones detalladas)
-
----
-
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft
+Una vez completado PHASE 2: SOLUTION_STRATEGY:
+→ Pasar a PHASE 3: PLAN (especificaciones detalladas)

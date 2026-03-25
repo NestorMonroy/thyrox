@@ -1,7 +1,28 @@
+```yml
+Fecha inicio sesión: [YYYY-MM-DD-HH-mm-ss]
+Fecha fin sesión: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión: [1.0]
+Ejecutor: [Nombre]
+Issues tratados hoy: [N]
+Issues resueltos: [N]
+Issues en progreso: [N]
+Issues demorados: [N]
+Problemas encontrados: [N]
+Tiempo total sesión: [horas]
+Siguiente sesión: [YYYY-MM-DD-HH-mm-ss]
+```
+
 # Log de Ejecución - [Nombre del Proyecto/Tarea]
 
-Fecha inicio: [YYYY-MM-DD]
-Fecha última actualización: [YYYY-MM-DD HH:MM]
+## Propósito
+
+Documentar el progreso diario durante la corrección de issues. Dashboard vivo con estado actual.
+
+> Objetivo: Objetivo: Crear registro actualizable del progreso, bloqueadores y métricas en tiempo real.
+
+---
+
 Basado en: categorization-plan.md ([fecha del plan])
 
 ---
@@ -368,10 +389,3 @@ Pasos para validación completa:
 | [YYYY-MM-DD] | Lote 1 completado | [Nombre] |
 | [YYYY-MM-DD] | Lote 2 completado | [Nombre] |
 | [YYYY-MM-DD] | Actualización de métricas | [Nombre] |
-
----
-
-**Documento actualizado**: [YYYY-MM-DD HH:MM]
-**Autor**: [Nombre]
-**Estado del proyecto**: [En progreso / Completado]
-**Próximo documento**: final-report.md.template (cuando todos los lotes estén completos)

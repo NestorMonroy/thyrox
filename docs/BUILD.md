@@ -1,10 +1,25 @@
+```yml
+Tipo: Documentación Técnica Detallada
+Categoría: Build & Deployment
+Versión: 1.0
+Propósito: Guía completa para construir, probar y desplegar
+Objetivo: Proporcionar instrucciones paso a paso para setup, build, test y deployment
+Fecha actualización: 2026-03-25
+```
+
 # Documentación de Build
 
-Guía completa para construir, probar y desplegar THYROX.
+## Propósito
+
+Guía completa para construir, probar y desplegar THYROX. Cubre setup local, CI/CD, Docker, y production deployment.
+
+> Objetivo: Que desarrolladores puedan reproducir el ambiente, ejecutar tests, y hacer deploy a producción.
 
 ---
 
-## Requisitos Previos
+## Descripción General
+
+Guía completa para construir, probar y desplegar THYROX.
 
 ### Sistema
 

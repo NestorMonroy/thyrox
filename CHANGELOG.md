@@ -1,4 +1,23 @@
+```yml
+Tipo: Documentación de Cambios
+Categoría: Historial de Proyecto
+Versión: 0.1.0
+Propósito: Registro automático de todos los cambios notables del proyecto
+Objetivo: Documentar cambios siguiendo Semantic Versioning y Keep a Changelog
+Fecha actualización: 2026-03-25
+```
+
 # CHANGELOG
+
+## Propósito
+
+Registro de todos los cambios notables del proyecto THYROX. Sigue el formato Keep a Changelog y Semantic Versioning.
+
+> Objetivo: Proporcionar historial claro de qué se agregó, cambió, y deprecó en cada versión.
+
+---
+
+## Formato y Convenciones
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 

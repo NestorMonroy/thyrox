@@ -1,12 +1,21 @@
----
-name: spec-driven-dev
-description: "Desarrollo guiado por especificaciones en 4 fases. Usar para features complejas, cambios arquitectonicos, o cualquier trabajo que requiera planificacion estructurada."
-version: 1.2.0
-created: 2026-01-29
-updated: 2026-02-01
----
+```yml
+Tipo: Metodología PHASE 4
+Categoría: Desarrollo Guiado por Especificaciones
+Versión: 1.0
+Propósito: Metodología completa para desarrollo en 4 fases: Requirements, Design, Tasks, Validation.
+Objetivo: Proporcionar proceso estructurado para features complejas.
+Fecha actualización: 2026-03-25
+```
 
 # Spec-Driven Development
+
+## Propósito
+
+Metodología completa para desarrollo en 4 fases: Requirements, Design, Tasks, Validation.
+
+> Objetivo: Proporcionar proceso estructurado para features complejas.
+
+---
 
 Metodología para trabajo complejo que requiere planificación estructurada. Aplica 4 fases: Requirements → Design → Tasks → Implementation.
 

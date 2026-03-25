@@ -1,10 +1,25 @@
+```yml
+Tipo: Documentación Técnica Detallada
+Categoría: API REST
+Versión: 0.1.0
+Propósito: Documentación completa de endpoints, autenticación y ejemplos
+Objetivo: Proporcionar guía detallada para usuarios de API
+Fecha actualización: 2026-03-25
+```
+
 # Documentación de API
 
-Documentación completa de endpoints, autenticación y ejemplos de uso.
+## Propósito
+
+Documentación completa y detallada de la API REST: endpoints, autenticación, ejemplos, y mejores prácticas.
+
+> Objetivo: Que desarrolladores puedan integrar fácilmente con la API siguiendo ejemplos prácticos.
 
 ---
 
-## Overview
+## Descripción General
+
+Documentación completa de endpoints, autenticación y ejemplos de uso.
 
 Esta API proporciona endpoints para [descripción general].
 
