@@ -1,0 +1,146 @@
+# Context: [PROJECT_NAME]
+
+## Scope / Boundaries
+
+### Dentro del Sistema
+
+- [Component/Feature 1]
+- [Component/Feature 2]
+- [Component/Feature 3]
+
+**Ejemplo:**
+- User authentication and authorization
+- Product catalog management
+- Shopping cart functionality
+- Order processing
+- Inventory tracking
+
+### Fuera del Sistema (External Dependencies)
+
+- [External Service 1]
+- [External Service 2]
+- [External Service 3]
+
+**Ejemplo:**
+- Payment processing (Stripe/PayPal)
+- Shipping logistics (FedEx/UPS)
+- Email delivery (SendGrid)
+- Analytics (Google Analytics)
+
+---
+
+## Business Context
+
+| External System | Data Exchange | Business Value |
+|-----------------|---------------|-----------------|
+| [System Name] | [Data flowing] | [Business benefit] |
+| [System Name] | [Data flowing] | [Business benefit] |
+| [System Name] | [Data flowing] | [Business benefit] |
+
+**Ejemplo:**
+| External System | Data Exchange | Business Value |
+|-----------------|---------------|-----------------|
+| Customer Portal | Orders, Reviews | Generate revenue |
+| Supplier System | Stock levels | Ensure product availability |
+| Payment Provider | Transactions | Secure payment processing |
+| Shipping Partner | Order details | Deliver to customers |
+| Analytics DB | User data | Business intelligence |
+
+---
+
+## Technical Context
+
+| External System | Interface | Technology | Direction |
+|-----------------|-----------|-----------|-----------|
+| [System] | [API type] | [Protocol] | [Inbound/Outbound] |
+| [System] | [API type] | [Protocol] | [Inbound/Outbound] |
+| [System] | [API type] | [Protocol] | [Inbound/Outbound] |
+
+**Ejemplo:**
+| External System | Interface | Technology | Direction |
+|-----------------|-----------|-----------|-----------|
+| Customer Portal | REST API | HTTPS | Inbound |
+| Stripe (Payments) | REST API | HTTPS, OAuth2 | Outbound |
+| Supplier API | SOAP | SOAP/XML | Outbound |
+| Message Queue | Publisher/Subscriber | RabbitMQ | Bidirectional |
+| Data Warehouse | SQL | PostgreSQL | Outbound |
+
+---
+
+## Diagrama de Contexto
+
+```
+┌─────────────────────────────────────────┐
+│         OUR SYSTEM                      │
+│    [Core ecommerce platform]            │
+└─────────────────────────────────────────┘
+    ↓↓         ↑↑         ↓↓         ↑↑
+    ↓↓         ↑↑         ↓↓         ↑↑
+
+┌──────────┐  ┌──────────┐  ┌──────────┐
+│Customer  │  │Payment   │  │Inventory │
+│Portal    │  │Gateway   │  │System    │
+│(Inbound) │  │(Out)     │  │(Out)     │
+└──────────┘  └──────────┘  └──────────┘
+
+┌──────────┐  ┌──────────┐  ┌──────────┐
+│Shipping  │  │Analytics │  │Email     │
+│Partner   │  │Warehouse │  │Service   │
+│(Bidirect)│  │(Out)     │  │(Out)     │
+└──────────┘  └──────────┘  └──────────┘
+```
+
+[Reemplazar con diagrama específico de tu proyecto]
+
+---
+
+## Data Flows
+
+### Inbound Data Flows
+
+[From external systems to our system]
+
+**Ejemplo:**
+- Customer browses → Web Portal sends search queries → System returns products
+- Payment confirmation → Stripe sends webhook → System updates order status
+
+### Outbound Data Flows
+
+[From our system to external systems]
+
+**Ejemplo:**
+- Order created → System sends inventory update → Supplier system updates stock
+- User purchase → System sends data → Analytics warehouse
+
+### Bidirectional Data Flows
+
+[Both directions]
+
+**Ejemplo:**
+- Order sync with warehouse → Warehouse sends updates, we send confirmations
+
+---
+
+## Validación Checklist
+
+- [ ] Scope/boundaries claramente definidos
+- [ ] Business context identificado
+- [ ] Technical context identificado
+- [ ] Sistemas externos específicos (no genéricos)
+- [ ] Datos intercambiados claros
+- [ ] Protocolos específicos documentados
+- [ ] Direcciones de flujo claras
+- [ ] Diagrama de contexto visual
+
+---
+
+## Siguiente Paso
+
+Una vez completado este documento y toda PHASE 2: ANALYZE:
+→ Pasar a PHASE 3: SOLUTION_STRATEGY
+
+---
+
+**Documento creado:** [TIMESTAMP]  
+**Versión:** 1.0.0  
+**Status:** Draft

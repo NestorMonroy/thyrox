@@ -27,26 +27,135 @@ This skill is designed to work seamlessly with the THYROX template structure and
 
 ## How This Skill Works
 
-PM-THYROX follows a 5-phase workflow, each phase working directly with files in the THYROX structure:
+PM-THYROX follows a 7-phase workflow aligned with SDLC (Software Development Lifecycle), each phase working directly with files in the THYROX structure:
 
 ```
-Phase 1: PLAN         → Update ROADMAP.md with requirements
-Phase 2: STRUCTURE    → Create PRD in .claude/prds/ (optional)
-Phase 3: DECOMPOSE    → Break down into tasks using Claude Code /task:create
-Phase 4: EXECUTE      → Work on tasks and commit with Conventional Commits
-Phase 5: TRACK        → Monitor progress and auto-generate CHANGELOG.md
+Phase 1: ANALYZE           → Requirements, Quality Goals, Stakeholders, Context
+                             References: introduction.md, requirements.md, etc.
+                             
+Phase 2: SOLUTION_STRATEGY → Architectural plan: ideas, decisions, tech stack
+                             Reference: solution-strategy.md
+                             
+Phase 3: PLAN              → Brainstorm, update ROADMAP.md
+                             
+Phase 4: STRUCTURE         → Create PRD or Spec-Driven docs (optional)
+                             Templates: requirements.md, design.md, tasks.md
+                             
+Phase 5: DECOMPOSE         → Break down into tasks using Claude Code /task:create
+                             
+Phase 6: EXECUTE           → Work on tasks and commit with Conventional Commits
+                             
+Phase 7: TRACK             → Monitor progress, testing, deployment, maintenance
 ```
 
 Each phase updates the project's source of truth — no external tools required.
 
 ---
 
-## Phase 1: PLAN
+## Phase 1: ANALYZE
 
-**Goal:** Capture requirements and create a clear specification.
+**Goal:** Deep understanding of requirements, quality goals, stakeholders, constraints, and context.
+
+**Output:** ARC42 Section 1, 2, 3 (Introduction & Goals, Constraints, Context)
+
+### Process
+
+This phase contains 7 subsections:
+
+1. **Introduction** (`introduction.md`)
+   - Vision general del proyecto
+   - Propósito y contexto
+
+2. **Requirements Analysis** (`requirements-analysis.md`)
+   - Requisitos funcionales (Level 1 + Level 2)
+   - Matriz de trazabilidad
+
+3. **Quality Goals** (`quality-goals.md`)
+   - Priority 1, 2, 3
+   - Quality attributes y scenarios
+   - Trade-offs
+
+4. **Stakeholders** (`stakeholders.md`)
+   - Matriz de roles y necesidades
+   - Conflictos y resoluciones
+   - Alineamiento con Quality Goals
+
+5. **Basic Usage** (`basic-usage.md`)
+   - Cómo funciona el sistema operacionalmente
+   - Flujo principal, modos de operación
+   - Resultados observables
+
+6. **Constraints** (`constraints.md`)
+   - Technical, Platform, Organizational, Regulatory, Business
+   - Cómo guían la arquitectura
+
+7. **Context** (`context.md`)
+   - Business Context (sistemas externos)
+   - Technical Context (dependencias)
+   - Diagrama de contexto
+
+**References:**
+See: `references/introduction.md`, `references/requirements.md`, `references/quality-goals.md`, `references/stakeholders.md`, `references/basic-usage.md`, `references/constraints.md`, `references/context.md`
+
+**Templates:**
+Use: `introduction.md.template`, `requirements-analysis.md.template`, etc.
 
 ### Trigger
-User says something like: "I want to build X", "let's plan X", "create feature X"
+
+User says: "I need to analyze this project", "let's document requirements", "what are the constraints?"
+
+### Transition
+
+Ask: "Ready to move to PHASE 2: SOLUTION_STRATEGY?" (after all 7 subsections approved)
+
+---
+
+## Phase 2: SOLUTION_STRATEGY
+
+**Goal:** Architectural plan defining HOW to satisfy requirements within constraints.
+
+**Output:** Solution Strategy document (ARC42 Section 4)
+
+### Process
+
+Document:
+
+1. **Key Ideas**
+   - Fundamental architectural concepts
+   
+2. **Fundamental Decisions**
+   - Why this decision over alternatives
+   - Implications
+   
+3. **Technology Stack**
+   - Languages, frameworks, databases, deployment, etc.
+   
+4. **Architecture Patterns**
+   - Structural, behavioral, architectural styles
+   
+5. **How We Achieve Quality Goals**
+   - Mechanisms for each quality goal
+
+6. **Adherence to Constraints**
+   - How we respect each constraint
+
+**Reference:**
+See: `references/solution-strategy.md`
+
+**Template:**
+Use: `solution-strategy.md.template`
+
+### Trigger
+
+User says: "Let's design the architecture", "what's the technical approach?"
+
+### Transition
+
+Ask: "Ready to move to PHASE 3: PLAN?" (after solution strategy approved)
+
+---
+
+## Phase 3: PLAN
 
 ### Process
 
@@ -83,9 +192,9 @@ Ask: "Ready to break this down into tasks, or do you want more planning?"
 
 ---
 
-## Phase 2: STRUCTURE (Optional: Simple PRD or Spec-Driven)
+## Phase 4: STRUCTURE
 
-**Goal:** Create formal specification document if needed.
+**Goal:** Create detailed specification documents before implementation.
 
 ### When to Use
 
@@ -166,9 +275,9 @@ If using Spec-Driven:
 
 ---
 
-## Phase 3: DECOMPOSE
+## Phase 5: DECOMPOSE
 
-**Goal:** Break down the feature into discrete, assignable tasks.
+**Goal:** Break down features into discrete, assignable tasks.
 
 ### Trigger
 User says: "break it down", "create tasks", "decompose this"
@@ -213,7 +322,7 @@ User says: "break it down", "create tasks", "decompose this"
 
 ---
 
-## Phase 4: EXECUTE
+## Phase 6: EXECUTE
 
 **Goal:** Build the feature and track progress.
 
@@ -261,7 +370,7 @@ Multiple Claude Code sessions can work simultaneously:
 
 ---
 
-## Phase 5: TRACK
+## Phase 7: TRACK
 
 **Goal:** Know project status at a glance.
 
