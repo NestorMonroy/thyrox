@@ -1,10 +1,25 @@
+```yml
+Tipo: Documentación Técnica
+Categoría: API REST
+Versión: 1.0
+Propósito: Documentación de sub-proyecto API REST
+Objetivo: Proporcionar quick start, estructura, y guía de desarrollo de API
+Fecha actualización: 2026-03-25
+```
+
 # THYROX API
 
-Sub-proyecto: REST API para THYROX.
+## Propósito
+
+Documentación del sub-proyecto API: REST API construida con Node.js y Express para THYROX.
+
+> Objetivo: Que developers puedan entender la estructura, instalar dependencias, y comenzar a desarrollar endpoints.
 
 ---
 
-## Overview
+## Descripción General
+
+Sub-proyecto: REST API para THYROX.
 
 API REST construida con Node.js y Express.
 
