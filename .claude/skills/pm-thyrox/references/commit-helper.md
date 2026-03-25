@@ -70,14 +70,15 @@ Guía para crear commits siguiendo **Conventional Commits** en el proyecto THYRO
 
 Usar los templates en `/templates/` para casos específicos:
 
-| Archivo | Uso |
-|---------|-----|
-| **feature.template** | Nueva característica o funcionalidad |
-| **bugfix.template** | Corrección de errores |
-| **refactor.template** | Refactorización de código |
-| **documentation.template** | Cambios de documentación |
-| **task-completion.template** | Al completar una tarea de PM-THYROX |
-| **multiple-files.template** | Múltiples archivos modificados |
+| Archivo | Tipo | Uso |
+|---------|------|-----|
+| **commit-message-main.template** | Master | Referencia completa y ejemplos |
+| **feature.template** | feat | Nueva característica o funcionalidad |
+| **bugfix.template** | fix | Corrección de errores |
+| **refactor.template** | refactor | Refactorización de código |
+| **documentation.template** | docs | Cambios de documentación |
+| **task-completion.template** | feat | Al completar una tarea de PM-THYROX |
+| **multiple-files.template** | multiple | Múltiples archivos modificados |
 
 ---
 

@@ -15,6 +15,20 @@ Cada template incluye:
 
 ## Templates Disponibles
 
+### 0. **commit-message-main.template** (Master Template)
+
+Template principal y completo con todas las secciones de Conventional Commits.
+
+Usar cuando:
+- Necesitas referencia completa
+- Quieres ver todas las opciones disponibles
+- No estás seguro cuál template específico usar
+- Necesitas entender la estructura completa de un commit
+
+Cubre: Tipos, scopes, subject, body, footer, ejemplos completos, breaking changes, referencias, co-authored-by
+
+---
+
 ### 1. **feature.template**
 Para commits de **nueva funcionalidad**.
 
