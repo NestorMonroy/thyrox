@@ -83,16 +83,28 @@ Ask: "Ready to break this down into tasks, or do you want more planning?"
 
 ---
 
-## Phase 2: STRUCTURE (Optional PRD)
+## Phase 2: STRUCTURE (Optional: Simple PRD or Spec-Driven)
 
-**Goal:** Create a formal specification document if needed.
+**Goal:** Create formal specification document if needed.
 
 ### When to Use
-- Feature is complex (5+ subtasks)
-- Team collaboration needed
-- Requirements need detailed documentation
 
-### Process
+**Simple PRD**:
+- Feature is moderately complex (5-10 subtasks)
+- Straightforward scope
+- <2 hours total work
+- Low risk
+
+**Spec-Driven Development**:
+- Feature is very complex (10+ subtasks)
+- Multiple components affected
+- Architectural changes
+- High risk of regresions
+- Multi-session work
+- Requires detailed planning
+- Multiple stakeholders
+
+### Option A: Simple PRD
 
 1. **Create PRD File**
    Create `.claude/prds/<feature-name>.md` with:
@@ -109,14 +121,48 @@ Ask: "Ready to break this down into tasks, or do you want more planning?"
    - "Anything unclear?"
 
 3. **Link to ROADMAP.md**
-   Update ROADMAP.md to reference the PRD:
-   ```
-   Feature: User Authentication
-   PRD: See .claude/prds/user-authentication.md
-   ```
+   Update ROADMAP.md to reference the PRD
+
+### Option B: Spec-Driven Development
+
+For complex work, use **Spec-Driven Development**:
+
+Consult **`references/spec-driven-development.md`** for:
+- Decision Framework: Should you use spec-driven?
+- 4-Phase Workflow:
+  * FASE 1: Requirements (QUE necesitas)
+  * FASE 2: Design (COMO lo implementarás)
+  * FASE 3: Tasks (PASOS exactos)
+  * FASE 4: Implementation (EJECUTA)
+
+**Templates**:
+- `requirements.md.template` - Define requirements
+- `design.md.template` - Design solution
+- `tasks.md.template` - Break into actionable tasks
+
+**Benefits**:
+- Clear approval gates between phases
+- Detailed plan for implementation
+- Easy to resume across sessions
+- Prevents regresions
+- Documents architectural decisions
+
+**Process**:
+1. Create requirements document (using template)
+2. Get approval from user
+3. Create design document (using template)
+4. Get approval from user
+5. Create tasks document (using template)
+6. Get approval from user
+7. Execute tasks (PHASE 4)
 
 ### Transition
+
+If using Simple PRD:
 "Ready to decompose this into tasks?"
+
+If using Spec-Driven:
+"Ready to move to FASE 2: Design?" (after requirements approved)
 
 ---
 

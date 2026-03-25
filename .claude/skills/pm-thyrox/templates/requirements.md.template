@@ -1,0 +1,110 @@
+# Requirements: [Titulo del Proyecto/Feature]
+
+Fecha: YYYY-MM-DD
+Autor: [Nombre]
+Estado: Draft | Review | Approved
+
+## 1. Contexto
+
+[Descripcion de la situacion actual y por que es necesario este trabajo]
+
+## 2. Problema
+
+[Descripcion clara y concisa del problema especifico a resolver]
+
+## 3. Objetivos
+
+### 3.1 Objetivo Principal
+
+[Objetivo primario que se debe alcanzar]
+
+### 3.2 Objetivos Secundarios
+
+- [Objetivo secundario 1]
+- [Objetivo secundario 2]
+- [Objetivo secundario 3]
+
+## 4. Requisitos Funcionales
+
+RF-001: [Titulo del requisito]
+- Descripcion: [Descripcion detallada]
+- Prioridad: Alta | Media | Baja
+- Criterio de aceptacion: [Como se validara que se cumple]
+
+RF-002: [Titulo del requisito]
+- Descripcion: [Descripcion detallada]
+- Prioridad: Alta | Media | Baja
+- Criterio de aceptacion: [Como se validara]
+
+RF-003: [Titulo del requisito]
+...
+
+## 5. Requisitos No Funcionales
+
+RNF-001: [Titulo - ej: Performance]
+- Descripcion: [Descripcion detallada]
+- Metrica: [Como se mide]
+- Umbral: [Valor minimo aceptable]
+
+RNF-002: [Titulo - ej: Mantenibilidad]
+- Descripcion: [Descripcion detallada]
+- Metrica: [Como se mide]
+- Umbral: [Valor minimo aceptable]
+
+## 6. Restricciones
+
+- [Restriccion organizacional 1]
+- [Restriccion tecnica 1]
+- [Restriccion de tiempo/presupuesto]
+- [Restriccion de recursos]
+
+## 7. Fuera de Alcance
+
+Explicito que NO se incluye en este proyecto:
+
+- [Item fuera de alcance 1]
+- [Item fuera de alcance 2]
+- [Item fuera de alcance 3]
+
+## 8. Stakeholders
+
+| Stakeholder | Rol | Interes |
+|-------------|-----|---------|
+| [Nombre/Rol] | [Funcion] | [Que espera del proyecto] |
+| [Nombre/Rol] | [Funcion] | [Que espera del proyecto] |
+
+## 9. Supuestos
+
+- [Supuesto 1 que se asume verdadero]
+- [Supuesto 2]
+
+## 10. Dependencias
+
+- [Dependencia externa 1]
+- [Dependencia de otros proyectos]
+
+## 11. Riesgos Identificados
+
+| Riesgo | Probabilidad | Impacto | Mitigacion |
+|--------|--------------|---------|------------|
+| [Riesgo 1] | Alta/Media/Baja | Alto/Medio/Bajo | [Como mitigar] |
+| [Riesgo 2] | Alta/Media/Baja | Alto/Medio/Bajo | [Como mitigar] |
+
+## 12. Referencias
+
+- [Documento relacionado 1]
+- [URL o path a documentacion relevante]
+- [Issue o ticket relacionado]
+
+## 13. Aprobacion
+
+- [ ] Revisado por: [Nombre]
+- [ ] Aprobado por: [Nombre]
+- [ ] Fecha de aprobacion: YYYY-MM-DD
+
+## Historial de Cambios
+
+| Fecha | Version | Cambios | Autor |
+|-------|---------|---------|-------|
+| YYYY-MM-DD | 0.1 | Creacion inicial | [Nombre] |
+| YYYY-MM-DD | 0.2 | [Cambios realizados] | [Nombre] |
