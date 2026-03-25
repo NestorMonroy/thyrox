@@ -286,6 +286,30 @@ Example output:
 - Updated API error response format
 ```
 
+### Correcting 100+ Issues (Incremental Correction)
+
+If you detect 100+ issues during TRACK phase:
+
+User says: "I have 100+ warnings", "how do I fix many issues?", "correct issues incrementally"
+
+**Use Incremental Correction Methodology:**
+
+Consult **`references/incremental-correction.md`** for:
+- Decision Framework: ¿Manual vs Script?
+- 8 Protections for safe scripts
+- 4 templates to document process:
+  * `analysis-phase.md.template` - Analyze all issues
+  * `categorization-plan.md.template` - Plan batches
+  * `execution-log.md.template` - Track execution
+  * `final-report.md.template` - Document results
+
+**Quick Process:**
+1. Use `analysis-phase.md.template` to understand issues
+2. Use `categorization-plan.md.template` to create batches
+3. Execute batches, document in `execution-log.md.template`
+4. Finalize with `final-report.md.template`
+5. Commit results with clear messages
+
 ---
 
 ## Natural Language Commands
