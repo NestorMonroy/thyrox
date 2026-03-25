@@ -35,7 +35,7 @@ Responde preguntas fundamentales:
 
 **Entregable:** Tabla de requisitos con ID, descripción, prioridad
 
-Consultar: [requirements.md]
+Consultar: [[requirements.md]]
 
 ---
 
