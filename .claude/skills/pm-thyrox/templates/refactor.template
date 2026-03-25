@@ -41,27 +41,3 @@ refactor(database): consolidate user queries into repository pattern
 refactor(api): extract common validation into middleware
 refactor(structure): reorganize project directories per conventions
 refactor(code): remove code duplication in auth service
-
----
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Refactor Template** es un patrón de mensaje de commit para MEJORAS SIN CAMBIO FUNCIONAL en PHASE 6: EXECUTE. Su propósito es documentar POR QUÉ se refactorizó sin cambiar comportamiento.
->
-> **Objetivo:** Registrar mejoras de calidad, mantenibilidad y performance sin cambios funcionales visibles al usuario.
->
-> **Estructura:**
-> - **Metadatos YAML** → Fecha, tipo, componente, razón, autor, alcance, tests, performance, esfuerzo
-> - **Título (72 caracteres)** → refactor(scope): descripción breve
-> - **Razón** → Code smell, performance, mantenibilidad, claridad
-> - **Cómo** → Reorganización, patrones, principios aplicados, migración
-> - **Impacto** → Archivos afectados, líneas, breaking changes, performance, compatibilidad
-> - **Comportamiento** → Funcionalidad (sin cambios), tests antes/después
->
-> **Diferencia crucial (PHASE 6: EXECUTE):**
-> - **feature.template** → Nueva funcionalidad (usuario la ve)
-> - **bugfix.template** → Corrección de error existente
-> - **refactor.template** → Mejora sin cambio funcional (usuario NO la ve)
-> - **documentation.template** → Mejora de documentación
->
-> Refactors deben mantener todos los tests pasando. Performance impact debe ser documentado explícitamente.

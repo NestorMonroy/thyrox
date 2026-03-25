@@ -10,6 +10,14 @@ Requisitos totales: [N]
 
 # Requirements Analysis: [PROJECT_NAME]
 
+## Propósito
+
+Documentar QUÉ debe hacer el sistema, en dos niveles: requisitos generales y específicos.
+
+> Objetivo: Especificar de forma clara, completa y verificable qué funcionalidades el sistema debe proporcionar.
+
+---
+
 ## Requisitos Generales (Level 1)
 
 | ID  | Requirement | Explanation |
@@ -92,20 +100,3 @@ Una vez completado este documento:
 → Pasar a `quality-goals.md`
 
 ---
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Requirements Analysis** (Análisis de Requisitos) es la segunda subsección de PHASE 1: ANALYZE. Su propósito es documentar QUÉ debe hacer el sistema.
->
-> **Objetivo:** Especificar de forma clara, completa y verificable qué funcionalidades el sistema debe proporcionar.
->
-> **Estructura de dos niveles:**
-> - **Level 1 (Requisitos Generales)** → QUÉ debe hacer (visión general)
-> - **Level 2 (Requisitos Específicos)** → CÓMO verificar que cumple (detalles técnicos)
->
-> **Diferencia crucial:**
-> - **Requirements** → QUÉ hace el sistema (especificación)
-> - **Quality Goals** → QUÉ TAN BIEN lo hace (atributos de calidad)
-> - **Constraints** → QUÉ LIMITA su capacidad
->
-> Cada requisito debe ser verificable, medible y trazable a stakeholders y quality goals.

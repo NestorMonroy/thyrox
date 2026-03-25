@@ -9,6 +9,14 @@ Metas definidas: [N]
 
 # Quality Goals: [PROJECT_NAME]
 
+## Propósito
+
+Documentar QUÉ TAN BIEN debe el sistema cumplir sus requisitos, usando atributos de calidad con scenarios medibles.
+
+> Objetivo: Especificar atributos de calidad (performance, security, usability, etc.) priorizados en tres niveles (Critical, Important, Desirable).
+
+---
+
 ## Priority 1: Critical
 
 | Quality Goal | Scenario |
@@ -93,21 +101,3 @@ Una vez completado este documento:
 → Pasar a `stakeholders.md`
 
 ---
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Quality Goals** (Objetivos de Calidad) es la tercera subsección de PHASE 1: ANALYZE. Su propósito es documentar QUÉ TAN BIEN debe el sistema cumplir sus requisitos.
->
-> **Objetivo:** Especificar atributos de calidad (correctness, performance, security, etc.) con scenarios medibles y verificables.
->
-> **Estructura de tres prioridades:**
-> - **Priority 1 (Critical)** → Fracasar aquí = sistema no funciona
-> - **Priority 2 (Important)** → Fracasar aquí = usuario insatisfecho
-> - **Priority 3 (Desirable)** → Fracasar aquí = nice-to-have perdido
->
-> **Diferencia crucial:**
-> - **Requirements** → QUÉ hace (funcionalidad)
-> - **Quality Goals** → QUÉ TAN BIEN lo hace (atributos, medibles)
-> - **Constraints** → QUÉ LIMITA lograrlo
->
-> Cada goal debe tener un scenario específico, medible y verificable. Los trade-offs deben estar documentados y resueltos explícitamente.

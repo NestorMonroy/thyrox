@@ -12,6 +12,14 @@ Revisor designado: [Nombre]
 
 # Design: [Titulo del Proyecto/Feature]
 
+## Propósito
+
+Documentar CÓMO arquitectónicamente implementar los requisitos. Decisiones arquitectónicas, componentes, relaciones.
+
+> Objetivo: Objetivo: Traducir requisitos en decisiones técnicas implementables.
+
+---
+
 Basado en: requirements.md
 
 ## 1. Vision General
@@ -275,27 +283,3 @@ TC-002: [Titulo del caso]
 |-------|---------|---------|-------|
 | YYYY-MM-DD | 0.1 | Creacion inicial | [Nombre] |
 | YYYY-MM-DD | 0.2 | [Cambios realizados] | [Nombre] |
-
----
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Design** (Diseño Técnico) es la segunda subsección de PHASE 4: STRUCTURE (Spec-Driven Development). Su propósito es documentar CÓMO arquitectónicamente implementar los requisitos.
->
-> **Objetivo:** Traducir requisitos de requirements.md en decisiones arquitectónicas ejecutables.
->
-> **Estructura:**
-> - **Visión General** → Solución de alto nivel
-> - **Decisiones Arquitectónicas** → DA-001, DA-002, ... con alternativas evaluadas
-> - **Componentes** → Nuevos, modificados, deprecados
-> - **Estructura de Archivos** → Dónde va cada cosa
-> - **Relaciones e Integraciones** → Cómo interactúan componentes
-> - **Data Models** → Esquemas y estructuras
-> - **Aprobación** → Revisores y aprobadores
->
-> **Diferencia crucial (Spec-Driven):**
-> - **requirements.md** → QUÉ debe implementarse
-> - **design.md** → CÓMO arquitectónicamente
-> - **tasks.md** → CÓMO técnicamente (pasos específicos)
->
-> Cada decisión arquitectónica debe estar justificada, considerar alternativas, y documentar consecuencias.

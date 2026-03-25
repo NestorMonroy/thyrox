@@ -12,6 +12,14 @@ Requisitos implementar: [N]
 
 # Requirements: [Titulo del Proyecto/Feature]
 
+## Propósito
+
+Documentar QUÉ debe implementarse en UNA feature específica. Los requisitos deben ser claros, verificables y con criterios de aceptación.
+
+> Objetivo: Objetivo: Crear especificación ejecutable que pueda ser pasada a diseñadores sin ambigüedad.
+
+---
+
 ## 1. Contexto
 
 [Descripcion de la situacion actual y por que es necesario este trabajo]
@@ -116,28 +124,3 @@ Explicito que NO se incluye en este proyecto:
 |-------|---------|---------|-------|
 | YYYY-MM-DD | 0.1 | Creacion inicial | [Nombre] |
 | YYYY-MM-DD | 0.2 | [Cambios realizados] | [Nombre] |
-
----
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Requirements** (Requisitos Especificados) es la primera subsección de PHASE 4: STRUCTURE (Spec-Driven Development). Su propósito es documentar QUÉ debe implementarse en forma completa y verificable.
->
-> **Objetivo:** Crear especificación ejecutable que pueda ser pasada a diseñadores sin ambigüedad.
->
-> **Estructura:**
-> - **Contexto** → Por qué se hace
-> - **Problema** → Qué problema resuelve
-> - **Objetivos** → Principal y secundarios
-> - **Requisitos Funcionales** → QUÉ debe hacer (RF-001, RF-002, ...)
-> - **Requisitos No Funcionales** → QUÉ TAN BIEN debe hacerlo (RNF-001, ...)
-> - **Criterios de Aceptación** → CÓMO verificar que cumple
-> - **Aprobación** → Revisores y aprobadores
->
-> **Diferencia crucial (Spec-Driven):**
-> - **PHASE 1: requirements-analysis.md** → Requisitos generales del proyecto
-> - **PHASE 4: requirements.md** → Requisitos específicos de UNA feature
-> - **PHASE 4: design.md** → CÓMO arquitectónicamente implementar
-> - **PHASE 4: tasks.md** → CÓMO técnicamente especificar pasos
->
-> Este documento es la base para que el diseñador trabaje sin ambigüedades.

@@ -8,6 +8,14 @@ Estado: [Borrador/En revisión/Aprobado]
 
 # Introduction and Goals: [PROJECT_NAME]
 
+## Propósito
+
+Establece el contexto general del proyecto. Define QUÉ es el sistema, POR QUÉ existe, PARA QUIÉN, y cuál es su objetivo general.
+
+> Objetivo: Proporcionar una visión clara que sienta las bases para todas las demás subsecciones del análisis.
+
+---
+
 ## Visión General
 
 [2-3 párrafos describiendo:]
@@ -49,18 +57,3 @@ Este documento es el inicio de PHASE 2: ANALYZE. Las subsecciones que siguen son
 
 Una vez completado este documento:
 → Pasar a `requirements-analysis.md`
-
----
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Introduction and Goals** (Introducción y Objetivos) es la primera subsección de PHASE 1: ANALYZE. Su propósito es establecer el contexto general del proyecto.
->
-> **Objetivo:** Proporcionar una visión clara de qué es el sistema, por qué existe, para quién existe, y cuál es su objetivo general.
->
-> **Diferencia crucial:**
-> - **Visión General** → QUÉ es el sistema y POR QUÉ existe
-> - **Requirements** → QUÉ debe hacer específicamente
-> - **Context** → DÓNDE se inserta en el ecosistema
->
-> Esta subsección sientan las bases para todas las demás. Sin una introducción clara, el análisis de requisitos se vuelve confuso.

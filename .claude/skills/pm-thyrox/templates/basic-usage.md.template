@@ -9,6 +9,14 @@ Estado flujo: [Diseño/Implementado/En testing]
 
 # Basic Usage: [PROJECT_NAME]
 
+## Propósito
+
+Documentar CÓMO funciona el sistema operacionalmente. Describe el flujo completo desde la perspectiva del usuario.
+
+> Objetivo: Que todos entiendan cómo el sistema funciona en la práctica, qué flujos existen, y cuáles son las interacciones principales.
+
+---
+
 ## Descripción Narrativa
 
 [2-3 párrafos describiendo:]
@@ -161,24 +169,3 @@ El usuario observa:
 
 Una vez completado este documento:
 → Pasar a `constraints.md`
-
----
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Basic Usage** (Uso Básico / Operación del Sistema) es la quinta subsección de PHASE 1: ANALYZE. Su propósito es documentar CÓMO FUNCIONA EL SISTEMA desde la perspectiva operacional.
->
-> **Objetivo:** Mostrar el flujo completo de operación, los pasos que toma el sistema, y cómo interactúan los componentes desde el punto de vista del usuario.
->
-> **Estructura:**
-> - **Narrativa** → Descripción general de qué es y para qué sirve
-> - **Flujo principal** → Pasos secuenciales numerados
-> - **Modos de operación** → Variantes del flujo (happy path, edge cases)
-> - **Resultados** → Qué observa el usuario al final
->
-> **Diferencia crucial:**
-> - **Requirements** → QUÉ debe hacer el sistema (especificación)
-> - **Basic Usage** → CÓMO funciona el sistema (operación)
-> - **Constraints** → QUÉ LIMITA su funcionamiento
->
-> Este documento usa lenguaje simple, no técnico. Es fácil de entender para cualquier stakeholder.

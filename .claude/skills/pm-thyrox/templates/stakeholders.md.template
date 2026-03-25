@@ -9,6 +9,14 @@ Total stakeholders: [N]
 
 # Stakeholders: [PROJECT_NAME]
 
+## Propósito
+
+Identificar QUIÉN usa el sistema y QUÉ necesita. Documentar roles, necesidades, y cómo se conectan con quality goals.
+
+> Objetivo: Asegurar que todas las necesidades de stakeholders estén documentadas y consideradas en el diseño.
+
+---
+
 ## Matriz de Stakeholders
 
 | Role | Description | Goal / Intention |
@@ -128,21 +136,3 @@ Una vez completado este documento:
 → Pasar a `basic-usage.md`
 
 ---
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Stakeholders** (Partes Interesadas) es la cuarta subsección de PHASE 1: ANALYZE. Su propósito es identificar QUIÉN usa el sistema y QUÉ necesita de él.
->
-> **Objetivo:** Documentar todos los roles/personas que interactúan con el sistema, sus necesidades, y sus relaciones con quality goals.
->
-> **Estructura:**
-> - **Matriz rápida** → Vista general de todos los stakeholders
-> - **Descripción detallada** → Profundización en cada rol
-> - **Conflictos** → Resolver tensiones entre necesidades opuestas
->
-> **Diferencia crucial:**
-> - **Requirements** → QUÉ debe hacer el sistema
-> - **Stakeholders** → QUIÉN lo usa y QUÉ NECESITA
-> - **Quality Goals** → QUÉ TAN BIEN satisface necesidades
->
-> Cada stakeholder debe estar conectado explícitamente a quality goals. Los conflictos de intereses deben documentarse y resolverse.

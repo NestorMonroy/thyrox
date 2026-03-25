@@ -36,26 +36,3 @@ docs(api): document all endpoints with examples
 docs(contribute): update contribution guidelines
 docs(setup): add troubleshooting section
 docs(code): improve docstrings in auth module
-
----
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Documentation Template** es un patrón de mensaje de commit para MEJORAS DE DOCUMENTACIÓN en PHASE 6: EXECUTE. Su propósito es documentar QUÉ secciones se agregaron/actualizaron.
->
-> **Objetivo:** Registrar mejoras de documentación (README, API docs, guías, ejemplos, docstrings).
->
-> **Estructura:**
-> - **Metadatos YAML** → Fecha, tipo, sección, versión, autor, archivos, ejemplos, revisor, estado
-> - **Título (72 caracteres)** → docs(scope): descripción breve
-> - **QUÉ cambió** → Nuevas secciones, existentes actualizadas, contenido removido, claridad mejorada
-> - **Tipo de documentación** → README, API docs, guías arquitectura, setup, ejemplos, docstrings
-> - **Archivos afectados** → Lista con descripción breve
->
-> **Diferencia crucial (PHASE 6: EXECUTE):**
-> - **feature.template** → Nueva funcionalidad
-> - **bugfix.template** → Corrección de error
-> - **refactor.template** → Mejora de código
-> - **documentation.template** → Mejora de documentación
->
-> Documentación debe ser clara, actualizada, y con ejemplos prácticos. Los docstrings deben acompañar cambios de código.

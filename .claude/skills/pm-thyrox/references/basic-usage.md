@@ -1,24 +1,19 @@
----
-name: basic-usage
-description: "Basic Usage - Explica CÓMO FUNCIONA el sistema desde la perspectiva del usuario. Pasos secuenciales, modos de operación, resultados observables."
-version: 1.0.0
-created: 2026-02-01
-updated: 2026-02-01
----
+```yml
+Tipo: Referencia PHASE 1: ANALYZE
+Categoría: Análisis
+Versión: 1.0
+Propósito: Guía de cómo documentar CÓMO funciona el sistema operacionalmente desde perspectiva usuario.
+Objetivo: Describir flujos completos de uso del sistema.
+Fecha actualización: 2026-03-25
+```
 
 # Basic Usage (ARC42 Section 1.1 - How It Works)
 
 ## Propósito
 
-La subsección "Basic Usage" explica **CÓMO FUNCIONA EL SISTEMA** desde la perspectiva del usuario.
+Guía de cómo documentar CÓMO funciona el sistema operacionalmente desde perspectiva usuario.
 
-> Objetivo: Mostrar cómo opera el sistema, los pasos que toma, y cómo interactúan los componentes
-
-**Diferencia crucial:**
-```
-Requirements (1.1)  → QUÉ debe hacer
-Basic Usage (1.1)   → CÓMO funciona el sistema (pasos operacionales)
-```
+> Objetivo: Describir flujos completos de uso del sistema.
 
 ---
 

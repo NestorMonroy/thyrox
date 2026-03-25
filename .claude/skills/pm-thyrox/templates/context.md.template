@@ -9,6 +9,14 @@ Sistemas externos: [N]
 
 # Context: [PROJECT_NAME]
 
+## Propósito
+
+Documentar DÓNDE se inserta el sistema en el ecosistema. Define límites (scope) e integraciones con sistemas externos.
+
+> Objetivo: Objetivo: Que todos entiendan los límites del sistema y cómo se conecta con el mundo externo.
+
+---
+
 ## Scope / Boundaries
 
 ### Dentro del Sistema
@@ -147,23 +155,3 @@ Sistemas externos: [N]
 
 Una vez completado este documento y toda PHASE 1: ANALYZE:
 → Pasar a PHASE 2: SOLUTION_STRATEGY
-
----
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Context** (Contexto) es la séptima y final subsección de PHASE 1: ANALYZE. Su propósito es documentar DÓNDE se inserta el sistema en el ecosistema.
->
-> **Objetivo:** Definir los límites del sistema (qué está dentro, qué fuera) y documentar las integraciones con sistemas externos.
->
-> **Estructura:**
-> - **Scope/Boundaries** → Qué está dentro vs fuera del sistema
-> - **Business Context** → Sistemas externos desde perspectiva negocio
-> - **Technical Context** → Integraciones técnicas, protocolos, APIs
->
-> **Diferencia crucial:**
-> - **Requirements** → QUÉ hace el sistema (funcionalidad interna)
-> - **Context** → DÓNDE se inserta (ecosistema externo)
-> - **Constraints** → QUÉ LIMITA sus integraciones
->
-> Este documento cierra PHASE 1: ANALYZE y proporciona toda la información necesaria para PHASE 2: SOLUTION_STRATEGY.

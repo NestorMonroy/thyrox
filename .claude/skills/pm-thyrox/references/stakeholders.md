@@ -1,24 +1,19 @@
----
-name: stakeholders
-description: "Stakeholders - Identifica QUIÉN usa el sistema y QUÉ necesita cada uno. Matriz de roles, necesidades, y alineamiento con quality goals."
-version: 1.0.0
-created: 2026-02-01
-updated: 2026-02-01
----
+```yml
+Tipo: Referencia PHASE 1: ANALYZE
+Categoría: Análisis
+Versión: 1.0
+Propósito: Guía de cómo identificar y documentar QUIÉN usa el sistema y QUÉ necesita.
+Objetivo: Asegurar que todas las necesidades de stakeholders estén consideradas.
+Fecha actualización: 2026-03-25
+```
 
 # Stakeholders (ARC42 Section 1.3)
 
 ## Propósito
 
-La subsección "Stakeholders" identifica **QUIÉN** se ve afectado por la arquitectura y **QUÉ** espera cada uno.
+Guía de cómo identificar y documentar QUIÉN usa el sistema y QUÉ necesita.
 
-> Objetivo: Asegurar que la documentación arquitectónica satisface a TODOS los interesados
-
-**Pregunta fundamental:**
-```
-¿Quiénes van a leer/usar esta arquitectura?
-¿Qué necesita cada uno?
-```
+> Objetivo: Asegurar que todas las necesidades de stakeholders estén consideradas.
 
 ---
 

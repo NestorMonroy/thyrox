@@ -57,29 +57,3 @@ Examples:
 feat(api): implement user authentication (Phase 2: Sub-proyecto API)
 feat(payments): add stripe integration (Phase 3: Payment System)
 feat(admin): create dashboard views (Phase 4: Admin Features)
-
----
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Task Completion Template** es un patrón de mensaje de commit para CIERRE DE TAREAS COMPLETADAS en PHASE 6: EXECUTE. Su propósito es documentar QUÉ tarea se completó, CUÁNDO, y CON QUÉ ESFUERZO.
->
-> **Objetivo:** Crear registro de finalización de tareas con traceabilidad a ROADMAP, estimaciones vs reales, y documentación de esfuerzo.
->
-> **Estructura:**
-> - **Metadatos YAML** → Fecha, tipo, Task ID, feature, responsable, fechas, horas, tests, code review
-> - **Título** → feat(scope): implement [feature] (Phase X: [PHASE NAME])
-> - **ROADMAP Reference** → Phase, Feature, Status
-> - **Completed tasks** → Lista de subtareas con fechas
-> - **Resumen feature** → QUÉ se implementó y POR QUÉ
-> - **Detalles implementación** → Arquitectura, decisiones, tecnologías, testing
-> - **Testing** → Conteo de tests (unit, integration, manual)
-> - **Documentación** → Código, API docs, guías
-> - **Deployment** → Migraciones, env vars, breaking changes
->
-> **Diferencia crucial (PHASE 6: EXECUTE):**
-> - **feature.template** → Durante ejecución (commit incremental)
-> - **task-completion.template** → Al cierre de tarea (resumen completo)
-> - Documenta esfuerzo real vs estimado (auditoría de estimaciones)
->
-> Cada task completion debe cerrarse explícitamente contra ROADMAP.

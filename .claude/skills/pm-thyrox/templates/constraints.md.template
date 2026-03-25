@@ -9,6 +9,14 @@ Constraints identificadas: [N]
 
 # Constraints: [PROJECT_NAME]
 
+## Propósito
+
+Documentar QUÉ LIMITA el sistema. Las limitaciones pueden ser técnicas, de plataforma, organizativas, regulatorias o de negocio.
+
+> Objetivo: Objetivo: Que todos entiendan qué restringe el diseño y la implementación del sistema.
+
+---
+
 ## Technical Constraints
 
 | Constraint | Reason | Impact |
@@ -137,25 +145,3 @@ Constraints identificadas: [N]
 
 Una vez completado este documento:
 → Pasar a `context.md`
-
----
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Constraints** (Limitaciones) es la sexta subsección de PHASE 1: ANALYZE. Su propósito es documentar QUÉ LIMITA la capacidad del sistema.
->
-> **Objetivo:** Identificar todas las limitaciones (técnicas, plataforma, organizacionales, regulatorias, negocio) que afectan decisiones arquitectónicas.
->
-> **Estructura de 5 categorías:**
-> - **Technical** → Tecnologías obligatorias/prohibidas
-> - **Platform** → Infraestructura requerida
-> - **Organizational** → Limitaciones de recursos, personas, tiempo
-> - **Regulatory** → Leyes, estándares, compliance
-> - **Business** → Presupuesto, mercado, competencia
->
-> **Diferencia crucial:**
-> - **Requirements** → QUÉ debe hacer
-> - **Quality Goals** → QUÉ TAN BIEN lo hace
-> - **Constraints** → QUÉ LIMITA lograrlo
->
-> Cada constraint debe tener razón clara e impacto documentado. Las constraints guían las decisiones de PHASE 2: SOLUTION_STRATEGY.

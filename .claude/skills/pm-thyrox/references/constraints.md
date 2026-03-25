@@ -1,25 +1,19 @@
----
-name: constraints
-description: "Constraints - Define QUÉ LIMITA la solución. Restricciones técnicas, de plataforma, organizacionales, regulatorias, de negocio."
-version: 1.0.0
-created: 2026-02-01
-updated: 2026-02-01
----
+```yml
+Tipo: Referencia PHASE 1: ANALYZE
+Categoría: Análisis
+Versión: 1.0
+Propósito: Guía de cómo identificar QUÉ LIMITA el sistema (técnico, plataforma, org, regulatorio, negocio).
+Objetivo: Documentar todas las limitaciones que afectan el diseño.
+Fecha actualización: 2026-03-25
+```
 
 # Constraints (ARC42 Section 2)
 
 ## Propósito
 
-La sección "Constraints" define **QUÉ LIMITA** la solución arquitectónica.
+Guía de cómo identificar QUÉ LIMITA el sistema (técnico, plataforma, org, regulatorio, negocio).
 
-> Objetivo: Documentar decisiones que NO son arquitectónicas sino impuestas
-
-**Diferencia crucial:**
-```
-Quality Goals        → Lo que DESEAMOS lograr
-Constraints          → Lo que NOS LIMITA para lograrlo
-Solution Strategy    → CÓMO trabajamos dentro de esas limitaciones
-```
+> Objetivo: Documentar todas las limitaciones que afectan el diseño.
 
 ---
 

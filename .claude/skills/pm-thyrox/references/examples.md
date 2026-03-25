@@ -1,4 +1,21 @@
+```yml
+Tipo: Ejemplos Prácticos
+Categoría: Casos de Uso
+Versión: 1.0
+Propósito: Colección de ejemplos reales de cómo usar PM-THYROX en diferentes escenarios.
+Objetivo: Demostrar aplicación práctica del skill con casos concretos.
+Fecha actualización: 2026-03-25
+```
+
 # PM-THYROX Use Cases & Examples
+
+## Propósito
+
+Colección de ejemplos reales de cómo usar PM-THYROX en diferentes escenarios.
+
+> Objetivo: Demostrar aplicación práctica del skill con casos concretos.
+
+---
 
 This document provides real-world examples of using PM-THYROX across different scenarios.
 

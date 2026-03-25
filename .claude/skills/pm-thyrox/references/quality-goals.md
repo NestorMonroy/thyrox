@@ -1,24 +1,19 @@
----
-name: quality-goals
-description: "Quality Goals - Define QUÉ TAN BIEN debe funcionar el sistema. Prioridades, atributos de calidad, scenarios."
-version: 1.0.0
-created: 2026-02-01
-updated: 2026-02-01
----
+```yml
+Tipo: Referencia PHASE 1: ANALYZE
+Categoría: Análisis
+Versión: 1.0
+Propósito: Guía de cómo definir objetivos de calidad priorizados (Critical, Important, Desirable).
+Objetivo: Especificar QUÉ TAN BIEN debe funcionar el sistema con scenarios medibles.
+Fecha actualización: 2026-03-25
+```
 
 # Quality Goals (ARC42 Section 1.2)
 
 ## Propósito
 
-La subsección "Quality Goals" define **QUÉ TAN BIEN** debe el sistema hacer lo que se especifica en Requisitos Básicos (1.1).
+Guía de cómo definir objetivos de calidad priorizados (Critical, Important, Desirable).
 
-> Objetivo: Definir atributos de calidad que guíen decisiones arquitectónicas
-
-**Diferencia crucial:**
-```
-Requirements (1.1)  → QUÉ debe hacer
-Quality Goals (1.2) → QUÉ TAN BIEN debe hacerlo
-```
+> Objetivo: Especificar QUÉ TAN BIEN debe funcionar el sistema con scenarios medibles.
 
 ---
 

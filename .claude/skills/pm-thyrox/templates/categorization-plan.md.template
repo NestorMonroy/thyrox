@@ -14,6 +14,14 @@ Herramientas: [Sistema de tracking usado]
 
 # Plan de Categorización - [Nombre del Proyecto/Tarea]
 
+## Propósito
+
+Documentar el plan de categorización de issues en lotes prioritarios. Estrategia de ejecución incremental.
+
+> Objetivo: Objetivo: Convertir 100+ issues caóticas en lotes ordenados y ejecutables.
+
+---
+
 Basado en: analysis-phase.md ([fecha del análisis])
 
 ---
@@ -373,30 +381,3 @@ Si un lote falla críticamente:
 
 **Comentarios**:
 [Cualquier comentario del revisor]
-
----
-
-## PROPÓSITO DE ESTA SUBSECCIÓN
-
-> **Categorization Plan** (Plan de Categorización) es la segunda subsección de PHASE 7: TRACK (Incremental Correction). Su propósito es crear un PLAN de cómo corregir los 100+ issues.
->
-> **Objetivo:** Organizar issues en lotes priorizados para ejecución incremental y coordinada.
->
-> **Estructura:**
-> - **Metadatos YAML** → Fecha, proyecto, versión, planificador, conteos, fechas, responsable, herramientas
-> - **Resumen Ejecutivo** → Estrategia elegida, número de lotes, tamaño promedio, orden, estimación, fechas
-> - **Estrategia de Categorización** → Criterio principal, razones, alternativas consideradas
-> - **Criterios de Agrupación** → Primario, secundario, terciario + lógica
-> - **Lotes Definidos** → LOTE-1, LOTE-2, ... con issues específicas
-> - **Dependencias Entre Lotes** → Qué lote depende de cuál
-> - **Estimación Detallada** → Por lote, por tipo de issue
-> - **Calendario de Ejecución** → Cuándo ejecutar cada lote
-> - **Aprobación** → Revisión y aprobación
->
-> **Diferencia crucial (PHASE 7: TRACK - Incremental Correction):**
-> - **analysis-phase.md** → Inventario: QUÉ estaba roto
-> - **categorization-plan.md** → Plan: CÓMO vamos a corregir
-> - **execution-log.md** → Progreso: QUÉ vamos corrigiendo
-> - **final-report.md** → Resultado: QUÉ corregimos
->
-> Este documento es el PLAN DE ATAQUE: convierte 100+ issues caóticas en lotes ordenados y ejecutables.
