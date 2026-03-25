@@ -1,4 +1,21 @@
+```yml
+Tipo: Metodología General
+Categoría: Convenciones
+Versión: 1.0
+Propósito: Define convenciones del proyecto: ubicaciones de archivos, nombrado, estructura.
+Objetivo: Asegurar consistencia en todo el proyecto.
+Fecha actualización: 2026-03-25
+```
+
 # PM-THYROX Conventions
+
+## Propósito
+
+Define convenciones del proyecto: ubicaciones de archivos, nombrado, estructura.
+
+> Objetivo: Asegurar consistencia en todo el proyecto.
+
+---
 
 ## File Locations
 
@@ -269,7 +286,7 @@ Next: Task Z (ready to start)
 
 ## Architectural Decisions
 
-Use `.claude/context/decisions.md` to document ADRs:
+Use [.claude/context/decisions.md](../../../context/decisions.md) to document ADRs:
 
 ```markdown
 # Architectural Decision Records
@@ -295,7 +312,7 @@ Use `.claude/context/decisions.md` to document ADRs:
 
 ## Reference: Change Log Template
 
-`CHANGELOG.md` is auto-generated but follows this format:
+[CHANGELOG.md](../../../../CHANGELOG.md) is auto-generated but follows this format:
 
 ```markdown
 # Changelog

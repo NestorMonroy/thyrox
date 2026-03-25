@@ -1,4 +1,26 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Hash commit: [hash SHA-1 abreviado, ej: a1b2c3d]
+Autor: [Nombre]
+Proyecto: [Nombre del proyecto]
+Rama: [nombre-rama]
+Tipo cambio: [feature/fix/refactor/docs/test/chore]
+Scope: [Componente afectado]
+Tickets relacionados: [TICKET-1, TICKET-2]
+Archivos: [N]
+Tests: [SI/NO]
+Breaking change: [SI/NO]
+```
+
 # Commit Message Template - Conventional Commits
+
+## Propósito
+
+Template MAESTRO de Conventional Commits. Guía completa para escribir mensajes consistentes.
+
+> Objetivo: Objetivo: Estandarizar mensajes de commit para facilitar auditoría, generación de CHANGELOG y búsqueda.
+
+---
 # Formato: <type>(<scope>): <subject>
 #
 # <body>

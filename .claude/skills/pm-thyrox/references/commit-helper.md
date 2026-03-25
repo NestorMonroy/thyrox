@@ -1,4 +1,21 @@
+```yml
+Tipo: Herramienta PHASE 6
+Categoría: Commits
+Versión: 1.0
+Propósito: Guía de cómo usar Conventional Commits en PHASE 6: EXECUTE.
+Objetivo: Estandarizar mensajes de commit y crear auditoría clara.
+Fecha actualización: 2026-03-25
+```
+
 # Commit Helper - Conventional Commits Guide
+
+## Propósito
+
+Guía de cómo usar Conventional Commits en PHASE 6: EXECUTE.
+
+> Objetivo: Estandarizar mensajes de commit y crear auditoría clara.
+
+---
 
 Guía para crear commits siguiendo **Conventional Commits** en el proyecto THYROX.
 
@@ -297,7 +314,7 @@ git commit -m "random changes"
 ## Ver También
 
 - `templates/` - Plantillas de commits para casos específicos
-- `CONVENTIONS.md` - Convenciones generales del proyecto
+- [conventions.md](./conventions.md) - Convenciones generales del proyecto
 - ROADMAP.md - Plan de proyecto para referenciar en commits
 
 ---

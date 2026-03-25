@@ -1,18 +1,19 @@
----
-name: requirements
-description: "Requirements Analysis - Estructura pura de requisitos con dos niveles: general y específico. Incluye matriz de trazabilidad."
-version: 1.0.0
-created: 2026-02-01
-updated: 2026-02-01
----
+```yml
+Tipo: Referencia PHASE 1: ANALYZE
+Categoría: Análisis
+Versión: 1.0
+Propósito: Guía de cómo estructurar requisitos en dos niveles (general y específico).
+Objetivo: Crear estructura clara y verificable de requisitos del sistema.
+Fecha actualización: 2026-03-25
+```
 
 # Requirements Analysis (ARC42 Section 1.1)
 
 ## Propósito
 
-La subsección "Basic Requirements" define **QUÉ debe hacer el sistema** (sin detalles de cómo).
+Guía de cómo estructurar requisitos en dos niveles (general y específico).
 
-> Objetivo: Que todos entiendan QUÉ funcionalidad el sistema debe proporcionar
+> Objetivo: Crear estructura clara y verificable de requisitos del sistema.
 
 ---
 
@@ -225,7 +226,7 @@ Para cada R-N, detallar:
 
 ## Próximo Paso
 
-Una vez completado: → Pasar a `quality-goals.md`
+Una vez completado: → Pasar a [quality-goals.md](./quality-goals.md)
 
 ---
 

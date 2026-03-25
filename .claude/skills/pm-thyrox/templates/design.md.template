@@ -1,9 +1,26 @@
+```yml
+Fecha diseño: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Feature: [Nombre de la feature]
+Versión diseño: [1.0]
+Diseñador: [Nombre]
+Componentes: [N]
+Dependencias externas: [N]
+Estado: [En progreso/Completo/Validado]
+Revisor designado: [Nombre]
+```
+
 # Design: [Titulo del Proyecto/Feature]
 
+## Propósito
+
+Documentar CÓMO arquitectónicamente implementar los requisitos. Decisiones arquitectónicas, componentes, relaciones.
+
+> Objetivo: Objetivo: Traducir requisitos en decisiones técnicas implementables.
+
+---
+
 Basado en: requirements.md
-Fecha: YYYY-MM-DD
-Autor: [Nombre]
-Estado: Draft | Review | Approved
 
 ## 1. Vision General
 

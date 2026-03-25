@@ -1,4 +1,21 @@
+```yml
+Tipo: Mejores Prácticas Anthropic
+Categoría: Contexto Largo
+Versión: 1.0
+Propósito: Compilación de mejores prácticas para trabajar con documentos grandes y contextos extensos.
+Objetivo: Optimizar uso de token budget en conversaciones largas.
+Fecha actualización: 2026-03-25
+```
+
 # Long Context Tips - Trabajar con Documentos Grandes
+
+## Propósito
+
+Compilación de mejores prácticas para trabajar con documentos grandes y contextos extensos.
+
+> Objetivo: Optimizar uso de token budget en conversaciones largas.
+
+---
 
 Basado en: Anthropic Long Context Best Practices
 Adaptado para: Proyecto ADT

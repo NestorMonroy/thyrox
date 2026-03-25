@@ -1,25 +1,19 @@
----
-name: context
-description: "Context - Define LÍMITES Y ALCANCE del sistema. Distingue qué está adentro vs afuera. Sistemas vecinos, dependencias, interacciones."
-version: 1.0.0
-created: 2026-02-01
-updated: 2026-02-01
----
+```yml
+Tipo: Referencia PHASE 2: SOLUTION_STRATEGY
+Categoría: Estrategia
+Versión: 1.0
+Propósito: Guía de cómo definir límites del sistema y sistemas externos que se integran.
+Objetivo: Clarificar dónde se inserta el sistema en el ecosistema.
+Fecha actualización: 2026-03-25
+```
 
 # Context (ARC42 Section 3)
 
 ## Propósito
 
-La sección "Context" define **LÍMITES Y ALCANCE DEL SISTEMA** para distinguirlo de sistemas vecinos/externos.
+Guía de cómo definir límites del sistema y sistemas externos que se integran.
 
-> Objetivo: Identificar QUÉ está adentro del sistema y QUÉ está afuera, y cómo interactúan
-
-**Diferencia crucial:**
-```
-Introduction (Section 1) → POR QUÉ existe el sistema
-Context (Section 3)      → DÓNDE está el sistema y QUIÉN lo usa
-Constraints (Section 2)  → QUÉ LIMITA al sistema
-```
+> Objetivo: Clarificar dónde se inserta el sistema en el ecosistema.
 
 ---
 

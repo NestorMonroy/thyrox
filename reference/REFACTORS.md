@@ -1,10 +1,25 @@
+```yml
+Tipo: Documentación de Tracking
+Categoría: Refactors & Deuda Técnica
+Versión: 1.0
+Propósito: Tracking de refactorizaciones, mejoras de código y deuda técnica
+Objetivo: Documentar oportunidades de mejora y deuda técnica con priorización
+Fecha actualización: 2026-03-25
+```
+
 # REFACTORS
 
-Refactorizaciones, mejoras de código y technical debt tracking.
+## Propósito
+
+Tracking de refactorizaciones, mejoras de código y deuda técnica. Documenta oportunidades de mejora organizadas por categoría y prioridad.
+
+> Objetivo: Organizar y priorizar trabajo de mejora técnica para ejecución futura.
 
 ---
 
-## Oportunidades de Mejora
+## Descripción General
+
+Refactorizaciones, mejoras de código y technical debt tracking.
 
 ### Code Quality
 

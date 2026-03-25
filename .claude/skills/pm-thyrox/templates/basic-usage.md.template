@@ -1,4 +1,21 @@
+```yml
+Fecha creación: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión flujo: [1.0]
+Autor: [Nombre]
+Sistema: [Nombre/versión del sistema]
+Estado flujo: [Diseño/Implementado/En testing]
+```
+
 # Basic Usage: [PROJECT_NAME]
+
+## Propósito
+
+Documentar CÓMO funciona el sistema operacionalmente. Describe el flujo completo desde la perspectiva del usuario.
+
+> Objetivo: Que todos entiendan cómo el sistema funciona en la práctica, qué flujos existen, y cuáles son las interacciones principales.
+
+---
 
 ## Descripción Narrativa
 
@@ -152,9 +169,3 @@ El usuario observa:
 
 Una vez completado este documento:
 → Pasar a `constraints.md`
-
----
-
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft

@@ -1,8 +1,21 @@
+```yml
+Tipo: Plan Maestro
+Categoría: Gestión de Proyecto
+Versión: 0.1.0
+Propósito: Plan maestro de trabajo y tracking de progreso
+Objetivo: Documentar fases, epics, y estado actual del proyecto
+Fecha actualización: 2026-03-25
+```
+
 # ROADMAP - THYROX Template
 
-**Estado del Proyecto:** En Desarrollo
-**Última Actualización:** 2025-03-24
-**Versión:** 0.1.0
+## Propósito
+
+Plan maestro del proyecto THYROX. Documenta todas las fases, epics, features, y estado actual del trabajo.
+
+> Objetivo: Proporcionar vista clara de qué se está haciendo, qué está completo, y qué falta.
+
+---
 
 ## Convenciones de Progreso
 

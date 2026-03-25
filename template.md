@@ -1,0 +1,133 @@
+```yml
+Tipo: Template
+Categoría: Documentación General
+Versión: 1.0
+Propósito: Template base para crear nuevos documentos en THYROX
+Objetivo: Proporcionar estructura consistente para todos los documentos
+Fecha actualización: 2026-03-25
+```
+
+# [Document Title]
+
+## Propósito
+
+[Descripción breve de qué es este documento]
+
+> Objetivo: [Qué se busca lograr con este documento]
+
+---
+
+## Resumen Ejecutivo
+
+[Resumen de 2-3 párrafos del contenido principal]
+
+---
+
+## Tabla de Contenidos
+
+[Genera automáticamente]
+
+---
+
+## Introducción
+
+[Contexto y antecedentes]
+
+**Scope:**<br>
+[Qué está incluido]
+
+**No incluido:**<br>
+[Qué NO está incluido]
+
+---
+
+## Sección Principal 1
+
+### Subsección 1.1
+
+Contenido aquí...
+
+**Puntos clave:**<br>
+Punto 1<br>
+Punto 2<br>
+Punto 3
+
+### Subsección 1.2
+
+Contenido aquí...
+
+---
+
+## Sección Principal 2
+
+[Estructurado igual a sección anterior]
+
+---
+
+## Sección Principal 3
+
+[Estructurado igual]
+
+---
+
+## Ejemplos
+
+### Ejemplo 1
+
+Código o caso de uso:
+
+```
+Formato según tipo (código, CLI, etc.)
+```
+
+### Ejemplo 2
+
+Otro ejemplo...
+
+---
+
+## Best Practices
+
+✓ Buena práctica 1<br>
+✓ Buena práctica 2<br>
+✓ Buena práctica 3
+
+---
+
+## Common Issues
+
+**Q: Pregunta común 1?**<br>
+A: Respuesta aquí...
+
+**Q: Pregunta común 2?**<br>
+A: Respuesta aquí...
+
+---
+
+## References
+
+- [Link 1](url)
+- [Link 2](url)
+- [Link 3](url)
+
+---
+
+## Related Documents
+
+- [Related Doc 1](path)
+- [Related Doc 2](path)
+
+---
+
+## Changelog
+
+| Versión | Fecha | Cambios |
+|---------|-------|---------|
+| 1.0 | 2026-03-25 | Versión inicial |
+
+---
+
+**Última Actualización:** 2026-03-25<br>
+**Próxima Review:** 2026-04-25<br>
+**Author:** [Author name]<br>
+**Contact:** [Contact info]

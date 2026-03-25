@@ -1,6 +1,19 @@
+```yml
+Tipo: Contexto de Proyecto
+Categoría: Decisiones Arquitectónicas
+Versión: 1.0
+Propósito: Registro y documentación de decisiones arquitectónicas importantes
+Objetivo: Mantener historial de decisiones técnicas para referencia futura
+Fecha actualización: 2026-03-25
+```
+
 # Decisiones de Arquitectura
 
-Registro de decisiones técnicas importantes.
+## Propósito
+
+Registro de decisiones arquitectónicas y técnicas importantes del proyecto THYROX. Documenta el razonamiento detrás de cada decisión clave.
+
+> Objetivo: Proporcionar historial claro de decisiones para auditoría, comprensión de trade-offs, y referencia futura.
 
 ---
 

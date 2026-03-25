@@ -1,8 +1,27 @@
+```yml
+Fecha análisis: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión análisis: [1.0]
+Responsable: [Nombre]
+Total issues encontrados: [N]
+Severidad Critical: [N]
+Severidad High: [N]
+Severidad Medium: [N]
+Severidad Low: [N]
+Categorías identificadas: [N]
+Análisis completado: [SI/NO]
+Aprobado por: [Nombre]
+```
+
 # Análisis Inicial de Issues - [Nombre del Proyecto/Tarea]
 
-Fecha: [YYYY-MM-DD]
-Proyecto: [Nombre del proyecto]
-Build analizado: [Comando de build ejecutado, ej: make html]
+## Propósito
+
+Documentar el análisis inicial de 100+ issues encontrados. Crear inventario completo y categorizado.
+
+> Objetivo: Objetivo: Crear BASELINE de qué estaba roto ANTES de empezar a corregir.
+
+---
 
 ---
 
@@ -232,9 +251,3 @@ Bajo:    [########] [Número] issues
 - [Nota 1]
 - [Nota 2]
 - [Nota 3]
-
----
-
-**Documento creado**: [YYYY-MM-DD HH:MM]
-**Autor**: [Nombre]
-**Próximo documento**: categorization-plan.md.template

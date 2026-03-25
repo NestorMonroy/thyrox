@@ -1,12 +1,21 @@
----
-name: incremental-correction-methodology
-description: "Metodología validada para corrección incremental de issues a gran escala. Incluye thought process, 8 protecciones obligatorias, flujo con análisis completo obligatorio, trade-offs, anti-patrones y métricas. Transferible a cualquier proyecto con 100+ issues."
-version: 1.5.0
-created: 2026-01-30
-updated: 2026-02-01
----
+```yml
+Tipo: Metodología PHASE 7
+Categoría: Corrección Incremental
+Versión: 1.0
+Propósito: Metodología validada para corrección de 100+ issues a gran escala con análisis obligatorio.
+Objetivo: Convertir caos de issues en correcciones organizadas y medibles.
+Fecha actualización: 2026-03-25
+```
 
 # Incremental Correction Methodology
+
+## Propósito
+
+Metodología validada para corrección de 100+ issues a gran escala con análisis obligatorio.
+
+> Objetivo: Convertir caos de issues en correcciones organizadas y medibles.
+
+---
 
 **Versión**: 1.4.0  
 **Aplicable a**: Cualquier proyecto con corrección incremental de issues (100+ issues)

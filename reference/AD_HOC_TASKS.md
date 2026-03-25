@@ -1,8 +1,27 @@
+```yml
+Tipo: Documentación de Tracking
+Categoría: Tareas Ad-hoc
+Versión: 1.0
+Propósito: Registro de tareas pequeñas, enhancements y mejoras ad-hoc
+Objetivo: Trackear y organizar trabajo pequeño que surge durante desarrollo
+Fecha actualización: 2026-03-25
+```
+
 # AD_HOC_TASKS
 
-Tareas pequenas, enhancimientos y mejoras que surgen durante el desarrollo.
+## Propósito
 
-Convencion:
+Registro de tareas pequeñas, enhancements y mejoras que surgen durante el desarrollo. Para trabajo que no justifica un PRD completo.
+
+> Objetivo: Organizar y trackear mejoras y enhancements pequeños de forma ágil.
+
+---
+
+## Descripción General
+
+Tareas pequeñas, enhancements y mejoras que surgen durante el desarrollo.
+
+## Convencion
 - `[ ]` = Pendiente
 - `[-]` = En Progreso
 - `[x]` = Completado

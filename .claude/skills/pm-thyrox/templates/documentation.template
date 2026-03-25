@@ -1,3 +1,15 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Tipo: docs
+Sección documentada: [Nombre/ruta]
+Versión docs: [1.0]
+Autor: [Nombre]
+Archivos docs: [N]
+Ejemplos añadidos: [N]
+Revisor: [Nombre]
+Estado: [Borrador/Publicado]
+```
+
 docs(scope): short description of documentation changes
 
 Explain what documentation was added/updated:

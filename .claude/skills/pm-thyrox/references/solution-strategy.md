@@ -1,36 +1,19 @@
----
-name: solution-strategy
-description: "Solution Strategy - Plan arquitectónico que define ideas clave, decisiones fundamentales, tecnologías, patrones, y CÓMO lograr Quality Goals."
-version: 1.0.0
-created: 2026-02-01
-updated: 2026-02-01
----
+```yml
+Tipo: Referencia PHASE 2: SOLUTION_STRATEGY
+Categoría: Estrategia
+Versión: 1.0
+Propósito: Guía de cómo crear plan arquitectónico que satisface requisitos dentro de constraints.
+Objetivo: Transformar análisis en decisiones arquitectónicas implementables.
+Fecha actualización: 2026-03-25
+```
 
 # Solution Strategy (ARC42 Section 4)
 
 ## Propósito
 
-La sección "Solution Strategy" define **CÓMO ARQUITECTÓNICAMENTE** cumpliremos con los requisitos y quality goals, dentro de las constraints.
+Guía de cómo crear plan arquitectónico que satisface requisitos dentro de constraints.
 
-> Objetivo: El plan arquitectónico que guía la implementación
-
-**Conexión con otras fases:**
-```
-PHASE 2: ANALYZE
-├── Requirements (QUÉ hacer)
-├── Quality Goals (QUÉ TAN BIEN)
-├── Constraints (QUÉ LIMITA)
-└── Context (DÓNDE está)
-        ↓↓↓
-PHASE 3: SOLUTION_STRATEGY
-└── CÓMO lograr todo eso
-        ↓↓↓
-PHASE 4: STRUCTURE
-├── SPECS detalladas para implementar la strategy
-        ↓↓↓
-PHASE 6: EXECUTE
-└── Código que implementa la strategy
-```
+> Objetivo: Transformar análisis en decisiones arquitectónicas implementables.
 
 ---
 

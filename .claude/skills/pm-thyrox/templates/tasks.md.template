@@ -1,9 +1,27 @@
+```yml
+Fecha creación tareas: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Feature: [Nombre de la feature]
+Versión breakdown: [1.0]
+Creador tareas: [Nombre]
+Total tareas: [N]
+Dependencias críticas: [N]
+Fecha inicio prevista: [YYYY-MM-DD]
+Fecha fin prevista: [YYYY-MM-DD]
+Responsable implementación: [Nombre/equipo]
+```
+
 # Tasks: [Titulo del Proyecto/Feature]
 
+## Propósito
+
+Documentar CÓMO técnicamente implementar el diseño. Desglose en tareas atómicas con comandos exactos y criterios de éxito.
+
+> Objetivo: Objetivo: Crear tareas independientes que un developer pueda ejecutar paso a paso.
+
+---
+
 Basado en: design.md
-Fecha: YYYY-MM-DD
-Autor: [Nombre]
-Estado: Draft | Approved | In Progress | Completed
 
 ## Resumen
 

@@ -1,4 +1,21 @@
+```yml
+Fecha análisis: [YYYY-MM-DD-HH-mm-ss]
+Proyecto: [Nombre del proyecto]
+Versión constraints: [1.0]
+Autor: [Nombre]
+Período vigencia: [YYYY-MM-DD hasta YYYY-MM-DD]
+Constraints identificadas: [N]
+```
+
 # Constraints: [PROJECT_NAME]
+
+## Propósito
+
+Documentar QUÉ LIMITA el sistema. Las limitaciones pueden ser técnicas, de plataforma, organizativas, regulatorias o de negocio.
+
+> Objetivo: Objetivo: Que todos entiendan qué restringe el diseño y la implementación del sistema.
+
+---
 
 ## Technical Constraints
 
@@ -128,9 +145,3 @@
 
 Una vez completado este documento:
 → Pasar a `context.md`
-
----
-
-**Documento creado:** [TIMESTAMP]  
-**Versión:** 1.0.0  
-**Status:** Draft

@@ -1,3 +1,16 @@
+```yml
+Fecha completación: [YYYY-MM-DD-HH-mm-ss]
+Tipo: task
+Task ID: [ID de la tarea, ej: TASK-789]
+Feature relacionada: [Nombre feature]
+Responsable: [Nombre]
+Fecha inicio: [YYYY-MM-DD]
+Fecha fin: [YYYY-MM-DD]
+Horas dedicadas: [N]
+Tests: [SI/NO]
+Code review: [Pendiente/Completo]
+```
+
 feat(scope): implement [feature name] (Phase X: [PHASE NAME])
 
 ROADMAP Reference:
