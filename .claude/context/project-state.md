@@ -1,6 +1,19 @@
+```yml
+Tipo: Contexto de Proyecto
+Categoría: Estado del Proyecto
+Versión: 1.0
+Propósito: Documentación del estado actual y contexto del proyecto THYROX
+Objetivo: Proporcionar vista clara del estado, stack, fases, y próximos pasos
+Fecha actualización: 2026-03-25
+```
+
 # Project State
 
-Estado actual y contexto del proyecto THYROX.
+## Propósito
+
+Documentación del estado actual y contexto del proyecto THYROX. Proporciona información sobre stack técnico, fases de desarrollo, y estado general.
+
+> Objetivo: Mantener registro actualizado del estado del proyecto para referencia y onboarding.
 
 ---
 
