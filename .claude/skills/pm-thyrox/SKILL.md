@@ -1,13 +1,27 @@
----
-name: pm-thyrox
-description: Project management workflow adapted from CCPM for THYROX template. Use this skill whenever the user wants to plan features, break down work, track progress, create PRDs, or manage project lifecycle. Make sure to use this when users say "plan this feature", "break it down", "what's next", "what's blocked", "create task", "mark done", "generate changelog", or any project planning activity. This is a spec-driven development approach using ROADMAP.md as the source of truth combined with Claude Code native task management.
----
+```yml
+Tipo: Skill Maestro
+Categoría: Project Management
+Versión: 1.0
+Nombre: pm-thyrox
+Descripción: Flujo de gestión de proyectos basado en CCPM para THYROX
+Propósito: Proporcionar metodología completa de gestión de proyectos usando 7 fases SDLC
+Objetivo: Que usuarios puedan planificar, descomponer, ejecutar y trackear proyectos
+Fecha actualización: 2026-03-25
+```
 
 # PM-THYROX: Project Management for THYROX Template
 
-A project management skill that adapts CCPM (Spec-driven development) principles for the THYROX template system. Unlike CCPM which requires GitHub Issues, PM-THYROX uses ROADMAP.md as the single source of truth, combined with Claude Code native task management and Git-based automation.
+## Propósito
+
+PM-THYROX es el skill maestro de gestión de proyectos que adapta principios CCPM (Spec-driven development) para el template THYROX. Proporciona una metodología estructurada en 7 fases SDLC.
+
+> Objetivo: Que usuarios puedan planificar features, descomponer trabajo, trackear progreso, crear PRDs, y manejar el ciclo de vida completo del proyecto.
 
 ---
+
+## Descripción General
+
+A project management skill that adapts CCPM (Spec-driven development) principles for the THYROX template system. Unlike CCPM which requires GitHub Issues, PM-THYROX uses ROADMAP.md as the single source of truth, combined with Claude Code native task management and Git-based automation.
 
 ## When to Use This Skill
 
