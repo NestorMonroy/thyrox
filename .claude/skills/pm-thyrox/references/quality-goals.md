@@ -223,7 +223,7 @@ Usar: `quality-goals.md.template`
 
 ## Próximo Paso
 
-Una vez completado: → Pasar a `stakeholders.md`
+Una vez completado: → Pasar a [stakeholders.md](./stakeholders.md)
 
 ---
 

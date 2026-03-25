@@ -189,18 +189,18 @@ Crear PR con template automático que incluya:
 ### `.claude/`
 
 **context/** - Estado actual del proyecto
-- `project-state.md` - Contexto general
-- `decisions.md` - Decisiones arquitectónicas
+- [project-state.md](.claude/context/project-state.md) - Contexto general
+- [decisions.md](.claude/context/decisions.md) - Decisiones arquitectónicas
 
 **skills/** - Comandos personalizados
 - `changelog.md` - Generar CHANGELOG desde git log
-- `commit-convention.md` - Validar commits
+- [commit-convention.md](./commit-convention.md) - Validar commits
 
 **prds/** - Product Requirements Documents
-- `template.md` - Template para nuevas funcionalidades
+- [template.md](./template.md) - Template para nuevas funcionalidades
 
 **epics/** - Epics y task decomposition
-- Ejemplo: `example-epic/epic.md` + tasks
+- Ejemplo: [example-epic/epic.md](example-epic/epic.md) + tasks
 
 ### `docs/`
 

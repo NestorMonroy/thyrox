@@ -76,7 +76,7 @@ Each phase updates the project's source of truth — no external tools required.
 
 This phase contains 7 subsections:
 
-1. **Introduction** (`introduction.md`)
+1. **Introduction** ([introduction.md](references/introduction.md))
    - Vision general del proyecto
    - Propósito y contexto
 
@@ -84,26 +84,26 @@ This phase contains 7 subsections:
    - Requisitos funcionales (Level 1 + Level 2)
    - Matriz de trazabilidad
 
-3. **Quality Goals** (`quality-goals.md`)
+3. **Quality Goals** ([quality-goals.md](references/quality-goals.md))
    - Priority 1, 2, 3
    - Quality attributes y scenarios
    - Trade-offs
 
-4. **Stakeholders** (`stakeholders.md`)
+4. **Stakeholders** ([stakeholders.md](references/stakeholders.md))
    - Matriz de roles y necesidades
    - Conflictos y resoluciones
    - Alineamiento con Quality Goals
 
-5. **Basic Usage** (`basic-usage.md`)
+5. **Basic Usage** ([basic-usage.md](references/basic-usage.md))
    - Cómo funciona el sistema operacionalmente
    - Flujo principal, modos de operación
    - Resultados observables
 
-6. **Constraints** (`constraints.md`)
+6. **Constraints** ([constraints.md](references/constraints.md))
    - Technical, Platform, Organizational, Regulatory, Business
    - Cómo guían la arquitectura
 
-7. **Context** (`context.md`)
+7. **Context** ([context.md](references/context.md))
    - Business Context (sistemas externos)
    - Technical Context (dependencias)
    - Diagrama de contexto

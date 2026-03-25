@@ -315,7 +315,7 @@ Usar: `constraints.md.template`
 
 ## Próximo Paso
 
-Una vez completado: → Pasar a `context.md`
+Una vez completado: → Pasar a [context.md](./context.md)
 
 ---
 

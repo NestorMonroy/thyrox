@@ -286,7 +286,7 @@ Next: Task Z (ready to start)
 
 ## Architectural Decisions
 
-Use `.claude/context/decisions.md` to document ADRs:
+Use [.claude/context/decisions.md](../../../context/decisions.md) to document ADRs:
 
 ```markdown
 # Architectural Decision Records
@@ -312,7 +312,7 @@ Use `.claude/context/decisions.md` to document ADRs:
 
 ## Reference: Change Log Template
 
-`CHANGELOG.md` is auto-generated but follows this format:
+[CHANGELOG.md](../../../../CHANGELOG.md) is auto-generated but follows this format:
 
 ```markdown
 # Changelog

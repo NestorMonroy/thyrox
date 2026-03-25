@@ -314,7 +314,7 @@ git commit -m "random changes"
 ## Ver También
 
 - `templates/` - Plantillas de commits para casos específicos
-- `conventions.md` - Convenciones generales del proyecto
+- [conventions.md](./conventions.md) - Convenciones generales del proyecto
 - ROADMAP.md - Plan de proyecto para referenciar en commits
 
 ---
