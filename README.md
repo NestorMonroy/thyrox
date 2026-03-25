@@ -51,40 +51,37 @@ thyrox/
 ├── ROADMAP.md               # Plan maestro del proyecto
 ├── CHANGELOG.md             # Historial de cambios
 ├── CLAUDE.md                # Contexto persistente para Claude Code
+├── ARCHITECTURE.md          # Decisiones arquitectónicas
+├── CONTRIBUTING.md          # Guía de contribución
+├── commit-convention.md     # Convenciones de commits
+├── template.md              # Template para documentos
 │
 ├── .claude/                 # Configuración de Claude Code
-│   ├── CLAUDE.md
 │   ├── context/
 │   │   ├── project-state.md
 │   │   └── decisions.md
-│   ├── skills/
-│   │   ├── changelog.md
-│   │   └── commit-convention.md
-│   ├── prds/
-│   │   └── template.md
-│   └── epics/
-│       └── example-epic/
-│           ├── epic.md
-│           └── tasks.md
+│   └── skills/
+│       └── pm-thyrox/       # Skill principal de PM
 │
-├── docs/                    # Documentación del proyecto
+├── docs/                    # Documentación técnica
 │   ├── API.md              # Documentación de endpoints
-│   ├── BUILD.md            # Proceso de construcción
-│   ├── ARCHITECTURE.md     # Decisiones arquitectónicas
-│   └── CONTRIBUTING.md     # Guía de contribución
+│   └── BUILD.md            # Guía de build y deployment
 │
-├── reference/              # Referencias y tareas ad-hoc
+├── reference/              # Referencias y tareas
 │   ├── AD_HOC_TASKS.md    # Tareas pequeñas
 │   └── REFACTORS.md       # Mejoras pendientes
 │
+├── example-epic/           # Ejemplo de epic
+│   └── epic.md            # Template y ejemplo
+│
 ├── api/                    # Sub-proyecto: API
-│   ├── src/
-│   ├── tests/
+│   ├── src/               # Código fuente
+│   ├── tests/             # Tests
 │   └── README.md
 │
 ├── build/                  # Sub-proyecto: Build
-│   ├── scripts/
-│   ├── config/
+│   ├── scripts/           # Scripts de build
+│   ├── config/            # Configuraciones
 │   └── README.md
 │
 └── .gitignore             # Archivos a ignorar
