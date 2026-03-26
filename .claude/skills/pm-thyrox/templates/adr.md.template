@@ -1,0 +1,185 @@
+```yml
+Tipo: Architectural Decision Record
+Categoría: Decisión Técnica/Arquitectónica
+Versión: 1.0
+Propósito: Documentar decisión arquitectónica importante
+Objetivo: Registrar contexto, opciones, decisión y consecuencias
+Fecha actualización: YYYY-MM-DD
+```
+
+# ADR-NNN: [Título de la Decisión]
+
+## Metadatos
+
+**ADR ID:** ADR-NNN<br>
+**Título:** [Título descriptivo de la decisión]<br>
+**Fecha:** YYYY-MM-DD<br>
+**Status:** Propuesto | Aprobado | Deprecado | Reemplazado<br>
+**Owner:** [Nombre del responsable]<br>
+**Revisor:** [Nombre del revisor]
+
+---
+
+## Contexto
+
+[Descripción clara del problema o situación que requiere una decisión]
+
+**Drivers de negocio:**
+- [Driver 1]
+- [Driver 2]
+- [Driver 3]
+
+**Restricciones técnicas:**
+- [Restricción 1]
+- [Restricción 2]
+
+---
+
+## Opciones Consideradas
+
+### Opción 1: [Nombre de la Opción]
+
+**Descripción:**
+[Explicar la opción]
+
+**Ventajas:**<br>
++ Ventaja 1<br>
++ Ventaja 2<br>
++ Ventaja 3
+
+**Desventajas:**<br>
+- Desventaja 1<br>
+- Desventaja 2<br>
+- Desventaja 3
+
+**Estimación:** [Esfuerzo/Costo/Tiempo]
+
+---
+
+### Opción 2: [Nombre de la Opción]
+
+**Descripción:**
+[Explicar la opción]
+
+**Ventajas:**<br>
++ Ventaja 1<br>
++ Ventaja 2
+
+**Desventajas:**<br>
+- Desventaja 1<br>
+- Desventaja 2
+
+**Estimación:** [Esfuerzo/Costo/Tiempo]
+
+---
+
+### Opción 3: [Nombre de la Opción]
+
+[Continuar con mismo patrón]
+
+---
+
+## Decisión
+
+**Se elige:** [Opción seleccionada]
+
+**Razón principal:** [Por qué esta opción es la mejor]
+
+---
+
+## Justificación
+
+[Explicar detalladamente por qué se eligió esta opción]
+
+**Trade-offs aceptados:**<br>
+[Explicar qué se pierde con esta decisión]
+
+**Alternativas descartadas:**<br>
+[Explicar brevemente por qué se descartaron las otras opciones]
+
+---
+
+## Consecuencias
+
+### Positivas
+
+✓ [Beneficio/Consecuencia positiva 1]<br>
+✓ [Beneficio/Consecuencia positiva 2]<br>
+✓ [Beneficio/Consecuencia positiva 3]
+
+### Negativas
+
+✗ [Riesgo/Consecuencia negativa 1]<br>
+✗ [Riesgo/Consecuencia negativa 2]<br>
+✗ [Riesgo/Consecuencia negativa 3]
+
+### Mitigaciones
+
+Para las consecuencias negativas:
+
+[Consecuencia negativa] → [Mitigación/Plan]<br>
+[Consecuencia negativa] → [Mitigación/Plan]
+
+---
+
+## Impacto
+
+**Áreas afectadas:**<br>
+- [Sistema/Componente 1]<br>
+- [Sistema/Componente 2]<br>
+- [Sistema/Componente 3]
+
+**Esfuerzo de implementación:** [Bajo/Medio/Alto]<br>
+**Fecha planeada de implementación:** [YYYY-MM-DD]<br>
+**Fecha real de implementación:** [YYYY-MM-DD]
+
+---
+
+## Implementación
+
+**Pasos:**<br>
+1. [Paso 1]<br>
+2. [Paso 2]<br>
+3. [Paso 3]
+
+**Responsables:**<br>
+- [Nombre]: [Rol/Tarea]<br>
+- [Nombre]: [Rol/Tarea]
+
+**Criterios de éxito:**<br>
+- [ ] [Criterio 1]<br>
+- [ ] [Criterio 2]<br>
+- [ ] [Criterio 3]
+
+---
+
+## Referencias
+
+- [Documento 1](./documento-1.md)
+- [Documento 2](./documento-2.md)
+- [Link externo](https://example.com)
+
+---
+
+## Historial de Cambios
+
+| Versión | Fecha | Cambios | Autor |
+|---------|-------|---------|-------|
+| 1.0 | YYYY-MM-DD | Versión inicial | [Autor] |
+| 1.1 | YYYY-MM-DD | [Cambios] | [Autor] |
+
+---
+
+## Aprobaciones
+
+| Rol | Nombre | Fecha | Firma |
+|-----|--------|-------|-------|
+| Owner | [Nombre] | YYYY-MM-DD | ✓ |
+| Revisor | [Nombre] | YYYY-MM-DD | ✓ |
+| Aprobador | [Nombre] | YYYY-MM-DD | ✓ |
+
+---
+
+**Última Actualización:** YYYY-MM-DD<br>
+**Próxima Revisión:** YYYY-MM-DD<br>
+**Archivado en:** [.claude/context/decisions/adr-NNN.md]

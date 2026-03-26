@@ -63,9 +63,6 @@ thyrox/
 │   ├── BUILD.md
 │   ├── ARCHITECTURE.md
 │   └── CONTRIBUTING.md
-├── reference/               # Tareas y refactors
-│   ├── AD_HOC_TASKS.md
-│   └── REFACTORS.md
 ├── api/                     # Sub-proyecto: API
 ├── build/                   # Sub-proyecto: Build
 └── .gitignore
@@ -145,7 +142,7 @@ Mostrar:
 
 - Leer últimas líneas de ROADMAP.md
 - Revisar CHANGELOG.md (últimas 5 entradas)
-- Revisar AD_HOC_TASKS.md si hay
+- Revisar [AD_HOC_TASKS.md](.claude/skills/pm-thyrox/tracking/AD_HOC_TASKS.md) si hay
 
 ### 3. Seleccionar Tarea
 
@@ -194,13 +191,13 @@ Crear PR con template automático que incluya:
 
 **skills/** - Comandos personalizados
 - `changelog.md` - Generar CHANGELOG desde git log
-- [commit-convention.md](./commit-convention.md) - Validar commits
+- [commit-convention.md](.claude/skills/pm-thyrox/references/commit-convention.md) - Validar commits
 
 **prds/** - Product Requirements Documents
 - [template.md](./template.md) - Template para nuevas funcionalidades
 
 **epics/** - Epics y task decomposition
-- Ejemplo: [example-epic/epic.md](example-epic/epic.md) + tasks
+- Ejemplo: [example-epic/epic.md](.claude/skills/pm-thyrox/epics/example-epic/epic.md) + tasks
 
 ### `docs/`
 
@@ -225,7 +222,7 @@ Antes de terminar cada sesión:
 
 - [ ] Commits realizados con mensaje descriptivo
 - [ ] ROADMAP.md actualizado con progreso
-- [ ] AD_HOC_TASKS.md actualizado si hay cambios
+- [ ] [AD_HOC_TASKS.md](.claude/skills/pm-thyrox/tracking/AD_HOC_TASKS.md) actualizado si hay cambios
 - [ ] Tests pasando (si aplica)
 - [ ] Documentación actualizada
 - [ ] Rama limpia o PR creado

@@ -30,7 +30,7 @@ Introduce los conceptos fundamentales del análisis. Base para entender las 7 su
 
 **Entregable:** Tabla de requisitos con ID, descripción, prioridad
 
-Consultar: [requirements.md](./requirements.md)
+Consultar: [requirements-analysis.md](./requirements-analysis.md)
 
 ---
 
@@ -86,7 +86,7 @@ PHASE 2: ANALYZE - Tu responsabilidad es completar:
 
 1. introduction.md (este documento - entender propósito)
    ↓
-2. requirements.md (Basic Requirements - QUÉ)
+2. requirements-analysis.md (Basic Requirements - QUÉ)
    ↓
 3. quality-goals.md (Quality Goals - QUÉ TAN BIEN)
    ↓
@@ -135,7 +135,7 @@ Una vez completo → PHASE 3: SOLUTION_STRATEGY
 ## Checklist PHASE 2: ANALYZE
 
 - [ ] introduction.md completado
-- [ ] requirements.md completado (Requirements Analysis)
+- [ ] requirements-analysis.md completado (Requirements Analysis)
 - [ ] quality-goals.md completado
 - [ ] stakeholders.md completado
 - [ ] basic-usage.md completado
