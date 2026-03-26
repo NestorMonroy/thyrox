@@ -1,0 +1,258 @@
+# Exit Conditions - 7 PHASES
+
+## PHASE 1: PLAN
+
+**Objetivo:** Decidir si trabajamos en esto
+
+**Exit Conditions (TODAS deben cumplirse):**
+- [ ] Scope está definido (qué hacemos, qué NO hacemos)
+- [ ] Decisión clara: SI proceder con el proyecto
+- [ ] Stakeholders identificados (quién aprueba qué)
+- [ ] Duración estimada definida
+- [ ] Nivel de complejidad assessado (simple/medio/complejo)
+
+**Success Criteria:**
+- Puedes escribir en 2-3 párrafos QUÉ vas a hacer
+- Está claro POR QUÉ (valor/impacto)
+- Alguien lo aprobó (usuario, arquitecto, etc.)
+
+**Transition:**
+→ Si todas las condiciones se cumplen: AVANZAR A PHASE 2
+→ Si NO se cumplen: PARAR, refinar scope, volver a PHASE 1
+
+---
+
+## PHASE 2: ANALYZE
+
+**Objetivo:** Entender requisitos, restricciones, stakeholders
+
+**Exit Conditions (TODAS deben cumplirse):**
+- [ ] Requisitos funcionales documentados (RF-001 a RF-NNN)
+- [ ] Requisitos no-funcionales documentados (RNF-001 a RNF-NNN)
+- [ ] Quality goals definidos (cómo medimos éxito)
+- [ ] Stakeholders documentados (quiénes, qué roles)
+- [ ] Constraints identificados (técnicos, de negocio, tiempo)
+- [ ] Context y problem statement claros
+- [ ] Aproximadamente 8 documentos analizados o creados
+- [ ] USER APPROVAL obtenido (o confirmación "vamos con esto")
+
+**Success Criteria:**
+- Podés explicar a alguien QUÉ necesita el usuario sin dudas
+- Hay clara separación entre requisitos (QUÉ) y diseño (CÓMO)
+- Todos los stakeholders están de acuerdo en requisitos
+
+**Artifacts Expected:**
+- introduction.md
+- requirements-analysis.md
+- quality-goals.md
+- stakeholders.md
+- basic-usage.md
+- constraints.md
+- context.md
+- use-cases.md
+
+**Transition:**
+→ Si todas cumplidas: AVANZAR A PHASE 3
+→ Si NOT: Refinar análisis, agregar requisitos faltantes, volver a iterate
+
+---
+
+## PHASE 3: SOLUTION_STRATEGY
+
+**Objetivo:** Definir CÓMO vamos a cumplir los requisitos (arquitectura)
+
+**Exit Conditions (TODAS deben cumplirse):**
+- [ ] Visión técnica global definida (qué componentes, cómo se integran)
+- [ ] Decisiones arquitectónicas tomadas (DA-001 a DA-NNN)
+- [ ] Alternativas consideradas y rechazadas documentadas
+- [ ] Justificación clara POR QUÉ esta solución vs otras
+- [ ] Riesgos técnicos identificados
+- [ ] Dependencies externas mapeadas
+- [ ] Mitigaciones para riesgos propuestas
+- [ ] USER/ARCHITECT APPROVAL obtenido
+
+**Success Criteria:**
+- Podés dibujar (o describir) la solución en 5 minutos
+- Está claro por qué NO elegimos alternativas
+- Riesgos y mitigaciones son realistas
+
+**Artifacts Expected:**
+- solution-strategy.md
+- architecture-diagram o description
+- risk-assessment.md
+
+**Transition:**
+→ Si todas cumplidas: AVANZAR A PHASE 4
+→ Si NOT: Refinar arquitectura, considerar más alternativas
+
+---
+
+## PHASE 4: STRUCTURE
+
+**Objetivo:** Especificar EXACTAMENTE qué vamos a implementar (specs técnicas)
+
+**Exit Conditions (TODAS deben cumplirse):**
+- [ ] Cada requisito tiene especificación técnica (SPEC-001 a SPEC-NNN)
+- [ ] Criteria de aceptación definidos (Given/When/Then)
+- [ ] Componentes afectados documentados
+- [ ] Consideraciones técnicas listadas
+- [ ] Design document completo (diseño detallado)
+- [ ] Tasks listadas y decomposed (TASK-001 a TASK-NNN)
+- [ ] Cada tarea tiene: descripción, files afectados, success criteria
+- [ ] Order de ejecución definido (dependencias)
+- [ ] Estimaciones realistas (horas por tarea)
+- [ ] USER/ARCHITECT APPROVAL en specs y design
+
+**Success Criteria:**
+- Developer podría implementar sin preguntar
+- Test engineer podría escribir tests sin preguntar
+- Specs tienen suficiente detalle pero no son overkill
+
+**Artifacts Expected:**
+- requirements-specification.md
+- design.md
+- tasks.md
+- /specification directory con sub-docs si es grande
+
+**Transition:**
+→ Si todas cumplidas: AVANZAR A PHASE 5
+→ Si NOT: Agregar detalles faltantes, refinar tareas
+
+---
+
+## PHASE 5: DECOMPOSE
+
+**Objetivo:** Asegurar que tasks están ATÓMICAS y listos para ejecutar
+
+**Exit Conditions (TODAS deben cumplirse):**
+- [ ] Cada tarea es ATÓMICA (1 cambio lógico, 15-30 min típicamente)
+- [ ] No hay dependencies circulares
+- [ ] Order de ejecución es óptimo (minimal context switching)
+- [ ] Checkpoints de validación definidos
+- [ ] Rollback plan existe si algo falla
+- [ ] Criterios de éxito son SMART (Specific, Measurable, Achievable, Relevant, Time-bound)
+- [ ] Antes de ejecutar: CONFIRMACIÓN "estamos listos"
+
+**Success Criteria:**
+- Developer podría agarrar una tarea y ejecutarla sin más preguntas
+- Si algo falla, está claro cómo rollback
+- Estimaciones parecen realistas
+
+**Artifacts Expected:**
+- tasks.md refinado
+- TRACKING.md creado
+- rollback-plan.md si es complejo
+
+**Transition:**
+→ Si todas cumplidas: AVANZAR A PHASE 6
+→ Si NOT: Re-descomponer tareas
+
+---
+
+## PHASE 6: EXECUTE
+
+**Objetivo:** Implementar exactamente según plan
+
+**Exit Conditions (TODAS deben cumplirse):**
+- [ ] Todas las tasks ejecutadas (status = DONE)
+- [ ] Tests pasaron (o N/A si no aplica)
+- [ ] Commits realizados y mensaje formato sigue convention
+- [ ] Documentación actualizada (si aplica)
+- [ ] Code review aprobada (si aplica)
+- [ ] Artifacts modificados como se planificó
+- [ ] TRACKING.md actualizado con resultados
+- [ ] Issues durante ejecución documentados y resueltos
+- [ ] QA/USER sign-off (si aplica)
+
+**Success Criteria:**
+- Proyecto está en estado "producción-ready" o "archive-ready"
+- No hay tareas pendientes
+- Cambios son reproducibles y documentados
+- Si algo cambió del plan, está documentado POR QUÉ
+
+**Artifacts Expected:**
+- implementation/ directory poblado
+- TRACKING.md con status de cada tarea
+- RESULTADOS.md con qué se logró
+- Code/docs actualizado en repo
+- Git commits documentados
+
+**Transition:**
+→ Si todas cumplidas: AVANZAR A PHASE 7
+→ Si NOT: Completar tareas faltantes, refinamiento final
+
+---
+
+## PHASE 7: TRACK
+
+**Objetivo:** Analizar resultados y documentar lecciones
+
+**Exit Conditions (TODAS deben cumplirse):**
+- [ ] Análisis de resultados completo (qué salió bien/mal)
+- [ ] Lecciones aprendidas documentadas
+- [ ] Comparación: Estimado vs Real (duración, complejidad)
+- [ ] Issues encontrados durante ejecución analizados
+- [ ] Recomendaciones para proyectos futuros anotadas
+- [ ] Project archivado (movido a archive/ si aplica)
+- [ ] Work-logs finales creados
+- [ ] Project-state.md actualizado con status CLOSED
+- [ ] ADR creado SI hubo decisión importante no documentada
+
+**Success Criteria:**
+- Next person que lea el proyecto entiende QUÉ pasó y POR QUÉ
+- Se documentaron learnings (buenas prácticas, anti-patrones)
+- Métricas capturadas: duración total, fases más largas, problemas frecuentes
+
+**Artifacts Expected:**
+- RESULTADOS-FINALES.md
+- LECCIONES-APRENDIDAS.md
+- work-logs/ snapshot final
+- project.json actualizado con timing
+- Archive/ con proyecto cerrado
+
+**Transition:**
+→ Si todas cumplidas: PROJECT CLOSED ✓
+→ Resultado: Histórico completo en work-logs/ + archivo en changes/archive/
+
+---
+
+## CÓMO USAR ESTE DOCUMENTO
+
+1. **Al iniciar un PROJECT:**
+   - Copiar este template a: changes/YYYY-MM-DD-HH-MM-proyecto/EXIT_CONDITIONS.md
+   - Revisar qué aplica a TU proyecto específico
+   - Ajustar si es necesario
+
+2. **Durante ejecución:**
+   - Marcar ✓ cuando cada condición se cumple
+   - Si una condición NO se puede cumplir: documentar POR QUÉ
+   - Decidir: continuar o refinar?
+
+3. **Al completar cada PHASE:**
+   - Revisar: ¿TODAS las exit conditions?
+   - Si NO: ¿qué falta?
+   - Si SÍ: proceder a siguiente PHASE
+
+4. **Para sub-agents:**
+   - Sub-agent revisa Exit_CONDITIONS.md
+   - Valida que todas las condiciones se cumplan
+   - Feedback: "Ready for next phase" o "Need X before continuing"
+
+---
+
+## ESCALABILIDAD
+
+**Para proyectos PEQUEÑOS (<2 horas):**
+- Usar SOLO: Work-log + Document
+- Exit conditions: Simplificadas (solo el 50%)
+- SIN: changes/ structure completa
+
+**Para proyectos MEDIANOS (2-8 horas):**
+- Usar: work-logs + changes/ parcial
+- Exit conditions: 80% compliance
+- Con: Algunas fases pueden ser más rápidas
+
+**Para proyectos GRANDES (8+ horas):**
+- Usar: FULL structure (work-logs + changes + project.json + exit conditions)
+- Exit conditions: 100% compliance
+- Con: Múltiples iteraciones, sub-agents, detailed tracking

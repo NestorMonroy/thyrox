@@ -488,7 +488,7 @@ Update ROADMAP.md:
 ### Option 1: Add to REFACTORS.md
 
 ```
-reference/REFACTORS.md:
+../tracking/REFACTORS.md:
 
 ## Database Query Optimization
 
@@ -530,7 +530,7 @@ refactor(auth): consolidate auth logic into single module
 
 ### Small Feature (1-2 hours)
 - No PHASE update needed
-- Use AD_HOC_TASKS.md
+- Use [AD_HOC_TASKS.md](../tracking/AD_HOC_TASKS.md)
 - One Claude Code session
 - One commit or two
 
@@ -548,7 +548,7 @@ refactor(auth): consolidate auth logic into single module
 - Track blockers and velocity
 
 ### Bug Fix
-- Use AD_HOC_TASKS.md for documentation
+- Use [AD_HOC_TASKS.md](../tracking/AD_HOC_TASKS.md) for documentation
 - Fix and commit immediately
 - No task creation needed unless complex
 - Update CHANGELOG.md in next release

@@ -45,7 +45,7 @@ PM-THYROX follows a 7-phase workflow aligned with SDLC (Software Development Lif
 
 ```
 Phase 1: ANALYZE           → Requirements, Quality Goals, Stakeholders, Context
-                             References: introduction.md, requirements.md, etc.
+                             References: introduction.md, requirements-analysis.md, etc.
                              
 Phase 2: SOLUTION_STRATEGY → Architectural plan: ideas, decisions, tech stack
                              Reference: solution-strategy.md
@@ -53,7 +53,7 @@ Phase 2: SOLUTION_STRATEGY → Architectural plan: ideas, decisions, tech stack
 Phase 3: PLAN              → Brainstorm, update ROADMAP.md
                              
 Phase 4: STRUCTURE         → Create PRD or Spec-Driven docs (optional)
-                             Templates: requirements.md, design.md, tasks.md
+                             Templates: requirements-analysis.md, requirements-specification.md, design.md, tasks.md
                              
 Phase 5: DECOMPOSE         → Break down into tasks using Claude Code /task:create
                              
@@ -76,7 +76,7 @@ Each phase updates the project's source of truth — no external tools required.
 
 This phase contains 7 subsections:
 
-1. **Introduction** ([introduction.md](references/introduction.md))
+1. [Introduction](references/introduction.md)
    - Vision general del proyecto
    - Propósito y contexto
 
@@ -84,32 +84,32 @@ This phase contains 7 subsections:
    - Requisitos funcionales (Level 1 + Level 2)
    - Matriz de trazabilidad
 
-3. **Quality Goals** ([quality-goals.md](references/quality-goals.md))
+3. [Quality Goals](references/quality-goals.md)
    - Priority 1, 2, 3
    - Quality attributes y scenarios
    - Trade-offs
 
-4. **Stakeholders** ([stakeholders.md](references/stakeholders.md))
+4. [Stakeholders](references/stakeholders.md)
    - Matriz de roles y necesidades
    - Conflictos y resoluciones
    - Alineamiento con Quality Goals
 
-5. **Basic Usage** ([basic-usage.md](references/basic-usage.md))
+5. [Basic Usage](references/basic-usage.md)
    - Cómo funciona el sistema operacionalmente
    - Flujo principal, modos de operación
    - Resultados observables
 
-6. **Constraints** ([constraints.md](references/constraints.md))
+6. [Constraints](references/constraints.md)
    - Technical, Platform, Organizational, Regulatory, Business
    - Cómo guían la arquitectura
 
-7. **Context** ([context.md](references/context.md))
+7. [Context](references/context.md)
    - Business Context (sistemas externos)
    - Technical Context (dependencias)
    - Diagrama de contexto
 
 **References:**
-See: `references/introduction.md`, `references/requirements.md`, `references/quality-goals.md`, `references/stakeholders.md`, `references/basic-usage.md`, `references/constraints.md`, `references/context.md`
+See: `references/introduction.md`, `references/requirements-analysis.md`, `references/quality-goals.md`, `references/stakeholders.md`, `references/basic-usage.md`, `references/constraints.md`, `references/context.md`, `references/use-cases.md`
 
 **Templates:**
 Use: `introduction.md.template`, `requirements-analysis.md.template`, etc.
@@ -259,7 +259,8 @@ Consult **`references/spec-driven-development.md`** for:
   * FASE 4: Implementation (EJECUTA)
 
 **Templates**:
-- `requirements.md.template` - Define requirements
+- `requirements-analysis.md.template` - Analyze requirements (PHASE 2)
+- `requirements-specification.md.template` - Specify technical requirements (PHASE 4)
 - `design.md.template` - Design solution
 - `tasks.md.template` - Break into actionable tasks
 
@@ -525,12 +526,20 @@ All project files live in THYROX structure:
 │   │
 │   └── skills/
 │       └── pm-thyrox/          This skill
+│           ├── SKILL.md
+│           ├── references/     Documentation references
+│           ├── templates/      Document templates
+│           ├── tracking/       Task tracking
+│           │   ├── AD_HOC_TASKS.md
+│           │   └── REFACTORS.md
+│           └── epics/          Epic examples
+│               └── example-epic/
 │
-├── reference/
-│   ├── AD_HOC_TASKS.md         Small tasks/improvements
-│   └── REFACTORS.md            Technical debt
-
-└── (api/, build/, docs/)       Project structure
+├── docs/                       Documentation (API, BUILD, etc.)
+├── api/                        Sub-project: API
+├── build/                      Sub-project: Build
+│
+└── .gitignore
 ```
 
 ### ROADMAP.md Format
@@ -729,8 +738,8 @@ PM-THYROX:
 ## When to NOT Use This Skill
 
 - **Ad-hoc experiments** — For quick POCs, just code. Update ROADMAP.md later.
-- **Very small tasks** — "Add a comment" doesn't need a task. Use AD_HOC_TASKS.md instead.
-- **Bug fixes** — Quick fixes go straight to commits. Add to REFACTORS.md if it's tech debt.
+- **Very small tasks** — "Add a comment" doesn't need a task. Use [AD_HOC_TASKS.md](tracking/AD_HOC_TASKS.md) instead.
+- **Bug fixes** — Quick fixes go straight to commits. Add to [REFACTORS.md](tracking/REFACTORS.md) if it's tech debt.
 
 ---
 
@@ -806,6 +815,211 @@ Consultar **`references/long-context-tips.md`** cuando:
 - Validar cross-references en múltiples archivos
 
 **Cubre**: Data at top patterns, XML structuring, ground responses, mejores prácticas para docs grandes.
+
+---
+
+---
+
+## Exit Conditions (Cuándo avanzar de PHASE)
+
+Cada PHASE tiene **exit conditions** que deben cumplirse antes de continuar. Ver: `references/changes/.EXIT_CONDITIONS.md.template`
+
+### Resumen Rápido:
+
+**PHASE 1 (PLAN):** Scope definido + Decisión tomada + Stakeholders identificados
+
+**PHASE 2 (ANALYZE):** Requisitos documentados + Aprobación de usuario + Todas las referencias completas
+
+**PHASE 3 (SOLUTION):** Arquitectura definida + Alternativas consideradas + Riesgos identificados
+
+**PHASE 4 (STRUCTURE):** Specs completas + Design aprobado + Tasks descompuestas
+
+**PHASE 5 (DECOMPOSE):** Tasks atómicas + Order definido + Checkpoints de validación
+
+**PHASE 6 (EXECUTE):** Todas las tasks completadas + Tests pasados + Commits realizados
+
+**PHASE 7 (TRACK):** Análisis completo + Lecciones documentadas + Proyecto archivado
+
+### Cómo Usar:
+
+1. Copiar: `.claude/context/changes/.EXIT_CONDITIONS.md.template`
+2. Llenar: Checklist por cada PHASE
+3. Validar: ¿Se cumplen todas?
+4. Decisión: Avanzar o refinar?
+
+---
+
+## Escalabilidad por Complejidad
+
+**PM-THYROX** se adapta al tamaño del proyecto:
+
+### Proyectos Pequeños (<2 horas)
+
+**Estructura simplificada:**
+- 1 work-log (snapshot inicial)
+- 1 documento mutable (donde se captura todo)
+- Sin structure completa de changes/
+
+**Fases activas:** 1, 2, 6, 7  
+**Sin:** Cambios/, sub-agents, JSON metadata
+
+**Ejemplo:**
+```
+work-logs/2026-03-26-10-00-quick-fix-typo.md
+documento: TASK-FIX-TYPO.md (todo en uno)
+```
+
+### Proyectos Medianos (2-8 horas)
+
+**Estructura balanceada:**
+- work-logs/ granulares (1 por STEP importante)
+- changes/YYYY-MM-DD-HH-MM-nombre/ con estructura PHASE-based
+- project.json simple
+
+**Fases activas:** 1, 2, 3, 4, 5, 6, 7  
+**Con:** Algunas fases pueden ser rápidas
+**Sub-agents:** Validación manual entre PHASEs
+
+**Ejemplo:**
+```
+work-logs/
+  2026-03-26-10-00-decision-feature-x.md
+  2026-03-26-10-15-analisis-requisitos.md
+  2026-03-26-11-00-design-aprobado.md
+  
+changes/2026-03-26-10-00-feature-x/
+  project.json
+  PLAN.md
+  analisis/
+  specification/
+  tasks/
+  implementation/
+```
+
+### Proyectos Grandes (8+ horas)
+
+**Estructura completa:**
+- work-logs/ muy granulares (1 por STEP)
+- changes/YYYY-MM-DD-HH-MM-nombre/ completo
+- project.json con timing data
+- exit-conditions.md rigurosas
+- sub-agents para validación automática
+
+**Fases activas:** 1-7 con rigor completo  
+**Con:** Iteraciones, validaciones, análisis cuantitativos
+**Sub-agents:** Validación automática entre PHASEs
+
+**Ejemplo:**
+```
+work-logs/
+  2026-03-26-10-00-decision-big-project.md
+  2026-03-26-10-15-step1-inventario.md
+  2026-03-26-10-30-step2-conflictos.md
+  2026-03-26-11-00-estrategia-aprobada.md
+  2026-03-26-11-30-step1-especificación.md
+  ... (muchos más)
+
+changes/2026-03-26-10-00-big-project/
+  project.json (timing data)
+  EXIT_CONDITIONS.md (100% compliance)
+  PLAN.md, analisis/, estrategia/, specification/, tasks/, implementation/
+  [Sub-agent validation logs]
+```
+
+### Decision Framework: ¿Cuál usar?
+
+- **< 30 minutos:** Solo work-log
+- **30 min - 2 horas:** Work-log + documento simple
+- **2 - 8 horas:** Work-logs + changes/ (MEDIUM)
+- **8+ horas:** FULL STRUCTURE con sub-agents
+
+---
+
+## Sub-Agents para Validación
+
+Para proyectos MEDIANOS y GRANDES, usar sub-agents para validación entre PHASEs:
+
+### Validación After PHASE 2
+
+Sub-agent revisa:
+- [ ] Requisitos están claros?
+- [ ] Documentación está completa?
+- [ ] Stakeholders aprobaron?
+- [ ] Referencias está al 100%?
+
+Feedback: "Ready for PHASE 3" o "Missing: [X]"
+
+### Validación After PHASE 4
+
+Sub-agent revisa:
+- [ ] Design es implementable?
+- [ ] Tasks pueden ejecutarse atómicamente?
+- [ ] Estimaciones son realistas?
+- [ ] Criterios de éxito son verificables?
+
+Feedback: "Ready for PHASE 5" o "Refine: [X]"
+
+### Validación After PHASE 6
+
+Sub-agent revisa:
+- [ ] Todos los tasks completados?
+- [ ] Tests pasados?
+- [ ] Code quality OK?
+- [ ] Commits sigue convención?
+
+Feedback: "Ready for PHASE 7" o "Fix: [X]"
+
+### Cómo Invocar Sub-Agents
+
+Simplemente decir:
+```
+"Sub-agent, por favor valida que completamos PHASE 2.
+Checkea: exit_conditions.md y project.json"
+```
+
+El sub-agent:
+1. Lee EXIT_CONDITIONS.md
+2. Revisa project.json
+3. Valida cambios/
+4. Reporta: "✓ LISTO" o "✗ NECESITA: [X]"
+
+---
+
+## Tracking & Metrics
+
+### JSON Metadata
+
+Cada proyecto tiene `project.json` que captura:
+
+```json
+{
+  "phases": {
+    "phase_1": { "status": "completed", "duration_minutes": 15 },
+    "phase_2": { "status": "in_progress", "duration_minutes": 30 }
+  },
+  "timing": {
+    "total_duration_minutes": 45,
+    "breakdown_by_phase": { ... }
+  }
+}
+```
+
+### Work-Logs
+
+Cada work-log tiene metadata:
+```
+phase: 2
+step: step-1-inventario
+duration_minutes: 15
+status: completed
+```
+
+### Analysis
+
+Después de PHASE 7, puedes:
+- Comparar: Estimado vs Real
+- Analizar: Cuáles PHASEs toman más tiempo
+- Optimizar: Patrones para proyectos futuros
 
 ---
 

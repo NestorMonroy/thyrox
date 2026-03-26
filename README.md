@@ -53,7 +53,6 @@ thyrox/
 ├── CLAUDE.md                # Contexto persistente para Claude Code
 ├── ARCHITECTURE.md          # Decisiones arquitectónicas
 ├── CONTRIBUTING.md          # Guía de contribución
-├── commit-convention.md     # Convenciones de commits
 ├── template.md              # Template para documentos
 │
 ├── .claude/                 # Configuración de Claude Code
@@ -67,12 +66,7 @@ thyrox/
 │   ├── API.md              # Documentación de endpoints
 │   └── BUILD.md            # Guía de build y deployment
 │
-├── reference/              # Referencias y tareas
-│   ├── AD_HOC_TASKS.md    # Tareas pequeñas
-│   └── REFACTORS.md       # Mejoras pendientes
-│
-├── example-epic/           # Ejemplo de epic
-│   └── epic.md            # Template y ejemplo
+
 │
 ├── api/                    # Sub-proyecto: API
 │   ├── src/               # Código fuente

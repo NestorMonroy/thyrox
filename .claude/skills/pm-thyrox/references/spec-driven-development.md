@@ -148,9 +148,9 @@ Usar cuando:
 
 ## Templates Disponibles
 
-### 1. requirements.md.template
+### 1. requirements-analysis.md.template
 
-**Propósito**: Definir QUE se necesita (FASE 1)
+**Propósito**: Definir QUÉ se necesita (PHASE 2: ANALYZE)
 
 **Contenido**:
 - Contexto y problema
@@ -162,15 +162,33 @@ Usar cuando:
 - Stakeholders
 - Referencias
 
-**Cuándo usar**: Al iniciar proyecto complejo
+**Cuándo usar**: Al iniciar análisis de requisitos
 
-**Ubicación**: `/templates/requirements.md.template`
+**Ubicación**: `/templates/requirements-analysis.md.template`
+
+---
+
+### 1b. requirements-specification.md.template
+
+**Propósito**: Definir CÓMO se implementan los requisitos (PHASE 4: STRUCTURE)
+
+**Contenido**:
+- Mapeo análisis → especificación
+- Criterios de aceptación
+- Consideraciones técnicas
+- Componentes afectados
+- Esfuerzo estimado
+- Validación y aprobaciones
+
+**Cuándo usar**: Al estructurar implementación técnica
+
+**Ubicación**: `/templates/requirements-specification.md.template`
 
 ---
 
 ### 2. design.md.template
 
-**Propósito**: Definir COMO se implementará (FASE 2)
+**Propósito**: Definir CÓMO se implementará (PHASE 4: STRUCTURE)
 
 **Contenido**:
 - Visión general de la solución
@@ -222,7 +240,7 @@ Usar cuando:
 **Objetivo**: Documento claro de qué se necesita
 
 **Pasos**:
-1. Usar `requirements.md.template`
+1. Usar `requirements-analysis.md.template`
 2. Completar:
    - Contexto y problema
    - Objetivos claros
@@ -588,7 +606,8 @@ A: No. Es inversión:
 
 - PM-THYROX SKILL.md - PHASE 2: STRUCTURE
 - Templates en `/templates/`:
-  - `requirements.md.template`
+  - `requirements-analysis.md.template`
+  - `requirements-specification.md.template`
   - `design.md.template`
   - `tasks.md.template`
 - commit-helper.md - Para commits documentados por tarea

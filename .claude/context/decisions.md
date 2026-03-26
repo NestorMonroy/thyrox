@@ -2,8 +2,8 @@
 Tipo: Contexto de Proyecto
 Categoría: Decisiones Arquitectónicas
 Versión: 1.0
-Propósito: Registro y documentación de decisiones arquitectónicas importantes
-Objetivo: Mantener historial de decisiones técnicas para referencia futura
+Propósito: Índice y registro de decisiones arquitectónicas importantes
+Objetivo: Proporcionar visión clara de decisiones técnicas del proyecto
 Fecha actualización: 2026-03-25
 ```
 
@@ -17,251 +17,47 @@ Registro de decisiones arquitectónicas y técnicas importantes del proyecto THY
 
 ---
 
-## ADR-001: Markdown para Documentación
+## Índice de ADRs
 
-**Fecha:** 2025-03-24
-**Status:** Aprobado
-**Owner:** User
+### Aprobados y Activos
 
-### Contexto
+1. [ADR-001: Markdown para Documentación](decisions/adr-001.md) ✓
+   - Usar Markdown como formato estándar de documentación
+   - Status: Aprobado | Fecha: 2025-03-24
 
-Necesitamos elegir formato para documentación del proyecto.
+2. [ADR-002: ROADMAP.md como Single Source of Truth](decisions/adr-002.md) ✓
+   - ROADMAP.md es la fuente única de verdad para tracking
+   - Status: Aprobado | Fecha: 2025-03-24
 
-### Opciones Consideradas
+3. [ADR-003: Conventional Commits](decisions/adr-003.md) ✓
+   - Estandarizar formato de commits
+   - Status: Aprobado | Fecha: 2025-03-24
 
-1. Markdown - Simple, versionable, GitHub-native
-2. Confluence - Centralizado pero no versionable
-3. Notion - Bonito pero cerrado
-4. Confluence - No versionable
+4. [ADR-004: Separación de Sub-proyectos](decisions/adr-004.md) ✓
+   - API y Build como sub-proyectos independientes
+   - Status: Aprobado | Fecha: 2025-03-24
 
-### Decisión
+5. [ADR-005: Claude Code como Development Agent](decisions/adr-005.md) ✓
+   - Automatización de desarrollo con Claude Code
+   - Status: Aprobado | Fecha: 2025-03-24
 
-**Usar Markdown** para toda documentación.
+7. [ADR-007: PostgreSQL como Base de Datos](decisions/adr-007.md) ✓
+   - Motor de base de datos principal
+   - Status: Aprobado | Fecha: 2025-03-24
 
-### Justificación
+### Planeados para Fases Futuras
 
-- Versionable en Git
-- Simple de escribir
-- GitHub lo renderiza nativamente
-- Fácil de convertir a otros formatos
-- No requiere herramientas especiales
-- Legible en texto plano
+6. [ADR-006: YAML para Configuración](decisions/adr-006.md) ⏳
+   - Usar YAML para archivos de configuración
+   - Status: Pendiente (Fase 2) | Fecha: 2025-03-24
 
-### Consecuencias
+8. [ADR-008: Docker para Containerización](decisions/adr-008.md) ⏳
+   - Reproducibilidad y deployment con Docker
+   - Status: Aprobado (Fase 2) | Fecha: 2025-03-24
 
-- Requiere disciplina para mantener actualizado
-- No hay UI visual como Confluence
-- Requiere git knowledge para contribuir
-
----
-
-## ADR-002: ROADMAP.md como Single Source of Truth
-
-**Fecha:** 2025-03-24
-**Status:** Aprobado
-**Owner:** User
-
-### Decisión
-
-ROADMAP.md es la fuente única de verdad para tracking de tareas.
-
-### Por Qué
-
-- Versionable
-- Accesible desde cualquier lugar
-- Integrable con Claude Code
-- Simple y eficiente
-- No requiere herramientas externas
-
-### Alternativas Rechazadas
-
-- GitHub Issues (scattered context)
-- Trello (no versionable)
-- Linear (expensive)
-- Notion (closed ecosystem)
-
----
-
-## ADR-003: Conventional Commits
-
-**Fecha:** 2025-03-24
-**Status:** Aprobado
-**Owner:** User
-
-### Decisión
-
-Usar Conventional Commits v1.0.0 para todos los commits.
-
-### Formato
-
-```
-<type>(<scope>): <description>
-```
-
-### Tipos
-
-- **feat:** Feature nueva
-- **fix:** Corrección de bug
-- **docs:** Cambios en documentación
-- **test:** Agregar/modificar tests
-- **refactor:** Cambio de código sin alterar funcionalidad
-- **chore:** Build, deps, etc
-
-### Beneficios
-
-- Commits legibles y semánticos
-- Facilita changelog automático
-- Semantic versioning automático
-- Git history limpio
-
----
-
-## ADR-004: Separación de Sub-proyectos
-
-**Fecha:** 2025-03-24
-**Status:** Aprobado
-**Owner:** User
-
-### Decisión
-
-API y Build son sub-proyectos separados dentro del mismo repositorio.
-
-### Estructura
-
-```
-thyrox/
-├── api/        # Sub-proyecto API
-├── build/      # Sub-proyecto Build
-└── docs/       # Documentación compartida
-```
-
-### Justificación
-
-- Independencia de desarrollo
-- Equipos pueden trabajar en paralelo
-- Versionado separado si es necesario
-- Misma documentación base
-
-### Alternativas Consideradas
-
-- Monorepo gigante (demasiado caótico)
-- Repositorios separados (falta de contexto)
-
----
-
-## ADR-005: Claude Code como Development Agent
-
-**Fecha:** 2025-03-24
-**Status:** Aprobado
-**Owner:** User
-
-### Decisión
-
-Usar Claude Code para automatización de desarrollo.
-
-### Usar Para
-
-- Commits automáticos
-- Changelog generation
-- Tests
-- Refactoring
-- Documentation
-
-### No Usar Para
-
-- Decisiones arquitectónicas (human-only)
-- Code reviews finales (human validation)
-- Deployments críticos (manual gate)
-
-### Contexto
-
-- CLAUDE.md define comportamiento
-- /task:create para nuevas tareas
-- /clear para limpiar contexto si es muy largo
-
----
-
-## ADR-006: YAML para Configuración
-
-**Fecha:** 2025-03-24
-**Status:** Pendiente (Fase 2)
-
-### Decisión
-
-Usar YAML para archivos de configuración (CI/CD, etc).
-
-### Archivos
-
-- `.github/workflows/*.yml` - GitHub Actions
-- `docker-compose.yml` - Docker setup
-- `.claude/config.yml` - Claude Code config
-
-### Justificación
-
-- Readable
-- Indentation based (visual structure)
-- Wide support
-
----
-
-## ADR-007: PostgreSQL como Base de Datos
-
-**Fecha:** 2025-03-24
-**Status:** Aprobado
-
-### Decisión
-
-Usar PostgreSQL como principal base de datos.
-
-### Justificación
-
-- Open source
-- Robusto y confiable
-- Soporta JSON
-- Herramientas maduras
-- Escalable
-
----
-
-## ADR-008: Docker para Containerización
-
-**Fecha:** 2025-03-24
-**Status:** Aprobado (Fase 2)
-
-### Decisión
-
-Usar Docker para reproducibilidad.
-
-### Enfoque
-
-- `Dockerfile` por sub-proyecto
-- `docker-compose.yml` para desarrollo
-- Minimal images basadas en alpine
-
----
-
-## ADR-009: GitHub Actions para CI/CD
-
-**Fecha:** 2025-03-24
-**Status:** Aprobado (Fase 2)
-
-### Decisión
-
-GitHub Actions para automatización.
-
-### Pipeline
-
-1. Lint
-2. Test
-3. Build
-4. Deploy
-
-### Ventajas
-
-- Nativo en GitHub
-- Gratis para repos públicos
-- YAML simple
-- Buena integración
+9. [ADR-009: GitHub Actions para CI/CD](decisions/adr-009.md) ⏳
+   - Automatización de tests y deployment
+   - Status: Aprobado (Fase 2) | Fecha: 2025-03-24
 
 ---
 
@@ -269,13 +65,67 @@ GitHub Actions para automatización.
 
 ### Pendientes de Decisión
 
-- [ ] Qué frontend framework usar
-- [ ] Estrategia de caching
+- [ ] Frontend framework (React, Vue, Svelte, etc.)
+- [ ] Estrategia de caching (Redis, Memcached, etc.)
 - [ ] Monitoreo y logging strategy
 - [ ] Feature flag system
+- [ ] Autenticación/Autorización estándar
+- [ ] Versionado de API
 
 ---
 
-**Convención:** ADR-XXX (Architecture Decision Record)
-**Formato:** Basado en [ADRs by Michael Nygard](https://adr.github.io/)
-**Próxima Review:** 2025-04-24
+## Cómo Usar Este Sistema
+
+### Crear una Nueva ADR
+
+1. Usa el template: [adr.md.template](.claude/skills/pm-thyrox/templates/adr.md.template)
+2. Copia a `decisions/adr-NNN.md`
+3. Completa todas las secciones
+4. Agrega el link aquí en el índice
+5. Commit con mensaje: `docs(adr): add ADR-NNN [título]`
+
+### Actualizar una ADR
+
+1. Edita el archivo correspondiente
+2. Actualiza el versionado
+3. Commit con mensaje: `docs(adr): update ADR-NNN [cambio]`
+
+### Deprecar una ADR
+
+1. Cambia Status a "Deprecado"
+2. Agrega nota sobre qué la reemplaza
+3. Mueve a sección "Deprecadas"
+
+---
+
+## Estadísticas
+
+**Total ADRs:** 9<br>
+**Aprobadas:** 7<br>
+**Pendientes:** 2<br>
+**Deprecadas:** 0<br>
+**Activas en producción:** 7
+
+---
+
+## Convenciones
+
+- **Formato:** ADR-XXX (Architecture Decision Record)
+- **Basado en:** [ADRs by Michael Nygard](https://adr.github.io/)
+- **Template:** [adr.md.template](.claude/skills/pm-thyrox/templates/adr.md.template)
+- **Ubicación:** `.claude/context/decisions/`
+
+---
+
+## Referencias Relacionadas
+
+- [ROADMAP.md](../ROADMAP.md) - Plan del proyecto
+- [ARCHITECTURE.md](../ARCHITECTURE.md) - Decisiones arquitectónicas detalladas
+- [commit-convention.md](../skills/pm-thyrox/references/commit-convention.md) - Convenciones de commits (ADR-003)
+- [adr.md.template](../skills/pm-thyrox/templates/adr.md.template) - Template para nuevas ADRs
+
+---
+
+**Convención:** ADR-XXX (Architecture Decision Record)<br>
+**Próxima Review:** 2025-04-24<br>
+**Última Actualización:** 2026-03-25
