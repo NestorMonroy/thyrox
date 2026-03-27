@@ -123,81 +123,71 @@ Usar **Semantic Versioning**:
 
 ---
 
-## FLUJO DE TRABAJO
+## METODOLOGÍA: 7 FASES
 
-### 1. Inicio de Sesión
+El motor del proyecto es el **SKILL** ([pm-thyrox](skills/pm-thyrox/SKILL.md)). Define un flujo de 7 fases SDLC:
+
+```
+Phase 1: ANALYZE           → Entender requisitos, stakeholders, contexto
+Phase 2: SOLUTION_STRATEGY → Plan arquitectónico, decisiones técnicas
+Phase 3: PLAN              → Scope, brainstorm, actualizar ROADMAP.md
+Phase 4: STRUCTURE         → PRDs o Spec-Driven docs (opcional)
+Phase 5: DECOMPOSE         → Descomponer en tasks atómicas
+Phase 6: EXECUTE           → Implementar + commits convencionales
+Phase 7: TRACK             → Monitorear, changelog, cierre
+```
+
+**Siempre empezar por ANALYZE.** No planificar sin entender primero.
+
+Para proyectos pequeños (<2h): usar fases 1, 2, 6, 7.
+Para proyectos grandes (8h+): usar las 7 fases completas.
+
+Ver [SKILL](skills/pm-thyrox/SKILL.md) para proceso detallado de cada fase.
+
+---
+
+## FLUJO DE SESIÓN
+
+### 1. Inicio
 
 ```bash
-cd /home/thyrox
-claude
+cd /home/thyrox && claude
 ```
 
-Mostrar:
-```
-/status       # Estado general
-/task:show    # Tareas pendientes
-```
+### 2. Contexto
 
-### 2. Revisar Contexto
-
-- Leer últimas líneas de ROADMAP.md
-- Revisar CHANGELOG.md (últimas 5 entradas)
+- Revisar ROADMAP.md (estado actual)
 - Revisar [AD_HOC_TASKS](skills/pm-thyrox/tracking/AD_HOC_TASKS.md) si hay
+- Identificar en qué fase estamos
 
-### 3. Seleccionar Tarea
+### 3. Trabajar
 
-```
-/task:create "Descripción de tarea"
-/task:next   # O ver recomendación siguiente
-```
+- Seguir la fase correspondiente del [SKILL](skills/pm-thyrox/SKILL.md)
+- Commits con Conventional Commits
+- Actualizar ROADMAP.md al completar items
 
-### 4. Desarrollo
+### 4. Cerrar sesión
 
-- Crear feature branch: `git checkout -b feature/nombre`
-- Claude Code hace commits automáticamente
-- Commits deben seguir Conventional Commits
-
-### 5. Actualizar ROADMAP.md
-
-Marcar tarea como:
-```markdown
-- [x] **Nombre Tarea** - Descripción (2025-03-24)
-```
-
-### 6. Generar Changelog
-
-Semanalmente:
-```bash
-/changelog:generate --from v0.0.0
-```
-
-### 7. Pull Request
-
-Crear PR con template automático que incluya:
-- Qué cambió
-- Por qué cambió
-- Testing realizado
-- Links a issues/tasks
+- Verificar checklist (abajo)
+- Documentar progreso en work-logs si aplica
 
 ---
 
 ## ESTRUCTURA DE CARPETAS
 
-### `.claude/`
+### `.claude/` — Motor del proyecto
 
-**context/** - Estado actual del proyecto
+**skills/pm-thyrox/** - El SKILL principal
+- [SKILL](skills/pm-thyrox/SKILL.md) - Metodología de 7 fases (leer primero)
+- `references/` - 19 guías de referencia por fase
+- `templates/` - 25 templates para documentos
+- `tracking/` - [AD_HOC_TASKS](skills/pm-thyrox/tracking/AD_HOC_TASKS.md), [REFACTORS](skills/pm-thyrox/tracking/REFACTORS.md)
+- `epics/` - Ejemplo: [example-epic/epic](skills/pm-thyrox/epics/example-epic/epic.md)
+
+**context/** - Estado del proyecto
 - [project-state](context/project-state.md) - Contexto general
 - [decisions](context/decisions.md) - Decisiones arquitectónicas
-
-**skills/** - Comandos personalizados
-- [changelog](skills/pm-thyrox/references/changelog.md) - Generar CHANGELOG desde git log
-- [commit-convention](skills/pm-thyrox/references/commit-convention.md) - Validar commits
-
-**prds/** - Product Requirements Documents
-- [template](context/template.md) - Template para nuevas funcionalidades
-
-**epics/** - Epics y task decomposition
-- Ejemplo: [example-epic/epic](skills/pm-thyrox/epics/example-epic/epic.md) + tasks
+- `work-logs/` - Bitácora de sesiones
 
 ### `docs/`
 
@@ -263,11 +253,12 @@ git status
 
 ### Para Claude Code:
 
-1. **Siempre revisar ROADMAP.md** antes de iniciar trabajo
-2. **Commits atómicos** - Un concepto por commit
-3. **Mensajes descriptivos** - Explicar el por qué
-4. **Testing primero** - Si es código crítico
-5. **Documentar cambios** - Actualizar docs/ si aplica
+1. **Leer [SKILL](skills/pm-thyrox/SKILL.md)** para entender la metodología
+2. **Siempre empezar por ANALYZE** - Entender antes de planificar
+3. **Commits atómicos** - Un concepto por commit
+4. **Mensajes descriptivos** - Explicar el por qué
+5. **Testing primero** - Si es código crítico
+6. **Documentar cambios** - Actualizar docs/ si aplica
 
 ### Limitaciones Conocidas:
 
@@ -289,13 +280,13 @@ git status
 Al iniciar próxima sesión:
 
 1. `cd /home/thyrox && claude`
-2. `/status` - Ver dónde estamos
-3. Revisar ROADMAP.md
-4. `/task:next` - Siguiente tarea
-5. Iniciar desarrollo
+2. Revisar ROADMAP.md — ¿En qué fase estamos?
+3. Consultar [SKILL](skills/pm-thyrox/SKILL.md) — ¿Qué toca hacer en esa fase?
+4. Trabajar siguiendo la fase correspondiente
+5. Cerrar con checklist de sesión
 
 ---
 
-**Última Actualización:** 2025-03-24 
+**Última Actualización:** 2026-03-27
 **Versión:** 0.1.0
 **Mantenedor:** Claude Code + Human

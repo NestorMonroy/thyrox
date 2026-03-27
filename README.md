@@ -35,13 +35,13 @@ THYROX es un framework completo para:
 
 ## Características
 
-- Sistema de gestión de tareas con dependencias
+- **Metodología de 7 fases SDLC** integrada en un SKILL reutilizable
 - ROADMAP.md como plan maestro
 - Changelog automático desde commits
 - Conventional Commits integrado
 - Documentación de API + Build separada
-- Claude.md como memoria del proyecto
-- Estructura lista para dos sub-proyectos
+- CLAUDE.md como memoria persistente del proyecto
+- 19 guías de referencia + 25 templates listos para usar
 
 ## Estructura
 
@@ -107,13 +107,35 @@ thyrox/
    # > /task:create "Configurar API base"
    ```
 
-## Workflow Diario
+## Metodología
 
-1. **Morning:** `claude` → revisar `/tasks` y `/status`
-2. **Development:** Claude crea commits convencionales automáticamente
-3. **Progress:** Actualizar ROADMAP.md al completar items
-4. **Weekly:** `/changelog:generate` para actualizar CHANGELOG.md
-5. **Review:** PRs con documentación automática
+El motor de THYROX es el **SKILL** (`.claude/skills/pm-thyrox/SKILL.md`), que define 7 fases:
+
+```
+1. ANALYZE           → Entender requisitos, stakeholders, contexto
+2. SOLUTION_STRATEGY → Plan arquitectónico, decisiones técnicas
+3. PLAN              → Scope, brainstorm, actualizar ROADMAP.md
+4. STRUCTURE         → PRDs o Spec-Driven docs (opcional)
+5. DECOMPOSE         → Descomponer en tasks atómicas
+6. EXECUTE           → Implementar + commits convencionales
+7. TRACK             → Monitorear, changelog, cierre
+```
+
+**Siempre empezar por ANALYZE.** Para proyectos pequeños: fases 1, 2, 6, 7.
+
+### Jerarquía de archivos
+
+| Nivel | Archivo | Función |
+|-------|---------|---------|
+| 1 | `.claude/skills/pm-thyrox/SKILL.md` | Motor — define metodología y fases |
+| 2 | `.claude/CLAUDE.md` | Puente — contexto persistente entre sesiones |
+| 3 | `README.md` | Presentación — entrada para humanos |
+
+### Workflow diario
+
+1. **Inicio:** `claude` → revisar ROADMAP.md, identificar fase actual
+2. **Trabajo:** Seguir la fase correspondiente del SKILL
+3. **Cierre:** Commits convencionales, actualizar ROADMAP.md
 
 ## Convenciones
 
@@ -212,5 +234,5 @@ Generado con THYROX Template + Claude Code
 
 ---
 
-**Última actualización:** 2025-03-24
+**Última actualización:** 2026-03-27
 **Versión:** 0.1.0
