@@ -25,7 +25,7 @@ Registro de decisiones arquitectónicas y técnicas importantes del proyecto THY
    - Usar Markdown como formato estándar de documentación
    - Status: Aprobado | Fecha: 2025-03-24
 
-2. [ADR-002: ROADMAP.md como Single Source of Truth](decisions/adr-002.md) ✓
+2. [ADR-002: ROADMAP como Single Source of Truth](decisions/adr-002.md) ✓
    - ROADMAP.md es la fuente única de verdad para tracking
    - Status: Aprobado | Fecha: 2025-03-24
 
@@ -78,7 +78,7 @@ Registro de decisiones arquitectónicas y técnicas importantes del proyecto THY
 
 ### Crear una Nueva ADR
 
-1. Usa el template: [adr.md.template](.claude/skills/pm-thyrox/templates/adr.md.template)
+1. Usa el template: [adr.template](.claude/skills/pm-thyrox/templates/adr.md.template)
 2. Copia a `decisions/adr-NNN.md`
 3. Completa todas las secciones
 4. Agrega el link aquí en el índice
@@ -112,17 +112,17 @@ Registro de decisiones arquitectónicas y técnicas importantes del proyecto THY
 
 - **Formato:** ADR-XXX (Architecture Decision Record)
 - **Basado en:** [ADRs by Michael Nygard](https://adr.github.io/)
-- **Template:** [adr.md.template](.claude/skills/pm-thyrox/templates/adr.md.template)
+- **Template:** [adr.template](.claude/skills/pm-thyrox/templates/adr.md.template)
 - **Ubicación:** `.claude/context/decisions/`
 
 ---
 
 ## Referencias Relacionadas
 
-- [ROADMAP.md](../ROADMAP.md) - Plan del proyecto
-- [ARCHITECTURE.md](../ARCHITECTURE.md) - Decisiones arquitectónicas detalladas
-- [commit-convention.md](../skills/pm-thyrox/references/commit-convention.md) - Convenciones de commits (ADR-003)
-- [adr.md.template](../skills/pm-thyrox/templates/adr.md.template) - Template para nuevas ADRs
+- [ROADMAP](../ROADMAP.md) - Plan del proyecto
+- [ARCHITECTURE](../ARCHITECTURE.md) - Decisiones arquitectónicas detalladas
+- [commit-convention](../skills/pm-thyrox/references/commit-convention.md) - Convenciones de commits (ADR-003)
+- [adr.template](../skills/pm-thyrox/templates/adr.md.template) - Template para nuevas ADRs
 
 ---
 

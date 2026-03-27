@@ -228,7 +228,7 @@ const users = await User.query()
 
 ### Cambios en API
 
-Actualiza [docs/API.md](docs/API.md):
+Actualiza [docs/API](docs/API.md):
 
 ```
 ### GET /api/v1/users/:id
@@ -245,7 +245,7 @@ Obtiene usuario por ID.
 
 ### Cambios en Arquitectura
 
-Actualiza [ARCHITECTURE.md](./ARCHITECTURE.md):
+Actualiza [ARCHITECTURE](./ARCHITECTURE.md):
 
 - Decisiones arquitectónicas
 - Patrones nuevos
@@ -253,7 +253,7 @@ Actualiza [ARCHITECTURE.md](./ARCHITECTURE.md):
 
 ### Cambios en Proceso
 
-Actualiza [CONTRIBUTING.md](./CONTRIBUTING.md) (este archivo):
+Actualiza [CONTRIBUTING](./CONTRIBUTING.md) (este archivo):
 
 - Nuevos procesos
 - Cambios en convenciones

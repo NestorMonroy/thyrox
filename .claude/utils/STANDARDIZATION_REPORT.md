@@ -243,7 +243,7 @@ Ver histórico completo: `git log --oneline -10`
 - Punto de entrada principal
 - Completamente estandarizado
 
-**Ubicación:** [SKILL.md](./../skills/pm-thyrox/SKILL.md)
+**Ubicación:** [SKILL](./../skills/pm-thyrox/SKILL.md)
 
 **Para empezar:** SKILL.md → README.md → ROADMAP.md
 

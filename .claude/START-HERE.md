@@ -12,13 +12,13 @@ El validador v3 encontró **259 referencias** en tu proyecto THYROX:
 ## Archivos principales
 
 ### Para entender qué está pasando
-→ Lee **[VALIDATION-STATUS.md](utils/VALIDATION-STATUS.md)** (5 min)
+→ Lee **[VALIDATION-STATUS](utils/VALIDATION-STATUS.md)** (5 min)
 
 ### Para ver todos los detalles
 → Abre **[reference-validation-report.txt](utils/reference-validation-report.txt)** (largo, pero completo)
 
 ### Para aprender a usar el validador
-→ Lee **[VALIDATE-REFERENCES-v3-GUIDE.md](utils/VALIDATE-REFERENCES-v3-GUIDE.md)**
+→ Lee **[VALIDATE-REFERENCES-v3-GUIDE](utils/VALIDATE-REFERENCES-v3-GUIDE.md)**
 
 ## Qué hacer ahora
 
@@ -95,4 +95,4 @@ La mejora principal: **detecta referencias documentales** (ejemplos en SKILL.md)
 
 ---
 
-**Próximo paso**: Lee [VALIDATION-STATUS.md](utils/VALIDATION-STATUS.md)
+**Próximo paso**: Lee [VALIDATION-STATUS](utils/VALIDATION-STATUS.md)

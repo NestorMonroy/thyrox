@@ -80,7 +80,7 @@ This phase contains 7 subsections:
    - Vision general del proyecto
    - Propósito y contexto
 
-2. **Requirements Analysis** ([requirements-analysis.md](references/requirements-analysis.md))
+2. **Requirements Analysis** ([requirements-analysis](references/requirements-analysis.md))
    - Requisitos funcionales (Level 1 + Level 2)
    - Matriz de trazabilidad
 
@@ -109,7 +109,7 @@ This phase contains 7 subsections:
    - Diagrama de contexto
 
 **References:**
-See: [introduction.md](references/introduction.md), [requirements-analysis.md](references/requirements-analysis.md), [quality-goals.md](references/quality-goals.md), [stakeholders.md](references/stakeholders.md), [basic-usage.md](references/basic-usage.md), [constraints.md](references/constraints.md), [context.md](references/context.md), [use-cases.md](references/use-cases.md)
+See: [introduction](references/introduction.md), [requirements-analysis](references/requirements-analysis.md), [quality-goals](references/quality-goals.md), [stakeholders](references/stakeholders.md), [basic-usage](references/basic-usage.md), [constraints](references/constraints.md), [context](references/context.md), [use-cases](references/use-cases.md)
 
 **Templates:**
 Use: `introduction.md.template`, `requirements-analysis.md.template`, etc.
@@ -154,7 +154,7 @@ Document:
    - How we respect each constraint
 
 **Reference:**
-See: [solution-strategy.md](references/solution-strategy.md)
+See: [solution-strategy](references/solution-strategy.md)
 
 **Template:**
 Use: `solution-strategy.md.template`
@@ -250,7 +250,7 @@ Ask: "Ready to break this down into tasks, or do you want more planning?"
 
 For complex work, use **Spec-Driven Development**:
 
-Consult **[spec-driven-development.md](references/spec-driven-development.md)** for:
+Consult **[spec-driven-development](references/spec-driven-development.md)** for:
 - Decision Framework: Should you use spec-driven?
 - 4-Phase Workflow:
   * FASE 1: Requirements (QUE necesitas)
@@ -464,7 +464,7 @@ User says: "I have 100+ warnings", "how do I fix many issues?", "correct issues 
 
 **Use Incremental Correction Methodology:**
 
-Consult **[incremental-correction.md](references/incremental-correction.md)** for:
+Consult **[incremental-correction](references/incremental-correction.md)** for:
 - Decision Framework: ¿Manual vs Script?
 - 8 Protections for safe scripts
 - 4 templates to document process:
@@ -738,8 +738,8 @@ PM-THYROX:
 ## When to NOT Use This Skill
 
 - **Ad-hoc experiments** — For quick POCs, just code. Update ROADMAP.md later.
-- **Very small tasks** — "Add a comment" doesn't need a task. Use [AD_HOC_TASKS.md](tracking/AD_HOC_TASKS.md) instead.
-- **Bug fixes** — Quick fixes go straight to commits. Add to [REFACTORS.md](tracking/REFACTORS.md) if it's tech debt.
+- **Very small tasks** — "Add a comment" doesn't need a task. Use [AD_HOC_TASKS](tracking/AD_HOC_TASKS.md) instead.
+- **Bug fixes** — Quick fixes go straight to commits. Add to [REFACTORS](tracking/REFACTORS.md) if it's tech debt.
 
 ---
 
@@ -771,7 +771,7 @@ git add [archivos]
 git commit -m "[contenido del template completado]"
 ```
 
-Consultar **[commit-helper.md](references/commit-helper.md)** para:
+Consultar **[commit-helper](references/commit-helper.md)** para:
 - Explicación completa de Conventional Commits
 - Tipos válidos (feat, fix, docs, refactor, test, chore, perf)
 - Scopes THYROX-specific
@@ -784,7 +784,7 @@ Consultar **[commit-helper.md](references/commit-helper.md)** para:
 
 ### Prompting Optimization
 
-Consultar **[prompting-tips.md](references/prompting-tips.md)** cuando:
+Consultar **[prompting-tips](references/prompting-tips.md)** cuando:
 - Claude no entiende tus instrucciones correctamente
 - Necesitas mejor calidad en análisis complejos
 - Trabajas en tareas multi-paso y algo falla
@@ -796,7 +796,7 @@ Consultar **[prompting-tips.md](references/prompting-tips.md)** cuando:
 
 ### Skill Authoring
 
-Consultar **[skill-authoring.md](references/skill-authoring.md)** cuando:
+Consultar **[skill-authoring](references/skill-authoring.md)** cuando:
 - Necesitas crear un nuevo skill
 - Un skill crece demasiado (>500 líneas)
 - Quieres mejorar calidad de un skill existente
@@ -808,7 +808,7 @@ Consultar **[skill-authoring.md](references/skill-authoring.md)** cuando:
 
 ### Long Context Documents
 
-Consultar **[long-context-tips.md](references/long-context-tips.md)** cuando:
+Consultar **[long-context-tips](references/long-context-tips.md)** cuando:
 - Trabajas con documentos >5,000 palabras
 - Necesitas traducir architecture docs o docs técnicas grandes
 - Analizas build output o logs extensos
