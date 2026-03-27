@@ -80,7 +80,7 @@ This phase contains 7 subsections:
    - Vision general del proyecto
    - Propósito y contexto
 
-2. **Requirements Analysis** (`requirements-analysis.md`)
+2. **Requirements Analysis** ([requirements-analysis.md](references/requirements-analysis.md))
    - Requisitos funcionales (Level 1 + Level 2)
    - Matriz de trazabilidad
 
@@ -109,7 +109,7 @@ This phase contains 7 subsections:
    - Diagrama de contexto
 
 **References:**
-See: `references/introduction.md`, `references/requirements-analysis.md`, `references/quality-goals.md`, `references/stakeholders.md`, `references/basic-usage.md`, `references/constraints.md`, `references/context.md`, `references/use-cases.md`
+See: [introduction.md](references/introduction.md), [requirements-analysis.md](references/requirements-analysis.md), [quality-goals.md](references/quality-goals.md), [stakeholders.md](references/stakeholders.md), [basic-usage.md](references/basic-usage.md), [constraints.md](references/constraints.md), [context.md](references/context.md), [use-cases.md](references/use-cases.md)
 
 **Templates:**
 Use: `introduction.md.template`, `requirements-analysis.md.template`, etc.
@@ -154,7 +154,7 @@ Document:
    - How we respect each constraint
 
 **Reference:**
-See: `references/solution-strategy.md`
+See: [solution-strategy.md](references/solution-strategy.md)
 
 **Template:**
 Use: `solution-strategy.md.template`
@@ -250,7 +250,7 @@ Ask: "Ready to break this down into tasks, or do you want more planning?"
 
 For complex work, use **Spec-Driven Development**:
 
-Consult **`references/spec-driven-development.md`** for:
+Consult **[spec-driven-development.md](references/spec-driven-development.md)** for:
 - Decision Framework: Should you use spec-driven?
 - 4-Phase Workflow:
   * FASE 1: Requirements (QUE necesitas)
@@ -464,7 +464,7 @@ User says: "I have 100+ warnings", "how do I fix many issues?", "correct issues 
 
 **Use Incremental Correction Methodology:**
 
-Consult **`references/incremental-correction.md`** for:
+Consult **[incremental-correction.md](references/incremental-correction.md)** for:
 - Decision Framework: ¿Manual vs Script?
 - 8 Protections for safe scripts
 - 4 templates to document process:
@@ -771,7 +771,7 @@ git add [archivos]
 git commit -m "[contenido del template completado]"
 ```
 
-Consultar **`references/commit-helper.md`** para:
+Consultar **[commit-helper.md](references/commit-helper.md)** para:
 - Explicación completa de Conventional Commits
 - Tipos válidos (feat, fix, docs, refactor, test, chore, perf)
 - Scopes THYROX-specific
@@ -784,7 +784,7 @@ Consultar **`references/commit-helper.md`** para:
 
 ### Prompting Optimization
 
-Consultar **`references/prompting-tips.md`** cuando:
+Consultar **[prompting-tips.md](references/prompting-tips.md)** cuando:
 - Claude no entiende tus instrucciones correctamente
 - Necesitas mejor calidad en análisis complejos
 - Trabajas en tareas multi-paso y algo falla
@@ -796,7 +796,7 @@ Consultar **`references/prompting-tips.md`** cuando:
 
 ### Skill Authoring
 
-Consultar **`references/skill-authoring.md`** cuando:
+Consultar **[skill-authoring.md](references/skill-authoring.md)** cuando:
 - Necesitas crear un nuevo skill
 - Un skill crece demasiado (>500 líneas)
 - Quieres mejorar calidad de un skill existente
@@ -808,7 +808,7 @@ Consultar **`references/skill-authoring.md`** cuando:
 
 ### Long Context Documents
 
-Consultar **`references/long-context-tips.md`** cuando:
+Consultar **[long-context-tips.md](references/long-context-tips.md)** cuando:
 - Trabajas con documentos >5,000 palabras
 - Necesitas traducir architecture docs o docs técnicas grandes
 - Analizas build output o logs extensos

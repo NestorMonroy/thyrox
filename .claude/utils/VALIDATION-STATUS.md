@@ -7,9 +7,9 @@
 
 ### Reportes
 - `reference-validation-report.txt` - Reporte completo detallado (2,847 líneas)
-- `VALIDATION-ANALYSIS.md` - Análisis de hallazgos
-- `VALIDATE-REFERENCES-v3-GUIDE.md` - Guía completa de uso
-- `VALIDATION-STATUS.md` - Este archivo
+- [VALIDATION-ANALYSIS.md](VALIDATION-ANALYSIS.md) - Análisis de hallazgos
+- [VALIDATE-REFERENCES-v3-GUIDE.md](VALIDATE-REFERENCES-v3-GUIDE.md) - Guía completa de uso
+- [VALIDATION-STATUS.md](VALIDATION-STATUS.md) - Este archivo
 
 ---
 

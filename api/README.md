@@ -24,8 +24,8 @@ Sub-proyecto: REST API para THYROX.
 API REST construida con Node.js y Express.
 
 **Ubicación:** `/api`
-**Documentación:** `/docs/API.md`
-**Build:** Ver `/docs/BUILD.md`
+**Documentación:** [API.md](../docs/API.md)
+**Build:** Ver [BUILD.md](../docs/BUILD.md)
 
 ---
 
@@ -81,7 +81,7 @@ npm run lint:fix     # Auto-fix
 - `POST /auth/login` - Login
 - `GET /users` - Listar usuarios (autenticado)
 
-Para endpoints completos, ver `/docs/API.md`.
+Para endpoints completos, ver [API.md](../docs/API.md).
 
 ---
 
@@ -97,15 +97,15 @@ npm test -- --coverage     # Con cobertura
 
 ## Documentación
 
-- Full API docs: `/docs/API.md`
-- Build/setup: `/docs/BUILD.md`
-- Architecture: `/docs/ARCHITECTURE.md`
+- Full API docs: [API.md](../docs/API.md)
+- Build/setup: [BUILD.md](../docs/BUILD.md)
+- Architecture: [ARCHITECTURE.md](../ARCHITECTURE.md)
 
 ---
 
 ## Contribuir
 
-1. Ver `/docs/CONTRIBUTING.md`
+1. Ver [CONTRIBUTING.md](../CONTRIBUTING.md)
 2. Usar Conventional Commits
 3. Tests obligatorios
 4. Update documentación

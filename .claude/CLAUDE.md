@@ -190,7 +190,7 @@ Crear PR con template automático que incluya:
 - [decisions.md](context/decisions.md) - Decisiones arquitectónicas
 
 **skills/** - Comandos personalizados
-- `changelog.md` - Generar CHANGELOG desde git log
+- [changelog.md](skills/pm-thyrox/references/changelog.md) - Generar CHANGELOG desde git log
 - [commit-convention.md](skills/pm-thyrox/references/commit-convention.md) - Validar commits
 
 **prds/** - Product Requirements Documents

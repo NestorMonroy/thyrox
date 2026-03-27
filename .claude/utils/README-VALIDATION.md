@@ -43,10 +43,10 @@ python3 validate-references-v3.py --debug
 
 - `validate-references-v3.py` - Script de validación (340 líneas)
 - `reference-validation-report.txt` - Reporte completo
-- `VALIDATION-STATUS.md` - Estado y acciones
-- `VALIDATION-ANALYSIS.md` - Análisis
-- `VALIDATE-REFERENCES-v3-GUIDE.md` - Guía de uso
-- `README-VALIDATION.md` - Este archivo
+- [VALIDATION-STATUS.md](VALIDATION-STATUS.md) - Estado y acciones
+- [VALIDATION-ANALYSIS.md](VALIDATION-ANALYSIS.md) - Análisis
+- [VALIDATE-REFERENCES-v3-GUIDE.md](VALIDATE-REFERENCES-v3-GUIDE.md) - Guía de uso
+- [README-VALIDATION.md](README-VALIDATION.md) - Este archivo
 
 ## Próximos Pasos
 
