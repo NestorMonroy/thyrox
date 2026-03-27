@@ -276,9 +276,9 @@ make clean && make html
 
 ## Features Avanzadas
 
-**Análisis de warnings**: Ver [ANALYSIS.md](ANALYSIS.md) para guía completa
-**Validación de links**: Ver [LINKCHECK.md](LINKCHECK.md) para todos los métodos
-**Ejemplos**: Ver [EXAMPLES.md](EXAMPLES.md) para patrones comunes
+**Análisis de warnings**: Ver [ANALYSIS](ANALYSIS.md) para guía completa
+**Validación de links**: Ver [LINKCHECK](LINKCHECK.md) para todos los métodos
+**Ejemplos**: Ver [EXAMPLES](EXAMPLES.md) para patrones comunes
 ```
 
 Claude carga ANALYSIS.md, LINKCHECK.md o EXAMPLES.md solo cuando necesario.
@@ -304,9 +304,9 @@ translation-workflow/
 
 ## Modos Disponibles
 
-**Alta Fidelidad**: Preservación máxima de estructura → Ver [modes/high-fidelity.md](modes/high-fidelity.md)
-**Marcado Visual**: Traducción con énfasis visual → Ver [modes/visual-markup.md](modes/visual-markup.md)
-**Enriquecimiento**: Agregar valor al contenido → Ver [modes/enrichment.md](modes/enrichment.md)
+**Alta Fidelidad**: Preservación máxima de estructura → Ver [modes/high-fidelity](modes/high-fidelity.md)
+**Marcado Visual**: Traducción con énfasis visual → Ver [modes/visual-markup](modes/visual-markup.md)
+**Enriquecimiento**: Agregar valor al contenido → Ver [modes/enrichment](modes/enrichment.md)
 
 ## Búsqueda Rápida
 
@@ -330,8 +330,8 @@ Mostrar contenido básico, enlazar a contenido avanzado.
 
 Para edits simples, modificar el archivo .rst directamente.
 
-**Para cambios complejos**: Ver [ADVANCED-RST.md](ADVANCED-RST.md)
-**Para directives especiales**: Ver [DIRECTIVES.md](DIRECTIVES.md)
+**Para cambios complejos**: Ver [ADVANCED-RST](ADVANCED-RST.md)
+**Para directives especiales**: Ver [DIRECTIVES](DIRECTIVES.md)
 ```
 
 Claude lee ADVANCED-RST.md o DIRECTIVES.md solo cuando usuario necesita esas features.
@@ -347,10 +347,10 @@ Claude puede leer parcialmente archivos cuando están referenciados desde otros 
 **Malo - Demasiado profundo**:
 ```markdown
 # SKILL.md
-Ver [advanced.md](advanced.md)...
+Ver [advanced](advanced.md)...
 
 # advanced.md
-Ver [details.md](details.md)...
+Ver [details](details.md)...
 
 # details.md
 Aquí está la información real...
@@ -361,9 +361,9 @@ Aquí está la información real...
 # SKILL.md
 
 **Uso básico**: [instrucciones en SKILL.md]
-**Features avanzadas**: Ver [advanced.md](advanced.md)
-**Referencia API**: Ver [reference.md](reference.md)
-**Ejemplos**: Ver [examples.md](examples.md)
+**Features avanzadas**: Ver [advanced](advanced.md)
+**Referencia API**: Ver [reference](reference.md)
+**Ejemplos**: Ver [examples](examples.md)
 ```
 
 ---

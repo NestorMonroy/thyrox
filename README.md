@@ -197,9 +197,9 @@ git checkout -b feature/nombre
 
 ## Configuración Inicial
 
-1. Editar [ROADMAP.md](./ROADMAP.md) con tu proyecto
-2. Actualizar [CLAUDE.md](.claude/CLAUDE.md) con contexto específico
-3. Configurar [.claude/context/project-state.md](.claude/context/project-state.md)
+1. Editar [ROADMAP](./ROADMAP.md) con tu proyecto
+2. Actualizar [CLAUDE](.claude/CLAUDE.md) con contexto específico
+3. Configurar [.claude/context/project-state](.claude/context/project-state.md)
 4. Crear PRD en `.claude/prds/` si aplica
 
 ## Licencia
