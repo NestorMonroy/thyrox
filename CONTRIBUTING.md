@@ -431,6 +431,6 @@ A: Es feedback, no rechazo personal. Aprende y intenta de nuevo.
 ---
 
 **Última Actualización:** 2026-03-25<br>
-**Próxima Review:** 2026-04-25<br>
+**Próxima Review:** 2026-04-25
 <br>
 ¡Gracias por contribuir!

@@ -25,10 +25,10 @@ Este archivo contiene el contexto permanente para Claude Code en el proyecto THY
 
 ## PROYECTO
 
-**Nombre:** THYROX Template
-**Descripción:** Framework profesional para gestión de proyectos con Claude Code
-**Acercamiento:** Acrónimo = Tracking Hierarchy Yield Roadmap Organization eXecution
-**Repositorio:** /home/thyrox
+**Nombre:** THYROX Template<br>
+**Descripción:** Framework profesional para gestión de proyectos con Claude Code<br>
+**Acercamiento:** Acrónimo = Tracking Hierarchy Yield Roadmap Organization eXecution<br>
+**Repositorio:** /home/thyrox<br>
 **Estado:** En Desarrollo (v0.1.0)
 
 ---

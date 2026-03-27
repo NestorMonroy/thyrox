@@ -11,10 +11,10 @@ Fecha actualización: 2026-03-26
 
 ## Status General
 
-**Proyecto:** THYROX (Tracking Hierarchy Yield Roadmap Organization eXecution)  
-**Versión:** 0.1.0  
-**Estado:** En Desarrollo  
-**Última Actualización:** 2026-03-26 01:18 UTC  
+**Proyecto:** THYROX (Tracking Hierarchy Yield Roadmap Organization eXecution)<br>
+**Versión:** 0.1.0<br>
+**Estado:** En Desarrollo<br>
+**Última Actualización:** 2026-03-26 01:18 UTC<br>
 **Git Commits:** 3 commits esta sesión
 
 ---
