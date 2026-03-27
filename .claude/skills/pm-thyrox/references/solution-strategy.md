@@ -7,7 +7,7 @@ Objetivo: Transformar análisis en decisiones arquitectónicas implementables.
 Fecha actualización: 2026-03-25
 ```
 
-# Solution Strategy (ARC42 Section 4)
+# Solution Strategy
 
 ## Propósito
 

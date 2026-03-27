@@ -7,7 +7,7 @@ Objetivo: Documentar todas las limitaciones que afectan el diseño.
 Fecha actualización: 2026-03-25
 ```
 
-# Constraints (ARC42 Section 2)
+# Constraints
 
 ## Propósito
 

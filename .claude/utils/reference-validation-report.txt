@@ -299,8 +299,8 @@ solution-strategy.md:
   [DOC] olution-strategy.md
 
 spec-driven-development.md:
-  [DOC] 2026-01-28-09-10-requirements-traducir-arc42-sec-10.md
-  [DOC] 2026-01-28-10-00-design-traducir-arc42-sec-10.md
+  [DOC] 2026-01-28-09-10-requirements-traducir-architecture-docs-sec-10.md
+  [DOC] 2026-01-28-10-00-design-traducir-architecture-docs-sec-10.md
   [DOC] analisis_seccion.json
   [DOC] design.md.template
   [DOC] equirements-analysis.md

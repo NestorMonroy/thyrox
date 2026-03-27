@@ -63,7 +63,7 @@ Template MAESTRO de Conventional Commits. Guía completa para escribir mensajes 
 # - docs: Documentación general
 # - workflow: Cambios en workflows
 # - build: Sistema de build
-# - arc42: Documentación arquitectura
+# - architecture: Documentación arquitectura
 # - sphinx: Configuración Sphinx
 # - translation: Traducciones
 #
@@ -80,7 +80,7 @@ Template MAESTRO de Conventional Commits. Guía completa para escribir mensajes 
 # Ejemplos:
 # - add user authentication
 # - fix bug in translation workflow
-# - update arc42 section 10
+# - update architecture docs section 10
 #
 # ============================================================================
 # BODY: Descripción detallada (opcional)
@@ -111,7 +111,7 @@ Template MAESTRO de Conventional Commits. Guía completa para escribir mensajes 
 # feat(skills): add commit-message template
 #
 # Ejemplo 2 - Con body:
-# fix(translation): correct terminology in arc42 section 10
+# fix(translation): correct terminology in architecture docs section 10
 #
 # Update glossary with correct technical terms for
 # quality requirements section.

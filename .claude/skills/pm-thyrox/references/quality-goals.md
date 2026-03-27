@@ -7,7 +7,7 @@ Objetivo: Especificar QUÉ TAN BIEN debe funcionar el sistema con scenarios medi
 Fecha actualización: 2026-03-25
 ```
 
-# Quality Goals (ARC42 Section 1.2)
+# Quality Goals
 
 ## Propósito
 

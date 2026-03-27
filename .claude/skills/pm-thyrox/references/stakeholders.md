@@ -7,7 +7,7 @@ Objetivo: Asegurar que todas las necesidades de stakeholders estén consideradas
 Fecha actualización: 2026-03-25
 ```
 
-# Stakeholders (ARC42 Section 1.3)
+# Stakeholders
 
 ## Propósito
 
@@ -61,7 +61,7 @@ Quiénes son, qué hacen
 **Ejemplo:**
 ```
 "Writes documentation with HTML output"
-"Uses arc42 for architecture documentation"
+"Uses architecture docs for documentation"
 "Implements the ecommerce platform"
 ```
 
@@ -78,7 +78,7 @@ Qué espera o necesita del sistema
 **Ejemplo:**
 ```
 "Wants to check that links and images are valid"
-"Wants a practical example of how to apply arc42"
+"Wants a practical example of how to apply architecture documentation"
 "Wants to understand architecture decisions"
 ```
 

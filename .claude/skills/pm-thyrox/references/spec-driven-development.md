@@ -338,9 +338,9 @@ Nombre archivo: `YYYY-MM-DD-HH-MM-titulo.md`
 - titulo: Kebab-case, max 50 chars
 
 Ejemplos:
-- 2026-01-28-09-10-requirements-traducir-arc42-sec-10.md
-- 2026-01-28-10-00-design-traducir-arc42-sec-10.md
-- 2026-01-28-10-30-tasks-traducir-arc42-sec-10.md
+- 2026-01-28-09-10-requirements-traducir-architecture-docs-sec-10.md
+- 2026-01-28-10-00-design-traducir-architecture-docs-sec-10.md
+- 2026-01-28-10-30-tasks-traducir-architecture-docs-sec-10.md
 
 ### Identificadores
 
@@ -390,17 +390,17 @@ Ejemplos:
 
 ## Ejemplo Completo Real
 
-### Proyecto: Traducir arc42 Section 10
+### Proyecto: Traducir architecture docs Section 10
 
-**2026-01-28-09-10-requirements-traducir-arc42-sec-10.md**
+**2026-01-28-09-10-requirements-traducir-architecture-docs-sec-10.md**
 ```markdown
-# Requirements: Traducir arc42 Section 10
+# Requirements: Traducir architecture docs Section 10
 
 ## Problema
 Documentación en inglés, necesitamos versión en español para usuarios internos.
 
 ## Objetivos
-Principal: Traducir sección 10 Quality Requirements de arc42 a español
+Principal: Traducir sección 10 Quality Requirements de architecture docs a español
 Secundarios: Validar con SMEs, generar metadata
 
 ## Requisitos Funcionales
@@ -420,9 +420,9 @@ RF-003: Validación de build
 - Preservar cross-references
 ```
 
-**2026-01-28-10-00-design-traducir-arc42-sec-10.md**
+**2026-01-28-10-00-design-traducir-architecture-docs-sec-10.md**
 ```markdown
-# Design: Traducir arc42 Section 10
+# Design: Traducir architecture docs Section 10
 
 Basado en: requirements (aprobado 2026-01-28-09-30)
 
@@ -458,9 +458,9 @@ TC-003: Cross-references validas
 - Validar: linkcheck pasando
 ```
 
-**2026-01-28-10-30-tasks-traducir-arc42-sec-10.md**
+**2026-01-28-10-30-tasks-traducir-architecture-docs-sec-10.md**
 ```markdown
-# Tasks: Traducir arc42 Section 10
+# Tasks: Traducir architecture docs Section 10
 
 Total tareas: 8
 Estimación total: 6 horas
@@ -476,7 +476,7 @@ Estimación total: 6 horas
 - Estimación: 5 min
 
 ## TASK-002: Copiar originales
-- Archivos: source/arc42/... → sections/10_quality_requirements/original/
+- Archivos: source/architecture/... → sections/10_quality_requirements/original/
 - Criterios: Archivos copiados sin cambios
 - Estimación: 10 min
 
@@ -530,10 +530,10 @@ EJECUTANDO TASK-002: Copiar originales
 ✓ TASK-002 completada
 
 EJECUTANDO TASK-003: Traducir index.rst
-[Traducir contenido con Arc42Translator]
+[Traducir contenido con ArchitectureTranslator]
 [Validar build]
 ✓ TASK-003 completada
-git commit -m "feat(arc42): implement TASK-003 - translate section 10 index"
+git commit -m "feat(architecture-docs): implement TASK-003 - translate section 10 index"
 
 ... continuar hasta TASK-008
 
@@ -542,7 +542,7 @@ EJECUTANDO TASK-008: Validación final
 ✓ Todos los tests pasan
 ✓ Proyecto completado
 
-git commit -m "feat(arc42): implement TASK-008 - final validation section 10 complete"
+git commit -m "feat(architecture-docs): implement TASK-008 - final validation section 10 complete"
 ```
 
 ---

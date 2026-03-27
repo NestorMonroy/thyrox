@@ -7,7 +7,7 @@ Objetivo: Describir flujos completos de uso del sistema.
 Fecha actualización: 2026-03-25
 ```
 
-# Basic Usage (ARC42 Section 1.1 - How It Works)
+# Basic Usage (How It Works)
 
 ## Propósito
 

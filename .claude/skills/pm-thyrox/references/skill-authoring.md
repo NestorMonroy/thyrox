@@ -192,12 +192,12 @@ La `description` en frontmatter habilita descubrimiento del skill.
 
 **Skill de procesamiento Sphinx**:
 ```yaml
-description: "Ejecuta builds de Sphinx, analiza warnings y genera reportes. Usar cuando trabajas con documentación Sphinx, arc42 o necesitas validar build."
+description: "Ejecuta builds de Sphinx, analiza warnings y genera reportes. Usar cuando trabajas con documentación Sphinx, architecture docs o necesitas validar build."
 ```
 
 **Skill de traducción**:
 ```yaml
-description: "Traduce documentación técnica de inglés a español con alta fidelidad. Usar cuando traduces arc42, Sphinx docs o documentación técnica compleja."
+description: "Traduce documentación técnica de inglés a español con alta fidelidad. Usar cuando traduces architecture docs, Sphinx docs o documentación técnica compleja."
 ```
 
 **Skill de corrección incremental**:
@@ -262,7 +262,7 @@ incremental-correction-methodology/
 ```markdown
 ---
 name: sphinx-documentation
-description: "Construye y valida documentación Sphinx para arc42. Usar cuando trabajas con docs Sphinx o arc42."
+description: "Construye y valida documentación Sphinx para architecture docs. Usar cuando trabajas con docs Sphinx o architecture docs."
 ---
 
 # Sphinx Documentation
@@ -380,7 +380,7 @@ Para archivos de referencia >100 líneas, incluir tabla de contenidos al inicio.
 - Directives básicas (toctree, include, literalinclude)
 - Directives de admonición (note, warning, danger)
 - Directives de código (code-block, highlight)
-- Directives personalizadas arc42
+- Directives personalizadas de architecture docs
 - Ejemplos de uso
 
 ## Directives Básicas
@@ -738,7 +738,7 @@ Guiar a Claude a través de puntos de decisión.
 
 2. Workflow de Creación:
    - Crear nuevo archivo .rst
-   - Seguir estructura arc42 si aplica
+   - Seguir estructura de architecture docs si aplica
    - Agregar a toctree en index.rst
    - Build y validar
 

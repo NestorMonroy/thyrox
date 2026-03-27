@@ -70,7 +70,7 @@ Each phase updates the project's source of truth — no external tools required.
 
 **Goal:** Deep understanding of requirements, quality goals, stakeholders, constraints, and context.
 
-**Output:** ARC42 Section 1, 2, 3 (Introduction & Goals, Constraints, Context)
+**Output:** Introduction & Goals, Constraints, Context (Sections 1, 2, 3)
 
 ### Process
 
@@ -128,7 +128,7 @@ Ask: "Ready to move to PHASE 2: SOLUTION_STRATEGY?" (after all 7 subsections app
 
 **Goal:** Architectural plan defining HOW to satisfy requirements within constraints.
 
-**Output:** Solution Strategy document (ARC42 Section 4)
+**Output:** Solution Strategy document (Section 4)
 
 ### Process
 
@@ -810,7 +810,7 @@ Consultar **`references/skill-authoring.md`** cuando:
 
 Consultar **`references/long-context-tips.md`** cuando:
 - Trabajas con documentos >5,000 palabras
-- Necesitas traducir arc42 o docs técnicas grandes
+- Necesitas traducir architecture docs o docs técnicas grandes
 - Analizas build output o logs extensos
 - Validar cross-references en múltiples archivos
 

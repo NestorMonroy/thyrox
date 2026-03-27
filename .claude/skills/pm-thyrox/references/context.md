@@ -7,7 +7,7 @@ Objetivo: Clarificar dónde se inserta el sistema en el ecosistema.
 Fecha actualización: 2026-03-25
 ```
 
-# Context (ARC42 Section 3)
+# Context
 
 ## Propósito
 

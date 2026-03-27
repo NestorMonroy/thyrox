@@ -49,7 +49,7 @@ Instrucciones:
 
 **Mal estructurado (query primero)**:
 ```
-Traducir este documento de arc42 a español usando modo Alta Fidelidad.
+Traducir este documento de architecture docs a español usando modo Alta Fidelidad.
 
 <documento>
 [5000 palabras de contenido]
@@ -66,7 +66,7 @@ Traducir este documento de arc42 a español usando modo Alta Fidelidad.
 </documento>
 
 Instrucciones:
-Traducir este documento de arc42 a español usando modo Alta Fidelidad.
+Traducir este documento de architecture docs a español usando modo Alta Fidelidad.
 Preservar toda estructura, labels y referencias.
 ```
 **Resultado**: Claude procesa documento completo, luego aplica instrucciones con contexto total.
@@ -96,7 +96,7 @@ XML tags crean estructura semántica que ayuda a Claude:
 ### Patrón Básico - Documento Simple
 
 ```xml
-<documento id="arc42-section-10">
+<documento id="architecture-docs-section-10">
   <metadata>
     <titulo>Quality Requirements</titulo>
     <seccion>10</seccion>
@@ -116,10 +116,10 @@ Analizar el documento y extraer todos los requisitos de calidad.
 
 ### Patrón Avanzado - Documento con Subsecciones
 
-**Ejemplo - arc42 completo**:
+**Ejemplo - architecture docs completo**:
 
 ```xml
-<arc42 version="8.0">
+<architecture-docs version="8.0">
   <section id="01-introduction">
     <titulo>Introduction and Goals</titulo>
     <subsection id="01-1-requirements">
@@ -164,7 +164,7 @@ Analizar el documento y extraer todos los requisitos de calidad.
       </contenido>
     </subsection>
   </section>
-</arc42>
+</architecture-docs>
 
 Instrucciones:
 Analizar la sección <section id="03-context"> y:
@@ -190,7 +190,7 @@ Cuando trabajas con múltiples documentos relacionados:
     </contenido>
   </documento>
   
-  <documento id="arc42-sec-05" tipo="principal">
+  <documento id="architecture-docs-sec-05" tipo="principal">
     <titulo>Building Block View</titulo>
     <referencias>
       <ref id-doc="glossary" terminos="microservice, API Gateway" />
@@ -200,10 +200,10 @@ Cuando trabajas con múltiples documentos relacionados:
     </contenido>
   </documento>
   
-  <documento id="arc42-sec-06" tipo="principal">
+  <documento id="architecture-docs-sec-06" tipo="principal">
     <titulo>Runtime View</titulo>
     <referencias>
-      <ref id-doc="arc42-sec-05" componentes="API Gateway, Backend Services" />
+      <ref id-doc="architecture-docs-sec-05" componentes="API Gateway, Backend Services" />
     </referencias>
     <contenido>
       [contenido de section 6]
@@ -212,7 +212,7 @@ Cuando trabajas con múltiples documentos relacionados:
 </documentos-relacionados>
 
 Instrucciones:
-Revisar consistencia entre arc42-sec-05 y arc42-sec-06.
+Revisar consistencia entre architecture-docs-sec-05 y architecture-docs-sec-06.
 Verificar que componentes mencionados en sec-06 están definidos en sec-05.
 Usar glossary para verificar terminología.
 ```
@@ -234,7 +234,7 @@ Cuando analizas documentos largos, citar texto original:
 ### Patrón de Citación - Análisis
 
 ```xml
-<documento id="arc42-section-09">
+<documento id="architecture-docs-section-09">
   <titulo>Architecture Decisions</titulo>
   <contenido>
     We decided to use microservices architecture because it provides
@@ -341,13 +341,13 @@ Evaluación:
 
 ## Casos de Uso ADT
 
-### Caso 1: Traducción de arc42 Completo
+### Caso 1: Traducción de architecture docs Completo
 
-**Escenario**: Traducir todo el documento arc42 (13 secciones, ~25,000 palabras) de inglés a español.
+**Escenario**: Traducir todo el documento architecture docs (13 secciones, ~25,000 palabras) de inglés a español.
 
 **Estructura recomendada**:
 ```xml
-<arc42-completo version="8.0" lang="en">
+<architecture-docs-completo version="8.0" lang="en">
   <metadata>
     <proyecto>Sistema de Gestión de Contenidos</proyecto>
     <version>2.0</version>
@@ -363,10 +363,10 @@ Evaluación:
   </section>
   
   [... sections 3-13 ...]
-</arc42-completo>
+</architecture-docs-completo>
 
 Instrucciones:
-Traducir arc42 completo de inglés a español usando modo Alta Fidelidad.
+Traducir architecture docs completo de inglés a español usando modo Alta Fidelidad.
 
 Workflow:
 1. Procesar sección por sección (01 → 13)
@@ -402,9 +402,9 @@ Comenzar con section 01. Después de traducirla, pausar para validación.
   <output>
 [aquí todo el output completo del build, línea por línea]
 
-/tmp/ADT/source/arc42/section-01.rst:45: WARNING: undefined label: introduction-goals
-/tmp/ADT/source/arc42/section-02.rst:12: WARNING: duplicate label constraints
-/tmp/ADT/source/arc42/section-05.rst:78: WARNING: toctree contains reference to nonexisting document 'components/api'
+/tmp/ADT/source/architecture/section-01.rst:45: WARNING: undefined label: introduction-goals
+/tmp/ADT/source/architecture/section-02.rst:12: WARNING: duplicate label constraints
+/tmp/ADT/source/architecture/section-05.rst:78: WARNING: toctree contains reference to nonexisting document 'components/api'
 [... todos los 230 warnings ...]
   </output>
 </build-output>
@@ -433,12 +433,12 @@ Mostrar razonamiento paso a paso antes de la propuesta final.
 
 ### Caso 3: Cross-Reference Validation
 
-**Escenario**: Verificar que todas las referencias entre secciones de arc42 son correctas.
+**Escenario**: Verificar que todas las referencias entre secciones de architecture docs son correctas.
 
 **Estructura recomendada**:
 ```xml
-<arc42-project>
-  <seccion-origen id="sec-05" archivo="source/arc42/section-05.rst">
+<architecture-docs-project>
+  <seccion-origen id="sec-05" archivo="source/architecture/section-05.rst">
     <contenido>
       ... text ...
       Ver :ref:`quality-requirements` para detalles de calidad.
@@ -451,7 +451,7 @@ Mostrar razonamiento paso a paso antes de la propuesta final.
     </referencias-salientes>
   </seccion-origen>
   
-  <seccion-destino id="sec-10" archivo="source/arc42/section-10.rst">
+  <seccion-destino id="sec-10" archivo="source/architecture/section-10.rst">
     <contenido>
       .. _quality-requirements:
       
@@ -465,7 +465,7 @@ Mostrar razonamiento paso a paso antes de la propuesta final.
     </labels-definidos>
   </seccion-destino>
   
-  <seccion-destino id="sec-07" archivo="source/arc42/section-07.rst">
+  <seccion-destino id="sec-07" archivo="source/architecture/section-07.rst">
     <contenido>
       .. _deployment-view:
       
@@ -478,7 +478,7 @@ Mostrar razonamiento paso a paso antes de la propuesta final.
       <label name="deployment-view" linea="1" />
     </labels-definidos>
   </seccion-destino>
-</arc42-project>
+</architecture-docs-project>
 
 Instrucciones:
 Validar que todas las referencias en seccion-origen tienen labels correspondientes definidos.
@@ -600,7 +600,7 @@ Traducir este documento.
 ### ❌ Sin Estructura en Documentos Largos
 
 ```
-[25,000 palabras de arc42 sin ninguna estructura XML]
+[25,000 palabras de architecture docs sin ninguna estructura XML]
 
 Analizar sección 5.
 ```
@@ -648,11 +648,11 @@ Trabajar con documentos largos efectivamente requiere:
 4. **Checkpoints** - Validación incremental
 5. **Metadata** - Contexto sin contaminar contenido
 
-Aplicar estos principios en proyectos ADT donde documentos largos (arc42, build outputs, documentación técnica) son comunes.
+Aplicar estos principios en proyectos ADT donde documentos largos (architecture docs, build outputs, documentación técnica) son comunes.
 
 ---
 
 **Documento basado en**: Anthropic Long Context Best Practices
-**Adaptado para**: Proyecto ADT con ejemplos arc42, Sphinx, build analysis
+**Adaptado para**: Proyecto ADT con ejemplos architecture docs, Sphinx, build analysis
 **Fecha**: 2026-02-01
 **Ver también**: skill-authoring.md, prompting-tips.md

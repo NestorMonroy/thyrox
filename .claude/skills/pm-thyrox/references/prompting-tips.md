@@ -36,7 +36,7 @@ Ayúdame con este archivo RST.
 
 **Explícito (MEJOR)**:
 ```
-Revisar source/arc42/section-10.rst y:
+Revisar source/architecture/section-10.rst y:
 1. Corregir referencias rotas
 2. Validar sintaxis RST
 3. Verificar que todos los labels están definidos
@@ -57,7 +57,7 @@ Traducir este documento.
 
 **Con contexto (MEJOR)**:
 ```
-Traducir este documento de arc42 section 9 (Architecture Decisions) de inglés a español.
+Traducir este documento de architecture docs section 9 (Architecture Decisions) de inglés a español.
 
 Contexto:
 - Es documentación técnica de arquitectura de software
@@ -162,7 +162,7 @@ Claude sabe cuánto contexto tiene disponible y puede auto-gestionar.
 
 **Ejemplo - ADT**:
 ```
-Analizar este documento largo de arc42 (15,000 palabras).
+Analizar este documento largo de architecture docs (15,000 palabras).
 
 Nota: Este documento es grande. Si necesitas, puedes:
 - Pedir que te comparta secciones específicas
@@ -184,9 +184,9 @@ Claude puede trabajar con múltiples "ventanas" de contexto en conversaciones la
 ```
 Tengo 3 documentos relacionados para revisar:
 
-1. source/arc42/section-05.rst (Building Block View)
-2. source/arc42/section-06.rst (Runtime View)  
-3. source/arc42/section-07.rst (Deployment View)
+1. source/architecture/section-05.rst (Building Block View)
+2. source/architecture/section-06.rst (Runtime View)
+3. source/architecture/section-07.rst (Deployment View)
 
 Plan de trabajo:
 - Primero, revisaremos section-05 en detalle
@@ -264,7 +264,7 @@ Establecer puntos de verificación naturales.
 
 **Ejemplo - Traducción ADT**:
 ```
-Vamos a traducir arc42 section 10 (Quality Requirements).
+Vamos a traducir architecture docs section 10 (Quality Requirements).
 Este documento tiene ~5000 palabras.
 
 Checkpoints:
@@ -298,7 +298,7 @@ Generar documentación para la sección de Arquitectura.
 Tono: Formal, técnico
 Audiencia: Arquitectos de software senior
 Estilo: Preciso, conciso, con terminología técnica apropiada
-Formato: arc42 standard
+Formato: architecture documentation standard
 ```
 
 **Conversacional - Explicaciones**:
@@ -347,7 +347,7 @@ Claude puede decidir cuándo usar computer tools para completar tareas.
 
 **Guía efectiva - ADT**:
 ```
-Revisar y corregir warnings en source/arc42/section-08.rst
+Revisar y corregir warnings en source/architecture/section-08.rst
 
 Puedes usar cualquier herramienta que necesites:
 - Ver el archivo para entender estructura
@@ -401,7 +401,7 @@ Para documentos largos, estructura importa.
 
 **Estructura óptima**:
 ```
-Aquí está el documento completo de arc42 section 10 para traducir:
+Aquí está el documento completo de architecture docs section 10 para traducir:
 
 <documento>
 [contenido completo del documento - 5000 palabras]
@@ -423,7 +423,7 @@ XML tags ayudan a Claude encontrar secciones específicas en documentos grandes.
 
 **Ejemplo - ADT**:
 ```
-Aquí está el documento de arc42 dividido en secciones:
+Aquí está el documento de architecture docs dividido en secciones:
 
 <section id="introduction">
 [Contenido de Introduction and Goals]
@@ -454,7 +454,7 @@ Para análisis de documentos largos, pedir que Claude cite el texto original.
 
 **Ejemplo - ADT**:
 ```
-Analizar este documento de arc42 section 9 (Architecture Decisions).
+Analizar este documento de architecture docs section 9 (Architecture Decisions).
 
 Para cada decisión identificada:
 1. Citar el texto exacto del documento
@@ -482,7 +482,7 @@ No esperar perfección en primer intento.
 **Workflow iterativo - ADT**:
 ```
 # Iteración 1: Draft inicial
-Crear primer draft de traducción de arc42 section 10.
+Crear primer draft de traducción de architecture docs section 10.
 
 # Iteración 2: Revisión técnica
 Revisar traducción y validar:
@@ -546,7 +546,7 @@ Mostrar razonamiento paso a paso antes de la propuesta final.
 ### Traducción de Documentación Técnica
 
 ```
-Traducir arc42 section 5 (Building Block View) de inglés a español.
+Traducir architecture docs section 5 (Building Block View) de inglés a español.
 
 Contexto del proyecto:
 - Documentación de arquitectura de software
@@ -640,6 +640,6 @@ Comenzar con Lote 1: Referencias rotas (80 warnings).
 ---
 
 **Documento basado en**: Anthropic Prompting Best Practices
-**Adaptado para**: Proyecto ADT con ejemplos Sphinx, arc42, RST
+**Adaptado para**: Proyecto ADT con ejemplos Sphinx, architecture docs, RST
 **Fecha**: 2026-02-01
 **Ver también**: skill-authoring.md, long-context-tips.md
