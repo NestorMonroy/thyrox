@@ -534,10 +534,9 @@ All project files live in THYROX structure:
 │       └── pm-thyrox/          This skill
 │           ├── SKILL.md
 │           ├── references/     Documentation references
-│           ├── templates/      Document templates (includes epic.md.template)
-│           └── tracking/       Task tracking
-│               ├── AD_HOC_TASKS.md
-│               └── REFACTORS.md
+│           └── assets/         Document templates + tracking templates
+│               ├── AD_HOC_TASKS.md.template
+│               └── REFACTORS.md.template
 │
 ├── docs/                       Documentation (API, BUILD, etc.)
 ├── api/                        Sub-project: API
@@ -742,8 +741,8 @@ PM-THYROX:
 ## When to NOT Use This Skill
 
 - **Ad-hoc experiments** — For quick POCs, just code. Update ROADMAP.md later.
-- **Very small tasks** — "Add a comment" doesn't need a task. Use [AD_HOC_TASKS](tracking/AD_HOC_TASKS.md) instead.
-- **Bug fixes** — Quick fixes go straight to commits. Add to [REFACTORS](tracking/REFACTORS.md) if it's tech debt.
+- **Very small tasks** — "Add a comment" doesn't need a task. Use [AD_HOC_TASKS](assets/AD_HOC_TASKS.md.template) instead.
+- **Bug fixes** — Quick fixes go straight to commits. Add to [REFACTORS](assets/REFACTORS.md.template) if it's tech debt.
 
 ---
 
@@ -766,7 +765,7 @@ Después de completar trabajo y necesitar hacer commit:
 
 **Paso 2: Consulta el template**
 ```bash
-cat .claude/skills/pm-thyrox/templates/[template-nombre].template
+cat .claude/skills/pm-thyrox/assets/[template-nombre].template
 ```
 
 **Paso 3: Completa y commitea**
@@ -826,7 +825,7 @@ Consultar **[long-context-tips](references/long-context-tips.md)** cuando:
 
 ## Exit Conditions (Cuándo avanzar de PHASE)
 
-Cada PHASE tiene **exit conditions** que deben cumplirse antes de continuar. Ver: `templates/EXIT_CONDITIONS.md.template`
+Cada PHASE tiene **exit conditions** que deben cumplirse antes de continuar. Ver: `assets/EXIT_CONDITIONS.md.template`
 
 ### Resumen Rápido:
 
@@ -846,7 +845,7 @@ Cada PHASE tiene **exit conditions** que deben cumplirse antes de continuar. Ver
 
 ### Cómo Usar:
 
-1. Copiar: `.claude/skills/pm-thyrox/templates/EXIT_CONDITIONS.md.template`
+1. Copiar: `.claude/skills/pm-thyrox/assets/EXIT_CONDITIONS.md.template`
 2. Llenar: Checklist por cada PHASE
 3. Validar: ¿Se cumplen todas?
 4. Decisión: Avanzar o refinar?

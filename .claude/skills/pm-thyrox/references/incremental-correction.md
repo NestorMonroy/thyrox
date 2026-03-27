@@ -174,7 +174,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Inmediatamente después de detectar issues en el build
 
-**Ubicación**: `/templates/analysis-phase.md.template`
+**Ubicación**: `/assets/analysis-phase.md.template`
 
 ---
 
@@ -191,7 +191,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Después de completar analysis-phase.md
 
-**Ubicación**: `/templates/categorization-plan.md.template`
+**Ubicación**: `/assets/categorization-plan.md.template`
 
 ---
 
@@ -209,7 +209,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Durante toda la ejecución, actualizar después de cada lote
 
-**Ubicación**: `/templates/execution-log.md.template`
+**Ubicación**: `/assets/execution-log.md.template`
 
 ---
 
@@ -228,7 +228,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Al completar todos los lotes
 
-**Ubicación**: `/templates/final-report.md.template`
+**Ubicación**: `/assets/final-report.md.template`
 
 ---
 
@@ -280,10 +280,10 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 ```bash
 # Copiar templates según necesites
-cp .claude/skills/pm-thyrox/templates/analysis-phase.md.template ./ANALISIS_issues_$(date +%Y-%m-%d).md
-cp .claude/skills/pm-thyrox/templates/categorization-plan.md.template ./PLAN_categorizacion_$(date +%Y-%m-%d).md
-cp .claude/skills/pm-thyrox/templates/execution-log.md.template ./LOG_ejecucion_$(date +%Y-%m-%d).md
-cp .claude/skills/pm-thyrox/templates/final-report.md.template ./REPORTE_final_$(date +%Y-%m-%d).md
+cp .claude/skills/pm-thyrox/assets/analysis-phase.md.template ./ANALISIS_issues_$(date +%Y-%m-%d).md
+cp .claude/skills/pm-thyrox/assets/categorization-plan.md.template ./PLAN_categorizacion_$(date +%Y-%m-%d).md
+cp .claude/skills/pm-thyrox/assets/execution-log.md.template ./LOG_ejecucion_$(date +%Y-%m-%d).md
+cp .claude/skills/pm-thyrox/assets/final-report.md.template ./REPORTE_final_$(date +%Y-%m-%d).md
 ```
 
 ### Paso 2: Completar analysis-phase.md
@@ -529,7 +529,7 @@ A: Usa el Decision Framework al inicio. Si dudas → MANUAL. Scripts sin las 8 P
 ## Ver También
 
 - PM-THYROX SKILL.md - PHASE 7: TRACK
-- Templates en `/templates/`:
+- Templates en `/assets/`:
   - `analysis-phase.md.template`
   - `categorization-plan.md.template`
   - `execution-log.md.template`

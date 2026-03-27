@@ -29,7 +29,7 @@ Ninguno en ejecución actualmente. Últimos proyectos completados:
 - Templates creados: 25 total
 - Archivos actualizados: 3 principales
 - Commits: 2 (7925aa6, bdb27b6)
-- Ver: [changes/2026-03-25-14-00-consolidacion-7-phases/](./changes/.EXIT_CONDITIONS.md.template)
+- Ver: 2026-03-25-14-00-consolidacion-7-phases/
 
 ---
 
@@ -39,10 +39,7 @@ Ninguno en ejecución actualmente. Últimos proyectos completados:
 .claude/context/
 ├── project-state.md          ← Tú estás aquí
 ├── work-logs/                ← Snapshots granulares por STEP
-├── changes/                  ← Proyectos mutables (PHASE-based)
-│   ├── .project.json.template
-│   ├── .EXIT_CONDITIONS.md.template
-│   └── YYYY-MM-DD-HH-MM-proyecto/
+├── YYYY-MM-DD-HH-MM-proyecto/  ← Proyectos mutables (PHASE-based)
 │       ├── PLAN.md
 │       ├── analisis/
 │       ├── estrategia/
@@ -55,8 +52,7 @@ Ninguno en ejecución actualmente. Últimos proyectos completados:
 .claude/skills/pm-thyrox/
 ├── SKILL.md                  ← 7 PHASES framework
 ├── references/               ← 18 referencias
-├── templates/                ← 25 templates
-└── tracking/                 ← tracking docs
+└── assets/                   ← 25 templates + tracking docs
 ```
 
 ---
@@ -96,31 +92,6 @@ PHASE 7: TRACK             → Monitoreo, changelog, cierre
 - .TEMPLATE-work-log-granular.md (usar como referencia)
 
 ---
-
-## Changes (Proyectos Mutables)
-
-**Formato:** .claude/context/changes/YYYY-MM-DD-HH-MM-nombre-proyecto/  
-**Propósito:** Agrupación de todo un proyecto con estructura PHASE-based
-
-**Estructura dentro:**
-```
-2026-03-25-14-00-consolidacion-7-phases/
-├── project.json              ← Metadata de proyecto
-├── EXIT_CONDITIONS.md        ← Checklist de salida por PHASE
-├── PLAN.md                   (PHASE 1)
-├── analisis/                 (PHASE 2)
-├── estrategia/               (PHASE 3)
-├── specification/            (PHASE 4)
-├── tasks/                    (PHASE 5)
-└── implementation/           (PHASE 6-7)
-    ├── TRACKING.md
-    ├── RESULTADOS-FINALES.md
-    └── LECCIONES-APRENDIDAS.md
-```
-
-**Templates disponibles:**
-- .project.json.template (copiar y llenar)
-- .EXIT_CONDITIONS.md.template (copiar y usar)
 
 ---
 

@@ -164,7 +164,7 @@ Usar cuando:
 
 **Cuándo usar**: Al iniciar análisis de requisitos
 
-**Ubicación**: `/templates/requirements-analysis.md.template`
+**Ubicación**: `/assets/requirements-analysis.md.template`
 
 ---
 
@@ -182,7 +182,7 @@ Usar cuando:
 
 **Cuándo usar**: Al estructurar implementación técnica
 
-**Ubicación**: `/templates/requirements-specification.md.template`
+**Ubicación**: `/assets/requirements-specification.md.template`
 
 ---
 
@@ -204,7 +204,7 @@ Usar cuando:
 
 **Cuándo usar**: Después de aprobación de requirements
 
-**Ubicación**: `/templates/design.md.template`
+**Ubicación**: `/assets/design.md.template`
 
 ---
 
@@ -229,7 +229,7 @@ Usar cuando:
 
 **Cuándo usar**: Después de aprobación de design
 
-**Ubicación**: `/templates/tasks.md.template`
+**Ubicación**: `/assets/tasks.md.template`
 
 ---
 
@@ -605,7 +605,7 @@ A: No. Es inversión:
 ## Ver También
 
 - PM-THYROX SKILL.md - PHASE 4: STRUCTURE
-- Templates en `/templates/`:
+- Templates en `/assets/`:
   - `requirements-analysis.md.template`
   - `requirements-specification.md.template`
   - `design.md.template`

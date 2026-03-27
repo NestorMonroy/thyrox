@@ -246,7 +246,7 @@ skill/
 ```
 incremental-correction-methodology/
 ├── SKILL.md (metodología core + fases)
-├── templates/
+├── assets/
 │   ├── analysis-phase.md.template
 │   ├── categorization-plan.md.template
 │   ├── execution-log.md.template

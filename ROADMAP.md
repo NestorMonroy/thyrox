@@ -116,8 +116,8 @@ Plan maestro del proyecto THYROX. Documenta todas las fases, epics, features, y 
 
 - [ ] Sistema de tasks nativo
 - [ ] Dependencias entre tasks
-- [ ] [AD_HOC_TASKS](.claude/skills/pm-thyrox/tracking/AD_HOC_TASKS.md) setup
-- [ ] [REFACTORS](.claude/skills/pm-thyrox/tracking/REFACTORS.md) tracking
+- [ ] [AD_HOC_TASKS](.claude/skills/pm-thyrox/assets/AD_HOC_TASKS.md.template) setup
+- [ ] [REFACTORS](.claude/skills/pm-thyrox/assets/REFACTORS.md.template) tracking
 
 ---
 

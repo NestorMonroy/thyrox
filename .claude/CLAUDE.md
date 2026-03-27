@@ -157,7 +157,7 @@ cd /home/thyrox && claude
 ### 2. Contexto
 
 - Revisar ROADMAP.md (estado actual)
-- Revisar [AD_HOC_TASKS](skills/pm-thyrox/tracking/AD_HOC_TASKS.md) si hay
+- Revisar [AD_HOC_TASKS](skills/pm-thyrox/assets/AD_HOC_TASKS.md.template) si hay
 - Identificar en qué fase estamos
 
 ### 3. Trabajar
@@ -180,9 +180,9 @@ cd /home/thyrox && claude
 **skills/pm-thyrox/** - El SKILL principal
 - [SKILL](skills/pm-thyrox/SKILL.md) - Metodología de 7 fases (leer primero)
 - `references/` - 19 guías de referencia por fase
-- `templates/` - 25 templates para documentos
-- `tracking/` - [AD_HOC_TASKS](skills/pm-thyrox/tracking/AD_HOC_TASKS.md), [REFACTORS](skills/pm-thyrox/tracking/REFACTORS.md)
-- `templates/epic.md.template` - Template para epics
+- `assets/` - 25 templates para documentos
+- `assets/AD_HOC_TASKS.md.template`, `assets/REFACTORS.md.template` - Tracking templates
+- `assets/epic.md.template` - Template para epics
 
 **context/** - Estado del proyecto
 - [project-state](context/project-state.md) - Contexto general
@@ -212,7 +212,7 @@ Antes de terminar cada sesión:
 
 - [ ] Commits realizados con mensaje descriptivo
 - [ ] ROADMAP.md actualizado con progreso
-- [ ] [AD_HOC_TASKS](skills/pm-thyrox/tracking/AD_HOC_TASKS.md) actualizado si hay cambios
+- [ ] [AD_HOC_TASKS](skills/pm-thyrox/assets/AD_HOC_TASKS.md.template) actualizado si hay cambios
 - [ ] Tests pasando (si aplica)
 - [ ] Documentación actualizada
 - [ ] Rama limpia o PR creado

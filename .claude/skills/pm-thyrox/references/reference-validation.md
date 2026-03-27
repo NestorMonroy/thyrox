@@ -120,23 +120,9 @@ cp .project.json.template project.json
 
 ### Problema 3: Archivos en skills/ que faltan
 
-**Ubicación**: `.claude/skills/pm-thyrox/templates/` y `modes/`  
-**Faltantes**:
-- templates/categorization-plan.md
-- templates/execution-log.md
-- templates/final-report.md
-- modes/enrichment.md
-- modes/high-fidelity.md
-
-**Solución**:
-```bash
-# Crear archivos como stubs con contenido mínimo
-touch .claude/skills/pm-thyrox/templates/categorization-plan.md
-touch .claude/skills/pm-thyrox/templates/execution-log.md
-touch .claude/skills/pm-thyrox/templates/final-report.md
-mkdir -p .claude/skills/pm-thyrox/modes
-touch .claude/skills/pm-thyrox/modes/enrichment.md
-touch .claude/skills/pm-thyrox/modes/high-fidelity.md
+**Ubicación**: `.claude/skills/pm-thyrox/assets/`
+**Nota**: Estos archivos ya existen como `.template` en assets/.
+Los archivos `modes/` son aspiracionales (referenciados en skill-authoring.md pero no creados).
 ```
 
 ---
