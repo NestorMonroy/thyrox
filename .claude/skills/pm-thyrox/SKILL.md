@@ -488,16 +488,18 @@ These are patterns users will say. PM-THYROX should recognize and respond:
 
 | User Says | What Happens |
 |-----------|--------------|
-| "plan X feature" | Phase 1: PLAN → brainstorm + update ROADMAP.md |
-| "create a PRD for X" | Phase 2: STRUCTURE → create .claude/prds/X.md |
-| "break down X" | Phase 3: DECOMPOSE → create tasks in Claude Code |
-| "what's next?" | Phase 5: TRACK → show next available tasks |
-| "what's blocked?" | Phase 5: TRACK → show blocked tasks |
-| "standup" | Phase 5: TRACK → show status report |
-| "mark X done" | Phase 4/5 → update ROADMAP.md, confirm complete |
-| "create task: X" | Phase 3 → /task:create "X" |
-| "show tasks" | Phase 4 → /task:show |
-| "generate changelog" | Phase 5 → read commits, update CHANGELOG.md |
+| "analyze X", "let's document requirements" | Phase 1: ANALYZE → requirements, stakeholders, context |
+| "let's design the architecture" | Phase 2: SOLUTION_STRATEGY → architectural plan |
+| "plan X feature" | Phase 3: PLAN → brainstorm + update ROADMAP.md |
+| "create a PRD for X" | Phase 4: STRUCTURE → create .claude/prds/X.md |
+| "break down X" | Phase 5: DECOMPOSE → create tasks in Claude Code |
+| "create task: X" | Phase 5: DECOMPOSE → /task:create "X" |
+| "show tasks" | Phase 6: EXECUTE → /task:show |
+| "mark X done" | Phase 6/7 → update ROADMAP.md, confirm complete |
+| "what's next?" | Phase 7: TRACK → show next available tasks |
+| "what's blocked?" | Phase 7: TRACK → show blocked tasks |
+| "standup" | Phase 7: TRACK → show status report |
+| "generate changelog" | Phase 7: TRACK → read commits, update CHANGELOG.md |
 
 ---
 
@@ -826,13 +828,13 @@ Cada PHASE tiene **exit conditions** que deben cumplirse antes de continuar. Ver
 
 ### Resumen Rápido:
 
-**PHASE 1 (PLAN):** Scope definido + Decisión tomada + Stakeholders identificados
+**PHASE 1 (ANALYZE):** Requisitos documentados + Stakeholders identificados + Todas las referencias completas
 
-**PHASE 2 (ANALYZE):** Requisitos documentados + Aprobación de usuario + Todas las referencias completas
+**PHASE 2 (SOLUTION_STRATEGY):** Arquitectura definida + Alternativas consideradas + Riesgos identificados
 
-**PHASE 3 (SOLUTION):** Arquitectura definida + Alternativas consideradas + Riesgos identificados
+**PHASE 3 (PLAN):** Scope definido + Decisión tomada + ROADMAP.md actualizado
 
-**PHASE 4 (STRUCTURE):** Specs completas + Design aprobado + Tasks descompuestas
+**PHASE 4 (STRUCTURE):** Specs completas + Design aprobado + PRD o Spec-Driven docs listos
 
 **PHASE 5 (DECOMPOSE):** Tasks atómicas + Order definido + Checkpoints de validación
 

@@ -64,13 +64,13 @@ Ninguno en ejecución actualmente. Últimos proyectos completados:
 ## 7 PHASES Framework
 
 ```
-PHASE 1: PLAN          → Scope inicial
-PHASE 2: ANALYZE       → Requisitos (8 refs, 8 templates)
-PHASE 3: SOLUTION      → Arquitectura (1 ref, 1 template)
-PHASE 4: STRUCTURE     → Specs técnicas (1 ref, 3 templates)
-PHASE 5: DECOMPOSE     → Break down tareas
-PHASE 6: EXECUTE       → Implementación
-PHASE 7: TRACK         → Análisis y cierre
+PHASE 1: ANALYZE           → Requisitos, stakeholders, context (8 refs, 8 templates)
+PHASE 2: SOLUTION_STRATEGY → Arquitectura, decisiones técnicas (1 ref, 1 template)
+PHASE 3: PLAN              → Scope, brainstorm, ROADMAP.md
+PHASE 4: STRUCTURE         → PRDs o Spec-Driven docs (1 ref, 3 templates)
+PHASE 5: DECOMPOSE         → Break down tareas
+PHASE 6: EXECUTE           → Implementación
+PHASE 7: TRACK             → Monitoreo, changelog, cierre
 ```
 
 **Status:** ✓ Documentadas completamente  

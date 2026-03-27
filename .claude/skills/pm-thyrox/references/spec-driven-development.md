@@ -1,9 +1,9 @@
 ```yml
-Tipo: Metodología PHASE 4
+Tipo: Metodología (opción dentro de PHASE 4: STRUCTURE)
 Categoría: Desarrollo Guiado por Especificaciones
 Versión: 1.0
-Propósito: Metodología completa para desarrollo en 4 fases: Requirements, Design, Tasks, Validation.
-Objetivo: Proporcionar proceso estructurado para features complejas.
+Propósito: Metodología en 4 pasos (Requirements, Design, Tasks, Validation) para features complejas.
+Objetivo: Proporcionar proceso estructurado cuando Phase 4 requiere especificación detallada.
 Fecha actualización: 2026-03-25
 ```
 

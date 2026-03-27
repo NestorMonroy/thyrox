@@ -1,5 +1,5 @@
 ```yml
-Tipo: Metodología PHASE 7
+Tipo: Metodología PHASE 7: TRACK
 Categoría: Corrección Incremental
 Versión: 1.0
 Propósito: Metodología validada para corrección de 100+ issues a gran escala con análisis obligatorio.
@@ -483,15 +483,15 @@ Proyecto Sphinx con 230 warnings detectados en build.
 
 ## Integración con PM-THYROX
 
-Esta metodología es parte de **PHASE 5: TRACK** del skill PM-THYROX.
+Esta metodología es parte de **PHASE 7: TRACK** del skill PM-THYROX.
 
 Usar cuando:
-- Completes PHASE 4: EXECUTE
+- Completes PHASE 6: EXECUTE
 - Detectas 100+ issues en tu proyecto
 - Necesitas planificar corrección incremental
 
 Workflow:
-1. PHASE 5: TRACK (PM-THYROX) te guía inicialmente
+1. PHASE 7: TRACK (PM-THYROX) te guía inicialmente
 2. Si tienes 100+ issues → Usa incremental-correction-methodology
 3. Usa los 4 templates para documentar cada fase
 4. Cuando termines → Incluye final-report.md en tu commit
@@ -528,7 +528,7 @@ A: Usa el Decision Framework al inicio. Si dudas → MANUAL. Scripts sin las 8 P
 
 ## Ver También
 
-- PM-THYROX SKILL.md - PHASE 5: TRACK
+- PM-THYROX SKILL.md - PHASE 7: TRACK
 - Templates en `/templates/`:
   - `analysis-phase.md.template`
   - `categorization-plan.md.template`

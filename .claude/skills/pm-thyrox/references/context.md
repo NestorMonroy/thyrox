@@ -1,6 +1,6 @@
 ```yml
-Tipo: Referencia PHASE 2: SOLUTION_STRATEGY
-Categoría: Estrategia
+Tipo: Referencia PHASE 1: ANALYZE
+Categoría: Análisis
 Versión: 1.0
 Propósito: Guía de cómo definir límites del sistema y sistemas externos que se integran.
 Objetivo: Clarificar dónde se inserta el sistema en el ecosistema.

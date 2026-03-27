@@ -20,11 +20,11 @@ Documentar CÓMO arquitectónicamente implementar los requisitos. Decisiones arq
 
 ---
 
-Basado en: requirements.md
+Basado en: requirements-analysis.md
 
 ## 1. Vision General
 
-[Overview de alto nivel de la solucion propuesta. Como se resuelve el problema planteado en requirements.md]
+[Overview de alto nivel de la solucion propuesta. Como se resuelve el problema planteado en requirements-analysis.md]
 
 ## 2. Decisiones Arquitectonicas
 
@@ -37,7 +37,7 @@ DA-001: [Titulo de la decision]
 - Consecuencias:
  - Positivas: [Beneficios]
  - Negativas: [Trade-offs, costos]
-- Referencias: RF-001, RF-003 (de requirements.md)
+- Referencias: RF-001, RF-003 (de requirements-analysis.md)
 
 DA-002: [Titulo de la decision]
 ...
@@ -194,14 +194,14 @@ TC-001: [Titulo del caso]
  1. [Paso 1]
  2. [Paso 2]
 - Output esperado: [Resultado esperado]
-- Referencias: RF-001 (requirements.md)
+- Referencias: RF-001 (requirements-analysis.md)
 
 TC-002: [Titulo del caso]
 ...
 
 ### 10.2 Criterios de Validacion
 
-- [x] Todos los RF de requirements.md cubiertos
+- [x] Todos los RF de requirements-analysis.md cubiertos
 - [x] Build exitoso sin errores
 - [x] Linkcheck pasa
 - [ ] Metadata completa
@@ -258,7 +258,7 @@ TC-002: [Titulo del caso]
 
 ### 14.1 Documentos Relacionados
 
-- requirements.md (este proyecto)
+- requirements-analysis.md (este proyecto)
 - [Otro documento de diseño relacionado]
 
 ### 14.2 Recursos Externos
