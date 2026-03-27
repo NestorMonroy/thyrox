@@ -74,7 +74,7 @@ Each phase updates the project's source of truth — no external tools required.
 
 ### Process
 
-This phase contains 7 subsections:
+This phase contains 8 subsections:
 
 1. [Introduction](references/introduction.md)
    - Vision general del proyecto
@@ -84,32 +84,36 @@ This phase contains 7 subsections:
    - Requisitos funcionales (Level 1 + Level 2)
    - Matriz de trazabilidad
 
-3. [Quality Goals](references/quality-goals.md)
+3. [Use Cases](references/use-cases.md)
+   - Flujos de interacción usuario-sistema
+   - Flujos alternativos y postcondiciones
+
+4. [Quality Goals](references/quality-goals.md)
    - Priority 1, 2, 3
    - Quality attributes y scenarios
    - Trade-offs
 
-4. [Stakeholders](references/stakeholders.md)
+5. [Stakeholders](references/stakeholders.md)
    - Matriz de roles y necesidades
    - Conflictos y resoluciones
    - Alineamiento con Quality Goals
 
-5. [Basic Usage](references/basic-usage.md)
+6. [Basic Usage](references/basic-usage.md)
    - Cómo funciona el sistema operacionalmente
    - Flujo principal, modos de operación
    - Resultados observables
 
-6. [Constraints](references/constraints.md)
+7. [Constraints](references/constraints.md)
    - Technical, Platform, Organizational, Regulatory, Business
    - Cómo guían la arquitectura
 
-7. [Context](references/context.md)
+8. [Context](references/context.md)
    - Business Context (sistemas externos)
    - Technical Context (dependencias)
    - Diagrama de contexto
 
 **References:**
-See: [introduction](references/introduction.md), [requirements-analysis](references/requirements-analysis.md), [quality-goals](references/quality-goals.md), [stakeholders](references/stakeholders.md), [basic-usage](references/basic-usage.md), [constraints](references/constraints.md), [context](references/context.md), [use-cases](references/use-cases.md)
+See: [introduction](references/introduction.md), [requirements-analysis](references/requirements-analysis.md), [use-cases](references/use-cases.md), [quality-goals](references/quality-goals.md), [stakeholders](references/stakeholders.md), [basic-usage](references/basic-usage.md), [constraints](references/constraints.md), [context](references/context.md)
 
 **Templates:**
 Use: `introduction.md.template`, `requirements-analysis.md.template`, etc.

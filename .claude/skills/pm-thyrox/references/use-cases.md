@@ -1,5 +1,5 @@
 ```yml
-Tipo: Documentación de Proyecto
+Tipo: Referencia PHASE 1: ANALYZE
 Categoría: Casos de Uso
 Versión: 1.0
 Propósito: Documentar casos de uso y flujos principales del sistema
@@ -84,7 +84,7 @@ Alternativa 2a: Si [condición]
 
 ---
 
-## Relación con PHASE 2: ANALYZE
+## Relación con PHASE 1: ANALYZE
 
 Los casos de uso son parte crítica del ANALYZE porque:
 
@@ -113,4 +113,12 @@ Los casos de uso son parte crítica del ANALYZE porque:
 
 ---
 
-**Última Actualización:** 2026-03-25
+---
+
+## Próximo Paso
+
+Una vez completado: → Pasar a [quality-goals](./quality-goals.md)
+
+---
+
+**Última Actualización:** 2026-03-27

@@ -18,7 +18,7 @@ Compilación de mejores prácticas de Anthropic para escribir prompts efectivos 
 ---
 
 Basado en: Anthropic Prompting Best Practices
-Adaptado para: Proyecto ADT
+Adaptado para: THYROX
 Fecha: 2026-02-01
 
 ---
@@ -180,7 +180,7 @@ Claude puede sugerir estrategias para manejar el documento efectivamente.
 
 Claude puede trabajar con múltiples "ventanas" de contexto en conversaciones largas.
 
-**Patrón efectivo - Proyecto ADT**:
+**Patrón efectivo - Ejemplo práctico**:
 ```
 Tengo 3 documentos relacionados para revisar:
 
@@ -640,6 +640,6 @@ Comenzar con Lote 1: Referencias rotas (80 warnings).
 ---
 
 **Documento basado en**: Anthropic Prompting Best Practices
-**Adaptado para**: Proyecto ADT con ejemplos Sphinx, architecture docs, RST
+**Adaptado para**: THYROX con ejemplos Sphinx, architecture docs, RST
 **Fecha**: 2026-02-01
 **Ver también**: skill-authoring.md, long-context-tips.md

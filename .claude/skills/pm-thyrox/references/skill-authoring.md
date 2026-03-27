@@ -18,7 +18,7 @@ Compilación de mejores prácticas de Anthropic para crear skills de alta calida
 ---
 
 Basado en: Anthropic Skill Authoring Best Practices
-Adaptado para: Proyecto ADT
+Adaptado para: THYROX
 Fecha: 2026-02-01
 
 ---
@@ -834,6 +834,6 @@ El proceso más efectivo involucra a Claude mismo.
 ---
 
 **Documento basado en**: Anthropic Skill Authoring Best Practices
-**Adaptado para**: Proyecto ADT
+**Adaptado para**: THYROX
 **Fecha**: 2026-02-01
 **Ver también**: prompting-tips.md, long-context-tips.md

@@ -2,7 +2,7 @@
 Tipo: Referencia PHASE 1: ANALYZE
 Categoría: Introducción
 Versión: 1.0
-Propósito: Introduce los conceptos fundamentales del análisis. Base para entender las 7 subsecciones de PHASE 1.
+Propósito: Introduce los conceptos fundamentales del análisis. Base para entender las 8 subsecciones de PHASE 1.
 Objetivo: Proporcionar context general y explicar estructura de análisis de requisitos.
 Fecha actualización: 2026-03-25
 ```
@@ -11,7 +11,7 @@ Fecha actualización: 2026-03-25
 
 ## Propósito
 
-Introduce los conceptos fundamentales del análisis. Base para entender las 7 subsecciones de PHASE 1.
+Introduce los conceptos fundamentales del análisis. Base para entender las 8 subsecciones de PHASE 1.
 
 > Objetivo: Proporcionar context general y explicar estructura de análisis de requisitos.
 
@@ -31,6 +31,22 @@ Introduce los conceptos fundamentales del análisis. Base para entender las 7 su
 **Entregable:** Tabla de requisitos con ID, descripción, prioridad
 
 Consultar: [requirements-analysis](./requirements-analysis.md)
+
+---
+
+### 1.1b: Use Cases
+
+**Define:** CÓMO interactúan los usuarios con el sistema
+
+**Estructura:**
+- Actor primario (quién inicia)
+- Flujo principal (pasos numerados)
+- Flujos alternativos (variaciones)
+- Precondiciones y postcondiciones
+
+**Entregable:** Catálogo de casos de uso con ID (UC-001, UC-002, etc.)
+
+Consultar: [use-cases](./use-cases.md)
 
 ---
 
@@ -79,24 +95,26 @@ Consultar: [context](./context.md)
 
 ---
 
-## Flujo en PHASE 2: ANALYZE
+## Flujo en PHASE 1: ANALYZE
 
 ```
-PHASE 2: ANALYZE - Tu responsabilidad es completar:
+PHASE 1: ANALYZE - Tu responsabilidad es completar:
 
 1. introduction.md (este documento - entender propósito)
    ↓
 2. requirements-analysis.md (Basic Requirements - QUÉ)
    ↓
-3. quality-goals.md (Quality Goals - QUÉ TAN BIEN)
+3. use-cases.md (Casos de Uso - CÓMO se usa)
    ↓
-4. stakeholders.md (Stakeholders - QUIÉN)
+4. quality-goals.md (Quality Goals - QUÉ TAN BIEN)
    ↓
-5. basic-usage.md (Basic Usage - CÓMO funciona)
+5. stakeholders.md (Stakeholders - QUIÉN)
    ↓
-6. constraints.md (Constraints - QUÉ limita)
+6. basic-usage.md (Basic Usage - CÓMO funciona)
    ↓
-7. context.md (Context - DÓNDE está)
+7. constraints.md (Constraints - QUÉ limita)
+   ↓
+8. context.md (Context - DÓNDE está)
 
 Deliverable: Architecture Docs Section 1, 2, 3 COMPLETO
 ```
@@ -108,6 +126,7 @@ Deliverable: Architecture Docs Section 1, 2, 3 COMPLETO
 Para cada subsección, hay un template:
 
 - `requirements-analysis.md.template` - Estructura para Requirements
+- `use-cases.md.template` - Estructura para Use Cases
 - `quality-goals.md.template` - Estructura para Quality Goals
 - `stakeholders.md.template` - Estructura para Stakeholders
 - `basic-usage.md.template` - Estructura para Basic Usage
@@ -132,10 +151,11 @@ Una vez completo → PHASE 3: SOLUTION_STRATEGY
 
 ---
 
-## Checklist PHASE 2: ANALYZE
+## Checklist PHASE 1: ANALYZE
 
 - [ ] introduction.md completado
 - [ ] requirements-analysis.md completado (Requirements Analysis)
+- [ ] use-cases.md completado (Use Cases)
 - [ ] quality-goals.md completado
 - [ ] stakeholders.md completado
 - [ ] basic-usage.md completado
@@ -150,10 +170,10 @@ Una vez completo → PHASE 3: SOLUTION_STRATEGY
 ## Relación con Otras Fases
 
 **Entra de:**
-- PHASE 1: PLAN (plan general)
+- Inicio del proyecto o necesidad identificada
 
 **Sale hacia:**
-- PHASE 3: SOLUTION_STRATEGY (define cómo cumplir estos requisitos)
+- PHASE 2: SOLUTION_STRATEGY (define cómo cumplir estos requisitos)
 - PHASE 4: STRUCTURE (especificaciones basadas en estos requisitos)
 
 ---

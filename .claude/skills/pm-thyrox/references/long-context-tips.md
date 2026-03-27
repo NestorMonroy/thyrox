@@ -18,7 +18,7 @@ Compilación de mejores prácticas para trabajar con documentos grandes y contex
 ---
 
 Basado en: Anthropic Long Context Best Practices
-Adaptado para: Proyecto ADT
+Adaptado para: THYROX
 Fecha: 2026-02-01
 
 ---
@@ -653,6 +653,6 @@ Aplicar estos principios en proyectos ADT donde documentos largos (architecture 
 ---
 
 **Documento basado en**: Anthropic Long Context Best Practices
-**Adaptado para**: Proyecto ADT con ejemplos architecture docs, Sphinx, build analysis
+**Adaptado para**: THYROX con ejemplos architecture docs, Sphinx, build analysis
 **Fecha**: 2026-02-01
 **Ver también**: skill-authoring.md, prompting-tips.md
