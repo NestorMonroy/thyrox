@@ -108,7 +108,7 @@ thyrox/
 
 ## Metodología
 
-El motor de THYROX es el **SKILL** (`.claude/skills/pm-thyrox/SKILL.md`), que define 7 fases:
+El motor de THYROX es el **[SKILL](.claude/skills/pm-thyrox/SKILL.md)**, que define 7 fases:
 
 ```
 1. ANALYZE           → Entender requisitos, stakeholders, contexto
