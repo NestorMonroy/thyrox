@@ -121,7 +121,7 @@ PHASE 7: TRACK             → Monitoreo, changelog, cierre
 ### Para iniciar un NUEVO proyecto:
 
 1. Lee: [pm-thyrox SKILL](./../skills/pm-thyrox/SKILL.md)
-2. Crea: `changes/YYYY-MM-DD-HH-MM-nombre-proyecto/`
+2. Crea: `YYYY-MM-DD-HH-MM-nombre-proyecto/` in context
 3. Copia: `.project.json.template` → `project.json`
 4. Copia: `.EXIT_CONDITIONS.md.template` → `EXIT_CONDITIONS.md`
 5. Crea: `work-logs/2026-XX-XX-HH-MM-decision-nombre.md` (PHASE 1)
@@ -129,7 +129,7 @@ PHASE 7: TRACK             → Monitoreo, changelog, cierre
 
 ### Para continuar un proyecto:
 
-1. Localiza carpeta en: `changes/YYYY-MM-DD-HH-MM-nombre/`
+1. Localiza carpeta en: `YYYY-MM-DD-HH-MM-nombre/`
 2. Lee: `project.json` para ver progreso
 3. Lee: `EXIT_CONDITIONS.md` para saber qué se necesita
 4. Lee: Últimos work-logs en: `work-logs/` (grep por nombre del proyecto)
@@ -148,7 +148,7 @@ PHASE 7: TRACK             → Monitoreo, changelog, cierre
 
 **Inmediato:**
 - [ ] Iniciar nuevo proyecto (o continuar uno existente)
-- [ ] Copiar templates de changes/
+- [ ] Copiar templates from assets/
 - [ ] Documentar PHASE 1 (PLAN)
 
 **Siguientes:**
@@ -167,10 +167,10 @@ PHASE 7: TRACK             → Monitoreo, changelog, cierre
 
 **Proyectos pequeños (<2h):**
 - Usa: 1 work-log + 1 documento
-- SIN: changes/ completo
+- SIN: full project structure
 
 **Proyectos medianos (2-8h):**
-- Usa: work-logs + changes/ parcial
+- Usa: work-logs + partial project structure
 - CON: Principales PHASEs (1, 2, 6, 7)
 
 **Proyectos grandes (8+h):**

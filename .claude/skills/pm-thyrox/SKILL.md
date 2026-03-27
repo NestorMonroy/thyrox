@@ -861,10 +861,9 @@ Cada PHASE tiene **exit conditions** que deben cumplirse antes de continuar. Ver
 **Estructura simplificada:**
 - 1 work-log (snapshot inicial)
 - 1 documento mutable (donde se captura todo)
-- Sin structure completa de changes/
 
-**Fases activas:** 1, 2, 6, 7  
-**Sin:** Cambios/, sub-agents, JSON metadata
+**Fases activas:** 1, 2, 6, 7
+**Sin:** Sub-agents, JSON metadata
 
 **Ejemplo:**
 ```
@@ -876,10 +875,10 @@ documento: TASK-FIX-TYPO.md (todo en uno)
 
 **Estructura balanceada:**
 - work-logs/ granulares (1 por STEP importante)
-- changes/YYYY-MM-DD-HH-MM-nombre/ con estructura PHASE-based
+- epics/YYYY-MM-DD-HH-MM-nombre/ con estructura PHASE-based
 - project.json simple
 
-**Fases activas:** 1, 2, 3, 4, 5, 6, 7  
+**Fases activas:** 1, 2, 3, 4, 5, 6, 7
 **Con:** Algunas fases pueden ser rápidas
 **Sub-agents:** Validación manual entre PHASEs
 
@@ -889,8 +888,8 @@ work-logs/
   2026-03-26-10-00-decision-feature-x.md
   2026-03-26-10-15-analisis-requisitos.md
   2026-03-26-11-00-design-aprobado.md
-  
-changes/2026-03-26-10-00-feature-x/
+
+epics/2026-03-26-10-00-feature-x/
   project.json
   PLAN.md
   analisis/
@@ -903,12 +902,12 @@ changes/2026-03-26-10-00-feature-x/
 
 **Estructura completa:**
 - work-logs/ muy granulares (1 por STEP)
-- changes/YYYY-MM-DD-HH-MM-nombre/ completo
+- epics/YYYY-MM-DD-HH-MM-nombre/ completo
 - project.json con timing data
-- exit-conditions.md rigurosas
+- EXIT_CONDITIONS.md rigurosas
 - sub-agents para validación automática
 
-**Fases activas:** 1-7 con rigor completo  
+**Fases activas:** 1-7 con rigor completo
 **Con:** Iteraciones, validaciones, análisis cuantitativos
 **Sub-agents:** Validación automática entre PHASEs
 
@@ -922,7 +921,7 @@ work-logs/
   2026-03-26-11-30-step1-especificación.md
   ... (muchos más)
 
-changes/2026-03-26-10-00-big-project/
+epics/2026-03-26-10-00-big-project/
   project.json (timing data)
   EXIT_CONDITIONS.md (100% compliance)
   PLAN.md, analisis/, estrategia/, specification/, tasks/, implementation/
@@ -933,7 +932,7 @@ changes/2026-03-26-10-00-big-project/
 
 - **< 30 minutos:** Solo work-log
 - **30 min - 2 horas:** Work-log + documento simple
-- **2 - 8 horas:** Work-logs + changes/ (MEDIUM)
+- **2 - 8 horas:** Work-logs + epics/ (MEDIUM)
 - **8+ horas:** FULL STRUCTURE con sub-agents
 
 ---
