@@ -1,28 +1,6 @@
 # Exit Conditions - 7 PHASES
 
-## PHASE 1: PLAN
-
-**Objetivo:** Decidir si trabajamos en esto
-
-**Exit Conditions (TODAS deben cumplirse):**
-- [ ] Scope está definido (qué hacemos, qué NO hacemos)
-- [ ] Decisión clara: SI proceder con el proyecto
-- [ ] Stakeholders identificados (quién aprueba qué)
-- [ ] Duración estimada definida
-- [ ] Nivel de complejidad assessado (simple/medio/complejo)
-
-**Success Criteria:**
-- Puedes escribir en 2-3 párrafos QUÉ vas a hacer
-- Está claro POR QUÉ (valor/impacto)
-- Alguien lo aprobó (usuario, arquitecto, etc.)
-
-**Transition:**
-→ Si todas las condiciones se cumplen: AVANZAR A PHASE 2
-→ Si NO se cumplen: PARAR, refinar scope, volver a PHASE 1
-
----
-
-## PHASE 2: ANALYZE
+## PHASE 1: ANALYZE
 
 **Objetivo:** Entender requisitos, restricciones, stakeholders
 
@@ -33,7 +11,7 @@
 - [ ] Stakeholders documentados (quiénes, qué roles)
 - [ ] Constraints identificados (técnicos, de negocio, tiempo)
 - [ ] Context y problem statement claros
-- [ ] Aproximadamente 8 documentos analizados o creados
+- [ ] 8 documentos analizados o creados
 - [ ] USER APPROVAL obtenido (o confirmación "vamos con esto")
 
 **Success Criteria:**
@@ -44,20 +22,20 @@
 **Artifacts Expected:**
 - introduction.md
 - requirements-analysis.md
+- use-cases.md
 - quality-goals.md
 - stakeholders.md
 - basic-usage.md
 - constraints.md
 - context.md
-- use-cases.md
 
 **Transition:**
-→ Si todas cumplidas: AVANZAR A PHASE 3
+→ Si todas cumplidas: AVANZAR A PHASE 2
 → Si NOT: Refinar análisis, agregar requisitos faltantes, volver a iterate
 
 ---
 
-## PHASE 3: SOLUTION_STRATEGY
+## PHASE 2: SOLUTION_STRATEGY
 
 **Objetivo:** Definir CÓMO vamos a cumplir los requisitos (arquitectura)
 
@@ -82,8 +60,30 @@
 - risk-assessment.md
 
 **Transition:**
-→ Si todas cumplidas: AVANZAR A PHASE 4
+→ Si todas cumplidas: AVANZAR A PHASE 3
 → Si NOT: Refinar arquitectura, considerar más alternativas
+
+---
+
+## PHASE 3: PLAN
+
+**Objetivo:** Decidir scope y planificar el trabajo
+
+**Exit Conditions (TODAS deben cumplirse):**
+- [ ] Scope está definido (qué hacemos, qué NO hacemos)
+- [ ] Decisión clara: SI proceder con el proyecto
+- [ ] Duración estimada definida
+- [ ] Nivel de complejidad assessado (simple/medio/complejo)
+- [ ] ROADMAP.md actualizado con el plan
+
+**Success Criteria:**
+- Puedes escribir en 2-3 párrafos QUÉ vas a hacer
+- Está claro POR QUÉ (valor/impacto)
+- Alguien lo aprobó (usuario, arquitecto, etc.)
+
+**Transition:**
+→ Si todas cumplidas: AVANZAR A PHASE 4
+→ Si NOT: Refinar scope, volver a iterate
 
 ---
 
@@ -115,7 +115,7 @@
 - /specification directory con sub-docs si es grande
 
 **Transition:**
-→ Si todas cumplidas: AVANZAR A PHASE 5
+→ Si todas cumplidas: AVANZAR A PHASE 5: DECOMPOSE
 → Si NOT: Agregar detalles faltantes, refinar tareas
 
 ---

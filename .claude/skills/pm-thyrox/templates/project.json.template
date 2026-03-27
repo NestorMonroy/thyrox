@@ -10,18 +10,9 @@
   },
 
   "phases": {
-    "phase_1_plan": {
-      "status": "completed",
-      "started_at": "2026-03-25T14:00:00Z",
-      "completed_at": "2026-03-25T14:15:00Z",
-      "duration_minutes": 15,
-      "artifacts": ["PLAN.md"],
-      "exit_conditions_met": true,
-      "notes": "Scope definido, decisión tomada"
-    },
-    "phase_2_analyze": {
+    "phase_1_analyze": {
       "status": "in_progress",
-      "started_at": "2026-03-25T14:15:00Z",
+      "started_at": "2026-03-25T14:00:00Z",
       "completed_at": null,
       "duration_minutes": null,
       "artifacts": [
@@ -31,12 +22,21 @@
       "exit_conditions_met": false,
       "notes": "Analizando requisitos, faltan 2 referencias"
     },
-    "phase_3_solution_strategy": {
+    "phase_2_solution_strategy": {
       "status": "pending",
       "started_at": null,
       "completed_at": null,
       "duration_minutes": null,
       "artifacts": [],
+      "exit_conditions_met": false,
+      "notes": ""
+    },
+    "phase_3_plan": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "duration_minutes": null,
+      "artifacts": ["PLAN.md"],
       "exit_conditions_met": false,
       "notes": ""
     },
@@ -104,19 +104,19 @@
   },
 
   "completion_checklist": {
-    "phase_1": {
-      "scope_defined": true,
-      "decision_taken": true,
-      "stakeholders_identified": true
-    },
-    "phase_2": {
+    "phase_1_analyze": {
       "requirements_documented": false,
       "user_approval": false,
       "references_complete": false
     },
-    "phase_3": {
+    "phase_2_solution_strategy": {
       "strategy_defined": false,
       "architecture_validated": false
+    },
+    "phase_3_plan": {
+      "scope_defined": false,
+      "decision_taken": false,
+      "roadmap_updated": false
     },
     "phase_4": {
       "specs_written": false,

@@ -826,7 +826,7 @@ Consultar **[long-context-tips](references/long-context-tips.md)** cuando:
 
 ## Exit Conditions (Cuándo avanzar de PHASE)
 
-Cada PHASE tiene **exit conditions** que deben cumplirse antes de continuar. Ver: `references/changes/.EXIT_CONDITIONS.md.template`
+Cada PHASE tiene **exit conditions** que deben cumplirse antes de continuar. Ver: `templates/EXIT_CONDITIONS.md.template`
 
 ### Resumen Rápido:
 
@@ -846,7 +846,7 @@ Cada PHASE tiene **exit conditions** que deben cumplirse antes de continuar. Ver
 
 ### Cómo Usar:
 
-1. Copiar: `.claude/context/changes/.EXIT_CONDITIONS.md.template`
+1. Copiar: `.claude/skills/pm-thyrox/templates/EXIT_CONDITIONS.md.template`
 2. Llenar: Checklist por cada PHASE
 3. Validar: ¿Se cumplen todas?
 4. Decisión: Avanzar o refinar?
