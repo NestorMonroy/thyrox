@@ -311,7 +311,7 @@ Usar: `basic-usage.md.template`
 
 ## Próximo Paso
 
-Una vez completado: → Pasar a [constraints.md](./constraints.md)
+Una vez completado: → Pasar a [constraints](./constraints.md)
 
 ---
 

@@ -30,7 +30,7 @@ Introduce los conceptos fundamentales del análisis. Base para entender las 7 su
 
 **Entregable:** Tabla de requisitos con ID, descripción, prioridad
 
-Consultar: [requirements-analysis.md](./requirements-analysis.md)
+Consultar: [requirements-analysis](./requirements-analysis.md)
 
 ---
 
@@ -45,7 +45,7 @@ Consultar: [requirements-analysis.md](./requirements-analysis.md)
 
 **Entregable:** Matriz de Quality Goals por prioridad
 
-Consultar: [quality-goals.md](./quality-goals.md)
+Consultar: [quality-goals](./quality-goals.md)
 
 ---
 
@@ -60,7 +60,7 @@ Consultar: [quality-goals.md](./quality-goals.md)
 
 **Entregable:** Tabla de Stakeholders
 
-Consultar: [stakeholders.md](./stakeholders.md)
+Consultar: [stakeholders](./stakeholders.md)
 
 ---
 
@@ -75,7 +75,7 @@ Consultar: [stakeholders.md](./stakeholders.md)
 
 **Entregable:** Diagrama de contexto
 
-Consultar: [context.md](./context.md)
+Consultar: [context](./context.md)
 
 ---
 

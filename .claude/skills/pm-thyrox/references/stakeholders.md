@@ -321,7 +321,7 @@ Para cada stakeholder principal:
 
 ## Próximo Paso
 
-Una vez completado: → Pasar a [basic-usage.md](./basic-usage.md)
+Una vez completado: → Pasar a [basic-usage](./basic-usage.md)
 
 ---
 

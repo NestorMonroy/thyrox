@@ -226,7 +226,7 @@ Para cada R-N, detallar:
 
 ## Próximo Paso
 
-Una vez completado: → Pasar a [quality-goals.md](./quality-goals.md)
+Una vez completado: → Pasar a [quality-goals](./quality-goals.md)
 
 ---
 

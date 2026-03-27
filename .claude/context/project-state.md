@@ -130,7 +130,7 @@ PHASE 7: TRACK         → Análisis y cierre
 **Aprobadas:** 7 (ADR-001 a ADR-007)  
 **Pendientes:** 2 (ADR-008, ADR-009 - Fase 2)
 
-**Ver:** [decisions.md](./decisions.md) para INDEX completo
+**Ver:** [decisions](./decisions.md) para INDEX completo
 
 ---
 
@@ -149,7 +149,7 @@ PHASE 7: TRACK         → Análisis y cierre
 
 ### Para iniciar un NUEVO proyecto:
 
-1. Lee: [pm-thyrox SKILL.md](./../skills/pm-thyrox/SKILL.md)
+1. Lee: [pm-thyrox SKILL](./../skills/pm-thyrox/SKILL.md)
 2. Crea: `changes/YYYY-MM-DD-HH-MM-nombre-proyecto/`
 3. Copia: `.project.json.template` → `project.json`
 4. Copia: `.EXIT_CONDITIONS.md.template` → `EXIT_CONDITIONS.md`
