@@ -518,31 +518,63 @@ All project files live in THYROX structure:
 ├── CLAUDE.md               Persistent context for Claude Code
 │
 ├── .claude/
-│   ├── context/
-│   │   ├── project-state.md    Current phase/progress
-│   │   └── decisions.md        Architectural decisions (ADRs)
-│   │
-│   ├── prds/                   Product requirement documents
-│   │   └── <feature-name>.md
-│   │
-│   ├── epics/                  Epics (optional, for complex features)
-│   │   └── <epic-name>/
-│   │       ├── epic.md
-│   │       └── <task-id>.md
+│   ├── context/                  Work produced by using the framework
+│   │   ├── project-state.md     Current phase/progress
+│   │   ├── decisions/           ADRs (adr-001.md, adr-002.md, ...)
+│   │   ├── decisions.md         ADR index
+│   │   ├── analysis/            Diagnostics and audits
+│   │   ├── epics/               Planned work (epic.md + specs + tasks)
+│   │   │   └── YYYY-MM-DD-nombre/
+│   │   │       ├── epic.md
+│   │   │       ├── specs/
+│   │   │       ├── tasks.md
+│   │   │       ├── project.json
+│   │   │       └── EXIT_CONDITIONS.md
+│   │   └── work-logs/           Session journals
 │   │
 │   └── skills/
-│       └── pm-thyrox/          This skill
+│       └── pm-thyrox/            This skill (the engine)
 │           ├── SKILL.md
-│           ├── references/     Documentation references
-│           └── assets/         Document templates + tracking templates
-│               ├── AD_HOC_TASKS.md.template
-│               └── REFACTORS.md.template
+│           ├── references/       Documentation loaded into context
+│           ├── scripts/          Executable code (Python/Bash)
+│           └── assets/           Templates for output
 │
-├── docs/                       Documentation (API, BUILD, etc.)
-├── api/                        Sub-project: API
-├── build/                      Sub-project: Build
+├── docs/                         Documentation (API, BUILD, etc.)
+├── api/                          Sub-project: API
+├── build/                        Sub-project: Build
 │
 └── .gitignore
+```
+
+---
+
+## Where Outputs Live (by Phase)
+
+Each phase produces artifacts. Here's where they go:
+
+| Phase | What's produced | Where it goes |
+|-------|----------------|---------------|
+| **1. ANALYZE** | Diagnostics, inventories, findings | `context/analysis/` |
+| **1. ANALYZE** | Architectural decisions discovered | `context/decisions/adr-NNN.md` |
+| **2. SOLUTION_STRATEGY** | Architecture decisions, tech stack | `context/decisions/adr-NNN.md` |
+| **3. PLAN** | Epic definition (scope, features, timeline) | `context/epics/YYYY-MM-DD-nombre/epic.md` |
+| **3. PLAN** | ROADMAP update | `ROADMAP.md` |
+| **4. STRUCTURE** | Specs, design docs | `context/epics/YYYY-MM-DD-nombre/specs/` |
+| **4. STRUCTURE** | Exit conditions | `context/epics/YYYY-MM-DD-nombre/EXIT_CONDITIONS.md` |
+| **5. DECOMPOSE** | Atomic tasks | `context/epics/YYYY-MM-DD-nombre/tasks.md` |
+| **5. DECOMPOSE** | Project tracking | `context/epics/YYYY-MM-DD-nombre/project.json` |
+| **6. EXECUTE** | Session journals | `context/work-logs/YYYY-MM-DD-HH-MM-desc.md` |
+| **6. EXECUTE** | Code + commits | Repository (git) |
+| **7. TRACK** | Audits, final reports | `context/analysis/` |
+| **7. TRACK** | Changelog | `CHANGELOG.md` |
+| **Any phase** | Architectural decisions | `context/decisions/adr-NNN.md` |
+
+### Naming conventions
+
+- **Epics:** `YYYY-MM-DD-nombre-descriptivo/` (timestamp + kebab-case)
+- **Work-logs:** `YYYY-MM-DD-HH-MM-descripcion.md`
+- **ADRs:** `adr-NNN.md` (sequential numbering)
+- **Analysis:** Descriptive name (e.g., `project-analysis.md`, `references-analysis.md`)
 ```
 
 ### ROADMAP.md Format

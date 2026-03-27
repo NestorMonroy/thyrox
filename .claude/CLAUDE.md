@@ -177,17 +177,18 @@ cd /home/thyrox && claude
 
 ### `.claude/` — Motor del proyecto
 
-**skills/pm-thyrox/** - El SKILL principal
+**skills/pm-thyrox/** - El SKILL principal (el motor)
 - [SKILL](skills/pm-thyrox/SKILL.md) - Metodología de 7 fases (leer primero)
-- `references/` - 19 guías de referencia por fase
-- `assets/` - 25 templates para documentos
-- `assets/AD_HOC_TASKS.md.template`, `assets/REFACTORS.md.template` - Tracking templates
-- `assets/epic.md.template` - Template para epics
+- `references/` - 20 guías de referencia por fase
+- `scripts/` - Código ejecutable (validación, detección)
+- `assets/` - 30 templates para documentos de output
 
-**context/** - Estado del proyecto
+**context/** - Trabajo producido al usar el framework
 - [project-state](context/project-state.md) - Contexto general
-- [decisions](context/decisions.md) - Decisiones arquitectónicas
-- `work-logs/` - Bitácora de sesiones
+- [decisions](context/decisions.md) - Decisiones arquitectónicas (ADRs)
+- `analysis/` - Diagnósticos y auditorías (Phase 1, 7)
+- `epics/` - Trabajo planificado: epic + specs + tasks (Phase 3, 4, 5)
+- `work-logs/` - Bitácora de sesiones (Phase 6, 7)
 
 ### `docs/`
 
