@@ -318,8 +318,8 @@ Usar: `context.md.template`
 
 ## Próximo Paso
 
-Una vez completado PHASE 2: ANALYZE (introduction → context):
-→ Continuar a PHASE 3: SOLUTION_STRATEGY
+Una vez completado PHASE 1: ANALYZE (introduction → context):
+→ Continuar a PHASE 2: SOLUTION_STRATEGY
 
 ---
 

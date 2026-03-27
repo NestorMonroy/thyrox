@@ -352,7 +352,7 @@ Technologies: Hystrix, Kubernetes, monitoring
 ```
 - Ideas clave y conceptos
 - Decisiones con justificación
-- Alineadas con Analysis (PHASE 2)
+- Alineadas con Analysis (PHASE 1)
 - Respetan Constraints
 - Claras para guiar implementación
 - Documentadas para comunidad
@@ -396,7 +396,7 @@ Cómo respetamos cada constraint:
 
 ## Próximo Paso
 
-Una vez completado PHASE 3: SOLUTION_STRATEGY:
+Una vez completado PHASE 2: SOLUTION_STRATEGY:
 → Continuar a PHASE 4: STRUCTURE (especificaciones detalladas)
 
 ---

@@ -78,7 +78,7 @@ Registro de decisiones arquitectónicas y técnicas importantes del proyecto THY
 
 ### Crear una Nueva ADR
 
-1. Usa el template: [adr.template](.claude/skills/pm-thyrox/templates/adr.md.template)
+1. Usa el template: [adr.template](../skills/pm-thyrox/templates/adr.md.template)
 2. Copia a `decisions/adr-NNN.md`
 3. Completa todas las secciones
 4. Agrega el link aquí en el índice
@@ -112,15 +112,15 @@ Registro de decisiones arquitectónicas y técnicas importantes del proyecto THY
 
 - **Formato:** ADR-XXX (Architecture Decision Record)
 - **Basado en:** [ADRs by Michael Nygard](https://adr.github.io/)
-- **Template:** [adr.template](.claude/skills/pm-thyrox/templates/adr.md.template)
+- **Template:** [adr.template](../skills/pm-thyrox/templates/adr.md.template)
 - **Ubicación:** `.claude/context/decisions/`
 
 ---
 
 ## Referencias Relacionadas
 
-- [ROADMAP](../ROADMAP.md) - Plan del proyecto
-- [ARCHITECTURE](../ARCHITECTURE.md) - Decisiones arquitectónicas detalladas
+- [ROADMAP](../../ROADMAP.md) - Plan del proyecto
+- [ARCHITECTURE](../../ARCHITECTURE.md) - Decisiones arquitectónicas detalladas
 - [commit-convention](../skills/pm-thyrox/references/commit-convention.md) - Convenciones de commits (ADR-003)
 - [adr.template](../skills/pm-thyrox/templates/adr.md.template) - Template para nuevas ADRs
 

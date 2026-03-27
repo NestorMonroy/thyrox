@@ -150,7 +150,7 @@ Usar cuando:
 
 ### 1. requirements-analysis.md.template
 
-**Propósito**: Definir QUÉ se necesita (PHASE 2: ANALYZE)
+**Propósito**: Definir QUÉ se necesita (PHASE 1: ANALYZE)
 
 **Contenido**:
 - Contexto y problema
@@ -549,17 +549,17 @@ git commit -m "feat(architecture-docs): implement TASK-008 - final validation se
 
 ## Integración con PM-THYROX
 
-Spec-Driven Development es **OPCION dentro de PHASE 2: STRUCTURE** de PM-THYROX.
+Spec-Driven Development es **OPCION dentro de PHASE 4: STRUCTURE** de PM-THYROX.
 
 **Flujo**:
 1. User: "Voy a trabajar en una feature compleja"
-2. PHASE 2: STRUCTURE → Ofrece dos opciones:
+2. PHASE 4: STRUCTURE → Ofrece dos opciones:
    - Simple: PRD básico (para trabajo pequeño)
    - Complejo: Spec-Driven (para trabajo grande/riesgoso)
 3. User: "Es complejo, necesito planificación detallada"
 4. Claude: Use Spec-Driven Development
 5. Execute 4 fases con templates
-6. At end → Use PHASE 4: EXECUTE para implementar
+6. At end → Use PHASE 6: EXECUTE para implementar
 
 ---
 
@@ -604,7 +604,7 @@ A: No. Es inversión:
 
 ## Ver También
 
-- PM-THYROX SKILL.md - PHASE 2: STRUCTURE
+- PM-THYROX SKILL.md - PHASE 4: STRUCTURE
 - Templates en `/templates/`:
   - `requirements-analysis.md.template`
   - `requirements-specification.md.template`
