@@ -53,7 +53,6 @@ thyrox/
 ├── CLAUDE.md                # Contexto persistente para Claude Code
 ├── ARCHITECTURE.md          # Decisiones arquitectónicas
 ├── CONTRIBUTING.md          # Guía de contribución
-├── template.md              # Template para documentos
 │
 ├── .claude/                 # Configuración de Claude Code
 │   ├── context/
