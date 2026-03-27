@@ -182,7 +182,7 @@ cd /home/thyrox && claude
 - `references/` - 19 guías de referencia por fase
 - `templates/` - 25 templates para documentos
 - `tracking/` - [AD_HOC_TASKS](skills/pm-thyrox/tracking/AD_HOC_TASKS.md), [REFACTORS](skills/pm-thyrox/tracking/REFACTORS.md)
-- `epics/` - Ejemplo: [example-epic/epic](skills/pm-thyrox/epics/example-epic/epic.md)
+- `templates/epic.md.template` - Template para epics
 
 **context/** - Estado del proyecto
 - [project-state](context/project-state.md) - Contexto general

@@ -534,12 +534,10 @@ All project files live in THYROX structure:
 │       └── pm-thyrox/          This skill
 │           ├── SKILL.md
 │           ├── references/     Documentation references
-│           ├── templates/      Document templates
-│           ├── tracking/       Task tracking
-│           │   ├── AD_HOC_TASKS.md
-│           │   └── REFACTORS.md
-│           └── epics/          Epic examples
-│               └── example-epic/
+│           ├── templates/      Document templates (includes epic.md.template)
+│           └── tracking/       Task tracking
+│               ├── AD_HOC_TASKS.md
+│               └── REFACTORS.md
 │
 ├── docs/                       Documentation (API, BUILD, etc.)
 ├── api/                        Sub-project: API

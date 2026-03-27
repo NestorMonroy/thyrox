@@ -31,11 +31,6 @@ All PM-THYROX workflow files are stored in the THYROX project structure:
     ├── prds/               Product requirement documents
     │   └── <feature>.md
     │
-    ├── epics/              Epics for complex features (optional)
-    │   └── <epic>/
-    │       ├── epic.md
-    │       └── <task-id>.md
-    │
     ├── context/
     │   ├── project-state.md    Current phase/progress
     │   └── decisions.md        ADRs and decisions
