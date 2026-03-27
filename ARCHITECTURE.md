@@ -166,7 +166,7 @@ project/
 │   │   ├── services/
 │   │   ├── middleware/
 │   │   ├── models/
-│   │   └── utils/
+│   │   └── helpers/
 │   ├── tests/
 │   └── package.json
 ├── build/

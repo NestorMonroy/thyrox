@@ -65,7 +65,7 @@ Estas están OK. Son ejemplos mostrados para enseñanza, no archivos reales.
 ### Sección 3: REFERENCIAS ROTAS
 ```
 project-state.md:
-  [ROTA] project.json       (← No existe en ./changes/)
+  [ROTA] project.json       (← No existe en context)
 
 incremental-correction.md:
   [ROTA] PLAN.md            (← No existe en raíz)
@@ -107,15 +107,15 @@ touch docs/ROADMAP.md
 
 ### Problema 2: Templates no instanciados
 
-**Ubicación**: `.claude/context/changes/`  
+**Ubicación**: `.claude/context/`
 **Archivos**: `EXIT_CONDITIONS.md`, `project.json`
 
 **Solución**:
 ```bash
-# Existen como .template, crear instancias
-cd /home/thyrox/.claude/context/changes/
-cp .EXIT_CONDITIONS.md.template EXIT_CONDITIONS.md
-cp .project.json.template project.json
+# Existen as .template in assets/, crear instancias
+cd /home/thyrox/.claude/context/
+cp ../skills/pm-thyrox/assets/EXIT_CONDITIONS.md.template EXIT_CONDITIONS.md
+cp ../skills/pm-thyrox/assets/project.json.template project.json
 ```
 
 ### Problema 3: Archivos en skills/ que faltan
