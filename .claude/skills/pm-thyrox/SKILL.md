@@ -111,6 +111,9 @@ Documentar lecciones previene repetir los mismos errores.
 - Documentar lecciones aprendidas en `work/.../lessons.md`
 - Si hay 100+ issues: ver [incremental-correction](references/incremental-correction.md)
 - Validar integridad: ver [reference-validation](references/reference-validation.md)
+- Gate soft antes de avanzar de fase: `bash scripts/validate-phase-readiness.sh <phase>`
+- Validar cierre de sesión: `bash scripts/validate-session-close.sh`
+- Resumen rápido del estado: `bash scripts/project-status.sh`
 
 **Salir cuando:** Análisis completo y lecciones documentadas.
 

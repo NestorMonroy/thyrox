@@ -461,6 +461,37 @@ All notable changes to this project will be documented in this file.
 5. Git merges independently
 6. ROADMAP.md shows parallel progress
 
+## Error Tracking (AP-06)
+
+Errores se documentan en `context/errors/ERR-NNN.md` usando el template `assets/error-report.md.template`.
+
+**Campos obligatorios:** Qué pasó / Por qué / **Prevención** / Insight
+
+**Reglas:**
+- Cada error DEBE tener campo "Prevención" con acción concreta
+- Si un error recurre (ej: ERR-002 → ERR-006), la "Prevención" del error anterior falló — escalar a regla en SKILL.md o CLAUDE.md
+- Errores que recurren 2+ veces se convierten en locked decision en CLAUDE.md
+
+**Feedback loop:** Error → Prevención → Si recurre → Regla en SKILL/CLAUDE
+
+## Human Handoff (AP-04)
+
+Cuando Claude necesita una decisión del usuario que no puede resolverse en la sesión actual:
+
+1. **Sesión actual:** Agregar al campo `blockers:` en `now.md`
+   ```yml
+   blockers: ["Decidir stack tecnológico para API", "Aprobar diseño de DB schema"]
+   ```
+
+2. **Cross-sesión:** Agregar sección en `focus.md`
+   ```markdown
+   ### Decisiones pendientes del usuario
+   - [ ] Decidir stack tecnológico para API (bloquea T-003)
+   - [ ] Aprobar diseño de DB schema (bloquea Phase 4)
+   ```
+
+3. **Resolución:** Al decidir, eliminar de blockers/focus y documentar decisión en `context/decisions/`
+
 ## Best Practices
 
 - **Update ROADMAP.md daily** — Keep it fresh and accurate
@@ -480,4 +511,7 @@ All notable changes to this project will be documented in this file.
 | CHANGELOG.md | After commit sequence | Weekly |
 | decisions.md | Major architectural decision | As-needed |
 | project-state.md | End of session | Weekly |
+| focus.md | End of session | Every session |
+| now.md | Start and end of session | Every session |
+| context/errors/ | When error occurs | As-needed |
 | Git tag | Release to production | With version bump |
