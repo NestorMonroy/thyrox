@@ -1,278 +1,112 @@
 ```yml
-Tipo: Documentación Técnica
-Categoría: Arquitectura del Sistema
-Versión: 1.0
-Propósito: Documentación de decisiones arquitectónicas y diseño del sistema
-Objetivo: Proporcionar visión clara de la arquitectura y decisiones técnicas
-Fecha actualización: 2026-03-25
+Tipo: Documentación Principal
+Categoría: Arquitectura
+Versión: 2.0
+Propósito: Decisiones arquitectónicas del proyecto THYROX
+Fecha actualización: 2026-03-27
 ```
 
-# ARCHITECTURE
+# ARCHITECTURE — THYROX
 
-## Propósito
+## Visión General
 
-Documentación de decisiones arquitectónicas, patrones de diseño, y estructura del sistema THYROX.
-
-> Objetivo: Que nuevos desarrolladores comprendan la arquitectura y tomen decisiones consistentes.
+THYROX es un framework de gestión de proyectos para Claude Code. No es una aplicación — es una **metodología empaquetada como un Anthropic Skill** que se copia a cualquier proyecto.
 
 ---
 
-## Visión General de Arquitectura
+## Estructura Arquitectónica
 
-THYROX es un template profesional para gestión de proyectos con Claude Code. La arquitectura se divide en componentes independientes:
+```
+pm-thyrox/                   ← El skill (el motor)
+├── SKILL.md                 Instrucciones (~250 líneas, progressive disclosure)
+├── scripts/                 Código ejecutable (detect/convert/validate)
+├── references/              Documentación cargada en contexto bajo demanda
+└── assets/                  Templates copiados para generar output
+```
 
-**Backend:** Node.js + Express<br>
-**Frontend:** (Por definir)<br>
-**Base de Datos:** PostgreSQL<br>
-**DevOps:** GitHub Actions + Docker<br>
-**Documentación:** Markdown versionado en Git
-
----
-
-## Componentes Principales
-
-### API Sub-proyecto (./ api/)
-
-REST API construida con Node.js y Express.
-
-**Estructura:**<br>
-`src/routes/` - Definición de endpoints<br>
-`src/controllers/` - Manejadores de requests<br>
-`src/services/` - Lógica de negocio<br>
-`src/middleware/` - Middleware de Express<br>
-`src/models/` - Modelos de datos
-
-### Build Sub-proyecto (./ build/)
-
-Configuración de build, testing, y deployment.
-
-**Incluye:**<br>
-Scripts de setup, compilación, testing<br>
-Configuración GitHub Actions<br>
-Docker setup y compose<br>
-Ambiente variables
-
-### Documentación (./ docs/)
-
-Documentación técnica y guías.
-
-**Incluye:**<br>
-API.md - Endpoints y autenticación<br>
-BUILD.md - Guía de build y deployment<br>
-ARCHITECTURE.md - Decisiones arquitectónicas<br>
-CONTRIBUTING.md - Guía de contribución
+Sigue la anatomía oficial de Anthropic para skills:
+- **SKILL.md**: Solo lo esencial + navegación a references
+- **scripts/**: Token efficient, deterministic, ejecutable sin cargar en contexto
+- **references/**: Documentación que Claude lee cuando la necesita
+- **assets/**: Archivos que se copian al output, no se cargan en contexto
 
 ---
 
 ## Decisiones Arquitectónicas
 
-### 1. Monorepo con Sub-proyectos
+### ADR-001: Markdown como formato único
 
-**Decisión:** Mantener API y Build como sub-proyectos independientes dentro de un monorepo.
+**Decisión:** Toda documentación en Markdown versionado en Git.<br>
+**Razón:** Universal, git-friendly, legible por humanos y AI, sin dependencias.<br>
+**Consecuencia:** No hay queries complejos. El filesystem es la base de datos.
 
-**Razones:**<br>
-Facilita desarrollo independiente<br>
-Permite versioning separado<br>
-Documentación colocalizada<br>
-CI/CD pipeline unificado
+### ADR-002: ROADMAP.md como fuente de verdad
 
-### 2. Markdown como Fuente de Verdad
+**Decisión:** Un solo archivo para estado de progreso del proyecto.<br>
+**Razón:** Simple, versionado, sin herramientas externas.<br>
+**Consecuencia:** No GitHub Issues, no Jira, no Notion.
 
-**Decisión:** Toda documentación en Markdown versionado en Git.
+### ADR-003: Conventional Commits
 
-**Razones:**<br>
-Versionable y auditable<br>
-Sin dependencias externas<br>
-GitHub lo renderiza nativamente<br>
-Fácil de convertir a otros formatos
+**Decisión:** Formato estandarizado para todos los commits.<br>
+**Razón:** Changelog automático e historial legible.<br>
+**Consecuencia:** `type(scope): description`
 
-### 3. ROADMAP.md como Plan Maestro
+### ADR-004: Single Skill con Progressive Disclosure
 
-**Decisión:** ROADMAP.md es la fuente única de verdad para el estado del proyecto.
+**Decisión:** Un solo skill (pm-thyrox) con 21 references, no 15 skills separados.<br>
+**Razón:** Evita fragmentación, Claude solo carga lo que necesita.<br>
+**Consecuencia:** SKILL.md ≤500 líneas.
 
-**Razones:**<br>
-Single source of truth<br>
-Fácil de actualizar<br>
-Histórico completo en Git<br>
-Accesible para todo el equipo
+### ADR-005: ANALYZE primero
 
-### 4. Conventional Commits
+**Decisión:** Phase 1 es ANALYZE, no PLAN.<br>
+**Razón:** No se puede planificar lo que no se entiende.<br>
+**Consecuencia:** Orden fijo: ANALYZE → SOLUTION_STRATEGY → PLAN → STRUCTURE → DECOMPOSE → EXECUTE → TRACK.
 
-**Decisión:** Usar Conventional Commits para estandarización.
+### ADR-006: Separación Motor / Trabajo
 
-**Razones:**<br>
-Commits legibles y estructurados<br>
-Facilita changelog automático<br>
-Semántica clara<br>
-Herramientas integran fácilmente
+**Decisión:** skills/pm-thyrox/ (estático) separado de context/ (dinámico).<br>
+**Razón:** El skill es reutilizable, el trabajo es específico por proyecto.<br>
+**Consecuencia:** Copiar pm-thyrox/ no arrastra trabajo anterior.
 
-### 5. Claude Code Native
+### ADR-007: Detect/Convert/Validate Pattern
 
-**Decisión:** Usar features nativas de Claude Code, no librerías externas.
+**Decisión:** Cada herramienta tiene 3 scripts con responsabilidad única.<br>
+**Razón:** Composable para CI/CD, cada uno sirve a una fase distinta.<br>
+**Consecuencia:** 6 scripts (3 Bash + 3 Python).
 
-**Razones:**<br>
-Reduce dependencias<br>
-Facilita mantenimiento<br>
-No requiere configuración adicional<br>
-Integración directa
+### ADR-008: Git como única persistencia
+
+**Decisión:** Zero archivos backup en el repo.<br>
+**Razón:** Git ya versiona todo.<br>
+**Consecuencia:** No hay `_backup_*.md` ni `SKILL.md.backup`.
 
 ---
 
-## Patrones de Diseño
+## Technology Stack
 
-### API REST
+```
+Documentation:     Markdown (.md)
+Version Control:   Git
+AI Runtime:        Claude Code (Anthropic)
+Scripts:           Bash (portable) + Python 3 (parsing)
+Templates:         .template files
+```
 
-- **Endpoints:** RESTful design
-- **Autenticación:** API Keys + Bearer tokens
-- **Validación:** Input validation en middleware
-- **Error Handling:** Standardized error responses
-- **Versionado:** `/v1/` prefix en URLs
-
-### Base de Datos
-
-- **ORM:** (Por definir)
-- **Migraciones:** Git-based (no automáticas)
-- **Backup:** Daily snapshots
-- **Índices:** Optimizados para queries comunes
-
-### Estructura de Código
-
-**Separación de concerns:**<br>
-Routes → Controllers → Services → Models<br>
-Cada capa con responsabilidad clara<br>
-Inyección de dependencias<br>
-Testing en cada nivel
+**Zero dependencias externas** — Solo git + Claude Code.
 
 ---
 
 ## Convenciones
 
-### Naming
-
 **Archivos:** `kebab-case.md`<br>
-**Carpetas:** `lowercase-folders/`<br>
-**Variables:** `camelCase`<br>
-**Constantes:** `CONSTANT_CASE`<br>
-**Classes:** `PascalCase`
-
-### Estructura de Carpetas
-
-```
-project/
-├── api/
-│   ├── src/
-│   │   ├── routes/
-│   │   ├── controllers/
-│   │   ├── services/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   └── helpers/
-│   ├── tests/
-│   └── package.json
-├── build/
-│   ├── scripts/
-│   ├── config/
-│   └── Dockerfile
-├── docs/
-├── .claude/
-│   ├── context/
-│   ├── skills/
-│   └── prds/
-└── reference/
-```
+**Carpetas:** `lowercase/`<br>
+**Commits:** `type(scope): description`<br>
+**Epics:** `YYYY-MM-DD-nombre/`<br>
+**Work-logs:** `YYYY-MM-DD-HH-MM-desc.md`<br>
+**ADRs:** `adr-NNN.md`
 
 ---
 
-## Escalabilidad
-
-### Crecimiento Horizontal
-
-**API:** Stateless design para fácil escalado<br>
-**BD:** Connection pooling<br>
-**Cache:** Redis para datos frecuentes<br>
-**CDN:** Para assets estáticos
-
-### Crecimiento Vertical
-
-**Code:** Módulos independientes<br>
-**DB:** Índices optimizados<br>
-**Cache:** Estrategia inteligente<br>
-**Monitoring:** Métricas clave
-
----
-
-## Seguridad
-
-### Principios
-
-**Least Privilege:** Mínimos permisos necesarios<br>
-**Defense in Depth:** Múltiples capas<br>
-**Secure by Default:** Seguridad es el default<br>
-**Audit Trail:** Logging de cambios
-
-### Implementación
-
-**HTTPS:** Siempre en producción<br>
-**API Keys:** Rotación periódica<br>
-**Input Validation:** En todos los endpoints<br>
-**CORS:** Configurado restrictivamente<br>
-**Rate Limiting:** Para prevenir abuse
-
----
-
-## Deployment
-
-### Ambientes
-
-**Desarrollo:** Local machine<br>
-**Staging:** Pre-producción para testing<br>
-**Producción:** Live environment
-
-### CI/CD Pipeline
-
-1. **Commit:** Push a GitHub
-2. **Test:** Automated tests corren
-3. **Build:** Docker image se construye
-4. **Deploy:** Auto-deploy a staging
-5. **Review:** Manual approval
-6. **Release:** Deploy a producción
-
-### Rollback
-
-- Versiones anteriores en registry
-- Database migrations reversibles
-- Health checks antes de considerar ready
-- Monitoreo post-deployment
-
----
-
-## Monitoreo y Logging
-
-### Logs
-
-**Application:** Estructura JSON<br>
-**Access:** Request/response logs<br>
-**Error:** Stack traces con contexto<br>
-**Audit:** Cambios críticos
-
-### Métricas
-
-**Performance:** Response times<br>
-**Availability:** Uptime y errors<br>
-**Business:** User counts, transactions<br>
-**Infrastructure:** CPU, memory, disk
-
----
-
-## Roadmap Futuro
-
-**Phase 1 (Actual):** Estructura base<br>
-**Phase 2:** API completa<br>
-**Phase 3:** Build & deployment<br>
-**Phase 4:** Frontend<br>
-**Phase 5:** Escalabilidad
-
----
-
-**Última Actualización:** 2026-03-25<br>
-**Próxima Review:** 2026-04-25
+**Última actualización:** 2026-03-27

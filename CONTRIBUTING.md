@@ -1,436 +1,146 @@
 ```yml
-Tipo: Documentación del Proyecto
+Tipo: Documentación Principal
 Categoría: Guía de Contribución
-Versión: 1.0
-Propósito: Guía para contribuir al proyecto THYROX
-Objetivo: Que contributors sigan procesos consistentes y de calidad
-Fecha actualización: 2026-03-25
+Versión: 2.0
+Propósito: Cómo contribuir al proyecto THYROX
+Fecha actualización: 2026-03-27
 ```
 
-# CONTRIBUTING
+# CONTRIBUTING — THYROX
 
-## Propósito
+## Flujo de Trabajo
 
-Guía para contribuir al proyecto THYROX. Documenta procesos, convenciones, y best practices.
+THYROX usa una metodología de 7 fases SDLC definida en el [SKILL](.claude/skills/pm-thyrox/SKILL.md):
 
-> Objetivo: Asegurar contribuciones de calidad consistentes con los estándares del proyecto.
+```
+1. ANALYZE           → Entender requisitos
+2. SOLUTION_STRATEGY → Decidir arquitectura
+3. PLAN              → Definir scope, actualizar ROADMAP.md
+4. STRUCTURE         → Crear PRD o specs
+5. DECOMPOSE         → Descomponer en tasks
+6. EXECUTE           → Implementar + commits
+7. TRACK             → Validar + changelog
+```
+
+**Siempre empezar por ANALYZE.**
 
 ---
 
-## Antes de Comenzar
+## Cómo Contribuir
 
-### Prerequisites
-
-**Requerido:**<br>
-Node.js 18.x o superior<br>
-Git 2.30+<br>
-GitHub account<br>
-Editor de código (VSCode recomendado)
-
-**Opcional:**<br>
-Docker<br>
-PostgreSQL local<br>
-Postman/Insomnia
-
-### Setup Inicial
+### 1. Entender el proyecto
 
 ```bash
-# Clonar repositorio
-git clone https://github.com/user/thyrox.git
-cd thyrox
+cd thyrox && claude
+```
 
-# Instalar dependencias
-npm install
+Claude Code lee CLAUDE.md → consulta SKILL.md → identifica fase actual.
 
-# Setup inicial
-npm run setup
+### 2. Revisar estado
 
-# Verificar setup
-npm run health-check
+- Leer `ROADMAP.md` — ¿qué está pendiente?
+- Leer `CHANGELOG.md` — ¿qué cambió recientemente?
+
+### 3. Crear branch
+
+```bash
+git checkout -b feature/descripcion
+# o: bugfix/descripcion, docs/descripcion
+```
+
+### 4. Trabajar siguiendo las fases
+
+Consultar [SKILL](.claude/skills/pm-thyrox/SKILL.md) para saber qué fase aplica.
+
+### 5. Commits con Conventional Commits
+
+```
+feat(scope): add new feature
+fix(scope): fix bug description
+docs(scope): update documentation
+refactor(scope): restructure code
+```
+
+**Reglas:**
+- Primera línea < 72 caracteres
+- Presente imperativo ("add" no "added")
+- Sin punto final
+- Sin emojis
+
+### 6. Actualizar ROADMAP.md
+
+```markdown
+- [x] Task completada (YYYY-MM-DD)
+```
+
+### 7. Push y PR
+
+```bash
+git push -u origin feature/descripcion
 ```
 
 ---
 
-## Proceso de Contribución
+## Estructura del Proyecto
 
-### 1. Crear un Issue
-
-Antes de empezar a trabajar, crea un issue describiendo:
-
-**Título claro:** "Feature: X" o "Fix: Y"<br>
-**Descripción:** Qué, por qué, cómo<br>
-**Contexto:** Información relevante<br>
-**Screenshots/Logs:** Si aplica<br>
-**Labels:** feature, bug, documentation, etc.
-
-### 2. Crear una Branch
-
-```bash
-# Actualizar main
-git checkout main
-git pull origin main
-
-# Crear branch
-git checkout -b feature/nombre-feature
-# o
-git checkout -b fix/nombre-bug
 ```
-
-**Convención:** `type/description`<br>
-`feature/user-auth`<br>
-`fix/login-error`<br>
-`docs/update-readme`
-
-### 3. Hacer Cambios
-
-**Código:**<br>
-Sigue convenciones del proyecto<br>
-Agrega tests para nuevo código<br>
-Asegúrate de que tests pasen<br>
-Documenta cambios complejos
-
-**Commits:**<br>
-Commits frecuentes y descriptivos<br>
-Sigue Conventional Commits<br>
-Referencia el issue: `fix: login error (fixes #123)`
-
-### 4. Push y Pull Request
-
-```bash
-# Push a origin
-git push origin feature/nombre-feature
-
-# Crear Pull Request en GitHub
-# Rellena el template PR
-# Referencia el issue
+thyrox/
+├── README.md              Presentación
+├── ROADMAP.md             Plan maestro (fuente de verdad)
+├── CHANGELOG.md           Historial de cambios
+├── ARCHITECTURE.md        Decisiones arquitectónicas
+├── CONTRIBUTING.md        Este archivo
+├── .claude/
+│   ├── CLAUDE.md          Contexto persistente
+│   ├── context/           Trabajo producido (analysis, epics, work-logs, decisions)
+│   └── skills/pm-thyrox/  Skill principal (SKILL.md + references + scripts + assets)
+├── docs/                  API.md, BUILD.md
+├── api/                   Sub-proyecto API
+└── build/                 Sub-proyecto Build
 ```
-
-**PR Description:**<br>
-Qué cambia<br>
-Por qué cambia<br>
-Cómo testearlo<br>
-Breaking changes (si aplica)<br>
-Screenshots/videos<br>
-Closes #123
-
-### 5. Code Review
-
-**Espera feedback** de los maintainers<br>
-**Responde comentarios** constructivamente<br>
-**Haz cambios** según feedback<br>
-**Re-request review** después de cambios
-
-### 6. Merge
-
-Una vez aprobado:<br>
-Squash commits (si aplica)<br>
-Merge a main<br>
-Delete feature branch<br>
-Close issue relacionado
 
 ---
 
-## Convenciones del Código
+## Convenciones
 
-### JavaScript/Node.js
+### Archivos y carpetas
 
-**Style:** ESLint config del proyecto<br>
-**Linter:** `npm run lint`<br>
-**Formatter:** Prettier<br>
-**Tests:** Jest
+- Archivos: `kebab-case.md`
+- Carpetas: `lowercase/`
+- Templates: `nombre.md.template` (en assets/)
 
-**Ejemplo:**
+### ROADMAP.md
 
-```javascript
-// Buen ejemplo
-const getUserById = async (userId) => {
-  try {
-    const user = await db.users.findById(userId);
-    if (!user) {
-      throw new NotFoundError(`User ${userId} not found`);
-    }
-    return user;
-  } catch (error) {
-    logger.error('Error fetching user', { userId, error });
-    throw error;
-  }
-};
+```
+- [ ] = Pendiente
+- [-] = En Progreso
+- [x] = Completado (YYYY-MM-DD)
 ```
 
 ### Markdown
 
-**Formato:** Markdown estándar<br>
-**Line breaks:** `<br>` para HTML<br>
-**Headers:** `# Title`, `## Subtitle`, etc.<br>
-**Lists:** `-` para viñetas, no números
-
-### Git Commits
-
-Sigue Conventional Commits:
-
-```
-feat(api): add user authentication endpoint
-fix(db): resolve connection pooling issue
-docs(readme): update installation steps
-style(code): format with prettier
-refactor(service): simplify user service
-test(auth): add authentication tests
-chore(deps): update dependencies
-```
+- Links: `[texto](ruta/archivo.md)` (no backticks)
+- Texto del link sin extensión: `[SKILL]` no `[SKILL.md]`
+- Line breaks en metadata: usar `<br>`
 
 ---
 
-## Testing
+## Validación
 
-### Unit Tests
+Antes de hacer PR, ejecutar:
 
 ```bash
-npm run test
-npm run test:watch
-npm run test:coverage
-```
+# Detectar backtick refs sin convertir
+bash .claude/skills/pm-thyrox/scripts/detect-missing-md-links.sh
 
-**Requerimientos:**<br>
-Mínimo 80% coverage<br>
-Happy path y edge cases<br>
-Mocking de dependencias
+# Detectar links rotos
+python3 .claude/skills/pm-thyrox/scripts/detect_broken_references.py
 
-### Integration Tests
-
-```bash
-npm run test:integration
-```
-
-**Requerimientos:**<br>
-Test contra staging DB<br>
-Full workflow testing<br>
-Error scenarios
-
-### Manual Testing
-
-- Test en local antes de PR
-- Sigue casos de uso documentados
-- Prueba en diferentes ambientes
-- Verifica breaking changes
-
----
-
-## Documentation
-
-### Cambios en Código
-
-**Comenta código complejo:**<br>
-```javascript
-// Evita el N+1 problem al pre-load relations
-const users = await User.query()
-  .withGraphFetched('posts');
-```
-
-### Cambios en API
-
-Actualiza [docs/API](docs/API.md):
-
-```
-### GET /api/v1/users/:id
-
-Obtiene usuario por ID.
-
-**Parameters:**
-- id (string, required): User ID
-
-**Response:**
-- 200: User object
-- 404: User not found
-```
-
-### Cambios en Arquitectura
-
-Actualiza [ARCHITECTURE](./ARCHITECTURE.md):
-
-- Decisiones arquitectónicas
-- Patrones nuevos
-- Cambios en estructura
-
-### Cambios en Proceso
-
-Actualiza [CONTRIBUTING](./CONTRIBUTING.md) (este archivo):
-
-- Nuevos procesos
-- Cambios en convenciones
-- Nuevas herramientas
-
----
-
-## Best Practices
-
-### Code Quality
-
-**DRY:** Don't Repeat Yourself<br>
-**SOLID:** Single Responsibility, etc.<br>
-**KISS:** Keep It Simple, Stupid<br>
-**YAGNI:** You Aren't Gonna Need It
-
-### Naming
-
-**Variables:** Descriptivas, claras<br>
-`const userName = 'John';` ✓<br>
-`const u = 'John';` ✗
-
-**Functions:** Verbo + sustantivo<br>
-`getUserById()` ✓<br>
-`getUser()` con múltiples parámetros ✗
-
-### Comments
-
-**Usa cuando:**<br>
-Explicas el "por qué", no el "qué"<br>
-Código complejo<br>
-Workarounds o hacks
-
-**No uses cuando:**<br>
-El código es autoexplicativo<br>
-El nombre de función/variable es claro
-
----
-
-## Reportar Issues
-
-### Bug Report
-
-```markdown
-**Descripción:** Qué está roto
-
-**Pasos para reproducir:**
-1. ...
-2. ...
-3. ...
-
-**Comportamiento esperado:** Qué debería pasar
-
-**Actual:** Qué pasa actualmente
-
-**Ambiente:**
-- OS: Ubuntu 20.04
-- Node: 18.0.0
-- Versión: 0.1.0
-
-**Logs:**
-[Pegá los logs aquí]
-
-**Screenshots:**
-[Si aplica]
-```
-
-### Feature Request
-
-```markdown
-**Descripción:** Qué quieres agregar
-
-**Casos de uso:** Cuándo se usaría
-
-**Diseño propuesto:** Cómo se vería
-
-**Alternativas:** Otros enfoques
-
-**Contexto adicional:** Información relevante
+# Validar (exit 0 = OK)
+bash .claude/skills/pm-thyrox/scripts/validate-missing-md-links.sh
+python3 .claude/skills/pm-thyrox/scripts/validate-broken-references.py
 ```
 
 ---
 
-## Ayuda y Soporte
-
-### Preguntas
-
-Abre un issue con label `question`<br>
-O contacta a los maintainers<br>
-O revisa la documentación existente
-
-### Discussion
-
-Para discusiones amplias, abre un Discussion en GitHub<br>
-No merece un issue individual<br>
-Puede llevar a un issue después
-
-### Escalation
-
-Si algo está bloqueado, menciona a los maintainers<br>
-Sé respetuoso<br>
-Proporciona contexto completo
-
----
-
-## Code of Conduct
-
-### Principios
-
-**Respeto:** A todos los miembros<br>
-**Inclusión:** Bienvenida a todos<br>
-**Constructivo:** Feedback helpful<br>
-**Profesional:** Comunicación clara
-
-### Prohibido
-
-Abuso, acoso, discriminación<br>
-Spam o solicitudes injustificadas<br>
-Lenguaje ofensivo<br>
-Desviar temas
-
-### Violations
-
-Reporta violations a maintainers<br>
-Proporciona evidencia<br>
-Mantén privacidad<br>
-Se tomarán acciones
-
----
-
-## Tips para Contribuciones Exitosas
-
-✓ Lee la documentación existente<br>
-✓ Sigue las convenciones del proyecto<br>
-✓ Tests para todo código nuevo<br>
-✓ Commits descriptivos<br>
-✓ PRs enfocadas en un tema<br>
-✓ Comunica claramente<br>
-✓ Sé paciente con reviews<br>
-✓ Aprende del feedback<br>
-✓ Ayuda a otros contributors<br>
-✓ Celebra cuando merges
-
----
-
-## Recursos
-
-**Documentación:**<br>
-README.md - Overview<br>
-ARCHITECTURE.md - Arquitectura<br>
-ROADMAP.md - Plan del proyecto<br>
-docs/ - Documentación detallada
-
-**Links útiles:**<br>
-Conventional Commits: https://www.conventionalcommits.org/<br>
-GitHub Flow: https://guides.github.com/introduction/flow/<br>
-Semantic Versioning: https://semver.org/
-
----
-
-## FAQ
-
-**Q: ¿Cómo empiezo?**<br>
-A: Lee este archivo, luego elige un issue con label `good first issue`
-
-**Q: ¿Puedo trabajar en múltiples issues?**<br>
-A: Sí, pero en branches separadas. Una rama = un tema.
-
-**Q: ¿Cuánto tarda el code review?**<br>
-A: 24-48 horas normalmente. Depende de la complejidad.
-
-**Q: ¿Qué si mi PR es rechazada?**<br>
-A: Es feedback, no rechazo personal. Aprende y intenta de nuevo.
-
----
-
-**Última Actualización:** 2026-03-25<br>
-**Próxima Review:** 2026-04-25
-<br>
-¡Gracias por contribuir!
+**Última actualización:** 2026-03-27
