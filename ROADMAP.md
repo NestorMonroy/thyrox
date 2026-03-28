@@ -200,6 +200,36 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## FASE 3d: Resolver riesgos de referencia (anti-patterns de 14 proyectos)
+
+**Work package:** context/work/2026-03-28-15-51-08-reference-errors-analysis/
+**Análisis:** 12 anti-patterns identificados, 6 riesgos activos, 4 requieren acción
+
+### Enforcement ejecutable (AP-01 + AP-09)
+
+- [ ] Extender stop-hook para validar focus.md + now.md actualizados
+- [ ] Documentar en SKILL.md cómo usar validate-phase-readiness.sh como gate soft
+
+### Error-to-prevention feedback loop (AP-06)
+
+- [ ] Crear template ERR mejorado con campo "Prevención" obligatorio
+- [ ] Actualizar convenciones de error tracking en conventions.md
+
+### Handoff humano persistente (AP-04)
+
+- [ ] Agregar sección "Decisiones pendientes del usuario" en focus.md cuando aplique
+- [ ] Documentar convención de blockers en now.md
+
+### Token efficiency (AP-10)
+
+- [ ] Crear scripts/project-status.sh — resumen <50 líneas del estado
+
+### No requiere acción
+
+- [x] AP-05: SKILL.md mezcla capas — 191 líneas es manejable, no separar (2026-03-28)
+
+---
+
 ## FASE 4: Template listo para reutilización (futuro)
 
 ### Generalización
@@ -221,12 +251,17 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 ```
 FASE 1: Framework Base       — 100% ✓
 FASE 2: Consolidación        — 100% ✓
-FASE 3: Completar docs       —   0%
+FASE 3: Completar docs       —  80%
+FASE 3b: spec-kit adoption   — 100% ✓
+FASE 3c: spec-kit deep       — 100% ✓
+FASE 3d: Riesgos referencia  —   0%
 FASE 4: Template reutilizable —   0%
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
+Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
+Sesión 2026-03-28 (s3): 5 corrections + reference errors analysis
 ```
 
 ---
 
-**Última actualización:** 2026-03-27
+**Última actualización:** 2026-03-28
