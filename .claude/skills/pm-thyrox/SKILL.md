@@ -139,7 +139,7 @@ See: [solution-strategy](references/solution-strategy.md)
 2. Implement the change
 3. Commit with Conventional Commits (see [commit-helper](references/commit-helper.md))
 4. Update ROADMAP.md: `[ ]` → `[x]` with date
-5. If long session: document in `context/work-logs/`
+5. Update work-log with progress
 6. Repeat until all tasks complete
 
 **Exit:** All tasks complete, tests passing, commits done → Phase 7.
@@ -249,6 +249,20 @@ For full details: see [conventions](references/conventions.md).
 **Phase 7 (TRACK):** Analysis complete + lessons documented
 
 Full exit conditions: use `assets/EXIT_CONDITIONS.md.template`
+
+---
+
+## Session Artifacts (not phase-specific)
+
+These artifacts span the session, not individual phases:
+
+| Artifact | CREATE when | UPDATE when | CLOSE when |
+|----------|------------|-------------|------------|
+| **Work-log** | Session start | During Phase 6 (progress) | Session end (Phase 7) |
+| **ADRs** | Decision made (Phase 2+) | Decision changes | — |
+| **Epic** | Phase 3 (PLAN) | Phase 4-5 (add specs, tasks) | Phase 7 (mark complete) |
+
+**Work-log is mandatory.** Every session must have one at `context/work-logs/YYYY-MM-DD-HH-MM-desc.md`.
 
 ---
 

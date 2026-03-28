@@ -160,22 +160,27 @@ Ver [SKILL](skills/pm-thyrox/SKILL.md) para proceso detallado de cada fase.
 cd /home/thyrox && claude
 ```
 
+- Crear work-log: `context/work-logs/YYYY-MM-DD-HH-MM-descripcion.md`
+- Registrar: fecha, objetivo de la sesión, fase actual
+
 ### 2. Contexto
 
 - Revisar ROADMAP.md (estado actual)
-- Revisar [AD_HOC_TASKS](skills/pm-thyrox/assets/AD_HOC_TASKS.md.template) si hay
+- Revisar work-log anterior (si existe)
 - Identificar en qué fase estamos
 
 ### 3. Trabajar
 
 - Seguir la fase correspondiente del [SKILL](skills/pm-thyrox/SKILL.md)
+- Crear ADRs cuando se toman decisiones arquitectónicas (Phase 2+)
+- Crear epic cuando se planifica trabajo (Phase 3)
 - Commits con Conventional Commits
 - Actualizar ROADMAP.md al completar items
 
 ### 4. Cerrar sesión
 
+- Completar work-log: resumen, decisiones, errores, siguiente sesión
 - Verificar checklist (abajo)
-- Documentar progreso en work-logs si aplica
 
 ---
 
