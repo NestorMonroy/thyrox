@@ -9,7 +9,7 @@
 set -euo pipefail
 
 WORKSPACE="/tmp/thyrox-eval-workspace"
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
 SKILL_DIR="${PROJECT_ROOT}/.claude/skills/pm-thyrox"
 SPECIFIC_EVAL="${1:-all}"
 

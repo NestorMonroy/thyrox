@@ -27,6 +27,8 @@ Las 8 subsecciones de análisis (leer cuando se necesite profundidad):
 [introduction](references/introduction.md), [requirements-analysis](references/requirements-analysis.md), [use-cases](references/use-cases.md), [quality-goals](references/quality-goals.md), [stakeholders](references/stakeholders.md), [basic-usage](references/basic-usage.md), [constraints](references/constraints.md), [context](references/context.md)
 
 **Salir cuando:** Los hallazgos están documentados y aprobados por el usuario.
+**Siguiente:** Proponer Phase 2. Si no requiere decisiones arquitectónicas, proponer saltar a Phase 3.
+**Detectar:** Si `work/.../analysis/` tiene hallazgos documentados, Phase 1 ya completó.
 
 ### Phase 2: SOLUTION_STRATEGY
 
@@ -40,6 +42,8 @@ Investigar alternativas antes de decidir previene decisiones sin evidencia.
 Ver [solution-strategy](references/solution-strategy.md) para la guía completa.
 
 **Salir cuando:** Arquitectura aprobada con investigación documentada.
+**Siguiente:** Proponer Phase 3: PLAN para definir scope y crear work package.
+**Detectar:** Si `work/.../spec.md` tiene decisiones arquitectónicas, Phase 2 ya completó.
 
 ### Phase 3: PLAN
 
@@ -51,6 +55,8 @@ Definir scope antes de estructurar previene scope creep.
 4. Obtener aprobación del scope
 
 **Salir cuando:** ROADMAP actualizado y scope aprobado.
+**Siguiente:** Proponer Phase 4: STRUCTURE para especificar antes de descomponer.
+**Detectar:** Si ROADMAP.md tiene el work package linkeado, Phase 3 ya completó.
 
 ### Phase 4: STRUCTURE
 
@@ -62,18 +68,24 @@ Especificar antes de descomponer previene ambigüedad en las tareas.
 Verificar que no queden marcadores [NEEDS CLARIFICATION] sin resolver — la ambigüedad en specs se multiplica en la implementación.
 
 **Salir cuando:** Specs aprobadas y sin ambigüedades.
+**Siguiente:** Proponer Phase 5: DECOMPOSE para crear tareas atómicas.
+**Detectar:** Si `work/.../spec.md` tiene user stories y acceptance criteria, Phase 4 ya completó.
 
 ### Phase 5: DECOMPOSE
 
 Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
 1. Leer spec.md del work package
-2. Crear lista de tareas: `- [ ] [T-NNN] Descripción (R-N)` — cada tarea referencia su requisito
+2. Crear lista de tareas con IDs trazables — cada tarea necesita un ID y referencia a su requisito
+   porque esto permite detectar tareas huérfanas (sin requisito) o requisitos sin cobertura.
+   Formato: `- [ ] [T-NNN] Descripción (R-N)`
 3. Marcar tareas paralelas [P]
 4. Definir checkpoints de validación
 5. Guardar en `work/.../plan.md` o `work/.../tasks.md`
 
 **Salir cuando:** Tareas atómicas con orden definido.
+**Siguiente:** Proponer Phase 6: EXECUTE para implementar.
+**Detectar:** Si `work/.../plan.md` tiene checkboxes `- [ ] [T-NNN]`, Phase 5 ya completó.
 
 ### Phase 6: EXECUTE
 
@@ -86,12 +98,15 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 5. Repetir hasta completar todas las tareas
 
 **Salir cuando:** Todas las tareas completadas y commiteadas.
+**Siguiente:** Proponer Phase 7: TRACK para documentar lecciones.
+**Detectar:** Si todas las checkboxes en `plan.md` están `[x]`, Phase 6 ya completó.
 
 ### Phase 7: TRACK
 
 Documentar lecciones previene repetir los mismos errores.
 
-- Revisar progreso desde ROADMAP.md + commits recientes
+- Revisar progreso desde ROADMAP.md + commits recientes. Si hay work package activo con plan.md,
+  identificar la siguiente tarea incompleta y sugerirla como acción concreta
 - Generar changelog desde commits → CHANGELOG.md
 - Documentar lecciones aprendidas en `work/.../lessons.md`
 - Si hay 100+ issues: ver [incremental-correction](references/incremental-correction.md)
