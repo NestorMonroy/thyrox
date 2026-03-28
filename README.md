@@ -55,11 +55,20 @@ thyrox/
 ├── CONTRIBUTING.md          # Guía de contribución
 │
 ├── .claude/                 # Configuración de Claude Code
+│   ├── CLAUDE.md            # Contexto persistente (Level 2)
 │   ├── context/
-│   │   ├── project-state.md
-│   │   └── decisions.md
+│   │   ├── project-state.md # Metadata del proyecto
+│   │   ├── focus.md         # Dirección actual
+│   │   ├── now.md           # Estado de sesión (YAML)
+│   │   ├── decisions/       # ADRs (adr-NNN.md)
+│   │   ├── errors/          # Error tracking (ERR-NNN.md)
+│   │   └── work/            # Work packages (YYYY-MM-DD-HH-MM-SS-nombre/)
 │   └── skills/
 │       └── pm-thyrox/       # Skill principal de PM
+│           ├── SKILL.md     # Motor — 7 fases SDLC (Level 1)
+│           ├── references/  # 20 guías de metodología
+│           ├── scripts/     # Validación y evals
+│           └── assets/      # 33 templates de artefactos
 │
 ├── docs/                    # Documentación técnica
 │   ├── API.md              # Documentación de endpoints

@@ -150,6 +150,10 @@ cp .claude/skills/pm-thyrox/scripts/commit-msg-hook.sh .git/hooks/commit-msg
 chmod +x .git/hooks/commit-msg
 ```
 
+### Cuando algo falla
+
+Documentar errores usando el template `assets/error-report.md.template` en `context/errors/ERR-NNN.md`. Campos obligatorios: Qué pasó / Por qué / **Prevención** / Insight. Ver [Error Tracking](./claude/skills/pm-thyrox/references/conventions.md#error-tracking-ap-06) para la convención completa.
+
 ### CI/CD
 
 El proyecto incluye GitHub Actions (`.github/workflows/validate.yml`) que verifica:
