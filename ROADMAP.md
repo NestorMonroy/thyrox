@@ -113,11 +113,11 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 - [x] Análisis de covariancia: 5 leyes verificadas en 9 archivos (2026-03-28)
 - [x] Solution strategy: fuente canónica + referencia (2026-03-28)
-- [-] LAW 4: Jerarquía — agregar a SKILL.md, CLAUDE.md (en progreso)
-- [ ] LAW 2: Estructura — agregar scripts/ a SKILL.md, eliminar prds/ de CLAUDE.md
-- [ ] LAW 3: Naming — hacer explícitas convenciones en SKILL.md
-- [ ] LAW 5: Outputs — clarificar analysis/ y work-logs/ en SKILL.md
-- [ ] LAW 2: conventions.md — actualizar estructura completa
+- [x] LAW 4: Jerarquía — Level 1/2/3 en SKILL, CLAUDE, README (2026-03-28)
+- [x] LAW 2: Estructura — scripts/ en SKILL.md, prds/ eliminado de CLAUDE.md (2026-03-28)
+- [x] LAW 3: Naming — convenciones explícitas en SKILL.md (2026-03-28)
+- [x] LAW 2: conventions.md — estructura actualizada (2026-03-28)
+- [x] Verificación: 5 leyes invariantes confirmadas por grep (2026-03-28)
 
 ### Validación final
 
