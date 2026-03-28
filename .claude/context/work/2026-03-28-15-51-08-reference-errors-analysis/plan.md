@@ -25,26 +25,26 @@ Tipo: Phase 3+5 (PLAN + DECOMPOSE)
 
 ### Bloque 1: Enforcement ejecutable (AP-01 + AP-09)
 
-- [ ] [T-001] Crear script `scripts/validate-session-close.sh` que verifique: focus.md actualizado hoy, now.md tiene phase, work package activo tiene commits recientes (R-AP01)
-- [ ] [T-002] Documentar en SKILL.md Phase 7 cómo usar `validate-phase-readiness.sh` como gate soft antes de avanzar de fase (R-AP09)
+- [x] [T-001] Crear script `scripts/validate-session-close.sh` que verifique: focus.md actualizado hoy, now.md tiene phase, work package activo tiene commits recientes (R-AP01)
+- [x] [T-002] Documentar en SKILL.md Phase 7 cómo usar `validate-phase-readiness.sh` como gate soft antes de avanzar de fase (R-AP09)
 
 ### Bloque 2: Error-to-prevention feedback loop (AP-06)
 
-- [ ] [T-003] Crear template `assets/error-report.md.template` con campos: Qué pasó / Por qué / Prevención / Insight (R-AP06)
-- [ ] [T-004] Actualizar `references/conventions.md` con convención de error tracking mejorada (R-AP06)
+- [x] [T-003] Crear template `assets/error-report.md.template` con campos: Qué pasó / Por qué / Prevención / Insight (R-AP06)
+- [x] [T-004] Actualizar `references/conventions.md` con convención de error tracking mejorada (R-AP06)
 
 ### Bloque 3: Handoff humano persistente (AP-04)
 
-- [ ] [T-005] Documentar convención en `references/conventions.md`: usar `blockers:` en now.md para sesión actual + sección "Decisiones pendientes" en focus.md para cross-sesión (R-AP04)
+- [x] [T-005] Documentar convención en `references/conventions.md`: usar `blockers:` en now.md para sesión actual + sección "Decisiones pendientes" en focus.md para cross-sesión (R-AP04)
 
 ### Bloque 4: Token efficiency (AP-10)
 
-- [ ] [T-006] Crear `scripts/project-status.sh` que lea focus.md + now.md + último work package y genere resumen <50 líneas (R-AP10)
+- [x] [T-006] Crear `scripts/project-status.sh` que lea focus.md + now.md + último work package y genere resumen <50 líneas (R-AP10)
 
 ### Bloque 5: Tracking
 
-- [ ] [T-007] Actualizar ROADMAP.md con checkboxes completadas (R-TRACK)
-- [ ] [T-008] Actualizar focus.md + now.md para cierre (R-TRACK)
+- [x] [T-007] Actualizar ROADMAP.md con checkboxes completadas (R-TRACK)
+- [x] [T-008] Actualizar focus.md + now.md para cierre (R-TRACK)
 
 ---
 

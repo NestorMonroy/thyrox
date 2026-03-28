@@ -207,22 +207,21 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ### Enforcement ejecutable (AP-01 + AP-09)
 
-- [ ] Extender stop-hook para validar focus.md + now.md actualizados
-- [ ] Documentar en SKILL.md cómo usar validate-phase-readiness.sh como gate soft
+- [x] Crear validate-session-close.sh (hard gate) (2026-03-28)
+- [x] Documentar en SKILL.md cómo usar validate-phase-readiness.sh como gate soft (2026-03-28)
 
 ### Error-to-prevention feedback loop (AP-06)
 
-- [ ] Crear template ERR mejorado con campo "Prevención" obligatorio
-- [ ] Actualizar convenciones de error tracking en conventions.md
+- [x] Crear template ERR mejorado con campo "Prevención" obligatorio (2026-03-28)
+- [x] Actualizar convenciones de error tracking en conventions.md (2026-03-28)
 
 ### Handoff humano persistente (AP-04)
 
-- [ ] Agregar sección "Decisiones pendientes del usuario" en focus.md cuando aplique
-- [ ] Documentar convención de blockers en now.md
+- [x] Documentar convención: blockers en now.md + sección en focus.md (2026-03-28)
 
 ### Token efficiency (AP-10)
 
-- [ ] Crear scripts/project-status.sh — resumen <50 líneas del estado
+- [x] Crear scripts/project-status.sh — resumen <50 líneas del estado (2026-03-28)
 
 ### No requiere acción
 
@@ -254,7 +253,7 @@ FASE 2: Consolidación        — 100% ✓
 FASE 3: Completar docs       —  80%
 FASE 3b: spec-kit adoption   — 100% ✓
 FASE 3c: spec-kit deep       — 100% ✓
-FASE 3d: Riesgos referencia  —   0%
+FASE 3d: Riesgos referencia  — 100% ✓
 FASE 4: Template reutilizable —   0%
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
