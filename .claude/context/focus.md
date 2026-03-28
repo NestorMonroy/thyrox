@@ -6,19 +6,21 @@ Versión: 1.0
 
 # Focus
 
-SKILL.md reescrito (176 líneas) + tests creados (31 total) + mapping verificado.
+SKILL.md reescrito + 54 test cases creados + multi-interaction evals ejecutados.
 
-## Completado esta sesión
+## Completado sesión 2
 
-- SKILL.md reescrito según skill-creator guidelines
-- 3 functional evals + 28 trigger evals creados
-- verify-skill-mapping.sh: 29 passed, 0 failed, 7 warnings
-- References mapping: 20 references mapeadas a fases con "when to read"
-- Templates mapping: 32 templates mapeados a fases con triggers
+- SKILL.md reescrito (176 líneas, skill-creator guidelines)
+- TOC agregado a 7 references >300 líneas
+- 54 test cases: 28 trigger + 3 functional + 23 multi-interaction
+- Evals ejecutados: functional 78.6%, multi-interaction 76.9%
+- 4 lecciones documentadas (L-004 a L-007)
 - Errores centralizados en context/errors/ (ERR-001 a ERR-028)
+- Script run-multi-evals.sh creado (bug en paths pendiente de fix)
 
 ## Pendiente
 
-- 7 references necesitan TOC (>300 líneas sin tabla de contenidos)
-- Description optimization (run_loop.py del skill-creator)
-- Ejecutar functional evals cuando el entorno lo permita
+1. Fix bug en run-multi-evals.sh (path doble .claude/.claude/)
+2. Re-ejecutar MI-22 después del fix
+3. Evaluar qué gaps del SKILL mejorar basado en eval results
+4. Considerar: description optimization si los trigger evals fallan
