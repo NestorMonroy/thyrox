@@ -22,9 +22,9 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
 1. Investigar requisitos, stakeholders, constraints y contexto
 2. Crear work package: `context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
 3. Documentar hallazgos en `work/.../analysis/`
-4. Si hay decisiones arquitectónicas, crear ADR en `context/decisions/`
+4. Si hay decisiones arquitectónicas, crear ADR en `context/decisions/` usando `assets/adr.md.template`
 
-Las 8 subsecciones de análisis (leer cuando se necesite profundidad):
+Las 8 subsecciones de análisis (leer cuando se necesite profundidad, usar `assets/introduction.md.template` como formato de output):
 [introduction](references/introduction.md), [requirements-analysis](references/requirements-analysis.md), [use-cases](references/use-cases.md), [quality-goals](references/quality-goals.md), [stakeholders](references/stakeholders.md), [basic-usage](references/basic-usage.md), [constraints](references/constraints.md), [context](references/context.md)
 
 **Salir cuando:** Los hallazgos están documentados y aprobados por el usuario.
@@ -35,15 +35,16 @@ Las 8 subsecciones de análisis (leer cuando se necesite profundidad):
 
 Investigar alternativas antes de decidir previene decisiones sin evidencia.
 
-1. Listar unknowns → investigar alternativas → documentar pros/cons
-2. Verificar que las decisiones respetan los principios del proyecto
-3. Documentar decisiones con justificación
-4. Re-verificar después de diseñar (las decisiones pueden cambiar al profundizar)
+1. **Key Ideas** — definir los conceptos centrales que guían la solución
+2. **Research** — listar unknowns → investigar alternativas → documentar pros/cons por cada uno
+3. **Pre-design check** — verificar que las decisiones respetan los principios del proyecto
+4. **Decisions** — documentar decisiones fundamentales con justificación. Usar `assets/adr.md.template` para decisiones arquitectónicas
+5. **Post-design re-check** — re-verificar después de diseñar (las decisiones pueden cambiar al profundizar)
 
-Ver [solution-strategy](references/solution-strategy.md) para la guía completa.
+Ver [solution-strategy](references/solution-strategy.md) para estructura completa (Tech Stack, Patterns, Quality Goals).
 
 **Salir cuando:** Arquitectura aprobada con investigación documentada.
-**Siguiente:** Proponer Phase 3: PLAN para definir scope y crear work package.
+**Siguiente:** Proponer Phase 3: PLAN para definir scope y linkear work package en ROADMAP.
 **Detectar:** Si `work/.../spec.md` tiene decisiones arquitectónicas, Phase 2 ya completó.
 
 ### Phase 3: PLAN
@@ -51,7 +52,7 @@ Ver [solution-strategy](references/solution-strategy.md) para la guía completa.
 Definir scope antes de estructurar previene scope creep.
 
 1. Brainstorm: ¿qué problema? ¿quiénes son los usuarios? ¿qué es éxito? ¿qué está fuera?
-2. Si no se creó en Phase 1, crear work package: `context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
+2. Verificar que el work package existe (creado en Phase 1). Para trabajo grande que agrupa múltiples features, usar `assets/epic.md.template`
 3. Actualizar ROADMAP.md con features y link al work package
 4. Obtener aprobación del scope
 
@@ -66,9 +67,9 @@ Especificar antes de descomponer previene ambigüedad en las tareas.
 **Simple** (<10 tareas): Crear spec.md con overview, user stories, acceptance criteria.
 **Complejo** (10+ tareas): Ver [spec-driven-development](references/spec-driven-development.md).
 
-Verificar que no queden marcadores [NEEDS CLARIFICATION] sin resolver — la ambigüedad en specs se multiplica en la implementación.
+Verificar que no queden marcadores [NEEDS CLARIFICATION] sin resolver — la ambigüedad en specs se multiplica en la implementación. Usar `assets/spec-quality-checklist.md.template` como gate antes de avanzar a Phase 5.
 
-**Salir cuando:** Specs aprobadas y sin ambigüedades.
+**Salir cuando:** Specs aprobadas, checklist pasado, sin ambigüedades.
 **Siguiente:** Proponer Phase 5: DECOMPOSE para crear tareas atómicas.
 **Detectar:** Si `work/.../spec.md` tiene user stories y acceptance criteria, Phase 4 ya completó.
 
@@ -97,8 +98,8 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 2. Implementar el cambio. Si falla, crear ERR-NNN antes de reintentar con otro approach
 3. No commitear archivos temporales, binarios ni backups — usar /tmp/ para efímeros
 4. Commit con [Conventional Commits](references/commit-helper.md): `type(scope): description`
-4. Actualizar ROADMAP.md: `[ ]` → `[x]` con fecha
-5. Repetir hasta completar todas las tareas
+5. Actualizar ROADMAP.md: `[ ]` → `[x]` con fecha
+6. Repetir hasta completar todas las tareas
 
 **Salir cuando:** Todas las tareas completadas y commiteadas.
 **Siguiente:** Proponer Phase 7: TRACK para documentar lecciones.
@@ -129,13 +130,15 @@ Documentar lecciones previene repetir los mismos errores.
 |------|-----------|-----------|
 | 1 | Análisis | `work/.../analysis/` |
 | 1-2 | Decisiones | `context/decisions/adr-NNN.md` |
-| 3 | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` |
+| 1 | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` |
 | 4 | Especificación | `work/.../spec.md` |
 | 5 | Tareas | `work/.../plan.md` o `work/.../tasks.md` |
 | 6 | Código | Repositorio (git) |
 | 7 | Lecciones | `work/.../lessons.md` |
 | — | Errores | `context/errors/ERR-NNN-descripcion.md` |
 | — | Templates | `assets/*.md.template` (usar como base para nuevos artefactos) |
+| — | Doc base | `assets/document.md.template` (template genérico para cualquier documento) |
+| — | Principios | `assets/constitution.md.template` (principios inmutables del proyecto) |
 
 ## Estructura de un work package
 
