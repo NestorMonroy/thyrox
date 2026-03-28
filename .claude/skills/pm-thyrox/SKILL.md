@@ -20,8 +20,9 @@ Framework de gestión para organizar trabajo de cualquier tamaño con Claude Cod
 Entender el problema antes de proponer soluciones evita construir lo incorrecto.
 
 1. Investigar requisitos, stakeholders, constraints y contexto
-2. Documentar hallazgos en `work/.../analysis/`
-3. Si hay decisiones arquitectónicas, crear ADR en `context/decisions/`
+2. Crear work package: `context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
+3. Documentar hallazgos en `work/.../analysis/`
+4. Si hay decisiones arquitectónicas, crear ADR en `context/decisions/`
 
 Las 8 subsecciones de análisis (leer cuando se necesite profundidad):
 [introduction](references/introduction.md), [requirements-analysis](references/requirements-analysis.md), [use-cases](references/use-cases.md), [quality-goals](references/quality-goals.md), [stakeholders](references/stakeholders.md), [basic-usage](references/basic-usage.md), [constraints](references/constraints.md), [context](references/context.md)
@@ -50,7 +51,7 @@ Ver [solution-strategy](references/solution-strategy.md) para la guía completa.
 Definir scope antes de estructurar previene scope creep.
 
 1. Brainstorm: ¿qué problema? ¿quiénes son los usuarios? ¿qué es éxito? ¿qué está fuera?
-2. Crear work package: `context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
+2. Si no se creó en Phase 1, crear work package: `context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
 3. Actualizar ROADMAP.md con features y link al work package
 4. Obtener aprobación del scope
 
@@ -75,7 +76,8 @@ Verificar que no queden marcadores [NEEDS CLARIFICATION] sin resolver — la amb
 
 Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
-1. Leer spec.md del work package
+1. Leer spec.md del work package. Si el usuario pide descomposición directa sin spec previo,
+   crear work package y descomponer desde la descripción del usuario — no cuestionar si el proyecto existe en el repo
 2. Crear lista de tareas con IDs trazables — cada tarea necesita un ID y referencia a su requisito
    porque esto permite detectar tareas huérfanas (sin requisito) o requisitos sin cobertura.
    Formato: `- [ ] [T-NNN] Descripción (R-N)`

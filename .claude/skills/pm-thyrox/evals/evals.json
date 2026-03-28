@@ -20,7 +20,7 @@
       "expected_output": "Lee focus.md y/o now.md y/o ROADMAP.md. Reporta estado actual basado en datos reales. Sugiere siguiente paso concreto basado en la fase actual.",
       "files": [],
       "expectations": [
-        "Se leen archivos de estado del proyecto (focus.md, now.md, o ROADMAP.md)",
+        "La respuesta contiene datos específicos del proyecto (nombres de fases, porcentajes, tareas pendientes reales — no genéricos)",
         "La respuesta está basada en datos reales del proyecto, no inventados",
         "Se sugiere una acción concreta como siguiente paso",
         "Se identifica en qué fase del SDLC se encuentra el proyecto"
