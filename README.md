@@ -82,28 +82,28 @@ thyrox/
 
 ## Inicio Rápido
 
-1. **Clonar y setup:**
+1. **Clonar el template:**
    ```bash
-   git clone <repo> thyrox
-   cd thyrox
-   git init
+   git clone https://github.com/NestorMonroy/thyrox mi-proyecto
+   cd mi-proyecto
    ```
 
-2. **Inicializar Claude Code:**
+2. **Ejecutar setup:**
    ```bash
-   claude --init
-   cp CLAUDE.md .claude/CLAUDE.md
+   bash setup-template.sh
+   ```
+   El script te pedirá el nombre de tu proyecto, reemplazará THYROX por tu nombre, y reseteará los archivos de estado.
+
+3. **Commit inicial:**
+   ```bash
+   git add -A && git commit -m "feat: initialize from pm-thyrox template"
    ```
 
-3. **Revisar ROADMAP:**
-   ```bash
-   cat ROADMAP.md
-   ```
-
-4. **Crear tu primer task:**
+4. **Abrir Claude Code y empezar:**
    ```bash
    claude
-   # > /task:create "Configurar API base"
+   # Di: "Quiero empezar a planificar mi proyecto"
+   # El skill pm-thyrox te guiará desde Phase 1: ANALYZE
    ```
 
 ## Metodología
@@ -218,10 +218,12 @@ git checkout -b feature/nombre
 
 ## Configuración Inicial
 
-1. Editar [ROADMAP](./ROADMAP.md) con tu proyecto
-2. Actualizar [CLAUDE](.claude/CLAUDE.md) con contexto específico
-3. Configurar [project-state](.claude/context/project-state.md)
-4. Crear PRD en `.claude/prds/` si aplica
+Si prefieres configurar manualmente sin el script:
+
+1. Reemplazar "THYROX" por el nombre de tu proyecto en archivos core
+2. Editar [ROADMAP](./ROADMAP.md) con tus fases de trabajo
+3. Actualizar [CLAUDE](.claude/CLAUDE.md) con contexto del proyecto
+4. Configurar [project-state](.claude/context/project-state.md)
 
 ## Licencia
 
