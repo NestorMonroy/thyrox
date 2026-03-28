@@ -1,3 +1,9 @@
+```yml
+Tipo: Estado Operacional
+Versión: 1.0
+Última actualización: 2026-03-28
+```
+
 # Focus
 
 Reorganización de context/ completada. Siguiente: reescribir SKILL.md según skill-creator guidelines.
@@ -12,6 +18,7 @@ Reorganización de context/ completada. Siguiente: reescribir SKILL.md según sk
 - 8 work packages con timestamps reales de git
 - 24 errores documentados (ERR-001 a ERR-024)
 - 12 ADRs (adr-001 a adr-012)
+- Backup de 14 repos de referencia en .claude/_archived/ (754MB, checksums OK)
 
 ## Próxima sesión
 
