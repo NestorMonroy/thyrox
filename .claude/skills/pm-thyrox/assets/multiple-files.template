@@ -1,0 +1,55 @@
+```yml
+Fecha: [YYYY-MM-DD-HH-mm-ss]
+Tipo: [feature/fix/refactor/etc]
+Cambios relacionados a: [Nombre/descripción]
+Autor: [Nombre]
+Total archivos: [N]
+Archivos agregados: [N]
+Archivos modificados: [N]
+Archivos eliminados: [N]
+Tests: [SI/NO]
+Coordinación con: [Nombres otros devs si aplica]
+```
+
+type(scope): short description
+
+Brief explanation of the change that spans multiple files.
+
+Files affected by type:
+
+Database:
+- [file]: [description]
+
+API:
+- [file]: [description]
+
+Tests:
+- [file]: [description]
+
+Configuration:
+- [file]: [description]
+
+Documentation:
+- [file]: [description]
+
+Migration/Breaking changes:
+[If any, describe what changes users need to make]
+
+Why multiple files:
+Explain why this change required modifications across
+multiple components. What's the logical relationship
+between the changes.
+
+Testing:
+- What tests were run
+- What areas were affected
+- Any integration testing needed
+
+Deployment:
+[Any special deployment steps]
+
+Examples:
+feat(payments): add stripe integration (multiple services)
+refactor(structure): reorganize project directories
+fix(validation): improve error handling across apis
+chore(build): update dependencies and build config
