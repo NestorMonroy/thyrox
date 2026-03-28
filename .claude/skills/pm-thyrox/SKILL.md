@@ -69,7 +69,8 @@ For details on scaling: see [scalability](references/scalability.md).
 7. [Constraints](references/constraints.md) — What limits the solution
 8. [Context](references/context.md) — External systems, boundaries
 
-**Exit:** All 8 subsections approved → Phase 2.
+**Gate:** Create or review `constitution.md` (use `assets/constitution.md.template`).
+**Exit:** All 8 subsections approved + constitution ready → Phase 2.
 
 ---
 
@@ -77,10 +78,13 @@ For details on scaling: see [scalability](references/scalability.md).
 
 **Goal:** Architectural plan defining HOW to satisfy requirements within constraints.
 
-Document: Key Ideas, Fundamental Decisions, Technology Stack, Architecture Patterns, How We Achieve Quality Goals, Adherence to Constraints.
+1. **Research:** List unknowns → investigate alternatives → document pros/cons
+2. **Constitution check:** Verify decisions respect constitution principles
+3. **Document:** Key Ideas, Decisions, Tech Stack, Patterns, Quality Goals, Constraints
 
 See: [solution-strategy](references/solution-strategy.md)
 
+**Gate:** Constitution check passed + research documented.
 **Exit:** Architecture approved → Phase 3.
 
 ---
@@ -89,9 +93,10 @@ See: [solution-strategy](references/solution-strategy.md)
 
 **Goal:** Define scope and update ROADMAP.md.
 
-1. Guided brainstorming (what, who, success criteria, out of scope)
-2. Update ROADMAP.md with features and acceptance criteria
-3. Optional: create epic in `context/epics/YYYY-MM-DD-nombre/`
+1. Brainstorm: ¿qué problema? ¿quiénes son los usuarios? ¿qué es éxito? ¿qué está fuera de scope?
+2. Create epic: `context/epics/YYYY-MM-DD-nombre/epic.md`
+3. Update ROADMAP.md with features + link to epic (`**Epic:** context/epics/...`)
+4. Get scope approval
 
 **Exit:** ROADMAP.md updated, scope approved → Phase 4.
 
@@ -105,7 +110,8 @@ See: [solution-strategy](references/solution-strategy.md)
 
 **Spec-Driven** (10+ subtasks, complex): See [spec-driven-development](references/spec-driven-development.md) for 4-step workflow (Requirements → Design → Tasks → Implementation).
 
-**Exit:** Specs approved → Phase 5.
+**Gate:** Run spec quality checklist (use `assets/spec-quality-checklist.md.template`). 0 failed items before Phase 5.
+**Exit:** Specs approved + checklist passed → Phase 5.
 
 ---
 
@@ -113,9 +119,12 @@ See: [solution-strategy](references/solution-strategy.md)
 
 **Goal:** Break features into atomic, assignable tasks.
 
-1. Analyze scope from ROADMAP.md or PRD
-2. Create task list with dependencies
-3. Define execution order and checkpoints
+1. Read epic.md and specs
+2. Identify independent work streams
+3. Create task list with IDs, dependencies, estimations
+4. Mark parallel tasks [P]
+5. Define validation checkpoints
+6. Save to `context/epics/.../tasks.md`
 
 **Exit:** Tasks atomic, order defined → Phase 6.
 
@@ -125,11 +134,12 @@ See: [solution-strategy](references/solution-strategy.md)
 
 **Goal:** Build the feature and track progress.
 
-1. Work on tasks, make commits with Conventional Commits
-2. Update ROADMAP.md: `[ ]` → `[-]` → `[x]` with date
-3. Document sessions in `context/work-logs/` if needed
-
-See: [commit-helper](references/commit-helper.md) for commit conventions.
+1. Check tasks.md — next task without blockers?
+2. Implement the change
+3. Commit with Conventional Commits (see [commit-helper](references/commit-helper.md))
+4. Update ROADMAP.md: `[ ]` → `[x]` with date
+5. If long session: document in `context/work-logs/`
+6. Repeat until all tasks complete
 
 **Exit:** All tasks complete, tests passing, commits done → Phase 7.
 

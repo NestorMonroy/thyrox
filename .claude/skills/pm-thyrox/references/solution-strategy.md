@@ -48,6 +48,30 @@ Idea: Event-Driven
 
 ---
 
+### 1b. Research Step (antes de decidir)
+
+Antes de tomar decisiones, investigar los unknowns.
+
+**Proceso:**
+1. Listar assumptions y unknowns del análisis (Phase 1)
+2. Por cada unknown: investigar alternativas, benchmarks, best practices
+3. Documentar hallazgos con pros/cons
+4. Justificar la elección con evidencia
+
+**Formato por decisión investigada:**
+```
+Unknown: [Qué no sabemos]
+Alternativas:
+  - [Opción A] — Pros: ... Cons: ...
+  - [Opción B] — Pros: ... Cons: ...
+Decisión: [Opción elegida]
+Justificación: [Por qué, con evidencia]
+```
+
+> No decidir sin investigar. Si no hay tiempo para investigar, documentar la assumption como riesgo.
+
+---
+
 ### 2. Fundamental Decisions (Decisiones Fundamentales)
 
 Las decisiones arquitectónicas más importantes.
