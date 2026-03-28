@@ -282,7 +282,7 @@ El usuario observa:
 
 ## Template para Basic Usage
 
-Usar: `basic-usage.md.template`
+Usar: [basic-usage.md.template](../assets/basic-usage.md.template)
 
 **Estructura del documento:**
 ```

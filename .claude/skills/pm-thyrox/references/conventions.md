@@ -463,7 +463,7 @@ All notable changes to this project will be documented in this file.
 
 ## Error Tracking (AP-06)
 
-Errores se documentan en `context/errors/ERR-NNN.md` usando el template `assets/error-report.md.template`.
+Errores se documentan en `context/errors/ERR-NNN.md` usando el template [error-report.md.template](../assets/error-report.md.template).
 
 **Campos obligatorios:** Qué pasó / Por qué / **Prevención** / Insight
 
@@ -502,7 +502,7 @@ Cuando Claude necesita una decisión del usuario que no puede resolverse en la s
 - **Commit frequently** — Small commits are easier to review and revert
 - **Keep task scope small** — Ideally 2-4 hours of work per task
 - **Review ROADMAP.md before starting session** — Context transfer is essential
-- **Before deleting files, grep for references** — Run `grep -r "filename" .claude/` to find all mentions and update them. Use `scripts/detect_broken_references.py` to validate after
+- **Before deleting files, grep for references** — Run `grep -r "filename" .claude/` to find all mentions and update them. Use [detect_broken_references.py](../scripts/detect_broken_references.py) to validate after
 
 ## When to Update What
 

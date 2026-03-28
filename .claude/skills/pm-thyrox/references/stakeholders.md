@@ -292,7 +292,7 @@ Resolución:
 
 ## Template para Stakeholders
 
-Usar: `stakeholders.md.template`
+Usar: [stakeholders.md.template](../assets/stakeholders.md.template)
 
 **Estructura del documento:**
 ```

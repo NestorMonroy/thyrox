@@ -386,7 +386,7 @@ Technologies: Hystrix, Kubernetes, monitoring
 
 ## Template para Solution Strategy
 
-Usar: `solution-strategy.md.template`
+Usar: [solution-strategy.md.template](../assets/solution-strategy.md.template)
 
 **Estructura del documento:**
 ```

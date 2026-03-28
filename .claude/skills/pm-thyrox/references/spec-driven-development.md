@@ -30,7 +30,7 @@ Metodología para trabajo complejo que requiere planificación estructurada. Apl
 - [Templates Disponibles](#templates-disponibles)
 - [Workflow Completo (4 Fases)](#workflow-completo-4-fases)
 - [Convenciones de Naming](#convenciones-de-naming)
-- [Mejores Prácticas](#mejores-pr�cticas)
+- [Mejores Prácticas](#mejores-pr�cticas)
 - [Ejemplo Completo Real](#ejemplo-completo-real)
 - [Problema](#problema)
 - [Objetivos](#objetivos)
@@ -197,7 +197,7 @@ Usar cuando:
 
 **Cuándo usar**: Al iniciar análisis de requisitos
 
-**Ubicación**: `/assets/requirements-analysis.md.template`
+**Ubicación**: [requirements-analysis.md.template](../assets/requirements-analysis.md.template)
 
 ---
 
@@ -215,7 +215,7 @@ Usar cuando:
 
 **Cuándo usar**: Al estructurar implementación técnica
 
-**Ubicación**: `/assets/requirements-specification.md.template`
+**Ubicación**: [requirements-specification.md.template](../assets/requirements-specification.md.template)
 
 ---
 
@@ -237,7 +237,7 @@ Usar cuando:
 
 **Cuándo usar**: Después de aprobación de requirements
 
-**Ubicación**: `/assets/design.md.template`
+**Ubicación**: [design.md.template](../assets/design.md.template)
 
 ---
 
@@ -262,7 +262,7 @@ Usar cuando:
 
 **Cuándo usar**: Después de aprobación de design
 
-**Ubicación**: `/assets/tasks.md.template`
+**Ubicación**: [tasks.md.template](../assets/tasks.md.template)
 
 ---
 
@@ -273,7 +273,7 @@ Usar cuando:
 **Objetivo**: Documento claro de qué se necesita
 
 **Pasos**:
-1. Usar `requirements-analysis.md.template`
+1. Usar [requirements-analysis.md.template](../assets/requirements-analysis.md.template)
 2. Completar:
    - Contexto y problema
    - Objetivos claros
@@ -292,7 +292,7 @@ Usar cuando:
 
 **Pasos**:
 1. Basarse en requirements aprobados
-2. Usar `design.md.template`
+2. Usar [design.md.template](../assets/design.md.template)
 3. Completar:
    - Visión general de la solución
    - Decisiones arquitectónicas (DA)
@@ -312,7 +312,7 @@ Usar cuando:
 
 **Pasos**:
 1. Basarse en design aprobado
-2. Usar `tasks.md.template`
+2. Usar [tasks.md.template](../assets/tasks.md.template)
 3. Completar:
    - Desglosar en tareas atómicas (15-30 tasks típicamente)
    - Cada task con descripción, archivos, comandos exactos
@@ -639,10 +639,10 @@ A: No. Es inversión:
 
 - PM-THYROX SKILL.md - PHASE 4: STRUCTURE
 - Templates en `/assets/`:
-  - `requirements-analysis.md.template`
-  - `requirements-specification.md.template`
-  - `design.md.template`
-  - `tasks.md.template`
+  - [requirements-analysis.md.template](../assets/requirements-analysis.md.template)
+  - [requirements-specification.md.template](../assets/requirements-specification.md.template)
+  - [design.md.template](../assets/design.md.template)
+  - [tasks.md.template](../assets/tasks.md.template)
 - commit-helper.md - Para commits documentados por tarea
 - incremental-correction.md - Para corregir 100+ issues
 

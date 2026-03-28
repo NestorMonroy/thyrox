@@ -24,14 +24,14 @@ Metodología validada para corrección de 100+ issues a gran escala con análisi
 
 ## Tabla de Contenidos
 
-- [Cuándo Usar Esta Metodología](#cu�ndo-usar-esta-metodologia)
+- [Cuándo Usar Esta Metodología](#cu�ndo-usar-esta-metodologia)
 - [Decision Framework: ¿Manual vs Script?](#decision-framework-manual-vs-script)
 - [Trigger Patterns](#trigger-patterns)
 - [Self-Check Before Starting Correction](#self-check-before-starting-correction)
 - [Templates Para Documentar el Proceso](#templates-para-documentar-el-proceso)
 - [Workflow Completo](#workflow-completo)
 - [Cómo Usar los Templates](#como-usar-los-templates)
-- [Mejores Prácticas](#mejores-pr�cticas)
+- [Mejores Prácticas](#mejores-pr�cticas)
 - [Filosofía Fundamental](#filosofia-fundamental)
 - [Beneficios de la Metodología](#beneficios-de-la-metodologia)
 - [Ejemplo de Proyecto Real](#ejemplo-de-proyecto-real)
@@ -194,7 +194,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Inmediatamente después de detectar issues en el build
 
-**Ubicación**: `/assets/analysis-phase.md.template`
+**Ubicación**: [analysis-phase.md.template](../assets/analysis-phase.md.template)
 
 ---
 
@@ -211,7 +211,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Después de completar analysis-phase.md
 
-**Ubicación**: `/assets/categorization-plan.md.template`
+**Ubicación**: [categorization-plan.md.template](../assets/categorization-plan.md.template)
 
 ---
 
@@ -229,7 +229,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Durante toda la ejecución, actualizar después de cada lote
 
-**Ubicación**: `/assets/execution-log.md.template`
+**Ubicación**: [execution-log.md.template](../assets/execution-log.md.template)
 
 ---
 
@@ -248,7 +248,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Al completar todos los lotes
 
-**Ubicación**: `/assets/final-report.md.template`
+**Ubicación**: [final-report.md.template](../assets/final-report.md.template)
 
 ---
 
@@ -550,10 +550,10 @@ A: Usa el Decision Framework al inicio. Si dudas → MANUAL. Scripts sin las 8 P
 
 - PM-THYROX SKILL.md - PHASE 7: TRACK
 - Templates en `/assets/`:
-  - `analysis-phase.md.template`
-  - `categorization-plan.md.template`
-  - `execution-log.md.template`
-  - `final-report.md.template`
+  - [analysis-phase.md.template](../assets/analysis-phase.md.template)
+  - [categorization-plan.md.template](../assets/categorization-plan.md.template)
+  - [execution-log.md.template](../assets/execution-log.md.template)
+  - [final-report.md.template](../assets/final-report.md.template)
 - commit-helper.md - Para commits documentados después de cada lote
 
 ---

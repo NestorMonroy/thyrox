@@ -197,7 +197,7 @@ Scalability vs Simplicity
 
 ## Template para Quality Goals
 
-Usar: `quality-goals.md.template`
+Usar: [quality-goals.md.template](../assets/quality-goals.md.template)
 
 **Estructura del documento:**
 ```

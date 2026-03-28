@@ -136,7 +136,7 @@ R-3        | User        | High     | Done   | Correctness
 
 ## Template para Requirements Analysis
 
-Usar: `requirements-analysis.md.template`
+Usar: [requirements-analysis.md.template](../assets/requirements-analysis.md.template)
 
 **Estructura del documento:**
 ```

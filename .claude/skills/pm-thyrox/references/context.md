@@ -289,7 +289,7 @@ Documentar explícitamente QUÉ ESTÁ DENTRO vs AFUERA:
 
 ## Template para Context
 
-Usar: `context.md.template`
+Usar: [context.md.template](../assets/context.md.template)
 
 **Estructura del documento:**
 ```

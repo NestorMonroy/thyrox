@@ -286,7 +286,7 @@ Solution Strategy: Monolito bien estructurado, no microservicios
 
 ## Template para Constraints
 
-Usar: `constraints.md.template`
+Usar: [constraints.md.template](../assets/constraints.md.template)
 
 **Estructura del documento:**
 ```
