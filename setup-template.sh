@@ -33,6 +33,13 @@ PROJECT_UPPER=$(echo "$PROJECT_NAME" | tr '[:lower:]' '[:upper:]' | tr ' ' '-')
 PROJECT_LOWER=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
 PROJECT_KEBAB=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
 
+# Validate: reject names with sed-dangerous characters
+if echo "$PROJECT_NAME" | grep -qE '[&/\\|]'; then
+    echo "Error: el nombre no puede contener &, /, \\ o |"
+    echo "Usa solo letras, números, espacios y guiones."
+    exit 1
+fi
+
 echo ""
 echo "Proyecto: $PROJECT_NAME"
 echo "  UPPER:  $PROJECT_UPPER"
