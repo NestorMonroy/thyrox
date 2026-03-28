@@ -46,6 +46,7 @@ coverage/
 # Claude Code
 .claude/tasks/
 .claude/plans/
+.claude/_archived/
 
 # Temporary files
 tmp/
