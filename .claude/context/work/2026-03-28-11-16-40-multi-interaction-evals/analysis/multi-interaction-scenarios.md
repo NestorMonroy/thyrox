@@ -101,4 +101,63 @@ Los 3 functional evals y 28 trigger evals solo cubren la PRIMERA interacción �
 
 ---
 
+## Hallazgos de functional evals anteriores (2026-03-28-11-05-52)
+
+Los 3 functional evals de primera interacción revelaron 3 gaps específicos que los escenarios multi-interacción deben verificar:
+
+### Gap 1: Work package no mencionado en primera interacción (FE-01 E2)
+
+Claude empieza con ANALYZE correctamente pero no propone crear work package en la primera respuesta. Pregunta primero.
+
+**Hipótesis:** El work package se propone en la SEGUNDA interacción, después de que el usuario responde las preguntas de análisis.
+
+**Escenario de verificación adicional:**
+
+| ID | Escenario | Qué debería pasar |
+|----|-----------|-------------------|
+| MI-21 | **Segunda interacción de FE-01** — Usuario responde las preguntas de análisis del inventario. "La tienda es de ropa, 500 productos, 2 empleados, necesito stock + alertas + reportes, solo web." | Con las respuestas, Claude debería: (1) proponer crear work package, (2) comenzar spec.md o pasar a Phase 3: PLAN. Ya no más preguntas — actuar. |
+
+### Gap 2: No sugiere siguiente paso explícito (FE-02 E3)
+
+Claude lee archivos de estado e identifica fase, pero no dice "haz esto ahora."
+
+**Hipótesis:** focus.md y now.md no tienen suficiente información sobre qué tarea específica está pendiente. Claude reporta estado pero no puede recomendar sin tasks concretas.
+
+**Escenario de verificación adicional:**
+
+| ID | Escenario | Qué debería pasar |
+|----|-----------|-------------------|
+| MI-22 | **Status check con plan.md activo** — Existe un work package con plan.md que tiene tasks `- [ ] T-004`, `- [x] T-003`, `- [x] T-002`, `- [x] T-001` | Claude debería leer plan.md, identificar T-004 como siguiente, y decir explícitamente "la siguiente tarea es T-004: [descripción]." |
+
+### Gap 3: No usa formato [T-NNN] en tareas (FE-03 E1)
+
+Claude descompone correctamente pero no usa el formato de IDs que SKILL.md muestra.
+
+**Hipótesis:** El SKILL.md muestra el formato pero no explica POR QUÉ es importante. Sin WHY, Claude lo trata como sugerencia opcional.
+
+**Escenario de verificación adicional:**
+
+| ID | Escenario | Qué debería pasar |
+|----|-----------|-------------------|
+| MI-23 | **Descomposición con contexto de trazabilidad** — "Descompón esto en tareas. Necesito poder rastrear cada tarea hasta su requisito original." | Con la petición explícita de trazabilidad, Claude debería usar [T-NNN] Description (R-N) porque el usuario PIDIÓ trazabilidad. |
+
+### Insight: Los gaps de primera interacción se resuelven en interacciones siguientes
+
+Los 3 misses de FE-01/02/03 no son fallos del SKILL — son comportamiento correcto de "pedir antes de actuar." El SKILL dice ANALYZE first, y eso es lo que Claude hace. Los outputs completos (work packages, task IDs, next steps explícitos) aparecen cuando hay suficiente contexto.
+
+**Esto confirma que los multi-interaction evals son más importantes que los first-interaction evals** para verificar que el SKILL funciona end-to-end.
+
+---
+
+## Resumen actualizado
+
+| Tipo | Cantidad | Cobertura |
+|------|----------|-----------|
+| Trigger evals (primera interacción) | 28 | ¿Se activa el SKILL? |
+| Functional evals (primera interacción) | 3 | ¿Sigue la metodología al inicio? |
+| Multi-interaction evals (continuidad) | 23 (20 + 3 nuevos) | ¿Funciona end-to-end? |
+| **Total** | **54** | — |
+
+---
+
 **Última actualización:** 2026-03-28
