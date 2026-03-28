@@ -7,7 +7,7 @@ Objetivo: Transformar análisis en decisiones arquitectónicas implementables.
 Fecha actualización: 2026-03-25
 ```
 
-# Solution Strategy (ARC42 Section 4)
+# Solution Strategy
 
 ## Propósito
 
@@ -45,6 +45,30 @@ Idea: Event-Driven
 - Descripción: Comunicación asíncrona vía eventos
 - Impacto: Desacoplamiento entre servicios, resiliencia
 ```
+
+---
+
+### 1b. Research Step (antes de decidir)
+
+Antes de tomar decisiones, investigar los unknowns.
+
+**Proceso:**
+1. Listar assumptions y unknowns del análisis (Phase 1)
+2. Por cada unknown: investigar alternativas, benchmarks, best practices
+3. Documentar hallazgos con pros/cons
+4. Justificar la elección con evidencia
+
+**Formato por decisión investigada:**
+```
+Unknown: [Qué no sabemos]
+Alternativas:
+  - [Opción A] — Pros: ... Cons: ...
+  - [Opción B] — Pros: ... Cons: ...
+Decisión: [Opción elegida]
+Justificación: [Por qué, con evidencia]
+```
+
+> No decidir sin investigar. Si no hay tiempo para investigar, documentar la assumption como riesgo.
 
 ---
 
@@ -352,7 +376,7 @@ Technologies: Hystrix, Kubernetes, monitoring
 ```
 - Ideas clave y conceptos
 - Decisiones con justificación
-- Alineadas con Analysis (PHASE 2)
+- Alineadas con Analysis (PHASE 1)
 - Respetan Constraints
 - Claras para guiar implementación
 - Documentadas para comunidad
@@ -396,7 +420,7 @@ Cómo respetamos cada constraint:
 
 ## Próximo Paso
 
-Una vez completado PHASE 3: SOLUTION_STRATEGY:
+Una vez completado PHASE 2: SOLUTION_STRATEGY:
 → Continuar a PHASE 4: STRUCTURE (especificaciones detalladas)
 
 ---

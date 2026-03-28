@@ -18,7 +18,7 @@ Compilación de mejores prácticas de Anthropic para crear skills de alta calida
 ---
 
 Basado en: Anthropic Skill Authoring Best Practices
-Adaptado para: Proyecto ADT
+Adaptado para: THYROX
 Fecha: 2026-02-01
 
 ---
@@ -192,12 +192,12 @@ La `description` en frontmatter habilita descubrimiento del skill.
 
 **Skill de procesamiento Sphinx**:
 ```yaml
-description: "Ejecuta builds de Sphinx, analiza warnings y genera reportes. Usar cuando trabajas con documentación Sphinx, arc42 o necesitas validar build."
+description: "Ejecuta builds de Sphinx, analiza warnings y genera reportes. Usar cuando trabajas con documentación Sphinx, architecture docs o necesitas validar build."
 ```
 
 **Skill de traducción**:
 ```yaml
-description: "Traduce documentación técnica de inglés a español con alta fidelidad. Usar cuando traduces arc42, Sphinx docs o documentación técnica compleja."
+description: "Traduce documentación técnica de inglés a español con alta fidelidad. Usar cuando traduces architecture docs, Sphinx docs o documentación técnica compleja."
 ```
 
 **Skill de corrección incremental**:
@@ -246,7 +246,7 @@ skill/
 ```
 incremental-correction-methodology/
 ├── SKILL.md (metodología core + fases)
-├── templates/
+├── assets/
 │   ├── analysis-phase.md.template
 │   ├── categorization-plan.md.template
 │   ├── execution-log.md.template
@@ -262,7 +262,7 @@ incremental-correction-methodology/
 ```markdown
 ---
 name: sphinx-documentation
-description: "Construye y valida documentación Sphinx para arc42. Usar cuando trabajas con docs Sphinx o arc42."
+description: "Construye y valida documentación Sphinx para architecture docs. Usar cuando trabajas con docs Sphinx o architecture docs."
 ---
 
 # Sphinx Documentation
@@ -276,9 +276,9 @@ make clean && make html
 
 ## Features Avanzadas
 
-**Análisis de warnings**: Ver [ANALYSIS.md](ANALYSIS.md) para guía completa
-**Validación de links**: Ver [LINKCHECK.md](LINKCHECK.md) para todos los métodos
-**Ejemplos**: Ver [EXAMPLES.md](EXAMPLES.md) para patrones comunes
+**Análisis de warnings**: Ver [ANALYSIS](ANALYSIS.md) para guía completa
+**Validación de links**: Ver [LINKCHECK](LINKCHECK.md) para todos los métodos
+**Ejemplos**: Ver [EXAMPLES](EXAMPLES.md) para patrones comunes
 ```
 
 Claude carga ANALYSIS.md, LINKCHECK.md o EXAMPLES.md solo cuando necesario.
@@ -304,9 +304,9 @@ translation-workflow/
 
 ## Modos Disponibles
 
-**Alta Fidelidad**: Preservación máxima de estructura → Ver [modes/high-fidelity.md](modes/high-fidelity.md)
-**Marcado Visual**: Traducción con énfasis visual → Ver [modes/visual-markup.md](modes/visual-markup.md)
-**Enriquecimiento**: Agregar valor al contenido → Ver [modes/enrichment.md](modes/enrichment.md)
+**Alta Fidelidad**: Preservación máxima de estructura → Ver [modes/high-fidelity](modes/high-fidelity.md)
+**Marcado Visual**: Traducción con énfasis visual → Ver [modes/visual-markup](modes/visual-markup.md)
+**Enriquecimiento**: Agregar valor al contenido → Ver [modes/enrichment](modes/enrichment.md)
 
 ## Búsqueda Rápida
 
@@ -330,8 +330,8 @@ Mostrar contenido básico, enlazar a contenido avanzado.
 
 Para edits simples, modificar el archivo .rst directamente.
 
-**Para cambios complejos**: Ver [ADVANCED-RST.md](ADVANCED-RST.md)
-**Para directives especiales**: Ver [DIRECTIVES.md](DIRECTIVES.md)
+**Para cambios complejos**: Ver [ADVANCED-RST](ADVANCED-RST.md)
+**Para directives especiales**: Ver [DIRECTIVES](DIRECTIVES.md)
 ```
 
 Claude lee ADVANCED-RST.md o DIRECTIVES.md solo cuando usuario necesita esas features.
@@ -347,10 +347,10 @@ Claude puede leer parcialmente archivos cuando están referenciados desde otros 
 **Malo - Demasiado profundo**:
 ```markdown
 # SKILL.md
-Ver [advanced.md](advanced.md)...
+Ver [advanced](advanced.md)...
 
 # advanced.md
-Ver [details.md](details.md)...
+Ver [details](details.md)...
 
 # details.md
 Aquí está la información real...
@@ -361,9 +361,9 @@ Aquí está la información real...
 # SKILL.md
 
 **Uso básico**: [instrucciones en SKILL.md]
-**Features avanzadas**: Ver [advanced.md](advanced.md)
-**Referencia API**: Ver [reference.md](reference.md)
-**Ejemplos**: Ver [examples.md](examples.md)
+**Features avanzadas**: Ver [advanced](advanced.md)
+**Referencia API**: Ver [reference](reference.md)
+**Ejemplos**: Ver [examples](examples.md)
 ```
 
 ---
@@ -380,7 +380,7 @@ Para archivos de referencia >100 líneas, incluir tabla de contenidos al inicio.
 - Directives básicas (toctree, include, literalinclude)
 - Directives de admonición (note, warning, danger)
 - Directives de código (code-block, highlight)
-- Directives personalizadas arc42
+- Directives personalizadas de architecture docs
 - Ejemplos de uso
 
 ## Directives Básicas
@@ -738,7 +738,7 @@ Guiar a Claude a través de puntos de decisión.
 
 2. Workflow de Creación:
    - Crear nuevo archivo .rst
-   - Seguir estructura arc42 si aplica
+   - Seguir estructura de architecture docs si aplica
    - Agregar a toctree en index.rst
    - Build y validar
 
@@ -834,6 +834,6 @@ El proceso más efectivo involucra a Claude mismo.
 ---
 
 **Documento basado en**: Anthropic Skill Authoring Best Practices
-**Adaptado para**: Proyecto ADT
+**Adaptado para**: THYROX
 **Fecha**: 2026-02-01
 **Ver también**: prompting-tips.md, long-context-tips.md

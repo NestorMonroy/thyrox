@@ -1,13 +1,13 @@
 ```yml
-Tipo: Referencia PHASE 2: SOLUTION_STRATEGY
-Categoría: Estrategia
+Tipo: Referencia PHASE 1: ANALYZE
+Categoría: Análisis
 Versión: 1.0
 Propósito: Guía de cómo definir límites del sistema y sistemas externos que se integran.
 Objetivo: Clarificar dónde se inserta el sistema en el ecosistema.
 Fecha actualización: 2026-03-25
 ```
 
-# Context (ARC42 Section 3)
+# Context
 
 ## Propósito
 
@@ -318,8 +318,8 @@ Usar: `context.md.template`
 
 ## Próximo Paso
 
-Una vez completado PHASE 2: ANALYZE (introduction → context):
-→ Continuar a PHASE 3: SOLUTION_STRATEGY
+Una vez completado PHASE 1: ANALYZE (introduction → context):
+→ Continuar a PHASE 2: SOLUTION_STRATEGY
 
 ---
 

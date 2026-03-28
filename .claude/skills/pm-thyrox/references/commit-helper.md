@@ -38,7 +38,7 @@ Ahora que necesites hacer un commit, haz esto:
 ### Paso 2: Consulta el template
 
 ```bash
-cat .claude/skills/pm-thyrox/templates/[template-nombre].template
+cat .claude/skills/pm-thyrox/assets/[template-nombre].template
 ```
 
 ### Paso 3: Completa el template
@@ -122,7 +122,7 @@ Claude te dirá cuál template usar según el tipo de cambio que hayas hecho.
 
 ## Templates Disponibles
 
-Usar los templates en `/templates/` para casos específicos:
+Usar los templates en `/assets/` para casos específicos:
 
 | Archivo | Tipo | Uso |
 |---------|------|-----|
@@ -313,8 +313,8 @@ git commit -m "random changes"
 
 ## Ver También
 
-- `templates/` - Plantillas de commits para casos específicos
-- [conventions.md](./conventions.md) - Convenciones generales del proyecto
+- `assets/` - Plantillas de commits para casos específicos
+- [conventions](./conventions.md) - Convenciones generales del proyecto
 - ROADMAP.md - Plan de proyecto para referenciar en commits
 
 ---

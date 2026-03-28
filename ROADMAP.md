@@ -1,212 +1,232 @@
 ```yml
 Tipo: Plan Maestro
 Categoría: Gestión de Proyecto
-Versión: 0.1.0
+Versión: 0.2.0
 Propósito: Plan maestro de trabajo y tracking de progreso
 Objetivo: Documentar fases, epics, y estado actual del proyecto
-Fecha actualización: 2026-03-25
+Fecha actualización: 2026-03-27
 ```
 
-# ROADMAP - THYROX Template
+# ROADMAP - THYROX
 
 ## Propósito
 
-Plan maestro del proyecto THYROX. Documenta todas las fases, epics, features, y estado actual del trabajo.
-
-> Objetivo: Proporcionar vista clara de qué se está haciendo, qué está completo, y qué falta.
+Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del trabajo.
 
 ---
 
-## Convenciones de Progreso
+## Convenciones
 
 - `[ ]` = Pendiente
 - `[-]` = En Progreso
-- `[x]` = Completado
+- `[x]` = Completado (YYYY-MM-DD)
 
 ---
 
-## FASE 1: Estructura Base
+## FASE 1: Framework Base (v0.1.0)
 
-### Infraestructura
+### Estructura del proyecto
 
-- [x] Crear estructura de directorios ✅ 2025-03-24
-- [x] Inicializar repositorio Git ✅ 2025-03-24
-- [x] Crear README.md ✅ 2025-03-24
-- [ ] Configurar .gitignore
-- [ ] Crear CONTRIBUTING.md
+- [x] Crear estructura de directorios (2026-03-25)
+- [x] Inicializar repositorio Git (2026-03-25)
+- [x] Crear README.md, ROADMAP.md, CHANGELOG.md (2026-03-25)
+- [x] Crear ARCHITECTURE.md, CONTRIBUTING.md (2026-03-25)
+- [x] Crear docs/API.md, docs/BUILD.md (2026-03-25)
+- [x] Crear api/README.md, build/README.md (2026-03-25)
 
-### Documentación Inicial
+### Skill pm-thyrox
 
-- [x] ROADMAP.md creado (2025-03-24)
-- [ ] CLAUDE.md - Contexto persistente
-- [ ] API.md - Documentación de endpoints
-- [ ] BUILD.md - Proceso de construcción
-- [ ] ARCHITECTURE.md - Decisiones técnicas
-
----
-
-## FASE 2: Sub-proyecto API
-
-### Planificación
-
-- [ ] Diseñar endpoints base
-- [ ] Definir schema de datos
-- [ ] Documentar autenticación
-- [ ] Crear OpenAPI spec
-
-### Implementación
-
-- [ ] Setup proyecto base
-- [ ] Implementar endpoints GET
-- [ ] Implementar endpoints POST
-- [ ] Validación de inputs
-- [ ] Tests unitarios
-
-### Documentación
-
-- [ ] Escribir API.md
-- [ ] Ejemplos de uso
-- [ ] Documentar errores
-- [ ] Setup guide
+- [x] SKILL.md con 7 fases SDLC (2026-03-25)
+- [x] 20 references de documentación por fase (2026-03-25)
+- [x] 30 assets/templates para output (2026-03-25)
+- [x] ADRs iniciales (9 decisiones documentadas) (2026-03-25)
 
 ---
 
-## FASE 3: Sub-proyecto Build
+## FASE 2: Consolidación y Coherencia (v0.2.0) — Sesión 2026-03-27
 
-### Configuración
+### Limpieza de contenido
 
-- [ ] Setup GitHub Actions
-- [ ] Configurar CI/CD pipeline
-- [ ] Tests automatizados
-- [ ] Linting y code quality
+- [x] Eliminar referencias arc42 — 85 ocurrencias en 16 archivos (2026-03-27)
+- [x] Convertir backtick refs a markdown links — 37 refs en 8 archivos (2026-03-27)
+- [x] Limpiar .md del texto visible de links — 63 links en 19 archivos (2026-03-27)
 
-### Deployment
+### Unificación de fases
 
-- [ ] Script de build
-- [ ] Configuración de ambientes
-- [ ] Zero-downtime deployment
-- [ ] Rollback procedures
+- [x] Análisis de coherencia del proyecto completo (2026-03-27)
+- [x] Análisis detallado de 20 references (2026-03-27)
+- [x] Unificar orden de fases: ANALYZE primero en todos los archivos (2026-03-27)
+- [x] Corregir numeración en SKILL.md tabla, exit conditions, project-state.md (2026-03-27)
+- [x] Corregir phase headers en solution-strategy, spec-driven-dev, incremental-correction, context (2026-03-27)
+- [x] Eliminar residuos de renombrado (requirements.md, requirements.md.template) (2026-03-27)
 
-### Documentación
+### Integración y flujo
 
-- [ ] BUILD.md completo
-- [ ] Troubleshooting guide
-- [ ] Environment variables
-- [ ] Deployment checklist
+- [x] Integrar use-cases.md al flujo de Phase 1 (8 subsecciones) (2026-03-27)
+- [x] Actualizar metadata genéricos Anthropic: ADT → THYROX (2026-03-27)
+- [x] Conectar CLAUDE.md y README.md al SKILL (jerarquía SKILL > CLAUDE > README) (2026-03-27)
+- [x] Corregir links rotos en decisions.md y docs/BUILD.md (2026-03-27)
 
----
+### Reorganización según anatomía oficial
 
-## FASE 4: Automatización y Gestión
+- [x] templates/ → assets/ (30 archivos) (2026-03-27)
+- [x] Crear scripts/ en pm-thyrox (mover scripts desde raíz y utils) (2026-03-27)
+- [x] tracking/ → assets/ (AD_HOC_TASKS, REFACTORS como .template) (2026-03-27)
+- [x] Mover epic example y templates sueltos a assets/ (2026-03-27)
+- [x] Eliminar utils/ (reportes obsoletos), START-HERE.md (2026-03-27)
+- [x] Mover validation guide a references/reference-validation.md (2026-03-27)
 
-### Claude Code Integration
+### Scripts con responsabilidad única
 
-- [ ] CLAUDE.md con contexto
-- [ ] Skills para changelog
-- [ ] Comandos personalizados
-- [ ] Hooks de automatización
+- [x] detect/convert/validate para md-links (3 scripts Bash) (2026-03-27)
+- [x] detect/convert/validate para broken-references (3 scripts Python) (2026-03-27)
 
-### Changelog & Versionado
+### Estructura context/
 
-- [ ] Setup Conventional Commits
-- [ ] Automatización de CHANGELOG.md
-- [ ] Semantic Versioning
-- [ ] Release process
+- [x] Crear context/analysis/ y mover análisis existentes (2026-03-27)
+- [x] Crear context/epics/ para trabajo planificado (2026-03-27)
+- [x] Documentar "Where Outputs Live" por fase en SKILL.md (2026-03-27)
+- [x] Agregar `<br>` consistentes en metadata blocks (2026-03-27)
 
-### Gestión de Tareas
+### Documentación Phase 1-2
 
-- [ ] Sistema de tasks nativo
-- [ ] Dependencias entre tasks
-- [ ] [AD_HOC_TASKS.md](.claude/skills/pm-thyrox/tracking/AD_HOC_TASKS.md) setup
-- [ ] [REFACTORS.md](.claude/skills/pm-thyrox/tracking/REFACTORS.md) tracking
-
----
-
-## FASE 5: Completitud y Calidad
-
-### Tests y Validación
-
-- [ ] Cobertura de tests
-- [ ] E2E tests
-- [ ] Performance testing
-- [ ] Security review
-
-### Documentación Final
-
-- [ ] API documentation completa
-- [ ] Build documentation completa
-- [ ] Architecture decisions
-- [ ] Contributing guidelines
-
-### Release
-
-- [ ] v0.1.0 release
-- [ ] Tag en Git
-- [ ] CHANGELOG actualizado
-- [ ] Publicación en templates
+- [x] Phase 1: ANALYZE — 8 documentos completos (2026-03-27)
+- [x] Phase 2: SOLUTION_STRATEGY — solution-strategy.md (2026-03-27)
+- [x] Phase 3: PLAN — ROADMAP.md reescrito (2026-03-27)
 
 ---
 
-## TAREAS RECIENTES
+## FASE 3: Completar documentación del framework
 
-*Esta sección se actualiza conforme avanzas*
+### SKILL.md optimización
 
-### En Progreso
+- [x] Reducir SKILL.md a <500 líneas — 1084 → 246 (2026-03-27)
+- [x] Mover contenido extenso a references/scalability.md (2026-03-27)
 
-- [ ] Estructura de directorios
-- [ ] Archivos iniciales
+### Documentación pública
 
-### Completadas
+- [x] Reescribir ARCHITECTURE.md reflejando estado real (2026-03-27)
+- [x] Reescribir CONTRIBUTING.md con flujo actualizado (2026-03-27)
+- [x] Actualizar CHANGELOG.md con trabajo real v0.1.0 y v0.2.0 (2026-03-27)
 
-- [x] Crear repositorio THYROX (2025-03-24)
-- [x] README.md (2025-03-24)
-- [x] ROADMAP.md (2025-03-24)
+### Covariancia — Consistencia entre archivos
+
+- [x] Análisis de covariancia: 5 leyes verificadas en 9 archivos (2026-03-28)
+- [x] Solution strategy: fuente canónica + referencia (2026-03-28)
+- [x] LAW 4: Jerarquía — Level 1/2/3 en SKILL, CLAUDE, README (2026-03-28)
+- [x] LAW 2: Estructura — scripts/ en SKILL.md, prds/ eliminado de CLAUDE.md (2026-03-28)
+- [x] LAW 3: Naming — convenciones explícitas en SKILL.md (2026-03-28)
+- [x] LAW 2: conventions.md — estructura actualizada (2026-03-28)
+- [x] Verificación: 5 leyes invariantes confirmadas por grep (2026-03-28)
+
+### Validación final
+
+- [ ] Ejecutar detect_broken_references.py y corregir
+- [ ] Ejecutar validate-missing-md-links.sh → exit 0
+- [ ] Verificar covariancia: las 5 leyes invariantes en los 9 archivos
+
+### Tracking de errores
+
+- [x] ERR-001: Análisis no documentado en context/analysis/ (2026-03-28)
+- [x] ERR-002: Clasificación incorrecta de tamaño del proyecto (2026-03-28)
+- [x] ERR-006: Saltar fases de nuevo — reincidencia de ERR-002 (2026-03-28)
 
 ---
 
-## NOTAS IMPORTANTES
+## FASE 3b: Adopción de conceptos spec-kit
 
-### Principios del Proyecto
+**Epic:** context/analysis/spec-kit-adoption-solution-strategy.md
 
-1. **Documentación es Código** - Todo debe estar documentado
-2. **Automatización Total** - Claude Code gestiona cambios
-3. **Trazabilidad Completa** - Cada cambio registrado
-4. **Estructura Clara** - Nada ambiguo
+### Nuevos templates
 
-### Próximos Pasos
+- [x] Crear `assets/spec-quality-checklist.md.template` (ERR-003) (2026-03-28)
+- [x] Crear `assets/constitution.md.template` (ERR-004) (2026-03-28)
 
-1. Configurar CLAUDE.md con contexto del proyecto
-2. Crear PRD en `.claude/prds/` si es necesario
-3. Descomponer tareas grandes en tasks más pequeños
-4. Iniciar con Fase 1
+### Mejorar artefactos existentes
+
+- [x] `assets/EXIT_CONDITIONS.md.template` — gates mandatorios + constitution check (ERR-008) (2026-03-28)
+- [x] `references/solution-strategy.md` — Research Step explícito (ERR-006) (2026-03-28)
+- [x] `references/conventions.md` — convención ROADMAP → epic link (ERR-007) (2026-03-28)
+- [x] `SKILL.md` — constitution y checklist en flujo de fases (ERR-003, ERR-004) (2026-03-28)
+
+### Enriquecer fases con pasos ejecutables
+
+- [x] Phase 3 (PLAN): pasos numerados en SKILL.md (ERR-005) (2026-03-28)
+- [x] Phase 5 (DECOMPOSE): pasos numerados en SKILL.md (ERR-005) (2026-03-28)
+- [x] Phase 6 (EXECUTE): pasos numerados en SKILL.md (ERR-005) (2026-03-28)
+
+### Tracking de errores (spec-kit adoption)
+
+- [x] ERR-003: Sin validación de specs → checklist template creado (2026-03-28)
+- [x] ERR-004: Sin constitution → constitution template creado (2026-03-28)
+- [x] ERR-005: Fases no ejecutables → pasos numerados en SKILL.md (2026-03-28)
+- [x] ERR-006: Saltar fases de nuevo → documentado como reincidencia (2026-03-28)
+- [x] ERR-007: ROADMAP sin links a epics → convención agregada (2026-03-28)
+- [x] ERR-008: Exit conditions informativas → gates mandatorios (2026-03-28)
+
+---
+
+## FASE 3c: Adopción profunda de spec-kit (mecanismos de calidad)
+
+**Epic:** context/analysis/spec-kit-deep-adoption-strategy.md
+
+### Script nuevo
+
+- [x] Crear `scripts/validate-phase-readiness.sh` — verifica artefactos por fase (D4) (2026-03-28)
+
+### Mejorar templates existentes
+
+- [x] `assets/tasks.md.template` — traceability T-NNN → R-N (D3) (2026-03-28)
+- [x] `assets/spec-quality-checklist.md.template` — [NEEDS CLARIFICATION] check + [Spec §] refs (D1, D3) (2026-03-28)
+- [x] `assets/EXIT_CONDITIONS.md.template` — double constitution check + markers gate (D2) (2026-03-28)
+
+### Mejorar references
+
+- [x] `references/conventions.md` — priority mapping + traceability IDs table (D5) (2026-03-28)
+
+### SKILL.md updates
+
+- [x] Phase 2: double constitution check pre + post design (D2) (2026-03-28)
+- [x] Phase 4: zero [NEEDS CLARIFICATION] markers gate (D1) (2026-03-28)
+- [x] Phase 5: task traceability T-NNN → R-N (D3) (2026-03-28)
+
+### Tracking de errores (deep analysis)
+
+- [x] ERR-012: No hay cadena input/output entre fases → validate-phase-readiness.sh (2026-03-28)
+- [x] ERR-013: No hay [NEEDS CLARIFICATION] mechanism → checklist + convención (2026-03-28)
+- [x] ERR-016: No hay double constitution check → pre + post design (2026-03-28)
+- [x] ERR-017: No hay priority→phase mapping → convención documentada (2026-03-28)
+- [x] ERR-018: No hay trazabilidad req→task→checklist → IDs en templates (2026-03-28)
+
+---
+
+## FASE 4: Template listo para reutilización (futuro)
+
+### Generalización
+
+- [ ] Limpiar contenido específico de THYROX para hacerlo template genérico
+- [ ] Crear guía de "cómo usar este template para tu proyecto"
+- [ ] Testear copiando pm-thyrox/ a un proyecto nuevo
+
+### CI/CD
+
+- [ ] GitHub Actions con validate-* scripts
+- [ ] Pre-commit hooks para conventional commits
+- [ ] Automatización de changelog
 
 ---
 
 ## Métricas de Progreso
 
 ```
-Total Tareas: 40
-Completadas: 3 (7.5%)
-En Progreso: 2 (5%)
-Pendientes: 35 (87.5%)
+FASE 1: Framework Base       — 100% ✓
+FASE 2: Consolidación        — 100% ✓
+FASE 3: Completar docs       —   0%
+FASE 4: Template reutilizable —   0%
 
-Fase 1: 40% - Estructura Base
-Fase 2: 0% - Sub-proyecto API
-Fase 3: 0% - Sub-proyecto Build
-Fase 4: 0% - Automatización
-Fase 5: 0% - Completitud
+Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 ```
 
 ---
 
-**Instrucciones de Uso:**
-
-1. Actualiza este archivo conforme avanzas en el proyecto
-2. Cambia `[ ]` a `[-]` cuando inicies una tarea
-3. Cambia `[-]` a `[x]` + fecha cuando completes
-4. Agrega nuevas tareas conforme surjan
-5. Mantén las métricas al día
-
-Usa Claude Code para:
-- Sugerir nuevas tareas
-- Descomponer tareas grandes
-- Actualizar progreso automáticamente
+**Última actualización:** 2026-03-27
