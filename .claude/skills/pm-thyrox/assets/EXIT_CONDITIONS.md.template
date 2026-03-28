@@ -1,8 +1,13 @@
 # Exit Conditions - 7 PHASES
 
+> **GATES ARE MANDATORY.** Do not advance to the next phase if conditions are not met. If a condition cannot be met, document WHY in an ADR before proceeding.
+
 ## PHASE 1: ANALYZE
 
 **Objetivo:** Entender requisitos, restricciones, stakeholders
+
+**Gate — Constitution:**
+- [ ] `constitution.md` creada o revisada (usar `assets/constitution.md.template`)
 
 **Exit Conditions (TODAS deben cumplirse):**
 - [ ] Requisitos funcionales documentados (RF-001 a RF-NNN)
@@ -12,7 +17,9 @@
 - [ ] Constraints identificados (técnicos, de negocio, tiempo)
 - [ ] Context y problem statement claros
 - [ ] 8 documentos analizados o creados
-- [ ] USER APPROVAL obtenido (o confirmación "vamos con esto")
+- [ ] USER APPROVAL obtenido
+
+**⛔ Si NO se cumplen → PARAR. Completar antes de continuar.**
 
 **Success Criteria:**
 - Podés explicar a alguien QUÉ necesita el usuario sin dudas
@@ -39,6 +46,14 @@
 
 **Objetivo:** Definir CÓMO vamos a cumplir los requisitos (arquitectura)
 
+**Gate — Constitution Check:**
+- [ ] Cada decisión respeta los Core Principles de constitution.md
+- [ ] Si hay violación → documentar justificación en ADR
+
+**Gate — Research:**
+- [ ] Unknowns investigados (no decidir sin evidencia)
+- [ ] Alternativas documentadas con pros/cons para cada decisión
+
 **Exit Conditions (TODAS deben cumplirse):**
 - [ ] Visión técnica global definida (qué componentes, cómo se integran)
 - [ ] Decisiones arquitectónicas tomadas (DA-001 a DA-NNN)
@@ -48,6 +63,8 @@
 - [ ] Dependencies externas mapeadas
 - [ ] Mitigaciones para riesgos propuestas
 - [ ] USER/ARCHITECT APPROVAL obtenido
+
+**⛔ Si NO se cumplen → PARAR. No diseñar sin investigar.**
 
 **Success Criteria:**
 - Podés dibujar (o describir) la solución en 5 minutos
@@ -91,12 +108,18 @@
 
 **Objetivo:** Especificar EXACTAMENTE qué vamos a implementar (specs técnicas)
 
+**Gate — Spec Quality:**
+- [ ] Spec quality checklist completado (usar `assets/spec-quality-checklist.md.template`)
+- [ ] 0 items fallidos (o aprobación explícita del usuario si persisten)
+
 **Exit Conditions (TODAS deben cumplirse):**
 - [ ] Cada requisito tiene especificación técnica (SPEC-001 a SPEC-NNN)
 - [ ] Criteria de aceptación definidos (Given/When/Then)
 - [ ] Componentes afectados documentados
 - [ ] Consideraciones técnicas listadas
 - [ ] Design document completo (diseño detallado)
+
+**⛔ Si spec quality checklist tiene items fallidos → PARAR. Iterar spec (máx 2 veces).**
 - [ ] Tasks listadas y decomposed (TASK-001 a TASK-NNN)
 - [ ] Cada tarea tiene: descripción, files afectados, success criteria
 - [ ] Order de ejecución definido (dependencias)

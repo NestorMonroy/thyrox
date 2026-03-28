@@ -67,6 +67,8 @@ All PM-THYROX workflow files are stored in the THYROX project structure:
 ### Feature X
 Brief description of what this feature does and why.
 
+**Epic:** context/epics/YYYY-MM-DD-nombre/
+
 - [ ] Subtask 1
 - [-] Subtask 2 (started 2025-03-24)
 - [x] Subtask 3 (2025-03-24)
