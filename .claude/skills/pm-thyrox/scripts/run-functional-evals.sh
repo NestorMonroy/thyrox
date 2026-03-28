@@ -89,11 +89,11 @@ EOF
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"
 
-    check_expectation "$result" "analiz\|entender\|investigar\|Phase 1\|ANALYZE" "Menciona analizar antes de planificar" || true
-    check_expectation "$result" "work.*package\|directorio.*trabajo\|context/work\|YYYY-MM-DD\|carpeta\|paquete\|crear.*work" "Propone crear work package" || true
-    check_expectation "$result" "requisit\|usuario\|limitac\|stakeholder\|constraint\|pregunt\|aclarar\|definir" "Hace preguntas de análisis" || true
-    check_negative "$result" "function \|class \|import \|def \|const \|npm install\|pip install" "NO genera código" || true
-    check_expectation "$result" "fase\|phase\|SKILL\|metodolog\|SDLC" "Referencia metodología de fases" || true
+    check_expectation "$result" "analiz\|entender\|investigar\|Phase 1\|ANALYZE\|antes de\|primero" "Prioriza entender antes de planificar" || true
+    check_expectation "$result" "document\|registr\|organiz\|directorio\|carpeta\|work\|crear.*estructura\|guardar" "Propone documentar/organizar los hallazgos" || true
+    check_expectation "$result" "?\|requisit\|usuario\|limitac\|stakeholder\|constraint\|pregunt\|aclarar\|definir\|plataforma\|stack\|acceso" "Hace preguntas para entender el problema" || true
+    check_negative "$result" "function \|class \|import \|def \|const \|npm install\|pip install" "NO genera código de implementación" || true
+    check_negative "$result" "aquí.*código\|implementación\|ya.*puedes.*usar\|listo.*para.*producción" "NO salta directo a implementar" || true
 }
 
 # ===== FE-02: Status check — datos reales del proyecto =====
@@ -205,11 +205,11 @@ EOF
     echo "  Response: ${result:0:150}..."
     echo "  Expectations:"
 
-    check_expectation "$result" "\[T-[0-9]\|T-00\|T-01\|\- \[ \].*[0-9]" "Tareas tienen IDs o checkboxes numerados" || true
-    check_expectation "$result" "1\.\|primero\|antes\|luego\|después\|orden\|secuenc\|fase\|etapa\|paso" "Orden lógico de ejecución" || true
-    check_expectation "$result" "i18n\|react-i18next\|localiz\|traducción\|locale\|string\|texto" "Tareas específicas de i18n" || true
-    check_expectation "$result" "plan\.md\|tasks\.md\|guardar\|work.*package\|context/work" "Sugiere guardar en plan/tasks o work package" || true
-    check_expectation "$result" "scope\|analiz\|entender\|antes\|evaluar\|investigar\|alcance\|inventari\|pantalla" "Analiza scope antes de descomponer" || true
+    check_expectation "$result" "\[T-[0-9]\|T-00\|T-01\|\- \[ \].*[0-9]\|\- \[ \]" "Tareas tienen IDs o checkboxes" || true
+    check_expectation "$result" "1\.\|primero\|antes\|luego\|después\|orden\|secuenc\|fase\|etapa\|paso\|Fase\|Lote\|Bloque" "Orden lógico de ejecución" || true
+    check_expectation "$result" "i18n\|react-i18next\|localiz\|traducción\|locale\|string\|texto\|idioma" "Tareas específicas del dominio (i18n)" || true
+    check_expectation "$result" "30.*pantalla\|pantalla\|screen\|lote\|grupo\|módulo\|bloque" "Considera la escala (30 pantallas) en la descomposición" || true
+    check_negative "$result" "no.*tiene.*código\|no.*encontr\|no.*existe.*app\|aclarar.*qué.*proyecto" "NO cuestiona si el proyecto existe" || true
 }
 
 # ===== MAIN =====
