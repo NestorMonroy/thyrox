@@ -105,6 +105,17 @@ Cada artefacto usa IDs para trazabilidad cruzada:
 | ADRs | adr-NNN | adr-001 | decisions/ |
 
 **Regla:** Cada task (T-NNN) DEBE referenciar el requirement que satisface (R-N o FR-NNN).
+
+---
+
+## Analysis vs Epic
+
+| Tipo | Qué es | Dónde va | Cuándo |
+|------|--------|----------|--------|
+| **Analysis** | Diagnóstico, hallazgos, investigación | `context/analysis/` | Phase 1 (ANALYZE) o Phase 7 (TRACK) |
+| **Epic** | Plan de trabajo con spec + tasks + execution | `context/epics/YYYY-MM-DD-nombre/` | Phase 3+ (tiene epic.md + tasks.md) |
+
+**Regla:** Si el trabajo tiene las 7 fases completas (analysis + strategy + plan + structure + tasks + execute + track) → es un epic. Si es solo hallazgos → es un analysis.
 **Notes:** Any relevant context or decisions
 **PRD:** Link to .claude/prds/feature.md if exists
 **Epic:** Link to .claude/epics/feature/ if exists
