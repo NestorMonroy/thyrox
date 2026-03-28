@@ -238,11 +238,12 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 - [x] Actualizar README.md con Quick Start usando setup-template.sh (2026-03-28)
 - [x] Testear copiando repo a directorio limpio y ejecutando script (2026-03-28)
 
-### CI/CD (futuro)
+### CI/CD
 
-- [ ] GitHub Actions con validate-* scripts
-- [ ] Pre-commit hooks para conventional commits
-- [ ] Automatización de changelog
+- [x] GitHub Actions workflow validate.yml (skill integrity + conventional commits) (2026-03-28)
+- [x] Pre-commit hook commit-msg-hook.sh para conventional commits (2026-03-28)
+- [x] Documentar setup de hooks en CONTRIBUTING.md (2026-03-28)
+- [ ] Automatización de changelog (futuro — requiere release workflow)
 
 ---
 
@@ -255,7 +256,7 @@ FASE 3: Completar docs       — 100% ✓
 FASE 3b: spec-kit adoption   — 100% ✓
 FASE 3c: spec-kit deep       — 100% ✓
 FASE 3d: Riesgos referencia  — 100% ✓
-FASE 4: Template reutilizable —  80% (CI/CD pendiente)
+FASE 4: Template reutilizable —  95% (changelog automation pendiente)
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections

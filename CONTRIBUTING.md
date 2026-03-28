@@ -141,6 +141,23 @@ bash .claude/skills/pm-thyrox/scripts/validate-missing-md-links.sh
 python3 .claude/skills/pm-thyrox/scripts/validate-broken-references.py
 ```
 
+### Instalar commit hook
+
+Para validar conventional commits automáticamente:
+
+```bash
+cp .claude/skills/pm-thyrox/scripts/commit-msg-hook.sh .git/hooks/commit-msg
+chmod +x .git/hooks/commit-msg
+```
+
+### CI/CD
+
+El proyecto incluye GitHub Actions (`.github/workflows/validate.yml`) que verifica:
+- Integridad del SKILL (verify-skill-mapping.sh)
+- SKILL.md < 500 líneas
+- YAML frontmatter con name + description
+- Conventional commits en PRs
+
 ---
 
-**Última actualización:** 2026-03-27
+**Última actualización:** 2026-03-28
