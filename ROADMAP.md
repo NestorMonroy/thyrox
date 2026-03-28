@@ -96,24 +96,39 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## FASE 3: Completar documentación del framework (pendiente)
+## FASE 3: Completar documentación del framework
 
 ### SKILL.md optimización
 
-- [ ] Reducir SKILL.md a <500 líneas (progressive disclosure)
-- [ ] Mover contenido extenso a references/
+- [x] Reducir SKILL.md a <500 líneas — 1084 → 246 (2026-03-27)
+- [x] Mover contenido extenso a references/scalability.md (2026-03-27)
 
 ### Documentación pública
 
-- [ ] Reescribir ARCHITECTURE.md reflejando estado real
-- [ ] Reescribir CONTRIBUTING.md con flujo actualizado
-- [ ] Actualizar CHANGELOG.md con trabajo real
+- [x] Reescribir ARCHITECTURE.md reflejando estado real (2026-03-27)
+- [x] Reescribir CONTRIBUTING.md con flujo actualizado (2026-03-27)
+- [x] Actualizar CHANGELOG.md con trabajo real v0.1.0 y v0.2.0 (2026-03-27)
+
+### Covariancia — Consistencia entre archivos
+
+- [x] Análisis de covariancia: 5 leyes verificadas en 9 archivos (2026-03-28)
+- [x] Solution strategy: fuente canónica + referencia (2026-03-28)
+- [-] LAW 4: Jerarquía — agregar a SKILL.md, CLAUDE.md (en progreso)
+- [ ] LAW 2: Estructura — agregar scripts/ a SKILL.md, eliminar prds/ de CLAUDE.md
+- [ ] LAW 3: Naming — hacer explícitas convenciones en SKILL.md
+- [ ] LAW 5: Outputs — clarificar analysis/ y work-logs/ en SKILL.md
+- [ ] LAW 2: conventions.md — actualizar estructura completa
 
 ### Validación final
 
 - [ ] Ejecutar detect_broken_references.py y corregir
 - [ ] Ejecutar validate-missing-md-links.sh → exit 0
-- [ ] Verificar todas las transiciones entre fases
+- [ ] Verificar covariancia: las 5 leyes invariantes en los 9 archivos
+
+### Tracking de errores
+
+- [x] ERR-001: Análisis no documentado en context/analysis/ (2026-03-28)
+- [x] ERR-002: Clasificación incorrecta de tamaño del proyecto (2026-03-28)
 
 ---
 
