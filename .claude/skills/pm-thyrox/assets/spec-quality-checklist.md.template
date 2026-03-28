@@ -16,21 +16,21 @@ Validar calidad de la especificación ANTES de descomponer en tasks. Si hay item
 
 ---
 
-## Completitud
+## Completitud [Spec §Requirements]
 
-- [ ] Todos los requisitos funcionales documentados
+- [ ] Todos los requisitos funcionales documentados (R-N o FR-NNN)
 - [ ] Requisitos no-funcionales identificados (performance, seguridad, escalabilidad)
-- [ ] Criterios de éxito definidos y medibles
+- [ ] Criterios de éxito definidos y medibles (SC-NNN)
 - [ ] Scope claramente delimitado (qué incluye Y qué excluye)
 - [ ] Dependencias identificadas
 - [ ] Assumptions documentadas
 
-## Claridad
+## Claridad [Spec §Requirements + §Use Cases]
 
 - [ ] Cada requisito es específico (no vago: "rápido", "bueno", "fácil")
 - [ ] Sin términos ambiguos sin definir
 - [ ] Cada requisito tiene un solo significado posible
-- [ ] Sin marcadores [NEEDS CLARIFICATION] sin resolver
+- [ ] **Zero [NEEDS CLARIFICATION] markers sin resolver** → Si hay, iterar spec antes de continuar
 
 ## Consistencia
 

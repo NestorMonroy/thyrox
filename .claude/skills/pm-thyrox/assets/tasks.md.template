@@ -34,43 +34,17 @@ Fecha fin estimada: YYYY-MM-DD
 
 ### FASE: Preparacion (Estimacion: Xh)
 
-TASK-001: [Titulo de tarea]
-- Descripcion: [Descripcion detallada de que hacer]
-- Archivos afectados:
- - [Ninguno] (solo comandos de sistema)
- - O: source/path/file.rst (NUEVO/MODIFICADO/ELIMINADO)
-- Comandos a ejecutar:
- ```bash
- mkdir -p source/nuevo_directorio
- touch source/nuevo_directorio/index.rst
- ```
-- Criterios de exito:
- - [Criterio 1: Directorio existe]
- - [Criterio 2: Archivo creado]
-- Dependencias: Ninguna
-- Estimacion: 5 minutos
-- Estado: [ ] Pendiente | [x] Completada
+- [ ] [T-001] Descripción de la tarea (R-1)
+- [ ] [T-002] Descripción de la tarea (R-1)
 
-TASK-002: [Titulo de tarea]
-- Descripcion: [Descripcion detallada]
-- Archivos afectados:
- - source/path/archivo.rst (NUEVO)
- - source/path/index.rst (MODIFICADO - agregar a toctree)
-- Comandos a ejecutar:
- ```bash
- cat > source/path/archivo.rst <<'EOF'
- Titulo
- ======
+> Cada task DEBE referenciar el requirement que satisface: (R-N), (FR-NNN), o (UC-NNN).
+> Marcar [P] si es parallelizable: `- [ ] [T-003] [P] Descripción (R-2)`
 
- Contenido del archivo.
- EOF
- ```
-- Criterios de exito:
- - Archivo creado con contenido correcto
- - Sintaxis RST valida
-- Dependencias: TASK-001
-- Estimacion: 15 minutos
-- Estado: [ ] Pendiente
+**Ejemplo:**
+- [ ] [T-001] Crear estructura de directorios (R-1)
+- [ ] [T-002] [P] Configurar git hooks (R-3)
+- [ ] [T-003] Implementar endpoint login (R-1, FR-001)
+- [ ] [T-004] Escribir tests de autenticación (R-1, UC-002)
 
 ### FASE: Implementacion Core (Estimacion: Yh)
 

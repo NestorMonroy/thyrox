@@ -79,12 +79,13 @@ For details on scaling: see [scalability](references/scalability.md).
 **Goal:** Architectural plan defining HOW to satisfy requirements within constraints.
 
 1. **Research:** List unknowns → investigate alternatives → document pros/cons
-2. **Constitution check:** Verify decisions respect constitution principles
+2. **Pre-design constitution check:** Verify principles before deciding
 3. **Document:** Key Ideas, Decisions, Tech Stack, Patterns, Quality Goals, Constraints
+4. **Post-design constitution re-check:** Verify decisions still respect principles
 
 See: [solution-strategy](references/solution-strategy.md)
 
-**Gate:** Constitution check passed + research documented.
+**Gate:** Both constitution checks passed + research documented.
 **Exit:** Architecture approved → Phase 3.
 
 ---
@@ -110,8 +111,8 @@ See: [solution-strategy](references/solution-strategy.md)
 
 **Spec-Driven** (10+ subtasks, complex): See [spec-driven-development](references/spec-driven-development.md) for 4-step workflow (Requirements → Design → Tasks → Implementation).
 
-**Gate:** Run spec quality checklist (use `assets/spec-quality-checklist.md.template`). 0 failed items before Phase 5.
-**Exit:** Specs approved + checklist passed → Phase 5.
+**Gate:** Run spec quality checklist (use `assets/spec-quality-checklist.md.template`). 0 failed items. Zero [NEEDS CLARIFICATION] markers.
+**Exit:** Specs approved + checklist passed + no ambiguities → Phase 5.
 
 ---
 
@@ -121,7 +122,7 @@ See: [solution-strategy](references/solution-strategy.md)
 
 1. Read epic.md and specs
 2. Identify independent work streams
-3. Create task list with IDs, dependencies, estimations
+3. Create task list: `- [ ] [T-NNN] Description (R-N)` — each task references its requirement
 4. Mark parallel tasks [P]
 5. Define validation checkpoints
 6. Save to `context/epics/.../tasks.md`

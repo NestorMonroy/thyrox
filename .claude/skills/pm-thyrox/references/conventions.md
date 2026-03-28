@@ -75,6 +75,36 @@ Brief description of what this feature does and why.
 
 **Dependencies:** List what this depends on
 **Blocked by:** List what's blocking this
+
+---
+
+## Priority Mapping
+
+User stories con prioridades se mapean a fases de ejecución:
+
+| Priority | Task Phase | Execution | MVP? |
+|----------|-----------|-----------|------|
+| P1 | Phase 3 tasks | Primero | Sí |
+| P2 | Phase 4 tasks | Segundo | No |
+| P3 | Phase 5 tasks | Último | No |
+
+---
+
+## Traceability IDs
+
+Cada artefacto usa IDs para trazabilidad cruzada:
+
+| Tipo | Formato | Ejemplo | Dónde se usa |
+|------|---------|---------|-------------|
+| Requirements | R-N | R-1, R-2 | requirements-analysis |
+| Functional Requirements | FR-NNN | FR-001 | spec/requirements |
+| Use Cases | UC-NNN | UC-001 | use-cases |
+| Success Criteria | SC-NNN | SC-001 | quality-goals/spec |
+| Tasks | T-NNN | T-001 | tasks.md |
+| Checklist Items | CHK-NNN | CHK-001 | checklists |
+| ADRs | adr-NNN | adr-001 | decisions/ |
+
+**Regla:** Cada task (T-NNN) DEBE referenciar el requirement que satisface (R-N o FR-NNN).
 **Notes:** Any relevant context or decisions
 **PRD:** Link to .claude/prds/feature.md if exists
 **Epic:** Link to .claude/epics/feature/ if exists

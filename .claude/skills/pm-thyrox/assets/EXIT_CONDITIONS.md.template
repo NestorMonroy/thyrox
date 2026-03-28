@@ -46,13 +46,17 @@
 
 **Objetivo:** Definir CÓMO vamos a cumplir los requisitos (arquitectura)
 
-**Gate — Constitution Check:**
+**Gate — Pre-Design Constitution Check:**
 - [ ] Cada decisión respeta los Core Principles de constitution.md
 - [ ] Si hay violación → documentar justificación en ADR
 
 **Gate — Research:**
 - [ ] Unknowns investigados (no decidir sin evidencia)
 - [ ] Alternativas documentadas con pros/cons para cada decisión
+
+**Gate — Post-Design Constitution Re-Check:**
+- [ ] Después de tomar decisiones, re-verificar: ¿siguen respetando constitution?
+- [ ] Si nueva violación → documentar o revertir decisión
 
 **Exit Conditions (TODAS deben cumplirse):**
 - [ ] Visión técnica global definida (qué componentes, cómo se integran)
@@ -111,6 +115,10 @@
 **Gate — Spec Quality:**
 - [ ] Spec quality checklist completado (usar `assets/spec-quality-checklist.md.template`)
 - [ ] 0 items fallidos (o aprobación explícita del usuario si persisten)
+
+**Gate — [NEEDS CLARIFICATION]:**
+- [ ] Zero [NEEDS CLARIFICATION] markers sin resolver en toda la spec
+- [ ] Si hay markers → resolver con el usuario antes de descomponer en tasks
 
 **Exit Conditions (TODAS deben cumplirse):**
 - [ ] Cada requisito tiene especificación técnica (SPEC-001 a SPEC-NNN)
