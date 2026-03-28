@@ -6,7 +6,16 @@ Versión: 1.0
 
 # Focus
 
-SKILL.md reescrito + 54 test cases creados + multi-interaction evals ejecutados.
+5 correcciones del eval gap analysis aplicadas al SKILL.md y run-multi-evals.sh.
+
+## Completado sesión 3
+
+- Fix path bug en run-multi-evals.sh (PROJECT_ROOT doble .claude/)
+- Transitions activas (Siguiente) en las 7 fases
+- Detección de fase completada (Detectar) en las 7 fases
+- WHY para formato [T-NNN] en Phase 5
+- "Identificar siguiente tarea" en Phase 7
+- SKILL.md: 176 → 191 líneas (bajo límite 500)
 
 ## Completado sesión 2
 
@@ -16,11 +25,9 @@ SKILL.md reescrito + 54 test cases creados + multi-interaction evals ejecutados.
 - Evals ejecutados: functional 78.6%, multi-interaction 76.9%
 - 4 lecciones documentadas (L-004 a L-007)
 - Errores centralizados en context/errors/ (ERR-001 a ERR-028)
-- Script run-multi-evals.sh creado (bug en paths pendiente de fix)
 
 ## Pendiente
 
-1. Fix bug en run-multi-evals.sh (path doble .claude/.claude/)
-2. Re-ejecutar MI-22 después del fix
-3. Evaluar qué gaps del SKILL mejorar basado en eval results
-4. Considerar: description optimization si los trigger evals fallan
+1. Re-ejecutar MI-22 para verificar fix del script
+2. Documentar lecciones de sesión 3
+3. Evaluar si los scores mejoran con las corrections
