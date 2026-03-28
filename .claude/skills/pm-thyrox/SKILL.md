@@ -10,9 +10,17 @@ Fecha actualización: 2026-03-27
 
 # PM-THYROX: Project Management Skill
 
+**Level 1 — Motor del framework.** Este archivo es la fuente canónica de la metodología THYROX. Los demás archivos lo referencian, no lo redefinen.
+
+```
+Level 1: SKILL.md    → Motor (define metodología, fases, reglas)
+Level 2: CLAUDE.md   → Puente (contexto persistente entre sesiones)
+Level 3: README.md   → Presentación (entrada para humanos)
+```
+
 ## Propósito
 
-Skill maestro de gestión de proyectos para THYROX. Metodología de 7 fases SDLC que permite analizar, planificar, estructurar, ejecutar y trackear proyectos de cualquier tamaño.
+Metodología de 7 fases SDLC para analizar, planificar, estructurar, ejecutar y trackear proyectos de cualquier tamaño con Claude Code.
 
 > ROADMAP.md es la fuente de verdad. Git es la persistencia. ANALYZE siempre primero.
 
@@ -190,9 +198,32 @@ See: [commit-helper](references/commit-helper.md) for commit conventions.
 │   └── skills/pm-thyrox/         This skill
 │       ├── SKILL.md              ← You are here
 │       ├── references/           Documentation loaded on demand
-│       ├── scripts/              Executable code (detect/convert/validate)
+│       ├── scripts/              Executable code
+│       │   ├── detect-missing-md-links.sh
+│       │   ├── convert-missing-md-links.sh
+│       │   ├── validate-missing-md-links.sh
+│       │   ├── detect_broken_references.py
+│       │   ├── convert-broken-references.py
+│       │   └── validate-broken-references.py
 │       └── assets/               Templates for output
 ```
+
+---
+
+## Naming Conventions
+
+```
+Files:       kebab-case.md
+Folders:     lowercase/
+Commits:     type(scope): description
+Branches:    feature/, bugfix/, docs/
+Epics:       YYYY-MM-DD-nombre/
+Work-logs:   YYYY-MM-DD-HH-MM-desc.md
+ADRs:        adr-NNN.md
+Templates:   nombre.md.template
+```
+
+For full details: see [conventions](references/conventions.md).
 
 ---
 

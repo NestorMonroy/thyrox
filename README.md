@@ -124,11 +124,11 @@ El motor de THYROX es el **[SKILL](.claude/skills/pm-thyrox/SKILL.md)**, que def
 
 ### Jerarquía de archivos
 
-| Nivel | Archivo | Función |
+| Level | Archivo | Función |
 |-------|---------|---------|
-| 1 | `.claude/skills/pm-thyrox/SKILL.md` | Motor — define metodología y fases |
-| 2 | `.claude/CLAUDE.md` | Puente — contexto persistente entre sesiones |
-| 3 | `README.md` | Presentación — entrada para humanos |
+| Level 1 | [SKILL](.claude/skills/pm-thyrox/SKILL.md) | Motor — define metodología y fases |
+| Level 2 | [CLAUDE](.claude/CLAUDE.md) | Puente — contexto persistente entre sesiones |
+| Level 3 | README.md | Presentación — entrada para humanos |
 
 ### Workflow diario
 

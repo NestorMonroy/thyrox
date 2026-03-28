@@ -9,11 +9,13 @@ Fecha actualización: 2026-03-25
 
 # CLAUDE.md - Contexto Persistente THYROX
 
+**Level 2 — Puente entre SKILL y proyecto.** Este archivo conecta la metodología ([SKILL](skills/pm-thyrox/SKILL.md), Level 1) con el proyecto real. README.md (Level 3) es la presentación para humanos.
+
 ## Propósito
 
-Archivo de contexto persistente para Claude Code en el proyecto THYROX. Proporciona información crítica sobre estructura, convenciones, y estado actual.
+Contexto persistente para Claude Code. Estructura, convenciones, y estado actual del proyecto.
 
-> Objetivo: Que Claude recuerde estructura, decisiones, y contexto del proyecto entre sesiones.
+> Objetivo: Que Claude recuerde estructura, decisiones, y contexto entre sesiones.
 
 ---
 
@@ -49,23 +51,27 @@ Crear un template reutilizable que permita:
 
 ```
 thyrox/
-├── README.md                 # Presentación
-├── ROADMAP.md               # Plan maestro (actualizar en cada sesión)
-├── CHANGELOG.md             # Historial (auto-generado)
-├── CLAUDE.md                # Este archivo
-├── .claude/                 # Configuración Claude Code
-│   ├── context/             # Estado del proyecto
-│   ├── skills/              # Comandos personalizados
-│   ├── prds/                # Product Requirements
-│   └── epics/               # Epics y tasks
-├── docs/                    # Documentación pública
-│   ├── API.md
-│   ├── BUILD.md
-│   ├── ARCHITECTURE.md
-│   └── CONTRIBUTING.md
+├── README.md                 # Presentación (Level 3)
+├── ROADMAP.md               # Plan maestro (fuente de verdad)
+├── CHANGELOG.md             # Historial de cambios
+├── ARCHITECTURE.md          # Decisiones arquitectónicas
+├── CONTRIBUTING.md          # Guía de contribución
+├── .claude/
+│   ├── CLAUDE.md            # Este archivo (Level 2)
+│   ├── context/             # Trabajo producido por el framework
+│   │   ├── project-state.md
+│   │   ├── decisions/       # ADRs
+│   │   ├── analysis/        # Diagnósticos y auditorías
+│   │   ├── epics/           # Trabajo planificado
+│   │   └── work-logs/       # Bitácora de sesiones
+│   └── skills/pm-thyrox/    # El SKILL (Level 1)
+│       ├── SKILL.md         # Motor del framework
+│       ├── references/      # Documentación bajo demanda
+│       ├── scripts/         # Código ejecutable
+│       └── assets/          # Templates de output
+├── docs/                    # API.md, BUILD.md
 ├── api/                     # Sub-proyecto: API
-├── build/                   # Sub-proyecto: Build
-└── .gitignore
+└── build/                   # Sub-proyecto: Build
 ```
 
 ---

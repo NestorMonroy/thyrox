@@ -23,20 +23,25 @@ All PM-THYROX workflow files are stored in the THYROX project structure:
 
 ```
 /project/
-├── ROADMAP.md              Main project plan (source of truth)
-├── CHANGELOG.md            Release notes (auto-generated)
-├── CLAUDE.md               Persistent context for Claude Code
+├── ROADMAP.md                    Source of truth for progress
+├── CHANGELOG.md                  Auto-generated from commits
+├── ARCHITECTURE.md               Architectural decisions
+├── CONTRIBUTING.md               Contribution guide
 │
 └── .claude/
-    ├── prds/               Product requirement documents
-    │   └── <feature>.md
+    ├── CLAUDE.md                 Persistent context (Level 2)
+    ├── context/                  Work produced by framework
+    │   ├── project-state.md     Current phase/progress
+    │   ├── decisions/           ADRs (adr-NNN.md)
+    │   ├── analysis/            Diagnostics and audits (Phase 1, 7)
+    │   ├── epics/               Planned work (Phase 3, 4, 5)
+    │   └── work-logs/           Session journals (Phase 6)
     │
-    ├── context/
-    │   ├── project-state.md    Current phase/progress
-    │   └── decisions.md        ADRs and decisions
-    │
-    └── skills/
-        └── pm-thyrox/
+    └── skills/pm-thyrox/        The SKILL (Level 1)
+        ├── SKILL.md             Motor — canonical source
+        ├── references/          Documentation loaded on demand
+        ├── scripts/             Executable code (detect/convert/validate)
+        └── assets/              Templates for output
 ```
 
 ## ROADMAP.md Format
