@@ -129,6 +129,31 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 - [x] ERR-001: Análisis no documentado en context/analysis/ (2026-03-28)
 - [x] ERR-002: Clasificación incorrecta de tamaño del proyecto (2026-03-28)
+- [x] ERR-006: Saltar fases de nuevo — reincidencia de ERR-002 (2026-03-28)
+
+---
+
+## FASE 3b: Adopción de conceptos spec-kit
+
+**Epic:** context/analysis/spec-kit-adoption-solution-strategy.md
+
+### Nuevos templates
+
+- [ ] Crear `assets/spec-quality-checklist.md.template` (ERR-003)
+- [ ] Crear `assets/constitution.md.template` (ERR-004)
+
+### Mejorar artefactos existentes
+
+- [ ] `assets/EXIT_CONDITIONS.md.template` — agregar gates mandatorios + constitution check (ERR-008)
+- [ ] `references/solution-strategy.md` — agregar Research Step explícito (ERR-006)
+- [ ] `references/conventions.md` — agregar convención ROADMAP → epic link (ERR-007)
+- [ ] `SKILL.md` — agregar constitution y checklist al flujo de fases (ERR-003, ERR-004)
+
+### Enriquecer fases con pasos ejecutables
+
+- [ ] Phase 3 (PLAN): agregar pasos numerados a reference o SKILL (ERR-005)
+- [ ] Phase 5 (DECOMPOSE): agregar pasos numerados (ERR-005)
+- [ ] Phase 6 (EXECUTE): agregar pasos numerados (ERR-005)
 
 ---
 
