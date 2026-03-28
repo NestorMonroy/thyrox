@@ -26,8 +26,15 @@ Versión: 1.0
 - 54 test cases + evals ejecutados
 - Errores centralizados (ERR-001 a ERR-028)
 
+## Completado sesión 3 (cont.)
+
+- FASE 3 validación final: 0 links rotos en core, covariancia verificada
+- Evals: 40/40 (100%) — functional + multi-interaction
+- setup-template.sh creado y testeado
+- FASE 4 generalización completada (CI/CD pendiente)
+
 ## Pendiente
 
-1. Re-ejecutar suite completa de evals para medir mejora en scores
-2. FASE 3 validación final (broken references, md-links, covariancia)
-3. FASE 4: Template listo para reutilización
+1. CI/CD: GitHub Actions con validate-* scripts
+2. Pre-commit hooks para conventional commits
+3. Automatización de changelog

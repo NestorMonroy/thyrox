@@ -229,15 +229,16 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## FASE 4: Template listo para reutilización (futuro)
+## FASE 4: Template listo para reutilización
 
 ### Generalización
 
-- [ ] Limpiar contenido específico de THYROX para hacerlo template genérico
-- [ ] Crear guía de "cómo usar este template para tu proyecto"
-- [ ] Testear copiando pm-thyrox/ a un proyecto nuevo
+- [x] Análisis de contenido THYROX-específico vs genérico (85-90% genérico) (2026-03-28)
+- [x] Crear setup-template.sh — script interactivo de personalización (2026-03-28)
+- [x] Actualizar README.md con Quick Start usando setup-template.sh (2026-03-28)
+- [x] Testear copiando repo a directorio limpio y ejecutando script (2026-03-28)
 
-### CI/CD
+### CI/CD (futuro)
 
 - [ ] GitHub Actions con validate-* scripts
 - [ ] Pre-commit hooks para conventional commits
@@ -254,7 +255,7 @@ FASE 3: Completar docs       — 100% ✓
 FASE 3b: spec-kit adoption   — 100% ✓
 FASE 3c: spec-kit deep       — 100% ✓
 FASE 3d: Riesgos referencia  — 100% ✓
-FASE 4: Template reutilizable —   0%
+FASE 4: Template reutilizable —  80% (CI/CD pendiente)
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
