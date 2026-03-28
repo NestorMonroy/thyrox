@@ -166,6 +166,40 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## FASE 3c: Adopción profunda de spec-kit (mecanismos de calidad)
+
+**Epic:** context/analysis/spec-kit-deep-adoption-strategy.md
+
+### Script nuevo
+
+- [ ] Crear `scripts/validate-phase-readiness.sh` — verifica artefactos por fase (D4)
+
+### Mejorar templates existentes
+
+- [ ] `assets/tasks.md.template` — cada task referencia requirement R-N o FR-NNN (D3)
+- [ ] `assets/spec-quality-checklist.md.template` — agregar check [NEEDS CLARIFICATION] + refs a spec sections (D1, D3)
+- [ ] `assets/EXIT_CONDITIONS.md.template` — double constitution check en Phase 2 (D2)
+
+### Mejorar references
+
+- [ ] `references/conventions.md` — priority mapping P1→Phase 3 MVP, P2→Phase 4, P3→Phase 5 (D5)
+
+### SKILL.md updates
+
+- [ ] Phase 2: "Re-check constitution AFTER design" (D2)
+- [ ] Phase 4: "Resolve all [NEEDS CLARIFICATION] before Phase 5" (D1)
+- [ ] Phase 5: "Tasks reference requirements (R-N)" (D3)
+
+### Tracking de errores (deep analysis)
+
+- [x] ERR-012: No hay cadena input/output entre fases → validate-phase-readiness.sh (2026-03-28)
+- [x] ERR-013: No hay [NEEDS CLARIFICATION] mechanism → checklist + convención (2026-03-28)
+- [x] ERR-016: No hay double constitution check → pre + post design (2026-03-28)
+- [x] ERR-017: No hay priority→phase mapping → convención documentada (2026-03-28)
+- [x] ERR-018: No hay trazabilidad req→task→checklist → IDs en templates (2026-03-28)
+
+---
+
 ## FASE 4: Template listo para reutilización (futuro)
 
 ### Generalización
