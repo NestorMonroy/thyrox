@@ -1,0 +1,43 @@
+{
+  "skill_name": "pm-thyrox",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Quiero crear un sistema de inventario para una tienda pequeña. Manejaría productos, categorías, stock, y alertas cuando un producto está por agotarse. La tienda tiene 2 empleados y unos 500 productos. Ayúdame a empezar.",
+      "expected_output": "Empieza con Phase 1 ANALYZE (no salta a planificar). Hace preguntas de análisis sobre requisitos, stakeholders, constraints. Propone crear work package con timestamp. NO escribe código directamente.",
+      "files": [],
+      "expectations": [
+        "La respuesta menciona analizar o entender antes de planificar",
+        "Se propone crear un work package o directorio de trabajo",
+        "Se hacen preguntas sobre requisitos, usuarios o limitaciones",
+        "NO se genera código de implementación directamente",
+        "Se referencia o sigue la metodología de fases del SKILL"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "¿En qué punto estamos del proyecto? ¿Qué debería hacer ahora?",
+      "expected_output": "Lee focus.md y/o now.md y/o ROADMAP.md. Reporta estado actual basado en datos reales. Sugiere siguiente paso concreto basado en la fase actual.",
+      "files": [],
+      "expectations": [
+        "Se leen archivos de estado del proyecto (focus.md, now.md, o ROADMAP.md)",
+        "La respuesta está basada en datos reales del proyecto, no inventados",
+        "Se sugiere una acción concreta como siguiente paso",
+        "Se identifica en qué fase del SDLC se encuentra el proyecto"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Necesito agregar soporte multi-idioma a la aplicación. Los textos están hardcodeados en español por todo el código. Hay unas 30 pantallas. Descompón esto en tareas que pueda ir haciendo.",
+      "expected_output": "Primero analiza el scope (Phase 4 STRUCTURE). Luego descompone en tareas con formato [T-NNN]. Cada tarea referencia lo que resuelve. Tareas son atómicas y con orden lógico.",
+      "files": [],
+      "expectations": [
+        "Las tareas tienen IDs con formato [T-NNN] o similar",
+        "Hay un orden lógico de ejecución (no aleatorio)",
+        "Las tareas son atómicas (no 'implementar todo')",
+        "Se sugiere guardar en plan.md o tasks.md",
+        "Se analiza el scope antes de descomponer directamente"
+      ]
+    }
+  ]
+}
