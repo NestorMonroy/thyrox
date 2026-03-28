@@ -182,11 +182,11 @@ Implementar y ejecutar 23 escenarios de evaluación multi-interacción para veri
 
 ### Bloque 3: Ejecutar y documentar (T-006 a T-008)
 
-- [ ] [T-006] Ejecutar los 7 evals automatizados
+- [x] [T-006] Ejecutar los 7 evals automatizados — 20/26 (76.9%) (2026-03-28)
   - `bash scripts/run-multi-evals.sh`
   - Capturar output completo
 
-- [ ] [T-007] Documentar resultados en plan.md
+- [x] [T-007] Documentar resultados en plan.md (2026-03-28)
   - Tabla de resultados por eval
   - Análisis de fallos
   - Comparación con functional evals de primera interacción (78.6%)
