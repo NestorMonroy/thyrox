@@ -22,29 +22,31 @@ Reescribir SKILL.md siguiendo skill-creator guidelines. Incluye:
 
 ## Tasks
 
-- [ ] [T-001] Escribir nuevo YAML frontmatter con description pushy (~80 palabras)
-- [ ] [T-002] Escribir intro del skill (qué es, para quién, principio core) — 10 líneas
-- [ ] [T-003] Escribir 7 fases con WHY + steps + gate + exit + refs — 8-9 líneas por fase
-- [ ] [T-004] Escribir tabla "Where Outputs Live"
-- [ ] [T-005] Escribir sección work package structure + naming
-- [ ] [T-006] Escribir sección scalability (thresholds)
-- [ ] [T-007] Escribir references agrupadas por dominio con "when to read"
-- [ ] [T-008] Verificar total < 500 líneas
-- [ ] [T-009] Actualizar CLAUDE.md si hay cambios en estructura
-- [ ] [T-010] Commit y push
+- [x] [T-001] Escribir nuevo YAML frontmatter con description pushy (~80 palabras) (2026-03-28)
+- [x] [T-002] Escribir intro del skill (qué es, para quién, principio core) — 10 líneas (2026-03-28)
+- [x] [T-003] Escribir 7 fases con WHY + steps + gate + exit + refs — 8-9 líneas por fase (2026-03-28)
+- [x] [T-004] Escribir tabla "Where Outputs Live" (2026-03-28)
+- [x] [T-005] Escribir sección work package structure + naming (2026-03-28)
+- [x] [T-006] Escribir sección scalability (thresholds) (2026-03-28)
+- [x] [T-007] Escribir references agrupadas por dominio con "when to read" (2026-03-28)
+- [x] [T-008] Verificar total < 500 líneas — resultado: 176 líneas (2026-03-28)
+- [x] [T-009] Actualizar CLAUDE.md — no necesario, estructura no cambió (2026-03-28)
+- [x] [T-010] Commit y push (2026-03-28)
 
 ## Acceptance Criteria
 
-- [ ] SKILL.md tiene YAML frontmatter con name + description
-- [ ] Description es "pushy" (~80 palabras, cubre edge cases de triggering)
-- [ ] Cada fase tiene 1 línea de WHY
-- [ ] References tienen "when to read" guidance
-- [ ] Total < 500 líneas (ideal < 200)
-- [ ] Imperative form en instrucciones
-- [ ] Sin "MUST" en mayúsculas — explicar WHY en vez de gritar
+- [x] SKILL.md tiene YAML frontmatter con name + description
+- [x] Description es "pushy" (~80 palabras, cubre edge cases de triggering)
+- [x] Cada fase tiene 1 línea de WHY (8 líneas con "previene/evita/antes de")
+- [x] References tienen "when to read" guidance (8 líneas "leer cuando/según")
+- [x] Total < 500 líneas (ideal < 200) — resultado: 176 líneas
+- [x] Imperative form en instrucciones
+- [x] Sin "MUST" en mayúsculas — 0 ocurrencias
 
-## Siguiente Paso
+## Verification (Phase 7: TRACK)
 
-→ Phase 4: STRUCTURE (ya cubierto en spec.md)
-→ Phase 5: DECOMPOSE (tasks arriba)
-→ Phase 6: EXECUTE
+- [x] 176 líneas (< 500 ✓)
+- [x] 20/20 references linked (0 missing ✓)
+- [x] 0 broken reference links ✓
+- [x] YAML frontmatter parseable (name + description fields ✓)
+- [x] 0 MUST/ALWAYS/NEVER en mayúsculas ✓
