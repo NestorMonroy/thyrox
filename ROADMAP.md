@@ -172,23 +172,23 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ### Script nuevo
 
-- [ ] Crear `scripts/validate-phase-readiness.sh` — verifica artefactos por fase (D4)
+- [x] Crear `scripts/validate-phase-readiness.sh` — verifica artefactos por fase (D4) (2026-03-28)
 
 ### Mejorar templates existentes
 
-- [ ] `assets/tasks.md.template` — cada task referencia requirement R-N o FR-NNN (D3)
-- [ ] `assets/spec-quality-checklist.md.template` — agregar check [NEEDS CLARIFICATION] + refs a spec sections (D1, D3)
-- [ ] `assets/EXIT_CONDITIONS.md.template` — double constitution check en Phase 2 (D2)
+- [x] `assets/tasks.md.template` — traceability T-NNN → R-N (D3) (2026-03-28)
+- [x] `assets/spec-quality-checklist.md.template` — [NEEDS CLARIFICATION] check + [Spec §] refs (D1, D3) (2026-03-28)
+- [x] `assets/EXIT_CONDITIONS.md.template` — double constitution check + markers gate (D2) (2026-03-28)
 
 ### Mejorar references
 
-- [ ] `references/conventions.md` — priority mapping P1→Phase 3 MVP, P2→Phase 4, P3→Phase 5 (D5)
+- [x] `references/conventions.md` — priority mapping + traceability IDs table (D5) (2026-03-28)
 
 ### SKILL.md updates
 
-- [ ] Phase 2: "Re-check constitution AFTER design" (D2)
-- [ ] Phase 4: "Resolve all [NEEDS CLARIFICATION] before Phase 5" (D1)
-- [ ] Phase 5: "Tasks reference requirements (R-N)" (D3)
+- [x] Phase 2: double constitution check pre + post design (D2) (2026-03-28)
+- [x] Phase 4: zero [NEEDS CLARIFICATION] markers gate (D1) (2026-03-28)
+- [x] Phase 5: task traceability T-NNN → R-N (D3) (2026-03-28)
 
 ### Tracking de errores (deep analysis)
 
