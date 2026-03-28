@@ -40,6 +40,9 @@ out/
 
 # Testing
 coverage/
+.coverage
+htmlcov/
+coverage.xml
 .nyc_output/
 .pytest_cache/
 
@@ -51,6 +54,28 @@ coverage/
 tmp/
 temp/
 *.tmp
+*.backup
+*.backup2
+*.bak
+
+# Binaries & media (prevent grokputer-style pollution)
+*.exe
+*.msi
+*.dll
+*.mp4
+*.avi
+*.mov
+*.rar
+*.zip
+*.tar.gz
+*.7z
+*.bmp
+*.psd
+*.tiff
+*.xlsx
+*.docx
+*.pptx
+*.lnk
 
 # Database
 *.sqlite
@@ -75,3 +100,11 @@ temp/
 
 # Generated files
 CHANGELOG-auto.md
+*-report.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+env/
+venv/

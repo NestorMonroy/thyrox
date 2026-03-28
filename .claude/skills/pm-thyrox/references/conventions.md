@@ -502,6 +502,7 @@ Cuando Claude necesita una decisión del usuario que no puede resolverse en la s
 - **Commit frequently** — Small commits are easier to review and revert
 - **Keep task scope small** — Ideally 2-4 hours of work per task
 - **Review ROADMAP.md before starting session** — Context transfer is essential
+- **Before deleting files, grep for references** — Run `grep -r "filename" .claude/` to find all mentions and update them. Use `scripts/detect_broken_references.py` to validate after
 
 ## When to Update What
 

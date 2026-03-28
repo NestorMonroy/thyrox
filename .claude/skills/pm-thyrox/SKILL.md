@@ -94,8 +94,9 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 Commits frecuentes con mensajes descriptivos crean un historial navegable.
 
 1. Tomar siguiente tarea sin bloqueos
-2. Implementar el cambio
-3. Commit con [Conventional Commits](references/commit-helper.md): `type(scope): description`
+2. Implementar el cambio. Si falla, crear ERR-NNN antes de reintentar con otro approach
+3. No commitear archivos temporales, binarios ni backups — usar /tmp/ para efímeros
+4. Commit con [Conventional Commits](references/commit-helper.md): `type(scope): description`
 4. Actualizar ROADMAP.md: `[ ]` → `[x]` con fecha
 5. Repetir hasta completar todas las tareas
 
@@ -114,6 +115,7 @@ Documentar lecciones previene repetir los mismos errores.
 - Si hay 100+ issues: ver [incremental-correction](references/incremental-correction.md)
 - Validar integridad: ver [reference-validation](references/reference-validation.md)
 - Gate soft antes de avanzar de fase: `bash scripts/validate-phase-readiness.sh <phase>`
+- Verificar que no quedaron archivos temporales fuera de `context/work/`
 - Validar cierre de sesión: `bash scripts/validate-session-close.sh`
 - Resumen rápido del estado: `bash scripts/project-status.sh`
 
