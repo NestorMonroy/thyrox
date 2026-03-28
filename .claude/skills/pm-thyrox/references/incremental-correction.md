@@ -22,6 +22,26 @@ Metodología validada para corrección de 100+ issues a gran escala con análisi
 
 ---
 
+## Tabla de Contenidos
+
+- [Cuándo Usar Esta Metodología](#cu�ndo-usar-esta-metodologia)
+- [Decision Framework: ¿Manual vs Script?](#decision-framework-manual-vs-script)
+- [Trigger Patterns](#trigger-patterns)
+- [Self-Check Before Starting Correction](#self-check-before-starting-correction)
+- [Templates Para Documentar el Proceso](#templates-para-documentar-el-proceso)
+- [Workflow Completo](#workflow-completo)
+- [Cómo Usar los Templates](#como-usar-los-templates)
+- [Mejores Prácticas](#mejores-pr�cticas)
+- [Filosofía Fundamental](#filosofia-fundamental)
+- [Beneficios de la Metodología](#beneficios-de-la-metodologia)
+- [Ejemplo de Proyecto Real](#ejemplo-de-proyecto-real)
+- [Integración con PM-THYROX](#integracion-con-pm-thyrox)
+- [FAQ](#faq)
+- [Ver También](#ver-tambien)
+
+---
+
+
 ## Cuándo Usar Esta Metodología
 
 Use esta metodología cuando necesite:

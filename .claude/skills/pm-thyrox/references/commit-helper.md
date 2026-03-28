@@ -21,6 +21,26 @@ Guía para crear commits siguiendo **Conventional Commits** en el proyecto THYRO
 
 ---
 
+## Tabla de Contenidos
+
+- [CUANDO HAGAS UN COMMIT, USA LOS TEMPLATES](#cuando-hagas-un-commit-usa-los-templates)
+- [Cuando Usar](#cuando-usar)
+- [Formato Base](#formato-base)
+- [Tipos Válidos](#tipos-v�lidos)
+- [Scopes Comunes en THYROX](#scopes-comunes-en-thyrox)
+- [Reglas Esenciales](#reglas-esenciales)
+- [Templates Disponibles](#templates-disponibles)
+- [Ejemplos Rápidos](#ejemplos-r�pidos)
+- [Proceso de Commit](#proceso-de-commit)
+- [Validación Pre-Commit](#validacion-pre-commit)
+- [Best Practices](#best-practices)
+- [Integración con PM-THYROX](#integracion-con-pm-thyrox)
+- [Referencias Externas](#referencias-externas)
+- [Ver También](#ver-tambien)
+
+---
+
+
 ## CUANDO HAGAS UN COMMIT, USA LOS TEMPLATES
 
 Ahora que necesites hacer un commit, haz esto:

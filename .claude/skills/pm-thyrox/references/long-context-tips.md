@@ -23,6 +23,19 @@ Fecha: 2026-02-01
 
 ---
 
+## Tabla de Contenidos
+
+- [Essential Tips](#essential-tips)
+- [Estructurar Documentos con XML Tags](#estructurar-documentos-con-xml-tags)
+- [Ground Responses in Quotes](#ground-responses-in-quotes)
+- [Casos de Uso ADT](#casos-de-uso-adt)
+- [Mejores Prácticas Resumidas](#mejores-pr�cticas-resumidas)
+- [Anti-Patterns (Evitar)](#anti-patterns-evitar)
+- [Conclusión](#conclusion)
+
+---
+
+
 ## Essential Tips
 
 Claude 4.5 puede manejar contextos muy largos (hasta 200K tokens), pero la forma en que estructuras el input afecta significativamente la calidad de las respuestas.

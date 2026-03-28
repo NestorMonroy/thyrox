@@ -21,6 +21,39 @@ Metodolog铆a para trabajo complejo que requiere planificaci贸n estructurada. Apl
 
 ---
 
+## Tabla de Contenidos
+
+- [Cuando Usar Spec-Driven Development](#cuando-usar-spec-driven-development)
+- [Decision Framework: 驴Necesito Spec-Driven Development?](#decision-framework-necesito-spec-driven-development)
+- [Trigger Patterns](#trigger-patterns)
+- [Self-Check Before Starting Spec-Driven](#self-check-before-starting-spec-driven)
+- [Templates Disponibles](#templates-disponibles)
+- [Workflow Completo (4 Fases)](#workflow-completo-4-fases)
+- [Convenciones de Naming](#convenciones-de-naming)
+- [Mejores Pr谩cticas](#mejores-pr胏ticas)
+- [Ejemplo Completo Real](#ejemplo-completo-real)
+- [Problema](#problema)
+- [Objetivos](#objetivos)
+- [Requisitos Funcionales](#requisitos-funcionales)
+- [Restricciones](#restricciones)
+- [Decisi贸n Arquitect贸nica](#decision-arquitectonica)
+- [Estructura](#estructura)
+- [Plan de Testing](#plan-de-testing)
+- [TASK-001: Preparar directorios](#task-001-preparar-directorios)
+- [TASK-002: Copiar originales](#task-002-copiar-originales)
+- [TASK-003: Traducir index.rst](#task-003-traducir-index.rst)
+- [TASK-004: Traducir quality_tree.rst](#task-004-traducir-quality_tree.rst)
+- [TASK-005-007: Traducir scenas.rst, appendix.rst, etc](#task-005-007-traducir-scenas.rst-appendix.rst-etc)
+- [TASK-008: Validaci贸n final](#task-008-validacion-final)
+- [Checkpoints](#checkpoints)
+- [Rollback](#rollback)
+- [Integraci贸n con PM-THYROX](#integracion-con-pm-thyrox)
+- [FAQ](#faq)
+- [Ver Tambi茅n](#ver-tambien)
+
+---
+
+
 ## Cuando Usar Spec-Driven Development
 
 Usar cuando:

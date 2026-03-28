@@ -23,6 +23,22 @@ Fecha: 2026-02-01
 
 ---
 
+## Tabla de Contenidos
+
+- [Principios Generales](#principios-generales)
+- [Long-Horizon Reasoning](#long-horizon-reasoning)
+- [Context Awareness](#context-awareness)
+- [State Management](#state-management)
+- [Communication Style](#communication-style)
+- [Tool Usage Patterns](#tool-usage-patterns)
+- [Trabajar con Documentos Largos](#trabajar-con-documentos-largos)
+- [Iteración y Refinamiento](#iteracion-y-refinamiento)
+- [Casos de Uso Específicos ADT](#casos-de-uso-especificos-adt)
+- [Resumen de Principios](#resumen-de-principios)
+
+---
+
+
 ## Principios Generales
 
 ### 1. Ser Explícito con Instrucciones

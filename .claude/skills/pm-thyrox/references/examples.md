@@ -149,6 +149,23 @@ PM-THYROX reads ROADMAP.md:
 
 ---
 
+## Tabla de Contenidos
+
+- [Use Case 1: Simple Feature - "Add Password Reset"](#use-case-1-simple-feature---"add-password-reset")
+- [Use Case 2: Complex Feature - "Payment System"](#use-case-2-complex-feature---"payment-system")
+- [Use Case 3: Bug Fix - "Token Expiry Race Condition"](#use-case-3-bug-fix---"token-expiry-race-condition")
+- [Use Case 4: Standup During Development](#use-case-4-standup-during-development)
+- [Use Case 5: Complex Dependencies](#use-case-5-complex-dependencies)
+- [Use Case 6: Weekly Changelog Generation](#use-case-6-weekly-changelog-generation)
+- [Use Case 7: Handling Blockers](#use-case-7-handling-blockers)
+- [Use Case 8: Tech Debt & Refactoring](#use-case-8-tech-debt-&-refactoring)
+- [Database Query Optimization](#database-query-optimization)
+- [Consolidate Auth Services](#consolidate-auth-services)
+- [Tips for Different Feature Sizes](#tips-for-different-feature-sizes)
+
+---
+
+
 ## Use Case 2: Complex Feature - "Payment System"
 
 ### Phase 1: PLAN (30 min - complex feature)

@@ -78,6 +78,37 @@ Brief description of what this feature does and why.
 
 ---
 
+## Tabla de Contenidos
+
+- [File Locations](#file-locations)
+- [ROADMAP.md Format](#roadmap.md-format)
+- [Progress Conventions](#progress-conventions)
+- [PHASE N: Feature Name](#phase-n-feature-name)
+- [Priority Mapping](#priority-mapping)
+- [Traceability IDs](#traceability-ids)
+- [Analysis vs Epic](#analysis-vs-epic)
+- [Progress Conventions](#progress-conventions)
+- [PHASE 1: Estructura Base](#phase-1-estructura-base)
+- [PHASE 2: Sub-proyecto API](#phase-2-sub-proyecto-api)
+- [PHASE 3: Sub-proyecto Build](#phase-3-sub-proyecto-build)
+- [Conventional Commits Format](#conventional-commits-format)
+- [Task Management with Claude Code](#task-management-with-claude-code)
+- [Progress Tracking](#progress-tracking)
+- [Dependency Management](#dependency-management)
+- [Blocking and Waiting](#blocking-and-waiting)
+- [Architectural Decisions](#architectural-decisions)
+- [ADR-001: JWT for Authentication](#adr-001-jwt-for-authentication)
+- [ADR-002: Use Stripe for Payments](#adr-002-use-stripe-for-payments)
+- [Reference: Change Log Template](#reference-change-log-template)
+- [[0.2.0] - 2025-03-28](#[0.2.0]---2025-03-28)
+- [[0.1.0] - 2025-03-24](#[0.1.0]---2025-03-24)
+- [Common Workflows](#common-workflows)
+- [Best Practices](#best-practices)
+- [When to Update What](#when-to-update-what)
+
+---
+
+
 ## Priority Mapping
 
 User stories con prioridades se mapean a fases de ejecución:
