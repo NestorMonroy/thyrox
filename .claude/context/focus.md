@@ -28,6 +28,6 @@ Versión: 1.0
 
 ## Pendiente
 
-1. Re-ejecutar MI-22 para verificar fix del script
-2. Documentar lecciones de sesión 3
-3. Evaluar si los scores mejoran con las corrections
+1. Re-ejecutar suite completa de evals para medir mejora en scores
+2. Considerar: description optimization si los trigger evals fallan
+3. Evaluar nuevos gaps tras re-run completo
