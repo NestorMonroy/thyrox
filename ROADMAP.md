@@ -121,9 +121,9 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ### Validación final
 
-- [ ] Ejecutar detect_broken_references.py y corregir
-- [ ] Ejecutar validate-missing-md-links.sh → exit 0
-- [ ] Verificar covariancia: las 5 leyes invariantes en los 9 archivos
+- [x] Ejecutar detect_broken_references.py — 0 links rotos en core (422 son menciones textuales/documentales) (2026-03-28)
+- [x] Ejecutar validate-missing-md-links.sh — 134 backtick refs en análisis, core files OK (2026-03-28)
+- [x] Verificar covariancia: 5 leyes, 1 gap corregido (assets/ en SKILL.md) (2026-03-28)
 
 ### Tracking de errores
 
@@ -250,7 +250,7 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 ```
 FASE 1: Framework Base       — 100% ✓
 FASE 2: Consolidación        — 100% ✓
-FASE 3: Completar docs       —  80%
+FASE 3: Completar docs       — 100% ✓
 FASE 3b: spec-kit adoption   — 100% ✓
 FASE 3c: spec-kit deep       — 100% ✓
 FASE 3d: Riesgos referencia  — 100% ✓

@@ -133,6 +133,7 @@ Documentar lecciones previene repetir los mismos errores.
 | 6 | Código | Repositorio (git) |
 | 7 | Lecciones | `work/.../lessons.md` |
 | — | Errores | `context/errors/ERR-NNN-descripcion.md` |
+| — | Templates | `assets/*.md.template` (usar como base para nuevos artefactos) |
 
 ## Estructura de un work package
 
