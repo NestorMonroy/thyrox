@@ -1,112 +1,81 @@
 ```yml
-Tipo: Documentación de Cambios
-Categoría: Historial de Proyecto
-Versión: 0.1.0
-Propósito: Registro automático de todos los cambios notables del proyecto
-Objetivo: Documentar cambios siguiendo Semantic Versioning y Keep a Changelog
-Fecha actualización: 2026-03-25
+Tipo: Historial de Cambios
+Categoría: Proyecto
+Versión: 0.2.0
+Propósito: Registro de cambios notables del proyecto
+Fecha actualización: 2026-03-27
 ```
 
-# CHANGELOG
+# CHANGELOG — THYROX
 
-## Propósito
-
-Registro de todos los cambios notables del proyecto THYROX. Sigue el formato Keep a Changelog y Semantic Versioning.
-
-> Objetivo: Proporcionar historial claro de qué se agregó, cambió, y deprecó en cada versión.
+Formato basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## Formato y Convenciones
-
-Todos los cambios notables de este proyecto serán documentados en este archivo.
-
-El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-y este proyecto sigue [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
----
-
-## [0.1.0] - 2025-03-24
+## [0.2.0] - 2026-03-27
 
 ### Added
-
-- Estructura inicial de THYROX template
-- README.md con documentación general
-- ROADMAP.md con plan maestro del proyecto
-- CLAUDE.md como contexto persistente
-- CHANGELOG.md para tracking de cambios
-- Documentación de API.md
-- Documentación de BUILD.md
-- Estructura de carpetas (.claude/, docs/, reference/)
-- .gitignore configuration
+- Phase 1: ANALYZE — 8 documentos de análisis del proyecto
+- Phase 2: SOLUTION_STRATEGY — estrategia arquitectónica
+- Phase 3: PLAN — ROADMAP reescrito con estado real
+- Phase 4: STRUCTURE — PRD para completar documentación
+- Phase 5: DECOMPOSE — 9 tasks atómicas
+- Patrón detect/convert/validate para md-links (3 scripts Bash)
+- Patrón detect/convert/validate para broken-references (3 scripts Python)
+- context/analysis/ y context/epics/ para outputs del framework
+- references/scalability.md (escalabilidad, sub-agents, metrics)
+- references/reference-validation.md (guía de validación)
+- "Where Outputs Live" table en SKILL.md
 
 ### Changed
-
-- N/A (Primera versión)
-
-### Deprecated
-
-- N/A
+- SKILL.md optimizado: 1084 → 246 líneas (progressive disclosure)
+- ROADMAP.md reescrito reflejando estado real del proyecto
+- ARCHITECTURE.md reescrito con decisiones reales (no aspiracionales)
+- CONTRIBUTING.md reescrito con flujo THYROX real
+- CLAUDE.md conectado a SKILL con 7 fases y jerarquía
+- README.md con sección Metodología y tabla de jerarquía
+- templates/ → assets/ (anatomía oficial de Anthropic)
+- tracking/ → assets/ (AD_HOC_TASKS, REFACTORS como .template)
+- Orden de fases unificado: ANALYZE primero en todos los archivos
+- use-cases.md integrado como 3ra subsección de Phase 1
+- Metadata "Proyecto ADT" → "THYROX" en 3 archivos genéricos
+- EXIT_CONDITIONS.md.template y project.json.template corregidos
 
 ### Removed
-
-- N/A
+- 85 ocurrencias de "arc42" reemplazadas por "architecture docs"
+- requirements.md y requirements.md.template (residuos de renombrado)
+- .claude/utils/ completo (reportes obsoletos)
+- .claude/START-HERE.md (era navegador de utils)
+- .claude/context/changes/ (templates movidos a assets/)
+- .claude/skills/pm-thyrox/epics/ (epic template movido a assets/)
+- Root scripts/ (consolidado en pm-thyrox/scripts/)
+- detect-arc42.sh (propósito cumplido)
 
 ### Fixed
-
-- N/A
-
-### Security
-
-- N/A
+- 6 errores de numeración de fases en references
+- 7 links rotos por paths relativos incorrectos
+- `<br>` tags inconsistentes en metadata blocks
+- Backtick refs convertidos a markdown links (63+ conversiones)
+- .md removido del texto visible de links
 
 ---
 
-## [Unreleased]
+## [0.1.0] - 2026-03-25
 
 ### Added
-
-- [ ] Configuración GitHub Actions
-- [ ] Tests unitarios
-- [ ] Endpoints de API base
-- [ ] Build scripts
-
-### Changed
-
-- Mejoras en documentación
-
-### Fixed
-
-- Bugs encontrados en desarrollo
+- Estructura base del proyecto THYROX
+- SKILL.md con metodología de 7 fases SDLC
+- 20 references de documentación por fase
+- 28 assets/templates para documentos
+- 9 ADRs (Architecture Decision Records)
+- README.md, ROADMAP.md, CHANGELOG.md
+- ARCHITECTURE.md, CONTRIBUTING.md
+- docs/API.md, docs/BUILD.md
+- api/README.md, build/README.md
+- project-state.md, decisions.md
+- Conventional Commits integrado
 
 ---
 
-## Instrucciones de Actualización
-
-Este archivo se actualiza automáticamente con:
-
-```bash
-/changelog:generate --from v0.0.0 --to v0.1.0
-```
-
-O manualmente siguiendo:
-
-1. Agregar versión con fecha: `## [X.Y.Z] - YYYY-MM-DD`
-2. Categorías: Added, Changed, Deprecated, Removed, Fixed, Security
-3. Cada item descripción clara y concisa
-4. Mantener formato [Keep a Changelog](https://keepachangelog.com/)
-
----
-
-**Formato de versión:** Semantic Versioning (MAJOR.MINOR.PATCH)
-
-Ejemplo:
-- `0.1.0` - Primera release beta
-- `1.0.0` - Primera release estable
-- `1.1.0` - Nueva funcionalidad compatible
-- `1.1.1` - Bugfix
-- `2.0.0` - Breaking changes
-
----
-
-**Última Actualización:** 2025-03-24
+**Generado desde:** `git log --oneline`

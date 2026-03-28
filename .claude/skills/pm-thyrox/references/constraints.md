@@ -7,7 +7,7 @@ Objetivo: Documentar todas las limitaciones que afectan el diseño.
 Fecha actualización: 2026-03-25
 ```
 
-# Constraints (ARC42 Section 2)
+# Constraints
 
 ## Propósito
 
@@ -315,7 +315,7 @@ Usar: `constraints.md.template`
 
 ## Próximo Paso
 
-Una vez completado: → Pasar a [context.md](./context.md)
+Una vez completado: → Pasar a [context](./context.md)
 
 ---
 

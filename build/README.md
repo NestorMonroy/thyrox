@@ -24,7 +24,7 @@ Sub-proyecto: Build, CI/CD y Deployment.
 Configuración de build, testing, y deployment pipeline.
 
 **Ubicación:** `/build`
-**Documentación:** `/docs/BUILD.md`
+**Documentación:** [BUILD.md](../docs/BUILD.md)
 
 ---
 
@@ -114,7 +114,7 @@ git push origin v0.1.0
 
 ## Troubleshooting
 
-Ver `/docs/BUILD.md` para:
+Ver [BUILD.md](../docs/BUILD.md) para:
 - Setup issues
 - Test failures
 - Build errors
@@ -124,9 +124,9 @@ Ver `/docs/BUILD.md` para:
 
 ## Documentación
 
-- Full build docs: `/docs/BUILD.md`
-- Architecture: `/docs/ARCHITECTURE.md`
-- Contributing: `/docs/CONTRIBUTING.md`
+- Full build docs: [BUILD.md](../docs/BUILD.md)
+- Architecture: [ARCHITECTURE.md](../ARCHITECTURE.md)
+- Contributing: [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 ---
 

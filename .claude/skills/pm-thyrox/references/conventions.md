@@ -23,25 +23,25 @@ All PM-THYROX workflow files are stored in the THYROX project structure:
 
 ```
 /project/
-├── ROADMAP.md              Main project plan (source of truth)
-├── CHANGELOG.md            Release notes (auto-generated)
-├── CLAUDE.md               Persistent context for Claude Code
+├── ROADMAP.md                    Source of truth for progress
+├── CHANGELOG.md                  Auto-generated from commits
+├── ARCHITECTURE.md               Architectural decisions
+├── CONTRIBUTING.md               Contribution guide
 │
 └── .claude/
-    ├── prds/               Product requirement documents
-    │   └── <feature>.md
+    ├── CLAUDE.md                 Persistent context (Level 2)
+    ├── context/                  Work produced by framework
+    │   ├── project-state.md     Current phase/progress
+    │   ├── decisions/           ADRs (adr-NNN.md)
+    │   ├── analysis/            Diagnostics and audits (Phase 1, 7)
+    │   ├── epics/               Planned work (Phase 3, 4, 5)
+    │   └── work-logs/           Session journals (Phase 6)
     │
-    ├── epics/              Epics for complex features (optional)
-    │   └── <epic>/
-    │       ├── epic.md
-    │       └── <task-id>.md
-    │
-    ├── context/
-    │   ├── project-state.md    Current phase/progress
-    │   └── decisions.md        ADRs and decisions
-    │
-    └── skills/
-        └── pm-thyrox/
+    └── skills/pm-thyrox/        The SKILL (Level 1)
+        ├── SKILL.md             Motor — canonical source
+        ├── references/          Documentation loaded on demand
+        ├── scripts/             Executable code (detect/convert/validate)
+        └── assets/              Templates for output
 ```
 
 ## ROADMAP.md Format
@@ -67,12 +67,55 @@ All PM-THYROX workflow files are stored in the THYROX project structure:
 ### Feature X
 Brief description of what this feature does and why.
 
+**Epic:** context/epics/YYYY-MM-DD-nombre/
+
 - [ ] Subtask 1
 - [-] Subtask 2 (started 2025-03-24)
 - [x] Subtask 3 (2025-03-24)
 
 **Dependencies:** List what this depends on
 **Blocked by:** List what's blocking this
+
+---
+
+## Priority Mapping
+
+User stories con prioridades se mapean a fases de ejecución:
+
+| Priority | Task Phase | Execution | MVP? |
+|----------|-----------|-----------|------|
+| P1 | Phase 3 tasks | Primero | Sí |
+| P2 | Phase 4 tasks | Segundo | No |
+| P3 | Phase 5 tasks | Último | No |
+
+---
+
+## Traceability IDs
+
+Cada artefacto usa IDs para trazabilidad cruzada:
+
+| Tipo | Formato | Ejemplo | Dónde se usa |
+|------|---------|---------|-------------|
+| Requirements | R-N | R-1, R-2 | requirements-analysis |
+| Functional Requirements | FR-NNN | FR-001 | spec/requirements |
+| Use Cases | UC-NNN | UC-001 | use-cases |
+| Success Criteria | SC-NNN | SC-001 | quality-goals/spec |
+| Tasks | T-NNN | T-001 | tasks.md |
+| Checklist Items | CHK-NNN | CHK-001 | checklists |
+| ADRs | adr-NNN | adr-001 | decisions/ |
+
+**Regla:** Cada task (T-NNN) DEBE referenciar el requirement que satisface (R-N o FR-NNN).
+
+---
+
+## Analysis vs Epic
+
+| Tipo | Qué es | Dónde va | Cuándo |
+|------|--------|----------|--------|
+| **Analysis** | Diagnóstico, hallazgos, investigación | `context/analysis/` | Phase 1 (ANALYZE) o Phase 7 (TRACK) |
+| **Epic** | Plan de trabajo con spec + tasks + execution | `context/epics/YYYY-MM-DD-nombre/` | Phase 3+ (tiene epic.md + tasks.md) |
+
+**Regla:** Si el trabajo tiene las 7 fases completas (analysis + strategy + plan + structure + tasks + execute + track) → es un epic. Si es solo hallazgos → es un analysis.
 **Notes:** Any relevant context or decisions
 **PRD:** Link to .claude/prds/feature.md if exists
 **Epic:** Link to .claude/epics/feature/ if exists
@@ -286,7 +329,7 @@ Next: Task Z (ready to start)
 
 ## Architectural Decisions
 
-Use [.claude/context/decisions.md](../../../context/decisions.md) to document ADRs:
+Use [.claude/context/decisions](../../../context/decisions.md) to document ADRs:
 
 ```markdown
 # Architectural Decision Records
@@ -312,7 +355,7 @@ Use [.claude/context/decisions.md](../../../context/decisions.md) to document AD
 
 ## Reference: Change Log Template
 
-[CHANGELOG.md](../../../../CHANGELOG.md) is auto-generated but follows this format:
+[CHANGELOG](../../../../CHANGELOG.md) is auto-generated but follows this format:
 
 ```markdown
 # Changelog

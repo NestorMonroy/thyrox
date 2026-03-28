@@ -426,9 +426,9 @@ aws logs tail /aws/lambda/thyrox
 
 ## Documentación Adicional
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Decisiones técnicas
-- [CONTRIBUTING.md](./CONTRIBUTING.md) - Guía de contribución
-- [API.md](./API.md) - Documentación de endpoints
+- [ARCHITECTURE](../ARCHITECTURE.md) - Decisiones técnicas
+- [CONTRIBUTING](../CONTRIBUTING.md) - Guía de contribución
+- [API](./API.md) - Documentación de endpoints
 
 ---
 

@@ -11,10 +11,10 @@ Fecha actualización: 2026-03-26
 
 ## Status General
 
-**Proyecto:** THYROX (Tracking Hierarchy Yield Roadmap Organization eXecution)  
-**Versión:** 0.1.0  
-**Estado:** En Desarrollo  
-**Última Actualización:** 2026-03-26 01:18 UTC  
+**Proyecto:** THYROX (Tracking Hierarchy Yield Roadmap Organization eXecution)<br>
+**Versión:** 0.1.0<br>
+**Estado:** En Desarrollo<br>
+**Última Actualización:** 2026-03-26 01:18 UTC<br>
 **Git Commits:** 3 commits esta sesión
 
 ---
@@ -29,7 +29,7 @@ Ninguno en ejecución actualmente. Últimos proyectos completados:
 - Templates creados: 25 total
 - Archivos actualizados: 3 principales
 - Commits: 2 (7925aa6, bdb27b6)
-- Ver: [changes/2026-03-25-14-00-consolidacion-7-phases/](./changes/.EXIT_CONDITIONS.md.template)
+- Ver: 2026-03-25-14-00-consolidacion-7-phases/
 
 ---
 
@@ -39,10 +39,7 @@ Ninguno en ejecución actualmente. Últimos proyectos completados:
 .claude/context/
 ├── project-state.md          ← Tú estás aquí
 ├── work-logs/                ← Snapshots granulares por STEP
-├── changes/                  ← Proyectos mutables (PHASE-based)
-│   ├── .project.json.template
-│   ├── .EXIT_CONDITIONS.md.template
-│   └── YYYY-MM-DD-HH-MM-proyecto/
+├── YYYY-MM-DD-HH-MM-proyecto/  ← Proyectos mutables (PHASE-based)
 │       ├── PLAN.md
 │       ├── analisis/
 │       ├── estrategia/
@@ -55,8 +52,7 @@ Ninguno en ejecución actualmente. Últimos proyectos completados:
 .claude/skills/pm-thyrox/
 ├── SKILL.md                  ← 7 PHASES framework
 ├── references/               ← 18 referencias
-├── templates/                ← 25 templates
-└── tracking/                 ← tracking docs
+└── assets/                   ← 25 templates + tracking docs
 ```
 
 ---
@@ -64,13 +60,13 @@ Ninguno en ejecución actualmente. Últimos proyectos completados:
 ## 7 PHASES Framework
 
 ```
-PHASE 1: PLAN          → Scope inicial
-PHASE 2: ANALYZE       → Requisitos (8 refs, 8 templates)
-PHASE 3: SOLUTION      → Arquitectura (1 ref, 1 template)
-PHASE 4: STRUCTURE     → Specs técnicas (1 ref, 3 templates)
-PHASE 5: DECOMPOSE     → Break down tareas
-PHASE 6: EXECUTE       → Implementación
-PHASE 7: TRACK         → Análisis y cierre
+PHASE 1: ANALYZE           → Requisitos, stakeholders, context (8 refs, 8 templates)
+PHASE 2: SOLUTION_STRATEGY → Arquitectura, decisiones técnicas (1 ref, 1 template)
+PHASE 3: PLAN              → Scope, brainstorm, ROADMAP.md
+PHASE 4: STRUCTURE         → PRDs o Spec-Driven docs (1 ref, 3 templates)
+PHASE 5: DECOMPOSE         → Break down tareas
+PHASE 6: EXECUTE           → Implementación
+PHASE 7: TRACK             → Monitoreo, changelog, cierre
 ```
 
 **Status:** ✓ Documentadas completamente  
@@ -97,31 +93,6 @@ PHASE 7: TRACK         → Análisis y cierre
 
 ---
 
-## Changes (Proyectos Mutables)
-
-**Formato:** .claude/context/changes/YYYY-MM-DD-HH-MM-nombre-proyecto/  
-**Propósito:** Agrupación de todo un proyecto con estructura PHASE-based
-
-**Estructura dentro:**
-```
-2026-03-25-14-00-consolidacion-7-phases/
-├── project.json              ← Metadata de proyecto
-├── EXIT_CONDITIONS.md        ← Checklist de salida por PHASE
-├── PLAN.md                   (PHASE 1)
-├── analisis/                 (PHASE 2)
-├── estrategia/               (PHASE 3)
-├── specification/            (PHASE 4)
-├── tasks/                    (PHASE 5)
-└── implementation/           (PHASE 6-7)
-    ├── TRACKING.md
-    ├── RESULTADOS-FINALES.md
-    └── LECCIONES-APRENDIDAS.md
-```
-
-**Templates disponibles:**
-- .project.json.template (copiar y llenar)
-- .EXIT_CONDITIONS.md.template (copiar y usar)
-
 ---
 
 ## Decisiones (ADRs)
@@ -130,7 +101,7 @@ PHASE 7: TRACK         → Análisis y cierre
 **Aprobadas:** 7 (ADR-001 a ADR-007)  
 **Pendientes:** 2 (ADR-008, ADR-009 - Fase 2)
 
-**Ver:** [decisions.md](./decisions.md) para INDEX completo
+**Ver:** [decisions](./decisions.md) para INDEX completo
 
 ---
 
@@ -149,8 +120,8 @@ PHASE 7: TRACK         → Análisis y cierre
 
 ### Para iniciar un NUEVO proyecto:
 
-1. Lee: [pm-thyrox SKILL.md](./../skills/pm-thyrox/SKILL.md)
-2. Crea: `changes/YYYY-MM-DD-HH-MM-nombre-proyecto/`
+1. Lee: [pm-thyrox SKILL](./../skills/pm-thyrox/SKILL.md)
+2. Crea: `YYYY-MM-DD-HH-MM-nombre-proyecto/` in context
 3. Copia: `.project.json.template` → `project.json`
 4. Copia: `.EXIT_CONDITIONS.md.template` → `EXIT_CONDITIONS.md`
 5. Crea: `work-logs/2026-XX-XX-HH-MM-decision-nombre.md` (PHASE 1)
@@ -158,7 +129,7 @@ PHASE 7: TRACK         → Análisis y cierre
 
 ### Para continuar un proyecto:
 
-1. Localiza carpeta en: `changes/YYYY-MM-DD-HH-MM-nombre/`
+1. Localiza carpeta en: `YYYY-MM-DD-HH-MM-nombre/`
 2. Lee: `project.json` para ver progreso
 3. Lee: `EXIT_CONDITIONS.md` para saber qué se necesita
 4. Lee: Últimos work-logs en: `work-logs/` (grep por nombre del proyecto)
@@ -177,7 +148,7 @@ PHASE 7: TRACK         → Análisis y cierre
 
 **Inmediato:**
 - [ ] Iniciar nuevo proyecto (o continuar uno existente)
-- [ ] Copiar templates de changes/
+- [ ] Copiar templates from assets/
 - [ ] Documentar PHASE 1 (PLAN)
 
 **Siguientes:**
@@ -196,10 +167,10 @@ PHASE 7: TRACK         → Análisis y cierre
 
 **Proyectos pequeños (<2h):**
 - Usa: 1 work-log + 1 documento
-- SIN: changes/ completo
+- SIN: full project structure
 
 **Proyectos medianos (2-8h):**
-- Usa: work-logs + changes/ parcial
+- Usa: work-logs + partial project structure
 - CON: Principales PHASEs (1, 2, 6, 7)
 
 **Proyectos grandes (8+h):**

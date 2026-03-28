@@ -7,7 +7,7 @@ Objetivo: Crear estructura clara y verificable de requisitos del sistema.
 Fecha actualización: 2026-03-25
 ```
 
-# Requirements Analysis (ARC42 Section 1.1)
+# Requirements Analysis
 
 ## Propósito
 
@@ -19,7 +19,7 @@ Guía de cómo estructurar requisitos en dos niveles (general y específico).
 
 ## Estructura Pura de Requirements
 
-Basado en ARC42 ejemplo HtmlSanityCheck:
+Basado en el ejemplo HtmlSanityCheck:
 
 ### Nivel 1: Requisitos Generales
 
@@ -226,7 +226,7 @@ Para cada R-N, detallar:
 
 ## Próximo Paso
 
-Una vez completado: → Pasar a [quality-goals.md](./quality-goals.md)
+Una vez completado: → Pasar a [use-cases](./use-cases.md)
 
 ---
 

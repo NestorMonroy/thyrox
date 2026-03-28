@@ -1,9 +1,9 @@
 ```yml
-Tipo: Metodología PHASE 4
+Tipo: Metodología (opción dentro de PHASE 4: STRUCTURE)
 Categoría: Desarrollo Guiado por Especificaciones
 Versión: 1.0
-Propósito: Metodología completa para desarrollo en 4 fases: Requirements, Design, Tasks, Validation.
-Objetivo: Proporcionar proceso estructurado para features complejas.
+Propósito: Metodología en 4 pasos (Requirements, Design, Tasks, Validation) para features complejas.
+Objetivo: Proporcionar proceso estructurado cuando Phase 4 requiere especificación detallada.
 Fecha actualización: 2026-03-25
 ```
 
@@ -150,7 +150,7 @@ Usar cuando:
 
 ### 1. requirements-analysis.md.template
 
-**Propósito**: Definir QUÉ se necesita (PHASE 2: ANALYZE)
+**Propósito**: Definir QUÉ se necesita (PHASE 1: ANALYZE)
 
 **Contenido**:
 - Contexto y problema
@@ -164,7 +164,7 @@ Usar cuando:
 
 **Cuándo usar**: Al iniciar análisis de requisitos
 
-**Ubicación**: `/templates/requirements-analysis.md.template`
+**Ubicación**: `/assets/requirements-analysis.md.template`
 
 ---
 
@@ -182,7 +182,7 @@ Usar cuando:
 
 **Cuándo usar**: Al estructurar implementación técnica
 
-**Ubicación**: `/templates/requirements-specification.md.template`
+**Ubicación**: `/assets/requirements-specification.md.template`
 
 ---
 
@@ -204,7 +204,7 @@ Usar cuando:
 
 **Cuándo usar**: Después de aprobación de requirements
 
-**Ubicación**: `/templates/design.md.template`
+**Ubicación**: `/assets/design.md.template`
 
 ---
 
@@ -229,7 +229,7 @@ Usar cuando:
 
 **Cuándo usar**: Después de aprobación de design
 
-**Ubicación**: `/templates/tasks.md.template`
+**Ubicación**: `/assets/tasks.md.template`
 
 ---
 
@@ -338,9 +338,9 @@ Nombre archivo: `YYYY-MM-DD-HH-MM-titulo.md`
 - titulo: Kebab-case, max 50 chars
 
 Ejemplos:
-- 2026-01-28-09-10-requirements-traducir-arc42-sec-10.md
-- 2026-01-28-10-00-design-traducir-arc42-sec-10.md
-- 2026-01-28-10-30-tasks-traducir-arc42-sec-10.md
+- 2026-01-28-09-10-requirements-traducir-architecture-docs-sec-10.md
+- 2026-01-28-10-00-design-traducir-architecture-docs-sec-10.md
+- 2026-01-28-10-30-tasks-traducir-architecture-docs-sec-10.md
 
 ### Identificadores
 
@@ -390,17 +390,17 @@ Ejemplos:
 
 ## Ejemplo Completo Real
 
-### Proyecto: Traducir arc42 Section 10
+### Proyecto: Traducir architecture docs Section 10
 
-**2026-01-28-09-10-requirements-traducir-arc42-sec-10.md**
+**2026-01-28-09-10-requirements-traducir-architecture-docs-sec-10.md**
 ```markdown
-# Requirements: Traducir arc42 Section 10
+# Requirements: Traducir architecture docs Section 10
 
 ## Problema
 Documentación en inglés, necesitamos versión en español para usuarios internos.
 
 ## Objetivos
-Principal: Traducir sección 10 Quality Requirements de arc42 a español
+Principal: Traducir sección 10 Quality Requirements de architecture docs a español
 Secundarios: Validar con SMEs, generar metadata
 
 ## Requisitos Funcionales
@@ -420,9 +420,9 @@ RF-003: Validación de build
 - Preservar cross-references
 ```
 
-**2026-01-28-10-00-design-traducir-arc42-sec-10.md**
+**2026-01-28-10-00-design-traducir-architecture-docs-sec-10.md**
 ```markdown
-# Design: Traducir arc42 Section 10
+# Design: Traducir architecture docs Section 10
 
 Basado en: requirements (aprobado 2026-01-28-09-30)
 
@@ -458,9 +458,9 @@ TC-003: Cross-references validas
 - Validar: linkcheck pasando
 ```
 
-**2026-01-28-10-30-tasks-traducir-arc42-sec-10.md**
+**2026-01-28-10-30-tasks-traducir-architecture-docs-sec-10.md**
 ```markdown
-# Tasks: Traducir arc42 Section 10
+# Tasks: Traducir architecture docs Section 10
 
 Total tareas: 8
 Estimación total: 6 horas
@@ -476,7 +476,7 @@ Estimación total: 6 horas
 - Estimación: 5 min
 
 ## TASK-002: Copiar originales
-- Archivos: source/arc42/... → sections/10_quality_requirements/original/
+- Archivos: source/architecture/... → sections/10_quality_requirements/original/
 - Criterios: Archivos copiados sin cambios
 - Estimación: 10 min
 
@@ -530,10 +530,10 @@ EJECUTANDO TASK-002: Copiar originales
 ✓ TASK-002 completada
 
 EJECUTANDO TASK-003: Traducir index.rst
-[Traducir contenido con Arc42Translator]
+[Traducir contenido con ArchitectureTranslator]
 [Validar build]
 ✓ TASK-003 completada
-git commit -m "feat(arc42): implement TASK-003 - translate section 10 index"
+git commit -m "feat(architecture-docs): implement TASK-003 - translate section 10 index"
 
 ... continuar hasta TASK-008
 
@@ -542,24 +542,24 @@ EJECUTANDO TASK-008: Validación final
 ✓ Todos los tests pasan
 ✓ Proyecto completado
 
-git commit -m "feat(arc42): implement TASK-008 - final validation section 10 complete"
+git commit -m "feat(architecture-docs): implement TASK-008 - final validation section 10 complete"
 ```
 
 ---
 
 ## Integración con PM-THYROX
 
-Spec-Driven Development es **OPCION dentro de PHASE 2: STRUCTURE** de PM-THYROX.
+Spec-Driven Development es **OPCION dentro de PHASE 4: STRUCTURE** de PM-THYROX.
 
 **Flujo**:
 1. User: "Voy a trabajar en una feature compleja"
-2. PHASE 2: STRUCTURE → Ofrece dos opciones:
+2. PHASE 4: STRUCTURE → Ofrece dos opciones:
    - Simple: PRD básico (para trabajo pequeño)
    - Complejo: Spec-Driven (para trabajo grande/riesgoso)
 3. User: "Es complejo, necesito planificación detallada"
 4. Claude: Use Spec-Driven Development
 5. Execute 4 fases con templates
-6. At end → Use PHASE 4: EXECUTE para implementar
+6. At end → Use PHASE 6: EXECUTE para implementar
 
 ---
 
@@ -604,8 +604,8 @@ A: No. Es inversión:
 
 ## Ver También
 
-- PM-THYROX SKILL.md - PHASE 2: STRUCTURE
-- Templates en `/templates/`:
+- PM-THYROX SKILL.md - PHASE 4: STRUCTURE
+- Templates en `/assets/`:
   - `requirements-analysis.md.template`
   - `requirements-specification.md.template`
   - `design.md.template`
