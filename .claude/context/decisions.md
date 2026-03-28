@@ -59,6 +59,20 @@ Registro de decisiones arquitectónicas y técnicas importantes del proyecto THY
    - Automatización de tests y deployment
    - Status: Aprobado (Fase 2) | Fecha: 2025-03-24
 
+### Sesión 2026-03-27/28
+
+10. [ADR-010: ANALYZE primero, siempre](decisions/adr-010.md) ✓
+    - Phase 1 es ANALYZE, orden canónico fijo
+    - Status: Aprobado | Fecha: 2026-03-27
+
+11. [ADR-011: Anatomía oficial de Anthropic](decisions/adr-011.md) ✓
+    - SKILL.md + scripts/ + references/ + assets/
+    - Status: Aprobado | Fecha: 2026-03-27
+
+12. [ADR-012: Work-log obligatorio por sesión](decisions/adr-012.md) ✓
+    - Cada sesión debe tener work-log, no opcional
+    - Status: Aprobado | Fecha: 2026-03-28
+
 ---
 
 ## Cambios Futuros
