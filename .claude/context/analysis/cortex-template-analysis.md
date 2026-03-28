@@ -1,75 +1,121 @@
 ```yml
 Fecha: 2026-03-28
 Proyecto: THYROX
-Tipo: Análisis de referencia (Phase 1: ANALYZE)
+Tipo: Análisis de referencia profundo (Phase 1: ANALYZE)
 Referencia: /tmp/thyrox-references/Cortex-Template/
 ```
 
-# Análisis: Cortex-Template — OS completo para cerebro AI
+# Análisis: Cortex-Template — Brain OS para Claude
 
 ## Qué es
 
-Un **sistema operativo externalizado** para sesiones de Claude. No es un skill ni un plugin — es una arquitectura completa de "cerebro" con 90+ agentes, constitution, claims system, metabolism metrics, memory layers, workflows YAML, y un brain-engine con SQLite + RAG.
+Un sistema operativo completo para Claude Code. No es un skill ni un plugin — es un **brain externalizado** con 90+ agentes, constitution inmutable, sistema de claims, metabolismo, memoria de 3 capas, workflows YAML, y motor de búsqueda semántica (SQLite + RAG).
 
-Es el proyecto más ambicioso de los 7 analizados.
+Es el proyecto más ambicioso de los 7 que analizamos. Y el más relevante para THYROX.
 
 ---
 
-## Conceptos clave
+## Los conceptos que importan
 
-### 1. Tres capas del cerebro
+### 1. Capas de contexto (Layer 0-3)
 
 ```
-Brain (kernel)   = Identidad inmutable. KERNEL.md, agents/, profil/
-Cortex (coord)   = Señales entre instancias. BSI protocol, claims, locks
-Cosmos (satélites) = Conocimiento orbitante. todo/, toolkit/, progression/
+L0 (~5%):  Constitution + KERNEL + PATHS     ← SIEMPRE cargado, inmutable
+L1 (~10%): focus.md + now.md + coach-boot    ← Estado de sesión
+L2 (~8%):  Proyecto activo + todos           ← Scope del trabajo
+L3 (0%):   Bajo demanda                      ← Solo si se necesita
 ```
 
-### 2. Constitution como Layer 0
+**KPI constitucional:** L0+L1 < 2,000 líneas. Más = sesión lenta.
 
-`brain-constitution.md` se carga ANTES que todo. Si falta o está corrupta → HALT (no hay sesión).
+**Para THYROX:**
+- L0 = CLAUDE.md + SKILL.md (ya lo tenemos)
+- L1 = project-state.md + ROADMAP.md (ya lo tenemos)
+- L2 = references/ cargados bajo demanda (ya lo tenemos)
+- L3 = assets/ + git history (ya lo tenemos)
 
-Invariantes clave:
-- **Determinismo:** El cerebro nunca adivina. Dato ausente = "INFORMATION MANQUANTE"
-- **Autonomía:** Reversible + sin efecto externo → ejecuta solo. Irreversible → escala a humano.
-- **Degradación graceful:** 4 niveles (FULL → SEMI+ → SEMI → NO) según qué layers están disponibles
+**Lo que NO tenemos:** El KPI de líneas y el budget de contexto explícito.
 
-### 3. Scribe pattern (escritor único por territorio)
+### 2. Constitution como Layer 0 inmutable
 
-Cada directorio tiene UN agente dueño que es el único que puede escribirlo:
-- `todo-scribe` → escribe todo/
-- `toolkit-scribe` → escribe toolkit/
-- `metabolism-scribe` → escribe metabolism/
+brain-constitution.md define:
+- **Halt conditions** — si la constitution falta/está corrupta → NO se inicia sesión
+- **Invariantes de identidad** — "el brain es determinístico, nunca adivina"
+- **Degradación graceful** — qué pasa cuando faltan capas (FULL → SEMI+ → SEMI → NO)
+- **Regla de autonomía** — reversible + sin efecto externo → ejecutar solo; irreversible → escalar a humano
 
-Ningún otro agente toca esos archivos. Git blame es significativo.
+**Lo que THYROX tiene:** constitution.md.template sin instanciar, gates en EXIT_CONDITIONS.
+**Lo que le falta:** Halt conditions reales, degradación graceful, regla de autonomía.
 
-### 4. Context-tier-split (boot vs detail)
+### 3. focus.md + now.md (estado de sesión)
+
+| Archivo | Propósito | Para quién | Formato |
+|---------|-----------|-----------|---------|
+| focus.md | Dirección actual, bloqueadores | Humano | Markdown libre |
+| now.md | Estado de sesión (cold_boot, última sesión) | AI | YAML structured |
+
+**Juntos reemplazan:** work-logs + project-state.md + parte de ROADMAP.md.
+
+**Para THYROX:** Esto es más simple y efectivo que nuestro sistema actual de work-logs narrativos + project-state.md + ROADMAP.md. Son 2 archivos en vez de 3, con propósitos claros.
+
+### 4. Scribe pattern (single writer per territory)
+
+```
+todo-scribe     → solo él escribe en todo/
+toolkit-scribe  → solo él escribe en toolkit/
+coach-scribe    → solo él escribe en progression/
+metabolism-scribe → solo él escribe métricas
+```
+
+**Regla:** Ningún agente toca el territorio de otro. Si necesita datos, envía señal HANDOFF.
+
+**Para THYROX:** Nuestro analysis/ tiene 20+ archivos escritos por "Claude" sin distinción. No hay ownership. Cualquier fase escribe donde quiere.
+
+### 5. Context-tier-split (boot-summary + detail)
 
 Cada agente tiene:
-- **Header (20 líneas)** — cargado en L1 al boot
-- **Detail (completo)** — cargado solo cuando se invoca
+- **Header (20 líneas)** — cargado en L1 (siempre visible)
+- **Detail (200+ líneas)** — cargado bajo demanda
 
-KPI: always-tier < 2,000 líneas. Cold start < 2 min.
+**Para THYROX:** Nuestras references/ son toda "detail." No hay headers. SKILL.md intenta ser el header de todo, pero 288 líneas es mucho para un boot summary.
 
-### 5. focus.md + now.md (estado actual)
+### 6. Checkpoint pattern (< 50 líneas)
 
-| Archivo | Para quién | Qué contiene |
-|---------|-----------|-------------|
-| focus.md | Humanos | Dirección actual, blockers, próxima acción |
-| now.md | Máquina | cold_boot flag, última sesión, blockers YAML |
+Al final de una sesión:
+```markdown
+# Checkpoint — Sprint 123
 
-Al cerrar sesión → scribe actualiza focus.md, metabolism-scribe actualiza now.md.
-Al abrir sesión → helloWorld lee ambos y rehydrata contexto.
+## State
+- JWT validation refactored
+- Tests: 8/12 passing
+- Blockers: Redis pool (async)
 
-### 6. Metabolism (métricas de salud)
-
-Por sesión: tokens_used, context_peak, agents_loaded, duration, commits, todos_closed, health_score.
-
-```
-health = (todos_closed × 40%) + (commits × 30%) + (no_errors × 20%) + (efficiency × 10%)
+## Next
+1. Debug Redis
+2. Complete tests
 ```
 
-### 7. Workflows YAML
+**Siguiente sesión:** Lee checkpoint → warm restart en 30 segundos.
+
+**Para THYROX:** Esto es lo que now.md hace. Más útil que un work-log de 150 líneas.
+
+### 7. Metabolismo (métricas de sesión)
+
+```yaml
+tokens_used: 45000
+context_peak: 72%
+agents_loaded: 5
+duration_min: 45
+commits: 8
+todos_closed: 3
+health_score: 78
+```
+
+**Capturado automáticamente** al cerrar sesión por metabolism-scribe.
+
+**Para THYROX:** No tenemos métricas de sesión. No sabemos si una sesión fue productiva o no.
+
+### 8. Workflows como YAML
 
 ```yaml
 name: refactor-secure
@@ -79,67 +125,27 @@ chain:
     scope: auth/
     gate: 0-failures
   - step: 2
+    type: test
+    gate: 80%-coverage
+  - step: 3
     type: review
     gate: human
 ```
 
-Cadenas de agentes con gates entre pasos. Ejecutables con `workflow-launch.sh`.
+**Para THYROX:** Nuestras 7 fases son un workflow implícito en SKILL.md. No son ejecutables como YAML.
 
-### 8. Claims (ownership de sesión)
+### 9. PATHS.md (anti-hallucination)
 
-```yaml
-sess_id: sess-20260322-1200-work-superoauth
-scope: superoauth/src/auth/
-status: open
-expires: 4h
+```
+| Nombre semántico | Path real |
+|-----------------|-----------|
+| brain/          | /home/user/Brain |
+| projects/       | /home/user/Dev |
 ```
 
-Declaraciones de "esta sesión trabaja en este scope." Pre-flight checks verifican que no hay colisiones.
+**Regla:** Si un path no está en PATHS.md → "INFORMACIÓN FALTANTE." Nunca inventar paths.
 
-### 9. PATHS.md (paths semánticos)
-
-Nunca hardcodear rutas. Usar nombres semánticos:
-```
-brain/ → <BRAIN_ROOT>
-toolkit/ → <BRAIN_ROOT>/toolkit/
-```
-
-Si el brain se mueve de directorio, actualizar PATHS.md una vez. Todo sigue funcionando.
-
-### 10. Handoff pattern
-
-Al cerrar sesión:
-1. Session summary → qué se entregó
-2. Coach feedback → progresión observada
-3. Next session prompt → listo para copiar
-
-Checkpoints < 50 líneas entre sesiones. Warm restart < 30 seg.
-
----
-
-## Lo genuinamente útil vs lo overengineered
-
-### Genuinamente útil (adoptar)
-
-| Concepto | Por qué | Esfuerzo |
-|----------|---------|---------|
-| **Scribe pattern** | Elimina 80% de conflictos de estado | Bajo |
-| **Constitution Layer 0** | Previene drift silencioso | Bajo |
-| **Context-tier-split** | Escala a 100+ agentes sin explotar contexto | Medio |
-| **focus.md + now.md** | Reemplaza ROADMAP + work-logs con 2 archivos simples | Bajo |
-| **Checkpoint < 50 líneas** | Warm restart rápido | Bajo |
-| **PATHS.md** | Previene paths hardcodeados | Bajo |
-| **Metabolism metrics** | Medir si el framework mejora | Medio |
-
-### Overengineered (no adoptar)
-
-| Concepto | Por qué no | Cuándo sí |
-|----------|-----------|----------|
-| **90+ agentes** | Confuso para un solo usuario | Cuando hay equipo grande |
-| **4 tiers** (free→full) | Innecesario sin monetización | Cuando hay producto comercial |
-| **BSI claims system** | Complejidad para single-user | Cuando hay multi-instancia |
-| **brain-hypervisor** | Futuro, no presente | Cuando hay workflows paralelos reales |
-| **brain-engine SQLite+RAG** | Overhead de infraestructura | Cuando grep no es suficiente |
+**Para THYROX:** No tenemos esto. Claude adivina paths (y a veces se equivoca).
 
 ---
 
@@ -147,27 +153,55 @@ Checkpoints < 50 líneas entre sesiones. Warm restart < 30 seg.
 
 | Aspecto | spec-kit | claude-pipe | mlx-tts | oh-my-claude | conv-temp | clawpal | Cortex | THYROX |
 |---------|----------|-------------|---------|-------------|-----------|---------|--------|--------|
-| **Complejidad** | Media | Baja | Baja | Media | Baja | Media | **Muy Alta** | Media |
-| **Agentes** | No | No | No | 5 | No | No | **90+** | No |
-| **Constitution** | Sí | No | No | Decision gate | No | No | **Sí (Layer 0)** | Template |
-| **Estado actual** | tasks.md | No | No | save/load | 3 tiers | focus+checklists | **focus+now+metabolism** | ROADMAP |
-| **Workflows** | 4 commands | Manual | Hooks | Ralph loops | Manual | 48 plans | **YAML chains** | 7 fases |
-| **Memory** | Checkboxes | Sessions | No | Save/load | 3 tiers manual | Plans inmutables | **3 layers auto** | work-logs vacíos |
-| **Enforcement** | Templates | Manual | Hooks | Hooks+loops | Manual | cc.md feedback | **Constitution+pre-flight** | Documental |
+| **Agentes** | No | No | No | 5 | No | No | 90+ | No |
+| **Constitution** | Template | No | No | Decision gate | No | No | L0 inmutable | Template sin instanciar |
+| **Estado sesión** | Checkboxes | Sessions API | Hooks | Save/load | 3 tiers manual | cc.md | focus+now.md | project-state (incompleto) |
+| **Métricas** | No | No | No | No | No | No | Metabolismo | No |
+| **Workflows** | 4 comandos | No | 7 commands | STV skills | No | Planes con fecha | YAML chains | 7 fases en SKILL.md |
+| **Ownership** | No | No | No | Agentes por rol | No | No | Scribe pattern | No |
+| **Paths** | No | No | No | No | No | No | PATHS.md | No |
+| **Context budget** | No | No | No | No | Sí (3 tiers) | No | L0-L3 con KPI | No |
 
 ---
 
-## Lo que esto significa para THYROX
+## Lo genuinamente útil vs lo overengineered
 
-Cortex-Template es lo que THYROX podría ser si escalara al máximo. Pero la lección no es "copiar Cortex" — es **extraer los patrones universales**:
+### ADOPTAR (alto valor, implementable)
 
-1. **focus.md + now.md** > ROADMAP + work-logs (más simple, más útil)
-2. **Scribe pattern** > "cualquier agente escribe cualquier archivo" (menos conflictos)
-3. **Constitution Layer 0** > principios dispersos (enforcement real)
-4. **Checkpoint < 50 líneas** > work-logs de 150 líneas (más eficiente)
-5. **Context-tier-split** > cargar todo siempre (escalable)
+1. **focus.md + now.md** — Reemplaza work-logs + project-state con 2 archivos claros
+2. **Constitution instanciada** — Con halt conditions y regla de autonomía
+3. **Context budget** — L0+L1 < N líneas como KPI
+4. **Checkpoint pattern** — < 50 líneas al final de sesión
+5. **PATHS.md** — Anti-hallucination para paths
 
-El resto (90+ agentes, BSI claims, brain-engine, metabolism) es para cuando THYROX crezca. No ahora.
+### EVALUAR (alto valor, requiere diseño)
+
+6. **Scribe pattern** — Ownership de directorios
+7. **Metabolismo** — Métricas automáticas de sesión
+8. **Workflows YAML** — Fases como cadenas ejecutables
+
+### NO ADOPTAR (overengineered para THYROX)
+
+9. **90+ agentes** — THYROX es un skill, no un OS
+10. **BSI claims** — Solo para multi-instancia
+11. **brain-engine (SQLite + RAG)** — Solo cuando hay >1000 archivos
+12. **4 tiers** — 2 son suficientes
+13. **Modes** — Sessions ya cubren esto
+14. **Signals (SPAWN, RETURN, BLOCKED_ON)** — Solo para multi-agente complejo
+
+---
+
+## La reflexión central
+
+Cortex-Template es lo que THYROX **podría ser si creciera 10x.** Demuestra que la dirección es correcta (constitution, fases, references, scripts) pero que hay conceptos intermedios que THYROX necesita antes de escalar:
+
+1. **focus.md + now.md** > work-logs narrativos
+2. **Constitution instanciada** > template sin usar
+3. **Context budget explícito** > cargar todo y esperar
+4. **Checkpoint** > reconstruir todo cada sesión
+5. **PATHS.md** > adivinar rutas
+
+Estos 5 conceptos son el puente entre THYROX actual y un sistema que escala.
 
 ---
 
