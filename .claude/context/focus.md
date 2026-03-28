@@ -6,18 +6,19 @@ Versión: 1.0
 
 # Focus
 
-SKILL.md reescrito según skill-creator guidelines (176 líneas, 20/20 refs linked).
+SKILL.md reescrito (176 líneas) + tests creados (31 total) + mapping verificado.
 
 ## Completado esta sesión
 
-- SKILL.md reescrito: description pushy, WHY por fase, refs por dominio con "when to read"
-- Errores centralizados en context/errors/ (12 archivos)
-- Backup de 14 repos de referencia en .claude/_archived/
-- Nueva rama claude/skill-rewrite-session-2 creada y pusheada
+- SKILL.md reescrito según skill-creator guidelines
+- 3 functional evals + 28 trigger evals creados
+- verify-skill-mapping.sh: 29 passed, 0 failed, 7 warnings
+- References mapping: 20 references mapeadas a fases con "when to read"
+- Templates mapping: 32 templates mapeados a fases con triggers
+- Errores centralizados en context/errors/ (ERR-001 a ERR-028)
 
-## Próxima sesión
+## Pendiente
 
-1. Crear test cases (evals.json) para verificar que el SKILL triggerea correctamente
-2. Evaluar si CLAUDE.md necesita actualización post-rewrite
-3. Verificar que los references no necesiten TOC (los >300 líneas)
-4. Considerar description optimization (run_loop.py del skill-creator)
+- 7 references necesitan TOC (>300 líneas sin tabla de contenidos)
+- Description optimization (run_loop.py del skill-creator)
+- Ejecutar functional evals cuando el entorno lo permita
