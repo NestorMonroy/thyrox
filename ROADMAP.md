@@ -139,21 +139,30 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ### Nuevos templates
 
-- [ ] Crear `assets/spec-quality-checklist.md.template` (ERR-003)
-- [ ] Crear `assets/constitution.md.template` (ERR-004)
+- [x] Crear `assets/spec-quality-checklist.md.template` (ERR-003) (2026-03-28)
+- [x] Crear `assets/constitution.md.template` (ERR-004) (2026-03-28)
 
 ### Mejorar artefactos existentes
 
-- [ ] `assets/EXIT_CONDITIONS.md.template` — agregar gates mandatorios + constitution check (ERR-008)
-- [ ] `references/solution-strategy.md` — agregar Research Step explícito (ERR-006)
-- [ ] `references/conventions.md` — agregar convención ROADMAP → epic link (ERR-007)
-- [ ] `SKILL.md` — agregar constitution y checklist al flujo de fases (ERR-003, ERR-004)
+- [x] `assets/EXIT_CONDITIONS.md.template` — gates mandatorios + constitution check (ERR-008) (2026-03-28)
+- [x] `references/solution-strategy.md` — Research Step explícito (ERR-006) (2026-03-28)
+- [x] `references/conventions.md` — convención ROADMAP → epic link (ERR-007) (2026-03-28)
+- [x] `SKILL.md` — constitution y checklist en flujo de fases (ERR-003, ERR-004) (2026-03-28)
 
 ### Enriquecer fases con pasos ejecutables
 
-- [ ] Phase 3 (PLAN): agregar pasos numerados a reference o SKILL (ERR-005)
-- [ ] Phase 5 (DECOMPOSE): agregar pasos numerados (ERR-005)
-- [ ] Phase 6 (EXECUTE): agregar pasos numerados (ERR-005)
+- [x] Phase 3 (PLAN): pasos numerados en SKILL.md (ERR-005) (2026-03-28)
+- [x] Phase 5 (DECOMPOSE): pasos numerados en SKILL.md (ERR-005) (2026-03-28)
+- [x] Phase 6 (EXECUTE): pasos numerados en SKILL.md (ERR-005) (2026-03-28)
+
+### Tracking de errores (spec-kit adoption)
+
+- [x] ERR-003: Sin validación de specs → checklist template creado (2026-03-28)
+- [x] ERR-004: Sin constitution → constitution template creado (2026-03-28)
+- [x] ERR-005: Fases no ejecutables → pasos numerados en SKILL.md (2026-03-28)
+- [x] ERR-006: Saltar fases de nuevo → documentado como reincidencia (2026-03-28)
+- [x] ERR-007: ROADMAP sin links a epics → convención agregada (2026-03-28)
+- [x] ERR-008: Exit conditions informativas → gates mandatorios (2026-03-28)
 
 ---
 
