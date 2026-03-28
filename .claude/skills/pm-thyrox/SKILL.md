@@ -1,101 +1,176 @@
 ```yml
 name: pm-thyrox
-description: "Project management with 7-phase SDLC for THYROX. Use when planning features, breaking down work, tracking progress, documenting decisions, or managing project lifecycle."
+description: "Framework de gestión de proyectos con metodología SDLC de 7 fases. Usar este skill cuando el usuario quiera planificar, analizar, diseñar, organizar, trackear o gestionar CUALQUIER tipo de trabajo — features, bug fixes, refactoring, documentación, investigación o setup de proyecto. También usar cuando el usuario pregunte '¿qué hago primero?', '¿cómo organizo esto?', '¿cuál es el estado?', 'crea un plan para X', 'analiza X', 'descompón X en tareas', 'documenta esta decisión', o cualquier cosa relacionada con workflow de proyecto, tracking de trabajo, registros de decisiones o desarrollo estructurado. Siempre empezar con ANALYZE antes de planificar."
 ```
 
-# PM-THYROX
+# PM-THYROX: Gestión de Proyectos
 
-**Level 1 — Motor del framework.** Fuente canónica de la metodología.
+Framework de gestión para organizar trabajo de cualquier tamaño con Claude Code. Sigue una metodología de 7 fases donde entender viene antes que planificar, y planificar viene antes que ejecutar.
 
-```
-Level 1: SKILL.md    → Motor (define metodología y fases)
-Level 2: CLAUDE.md   → Puente (contexto persistente entre sesiones)
-Level 3: README.md   → Presentación (entrada para humanos)
-```
+**Principio core:** Analizar antes de actuar. Cada fase produce artefactos que alimentan la siguiente. Saltar fases produce trabajo sin fundamento.
 
-## 7 Phases
+**Escala:** Trabajos <2h usan fases 1, 2, 6, 7. Trabajos de 2-8h usan las 7. Ver [escalabilidad](references/scalability.md) para detalles.
+
+---
+
+## Las 7 Fases
 
 ### Phase 1: ANALYZE
-Understand requirements, stakeholders, constraints, context.
-8 subsections: [introduction](references/introduction.md), [requirements-analysis](references/requirements-analysis.md), [use-cases](references/use-cases.md), [quality-goals](references/quality-goals.md), [stakeholders](references/stakeholders.md), [basic-usage](references/basic-usage.md), [constraints](references/constraints.md), [context](references/context.md).
-**Exit:** All subsections documented + approved.
+
+Entender el problema antes de proponer soluciones evita construir lo incorrecto.
+
+1. Investigar requisitos, stakeholders, constraints y contexto
+2. Documentar hallazgos en `work/.../analysis/`
+3. Si hay decisiones arquitectónicas, crear ADR en `context/decisions/`
+
+Las 8 subsecciones de análisis (leer cuando se necesite profundidad):
+[introduction](references/introduction.md), [requirements-analysis](references/requirements-analysis.md), [use-cases](references/use-cases.md), [quality-goals](references/quality-goals.md), [stakeholders](references/stakeholders.md), [basic-usage](references/basic-usage.md), [constraints](references/constraints.md), [context](references/context.md)
+
+**Salir cuando:** Los hallazgos están documentados y aprobados por el usuario.
 
 ### Phase 2: SOLUTION_STRATEGY
-Architectural plan: HOW to satisfy requirements within constraints.
-1. **Research:** List unknowns → investigate → document pros/cons
-2. **Pre-design check:** Verify principles before deciding
-3. **Document:** Key Ideas, Decisions, Tech Stack, Patterns
-4. **Post-design re-check:** Verify decisions still respect principles
-See: [solution-strategy](references/solution-strategy.md)
-**Exit:** Architecture approved + research documented.
+
+Investigar alternativas antes de decidir previene decisiones sin evidencia.
+
+1. Listar unknowns → investigar alternativas → documentar pros/cons
+2. Verificar que las decisiones respetan los principios del proyecto
+3. Documentar decisiones con justificación
+4. Re-verificar después de diseñar (las decisiones pueden cambiar al profundizar)
+
+Ver [solution-strategy](references/solution-strategy.md) para la guía completa.
+
+**Salir cuando:** Arquitectura aprobada con investigación documentada.
 
 ### Phase 3: PLAN
-1. Brainstorm: problem, users, success criteria, out of scope
-2. Create work package: `context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
-3. Update ROADMAP.md with features + link to work package
-4. Get scope approval
-**Exit:** ROADMAP updated + scope approved.
+
+Definir scope antes de estructurar previene scope creep.
+
+1. Brainstorm: ¿qué problema? ¿quiénes son los usuarios? ¿qué es éxito? ¿qué está fuera?
+2. Crear work package: `context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
+3. Actualizar ROADMAP.md con features y link al work package
+4. Obtener aprobación del scope
+
+**Salir cuando:** ROADMAP actualizado y scope aprobado.
 
 ### Phase 4: STRUCTURE
-**Simple** (<10 tasks): Create spec.md with overview, user stories, acceptance criteria.
-**Complex** (10+ tasks): See [spec-driven-development](references/spec-driven-development.md).
-**Gate:** Run spec quality checklist (`assets/spec-quality-checklist.md.template`). Zero [NEEDS CLARIFICATION] markers.
-**Exit:** Specs approved + checklist passed.
+
+Especificar antes de descomponer previene ambigüedad en las tareas.
+
+**Simple** (<10 tareas): Crear spec.md con overview, user stories, acceptance criteria.
+**Complejo** (10+ tareas): Ver [spec-driven-development](references/spec-driven-development.md).
+
+Verificar que no queden marcadores [NEEDS CLARIFICATION] sin resolver — la ambigüedad en specs se multiplica en la implementación.
+
+**Salir cuando:** Specs aprobadas y sin ambigüedades.
 
 ### Phase 5: DECOMPOSE
-1. Read spec.md
-2. Create task list: `- [ ] [T-NNN] Description (R-N)` — each task references its requirement
-3. Mark parallel tasks [P]
-4. Define validation checkpoints
-5. Save to `work/.../plan.md` or `work/.../tasks.md`
-**Exit:** Tasks atomic + order defined.
+
+Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
+
+1. Leer spec.md del work package
+2. Crear lista de tareas: `- [ ] [T-NNN] Descripción (R-N)` — cada tarea referencia su requisito
+3. Marcar tareas paralelas [P]
+4. Definir checkpoints de validación
+5. Guardar en `work/.../plan.md` o `work/.../tasks.md`
+
+**Salir cuando:** Tareas atómicas con orden definido.
 
 ### Phase 6: EXECUTE
-1. Next task without blockers?
-2. Implement the change
-3. Commit with [Conventional Commits](references/commit-helper.md)
-4. Update ROADMAP.md: `[ ]` → `[x]` with date
-5. Repeat until all tasks complete
-**Exit:** All tasks done + committed.
+
+Commits frecuentes con mensajes descriptivos crean un historial navegable.
+
+1. Tomar siguiente tarea sin bloqueos
+2. Implementar el cambio
+3. Commit con [Conventional Commits](references/commit-helper.md): `type(scope): description`
+4. Actualizar ROADMAP.md: `[ ]` → `[x]` con fecha
+5. Repetir hasta completar todas las tareas
+
+**Salir cuando:** Todas las tareas completadas y commiteadas.
 
 ### Phase 7: TRACK
-- **Status:** Show progress from ROADMAP.md + recent commits
-- **Changelog:** Generate from commits → CHANGELOG.md
-- **Validation:** Run scripts (see [reference-validation](references/reference-validation.md))
-- **100+ issues:** See [incremental-correction](references/incremental-correction.md)
-**Exit:** Analysis complete + lessons documented.
 
-## Where Outputs Live
+Documentar lecciones previene repetir los mismos errores.
 
-| Phase | Output | Location |
-|-------|--------|----------|
-| 1 | Analysis | `work/.../analysis/` |
-| 1-2 | Decisions | `context/decisions/adr-NNN.md` |
+- Revisar progreso desde ROADMAP.md + commits recientes
+- Generar changelog desde commits → CHANGELOG.md
+- Documentar lecciones aprendidas en `work/.../lessons.md`
+- Si hay 100+ issues: ver [incremental-correction](references/incremental-correction.md)
+- Validar integridad: ver [reference-validation](references/reference-validation.md)
+
+**Salir cuando:** Análisis completo y lecciones documentadas.
+
+---
+
+## Dónde viven los artefactos
+
+| Fase | Artefacto | Ubicación |
+|------|-----------|-----------|
+| 1 | Análisis | `work/.../analysis/` |
+| 1-2 | Decisiones | `context/decisions/adr-NNN.md` |
 | 3 | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` |
-| 4 | Spec | `work/.../spec.md` |
-| 5 | Tasks | `work/.../plan.md` or `work/.../tasks.md` |
-| 6 | Code | Repository (git) |
-| 7 | Lessons | `work/.../lessons.md` |
+| 4 | Especificación | `work/.../spec.md` |
+| 5 | Tareas | `work/.../plan.md` o `work/.../tasks.md` |
+| 6 | Código | Repositorio (git) |
+| 7 | Lecciones | `work/.../lessons.md` |
+| — | Errores | `context/errors/ERR-NNN-descripcion.md` |
+
+## Estructura de un work package
+
+```
+context/work/YYYY-MM-DD-HH-MM-SS-nombre/
+├── analysis/        ← Si necesitó análisis (Phase 1)
+├── spec.md          ← Qué y por qué (Phase 4)
+├── plan.md          ← Tareas con checkboxes (Phase 5)
+├── tasks.md         ← Solo si hay 10+ tareas
+└── lessons.md       ← Lecciones aprendidas (Phase 7)
+```
+
+No todos los paquetes necesitan todos los archivos. Un fix rápido puede tener solo plan.md.
+
+**Cuándo crear un work package:**
+- Trabajo involucra múltiples archivos o fases
+- Tiene consecuencias de decisión
+- Dura más de 30 minutos
+- Produce lecciones
 
 ## Naming
 
 ```
-Files:     kebab-case.md        Work packages: YYYY-MM-DD-HH-MM-SS-nombre/
-Commits:   type(scope): desc    ADRs:          adr-NNN.md
-Branches:  feature/, bugfix/    Tasks:         [T-NNN] Description (R-N)
+Archivos:        kebab-case.md
+Work packages:   YYYY-MM-DD-HH-MM-SS-nombre/
+Commits:         type(scope): description
+ADRs:            adr-NNN.md
+Tareas:          [T-NNN] Descripción (R-N)
+Errores:         ERR-NNN-descripcion.md
 ```
 
-See: [conventions](references/conventions.md) for full details.
+Ver [conventions](references/conventions.md) para detalles completos.
 
-## Scalability
+---
 
-**< 2h:** Phases 1, 2, 6, 7. See [scalability](references/scalability.md).
-**2-8h:** All 7 phases.
-**8h+:** Full structure with EXIT_CONDITIONS (`assets/EXIT_CONDITIONS.md.template`).
+## References por dominio
 
-## Advanced
+### Phase 1: ANALYZE (leer cuando se investiga un problema)
+[introduction](references/introduction.md) · [requirements-analysis](references/requirements-analysis.md) · [use-cases](references/use-cases.md) · [quality-goals](references/quality-goals.md) · [stakeholders](references/stakeholders.md) · [basic-usage](references/basic-usage.md) · [constraints](references/constraints.md) · [context](references/context.md)
 
-- [prompting-tips](references/prompting-tips.md) — When Claude struggles
-- [long-context-tips](references/long-context-tips.md) — Documents >5,000 words
-- [skill-authoring](references/skill-authoring.md) — Creating or improving skills
-- [examples](references/examples.md) — 8 real-world use cases
+### Phase 2: SOLUTION (leer cuando se toman decisiones arquitectónicas)
+[solution-strategy](references/solution-strategy.md)
+
+### Phase 4: STRUCTURE (leer cuando se crean especificaciones complejas)
+[spec-driven-development](references/spec-driven-development.md)
+
+### Phase 6: EXECUTE (leer cuando se hacen commits)
+[commit-helper](references/commit-helper.md) · [commit-convention](references/commit-convention.md)
+
+### Phase 7: TRACK (leer cuando se valida o corrige)
+[reference-validation](references/reference-validation.md) · [incremental-correction](references/incremental-correction.md)
+
+### Cross-phase (leer según necesidad)
+[conventions](references/conventions.md) — Convenciones de archivos, commits, ROADMAP
+[scalability](references/scalability.md) — Cómo escalar el framework según complejidad
+[examples](references/examples.md) — 8 casos de uso reales
+
+### Avanzado (leer cuando Claude tiene dificultades)
+[prompting-tips](references/prompting-tips.md) — Cuando Claude no entiende instrucciones
+[long-context-tips](references/long-context-tips.md) — Documentos >5,000 palabras
+[skill-authoring](references/skill-authoring.md) — Crear o mejorar skills
