@@ -21,4 +21,6 @@ Errores documentados durante el desarrollo de THYROX. Todos resueltos — sirven
 | 027 | Sin mapping de cuándo se usan templates | Resuelto | references-templates-mapping.md |
 | 028 | Commits retrasados después de crear archivos | Resuelto | Commit inmediato como convención |
 
+| 029 | Phase 2 ejecutada sin seguir structure de solution-strategy.md | Resuelto | Rehecho con estructura completa; SKILL debería referenciar estructura |
+
 **Template para nuevos errores:** `assets/error-report.md.template` (campos: Qué pasó / Por qué / Prevención / Insight)
