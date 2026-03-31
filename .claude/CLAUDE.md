@@ -38,8 +38,10 @@ Fecha actualización: 2026-03-28
 
 ## Flujo de sesión
 
+**Todo trabajo pasa por el [SKILL](skills/pm-thyrox/SKILL.md)** — incluso un bug fix usa fases 1,2,6,7 (abreviadas para <2h).
+
 1. **Inicio** — Leer focus.md + now.md. Revisar ROADMAP.md.
-2. **Contexto** — Identificar fase actual. Consultar [SKILL](skills/pm-thyrox/SKILL.md).
+2. **Contexto** — Identificar fase actual del [SKILL](skills/pm-thyrox/SKILL.md). Si no hay fase, empezar por Phase 1: ANALYZE.
 3. **Trabajar** — Seguir la fase. Commits convencionales. Actualizar ROADMAP.md.
 4. **Cierre** — Actualizar focus.md + now.md.
 

@@ -256,6 +256,13 @@ if [ -d ".claude/context/errors" ]; then
     echo "  ✅ context/errors/ limpiado"
 fi
 
+# Clean decisions (THYROX framework decisions — user creates their own)
+if [ -d ".claude/context/decisions" ]; then
+    rm -rf .claude/context/decisions/
+    mkdir -p .claude/context/decisions
+    echo "  ✅ context/decisions/ limpiado (usar assets/adr.md.template para crear nuevas)"
+fi
+
 echo ""
 echo "--- Limpiando archivos de setup ---"
 rm -f reference-validation-report.txt

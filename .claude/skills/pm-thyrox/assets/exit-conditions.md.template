@@ -250,7 +250,7 @@
 ## CÓMO USAR ESTE DOCUMENTO
 
 1. **Al iniciar un PROJECT:**
-   - Copiar este template a: changes/YYYY-MM-DD-HH-MM-proyecto/EXIT_CONDITIONS.md
+   - Copiar este template a: changes/YYYY-MM-DD-HH-MM-proyecto/exit-conditions.md
    - Revisar qué aplica a TU proyecto específico
    - Ajustar si es necesario
 
@@ -265,7 +265,7 @@
    - Si SÍ: proceder a siguiente PHASE
 
 4. **Para sub-agents:**
-   - Sub-agent revisa Exit_CONDITIONS.md
+   - Sub-agent revisa exit-conditions.md
    - Valida que todas las condiciones se cumplan
    - Feedback: "Ready for next phase" o "Need X before continuing"
 

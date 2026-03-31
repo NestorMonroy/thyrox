@@ -28,5 +28,5 @@
   {"id": "TE-25", "query": "Tomamos la decisión de usar PostgreSQL en vez de MongoDB. El equipo votó 3-1. Quiero documentar por qué y qué alternativas consideramos.", "should_trigger": true, "reason": "Documentar decisión → adr.md.template"},
   {"id": "TE-26", "query": "Este feature de notificaciones es complejo, tiene websockets, colas de mensajes, y templates por canal. Necesito una spec detallada antes de empezar.", "should_trigger": true, "reason": "Spec detallada → design.md.template + requirements-specification.md.template"},
   {"id": "TE-27", "query": "Estamos arrancando un proyecto nuevo y quiero definir los principios técnicos que todo el equipo debe seguir.", "should_trigger": true, "reason": "Principios técnicos → constitution.md.template"},
-  {"id": "TE-28", "query": "Hay muchas tareas pendientes sin organizar. Unos bugs que reportaron, unas mejoras que se me ocurrieron, y un par de refactors que necesitamos.", "should_trigger": true, "reason": "Tareas sin organizar → AD_HOC_TASKS.md.template"}
+  {"id": "TE-28", "query": "Hay muchas tareas pendientes sin organizar. Unos bugs que reportaron, unas mejoras que se me ocurrieron, y un par de refactors que necesitamos.", "should_trigger": true, "reason": "Tareas sin organizar → ad-hoc-tasks.md.template"}
 ]

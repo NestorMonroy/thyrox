@@ -325,7 +325,7 @@ Next: Complete tests, then API docs
 ```
 User: "There's a bug in token handling - race condition on expiry"
 
-PM-THYROX: "Got it. This is a quick fix. Should I add it to AD_HOC_TASKS.md?"
+PM-THYROX: "Got it. This is a quick fix. Should I add it to ad-hoc-tasks.md?"
 
 User: "Just fix it"
 
@@ -333,7 +333,7 @@ Dev:
   feat(auth): fix race condition in token expiry
   test(auth): add regression test for token race condition
 
-Updates ROADMAP.md or AD_HOC_TASKS.md:
+Updates ROADMAP.md or ad-hoc-tasks.md:
   Bug Fixes
   - [x] Token expiry race condition (2025-03-24)
 ```
@@ -502,10 +502,10 @@ Update ROADMAP.md:
 
 ## Use Case 8: Tech Debt & Refactoring
 
-### Option 1: Add to REFACTORS.md
+### Option 1: Add to refactors.md
 
 ```
-../assets/REFACTORS.md.template:
+../assets/refactors.md.template:
 
 ## Database Query Optimization
 
@@ -547,7 +547,7 @@ refactor(auth): consolidate auth logic into single module
 
 ### Small Feature (1-2 hours)
 - No PHASE update needed
-- Use [AD_HOC_TASKS](../assets/AD_HOC_TASKS.md.template)
+- Use [ad-hoc-tasks](../assets/ad-hoc-tasks.md.template)
 - One Claude Code session
 - One commit or two
 
@@ -565,7 +565,7 @@ refactor(auth): consolidate auth logic into single module
 - Track blockers and velocity
 
 ### Bug Fix
-- Use [AD_HOC_TASKS](../assets/AD_HOC_TASKS.md.template) for documentation
+- Use [ad-hoc-tasks](../assets/ad-hoc-tasks.md.template) for documentation
 - Fix and commit immediately
 - No task creation needed unless complex
 - Update CHANGELOG.md in next release

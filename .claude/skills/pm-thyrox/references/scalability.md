@@ -76,7 +76,7 @@ epics/2026-03-26-10-00-feature-x/
 - work-logs/ muy granulares (1 por STEP)
 - epics/YYYY-MM-DD-HH-MM-nombre/ completo
 - project.json con timing data
-- EXIT_CONDITIONS.md rigurosas
+- exit-conditions.md rigurosas
 - sub-agents para validación automática
 
 **Fases activas:** 1-7 con rigor completo
@@ -93,7 +93,7 @@ work-logs/
 
 epics/2026-03-26-10-00-big-project/
   project.json (timing data)
-  EXIT_CONDITIONS.md (100% compliance)
+  exit-conditions.md (100% compliance)
   PLAN.md, analisis/, estrategia/, specification/, tasks/, implementation/
 ```
 

@@ -108,13 +108,13 @@ touch docs/ROADMAP.md
 ### Problema 2: Templates no instanciados
 
 **Ubicación**: `.claude/context/`
-**Archivos**: `EXIT_CONDITIONS.md`, `project.json`
+**Archivos**: `exit-conditions.md`, `project.json`
 
 **Solución**:
 ```bash
 # Existen as .template in assets/, crear instancias
 cd /home/thyrox/.claude/context/
-cp ../skills/pm-thyrox/assets/EXIT_CONDITIONS.md.template EXIT_CONDITIONS.md
+cp ../skills/pm-thyrox/assets/exit-conditions.md.template exit-conditions.md
 cp ../skills/pm-thyrox/assets/project.json.template project.json
 ```
 
