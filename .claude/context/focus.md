@@ -39,8 +39,9 @@ Versión: 1.0
 - 4 lecciones (L-015 a L-018)
 
 - SKILL flow analysis: 8 problemas resueltos, 0 assets huérfanos, ~40 backtick→link conversions
-- 3 lecciones (L-019 a L-021)
+- Consistencia: 3 assets renombrados, decisions/ limpiado en setup, SKILL unavoidable
+- 6 lecciones (L-019 a L-024)
 
 ## Pendiente
 
-Proyecto completo. Pendiente solo re-ejecutar evals para verificar que las correcciones no rompieron nada.
+Re-ejecutar evals para verificar que las correcciones no rompieron nada.
