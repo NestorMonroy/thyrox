@@ -42,6 +42,12 @@ Versión: 1.0
 - Consistencia: 3 assets renombrados, decisions/ limpiado en setup, SKILL unavoidable
 - 6 lecciones (L-019 a L-024)
 
-## Pendiente
+## Completado sesión 4
 
-Re-ejecutar evals para verificar que las correcciones no rompieron nada.
+- SKILL activation failure investigado y resuelto (WP: 2026-04-01-18-39-56-skill-activation-failure)
+- Triple-layer activation implementada: CLAUDE.md OBLIGATORIO + session-start.sh hook + settings.json SessionStart
+- SKILL.md Haiku-compatible: 15 gaps H1.1–HE.1 cubiertos con Baja Libertad solo en gates
+- 11 tareas completadas (T-001 a T-011), 0 degradación
+- Evals: 14/14 (100%) post-cambios
+- 5 lecciones documentadas (L-001 a L-005)
+- Deuda técnica pendiente: T-DT-001 (examples.md nomenclatura fases)
