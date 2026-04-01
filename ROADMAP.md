@@ -247,6 +247,36 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## FASE 5: Compatibilidad multi-modelo (Haiku + activación automática)
+
+**Work package:** context/work/2026-04-01-18-39-56-skill-activation-failure/
+
+### Activación automática del SKILL (D1)
+
+- [ ] [T-001] CLAUDE.md — flujo de sesión obligatorio + Skill tool + fallback inline
+- [ ] [T-002] Crear session-start.sh — startup hook de sesión
+- [ ] [T-003] Configurar SessionStart hook en settings.json
+
+### SKILL.md — gates Baja Libertad por fase (D2)
+
+- [ ] [T-004] Phase 1: 8 aspectos + decisión arquitectónica + REQUERIDO template + exit criteria
+- [ ] [T-005] Phase 2: PASO 0 REQUERIDO solution-strategy + Key Ideas desde analysis/
+- [ ] [T-006] Phase 3: verificación WP explícita
+- [ ] [T-007] Phase 4: checklist REQUERIDO + exit criteria verificable
+- [ ] [T-008] Phase 5: WP activo = más reciente en context/work/
+- [ ] [T-009] Phase 6: fuente de tareas + ERR-NNN con template + renumerar pasos
+- [ ] [T-010] Escalabilidad: tabla explícita tamaño → fases activas
+
+### Verificación (no degradación)
+
+- [ ] [T-011] Re-ejecutar evals — verificar baseline 40/40 se mantiene
+
+### Deuda técnica
+
+- [ ] [T-DT-001] examples.md — actualizar nomenclatura de fases (fuera de scope FASE 5)
+
+---
+
 ## Métricas de Progreso
 
 ```
@@ -257,6 +287,7 @@ FASE 3b: spec-kit adoption   — 100% ✓
 FASE 3c: spec-kit deep       — 100% ✓
 FASE 3d: Riesgos referencia  — 100% ✓
 FASE 4: Template reutilizable — 100% ✓
+FASE 5: Compatibilidad multi-modelo  — 0% [-]
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections

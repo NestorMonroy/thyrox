@@ -216,8 +216,22 @@ Resolución via **Progressive Disclosure** (skill-authoring.md):
 El contenido de análisis dentro de cada fase puede quedarse en "Alta Libertad" —
 ahí sí queremos que el modelo use criterio.
 
-**Riesgo de degradación para Sonnet/Opus:** Ninguno.
-skill-authoring.md confirma: instrucciones más explícitas ayudan a todos los modelos.
+**Riesgo de degradación para Sonnet/Opus — documentado y mitigado:**
+
+skill-authoring.md confirma: instrucciones más explícitas benefician a todos los modelos.
+Sin embargo, documentamos las salvaguardas concretas:
+
+| Salvaguarda | Detalle |
+|-------------|---------|
+| Baseline conocido | Evals actuales: 40/40 (100%) con Sonnet antes de cualquier cambio |
+| Test incremental | Re-ejecutar `bash scripts/run-functional-evals.sh` después de cada tarea T-NNN |
+| Criterio de degradación | Si cualquier eval baja de 100% → revertir ese cambio, diagnosticar |
+| Cambios aditivos | No eliminar texto existente — solo agregar/fortalecer lenguaje |
+| Revisión manual | Verificar que cada "REQUERIDO:" no restrinja casos que Sonnet/Opus manejaban bien |
+
+Los cambios de "Alta Libertad" → "Baja Libertad" aplican SOLO a gates y referencias
+a templates. El contenido de análisis queda en "Alta Libertad" — ahí Sonnet/Opus
+sigue usando criterio propio, sin restricción.
 
 ---
 
