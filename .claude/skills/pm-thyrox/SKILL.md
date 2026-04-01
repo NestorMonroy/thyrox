@@ -39,7 +39,10 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
    - **Criterios de éxito** — ¿cómo sabremos que está bien hecho?
 2. Crear work package: `context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
 3. REQUERIDO: Crear `work/.../analysis/introduction.md` usando [introduction.md.template](assets/introduction.md.template)
-4. Si hay decisión arquitectónica (cambio de stack tecnológico, adopción de patrón nuevo como microservicios o event-driven, o reemplazo de componente principal), crear ADR en `context/decisions/` usando [adr.md.template](assets/adr.md.template)
+4. REQUERIDO: Crear `work/.../risk-register.md` usando [risk-register.md.template](assets/risk-register.md.template) — identificar riesgos desde el inicio. Actualizar en cada fase.
+5. Si el análisis es complejo, crear sub-documentos en `work/.../analysis/` según necesidad:
+   [stakeholders.md.template](assets/stakeholders.md.template) · [requirements-analysis.md.template](assets/requirements-analysis.md.template) · [use-cases.md.template](assets/use-cases.md.template) · [quality-goals.md.template](assets/quality-goals.md.template) · [constraints.md.template](assets/constraints.md.template) · [context.md.template](assets/context.md.template)
+6. Si hay decisión arquitectónica (cambio de stack tecnológico, adopción de patrón nuevo como microservicios o event-driven, o reemplazo de componente principal), crear ADR en `context/decisions/` usando [adr.md.template](assets/adr.md.template)
 
 Referencias de análisis por subsección (leer según necesidad):
 [introduction](references/introduction.md) · [requirements-analysis](references/requirements-analysis.md) · [use-cases](references/use-cases.md) · [quality-goals](references/quality-goals.md) · [stakeholders](references/stakeholders.md) · [basic-usage](references/basic-usage.md) · [constraints](references/constraints.md) · [context](references/context.md)
@@ -53,17 +56,18 @@ Referencias de análisis por subsección (leer según necesidad):
 Investigar alternativas antes de decidir previene decisiones sin evidencia.
 
 0. REQUERIDO: Leer [solution-strategy](references/solution-strategy.md) antes de empezar esta fase. Basar las Key Ideas en los hallazgos de `work/.../analysis/`.
-1. **Key Ideas** — definir los conceptos centrales que guían la solución (basarse en analysis/ de Phase 1)
-2. **Research** — listar unknowns → investigar alternativas → documentar pros/cons por cada uno
-3. **Pre-design check** — verificar que las decisiones respetan los principios del proyecto
-4. **Decisions** — documentar decisiones fundamentales con justificación. Usar [adr.md.template](assets/adr.md.template) para decisiones arquitectónicas
-5. **Post-design re-check** — re-verificar después de diseñar (las decisiones pueden cambiar al profundizar)
+1. REQUERIDO: Crear `work/.../solution-strategy.md` usando [solution-strategy.md.template](assets/solution-strategy.md.template)
+2. **Key Ideas** — definir los conceptos centrales que guían la solución (basarse en analysis/ de Phase 1)
+3. **Research** — listar unknowns → investigar alternativas → documentar pros/cons por cada uno
+4. **Pre-design check** — verificar que las decisiones respetan los principios del proyecto
+5. **Decisions** — documentar decisiones fundamentales con justificación. Usar [adr.md.template](assets/adr.md.template) para decisiones arquitectónicas
+6. **Post-design re-check** — re-verificar después de diseñar (las decisiones pueden cambiar al profundizar)
 
 Ver [solution-strategy](references/solution-strategy.md) para estructura completa (Tech Stack, Patterns, Quality Goals).
 
 **Salir cuando:** Arquitectura aprobada con investigación documentada.
 **Siguiente:** Proponer Phase 3: PLAN para definir scope y linkear work package en ROADMAP.
-**Detectar:** Si `work/.../spec.md` tiene decisiones arquitectónicas, Phase 2 ya completó.
+**Detectar:** Si `work/.../solution-strategy.md` existe con decisiones documentadas, Phase 2 ya completó.
 
 ### Phase 3: PLAN
 
@@ -82,56 +86,58 @@ Definir scope antes de estructurar previene scope creep.
 
 Especificar antes de descomponer previene ambigüedad en las tareas.
 
-**Simple** (<10 tareas): Crear spec.md con overview, user stories, acceptance criteria.
+**Simple** (<10 tareas): Crear `work/.../requirements-spec.md` usando [requirements-specification.md.template](assets/requirements-specification.md.template) con overview, user stories, acceptance criteria.
 **Complejo** (10+ tareas): Ver [spec-driven-development](references/spec-driven-development.md).
 
 REQUERIDO: Completar [spec-quality-checklist.md.template](assets/spec-quality-checklist.md.template) ANTES de Phase 5. NO avanzar si quedan ítems sin ✓ o marcadores `[NEEDS CLARIFICATION]` sin resolver — la ambigüedad en specs se multiplica en la implementación.
 
-**Salir cuando:** `work/.../spec.md` existe, no contiene `[NEEDS CLARIFICATION]`, y checklist completado al 100%.
+**Salir cuando:** `work/.../requirements-spec.md` existe, no contiene `[NEEDS CLARIFICATION]`, y checklist completado al 100%.
 **Siguiente:** Proponer Phase 5: DECOMPOSE para crear tareas atómicas.
-**Detectar:** Si `work/.../spec.md` tiene user stories y acceptance criteria sin `[NEEDS CLARIFICATION]`, Phase 4 ya completó.
+**Detectar:** Si `work/.../requirements-spec.md` tiene user stories y acceptance criteria sin `[NEEDS CLARIFICATION]`, Phase 4 ya completó.
 
 ### Phase 5: DECOMPOSE
 
 Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
-1. Leer spec.md del work package activo (= directorio más reciente en `context/work/`). Si el usuario pide descomposición directa sin spec previo,
+1. Leer `work/.../requirements-spec.md` del work package activo (= directorio más reciente en `context/work/`). Si el usuario pide descomposición directa sin spec previo,
    crear work package y descomponer desde la descripción del usuario — no cuestionar si el proyecto existe en el repo
-2. Crear lista de tareas con IDs trazables — cada tarea necesita un ID y referencia a su requisito
+2. REQUERIDO: Crear `work/.../task-plan.md` usando [tasks.md.template](assets/tasks.md.template)
+3. Crear lista de tareas con IDs trazables — cada tarea necesita un ID y referencia a su requisito
    porque esto permite detectar tareas huérfanas (sin requisito) o requisitos sin cobertura.
    Formato: `- [ ] [T-NNN] Descripción (R-N)`
-3. Marcar tareas paralelas [P]
-4. Definir checkpoints de validación
-5. Guardar en `work/.../plan.md` o `work/.../tasks.md`
+4. Marcar tareas paralelas [P]
+5. Definir checkpoints de validación
 
-**Salir cuando:** Tareas atómicas con orden definido.
+**Salir cuando:** `work/.../task-plan.md` existe con tareas atómicas y orden definido.
 **Siguiente:** Proponer Phase 6: EXECUTE para implementar.
-**Detectar:** Si `work/.../plan.md` tiene checkboxes `- [ ] [T-NNN]`, Phase 5 ya completó.
+**Detectar:** Si `work/.../task-plan.md` tiene checkboxes `- [ ] [T-NNN]`, Phase 5 ya completó.
 
 ### Phase 6: EXECUTE
 
 Commits frecuentes con mensajes descriptivos crean un historial navegable.
 
-1. Tomar siguiente tarea pendiente de `work/.../plan.md` (checkbox `- [ ]`) sin bloqueos
-2. Implementar el cambio
-3. Si la implementación falla, crear `context/errors/ERR-NNN-descripcion.md` usando [error-report.md.template](assets/error-report.md.template) antes de reintentar con otro approach
-4. No commitear archivos temporales, binarios ni backups — usar /tmp/ para efímeros
-5. Commit con [Conventional Commits](references/commit-helper.md): `type(scope): description`
-6. Actualizar ROADMAP.md: `[ ]` → `[x]` con fecha
-7. Repetir hasta completar todas las tareas
+1. Tomar siguiente tarea pendiente de `work/.../task-plan.md` (checkbox `- [ ]`) sin bloqueos
+2. REQUERIDO al inicio de sesión: Crear o actualizar `work/.../execution-log.md` usando [execution-log.md.template](assets/execution-log.md.template)
+3. Implementar el cambio
+4. Si la implementación falla, crear `context/errors/ERR-NNN-descripcion.md` usando [error-report.md.template](assets/error-report.md.template) antes de reintentar con otro approach
+5. No commitear archivos temporales, binarios ni backups — usar /tmp/ para efímeros
+6. Commit con [Conventional Commits](references/commit-helper.md): `type(scope): description`
+7. Actualizar ROADMAP.md: `[ ]` → `[x]` con fecha
+8. Repetir hasta completar todas las tareas
 
 **Salir cuando:** Todas las tareas completadas y commiteadas.
 **Siguiente:** Proponer Phase 7: TRACK para documentar lecciones.
-**Detectar:** Si todas las checkboxes en `plan.md` están `[x]`, Phase 6 ya completó.
+**Detectar:** Si todas las checkboxes en `task-plan.md` están `[x]`, Phase 6 ya completó.
 
 ### Phase 7: TRACK
 
 Documentar lecciones previene repetir los mismos errores.
 
-- Revisar progreso desde ROADMAP.md + commits recientes. Si hay work package activo con plan.md,
+- Revisar progreso desde ROADMAP.md + commits recientes. Si hay work package activo con task-plan.md,
   identificar la siguiente tarea incompleta y sugerirla como acción concreta
-- Generar changelog desde commits → CHANGELOG.md
-- Documentar lecciones aprendidas en `work/.../lessons.md`
+- REQUERIDO: Crear `work/.../lessons-learned.md` usando [lessons-learned.md.template](assets/lessons-learned.md.template)
+- REQUERIDO: Generar `CHANGELOG.md` desde commits usando [changelog.md.template](assets/changelog.md.template)
+- Actualizar `work/.../risk-register.md`: cerrar riesgos resueltos, documentar los que se materializaron
 - Si hay 100+ issues: ver [incremental-correction](references/incremental-correction.md)
 - Validar integridad: ver [reference-validation](references/reference-validation.md)
 - Gate soft antes de avanzar de fase: `bash scripts/validate-phase-readiness.sh <phase>`
@@ -145,29 +151,36 @@ Documentar lecciones previene repetir los mismos errores.
 
 ## Dónde viven los artefactos
 
-| Fase | Artefacto | Ubicación |
-|------|-----------|-----------|
-| 1 | Análisis | `work/.../analysis/` |
-| 1-2 | Decisiones | `context/decisions/adr-NNN.md` |
-| 1 | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` |
-| 4 | Especificación | `work/.../spec.md` |
-| 5 | Tareas | `work/.../plan.md` o `work/.../tasks.md` |
-| 6 | Código | Repositorio (git) |
-| 7 | Lecciones | `work/.../lessons.md` |
-| — | Errores | `context/errors/ERR-NNN-descripcion.md` |
-| — | Templates | `assets/*.md.template` (usar como base para nuevos artefactos) |
-| — | Doc base | [document.md.template](assets/document.md.template) (template genérico para cualquier documento) |
-| — | Principios | [constitution.md.template](assets/constitution.md.template) (principios inmutables del proyecto) |
+| Fase | Artefacto | Ubicación | Template |
+|------|-----------|-----------|----------|
+| 1 | Síntesis de análisis | `work/.../analysis/introduction.md` | [introduction.md.template](assets/introduction.md.template) |
+| 1 | Registro de riesgos | `work/.../risk-register.md` | [risk-register.md.template](assets/risk-register.md.template) |
+| 1 | Sub-análisis (opcional) | `work/.../analysis/*.md` | stakeholders, requirements-analysis, use-cases, quality-goals, constraints, context |
+| 1–2 | Decisiones arquitectónicas | `context/decisions/adr-NNN.md` | [adr.md.template](assets/adr.md.template) |
+| 1 | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` | — |
+| 2 | Estrategia de solución | `work/.../solution-strategy.md` | [solution-strategy.md.template](assets/solution-strategy.md.template) |
+| 4 | Especificación de requisitos | `work/.../requirements-spec.md` | [requirements-specification.md.template](assets/requirements-specification.md.template) |
+| 5 | Plan de tareas | `work/.../task-plan.md` | [tasks.md.template](assets/tasks.md.template) |
+| 6 | Log de ejecución | `work/.../execution-log.md` | [execution-log.md.template](assets/execution-log.md.template) |
+| 6 | Código | Repositorio (git) | — |
+| 7 | Lecciones aprendidas | `work/.../lessons-learned.md` | [lessons-learned.md.template](assets/lessons-learned.md.template) |
+| 7 | Changelog | `CHANGELOG.md` | [changelog.md.template](assets/changelog.md.template) |
+| — | Errores | `context/errors/ERR-NNN-descripcion.md` | [error-report.md.template](assets/error-report.md.template) |
+| — | Principios inmutables | `constitution.md` | [constitution.md.template](assets/constitution.md.template) |
 
 ## Estructura de un work package
 
 ```
 context/work/YYYY-MM-DD-HH-MM-SS-nombre/
-├── analysis/        ← Si necesitó análisis (Phase 1)
-├── spec.md          ← Qué y por qué (Phase 4)
-├── plan.md          ← Tareas con checkboxes (Phase 5)
-├── tasks.md         ← Solo si hay 10+ tareas
-└── lessons.md       ← Lecciones aprendidas (Phase 7)
+├── analysis/
+│   ├── introduction.md      ← Síntesis del análisis (Phase 1) — REQUERIDO
+│   └── *.md                 ← Sub-análisis opcionales (stakeholders, constraints, etc.)
+├── risk-register.md         ← Riesgos vivos Phase 1→6 (Phase 1) — REQUERIDO
+├── solution-strategy.md     ← Estrategia arquitectónica (Phase 2)
+├── requirements-spec.md     ← Especificación de requisitos (Phase 4)
+├── task-plan.md             ← Tareas con checkboxes (Phase 5) — REQUERIDO
+├── execution-log.md         ← Log de sesiones de ejecución (Phase 6)
+└── lessons-learned.md       ← Lecciones aprendidas (Phase 7) — REQUERIDO
 ```
 
 No todos los paquetes necesitan todos los archivos. Un fix rápido puede tener solo plan.md.
