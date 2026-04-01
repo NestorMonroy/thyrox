@@ -70,13 +70,35 @@ Objetivo: "REQUERIDO: completar [template] ANTES de avanzar" → no negociable
 - Pros: Funciona con cualquier modelo, sin dependencia del Skill tool
 - Cons: Duplica contenido, mantenimiento doble, CLAUDE.md se vuelve muy largo
 
-**Opción C: Opción A + fallback inline (híbrido)**
-- Instrucción de Skill tool + "Si el Skill tool no está disponible, leer SKILL.md y seguirlo"
-- Pros: Cubre modelos capaces (Skill tool) y menos capaces (fallback)
-- Cons: Ninguno significativo
+**Opción C: Startup hook que inyecta recordatorio al inicio de sesión**
 
-**Decisión**: Opción C
-Razón: Máxima cobertura de modelos sin duplicar contenido.
+Investigación: Claude Code soporta hooks tipo `session_start` configurables en settings.json.
+El proyecto ya tiene infraestructura de hooks: `validate-session-close.sh` (cierre de sesión)
+y `commit-msg-hook.sh` (pre-commit). Un hook de apertura sería el complemento natural.
+
+Mecanismo: crear `session-start.sh` que imprime al contexto:
+```
+=== PM-THYROX ACTIVO ===
+ANTES de cualquier tarea: invocar Skill tool → pm-thyrox
+Si no disponible: leer .claude/skills/pm-thyrox/SKILL.md
+Work package activo: [detectar automáticamente]
+=========================
+```
+- Pros: Se ejecuta automáticamente en cada sesión sin depender de CLAUDE.md ni del usuario;
+  complementa cualquier otra opción; ya existe infraestructura de hooks en el proyecto
+- Cons: Solo actúa al inicio — si la sesión ya está corriendo, no reinyecta el recordatorio;
+  requiere configurar settings.json además de crear el script
+
+**Opción D: Combinar A + C + fallback inline (triple capa)**
+- CLAUDE.md con lenguaje fuerte (capa de texto)
+- Startup hook (capa de ejecución automática)
+- Fallback inline "Si Skill tool no disponible, leer SKILL.md" (capa de respaldo)
+- Pros: Máxima robustez — falla una capa, las otras dos cubren
+- Cons: Más componentes a mantener
+
+**Decisión**: Opción D
+Razón: Las 3 capas son independientes entre sí. Cada una cubre el fallo de las otras.
+CLAUDE.md cubre texto; hook cubre inicio de sesión; fallback cubre modelos que no ven el hook.
 
 ---
 
@@ -155,13 +177,47 @@ Inventario completo por fase:
 
 ---
 
-### Unknown 3: ¿Resuelven estos fixes el problema de Haiku sin romper Sonnet/Opus?
+### Unknown 3: ¿Qué nivel de explicitez necesita SKILL.md para Haiku sin romper Sonnet/Opus?
 
-**De prompting-tips.md**: Instrucciones explícitas mejoran todos los modelos.
-No hay riesgo de degradación — la explicitez ayuda a Haiku sin perjudicar Sonnet/Opus.
+**skill-authoring.md — Principio "Grados de Libertad":**
 
-**Riesgo real**: Si los cambios son muy verbosos, el contexto crece.
-**Mitigación**: Los fixes son líneas adicionales mínimas. SKILL.md pasaría de ~200 a ~250 líneas — aceptable.
+> "Baja Libertad (Scripts específicos, pocos parámetros): Usar cuando operaciones son
+> frágiles, consistencia es crítica, secuencia específica debe seguirse"
+
+> "Si planeas usar el skill con múltiples modelos, apunta a instrucciones que funcionen
+> bien con todos. Claude Haiku: ¿El skill da suficiente guía?"
+
+El SKILL actual está en "Alta Libertad" (instrucciones basadas en texto, heurísticas).
+Las transiciones entre fases y los pasos críticos necesitan "Baja Libertad" para Haiku.
+
+**Tensión real**: "Conciso es Clave" vs "Haiku necesita más guía"
+
+Resolución via **Progressive Disclosure** (skill-authoring.md):
+- SKILL.md <500 líneas (conciso para Sonnet/Opus)
+- Cada paso crítico usa lenguaje "Baja Libertad" (REQUERIDO, SIEMPRE, NO)
+- El contenido dentro de cada fase puede quedar en "Alta Libertad"
+- Los GATES entre fases deben ser "Baja Libertad" explícitos
+
+**Lo que cambia concretamente (lenguaje):**
+
+| Actual (Alta Libertad) | Objetivo (Baja Libertad para gates) |
+|------------------------|-------------------------------------|
+| "usar [template] como guide" | "REQUERIDO: usar [template]. No avanzar sin él" |
+| "si hay decisiones arquitectónicas" | "Decisión arquitectónica = cambio de stack / patrón nuevo / reemplazo de componente" |
+| "Salir cuando: hallazgos documentados" | "Salir cuando: introduction.md existe Y sin [NEEDS CLARIFICATION]" |
+| "Tomar siguiente tarea" | "Leer plan.md. Tomar primera `- [ ] [T-NNN]` sin dependencias pendientes" |
+| "cuando se necesite profundidad" | Eliminar — deja la decisión al modelo; reemplazar con criterio específico |
+
+**Conclusión**: No reescribir todo. Aplicar "Baja Libertad" SOLO en:
+1. Los gates de entrada/salida de cada fase
+2. Las referencias a templates (de sugestivas a REQUERIDO)
+3. Las condiciones ambiguas ("si aplica", "cuando sea necesario")
+
+El contenido de análisis dentro de cada fase puede quedarse en "Alta Libertad" —
+ahí sí queremos que el modelo use criterio.
+
+**Riesgo de degradación para Sonnet/Opus:** Ninguno.
+skill-authoring.md confirma: instrucciones más explícitas ayudan a todos los modelos.
 
 ---
 
@@ -191,9 +247,9 @@ Sin violaciones. Seguir.
 
 ## 4. Decisions
 
-### Decisión 1: CLAUDE.md — activación obligatoria con fallback
+### Decisión 1: Triple capa de activación (CLAUDE.md + hook + fallback)
 
-**Cambio concreto en "Flujo de sesión":**
+**Capa 1 — CLAUDE.md con lenguaje fuerte:**
 
 ```markdown
 ## Flujo de sesión — OBLIGATORIO
@@ -210,42 +266,54 @@ SIEMPRE seguir este flujo antes de trabajar en cualquier tarea:
 5. **Cierre** — Actualizar focus.md + now.md
 ```
 
-**Justificación**: Lenguaje imperativo (`SIEMPRE`, `OBLIGATORIO`, `ANTES`, `NO saltarse`)
-+ fallback para cuando el Skill tool no esté disponible.
+**Capa 2 — Startup hook (`session-start.sh`):**
+- Crear `.claude/skills/pm-thyrox/scripts/session-start.sh`
+- Configurar en settings.json como hook `SessionStart`
+- El script detecta work package activo y lo inyecta como contexto de inicio
+- Complemento de `validate-session-close.sh` que ya existe
+
+**Capa 3 — Fallback inline (ya incluido en Capa 1)**
+
+**Justificación**: 3 capas independientes. Una puede fallar, las otras 2 cubren.
+Basado en: Unknown 1 Opción D + infraestructura de hooks ya existente en el proyecto.
 
 ---
 
-### Decisión 2: SKILL.md — corregir TODOS los huecos identificados
+### Decisión 2: SKILL.md — aplicar "Baja Libertad" en gates, "Alta Libertad" en contenido
 
-Cambios por fase (todos los huecos del Unknown 2):
+**Principio** (de skill-authoring.md):
+- Gates entre fases = "Baja Libertad" (secuencia específica, no negociable)
+- Contenido de análisis dentro de cada fase = "Alta Libertad" (criterio del modelo)
+
+**Cambios por fase — solo los gates y puntos de decisión críticos:**
 
 **Phase 1:**
-- Reemplazar "Investigar requisitos..." con los 8 aspectos nombrados explícitamente (H1.1)
-- Definir qué cuenta como decisión arquitectónica con 3 ejemplos concretos (H1.2)
-- Cambiar referencia a introduction.md.template de sugestiva a `REQUERIDO:` (H1.3)
-- Agregar exit criteria verificable: "introduction.md existe Y sin [NEEDS CLARIFICATION]" (H1.4)
+- "Investigar requisitos..." → listar los 8 aspectos (gate de entrada explícito) (H1.1)
+- "Si hay decisiones arquitectónicas" → definir con 3 ejemplos concretos (H1.2)
+- Referencia a introduction.md.template: sugestiva → `REQUERIDO:` (H1.3)
+- Exit criteria: "hallazgos documentados" → "introduction.md existe Y sin [NEEDS CLARIFICATION]" (H1.4)
 
 **Phase 2:**
-- Agregar PASO 0: "Leer [solution-strategy](references/solution-strategy.md) ANTES de empezar (REQUERIDO)" (H2.1)
-- Aclarar que Key Ideas deben basarse en analysis/ de Phase 1 (H2.2)
+- Agregar PASO 0 (gate de entrada): "REQUERIDO: leer [solution-strategy](references/solution-strategy.md) antes de empezar" (H2.1)
+- Key Ideas: aclarar que se basan en analysis/ de Phase 1 (H2.2)
 
 **Phase 3:**
-- Agregar cómo verificar work package: `ls context/work/` (H3.1)
+- Gate de verificación: `ls context/work/` — si no existe, volver a Phase 1 (H3.1)
 
 **Phase 4:**
-- Cambiar "como gate" por "REQUERIDO: completar antes de Phase 5" (H4.1)
-- Agregar exit criteria verificable (H4.2)
+- "como gate" → "REQUERIDO: completar antes de Phase 5. NO avanzar sin ✓ completo" (H4.1)
+- Exit criteria verificable: spec.md existe Y sin [NEEDS CLARIFICATION] (H4.2)
 
 **Phase 5:**
-- Aclarar cómo identificar work package activo: más reciente en context/work/ (H5.1)
+- Work package activo: "el directorio más reciente en context/work/" (H5.1)
 
 **Phase 6:**
-- Especificar fuente de tareas: "plan.md del work package activo" (H6.1)
-- Especificar cómo crear ERR-NNN: ruta + template (H6.2)
+- Fuente de tareas: "Leer plan.md. Tomar primera `- [ ] [T-NNN]` sin dependencias" (H6.1)
+- ERR-NNN: ruta exacta + template específico (H6.2)
 - Corregir numeración duplicada (H6.3)
 
 **Escalabilidad:**
-- Agregar tabla explícita: tamaño de trabajo → qué fases → cómo ejecutarlas (HE.1)
+- Tabla explícita: tamaño → fases activas → qué omitir (HE.1)
 
 ---
 
@@ -320,11 +388,13 @@ Cambios mínimos = riesgo mínimo de romper lo que funciona.
 
 ```
 Cambiar:
-  .claude/CLAUDE.md                               ← D1: activación
-  .claude/skills/pm-thyrox/SKILL.md               ← D2+D3: todos los huecos
+  .claude/CLAUDE.md                                      ← D1 capa 1: lenguaje fuerte
+  .claude/skills/pm-thyrox/SKILL.md                      ← D2+D3: gates Baja Libertad
+  .claude/skills/pm-thyrox/scripts/session-start.sh      ← D1 capa 2: NUEVO startup hook
+  settings.json (o .claude/settings.json)                ← D1 capa 2: configurar hook SessionStart
 
 Fuera de scope:
-  .claude/skills/pm-thyrox/references/examples.md ← D4: deuda técnica
+  .claude/skills/pm-thyrox/references/examples.md        ← D4: deuda técnica
 ```
 
 ---
