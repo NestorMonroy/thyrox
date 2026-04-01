@@ -9,7 +9,16 @@ Framework de gestión para organizar trabajo de cualquier tamaño con Claude Cod
 
 **Principio core:** Analizar antes de actuar. Cada fase produce artefactos que alimentan la siguiente. Saltar fases produce trabajo sin fundamento.
 
-**Escala:** Trabajos <2h usan fases 1, 2, 6, 7. Trabajos de 2-8h usan las 7. Ver [escalabilidad](references/scalability.md) para detalles.
+**Escala según tamaño del trabajo:**
+
+| Tamaño | Duración | Fases activas | Qué omitir |
+|--------|----------|---------------|------------|
+| Micro | <30 min | 1, 6, 7 | Phases 2, 3, 4, 5 (spec y plan opcionales) |
+| Pequeño | 30 min – 2h | 1, 2, 6, 7 | Phases 3, 4, 5 (no requiere plan formal) |
+| Mediano | 2h – 8h | 1, 2, 3, 4, 5, 6, 7 | Ninguna — seguir las 7 fases completas |
+| Grande | >8h | 1, 2, 3, 4, 5, 6, 7 | Ninguna — usar epic.md para agrupar features |
+
+Ver [escalabilidad](references/scalability.md) para detalles y casos de borde.
 
 ---
 
@@ -19,23 +28,32 @@ Framework de gestión para organizar trabajo de cualquier tamaño con Claude Cod
 
 Entender el problema antes de proponer soluciones evita construir lo incorrecto.
 
-1. Investigar requisitos, stakeholders, constraints y contexto
+1. Investigar estos 8 aspectos — preguntar al usuario lo que no esté claro:
+   - **Objetivo/Por qué** — ¿qué se quiere lograr y por qué importa?
+   - **Stakeholders** — ¿quiénes son los usuarios y qué necesitan?
+   - **Uso operacional** — ¿cómo se usará el sistema en la práctica?
+   - **Atributos de calidad** — ¿qué importa más: velocidad, seguridad, confiabilidad?
+   - **Restricciones** — ¿qué limita la solución (tech, tiempo, presupuesto)?
+   - **Contexto/sistemas vecinos** — ¿dónde se sitúa, qué lo rodea?
+   - **Fuera de alcance** — ¿qué NO se va a hacer?
+   - **Criterios de éxito** — ¿cómo sabremos que está bien hecho?
 2. Crear work package: `context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
-3. Documentar hallazgos en `work/.../analysis/`
-4. Si hay decisiones arquitectónicas, crear ADR en `context/decisions/` usando [adr.md.template](assets/adr.md.template)
+3. REQUERIDO: Crear `work/.../analysis/introduction.md` usando [introduction.md.template](assets/introduction.md.template)
+4. Si hay decisión arquitectónica (cambio de stack tecnológico, adopción de patrón nuevo como microservicios o event-driven, o reemplazo de componente principal), crear ADR en `context/decisions/` usando [adr.md.template](assets/adr.md.template)
 
-Las 8 subsecciones de análisis (leer cuando se necesite profundidad, usar [introduction.md.template](assets/introduction.md.template) como formato de output):
-[introduction](references/introduction.md), [requirements-analysis](references/requirements-analysis.md), [use-cases](references/use-cases.md), [quality-goals](references/quality-goals.md), [stakeholders](references/stakeholders.md), [basic-usage](references/basic-usage.md), [constraints](references/constraints.md), [context](references/context.md)
+Referencias de análisis por subsección (leer según necesidad):
+[introduction](references/introduction.md) · [requirements-analysis](references/requirements-analysis.md) · [use-cases](references/use-cases.md) · [quality-goals](references/quality-goals.md) · [stakeholders](references/stakeholders.md) · [basic-usage](references/basic-usage.md) · [constraints](references/constraints.md) · [context](references/context.md)
 
-**Salir cuando:** Los hallazgos están documentados y aprobados por el usuario.
+**Salir cuando:** `work/.../analysis/introduction.md` existe, no contiene `[NEEDS CLARIFICATION]`, y el usuario aprobó los hallazgos.
 **Siguiente:** Proponer Phase 2. Si no requiere decisiones arquitectónicas, proponer saltar a Phase 3.
-**Detectar:** Si `work/.../analysis/` tiene hallazgos documentados, Phase 1 ya completó.
+**Detectar:** Si `work/.../analysis/introduction.md` existe sin `[NEEDS CLARIFICATION]`, Phase 1 ya completó.
 
 ### Phase 2: SOLUTION_STRATEGY
 
 Investigar alternativas antes de decidir previene decisiones sin evidencia.
 
-1. **Key Ideas** — definir los conceptos centrales que guían la solución
+0. REQUERIDO: Leer [solution-strategy](references/solution-strategy.md) antes de empezar esta fase. Basar las Key Ideas en los hallazgos de `work/.../analysis/`.
+1. **Key Ideas** — definir los conceptos centrales que guían la solución (basarse en analysis/ de Phase 1)
 2. **Research** — listar unknowns → investigar alternativas → documentar pros/cons por cada uno
 3. **Pre-design check** — verificar que las decisiones respetan los principios del proyecto
 4. **Decisions** — documentar decisiones fundamentales con justificación. Usar [adr.md.template](assets/adr.md.template) para decisiones arquitectónicas
@@ -52,7 +70,7 @@ Ver [solution-strategy](references/solution-strategy.md) para estructura complet
 Definir scope antes de estructurar previene scope creep.
 
 1. Brainstorm: ¿qué problema? ¿quiénes son los usuarios? ¿qué es éxito? ¿qué está fuera?
-2. Verificar que el work package existe (creado en Phase 1). Para trabajo grande que agrupa múltiples features, usar [epic.md.template](assets/epic.md.template)
+2. Verificar que el work package existe: `ls context/work/`. Si no existe, volver a Phase 1 antes de continuar. Para trabajo grande que agrupa múltiples features, usar [epic.md.template](assets/epic.md.template)
 3. Actualizar ROADMAP.md con features y link al work package
 4. Obtener aprobación del scope
 
@@ -67,17 +85,17 @@ Especificar antes de descomponer previene ambigüedad en las tareas.
 **Simple** (<10 tareas): Crear spec.md con overview, user stories, acceptance criteria.
 **Complejo** (10+ tareas): Ver [spec-driven-development](references/spec-driven-development.md).
 
-Verificar que no queden marcadores [NEEDS CLARIFICATION] sin resolver — la ambigüedad en specs se multiplica en la implementación. Usar [spec-quality-checklist.md.template](assets/spec-quality-checklist.md.template) como gate antes de avanzar a Phase 5.
+REQUERIDO: Completar [spec-quality-checklist.md.template](assets/spec-quality-checklist.md.template) ANTES de Phase 5. NO avanzar si quedan ítems sin ✓ o marcadores `[NEEDS CLARIFICATION]` sin resolver — la ambigüedad en specs se multiplica en la implementación.
 
-**Salir cuando:** Specs aprobadas, checklist pasado, sin ambigüedades.
+**Salir cuando:** `work/.../spec.md` existe, no contiene `[NEEDS CLARIFICATION]`, y checklist completado al 100%.
 **Siguiente:** Proponer Phase 5: DECOMPOSE para crear tareas atómicas.
-**Detectar:** Si `work/.../spec.md` tiene user stories y acceptance criteria, Phase 4 ya completó.
+**Detectar:** Si `work/.../spec.md` tiene user stories y acceptance criteria sin `[NEEDS CLARIFICATION]`, Phase 4 ya completó.
 
 ### Phase 5: DECOMPOSE
 
 Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
-1. Leer spec.md del work package. Si el usuario pide descomposición directa sin spec previo,
+1. Leer spec.md del work package activo (= directorio más reciente en `context/work/`). Si el usuario pide descomposición directa sin spec previo,
    crear work package y descomponer desde la descripción del usuario — no cuestionar si el proyecto existe en el repo
 2. Crear lista de tareas con IDs trazables — cada tarea necesita un ID y referencia a su requisito
    porque esto permite detectar tareas huérfanas (sin requisito) o requisitos sin cobertura.
@@ -94,12 +112,13 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
 Commits frecuentes con mensajes descriptivos crean un historial navegable.
 
-1. Tomar siguiente tarea sin bloqueos
-2. Implementar el cambio. Si falla, crear ERR-NNN antes de reintentar con otro approach
-3. No commitear archivos temporales, binarios ni backups — usar /tmp/ para efímeros
-4. Commit con [Conventional Commits](references/commit-helper.md): `type(scope): description`
-5. Actualizar ROADMAP.md: `[ ]` → `[x]` con fecha
-6. Repetir hasta completar todas las tareas
+1. Tomar siguiente tarea pendiente de `work/.../plan.md` (checkbox `- [ ]`) sin bloqueos
+2. Implementar el cambio
+3. Si la implementación falla, crear `context/errors/ERR-NNN-descripcion.md` usando [error-report.md.template](assets/error-report.md.template) antes de reintentar con otro approach
+4. No commitear archivos temporales, binarios ni backups — usar /tmp/ para efímeros
+5. Commit con [Conventional Commits](references/commit-helper.md): `type(scope): description`
+6. Actualizar ROADMAP.md: `[ ]` → `[x]` con fecha
+7. Repetir hasta completar todas las tareas
 
 **Salir cuando:** Todas las tareas completadas y commiteadas.
 **Siguiente:** Proponer Phase 7: TRACK para documentar lecciones.

@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/skills/pm-thyrox/scripts/session-start.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

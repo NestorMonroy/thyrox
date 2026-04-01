@@ -253,23 +253,23 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ### Activación automática del SKILL (D1)
 
-- [ ] [T-001] CLAUDE.md — flujo de sesión obligatorio + Skill tool + fallback inline
-- [ ] [T-002] Crear session-start.sh — startup hook de sesión
-- [ ] [T-003] Configurar SessionStart hook en settings.json
+- [x] [T-001] CLAUDE.md — flujo de sesión obligatorio + Skill tool + fallback inline — 2026-04-01
+- [x] [T-002] Crear session-start.sh — startup hook de sesión — 2026-04-01
+- [x] [T-003] Configurar SessionStart hook en settings.json — 2026-04-01
 
 ### SKILL.md — gates Baja Libertad por fase (D2)
 
-- [ ] [T-004] Phase 1: 8 aspectos + decisión arquitectónica + REQUERIDO template + exit criteria
-- [ ] [T-005] Phase 2: PASO 0 REQUERIDO solution-strategy + Key Ideas desde analysis/
-- [ ] [T-006] Phase 3: verificación WP explícita
-- [ ] [T-007] Phase 4: checklist REQUERIDO + exit criteria verificable
-- [ ] [T-008] Phase 5: WP activo = más reciente en context/work/
-- [ ] [T-009] Phase 6: fuente de tareas + ERR-NNN con template + renumerar pasos
-- [ ] [T-010] Escalabilidad: tabla explícita tamaño → fases activas
+- [x] [T-004] Phase 1: 8 aspectos + decisión arquitectónica + REQUERIDO template + exit criteria — 2026-04-01
+- [x] [T-005] Phase 2: PASO 0 REQUERIDO solution-strategy + Key Ideas desde analysis/ — 2026-04-01
+- [x] [T-006] Phase 3: verificación WP explícita — 2026-04-01
+- [x] [T-007] Phase 4: checklist REQUERIDO + exit criteria verificable — 2026-04-01
+- [x] [T-008] Phase 5: WP activo = más reciente en context/work/ — 2026-04-01
+- [x] [T-009] Phase 6: fuente de tareas + ERR-NNN con template + renumerar pasos — 2026-04-01
+- [x] [T-010] Escalabilidad: tabla explícita tamaño → fases activas — 2026-04-01
 
 ### Verificación (no degradación)
 
-- [ ] [T-011] Re-ejecutar evals — verificar baseline 40/40 se mantiene
+- [x] [T-011] Re-ejecutar evals — 14/14 (100%) — 2026-04-01
 
 ### Deuda técnica
 
