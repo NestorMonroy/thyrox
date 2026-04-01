@@ -413,6 +413,196 @@ Fuera de scope:
 
 ---
 
+## Phase 4: STRUCTURE
+
+### Requisitos Funcionales
+
+| ID | Requisito | Criterio de aceptación (AC) |
+|----|-----------|----------------------------|
+| R-1 | CLAUDE.md instruye invocar Skill tool antes de cualquier tarea | "Skill tool → pm-thyrox" aparece en flujo de sesión con lenguaje imperativo |
+| R-2 | CLAUDE.md tiene fallback explícito para cuando el Skill tool no está disponible | Texto "Si el Skill tool no está disponible: leer SKILL.md" presente |
+| R-3 | Startup hook se ejecuta al inicio de cada sesión | settings.json tiene hook SessionStart; session-start.sh existe y es ejecutable |
+| R-4 | Phase 1 del SKILL lista los 8 aspectos de análisis explícitamente | No contiene "Investigar requisitos" sin detallar; lista 8 ítems nombrados |
+| R-5 | Phase 1 define cuándo crear un ADR (3 criterios concretos) | Texto contiene ≥ 3 ejemplos de qué es una decisión arquitectónica |
+| R-6 | introduction.md.template es REQUERIDO en Phase 1, no sugestivo | Contiene "REQUERIDO" en la referencia al template |
+| R-7 | Phase 1 tiene exit criteria verificable (no subjetivo) | Exit criteria menciona "introduction.md" como artefacto verificable |
+| R-8 | Phase 2 lee solution-strategy.md como PASO 0 explícito | Primer paso de Phase 2 contiene "REQUERIDO" y link a solution-strategy |
+| R-9 | Phase 3 verifica existencia del work package con instrucción concreta | Contiene instrucción de verificar context/work/ |
+| R-10 | spec-quality-checklist es REQUERIDO antes de avanzar a Phase 5 | Contiene "REQUERIDO: completar" y "NO avanzar" en Phase 4 |
+| R-11 | Phase 5 identifica work package activo de forma determinista | Define "work package activo = más reciente en context/work/" |
+| R-12 | Phase 6 especifica fuente de tareas (plan.md) | Contiene "Leer plan.md" o equivalente explícito |
+| R-13 | Phase 6 especifica cómo crear ERR-NNN con template | Contiene ruta context/errors/ y referencia a error-report.md.template |
+| R-14 | Phase 6 tiene numeración de pasos sin duplicados | Pasos 1,2,3,4,5,6 sin repetición |
+| R-15 | Escalabilidad tiene tabla explícita de tamaño → fases activas | Existe tabla o lista estructurada con al menos 3 tamaños de trabajo |
+| R-16 | Evals pasan al 100% después de todos los cambios | run-functional-evals.sh reporta ≥ 40/40 |
+
+### Requisitos No Funcionales
+
+| ID | Requisito |
+|----|-----------|
+| RNF-1 | SKILL.md no supera 500 líneas después de los cambios (progressive disclosure) |
+| RNF-2 | Ningún cambio elimina texto existente que funciona — solo agregar/fortalecer |
+| RNF-3 | Cada "REQUERIDO:" no restringe casos válidos que Sonnet/Opus manejaban correctamente |
+
+### Design: cambios exactos por archivo
+
+#### CLAUDE.md — T-001
+
+Sección a reemplazar: "Flujo de sesión"
+
+```markdown
+## Flujo de sesión — OBLIGATORIO
+
+SIEMPRE seguir este flujo. NO omitir pasos.
+
+1. **Inicio** — Leer focus.md + now.md + ROADMAP.md
+2. **Activar SKILL** — ANTES de responder cualquier tarea:
+   invocar Skill tool → pm-thyrox.
+   Si el Skill tool no está disponible: leer SKILL.md completo y seguirlo paso a paso.
+3. **Identificar fase activa** — Revisar context/work/:
+   - Hay work package con work en curso → continuar en la fase donde quedó
+   - No hay work package activo → empezar Phase 1: ANALYZE
+4. **Trabajar** — Seguir cada fase hasta su exit criteria. NO saltarse fases.
+5. **Cierre** — Actualizar focus.md + now.md
+```
+
+#### session-start.sh — T-002
+
+Nuevo archivo: `.claude/skills/pm-thyrox/scripts/session-start.sh`
+
+```bash
+#!/usr/bin/env bash
+# session-start.sh — SessionStart hook para Claude Code
+# Inyecta contexto de activación del SKILL al inicio de cada sesión.
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
+CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
+
+# Detectar work package activo (más reciente en context/work/)
+ACTIVE_WP=""
+if [ -d "${CONTEXT_DIR}/work" ]; then
+    ACTIVE_WP=$(ls -1t "${CONTEXT_DIR}/work" 2>/dev/null | head -1)
+fi
+
+echo ""
+echo "=== PM-THYROX — ACTIVAR SKILL ANTES DE TRABAJAR ==="
+echo ""
+echo "  REQUERIDO: Invocar Skill tool → pm-thyrox"
+echo "  Si no disponible: leer .claude/skills/pm-thyrox/SKILL.md"
+echo ""
+if [ -n "$ACTIVE_WP" ]; then
+    echo "  Work package activo: context/work/${ACTIVE_WP}/"
+    # Detectar phase actual desde now.md
+    if [ -f "${CONTEXT_DIR}/now.md" ]; then
+        PHASE=$(grep "^phase:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/phase: *//')
+        [ -n "$PHASE" ] && echo "  Fase actual: ${PHASE}"
+    fi
+else
+    echo "  Sin work package activo → empezar Phase 1: ANALYZE"
+fi
+echo ""
+echo "===================================================="
+echo ""
+```
+
+#### settings.json — T-003
+
+Agregar hook `SessionStart` apuntando a `session-start.sh`.
+
+Verificar si ya existe `.claude/settings.json` o `settings.json` en raíz.
+Agregar (o crear) entrada:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "bash .claude/skills/pm-thyrox/scripts/session-start.sh"
+      }
+    ]
+  }
+}
+```
+
+#### SKILL.md — T-004 a T-010
+
+**T-004 — Phase 1** (cambios quirúrgicos):
+
+1. Reemplazar paso 1 actual:
+   - De: `"Investigar requisitos, stakeholders, constraints y contexto"`
+   - A: lista de 8 aspectos: objetivo/por qué, stakeholders, uso operacional, atributos de calidad, restricciones, contexto/sistemas vecinos, fuera de alcance, criterios de éxito
+
+2. Paso 4 (ADR): agregar criterio — "Decisión arquitectónica = cambio de stack tecnológico, adopción de patrón nuevo (microservicios, event-driven, etc.), o reemplazo de componente principal"
+
+3. Línea de introduction.md.template: agregar `REQUERIDO:` antes de "usar"
+
+4. Exit criteria: reemplazar "hallazgos documentados" por "analysis/introduction.md existe Y no contiene [NEEDS CLARIFICATION]"
+
+**T-005 — Phase 2**:
+- Insertar como primer ítem (antes de Key Ideas):
+  `0. REQUERIDO: Leer [solution-strategy](references/solution-strategy.md) antes de empezar esta fase. Key Ideas deben basarse en los hallazgos de work/.../analysis/`
+
+**T-006 — Phase 3**:
+- En paso 2 (verificar work package): agregar "Si no existe → volver a Phase 1"
+
+**T-007 — Phase 4**:
+- Cambiar "Usar [spec-quality-checklist.md.template] como gate" →
+  "REQUERIDO: Completar [spec-quality-checklist.md.template] ANTES de Phase 5. NO avanzar si hay ítems sin ✓"
+- Exit criteria: agregar "spec.md no contiene [NEEDS CLARIFICATION]"
+
+**T-008 — Phase 5**:
+- En paso 1: agregar "Work package activo = directorio más reciente en context/work/"
+
+**T-009 — Phase 6**:
+- Paso 1: cambiar "Tomar siguiente tarea sin bloqueos" → "Leer work/.../plan.md. Tomar la primera tarea `- [ ] [T-NNN]` sin dependencias pendientes"
+- Paso 2: cambiar "crear ERR-NNN" → "crear context/errors/ERR-NNN-descripcion.md usando [error-report.md.template](assets/error-report.md.template)"
+- Corregir numeración: renumerar los pasos 1-6 sin duplicados
+
+**T-010 — Escalabilidad** (sección existente o nueva):
+```markdown
+| Tamaño | Fases activas | Qué omitir |
+|--------|--------------|------------|
+| <30 min (hotfix) | 6, 7 | Fases 1-5 |
+| 30 min – 2h (fix pequeño) | 1, 2, 6, 7 | Fases 3, 4, 5 |
+| 2h – 8h (feature) | 1, 2, 3, 4, 5, 6, 7 | Ninguna |
+| 8h+ (proyecto) | 1, 2, 3, 4, 5, 6, 7 (rigurosas) | Ninguna |
+```
+
+### Spec Quality Checklist
+
+**Completitud:**
+- [x] Todos los requisitos funcionales documentados (R-1 a R-16)
+- [x] Requisitos no funcionales identificados (RNF-1 a RNF-3)
+- [x] Criterios de aceptación definidos y medibles por tarea
+- [x] Scope delimitado (qué incluye: CLAUDE.md, SKILL.md, session-start.sh, settings.json — qué excluye: examples.md)
+- [x] Dependencias identificadas (T-003 depende de T-002; T-011 depende de T-004 a T-010)
+- [x] Assumptions documentadas (evals actuales = 40/40 como baseline)
+
+**Claridad:**
+- [x] Cada requisito es específico (R-4: "lista 8 ítems nombrados", no "sea más claro")
+- [x] Sin términos ambiguos sin definir
+- [x] Cada requisito tiene un solo significado posible
+- [x] Zero [NEEDS CLARIFICATION] markers
+
+**Consistencia:**
+- [x] Requisitos no se contradicen
+- [x] Terminología consistente (Baja Libertad = gates; Alta Libertad = contenido)
+- [x] Alineado con Locked Decisions de CLAUDE.md
+
+**Medibilidad:**
+- [x] Cada criterio de aceptación es verificable (grep, ls, conteo de líneas)
+- [x] T-016/R-16: run-functional-evals.sh ≥ 40/40 es objetivo/binario
+
+**Cobertura:**
+- [x] Todos los huecos de Haiku (H1.1 a HE.1) tienen tarea asignada
+- [x] Flujo de activación (D1) y flujo de instrucción (D2) cubiertos
+- [x] Riesgo de degradación Sonnet/Opus cubierto (T-011 + salvaguardas RNF)
+
+**Resultado checklist:** 20/20 ítems ✓ — Sin [NEEDS CLARIFICATION]
+
+---
+
 ## Checklist de Validación (solution-strategy.md)
 
 - [x] Key Ideas identificadas y articuladas
