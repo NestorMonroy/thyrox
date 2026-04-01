@@ -1,6 +1,6 @@
 ```yml
 ID: ERR-NNN
-Fecha: YYYY-MM-DD
+Fecha: YYYY-MM-DD-HH-MM-SS
 Fase: Phase N (PHASE_NAME)
 Severidad: alta | media | baja
 Recurrencia: primera | reincidencia de ERR-XXX

@@ -4,8 +4,8 @@ Tipo: task
 Task ID: [ID de la tarea, ej: TASK-789]
 Feature relacionada: [Nombre feature]
 Responsable: [Nombre]
-Fecha inicio: [YYYY-MM-DD]
-Fecha fin: [YYYY-MM-DD]
+Fecha inicio: [YYYY-MM-DD-HH-MM-SS]
+Fecha fin: [YYYY-MM-DD-HH-MM-SS]
 Horas dedicadas: [N]
 Tests: [SI/NO]
 Code review: [Pendiente/Completo]
@@ -19,9 +19,9 @@ Feature: [Feature Name]
 Status: COMPLETE
 
 Completed tasks:
-- [x] Subtask 1 (YYYY-MM-DD)
-- [x] Subtask 2 (YYYY-MM-DD)
-- [x] Subtask 3 (YYYY-MM-DD)
+- [x] Subtask 1 (YYYY-MM-DD-HH-MM-SS)
+- [x] Subtask 2 (YYYY-MM-DD-HH-MM-SS)
+- [x] Subtask 3 (YYYY-MM-DD-HH-MM-SS)
 
 Feature summary:
 Describe what was implemented and why it matters.

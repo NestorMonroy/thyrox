@@ -1,7 +1,7 @@
 ```yml
 Proyecto: [Nombre del proyecto]
 Versión: [X.Y.Z]
-Fecha: [YYYY-MM-DD]
+Fecha: [YYYY-MM-DD-HH-MM-SS]
 Commits incluidos: [N]
 Autor: [Nombre]
 Rama: [nombre-rama]
@@ -15,7 +15,7 @@ Rama: [nombre-rama]
 
 ---
 
-## [X.Y.Z] — YYYY-MM-DD
+## [X.Y.Z] — YYYY-MM-DD-HH-MM-SS
 
 ### Added
 
@@ -42,7 +42,7 @@ Rama: [nombre-rama]
 
 ---
 
-## [X.Y.Z-anterior] — YYYY-MM-DD
+## [X.Y.Z-anterior] — YYYY-MM-DD-HH-MM-SS
 
 [Repetir estructura por cada versión/release anterior]
 

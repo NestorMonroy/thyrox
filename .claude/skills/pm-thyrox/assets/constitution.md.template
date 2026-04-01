@@ -1,5 +1,5 @@
 ```yml
-Fecha: [YYYY-MM-DD]
+Fecha: [YYYY-MM-DD-HH-MM-SS]
 Proyecto: [PROJECT_NAME]
 Versión constitution: 1.0
 Autor: [Nombre]
@@ -88,4 +88,4 @@ Si algún check falla → PARAR. Documentar excepción en ADR antes de continuar
 
 ---
 
-**Última actualización:** [YYYY-MM-DD]
+**Última actualización:** [YYYY-MM-DD-HH-MM-SS]

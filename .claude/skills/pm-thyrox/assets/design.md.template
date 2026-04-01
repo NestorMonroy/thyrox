@@ -275,11 +275,11 @@ TC-002: [Titulo del caso]
 
 - [ ] Revisado por: [Nombre]
 - [ ] Aprobado por: [Nombre]
-- [ ] Fecha de aprobacion: YYYY-MM-DD
+- [ ] Fecha de aprobacion: YYYY-MM-DD-HH-MM-SS
 
 ## Historial de Cambios
 
 | Fecha | Version | Cambios | Autor |
 |-------|---------|---------|-------|
-| YYYY-MM-DD | 0.1 | Creacion inicial | [Nombre] |
-| YYYY-MM-DD | 0.2 | [Cambios realizados] | [Nombre] |
+| YYYY-MM-DD-HH-MM-SS | 0.1 | Creacion inicial | [Nombre] |
+| YYYY-MM-DD-HH-MM-SS | 0.2 | [Cambios realizados] | [Nombre] |

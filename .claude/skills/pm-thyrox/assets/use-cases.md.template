@@ -4,7 +4,7 @@ Categoría: Casos de Uso
 Versión: 1.0
 Propósito: Template para documentar casos de uso del proyecto
 Objetivo: Capturar flujos usuario-sistema de forma consistente
-Fecha actualización: YYYY-MM-DD
+Fecha actualización: YYYY-MM-DD-HH-MM-SS
 ```
 
 # Casos de Uso - [Nombre del Proyecto]
@@ -85,5 +85,5 @@ Alternativa 3b: Si [condición específica]
 
 [Consideraciones técnicas para implementación, restricciones, patrones]
 
-**Última Actualización:** YYYY-MM-DD<br>
-**Próxima Revisión:** YYYY-MM-DD
+**Última Actualización:** YYYY-MM-DD-HH-MM-SS<br>
+**Próxima Revisión:** YYYY-MM-DD-HH-MM-SS

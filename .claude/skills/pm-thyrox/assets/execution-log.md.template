@@ -47,7 +47,7 @@ Basado en: categorization-plan.md ([fecha del plan])
 
 | Lote | Estado | Issues Resueltos | Tiempo | Build Status | Fecha Completado |
 |------|--------|------------------|--------|--------------|------------------|
-| 1 | [✓ Completado / ⏸ En progreso / ⏱ Pendiente] | [X/Y] | [Xh] | [✓ Pass / ✗ Fail] | [YYYY-MM-DD] |
+| 1 | [✓ Completado / ⏸ En progreso / ⏱ Pendiente] | [X/Y] | [Xh] | [✓ Pass / ✗ Fail] | [YYYY-MM-DD-HH-MM-SS] |
 | 2 | [Estado] | [X/Y] | [Xh] | [Status] | [Fecha] |
 | 3 | [Estado] | [X/Y] | [Xh] | [Status] | [Fecha] |
 | 4 | [Estado] | [X/Y] | [Xh] | [Status] | [Fecha] |
@@ -66,9 +66,9 @@ Basado en: categorization-plan.md ([fecha del plan])
 
 **Estado**: [Completado / En progreso / Pendiente]
 
-**Fecha inicio**: [YYYY-MM-DD HH:MM]
+**Fecha inicio**: [YYYY-MM-DD-HH-MM-SS HH:MM]
 
-**Fecha fin**: [YYYY-MM-DD HH:MM]
+**Fecha fin**: [YYYY-MM-DD-HH-MM-SS HH:MM]
 
 **Duración real**: [Xh] (estimado: [Yh])
 
@@ -385,7 +385,7 @@ Pasos para validación completa:
 
 | Fecha | Cambio | Autor |
 |-------|--------|-------|
-| [YYYY-MM-DD] | Log creado | [Nombre] |
-| [YYYY-MM-DD] | Lote 1 completado | [Nombre] |
-| [YYYY-MM-DD] | Lote 2 completado | [Nombre] |
-| [YYYY-MM-DD] | Actualización de métricas | [Nombre] |
+| [YYYY-MM-DD-HH-MM-SS] | Log creado | [Nombre] |
+| [YYYY-MM-DD-HH-MM-SS] | Lote 1 completado | [Nombre] |
+| [YYYY-MM-DD-HH-MM-SS] | Lote 2 completado | [Nombre] |
+| [YYYY-MM-DD-HH-MM-SS] | Actualización de métricas | [Nombre] |

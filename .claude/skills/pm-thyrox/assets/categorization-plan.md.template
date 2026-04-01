@@ -6,8 +6,8 @@ Planificador: [Nombre]
 Total issues a categorizar: [N]
 Categorías definidas: [N]
 Prioridades definidas: [N]
-Fecha inicio categorización: [YYYY-MM-DD]
-Fecha fin prevista: [YYYY-MM-DD]
+Fecha inicio categorización: [YYYY-MM-DD-HH-MM-SS]
+Fecha fin prevista: [YYYY-MM-DD-HH-MM-SS]
 Responsable: [Nombre/equipo]
 Herramientas: [Sistema de tracking usado]
 ```
@@ -38,9 +38,9 @@ Basado en: analysis-phase.md ([fecha del análisis])
 
 **Estimación total**: [Horas totales estimadas]
 
-**Fecha inicio estimada**: [YYYY-MM-DD]
+**Fecha inicio estimada**: [YYYY-MM-DD-HH-MM-SS]
 
-**Fecha fin estimada**: [YYYY-MM-DD]
+**Fecha fin estimada**: [YYYY-MM-DD-HH-MM-SS]
 
 ---
 
@@ -206,12 +206,12 @@ Basado en: analysis-phase.md ([fecha del análisis])
 
 | Fecha | Lote | Actividades | Duración |
 |-------|------|-------------|----------|
-| [YYYY-MM-DD] | Setup | Preparación, backups | [Xh] |
-| [YYYY-MM-DD] | Lote 1 | Ejecución + validación | [Xh] |
-| [YYYY-MM-DD] | Lote 2 | Ejecución + validación | [Xh] |
-| [YYYY-MM-DD] | Lote 3 | Ejecución + validación | [Xh] |
-| [YYYY-MM-DD] | Lote 4 | Ejecución + validación | [Xh] |
-| [YYYY-MM-DD] | Final | Validación completa, reporte | [Xh] |
+| [YYYY-MM-DD-HH-MM-SS] | Setup | Preparación, backups | [Xh] |
+| [YYYY-MM-DD-HH-MM-SS] | Lote 1 | Ejecución + validación | [Xh] |
+| [YYYY-MM-DD-HH-MM-SS] | Lote 2 | Ejecución + validación | [Xh] |
+| [YYYY-MM-DD-HH-MM-SS] | Lote 3 | Ejecución + validación | [Xh] |
+| [YYYY-MM-DD-HH-MM-SS] | Lote 4 | Ejecución + validación | [Xh] |
+| [YYYY-MM-DD-HH-MM-SS] | Final | Validación completa, reporte | [Xh] |
 
 **Duración total**: [Días de trabajo]
 
@@ -377,7 +377,7 @@ Si un lote falla críticamente:
 
 **Plan revisado por**: [Nombre]
 
-**Fecha de aprobación**: [YYYY-MM-DD]
+**Fecha de aprobación**: [YYYY-MM-DD-HH-MM-SS]
 
 **Comentarios**:
 [Cualquier comentario del revisor]

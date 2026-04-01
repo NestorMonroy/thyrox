@@ -1,6 +1,6 @@
 ```yml
-Fecha inicio correcciones: [YYYY-MM-DD]
-Fecha fin correcciones: [YYYY-MM-DD]
+Fecha inicio correcciones: [YYYY-MM-DD-HH-MM-SS]
+Fecha fin correcciones: [YYYY-MM-DD-HH-MM-SS]
 Proyecto: [Nombre del proyecto]
 Versión reporte: [1.0]
 Responsable proceso: [Nombre]
@@ -433,7 +433,7 @@ make linkcheck
 
 ## Metadatos del Reporte
 
-**Documento creado**: [YYYY-MM-DD HH:MM]
+**Documento creado**: [YYYY-MM-DD-HH-MM-SS HH:MM]
 
 **Autor**: [Nombre]
 

@@ -6,8 +6,8 @@ Versión breakdown: [1.0]
 Creador tareas: [Nombre]
 Total tareas: [N]
 Dependencias críticas: [N]
-Fecha inicio prevista: [YYYY-MM-DD]
-Fecha fin prevista: [YYYY-MM-DD]
+Fecha inicio prevista: [YYYY-MM-DD-HH-MM-SS]
+Fecha fin prevista: [YYYY-MM-DD-HH-MM-SS]
 Responsable implementación: [Nombre/equipo]
 ```
 
@@ -27,8 +27,8 @@ Basado en: design.md
 
 Total de tareas: XX
 Estimacion total: YY horas
-Fecha inicio estimada: YYYY-MM-DD
-Fecha fin estimada: YYYY-MM-DD
+Fecha inicio estimada: YYYY-MM-DD-HH-MM-SS
+Fecha fin estimada: YYYY-MM-DD-HH-MM-SS
 
 ## Fases de Implementacion
 
@@ -361,11 +361,11 @@ Si surgen preguntas durante implementacion, documentar aqui:
 - [ ] Estimaciones validadas
 - [ ] Orden de ejecucion verificado
 - [ ] Aprobado por: [Nombre]
-- [ ] Fecha aprobacion: YYYY-MM-DD
+- [ ] Fecha aprobacion: YYYY-MM-DD-HH-MM-SS
 
 ## Historial de Cambios
 
 | Fecha | Cambios | Autor |
 |-------|---------|-------|
-| YYYY-MM-DD | Creacion inicial | [Nombre] |
-| YYYY-MM-DD | Ajuste TASK-005 | [Nombre] |
+| YYYY-MM-DD-HH-MM-SS | Creacion inicial | [Nombre] |
+| YYYY-MM-DD-HH-MM-SS | Ajuste TASK-005 | [Nombre] |

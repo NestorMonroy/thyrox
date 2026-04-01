@@ -1,5 +1,5 @@
 ```yml
-Fecha: [YYYY-MM-DD]
+Fecha: [YYYY-MM-DD-HH-MM-SS]
 Feature: [FEATURE_NAME]
 Epic: [context/epics/YYYY-MM-DD-nombre/]
 Iteración: [1/2]
@@ -75,4 +75,4 @@ Validar calidad de la especificación ANTES de descomponer en tasks. Si hay item
 
 ---
 
-**Última actualización:** [YYYY-MM-DD]
+**Última actualización:** [YYYY-MM-DD-HH-MM-SS]

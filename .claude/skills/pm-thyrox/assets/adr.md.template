@@ -4,7 +4,7 @@ Categoría: Decisión Técnica/Arquitectónica
 Versión: 1.0
 Propósito: Documentar decisión arquitectónica importante
 Objetivo: Registrar contexto, opciones, decisión y consecuencias
-Fecha actualización: YYYY-MM-DD
+Fecha actualización: YYYY-MM-DD-HH-MM-SS
 ```
 
 # ADR-NNN: [Título de la Decisión]
@@ -13,7 +13,7 @@ Fecha actualización: YYYY-MM-DD
 
 **ADR ID:** ADR-NNN<br>
 **Título:** [Título descriptivo de la decisión]<br>
-**Fecha:** YYYY-MM-DD<br>
+**Fecha:** YYYY-MM-DD-HH-MM-SS<br>
 **Status:** Propuesto | Aprobado | Deprecado | Reemplazado<br>
 **Owner:** [Nombre del responsable]<br>
 **Revisor:** [Nombre del revisor]
@@ -130,8 +130,8 @@ Para las consecuencias negativas:
 - [Sistema/Componente 3]
 
 **Esfuerzo de implementación:** [Bajo/Medio/Alto]<br>
-**Fecha planeada de implementación:** [YYYY-MM-DD]<br>
-**Fecha real de implementación:** [YYYY-MM-DD]
+**Fecha planeada de implementación:** [YYYY-MM-DD-HH-MM-SS]<br>
+**Fecha real de implementación:** [YYYY-MM-DD-HH-MM-SS]
 
 ---
 
@@ -165,8 +165,8 @@ Para las consecuencias negativas:
 
 | Versión | Fecha | Cambios | Autor |
 |---------|-------|---------|-------|
-| 1.0 | YYYY-MM-DD | Versión inicial | [Autor] |
-| 1.1 | YYYY-MM-DD | [Cambios] | [Autor] |
+| 1.0 | YYYY-MM-DD-HH-MM-SS | Versión inicial | [Autor] |
+| 1.1 | YYYY-MM-DD-HH-MM-SS | [Cambios] | [Autor] |
 
 ---
 
@@ -174,12 +174,12 @@ Para las consecuencias negativas:
 
 | Rol | Nombre | Fecha | Firma |
 |-----|--------|-------|-------|
-| Owner | [Nombre] | YYYY-MM-DD | ✓ |
-| Revisor | [Nombre] | YYYY-MM-DD | ✓ |
-| Aprobador | [Nombre] | YYYY-MM-DD | ✓ |
+| Owner | [Nombre] | YYYY-MM-DD-HH-MM-SS | ✓ |
+| Revisor | [Nombre] | YYYY-MM-DD-HH-MM-SS | ✓ |
+| Aprobador | [Nombre] | YYYY-MM-DD-HH-MM-SS | ✓ |
 
 ---
 
-**Última Actualización:** YYYY-MM-DD<br>
-**Próxima Revisión:** YYYY-MM-DD<br>
+**Última Actualización:** YYYY-MM-DD-HH-MM-SS<br>
+**Próxima Revisión:** YYYY-MM-DD-HH-MM-SS<br>
 **Archivado en:** [.claude/context/decisions/adr-NNN.md]

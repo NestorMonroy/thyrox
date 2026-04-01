@@ -4,7 +4,7 @@ Categoría: Requisitos de Sistema
 Versión: 1.0
 Propósito: Especificación técnica de requisitos del proyecto
 Objetivo: Traducir requisitos de análisis a especificaciones técnicas implementables
-Fecha actualización: YYYY-MM-DD
+Fecha actualización: YYYY-MM-DD-HH-MM-SS
 ```
 
 # Especificación de Requisitos Técnicos - [Proyecto]
@@ -138,12 +138,12 @@ SPEC-002 → SPEC-004
 
 | Rol | Nombre | Fecha | Firma |
 |-----|--------|-------|-------|
-| Arquitecto | [Nombre] | YYYY-MM-DD | ✓ |
-| Tech Lead | [Nombre] | YYYY-MM-DD | ✓ |
-| Product | [Nombre] | YYYY-MM-DD | ✓ |
+| Arquitecto | [Nombre] | YYYY-MM-DD-HH-MM-SS | ✓ |
+| Tech Lead | [Nombre] | YYYY-MM-DD-HH-MM-SS | ✓ |
+| Product | [Nombre] | YYYY-MM-DD-HH-MM-SS | ✓ |
 
 ---
 
 **Versión:** 1.0<br>
-**Última Actualización:** YYYY-MM-DD<br>
-**Próxima Revisión:** YYYY-MM-DD
+**Última Actualización:** YYYY-MM-DD-HH-MM-SS<br>
+**Próxima Revisión:** YYYY-MM-DD-HH-MM-SS

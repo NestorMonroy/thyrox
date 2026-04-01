@@ -1,8 +1,8 @@
 ```yml
 Proyecto: [Nombre del proyecto]
 Work package: [YYYY-MM-DD-HH-MM-SS-nombre]
-Fecha creación: [YYYY-MM-DD]
-Última actualización: [YYYY-MM-DD]
+Fecha creación: [YYYY-MM-DD-HH-MM-SS]
+Última actualización: [YYYY-MM-DD-HH-MM-SS]
 Fase actual: [Phase N — PHASE_NAME]
 Riesgos abiertos: [N]
 Riesgos mitigados: [N]
@@ -49,7 +49,7 @@ Registrar, priorizar y trackear los riesgos identificados durante el proyecto. U
 **Severidad**: [crítica / alta / media / baja]
 **Estado**: [abierto / mitigado / cerrado]
 **Fase de identificación**: [Phase N]
-**Última actualización**: [YYYY-MM-DD]
+**Última actualización**: [YYYY-MM-DD-HH-MM-SS]
 
 **Señales de alerta**
 
@@ -73,8 +73,8 @@ Registrar, priorizar y trackear los riesgos identificados durante el proyecto. U
 
 | Fecha | Fase | Cambio | Autor |
 |-------|------|--------|-------|
-| [YYYY-MM-DD] | Phase 1 | Identificado | [Nombre] |
-| [YYYY-MM-DD] | Phase 4 | Mitigación aplicada: [descripción] | [Nombre] |
+| [YYYY-MM-DD-HH-MM-SS] | Phase 1 | Identificado | [Nombre] |
+| [YYYY-MM-DD-HH-MM-SS] | Phase 4 | Mitigación aplicada: [descripción] | [Nombre] |
 
 ---
 
@@ -88,7 +88,7 @@ Registrar, priorizar y trackear los riesgos identificados durante el proyecto. U
 
 | ID | Descripción | Cómo se cerró | Fecha cierre |
 |----|-------------|---------------|-------------|
-| R-NNN | [Descripción] | [Mitigado / No ocurrió / Ocurrió y se resolvió con ERR-NNN] | [YYYY-MM-DD] |
+| R-NNN | [Descripción] | [Mitigado / No ocurrió / Ocurrió y se resolvió con ERR-NNN] | [YYYY-MM-DD-HH-MM-SS] |
 
 ---
 

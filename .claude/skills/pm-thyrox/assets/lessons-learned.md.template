@@ -1,6 +1,6 @@
 ```yml
 ID work package: [YYYY-MM-DD-HH-MM-SS-nombre]
-Fecha cierre: [YYYY-MM-DD]
+Fecha cierre: [YYYY-MM-DD-HH-MM-SS]
 Proyecto: [Nombre del proyecto]
 Fase de origen: [Phase N — PHASE_NAME]
 Total lecciones: [N]
