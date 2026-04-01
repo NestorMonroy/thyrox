@@ -36,14 +36,18 @@ Fecha actualización: 2026-03-28
     └── assets/             Templates de output
 ```
 
-## Flujo de sesión
+## Flujo de sesión — OBLIGATORIO
 
-**Todo trabajo pasa por el [SKILL](skills/pm-thyrox/SKILL.md)** — incluso un bug fix usa fases 1,2,6,7 (abreviadas para <2h).
+SIEMPRE seguir este flujo. NO omitir pasos.
 
-1. **Inicio** — Leer focus.md + now.md. Revisar ROADMAP.md.
-2. **Contexto** — Identificar fase actual del [SKILL](skills/pm-thyrox/SKILL.md). Si no hay fase, empezar por Phase 1: ANALYZE.
-3. **Trabajar** — Seguir la fase. Commits convencionales. Actualizar ROADMAP.md.
-4. **Cierre** — Actualizar focus.md + now.md.
+1. **Inicio** — Leer focus.md + now.md + ROADMAP.md.
+2. **Activar SKILL** — ANTES de responder cualquier tarea: invocar Skill tool → pm-thyrox.
+   Si el Skill tool no está disponible: leer [SKILL.md](skills/pm-thyrox/SKILL.md) completo y seguirlo paso a paso.
+3. **Identificar fase activa** — Revisar `context/work/`:
+   - Hay work package activo → continuar en la fase donde quedó.
+   - No hay work package → empezar Phase 1: ANALYZE.
+4. **Trabajar** — Seguir cada fase hasta su exit criteria. NO saltarse fases. Commits convencionales. Actualizar ROADMAP.md.
+5. **Cierre** — Actualizar focus.md + now.md.
 
 ## Para más contexto
 
