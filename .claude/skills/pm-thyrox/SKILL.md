@@ -212,6 +212,25 @@ Tareas:          [T-NNN] Descripción (R-N)
 Errores:         ERR-NNN-descripcion.md
 ```
 
+**Artefactos de work package — patrón `{nombre-wp}-{tipo}.md`:**
+
+```
+{nombre-wp} = parte descriptiva del WP (sin timestamp)
+{tipo}      = analysis | solution-strategy | requirements-spec |
+              task-plan | execution-log | lessons-learned | risk-register
+
+Ejemplo: WP "2026-04-02-10-00-00-pagos-stripe"
+  → analysis/pagos-stripe-analysis.md
+  → pagos-stripe-solution-strategy.md
+  → pagos-stripe-task-plan.md
+  → pagos-stripe-lessons-learned.md
+
+Excepción: CHANGELOG.md — nombre global, convención universal (Keep a Changelog)
+```
+
+> WPs anteriores a 2026-04-02 usan naming legacy (`spec.md`, `plan.md`, `lessons.md`).
+> No se migran. El patrón `{nombre-wp}-{tipo}.md` aplica a WPs nuevos.
+
 Ver [conventions](references/conventions.md) para detalles completos.
 
 ---

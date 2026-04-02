@@ -299,8 +299,8 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ### Formalización del patrón (D3 + D4)
 
-- [ ] [T-001] SKILL.md sección Naming — regla explícita del patrón {nombre-wp}-{tipo}.md (D3)
-- [ ] [T-002] SKILL.md — nota de compatibilidad WPs históricos (D4)
+- [x] [T-001] SKILL.md sección Naming — regla explícita del patrón {nombre-wp}-{tipo}.md (D3) — 2026-04-02
+- [x] [T-002] SKILL.md — nota de compatibilidad WPs históricos (D4) — 2026-04-02
 
 ---
 
