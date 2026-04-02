@@ -4,25 +4,25 @@
 # Retorna exit 0 si ready, exit 1 si falta algo.
 #
 # Uso:
-#   ./validate-phase-readiness.sh <phase-number> [epic-dir]
+#   ./validate-phase-readiness.sh <phase-number> [wp-dir]
 #   ./validate-phase-readiness.sh 2                          # ¿Listo para Phase 2?
-#   ./validate-phase-readiness.sh 5 context/epics/2026-03-28-feature/
+#   ./validate-phase-readiness.sh 5 context/work/2026-04-01-18-39-56-mi-feature/
 
 set -euo pipefail
 
 PHASE="${1:-}"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
-EPIC_DIR="${2:-}"
+WP_DIR="${2:-}"
 
 if [ -z "$PHASE" ]; then
-    echo "Usage: validate-phase-readiness.sh <phase-number> [epic-dir]"
+    echo "Usage: validate-phase-readiness.sh <phase-number> [wp-dir]"
     echo "Phases: 1=ANALYZE, 2=SOLUTION_STRATEGY, 3=PLAN, 4=STRUCTURE, 5=DECOMPOSE, 6=EXECUTE, 7=TRACK"
     exit 1
 fi
 
-# Auto-detect latest epic if not provided
-if [ -z "$EPIC_DIR" ]; then
-    EPIC_DIR=$(find "$REPO_ROOT/.claude/context/epics" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -r | head -1)
+# Auto-detect latest work package if not provided
+if [ -z "$WP_DIR" ]; then
+    WP_DIR=$(find "$REPO_ROOT/.claude/context/work" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -r | head -1)
 fi
 
 BOLD='\033[1m'
@@ -46,6 +46,38 @@ check() {
     fi
 }
 
+check_glob() {
+    local desc="$1"
+    local dir="$2"
+    local pattern="$3"
+
+    local match
+    match=$(find "$dir" -maxdepth 1 -name "$pattern" 2>/dev/null | head -1)
+    if [ -n "$match" ]; then
+        echo -e "  ${GREEN}✓${NC} $desc ($match)"
+        PASS=$((PASS + 1))
+    else
+        echo -e "  ${RED}✗${NC} $desc — ${RED}no file matching '$pattern' in $dir${NC}"
+        FAIL=$((FAIL + 1))
+    fi
+}
+
+check_no_pattern() {
+    local desc="$1"
+    local dir="$2"
+    local pattern="$3"
+
+    if grep -qlr "$pattern" "$dir" 2>/dev/null; then
+        local count
+        count=$(grep -rl "$pattern" "$dir" 2>/dev/null | wc -l | tr -d ' ')
+        echo -e "  ${RED}✗${NC} $desc — ${RED}$count files with '$pattern'${NC}"
+        FAIL=$((FAIL + 1))
+    else
+        echo -e "  ${GREEN}✓${NC} $desc"
+        PASS=$((PASS + 1))
+    fi
+}
+
 check_content() {
     local desc="$1"
     local path="$2"
@@ -62,100 +94,106 @@ check_content() {
 
 PHASE_NAMES=("" "ANALYZE" "SOLUTION_STRATEGY" "PLAN" "STRUCTURE" "DECOMPOSE" "EXECUTE" "TRACK")
 echo -e "${BOLD}Checking readiness for Phase $PHASE: ${PHASE_NAMES[$PHASE]}${NC}"
-echo -e "Epic dir: ${EPIC_DIR:-none detected}"
+echo -e "Work package: ${WP_DIR:-none detected}"
 echo ""
 
 case "$PHASE" in
     1)
-        echo "Phase 1: ANALYZE requires constitution + 8 analysis documents"
-        check "constitution.md" "$REPO_ROOT/.claude/context/constitution.md"
-        if [ -n "$EPIC_DIR" ]; then
-            check "introduction.md" "$EPIC_DIR/introduction.md"
-            check "requirements-analysis.md" "$EPIC_DIR/requirements-analysis.md"
-            check "use-cases.md" "$EPIC_DIR/use-cases.md"
-            check "quality-goals.md" "$EPIC_DIR/quality-goals.md"
-            check "stakeholders.md" "$EPIC_DIR/stakeholders.md"
-            check "basic-usage.md" "$EPIC_DIR/basic-usage.md"
-            check "constraints.md" "$EPIC_DIR/constraints.md"
-            check "context.md" "$EPIC_DIR/context.md"
+        echo "Phase 1: ANALYZE — analysis document + risk register"
+        if [ -n "$WP_DIR" ]; then
+            check_glob "*-analysis.md" "$WP_DIR/analysis" "*-analysis.md"
+            check_glob "*-risk-register.md" "$WP_DIR" "*-risk-register.md"
+            if [ -d "$WP_DIR/analysis" ]; then
+                check_no_pattern "No [NEEDS CLARIFICATION] in analysis" "$WP_DIR/analysis" "\[NEEDS CLARIFICATION\]"
+            fi
         else
-            echo -e "  ${RED}✗${NC} No epic directory found"
-            FAIL=$((FAIL + 8))
+            echo -e "  ${RED}✗${NC} No work package directory found in context/work/"
+            FAIL=$((FAIL + 3))
         fi
         ;;
     2)
-        echo "Phase 2: SOLUTION_STRATEGY requires solution-strategy with research"
-        if [ -n "$EPIC_DIR" ]; then
-            check "solution-strategy.md" "$EPIC_DIR/solution-strategy.md"
-            check_content "Research Step documented" "$EPIC_DIR/solution-strategy.md" "research\|alternatives\|unknown"
-            check_content "Constitution check done" "$EPIC_DIR/solution-strategy.md" "constitution\|principles"
+        echo "Phase 2: SOLUTION_STRATEGY — solution strategy with research"
+        if [ -n "$WP_DIR" ]; then
+            check_glob "*-solution-strategy.md" "$WP_DIR" "*-solution-strategy.md"
+            local_file=$(find "$WP_DIR" -maxdepth 1 -name "*-solution-strategy.md" 2>/dev/null | head -1)
+            if [ -n "$local_file" ]; then
+                check_content "Research documented" "$local_file" "research\|alternatives\|unknown\|alternativ"
+                check_content "Decisions documented" "$local_file" "decision\|Decision"
+            fi
         else
-            echo -e "  ${RED}✗${NC} No epic directory found"
+            echo -e "  ${RED}✗${NC} No work package directory found"
             FAIL=$((FAIL + 3))
         fi
         ;;
     3)
-        echo "Phase 3: PLAN requires ROADMAP updated + epic created"
+        echo "Phase 3: PLAN — ROADMAP updated with work package"
         check "ROADMAP.md" "$REPO_ROOT/ROADMAP.md"
-        check_content "ROADMAP has current epic" "$REPO_ROOT/ROADMAP.md" "Epic:"
-        if [ -n "$EPIC_DIR" ]; then
-            check "Epic directory exists" "$EPIC_DIR"
+        if [ -n "$WP_DIR" ]; then
+            WP_NAME=$(basename "$WP_DIR")
+            check_content "ROADMAP references work package" "$REPO_ROOT/ROADMAP.md" "$WP_NAME"
         else
-            echo -e "  ${RED}✗${NC} No epic directory found"
+            echo -e "  ${RED}✗${NC} No work package directory found"
             FAIL=$((FAIL + 1))
         fi
         ;;
     4)
-        echo "Phase 4: STRUCTURE requires spec + checklist passed"
-        if [ -n "$EPIC_DIR" ]; then
-            check "structure.md or epic.md" "$EPIC_DIR/structure.md"
-            # Check for [NEEDS CLARIFICATION] in any md file
-            NC_COUNT=$(grep -rl "\[NEEDS CLARIFICATION" "$EPIC_DIR"/*.md 2>/dev/null | wc -l || echo 0)
-            if [ "$NC_COUNT" -eq 0 ]; then
-                echo -e "  ${GREEN}✓${NC} Zero [NEEDS CLARIFICATION] markers"
-                PASS=$((PASS + 1))
-            else
-                echo -e "  ${RED}✗${NC} $NC_COUNT files with [NEEDS CLARIFICATION] markers"
-                FAIL=$((FAIL + 1))
-            fi
+        echo "Phase 4: STRUCTURE — requirements spec without [NEEDS CLARIFICATION]"
+        if [ -n "$WP_DIR" ]; then
+            check_glob "*-requirements-spec.md" "$WP_DIR" "*-requirements-spec.md"
+            check_no_pattern "No [NEEDS CLARIFICATION] markers" "$WP_DIR" "\[NEEDS CLARIFICATION\]"
         else
-            echo -e "  ${RED}✗${NC} No epic directory found"
+            echo -e "  ${RED}✗${NC} No work package directory found"
             FAIL=$((FAIL + 2))
         fi
         ;;
     5)
-        echo "Phase 5: DECOMPOSE requires tasks.md with IDs"
-        if [ -n "$EPIC_DIR" ]; then
-            check "tasks.md" "$EPIC_DIR/tasks.md"
-            check_content "Tasks have IDs" "$EPIC_DIR/tasks.md" "T-\|TASK-\|\[T"
+        echo "Phase 5: DECOMPOSE — task plan with IDs and checkboxes"
+        if [ -n "$WP_DIR" ]; then
+            check_glob "*-task-plan.md" "$WP_DIR" "*-task-plan.md"
+            local_file=$(find "$WP_DIR" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
+            if [ -n "$local_file" ]; then
+                check_content "Tasks have IDs [T-NNN]" "$local_file" "\[T-[0-9]"
+                check_content "Tasks have checkboxes" "$local_file" "^\- \["
+            fi
         else
-            echo -e "  ${RED}✗${NC} No epic directory found"
-            FAIL=$((FAIL + 2))
+            echo -e "  ${RED}✗${NC} No work package directory found"
+            FAIL=$((FAIL + 3))
         fi
         ;;
     6)
-        echo "Phase 6: EXECUTE requires tasks completed"
-        if [ -n "$EPIC_DIR" ] && [ -e "$EPIC_DIR/tasks.md" ]; then
-            TOTAL=$(grep -c "^\- \[" "$EPIC_DIR/tasks.md" 2>/dev/null || echo 0)
-            DONE=$(grep -c "^\- \[x\]" "$EPIC_DIR/tasks.md" 2>/dev/null || echo 0)
-            if [ "$TOTAL" -gt 0 ] && [ "$TOTAL" -eq "$DONE" ]; then
-                echo -e "  ${GREEN}✓${NC} All tasks complete ($DONE/$TOTAL)"
-                PASS=$((PASS + 1))
+        echo "Phase 6: EXECUTE — all tasks completed"
+        if [ -n "$WP_DIR" ]; then
+            local_file=$(find "$WP_DIR" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
+            if [ -n "$local_file" ]; then
+                TOTAL=$(grep -c '^\- \[' "$local_file" 2>/dev/null || echo 0)
+                DONE=$(grep -c '^\- \[x\]' "$local_file" 2>/dev/null || echo 0)
+                if [ "$TOTAL" -gt 0 ] && [ "$TOTAL" -eq "$DONE" ]; then
+                    echo -e "  ${GREEN}✓${NC} All tasks complete ($DONE/$TOTAL)"
+                    PASS=$((PASS + 1))
+                else
+                    echo -e "  ${RED}✗${NC} Tasks incomplete ($DONE/$TOTAL)"
+                    FAIL=$((FAIL + 1))
+                fi
             else
-                echo -e "  ${RED}✗${NC} Tasks incomplete ($DONE/$TOTAL)"
+                echo -e "  ${RED}✗${NC} No *-task-plan.md found in $WP_DIR"
                 FAIL=$((FAIL + 1))
             fi
         else
-            echo -e "  ${RED}✗${NC} No tasks.md found"
+            echo -e "  ${RED}✗${NC} No work package directory found"
             FAIL=$((FAIL + 1))
         fi
-        check_content "ROADMAP updated" "$REPO_ROOT/ROADMAP.md" "\[x\]"
+        check_content "ROADMAP has completed tasks" "$REPO_ROOT/ROADMAP.md" "\[x\]"
         ;;
     7)
-        echo "Phase 7: TRACK requires ROADMAP + CHANGELOG updated"
-        check "ROADMAP.md" "$REPO_ROOT/ROADMAP.md"
+        echo "Phase 7: TRACK — lessons learned + changelog"
+        if [ -n "$WP_DIR" ]; then
+            check_glob "*-lessons-learned.md" "$WP_DIR" "*-lessons-learned.md"
+        else
+            echo -e "  ${RED}✗${NC} No work package directory found"
+            FAIL=$((FAIL + 1))
+        fi
         check "CHANGELOG.md" "$REPO_ROOT/CHANGELOG.md"
-        check_content "CHANGELOG has current version" "$REPO_ROOT/CHANGELOG.md" "0\.\|1\.\|2\."
+        check_content "CHANGELOG has version entry" "$REPO_ROOT/CHANGELOG.md" "## \[0\.\|## \[1\.\|## \[2\."
         ;;
     *)
         echo "Invalid phase: $PHASE (use 1-7)"

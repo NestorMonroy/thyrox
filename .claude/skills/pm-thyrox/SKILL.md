@@ -42,8 +42,10 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
    — el nombre del archivo debe revelar QUÉ se analiza. Ejemplo: `skill-activation-analysis.md`, no `introduction.md`
 4. REQUERIDO: Crear `work/../{nombre-wp}-risk-register.md` usando [risk-register.md.template](assets/risk-register.md.template) — identificar riesgos desde el inicio. Actualizar en cada fase.
 5. Si el análisis es complejo, crear sub-documentos en `work/.../analysis/` según necesidad:
-   [stakeholders.md.template](assets/stakeholders.md.template) · [requirements-analysis.md.template](assets/requirements-analysis.md.template) · [use-cases.md.template](assets/use-cases.md.template) · [quality-goals.md.template](assets/quality-goals.md.template) · [constraints.md.template](assets/constraints.md.template) · [context.md.template](assets/context.md.template)
-6. Si hay decisión arquitectónica (cambio de stack tecnológico, adopción de patrón nuevo como microservicios o event-driven, o reemplazo de componente principal), crear ADR en `context/decisions/` usando [adr.md.template](assets/adr.md.template)
+   [stakeholders.md.template](assets/stakeholders.md.template) · [requirements-analysis.md.template](assets/requirements-analysis.md.template) · [use-cases.md.template](assets/use-cases.md.template) · [quality-goals.md.template](assets/quality-goals.md.template) · [constraints.md.template](assets/constraints.md.template) · [context.md.template](assets/context.md.template) · [basic-usage.md.template](assets/basic-usage.md.template)
+6. Para proyectos medianos/grandes: Crear `work/../{nombre-wp}-exit-conditions.md` usando [exit-conditions.md.template](assets/exit-conditions.md.template) — checklist vivo de gates para las 7 fases. Actualizar al cerrar cada fase.
+7. Si el proyecto define principios arquitectónicos globales que otras features deben respetar, crear/actualizar `constitution.md` en la raíz usando [constitution.md.template](assets/constitution.md.template)
+8. Si hay decisión arquitectónica (cambio de stack tecnológico, adopción de patrón nuevo como microservicios o event-driven, o reemplazo de componente principal), crear ADR en `context/decisions/` usando [adr.md.template](assets/adr.md.template)
 
 Referencias de análisis por subsección (leer según necesidad):
 [introduction](references/introduction.md) · [requirements-analysis](references/requirements-analysis.md) · [use-cases](references/use-cases.md) · [quality-goals](references/quality-goals.md) · [stakeholders](references/stakeholders.md) · [basic-usage](references/basic-usage.md) · [constraints](references/constraints.md) · [context](references/context.md)
@@ -90,7 +92,7 @@ Especificar antes de descomponer previene ambigüedad en las tareas.
 
 **Simple** (<10 tareas): Crear `work/../{nombre-wp}-requirements-spec.md` usando [requirements-specification.md.template](assets/requirements-specification.md.template) con overview, user stories, acceptance criteria.
    — Ejemplo: `skill-activation-requirements-spec.md`, no `requirements-spec.md`
-**Complejo** (10+ tareas): Ver [spec-driven-development](references/spec-driven-development.md).
+**Complejo** (10+ tareas): Ver [spec-driven-development](references/spec-driven-development.md). Además, crear `work/../{nombre-wp}-design.md` usando [design.md.template](assets/design.md.template) — visión arquitectónica, componentes afectados, decisiones de diseño.
 
 REQUERIDO: Completar [spec-quality-checklist.md.template](assets/spec-quality-checklist.md.template) ANTES de Phase 5. NO avanzar si quedan ítems sin ✓ o marcadores `[NEEDS CLARIFICATION]` sin resolver — la ambigüedad en specs se multiplica en la implementación.
 
@@ -143,6 +145,7 @@ Documentar lecciones previene repetir los mismos errores.
   — Ejemplo: `skill-activation-lessons-learned.md`, no `lessons-learned.md`
 - REQUERIDO: Generar `CHANGELOG.md` desde commits usando [changelog.md.template](assets/changelog.md.template)
 - Actualizar `work/.../risk-register.md`: cerrar riesgos resueltos, documentar los que se materializaron
+- Para proyectos grandes o con métricas relevantes: crear `work/../{nombre-wp}-final-report.md` usando [final-report.md.template](assets/final-report.md.template) — resumen ejecutivo, estimado vs real, métricas
 - Si hay 100+ issues: ver [incremental-correction](references/incremental-correction.md)
 - Validar integridad: ver [reference-validation](references/reference-validation.md)
 - Gate soft antes de avanzar de fase: `bash scripts/validate-phase-readiness.sh <phase>`
@@ -160,18 +163,21 @@ Documentar lecciones previene repetir los mismos errores.
 |------|-----------|-----------|----------|
 | 1 | Síntesis de análisis | `work/.../analysis/{nombre-wp}-analysis.md` | [introduction.md.template](assets/introduction.md.template) |
 | 1 | Registro de riesgos | `work/../{nombre-wp}-risk-register.md` | [risk-register.md.template](assets/risk-register.md.template) |
-| 1 | Sub-análisis (opcional) | `work/.../analysis/*.md` | stakeholders, requirements-analysis, use-cases, quality-goals, constraints, context |
+| 1 | Sub-análisis (opcional) | `work/.../analysis/*.md` | stakeholders, requirements-analysis, use-cases, quality-goals, constraints, context, basic-usage |
+| 1 | Gates de 7 fases (mediano/grande) | `work/../{nombre-wp}-exit-conditions.md` | [exit-conditions.md.template](assets/exit-conditions.md.template) |
+| 1 | Principios globales del proyecto | `constitution.md` (raíz) | [constitution.md.template](assets/constitution.md.template) |
 | 1–2 | Decisiones arquitectónicas | `context/decisions/adr-NNN.md` | [adr.md.template](assets/adr.md.template) |
 | 1 | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` | — |
 | 2 | Estrategia de solución | `work/../{nombre-wp}-solution-strategy.md` | [solution-strategy.md.template](assets/solution-strategy.md.template) |
 | 4 | Especificación de requisitos | `work/../{nombre-wp}-requirements-spec.md` | [requirements-specification.md.template](assets/requirements-specification.md.template) |
+| 4 | Diseño técnico (complejo) | `work/../{nombre-wp}-design.md` | [design.md.template](assets/design.md.template) |
 | 5 | Plan de tareas | `work/../{nombre-wp}-task-plan.md` | [tasks.md.template](assets/tasks.md.template) |
 | 6 | Log de ejecución | `work/../{nombre-wp}-execution-log.md` | [execution-log.md.template](assets/execution-log.md.template) |
 | 6 | Código | Repositorio (git) | — |
 | 7 | Lecciones aprendidas | `work/../{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](assets/lessons-learned.md.template) |
 | 7 | Changelog | `CHANGELOG.md` | [changelog.md.template](assets/changelog.md.template) |
+| 7 | Reporte final (grande) | `work/../{nombre-wp}-final-report.md` | [final-report.md.template](assets/final-report.md.template) |
 | — | Errores | `context/errors/ERR-NNN-descripcion.md` | [error-report.md.template](assets/error-report.md.template) |
-| — | Principios inmutables | `constitution.md` | [constitution.md.template](assets/constitution.md.template) |
 
 ## Estructura de un work package
 
@@ -181,11 +187,14 @@ context/work/YYYY-MM-DD-HH-MM-SS-nombre/
 │   ├── {nombre}-analysis.md          ← Síntesis del análisis (Phase 1) — REQUERIDO
 │   └── {nombre}-{subtema}.md         ← Sub-análisis opcionales (stakeholders, constraints, etc.)
 ├── {nombre}-risk-register.md         ← Riesgos vivos Phase 1→6 — REQUERIDO
+├── {nombre}-exit-conditions.md       ← Gates de las 7 fases (Phase 1, mediano/grande)
 ├── {nombre}-solution-strategy.md     ← Estrategia arquitectónica (Phase 2)
 ├── {nombre}-requirements-spec.md     ← Especificación de requisitos (Phase 4)
+├── {nombre}-design.md                ← Diseño técnico (Phase 4, complejo)
 ├── {nombre}-task-plan.md             ← Tareas con checkboxes (Phase 5) — REQUERIDO
 ├── {nombre}-execution-log.md         ← Log de sesiones de ejecución (Phase 6)
-└── {nombre}-lessons-learned.md       ← Lecciones aprendidas (Phase 7) — REQUERIDO
+├── {nombre}-lessons-learned.md       ← Lecciones aprendidas (Phase 7) — REQUERIDO
+└── {nombre}-final-report.md          ← Reporte final con métricas (Phase 7, grande)
 ```
 
 **Convención de nombres — OBLIGATORIO:**
@@ -216,8 +225,9 @@ Errores:         ERR-NNN-descripcion.md
 
 ```
 {nombre-wp} = parte descriptiva del WP (sin timestamp)
-{tipo}      = analysis | solution-strategy | requirements-spec |
-              task-plan | execution-log | lessons-learned | risk-register
+{tipo}      = analysis | solution-strategy | requirements-spec | design |
+              task-plan | execution-log | lessons-learned | risk-register |
+              exit-conditions | final-report
 
 Ejemplo: WP "2026-04-02-10-00-00-pagos-stripe"
   → analysis/pagos-stripe-analysis.md

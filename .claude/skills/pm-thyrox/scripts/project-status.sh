@@ -41,12 +41,11 @@ echo ""
 if [ -f "${CONTEXT_DIR}/now.md" ]; then
     CURRENT_WORK=$(grep "^current_work:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/current_work: *//' || echo "null")
     if [ "$CURRENT_WORK" != "null" ] && [ -n "$CURRENT_WORK" ]; then
-        PLAN_FILE="${CONTEXT_DIR}/${CURRENT_WORK}plan.md"
-        TASKS_FILE="${CONTEXT_DIR}/${CURRENT_WORK}tasks.md"
-
-        TARGET=""
-        [ -f "$PLAN_FILE" ] && TARGET="$PLAN_FILE"
-        [ -f "$TASKS_FILE" ] && TARGET="$TASKS_FILE"
+        WP_DIR="${CONTEXT_DIR}/${CURRENT_WORK}"
+        # New naming: *-task-plan.md; legacy fallback: tasks.md / plan.md
+        TARGET=$(find "$WP_DIR" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
+        [ -z "$TARGET" ] && [ -f "${WP_DIR}tasks.md" ] && TARGET="${WP_DIR}tasks.md"
+        [ -z "$TARGET" ] && [ -f "${WP_DIR}plan.md" ] && TARGET="${WP_DIR}plan.md"
 
         if [ -n "$TARGET" ]; then
             TOTAL=$(grep -c '^\- \[' "$TARGET" 2>/dev/null || echo 0)
