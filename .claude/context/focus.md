@@ -42,6 +42,15 @@ Versión: 1.0
 - Consistencia: 3 assets renombrados, decisions/ limpiado en setup, SKILL unavoidable
 - 6 lecciones (L-019 a L-024)
 
+## Completado sesión 5
+
+- WP template-phase-integration completado (7 fases)
+- Contrato fase→template→output formalizado en SKILL.md (19 refs, todas válidas)
+- Naming: patrón {nombre-wp}-{tipo}.md + nota WPs legacy
+- 3 templates nuevos: lessons-learned, changelog, risk-register
+- CHANGELOG.md actualizado a v0.4.0
+- Deuda técnica: T-DT-001 examples.md (baja prioridad)
+
 ## Completado sesión 4
 
 - SKILL activation failure investigado y resuelto (WP: 2026-04-01-18-39-56-skill-activation-failure)

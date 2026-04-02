@@ -2,11 +2,11 @@
 Proyecto: thyrox / pm-thyrox SKILL
 Work package: 2026-04-01-22-15-43-template-phase-integration
 Fecha creación: 2026-04-01-22-15-43
-Última actualización: 2026-04-01-22-15-43
-Fase actual: Phase 1 — ANALYZE
-Riesgos abiertos: 3
+Última actualización: 2026-04-02-00-00-00
+Fase actual: Phase 7 — TRACK
+Riesgos abiertos: 0
 Riesgos mitigados: 0
-Riesgos cerrados: 0
+Riesgos cerrados: 3
 Autor: Claude
 ```
 
@@ -16,9 +16,9 @@ Autor: Claude
 
 | ID | Descripción | Probabilidad | Impacto | Severidad | Estado | Dueño |
 |----|-------------|:------------:|:-------:|:---------:|--------|-------|
-| R-001 | Links en SKILL.md apuntan a templates inexistentes | media | alto | alta | abierto | Claude |
-| R-002 | Nuevos output filenames rompen detección de fases en WPs históricos | alta | medio | alta | abierto | Claude |
-| R-003 | Templates nuevos no siguen convenciones del proyecto | baja | medio | baja | abierto | Claude |
+| R-001 | Links en SKILL.md apuntan a templates inexistentes | media | alto | alta | cerrado | Claude |
+| R-002 | Nuevos output filenames rompen detección de fases en WPs históricos | alta | medio | alta | cerrado | Claude |
+| R-003 | Templates nuevos no siguen convenciones del proyecto | baja | medio | baja | cerrado | Claude |
 
 ---
 
@@ -107,7 +107,11 @@ las convenciones formales del proyecto.
 
 ## Riesgos cerrados
 
-*(ninguno aún)*
+| ID | Descripción | Cómo se cerró | Fecha cierre |
+|----|-------------|---------------|-------------|
+| R-001 | Links en SKILL.md apuntan a templates inexistentes | Verificación Phase 2: 19/19 válidos | 2026-04-02-00-00-00 |
+| R-002 | Naming nuevo rompe detección WPs históricos | D4: nota legacy en sección Naming de SKILL.md | 2026-04-02-00-00-00 |
+| R-003 | Templates nuevos fuera de convención | Verificación Phase 2: estructura consistente con maduros | 2026-04-02-00-00-00 |
 
 ---
 
@@ -116,5 +120,5 @@ las convenciones formales del proyecto.
 - [x] Riesgos identificados en Phase 1 antes de planificar
 - [x] Cada riesgo tiene señales de alerta definidas
 - [x] Cada riesgo tiene plan de contingencia
-- [ ] Registro actualizado al final de cada fase
-- [ ] Riesgos materializados referenciados en `context/errors/ERR-NNN.md`
+- [x] Registro actualizado al final de cada fase
+- [x] Ningún riesgo se materializó — no se generaron ERR-NNN

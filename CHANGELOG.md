@@ -13,6 +13,29 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.4.0] - 2026-04-02
+
+### Added
+- 3 templates nuevos desde perspectiva PM: `lessons-learned.md.template`, `changelog.md.template`, `risk-register.md.template`
+- `session-start.sh` — SessionStart hook con detección de WP activo y fase actual
+- `.claude/settings.json` — configuración de hook SessionStart
+- Sección Naming en SKILL.md: patrón `{nombre-wp}-{tipo}.md` con Reveal Intent
+
+### Changed
+- CLAUDE.md: flujo de sesión reescrito como OBLIGATORIO con triple-layer activation
+- SKILL.md: contrato fase→template→output para las 7 fases (19 referencias validadas)
+- SKILL.md: output filenames con Reveal Intent — patrón `{nombre-wp}-{tipo}.md`
+- SKILL.md: detección de fases via glob `*-{tipo}.md` (compatible con naming por WP)
+- SKILL.md: escalabilidad con tabla explícita micro/pequeño/mediano/grande
+- Todos los templates (19 archivos): timestamps estandarizados a `YYYY-MM-DD-HH-MM-SS`
+
+### Fixed
+- SKILL.md Phase 1–6: gates con lenguaje Baja Libertad (REQUERIDO/NO avanzar/SIEMPRE)
+- SKILL.md Phase 6: numeración de pasos sin duplicados, fuente de tareas explícita
+- WPs históricos: documentados como legacy — no requieren migración
+
+---
+
 ## [0.2.0] - 2026-03-27
 
 ### Added
