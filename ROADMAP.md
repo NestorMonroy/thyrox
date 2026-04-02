@@ -277,6 +277,33 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## FASE 6: Integración de templates por fase (Reveal Intent + contrato fase→template→output)
+
+**Work package:** context/work/2026-04-01-22-15-43-template-phase-integration/
+
+### Templates faltantes (PM perspective)
+
+- [x] lessons-learned.md.template — Phase 7 — 2026-04-01
+- [x] changelog.md.template — Phase 7 — 2026-04-01
+- [x] risk-register.md.template — Phase 1 — 2026-04-01
+
+### SKILL.md — contrato fase→template→output
+
+- [x] Referenciar templates existentes por fase (Phase 2, 4, 5, 6, 7) — 2026-04-01
+- [x] Reveal Intent en output filenames: patrón {nombre-wp}-{tipo}.md — 2026-04-01
+- [x] Detección de fases via glob *-{tipo}.md — 2026-04-01
+
+### Templates — estandarización
+
+- [x] Timestamps YYYY-MM-DD-HH-MM-SS en todos los templates (19 archivos) — 2026-04-01
+
+### Formalización del patrón (D3 + D4)
+
+- [ ] [T-001] SKILL.md sección Naming — regla explícita del patrón {nombre-wp}-{tipo}.md (D3)
+- [ ] [T-002] SKILL.md — nota de compatibilidad WPs históricos (D4)
+
+---
+
 ## Métricas de Progreso
 
 ```
