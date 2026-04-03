@@ -406,6 +406,60 @@ Phase 6 EXECUTE para el mismo proyecto:
 **La composición:** pm-thyrox es el director. Los tech skills son los expertos.
 En cada fase, pm-thyrox invoca los tech skills relevantes para la capa que se está trabajando.
 
+### H-020: Tech skills como artefactos persistentes — bootstrap once, use forever
+
+**El punto clave que cambia la arquitectura:**
+
+La detección y generación de tech skills **NO ocurre en cada sesión**.
+Ocurre **una sola vez** (bootstrap) y el resultado vive en git permanentemente.
+
+```
+SESIÓN 1 — Bootstrap (solo si no existen tech skills):
+  /workflow_init → tech-detector → skill-generator
+  → crea .claude/skills/react-frontend/SKILL.md
+  → crea .claude/guidelines/react.instructions.md
+  → git commit "feat(skills): bootstrap React + Node + Postgres skills"
+  → FIN. Ya no se vuelve a detectar.
+
+SESIÓN 2, 3, N — Normal:
+  session-start.sh detecta que .claude/skills/react-frontend/ existe
+  → lo menciona en el startup: "Tech skills activos: react-frontend, nodejs-backend"
+  → Claude los usa automáticamente
+  → ZERO re-detección
+```
+
+**Por qué esto es correcto:**  
+Alinea con nuestro ADR-008 — **Git as persistence**. Los skills generados
+son archivos en git. La "memoria" del stack tecnológico ES el filesystem.
+No hay diferencia entre un skill generado y uno escrito a mano — ambos
+son archivos `.md` commiteados.
+
+**Cuándo SÍ se re-ejecuta detección:**
+- Usuario agrega una tech nueva explícitamente (`/workflow_add_tech vue`)
+- Usuario hace refactor del stack (`/workflow_update_stack`)
+- El proyecto cambia (detect stale: tech en `.claude/skills/` ya no existe en el proyecto)
+
+**Implicación para session-start.sh:**  
+El hook ya conoce el WP activo desde `now.md`. También debería listar
+los tech skills activos desde `.claude/skills/` para que Claude sepa
+qué contexto tech-específico aplicar en la sesión.
+
+```bash
+# En session-start.sh — nuevo bloque:
+TECH_SKILLS=$(find .claude/skills -mindepth 1 -maxdepth 1 -type d \
+  ! -name "pm-thyrox" 2>/dev/null | xargs -I{} basename {} | tr '\n' ', ')
+if [ -n "$TECH_SKILLS" ]; then
+  echo "Tech skills activos: $TECH_SKILLS"
+fi
+```
+
+**Implicación para ADR-004 (Single skill):**  
+ADR-004 dice "Un pm-thyrox, no 15 skills separados". Esto no se viola porque:
+- pm-thyrox sigue siendo el único **skill de gestión** (Phase 1-7)
+- Los tech skills son una **categoría nueva**: skills de tecnología, no de gestión
+- La distinción: pm-thyrox dice QUÉ hacer en cada fase; tech skills dicen CÓMO hacerlo en esa tech
+- ADR-004 necesita actualizarse para reconocer las dos categorías
+
 ---
 
 ## Lo que NO se adapta (BC-specific)
@@ -456,15 +510,30 @@ Pero la visión que el usuario describe va más lejos: un **meta-framework gener
 - Volt Factory: pipeline estático para BC/AL
 - Nuestro objetivo: framework que se **auto-configura** para cualquier stack
 
-**Cómo se materializaría:**
-1. Usuario inicia proyecto con `/workflow_01_analyze`
-2. Phase 1 ANALYZE incluye Tech Detection (scan de archivos del proyecto)
-3. Tech Detector identifica: React 18, Node.js, PostgreSQL
-4. Skill Generator crea: `skills/react-frontend/`, `skills/nodejs-backend/`, `skills/postgresql/`
-5. Guidelines Generator crea: `guidelines/react.instructions.md`, `guidelines/nodejs.instructions.md`
-6. Desde ese momento, **cada sesión** tiene contexto tech-específico automático
-7. En Phase 4, los tech skills enriquecen el requirements-spec con detalles específicos
-8. En Phase 6, las instructions enforcan las convenciones sin que el usuario las pida
+**Ciclo de vida correcto (H-020):**
+
+```
+BOOTSTRAP (una sola vez, la primera vez):
+  Usuario: "proyecto React + Node + Postgres"
+  → /workflow_init o Phase 1 ANALYZE detecta que no hay tech skills
+  → tech-detector escanea el proyecto
+  → skill-generator crea los skills + guidelines
+  → git commit → quedan como artefactos permanentes del proyecto
+
+CADA SESIÓN (sin detección):
+  session-start.sh:
+  → WP activo: voltfactory-adaptation (desde now.md)
+  → Tech skills activos: react-frontend, nodejs-backend, postgresql (desde .claude/skills/)
+  → Claude aplica sus convenciones automáticamente
+
+CAMBIO DE STACK (explícito):
+  → /workflow_add_tech vue  ← agrega nuevo skill
+  → /workflow_update_stack  ← re-detecta cambios
+```
+
+**En Phase 4, los tech skills enriquecen el requirements-spec automáticamente.
+En Phase 6, las instructions enforcan las convenciones sin que el usuario las pida.
+Sin re-detección. Sin re-generación. El filesystem ES la memoria.**
 
 **Lo que PM-THYROX aporta que Volt Factory no tiene:**
 - Tecnología-agnóstico (funciona con cualquier stack)
