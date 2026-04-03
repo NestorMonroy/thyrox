@@ -192,8 +192,8 @@ color: cyan
 ---
 ```
 Y dentro del agente: secciones **CAN / CANNOT** que definen límites exactos:
-- ✅ CAN: Leer specs técnicas, implementar AL, invocar sub-agentes
-- ❌ CANNOT: Compilar directamente, crear diseños técnicos, correr tests  
+- CAN: Leer specs técnicas, implementar AL, invocar sub-agentes
+- CANNOT: Compilar directamente, crear diseños técnicos, correr tests  
 
 **PM-THYROX actual:** El skill no tiene frontmatter de agente, no tiene CAN/CANNOT.  
 **Adaptable:** ALTO — Cuando creemos skills de tech-layer, usar este formato exacto.
@@ -363,8 +363,8 @@ I will launch bc-business-research to:
 - 30-50 features
 
 Success Criteria:
-- ✅ Research docs in factory/1research/[Feature]/
-- ✅ 5,000+ words per feature
+- Research docs in factory/1research/[Feature]/
+- 5,000+ words per feature
 
 Next Stage: /workflow_02_functional_design
 ```
