@@ -177,6 +177,237 @@ para convenciones críticas que deben aplicarse siempre (naming, commits, WP str
 
 ---
 
+## Hallazgos Profundizados — Lectura de archivos reales
+
+### H-013: Agent frontmatter como contrato de capacidades
+
+**Volt Factory:** Cada agente tiene YAML frontmatter nativo de Claude Code:
+```yaml
+---
+name: bc-al-developer
+description: Use this agent when... <example>...</example>
+tools: Bash, Glob, Read, Edit, mcp__objid__allocate_id, ...  ← lista explícita
+model: sonnet
+color: cyan
+---
+```
+Y dentro del agente: secciones **CAN / CANNOT** que definen límites exactos:
+- ✅ CAN: Leer specs técnicas, implementar AL, invocar sub-agentes
+- ❌ CANNOT: Compilar directamente, crear diseños técnicos, correr tests  
+
+**PM-THYROX actual:** El skill no tiene frontmatter de agente, no tiene CAN/CANNOT.  
+**Adaptable:** ALTO — Cuando creemos skills de tech-layer, usar este formato exacto.
+La descripción con `<example>` tags es clave: Claude Code usa eso para decidir cuándo invocar el agente automáticamente.
+
+### H-014: LA VISIÓN CENTRAL — Framework generativo auto-adaptable
+
+Esta es la brecha más grande que no existía en el análisis inicial.
+
+**Volt Factory:** Hardcodeado a BC/AL. Para usarlo con otra tecnología habría que
+reescribir todo desde cero. Es un framework **estático** para un dominio específico.
+
+**La nueva visión (meta-framework):** PM-THYROX debe ser capaz de **generar su
+propio stack de skills** basado en el proyecto detectado.
+
+```
+Usuario dice: "Proyecto React + Node.js + PostgreSQL"
+                        ↓
+        PM-THYROX Phase 1: Tech Detection
+                        ↓
+    Auto-genera:
+    .claude/skills/react-frontend/SKILL.md
+    .claude/skills/nodejs-backend/SKILL.md
+    .claude/skills/postgresql-db/SKILL.md
+    .claude/guidelines/react.instructions.md
+    .claude/guidelines/nodejs.instructions.md
+    .claude/guidelines/project-conventions.instructions.md
+```
+
+**Cómo funciona Volt Factory vs cómo funcionaría nuestro framework:**
+
+| Aspecto | Volt Factory | Meta-Framework |
+|---------|-------------|----------------|
+| Tech scope | BC/AL (hardcoded) | Cualquier tecnología |
+| Skills | Pre-escritos a mano | Auto-generados desde registry |
+| Guidelines | Hand-written por tech | Generados desde templates |
+| Adaptación | Fork + reescribir | Scan + generate |
+| Aprender tech nueva | Imposible sin reescribir | Agregar template al registry |
+| Agentes | 7 fijos | 3 core + N generados |
+
+**La arquitectura completa del meta-framework:**
+```
+.claude/
+├── CLAUDE.md                         ← 15 líneas, imperativo
+├── skills/
+│   ├── pm-thyrox/                    ← Core orchestrator (existe)
+│   └── {tech-layer}/                 ← Auto-generado por tech detector
+│       ├── SKILL.md                  ← Guía phase-by-phase para esa tech
+│       └── references/               ← Patterns, convenciones de esa tech
+├── guidelines/                       ← Auto-generados, always-on
+│   ├── {tech-frontend}.instructions.md
+│   ├── {tech-backend}.instructions.md
+│   └── project-conventions.instructions.md
+├── agents/                           ← Sub-agentes especializados
+│   ├── tech-detector.md              ← Detecta stack del proyecto
+│   └── skill-generator.md            ← Genera SKILL.md desde templates
+└── commands/                         ← Entry points de fase
+    ├── workflow_01_analyze.md
+    └── workflow_07_track.md
+
+registry/                             ← Fuente de verdad (templates)
+├── frontend/react.template.md
+├── frontend/vue.template.md
+├── backend/nodejs.template.md
+├── backend/django.template.md
+└── database/postgresql.template.md
+```
+
+### H-015: Tech Skill Registry — catálogo de templates
+
+**Volt Factory:** No tiene registry. Todo está hardcoded en los agentes.
+
+**Nueva necesidad:** Un directorio `registry/` con templates por tecnología.
+Cada template sabe cómo guiar el desarrollo en esa tech para cada fase del SDLC:
+
+```markdown
+# Registry Template: React Frontend
+
+## Phase 1: ANALYZE — qué investigar en un proyecto React
+- Versión de React (18.x hooks vs class components)
+- State management: Redux, Zustand, Context API...
+- Testing: Jest + RTL, Cypress, Playwright
+
+## Phase 4: STRUCTURE — qué incluir en requirements-spec
+- Component hierarchy diagram
+- State flow design
+- API contract (inputs/outputs por componente)
+
+## Phase 6: EXECUTE — convenciones obligatorias
+- Naming: PascalCase para componentes, camelCase para hooks
+- File structure: feature-based, no type-based
+- Testing: cada componente tiene su .test.tsx
+```
+
+**Contenido del registry** (candidatos iniciales):
+- Frontend: `react`, `vue`, `nextjs`, `angular`, `svelte`
+- Backend: `nodejs-express`, `nodejs-fastify`, `django`, `rails`, `fastapi`, `laravel`
+- Database: `postgresql`, `mongodb`, `mysql`, `redis`, `sqlite`
+- Infra: `docker`, `kubernetes`, `terraform`, `github-actions`
+- Mobile: `react-native`, `flutter`
+
+### H-016: .instructions.md auto-generados (not hand-written)
+
+**Volt Factory:** `al-naming-conventions.instructions.md` — 200 líneas escritas
+a mano con Reglas + Intent + Ejemplos Buenos/Malos. Cargadas automáticamente
+en CADA sesión que involucra código AL.
+
+**Patrón que tomamos:** La estructura de las instructions es universal:
+```markdown
+# {Tech} Conventions
+
+## Rule 1: {Nombre de la regla}
+### Intent
+{Por qué esta regla existe}
+### Examples
+```{lang}
+// GOOD
+...
+// BAD
+...
+```
+```
+
+**Generación automática:** Cuando `skill-generator` crea un skill para `react`,
+también genera `.claude/guidelines/react.instructions.md` con las reglas
+críticas de ese tech. El registry template incluye tanto el SKILL.md como
+el .instructions.md correspondiente.
+
+**Efecto:** Desde el momento en que se detecta React en el proyecto, Claude
+aplica automáticamente: naming conventions, component structure, testing patterns,
+sin que el usuario tenga que pedirlo.
+
+### H-017: CLAUDE.md imperativo — patrón Volt Factory
+
+**Volt Factory CLAUDE.md** (15 líneas, cero teoría):
+```
+When developing AL code, MANDATORY follow:
+1. Use bc-al-developer + al-guidelines
+2. Compile with bc-app-compiler (fix errors if any)
+3. Publish to BC
+4. Create automated tests, compile Test app
+5. Run tests with bc-test-runner
+6. ONLY done when ALL tests pass
+```
+Sin explicaciones. Sin contexto histórico. Solo: haz esto, luego esto.
+
+**Nuestro CLAUDE.md actual:** Más descriptivo, tiene historia, locked decisions,
+estructura. Funciona bien como Level 2 (puente).
+
+**Adaptable:** Para proyectos de desarrollo (no solo gestión), el CLAUDE.md
+del proyecto debería ser un checklist de 10-15 líneas que enforcea el flujo.
+Los projects generados por el meta-framework tendrían un CLAUDE.md auto-generado
+corto e imperativo específico al stack detectado.
+
+### H-018: Commands como entry points con success criteria
+
+**Volt Factory workflow commands** (~30 líneas cada uno):
+```markdown
+# Workflow 01: Business Research
+
+Required: INDUSTRY_NAME
+Optional: FOCUS_AREAS
+
+I will launch bc-business-research to:
+- 20+ web searches
+- 8-12 business journeys
+- 30-50 features
+
+Success Criteria:
+- ✅ Research docs in factory/1research/[Feature]/
+- ✅ 5,000+ words per feature
+
+Next Stage: /workflow_02_functional_design
+```
+
+**Patrón clave:** Cada command tiene:
+1. Parámetros requeridos/opcionales
+2. Qué agente invoca
+3. Success criteria medibles
+4. Referencia al siguiente command
+
+**Adaptable:** Nuestros workflow commands para las 7 fases deberían seguir
+exactamente este patrón. El usuario escribe `/workflow_01_analyze` y el command
+le pide: WP name, descripción del problema, tech stack (si aplica).
+
+### H-019: Layer-based skill architecture — skills por capa, no por fase
+
+**Volt Factory:** Un agente por responsabilidad técnica (`bc-al-developer`,
+`bc-app-compiler`, `bc-test-runner`). Cada uno maneja una fase o concern.
+
+**Nuestra arquitectura:** Dividir skills en dos ejes ortogonales:
+
+**Eje 1 — Gestión (pm-thyrox):** Fases 1-7, agnóstico de tech.
+**Eje 2 — Tecnología (tech skills):** Específico por layer, cubre todas las fases.
+
+```
+Phase 4 STRUCTURE para un proyecto React + Node:
+  → pm-thyrox dice: "crear requirements-spec.md"
+  → react-frontend dice: "incluir component hierarchy + state flow"
+  → nodejs-backend dice: "incluir API contracts + middleware design"
+  → postgresql-db dice: "incluir schema + migration plan"
+
+Phase 6 EXECUTE para el mismo proyecto:
+  → pm-thyrox dice: "implementar según task-plan, commit convencional"
+  → react-frontend dice: "naming PascalCase, tests con RTL, feature-based folders"
+  → nodejs-backend dice: "async/await, error middleware, input validation"
+  → postgresql-db dice: "usar migrations, no SQL raw, indexes explícitos"
+```
+
+**La composición:** pm-thyrox es el director. Los tech skills son los expertos.
+En cada fase, pm-thyrox invoca los tech skills relevantes para la capa que se está trabajando.
+
+---
+
 ## Lo que NO se adapta (BC-specific)
 
 - AL code guidelines (Dynamics 365)
@@ -189,15 +420,54 @@ para convenciones críticas que deben aplicarse siempre (naming, commits, WP str
 
 ---
 
+## Resumen actualizado de adaptaciones
+
+### PRIORIDAD ALTA — meta-framework generativo (visión central)
+
+| ID | Adaptación | Esfuerzo | Impacto |
+|----|-----------|---------|---------|
+| A-001 | Commands `/workflow_01_analyze`…`/workflow_07_track` con success criteria | Bajo | Alto |
+| A-002 | Documento HANDOFF Phase 5→6 (`{nombre}-handoff.md`) | Bajo | Alto |
+| A-003 | Test specs en Phase 4 (sección en requirements-spec template) | Bajo | Alto |
+| A-004 | `.claude/guidelines/` con `.instructions.md` always-on | Medio | Alto |
+| **A-012** | **Tech Skill Registry** — templates por tecnología en `registry/` | Alto | Crítico |
+| **A-013** | **Tech Detector** — agente que escanea stack del proyecto | Medio | Crítico |
+| **A-014** | **Skill Generator** — genera SKILL.md + .instructions.md desde registry | Alto | Crítico |
+| **A-015** | **Agent frontmatter** — formato nativo Claude Code para tech skills | Bajo | Alto |
+
+### PRIORIDAD MEDIA
+
+| ID | Adaptación | Esfuerzo | Impacto |
+|----|-----------|---------|---------|
+| A-005 | Research checklist en Phase 1 | Bajo | Medio |
+| A-006 | Jerarquía Epic→Feature→WP en ROADMAP | Bajo | Medio |
+| A-007 | CLAUDE.md imperativo auto-generado por proyecto | Medio | Medio |
+
+---
+
 ## Conclusión
 
-**4 adaptaciones de alto impacto y bajo esfuerzo** identificadas:
+Volt Factory **valida** nuestra estructura de 7 fases. Su aporte inmediato son
+4 mejoras concretas (commands, handoff, test specs, instructions).
 
-1. **Slash commands** por fase — acelera el inicio de cada fase
-2. **HANDOFF document** — resuelve pérdida de contexto entre sesiones
-3. **Test specs en Phase 4** — conecta criterios de aceptación con tests
-4. **`.instructions.md` automáticos** — enforcea convenciones sin depender de que Claude lea referencias
+Pero la visión que el usuario describe va más lejos: un **meta-framework generativo**.
 
-Volt Factory valida que nuestra estructura de 7 fases es sólida.
-Su principal aporte es en **automatización de activación** (commands, instructions)
-y en **documentos de transición entre fases** (handoff).
+**El salto arquitectónico:**
+- Volt Factory: pipeline estático para BC/AL
+- Nuestro objetivo: framework que se **auto-configura** para cualquier stack
+
+**Cómo se materializaría:**
+1. Usuario inicia proyecto con `/workflow_01_analyze`
+2. Phase 1 ANALYZE incluye Tech Detection (scan de archivos del proyecto)
+3. Tech Detector identifica: React 18, Node.js, PostgreSQL
+4. Skill Generator crea: `skills/react-frontend/`, `skills/nodejs-backend/`, `skills/postgresql/`
+5. Guidelines Generator crea: `guidelines/react.instructions.md`, `guidelines/nodejs.instructions.md`
+6. Desde ese momento, **cada sesión** tiene contexto tech-específico automático
+7. En Phase 4, los tech skills enriquecen el requirements-spec con detalles específicos
+8. En Phase 6, las instructions enforcan las convenciones sin que el usuario las pida
+
+**Lo que PM-THYROX aporta que Volt Factory no tiene:**
+- Tecnología-agnóstico (funciona con cualquier stack)
+- Auto-generativo (no requiere reescribir para nueva tech)
+- Composable (React + Node + Postgres funciona simultáneamente)
+- Extensible (agregar una tech = agregar un template al registry)

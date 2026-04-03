@@ -12,6 +12,9 @@ Estado: Activo
 | R-001 | Adaptar demasiado (scope creep) | Alta | Alto | CRÍTICO | Abierto |
 | R-002 | `.instructions.md` automáticos sobrecargan contexto | Media | Medio | MEDIO | Abierto |
 | R-003 | Slash commands duplican responsabilidad del SKILL | Media | Bajo | BAJO | Abierto |
+| R-004 | Registry crece sin control — 50+ templates difíciles de mantener | Media | Alto | ALTO | Abierto |
+| R-005 | Tech Detection falla en proyectos polyglot o sin archivos de config | Alta | Medio | MEDIO | Abierto |
+| R-006 | Skills generados de baja calidad si templates son genéricos | Media | Alto | ALTO | Abierto |
 
 ## R-001 — Scope creep: adaptar todo Volt Factory
 
@@ -36,3 +39,31 @@ universales (naming de WP, commits, estructura de artefactos).
 pedir Phase 1, los slash commands son redundantes y hay que mantener dos sistemas.  
 **Mitigación:** Los slash commands deben SER ATAJOS que pre-cargan contexto específico
 (WP activo, fase, artefactos existentes), no duplicar la lógica del SKILL.
+
+## R-004 — Registry crece sin control
+
+**Descripción:** Si añadimos templates para cada framework/librería, el registry
+se convierte en un proyecto en sí mismo. React, Next.js, Remix, Astro… solo para
+frontend ya son 10+.  
+**Mitigación:** Limitar el registry inicial a las tecnologías más usadas (top 10).
+Agrupar por categoría, no por framework específico cuando sea posible.
+Criterio de entrada: la tech debe ser usada en proyectos reales del usuario.
+
+## R-005 — Tech Detection falla en proyectos polyglot
+
+**Descripción:** Proyectos con múltiples lenguajes, monorepos, o sin archivos de
+configuración estándar hacen que el detector automático falle o dé falsos positivos.  
+**Mitigación:** El detector tiene dos modos: automático (scan de archivos) y manual
+(usuario declara el stack). El manual siempre override al automático.
+Fallback: si no detecta nada, preguntar al usuario.
+
+## R-006 — Skills generados de baja calidad
+
+**Descripción:** Si los templates del registry son genéricos o superficiales,
+los skills generados no agregan valor real. "Usa buenas prácticas de React" no
+es útil. "Usa hooks sobre class components, useState para local state, Zustand para
+global state, RTL para testing" sí lo es.  
+**Mitigación:** Cada template del registry debe tener al menos:
+- 5 reglas específicas y medibles (no "usa buenas prácticas")
+- Ejemplos buenos/malos para cada regla
+- Guía phase-by-phase con entregables concretos
