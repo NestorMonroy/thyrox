@@ -213,7 +213,7 @@ Capas validas: `frontend`, `backend`, `db`, `infra`, `mobile`, `testing`.
 **D-005: Mecanismo de bootstrap**
 Comando: `/workflow_init` o paso nuevo en Phase 1 cuando no hay tech skills.
 Proceso: scan proyecto → match con registry → instanciar templates → git commit.
-El `/workflow_init` es el equivalente de nuestro primer `/workflow_01_analyze` con
+El `/workflow_init` es el equivalente de nuestro primer `/workflow_analyze` con
 la diferencia de que ademas genera los tech skills si no existen.
 
 **D-006: Activacion en sesiones normales**

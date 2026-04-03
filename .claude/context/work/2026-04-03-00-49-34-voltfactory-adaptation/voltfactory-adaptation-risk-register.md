@@ -35,7 +35,7 @@ universales (naming de WP, commits, estructura de artefactos).
 
 ## R-003 — Slash commands duplican el SKILL
 
-**Descripción:** Si `/workflow_01_analyze` hace lo mismo que invocar el SKILL y
+**Descripción:** Si `/workflow_analyze` hace lo mismo que invocar el SKILL y
 pedir Phase 1, los slash commands son redundantes y hay que mantener dos sistemas.  
 **Mitigación:** Los slash commands deben SER ATAJOS que pre-cargan contexto específico
 (WP activo, fase, artefactos existentes), no duplicar la lógica del SKILL.

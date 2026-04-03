@@ -327,13 +327,13 @@ N tech skills auto-generados desde un registry centralizado, persistentes como a
 
 ### Workflow commands (Phase entry points)
 
-- [ ] `/workflow_01_analyze` — Phase 1: ANALYZE con context pre-cargado
-- [ ] `/workflow_02_strategy` — Phase 2: SOLUTION_STRATEGY
-- [ ] `/workflow_03_plan` — Phase 3: PLAN con ROADMAP check
-- [ ] `/workflow_04_structure` — Phase 4: STRUCTURE con spec template
-- [ ] `/workflow_05_decompose` — Phase 5: DECOMPOSE con task template
-- [ ] `/workflow_06_execute` — Phase 6: EXECUTE con next task automático
-- [ ] `/workflow_07_track` — Phase 7: TRACK con validate-phase-readiness
+- [ ] `/workflow_analyze` — Phase 1: ANALYZE con context pre-cargado
+- [ ] `/workflow_strategy` — Phase 2: SOLUTION_STRATEGY
+- [ ] `/workflow_plan` — Phase 3: PLAN con ROADMAP check
+- [ ] `/workflow_structure` — Phase 4: STRUCTURE con spec template
+- [ ] `/workflow_decompose` — Phase 5: DECOMPOSE con task template
+- [ ] `/workflow_execute` — Phase 6: EXECUTE con next task automático
+- [ ] `/workflow_track` — Phase 7: TRACK con validate-phase-readiness
 
 ### session-start.sh actualizado
 

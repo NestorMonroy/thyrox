@@ -49,7 +49,7 @@ factory/4development/   factory/5unit_test/   docs/
 28 comandos organizados por responsabilidad.  
 **PM-THYROX actual:** Sin comandos slash para fases.  
 **Brecha:** Para iniciar una fase hay que invocar el SKILL y recordar qué fase seguir.  
-**Adaptable:** ALTO — crear `/workflow_01_analyze`, `/workflow_02_solution`, etc.
+**Adaptable:** ALTO — crear `/workflow_analyze`, `/workflow_solution`, etc.
 como atajos que pre-cargan contexto de la fase correspondiente.
 
 ### H-003: Agentes especializados por fase
@@ -153,7 +153,7 @@ para convenciones críticas que deben aplicarse siempre (naming, commits, WP str
 
 | ID | Adaptación | Esfuerzo | Impacto |
 |----|-----------|---------|---------|
-| A-001 | Slash commands por fase (`/workflow_01_analyze`…) | Bajo | Alto |
+| A-001 | Slash commands por fase (`/workflow_analyze`…) | Bajo | Alto |
 | A-002 | Documento HANDOFF Phase 5→6 (`{nombre}-handoff.md`) | Bajo | Alto |
 | A-003 | Test specs en Phase 4 (sección en requirements-spec template) | Bajo | Alto |
 | A-004 | `.claude/guidelines/` con `.instructions.md` automáticos | Medio | Alto |
@@ -251,8 +251,8 @@ Usuario dice: "Proyecto React + Node.js + PostgreSQL"
 │   ├── tech-detector.md              ← Detecta stack del proyecto
 │   └── skill-generator.md            ← Genera SKILL.md desde templates
 └── commands/                         ← Entry points de fase
-    ├── workflow_01_analyze.md
-    └── workflow_07_track.md
+    ├── workflow_analyze.md
+    └── workflow_track.md
 
 registry/                             ← Fuente de verdad (templates)
 ├── frontend/react.template.md
@@ -376,7 +376,7 @@ Next Stage: /workflow_02_functional_design
 4. Referencia al siguiente command
 
 **Adaptable:** Nuestros workflow commands para las 7 fases deberían seguir
-exactamente este patrón. El usuario escribe `/workflow_01_analyze` y el command
+exactamente este patrón. El usuario escribe `/workflow_analyze` y el command
 le pide: WP name, descripción del problema, tech stack (si aplica).
 
 ### H-019: Layer-based skill architecture — skills por capa, no por fase
@@ -480,7 +480,7 @@ ADR-004 dice "Un pm-thyrox, no 15 skills separados". Esto no se viola porque:
 
 | ID | Adaptación | Esfuerzo | Impacto |
 |----|-----------|---------|---------|
-| A-001 | Commands `/workflow_01_analyze`…`/workflow_07_track` con success criteria | Bajo | Alto |
+| A-001 | Commands `/workflow_analyze`…`/workflow_track` con success criteria | Bajo | Alto |
 | A-002 | Documento HANDOFF Phase 5→6 (`{nombre}-handoff.md`) | Bajo | Alto |
 | A-003 | Test specs en Phase 4 (sección en requirements-spec template) | Bajo | Alto |
 | A-004 | `.claude/guidelines/` con `.instructions.md` always-on | Medio | Alto |
