@@ -149,6 +149,26 @@ grep -n "tabla.*RC\|RC.*tabla" .claude/skills/pm-thyrox/SKILL.md
 
 ---
 
+## Restricción crítica: qué NO es el problema
+
+Los errores ocurrieron **con el SKILL ya activo** — la sesión había invocado el Skill
+tool antes de ejecutar las phases. El problema no es de invocación.
+
+La capa de invocación ya está cubierta a nivel meta:
+- `CLAUDE.md` — "Activar SKILL ANTES de responder cualquier tarea"
+- `session-start.sh` — hook que inyecta el recordatorio en cada sesión
+
+Agregar "invocar el SKILL" como corrección sería documentar el meta-skill dentro del
+propio SKILL — duplicación de niveles y no resuelve nada.
+
+**El problema es de contenido:** Phase 3 del SKILL no tiene gates que detengan al modelo
+cuando la trazabilidad RC → tarea está incompleta. El modelo siguió el SKILL y aun así
+se adelantó — porque el SKILL no tenía instrucción que lo impidiera.
+
+La solución vive en el contenido de Phase 3, no en la capa de invocación.
+
+---
+
 ## Sin ítems [NEEDS CLARIFICATION]
 
 Todos los hallazgos son verificables directamente en SKILL.md.
