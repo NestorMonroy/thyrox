@@ -66,6 +66,21 @@ INSTRUCTIONS_FILE="$GUIDELINES_DIR/${SKILL_NAME}.instructions.md"
 LAYER_TITLE="$(echo "$LAYER" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
 FRAMEWORK_TITLE="$(echo "$FRAMEWORK" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
 
+# Overrides para títulos con formato especial
+case "$LAYER" in
+  db)     LAYER_TITLE="DB" ;;
+  infra)  LAYER_TITLE="Infra" ;;
+esac
+case "$FRAMEWORK" in
+  nodejs)      FRAMEWORK_TITLE="Node.js" ;;
+  nextjs)      FRAMEWORK_TITLE="Next.js" ;;
+  reactnative) FRAMEWORK_TITLE="React Native" ;;
+  postgresql)  FRAMEWORK_TITLE="PostgreSQL" ;;
+  mongodb)     FRAMEWORK_TITLE="MongoDB" ;;
+  mysql)       FRAMEWORK_TITLE="MySQL" ;;
+  kubernetes)  FRAMEWORK_TITLE="Kubernetes" ;;
+esac
+
 # ── Validaciones ───────────────────────────────────────────────────────────
 if [ ! -f "$TEMPLATE_PATH" ]; then
     echo -e "${RED}ERROR: Template not found: registry/${LAYER}/${FRAMEWORK}.template.md${NC}" >&2
