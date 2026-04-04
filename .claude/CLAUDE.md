@@ -18,6 +18,19 @@ Fecha actualización: 2026-03-28
 6. **Work packages with timestamp** — context/work/YYYY-MM-DD-HH-MM-SS-nombre/
 7. **Conventional Commits** — `type(scope): description` (ADR-003)
 
+## SKILL vs ADR — Regla de uso
+
+|                  | SKILL.md                                     | ADR en context/decisions/                              |
+|------------------|----------------------------------------------|--------------------------------------------------------|
+| Que es           | Instrucciones de metodologia (como trabajar) | Registro de decision tomada (por que se eligio X)      |
+| Quien lo escribe | Mantenedor del framework                     | Claude en Phase 1-2, cuando hay decision permanente    |
+| Cuando modificar | Solo si cambia la metodologia de gestion     | Al tomar una decision arquitectonica del proyecto      |
+| Duracion         | Vive con el framework                        | Inmutable una vez aprobado                             |
+
+REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
+- Cambia COMO se trabaja en general -> SKILL.md
+- Registra POR QUE se eligio algo en este proyecto -> ADR en context/decisions/
+
 ## Estructura
 
 ```

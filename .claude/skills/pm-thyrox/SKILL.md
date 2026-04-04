@@ -61,7 +61,14 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
    Si el proyecto requiere metadata JSON estructurada (>50 issues): [project.json.template](assets/project.json.template) — opcional
 6. Para proyectos medianos/grandes: Crear `work/../{nombre-wp}-exit-conditions.md` usando [exit-conditions.md.template](assets/exit-conditions.md.template) — checklist vivo de gates para las 7 fases. Actualizar al cerrar cada fase.
 7. Si el proyecto define principios arquitectónicos globales que otras features deben respetar, crear/actualizar `constitution.md` en la raíz usando [constitution.md.template](assets/constitution.md.template)
-8. Si hay decisión arquitectónica (cambio de stack tecnológico, adopción de patrón nuevo como microservicios o event-driven, o reemplazo de componente principal), crear ADR en `context/decisions/` usando [adr.md.template](assets/adr.md.template)
+8. ADR: Crear en `context/decisions/adr-NNN.md` usando [adr.md.template](assets/adr.md.template) SOLO SI aplica alguno de estos casos:
+   - SI: cambio de stack tecnologico (lenguaje, base de datos, framework principal)
+   - SI: adopcion de nuevo patron arquitectonico (microservicios, event-driven, CQRS)
+   - SI: reemplazo de componente principal del sistema
+   - SI: decision que afecta todos los work packages futuros del proyecto
+   - NO: convencion de naming, formato de archivo, o template nuevo
+   - NO: decision que solo afecta el WP actual
+   - NO: cambios a la metodologia de gestion (eso va en SKILL.md, no en un ADR)
 
 Referencias de análisis por subsección (leer según necesidad):
 [introduction](references/introduction.md) · [requirements-analysis](references/requirements-analysis.md) · [use-cases](references/use-cases.md) · [quality-goals](references/quality-goals.md) · [stakeholders](references/stakeholders.md) · [basic-usage](references/basic-usage.md) · [constraints](references/constraints.md) · [context](references/context.md)

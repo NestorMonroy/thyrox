@@ -389,6 +389,24 @@ N tech skills auto-generados desde un registry centralizado, persistentes como a
 
 ---
 
+## FASE 9: Boundary SKILL vs ADR — compatibilidad multi-modelo (2026-04-04)
+
+**WP:** `.claude/context/work/2026-04-04-07-17-37-skill-adr-boundary/`
+
+### Capa 1 — CLAUDE.md
+
+- [x] Nueva seccion `## SKILL vs ADR — Regla de uso` con tabla 4 filas (2026-04-04)
+
+### Capa 2 — SKILL.md
+
+- [x] Step 8 Phase 1 reemplazado con lista SI/NO (7 items, sin texto vago) (2026-04-04)
+
+### Capa 3 — adr.md.template
+
+- [x] Campo `Uso:` en frontmatter YAML con restriccion de uso explicita (2026-04-04)
+
+---
+
 ## Métricas de Progreso
 
 ```
@@ -403,11 +421,13 @@ FASE 5: Compatibilidad multi-modelo — 100% ✓
 FASE 6: Template phase integration  — 100% ✓
 FASE 7: Meta-framework generativo   — 100% ✓
 FASE 8: Resolución de deuda técnica — 100% ✓
+FASE 9: Boundary SKILL vs ADR       — 100% ✓
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
 Sesión 2026-03-28 (s3): 5 corrections + reference errors analysis
 Sesión 2026-04-03: voltfactory analysis + solution strategy + tests (55/55)
+Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibilidad Haiku
 ```
 
 ---

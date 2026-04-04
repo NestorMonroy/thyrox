@@ -13,6 +13,23 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.7.0] - 2026-04-04
+
+### Added — Boundary SKILL vs ADR para compatibilidad multi-modelo (WP skill-adr-boundary)
+
+**Capa 1 — CLAUDE.md:**
+- Nueva seccion `## SKILL vs ADR — Regla de uso` con tabla comparativa (que es, quien lo escribe, cuando modificar, duracion)
+- Regla explicita: "Cambia COMO se trabaja -> SKILL.md / Registra POR QUE se eligio algo -> ADR"
+
+**Capa 2 — SKILL.md Phase 1 Step 8:**
+- Reemplazado texto vago "Si hay decision arquitectonica..." por lista SI/NO con 7 items concretos
+- Ejemplos explicitos de cuando SI crear ADR (stack, patron arquitectonico, componente principal) y cuando NO (naming, template, decision de WP)
+
+**Capa 3 — adr.md.template:**
+- Campo `Uso:` en frontmatter YAML con restriccion de uso en tres lineas
+
+---
+
 ## [0.6.0] - 2026-04-04
 
 ### Fixed — Resolución de Deuda Técnica (WP technical-debt-resolution)

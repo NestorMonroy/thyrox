@@ -5,6 +5,9 @@ Versión: 1.0
 Propósito: Documentar decisión arquitectónica importante
 Objetivo: Registrar contexto, opciones, decisión y consecuencias
 Fecha actualización: YYYY-MM-DD-HH-MM-SS
+Uso: Solo para decisiones arquitectonicas permanentes del PROYECTO (stack, patrones, componentes principales).
+     NO usar para decisiones de metodologia — esas van en SKILL.md.
+     NO usar para decisiones que solo afectan el WP actual — esas van en design.md o plan.md del WP.
 ```
 
 # ADR-NNN: [Título de la Decisión]

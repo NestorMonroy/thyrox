@@ -44,4 +44,4 @@ Pequeno — 5 tareas, 3 archivos modificados, 0 archivos nuevos, sin dependencia
 
 ## Scope aprobado
 
-- [ ] Aprobado por usuario (2026-04-04)
+- [x] Aprobado por usuario (2026-04-04)
