@@ -6,10 +6,25 @@
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
 CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
 
-# Detectar work package activo (más reciente en context/work/)
+# Detectar work package activo
+# Fuente 1 (primaria): now.md::current_work si phase != complete
+# Fuente 2 (fallback): directorio más reciente por nombre (YYYY-MM-DD prefijo), no por mtime
 ACTIVE_WP=""
-if [ -d "${CONTEXT_DIR}/work" ]; then
-    ACTIVE_WP=$(ls -1t "${CONTEXT_DIR}/work" 2>/dev/null | head -1)
+PHASE=""
+
+if [ -f "${CONTEXT_DIR}/now.md" ]; then
+    PHASE=$(grep "^phase:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/phase: *//')
+    if [ "$PHASE" != "complete" ] && [ -n "$PHASE" ]; then
+        CURRENT_WORK=$(grep "^current_work:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/current_work: *//')
+        if [ -n "$CURRENT_WORK" ] && [ "$CURRENT_WORK" != "null" ]; then
+            ACTIVE_WP=$(basename "$CURRENT_WORK")
+        fi
+    fi
+fi
+
+# Fallback: sort por nombre (timestamp prefix garantiza orden cronológico)
+if [ -z "$ACTIVE_WP" ] && [ "$PHASE" != "complete" ] && [ -d "${CONTEXT_DIR}/work" ]; then
+    ACTIVE_WP=$(ls -1 "${CONTEXT_DIR}/work" 2>/dev/null | sort -r | head -1)
 fi
 
 echo ""
@@ -20,11 +35,7 @@ echo "  Si no disponible: leer .claude/skills/pm-thyrox/SKILL.md"
 echo ""
 if [ -n "$ACTIVE_WP" ]; then
     echo "  Work package activo: context/work/${ACTIVE_WP}/"
-    # Detectar phase actual desde now.md
-    if [ -f "${CONTEXT_DIR}/now.md" ]; then
-        PHASE=$(grep "^phase:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/phase: *//')
-        [ -n "$PHASE" ] && echo "  Fase actual: ${PHASE}"
-    fi
+    [ -n "$PHASE" ] && echo "  Fase actual: ${PHASE}"
     # Mostrar próxima tarea pendiente si existe task-plan.md (o fallback plan.md)
     WP_DIR="${CONTEXT_DIR}/work/${ACTIVE_WP}"
     TASK_PLAN=$(find "$WP_DIR" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
