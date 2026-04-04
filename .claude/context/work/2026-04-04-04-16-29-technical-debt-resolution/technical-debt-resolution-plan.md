@@ -2,7 +2,7 @@
 Fecha: 2026-04-04-04-16-29
 WP: 2026-04-04-04-16-29-technical-debt-resolution
 Fase: 3 - PLAN
-Estado: Pendiente aprobación
+Estado: Aprobado — 2026-04-04
 ```
 
 # Plan — Technical Debt Resolution
@@ -92,4 +92,4 @@ Ver tracking: [ROADMAP.md — FASE 8](../../../../../ROADMAP.md)
 
 ## Estado de aprobación
 
-- [ ] Scope aprobado por usuario — PENDIENTE
+- [x] Scope aprobado por usuario — 2026-04-04
