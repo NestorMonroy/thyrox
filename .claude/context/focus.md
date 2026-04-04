@@ -19,7 +19,8 @@ Deuda técnica resuelta. WP technical-debt-resolution cerrado en FASE 8. Framewo
 - 8 WPs históricos cerrados (0 checkboxes abiertos)
 - CHANGELOG.md v0.6.0, ROADMAP FASE 8 = 100%
 - 5 lecciones (L-025 a L-029)
-- Deuda activa: T-DT-004 (code-fenced false positives, baja), T-DT-005 (session-start.sh WP detection, media)
+- Deuda activa: T-DT-004 (code-fenced false positives, baja), T-DT-005 (session-start.sh WP detection, media — resuelto sesion 8)
+- Deuda activa: T-DT-006 (solution-strategy.md.template sin seccion de flujos ni ejemplo mermaid, baja)
 
 ## Completado sesión 3
 
