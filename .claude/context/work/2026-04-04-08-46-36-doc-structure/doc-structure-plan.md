@@ -2,7 +2,7 @@
 Fecha: 2026-04-04-08-46-36
 WP: doc-structure
 Fase: 3 - PLAN
-Estado: Pendiente aprobación
+Estado: Aprobado — 2026-04-04
 ```
 
 # Plan — Separación .claude/ vs doc/ y adr_path configurable
@@ -89,4 +89,4 @@ Ver tracking: [ROADMAP.md — FASE 10](../../../../../ROADMAP.md)
 
 ## Estado de aprobación
 
-- [ ] Scope aprobado por usuario — PENDIENTE
+- [x] Scope aprobado por usuario — 2026-04-04
