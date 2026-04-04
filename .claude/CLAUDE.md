@@ -10,6 +10,9 @@ Fecha actualización: 2026-03-28
 
 ## Locked Decisions (no revisitar)
 
+Estas son reglas del framework de metodologia — NO son ADRs del proyecto.
+Los ADRs del proyecto viven en `context/decisions/adr-NNN.md`.
+
 1. **ANALYZE first** — No planificar sin entender primero (ADR-010)
 2. **Anatomía oficial** — SKILL.md + scripts/ + references/ + assets/ (ADR-011)
 3. **Git as persistence** — Zero archivos backup, historial en git (ADR-008)
