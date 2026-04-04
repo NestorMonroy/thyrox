@@ -346,6 +346,49 @@ N tech skills auto-generados desde un registry centralizado, persistentes como a
 
 ---
 
+## FASE 8: Resolución de Deuda Técnica (2026-04-04)
+
+**WP:** `.claude/context/work/2026-04-04-04-16-29-technical-debt-resolution/`
+
+### Templates huérfanos — mapeo completo (SPEC-001)
+
+- [x] Headers `Fase:` en 6 templates: ad-hoc-tasks, analysis-phase, categorization-plan, document, project.json, refactors (2026-04-04)
+- [x] SKILL.md tabla artefactos — 6 rows nuevas con condición de activación (2026-04-04)
+- [x] SKILL.md Phase 1 — links a analysis-phase.md.template y project.json.template (2026-04-04)
+- [x] SKILL.md Phase 4/5/6/7 — links a document, categorization-plan, ad-hoc-tasks, refactors (2026-04-04)
+
+### D-001: examples.md nomenclatura (SPEC-002)
+
+- [x] 8 headers de fase corregidos (Phase 1-5 → Phase 3-7) (2026-04-04)
+- [x] Nota con los 7 nombres oficiales: ANALYZE → SOLUTION_STRATEGY → ... → TRACK (2026-04-04)
+
+### D-002: scalability.md referencias (SPEC-003)
+
+- [x] project.json → opcional con threshold >50 issues (2026-04-04)
+- [x] exit_conditions.md → exit-conditions.md (2026-04-04)
+
+### TD-001: Timestamp conventions y validación (SPEC-004)
+
+- [x] references/conventions.md — sección "Timestamp Format" con YYYY-MM-DD-HH-MM-SS (2026-04-04)
+- [x] scripts/validate-session-close.sh — check de placeholders sin resolver (2026-04-04)
+
+### TD-002: validate-phase-readiness.sh Phase 3 (SPEC-005)
+
+- [x] Phase 3 case verifica existencia de *-plan.md y scope aprobado [x] (2026-04-04)
+
+### Cierre formal de WPs históricos (SPEC-006)
+
+- [x] 2026-03-27-coherencia-unificacion-fases — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-covariancia — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-spec-kit-adoption — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-spec-kit-deep-adoption — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-multi-interaction-evals — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-cicd-setup — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-skill-flow-analysis — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-31-skill-consistency — 0 checkboxes abiertos (2026-04-04)
+
+---
+
 ## Métricas de Progreso
 
 ```
@@ -359,6 +402,7 @@ FASE 4: Template reutilizable    — 100% ✓
 FASE 5: Compatibilidad multi-modelo — 100% ✓
 FASE 6: Template phase integration  — 100% ✓
 FASE 7: Meta-framework generativo   — 100% ✓
+FASE 8: Resolución de deuda técnica — 100% ✓
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
