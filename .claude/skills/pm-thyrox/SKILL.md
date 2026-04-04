@@ -57,6 +57,8 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
 4. REQUERIDO: Crear `work/../{nombre-wp}-risk-register.md` usando [risk-register.md.template](assets/risk-register.md.template) — identificar riesgos desde el inicio. Actualizar en cada fase.
 5. Si el análisis es complejo, crear sub-documentos en `work/.../analysis/` según necesidad:
    [stakeholders.md.template](assets/stakeholders.md.template) · [requirements-analysis.md.template](assets/requirements-analysis.md.template) · [use-cases.md.template](assets/use-cases.md.template) · [quality-goals.md.template](assets/quality-goals.md.template) · [constraints.md.template](assets/constraints.md.template) · [context.md.template](assets/context.md.template) · [basic-usage.md.template](assets/basic-usage.md.template)
+   Si el análisis involucra >20 issues con severidades: [analysis-phase.md.template](assets/analysis-phase.md.template)
+   Si el proyecto requiere metadata JSON estructurada (>50 issues): [project.json.template](assets/project.json.template) — opcional
 6. Para proyectos medianos/grandes: Crear `work/../{nombre-wp}-exit-conditions.md` usando [exit-conditions.md.template](assets/exit-conditions.md.template) — checklist vivo de gates para las 7 fases. Actualizar al cerrar cada fase.
 7. Si el proyecto define principios arquitectónicos globales que otras features deben respetar, crear/actualizar `constitution.md` en la raíz usando [constitution.md.template](assets/constitution.md.template)
 8. Si hay decisión arquitectónica (cambio de stack tecnológico, adopción de patrón nuevo como microservicios o event-driven, o reemplazo de componente principal), crear ADR en `context/decisions/` usando [adr.md.template](assets/adr.md.template)
@@ -110,6 +112,7 @@ Especificar antes de descomponer previene ambigüedad en las tareas.
 **Complejo** (10+ tareas): Ver [spec-driven-development](references/spec-driven-development.md). Además, crear `work/../{nombre-wp}-design.md` usando [design.md.template](assets/design.md.template) — visión arquitectónica, componentes afectados, decisiones de diseño.
 
 REQUERIDO: Completar [spec-quality-checklist.md.template](assets/spec-quality-checklist.md.template) ANTES de Phase 5. NO avanzar si quedan ítems sin ✓ o marcadores `[NEEDS CLARIFICATION]` sin resolver — la ambigüedad en specs se multiplica en la implementación.
+Para documentos técnicos que no tienen template específico: [document.md.template](assets/document.md.template)
 
 **Salir cuando:** `work/.../*-requirements-spec.md` existe, no contiene `[NEEDS CLARIFICATION]`, y checklist completado al 100%.
 **Siguiente:** Proponer Phase 5: DECOMPOSE para crear tareas atómicas.
@@ -128,6 +131,7 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
    Formato: `- [ ] [T-NNN] Descripción (R-N)`
 4. Marcar tareas paralelas [P]
 5. Definir checkpoints de validación
+   Si hay >50 issues antes de descomponer: [categorization-plan.md.template](assets/categorization-plan.md.template) — categorizar primero para identificar grupos naturales
 
 **Salir cuando:** `work/.../*-task-plan.md` existe con tareas atómicas y orden definido.
 **Siguiente:** Proponer Phase 6: EXECUTE para implementar.
@@ -145,6 +149,7 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 6. Commit con [Conventional Commits](references/commit-helper.md): `type(scope): description`
 7. Actualizar ROADMAP.md: `[ ]` → `[x]` con fecha
 8. Repetir hasta completar todas las tareas
+   Para trabajo micro (<30 min) sin WP: [ad-hoc-tasks.md.template](assets/ad-hoc-tasks.md.template) — registrar sin crear work package completo
 
 **Salir cuando:** Todas las tareas completadas y commiteadas.
 **Siguiente:** Proponer Phase 7: TRACK para documentar lecciones.
@@ -161,6 +166,7 @@ Documentar lecciones previene repetir los mismos errores.
 - REQUERIDO: Generar `CHANGELOG.md` desde commits usando [changelog.md.template](assets/changelog.md.template)
 - Actualizar `work/.../risk-register.md`: cerrar riesgos resueltos, documentar los que se materializaron
 - Para proyectos grandes o con métricas relevantes: crear `work/../{nombre-wp}-final-report.md` usando [final-report.md.template](assets/final-report.md.template) — resumen ejecutivo, estimado vs real, métricas
+- Para tracking de deuda técnica identificada: [refactors.md.template](assets/refactors.md.template)
 - Si hay 100+ issues: ver [incremental-correction](references/incremental-correction.md)
 - Validar integridad: ver [reference-validation](references/reference-validation.md)
 - Gate soft antes de avanzar de fase: `bash scripts/validate-phase-readiness.sh <phase>`
@@ -193,6 +199,12 @@ Documentar lecciones previene repetir los mismos errores.
 | 7 | Lecciones aprendidas | `work/../{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](assets/lessons-learned.md.template) |
 | 7 | Changelog | `CHANGELOG.md` | [changelog.md.template](assets/changelog.md.template) |
 | 7 | Reporte final (grande) | `work/../{nombre-wp}-final-report.md` | [final-report.md.template](assets/final-report.md.template) |
+| 1 | Análisis por severidad (>20 issues) | `work/.../analysis/{nombre}-analysis-phase.md` | [analysis-phase.md.template](assets/analysis-phase.md.template) — opcional |
+| 1 | Metadata JSON del proyecto (>50 issues) | `work/../project.json` | [project.json.template](assets/project.json.template) — opcional |
+| 4 | Documento técnico genérico | `work/../{nombre}-document.md` | [document.md.template](assets/document.md.template) — cuando no aplica template específico |
+| 5 | Categorización de issues (>50) | `work/../{nombre}-categorization-plan.md` | [categorization-plan.md.template](assets/categorization-plan.md.template) — opcional |
+| 5/6 | Tareas ad-hoc (<2h, sin WP) | `ad-hoc-tasks.md` | [ad-hoc-tasks.md.template](assets/ad-hoc-tasks.md.template) — opcional |
+| 5/6 | Tracking de deuda técnica | `refactors.md` | [refactors.md.template](assets/refactors.md.template) — opcional |
 | — | Errores | `context/errors/ERR-NNN-descripcion.md` | [error-report.md.template](assets/error-report.md.template) |
 
 ## Estructura de un work package

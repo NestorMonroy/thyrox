@@ -46,7 +46,7 @@ documento: TASK-FIX-TYPO.md (todo en uno)
 **Estructura balanceada:**
 - work-logs/ granulares (1 por STEP importante)
 - epics/YYYY-MM-DD-HH-MM-nombre/ con estructura PHASE-based
-- project.json simple
+- project.json — opcional, activar si el proyecto tiene >50 issues o necesita tracking de métricas estructurado
 
 **Fases activas:** 1, 2, 3, 4, 5, 6, 7
 **Con:** Algunas fases pueden ser rápidas
@@ -137,7 +137,7 @@ Feedback: "Ready for PHASE 7" o "Fix: [X]"
 
 ```
 "Sub-agent, valida que completamos PHASE 1.
-Checkea: exit_conditions.md y project.json"
+Checkea: exit-conditions.md y project.json (si aplica)"
 ```
 
 ---
