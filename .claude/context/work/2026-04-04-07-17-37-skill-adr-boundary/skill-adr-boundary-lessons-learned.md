@@ -35,6 +35,17 @@ La deuda T-DT-006 existe porque el template y la practica divergieron.
 Accion: Si una convencion no esta en el template, registrarla como deuda tecnica
 inmediatamente (no al final del WP).
 
+## L-034 — El plan debe mapear cada RC a una tarea concreta, no a una seccion
+
+En Phase 2 se dijo "CLAUDE.md resuelve RC-001 y RC-003." En Phase 3 el plan solo
+capturo una tarea ("nueva seccion SKILL vs ADR") que resuelve RC-001. RC-003 requeria
+una accion distinta (modificar "Locked Decisions") pero no se convirtio en tarea
+separada. Phase 6 implemento el plan fielmente — el plan era incompleto.
+
+Accion: Al cerrar Phase 3, verificar que cada RC de prioridad Alta o Media tenga
+al menos una tarea con verbo + archivo + criterio concreto. Si una RC aparece solo
+en la narrativa de Phase 2 sin tarea asociada, es un gap.
+
 ## L-033 — Boundary statements deben estar donde el modelo llega primero
 
 CLAUDE.md se lee antes que SKILL.md. Una regla en SKILL.md puede llegar tarde
