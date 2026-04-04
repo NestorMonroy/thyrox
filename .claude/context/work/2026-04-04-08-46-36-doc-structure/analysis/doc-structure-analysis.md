@@ -206,8 +206,28 @@ ls doc/architecture/decisions/
 | H-002 | CLAUDE.md "Locked Decisions" referencia ADR IDs de THYROX — no portable a otros proyectos | Alta |
 | H-003 | SKILL.md Phase 1 Step 8 hardcodea `context/decisions/` — no respeta convención del proyecto | Alta |
 | H-004 | No existe separación documentada entre artefactos efímeros (Claude) y permanentes (proyecto) | Media |
-| H-005 | Framework ADRs (ADR-010, ADR-011) están mezclados con project ADRs en el mismo directorio | Media |
+| H-005 | Framework ADRs (ADR-010, ADR-011) mezclados con project ADRs en el mismo directorio | Media |
 | H-006 | No hay estructura `doc/` en THYROX como ejemplo de lo que el framework debería producir | Baja |
+| H-007 | La convención de `doc/` con Sphinx requiere un tech skill dedicado — no es responsabilidad de pm-thyrox | Alta |
+
+### H-007 — Sphinx es un tech skill, no parte de pm-thyrox
+
+pm-thyrox gestiona CÓMO trabajar (fases SDLC, artefactos, gates).
+Sphinx gestiona CÓMO documentar para un sistema generador de docs (conf.py, RST/MD,
+estructura `doc/`, build, templates).
+
+Siguiendo ADR-012 (un management skill + N tech skills):
+- `pm-thyrox` → metodología de gestión, referencia a Sphinx skill para docs
+- `sphinx` (nuevo tech skill) → convenciones Sphinx, estructura `doc/`, plantillas RST/MD,
+  dónde viven los ADRs para que Sphinx los indexe, cómo generar HTML
+
+Esto significa que el scope de este WP NO incluye implementar la integración con Sphinx.
+El WP establece:
+1. La separación `.claude/` (efímero, Claude) vs `doc/` (permanente, equipo)
+2. La convención `adr_path` configurable en CLAUDE.md
+3. El stub del nuevo tech skill `sphinx` (estructura, no contenido completo)
+
+El contenido completo del skill `sphinx` es un WP separado.
 
 ---
 
