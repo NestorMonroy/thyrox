@@ -19,16 +19,28 @@ Basado en: voltfactory-adaptation-solution-strategy.md (D-001 a D-007)
 PM-THYROX se extiende con una capa de skills de tecnología que se auto-generan desde
 un registry centralizado. La arquitectura tiene dos ejes ortogonales:
 
-```
-EJE DE GESTIÓN (pm-thyrox)           EJE DE TECNOLOGÍA (tech skills)
-─────────────────────────────         ─────────────────────────────
-Phase 1: ANALYZE                      frontend-react
-Phase 2: SOLUTION_STRATEGY            backend-nodejs
-Phase 3: PLAN                         db-postgresql
-Phase 4: STRUCTURE                    (generados desde registry)
-Phase 5: DECOMPOSE
-Phase 6: EXECUTE
-Phase 7: TRACK
+```mermaid
+graph TB
+    subgraph Gestion["Eje de Gestión — pm-thyrox (CUÁNDO y CÓMO documentar)"]
+        direction TB
+        P1[Phase 1: ANALYZE] --> P2[Phase 2: SOLUTION_STRATEGY]
+        P2 --> P3[Phase 3: PLAN]
+        P3 --> P4[Phase 4: STRUCTURE]
+        P4 --> P5[Phase 5: DECOMPOSE]
+        P5 --> P6[Phase 6: EXECUTE]
+        P6 --> P7[Phase 7: TRACK]
+    end
+
+    subgraph Tecnologia["Eje de Tecnología — tech skills (CÓMO implementar en cada tech)"]
+        direction TB
+        FR[frontend-react]
+        BN[backend-nodejs]
+        PG[db-postgresql]
+    end
+
+    P6 -. "invoca según capa activa" .-> FR
+    P6 -. "invoca según capa activa" .-> BN
+    P6 -. "invoca según capa activa" .-> PG
 ```
 
 pm-thyrox dice CUÁNDO y CÓMO documentar. Los tech skills dicen CÓMO implementar en
@@ -221,78 +233,70 @@ description: "Descripción breve para auto-suggest de Claude Code"
 
 ### 6.1 Flujo Bootstrap (primera vez, con /workflow_init)
 
-```
-Usuario: /workflow_init
-    │
-    ▼
-Claude escanea proyecto
-    │  package.json → react, express
-    │  *.sql encontrado
-    ▼
-Claude muestra detección:
-    "Detectado: frontend-react, backend-nodejs, db-postgresql"
-    │
-    ▼
-Usuario confirma (o ajusta manualmente)
-    │
-    ▼
-Para cada tech:
-    _generator.sh {layer} {framework} {project_name}
-    │
-    ├── Lee registry/{layer}/{framework}.template.md
-    ├── Extrae sección SKILL_START..SKILL_END
-    ├── Extrae sección INSTRUCTIONS_START..INSTRUCTIONS_END
-    ├── Reemplaza {{placeholders}}
-    ├── Escribe .claude/skills/{layer}-{framework}/SKILL.md
-    └── Escribe .claude/guidelines/{layer}-{framework}.instructions.md
-    │
-    ▼
-git add .claude/skills/ .claude/guidelines/
-git commit "feat(skills): bootstrap frontend-react, backend-nodejs, db-postgresql"
-    │
-    ▼
-Claude muestra resumen: archivos creados, próximo paso (/workflow_analyze)
+```mermaid
+sequenceDiagram
+    actor U as Usuario
+    participant C as Claude
+    participant G as _generator.sh
+    participant R as Registry
+    participant Git
+
+    U->>C: /workflow_init
+    C->>C: Escanea package.json, *.sql, go.mod...
+    C->>U: "Detectado: frontend-react, backend-nodejs, db-postgresql"
+    U->>C: Confirma (o ajusta lista manualmente)
+
+    loop Para cada tech confirmada
+        C->>G: _generator.sh {layer} {framework} {project_name}
+        G->>R: Lee registry/{layer}/{framework}.template.md
+        R-->>G: Contenido del template
+        G->>G: Extrae SKILL_START..SKILL_END
+        G->>G: Extrae INSTRUCTIONS_START..INSTRUCTIONS_END
+        G->>G: Reemplaza {{placeholders}}
+        G-->>C: .claude/skills/{layer}-{framework}/SKILL.md
+        G-->>C: .claude/guidelines/{layer}-{framework}.instructions.md
+    end
+
+    C->>Git: git add + commit "feat(skills): bootstrap frontend-react, backend-nodejs, db-postgresql"
+    C->>U: Resumen: archivos creados, próximo paso (/workflow_analyze)
 ```
 
 ### 6.2 Flujo de sesión normal (bootstrap ya realizado)
 
-```
-Nueva sesión Claude Code
-    │
-    ▼
-hooks/SessionStart → session-start.sh
-    │  Muestra: WP activo + Tech skills activos
-    ▼
-Claude Code carga automáticamente:
-    .claude/guidelines/frontend-react.instructions.md  ← reglas React
-    .claude/guidelines/backend-nodejs.instructions.md  ← reglas Node
-    .claude/guidelines/db-postgresql.instructions.md   ← reglas Postgres
-    │
-    ▼
-Usuario: /workflow_execute
-    │
-    ▼
-Claude (con contexto tech activo):
-    - Lee *-task-plan.md del WP activo
-    - Toma siguiente tarea
-    - Implementa respetando reglas de .instructions.md activos
-    - Commit convencional
+```mermaid
+sequenceDiagram
+    participant Hook as SessionStart Hook
+    participant SS as session-start.sh
+    participant CC as Claude Code
+    participant C as Claude
+    actor U as Usuario
+
+    Hook->>SS: ejecuta al iniciar sesión
+    SS->>U: "WP activo: voltfactory-adaptation"
+    SS->>U: "Tech skills activos: frontend-react, backend-nodejs, db-postgresql"
+
+    Note over CC: Carga automática (nativa Claude Code)
+    CC->>CC: Lee .claude/guidelines/frontend-react.instructions.md
+    CC->>CC: Lee .claude/guidelines/backend-nodejs.instructions.md
+    CC->>CC: Lee .claude/guidelines/db-postgresql.instructions.md
+
+    U->>C: /workflow_execute
+    C->>C: Lee *-task-plan.md del WP activo
+    C->>C: Toma siguiente tarea pendiente (- [ ])
+    Note over C: Implementa respetando reglas de .instructions.md
+    C->>C: Commit convencional
+    C->>U: Tarea completada, muestra siguiente pendiente
 ```
 
 ### 6.3 Flujo de actualización de template
 
-```
-Dev agrega nueva regla a registry/frontend/react.template.md
-    │
-    ▼
-En el proyecto: _generator.sh frontend react --force
-    │
-    ▼
-Sobreescribe .claude/skills/frontend-react/SKILL.md
-            .claude/guidelines/frontend-react.instructions.md
-    │
-    ▼
-git commit "chore(skills): sync frontend-react from registry v1.1"
+```mermaid
+flowchart LR
+    A["Dev edita\nregistry/frontend/react.template.md"] --> B["_generator.sh frontend react --force"]
+    B --> C["Sobreescribe\n.claude/skills/frontend-react/SKILL.md"]
+    B --> D["Sobreescribe\n.claude/guidelines/frontend-react.instructions.md"]
+    C --> E["git commit\nchore(skills): sync frontend-react from registry v1.1"]
+    D --> E
 ```
 
 ---

@@ -53,6 +53,49 @@ en place.
 
 ---
 
+## TD-003: Templates huérfanos en assets/ no referenciados en ningún flujo
+
+```
+Severidad: baja
+Origen: Auditoría 2026-04-03
+Fase afectada: Cross-phase (confusión al buscar templates)
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+Seis templates en `.claude/skills/pm-thyrox/assets/` no están referenciados en
+SKILL.md ni en ningún reference activo del flujo. Generan ruido y confusión:
+- `ad-hoc-tasks.md.template` — tracking de tareas ad-hoc sin WP formal
+- `analysis-phase.md.template` — duplica funcionalidad de `introduction.md.template`
+- `categorization-plan.md.template` — no corresponde a ninguna fase del SKILL
+- `document.md.template` — template genérico sin fase asignada
+- `project.json.template` — metadata de proyecto en JSON (no Markdown)
+- `refactors.md.template` — tracking de refactors (podría ser útil en Phase 6)
+
+Nota: `bugfix`, `feature`, `refactor`, `documentation`, `multiple-files`,
+`task-completion`, `commit-message-main` son templates de commit — sí están
+referenciados en `references/commit-helper.md`.
+
+**Impacto:**
+Cuando alguien busca "qué template usar para X", encuentra templates huérfanos
+que no tienen instrucciones de uso. Aumenta la fricción y la incertidumbre.
+
+**Resolución:**
+Para cada template huérfano, decidir uno de:
+1. Mapear a una fase en SKILL.md (si tiene uso legítimo)
+2. Mover a `assets/legacy/` con un README explicando que están deprecados
+3. Eliminar si no tienen valor (ADR-008: Git as persistence, el historial preserva)
+
+Candidato a mapear: `ad-hoc-tasks.md.template` → Phase 6 para tareas fuera del
+task-plan. Candidato a eliminar: `analysis-phase.md.template` (duplica introduction),
+`categorization-plan.md.template`, `document.md.template`.
+
+**Criterio de cierre:**
+Cero templates en `assets/` sin referencia en SKILL.md o en un reference activo.
+Cada template tiene una fase asignada o está en `assets/legacy/`.
+
+---
+
 ## TD-002: Phase 3 (PLAN) no produce artefacto en el WP
 
 ```

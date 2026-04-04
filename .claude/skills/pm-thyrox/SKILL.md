@@ -20,6 +20,20 @@ Framework de gestión para organizar trabajo de cualquier tamaño con Claude Cod
 
 Ver [escalabilidad](references/scalability.md) para detalles y casos de borde.
 
+```mermaid
+flowchart LR
+    P1([ANALYZE]) --> P2([SOLUTION\nSTRATEGY])
+    P2 --> P3([PLAN])
+    P3 --> P4([STRUCTURE])
+    P4 --> P5([DECOMPOSE])
+    P5 --> P6([EXECUTE])
+    P6 --> P7([TRACK])
+    P6 -->|más tareas| P6
+
+    P1 -.->|micro: saltar 2-5| P6
+    P2 -.->|pequeño: saltar 3-5| P6
+```
+
 ---
 
 ## Las 7 Fases
@@ -79,12 +93,13 @@ Definir scope antes de estructurar previene scope creep.
 
 1. Brainstorm: ¿qué problema? ¿quiénes son los usuarios? ¿qué es éxito? ¿qué está fuera?
 2. Verificar que el work package existe: `ls context/work/`. Si no existe, volver a Phase 1 antes de continuar. Para trabajo grande que agrupa múltiples features, usar [epic.md.template](assets/epic.md.template)
-3. Actualizar ROADMAP.md con features y link al work package
-4. Obtener aprobación del scope
+3. REQUERIDO: Crear `work/../{nombre-wp}-plan.md` usando [plan.md.template](assets/plan.md.template) — scope statement, in-scope, out-of-scope explícito, estimación de esfuerzo
+4. Actualizar ROADMAP.md con features y link al work package
+5. Obtener aprobación del scope — NO declarar Phase 3 completa hasta confirmación explícita del usuario
 
-**Salir cuando:** ROADMAP actualizado y scope aprobado.
+**Salir cuando:** `work/../{nombre-wp}-plan.md` existe con scope aprobado Y ROADMAP actualizado.
 **Siguiente:** Proponer Phase 4: STRUCTURE para especificar antes de descomponer.
-**Detectar:** Si ROADMAP.md tiene el work package linkeado, Phase 3 ya completó.
+**Detectar:** Si `work/.../*-plan.md` existe con `[x] Scope aprobado`, Phase 3 ya completó.
 
 ### Phase 4: STRUCTURE
 
@@ -169,6 +184,7 @@ Documentar lecciones previene repetir los mismos errores.
 | 1–2 | Decisiones arquitectónicas | `context/decisions/adr-NNN.md` | [adr.md.template](assets/adr.md.template) |
 | 1 | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` | — |
 | 2 | Estrategia de solución | `work/../{nombre-wp}-solution-strategy.md` | [solution-strategy.md.template](assets/solution-strategy.md.template) |
+| 3 | Scope del trabajo | `work/../{nombre-wp}-plan.md` | [plan.md.template](assets/plan.md.template) |
 | 4 | Especificación de requisitos | `work/../{nombre-wp}-requirements-spec.md` | [requirements-specification.md.template](assets/requirements-specification.md.template) |
 | 4 | Diseño técnico (complejo) | `work/../{nombre-wp}-design.md` | [design.md.template](assets/design.md.template) |
 | 5 | Plan de tareas | `work/../{nombre-wp}-task-plan.md` | [tasks.md.template](assets/tasks.md.template) |
@@ -189,6 +205,7 @@ context/work/YYYY-MM-DD-HH-MM-SS-nombre/
 ├── {nombre}-risk-register.md         ← Riesgos vivos Phase 1→6 — REQUERIDO
 ├── {nombre}-exit-conditions.md       ← Gates de las 7 fases (Phase 1, mediano/grande)
 ├── {nombre}-solution-strategy.md     ← Estrategia arquitectónica (Phase 2)
+├── {nombre}-plan.md                  ← Scope aprobado (Phase 3)
 ├── {nombre}-requirements-spec.md     ← Especificación de requisitos (Phase 4)
 ├── {nombre}-design.md                ← Diseño técnico (Phase 4, complejo)
 ├── {nombre}-task-plan.md             ← Tareas con checkboxes (Phase 5) — REQUERIDO
@@ -225,9 +242,9 @@ Errores:         ERR-NNN-descripcion.md
 
 ```
 {nombre-wp} = parte descriptiva del WP (sin timestamp)
-{tipo}      = analysis | solution-strategy | requirements-spec | design |
+{tipo}      = analysis | solution-strategy | plan | requirements-spec | design |
               task-plan | execution-log | lessons-learned | risk-register |
-              exit-conditions | final-report
+              exit-conditions | final-report | spec-checklist
 
 Ejemplo: WP "2026-04-02-10-00-00-pagos-stripe"
   → analysis/pagos-stripe-analysis.md
