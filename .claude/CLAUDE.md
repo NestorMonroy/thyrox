@@ -13,13 +13,13 @@ Fecha actualización: 2026-03-28
 Estas son reglas del framework de metodologia — NO son ADRs del proyecto.
 Los ADRs del proyecto viven en `context/decisions/adr-NNN.md`.
 
-1. **ANALYZE first** — No planificar sin entender primero (ADR-010)
-2. **Anatomía oficial** — SKILL.md + scripts/ + references/ + assets/ (ADR-011)
-3. **Git as persistence** — Zero archivos backup, historial en git (ADR-008)
-4. **Markdown only** — Sin bases de datos, sin formatos propietarios (ADR-001)
-5. **Single skill** — Un pm-thyrox con references, no 15 skills separados (ADR-004)
+1. **ANALYZE first** — No planificar sin entender primero
+2. **Anatomía oficial** — SKILL.md + scripts/ + references/ + assets/
+3. **Git as persistence** — Zero archivos backup, historial en git
+4. **Markdown only** — Sin bases de datos, sin formatos propietarios
+5. **Single skill** — Un pm-thyrox con references, no 15 skills separados
 6. **Work packages with timestamp** — context/work/YYYY-MM-DD-HH-MM-SS-nombre/
-7. **Conventional Commits** — `type(scope): description` (ADR-003)
+7. **Conventional Commits** — `type(scope): description`
 
 ## SKILL vs ADR — Regla de uso
 
@@ -64,6 +64,11 @@ SIEMPRE seguir este flujo. NO omitir pasos.
    - No hay work package → empezar Phase 1: ANALYZE.
 4. **Trabajar** — Seguir cada fase hasta su exit criteria. NO saltarse fases. Commits convencionales. Actualizar ROADMAP.md.
 5. **Cierre** — Actualizar focus.md + now.md.
+
+## Configuración del Proyecto
+
+adr_path: .claude/context/decisions/   # THYROX mantiene ADRs en .claude/ — retrocompat
+# Default para nuevos proyectos: doc/architecture/decisions/
 
 ## Para más contexto
 
