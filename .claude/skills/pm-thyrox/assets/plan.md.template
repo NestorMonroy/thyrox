@@ -54,6 +54,19 @@ Fases activas: [según tabla de escalabilidad en SKILL.md]
 
 ---
 
+## Trazabilidad RC → Tarea
+
+> Incluir esta sección SOLO si el plan deriva de `analysis/` con RC formales.
+> Omitir si el trabajo es mecánico y no tiene RC documentadas.
+
+| Tarea | Archivo | Resuelve RC |
+|-------|---------|-------------|
+| [descripción de tarea] | [archivo afectado] | RC-00N |
+
+Gate: cada RC de prioridad Alta o Media debe tener al menos una fila antes de presentar el plan al usuario.
+
+---
+
 ## Link ROADMAP
 
 Ver tracking: [ROADMAP.md — sección correspondiente](../../../../../ROADMAP.md)

@@ -13,6 +13,27 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.7.1] - 2026-04-04
+
+### Fixed — Correcciones de proceso Phase 3 (WP skill-adr-boundary, reapertura)
+
+**SPEC-001 — Gate de trazabilidad RC→tarea:**
+- `SKILL.md` Phase 3 paso 5: SI hay RC formales → REQUERIDO tabla RC→tarea antes de presentar plan
+
+**SPEC-002 — Nota DECOMPOSE condicional:**
+- `SKILL.md` Phase 3: SI hay RC con prioridades distintas → DECOMPOSE no puede saltarse
+
+**SPEC-003 — Exit criteria con cobertura:**
+- `SKILL.md` Phase 3 Salir cuando: SI hay RC formales, tabla debe existir y estar completa
+
+**SPEC-004 — Template plan.md:**
+- `plan.md.template`: sección condicional trazabilidad RC→tarea con gate
+
+**SPEC-005 — Limpieza artefacto mal ubicado:**
+- Eliminado `process-error-analysis.md` de raíz WP (versión correcta en `analysis/`)
+
+---
+
 ## [0.7.0] - 2026-04-04
 
 ### Added — Boundary SKILL vs ADR para compatibilidad multi-modelo (WP skill-adr-boundary)

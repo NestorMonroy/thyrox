@@ -405,6 +405,14 @@ N tech skills auto-generados desde un registry centralizado, persistentes como a
 
 - [x] Campo `Uso:` en frontmatter YAML con restriccion de uso explicita (2026-04-04)
 
+### Correcciones de proceso Phase 3 (reapertura WP)
+
+- [x] SKILL.md Phase 3 — paso 5: tabla trazabilidad RC→tarea condicional (SPEC-001) (2026-04-04)
+- [x] SKILL.md Phase 3 — Nota DECOMPOSE: no saltable si hay RC con prioridades distintas (SPEC-002) (2026-04-04)
+- [x] SKILL.md Phase 3 — exit criteria: gate de cobertura RC integrado (SPEC-003) (2026-04-04)
+- [x] plan.md.template — sección condicional trazabilidad RC→tarea (SPEC-004) (2026-04-04)
+- [x] process-error-analysis.md eliminado de raíz WP (SPEC-005) (2026-04-04)
+
 ---
 
 ## Métricas de Progreso
@@ -421,7 +429,7 @@ FASE 5: Compatibilidad multi-modelo — 100% ✓
 FASE 6: Template phase integration  — 100% ✓
 FASE 7: Meta-framework generativo   — 100% ✓
 FASE 8: Resolución de deuda técnica — 100% ✓
-FASE 9: Boundary SKILL vs ADR       — 100% ✓
+FASE 9: Boundary SKILL vs ADR + correcciones proceso Phase 3 — 100% ✓
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections

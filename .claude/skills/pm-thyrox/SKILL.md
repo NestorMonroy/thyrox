@@ -104,9 +104,13 @@ Definir scope antes de estructurar previene scope creep.
 2. Verificar que el work package existe: `ls context/work/`. Si no existe, volver a Phase 1 antes de continuar. Para trabajo grande que agrupa múltiples features, usar [epic.md.template](assets/epic.md.template)
 3. REQUERIDO: Crear `work/../{nombre-wp}-plan.md` usando [plan.md.template](assets/plan.md.template) — scope statement, in-scope, out-of-scope explícito, estimación de esfuerzo
 4. Actualizar ROADMAP.md con features y link al work package
-5. Obtener aprobación del scope — NO declarar Phase 3 completa hasta confirmación explícita del usuario
+5. SI el plan deriva de `analysis/` con RC formales → REQUERIDO: incluir tabla de trazabilidad RC→tarea en el plan antes de presentarlo al usuario. Cada RC de prioridad Alta o Media debe tener al menos una fila. NO presentar el plan si la tabla está incompleta.
+   SI el plan no tiene RC formales (trabajo mecánico) → omitir la tabla.
+6. Obtener aprobación del scope — NO declarar Phase 3 completa hasta confirmación explícita del usuario
 
-**Salir cuando:** `work/../{nombre-wp}-plan.md` existe con scope aprobado Y ROADMAP actualizado.
+**Nota DECOMPOSE:** SI el plan deriva de RC con prioridades distintas (Alta, Media, Baja) → Phase 5: DECOMPOSE NO puede saltarse, independientemente de la clasificación de tamaño en la tabla de escalabilidad. El criterio de tamaño aplica solo a WPs sin RC formales.
+
+**Salir cuando:** `work/../{nombre-wp}-plan.md` existe con scope aprobado Y ROADMAP actualizado. SI hay RC formales: la tabla de trazabilidad RC→tarea existe y cada RC Alta/Media tiene al menos una tarea asignada.
 **Siguiente:** Proponer Phase 4: STRUCTURE para especificar antes de descomponer.
 **Detectar:** Si `work/.../*-plan.md` existe con `[x] Scope aprobado`, Phase 3 ya completó.
 
