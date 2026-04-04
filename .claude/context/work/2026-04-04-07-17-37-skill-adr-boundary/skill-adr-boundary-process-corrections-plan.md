@@ -90,4 +90,4 @@ Ver tracking: [ROADMAP.md — FASE 9](../../../../../ROADMAP.md)
 
 ## Estado de aprobación
 
-- [ ] Scope aprobado por usuario — PENDIENTE
+- [x] Scope aprobado por usuario — 2026-04-04
