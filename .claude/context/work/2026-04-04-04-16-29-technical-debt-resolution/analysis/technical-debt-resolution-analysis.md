@@ -242,43 +242,152 @@ Los siguientes scripts son referenciados en SKILL.md Phase 7 y deben verificarse
 
 ---
 
-## 7. Síntesis — Qué Requiere Implementación Real
+## 7. Auditoría de WPs Históricos — Deuda Real Encontrada
+
+Todos los `[ ]` en WPs anteriores fueron verificados contra el estado real del repositorio.
+
+### 7.1 WPs con trabajo ya implementado (solo necesitan cierre formal)
+
+Los siguientes WPs tienen todas sus tareas implementadas en sesiones posteriores pero
+nunca se marcaron como `[x]` en sus task-plans. Requieren cierre formal:
+
+| WP | Tareas implementadas | Evidencia |
+|----|---------------------|-----------|
+| `2026-03-27-014512-coherencia-unificacion-fases` | Todos los items de unificación de fases | ROADMAP FASE 2 = 100% ✓ |
+| `2026-03-28-015504-covariancia` | Todos los items de covariancia | ROADMAP FASE 3 covariancia = 100% ✓ |
+| `2026-03-28-020942-spec-kit-adoption` | Templates + SKILL.md actualizado | ROADMAP FASE 3b = 100% ✓ |
+| `2026-03-28-023917-spec-kit-deep-adoption` | validate-phase-readiness.sh + SKILL.md | ROADMAP FASE 3c = 100% ✓ |
+| `2026-03-28-18-25-45-cicd-setup` | validate.yml + commit-msg-hook.sh creados | ROADMAP FASE 4 CI/CD = 100% ✓ |
+| `2026-03-28-11-16-40-multi-interaction-evals` | evals/multi-interaction-evals.json, run-multi-evals.sh, lessons.md | Scripts y JSON existen en evals/ |
+| `2026-03-28-20-15-30-skill-flow-analysis` | T-001..T-008, T-010..T-012 todos aplicados | SKILL.md tiene todos los cambios |
+| `2026-03-31-06-14-23-skill-consistency` | T-001/T-002/T-003/T-005/T-006/T-007 implementados | Assets renombrados, CLAUDE.md actualizado, setup-template.sh limpia decisions/ |
+
+**Estos WPs no requieren nueva implementación. Solo cierre: marcar task-plans como `[x]`.**
+
+---
+
+### 7.2 Deuda genuinamente pendiente en WPs históricos
+
+#### D-001: `examples.md` — nomenclatura de fases completamente obsoleta
+
+**WP origen:** `2026-04-01-18-39-56-skill-activation-failure` (T-DT-001)
+
+**Problema verificado:** `references/examples.md` usa una numeración de fases que no
+corresponde al SKILL.md actual:
+
+| `examples.md` (actual) | SKILL.md actual | Diferencia |
+|------------------------|-----------------|------------|
+| Phase 1: PLAN | Phase 1: ANALYZE | Nombre incorrecto |
+| Phase 2: STRUCTURE | Phase 2: SOLUTION_STRATEGY | Nombre incorrecto |
+| Phase 3: DECOMPOSE | Phase 3: PLAN | Nombre incorrecto |
+| Phase 4: EXECUTE | Phase 4: STRUCTURE | Nombre incorrecto |
+| Phase 5: TRACK | Phase 5: DECOMPOSE | Nombre incorrecto |
+| — | Phase 6: EXECUTE | Faltante |
+| — | Phase 7: TRACK | Faltante |
+
+**Impacto:** Claude Haiku y modelos con menos contexto leen `examples.md` como referencia
+de comportamiento esperado. Si los ejemplos muestran "Phase 1: PLAN", el modelo puede
+confundir la fase de planificación con la fase de análisis.
+
+**Resolución:** Reescribir todos los ejemplos en `examples.md` con la nomenclatura correcta
+de 7 fases actuales.
+
+---
+
+#### D-002: `scalability.md` — referencias a templates eliminados
+
+**WP origen:** `2026-03-31-06-14-23-skill-consistency` (T-004 parcialmente pendiente)
+
+**Problema verificado:** `references/scalability.md` referencia `project.json` como si
+fuera un artefacto vivo del framework (líneas 49, 63, 78, 95, 140, 149). También
+referencia `exit_conditions.md` (sin prefijo `.template`) en línea 140.
+
+- `project.json.template` va a ser eliminado en este WP (viola ADR-001)
+- `exit_conditions.md` → nombre correcto es `exit-conditions.md.template`
+
+**Impacto:** `scalability.md` es un reference activo. Un modelo que lo lea ve instrucciones
+de mantener un `project.json` que ya no forma parte del framework.
+
+**Resolución:**
+- Eliminar las referencias a `project.json` de `scalability.md` (6 ocurrencias)
+- Corregir `exit_conditions.md` → `exit-conditions.md.template`
+
+---
+
+#### D-003: `skill-flow-analysis` T-009 — OBSOLETO
+
+**WP origen:** `2026-03-28-20-15-30-skill-flow-analysis` (T-009: agregar `document.md.template`
+en sección Templates de SKILL.md)
+
+**Verificación:** `document.md.template` NO está en SKILL.md. Sin embargo, en este WP se
+decidió ELIMINAR `document.md.template`. Por lo tanto T-009 es obsoleto — no se implementa
+porque el template será eliminado.
+
+**Acción:** Marcar T-009 como `[-]` en el plan.md del WP con nota "OBSOLETO: template eliminado".
+
+---
+
+#### D-004: WPs con task-plans no cerrados requieren cierre formal
+
+Los WPs listados en §7.1 tienen `- [ ]` en sus task-plans pero el trabajo ya está hecho.
+Deben marcarse como completados para que `validate-session-close.sh` no genere falsos alertas.
+
+---
+
+### 7.3 TD-001: Timestamps incompletos — escala real
+
+**Verificación:** `93 artefactos` en WPs históricos tienen `Fecha: YYYY-MM-DD` sin hora.
+
+Los WPs afectados son todos históricos (pre-2026-04), ya cerrados. La corrección
+de timestamps en WPs cerrados tiene valor mínimo de trazabilidad.
+
+**Decisión de scope:**
+- Artefactos en WPs cerrados: NO corregir retroactivamente (el valor de trazabilidad
+  ya es nulo — los WPs están cerrados y no se revisitarán).
+- Implementar prevención para WPs futuros:
+  - Regla en `conventions.md`
+  - Validación en `validate-session-close.sh` para el WP activo
+
+---
+
+## 8. Síntesis — Qué Requiere Implementación Real
 
 Ordenado por impacto y dependencias:
 
 ### Grupo A — Templates (baja fricción, alto valor de claridad)
 - Eliminar 4 templates: `analysis-phase.md`, `categorization-plan.md`, `document.md`, `project.json`
-- Mapear 2 templates: `ad-hoc-tasks.md` y `refactors.md` a fases en SKILL.md
+- Mapear 2 templates en SKILL.md: `ad-hoc-tasks.md` (Phase 6) y `refactors.md` (Phase 6/7)
 
-### Grupo B — Referencias desactualizadas (bajo esfuerzo)
-- T-004 del WP skill-consistency: verificar y corregir nombres en `examples.md`, `reference-validation.md`, `scalability.md`
-- T-DT-001: actualizar nomenclatura de fases en `examples.md`
-- Cerrar formalmente el WP `skill-consistency` (marcar tareas resueltas, crear lessons-learned)
+### Grupo B — Referencias desactualizadas (impacto en modelos más pequeños)
+- D-001: Reescribir `examples.md` con nomenclatura de 7 fases actuales
+- D-002: Eliminar referencias a `project.json` y corregir `exit_conditions.md` en `scalability.md`
 
 ### Grupo C — Convenciones y validación (impacto estructural)
-- TD-001: agregar regla de timestamp en `conventions.md`
-- TD-001: agregar validación en `validate-session-close.sh`
-- TD-002: verificar y agregar check de `*-plan.md` en `validate-phase-readiness.sh` Phase 3
+- TD-001: Agregar regla de timestamp en `conventions.md`
+- TD-001: Agregar validación en `validate-session-close.sh` para WP activo (no retroactivo)
+- TD-002: Verificar que `validate-phase-readiness.sh` incluya check de `*-plan.md` para Phase 3
 
-### Grupo D — Setup template
-- T-005 del WP skill-consistency: agregar limpieza de `context/decisions/` en `setup-template.sh`
+### Grupo D — Cierre de WPs históricos
+- Marcar `[x]` todas las tareas ya implementadas en los 8 WPs históricos (§7.1)
+- Marcar T-009 de skill-flow-analysis como `[-]` OBSOLETO
 
 ---
 
-## 8. Decisión Arquitectónica Clave
+## 9. Decisión Arquitectónica Clave
 
 **No mover templates a `assets/legacy/`.**
 
 Los 4 templates a eliminar se borrarán directamente (ADR-008: Git as persistence).
-El historial git preserva el contenido si se necesita en el futuro. No crear
-directorios legacy que acumulen ruido.
+El historial git preserva el contenido si se necesita en el futuro.
 
-Los 2 templates a mantener se mapean explícitamente a fases en SKILL.md.
+**Timestamps históricos: no corregir retroactivamente.**
+
+93 artefactos en WPs cerrados tienen timestamps sin hora. Corregirlos no agrega
+valor de trazabilidad (WPs ya cerrados, no se revisitarán). Solo prevención forward.
 
 ---
 
-## 9. Fuera de Scope
+## 10. Fuera de Scope
 
-- Auditoría de WPs históricos (pre-2026-04) para timestamps — demasiado volumen, bajo valor
-- Refactoring de referencias dentro de los WPs históricos archivados
 - Nueva funcionalidad (este WP es solo deuda técnica)
+- Corrección retroactiva de timestamps en WPs cerrados (ver §7.3)
