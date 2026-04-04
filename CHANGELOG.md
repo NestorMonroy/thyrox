@@ -1,7 +1,7 @@
 ```yml
 Tipo: Historial de Cambios
 Categoría: Proyecto
-Versión: 0.5.0
+Versión: 0.8.0
 Propósito: Registro de cambios notables del proyecto
 Fecha actualización: 2026-04-04
 ```
@@ -10,6 +10,36 @@ Fecha actualización: 2026-04-04
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [0.8.0] - 2026-04-04
+
+### Added — Separación .claude/ vs doc/ con adr_path configurable (WP doc-structure)
+
+**SPEC-001 — Campo `adr_path` en CLAUDE.md:**
+- `CLAUDE.md`: sección `## Configuración del Proyecto` con `adr_path: .claude/context/decisions/`
+- Retrocompatibilidad explícita para THYROX; nuevos proyectos usan `doc/architecture/decisions/`
+
+**SPEC-002 — Locked Decisions portables:**
+- `CLAUDE.md`: eliminadas referencias a IDs de ADR en sección Locked Decisions
+- Reglas de framework ahora desacopladas de ADRs del proyecto
+
+**SPEC-003 — SKILL.md Phase 1 Step 8 con regla `adr_path`:**
+- Instrucción SI/NO: SI CLAUDE.md tiene `adr_path:` → usarla. SI NO → `doc/architecture/decisions/`
+- Formato binario para compatibilidad con modelos de menor capacidad (Haiku)
+
+**SPEC-004 — `doc/architecture/decisions/README.md`:**
+- Nuevo directorio canónico para ADRs en proyectos nuevos
+- README con propósito, estructura y convenciones de naming
+
+**SPEC-005 — `.claude/skills/sphinx/SKILL.md` stub:**
+- Tech skill para documentación Sphinx/RST registrado en el framework
+- Secciones marcadas `[PENDIENTE]` para desarrollo futuro
+
+**SPEC-006 — ADR-013: doc/ como documentación canónica:**
+- Decisión arquitectónica registrada en `.claude/context/decisions/adr-013.md`
+- Establece `doc/` como directorio canónico para documentación permanente del proyecto
 
 ---
 

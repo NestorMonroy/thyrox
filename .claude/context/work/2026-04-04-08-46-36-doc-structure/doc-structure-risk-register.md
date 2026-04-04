@@ -3,9 +3,9 @@ Proyecto: THYROX — PM-THYROX Framework
 Work package: 2026-04-04-08-46-36-doc-structure
 Fecha creación: 2026-04-04
 Última actualización: 2026-04-04
-Fase actual: Phase 1 — ANALYZE
-Riesgos abiertos: 5
-Riesgos mitigados: 0
+Fase actual: Phase 7 — TRACK (CERRADO)
+Riesgos abiertos: 0
+Riesgos mitigados: 5
 Riesgos cerrados: 0
 ```
 
@@ -15,11 +15,11 @@ Riesgos cerrados: 0
 
 | ID | Descripción | Probabilidad | Impacto | Severidad | Estado |
 |----|-------------|:------------:|:-------:|:---------:|--------|
-| R-001 | El campo `adr_path` no se lee correctamente por Haiku — escribe en lugar equivocado | Media | Alto | Alta | Abierto |
-| R-002 | Proyectos existentes que no declaran `adr_path` quedan con ADRs en `.claude/` sin saberlo | Alta | Medio | Alta | Abierto |
-| R-003 | `doc/` se convierte en basura si el SKILL escribe artefactos efímeros ahí por error | Baja | Alto | Media | Abierto |
-| R-004 | CLAUDE.md sin referencias a ADR IDs pierde trazabilidad histórica de las reglas | Media | Bajo | Baja | Abierto |
-| R-005 | Dos convenciones coexistiendo (`.claude/context/decisions/` vs `doc/`) crean confusión | Alta | Medio | Alta | Abierto |
+| R-001 | El campo `adr_path` no se lee correctamente por Haiku — escribe en lugar equivocado | Media | Alto | Alta | Mitigado — SKILL.md usa SI/NO |
+| R-002 | Proyectos existentes que no declaran `adr_path` quedan con ADRs en `.claude/` sin saberlo | Alta | Medio | Alta | Mitigado — THYROX se autodeclara en CLAUDE.md |
+| R-003 | `doc/` se convierte en basura si el SKILL escribe artefactos efímeros ahí por error | Baja | Alto | Media | Mitigado — tabla explícita en SKILL.md |
+| R-004 | CLAUDE.md sin referencias a ADR IDs pierde trazabilidad histórica de las reglas | Media | Bajo | Baja | Mitigado — no se materializó; Locked Decisions portables |
+| R-005 | Dos convenciones coexistiendo (`.claude/context/decisions/` vs `doc/`) crean confusión | Alta | Medio | Alta | Mitigado — `adr_path` es única fuente de verdad |
 
 ## Detalle de riesgos
 

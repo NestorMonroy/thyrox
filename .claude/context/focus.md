@@ -6,7 +6,7 @@ Versión: 1.0
 
 # Focus
 
-WP skill-adr-boundary cerrado (sesión 9). Boundary SKILL vs ADR en 3 capas + gates Phase 3 implementados. Framework listo con trazabilidad RC→tarea obligatoria y DECOMPOSE condicional por RC.
+WP doc-structure cerrado (sesión 10). Separación .claude/ vs doc/ formalizada con adr_path configurable. SKILL.md multi-modelo (SI/NO), sphinx skill registrado, ADR-013 aprobado. Framework listo para proyectos nuevos con doc/ canónico.
 
 ## Completado sesión 7
 
