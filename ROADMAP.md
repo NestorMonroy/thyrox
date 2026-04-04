@@ -313,36 +313,36 @@ N tech skills auto-generados desde un registry centralizado, persistentes como a
 
 ### Registry base
 
-- [ ] Crear estructura `.claude/registry/` con README
-- [ ] Crear `_generator.sh` — instancia templates en project skills
-- [ ] Template `frontend/react.template.md` (SKILL.md + instructions.md)
-- [ ] Template `backend/nodejs.template.md` (SKILL.md + instructions.md)
-- [ ] Template `db/postgresql.template.md` (SKILL.md + instructions.md)
+- [x] Crear estructura `.claude/registry/` con README (2026-04-04)
+- [x] Crear `_generator.sh` — instancia templates en project skills (2026-04-04)
+- [x] Template `frontend/react.template.md` (SKILL.md + instructions.md) (2026-04-04)
+- [x] Template `backend/nodejs.template.md` (SKILL.md + instructions.md) (2026-04-04)
+- [x] Template `db/postgresql.template.md` (SKILL.md + instructions.md) (2026-04-04)
 
 ### Bootstrap command
 
-- [ ] Crear `/workflow_init` — detecta stack, instancia skills desde registry, git commit
-- [ ] Tech detector integrado en `/workflow_init` (scan package.json, requirements.txt, etc.)
-- [ ] Modo manual override para proyectos polyglot o sin config estándar
+- [x] Crear `/workflow_init` — detecta stack, instancia skills desde registry, git commit (2026-04-04)
+- [x] Tech detector integrado en `/workflow_init` (scan package.json, requirements.txt, etc.) (2026-04-04)
+- [x] Modo manual override para proyectos polyglot o sin config estándar (2026-04-04)
 
 ### Workflow commands (Phase entry points)
 
-- [ ] `/workflow_analyze` — Phase 1: ANALYZE con context pre-cargado
-- [ ] `/workflow_strategy` — Phase 2: SOLUTION_STRATEGY
-- [ ] `/workflow_plan` — Phase 3: PLAN con ROADMAP check
-- [ ] `/workflow_structure` — Phase 4: STRUCTURE con spec template
-- [ ] `/workflow_decompose` — Phase 5: DECOMPOSE con task template
-- [ ] `/workflow_execute` — Phase 6: EXECUTE con next task automático
-- [ ] `/workflow_track` — Phase 7: TRACK con validate-phase-readiness
+- [x] `/workflow_analyze` — Phase 1: ANALYZE con context pre-cargado (2026-04-04)
+- [x] `/workflow_strategy` — Phase 2: SOLUTION_STRATEGY (2026-04-04)
+- [x] `/workflow_plan` — Phase 3: PLAN con ROADMAP check (2026-04-04)
+- [x] `/workflow_structure` — Phase 4: STRUCTURE con spec template (2026-04-04)
+- [x] `/workflow_decompose` — Phase 5: DECOMPOSE con task template (2026-04-04)
+- [x] `/workflow_execute` — Phase 6: EXECUTE con next task automático (2026-04-04)
+- [x] `/workflow_track` — Phase 7: TRACK con validate-phase-readiness (2026-04-04)
 
 ### session-start.sh actualizado
 
-- [ ] Detectar tech skills activos en `.claude/skills/`
-- [ ] Mostrar lista de tech skills activos en startup display
+- [x] Detectar tech skills activos en `.claude/skills/` (2026-04-04)
+- [x] Mostrar lista de tech skills activos en startup display (2026-04-04)
 
 ### ADR-012
 
-- [ ] Crear `context/decisions/adr-012.md` — refinamiento de ADR-004 (management vs tech skills)
+- [x] Crear `context/decisions/adr-012.md` — refinamiento de ADR-004 (management vs tech skills) (2026-04-04)
 
 ---
 
@@ -358,7 +358,7 @@ FASE 3d: Riesgos referencia      — 100% ✓
 FASE 4: Template reutilizable    — 100% ✓
 FASE 5: Compatibilidad multi-modelo — 100% ✓
 FASE 6: Template phase integration  — 100% ✓
-FASE 7: Meta-framework generativo   — 0% [ ]
+FASE 7: Meta-framework generativo   — 100% ✓
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
@@ -368,4 +368,4 @@ Sesión 2026-04-03: voltfactory analysis + solution strategy + tests (55/55)
 
 ---
 
-**Última actualización:** 2026-04-03
+**Última actualización:** 2026-04-04

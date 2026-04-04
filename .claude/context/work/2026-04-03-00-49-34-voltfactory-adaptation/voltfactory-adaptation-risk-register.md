@@ -1,20 +1,21 @@
 ```yml
 Fecha: 2026-04-03-00-49-34
+Fecha cierre: 2026-04-04-00-00-00
 WP: voltfactory-adaptation
-Fase actual: 1 - ANALYZE
-Estado: Activo
+Fase actual: 7 - TRACK
+Estado: Cerrado
 ```
 
 # Risk Register — voltfactory-adaptation
 
 | ID | Riesgo | Prob | Impacto | Severidad | Estado |
 |----|--------|------|---------|-----------|--------|
-| R-001 | Adaptar demasiado (scope creep) | Alta | Alto | CRÍTICO | Abierto |
-| R-002 | `.instructions.md` automáticos sobrecargan contexto | Media | Medio | MEDIO | Abierto |
-| R-003 | Slash commands duplican responsabilidad del SKILL | Media | Bajo | BAJO | Abierto |
-| R-004 | Registry crece sin control — 50+ templates difíciles de mantener | Media | Alto | ALTO | Abierto |
-| R-005 | Tech Detection falla en proyectos polyglot o sin archivos de config | Alta | Medio | MEDIO | Abierto |
-| R-006 | Skills generados de baja calidad si templates son genéricos | Media | Alto | ALTO | Abierto |
+| R-001 | Adaptar demasiado (scope creep) | Alta | Alto | CRÍTICO | Cerrado — No materializado |
+| R-002 | `.instructions.md` automáticos sobrecargan contexto | Media | Medio | MEDIO | Cerrado — No materializado |
+| R-003 | Slash commands duplican responsabilidad del SKILL | Media | Bajo | BAJO | Cerrado — Mitigado: comandos son atajos de contexto, no duplican lógica |
+| R-004 | Registry crece sin control — 50+ templates difíciles de mantener | Media | Alto | ALTO | Cerrado — Mitigado: 3 templates iniciales, criterio de entrada definido |
+| R-005 | Tech Detection falla en proyectos polyglot o sin archivos de config | Alta | Medio | MEDIO | Cerrado — Mitigado: modo manual override implementado en workflow_init |
+| R-006 | Skills generados de baja calidad si templates son genéricos | Media | Alto | ALTO | Cerrado — Mitigado: 5+ reglas específicas con ejemplos buenos/malos en cada template |
 
 ## R-001 — Scope creep: adaptar todo Volt Factory
 
