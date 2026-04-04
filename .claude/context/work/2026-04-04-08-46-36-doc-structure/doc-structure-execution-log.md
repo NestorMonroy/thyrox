@@ -17,7 +17,7 @@ Fase: 6 - EXECUTE
 ### T-003 — SKILL.md Phase 1 Step 8
 **Estado:** ✓ Completado — regla SI/NO implementada
 
-### T-004 — doc/architecture/decisions/README.md
+### T-004 — docs/architecture/decisions/README.md
 **Estado:** ✓ Completado
 
 ### T-005 — .claude/skills/sphinx/SKILL.md stub
@@ -32,7 +32,7 @@ Fase: 6 - EXECUTE
 grep "adr_path" .claude/CLAUDE.md           → 1 resultado ✓
 grep "ADR-0[0-9][0-9]" .claude/CLAUDE.md    → 0 resultados ✓
 SKILL.md Phase 1 Step 8 adr_path            → presente ✓
-doc/architecture/decisions/README.md        → existe ✓
+docs/architecture/decisions/README.md        → existe ✓
 .claude/skills/sphinx/SKILL.md              → existe ✓
 .claude/context/decisions/adr-013.md        → existe ✓
 ```

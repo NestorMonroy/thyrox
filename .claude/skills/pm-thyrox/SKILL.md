@@ -63,7 +63,7 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
 7. Si el proyecto define principios arquitectónicos globales que otras features deben respetar, crear/actualizar `constitution.md` en la raíz usando [constitution.md.template](assets/constitution.md.template)
 8. ADR: **Dónde crear el ADR:**
    - SI CLAUDE.md del proyecto tiene campo `adr_path` → crear en ese path
-   - SI NO → crear en `doc/architecture/decisions/` (default)
+   - SI NO → crear en `docs/architecture/decisions/` (default)
 
    Usar [adr.md.template](assets/adr.md.template) SOLO SI aplica alguno de estos casos:
    - SI: cambio de stack tecnologico (lenguaje, base de datos, framework principal)

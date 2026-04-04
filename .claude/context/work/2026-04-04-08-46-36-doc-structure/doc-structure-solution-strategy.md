@@ -17,7 +17,7 @@ y cómo introducir el stub del tech skill `sphinx` siguiendo ADR-012.
 
 ## Key Ideas
 
-### Idea 1: Separación por audiencia — .claude/ vs doc/
+### Idea 1: Separación por audiencia — .claude/ vs docs/
 
 **Descripción:**
 Dos tipos de artefactos conviven hoy en `.claude/`: contexto de sesión (efímero,
@@ -26,8 +26,8 @@ La separación no es de formato sino de audiencia y durabilidad.
 
 **Impacto:**
 - `.claude/` queda como espacio exclusivo de Claude (work packages, focus, now)
-- `doc/` se convierte en la fuente canónica de documentación entregable
-- Herramientas como Sphinx pueden indexar `doc/` sin configuración especial
+- `docs/` se convierte en la fuente canónica de documentación entregable
+- Herramientas como Sphinx pueden indexar `docs/` sin configuración especial
 - Un nuevo desarrollador encuentra la documentación donde espera encontrarla
 
 ### Idea 2: adr_path configurable — portabilidad sin cambiar SKILL.md
@@ -35,19 +35,19 @@ La separación no es de formato sino de audiencia y durabilidad.
 **Descripción:**
 El campo `adr_path` en CLAUDE.md permite que cada proyecto declare su propia
 convención de documentación. SKILL.md Phase 1 Step 8 lee ese campo; si no
-existe, usa el default `doc/architecture/decisions/`.
+existe, usa el default `docs/architecture/decisions/`.
 
 **Impacto:**
 - SKILL.md es completamente portátil entre proyectos
 - THYROX puede mantener `.claude/context/decisions/` declarándolo como su `adr_path`
-- Proyectos nuevos arrancan con el default que ya produce `doc/` correcto
+- Proyectos nuevos arrancan con el default que ya produce `docs/` correcto
 - Haiku puede seguir la regla SI/NO sin ambigüedad
 
 ### Idea 3: Tech skills separados — ADR-012 aplicado a Sphinx
 
 **Descripción:**
 pm-thyrox gestiona metodología (SDLC, fases, artefactos). Sphinx gestiona
-documentación técnica (conf.py, RST, estructura doc/, build). Siguiendo ADR-012,
+documentación técnica (conf.py, RST, estructura docs/, build). Siguiendo ADR-012,
 Sphinx se implementa como tech skill separado con stub inicial en este WP.
 
 **Impacto:**
@@ -81,7 +81,7 @@ Haiku encuentra secciones H2 fiablemente. Sigue el patrón del documento existen
 **Decisión:** Opción A — regla SI/NO:
 ```
 SI CLAUDE.md tiene campo adr_path → escribir ADRs ahí
-SI NO → escribir en doc/architecture/decisions/ (default)
+SI NO → escribir en docs/architecture/decisions/ (default)
 ```
 
 ### Unknown 3: ¿Qué contiene el stub del skill sphinx?
@@ -133,7 +133,7 @@ El campo `adr_path` tiene un default documentado que elimina ambigüedad.
 ```yaml
 ## Configuración del Proyecto
 
-adr_path: doc/architecture/decisions/   # default — cambiar si el proyecto usa otra convención
+adr_path: docs/architecture/decisions/   # default — cambiar si el proyecto usa otra convención
 ```
 
 ### Decision 2: Actualizar SKILL.md Phase 1 Step 8 con regla SI/NO
@@ -165,19 +165,19 @@ crea la estructura y señala el scope sin implementar todo el contenido.
 - Un WP posterior implementa referencias/, assets/, y contenido completo
 - El stub es suficiente para que Claude sepa que el skill existe
 
-### Decision 4: Crear estructura `doc/` mínima en THYROX
+### Decision 4: Crear estructura `docs/` mínima en THYROX
 
 **Alternatives considered:**
-- Solo actualizar CLAUDE.md + SKILL.md sin crear doc/ — incompleto como ejemplo
-- Crear doc/ con contenido real — out of scope de este WP
+- Solo actualizar CLAUDE.md + SKILL.md sin crear docs/ — incompleto como ejemplo
+- Crear docs/ con contenido real — out of scope de este WP
 
 **Justification:**
 THYROX es el proyecto de referencia del framework. Si el framework dicta que
-`doc/architecture/decisions/` existe, THYROX debe tener esa estructura.
+`docs/architecture/decisions/` existe, THYROX debe tener esa estructura.
 Los ADRs existentes NO se migran (eso es un WP separado).
 
 **Implications:**
-- Se crea `doc/architecture/decisions/README.md` como placeholder
+- Se crea `docs/architecture/decisions/README.md` como placeholder
 - El directorio es visible y navegable para Sphinx en el futuro
 - No hay migración de ADRs existentes en este WP
 
@@ -189,10 +189,10 @@ Los ADRs existentes NO se migran (eso es un WP separado).
 |-------------|-----------|
 | ¿Rompe retrocompat de THYROX? | No — CLAUDE.md declarará `.claude/context/decisions/` como su `adr_path` |
 | ¿SKILL.md queda portátil? | Sí — la regla SI/NO no referencia IDs de THYROX |
-| ¿Sphinx puede indexar doc/? | Sí — `doc/` es directorio visible, estructura estándar |
+| ¿Sphinx puede indexar docs/? | Sí — `docs/` es directorio visible, estructura estándar |
 | ¿Haiku puede seguir la regla? | Sí — SI/NO con grep a CLAUDE.md |
 | ¿El stub de sphinx sigue ADR-012? | Sí — SKILL.md + estructura mínima |
-| ¿Algún ADR nuevo necesario? | Sí — ADR-013: doc/ como documentación canónica del proyecto |
+| ¿Algún ADR nuevo necesario? | Sí — ADR-013: docs/ como documentación canónica del proyecto |
 
 ---
 
@@ -204,7 +204,7 @@ Los ADRs existentes NO se migran (eso es un WP separado).
 | SKILL.md Phase 1 Step 8 | Modificación | `.claude/skills/pm-thyrox/SKILL.md` |
 | CLAUDE.md Locked Decisions limpio | Modificación | `.claude/CLAUDE.md` |
 | Stub sphinx skill | Creación | `.claude/skills/sphinx/SKILL.md` |
-| Estructura doc/ mínima | Creación | `doc/architecture/decisions/README.md` |
+| Estructura docs/ mínima | Creación | `docs/architecture/decisions/README.md` |
 | ADR-013 | Creación | `.claude/context/decisions/adr-013.md` |
 
 ---

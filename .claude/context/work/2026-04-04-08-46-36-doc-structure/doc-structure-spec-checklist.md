@@ -26,7 +26,7 @@ Estado: Pasó
 ## Consistencia
 
 - [x] Requisitos no se contradicen entre sí
-- [x] Terminología consistente (adr_path, doc/, .claude/ usados uniformemente)
+- [x] Terminología consistente (adr_path, docs/, .claude/ usados uniformemente)
 - [x] Prioridades no entran en conflicto (Critical > High > Medium, sin overlap)
 - [x] Alineado con constitution.md (no existe — no aplica)
 

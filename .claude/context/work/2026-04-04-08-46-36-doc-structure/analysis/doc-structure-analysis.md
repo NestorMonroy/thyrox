@@ -5,12 +5,12 @@ Versión análisis: 1.0
 Estado: Borrador
 ```
 
-# Análisis: Separación de contexto Claude vs documentación de proyecto (doc/)
+# Análisis: Separación de contexto Claude vs documentación de proyecto (docs/)
 
 ## Propósito
 
 Analizar la estructura actual donde todo vive en `.claude/` y determinar qué debe
-separarse hacia `doc/` para que los proyectos que usan PM-THYROX produzcan
+separarse hacia `docs/` para que los proyectos que usan PM-THYROX produzcan
 documentación real — accesible para el equipo, reproducible en cualquier proyecto,
 y compatible con herramientas como Sphinx o MkDocs.
 
@@ -45,7 +45,7 @@ quedan invisibles para:
 ### Lo que un PM senior entregaría
 
 ```
-doc/
+docs/
 ├── architecture/
 │   ├── decisions/
 │   │   ├── adr-001-markdown-documentation.md
@@ -71,19 +71,19 @@ del proyecto (permanentes, documentación entregable) para que:
 
 - Los ADRs sean accesibles a todo el equipo sin depender de Claude
 - El framework sea reproducible en cualquier proyecto con su propia convención de docs
-- La carpeta `doc/` sea la fuente canónica de documentación del proyecto
+- La carpeta `docs/` sea la fuente canónica de documentación del proyecto
 - Las herramientas de docs (Sphinx) puedan indexar y renderizar los ADRs
 
 ### 2. Stakeholders
 
 | Stakeholder | Necesidad |
 |-------------|-----------|
-| Desarrollador sin Claude Code | Leer ADRs y docs en `doc/`, no en `.claude/` |
+| Desarrollador sin Claude Code | Leer ADRs y docs en `docs/`, no en `.claude/` |
 | PM que entrega el proyecto | Documentación en estructura estándar, exportable |
-| Sphinx / MkDocs | Indexar archivos en `doc/`, no en directorios ocultos |
+| Sphinx / MkDocs | Indexar archivos en `docs/`, no en directorios ocultos |
 | Claude (Sonnet/Haiku) | Saber dónde escribir ADRs según la convención del proyecto |
 | Mantenedor del framework | CLAUDE.md portátil sin referencias a ADR IDs de THYROX |
-| Nuevo proyecto usando el SKILL | Arrancar con `doc/` vacío, listo para su propia documentación |
+| Nuevo proyecto usando el SKILL | Arrancar con `docs/` vacío, listo para su propia documentación |
 
 ### 3. Uso operacional
 
@@ -104,7 +104,7 @@ flowchart TD
     A[Claude ejecuta Phase 1] --> B{Hay decision arquitectonica?}
     B -->|Si| C{Existe adr_path\nen CLAUDE.md?}
     C -->|Si| D[Escribe ADR en\nadr_path configurado]
-    C -->|No — default| E[Escribe ADR en\ndoc/architecture/decisions/]
+    C -->|No — default| E[Escribe ADR en\ndocs/architecture/decisions/]
     D --> F[ADR accesible al equipo\ny Sphinx lo indexa]
     E --> F
     F --> G[PM puede entregar\ndocs completas]
@@ -115,7 +115,7 @@ flowchart TD
 **Uso del campo configurable:**
 ```yaml
 # En CLAUDE.md del proyecto
-adr_path: doc/architecture/decisions/     # default
+adr_path: docs/architecture/decisions/     # default
 # o
 adr_path: docs/decisions/                # proyecto con convención propia
 # o
@@ -127,10 +127,10 @@ adr_path: .claude/context/decisions/     # proyecto que prefiere mantener intern
 | Atributo | Requisito |
 |----------|-----------|
 | Portabilidad | El SKILL funciona en cualquier proyecto sin cambiar SKILL.md |
-| Compatibilidad | `doc/` es indexable por Sphinx, MkDocs, Docusaurus sin config especial |
+| Compatibilidad | `docs/` es indexable por Sphinx, MkDocs, Docusaurus sin config especial |
 | Retrocompatibilidad | Proyectos existentes pueden mantener `.claude/context/decisions/` si lo declaran |
 | Claridad para Haiku | La regla de dónde escribir ADRs es SI/NO, no narrativa |
-| Entregabilidad | `doc/` es lo que un PM puede dar a un cliente sin filtrar |
+| Entregabilidad | `docs/` es lo que un PM puede dar a un cliente sin filtrar |
 
 ### 5. Restricciones
 
@@ -146,12 +146,12 @@ adr_path: .claude/context/decisions/     # proyecto que prefiere mantener intern
 .claude/                    ← Claude-only (efímero + framework)
 ├── CLAUDE.md               ← Level 2 con adr_path configurable
 ├── context/
-│   ├── work/               ← WPs — SIEMPRE .claude/, nunca doc/
+│   ├── work/               ← WPs — SIEMPRE .claude/, nunca docs/
 │   ├── focus.md            ← sesión — SIEMPRE .claude/
 │   └── now.md              ← sesión — SIEMPRE .claude/
 └── skills/pm-thyrox/       ← el SKILL distribuible
 
-doc/                        ← proyecto (permanente, entregable)
+docs/                        ← proyecto (permanente, entregable)
 ├── architecture/
 │   └── decisions/          ← ADRs del proyecto
 ├── guides/
@@ -164,23 +164,23 @@ doc/                        ← proyecto (permanente, entregable)
 |---------|-----------|-------------|
 | `.claude/context/work/` | Solo Claude | Efímera — termina con el WP |
 | `.claude/context/focus.md` | Solo Claude | Sesión actual |
-| `doc/` | Todo el equipo | Permanente — vive con el proyecto |
+| `docs/` | Todo el equipo | Permanente — vive con el proyecto |
 
 ### 7. Fuera de alcance
 
 | Excluido | Razón |
 |---|---|
-| Migrar ADRs de THYROX de `.claude/context/decisions/` a `doc/` | THYROX puede declarar su propia `adr_path`; no es urgente |
+| Migrar ADRs de THYROX de `.claude/context/decisions/` a `docs/` | THYROX puede declarar su propia `adr_path`; no es urgente |
 | Configurar Sphinx en THYROX | Tarea separada; el WP solo establece la convención |
-| Mover work packages a `doc/` | Los WPs son efímeros — SIEMPRE en `.claude/context/work/` |
+| Mover work packages a `docs/` | Los WPs son efímeros — SIEMPRE en `.claude/context/work/` |
 | Cambiar la ubicación de `context/focus.md` o `now.md` | Son estado de sesión — pertenecen a `.claude/` |
 | Soporte para múltiples `adr_path` en un mismo proyecto | Complejidad innecesaria |
 
 ### 8. Criterios de éxito
 
 ```bash
-# SKILL.md menciona adr_path o doc/ en la instrucción de ADRs
-grep -n "adr_path\|doc/" .claude/skills/pm-thyrox/SKILL.md
+# SKILL.md menciona adr_path o docs/ en la instrucción de ADRs
+grep -n "adr_path\|docs/" .claude/skills/pm-thyrox/SKILL.md
 # → al menos 1 resultado en Phase 1 Step 8
 
 # CLAUDE.md tiene campo adr_path
@@ -191,8 +191,8 @@ grep -n "adr_path" .claude/CLAUDE.md
 grep -n "ADR-0[0-9][0-9]" .claude/CLAUDE.md
 # → 0 resultados (las reglas son auto-contenidas)
 
-# Estructura doc/ creada con README para Sphinx
-ls doc/architecture/decisions/
+# Estructura docs/ creada con README para Sphinx
+ls docs/architecture/decisions/
 # → directorio existe con al menos README.md
 ```
 
@@ -207,23 +207,23 @@ ls doc/architecture/decisions/
 | H-003 | SKILL.md Phase 1 Step 8 hardcodea `context/decisions/` — no respeta convención del proyecto | Alta |
 | H-004 | No existe separación documentada entre artefactos efímeros (Claude) y permanentes (proyecto) | Media |
 | H-005 | Framework ADRs (ADR-010, ADR-011) mezclados con project ADRs en el mismo directorio | Media |
-| H-006 | No hay estructura `doc/` en THYROX como ejemplo de lo que el framework debería producir | Baja |
-| H-007 | La convención de `doc/` con Sphinx requiere un tech skill dedicado — no es responsabilidad de pm-thyrox | Alta |
+| H-006 | No hay estructura `docs/` en THYROX como ejemplo de lo que el framework debería producir | Baja |
+| H-007 | La convención de `docs/` con Sphinx requiere un tech skill dedicado — no es responsabilidad de pm-thyrox | Alta |
 
 ### H-007 — Sphinx es un tech skill, no parte de pm-thyrox
 
 pm-thyrox gestiona CÓMO trabajar (fases SDLC, artefactos, gates).
 Sphinx gestiona CÓMO documentar para un sistema generador de docs (conf.py, RST/MD,
-estructura `doc/`, build, templates).
+estructura `docs/`, build, templates).
 
 Siguiendo ADR-012 (un management skill + N tech skills):
 - `pm-thyrox` → metodología de gestión, referencia a Sphinx skill para docs
-- `sphinx` (nuevo tech skill) → convenciones Sphinx, estructura `doc/`, plantillas RST/MD,
+- `sphinx` (nuevo tech skill) → convenciones Sphinx, estructura `docs/`, plantillas RST/MD,
   dónde viven los ADRs para que Sphinx los indexe, cómo generar HTML
 
 Esto significa que el scope de este WP NO incluye implementar la integración con Sphinx.
 El WP establece:
-1. La separación `.claude/` (efímero, Claude) vs `doc/` (permanente, equipo)
+1. La separación `.claude/` (efímero, Claude) vs `docs/` (permanente, equipo)
 2. La convención `adr_path` configurable en CLAUDE.md
 3. El stub del nuevo tech skill `sphinx` (estructura, no contenido completo)
 
@@ -233,5 +233,5 @@ El contenido completo del skill `sphinx` es un WP separado.
 
 ## Sin ítems [NEEDS CLARIFICATION]
 
-Todos los hallazgos son verificables. La separación `.claude/` vs `doc/` es clara.
+Todos los hallazgos son verificables. La separación `.claude/` vs `docs/` es clara.
 El campo `adr_path` como mecanismo de configuración está definido en la exploración previa.

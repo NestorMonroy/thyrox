@@ -7,7 +7,7 @@ Total lecciones: 4
 Autor: Claude
 ```
 
-# Lessons Learned: doc-structure — Separación .claude/ vs doc/ con adr_path configurable
+# Lessons Learned: doc-structure — Separación .claude/ vs docs/ con adr_path configurable
 
 ## Propósito
 
@@ -21,8 +21,8 @@ Capturar qué aprendió el equipo durante este work package — qué funcionó, 
 
 **Qué pasó**
 
-R-002 planteaba que si el default para `adr_path` era `doc/architecture/decisions/`,
-proyectos sin esa estructura recibirían un directorio `doc/` creado sin pedirlo.
+R-002 planteaba que si el default para `adr_path` era `docs/architecture/decisions/`,
+proyectos sin esa estructura recibirían un directorio `docs/` creado sin pedirlo.
 La solución emergió naturalmente: THYROX se autodeclara como proyecto de retrocompat
 usando `adr_path: .claude/context/decisions/` en su propio CLAUDE.md.
 
@@ -35,7 +35,7 @@ la única fuente de verdad.
 **Fix aplicado**
 
 CLAUDE.md de THYROX tiene `adr_path: .claude/context/decisions/` con comentario
-explicando que es retrocompat. Nuevos proyectos usarán `doc/architecture/decisions/`
+explicando que es retrocompat. Nuevos proyectos usarán `docs/architecture/decisions/`
 por defecto si no declaran nada (comportamiento del SKILL.md Phase 1 Step 8).
 
 **Regla**
@@ -63,7 +63,7 @@ semántica.
 **Fix aplicado**
 
 SKILL.md Phase 1 Step 8 usa formato: "SI CLAUDE.md tiene `adr_path:` → usar esa
-ruta. SI NO → usar `doc/architecture/decisions/`". Sin narrativa extra.
+ruta. SI NO → usar `docs/architecture/decisions/`". Sin narrativa extra.
 
 **Regla**
 

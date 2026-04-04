@@ -10,7 +10,7 @@ Estado: Aprobado
 ## Resumen Ejecutivo
 
 Separar los artefactos efímeros de Claude (`.claude/`) de los artefactos permanentes
-del proyecto (`doc/`) mediante un campo `adr_path` configurable en CLAUDE.md.
+del proyecto (`docs/`) mediante un campo `adr_path` configurable en CLAUDE.md.
 Adicionalmente, limpiar CLAUDE.md de referencias a IDs de ADRs externos y crear el
 stub del tech skill `sphinx` siguiendo ADR-012.
 
@@ -26,9 +26,9 @@ para documentación con Sphinx.
 | Sección `adr_path` en CLAUDE.md | SPEC-001 | Nueva sección H2 con campo configurable |
 | Limpiar Locked Decisions | SPEC-002 | Eliminar referencias a ADR IDs; reglas auto-contenidas |
 | SKILL.md Phase 1 Step 8 SI/NO | SPEC-003 | Regla condicional para ruta de ADRs |
-| `doc/architecture/decisions/README.md` | SPEC-004 | Placeholder que señala propósito del directorio |
+| `docs/architecture/decisions/README.md` | SPEC-004 | Placeholder que señala propósito del directorio |
 | Stub sphinx skill | SPEC-005 | SKILL.md mínimo con secciones `[PENDIENTE]` |
-| ADR-013 | SPEC-006 | Registro de la decisión de separación .claude/ vs doc/ |
+| ADR-013 | SPEC-006 | Registro de la decisión de separación .claude/ vs docs/ |
 
 ---
 
@@ -52,7 +52,7 @@ Then escribe el ADR en el path indicado por adr_path
 
 Given CLAUDE.md NO tiene la sección Configuración del Proyecto
 When Claude en Phase 1 decide crear un ADR
-Then escribe el ADR en doc/architecture/decisions/ (default)
+Then escribe el ADR en docs/architecture/decisions/ (default)
 
 Given un proyecto existente declara adr_path: .claude/context/decisions/
 When Claude en Phase 1 decide crear un ADR
@@ -76,7 +76,7 @@ Then escribe en .claude/context/decisions/ (retrocompatibilidad)
 ## Configuración del Proyecto
 
 adr_path: .claude/context/decisions/   # THYROX mantiene ADRs en .claude/ — retrocompat
-# Default para nuevos proyectos: doc/architecture/decisions/
+# Default para nuevos proyectos: docs/architecture/decisions/
 ```
 
 **Complejidad:** Baja
@@ -144,13 +144,13 @@ para que lea `adr_path` de CLAUDE.md del proyecto y use ese valor como destino.
 ### Criterios de Aceptación
 
 ```
-Given SKILL.md actualizado y CLAUDE.md con adr_path: doc/architecture/decisions/
+Given SKILL.md actualizado y CLAUDE.md con adr_path: docs/architecture/decisions/
 When Claude ejecuta Phase 1 Step 8 y aplica criterios de ADR
-Then crea el ADR en doc/architecture/decisions/adr-NNN.md
+Then crea el ADR en docs/architecture/decisions/adr-NNN.md
 
 Given SKILL.md actualizado y CLAUDE.md sin sección Configuración del Proyecto
 When Claude ejecuta Phase 1 Step 8 y aplica criterios de ADR
-Then crea el ADR en doc/architecture/decisions/adr-NNN.md (default)
+Then crea el ADR en docs/architecture/decisions/adr-NNN.md (default)
 
 Given SKILL.md actualizado y CLAUDE.md con adr_path: .claude/context/decisions/
 When Claude ejecuta Phase 1 Step 8 y aplica criterios de ADR
@@ -161,7 +161,7 @@ Then crea el ADR en .claude/context/decisions/adr-NNN.md
 
 - La regla SI/NO debe ser la primera instrucción del Step 8, antes de los criterios SI/NO de cuándo crear ADR
 - Debe ser parseable por Haiku: frase imperativa corta, no narrativa
-- El default `doc/architecture/decisions/` debe estar explícito
+- El default `docs/architecture/decisions/` debe estar explícito
 
 ### Implementación
 
@@ -172,14 +172,14 @@ Then crea el ADR en .claude/context/decisions/adr-NNN.md
 ```markdown
    **Dónde crear el ADR:**
    - SI CLAUDE.md tiene `adr_path` → crear en ese path
-   - SI NO → crear en `doc/architecture/decisions/` (default)
+   - SI NO → crear en `docs/architecture/decisions/` (default)
 ```
 
 **Complejidad:** Baja
 
 ---
 
-## SPEC-004: doc/architecture/decisions/README.md
+## SPEC-004: docs/architecture/decisions/README.md
 
 **ID:** SPEC-004
 **Prioridad:** Medium
@@ -187,15 +187,15 @@ Then crea el ADR en .claude/context/decisions/adr-NNN.md
 
 ### Descripción
 
-Crear la estructura mínima `doc/architecture/decisions/` con un README que señala
+Crear la estructura mínima `docs/architecture/decisions/` con un README que señala
 el propósito del directorio. THYROX declara `adr_path: .claude/context/decisions/`
 así que este directorio queda preparado para futuros ADRs o migración.
 
 ### Criterios de Aceptación
 
 ```
-Given doc/architecture/decisions/README.md creado
-When se ejecuta: ls doc/architecture/decisions/
+Given docs/architecture/decisions/README.md creado
+When se ejecuta: ls docs/architecture/decisions/
 Then aparece README.md en el listado
 
 Given README.md creado
@@ -213,7 +213,7 @@ Then entiende que THYROX usa .claude/context/decisions/ por retrocompatibilidad
 ### Implementación
 
 **Archivos a crear:**
-- `doc/architecture/decisions/README.md`
+- `docs/architecture/decisions/README.md`
 
 **Complejidad:** Baja
 
@@ -248,7 +248,7 @@ Then no intenta usar el skill para guiar configuración de Sphinx
 ### Consideraciones Técnicas
 
 - Frontmatter YAML con `name: sphinx` y `status: stub`
-- Secciones: Propósito, Estructura doc/, Convenciones RST/MD, Integración pm-thyrox
+- Secciones: Propósito, Estructura docs/, Convenciones RST/MD, Integración pm-thyrox
 - Cada sección con `[PENDIENTE — WP sphinx-implementation]`
 - No crear `references/` ni `assets/` vacíos — solo el SKILL.md
 
@@ -261,7 +261,7 @@ Then no intenta usar el skill para guiar configuración de Sphinx
 
 ---
 
-## SPEC-006: ADR-013 — doc/ como documentación canónica del proyecto
+## SPEC-006: ADR-013 — docs/ como documentación canónica del proyecto
 
 **ID:** SPEC-006
 **Prioridad:** High
@@ -270,7 +270,7 @@ Then no intenta usar el skill para guiar configuración de Sphinx
 ### Descripción
 
 Crear `context/decisions/adr-013.md` que registra la decisión de separar
-`.claude/` (contexto Claude) de `doc/` (documentación del proyecto), y el
+`.claude/` (contexto Claude) de `docs/` (documentación del proyecto), y el
 mecanismo `adr_path` como solución de portabilidad.
 
 ### Criterios de Aceptación
@@ -282,9 +282,9 @@ Then aparece adr-013.md
 
 Given adr-013.md leído
 When un nuevo desarrollador lo lee
-Then entiende por qué doc/ existe como directorio separado
+Then entiende por qué docs/ existe como directorio separado
 Then entiende el campo adr_path y su default
-Then entiende que .claude/ es efímero y doc/ es permanente
+Then entiende que .claude/ es efímero y docs/ es permanente
 ```
 
 ### Consideraciones Técnicas
@@ -313,7 +313,7 @@ SPEC-001
     ↓ declara dónde van los ADRs de THYROX
 SPEC-006 (ADR-013 se escribe en context/decisions/)
 
-SPEC-004 (doc/ creado)
+SPEC-004 (docs/ creado)
     ↓ justifica la existencia de
 SPEC-006 (ADR-013 documenta la separación)
 ```

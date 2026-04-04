@@ -14,7 +14,7 @@ flowchart TD
     T001["T-001\nCLAUDE.md adr_path\n(SPEC-001)"]
     T002["T-002\nCLAUDE.md Locked Decisions\n(SPEC-002)"]
     T003["T-003\nSKILL.md Phase 1 Step 8\n(SPEC-003)"]
-    T004["T-004\ndoc/ README.md\n(SPEC-004)"]
+    T004["T-004\ndocs/ README.md\n(SPEC-004)"]
     T005["T-005\nSphinx stub\n(SPEC-005)"]
     T006["T-006\nADR-013\n(SPEC-006)"]
     CP1{{"CP-1\nVerificar CLAUDE.md"}}
@@ -42,16 +42,16 @@ flowchart TD
 ### Fase B — Archivos independientes (paralelos)
 
 - [x] [T-003] [P] Añadir regla "Dónde crear el ADR" al inicio de Phase 1 Step 8 en `SKILL.md` (SPEC-003)
-- [x] [T-004] [P] Crear `doc/architecture/decisions/README.md` con descripción del propósito (SPEC-004)
+- [x] [T-004] [P] Crear `docs/architecture/decisions/README.md` con descripción del propósito (SPEC-004)
 - [x] [T-005] [P] Crear `.claude/skills/sphinx/SKILL.md` como stub con secciones `[PENDIENTE]` (SPEC-005)
-- [x] [T-006] [P] Crear `.claude/context/decisions/adr-013.md` — doc/ como documentación canónica (SPEC-006)
+- [x] [T-006] [P] Crear `.claude/context/decisions/adr-013.md` — docs/ como documentación canónica (SPEC-006)
 
 **CP-2 — Verificación final:**
 ```bash
 grep "adr_path" .claude/CLAUDE.md                      # → ≥1 resultado
 grep "ADR-0[0-9][0-9]" .claude/CLAUDE.md               # → 0 resultados
-grep -n "adr_path\|doc/" .claude/skills/pm-thyrox/SKILL.md | grep -i "step 8\|Phase 1" # → resultado
-ls doc/architecture/decisions/README.md                # → existe
+grep -n "adr_path\|docs/" .claude/skills/pm-thyrox/SKILL.md | grep -i "step 8\|Phase 1" # → resultado
+ls docs/architecture/decisions/README.md                # → existe
 ls .claude/skills/sphinx/SKILL.md                      # → existe
 ls .claude/context/decisions/adr-013.md                # → existe
 ```

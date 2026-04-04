@@ -1,6 +1,6 @@
 ```yml
 name: sphinx
-description: "Tech skill para documentación con Sphinx. Usar cuando el proyecto necesite configurar Sphinx, crear estructura doc/, escribir RST/Markdown para docs, o generar documentación HTML. Complementa pm-thyrox: mientras pm-thyrox gestiona el proceso, sphinx define cómo se estructura y publica la documentación."
+description: "Tech skill para documentación con Sphinx. Usar cuando el proyecto necesite configurar Sphinx, crear estructura docs/, escribir RST/Markdown para docs, o generar documentación HTML. Complementa pm-thyrox: mientras pm-thyrox gestiona el proceso, sphinx define cómo se estructura y publica la documentación."
 status: stub
 implementado: false
 pendiente_wp: sphinx-implementation
@@ -14,12 +14,12 @@ sphinx define cómo estructurar y publicar la documentación del proyecto.
 
 ---
 
-## Estructura doc/ [PENDIENTE — WP sphinx-implementation]
+## Estructura docs/ [PENDIENTE — WP sphinx-implementation]
 
 Convención de directorios para proyectos que usan este skill.
 
 ```
-doc/
+docs/
 ├── index.rst              ← Entry point de Sphinx
 ├── architecture/
 │   └── decisions/         ← ADRs del proyecto (adr_path default)

@@ -6,7 +6,7 @@ Versión: 1.0
 
 # Focus
 
-WP doc-structure cerrado (sesión 10). Separación .claude/ vs doc/ formalizada con adr_path configurable. SKILL.md multi-modelo (SI/NO), sphinx skill registrado, ADR-013 aprobado. Framework listo para proyectos nuevos con doc/ canónico.
+WP doc-structure cerrado (sesión 10). Separación .claude/ vs docs/ formalizada con adr_path configurable. SKILL.md multi-modelo (SI/NO), sphinx skill registrado, ADR-013 aprobado. Framework listo para proyectos nuevos con docs/ canónico.
 
 ## Completado sesión 7
 

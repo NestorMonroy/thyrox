@@ -17,4 +17,4 @@ por retrocompatibilidad. Los ADRs activos de THYROX viven en
 `.claude/context/decisions/`.
 
 Este directorio queda preparado para proyectos nuevos que usen pm-thyrox
-con el default `doc/architecture/decisions/`.
+con el default `docs/architecture/decisions/`.
