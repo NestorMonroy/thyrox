@@ -129,14 +129,117 @@ durante ejecución) y Phase 7 (si refactors se identifican al cerrar WP). Nota e
 
 ### 1.3 Resumen de decisiones
 
+Todos los templates se mantienen. El problema no es su existencia sino que no están
+mapeados en el flujo. La solución es mapearlos correctamente en SKILL.md y en los
+references correspondientes.
+
 ```
-ad-hoc-tasks.md.template   → MANTENER: mapear a Phase 6 en SKILL.md
-analysis-phase.md.template → ELIMINAR: duplica flujo Phase 1
-categorization-plan.md.template → ELIMINAR: demasiado específico
-document.md.template       → ELIMINAR: genérico, contradice framework
-project.json.template      → ELIMINAR: viola ADR-001
-refactors.md.template      → MANTENER: mapear a Phase 6 + Phase 7 en SKILL.md
+ad-hoc-tasks.md.template        → MANTENER + MAPEAR: Phase 6 (EXECUTE)
+analysis-phase.md.template      → MANTENER + MAPEAR: Phase 1 (ANALYZE) — escala grande
+categorization-plan.md.template → MANTENER + MAPEAR: Phase 5 (DECOMPOSE) — lotes grandes
+document.md.template            → MANTENER + MAPEAR: cross-phase (reference docs y ADRs)
+project.json.template           → MANTENER + MAPEAR: Phase 7 (TRACK) — resumen machine-readable
+refactors.md.template           → MANTENER + MAPEAR: Phase 6 (EXECUTE) + Phase 7 (TRACK)
 ```
+
+### 1.4 Mapeo detallado por template
+
+#### `ad-hoc-tasks.md.template` → Phase 6: EXECUTE
+
+**Cuándo usar:** Cuando durante la ejecución emergen tareas informales que no tienen
+SPEC asignado ni `[T-NNN]` formal. Umbral: si hay >3 tareas ad-hoc, crear este artefacto.
+Nota: si el volumen supera 5 items, evaluar si justifican un nuevo task-plan.
+
+**Dónde mapear en SKILL.md:** Phase 6 paso 1, como alternativa al task-plan para
+tareas emergentes sin trazabilidad formal.
+
+**Nombre de output:** `{nombre-wp}-ad-hoc-tasks.md`
+
+---
+
+#### `analysis-phase.md.template` → Phase 1: ANALYZE (proyectos de escala grande)
+
+**Cuándo usar:** Cuando Phase 1 encuentra 50+ issues, errores o elementos a corregir
+en un sistema existente. `introduction.md.template` captura el análisis general;
+`analysis-phase.md.template` captura el inventario exhaustivo con severidad, distribución
+y top-N afectados.
+
+**Relación con `introduction.md.template`:** No duplican — son complementarios.
+`introduction.md` es el resumen ejecutivo. `analysis-phase.md` es el inventario detallado
+(solo se usa cuando la escala lo justifica).
+
+**Dónde mapear en SKILL.md:** Phase 1 paso 3, como artefacto opcional para proyectos
+con escala de corrección masiva. También referenciable desde `references/incremental-correction.md`.
+
+**Nombre de output:** `{nombre-wp}-issue-inventory.md`
+
+---
+
+#### `categorization-plan.md.template` → Phase 5: DECOMPOSE (lotes grandes)
+
+**Cuándo usar:** Cuando Phase 5 necesita descomponer 30+ tareas en lotes secuenciales
+con validación entre lotes. `tasks.md.template` lista tareas con IDs; `categorization-plan.md`
+organiza esas tareas en batches con timeline, checkpoints y rollback.
+
+**Relación con `tasks.md.template`:** Complementarios. Se usa después de `tasks.md`:
+primero se lista el inventario de tareas, luego se agrupa en lotes con este template.
+
+**Dónde mapear en SKILL.md:** Phase 5 paso 3, como artefacto opcional para descomposición
+de alta escala (>30 tareas). También desde `references/scalability.md`.
+
+**Nombre de output:** `{nombre-wp}-batch-plan.md`
+
+---
+
+#### `document.md.template` → cross-phase (documentos de referencia y soporte)
+
+**Cuándo usar:** Cuando se necesita crear un documento de referencia, guía técnica o
+documentación de soporte que no es un artefacto directo de una fase (no es un análisis,
+ni una estrategia, ni un plan de tareas). Ejemplos: guías de onboarding, documentación
+de APIs internas, runbooks de operación.
+
+**Dónde mapear en SKILL.md:** Sección de templates transversales, junto a `adr.md.template`
+y `constitution.md.template`. Indicar que aplica cuando el output es documentación de
+referencia sin fase asignada.
+
+**Nombre de output:** `{nombre-descriptivo}.md` (sin prefijo de WP — es documentación
+duradera, no artefacto de WP)
+
+---
+
+#### `project.json.template` → Phase 7: TRACK (resumen machine-readable opcional)
+
+**Cuándo usar:** En proyectos donde existe tooling externo (dashboards, pipelines CI/CD,
+scripts de métricas) que necesita leer el estado del proyecto de forma programática.
+Es un artefacto opcional de cierre en Phase 7, no un requerimiento del flujo.
+
+**Nota de uso:** El contenido que captura (estado de fases, timing, artefactos) debe
+ser consistente con los artefactos Markdown del WP. Es un output derivado, no la fuente
+de verdad.
+
+**Dónde mapear en SKILL.md:** Phase 7 como artefacto opcional para proyectos con
+integración de tooling. Indicar explícitamente: "solo si existe tooling que lo consuma".
+
+**Nombre de output:** `{nombre-wp}-project.json`
+
+---
+
+#### `refactors.md.template` → Phase 6: EXECUTE + Phase 7: TRACK
+
+**Cuándo usar:**
+- En Phase 6: cuando durante la implementación se identifican oportunidades de refactor
+  que no están en el task-plan. Se crea para trackearlas sin bloquear la tarea en curso.
+- En Phase 7: cuando el cierre del WP revela deuda de código que debe registrarse para
+  sesiones futuras.
+
+**Relación con `risk-register.md.template`:** `risk-register` cubre riesgos del proyecto
+(qué puede salir mal). `refactors.md` cubre deuda de código identificada (qué se puede
+mejorar). Son ortogonales.
+
+**Dónde mapear en SKILL.md:** Phase 6 como artefacto opcional para deuda de código
+identificada durante ejecución. Phase 7 como artefacto opcional de cierre.
+
+**Nombre de output:** `{nombre-wp}-refactors.md`
 
 ---
 
@@ -354,9 +457,13 @@ de timestamps en WPs cerrados tiene valor mínimo de trazabilidad.
 
 Ordenado por impacto y dependencias:
 
-### Grupo A — Templates (baja fricción, alto valor de claridad)
-- Eliminar 4 templates: `analysis-phase.md`, `categorization-plan.md`, `document.md`, `project.json`
-- Mapear 2 templates en SKILL.md: `ad-hoc-tasks.md` (Phase 6) y `refactors.md` (Phase 6/7)
+### Grupo A — Templates (mapear todos los 6 en SKILL.md)
+- `ad-hoc-tasks.md` → Phase 6: tareas emergentes sin SPEC formal
+- `analysis-phase.md` → Phase 1: inventario exhaustivo para escala 50+ issues
+- `categorization-plan.md` → Phase 5: batching para 30+ tareas en lotes
+- `document.md` → cross-phase: documentación de referencia sin fase asignada
+- `project.json` → Phase 7: resumen machine-readable (solo si tooling lo consume)
+- `refactors.md` → Phase 6 + Phase 7: deuda de código durante/post ejecución
 
 ### Grupo B — Referencias desactualizadas (impacto en modelos más pequeños)
 - D-001: Reescribir `examples.md` con nomenclatura de 7 fases actuales
@@ -375,10 +482,11 @@ Ordenado por impacto y dependencias:
 
 ## 9. Decisión Arquitectónica Clave
 
-**No mover templates a `assets/legacy/`.**
+**No eliminar ningún template. Mapear todo en el flujo.**
 
-Los 4 templates a eliminar se borrarán directamente (ADR-008: Git as persistence).
-El historial git preserva el contenido si se necesita en el futuro.
+El problema de los templates "huérfanos" no era su existencia sino la ausencia de
+referencias en SKILL.md y en los references correspondientes. La solución correcta
+es mapear cada template al contexto de uso explícito en el flujo.
 
 **Timestamps históricos: no corregir retroactivamente.**
 
