@@ -415,6 +415,19 @@ N tech skills auto-generados desde un registry centralizado, persistentes como a
 
 ---
 
+## FASE 10: Separación .claude/ vs doc/ — adr_path configurable (2026-04-04)
+
+**WP:** `.claude/context/work/2026-04-04-08-46-36-doc-structure/`
+
+- [ ] CLAUDE.md — sección `## Configuración del Proyecto` con campo `adr_path`
+- [ ] CLAUDE.md — limpiar referencias a IDs de ADRs en "Locked Decisions"
+- [ ] SKILL.md Phase 1 Step 8 — regla SI/NO para `adr_path`
+- [ ] `doc/architecture/decisions/README.md` — estructura mínima
+- [ ] `.claude/skills/sphinx/SKILL.md` — stub tech skill
+- [ ] ADR-013: doc/ como documentación canónica del proyecto
+
+---
+
 ## Métricas de Progreso
 
 ```
@@ -430,6 +443,7 @@ FASE 6: Template phase integration  — 100% ✓
 FASE 7: Meta-framework generativo   — 100% ✓
 FASE 8: Resolución de deuda técnica — 100% ✓
 FASE 9: Boundary SKILL vs ADR + correcciones proceso Phase 3 — 100% ✓
+FASE 10: Separación .claude/ vs doc/ — adr_path configurable  — 0%
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
@@ -440,4 +454,4 @@ Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibil
 
 ---
 
-**Última actualización:** 2026-04-04
+**Última actualización:** 2026-04-04 (FASE 10 abierta — doc-structure WP)
