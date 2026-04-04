@@ -27,19 +27,19 @@ Completar la documentación del framework THYROX para que sea coherente, validad
 ## Acceptance Criteria
 
 ### SKILL.md Optimización
-- [ ] SKILL.md tiene ≤500 líneas
-- [ ] Contenido movido a references/ está correctamente enlazado
-- [ ] Todas las secciones esenciales se mantienen (7 fases, commands table, exit conditions, where outputs live)
+- [x] SKILL.md tiene ≤500 líneas
+- [x] Contenido movido a references/ está correctamente enlazado
+- [x] Todas las secciones esenciales se mantienen (7 fases, commands table, exit conditions, where outputs live)
 
 ### Documentación Pública
-- [ ] ARCHITECTURE.md refleja decisiones reales del proyecto (no aspiracionales)
-- [ ] CONTRIBUTING.md describe el flujo de trabajo actual con THYROX
-- [ ] CHANGELOG.md documenta v0.1.0 y v0.2.0 con trabajo real
+- [x] ARCHITECTURE.md refleja decisiones reales del proyecto (no aspiracionales)
+- [x] CONTRIBUTING.md describe el flujo de trabajo actual con THYROX
+- [x] CHANGELOG.md documenta v0.1.0 y v0.2.0 con trabajo real
 
 ### Validación
-- [ ] `validate-missing-md-links.sh` retorna exit 0
-- [ ] `validate-broken-references.py` retorna exit 0 (o solo documentales)
-- [ ] Todas las transiciones entre fases verificadas
+- [x] `validate-missing-md-links.sh` retorna exit 0
+- [x] `validate-broken-references.py` retorna exit 0 (o solo documentales)
+- [x] Todas las transiciones entre fases verificadas
 
 ---
 

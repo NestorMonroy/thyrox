@@ -53,7 +53,16 @@ else
     warn "now.md no existe"
 fi
 
-# 3. Work package activo tiene commits recientes
+# 3. now.md no tiene timestamps sin resolver
+if [ -f "${CONTEXT_DIR}/now.md" ]; then
+    if grep -q "\[YYYY-MM-DD-HH-MM-SS\]" "${CONTEXT_DIR}/now.md"; then
+        warn "now.md contiene placeholder literal [YYYY-MM-DD-HH-MM-SS] sin resolver — reemplazar con timestamp real"
+    else
+        pass "now.md sin placeholders de timestamp"
+    fi
+fi
+
+# 4. Work package activo tiene commits recientes
 if [ -f "${CONTEXT_DIR}/now.md" ]; then
     CURRENT_WORK=$(grep "^current_work:" "${CONTEXT_DIR}/now.md" | head -1 | sed 's/current_work: *//' || echo "null")
     if [ "$CURRENT_WORK" != "null" ] && [ -n "$CURRENT_WORK" ]; then

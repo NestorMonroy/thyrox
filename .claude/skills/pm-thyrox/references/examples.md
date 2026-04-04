@@ -19,9 +19,13 @@ Colección de ejemplos reales de cómo usar PM-THYROX en diferentes escenarios.
 
 This document provides real-world examples of using PM-THYROX across different scenarios.
 
+Each use case follows the 7-phase methodology: **ANALYZE → SOLUTION_STRATEGY → PLAN → STRUCTURE → DECOMPOSE → EXECUTE → TRACK**
+
+> Note: Short examples may skip phases 1 and 2 when analysis and strategy are implicit or trivial.
+
 ## Use Case 1: Simple Feature - "Add Password Reset"
 
-### Phase 1: PLAN (5 min)
+### Phase 3: PLAN (5 min)
 
 ```
 User: "We need to add password reset functionality"
@@ -38,7 +42,7 @@ User: Email verification, 1 hour token, 5 resends/hour
 PM-THYROX Updates ROADMAP.md:
 ```
 
-### Phase 3: DECOMPOSE (5 min)
+### Phase 5: DECOMPOSE (5 min)
 
 ```
 PM-THYROX: Breaking down into tasks...
@@ -62,7 +66,7 @@ ROADMAP.md updated with all subtasks:
   - [ ] Docs
 ```
 
-### Phase 4: EXECUTE (2-3 hours total)
+### Phase 6: EXECUTE (2-3 hours total)
 
 ```
 Day 1 - Session 1 (Database):
@@ -121,7 +125,7 @@ Day 3 - Session 5 (Docs):
   - [x] Docs (2025-03-25)
 ```
 
-### Phase 5: TRACK
+### Phase 7: TRACK
 
 ```
 User: "What's our status?"
@@ -168,7 +172,7 @@ PM-THYROX reads ROADMAP.md:
 
 ## Use Case 2: Complex Feature - "Payment System"
 
-### Phase 1: PLAN (30 min - complex feature)
+### Phase 3: PLAN (30 min - complex feature)
 
 ```
 User: "We need to build a payment system for subscriptions"
@@ -182,7 +186,7 @@ PM-THYROX: "This looks complex. Should we create a PRD?"
 User: "Yes, let's do that"
 ```
 
-### Phase 2: STRUCTURE (1 hour)
+### Phase 4: STRUCTURE (1 hour)
 
 ```
 PM-THYROX creates .claude/prds/payment-system.md with:
@@ -197,7 +201,7 @@ PM-THYROX creates .claude/prds/payment-system.md with:
 User reviews and refines PRD
 ```
 
-### Phase 3: DECOMPOSE (30 min)
+### Phase 5: DECOMPOSE (30 min)
 
 ```
 PM-THYROX analyzes PRD and identifies work streams:
@@ -239,7 +243,7 @@ Stream G (Docs):
 ROADMAP.md updated with all 16 subtasks
 ```
 
-### Phase 4: EXECUTE (5-7 days, parallel)
+### Phase 6: EXECUTE (5-7 days, parallel)
 
 ```
 Session 1 (Database Setup):
@@ -268,7 +272,7 @@ All sessions work in parallel, commit frequently.
 Dependencies ensure Sequential work only where needed.
 ```
 
-### Phase 5: TRACK
+### Phase 7: TRACK
 
 ```
 User: "What's our status on payments?"

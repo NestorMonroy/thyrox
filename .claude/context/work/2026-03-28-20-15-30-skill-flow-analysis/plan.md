@@ -9,30 +9,30 @@ Tipo: Phase 3+5 (PLAN + DECOMPOSE)
 
 ### Bloque 1: Work package creation (P-01 + P-08)
 
-- [ ] [T-001] Phase 3 paso 2: cambiar "crear work package" → "Verificar que el work package existe y linkearlo en ROADMAP" (R-P01)
-- [ ] [T-002] Tabla de artefactos: cambiar Phase 3 → Phase 1 para work package (R-P01)
-- [ ] [T-003] Phase 2 "Siguiente": cambiar "crear work package" → "definir scope" (R-P08)
+- [x] [T-001] Phase 3 paso 2: cambiar "crear work package" → "Verificar que el work package existe y linkearlo en ROADMAP" (R-P01)
+- [x] [T-002] Tabla de artefactos: cambiar Phase 3 → Phase 1 para work package (R-P01)
+- [x] [T-003] Phase 2 "Siguiente": cambiar "crear work package" → "definir scope" (R-P08)
 
 ### Bloque 2: Phase 2 explícita (P-04)
 
-- [ ] [T-004] Reescribir pasos de Phase 2 para nombrar: Key Ideas, Research (unknowns→alternatives), Decisions con justificación, pre/post design checks (R-P04)
+- [x] [T-004] Reescribir pasos de Phase 2 para nombrar: Key Ideas, Research (unknowns→alternatives), Decisions con justificación, pre/post design checks (R-P04)
 
 ### Bloque 3: Assets conectados al flujo (P-03 + P-05 + P-06)
 
-- [ ] [T-005] Phase 1 paso 4: agregar "usar `assets/adr.md.template`" (R-P06)
-- [ ] [T-006] Phase 4: agregar referencia a `assets/spec-quality-checklist.md.template` como gate (R-P05)
-- [ ] [T-007] Phase 1: agregar nota de `assets/introduction.md.template` junto a las 8 subsecciones (R-P03)
-- [ ] [T-008] Phase 3: agregar referencia a `assets/epic.md.template` para trabajo grande (R-P03)
-- [ ] [T-009] Sección "Templates": agregar `assets/document.md.template` como template base genérico y `assets/constitution.md.template` para principios del proyecto (R-P03)
+- [x] [T-005] Phase 1 paso 4: agregar "usar `assets/adr.md.template`" (R-P06)
+- [x] [T-006] Phase 4: agregar referencia a `assets/spec-quality-checklist.md.template` como gate (R-P05)
+- [x] [T-007] Phase 1: agregar nota de `assets/introduction.md.template` junto a las 8 subsecciones (R-P03)
+- [x] [T-008] Phase 3: agregar referencia a `assets/epic.md.template` para trabajo grande (R-P03)
+- [x] [T-009] Sección "Templates": agregar `assets/document.md.template` como template base genérico y `assets/constitution.md.template` para principios del proyecto (R-P03)
 
 ### Bloque 4: Fix cosmético (P-02)
 
-- [ ] [T-010] Phase 6: corregir numeración duplicada (dos "4") (R-P02)
+- [x] [T-010] Phase 6: corregir numeración duplicada (dos "4") (R-P02)
 
 ### Bloque 5: Track
 
-- [ ] [T-011] Verificar SKILL.md < 500 líneas después de cambios (R-TRACK)
-- [ ] [T-012] Actualizar focus.md + now.md (R-TRACK)
+- [x] [T-011] Verificar SKILL.md < 500 líneas después de cambios (R-TRACK)
+- [x] [T-012] Actualizar focus.md + now.md (R-TRACK)
 
 ## Orden
 

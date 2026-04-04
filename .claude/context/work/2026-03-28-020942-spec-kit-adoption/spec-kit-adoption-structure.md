@@ -18,39 +18,39 @@ Integrar 6 conceptos de spec-kit en THYROX: constitution, spec validation, resea
 
 ### Nuevos templates
 
-- [ ] `assets/spec-quality-checklist.md.template` existe y cubre: completitud, claridad, consistencia, medibilidad, cobertura
-- [ ] `assets/constitution.md.template` existe con: principios core (5-7), constraints, governance, versionado
-- [ ] Ambos siguen el formato YAML frontmatter + secciones del proyecto
+- [x] `assets/spec-quality-checklist.md.template` existe y cubre: completitud, claridad, consistencia, medibilidad, cobertura
+- [x] `assets/constitution.md.template` existe con: principios core (5-7), constraints, governance, versionado
+- [x] Ambos siguen el formato YAML frontmatter + secciones del proyecto
 
 ### EXIT_CONDITIONS mejorado
 
-- [ ] Cada phase tiene instrucción explícita: "Si NO se cumplen → PARAR"
-- [ ] Phase 2 incluye: constitution check (¿principios respetados?)
-- [ ] Phase 4 incluye: spec quality checklist completado
-- [ ] Gates son mandatorios, no informativos
+- [x] Cada phase tiene instrucción explícita: "Si NO se cumplen → PARAR"
+- [x] Phase 2 incluye: constitution check (¿principios respetados?)
+- [x] Phase 4 incluye: spec quality checklist completado
+- [x] Gates son mandatorios, no informativos
 
 ### Solution-strategy.md con Research Step
 
-- [ ] Sección "Research Step" antes de "Fundamental Decisions"
-- [ ] Pasos: identificar unknowns → investigar → documentar alternativas → justificar elección
-- [ ] Output: alternativas consideradas con rationale en cada decisión
+- [x] Sección "Research Step" antes de "Fundamental Decisions"
+- [x] Pasos: identificar unknowns → investigar → documentar alternativas → justificar elección
+- [x] Output: alternativas consideradas con rationale en cada decisión
 
 ### Conventions.md con ROADMAP→epic link
 
-- [ ] Convención documentada: cada feature del ROADMAP incluye `**Epic:** context/epics/YYYY-MM-DD-nombre/`
-- [ ] Ejemplo concreto
+- [x] Convención documentada: cada feature del ROADMAP incluye `**Epic:** context/epics/YYYY-MM-DD-nombre/`
+- [x] Ejemplo concreto
 
 ### SKILL.md actualizado
 
-- [ ] Phase 2 menciona constitution check
-- [ ] Phase 4 menciona spec quality checklist como gate
-- [ ] Ambos con links a los templates
+- [x] Phase 2 menciona constitution check
+- [x] Phase 4 menciona spec quality checklist como gate
+- [x] Ambos con links a los templates
 
 ### Fases con pasos ejecutables
 
-- [ ] Phase 3 (PLAN) en SKILL.md tiene pasos numerados claros
-- [ ] Phase 5 (DECOMPOSE) tiene pasos numerados claros
-- [ ] Phase 6 (EXECUTE) tiene pasos numerados claros
+- [x] Phase 3 (PLAN) en SKILL.md tiene pasos numerados claros
+- [x] Phase 5 (DECOMPOSE) tiene pasos numerados claros
+- [x] Phase 6 (EXECUTE) tiene pasos numerados claros
 
 ---
 

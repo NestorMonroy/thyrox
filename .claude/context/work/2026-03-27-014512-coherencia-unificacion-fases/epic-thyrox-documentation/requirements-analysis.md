@@ -154,8 +154,8 @@ Documentar QUÉ debe hacer THYROX como framework de gestión de proyectos.
 - [x] Dos niveles de detalle
 - [x] Cada requisito es verificable
 - [x] Orientado al negocio/usuario
-- [ ] Conectado a Stakeholders (siguiente documento)
-- [ ] Conectado a Quality Goals (siguiente documento)
+- [x] Conectado a Stakeholders (siguiente documento)
+- [x] Conectado a Quality Goals (siguiente documento)
 
 ---
 

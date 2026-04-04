@@ -126,14 +126,19 @@ case "$PHASE" in
         fi
         ;;
     3)
-        echo "Phase 3: PLAN — ROADMAP updated with work package"
+        echo "Phase 3: PLAN — plan.md con scope aprobado + ROADMAP actualizado"
         check "ROADMAP.md" "$REPO_ROOT/ROADMAP.md"
         if [ -n "$WP_DIR" ]; then
             WP_NAME=$(basename "$WP_DIR")
             check_content "ROADMAP references work package" "$REPO_ROOT/ROADMAP.md" "$WP_NAME"
+            check_glob "*-plan.md exists" "$WP_DIR" "*-plan.md"
+            local_plan=$(find "$WP_DIR" -maxdepth 1 -name "*-plan.md" 2>/dev/null | head -1)
+            if [ -n "$local_plan" ]; then
+                check_content "Scope aprobado [x] en plan.md" "$local_plan" "\[x\].*[Aa]probado\|[Aa]probado.*[0-9]\{4\}"
+            fi
         else
             echo -e "  ${RED}✗${NC} No work package directory found"
-            FAIL=$((FAIL + 1))
+            FAIL=$((FAIL + 3))
         fi
         ;;
     4)

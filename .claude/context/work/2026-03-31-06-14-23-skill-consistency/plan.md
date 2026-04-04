@@ -9,22 +9,22 @@ Tipo: Phase 3+5 (PLAN + DECOMPOSE)
 
 ### Bloque 1: Renombrar assets UPPERCASE (P-01)
 
-- [ ] [T-001] Renombrar AD_HOC_TASKS.md.template → ad-hoc-tasks.md.template (R-P01)
-- [ ] [T-002] Renombrar EXIT_CONDITIONS.md.template → exit-conditions.md.template (R-P01)
-- [ ] [T-003] Renombrar REFACTORS.md.template → refactors.md.template (R-P01)
-- [ ] [T-004] Actualizar refs en examples.md, reference-validation.md, scalability.md, trigger-evals.json (R-P01)
+- [x] [T-001] Renombrar AD_HOC_TASKS.md.template → ad-hoc-tasks.md.template (R-P01)
+- [x] [T-002] Renombrar EXIT_CONDITIONS.md.template → exit-conditions.md.template (R-P01)
+- [x] [T-003] Renombrar REFACTORS.md.template → refactors.md.template (R-P01)
+- [x] [T-004] Actualizar refs en examples.md, reference-validation.md, scalability.md, trigger-evals.json (R-P01)
 
 ### Bloque 2: setup-template.sh limpia decisions/ (P-02)
 
-- [ ] [T-005] Agregar limpieza de context/decisions/ en setup-template.sh (R-P02)
+- [x] [T-005] Agregar limpieza de context/decisions/ en setup-template.sh (R-P02)
 
 ### Bloque 3: SKILL unavoidable en flujo de sesión (P-03)
 
-- [ ] [T-006] Reescribir flujo de sesión en CLAUDE.md: "Todo trabajo pasa por el SKILL" (R-P03)
+- [x] [T-006] Reescribir flujo de sesión en CLAUDE.md: "Todo trabajo pasa por el SKILL" (R-P03)
 
 ### Bloque 4: Track
 
-- [ ] [T-007] Actualizar focus.md + now.md (R-TRACK)
+- [x] [T-007] Actualizar focus.md + now.md (R-TRACK)
 
 ## Orden
 

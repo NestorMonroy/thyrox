@@ -18,40 +18,40 @@ Implementar 5 mecanismos de calidad inspirados en spec-kit: [NEEDS CLARIFICATION
 
 ### validate-phase-readiness.sh (D4)
 
-- [ ] Script recibe phase number como argumento
-- [ ] Verifica que los artefactos requeridos existen para esa fase
-- [ ] Retorna exit 0 si ready, exit 1 si no
-- [ ] Muestra qué falta cuando falla
-- [ ] Cubre las 7 fases
+- [x] Script recibe phase number como argumento
+- [x] Verifica que los artefactos requeridos existen para esa fase
+- [x] Retorna exit 0 si ready, exit 1 si no
+- [x] Muestra qué falta cuando falla
+- [x] Cubre las 7 fases
 
 ### tasks.md.template (D3)
 
-- [ ] Cada task tiene formato: `- [ ] [T-NNN] Descripción (R-N)`
-- [ ] El (R-N) referencia el requirement que satisface
-- [ ] Ejemplo concreto incluido en template
+- [x] Cada task tiene formato: `- [x] [T-NNN] Descripción (R-N)`
+- [x] El (R-N) referencia el requirement que satisface
+- [x] Ejemplo concreto incluido en template
 
 ### spec-quality-checklist.md.template (D1 + D3)
 
-- [ ] Item nuevo: "¿Hay [NEEDS CLARIFICATION] sin resolver? → FAIL"
-- [ ] Items existentes incluyen referencia a sección del spec: `[Spec §Requisitos]`
-- [ ] Instrucción: "Si hay markers sin resolver, iterar spec antes de continuar"
+- [x] Item nuevo: "¿Hay [NEEDS CLARIFICATION] sin resolver? → FAIL"
+- [x] Items existentes incluyen referencia a sección del spec: `[Spec §Requisitos]`
+- [x] Instrucción: "Si hay markers sin resolver, iterar spec antes de continuar"
 
 ### EXIT_CONDITIONS.md.template (D2)
 
-- [ ] Phase 2 tiene dos checks de constitution: "Pre-design check" y "Post-design re-check"
-- [ ] Phase 4 tiene check de [NEEDS CLARIFICATION]: "Zero markers sin resolver"
+- [x] Phase 2 tiene dos checks de constitution: "Pre-design check" y "Post-design re-check"
+- [x] Phase 4 tiene check de [NEEDS CLARIFICATION]: "Zero markers sin resolver"
 
 ### conventions.md (D5)
 
-- [ ] Sección "Priority Mapping": P1→Phase 3 (MVP), P2→Phase 4, P3→Phase 5
-- [ ] Sección "Traceability IDs": R-N para requirements, T-NNN para tasks, CHK-NNN para checklists
+- [x] Sección "Priority Mapping": P1→Phase 3 (MVP), P2→Phase 4, P3→Phase 5
+- [x] Sección "Traceability IDs": R-N para requirements, T-NNN para tasks, CHK-NNN para checklists
 
 ### SKILL.md (~5 líneas adicionales)
 
-- [ ] Phase 2: menciona "Re-check constitution after design decisions"
-- [ ] Phase 4: menciona "Resolve all [NEEDS CLARIFICATION] markers"
-- [ ] Phase 5: menciona "Each task references its requirement (R-N)"
-- [ ] Total ≤300 líneas
+- [x] Phase 2: menciona "Re-check constitution after design decisions"
+- [x] Phase 4: menciona "Resolve all [NEEDS CLARIFICATION] markers"
+- [x] Phase 5: menciona "Each task references its requirement (R-N)"
+- [x] Total ≤300 líneas
 
 ---
 

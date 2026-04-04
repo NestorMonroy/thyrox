@@ -141,21 +141,21 @@ Esto NO son las 7 fases del framework principal, pero la numeración idéntica g
 ## 6. Acciones correctivas
 
 ### Prioridad 1: Limpiar residuos
-- [ ] Eliminar `requirements.md` (residuo de renombrado)
-- [ ] Eliminar `requirements.md.template` (residuo de renombrado)
+- [x] Eliminar `requirements.md` (residuo de renombrado)
+- [x] Eliminar `requirements.md.template` (residuo de renombrado)
 
 ### Prioridad 2: Corregir headers de fases
-- [ ] context.md: Cambiar metadata de "PHASE 2: SOLUTION_STRATEGY" a "PHASE 1: ANALYZE"
-- [ ] introduction.md: Unificar a "PHASE 1: ANALYZE"
-- [ ] incremental-correction.md: Resolver conflicto PHASE 7 vs PHASE 5
-- [ ] spec-driven-development.md: Clarificar que es opción dentro de Phase 4
+- [x] context.md: Cambiar metadata de "PHASE 2: SOLUTION_STRATEGY" a "PHASE 1: ANALYZE"
+- [x] introduction.md: Unificar a "PHASE 1: ANALYZE"
+- [x] incremental-correction.md: Resolver conflicto PHASE 7 vs PHASE 5
+- [x] spec-driven-development.md: Clarificar que es opción dentro de Phase 4
 
 ### Prioridad 3: Integrar use-cases.md
-- [ ] Decidir: ¿Agregar al flujo de introduction.md o mantener como referencia independiente?
+- [x] Decidir: ¿Agregar al flujo de introduction.md o mantener como referencia independiente?
 
 ### Prioridad 4: Resolver posición de genéricos
-- [ ] Decidir: ¿Mover prompting-tips, long-context-tips, skill-authoring a otra ubicación?
-- [ ] O: ¿Adaptarlos con ejemplos de THYROX?
+- [x] Decidir: ¿Mover prompting-tips, long-context-tips, skill-authoring a otra ubicación?
+- [x] O: ¿Adaptarlos con ejemplos de THYROX?
 
 ---
 

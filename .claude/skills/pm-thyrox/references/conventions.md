@@ -121,6 +121,23 @@ User stories con prioridades se mapean a fases de ejecución:
 
 ---
 
+## Timestamp Format
+
+Todos los artefactos del framework usan el formato:
+
+```
+YYYY-MM-DD-HH-MM-SS
+```
+
+**Aplica a:**
+- Nombres de work packages: `context/work/2026-04-04-04-16-29-feature-name/`
+- Frontmatter YAML de artefactos: `Fecha: 2026-04-04-04-16-29`
+- Nombres de work-logs: `context/work-logs/2026-04-04-04-16-29-descripcion.md`
+
+**Regla:** Nunca dejar `[YYYY-MM-DD-HH-MM-SS]` como placeholder literal. Siempre reemplazar con timestamp real.
+
+---
+
 ## Traceability IDs
 
 Cada artefacto usa IDs para trazabilidad cruzada:
