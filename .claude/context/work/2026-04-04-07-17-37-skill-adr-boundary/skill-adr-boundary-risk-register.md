@@ -3,10 +3,10 @@ Proyecto: THYROX — PM-THYROX Framework
 Work package: 2026-04-04-07-17-37-skill-adr-boundary
 Fecha creación: 2026-04-04
 Última actualización: 2026-04-04
-Fase actual: Phase 1 — ANALYZE (reabierto: proceso de correcciones)
-Riesgos abiertos: 5
-Riesgos mitigados: 2
-Riesgos cerrados: 0
+Fase actual: Phase 7 — TRACK (WP cerrado)
+Riesgos abiertos: 0
+Riesgos mitigados: 4
+Riesgos cerrados: 3
 ```
 
 # Risk Register — skill-adr-boundary
@@ -111,9 +111,13 @@ post-fase (como ocurrió en este WP). Costo: una iteración extra.
 
 ---
 
-## Riesgos mitigados
+## Riesgos mitigados / cerrados
 
-| ID | Descripción | Cómo se mitigó | Fecha |
-|----|-------------|----------------|-------|
-| R-001 | Cambios rompen WPs existentes | Tabla es condicional: solo si hay RC formales | 2026-04-04 |
-| R-002 | Duplicación guía ADR / SKILL.md | Decisión Phase 2: no crear adr-guide.md; inline en SKILL | 2026-04-04 |
+| ID | Descripción | Cómo se cerró | Fecha |
+|----|-------------|---------------|-------|
+| R-001 | Cambios rompen WPs existentes | Tabla condicional: solo si hay RC formales | 2026-04-04 |
+| R-002 | Duplicación guía ADR / SKILL.md | No crear adr-guide.md; inline en SKILL | 2026-04-04 |
+| R-003 | Reglas opacas para Haiku | SI/NO implementado en Phase 3 Step 5 y Nota DECOMPOSE | 2026-04-04 |
+| R-005 | Problema "adelantarse" en otras phases | Registrado como deuda futura; scope acotado a Phase 3 | 2026-04-04 |
+| R-006 | Tabla burocrática para WPs sin RC | Sección condicional en template — se omite si no aplica | 2026-04-04 |
+| R-007 | Criterio DECOMPOSE ambiguo | Nota DECOMPOSE en Phase 3 con condición explícita SI/NO | 2026-04-04 |

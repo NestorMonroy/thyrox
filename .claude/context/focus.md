@@ -6,7 +6,7 @@ Versión: 1.0
 
 # Focus
 
-WP skill-adr-boundary cerrado. Boundary SKILL vs ADR implementado en 3 capas para compatibilidad con modelos no-Sonnet.
+WP skill-adr-boundary cerrado (sesión 9). Boundary SKILL vs ADR en 3 capas + gates Phase 3 implementados. Framework listo con trazabilidad RC→tarea obligatoria y DECOMPOSE condicional por RC.
 
 ## Completado sesión 7
 
