@@ -11,7 +11,7 @@ Fecha actualización: 2026-03-28
 ## Locked Decisions (no revisitar)
 
 Estas son reglas del framework de metodologia — NO son ADRs del proyecto.
-Los ADRs del proyecto viven en `context/decisions/adr-NNN.md`.
+Los ADRs del proyecto viven en el path declarado por `adr_path` en este archivo (ver sección Configuración del Proyecto).
 
 1. **ANALYZE first** — No planificar sin entender primero
 2. **Anatomía oficial** — SKILL.md + scripts/ + references/ + assets/
@@ -23,7 +23,7 @@ Los ADRs del proyecto viven en `context/decisions/adr-NNN.md`.
 
 ## SKILL vs ADR — Regla de uso
 
-|                  | SKILL.md                                     | ADR en context/decisions/                              |
+|                  | SKILL.md                                     | ADR en {adr_path}                              |
 |------------------|----------------------------------------------|--------------------------------------------------------|
 | Que es           | Instrucciones de metodologia (como trabajar) | Registro de decision tomada (por que se eligio X)      |
 | Quien lo escribe | Mantenedor del framework                     | Claude en Phase 1-2, cuando hay decision permanente    |
@@ -32,7 +32,7 @@ Los ADRs del proyecto viven en `context/decisions/adr-NNN.md`.
 
 REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
 - Cambia COMO se trabaja en general -> SKILL.md
-- Registra POR QUE se eligio algo en este proyecto -> ADR en context/decisions/
+- Registra POR QUE se eligio algo en este proyecto -> ADR en {adr_path}
 
 ## Estructura
 
