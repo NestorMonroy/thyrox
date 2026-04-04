@@ -6,7 +6,7 @@ Versión: 1.0
 
 # Focus
 
-Deuda técnica resuelta. WP technical-debt-resolution cerrado en FASE 8. Framework listo para uso sin deuda pendiente conocida.
+WP skill-adr-boundary cerrado. Boundary SKILL vs ADR implementado en 3 capas para compatibilidad con modelos no-Sonnet.
 
 ## Completado sesión 7
 
