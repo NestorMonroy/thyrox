@@ -8,6 +8,8 @@ Categorías definidas: [N]
 Prioridades definidas: [N]
 Fecha inicio categorización: [YYYY-MM-DD-HH-MM-SS]
 Fecha fin prevista: [YYYY-MM-DD-HH-MM-SS]
+Fase: 5 - DECOMPOSE
+Activar si: >50 issues que necesitan categorización antes de descomponer en tasks
 Responsable: [Nombre/equipo]
 Herramientas: [Sistema de tracking usado]
 ```

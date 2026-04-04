@@ -1,3 +1,5 @@
+// Fase: 1 - ANALYZE
+// Activar si: proyecto con >50 issues o trabajo que necesita metadata estructurada en JSON
 {
   "metadata": {
     "project_id": "YYYY-MM-DD-HH-MM-project-name",

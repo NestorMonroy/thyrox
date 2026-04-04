@@ -5,6 +5,8 @@ Versión: 1.0
 Propósito: Registro de tareas pequeñas, enhancements y mejoras ad-hoc
 Objetivo: Trackear y organizar trabajo pequeño que surge durante desarrollo
 Fecha actualización: 2026-03-25
+Fase: 5 - DECOMPOSE / 6 - EXECUTE
+Activar si: tareas pequeñas (<2h) que no justifican work package completo
 ```
 
 # AD_HOC_TASKS

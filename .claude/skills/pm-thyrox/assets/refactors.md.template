@@ -5,6 +5,8 @@ Versión: 1.0
 Propósito: Tracking de refactorizaciones, mejoras de código y deuda técnica
 Objetivo: Documentar oportunidades de mejora y deuda técnica con priorización
 Fecha actualización: 2026-03-25
+Fase: 5 - DECOMPOSE / 6 - EXECUTE
+Activar si: hay deuda técnica o refactors identificados durante análisis que necesitan tracking estructurado
 ```
 
 # REFACTORS

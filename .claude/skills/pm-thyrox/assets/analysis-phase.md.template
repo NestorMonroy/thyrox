@@ -8,6 +8,8 @@ Severidad Critical: [N]
 Severidad High: [N]
 Severidad Medium: [N]
 Severidad Low: [N]
+Fase: 1 - ANALYZE
+Activar si: análisis de >20 issues o diagnóstico técnico complejo que requiere sub-análisis por categorías
 Categorías identificadas: [N]
 Análisis completado: [SI/NO]
 Aprobado por: [Nombre]
