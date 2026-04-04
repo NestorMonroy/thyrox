@@ -57,13 +57,14 @@ alternativa para tareas informales: "Si hay >3 tareas ad-hoc sin SPEC, usar
 **Estructura:** Inventario exhaustivo de 100+ issues con tabla de distribución por severidad,
 patrones de anti-patterns, top-10 archivos afectados, estrategias de resolución.
 
-**Evaluación:** Diseñado para un caso muy específico: auditorías masivas de issues en proyectos
-legacy. Duplica el propósito de `introduction.md.template` para el 99% de los casos. SKILL.md
-ya tiene el flujo: Phase 1 con `introduction.md` + sub-análisis especializados.
+**Evaluación:** Diseñado para auditorías masivas de issues en proyectos legacy o sistemas
+existentes. `introduction.md.template` captura el análisis general; este template captura
+el inventario exhaustivo con severidad, distribución y top-N afectados. Son complementarios,
+no duplicados: se usan juntos cuando la escala lo justifica.
 
-**Decisión: ELIMINAR.** Cuando se necesita analizar 100+ issues, el flujo normal es Phase 1
-con `introduction.md.template`. Si la escala lo justifica, se puede referenciar
-`references/incremental-correction.md`. No se necesita un template separado.
+**Decisión: MANTENER + MAPEAR a Phase 1.** Cuando Phase 1 encuentra 50+ issues, usar junto
+a `introduction.md.template`. Referenciar también desde `references/incremental-correction.md`.
+Output: `{nombre-wp}-issue-inventory.md`
 
 ---
 
@@ -72,13 +73,14 @@ con `introduction.md.template`. Si la escala lo justifica, se puede referenciar
 **Estructura:** Estrategia de batching con Gantt, validación entre lotes, rollback plan.
 Asume explícitamente ">100 issues" con un identificador numérico por issue.
 
-**Evaluación:** Demasiado específico para remediation masiva de proyectos legacy. El flujo
-normal de PM-THYROX cubre la descomposición en Phase 5 con `tasks.md.template`.
-Este template asume un dominio de problema que no es el caso general.
+**Evaluación:** Complemento de `tasks.md.template` para descomposición de alta escala.
+`tasks.md` lista tareas con IDs; este template organiza esas tareas en lotes secuenciales
+con validación entre lotes, timeline y rollback. Son complementarios: primero el inventario
+de tareas, luego la estrategia de batching.
 
-**Decisión: ELIMINAR.** El caso de batching masivo está documentado en
-`references/incremental-correction.md`. Un template separado agrega ruido sin
-agregar valor al flujo estándar.
+**Decisión: MANTENER + MAPEAR a Phase 5.** Para descomposición de 30+ tareas, usar
+después de `tasks.md.template`. Referenciar también desde `references/scalability.md`.
+Output: `{nombre-wp}-batch-plan.md`
 
 ---
 
@@ -87,12 +89,15 @@ agregar valor al flujo estándar.
 **Estructura:** Template genérico con secciones Purpose, Executive Summary, TOC, Introduction,
 Main Sections (3), Examples, Best Practices, Common Issues, References, Changelog.
 
-**Evaluación:** No está ligado a ninguna fase. Es boilerplate para "cualquier documento".
-En un framework donde cada fase tiene su template específico, esto genera ambigüedad:
-¿cuándo se usa `document.md` vs `introduction.md` vs `solution-strategy.md`?
+**Evaluación:** Template base para documentos de referencia o guías técnicas que no son
+artefactos directos de una fase específica (no es un análisis, ni una estrategia, ni
+un plan de tareas). Cubre casos como: runbooks, guías de onboarding, documentación de
+APIs internas, referencias técnicas duraderas del proyecto.
 
-**Decisión: ELIMINAR.** Los templates fase-específicos ya cubren todos los documentos que
-PM-THYROX produce. Un template genérico contradice el principio de "fase tiene un output".
+**Decisión: MANTENER + MAPEAR como template transversal.** Agregar en SKILL.md junto a
+`adr.md.template` y `constitution.md.template` como templates de documentación de soporte.
+Cuándo usar: cuando el output es documentación duradera de referencia, no un artefacto de WP.
+Output: `{nombre-descriptivo}.md` (sin prefijo de WP)
 
 ---
 
@@ -101,13 +106,14 @@ PM-THYROX produce. Un template genérico contradice el principio de "fase tiene 
 **Estructura:** JSON con `metadata`, `phases` (7 objetos con status/timing/artifacts),
 `timing`, `decisions`, `completion_checklist`.
 
-**Evaluación:** Viola directamente ADR-001 "Markdown only — Sin bases de datos, sin formatos
-propietarios". Además, ningún script del repositorio consume este archivo — existe sin
-tooling que lo lea. La información que captura ya vive en los artefactos Markdown del WP
-y en ROADMAP.md.
+**Evaluación:** Resumen machine-readable del estado del proyecto por fases. Útil cuando
+existe tooling externo (dashboards, pipelines CI/CD, scripts de métricas) que necesita
+leer el estado de forma programática. Es un output derivado —no la fuente de verdad—
+complementario a los artefactos Markdown del WP.
 
-**Decisión: ELIMINAR.** Viola ADR-001. Sin tooling que lo consuma. Información duplicada
-en artefactos Markdown existentes.
+**Decisión: MANTENER + MAPEAR a Phase 7 (opcional).** Agregar en SKILL.md Phase 7 como
+artefacto opcional de cierre, con la nota: "solo si existe tooling que lo consuma".
+Output: `{nombre-wp}-project.json`
 
 ---
 
@@ -412,7 +418,9 @@ referencia `exit_conditions.md` (sin prefijo `.template`) en línea 140.
 de mantener un `project.json` que ya no forma parte del framework.
 
 **Resolución:**
-- Eliminar las referencias a `project.json` de `scalability.md` (6 ocurrencias)
+- Actualizar las referencias a `project.json` en `scalability.md` (6 ocurrencias): cambiar de
+  "el proyecto tiene `project.json`" (como si fuera obligatorio) a "opcionalmente, si existe
+  tooling, usar `project.json.template` en Phase 7"
 - Corregir `exit_conditions.md` → `exit-conditions.md.template`
 
 ---
@@ -422,11 +430,12 @@ de mantener un `project.json` que ya no forma parte del framework.
 **WP origen:** `2026-03-28-20-15-30-skill-flow-analysis` (T-009: agregar `document.md.template`
 en sección Templates de SKILL.md)
 
-**Verificación:** `document.md.template` NO está en SKILL.md. Sin embargo, en este WP se
-decidió ELIMINAR `document.md.template`. Por lo tanto T-009 es obsoleto — no se implementa
-porque el template será eliminado.
+**Verificación:** `document.md.template` NO está en SKILL.md. En este WP se decide
+MAPEAR `document.md.template` como template transversal. T-009 sigue siendo válido —
+se implementa en este WP como parte del mapeo de templates.
 
-**Acción:** Marcar T-009 como `[-]` en el plan.md del WP con nota "OBSOLETO: template eliminado".
+**Acción:** Implementar T-009 en este WP: agregar `document.md.template` en SKILL.md
+sección de templates transversales (junto a `adr.md.template` y `constitution.md.template`).
 
 ---
 
@@ -467,7 +476,7 @@ Ordenado por impacto y dependencias:
 
 ### Grupo B — Referencias desactualizadas (impacto en modelos más pequeños)
 - D-001: Reescribir `examples.md` con nomenclatura de 7 fases actuales
-- D-002: Eliminar referencias a `project.json` y corregir `exit_conditions.md` en `scalability.md`
+- D-002: Actualizar referencias a `project.json` en `scalability.md` (de obligatorio a opcional Phase 7) y corregir `exit_conditions.md` → `exit-conditions.md.template`
 
 ### Grupo C — Convenciones y validación (impacto estructural)
 - TD-001: Agregar regla de timestamp en `conventions.md`
