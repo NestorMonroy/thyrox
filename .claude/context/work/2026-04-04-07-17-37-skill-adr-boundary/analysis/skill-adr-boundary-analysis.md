@@ -95,6 +95,33 @@ La tabla en SKILL.md muestra:
 
 Pero no hay descripción de qué distingue un ADR de un plan o de una decisión en SKILL.md.
 
+### RC-007: La solución misma debe ser atómica para Haiku
+
+La sesión 4 (WP skill-activation-failure) resolvió 15 gaps de compatibilidad Haiku usando
+el principio **"Baja Libertad solo en gates"**: reglas con lenguaje REQUERIDO/NO/SIEMPRE,
+no párrafos narrativos.
+
+El problema actual tiene el mismo requisito: si la corrección agrega texto narrativo para
+explicar la diferencia SKILL/ADR, Haiku seguirá sin poder usarlo. La solución debe producir
+**reglas en formato SI/NO** que no requieran inferencia:
+
+❌ Narrativo (Sonnet lo entiende, Haiku no):
+> "Considera si la decisión tiene impacto duradero en la arquitectura del proyecto antes de
+> crear un ADR."
+
+✅ Atómico (funciona para Haiku):
+> "CREAR ADR si: cambio de stack / nuevo patrón arquitectónico / reemplazo de componente principal.
+> NO crear ADR si: cambio dentro de una fase del WP / convención de naming / template nuevo."
+
+### RC-008: El stop hook es local, no portátil
+
+El hook `~/.claude/stop-hook-git-check.sh` es global de máquina (directorio `~/.claude/`,
+no `.claude/` del proyecto). Detecta archivos sin commitear para CUALQUIER modelo en esta
+máquina, pero **no existe en el entorno de otros desarrolladores** que clonen el repo.
+
+Por lo tanto: el stop hook es una red de seguridad local, no una solución al problema de
+confusión SKILL/ADR en otros entornos. El análisis no puede asumir su existencia.
+
 ---
 
 ## 3. Stakeholders
@@ -133,6 +160,15 @@ Pero no hay descripción de qué distingue un ADR de un plan o de una decisión 
 
 ## 7. Hallazgos aprobados
 
-Las causas raíz son RC-001 a RC-006. La solución debe atacar principalmente RC-001
-(boundary statement) y RC-002 (trigger explícito), que son las causas directas de confusión
-en modelos con menor capacidad de inferencia.
+Las causas raíz son RC-001 a RC-008. Prioridad:
+
+| Prioridad | RC | Razón |
+|-----------|-----|-------|
+| Alta | RC-001 | Sin boundary explícito — causa directa de toda confusión |
+| Alta | RC-002 | Trigger ambiguo — Haiku no puede inferir cuándo crear ADR |
+| Alta | RC-007 | La solución debe ser atómica (SI/NO), no narrativa |
+| Media | RC-003 | "Locked Decisions" en CLAUDE.md introduce tercer "lugar" |
+| Media | RC-005 | No existe `adr-guide.md` con ejemplos concretos |
+| Baja | RC-004 | Inconsistencia de formato entre ADRs legacy |
+| Baja | RC-006 | Tabla de artefactos sin descripción diferenciadora |
+| Info | RC-008 | Stop hook es local — no puede usarse como solución portátil |
