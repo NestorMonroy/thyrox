@@ -18,92 +18,98 @@ Fecha: 2026-04-04
 
 ## Flujos de decision
 
-### Flujo 1 — Sesion de un modelo (como Haiku lee el repo)
+### Flujo 1 — Sesion con otro modelo: como procesa el repo y donde falla
 
-```
-Inicio de sesion
-    |
-    v
-Lee CLAUDE.md (Level 2, siempre)
-    |
-    +-- Hoy: no hay boundary SKILL vs ADR -> confusion posible
-    |
-    +-- Con solucion: ve tabla SKILL vs ADR -> sabe la diferencia antes de trabajar
-    |
-    v
-Activa SKILL.md (Level 1, si esta disponible)
-    |
-    +-- Hoy: Step 8 dice "decision arquitectonica" -> ambiguo, Haiku lo interpreta mal
-    |
-    +-- Con solucion: Step 8 tiene lista SI/NO -> Haiku sabe exactamente cuando crear ADR
-    |
-    v
-Trabaja en un WP
-    |
-    v
-Necesita documentar una decision
-    |
-    +--[Cambia como se trabaja?]--SI--> modifica SKILL.md
-    |
-    +--[Decision permanente del proyecto?]--SI--> crea ADR en context/decisions/
-    |
-    +--[Decision que solo afecta este WP?]--SI--> documenta en el WP (design.md o plan.md)
-    |
-    v
-Commit convencional
-```
+```mermaid
+flowchart TD
+    A[Inicio de sesion] --> B{Lee CLAUDE.md?}
 
-### Flujo 2 — Como las 3 capas se activan en secuencia
+    B -->|Si| C{Boundary SKILL vs ADR\npresente?}
+    B -->|No — SKILL tool no disponible\no modelo lo omite| D[Va directo a trabajar\nsin contexto de boundary]
 
-```
-Capa 1: CLAUDE.md
-    Proposito: Boundary statement (que es cada artefacto)
-    Cuando actua: SIEMPRE, al inicio de cada sesion
-    Riesgo si falla: Modelo no lee CLAUDE.md -> Capa 2 compensa
-    |
-    v
-Capa 2: SKILL.md Phase 1 Step 8
-    Proposito: Trigger operacional (cuando crear ADR, lista SI/NO)
-    Cuando actua: Durante Phase 1 del WP
-    Riesgo si falla: SKILL no activado -> Capa 1 ya dio el boundary
-    |
-    v
-Capa 3: adr.md.template frontmatter
-    Proposito: Auto-descripcion del artefacto (Uso: solo para X)
-    Cuando actua: Cuando el modelo abre el template para crear un ADR
-    Riesgo si falla: El modelo no lee el template -> Capas 1 y 2 ya actuaron
+    C -->|Hoy: no existe| E[Confusion posible\ndesde el inicio]
+    C -->|Con solucion: tabla presente| F[Boundary claro antes\nde cualquier accion]
+
+    E --> G{Activa SKILL.md?}
+    F --> G
+    D --> G
+
+    G -->|Si| H{Step 8 Phase 1\nes claro?}
+    G -->|No| I[Trabaja sin metodologia\nriesgo alto de artefactos incorrectos]
+
+    H -->|Hoy: texto vago| J[Interpreta 'decision arquitectonica'\nde forma incorrecta]
+    H -->|Con solucion: lista SI/NO| K[Decision correcta\nen cada caso]
+
+    J --> L[Crea ADR donde no corresponde\no no lo crea cuando si corresponde]
+    K --> M[Artefacto en lugar correcto]
+    I --> L
+
+    L --> N{Stop hook activo\nen esta maquina?}
+    N -->|Si — ~/.claude/| O[Detecta archivos sin commit\nbloquea la sesion]
+    N -->|No — otro entorno| P[Confusion pasa desapercibida\nse propaga al repo]
+
+    O --> Q[Modelo debe corregir\nantes de continuar]
+    M --> R[Sesion exitosa]
+    P --> S[Deuda tecnica acumulada\nen el proyecto]
 ```
 
-### Flujo 3 — Arbol de decision para el modelo
+### Flujo 2 — Interaccion entre las 3 capas: no siempre se activan todas
 
+```mermaid
+flowchart TD
+    START[Inicio sesion] --> C1{Capa 1: CLAUDE.md\nleido?}
+
+    C1 -->|Si| C1OK[Boundary SKILL/ADR conocido]
+    C1 -->|No| C1FAIL[Sin boundary\nmodelo trabaja a ciegas]
+
+    C1OK --> C2{Capa 2: SKILL.md\nactivado?}
+    C1FAIL --> C2
+
+    C2 -->|Si, Capa 1 OK| BEST[Boundary + Trigger correcto\nriesgo minimo]
+    C2 -->|Si, Capa 1 FAIL| MID1[Solo trigger operacional\nsin definicion de que es cada artefacto\nriesgo medio]
+    C2 -->|No, Capa 1 OK| MID2[Solo boundary conceptual\nsin regla SI/NO en Phase 1\nriesgo medio]
+    C2 -->|No, Capa 1 FAIL| HIGH[Sin boundary ni trigger\nriesgo alto de confusion]
+
+    BEST --> C3{Modelo abre\nadr.md.template?}
+    MID1 --> C3
+    MID2 --> C3
+    HIGH --> ERR[Confusion casi garantizada\nstop hook o usuario deben corregir]
+
+    C3 -->|Si| C3OK[Campo Uso confirma\nla intencion del modelo]
+    C3 -->|No — crea ADR de memoria| C3SKIP[Capa 3 no aporta\npero Capas 1 y 2 ya actuaron]
+
+    C3OK --> COMMIT[Artefacto correcto]
+    C3SKIP --> COMMIT
 ```
-"Tengo que documentar algo"
-    |
-    v
-Es un cambio a la metodologia de como se trabaja?
-    |
-   SI -> SKILL.md (solo si eres el mantenedor del framework)
-    |
-   NO
-    |
-    v
-Es una decision que afecta todos los WPs futuros del proyecto?
-    |
-   SI -> ADR en context/decisions/adr-NNN.md
-    |
-   NO
-    |
-    v
-Es una decision que solo afecta el WP actual?
-    |
-   SI -> design.md o plan.md del WP
-    |
-   NO
-    |
-    v
-Es contexto del proyecto (estado, foco, sesion)?
-    |
-   SI -> project-state.md / focus.md / now.md
+
+### Flujo 3 — Arbol de decision del modelo al documentar algo
+
+Este flujo es no-lineal: hay ramas que regresan, ambiguedades que requieren consulta, y casos donde el modelo no puede decidir solo.
+
+```mermaid
+flowchart TD
+    START[El modelo necesita\ndocumentar algo] --> Q1{Cambia COMO\nse trabaja en general\npara todos los proyectos?}
+
+    Q1 -->|Si| SKILL[Modifica SKILL.md\nSolo si eres mantenedor\ndel framework]
+    Q1 -->|No — es especifico a este proyecto| Q2{Es una decision permanente\nque afecta todos los WPs\nfuturos del proyecto?}
+
+    Q2 -->|Si| Q3{Ya existe un ADR\nsobre este tema?}
+    Q3 -->|Si| Q3EX[Actualizar ADR existente\nno crear uno nuevo]
+    Q3 -->|No| Q4{Fue discutida con\nalternativas consideradas?}
+    Q4 -->|Si| ADR[Crear ADR en\ncontext/decisions/adr-NNN.md]
+    Q4 -->|No — se decidio sin analizar| BACK[Volver a Phase 2\ndocumentar alternativas primero]
+    BACK --> Q4
+
+    Q2 -->|No — es local al WP| Q5{Solo afecta\nel WP actual?}
+    Q5 -->|Si| WPDOC[design.md o plan.md\ndel WP actual]
+    Q5 -->|No — afecta mas de un WP\npero no es permanente| Q6{Es una convencion\nde nomenclatura, formato\no regla de estilo?}
+
+    Q6 -->|Si| CONV[conventions.md\nen references/]
+    Q6 -->|No| Q7{Es estado del proyecto\no de sesion actual?}
+
+    Q7 -->|Si| CTX[project-state.md\nfocus.md / now.md]
+    Q7 -->|No — no encaja en ninguna categoria| ASK[Consultar con el usuario\nantes de crear nuevo artefacto]
+    ASK --> START
 ```
 
 ---
