@@ -1,12 +1,23 @@
 ```yml
 Tipo: Estado Operacional
 Versión: 1.0
-Última actualización: 2026-03-28
+Última actualización: 2026-04-04
 ```
 
 # Focus
 
-6 riesgos de 14 proyectos de referencia analizados y 4 resueltos con implementación.
+Meta-framework generativo completado. pm-thyrox como orquestador de gestión + N tech skills auto-generados desde registry centralizado. WP voltfactory-adaptation cerrado en FASE 7.
+
+## Completado sesión 6
+
+- WP voltfactory-adaptation completado (7 fases, 21 tareas)
+- Registry base: `.claude/registry/` con 3 templates (react, nodejs, postgresql) + _generator.sh
+- 3 tech skills generados: frontend-react, backend-nodejs, db-postgresql
+- 8 workflow commands: /workflow_init + /workflow_analyze..track
+- session-start.sh: detecta y muestra tech skills activos
+- ADR-012: ejes ortogonales (management skill + tech skills)
+- CHANGELOG.md v0.5.0, ROADMAP FASE 7 = 100%
+- Deuda activa: TD-001 (timestamps), TD-003 (6 templates huerfanos)
 
 ## Completado sesión 3
 
