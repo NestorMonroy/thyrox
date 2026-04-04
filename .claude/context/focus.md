@@ -6,18 +6,20 @@ Versión: 1.0
 
 # Focus
 
-Meta-framework generativo completado. pm-thyrox como orquestador de gestión + N tech skills auto-generados desde registry centralizado. WP voltfactory-adaptation cerrado en FASE 7.
+Deuda técnica resuelta. WP technical-debt-resolution cerrado en FASE 8. Framework listo para uso sin deuda pendiente conocida.
 
-## Completado sesión 6
+## Completado sesión 7
 
-- WP voltfactory-adaptation completado (7 fases, 21 tareas)
-- Registry base: `.claude/registry/` con 3 templates (react, nodejs, postgresql) + _generator.sh
-- 3 tech skills generados: frontend-react, backend-nodejs, db-postgresql
-- 8 workflow commands: /workflow_init + /workflow_analyze..track
-- session-start.sh: detecta y muestra tech skills activos
-- ADR-012: ejes ortogonales (management skill + tech skills)
-- CHANGELOG.md v0.5.0, ROADMAP FASE 7 = 100%
-- Deuda activa: TD-001 (timestamps), TD-003 (6 templates huerfanos)
+- WP technical-debt-resolution completado (7 fases, 25 tareas)
+- 6 templates huérfanos mapeados al flujo (3 capas: header + SKILL.md + condición)
+- examples.md: 8 headers de fase corregidos (nomenclatura 7 fases oficiales)
+- scalability.md: project.json → opcional, exit_conditions fix
+- conventions.md: sección Timestamp Format + validate-session-close.sh check
+- validate-phase-readiness.sh: Phase 3 verifica plan.md + scope aprobado
+- 8 WPs históricos cerrados (0 checkboxes abiertos)
+- CHANGELOG.md v0.6.0, ROADMAP FASE 8 = 100%
+- 5 lecciones (L-025 a L-029)
+- Deuda activa: T-DT-004 (code-fenced false positives, baja), T-DT-005 (session-start.sh WP detection, media)
 
 ## Completado sesión 3
 

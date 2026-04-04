@@ -13,6 +13,40 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.6.0] - 2026-04-04
+
+### Fixed — Resolución de Deuda Técnica (WP technical-debt-resolution)
+
+**SPEC-001 — Templates huérfanos mapeados al flujo:**
+- `assets/ad-hoc-tasks.md.template` — header `Fase: 5/6`, condición de activación
+- `assets/analysis-phase.md.template` — header `Fase: 1`, condición >20 issues
+- `assets/categorization-plan.md.template` — header `Fase: 5`, condición >50 issues
+- `assets/document.md.template` — header `Fase: 4`, para docs sin template específico
+- `assets/project.json.template` — comentario `Fase: 1`, condición >50 issues
+- `assets/refactors.md.template` — header `Fase: 5/6`, condición para deuda técnica
+- `SKILL.md` — tabla de artefactos: 6 rows nuevas con condiciones de activación
+- `SKILL.md` — Phase 1/4/5/6/7: links a los 6 templates con condiciones explícitas
+
+**SPEC-002 — examples.md nomenclatura corregida:**
+- 8 headers de fase actualizados (Phase 1→3, Phase 2→4, Phase 3→5, Phase 4→6, Phase 5→7)
+- Nota con 7 fases oficiales: ANALYZE → SOLUTION_STRATEGY → PLAN → STRUCTURE → DECOMPOSE → EXECUTE → TRACK
+
+**SPEC-003 — scalability.md referencias:**
+- `project.json` cambiado de requerido a opcional con threshold >50 issues
+- `exit_conditions.md` → `exit-conditions.md` (nombre correcto con guión)
+
+**SPEC-004 — Timestamp conventions:**
+- `references/conventions.md` — sección "Timestamp Format" con YYYY-MM-DD-HH-MM-SS
+- `scripts/validate-session-close.sh` — check #3 detecta placeholders sin resolver
+
+**SPEC-005 — validate-phase-readiness.sh Phase 3:**
+- Phase 3 case verifica `*-plan.md` existe y tiene scope aprobado `[x]`
+
+**SPEC-006 — WPs históricos cerrados:**
+- 8 WPs con checkboxes abiertos cerrados: coherencia-unificacion-fases, covariancia, spec-kit-adoption, spec-kit-deep-adoption, multi-interaction-evals, cicd-setup, skill-flow-analysis, skill-consistency
+
+---
+
 ## [0.5.0] - 2026-04-04
 
 ### Added
