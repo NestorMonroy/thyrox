@@ -22,7 +22,7 @@ Documenta lecciones aprendidas, genera changelog, y cierra el work package activ
    - Patrones reutilizables identificados
    - Errores encontrados y cómo se resolvieron
 
-2. `CHANGELOG.md` — actualizar desde los commits del WP
+2. [CHANGELOG](CHANGELOG.md) — actualizar desde los commits del WP
    - Formato Keep a Changelog
    - Agrupar por tipo: Added, Changed, Fixed, Removed
 
@@ -45,6 +45,6 @@ bash .claude/skills/pm-thyrox/scripts/project-status.sh
 
 Phase 7 completa cuando:
 - `*-lessons-learned.md` existe
-- `CHANGELOG.md` actualizado
+- [CHANGELOG](CHANGELOG.md) actualizado
 - `validate-session-close.sh` pasa sin errores
 - No quedaron archivos temporales fuera de `context/work/`

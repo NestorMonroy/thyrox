@@ -26,7 +26,7 @@ para documentación con Sphinx.
 | Sección `adr_path` en CLAUDE.md | SPEC-001 | Nueva sección H2 con campo configurable |
 | Limpiar Locked Decisions | SPEC-002 | Eliminar referencias a ADR IDs; reglas auto-contenidas |
 | SKILL.md Phase 1 Step 8 SI/NO | SPEC-003 | Regla condicional para ruta de ADRs |
-| `docs/architecture/decisions/README.md` | SPEC-004 | Placeholder que señala propósito del directorio |
+| [README](docs/architecture/decisions/README.md) | SPEC-004 | Placeholder que señala propósito del directorio |
 | Stub sphinx skill | SPEC-005 | SKILL.md mínimo con secciones `[PENDIENTE]` |
 | ADR-013 | SPEC-006 | Registro de la decisión de separación .claude/ vs docs/ |
 
@@ -40,7 +40,7 @@ para documentación con Sphinx.
 
 ### Descripción
 
-Añadir sección `## Configuración del Proyecto` en `.claude/CLAUDE.md` con el campo
+Añadir sección `## Configuración del Proyecto` en [CLAUDE](.claude/CLAUDE.md) con el campo
 `adr_path` que indica dónde escribe Claude los ADRs del proyecto.
 
 ### Criterios de Aceptación
@@ -69,7 +69,7 @@ Then escribe en .claude/context/decisions/ (retrocompatibilidad)
 ### Implementación
 
 **Archivos a modificar:**
-- `.claude/CLAUDE.md` — añadir sección antes de `## Para más contexto`
+- [CLAUDE](.claude/CLAUDE.md) — añadir sección antes de `## Para más contexto`
 
 **Contenido exacto a añadir:**
 ```markdown
@@ -117,7 +117,7 @@ Then entiende cada regla sin necesidad de leer los ADRs referenciados
 ### Implementación
 
 **Archivos a modificar:**
-- `.claude/CLAUDE.md` — sección `## Locked Decisions`
+- [CLAUDE](.claude/CLAUDE.md) — sección `## Locked Decisions`
 
 **Transformación:**
 ```
@@ -166,7 +166,7 @@ Then crea el ADR en .claude/context/decisions/adr-NNN.md
 ### Implementación
 
 **Archivos a modificar:**
-- `.claude/skills/pm-thyrox/SKILL.md` — Phase 1 Step 8
+- [SKILL](.claude/skills/pm-thyrox/SKILL.md) — Phase 1 Step 8
 
 **Texto a añadir al inicio del Step 8:**
 ```markdown
@@ -213,7 +213,7 @@ Then entiende que THYROX usa .claude/context/decisions/ por retrocompatibilidad
 ### Implementación
 
 **Archivos a crear:**
-- `docs/architecture/decisions/README.md`
+- [README](docs/architecture/decisions/README.md)
 
 **Complejidad:** Baja
 
@@ -227,7 +227,7 @@ Then entiende que THYROX usa .claude/context/decisions/ por retrocompatibilidad
 
 ### Descripción
 
-Crear `.claude/skills/sphinx/SKILL.md` como stub siguiendo ADR-012 (tech skills
+Crear [SKILL](.claude/skills/sphinx/SKILL.md) como stub siguiendo ADR-012 (tech skills
 separados). El stub declara el propósito y las secciones futuras, marcadas con
 `[PENDIENTE]`. El contenido completo es un WP separado.
 
@@ -255,7 +255,7 @@ Then no intenta usar el skill para guiar configuración de Sphinx
 ### Implementación
 
 **Archivos a crear:**
-- `.claude/skills/sphinx/SKILL.md`
+- [SKILL](.claude/skills/sphinx/SKILL.md)
 
 **Complejidad:** Baja
 
@@ -296,7 +296,7 @@ Then entiende que .claude/ es efímero y docs/ es permanente
 ### Implementación
 
 **Archivos a crear:**
-- `.claude/context/decisions/adr-013.md`
+- [adr-013](.claude/context/decisions/adr-013.md)
 
 **Complejidad:** Baja
 

@@ -16,7 +16,7 @@ Documentar CÓMO implementar los 6 SPEC del WP. Todos los cambios son modificaci
 
 ---
 
-Basado en: `technical-debt-resolution-requirements-spec.md`
+Basado en: [technical-debt-resolution-requirements-spec](technical-debt-resolution-requirements-spec.md)
 
 ## 1. Visión General
 
@@ -106,7 +106,7 @@ Si un cambio introduce un problema:
 
 ## 8. Referencias
 
-- `technical-debt-resolution-requirements-spec.md` — este diseño
+- [technical-debt-resolution-requirements-spec](technical-debt-resolution-requirements-spec.md) — este diseño
 - `SKILL.md` — flujo de 7 fases
 - `references/scalability.md` — referencia de escalabilidad
 - `references/conventions.md` — convenciones del proyecto

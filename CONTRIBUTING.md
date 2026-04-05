@@ -38,8 +38,8 @@ Claude Code lee CLAUDE.md → consulta SKILL.md → identifica fase actual.
 
 ### 2. Revisar estado
 
-- Leer `ROADMAP.md` — ¿qué está pendiente?
-- Leer `CHANGELOG.md` — ¿qué cambió recientemente?
+- Leer [ROADMAP](ROADMAP.md) — ¿qué está pendiente?
+- Leer [CHANGELOG](CHANGELOG.md) — ¿qué cambió recientemente?
 
 ### 3. Crear branch
 

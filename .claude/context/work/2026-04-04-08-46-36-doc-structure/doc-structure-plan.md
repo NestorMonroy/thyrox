@@ -24,17 +24,17 @@ CLAUDE.md referencia IDs de ADRs de THYROX, rompiendo portabilidad del framework
 - `grep -n "adr_path\|docs/" .claude/skills/pm-thyrox/SKILL.md` → resultado en Phase 1 Step 8
 - `grep "ADR-0[0-9][0-9]" .claude/CLAUDE.md` → 0 resultados (Locked Decisions auto-contenidas)
 - `ls docs/architecture/decisions/` → directorio existe con README.md
-- `.claude/skills/sphinx/SKILL.md` existe como stub
+- [SKILL](.claude/skills/sphinx/SKILL.md) existe como stub
 
 ---
 
 ## In-Scope
 
-- Sección `## Configuración del Proyecto` con campo `adr_path` en `.claude/CLAUDE.md`
+- Sección `## Configuración del Proyecto` con campo `adr_path` en [CLAUDE](.claude/CLAUDE.md)
 - Limpieza de referencias a IDs de ADRs en sección "Locked Decisions" de `CLAUDE.md`
 - Update de Phase 1 Step 8 en `SKILL.md` con regla SI/NO para `adr_path`
-- Creación de `docs/architecture/decisions/README.md` (estructura mínima)
-- Creación de `.claude/skills/sphinx/SKILL.md` como stub (secciones `[PENDIENTE]`)
+- Creación de [README](docs/architecture/decisions/README.md) (estructura mínima)
+- Creación de [SKILL](.claude/skills/sphinx/SKILL.md) como stub (secciones `[PENDIENTE]`)
 - ADR-013: docs/ como documentación canónica del proyecto
 
 ---
@@ -58,8 +58,8 @@ CLAUDE.md referencia IDs de ADRs de THYROX, rompiendo portabilidad del framework
 |---|---|
 | CLAUDE.md — sección `adr_path` + limpiar Locked Decisions | 2 |
 | SKILL.md — Phase 1 Step 8 con regla SI/NO | 1 |
-| `docs/architecture/decisions/README.md` | 1 |
-| `.claude/skills/sphinx/SKILL.md` (stub) | 1 |
+| [README](docs/architecture/decisions/README.md) | 1 |
+| [SKILL](.claude/skills/sphinx/SKILL.md) (stub) | 1 |
 | ADR-013 | 1 |
 | **Total** | **6 tareas** |
 
@@ -72,12 +72,12 @@ Fases activas: 1 ✓, 2 ✓, 3 (este doc), 4, 5, 6, 7
 
 | Tarea | Archivo | Resuelve |
 |-------|---------|---------|
-| Sección `adr_path` en CLAUDE.md | `.claude/CLAUDE.md` | H-001, H-002, H-003 |
-| Limpiar Locked Decisions | `.claude/CLAUDE.md` | H-002 |
-| SKILL.md Phase 1 Step 8 SI/NO | `.claude/skills/pm-thyrox/SKILL.md` | H-003 |
-| `docs/architecture/decisions/README.md` | `docs/architecture/decisions/README.md` | H-006 |
-| Stub sphinx skill | `.claude/skills/sphinx/SKILL.md` | H-007 |
-| ADR-013 | `.claude/context/decisions/adr-013.md` | H-001, H-004 |
+| Sección `adr_path` en CLAUDE.md | [CLAUDE](.claude/CLAUDE.md) | H-001, H-002, H-003 |
+| Limpiar Locked Decisions | [CLAUDE](.claude/CLAUDE.md) | H-002 |
+| SKILL.md Phase 1 Step 8 SI/NO | [SKILL](.claude/skills/pm-thyrox/SKILL.md) | H-003 |
+| [README](docs/architecture/decisions/README.md) | `docs/architecture/decisions/README.md` | H-006 |
+| Stub sphinx skill | [SKILL](.claude/skills/sphinx/SKILL.md) | H-007 |
+| ADR-013 | [adr-013](.claude/context/decisions/adr-013.md) | H-001, H-004 |
 
 ---
 

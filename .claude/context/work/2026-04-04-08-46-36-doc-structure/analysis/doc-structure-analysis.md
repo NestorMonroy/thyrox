@@ -163,7 +163,7 @@ docs/                        ← proyecto (permanente, entregable)
 | Carpeta | Audiencia | Durabilidad |
 |---------|-----------|-------------|
 | `.claude/context/work/` | Solo Claude | Efímera — termina con el WP |
-| `.claude/context/focus.md` | Solo Claude | Sesión actual |
+| [focus](.claude/context/focus.md) | Solo Claude | Sesión actual |
 | `docs/` | Todo el equipo | Permanente — vive con el proyecto |
 
 ### 7. Fuera de alcance

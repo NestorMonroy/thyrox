@@ -25,8 +25,8 @@ Tipo: Phase 1 (ANALYZE)
 | Archivo | Qué limpiar |
 |---------|------------|
 | `project-state.md` | Proyectos completados, fechas específicas |
-| `CHANGELOG.md` | Entradas de v0.1.0 y v0.2.0 |
-| `ROADMAP.md` | Tareas completadas con fechas |
+| [CHANGELOG](CHANGELOG.md) | Entradas de v0.1.0 y v0.2.0 |
+| [ROADMAP](ROADMAP.md) | Tareas completadas con fechas |
 | `context/decisions/` | 12 ADRs son metodología (reutilizables), solo limpiar "proyecto THYROX" en contexto |
 | `context/errors/` | 28 ERRs son taxonomía genérica (reutilizables), limpiar "framework THYROX" |
 
@@ -62,4 +62,4 @@ Los `context/work/` contienen historia de THYROX (14 work packages). Para el tem
 2. **Crear `TEMPLATE_SETUP.md`** con instrucciones de personalización (search-and-replace guide)
 3. **Limpiar archivos de estado** — project-state, ROADMAP, CHANGELOG se resetean
 4. **NO limpiar work packages** — son git history, no archivos del template distribuible
-5. **El template distribuible es solo:** `.claude/skills/pm-thyrox/` + `.claude/CLAUDE.md` + archivos raíz
+5. **El template distribuible es solo:** `.claude/skills/pm-thyrox/` + [CLAUDE](.claude/CLAUDE.md) + archivos raíz

@@ -59,7 +59,7 @@ Los 3 archivos violan la convención que el propio SKILL define. Si un usuario v
 
 **El flujo actual:**
 
-1. Claude Code lee `.claude/CLAUDE.md` siempre (se carga automáticamente)
+1. Claude Code lee [CLAUDE](.claude/CLAUDE.md) siempre (se carga automáticamente)
 2. CLAUDE.md dice: "Consultar SKILL" en el paso 2 del flujo de sesión
 3. El SKILL tiene un `description:` en el frontmatter YAML que dice cuándo activarse
 

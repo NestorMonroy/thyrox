@@ -422,8 +422,8 @@ N tech skills auto-generados desde un registry centralizado, persistentes como a
 - [x] CLAUDE.md — sección `## Configuración del Proyecto` con campo `adr_path` (2026-04-04)
 - [x] CLAUDE.md — limpiar referencias a IDs de ADRs en "Locked Decisions" (2026-04-04)
 - [x] SKILL.md Phase 1 Step 8 — regla SI/NO para `adr_path` (2026-04-04)
-- [x] `docs/architecture/decisions/README.md` — estructura mínima (2026-04-04)
-- [x] `.claude/skills/sphinx/SKILL.md` — stub tech skill (2026-04-04)
+- [x] [README](docs/architecture/decisions/README.md) — estructura mínima (2026-04-04)
+- [x] [SKILL](.claude/skills/sphinx/SKILL.md) — stub tech skill (2026-04-04)
 - [x] ADR-013: docs/ como documentación canónica del proyecto (2026-04-04)
 
 ---

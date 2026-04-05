@@ -76,7 +76,7 @@ usar formato SI/NO o tabla, no párrafo. El formato determina la tasa de seguimi
 
 **Qué pasó**
 
-T-005 pedía crear `.claude/skills/sphinx/SKILL.md` como stub. Al crearlo, se
+T-005 pedía crear [SKILL](.claude/skills/sphinx/SKILL.md) como stub. Al crearlo, se
 descubrió que no había un template estándar para tech skill stubs — se improvisó
 con secciones `[PENDIENTE]`.
 
@@ -147,7 +147,7 @@ Cuando corrige comportamiento existente → patch. Cuando rompe compatibilidad �
 |----|-------------|-----------|----------------------|
 | T-DT-001 | Template para tech skill stub en `assets/tech-skill.md.template` | Media | framework-cleanup |
 | T-DT-002 | Regla de versionado semántico por tipo de WP en `references/conventions.md` | Baja | conventions-update |
-| T-DT-003 | Completar secciones `[PENDIENTE]` en `.claude/skills/sphinx/SKILL.md` | Media | sphinx-integration |
+| T-DT-003 | Completar secciones `[PENDIENTE]` en [SKILL](.claude/skills/sphinx/SKILL.md) | Media | sphinx-integration |
 
 ---
 

@@ -22,7 +22,7 @@ Sistema de control de computadora con IA basado en xAI Grok. Arquitectura de 9 a
 | G02 | **Backup files en git** — `main.py.backup`, `main.py.backup2`, `grok_client.py.backup`, `requirements.txt.backup.*` | `.gitignore` usa `backup_*` pero archivos usan `.backup` suffix — patrón equivocado | ADR-008: Git history IS the backup |
 | G03 | **8 archivos vacíos** — `test_kg_integration.py`, `messagebus.log`, `i think its running.txt`, `tree_of_life.md` | 0 bytes, committed sin contenido | ADR-001: Markdown only + review |
 | G04 | **Binarios en repo** — 18 archivos: `.jpg`, `.PNG`, `.bmp`, `.mp4`, `.msi` (2.5MB), `.rar`, `.pdf` (4.6MB), `.xlsx`, `.lnk`, carpeta `memes for xai/` | Sin política de archivos, todo commiteado | ADR-001: Markdown only |
-| G05 | **3 CLAUDE.md conflictivos** — root (17KB técnico), `docs/CLAUDE.md` (36KB, guía genérica de AI), `community/docs/CLAUDE.md` | Tres archivos con propósitos diferentes, Claude Code solo lee root | Single CLAUDE.md en `.claude/CLAUDE.md` |
+| G05 | **3 CLAUDE.md conflictivos** — root (17KB técnico), `docs/CLAUDE.md` (36KB, guía genérica de AI), `community/docs/CLAUDE.md` | Tres archivos con propósitos diferentes, Claude Code solo lee root | Single CLAUDE.md en [CLAUDE](.claude/CLAUDE.md) |
 
 ### ALTOS (6) — Workflow roto
 

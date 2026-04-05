@@ -41,10 +41,10 @@ Documentar los casos de uso principales del framework THYROX, describiendo cómo
 **Flujo principal:**
 
 1. Developer clona o copia el template THYROX a un nuevo directorio
-2. Developer revisa la estructura generada (`CLAUDE.md`, `ROADMAP.md`, `.claude/`)
+2. Developer revisa la estructura generada (`CLAUDE.md`, [ROADMAP](ROADMAP.md), `.claude/`)
 3. Developer actualiza `CLAUDE.md` con nombre, descripción y objetivo del nuevo proyecto
-4. Developer actualiza `ROADMAP.md` con las fases y milestones iniciales
-5. Developer configura `.claude/context/project-state.md` con el estado inicial
+4. Developer actualiza [ROADMAP](ROADMAP.md) con las fases y milestones iniciales
+5. Developer configura [project-state](.claude/context/project-state.md) con el estado inicial
 6. Developer hace commit inicial: `feat(init): initialize project with THYROX template`
 7. Claude Code valida que la estructura cumple con la anatomía de skill estándar
 
@@ -55,7 +55,7 @@ Documentar los casos de uso principales del framework THYROX, describiendo cómo
 **Postcondiciones:**
 - Repositorio con estructura THYROX completa
 - `CLAUDE.md` configurado para el nuevo proyecto
-- `ROADMAP.md` con plan inicial
+- [ROADMAP](ROADMAP.md) con plan inicial
 - Commit inicial registrado
 
 **Notas:** Este caso de uso es el punto de entrada para todo proyecto nuevo. La calidad de la configuracion inicial impacta todas las fases posteriores.
@@ -75,7 +75,7 @@ Documentar los casos de uso principales del framework THYROX, describiendo cómo
 
 **Flujo principal:**
 
-1. Claude Code lee `CLAUDE.md` y `ROADMAP.md` para entender el estado actual
+1. Claude Code lee `CLAUDE.md` y [ROADMAP](ROADMAP.md) para entender el estado actual
 2. Claude Code ejecuta las 8 subsecciones de Phase 1 ANALYZE:
    - 1.1 Introduction and Goals (contexto general, vision, objetivo)
    - 1.2 Requirements Analysis (requisitos funcionales R-1 a R-8)
@@ -86,7 +86,7 @@ Documentar los casos de uso principales del framework THYROX, describiendo cómo
    - 1.7 Risks (riesgos identificados y mitigaciones)
    - 1.8 Context and Scope (boundaries del sistema)
 3. Claude Code genera documentos en `.claude/context/epics/{epic-name}/`
-4. Claude Code actualiza `ROADMAP.md` marcando subsecciones completadas
+4. Claude Code actualiza [ROADMAP](ROADMAP.md) marcando subsecciones completadas
 5. PM/Architect revisa los documentos generados
 6. Claude Code ajusta documentos segun feedback
 
@@ -97,7 +97,7 @@ Documentar los casos de uso principales del framework THYROX, describiendo cómo
 
 **Postcondiciones:**
 - Documentos de analisis generados en el epic correspondiente
-- `ROADMAP.md` actualizado con progreso de Phase 1
+- [ROADMAP](ROADMAP.md) actualizado con progreso de Phase 1
 - Comprension clara del problema antes de planificar
 
 **Notas:** La fase de analisis es obligatoria. No se debe avanzar a planificacion sin completar al menos las subsecciones minimas. Los references en `references/` contienen guias detalladas para cada subseccion.
@@ -122,18 +122,18 @@ Documentar los casos de uso principales del framework THYROX, describiendo cómo
 3. Claude Code realiza brainstorm de enfoque tecnico y alternativas
 4. Claude Code define scope: que incluye y que queda fuera
 5. Claude Code crea epic en `.claude/context/epics/YYYY-MM-DD-feature-name/`
-6. Claude Code actualiza `ROADMAP.md` con los items del plan
+6. Claude Code actualiza [ROADMAP](ROADMAP.md) con los items del plan
 7. PM/Architect revisa y aprueba el scope propuesto
 8. Claude Code ajusta plan segun feedback
 
 **Flujos alternativos:**
 - **3a.** Si la feature es simple, Claude Code omite brainstorm y va directo a scope
-- **5a.** Para proyectos pequenos, Claude Code documenta el plan solo en `ROADMAP.md` sin crear epic
+- **5a.** Para proyectos pequenos, Claude Code documenta el plan solo en [ROADMAP](ROADMAP.md) sin crear epic
 - **7a.** Si PM/Architect rechaza el scope, volver a paso 3 con restricciones adicionales
 
 **Postcondiciones:**
 - Epic creado con estructura de carpetas
-- `ROADMAP.md` actualizado con items planificados
+- [ROADMAP](ROADMAP.md) actualizado con items planificados
 - Scope definido y aprobado
 - Listo para Phase 4 (STRUCTURE) o Phase 5 (DECOMPOSE)
 
@@ -159,7 +159,7 @@ Documentar los casos de uso principales del framework THYROX, describiendo cómo
 3. Claude Code implementa el cambio siguiendo los estandares del proyecto
 4. Claude Code verifica que tests pasan (si aplica)
 5. Claude Code hace commit atomico con Conventional Commits: `feat(scope): descripcion`
-6. Claude Code actualiza `ROADMAP.md` marcando la tarea como completada `[x]`
+6. Claude Code actualiza [ROADMAP](ROADMAP.md) marcando la tarea como completada `[x]`
 7. Claude Code registra progreso en work-log si la sesion es extensa
 8. Claude Code verifica el checklist de sesion antes de continuar
 
@@ -172,7 +172,7 @@ Documentar los casos de uso principales del framework THYROX, describiendo cómo
 **Postcondiciones:**
 - Cambio implementado y commiteado
 - Tests pasando
-- `ROADMAP.md` actualizado
+- [ROADMAP](ROADMAP.md) actualizado
 - Branch listo para merge o PR
 
 **Notas:** Cada commit debe representar un concepto atomico. Si un cambio toca validacion y UI, son dos commits separados. El mensaje debe explicar el "por que", no solo el "que".
@@ -223,7 +223,7 @@ Documentar los casos de uso principales del framework THYROX, describiendo cómo
 **Precondiciones:**
 - Decision arquitectonica identificada durante cualquier fase
 - Alternativas evaluadas o evaluables
-- Acceso a `.claude/context/decisions.md`
+- Acceso a [decisions](.claude/context/decisions.md)
 
 **Flujo principal:**
 
@@ -295,4 +295,4 @@ Documentar los casos de uso principales del framework THYROX, describiendo cómo
 
 ## Siguiente Paso
 
--> Pasar a `quality-goals.md`
+-> Pasar a [quality-goals](quality-goals.md)

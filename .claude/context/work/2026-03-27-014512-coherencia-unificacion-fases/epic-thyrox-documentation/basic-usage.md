@@ -170,4 +170,4 @@ El usuario observa:
 
 ## Siguiente Paso
 
-→ Pasar a `constraints.md`
+→ Pasar a [constraints](constraints.md)

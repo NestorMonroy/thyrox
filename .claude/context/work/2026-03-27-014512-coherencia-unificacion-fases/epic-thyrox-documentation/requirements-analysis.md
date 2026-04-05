@@ -161,4 +161,4 @@ Documentar QUÉ debe hacer THYROX como framework de gestión de proyectos.
 
 ## Siguiente Paso
 
-→ Pasar a `use-cases.md`
+→ Pasar a [use-cases](use-cases.md)

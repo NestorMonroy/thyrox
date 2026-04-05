@@ -82,7 +82,7 @@ a re-explicar el stack repetidamente.
 | **Total** | **23 tareas** |
 
 Clasificación: proyecto mediano (>10 tareas). Requiere Phase 4 completa con
-`voltfactory-adaptation-requirements-spec.md` y `voltfactory-adaptation-design.md`.
+[voltfactory-adaptation-requirements-spec](voltfactory-adaptation-requirements-spec.md) y [voltfactory-adaptation-design](voltfactory-adaptation-design.md).
 
 ---
 

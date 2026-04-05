@@ -96,4 +96,4 @@ Este documento es el inicio de PHASE 1: ANALYZE. Las subsecciones que siguen son
 
 ## Siguiente Paso
 
-→ Pasar a `requirements-analysis.md`
+→ Pasar a [requirements-analysis](requirements-analysis.md)

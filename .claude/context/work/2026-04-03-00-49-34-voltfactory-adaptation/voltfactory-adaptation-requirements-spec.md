@@ -89,7 +89,7 @@ Then explica: cómo agregar un nuevo template, las capas válidas, los placehold
 
 ### Archivos a crear
 
-- `.claude/registry/README.md`
+- [README](.claude/registry/README.md)
 - `.claude/registry/frontend/` (directorio)
 - `.claude/registry/backend/` (directorio)
 - `.claude/registry/db/` (directorio)
@@ -190,9 +190,9 @@ Then contiene reglas sobre: naming de tablas y columnas, uso de índices, migrac
 
 ### Archivos a crear
 
-- `.claude/registry/frontend/react.template.md`
-- `.claude/registry/backend/nodejs.template.md`
-- `.claude/registry/db/postgresql.template.md`
+- [react.template](.claude/registry/frontend/react.template.md)
+- [nodejs.template](.claude/registry/backend/nodejs.template.md)
+- [postgresql.template](.claude/registry/db/postgresql.template.md)
 
 ---
 
@@ -258,7 +258,7 @@ Then Claude muestra las capas disponibles en el registry
 
 ### Archivos a crear
 
-- `.claude/commands/workflow_init.md`
+- [workflow_init](.claude/commands/workflow_init.md)
 
 ---
 
@@ -305,13 +305,13 @@ Then lee el *-task-plan.md del WP activo
 
 ### Archivos a crear
 
-- `.claude/commands/workflow_analyze.md`
-- `.claude/commands/workflow_strategy.md`
-- `.claude/commands/workflow_plan.md`
-- `.claude/commands/workflow_structure.md`
-- `.claude/commands/workflow_decompose.md`
-- `.claude/commands/workflow_execute.md`
-- `.claude/commands/workflow_track.md`
+- [workflow_analyze](.claude/commands/workflow_analyze.md)
+- [workflow_strategy](.claude/commands/workflow_strategy.md)
+- [workflow_plan](.claude/commands/workflow_plan.md)
+- [workflow_structure](.claude/commands/workflow_structure.md)
+- [workflow_decompose](.claude/commands/workflow_decompose.md)
+- [workflow_execute](.claude/commands/workflow_execute.md)
+- [workflow_track](.claude/commands/workflow_track.md)
 
 ---
 

@@ -67,7 +67,7 @@ Then: omite la tabla de trazabilidad sin error
 
 ### Archivos a modificar
 
-- `.claude/skills/pm-thyrox/SKILL.md` — sección Phase 3, procedimiento
+- [SKILL](.claude/skills/pm-thyrox/SKILL.md) — sección Phase 3, procedimiento
 
 ### Verificación
 
@@ -113,7 +113,7 @@ Then: el modelo puede saltar DECOMPOSE según la tabla de escalabilidad
 
 ### Archivos a modificar
 
-- `.claude/skills/pm-thyrox/SKILL.md` — sección Phase 3
+- [SKILL](.claude/skills/pm-thyrox/SKILL.md) — sección Phase 3
 
 ### Verificación
 
@@ -160,7 +160,7 @@ Then: el exit criteria original aplica sin cambios
 
 ### Archivos a modificar
 
-- `.claude/skills/pm-thyrox/SKILL.md` — exit criteria de Phase 3
+- [SKILL](.claude/skills/pm-thyrox/SKILL.md) — exit criteria de Phase 3
 
 ### Verificación
 

@@ -73,7 +73,7 @@ Todo esto se hizo correctamente pero de forma ad-hoc, sin:
 | 5 | `tasks.md.template` | `task-plan.md` | ✗ nuevo |
 | 6 | `execution-log.md.template` | `execution-log.md` | ✗ nuevo |
 | 7 | `lessons-learned.md.template` | `lessons-learned.md` | ✗ nuevo |
-| 7 | `changelog.md.template` | `CHANGELOG.md` | ✗ nuevo |
+| 7 | `changelog.md.template` | [CHANGELOG](CHANGELOG.md) | ✗ nuevo |
 
 7 de 10 puntos de integración son trabajo nuevo. El spec anterior solo cubría 3.
 

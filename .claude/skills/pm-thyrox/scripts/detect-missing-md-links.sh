@@ -82,6 +82,12 @@ while IFS= read -r mdfile; do
                 [[ "$ref" == *"<"*">"* ]] && continue
                 [[ "$ref" == *"*"* ]] && continue
                 [[ "$ref" == *"{"*"}"* ]] && continue
+                [[ "$ref" == *"["* ]] && continue
+
+                # Skip if the referenced file does not exist (naming examples, patterns)
+                file_dir=$(dirname "$mdfile")
+                resolved_path="${file_dir}/${ref}"
+                [ ! -f "$resolved_path" ] && [ ! -f "${SEARCH_DIR}/${ref}" ] && continue
 
                 # Skip if this exact ref is already part of a markdown link on this line
                 # e.g., [text](ref.md) - the ref appears after ](

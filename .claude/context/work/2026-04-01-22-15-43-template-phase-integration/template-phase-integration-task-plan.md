@@ -14,11 +14,11 @@ Fecha fin prevista: 2026-04-02-00-00-00
 ## Tareas
 
 - [x] [T-001] SKILL.md sección Naming: agregar regla `{nombre-wp}-{tipo}.md` con ejemplo concreto (R-1) [P]
-  - **Archivo:** `.claude/skills/pm-thyrox/SKILL.md`
+  - **Archivo:** [SKILL](.claude/skills/pm-thyrox/SKILL.md)
   - **Done cuando:** sección Naming contiene el patrón, los tipos válidos y un ejemplo con WP real
 
 - [x] [T-002] SKILL.md sección Naming: agregar nota de WPs legacy (R-2) [P]
-  - **Archivo:** `.claude/skills/pm-thyrox/SKILL.md`
+  - **Archivo:** [SKILL](.claude/skills/pm-thyrox/SKILL.md)
   - **Done cuando:** existe nota que menciona `spec.md`, `plan.md`, `lessons.md` como legacy
 
 - [x] [T-003] Verificar SKILL.md < 500 líneas (RNF-1) — resultado: 263 líneas

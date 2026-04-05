@@ -106,7 +106,7 @@ Estado: [ ] Pendiente
 ```
 
 **Problema:**
-Phase 3 solo actualiza `ROADMAP.md` (archivo global) pero no crea ningún artefacto
+Phase 3 solo actualiza [ROADMAP](ROADMAP.md) (archivo global) pero no crea ningún artefacto
 dentro del WP. Esto rompe la trazabilidad: al revisar el WP en el futuro no hay
 registro de qué scope fue decidido en Phase 3, qué quedó dentro, qué quedó fuera,
 ni por qué.

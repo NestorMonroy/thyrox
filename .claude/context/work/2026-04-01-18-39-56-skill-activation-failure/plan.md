@@ -20,7 +20,7 @@ Spec: [spec.md](spec.md) — 16 RF, 3 RNF, design exacto por archivo.
 ## Bloque A — Activación triple capa (D1)
 
 - [x] [T-001] Reemplazar sección "Flujo de sesión" en CLAUDE.md con lenguaje OBLIGATORIO + instrucción Skill tool + fallback inline (R-1, R-2)
-  - **Archivo:** `.claude/CLAUDE.md`
+  - **Archivo:** [CLAUDE](.claude/CLAUDE.md)
   - **Done cuando:** contiene "OBLIGATORIO", "Skill tool → pm-thyrox", "Si el Skill tool no está disponible"
   - **Paralelo con:** T-002, T-004–T-010
 
@@ -39,7 +39,7 @@ Spec: [spec.md](spec.md) — 16 RF, 3 RNF, design exacto por archivo.
 ## Bloque B — SKILL.md gates Baja Libertad (D2)
 
 - [x] [T-004] SKILL.md Phase 1: 8 aspectos explícitos + definición de decisión arquitectónica + "REQUERIDO:" en template + exit criteria verificable (R-4, R-5, R-6, R-7) [P]
-  - **Archivo:** `.claude/skills/pm-thyrox/SKILL.md`
+  - **Archivo:** [SKILL](.claude/skills/pm-thyrox/SKILL.md)
   - **Done cuando:**
     - Paso 1 lista ≥8 aspectos nombrados (no dice solo "Investigar requisitos")
     - Paso ADR tiene ≥3 ejemplos de decisión arquitectónica
@@ -48,27 +48,27 @@ Spec: [spec.md](spec.md) — 16 RF, 3 RNF, design exacto por archivo.
   - **Paralelo con:** T-001, T-002, T-005–T-010
 
 - [x] [T-005] SKILL.md Phase 2: insertar PASO 0 "REQUERIDO: Leer solution-strategy.md" + aclarar que Key Ideas se basan en analysis/ (R-8) [P]
-  - **Archivo:** `.claude/skills/pm-thyrox/SKILL.md`
+  - **Archivo:** [SKILL](.claude/skills/pm-thyrox/SKILL.md)
   - **Done cuando:** Phase 2 tiene paso antes de "Key Ideas" con "REQUERIDO" y link a solution-strategy
   - **Paralelo con:** T-001, T-002, T-004, T-006–T-010
 
 - [x] [T-006] SKILL.md Phase 3: agregar instrucción explícita de verificar WP + volver a Phase 1 si no existe (R-9) [P]
-  - **Archivo:** `.claude/skills/pm-thyrox/SKILL.md`
+  - **Archivo:** [SKILL](.claude/skills/pm-thyrox/SKILL.md)
   - **Done cuando:** paso 2 de Phase 3 menciona verificar context/work/ y acción si no existe
   - **Paralelo con:** T-001, T-002, T-004, T-005, T-007–T-010
 
 - [x] [T-007] SKILL.md Phase 4: cambiar referencia spec-quality-checklist de sugestiva a "REQUERIDO: completar ANTES de Phase 5. NO avanzar" + exit criteria con [NEEDS CLARIFICATION] (R-10) [P]
-  - **Archivo:** `.claude/skills/pm-thyrox/SKILL.md`
+  - **Archivo:** [SKILL](.claude/skills/pm-thyrox/SKILL.md)
   - **Done cuando:** contiene "REQUERIDO: Completar" y "NO avanzar" en Phase 4; exit criteria menciona [NEEDS CLARIFICATION]
   - **Paralelo con:** T-001, T-002, T-004–T-006, T-008–T-010
 
 - [x] [T-008] SKILL.md Phase 5: definir "work package activo = directorio más reciente en context/work/" en paso 1 (R-11) [P]
-  - **Archivo:** `.claude/skills/pm-thyrox/SKILL.md`
+  - **Archivo:** [SKILL](.claude/skills/pm-thyrox/SKILL.md)
   - **Done cuando:** paso 1 de Phase 5 tiene definición explícita de WP activo
   - **Paralelo con:** T-001, T-002, T-004–T-007, T-009–T-010
 
 - [x] [T-009] SKILL.md Phase 6: especificar fuente de tareas (plan.md) + ERR-NNN con ruta y template + corregir numeración duplicada 1→6 (R-12, R-13, R-14) [P]
-  - **Archivo:** `.claude/skills/pm-thyrox/SKILL.md`
+  - **Archivo:** [SKILL](.claude/skills/pm-thyrox/SKILL.md)
   - **Done cuando:**
     - Paso 1 menciona "plan.md" explícitamente
     - Paso de error menciona "context/errors/" y "error-report.md.template"
@@ -76,7 +76,7 @@ Spec: [spec.md](spec.md) — 16 RF, 3 RNF, design exacto por archivo.
   - **Paralelo con:** T-001, T-002, T-004–T-008, T-010
 
 - [x] [T-010] SKILL.md Escalabilidad: agregar tabla explícita tamaño → fases activas → qué omitir (R-15) [P]
-  - **Archivo:** `.claude/skills/pm-thyrox/SKILL.md`
+  - **Archivo:** [SKILL](.claude/skills/pm-thyrox/SKILL.md)
   - **Done cuando:** existe tabla o lista con ≥3 filas de tamaño de trabajo y fases correspondientes
   - **Paralelo con:** T-001, T-002, T-004–T-009
 

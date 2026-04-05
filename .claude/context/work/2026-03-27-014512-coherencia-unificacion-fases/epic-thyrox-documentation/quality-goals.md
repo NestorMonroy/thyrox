@@ -81,4 +81,4 @@ Documentar QUÉ TAN BIEN debe funcionar THYROX como framework de gestión de pro
 
 ## Siguiente Paso
 
-→ Pasar a `stakeholders.md`
+→ Pasar a [stakeholders](stakeholders.md)

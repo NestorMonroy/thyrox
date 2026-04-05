@@ -178,7 +178,7 @@ Documentar lecciones previene repetir los mismos errores.
   identificar la siguiente tarea incompleta y sugerirla como acción concreta
 - REQUERIDO: Crear `work/../{nombre-wp}-lessons-learned.md` usando [lessons-learned.md.template](assets/lessons-learned.md.template)
   — Ejemplo: `skill-activation-lessons-learned.md`, no `lessons-learned.md`
-- REQUERIDO: Generar `CHANGELOG.md` desde commits usando [changelog.md.template](assets/changelog.md.template)
+- REQUERIDO: Generar [CHANGELOG](CHANGELOG.md) desde commits usando [changelog.md.template](assets/changelog.md.template)
 - Actualizar `work/.../risk-register.md`: cerrar riesgos resueltos, documentar los que se materializaron
 - Para proyectos grandes o con métricas relevantes: crear `work/../{nombre-wp}-final-report.md` usando [final-report.md.template](assets/final-report.md.template) — resumen ejecutivo, estimado vs real, métricas
 - Para tracking de deuda técnica identificada: [refactors.md.template](assets/refactors.md.template)
@@ -212,7 +212,7 @@ Documentar lecciones previene repetir los mismos errores.
 | 6 | Log de ejecución | `work/../{nombre-wp}-execution-log.md` | [execution-log.md.template](assets/execution-log.md.template) |
 | 6 | Código | Repositorio (git) | — |
 | 7 | Lecciones aprendidas | `work/../{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](assets/lessons-learned.md.template) |
-| 7 | Changelog | `CHANGELOG.md` | [changelog.md.template](assets/changelog.md.template) |
+| 7 | Changelog | [CHANGELOG](CHANGELOG.md) | [changelog.md.template](assets/changelog.md.template) |
 | 7 | Reporte final (grande) | `work/../{nombre-wp}-final-report.md` | [final-report.md.template](assets/final-report.md.template) |
 | 1 | Análisis por severidad (>20 issues) | `work/.../analysis/{nombre}-analysis-phase.md` | [analysis-phase.md.template](assets/analysis-phase.md.template) — opcional |
 | 1 | Metadata JSON del proyecto (>50 issues) | `work/../project.json` | [project.json.template](assets/project.json.template) — opcional |

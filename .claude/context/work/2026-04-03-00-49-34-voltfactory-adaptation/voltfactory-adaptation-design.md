@@ -94,10 +94,10 @@ no conoce fases SDLC.
 |---|---|---|
 | Registry | `.claude/registry/` | Fuente de verdad para templates de tech skills |
 | `_generator.sh` | `.claude/registry/_generator.sh` | Instancia templates en skills concretos |
-| Template react | `.claude/registry/frontend/react.template.md` | Template para proyectos React |
-| Template nodejs | `.claude/registry/backend/nodejs.template.md` | Template para backends Node.js |
-| Template postgresql | `.claude/registry/db/postgresql.template.md` | Template para DBs PostgreSQL |
-| `/workflow_init` | `.claude/commands/workflow_init.md` | Bootstrap command |
+| Template react | [react.template](.claude/registry/frontend/react.template.md) | Template para proyectos React |
+| Template nodejs | [nodejs.template](.claude/registry/backend/nodejs.template.md) | Template para backends Node.js |
+| Template postgresql | [postgresql.template](.claude/registry/db/postgresql.template.md) | Template para DBs PostgreSQL |
+| `/workflow_init` | [workflow_init](.claude/commands/workflow_init.md) | Bootstrap command |
 | Workflow commands (7) | `.claude/commands/workflow_*.md` | Phase entry points |
 
 ### 3.2 Componentes Modificados
@@ -376,8 +376,8 @@ activan cuando se llama `/workflow_init` o `_generator.sh` manualmente.
 
 ## 11. Referencias
 
-- `voltfactory-adaptation-solution-strategy.md` — Decisiones D-001 a D-007
-- `voltfactory-adaptation-requirements-spec.md` — SPECs detallados
+- [voltfactory-adaptation-solution-strategy](voltfactory-adaptation-solution-strategy.md) — Decisiones D-001 a D-007
+- [voltfactory-adaptation-requirements-spec](voltfactory-adaptation-requirements-spec.md) — SPECs detallados
 - `context/decisions/adr-012.md` (a crear) — Refinamiento ADR-004
 - Volt Factory analysis H-013, H-014, H-020 — patrones de agentes y skills
 

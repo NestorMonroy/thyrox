@@ -36,7 +36,7 @@ Los templates tienen nombres genéricos porque son reutilizables entre proyectos
 
 Ejemplo: WP `2026-04-01-22-15-43-template-phase-integration`
 → `template-phase-integration-analysis.md` (no `introduction.md`)
-→ `template-phase-integration-task-plan.md` (no `plan.md`)
+→ [template-phase-integration-task-plan](template-phase-integration-task-plan.md) (no `plan.md`)
 
 ### Idea 3: Detección de fase = glob `*-{tipo}.md`, no nombre exacto
 
@@ -94,7 +94,7 @@ Comparación de estructura contra templates maduros del proyecto:
 | Sub-análisis (stakeholders, constraints) | ✓ | `{nombre-wp}-stakeholders.md` |
 | Múltiples ADRs | ✓ | usan `adr-NNN.md` (convención propia) |
 | Errores | ✓ | usan `ERR-NNN-descripcion.md` (convención propia) |
-| CHANGELOG global | ✓ | excepción documentada: es `CHANGELOG.md` (convención universal) |
+| CHANGELOG global | ✓ | excepción documentada: es [CHANGELOG](CHANGELOG.md) (convención universal) |
 | WP de hotfix (<30min) | ✓ | solo `{nombre}-analysis.md` + `{nombre}-task-plan.md` |
 
 **Conclusión:** El patrón cubre todos los casos. CHANGELOG es la única excepción
@@ -144,7 +144,7 @@ Sin violaciones. Seguir.
 
 ### Decisión 5: CHANGELOG es excepción al patrón (nombre global, no por WP)
 
-**Qué:** `CHANGELOG.md` en raíz del proyecto, no `{nombre-wp}-changelog.md`.
+**Qué:** [CHANGELOG](CHANGELOG.md) en raíz del proyecto, no `{nombre-wp}-changelog.md`.
 **Justificación:** Convención universal de proyectos (Keep a Changelog, semver).
 **Estado:** Ya implementado. Esta decisión lo formaliza.
 

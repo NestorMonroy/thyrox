@@ -34,17 +34,17 @@ flowchart TD
 
 ### Fase A — CLAUDE.md (secuencial — mismo archivo)
 
-- [x] [T-001] Añadir sección `## Configuración del Proyecto` con campo `adr_path` en `.claude/CLAUDE.md` (SPEC-001)
-- [x] [T-002] Eliminar referencias a IDs de ADRs `(ADR-NNN)` en sección "Locked Decisions" de `.claude/CLAUDE.md` (SPEC-002)
+- [x] [T-001] Añadir sección `## Configuración del Proyecto` con campo `adr_path` en [CLAUDE](.claude/CLAUDE.md) (SPEC-001)
+- [x] [T-002] Eliminar referencias a IDs de ADRs `(ADR-NNN)` en sección "Locked Decisions" de [CLAUDE](.claude/CLAUDE.md) (SPEC-002)
 
 **CP-1:** `grep "ADR-0[0-9][0-9]" .claude/CLAUDE.md` → 0 resultados; `grep "adr_path" .claude/CLAUDE.md` → ≥1 resultado
 
 ### Fase B — Archivos independientes (paralelos)
 
 - [x] [T-003] [P] Añadir regla "Dónde crear el ADR" al inicio de Phase 1 Step 8 en `SKILL.md` (SPEC-003)
-- [x] [T-004] [P] Crear `docs/architecture/decisions/README.md` con descripción del propósito (SPEC-004)
-- [x] [T-005] [P] Crear `.claude/skills/sphinx/SKILL.md` como stub con secciones `[PENDIENTE]` (SPEC-005)
-- [x] [T-006] [P] Crear `.claude/context/decisions/adr-013.md` — docs/ como documentación canónica (SPEC-006)
+- [x] [T-004] [P] Crear [README](docs/architecture/decisions/README.md) con descripción del propósito (SPEC-004)
+- [x] [T-005] [P] Crear [SKILL](.claude/skills/sphinx/SKILL.md) como stub con secciones `[PENDIENTE]` (SPEC-005)
+- [x] [T-006] [P] Crear [adr-013](.claude/context/decisions/adr-013.md) — docs/ como documentación canónica (SPEC-006)
 
 **CP-2 — Verificación final:**
 ```bash

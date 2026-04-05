@@ -10,7 +10,7 @@ Fase: 5 - DECOMPOSE
 
 # Task Plan — Technical Debt Resolution
 
-Basado en: `technical-debt-resolution-requirements-spec.md`
+Basado en: [technical-debt-resolution-requirements-spec](technical-debt-resolution-requirements-spec.md)
 
 ---
 
@@ -54,7 +54,7 @@ Basado en: `technical-debt-resolution-requirements-spec.md`
 
 ## Finalización
 
-- [x] [T-024] Actualizar `ROADMAP.md` — agregar sección FASE 8 con todos los items de este WP y link al work package
+- [x] [T-024] Actualizar [ROADMAP](ROADMAP.md) — agregar sección FASE 8 con todos los items de este WP y link al work package
 - [x] [T-025] Validación final — ejecutar todos los criterios de aceptación: grep checks de SPEC-001 a SPEC-006
 
 ---

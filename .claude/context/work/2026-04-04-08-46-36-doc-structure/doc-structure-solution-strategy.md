@@ -161,7 +161,7 @@ ADR-012 establece que cada herramienta técnica tiene su propio skill. El stub
 crea la estructura y señala el scope sin implementar todo el contenido.
 
 **Implications:**
-- `.claude/skills/sphinx/SKILL.md` se crea en este WP con secciones `[PENDIENTE]`
+- [SKILL](.claude/skills/sphinx/SKILL.md) se crea en este WP con secciones `[PENDIENTE]`
 - Un WP posterior implementa referencias/, assets/, y contenido completo
 - El stub es suficiente para que Claude sepa que el skill existe
 
@@ -177,7 +177,7 @@ THYROX es el proyecto de referencia del framework. Si el framework dicta que
 Los ADRs existentes NO se migran (eso es un WP separado).
 
 **Implications:**
-- Se crea `docs/architecture/decisions/README.md` como placeholder
+- Se crea [README](docs/architecture/decisions/README.md) como placeholder
 - El directorio es visible y navegable para Sphinx en el futuro
 - No hay migración de ADRs existentes en este WP
 
@@ -200,12 +200,12 @@ Los ADRs existentes NO se migran (eso es un WP separado).
 
 | Artefacto | Tipo | Ubicación |
 |-----------|------|-----------|
-| Nueva sección en CLAUDE.md | Modificación | `.claude/CLAUDE.md` |
-| SKILL.md Phase 1 Step 8 | Modificación | `.claude/skills/pm-thyrox/SKILL.md` |
-| CLAUDE.md Locked Decisions limpio | Modificación | `.claude/CLAUDE.md` |
-| Stub sphinx skill | Creación | `.claude/skills/sphinx/SKILL.md` |
-| Estructura docs/ mínima | Creación | `docs/architecture/decisions/README.md` |
-| ADR-013 | Creación | `.claude/context/decisions/adr-013.md` |
+| Nueva sección en CLAUDE.md | Modificación | [CLAUDE](.claude/CLAUDE.md) |
+| SKILL.md Phase 1 Step 8 | Modificación | [SKILL](.claude/skills/pm-thyrox/SKILL.md) |
+| CLAUDE.md Locked Decisions limpio | Modificación | [CLAUDE](.claude/CLAUDE.md) |
+| Stub sphinx skill | Creación | [SKILL](.claude/skills/sphinx/SKILL.md) |
+| Estructura docs/ mínima | Creación | [README](docs/architecture/decisions/README.md) |
+| ADR-013 | Creación | [adr-013](.claude/context/decisions/adr-013.md) |
 
 ---
 

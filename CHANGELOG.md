@@ -29,16 +29,16 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Instrucción SI/NO: SI CLAUDE.md tiene `adr_path:` → usarla. SI NO → `docs/architecture/decisions/`
 - Formato binario para compatibilidad con modelos de menor capacidad (Haiku)
 
-**SPEC-004 — `docs/architecture/decisions/README.md`:**
+**SPEC-004 — [README](docs/architecture/decisions/README.md):**
 - Nuevo directorio canónico para ADRs en proyectos nuevos
 - README con propósito, estructura y convenciones de naming
 
-**SPEC-005 — `.claude/skills/sphinx/SKILL.md` stub:**
+**SPEC-005 — [SKILL](.claude/skills/sphinx/SKILL.md) stub:**
 - Tech skill para documentación Sphinx/RST registrado en el framework
 - Secciones marcadas `[PENDIENTE]` para desarrollo futuro
 
 **SPEC-006 — ADR-013: docs/ como documentación canónica:**
-- Decisión arquitectónica registrada en `.claude/context/decisions/adr-013.md`
+- Decisión arquitectónica registrada en [adr-013](.claude/context/decisions/adr-013.md)
 - Establece `docs/` como directorio canónico para documentación permanente del proyecto
 
 ---
@@ -123,23 +123,23 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - `.claude/registry/` — estructura de directorios `frontend/`, `backend/`, `db/` con README de convenciones
 - `.claude/registry/_generator.sh` — script bash para instanciar templates en project skills; soporta `--force`, `--dry-run`; extracción con `awk`, reemplazo de placeholders con `sed`
-- `.claude/registry/frontend/react.template.md` — template React con guía phase-by-phase + 6 reglas INSTRUCTIONS con ejemplos buenos/malos
-- `.claude/registry/backend/nodejs.template.md` — template Node.js con 6 reglas de arquitectura, async/await, validación, config
-- `.claude/registry/db/postgresql.template.md` — template PostgreSQL con 6 reglas: snake_case, migraciones, índices, anti-N+1, transacciones
+- [react.template](.claude/registry/frontend/react.template.md) — template React con guía phase-by-phase + 6 reglas INSTRUCTIONS con ejemplos buenos/malos
+- [nodejs.template](.claude/registry/backend/nodejs.template.md) — template Node.js con 6 reglas de arquitectura, async/await, validación, config
+- [postgresql.template](.claude/registry/db/postgresql.template.md) — template PostgreSQL con 6 reglas: snake_case, migraciones, índices, anti-N+1, transacciones
 - `.claude/skills/frontend-react/` — skill generado desde registry (SKILL.md + guidelines)
 - `.claude/skills/backend-nodejs/` — skill generado desde registry (SKILL.md + guidelines)
 - `.claude/skills/db-postgresql/` — skill generado desde registry (SKILL.md + guidelines)
-- `.claude/guidelines/frontend-react.instructions.md` — reglas always-on para proyectos React
-- `.claude/guidelines/backend-nodejs.instructions.md` — reglas always-on para proyectos Node.js
-- `.claude/guidelines/db-postgresql.instructions.md` — reglas always-on para proyectos PostgreSQL
-- `.claude/commands/workflow_init.md` — bootstrap command: detecta stack, instancia skills, hace commit
-- `.claude/commands/workflow_analyze.md` — Phase 1 entry point con contexto pre-cargado
-- `.claude/commands/workflow_strategy.md` — Phase 2 entry point
-- `.claude/commands/workflow_plan.md` — Phase 3 entry point con gate anti-ERR-030
-- `.claude/commands/workflow_structure.md` — Phase 4 entry point (Mermaid requerido)
-- `.claude/commands/workflow_decompose.md` — Phase 5 entry point
-- `.claude/commands/workflow_execute.md` — Phase 6 entry point con next task automático
-- `.claude/commands/workflow_track.md` — Phase 7 entry point con validate-phase-readiness
+- [frontend-react.instructions](.claude/guidelines/frontend-react.instructions.md) — reglas always-on para proyectos React
+- [backend-nodejs.instructions](.claude/guidelines/backend-nodejs.instructions.md) — reglas always-on para proyectos Node.js
+- [db-postgresql.instructions](.claude/guidelines/db-postgresql.instructions.md) — reglas always-on para proyectos PostgreSQL
+- [workflow_init](.claude/commands/workflow_init.md) — bootstrap command: detecta stack, instancia skills, hace commit
+- [workflow_analyze](.claude/commands/workflow_analyze.md) — Phase 1 entry point con contexto pre-cargado
+- [workflow_strategy](.claude/commands/workflow_strategy.md) — Phase 2 entry point
+- [workflow_plan](.claude/commands/workflow_plan.md) — Phase 3 entry point con gate anti-ERR-030
+- [workflow_structure](.claude/commands/workflow_structure.md) — Phase 4 entry point (Mermaid requerido)
+- [workflow_decompose](.claude/commands/workflow_decompose.md) — Phase 5 entry point
+- [workflow_execute](.claude/commands/workflow_execute.md) — Phase 6 entry point con next task automático
+- [workflow_track](.claude/commands/workflow_track.md) — Phase 7 entry point con validate-phase-readiness
 - `.claude/skills/pm-thyrox/assets/plan.md.template` — template Phase 3: scope statement, in/out-of-scope, aprobación
 - `context/decisions/adr-012.md` — refinamiento ADR-004: management skill + N tech skills como ejes ortogonales
 - `context/technical-debt.md` — registro de deuda técnica TD-001, TD-002, TD-003

@@ -63,7 +63,7 @@ graph LR
 ## Fase A — Fundación del Registry (SPEC-001)
 
 - [x] [T-001] Crear `.claude/registry/` con subdirectorios `frontend/`, `backend/`, `db/` (SPEC-001)
-- [x] [T-002] Crear `.claude/registry/README.md` — convenciones, capas válidas, placeholders obligatorios, formato de secciones SKILL/INSTRUCTIONS (SPEC-001)
+- [x] [T-002] Crear [README](.claude/registry/README.md) — convenciones, capas válidas, placeholders obligatorios, formato de secciones SKILL/INSTRUCTIONS (SPEC-001)
 
 **Checkpoint A:** `.claude/registry/` existe con 3 subdirs y README legible.
 
@@ -92,7 +92,7 @@ graph LR
 
 ## Fase D — Bootstrap Command (SPEC-004)
 
-- [x] [T-010] Crear `.claude/commands/workflow_init.md` — prompt base que describe el flujo completo: escanear, mostrar detección, confirmar, ejecutar generator, hacer commit (SPEC-004)
+- [x] [T-010] Crear [workflow_init](.claude/commands/workflow_init.md) — prompt base que describe el flujo completo: escanear, mostrar detección, confirmar, ejecutar generator, hacer commit (SPEC-004)
 - [x] [T-011] Implementar tabla de detección en el prompt de `workflow_init.md`: `package.json` con `"react"` → frontend-react, con `"express"`/`"fastify"` → backend-nodejs, archivos `*.sql` o `docker-compose.yml` con postgres → db-postgresql (SPEC-004)
 - [x] [T-012] Implementar en `workflow_init.md`: modo manual override cuando no se detecta config, manejo de "skills ya existen" ofreciendo `--force` (SPEC-004)
 
@@ -102,13 +102,13 @@ graph LR
 
 ## Fase E — Workflow Commands (SPEC-005) [Paralelas post-T-010]
 
-- [x] [T-013] [P] Crear `.claude/commands/workflow_analyze.md` — identifica WP activo, lista tech skills, invoca pm-thyrox Phase 1, indica exit criteria (SPEC-005)
-- [x] [T-014] [P] Crear `.claude/commands/workflow_strategy.md` — lee analysis/ del WP activo, invoca Phase 2, indica documentos a producir (SPEC-005)
-- [x] [T-015] [P] Crear `.claude/commands/workflow_plan.md` — verifica WP, invoca Phase 3, recuerda crear `{nombre}-plan.md` y esperar aprobación (SPEC-005)
-- [x] [T-016] [P] Crear `.claude/commands/workflow_structure.md` — lee solution-strategy y plan del WP, invoca Phase 4, indica que es complejo si >10 tareas (SPEC-005)
-- [x] [T-017] [P] Crear `.claude/commands/workflow_decompose.md` — lee requirements-spec del WP, invoca Phase 5, recuerda formato `[T-NNN] Descripción (SPEC-N)` (SPEC-005)
-- [x] [T-018] [P] Crear `.claude/commands/workflow_execute.md` — lee task-plan del WP activo, toma siguiente `- [ ]`, ejecuta con commits convencionales, actualiza checkbox (SPEC-005)
-- [x] [T-019] [P] Crear `.claude/commands/workflow_track.md` — invoca Phase 7, lista artefactos requeridos (lessons-learned, CHANGELOG), ejecuta validate-phase-readiness.sh (SPEC-005)
+- [x] [T-013] [P] Crear [workflow_analyze](.claude/commands/workflow_analyze.md) — identifica WP activo, lista tech skills, invoca pm-thyrox Phase 1, indica exit criteria (SPEC-005)
+- [x] [T-014] [P] Crear [workflow_strategy](.claude/commands/workflow_strategy.md) — lee analysis/ del WP activo, invoca Phase 2, indica documentos a producir (SPEC-005)
+- [x] [T-015] [P] Crear [workflow_plan](.claude/commands/workflow_plan.md) — verifica WP, invoca Phase 3, recuerda crear `{nombre}-plan.md` y esperar aprobación (SPEC-005)
+- [x] [T-016] [P] Crear [workflow_structure](.claude/commands/workflow_structure.md) — lee solution-strategy y plan del WP, invoca Phase 4, indica que es complejo si >10 tareas (SPEC-005)
+- [x] [T-017] [P] Crear [workflow_decompose](.claude/commands/workflow_decompose.md) — lee requirements-spec del WP, invoca Phase 5, recuerda formato `[T-NNN] Descripción (SPEC-N)` (SPEC-005)
+- [x] [T-018] [P] Crear [workflow_execute](.claude/commands/workflow_execute.md) — lee task-plan del WP activo, toma siguiente `- [ ]`, ejecuta con commits convencionales, actualiza checkbox (SPEC-005)
+- [x] [T-019] [P] Crear [workflow_track](.claude/commands/workflow_track.md) — invoca Phase 7, lista artefactos requeridos (lessons-learned, CHANGELOG), ejecuta validate-phase-readiness.sh (SPEC-005)
 
 **Checkpoint E:** Los 7 commands existen y tienen estructura consistente: contexto de sesión → fase a ejecutar → exit criteria.
 

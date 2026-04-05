@@ -57,7 +57,7 @@ Cada fase debe producir al menos un artefacto dentro del WP. Para Phase 3: crear
 ### L-003: Timestamps incompletos en artefactos rompen la trazabilidad temporal
 
 **Qué pasó**
-`voltfactory-adaptation-solution-strategy.md` fue creado con `Fecha: 2026-04-03`
+[voltfactory-adaptation-solution-strategy](voltfactory-adaptation-solution-strategy.md) fue creado con `Fecha: 2026-04-03`
 (sin hora) mientras que el análisis usó `Fecha: 2026-04-03-00-49-34` (completo). → TD-001.
 
 **Raíz**
