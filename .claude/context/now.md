@@ -5,18 +5,20 @@ Versión: 1.0
 cold_boot: false
 last_session: 2026-04-05
 current_work: work/2026-04-05-01-09-22-thyrox-capabilities-integration/
-phase: 1-analyze
+phase: 2-solution-strategy
 blockers: []
 ```
 
 # Contexto
 
-Sesión 11 EN PROGRESO. WP thyrox-capabilities-integration abierto — Phase 1 ANALYZE completada.
-- Análisis: 3 brechas críticas documentadas (BRECHA-1: ejecución, BRECHA-2: memoria semántica, BRECHA-3: agentes especializados)
-- Mapa EvoAgentX → meta-framework THYROX documentado
-- Risk register: 5 riesgos (R-001..R-005)
-- WP anterior (evoagentx-analysis Phase 2): CANCELADO — no consideraba visión meta-framework generativo
-- Pendiente: aprobación del usuario → Phase 2 SOLUTION_STRATEGY
+Sesión 12 EN PROGRESO. WP thyrox-capabilities-integration — Phase 2 SOLUTION_STRATEGY completada.
+- Phase 1: 3 brechas (BRECHA-1: ejecución, BRECHA-2: memoria semántica, BRECHA-3: agentes)
+- Phase 2: Estrategia definida — MCP como puente de integración
+  - 3 MCP servers: thyrox-memory, thyrox-executor, thyrox-agents
+  - Adapter layer: registry/mcp/_evoagentx_adapter.py
+  - FAISS-cpu + sentence-transformers (local, sin API keys)
+  - D-1..D-5 documentadas
+- Pendiente: aprobación del usuario → Phase 3 PLAN
 
 ## WP cancelado
 - work/2026-04-05-00-00-00-evoagentx-analysis/evoagentx-analysis-solution-strategy.md
