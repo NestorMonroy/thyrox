@@ -1,429 +1,556 @@
 ```yml
-ID work package: 2026-04-05-01-09-22-thyrox-capabilities-integration
-Sub-análisis: Meta-framework como sistema de agentes — template replicable
+Sub-análisis: Meta-framework como template replicable — arquitectura v3
+WP: 2026-04-05-01-09-22-thyrox-capabilities-integration
 Fecha: 2026-04-05
-Requisitos nuevos incorporados:
-  - Solicitudes atómicas (decomposición obligatoria antes de ejecutar)
-  - Model-agnostic (Claude O GPT, sin lock-in)
-  - Template replicable (bajo friction, bootstrap once)
-  - Inspirado en EvoAgentX pero implementación propia
-Fuentes anteriores: mcp-agents-architecture-analysis.md, thyrox-capabilities-integration-analysis.md
+Nuevos requisitos incorporados:
+  - Solicitudes atómicas: descomposición obligatoria antes de ejecutar
+  - Model-agnostic: funciona con Claude Y GPT
+  - Template replicable: bootstrap rápido, bajo friction
+  - Inspiración EvoAgentX: patrones adoptados, no copiados
+Reemplaza parcialmente: mcp-agents-architecture-analysis.md (amplía, no contradice)
 ```
 
-# Análisis: THYROX como sistema de agentes — meta-framework template
+# Análisis: Meta-framework como Template Replicable
+
+## El problema central — la imagen de MLflow aplicada a THYROX
+
+La imagen compartida muestra dos journeys de MLflow. La analogía directa:
+
+```
+LEGACY (izquierda — lo que THYROX hace HOY):
+  Usuario: "implementa autenticación"
+       ↓
+  Claude recibe solicitud vaga
+       ↓
+  Intenta interpretar todo a la vez ← FAILURE POINT: ambigüedad
+       ↓
+  Genera código / docs
+       ↓
+  ¿Funciona? → NO → Hard to fix (no sabemos dónde falló la interpretación)
+
+MODERN (derecha — lo que THYROX v2 debe ser):
+  Usuario: "implementa autenticación"
+       ↓
+  TaskPlanner descompone en subtareas atómicas ← automated validation
+       ↓
+  Cada subtarea: acción clara + archivo único + output esperado
+       ↓
+  Agente especializado ejecuta cada subtarea
+       ↓
+  ¿Funciona? → NO → Easy to fix (sabemos exactamente qué subtarea falló)
+
+"If it works in your development environment, it will likely work everywhere else"
+→ En THYROX: si el template funciona con Claude, funciona con GPT.
+```
 
 ---
 
-## El problema central que THYROX resuelve como sistema de agentes
-
-### Lo que tenemos hoy
-
-```
-Usuario: "implementa autenticación JWT en el proyecto"
-                ↓
-    UN SOLO Claude (pm-thyrox SKILL cargado)
-                ↓
-    Claude interpreta TODO al mismo tiempo:
-    - ¿Qué significa "implementar"?
-    - ¿Qué tech stack?
-    - ¿Qué archivos tocar?
-    - ¿Cómo testear?
-    - ¿Qué convenciones seguir?
-                ↓
-    Resultado: interpretación inconsistente
-    con solicitudes vagas → trabajo incorrecto
-```
+## Hallazgo 1: La atomicidad NO es opcional
 
 ### El problema detectado
 
-> "si no somos atómicos en las solicitudes, NO es posible que el modelo
-> detecte o interprete de manera correcta la solicitud del usuario"
+El usuario identificó algo fundamental sobre los LLMs:
 
-El modelo (Claude o GPT) falla cuando recibe una solicitud que mezcla:
-- Intención del usuario (QUÉ quiere lograr)
-- Contexto técnico (EN QUÉ stack)
-- Tarea concreta (QUÉ acción específica)
-- Criterio de éxito (CÓMO saber que está bien)
+> "si no somos atómicos en las solicitudes, NO es posible que el modelo detecte
+> o interprete de manera correcta la solicitud del usuario, esta puede ser
+> desde muy vaga hasta específica"
 
-Una solicitud vaga colapsa estas 4 dimensiones en una sola pregunta sin resolver.
+Esto se confirma con lo visto en EvoAgentX: su `TaskPlanner` no es un feature
+adicional — es la **capa obligatoria** que convierte cualquier goal en subtareas
+ejecutables antes de enviarlas a los agentes.
 
----
-
-## Parte I: Atomicidad — el principio arquitectónico central
-
-### H-ATOM-01: Qué significa "solicitud atómica"
-
-Una solicitud atómica tiene exactamente:
-- **1 verbo de acción**: Create / Update / Delete / Execute / Validate
-- **1 target específico**: un archivo, endpoint, componente, o comando
-- **1 output verificable**: el resultado exacto esperado
-- **0 ambigüedad**: no hay "dependiendo de X, hacer Y o Z"
+### Por qué un LLM falla con solicitudes no atómicas
 
 ```
-❌ NO ATÓMICA:
-  "implementa autenticación JWT"
-  → múltiples acciones, múltiples archivos, múltiples decisiones
+SOLICITUD VAGA:
+  "implementa el módulo de pagos"
+  → El modelo debe adivinar: ¿Stripe o PayPal? ¿webhook o polling? ¿qué endpoints?
+  → Resultado: implementación incompleta, asunciones incorrectas, difícil de debuggear
 
-✓ ATÓMICA:
-  "Create src/models/User.ts con campos: email (string), passwordHash (string), createdAt (Date)"
-  "Create POST /api/auth/register que recibe {email, password} y devuelve {userId, token}"
-  "Create POST /api/auth/login que recibe {email, password} y devuelve {token, expiresAt}"
-  "Add JWT middleware a todas las rutas bajo /api/protected/*"
-  "Execute: npm test -- --testPathPattern=auth para validar los 4 endpoints"
+SOLICITUD ESPECÍFICA PERO NO ATÓMICA:
+  "implementa Stripe con webhooks, maneja eventos payment_intent.succeeded
+   y payment_intent.payment_failed, guarda en PostgreSQL, envía email de confirmación"
+  → Demasiados concerns en una sola tarea → el modelo puede olvidar alguno
+  → Resultado: implementación parcial
+
+SOLICITUD ATÓMICA:
+  "Crea endpoint POST /api/webhooks/stripe que recibe y valida la firma Stripe"
+  → Una acción, un archivo, un output claro
+  → El modelo no puede malinterpretar
+  → Si falla, el error es localizado y fácil de corregir
 ```
 
-### H-ATOM-02: La analogía con MLflow — "Models from Code"
+### La capa obligatoria: TaskPlanner propio
 
-La imagen del usuario muestra exactamente este patrón aplicado a MLflow:
-
-```
-LEGACY (izquierda — complejo, hard to fix):
-  Define Custom PythonModel → Create instance → Log Model Object
-  → múltiples puntos de fallo: serialization, input schema,
-    external references, unpicklable state, dependency inference
-  → cuando falla: no sabes dónde ni por qué → "Hard to fix"
-
-MODERN (derecha — simple, easy to fix):
-  Define PythonModel in script → Log script as model
-  → Automated validation
-  → Falla en: external references, input schema (lugares conocidos)
-  → "Easy to fix"
-  → "If the model works in your development environment,
-     it will likely work everywhere else"
-```
-
-**La traducción directa a THYROX:**
-
-| MLflow Legacy | MLflow Modern | THYROX equivalente |
-|--------------|--------------|-------------------|
-| Define Custom PythonModel | Define PythonModel in script | Define agent en registry template |
-| Create instance + Log Object | Log script as model | Bootstrap desde registry |
-| Múltiples puntos de fallo | Automated validation | task-decomposer valida atomicidad |
-| Hard to fix | Easy to fix | Cada tarea atómica falla en aislamiento |
-| Works per environment | Works everywhere | Works with Claude OR GPT |
-
-### H-ATOM-03: El TaskPlanner de EvoAgentX — qué adoptamos
-
-EvoAgentX tiene `TaskPlanner` que descompone goals en subtareas:
-
-```python
-# EvoAgentX TaskPlanner (Python, LLM calls propias)
-class TaskPlanner(Agent):
-    def plan(self, goal: str) -> List[SubTask]:
-        response = self.llm.generate(
-            f"Decompose this goal into atomic subtasks: {goal}"
-        )
-        return parse_subtasks(response)
-```
-
-**Nuestro equivalente (inspirado, no copiado):**
+Inspirado en `TaskPlanner` de EvoAgentX pero implementado como **agente nativo**:
 
 ```markdown
+# .claude/agents/task-planner.md
+
 ---
-name: task-decomposer
-description: "Descompone cualquier solicitud del usuario en tareas atómicas
-  antes de delegarlas a agentes especializados.
-  Use this agent when: el usuario hace una solicitud que involucra
-  más de un archivo, más de una acción, o cuya scope no está definido.
+name: task-planner
+description: "SIEMPRE invocar antes de cualquier tarea de implementación.
+  Convierte solicitudes vagas o específicas en subtareas atómicas.
+  Use this agent when: el usuario pide implementar, crear, modificar,
+  refactorizar, o cualquier acción de código.
   <example>
-  input: 'implementa autenticación JWT'
-  output: lista de 5 tareas atómicas con verbo + target + output esperado
+  usuario: implementa autenticación JWT
+  acción: descompone en 6-8 subtareas atómicas antes de ejecutar
   </example>"
-tools: Read, mcp__thyrox_memory__retrieve
+tools: Read, Glob, Grep
 model: sonnet
 ---
 
-# Task Decomposer
+## Criterios de atomicidad — una subtarea DEBE cumplir TODOS:
 
-## Responsabilidad
-Convertir solicitudes (vagas o específicas) en tareas atómicas
-antes de que cualquier otro agente ejecute.
+1. **Una acción**: Create | Update | Delete | Move | Rename | Execute — solo una
+2. **Un artefacto**: un archivo, un endpoint, una función — no "los archivos de auth"
+3. **Output verificable**: existe el archivo X / el test pasa / el endpoint responde 200
+4. **Sin decisiones implícitas**: todas las opciones ya están tomadas, no hay "elige entre..."
+5. **Independiente o con dependencia explícita**: "depende de T-001" — no asumida
 
-## Proceso OBLIGATORIO
-1. Leer el contexto del proyecto (package.json, estructura, skills activos)
-2. Recuperar tareas similares anteriores (mcp__thyrox_memory__retrieve)
-3. Descomponer en tareas donde CADA tarea tenga:
-   - Verbo: Create | Update | Delete | Execute | Validate
-   - Target: 1 archivo o 1 comando específico
-   - Output: resultado exacto y verificable
-   - Agente: qué tech-expert debe ejecutarla
-4. Presentar lista al usuario — NO ejecutar sin aprobación (HITL gate)
+## Formato de output obligatorio:
 
-## Criterio de atomicidad
-Una tarea es atómica cuando puede fallar de manera aislada
-sin afectar las demás tareas de la lista.
-
-## CAN
-- Leer archivos de configuración del proyecto
-- Recuperar contexto de tareas similares anteriores
-- Producir lista estructurada de tareas atómicas
-
-## CANNOT
-- Ejecutar ninguna tarea
-- Escribir ningún archivo del proyecto
-- Decidir el orden de ejecución (eso es pm-thyrox)
+Para cada subtarea:
+T-NNN: [verbo] [artefacto específico]
+  Input:  qué necesita para ejecutarse
+  Output: qué produce exactamente
+  Agent:  qué agente la ejecuta (react-expert | nodejs-expert | task-executor)
+  Test:   cómo verificar que funcionó
 ```
 
-**Por qué native agent y no Python:** El task-decomposer ES Claude razonando.
-No necesita un proceso Python externo — necesita contexto del proyecto y
-capacidad de razonamiento. Un native agent `.md` lo provee sin overhead.
+### Diferencia entre TaskPlanner de EvoAgentX y el nuestro
+
+| Aspecto | EvoAgentX TaskPlanner | Nuestro task-planner |
+|---------|----------------------|---------------------|
+| Implementación | Clase Python que llama al LLM propio | Agente `.md` nativo — usa Claude |
+| Invocación | `wf_generator.plan(goal)` en código | Claude lo invoca por `description` |
+| Output | Lista de `SubTask` Python objects | Markdown con T-NNN formateado |
+| Integración | Con `AgentManager` Python | Con pm-thyrox SKILL y otros agentes |
+| Control | EvoAgentX framework | Nosotros — instrucciones en Markdown |
+| Modelo | Configurable (GPT-4, Claude, etc.) | El modelo activo (Claude o GPT) |
 
 ---
 
-## Parte II: Model-agnostic — funciona con Claude O GPT
+## Hallazgo 2: Model-agnostic — el problema real
 
-### H-MODEL-01: El problema del lock-in actual
+### El lock-in actual
 
-Los `.claude/agents/*.md` con frontmatter YAML son **Claude Code específicos**.
-Un equipo que usa Cursor (GPT-4) o GitHub Copilot no puede usar los mismos archivos.
+Los `.claude/agents/*.md` son **Claude Code específicos**. Si el usuario trabaja
+con Cursor + GPT-4, o VS Code + Copilot, o Windsurf + Claude, esos agentes
+no funcionan fuera del ecosistema Claude Code.
 
-### H-MODEL-02: La solución — registry como fuente de verdad model-agnostic
+### La solución: Registry como fuente de verdad model-agnostic
 
-El registry define el agente en formato neutro (YAML). El bootstrap genera
-el formato específico al modelo del equipo:
+La clave es separar **la definición del comportamiento** (model-agnostic)
+de **el formato de integración** (model-specific):
 
 ```
 registry/
 └── agents/
-    └── react-expert.agent.yaml      ← FUENTE DE VERDAD (model-agnostic)
-        name: react-expert
-        purpose: React component implementation expert
-        can:
-          - Implement React components following hooks pattern
-          - Execute: yarn test --testPathPattern=[component]
-          - Execute: yarn build to validate no TypeScript errors
-        cannot:
-          - Modify backend files
-          - Make database queries directly
-        tools:
-          - filesystem_read
-          - filesystem_write
-          - shell_execute
-        atomic_scope: one component file per task
+    └── task-planner.agent.yaml    ← DEFINICIÓN (model-agnostic)
+
+Al hacer bootstrap:
+  → render para Claude Code  → .claude/agents/task-planner.md
+  → render para OpenAI       → openai-assistants/task-planner.json (futuro)
+  → render para cualquier LLM que soporte tool calling
 ```
 
-**Bootstrap genera el formato correcto según el modelo:**
+### El formato YAML model-agnostic en registry
+
+```yaml
+# registry/agents/task-planner.agent.yaml
+
+agent:
+  name: task-planner
+  version: "1.0"
+  purpose: >
+    Decomposes vague or specific user requests into atomic subtasks
+    before any implementation agent executes.
+
+  trigger:
+    # Claude Code: description field → auto-invoke
+    # GPT: system prompt prefix or function definition
+    when:
+      - "user requests any implementation, creation, or modification"
+      - "input contains: implement, create, build, add, modify, refactor"
+    examples:
+      - input: "implement JWT authentication"
+        action: "decompose into 6-8 atomic subtasks"
+
+  constraints:
+    can:
+      - read project files to understand context
+      - ask clarifying questions if critical info is missing
+      - produce atomic task list in standard format
+    cannot:
+      - write any files
+      - execute any commands
+      - make architectural decisions
+
+  output_format:
+    type: structured_task_list
+    schema:
+      task_id: "T-NNN"
+      verb: "Create|Update|Delete|Move|Execute"
+      artifact: "specific file/endpoint/function"
+      input: "what it needs"
+      output: "what it produces"
+      agent: "which agent executes it"
+      test: "how to verify"
+
+  atomicity_criteria:
+    - single_action: true
+    - single_artifact: true
+    - verifiable_output: true
+    - no_implicit_decisions: true
+    - explicit_dependencies: true
+
+# Renderizado para Claude Code:
+render:
+  claude_code:
+    file: ".claude/agents/task-planner.md"
+    frontmatter:
+      tools: ["Read", "Glob", "Grep"]
+      model: "sonnet"
+      color: "yellow"
+
+# Renderizado para OpenAI (futuro):
+  openai:
+    file: "openai-config/assistants/task-planner.json"
+    format: "assistant_api_v2"
+```
+
+### Qué cambia por modelo
+
+| Elemento | Claude Code | GPT-4 (Cursor/API) |
+|----------|------------|-------------------|
+| Agente definition | `.claude/agents/*.md` | System prompt / Assistant config |
+| Auto-invocación | `description` field | Function calling / tool definition |
+| MCP tools | `mcp__thyrox_*` nativo | OpenAI tools JSON (mismo protocolo) |
+| SKILL.md | Cargado automáticamente | Como system prompt / RAG context |
+| Registry render | `skill-generator.md` → Write | `bootstrap.py --model openai` |
+
+**Lo que es IDÉNTICO en ambos modelos:**
+- Los MCP servers (thyrox-memory, thyrox-executor) — MCP es model-agnostic
+- La estructura del registry (`registry/`)
+- Los artefactos producidos (SKILL.md, .instructions.md, task lists)
+- El flujo de 7 fases (ANALYZE → TRACK)
+- La atomicidad de las tareas
+
+---
+
+## Hallazgo 3: Template replicable — "Models from Code" para agentes
+
+### El paralelo exacto con la imagen MLflow
+
+```
+MLflow "Models from Code":          THYROX "Skills from Registry":
+
+Define PythonModel in script        Define agent in registry YAML
+       ↓                                    ↓
+Log script as model                 Bootstrap from registry
+       ↓                                    ↓
+Automated validation                TaskPlanner validates atomicity
+       ↓                                    ↓
+Register Model                      git commit (skills viven en git)
+       ↓                                    ↓
+Deploy Model                        Agents active in .claude/agents/
+       ↓                                    ↓
+Use the model                       Use the agent
+
+"Easy to fix" when it fails         Atomic tasks → fallo localizado
+"Works everywhere"                  Works with Claude OR GPT
+```
+
+### Lo que hace replicable un template
+
+Un proyecto nuevo debería poder integrar THYROX en **menos de 5 minutos**:
 
 ```bash
-# Para Claude Code:
-thyrox bootstrap --model claude --stack react,node,postgres
-→ genera: .claude/agents/react-expert.md (con frontmatter YAML)
+# OPCIÓN A: Bootstrap completo (proyecto nuevo)
+git clone https://github.com/thyrox/thyrox-template .thyrox
+python .thyrox/bootstrap.py --stack "react,nodejs,postgresql" --model claude
 
-# Para OpenAI/GPT (Cursor, Copilot, etc.):
-thyrox bootstrap --model openai --stack react,node,postgres
-→ genera: .cursorrules o openai-assistants.json con la misma lógica
+# Resultado inmediato:
+.claude/
+├── CLAUDE.md                (generado — 15 líneas imperativas)
+├── skills/pm-thyrox/        (copiado desde template)
+├── agents/
+│   ├── task-planner.md      (generado desde registry)
+│   ├── tech-detector.md     (generado desde registry)
+│   ├── skill-generator.md   (generado desde registry)
+│   ├── react-expert.md      (generado desde react.agent.yaml)
+│   ├── nodejs-expert.md     (generado desde nodejs.agent.yaml)
+│   └── postgresql-expert.md (generado desde postgresql.agent.yaml)
+├── guidelines/
+│   ├── react.instructions.md
+│   └── nodejs.instructions.md
+└── memory/                  (vacío — se llena con el uso)
+registry/mcp/
+├── memory_server.py
+└── executor_server.py
+settings.json                (mcpServers configurado)
 
-# En ambos casos:
-→ el agente tiene el mismo CAN/CANNOT
-→ el agente recibe las mismas tareas atómicas
-→ el resultado es equivalente
+git add . && git commit -m "feat(thyrox): bootstrap React+Node+PostgreSQL stack"
+
+# OPCIÓN B: Proyecto existente (agregar tech skill)
+python .thyrox/bootstrap.py --add "vue" --model claude
 ```
 
-### H-MODEL-03: Qué es idéntico en ambos modelos
-
-El **comportamiento** del agente no cambia según el modelo. Lo que cambia es el formato de invocación:
-
-| Elemento | Claude Code | GPT/OpenAI |
-|----------|-------------|-----------|
-| Definición del agente | `.claude/agents/react-expert.md` | `.cursorrules` o assistant config |
-| Invocación | `description` field + `<example>` | System prompt o assistant instructions |
-| Tools de filesystem | `Read`, `Write`, `Edit` (built-in) | `file_read`, `file_write` (tool calling) |
-| Tools de ejecución | `mcp__thyrox_executor__exec_cmd` | MCP o function calling a executor |
-| Memoria semántica | `mcp__thyrox_memory__retrieve` | Mismo MCP server (protocolo estándar) |
-| Atomicidad | Garantizada por task-decomposer | Misma garantía (mismo agente) |
-
-**Los MCP servers son model-agnostic por definición:** MCP es un estándar abierto
-que funciona con cualquier LLM que soporte tool calling. El `thyrox-memory` y
-`thyrox-executor` MCP servers no saben si los llama Claude o GPT-4.
-
----
-
-## Parte III: Agentes del sistema — 4 core + N generados
-
-### El sistema completo de agentes
+### La estructura del template en sí
 
 ```
-NIVEL 0 — ORQUESTADOR (ya existe, sin cambio)
-  pm-thyrox SKILL.md
-  → conoce las 7 fases del SDLC
-  → NO conoce tecnologías específicas
-  → delega a agentes según la fase
-
-NIVEL 1 — AGENTES CORE (4 agentes, siempre presentes)
-  task-decomposer.md   → descompone solicitudes vagas en atómicas (NUEVO)
-  tech-detector.md     → detecta stack del proyecto (NUEVO)
-  skill-generator.md   → genera skills + agentes desde registry (NUEVO)
-  memory-manager.md    → gestiona cuándo indexar y qué recuperar (NUEVO)
-
-NIVEL 2 — AGENTES GENERADOS (N agentes, uno por tech stack detectado)
-  react-expert.md      → generado en bootstrap para proyectos React
-  nodejs-expert.md     → generado para proyectos Node.js
-  postgresql-expert.md → generado para proyectos PostgreSQL
-  [tech]-expert.md     → generado para cada tech en registry/
-
-INFRAESTRUCTURA MCP (2 servidores Python, siempre activos)
-  thyrox-memory        → LongTermMemory + FAISS (EvoAgentX memory/)
-  thyrox-executor      → CMDToolkit + PythonInterpreterToolkit (EvoAgentX tools/)
-```
-
-### Flujo completo con agentes y atomicidad
-
-```
-USUARIO: "implementa autenticación JWT con refresh tokens"
-                ↓
-PASO 1 — task-decomposer (NIVEL 1)
-  Lee: package.json, estructura del proyecto, skills activos
-  Recupera: mcp__thyrox_memory__retrieve("autenticación JWT proyectos anteriores")
-  Produce: lista de 7 tareas atómicas
-    [T-001] Create src/models/User.ts {email, passwordHash, refreshToken} [nodejs-expert]
-    [T-002] Create POST /api/auth/register endpoint [nodejs-expert]
-    [T-003] Create POST /api/auth/login → {accessToken, refreshToken} [nodejs-expert]
-    [T-004] Create POST /api/auth/refresh → nuevo accessToken [nodejs-expert]
-    [T-005] Create JWT middleware para rutas protegidas [nodejs-expert]
-    [T-006] Create src/components/LoginForm.tsx [react-expert]
-    [T-007] Execute: npm test -- --testPathPattern=auth [nodejs-expert]
-  HITL: presenta lista al usuario → espera aprobación
-
-PASO 2 — pm-thyrox SKILL (NIVEL 0)
-  Registra tareas en task-plan.md
-  Inicia Phase 6 EXECUTE
-
-PASO 3 — nodejs-expert ejecuta T-001 (NIVEL 2)
-  Recibe: tarea ATÓMICA "Create src/models/User.ts con campos X, Y, Z"
-  Usa: Write (escribe el archivo)
-  Usa: mcp__thyrox_executor__exec_cmd("npx tsc --noEmit") para validar types
-  Resultado: ✓ o error aislado en T-001 solamente
-
-PASO 4..N — cada tarea atómica ejecutada por el agente correcto
-  Cada fallo es aislado → fácil de identificar y corregir (MLflow analogy: "easy to fix")
-
-PASO FINAL — memory-manager
-  Usa: mcp__thyrox_memory__store(lessons_learned, {task: "jwt-auth", stack: "nodejs"})
-  Próxima vez: task-decomposer tiene contexto de esta implementación
+thyrox-template/               ← el repo que se instala
+├── bootstrap.py               ← script de bootstrap (único punto de entrada)
+├── registry/
+│   ├── agents/
+│   │   ├── task-planner.agent.yaml    ← REQUERIDO en todo proyecto
+│   │   ├── tech-detector.agent.yaml
+│   │   ├── skill-generator.agent.yaml
+│   │   └── task-executor.agent.yaml   ← ejecuta tareas atómicas genéricas
+│   ├── frontend/
+│   │   ├── react.agent.yaml
+│   │   ├── react.skill.template.md
+│   │   └── react.instructions.template.md
+│   ├── backend/
+│   │   ├── nodejs.agent.yaml
+│   │   └── nodejs.skill.template.md
+│   ├── database/
+│   │   └── postgresql.agent.yaml
+│   └── mcp/
+│       ├── _evoagentx_adapter.py
+│       ├── memory_server.py
+│       └── executor_server.py
+├── skills/
+│   └── pm-thyrox/             ← skill base (no se modifica)
+└── templates/
+    ├── CLAUDE.md.template     ← template de CLAUDE.md imperativo
+    └── settings.json.template ← template de settings con mcpServers
 ```
 
 ---
 
-## Parte IV: Qué adoptamos de EvoAgentX (transformado a nuestro sistema)
+## Hallazgo 4: Patrones de EvoAgentX que adoptamos (transformados)
 
-### Patrones de EvoAgentX que adaptamos
+### 4.1 TaskPlanner → task-planner.md (nuestro)
 
-| Patrón EvoAgentX | Implementación EvoAgentX | Nuestra adaptación |
-|-----------------|--------------------------|-------------------|
-| `TaskPlanner` | Clase Python con LLM calls propias | `task-decomposer.md` native agent |
-| `BaseModule` + `MODULE_REGISTRY` | Registro Python de clases por `class_name` | `registry/` directory con templates YAML |
-| `WorkFlowGraph` DAG | Grafo Python de nodos y edges | 7 fases SDLC de pm-thyrox (ya existe) |
-| `AgentManager` pool | Python: gestiona lista de agentes | Claude Code invoca por `description` |
-| `ShortTermMemory` | Buffer Python en memoria | Ventana de contexto de Claude/GPT |
-| `LongTermMemory` + FAISS | Python: EvoAgentX lo implementa | MCP server `thyrox-memory` lo expone |
-| `CMDToolkit` | Python: subprocess wrapper | MCP server `thyrox-executor` lo expone |
-| `WorkFlowReviewer` | TODO (no implementado) | task-decomposer hace la revisión ANTES |
+**EvoAgentX:** Clase Python, llama al LLM propio, retorna `List[SubTask]` Python
+**Nuestro:** Agente `.md`, usa Claude nativo, retorna lista Markdown `T-NNN`
 
-### Lo que EvoAgentX NO tiene que nosotros sí
+La diferencia arquitectónica: EvoAgentX crea un `TaskPlanner` por workflow.
+Nosotros tenemos UN `task-planner.md` que Claude invoca para CUALQUIER solicitud.
+Es el guardián de la atomicidad — ningún agente ejecuta sin que task-planner valide.
 
-| Nuestra característica | Por qué importa |
-|----------------------|----------------|
-| Model-agnostic templates | EvoAgentX hardcodea LiteLLMModel — nosotros no hardcodeamos nada |
-| Registry como fuente de verdad | EvoAgentX define agentes en Python — nosotros en YAML templates versionados |
-| HITL como gate de fase (Markdown) | EvoAgentX tiene GUI para HITL — nosotros usamos aprobación en texto |
-| Atomicity enforcement | EvoAgentX no valida atomicidad — nosotros lo hacemos obligatorio |
-| Bootstrap once, git persist | EvoAgentX recrea agentes en memoria cada vez — nosotros los commiteamos |
+### 4.2 BaseModule + MODULE_REGISTRY → registry/ (nuestro)
+
+**EvoAgentX:** `BaseModule` con `MODULE_REGISTRY` Python — cualquier clase puede
+ser serializada/deserializada por nombre string. Permite cargar componentes dinámicamente.
+
+**Nuestro:** `registry/` con YAML templates — cualquier tecnología puede ser
+"cargada" como un conjunto de archivos generados. El nombre string es el directorio
+(`react`, `nodejs`, `postgresql`).
+
+La diferencia: EvoAgentX hace registro en Python runtime.
+Nosotros hacemos registro en filesystem — más simple, más portable, más git-friendly.
+
+### 4.3 Dual sync/async → MCP servers (thyrox-executor)
+
+**EvoAgentX:**
+```python
+def __call__(self, *args, **kwargs):
+    try:
+        asyncio.get_running_loop()
+        return self.async_execute(...)  # async context (FastAPI)
+    except RuntimeError:
+        return self.execute(...)         # sync context (scripts)
+```
+
+**Nuestro:** Los MCP servers manejan esto implícitamente.
+El cliente MCP (Claude Code) hace tool calls; el server las procesa.
+No necesitamos el patrón explícito porque MCP abstrae el transport.
+
+### 4.4 WorkFlowGraph → las 7 fases de pm-thyrox (nuestro)
+
+**EvoAgentX:** DAG Python con `WorkFlowNode` + `WorkFlowEdge`.
+Define explícitamente: "A antes que B, C paralelo con D".
+
+**Nuestro:** Las 7 fases del SKILL son el workflow graph — definido en Markdown.
+Las fases tienen entrada/salida documentada y exit criteria.
+El "DAG" es textual: Phase 1 → Phase 2 → ... → Phase 7.
+
+La diferencia: EvoAgentX es determinista (grafo fijo). Nuestro es adaptativo
+(Claude puede saltar fases según tamaño del trabajo).
+
+### 4.5 Agentes especializados por responsabilidad → nuestros agentes core
+
+**EvoAgentX tiene:**
+- `TaskPlanner` — descompone goals
+- `AgentGenerator` — crea configs de agentes
+- `LongTermMemoryAgent` — integra memoria en el workflow
+
+**Nosotros tenemos (análogo, implementado como agentes nativos):**
+- `task-planner.md` — descompone solicitudes en tareas atómicas ← NUEVO
+- `skill-generator.md` — crea skills desde registry (≈ AgentGenerator)
+- `tech-detector.md` — detecta stack (input para skill-generator)
+- `task-executor.md` — ejecuta tareas atómicas usando MCP executor ← NUEVO
 
 ---
 
-## Parte V: Template replicable — "bootstrap once, works everywhere"
+## Hallazgo 5: El agente task-executor — cierre de la BRECHA-1
 
-### El requisito
-
-> "lo que nosotros queremos es que lo que estamos haciendo sirva como template,
-> y sea fácil replicar, sin que demore mucho integrarlo en su flujo"
-
-### Diseño del bootstrap (analogía: MLflow "Models from Code")
+La BRECHA-1 (los tech skills no ejecutan código) se cierra con DOS agentes, no uno:
 
 ```
-PROYECTO NUEVO que quiere usar THYROX:
-
-Paso 1 — clonar/instalar (1 minuto):
-  git submodule add https://github.com/nestormonroy/thyrox .thyrox
-  # O: pip install thyrox (si se empaqueta)
-
-Paso 2 — bootstrap (1 comando):
-  thyrox init --stack "react,nodejs,postgresql" --model claude
-  # O: thyrox init --stack "vue,fastapi,mongodb" --model openai
-
-  Resultado automático:
-  ├── .claude/
-  │   ├── CLAUDE.md          (generado, imperativo, 15 líneas)
-  │   ├── skills/pm-thyrox/  (copiado desde .thyrox)
-  │   ├── agents/
-  │   │   ├── task-decomposer.md   (core, siempre)
-  │   │   ├── tech-detector.md     (core, siempre)
-  │   │   ├── react-expert.md      (generado por stack)
-  │   │   ├── nodejs-expert.md     (generado por stack)
-  │   │   └── postgresql-expert.md (generado por stack)
-  │   └── guidelines/
-  │       ├── react.instructions.md    (generado)
-  │       └── nodejs.instructions.md  (generado)
-  ├── registry/mcp/
-  │   ├── memory_server.py    (copiado)
-  │   └── executor_server.py  (copiado)
-  └── settings.json           (generado con mcpServers)
-
-Paso 3 — empezar a trabajar (0 minutos):
-  El equipo ya tiene agentes especializados funcionando.
-  pm-thyrox SKILL activo. Memoria semántica lista.
-  task-decomposer asegura atomicidad desde el primer request.
-
-TOTAL: < 5 minutos desde cero hasta sistema de agentes operativo
+SOLICITUD USUARIO
+      ↓
+task-planner.md           ← descompone en T-001, T-002, ..., T-N (atómicos)
+      ↓
+[tech]-expert.md          ← aplica convenciones tech-específicas a cada T-NNN
+      ↓
+task-executor.md          ← ejecuta usando mcp__thyrox_executor__exec_cmd
+      ↓
+RESULTADO + VALIDACIÓN
 ```
 
-### Validación automática (el punto "easy to fix" de MLflow)
+**task-planner** sabe QUÉ hacer (descomponer)
+**[tech]-expert** sabe CÓMO hacerlo (convenciones React/Node/etc.)
+**task-executor** sabe EJECUTARLO (shell, tests, git commit)
 
-Durante el bootstrap, el sistema valida:
-```
-✓ registry/mcp/memory_server.py importa sin errores
-✓ registry/mcp/executor_server.py importa sin errores
-✓ faiss-cpu instalado
-✓ sentence-transformers instalado
-✓ .claude/agents/ contiene los 4 core agents
-✓ settings.json tiene mcpServers configurados
-✗ Error: postgresql no tiene template en registry/database/
-  → Acción: usar template genérico o agregar al registry
-```
+```markdown
+# .claude/agents/task-executor.md
 
-Si algo falla en validación → falla en un lugar conocido → "easy to fix".
-Si todo pasa → "works in dev → works everywhere" (mismo comportamiento con Claude o GPT).
+---
+name: task-executor
+description: "Ejecuta una tarea atómica específica (T-NNN) usando herramientas
+  de ejecución. Siempre recibe una tarea del task-planner, nunca interpreta
+  solicitudes vagas.
+  <example>
+  input: T-003: Create POST /api/auth/login endpoint in src/routes/auth.js
+  acción: escribe el archivo, ejecuta tests, hace commit
+  </example>"
+tools: Read, Write, Edit, mcp__thyrox_executor__exec_cmd, mcp__thyrox_executor__exec_python
+model: sonnet
+---
+
+## Reglas de operación
+
+1. SOLO ejecutar tareas con formato T-NNN (atómicas). Si la solicitud no tiene
+   este formato, rechazar y pedir al usuario que ejecute task-planner primero.
+2. Antes de ejecutar: leer el archivo afectado si existe
+3. Después de ejecutar: correr el test especificado en la tarea
+4. Si el test falla: máximo 2 reintentos, luego escalar al usuario
+5. Siempre hacer commit con Conventional Commits al completar exitosamente
+```
 
 ---
 
-## Parte VI: Por qué esto resuelve los objetivos de AI agents
+## Arquitectura v3 — Completa y corregida
 
-Mapeando los objetivos del usuario a nuestra arquitectura:
+```
+THYROX META-FRAMEWORK v3
+════════════════════════════════════════════════════════════════
 
-| Objetivo AI agents | Cómo lo resuelve THYROX |
-|-------------------|------------------------|
-| **Modular Components** | Cada agente `.md` tiene responsabilidad única (CAN/CANNOT) |
-| **Collaboration** | task-decomposer → tech-experts → memory-manager: pipeline colaborativo |
-| **Human-Agent Collaboration** | HITL gate en task-decomposer: humano aprueba lista antes de ejecutar |
-| **Process Orchestration** | pm-thyrox SKILL coordina las 7 fases; agentes ejecutan por fase |
-| **Autonomy** | tech-experts ejecutan tareas atómicas sin intervención humana |
-| **Goal-Oriented** | task-decomposer convierte cualquier goal en plan ejecutable |
-| **Multi-Agent Collaboration** | react-expert + nodejs-expert + postgresql-expert colaboran en Phase 6 |
+LAYER 0: REGISTRY (fuente de verdad — model-agnostic)
+════════════════════════════════════════════════════════════════
+
+registry/
+├── agents/                          ← definiciones YAML portables
+│   ├── task-planner.agent.yaml      ← descomposición atómica (NUEVO)
+│   ├── task-executor.agent.yaml     ← ejecución atómica (NUEVO)
+│   ├── tech-detector.agent.yaml
+│   ├── skill-generator.agent.yaml
+│   └── [tech].agent.yaml            ← por cada tecnología
+├── frontend/react.*
+├── backend/nodejs.*
+├── database/postgresql.*
+└── mcp/
+    ├── _evoagentx_adapter.py
+    ├── memory_server.py
+    └── executor_server.py
+
+bootstrap.py                         ← único punto de entrada
+  --stack "react,nodejs,postgresql"  ← genera todo lo necesario
+  --model claude|openai              ← renderiza para el modelo correcto
+  --add "vue"                        ← agrega tech skill a proyecto existente
+
+════════════════════════════════════════════════════════════════
+LAYER 1: ORQUESTACIÓN (generada desde registry)
+════════════════════════════════════════════════════════════════
+
+.claude/                             ← generado por bootstrap.py
+├── CLAUDE.md                        ← 15 líneas imperativas (auto-generado)
+├── skills/pm-thyrox/SKILL.md        ← copiado desde template (sin cambio)
+├── agents/
+│   ├── task-planner.md              ← render de task-planner.agent.yaml
+│   ├── task-executor.md             ← render de task-executor.agent.yaml
+│   ├── tech-detector.md             ← render de tech-detector.agent.yaml
+│   ├── skill-generator.md           ← render de skill-generator.agent.yaml
+│   ├── react-expert.md              ← render de react.agent.yaml
+│   ├── nodejs-expert.md             ← render de nodejs.agent.yaml
+│   └── postgresql-expert.md         ← render de postgresql.agent.yaml
+├── guidelines/
+│   ├── react.instructions.md        ← always-on conventions
+│   └── nodejs.instructions.md
+└── memory/thyrox.faiss              ← índice semántico
+
+════════════════════════════════════════════════════════════════
+LAYER 2: MCP SERVERS (puente Python → Claude/GPT)
+════════════════════════════════════════════════════════════════
+
+thyrox-memory MCP server:
+  mcp__thyrox_memory__store(content, metadata)
+  mcp__thyrox_memory__retrieve(query, top_k)
+  → EvoAgentX: LongTermMemory + FAISS-cpu + sentence-transformers
+
+thyrox-executor MCP server:
+  mcp__thyrox_executor__exec_cmd(cmd, cwd)
+  mcp__thyrox_executor__exec_python(code)
+  mcp__thyrox_executor__read_file(path)
+  mcp__thyrox_executor__write_file(path, content)
+  → EvoAgentX: CMDToolkit + PythonInterpreterToolkit + FileToolkit
+
+════════════════════════════════════════════════════════════════
+FLUJO COMPLETO — solicitud vaga a resultado atómico
+════════════════════════════════════════════════════════════════
+
+USUARIO: "implementa autenticación JWT"
+  ↓
+[pm-thyrox SKILL detecta tarea de implementación]
+  ↓
+Agent(task-planner)
+  → lee: src/, package.json (contexto del proyecto)
+  → recupera: mcp__thyrox_memory__retrieve("autenticación proyectos anteriores")
+  → produce:
+      T-001: Create User model in src/models/User.js
+      T-002: Create POST /api/auth/register in src/routes/auth.js
+      T-003: Create POST /api/auth/login returning JWT in src/routes/auth.js
+      T-004: Create JWT middleware in src/middleware/auth.js
+      T-005: Add auth middleware to protected routes in src/app.js
+      T-006: Write integration tests in tests/auth.test.js
+  ↓
+[Para cada T-NNN]:
+Agent(nodejs-expert)         ← aplica convenciones Node.js al T-NNN
+  + Agent(task-executor)     ← ejecuta con mcp__thyrox_executor__exec_cmd
+      → "npm test tests/auth.test.js" → si pasa → commit
+  ↓
+Phase 7 TRACK:
+  mcp__thyrox_memory__store(lessons, {wp: "...", tech: "nodejs"})
+```
 
 ---
 
-## Resumen: hallazgos de este análisis
+## Resumen de hallazgos v3
 
-| ID | Hallazgo | Acción |
-|----|----------|--------|
-| H-ATOM-01 | Solicitudes no atómicas = modelo no interpreta correctamente | `task-decomposer.md` obligatorio como primer agente |
-| H-ATOM-02 | Analogía MLflow: atómico = easy to fix, monolítico = hard to fix | Cada agente recibe 1 tarea con 1 output |
-| H-ATOM-03 | TaskPlanner de EvoAgentX → nuestro task-decomposer native | Implementar como native agent, no Python |
-| H-MODEL-01 | `.claude/agents/*.md` es Claude-specific | Templates YAML en registry como fuente neutral |
-| H-MODEL-02 | Registry → render a Claude format O GPT format | `thyrox init --model [claude|openai]` |
-| H-MODEL-03 | MCP servers son model-agnostic por protocolo | thyrox-memory y thyrox-executor funcionan con cualquier LLM |
-| H-SYS-01 | 4 agentes core siempre presentes + N generados por stack | Arquitectura de 2 niveles: core + tech-experts |
-| H-SYS-02 | HITL gate en task-decomposer antes de ejecutar | Humano aprueba lista atómica → autonomía en ejecución |
-| H-TMPL-01 | Bootstrap en < 5 min: `thyrox init --stack X --model Y` | Un comando instala todo el sistema |
-| H-TMPL-02 | Validación automática al bootstrap | Falla en lugar conocido → easy to fix |
-| H-EVO-01 | EvoAgentX restringido: solo memory/ + tools/ | No usar agents/, workflow/, optimizers/ |
+| ID | Hallazgo | Impacto |
+|----|----------|---------|
+| H-ATOM-01 | Atomicidad es prerequisito — solicitudes no atómicas producen interpretación incorrecta | Arquitectónico — task-planner obligatorio |
+| H-ATOM-02 | task-planner + task-executor son dos agentes distintos: uno planifica, otro ejecuta | Diseño de agentes |
+| H-MODEL-01 | Registry YAML es model-agnostic; el render produce el formato correcto por modelo | Arquitectónico — portabilidad |
+| H-MODEL-02 | MCP protocol es model-agnostic — funciona con Claude y GPT (ambos soportan tool calling) | Implementación |
+| H-TMPL-01 | bootstrap.py como único punto de entrada: `--stack`, `--model`, `--add` | UX del meta-framework |
+| H-TMPL-02 | "Works everywhere" = si el template funciona en dev, funciona con cualquier modelo | Filosofía de diseño |
+| H-EVO-01 | TaskPlanner pattern adoptado como task-planner.md nativo (no Python class) | Implementación |
+| H-EVO-02 | BaseModule registry pattern adoptado como registry/ filesystem (más simple, más portable) | Implementación |
+| H-EVO-03 | WorkFlowGraph adoptado como las 7 fases de pm-thyrox (Markdown, adaptativo) | Implementación |
+| H-AGENT-01 | 6 agentes core: task-planner, task-executor, tech-detector, skill-generator, [tech]-expert(N) | Diseño completo |
