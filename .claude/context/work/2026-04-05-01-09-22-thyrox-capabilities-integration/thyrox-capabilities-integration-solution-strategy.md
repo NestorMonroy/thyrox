@@ -13,7 +13,9 @@ Cambios v3:
   - D-6: task-planner como gate obligatorio de atomicidad
   - D-7: registry YAML como fuente model-agnostic (Claude + GPT)
   - D-8: bootstrap.py como único entry point de instalación
-  - 6 agentes core definidos (task-planner, task-executor, tech-detector, skill-generator + N tech-experts)
+  - D-9: thyrox-executor scope reducido — solo subprocess (exec_cmd + exec_python)
+  - D-10: WorkFlowGraph diferido — task-planner T-NNN + deps como DAG implícito
+  - 6 agentes core; tech-detector + skill-generator son pure-native (sin MCP)
   - thyrox-agents MCP server eliminado (reemplazado por native agents)
   - 2 MCP servers definitivos: thyrox-memory + thyrox-executor
 ```
@@ -261,6 +263,114 @@ nuevo no requiere documentación — un solo comando lo configura todo.
 
 ---
 
+### Idea 8: Native agents — acceso completo al ecosistema de tools de Claude Code
+
+Este punto cambia materialmente el scope de `thyrox-executor`.
+
+Un native agent (`.claude/agents/*.md`) no está restringido a tools MCP.
+Tiene acceso al ecosistema completo de Claude Code:
+
+```
+TOOLS DISPONIBLES en cualquier native agent:
+  Nativas Claude Code:
+    Read, Write, Edit, Glob, Grep, Bash, Agent
+  MCP tools registradas:
+    mcp__thyrox_memory__*
+    mcp__thyrox_executor__*
+    mcp__github__*
+    … cualquier otro MCP server activo en settings.json
+```
+
+**Implicación directa sobre thyrox-executor:**
+
+```
+ANTES (asunción incorrecta):
+  task-executor necesita mcp__thyrox_executor__read_file("src/auth.ts")
+  task-executor necesita mcp__thyrox_executor__write_file("src/auth.ts", ...)
+  task-executor necesita mcp__thyrox_executor__list_dir("src/")
+
+CORRECTO (con full tool access):
+  task-executor usa Read("src/auth.ts")         ← nativa Claude Code
+  task-executor usa Write("src/auth.ts", ...)   ← nativa Claude Code
+  task-executor usa Glob("src/**/*.ts")          ← nativa Claude Code
+  task-executor usa mcp__thyrox_executor__exec_cmd("yarn test") ← solo subprocess
+```
+
+**El scope de thyrox-executor se reduce a lo que Claude NO puede hacer nativamente:**
+- `exec_cmd(cmd, cwd)` — subprocess shell (yarn, npm, git, pytest, docker)
+- `exec_python(code)` — Python interpreter con ambiente controlado
+
+**Implicación sobre tech-detector y skill-generator:**
+
+```
+tech-detector NO necesita MCP para detectar el stack:
+  usa Glob("**/package.json")   → detecta Node.js/React
+  usa Glob("**/requirements.txt") → detecta Python
+  usa Read("package.json")      → lee dependencies
+  usa Glob("**/docker-compose.yml") → detecta Docker
+  usa Grep("from django", "**/*.py") → detecta Django
+
+skill-generator NO necesita MCP para crear archivos:
+  usa Read("registry/agents/react.yml")  → lee template
+  usa Write(".claude/agents/react-expert.md") → genera agente
+  usa Read("registry/frontend/react.skill.template.md")
+  usa Write(".claude/skills/react-frontend/SKILL.md")
+```
+
+**Conclusión:** tech-detector y skill-generator son pure-native agents.
+No usan MCP executor en absoluto — solo tools nativas Claude Code.
+Esto los hace más simples, más rápidos, y sin dependencia de infraestructura.
+
+---
+
+### Idea 9: WorkFlowGraph / DAG — orquestación explícita vs inferida
+
+**El problema que plantea WorkFlowGraph:**
+
+EvoAgentX tiene `WorkFlowGraph`: un DAG donde defines explícitamente:
+- "A siempre antes que B"
+- "C y D en paralelo"
+- "E solo si A falla (fallback)"
+
+Con native agents, **Claude infiere el orden** a partir del contenido de los T-NNN
+y sus dependencias declaradas. Funciona, pero es menos determinista para flujos complejos.
+
+**¿Necesita THYROX implementar WorkFlowGraph?**
+
+```
+CASO 1 — Flujo simple (mayoría de casos):
+  T-001 → T-002 → T-003
+  Claude infiere el orden de la lista y dependencias declaradas ✓
+
+CASO 2 — Flujo con paralelo:
+  T-001 → [T-002, T-003 en paralelo] → T-004
+  Claude NO ejecuta en paralelo nativamente — es secuencial ✗
+  WorkFlowGraph tampoco resuelve esto: Claude Code sigue siendo secuencial
+
+CASO 3 — Flujo con fallback:
+  T-001 → T-002 → [si T-002 falla → T-002b (alternativa)]
+  task-planner puede definir: "T-002b: fallback si T-002 falla"
+  Claude infiere el condicional con instrucciones explícitas ✓
+
+CASO 4 — Flujo muy complejo (>10 tareas interdependientes):
+  WorkFlowGraph sería más determinista
+  Pero implementar WorkFlowGraph requiere un executor engine Python
+  → viola "no complejidad especulativa" para el 95% de los casos
+```
+
+**Veredicto:**
+
+El **paralelo real** no es posible en Claude Code con agentes nativos — ni con
+WorkFlowGraph ni sin él. Claude es secuencial.
+
+El **orden determinista** se logra con task-planner usando notación de dependencias
+explícitas en T-NNN + instrucciones claras al task-executor.
+
+WorkFlowGraph solo agrega valor si hay ejecución paralela real (requiere
+infraestructura Python fuera de Claude). Eso está fuera del scope de v3.
+
+---
+
 ## Research — Decisiones investigadas
 
 ### R-1: ¿Cómo integrar EvoAgentX con Claude Code?
@@ -375,6 +485,54 @@ no durante el trabajo. Sin violación de restricciones.
 **Decisión:** `bootstrap.py` es una herramienta de instalación one-shot, fuera del
 flujo runtime de Claude. Los artefactos que genera (`.claude/agents/*.md`, `settings.json`)
 son los que Claude usa — no el script en sí.
+
+---
+
+### R-8: ¿WorkFlowGraph (DAG explícito) o task-planner con dependencias declaradas?
+
+**Unknown:** ¿Necesita THYROX implementar un engine de orquestación DAG (estilo EvoAgentX
+WorkFlowGraph) para garantizar orden determinista en flujos complejos?
+
+| Alternativa | Determinismo | Paralelo real | Complejidad impl | Scope v3 |
+|-------------|-------------|--------------|-----------------|---------|
+| **A: WorkFlowGraph Python** | Alto — grafo explícito | Posible con threading | Alta — requiere engine Python | Fuera de scope |
+| **B: Task-planner T-NNN + deps declaradas** | Medio-alto — orden inferido de dependencias | NO — Claude es secuencial | Baja — solo instrucciones en .md | ✓ En scope |
+| **C: Sin orquestación explícita** | Bajo — Claude interpreta libremente | NO | Cero | Insuficiente para flujos complejos |
+
+**Decisión:** B — task-planner con notación de dependencias en T-NNN.
+**Justificación:**
+1. Claude Code es secuencial — el paralelo real requiere infraestructura Python
+   externa, que está fuera del scope de v3 (y posiblemente de v4)
+2. El orden determinista suficiente se logra con dependencias declaradas:
+   `T-003 [depende: T-001, T-002]` + instrucciones al task-executor
+3. WorkFlowGraph agrega complejidad real solo si hay ejecución paralela —
+   sin eso, es overhead puro. "No complejidad especulativa"
+4. Si en v4 se implementa ejecución paralela, task-planner ya produce el DAG
+   implícito que un engine Python podría interpretar
+
+**Límite reconocido:** Para flujos con >15 tareas altamente interdependientes,
+la inferencia de Claude puede desviarse. La mitigación es: task-planner
+produce un documento T-NNN con dependencias explícitas que task-executor
+sigue linealmente sin interpretación.
+
+---
+
+### R-9: ¿tech-detector y skill-generator necesitan MCP tools?
+
+**Unknown:** ¿Deben tech-detector y skill-generator usar `mcp__thyrox_executor`
+para leer archivos y detectar el stack, o pueden usar tools nativas?
+
+| Operación | Via MCP executor | Via tool nativa | Veredicto |
+|-----------|-----------------|-----------------|-----------|
+| Leer package.json | `exec_cmd("cat package.json")` | `Read("package.json")` | Nativa ✓ |
+| Listar archivos | `exec_cmd("ls src/")` | `Glob("src/**")` | Nativa ✓ |
+| Buscar imports | `exec_cmd("grep -r 'from django'")` | `Grep("from django", "**/*.py")` | Nativa ✓ |
+| Escribir SKILL.md | `exec_cmd("cat > .claude/agents/react-expert.md")` | `Write(".claude/agents/react-expert.md")` | Nativa ✓ |
+
+**Decisión:** tech-detector y skill-generator son **pure-native agents**.
+Zero dependencia de MCP servers. Usan exclusivamente: Read, Write, Edit, Glob, Grep.
+**Justificación:** Son los casos de uso perfectos para las tools nativas. Sin MCP,
+arrancan instantáneamente, sin dependencia de que los servers estén corriendo.
 
 ---
 
@@ -497,6 +655,48 @@ No es integración runtime (sin violación de "sin CLI") — es setup inicial co
 - Genera: 6 agentes core + tech-experts + MCP servers + settings.json + requirements.txt
 - Idempotente: si ya existe un agente generado, no sobreescribe sin `--force`
 - Documentado en README del registry como el primer paso
+
+---
+
+### D-9: thyrox-executor scope reducido — solo subprocess, no file ops
+
+**Alternativas:** thyrox-executor maneja todo (exec + file ops), solo subprocess
+**Decisión:** thyrox-executor expone exclusivamente operaciones subprocess:
+- `exec_cmd(cmd, cwd)` — shell subprocess (yarn, npm, git, pytest, docker)
+- `exec_python(code)` — Python interpreter controlado
+
+**Justificación:** Los native agents tienen acceso a Read, Write, Edit, Glob, Grep.
+No necesitan un MCP server de intermediario para file operations. Delegar eso
+al executor sería overhead puro. El executor solo agrega valor para lo que
+Claude Code no puede hacer nativamente: lanzar subprocesos.
+**Implicaciones:**
+- `executor_server.py` es más simple de implementar (2 tools, no 6)
+- Los agentes hacen `Read("file")` directamente — más rápido, más simple
+- El scope claro evita que executor se convierta en un "God server"
+
+---
+
+### D-10: WorkFlowGraph diferido — task-planner T-NNN con deps como DAG implícito
+
+**Alternativas:** Implementar WorkFlowGraph Python en v3, task-planner con deps declaradas, sin orquestación
+**Decisión:** task-planner produce T-NNN con dependencias explícitas. Sin WorkFlowGraph engine en v3.
+**Justificación:**
+1. Claude Code es secuencial — paralelo real requiere infra Python fuera de scope
+2. El 95% de los flujos de THYROX son lineales o tienen dependencias simples
+3. task-planner genera DAG implícito (T-NNN + deps) que un engine futuro puede
+   interpretar sin cambiar el formato — forward-compatible
+4. "No complejidad especulativa" — WorkFlowGraph engine solo cuando haya
+   paralelismo real que justifique la complejidad
+
+**Formato T-NNN con dependencias** (contrato de task-planner):
+```
+T-001: Crear migración tabla stripe_events [deps: ninguna]
+T-002: Endpoint POST /api/webhooks/stripe [deps: T-001]
+T-003: Handler payment_intent.succeeded [deps: T-002]
+T-004: Handler payment_intent.payment_failed [deps: T-002]
+T-005: Tests de integración [deps: T-003, T-004]
+```
+task-executor ejecuta en orden topológico → determinista sin engine.
 
 ---
 
@@ -713,14 +913,17 @@ Phase 7: TRACK
 | ¿Atomicidad enforced? | Sí. task-planner como gate obligatorio antes de Phase 6 EXECUTE |
 | ¿Model-agnostic? | Sí. Registry YAML → bootstrap.py renderiza para Claude o GPT |
 | ¿Template replicable? | Sí. Un comando instala el sistema completo en cualquier proyecto |
-| ¿Complejidad justificada? | Sí. 2 servers + adapter + 6 agents + bootstrap = mínimo para cerrar las 3 brechas + los 3 nuevos requisitos |
+| ¿Native tools usadas correctamente? | Sí. tech-detector + skill-generator usan Read/Glob/Grep/Write nativos |
+| ¿thyrox-executor scope correcto? | Sí. Solo exec_cmd + exec_python — no file ops (esas son nativas) |
+| ¿WorkFlowGraph necesario ahora? | No. DAG implícito via T-NNN + deps es suficiente. Claude es secuencial |
+| ¿Complejidad justificada? | Sí. 2 servers (scope reducido) + 6 agents (4 pure-native) + bootstrap = mínimo viable |
 
 ---
 
 ## Validation Checklist
 
 - [x] Key ideas claramente articuladas (MCP bridge, 2 servers, native agents, atomicidad, model-agnostic, bootstrap)
-- [x] Decisiones fundamentales documentadas (D-1..D-8)
+- [x] Decisiones fundamentales documentadas (D-1..D-10)
 - [x] Alternativas consideradas para cada decisión (R-1..R-7)
 - [x] Justificaciones claras
 - [x] Technology stack completo con deps mínimas
