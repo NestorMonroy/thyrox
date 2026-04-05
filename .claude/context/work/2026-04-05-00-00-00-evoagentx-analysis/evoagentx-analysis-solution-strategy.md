@@ -2,9 +2,14 @@
 ID work package: 2026-04-05-00-00-00-evoagentx-analysis
 Fecha: 2026-04-05
 Fase: Phase 2 — SOLUTION_STRATEGY
+Estado: CANCELADO
+Razón: Análisis incompleto — no consideró la visión meta-framework generativo de THYROX (H-014, H-020 de voltfactory-adaptation-analysis.md). La estrategia propuesta trataba THYROX como una app de gestión, no como un generador de stacks de skills.
+Reemplazado por: WP 2026-04-05-01-09-22-thyrox-capabilities-integration
 Tipo: Análisis de integración EvoAgentX ↔ THYROX
 Restricciones: Sin CLI, Sin GUI, Sin REST API (app/ layer excluido)
 ```
+
+> ⚠️ **DOCUMENTO CANCELADO** — Ver WP `2026-04-05-12-00-00-thyrox-capabilities-integration` para el análisis correcto.
 
 # Solution Strategy: Integración EvoAgentX ↔ THYROX
 
