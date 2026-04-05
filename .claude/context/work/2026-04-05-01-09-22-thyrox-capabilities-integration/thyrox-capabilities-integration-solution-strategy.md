@@ -1,17 +1,21 @@
 ```yml
 Fecha estrategia: 2026-04-05-01-09-22
 Proyecto: THYROX — Integración de capacidades con EvoAgentX
-Versión arquitectura: 2.0
+Versión arquitectura: 3.0
 Fase: Phase 2 — SOLUTION_STRATEGY
-Estado: Propuesta
-Fuentes: thyrox-capabilities-integration-analysis.md (BRECHA-1, BRECHA-2, BRECHA-3)
+Estado: Aprobada
+Fuentes:
+  - thyrox-capabilities-integration-analysis.md (BRECHA-1, BRECHA-2, BRECHA-3)
+  - analysis/mcp-agents-architecture-analysis.md (MCP + native agents)
+  - analysis/meta-framework-template-analysis.md (atomicity + model-agnostic + template)
 Restricciones: Sin CLI, Sin GUI, Sin REST API
-Correcciones v2:
-  - Agentes implementados como Claude Code native agents (.claude/agents/*.md)
-  - NO usar evoagentx.agents (CustomizeAgent, AgentManager)
-  - 2 MCP servers (eliminado thyrox-agents server)
-  - EvoAgentX solo: memory/ + tools/
-  - Ver: analysis/mcp-agents-architecture-analysis.md
+Cambios v3:
+  - D-6: task-planner como gate obligatorio de atomicidad
+  - D-7: registry YAML como fuente model-agnostic (Claude + GPT)
+  - D-8: bootstrap.py como único entry point de instalación
+  - 6 agentes core definidos (task-planner, task-executor, tech-detector, skill-generator + N tech-experts)
+  - thyrox-agents MCP server eliminado (reemplazado por native agents)
+  - 2 MCP servers definitivos: thyrox-memory + thyrox-executor
 ```
 
 # Solution Strategy: THYROX + EvoAgentX via MCP
@@ -85,25 +89,31 @@ Repositorio del proyecto
 
 ---
 
-### Idea 2: Tres servidores MCP especializados — uno por brecha
+### Idea 2: Dos servidores MCP especializados + agentes nativos Claude Code
 
-Cada brecha de Phase 1 mapea a un servidor MCP distinto con responsabilidad única:
+Las brechas de Phase 1 se resuelven con la combinación correcta de mecanismos:
 
 ```
-BRECHA-1: Ejecución de código   → thyrox-executor  (CMDToolkit + PythonInterpreterToolkit)
-BRECHA-2: Memoria semántica     → thyrox-memory    (LongTermMemory + FAISS)
-BRECHA-3: Agentes especializados → thyrox-agents   (CustomizeAgent + AgentManager)
+BRECHA-1: Ejecución de código    → thyrox-executor  (CMDToolkit + PythonInterpreterToolkit)
+BRECHA-2: Memoria semántica      → thyrox-memory    (LongTermMemory + FAISS)
+BRECHA-3: Agentes especializados → .claude/agents/*.md  (native Claude Code agents)
 ```
 
-**Por qué tres servidores y no uno:**
+**Por qué agentes nativos y NO un tercer MCP server para agentes:**
 
-| Criterio | Un servidor monolítico | Tres servidores especializados |
+El `mcp-agents-architecture-analysis.md` demostró que `evoagentx.agents` no es
+invoable como tool MCP — requiere un agente orquestador que interprete. Los
+agentes en `.claude/agents/*.md` son exactly eso: el mecanismo nativo de
+Claude Code para subagentes especializados con contexto persistente.
+
+**Por qué dos servers y no uno monolítico:**
+
+| Criterio | Un servidor monolítico | Dos servidores especializados |
 |----------|----------------------|-------------------------------|
 | Activación | Todo o nada | Activar solo lo que se necesita |
 | Fallo | Un error bloquea todo | Fallo aislado por dominio |
 | Dependencias | Carga todas las deps (incluyendo torch) | Cada server carga solo sus deps |
 | Evolución | Cambio en memoria afecta ejecución | Servers evolucionan independientemente |
-| Testing | Difícil aislar | Testeable por separado |
 
 ---
 
@@ -176,6 +186,81 @@ SESIONES SIGUIENTES: skills ya están, zero re-detección
 
 ---
 
+### Idea 5: task-planner como gate de atomicidad — obligatorio antes de ejecutar
+
+El análisis v3 confirma que los LLMs fallan de forma impredecible con solicitudes
+vagas o multi-concern. La solución es un agente dedicado que **siempre corre primero**:
+
+```
+SIN task-planner (HOY):
+  Usuario: "implementa el módulo de pagos"
+       ↓ Claude interpreta todo a la vez
+       ↓ hace asunciones sobre Stripe/PayPal, webhooks/polling
+       ↓ falla en algún lugar → difícil de debuggear
+
+CON task-planner (v3):
+  Usuario: "implementa el módulo de pagos"
+       ↓ task-planner descompone (5 criterios de atomicidad)
+       ↓ T-001: "Crea endpoint POST /api/webhooks/stripe que valida firma"
+       ↓ T-002: "Guarda evento en tabla stripe_events con campos X,Y,Z"
+       ↓ task-executor ejecuta cada T-NNN por separado
+       ↓ fallo localizado → fácil de corregir
+```
+
+**Los 5 criterios de atomicidad** (gate obligatorio — si alguno falla, re-descomponer):
+1. Un solo verbo de acción (crea, actualiza, elimina, lee — no "crea y conecta")
+2. Un solo artefacto modificado (un archivo, una migración, un endpoint)
+3. Output verificable sin interpretación (200 OK, test verde, archivo existe)
+4. Sin decisiones implícitas (qué campo guardar, qué librería usar — ya decidido)
+5. Dependencias explícitas (si depende de T-001, debe decirlo)
+
+---
+
+### Idea 6: Registry YAML como fuente model-agnostic
+
+El registry define el comportamiento de cada agente en YAML neutral al modelo.
+`bootstrap.py` lo renderiza al formato correcto según el flag `--model`:
+
+```
+registry/agents/task-planner.yml          ← definición neutral
+    name: task-planner
+    role: Descompone goals en tareas atómicas
+    tools: [thyrox-executor, thyrox-memory]
+    behavior: |
+      Antes de ejecutar cualquier implementación, descomponer...
+         ↓
+bootstrap.py --model claude
+    → .claude/agents/task-planner.md       ← frontmatter Claude Code nativo
+         ↓
+bootstrap.py --model openai   (futuro)
+    → .openai/assistants/task-planner.json ← Assistants API config
+```
+
+**Por qué esto importa:**
+
+La misma metodología THYROX funciona con cualquier LLM. Si el usuario migra
+de Claude a GPT-4o, no pierde el framework — cambia el renderer, no el contenido.
+
+---
+
+### Idea 7: bootstrap.py — un comando, sistema completo
+
+```bash
+python bootstrap.py --stack "react,nodejs,postgresql" --model claude
+```
+
+Genera en menos de 5 minutos:
+- 6 agentes core en `.claude/agents/`
+- Tech-experts por cada tecnología del stack
+- `registry/mcp/` con los dos servers
+- `settings.json` con mcpServers configurados
+- `requirements.txt` con deps mínimas
+
+**Por qué importa:** Reduce la fricción de adopción a cero. THYROX en un proyecto
+nuevo no requiere documentación — un solo comando lo configura todo.
+
+---
+
 ## Research — Decisiones investigadas
 
 ### R-1: ¿Cómo integrar EvoAgentX con Claude Code?
@@ -234,9 +319,62 @@ sin puertos, sin infraestructura externa.
 
 ---
 
-### R-4: ¿Un MCP server o tres?
+### R-4: ¿Un MCP server o dos?
 
-Cubierto en Key Idea 2. **Decisión:** Tres servidores especializados.
+Cubierto en Key Idea 2. **Decisión:** Dos servidores especializados (thyrox-memory + thyrox-executor).
+Los agentes especializados van como native Claude Code agents, no como MCP server.
+
+---
+
+### R-5: ¿Dónde implementar la atomicidad — en el SKILL.md o como agente separado?
+
+**Unknown:** ¿La descomposición atómica debe ser una instrucción en pm-thyrox SKILL.md
+o un agente independiente (`task-planner.md`)?
+
+| Alternativa | Pros | Cons |
+|-------------|------|------|
+| **A: Instrucción en SKILL.md** | Simple, sin agente extra | No es ejecutable por separado; Claude puede saltárselo |
+| **B: Agente task-planner.md** | Invocable explícitamente; separación de concerns; testeable | Requiere crear y mantener el agente |
+| **C: Sin atomicidad explícita** | Zero overhead | Mantiene el problema de LLM con solicitudes vagas |
+
+**Decisión:** B — Agente `task-planner.md` como nativo Claude Code.
+**Justificación:** Un agente separado es invocable, testeable, y forzable antes de
+cualquier ejecución. La instrucción en SKILL.md es complementaria (dice "usar task-planner"),
+pero el mecanismo de enforcement es el agente.
+
+---
+
+### R-6: ¿Registry YAML o directamente archivos .md por modelo?
+
+**Unknown:** ¿Definir agentes directamente en `.claude/agents/*.md` o via YAML neutral?
+
+| Alternativa | Pros | Cons |
+|-------------|------|------|
+| **A: Solo .md directo** | Simple, cero overhead | Lock-in a Claude; si hay 20 agentes, mantenerlos a mano es costoso |
+| **B: YAML → render** | Model-agnostic; single source of truth; bootstrap consistente | Requiere bootstrap.py |
+| **C: JSON schema** | Estándar OpenAI | Más complejo, menos legible |
+
+**Decisión:** B — YAML en `registry/agents/*.yml` → `bootstrap.py` renderiza a `.md`.
+**Justificación:** Permite model-agnostic y reduce los archivos que hay que mantener
+a mano. Los `.md` son artefactos generados — la fuente de verdad es el YAML.
+
+---
+
+### R-7: ¿Cómo implementar bootstrap.py sin violar "sin CLI"?
+
+**Unknown:** `bootstrap.py` se ejecuta con `python bootstrap.py` — ¿es eso "CLI"?
+
+**Clarificación de la restricción "sin CLI":**
+La restricción significa que Claude NO llama herramientas Python via subprocess
+durante las sesiones de trabajo. `bootstrap.py` es una herramienta de **setup inicial**
+que el desarrollador ejecuta una sola vez fuera de Claude — no es integración runtime.
+
+**Análogo a:** `npm install` o `npx create-react-app`. Se corre antes de trabajar,
+no durante el trabajo. Sin violación de restricciones.
+
+**Decisión:** `bootstrap.py` es una herramienta de instalación one-shot, fuera del
+flujo runtime de Claude. Los artefactos que genera (`.claude/agents/*.md`, `settings.json`)
+son los que Claude usa — no el script en sí.
 
 ---
 
@@ -314,8 +452,51 @@ El índice `.faiss` vive en `.claude/memory/` y se commitea.
 **Justificación:** El registry es la fuente de verdad de TODO lo que el meta-framework
 genera. Tener los MCP servers ahí los hace versionables, distribuibles y parte del bootstrap.
 **Implicaciones:**
-- `registry/` ahora tiene subdirectorios: frontend/, backend/, database/, mcp/
-- Los MCP servers son parte del "paquete THYROX" que se instala en un proyecto nuevo
+- `registry/` ahora tiene subdirectorios: agents/, frontend/, backend/, database/, mcp/
+- Los MCP servers + agent YAMLs son parte del "paquete THYROX" que se instala en un proyecto nuevo
+
+---
+
+### D-6: task-planner como agente nativo obligatorio — gate de atomicidad
+
+**Alternativas:** Instrucción en SKILL.md, sin atomicidad explícita
+**Decisión:** `.claude/agents/task-planner.md` como agente Claude Code nativo
+**Justificación:** La atomicidad no puede ser opcional si queremos resultados predecibles.
+Un agente invocable es el único mecanismo que enforcement la descomposición antes de ejecutar.
+**Implicaciones:**
+- `task-planner.md` define los 5 criterios de atomicidad y el formato T-NNN
+- pm-thyrox SKILL.md referencia `task-planner` como primer paso de Phase 6 EXECUTE
+- `task-executor.md` es el agente complementario que ejecuta cada T-NNN
+- Los 6 agentes core: task-planner, task-executor, tech-detector, skill-generator + N tech-experts
+
+---
+
+### D-7: Registry YAML como fuente model-agnostic — bootstrap.py como renderer
+
+**Alternativas:** Archivos `.md` escritos a mano directamente, JSON schema
+**Decisión:** YAML en `registry/agents/*.yml` → `bootstrap.py` renderiza a formato correcto
+**Justificación:** Single source of truth model-agnostic. Los `.claude/agents/*.md` son
+artefactos generados. Si THYROX se porta a otro LLM, solo cambia el renderer.
+**Implicaciones:**
+- `registry/agents/` contiene: task-planner.yml, task-executor.yml, tech-detector.yml,
+  skill-generator.yml, react-expert.yml, nodejs-expert.yml, etc.
+- `bootstrap.py --model claude` genera los `.md` con frontmatter correcto
+- `bootstrap.py --model openai` (futuro) genera config de Assistants API
+- Los `.claude/agents/*.md` se commitean en git (artefactos generados, no ignorados)
+
+---
+
+### D-8: bootstrap.py como entry point de instalación one-shot
+
+**Alternativas:** Documentación manual de setup, Makefile, shell script
+**Decisión:** `bootstrap.py` como único comando de instalación
+**Justificación:** Reduce fricción de adopción a cero. Un solo comando genera todo el sistema.
+No es integración runtime (sin violación de "sin CLI") — es setup inicial como `npm install`.
+**Implicaciones:**
+- `python bootstrap.py --stack "react,nodejs,postgresql" --model claude`
+- Genera: 6 agentes core + tech-experts + MCP servers + settings.json + requirements.txt
+- Idempotente: si ya existe un agente generado, no sobreescribe sin `--force`
+- Documentado en README del registry como el primer paso
 
 ---
 
@@ -332,7 +513,10 @@ Shell toolkit:              EvoAgentX CMDToolkit (git, npm, yarn, pytest, docker
 Python toolkit:             EvoAgentX PythonInterpreterToolkit
 Config integración:         settings.json → mcpServers section
 Persistencia memoria:       .claude/memory/*.faiss (commiteado en git)
+Persistencia agents:        .claude/agents/*.md (generados por bootstrap.py, commiteados)
 Persistencia skills:        .claude/skills/*/SKILL.md (commiteado en git)
+Agent definitions source:   registry/agents/*.yml (YAML model-agnostic)
+Bootstrap tool:             registry/bootstrap.py (one-shot setup, no runtime)
 ```
 
 **Dependencias mínimas** (sin torch, sin ColPali, sin app/):
@@ -342,6 +526,17 @@ evoagentx==0.1.0
 faiss-cpu>=1.7.4
 sentence-transformers>=2.2.0
 pydantic>=2.0
+pyyaml>=6.0        # para bootstrap.py
+jinja2>=3.1        # rendering de templates YAML → .md
+```
+
+**6 Agentes core** (generados por bootstrap.py):
+```
+task-planner     — descompone goals en T-NNN atómicos (gate obligatorio)
+task-executor    — ejecuta un T-NNN usando mcp__thyrox_executor
+tech-detector    — detecta stack tecnológico del repositorio
+skill-generator  — genera SKILL.md desde registry/agents/*.yml
+{tech}-expert    — N agentes, uno por tecnología (react-expert, nodejs-expert, etc.)
 ```
 
 ---
@@ -414,95 +609,155 @@ pydantic>=2.0
 
 ---
 
-## Diagrama de arquitectura final
+## Diagrama de arquitectura final (v3)
 
 ```
+SETUP (one-shot, fuera de Claude):
+  python bootstrap.py --stack "react,nodejs,postgresql" --model claude
+       ↓
+  Lee: registry/agents/*.yml  (YAML model-agnostic)
+       ↓
+  Genera:
+    .claude/agents/task-planner.md
+    .claude/agents/task-executor.md
+    .claude/agents/tech-detector.md
+    .claude/agents/skill-generator.md
+    .claude/agents/react-expert.md
+    .claude/agents/nodejs-expert.md
+    .claude/agents/postgresql-expert.md
+    .claude/settings.json → mcpServers configurados
+
+─────────────────────────────────────────────────────────
+
+RUNTIME (dentro de Claude Code):
+
 PROYECTO USUARIO
 └── .claude/
     ├── settings.json
     │   └── mcpServers:
     │       ├── thyrox-memory:   python registry/mcp/memory_server.py
-    │       ├── thyrox-executor: python registry/mcp/executor_server.py
-    │       └── thyrox-agents:   python registry/mcp/agents_server.py
+    │       └── thyrox-executor: python registry/mcp/executor_server.py
+    │
+    ├── agents/                  ← generados por bootstrap.py, commiteados
+    │   ├── task-planner.md      ← gate de atomicidad (siempre primero)
+    │   ├── task-executor.md     ← ejecuta T-NNN via thyrox-executor
+    │   ├── tech-detector.md     ← detecta stack, invoca skill-generator
+    │   ├── skill-generator.md   ← genera SKILL.md desde registry YAML
+    │   ├── react-expert.md      ← especialista React (generado si --stack react)
+    │   ├── nodejs-expert.md     ← especialista Node.js
+    │   └── postgresql-expert.md ← especialista PostgreSQL
     │
     ├── skills/
-    │   ├── pm-thyrox/          ← orquestador, sin cambios
-    │   ├── react-frontend/     ← generado por thyrox-agents en bootstrap
-    │   └── nodejs-backend/     ← generado por thyrox-agents en bootstrap
-    │
-    ├── guidelines/
-    │   └── react.instructions.md ← generado en bootstrap, always-on
+    │   ├── pm-thyrox/           ← orquestador, sin cambios
+    │   ├── react-frontend/      ← generado por skill-generator en bootstrap
+    │   └── nodejs-backend/      ← generado por skill-generator en bootstrap
     │
     └── memory/
-        └── thyrox.faiss        ← índice semántico de WPs/ADRs/lecciones
+        └── thyrox.faiss         ← índice semántico de WPs/ADRs/lecciones
 
 registry/
+├── agents/                      ← YAML model-agnostic (fuente de verdad)
+│   ├── task-planner.yml
+│   ├── task-executor.yml
+│   ├── tech-detector.yml
+│   ├── skill-generator.yml
+│   └── tech-experts/
+│       ├── react.yml
+│       ├── nodejs.yml
+│       └── postgresql.yml
 ├── mcp/
-│   ├── _evoagentx_adapter.py   ← único punto de contacto con EvoAgentX
-│   ├── memory_server.py        ← tools: store, retrieve
-│   ├── executor_server.py      ← tools: exec_cmd, exec_python, read_file, write_file
-│   └── agents_server.py        ← tools: detect_tech, generate_skill, list_skills
+│   ├── _evoagentx_adapter.py    ← único punto de contacto con EvoAgentX
+│   ├── memory_server.py         ← tools: store, retrieve
+│   └── executor_server.py       ← tools: exec_cmd, exec_python
+├── bootstrap.py                 ← entry point de instalación
 ├── frontend/
-│   ├── react.skill.template.md
-│   └── react.agent.template.py
+│   └── react.skill.template.md
 └── backend/
     └── nodejs.skill.template.md
 
-FLUJO POR FASE:
+─────────────────────────────────────────────────────────
+
+FLUJO POR FASE (runtime):
 
 Phase 1: ANALYZE (nueva sesión)
   Claude → mcp__thyrox_memory__retrieve("contexto proyectos anteriores similares")
-  Claude → mcp__thyrox_agents__detect_tech("./") [solo si no hay skills]
+  [si no hay agents/] → tech-detector → skill-generator → commit
 
-Phase 1: BOOTSTRAP (solo primera vez)
-  Claude → mcp__thyrox_agents__generate_skill("react", registry/frontend/react.skill.template.md)
-  Claude → git commit "feat(skills): bootstrap React skills"
-
-Phase 6: EXECUTE
-  Claude → mcp__thyrox_executor__exec_cmd("yarn test --coverage")
-  Claude → mcp__thyrox_executor__exec_cmd("git commit -m 'feat(auth): ...'")
+Phase 6: EXECUTE — CON gate de atomicidad
+  Usuario: "implementa autenticación JWT"
+       ↓
+  Claude invoca task-planner
+       ↓ descompone en T-001..T-005 (5 criterios verificados)
+       ↓
+  Claude invoca task-executor para cada T-NNN
+       ↓ usa mcp__thyrox_executor__exec_cmd("yarn test")
+       ↓ usa mcp__thyrox_executor__exec_python(script)
+       ↓ resultado localizado → fácil de corregir si falla
 
 Phase 7: TRACK
-  Claude → mcp__thyrox_memory__store(lessons_learned_content, {wp: "...", date: "..."})
+  Claude → mcp__thyrox_memory__store(lessons_learned, {wp, date, phase})
 ```
 
 ---
 
-## Post-design Re-check
+## Post-design Re-check (v3)
 
 | Check | Estado |
 |-------|--------|
 | ¿Viola algún ADR? | No. ADR-008, ADR-012 respetados |
-| ¿Requiere CLI/GUI/REST? | No. stdio transport, proceso local |
-| ¿Bootstrap once preservado? | Sí. `thyrox-agents` commitea inmediatamente |
-| ¿Las 3 brechas están cerradas? | Sí. BRECHA-1 → executor, BRECHA-2 → memory, BRECHA-3 → agents |
-| ¿EvoAgentX aislado? | Sí. Adapter layer + versión pinned |
+| ¿Requiere CLI/GUI/REST? | No. stdio transport + bootstrap.py es one-shot setup, no runtime |
+| ¿Bootstrap once preservado? | Sí. Agentes y skills generados se commitean en git (H-020) |
+| ¿Las 3 brechas están cerradas? | Sí. BRECHA-1 → executor, BRECHA-2 → memory, BRECHA-3 → native agents |
+| ¿EvoAgentX aislado? | Sí. Adapter layer + `evoagentx==0.1.0` pinned |
 | ¿Local-first? | Sí. FAISS-cpu + sentence-transformers, zero API keys |
-| ¿Complejidad justificada? | Sí. 3 archivos Python + 1 adapter = la implementación mínima para cerrar las 3 brechas |
+| ¿Atomicidad enforced? | Sí. task-planner como gate obligatorio antes de Phase 6 EXECUTE |
+| ¿Model-agnostic? | Sí. Registry YAML → bootstrap.py renderiza para Claude o GPT |
+| ¿Template replicable? | Sí. Un comando instala el sistema completo en cualquier proyecto |
+| ¿Complejidad justificada? | Sí. 2 servers + adapter + 6 agents + bootstrap = mínimo para cerrar las 3 brechas + los 3 nuevos requisitos |
 
 ---
 
 ## Validation Checklist
 
-- [x] Key ideas claramente articuladas (MCP bridge, 3 servers, adapter, registry)
-- [x] Decisiones fundamentales documentadas (D-1..D-5)
-- [x] Alternativas consideradas para cada decisión
+- [x] Key ideas claramente articuladas (MCP bridge, 2 servers, native agents, atomicidad, model-agnostic, bootstrap)
+- [x] Decisiones fundamentales documentadas (D-1..D-8)
+- [x] Alternativas consideradas para cada decisión (R-1..R-7)
 - [x] Justificaciones claras
-- [x] Technology stack completo
-- [x] Patrones seleccionados
-- [x] Quality goals cubiertos
-- [x] Restricciones respetadas (Sin CLI/GUI/REST)
+- [x] Technology stack completo con deps mínimas
+- [x] Patrones seleccionados (Adapter, Single Responsibility, Registry, Facade, Bootstrap)
+- [x] Quality goals cubiertos (QG-1..QG-4)
+- [x] Restricciones respetadas (Sin CLI/GUI/REST — bootstrap.py es setup, no runtime)
 - [x] Trazable a Phase 1 (BRECHA-1, BRECHA-2, BRECHA-3)
-- [x] Guía clara para Phase 3: PLAN (qué construir: 3 MCP servers + adapter + registry/mcp/)
+- [x] Nuevos requisitos integrados (atomicidad, model-agnostic, template replicable)
+- [x] Diagrama de arquitectura actualizado (v3 con 6 agentes + 2 MCP servers)
+- [x] Guía clara para Phase 3: PLAN
 
 ---
 
 ## Siguiente Paso
 
-Phase 2 completa. Proponer `/workflow_plan` para definir scope y tareas concretas:
+Phase 2 completa. Proponer `/workflow_plan` para Phase 3 — scope y entregables concretos:
+
+**MCP Servers (2):**
 - `registry/mcp/_evoagentx_adapter.py`
 - `registry/mcp/memory_server.py`
 - `registry/mcp/executor_server.py`
-- `registry/mcp/agents_server.py`
-- Actualización de `settings.json` con `mcpServers`
-- Expansión del `registry/` con `{tech}.agent.template.py`
+
+**Registry agents YAML (6 core):**
+- `registry/agents/task-planner.yml`
+- `registry/agents/task-executor.yml`
+- `registry/agents/tech-detector.yml`
+- `registry/agents/skill-generator.yml`
+- `registry/agents/tech-experts/react.yml`, `nodejs.yml`, `postgresql.yml`
+
+**Bootstrap:**
+- `registry/bootstrap.py`
+
+**Config:**
+- `.claude/settings.json` con `mcpServers` configurados
+- `.claude/agents/*.md` generados por bootstrap.py
+
+**Skill templates tech:**
+- `registry/frontend/react.skill.template.md`
+- `registry/backend/nodejs.skill.template.md`
+- `registry/database/postgresql.skill.template.md`
