@@ -1,11 +1,17 @@
 ```yml
 Fecha estrategia: 2026-04-05-01-09-22
 Proyecto: THYROX — Integración de capacidades con EvoAgentX
-Versión arquitectura: 1.0
+Versión arquitectura: 2.0
 Fase: Phase 2 — SOLUTION_STRATEGY
 Estado: Propuesta
 Fuentes: thyrox-capabilities-integration-analysis.md (BRECHA-1, BRECHA-2, BRECHA-3)
 Restricciones: Sin CLI, Sin GUI, Sin REST API
+Correcciones v2:
+  - Agentes implementados como Claude Code native agents (.claude/agents/*.md)
+  - NO usar evoagentx.agents (CustomizeAgent, AgentManager)
+  - 2 MCP servers (eliminado thyrox-agents server)
+  - EvoAgentX solo: memory/ + tools/
+  - Ver: analysis/mcp-agents-architecture-analysis.md
 ```
 
 # Solution Strategy: THYROX + EvoAgentX via MCP
