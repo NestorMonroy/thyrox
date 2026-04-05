@@ -454,4 +454,36 @@ Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibil
 
 ---
 
+## FASE 11: Integración de Capacidades — MCP + Native Agents (2026-04-05)
+
+**WP:** `.claude/context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/`
+**Decisiones:** D-1..D-10 (solution-strategy v3.1)
+**Brechas cerradas:** BRECHA-1 (ejecución), BRECHA-2 (memoria), BRECHA-3 (agentes)
+
+### MCP Infrastructure
+
+- [ ] `registry/mcp/_evoagentx_adapter.py` — adapter layer EvoAgentX
+- [ ] `registry/mcp/memory_server.py` — MCP server: store + retrieve (FAISS)
+- [ ] `registry/mcp/executor_server.py` — MCP server: exec_cmd + exec_python
+- [ ] `settings.json` mcpServers + `requirements.txt`
+
+### Native Agents — Core
+
+- [ ] `.claude/agents/task-planner.md` — gate de atomicidad (T-NNN + deps)
+- [ ] `.claude/agents/task-executor.md` — ejecuta T-NNN (nativas + exec_cmd)
+- [ ] `.claude/agents/tech-detector.md` — detecta stack (pure-native: Glob/Read)
+- [ ] `.claude/agents/skill-generator.md` — genera SKILL.md + agent desde YAML
+
+### Registry
+
+- [ ] `registry/agents/*.yml` — 7 definiciones YAML (4 core + 3 tech-experts)
+- [ ] `registry/{frontend,backend,database}/*.skill.template.md` — 3 tech stacks
+- [ ] `registry/bootstrap.py` — `--stack --model --force`
+
+### Validación
+
+- [ ] Test end-to-end: bootstrap → detect → plan → execute → store → retrieve
+
+---
+
 **Última actualización:** 2026-04-04 (FASE 10 abierta — doc-structure WP)
