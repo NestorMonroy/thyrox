@@ -2,7 +2,7 @@
 Fecha: 2026-04-05-01-09-22
 WP: thyrox-capabilities-integration
 Fase: 3 - PLAN
-Estado: Pendiente aprobación
+Estado: Aprobado — 2026-04-05
 ```
 
 # Plan — THYROX: Integración de Capacidades via MCP + Native Agents
@@ -152,4 +152,4 @@ Ver tracking: [ROADMAP.md — FASE 11](../../../../../ROADMAP.md#fase-11-thyrox-
 
 ## Estado de aprobación
 
-- [ ] Scope aprobado por usuario — PENDIENTE
+- [x] Scope aprobado por usuario — 2026-04-05
