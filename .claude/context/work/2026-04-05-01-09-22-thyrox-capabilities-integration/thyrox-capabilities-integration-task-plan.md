@@ -40,14 +40,14 @@ Fuente: `thyrox-capabilities-integration-requirements-spec.md` (SPEC-001..SPEC-0
 
 ## FASE 0 — Estructura de directorios (5 min)
 
-- [ ] [T-001] Crear estructura de directorios del registry: `registry/mcp/`, `registry/agents/`, `registry/frontend/`, `registry/backend/`, `registry/database/`, `.claude/memory/` (SPEC-001, SPEC-009, SPEC-010, SPEC-011)
+- [x] [T-001] Crear estructura de directorios del registry: `registry/mcp/`, `registry/agents/`, `registry/frontend/`, `registry/backend/`, `registry/database/`, `.claude/memory/` (SPEC-001, SPEC-009, SPEC-010, SPEC-011)
 
 ---
 
 ## FASE 1 — Core Services Layer (45 min)
 
-- [ ] [T-002] Implementar `registry/mcp/thyrox_core.py` — dataclasses `ExecResult` y `MemoryResult`, funciones `init_memory`, `store_memory`, `retrieve_memory` (FAISS + sentence-transformers), `exec_cmd`, `exec_python` (subprocess con blocklist de comandos destructivos) (SPEC-001)
-- [ ] [T-003] [P] Crear `requirements.txt` con dependencias mínimas: `mcp`, `faiss-cpu`, `sentence-transformers`, `pydantic`, `numpy` (SPEC-004)
+- [x] [T-002] Implementar `registry/mcp/thyrox_core.py` — dataclasses `ExecResult` y `MemoryResult`, funciones `init_memory`, `store_memory`, `retrieve_memory` (FAISS + sentence-transformers), `exec_cmd`, `exec_python` (subprocess con blocklist de comandos destructivos) (SPEC-001)
+- [x] [T-003] [P] Crear `requirements.txt` con dependencias mínimas: `mcp`, `faiss-cpu`, `sentence-transformers`, `pydantic`, `numpy` (SPEC-004)
 
 > CHECKPOINT-1: `python -c "import registry.mcp.thyrox_core"` sin errores de importación.
 
@@ -57,8 +57,8 @@ Fuente: `thyrox-capabilities-integration-requirements-spec.md` (SPEC-001..SPEC-0
 
 _Requiere T-002 completo._
 
-- [ ] [T-004] Implementar `registry/mcp/memory_server.py` — MCP server stdio con tools `store` y `retrieve`; inicializa índice FAISS en `.claude/memory/thyrox.faiss` si no existe; usa `thyrox_core.store_memory` y `retrieve_memory` (SPEC-002)
-- [ ] [T-005] [P] Implementar `registry/mcp/executor_server.py` — MCP server stdio con tools `exec_cmd` y `exec_python`; delega a `thyrox_core.exec_cmd` y `exec_python`; valida blocklist antes de ejecutar (SPEC-003)
+- [x] [T-004] Implementar `registry/mcp/memory_server.py` — MCP server stdio con tools `store` y `retrieve`; inicializa índice FAISS en `.claude/memory/thyrox.faiss` si no existe; usa `thyrox_core.store_memory` y `retrieve_memory` (SPEC-002)
+- [x] [T-005] [P] Implementar `registry/mcp/executor_server.py` — MCP server stdio con tools `exec_cmd` y `exec_python`; delega a `thyrox_core.exec_cmd` y `exec_python`; valida blocklist antes de ejecutar (SPEC-003)
 
 > CHECKPOINT-2: `python registry/mcp/memory_server.py --help` y `python registry/mcp/executor_server.py --help` corren sin errores.
 
@@ -68,7 +68,7 @@ _Requiere T-002 completo._
 
 _Requiere T-004 y T-005 completos._
 
-- [ ] [T-006] Actualizar `.claude/settings.json` — agregar sección `mcpServers` con `thyrox-memory` (command: python, args: registry/mcp/memory_server.py, env: MEMORY_INDEX_PATH=.claude/memory/thyrox.faiss) y `thyrox-executor` (command: python, args: registry/mcp/executor_server.py) (SPEC-004)
+- [x] [T-006] Crear `.mcp.json` con `mcpServers` (thyrox-memory + thyrox-executor) — nota: settings.json no acepta mcpServers, usar .mcp.json con `thyrox-memory` (command: python, args: registry/mcp/memory_server.py, env: MEMORY_INDEX_PATH=.claude/memory/thyrox.faiss) y `thyrox-executor` (command: python, args: registry/mcp/executor_server.py) (SPEC-004)
 
 ---
 
@@ -76,13 +76,13 @@ _Requiere T-004 y T-005 completos._
 
 _Sin dependencias de FASE 1-3. Pueden ejecutarse en paralelo._
 
-- [ ] [T-007] [P] Crear `registry/agents/task-planner.yml` — schema YAML con name, description, model (claude-sonnet-4-6), tools ([Read, Write, Edit, Glob, Grep, Agent, TodoWrite]), system_prompt con los 5 criterios de atomicidad y formato T-NNN (SPEC-009, SPEC-005)
-- [ ] [T-008] [P] Crear `registry/agents/task-executor.yml` — schema YAML con name, description, model, tools ([Read, Write, Edit, Glob, Grep, Bash, mcp__thyrox_executor__exec_cmd, mcp__thyrox_executor__exec_python, mcp__thyrox_memory__store]), system_prompt con reglas de ejecución T-NNN (SPEC-009, SPEC-006)
-- [ ] [T-009] [P] Crear `registry/agents/tech-detector.yml` — schema YAML con name, description, model, tools ([Glob, Read, Grep]), system_prompt con tabla de señales de detección por tecnología (SPEC-009, SPEC-007)
-- [ ] [T-010] [P] Crear `registry/agents/skill-generator.yml` — schema YAML con name, description, model, tools ([Read, Write, Glob]), system_prompt con lógica de idempotencia (skip si ya existe sin --force) (SPEC-009, SPEC-008)
-- [ ] [T-011] [P] Crear `registry/agents/react-expert.yml` — schema YAML para tech-expert React: name, description, model, tools ([Read, Write, Edit, Glob, Grep, mcp__thyrox_executor__exec_cmd]), system_prompt con convenciones React/hooks/testing (SPEC-009)
-- [ ] [T-012] [P] Crear `registry/agents/nodejs-expert.yml` — schema YAML para tech-expert Node.js: name, description, model, tools, system_prompt con convenciones Express/Fastify/npm/yarn (SPEC-009)
-- [ ] [T-013] [P] Crear `registry/agents/postgresql-expert.yml` — schema YAML para tech-expert PostgreSQL: name, description, model, tools, system_prompt con convenciones SQL/migrations/indexes (SPEC-009)
+- [x] [T-007] [P] Crear `registry/agents/task-planner.yml` — schema YAML con name, description, model (claude-sonnet-4-6), tools ([Read, Write, Edit, Glob, Grep, Agent, TodoWrite]), system_prompt con los 5 criterios de atomicidad y formato T-NNN (SPEC-009, SPEC-005)
+- [x] [T-008] [P] Crear `registry/agents/task-executor.yml` — schema YAML con name, description, model, tools ([Read, Write, Edit, Glob, Grep, Bash, mcp__thyrox_executor__exec_cmd, mcp__thyrox_executor__exec_python, mcp__thyrox_memory__store]), system_prompt con reglas de ejecución T-NNN (SPEC-009, SPEC-006)
+- [x] [T-009] [P] Crear `registry/agents/tech-detector.yml`
+- [x] [T-010] [P] Crear `registry/agents/skill-generator.yml`
+- [x] [T-011] [P] Crear `registry/agents/react-expert.yml`
+- [x] [T-012] [P] Crear `registry/agents/nodejs-expert.yml`
+- [x] [T-013] [P] Crear `registry/agents/postgresql-expert.yml`
 
 ---
 
@@ -90,9 +90,9 @@ _Sin dependencias de FASE 1-3. Pueden ejecutarse en paralelo._
 
 _Sin dependencias de FASE 1-4. Pueden ejecutarse en paralelo._
 
-- [ ] [T-014] [P] Crear `registry/frontend/react.skill.template.md` — SKILL.md template para React: sección de convenciones de componentes, patrones de hooks, commands de testing (yarn test, vitest), referencias al stack del proyecto. Usar `{{PROJECT_NAME}}` como placeholder (SPEC-010)
-- [ ] [T-015] [P] Crear `registry/backend/nodejs.skill.template.md` — SKILL.md template para Node.js: convenciones de módulos, patrones async/await, commands de testing, estructura de rutas Express (SPEC-010)
-- [ ] [T-016] [P] Crear `registry/database/postgresql.skill.template.md` — SKILL.md template para PostgreSQL: convenciones SQL, patrones de migrations, índices, commands psql, naming de tablas/columnas (SPEC-010)
+- [x] [T-014] [P] Crear `registry/frontend/react.skill.template.md`
+- [x] [T-015] [P] Crear `registry/backend/nodejs.skill.template.md`
+- [x] [T-016] [P] Crear `registry/database/postgresql.skill.template.md`
 
 ---
 
@@ -100,10 +100,10 @@ _Sin dependencias de FASE 1-4. Pueden ejecutarse en paralelo._
 
 _Requiere FASE 4 completa (T-007..T-013) para que los YAML sean la fuente de verdad._
 
-- [ ] [T-017] [P] Crear `.claude/agents/task-planner.md` — frontmatter YAML con name, description, tools de T-007; body con los 5 criterios de atomicidad hardcoded, formato T-NNN de salida, instrucción de NUNCA ejecutar (solo planificar) (SPEC-005)
-- [ ] [T-018] [P] Crear `.claude/agents/task-executor.md` — frontmatter YAML con name, description, tools de T-008; body con reglas de ejecución: usar tools nativas para file ops, usar exec_cmd para shell, reportar errores con contexto, almacenar lección si instructivo (SPEC-006)
-- [ ] [T-019] [P] Crear `.claude/agents/tech-detector.md` — frontmatter YAML con name, description, tools de T-009; body con tabla de señales de detección, lógica de "ya existe skill → skip", output format (SPEC-007)
-- [ ] [T-020] [P] Crear `.claude/agents/skill-generator.md` — frontmatter YAML con name, description, tools de T-010; body con lógica de lectura YAML + template, escritura idempotente, reporte de "no hay template para {tech}" (SPEC-008)
+- [x] [T-017] [P] Crear `.claude/agents/task-planner.md`
+- [x] [T-018] [P] Crear `.claude/agents/task-executor.md`
+- [x] [T-019] [P] Crear `.claude/agents/tech-detector.md`
+- [x] [T-020] [P] Crear `.claude/agents/skill-generator.md`
 
 > CHECKPOINT-3: `ls .claude/agents/` muestra los 4 agentes. Cada `.md` tiene frontmatter YAML válido (name, description, tools).
 
@@ -113,7 +113,7 @@ _Requiere FASE 4 completa (T-007..T-013) para que los YAML sean la fuente de ver
 
 _Requiere T-007..T-016 completos (YAML y templates existentes)._
 
-- [ ] [T-021] Implementar `registry/bootstrap.py` — CLI con args `--stack` (CSV), `--model` (default: claude), `--force`; lee YAML de `registry/agents/`, renderiza `.claude/agents/*.md` para cada agente; actualiza `mcpServers` en `.claude/settings.json`; genera `requirements.txt`; idempotente (skip si existe sin --force); reporta "modelo openai no soportado en v3" si --model openai (SPEC-011)
+- [x] [T-021] Implementar `registry/bootstrap.py` — CLI con args `--stack` (CSV), `--model` (default: claude), `--force`; lee YAML de `registry/agents/`, renderiza `.claude/agents/*.md` para cada agente; actualiza `mcpServers` en `.claude/settings.json`; genera `requirements.txt`; idempotente (skip si existe sin --force); reporta "modelo openai no soportado en v3" si --model openai (SPEC-011)
 
 > CHECKPOINT-4: `python registry/bootstrap.py --stack "react,nodejs,postgresql" --model claude` completa sin errores. Genera 7 archivos en `.claude/agents/`.
 
@@ -123,7 +123,7 @@ _Requiere T-007..T-016 completos (YAML y templates existentes)._
 
 _Requiere T-001..T-021 completos._
 
-- [ ] [T-022] Validar flujo completo SPEC-012:
+- [x] [T-022] Validar flujo completo SPEC-012:
   - Step 1: `python registry/bootstrap.py --stack "react,nodejs" --model claude` → 7 agentes en `.claude/agents/`
   - Step 2: Verificar `settings.json` tiene sección `mcpServers` con thyrox-memory y thyrox-executor
   - Step 3: Verificar que `requirements.txt` contiene las 5 deps

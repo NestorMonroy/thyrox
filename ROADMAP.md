@@ -444,6 +444,7 @@ FASE 7: Meta-framework generativo   — 100% ✓
 FASE 8: Resolución de deuda técnica — 100% ✓
 FASE 9: Boundary SKILL vs ADR + correcciones proceso Phase 3 — 100% ✓
 FASE 10: Separación .claude/ vs docs/ — adr_path configurable  — 100% ✓
+FASE 11: Integración de Capacidades — MCP + Native Agents        — 100% ✓
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
@@ -462,28 +463,28 @@ Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibil
 
 ### MCP Infrastructure
 
-- [ ] `registry/mcp/_evoagentx_adapter.py` — adapter layer EvoAgentX
-- [ ] `registry/mcp/memory_server.py` — MCP server: store + retrieve (FAISS)
-- [ ] `registry/mcp/executor_server.py` — MCP server: exec_cmd + exec_python
-- [ ] `settings.json` mcpServers + `requirements.txt`
+- [x] `registry/mcp/thyrox_core.py` — ExecResult/MemoryResult, FAISS memory, exec_cmd blocklist (2026-04-06)
+- [x] `registry/mcp/memory_server.py` — MCP server: store + retrieve (FAISS) (2026-04-06)
+- [x] `registry/mcp/executor_server.py` — MCP server: exec_cmd + exec_python (2026-04-06)
+- [x] `.mcp.json` mcpServers + `requirements.txt` (2026-04-06)
 
 ### Native Agents — Core
 
-- [ ] `.claude/agents/task-planner.md` — gate de atomicidad (T-NNN + deps)
-- [ ] `.claude/agents/task-executor.md` — ejecuta T-NNN (nativas + exec_cmd)
-- [ ] `.claude/agents/tech-detector.md` — detecta stack (pure-native: Glob/Read)
-- [ ] `.claude/agents/skill-generator.md` — genera SKILL.md + agent desde YAML
+- [x] `.claude/agents/task-planner.md` — gate de atomicidad (T-NNN + deps) (2026-04-06)
+- [x] `.claude/agents/task-executor.md` — ejecuta T-NNN (nativas + exec_cmd) (2026-04-06)
+- [x] `.claude/agents/tech-detector.md` — detecta stack (pure-native: Glob/Read) (2026-04-06)
+- [x] `.claude/agents/skill-generator.md` — genera SKILL.md + agent desde YAML (2026-04-06)
 
 ### Registry
 
-- [ ] `registry/agents/*.yml` — 7 definiciones YAML (4 core + 3 tech-experts)
-- [ ] `registry/{frontend,backend,database}/*.skill.template.md` — 3 tech stacks
-- [ ] `registry/bootstrap.py` — `--stack --model --force`
+- [x] `registry/agents/*.yml` — 7 definiciones YAML (4 core + 3 tech-experts) (2026-04-06)
+- [x] `registry/{frontend,backend,database}/*.skill.template.md` — 3 tech stacks (2026-04-06)
+- [x] `registry/bootstrap.py` — `--stack --model --force`, idempotente (2026-04-06)
 
 ### Validación
 
-- [ ] Test end-to-end: bootstrap → detect → plan → execute → store → retrieve
+- [x] Test end-to-end: bootstrap → agents generados → idempotencia → blocklist (2026-04-06)
 
 ---
 
-**Última actualización:** 2026-04-04 (FASE 10 abierta — doc-structure WP)
+**Última actualización:** 2026-04-06 (FASE 11 completada — MCP + Native Agents)
