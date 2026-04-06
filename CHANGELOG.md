@@ -1,15 +1,68 @@
 ```yml
 Tipo: Historial de Cambios
 Categoría: Proyecto
-Versión: 0.8.0
+Versión: 0.9.0
 Propósito: Registro de cambios notables del proyecto
-Fecha actualización: 2026-04-04
+Fecha actualización: 2026-04-06
 ```
 
 # CHANGELOG — THYROX
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [0.9.0] - 2026-04-06
+
+### Added — Integración de Capacidades MCP + Native Agents (WP thyrox-capabilities-integration)
+
+**MCP Infrastructure — SPEC-001..SPEC-004:**
+- `registry/mcp/thyrox_core.py`: dataclasses `ExecResult`/`MemoryResult`, memoria semántica FAISS
+  con `sentence-transformers` (store/retrieve por similitud), `exec_cmd` con blocklist de comandos
+  destructivos, `exec_python` con subprocess controlado
+- `registry/mcp/memory_server.py`: MCP server stdio con tools `store` y `retrieve`; inicializa
+  índice FAISS en `.claude/memory/thyrox.faiss`
+- `registry/mcp/executor_server.py`: MCP server stdio con tools `exec_cmd` y `exec_python`;
+  valida blocklist antes de ejecutar (bloquea `rm -rf /`, `mkfs`, fork bombs, etc.)
+- `requirements.txt`: `mcp>=1.0.0`, `faiss-cpu>=1.7.4`, `sentence-transformers>=2.7.0`,
+  `pydantic>=2.0.0`, `numpy>=1.24.0`
+- `.mcp.json`: entradas `thyrox-memory` y `thyrox-executor` con paths y env vars
+
+**Registry YAML — SPEC-009:**
+- `registry/agents/task-planner.yml`: 5 criterios de atomicidad, formato T-NNN, tools de planificación
+- `registry/agents/task-executor.yml`: reglas de ejecución, tools nativas + MCP exec_cmd/exec_python
+- `registry/agents/tech-detector.yml`: tabla de señales de detección por tecnología, lógica de skip
+- `registry/agents/skill-generator.yml`: idempotencia (skip si existe sin --force), output format
+- `registry/agents/react-expert.yml`: convenciones React/hooks/Vitest
+- `registry/agents/nodejs-expert.yml`: convenciones Express/ESM/async-await
+- `registry/agents/postgresql-expert.yml`: convenciones SQL/migrations/indexes
+
+**Tech Skill Templates — SPEC-010:**
+- `registry/frontend/react.skill.template.md`: componentes funcionales TS, hooks, Vitest+RTL,
+  patrones a evitar; placeholder `{{PROJECT_NAME}}`
+- `registry/backend/nodejs.skill.template.md`: ESM, async/await, estructura Express, Zod en límites
+- `registry/database/postgresql.skill.template.md`: naming conventions, schema template, migrations
+  YYYYMMDDHHMMSS, índices, transacciones, comandos psql
+
+**Native Agents — SPEC-005..SPEC-008:**
+- `.claude/agents/task-planner.md`: gate de atomicidad — 5 criterios hardcoded, NUNCA ejecuta
+- `.claude/agents/task-executor.md`: usa herramientas nativas para file ops, exec_cmd para shell,
+  crea ERR-NNN si falla, almacena lección instructiva con mcp__thyrox-memory__store
+- `.claude/agents/tech-detector.md`: tabla de señales (React, Node.js, PostgreSQL, Python, Docker...),
+  skip si ya existe skill, output format con ✓/✗
+- `.claude/agents/skill-generator.md`: idempotente, sustituye `{{PROJECT_NAME}}`, reporta techs
+  no soportadas
+
+**Bootstrap — SPEC-011:**
+- `registry/bootstrap.py`: CLI con `--stack` (CSV), `--model` (default: claude), `--force`;
+  lee YAML del registry, renderiza `.claude/agents/*.md`, actualiza `.mcp.json`; idempotente
+  (skip sin --force); reporta "modelo openai no soportado en v3" si `--model openai`
+
+**Validación E2E — SPEC-012:**
+- Bootstrap con `--stack react,nodejs` genera 6 agentes en `.claude/agents/`
+- Idempotencia verificada: segunda ejecución reporta skip para todos los agentes existentes
+- Blocklist verificado: `rm -rf /` devuelve error bloqueado desde executor_server.py
 
 ---
 
