@@ -11,10 +11,11 @@ Fuentes: solution-strategy v3.1 (D-1..D-10), requirements-spec v1.0
 
 ## 1. Visión General
 
-THYROX integra EvoAgentX como librería interna (no como framework externo) via dos
-MCP servers en stdio transport. Los agentes especializados son native Claude Code agents
-con acceso a todas las tools del ecosistema. Un adapter layer aisla EvoAgentX v0.1.0.
-Bootstrap.py instala el sistema completo desde un YAML registry model-agnostic.
+THYROX implementa sus propias capacidades de memoria y ejecución inspiradas en patrones
+de EvoAgentX — sin dependencia de la librería. Dos MCP servers en stdio transport exponen
+las capacidades via `thyrox_core.py` (código nativo). Los agentes son native Claude Code
+agents con acceso a todas las tools del ecosistema. Bootstrap.py instala el sistema completo
+desde un YAML registry model-agnostic.
 
 ---
 
@@ -37,14 +38,11 @@ graph TB
         EX[thyrox-executor<br/>executor_server.py]
     end
 
-    subgraph Adapter["Adapter Layer"]
-        AD[_evoagentx_adapter.py]
-    end
-
-    subgraph EvoAgentX["EvoAgentX v0.1.0"]
-        LTM[LongTermMemory<br/>FAISS]
-        CMD[CMDToolkit]
-        PY[PythonInterpreterToolkit]
+    subgraph CoreServices["Core Services — thyrox_core.py"]
+        TC[thyrox_core.py<br/>implementación propia]
+        FAISSLIB[faiss-cpu<br/>vector store]
+        ST[sentence-transformers<br/>embeddings]
+        SP[subprocess<br/>shell exec]
     end
 
     subgraph NativeTools["Tools Nativas Claude Code"]
@@ -77,13 +75,13 @@ graph TB
     TE -->|exec_cmd / exec_python| EX
     CC -->|store / retrieve| MS
 
-    MS --> AD
-    EX --> AD
-    AD --> LTM
-    AD --> CMD
-    AD --> PY
+    MS --> TC
+    EX --> TC
+    TC --> FAISSLIB
+    TC --> ST
+    TC --> SP
 
-    LTM --> FAISS
+    FAISSLIB --> FAISS
     BP -->|lee| YAML
     BP -->|lee| TMPL
     BP -->|genera| AGENTS
@@ -121,24 +119,24 @@ sequenceDiagram
 sequenceDiagram
     participant CL as Claude Code
     participant MS as memory_server.py
-    participant AD as _evoagentx_adapter
+    participant TC as thyrox_core.py
     participant FA as FAISS Index
 
     CL->>MS: mcp__thyrox_memory__store(content, metadata)
-    MS->>AD: store_memory(content, metadata)
-    AD->>AD: encode(content) via sentence-transformers
-    AD->>FA: index.add(vector)
+    MS->>TC: store_memory(content, metadata)
+    TC->>TC: encode(content) via sentence-transformers
+    TC->>FA: index.add(vector)
     FA->>FA: persiste en .claude/memory/thyrox.faiss
     MS->>CL: {"status": "ok", "id": "uuid-123"}
 
     Note over CL,FA: Nueva sesión
 
     CL->>MS: mcp__thyrox_memory__retrieve(query, top_k=3)
-    MS->>AD: retrieve_memory(query, top_k=3)
-    AD->>AD: encode(query)
-    AD->>FA: index.search(vector, k=3)
-    FA->>AD: [(score, id), ...]
-    AD->>MS: [MemoryResult(content, metadata, score), ...]
+    MS->>TC: retrieve_memory(query, top_k=3)
+    TC->>TC: encode(query)
+    TC->>FA: index.search(vector, k=3)
+    FA->>TC: [(score, id), ...]
+    TC->>MS: [MemoryResult(content, metadata, score), ...]
     MS->>CL: lista de resultados ordenados por score
 ```
 
@@ -208,7 +206,7 @@ sequenceDiagram
 thyrox/
 ├── registry/
 │   ├── mcp/
-│   │   ├── _evoagentx_adapter.py    [NUEVO] adapter layer
+│   │   ├── thyrox_core.py           [NUEVO] implementación propia — FAISS + subprocess
 │   │   ├── memory_server.py         [NUEVO] MCP server — store + retrieve
 │   │   └── executor_server.py       [NUEVO] MCP server — exec_cmd + exec_python
 │   ├── agents/
@@ -252,7 +250,7 @@ thyrox/
 
 ## 5. Interfaces y Contratos
 
-### 5.1 _evoagentx_adapter.py — interfaces estables
+### 5.1 thyrox_core.py — interfaces del módulo core
 
 ```python
 @dataclass
@@ -318,7 +316,15 @@ system_prompt: |                # prompt del sistema multiline
 
 ## 6. Decisiones Arquitectónicas (DA)
 
-### DA-001: Two MCP servers, not one (D-2)
+### DA-001: Código propio, no EvoAgentX como dependencia (D-3 revisado)
+
+- **Decisión:** `thyrox_core.py` implementa memoria y ejecución desde cero con FAISS + subprocess
+- **Razón:** Independencia de una librería externa en v0.1.0. Los patrones de EvoAgentX
+  (TaskPlanner, LongTermMemory, CMDToolkit) son la inspiración, no la implementación.
+- **Consecuencia:** Zero dependencia `evoagentx` en requirements. El código es mantenible
+  por el equipo sin depender del ciclo de release de un tercero.
+
+### DA-002: Two MCP servers, not one (D-2)
 
 - **Decisión:** Dos servers especializados (memory + executor) en lugar de uno monolítico
 - **Razón:** Isolación de fallos — memory puede fallar sin afectar executor y viceversa.
@@ -352,8 +358,8 @@ system_prompt: |                # prompt del sistema multiline
 
 ### Internas (entre componentes)
 
-- `memory_server.py` → `_evoagentx_adapter.py`
-- `executor_server.py` → `_evoagentx_adapter.py`
+- `memory_server.py` → `thyrox_core.py`
+- `executor_server.py` → `thyrox_core.py`
 - `bootstrap.py` → `registry/agents/*.yml` + `registry/*/templates`
 - `.claude/agents/*.md` → generados por `bootstrap.py`
 - `skill-generator.md` → lee `registry/agents/*.yml` + skill templates
@@ -362,8 +368,7 @@ system_prompt: |                # prompt del sistema multiline
 
 ```
 mcp >= 0.9.0                        # MCP Python SDK (Anthropic)
-evoagentx == 0.1.0                  # pinned — adapter layer absorbe cambios
-faiss-cpu >= 1.7.4                  # vector store local
+faiss-cpu >= 1.7.4                  # vector store local (implementación propia)
 sentence-transformers >= 2.2.0      # embeddings locales all-MiniLM-L6-v2
 pydantic >= 2.0                     # schemas y validación
 ```
@@ -377,7 +382,7 @@ pydantic >= 2.0                     # schemas y validación
 ### Exec_cmd — command injection mitigation
 
 ```python
-# En _evoagentx_adapter.py
+# En thyrox_core.py
 BLOCKED_PATTERNS = [
     r"rm\s+-rf\s+/",
     r">\s*/dev/sda",
@@ -405,7 +410,7 @@ Claude Code en el mismo proceso. Sin superficies de ataque externas.
 ### TC-001: Adapter layer — exec_cmd básico
 
 ```
-Precondición: Python 3.11+, evoagentx instalado
+Precondición: Python 3.11+, faiss-cpu y sentence-transformers instalados
 Input: exec_cmd("echo hello", cwd="/tmp")
 Esperado: ExecResult(stdout="hello\n", stderr="", returncode=0)
 ```
@@ -476,7 +481,7 @@ nativos generados en `.claude/agents/` pueden conservarse — no tienen efectos 
 - Plan aprobado: `thyrox-capabilities-integration-plan.md`
 - Requirements Spec: `thyrox-capabilities-integration-requirements-spec.md`
 - D-1..D-10: Decisiones fundamentales en solution-strategy
-- EvoAgentX docs: `evoagentx/` source (local)
+- Patrones inspirados en: EvoAgentX (TaskPlanner, LongTermMemory, CMDToolkit) — sin dependencia
 
 ---
 

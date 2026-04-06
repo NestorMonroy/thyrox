@@ -14,9 +14,9 @@ SPECs: 12
 
 Integrar tres capacidades faltantes en THYROX via MCP servers y native Claude Code agents:
 ejecución de código (BRECHA-1), memoria semántica persistente (BRECHA-2) y agentes
-especializados por tecnología (BRECHA-3). La integración usa EvoAgentX como librería
-interna, aislada detrás de un adapter layer. Los agentes son native Claude Code agents
-con acceso completo al ecosistema de tools. Bootstrap.py instala el sistema en un comando.
+especializados por tecnología (BRECHA-3). El código es **implementación propia** inspirada
+en patrones de EvoAgentX — sin dependencia de la librería. Los agentes son native Claude
+Code agents con acceso completo al ecosistema de tools. Bootstrap.py instala el sistema en un comando.
 
 **Objetivo:** Un desarrollador ejecuta `python registry/bootstrap.py --stack "react,nodejs,postgresql" --model claude` y obtiene un sistema funcional con MCP servers, agentes, memory store y tech-expert skills.
 
@@ -37,28 +37,26 @@ con acceso completo al ecosistema de tools. Bootstrap.py instala el sistema en u
 
 ---
 
-## SPEC-001: EvoAgentX Adapter Layer
+## SPEC-001: Core Services Layer — implementación propia
 
 **ID:** SPEC-001
-**Origen:** D-3 (Adapter pattern para EvoAgentX)
-**Prioridad:** Critical — todo lo demás depende
+**Origen:** D-3 revisado — código propio inspirado en EvoAgentX, sin dependencia de la librería
+**Prioridad:** Critical — memory_server y executor_server dependen de este módulo
 **Estado:** Pendiente
 
 ### Descripción
 
-Capa de abstracción única sobre EvoAgentX. Expone interfaces estables.
-Los MCP servers importan exclusivamente de este adapter, nunca de `evoagentx` directamente.
+Módulo interno `registry/mcp/thyrox_core.py` que implementa desde cero las interfaces
+de memoria vectorial y ejecución de código. Usa FAISS + sentence-transformers para
+memoria, subprocess para ejecución. Los patrones (TaskPlanner → T-NNN, LongTermMemory →
+FAISS store/retrieve) están inspirados en EvoAgentX pero son código THYROX nativo.
 
 ### Criterios de Aceptación
 
 ```
-Given evoagentx==0.1.0 instalado
-When se importa _evoagentx_adapter
-Then expone: exec_cmd, exec_python, store_memory, retrieve_memory
-
-Given evoagentx cambia su API interna en v0.2.x
-When se actualiza _evoagentx_adapter únicamente
-Then memory_server.py y executor_server.py siguen funcionando sin cambios
+Given faiss-cpu y sentence-transformers instalados
+When se importa thyrox_core
+Then expone: exec_cmd, exec_python, store_memory, retrieve_memory, init_memory
 
 Given un comando shell válido
 When exec_cmd(cmd="echo hello", cwd="/tmp")
@@ -67,11 +65,21 @@ Then retorna ExecResult(stdout="hello\n", stderr="", returncode=0)
 Given código Python válido
 When exec_python(code="print(1+1)")
 Then retorna ExecResult(stdout="2\n", stderr="", returncode=0)
+
+Given content="lección sobre React hooks"
+When store_memory(content, metadata={"wp": "abc"})
+Then vectoriza con sentence-transformers y almacena en índice FAISS local
+
+Given índice con documentos
+When retrieve_memory("React hooks", top_k=3)
+Then retorna lista[MemoryResult] ordenada por similitud coseno descendente
 ```
 
-### Interfaces del adapter
+### Interfaces del módulo
 
 ```python
+from dataclasses import dataclass
+
 @dataclass
 class ExecResult:
     stdout: str
@@ -84,15 +92,15 @@ class MemoryResult:
     metadata: dict
     score: float
 
-def exec_cmd(cmd: str, cwd: str = ".") -> ExecResult
-def exec_python(code: str) -> ExecResult
-def store_memory(content: str, metadata: dict) -> None
+def init_memory(index_path: str, model_name: str = "all-MiniLM-L6-v2") -> None
+def exec_cmd(cmd: str, cwd: str = ".", timeout: int = 60) -> ExecResult
+def exec_python(code: str, timeout: int = 30) -> ExecResult
+def store_memory(content: str, metadata: dict) -> str          # retorna uuid
 def retrieve_memory(query: str, top_k: int = 5) -> list[MemoryResult]
-def init_memory(index_path: str, model_name: str) -> None
 ```
 
-**Archivos:** `registry/mcp/_evoagentx_adapter.py`
-**Complejidad:** Alta (EvoAgentX integration point)
+**Archivos:** `registry/mcp/thyrox_core.py`
+**Complejidad:** Alta — es el núcleo de las capacidades de memoria y ejecución
 
 ---
 
@@ -223,7 +231,7 @@ Y las tools mcp__thyrox_memory__* y mcp__thyrox_executor__* están disponibles
 
 Given requirements.txt con las 5 deps
 When pip install -r requirements.txt
-Then instala sin conflictos: mcp, evoagentx==0.1.0, faiss-cpu, sentence-transformers, pydantic
+Then instala sin conflictos: mcp, faiss-cpu, sentence-transformers, pydantic
 ```
 
 ### Contenido esperado
@@ -632,7 +640,7 @@ SPEC-012 (validación e2e)
 
 | Riesgo | Impacto | Prob | Mitigación |
 |--------|---------|------|-----------|
-| EvoAgentX v0.1.0 API rota en instalación limpia | Alto | Media | Adapter isolates + `evoagentx==0.1.0` pinned |
+| faiss-cpu incompatibilidad con Python 3.12+ | Medio | Baja | Desarrollar en Python 3.11; documentar versión soportada |
 | sentence-transformers descarga modelo en primer uso (80MB) | Bajo | Alta | Documentar en README; solo ocurre una vez |
 | faiss-cpu incompatibilidad con Python 3.12+ | Medio | Baja | Testear en 3.11; documentar versión soportada |
 | Claude Code no encuentra MCP server en path relativo | Medio | Media | Usar path absoluto en settings.json o __file__ en server |
@@ -643,7 +651,7 @@ SPEC-012 (validación e2e)
 
 - **T-NNN:** Tarea atómica con ID secuencial (T-001, T-002...) producida por task-planner
 - **Pure-native agent:** Agente que usa solo tools nativas Claude Code, sin MCP
-- **Adapter layer:** `_evoagentx_adapter.py` — único punto de contacto con EvoAgentX
+- **Core services layer:** `thyrox_core.py` — implementación propia de memoria y ejecución
 - **stdio transport:** Comunicación MCP via pipes stdin/stdout — sin puertos, sin servidor externo
 - **Bootstrap once (H-020):** Los artefactos generados se commitean; no se regeneran en sesiones posteriores
 

@@ -1,6 +1,6 @@
 ```yml
 Fecha estrategia: 2026-04-05-01-09-22
-Proyecto: THYROX — Integración de capacidades con EvoAgentX
+Proyecto: THYROX — Integración de capacidades (implementación propia)
 Versión arquitectura: 3.0
 Fase: Phase 2 — SOLUTION_STRATEGY
 Estado: Aprobada
@@ -20,7 +20,7 @@ Cambios v3:
   - 2 MCP servers definitivos: thyrox-memory + thyrox-executor
 ```
 
-# Solution Strategy: THYROX + EvoAgentX via MCP
+# Solution Strategy: THYROX Capabilities Integration via MCP
 
 ## Propósito
 
@@ -70,22 +70,23 @@ El MCP server corre en el mismo host, sin puertos externos, sin GUI.
 Transport: stdio (pipe directo entre Claude y el proceso Python).
 ```
 
-**Relación con EvoAgentX:**
-Los MCP servers son wrappers Python que usan EvoAgentX como **librería interna**.
-EvoAgentX no se expone — es un detalle de implementación de cada server.
+**Relación con thyrox_core.py:**
+Los MCP servers son wrappers Python sobre `thyrox_core.py`, el módulo nativo THYROX
+que implementa memoria y ejecución. Los patrones están inspirados en EvoAgentX
+(LongTermMemory, CMDToolkit) pero el código es propio — sin dependencia de la librería.
 
 ```
 Claude Code
     ↓ tool call
 MCP Server (Python process)
     ↓ import
-EvoAgentX (librería: agents, memory, tools)
+thyrox_core.py (FAISS + sentence-transformers + subprocess)
     ↓ filesystem/subprocess
 Repositorio del proyecto
 ```
 
 **Impacto en la arquitectura:**
-- Elimina la necesidad de CLI, GUI o REST API para integrar EvoAgentX
+- Elimina la necesidad de CLI, GUI o REST API
 - Claude llama las capacidades Python de forma nativa, con tipado y schemas
 - Cada MCP server puede activarse/desactivarse independientemente en settings.json
 
@@ -96,15 +97,15 @@ Repositorio del proyecto
 Las brechas de Phase 1 se resuelven con la combinación correcta de mecanismos:
 
 ```
-BRECHA-1: Ejecución de código    → thyrox-executor  (CMDToolkit + PythonInterpreterToolkit)
-BRECHA-2: Memoria semántica      → thyrox-memory    (LongTermMemory + FAISS)
+BRECHA-1: Ejecución de código    → thyrox-executor  (subprocess: exec_cmd + exec_python)
+BRECHA-2: Memoria semántica      → thyrox-memory    (FAISS + sentence-transformers)
 BRECHA-3: Agentes especializados → .claude/agents/*.md  (native Claude Code agents)
 ```
 
 **Por qué agentes nativos y NO un tercer MCP server para agentes:**
 
-El `mcp-agents-architecture-analysis.md` demostró que `evoagentx.agents` no es
-invoable como tool MCP — requiere un agente orquestador que interprete. Los
+El `mcp-agents-architecture-analysis.md` demostró que un MCP server de agentes
+no es invoable directamente — requiere un agente orquestador que interprete. Los
 agentes en `.claude/agents/*.md` son exactly eso: el mecanismo nativo de
 Claude Code para subagentes especializados con contexto persistente.
 
@@ -119,28 +120,27 @@ Claude Code para subagentes especializados con contexto persistente.
 
 ---
 
-### Idea 3: Adapter Layer — aislamiento de EvoAgentX 0.1.0
+### Idea 3: Core Services Layer — implementación propia
 
-EvoAgentX está en v0.1.0. Su API puede cambiar en 0.2.x. La solución es una
-**capa adapter** que encapsula toda interacción con EvoAgentX:
+En lugar de depender de una librería externa en v0.1.0, THYROX implementa sus
+propias capacidades en `thyrox_core.py`. Los patrones están **inspirados en EvoAgentX**
+(LongTermMemory, CMDToolkit, PythonInterpreterToolkit) pero el código es nativo:
 
 ```
 registry/
 └── mcp/
-    ├── _evoagentx_adapter.py   ← ÚNICO punto de contacto con EvoAgentX
+    ├── thyrox_core.py          ← núcleo: FAISS + sentence-transformers + subprocess
     │   # Expone interfaces estables:
-    │   # - create_agent(name, description, tools) → AbstractAgent
-    │   # - store_memory(content, metadata) → None
+    │   # - init_memory(index_path, model_name) → None
+    │   # - store_memory(content, metadata) → str (uuid)
     │   # - retrieve_memory(query, top_k) → List[MemoryResult]
-    │   # - exec_cmd(command, cwd) → ExecResult
-    │   # - exec_python(code) → ExecResult
-    ├── memory_server.py        ← usa _evoagentx_adapter, no EvoAgentX directamente
-    ├── executor_server.py      ← idem
-    └── agents_server.py        ← idem
+    │   # - exec_cmd(cmd, cwd, timeout) → ExecResult
+    │   # - exec_python(code, timeout) → ExecResult
+    ├── memory_server.py        ← MCP server: importa thyrox_core
+    └── executor_server.py      ← MCP server: importa thyrox_core
 ```
 
-Si EvoAgentX cambia su API, solo se modifica `_evoagentx_adapter.py`.
-Los tres MCP servers no saben nada de EvoAgentX internamente.
+Los MCP servers importan de `thyrox_core.py` — el código es 100% THYROX.
 
 ---
 
@@ -163,10 +163,9 @@ registry/
 │   ├── postgresql.skill.template.md
 │   └── postgresql.agent.template.py
 └── mcp/
-    ├── _evoagentx_adapter.py           ← adapter (compartido)
+    ├── thyrox_core.py                  ← núcleo (compartido por memory + executor)
     ├── memory_server.py                ← MCP server de memoria
-    ├── executor_server.py              ← MCP server de ejecución
-    └── agents_server.py                ← MCP server de agentes
+    └── executor_server.py              ← MCP server de ejecución
 ```
 
 **Flujo completo con el registry:**

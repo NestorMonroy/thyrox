@@ -32,11 +32,11 @@ skills específicos, ejecutan tests, y recuperan contexto de WPs anteriores.
 
 ### MCP Infrastructure (BRECHA-1 + BRECHA-2)
 
-- `registry/mcp/_evoagentx_adapter.py` — adapter layer, único punto de contacto con EvoAgentX
+- `registry/mcp/thyrox_core.py` — implementación propia: FAISS + subprocess + sentence-transformers
 - `registry/mcp/memory_server.py` — MCP server con 2 tools: `store`, `retrieve`
 - `registry/mcp/executor_server.py` — MCP server con 2 tools: `exec_cmd`, `exec_python`
 - `settings.json` — sección `mcpServers` con thyrox-memory y thyrox-executor
-- `requirements.txt` — deps mínimas: `mcp`, `evoagentx==0.1.0`, `faiss-cpu`, `sentence-transformers`
+- `requirements.txt` — deps mínimas: `mcp`, `faiss-cpu`, `sentence-transformers`, `pydantic`
 
 ### Native Agents — Core (BRECHA-3)
 
@@ -73,8 +73,8 @@ skills específicos, ejecutan tests, y recuperan contexto de WPs anteriores.
 | thyrox-agents MCP server | mcp-agents-architecture-analysis: agentes como native Claude Code agents, no MCP server |
 | GPT-4 / OpenAI rendering en bootstrap.py | D-7: YAML es model-agnostic; el renderer para OpenAI es v4. v3 solo renderiza para Claude. |
 | torch / GPU dependencies | D-4: faiss-cpu (no GPU). sentence-transformers sin torch chain completo |
+| Librería `evoagentx` como dependencia | Código propio inspirado en sus patrones — sin dependencia externa |
 | EvoAgentX app/ (CLI, GUI, REST) | Restricción del proyecto: sin CLI, sin GUI, sin REST API |
-| EvoAgentX evoagentx.agents (CustomizeAgent, AgentManager) | Agents = native Claude Code; EvoAgentX solo via adapter (memory + tools) |
 | Producción / Docker / CI pipeline | Fuera del scope del meta-framework en esta fase |
 | N tech-experts adicionales (vue, django, etc.) | React, Node.js, PostgreSQL cubren el stack actual. Otros se agregan con el mismo patrón. |
 | UI de monitoreo de memoria | Sin GUI — el contenido del índice FAISS se inspecciona via `retrieve` directamente |

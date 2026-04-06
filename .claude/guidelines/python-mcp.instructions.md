@@ -3,6 +3,8 @@
 Reglas siempre activas para código Python del meta-framework THYROX.
 Aplica a: `registry/mcp/*.py`, `registry/bootstrap.py`, cualquier `.py` en el proyecto.
 
+**Principio:** Código propio inspirado en patrones de EvoAgentX. Sin dependencia de `evoagentx`.
+
 ---
 
 ## Regla 1: Type hints completos — sin `Any` innecesario
@@ -41,10 +43,10 @@ def exec_cmd(...) -> dict:
 
 ---
 
-## Regla 3: exec_cmd siempre con timeout y sin shell=True para comandos compuestos
+## Regla 3: exec_cmd siempre con timeout — nunca bloquea indefinido
 
 ```python
-# CORRECTO — shell=True solo para comandos simples con timeout
+# CORRECTO
 result = subprocess.run(
     cmd,
     shell=True,
@@ -54,7 +56,7 @@ result = subprocess.run(
     cwd=cwd,
 )
 
-# INCORRECTO — sin timeout (puede bloquear el MCP server indefinidamente)
+# INCORRECTO — sin timeout
 result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 ```
 
@@ -86,7 +88,7 @@ def _is_safe_command(cmd: str) -> bool:
 @server.tool()
 async def exec_cmd_tool(cmd: str, cwd: str = ".") -> dict:
     try:
-        result = adapter.exec_cmd(cmd, cwd)
+        result = _exec_cmd(cmd, cwd)
         return {"stdout": result.stdout, "stderr": result.stderr, "returncode": result.returncode}
     except Exception as e:
         return {"error": str(e), "returncode": -1}
@@ -95,7 +97,6 @@ async def exec_cmd_tool(cmd: str, cwd: str = ".") -> dict:
 @server.tool()
 async def exec_cmd_tool(cmd: str) -> dict:
     result = subprocess.run(cmd, ...)  # puede raise FileNotFoundError, etc.
-    return result  # no captura excepciones
 ```
 
 ---
@@ -111,7 +112,6 @@ index_path.parent.mkdir(parents=True, exist_ok=True)
 
 # INCORRECTO
 index_path = ".claude/memory/" + "thyrox.faiss"
-os.makedirs(".claude/memory/", exist_ok=True)
 ```
 
 ---
@@ -133,32 +133,17 @@ output_path.write_text(content)
 
 ---
 
-## Regla 8: Imports de EvoAgentX — solo via _evoagentx_adapter
-
-```python
-# CORRECTO — solo el adapter importa de evoagentx
-# En _evoagentx_adapter.py:
-from evoagentx.memory import LongTermMemory
-from evoagentx.tools import CMDToolkit
-
-# INCORRECTO — importar evoagentx directamente en los servers
-# En memory_server.py:
-from evoagentx.memory import LongTermMemory  # ← PROHIBIDO fuera del adapter
-```
-
----
-
-## Regla 9: Persistencia FAISS — guardar después de cada store
+## Regla 8: FAISS — persistir después de cada store, no al cerrar
 
 ```python
 # CORRECTO — persistir inmediatamente tras agregar
 def store_memory(content: str, metadata: dict) -> str:
     vector = model.encode([content])
     index.add(vector)
-    faiss.write_index(index, str(index_path))  # persistir siempre
+    faiss.write_index(index, str(index_path))  # siempre
     return str(uuid.uuid4())
 
-# INCORRECTO — persistir solo al cerrar (se pierde si el proceso muere)
+# INCORRECTO — persistir solo al cerrar (se pierde en crash)
 atexit.register(lambda: faiss.write_index(index, str(index_path)))
 ```
 
@@ -167,12 +152,10 @@ atexit.register(lambda: faiss.write_index(index, str(index_path)))
 ## Stack de dependencias (no agregar sin justificación)
 
 ```
-mcp >= 0.9.0                  # MCP SDK Anthropic
-evoagentx == 0.1.0            # pinned — no upgradear sin revisar adapter
-faiss-cpu >= 1.7.4            # vector store (no faiss-gpu — sin torch)
-sentence-transformers >= 2.2.0 # embeddings locales
-pydantic >= 2.0               # validación de schemas
+mcp >= 0.9.0                   # MCP SDK Anthropic
+faiss-cpu >= 1.7.4             # vector store local (no faiss-gpu)
+sentence-transformers >= 2.2.0  # embeddings locales
+pydantic >= 2.0                # validación de schemas
 ```
 
-**Prohibido agregar:** `torch`, `tensorflow`, `fastapi`, `celery`, `redis`, `aiohttp`
-(sin aprobación explícita en ADR — violaría restricciones del proyecto).
+**Prohibido agregar sin ADR:** `evoagentx`, `torch`, `tensorflow`, `fastapi`, `celery`, `redis`.
