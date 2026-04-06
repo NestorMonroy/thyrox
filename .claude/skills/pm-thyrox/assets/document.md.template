@@ -4,7 +4,7 @@ Categoría: Documentación General
 Versión: 1.0
 Propósito: Template base para crear nuevos documentos en THYROX
 Objetivo: Proporcionar estructura consistente para todos los documentos
-Fecha actualización: 2026-03-25
+Fecha actualización: [YYYY-MM-DD-HH-MM-SS]
 Fase: 4 - STRUCTURE
 Activar si: documento técnico que no encaja en ningún template específico (requirements-spec, design, lessons-learned, etc.)
 ```

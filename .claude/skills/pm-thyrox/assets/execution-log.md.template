@@ -1,6 +1,6 @@
 ```yml
-Fecha inicio sesión: [YYYY-MM-DD-HH-mm-ss]
-Fecha fin sesión: [YYYY-MM-DD-HH-mm-ss]
+Fecha inicio sesión: [YYYY-MM-DD-HH-MM-SS]
+Fecha fin sesión: [YYYY-MM-DD-HH-MM-SS]
 Proyecto: [Nombre del proyecto]
 Versión: [1.0]
 Ejecutor: [Nombre]
@@ -10,7 +10,7 @@ Issues en progreso: [N]
 Issues demorados: [N]
 Problemas encontrados: [N]
 Tiempo total sesión: [horas]
-Siguiente sesión: [YYYY-MM-DD-HH-mm-ss]
+Siguiente sesión: [YYYY-MM-DD-HH-MM-SS]
 ```
 
 # Log de Ejecución - [Nombre del Proyecto/Tarea]

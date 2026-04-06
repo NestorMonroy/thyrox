@@ -1,5 +1,5 @@
 ```yml
-Fecha estrategia: [YYYY-MM-DD-HH-mm-ss]
+Fecha estrategia: [YYYY-MM-DD-HH-MM-SS]
 Proyecto: [Nombre del proyecto]
 Versión arquitectura: [1.0]
 Arquitecto: [Nombre]

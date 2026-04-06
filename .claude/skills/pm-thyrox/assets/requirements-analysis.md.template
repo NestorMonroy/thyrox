@@ -1,6 +1,6 @@
 ```yml
-Fecha creación: [YYYY-MM-DD-HH-mm-ss]
-Fecha última actualización: [YYYY-MM-DD-HH-mm-ss]
+Fecha creación: [YYYY-MM-DD-HH-MM-SS]
+Fecha última actualización: [YYYY-MM-DD-HH-MM-SS]
 Proyecto: [Nombre del proyecto]
 Versión requisitos: [1.0]
 Responsable análisis: [Nombre]

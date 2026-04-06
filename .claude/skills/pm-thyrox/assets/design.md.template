@@ -1,5 +1,5 @@
 ```yml
-Fecha diseño: [YYYY-MM-DD-HH-mm-ss]
+Fecha diseño: [YYYY-MM-DD-HH-MM-SS]
 Proyecto: [Nombre del proyecto]
 Feature: [Nombre de la feature]
 Versión diseño: [1.0]

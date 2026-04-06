@@ -4,7 +4,7 @@ Categoría: Refactors & Deuda Técnica
 Versión: 1.0
 Propósito: Tracking de refactorizaciones, mejoras de código y deuda técnica
 Objetivo: Documentar oportunidades de mejora y deuda técnica con priorización
-Fecha actualización: 2026-03-25
+Fecha actualización: [YYYY-MM-DD-HH-MM-SS]
 Fase: 5 - DECOMPOSE / 6 - EXECUTE
 Activar si: hay deuda técnica o refactors identificados durante análisis que necesitan tracking estructurado
 ```
@@ -101,4 +101,4 @@ Refactorizaciones, mejoras de código y technical debt tracking.
 
 **Prioridad:** Media
 **Owner:** TODO
-**Fecha Creación:** 2025-03-24
+**Fecha Creación:** [YYYY-MM-DD-HH-MM-SS]

@@ -1,5 +1,5 @@
 ```yml
-Fecha completación: [YYYY-MM-DD-HH-mm-ss]
+Fecha completación: [YYYY-MM-DD-HH-MM-SS]
 Tipo: task
 Task ID: [ID de la tarea, ej: TASK-789]
 Feature relacionada: [Nombre feature]

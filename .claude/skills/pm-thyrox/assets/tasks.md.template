@@ -1,5 +1,5 @@
 ```yml
-Fecha creación tareas: [YYYY-MM-DD-HH-mm-ss]
+Fecha creación tareas: [YYYY-MM-DD-HH-MM-SS]
 Proyecto: [Nombre del proyecto]
 Feature: [Nombre de la feature]
 Versión breakdown: [1.0]

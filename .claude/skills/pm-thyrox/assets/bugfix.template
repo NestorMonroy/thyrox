@@ -1,5 +1,5 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-mm-ss]
+Fecha: [YYYY-MM-DD-HH-MM-SS]
 Tipo: fix
 Bug ID: [ID del bug, ej: BUG-456]
 Severidad: [Critical/High/Medium/Low]

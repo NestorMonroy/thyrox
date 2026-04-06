@@ -1,5 +1,5 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-mm-ss]
+Fecha: [YYYY-MM-DD-HH-MM-SS]
 Proyecto: [Nombre del proyecto]
 Versión análisis: [1.0]
 Autor: [Nombre]

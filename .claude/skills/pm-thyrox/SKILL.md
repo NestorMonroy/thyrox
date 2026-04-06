@@ -53,6 +53,7 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
    - **Criterios de éxito** — ¿cómo sabremos que está bien hecho?
 2. Crear work package: obtener timestamp real ejecutando `date +%Y-%m-%d-%H-%M-%S` → crear `context/work/{timestamp}-nombre/`
    — NUNCA inventar ni estimar el timestamp. SIEMPRE obtenerlo del sistema antes de crear el directorio.
+   — Este mismo comando aplica a TODOS los campos `Fecha` de cualquier artefacto (Fecha creación, Fecha actualización, Fecha cierre). NUNCA usar solo `YYYY-MM-DD` — siempre incluir `HH-MM-SS`.
 3. REQUERIDO: Crear `work/.../analysis/{nombre-wp}-analysis.md` usando [introduction.md.template](assets/introduction.md.template)
    — el nombre del archivo debe revelar QUÉ se analiza. Ejemplo: `skill-activation-analysis.md`, no `introduction.md`
 4. REQUERIDO: Crear `work/../{nombre-wp}-risk-register.md` usando [risk-register.md.template](assets/risk-register.md.template) — identificar riesgos desde el inicio. Actualizar en cada fase.

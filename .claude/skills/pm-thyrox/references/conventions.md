@@ -132,9 +132,21 @@ YYYY-MM-DD-HH-MM-SS
 **Aplica a:**
 - Nombres de work packages: `context/work/2026-04-04-04-16-29-feature-name/`
 - Frontmatter YAML de artefactos: `Fecha: 2026-04-04-04-16-29`
+- Campos `Fecha creación`, `Fecha actualización`, `Fecha cierre` dentro de cualquier template
 - Nombres de work-logs: `context/work-logs/2026-04-04-04-16-29-descripcion.md`
 
-**Regla:** Nunca dejar `[YYYY-MM-DD-HH-MM-SS]` como placeholder literal. Siempre reemplazar con timestamp real.
+**Cómo obtener el timestamp — OBLIGATORIO:**
+
+```bash
+date +%Y-%m-%d-%H-%M-%S
+# Ejemplo de output: 2026-04-06-14-32-07
+```
+
+SIEMPRE ejecutar este comando antes de escribir cualquier campo `Fecha` en un artefacto.
+NUNCA usar solo la fecha (`YYYY-MM-DD`) — siempre incluir la hora (`HH-MM-SS`).
+NUNCA inventar ni estimar el timestamp.
+
+**Regla:** Nunca dejar `[YYYY-MM-DD-HH-MM-SS]` como placeholder literal. Siempre reemplazar con timestamp real obtenido del sistema.
 
 ---
 
