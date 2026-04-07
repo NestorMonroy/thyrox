@@ -178,6 +178,17 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 8. Repetir hasta completar todas las tareas
    Para trabajo micro (<30 min) sin WP: [ad-hoc-tasks.md.template](assets/ad-hoc-tasks.md.template) — registrar sin crear work package completo
 
+**Pre-flight para paralelo (hacer ANTES de lanzar agentes):**
+1. Listar archivos que toca cada agente
+2. Detectar intersecciones → resolver scope collision antes de lanzar
+3. Asignar section owners para archivos compartidos
+4. Definir gates explícitos (quién desbloquea a quién)
+
+**En ejecución paralela (N agentes):**
+- El agente coordinador (Claude principal) es responsable de: lanzar agentes, manejar failures, escribir archivos cuando Write esté bloqueado, actualizar ROADMAP/CHANGELOG en Phase 7.
+- Antes de lanzar agentes: definir scope de cada uno, identificar archivos compartidos, asignar section owners, documentar gates cross-WP.
+- Ver [conventions](references/conventions.md#parallel-agent-execution) para protocolo completo.
+
 **Salir cuando:** Todas las tareas completadas y commiteadas.
 **Siguiente:** Proponer Phase 7: TRACK para documentar lecciones.
 **Detectar:** Si todas las checkboxes en `*-task-plan.md` están `[x]`, Phase 6 ya completó.
