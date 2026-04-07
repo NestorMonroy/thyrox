@@ -168,6 +168,7 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 <!-- SECTION OWNER: parallel-agent-conventions -->
    En ejecución paralela: escribir estado en `context/now-{agent-id}.md`, no en `now.md`. Ver [conventions](references/conventions.md#parallel-agent-execution).
 <!-- END SECTION: parallel-agent-conventions -->
+   En ejecución paralela: ANTES de ejecutar, cambiar tarea a `[~] @agent-id (claimed: timestamp)` y hacer commit del claim. Ver [conventions](references/conventions.md#parallel-agent-execution).
 2. REQUERIDO al inicio de sesión: Crear o actualizar `work/../{nombre-wp}-execution-log.md` usando [execution-log.md.template](assets/execution-log.md.template)
 3. Implementar el cambio
 4. Si la implementación falla, crear `context/errors/ERR-NNN-descripcion.md` usando [error-report.md.template](assets/error-report.md.template) antes de reintentar con otro approach
