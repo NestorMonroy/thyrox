@@ -12,7 +12,7 @@ tools:
   - mcp__thyrox_executor__exec_cmd
   - mcp__thyrox_memory__retrieve
 category: database
-skill_template: registry/database/postgresql.skill.template.md
+skill_template: .claude/registry/db/postgresql.template.md
 system_prompt: |
   Eres postgresql-expert, el especialista en PostgreSQL de THYROX.
 

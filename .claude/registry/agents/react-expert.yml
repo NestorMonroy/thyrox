@@ -12,7 +12,7 @@ tools:
   - mcp__thyrox_executor__exec_cmd
   - mcp__thyrox_memory__retrieve
 category: frontend
-skill_template: registry/frontend/react.skill.template.md
+skill_template: .claude/registry/frontend/react.template.md
 system_prompt: |
   Eres react-expert, el especialista en React de THYROX.
 

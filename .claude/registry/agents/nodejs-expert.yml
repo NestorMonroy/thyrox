@@ -12,7 +12,7 @@ tools:
   - mcp__thyrox_executor__exec_cmd
   - mcp__thyrox_memory__retrieve
 category: backend
-skill_template: registry/backend/nodejs.skill.template.md
+skill_template: .claude/registry/backend/nodejs.template.md
 system_prompt: |
   Eres nodejs-expert, el especialista en Node.js de THYROX.
 

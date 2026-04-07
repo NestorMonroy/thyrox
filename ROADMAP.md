@@ -445,12 +445,17 @@ FASE 8: Resolución de deuda técnica — 100% ✓
 FASE 9: Boundary SKILL vs ADR + correcciones proceso Phase 3 — 100% ✓
 FASE 10: Separación .claude/ vs docs/ — adr_path configurable  — 100% ✓
 FASE 11: Integración de Capacidades — MCP + Native Agents        — 100% ✓
+FASE 12: Estandarización de Keys de Metadata YAML                 — 100% ✓
+FASE 13: Convenciones para Ejecución Paralela de Agentes          — 100% ✓
+FASE 14: Correcciones al flujo — post-mortem FASE 13              — 100% ✓
+FASE 15: Unificación de Registry                                  — 100% ✓
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
 Sesión 2026-03-28 (s3): 5 corrections + reference errors analysis
 Sesión 2026-04-03: voltfactory analysis + solution strategy + tests (55/55)
 Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibilidad Haiku
+Sesión 2026-04-07: parallel agents dogfooding + flow corrections + registry unification
 ```
 
 ---
@@ -568,4 +573,27 @@ Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibil
 
 ---
 
-**Última actualización:** 2026-04-07 (FASE 14 completada — flow corrections post-mortem v1.1.1)
+---
+
+## FASE 15: Unificación de Registry (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-06-15-20-registry-unification/`
+**Decisión:** `.claude/registry/` como único registry canónico — `registry/` raíz eliminado
+
+### Migración
+
+- [x] `registry/agents/*.yml` (7 archivos) → `.claude/registry/agents/` (2026-04-07)
+- [x] `registry/mcp/*.py` (3 archivos) → `.claude/registry/mcp/` (2026-04-07)
+- [x] `registry/bootstrap.py` → `.claude/registry/bootstrap.py` + PROJECT_ROOT fix (2026-04-07)
+- [x] `.mcp.json` — 2 paths actualizados a `.claude/registry/mcp/` (2026-04-07)
+- [x] `registry/` (raíz) — eliminado tras migración (2026-04-07)
+- [x] 3 YMLs `skill_template:` — paths rotos corregidos tras migración (2026-04-07)
+- [x] `context/work/INDEX.md` — índice de WPs por FASE (T-007) (2026-04-07)
+
+### Conceptual
+
+- [x] Distinción `agents/*.yml` (agente spawnable) vs `backend/*.template.md` (SKILL de metodología) documentada — L-055 (2026-04-07)
+
+---
+
+**Última actualización:** 2026-04-07 (FASE 15 completada — registry unificado en .claude/registry/ v1.2.0)

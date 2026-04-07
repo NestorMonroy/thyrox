@@ -1,25 +1,27 @@
 ```yml
 type: Estado Operacional
 version: 1.0
-updated_at: 2026-04-07 05:56:49
+updated_at: 2026-04-07 07:00:00
 ```
 
 # Focus
 
-FASE 14 completada. Framework v1.1.1 — convenciones de ejecución paralela implementadas y validadas por dogfooding.
+FASE 15 completada. Framework v1.2.0 — registry unificado en `.claude/registry/`.
 
 ## Completado (2026-04-07)
 
 - FASE 12: Metadata keys → snake_case en 100+ artefactos
 - FASE 13: Parallel agent conventions (WP-1) + agent format spec (WP-2) — dogfooding real
 - FASE 14: 8 correcciones al flujo post-mortem aplicadas en SKILL.md y conventions.md
+- FASE 15: `registry/` raíz eliminado — todo unificado en `.claude/registry/`
 
 ## Estado del framework
 
 - 6 agentes nativos en `.claude/agents/` — 0 errores en linter
 - Spec formal: `references/agent-spec.md`
 - Convenciones paralelo: `references/conventions.md#parallel-agent-execution`
-- Lecciones L-001..L-052 documentadas
+- Lecciones L-001..L-056 documentadas
+- Registry: `.claude/registry/` (agents + mcp + backend + frontend + db)
 
 ## Sin pendientes activos
 
