@@ -29,9 +29,9 @@ Tareas paralelizables: 6
 
 ### FASE 1 — Fundamentos del claim protocol (base para todo lo demás)
 
-- [ ] [T-001] Documentar estado `[~]` con formato exacto en `assets/tasks.md.template` (R-001)
-- [ ] [T-002] [P] Documentar formato `now-{agent-id}.md` en `references/conventions.md` (R-002)
-- [ ] [T-003] [P] Documentar protocolo de claim en `references/conventions.md` — sección "Claim de tareas" (R-001)
+- [x] [T-001] Documentar estado `[~]` con formato exacto en `assets/tasks.md.template` (R-001)
+- [x] [T-002] [P] Documentar formato `now-{agent-id}.md` en `references/conventions.md` (R-002)
+- [x] [T-003] [P] Documentar protocolo de claim en `references/conventions.md` — sección "Claim de tareas" (R-001)
 
 > T-002 y T-003 son paralelas entre sí. Ambas requieren que T-001 esté aprobada conceptualmente (el estado `[~]` es prerequisito de ambas secciones), pero pueden escribirse simultáneamente en secciones distintas de `conventions.md`.
 
