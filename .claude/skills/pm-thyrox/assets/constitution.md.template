@@ -1,9 +1,9 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-MM-SS]
-Proyecto: [PROJECT_NAME]
-Versión constitution: 1.0
-Autor: [Nombre]
-Estado: [Borrador/Aprobada]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+project: [PROJECT_NAME]
+constitution_version: 1.0
+author: [Nombre]
+status: [Borrador/Aprobada]
 ```
 
 # Constitution: [PROJECT_NAME]

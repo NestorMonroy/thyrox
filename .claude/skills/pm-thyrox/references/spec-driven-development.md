@@ -1,10 +1,10 @@
 ```yml
-Tipo: Metodología (opción dentro de PHASE 4: STRUCTURE)
-Categoría: Desarrollo Guiado por Especificaciones
-Versión: 1.0
-Propósito: Metodología en 4 pasos (Requirements, Design, Tasks, Validation) para features complejas.
-Objetivo: Proporcionar proceso estructurado cuando Phase 4 requiere especificación detallada.
-Fecha actualización: 2026-03-25
+type: Metodología (opción dentro de PHASE 4: STRUCTURE)
+category: Desarrollo Guiado por Especificaciones
+version: 1.0
+purpose: Metodología en 4 pasos (Requirements, Design, Tasks, Validation) para features complejas.
+goal: Proporcionar proceso estructurado cuando Phase 4 requiere especificación detallada.
+updated_at: 2026-03-25
 ```
 
 # Spec-Driven Development

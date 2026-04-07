@@ -1,11 +1,11 @@
 ```yml
-Fecha estrategia: [YYYY-MM-DD-HH-MM-SS]
-Proyecto: [Nombre del proyecto]
-Versión arquitectura: [1.0]
-Arquitecto: [Nombre]
-Stack versión: [ej: Python 3.11, Django 4.2, PostgreSQL 14]
-Validado por: [Nombre]
-Estado: [Propuesta/En revisión/Aprobado]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+project: [Nombre del proyecto]
+architecture_version: [1.0]
+architect: [Nombre]
+stack_version: [ej: Python 3.11, Django 4.2, PostgreSQL 14]
+validated_by: [Nombre]
+status: [Propuesta/En revisión/Aprobado]
 ```
 
 # Solution Strategy: [PROJECT_NAME]

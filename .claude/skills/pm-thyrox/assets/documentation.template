@@ -1,13 +1,13 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-MM-SS]
-Tipo: docs
+created_at: [YYYY-MM-DD-HH-MM-SS]
+type: docs
 Sección documentada: [Nombre/ruta]
-Versión docs: [1.0]
-Autor: [Nombre]
-Archivos docs: [N]
+docs_version: [1.0]
+author: [Nombre]
+docs_files: [N]
 Ejemplos añadidos: [N]
-Revisor: [Nombre]
-Estado: [Borrador/Publicado]
+reviewer: [Nombre]
+status: [Borrador/Publicado]
 ```
 
 docs(scope): short description of documentation changes

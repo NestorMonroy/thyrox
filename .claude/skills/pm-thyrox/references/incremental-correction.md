@@ -1,10 +1,10 @@
 ```yml
-Tipo: Metodología PHASE 7: TRACK
-Categoría: Corrección Incremental
-Versión: 1.0
-Propósito: Metodología validada para corrección de 100+ issues a gran escala con análisis obligatorio.
-Objetivo: Convertir caos de issues en correcciones organizadas y medibles.
-Fecha actualización: 2026-03-25
+type: Metodología PHASE 7: TRACK
+category: Corrección Incremental
+version: 1.0
+purpose: Metodología validada para corrección de 100+ issues a gran escala con análisis obligatorio.
+goal: Convertir caos de issues en correcciones organizadas y medibles.
+updated_at: 2026-03-25
 ```
 
 # Incremental Correction Methodology

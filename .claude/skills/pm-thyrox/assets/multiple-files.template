@@ -1,14 +1,14 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-MM-SS]
-Tipo: [feature/fix/refactor/etc]
-Cambios relacionados a: [Nombre/descripción]
-Autor: [Nombre]
-Total archivos: [N]
-Archivos agregados: [N]
-Archivos modificados: [N]
-Archivos eliminados: [N]
-Tests: [SI/NO]
-Coordinación con: [Nombres otros devs si aplica]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+type: [feature/fix/refactor/etc]
+related_to: [Nombre/descripción]
+author: [Nombre]
+total_files: [N]
+files_added: [N]
+files_modified: [N]
+files_deleted: [N]
+tests: [SI/NO]
+coordination_with: [Nombres otros devs si aplica]
 ```
 
 type(scope): short description

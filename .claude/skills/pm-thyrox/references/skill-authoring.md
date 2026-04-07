@@ -1,10 +1,10 @@
 ```yml
-Tipo: Mejores Prácticas Anthropic
-Categoría: Skill Authoring
-Versión: 1.0
-Propósito: Compilación de mejores prácticas de Anthropic para crear skills de alta calidad.
-Objetivo: Proporcionar guía completa de skill authoring con ejemplos.
-Fecha actualización: 2026-03-25
+type: Mejores Prácticas Anthropic
+category: Skill Authoring
+version: 1.0
+purpose: Compilación de mejores prácticas de Anthropic para crear skills de alta calidad.
+goal: Proporcionar guía completa de skill authoring con ejemplos.
+updated_at: 2026-03-25
 ```
 
 # Skill Authoring - Mejores Prácticas para Crear Skills

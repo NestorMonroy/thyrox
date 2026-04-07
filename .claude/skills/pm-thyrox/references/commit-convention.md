@@ -1,10 +1,10 @@
 ```yml
-Tipo: Documentación del Proyecto
-Categoría: Convenciones de Control de Versión
-Versión: 1.0
-Propósito: Guía de convenciones para mensajes de commits
-Objetivo: Estandarizar commits para mejor legibilidad e integración automática
-Fecha actualización: 2026-03-25
+type: Documentación del Proyecto
+category: Convenciones de Control de Versión
+version: 1.0
+purpose: Guía de convenciones para mensajes de commits
+goal: Estandarizar commits para mejor legibilidad e integración automática
+updated_at: 2026-03-25
 ```
 
 # Commit Convention

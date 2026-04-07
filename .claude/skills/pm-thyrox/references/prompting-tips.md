@@ -1,10 +1,10 @@
 ```yml
-Tipo: Mejores Prácticas Anthropic
-Categoría: Prompting
-Versión: 1.0
-Propósito: Compilación de mejores prácticas de Anthropic para escribir prompts efectivos con Claude 4.5.
-Objetivo: Maximizar calidad de respuestas de Claude con prompts bien estructurados.
-Fecha actualización: 2026-03-25
+type: Mejores Prácticas Anthropic
+category: Prompting
+version: 1.0
+purpose: Compilación de mejores prácticas de Anthropic para escribir prompts efectivos con Claude 4.5.
+goal: Maximizar calidad de respuestas de Claude con prompts bien estructurados.
+updated_at: 2026-03-25
 ```
 
 # Prompting Tips - Mejores Prácticas para Claude 4.5

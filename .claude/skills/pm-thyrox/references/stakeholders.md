@@ -1,10 +1,10 @@
 ```yml
-Tipo: Referencia PHASE 1: ANALYZE
-Categoría: Análisis
-Versión: 1.0
-Propósito: Guía de cómo identificar y documentar QUIÉN usa el sistema y QUÉ necesita.
-Objetivo: Asegurar que todas las necesidades de stakeholders estén consideradas.
-Fecha actualización: 2026-03-25
+type: Referencia PHASE 1: ANALYZE
+category: Análisis
+version: 1.0
+purpose: Guía de cómo identificar y documentar QUIÉN usa el sistema y QUÉ necesita.
+goal: Asegurar que todas las necesidades de stakeholders estén consideradas.
+updated_at: 2026-03-25
 ```
 
 # Stakeholders

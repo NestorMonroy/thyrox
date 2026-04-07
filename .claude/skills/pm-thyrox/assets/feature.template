@@ -1,12 +1,12 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-MM-SS]
-Tipo: feature
-Feature: [Nombre corto]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+type: feature
+feature: [Nombre corto]
 Ticket: [ID ticket, ej: PROJ-123]
-Autor: [Nombre]
+author: [Nombre]
 Branch: [nombre-rama]
-Archivos modificados: [N]
-Tests: [SI/NO]
+files_modified: [N]
+tests: [SI/NO]
 ```
 
 feat(scope): short description under 72 chars

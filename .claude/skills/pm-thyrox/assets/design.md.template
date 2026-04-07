@@ -1,13 +1,13 @@
 ```yml
-Fecha diseño: [YYYY-MM-DD-HH-MM-SS]
-Proyecto: [Nombre del proyecto]
-Feature: [Nombre de la feature]
-Versión diseño: [1.0]
-Diseñador: [Nombre]
-Componentes: [N]
-Dependencias externas: [N]
-Estado: [En progreso/Completo/Validado]
-Revisor designado: [Nombre]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+project: [Nombre del proyecto]
+feature: [Nombre de la feature]
+design_version: [1.0]
+designer: [Nombre]
+components: [N]
+external_dependencies: [N]
+status: [En progreso/Completo/Validado]
+assigned_reviewer: [Nombre]
 ```
 
 # Design: [Titulo del Proyecto/Feature]

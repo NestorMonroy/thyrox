@@ -1,9 +1,9 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-MM-SS]
-Proyecto: [Nombre del proyecto]
-Versión análisis: [1.0]
-Autor: [Nombre]
-Estado: [Borrador/En revisión/Aprobado]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+project: [Nombre del proyecto]
+analysis_version: [1.0]
+author: [Nombre]
+status: [Borrador/En revisión/Aprobado]
 ```
 
 # Introduction and Goals: [PROJECT_NAME]

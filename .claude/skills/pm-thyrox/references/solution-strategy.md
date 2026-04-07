@@ -1,10 +1,10 @@
 ```yml
-Tipo: Referencia PHASE 2: SOLUTION_STRATEGY
-Categoría: Estrategia
-Versión: 1.0
-Propósito: Guía de cómo crear plan arquitectónico que satisface requisitos dentro de constraints.
-Objetivo: Transformar análisis en decisiones arquitectónicas implementables.
-Fecha actualización: 2026-03-25
+type: Referencia PHASE 2: SOLUTION_STRATEGY
+category: Estrategia
+version: 1.0
+purpose: Guía de cómo crear plan arquitectónico que satisface requisitos dentro de constraints.
+goal: Transformar análisis en decisiones arquitectónicas implementables.
+updated_at: 2026-03-25
 ```
 
 # Solution Strategy

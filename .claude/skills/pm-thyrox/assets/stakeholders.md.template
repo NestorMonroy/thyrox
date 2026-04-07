@@ -1,10 +1,10 @@
 ```yml
-Fecha identificación: [YYYY-MM-DD-HH-MM-SS]
-Proyecto: [Nombre del proyecto]
-Versión stakeholder map: [1.0]
-Responsable: [Nombre]
-Total stakeholders: [N]
-Última revisión: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+project: [Nombre del proyecto]
+stakeholder_map_version: [1.0]
+owner: [Nombre]
+total_stakeholders: [N]
+last_reviewed_at: [YYYY-MM-DD-HH-MM-SS]
 ```
 
 # Stakeholders: [PROJECT_NAME]

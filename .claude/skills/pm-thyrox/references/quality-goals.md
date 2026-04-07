@@ -1,10 +1,10 @@
 ```yml
-Tipo: Referencia PHASE 1: ANALYZE
-Categoría: Análisis
-Versión: 1.0
-Propósito: Guía de cómo definir objetivos de calidad priorizados (Critical, Important, Desirable).
-Objetivo: Especificar QUÉ TAN BIEN debe funcionar el sistema con scenarios medibles.
-Fecha actualización: 2026-03-25
+type: Referencia PHASE 1: ANALYZE
+category: Análisis
+version: 1.0
+purpose: Guía de cómo definir objetivos de calidad priorizados (Critical, Important, Desirable).
+goal: Especificar QUÉ TAN BIEN debe funcionar el sistema con scenarios medibles.
+updated_at: 2026-03-25
 ```
 
 # Quality Goals

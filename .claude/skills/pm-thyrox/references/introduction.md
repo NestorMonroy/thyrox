@@ -1,10 +1,10 @@
 ```yml
-Tipo: Referencia PHASE 1: ANALYZE
-Categoría: Introducción
-Versión: 1.0
-Propósito: Introduce los conceptos fundamentales del análisis. Base para entender las 8 subsecciones de PHASE 1.
-Objetivo: Proporcionar context general y explicar estructura de análisis de requisitos.
-Fecha actualización: 2026-03-25
+type: Referencia PHASE 1: ANALYZE
+category: Introducción
+version: 1.0
+purpose: Introduce los conceptos fundamentales del análisis. Base para entender las 8 subsecciones de PHASE 1.
+goal: Proporcionar context general y explicar estructura de análisis de requisitos.
+updated_at: 2026-03-25
 ```
 
 # Introduction and Goals

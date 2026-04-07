@@ -1,9 +1,9 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-MM-SS]
-Feature: [FEATURE_NAME]
-Epic: [context/epics/YYYY-MM-DD-nombre/]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+feature: [FEATURE_NAME]
+epic: [context/epics/YYYY-MM-DD-nombre/]
 Iteración: [1/2]
-Estado: [Pendiente/Pasó/Falló]
+status: [Pendiente/Pasó/Falló]
 ```
 
 # Spec Quality Checklist: [FEATURE_NAME]

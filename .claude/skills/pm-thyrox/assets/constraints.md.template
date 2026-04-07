@@ -1,9 +1,9 @@
 ```yml
-Fecha análisis: [YYYY-MM-DD-HH-MM-SS]
-Proyecto: [Nombre del proyecto]
-Versión constraints: [1.0]
-Autor: [Nombre]
-Período vigencia: [YYYY-MM-DD-HH-MM-SS hasta YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+project: [Nombre del proyecto]
+constraints_version: [1.0]
+author: [Nombre]
+validity_period: [YYYY-MM-DD-HH-MM-SS hasta YYYY-MM-DD-HH-MM-SS]
 Constraints identificadas: [N]
 ```
 

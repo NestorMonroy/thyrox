@@ -1,10 +1,10 @@
 ```yml
-ID work package: [YYYY-MM-DD-HH-MM-SS-nombre]
-Fecha cierre: [YYYY-MM-DD-HH-MM-SS]
-Proyecto: [Nombre del proyecto]
-Fase de origen: [Phase N — PHASE_NAME]
-Total lecciones: [N]
-Autor: [Nombre]
+work_package_id: [YYYY-MM-DD-HH-MM-SS-nombre]
+closed_at: [YYYY-MM-DD-HH-MM-SS]
+project: [Nombre del proyecto]
+source_phase: [Phase N — PHASE_NAME]
+total_lessons: [N]
+author: [Nombre]
 ```
 
 # Lessons Learned: [Título del work package]

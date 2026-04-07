@@ -1,17 +1,17 @@
 ```yml
-Fecha plan: [YYYY-MM-DD-HH-MM-SS]
-Proyecto: [Nombre del proyecto]
-Versión categorización: [1.0]
-Planificador: [Nombre]
-Total issues a categorizar: [N]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+project: [Nombre del proyecto]
+categorization_version: [1.0]
+planner: [Nombre]
+total_issues: [N]
 Categorías definidas: [N]
 Prioridades definidas: [N]
-Fecha inicio categorización: [YYYY-MM-DD-HH-MM-SS]
-Fecha fin prevista: [YYYY-MM-DD-HH-MM-SS]
-Fase: 5 - DECOMPOSE
-Activar si: >50 issues que necesitan categorización antes de descomponer en tasks
-Responsable: [Nombre/equipo]
-Herramientas: [Sistema de tracking usado]
+started_at: [YYYY-MM-DD-HH-MM-SS]
+planned_end: [YYYY-MM-DD-HH-MM-SS]
+phase: 5 - DECOMPOSE
+activate_if: >50 issues que necesitan categorización antes de descomponer en tasks
+owner: [Nombre/equipo]
+tools: [Sistema de tracking usado]
 ```
 
 # Plan de Categorización - [Nombre del Proyecto/Tarea]

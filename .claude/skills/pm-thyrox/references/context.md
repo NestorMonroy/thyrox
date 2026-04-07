@@ -1,10 +1,10 @@
 ```yml
-Tipo: Referencia PHASE 1: ANALYZE
-Categoría: Análisis
-Versión: 1.0
-Propósito: Guía de cómo definir límites del sistema y sistemas externos que se integran.
-Objetivo: Clarificar dónde se inserta el sistema en el ecosistema.
-Fecha actualización: 2026-03-25
+type: Referencia PHASE 1: ANALYZE
+category: Análisis
+version: 1.0
+purpose: Guía de cómo definir límites del sistema y sistemas externos que se integran.
+goal: Clarificar dónde se inserta el sistema en el ecosistema.
+updated_at: 2026-03-25
 ```
 
 # Context

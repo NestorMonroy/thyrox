@@ -1,10 +1,10 @@
 ```yml
-Tipo: Ejemplo
-Categoría: Epic Documentation
-Versión: 1.0
-Propósito: Ejemplo de cómo documentar un epic en THYROX
-Objetivo: Proporcionar template para nuevos epics del proyecto
-Fecha actualización: [YYYY-MM-DD-HH-MM-SS]
+type: Ejemplo
+category: Epic Documentation
+version: 1.0
+purpose: Ejemplo de cómo documentar un epic en THYROX
+goal: Proporcionar template para nuevos epics del proyecto
+updated_at: [YYYY-MM-DD-HH-MM-SS]
 ```
 
 # Epic Example: User Authentication System

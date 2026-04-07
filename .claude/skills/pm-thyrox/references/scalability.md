@@ -1,10 +1,10 @@
 ```yml
-Tipo: Referencia General
-Categoría: Escalabilidad
-Versión: 1.0
-Propósito: Guía de cómo adaptar PM-THYROX según complejidad del proyecto.
-Objetivo: Decidir qué estructura y fases usar según tamaño del trabajo.
-Fecha actualización: 2026-03-27
+type: Referencia General
+category: Escalabilidad
+version: 1.0
+purpose: Guía de cómo adaptar PM-THYROX según complejidad del proyecto.
+goal: Decidir qué estructura y fases usar según tamaño del trabajo.
+updated_at: 2026-03-27
 ```
 
 # Escalabilidad por Complejidad

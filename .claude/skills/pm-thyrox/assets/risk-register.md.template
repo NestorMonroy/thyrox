@@ -1,13 +1,13 @@
 ```yml
-Proyecto: [Nombre del proyecto]
+project: [Nombre del proyecto]
 Work package: [YYYY-MM-DD-HH-MM-SS-nombre]
-Fecha creación: [YYYY-MM-DD-HH-MM-SS]
-Última actualización: [YYYY-MM-DD-HH-MM-SS]
-Fase actual: [Phase N — PHASE_NAME]
-Riesgos abiertos: [N]
-Riesgos mitigados: [N]
-Riesgos cerrados: [N]
-Autor: [Nombre]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+updated_at: [YYYY-MM-DD-HH-MM-SS]
+current_phase: [Phase N — PHASE_NAME]
+open_risks: [N]
+mitigated_risks: [N]
+closed_risks: [N]
+author: [Nombre]
 ```
 
 # Risk Register: [Nombre del Proyecto / Work Package]

@@ -1,11 +1,11 @@
 ```yml
-Fecha creación: [YYYY-MM-DD-HH-MM-SS]
-Fecha última actualización: [YYYY-MM-DD-HH-MM-SS]
-Proyecto: [Nombre del proyecto]
-Versión requisitos: [1.0]
-Responsable análisis: [Nombre]
-Estado: [Incompleto/Completo/Validado]
-Requisitos totales: [N]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+updated_at: [YYYY-MM-DD-HH-MM-SS]
+project: [Nombre del proyecto]
+requirements_version: [1.0]
+analysis_owner: [Nombre]
+status: [Incompleto/Completo/Validado]
+total_requirements: [N]
 ```
 
 # Requirements Analysis: [PROJECT_NAME]

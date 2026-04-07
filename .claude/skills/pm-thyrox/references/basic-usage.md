@@ -1,10 +1,10 @@
 ```yml
-Tipo: Referencia PHASE 1: ANALYZE
-Categoría: Análisis
-Versión: 1.0
-Propósito: Guía de cómo documentar CÓMO funciona el sistema operacionalmente desde perspectiva usuario.
-Objetivo: Describir flujos completos de uso del sistema.
-Fecha actualización: 2026-03-25
+type: Referencia PHASE 1: ANALYZE
+category: Análisis
+version: 1.0
+purpose: Guía de cómo documentar CÓMO funciona el sistema operacionalmente desde perspectiva usuario.
+goal: Describir flujos completos de uso del sistema.
+updated_at: 2026-03-25
 ```
 
 # Basic Usage (How It Works)

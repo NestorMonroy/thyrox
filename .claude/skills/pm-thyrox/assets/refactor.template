@@ -1,11 +1,11 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-MM-SS]
-Tipo: refactor
-Componente: [Nombre componente refactorizado]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+type: refactor
+component: [Nombre componente refactorizado]
 Razón: [Descripción breve por qué]
-Autor: [Nombre]
+author: [Nombre]
 Alcance: [Número de archivos/líneas afectadas]
-Tests pasando: [SI/NO]
+tests_passing: [SI/NO]
 Performance impact: [Ninguno/Mejora/Degradación]
 Estimado esfuerzo: [horas]
 ```

@@ -1,10 +1,10 @@
 ```yml
-Tipo: Especificación Técnica
-Categoría: Requisitos de Sistema
-Versión: 1.0
-Propósito: Especificación técnica de requisitos del proyecto
-Objetivo: Traducir requisitos de análisis a especificaciones técnicas implementables
-Fecha actualización: YYYY-MM-DD-HH-MM-SS
+type: Especificación Técnica
+category: Requisitos de Sistema
+version: 1.0
+purpose: Especificación técnica de requisitos del proyecto
+goal: Traducir requisitos de análisis a especificaciones técnicas implementables
+updated_at: YYYY-MM-DD-HH-MM-SS
 ```
 
 # Especificación de Requisitos Técnicos - [Proyecto]

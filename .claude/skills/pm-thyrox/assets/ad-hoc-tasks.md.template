@@ -1,12 +1,12 @@
 ```yml
-Tipo: Documentación de Tracking
-Categoría: Tareas Ad-hoc
-Versión: 1.0
-Propósito: Registro de tareas pequeñas, enhancements y mejoras ad-hoc
-Objetivo: Trackear y organizar trabajo pequeño que surge durante desarrollo
-Fecha actualización: [YYYY-MM-DD-HH-MM-SS]
-Fase: 5 - DECOMPOSE / 6 - EXECUTE
-Activar si: tareas pequeñas (<2h) que no justifican work package completo
+type: Documentación de Tracking
+category: Tareas Ad-hoc
+version: 1.0
+purpose: Registro de tareas pequeñas, enhancements y mejoras ad-hoc
+goal: Trackear y organizar trabajo pequeño que surge durante desarrollo
+updated_at: [YYYY-MM-DD-HH-MM-SS]
+phase: 5 - DECOMPOSE / 6 - EXECUTE
+activate_if: tareas pequeñas (<2h) que no justifican work package completo
 ```
 
 # AD_HOC_TASKS

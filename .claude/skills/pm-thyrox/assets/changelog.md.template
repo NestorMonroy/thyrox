@@ -1,10 +1,10 @@
 ```yml
-Proyecto: [Nombre del proyecto]
-Versión: [X.Y.Z]
-Fecha: [YYYY-MM-DD-HH-MM-SS]
+project: [Nombre del proyecto]
+version: [X.Y.Z]
+created_at: [YYYY-MM-DD-HH-MM-SS]
 Commits incluidos: [N]
-Autor: [Nombre]
-Rama: [nombre-rama]
+author: [Nombre]
+branch: [nombre-rama]
 ```
 
 # Changelog: [Nombre del Proyecto]

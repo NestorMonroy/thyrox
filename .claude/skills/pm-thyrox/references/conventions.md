@@ -1,10 +1,10 @@
 ```yml
-Tipo: Metodología General
-Categoría: Convenciones
-Versión: 1.0
-Propósito: Define convenciones del proyecto: ubicaciones de archivos, nombrado, estructura.
-Objetivo: Asegurar consistencia en todo el proyecto.
-Fecha actualización: 2026-03-25
+type: Metodología General
+category: Convenciones
+version: 1.0
+purpose: Define convenciones del proyecto: ubicaciones de archivos, nombrado, estructura.
+goal: Asegurar consistencia en todo el proyecto.
+updated_at: 2026-03-25
 ```
 
 # PM-THYROX Conventions

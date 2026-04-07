@@ -1,10 +1,10 @@
 ```yml
-Tipo: Referencia PHASE 1: ANALYZE
-Categoría: Análisis
-Versión: 1.0
-Propósito: Guía de cómo estructurar requisitos en dos niveles (general y específico).
-Objetivo: Crear estructura clara y verificable de requisitos del sistema.
-Fecha actualización: 2026-03-25
+type: Referencia PHASE 1: ANALYZE
+category: Análisis
+version: 1.0
+purpose: Guía de cómo estructurar requisitos en dos niveles (general y específico).
+goal: Crear estructura clara y verificable de requisitos del sistema.
+updated_at: 2026-03-25
 ```
 
 # Requirements Analysis

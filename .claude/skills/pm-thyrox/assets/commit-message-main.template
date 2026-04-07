@@ -1,14 +1,14 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD-HH-MM-SS]
 Hash commit: [hash SHA-1 abreviado, ej: a1b2c3d]
-Autor: [Nombre]
-Proyecto: [Nombre del proyecto]
-Rama: [nombre-rama]
+author: [Nombre]
+project: [Nombre del proyecto]
+branch: [nombre-rama]
 Tipo cambio: [feature/fix/refactor/docs/test/chore]
-Scope: [Componente afectado]
+scope: [Componente afectado]
 Tickets relacionados: [TICKET-1, TICKET-2]
 Archivos: [N]
-Tests: [SI/NO]
+tests: [SI/NO]
 Breaking change: [SI/NO]
 ```
 

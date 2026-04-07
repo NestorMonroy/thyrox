@@ -1,10 +1,10 @@
 ```yml
-Tipo: Referencia PHASE 1: ANALYZE
-Categoría: Análisis
-Versión: 1.0
-Propósito: Guía de cómo identificar QUÉ LIMITA el sistema (técnico, plataforma, org, regulatorio, negocio).
-Objetivo: Documentar todas las limitaciones que afectan el diseño.
-Fecha actualización: 2026-03-25
+type: Referencia PHASE 1: ANALYZE
+category: Análisis
+version: 1.0
+purpose: Guía de cómo identificar QUÉ LIMITA el sistema (técnico, plataforma, org, regulatorio, negocio).
+goal: Documentar todas las limitaciones que afectan el diseño.
+updated_at: 2026-03-25
 ```
 
 # Constraints

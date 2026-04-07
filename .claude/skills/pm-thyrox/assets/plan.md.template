@@ -1,8 +1,8 @@
 ```yml
-Fecha: [YYYY-MM-DD-HH-MM-SS]
-WP: [nombre-del-work-package]
-Fase: 3 - PLAN
-Estado: [Pendiente aprobación | Aprobado — YYYY-MM-DD]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+wp: [nombre-del-work-package]
+phase: 3 - PLAN
+status: [Pendiente aprobación | Aprobado — YYYY-MM-DD]
 ```
 
 # Plan — [Título descriptivo del trabajo]

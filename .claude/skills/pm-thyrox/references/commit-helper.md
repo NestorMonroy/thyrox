@@ -1,10 +1,10 @@
 ```yml
-Tipo: Herramienta PHASE 6
-Categoría: Commits
-Versión: 1.0
-Propósito: Guía de cómo usar Conventional Commits en PHASE 6: EXECUTE.
-Objetivo: Estandarizar mensajes de commit y crear auditoría clara.
-Fecha actualización: 2026-03-25
+type: Herramienta PHASE 6
+category: Commits
+version: 1.0
+purpose: Guía de cómo usar Conventional Commits en PHASE 6: EXECUTE.
+goal: Estandarizar mensajes de commit y crear auditoría clara.
+updated_at: 2026-03-25
 ```
 
 # Commit Helper - Conventional Commits Guide

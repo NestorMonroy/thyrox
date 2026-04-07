@@ -1,9 +1,9 @@
 ```yml
-Fecha creación: [YYYY-MM-DD-HH-MM-SS]
-Proyecto: [Nombre del proyecto]
-Versión flujo: [1.0]
-Autor: [Nombre]
-Sistema: [Nombre/versión del sistema]
+created_at: [YYYY-MM-DD-HH-MM-SS]
+project: [Nombre del proyecto]
+flow_version: [1.0]
+author: [Nombre]
+system: [Nombre/versión del sistema]
 Estado flujo: [Diseño/Implementado/En testing]
 ```
 

@@ -1,10 +1,10 @@
 ```yml
-Tipo: Referencia PHASE 1: ANALYZE
-Categoría: Casos de Uso
-Versión: 1.0
-Propósito: Documentar casos de uso y flujos principales del sistema
-Objetivo: Proporcionar visión clara de interacciones usuario-sistema
-Fecha actualización: 2026-03-25
+type: Referencia PHASE 1: ANALYZE
+category: Casos de Uso
+version: 1.0
+purpose: Documentar casos de uso y flujos principales del sistema
+goal: Proporcionar visión clara de interacciones usuario-sistema
+updated_at: 2026-03-25
 ```
 
 # Casos de Uso
