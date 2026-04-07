@@ -37,18 +37,18 @@ Tareas paralelizables: 6
 
 ### FASE 2 — Convenciones de sesión paralela
 
-- [ ] [T-004] [P] Documentar protocolo ROADMAP solo lectura en `references/conventions.md` — sección "ROADMAP durante ejecución paralela" (R-003)
-- [ ] [T-005] [P] Documentar ciclo de vida de `now-{agent-id}.md` (inicio, trabajo, cierre) en `references/conventions.md` (R-002, R-005)
-- [ ] [T-006] Documentar protocolo de handoff de sesión paso a paso en `references/conventions.md` — sección "Handoff y recuperación" (R-005)
-- [ ] [T-012] Documentar recuperación de claims abandonados (timeout/crash) en `references/conventions.md` — sección "Recovery de tareas bloqueadas" (R-005)
+- [x] [T-004] [P] Documentar protocolo ROADMAP solo lectura en `references/conventions.md` — sección "ROADMAP durante ejecución paralela" (R-003)
+- [x] [T-005] [P] Documentar ciclo de vida de `now-{agent-id}.md` (inicio, trabajo, cierre) en `references/conventions.md` (R-002, R-005)
+- [x] [T-006] Documentar protocolo de handoff de sesión paso a paso en `references/conventions.md` — sección "Handoff y recuperación" (R-005)
+- [x] [T-012] Documentar recuperación de claims abandonados (timeout/crash) en `references/conventions.md` — sección "Recovery de tareas bloqueadas" (R-005)
 
 > T-004 y T-005 son paralelas entre sí. T-006 y T-012 dependen de T-005 (el protocolo de cierre es prerequisito para hablar de recovery). T-012 puede ejecutarse en paralelo con T-006 si se coordinan las secciones.
 
 ### FASE 3 — Namespacing y script
 
-- [ ] [T-007] Documentar namespacing de ADRs por capa en `references/conventions.md` — sección "ADRs por capa" (R-004)
-- [ ] [T-008] [P] Actualizar `scripts/project-status.sh` para leer glob `now-*.md` con retrocompatibilidad (R-006)
-- [ ] [T-009] [P] Actualizar `CLAUDE.md` — reflejar `adr_path` por defecto para proyectos nuevos (R-004)
+- [x] [T-007] Documentar namespacing de ADRs por capa en `references/conventions.md` — sección "ADRs por capa" (R-004)
+- [x] [T-008] [P] Actualizar `scripts/project-status.sh` para leer glob `now-*.md` con retrocompatibilidad (R-006)
+- [x] [T-009] [P] Actualizar `CLAUDE.md` — reflejar `adr_path` por defecto para proyectos nuevos (R-004)
 
 > T-007 debe completarse antes de T-009 (CLAUDE.md referencia el namespacing). T-008 y T-009 son paralelas entre sí.
 
