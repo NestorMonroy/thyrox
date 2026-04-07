@@ -150,6 +150,9 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
    porque esto permite detectar tareas huérfanas (sin requisito) o requisitos sin cobertura.
    Formato: `- [ ] [T-NNN] Descripción (R-N)`
 4. Marcar tareas paralelas [P]
+<!-- SECTION OWNER: parallel-agent-conventions -->
+   En ejecución paralela: usar estado `[~]` para reclamar tareas antes de ejecutarlas. Ver [conventions](references/conventions.md#parallel-agent-execution).
+<!-- END SECTION: parallel-agent-conventions -->
 5. Definir checkpoints de validación
    Si hay >50 issues antes de descomponer: [categorization-plan.md.template](assets/categorization-plan.md.template) — categorizar primero para identificar grupos naturales
 
@@ -162,6 +165,9 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 Commits frecuentes con mensajes descriptivos crean un historial navegable.
 
 1. Tomar siguiente tarea pendiente de `work/.../*-task-plan.md` (checkbox `- [ ]`) sin bloqueos
+<!-- SECTION OWNER: parallel-agent-conventions -->
+   En ejecución paralela: escribir estado en `context/now-{agent-id}.md`, no en `now.md`. Ver [conventions](references/conventions.md#parallel-agent-execution).
+<!-- END SECTION: parallel-agent-conventions -->
 2. REQUERIDO al inicio de sesión: Crear o actualizar `work/../{nombre-wp}-execution-log.md` usando [execution-log.md.template](assets/execution-log.md.template)
 3. Implementar el cambio
 4. Si la implementación falla, crear `context/errors/ERR-NNN-descripcion.md` usando [error-report.md.template](assets/error-report.md.template) antes de reintentar con otro approach
