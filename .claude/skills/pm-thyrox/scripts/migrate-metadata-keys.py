@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """
-migrate-metadata-keys.py — Migra keys de metadata YAML de español a inglés.
+migrate-metadata-keys.py — Migra keys de metadata YAML en frontmatter markdown.
 
-Transforma únicamente el bloque frontmatter YAML (entre ```yml y ```)
-sin tocar el cuerpo del documento markdown.
+Transforma keys en español (con espacios/tildes) a inglés snake_case.
+Solo modifica el bloque frontmatter (entre ```yml y ```).
+El cuerpo del documento NO se toca.
 
 Uso:
-  python migrate-metadata-keys.py --layer 1 [--dry-run]
-  python migrate-metadata-keys.py --layer 1 --layer 3 [--dry-run]
-  python migrate-metadata-keys.py --file path/to/file.md [--dry-run]
-  python migrate-metadata-keys.py --all [--dry-run]
-  python migrate-metadata-keys.py --verify-only [--layer N | --all]
+    python scripts/migrate-metadata-keys.py --layer 1 [--dry-run]
+    python scripts/migrate-metadata-keys.py --layer 1 --layer 2 [--dry-run]
+    python scripts/migrate-metadata-keys.py --file path/to/file.md [--dry-run]
+    python scripts/migrate-metadata-keys.py --all [--dry-run]
+    python scripts/migrate-metadata-keys.py --verify-only [--layer N | --all]
 """
 
 import argparse
@@ -18,49 +19,12 @@ import re
 import sys
 from pathlib import Path
 
-# Raíz del proyecto — dos niveles arriba de scripts/
-ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
-
-ASSETS_DIR     = ROOT / ".claude/skills/pm-thyrox/assets"
-REFERENCES_DIR = ROOT / ".claude/skills/pm-thyrox/references"
-SKILL_FILE     = ROOT / ".claude/skills/pm-thyrox/SKILL.md"
-CONVENTIONS    = ROOT / ".claude/skills/pm-thyrox/references/conventions.md"
-CLAUDE_MD      = ROOT / ".claude/CLAUDE.md"
-CONTEXT_ACTIVE = [
-    ROOT / ".claude/context/focus.md",
-    ROOT / ".claude/context/now.md",
-    ROOT / ".claude/context/project-state.md",
-    ROOT / ".claude/context/technical-debt.md",
-    ROOT / ".claude/context/decisions.md",
-]
-ADRS_DIR       = ROOT / ".claude/context/decisions"
-ERRORS_DIR     = ROOT / ".claude/context/errors"
-WP_ACTIVE      = ROOT / ".claude/context/work/2026-04-05-01-09-22-thyrox-capabilities-integration"
-
-# Capas de migración
-LAYERS = {
-    1: lambda: list(ASSETS_DIR.glob("*.template")),
-    2: lambda: list(REFERENCES_DIR.glob("*.md")),
-    3: lambda: [SKILL_FILE, CONVENTIONS],
-    4: lambda: [f for f in CONTEXT_ACTIVE if f.exists()],
-    5: lambda: sorted(ADRS_DIR.glob("adr-*.md")),
-    6: lambda: sorted(ERRORS_DIR.glob("ERR-*.md")),
-    7: lambda: list(WP_ACTIVE.rglob("*.md")) if WP_ACTIVE.exists() else [],
-}
-
-# Patrones para detectar keys en español en frontmatter
-SPANISH_KEY_PATTERNS = [
-    r"^Tipo:", r"^Categoría:", r"^Versión:", r"^Propósito:", r"^Objetivo:",
-    r"^Fase:", r"^Estado:", r"^Autor:", r"^Proyecto:", r"^Activar si:",
-    r"^Fecha ", r"^Fecha:", r"^Última ", r"^Total ", r"^Responsable",
-    r"^Revisor", r"^Aprobado por:", r"^Validado por:", r"^Severidad:",
-    r"^Clasificación:", r"^Riesgos ", r"^Estimacion ",
-]
-
-# KEY_MAP: español → inglés
-# ORDEN CRÍTICO: keys más largos primero para evitar sustituciones parciales
-# (ej: "Fecha creación" debe aplicarse antes que "Fecha")
-KEY_MAP_RAW = {
+# ---------------------------------------------------------------------------
+# KEY MAP — español → inglés
+# Orden: los keys más largos primero para evitar sustituciones parciales.
+# Ejemplo: "Fecha creación" debe procesarse antes que "Fecha".
+# ---------------------------------------------------------------------------
+_KEY_MAP_RAW = {
     # Grupo A — universales
     "Tipo": "type",
     "Categoría": "category",
@@ -83,10 +47,9 @@ KEY_MAP_RAW = {
     "Epic": "epic",
     "Feature": "feature",
     "Rama": "branch",
-
-    # Grupo B — fechas (más largos primero es crítico aquí)
-    "Fecha última actualización": "updated_at",
+    # Grupo B — fechas (más largos primero — crítico)
     "Fecha creación tareas": "created_at",
+    "Fecha última actualización": "updated_at",
     "Fecha inicio categorización": "started_at",
     "Fecha inicio correcciones": "started_at",
     "Fecha fin correcciones": "ended_at",
@@ -101,16 +64,15 @@ KEY_MAP_RAW = {
     "Última actualización": "updated_at",
     "Fecha completación": "completed_at",
     "Fecha estrategia": "created_at",
-    "Fecha creación": "created_at",
     "Fecha documento": "created_at",
+    "Fecha creación": "created_at",
     "Fecha análisis": "created_at",
     "Fecha diseño": "created_at",
-    "Fecha cierre": "closed_at",
     "Fecha inicio": "started_at",
+    "Fecha cierre": "closed_at",
     "Fecha plan": "created_at",
     "Fecha fin": "ended_at",
     "Fecha": "created_at",
-
     # Grupo C — contadores
     "Total issues a categorizar": "total_issues",
     "Total issues encontrados": "total_issues_found",
@@ -122,289 +84,301 @@ KEY_MAP_RAW = {
     "Riesgos mitigados": "mitigated_risks",
     "Riesgos abiertos": "open_risks",
     "Riesgos cerrados": "closed_risks",
-
     # Grupo D — roles
     "Responsable análisis": "analysis_owner",
     "Responsable implementación": "implementation_owner",
     "Responsable proceso": "process_owner",
     "Revisor designado": "assigned_reviewer",
     "Coordinación con": "coordination_with",
-    "Responsable": "owner",
-    "Revisor": "reviewer",
+    "Creador tareas": "tasks_creator",
     "Aprobado por": "approved_by",
     "Validado por": "validated_by",
     "Corregido por": "fixed_by",
     "Reportado por": "reported_by",
+    "Responsable": "owner",
+    "Revisor": "reviewer",
     "Ejecutor": "executor",
     "Planificador": "planner",
     "Diseñador": "designer",
     "Arquitecto": "architect",
-    "Creador tareas": "tasks_creator",
-
     # Grupo E — versiones y tracking
     "Versión Quality Goals": "quality_goals_version",
     "Versión stakeholder map": "stakeholder_map_version",
     "Versión categorización": "categorization_version",
     "Versión arquitectura": "architecture_version",
-    "Versión constraints": "constraints_version",
     "Versión constitution": "constitution_version",
+    "Versión constraints": "constraints_version",
     "Versión requisitos": "requirements_version",
     "Versión breakdown": "breakdown_version",
     "Versión análisis": "analysis_version",
     "Versión contexto": "context_version",
-    "Versión diseño": "design_version",
     "Versión reporte": "report_version",
+    "Versión diseño": "design_version",
     "Versión flujo": "flow_version",
     "Versión docs": "docs_version",
+    "Stack versión": "stack_version",
+    "ID work package": "work_package_id",
     "Fase de origen": "source_phase",
     "Fases activas": "active_phases",
     "Fase actual": "current_phase",
-    "ID work package": "work_package_id",
-    "Stack versión": "stack_version",
-
-    # Grupo G — keys faltantes detectados en verify
-    "Última actualización integración": "integration_updated_at",
-    "Cambios relacionados a": "related_to",
-    "Sistemas externos": "external_systems",
-    "Última revisión": "last_reviewed_at",
-    "Total archivos": "total_files",
-    "Archivos modificados": "files_modified",
-    "Archivos eliminados": "files_deleted",
-    "Archivos agregados": "files_added",
-    "Archivos docs": "docs_files",
-    "Tests añadidos": "tests_added",
-    "Tests pasando": "tests_passing",
-    "Tests": "tests",
-
-    # Grupo F — específicos de templates
+    # Grupo F — específicos
     "Tiempo total sesión": "total_session_time",
     "Issues tratados hoy": "issues_handled_today",
     "Issues en progreso": "in_progress_issues",
-    "Issues demorados": "delayed_issues",
     "Issues pendientes": "pending_issues",
+    "Issues demorados": "delayed_issues",
     "Issues resueltos": "resolved_issues",
-    "Dependencias críticas": "critical_dependencies",
-    "Dependencias externas": "external_dependencies",
+    "Siguiente sesión": "next_session",
     "Tasa resolución": "resolution_rate",
     "Período evaluación": "evaluation_period",
     "Período vigencia": "validity_period",
+    "Dependencias críticas": "critical_dependencies",
+    "Dependencias externas": "external_dependencies",
+    "Clasificación": "classification",
     "Budget utilizado": "budget_used",
     "Horas dedicadas": "hours_spent",
-    "Siguiente sesión": "next_session",
-    "Clasificación": "classification",
-    "Componentes": "components",
-    "Componente": "component",
     "Severidad": "severity",
     "Recurrencia": "recurrence",
+    "Componentes": "components",
+    "Componente": "component",
 }
 
 # Ordenar por longitud descendente — crítico para evitar sustituciones parciales
-KEY_MAP = dict(sorted(KEY_MAP_RAW.items(), key=lambda x: len(x[0]), reverse=True))
+KEY_MAP = dict(
+    sorted(_KEY_MAP_RAW.items(), key=lambda x: len(x[0]), reverse=True)
+)
+
+# ---------------------------------------------------------------------------
+# Capas de migración
+# ---------------------------------------------------------------------------
+REPO_ROOT = Path(__file__).parent.parent.parent  # .claude/skills/pm-thyrox/scripts/ → repo root
+
+LAYERS = {
+    1: {
+        "name": "templates (assets/)",
+        "patterns": [".claude/skills/pm-thyrox/assets/*.template",
+                     ".claude/skills/pm-thyrox/assets/*.md.template"],
+    },
+    2: {
+        "name": "references/",
+        "patterns": [".claude/skills/pm-thyrox/references/*.md"],
+    },
+    4: {
+        "name": "context activo",
+        "files": [
+            ".claude/context/focus.md",
+            ".claude/context/now.md",
+            ".claude/context/project-state.md",
+            ".claude/context/technical-debt.md",
+            ".claude/context/decisions.md",
+        ],
+    },
+    5: {
+        "name": "ADRs",
+        "patterns": [".claude/context/decisions/adr-*.md"],
+    },
+    6: {
+        "name": "error reports",
+        "patterns": [".claude/context/errors/ERR-*.md"],
+    },
+    7: {
+        "name": "WP activo thyrox-capabilities-integration",
+        "patterns": [
+            ".claude/context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/**/*.md",
+            ".claude/context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/*.md",
+        ],
+    },
+}
+
+# ---------------------------------------------------------------------------
+# Core: extrae y transforma el frontmatter
+# ---------------------------------------------------------------------------
+FRONTMATTER_RE = re.compile(
+    r"^(```yml\n)(.*?)(^```)", re.MULTILINE | re.DOTALL
+)
 
 
-def extract_frontmatter(content: str) -> tuple[str, str, str]:
+def migrate_frontmatter(content: str) -> tuple[str, list[str]]:
     """
-    Separa el contenido en (before_fm, frontmatter_block, after_fm).
-    El frontmatter es el bloque entre ```yml (o ```yaml) y el ``` de cierre.
-    Si no hay frontmatter, retorna ("", "", content).
+    Transforma los keys del frontmatter YAML. Retorna (nuevo_contenido, cambios).
+    Si no hay frontmatter, retorna el contenido original sin cambios.
     """
-    pattern = re.compile(r"^(```(?:yml|yaml)\n)(.*?)(^```\n?)", re.MULTILINE | re.DOTALL)
-    match = pattern.search(content)
+    match = FRONTMATTER_RE.search(content)
     if not match:
-        return "", "", content
+        return content, []
 
-    start = match.start()
-    end = match.end()
-    before = content[:start]
-    fm_open = match.group(1)
-    fm_body = match.group(2)
-    fm_close = match.group(3)
-    after = content[end:]
-
-    return before, fm_open + fm_body + fm_close, after
-
-
-def migrate_frontmatter(fm_block: str) -> tuple[str, list[tuple[str, str]]]:
-    """
-    Aplica KEY_MAP al bloque frontmatter.
-    Retorna (fm_migrado, lista_de_cambios).
-    """
+    open_fence, block, close_fence = match.group(1), match.group(2), match.group(3)
+    new_block = block
     changes = []
-    lines = fm_block.split("\n")
-    new_lines = []
 
-    for line in lines:
-        new_line = line
-        for es_key, en_key in KEY_MAP.items():
-            # Matchear "EsKey: " o "EsKey:" al inicio de la línea
-            pattern = re.compile(r"^(" + re.escape(es_key) + r")(\s*:)")
-            if pattern.match(line):
-                new_line = pattern.sub(en_key + r"\2", line, count=1)
-                if new_line != line:
-                    changes.append((es_key, en_key))
-                break  # aplicar solo la primera coincidencia por línea
-        new_lines.append(new_line)
+    for old_key, new_key in KEY_MAP.items():
+        # Matchea exactamente "Old Key:" al inicio de una línea dentro del bloque
+        pattern = re.compile(r"^(" + re.escape(old_key) + r")(\s*:)", re.MULTILINE)
+        if pattern.search(new_block):
+            new_block = pattern.sub(new_key + r"\2", new_block)
+            changes.append(f"  {old_key} → {new_key}")
 
-    return "\n".join(new_lines), changes
+    new_content = content[: match.start()] + open_fence + new_block + close_fence + content[match.end():]
+    return new_content, changes
 
 
-def migrate_file(path: Path, dry_run: bool = False) -> tuple[bool, list[tuple[str, str]]]:
-    """
-    Migra un archivo. Retorna (modificado, cambios).
-    """
+# ---------------------------------------------------------------------------
+# Operaciones sobre archivos
+# ---------------------------------------------------------------------------
+
+def process_file(path: Path, dry_run: bool) -> tuple[bool, list[str]]:
+    """Procesa un archivo. Retorna (modificado, lista_de_cambios)."""
     try:
-        content = path.read_text(encoding="utf-8")
-    except UnicodeDecodeError:
-        try:
-            content = path.read_text(encoding="latin-1")
-        except Exception as e:
-            print(f"  ERROR leyendo {path}: {e}")
-            return False, []
+        original = path.read_text(encoding="utf-8")
     except Exception as e:
-        print(f"  ERROR leyendo {path}: {e}")
+        print(f"  ERROR leyendo {path}: {e}", file=sys.stderr)
         return False, []
 
-    before, fm_block, after = extract_frontmatter(content)
-
-    if not fm_block:
-        return False, []
-
-    new_fm, changes = migrate_frontmatter(fm_block)
+    new_content, changes = migrate_frontmatter(original)
 
     if not changes:
         return False, []
 
-    new_content = before + new_fm + after
-
     if dry_run:
-        print(f"\n  {path.relative_to(ROOT)}")
-        for es_key, en_key in changes:
-            print(f"    '{es_key}:' -> '{en_key}:'")
+        print(f"\n[DRY-RUN] {path.relative_to(REPO_ROOT)}")
+        for c in changes:
+            print(c)
     else:
         path.write_text(new_content, encoding="utf-8")
+        print(f"  ✓ {path.relative_to(REPO_ROOT)}")
+        for c in changes:
+            print(c)
 
     return True, changes
 
 
-def verify_files(files: list[Path]) -> list[Path]:
-    """
-    Verifica que los archivos no tengan keys en español en frontmatter.
-    Retorna lista de archivos con residuos.
-    """
-    problematic = []
+def get_files_for_layer(layer_num: int) -> list[Path]:
+    """Resuelve los archivos para una capa dada."""
+    layer = LAYERS.get(layer_num)
+    if not layer:
+        print(f"ERROR: capa {layer_num} no definida.", file=sys.stderr)
+        return []
+
+    files = []
+    if "files" in layer:
+        for f in layer["files"]:
+            p = REPO_ROOT / f
+            if p.exists():
+                files.append(p)
+            else:
+                print(f"  WARNING: {f} no encontrado", file=sys.stderr)
+    if "patterns" in layer:
+        for pattern in layer["patterns"]:
+            files.extend(REPO_ROOT.glob(pattern))
+
+    return sorted(set(files))
+
+
+# ---------------------------------------------------------------------------
+# Verificación
+# ---------------------------------------------------------------------------
+SPANISH_KEY_PATTERN = re.compile(
+    r"^(Tipo|Categoría|Versión|Propósito|Objetivo|Fase|Estado|Autor|Proyecto|"
+    r"Fecha|Última actualización|ID work package|Total |Requisitos|Estimacion|"
+    r"Riesgos|Responsable|Revisor|Aprobado|Validado|Corregido|Reportado|"
+    r"Ejecutor|Planificador|Diseñador|Arquitecto|Creador|Coordinación|"
+    r"Versión |Stack versión|Fase actual|Fase de origen|Fases activas|"
+    r"Tiempo total|Issues |Siguiente sesión|Tasa|Período|Dependencias|"
+    r"Clasificación|Budget|Horas|Severidad|Recurrencia|Componente|"
+    r"Activar si)\s*:",
+    re.MULTILINE,
+)
+
+
+def verify_files(files: list[Path]) -> int:
+    """Verifica que los archivos no tengan keys en español. Retorna nº de archivos con problemas."""
+    issues = 0
     for path in files:
         try:
             content = path.read_text(encoding="utf-8")
         except Exception:
             continue
-        _, fm_block, _ = extract_frontmatter(content)
-        if not fm_block:
+        # Solo verificar dentro del frontmatter
+        match = FRONTMATTER_RE.search(content)
+        if not match:
             continue
-        for pattern in SPANISH_KEY_PATTERNS:
-            if re.search(pattern, fm_block, re.MULTILINE):
-                problematic.append(path)
-                break
-    return problematic
+        block = match.group(2)
+        hits = SPANISH_KEY_PATTERN.findall(block)
+        if hits:
+            print(f"  FAIL {path.relative_to(REPO_ROOT)}: {hits}")
+            issues += 1
+    return issues
 
 
-def get_layer_files(layer: int) -> list[Path]:
-    if layer not in LAYERS:
-        print(f"ERROR: capa {layer} no existe. Capas válidas: 1-7")
-        sys.exit(1)
-    return LAYERS[layer]()
-
-
-def run_migration(files: list[Path], dry_run: bool, label: str) -> int:
-    """Ejecuta la migración sobre una lista de archivos. Retorna count de modificados."""
-    modified = 0
-    if dry_run:
-        print(f"\n[DRY-RUN] {label} — {len(files)} archivos")
-    else:
-        print(f"\n[APPLY] {label} — {len(files)} archivos")
-
-    for path in sorted(files):
-        changed, changes = migrate_file(path, dry_run=dry_run)
-        if changed:
-            modified += 1
-            if not dry_run:
-                print(f"  OK  {path.relative_to(ROOT)} ({len(changes)} keys migrados)")
-
-    label_action = "cambios detectados" if dry_run else "archivos modificados"
-    print(f"  --> {modified} {label_action}")
-    return modified
-
-
-def run_verify(files: list[Path], label: str) -> bool:
-    """Verifica ausencia de keys en español. Retorna True si todo OK."""
-    problematic = verify_files(files)
-    if problematic:
-        print(f"\n[VERIFY FAIL] {label} — {len(problematic)} archivos con keys en español:")
-        for p in problematic:
-            print(f"  {p.relative_to(ROOT)}")
-        return False
-    else:
-        print(f"\n[VERIFY OK] {label} — cero keys en español")
-        return True
-
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Migra keys YAML de español a inglés en frontmatter markdown.")
-    parser.add_argument("--layer", type=int, action="append", metavar="N",
-                        help="Capa(s) a migrar (1-7). Puede repetirse: --layer 1 --layer 2")
-    parser.add_argument("--file", type=Path, metavar="PATH",
-                        help="Migrar un archivo específico")
+    parser = argparse.ArgumentParser(description="Migra keys de metadata YAML español → inglés")
+    parser.add_argument("--layer", type=int, action="append", dest="layers",
+                        help="Número de capa a procesar (puede repetirse: --layer 1 --layer 2)")
+    parser.add_argument("--file", type=Path, dest="single_file",
+                        help="Procesar un archivo específico")
     parser.add_argument("--all", action="store_true",
-                        help="Migrar todas las capas en orden")
+                        help="Procesar todas las capas en orden")
     parser.add_argument("--dry-run", action="store_true",
-                        help="Mostrar cambios sin aplicar")
+                        help="Mostrar cambios sin escribir archivos")
     parser.add_argument("--verify-only", action="store_true",
-                        help="Solo verificar, sin migrar")
-
+                        help="Solo verificar, no migrar")
     args = parser.parse_args()
 
-    if not any([args.layer, args.file, args.all]):
+    if not any([args.layers, args.single_file, args.all]):
         parser.print_help()
         sys.exit(1)
 
-    all_ok = True
+    dry_run = args.dry_run
+    if dry_run:
+        print("=== DRY-RUN — no se escriben archivos ===\n")
 
-    if args.file:
-        path = args.file if args.file.is_absolute() else ROOT / args.file
-        if not path.exists():
-            print(f"ERROR: archivo no encontrado: {path}")
-            sys.exit(1)
-        if args.verify_only:
-            all_ok = run_verify([path], str(path.relative_to(ROOT)))
-        else:
-            run_migration([path], args.dry_run, str(path.relative_to(ROOT)))
-
+    # Recolectar archivos según modo
+    if args.single_file:
+        files = [args.single_file.resolve()]
     elif args.all:
-        layers = sorted(LAYERS.keys())
-        for layer in layers:
-            files = get_layer_files(layer)
-            label = f"Capa {layer}"
-            if args.verify_only:
-                ok = run_verify(files, label)
-                all_ok = all_ok and ok
-            else:
-                run_migration(files, args.dry_run, label)
-                if not args.dry_run:
-                    run_verify(files, label)
-
-    elif args.layer:
-        for layer in sorted(set(args.layer)):
-            files = get_layer_files(layer)
-            label = f"Capa {layer}"
-            if args.verify_only:
-                ok = run_verify(files, label)
-                all_ok = all_ok and ok
-            else:
-                run_migration(files, args.dry_run, label)
-                if not args.dry_run:
-                    run_verify(files, label)
+        files = []
+        for layer_num in sorted(LAYERS.keys()):
+            files.extend(get_files_for_layer(layer_num))
+    else:
+        files = []
+        for layer_num in sorted(args.layers):
+            layer_files = get_files_for_layer(layer_num)
+            layer_name = LAYERS.get(layer_num, {}).get("name", f"capa {layer_num}")
+            print(f"\n--- Capa {layer_num}: {layer_name} ({len(layer_files)} archivos) ---")
+            files.extend(layer_files)
 
     if args.verify_only:
-        sys.exit(0 if all_ok else 1)
+        print("\n=== VERIFICACIÓN ===")
+        issues = verify_files(files)
+        if issues == 0:
+            print(f"  OK: cero keys en español en {len(files)} archivos")
+        else:
+            print(f"\n  FAIL: {issues} archivo(s) con keys en español")
+            sys.exit(1)
+        return
+
+    # Migrar
+    total_modified = 0
+    for path in files:
+        modified, _ = process_file(path, dry_run)
+        if modified:
+            total_modified += 1
+
+    action = "modificarían" if dry_run else "modificados"
+    print(f"\n{'DRY-RUN: ' if dry_run else ''}Total {action}: {total_modified}/{len(files)} archivos")
+
+    # Verificación post-migración (solo si no es dry-run)
+    if not dry_run and total_modified > 0:
+        print("\n=== Verificación post-migración ===")
+        issues = verify_files(files)
+        if issues == 0:
+            print(f"  OK: cero keys en español")
+        else:
+            print(f"  WARNING: {issues} archivo(s) con keys residuales — revisar manualmente")
 
 
 if __name__ == "__main__":
