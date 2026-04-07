@@ -36,20 +36,20 @@ Fecha inicio estimada: 2026-04-07
 
 ### FASE 2 — Linter
 
-- [ ] [T-002] Crear `scripts/lint-agents.py` con validación de campos obligatorios, prohibidos y calidad de description (R-007)
+- [x] [T-002] Crear `scripts/lint-agents.py` con validación de campos obligatorios, prohibidos y calidad de description (R-007)
 
 > Depende de T-001 (necesita spec aprobada para implementar reglas).
 
 ### FASE 3 — Correcciones de agentes
 
-- [ ] [T-004] Corregir `nodejs-expert.md`: eliminar `model`, completar `description` con patrón `{qué hace}. Usar cuando {condición}.` (R-004)
-- [ ] [T-005] Corregir `react-expert.md`: eliminar `model`, completar `description` con patrón `{qué hace}. Usar cuando {condición}.` (R-004)
+- [x] [T-004] Corregir `nodejs-expert.md`: eliminar `model`, completar `description` con patrón `{qué hace}. Usar cuando {condición}.` (R-004)
+- [x] [T-005] Corregir `react-expert.md`: eliminar `model`, completar `description` con patrón `{qué hace}. Usar cuando {condición}.` (R-004)
 
 > T-004 y T-005 dependen de T-001 (spec aprobada). Pueden ejecutarse en paralelo [P] entre sí.
 
 ### FASE 4 — Generador
 
-- [ ] [T-006] Actualizar `skill-generator.md`: agregar instrucción explícita para no propagar el campo `model` al generar agentes nativos (R-005)
+- [x] [T-006] Actualizar `skill-generator.md`: agregar instrucción explícita para no propagar el campo `model` al generar agentes nativos (R-005)
 
 > Depende de T-001 (spec aprobada).
 
