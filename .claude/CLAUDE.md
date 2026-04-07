@@ -67,8 +67,7 @@ SIEMPRE seguir este flujo. NO omitir pasos.
 
 ## Configuración del Proyecto
 
-adr_path: .claude/context/decisions/   # THYROX mantiene ADRs en .claude/ — retrocompat
-# Default para nuevos proyectos: docs/architecture/decisions/
+adr_path: .claude/context/decisions/   # THYROX: retrocompat. Nuevos proyectos: usar subdirectorios por capa (global/, api/, db/, ui/, deploy/, framework/)
 
 ## Para más contexto
 
