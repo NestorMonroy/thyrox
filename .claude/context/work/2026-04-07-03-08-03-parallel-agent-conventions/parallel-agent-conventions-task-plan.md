@@ -54,8 +54,8 @@ Tareas paralelizables: 6
 
 ### FASE 4 — Tareas gateadas [GATE WP-2]
 
-- [ ] [T-010] [GATE WP-2] task-executor — claim protocol (R-007)
-- [ ] [T-011] [GATE WP-2] task-planner — awareness de claims (R-008)
+- [~] [T-010] [GATE WP-2] task-executor — claim protocol (R-007) @task-executor (claimed: 2026-04-07 05:31:43)
+- [~] [T-011] [GATE WP-2] task-planner — awareness de claims (R-008) @task-executor (claimed: 2026-04-07 05:31:43)
 
 > No ejecutar hasta que WP-2 (`agent-format-spec`) apruebe su spec formal.
 
