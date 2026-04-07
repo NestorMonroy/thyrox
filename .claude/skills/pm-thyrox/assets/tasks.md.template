@@ -30,6 +30,25 @@ Estimacion total: YY horas
 Fecha inicio estimada: YYYY-MM-DD-HH-MM-SS
 Fecha fin estimada: YYYY-MM-DD-HH-MM-SS
 
+## Estados de tarea
+
+| Estado | Formato | Significado |
+|--------|---------|-------------|
+| `[ ]` | `- [ ] [T-NNN] desc` | Pendiente — disponible para cualquier agente |
+| `[~]` | `- [~] [T-NNN] desc @agent-id (claimed: YYYY-MM-DD HH:MM:SS)` | En progreso — reclamada por un agente |
+| `[x]` | `- [x] [T-NNN] desc @agent-id (done: YYYY-MM-DD HH:MM:SS)` | Completada |
+
+**Protocolo de claim (ejecución paralela):**
+1. Leer task-plan — tomar la primera tarea en `[ ]`
+2. Cambiar a `[~]` con `@{agent-id}` y timestamp actual
+3. Hacer commit antes de ejecutar
+4. Al completar: cambiar a `[x]` con timestamp de done
+5. Si se abandona: revertir a `[ ]` con commit `fix: release abandoned claim T-NNN`
+
+**Recovery de claims huérfanos:**
+Un claim `[~]` con timestamp > 30 min sin commit del agente puede considerarse abandonado.
+Verificar `context/now-{agent-id}.md` — si `status: closed` o no existe, liberar el claim.
+
 ## Fases de Implementacion
 
 ### FASE: Preparacion (Estimacion: Xh)
