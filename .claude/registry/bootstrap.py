@@ -6,9 +6,9 @@ Genera agentes nativos en .claude/agents/ a partir del registry YAML + templates
 y actualiza .mcp.json con los MCP servers de Thyrox.
 
 Uso:
-    python registry/bootstrap.py --stack react,nodejs,postgresql
-    python registry/bootstrap.py --stack react --force
-    python registry/bootstrap.py --stack react --model claude
+    python .claude/registry/bootstrap.py --stack react,nodejs,postgresql
+    python .claude/registry/bootstrap.py --stack react --force
+    python .claude/registry/bootstrap.py --stack react --model claude
 """
 
 import argparse
@@ -21,7 +21,7 @@ from pathlib import Path
 # ─── Constantes ──────────────────────────────────────────────────────────────
 
 REGISTRY_DIR = Path(__file__).parent
-PROJECT_ROOT = REGISTRY_DIR.parent
+PROJECT_ROOT = REGISTRY_DIR.parent.parent  # .claude/registry/ → .claude/ → repo root
 AGENTS_DIR = PROJECT_ROOT / ".claude" / "agents"
 MEMORY_DIR = PROJECT_ROOT / ".claude" / "memory"
 MCP_JSON = PROJECT_ROOT / ".mcp.json"
@@ -44,14 +44,14 @@ CORE_AGENTS = ["task-planner", "task-executor", "tech-detector", "skill-generato
 MCP_SERVERS = {
     "thyrox-memory": {
         "command": "python",
-        "args": ["registry/mcp/memory_server.py"],
+        "args": [".claude/registry/mcp/memory_server.py"],
         "env": {
             "MEMORY_INDEX_PATH": ".claude/memory/thyrox.faiss"
         }
     },
     "thyrox-executor": {
         "command": "python",
-        "args": ["registry/mcp/executor_server.py"]
+        "args": [".claude/registry/mcp/executor_server.py"]
     }
 }
 
