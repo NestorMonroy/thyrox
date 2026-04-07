@@ -1,7 +1,6 @@
 ---
 name: nodejs-expert
-description: >
-model: claude
+description: Experto en Node.js, Express y ecosistema npm. Usar cuando el usuario necesite implementar APIs REST, middlewares, gestión de paquetes o depurar código Node.js.
 tools:
   - Read
   - Write
