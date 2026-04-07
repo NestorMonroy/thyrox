@@ -553,4 +553,19 @@ Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibil
 
 ---
 
-**Última actualización:** 2026-04-07 (FASE 13 completada — parallel agent conventions + agent format spec v1.1.0)
+---
+
+## FASE 14: Correcciones al flujo — post-mortem FASE 13 (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-05-41-41-flow-corrections/`
+**Origen:** 8 gaps detectados durante dogfooding de ejecución paralela
+
+- [x] `SKILL.md` Phase 6: rol coordinador + pre-flight scope check + claim `[~]` obligatorio (2026-04-07)
+- [x] `SKILL.md` Phase 7: single-agent por diseño en ejecución paralela (2026-04-07)
+- [x] `conventions.md`: límite 800 palabras para prompts de agentes (2026-04-07)
+- [x] `conventions.md`: sufijo -a/-b para WPs creados en el mismo segundo (2026-04-07)
+- [x] `conventions.md`: protocolo Write bloqueado — agente reporta contenido, coordinador crea archivo (2026-04-07)
+
+---
+
+**Última actualización:** 2026-04-07 (FASE 14 completada — flow corrections post-mortem v1.1.1)
