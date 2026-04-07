@@ -11,19 +11,19 @@ CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
 echo "=== THYROX Project Status ==="
 echo ""
 
-# 1. Session state from now.md
-if [ -f "${CONTEXT_DIR}/now.md" ]; then
-    PHASE=$(grep "^phase:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/phase: *//' || echo "unknown")
-    CURRENT_WORK=$(grep "^current_work:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/current_work: *//' || echo "none")
-    COLD_BOOT=$(grep "^cold_boot:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/cold_boot: *//' || echo "unknown")
-    BLOCKERS=$(grep "^blockers:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/blockers: *//' || echo "[]")
-
-    echo "Phase:        $PHASE"
-    echo "Work package: $CURRENT_WORK"
-    echo "Cold boot:    $COLD_BOOT"
-    echo "Blockers:     $BLOCKERS"
-else
-    echo "⚠️  now.md not found"
+# 1. Session state — parallel or single agent
+# Estado de agentes activos (paralelo o single)
+if ls "${CONTEXT_DIR}"/now-*.md 2>/dev/null | grep -q .; then
+    echo "=== Agentes activos ==="
+    for f in "${CONTEXT_DIR}"/now-*.md; do
+        agent_id=$(basename "$f" .md | sed 's/now-//')
+        status=$(grep "^status:" "$f" 2>/dev/null | head -1 | cut -d' ' -f2-)
+        work=$(grep "^current_work:" "$f" 2>/dev/null | head -1 | cut -d' ' -f2-)
+        echo "  $agent_id: $status — $work"
+    done
+elif [ -f "${CONTEXT_DIR}/now.md" ]; then
+    echo "=== Estado actual (single agent) ==="
+    grep -E "^(status|current_work|phase):" "${CONTEXT_DIR}/now.md"
 fi
 
 echo ""
