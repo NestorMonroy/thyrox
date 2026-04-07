@@ -1,7 +1,7 @@
 ```yml
-Tipo: Estado Operacional
-Versión: 1.0
-Última actualización: 2026-04-06
+type: Estado Operacional
+version: 1.0
+updated_at: 2026-04-06
 ```
 
 # Focus

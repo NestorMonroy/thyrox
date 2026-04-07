@@ -1,7 +1,7 @@
 ```yml
-Tipo: Estado de Sesión
-Versión: 1.0
-Última actualización: 2026-04-06
+type: Estado de Sesión
+version: 1.0
+updated_at: 2026-04-06
 cold_boot: false
 last_session: 2026-04-06
 current_work: work/2026-04-05-01-09-22-thyrox-capabilities-integration/

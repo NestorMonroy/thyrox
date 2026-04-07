@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-005
-Fecha: 2026-03-28
-Tipo: Gap en el framework
-Severidad: Media
-Estado: Detectado
+id: ERR-005
+created_at: 2026-03-28
+type: Gap en el framework
+severity: Media
+status: Detectado
 ```
 
 # ERR-005: Fases descritas pero no ejecutables

@@ -1,8 +1,8 @@
 ```yml
-Fecha: 2026-04-05-01-09-22
-WP: thyrox-capabilities-integration
-Fase: 3 - PLAN
-Estado: Aprobado — 2026-04-05
+created_at: 2026-04-05-01-09-22
+wp: thyrox-capabilities-integration
+phase: 3 - PLAN
+status: Aprobado — 2026-04-05
 ```
 
 # Plan — THYROX: Integración de Capacidades via MCP + Native Agents

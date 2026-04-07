@@ -1,9 +1,9 @@
 ```yml
-Fecha estrategia: 2026-04-05-01-09-22
-Proyecto: THYROX — Integración de capacidades (implementación propia)
-Versión arquitectura: 3.0
-Fase: Phase 2 — SOLUTION_STRATEGY
-Estado: Aprobada
+created_at: 2026-04-05-01-09-22
+project: THYROX — Integración de capacidades (implementación propia)
+architecture_version: 3.0
+phase: Phase 2 — SOLUTION_STRATEGY
+status: Aprobada
 Fuentes:
   - thyrox-capabilities-integration-analysis.md (BRECHA-1, BRECHA-2, BRECHA-3)
   - analysis/mcp-agents-architecture-analysis.md (MCP + native agents)

@@ -1,9 +1,9 @@
 ```yml
-Proyecto: THYROX — Capacidades de integración con EvoAgentX
+project: THYROX — Capacidades de integración con EvoAgentX
 Work package: 2026-04-05-01-09-22-thyrox-capabilities-integration
-Fecha creación: 2026-04-05
-Fase actual: Phase 1 — ANALYZE
-Riesgos abiertos: 5
+created_at: 2026-04-05
+current_phase: Phase 1 — ANALYZE
+open_risks: 5
 ```
 
 # Risk Register — thyrox-capabilities-integration

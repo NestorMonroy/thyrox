@@ -1,7 +1,7 @@
 ```yml
-ID work package: 2026-04-05-01-09-22-thyrox-capabilities-integration
+work_package_id: 2026-04-05-01-09-22-thyrox-capabilities-integration
 Sub-análisis: MCP + Agentes propios — arquitectura corregida
-Fecha: 2026-04-05
+created_at: 2026-04-05
 Correcciones sobre solution-strategy v1:
   - NO usar evoagentx.agents (CustomizeAgent, AgentManager)
   - Los agentes son nuestros: Claude Code native agents (.claude/agents/*.md)

@@ -1,11 +1,11 @@
 ```yml
-Fecha creación tareas: 2026-04-06
-WP: thyrox-capabilities-integration
-Versión breakdown: 1.0
-Total tareas: 27
-Dependencias críticas: 5
-Fecha inicio prevista: 2026-04-06
-Responsable implementación: Claude
+created_at: 2026-04-06
+wp: thyrox-capabilities-integration
+breakdown_version: 1.0
+total_tasks: 27
+critical_dependencies: 5
+planned_start: 2026-04-06
+implementation_owner: Claude
 ```
 
 # Task Plan — THYROX Capabilities Integration via MCP + Native Agents

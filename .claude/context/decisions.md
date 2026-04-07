@@ -1,10 +1,10 @@
 ```yml
-Tipo: Contexto de Proyecto
-Categoría: Decisiones Arquitectónicas
-Versión: 1.0
-Propósito: Índice y registro de decisiones arquitectónicas importantes
-Objetivo: Proporcionar visión clara de decisiones técnicas del proyecto
-Fecha actualización: 2026-03-25
+type: Contexto de Proyecto
+category: Decisiones Arquitectónicas
+version: 1.0
+purpose: Índice y registro de decisiones arquitectónicas importantes
+goal: Proporcionar visión clara de decisiones técnicas del proyecto
+updated_at: 2026-03-25
 ```
 
 # Decisiones de Arquitectura

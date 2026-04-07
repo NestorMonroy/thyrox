@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-003
-Fecha: 2026-03-28
-Tipo: Gap en el framework
-Severidad: Alta
-Estado: Detectado
+id: ERR-003
+created_at: 2026-03-28
+type: Gap en el framework
+severity: Alta
+status: Detectado
 ```
 
 # ERR-003: Sin validación de especificaciones

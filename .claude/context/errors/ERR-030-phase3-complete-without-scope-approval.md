@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-030
-Fecha: 2026-04-03-00-00-00
-Fase: Phase 3 (PLAN)
-Severidad: media
-Recurrencia: primera
+id: ERR-030
+created_at: 2026-04-03-00-00-00
+phase: Phase 3 (PLAN)
+severity: media
+recurrence: primera
 ```
 
 # ERR-030: Phase 3 declarada completa sin obtener aprobación del scope

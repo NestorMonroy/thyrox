@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-024
-Fecha: 2026-03-28
-Tipo: Comprensión incorrecta
-Severidad: Alta
-Estado: Detectado
+id: ERR-024
+created_at: 2026-03-28
+type: Comprensión incorrecta
+severity: Alta
+status: Detectado
 ```
 
 # ERR-024: Propuesta de "archivar y empezar limpio" en vez de organizar

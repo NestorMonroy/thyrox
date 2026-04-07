@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-022
-Fecha: 2026-03-28
-Tipo: Violación de proceso (reincidencia de patrón)
-Severidad: Alta
-Estado: Detectado
+id: ERR-022
+created_at: 2026-03-28
+type: Violación de proceso (reincidencia de patrón)
+severity: Alta
+status: Detectado
 Relacionado: ERR-021, ADR-012
 ```
 

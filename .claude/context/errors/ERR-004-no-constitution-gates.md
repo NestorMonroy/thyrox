@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-004
-Fecha: 2026-03-28
-Tipo: Gap en el framework
-Severidad: Alta
-Estado: Detectado
+id: ERR-004
+created_at: 2026-03-28
+type: Gap en el framework
+severity: Alta
+status: Detectado
 ```
 
 # ERR-004: Sin constitution ni gates de enforcement

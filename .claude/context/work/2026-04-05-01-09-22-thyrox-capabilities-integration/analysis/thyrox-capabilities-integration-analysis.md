@@ -1,9 +1,9 @@
 ```yml
-ID work package: 2026-04-05-01-09-22-thyrox-capabilities-integration
-Fecha: 2026-04-05
+work_package_id: 2026-04-05-01-09-22-thyrox-capabilities-integration
+created_at: 2026-04-05
 Hora: 01-09-22
-Fase: Phase 1 — ANALYZE
-Tipo: Análisis de capacidades faltantes + integración EvoAgentX
+phase: Phase 1 — ANALYZE
+type: Análisis de capacidades faltantes + integración EvoAgentX
 Restricciones: Sin CLI, Sin GUI, Sin REST API (app/ layer excluido)
 Fuentes: voltfactory-adaptation-analysis.md (H-014, H-019, H-020) + evoagentx-analysis.md (H-001..H-013)
 ```

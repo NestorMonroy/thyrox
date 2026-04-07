@@ -1,9 +1,9 @@
 ```yml
-Tipo: Especificación Técnica
-WP: thyrox-capabilities-integration
-Versión: 1.0
-Fecha: 2026-04-05
-Estado: Pendiente aprobación
+type: Especificación Técnica
+wp: thyrox-capabilities-integration
+version: 1.0
+created_at: 2026-04-05
+status: Pendiente aprobación
 Fuentes: solution-strategy v3.1 (D-1..D-10), plan aprobado 2026-04-05
 SPECs: 12
 ```

@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-028
-Fecha: 2026-03-28
-Tipo: Violación de proceso
-Severidad: Baja
-Estado: Detectado
+id: ERR-028
+created_at: 2026-03-28
+type: Violación de proceso
+severity: Baja
+status: Detectado
 ```
 
 # ERR-028: Commits retrasados después de crear archivos

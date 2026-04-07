@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-006
-Fecha: 2026-03-28
-Tipo: Violación de proceso (reincidencia)
-Severidad: Alta
-Estado: Detectado
+id: ERR-006
+created_at: 2026-03-28
+type: Violación de proceso (reincidencia)
+severity: Alta
+status: Detectado
 Relacionado: ERR-002
 ```
 

@@ -32,7 +32,7 @@ echo ""
 if [ -f "${CONTEXT_DIR}/focus.md" ]; then
     echo "--- Focus ---"
     # Extract the first paragraph after # Focus header
-    sed -n '/^# Focus/,/^##/{/^#/d; /^$/d; /^```/d; /^Tipo:/d; /^Versión:/d; /^Última/d; p;}' "${CONTEXT_DIR}/focus.md" | head -3
+    sed -n '/^# Focus/,/^##/{/^#/d; /^$/d; /^```/d; /^type:/d; /^version:/d; /^updated_at:/d; p;}' "${CONTEXT_DIR}/focus.md" | head -3
 fi
 
 echo ""

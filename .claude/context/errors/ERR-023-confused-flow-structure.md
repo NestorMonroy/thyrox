@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-023
-Fecha: 2026-03-28
-Tipo: Confusión estructural
-Severidad: Crítica
-Estado: Detectado
+id: ERR-023
+created_at: 2026-03-28
+type: Confusión estructural
+severity: Crítica
+status: Detectado
 ```
 
 # ERR-023: Confusión sobre estructura del flujo de trabajo

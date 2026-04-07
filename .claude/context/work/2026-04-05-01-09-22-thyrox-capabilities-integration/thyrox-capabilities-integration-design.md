@@ -1,9 +1,9 @@
 ```yml
-Fecha diseño: 2026-04-05
-WP: thyrox-capabilities-integration
-Versión: 1.0
-Componentes: 12
-Estado: Pendiente aprobación
+created_at: 2026-04-05
+wp: thyrox-capabilities-integration
+version: 1.0
+components: 12
+status: Pendiente aprobación
 Fuentes: solution-strategy v3.1 (D-1..D-10), requirements-spec v1.0
 ```
 

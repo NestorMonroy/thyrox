@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-025
-Fecha: 2026-03-28
-Tipo: Inconsistencia en naming
-Severidad: Media
-Estado: Detectado
+id: ERR-025
+created_at: 2026-03-28
+type: Inconsistencia en naming
+severity: Media
+status: Detectado
 ```
 
 # ERR-025: Work packages creados sin timestamp completo

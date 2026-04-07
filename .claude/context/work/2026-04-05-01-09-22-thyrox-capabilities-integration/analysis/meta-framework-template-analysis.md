@@ -1,7 +1,7 @@
 ```yml
 Sub-análisis: Meta-framework como template replicable — arquitectura v3
-WP: 2026-04-05-01-09-22-thyrox-capabilities-integration
-Fecha: 2026-04-05
+wp: 2026-04-05-01-09-22-thyrox-capabilities-integration
+created_at: 2026-04-05
 Nuevos requisitos incorporados:
   - Solicitudes atómicas: descomposición obligatoria antes de ejecutar
   - Model-agnostic: funciona con Claude Y GPT

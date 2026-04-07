@@ -1,7 +1,7 @@
 ```yml
-Tipo: Contexto Persistente
-Versión: 3.0
-Fecha actualización: 2026-03-28
+type: Contexto Persistente
+version: 3.0
+updated_at: 2026-04-07 02:15:00
 ```
 
 # CLAUDE.md — THYROX

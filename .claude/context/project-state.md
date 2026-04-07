@@ -1,10 +1,10 @@
 ```yml
-Tipo: Dashboard de Proyecto
-Categoría: Estado Actual
-Versión: 2.0
-Propósito: Dashboard del proyecto THYROX - Estado actual y navegación
-Objetivo: Punto de entrada para entender estado actual y próximos pasos
-Fecha actualización: 2026-03-26
+type: Dashboard de Proyecto
+category: Estado Actual
+version: 2.0
+purpose: Dashboard del proyecto THYROX - Estado actual y navegación
+goal: Punto de entrada para entender estado actual y próximos pasos
+updated_at: 2026-03-26
 ```
 
 # Project State - THYROX

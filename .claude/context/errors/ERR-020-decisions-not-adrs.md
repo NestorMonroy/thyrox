@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-020
-Fecha: 2026-03-28
-Tipo: Violación de proceso
-Severidad: Alta
-Estado: Detectado
+id: ERR-020
+created_at: 2026-03-28
+type: Violación de proceso
+severity: Alta
+status: Detectado
 ```
 
 # ERR-020: 9 decisiones arquitectónicas sin ADRs

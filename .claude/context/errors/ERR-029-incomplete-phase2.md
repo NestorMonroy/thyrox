@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-029
-Fecha: 2026-03-28
-Fase: Phase 2 (SOLUTION_STRATEGY)
-Severidad: media
-Recurrencia: primera
+id: ERR-029
+created_at: 2026-03-28
+phase: Phase 2 (SOLUTION_STRATEGY)
+severity: media
+recurrence: primera
 ```
 
 # ERR-029: Phase 2 ejecutada sin seguir la estructura de solution-strategy.md

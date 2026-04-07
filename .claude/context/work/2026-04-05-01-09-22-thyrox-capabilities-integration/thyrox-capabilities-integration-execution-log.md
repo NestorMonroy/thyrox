@@ -1,6 +1,6 @@
 ```yml
-WP: thyrox-capabilities-integration
-Fase: Phase 6 — EXECUTE
+wp: thyrox-capabilities-integration
+phase: Phase 6 — EXECUTE
 Inicio sesión: 2026-04-06
 Branch: claude/check-merge-status-Dcyvj
 ```

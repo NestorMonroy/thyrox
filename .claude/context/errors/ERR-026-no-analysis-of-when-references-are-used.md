@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-026
-Fecha: 2026-03-28
-Tipo: Gap en documentación
-Severidad: Alta
-Estado: Detectado
+id: ERR-026
+created_at: 2026-03-28
+type: Gap en documentación
+severity: Alta
+status: Detectado
 ```
 
 # ERR-026: No hay análisis de cuándo se usa cada reference

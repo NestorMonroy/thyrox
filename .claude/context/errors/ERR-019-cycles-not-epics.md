@@ -1,9 +1,9 @@
 ```yml
-ID: ERR-019
-Fecha: 2026-03-28
-Tipo: Inconsistencia estructura/práctica
-Severidad: Media
-Estado: Detectado
+id: ERR-019
+created_at: 2026-03-28
+type: Inconsistencia estructura/práctica
+severity: Media
+status: Detectado
 ```
 
 # ERR-019: Ciclos de trabajo como análisis sueltos, no epics

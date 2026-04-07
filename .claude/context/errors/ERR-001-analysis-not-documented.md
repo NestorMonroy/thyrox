@@ -1,10 +1,10 @@
 ```yml
-ID: ERR-001
-Fecha: 2026-03-28
-Tipo: Violación de proceso
-Severidad: Media
+id: ERR-001
+created_at: 2026-03-28
+type: Violación de proceso
+severity: Media
 Phase donde ocurrió: Phase 1 (ANALYZE)
-Estado: Corregido
+status: Corregido
 ```
 
 # ERR-001: Análisis de covariancia no documentado

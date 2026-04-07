@@ -1,10 +1,10 @@
 ```yml
-ID work package: 2026-04-05-01-09-22-thyrox-capabilities-integration
-Fecha cierre: 2026-04-06
-Proyecto: THYROX
-Fase de origen: Phase 7 — TRACK
-Total lecciones: 5
-Autor: Claude
+work_package_id: 2026-04-05-01-09-22-thyrox-capabilities-integration
+closed_at: 2026-04-06
+project: THYROX
+source_phase: Phase 7 — TRACK
+total_lessons: 5
+author: Claude
 ```
 
 # Lessons Learned: THYROX Capabilities Integration — MCP + Native Agents

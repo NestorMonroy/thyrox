@@ -123,30 +123,82 @@ User stories con prioridades se mapean a fases de ejecución:
 
 ## Timestamp Format
 
-Todos los artefactos del framework usan el formato:
+Dos formatos según el contexto:
 
-```
-YYYY-MM-DD-HH-MM-SS
-```
+| Contexto | Formato | Ejemplo |
+|----------|---------|---------|
+| Nombres de directorio / filename | `YYYY-MM-DD-HH-MM-SS` (todo guiones) | `2026-04-07-01-41-49` |
+| Valores de metadata en frontmatter | `YYYY-MM-DD HH:MM:SS` (ISO 8601 local) | `2026-04-07 01:41:49` |
 
-**Aplica a:**
-- Nombres de work packages: `context/work/2026-04-04-04-16-29-feature-name/`
-- Frontmatter YAML de artefactos: `Fecha: 2026-04-04-04-16-29`
-- Campos `Fecha creación`, `Fecha actualización`, `Fecha cierre` dentro de cualquier template
-- Nombres de work-logs: `context/work-logs/2026-04-04-04-16-29-descripcion.md`
-
-**Cómo obtener el timestamp — OBLIGATORIO:**
+**Comandos — OBLIGATORIO ejecutar, nunca inventar:**
 
 ```bash
-date +%Y-%m-%d-%H-%M-%S
-# Ejemplo de output: 2026-04-06-14-32-07
+# Para directorios y filenames:
+date +%Y-%m-%d-%H-%M-%S          # → 2026-04-07-01-41-49
+
+# Para valores de metadata (created_at, updated_at, etc.):
+date '+%Y-%m-%d %H:%M:%S'        # → 2026-04-07 01:41:49
 ```
 
-SIEMPRE ejecutar este comando antes de escribir cualquier campo `Fecha` en un artefacto.
-NUNCA usar solo la fecha (`YYYY-MM-DD`) — siempre incluir la hora (`HH-MM-SS`).
-NUNCA inventar ni estimar el timestamp.
+NUNCA usar solo `YYYY-MM-DD` — siempre incluir la hora.
+NUNCA dejar `[YYYY-MM-DD HH:MM:SS]` como placeholder literal.
 
-**Regla:** Nunca dejar `[YYYY-MM-DD-HH-MM-SS]` como placeholder literal. Siempre reemplazar con timestamp real obtenido del sistema.
+---
+
+## Metadata Keys
+
+**Regla:** Keys en inglés snake_case. Valores en español.
+
+```yaml
+# Correcto:
+type: Análisis
+created_at: 2026-04-07 01:41:49
+
+# Incorrecto:
+Tipo: Análisis
+Fecha creación: 2026-04-07-01-41-49
+```
+
+**Nota legacy:** Artefactos en `context/work/` anteriores a 2026-04-07 usan keys
+en español. No se migran. Ambos formatos son entendidos por Claude.
+
+### Mapa español → inglés
+
+| Español | Inglés |
+|---------|--------|
+| `Tipo` | `type` |
+| `Categoría` | `category` |
+| `Versión` | `version` |
+| `Propósito` | `purpose` |
+| `Objetivo` | `goal` |
+| `Fase` | `phase` |
+| `Estado` | `status` |
+| `Autor` | `author` |
+| `Proyecto` | `project` |
+| `Activar si` | `activate_if` |
+| `Fecha` / `Fecha creación` | `created_at` |
+| `Fecha actualización` / `Última actualización` | `updated_at` |
+| `Fecha cierre` | `closed_at` |
+| `Fecha inicio` | `started_at` |
+| `Fecha fin` | `ended_at` |
+| `Fecha inicio prevista` | `planned_start` |
+| `Fecha fin prevista` | `planned_end` |
+| `Fecha inicio sesión` | `session_started_at` |
+| `Fecha fin sesión` | `session_ended_at` |
+| `Fecha completación` | `completed_at` |
+| `ID work package` | `work_package_id` |
+| `Total lecciones` | `total_lessons` |
+| `Total tareas` | `total_tasks` |
+| `Riesgos abiertos` | `open_risks` |
+| `Riesgos cerrados` | `closed_risks` |
+| `Responsable` | `owner` |
+| `Revisor` | `reviewer` |
+| `Aprobado por` | `approved_by` |
+| `Severidad` | `severity` |
+| `Fase actual` | `current_phase` |
+| `Fase de origen` | `source_phase` |
+
+Mapa completo en `scripts/migrate-metadata-keys.py` → `KEY_MAP`.
 
 ---
 

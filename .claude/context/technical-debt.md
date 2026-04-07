@@ -1,7 +1,7 @@
 ```yml
-Tipo: Registro de Deuda Técnica
-Fecha creación: 2026-04-03
-Última actualización: 2026-04-03
+type: Registro de Deuda Técnica
+created_at: 2026-04-03
+updated_at: 2026-04-03
 ```
 
 # Deuda Técnica — THYROX

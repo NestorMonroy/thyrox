@@ -1,9 +1,9 @@
 ```yml
-Fecha: 2026-04-05
-Feature: thyrox-capabilities-integration
-WP: context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/
+created_at: 2026-04-05
+feature: thyrox-capabilities-integration
+wp: context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/
 Iteración: 1
-Estado: Pasó
+status: Pasó
 ```
 
 # Spec Quality Checklist — thyrox-capabilities-integration

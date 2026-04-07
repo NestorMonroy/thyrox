@@ -1,10 +1,10 @@
 ```yml
-ID: ERR-002
-Fecha: 2026-03-28
-Tipo: Violación de proceso
-Severidad: Alta
+id: ERR-002
+created_at: 2026-03-28
+type: Violación de proceso
+severity: Alta
 Phase donde ocurrió: Phase 2 (SOLUTION_STRATEGY)
-Estado: Detectado
+status: Detectado
 ```
 
 # ERR-002: Clasificación incorrecta de tamaño del proyecto
