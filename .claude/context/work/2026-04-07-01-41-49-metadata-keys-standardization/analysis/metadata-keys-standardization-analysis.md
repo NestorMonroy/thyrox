@@ -2,7 +2,7 @@
 type: Analysis
 category: Framework Standardization
 work_package_id: 2026-04-07-01-41-49-metadata-keys-standardization
-created_at: 2026-04-07 01-41-49
+created_at: 2026-04-07 01:41:49
 phase: 1 - ANALYZE
 status: draft
 ```
@@ -237,7 +237,9 @@ del proceso como tarea opcional de bajo riesgo.
 1. **Retrocompatibilidad de artefactos legacy** — los archivos históricos en context/work/2026-03-* y parte de 2026-04-* quedan con keys en español. Se documenta como norma en conventions.md.
 2. **Scope de la migración de body**: solo frontmatter YAML. Los campos en negrita del cuerpo markdown (`**Fecha Creación:**`) son presentación, no metadata parseada — quedan en español.
 3. **Scripts de validación existentes** — `scripts/validate-phase-readiness.sh` y `scripts/validate-session-close.sh` pueden buscar keys en español. Verificar antes de migrar.
-4. **Formato de valor de fecha**: `YYYY-MM-DD HH-MM-SS` (espacio entre fecha y hora) — para metadata values. Los nombres de directorio mantienen `YYYY-MM-DD-HH-MM-SS` (todo guiones).
+4. **Formato de valor de fecha**: `YYYY-MM-DD HH:MM:SS` (ISO 8601 local, colons en tiempo) — para metadata values. Los nombres de directorio mantienen `YYYY-MM-DD-HH-MM-SS` (todo guiones — colons no válidos en filesystems).
+   - Comandos `date`: valores → `date '+%Y-%m-%d %H:%M:%S'` / directorios → `date +%Y-%m-%d-%H-%M-%S`
+   - Nota YAML 1.1: PyYAML puede parsear `2026-04-07 01:41:49` como datetime en lugar de string. Para estos archivos leídos por Claude como texto, no es un problema. Si se parsea programáticamente, usar comillas: `"2026-04-07 01:41:49"`.
 
 ---
 

@@ -1,7 +1,7 @@
 ```yml
 type: Risk Register
 work_package_id: 2026-04-07-01-41-49-metadata-keys-standardization
-created_at: 2026-04-07 01-41-49
+created_at: 2026-04-07 01:41:49
 status: active
 open_risks: 3
 closed_risks: 0
