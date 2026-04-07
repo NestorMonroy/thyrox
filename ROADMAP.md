@@ -497,24 +497,24 @@ Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibil
 
 ### Script de migración
 
-- [ ] `scripts/migrate-metadata-keys.py` — dry-run + --layer N + verificación integrada
+- [x] `scripts/migrate-metadata-keys.py` — dry-run + --layer N + verificación integrada (2026-04-07)
 
 ### Migración por capas
 
-- [ ] Capa 1: 35 templates en `assets/` (via script)
-- [ ] Capa 2: ~20 references en `skills/pm-thyrox/references/` (via script)
-- [ ] Capa 3: `SKILL.md` + `conventions.md` — mapa completo + nota legacy + comandos date
-- [ ] Capa 4: context/ activo (focus.md, now.md, project-state.md, technical-debt.md, decisions.md)
-- [ ] Capa 5: 13 ADRs en `context/decisions/`
-- [ ] Capa 6: 28 error reports en `context/errors/`
-- [ ] Capa 7: WP activo `thyrox-capabilities-integration` (~10 artefactos)
-- [ ] Capa 8: `scripts/project-status.sh` — fix patrones sed de keys en español
-- [ ] `CLAUDE.md` — frontmatter propio
+- [x] Capa 1: 35 templates en `assets/` (2026-04-07)
+- [x] Capa 2: 20 references en `skills/pm-thyrox/references/` (2026-04-07)
+- [x] Capa 3: `SKILL.md` + `conventions.md` — mapa completo + nota legacy + comandos date (2026-04-07)
+- [x] Capa 4: context/ activo — 5 archivos (2026-04-07)
+- [x] Capa 5: 13 ADRs en `context/decisions/` (2026-04-07)
+- [x] Capa 6: 28 error reports en `context/errors/` (2026-04-07)
+- [x] Capa 7: WP activo `thyrox-capabilities-integration` — 12 artefactos (2026-04-07)
+- [x] `scripts/project-status.sh` — patrones sed actualizados (2026-04-07)
+- [x] `CLAUDE.md` — frontmatter propio (2026-04-07)
 
 ### Verificación final
 
-- [ ] grep de validación: cero keys españoles en templates + framework activo
+- [x] VERIFY OK: cero keys españoles en todas las capas (2026-04-07)
 
 ---
 
-**Última actualización:** 2026-04-07 (FASE 12 en progreso — metadata keys standardization)
+**Última actualización:** 2026-04-07 (FASE 12 completada — metadata keys standardization v1.0.0)

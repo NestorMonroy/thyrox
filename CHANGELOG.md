@@ -1,15 +1,58 @@
 ```yml
-Tipo: Historial de Cambios
-Categoría: Proyecto
-Versión: 0.9.0
-Propósito: Registro de cambios notables del proyecto
-Fecha actualización: 2026-04-06
+type: Historial de Cambios
+category: Proyecto
+version: 1.0.0
+purpose: Registro de cambios notables del proyecto
+updated_at: 2026-04-07 02:22:27
 ```
 
 # CHANGELOG — THYROX
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [1.0.0] - 2026-04-07
+
+### Changed — Estandarización de keys de metadata YAML (WP metadata-keys-standardization)
+
+**Estándar adoptado:** Keys en inglés snake_case, valores en español, timestamps ISO 8601.
+
+```yaml
+# Antes (legacy):
+Tipo: Análisis
+Fecha creación: 2026-04-07
+Versión: 1.0
+
+# Ahora (estándar):
+type: Análisis
+created_at: 2026-04-07 02:22:27
+version: 1.0
+```
+
+**Archivos migrados:**
+- Capa 1: 35 templates en `assets/` — ~85 keys únicos mapeados
+- Capa 2: 20 references en `references/` (2 con encoding corrupto → sed)
+- Capa 3: `SKILL.md` + `conventions.md` — nueva sección `## Metadata Keys` con mapa completo
+- Capa 4: `focus.md`, `now.md`, `project-state.md`, `technical-debt.md`, `decisions.md`
+- Capa 5: 13 ADRs en `context/decisions/`
+- Capa 6: 28 error reports en `context/errors/`
+- Capa 7: WP activo `thyrox-capabilities-integration` — 12 artefactos
+- `CLAUDE.md` frontmatter propio
+- `scripts/project-status.sh` — patrones sed actualizados
+
+**Nuevo script:** `scripts/migrate-metadata-keys.py`
+- `--dry-run`, `--layer N`, `--all`, `--verify-only`
+- KEY_MAP con ~85 entries ordenados por longitud descendente
+- Verificación integrada post-apply
+
+**Formato de timestamps — dos comandos distintos:**
+- Directorios: `date +%Y-%m-%d-%H-%M-%S` → `2026-04-07-02-22-27`
+- Metadata values: `date '+%Y-%m-%d %H:%M:%S'` → `2026-04-07 02:22:27`
+
+**Nota legacy:** Artefactos en `context/work/` anteriores a 2026-04-07 mantienen
+keys en español. No se migran.
 
 ---
 
