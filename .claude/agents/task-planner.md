@@ -47,6 +47,19 @@ Una tarea es atómica cuando cumple los 5 criterios:
 5. Marcar paralelas con `[P]`
 6. Crear o actualizar `{nombre-wp}-task-plan.md` en el work package
 
+## Awareness de Claims (Ejecución Paralela)
+
+Al generar o revisar un task-plan con ejecución paralela activa:
+
+1. Antes de sugerir la "siguiente tarea", verificar el estado actual:
+   - `[ ]` — disponible
+   - `[~]` — reclamada por otro agente (NO sugerir)
+   - `[x]` — completada
+2. Solo sugerir tareas en `[ ]`
+3. Al generar nuevas tareas, usar formato con ID trazable:
+   `- [ ] [T-NNN] descripción (R-N)`
+4. No generar tareas con IDs duplicados — revisar el task-plan completo antes de asignar T-NNN
+
 ## Reglas Estrictas
 
 - NUNCA escribir código de implementación
