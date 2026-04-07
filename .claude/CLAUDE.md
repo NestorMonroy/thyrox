@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
-version: 3.0
-updated_at: 2026-04-07 02:15:00
+version: 3.1
+updated_at: 2026-04-07 05:56:49
 ```
 
 # CLAUDE.md — THYROX
@@ -39,11 +39,13 @@ REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
 ```
 .claude/
 ├── CLAUDE.md              ← Este archivo (Level 2)
+├── agents/                ← Agentes nativos Claude Code (6 agentes, spec: agent-spec.md)
 ├── context/
 │   ├── project-state.md   ← Metadata del proyecto
 │   ├── focus.md           ← Dirección actual
-│   ├── now.md             ← Estado de sesión (YAML)
-│   ├── decisions/         ← ADRs
+│   ├── now.md             ← Estado de sesión single-agent
+│   ├── now-{agent-id}.md  ← Estado por agente (ejecución paralela)
+│   ├── decisions/         ← ADRs (global/ api/ db/ ui/ deploy/ framework/ + raíz legacy)
 │   └── work/              ← Paquetes de trabajo (YYYY-MM-DD-HH-MM-SS-nombre/)
 └── skills/pm-thyrox/      ← El SKILL (Level 1)
     ├── SKILL.md            Motor — metodología 7 fases

@@ -332,9 +332,11 @@ Ver [conventions](references/conventions.md) para detalles completos.
 [reference-validation](references/reference-validation.md) · [incremental-correction](references/incremental-correction.md)
 
 ### Cross-phase (leer según necesidad)
-[conventions](references/conventions.md) — Convenciones de archivos, commits, ROADMAP
+[conventions](references/conventions.md) — Convenciones de archivos, commits, ROADMAP, ejecución paralela
 [scalability](references/scalability.md) — Cómo escalar el framework según complejidad
 [examples](references/examples.md) — 8 casos de uso reales
+[agent-spec](references/agent-spec.md) — Spec formal de agentes nativos Claude Code (campos obligatorios/prohibidos, naming)
+[skill-vs-agent](references/skill-vs-agent.md) — Cuándo crear un SKILL vs un agente nativo
 
 ### Avanzado (leer cuando Claude tiene dificultades)
 [prompting-tips](references/prompting-tips.md) — Cuando Claude no entiende instrucciones
