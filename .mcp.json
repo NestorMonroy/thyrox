@@ -2,14 +2,18 @@
   "mcpServers": {
     "thyrox-memory": {
       "command": "python",
-      "args": [".claude/registry/mcp/memory_server.py"],
+      "args": [
+        ".claude/registry/mcp/memory_server.py"
+      ],
       "env": {
         "MEMORY_INDEX_PATH": ".claude/memory/thyrox.faiss"
       }
     },
     "thyrox-executor": {
       "command": "python",
-      "args": [".claude/registry/mcp/executor_server.py"]
+      "args": [
+        ".claude/registry/mcp/executor_server.py"
+      ]
     }
   }
 }
