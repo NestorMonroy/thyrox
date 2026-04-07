@@ -3,7 +3,7 @@ type: Plan
 work_package: metadata-keys-standardization
 phase: 3 - PLAN
 created_at: 2026-04-07 01:50:00
-status: Pendiente aprobación
+status: Aprobado — 2026-04-07
 ```
 
 # Plan — Estandarización de Keys de Metadata YAML
@@ -86,4 +86,4 @@ Ver tracking: [ROADMAP.md — FASE 12](../../../../../ROADMAP.md)
 
 ## Estado de aprobación
 
-- [ ] Scope aprobado por usuario — PENDIENTE
+- [x] Scope aprobado por usuario — 2026-04-07
