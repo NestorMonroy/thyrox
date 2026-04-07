@@ -195,6 +195,8 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 
 ### Phase 7: TRACK
 
+**En ejecución paralela:** Phase 7 es single-agent por diseño. El coordinador consolida lecciones de todos los WPs, actualiza ROADMAP y CHANGELOG como único escritor, y cierra los `now-{agent-id}.md` de todos los agentes.
+
 Documentar lecciones previene repetir los mismos errores.
 
 - Revisar progreso desde ROADMAP.md + commits recientes. Si hay work package activo con task-plan.md,
