@@ -60,6 +60,24 @@ Si el error o su solución es instructivo, almacenar con:
 mcp__thyrox-memory__store: "Lección: {descripción} — Causa: {causa} — Solución: {solución}"
 ```
 
+## Claim Protocol (Ejecución Paralela)
+
+Antes de ejecutar cualquier tarea del task-plan:
+
+1. Leer el task-plan — identificar la primera tarea en `- [ ]`
+2. Si la tarea está en `- [~]` (otro agente la tomó): pasar a la siguiente `[ ]`
+3. Cambiar la tarea seleccionada a:
+   `- [~] [T-NNN] descripción @task-executor (claimed: YYYY-MM-DD HH:MM:SS)`
+   Usar timestamp real con `date '+%Y-%m-%d %H:%M:%S'`
+4. Hacer commit del claim ANTES de ejecutar:
+   `git commit -m "chore(task-plan): claim T-NNN @task-executor"`
+5. Ejecutar la tarea
+6. Al completar, actualizar a:
+   `- [x] [T-NNN] descripción @task-executor (done: YYYY-MM-DD HH:MM:SS)`
+7. Commit de completion
+
+Si el agente se interrumpe con tarea en `[~]`: el claim queda para recovery manual (ver conventions.md#recovery-de-claims-abandonados).
+
 ## Convenciones de Commit
 
 Después de completar un grupo lógico de tareas:
