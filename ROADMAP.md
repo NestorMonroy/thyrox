@@ -653,4 +653,22 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ---
 
-**Última actualización:** 2026-04-07 (FASE 17 completada — análisis mise versionado en WP + docs/references/ v1.4.0)
+---
+
+## FASE 18: Human Gates — autorización explícita por fase (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-18-49-50-human-gates/`
+**Causa raíz:** "SI" previo interpretado como autorización en blanco para todo el WP
+
+### Cambios en SKILL.md
+
+- [x] Phase 1 exit: `⏸ GATE HUMANO` + campo `reversibility` en frontmatter del WP (2026-04-07)
+- [x] Phase 2 exit: `⏸ GATE HUMANO` (2026-04-07)
+- [x] Phase 4 exit: `⏸ GATE HUMANO` con excepción para WPs `documentation` (2026-04-07)
+- [x] Phase 5 exit: `⏸ GATE HUMANO CRÍTICO` — sin excepciones, transición más peligrosa (2026-04-07)
+- [x] Phase 6: `⚠ GATE OPERACIÓN` para operaciones destructivas con lista explícita (2026-04-07)
+- [x] Lecciones L-064..L-067 documentadas (2026-04-07)
+
+---
+
+**Última actualización:** 2026-04-07 (FASE 18 completada — human gates en SKILL.md v1.5.0)

@@ -57,6 +57,10 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
      - Directorios: `date +%Y-%m-%d-%H-%M-%S` → `2026-04-07-01-41-49` (todo guiones)
      - Metadata values (`created_at`, `updated_at`, etc.): `date '+%Y-%m-%d %H:%M:%S'` → `2026-04-07 01:41:49` (ISO 8601)
    — Keys de metadata en inglés snake_case. Ver [conventions](references/conventions.md#metadata-keys).
+   — Clasificar reversibilidad del WP en el frontmatter:
+     - `reversibility: documentation` — solo crea/modifica archivos en context/work/ o docs/
+     - `reversibility: reversible` — modifica código o config, recuperable vía git
+     - `reversibility: irreversible` — elimina archivos, modifica infraestructura activa, no se deshace con git revert
 3. REQUERIDO: Crear `work/.../analysis/{nombre-wp}-analysis.md` usando [introduction.md.template](assets/introduction.md.template)
    — el nombre del archivo debe revelar QUÉ se analiza. Ejemplo: `skill-activation-analysis.md`, no `introduction.md`
 4. REQUERIDO: Crear `work/../{nombre-wp}-risk-register.md` usando [risk-register.md.template](assets/risk-register.md.template) — identificar riesgos desde el inicio. Actualizar en cada fase.
@@ -82,7 +86,12 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
 Referencias de análisis por subsección (leer según necesidad):
 [introduction](references/introduction.md) · [requirements-analysis](references/requirements-analysis.md) · [use-cases](references/use-cases.md) · [quality-goals](references/quality-goals.md) · [stakeholders](references/stakeholders.md) · [basic-usage](references/basic-usage.md) · [constraints](references/constraints.md) · [context](references/context.md)
 
-**Salir cuando:** `work/.../analysis/{nombre-wp}-analysis.md` existe, no contiene `[NEEDS CLARIFICATION]`, y el usuario aprobó los hallazgos.
+**⏸ GATE HUMANO — STOP antes de continuar:**
+Presentar al usuario un resumen de los hallazgos del análisis (objetivos, gaps, riesgos principales, criterios de éxito).
+Esperar confirmación explícita antes de avanzar a Phase 2.
+NO continuar hasta recibir respuesta — un "SI" previo no autoriza esta fase.
+
+**Salir cuando:** `work/.../analysis/{nombre-wp}-analysis.md` existe, no contiene `[NEEDS CLARIFICATION]`, y el usuario confirmó los hallazgos explícitamente en esta sesión.
 **Siguiente:** Proponer Phase 2. Si no requiere decisiones arquitectónicas, proponer saltar a Phase 3.
 **Detectar:** Si `work/.../analysis/` contiene al menos un `*-analysis.md` sin `[NEEDS CLARIFICATION]`, Phase 1 ya completó.
 
@@ -101,7 +110,12 @@ Investigar alternativas antes de decidir previene decisiones sin evidencia.
 
 Ver [solution-strategy](references/solution-strategy.md) para estructura completa (Tech Stack, Patterns, Quality Goals).
 
-**Salir cuando:** Arquitectura aprobada con investigación documentada.
+**⏸ GATE HUMANO — STOP antes de continuar:**
+Presentar al usuario las decisiones clave de la solución (Key Ideas, Decisions, alternativas descartadas).
+Esperar confirmación explícita antes de avanzar a Phase 3.
+NO continuar hasta recibir respuesta — un "SI" previo no autoriza esta fase.
+
+**Salir cuando:** `work/.../*-solution-strategy.md` existe con decisiones documentadas y el usuario las confirmó explícitamente en esta sesión.
 **Siguiente:** Proponer Phase 3: PLAN para definir scope y linkear work package en ROADMAP.
 **Detectar:** Si `work/.../*-solution-strategy.md` existe con decisiones documentadas, Phase 2 ya completó.
 
@@ -134,7 +148,13 @@ Especificar antes de descomponer previene ambigüedad en las tareas.
 REQUERIDO: Completar [spec-quality-checklist.md.template](assets/spec-quality-checklist.md.template) ANTES de Phase 5. NO avanzar si quedan ítems sin ✓ o marcadores `[NEEDS CLARIFICATION]` sin resolver — la ambigüedad en specs se multiplica en la implementación.
 Para documentos técnicos que no tienen template específico: [document.md.template](assets/document.md.template)
 
-**Salir cuando:** `work/.../*-requirements-spec.md` existe, no contiene `[NEEDS CLARIFICATION]`, y checklist completado al 100%.
+**⏸ GATE HUMANO — STOP antes de continuar:**
+Presentar al usuario la especificación completa (user stories, acceptance criteria, diseño si aplica).
+Esperar confirmación explícita antes de avanzar a Phase 5 (DECOMPOSE).
+NO continuar hasta recibir respuesta.
+Excepción: si el WP es `reversibility: documentation` y la spec no tiene ambigüedades, el gate puede ser ligero (mencionar que se va a descomponer y dar oportunidad de objetar).
+
+**Salir cuando:** `work/.../*-requirements-spec.md` existe, no contiene `[NEEDS CLARIFICATION]`, checklist completado al 100%, y el usuario confirmó la spec.
 **Siguiente:** Proponer Phase 5: DECOMPOSE para crear tareas atómicas.
 **Detectar:** Si `work/.../*-requirements-spec.md` tiene user stories y acceptance criteria sin `[NEEDS CLARIFICATION]`, Phase 4 ya completó.
 
@@ -156,7 +176,13 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 5. Definir checkpoints de validación
    Si hay >50 issues antes de descomponer: [categorization-plan.md.template](assets/categorization-plan.md.template) — categorizar primero para identificar grupos naturales
 
-**Salir cuando:** `work/.../*-task-plan.md` existe con tareas atómicas y orden definido.
+**⏸ GATE HUMANO CRÍTICO — STOP obligatorio antes de Phase 6:**
+Presentar al usuario el task-plan completo con TODAS las tareas listadas.
+Esperar confirmación explícita antes de ejecutar CUALQUIER tarea.
+Este gate NO tiene excepciones — incluso WPs `documentation` deben pasar por aquí.
+Razón: Phase 6 modifica el repositorio. El usuario debe aprobar el plan antes de que se ejecute.
+
+**Salir cuando:** `work/.../*-task-plan.md` existe con tareas atómicas, orden definido, y el usuario aprobó el plan explícitamente en esta sesión.
 **Siguiente:** Proponer Phase 6: EXECUTE para implementar.
 **Detectar:** Si `work/.../*-task-plan.md` tiene checkboxes `- [ ] [T-NNN]`, Phase 5 ya completó.
 
@@ -171,6 +197,15 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
    En ejecución paralela: ANTES de ejecutar, cambiar tarea a `[~] @agent-id (claimed: timestamp)` y hacer commit del claim. Ver [conventions](references/conventions.md#parallel-agent-execution).
 2. REQUERIDO al inicio de sesión: Crear o actualizar `work/../{nombre-wp}-execution-log.md` usando [execution-log.md.template](assets/execution-log.md.template)
 3. Implementar el cambio
+   **⚠ GATE OPERACIÓN** — antes de ejecutar operaciones destructivas o de alto impacto, STOP y describir al usuario qué se va a hacer:
+   - Eliminar archivos o directorios (`rm`, `rmdir`, borrar con Write)
+   - Sobreescribir archivos de configuración existentes con `--force`
+   - Modificar `.mcp.json`, `CLAUDE.md`, o archivos que afectan todas las sesiones futuras
+   - `git push --force` o cualquier operación que reescriba historia
+   - Cualquier operación que NO sea reversible con `git revert`
+   Para WPs `reversibility: irreversible`: aplicar este gate en CADA operación destructiva individualmente.
+   Para WPs `reversibility: reversible`: aplicar el gate para operaciones fuera de git (delete de archivos no trackeados, modificación de infraestructura).
+   Para WPs `reversibility: documentation`: no se esperan operaciones destructivas — si aparece una, es una señal de que la clasificación fue incorrecta.
 4. Si la implementación falla, crear `context/errors/ERR-NNN-descripcion.md` usando [error-report.md.template](assets/error-report.md.template) antes de reintentar con otro approach
 5. No commitear archivos temporales, binarios ni backups — usar /tmp/ para efímeros
 6. Commit con [Conventional Commits](references/commit-helper.md): `type(scope): description`
