@@ -664,4 +664,38 @@ Un claim `[~]` es candidato a liberación si:
 
 **Umbral sugerido:** 30 minutos sin commit del agente.
 **Evidencia de dogfooding:** 2 timeouts observados durante Phase 3-4 de este WP dejaron claims potencialmente huérfanos.
+
+### Límite de tamaño para prompts de agentes
+
+**Máximo recomendado: 800 palabras por prompt de agente.**
+
+Prompts más largos aumentan el riesgo de timeout en ejecución paralela.
+Si el contexto requiere más: dividir en agentes secuenciales o reducir archivos a leer.
+
+Evidencia (FASE 13): prompts ~700 palabras → 0 timeouts. Prompts ~2500 palabras → 3 timeouts.
+
+### Timestamps únicos en WPs creados en paralelo
+
+Cuando dos WPs se crean en el mismo segundo, agregar sufijo al directorio:
+
+```bash
+# WP-1:
+2026-04-07-03-08-03-a-parallel-agent-conventions/
+# WP-2:
+2026-04-07-03-08-03-b-agent-format-spec/
+```
+
+Sufijos: `-a`, `-b`, `-c`, ... en orden de creación.
+Esto garantiza que `ls context/work/ | tail -1` devuelva un resultado determinista.
+
+### Protocolo cuando Write está bloqueado en un agente
+
+Si un agente no puede crear un archivo (Write denegado):
+
+1. El agente incluye el contenido completo del archivo en su reporte final
+2. El coordinador crea el archivo con el contenido reportado
+3. El coordinador hace el commit correspondiente
+
+Este es el comportamiento esperado — no un error del agente.
+El coordinador siempre tiene Write habilitado; los agentes pueden tenerlo restringido.
 <!-- END SECTION: parallel-agent-conventions -->
