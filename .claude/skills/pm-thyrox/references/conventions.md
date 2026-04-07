@@ -614,9 +614,16 @@ El archivo `context/now.md` permanece sin modificar (retrocompatibilidad).
 
 ### ROADMAP.md — Solo lectura en ejecución paralela
 
-Durante sesiones con múltiples agentes, ROADMAP.md NO se modifica.
-El progreso se registra en `{wp}-execution-log.md` del work package.
-ROADMAP.md se actualiza en Phase 7 por el agente coordinador o el usuario.
+Durante sesiones con múltiples agentes, ROADMAP.md NO se modifica directamente.
+El progreso se registra en `{wp}-execution-log.md` de cada work package.
+ROADMAP.md se actualiza al final en Phase 7 por el agente coordinador o el usuario.
+
+### Ciclo de vida de now-{agent-id}.md
+
+1. **Inicio de sesión:** crear `context/now-{agent-id}.md` con `status: active` y `current_work:`
+2. **Durante trabajo:** actualizar `phase:` y tareas en progreso
+3. **Cierre:** actualizar `status: closed` y hacer commit
+4. **Descubrimiento:** al iniciar, ejecutar `ls context/now-*.md` para ver agentes activos
 
 ### Namespacing de ADRs por capa
 
@@ -633,6 +640,28 @@ ADRs históricos en `context/decisions/` raíz (adr-001..adr-014) permanecen sin
 
 ### Handoff de sesión
 
-Al iniciar: `ls context/now-*.md` para ver agentes activos.
-Al cerrar: `status: closed` en `context/now-{agent-id}.md` + commit.
+Al iniciar sesión paralela:
+1. `ls context/now-*.md` — identificar agentes activos (status: active)
+2. Leer task-plans de WPs activos — evitar tareas ya en `[~]`
+3. Crear propio `context/now-{agent-id}.md`
+
+Al cerrar sesión:
+1. Completar tareas en progreso o revertir claims `[~]` → `[ ]`
+2. Actualizar `status: closed` en `context/now-{agent-id}.md`
+3. Commit y push
+
+### Recovery de claims abandonados
+
+Un claim `[~]` es candidato a liberación si:
+- El timestamp `claimed:` tiene más de 30 minutos
+- `context/now-{agent-id}.md` tiene `status: closed` o no existe
+- No hay commits recientes del agente en `git log`
+
+**Protocolo de liberación:**
+1. Verificar que el agente está inactivo (now-{agent-id}.md status: closed)
+2. Cambiar `[~]` → `[ ]` en el task-plan (quitar @agent-id y timestamps)
+3. Commit: `fix(task-plan): release abandoned claim T-NNN from {agent-id} (timeout/crash)`
+
+**Umbral sugerido:** 30 minutos sin commit del agente.
+**Evidencia de dogfooding:** 2 timeouts observados durante Phase 3-4 de este WP dejaron claims potencialmente huérfanos.
 <!-- END SECTION: parallel-agent-conventions -->
