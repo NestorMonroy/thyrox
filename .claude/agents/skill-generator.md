@@ -35,18 +35,21 @@ para cada tech en stack:
 ## Generación desde YAML + Template
 
 1. Leer `registry/agents/{tech}-expert.yml`
-2. Extraer: `name`, `description`, `model`, `tools`, `system_prompt`
+2. Extraer: `name`, `description`, `tools` — IGNORAR `model`, `category`, `skill_template`, `system_prompt`
 3. Leer template: `registry/{categoria}/{tech}.skill.template.md`
 4. Sustituir `{{PROJECT_NAME}}` con el nombre del proyecto (leer de `context/project-state.md` o preguntar)
 5. Escribir `.claude/agents/{tech}-expert.md` con frontmatter YAML + body del template
 
 ## Formato de Output del Agente Generado
 
+> IMPORTANTE: Al generar un agente nativo, omitir los campos: model, category, skill_template, system_prompt.
+> Estos campos son metadata del registry y NO tienen semántica en agentes nativos de Claude Code.
+> El campo `model` en particular está PROHIBIDO — Claude Code infiere el modelo de la sesión.
+
 ```markdown
 ---
 name: {name}
 description: {description}
-model: {model}
 tools:
   - {tool1}
   - {tool2}
