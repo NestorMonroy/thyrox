@@ -597,3 +597,42 @@ Cuando Claude necesita una decisión del usuario que no puede resolverse en la s
 | now.md | Start and end of session | Every session |
 | context/errors/ | When error occurs | As-needed |
 | Git tag | Release to production | With version bump |
+
+<!-- SECTION OWNER: parallel-agent-conventions -->
+## Parallel Agent Execution
+
+### now-{agent-id}.md — Estado por agente
+
+En ejecución paralela, cada agente escribe su estado en `context/now-{agent-id}.md`.
+El archivo `context/now.md` permanece sin modificar (retrocompatibilidad).
+
+**Formato del agent-id:** kebab-case, único por sesión. Ejemplos: `agent-a`, `task-executor-1`, `wp-paralelo-2`.
+
+**Ciclo de vida:**
+- Inicio: crear `context/now-{agent-id}.md` con `status: active`
+- Cierre: actualizar `status: closed` y hacer commit
+
+### ROADMAP.md — Solo lectura en ejecución paralela
+
+Durante sesiones con múltiples agentes, ROADMAP.md NO se modifica.
+El progreso se registra en `{wp}-execution-log.md` del work package.
+ROADMAP.md se actualiza en Phase 7 por el agente coordinador o el usuario.
+
+### Namespacing de ADRs por capa
+
+| Capa | Path | Prefijo |
+|------|------|---------|
+| Cross-layer | `context/decisions/global/` | `ADR-GLOBAL-NNN` |
+| API / backend | `context/decisions/api/` | `ADR-API-NNN` |
+| Base de datos | `context/decisions/db/` | `ADR-DB-NNN` |
+| Frontend / UI | `context/decisions/ui/` | `ADR-UI-NNN` |
+| Deploy / infra | `context/decisions/deploy/` | `ADR-DEPLOY-NNN` |
+| Framework | `context/decisions/framework/` | `ADR-FRAMEWORK-NNN` |
+
+ADRs históricos en `context/decisions/` raíz (adr-001..adr-014) permanecen sin migrar.
+
+### Handoff de sesión
+
+Al iniciar: `ls context/now-*.md` para ver agentes activos.
+Al cerrar: `status: closed` en `context/now-{agent-id}.md` + commit.
+<!-- END SECTION: parallel-agent-conventions -->
