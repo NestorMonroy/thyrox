@@ -517,4 +517,40 @@ Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibil
 
 ---
 
-**Última actualización:** 2026-04-07 (FASE 12 completada — metadata keys standardization v1.0.0)
+---
+
+## FASE 13: Convenciones para Ejecución Paralela de Agentes (2026-04-07)
+
+**WP-1:** `.claude/context/work/2026-04-07-03-08-03-parallel-agent-conventions/`
+**WP-2:** `.claude/context/work/2026-04-07-03-08-03-agent-format-spec/`
+**ADR:** ADR-014 — scope coordination entre ambos WPs
+**Dogfooding:** ambos WPs ejecutados en paralelo como experimento del problema que resuelven
+
+### WP-2: agent-format-spec
+
+- [x] `references/agent-spec.md` — spec formal de campos (obligatorio/opcional/prohibido) (2026-04-07)
+- [x] `scripts/lint-agents.py` — linter Python: 0 errores en 6 agentes (2026-04-07)
+- [x] `references/skill-vs-agent.md` — distinción formal SKILL vs Agente (2026-04-07)
+- [x] `.claude/agents/nodejs-expert.md` — corregido: description + quitar model (2026-04-07)
+- [x] `.claude/agents/react-expert.md` — corregido: description + quitar model (2026-04-07)
+- [x] `.claude/agents/skill-generator.md` — no propaga model al output nativo (2026-04-07)
+
+### WP-1: parallel-agent-conventions
+
+- [x] `assets/tasks.md.template` — estado `[~]` con claim protocol y recovery (2026-04-07)
+- [x] `references/conventions.md` — sección "Parallel Agent Execution": now-{agent-id}.md, ROADMAP readonly, ADR namespacing, handoff, recovery de claims (2026-04-07)
+- [x] `SKILL.md` — Phase 5-6 con notas de ejecución paralela (section owner markers) (2026-04-07)
+- [x] `scripts/project-status.sh` — lee glob now-*.md con retrocompatibilidad (2026-04-07)
+- [x] `CLAUDE.md` — adr_path con guidance de namespacing por capa (2026-04-07)
+- [x] `.claude/agents/task-executor.md` — claim protocol para ejecución paralela (2026-04-07)
+- [x] `.claude/agents/task-planner.md` — awareness de claims activos (2026-04-07)
+
+### Lecciones clave (L-039..L-049)
+
+- [x] 5 gaps de fricción detectados independientemente por ambos agentes en Phase 1 (2026-04-07)
+- [x] T-012 (recovery de claims) emergió por dogfooding — no estaba en el plan original (2026-04-07)
+- [x] Prompts cortos = sin timeout; prompts largos = timeouts en ejecución paralela (2026-04-07)
+
+---
+
+**Última actualización:** 2026-04-07 (FASE 13 completada — parallel agent conventions + agent format spec v1.1.0)

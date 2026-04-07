@@ -13,6 +13,37 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.1.0] - 2026-04-07
+
+### Added — Convenciones para ejecución paralela de agentes (WP parallel-agent-conventions)
+
+- `references/conventions.md` — sección "Parallel Agent Execution": estado `[~]` con claim protocol, patrón `now-{agent-id}.md`, ROADMAP readonly durante sesión paralela, namespacing ADRs por capa, handoff y recovery de claims abandonados
+- `assets/tasks.md.template` — estado `[~]` (in-progress) con formato `@agent-id (claimed: timestamp)` y protocolo de recovery
+- `SKILL.md` — notas de ejecución paralela en Phase 5-6 con section owner markers
+- `scripts/project-status.sh` — ahora lee glob `now-*.md` con retrocompatibilidad a `now.md`
+- `CLAUDE.md` — guidance de namespacing ADRs por capa en comentario de `adr_path`
+- `.claude/agents/task-executor.md` — claim protocol: `[~]` antes de ejecutar, commit antes de empezar
+- `.claude/agents/task-planner.md` — awareness de claims: solo sugiere tareas en `[ ]`
+- `context/decisions/adr-014.md` — scope coordination entre WP-1 y WP-2
+
+### Added — Spec formal de agentes nativos (WP agent-format-spec)
+
+- `references/agent-spec.md` — spec formal de campos: REQUERIDOS (`name`, `description`, `tools`), PROHIBIDOS (`model`, `category`, `skill_template`, `system_prompt`), 3 patrones de naming
+- `scripts/lint-agents.py` — linter Python para `.claude/agents/*.md`: detecta campos faltantes, prohibidos y descriptions vacías. Exit code 0/1. Resultado: 6 archivos, 0 errores
+- `references/skill-vs-agent.md` — distinción formal: qué es, dónde vive, cómo se activa, cuándo usar cada uno
+
+### Fixed — Agentes corregidos
+
+- `.claude/agents/nodejs-expert.md` — description vacía corregida, campo `model` eliminado
+- `.claude/agents/react-expert.md` — description vacía corregida, campo `model` eliminado
+- `.claude/agents/skill-generator.md` — instrucción explícita de no propagar `model` al output nativo
+
+### Meta — Dogfooding
+
+Ambos WPs ejecutados en paralelo como experimento del problema que resuelven. 5 instancias de fricción detectadas independientemente por ambos agentes en Phase 1. T-012 (recovery de claims por timeout/crash) emergió del experimento — no estaba planificada.
+
+---
+
 ## [1.0.0] - 2026-04-07
 
 ### Changed — Estandarización de keys de metadata YAML (WP metadata-keys-standardization)
