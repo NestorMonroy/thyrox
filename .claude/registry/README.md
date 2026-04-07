@@ -1,90 +1,144 @@
-# Tech Skill Registry
+# THYROX Registry
 
-Fuente de verdad para templates de tech skills. Cada template produce dos artefactos
-cuando se instancia en un proyecto via `_generator.sh`:
-- `.claude/skills/{layer}-{framework}/SKILL.md` — guía fase-por-fase
-- `.claude/guidelines/{layer}-{framework}.instructions.md` — reglas siempre-on
+El registry es la fuente de verdad para los tres tipos de artefactos que THYROX genera automáticamente. Cada tipo tiene un propósito distinto y un flujo de generación propio.
 
 ---
 
-## Estructura
+## Los tres flujos
+
+### Flujo A — Agents (comportamiento)
+
+**Qué son:** Definiciones de agentes spawnables — subprocesos Claude con herramientas específicas y conocimiento técnico embebido.
+
+**Formato:** `agents/*.yml`
+
+**Generador:** `bootstrap.py`
+
+**Salida:** `.claude/agents/*.md` (agentes nativos Claude Code)
+
+**Invocación:** `Agent tool → subagent_type: "nombre-agente"`
 
 ```
-registry/
+agents/task-planner.yml  ──┐
+agents/task-executor.yml ──┤
+agents/tech-detector.yml ──┤─→ bootstrap.py ──→ .claude/agents/*.md
+agents/skill-generator.yml─┤
+agents/nodejs-expert.yml ──┤
+agents/react-expert.yml  ──┤
+agents/postgresql-expert.yml┘
+```
+
+Uso: `python .claude/registry/bootstrap.py --stack nodejs,react`
+
+Ver [`agents/README.md`](agents/README.md) para el formato de los YMLs.
+
+---
+
+### Flujo B — Skill Templates (datos/metodología)
+
+**Qué son:** Templates de metodología SDLC por stack tecnológico — guías fase-por-fase para trabajar en proyectos con un framework específico.
+
+**Formato:** `{layer}/{framework}.template.md`
+
+**Generador:** `_generator.sh`
+
+**Salida:**
+- `.claude/skills/{layer}-{framework}/SKILL.md` — guía fase-por-fase
+- `.claude/guidelines/{layer}-{framework}.instructions.md` — reglas siempre-on
+
+**Invocación:** `Skill tool → {layer}-{framework}` o auto-carga via `.instructions.md`
+
+```
+backend/nodejs.template.md    ──┐
+frontend/react.template.md    ──┤─→ _generator.sh ──→ .claude/skills/
+db/postgresql.template.md     ──┘                     .claude/guidelines/
+```
+
+Uso: `.claude/registry/_generator.sh backend nodejs`
+
+---
+
+### Flujo C — MCP Servers (runtime)
+
+**Qué son:** Servidores MCP que exponen capacidades de ejecución y memoria a Claude durante la sesión.
+
+**Formato:** `mcp/*.py`
+
+**Activación:** Declarados en `.mcp.json` — Claude Code los arranca automáticamente.
+
+**Herramientas expuestas:**
+- `mcp__thyrox-executor__exec_cmd` — ejecuta comandos shell
+- `mcp__thyrox-executor__exec_python` — ejecuta código Python
+- `mcp__thyrox-memory__store` / `retrieve` — memoria persistente (FAISS)
+
+```
+mcp/executor_server.py  ──┐
+mcp/memory_server.py    ──┤─→ .mcp.json ──→ Claude Code arranca los servidores
+mcp/thyrox_core.py      ──┘                  en cada sesión
+```
+
+Ver [`mcp/README.md`](mcp/README.md) para detalles de cada servidor.
+
+---
+
+## Separación datos/comportamiento
+
+Inspirado en [mise](https://mise.jdx.dev):
+
+| Tipo | Naturaleza | Análogo en mise |
+|------|-----------|-----------------|
+| `agents/*.yml` | **Comportamiento** — define quién puede ejecutar qué | Backends (npm, cargo, github) |
+| `{layer}/*.template.md` | **Datos** — define qué metodología aplicar | Registry TOML por tool |
+| `mcp/*.py` | **Runtime** — infraestructura de capacidades | Herramientas instaladas por mise |
+
+La separación física ya existe en el directorio. Esta tabla documenta la separación semántica.
+
+---
+
+## Estructura completa
+
+```
+.claude/registry/
 ├── README.md              ← Este archivo
-├── _generator.sh          ← Instanciador de templates
+├── bootstrap.py           ← Genera .claude/agents/ desde agents/*.yml
+├── _generator.sh          ← Genera .claude/skills/ desde templates
+├── agents/                ← Flujo A: definiciones de agentes
+│   ├── README.md
+│   ├── task-planner.yml
+│   ├── task-executor.yml
+│   ├── tech-detector.yml
+│   ├── skill-generator.yml
+│   ├── nodejs-expert.yml
+│   ├── react-expert.yml
+│   └── postgresql-expert.yml
+├── backend/               ← Flujo B: templates de metodología
+│   └── nodejs.template.md
 ├── frontend/
 │   └── react.template.md
-├── backend/
-│   └── nodejs.template.md
-└── db/
-    └── postgresql.template.md
+├── db/
+│   └── postgresql.template.md
+└── mcp/                   ← Flujo C: servidores de runtime
+    ├── README.md
+    ├── thyrox_core.py
+    ├── executor_server.py
+    └── memory_server.py
 ```
 
-## Capas válidas
+---
 
-| Capa | Ejemplos de frameworks |
-|---|---|
-| `frontend` | react, vue, angular, nextjs, svelte |
-| `backend` | nodejs, python, go, java, ruby |
+## Capas válidas para templates
+
+| Capa | Ejemplos |
+|------|----------|
+| `frontend` | react, vue, nextjs, svelte |
+| `backend` | nodejs, python, go, java |
 | `db` | postgresql, mysql, mongodb, redis |
 | `infra` | docker, kubernetes, terraform |
 | `mobile` | reactnative, flutter |
 | `testing` | cypress, playwright, jest |
 
-## Formato de un template
+## Cómo extender el registry
 
-Cada archivo `.template.md` contiene DOS secciones separadas por marcadores:
-
-```markdown
-<!-- SKILL_START -->
-# {{LAYER_TITLE}} {{FRAMEWORK_TITLE}} — SKILL
-...contenido del SKILL.md (guía por fase)...
-<!-- SKILL_END -->
-
-<!-- INSTRUCTIONS_START -->
-# {{LAYER_TITLE}} {{FRAMEWORK_TITLE}} — Guidelines
-...reglas siempre-on para Claude...
-<!-- INSTRUCTIONS_END -->
-```
-
-## Placeholders obligatorios
-
-Todos los templates deben incluir estos placeholders — `_generator.sh` los reemplaza:
-
-| Placeholder | Reemplazado por |
-|---|---|
-| `{{PROJECT_NAME}}` | Nombre del proyecto destino |
-| `{{LAYER}}` | Capa en minúscula (ej: `frontend`) |
-| `{{FRAMEWORK}}` | Framework en minúscula (ej: `react`) |
-| `{{LAYER_TITLE}}` | Capa con mayúscula inicial (ej: `Frontend`) |
-| `{{FRAMEWORK_TITLE}}` | Framework con mayúscula inicial (ej: `React`) |
-
-## Criterio de calidad para INSTRUCTIONS
-
-Cada regla en la sección INSTRUCTIONS debe ser:
-- **Específica:** "Usa PascalCase para componentes React" — no "usa buenas prácticas"
-- **Verificable:** se puede revisar si se cumple o no con un grep/linter
-- **Con ejemplo:** código bueno Y código malo en el mismo bloque
-
-Mínimo 5 reglas por template. Sin ejemplos, la regla no cuenta.
-
-## Cómo agregar un nuevo template
-
-1. Crear `registry/{capa}/{framework}.template.md`
-2. Incluir ambas secciones con marcadores
-3. Incluir todos los placeholders obligatorios
-4. Escribir mínimo 5 reglas en INSTRUCTIONS con ejemplos
-5. Testear: `_generator.sh {capa} {framework} test-project`
-6. Verificar que los archivos generados son coherentes
-7. Commit: `feat(registry): add {capa}-{framework} template`
-
-## Cuándo regenerar skills en un proyecto
-
-```bash
-# Actualizar un skill con la versión más reciente del template
-.claude/registry/_generator.sh frontend react --force
-
-# Ver qué se generaría sin crear archivos
-.claude/registry/_generator.sh frontend react --dry-run
-```
+- **Agregar un agente nuevo** → crear `agents/{nombre}.yml`. Ver [`agents/README.md`](agents/README.md).
+- **Agregar un tech skill nuevo** → crear `{layer}/{framework}.template.md`. Ver el formato de templates en el README anterior.
+- **Modificar un servidor MCP** → ver [`mcp/README.md`](mcp/README.md).

@@ -449,6 +449,7 @@ FASE 12: Estandarización de Keys de Metadata YAML                 — 100% ✓
 FASE 13: Convenciones para Ejecución Paralela de Agentes          — 100% ✓
 FASE 14: Correcciones al flujo — post-mortem FASE 13              — 100% ✓
 FASE 15: Unificación de Registry                                  — 100% ✓
+FASE 16: Separación semántica del Registry + docs públicos        — 100% ✓
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
@@ -596,4 +597,26 @@ Sesión 2026-04-07: parallel agents dogfooding + flow corrections + registry uni
 
 ---
 
-**Última actualización:** 2026-04-07 (FASE 15 completada — registry unificado en .claude/registry/ v1.2.0)
+---
+
+## FASE 16: Separación semántica del Registry + Documentación pública (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-06-30-37-registry-separation/`
+**Referencia:** mise (jdx/mise) — principio datos/comportamiento
+**Objetivo:** Documentar los 3 flujos del registry y crear referencia pública en `/docs`
+
+- [x] `.claude/registry/README.md` — reescrito: 3 flujos (Agents/Skills/MCP) con lenguaje datos/comportamiento (2026-04-07)
+- [x] `.claude/registry/agents/README.md` — creado: campos YML, agentes disponibles, cómo agregar uno (2026-04-07)
+- [x] `.claude/registry/mcp/README.md` — creado: servidores, herramientas expuestas, setup, extensión (2026-04-07)
+- [x] `docs/registry.md` — creado: referencia pública de los 3 flujos, bootstrap completo (2026-04-07)
+- [x] `docs/architecture/registry-design.md` — creado: decisión arquitectónica con paralelo mise (2026-04-07)
+
+### Lecciones clave (L-057..L-060)
+
+- [x] Referencia externa (mise) enriqueció el scope antes de ejecutar — esperar análisis fue correcto (2026-04-07)
+- [x] Principio datos/comportamiento: templates = datos, agents = comportamiento, MCP = runtime (2026-04-07)
+- [x] Futuro FASE 17: `skill.toml` + JSON Schema + `thyrox doctor` (documentado en registry-design.md) (2026-04-07)
+
+---
+
+**Última actualización:** 2026-04-07 (FASE 16 completada — registry documentado, referencia pública en /docs v1.3.0)
