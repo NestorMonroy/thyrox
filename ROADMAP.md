@@ -487,4 +487,34 @@ Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibil
 
 ---
 
-**Última actualización:** 2026-04-06 (FASE 11 completada — MCP + Native Agents)
+---
+
+## FASE 12: Estandarización de Keys de Metadata YAML (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-01-41-49-metadata-keys-standardization/`
+**Decisiones:** D-01..D-05 (solution-strategy)
+**Objetivo:** Keys en inglés snake_case, valores en español, formato ISO 8601 para fechas
+
+### Script de migración
+
+- [ ] `scripts/migrate-metadata-keys.py` — dry-run + --layer N + verificación integrada
+
+### Migración por capas
+
+- [ ] Capa 1: 35 templates en `assets/` (via script)
+- [ ] Capa 2: ~20 references en `skills/pm-thyrox/references/` (via script)
+- [ ] Capa 3: `SKILL.md` + `conventions.md` — mapa completo + nota legacy + comandos date
+- [ ] Capa 4: context/ activo (focus.md, now.md, project-state.md, technical-debt.md, decisions.md)
+- [ ] Capa 5: 13 ADRs en `context/decisions/`
+- [ ] Capa 6: 28 error reports en `context/errors/`
+- [ ] Capa 7: WP activo `thyrox-capabilities-integration` (~10 artefactos)
+- [ ] Capa 8: `scripts/project-status.sh` — fix patrones sed de keys en español
+- [ ] `CLAUDE.md` — frontmatter propio
+
+### Verificación final
+
+- [ ] grep de validación: cero keys españoles en templates + framework activo
+
+---
+
+**Última actualización:** 2026-04-07 (FASE 12 en progreso — metadata keys standardization)
