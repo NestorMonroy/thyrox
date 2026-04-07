@@ -619,4 +619,38 @@ Sesión 2026-04-07: parallel agents dogfooding + flow corrections + registry uni
 
 ---
 
-**Última actualización:** 2026-04-07 (FASE 16 completada — registry documentado, referencia pública en /docs v1.3.0)
+---
+
+## FASE 17: Análisis de referencia — mise (jdx/mise) (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-17-20-33-mise-reference-analysis/`
+**Fuente:** https://github.com/jdx/mise — gestor de versiones de herramientas de desarrollo
+**Propósito:** Extraer principios de diseño aplicables a THYROX (registry, datos/comportamiento, extensibilidad)
+
+- [x] `analysis/mise-reference-analysis.md` — análisis completo (8 patrones, 8 inspiraciones, tabla de paralelos) (2026-04-07)
+- [x] `docs/references/mise.md` — copia pública para contributors (2026-04-07)
+- [x] Todos los artefactos del WP (7 fases) (2026-04-07)
+
+### Inspiraciones documentadas → backlog FASE 18
+
+- [ ] **I-1:** `skill.toml` por skill — metadata declarativo consultable programáticamente
+- [ ] **I-2:** Merge semántico diferenciado por sección en CLAUDE.md
+- [ ] **I-3:** Auto-detection por `detect = [...]` en `skill.toml`
+- [ ] **I-4:** `package.toml` por work package — metadata de WP consultable
+- [ ] **I-5:** JSON Schema para `skill.toml` y `package.toml` con autocompletion
+- [ ] **I-6:** `thyrox doctor` — verificación integrada del setup
+- [ ] **I-7:** Hooks de lifecycle declarativos en `.claude/hooks.toml`
+- [ ] **I-8:** Modularización de SKILL.md via `[phases].includes`
+
+---
+
+## FASE 16 métricas actualizadas
+
+```
+FASE 16: Separación semántica del Registry + docs públicos        — 100% ✓
+FASE 17: Análisis de referencia mise                              — 100% ✓
+```
+
+---
+
+**Última actualización:** 2026-04-07 (FASE 17 completada — análisis mise versionado en WP + docs/references/ v1.4.0)
