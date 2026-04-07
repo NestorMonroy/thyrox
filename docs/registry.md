@@ -31,15 +31,28 @@ Los agentes son subprocesos Claude con herramientas específicas y conocimiento 
 
 ### Agentes incluidos
 
-| Agente | Propósito |
-|--------|-----------|
-| `task-planner` | Descompone trabajo en tareas atómicas T-NNN con IDs trazables |
-| `task-executor` | Ejecuta una tarea T-NNN del task-plan activo |
-| `tech-detector` | Detecta el stack tecnológico desde archivos de configuración |
-| `skill-generator` | Genera SKILL.md + agente desde un YML del registry |
-| `nodejs-expert` | Experto en Node.js, Express, testing con Jest |
-| `react-expert` | Experto en React, hooks, Vitest/React Testing Library |
-| `postgresql-expert` | Experto en PostgreSQL, migrations, SQL avanzado |
+Los agentes se dividen en **core** (siempre presentes) y **tech-experts** (generados según stack).
+
+#### Core agents
+
+| Agente | Phase SDLC | Propósito |
+|--------|-----------|-----------|
+| `tech-detector` | Phase 1 — ANALYZE | Detecta el stack tecnológico desde archivos de configuración |
+| `task-planner` | Phase 5 — DECOMPOSE | Descompone trabajo en tareas atómicas T-NNN con IDs trazables |
+| `task-executor` | Phase 6 — EXECUTE | Ejecuta una tarea T-NNN del task-plan activo |
+| `skill-generator` | Bootstrap / Phase 7 | Genera SKILL.md + agente desde un YML del registry |
+
+#### Tech-expert agents (por stack)
+
+| Agente | Phase SDLC | Stack | Estado |
+|--------|-----------|-------|--------|
+| `nodejs-expert` | Phase 6 — EXECUTE | `--stack nodejs` | Generado |
+| `react-expert` | Phase 6 — EXECUTE | `--stack react` | Generado |
+| `webpack-expert` | Phase 6 — EXECUTE | `--stack webpack` | Generado |
+| `postgresql-expert` | Phase 6 — EXECUTE | `--stack postgresql` | Generado |
+| `mysql-expert` | Phase 6 — EXECUTE | `--stack mysql` | Generado |
+
+Los tech-experts solo están disponibles después de `bootstrap.py --stack {techs}`. Son el puente entre el conocimiento técnico del registry (YML) y los agentes nativos Claude Code.
 
 ### Invocar un agente
 

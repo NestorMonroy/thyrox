@@ -64,15 +64,28 @@ system_prompt: |
 
 ## Agentes disponibles
 
-| Agente | Propósito | Tools clave |
-|--------|-----------|-------------|
-| `task-planner` | Descompone trabajo en tareas atómicas T-NNN | Read, Write, Glob, Grep |
-| `task-executor` | Ejecuta una tarea T-NNN del task-plan | Read, Write, Edit, Bash, exec_cmd |
-| `tech-detector` | Detecta stack tecnológico desde archivos de config | Glob, Read |
-| `skill-generator` | Genera SKILL.md + agente desde un YML del registry | Read, Write, Glob |
-| `nodejs-expert` | Experto en Node.js, Express, testing | Read, Write, Edit, exec_cmd |
-| `react-expert` | Experto en React, hooks, Vitest | Read, Write, Edit, exec_cmd |
-| `postgresql-expert` | Experto en PostgreSQL, migrations, SQL | Read, Write, Edit, exec_cmd |
+Los agentes se dividen en dos grupos: **core** (siempre presentes, no dependen del stack) y **tech-experts** (generados según el stack del proyecto).
+
+### Core agents — siempre activos
+
+| Agente | Phase SDLC | Propósito | Tools clave |
+|--------|-----------|-----------|-------------|
+| `tech-detector` | Phase 1 — ANALYZE | Detecta stack tecnológico desde archivos de config | Glob, Read |
+| `task-planner` | Phase 5 — DECOMPOSE | Descompone trabajo en tareas atómicas T-NNN | Read, Write, Glob, Grep |
+| `task-executor` | Phase 6 — EXECUTE | Ejecuta una tarea T-NNN del task-plan | Read, Write, Edit, Bash, exec_cmd |
+| `skill-generator` | Bootstrap / Phase 7 | Genera SKILL.md + agente desde un YML del registry | Read, Write, Glob |
+
+### Tech-expert agents — generados por stack
+
+| Agente | Phase SDLC | Propósito | Stack |
+|--------|-----------|-----------|-------|
+| `nodejs-expert` | Phase 6 — EXECUTE | Implementa features Node.js, Express, testing Jest | `--stack nodejs` |
+| `react-expert` | Phase 6 — EXECUTE | Implementa componentes React, hooks, Vitest | `--stack react` |
+| `webpack-expert` | Phase 6 — EXECUTE | Configura bundling, loaders, plugins, optimización | `--stack webpack` |
+| `postgresql-expert` | Phase 6 — EXECUTE | Escribe SQL, migrations, índices PostgreSQL | `--stack postgresql` |
+| `mysql-expert` | Phase 6 — EXECUTE | Escribe SQL, migrations, índices MySQL | `--stack mysql` |
+
+> Los tech-experts se generan al ejecutar `bootstrap.py --stack {techs}`. Solo están disponibles si el stack fue declarado. `tech-detector` es el agente que detecta qué stack requiere bootstrap.
 
 ---
 

@@ -30,11 +30,13 @@ PROJECT_STATE = PROJECT_ROOT / ".claude" / "context" / "project-state.md"
 SUPPORTED_MODELS = ["claude"]
 TECH_CATEGORIES = {
     "react": "frontend",
+    "webpack": "frontend",
     "nodejs": "backend",
-    "postgresql": "database",
     "python": "backend",
     "fastapi": "backend",
     "django": "backend",
+    "postgresql": "database",
+    "mysql": "database",
     "mongodb": "database",
     "redis": "database",
 }
@@ -163,27 +165,48 @@ def parse_system_prompt(yml_path: Path) -> str:
 
 
 def parse_field(yml_path: Path, field: str) -> str:
-    """Extrae un campo simple del YAML."""
+    """Extrae un campo simple del YAML. Soporta block scalars (> y |)."""
     if not yml_path.exists():
         return ""
 
     content = yml_path.read_text()
-    for line in content.splitlines():
+    lines = content.splitlines()
+
+    for i, line in enumerate(lines):
         stripped = line.strip()
         if stripped.startswith(f"{field}:"):
-            return stripped[len(f"{field}:"):].strip()
+            value = stripped[len(f"{field}:"):].strip()
+            # Block scalar (> o |): recolectar líneas siguientes indentadas
+            if value in (">", "|", ""):
+                block_lines = []
+                indent = None
+                for j in range(i + 1, len(lines)):
+                    bline = lines[j]
+                    if not bline.strip():
+                        block_lines.append("")
+                        continue
+                    # Detectar indentación del primer bloque
+                    if indent is None:
+                        indent = len(bline) - len(bline.lstrip())
+                    if len(bline) - len(bline.lstrip()) < indent:
+                        break  # Fin del bloque
+                    block_lines.append(bline.strip())
+                return " ".join(l for l in block_lines if l).strip()
+            return value
     return ""
 
 
 # ─── Generadores ─────────────────────────────────────────────────────────────
 
-def generate_agent_md(name: str, description: str, model: str, tools: list[str], body: str) -> str:
-    """Genera el contenido de un archivo .claude/agents/*.md."""
+def generate_agent_md(name: str, description: str, tools: list[str], body: str) -> str:
+    """Genera el contenido de un archivo .claude/agents/*.md.
+
+    NOTA: model NO se incluye — campo prohibido en agentes nativos Claude Code.
+    """
     tools_yaml = "\n".join(f"  - {t}" for t in tools)
     return f"""---
 name: {name}
 description: {description}
-model: {model}
 tools:
 {tools_yaml}
 ---
@@ -259,7 +282,7 @@ def install_tech_agent(tech: str, force: bool, model: str, project_name: str) ->
     body = "\n\n---\n\n".join(body_parts) if body_parts else f"# {name}\n\nAgente experto en {tech}."
 
     # Escribir el archivo
-    content = generate_agent_md(name, description, model, tools, body)
+    content = generate_agent_md(name, description, tools, body)
     dest.write_text(content)
     action = "sobreescrito" if dest.exists() else "creado"
     print(f"  ✓ {tech}-expert{' ' * max(0, 18 - len(tech))} → .claude/agents/{tech}-expert.md ({action})")
