@@ -1,7 +1,6 @@
 ---
 name: react-expert
-description: >
-model: claude
+description: Experto en React, hooks y ecosistema frontend. Usar cuando el usuario necesite implementar componentes, gestionar estado, configurar bundlers o depurar aplicaciones React.
 tools:
   - Read
   - Write
