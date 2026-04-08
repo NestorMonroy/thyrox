@@ -6,6 +6,27 @@
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
 CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
 
+# ─── ARQUITECTURA DE RUTAS (ADR-015) ───────────────────────────────────────
+# COMMANDS_SYNCED=false → /workflow_* commands desactualizados vs SKILL.md
+# COMMANDS_SYNCED=true  → /workflow_* sincronizados (post-TD-008), eliminar etiqueta [outdated]
+# Cambiar a true cuando TD-008 (sync /workflow_* commands) esté completado.
+COMMANDS_SYNCED=false
+
+# Mapa phase → /workflow_* command
+_phase_to_command() {
+    case "$1" in
+        "Phase 1") echo "/workflow_analyze" ;;
+        "Phase 2") echo "/workflow_strategy" ;;
+        "Phase 3") echo "/workflow_plan" ;;
+        "Phase 4") echo "/workflow_structure" ;;
+        "Phase 5") echo "/workflow_decompose" ;;
+        "Phase 6") echo "/workflow_execute" ;;
+        "Phase 7") echo "/workflow_track" ;;
+        *) echo "/workflow_analyze" ;;
+    esac
+}
+# ───────────────────────────────────────────────────────────────────────────
+
 # Detectar work package activo
 # Fuente 1 (primaria): now.md::current_work si phase != complete
 # Fuente 2 (fallback): directorio más reciente por nombre (YYYY-MM-DD prefijo), no por mtime
@@ -30,9 +51,6 @@ fi
 echo ""
 echo "=== PM-THYROX — ACTIVAR SKILL ANTES DE TRABAJAR ==="
 echo ""
-echo "  REQUERIDO: Invocar Skill tool → pm-thyrox"
-echo "  Si no disponible: leer .claude/skills/pm-thyrox/SKILL.md"
-echo ""
 if [ -n "$ACTIVE_WP" ]; then
     echo "  Work package activo: context/work/${ACTIVE_WP}/"
     [ -n "$PHASE" ] && echo "  Fase actual: ${PHASE}"
@@ -44,8 +62,26 @@ if [ -n "$ACTIVE_WP" ]; then
         NEXT=$(grep -m1 "^\- \[ \]" "$TASK_PLAN" 2>/dev/null | sed 's/- \[ \] //')
         [ -n "$NEXT" ] && echo "  Próxima tarea: ${NEXT}"
     fi
+    echo ""
+    # Mostrar las dos rutas de ejecución (ADR-015 D-04 + D-06)
+    WF_CMD=$(_phase_to_command "$PHASE")
+    echo "  Opciones de ejecución:"
+    echo "    A (calidad alta HOY):    invocar pm-thyrox SKILL → ${PHASE}"
+    if [ "$COMMANDS_SYNCED" = "true" ]; then
+        echo "    B (determinístico):      ${WF_CMD}"
+    else
+        echo "    B (determinístico):      ${WF_CMD}  [outdated — esperar TD-008]"
+    fi
 else
-    echo "  Sin work package activo → empezar Phase 1: ANALYZE"
+    echo "  Sin work package activo"
+    echo ""
+    echo "  Opciones de ejecución:"
+    echo "    A (calidad alta HOY):    invocar pm-thyrox SKILL → Phase 1: ANALYZE"
+    if [ "$COMMANDS_SYNCED" = "true" ]; then
+        echo "    B (determinístico):      /workflow_analyze"
+    else
+        echo "    B (determinístico):      /workflow_analyze  [outdated — esperar TD-008]"
+    fi
 fi
 
 # Detectar tech skills activos (generados por _generator.sh)
