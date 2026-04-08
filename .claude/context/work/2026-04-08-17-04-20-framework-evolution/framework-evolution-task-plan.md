@@ -54,11 +54,11 @@ flowchart TD
 
 ### Sesión 1 — Bloque E + B (5 tareas, micro)
 
-- [ ] [T-001] Crear `.claude/skills/pm-thyrox/scripts/stop-hook-git-check.sh` con verificación `stop_hook_active` (SPEC-E01)
-- [ ] [T-002] Crear `.claude/skills/pm-thyrox/scripts/session-resume.sh` con lógica PostCompact condicional (SPEC-E02)
-- [ ] [T-003] Actualizar `.claude/settings.json` — añadir entrada `Stop` hook (SPEC-E03)
-- [ ] [T-004] Actualizar `.claude/settings.json` — añadir entrada `PostCompact` hook (SPEC-E03)
-- [ ] [T-005] Actualizar `.claude/skills/pm-thyrox/SKILL.md` — añadir checklist atomicidad en sección Phase 5 DECOMPOSE (SPEC-B01)
+- [x] [T-001] Crear `.claude/skills/pm-thyrox/scripts/stop-hook-git-check.sh` con verificación `stop_hook_active` (SPEC-E01)
+- [x] [T-002] Crear `.claude/skills/pm-thyrox/scripts/session-resume.sh` con lógica PostCompact condicional (SPEC-E02)
+- [x] [T-003] Actualizar `.claude/settings.json` — añadir entrada `Stop` hook (SPEC-E03)
+- [x] [T-004] Actualizar `.claude/settings.json` — añadir entrada `PostCompact` hook (SPEC-E03)
+- [x] [T-005] Actualizar `.claude/skills/pm-thyrox/SKILL.md` — añadir checklist atomicidad en sección Phase 5 DECOMPOSE (SPEC-B01)
 
 **Checkpoint S1:** `stop-hook-git-check.sh` existe + `session-resume.sh` existe + `settings.json` tiene 3 hooks + SKILL.md Phase 5 tiene checklist. Verificar con `ls scripts/` y `cat settings.json`.
 
