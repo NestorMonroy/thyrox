@@ -83,7 +83,7 @@ T-016 → last (depende de todas las anteriores).
 
 ### Bloque conventions (T-011) — independiente
 
-- [ ] [T-011] Añadir sección `## State files — naming conventions` en `references/conventions.md` — tabla con 3 tipos de archivo: `now.md` (orquestador, estado compartido) / `now-{agent-name}.md` (agente nativo en ejecución, e.g. `now-task-executor.md`) / `now-{skill-name}-{wp-id}.md` (skill especializado, e.g. `now-security-audit-wp-auth.md`); regla de section owner; referencia a state-management.md para trigger map (US-06 / AC-06.1..AC-06.5)
+- [x] [T-011] Añadir sección `## State files — naming conventions` en `references/conventions.md` — tabla con 3 tipos de archivo: `now.md` (orquestador, estado compartido) / `now-{agent-name}.md` (agente nativo en ejecución, e.g. `now-task-executor.md`) / `now-{skill-name}-{wp-id}.md` (skill especializado, e.g. `now-security-audit-wp-auth.md`); regla de section owner; referencia a state-management.md para trigger map (US-06 / AC-06.1..AC-06.5)
 
 ---
 

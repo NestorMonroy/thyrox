@@ -699,3 +699,20 @@ Si un agente no puede crear un archivo (Write denegado):
 Este es el comportamiento esperado — no un error del agente.
 El coordinador siempre tiene Write habilitado; los agentes pueden tenerlo restringido.
 <!-- END SECTION: parallel-agent-conventions -->
+
+## State files — naming conventions
+
+Define qué archivo de estado usa cada tipo de entidad en ejecución. Convención establecida en ADR-015 D-08.
+
+| Tipo de entidad | Archivo de estado | Ejemplo |
+|----------------|-------------------|---------|
+| Orquestador / estado compartido | `context/now.md` | Estado de sesión single-agent o estado global |
+| Agente nativo en ejecución | `context/now-{agent-name}.md` | `now-task-executor.md`, `now-task-planner.md` |
+| Skill especializado activo | `context/now-{skill-name}-{wp-id}.md` | `now-security-audit-wp-auth.md` |
+
+**Regla de section owner:** Cada entidad escribe únicamente en su propio archivo de estado.
+`now.md` es territorio del orquestador — un agente o skill especializado NO sobreescribe `now.md`.
+
+**Cuándo crear el archivo:** Al inicio de la ejecución. Cuándo eliminarlo: al completar (o moverlo a `work/{wp}/` como evidencia).
+
+Ver también: [state-management.md](state-management.md) para el trigger map completo de cuándo actualizar cada campo.
