@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-03
+updated_at: 2026-04-08
 ```
 
 # Deuda Técnica — THYROX
@@ -437,3 +437,95 @@ Al abrir WP formal de agentes (agent-format-spec o similar).
 actualizan su `now-{agent-name}.md`. La convención está documentada en `conventions.md`.
 
 ---
+
+## TD-016: Phase 3 PLAN no verifica existencia de archivos antes de planificar cambios
+
+```
+Severidad: alta
+Origen: FASE 22 — framework-evolution (Phase 4 STRUCTURE detectó stop-hook-git-check.sh inexistente)
+Fase afectada: Phase 3 PLAN (al listar tareas de modificación/eliminación)
+Estado: [ ] Pendiente — requiere instrucción en SKILL.md Phase 3
+```
+
+**Problema:**
+Durante Phase 3 PLAN (y Phase 4 STRUCTURE), se asumió que `stop-hook-git-check.sh` existía
+y requería modificación. En Phase 4 se descubrió que el archivo no existe — la tarea correcta
+es "crear", no "modificar". Esta contradicción, si no se detecta, puede generar tareas imposibles
+en el task-plan de Phase 5 (e.g. T-001: "editar archivo que no existe").
+
+**Síntoma concreto:**
+- FASE 22 Phase 3 PLAN: `TD-013: Añadir verificación stop_hook_active en stop-hook-git-check.sh`
+  → implica que el archivo existe
+- FASE 22 Phase 4 STRUCTURE: verificación revela que `.claude/skills/pm-thyrox/scripts/stop-hook-git-check.sh`
+  **no existe** → la tarea correcta es "crear el archivo con la verificación", no "añadir a un existente"
+
+**Regla faltante en SKILL.md Phase 3:**
+> Al listar tareas de "modificar" o "eliminar" archivos, verificar que existen antes de incluirlos
+> en el In-Scope. Si no existen, cambiar a "crear". Comando de validación:
+> `[ -f "path/archivo" ] && echo "existe" || echo "CREAR"`
+
+**Impacto:**
+- Contradicciones entre plan y ejecución
+- Tareas de ejecución que fallan con "file not found"
+- Trazabilidad rota (task-plan describe una operación diferente a la real)
+
+**Solución:**
+Añadir en SKILL.md Phase 3 PLAN, antes de cerrar el In-Scope:
+
+> **Validación de existencia de archivos (obligatoria):**
+> Para cada archivo listado como "modificar" o "eliminar":
+> - Verificar que existe con `ls path/archivo`
+> - Si no existe: cambiar la descripción de la tarea a "crear"
+> - Si existe: confirmar que la modificación descrita es coherente con su contenido actual
+
+**Trigger para ejecutar:**
+WP de correcciones a SKILL.md (puede añadirse al WP de TD-007 o como FASE 23).
+
+**Criterio de cierre:**
+SKILL.md Phase 3 incluye el paso de validación de existencia. El siguiente WP que use Phase 3
+no presenta contradicciones entre In-Scope y el estado real del sistema.
+
+---
+
+## TD-017: Criterios de cambio de FASE no están documentados en CLAUDE.md ni SKILL.md
+
+```
+Severidad: media
+Origen: FASE 22 — pregunta explícita del usuario durante Phase 4 STRUCTURE
+Fase afectada: Phase 7 TRACK (cierre de FASE) y Phase 1 ANALYZE (apertura de nueva FASE)
+Estado: [ ] Pendiente — requiere clarificación en CLAUDE.md y/o SKILL.md
+```
+
+**Problema:**
+CLAUDE.md y SKILL.md definen el glosario FASE vs Phase, pero no documentan:
+1. **Cuándo se cierra una FASE**: ¿cuando Phase 7 TRACK completa?, ¿cuando el usuario aprueba?, ¿automáticamente?
+2. **Cuándo empieza una nueva FASE**: ¿cuando hay una nueva solicitud del usuario?, ¿cuando se abre un nuevo WP?
+3. **Qué determina el número de FASE**: ¿secuencial global?, ¿quién asigna el número?
+4. **FASE 22 específicamente**: ¿en qué condición se cierra y se pasa a FASE 23?
+
+**Estado actual de FASE 22:**
+FASE 22 está en Phase 4 STRUCTURE (aprobación pendiente). Para cerrar FASE 22 se necesita:
+- Completar Phase 5 DECOMPOSE → Phase 6 EXECUTE → Phase 7 TRACK
+- Phase 7 TRACK produce: lecciones aprendidas, CHANGELOG entry, ROADMAP actualizado, now.md → null
+
+**Regla faltante:**
+> Una FASE cambia cuando:
+> 1. Phase 7 TRACK completa para el WP activo (lecciones + changelog + ROADMAP)
+> 2. El WP activo se marca como `status: complete` en su plan
+> 3. `now.md` se actualiza a `phase: complete` y `current_work: null`
+> Una nueva FASE empieza cuando se crea un nuevo WP (nuevo directorio en `context/work/`)
+
+**Solución:**
+Añadir en CLAUDE.md (sección Glosario) una nota sobre el ciclo de vida de FASE:
+> Una FASE = un WP. Se cierra al completar Phase 7 TRACK del WP. La siguiente solicitud
+> de trabajo abre una nueva FASE (nuevo WP con timestamp).
+
+Y en SKILL.md Phase 7 TRACK: añadir instrucción explícita de "marcar FASE como cerrada".
+
+**Trigger para ejecutar:**
+WP de correcciones a CLAUDE.md/SKILL.md (puede combinarse con TD-016 o TD-007).
+
+**Criterio de cierre:**
+CLAUDE.md Glosario incluye nota sobre ciclo de vida. SKILL.md Phase 7 incluye
+instrucción de cierre de FASE. El usuario puede determinar en qué FASE está
+y cuándo cambia sin necesidad de preguntar.
