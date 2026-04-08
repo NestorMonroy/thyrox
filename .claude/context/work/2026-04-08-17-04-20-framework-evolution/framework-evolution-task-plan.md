@@ -16,12 +16,14 @@ flowchart TD
     T001[T-001 stop-hook-git-check.sh] --> T003[T-003 settings.json Stop]
     T002[T-002 session-resume.sh] --> T004[T-004 settings.json PostCompact]
     T005[T-005 SKILL.md Phase5 checklist]
-    T006[T-006 ADR-015 Addendum] --> T010[T-010 ADR-016]
+    T006[T-006 ADR-015 Addendum]
     T007[T-007 skill-vs-agent triggering]
     T008[T-008 skill-vs-agent hooks]
     T009[T-009 skill-vs-agent agent-teams]
 
-    T011[T-011 Spike] --> T012[T-012 migrate analyze]
+    T011[T-011 Spike] --> T010[T-010 ADR-016]
+    T006 --> T010
+    T011 --> T012[T-012 migrate analyze]
     T011 --> T013[T-013 migrate strategy]
     T011 --> T014[T-014 migrate plan]
     T011 --> T015[T-015 migrate structure]
@@ -43,7 +45,7 @@ flowchart TD
     T024 --> T026[T-026 sinergia note]
     T028 --> T029[T-029 COMMANDS_SYNCED=true]
 
-    T030[T-030 SKILL.md Phase1 Step0] --> T031[T-031 context.md.template]
+    T031[T-031 context.md.template] --> T030[T-030 SKILL.md Phase1 Step0]
 ```
 
 ---
@@ -62,42 +64,43 @@ flowchart TD
 
 ---
 
-### Sesión 2 — Bloque A (5 tareas, docs)
+### Sesión 2 — Bloque A (4 tareas, docs)
 
 - [ ] [T-006] Actualizar `.claude/context/decisions/adr-015.md` — añadir sección "Addendum 2026-04-08" con 5 correcciones (SPEC-A01)
 - [ ] [T-007] Actualizar `.claude/skills/pm-thyrox/references/skill-vs-agent.md` — actualizar tabla de triggering con 3 modos (SPEC-A02)
 - [ ] [T-008] Actualizar `.claude/skills/pm-thyrox/references/skill-vs-agent.md` — actualizar sección de hooks con 4 tipos (SPEC-A02)
 - [ ] [T-009] Actualizar `.claude/skills/pm-thyrox/references/skill-vs-agent.md` — añadir Agent teams como 4ta categoría (SPEC-A02)
-- [ ] [T-010] Crear `.claude/context/decisions/adr-016.md` — decisión commands→skills hidden (SPEC-A03)
 
-**Checkpoint S2:** ADR-015 tiene Addendum + skill-vs-agent.md tiene 3 actualizaciones + ADR-016 existe. Verificar con `grep "Addendum" adr-015.md` y `ls decisions/`.
+**Checkpoint S2:** ADR-015 tiene Addendum + skill-vs-agent.md tiene 3 actualizaciones. Verificar con `grep "Addendum" adr-015.md`. ADR-016 se crea en Sesión 3 (post-spike).
 
 ---
 
-### Sesión 3 — Bloque C: Spike + Migración (8 tareas)
+### Sesión 3 — Bloque C: Spike + ADR-016 + Migración (9 tareas)
 
-- [ ] [T-011] Spike: crear `.claude/skills/workflow_spike_test.md` con `disable-model-invocation: true`, verificar invocación `/<name>`, eliminar el archivo de prueba (SPEC-C01)
+- [ ] [T-011] Spike: crear `.claude/skills/workflow_spike_test.md` con `disable-model-invocation: true`, verificar invocación `/<name>` y que el hook en frontmatter dispara correctamente (DA-004: confirmar evento `UserPromptSubmit` u alternativo), eliminar el archivo de prueba, documentar resultado en `execution-log` del WP (SPEC-C01)
 
-> **Gate T-011:** Si el spike falla, detener Bloque C y notificar al usuario. Activar fallback (mantener commands/, solo sincronizar contenido in-place). T-012..T-029 se cancelan.
+> **Gate T-011:** Si el spike falla, detener Bloque C y notificar al usuario. Activar fallback (mantener commands/, solo sincronizar contenido in-place). T-010 y T-012..T-029 se cancelan. Revisar design.md §8 para el procedimiento completo.
 
-- [ ] [T-012] [P] Crear `.claude/skills/workflow_analyze.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` + contenido actual de commands/ (SPEC-C02)
-- [ ] [T-013] [P] Crear `.claude/skills/workflow_strategy.md` — frontmatter + hook + contenido actual (SPEC-C02)
-- [ ] [T-014] [P] Crear `.claude/skills/workflow_plan.md` — frontmatter + hook + contenido actual (SPEC-C02)
-- [ ] [T-015] [P] Crear `.claude/skills/workflow_structure.md` — frontmatter + hook + contenido actual (SPEC-C02)
-- [ ] [T-016] [P] Crear `.claude/skills/workflow_decompose.md` — frontmatter + hook + contenido actual (SPEC-C02)
-- [ ] [T-017] [P] Crear `.claude/skills/workflow_execute.md` — frontmatter + hook + contenido actual (SPEC-C02)
-- [ ] [T-018] [P] Crear `.claude/skills/workflow_track.md` — frontmatter + hook + contenido actual (SPEC-C02)
+- [ ] [T-010] Crear `.claude/context/decisions/adr-016.md` — decisión commands→skills hidden (contexto H-NEW-2+H-SCHED-1, opciones, decisión, implicación tabla 5 capas, criterio de revisión) (SPEC-A03)
 
-**Checkpoint S3:** `ls .claude/skills/workflow_*.md` muestra 7 archivos. Cada uno tiene `disable-model-invocation: true` en su frontmatter.
+- [ ] [T-012] [P] Crear `.claude/skills/workflow_analyze.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [ ] [T-013] [P] Crear `.claude/skills/workflow_strategy.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [ ] [T-014] [P] Crear `.claude/skills/workflow_plan.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [ ] [T-015] [P] Crear `.claude/skills/workflow_structure.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [ ] [T-016] [P] Crear `.claude/skills/workflow_decompose.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [ ] [T-017] [P] Crear `.claude/skills/workflow_execute.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [ ] [T-018] [P] Crear `.claude/skills/workflow_track.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+
+**Checkpoint S3:** ADR-016 existe (`ls decisions/adr-016.md`). `ls .claude/skills/workflow_*.md` muestra 7 archivos. Cada uno tiene `disable-model-invocation: true` en su frontmatter. Evento de hook confirmado (DA-004).
 
 ---
 
 ### Sesión 4 — Bloque C: Sync contenido parte 1 (4 tareas, batch)
 
-- [ ] [T-019] [P] Actualizar `.claude/skills/workflow_analyze.md` — reemplazar cuerpo con lógica Phase 1 actual (contexto sesión, 8 aspectos, exit criteria, stopping point manifest) (SPEC-C03)
-- [ ] [T-020] [P] Actualizar `.claude/skills/workflow_strategy.md` — reemplazar cuerpo con lógica Phase 2 actual (key ideas, research, decisiones, pre/post check) (SPEC-C03)
-- [ ] [T-021] [P] Actualizar `.claude/skills/workflow_plan.md` — reemplazar cuerpo con lógica Phase 3 actual (scope, in-scope, out-of-scope, estimación, validación archivos existentes) (SPEC-C03)
-- [ ] [T-022] [P] Actualizar `.claude/skills/workflow_structure.md` — reemplazar cuerpo con lógica Phase 4 actual (complejidad, spec/design, checklist) (SPEC-C03)
+- [ ] [T-019] [P] Actualizar `.claude/skills/workflow_analyze.md` — reemplazar cuerpo con lógica Phase 1 actual (contexto sesión, 8 aspectos, exit criteria, stopping point manifest) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [ ] [T-020] [P] Actualizar `.claude/skills/workflow_strategy.md` — reemplazar cuerpo con lógica Phase 2 actual (key ideas, research, decisiones, pre/post check) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [ ] [T-021] [P] Actualizar `.claude/skills/workflow_plan.md` — reemplazar cuerpo con lógica Phase 3 actual (scope, in-scope, out-of-scope, estimación, validación archivos existentes) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [ ] [T-022] [P] Actualizar `.claude/skills/workflow_structure.md` — reemplazar cuerpo con lógica Phase 4 actual (complejidad, spec/design, checklist) + actualizar `updated_at` en frontmatter (SPEC-C03)
 
 **Checkpoint S4:** Los 4 skills tienen contenido actualizado. Verificar que cada uno tiene sección "Exit criteria" y referencia al siguiente workflow.
 
@@ -105,9 +108,9 @@ flowchart TD
 
 ### Sesión 5 — Bloque C: Sync contenido parte 2 (3 tareas, batch)
 
-- [ ] [T-023] [P] Actualizar `.claude/skills/workflow_decompose.md` — reemplazar cuerpo con lógica Phase 5 actual (DAG, tareas atómicas, checklist atomicidad de T-005, aprobación usuario) (SPEC-C03)
-- [ ] [T-024] [P] Actualizar `.claude/skills/workflow_execute.md` — reemplazar cuerpo con lógica Phase 6 actual (gates async, state-management now.md, stopping points, async gates) (SPEC-C03)
-- [ ] [T-025] [P] Actualizar `.claude/skills/workflow_track.md` — reemplazar cuerpo con lógica Phase 7 actual (lecciones aprendidas, CHANGELOG, ROADMAP, cierre de FASE, now.md → complete) (SPEC-C03)
+- [ ] [T-023] [P] Actualizar `.claude/skills/workflow_decompose.md` — reemplazar cuerpo con lógica Phase 5 actual (DAG, tareas atómicas, checklist atomicidad de T-005, aprobación usuario) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [ ] [T-024] [P] Actualizar `.claude/skills/workflow_execute.md` — reemplazar cuerpo con lógica Phase 6 actual (gates async, state-management now.md, stopping points, async gates) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [ ] [T-025] [P] Actualizar `.claude/skills/workflow_track.md` — reemplazar cuerpo con lógica Phase 7 actual (lecciones aprendidas, CHANGELOG, ROADMAP, cierre de FASE, now.md → complete) + actualizar `updated_at` en frontmatter (SPEC-C03)
 
 **Checkpoint S5:** Los 7 skills tienen contenido completo y actualizado. Cada uno tiene `updated_at` en frontmatter.
 
@@ -126,10 +129,10 @@ flowchart TD
 
 ### Sesión 7 — Bloque D (2 tareas)
 
-- [ ] [T-030] Actualizar `.claude/skills/pm-thyrox/SKILL.md` — añadir Step 0 END USER CONTEXT al inicio de la sección Phase 1 ANALYZE (SPEC-D01)
-- [ ] [T-031] Crear `.claude/skills/pm-thyrox/assets/context.md.template` — template para documentar END USER CONTEXT al inicio de cada WP (SPEC-D02)
+- [ ] [T-031] Crear `.claude/skills/pm-thyrox/assets/context.md.template` — template para documentar END USER CONTEXT al inicio de cada WP (secciones: END USER, cadena de requisitos, restricciones relevantes) (SPEC-D02)
+- [ ] [T-030] Actualizar `.claude/skills/pm-thyrox/SKILL.md` — añadir Step 0 END USER CONTEXT al inicio de la sección Phase 1 ANALYZE, incluyendo referencia a `context.md.template` (SPEC-D01)
 
-**Checkpoint S7:** SKILL.md Phase 1 tiene Step 0 antes de los 8 aspectos. `assets/context.md.template` existe.
+**Checkpoint S7:** `assets/context.md.template` existe. SKILL.md Phase 1 tiene Step 0 antes de los 8 aspectos con referencia al template.
 
 ---
 
@@ -164,7 +167,9 @@ flowchart TD
 - [x] Ninguna descripción de tarea contiene "y" conectando dos operaciones distintas
 - [x] Cada tarea puede commitearse y marcarse [x] de forma independiente
 
-*Nota: T-011 (spike) crea + verifica + elimina un archivo temporal — es una única operación de validación que produce un resultado binario (pass/fail). Es atómica en su propósito.*
+*Nota: T-011 (spike) crea + verifica (invocación + hook event) + documenta + elimina — es una única operación de validación que produce un resultado binario (pass/fail). Es atómica en su propósito.*
+
+*Nota T-019..T-025: actualizar `updated_at` en frontmatter es parte de la misma operación de actualización del archivo — no es una operación separada. 1 archivo, 1 commit.*
 
 ---
 
