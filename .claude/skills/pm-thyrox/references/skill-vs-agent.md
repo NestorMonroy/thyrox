@@ -95,6 +95,32 @@ Hooks (100% determinísticos) + CLAUDE.md (siempre cargado) compensan la confiab
 
 ---
 
+## Tabla de decisión — SKILL vs /workflow_* vs agente vs CLAUDE.md
+
+Cuándo usar cada mecanismo. Usar la primera fila que aplique.
+
+| Situación | Mecanismo | Razón |
+|-----------|-----------|-------|
+| Instrucciones que deben aplicarse en TODA sesión sin excepción | CLAUDE.md (Capa 1) | Siempre cargado, sin triggering probabilístico |
+| Metodología de trabajo que se activa on-demand por dominio | SKILL (Capa 2) | Inyección de texto con conocimiento especializado |
+| Ejecutar una fase específica del ciclo PM de forma determinística | /workflow_* command (Capa 3) | Determinístico cuando el usuario lo invoca |
+| Especialista autónomo con tools acotadas, ejecutable en paralelo | Agente nativo (Capa 4) | Subproceso con contexto propio, tools declaradas |
+| Notificación o trigger al inicio/fin de sesión | Hook (Capa 0) | 100% determinístico, ejecutado por el harness |
+
+### Naturaleza de cada mecanismo
+
+| Mecanismo | Naturaleza | Confiabilidad | Overhead |
+|-----------|-----------|---------------|---------|
+| CLAUDE.md | Declarativo, siempre en contexto | Alta (siempre) | Bajo (~80 líneas fijas) |
+| SKILL | Probabilístico, on-demand | Media (puede no disparar) | Bajo (solo si se invoca) |
+| /workflow_* command | Determinístico, usuario lo invoca explícitamente | Alta (si se usa) | 0 (solo cuando se usa) |
+| Agente nativo | Determinístico una vez lanzado, contexto propio | Alta | 0 (contexto separado) |
+
+**Referencia completa:** [ADR-015](../../context/decisions/adr-015.md) documenta el razonamiento
+completo detrás de la arquitectura de 5 capas y las opciones descartadas.
+
+---
+
 ## Señales de confusión frecuente
 
 - Si el archivo necesita `tools` para hacer su trabajo → es un agente, no un SKILL.
