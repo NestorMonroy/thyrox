@@ -99,6 +99,7 @@ Referencias de análisis por subsección (leer según necesidad):
 Presentar al usuario un resumen de los hallazgos del análisis (objetivos, gaps, riesgos principales, criterios de éxito).
 Esperar confirmación explícita antes de avanzar a Phase 2.
 NO continuar hasta recibir respuesta — un "SI" previo no autoriza esta fase.
+Al recibir aprobación: actualizar `context/now.md::phase` a `Phase 2`.
 
 **Salir cuando:** `work/.../analysis/{nombre-wp}-analysis.md` existe, no contiene `[NEEDS CLARIFICATION]`, y el usuario confirmó los hallazgos explícitamente en esta sesión.
 **Siguiente:** Proponer Phase 2. Si no requiere decisiones arquitectónicas, proponer saltar a Phase 3.
@@ -123,6 +124,7 @@ Ver [solution-strategy](references/solution-strategy.md) para estructura complet
 Presentar al usuario las decisiones clave de la solución (Key Ideas, Decisions, alternativas descartadas).
 Esperar confirmación explícita antes de avanzar a Phase 3.
 NO continuar hasta recibir respuesta — un "SI" previo no autoriza esta fase.
+Al recibir aprobación: actualizar `context/now.md::phase` a `Phase 3`.
 
 **Salir cuando:** `work/.../*-solution-strategy.md` existe con decisiones documentadas y el usuario las confirmó explícitamente en esta sesión.
 **Siguiente:** Proponer Phase 3: PLAN para definir scope y linkear work package en ROADMAP.
@@ -164,6 +166,7 @@ Presentar al usuario la especificación completa (user stories, acceptance crite
 Esperar confirmación explícita antes de avanzar a Phase 5 (DECOMPOSE).
 NO continuar hasta recibir respuesta.
 Excepción: si el WP es `reversibility: documentation` y la spec no tiene ambigüedades, el gate puede ser ligero (mencionar que se va a descomponer y dar oportunidad de objetar).
+Al recibir aprobación: actualizar `context/now.md::phase` a `Phase 5`.
 
 **Salir cuando:** `work/.../*-requirements-spec.md` existe, no contiene `[NEEDS CLARIFICATION]`, checklist completado al 100%, y el usuario confirmó la spec.
 **Siguiente:** Proponer Phase 5: DECOMPOSE para crear tareas atómicas.
@@ -192,6 +195,7 @@ Presentar al usuario el task-plan completo con TODAS las tareas listadas.
 Esperar confirmación explícita antes de ejecutar CUALQUIER tarea.
 Este gate NO tiene excepciones — incluso WPs `documentation` deben pasar por aquí.
 Razón: Phase 6 modifica el repositorio. El usuario debe aprobar el plan antes de que se ejecute.
+Al recibir aprobación: actualizar `context/now.md::phase` a `Phase 6`.
 
 **Salir cuando:** `work/.../*-task-plan.md` existe con tareas atómicas, orden definido, y el usuario aprobó el plan explícitamente en esta sesión.
 **Siguiente:** Proponer Phase 6: EXECUTE para implementar.
