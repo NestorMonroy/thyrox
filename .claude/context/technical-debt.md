@@ -245,3 +245,38 @@ pm-thyrox SKILL ≤ 80 líneas. Cada workflow_* command contiene la lógica de s
 workflow_* están sincronizados con todas las instrucciones actuales (gates, manifest, calibración).
 
 ---
+
+## TD-007: Phase 1 carece de Step 0 — END USER CONTEXT antes del análisis técnico
+
+```
+Severidad: media
+Origen: Análisis de cadena de requisitos 2026-04-08 (context-hygiene WP)
+Fase afectada: Phase 1 ANALYZE (y por cascada, todas las demás)
+Estado: [ ] Pendiente — requiere WP propio
+```
+
+**Problema:**
+Phase 1 (ANALYZE) incluye "Stakeholders" como el segundo ítem de una lista de 8.
+No establece explícitamente quién es el END USER real ni mapea la cadena de traducción
+de requisitos entre niveles (END USER → App Programmer → Framework Dev → Platform → Hardware).
+Resultado: análisis técnicamente correcto pero desconectado del beneficiario real.
+
+**Las restricciones de bajo nivel afectan al END USER pero no se mapean:**
+- "Sin memoria nativa en Claude" → "Phase 7 DEBE actualizar archivos de estado" →
+  "El desarrollador puede continuar sin reconstruir contexto"
+- Sin el mapa, TD-004/TD-005 fueron identificados como "deuda técnica técnica" en lugar
+  de "restricción de plataforma que afecta directamente la experiencia del END USER"
+
+**Solución candidata (Opción B):**
+Añadir Step 0 dentro de Phase 1, escalado según tamaño del WP:
+- Micro: identificar END USER en una línea
+- Pequeño: END USER + restricción principal que sube
+- Mediano: cadena completa de traducción + restricciones que suben
+- Grande: cadena completa + artefacto separado `*-context.md`
+
+**Criterio de cierre:**
+SKILL.md Phase 1 tiene Step 0 explícito. Para WPs Mediano/Grande existe template
+`*-context.md` con: END USER, cadena de traducción por niveles, mapa de restricciones,
+promesas que podemos y no podemos hacer al END USER.
+
+---
