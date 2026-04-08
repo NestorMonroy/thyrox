@@ -33,6 +33,7 @@ status: Pendiente aprobación
 
 - **TD-013:** Añadir verificación `stop_hook_active` en `stop-hook-git-check.sh`
 - **TD-012:** Crear hook `PostCompact` (`session-resume.sh`) con lógica condicional sobre `compact_summary`
+- **TD-012:** Registrar el nuevo hook `PostCompact` en `settings.json` (sin esto el hook nunca dispara)
 
 ### Bloque B — Mejora de SKILL.md (micro, independiente)
 
@@ -53,6 +54,8 @@ status: Pendiente aprobación
 - Sincronizar contenido de los 7 skills con lógica actual de SKILL.md (gates, stopping point manifest, calibración L-085)
 - Reducir `pm-thyrox SKILL` a ~40 líneas (catálogo + tabla `/workflow_*`)
 - Eliminar `.claude/commands/` (o dejar redirect si aplica)
+- **Actualizar `session-start.sh`:** cambiar `COMMANDS_SYNCED=false → true` para eliminar etiqueta `[outdated]` de Ruta 2 (ADR-015 D-04)
+- Documentar sinergia `/loop` + `/workflow_*` en el contenido del skill migrado (nota de diseño — H-SCHED-3)
 
 ### Bloque D — TD-007: END USER CONTEXT en Phase 1
 
@@ -81,7 +84,7 @@ status: Pendiente aprobación
 | Bloque / Componente | Tareas estimadas |
 |---------------------|-----------------|
 | E — TD-013 (stop_hook_active) | 1 |
-| E — TD-012 (PostCompact hook + script + settings.json) | 3 |
+| E — TD-012 (session-resume.sh + settings.json) | 3 |
 | B — TD-011 (checklist Phase 5) | 1 |
 | A — ADR-015 Addendum (5 correcciones) | 2 |
 | A — skill-vs-agent.md (3 actualizaciones) | 1 |
@@ -90,11 +93,12 @@ status: Pendiente aprobación
 | C — Migrar 7 skills + frontmatter + hooks once:true | 3 |
 | C — Sincronizar contenido de los 7 skills con SKILL.md | 7 |
 | C — Reducir pm-thyrox SKILL + eliminar commands/ | 2 |
+| C — Actualizar session-start.sh (COMMANDS_SYNCED flag) | 1 |
 | D — Step 0 en SKILL.md Phase 1 | 1 |
 | D — Template `*-context.md` | 1 |
-| **Total** | **25 tareas** |
+| **Total** | **26 tareas** |
 
-**Clasificación:** Grande (Bloque C domina con 13 tareas)
+**Clasificación:** Grande (Bloque C domina con 15 tareas)
 **Constraint de ejecución:** Bloque C se ejecuta en batches de 2-3 tareas/sesión (L-085, R-02)
 **Fases activas:** 1-ANALYZE ✓ · 2-STRATEGY ✓ · 3-PLAN ← · 4-STRUCTURE · 5-DECOMPOSE · 6-EXECUTE · 7-TRACK
 
@@ -112,6 +116,8 @@ status: Pendiente aprobación
 | H-NEW-4: Agent teams peer-to-peer | A | ADR-015 + skill-vs-agent.md |
 | H-HOOK-5 + H-REF-3: hooks `once:true` en frontmatter | C | TD-008 hooks por skill |
 | H-SCHED-1: `/loop` es bundled skill (evidencia Anthropic) | C | ADR-016 justificación |
+| H-SCHED-3: sinergia `/loop` + `/workflow_*` | C | Nota de diseño en contenido del skill |
+| ADR-015 D-04: `COMMANDS_SYNCED` flag para eliminar [outdated] | C | `session-start.sh` actualización |
 | TD-011 (sin hallazgo externo, deuda preexistente) | B | SKILL.md Phase 5 |
 | TD-007 (sin hallazgo externo, deuda preexistente) | D | SKILL.md Phase 1 |
 
