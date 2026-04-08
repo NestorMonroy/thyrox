@@ -69,7 +69,7 @@ T-016 → last (depende de todas las anteriores).
 
 - [x] [T-007] Añadir TD-008 en `technical-debt.md` — sync completo de 7 /workflow_* commands con lógica actual de SKILL.md (gates, Stopping Point Manifest, calibración, state-management); prerequisito para reducir pm-thyrox SKILL a catálogo (S-04 diferido); severidad: alta (US-04 / AC-04.3)
 
-- [ ] [T-008] Añadir TD-009 en `technical-debt.md` — implementar patrón `now-{agent-name}.md` / `now-{skill-name}-{wp-id}.md` en definiciones de agentes nativos (agent-spec.md + 9 agentes); trigger: al abrir WP de agentes (US-04 / AC-04.4)
+- [x] [T-008] Añadir TD-009 en `technical-debt.md` — implementar patrón `now-{agent-name}.md` / `now-{skill-name}-{wp-id}.md` en definiciones de agentes nativos (agent-spec.md + 9 agentes); trigger: al abrir WP de agentes (US-04 / AC-04.4)
 
 - [ ] [T-009] Añadir TD-010 en `technical-debt.md` — benchmark empírico: SKILL vs CLAUDE.md vs baseline sin framework; 3 tareas equivalentes, métricas de calidad de output; trigger: cuando haya caso de uso real que justifique el tiempo (US-04 / AC-04.5)
 
