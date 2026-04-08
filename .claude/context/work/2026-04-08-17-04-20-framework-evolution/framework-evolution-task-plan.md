@@ -97,10 +97,10 @@ flowchart TD
 
 ### Sesión 4 — Bloque C: Sync contenido parte 1 (4 tareas, batch)
 
-- [ ] [T-019] [P] Actualizar `.claude/skills/workflow_analyze.md` — reemplazar cuerpo con lógica Phase 1 actual (contexto sesión, 8 aspectos, exit criteria, stopping point manifest) + actualizar `updated_at` en frontmatter (SPEC-C03)
-- [ ] [T-020] [P] Actualizar `.claude/skills/workflow_strategy.md` — reemplazar cuerpo con lógica Phase 2 actual (key ideas, research, decisiones, pre/post check) + actualizar `updated_at` en frontmatter (SPEC-C03)
-- [ ] [T-021] [P] Actualizar `.claude/skills/workflow_plan.md` — reemplazar cuerpo con lógica Phase 3 actual (scope, in-scope, out-of-scope, estimación, validación archivos existentes) + actualizar `updated_at` en frontmatter (SPEC-C03)
-- [ ] [T-022] [P] Actualizar `.claude/skills/workflow_structure.md` — reemplazar cuerpo con lógica Phase 4 actual (complejidad, spec/design, checklist) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [x] [T-019] [P] Actualizar `.claude/skills/workflow_analyze.md` — reemplazar cuerpo con lógica Phase 1 actual (contexto sesión, 8 aspectos, exit criteria, stopping point manifest) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [x] [T-020] [P] Actualizar `.claude/skills/workflow_strategy.md` — reemplazar cuerpo con lógica Phase 2 actual (key ideas, research, decisiones, pre/post check) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [x] [T-021] [P] Actualizar `.claude/skills/workflow_plan.md` — reemplazar cuerpo con lógica Phase 3 actual (scope, in-scope, out-of-scope, estimación, validación archivos existentes) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [x] [T-022] [P] Actualizar `.claude/skills/workflow_structure.md` — reemplazar cuerpo con lógica Phase 4 actual (complejidad, spec/design, checklist) + actualizar `updated_at` en frontmatter (SPEC-C03)
 
 **Checkpoint S4:** Los 4 skills tienen contenido actualizado. Verificar que cada uno tiene sección "Exit criteria" y referencia al siguiente workflow.
 
