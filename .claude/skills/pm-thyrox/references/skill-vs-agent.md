@@ -118,6 +118,7 @@ Cuándo usar cada mecanismo. Usar la primera fila que aplique.
 | Metodología de trabajo que se activa on-demand por dominio | SKILL (Capa 2) | Inyección de texto con conocimiento especializado |
 | Ejecutar una fase específica del ciclo PM de forma determinística | /workflow_* command (Capa 3) | Determinístico cuando el usuario lo invoca |
 | Especialista autónomo con tools acotadas, ejecutable en paralelo | Agente nativo (Capa 4) | Subproceso con contexto propio, tools declaradas |
+| Múltiples agentes coordinados sin orquestador central | Agent teams (experimental) | Agentes peer-to-peer vía `Agent` tool — no usar en producción hasta estabilización |
 | Notificación o trigger al inicio/fin de sesión | Hook (Capa 0) | 100% determinístico, ejecutado por el harness |
 
 ### Naturaleza de cada mecanismo
@@ -128,6 +129,7 @@ Cuándo usar cada mecanismo. Usar la primera fila que aplique.
 | SKILL | Probabilístico, on-demand | Media (puede no disparar) | Bajo (solo si se invoca) |
 | /workflow_* command | Determinístico, usuario lo invoca explícitamente | Alta (si se usa) | 0 (solo cuando se usa) |
 | Agente nativo | Determinístico una vez lanzado, contexto propio | Alta | 0 (contexto separado) |
+| Agent teams | Experimental — agentes peer-to-peer vía `Agent` tool | Media (experimental) | 0 por agente (contextos separados) |
 
 **Referencia completa:** [ADR-015](../../context/decisions/adr-015.md) documenta el razonamiento
 completo detrás de la arquitectura de 5 capas y las opciones descartadas.
