@@ -118,10 +118,10 @@ flowchart TD
 
 ### Sesión 6 — Bloque C: Finalización (4 tareas)
 
-- [ ] [T-026] Actualizar `.claude/skills/workflow_execute.md` — añadir nota de sinergia `/loop 10m /workflow_execute` al final del archivo (SPEC-C07)
-- [ ] [T-027] Actualizar `.claude/skills/pm-thyrox/SKILL.md` — reducir a catálogo ~40 líneas (eliminar lógica de fases, mantener activación + tabla /workflow_* + ADR-015 ref) (SPEC-C04)
-- [ ] [T-028] Eliminar los 7 archivos de `.claude/commands/`: `workflow_analyze.md`, `workflow_strategy.md`, `workflow_plan.md`, `workflow_structure.md`, `workflow_decompose.md`, `workflow_execute.md`, `workflow_track.md` (SPEC-C05)
-- [ ] [T-029] Actualizar `.claude/skills/pm-thyrox/scripts/session-start.sh` línea 13 — cambiar `COMMANDS_SYNCED=false` → `COMMANDS_SYNCED=true` (SPEC-C06)
+- [x] [T-026] Actualizar `.claude/skills/workflow_execute.md` — añadir nota de sinergia `/loop 10m /workflow_execute` al final del archivo (SPEC-C07)
+- [~] [T-027] DIFERIDO — Actualizar `.claude/skills/pm-thyrox/SKILL.md` — reducir a catálogo ~40 líneas (SPEC-C04) — bloqueado por TD-019 (estructura flat vs subdirectorio), TD-021 (Phase N → /workflow_* mapeo), TD-022 (limitaciones), TD-023 (references). Mover a FASE 23.
+- [x] [T-028] Eliminar los 7 archivos de `.claude/commands/`: `workflow_analyze.md`, `workflow_strategy.md`, `workflow_plan.md`, `workflow_structure.md`, `workflow_decompose.md`, `workflow_execute.md`, `workflow_track.md` (SPEC-C05)
+- [x] [T-029] Actualizar `.claude/skills/pm-thyrox/scripts/session-start.sh` línea 13 — cambiar `COMMANDS_SYNCED=false` → `COMMANDS_SYNCED=true` (SPEC-C06)
 
 **Checkpoint S6:** `ls .claude/commands/` muestra solo `workflow_init.md`. `session-start.sh` línea 13 = `COMMANDS_SYNCED=true`. pm-thyrox SKILL.md ≤80 líneas.
 

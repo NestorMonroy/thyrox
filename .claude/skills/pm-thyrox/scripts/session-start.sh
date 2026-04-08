@@ -9,8 +9,8 @@ CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
 # ─── ARQUITECTURA DE RUTAS (ADR-015) ───────────────────────────────────────
 # COMMANDS_SYNCED=false → /workflow_* commands desactualizados vs SKILL.md
 # COMMANDS_SYNCED=true  → /workflow_* sincronizados (post-TD-008), eliminar etiqueta [outdated]
-# Cambiar a true cuando TD-008 (sync /workflow_* commands) esté completado.
-COMMANDS_SYNCED=false
+# TD-008 completado (FASE 22). workflow_* ahora en .claude/skills/ (Capa 2, hidden).
+COMMANDS_SYNCED=true
 
 # Mapa phase → /workflow_* command
 _phase_to_command() {

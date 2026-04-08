@@ -92,3 +92,17 @@ Phase 6 completa cuando:
 
 **Detectar:** Si todas las checkboxes en `*-task-plan.md` están `[x]`, Phase 6 ya completó.
 Al terminar: proponer `/workflow_track` para Phase 7.
+
+---
+
+## Sinergia con /loop
+
+Una vez que los workflow_* están en `.claude/skills/` (TD-008 completo), es posible ejecutar:
+
+```
+/loop 10m /workflow_execute
+```
+
+Esto invoca `/workflow_execute` cada 10 minutos de forma automática — útil para WPs con muchas tareas que se ejecutan en batches. El skill `once: true` del hook garantiza que `now.md::phase` solo se actualiza en el primer disparo de la sesión.
+
+> Nota: requiere que el task-plan no tenga gates humanos pendientes (las tareas deben ser automáticas). Para WPs con gates obligatorios, usar `/loop` solo para el batch de tareas entre gates.
