@@ -123,6 +123,8 @@ NO continuar hasta recibir respuesta — un "SI" previo no autoriza esta fase.
 
 Definir scope antes de estructurar previene scope creep.
 
+> **Nota metodológica:** Phase 2 define el *cómo* — estrategia, alternativas investigadas, decisiones arquitectónicas. Phase 3 define el *qué* — scope statement, in-scope y out-of-scope explícitos. Phase 2 puede orientar el scope (las decisiones acotan lo que entra), pero el scope formal es un artefacto de Phase 3.
+
 1. Brainstorm: ¿qué problema? ¿quiénes son los usuarios? ¿qué es éxito? ¿qué está fuera?
 2. Verificar que el work package existe: `ls context/work/`. Si no existe, volver a Phase 1 antes de continuar. Para trabajo grande que agrupa múltiples features, usar [epic.md.template](assets/epic.md.template)
 3. REQUERIDO: Crear `work/../{nombre-wp}-plan.md` usando [plan.md.template](assets/plan.md.template) — scope statement, in-scope, out-of-scope explícito, estimación de esfuerzo
