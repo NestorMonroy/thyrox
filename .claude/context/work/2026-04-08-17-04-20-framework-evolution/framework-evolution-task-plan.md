@@ -129,8 +129,8 @@ flowchart TD
 
 ### Sesión 7 — Bloque D (2 tareas)
 
-- [ ] [T-031] Crear `.claude/skills/pm-thyrox/assets/context.md.template` — template para documentar END USER CONTEXT al inicio de cada WP (secciones: END USER, cadena de requisitos, restricciones relevantes) (SPEC-D02)
-- [ ] [T-030] Actualizar `.claude/skills/pm-thyrox/SKILL.md` — añadir Step 0 END USER CONTEXT al inicio de la sección Phase 1 ANALYZE, incluyendo referencia a `context.md.template` (SPEC-D01)
+- [x] [T-031] Crear `.claude/skills/pm-thyrox/assets/context.md.template` — template para documentar END USER CONTEXT al inicio de cada WP (secciones: END USER, cadena de requisitos, restricciones relevantes) (SPEC-D02)
+- [x] [T-030] Actualizar `.claude/skills/pm-thyrox/SKILL.md` — añadir Step 0 END USER CONTEXT al inicio de la sección Phase 1 ANALYZE, incluyendo referencia a `context.md.template` (SPEC-D01)
 
 **Checkpoint S7:** `assets/context.md.template` existe. SKILL.md Phase 1 tiene Step 0 antes de los 8 aspectos con referencia al template.
 

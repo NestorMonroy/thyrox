@@ -61,6 +61,16 @@ command correspondiente (Capa 3). Decisión completa: [ADR-015](../../context/de
 
 Entender el problema antes de proponer soluciones evita construir lo incorrecto.
 
+**Step 0 — END USER CONTEXT** (antes de los 8 aspectos):
+Identificar quién es el usuario final y qué problema resuelve con el sistema — no el implementador, no el PM.
+Crear `work/../analysis/{nombre-wp}-end-user-context.md` usando [end-user-context.md.template](assets/end-user-context.md.template).
+Checklist mínimo antes de continuar:
+- [ ] END USER identificado como persona real (no rol abstracto)
+- [ ] Problema expresado en su vocabulario (sin jerga técnica del implementador)
+- [ ] Al menos un indicador de éxito desde su perspectiva
+- [ ] Cadena de requisitos trazada (todas las capas)
+- [ ] Al menos un punto de fricción identificado o "Ninguno" explícito
+
 1. Investigar estos 8 aspectos — preguntar al usuario lo que no esté claro:
    - **Objetivo/Por qué** — ¿qué se quiere lograr y por qué importa?
    - **Stakeholders** — ¿quiénes son los usuarios y qué necesitan?
