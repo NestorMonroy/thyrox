@@ -280,18 +280,22 @@ revela que la arquitectura debe diseñarse para N skills desde el inicio, no com
 
 | Contexto | Archivo | Escribe | Contiene |
 |---------|---------|---------|---------|
-| Agente paralelo en ejecución | `now-{agent-id}.md` | El agente | Progreso de la tarea |
+| Agente nativo en ejecución | `now-{agent-name}.md` | El agente | Progreso de la tarea (e.g., `now-task-executor.md`) |
 | Checkpoint de skill especializado | `now-{skill-name}-{wp-id}.md` | El skill | Estado de evaluación del skill |
 | Estado compartido de sesión | `now.md` | pm-thyrox / orquestador | Fase activa, WPs, agentes |
 
 **Ejemplo:**
 ```
-now.md                        ← pm-thyrox: orchestration decisions
-now-agent1.md                 ← Agent-1: tarea T-007 en progreso
-now-agent2.md                 ← Agent-2: tarea T-008 en progreso
-now-security-audit-wp-auth.md ← security-audit: evaluación de WP-auth
-now-payment-flow-wp-pay.md    ← payment-flow: verificación de WP-payment
+now.md                        ← pm-thyrox: orchestration decisions (estado compartido)
+now-task-executor.md          ← task-executor: tarea T-007 en progreso
+now-task-planner.md           ← task-planner: descomposición T-008 en progreso
+now-security-audit-wp-auth.md ← security-audit skill: evaluación de WP-auth
+now-payment-flow-wp-pay.md    ← payment-flow skill: verificación de WP-payment
 ```
+
+**Patrón:** `now-{agent-name}.md` — donde `agent-name` es el nombre del agente nativo
+(e.g., `task-executor`, `task-planner`, `tech-detector`, `Explore`), no un ID numérico.
+El nombre del agente es estable y descriptivo; un ID numérico (`agent1`) no indica qué hace.
 
 **PTC-proof:** El patrón de archivos no cambia con PTC. Los agentes seguirán usando `now-{agent-id}.md`
 aunque internamente usen PTC para sus tool calls.
@@ -363,7 +367,7 @@ CAPA 3 — Lógica de fase on-demand (determinístico)
 CAPA 4 — Agentes + coordinación git (determinístico cuando Claude los lanza)
 ├─ task-executor: ejecuta T-NNN atómicamente
 ├─ [otros agentes nativos]
-├─ Coordinación: now.md (shared) + now-{agent-id}.md + now-{skill-name}-{wp-id}.md
+├─ Coordinación: now.md (shared) + now-{agent-name}.md + now-{skill-name}-{wp-id}.md
 └─ Git commits = barriers de sincronización (serializados, no bloquean ejecución paralela)
 ├─ task-planner: descompone trabajo
 ├─ tech-detector: detecta stack
