@@ -202,6 +202,120 @@ Valida nuestra propuesta de migrar `/workflow_*` de `.claude/commands/` → `.cl
 
 ---
 
+**Impacto:** Confirma Bloque C (TD-008). No cambia la estrategia, la refuerza.
+
+---
+
+## Hallazgos — Documentación "Hooks reference" (referencia técnica completa)
+
+### Resumen ejecutivo
+
+**Relevancia para FASE 22: ALTA.** El reference provee detalles técnicos exactos que:
+1. Confirman la corrección de TD-013 y la amplían con el schema exacto
+2. Cambian la estrategia óptima para TD-012 (PostCompact > SessionStart compact)
+3. Añaden nuance a la implementación de hooks en skill frontmatter (Bloque C)
+
+---
+
+### H-REF-1: Schema exacto de `stop_hook_active` — TD-013 confirmado
+
+El reference documenta el input exacto del evento `Stop`:
+
+```json
+{
+  "hook_event_name": "Stop",
+  "stop_hook_active": true,
+  "last_assistant_message": "I've completed the refactoring..."
+}
+```
+
+Nuevo campo no documentado antes: **`last_assistant_message`** — contiene el texto del último
+mensaje de Claude sin parsear el transcript. Nuestro `stop-hook-git-check.sh` podría usarlo
+para verificar si Claude mencionó commits pendientes antes de disparar el check.
+
+**TD-013 ampliado:** Además de verificar `stop_hook_active`, podríamos leer `last_assistant_message`
+para suprimir el hook cuando Claude ya menciona que hará un push — evita checks redundantes.
+Para FASE 22 solo añadimos la verificación básica de `stop_hook_active`.
+
+---
+
+### H-REF-2: `PostCompact` recibe `compact_summary` — mejor opción que `SessionStart compact` para TD-012
+
+El reference documenta:
+
+| Evento | Qué recibe | Ventaja |
+|--------|-----------|---------|
+| `SessionStart` (matcher: `compact`) | `source: "compact"` | Sencillo, patrón conocido |
+| `PostCompact` | `compact_summary` (texto del resumen generado) | Puede verificar qué se retuvo antes de re-inyectar |
+
+**Cambio de estrategia para TD-012:**
+`PostCompact` es la opción correcta para re-inyectar contexto post-compactación:
+- Recibe el resumen generado — podemos chequear si ya incluye el WP activo
+- Semánticamente más preciso (reacciona al evento de compactación, no al inicio de sesión)
+- No duplica la lógica con el `SessionStart` normal
+
+**Además:** `InstructionsLoaded` con `load_reason: "compact"` dispara cuando CLAUDE.md se recarga
+post-compactación. Podemos usarlo para confirmar que las instrucciones permanentes están activas.
+
+**TD-012 actualizado:** Crear `PostCompact` hook que re-inyecta: WP activo + fase + próxima tarea.
+Si el `compact_summary` ya incluye el WP, suprimir la re-inyección para no duplicar.
+
+---
+
+### H-REF-3: `once: true` para hooks en skill frontmatter — relevante para Bloque C
+
+El reference documenta el campo `once` en hooks de skills:
+
+> `once: true` — If `true`, runs only once per session then is removed. Skills only, not agents.
+
+Para nuestra estrategia de TD-008 (hooks en frontmatter de `/workflow_*` skills):
+- Si un `/workflow_analyze` skill tiene un hook `PostToolUse` para actualizar `now.md::phase`,
+  `once: true` garantiza que el hook solo dispara la primera vez que se usa la skill en la sesión.
+- Evita actualizaciones repetidas si el usuario invoca `/workflow_analyze` múltiples veces.
+
+**Impacto:** Detalle de implementación para Bloque C. No cambia el scope.
+
+---
+
+### H-REF-4: `SessionEnd` tiene timeout de 1.5s por defecto
+
+El reference advierte:
+> `SessionEnd` hooks have a default timeout of 1.5 seconds.
+
+Nuestro `stop-hook-git-check.sh` es un `Stop` hook (no `SessionEnd`) — no afectado.
+Pero si en el futuro añadimos un `SessionEnd` hook para limpiar `now.md`, debe ser muy rápido
+o configurar `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` explícitamente.
+
+**Impacto:** Ninguno en FASE 22. Nota de diseño para el futuro.
+
+---
+
+### H-REF-5: `WorktreeCreate` / `WorktreeRemove` — relevante para TD-009
+
+El reference confirma que `WorktreeCreate` y `WorktreeRemove` disparan cuando un subagent usa
+`isolation: "worktree"`. Nuestros agentes en `.claude/agents/` usan esta isolation.
+
+Cuando actualicemos agent definitions en TD-009, documentar:
+- Cada agente con `isolation: "worktree"` dispara estos eventos
+- Si se necesita cleanup del worktree en agentes custom → añadir `WorktreeRemove` hook
+
+**Impacto:** Nota para TD-009 (scope futuro).
+
+---
+
+### Correcciones a la estrategia de TD-012
+
+La tabla de comparación del Bloque E del scope propuesto debe actualizarse:
+
+| TD | Estrategia anterior | Estrategia correcta (post-reference) |
+|----|---------------------|--------------------------------------|
+| TD-013 | Añadir verificación `stop_hook_active` | Igual + opcionalmente leer `last_assistant_message` |
+| TD-012 | `SessionStart` con matcher `compact` | **`PostCompact` hook** que recibe `compact_summary` |
+
+La secuencia **E→B→A→C→D** y el scope de bloques no cambia. Solo el enfoque técnico de TD-012.
+
+---
+
 ### H-SCHED-2: Channels — nueva feature no en ninguna doc anterior
 
 La documentación menciona:
