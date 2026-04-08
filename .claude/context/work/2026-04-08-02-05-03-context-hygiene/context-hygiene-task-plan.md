@@ -57,7 +57,7 @@ T-006 depende de T-005. T-009 depende de T-006 + T-007 + T-008.
 
 - [ ] [T-010] Añadir sección "Glosario" en `CLAUDE.md` + nota/referencia en `SKILL.md` con distinción FASE vs Phase y ejemplo concreto (US-05 / AC-05.1, AC-05.2, AC-05.3)
 
-- [ ] [T-011] Crear `lessons-learned.md`, actualizar `CHANGELOG.md` y `ROADMAP.md` (FASE 20 → `[x]`)
+- [x] [T-011] Crear `lessons-learned.md`, actualizar `CHANGELOG.md` y `ROADMAP.md` (FASE 20 → `[x]`)
 
 ---
 

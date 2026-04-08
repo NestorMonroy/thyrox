@@ -701,17 +701,26 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ---
 
-## FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08)
+**Última actualización:** 2026-04-08 (FASE 20 completada — context-hygiene, state automation en SKILL.md v1.7.0)
+
+---
+
+## FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) ✓
 
 **WP:** `.claude/context/work/2026-04-08-02-05-03-context-hygiene/`
-**Causa raíz:** Phase 7 no instruye actualizar focus.md/now.md/project-state.md — congelados desde FASE 15
+**Causa raíz:** Phase 7 no instruía actualizar focus.md/now.md/project-state.md — congelados desde FASE 15
 
 ### Cambios
 
-- [ ] `focus.md` — actualizar a FASE 19 completada, WP context-hygiene activo
-- [ ] `now.md` — actualizar a WP context-hygiene activo, Phase en curso
-- [ ] `project-state.md` — 9 agentes, FASEs 1-19, versión 1.6.0
-- [ ] `SKILL.md` Phase 7 — checklist obligatorio para actualizar archivos de estado al cerrar WP
-- [ ] `CLAUDE.md` — glosario FASE (WP secuencial) vs Phase (SDLC 1-7)
-- [ ] `SKILL.md` — nota FASE vs Phase con referencia al glosario
-- [ ] Lecciones aprendidas + CHANGELOG
+- [x] `references/state-management.md` — tabla de triggers por archivo × evento (2026-04-08)
+- [x] `scripts/update-state.sh` — script de regeneración automática de project-state.md (2026-04-08)
+- [x] `SKILL.md` Phase 1 — instrucción REQUERIDA: actualizar now.md al crear WP (2026-04-08)
+- [x] `SKILL.md` gates de fase — actualizar now.md::phase en cada transición (2026-04-08)
+- [x] `SKILL.md` Phase 7 — tabla REQUERIDA con contenido mínimo por archivo al cerrar WP (2026-04-08)
+- [x] `focus.md` — actualizado a FASE 19 completada, WP context-hygiene activo (2026-04-08)
+- [x] `now.md` — actualizado a WP context-hygiene activo, Phase 6 (2026-04-08)
+- [x] `project-state.md` — regenerado: 9 agentes, 20 FASEs, v1.6.0 → v1.7.0 (2026-04-08)
+- [x] `CLAUDE.md` — glosario FASE (WP secuencial) vs Phase (SDLC 1-7) (2026-04-08)
+- [x] `SKILL.md` — nota FASE vs Phase con referencia al glosario (2026-04-08)
+- [x] Lecciones L-075..L-081 documentadas (2026-04-08)
+- [x] CHANGELOG v1.7.0 actualizado (2026-04-08)

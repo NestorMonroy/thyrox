@@ -13,6 +13,21 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.7.0] - 2026-04-08
+
+### Added — Context Hygiene: sincronización automática de archivos de estado (WP context-hygiene / FASE 20)
+
+- `references/state-management.md` (nuevo) — tabla de triggers: archivo × evento (crear WP, cambiar Phase, cerrar WP, añadir agente) con contenido mínimo por evento
+- `scripts/update-state.sh` (nuevo) — regenera `project-state.md` desde estado real del repo: agentes de `.claude/agents/`, versión de `CHANGELOG.md`, FASEs de `ROADMAP.md`; soporta `--dry-run`
+- `SKILL.md` Phase 1 step 2 — instrucción REQUERIDA: al crear WP, actualizar `now.md::current_work` y `now.md::phase: Phase 1`
+- `SKILL.md` gates de fase — cada ⏸ GATE HUMANO agrega: "Al recibir aprobación: actualizar `now.md::phase` a Phase N" (transiciones 1→2, 2→3, 4→5, 5→6)
+- `SKILL.md` Phase 7 — tabla REQUERIDA al cerrar WP: `now.md` (null), `focus.md` (FASE completada + próximo paso), `project-state.md` (ejecutar `update-state.sh`)
+- `CLAUDE.md` — sección Glosario: FASE/Phase/WP/SP-NNN con ejemplos concretos y regla mnemotécnica
+- `SKILL.md` — nota de nomenclatura FASE vs Phase con enlace al glosario
+- Lecciones L-075..L-081 documentadas
+
+---
+
 ## [1.6.0] - 2026-04-08
 
 ### Added — Async Gates: gates para agentes en background (WP async-gates / FASE 19)
