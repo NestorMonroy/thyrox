@@ -108,9 +108,9 @@ flowchart TD
 
 ### Sesión 5 — Bloque C: Sync contenido parte 2 (3 tareas, batch)
 
-- [ ] [T-023] [P] Actualizar `.claude/skills/workflow_decompose.md` — reemplazar cuerpo con lógica Phase 5 actual (DAG, tareas atómicas, checklist atomicidad de T-005, aprobación usuario) + actualizar `updated_at` en frontmatter (SPEC-C03)
-- [ ] [T-024] [P] Actualizar `.claude/skills/workflow_execute.md` — reemplazar cuerpo con lógica Phase 6 actual (gates async, state-management now.md, stopping points, async gates) + actualizar `updated_at` en frontmatter (SPEC-C03)
-- [ ] [T-025] [P] Actualizar `.claude/skills/workflow_track.md` — reemplazar cuerpo con lógica Phase 7 actual (lecciones aprendidas, CHANGELOG, ROADMAP, cierre de FASE, now.md → complete) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [x] [T-023] [P] Actualizar `.claude/skills/workflow_decompose.md` — reemplazar cuerpo con lógica Phase 5 actual (DAG, tareas atómicas, checklist atomicidad de T-005, aprobación usuario) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [x] [T-024] [P] Actualizar `.claude/skills/workflow_execute.md` — reemplazar cuerpo con lógica Phase 6 actual (gates async, state-management now.md, stopping points, async gates) + actualizar `updated_at` en frontmatter (SPEC-C03)
+- [x] [T-025] [P] Actualizar `.claude/skills/workflow_track.md` — reemplazar cuerpo con lógica Phase 7 actual (lecciones aprendidas, CHANGELOG, ROADMAP, cierre de FASE, now.md → complete) + actualizar `updated_at` en frontmatter (SPEC-C03)
 
 **Checkpoint S5:** Los 7 skills tienen contenido completo y actualizado. Cada uno tiene `updated_at` en frontmatter.
 
