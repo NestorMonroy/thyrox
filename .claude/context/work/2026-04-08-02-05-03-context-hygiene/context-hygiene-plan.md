@@ -4,7 +4,7 @@ work_package: 2026-04-08-02-05-03-context-hygiene
 created_at: 2026-04-08 02:05:03
 status: En progreso
 phase: Phase 3 — PLAN
-reversibility: documentation
+reversibility: reversible
 scope_approved: false
 ```
 
