@@ -2,8 +2,11 @@
 type: Solution Strategy
 work_package: 2026-04-08-17-04-20-framework-evolution
 created_at: 2026-04-08 18:30:00
+updated_at: 2026-04-08 19:00:00
 phase: Phase 2 — SOLUTION_STRATEGY
 status: Draft — awaiting user approval
+changelog:
+  - v1.1 (2026-04-08): 6 gaps materiales corregidos post-análisis de cobertura
 ```
 
 # Solution Strategy: Framework Evolution — FASE 22
@@ -83,7 +86,41 @@ Esto elimina ruido duplicado en contextos donde la compactación preservó corre
 
 ---
 
-### R-03: ADR-015 — ¿Addendum o ADR-016 para correcciones?
+### R-03: H-NEW-3 — ¿Incluir TD-009 scope ampliado en FASE 22?
+
+**Unknown:** H-NEW-3 descubrió que los subagents no heredan skills del padre — los agentes de THYROX (task-executor, task-planner, etc.) necesitan `skills: [pm-thyrox]` explícito en su frontmatter. ¿Esto va en FASE 22?
+
+**Análisis:**
+- TD-009 ya existía como "implementar `now-{agent-name}.md` en definiciones de agentes"
+- H-NEW-3 amplía ese scope: además del state file, cada agente necesita `skills:` declarado
+- Las dos mejoras son cohesivas — pertenecen al mismo WP
+
+**Decisión:** Diferir a TD-009. No entra en FASE 22.
+
+**Justificación:** FASE 22 ya tiene 5 Bloques. Incluir TD-009 rompería la cohesión del WP (framework evolution = documentación + hooks + TD-008). TD-009 es un WP propio sobre agent definitions. Se registra el scope ampliado en TRACK (Phase 7) para que TD-009 no se planifique incompleto.
+
+---
+
+### R-04: H-HOOK-6 / PreCompact — ¿Cuáles eventos nuevos entran en FASE 22?
+
+**Unknown:** El análisis identificó dos items como "relevantes para THYROX" pero sin Bloque asignado:
+- `PreCompact`: guardar estado crítico antes de compactar
+- H-HOOK-6 campo `if`: proteger archivos críticos con `Edit(.claude/CLAUDE.md)` y ADRs
+
+**Análisis:**
+
+| Item | Urgencia | Dependencia | Veredicto |
+|------|----------|-------------|-----------|
+| `PreCompact` | Media | Independiente del Bloque E | Diferir — no hay riesgo activo hoy |
+| Campo `if` (v2.1.85+) | Baja | Requiere conocer versión mínima | Diferir — protección valiosa pero no crítica |
+
+**Decisión:** Ambos quedan fuera de FASE 22. Se registran como TDs nuevos en Phase 7 TRACK:
+- **TD-014 (propuesto):** Hook `PreCompact` para persistir WP activo + fase antes de compactar
+- **TD-015 (propuesto):** Hook `PreToolUse` con campo `if` para proteger CLAUDE.md y ADRs de edición directa
+
+---
+
+### R-05: ADR-015 — ¿Addendum o ADR-016 para correcciones?
 
 **Unknown:** ¿Las correcciones a ADR-015 (H1, Capa 0, rules/, agent teams) van en el mismo ADR o requieren un nuevo ADR?
 
@@ -93,6 +130,16 @@ Esto elimina ruido duplicado en contextos donde la compactación preservó corre
 - ADR-016 está reservado para la decisión nueva de commands → skills hidden (TD-008).
 
 **Decisión:** Addendum datado en ADR-015. Status permanece "Accepted". ADR-016 es para TD-008.
+
+**Scope completo del Addendum (corregido post gap-analysis):**
+- H1 matizado: 3 modos de triggering (model-invocable, user-invocable, hidden)
+- Capa 0 corregida: 4 tipos de hook (command, prompt, agent, http) — no "100% determinístico"
+- Tabla 5 capas: añadir `.claude/rules/` como sublayer path-scoped de Capa 1
+- Tabla 5 capas: actualizar Capa 3 → skills hidden (post-D-FE-03)
+- **Tabla de mecanismos en ADR-015**: añadir "Agent teams" como 4ta categoría (peer-to-peer, experimental)
+- skill-vs-agent.md: añadir agent teams + **actualizar tabla de triggering** (3 modos) + **actualizar sección de hooks** (4 tipos)
+
+*Nota: Plugins (H-NEW-5) se omite del Addendum — "no relevante en lo inmediato" según el análisis. Puede incluirse como nota marginal pero no requiere corrección de diseño.*
 
 ---
 
@@ -158,6 +205,9 @@ Esto elimina ruido duplicado en contextos donde la compactación preservó corre
 
 **Decisión:** Migrar los 7 archivos `/workflow_*` de `.claude/commands/` a `.claude/skills/` con `disable-model-invocation: true` en frontmatter. Cada skill también recibe un hook en frontmatter para auto-actualizar `now.md::phase`.
 
+**Detalle de implementación de hooks en frontmatter (H-REF-3):**
+Cada hook de workflow_* skill debe usar `once: true` para garantizar que la actualización de `now.md::phase` solo dispara una vez por sesión, aunque el usuario invoque el mismo skill múltiples veces (e.g., `/workflow_execute` → `/workflow_execute` → segunda invocación no sobreescribe innecesariamente).
+
 **Precondición:** Spike de verificación (R-01) antes de migrar. 1 skill de prueba primero.
 
 **Implicaciones en ADR-015:**
@@ -170,11 +220,21 @@ Esto elimina ruido duplicado en contextos donde la compactación preservó corre
 
 ### D-FE-04: ADR-015 recibe Addendum (Status permanece Accepted)
 
-**Decisión:** Añadir sección "Addendum 2026-04-08" al final de ADR-015 con las 4 correcciones:
-1. H1 matizado: 3 modos de triggering (no solo "probabilístico")
-2. Capa 0 corregida: 4 tipos de hook (command, prompt, agent, http) — no "100% determinístico"
-3. Tabla 5 capas actualizada: añadir `.claude/rules/` como sublayer de Capa 1
-4. skill-vs-agent.md: añadir "Agent teams" como categoría peer-to-peer
+**Decisión:** Añadir sección "Addendum 2026-04-08" al final de ADR-015 con las siguientes correcciones (scope completo derivado del análisis):
+
+**En ADR-015:**
+1. H1 matizado: 3 modos de triggering (model-invocable / user-invocable / hidden `disable-model-invocation:true`)
+2. Capa 0 corregida: 4 tipos de hook (command, prompt, agent, http) — "determinístico" aplica solo a `type:command`
+3. Tabla 5 capas: añadir `.claude/rules/` como sublayer path-scoped en Capa 1
+4. Tabla 5 capas: Capa 3 actualizada → skills hidden (refleja D-FE-03)
+5. **Tabla de mecanismos**: añadir "Agent teams" como categoría peer-to-peer (experimental, disabled by default)
+
+**En skill-vs-agent.md** (artefacto de referencia vinculado a ADR-015):
+6. Añadir "Agent teams" como 4ta categoría en tabla de mecanismos
+7. **Actualizar tabla de triggering**: incluir los 3 modos (no solo probabilístico vs determinístico)
+8. **Actualizar sección de hooks**: documentar los 4 tipos (command / prompt / agent / http)
+
+**Nota:** H-REF-1 enhancement (`last_assistant_message` en TD-013) no entra en FASE 22 — solo la verificación básica de `stop_hook_active`. Se documenta como mejora futura en la descripción de TD-013.
 
 **Alternativa descartada:** ADR nuevo — las correcciones refinan conocimiento, no toman una decisión nueva sobre la arquitectura.
 
@@ -193,10 +253,12 @@ Esto elimina ruido duplicado en contextos donde la compactación preservó corre
 
 ### ¿Hay riesgos nuevos introducidos por esta estrategia?
 
-| Riesgo nuevo | Severidad | Mitigación |
-|--------------|-----------|-----------|
-| Spike de verificación R-01 puede revelar que skills hidden no se invoca con `/<name>` | Medio | Spike es la primera subtarea del Bloque C — si falla, fallback a commands/ |
-| PostCompact + `compact_summary` parsing puede ser frágil si el formato del summary cambia | Bajo | Hacer el check permisivo (si falla el parse → re-inyectar siempre) |
+| Riesgo | Severidad | Mitigación |
+|--------|-----------|-----------|
+| Spike R-01: skills hidden no se invoca con `/<name>` | Medio | Spike es la primera subtarea del Bloque C — si falla, fallback a commands/ |
+| PostCompact + `compact_summary` parsing frágil | Bajo | Check permisivo: si falla el parse → re-inyectar siempre |
+| **R-02 (del análisis): Context overflow en TD-008** — 7 archivos a sincronizar | Alto (probabilidad) | **Batch de 2-3 subtareas/sesión** (L-085 aplicada). Phase 3 PLAN debe respetar este constraint al definir la granularidad de las subtareas de Bloque C |
+| **R-04 (del análisis): Bloque C desplaza a D indefinidamente** | Media | Bloque B (TD-011) se ejecuta antes y es independiente de C. Si C se extiende, D puede ejecutarse en paralelo o en WP separado |
 
 ### ¿Queda algo sin decidir antes de Phase 3 PLAN?
 
@@ -210,8 +272,16 @@ Esto elimina ruido duplicado en contextos donde la compactación preservó corre
 
 | Bloque | TDs | Estrategia | Artefactos nuevos |
 |--------|-----|-----------|-------------------|
-| **E** (primero) | TD-013, TD-012 | stop_hook_active check + PostCompact hook | `session-resume.sh` o lógica en session-start.sh |
-| **B** | TD-011 | Añadir checklist en SKILL.md Phase 5 | — |
-| **A** | ADR-015 correcciones | Addendum en ADR-015 + actualizar skill-vs-agent.md | Addendum en ADR-015 |
-| **C** | TD-008 | commands → skills hidden + spike | ADR-016 + 7 skills migrados |
-| **D** | TD-007 | Step 0 en Phase 1 de SKILL.md + template | `*-context.md` template |
+| **E** (primero) | TD-013, TD-012 | `stop_hook_active` check + `PostCompact` hook (condicional con `compact_summary`) | `session-resume.sh` o lógica en session-start.sh |
+| **B** | TD-011 | Añadir checklist atomicidad en SKILL.md Phase 5 | — |
+| **A** | ADR-015 correcciones | Addendum ADR-015 (5 correcciones) + skill-vs-agent.md (3 actualizaciones) | Addendum en ADR-015 |
+| **C** | TD-008 | commands → skills hidden + `once:true` en hooks de frontmatter + spike (R-01) + batch 2-3/sesión (R-02) | ADR-016 + 7 skills migrados |
+| **D** | TD-007 | Step 0 en Phase 1 de SKILL.md + template `*-context.md` | Template `*-context.md` |
+
+### TDs diferidos identificados en FASE 22 (registrar en Phase 7 TRACK)
+
+| TD propuesto | Origen | Descripción |
+|--------------|--------|-------------|
+| TD-009 (scope ampliado) | H-NEW-3 | Agentes THYROX necesitan `skills: [pm-thyrox]` en frontmatter (no solo `now-{agent}.md`) |
+| TD-014 (nuevo) | H-HOOK-2 | Hook `PreCompact` para persistir WP activo + fase antes de compactar |
+| TD-015 (nuevo) | H-HOOK-6 | Hook `PreToolUse` con campo `if` para proteger CLAUDE.md y ADRs de edición directa |
