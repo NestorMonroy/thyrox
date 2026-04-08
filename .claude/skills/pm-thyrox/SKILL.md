@@ -83,6 +83,14 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
    - NO: decision que solo afecta el WP actual
    - NO: cambios a la metodologia de gestion (eso va en SKILL.md, no en un ADR)
 
+9. REQUERIDO: Añadir sección `## Stopping Point Manifest` al final del `*-analysis.md`:
+   — Registrar los gate-fase obligatorios (siempre aplican: 1→2, 2→3, 4→5, 5→6 y 6→7)
+   — Si el WP planifica agentes async: añadir fila SP-NNN por cada agente background
+   — Si hay ambigüedades de scope no resolubles: añadir gate-decision correspondiente
+   — Formato de tabla: `ID | Fase | Tipo | Evento | Acción requerida`
+   — Tipos válidos: `gate-fase` | `async-completion` | `gate-operacion` | `gate-decision`
+   — El manifest es un documento vivo: se actualiza en Phase 5 (pre-flight) y Phase 6 (al marcar ✓)
+
 Referencias de análisis por subsección (leer según necesidad):
 [introduction](references/introduction.md) · [requirements-analysis](references/requirements-analysis.md) · [use-cases](references/use-cases.md) · [quality-goals](references/quality-goals.md) · [stakeholders](references/stakeholders.md) · [basic-usage](references/basic-usage.md) · [constraints](references/constraints.md) · [context](references/context.md)
 
