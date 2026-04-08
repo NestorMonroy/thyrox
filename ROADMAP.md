@@ -698,3 +698,20 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 ---
 
 **Última actualización:** 2026-04-08 (FASE 19 completada — async gates en SKILL.md v1.6.0)
+
+---
+
+## FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08)
+
+**WP:** `.claude/context/work/2026-04-08-02-05-03-context-hygiene/`
+**Causa raíz:** Phase 7 no instruye actualizar focus.md/now.md/project-state.md — congelados desde FASE 15
+
+### Cambios
+
+- [ ] `focus.md` — actualizar a FASE 19 completada, WP context-hygiene activo
+- [ ] `now.md` — actualizar a WP context-hygiene activo, Phase en curso
+- [ ] `project-state.md` — 9 agentes, FASEs 1-19, versión 1.6.0
+- [ ] `SKILL.md` Phase 7 — checklist obligatorio para actualizar archivos de estado al cerrar WP
+- [ ] `CLAUDE.md` — glosario FASE (WP secuencial) vs Phase (SDLC 1-7)
+- [ ] `SKILL.md` — nota FASE vs Phase con referencia al glosario
+- [ ] Lecciones aprendidas + CHANGELOG
