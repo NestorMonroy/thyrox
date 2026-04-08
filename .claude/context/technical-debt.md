@@ -244,6 +244,17 @@ y sincronizarlos requiere un WP formal.
 pm-thyrox SKILL ≤ 80 líneas. Cada workflow_* command contiene la lógica de su fase.
 workflow_* están sincronizados con todas las instrucciones actuales (gates, manifest, calibración).
 
+### Corrección 2026-04-08 (FASE 21 — skill-architecture-review)
+
+El análisis original (context-hygiene WP, FASE 20) tenía 3 errores de framing:
+
+1. **"SKILL única opción viable"** → Falso. CLAUDE.md es una alternativa más confiable (siempre cargada, sin triggering probabilístico). Ignorar CLAUDE.md fue un error de framing del análisis original.
+2. **"Limitación arquitectónica"** → Falso. Es un tradeoff de producto (Anthropic eligió no incluir PTC en Claude Code). La arquitectura de 5 capas es viable y robusta — el límite es de producto, no de diseño.
+3. **"Trigger por tamaño (~600 líneas)"** → Incorrecto. El trigger real es confiabilidad: reducir pm-thyrox SKILL a catálogo SIN haber sincronizado los /workflow_* commands produce un sistema peor (Ruta 1 sin lógica + Ruta 2 outdated). El trigger correcto es: **TD-008 completado**.
+
+**Trigger actualizado:** cuando TD-008 esté completo (sync /workflow_* commands), no antes.
+**ADR de referencia:** [adr-015.md](decisions/adr-015.md) — documentación completa de la decisión.
+
 ---
 
 ## TD-007: Phase 1 carece de Step 0 — END USER CONTEXT antes del análisis técnico
