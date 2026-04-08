@@ -724,3 +724,20 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 - [x] `SKILL.md` — nota FASE vs Phase con referencia al glosario (2026-04-08)
 - [x] Lecciones L-075..L-081 documentadas (2026-04-08)
 - [x] CHANGELOG v1.7.0 actualizado (2026-04-08)
+
+---
+
+## FASE 21: Skill Architecture Review — decisión arquitectónica pm-thyrox (2026-04-08)
+
+**WP:** `.claude/context/work/2026-04-08-03-51-36-skill-architecture-review/`
+**Causa raíz:** Análisis FASE 20 tenía errores de framing (SKILL probabilístico no considerado, CLAUDE.md como alternativa ignorada, multi-skill no modelado)
+
+### Entregables
+
+- [ ] ADR: decisión arquitectónica D-01..D-09 (5 capas, humano en el loop, PTC-proof)
+- [ ] `session-start.sh` — muestra ambas rutas (SKILL + /workflow_*) con estado de calidad
+- [ ] `CLAUDE.md` — sección de guía multi-skill (D-09: máx simultáneos, ordering, section owners)
+- [ ] `pm-thyrox SKILL` — reducido a catálogo ~40 líneas (D-02)
+- [ ] `technical-debt.md` — TD-006 actualizado con análisis corregido + TD-008 para sync /workflow_*
+- [ ] `skill-vs-agent-analysis.md` — conclusiones corregidas
+- [ ] Lecciones aprendidas + CHANGELOG + ROADMAP
