@@ -71,7 +71,7 @@ T-016 → last (depende de todas las anteriores).
 
 - [x] [T-008] Añadir TD-009 en `technical-debt.md` — implementar patrón `now-{agent-name}.md` / `now-{skill-name}-{wp-id}.md` en definiciones de agentes nativos (agent-spec.md + 9 agentes); trigger: al abrir WP de agentes (US-04 / AC-04.4)
 
-- [ ] [T-009] Añadir TD-010 en `technical-debt.md` — benchmark empírico: SKILL vs CLAUDE.md vs baseline sin framework; 3 tareas equivalentes, métricas de calidad de output; trigger: cuando haya caso de uso real que justifique el tiempo (US-04 / AC-04.5)
+- [x] [T-009] Añadir TD-010 en `technical-debt.md` — benchmark empírico: SKILL vs CLAUDE.md vs baseline sin framework; 3 tareas equivalentes, métricas de calidad de output; trigger: cuando haya caso de uso real que justifique el tiempo (US-04 / AC-04.5)
 
 ---
 

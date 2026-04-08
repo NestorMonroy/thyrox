@@ -370,6 +370,40 @@ Los 7 /workflow_* commands tienen la lógica completa y actualizada de su fase.
 
 ---
 
+## TD-010: Benchmark empírico — SKILL vs CLAUDE.md vs baseline sin framework
+
+```
+Severidad: baja
+Origen: FASE 21 — skill-architecture-review (ADR-015 H1/H2/H3)
+Fase afectada: Metodología general (decisión de arquitectura)
+Estado: [ ] Pendiente — trigger: caso de uso real que justifique el tiempo
+```
+
+**Problema:**
+ADR-015 documenta hallazgos de terceros sobre SKILL vs CLAUDE.md (H1: triggering probabilístico,
+H2: prompt injection, H3: CLAUDE.md alternativa más confiable). Sin embargo, no existe evidencia
+empírica propia del proyecto THYROX que compare las tres opciones en condiciones equivalentes.
+
+Las decisiones actuales se basan en evidencia externa (artículo Mar 2026: 40/47 skills empeoran
+output, 0/20 disparos en prueba controlada). Un benchmark propio validaría o refutaría esos datos
+en el contexto específico de pm-thyrox y el stack de THYROX.
+
+**Benchmark propuesto:**
+- 3 tareas equivalentes de gestión PM (analyze, plan, execute)
+- 3 condiciones: (A) pm-thyrox SKILL activo, (B) solo CLAUDE.md, (C) sin framework
+- Métricas: calidad de output (rubrica 1-5), tasa de activación, líneas de instrucción seguidas
+
+**Trigger para ejecutar:**
+Cuando haya caso de uso real que justifique el tiempo (≥1 semana de trabajo).
+No ejecutar como ejercicio académico — solo si hay decisión arquitectónica pendiente
+que requiera datos propios.
+
+**Criterio de cierre:**
+Benchmark ejecutado con ≥3 tareas reales. Resultados en `references/benchmark-skill-vs-claude.md`.
+ADR-015 actualizado si los datos contradicen los hallazgos externos.
+
+---
+
 ## TD-009: Patrón now-{agent-name}.md no implementado en definiciones de agentes nativos
 
 ```
