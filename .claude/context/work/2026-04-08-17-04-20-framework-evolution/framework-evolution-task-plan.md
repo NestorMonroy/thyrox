@@ -4,7 +4,7 @@ work_package: 2026-04-08-17-04-20-framework-evolution
 created_at: 2026-04-08 21:00:00
 phase: Phase 5 — DECOMPOSE
 total_tasks: 31
-status: Pendiente aprobación
+status: Aprobado — 2026-04-08
 ```
 
 # Task Plan — FASE 22: Framework Evolution
@@ -175,4 +175,4 @@ flowchart TD
 
 ## Estado de Aprobación
 
-- [ ] Task-plan aprobado por usuario — PENDIENTE
+- [x] Task-plan aprobado por usuario — 2026-04-08
