@@ -182,3 +182,49 @@ Claude principal + pm-thyrox SKILL (thin orchestrator)
 | ¿Qué falta para la arquitectura correcta? | Hacer pm-thyrox thin + sincronizar workflow_* |
 | ¿Cuándo hacerlo? | Cuando pm-thyrox llegue a ~600 líneas (trigger TD-004) |
 | ¿Nueva deuda técnica? | TD-006: pm-thyrox thin orchestrator |
+
+---
+
+## Corrección — 2026-04-08 (FASE 21)
+
+Este análisis fue revisado en FASE 21 (WP: `2026-04-08-03-51-36-skill-architecture-review`) con
+evidencia externa que invalida 3 de sus conclusiones. Las correcciones están documentadas en
+[ADR-015](../../decisions/adr-015.md). Se registran aquí para preservar la trazabilidad.
+
+### Conclusión 1 — "SKILL única opción viable" → INCORRECTA
+
+**Lo que decía este análisis:**
+> La arquitectura correcta es un SKILL — es la única opción viable en Claude Code.
+
+**Por qué es incorrecto:**
+CLAUDE.md es una alternativa más confiable: siempre se carga, sin triggering probabilístico.
+El análisis ignoró CLAUDE.md como opción arquitectónica (error de framing por omisión).
+
+**Corrección:** CLAUDE.md + hooks son más confiables para instrucciones que deben ejecutarse siempre.
+SKILL es correcto para metodología on-demand. Son complementarios, no excluyentes.
+
+### Conclusión 2 — "Limitación arquitectónica de Claude Code" → INCORRECTA
+
+**Lo que decía este análisis:**
+> La razón por la que pm-thyrox no puede ser un agente es una limitación arquitectónica de Claude Code.
+
+**Por qué es incorrecto:**
+PTC (Programmatic Tool Calling) existe en la API y es ortogonal a la arquitectura de 5 capas.
+La ausencia de PTC en Claude Code es un **tradeoff de producto** (Anthropic eligió no incluirlo),
+no una limitación arquitectónica. La arquitectura de 5 capas es correcta independientemente de PTC.
+
+**Corrección:** La arquitectura de 5 capas (Hooks / CLAUDE.md / SKILLs / commands / agentes)
+es PTC-proof por diseño — PTC solo mejoraría la eficiencia interna de Capa 4.
+
+### Conclusión 3 — "Trigger por tamaño (~600 líneas)" → INCORRECTA
+
+**Lo que decía este análisis:**
+> Hacer pm-thyrox thin orchestrator cuando llegue a ~600 líneas (trigger TD-006).
+
+**Por qué es incorrecto:**
+Reducir pm-thyrox SKILL a catálogo SIN sincronizar primero los /workflow_* commands
+produce un sistema peor: Ruta 1 (SKILL) sin lógica + Ruta 2 (/workflow_*) outdated.
+El trigger correcto es confiabilidad, no tamaño.
+
+**Corrección:** El trigger es **TD-008 completado** (sync /workflow_* commands), no ~600 líneas.
+Ver ADR-015 D-02 y sección "Estado Actual vs Objetivo" para la secuencia correcta.

@@ -77,7 +77,7 @@ T-016 → last (depende de todas las anteriores).
 
 ### Bloque corrección de análisis (T-010) — independiente
 
-- [ ] [T-010] Añadir sección `## Corrección — 2026-04-08 (FASE 21)` al final de `skill-vs-agent-analysis.md` — listar las 3 conclusiones incorrectas: (1) "SKILL única opción viable" → CLAUDE.md es alternativa más confiable; (2) "limitación arquitectónica" → tradeoff de producto; (3) "trigger por tamaño" → trigger es confiabilidad, no líneas; referenciar adr-015 para razonamiento completo (US-05 / AC-05.1..AC-05.4)
+- [x] [T-010] Añadir sección `## Corrección — 2026-04-08 (FASE 21)` al final de `skill-vs-agent-analysis.md` — listar las 3 conclusiones incorrectas: (1) "SKILL única opción viable" → CLAUDE.md es alternativa más confiable; (2) "limitación arquitectónica" → tradeoff de producto; (3) "trigger por tamaño" → trigger es confiabilidad, no líneas; referenciar adr-015 para razonamiento completo (US-05 / AC-05.1..AC-05.4)
 
 ---
 
