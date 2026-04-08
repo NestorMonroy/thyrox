@@ -75,6 +75,19 @@ Arquitectura de 5 capas de pm-thyrox (ADR-015). Cada capa tiene un mecanismo de 
 
 **session-start.sh** (Capa 0) muestra las opciones A y B al inicio de cada sesión con etiqueta `[outdated]` en B mientras TD-008 no esté completo.
 
+### Tipos de hook en Capa 0
+
+La documentación oficial de Claude Code documenta 4 tipos de hook. Solo `command` es 100% determinístico ejecutado por el harness.
+
+| Tipo | Comportamiento | Determinístico | Uso en pm-thyrox |
+|------|----------------|----------------|-----------------|
+| `command` | Ejecuta shell command vía harness | ✓ Sí | SessionStart, Stop, PostCompact |
+| `prompt` | Inyecta texto en el próximo prompt de Claude | Probabilístico (interpretación de Claude) | No usado actualmente |
+| `agent` | Invoca un agente Claude Code | Determinístico (lanzamiento del agente) | No usado actualmente |
+| `http` | Llama a un endpoint HTTP externo | Determinístico (llamada HTTP) | No usado actualmente |
+
+**Regla:** pm-thyrox solo usa `type: command` → la garantía de determinismo de Capa 0 aplica. Si en el futuro se usan hooks `prompt`, esa garantía no aplica para esos hooks.
+
 ---
 
 ## 5 hallazgos externos sobre SKILLs
