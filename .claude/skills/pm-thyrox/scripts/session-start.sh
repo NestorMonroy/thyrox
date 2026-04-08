@@ -44,8 +44,9 @@ if [ -f "${CONTEXT_DIR}/now.md" ]; then
 fi
 
 # Fallback: sort por nombre (timestamp prefix garantiza orden cronológico)
+# Filtrar solo directorios con prefijo YYYY- para evitar que archivos como INDEX.md ganen el sort -r
 if [ -z "$ACTIVE_WP" ] && [ "$PHASE" != "complete" ] && [ -d "${CONTEXT_DIR}/work" ]; then
-    ACTIVE_WP=$(ls -1 "${CONTEXT_DIR}/work" 2>/dev/null | sort -r | head -1)
+    ACTIVE_WP=$(ls -1 "${CONTEXT_DIR}/work" 2>/dev/null | grep -E '^[0-9]{4}-' | sort -r | head -1)
 fi
 
 echo ""
