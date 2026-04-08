@@ -2,7 +2,7 @@
 created_at: 2026-04-08-17-04-20
 wp: 2026-04-08-17-04-20-framework-evolution
 phase: 3 - PLAN
-status: Pendiente aprobación
+status: Aprobado — 2026-04-08
 ```
 
 # Plan — FASE 22: Framework Evolution
@@ -131,4 +131,4 @@ Ver tracking: [ROADMAP.md — FASE 22](../../../../../ROADMAP.md#fase-22-framewo
 
 ## Estado de aprobación
 
-- [ ] Scope aprobado por usuario — PENDIENTE
+- [x] Scope aprobado por usuario — 2026-04-08
