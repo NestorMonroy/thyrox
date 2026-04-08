@@ -62,28 +62,116 @@ En este rango, la truncación de keywords puede ya estar ocurriendo.
 
 ---
 
-## 3. Estado actual de la arquitectura
+## 3. Estado actual de la arquitectura — COMPLETO
+
+El diagrama original omitió una capa crítica: los **hooks**. La arquitectura real tiene 5 capas:
 
 ```
-Claude Code (sesión)
+CAPA 0 — Hooks del sistema (100% determinísticos, ejecutados por el harness)
 │
-├─ Cargado siempre: CLAUDE.md (~80 líneas útiles)
-│   └─ Flujo de sesión: "Invocar pm-thyrox antes de trabajar"
+├─ SessionStart: session-start.sh
+│   └─ Imprime: WP activo + fase actual + próxima tarea + tech skills
+│   └─ DETERMINÍSTICO — se ejecuta siempre, sin probabilidad
 │
-├─ Cargado si se invoca: pm-thyrox SKILL (~430+ líneas)
-│   └─ Lógica completa de 7 fases, gates, manifest, calibración
+└─ Stop: stop-hook-git-check.sh
+    └─ Verifica commits sin push → bloquea si hay trabajo sin pushear
+    └─ DETERMINÍSTICO — Claude no puede ignorarlo
+
+CAPA 1 — Siempre en contexto (cargado en cada sesión)
 │
-├─ Invocados por usuario: /workflow_* commands (8 comandos, ~40-50 líneas c/u)
-│   └─ Phase-specific entry points — desactualizados vs SKILL.md
+└─ CLAUDE.md (~80 líneas útiles)
+    └─ Flujo de sesión: "Invocar pm-thyrox antes de trabajar"
+    └─ Referencia a state files: focus.md + now.md
+
+CAPA 2 — On-demand: invocación por SKILL tool (probabilística)
 │
-└─ Lanzados por Claude: agentes nativos (9 en .claude/agents/)
-    └─ task-executor, task-planner, tech-detector, Explore, etc.
+└─ pm-thyrox SKILL (~430+ líneas)
+    └─ Lógica completa de 7 fases (Phase 1..7), gates, manifest, calibración
+    └─ PROBABILÍSTICA — Claude decide si invocarlo basado en pattern-matching
+
+CAPA 3 — On-demand: invocación por slash command (determinística si el usuario la escribe)
+│
+└─ /workflow_analyze, /workflow_plan, /workflow_execute ... (8 commands, ~40-50 líneas c/u)
+    └─ Lógica phase-specific — DESACTUALIZADOS vs SKILL.md
+    └─ DETERMINÍSTICA si el usuario escribe /workflow_analyze — no depende de Claude
+
+CAPA 4 — Subprocesos: lanzados por Claude (independientes)
+│
+└─ Agentes nativos: task-executor, task-planner, tech-detector, Explore, etc.
+    └─ Corren en contexto separado, devuelven resultado
+    └─ DETERMINÍSTICOS una vez lanzados — el lanzamiento sí depende de Claude
 ```
 
-**Problema observado:** La instrucción "Invocar pm-thyrox" en CLAUDE.md es un recordatorio humano,
-no un trigger automático. El skill aún depende de que Claude lo invoque correctamente.
+**Observación crítica que faltaba:** Los **hooks (Capa 0)** son el único mecanismo
+100% determinístico disponible en Claude Code Web. session-start.sh ya actúa como
+"recordatorio forzado" que compensa la probabilística de la SKILL.
 
-**Mitigación actual:** session-start.sh imprime el recordatorio en cada sesión. Reduce pero no elimina la probabilidad de que Claude olvide invocar el skill.
+**El verdadero flujo de confiabilidad actual:**
+1. Hook (determinístico) → muestra WP activo y dice "invocar pm-thyrox"
+2. CLAUDE.md (siempre cargado) → repite la instrucción
+3. SKILL (probabilística) → contiene la lógica detallada
+
+Capas 1+2 compensan la debilidad de Capa 2. Es una arquitectura de compensación, no de diseño.
+
+---
+
+## 3b. La confusión conceptual: ¿son lo mismo workflow_*, Phase en SKILL y agentes?
+
+**No. Son 4 cosas distintas que representan el mismo concepto (SDLC phases) en capas diferentes.**
+
+### Mapa de equivalencias y diferencias
+
+| Elemento | Dónde vive | Tipo | Quien lo activa | Contexto de ejecución | Actualizado |
+|----------|-----------|------|----------------|----------------------|-------------|
+| `Phase 1: ANALYZE` en SKILL.md | Capa 2 (SKILL) | Texto inyectado | Claude (probabilístico) | Sesión principal | ✓ Sí — FASE 19+20 |
+| `/workflow_analyze` | Capa 3 (command) | Texto inyectado | Usuario (determinístico) | Sesión principal | ✗ Desactualizado |
+| `Agent(task-executor)` | Capa 4 (agente) | Subproceso | Claude (determinístico) | Contexto propio, aislado | ✓ Sí |
+| `Phase N` (concepto) | Mental model | Abstracción | — | — | — |
+
+### Lo que hace cada uno
+
+**Phase N en SKILL.md:**
+- Es una **sección de texto** dentro del markdown de pm-thyrox
+- Cuando Claude invoca el Skill tool, ese texto se inyecta en el contexto de la sesión
+- Claude lo lee y lo sigue como instrucciones
+- Contiene: qué hacer, en qué orden, qué artefactos crear, cuándo detenerse
+- Ejemplo: `Phase 1: ANALYZE` → 9 pasos + gate humano + exit criteria
+
+**`/workflow_analyze` command:**
+- Es un **archivo markdown separado** en `.claude/commands/workflow_analyze.md`
+- Cuando el usuario escribe `/workflow_analyze`, ese markdown se inyecta en el contexto
+- Debería contener la misma lógica que `Phase 1: ANALYZE` en SKILL.md
+- **PROBLEMA:** no la contiene — fue creado antes de FASE 19 y no tiene gates, manifest, calibración
+- La instrucción llega al contexto de la misma manera (texto inyectado), pero activada de forma diferente
+
+**Agente nativo (e.g., `task-executor`):**
+- Es un **subproceso completamente separado** lanzado con `Agent("task-executor")`
+- Tiene su propio contexto, sus propias herramientas, su propia memoria
+- NO sabe qué hay en pm-thyrox SKILL a menos que su definición lo incluya explícitamente
+- Ejecuta tareas atómicas (T-NNN) dentro de una fase, no la fase completa
+- Es un ejecutor, no un orquestador de fase
+
+### La superposición problemática
+
+```
+"Ejecutar Phase 1: ANALYZE"
+         │
+         ├─ Opción A: Claude ya tiene pm-thyrox SKILL en contexto
+         │    → Sigue las instrucciones de Phase 1 de SKILL.md
+         │    → Depende de que la SKILL se haya invocado correctamente
+         │
+         ├─ Opción B: Usuario escribe /workflow_analyze
+         │    → Claude recibe las instrucciones de workflow_analyze.md
+         │    → Instrucciones DIFERENTES (desactualizadas, sin gates)
+         │    → Mismo resultado esperado, diferente calidad de instrucción
+         │
+         └─ Opción C: No hay ninguno de los dos
+              → Claude improvisa "ANALYZE" basado en su conocimiento general
+              → Resultado variable, sin Stopping Point Manifest, sin artefactos correctos
+```
+
+**Este es el gap real:** las 3 opciones para ejecutar Phase 1 producen resultados distintos.
+La arquitectura correcta requeriría que las 3 opciones sean equivalentes.
 
 ---
 
@@ -216,15 +304,67 @@ La pregunta correcta no es "¿es SKILL el mecanismo correcto?" sino:
 
 ---
 
+## 7b. PTC: análisis técnico completo desde el artículo
+
+Fuente: "Programmatic Tool Calling with Claude Code: The Developer's Guide to Agent-Scale Automation"
+
+### Qué es PTC realmente
+
+PTC invierte el patrón de tool calling estándar:
+- **Estándar:** Claude llama tool → espera resultado → razona → llama siguiente tool. N tools = N round-trips.
+- **PTC:** Claude escribe un script Python que orquesta N tools → ejecuta → devuelve solo el resultado final. N tools ≈ 1 round-trip.
+
+### Los 3 componentes requeridos
+
+1. **Code Execution Tool** — sandbox de ejecución de código habilitado
+2. **Tool Opt-In** — cada tool debe declarar `"allowed_callers"` con la versión del sandbox
+   - Sin este flag: tool no es callable desde código generado (por diseño, protege tools con side effects)
+3. **Script Generation** — Claude escribe código que emite tool call requests; el host las resuelve y reinyecta
+
+### Lo que PTC NO es (aclaración crítica del artículo)
+
+> "PTC does not guarantee parallel execution. The script may express parallelism (via `asyncio.gather()`), but whether tool calls actually execute concurrently depends entirely on how your host application handles the emitted requests."
+
+**PTC no es true coroutines.** Es request-response mediado por la aplicación host.
+**La ganancia real es:** reducción de context window (orchestration logic en código, no en tokens de razonamiento), no necesariamente velocidad.
+
+### Estado en Claude Code
+
+| Plataforma | PTC disponible | Notas |
+|------------|---------------|-------|
+| Claude API | ✓ Beta | `code_execution_20250825` + `"allowed_callers"` |
+| Claude Code CLI/Web | ✗ | "Anthropic es consciente de la demanda; es razonable esperar que llegue" |
+| MCP servers en Claude Code | Parcial | MCP tools pueden ser llamados desde subagentes, no desde código Python generado |
+
+### Implicación para la decisión arquitectónica
+
+PTC no está disponible en Claude Code. Pero su mecanismo subyacente revela algo importante:
+
+**Lo que PTC hace bien:** elimina round-trips colocando la orquestación en código ejecutable en lugar de razonamiento conversacional.
+
+**Lo que hooks + workflow_* commands hacen de forma análoga:** los hooks son ejecutables determinísticos (shell, no Python generado), y los workflow_* commands son invocación directa (no probabilística). La arquitectura hooks + commands es la aproximación más cercana a PTC disponible en Claude Code hoy.
+
+**Cuando PTC llegue a Claude Code:** la arquitectura correcta cambiará fundamentalmente — pm-thyrox podría convertirse en un script Python que orquesta las 7 fases, no en instrucciones de texto inyectadas. Esta posibilidad debe quedar documentada en el ADR como cláusula de revisión.
+
+### Versioning risk
+
+Los identificadores del artículo (`code_execution_20250825`, `advanced-tool-use-2025-11-20`) son beta y Anthropic los cambia sin deprecation extendida. El ADR no debe acoplarse a versiones específicas.
+
+---
+
 ## 8. Restricciones del entorno
 
 | Restricción | Impacto en decisión |
 |-------------|-------------------|
-| Claude Code Web — sin PTC | PTC no disponible; orquestación por prompt, no código |
-| Claude Code Web — sin Tool Search API | Tool Search disponible internamente (deferred tools), no para SKILLs usuario |
-| CLAUDE.md siempre cargado | Ventaja de confiabilidad, desventaja de overhead |
-| workflow_* desactualizados | Costo de migración real — sincronización = WP separado |
-| 16 SKILLs activas (potencial truncación) | Argumento adicional para reducir pm-thyrox SKILL |
+| Hooks (Capa 0) son 100% determinísticos | Son la única garantía absoluta de ejecución — deben usarse como base de confiabilidad |
+| CLAUDE.md siempre cargado (Capa 1) | Ventaja de confiabilidad, desventaja de overhead en sesiones no-PM |
+| SKILL triggering probabilístico (Capa 2) | No se puede confiar en él sin mitigaciones de Capa 0 y 1 |
+| /workflow_* determinísticos si usuario los invoca (Capa 3) | Alta confiabilidad pero requiere que el usuario los conozca y los use |
+| workflow_* desactualizados vs SKILL.md | Costo de migración real — sincronización = WP separado antes de poder usarlos |
+| Claude Code Web — sin PTC | Orquestación por prompt/texto, no por código ejecutable; puede cambiar en el futuro |
+| Claude Code Web — sin Tool Search API | Tool Search disponible internamente (deferred tools), no para SKILLs del usuario |
+| 16 SKILLs activas (potencial truncación) | Argumento adicional para reducir pm-thyrox SKILL o migrar a commands |
+| workflow_* vs Phase N vs agentes: 3 rutas al mismo resultado | Sin equivalencia: la misma "Phase 1" tiene 3 implementaciones con calidad distinta |
 
 ---
 
