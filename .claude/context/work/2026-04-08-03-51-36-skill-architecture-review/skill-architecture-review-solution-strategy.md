@@ -8,6 +8,56 @@ constraint_primario: La arquitectura NO debe invalidarse cuando PTC llegue a Cla
 
 # Solution Strategy: Revisión Arquitectónica de pm-thyrox SKILL
 
+## Correcciones al análisis inicial (incorporadas tras clarificaciones)
+
+### Corrección 1: CLAUDE.md es Capa 1, no "compensatoria"
+
+CLAUDE.md no es una capa compensatoria — es la **capa base siempre presente** (Capa 1).
+"Compensatorio" describe su *función actual* (suple la probabilística del SKILL), no su naturaleza.
+Su naturaleza es: guía de comportamiento declarativa, idéntica a un system prompt. No ejecuta, no tiene estado.
+
+El orden correcto de las 5 capas:
+```
+Capa 0: HOOKS           — shell scripts, 100% determinístico, ejecutado por harness
+Capa 1: CLAUDE.md       — siempre en contexto, declarativo, base de comportamiento
+Capa 2: pm-thyrox SKILL — probabilístico on-demand
+Capa 3: /workflow_* commands — determinístico si usuario los invoca
+Capa 4: AGENTES nativos — determinístico una vez lanzados
+```
+
+"Repository/git barriers" **no es una capa** — es el mecanismo de coordinación *dentro* de Capa 4
+entre agentes paralelos (via `now-{agent-id}.md`, commits). Infraestructura de sincronización.
+
+### Corrección 2: Las 3 rutas tienen calidades distintas HOY
+
+Ejecutar "Phase 1: ANALYZE" por 3 rutas produce resultados con distinta calidad:
+
+| Ruta | Triggering | Calidad HOY | Calidad post-migración |
+|------|-----------|-------------|----------------------|
+| SKILL (pm-thyrox) | Probabilístico | Alta (instrucciones actualizadas) | Alta |
+| /workflow_analyze | Determinístico (usuario) | **Baja** (outdated — sin gates, sin manifest) | Alta |
+| Hooks + /workflow_analyze | Determinístico (hook informa, usuario ejecuta) | **Baja** (mismo problema) | Alta |
+
+**Consecuencia práctica:** hoy, usar `/workflow_analyze` directamente produce **regresión** vs usar
+pm-thyrox SKILL. Los commands son confiables pero desactualizados. El objetivo de este WP es
+eliminar esa diferencia de calidad sincronizando los commands.
+
+**¿Quién decide la ruta?** El usuario, siempre. CLAUDE.md *instruye* a Claude a invocar pm-thyrox,
+pero si el usuario escribe `/workflow_analyze`, Claude lo sigue directamente. CLAUDE.md persuade, no decide.
+
+### Corrección 3: PTC es ortogonal a los hooks
+
+PTC no elimina los hooks — hooks son procesos shell del OS, PTC es orquestación de tool calls
+dentro del contexto de Claude. Capas completamente ortogonales.
+
+Lo que PTC cambia cuando llegue: eficiencia interna de los agentes (N tool calls → 1 script).
+Lo que PTC NO cambia: /workflow_* commands, hooks, CLAUDE.md, estructura de fases.
+
+Para documentación externa (case studies): diseñar para HOY (hooks + commands) con nota al final:
+"Cuando PTC llegue a Claude Code, los agentes lo adoptan internamente — la arquitectura de fases no cambia."
+
+---
+
 ## Key Idea central
 
 **El insight que cambia todo:** PTC y los /workflow_* commands operan en capas diferentes
@@ -115,18 +165,31 @@ solo ese command cambia — sin tocar SKILL.md ni los otros commands.
 **Decisión:** session-start.sh pasa de "invocar pm-thyrox SKILL" como primera instrucción a
 mostrar directamente qué /workflow_* command ejecutar según el estado del WP activo.
 
-**Lógica:**
+**Lógica (100% dinámica — lee el repo en cada ejecución):**
 ```bash
-# Si hay WP activo con phase: Phase 1 → mostrar: "Ejecutar /workflow_analyze"
-# Si phase: Phase 2 → mostrar: "Ejecutar /workflow_strategy"
-# Si phase: Phase 6 → mostrar: "Ejecutar /workflow_execute (o próxima tarea T-NNN)"
-# Si no hay WP → mostrar: "Empezar con /workflow_analyze para nuevo WP"
+# Lee now.md::phase    → determina qué command corresponde
+# Lee now.md::current_work → determina el WP activo
+# Lee *-task-plan.md   → extrae primer checkbox [ ] como próxima tarea
+# Lee .claude/skills/  → lista tech skills activos (excluye pm-thyrox)
+
+# Si phase: Phase 1  → "Ejecutar /workflow_analyze"
+# Si phase: Phase 2  → "Ejecutar /workflow_strategy"
+# Si phase: Phase 3  → "Ejecutar /workflow_plan"
+# Si phase: Phase 4  → "Ejecutar /workflow_structure"
+# Si phase: Phase 5  → "Ejecutar /workflow_decompose"
+# Si phase: Phase 6  → "Ejecutar /workflow_execute · próxima tarea: T-NNN"
+# Si phase: Phase 7  → "Ejecutar /workflow_track"
+# Si null/sin WP     → "Sin WP activo → /workflow_analyze para nuevo WP"
 ```
 
-**Razón:** El hook es determinístico. Si el hook dice directamente qué command ejecutar,
-elimina la dependencia de que Claude "recuerde" invocar pm-thyrox y luego derive qué hacer.
+**Razón:** El hook es determinístico y guía al usuario directamente al command correcto.
+Elimina la cadena: hook → recordatorio → Claude invoca SKILL → Claude deriva fase → Claude sugiere acción.
+La nueva cadena: hook → "ejecuta /workflow_execute" → usuario ejecuta → listo.
 
 **PTC-proof:** El hook seguirá siendo un script shell. PTC no afecta los hooks.
+
+**Stop hook:** se dispara en el evento `stop` del harness (cierre de sesión), no periódicamente.
+Verifica `git log origin/branch..HEAD` — bloquea si hay commits locales sin push.
 
 ---
 
