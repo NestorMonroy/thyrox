@@ -51,6 +51,32 @@ covers: R-006
 
 ---
 
+## Las 5 capas y sus rutas de ejecución
+
+Arquitectura de 5 capas de pm-thyrox (ADR-015). Cada capa tiene un mecanismo de triggering distinto.
+
+### Tabla de capas
+
+| Capa | Nombre | Triggering | Overhead sesiones no-PM | Actualizable sin migración |
+|------|--------|-----------|------------------------|--------------------------|
+| 0 — Hooks | shell scripts (harness) | 100% determinístico | Negligible | ✓ Sí |
+| 1 — CLAUDE.md | system prompt declarativo | Siempre cargado | Bajo (~80 líneas) | ✓ Sí |
+| 2 — SKILLs (N) | text injection on-demand | Probabilístico | Bajo (solo si se invocan) | ✓ Sí |
+| 3 — /workflow_* | slash commands | Determinístico (usuario lo invoca) | Bajo (solo si se usan) | ✓ Sí (independiente por fase) |
+| 4 — Agentes nativos | subprocesos Claude | Determinístico (una vez lanzados) | 0 (contexto propio) | ✓ Sí |
+
+### Tabla de rutas (hoy vs objetivo)
+
+| Ruta | Mecanismo | Calidad HOY | Confiabilidad HOY | Criterio de uso |
+|------|-----------|-------------|-------------------|----------------|
+| A — pm-thyrox SKILL | Capa 2, probabilístico | Alta (lógica completa) | Media (puede no disparar) | Usar HOY cuando se necesita calidad máxima |
+| B — /workflow_* commands | Capa 3, determinístico | Baja (desactualizados) | Alta (si el usuario los invoca) | No recomendar hasta TD-008 completado |
+| C — /workflow_* post-TD-008 | Capa 3, determinístico | Alta (sincronizados) | Alta | Ruta preferida cuando TD-008 esté completo |
+
+**session-start.sh** (Capa 0) muestra las opciones A y B al inicio de cada sesión con etiqueta `[outdated]` en B mientras TD-008 no esté completo.
+
+---
+
 ## Señales de confusión frecuente
 
 - Si el archivo necesita `tools` para hacer su trabajo → es un agente, no un SKILL.

@@ -89,7 +89,7 @@ T-016 → last (depende de todas las anteriores).
 
 ### Bloque skill-vs-agent.md (T-012..T-014) — secuencial, mismo archivo
 
-- [ ] [T-012] Añadir sección "Las 5 capas y sus rutas" en `references/skill-vs-agent.md` — tabla de 5 capas (Capa 0..4: triggering / overhead / actualizable sin migración) + tabla de 3 rutas (SKILL probabilístico calidad alta HOY / /workflow_* outdated calidad baja HOY / /workflow_* post-TD-008 calidad alta) con criterio de selección (US-07 / AC-07.1, AC-07.2, AC-07.6)
+- [x] [T-012] Añadir sección "Las 5 capas y sus rutas" en `references/skill-vs-agent.md` — tabla de 5 capas (Capa 0..4: triggering / overhead / actualizable sin migración) + tabla de 3 rutas (SKILL probabilístico calidad alta HOY / /workflow_* outdated calidad baja HOY / /workflow_* post-TD-008 calidad alta) con criterio de selección (US-07 / AC-07.1, AC-07.2, AC-07.6)
 
 - [ ] [T-013] Añadir sección "5 hallazgos externos sobre SKILLs" en `references/skill-vs-agent.md` — H1 triggering probabilístico (evidencia: 0/20 disparos), H2 PTC ortogonal a hooks, H3 truncación de descripciones a 1% context budget, H4 SKILLs como prompt injection (40/47 empeoran output), H5 CLAUDE.md como alternativa superior en simplicidad; fuentes: artículo Mar 2026 + análisis FASE 21 (US-07 / AC-07.3)
 
