@@ -179,6 +179,63 @@ Las correcciones viven como "Addendum 2026-04-08" dentro del mismo ADR.
 
 ---
 
+## Hallazgos — Documentación "Run prompts on a schedule" (/loop y cron tools)
+
+### Resumen ejecutivo
+
+**Relevancia para FASE 22: BAJA.** Esta documentación describe una feature de scheduling que
+THYROX no usa hoy ni planea usar en los TDs en scope. Sin embargo, hay 3 puntos notables.
+
+---
+
+### H-SCHED-1: `/loop` es un bundled skill — confirma nuestra estrategia para TD-008
+
+La documentación describe `/loop` como un "bundled skill" (no como un command).
+Es invocable con `/loop`, usa `disable-model-invocation: true` implícitamente (el usuario lo invoca,
+no Claude automáticamente), y está implementado en `.claude/skills/`.
+
+**Esto es evidencia directa de que Anthropic usa skills con `/<name>` para sus propios comandos.**
+Valida nuestra propuesta de migrar `/workflow_*` de `.claude/commands/` → `.claude/skills/` con
+`disable-model-invocation: true`. La UX es idéntica — el usuario escribe `/<name>` en ambos casos.
+
+**Impacto:** Confirma Bloque C (TD-008). No cambia la estrategia, la refuerza.
+
+---
+
+### H-SCHED-2: Channels — nueva feature no en ninguna doc anterior
+
+La documentación menciona:
+> "To react to events as they happen instead of polling, see Channels: your CI can push the failure into the session directly."
+
+Channels es una feature de integración push (CI → sesión de Claude Code) que no aparece en
+ninguna de las docs anteriores. No es relevante para los TDs actuales pero es un hallazgo nuevo.
+
+**Impacto:** Ninguno en FASE 22. Registrar como conocimiento para evaluar en el futuro.
+No añade deuda técnica nueva.
+
+---
+
+### H-SCHED-3: `/loop` + `/workflow_*` — sinergia futura post-TD-008
+
+Una vez migrados `/workflow_*` a skills, un usuario podría hacer:
+```
+/loop 10m /workflow_execute
+```
+Para re-ejecutar una fase en intervalos mientras trabaja en otra cosa.
+No es un caso de uso inmediato para THYROX, pero es una capacidad que emerge naturalmente
+del diseño propuesto en TD-008.
+
+**Impacto:** Ninguno en FASE 22. Nota de diseño para la documentación de TD-008 (Bloque C).
+
+---
+
+### Veredicto: esta doc no modifica el scope ni la secuencia de FASE 22
+
+Los 3 hallazgos son: (1) confirmación de estrategia ya decidida, (2) nueva feature para futuro,
+(3) sinergia futura. Ninguno requiere cambios al análisis, al scope, ni a la secuencia E→B→A→C→D.
+
+---
+
 ## Propuesta de scope para FASE 22
 
 ### Bloque E — Correcciones de hooks urgentes (2 tareas, micro, ejecutar PRIMERO)
