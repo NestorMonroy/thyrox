@@ -67,7 +67,7 @@ T-016 → last (depende de todas las anteriores).
 
 - [x] [T-006] Actualizar TD-006 en `technical-debt.md` — añadir subsección "Corrección 2026-04-08 (FASE 21)": listar los 3 errores de framing del análisis original ("única opción viable", "limitación arquitectónica", "trigger por tamaño"); cambiar el trigger de "~600 líneas" a "cuando TD-008 esté completo" (US-04 / AC-04.1, AC-04.2)
 
-- [ ] [T-007] Añadir TD-008 en `technical-debt.md` — sync completo de 7 /workflow_* commands con lógica actual de SKILL.md (gates, Stopping Point Manifest, calibración, state-management); prerequisito para reducir pm-thyrox SKILL a catálogo (S-04 diferido); severidad: alta (US-04 / AC-04.3)
+- [x] [T-007] Añadir TD-008 en `technical-debt.md` — sync completo de 7 /workflow_* commands con lógica actual de SKILL.md (gates, Stopping Point Manifest, calibración, state-management); prerequisito para reducir pm-thyrox SKILL a catálogo (S-04 diferido); severidad: alta (US-04 / AC-04.3)
 
 - [ ] [T-008] Añadir TD-009 en `technical-debt.md` — implementar patrón `now-{agent-name}.md` / `now-{skill-name}-{wp-id}.md` en definiciones de agentes nativos (agent-spec.md + 9 agentes); trigger: al abrir WP de agentes (US-04 / AC-04.4)
 

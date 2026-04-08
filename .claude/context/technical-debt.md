@@ -330,3 +330,76 @@ Añadir en SKILL.md Phase 5 DECOMPOSE: checklist de atomicidad antes de presenta
 SKILL.md Phase 5 incluye el checklist de atomicidad. El siguiente WP tiene tareas atómicas desde el inicio.
 
 ---
+
+## TD-008: /workflow_* commands desactualizados — sync con lógica actual de SKILL.md
+
+```
+Severidad: alta
+Origen: FASE 21 — skill-architecture-review (ADR-015)
+Fase afectada: Capa 3 — /workflow_* commands (todas las fases)
+Estado: [ ] Pendiente — prerequisito bloqueante para TD-006 (reducir pm-thyrox SKILL)
+Prioridad: alta
+```
+
+**Problema:**
+Los 7 commands `/workflow_analyze`, `/workflow_strategy`, `/workflow_plan`, `/workflow_structure`,
+`/workflow_decompose`, `/workflow_execute`, `/workflow_track` existen en `.claude/commands/` pero
+están desactualizados: no contienen gates async, Stopping Point Manifest, calibración por tamaño,
+state-management con `now.md`, ni instrucciones de granularidad atómica añadidas desde su creación.
+
+**Impacto:**
+- Ruta B (determinística) del hook está marcada `[outdated]` — no se puede recomendar
+- ADR-015 establece que /workflow_* son la "única fuente de verdad de lógica de fase" (D-03) — hoy eso es falso
+- Sin TD-008 completado, no se puede reducir pm-thyrox SKILL a catálogo (D-02)
+
+**Trabajo requerido:**
+Sincronizar cada command con la lógica actual de SKILL.md:
+- Gates async y Stopping Point Manifest (de Phase 1, Phase 6)
+- Calibración por tamaño WP (micro/pequeño/mediano/grande)
+- State-management: actualizar `now.md` al inicio/fin de cada phase
+- Granularidad atómica de tasks (TD-011)
+- Añadir `updated_at` en frontmatter de cada command
+
+**Trigger para ejecutar:**
+Abrir WP formal dedicado a sync de /workflow_* commands.
+Flag `COMMANDS_SYNCED=false` en `session-start.sh` → cambiar a `true` cuando esté completo.
+
+**Criterio de cierre:**
+Los 7 /workflow_* commands tienen la lógica completa y actualizada de su fase.
+`COMMANDS_SYNCED=true` en `session-start.sh`. pm-thyrox SKILL reducido a catálogo (≤80 líneas).
+
+---
+
+## TD-009: Patrón now-{agent-name}.md no implementado en definiciones de agentes nativos
+
+```
+Severidad: media
+Origen: FASE 21 — skill-architecture-review (ADR-015 D-08)
+Fase afectada: Capa 4 — Agentes nativos (.claude/agents/)
+Estado: [ ] Pendiente — trigger: al abrir WP de agentes
+```
+
+**Problema:**
+ADR-015 D-08 define la convención de naming para state files en ejecución multi-agent:
+- `now-{agent-name}.md` para agentes nativos en ejecución (e.g. `now-task-executor.md`)
+- `now-{skill-name}-{wp-id}.md` para skills especializados
+
+Sin embargo, ninguna de las 9 definiciones en `.claude/agents/` ni `agent-spec.md` documenta
+esta convención ni instruye a los agentes a crear/actualizar su `now-{agent-name}.md`.
+Resultado: en ejecución paralela, no hay forma de saber qué agente está activo ni en qué estado.
+
+**Trabajo requerido:**
+1. Actualizar `references/agent-spec.md` — añadir campo `state_file` en la spec formal
+2. Actualizar las definiciones de agentes que hacen trabajo de ejecución larga:
+   - `task-executor.md` — crear `now-task-executor.md` al inicio, actualizar por tarea
+   - `task-planner.md` — crear `now-task-planner.md` al inicio
+3. Documentar la convención en `references/conventions.md` (TD relacionado: T-011 de FASE 21)
+
+**Trigger para ejecutar:**
+Al abrir WP formal de agentes (agent-format-spec o similar).
+
+**Criterio de cierre:**
+`agent-spec.md` incluye `state_file` como campo. Los agentes de ejecución larga crean y
+actualizan su `now-{agent-name}.md`. La convención está documentada en `conventions.md`.
+
+---
