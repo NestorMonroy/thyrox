@@ -231,4 +231,4 @@ El manifest documenta los gates esperados. Si el usuario no responde, Claude deb
 | SP-03 | 3→4 | gate-fase | Plan Phase 3 aprobado | Presentar scope declarado, esperar SI — ✓ Completado |
 | SP-04 | 4→5 | gate-fase | Spec Phase 4 aprobada | Presentar user stories + ACs, esperar SI — ✓ Completado |
 | SP-05 | 5→6 | gate-fase | Task-plan Phase 5 aprobado | Presentar 8 tareas, esperar SI — ✓ Completado |
-| SP-06 | 6→7 | gate-fase | Todas las tareas completas | Presentar cambios en SKILL.md, esperar SI antes de Phase 7 |
+| SP-06 | 6→7 | gate-fase | Todas las tareas completas | Presentar cambios en SKILL.md, esperar SI antes de Phase 7 — ⏳ ACTUAL |

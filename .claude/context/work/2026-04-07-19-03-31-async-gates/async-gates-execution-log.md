@@ -12,11 +12,11 @@ phase: Phase 6 — EXECUTE
 
 | Tarea | Estado | Notas |
 |-------|--------|-------|
-| T-001 | ⏳ | |
-| T-002 | ⏳ | |
-| T-003 | ⏳ | |
-| T-004 | ⏳ | |
-| T-005 | ⏳ | |
-| T-006 | ⏳ | |
-| T-007 | ⏳ | |
-| T-008 | ⏳ | |
+| T-001 | ✓ | Manifest con 6 SPs en async-gates-analysis.md |
+| T-002 | ✓ | Nota Phase 2 vs Phase 3 en SKILL.md |
+| T-003 | ✓ | Paso 9 Phase 1: manifest obligatorio con formato y tipos |
+| T-004 | ✓ | Pre-flight Phase 6 paso 5: SP-NNN por agente async |
+| T-005 | ✓ | Instrucción task-notification Phase 6: 6 pasos |
+| T-006 | ✓ | Tabla calibración Phase 6: reversibilidad × tipo |
+| T-007 | ✓ | Lecciones L-068..L-073 |
+| T-008 | ✓ | ROADMAP FASE 19 = 100%, CHANGELOG v1.6.0 |

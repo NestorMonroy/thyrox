@@ -32,21 +32,21 @@ T-001 y T-007/T-008 no tocan `SKILL.md` → pueden ejecutarse en sus ventanas si
 
 ## Tareas
 
-- [ ] [T-001] Añadir sección `## Stopping Point Manifest` en `async-gates-analysis.md` con tabla completa (gate-fase de las 7 fases de este WP) (US-06 / AC-06.1, AC-06.2)
+- [x] [T-001] Añadir sección `## Stopping Point Manifest` en `async-gates-analysis.md` con tabla completa (gate-fase de las 7 fases de este WP) (US-06 / AC-06.1, AC-06.2)
 
-- [ ] [T-002] Añadir nota metodológica en SKILL.md Phase 3: "Phase 2 define el cómo; Phase 3 define el qué" con aclaración de que Phase 2 orienta pero no declara scope (US-05 / AC-05.1, AC-05.2)
+- [x] [T-002] Añadir nota metodológica en SKILL.md Phase 3: "Phase 2 define el cómo; Phase 3 define el qué" con aclaración de que Phase 2 orienta pero no declara scope (US-05 / AC-05.1, AC-05.2)
 
-- [ ] [T-003] Añadir paso 9 en SKILL.md Phase 1: crear sección `## Stopping Point Manifest` en el `*-analysis.md` del WP, con formato estándar de tabla (ID | Fase | Tipo | Evento | Acción requerida) y tipos válidos (gate-fase, async-completion, gate-operacion, gate-decision) (US-01 / AC-01.1, AC-01.2, AC-01.3, AC-01.4, AC-01.5)
+- [x] [T-003] Añadir paso 9 en SKILL.md Phase 1: crear sección `## Stopping Point Manifest` en el `*-analysis.md` del WP, con formato estándar de tabla (ID | Fase | Tipo | Evento | Acción requerida) y tipos válidos (gate-fase, async-completion, gate-operacion, gate-decision) (US-01 / AC-01.1, AC-01.2, AC-01.3, AC-01.4, AC-01.5)
 
-- [ ] [T-004] Ampliar Phase 5 SKILL.md sección pre-flight: añadir paso para registrar SP-NNN por cada agente background en el Stopping Point Manifest antes de lanzarlo, con commit del manifest actualizado previo al primer agente (US-02 / AC-02.1, AC-02.2, AC-02.3)
+- [x] [T-004] Ampliar Phase 5 SKILL.md sección pre-flight: añadir paso para registrar SP-NNN por cada agente background en el Stopping Point Manifest antes de lanzarlo, con commit del manifest actualizado previo al primer agente (US-02 / AC-02.1, AC-02.2, AC-02.3)
 
-- [ ] [T-005] Añadir instrucción explícita en Phase 6 SKILL.md para `<task-notification>`: 6 pasos (identificar SP → presentar resultado → STOP → esperar → marcar ✓ → continuar o crear ERR-NNN) (US-03 / AC-03.1, AC-03.2, AC-03.3, AC-03.4)
+- [x] [T-005] Añadir instrucción explícita en Phase 6 SKILL.md para `<task-notification>`: 6 pasos (identificar SP → presentar resultado → STOP → esperar → marcar ✓ → continuar o crear ERR-NNN) (US-03 / AC-03.1, AC-03.2, AC-03.3, AC-03.4)
 
-- [ ] [T-006] Añadir tabla de calibración de gates async en Phase 6 SKILL.md: dos ejes reversibilidad × tipo de agente, tres niveles (fuerte/estándar/ligero) (US-04 / AC-04.1, AC-04.2, AC-04.3, AC-04.4)
+- [x] [T-006] Añadir tabla de calibración de gates async en Phase 6 SKILL.md: dos ejes reversibilidad × tipo de agente, tres niveles (fuerte/estándar/ligero) (US-04 / AC-04.1, AC-04.2, AC-04.3, AC-04.4)
 
-- [ ] [T-007] Crear `async-gates-lessons-learned.md` con lecciones L-068+ (Phase 7 prep)
+- [x] [T-007] Crear `async-gates-lessons-learned.md` con lecciones L-068+ (Phase 7 prep)
 
-- [ ] [T-008] Actualizar ROADMAP.md (checkboxes FASE 19 → `[x]`) y CHANGELOG.md
+- [x] [T-008] Actualizar ROADMAP.md (checkboxes FASE 19 → `[x]`) y CHANGELOG.md
 
 ---
 
