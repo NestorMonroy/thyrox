@@ -98,6 +98,20 @@ S-04 se convierte en el primer entregable del WP que ejecute TD-008.
 
 ---
 
+## Deuda técnica — items out-of-scope registrados
+
+Los siguientes ítems out-of-scope quedan registrados como TDs para ejecución futura:
+
+| TD | Origen OS | Descripción | Trigger |
+|----|----------|-------------|---------|
+| TD-008 | OS-01 + OS-04 | Sincronizar 7 /workflow_* commands con lógica actual de SKILL.md (gates, Stopping Point Manifest, calibración, state-management). Una vez completado, ejecutar S-04: reducir pm-thyrox SKILL a catálogo ~40 líneas | Cuando haya bandwidth — es el prerequisito para Opción B (determinístico total) |
+| TD-009 | OS-02 + OS-05 | Implementar patrón `now-{agent-name}.md` / `now-{skill-name}-{wp-id}.md` en las definiciones de agentes nativos existentes (agent-spec.md + 9 agentes) | Al abrir WP de agentes (cuando TD-008 esté completo) |
+| TD-010 | OS-03 | Benchmark empírico: SKILL vs CLAUDE.md vs baseline sin framework — 3 tareas equivalentes, métricas de calidad de output | Cuando haya caso de uso real que justifique el tiempo |
+
+*Estos TDs se añaden a `technical-debt.md` en la tarea S-05 (Phase 6).*
+
+---
+
 ## Criterios de éxito
 
 1. ADR firmado con las 9 decisiones, cláusula PTC, y estado actual vs objetivo documentado
