@@ -81,15 +81,15 @@ flowchart TD
 
 > **Gate T-011:** Si el spike falla, detener Bloque C y notificar al usuario. Activar fallback (mantener commands/, solo sincronizar contenido in-place). T-010 y T-012..T-029 se cancelan. Revisar design.md §8 para el procedimiento completo.
 
-- [ ] [T-010] Crear `.claude/context/decisions/adr-016.md` — decisión commands→skills hidden (contexto H-NEW-2+H-SCHED-1, opciones, decisión, implicación tabla 5 capas, criterio de revisión) (SPEC-A03)
+- [x] [T-010] Crear `.claude/context/decisions/adr-016.md` — decisión commands→skills hidden (contexto H-NEW-2+H-SCHED-1, opciones, decisión, implicación tabla 5 capas, criterio de revisión) (SPEC-A03)
 
-- [ ] [T-012] [P] Crear `.claude/skills/workflow_analyze.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
-- [ ] [T-013] [P] Crear `.claude/skills/workflow_strategy.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
-- [ ] [T-014] [P] Crear `.claude/skills/workflow_plan.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
-- [ ] [T-015] [P] Crear `.claude/skills/workflow_structure.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
-- [ ] [T-016] [P] Crear `.claude/skills/workflow_decompose.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
-- [ ] [T-017] [P] Crear `.claude/skills/workflow_execute.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
-- [ ] [T-018] [P] Crear `.claude/skills/workflow_track.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [x] [T-012] [P] Crear `.claude/skills/workflow_analyze.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [x] [T-013] [P] Crear `.claude/skills/workflow_strategy.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [x] [T-014] [P] Crear `.claude/skills/workflow_plan.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [x] [T-015] [P] Crear `.claude/skills/workflow_structure.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [x] [T-016] [P] Crear `.claude/skills/workflow_decompose.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [x] [T-017] [P] Crear `.claude/skills/workflow_execute.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
+- [x] [T-018] [P] Crear `.claude/skills/workflow_track.md` — frontmatter + `disable-model-invocation: true` + hook `once:true` (evento verificado en T-011) + contenido actual de commands/ (SPEC-C02)
 
 **Checkpoint S3:** ADR-016 existe (`ls decisions/adr-016.md`). `ls .claude/skills/workflow_*.md` muestra 7 archivos. Cada uno tiene `disable-model-invocation: true` en su frontmatter. Evento de hook confirmado (DA-004).
 
