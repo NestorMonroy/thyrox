@@ -734,10 +734,12 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ### Entregables
 
-- [ ] ADR: decisión arquitectónica D-01..D-09 (5 capas, humano en el loop, PTC-proof)
-- [ ] `session-start.sh` — muestra ambas rutas (SKILL + /workflow_*) con estado de calidad
-- [ ] `CLAUDE.md` — sección de guía multi-skill (D-09: máx simultáneos, ordering, section owners)
-- [ ] `pm-thyrox SKILL` — reducido a catálogo ~40 líneas (D-02)
-- [ ] `technical-debt.md` — TD-006 actualizado con análisis corregido + TD-008 para sync /workflow_*
-- [ ] `skill-vs-agent-analysis.md` — conclusiones corregidas
-- [ ] Lecciones aprendidas + CHANGELOG + ROADMAP
+- [x] ADR: decisión arquitectónica D-01..D-09 (5 capas, humano en el loop, PTC-proof) — adr-015.md
+- [x] `session-start.sh` — muestra ambas rutas (SKILL + /workflow_*) con estado de calidad
+- [x] `CLAUDE.md` — sección de guía multi-skill (D-09: máx simultáneos, ordering, section owners)
+- [x] `pm-thyrox SKILL` — nota de limitaciones + arquitectura objetivo (D-02 diferido a TD-008)
+- [x] `technical-debt.md` — TD-006 corregido + TD-008/009/010/011 registrados
+- [x] `skill-vs-agent-analysis.md` — 3 conclusiones incorrectas corregidas con referencia a ADR-015
+- [x] `references/skill-vs-agent.md` — 5 capas, 5 hallazgos externos, tabla de decisión
+- [x] `references/conventions.md` — naming conventions state files (now-{agent-name}.md)
+- [ ] Lecciones aprendidas + CHANGELOG — pendiente Phase 7

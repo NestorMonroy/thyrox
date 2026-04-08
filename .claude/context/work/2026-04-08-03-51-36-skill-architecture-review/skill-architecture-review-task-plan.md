@@ -105,7 +105,7 @@ T-016 → last (depende de todas las anteriores).
 
 ### Bloque cierre (T-016) — último
 
-- [ ] [T-016] Actualizar `ROADMAP.md` — marcar [x] todos los entregables de FASE 21 a medida que se completan; añadir fecha de completado (Phase 6 step 7)
+- [x] [T-016] Actualizar `ROADMAP.md` — marcar [x] todos los entregables de FASE 21 a medida que se completan; añadir fecha de completado (Phase 6 step 7)
 
 ---
 
