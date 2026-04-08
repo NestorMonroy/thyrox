@@ -57,6 +57,7 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
      - Directorios: `date +%Y-%m-%d-%H-%M-%S` → `2026-04-07-01-41-49` (todo guiones)
      - Metadata values (`created_at`, `updated_at`, etc.): `date '+%Y-%m-%d %H:%M:%S'` → `2026-04-07 01:41:49` (ISO 8601)
    — Keys de metadata en inglés snake_case. Ver [conventions](references/conventions.md#metadata-keys).
+   — REQUERIDO al crear WP: actualizar `context/now.md` con `current_work: context/work/{timestamp}-nombre/` y `phase: Phase 1`. Ver [state-management](references/state-management.md).
    — Clasificar reversibilidad del WP en el frontmatter:
      - `reversibility: documentation` — solo crea/modifica archivos en context/work/ o docs/
      - `reversibility: reversible` — modifica código o config, recuperable vía git
