@@ -280,3 +280,42 @@ SKILL.md Phase 1 tiene Step 0 explícito. Para WPs Mediano/Grande existe templat
 promesas que podemos y no podemos hacer al END USER.
 
 ---
+
+## TD-011: Task-plan sin granularidad atómica — las tareas no son independientemente verificables
+
+```
+Severidad: alta
+Origen: FASE 21 — error detectado en Phase 5 DECOMPOSE (task-plan de 8 tareas → corregido a 16)
+Fase afectada: Phase 5 DECOMPOSE (al crear task-plans)
+Estado: [ ] Pendiente — requiere instrucción explícita en SKILL.md Phase 5
+Prioridad: alta (se repite en cada WP)
+```
+
+**Problema:**
+Una tarea del task-plan debe poder commitearse y verificarse de forma **independiente**.
+Si una tarea contiene N operaciones distintas en el mismo archivo o N archivos distintos,
+una falla parcial no puede marcarse `[x]` — el commit es ambiguo y la trazabilidad se rompe.
+
+**Síntoma concreto detectado en FASE 21:**
+- T-004 original: "Actualizar technical-debt.md" → contenía 4 operaciones (TD-006 + TD-008 + TD-009 + TD-010)
+- T-007 original: "Actualizar skill-vs-agent.md" → contenía 4 secciones distintas
+- T-001 original: "Crear ADR con todo el contenido" → contenía 3 bloques independientes
+
+**Regla faltante en SKILL.md Phase 5:**
+> Una tarea atómica = 1 operación en 1 ubicación. Si la descripción dice "actualizar X con [A, B, C]",
+> dividir en 3 tareas: una por cada operación. Si dice "crear Y con secciones [1, 2, 3]", dividir en 3.
+
+**Criterio de atomicidad:**
+Una tarea es atómica si: (a) puede fallar sin afectar otras tareas, (b) su commit describe
+exactamente un cambio, (c) puede marcarse `[x]` con certeza cuando esa única operación completa.
+
+**Solución:**
+Añadir en SKILL.md Phase 5 DECOMPOSE: checklist de atomicidad antes de presentar el task-plan al usuario:
+- [ ] Cada tarea toca exactamente 1 ubicación (1 archivo O 1 sección de 1 archivo)
+- [ ] Ninguna descripción de tarea contiene "y" conectando dos operaciones distintas
+- [ ] Cada tarea puede fallar de forma independiente sin bloquear otras
+
+**Criterio de cierre:**
+SKILL.md Phase 5 incluye el checklist de atomicidad. El siguiente WP tiene tareas atómicas desde el inicio.
+
+---
