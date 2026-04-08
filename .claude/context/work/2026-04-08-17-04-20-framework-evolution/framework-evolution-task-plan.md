@@ -66,10 +66,10 @@ flowchart TD
 
 ### Sesión 2 — Bloque A (4 tareas, docs)
 
-- [ ] [T-006] Actualizar `.claude/context/decisions/adr-015.md` — añadir sección "Addendum 2026-04-08" con 5 correcciones (SPEC-A01)
-- [ ] [T-007] Actualizar `.claude/skills/pm-thyrox/references/skill-vs-agent.md` — actualizar tabla de triggering con 3 modos (SPEC-A02)
-- [ ] [T-008] Actualizar `.claude/skills/pm-thyrox/references/skill-vs-agent.md` — actualizar sección de hooks con 4 tipos (SPEC-A02)
-- [ ] [T-009] Actualizar `.claude/skills/pm-thyrox/references/skill-vs-agent.md` — añadir Agent teams como 4ta categoría (SPEC-A02)
+- [x] [T-006] Actualizar `.claude/context/decisions/adr-015.md` — añadir sección "Addendum 2026-04-08" con 5 correcciones (SPEC-A01)
+- [x] [T-007] Actualizar `.claude/skills/pm-thyrox/references/skill-vs-agent.md` — actualizar tabla de triggering con 3 modos (SPEC-A02)
+- [x] [T-008] Actualizar `.claude/skills/pm-thyrox/references/skill-vs-agent.md` — actualizar sección de hooks con 4 tipos (SPEC-A02)
+- [x] [T-009] Actualizar `.claude/skills/pm-thyrox/references/skill-vs-agent.md` — añadir Agent teams como 4ta categoría (SPEC-A02)
 
 **Checkpoint S2:** ADR-015 tiene Addendum + skill-vs-agent.md tiene 3 actualizaciones. Verificar con `grep "Addendum" adr-015.md`. ADR-016 se crea en Sesión 3 (post-spike).
 
