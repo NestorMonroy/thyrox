@@ -70,6 +70,16 @@ phase: Phase 7 — TRACK
 
 ---
 
+### L-074 — La validación pre-Phase 7 no debe depender del usuario
+
+**Contexto:** Al terminar Phase 6, el task-plan tenía todos los checkboxes como `[ ]` aunque las tareas ya habían sido ejecutadas. El usuario tuvo que pedirle a Claude que revisara — la validación no ocurrió automáticamente.
+
+**Lección:** Claude debe ejecutar una checklist de consistencia antes de proponer Phase 7, sin que el usuario lo solicite. Esta validación cubre: task-plan `[x]`, execution-log actualizado, ROADMAP checkboxes, Stopping Point Manifest. Si falla algún ítem, Claude corrige antes de avanzar.
+
+**Aplicación:** Sección "Validación pre-Phase 7" añadida a SKILL.md Phase 6 como paso REQUERIDO.
+
+---
+
 ## Métricas
 
 | Métrica | Valor |
@@ -78,6 +88,6 @@ phase: Phase 7 — TRACK
 | Tareas en task-plan | 8 |
 | Tareas completadas | 8 |
 | Cambios en SKILL.md | 4 secciones (Phase 1 paso 9, Phase 3 nota, Phase 5 pre-flight paso 5, Phase 6 gate async + calibración) |
-| Lecciones documentadas | L-068 a L-073 (6 lecciones) |
+| Lecciones documentadas | L-068 a L-074 (7 lecciones) |
 | Deuda técnica identificada | TD-004, TD-005 |
 | Errores en ejecución | 0 |
