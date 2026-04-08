@@ -258,7 +258,16 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 - Antes de lanzar agentes: definir scope de cada uno, identificar archivos compartidos, asignar section owners, documentar gates cross-WP.
 - Ver [conventions](references/conventions.md#parallel-agent-execution) para protocolo completo.
 
-**Salir cuando:** Todas las tareas completadas y commiteadas.
+**Validación pre-Phase 7 — REQUERIDO antes de proponer TRACK:**
+Verificar que los siguientes artefactos están actualizados y consistentes:
+- [ ] `*-task-plan.md` — todas las tareas completadas tienen `[x]` (no `[ ]`)
+- [ ] `*-execution-log.md` — estado final de cada tarea registrado
+- [ ] `ROADMAP.md` — todos los checkboxes de la FASE actual en `[x]`
+- [ ] Stopping Point Manifest — SP-NNN de Phase 6 marcados como `✓`
+- [ ] No quedan artefactos con estado desactualizado respecto a la ejecución real
+Si algún ítem falla → corregir antes de avanzar. No delegar esta validación al usuario.
+
+**Salir cuando:** Todas las tareas completadas, commiteadas, y validación pre-Phase 7 pasada.
 **Siguiente:** Proponer Phase 7: TRACK para documentar lecciones.
 **Detectar:** Si todas las checkboxes en `*-task-plan.md` están `[x]`, Phase 6 ya completó.
 
