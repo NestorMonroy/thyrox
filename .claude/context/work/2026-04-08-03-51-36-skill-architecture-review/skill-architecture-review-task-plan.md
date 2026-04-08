@@ -47,17 +47,17 @@ T-016 → last (depende de todas las anteriores).
 
 ### Bloque ADR (T-001..T-003) — secuencial, mismo archivo
 
-- [ ] [T-001] Crear `adr-015.md` con estructura base, sección de contexto, y los 5 hallazgos externos documentados con fuentes: artículo "Ultimate Guide to Claude Code Skills" (H1 probabilístico, H2 prompt injection, H3 CLAUDE.md alternativa) + análisis FASE 21 (H4 PTC ortogonal, H5 truncación de descripciones) (US-01 / AC-01.2)
+- [x] [T-001] Crear `adr-015.md` con estructura base, sección de contexto, y los 5 hallazgos externos documentados con fuentes: artículo "Ultimate Guide to Claude Code Skills" (H1 probabilístico, H2 prompt injection, H3 CLAUDE.md alternativa) + análisis FASE 21 (H4 PTC ortogonal, H5 truncación de descripciones) (US-01 / AC-01.2)
 
-- [ ] [T-002] Añadir sección "Decision" en `adr-015.md` con las 9 decisiones D-01..D-09, cada una con su justificación y referencia a la Key Idea o decisión de Phase 2 (US-01 / AC-01.3)
+- [x] [T-002] Añadir sección "Decision" en `adr-015.md` con las 9 decisiones D-01..D-09, cada una con su justificación y referencia a la Key Idea o decisión de Phase 2 (US-01 / AC-01.3)
 
-- [ ] [T-003] Añadir secciones finales en `adr-015.md`: tabla de 5 capas (triggering / overhead / actualizable), cláusula PTC (D-05), estado actual vs objetivo (qué funciona hoy vs qué requiere TD-008), estado `Accepted` y fecha (US-01 / AC-01.1, AC-01.4..AC-01.7)
+- [x] [T-003] Añadir secciones finales en `adr-015.md`: tabla de 5 capas (triggering / overhead / actualizable), cláusula PTC (D-05), estado actual vs objetivo (qué funciona hoy vs qué requiere TD-008), estado `Accepted` y fecha (US-01 / AC-01.1, AC-01.4..AC-01.7)
 
 ---
 
 ### Bloque hooks y configuración (T-004..T-005) — independientes
 
-- [ ] [T-004] Actualizar `session-start.sh` — añadir variable `COMMANDS_SYNCED=false` y lógica de output para mostrar ambas rutas: "Opción A (calidad alta HOY): invocar pm-thyrox SKILL" y "Opción B (determinístico): /workflow_N [outdated — esperar TD-008]" mapeado según `phase` en now.md; cuando `COMMANDS_SYNCED=true` eliminar la etiqueta sin cambiar estructura (US-02 / AC-02.1..AC-02.6)
+- [x] [T-004] Actualizar `session-start.sh` — añadir variable `COMMANDS_SYNCED=false` y lógica de output para mostrar ambas rutas: "Opción A (calidad alta HOY): invocar pm-thyrox SKILL" y "Opción B (determinístico): /workflow_N [outdated — esperar TD-008]" mapeado según `phase` en now.md; cuando `COMMANDS_SYNCED=true` eliminar la etiqueta sin cambiar estructura (US-02 / AC-02.1..AC-02.6)
 
 - [ ] [T-005] Añadir sección `## Multi-skill orchestration` en `CLAUDE.md` — ≤15 líneas: máx 2-3 skills simultáneos, cuándo secuenciar (si skill B necesita output de skill A), principio de section owners disjuntos, naming convention `now-{skill-name}-{wp-id}.md` (US-03 / AC-03.1..AC-03.6)
 

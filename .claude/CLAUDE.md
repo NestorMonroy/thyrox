@@ -67,6 +67,18 @@ SIEMPRE seguir este flujo. NO omitir pasos.
 4. **Trabajar** — Seguir cada fase hasta su exit criteria. NO saltarse fases. Commits convencionales. Actualizar ROADMAP.md.
 5. **Cierre** — Actualizar focus.md + now.md.
 
+## Multi-skill orchestration
+
+Reglas cuando hay más de un skill activo en la misma sesión.
+
+- **Máximo simultáneos:** 2-3 skills. Por encima de ese límite, el budget de context window para descripciones se satura y el triggering de todos se degrada.
+- **Cuándo secuenciar:** Si skill B necesita output de skill A (e.g. tech-detector → python-mcp), ejecutar A hasta completar y commitear antes de activar B.
+- **Section owners disjuntos:** Cada skill escribe en archivos distintos. Si dos skills necesitan tocar el mismo archivo, uno lo hace y el otro espera (o usa una sección marcada con `<!-- SECTION OWNER: {skill} -->`).
+- **Naming de state files por skill:**
+  - Orquestador / estado compartido → `context/now.md`
+  - Agente nativo en ejecución → `context/now-{agent-name}.md` (e.g. `now-task-executor.md`)
+  - Skill especializado → `context/now-{skill-name}-{wp-id}.md` (e.g. `now-security-audit-wp-auth.md`)
+
 ## Configuración del Proyecto
 
 adr_path: .claude/context/decisions/   # THYROX: retrocompat. Nuevos proyectos: usar subdirectorios por capa (global/, api/, db/, ui/, deploy/, framework/)
