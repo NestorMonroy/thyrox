@@ -17,7 +17,7 @@ covers: R-006
 |-----------|-------|--------|
 | **Qué es** | Documento de metodología que define cómo trabajar en un dominio. Instrucciones que Claude lee y sigue en la sesión activa. | Subagente nativo de Claude Code con identidad, tools propios y scope de ejecución acotado. Se invoca en paralelo o como especialista puntual. |
 | **Dónde vive** | `.claude/skills/{nombre}/SKILL.md` — dentro del framework de gestión | `.claude/agents/{nombre}.md` — directorio de agentes nativos de Claude Code |
-| **Cómo se activa** | Invocando el `Skill` tool con el nombre del skill, o leyendo el archivo SKILL.md directamente | Claude Code lo selecciona automáticamente por `description` (routing), o el usuario lo invoca explícitamente |
+| **Cómo se activa** | 3 modos: (1) **model-invocable** — Claude decide por `description`; (2) **user-invocable** — usuario escribe `/<name>`; (3) **hidden** — solo `/<name>`, modelo no lo auto-selecciona (`disable-model-invocation: true`) | Claude Code lo selecciona automáticamente por `description` (routing), o el usuario lo invoca explícitamente |
 | **Acceso a tools** | No declara tools propios — usa los del contexto de la sesión principal | Declara su propio conjunto de `tools` en el frontmatter; solo tiene acceso a esos tools |
 | **Ejecución en paralelo** | No — es metodología que el agente principal integra en su razonamiento | Sí — Claude Code puede lanzar múltiples agentes en paralelo con el `Task` tool |
 | **Formato del archivo** | Markdown con secciones estructuradas (fases, checklists, decisiones). Sin frontmatter obligatorio. | Frontmatter YAML con `name`, `description`, `tools` + cuerpo markdown con instrucciones del sistema |
