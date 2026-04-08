@@ -77,7 +77,7 @@ flowchart TD
 
 ### Sesión 3 — Bloque C: Spike + ADR-016 + Migración (9 tareas)
 
-- [ ] [T-011] Spike: crear `.claude/skills/workflow_spike_test.md` con `disable-model-invocation: true`, verificar invocación `/<name>` y que el hook en frontmatter dispara correctamente (DA-004: confirmar evento `UserPromptSubmit` u alternativo), eliminar el archivo de prueba, documentar resultado en `execution-log` del WP (SPEC-C01)
+- [x] [T-011] Spike: crear `.claude/skills/workflow_spike_test.md` con `disable-model-invocation: true`, verificar invocación `/<name>` y que el hook en frontmatter dispara correctamente (DA-004: confirmar evento `UserPromptSubmit` u alternativo), eliminar el archivo de prueba, documentar resultado en `execution-log` del WP (SPEC-C01)
 
 > **Gate T-011:** Si el spike falla, detener Bloque C y notificar al usuario. Activar fallback (mantener commands/, solo sincronizar contenido in-place). T-010 y T-012..T-029 se cancelan. Revisar design.md §8 para el procedimiento completo.
 
