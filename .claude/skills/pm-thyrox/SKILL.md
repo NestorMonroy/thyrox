@@ -208,6 +208,11 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 <!-- END SECTION: parallel-agent-conventions -->
 5. Definir checkpoints de validación
    Si hay >50 issues antes de descomponer: [categorization-plan.md.template](assets/categorization-plan.md.template) — categorizar primero para identificar grupos naturales
+6. Verificar atomicidad antes de presentar el task-plan al usuario:
+   - [ ] Cada tarea toca exactamente 1 ubicación (1 archivo O 1 sección de 1 archivo)
+   - [ ] Ninguna descripción de tarea contiene "y" conectando dos operaciones distintas
+   - [ ] Cada tarea puede commitearse y marcarse [x] de forma independiente
+   Si algún ítem falla: descomponer la tarea infractora antes de continuar.
 
 **⏸ GATE HUMANO CRÍTICO — STOP obligatorio antes de Phase 6:**
 Presentar al usuario el task-plan completo con TODAS las tareas listadas.
