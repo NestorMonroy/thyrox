@@ -200,6 +200,27 @@ Razón: Phase 6 modifica el repositorio. El usuario debe aprobar el plan antes d
 
 Commits frecuentes con mensajes descriptivos crean un historial navegable.
 
+**Al recibir `<task-notification>` (agente background completó):**
+1. Identificar el SP-NNN correspondiente en el Stopping Point Manifest del `*-analysis.md`
+2. Presentar al usuario: qué agente completó + resumen del resultado
+3. ⏸ GATE ASYNC — STOP: esperar confirmación antes de usar el output para la siguiente decisión o lanzar el siguiente agente
+4. Intensidad del gate según calibración (ver tabla abajo)
+5. Si el usuario aprueba: marcar SP-NNN como `✓` en el manifest y continuar
+6. Si el usuario señala un problema: crear `context/errors/ERR-NNN.md` y ajustar el plan
+
+**Calibración de gates async:**
+
+| Reversibilidad del WP | Tipo de agente | Nivel de gate |
+|----------------------|----------------|--------------|
+| `irreversible` | cualquiera | **Fuerte** — diff completo + "SI" explícito |
+| `reversible` | `task-executor` | **Fuerte** — diff completo + "SI" explícito |
+| `reversible` | `Explore` / investigación para decisión | **Estándar** — resumen + confirmación |
+| `reversible` | `Explore` / validación mecánica | **Ligero** — mencionar resultado + opción de objetar |
+| `documentation` | `task-executor` | **Estándar** — resumen + confirmación |
+| `documentation` | `Explore` / cualquiera | **Ligero** — mencionar resultado + opción de objetar |
+
+> Ausencia de respuesta del usuario ≠ aprobación. Si el usuario no responde, esperar — no auto-continuar.
+
 1. Tomar siguiente tarea pendiente de `work/.../*-task-plan.md` (checkbox `- [ ]`) sin bloqueos
 <!-- SECTION OWNER: parallel-agent-conventions -->
    En ejecución paralela: escribir estado en `context/now-{agent-id}.md`, no en `now.md`. Ver [conventions](references/conventions.md#parallel-agent-execution).
