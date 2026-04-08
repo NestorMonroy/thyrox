@@ -6,7 +6,7 @@ hooks:
     once: true
     type: command
     command: "echo 'phase: Phase 5' >> .claude/context/now.md"
-updated_at: 2026-04-08
+updated_at: 2026-04-08 22:00:00
 ---
 
 # /workflow_decompose — Phase 5: DECOMPOSE
@@ -19,47 +19,67 @@ Inicia o retoma Phase 5 DECOMPOSE del work package activo.
 
 1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
 2. Leer `*-requirements-spec.md` del WP para obtener los SPECs
-3. Verificar si ya existe `*-task-plan.md` con checkboxes `- [ ] [T-NNN]`:
+3. Leer `context/now.md` — verificar `phase`
+4. Verificar si ya existe `*-task-plan.md` con checkboxes `- [ ] [T-NNN]`:
    - Si existe → Phase 5 ya completó. Proponer `/workflow_execute`.
 
 ---
 
 ## Fase a ejecutar: Phase 5 DECOMPOSE
 
-Crear `[nombre-wp]-task-plan.md` basado en los SPECs del requirements-spec.
+Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
-Formato obligatorio por tarea:
-```
-- [ ] [T-NNN] Descripción de la tarea (SPEC-N)
-- [ ] [T-NNN] [P] Tarea paralelizable (SPEC-N)
-```
+1. Leer `work/.../*-requirements-spec.md` del WP activo
+   - Si el usuario pide descomposición directa sin spec previo: crear WP y descomponer desde la descripción — no cuestionar si el proyecto existe
 
-Cada tarea debe:
-- Referenciar su SPEC de origen `(SPEC-N)`
-- Ser atómica: máximo 1-2 horas de trabajo
-- Tener criterio de éxito observable
+2. REQUERIDO: Crear `work/../{nombre-wp}-task-plan.md` usando `assets/tasks.md.template`
+   - Nombre descriptivo: `skill-activation-task-plan.md`, no `task-plan.md`
 
-Incluir en el task-plan:
-1. **DAG de dependencias** en Mermaid — qué bloquea qué
-2. **Fases de ejecución** agrupadas lógicamente
-3. **Tareas [P]** marcadas explícitamente
-4. **Checkpoints** de validación por fase
+3. Crear lista de tareas con IDs trazables:
+   ```
+   - [ ] [T-NNN] Descripción de la tarea (SPEC-N)
+   - [ ] [T-NNN] [P] Tarea paralelizable (SPEC-N)
+   ```
+   Cada tarea necesita ID + referencia a su requisito — permite detectar tareas huérfanas.
 
-Verificar cobertura: cada SPEC debe tener al menos 1 tarea.
+4. Marcar tareas paralelas `[P]`
+   - En ejecución paralela: usar `[~]` para reclamar tareas antes de ejecutarlas
+   - Ver `references/conventions.md#parallel-agent-execution`
 
-**Verificar atomicidad antes de presentar:**
-- [ ] Cada tarea toca exactamente 1 ubicación (1 archivo O 1 sección de 1 archivo)
-- [ ] Ninguna descripción de tarea contiene "y" conectando dos operaciones distintas
-- [ ] Cada tarea puede commitearse y marcarse [x] de forma independiente
+5. Definir checkpoints de validación por grupo de tareas
+   - Si hay >50 issues: usar `assets/categorization-plan.md.template` para categorizar primero
+
+6. Incluir en el task-plan:
+   - **DAG de dependencias** en Mermaid — qué bloquea qué
+   - **Fases de ejecución** agrupadas lógicamente
+   - **Cobertura SPEC→Task** — tabla de trazabilidad inversa
+
+7. **Verificar atomicidad antes de presentar al usuario:**
+   - [ ] Cada tarea toca exactamente 1 ubicación (1 archivo O 1 sección de 1 archivo)
+   - [ ] Ninguna descripción de tarea contiene "y" conectando dos operaciones distintas
+   - [ ] Cada tarea puede commitearse y marcarse [x] de forma independiente
+   Si algún ítem falla: descomponer la tarea infractora antes de continuar.
+
+---
+
+## Gate humano
+
+⏸ GATE CRÍTICO — STOP obligatorio antes de Phase 6.
+Presentar el task-plan completo con TODAS las tareas listadas.
+Esperar confirmación explícita. Este gate NO tiene excepciones.
+Razón: Phase 6 modifica el repositorio — el usuario debe aprobar antes de que se ejecute.
+Al aprobar: actualizar `context/now.md::phase` a `Phase 6`.
 
 ---
 
 ## Exit criteria
 
 Phase 5 completa cuando:
-- `*-task-plan.md` existe con checkboxes `- [ ] [T-NNN]`
+- `work/.../*-task-plan.md` existe con checkboxes `- [ ] [T-NNN]`
 - Todas las tareas tienen referencia a su SPEC
-- DAG de dependencias documentado
-- Usuario aprobó el plan
+- DAG de dependencias documentado en Mermaid
+- Atomicidad verificada (3 ítems del checklist)
+- Usuario aprobó el plan explícitamente en esta sesión
 
+**Detectar:** Si `work/.../*-task-plan.md` tiene checkboxes `- [ ] [T-NNN]`, Phase 5 ya completó.
 Al terminar: proponer `/workflow_execute` para Phase 6.

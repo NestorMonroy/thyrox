@@ -6,7 +6,7 @@ hooks:
     once: true
     type: command
     command: "echo 'phase: Phase 6' >> .claude/context/now.md"
-updated_at: 2026-04-08
+updated_at: 2026-04-08 22:00:00
 ---
 
 # /workflow_execute — Phase 6: EXECUTE
@@ -20,31 +20,66 @@ Toma la siguiente tarea pendiente del work package activo y la ejecuta.
 1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
 2. Leer `*-task-plan.md` del WP activo
 3. Encontrar la siguiente tarea pendiente: primera línea con `- [ ] [T-`
-4. Listar tech skills activos: `ls .claude/skills/ | grep -v pm-thyrox`
-5. Crear o actualizar `[nombre-wp]-execution-log.md`
+4. Leer `context/now.md` — verificar `phase`
+5. Listar tech skills activos: `ls .claude/skills/ | grep -v pm-thyrox`
+6. REQUERIDO al inicio de sesión: crear o actualizar `{nombre-wp}-execution-log.md` usando `assets/execution-log.md.template`
 
 ---
 
 ## Fase a ejecutar: Phase 6 EXECUTE
 
-Para la tarea pendiente identificada:
+Commits frecuentes con mensajes descriptivos crean un historial navegable.
 
-1. Leer la descripción y el SPEC referenciado para entender qué construir
-2. Verificar dependencias: ¿las tareas previas requeridas están en `[x]`?
-3. Implementar el cambio respetando las reglas de los tech skills activos
-4. Si la implementación falla: crear `context/errors/ERR-NNN-descripcion.md` antes de reintentar
-5. Commit con conventional commits: `feat(scope): T-NNN — descripción`
-6. Actualizar el checkbox en `*-task-plan.md`: `- [ ]` → `- [x]`
-7. Actualizar ROADMAP.md: marcar el item como `[x]` con fecha
+**Al recibir `<task-notification>` (agente background completó):**
+1. Identificar el SP-NNN en el Stopping Point Manifest del `*-analysis.md`
+2. Presentar al usuario: qué agente completó + resumen del resultado
+3. ⏸ GATE ASYNC — STOP: esperar confirmación antes de usar el output o lanzar el siguiente agente
+4. Intensidad del gate según calibración (tabla abajo)
+5. Si aprueba: marcar SP-NNN como `✓` en el manifest y continuar
+6. Si hay problema: crear `context/errors/ERR-NNN.md` y ajustar el plan
 
-**Convención de commit por tarea:**
-```
-feat(scope): T-NNN — descripción breve
+**Calibración de gates async:**
 
-Implementa [qué]. Referencias: SPEC-N.
-```
+| Reversibilidad | Tipo de agente | Nivel de gate |
+|----------------|----------------|--------------|
+| `irreversible` | cualquiera | **Fuerte** — diff completo + "SI" explícito |
+| `reversible` | `task-executor` | **Fuerte** — diff completo + "SI" explícito |
+| `reversible` | `Explore` / decisión | **Estándar** — resumen + confirmación |
+| `reversible` | `Explore` / validación mecánica | **Ligero** — resultado + opción de objetar |
+| `documentation` | `task-executor` | **Estándar** — resumen + confirmación |
+| `documentation` | `Explore` / cualquiera | **Ligero** — resultado + opción de objetar |
 
-Después de cada tarea: preguntar si continuar con la siguiente o pausar.
+> Ausencia de respuesta ≠ aprobación. Si el usuario no responde, esperar — no auto-continuar.
+
+**Para cada tarea pendiente:**
+
+1. Leer la descripción y el SPEC referenciado
+2. Verificar dependencias: ¿las tareas previas requeridas están `[x]`?
+3. **⚠ GATE OPERACIÓN** — antes de operaciones destructivas, STOP y describir qué se va a hacer:
+   - Eliminar archivos/directorios, sobreescribir config con `--force`
+   - Modificar `.mcp.json`, `CLAUDE.md`, archivos que afectan todas las sesiones
+   - `git push --force` o cualquier operación que reescriba historia
+   - Cualquier operación no reversible con `git revert`
+4. Implementar el cambio respetando las reglas de los tech skills activos
+5. Si falla: crear `context/errors/ERR-NNN-descripcion.md` usando `assets/error-report.md.template` antes de reintentar con otro approach
+6. Commit con Conventional Commits: `type(scope): T-NNN — descripción`
+7. Actualizar checkbox en `*-task-plan.md`: `- [ ]` → `- [x]`
+8. Actualizar ROADMAP.md: `[ ]` → `[x]` con fecha
+
+**Pre-flight para ejecución paralela (antes de lanzar agentes):**
+1. Listar archivos que toca cada agente
+2. Detectar intersecciones → resolver scope collision antes de lanzar
+3. Asignar section owners para archivos compartidos
+4. Definir gates explícitos (quién desbloquea a quién)
+5. REQUERIDO: registrar SP-NNN en el Stopping Point Manifest por cada agente background
+   — hacer commit del manifest actualizado ANTES de lanzar el primer agente
+
+**Validación pre-Phase 7 — REQUERIDO antes de proponer TRACK:**
+- [ ] `*-task-plan.md` — todas las tareas completadas tienen `[x]`
+- [ ] `*-execution-log.md` — estado final de cada tarea registrado
+- [ ] `ROADMAP.md` — todos los checkboxes de la FASE actual en `[x]`
+- [ ] Stopping Point Manifest — SP-NNN de Phase 6 marcados como `✓`
+Si algún ítem falla → corregir antes de avanzar.
 
 ---
 
@@ -53,5 +88,7 @@ Después de cada tarea: preguntar si continuar con la siguiente o pausar.
 Phase 6 completa cuando:
 - Todas las checkboxes en `*-task-plan.md` están `[x]`
 - Todos los cambios están commiteados
+- Validación pre-Phase 7 pasada
 
+**Detectar:** Si todas las checkboxes en `*-task-plan.md` están `[x]`, Phase 6 ya completó.
 Al terminar: proponer `/workflow_track` para Phase 7.
