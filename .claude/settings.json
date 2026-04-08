@@ -19,6 +19,16 @@
           }
         ]
       }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/skills/pm-thyrox/scripts/session-resume.sh"
+          }
+        ]
+      }
     ]
   }
 }
