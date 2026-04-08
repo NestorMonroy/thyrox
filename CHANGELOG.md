@@ -13,6 +13,51 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.9.0] - 2026-04-08
+
+### Added — Framework Evolution: integración documentación oficial Claude Code + TDs prioritarios (WP framework-evolution / FASE 22)
+
+**Bloque E — Hooks (urgente):**
+- `scripts/stop-hook-git-check.sh` (nuevo) — hook Stop con check `stop_hook_active` (python3 parser + grep fallback) para evitar loop infinito; verifica commits sin pushear
+- `scripts/session-resume.sh` (nuevo) — hook PostCompact condicional: re-inyecta WP activo + fase + próxima tarea solo si no están en `compact_summary`
+- `.claude/settings.json` — añadidas entradas `Stop` y `PostCompact` hooks (total: 3 hooks activos)
+
+**Bloque B — SKILL.md Phase 5:**
+- `SKILL.md` Phase 5 DECOMPOSE — paso 6: checklist de atomicidad (3 ítems: 1 ubicación por tarea, sin "y" conector, independencia para commit)
+
+**Bloque A — Correcciones documentación:**
+- `context/decisions/adr-015.md` — Addendum 2026-04-08: 5 correcciones (triggering 3 modos, Capa 0 tipos: command/prompt/agent/http, .claude/rules/ sublayer, Capa 3 skills hidden post-TD-008, Agent teams como 4ª categoría)
+- `references/skill-vs-agent.md` — tabla triggering actualizada (3 modos), sección hooks con 4 tipos, Agent teams añadido como fila en tabla de decisión y de naturaleza
+- `context/decisions/adr-016.md` (nuevo) — decisión commands→skills hidden: contexto H-NEW-2 + H-SCHED-1, Opción B elegida, Capa 3 vacía post-FASE 22, spike T-011 como evidencia
+
+**Bloque C — TD-008 completo (commands→skills):**
+- `.claude/skills/workflow_analyze.md` + 6 más (nuevo×7) — 7 workflow_* skills migrados desde `commands/` con `disable-model-invocation: true` + hook `UserPromptSubmit once:true`; contenido sincronizado con lógica actual de SKILL.md (gates, manifest, calibración, pre-flight, sinergia /loop)
+- `.claude/commands/workflow_*.md` (eliminado×7) — solo queda `workflow_init.md`
+- `scripts/session-start.sh` — `COMMANDS_SYNCED=false` → `COMMANDS_SYNCED=true`; comentario actualizado a estado post-FASE 22
+- `CLAUDE.md` — Addendum a Locked Decision #5: 7 workflow_* skills son excepción intencional (herramientas de ejecución por fase, no tech domain skills); documentado en ADR-016; TD-019 para estructura
+
+**Bloque D — TD-007: END USER CONTEXT:**
+- `assets/end-user-context.md.template` (nuevo) — template Step 0: END USER (quién/problema/éxito/frustraciones), Cadena de Requisitos (tabla 5 capas), Restricciones Relevantes, Notas de Contexto, Checklist Step 0
+- `SKILL.md` Phase 1 ANALYZE — Step 0 añadido antes de los 8 aspectos: identificar END USER real, crear `{nombre-wp}-end-user-context.md` con checklist de 5 ítems
+
+### Changed
+
+- `scripts/session-start.sh` — `COMMANDS_SYNCED` actualizado + comentario descriptivo del estado actual
+
+### Fixed
+
+- R-05 resuelto: `stop-hook-git-check.sh` previene loop infinito verificando `stop_hook_active` antes de operar
+
+### Deferred
+
+- T-027 (SKILL.md reducción a ~40 líneas) — diferido a FASE 23: requiere TD-019..TD-023 resueltos primero
+
+### Lessons Learned
+
+- Lecciones L-087..L-093 documentadas (colisión `context.md.template`, Edit tool ambigüedad, now.md desincronización, spike user-side, cobertura previa a eliminación, comentarios "TODO" obsolescentes, flat files vs subdirectorios)
+
+---
+
 ## [1.8.0] - 2026-04-08
 
 ### Added — Skill Architecture Review: arquitectura de 5 capas para pm-thyrox (WP skill-architecture-review / FASE 21)

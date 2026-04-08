@@ -746,34 +746,35 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ---
 
-## FASE 22: Framework Evolution — Integración documentación oficial + TDs prioritarios (2026-04-08)
+## FASE 22: Framework Evolution — Integración documentación oficial + TDs prioritarios (2026-04-08) ✓
 
 **WP:** `.claude/context/work/2026-04-08-17-04-20-framework-evolution/`
-**Causa raíz:** Nueva documentación oficial de Claude Code revela inaccuraccias en ADR-015 + habilita estrategia superior para TD-008. R-05 (loop infinito en stop-hook) es riesgo activo.
+**Completada:** 2026-04-08 — versión v1.9.0
+**Causa raíz:** Nueva documentación oficial de Claude Code revela inaccuraccias en ADR-015 + habilita estrategia superior para TD-008. R-05 (loop infinito en stop-hook) era riesgo activo.
 
 ### Bloque E — Correcciones de hooks urgentes (R-05 activo)
 
-- [ ] TD-013: `stop_hook_active` check en `stop-hook-git-check.sh`
-- [ ] TD-012: Hook `PostCompact` con re-inyección condicional via `compact_summary`
+- [x] TD-013: `stop_hook_active` check en `stop-hook-git-check.sh`
+- [x] TD-012: Hook `PostCompact` con re-inyección condicional via `compact_summary`
 
 ### Bloque B — Mejora SKILL.md
 
-- [ ] TD-011: Checklist de atomicidad en SKILL.md Phase 5
+- [x] TD-011: Checklist de atomicidad en SKILL.md Phase 5
 
 ### Bloque A — Correcciones ADR-015 y referencias
 
-- [ ] ADR-015 Addendum: 5 correcciones (H1 triggering, Capa 0 tipos, rules/, agent teams, Capa 3)
-- [ ] skill-vs-agent.md: tabla triggering + hooks 4 tipos + agent teams
-- [ ] ADR-016: decisión commands → skills hidden
+- [x] ADR-015 Addendum: 5 correcciones (H1 triggering, Capa 0 tipos, rules/, agent teams, Capa 3)
+- [x] skill-vs-agent.md: tabla triggering + hooks 4 tipos + agent teams
+- [x] ADR-016: decisión commands → skills hidden
 
 ### Bloque C — TD-008 completo (commands → skills hidden)
 
-- [ ] Spike: verificar `/<name>` desde skills en Claude Code Web
-- [ ] Migrar 7 `/workflow_*` a `.claude/skills/` + `disable-model-invocation: true` + hooks `once:true`
-- [ ] Sincronizar contenido de 7 skills con lógica actual SKILL.md (gates, manifest, calibración)
-- [ ] Reducir pm-thyrox SKILL → ~40 líneas catálogo
+- [x] Spike: verificar `/<name>` desde skills en Claude Code Web (PASS)
+- [x] Migrar 7 `/workflow_*` a `.claude/skills/` + `disable-model-invocation: true` + hooks `once:true`
+- [x] Sincronizar contenido de 7 skills con lógica actual SKILL.md (gates, manifest, calibración)
+- [~] Reducir pm-thyrox SKILL → ~40 líneas catálogo (DIFERIDO → FASE 23, bloqueado por TD-019..TD-023)
 
 ### Bloque D — TD-007: END USER CONTEXT
 
-- [ ] Step 0 en SKILL.md Phase 1
-- [ ] Template `*-context.md`
+- [x] Step 0 en SKILL.md Phase 1
+- [x] Template `end-user-context.md.template`

@@ -1,19 +1,19 @@
 ```yml
 type: Dashboard de Proyecto
 category: Estado Actual
-version: 1.8.0
+version: 1.9.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-08 10:05:10
+updated_at: 2026-04-08 23:09:59
 ```
 
 # Project State — THYROX
 
 ## Status General
 
-**Versión:** 1.8.0
-**Estado:** Activo — framework pm-thyrox con 21 FASEs completadas
-**Última actualización:** 2026-04-08 10:05:10
+**Versión:** 1.9.0
+**Estado:** Activo — framework pm-thyrox con 22 FASEs completadas
+**Última actualización:** 2026-04-08 23:09:59
 **Branch activo:** `claude/check-merge-status-Dcyvj`
 
 ---
@@ -27,7 +27,7 @@ updated_at: 2026-04-08 10:05:10
 - `skill-generator` — Genera archivos de skill (.claude/skills/ o .claude/agents/) para una tecnologí
 - `task-executor` — Ejecuta tareas atómicas de un task-plan.md. Usar cuando hay un task-plan con ch
 - `task-planner` — Descompone trabajo en tareas atómicas con IDs trazables. Usar cuando el usuario
-- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
+- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
 - `webpack-expert` — Tech-expert para Webpack y bundling de assets. Conoce configuración de entry/ou
 
 ---
@@ -55,6 +55,7 @@ updated_at: 2026-04-08 10:05:10
 | FASE 19: Async Gates — gates para agentes en background (2026-04-08) |
 | FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) ✓ |
 | FASE 21: Skill Architecture Review — decisión arquitectónica pm-thyrox (2026-04-08) |
+| FASE 22: Framework Evolution — hooks Stop/PostCompact, 7 workflow_* skills hidden, Step 0 END USER CONTEXT (2026-04-08) |
 
 Ver ROADMAP.md para detalle de cada FASE.
 
@@ -81,7 +82,7 @@ Ver ROADMAP.md para detalle de cada FASE.
 
 ## Deuda técnica registrada
 
-Ver `.claude/context/technical-debt.md` para TD-001 a TD-007.
+Ver `.claude/context/technical-debt.md` para TD-001 a TD-023.
 
 ---
 
