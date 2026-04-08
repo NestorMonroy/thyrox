@@ -20,6 +20,12 @@ Framework de gestión para organizar trabajo de cualquier tamaño con Claude Cod
 
 Ver [escalabilidad](references/scalability.md) para detalles y casos de borde.
 
+**Nomenclatura:** "FASE" y "Phase" son niveles distintos — no confundir.
+`FASE N` = número secuencial global del proyecto (cada WP ocupa una FASE).
+`Phase N` = etapa interna del ciclo SDLC dentro de ese WP (1–7, se reinicia en cada FASE).
+Ejemplo: "FASE 20 está en Phase 6" = el WP #20 del proyecto está ejecutándose.
+Ver glosario completo en [CLAUDE.md](../../../CLAUDE.md#glosario).
+
 ```mermaid
 flowchart LR
     P1([ANALYZE]) --> P2([SOLUTION\nSTRATEGY])

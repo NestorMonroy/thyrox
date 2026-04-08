@@ -71,6 +71,18 @@ SIEMPRE seguir este flujo. NO omitir pasos.
 
 adr_path: .claude/context/decisions/   # THYROX: retrocompat. Nuevos proyectos: usar subdirectorios por capa (global/, api/, db/, ui/, deploy/, framework/)
 
+## Glosario
+
+| Término | Significado | Ejemplo |
+|---------|-------------|---------|
+| **FASE N** | Unidad de trabajo del proyecto — número secuencial global. Cada WP ocupa una FASE. | FASE 19: async-gates · FASE 20: context-hygiene |
+| **Phase N** | Etapa del ciclo SDLC dentro de un WP (1-ANALYZE … 7-TRACK). Se reinicia en cada FASE. | FASE 20 está en Phase 6: EXECUTE |
+| **WP** | Work package — directorio `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` que contiene todos los artefactos de una FASE | `context/work/2026-04-08-02-05-03-context-hygiene/` |
+| **SP-NNN** | Stopping Point — punto de parada explícito definido en el Stopping Point Manifest de Phase 1 | SP-06: gate 6→7, esperar aprobación humana |
+
+**Regla mnemotécnica:** FASE es el "qué proyecto", Phase es el "en qué paso del proyecto".
+Un proyecto con 20 FASEs tiene 20 WPs; cada WP recorre hasta 7 Phases internamente.
+
 ## Para más contexto
 
 - Metodología completa: [SKILL](skills/pm-thyrox/SKILL.md)
