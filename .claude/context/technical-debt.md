@@ -211,3 +211,37 @@ WP propio analiza 5 alternativas, decide arquitectura, produce ADR permanente.
 No implementar sin análisis — este ítem registra la deuda, no la resuelve.
 
 ---
+
+## TD-006: pm-thyrox debe ser thin orchestrator — mover lógica de fases a workflow_* commands
+
+```
+Severidad: media
+Origen: Análisis SKILL vs AGENTE 2026-04-08 (context-hygiene WP)
+Fase afectada: Arquitectura del SKILL principal
+Estado: [ ] Pendiente — trigger: pm-thyrox llega a ~600 líneas
+```
+
+**Problema:**
+pm-thyrox SKILL viola la definición de SKILL (unidad atómica, una responsabilidad) porque
+contiene la lógica completa de las 7 fases. Un SKILL debería ser un thin orchestrator;
+la lógica de cada fase debería vivir en su propio command atómico.
+
+**Hallazgo:** Los commands `/workflow_analyze`, `/workflow_plan`, `/workflow_execute`, etc.
+ya existen en `.claude/commands/` — la arquitectura correcta está 70% implementada.
+Falta: hacer pm-thyrox delgado y sincronizar workflow_* commands con la lógica actual de SKILL.md.
+
+**Cambio concreto:**
+- pm-thyrox SKILL: ~50 líneas (descripción, principios core, tabla escalabilidad, refs a workflow_*)
+- workflow_analyze.md: contiene lógica completa de Phase 1 (actualmente en pm-thyrox)
+- workflow_plan.md: contiene lógica completa de Phase 3 (actualmente en pm-thyrox)
+- ... etc. (un command por fase)
+
+**Trigger correcto:** pm-thyrox llega a ~600 líneas O agregar instrucción de fase causa conflicto de contexto.
+No antes — workflow_* commands están desactualizados (no tienen gates, Stopping Point Manifest, etc.)
+y sincronizarlos requiere un WP formal.
+
+**Criterio de cierre:**
+pm-thyrox SKILL ≤ 80 líneas. Cada workflow_* command contiene la lógica de su fase.
+workflow_* están sincronizados con todas las instrucciones actuales (gates, manifest, calibración).
+
+---
