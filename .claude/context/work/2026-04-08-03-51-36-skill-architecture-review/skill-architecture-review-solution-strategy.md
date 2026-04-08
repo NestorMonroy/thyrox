@@ -253,6 +253,70 @@ la brecha entre blueprint y producción como información, no como fracaso.
 
 ---
 
+### D-07: Capa 2 soporta N skills, no solo pm-thyrox
+
+**Decisión:** La arquitectura debe tratar pm-thyrox como una skill más en Capa 2, no como el
+orquestador único. Otros skills (security-audit, payment-flow, domain-specific) coexisten
+en la misma capa con sus propias responsabilidades.
+
+**Regla de coexistencia:**
+- Cada skill escribe solo en sus propios archivos (section owner a nivel de skill)
+- pm-thyrox escribe: `now.md` (orchestration decisions) + artefactos de WP
+- Skills especializados escriben: `now-{skill-name}-{wp-id}.md` (sus checkpoints propios)
+- Git commits serializan las escrituras sin bloquear la ejecución paralela
+
+**Límite recomendado:**
+- HOY (SKILL probabilístico): máximo 2 skills simultáneos — más contamina el context window
+- Post-migración (/workflow_* determinístico): hasta 3-4 skills con ordering explícito
+
+**Razón:** Doc 09 Extensión — la pregunta "¿qué pasa con las otras skills que muestra el hook?"
+revela que la arquitectura debe diseñarse para N skills desde el inicio, no como un caso especial.
+
+---
+
+### D-08: Naming convention para checkpoints multi-skill
+
+**Decisión:** Extender el patrón `now-{agent-id}.md` para incluir el contexto de skill:
+
+| Contexto | Archivo | Escribe | Contiene |
+|---------|---------|---------|---------|
+| Agente paralelo en ejecución | `now-{agent-id}.md` | El agente | Progreso de la tarea |
+| Checkpoint de skill especializado | `now-{skill-name}-{wp-id}.md` | El skill | Estado de evaluación del skill |
+| Estado compartido de sesión | `now.md` | pm-thyrox / orquestador | Fase activa, WPs, agentes |
+
+**Ejemplo:**
+```
+now.md                        ← pm-thyrox: orchestration decisions
+now-agent1.md                 ← Agent-1: tarea T-007 en progreso
+now-agent2.md                 ← Agent-2: tarea T-008 en progreso
+now-security-audit-wp-auth.md ← security-audit: evaluación de WP-auth
+now-payment-flow-wp-pay.md    ← payment-flow: verificación de WP-payment
+```
+
+**PTC-proof:** El patrón de archivos no cambia con PTC. Los agentes seguirán usando `now-{agent-id}.md`
+aunque internamente usen PTC para sus tool calls.
+
+---
+
+### D-09: CLAUDE.md incluye guía de orquestación multi-skill
+
+**Decisión:** CLAUDE.md debe incluir una sección de advertencia sobre múltiples skills:
+
+```markdown
+## Multi-skill orchestration
+
+- Máximo 2-3 skills simultáneos (context window).
+- Antes de lanzar N skills en paralelo: verificar que sus section owners son disjuntos.
+- Si un skill necesita el output de otro: lanzarlos en secuencia, no en paralelo.
+- Si hay duda sobre conflictos: usar /workflow_* commands para ordenar explícitamente.
+```
+
+**Razón:** Sin esta guía, el usuario puede lanzar 5 skills simultáneamente degradando la calidad.
+La guía en CLAUDE.md garantiza que siempre esté visible (siempre cargada) — sin depender de que
+el usuario recuerde un documento de referencia.
+
+---
+
 ## Pre-design check
 
 | Principio | ¿Se respeta? |
@@ -263,6 +327,9 @@ la brecha entre blueprint y producción como información, no como fracaso.
 | PTC-proof | ✓ PTC actúa en capa de agentes — no invalida commands ni hooks |
 | Sin duplicación | ✓ Lógica de fase en commands únicamente — SKILL es catálogo |
 | Migración gradual | ✓ SKILL puede coexistir durante sincronización de commands |
+| Multi-skill support | ✓ Capa 2 diseñada para N skills con section owners disjuntos |
+| Coordinación multi-skill | ✓ `now-{skill}-{wp}.md` como checkpoint por skill — sin conflictos |
+| Límite explícito | ✓ CLAUDE.md advierte: máx 2-3 skills simultáneos (context budget) |
 
 ---
 
@@ -277,9 +344,12 @@ CAPA 1 — Siempre en contexto
 └─ CLAUDE.md (~80 líneas: flujo de sesión, glosario, referencias)
     └─ Sin lógica de fase — solo: "para Phase N, ejecuta /workflow_N"
 
-CAPA 2 — Catálogo on-demand (SKILL, ~40 líneas)
-└─ pm-thyrox SKILL: descripción + tabla escalabilidad + tabla /workflow_*
-    └─ NO contiene lógica de fase
+CAPA 2 — Skills on-demand (N skills, probabilístico)
+├─ pm-thyrox SKILL (~40 líneas): catálogo → tabla /workflow_* — SIN lógica de fase
+├─ security-audit SKILL: evaluación de seguridad por WP (si aplica)
+├─ payment-flow SKILL: lógica de dominio de pagos (si aplica)
+└─ [otros domain-specific skills] — cada uno con section owner propio
+    Límite: máximo 2-3 simultáneos (context window budget)
 
 CAPA 3 — Lógica de fase on-demand (determinístico)
 ├─ /workflow_analyze    → Phase 1 completa (actualizada con gates + manifest)
@@ -290,8 +360,11 @@ CAPA 3 — Lógica de fase on-demand (determinístico)
 ├─ /workflow_execute    → Phase 6 completa (con task-notification gate)
 └─ /workflow_track      → Phase 7 completa (con cierre de estado)
 
-CAPA 4 — Agentes (determinístico cuando Claude los lanza)
+CAPA 4 — Agentes + coordinación git (determinístico cuando Claude los lanza)
 ├─ task-executor: ejecuta T-NNN atómicamente
+├─ [otros agentes nativos]
+├─ Coordinación: now.md (shared) + now-{agent-id}.md + now-{skill-name}-{wp-id}.md
+└─ Git commits = barriers de sincronización (serializados, no bloquean ejecución paralela)
 ├─ task-planner: descompone trabajo
 ├─ tech-detector: detecta stack
 └─ Explore: investiga codebase
@@ -312,7 +385,9 @@ CAPA 4 — Agentes (determinístico cuando Claude los lanza)
 |-------------------------------|-----------|
 | R-01: Migración rompe flujo actual | ✓ SKILL y commands coexisten durante migración |
 | R-02: workflow_* desactualizados | ✓ Sincronización es tarea explícita del WP |
-| R-03: CLAUDE.md sobrecargado | ✓ CLAUDE.md solo tiene referencias, no lógica |
+| R-03: CLAUDE.md sobrecargado | ✓ CLAUDE.md solo tiene referencias + guía multi-skill (~80 líneas) |
 | R-04: Sin evaluación empírica | ~ Pendiente — benchmark mínimo en Phase 4 |
 | R-05: PTC invalida arquitectura | ✓ D-05 + separación de capas lo previene |
 | R-06: Pérdida de contexto cross-fase | ✓ CLAUDE.md tiene referencias cross-phase |
+| R-nuevo: N skills degradan context window | ✓ D-09 — límite 2-3 en CLAUDE.md + D-07 section owners disjuntos |
+| R-nuevo: Race condition entre skills | ✓ D-08 — `now-{skill}-{wp}.md` por skill, git serializa escrituras |
