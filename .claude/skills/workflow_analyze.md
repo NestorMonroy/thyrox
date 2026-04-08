@@ -6,7 +6,7 @@ hooks:
     once: true
     type: command
     command: "echo 'phase: Phase 1' >> .claude/context/now.md"
-updated_at: 2026-04-08
+updated_at: 2026-04-08 22:00:00
 ---
 
 # /workflow_analyze — Phase 1: ANALYZE
@@ -17,20 +17,11 @@ Inicia o retoma Phase 1 ANALYZE del work package activo.
 
 ## Contexto de sesión
 
-1. Identificar el work package activo (directorio más reciente en `context/work/`):
-   ```bash
-   ls -t .claude/context/work/ | head -1
-   ```
-
-2. Listar tech skills activos:
-   ```bash
-   ls .claude/skills/ | grep -v pm-thyrox
-   ```
-
-3. Verificar si ya existe un `*-analysis.md` en el WP activo:
-   ```bash
-   ls .claude/context/work/[WP-activo]/analysis/ 2>/dev/null
-   ```
+1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
+2. Leer `context/now.md` — verificar `phase` y `current_work`
+3. Listar tech skills activos: `ls .claude/skills/ | grep -v pm-thyrox`
+4. Verificar si ya existe `*-analysis.md` en el WP:
+   - `ls .claude/context/work/[WP-activo]/analysis/ 2>/dev/null`
    - Si existe sin `[NEEDS CLARIFICATION]` → Phase 1 ya completó. Proponer `/workflow_strategy`.
    - Si no existe → iniciar Phase 1.
 
@@ -38,26 +29,65 @@ Inicia o retoma Phase 1 ANALYZE del work package activo.
 
 ## Fase a ejecutar: Phase 1 ANALYZE
 
-Seguir el SKILL pm-thyrox Phase 1 completo:
+Entender el problema antes de proponer soluciones evita construir lo incorrecto.
 
-1. Investigar los 8 aspectos (Objetivo, Stakeholders, Uso operacional, Calidad, Restricciones, Contexto, Fuera de alcance, Criterios de éxito)
-2. Crear work package si no existe: `context/work/$(date +%Y-%m-%d-%H-%M-%S)-[nombre]/`
-3. Crear `analysis/[nombre-wp]-analysis.md` usando `assets/introduction.md.template`
-4. Crear `[nombre-wp]-risk-register.md` usando `assets/risk-register.md.template`
-5. Para proyectos medianos/grandes: crear `[nombre-wp]-exit-conditions.md`
+1. Investigar estos **8 aspectos** — preguntar al usuario lo que no esté claro:
+   - **Objetivo/Por qué** — ¿qué se quiere lograr y por qué importa?
+   - **Stakeholders** — ¿quiénes son los usuarios y qué necesitan?
+   - **Uso operacional** — ¿cómo se usará el sistema en la práctica?
+   - **Atributos de calidad** — ¿qué importa más: velocidad, seguridad, confiabilidad?
+   - **Restricciones** — ¿qué limita la solución (tech, tiempo, presupuesto)?
+   - **Contexto/sistemas vecinos** — ¿dónde se sitúa, qué lo rodea?
+   - **Fuera de alcance** — ¿qué NO se va a hacer?
+   - **Criterios de éxito** — ¿cómo sabremos que está bien hecho?
 
-Tech skills activos a considerar en el análisis:
-- Si hay `frontend-react`: investigar componentes afectados, estado, rutas
-- Si hay `backend-nodejs`: investigar endpoints, capas, dependencias de API
-- Si hay `db-postgresql`: investigar tablas, relaciones, volumen de datos
+2. Crear work package — obtener timestamp real del sistema:
+   - Directorio: `date +%Y-%m-%d-%H-%M-%S` → `context/work/{timestamp}-nombre/`
+   - Metadata: `date '+%Y-%m-%d %H:%M:%S'` → ISO 8601 para `created_at`
+   - NUNCA inventar ni estimar el timestamp
+   - REQUERIDO: actualizar `context/now.md` con `current_work` y `phase: Phase 1`
+   - Clasificar reversibilidad: `documentation` | `reversible` | `irreversible`
+
+3. REQUERIDO: Crear `work/.../analysis/{nombre-wp}-analysis.md` usando `assets/introduction.md.template`
+   - El nombre debe revelar QUÉ se analiza: `skill-activation-analysis.md`, no `introduction.md`
+
+4. REQUERIDO: Crear `work/../{nombre-wp}-risk-register.md` usando `assets/risk-register.md.template`
+
+5. Si el análisis es complejo: crear sub-documentos en `work/.../analysis/` según necesidad
+   (stakeholders, requirements-analysis, use-cases, quality-goals, constraints, context)
+
+6. Para proyectos medianos/grandes: Crear `work/../{nombre-wp}-exit-conditions.md` usando `assets/exit-conditions.md.template`
+
+7. Si hay principios arquitectónicos globales: crear/actualizar `constitution.md` en la raíz
+
+8. ADR: crear solo si aplica (cambio de stack, nuevo patrón arquitectónico, decisión que afecta todos los WPs futuros). Path: `adr_path` en CLAUDE.md → `.claude/context/decisions/`
+
+9. REQUERIDO: Añadir `## Stopping Point Manifest` al final del `*-analysis.md`:
+   - Registrar gates obligatorios: 1→2, 2→3, 4→5, 5→6, 6→7
+   - Si hay agentes async: añadir SP-NNN por cada agente background
+   - Si hay ambigüedades de scope: añadir gate-decision
+   - Formato: `ID | Fase | Tipo | Evento | Acción requerida`
+   - Tipos: `gate-fase` | `async-completion` | `gate-operacion` | `gate-decision`
+
+Tech skills activos: si hay `frontend-react` investigar componentes; `backend-nodejs` investigar endpoints; `db-postgresql` investigar tablas y relaciones.
+
+---
+
+## Gate humano
+
+⏸ STOP — Presentar resumen de hallazgos (objetivos, gaps, riesgos, criterios de éxito).
+Esperar confirmación explícita. NO continuar sin respuesta.
+Al aprobar: actualizar `context/now.md::phase` a `Phase 2`.
 
 ---
 
 ## Exit criteria
 
 Phase 1 completa cuando:
-- `work/.../analysis/[nombre]-analysis.md` existe
-- No contiene `[NEEDS CLARIFICATION]`
-- Usuario aprobó los hallazgos
+- `work/.../analysis/{nombre-wp}-analysis.md` existe sin `[NEEDS CLARIFICATION]`
+- `{nombre-wp}-risk-register.md` existe
+- Stopping Point Manifest documentado
+- Usuario confirmó los hallazgos explícitamente en esta sesión
 
+**Detectar:** Si `work/.../analysis/` tiene `*-analysis.md` sin `[NEEDS CLARIFICATION]`, Phase 1 ya completó.
 Al terminar: proponer `/workflow_strategy` para Phase 2.

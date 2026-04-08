@@ -6,7 +6,7 @@ hooks:
     once: true
     type: command
     command: "echo 'phase: Phase 4' >> .claude/context/now.md"
-updated_at: 2026-04-08
+updated_at: 2026-04-08 22:00:00
 ---
 
 # /workflow_structure — Phase 4: STRUCTURE
@@ -19,36 +19,55 @@ Inicia o retoma Phase 4 STRUCTURE del work package activo.
 
 1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
 2. Leer plan y solution-strategy del WP para entender el scope
-3. Verificar si ya existe `*-requirements-spec.md` sin `[NEEDS CLARIFICATION]`:
-   - Si existe con checklist al 100% → Phase 4 ya completó. Proponer `/workflow_decompose`.
-4. Listar tech skills activos para orientar la spec técnica.
+3. Leer `context/now.md` — verificar `phase`
+4. Verificar si ya existe `*-requirements-spec.md` sin `[NEEDS CLARIFICATION]`:
+   - Si existe con spec-checklist al 100% → Phase 4 ya completó. Proponer `/workflow_decompose`.
+5. Listar tech skills activos para orientar la spec técnica.
 
 ---
 
 ## Fase a ejecutar: Phase 4 STRUCTURE
 
-**Determinar complejidad:**
-- < 10 tareas estimadas → Simple
-- 10+ tareas estimadas → Complejo (requiere también design.md)
+Especificar antes de descomponer previene ambigüedad en las tareas.
 
-**Simple:** Crear `[nombre-wp]-requirements-spec.md` con overview, user stories, acceptance criteria.
+**Determinar complejidad:**
+- < 10 tareas estimadas → **Simple**
+- 10+ tareas estimadas → **Complejo** (requiere también design.md)
+
+**Simple:** Crear `work/../{nombre-wp}-requirements-spec.md` usando `assets/requirements-specification.md.template`
+  - Con overview, user stories, acceptance criteria (Given/When/Then)
+  - Nombre descriptivo: `skill-activation-requirements-spec.md`, no `requirements-spec.md`
 
 **Complejo:** Crear ambos:
-1. `[nombre-wp]-requirements-spec.md` — qué construir (SPECs con Given/When/Then)
-2. `[nombre-wp]-design.md` — cómo construirlo (arquitectura, componentes, flujos con Mermaid)
+1. `work/../{nombre-wp}-requirements-spec.md` — qué construir (SPECs con Given/When/Then)
+2. `work/../{nombre-wp}-design.md` — cómo construirlo usando `assets/design.md.template`:
+   - Visión arquitectónica, componentes afectados, decisiones de diseño
+   - Ver `references/spec-driven-development.md` para guía completa
 
-**Todos los flujos, modelos y diagramas deben usar Mermaid** (no ASCII art).
+**Reglas de formato:**
+- Todos los flujos, modelos y diagramas deben usar **Mermaid** (no ASCII art)
+- Para docs técnicos sin template específico: `assets/document.md.template`
 
-REQUERIDO al finalizar: completar `[nombre-wp]-spec-checklist.md` (20 ítems).
-No avanzar si quedan `[NEEDS CLARIFICATION]` sin resolver.
+REQUERIDO al finalizar: completar `{nombre-wp}-spec-checklist.md` usando `assets/spec-quality-checklist.md.template` (20 ítems).
+NO avanzar si quedan ítems sin ✓ o marcadores `[NEEDS CLARIFICATION]` sin resolver.
+
+---
+
+## Gate humano
+
+⏸ STOP — Presentar la especificación completa (user stories, acceptance criteria, diseño si aplica).
+Esperar confirmación explícita. NO continuar sin respuesta.
+Excepción: si el WP es `reversibility: documentation` y la spec no tiene ambigüedades, el gate puede ser ligero.
+Al aprobar: actualizar `context/now.md::phase` a `Phase 5`.
 
 ---
 
 ## Exit criteria
 
 Phase 4 completa cuando:
-- `*-requirements-spec.md` existe sin `[NEEDS CLARIFICATION]`
-- Spec-checklist completado al 100%
-- Usuario aprobó la especificación
+- `work/.../*-requirements-spec.md` existe sin `[NEEDS CLARIFICATION]`
+- `{nombre-wp}-spec-checklist.md` completado al 100%
+- Usuario confirmó la especificación explícitamente en esta sesión
 
+**Detectar:** Si `work/.../*-requirements-spec.md` tiene user stories y acceptance criteria sin `[NEEDS CLARIFICATION]`, Phase 4 ya completó.
 Al terminar: proponer `/workflow_decompose` para Phase 5.

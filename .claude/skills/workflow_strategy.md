@@ -6,7 +6,7 @@ hooks:
     once: true
     type: command
     command: "echo 'phase: Phase 2' >> .claude/context/now.md"
-updated_at: 2026-04-08
+updated_at: 2026-04-08 22:00:00
 ---
 
 # /workflow_strategy — Phase 2: SOLUTION_STRATEGY
@@ -18,33 +18,58 @@ Inicia o retoma Phase 2 SOLUTION_STRATEGY del work package activo.
 ## Contexto de sesión
 
 1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
-2. Leer el analysis existente: `cat .claude/context/work/[WP]/analysis/*-analysis.md`
-3. Verificar si ya existe `*-solution-strategy.md`:
+2. Leer analysis existente: `cat .claude/context/work/[WP]/analysis/*-analysis.md`
+3. Leer `context/now.md` — verificar `phase`
+4. Verificar si ya existe `*-solution-strategy.md`:
    - Si existe con decisiones documentadas → Phase 2 ya completó. Proponer `/workflow_plan`.
-4. Listar tech skills activos: `ls .claude/skills/ | grep -v pm-thyrox`
+5. Listar tech skills activos: `ls .claude/skills/ | grep -v pm-thyrox`
 
 ---
 
 ## Fase a ejecutar: Phase 2 SOLUTION_STRATEGY
 
-REQUERIDO: Leer `skills/pm-thyrox/references/solution-strategy.md` antes de empezar.
+Investigar alternativas antes de decidir previene decisiones sin evidencia.
 
-Crear `[nombre-wp]-solution-strategy.md` con estas secciones obligatorias:
+0. REQUERIDO: Leer `skills/pm-thyrox/references/solution-strategy.md` antes de empezar.
+   Basar las Key Ideas en los hallazgos de `work/.../analysis/`.
 
-1. **Key Ideas** — conceptos centrales basados en el analysis
-2. **Research** — unknowns → alternativas → pros/cons documentados
-3. **Pre-design check** — verificar contra ADRs y constitution.md
-4. **Decisions** — decisiones fundamentales con justificación
-5. **Post-design re-check** — re-verificar después de decidir
+1. REQUERIDO: Crear `work/../{nombre-wp}-solution-strategy.md` usando `assets/solution-strategy.md.template`
+   - Nombre descriptivo: `skill-activation-solution-strategy.md`, no `solution-strategy.md`
 
-Para decisiones arquitectónicas importantes: crear ADR en `context/decisions/`.
+2. **Key Ideas** — definir conceptos centrales que guían la solución (desde analysis/ de Phase 1)
+
+3. **Research** — listar unknowns → investigar alternativas → documentar pros/cons por cada uno
+
+4. **Pre-design check** — verificar que las decisiones respetan:
+   - ADRs existentes en `context/decisions/`
+   - `constitution.md` si existe
+   - Restricciones identificadas en Phase 1
+
+5. **Decisions** — documentar decisiones fundamentales con justificación
+   - Para decisiones arquitectónicas importantes: crear ADR en `context/decisions/`
+   - Usar `assets/adr.md.template`
+
+6. **Post-design re-check** — re-verificar después de diseñar
+   (las decisiones pueden cambiar al profundizar — revisar consistency con Phase 1)
+
+Ver `references/solution-strategy.md` para estructura completa (Tech Stack, Patterns, Quality Goals).
+
+---
+
+## Gate humano
+
+⏸ STOP — Presentar las decisiones clave (Key Ideas, Decisions, alternativas descartadas).
+Esperar confirmación explícita. NO continuar sin respuesta.
+Al aprobar: actualizar `context/now.md::phase` a `Phase 3`.
 
 ---
 
 ## Exit criteria
 
 Phase 2 completa cuando:
-- `work/../[nombre]-solution-strategy.md` existe con las 5 secciones
-- Arquitectura aprobada por el usuario
+- `work/.../*-solution-strategy.md` existe con las 5 secciones obligatorias
+- Decisiones documentadas con justificación
+- Usuario confirmó la estrategia explícitamente en esta sesión
 
+**Detectar:** Si `work/.../*-solution-strategy.md` existe con decisiones documentadas, Phase 2 ya completó.
 Al terminar: proponer `/workflow_plan` para Phase 3.
