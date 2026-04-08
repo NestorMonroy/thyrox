@@ -28,6 +28,9 @@ La sincronización completa de /workflow_* commands queda como deuda técnica se
 | S-04 | Reducir `pm-thyrox SKILL` a catálogo ~40-50 líneas — eliminar lógica de fase, dejar solo descripción + tabla escalabilidad + tabla /workflow_* | D-02 | Core de la decisión — sin esto la arquitectura sigue siendo monolítica |
 | S-05 | Actualizar `technical-debt.md` — TD-006 con análisis corregido (5 hallazgos, errores de framing) + registrar TD-008 (sync /workflow_* commands) | D-03 | TD-006 necesita corregirse; TD-008 captura el trabajo pendiente |
 | S-06 | Actualizar `skill-vs-agent-analysis.md` — conclusiones corregidas (SKILL probabilístico, CLAUDE.md como alternativa, multi-skill) | — | Artefacto de FASE 20 con errores documentados — corregir para trazabilidad |
+| S-07 | Actualizar `references/conventions.md` — naming convention D-08: `now-{agent-name}.md` / `now-{skill-name}-{wp-id}.md` con tabla, ejemplos, y regla de section owner | D-08 | La convención está descrita en CLAUDE.md pero no en la referencia canónica donde se buscará |
+| S-08 | Actualizar `references/skill-vs-agent.md` — tabla 5 capas, 3 rutas con calidad, 5 hallazgos externos, tabla de decisión SKILL vs command vs agente | D-01..D-09 | Referencia permanente para decisiones futuras — sin ella el análisis queda solo en el WP |
+| S-09 | Añadir nota en `pm-thyrox SKILL.md` — ≤10 líneas antes de "Las 7 Fases": limitaciones de confiabilidad + referencia al ADR + arquitectura objetivo (thin cuando TD-008 completo) | D-06 | El framework debe ser honesto sobre sus propias limitaciones — sin ocultar el gap |
 
 ---
 

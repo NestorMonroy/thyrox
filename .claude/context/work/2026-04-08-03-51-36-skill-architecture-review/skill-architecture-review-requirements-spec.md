@@ -109,6 +109,62 @@ y corregir la deuda documental del análisis previo (FASE 20).
 
 ---
 
+## US-06: references/conventions.md formaliza el naming multi-skill (D-08)
+
+**Como** desarrollador que trabaja con múltiples skills o agentes en paralelo,
+**quiero** encontrar en `references/conventions.md` el naming convention canónico para archivos de estado,
+**para** no tener que deducirlo de CLAUDE.md ni de un ADR.
+
+### Acceptance Criteria
+
+| ID | Criterio |
+|----|---------|
+| AC-06.1 | `references/conventions.md` tiene una sección `## State files — naming conventions` (nueva o ampliada) |
+| AC-06.2 | Documenta los 3 tipos de archivo con su patrón, quién escribe y qué contiene: `now.md` / `now-{agent-name}.md` / `now-{skill-name}-{wp-id}.md` |
+| AC-06.3 | Incluye ejemplos concretos: `now-task-executor.md`, `now-security-audit-wp-auth.md` |
+| AC-06.4 | Explica la regla de section owner por archivo (quién es responsable de cada tipo) |
+| AC-06.5 | La sección referencia `references/state-management.md` (trigger map de FASE 20) para no duplicar |
+
+---
+
+## US-07: references/skill-vs-agent.md refleja el análisis actualizado
+
+**Como** desarrollador que necesita decidir si crear un SKILL, un agente nativo, o un /workflow_* command,
+**quiero** que `references/skill-vs-agent.md` incluya la arquitectura de 5 capas, las 3 rutas, y los hallazgos sobre confiabilidad,
+**para** tomar la decisión correcta sin repetir el análisis de FASE 21.
+
+### Acceptance Criteria
+
+| ID | Criterio |
+|----|---------|
+| AC-07.1 | El documento incluye la tabla de las 5 capas con triggering, overhead y actualización |
+| AC-07.2 | El documento explica las 3 rutas para ejecutar una fase y su calidad actual (SKILL=alta/probabilístico, /workflow_* HOY=baja/determinístico, /workflow_* post-TD-008=alta/determinístico) |
+| AC-07.3 | El documento documenta los 5 hallazgos externos sobre SKILLs (triggering probabilístico, PTC, truncación, prompt injection, CLAUDE.md alternativa) con sus fuentes |
+| AC-07.4 | El documento incluye la tabla de decisión: cuándo usar SKILL vs /workflow_* command vs agente nativo |
+| AC-07.5 | El documento referencia el ADR de FASE 21 para el razonamiento completo |
+| AC-07.6 | El documento distingue entre la naturaleza de CLAUDE.md (guía declarativa siempre cargada) vs SKILL (probabilístico on-demand) vs command (determinístico user-triggered) |
+
+---
+
+## US-08: pm-thyrox SKILL.md referencia el ADR y sus limitaciones conocidas
+
+**Como** Claude Code al invocar pm-thyrox SKILL,
+**quiero** que el propio SKILL.md tenga una nota sobre sus limitaciones de confiabilidad y el ADR que documenta la arquitectura objetivo,
+**para** que el framework sea honesto sobre su propio estado — sin ocultar el gap entre hoy y el objetivo.
+
+### Acceptance Criteria
+
+| ID | Criterio |
+|----|---------|
+| AC-08.1 | SKILL.md tiene una sección `## Limitaciones conocidas y arquitectura objetivo` (antes de "Las 7 Fases") |
+| AC-08.2 | La sección menciona que el triggering del SKILL es probabilístico y que session-start.sh + CLAUDE.md compensan |
+| AC-08.3 | La sección referencia el ADR de FASE 21 para la decisión arquitectónica completa |
+| AC-08.4 | La sección menciona que la arquitectura objetivo es: SKILL thin + /workflow_* actualizados (cuando TD-008 esté completo) |
+| AC-08.5 | La sección ocupa ≤10 líneas — no expandir SKILL.md innecesariamente |
+| AC-08.6 | La nota NO modifica ninguna de las 7 fases ni sus instrucciones — es solo un preámbulo informativo |
+
+---
+
 ## Spec Quality Checklist
 
 - [x] Cada US tiene AC medibles (no "debe funcionar bien")
@@ -117,3 +173,21 @@ y corregir la deuda documental del análisis previo (FASE 20).
 - [x] US-02 AC-02.5 anticipa TD-008 con flag eliminable — no hardcodea el estado temporal
 - [x] US-03 limita a ≤15 líneas — evita contaminar CLAUDE.md
 - [x] US-05 preserva el documento original — solo añade sección al final
+- [x] US-06 referencia state-management.md — no duplica el trigger map
+- [x] US-07 documenta los 5 hallazgos externos con fuentes — trazabilidad del análisis
+- [x] US-08 limita a ≤10 líneas — SKILL.md crece solo con lo necesario
+
+## Cobertura del análisis
+
+| Concepto analizado | Cubierto en |
+|-------------------|------------|
+| 5 capas + triggering por capa | US-01 (ADR) + US-07 (referencia) |
+| 3 rutas y calidad actual | US-02 (hook) + US-07 (referencia) |
+| Humano en el loop como feature | US-01 (ADR) |
+| Multi-skill: límites y coordinación | US-03 (CLAUDE.md) + US-06 (conventions) |
+| Naming `now-{agent-name}.md` / `now-{skill-name}-{wp-id}.md` | US-06 (conventions) |
+| 5 hallazgos externos (artículo + análisis) | US-07 (skill-vs-agent reference) |
+| PTC: ortogonal a hooks, no invalida arquitectura | US-01 (ADR) + US-07 |
+| SKILL: limitaciones de confiabilidad | US-08 (SKILL.md) + US-07 |
+| Errores de framing del análisis previo | US-05 (analysis corregido) + US-04 (TD-006) |
+| TDs: TD-008/009/010 para trabajo futuro | US-04 (technical-debt.md) |
