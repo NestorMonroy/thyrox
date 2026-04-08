@@ -1,25 +1,26 @@
 ```yml
 type: Estado de Sesión
 version: 1.0
-updated_at: 2026-04-08 03:30:00
+updated_at: 2026-04-08 03:51:36
 cold_boot: false
 last_session: 2026-04-08
-current_work: null
-phase: null
+current_work: context/work/2026-04-08-03-51-36-skill-architecture-review/
+phase: Phase 1
 blockers: []
 ```
 
 # Contexto
 
-Sin WP activo. FASE 20 completada — context-hygiene: trigger map + state automation en v1.7.0.
+WP activo: skill-architecture-review — Phase 1: ANALYZE en curso.
 
-## Estado actual — FASE 20 completada
+## Propósito
 
-- FASE 17: spec-quality-checklist ✓
-- FASE 18: Phase 2 vs Phase 3 — scope formal en Phase 3 ✓
-- FASE 19: async-gates — Stopping Point Manifest + task-notification gate ✓ (2026-04-08)
-- FASE 20: context-hygiene — trigger map + update-state.sh + glosario FASE/Phase ✓ (2026-04-08)
+Revisitar la arquitectura de pm-thyrox SKILL a la luz de 5 hallazgos críticos sobre
+confiabilidad de SKILLs + artículo "The Ultimate Guide to Claude Code Skills".
+Producir ADR con decisión arquitectónica: SKILL vs CLAUDE.md vs híbrido.
 
-## Próximo paso
+## Historial reciente
 
-Sin WP activo — framework en v1.7.0. Deuda técnica registrada: TD-006 (thin orchestrator), TD-007 (Phase 0).
+- FASE 19: async-gates ✓
+- FASE 20: context-hygiene ✓ (v1.7.0)
+- FASE 21: skill-architecture-review (EN CURSO)
