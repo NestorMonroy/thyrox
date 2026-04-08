@@ -42,6 +42,19 @@ flowchart LR
 
 ---
 
+## Limitaciones conocidas y arquitectura objetivo
+
+**Triggering probabilístico:** Este SKILL puede no activarse en sesiones con muchos skills simultáneos
+(H1/H3 — ver [skill-vs-agent.md](references/skill-vs-agent.md)). Compensado por:
+- `session-start.sh` (Capa 0, 100% determinístico) — recuerda al usuario activar el SKILL
+- `CLAUDE.md` (Capa 1, siempre cargado) — instrucciones mínimas de flujo siempre presentes
+
+**Arquitectura objetivo (post-TD-008):** Este SKILL se reducirá a ~40 líneas (catálogo + tabla de
+/workflow_* commands) cuando TD-008 esté completo. La lógica de cada fase vivirá en su /workflow_*
+command correspondiente (Capa 3). Decisión completa: [ADR-015](../../context/decisions/adr-015.md).
+
+---
+
 ## Las 7 Fases
 
 ### Phase 1: ANALYZE

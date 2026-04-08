@@ -99,7 +99,7 @@ T-016 → last (depende de todas las anteriores).
 
 ### Bloque SKILL.md (T-015) — independiente
 
-- [ ] [T-015] Añadir sección `## Limitaciones conocidas y arquitectura objetivo` en `pm-thyrox SKILL.md` — ≤10 líneas, ANTES de "Las 7 Fases": triggering probabilístico compensado por session-start.sh + CLAUDE.md; arquitectura objetivo = SKILL thin (~40 líneas) cuando TD-008 esté completo; referencia a adr-015 para la decisión completa (US-08 / AC-08.1..AC-08.6)
+- [x] [T-015] Añadir sección `## Limitaciones conocidas y arquitectura objetivo` en `pm-thyrox SKILL.md` — ≤10 líneas, ANTES de "Las 7 Fases": triggering probabilístico compensado por session-start.sh + CLAUDE.md; arquitectura objetivo = SKILL thin (~40 líneas) cuando TD-008 esté completo; referencia a adr-015 para la decisión completa (US-08 / AC-08.1..AC-08.6)
 
 ---
 
