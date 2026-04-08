@@ -566,3 +566,170 @@ Corrección al crear el próximo execution-log, o como parte de un WP de limpiez
 **Criterio de cierre:**
 
 Todos los execution-log nuevos usan timestamp completo en frontmatter y en headers de sesión. El execution-log de FASE 22 puede corregirse retroactivamente como parte del cierre de FASE.
+
+---
+
+## TD-019: Nomenclatura de workflow_*.md — ¿flat file o subdirectorio?
+
+```
+Severidad: alta
+Origen: Revisión FASE 22 — Sesión 6 (2026-04-08)
+Fase afectada: SKILL design (pre-TD-027)
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+Los 7 skills migrados en T-012..T-018 son archivos planos:
+```
+.claude/skills/workflow_analyze.md
+.claude/skills/workflow_strategy.md
+...
+```
+
+La anatomía oficial del framework (CLAUDE.md Locked Decision #2) define:
+```
+skills/{nombre}/SKILL.md   ← subdirectorio + SKILL.md
+```
+
+pm-thyrox sigue esta convención. Los workflow_* no. Esto tiene dos implicaciones:
+
+1. **Conflicto con Locked Decision #5** — "Un pm-thyrox con references, no 15 skills separados". Los 7 workflow_*.md crean efectivamente 7 skills adicionales. ¿Violan esta decisión o son un tipo diferente de mecanismo (commands en Capa 3, no skills en Capa 2)?
+
+2. **References y assets no tienen hogar** — Si los workflow_* tuvieran estructura de subdirectorio, cada uno podría tener `references/` y `assets/` propios. Con flat files, no pueden.
+
+**Pregunta a resolver:**
+¿Son los workflow_*.md "skills" (Capa 2) o "commands con frontmatter" (Capa 3 en nueva forma)? La respuesta determina si necesitan subdirectorios o si flat file es correcto.
+
+**Opciones:**
+- A) Mantener flat files — son Capa 3 (commands modernizados), no skills. Locked Decision #5 no aplica.
+- B) Convertir a subdirectorios — son skills reales. Requiere mover a `workflow_analyze/SKILL.md` etc.
+
+**Trigger para ejecutar:**
+Antes de TD-027 (reducción SKILL.md). Resolverlo desbloquea TD-020, TD-022, TD-023.
+
+**Criterio de cierre:**
+Decisión documentada en ADR (¿flat file Capa 3 o subdirectorio Capa 2?). Estructura aplicada consistentemente a los 7 archivos.
+
+---
+
+## TD-020: Escalabilidad (micro/pequeño/mediano/grande) no distribuida en workflow_* skills
+
+```
+Severidad: media
+Origen: Revisión FASE 22 — Sesión 6 (2026-04-08)
+Fase afectada: Todos los workflow_* (especialmente workflow_analyze)
+Estado: [ ] Pendiente — bloqueado por TD-019
+```
+
+**Problema:**
+
+La tabla de escalabilidad de pm-thyrox SKILL.md (qué fases activar según tamaño del WP) solo vive en pm-thyrox. Cuando el usuario invoca `/workflow_analyze` sin pasar por pm-thyrox primero, no tiene visibilidad de qué fases son opcionales para un WP micro o pequeño.
+
+**Solución:**
+
+Incluir en `workflow_analyze.md` (o en todos los workflow_*) una referencia a la tabla de escalabilidad o una versión condensada: si el WP es micro, proponer saltar a `/workflow_execute` directamente.
+
+**Trigger para ejecutar:**
+Después de TD-019 (resolución de estructura). Aplicar al skill que corresponda según la arquitectura.
+
+**Criterio de cierre:**
+Cualquier usuario que invoque `/workflow_analyze` recibe orientación sobre qué fases son opcionales según el tamaño del WP.
+
+---
+
+## TD-021: Terminología Phase N debe mapear explícitamente a /workflow_* en pm-thyrox
+
+```
+Severidad: media
+Origen: Revisión FASE 22 — Sesión 6 (2026-04-08)
+Fase afectada: pm-thyrox SKILL.md (catálogo post-TD-027)
+Estado: [ ] Pendiente — bloqueado por TD-019 y TD-027
+```
+
+**Problema:**
+
+Hay 3 conceptos que ahora coexisten sin distinción clara:
+
+| Concepto | Nivel | Ejemplo |
+|----------|-------|---------|
+| FASE N | Proyecto global (WP#) | FASE 22: framework-evolution |
+| Phase N | Etapa SDLC dentro de un WP | Phase 6: EXECUTE |
+| /workflow_* | Skill de ejecución que implementa una Phase | /workflow_execute |
+
+Actualmente pm-thyrox usa "Phase 1: ANALYZE", "Phase 6: EXECUTE" etc. sin referenciar `/workflow_*`. Después de TD-008, el usuario que lee pm-thyrox debe saber:
+- Concepto: "Phase 1" = qué es
+- Ejecución: "/workflow_analyze" = cómo ejecutarlo
+
+**Solución:**
+
+Actualizar pm-thyrox catálogo (post-TD-027) para mapear explícitamente:
+```
+| Phase | Concepto | Ejecutar con |
+|-------|---------|-------------|
+| Phase 1 | ANALYZE | /workflow_analyze |
+| Phase 2 | SOLUTION_STRATEGY | /workflow_strategy |
+...
+```
+
+Y actualizar el glosario de CLAUDE.md para incluir la tercera categoría: `/workflow_*`.
+
+**Trigger para ejecutar:**
+Después de TD-019 y TD-027 (reducción SKILL.md).
+
+---
+
+## TD-022: Limitaciones conocidas (triggering probabilístico) no integradas en workflow_* skills
+
+```
+Severidad: baja
+Origen: Revisión FASE 22 — Sesión 6 (2026-04-08)
+Fase afectada: workflow_* skills (todos)
+Estado: [ ] Pendiente — bloqueado por TD-019
+```
+
+**Problema:**
+
+La sección "Limitaciones conocidas y arquitectura objetivo" de pm-thyrox SKILL.md documenta que el triggering de skills es probabilístico (H1/H3). Esta información debe estar en cada workflow_* para que el usuario que llegue directamente a `/workflow_analyze` comprenda el contexto arquitectónico.
+
+La sección también menciona "Arquitectura objetivo (post-TD-008)" que ya fue completado — este texto debe actualizarse.
+
+**Solución:**
+1. Integrar en cada workflow_* una nota breve sobre la arquitectura de capas (opcional) y referencia a ADR-015.
+2. Actualizar la sección en pm-thyrox para reflejar que TD-008 está completo.
+
+**Trigger para ejecutar:**
+Después de TD-019 (estructura definida).
+
+---
+
+## TD-023: References de pm-thyrox sin asignación de propietario — bloqueado por TD-019
+
+```
+Severidad: media
+Origen: Revisión FASE 22 — Sesión 6 (2026-04-08)
+Fase afectada: .claude/skills/pm-thyrox/references/
+Estado: [ ] Pendiente — bloqueado por TD-019
+```
+
+**Problema:**
+
+La carpeta `.claude/skills/pm-thyrox/references/` contiene archivos que son utilizados por fases específicas:
+
+| Referencia | Fase que la usa |
+|-----------|----------------|
+| solution-strategy.md | Phase 2 → /workflow_strategy |
+| spec-driven-development.md | Phase 4 → /workflow_structure |
+| conventions.md | Phase 5-6 → /workflow_decompose, /workflow_execute |
+| state-management.md | Phase 6-7 → /workflow_execute, /workflow_track |
+| scalability.md | Phase 1 → /workflow_analyze |
+
+Si los workflow_* se convierten a subdirectorios (Opción B de TD-019), cada referencia debería migrar a `workflow_{fase}/references/`. Si se mantienen como flat files (Opción A), las referencias deben seguir en pm-thyrox/references/ con rutas relativas documentadas.
+
+**La tabla "Dónde viven los artefactos"** de SKILL.md tiene el mismo problema — referencia paths de assets y templates que actualmente están solo en pm-thyrox.
+
+**Trigger para ejecutar:**
+Después de TD-019 (arquitectura decidida).
+
+**Criterio de cierre:**
+Cada referencia tiene un propietario claro. Las rutas en los workflow_* apuntan correctamente a donde vive cada referencia.
