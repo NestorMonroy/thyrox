@@ -91,7 +91,7 @@ T-016 → last (depende de todas las anteriores).
 
 - [x] [T-012] Añadir sección "Las 5 capas y sus rutas" en `references/skill-vs-agent.md` — tabla de 5 capas (Capa 0..4: triggering / overhead / actualizable sin migración) + tabla de 3 rutas (SKILL probabilístico calidad alta HOY / /workflow_* outdated calidad baja HOY / /workflow_* post-TD-008 calidad alta) con criterio de selección (US-07 / AC-07.1, AC-07.2, AC-07.6)
 
-- [ ] [T-013] Añadir sección "5 hallazgos externos sobre SKILLs" en `references/skill-vs-agent.md` — H1 triggering probabilístico (evidencia: 0/20 disparos), H2 PTC ortogonal a hooks, H3 truncación de descripciones a 1% context budget, H4 SKILLs como prompt injection (40/47 empeoran output), H5 CLAUDE.md como alternativa superior en simplicidad; fuentes: artículo Mar 2026 + análisis FASE 21 (US-07 / AC-07.3)
+- [x] [T-013] Añadir sección "5 hallazgos externos sobre SKILLs" en `references/skill-vs-agent.md` — H1 triggering probabilístico (evidencia: 0/20 disparos), H2 PTC ortogonal a hooks, H3 truncación de descripciones a 1% context budget, H4 SKILLs como prompt injection (40/47 empeoran output), H5 CLAUDE.md como alternativa superior en simplicidad; fuentes: artículo Mar 2026 + análisis FASE 21 (US-07 / AC-07.3)
 
 - [ ] [T-014] Añadir "Tabla de decisión" y referencias en `references/skill-vs-agent.md` — cuándo usar SKILL vs /workflow_* command vs agente nativo; naturaleza de CLAUDE.md (declarativa siempre cargada) vs SKILL (probabilístico on-demand) vs command (determinístico user-triggered); referencia a adr-015 para razonamiento completo (US-07 / AC-07.4, AC-07.5, AC-07.6)
 

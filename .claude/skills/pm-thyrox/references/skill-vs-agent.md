@@ -77,6 +77,24 @@ Arquitectura de 5 capas de pm-thyrox (ADR-015). Cada capa tiene un mecanismo de 
 
 ---
 
+## 5 hallazgos externos sobre SKILLs
+
+Evidencia recopilada en FASE 21 que impacta las decisiones arquitectónicas de pm-thyrox.
+Fuentes: artículo "The Ultimate Guide to Claude Code Skills" (Mar 2026) + análisis FASE 21.
+
+| ID | Hallazgo | Evidencia | Fuente |
+|----|----------|-----------|--------|
+| H1 | **Triggering probabilístico** — Un SKILL perfectamente escrito puede no dispararse. | 0 de 20 prompts que deberían activar una CPO review skill → 0 disparos. | Artículo Mar 2026 |
+| H2 | **PTC es ortogonal a hooks y commands** — PTC mejora eficiencia interna de agentes (Capa 4), no reemplaza la arquitectura de capas. | PTC disponible en API, no en Claude Code Web. /workflow_* y hooks no cambian cuando PTC llegue. | Análisis FASE 21 |
+| H3 | **Truncación de descripciones al escalar** — El budget de context para SKILL descriptions es ~1% del context window. Con 16 skills activos, la truncación de keywords reduce la tasa de disparo. | THYROX: 16 skills activos → rango donde la truncación ya puede ocurrir. | Análisis FASE 21 |
+| H4 | **SKILLs son prompt injection** — No hay magia arquitectónica. 40 de 47 skills probados empeoraron el output. | "Skills are prompt injections. That's it. Nothing more magical than that." | Artículo Mar 2026 |
+| H5 | **CLAUDE.md como alternativa más simple** — Siempre cargado, sin triggering probabilístico, sin riesgo de truncación. | "Why not just stick with a well-written system prompt in your CLAUDE.md? It's simpler, always loads..." | Artículo Mar 2026 |
+
+**Implicación para pm-thyrox:** Los hallazgos H1/H3/H4 justifican la arquitectura de 5 capas (ADR-015):
+Hooks (100% determinísticos) + CLAUDE.md (siempre cargado) compensan la confiabilidad media del SKILL.
+
+---
+
 ## Señales de confusión frecuente
 
 - Si el archivo necesita `tools` para hacer su trabajo → es un agente, no un SKILL.
