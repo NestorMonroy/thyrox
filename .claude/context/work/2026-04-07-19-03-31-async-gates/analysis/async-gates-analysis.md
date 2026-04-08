@@ -216,3 +216,19 @@ El manifest documenta los gates esperados. Si el usuario no responde, Claude deb
 | R-02 | Manifest incompleto en Phase 1 (WP no planifica paralelos) | Medio | El manifest tiene entradas mínimas (gate-fase siempre) |
 | R-03 | Claude olvida consultar el manifest en Phase 6 | Alto | Añadir instrucción explícita en Phase 6 step 1 |
 | R-04 | task-notification llega mientras Claude está en otra operación | Bajo | Completar la operación actual, luego atender el gate |
+
+---
+
+## Stopping Point Manifest
+
+> Este WP es `reversibility: documentation` y no lanza agentes en background.
+> Solo contiene gate-fase obligatorios.
+
+| ID | Fase | Tipo | Evento | Acción requerida |
+|----|------|------|--------|-----------------|
+| SP-01 | 1→2 | gate-fase | Análisis Phase 1 completo | Presentar hallazgos al usuario, esperar SI — ✓ Completado |
+| SP-02 | 2→3 | gate-fase | Strategy Phase 2 completa | Presentar decisiones clave, esperar SI — ✓ Completado |
+| SP-03 | 3→4 | gate-fase | Plan Phase 3 aprobado | Presentar scope declarado, esperar SI — ✓ Completado |
+| SP-04 | 4→5 | gate-fase | Spec Phase 4 aprobada | Presentar user stories + ACs, esperar SI — ✓ Completado |
+| SP-05 | 5→6 | gate-fase | Task-plan Phase 5 aprobado | Presentar 8 tareas, esperar SI — ✓ Completado |
+| SP-06 | 6→7 | gate-fase | Todas las tareas completas | Presentar cambios en SKILL.md, esperar SI antes de Phase 7 |
