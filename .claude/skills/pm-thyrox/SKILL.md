@@ -297,7 +297,17 @@ Documentar lecciones previene repetir los mismos errores.
 - Validar cierre de sesión: `bash scripts/validate-session-close.sh`
 - Resumen rápido del estado: `bash scripts/project-status.sh`
 
-**Salir cuando:** Análisis completo y lecciones documentadas.
+**REQUERIDO al cerrar WP — actualizar archivos de estado:**
+
+| Archivo | Contenido mínimo requerido |
+|---------|---------------------------|
+| `context/now.md` | `current_work: null` · `phase: null` · `updated_at: timestamp` |
+| `context/focus.md` | Sección `## Completado`: FASE N + nombre-wp + qué se logró. Sección `## Sin WP activo`: versión actual + próximo paso en ROADMAP |
+| `context/project-state.md` | Ejecutar `bash .claude/skills/pm-thyrox/scripts/update-state.sh` — el script regenera el archivo desde el estado real del repo |
+
+Ver [state-management](references/state-management.md) para tabla de triggers completa.
+
+**Salir cuando:** Análisis completo, lecciones documentadas, y archivos de estado actualizados.
 
 ---
 
