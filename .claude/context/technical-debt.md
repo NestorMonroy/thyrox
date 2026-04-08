@@ -137,3 +137,77 @@ SKILL.md Phase 3 produce `{nombre-wp}-plan.md`. Template existe. WP activo tiene
 artefacto. validate-phase-readiness.sh Phase 3 verifica que el archivo existe.
 
 ---
+
+## TD-004: SKILL.md supera el límite de tamaño efectivo (~700 líneas)
+
+```
+Severidad: alta
+Origen: Observación 2026-04-08 (async-gates WP)
+Fase afectada: Todas (SKILL.md es el motor de la metodología)
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+SKILL.md crece con cada FASE. El límite efectivo para que un SKILL se ejecute de
+forma confiable es ~700 líneas. Por encima de ese umbral:
+- El contexto compacta el SKILL antes de que Claude lo aplique completo
+- Las instrucciones al final del archivo (Phase 6, 7) se ignoran con mayor frecuencia
+- Gates y convenciones añadidos en FASEs recientes son los más vulnerables
+
+**Impacto:**
+El framework crece en instrucciones pero su confiabilidad de ejecución cae.
+
+**Resolución candidata:**
+SKILL.md = instrucciones ejecutables mínimas por fase (~1 pantalla por fase).
+Detalle extenso → `references/` consultable bajo demanda.
+Evaluar si SKILL.md debe invocar references específicos por fase en lugar de
+contener todo el texto inline.
+
+**Criterio de cierre:**
+SKILL.md ≤ 700 líneas. Instrucciones críticas (gates, pre-flight, task-notification)
+verificadas como aplicadas en sesiones reales.
+
+---
+
+## TD-005: Arquitectura monolítica — evaluar evolución a orquestador + agentes por fase
+
+```
+Severidad: media
+Origen: Observación estratégica 2026-04-08 (async-gates WP)
+Fase afectada: Arquitectura general de pm-thyrox
+Estado: [ ] Pendiente — requiere WP propio
+```
+
+**Problema:**
+Diseño actual: "un SKILL que hace todo" (monolítico). A medida que el framework
+crece (7 fases, paralelo, gates, agentes especializados), la brecha entre lo que
+SKILL.md instruye y lo que los agentes hacen crece también.
+
+Anti-patrones activos:
+- **Monolithic SKILL**: crece sin control, no escala a 10+ agentes en paralelo
+- **Lógica de coordinación inline**: SKILL contiene lógica que debería estar en agentes especializados
+- **Paralelismo sin coordinación formal**: N agentes sin state compartido explícito
+
+**Alternativas a evaluar en WP propio:**
+```
+A) Todo en 1 SKILL (actual)                → no escala
+B) SKILL = orquestador + agentes por fase  → separación de concerns
+C) SKILL = solo entrada + agentes todo     → máximo desacoplamiento
+D) Hybrid: Agent & Repository + CSP        → decisiones dinámicas con backtracking
+E) Event-Driven                            → descartado (no disponible en Claude Code)
+```
+
+**Agentes especializados candidatos (si se elige B o D):**
+- `Agent-Phase1` — ANALYZE + Stopping Point Manifest
+- `Agent-Phase2-3` — SOLUTION_STRATEGY + PLAN
+- `Agent-Phase4-5` — STRUCTURE + DECOMPOSE
+- `Agent-Phase6` — EXECUTE + manejo de gates async
+- `Agent-Phase7` — TRACK + actualización de context files
+
+**Constraint clave:** Solo Claude Code. Coordinación vía `context/now.md` + git.
+
+**Criterio de cierre:**
+WP propio analiza 5 alternativas, decide arquitectura, produce ADR permanente.
+No implementar sin análisis — este ítem registra la deuda, no la resuelve.
+
+---
