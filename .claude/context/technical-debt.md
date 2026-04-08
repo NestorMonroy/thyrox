@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-08
+updated_at: 2026-04-08 22:00:00
 ```
 
 # Deuda Técnica — THYROX
@@ -529,3 +529,40 @@ WP de correcciones a CLAUDE.md/SKILL.md (puede combinarse con TD-016 o TD-007).
 CLAUDE.md Glosario incluye nota sobre ciclo de vida. SKILL.md Phase 7 incluye
 instrucción de cierre de FASE. El usuario puede determinar en qué FASE está
 y cuándo cambia sin necesidad de preguntar.
+
+---
+
+## TD-018: execution-log no respeta formato de timestamp completo
+
+```
+Severidad: baja
+Origen: Revisión FASE 22 — Phase 6 EXECUTE (2026-04-08)
+Fase afectada: Phase 6 EXECUTE (al crear execution-log)
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+Al crear `framework-evolution-execution-log.md` en T-011 se usaron dos formatos incorrectos:
+
+1. **Frontmatter `created_at`:** se usó `2026-04-08` (solo fecha) en lugar del timestamp completo `YYYY-MM-DD HH:MM:SS` que establece la convención del proyecto (TD-001).
+
+2. **Headers de sesión:** se usó `## Sesión N — Bloque X (YYYY-MM-DD)` (solo fecha) en lugar de `## Sesión N — Bloque X (YYYY-MM-DD HH:MM:SS)` con timestamp completo.
+
+**Impacto:**
+
+Inconsistencia con el resto de artefactos del proyecto que usan `created_at: YYYY-MM-DD HH:MM:SS`. Dificulta ordenamiento y correlación temporal de sesiones cuando más de una ocurre en el mismo día.
+
+**Solución:**
+
+1. Al crear un `*-execution-log.md`, el frontmatter debe tener `created_at: YYYY-MM-DD HH:MM:SS` (con hora).
+2. Los headers de sesión deben incluir timestamp completo: `## Sesión N — Bloque X (YYYY-MM-DD HH:MM:SS)`.
+3. Si no se conoce la hora exacta de inicio de la sesión, usar `$(date '+%Y-%m-%d %H:%M:%S')` al crear el archivo.
+
+**Trigger para ejecutar:**
+
+Corrección al crear el próximo execution-log, o como parte de un WP de limpieza de convenciones.
+
+**Criterio de cierre:**
+
+Todos los execution-log nuevos usan timestamp completo en frontmatter y en headers de sesión. El execution-log de FASE 22 puede corregirse retroactivamente como parte del cierre de FASE.
