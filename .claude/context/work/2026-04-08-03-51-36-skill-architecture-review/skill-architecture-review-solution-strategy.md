@@ -58,10 +58,9 @@ Para documentación externa (case studies): diseñar para HOY (hooks + commands)
 
 ---
 
-## Key Idea central
+## Key Ideas
 
-**El insight que cambia todo:** PTC y los /workflow_* commands operan en capas diferentes
-y son complementarios, no competidores.
+### Key Idea 1: PTC y /workflow_* son capas complementarias, no competidoras
 
 ```
 PTC orquesta:        TOOL CALLS  (file reads, bash, search — machine-triggered)
@@ -72,6 +71,34 @@ Una arquitectura que separa estos dos niveles es PTC-proof por diseño.
 Cuando PTC llegue a Claude Code, los agentes pueden usar PTC **internamente dentro de una fase**
 mientras las fases siguen siendo comandos determinísticos invocados por el usuario.
 El interface no cambia — solo la eficiencia interna de ejecución mejora.
+
+### Key Idea 2: "Humano en el loop" es un feature de diseño, no un gap
+
+La arquitectura actual requiere que el usuario decida activamente qué ruta ejecutar
+(SKILL vs /workflow_*). Doc 09 clarifica que esto es correcto: **el usuario es el guardián final**.
+
+```
+Modelo idealista (Docs 03-08): CSP solver toma decisiones → orquesta agentes
+Modelo realista (Doc 09 / esta arquitectura): Usuario decide → CLAUDE.md persuade → agentes ejecutan
+```
+
+La diferencia no es un defecto — es una decisión arquitectónica deliberada.
+"Autoridad distribuida" = Hooks + CLAUDE.md + Usuario + Agentes, no un único orchestrator.
+
+**Implicación para D-04:** el hook no debe solo mostrar "ejecuta /workflow_execute".
+Debe mostrar el estado y las **opciones disponibles** para que el usuario pueda decidir con información.
+El hook facilita la decisión humana — no la reemplaza.
+
+### Key Idea 3: Esta arquitectura ES el caso realista de los blueprints teóricos
+
+```
+Docs 03-08 (blueprint idealista):  CSP Model como autoridad única, 3 capas limpias
+Esta arquitectura (realista HOY):   5 capas con compensación, usuario como guardián final
+Post-migración (objetivo):          Convergencia — /workflow_* actualizados + hooks = determinístico + calidad alta
+```
+
+Los blueprints teóricos son válidos como referencia de diseño.
+La arquitectura que construimos es la implementación realista que respeta los gaps reales de Claude Code.
 
 ---
 
@@ -167,29 +194,50 @@ mostrar directamente qué /workflow_* command ejecutar según el estado del WP a
 
 **Lógica (100% dinámica — lee el repo en cada ejecución):**
 ```bash
-# Lee now.md::phase    → determina qué command corresponde
+# Lee now.md::phase        → determina fase activa del WP
 # Lee now.md::current_work → determina el WP activo
-# Lee *-task-plan.md   → extrae primer checkbox [ ] como próxima tarea
-# Lee .claude/skills/  → lista tech skills activos (excluye pm-thyrox)
+# Lee *-task-plan.md       → extrae primer checkbox [ ] como próxima tarea
+# Lee .claude/skills/      → lista tech skills activos (excluye pm-thyrox)
 
-# Si phase: Phase 1  → "Ejecutar /workflow_analyze"
-# Si phase: Phase 2  → "Ejecutar /workflow_strategy"
-# Si phase: Phase 3  → "Ejecutar /workflow_plan"
-# Si phase: Phase 4  → "Ejecutar /workflow_structure"
-# Si phase: Phase 5  → "Ejecutar /workflow_decompose"
-# Si phase: Phase 6  → "Ejecutar /workflow_execute · próxima tarea: T-NNN"
-# Si phase: Phase 7  → "Ejecutar /workflow_track"
-# Si null/sin WP     → "Sin WP activo → /workflow_analyze para nuevo WP"
+# Output por fase: estado + DOS opciones (SKILL route vs command route)
+
+# Si phase: Phase 6 → muestra:
+#   "WP activo: context-hygiene · Phase 6 · Próxima tarea: T-007"
+#   "  Opción A (calidad alta, hoy): Invocar pm-thyrox SKILL → Phase 6: EXECUTE"
+#   "  Opción B (determinístico):    /workflow_execute  [outdated hasta post-migración]"
+
+# Si null/sin WP → muestra:
+#   "Sin WP activo"
+#   "  Para nuevo WP: invocar pm-thyrox SKILL → Phase 1: ANALYZE"
+#   "  Alternativa:   /workflow_analyze        [outdated hasta post-migración]"
 ```
 
-**Razón:** El hook es determinístico y guía al usuario directamente al command correcto.
-Elimina la cadena: hook → recordatorio → Claude invoca SKILL → Claude deriva fase → Claude sugiere acción.
-La nueva cadena: hook → "ejecuta /workflow_execute" → usuario ejecuta → listo.
+**Razón:** El hook facilita la **decisión del usuario** — no la reemplaza.
+"Humano en el loop" es un feature: el hook da información, el usuario elige la ruta.
+Post-migración (commands sincronizados), la advertencia "outdated" desaparece y ambas opciones son equivalentes.
 
 **PTC-proof:** El hook seguirá siendo un script shell. PTC no afecta los hooks.
 
 **Stop hook:** se dispara en el evento `stop` del harness (cierre de sesión), no periódicamente.
 Verifica `git log origin/branch..HEAD` — bloquea si hay commits locales sin push.
+
+---
+
+### D-06: La arquitectura no oculta sus gaps — los hace visibles
+
+**Decisión:** Mientras /workflow_* commands estén desactualizados, la arquitectura debe
+**anunciar ese gap explícitamente** en lugar de silenciarlo.
+
+- El hook muestra "[outdated hasta post-migración]" junto a la opción /workflow_*
+- CLAUDE.md mantiene "invocar pm-thyrox" como instrucción primaria (no como workaround)
+- El ADR documenta el estado actual vs el estado objetivo con fechas o triggers claros
+
+**Razón:** Ocultar el gap (mostrar solo la opción A, o solo la opción B) produce resultados
+peores que hacer la elección explícita. El usuario informado elige mejor que el sistema que
+intenta tomar la decisión por él.
+
+**Referencia:** Doc 09, Sección 5 — "Realista vs Idealista": la arquitectura realista reconoce
+la brecha entre blueprint y producción como información, no como fracaso.
 
 ---
 
