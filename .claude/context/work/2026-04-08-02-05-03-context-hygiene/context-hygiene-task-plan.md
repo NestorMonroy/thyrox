@@ -37,23 +37,23 @@ T-006 depende de T-005. T-009 depende de T-006 + T-007 + T-008.
 
 ## Tareas
 
-- [ ] [T-001] Crear `references/state-management.md` con tabla de triggers: archivo × evento (crear WP, cambiar Phase, cerrar WP, añadir agente) (US-01 / AC-01.1, AC-01.2, AC-01.3, AC-01.4, AC-01.5)
+- [x] [T-001] Crear `references/state-management.md` con tabla de triggers: archivo × evento (crear WP, cambiar Phase, cerrar WP, añadir agente) (US-01 / AC-01.1, AC-01.2, AC-01.3, AC-01.4, AC-01.5)
 
-- [ ] [T-002] Añadir en SKILL.md Phase 1 step 2 (crear WP): instrucción de actualizar `now.md` con `current_work` y `phase: Phase 1` inmediatamente al crear el WP (US-02 / AC-02.1)
+- [x] [T-002] Añadir en SKILL.md Phase 1 step 2 (crear WP): instrucción de actualizar `now.md` con `current_work` y `phase: Phase 1` inmediatamente al crear el WP (US-02 / AC-02.1)
 
-- [ ] [T-003] Añadir en cada gate de Phase SKILL.md (⏸ GATE HUMANO): instrucción de actualizar `now.md::phase` antes de avanzar a la siguiente fase (US-02 / AC-02.2)
+- [x] [T-003] Añadir en cada gate de Phase SKILL.md (⏸ GATE HUMANO): instrucción de actualizar `now.md::phase` antes de avanzar a la siguiente fase (US-02 / AC-02.2)
 
-- [ ] [T-004] Ampliar checklist final de Phase 7 en SKILL.md: instrucción explícita con contenido mínimo para cada archivo — `focus.md` (FASE completada + próximo paso), `now.md` (`current_work: null`, `phase: null`), `project-state.md` (ejecutar `update-state.sh`) (US-02 / AC-02.3, AC-02.4)
+- [x] [T-004] Ampliar checklist final de Phase 7 en SKILL.md: instrucción explícita con contenido mínimo para cada archivo — `focus.md` (FASE completada + próximo paso), `now.md` (`current_work: null`, `phase: null`), `project-state.md` (ejecutar `update-state.sh`) (US-02 / AC-02.3, AC-02.4)
 
-- [ ] [T-005] Crear script `update-state.sh` que lea agentes reales de `.claude/agents/`, versión de `CHANGELOG.md`, FASEs de `ROADMAP.md` y escriba `project-state.md` actualizado. Soportar `--dry-run` (US-03 / AC-03.1, AC-03.2, AC-03.3, AC-03.4, AC-03.5)
+- [x] [T-005] Crear script `update-state.sh` que lea agentes reales de `.claude/agents/`, versión de `CHANGELOG.md`, FASEs de `ROADMAP.md` y escriba `project-state.md` actualizado. Soportar `--dry-run` (US-03 / AC-03.1, AC-03.2, AC-03.3, AC-03.4, AC-03.5)
 
-- [ ] [T-006] Ejecutar `update-state.sh` para generar `project-state.md` con estado real: 9 agentes, FASEs 1-19, versión 1.6.0 (US-04 / AC-04.3)
+- [x] [T-006] Ejecutar `update-state.sh` para generar `project-state.md` con estado real: 9 agentes, FASEs 1-19, versión 1.6.0 (US-04 / AC-04.3)
 
-- [ ] [T-007] Actualizar `now.md`: `current_work: 2026-04-08-02-05-03-context-hygiene`, `phase: Phase 6`, `updated_at` hoy (US-04 / AC-04.1)
+- [x] [T-007] Actualizar `now.md`: `current_work: 2026-04-08-02-05-03-context-hygiene`, `phase: Phase 6`, `updated_at` hoy (US-04 / AC-04.1)
 
-- [ ] [T-008] Actualizar `focus.md`: FASE 19 completada (async-gates), WP context-hygiene activo, próximos pasos (US-04 / AC-04.2)
+- [x] [T-008] Actualizar `focus.md`: FASE 19 completada (async-gates), WP context-hygiene activo, próximos pasos (US-04 / AC-04.2)
 
-- [ ] [T-009] Verificar que `session-start.sh` lee correctamente el WP activo desde `now.md` actualizado (US-04 / AC-04.4)
+- [x] [T-009] Verificar que `session-start.sh` lee correctamente el WP activo desde `now.md` actualizado (US-04 / AC-04.4)
 
 - [ ] [T-010] Añadir sección "Glosario" en `CLAUDE.md` + nota/referencia en `SKILL.md` con distinción FASE vs Phase y ejemplo concreto (US-05 / AC-05.1, AC-05.2, AC-05.3)
 
