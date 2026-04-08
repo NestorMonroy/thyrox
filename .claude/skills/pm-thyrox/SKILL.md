@@ -228,6 +228,9 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 2. Detectar intersecciones → resolver scope collision antes de lanzar
 3. Asignar section owners para archivos compartidos
 4. Definir gates explícitos (quién desbloquea a quién)
+5. REQUERIDO: Por cada agente que se lanzará en background, registrar SP-NNN en el Stopping Point Manifest del `*-analysis.md`:
+   — Qué agente, qué produce, qué presentar al usuario al completar
+   — Hacer commit del manifest actualizado ANTES de lanzar el primer agente
 
 **En ejecución paralela (N agentes):**
 - El agente coordinador (Claude principal) es responsable de: lanzar agentes, manejar failures, escribir archivos cuando Write esté bloqueado, actualizar ROADMAP/CHANGELOG en Phase 7.
