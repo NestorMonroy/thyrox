@@ -13,6 +13,28 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.8.0] - 2026-04-08
+
+### Added — Skill Architecture Review: arquitectura de 5 capas para pm-thyrox (WP skill-architecture-review / FASE 21)
+
+- `context/decisions/adr-015.md` (nuevo) — ADR de la arquitectura de 5 capas: 5 hallazgos externos (triggering probabilístico, PTC ortogonal, truncación de descripciones, SKILLs como prompt injection, CLAUDE.md alternativa), 4 opciones consideradas, 9 decisiones D-01..D-09, tabla de 5 capas, cláusula PTC, estado actual vs objetivo
+- `scripts/session-start.sh` — añade `COMMANDS_SYNCED=false` y función `_phase_to_command()`; muestra Opción A (SKILL, calidad alta HOY) y Opción B (/workflow_* con `[outdated]` mientras TD-008 pendiente)
+- `CLAUDE.md` — sección `## Multi-skill orchestration`: máx 2-3 skills simultáneos, cuándo secuenciar, section owners disjuntos, naming `now-{skill-name}-{wp-id}.md`
+- `SKILL.md` — sección `## Limitaciones conocidas y arquitectura objetivo` (≤10 líneas) antes de "Las 7 Fases": triggering probabilístico compensado, arquitectura objetivo post-TD-008, referencia a ADR-015
+- `references/skill-vs-agent.md` — 3 secciones nuevas: tabla de 5 capas + 3 rutas, 5 hallazgos externos con evidencia (H1..H5), tabla de decisión SKILL vs /workflow_* vs agente vs CLAUDE.md
+- `references/conventions.md` — sección `## State files — naming conventions`: tabla 3 tipos (now.md / now-{agent-name}.md / now-{skill-name}-{wp-id}.md), regla de section owner
+- `context/technical-debt.md` — TD-006 corregido (3 errores de framing del análisis FASE 20); TD-008 (sync /workflow_* commands, severidad alta, prerequisito para D-02); TD-009 (patrón now-{agent-name}.md en agentes); TD-010 (benchmark empírico); TD-011 (atomicidad de tareas en Phase 5)
+
+### Fixed
+
+- `context/work/…/skill-vs-agent-analysis.md` — sección "Corrección 2026-04-08 (FASE 21)": 3 conclusiones incorrectas corregidas con evidencia y referencia a ADR-015
+
+### Lessons Learned
+
+- Lecciones L-082..L-086 documentadas (análisis sin tabla de alternativas; spec sin cobertura; atomicidad tardía; context overflow; corrección en artefacto fuente)
+
+---
+
 ## [1.7.0] - 2026-04-08
 
 ### Added — Context Hygiene: sincronización automática de archivos de estado (WP context-hygiene / FASE 20)

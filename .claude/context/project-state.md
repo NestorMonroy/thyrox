@@ -1,19 +1,19 @@
 ```yml
 type: Dashboard de Proyecto
 category: Estado Actual
-version: 1.7.0
+version: 1.8.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-08 03:44:45
+updated_at: 2026-04-08 10:05:10
 ```
 
 # Project State — THYROX
 
 ## Status General
 
-**Versión:** 1.7.0
-**Estado:** Activo — framework pm-thyrox con 20 FASEs completadas
-**Última actualización:** 2026-04-08 03:44:45
+**Versión:** 1.8.0
+**Estado:** Activo — framework pm-thyrox con 21 FASEs completadas
+**Última actualización:** 2026-04-08 10:05:10
 **Branch activo:** `claude/check-merge-status-Dcyvj`
 
 ---
@@ -32,7 +32,7 @@ updated_at: 2026-04-08 03:44:45
 
 ---
 
-## FASEs completadas (20 total)
+## FASEs completadas (21 total)
 
 | FASE 1: Framework Base (v0.1.0) |
 | FASE 2: Consolidación y Coherencia (v0.2.0) — Sesión 2026-03-27 |
@@ -54,6 +54,7 @@ updated_at: 2026-04-08 03:44:45
 | FASE 18: Human Gates — autorización explícita por fase (2026-04-07) |
 | FASE 19: Async Gates — gates para agentes en background (2026-04-08) |
 | FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) ✓ |
+| FASE 21: Skill Architecture Review — decisión arquitectónica pm-thyrox (2026-04-08) |
 
 Ver ROADMAP.md para detalle de cada FASE.
 
