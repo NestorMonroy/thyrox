@@ -675,22 +675,26 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ---
 
-## FASE 19: Async Gates — gates para agentes en background (2026-04-07)
+## FASE 19: Async Gates — gates para agentes en background (2026-04-08)
 
 **WP:** `.claude/context/work/2026-04-07-19-03-31-async-gates/`
 **Causa raíz:** `<task-notification>` procesado automáticamente sin parar para revisión humana
 
 ### Cambios en SKILL.md
 
-- [ ] Phase 1: paso 9 — crear Stopping Point Manifest en el archivo de análisis del WP
-- [ ] Phase 1: definir formato estándar del manifest (tabla ID | Fase | Tipo | Evento | Acción)
-- [ ] Phase 5: pre-flight amplía registro de SP-NNN por cada agente background
-- [ ] Phase 6: instrucción explícita para `<task-notification>` — presentar → STOP → esperar
-- [ ] Phase 6: tabla de calibración de gates async (reversibilidad × tipo de agente)
-- [ ] Phase 3: nota metodológica — Phase 2 orienta scope, Phase 3 lo declara
+- [x] Phase 1: paso 9 — crear Stopping Point Manifest en el archivo de análisis del WP (2026-04-08)
+- [x] Phase 1: definir formato estándar del manifest (tabla ID | Fase | Tipo | Evento | Acción) (2026-04-08)
+- [x] Phase 5: pre-flight amplía registro de SP-NNN por cada agente background (2026-04-08)
+- [x] Phase 6: instrucción explícita para `<task-notification>` — presentar → STOP → esperar (2026-04-08)
+- [x] Phase 6: tabla de calibración de gates async (reversibilidad × tipo de agente) (2026-04-08)
+- [x] Phase 3: nota metodológica — Phase 2 orienta scope, Phase 3 lo declara (2026-04-08)
 
 ### Documentación
 
-- [ ] Stopping Point Manifest en analysis de este WP (primer ejemplo canónico)
-- [ ] Lecciones L-068+ documentadas
-- [ ] CHANGELOG actualizado
+- [x] Stopping Point Manifest en analysis de este WP (primer ejemplo canónico) (2026-04-08)
+- [x] Lecciones L-068..L-073 documentadas (2026-04-08)
+- [x] CHANGELOG actualizado (2026-04-08)
+
+---
+
+**Última actualización:** 2026-04-08 (FASE 19 completada — async gates en SKILL.md v1.6.0)

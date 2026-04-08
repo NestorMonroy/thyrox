@@ -13,6 +13,21 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.6.0] - 2026-04-08
+
+### Added — Async Gates: gates para agentes en background (WP async-gates / FASE 19)
+
+- `SKILL.md` Phase 1 paso 9 — Stopping Point Manifest obligatorio en cada WP: tabla `ID | Fase | Tipo | Evento | Acción requerida` con tipos `gate-fase | async-completion | gate-operacion | gate-decision`
+- `SKILL.md` Phase 3 — nota metodológica: Phase 2 define el cómo (estrategia), Phase 3 define el qué (scope). Phase 2 orienta pero no declara scope formalmente
+- `SKILL.md` Phase 6 pre-flight paso 5 — registro obligatorio de SP-NNN en el manifest por cada agente background antes de lanzarlo; commit del manifest antes del primer agente
+- `SKILL.md` Phase 6 — instrucción explícita para `<task-notification>`: 6 pasos (identificar SP → presentar resultado → ⏸ STOP → esperar → marcar ✓ → continuar o crear ERR)
+- `SKILL.md` Phase 6 — tabla de calibración de gates async: reversibilidad × tipo de agente → niveles fuerte/estándar/ligero; ausencia de respuesta ≠ aprobación
+- `context/work/2026-04-07-19-03-31-async-gates/analysis/async-gates-analysis.md` — primer ejemplo canónico de Stopping Point Manifest
+- `context/technical-debt.md` — TD-004 (SKILL.md tamaño ~700 líneas), TD-005 (arquitectura monolítica → evaluar orquestador + agentes por fase)
+- Lecciones L-068..L-073 documentadas
+
+---
+
 ## [1.1.0] - 2026-04-07
 
 ### Added — Convenciones para ejecución paralela de agentes (WP parallel-agent-conventions)
