@@ -326,12 +326,16 @@ El comando actual (`echo 'phase: PhaseN' >> now.md`) se reemplaza por
 Given: workflow-analyze/SKILL.md con hook command = echo 'phase: Phase 1' >> ...
 When:  se aplica el fix
 Then:  hook command = bash .claude/scripts/set-session-phase.sh "Phase 1"
-And:   ningun otro campo del frontmatter cambia
+And:   updated_at del frontmatter se actualiza al timestamp del edit (CLAUDE.md regla)
+And:   ningun otro campo del frontmatter cambia (excepto updated_at)
 
 Given: (mismo patron para los otros 6 skills: strategy, plan, structure, decompose, execute, track)
 When:  cada skill es invocado por el usuario
 Then:  now.md::phase se actualiza correctamente sin duplicados
 ```
+
+Nota: CLAUDE.md Locked Decision — `updated_at` se actualiza automaticamente en TODA
+edicion de archivo que tenga ese campo en el frontmatter. Esto aplica a T-006..T-012.
 
 ### Tabla de cambios
 
