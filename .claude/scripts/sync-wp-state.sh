@@ -1,0 +1,46 @@
+#!/bin/bash
+# sync-wp-state.sh — PostToolUse hook: sincroniza now.md::current_work
+# Llamado por settings.json PostToolUse Write hook
+# Recibe JSON del evento en stdin, extrae file_path, actualiza current_work si es WP
+# Fix de Bug 2: current_work se actualiza deterministicamente, no via instruccion LLM
+
+INPUT=$(cat)
+NOW_FILE=".claude/context/now.md"
+
+# Extraer file_path — jq con fallback a python3
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+if [ -z "$FILE_PATH" ]; then
+  FILE_PATH=$(echo "$INPUT" | python3 -c \
+    "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))" \
+    2>/dev/null || true)
+fi
+
+# Si no se pudo extraer o no es archivo WP, salir sin cambios
+if [[ "$FILE_PATH" != *"/.claude/context/work/"* ]]; then
+  exit 0
+fi
+
+# Extraer WP path relativo (work/YYYY-MM-DD-HH-MM-SS-nombre/)
+WP_PATH=$(echo "$FILE_PATH" | grep -oP 'work/[^/]+/')
+
+if [ -z "$WP_PATH" ]; then
+  exit 0
+fi
+
+# Leer current_work actual
+if [ ! -f "$NOW_FILE" ]; then
+  exit 0
+fi
+
+CURRENT=$(grep "^current_work:" "$NOW_FILE" | sed 's/current_work: //' | tr -d '[:space:]')
+
+# Solo actualizar si cambio el WP (idempotente)
+if [ "$CURRENT" = "$WP_PATH" ]; then
+  exit 0
+fi
+
+DATE=$(date '+%Y-%m-%d %H:%M:%S')
+sed -i \
+  -e "s|^current_work: .*|current_work: $WP_PATH|" \
+  -e "s|^updated_at: .*|updated_at: $DATE|" \
+  "$NOW_FILE"
