@@ -5,7 +5,7 @@ created_at: 2026-04-09 01:15:00
 updated_at: 2026-04-09 01:15:00
 phase: Phase 5 — DECOMPOSE
 total_tasks: 16
-completed: 0
+completed: 16
 ```
 
 # Task Plan: workflow-restructure (FASE 23)
@@ -89,7 +89,7 @@ Reducción SKILL.md. Única tarea, ejecutar último.
 
 ### BLOQUE S — Reducción SKILL.md
 
-- [ ] [T-016] Reducir `pm-thyrox/SKILL.md` de ~471 a ≤150 líneas: eliminar Limitaciones + Las 7 Fases, reemplazar con Catálogo de fases (SPEC-S-01) — requiere T-001..T-015
+- [x] [T-016] Reducir `pm-thyrox/SKILL.md` de ~471 a ≤150 líneas: eliminar Limitaciones + Las 7 Fases, reemplazar con Catálogo de fases (SPEC-S-01) — requiere T-001..T-015
 
 ---
 
