@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-09 21:50:00
+updated_at: 2026-04-09 22:30:00
 ```
 
 # Deuda Técnica — THYROX
@@ -1138,3 +1138,91 @@ Cada `workflow-*/SKILL.md` tiene seccion de deep review pre-gate. En una sesion 
 prueba, Claude detecta un gap en la spec (campo real del archivo no reconocido) y
 lo corrige antes de presentar el gate, sin que el usuario tenga que indicarlo.
 
+
+---
+
+## TD-032: GAPs de Phase 6 no prevenidos — checkboxes, execution-log, ROADMAP, SP-Manifest
+
+```
+Severidad: alta
+Origen: Deep review Phase 6 — FASE 28 (2026-04-09)
+Fase afectada: Phase 6 EXECUTE (toda WP mediana o grande)
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+El deep review de Phase 6 encontró 4 gaps que debieron prevenirse con automatismo
+o gates explícitos, pero el framework no tenía mecanismo para ello:
+
+| Gap | Descripción | Causa raíz |
+|-----|-------------|------------|
+| GAP-DR6-01 | Checkboxes del task-plan nunca actualizados a `[x]` durante ejecución | Claude ejecuta cada tarea pero olvida marcar el checkbox — no hay recordatorio automático |
+| GAP-DR6-02 | `execution-log.md` no creado al inicio de Phase 6 | La instrucción "REQUERIDO al inicio de sesión" en workflow-execute/SKILL.md es ignorada silenciosamente |
+| GAP-DR6-03 | ROADMAP.md sin entrada de la FASE actual | La instrucción del paso 8 ("Actualizar ROADMAP.md") se olvida — no hay validación antes del gate |
+| GAP-DR6-04 | SP-Manifest no actualizado cuando el usuario aprueba el GATE OPERACION | Actualizar el manifest es responsabilidad del LLM — sin hook ni recordatorio |
+
+**Impacto:**
+
+Estos gaps solo se detectan en el deep review pre-gate (TD-031). Sin el deep review,
+pasarían a Phase 7 TRACK con estado inconsistente: commits hechos pero artefactos
+de tracking sin actualizar.
+
+**Soluciones propuestas — dos planos:**
+
+### Plano A: Gates de decisión (instrucciones en SKILL.md)
+
+Agregar en `workflow-execute/SKILL.md` una sección de **Validación pre-tarea** que
+requiera, antes de marcar cada tarea como ejecutada:
+
+```
+Después de cada tarea:
+1. Actualizar checkbox en task-plan: [ ] → [x] (paso 7 — ya existe, reforzar)
+2. Si es la primera tarea de la sesión: verificar que execution-log.md existe
+3. Después de cada commit: verificar que ROADMAP.md tiene la entrada de la FASE actual
+4. Después de aprobar GATE OPERACION: marcar SP-NNN como 'si' en el Stopping Point Manifest
+```
+
+Y agregar en la sección de pre-flight de Phase 6 → Phase 7:
+
+```
+Pre-flight OBLIGATORIO (antes de proponer Phase 7):
+- [ ] Todos los checkboxes en task-plan son [x]
+- [ ] execution-log.md existe y tiene estado de cada tarea
+- [ ] ROADMAP.md tiene entrada con [x] para la FASE actual
+- [ ] SP-Manifest: todos los SP de Phase 6 marcados como 'si'
+```
+
+### Plano B: Permisos de herramienta (automatismo via hooks)
+
+- **Checkbox automático:** Un PostToolUse hook que, al detectar un commit con patrón
+  `T-NNN` en el mensaje, busque `T-NNN` en el task-plan y actualice `[ ]` → `[x]`.
+  Requiere: hook que parsee `git log --oneline -1` para extraer el T-NNN del commit.
+
+- **execution-log guard:** Un UserPromptSubmit hook al inicio de Phase 6 que verifique
+  si `*-execution-log.md` existe en el WP activo. Si no existe, emitir warning visible.
+  Similar a `project-status.sh` pero enfocado en el artefacto de ejecución.
+
+- **ROADMAP guard:** Agregar a `project-status.sh` una verificación: si hay WP activo,
+  buscar el nombre del WP en ROADMAP.md. Si no se encuentra → warning.
+
+- **SP-Manifest automático:** El script `sync-wp-state.sh` podría extenderse para,
+  cuando detecta un commit (PostToolUse en Write de task-plan), verificar si hay SP-NNN
+  pendiente que corresponda a la fase actual y marcarlo.
+
+**Análisis de viabilidad:**
+
+| Fix | Plano A (instrucción) | Plano B (hook) | Recomendación |
+|-----|-----------------------|----------------|---------------|
+| Checkboxes | Fácil — agregar paso 7 reforzado | Complejo — parsear commit messages | A primero, B como mejora futura |
+| execution-log | Fácil — verificación en pre-flight | Medio — hook UserPromptSubmit | A primero, B en FASE siguiente |
+| ROADMAP | Fácil — agregar a pre-flight | Medio — agregar a project-status.sh | A y B en paralelo |
+| SP-Manifest | Fácil — instrucción post-GATE | Complejo — requiere contexto de fase | Solo A |
+
+**Criterio de cierre:**
+
+En una sesión de prueba, Phase 6 completa con:
+- `validate-session-close.sh` detecta checkboxes sin `[x]` y falla si existen
+- `project-status.sh` muestra warning si el WP activo no está en ROADMAP.md
+- El execution-log existe antes de ejecutar la primera tarea
+- El SP-Manifest se actualiza en el mismo momento que se aprueba cada gate
