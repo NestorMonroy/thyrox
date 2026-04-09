@@ -138,3 +138,16 @@ Mapeo propuesto:
 - ✓ Mantiene `disable-model-invocation: true` en cada skill
 - ✓ TD-019 queda completamente cerrado con esta estrategia
 - ✓ Reversible via git (eliminar subdirectorios, restaurar flat files)
+
+## Nota: doble propósito de `disable-model-invocation: true`
+
+Documentación oficial (sección "Manage context with skills and subagents"):
+> "For skills you invoke manually, set `disable-model-invocation: true` to keep descriptions out of context until you need them."
+
+Los 7 `workflow-*` skills tienen ~100-150 líneas cada uno. El flag sirve para:
+1. **Control de invocación** — solo el usuario puede invocar vía `/workflow-analyze`
+2. **Optimización de context budget** — las descripciones NO se cargan en context al inicio de sesión
+
+Sin el flag, 7 skills × descripción = budget significativo consumido en cada sesión.
+Con el flag, costo = 0 hasta que el usuario invoca un workflow.
+**Este flag NO debe eliminarse en ninguna tarea de migración.**
