@@ -733,3 +733,59 @@ Después de TD-019 (arquitectura decidida).
 
 **Criterio de cierre:**
 Cada referencia tiene un propietario claro. Las rutas en los workflow_* apuntan correctamente a donde vive cada referencia.
+
+---
+
+## TD-024: agent-spec.md desactualizado — conflictos con docs oficiales Claude Code
+
+```
+Severidad: media
+Origen: Revisión FASE 23 — análisis docs oficiales (2026-04-09)
+Fase afectada: .claude/skills/pm-thyrox/references/agent-spec.md
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+`agent-spec.md` (creado 2026-04-07) tiene reglas que contradicen la documentación oficial de Claude Code:
+
+| Campo | agent-spec.md dice | Docs oficiales dicen |
+|-------|-------------------|---------------------|
+| `model` | PROHIBIDO | Válido — `sonnet\|opus\|haiku\|inherit` (default: inherit) |
+| `tools` | REQUERIDO | Opcional — hereda todos si omitido |
+
+Las reglas de `agent-spec.md` eran basadas en inferencia del comportamiento observado, no en documentación oficial. Con los docs oficiales disponibles, las reglas incorrectas deben corregirse.
+
+**Impacto:**
+
+Los agentes creados siguiendo `agent-spec.md` podrían no usar `model` (beneficioso para cost/speed optimization), y podrían incluir `tools` innecesariamente cuando heredar todo es lo correcto.
+
+**Criterio de cierre:**
+
+`agent-spec.md` actualizado para reflejar docs oficiales: `model` es válido y opcional, `tools` es opcional (con nota sobre cuándo usarlo).
+
+---
+
+## TD-025: skill-authoring.md desactualizado — pre-docs oficiales Claude Code
+
+```
+Severidad: baja
+Origen: Revisión FASE 23 — análisis docs oficiales (2026-04-09)
+Fase afectada: .claude/skills/pm-thyrox/references/skill-authoring.md
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+`skill-authoring.md` es de 2026-03-25, antes de la documentación oficial de Claude Code. Puede contener convenciones desactualizadas o incompletas respecto a:
+- Campo `name` (hyphens only — no underscores)
+- `disable-model-invocation: true` como optimización de context budget (no solo invocación)
+- `user-invocable: false` como opción disponible
+- Substituciones: `$ARGUMENTS[N]`, `${CLAUDE_SKILL_DIR}`, `${CLAUDE_SESSION_ID}`
+- `context: fork` + `agent:` field
+
+**Referencia:** `references/claude-code-components.md` (creado FASE 23) contiene la información correcta y actualizada.
+
+**Criterio de cierre:**
+
+`skill-authoring.md` actualizado o deprecado con referencia a `claude-code-components.md`.
