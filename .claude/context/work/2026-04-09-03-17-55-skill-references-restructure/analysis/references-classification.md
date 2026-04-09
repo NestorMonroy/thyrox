@@ -207,11 +207,47 @@ Referenciados solo en `workflow-track/SKILL.md` — bajo riesgo de mover.
 
 ---
 
+## Trazabilidad completa — todos los 24 archivos con destino
+
+**Regla de eliminación**: `pm-thyrox/references/` solo se elimina cuando TODOS los 24 archivos
+estén presentes en su destino y verificados. Ningún archivo se pierde — solo se reubica.
+
+| # | Archivo origen (`pm-thyrox/references/`) | Destino | Nivel |
+|---|------------------------------------------|---------|-------|
+| 1 | `agent-spec.md` | `.claude/references/` | global |
+| 2 | `basic-usage.md` | `workflow-analyze/references/` | fase |
+| 3 | `claude-code-components.md` | `.claude/references/` | global |
+| 4 | `commit-convention.md` | `workflow-execute/references/` | fase |
+| 5 | `commit-helper.md` | `workflow-execute/references/` | fase |
+| 6 | `constraints.md` | `workflow-analyze/references/` | fase |
+| 7 | `context.md` | `workflow-analyze/references/` | fase |
+| 8 | `conventions.md` | `.claude/references/` | global |
+| 9 | `examples.md` | `.claude/references/` | global |
+| 10 | `incremental-correction.md` | `workflow-track/references/` | fase |
+| 11 | `introduction.md` | `workflow-analyze/references/` | fase |
+| 12 | `long-context-tips.md` | `.claude/references/` | global |
+| 13 | `prompting-tips.md` | `.claude/references/` | global |
+| 14 | `quality-goals.md` | `workflow-analyze/references/` | fase |
+| 15 | `reference-validation.md` | `workflow-track/references/` | fase |
+| 16 | `requirements-analysis.md` | `workflow-analyze/references/` | fase |
+| 17 | `scalability.md` | `workflow-analyze/references/` | fase |
+| 18 | `skill-authoring.md` | `.claude/references/` | global |
+| 19 | `skill-vs-agent.md` | `.claude/references/` | global |
+| 20 | `solution-strategy.md` | `workflow-strategy/references/` | fase |
+| 21 | `spec-driven-development.md` | `workflow-structure/references/` | fase |
+| 22 | `stakeholders.md` | `workflow-analyze/references/` | fase |
+| 23 | `state-management.md` | `.claude/references/` | global |
+| 24 | `use-cases.md` | `workflow-analyze/references/` | fase |
+
+**Conteo:** 9 globales + 15 de fase = 24. Cero archivos sin destino.
+
+---
+
 ## Decisiones resueltas
 
 **Pregunta A → A2 extendido:**
 `.claude/references/` recibe 9 archivos: 4 docs de plataforma + 5 docs de patrón reutilizable.
-`pm-thyrox/references/` queda vacío y se elimina.
+`pm-thyrox/references/` se elimina **solo después** de verificar que los 24 destinos existen.
 
 **Pregunta B → B2:**
 - Scripts de infraestructura (hooks) → quedan en pm-thyrox/scripts/
