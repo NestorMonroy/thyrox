@@ -41,7 +41,7 @@ en Phase 2 al descubrir que el scope real son 11 archivos (3 scripts + 7 SKILL.m
 
 ## Phase 3 PLAN → Phase 4 STRUCTURE
 
-**Estado: PENDIENTE — en progreso**
+**Estado: COMPLETADO**
 
 - [x] Scope statement aprobado
 - [x] In scope / out of scope definidos
@@ -49,45 +49,45 @@ en Phase 2 al descubrir que el scope real son 11 archivos (3 scripts + 7 SKILL.m
 - [x] Gaps G-01..G-03 identificados y resueltos en plan
 - [x] R-03..R-05 agregados al risk register
 - [x] ROADMAP entries con todas las fases
-- [ ] Gate aprobado por usuario
+- [x] Gate aprobado por usuario
 
 ---
 
 ## Phase 4 STRUCTURE → Phase 5 DECOMPOSE
 
-**Estado: PENDIENTE**
+**Estado: COMPLETADO**
 
-- [ ] Requirements spec para cada script (input, output, comportamiento, edge cases)
-- [ ] Requirements spec para cambios en settings.json
-- [ ] Requirements spec para fix en 7 workflow-*/SKILL.md
-- [ ] Criterios de aceptacion por componente
-- [ ] Gate aprobado por usuario
+- [x] Requirements spec para cada script (input, output, comportamiento, edge cases)
+- [x] Requirements spec para cambios en settings.json
+- [x] Requirements spec para fix en 7 workflow-*/SKILL.md
+- [x] Criterios de aceptacion por componente
+- [x] Gate aprobado por usuario
 
 ---
 
 ## Phase 5 DECOMPOSE → Phase 6 EXECUTE
 
-**Estado: PENDIENTE** (SP-02)
+**Estado: COMPLETADO** (SP-02: si)
 
-- [ ] Task plan con T-NNN para cada uno de los 11 archivos
-- [ ] DAG de dependencias (scripts antes que SKILL.md que dependen de ellos)
-- [ ] Trazabilidad task → requisito de Phase 4
-- [ ] Gate aprobado por usuario (GATE OPERACION — edicion de SKILL.md y settings.json)
+- [x] Task plan con T-NNN para cada uno de los 11 archivos
+- [x] DAG de dependencias (scripts antes que SKILL.md que dependen de ellos)
+- [x] Trazabilidad task → requisito de Phase 4
+- [x] Gate aprobado por usuario (GATE OPERACION — edicion de SKILL.md y settings.json)
 
 ---
 
 ## Phase 6 EXECUTE → Phase 7 TRACK
 
-**Estado: PENDIENTE** (SP-03)
+**Estado: COMPLETADO — gate SP-03 pendiente usuario** (SP-03)
 
-- [ ] set-session-phase.sh creado y probado
-- [ ] sync-wp-state.sh creado y probado
-- [ ] close-wp.sh creado y probado
-- [ ] PostToolUse hook agregado a settings.json
-- [ ] Bug 1 corregido en los 7 workflow-*/SKILL.md
-- [ ] Instruccion close-wp.sh en workflow-track/SKILL.md
-- [ ] Ningun prompt al usuario durante ejecucion
-- [ ] Gate aprobado por usuario
+- [x] set-session-phase.sh creado y probado
+- [x] sync-wp-state.sh creado y probado
+- [x] close-wp.sh creado y probado
+- [x] PostToolUse hook agregado a settings.json
+- [x] Bug 1 corregido en los 7 workflow-*/SKILL.md
+- [x] Instruccion close-wp.sh en workflow-track/SKILL.md
+- [x] Ningun prompt al usuario durante ejecucion (CHECKPOINT-B: 0 echo, 1 hook)
+- [ ] Gate aprobado por usuario — PENDIENTE (deep review completado, esperando SI)
 
 ---
 
@@ -109,8 +109,8 @@ en Phase 2 al descubrir que el scope real son 11 archivos (3 scripts + 7 SKILL.m
 
 | SP-ID | Gate | Descripcion |
 |-------|------|-------------|
-| SP-01 | Phase 2→3 | Validar estrategia antes de planificar | COMPLETADO |
-| SP-02 | Phase 5→6 | Autorizar inicio de ejecucion (GATE OPERACION) | pendiente |
+| SP-01 | Phase 2→3 | Validar estrategia antes de planificar | si |
+| SP-02 | Phase 5→6 | Autorizar inicio de ejecucion (GATE OPERACION) | si |
 | SP-03 | Phase 6→7 | Confirmar que ejecucion fue correcta | pendiente |
 
 Nota: Gates Phase 3→4 y Phase 4→5 son parte del flujo normal del framework (no SP especiales).

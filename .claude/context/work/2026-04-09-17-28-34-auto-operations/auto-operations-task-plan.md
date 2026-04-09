@@ -35,11 +35,11 @@ Basado en: `auto-operations-requirements-spec.md` + `auto-operations-design.md`
 
 Los 3 scripts son archivos nuevos. No editan configuracion existente.
 
-- [ ] [T-001] Crear `.claude/scripts/set-session-phase.sh` con el contenido de SPEC-001 (SPEC-001)
-- [ ] [T-002] [P] Crear `.claude/scripts/sync-wp-state.sh` con el contenido de SPEC-002 (SPEC-002)
-- [ ] [T-003] [P] Crear `.claude/scripts/close-wp.sh` con el contenido de SPEC-003 (SPEC-003)
-- [ ] [T-004] Hacer ejecutables los 3 scripts: `chmod +x .claude/scripts/set-session-phase.sh .claude/scripts/sync-wp-state.sh .claude/scripts/close-wp.sh`
-- [ ] [T-018] Commit Fase A: `feat(fase-28): agregar scripts set-session-phase, sync-wp-state, close-wp`
+- [x] [T-001] Crear `.claude/scripts/set-session-phase.sh` con el contenido de SPEC-001 (SPEC-001)
+- [x] [T-002] [P] Crear `.claude/scripts/sync-wp-state.sh` con el contenido de SPEC-002 (SPEC-002)
+- [x] [T-003] [P] Crear `.claude/scripts/close-wp.sh` con el contenido de SPEC-003 (SPEC-003)
+- [x] [T-004] Hacer ejecutables los 3 scripts: `chmod +x .claude/scripts/set-session-phase.sh .claude/scripts/sync-wp-state.sh .claude/scripts/close-wp.sh`
+- [x] [T-018] Commit Fase A: `feat(fase-28): agregar scripts set-session-phase, sync-wp-state, close-wp`
 
 > T-001, T-002, T-003 son parallelizables entre si.
 > T-004 depende de T-001 + T-002 + T-003.
@@ -65,16 +65,16 @@ Estas ediciones tienen impacto inmediato en el comportamiento de Claude Code.
 Nota: cada Edit en un archivo `.md` con `updated_at` en frontmatter DEBE actualizar ese campo
 en el mismo Edit — regla de CLAUDE.md. Los T-006..T-012 lo incluyen explicitamente.
 
-- [ ] [T-005] Agregar clave `"PostToolUse"` dentro de `"hooks"` en `.claude/settings.json` (SPEC-004)
-- [ ] [T-006] [P] Edit `workflow-analyze/SKILL.md`: reemplazar `echo 'phase: Phase 1' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 1"` + actualizar `updated_at` (SPEC-005)
-- [ ] [T-007] [P] Edit `workflow-strategy/SKILL.md`: reemplazar `echo 'phase: Phase 2' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 2"` + actualizar `updated_at` (SPEC-005)
-- [ ] [T-008] [P] Edit `workflow-plan/SKILL.md`: reemplazar `echo 'phase: Phase 3' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 3"` + actualizar `updated_at` (SPEC-005)
-- [ ] [T-009] [P] Edit `workflow-structure/SKILL.md`: reemplazar `echo 'phase: Phase 4' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 4"` + actualizar `updated_at` (SPEC-005)
-- [ ] [T-010] [P] Edit `workflow-decompose/SKILL.md`: reemplazar `echo 'phase: Phase 5' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 5"` + actualizar `updated_at` (SPEC-005)
-- [ ] [T-011] [P] Edit `workflow-execute/SKILL.md`: reemplazar `echo 'phase: Phase 6' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 6"` + actualizar `updated_at` (SPEC-005)
-- [ ] [T-012] [P] Edit `workflow-track/SKILL.md` frontmatter: reemplazar `echo 'phase: Phase 7' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 7"` + actualizar `updated_at` (SPEC-005)
-- [ ] [T-013] Edit `workflow-track/SKILL.md` cuerpo: en tabla "REQUERIDO al cerrar WP", reemplazar fila `context/now.md | current_work: null...` por `context/now.md | Ejecutar: bash .claude/scripts/close-wp.sh` (SPEC-006)
-- [ ] [T-019] Commit Fase B: `fix(fase-28): corregir hook echo→set-session-phase en 7 SKILL.md + PostToolUse hook`
+- [x] [T-005] Agregar clave `"PostToolUse"` dentro de `"hooks"` en `.claude/settings.json` (SPEC-004)
+- [x] [T-006] [P] Edit `workflow-analyze/SKILL.md`: reemplazar `echo 'phase: Phase 1' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 1"` + actualizar `updated_at` (SPEC-005)
+- [x] [T-007] [P] Edit `workflow-strategy/SKILL.md`: reemplazar `echo 'phase: Phase 2' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 2"` + actualizar `updated_at` (SPEC-005)
+- [x] [T-008] [P] Edit `workflow-plan/SKILL.md`: reemplazar `echo 'phase: Phase 3' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 3"` + actualizar `updated_at` (SPEC-005)
+- [x] [T-009] [P] Edit `workflow-structure/SKILL.md`: reemplazar `echo 'phase: Phase 4' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 4"` + actualizar `updated_at` (SPEC-005)
+- [x] [T-010] [P] Edit `workflow-decompose/SKILL.md`: reemplazar `echo 'phase: Phase 5' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 5"` + actualizar `updated_at` (SPEC-005)
+- [x] [T-011] [P] Edit `workflow-execute/SKILL.md`: reemplazar `echo 'phase: Phase 6' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 6"` + actualizar `updated_at` (SPEC-005)
+- [x] [T-012] [P] Edit `workflow-track/SKILL.md` frontmatter: reemplazar `echo 'phase: Phase 7' >> ...` por `bash .claude/scripts/set-session-phase.sh "Phase 7"` + actualizar `updated_at` (SPEC-005)
+- [x] [T-013] Edit `workflow-track/SKILL.md` cuerpo: en tabla "REQUERIDO al cerrar WP", reemplazar fila `context/now.md | current_work: null...` por `context/now.md | Ejecutar: bash .claude/scripts/close-wp.sh` (SPEC-006)
+- [x] [T-019] Commit Fase B: `fix(fase-28): corregir hook echo→set-session-phase en 7 SKILL.md + PostToolUse hook`
 
 > T-006..T-012 son parallelizables entre si.
 > T-013 toca workflow-track/SKILL.md (seccion cuerpo) — ejecutar DESPUES de T-012 (seccion frontmatter).
@@ -91,7 +91,7 @@ Resultado esperado: 0 lineas en el primer grep, 1 linea en el segundo.
 
 ## Fase C — Validacion
 
-- [ ] [T-014] [P] Test `set-session-phase.sh` — verificar reemplazo in-place sin duplicar (SPEC-001):
+- [x] [T-014] [P] Test `set-session-phase.sh` — verificar reemplazo in-place sin duplicar (SPEC-001):
   ```bash
   # Backup
   cp .claude/context/now.md /tmp/now-backup.md
@@ -104,7 +104,7 @@ Resultado esperado: 0 lineas en el primer grep, 1 linea en el segundo.
   cp /tmp/now-backup.md .claude/context/now.md
   ```
 
-- [ ] [T-015] [P] Test `sync-wp-state.sh` — simular PostToolUse JSON y verificar current_work (SPEC-002):
+- [x] [T-015] [P] Test `sync-wp-state.sh` — simular PostToolUse JSON y verificar current_work (SPEC-002):
   ```bash
   # Backup
   cp .claude/context/now.md /tmp/now-backup.md
@@ -121,7 +121,7 @@ Resultado esperado: 0 lineas en el primer grep, 1 linea en el segundo.
   cp /tmp/now-backup.md .claude/context/now.md
   ```
 
-- [ ] [T-016] [P] Test `close-wp.sh` — verificar que setea null en ambos campos (SPEC-003):
+- [x] [T-016] [P] Test `close-wp.sh` — verificar que setea null en ambos campos (SPEC-003):
   ```bash
   # Backup
   cp .claude/context/now.md /tmp/now-backup.md
@@ -134,7 +134,7 @@ Resultado esperado: 0 lineas en el primer grep, 1 linea en el segundo.
   cp /tmp/now-backup.md .claude/context/now.md
   ```
 
-- [ ] [T-017] Test de integracion completo — cubre Bug 1 (UserPromptSubmit) y Bug 2 (PostToolUse):
+- [x] [T-017] Test de integracion completo — cubre Bug 1 (UserPromptSubmit) y Bug 2 (PostToolUse):
   ```
   Paso 1 (Bug 1 — set-session-phase via hook):
     - Leer now.md actual, notar el valor de phase
@@ -162,7 +162,7 @@ Resultado esperado: 0 lineas en el primer grep, 1 linea en el segundo.
 
 ## Fase D — Cierre
 
-- [ ] [T-020] Push: `git push -u origin <branch>` (depende de T-018 + T-019 + T-017)
+- [x] [T-020] Push: `git push -u origin <branch>` (depende de T-018 + T-019 + T-017)
 
 ---
 

@@ -912,3 +912,45 @@ FASE 17: Análisis de referencia mise                              — 100% si
 - [x] Tabla de comportamiento por categoria de archivo — 2026-04-09
 - [x] Distincion Plano A (gates de decision) vs Plano B (permisos de herramienta) — 2026-04-09
 - [x] Relacion: gate Phase 6→7 aprueba todo Phase 7 (push incluido) — 2026-04-09
+
+---
+
+## FASE 27: agentic-loop — Mecanismo de ejecución continua con /loop (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-09-17-22-48-agentic-loop/`
+**Causa raíz:** Sin mecanismo para ejecutar workflows de forma repetitiva sin intervención manual.
+
+- [ ] Phase 1 ANALYZE — completado, gate 1→2 pendiente aprobación usuario
+
+---
+
+## FASE 28: auto-operations — Sincronización determinista de now.md via hooks reactivos (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-09-17-28-34-auto-operations/`
+**Causa raíz:** 3 bugs de sincronización de estado (Bug 1: echo append YAML, Bug 2: current_work sin hook, Bug 4: cierre WP LLM-dependiente).
+
+### Fase A — Scripts nuevos
+
+- [x] T-001: Crear `set-session-phase.sh` — reemplaza `phase:` in-place via sed — 2026-04-09
+- [x] T-002: Crear `sync-wp-state.sh` — PostToolUse hook para `current_work` — 2026-04-09
+- [x] T-003: Crear `close-wp.sh` — cierra WP seteando null — 2026-04-09
+- [x] T-004: chmod +x en los 3 scripts — 2026-04-09
+- [x] T-018: Commit Fase A — 2026-04-09
+
+### Fase B — Edición de configuración
+
+- [x] T-005: settings.json — agregar PostToolUse Write hook → sync-wp-state.sh — 2026-04-09
+- [x] T-006..T-012: 7 workflow-*/SKILL.md — echo→set-session-phase + updated_at — 2026-04-09
+- [x] T-013: workflow-track/SKILL.md cuerpo — fila now.md → bash close-wp.sh — 2026-04-09
+- [x] T-019: Commit Fase B — 2026-04-09
+
+### Fase C — Validación
+
+- [x] T-014: Test set-session-phase.sh — PASS — 2026-04-09
+- [x] T-015: Test sync-wp-state.sh — PASS — 2026-04-09
+- [x] T-016: Test close-wp.sh — PASS — 2026-04-09
+- [x] T-017: Test integración — Step 1+3 PASS / Step 2 requiere nueva sesión — 2026-04-09
+
+### Fase D — Cierre
+
+- [x] T-020: git push — 2026-04-09
