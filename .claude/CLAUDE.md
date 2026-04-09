@@ -102,4 +102,4 @@ Un proyecto con 20 FASEs tiene 20 WPs; cada WP recorre hasta 7 Phases internamen
 - Metodología completa: [SKILL](skills/pm-thyrox/SKILL.md)
 - Estado del proyecto: [project-state](context/project-state.md)
 - Decisiones: [decisions](context/decisions.md)
-- Convenciones: [conventions](skills/pm-thyrox/references/conventions.md)
+- Convenciones: [conventions](references/conventions.md)

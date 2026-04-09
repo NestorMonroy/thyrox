@@ -66,7 +66,7 @@ bash .claude/skills/pm-thyrox/scripts/project-status.sh
 | `context/focus.md` | `## Completado`: FASE N + WP + qué se logró. `## Sin WP activo`: versión actual + próximo en ROADMAP |
 | `context/project-state.md` | Ejecutar `bash .claude/skills/pm-thyrox/scripts/update-state.sh` |
 
-Ver `references/state-management.md` para tabla de triggers completa.
+Ver `../../references/state-management.md` para tabla de triggers completa.
 
 ---
 

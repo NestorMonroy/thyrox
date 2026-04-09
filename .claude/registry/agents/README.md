@@ -120,4 +120,4 @@ El script lee los YMLs de este directorio y genera `.claude/agents/{nombre}.md`.
 
 ## Spec completa de agentes nativos
 
-Ver [agent-spec.md](../../skills/pm-thyrox/references/agent-spec.md) para la especificación formal de todos los campos, restricciones y convenciones de los agentes nativos Claude Code.
+Ver [agent-spec.md](../../references/agent-spec.md) para la especificación formal de todos los campos, restricciones y convenciones de los agentes nativos Claude Code.

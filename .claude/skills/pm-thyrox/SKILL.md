@@ -113,7 +113,7 @@ Errores:         ERR-NNN-descripcion.md
 Excepción: CHANGELOG.md — nombre global, convención universal (Keep a Changelog)
 ```
 
-Ver [conventions](references/conventions.md) para detalles completos.
+Ver [conventions](../../references/conventions.md) para detalles completos.
 
 ---
 
@@ -135,14 +135,14 @@ Ver [conventions](references/conventions.md) para detalles completos.
 [reference-validation](../workflow-track/references/reference-validation.md) · [incremental-correction](../workflow-track/references/incremental-correction.md)
 
 ### Cross-phase (leer según necesidad)
-[conventions](references/conventions.md) — Convenciones de archivos, commits, ROADMAP, ejecución paralela
+[conventions](../../references/conventions.md) — Convenciones de archivos, commits, ROADMAP, ejecución paralela
 [scalability](../workflow-analyze/references/scalability.md) — Cómo escalar el framework según complejidad
-[examples](references/examples.md) — 8 casos de uso reales
-[agent-spec](references/agent-spec.md) — Spec formal de agentes nativos Claude Code (campos obligatorios/prohibidos, naming)
-[skill-vs-agent](references/skill-vs-agent.md) — Cuándo crear un SKILL vs un agente nativo
-[claude-code-components](references/claude-code-components.md) — Referencia oficial de Skills, Subagents y Context (docs oficiales)
+[examples](../../references/examples.md) — 8 casos de uso reales
+[agent-spec](../../references/agent-spec.md) — Spec formal de agentes nativos Claude Code (campos obligatorios/prohibidos, naming)
+[skill-vs-agent](../../references/skill-vs-agent.md) — Cuándo crear un SKILL vs un agente nativo
+[claude-code-components](../../references/claude-code-components.md) — Referencia oficial de Skills, Subagents y Context (docs oficiales)
 
 ### Avanzado (leer cuando Claude tiene dificultades)
-[prompting-tips](references/prompting-tips.md) — Cuando Claude no entiende instrucciones
-[long-context-tips](references/long-context-tips.md) — Documentos >5,000 palabras
-[skill-authoring](references/skill-authoring.md) — Crear o mejorar skills
+[prompting-tips](../../references/prompting-tips.md) — Cuando Claude no entiende instrucciones
+[long-context-tips](../../references/long-context-tips.md) — Documentos >5,000 palabras
+[skill-authoring](../../references/skill-authoring.md) — Crear o mejorar skills
