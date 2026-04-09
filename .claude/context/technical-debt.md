@@ -871,3 +871,62 @@ El SKILL.md define Stopping Points (SP-NNN) para gates de fase, pero no los vinc
 
 `pm-thyrox/SKILL.md` tiene sección explícita de gates de escritura. En una sesión de prueba, Claude aplica los gates correctamente sin instrucción adicional del usuario.
 
+---
+
+## TD-028: Sin mecanismo para detectar reclasificacion de tamano de WP entre fases
+
+```
+Severidad: media
+Origen: FASE 28 — WP reclasificado de pequeno a mediano en Phase 2 (2026-04-09)
+Fase afectada: Phase 2 SOLUTION STRATEGY — transition 2→3
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+La clasificacion de tamano del WP (micro / pequeno / mediano / grande) ocurre en Phase 1
+ANALYZE y determina que fases son obligatorias. El framework no tiene mecanismo para
+re-evaluar el tamano cuando el scope real se descubre en fases posteriores.
+
+Ejemplo concreto en FASE 28:
+- Phase 1 clasifico el WP como "pequeno" (3 archivos → fases 1, 2, 6, 7)
+- Phase 2 (deep review) revelo que el scope real es 11 archivos → clasificacion "mediano"
+- Claude propuso saltar a Phase 5 directamente, omitiendo Phase 3 y Phase 4
+- El usuario tuvo que corregir manualmente
+
+**Root cause:**
+
+`workflow-strategy/SKILL.md` no tiene instruccion para re-evaluar el tamano del WP
+al terminar la estrategia. La clasificacion de Phase 1 se trata como definitiva, pero
+el scope real solo se conoce despues de disenar la solucion.
+
+**Impacto:**
+
+Cuando el scope se expande en Phase 2, Claude salta fases obligatorias para WPs medianos
+(Plan, Structure, Decompose), produciendo ejecucion sin especificacion formal.
+
+**Resolucion propuesta:**
+
+Agregar al final de `workflow-strategy/SKILL.md` una seccion de re-evaluacion:
+
+```
+## Re-evaluacion de tamano post-estrategia
+
+Antes de proponer la siguiente fase, comparar el scope de la estrategia con la
+clasificacion inicial de Phase 1:
+
+| Si el scope cambio a... | Siguiente fase | Fases a agregar |
+|------------------------|----------------|-----------------|
+| Sigue siendo micro     | Phase 6        | Ninguna |
+| Sigue siendo pequeno   | Phase 6        | Ninguna |
+| Paso a mediano/grande  | Phase 3 PLAN   | 3, 4, 5 |
+
+Si el tamano subio, actualizar exit-conditions.md con las fases adicionales.
+```
+
+**Criterio de cierre:**
+
+`workflow-strategy/SKILL.md` tiene seccion de re-evaluacion de tamano. En una sesion
+de prueba donde el scope se expande, Claude detecta el cambio y propone Phase 3 en
+lugar de saltar a Phase 5/6.
+
