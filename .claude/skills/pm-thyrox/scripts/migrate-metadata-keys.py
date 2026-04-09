@@ -245,7 +245,7 @@ def process_file(path: Path, dry_run: bool) -> tuple[bool, list[str]]:
             print(c)
     else:
         path.write_text(new_content, encoding="utf-8")
-        print(f"  ✓ {path.relative_to(REPO_ROOT)}")
+        print(f"  [OK] {path.relative_to(REPO_ROOT)}")
         for c in changes:
             print(c)
 

@@ -8,7 +8,7 @@ El validador v3 analiza tu estructura THYROX y clasifica 259 referencias encontr
 2. **Documentales** (91): Ejemplos/patrones mostrados en documentación (OK)
 3. **Rotas** (66): Archivos mencionados pero NO existen (ACCIÓN REQUERIDA)
 
-**Resultado**: 74.5% integridad general ✓
+**Resultado**: 74.5% integridad general+
 
 ---
 
@@ -174,9 +174,9 @@ Archivos analizados:        46
 Total referencias:          259
 
 Desglose:
-  ✓ Válidas:               102 (39.4%)
+  +Válidas:               102 (39.4%)
   ~ Documentales:          91  (35.1%)
-  ✗ Rotas:                 66  (25.5%)
+  -Rotas:                 66  (25.5%)
 
 Integridad general: 74.5%
 

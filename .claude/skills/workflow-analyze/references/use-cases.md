@@ -89,11 +89,11 @@ Alternativa 2a: Si [condición]
 
 Los casos de uso son parte crítica del ANALYZE porque:
 
-✓ **Capturan requisitos funcionales:** Qué debe hacer el sistema
-✓ **Desde perspectiva del usuario:** No desde la técnica
-✓ **Trazabilidad:** Cada requisito puede vincularse a un caso de uso
-✓ **Validación:** Los casos de uso se usan para aceptación
-✓ **Comunicación:** Claros para stakeholders
++**Capturan requisitos funcionales:** Qué debe hacer el sistema
++**Desde perspectiva del usuario:** No desde la técnica
++**Trazabilidad:** Cada requisito puede vincularse a un caso de uso
++**Validación:** Los casos de uso se usan para aceptación
++**Comunicación:** Claros para stakeholders
 
 ---
 
@@ -107,10 +107,10 @@ Los casos de uso son parte crítica del ANALYZE porque:
 
 ## Reglas de Nombrado
 
-✓ IDs: UC-001, UC-002, etc. (sin prefijos adicionales)<br>
-✓ Nombres: Verbo + Objeto (ej: "Crear Proyecto", "Editar Configuración")<br>
-✓ Actores: Roles, no nombres específicos (User, Admin, System)<br>
-✓ Pasos: Acción clara, sujeto explícito
++IDs: UC-001, UC-002, etc. (sin prefijos adicionales)<br>
++Nombres: Verbo + Objeto (ej: "Crear Proyecto", "Editar Configuración")<br>
++Actores: Roles, no nombres específicos (User, Admin, System)<br>
++Pasos: Acción clara, sujeto explícito
 
 ---
 

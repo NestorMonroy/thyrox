@@ -259,7 +259,7 @@ El usuario observa:
 
 ## Errores Comunes a Evitar
 
-### ❌ NO hacer:
+### [ERROR] NO hacer:
 ```
 - Detalles técnicos de implementación
 - Nombres de clases o métodos
@@ -269,7 +269,7 @@ El usuario observa:
 - Lenguaje técnico sin explicación
 ```
 
-### ✓ HACER:
+### HACER:
 ```
 - Pasos observables por el usuario
 - Lenguaje simple y directo

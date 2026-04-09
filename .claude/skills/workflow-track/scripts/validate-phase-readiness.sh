@@ -38,10 +38,10 @@ check() {
     local path="$2"
 
     if [ -e "$path" ]; then
-        echo -e "  ${GREEN}✓${NC} $desc"
+        echo -e "  [OK] $desc"
         PASS=$((PASS + 1))
     else
-        echo -e "  ${RED}✗${NC} $desc — ${RED}MISSING: $path${NC}"
+        echo -e "  [FAIL] $desc — ${RED}MISSING: $path${NC}"
         FAIL=$((FAIL + 1))
     fi
 }
@@ -54,10 +54,10 @@ check_glob() {
     local match
     match=$(find "$dir" -maxdepth 1 -name "$pattern" 2>/dev/null | head -1)
     if [ -n "$match" ]; then
-        echo -e "  ${GREEN}✓${NC} $desc ($match)"
+        echo -e "  [OK] $desc ($match)"
         PASS=$((PASS + 1))
     else
-        echo -e "  ${RED}✗${NC} $desc — ${RED}no file matching '$pattern' in $dir${NC}"
+        echo -e "  [FAIL] $desc — ${RED}no file matching '$pattern' in $dir${NC}"
         FAIL=$((FAIL + 1))
     fi
 }
@@ -70,10 +70,10 @@ check_no_pattern() {
     if grep -qlr "$pattern" "$dir" 2>/dev/null; then
         local count
         count=$(grep -rl "$pattern" "$dir" 2>/dev/null | wc -l | tr -d ' ')
-        echo -e "  ${RED}✗${NC} $desc — ${RED}$count files with '$pattern'${NC}"
+        echo -e "  [FAIL] $desc — ${RED}$count files with '$pattern'${NC}"
         FAIL=$((FAIL + 1))
     else
-        echo -e "  ${GREEN}✓${NC} $desc"
+        echo -e "  [OK] $desc"
         PASS=$((PASS + 1))
     fi
 }
@@ -84,10 +84,10 @@ check_content() {
     local pattern="$3"
 
     if [ -e "$path" ] && grep -qi "$pattern" "$path" 2>/dev/null; then
-        echo -e "  ${GREEN}✓${NC} $desc"
+        echo -e "  [OK] $desc"
         PASS=$((PASS + 1))
     else
-        echo -e "  ${RED}✗${NC} $desc — ${RED}pattern '$pattern' not found in $path${NC}"
+        echo -e "  [FAIL] $desc — ${RED}pattern '$pattern' not found in $path${NC}"
         FAIL=$((FAIL + 1))
     fi
 }
@@ -107,7 +107,7 @@ case "$PHASE" in
                 check_no_pattern "No [NEEDS CLARIFICATION] in analysis" "$WP_DIR/analysis" "\[NEEDS CLARIFICATION\]"
             fi
         else
-            echo -e "  ${RED}✗${NC} No work package directory found in context/work/"
+            echo -e "  [FAIL] No work package directory found in context/work/"
             FAIL=$((FAIL + 3))
         fi
         ;;
@@ -121,7 +121,7 @@ case "$PHASE" in
                 check_content "Decisions documented" "$local_file" "decision\|Decision"
             fi
         else
-            echo -e "  ${RED}✗${NC} No work package directory found"
+            echo -e "  [FAIL] No work package directory found"
             FAIL=$((FAIL + 3))
         fi
         ;;
@@ -137,7 +137,7 @@ case "$PHASE" in
                 check_content "Scope aprobado [x] en plan.md" "$local_plan" "\[x\].*[Aa]probado\|[Aa]probado.*[0-9]\{4\}"
             fi
         else
-            echo -e "  ${RED}✗${NC} No work package directory found"
+            echo -e "  [FAIL] No work package directory found"
             FAIL=$((FAIL + 3))
         fi
         ;;
@@ -147,7 +147,7 @@ case "$PHASE" in
             check_glob "*-requirements-spec.md" "$WP_DIR" "*-requirements-spec.md"
             check_no_pattern "No [NEEDS CLARIFICATION] markers" "$WP_DIR" "\[NEEDS CLARIFICATION\]"
         else
-            echo -e "  ${RED}✗${NC} No work package directory found"
+            echo -e "  [FAIL] No work package directory found"
             FAIL=$((FAIL + 2))
         fi
         ;;
@@ -161,7 +161,7 @@ case "$PHASE" in
                 check_content "Tasks have checkboxes" "$local_file" "^\- \["
             fi
         else
-            echo -e "  ${RED}✗${NC} No work package directory found"
+            echo -e "  [FAIL] No work package directory found"
             FAIL=$((FAIL + 3))
         fi
         ;;
@@ -173,18 +173,18 @@ case "$PHASE" in
                 TOTAL=$(grep -c '^\- \[' "$local_file" 2>/dev/null || echo 0)
                 DONE=$(grep -c '^\- \[x\]' "$local_file" 2>/dev/null || echo 0)
                 if [ "$TOTAL" -gt 0 ] && [ "$TOTAL" -eq "$DONE" ]; then
-                    echo -e "  ${GREEN}✓${NC} All tasks complete ($DONE/$TOTAL)"
+                    echo -e "  [OK] All tasks complete ($DONE/$TOTAL)"
                     PASS=$((PASS + 1))
                 else
-                    echo -e "  ${RED}✗${NC} Tasks incomplete ($DONE/$TOTAL)"
+                    echo -e "  [FAIL] Tasks incomplete ($DONE/$TOTAL)"
                     FAIL=$((FAIL + 1))
                 fi
             else
-                echo -e "  ${RED}✗${NC} No *-task-plan.md found in $WP_DIR"
+                echo -e "  [FAIL] No *-task-plan.md found in $WP_DIR"
                 FAIL=$((FAIL + 1))
             fi
         else
-            echo -e "  ${RED}✗${NC} No work package directory found"
+            echo -e "  [FAIL] No work package directory found"
             FAIL=$((FAIL + 1))
         fi
         check_content "ROADMAP has completed tasks" "$REPO_ROOT/ROADMAP.md" "\[x\]"
@@ -194,7 +194,7 @@ case "$PHASE" in
         if [ -n "$WP_DIR" ]; then
             check_glob "*-lessons-learned.md" "$WP_DIR" "*-lessons-learned.md"
         else
-            echo -e "  ${RED}✗${NC} No work package directory found"
+            echo -e "  [FAIL] No work package directory found"
             FAIL=$((FAIL + 1))
         fi
         check "CHANGELOG.md" "$REPO_ROOT/CHANGELOG.md"

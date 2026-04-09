@@ -37,10 +37,10 @@ assert_pass() {
     local test_name="$1"
     local exit_code="$2"
     if [ "$exit_code" -eq 0 ]; then
-        echo "  ✅ PASS: $test_name"
+        echo "  [OK] PASS: $test_name"
         PASS=$((PASS + 1))
     else
-        echo "  ❌ FAIL: $test_name (expected exit 0, got $exit_code)"
+        echo "  [ERROR] FAIL: $test_name (expected exit 0, got $exit_code)"
         FAIL=$((FAIL + 1))
     fi
 }
@@ -49,10 +49,10 @@ assert_fail() {
     local test_name="$1"
     local exit_code="$2"
     if [ "$exit_code" -ne 0 ]; then
-        echo "  ✅ PASS: $test_name"
+        echo "  [OK] PASS: $test_name"
         PASS=$((PASS + 1))
     else
-        echo "  ❌ FAIL: $test_name (expected exit 1, got 0)"
+        echo "  [ERROR] FAIL: $test_name (expected exit 1, got 0)"
         FAIL=$((FAIL + 1))
     fi
 }

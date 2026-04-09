@@ -139,7 +139,7 @@ if $DRY_RUN; then
     echo "$CONTENT"
 else
     echo "$CONTENT" > "$OUTPUT"
-    echo "✅ project-state.md actualizado"
+    echo "[OK] project-state.md actualizado"
     echo "   Agentes: ${AGENTS_COUNT}"
     echo "   Versión: ${VERSION}"
     echo "   FASEs: ${FASES_COUNT}"

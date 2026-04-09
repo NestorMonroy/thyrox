@@ -183,7 +183,7 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `SKILL.md` Phase 1 paso 9 — Stopping Point Manifest obligatorio en cada WP: tabla `ID | Fase | Tipo | Evento | Acción requerida` con tipos `gate-fase | async-completion | gate-operacion | gate-decision`
 - `SKILL.md` Phase 3 — nota metodológica: Phase 2 define el cómo (estrategia), Phase 3 define el qué (scope). Phase 2 orienta pero no declara scope formalmente
 - `SKILL.md` Phase 6 pre-flight paso 5 — registro obligatorio de SP-NNN en el manifest por cada agente background antes de lanzarlo; commit del manifest antes del primer agente
-- `SKILL.md` Phase 6 — instrucción explícita para `<task-notification>`: 6 pasos (identificar SP → presentar resultado → ⏸ STOP → esperar → marcar ✓ → continuar o crear ERR)
+- `SKILL.md` Phase 6 — instrucción explícita para `<task-notification>`: 6 pasos (identificar SP → presentar resultado → ⏸ STOP → esperar → marcar si → continuar o crear ERR)
 - `SKILL.md` Phase 6 — tabla de calibración de gates async: reversibilidad × tipo de agente → niveles fuerte/estándar/ligero; ausencia de respuesta ≠ aprobación
 - `context/work/2026-04-07-19-03-31-async-gates/analysis/async-gates-analysis.md` — primer ejemplo canónico de Stopping Point Manifest
 - `context/technical-debt.md` — TD-004 (SKILL.md tamaño ~700 líneas), TD-005 (arquitectura monolítica → evaluar orquestador + agentes por fase)
@@ -302,7 +302,7 @@ keys en español. No se migran.
 - `.claude/agents/task-executor.md`: usa herramientas nativas para file ops, exec_cmd para shell,
   crea ERR-NNN si falla, almacena lección instructiva con mcp__thyrox-memory__store
 - `.claude/agents/tech-detector.md`: tabla de señales (React, Node.js, PostgreSQL, Python, Docker...),
-  skip si ya existe skill, output format con ✓/✗
+  skip si ya existe skill, output format con si/-
 - `.claude/agents/skill-generator.md`: idempotente, sustituye `{{PROJECT_NAME}}`, reporta techs
   no soportadas
 

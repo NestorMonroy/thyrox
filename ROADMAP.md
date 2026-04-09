@@ -431,25 +431,25 @@ N tech skills auto-generados desde un registry centralizado, persistentes como a
 ## Métricas de Progreso
 
 ```
-FASE 1: Framework Base           — 100% ✓
-FASE 2: Consolidación            — 100% ✓
-FASE 3: Completar docs           — 100% ✓
-FASE 3b: spec-kit adoption       — 100% ✓
-FASE 3c: spec-kit deep           — 100% ✓
-FASE 3d: Riesgos referencia      — 100% ✓
-FASE 4: Template reutilizable    — 100% ✓
-FASE 5: Compatibilidad multi-modelo — 100% ✓
-FASE 6: Template phase integration  — 100% ✓
-FASE 7: Meta-framework generativo   — 100% ✓
-FASE 8: Resolución de deuda técnica — 100% ✓
-FASE 9: Boundary SKILL vs ADR + correcciones proceso Phase 3 — 100% ✓
-FASE 10: Separación .claude/ vs docs/ — adr_path configurable  — 100% ✓
-FASE 11: Integración de Capacidades — MCP + Native Agents        — 100% ✓
-FASE 12: Estandarización de Keys de Metadata YAML                 — 100% ✓
-FASE 13: Convenciones para Ejecución Paralela de Agentes          — 100% ✓
-FASE 14: Correcciones al flujo — post-mortem FASE 13              — 100% ✓
-FASE 15: Unificación de Registry                                  — 100% ✓
-FASE 16: Separación semántica del Registry + docs públicos        — 100% ✓
+FASE 1: Framework Base           — 100% si
+FASE 2: Consolidación            — 100% si
+FASE 3: Completar docs           — 100% si
+FASE 3b: spec-kit adoption       — 100% si
+FASE 3c: spec-kit deep           — 100% si
+FASE 3d: Riesgos referencia      — 100% si
+FASE 4: Template reutilizable    — 100% si
+FASE 5: Compatibilidad multi-modelo — 100% si
+FASE 6: Template phase integration  — 100% si
+FASE 7: Meta-framework generativo   — 100% si
+FASE 8: Resolución de deuda técnica — 100% si
+FASE 9: Boundary SKILL vs ADR + correcciones proceso Phase 3 — 100% si
+FASE 10: Separación .claude/ vs docs/ — adr_path configurable  — 100% si
+FASE 11: Integración de Capacidades — MCP + Native Agents        — 100% si
+FASE 12: Estandarización de Keys de Metadata YAML                 — 100% si
+FASE 13: Convenciones para Ejecución Paralela de Agentes          — 100% si
+FASE 14: Correcciones al flujo — post-mortem FASE 13              — 100% si
+FASE 15: Unificación de Registry                                  — 100% si
+FASE 16: Separación semántica del Registry + docs públicos        — 100% si
 
 Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
 Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
@@ -647,8 +647,8 @@ Sesión 2026-04-07: parallel agents dogfooding + flow corrections + registry uni
 ## FASE 16 métricas actualizadas
 
 ```
-FASE 16: Separación semántica del Registry + docs públicos        — 100% ✓
-FASE 17: Análisis de referencia mise                              — 100% ✓
+FASE 16: Separación semántica del Registry + docs públicos        — 100% si
+FASE 17: Análisis de referencia mise                              — 100% si
 ```
 
 ---
@@ -705,7 +705,7 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ---
 
-## FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) ✓
+## FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) si
 
 **WP:** `.claude/context/work/2026-04-08-02-05-03-context-hygiene/`
 **Causa raíz:** Phase 7 no instruía actualizar focus.md/now.md/project-state.md — congelados desde FASE 15
@@ -746,7 +746,7 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ---
 
-## FASE 22: Framework Evolution — Integración documentación oficial + TDs prioritarios (2026-04-08) ✓
+## FASE 22: Framework Evolution — Integración documentación oficial + TDs prioritarios (2026-04-08) si
 
 **WP:** `.claude/context/work/2026-04-08-17-04-20-framework-evolution/`
 **Completada:** 2026-04-08 — versión v1.9.0

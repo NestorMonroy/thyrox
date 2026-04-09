@@ -18,12 +18,12 @@ WARNS=0
 PASSES=0
 
 warn() {
-    echo "  ⚠️  $1"
+    echo "  [WARN]  $1"
     WARNS=$((WARNS + 1))
 }
 
 pass() {
-    echo "  ✅ $1"
+    echo "  [OK] $1"
     PASSES=$((PASSES + 1))
 }
 

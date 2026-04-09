@@ -557,24 +557,24 @@ Si falla TASK-004:
 ```
 EJECUTANDO TASK-001: Preparar directorios
 [Crear directorios]
-✓ TASK-001 completada
++TASK-001 completada
 
 EJECUTANDO TASK-002: Copiar originales
 [Copiar archivos]
-✓ TASK-002 completada
++TASK-002 completada
 
 EJECUTANDO TASK-003: Traducir index.rst
 [Traducir contenido con ArchitectureTranslator]
 [Validar build]
-✓ TASK-003 completada
++TASK-003 completada
 git commit -m "feat(architecture-docs): implement TASK-003 - translate section 10 index"
 
 ... continuar hasta TASK-008
 
 EJECUTANDO TASK-008: Validación final
 [Ejecutar make clean html, linkcheck]
-✓ Todos los tests pasan
-✓ Proyecto completado
++Todos los tests pasan
++Proyecto completado
 
 git commit -m "feat(architecture-docs): implement TASK-008 - final validation section 10 complete"
 ```

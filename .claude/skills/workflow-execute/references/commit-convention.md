@@ -195,19 +195,19 @@ BREAKING-CHANGE: user response format changed
 ### Siempre en Inglés
 
 ```
-✓ feat(api): add authentication
-✗ feat(api): agregar autenticación
+OK: feat(api): add authentication
+MAL: feat(api): agregar autenticación
 ```
 
 ### Referencia a Issues
 
 ```
-✓ Fixes #123
-✓ Closes #456
-✓ Resolves #789
+OK: Fixes #123
+OK: Closes #456
+OK: Resolves #789
 
-✗ fix #123 (sin palabra)
-✗ fixes issue #123 (demasiado verboso)
+MAL: fix #123 (sin palabra)
+MAL: fixes issue #123 (demasiado verboso)
 ```
 
 ### Scope Consistente
@@ -223,8 +223,8 @@ feat(api): add tests
 ### No Demasiado Largo
 
 ```
-✓ feat(api): add user authentication
-✗ feat(api): add user authentication with JWT tokens and refresh functionality
+OK: feat(api): add user authentication
+MAL: feat(api): add user authentication with JWT tokens and refresh functionality
 ```
 
 ---

@@ -267,7 +267,7 @@ Resolución:
 
 ## Errores Comunes a Evitar
 
-### ❌ NO hacer:
+### [ERROR] NO hacer:
 ```
 - Usar nombres de personas ("Juan, María")
 - Stakeholders demasiado genéricos ("Management")
@@ -278,7 +278,7 @@ Resolución:
 - Metas imposibles de verificar
 ```
 
-### ✓ HACER:
+### HACER:
 ```
 - Usar roles ocupacionales
 - Específico y medible

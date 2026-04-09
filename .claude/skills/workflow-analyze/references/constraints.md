@@ -249,7 +249,7 @@ Solution Strategy: Monolito bien estructurado, no microservicios
 
 ## Errores Comunes a Evitar
 
-### ❌ NO hacer:
+### [ERROR] NO hacer:
 ```
 - Confundir con Quality Goals ("sistema debe ser rápido")
 - Constraints que pueden cambiar (son impuestos, no elegidos)
@@ -258,7 +258,7 @@ Solution Strategy: Monolito bien estructurado, no microservicios
 - Ignorar impacto en arquitectura
 ```
 
-### ✓ HACER:
+### HACER:
 ```
 - Categorizar por tipo
 - Documentar razón clara

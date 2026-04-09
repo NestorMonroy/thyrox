@@ -24,10 +24,10 @@ echo "--- References enlazadas en SKILL.md ---"
 for ref in "${REFS_DIR}"/*.md; do
     name=$(basename "$ref")
     if grep -q "references/${name}" "$SKILL_FILE" 2>/dev/null; then
-        echo "  ✅ ${name}"
+        echo "  [OK] ${name}"
         PASS=$((PASS + 1))
     else
-        echo "  ❌ ${name} — NO enlazada en SKILL.md"
+        echo "  [ERROR] ${name} — NO enlazada en SKILL.md"
         FAIL=$((FAIL + 1))
     fi
 done
@@ -40,10 +40,10 @@ for ref in "${REFS_DIR}"/*.md; do
     lines=$(wc -l < "$ref")
     if [ "$lines" -gt 300 ]; then
         if grep -qi "table of contents\|tabla de contenidos\|## TOC\|## Contenido" "$ref" 2>/dev/null; then
-            echo "  ✅ ${name} (${lines} líneas, tiene TOC)"
+            echo "  [OK] ${name} (${lines} líneas, tiene TOC)"
             PASS=$((PASS + 1))
         else
-            echo "  ⚠️  ${name} (${lines} líneas, SIN TOC)"
+            echo "  [WARN]  ${name} (${lines} líneas, SIN TOC)"
             WARN=$((WARN + 1))
         fi
     fi
@@ -53,18 +53,18 @@ echo ""
 # 3. Verificar que YAML frontmatter tiene name y description
 echo "--- YAML frontmatter ---"
 if head -5 "$SKILL_FILE" | grep -q "^name:"; then
-    echo "  ✅ name field presente"
+    echo "  [OK] name field presente"
     PASS=$((PASS + 1))
 else
-    echo "  ❌ name field ausente"
+    echo "  [ERROR] name field ausente"
     FAIL=$((FAIL + 1))
 fi
 
 if head -5 "$SKILL_FILE" | grep -q "^description:"; then
-    echo "  ✅ description field presente"
+    echo "  [OK] description field presente"
     PASS=$((PASS + 1))
 else
-    echo "  ❌ description field ausente"
+    echo "  [ERROR] description field ausente"
     FAIL=$((FAIL + 1))
 fi
 echo ""
@@ -73,10 +73,10 @@ echo ""
 SKILL_LINES=$(wc -l < "$SKILL_FILE")
 echo "--- Tamaño del SKILL ---"
 if [ "$SKILL_LINES" -le 500 ]; then
-    echo "  ✅ ${SKILL_LINES} líneas (< 500)"
+    echo "  [OK] ${SKILL_LINES} líneas (< 500)"
     PASS=$((PASS + 1))
 else
-    echo "  ❌ ${SKILL_LINES} líneas (> 500)"
+    echo "  [ERROR] ${SKILL_LINES} líneas (> 500)"
     FAIL=$((FAIL + 1))
 fi
 echo ""
@@ -84,20 +84,20 @@ echo ""
 # 5. Verificar assets existen
 echo "--- Assets ---"
 ASSET_COUNT=$(find "$ASSETS_DIR" -name "*.template" -o -name "*.md.template" | wc -l)
-echo "  📦 ${ASSET_COUNT} templates en assets/"
+echo "    ${ASSET_COUNT} templates en assets/"
 echo ""
 
 # 6. Verificar scripts existen
 echo "--- Scripts ---"
 SCRIPT_COUNT=$(find "${SKILL_DIR}/scripts" -name "*.sh" -o -name "*.py" | wc -l)
-echo "  📦 ${SCRIPT_COUNT} scripts"
+echo "    ${SCRIPT_COUNT} scripts"
 echo ""
 
 # Resumen
 echo "=== Resumen ==="
-echo "  ✅ Passed: ${PASS}"
-echo "  ❌ Failed: ${FAIL}"
-echo "  ⚠️  Warnings: ${WARN}"
+echo "  [OK] Passed: ${PASS}"
+echo "  [ERROR] Failed: ${FAIL}"
+echo "  [WARN]  Warnings: ${WARN}"
 echo ""
 
 if [ "$FAIL" -eq 0 ]; then

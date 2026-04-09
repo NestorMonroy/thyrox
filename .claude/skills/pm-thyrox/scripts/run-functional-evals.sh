@@ -34,11 +34,11 @@ check_expectation() {
     local description="$3"
 
     if echo "$result" | grep -qi "$pattern"; then
-        echo "    ✅ $description"
+        echo "    [OK] $description"
         TOTAL_PASS=$((TOTAL_PASS + 1))
         return 0
     else
-        echo "    ❌ $description"
+        echo "    [ERROR] $description"
         TOTAL_FAIL=$((TOTAL_FAIL + 1))
         return 1
     fi
@@ -50,11 +50,11 @@ check_negative() {
     local description="$3"
 
     if echo "$result" | grep -qi "$pattern"; then
-        echo "    ❌ $description (found when shouldn't)"
+        echo "    [ERROR] $description (found when shouldn't)"
         TOTAL_FAIL=$((TOTAL_FAIL + 1))
         return 1
     else
-        echo "    ✅ $description"
+        echo "    [OK] $description"
         TOTAL_PASS=$((TOTAL_PASS + 1))
         return 0
     fi
@@ -140,7 +140,7 @@ EOF
     cat > "$dir/ROADMAP.md" << 'EOF'
 # ROADMAP
 
-## FASE 1: Base — 100% ✓
+## FASE 1: Base — 100% ok
 - [x] Auth system (2026-03-10)
 - [x] CRUD productos (2026-03-15)
 - [x] Carrito (2026-03-20)

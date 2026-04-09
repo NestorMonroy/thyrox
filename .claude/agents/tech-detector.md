@@ -43,10 +43,10 @@ Si ya existe `.claude/agents/{tech}-expert.md`:
 
 ```
 Tecnologías detectadas:
-✓ react     — package.json contiene "react" ^18.0.0, archivos .tsx encontrados
-✓ nodejs    — package.json presente, tsconfig.json presente
-✓ postgresql — docker-compose.yml con postgres:15
-✗ python    — no encontrado
++react     — package.json contiene "react" ^18.0.0, archivos .tsx encontrados
++nodejs    — package.json presente, tsconfig.json presente
++postgresql — docker-compose.yml con postgres:15
+-python    — no encontrado
 
 Skills disponibles en registry: react, nodejs, postgresql
 Skills ya configurados: ninguno

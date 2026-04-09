@@ -174,7 +174,7 @@ Scalability vs Simplicity
 
 ## Errores Comunes a Evitar
 
-### ❌ NO hacer:
+### [ERROR] NO hacer:
 ```
 - Quality Goals vagos ("sistema debe ser bueno")
 - No verificables ("será muy rápido")
@@ -184,7 +184,7 @@ Scalability vs Simplicity
 - Ignorar trade-offs
 ```
 
-### ✓ HACER:
+### HACER:
 ```
 - Prioridades claras y justificadas
 - Scenarios concretos y medibles

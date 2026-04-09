@@ -34,11 +34,11 @@ check_expectation() {
     local description="$3"
 
     if echo "$result" | grep -qi "$pattern"; then
-        echo "    ✅ $description"
+        echo "    [OK] $description"
         TOTAL_PASS=$((TOTAL_PASS + 1))
         return 0
     else
-        echo "    ❌ $description"
+        echo "    [ERROR] $description"
         TOTAL_FAIL=$((TOTAL_FAIL + 1))
         return 1
     fi
@@ -50,11 +50,11 @@ check_negative() {
     local description="$3"
 
     if echo "$result" | grep -qi "$pattern"; then
-        echo "    ❌ $description (found when shouldn't)"
+        echo "    [ERROR] $description (found when shouldn't)"
         TOTAL_FAIL=$((TOTAL_FAIL + 1))
         return 1
     else
-        echo "    ✅ $description"
+        echo "    [OK] $description"
         TOTAL_PASS=$((TOTAL_PASS + 1))
         return 0
     fi
@@ -75,7 +75,7 @@ run_eval() {
     result=$(cd "$dir" && claude -p "$prompt" 2>/dev/null) || result=""
 
     if [ -z "$result" ]; then
-        echo "    ⚠️  Empty response"
+        echo "    [WARN]  Empty response"
         return
     fi
 

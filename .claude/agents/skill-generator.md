@@ -71,9 +71,9 @@ tools:
 ```
 Generando skills para stack: react, nodejs, postgresql
 
-✓ react     → .claude/agents/react-expert.md (creado)
-✓ nodejs    → .claude/agents/nodejs-expert.md (creado)
-✓ postgresql → .claude/agents/postgresql-expert.md (creado)
++react     → .claude/agents/react-expert.md (creado)
++nodejs    → .claude/agents/nodejs-expert.md (creado)
++postgresql → .claude/agents/postgresql-expert.md (creado)
 
 3 skills generados. Reinicia Claude Code para activarlos.
 ```

@@ -92,7 +92,7 @@ for file in "${CORE_FILES[@]}"; do
         sed -i "s/thyrox/$PROJECT_LOWER/g" "$file"
         sed -i "s/Thyrox/$PROJECT_NAME/g" "$file"
         sed -i "s/PM-THYROX/PM-$PROJECT_UPPER/g" "$file"
-        echo "  ✅ $file"
+        echo "  [OK] $file"
     fi
 done
 
@@ -101,7 +101,7 @@ for file in .claude/context/decisions/adr-*.md; do
     if [ -f "$file" ] && grep -q "THYROX\|thyrox" "$file"; then
         sed -i "s/THYROX/$PROJECT_UPPER/g" "$file"
         sed -i "s/thyrox/$PROJECT_LOWER/g" "$file"
-        echo "  ✅ $file"
+        echo "  [OK] $file"
     fi
 done
 
@@ -110,7 +110,7 @@ for file in .claude/context/errors/ERR-*.md; do
     if [ -f "$file" ] && grep -q "THYROX\|thyrox" "$file"; then
         sed -i "s/THYROX/$PROJECT_UPPER/g" "$file"
         sed -i "s/thyrox/$PROJECT_LOWER/g" "$file"
-        echo "  ✅ $file"
+        echo "  [OK] $file"
     fi
 done
 
@@ -140,7 +140,7 @@ Fecha actualización: $(date +%Y-%m-%d)
 
 pm-thyrox con 7 fases SDLC, 20 references, 32+ templates
 EOF
-echo "  ✅ project-state.md reseteado"
+echo "  [OK] project-state.md reseteado"
 
 cat > ".claude/context/focus.md" << EOF
 \`\`\`yml
@@ -158,7 +158,7 @@ Proyecto recién inicializado desde template pm-thyrox.
 1. Phase 1: ANALYZE — entender requisitos del proyecto
 2. Definir scope y crear primer work package
 EOF
-echo "  ✅ focus.md reseteado"
+echo "  [OK] focus.md reseteado"
 
 cat > ".claude/context/now.md" << EOF
 \`\`\`yml
@@ -176,7 +176,7 @@ blockers: []
 
 Primera sesión. Template inicializado. Listo para Phase 1: ANALYZE.
 EOF
-echo "  ✅ now.md reseteado"
+echo "  [OK] now.md reseteado"
 
 cat > "ROADMAP.md" << EOF
 \`\`\`yml
@@ -216,7 +216,7 @@ FASE 1: Setup inicial — 10%
 
 **Última actualización:** $(date +%Y-%m-%d)
 EOF
-echo "  ✅ ROADMAP.md reseteado"
+echo "  [OK] ROADMAP.md reseteado"
 
 cat > "CHANGELOG.md" << EOF
 \`\`\`yml
@@ -238,7 +238,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/).
 - 32+ templates de artefactos
 - Scripts de validación
 EOF
-echo "  ✅ CHANGELOG.md reseteado"
+echo "  [OK] CHANGELOG.md reseteado"
 
 echo ""
 echo "--- Limpiando work packages y errores de ejemplo ---"
@@ -246,28 +246,28 @@ echo "--- Limpiando work packages y errores de ejemplo ---"
 # 4. Clean work packages (THYROX development history)
 if [ -d ".claude/context/work" ]; then
     rm -rf .claude/context/work/*/
-    echo "  ✅ context/work/ limpiado"
+    echo "  [OK] context/work/ limpiado"
 fi
 
 # Clean error files (THYROX-specific errors)
 if [ -d ".claude/context/errors" ]; then
     rm -rf .claude/context/errors/
     mkdir -p .claude/context/errors
-    echo "  ✅ context/errors/ limpiado"
+    echo "  [OK] context/errors/ limpiado"
 fi
 
 # Clean decisions (THYROX framework decisions — user creates their own)
 if [ -d ".claude/context/decisions" ]; then
     rm -rf .claude/context/decisions/
     mkdir -p .claude/context/decisions
-    echo "  ✅ context/decisions/ limpiado (usar assets/adr.md.template para crear nuevas)"
+    echo "  [OK] context/decisions/ limpiado (usar assets/adr.md.template para crear nuevas)"
 fi
 
 echo ""
 echo "--- Limpiando archivos de setup ---"
 rm -f reference-validation-report.txt
 rm -f setup-template.sh
-echo "  ✅ setup-template.sh auto-eliminado"
+echo "  [OK] setup-template.sh auto-eliminado"
 
 echo ""
 echo "============================================"

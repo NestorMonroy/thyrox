@@ -208,9 +208,9 @@ description: "Metodología validada para corrección incremental de issues a gra
 
 **Evitar descripciones vagas**:
 ```yaml
-description: "Ayuda con documentos"  # ❌ Demasiado vago
-description: "Procesa data"          # ❌ No específico
-description: "Hace cosas con archivos" # ❌ Sin triggers claros
+description: "Ayuda con documentos"  # [ERROR] Demasiado vago
+description: "Procesa data"          # [ERROR] No específico
+description: "Hace cosas con archivos" # [ERROR] Sin triggers claros
 ```
 
 ---

@@ -201,13 +201,13 @@ def main() -> int:
         total_warnings += len(warnings)
 
         if not errors and not warnings:
-            print(f"✓ {file_path}")
+            print(f"[OK] {file_path}")
         elif not errors and warnings:
-            print(f"✓ {file_path} ({len(warnings)} warning(s))")
+            print(f"[OK] {file_path} ({len(warnings)} warning(s))")
             for w in warnings:
                 print(f"    WARN: {w}")
         else:
-            print(f"✗ {file_path}: {len(errors)} error(s), {len(warnings)} warning(s)")
+            print(f"[FAIL] {file_path}: {len(errors)} error(s), {len(warnings)} warning(s)")
             for e in errors:
                 print(f"    ERROR: {e}")
             for w in warnings:

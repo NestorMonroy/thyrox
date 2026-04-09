@@ -60,11 +60,11 @@ Arquitectura de 5 capas de pm-thyrox (ADR-015). Cada capa tiene un mecanismo de 
 
 | Capa | Nombre | Triggering | Overhead sesiones no-PM | Actualizable sin migración |
 |------|--------|-----------|------------------------|--------------------------|
-| 0 — Hooks | shell scripts (harness) | 100% determinístico | Negligible | ✓ Sí |
-| 1 — CLAUDE.md | system prompt declarativo | Siempre cargado | Bajo (~80 líneas) | ✓ Sí |
-| 2 — SKILLs (N) | text injection on-demand | Probabilístico | Bajo (solo si se invocan) | ✓ Sí |
-| 3 — /workflow_* | slash commands | Determinístico (usuario lo invoca) | Bajo (solo si se usan) | ✓ Sí (independiente por fase) |
-| 4 — Agentes nativos | subprocesos Claude | Determinístico (una vez lanzados) | 0 (contexto propio) | ✓ Sí |
+| 0 — Hooks | shell scripts (harness) | 100% determinístico | Negligible | Sí |
+| 1 — CLAUDE.md | system prompt declarativo | Siempre cargado | Bajo (~80 líneas) | Sí |
+| 2 — SKILLs (N) | text injection on-demand | Probabilístico | Bajo (solo si se invocan) | Sí |
+| 3 — /workflow_* | slash commands | Determinístico (usuario lo invoca) | Bajo (solo si se usan) | Sí (independiente por fase) |
+| 4 — Agentes nativos | subprocesos Claude | Determinístico (una vez lanzados) | 0 (contexto propio) | Sí |
 
 ### Tabla de rutas (hoy vs objetivo)
 
@@ -82,7 +82,7 @@ La documentación oficial de Claude Code documenta 4 tipos de hook. Solo `comman
 
 | Tipo | Comportamiento | Determinístico | Uso en pm-thyrox |
 |------|----------------|----------------|-----------------|
-| `command` | Ejecuta shell command vía harness | ✓ Sí | SessionStart, Stop, PostCompact |
+| `command` | Ejecuta shell command vía harness | Sí | SessionStart, Stop, PostCompact |
 | `prompt` | Inyecta texto en el próximo prompt de Claude | Probabilístico (interpretación de Claude) | No usado actualmente |
 | `agent` | Invoca un agente Claude Code | Determinístico (lanzamiento del agente) | No usado actualmente |
 | `http` | Llama a un endpoint HTTP externo | Determinístico (llamada HTTP) | No usado actualmente |

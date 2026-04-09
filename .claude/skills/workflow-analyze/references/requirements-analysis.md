@@ -188,7 +188,7 @@ Para cada R-N, detallar:
 
 ## Errores Comunes a Evitar
 
-### ❌ NO hacer:
+### [ERROR] NO hacer:
 ```
 - Requisitos demasiado vagos ("sistema debe ser bueno")
 - Requisitos demasiado técnicos (detalles de implementación)
@@ -197,7 +197,7 @@ Para cada R-N, detallar:
 - Requisitos contradictorios sin resolución
 ```
 
-### ✓ HACER:
+### HACER:
 ```
 - Requisitos claros y verificables
 - Dos niveles de abstracción

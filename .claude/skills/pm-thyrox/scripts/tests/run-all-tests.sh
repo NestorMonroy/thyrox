@@ -59,11 +59,11 @@ echo "╔═══════════════════════�
 TOTAL=$((TOTAL_PASS + TOTAL_FAIL))
 echo "║  Test suites: $TOTAL_PASS/$TOTAL passed"
 if [ "$TOTAL_FAIL" -eq 0 ]; then
-    echo "║  Status: ALL PASS ✅"
+    echo "║  Status: ALL PASS [OK]"
     echo "╚══════════════════════════════════════════╝"
     exit 0
 else
-    echo "║  Status: $TOTAL_FAIL FAILED ❌"
+    echo "║  Status: $TOTAL_FAIL FAILED [ERROR]"
     echo "╚══════════════════════════════════════════╝"
     exit 1
 fi

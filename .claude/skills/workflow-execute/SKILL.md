@@ -36,7 +36,7 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 2. Presentar al usuario: qué agente completó + resumen del resultado
 3. ⏸ GATE ASYNC — STOP: esperar confirmación antes de usar el output o lanzar el siguiente agente
 4. Intensidad del gate según calibración (tabla abajo)
-5. Si aprueba: marcar SP-NNN como `✓` en el manifest y continuar
+5. Si aprueba: marcar SP-NNN como `si` en el manifest y continuar
 6. Si hay problema: crear `context/errors/ERR-NNN.md` y ajustar el plan
 
 **Calibración de gates async:**
@@ -79,7 +79,7 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 - [ ] `*-task-plan.md` — todas las tareas completadas tienen `[x]`
 - [ ] `*-execution-log.md` — estado final de cada tarea registrado
 - [ ] `ROADMAP.md` — todos los checkboxes de la FASE actual en `[x]`
-- [ ] Stopping Point Manifest — SP-NNN de Phase 6 marcados como `✓`
+- [ ] Stopping Point Manifest — SP-NNN de Phase 6 marcados como `si`
 Si algún ítem falla → corregir antes de avanzar.
 
 ---

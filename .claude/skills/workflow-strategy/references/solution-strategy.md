@@ -363,7 +363,7 @@ Technologies: Hystrix, Kubernetes, monitoring
 
 ## Errores Comunes a Evitar
 
-### ❌ NO hacer:
+### [ERROR] NO hacer:
 ```
 - Ser demasiado específico (detalles de implementación)
 - Ignorar Quality Goals
@@ -373,7 +373,7 @@ Technologies: Hystrix, Kubernetes, monitoring
 - Strategy que no guía implementación
 ```
 
-### ✓ HACER:
+### HACER:
 ```
 - Ideas clave y conceptos
 - Decisiones con justificación

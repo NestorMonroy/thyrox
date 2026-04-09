@@ -230,12 +230,12 @@ def install_core_agents(force: bool, model: str) -> list[str]:
         agent_path = source_dir / f"{agent_name}.md"
         if agent_path.exists():
             if not force:
-                print(f"  ✓ {agent_name:<20} → ya existe — skip")
+                print(f"  [OK] {agent_name:<20} → ya existe — skip")
             else:
-                print(f"  ✓ {agent_name:<20} → ya existe (--force: manteniendo)")
+                print(f"  [OK] {agent_name:<20} → ya existe (--force: manteniendo)")
             installed.append(agent_name)
         else:
-            print(f"  ✗ {agent_name:<20} → no encontrado en .claude/agents/")
+            print(f"  [FAIL] {agent_name:<20} → no encontrado en .claude/agents/")
 
     return installed
 
@@ -248,13 +248,13 @@ def install_tech_agent(tech: str, force: bool, model: str, project_name: str) ->
     dest = AGENTS_DIR / f"{tech}-expert.md"
 
     if dest.exists() and not force:
-        print(f"  ✓ {tech}-expert{' ' * max(0, 18 - len(tech))} → ya existe — skip")
+        print(f"  [OK] {tech}-expert{' ' * max(0, 18 - len(tech))} → ya existe — skip")
         return False
 
     # Buscar YAML en registry
     yml_path = REGISTRY_DIR / "agents" / f"{tech}-expert.yml"
     if not yml_path.exists():
-        print(f"  ✗ {tech}-expert{' ' * max(0, 18 - len(tech))} → no hay YAML en registry/agents/{tech}-expert.yml")
+        print(f"  [FAIL] {tech}-expert{' ' * max(0, 18 - len(tech))} → no hay YAML en registry/agents/{tech}-expert.yml")
         return False
 
     # Leer campos del YAML
@@ -285,7 +285,7 @@ def install_tech_agent(tech: str, force: bool, model: str, project_name: str) ->
     content = generate_agent_md(name, description, tools, body)
     dest.write_text(content)
     action = "sobreescrito" if dest.exists() else "creado"
-    print(f"  ✓ {tech}-expert{' ' * max(0, 18 - len(tech))} → .claude/agents/{tech}-expert.md ({action})")
+    print(f"  [OK] {tech}-expert{' ' * max(0, 18 - len(tech))} → .claude/agents/{tech}-expert.md ({action})")
     return True
 
 
@@ -309,9 +309,9 @@ def update_mcp_json(force: bool) -> None:
     if changed:
         existing["mcpServers"] = mcp_servers
         MCP_JSON.write_text(json.dumps(existing, indent=2) + "\n")
-        print(f"  ✓ .mcp.json actualizado con thyrox-memory y thyrox-executor")
+        print(f"  [OK] .mcp.json actualizado con thyrox-memory y thyrox-executor")
     else:
-        print(f"  ✓ .mcp.json — MCP servers ya configurados — skip")
+        print(f"  [OK] .mcp.json — MCP servers ya configurados — skip")
 
 
 def ensure_memory_dir() -> None:

@@ -203,22 +203,22 @@ Documentar explícitamente QUÉ ESTÁ DENTRO vs AFUERA:
 ### Dentro del Sistema
 
 ```
-✓ User authentication and authorization
-✓ Product catalog management
-✓ Shopping cart functionality
-✓ Order processing
-✓ Payment integration
-✓ Inventory tracking
++User authentication and authorization
++Product catalog management
++Shopping cart functionality
++Order processing
++Payment integration
++Inventory tracking
 ```
 
 ### Fuera del Sistema (External Dependencies)
 
 ```
-✗ Payment processing (Stripe/PayPal)
-✗ Shipping logistics (FedEx/UPS)
-✗ Email delivery (SendGrid)
-✗ Analytics (Google Analytics)
-✗ Authentication (Auth0)
+-Payment processing (Stripe/PayPal)
+-Shipping logistics (FedEx/UPS)
+-Email delivery (SendGrid)
+-Analytics (Google Analytics)
+-Authentication (Auth0)
 ```
 
 ---
@@ -250,7 +250,7 @@ Documentar explícitamente QUÉ ESTÁ DENTRO vs AFUERA:
 
 ## Errores Comunes a Evitar
 
-### ❌ NO hacer:
+### [ERROR] NO hacer:
 ```
 - Incluir detalles técnicos en Business Context
 - Sistemas demasiado genéricos ("External API")
@@ -260,7 +260,7 @@ Documentar explícitamente QUÉ ESTÁ DENTRO vs AFUERA:
 - Confundir con interno architecture
 ```
 
-### ✓ HACER:
+### HACER:
 ```
 - Específico: nombre sistema externo real
 - Documentar protocolos y tecnologías

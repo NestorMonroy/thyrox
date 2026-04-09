@@ -50,7 +50,7 @@ Especificar antes de descomponer previene ambigüedad en las tareas.
 - Para docs técnicos sin template específico: `assets/document.md.template`
 
 REQUERIDO al finalizar: completar `{nombre-wp}-spec-checklist.md` usando `assets/spec-quality-checklist.md.template` (20 ítems).
-NO avanzar si quedan ítems sin ✓ o marcadores `[NEEDS CLARIFICATION]` sin resolver.
+NO avanzar si quedan ítems sin +o marcadores `[NEEDS CLARIFICATION]` sin resolver.
 
 ---
 

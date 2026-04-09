@@ -23,11 +23,11 @@ owner: pm-thyrox (cross-phase)
 
 | Evento | `now.md` | `focus.md` | `project-state.md` |
 |--------|---------|-----------|-------------------|
-| **Phase 1: WP creado** | ✓ Actualizar `current_work` + `phase: Phase 1` | ✓ Mencionar WP abierto | — |
-| **Transición de Phase (1→2, 2→3…)** | ✓ Actualizar `phase: Phase N` | — | — |
-| **Phase 7: WP cerrado** | ✓ `current_work: null`, `phase: null` | ✓ FASE completada + próximo paso | ✓ Ejecutar `update-state.sh` |
-| **Nuevo agente añadido** | — | — | ✓ Ejecutar `update-state.sh` |
-| **Nueva versión en CHANGELOG** | — | — | ✓ Ejecutar `update-state.sh` |
+| **Phase 1: WP creado** | +Actualizar `current_work` + `phase: Phase 1` | +Mencionar WP abierto | — |
+| **Transición de Phase (1→2, 2→3…)** | +Actualizar `phase: Phase N` | — | — |
+| **Phase 7: WP cerrado** | +`current_work: null`, `phase: null` | +FASE completada + próximo paso | +Ejecutar `update-state.sh` |
+| **Nuevo agente añadido** | — | — | +Ejecutar `update-state.sh` |
+| **Nueva versión en CHANGELOG** | — | — | +Ejecutar `update-state.sh` |
 
 ---
 

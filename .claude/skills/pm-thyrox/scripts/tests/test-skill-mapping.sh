@@ -19,10 +19,10 @@ assert_pass() {
     local name="$1"
     local exit_code="$2"
     if [ "$exit_code" -eq 0 ]; then
-        echo "  ✅ PASS: $name"
+        echo "  [OK] PASS: $name"
         PASS=$((PASS + 1))
     else
-        echo "  ❌ FAIL: $name (expected 0, got $exit_code)"
+        echo "  [ERROR] FAIL: $name (expected 0, got $exit_code)"
         FAIL=$((FAIL + 1))
     fi
 }
@@ -31,10 +31,10 @@ assert_true() {
     local name="$1"
     local condition="$2"
     if [ "$condition" -eq 1 ] 2>/dev/null || [ "$condition" = "true" ] 2>/dev/null; then
-        echo "  ✅ PASS: $name"
+        echo "  [OK] PASS: $name"
         PASS=$((PASS + 1))
     else
-        echo "  ❌ FAIL: $name"
+        echo "  [ERROR] FAIL: $name"
         FAIL=$((FAIL + 1))
     fi
 }
@@ -43,10 +43,10 @@ check_contains() {
     local name="$1"
     local pattern="$2"
     if grep -q "$pattern" "$SKILL_FILE" 2>/dev/null; then
-        echo "  ✅ PASS: $name"
+        echo "  [OK] PASS: $name"
         PASS=$((PASS + 1))
     else
-        echo "  ❌ FAIL: $name — pattern not found: $pattern"
+        echo "  [ERROR] FAIL: $name — pattern not found: $pattern"
         FAIL=$((FAIL + 1))
     fi
 }
@@ -55,10 +55,10 @@ check_not_contains() {
     local name="$1"
     local pattern="$2"
     if ! grep -q "$pattern" "$SKILL_FILE" 2>/dev/null; then
-        echo "  ✅ PASS: $name"
+        echo "  [OK] PASS: $name"
         PASS=$((PASS + 1))
     else
-        echo "  ❌ FAIL: $name — unexpected pattern found: $pattern"
+        echo "  [ERROR] FAIL: $name — unexpected pattern found: $pattern"
         FAIL=$((FAIL + 1))
     fi
 }
@@ -79,10 +79,10 @@ echo "=== SKILL.md tamaño ==="
 
 LINES=$(wc -l < "$SKILL_FILE")
 if [ "$LINES" -le 500 ]; then
-    echo "  ✅ PASS: SKILL.md tamaño ($LINES líneas ≤ 500)"
+    echo "  [OK] PASS: SKILL.md tamaño ($LINES líneas ≤ 500)"
     PASS=$((PASS + 1))
 else
-    echo "  ❌ FAIL: SKILL.md demasiado largo ($LINES líneas > 500)"
+    echo "  [ERROR] FAIL: SKILL.md demasiado largo ($LINES líneas > 500)"
     FAIL=$((FAIL + 1))
 fi
 

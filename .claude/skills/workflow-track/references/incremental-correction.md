@@ -47,17 +47,17 @@ Metodología validada para corrección de 100+ issues a gran escala con análisi
 
 Use esta metodología cuando necesite:
 
-- ✅ Corregir 100+ issues en un proyecto
-- ✅ Decidir entre manual vs automatizado
-- ✅ Estructurar proceso de corrección a gran escala
-- ✅ Evitar introducir regresiones
-- ✅ Documentar decisiones y aprendizajes
-- ✅ Balancear velocidad vs calidad
+- [OK] Corregir 100+ issues en un proyecto
+- [OK] Decidir entre manual vs automatizado
+- [OK] Estructurar proceso de corrección a gran escala
+- [OK] Evitar introducir regresiones
+- [OK] Documentar decisiones y aprendizajes
+- [OK] Balancear velocidad vs calidad
 
 **NO use esta metodología para**:
-- ❌ Correcciones puntuales (<10 issues)
-- ❌ Issues de complejidad uniforme
-- ❌ Cuando velocidad es la única prioridad
+- [ERROR] Correcciones puntuales (<10 issues)
+- [ERROR] Issues de complejidad uniforme
+- [ERROR] Cuando velocidad es la única prioridad
 
 ---
 

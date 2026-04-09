@@ -21,27 +21,27 @@ Registro de decisiones arquitectónicas y técnicas importantes del proyecto THY
 
 ### Aprobados y Activos
 
-1. [ADR-001: Markdown para Documentación](decisions/adr-001.md) ✓
+1. [ADR-001: Markdown para Documentación](decisions/adr-001.md)+
    - Usar Markdown como formato estándar de documentación
    - Status: Aprobado | Fecha: 2025-03-24
 
-2. [ADR-002: ROADMAP como Single Source of Truth](decisions/adr-002.md) ✓
+2. [ADR-002: ROADMAP como Single Source of Truth](decisions/adr-002.md)+
    - ROADMAP.md es la fuente única de verdad para tracking
    - Status: Aprobado | Fecha: 2025-03-24
 
-3. [ADR-003: Conventional Commits](decisions/adr-003.md) ✓
+3. [ADR-003: Conventional Commits](decisions/adr-003.md)+
    - Estandarizar formato de commits
    - Status: Aprobado | Fecha: 2025-03-24
 
-4. [ADR-004: Separación de Sub-proyectos](decisions/adr-004.md) ✓
+4. [ADR-004: Separación de Sub-proyectos](decisions/adr-004.md)+
    - API y Build como sub-proyectos independientes
    - Status: Aprobado | Fecha: 2025-03-24
 
-5. [ADR-005: Claude Code como Development Agent](decisions/adr-005.md) ✓
+5. [ADR-005: Claude Code como Development Agent](decisions/adr-005.md)+
    - Automatización de desarrollo con Claude Code
    - Status: Aprobado | Fecha: 2025-03-24
 
-7. [ADR-007: PostgreSQL como Base de Datos](decisions/adr-007.md) ✓
+7. [ADR-007: PostgreSQL como Base de Datos](decisions/adr-007.md)+
    - Motor de base de datos principal
    - Status: Aprobado | Fecha: 2025-03-24
 
@@ -61,15 +61,15 @@ Registro de decisiones arquitectónicas y técnicas importantes del proyecto THY
 
 ### Sesión 2026-03-27/28
 
-10. [ADR-010: ANALYZE primero, siempre](decisions/adr-010.md) ✓
+10. [ADR-010: ANALYZE primero, siempre](decisions/adr-010.md)+
     - Phase 1 es ANALYZE, orden canónico fijo
     - Status: Aprobado | Fecha: 2026-03-27
 
-11. [ADR-011: Anatomía oficial de Anthropic](decisions/adr-011.md) ✓
+11. [ADR-011: Anatomía oficial de Anthropic](decisions/adr-011.md)+
     - SKILL.md + scripts/ + references/ + assets/
     - Status: Aprobado | Fecha: 2026-03-27
 
-12. [ADR-012: Work-log obligatorio por sesión](decisions/adr-012.md) ✓
+12. [ADR-012: Work-log obligatorio por sesión](decisions/adr-012.md)+
     - Cada sesión debe tener work-log, no opcional
     - Status: Aprobado | Fecha: 2026-03-28
 
