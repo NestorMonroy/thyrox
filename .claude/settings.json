@@ -1,4 +1,37 @@
 {
+  "defaultMode": "acceptEdits",
+  "permissions": {
+    "allow": [
+      "Bash(bash .claude/scripts/*)",
+      "Bash(bash .claude/skills/*/scripts/*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git commit -m *)",
+      "Bash(git push *)",
+      "Bash(git push -u *)",
+      "Bash(git status)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git fetch *)",
+      "Bash(git branch *)",
+      "Bash(date *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)",
+      "Bash(echo *)"
+    ],
+    "ask": [
+      "Edit(/.claude/CLAUDE.md)",
+      "Edit(/.claude/skills/*/SKILL.md)",
+      "Edit(/.claude/scripts/*.sh)",
+      "Edit(/.claude/settings.json)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push --force-with-lease *)",
+      "Bash(git reset --hard *)",
+      "Bash(rm -rf *)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {

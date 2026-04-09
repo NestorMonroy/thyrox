@@ -117,6 +117,51 @@ Ver [conventions](../../references/conventions.md) para detalles completos.
 
 ---
 
+## Modelo de permisos
+
+El framework opera en dos planos independientes. Confundirlos genera fricción innecesaria o falsa sensación de seguridad.
+
+### Plano A — Gates de decisión del SKILL (metodológico)
+
+Puntos donde el humano decide si continuar. Definidos en cada `workflow-*/SKILL.md` como `⏸ STOP`.
+
+| Gate | Momento | Propósito |
+|------|---------|-----------|
+| Phase 1 → 2 | Después de análisis | Validar hallazgos antes de diseñar |
+| Phase 2 → 3 | Después de estrategia | Aprobar dirección antes de planificar |
+| Phase 4 → 5 | Después de spec | Aprobar spec antes de descomponer |
+| Phase 5 → 6 | Antes de ejecutar | Autorizar inicio de ejecución |
+| Phase 6 → 7 | Antes de TRACK | Confirmar que la ejecución fue correcta |
+| GATE OPERACION | Operación destructiva | Aprobar antes de acción irreversible |
+
+Estos gates son **correctos e intencionales**. No se eliminan.
+
+### Plano B — Permisos de herramienta de Claude Code (sistema)
+
+Configurados en `.claude/settings.json`. Independientes de los gates del SKILL — aplican por llamada de herramienta, no por fase.
+
+**Comportamiento por categoría de archivo/operación:**
+
+| Categoría | Ejemplos | Comportamiento |
+|-----------|---------|---------------|
+| Artefactos WP | `context/work/**/*.md` | Auto (acceptEdits) |
+| Estado de sesión | `now.md`, `focus.md` | Auto (acceptEdits) |
+| Historial del proyecto | `CHANGELOG.md`, `ROADMAP.md` | Auto (acceptEdits) |
+| Scripts del framework | `bash .claude/scripts/*` | Auto (allow) |
+| Scripts de validacion | `bash .claude/skills/*/scripts/*` | Auto (allow) |
+| Git rutinario | `git add/commit/push/status/log` | Auto (allow) |
+| Configuracion del framework | `SKILL.md`, `CLAUDE.md`, `settings.json`, `scripts/*.sh` | Prompt (ask) |
+| Operaciones destructivas | `git push --force`, `git reset --hard`, `rm -rf` | Bloqueado (deny) |
+
+**Relacion entre planos:**
+El gate Phase 6→7 (Plano A) es la aprobacion para todo Phase 7. Las operaciones de cierre
+(update-state.sh, validate-session-close.sh, git add/commit/push) corren automaticamente
+despues de ese gate — son consecuencia de la decision, no nuevas decisiones.
+
+Ver `.claude/settings.json` para la configuracion vigente.
+
+---
+
 ## References por dominio
 
 ### Phase 1: ANALYZE (leer cuando se investiga un problema)
