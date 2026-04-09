@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-09 22:30:00
+updated_at: 2026-04-09 23:05:00
 ```
 
 # Deuda Técnica — THYROX
@@ -1226,3 +1226,97 @@ En una sesión de prueba, Phase 6 completa con:
 - `project-status.sh` muestra warning si el WP activo no está en ROADMAP.md
 - El execution-log existe antes de ejecutar la primera tarea
 - El SP-Manifest se actualiza en el mismo momento que se aprueba cada gate
+
+---
+
+## TD-033: now.md modificado por PostToolUse hook no se incluye en commits automáticamente
+
+```
+Severidad: alta
+Origen: Deep review FASE 28 — gap identificado en FASE 29 Phase 1 (2026-04-09)
+Fase afectada: Todas — especialmente al hacer commits en Phase 6 EXECUTE
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+`sync-wp-state.sh` (PostToolUse hook, FASE 28) modifica `now.md::current_work`
+después de cada Write a `context/work/**`. Esto es correcto y funciona. Pero el
+cambio en `now.md` queda en estado **uncommitted** hasta el siguiente commit explícito.
+
+Resultado: al presentar un gate (⏸ STOP) o al terminar la sesión, `now.md` puede
+estar modificado pero no commiteado. El stop hook detecta este estado como error.
+
+**Ejemplo concreto (FASE 29):**
+
+```
+Write analysis.md → PostToolUse → sync-wp-state.sh → now.md::current_work = WP-29
+git add analysis.md risk-register.md → commit   ← now.md NO incluido
+⏸ GATE Phase 1→2 presentado
+Stop hook: "uncommitted changes in now.md"       ← error detectado
+```
+
+**Root cause (análisis FASE 29):**
+
+SPEC-002 de FASE 28 definió la postcondición como:
+> `now.md::current_work == "work/WP-X/"` — correcto, pero incompleto.
+
+La postcondición real necesaria era:
+> `now.md::current_work == "work/WP-X/"` **AND** ese valor está commiteado en git.
+
+La segunda condición nunca se especificó ni validó en los tests de integración (T-017).
+
+**Regla general faltante:**
+
+Antes de cualquier gate (⏸ STOP) y antes de cada commit de artefactos, incluir
+siempre `now.md` (y `focus.md` si fue modificado) en el staged set.
+
+```bash
+# Patrón correcto de commit en workflow-*/SKILL.md:
+git add <artefactos-de-la-fase> .claude/context/now.md
+git commit -m "type(scope): descripción"
+git push ...
+```
+
+**Soluciones propuestas:**
+
+### Plano A — Instrucción en SKILL.md (inmediato)
+
+Agregar en cada `workflow-*/SKILL.md`, en el paso de commit:
+
+```markdown
+**Commit de fase** (incluir siempre now.md si fue modificado):
+git add <artefactos> .claude/context/now.md
+git commit -m "type(scope): descripción"
+```
+
+Y en la sección de pre-gate (TD-029/TD-031):
+```markdown
+Antes de presentar el gate:
+- [ ] git status — si now.md aparece como "M", incluirlo en el commit
+```
+
+### Plano B — PostToolUse hook extendido (automático)
+
+Extender `sync-wp-state.sh` para que, además de actualizar `now.md`, haga
+`git add .claude/context/now.md` automáticamente. Pero esto tiene riesgo:
+un `git add` automático puede interferir con staged sets parciales que Claude
+está construyendo deliberadamente.
+
+**Análisis de viabilidad Plano B:**
+
+| Opción | Ventaja | Riesgo |
+|--------|---------|--------|
+| Agregar `git add now.md` en sync-wp-state.sh | Automático, siempre correcto | Interfiere con staged sets deliberados |
+| PostToolUse hook separado para git add | Más aislado | Complejidad adicional, mismo riesgo |
+| Ningún auto-add — solo instrucción manual | Sin riesgos | Depende del LLM (frágil) |
+
+**Recomendación:** Plano A primero (instrucción explícita en SKILL.md), evaluar
+Plano B cuando haya evidencia de que Plano A falla consistentemente.
+
+**Criterio de cierre:**
+
+En una sesión de prueba con WP mediano:
+- El stop hook no reporta uncommitted changes en now.md al finalizar ninguna fase
+- Al presentar cada gate, `git status` muestra "nothing to commit"
+- now.md::current_work está commiteado antes de cada ⏸ STOP
