@@ -823,31 +823,31 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ### Batch A — 15 referencias de fase → workflow-*/references/
 
-- [ ] A-01: Crear dirs + `git mv` 9 refs → `workflow-analyze/references/` + actualizar links en pm-thyrox/SKILL.md + workflow-analyze/SKILL.md línea 30 + workflow-strategy/SKILL.md línea 34
-- [ ] A-02: Crear dirs + `git mv` 6 refs → workflow-execute/strategy/structure/track references/ + actualizar links
-- [ ] A-VAL: `detect_broken_references.py` — verificación post-Batch A
+- [x] A-01: Crear dirs + `git mv` 9 refs → `workflow-analyze/references/` + actualizar links en pm-thyrox/SKILL.md + workflow-analyze/SKILL.md línea 30 + workflow-strategy/SKILL.md línea 34 — 2026-04-09
+- [x] A-02: Crear dirs + `git mv` 6 refs → workflow-execute/strategy/structure/track references/ + actualizar links — 2026-04-09
+- [x] A-VAL: `detect_broken_references.py` — verificación post-Batch A — 2026-04-09
 
 ### Batch B — 9 referencias globales → .claude/references/
 
-- [ ] B-01: Crear `.claude/references/` + `git mv` 9 refs + actualizar links en pm-thyrox/SKILL.md + CLAUDE.md línea 105 (conventions) + workflow-track/SKILL.md línea 69 (state-management)
-- [ ] B-02: Eliminar `pm-thyrox/references/` (verificado vacío — 24/24 destinos presentes)
-- [ ] B-VAL: `detect_broken_references.py` — verificación post-Batch B
+- [x] B-01: Crear `.claude/references/` + `git mv` 9 refs + actualizar links en pm-thyrox/SKILL.md + CLAUDE.md línea 105 (conventions) + workflow-track/SKILL.md línea 69 (state-management) — 2026-04-09
+- [x] B-02: Eliminar `pm-thyrox/references/` (verificado vacío — 24/24 destinos presentes) — 2026-04-09
+- [x] B-VAL: `detect_broken_references.py` — verificación post-Batch B — 2026-04-09
 
 ### Batch C — 2 scripts + tests split → workflow-track/scripts/
 
-- [ ] C-01: Crear `workflow-track/scripts/` + `git mv` 2 scripts + `test-phase-readiness.sh` → `workflow-track/scripts/tests/`
-- [ ] C-02: Actualizar links — `workflow-track/SKILL.md` ×4, `state-management.md` ×1 (validate-session-close), `run-all-tests.sh` path a test-phase-readiness
-- [ ] C-VAL: `detect_broken_references.py` — verificación post-Batch C
+- [x] C-01: Crear `workflow-track/scripts/` + `git mv` 2 scripts + `test-phase-readiness.sh` → `workflow-track/scripts/tests/` — 2026-04-09
+- [x] C-02: Actualizar links — `workflow-track/SKILL.md` ×4, `state-management.md` ×1 (validate-session-close), `run-all-tests.sh` path a test-phase-readiness — 2026-04-09
+- [x] C-VAL: `detect_broken_references.py` — verificación post-Batch C — 2026-04-09
 
 ### Batch D — 13 scripts → .claude/scripts/ + settings.json
 
-- [ ] D-01: Crear `.claude/scripts/` + `git mv` 13 scripts
-- [ ] D-02: Actualizar `settings.json` (3 paths) + links en `workflow-track/SKILL.md` (update-state, project-status), `agent-spec.md` ×3, `reference-validation.md` ×5, `state-management.md` ×3 (update-state)
-- [ ] D-03: Reinstalar git hook — `cp .claude/scripts/commit-msg-hook.sh .git/hooks/commit-msg`
-- [ ] D-VAL: `detect_broken_references.py` — verificación post-Batch D
+- [x] D-01: Crear `.claude/scripts/` + `git mv` 13 scripts — 2026-04-09
+- [x] D-02: Actualizar `settings.json` (3 paths) + links en `workflow-track/SKILL.md` (update-state, project-status), `agent-spec.md` ×3, `reference-validation.md` ×5, `state-management.md` ×3 (update-state) — 2026-04-09
+- [x] D-03: Reinstalar git hook — `cp .claude/scripts/commit-msg-hook.sh .git/hooks/commit-msg` — 2026-04-09
+- [x] D-VAL: `detect_broken_references.py` — verificación post-Batch D — 2026-04-09
 
 ### Commit final — Documentación + ADR
 
-- [ ] F-01: Actualizar `CLAUDE.md` `## Estructura` (9 dirs reales) + pm-thyrox/SKILL.md paths
-- [ ] F-02: Crear `ADR-017` (3 niveles de artefactos: .claude/references/, .claude/scripts/, workflow-*/references/)
-- [ ] F-03: Cerrar TD-020 — `.claude/commands/` documentado en CLAUDE.md
+- [x] F-01: Actualizar `CLAUDE.md` `## Estructura` (9 dirs reales) + pm-thyrox/SKILL.md paths — 2026-04-09
+- [x] F-02: Crear `ADR-017` (3 niveles de artefactos: .claude/references/, .claude/scripts/, workflow-*/references/) — 2026-04-09
+- [x] F-03: Cerrar TD-020 — `.claude/commands/` documentado en CLAUDE.md — 2026-04-09

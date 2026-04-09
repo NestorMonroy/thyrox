@@ -13,6 +13,45 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.1.0] - 2026-04-09
+
+### Added — References Restructure: 3-level architecture for references & scripts (WP skill-references-restructure / FASE 24)
+
+**Batch A — 15 phase-specific refs → workflow-*/references/:**
+- `.claude/skills/workflow-analyze/references/`: scalability.md (migrado desde pm-thyrox/references/)
+- `.claude/skills/workflow-strategy/references/`: solution-strategy.md
+- `.claude/skills/workflow-structure/references/`: spec-driven-development.md
+- `.claude/skills/workflow-execute/references/`: commit-convention.md, commit-helper.md
+- `.claude/skills/workflow-track/references/`: incremental-correction.md, reference-validation.md
+- (workflow-analyze también recibió: analysis-frameworks.md, business-context.md, context-boundaries.md, quality-goals.md, requirements-categories.md, risk-register-guide.md, stakeholders.md, use-cases.md)
+
+**Batch B — 9 global refs → .claude/references/ (nuevo directorio):**
+- `.claude/references/`: agent-spec.md, claude-code-components.md, conventions.md, examples.md, long-context-tips.md, prompting-tips.md, skill-authoring.md, skill-vs-agent.md, state-management.md
+- `pm-thyrox/references/` eliminado (todos los 24 archivos migrados a sus destinos correctos)
+
+**Batch C — Scripts de fase → workflow-track/scripts/:**
+- `.claude/skills/workflow-track/scripts/`: validate-phase-readiness.sh, validate-session-close.sh
+- `.claude/skills/workflow-track/scripts/tests/`: test-phase-readiness.sh (split de run-all-tests.sh)
+
+**Batch D — 13 scripts de infraestructura → .claude/scripts/ (nuevo directorio):**
+- `.claude/scripts/`: session-start.sh, session-resume.sh, stop-hook-git-check.sh, project-status.sh, update-state.sh, commit-msg-hook.sh, detect_broken_references.py, lint-agents.py, bootstrap.py, check-phase-readiness.sh, run-bootstrap.sh, + otros
+- `.claude/settings.json` — 3 hook paths actualizados: `pm-thyrox/scripts/` → `.claude/scripts/`
+
+**Commit final — Documentación arquitectónica:**
+- `CLAUDE.md` `## Estructura` — expandido de 3 a 9 dirs: agents/, commands/, context/, guidelines/, memory/, references/, registry/, scripts/, skills/. TD-020 resuelto.
+- `context/decisions/adr-017.md` — documenta los 3 niveles arquitectónicos con criterios de inclusión y alternativas consideradas
+
+### Fixed
+
+- Cross-references corregidas en: `commit-helper.md`, `workflow-decompose/SKILL.md`, `decisions.md`, `adr-003.md`, `registry/agents/README.md`, `CONTRIBUTING.md`, `setup-template.sh` (13 paths)
+- `settings.json` hooks: paths `pm-thyrox/scripts/` → `.claude/scripts/` (hooks de sesión ahora en ubicación semánticamente correcta)
+
+### Lessons Learned
+
+- L-098..L-101 documentadas (ver WP skill-references-restructure-lessons-learned.md)
+
+---
+
 ## [2.0.0] - 2026-04-09
 
 ### Added — Workflow Restructure: migración a workflow-*/SKILL.md + reducción SKILL.md (WP workflow-restructure / FASE 23)
