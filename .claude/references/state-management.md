@@ -3,7 +3,7 @@ type: Referencia — Gestión de Estado de Sesión
 category: Cross-phase
 version: 1.0
 purpose: Define cuándo y cómo actualizar los archivos de estado del proyecto
-updated_at: 2026-04-08
+updated_at: 2026-04-09
 owner: pm-thyrox (cross-phase)
 ```
 
@@ -35,10 +35,14 @@ owner: pm-thyrox (cross-phase)
 
 ### `now.md` — al crear WP (Phase 1)
 ```yaml
-current_work: context/work/{timestamp}-{nombre}/
+current_work: work/{timestamp}-{nombre}/
 phase: Phase 1
 updated_at: YYYY-MM-DD HH:MM:SS
 ```
+
+> `current_work` es relativo a `.claude/context/` — NO al repo root.
+> `validate-session-close.sh` construye: `CONTEXT_DIR + "/" + current_work`.
+> Si escribes `context/work/...` el path queda duplicado: `.claude/context/context/work/...` (roto).
 
 ### `now.md` — al cerrar WP (Phase 7)
 ```yaml
@@ -83,8 +87,21 @@ bash .claude/scripts/update-state.sh --dry-run
 
 ---
 
-## Regla de oro
+## Comportamiento del sistema de permisos sobre archivos de estado
+
+Con `defaultMode: acceptEdits` (configurado en FASE 26), Edit sobre estos archivos es **automático**:
+- `context/now.md` — auto
+- `context/focus.md` — auto
+- `context/project-state.md` — auto (o vía `update-state.sh` que también es auto)
+
+No requieren confirmación adicional después del gate de fase. Ver [permission-model](permission-model.md).
+
+---
+
+## Reglas de oro
 
 > `now.md` es la fuente de verdad para `session-start.sh`.
 > Si `now.md::current_work` es incorrecto, el hook arranca con el WP equivocado.
 > Actualizar `now.md` es la operación de mayor impacto en la continuidad de sesión.
+
+> `current_work` es siempre relativo a `.claude/context/` — usar `work/TIMESTAMP-nombre/`, nunca `context/work/TIMESTAMP-nombre/`.
