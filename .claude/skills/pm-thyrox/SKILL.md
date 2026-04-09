@@ -45,7 +45,7 @@ Cada fase vive en su propio skill. Invocar directamente para ejecutar:
 | Phase 6: EXECUTE | `/workflow-execute` | Ejecutar. Commits + actualizar task plan + gates async. |
 | Phase 7: TRACK | `/workflow-track` | Cerrar WP. Lessons learned + CHANGELOG + estado. |
 
-Ver [escalabilidad](references/scalability.md) para reglas de qué fases omitir según tamaño del WP.
+Ver [escalabilidad](../workflow-analyze/references/scalability.md) para reglas de qué fases omitir según tamaño del WP.
 
 ---
 
@@ -120,23 +120,23 @@ Ver [conventions](references/conventions.md) para detalles completos.
 ## References por dominio
 
 ### Phase 1: ANALYZE (leer cuando se investiga un problema)
-[introduction](references/introduction.md) · [requirements-analysis](references/requirements-analysis.md) · [use-cases](references/use-cases.md) · [quality-goals](references/quality-goals.md) · [stakeholders](references/stakeholders.md) · [basic-usage](references/basic-usage.md) · [constraints](references/constraints.md) · [context](references/context.md)
+[introduction](../workflow-analyze/references/introduction.md) · [requirements-analysis](../workflow-analyze/references/requirements-analysis.md) · [use-cases](../workflow-analyze/references/use-cases.md) · [quality-goals](../workflow-analyze/references/quality-goals.md) · [stakeholders](../workflow-analyze/references/stakeholders.md) · [basic-usage](../workflow-analyze/references/basic-usage.md) · [constraints](../workflow-analyze/references/constraints.md) · [context](../workflow-analyze/references/context.md)
 
 ### Phase 2: SOLUTION (leer cuando se toman decisiones arquitectónicas)
-[solution-strategy](references/solution-strategy.md)
+[solution-strategy](../workflow-strategy/references/solution-strategy.md)
 
 ### Phase 4: STRUCTURE (leer cuando se crean especificaciones complejas)
-[spec-driven-development](references/spec-driven-development.md)
+[spec-driven-development](../workflow-structure/references/spec-driven-development.md)
 
 ### Phase 6: EXECUTE (leer cuando se hacen commits)
-[commit-helper](references/commit-helper.md) · [commit-convention](references/commit-convention.md)
+[commit-helper](../workflow-execute/references/commit-helper.md) · [commit-convention](../workflow-execute/references/commit-convention.md)
 
 ### Phase 7: TRACK (leer cuando se valida o corrige)
-[reference-validation](references/reference-validation.md) · [incremental-correction](references/incremental-correction.md)
+[reference-validation](../workflow-track/references/reference-validation.md) · [incremental-correction](../workflow-track/references/incremental-correction.md)
 
 ### Cross-phase (leer según necesidad)
 [conventions](references/conventions.md) — Convenciones de archivos, commits, ROADMAP, ejecución paralela
-[scalability](references/scalability.md) — Cómo escalar el framework según complejidad
+[scalability](../workflow-analyze/references/scalability.md) — Cómo escalar el framework según complejidad
 [examples](references/examples.md) — 8 casos de uso reales
 [agent-spec](references/agent-spec.md) — Spec formal de agentes nativos Claude Code (campos obligatorios/prohibidos, naming)
 [skill-vs-agent](references/skill-vs-agent.md) — Cuándo crear un SKILL vs un agente nativo

@@ -135,7 +135,7 @@ Registro de decisiones arquitectónicas y técnicas importantes del proyecto THY
 
 - [ROADMAP](../../ROADMAP.md) - Plan del proyecto
 - [ARCHITECTURE](../../ARCHITECTURE.md) - Decisiones arquitectónicas detalladas
-- [commit-convention](../skills/pm-thyrox/references/commit-convention.md) - Convenciones de commits (ADR-003)
+- [commit-convention](../skills/workflow-execute/references/commit-convention.md) - Convenciones de commits (ADR-003)
 - [adr.template](../skills/pm-thyrox/assets/adr.md.template) - Template para nuevas ADRs
 
 ---

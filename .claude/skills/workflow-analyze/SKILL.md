@@ -27,7 +27,7 @@ Determinar qué fases son obligatorias antes de empezar el análisis:
 | Mediano | 2h – 8h | 1, 2, 3, 4, 5, 6, 7 | Ninguna — seguir las 7 fases completas |
 | Grande | >8h | 1, 2, 3, 4, 5, 6, 7 | Ninguna — usar epic.md para agrupar features |
 
-Ver [escalabilidad](../../pm-thyrox/references/scalability.md) para detalles y casos de borde.
+Ver [escalabilidad](references/scalability.md) para detalles y casos de borde.
 
 ---
 

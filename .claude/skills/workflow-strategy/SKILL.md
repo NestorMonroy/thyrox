@@ -31,7 +31,7 @@ Inicia o retoma Phase 2 SOLUTION_STRATEGY del work package activo.
 
 Investigar alternativas antes de decidir previene decisiones sin evidencia.
 
-0. REQUERIDO: Leer `skills/pm-thyrox/references/solution-strategy.md` antes de empezar.
+0. REQUERIDO: Leer `skills/workflow-strategy/references/solution-strategy.md` antes de empezar.
    Basar las Key Ideas en los hallazgos de `work/.../analysis/`.
 
 1. REQUERIDO: Crear `work/../{nombre-wp}-solution-strategy.md` usando `assets/solution-strategy.md.template`
