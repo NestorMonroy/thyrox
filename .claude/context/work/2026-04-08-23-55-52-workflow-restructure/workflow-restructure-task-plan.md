@@ -14,7 +14,7 @@ completed: 0
 
 ```mermaid
 flowchart TD
-    M01[T-001 workflow-analyze] --> TD01[T-009 escalabilidad]
+    M01[T-001 workflow-analyze] --> TD01[T-013 escalabilidad]
     M02[T-002 workflow-strategy]
     M03[T-003 workflow-plan]
     M04[T-004 workflow-structure]
@@ -30,27 +30,18 @@ flowchart TD
     M06 --> S01
     M07 --> S01
     R01[T-008 session-start.sh] --> S01
-    R02[T-009b CLAUDE.md]
-    R03[T-010 workflow_init.md]
-    R04[T-011 adr-016.md]
-    R05[T-012 technical-debt.md]
-    TD01 --> S01
-    R01 --> S01
-    R02 --> S01
-    R03 --> S01
-    R04 --> S01
-    R05 --> S01
-
-    TD02[T-013 owner references/]
-    TD03[T-014 agent-spec.md]
-    TD04[T-015 marcar TDs en tech-debt.md]
-    TD01 --> TD04
-    TD02 --> TD04
-    TD03 --> TD04
+    R02[T-009 CLAUDE.md] --> S01
+    R03[T-010 workflow_init.md] --> S01
+    R04[T-011 adr-016.md] --> S01
+    R05[T-012 technical-debt.md] --> S01
+    TD01[T-013 escalabilidad] --> S01
+    TD02[T-014 owner references/] --> S01
+    TD03[T-015 agent-spec.md] --> S01
 ```
 
 **Regla crítica:** T-016 (S-01) NO puede iniciar hasta que T-001..T-015 estén `[x]`.
-T-013 y T-014 son independientes — pueden ejecutarse en cualquier momento.
+T-014 y T-015 son independientes — pueden ejecutarse en cualquier momento.
+T-013 requiere T-001 completado.
 
 ---
 
@@ -62,8 +53,8 @@ Crear 7 subdirectorios. Todas paralelas entre sí.
 ### Fase B — Bloque R (paralelo, 5 tareas) + TD-02/TD-03 (independientes)
 Actualizar referencias externas. Puede ejecutarse en paralelo con Fase A o después.
 
-### Fase C — TD-01 (post M-01) + marcar TDs completados (post TD-01/TD-02/TD-03)
-Secuencial: TD-01 requiere M-01 completado.
+### Fase C — T-013 (post T-001)
+Secuencial: T-013 requiere T-001 completado. T-014 y T-015 son independientes (Fase B).
 
 ### Fase D — S-01 (post todo lo anterior)
 Reducción SKILL.md. Única tarea, ejecutar último.
@@ -74,13 +65,13 @@ Reducción SKILL.md. Única tarea, ejecutar último.
 
 ### BLOQUE M — Migración
 
-- [ ] [T-001] Crear `.claude/skills/workflow-analyze/SKILL.md` con frontmatter oficial y eliminar `.claude/skills/workflow_analyze.md` (SPEC-M-01) [P]
-- [ ] [T-002] Crear `.claude/skills/workflow-strategy/SKILL.md` con frontmatter oficial y eliminar `.claude/skills/workflow_strategy.md` (SPEC-M-02) [P]
-- [ ] [T-003] Crear `.claude/skills/workflow-plan/SKILL.md` con frontmatter oficial y eliminar `.claude/skills/workflow_plan.md` (SPEC-M-03) [P]
-- [ ] [T-004] Crear `.claude/skills/workflow-structure/SKILL.md` con frontmatter oficial y eliminar `.claude/skills/workflow_structure.md` (SPEC-M-04) [P]
-- [ ] [T-005] Crear `.claude/skills/workflow-decompose/SKILL.md` con frontmatter oficial y eliminar `.claude/skills/workflow_decompose.md` (SPEC-M-05) [P]
-- [ ] [T-006] Crear `.claude/skills/workflow-execute/SKILL.md` con frontmatter oficial y eliminar `.claude/skills/workflow_execute.md` (SPEC-M-06) [P]
-- [ ] [T-007] Crear `.claude/skills/workflow-track/SKILL.md` con frontmatter oficial y eliminar `.claude/skills/workflow_track.md` (SPEC-M-07) [P]
+- [ ] [T-001] Crear `.claude/skills/workflow-analyze/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_analyze.md` (SPEC-M-01) [P]
+- [ ] [T-002] Crear `.claude/skills/workflow-strategy/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_strategy.md` (SPEC-M-02) [P]
+- [ ] [T-003] Crear `.claude/skills/workflow-plan/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_plan.md` (SPEC-M-03) [P]
+- [ ] [T-004] Crear `.claude/skills/workflow-structure/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_structure.md` (SPEC-M-04) [P]
+- [ ] [T-005] Crear `.claude/skills/workflow-decompose/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_decompose.md` (SPEC-M-05) [P]
+- [ ] [T-006] Crear `.claude/skills/workflow-execute/SKILL.md` (frontmatter oficial + H1, refs internas y sección /loop actualizadas) y eliminar `.claude/skills/workflow_execute.md` (SPEC-M-06) [P]
+- [ ] [T-007] Crear `.claude/skills/workflow-track/SKILL.md` (frontmatter oficial + H1 actualizado) y eliminar `.claude/skills/workflow_track.md` (SPEC-M-07) [P]
 
 ### BLOQUE R — Referencias
 
