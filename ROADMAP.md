@@ -823,22 +823,28 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ### Batch A — 15 referencias de fase → workflow-*/references/
 
-- [ ] A-01: Crear dirs + `git mv` 9 refs → `workflow-analyze/references/` + actualizar links
+- [ ] A-01: Crear dirs + `git mv` 9 refs → `workflow-analyze/references/` + actualizar links en pm-thyrox/SKILL.md + workflow-analyze/SKILL.md
 - [ ] A-02: Crear dirs + `git mv` 6 refs → workflow-execute/strategy/structure/track references/ + actualizar links
+- [ ] A-VAL: `detect_broken_references.py` — verificación post-Batch A
 
 ### Batch B — 9 referencias globales → .claude/references/
 
 - [ ] B-01: Crear `.claude/references/` + `git mv` 9 refs + actualizar links en pm-thyrox/SKILL.md
 - [ ] B-02: Eliminar `pm-thyrox/references/` (verificado vacío — 24/24 destinos presentes)
+- [ ] B-VAL: `detect_broken_references.py` — verificación post-Batch B
 
-### Batch C — 2 scripts → workflow-track/scripts/
+### Batch C — 2 scripts + tests split → workflow-track/scripts/
 
-- [ ] C-01: Crear `workflow-track/scripts/` + `git mv` 2 scripts + actualizar links en SKILL.md
+- [ ] C-01: Crear `workflow-track/scripts/` + `git mv` 2 scripts + `test-phase-readiness.sh` → `workflow-track/scripts/tests/`
+- [ ] C-02: Actualizar links — `workflow-track/SKILL.md` ×4, `state-management.md` ×1 (validate-session-close), `run-all-tests.sh` path a test-phase-readiness
+- [ ] C-VAL: `detect_broken_references.py` — verificación post-Batch C
 
 ### Batch D — 13 scripts → .claude/scripts/ + settings.json
 
 - [ ] D-01: Crear `.claude/scripts/` + `git mv` 13 scripts
-- [ ] D-02: Actualizar `settings.json` (3 paths) + links en workflow-track/SKILL.md, agent-spec.md, reference-validation.md, state-management.md
+- [ ] D-02: Actualizar `settings.json` (3 paths) + links en `workflow-track/SKILL.md` (update-state, project-status), `agent-spec.md` ×3, `reference-validation.md` ×5, `state-management.md` ×3 (update-state)
+- [ ] D-03: Reinstalar git hook — `cp .claude/scripts/commit-msg-hook.sh .git/hooks/commit-msg`
+- [ ] D-VAL: `detect_broken_references.py` — verificación post-Batch D
 
 ### Commit final — Documentación + ADR
 

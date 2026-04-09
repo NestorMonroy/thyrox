@@ -48,6 +48,8 @@ Crear los 5 nuevos directorios `references/` en los skills de fase que los neces
 
 Actualización de links en cada commit de batch: `pm-thyrox/SKILL.md` + `workflow-*/SKILL.md` que referencien estos archivos.
 
+Acción post-commit: `detect_broken_references.py` ← verificación Batch A (G5)
+
 ### Batch B — 9 references globales → .claude/references/
 
 Crear `.claude/references/` (nuevo dir, 9 archivos): agent-spec, claude-code-components,
@@ -56,18 +58,26 @@ conventions, examples, long-context-tips, prompting-tips, skill-authoring, skill
 Actualización de links: `pm-thyrox/SKILL.md` (sección `## References por dominio`) — paths
 relativos cambian de `references/X.md` a `../../references/X.md`.
 
+Acción post-commit: `detect_broken_references.py` ← verificación Batch B (G5)
+
 ### Eliminar pm-thyrox/references/
 
 Solo después de verificar que los 24/24 archivos existen en sus destinos.
 `git rm -r .claude/skills/pm-thyrox/references/`
 
-### Batch C — 2 scripts → workflow-track/scripts/
+### Batch C — 2 scripts + tests split → workflow-track/scripts/
 
-Crear `workflow-track/scripts/` (nuevo dir):
+Crear `workflow-track/scripts/` y `workflow-track/scripts/tests/` (2 nuevos dirs):
 - `validate-phase-readiness.sh` → `workflow-track/scripts/`
 - `validate-session-close.sh` → `workflow-track/scripts/`
+- `tests/test-phase-readiness.sh` → `workflow-track/scripts/tests/` ← scripts-pending-decisions-v2 fila 20
 
-Actualización de links: `workflow-track/SKILL.md` ×2; paths en tests si aplica.
+Actualización de links en el MISMO commit:
+- `workflow-track/SKILL.md` ×4 (validate-phase-readiness ×1, validate-session-close ×2, project-status path verificar)
+- `state-management.md` ×1 — línea 17: `validate-session-close.sh` path (ya en `.claude/references/` por Batch B) ← **G1: debe ir aquí, no en D-02**
+- `pm-thyrox/scripts/tests/run-all-tests.sh` ×1 — línea que llama `${TESTS_DIR}/test-phase-readiness.sh` → path absoluto a `workflow-track/scripts/tests/test-phase-readiness.sh` ← **G2**
+
+Acción post-commit: `detect_broken_references.py` ← verificación Batch C
 
 ### Batch D — 13 scripts → .claude/scripts/ + settings.json
 
@@ -77,19 +87,31 @@ update-state.sh, project-status.sh, detect_broken_references.py, validate-broken
 convert-broken-references.py, validate-missing-md-links.sh, detect-missing-md-links.sh,
 convert-missing-md-links.sh
 
-Actualizaciones en el mismo commit:
-- `settings.json` → 3 paths de hooks a `.claude/scripts/`
-- `workflow-track/SKILL.md` → paths de update-state.sh, project-status.sh
-- `agent-spec.md` → path de lint-agents.py (ya en `.claude/references/` por Batch B)
-- `reference-validation.md` → paths de los 6 scripts de validación (ya en `.claude/skills/workflow-track/references/` por Batch A)
-- `state-management.md` → paths de update-state.sh y validate-session-close.sh (ya en `.claude/references/` por Batch B)
+Actualizaciones en el MISMO commit:
+- `settings.json` → 3 paths de hooks: SessionStart, Stop, PostCompact → `.claude/scripts/`
+- `workflow-track/SKILL.md` → paths de update-state.sh ×1 (línea 67) + project-status.sh ×1 (línea 22)
+- `agent-spec.md` → path de lint-agents.py ×3 (ya en `.claude/references/` por Batch B)
+- `reference-validation.md` → paths de los 6 scripts de validación ×5 (ya en `.claude/skills/workflow-track/references/` por Batch A)
+- `state-management.md` → paths de update-state.sh ×3 (líneas 28-30, 69, 78-81) — ojo: validate-session-close.sh ya se actualizó en Batch C
+
+Acción post-commit (manual — **G3: commit-msg-hook.sh usa `.git/hooks/`, NO está en el repo**):
+> `commit-msg-hook.sh` se instala manualmente en `.git/hooks/commit-msg` (ver comentario en el script).
+> Después de Batch D: `cp .claude/scripts/commit-msg-hook.sh .git/hooks/commit-msg`
+> No hay archivo en el repo que referencie su path → no requiere `Edit`, solo esta instrucción de reinstalación.
+
+Acción post-commit: `detect_broken_references.py` ← verificación Batch D
 
 ### Commit final — CLAUDE.md + pm-thyrox/SKILL.md + ADR-017
 
 - `CLAUDE.md`: actualizar `## Estructura` con los 9 directorios reales de `.claude/`
   (incluyendo `commands/`, `guidelines/`, `memory/`, `registry/`, `references/` nuevo, `scripts/` nuevo)
 - `pm-thyrox/SKILL.md`: actualizar sección de anatomía si referencia `references/`
-- `ADR-017`: documentar los 3 niveles de artefactos (`.claude/references/`, `.claude/scripts/`, `workflow-*/references/`)
+- `ADR-017`: contenido completo según solution-strategy (G4): ← spec completa
+  - Por qué `.claude/references/` (global — plataforma y patrones reutilizables)
+  - Por qué `.claude/scripts/` (infraestructura Claude Code del proyecto)
+  - Por qué `.claude/guidelines/` es DISTINTO (siempre-cargado, generado por registry — no on-demand)
+  - Por qué se elimina `pm-thyrox/references/` y se conserva `pm-thyrox/scripts/`
+  - Evidencia de 6 proyectos reales que confirman `.claude/scripts/` como patrón establecido
 - TD-020 cerrado: `.claude/commands/` documentado con descripción en CLAUDE.md
 
 ---
@@ -115,9 +137,9 @@ Actualizaciones en el mismo commit:
 | Batch A — 15 referencias de fase (5 dirs nuevos) | 2 tareas (crear dirs + git mv + links) |
 | Batch B — 9 referencias globales (1 dir nuevo) | 2 tareas (crear dir + git mv + links) |
 | Eliminar pm-thyrox/references/ | 1 tarea |
-| Batch C — 2 scripts workflow-track (1 dir nuevo) | 1 tarea |
-| Batch D — 13 scripts .claude/scripts/ (1 dir nuevo) | 2 tareas (git mv + multi-file link updates) |
-| Validación post-batch (detect_broken_references.py) | 1 tarea (×4 batches inline) |
+| Batch C — 2 scripts + test-phase-readiness.sh + run-all-tests.sh update (2 dirs nuevos) | 2 tareas |
+| Batch D — 13 scripts .claude/scripts/ (1 dir nuevo) + commit-msg reinstall | 2 tareas + 1 acción manual |
+| Validación post-batch (detect_broken_references.py) | inline en cada batch (×4) |
 | CLAUDE.md + pm-thyrox/SKILL.md + ADR-017 | 2 tareas |
 | **Total** | **~11 tareas atómicas** |
 
