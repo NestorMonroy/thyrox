@@ -1,0 +1,201 @@
+```yml
+type: Reference
+title: Modelo de Permisos — Gates de decision vs permisos de herramienta
+category: Cross-phase
+version: 1.0
+created_at: 2026-04-09
+work_package: 2026-04-09-10-25-55-write-gates
+owner: pm-thyrox (cross-phase)
+purpose: Explicar los dos planos de aprobacion del framework y la configuracion vigente de settings.json
+```
+
+# Modelo de Permisos — Gates de decision vs permisos de herramienta
+
+El framework opera en dos planos de aprobacion independientes. Cada uno tiene una funcion
+distinta. Configurarlos juntos es lo que elimina la friccion innecesaria sin sacrificar seguridad.
+
+---
+
+## Los dos planos
+
+### Plano A — Gates de decision del SKILL (metodologico)
+
+Puntos donde el **humano decide si continuar**. Definidos en `workflow-*/SKILL.md` como `STOP`.
+
+Son gates de **governance**: "¿los resultados de esta fase son correctos antes de comprometerse con la siguiente?"
+
+| Gate | Momento | Proposito |
+|------|---------|-----------|
+| Phase 1 → 2 | Despues del analisis | Validar hallazgos antes de disenar |
+| Phase 2 → 3 | Despues de la estrategia | Aprobar direccion antes de planificar |
+| Phase 4 → 5 | Despues del spec | Aprobar spec antes de descomponer |
+| Phase 5 → 6 | Antes de ejecutar | Autorizar inicio de ejecucion |
+| Phase 6 → 7 | Antes de TRACK | Confirmar que la ejecucion fue correcta |
+| GATE OPERACION | Operacion destructiva | Aprobar accion irreversible puntual |
+
+**Estos gates no se eliminan.** Son la barrera correcta. El humano decide una vez por transicion de fase.
+
+### Plano B — Permisos de herramienta de Claude Code (sistema)
+
+Configurados en `.claude/settings.json`. Aplican por **llamada de herramienta**, no por fase.
+
+Son mecanismos de **ejecucion**: que operaciones corren sin prompt dentro de una fase ya aprobada.
+
+Sin configuracion: cada llamada a Bash (scripts, git) y Edit (archivos) genera un prompt individual,
+incluso despues de que el humano ya dijo "SI" al gate de fase.
+
+---
+
+## Tabla de comportamiento por categoria
+
+| Categoria | Ejemplos | Comportamiento | Mecanismo |
+|-----------|---------|---------------|-----------|
+| Artefactos WP | `context/work/**/*.md` | Auto | `acceptEdits` |
+| Estado de sesion | `now.md`, `focus.md` | Auto | `acceptEdits` |
+| Historial del proyecto | `CHANGELOG.md`, `ROADMAP.md` | Auto | `acceptEdits` |
+| Scripts del framework | `bash .claude/scripts/*` | Auto | `allow` |
+| Scripts de validacion de fase | `bash .claude/skills/*/scripts/*` | Auto | `allow` |
+| Git rutinario | `git add/commit/push/status/log/diff` | Auto | `allow` |
+| Config del framework | `SKILL.md`, `CLAUDE.md`, `scripts/*.sh`, `settings.json` | Prompt | `ask` |
+| Operaciones destructivas | `git push --force`, `git reset --hard`, `rm -rf` | Bloqueado | `deny` |
+
+**Relacion entre planos:**
+El gate Phase 6→7 (Plano A) es la aprobacion para TODO Phase 7. Las operaciones de cierre
+(scripts de validacion, git add/commit/push) corren automaticamente despues de ese gate.
+Son consecuencia de la decision, no nuevas decisiones.
+
+---
+
+## Configuracion vigente — settings.json
+
+```json
+{
+  "defaultMode": "acceptEdits",
+  "permissions": {
+    "allow": [
+      "Bash(bash .claude/scripts/*)",
+      "Bash(bash .claude/skills/*/scripts/*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git commit -m *)",
+      "Bash(git push *)",
+      "Bash(git push -u *)",
+      "Bash(git status)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git fetch *)",
+      "Bash(git branch *)",
+      "Bash(date *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)",
+      "Bash(echo *)"
+    ],
+    "ask": [
+      "Edit(/.claude/CLAUDE.md)",
+      "Edit(/.claude/skills/*/SKILL.md)",
+      "Edit(/.claude/scripts/*.sh)",
+      "Edit(/.claude/settings.json)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push --force-with-lease *)",
+      "Bash(git reset --hard *)",
+      "Bash(rm -rf *)"
+    ]
+  }
+}
+```
+
+---
+
+## Sintaxis de reglas
+
+Referencia rapida de la sintaxis de `permissions`:
+
+| Patron | Ejemplo | Efecto |
+|--------|---------|--------|
+| Tool sin especificador | `Bash` | Todos los comandos Bash |
+| Comando exacto | `Bash(git status)` | Solo ese comando literal |
+| Wildcard al final | `Bash(git add *)` | Cualquier `git add ...` |
+| Wildcard al inicio | `Bash(* --version)` | Cualquier comando con `--version` |
+| Path relativo al proyecto | `Edit(/src/**/*.ts)` | Archivos en `<project>/src/` |
+| Path con wildcard de dir | `Edit(/.claude/skills/*/SKILL.md)` | SKILL.md de cualquier workflow-* |
+| Domain fetch | `WebFetch(domain:example.com)` | Fetch solo a ese dominio |
+
+**Precedencia:** deny → ask → allow (el primer match gana, deny siempre primero)
+
+**Importante:** `Bash(safe-cmd *)` NO permite `safe-cmd && otro-comando` — Claude Code
+reconoce operadores shell y los trata como comandos separados.
+
+---
+
+## Modos disponibles
+
+| Modo | Descripcion | Usar cuando |
+|------|-------------|-------------|
+| `default` | Prompt en primer uso de cada herramienta | Nunca — maxima friccion sin beneficio |
+| `acceptEdits` | Auto-acepta Edit/Write + mkdir/touch/mv/cp | **Modo recomendado** para este proyecto |
+| `plan` | Solo lectura y analisis, no puede modificar ni ejecutar | Revisiones de seguridad o auditorias |
+| `auto` | Auto-aprueba con clasificador de seguridad (preview) | Experimento — no usar en produccion |
+| `bypassPermissions` | Salta todos los prompts excepto dirs protegidos | Solo en contenedores aislados |
+
+**Nota sobre `bypassPermissions`:** `.claude/skills/` es EXEMPT — Claude puede editar SKILL.md
+sin prompt en ese modo. No usar en entornos de produccion por este motivo.
+
+---
+
+## Como extender la configuracion
+
+### Agregar una operacion confiable
+
+```json
+"allow": ["Bash(npm run *)"]
+```
+
+### Proteger un archivo critico del proyecto
+
+```json
+"ask": ["Edit(/constitution.md)"]
+```
+
+### Bloquear acceso a archivos sensibles
+
+```json
+"deny": ["Read(/.env)", "Read(/**/.env)"]
+```
+
+### Permitir fetch solo a dominios conocidos
+
+```json
+"allow": ["WebFetch(domain:api.github.com)"],
+"deny": ["WebFetch"]
+```
+
+---
+
+## Principios de diseno (L-106..L-109)
+
+**L-106 — Edit y Write requieren aprobacion por defecto:**
+Read-only (Read, Grep, Glob) es auto. Edit/Write genera prompt hasta fin de sesion.
+Bash genera prompt permanente. `acceptEdits` cambia Edit/Write, no Bash.
+
+**L-107 — Configurar los dos planos juntos:**
+Al disenar un flujo con gates de fase, definir explicitamente que pasa en Plano B dentro de
+cada fase. El gate de fase debe ser la unica friccion para operaciones rutinarias post-gate.
+
+**L-108 — ask > deny para archivos de uso frecuente:**
+`deny` bloquea incluso cuando el uso es legitimo (framework maintenance ocurre en ~80% FASEs).
+`ask` fuerza un prompt sin bloquear — correcto para config del framework.
+`deny` es correcto solo para operaciones que nunca deben ocurrir en flujo normal (force push, rm -rf).
+
+**L-109 — git push es consecuencia del gate, no una nueva decision:**
+Despues de que el humano aprobo Phase 7, el push es el desenlace natural.
+Solo las variantes destructivas (--force, --force-with-lease) van a `deny`.
+
+---
+
+## Ver tambien
+
+- [claude-code-components](claude-code-components.md) — Referencia oficial completa de Skills, frontmatter y permisos
+- [state-management](state-management.md) — Cuando actualizar now.md, focus.md, project-state.md
+- `.claude/settings.json` — Configuracion vigente del proyecto

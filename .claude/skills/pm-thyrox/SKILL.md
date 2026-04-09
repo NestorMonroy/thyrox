@@ -158,7 +158,7 @@ El gate Phase 6→7 (Plano A) es la aprobacion para todo Phase 7. Las operacione
 (update-state.sh, validate-session-close.sh, git add/commit/push) corren automaticamente
 despues de ese gate — son consecuencia de la decision, no nuevas decisiones.
 
-Ver `.claude/settings.json` para la configuracion vigente.
+Ver [permission-model](../../references/permission-model.md) para la referencia completa y `.claude/settings.json` para la configuracion vigente.
 
 ---
 
@@ -186,6 +186,7 @@ Ver `.claude/settings.json` para la configuracion vigente.
 [agent-spec](../../references/agent-spec.md) — Spec formal de agentes nativos Claude Code (campos obligatorios/prohibidos, naming)
 [skill-vs-agent](../../references/skill-vs-agent.md) — Cuándo crear un SKILL vs un agente nativo
 [claude-code-components](../../references/claude-code-components.md) — Referencia oficial de Skills, Subagents y Context (docs oficiales)
+[permission-model](../../references/permission-model.md) — Dos planos de aprobacion: gates de decision (SKILL) vs permisos de herramienta (settings.json)
 
 ### Avanzado (leer cuando Claude tiene dificultades)
 [prompting-tips](../../references/prompting-tips.md) — Cuando Claude no entiende instrucciones
