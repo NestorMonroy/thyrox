@@ -3,13 +3,43 @@ type: Historial de Cambios
 category: Proyecto
 version: 1.0.0
 purpose: Registro de cambios notables del proyecto
-updated_at: 2026-04-09 02:48:38
+updated_at: 2026-04-09 22:30:00
 ```
 
 # CHANGELOG — THYROX
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [2.4.0] - 2026-04-09
+
+### Added — Auto-operations: sincronización determinista de now.md via hooks reactivos (WP auto-operations / FASE 28)
+
+- `.claude/scripts/set-session-phase.sh` — reemplaza `phase:` in-place con `sed -i`, fix Bug 1 (echo append fuera de YAML)
+- `.claude/scripts/sync-wp-state.sh` — PostToolUse Write hook, sincroniza `now.md::current_work` al WP activo, fix Bug 2
+- `.claude/scripts/close-wp.sh` — cierra WP seteando `phase: null` y `current_work: null`, fix Bug 4
+- `settings.json` `hooks.PostToolUse`: Write → `sync-wp-state.sh` (con fallback jq→python3)
+
+### Fixed
+
+- Bug 1: `echo 'phase: N' >> now.md` duplicaba campo YAML → `set-session-phase.sh` reemplaza in-place
+- Bug 2: `now.md::current_work` nunca sincronizado → PostToolUse Write hook activo en nueva sesión
+- Bug 4: cierre de WP en Phase 7 LLM-dependiente → `workflow-track/SKILL.md` instruye `bash close-wp.sh` explícitamente
+- 7 × `workflow-*/SKILL.md`: hook `echo >>` → `bash set-session-phase.sh 'Phase N'` + `updated_at` actualizado
+
+### Technical Debt Registered
+
+- TD-028: Sin mecanismo para detectar reclasificación de tamaño de WP mid-flight
+- TD-029: Sin doble validación al transitar entre fases (diagrama Mermaid incluido)
+- TD-030: Análisis de impacto de renombrar Phase N → nomenclatura workflow-*
+- TD-031: workflow-*/SKILL.md sin instrucción de deep review pre-gate
+- TD-032: GAPs Phase 6 no prevenidos — propuesta Plano A (instrucciones) + Plano B (hooks)
+
+### Known Limitation
+
+- PostToolUse hook (Bug 2 fix) requiere nueva sesión para activarse — no validable en sesión de creación
 
 ---
 
