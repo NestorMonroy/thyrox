@@ -203,6 +203,8 @@ y el ask rule viene del sistema (hard). La Opción C combina lo mejor de ambos m
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git commit -m *)",
+      "Bash(git push *)",
+      "Bash(git push -u *)",
       "Bash(git status)",
       "Bash(git log *)",
       "Bash(git diff *)",
@@ -244,7 +246,7 @@ y el ask rule viene del sistema (hard). La Opción C combina lo mejor de ambos m
 | `bash .claude/scripts/*` | Auto (allow) |
 | `bash .claude/skills/*/scripts/*` | Auto (allow) |
 | `git add/commit/status/log/diff` | Auto (allow) |
-| `git push` | Prompt (ask — no está en allow ni deny) |
+| `git push`, `git push -u *` | Auto (allow) — gate Phase 6→7 fue la aprobación |
 | `git push --force` | Bloqueado (deny) |
 | `git reset --hard` | Bloqueado (deny) |
 | `rm -rf` | Bloqueado (deny) |
@@ -255,12 +257,17 @@ y el ask rule viene del sistema (hard). La Opción C combina lo mejor de ambos m
 
 **Phase 7 normal (cierre de WP de producto):**
 - Sin configuración: 7 prompts
-- Con configuración: 1 prompt (git push)
+- Con configuración: **0 prompts** — todo fluye automáticamente post-gate Phase 6→7
 
 **Phase 6 de framework maintenance (ej: FASE 22, 23, 24, 26):**
 - Sin configuración: múltiples prompts por cada Edit + Bash
-- Con configuración: 1 prompt por archivo de framework editado + 1 prompt por git push
+- Con configuración: 1 prompt por archivo de framework editado (SKILL.md, CLAUDE.md)
 - Estos prompts SON correctos — son exactamente los gates que deben existir
 
+**Decisión: `git push` es automático.**
+Justificación: el gate de Phase 6→7 ("SI" del usuario) es la aprobación para todo lo que
+sigue en Phase 7. El push es consecuencia de esa decisión, no una nueva decisión.
+Solo `git push --force` y variantes peligrosas permanecen en `deny`.
+
 **Resultado:** Fricción proporcional al riesgo. Sin fricción en operaciones rutinarias.
-Fricción intencional en operaciones que afectan el framework.
+Fricción intencional solo en operaciones que afectan el framework o son destructivas.
