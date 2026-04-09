@@ -27,6 +27,15 @@ Antes del plan formal, revision de todo lo identificado hasta aqui buscando gaps
 - D-04: close-wp.sh como Opcion B (intencional, no hook auto)
 - D-05: focus.md fuera del scope del hook (correcto)
 
+### Evidencia en vivo — Bug 2 confirmado (agregado en deep review)
+
+Al reanudar la sesion mientras este WP estaba activo, el session-start hook mostro:
+"Sin work package activo" — aunque `context/work/2026-04-09-17-28-34-auto-operations/`
+y `context/work/2026-04-09-17-19-45-agentic-loop/` existen en disco.
+
+Causa: `now.md::current_work` no se actualiza automaticamente (Bug 2). El hook de
+session-start lee `current_work: null` y reporta "sin WP". Confirma la urgencia del fix.
+
 ### Gaps nuevos encontrados en Phase 3 (deep review)
 
 **Gap G-01: Conflicto close-wp.sh vs PostToolUse hook**
@@ -98,12 +107,6 @@ settings.json.
 - Creacion automatica del directorio WP (mkdir sigue siendo instruccion, el hook corrige despues)
 - Cambios a session-start.sh u otros scripts de infraestructura
 - Cambios a agents ni a otras referencias
-- Phase 4 STRUCTURE (los requisitos son suficientemente claros — se salta a Phase 5 con justificacion)
-
-**Justificacion de omitir Phase 4:** Los cambios son de bajo riesgo y bien especificados:
-reemplazar un comando en frontmatter YAML + crear 3 scripts bash con logica simple.
-No hay diseno de arquitectura compleja ni decisiones de API. Phase 4 agregaria overhead
-sin valor para este WP.
 
 ## Criterios de exito
 
@@ -116,9 +119,15 @@ sin valor para este WP.
 ## ROADMAP entries
 
 ```
-[ ] FASE 28: auto-operations — corregir sincronizacion de estado de sesion
-    [ ] Scripts: set-session-phase.sh, sync-wp-state.sh, close-wp.sh
-    [ ] Hook PostToolUse en settings.json
-    [ ] Fix Bug 1 en 7 workflow-*/SKILL.md
-    [ ] Validacion en sesion de prueba
+[-] FASE 28: auto-operations — corregir sincronizacion de estado de sesion
+    [x] Phase 1 ANALYZE — analisis completado
+    [x] Phase 2 SOLUTION STRATEGY — estrategia definida
+    [x] Phase 3 PLAN — scope aprobado
+    [ ] Phase 4 STRUCTURE — requirements spec (3 scripts + settings.json + 7 SKILL.md)
+    [ ] Phase 5 DECOMPOSE — task-plan atomico con trazabilidad
+    [ ] Phase 6 EXECUTE:
+        [ ] Scripts: set-session-phase.sh, sync-wp-state.sh, close-wp.sh
+        [ ] Hook PostToolUse en settings.json
+        [ ] Fix Bug 1 en 7 workflow-*/SKILL.md
+    [ ] Phase 7 TRACK — validacion en sesion de prueba + lessons-learned
 ```

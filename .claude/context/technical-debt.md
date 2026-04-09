@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-09 10:30:00
+updated_at: 2026-04-09 21:15:00
 ```
 
 # Deuda Técnica — THYROX
@@ -929,4 +929,126 @@ Si el tamano subio, actualizar exit-conditions.md con las fases adicionales.
 `workflow-strategy/SKILL.md` tiene seccion de re-evaluacion de tamano. En una sesion
 de prueba donde el scope se expande, Claude detecta el cambio y propone Phase 3 en
 lugar de saltar a Phase 5/6.
+
+---
+
+## TD-029: Sin doble validacion al transicionar entre Phases
+
+```
+Severidad: alta
+Origen: FASE 28 — patron repetido 3 veces (Phase 2→3, Phase 3→4, y ahora Phase 3→5) (2026-04-09)
+Fase afectada: Todas las transiciones entre Phases
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+El framework no tiene mecanismo de doble validacion al transicionar entre Phases.
+El patron observado repetidamente en FASE 28:
+
+1. Claude termina el documento de Phase N
+2. Claude propone ir a Phase N+2 saltandose Phase N+1 (o propone saltarla por "eficiencia")
+3. El usuario tiene que corregir manualmente
+
+Ocurrio en:
+- Transition Phase 2→3: Claude propuso ir directamente a Phase 5 (salto Phase 3 PLAN)
+- Transition Phase 3→4: El documento de Phase 3 listo Phase 4 como "out of scope" e iba a Phase 5
+- Transition Phase 3→5: Nueva instancia registrada en 2026-04-09
+
+**Root cause:**
+
+Los `workflow-*/SKILL.md` no tienen una etapa explicita de "revisar completitud de la phase
+anterior antes de proponer la siguiente". Claude optimiza hacia la ejecucion y tiende a
+saltar fases que considera "de overhead".
+
+**Proceso correcto (no implementado en el framework):**
+
+```mermaid
+flowchart TD
+    A[Trabajar en Phase N] --> B[Crear documento de Phase N]
+    B --> C{Deep review\nde Phase N}
+    C --> D{Todos los gaps\nresueltos?}
+    D -->|No| E[Corregir documento\ny artefactos de Phase N]
+    E --> C
+    D -->|Si| F{WP es mediano\no grande?}
+    F -->|Si| G[Verificar que Phase N+1\nes obligatoria segun tamano]
+    G --> H{Phase N+1\nes requerida?}
+    H -->|Si| I[Proponer Phase N+1\n--- GATE ---]
+    H -->|No con justificacion\ndocumentada| J[Proponer saltarla\ncon ADR o plan explicito]
+    F -->|Micro o pequeno| I
+    I --> K[Phase N+1]
+    J --> K
+```
+
+**Impacto:**
+
+Fases saltadas = trabajo sin especificacion formal = bugs en ejecucion descubiertos tarde.
+
+**Resolucion propuesta:**
+
+Agregar al final de cada `workflow-*/SKILL.md` una seccion obligatoria antes del gate:
+
+```
+## Antes de proponer la siguiente Phase
+
+1. Deep review del documento de esta Phase: listar todo lo que se prometio vs lo entregado
+2. Revisar el risk register: todos los riesgos de esta phase tienen mitigacion?
+3. Verificar tamano del WP: si es mediano o grande, la siguiente phase es OBLIGATORIA
+4. Solo si todo lo anterior esta completo → presentar gate al usuario
+```
+
+**Criterio de cierre:**
+
+En una sesion de prueba con WP mediano, Claude completa las 7 phases sin que el usuario
+tenga que corregir ninguna transicion.
+
+---
+
+## TD-030: Impacto de renombrar "Phase N" a nomenclatura alineada con workflow-*
+
+```
+Severidad: baja
+Origen: Sugerencia de usuario (2026-04-09)
+Fase afectada: Cross-phase (nomenclatura global del framework)
+Estado: [ ] Pendiente — requiere analisis de impacto antes de decidir
+```
+
+**Problema / Motivacion:**
+
+La nomenclatura actual usa "Phase 1" ... "Phase 7" para las etapas internas del SDLC.
+Las alternativas propuestas son:
+
+| Opcion | Ejemplo | Alineacion con skills |
+|--------|---------|----------------------|
+| Actual | `Phase 1`, `Phase 2`, ..., `Phase 7` | No alineada (numerica) |
+| A — kebab numerico | `phase-1`, `phase-2`, ..., `phase-7` | Parcial (kebab-case) |
+| B — semantic | `workflow-analyze`, `workflow-strategy`, ..., `workflow-track` | Total (igual que skills) |
+
+**Preguntas a responder en el analisis:**
+
+1. **Frecuencia de uso**: En cuantos archivos aparece "Phase N" con numero?
+   (SKILL.md x7, CLAUDE.md, now.md, exit-conditions, plan, task-plan, execution-log, etc.)
+2. **Costo de migracion**: Cuantos archivos tendrian que actualizarse?
+3. **Beneficio de Opcion B**: "workflow-analyze" es mas semantico que "Phase 1" — pero
+   tambien es mas largo. Al escribir `now.md::phase: workflow-execute` vs `phase: Phase 6`,
+   cual es mas legible?
+4. **Consistencia con glosario**: El glosario en CLAUDE.md distingue FASE (numero global)
+   de Phase (etapa interna). Cambiar Phase a workflow-* podria confundir los dos planos.
+5. **Impacto en hooks**: Los UserPromptSubmit hooks en workflow-*/SKILL.md actualmente
+   ejecutan `set-session-phase.sh "Phase N"`. Con Opcion B seria `set-session-phase.sh "workflow-execute"`.
+   El campo `now.md::phase` contendria el nombre semantico — mas legible pero mas largo.
+6. **Retrocompatibilidad**: ADRs existentes, artefactos WP y contexto de sesion usan
+   "Phase N". Una migracion requeriria sed masivo o convivencia de dos nomenclaturas.
+
+**Beneficio potencial:**
+
+Opcion B elimina la necesidad de memorizar que Phase 6 = EXECUTE. El nombre del skill
+invocado y el valor en now.md serian identicos. Reduce friccion cognitiva.
+
+**Criterio de cierre:**
+
+Analisis de impacto completado con:
+- Conteo de archivos afectados por opcion
+- Decision documentada en ADR (adoptar A, B, o mantener actual)
+- Si se adopta cambio: plan de migracion con sed commands y criterio de validacion
 

@@ -7,28 +7,80 @@ created_at: 2026-04-09 18:15:00
 
 # Risk Register — auto-operations
 
-## R-01: Script create-wp.sh crea WP con timestamp incorrecto
+## R-01: [OBSOLETO — solucion descartada en Phase 2]
 
 ```
-Probabilidad: baja
-Impacto: alto
-Severidad: media
+Estado: obsoleto — create-wp.sh fue descartado en Phase 2 (D-04 adopta close-wp.sh)
 ```
 
-Si el script usa `date +%Y-%m-%d-%H-%M-%S` pero hay desfase de zona horaria o el sistema no tiene `date` disponible, el timestamp será incorrecto. El WP queda con un nombre inconsistente con el `created_at` del frontmatter.
-
-**Mitigación:** El script captura el timestamp una vez y lo usa para AMBOS: el directorio y el `created_at` del frontmatter.
+El riesgo original aplica a create-wp.sh, que ya no es parte de la solucion.
+La solucion adoptada usa PostToolUse hooks reactivos, no scripts imperativos.
 
 ---
 
-## R-02: create-wp.sh sobreescribe now.md si ya hay un WP activo
+## R-02: [OBSOLETO — solucion descartada en Phase 2]
 
 ```
-Probabilidad: media
-Impacto: alto
-Severidad: alta
+Estado: obsoleto — create-wp.sh fue descartado en Phase 2
 ```
 
-Si se invoca `/workflow-analyze` (y por tanto create-wp.sh) cuando ya hay un `current_work` activo en now.md, el script sobreescribiría el WP en curso.
+El riesgo original aplica a create-wp.sh, que ya no es parte de la solucion.
 
-**Mitigación:** El script verifica `current_work` en now.md antes de crear. Si hay WP activo, aborta con mensaje: "WP activo detectado: {nombre}. Cerrarlo primero."
+---
+
+## R-03: Conflicto close-wp.sh vs PostToolUse hook en Phase 7
+
+```
+Probabilidad: baja (flujo normal no genera conflicto)
+Impacto: medio
+Severidad: baja
+```
+
+Si `close-wp.sh` setea `current_work: null` y luego Claude escribe otro archivo WP,
+el PostToolUse hook volveria a setear `current_work` al WP. El conflicto se anula.
+
+**Analisis:** En el flujo normal de Phase 7, `close-wp.sh` se llama AL FINAL, despues
+del ultimo Write al WP. El hook solo actua cuando detecta CAMBIO de WP. Si no hay mas
+Writes, no hay mas disparo. El conflicto es teorico, no real en el flujo normal.
+
+**Mitigacion:** Instruccion explicita en workflow-track/SKILL.md: llamar close-wp.sh
+DESPUES de todos los Writes del WP (lessons-learned, final-report).
+
+---
+
+## R-04: jq como dependencia no declarada en sync-wp-state.sh
+
+```
+Probabilidad: baja (jq disponible en /usr/bin/jq en este entorno)
+Impacto: alto (si falla, current_work no se sincroniza)
+Severidad: media
+```
+
+`sync-wp-state.sh` usa `jq` para parsear el JSON de stdin del PostToolUse hook.
+Si el entorno no tiene jq, el script falla silenciosamente.
+
+**Mitigacion:** Agregar fallback a python3 en el script:
+
+```bash
+FILE_PATH=$(jq -r '.tool_input.file_path // empty' 2>/dev/null || \
+            python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))")
+```
+
+O documentar jq como prerequisito en scripts/README.
+
+---
+
+## R-05: Campo `if` en PostToolUse puede no filtrar paths profundos
+
+```
+Probabilidad: media (comportamiento de * con separadores no verificado)
+Impacto: bajo (solo performance, no funcional)
+Severidad: baja
+```
+
+El campo `if: "Write(/.claude/context/work/*)"` puede no filtrar correctamente
+si `*` no atraviesa separadores de directorio en paths profundos.
+
+**Mitigacion:** El script `sync-wp-state.sh` tiene filtro interno como fallback.
+Si el `if` no filtra, el script verifica y sale con exit 0 rapidamente.
+Sin impacto funcional — solo el script se lanza innecesariamente en otros Writes.
