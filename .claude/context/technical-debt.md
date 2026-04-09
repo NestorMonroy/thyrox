@@ -932,34 +932,42 @@ lugar de saltar a Phase 5/6.
 
 ---
 
-## TD-029: Sin doble validacion al transicionar entre Phases
+## TD-029: Sin doble validacion al transitar entre fases
 
 ```
 Severidad: alta
-Origen: FASE 28 — patron repetido 3 veces (Phase 2→3, Phase 3→4, y ahora Phase 3→5) (2026-04-09)
-Fase afectada: Todas las transiciones entre Phases
+Origen: FASE 28 — Phase 3→4 omitida dos veces (2026-04-09)
+Fase afectada: Todas las transiciones de fase
 Estado: [ ] Pendiente
 ```
 
 **Problema:**
 
-El framework no tiene mecanismo de doble validacion al transicionar entre Phases.
-El patron observado repetidamente en FASE 28:
+Al finalizar una fase, Claude produce el documento correspondiente y propone pasar
+directamente a la siguiente fase sin revisar si la fase ANTERIOR esta completa.
+El patron se ha repetido dos veces en FASE 28:
 
-1. Claude termina el documento de Phase N
-2. Claude propone ir a Phase N+2 saltandose Phase N+1 (o propone saltarla por "eficiencia")
-3. El usuario tiene que corregir manualmente
+1. Phase 2 → propuso saltar a Phase 5 (omitiendo Phase 3)
+2. Phase 3 → propuso saltar a Phase 5 (omitiendo Phase 4)
 
-Ocurrio en:
-- Transition Phase 2→3: Claude propuso ir directamente a Phase 5 (salto Phase 3 PLAN)
-- Transition Phase 3→4: El documento de Phase 3 listo Phase 4 como "out of scope" e iba a Phase 5
-- Transition Phase 3→5: Nueva instancia registrada en 2026-04-09
+En ambos casos el documento de la phase ACTUAL estaba incompleto o contenia
+contradicciones (Phase 3 excluia Phase 4 en un WP mediano).
 
 **Root cause:**
 
-Los `workflow-*/SKILL.md` no tienen una etapa explicita de "revisar completitud de la phase
-anterior antes de proponer la siguiente". Claude optimiza hacia la ejecucion y tiende a
-saltar fases que considera "de overhead".
+Ningun workflow-*/SKILL.md tiene instruccion para realizar una revision profunda del
+documento de la phase ANTERIOR antes de proponer la siguiente. El flujo es:
+  - Terminar Phase N → proponer Phase N+1 (sin validacion de Phase N)
+
+Lo correcto es:
+  - Terminar Phase N → crear documento Phase N → revisar PROFUNDAMENTE Phase N →
+    detectar gaps → corregir → GATE → proponer Phase N+1
+
+**Impacto:**
+
+Documentos de fases con contenido incompleto, inconsistente o auto-contradictorio
+pasan a fases posteriores. El error se detecta tarde (o no se detecta), produciendo
+ejecucion sin fundamento solido.
 
 **Proceso correcto (no implementado en el framework):**
 
@@ -980,27 +988,29 @@ flowchart TD
     J --> K
 ```
 
-**Impacto:**
-
-Fases saltadas = trabajo sin especificacion formal = bugs en ejecucion descubiertos tarde.
-
 **Resolucion propuesta:**
 
-Agregar al final de cada `workflow-*/SKILL.md` una seccion obligatoria antes del gate:
+Agregar al final de CADA `workflow-*/SKILL.md` una seccion de validacion pre-gate:
 
-```
-## Antes de proponer la siguiente Phase
+```markdown
+## Validacion pre-gate (OBLIGATORIO antes de proponer siguiente fase)
 
-1. Deep review del documento de esta Phase: listar todo lo que se prometio vs lo entregado
-2. Revisar el risk register: todos los riesgos de esta phase tienen mitigacion?
-3. Verificar tamano del WP: si es mediano o grande, la siguiente phase es OBLIGATORIA
-4. Solo si todo lo anterior esta completo → presentar gate al usuario
+1. Releer el documento producido en esta fase completo
+2. Deep review: listar todo lo prometido vs lo entregado
+3. Verificar risk register: todos los riesgos tienen mitigacion?
+4. Verificar consistencia con documentos de fases anteriores
+5. Si WP es mediano o grande: confirmar que Phase N+1 es obligatoria
+6. Si hay gaps: corregirlos antes de proponer el gate
+7. Solo si todo lo anterior esta completo → presentar gate al usuario
+
+El gate es la CONSECUENCIA de la validacion, no el sustituto.
 ```
 
 **Criterio de cierre:**
 
-En una sesion de prueba con WP mediano, Claude completa las 7 phases sin que el usuario
-tenga que corregir ninguna transicion.
+Cada `workflow-*/SKILL.md` tiene seccion de validacion pre-gate. En una sesion de
+prueba con WP mediano, Claude completa las 7 phases sin que el usuario tenga que
+corregir ninguna transicion.
 
 ---
 
