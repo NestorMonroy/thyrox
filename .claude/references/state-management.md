@@ -66,7 +66,7 @@ Framework en v{version}. Próximo paso: {siguiente item en ROADMAP o "sin pendie
 ```
 
 ### `project-state.md` — generado por script
-Ejecutar: `bash .claude/skills/pm-thyrox/scripts/update-state.sh`
+Ejecutar: `bash .claude/scripts/update-state.sh`
 El script lee el estado real del repo y sobreescribe `project-state.md`.
 
 ---
@@ -75,10 +75,10 @@ El script lee el estado real del repo y sobreescribe `project-state.md`.
 
 ```bash
 # Generar project-state.md desde el repo real:
-bash .claude/skills/pm-thyrox/scripts/update-state.sh
+bash .claude/scripts/update-state.sh
 
 # Ver qué escribiría sin modificar el archivo:
-bash .claude/skills/pm-thyrox/scripts/update-state.sh --dry-run
+bash .claude/scripts/update-state.sh --dry-run
 ```
 
 ---

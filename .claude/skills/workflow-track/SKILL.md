@@ -19,7 +19,7 @@ Documenta lecciones aprendidas, genera changelog, y cierra el work package activ
 ## Contexto de sesión
 
 1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
-2. Revisar progreso: `bash .claude/skills/pm-thyrox/scripts/project-status.sh`
+2. Revisar progreso: `bash .claude/scripts/project-status.sh`
 3. Verificar que todas las tareas están `[x]` en `*-task-plan.md`
 4. Leer `context/now.md` — verificar `phase`
 5. Gate soft: `bash .claude/skills/workflow-track/scripts/validate-phase-readiness.sh 7`
@@ -55,7 +55,7 @@ Documentar lecciones previene repetir los mismos errores.
 **Validaciones de cierre:**
 ```bash
 bash .claude/skills/workflow-track/scripts/validate-session-close.sh
-bash .claude/skills/pm-thyrox/scripts/project-status.sh
+bash .claude/scripts/project-status.sh
 ```
 
 **REQUERIDO al cerrar WP — actualizar archivos de estado:**
@@ -64,7 +64,7 @@ bash .claude/skills/pm-thyrox/scripts/project-status.sh
 |---------|---------------------------|
 | `context/now.md` | `current_work: null` · `phase: null` · `updated_at: timestamp` |
 | `context/focus.md` | `## Completado`: FASE N + WP + qué se logró. `## Sin WP activo`: versión actual + próximo en ROADMAP |
-| `context/project-state.md` | Ejecutar `bash .claude/skills/pm-thyrox/scripts/update-state.sh` |
+| `context/project-state.md` | Ejecutar `bash .claude/scripts/update-state.sh` |
 
 Ver `../../references/state-management.md` para tabla de triggers completa.
 

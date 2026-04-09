@@ -129,14 +129,14 @@ Cumple:
 El linter ejecutable que valida estas reglas vive en:
 
 ```
-.claude/skills/pm-thyrox/scripts/lint-agents.py
+.claude/scripts/lint-agents.py
 ```
 
 Uso:
 ```bash
 # Validar todos los agentes
-python3 .claude/skills/pm-thyrox/scripts/lint-agents.py
+python3 .claude/scripts/lint-agents.py
 
 # Validar un agente específico
-python3 .claude/skills/pm-thyrox/scripts/lint-agents.py .claude/agents/nodejs-expert.md
+python3 .claude/scripts/lint-agents.py .claude/agents/nodejs-expert.md
 ```

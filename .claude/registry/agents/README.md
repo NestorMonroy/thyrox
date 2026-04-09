@@ -96,7 +96,7 @@ Los agentes se dividen en dos grupos: **core** (siempre presentes, no dependen d
 3. Listar solo las herramientas necesarias en `tools`
 4. NO incluir `model`
 5. Testear: `python .claude/registry/bootstrap.py --stack {nombre} --force`
-6. Verificar con el linter: `python .claude/skills/pm-thyrox/scripts/lint-agents.py`
+6. Verificar con el linter: `python .claude/scripts/lint-agents.py`
 7. Commit: `feat(registry): add {nombre} agent`
 
 ---

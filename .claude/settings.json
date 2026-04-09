@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/skills/pm-thyrox/scripts/session-start.sh"
+            "command": "bash .claude/scripts/session-start.sh"
           }
         ]
       }
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/skills/pm-thyrox/scripts/stop-hook-git-check.sh"
+            "command": "bash .claude/scripts/stop-hook-git-check.sh"
           }
         ]
       }
@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/skills/pm-thyrox/scripts/session-resume.sh"
+            "command": "bash .claude/scripts/session-resume.sh"
           }
         ]
       }

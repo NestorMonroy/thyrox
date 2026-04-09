@@ -16,27 +16,25 @@ El validador v3 analiza tu estructura THYROX y clasifica 259 referencias encontr
 
 ### Ejecución Básica
 ```bash
-cd /home/thyrox
-python3 detect_broken_references.py
-owner: workflow-track
+python3 .claude/scripts/detect_broken_references.py
 ```
 Genera: `reference-validation-report.txt`
 
 ### Con Debug (más detallado)
 ```bash
-python3 detect_broken_references.py --debug
+python3 .claude/scripts/detect_broken_references.py --debug
 ```
 Muestra cada referencia conforme se valida.
 
 ### Ignorando Referencias Documentales
 ```bash
-python3 detect_broken_references.py --ignore-examples
+python3 .claude/scripts/detect_broken_references.py --ignore-examples
 ```
 Solo cuenta referencias "concretas" (para CI/CD).
 
 ### Directorio Específico
 ```bash
-python3 detect_broken_references.py /ruta/al/proyecto
+python3 .claude/scripts/detect_broken_references.py /ruta/al/proyecto
 ```
 
 ---
@@ -163,7 +161,7 @@ El script retorna:
 **Ejemplo en GitHub Actions**:
 ```yaml
 - name: Validar referencias
-  run: python3 detect_broken_references.py
+  run: python3 .claude/scripts/detect_broken_references.py
   # Falla si hay referencias rotas
 ```
 
@@ -209,7 +207,7 @@ R: Usa `grep` para filtrar:
 
 **P: Quiero validar solo un subdirectorio**
 R: ```bash
-   python3 detect_broken_references.py .claude/skills/
+   python3 .claude/scripts/detect_broken_references.py .claude/skills/
    ```
 
 ---
