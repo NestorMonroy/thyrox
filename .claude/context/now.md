@@ -1,22 +1,21 @@
 ```yml
 type: Estado de Sesión
 version: 1.0
-updated_at: 2026-04-09 02:48:38
+updated_at: 2026-04-09 03:17:55
 cold_boot: false
 last_session: 2026-04-09
-current_work: ~
-phase: ~
+current_work: context/work/2026-04-09-03-17-55-skill-references-restructure/
+phase: Phase 1
 blockers: []
 ```
 
 # Contexto
 
-Sin WP activo. FASE 23 completada.
+WP activo: skill-references-restructure (FASE 24) — Phase 1 ANALYZE.
+Objetivo: distribuir referencias de pm-thyrox/ a sus workflow-* skills correspondientes + definir nivel global para cross-phase references.
 
 ## Historial reciente
 
-- FASE 19: async-gates ✓
-- FASE 20: context-hygiene ✓ (v1.7.0)
-- FASE 21: skill-architecture-review ✓ (v1.8.0)
 - FASE 22: framework-evolution ✓ (v1.9.0)
 - FASE 23: workflow-restructure ✓ (v2.0.0)
+- FASE 24: skill-references-restructure (EN CURSO — Phase 1)
