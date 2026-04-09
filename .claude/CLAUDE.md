@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
-version: 3.1
-updated_at: 2026-04-07 05:56:49
+version: 3.2
+updated_at: 2026-04-09 12:00:00
 ```
 
 # CLAUDE.md — THYROX
@@ -58,6 +58,16 @@ REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
 └── skills/                ← Skills del framework (pm-thyrox + workflow-*)
     └── pm-thyrox/         ← El SKILL (Level 1): SKILL.md + references/ + scripts/ + assets/
 ```
+
+## Reglas de edición — OBLIGATORIO
+
+Aplicar en TODA edición de archivo, sin excepción:
+
+1. **`updated_at` es automático** — Si el archivo que se está editando tiene `updated_at` en su frontmatter, actualizarlo al timestamp actual (`date '+%Y-%m-%d %H:%M:%S'`) en el mismo Edit. No es un paso separado, no requiere que el usuario lo pida, no requiere GATE OPERACIÓN. Es una edición consecuencia — ocurre siempre.
+
+2. **Un solo Edit por archivo** — Nunca hacer dos Edits separados al mismo archivo: uno para el contenido y otro para `updated_at`. Ambos cambios van en la misma llamada.
+
+3. **`updated_at` no aplica a artefactos WP** — Los archivos en `context/work/` tienen `created_at` en su frontmatter y no se actualizan como documentos vivos. No agregar `updated_at` donde no existía.
 
 ## Flujo de sesión — OBLIGATORIO
 

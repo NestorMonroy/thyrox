@@ -56,7 +56,9 @@ No toda edicion tiene el mismo peso. Antes de decidir si una operacion necesita 
 | **Edicion consecuencia** | Metadata que refleja un cambio ya aprobado — nunca ocurre sola | `updated_at`, `version`, checkboxes en ROADMAP, entrada en CHANGELOG, lecciones aprendidas | Auto — es el resultado de una decision anterior |
 | **Edicion correctiva** | Corrige sin cambiar semantica — typo, link roto, formato | Arreglar path en `references/*.md`, corregir nombre de archivo | Auto si no cambia instrucciones |
 
-**Regla:** Si la edicion SOLO actualiza `updated_at` u otros campos de metadata como consecuencia de otro cambio, NO requiere GATE OPERACION. El prompt del `ask` rule (si aplica) se aprueba sin deliberacion.
+**Regla de gate:** Si la edicion SOLO actualiza `updated_at` u otros campos de metadata como consecuencia de otro cambio, NO requiere GATE OPERACION. El prompt del `ask` rule (si aplica) se aprueba sin deliberacion.
+
+**Regla de comportamiento:** `updated_at` se actualiza **automaticamente** en el mismo Edit que modifica el contenido — sin que el usuario lo pida, sin paso separado. Ver `CLAUDE.md ## Reglas de edicion`.
 
 ---
 
