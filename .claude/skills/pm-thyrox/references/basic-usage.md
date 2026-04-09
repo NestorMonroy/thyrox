@@ -5,6 +5,7 @@ version: 1.0
 purpose: Guía de cómo documentar CÓMO funciona el sistema operacionalmente desde perspectiva usuario.
 goal: Describir flujos completos de uso del sistema.
 updated_at: 2026-03-25
+owner: workflow-analyze
 ```
 
 # Basic Usage (How It Works)

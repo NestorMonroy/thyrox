@@ -5,6 +5,7 @@ version: 1.0
 purpose: Guía de cómo adaptar PM-THYROX según complejidad del proyecto.
 goal: Decidir qué estructura y fases usar según tamaño del trabajo.
 updated_at: 2026-03-27
+owner: workflow-analyze
 ```
 
 # Escalabilidad por Complejidad

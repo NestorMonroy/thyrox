@@ -5,6 +5,7 @@ version: 1.0
 purpose: Guía de cómo usar Conventional Commits en PHASE 6: EXECUTE.
 goal: Estandarizar mensajes de commit y crear auditoría clara.
 updated_at: 2026-03-25
+owner: workflow-execute
 ```
 
 # Commit Helper - Conventional Commits Guide
@@ -26,11 +27,11 @@ Guía para crear commits siguiendo **Conventional Commits** en el proyecto THYRO
 - [CUANDO HAGAS UN COMMIT, USA LOS TEMPLATES](#cuando-hagas-un-commit-usa-los-templates)
 - [Cuando Usar](#cuando-usar)
 - [Formato Base](#formato-base)
-- [Tipos Válidos](#tipos-v�lidos)
+- [Tipos Válidos](#tipos-v�lidos)
 - [Scopes Comunes en THYROX](#scopes-comunes-en-thyrox)
 - [Reglas Esenciales](#reglas-esenciales)
 - [Templates Disponibles](#templates-disponibles)
-- [Ejemplos Rápidos](#ejemplos-r�pidos)
+- [Ejemplos Rápidos](#ejemplos-r�pidos)
 - [Proceso de Commit](#proceso-de-commit)
 - [Validación Pre-Commit](#validacion-pre-commit)
 - [Best Practices](#best-practices)

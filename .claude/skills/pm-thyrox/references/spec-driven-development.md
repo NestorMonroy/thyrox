@@ -5,6 +5,7 @@ version: 1.0
 purpose: Metodología en 4 pasos (Requirements, Design, Tasks, Validation) para features complejas.
 goal: Proporcionar proceso estructurado cuando Phase 4 requiere especificación detallada.
 updated_at: 2026-03-25
+owner: workflow-structure
 ```
 
 # Spec-Driven Development

@@ -5,6 +5,7 @@ version: 1.0
 purpose: Guía de cómo estructurar requisitos en dos niveles (general y específico).
 goal: Crear estructura clara y verificable de requisitos del sistema.
 updated_at: 2026-03-25
+owner: workflow-analyze
 ```
 
 # Requirements Analysis

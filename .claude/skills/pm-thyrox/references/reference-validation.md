@@ -18,6 +18,7 @@ El validador v3 analiza tu estructura THYROX y clasifica 259 referencias encontr
 ```bash
 cd /home/thyrox
 python3 detect_broken_references.py
+owner: workflow-track
 ```
 Genera: `reference-validation-report.txt`
 

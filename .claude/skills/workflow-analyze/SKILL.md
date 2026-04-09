@@ -16,6 +16,21 @@ Inicia o retoma Phase 1 ANALYZE del work package activo.
 
 ---
 
+## Escalabilidad
+
+Determinar qué fases son obligatorias antes de empezar el análisis:
+
+| Tamaño | Duración | Fases activas | Qué omitir |
+|--------|----------|---------------|------------|
+| Micro | <30 min | 1, 6, 7 | Phases 2, 3, 4, 5 (spec y plan opcionales) |
+| Pequeño | 30 min – 2h | 1, 2, 6, 7 | Phases 3, 4, 5 (no requiere plan formal) |
+| Mediano | 2h – 8h | 1, 2, 3, 4, 5, 6, 7 | Ninguna — seguir las 7 fases completas |
+| Grande | >8h | 1, 2, 3, 4, 5, 6, 7 | Ninguna — usar epic.md para agrupar features |
+
+Ver [escalabilidad](../../pm-thyrox/references/scalability.md) para detalles y casos de borde.
+
+---
+
 ## Contexto de sesión
 
 1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`

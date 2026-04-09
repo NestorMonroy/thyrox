@@ -5,11 +5,16 @@ work_package: 2026-04-07-03-08-03-agent-format-spec
 created_at: 2026-04-07 05:22:12
 status: Activo
 covers: R-001, R-002, R-003, R-006
+owner: pm-thyrox (cross-phase)
 ```
 
 # Especificación de formato — Agentes nativos de Claude Code
 
 Este documento es el **gate de WP-1** (`parallel-agent-conventions`). Ninguna tarea que modifique agentes existentes debe iniciar hasta que esta spec esté aprobada.
+
+> **Nota (2026-04-09):** Campos `model` y `tools` corregidos respecto a versión original.
+> Ver [claude-code-components.md](claude-code-components.md) para referencia oficial completa.
+> TD-024 resuelto.
 
 ---
 
@@ -19,8 +24,8 @@ Este documento es el **gate de WP-1** (`parallel-agent-conventions`). Ninguna ta
 |-------|--------|-------------|
 | `name` | REQUERIDO | Kebab-case. Debe coincidir exactamente con el nombre del archivo sin extensión. |
 | `description` | REQUERIDO | Campo de routing — Claude Code lo usa para seleccionar el agente automáticamente. Patrón obligatorio: `{qué hace}. Usar cuando {condición}.` Mínimo 20 caracteres. No puede ser bloque vacío `>`. |
-| `tools` | REQUERIDO | Lista YAML de herramientas. Al menos un elemento. |
-| `model` | PROHIBIDO | Metadata del registry. Claude Code infiere el modelo de la sesión — no es metadata del agente nativo. |
+| `tools` | Opcional | Lista YAML de herramientas. Si se omite: hereda todas las tools del parent. |
+| `model` | Opcional | `sonnet \| opus \| haiku \| inherit`. Default: `inherit` (hereda del parent). |
 | `category` | PROHIBIDO | Metadata del registry. No tiene semántica en agentes nativos. |
 | `skill_template` | PROHIBIDO | Metadata del generador. No debe propagarse al agente nativo generado. |
 | `system_prompt` | PROHIBIDO | El system prompt va en el cuerpo markdown del archivo, no en el frontmatter. |

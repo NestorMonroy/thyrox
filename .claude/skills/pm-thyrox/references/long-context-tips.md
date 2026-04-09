@@ -5,6 +5,7 @@ version: 1.0
 purpose: CompilaciÃ³n de mejores prÃ¡cticas para trabajar con documentos grandes y contextos extensos.
 goal: Optimizar uso de token budget en conversaciones largas.
 updated_at: 2026-03-25
+owner: pm-thyrox (cross-phase)
 ```
 
 # Long Context Tips - Trabajar con Documentos Grandes

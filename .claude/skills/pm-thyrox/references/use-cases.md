@@ -5,6 +5,7 @@ version: 1.0
 purpose: Documentar casos de uso y flujos principales del sistema
 goal: Proporcionar visión clara de interacciones usuario-sistema
 updated_at: 2026-03-25
+owner: workflow-analyze
 ```
 
 # Casos de Uso

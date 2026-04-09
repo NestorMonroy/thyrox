@@ -5,6 +5,7 @@ work_package: 2026-04-07-03-08-03-agent-format-spec
 created_at: 2026-04-07 05:22:12
 status: Activo
 covers: R-006
+owner: pm-thyrox (cross-phase)
 ```
 
 # SKILL vs Agente — Distinción y regla de decisión

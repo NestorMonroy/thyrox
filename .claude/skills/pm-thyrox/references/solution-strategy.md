@@ -5,6 +5,7 @@ version: 1.0
 purpose: Guía de cómo crear plan arquitectónico que satisface requisitos dentro de constraints.
 goal: Transformar análisis en decisiones arquitectónicas implementables.
 updated_at: 2026-03-25
+owner: workflow-strategy
 ```
 
 # Solution Strategy

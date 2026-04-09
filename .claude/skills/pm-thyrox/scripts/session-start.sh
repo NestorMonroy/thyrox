@@ -7,22 +7,22 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
 CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
 
 # ─── ARQUITECTURA DE RUTAS (ADR-015) ───────────────────────────────────────
-# COMMANDS_SYNCED=false → /workflow_* commands desactualizados vs SKILL.md
-# COMMANDS_SYNCED=true  → /workflow_* sincronizados (post-TD-008), eliminar etiqueta [outdated]
+# COMMANDS_SYNCED=false → /workflow-* commands desactualizados vs SKILL.md
+# COMMANDS_SYNCED=true  → /workflow-* sincronizados (post-TD-008), eliminar etiqueta [outdated]
 # TD-008 completado (FASE 22). workflow_* ahora en .claude/skills/ (Capa 2, hidden).
 COMMANDS_SYNCED=true
 
 # Mapa phase → /workflow_* command
 _phase_to_command() {
     case "$1" in
-        "Phase 1") echo "/workflow_analyze" ;;
-        "Phase 2") echo "/workflow_strategy" ;;
-        "Phase 3") echo "/workflow_plan" ;;
-        "Phase 4") echo "/workflow_structure" ;;
-        "Phase 5") echo "/workflow_decompose" ;;
-        "Phase 6") echo "/workflow_execute" ;;
-        "Phase 7") echo "/workflow_track" ;;
-        *) echo "/workflow_analyze" ;;
+        "Phase 1") echo "/workflow-analyze" ;;
+        "Phase 2") echo "/workflow-strategy" ;;
+        "Phase 3") echo "/workflow-plan" ;;
+        "Phase 4") echo "/workflow-structure" ;;
+        "Phase 5") echo "/workflow-decompose" ;;
+        "Phase 6") echo "/workflow-execute" ;;
+        "Phase 7") echo "/workflow-track" ;;
+        *) echo "/workflow-analyze" ;;
     esac
 }
 # ───────────────────────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ else
     echo "  Opciones de ejecución:"
     echo "    A (calidad alta HOY):    invocar pm-thyrox SKILL → Phase 1: ANALYZE"
     if [ "$COMMANDS_SYNCED" = "true" ]; then
-        echo "    B (determinístico):      /workflow_analyze"
+        echo "    B (determinístico):      /workflow-analyze"
     else
         echo "    B (determinístico):      /workflow_analyze  [outdated — esperar TD-008]"
     fi

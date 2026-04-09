@@ -65,27 +65,27 @@ Reducción SKILL.md. Única tarea, ejecutar último.
 
 ### BLOQUE M — Migración
 
-- [ ] [T-001] Crear `.claude/skills/workflow-analyze/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_analyze.md` (SPEC-M-01) [P]
-- [ ] [T-002] Crear `.claude/skills/workflow-strategy/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_strategy.md` (SPEC-M-02) [P]
-- [ ] [T-003] Crear `.claude/skills/workflow-plan/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_plan.md` (SPEC-M-03) [P]
-- [ ] [T-004] Crear `.claude/skills/workflow-structure/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_structure.md` (SPEC-M-04) [P]
-- [ ] [T-005] Crear `.claude/skills/workflow-decompose/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_decompose.md` (SPEC-M-05) [P]
-- [ ] [T-006] Crear `.claude/skills/workflow-execute/SKILL.md` (frontmatter oficial + H1, refs internas y sección /loop actualizadas) y eliminar `.claude/skills/workflow_execute.md` (SPEC-M-06) [P]
-- [ ] [T-007] Crear `.claude/skills/workflow-track/SKILL.md` (frontmatter oficial + H1 actualizado) y eliminar `.claude/skills/workflow_track.md` (SPEC-M-07) [P]
+- [x] [T-001] Crear `.claude/skills/workflow-analyze/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_analyze.md` (SPEC-M-01) [P]
+- [x] [T-002] Crear `.claude/skills/workflow-strategy/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_strategy.md` (SPEC-M-02) [P]
+- [x] [T-003] Crear `.claude/skills/workflow-plan/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_plan.md` (SPEC-M-03) [P]
+- [x] [T-004] Crear `.claude/skills/workflow-structure/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_structure.md` (SPEC-M-04) [P]
+- [x] [T-005] Crear `.claude/skills/workflow-decompose/SKILL.md` (frontmatter oficial + H1 y refs internas actualizadas) y eliminar `.claude/skills/workflow_decompose.md` (SPEC-M-05) [P]
+- [x] [T-006] Crear `.claude/skills/workflow-execute/SKILL.md` (frontmatter oficial + H1, refs internas y sección /loop actualizadas) y eliminar `.claude/skills/workflow_execute.md` (SPEC-M-06) [P]
+- [x] [T-007] Crear `.claude/skills/workflow-track/SKILL.md` (frontmatter oficial + H1 actualizado) y eliminar `.claude/skills/workflow_track.md` (SPEC-M-07) [P]
 
 ### BLOQUE R — Referencias
 
-- [ ] [T-008] Actualizar `session-start.sh`: función `_phase_to_command()` (8 refs) + línea 82 + comentarios líneas 10-11 (SPEC-R-01) [P]
-- [ ] [T-009] Actualizar `CLAUDE.md`: addendum Locked Decision #5 con naming FASE 23 (SPEC-R-02) [P]
-- [ ] [T-010] Actualizar `commands/workflow_init.md`: línea 108 `/workflow_analyze` → `/workflow-analyze` (SPEC-R-03) [P]
-- [ ] [T-011] Actualizar `adr-016.md`: añadir sección `## Addendum — FASE 23` al final (SPEC-R-04) [P]
-- [ ] [T-012] Actualizar `technical-debt.md`: refs target en TD-019..023 (SPEC-R-05) [P]
+- [x] [T-008] Actualizar `session-start.sh`: función `_phase_to_command()` (8 refs) + línea 82 + comentarios líneas 10-11 (SPEC-R-01) [P]
+- [x] [T-009] Actualizar `CLAUDE.md`: addendum Locked Decision #5 con naming FASE 23 (SPEC-R-02) [P]
+- [x] [T-010] Actualizar `commands/workflow_init.md`: línea 108 `/workflow_analyze` → `/workflow-analyze` (SPEC-R-03) [P]
+- [x] [T-011] Actualizar `adr-016.md`: añadir sección `## Addendum — FASE 23` al final (SPEC-R-04) [P]
+- [x] [T-012] Actualizar `technical-debt.md`: refs target en TD-019..023 (SPEC-R-05) [P]
 
 ### BLOQUE TD — Deuda técnica
 
-- [ ] [T-013] Añadir sección `## Escalabilidad` a `workflow-analyze/SKILL.md` (SPEC-TD-01) — requiere T-001
-- [ ] [T-014] Añadir `owner:` al frontmatter de 24 archivos en `references/` (SPEC-TD-02) [P]
-- [ ] [T-015] Actualizar `agent-spec.md`: `model` Opcional, `tools` Opcional, nota corrección (SPEC-TD-03) [P]
+- [x] [T-013] Añadir sección `## Escalabilidad` a `workflow-analyze/SKILL.md` (SPEC-TD-01) — requiere T-001
+- [x] [T-014] Añadir `owner:` al frontmatter de 24 archivos en `references/` (SPEC-TD-02) [P]
+- [x] [T-015] Actualizar `agent-spec.md`: `model` Opcional, `tools` Opcional, nota corrección (SPEC-TD-03) [P]
 
 ### BLOQUE S — Reducción SKILL.md
 

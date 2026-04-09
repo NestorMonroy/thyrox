@@ -18,7 +18,8 @@ Los ADRs del proyecto viven en el path declarado por `adr_path` en este archivo 
 3. **Git as persistence** — Zero archivos backup, historial en git
 4. **Markdown only** — Sin bases de datos, sin formatos propietarios
 5. **Single skill** — Un pm-thyrox con references, no 15 skills separados
-   *Addendum FASE 22:* Los 7 `workflow_*` skills (workflow_analyze, …, workflow_track) son la excepción intencional: son herramientas de ejecución por fase, no skills de dominio tecnológico. Esta excepción está documentada en ADR-016. La regla original sigue vigente para tech skills (python, react, etc.). Ver TD-019 para la resolución de estructura (subdirectorio vs flat file).
+   *Addendum FASE 22:* Los 7 `workflow-*` skills (workflow-analyze, …, workflow-track) son la excepción intencional: son herramientas de ejecución por fase, no skills de dominio tecnológico. Esta excepción está documentada en ADR-016. La regla original sigue vigente para tech skills (python, react, etc.).
+   *Addendum FASE 23:* Nomenclatura resuelta a kebab-case hyphens — `workflow-*/SKILL.md`. TD-019 cerrado (FASE 23).
 6. **Work packages with timestamp** — context/work/YYYY-MM-DD-HH-MM-SS-nombre/
 7. **Conventional Commits** — `type(scope): description`
 

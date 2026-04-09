@@ -5,6 +5,7 @@ version: 1.0
 purpose: Guía de convenciones para mensajes de commits
 goal: Estandarizar commits para mejor legibilidad e integración automática
 updated_at: 2026-03-25
+owner: workflow-execute
 ```
 
 # Commit Convention

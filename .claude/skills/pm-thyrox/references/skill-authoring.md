@@ -5,6 +5,7 @@ version: 1.0
 purpose: Compilación de mejores prácticas de Anthropic para crear skills de alta calidad.
 goal: Proporcionar guía completa de skill authoring con ejemplos.
 updated_at: 2026-03-25
+owner: pm-thyrox (cross-phase)
 ```
 
 # Skill Authoring - Mejores Prácticas para Crear Skills

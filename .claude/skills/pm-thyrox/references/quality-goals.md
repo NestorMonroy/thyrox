@@ -5,6 +5,7 @@ version: 1.0
 purpose: Guía de cómo definir objetivos de calidad priorizados (Critical, Important, Desirable).
 goal: Especificar QUÉ TAN BIEN debe funcionar el sistema con scenarios medibles.
 updated_at: 2026-03-25
+owner: workflow-analyze
 ```
 
 # Quality Goals

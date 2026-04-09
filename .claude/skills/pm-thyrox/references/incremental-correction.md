@@ -5,6 +5,7 @@ version: 1.0
 purpose: Metodología validada para corrección de 100+ issues a gran escala con análisis obligatorio.
 goal: Convertir caos de issues en correcciones organizadas y medibles.
 updated_at: 2026-03-25
+owner: workflow-track
 ```
 
 # Incremental Correction Methodology
