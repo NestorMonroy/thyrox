@@ -41,11 +41,30 @@ Cada subdirectorio contendrá exactamente:
 
 Excepción: `workflow-analyze/SKILL.md` recibirá la tabla de escalabilidad (TD-020) como sección adicional al final del archivo, antes del Exit criteria.
 
-### D-03: `description:` en frontmatter — actualizar nombre
+### D-03: Frontmatter completo por SKILL.md — tres campos a actualizar
 
-Cada `workflow-*/SKILL.md` actualiza:
-- `description: /workflow_analyze — ...` → `description: /workflow-analyze — ...`
-- Esto garantiza que `/<name>` = `/workflow-analyze` coincide con el directorio
+Basado en documentación oficial de Claude Code (campo `name`: "Lowercase letters, numbers, and hyphens only" — underscores inválidos):
+
+Cada `workflow-*/SKILL.md` tendrá el siguiente frontmatter:
+```yaml
+---
+name: workflow-analyze          ← NUEVO: campo name explícito (hyphens only per docs)
+description: Phase 1 ANALYZE — inicia o retoma el análisis del WP activo.
+disable-model-invocation: true  ← sin cambio
+hooks:                          ← PRESERVAR — campo oficial de lifecycle hooks
+  - event: UserPromptSubmit
+    once: true
+    type: command
+    command: "echo 'phase: Phase 1' >> .claude/context/now.md"
+updated_at: 2026-04-09 00:00:00 ← actualizar timestamp
+---
+```
+
+Cambios respecto al flat file:
+1. `name: workflow-analyze` — campo explícito, determina la invocación `/<name>` = `/workflow-analyze`
+2. `description:` — limpiar el prefijo `/workflow_analyze —`; descripción natural sin slash command
+3. `hooks:` — PRESERVAR exactamente como están (son el mecanismo oficial de lifecycle hooks)
+4. `updated_at:` — actualizar timestamp
 
 ### D-04: Reducción SKILL.md — qué eliminar y qué conservar
 
