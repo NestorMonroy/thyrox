@@ -23,10 +23,12 @@ FASE 25 completada. Framework v2.2.0 — distribución de 37 templates a `workfl
 - 9 agentes nativos en `.claude/agents/`
 - Versión: v2.2.0
 - Lecciones: L-001..L-105
-- Deuda técnica: TD-001..TD-024 (TD-018 pendiente — baja prioridad)
+- Deuda técnica: TD-001..TD-027 (TD-018 baja; TD-026 media; TD-027 alta — próxima prioridad)
 
 ## Sin WP activo
 
 ## Próximos pasos (ROADMAP)
 
-1. **TD-018 (baja):** execution-log — usar timestamp completo `YYYY-MM-DD HH:MM:SS` en frontmatter y headers de sesión
+1. **TD-027 (alta):** Criterio auto-write vs gate humano — agregar sección explícita en pm-thyrox/SKILL.md con tabla de categorías de archivo y vincular SPs
+2. **TD-026 (media):** ROADMAP.md > 10000 tokens — evaluar split en ROADMAP-history.md o estructura por era
+3. **TD-018 (baja):** execution-log — usar timestamp completo `YYYY-MM-DD HH:MM:SS` en frontmatter y headers de sesión

@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-08 22:00:00
+updated_at: 2026-04-09 10:30:00
 ```
 
 # Deuda Técnica — THYROX
@@ -789,3 +789,84 @@ Estado: [ ] Pendiente
 **Criterio de cierre:**
 
 `skill-authoring.md` actualizado o deprecado con referencia a `claude-code-components.md`.
+
+---
+
+## TD-026: ROADMAP.md supera el límite del Read tool (10000 tokens)
+
+```
+Severidad: media
+Origen: FASE 25 Phase 7 — error al leer ROADMAP.md completo (2026-04-09)
+Fase afectada: Phase 3 PLAN y Phase 7 TRACK (requieren leer/actualizar ROADMAP.md)
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+ROADMAP.md supera los 10000 tokens que el Read tool puede leer en una sola llamada. El error obliga a usar `offset` + `limit` para navegar el archivo por partes, lo que fragmenta el contexto y aumenta el riesgo de omitir secciones relevantes.
+
+Error observado:
+```
+File content (15204 tokens) exceeds maximum allowed tokens (10000).
+Use offset and limit parameters to read specific portions of the file.
+```
+
+**Causa raíz:**
+
+ROADMAP.md acumula todo el historial de FASEs en un único archivo flat. Con 25+ FASEs el archivo seguirá creciendo indefinidamente.
+
+**Opciones de resolución (a evaluar en Phase 1 del WP correspondiente):**
+
+1. **Archivo de resumen + archivo de historial**: `ROADMAP.md` contiene solo FASEs activas/pendientes + próximos pasos. `ROADMAP-history.md` (o `context/roadmap-history.md`) acumula FASEs completadas. Read tool puede leer cada parte independientemente.
+2. **Secciones por era**: `ROADMAP-v1.md` (FASEs 1-15), `ROADMAP-v2.md` (FASEs 16-30), etc. Rotación cada ~15 FASEs.
+3. **ROADMAP.md como índice + archivos por FASE**: Cada WP tiene su sección en `context/work/TIMESTAMP-nombre/FASE-roadmap-entry.md`. ROADMAP.md apunta a ellos. Más fragmentado pero elimina el problema de raíz.
+
+**Criterio de cierre:**
+
+ROADMAP.md (o su reemplazo) puede leerse en una sola llamada sin `offset`/`limit`. El flujo Phase 7 TRACK actualiza el archivo sin errores de token.
+
+---
+
+## TD-027: Criterio de auto-write vs validación humana no implementado en pm-thyrox
+
+```
+Severidad: alta
+Origen: FASE 25 — comportamiento inconsistente en gates de escritura (2026-04-09)
+Fase afectada: Todas — especialmente Phase 3 PLAN, Phase 5 DECOMPOSE, Phase 7 TRACK
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+El skill pm-thyrox no tiene un criterio explícito y aplicado consistentemente para decidir cuándo Claude puede crear/modificar un archivo de forma autónoma vs cuándo debe esperar confirmación humana. En la práctica:
+
+- Archivos de estado operacional (`now.md`, `focus.md`) se actualizan sin gate — correcto.
+- Artefactos del WP (análisis, plan, task-plan) se crean sin gate — correcto en fases de exploración.
+- Archivos de configuración del framework (`SKILL.md`, `CLAUDE.md`, `ADR-*.md`) se modifican sin confirmación explícita en algunos flujos — riesgo alto.
+- El Stopping Point Manifest define SPs pero no los traduce en gates de escritura de archivo de forma sistemática.
+
+**Dimensiones del criterio faltante:**
+
+| Categoría de archivo | Auto-write | Gate humano |
+|---------------------|------------|-------------|
+| Artefactos WP (`context/work/`) | Siempre | Nunca |
+| Estado sesión (`now.md`, `focus.md`) | Siempre | Nunca |
+| Referencias (`references/*.md`) | Solo correcciones | Si cambia semántica |
+| Configuración framework (`SKILL.md`, `CLAUDE.md`) | Nunca | Siempre |
+| ADRs (`decisions/*.md`) | Draft | Aprobación explícita |
+| Archivos del proyecto (`ROADMAP.md`, `CHANGELOG.md`) | Phase 7 post-validate | Gate SP-06 |
+| Scripts operacionales (`.claude/scripts/*.sh`) | Nunca | Siempre |
+
+**Causa raíz:**
+
+El SKILL.md define Stopping Points (SP-NNN) para gates de fase, pero no los vincula a categorías específicas de archivos. La implementación depende del juicio del LLM en cada sesión, lo que genera inconsistencia.
+
+**Resolución propuesta:**
+
+1. Agregar sección `## Gates de escritura por tipo de archivo` en `pm-thyrox/SKILL.md` con la tabla anterior como regla explícita.
+2. Vincular cada SP en el Stopping Point Manifest a la categoría de archivo que desbloquea.
+3. Considerar un ADR si la decisión implica cambiar la arquitectura del Stopping Point Manifest.
+
+**Criterio de cierre:**
+
+`pm-thyrox/SKILL.md` tiene sección explícita de gates de escritura. En una sesión de prueba, Claude aplica los gates correctamente sin instrucción adicional del usuario.
