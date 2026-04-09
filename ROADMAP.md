@@ -788,28 +788,28 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ### Bloque M — Migración 7 skills (flat → subdirectorio)
 
-- [ ] M-01: `workflow-analyze/SKILL.md` (crear dir + SKILL.md con frontmatter oficial + eliminar flat file)
-- [ ] M-02: `workflow-strategy/SKILL.md`
-- [ ] M-03: `workflow-plan/SKILL.md`
-- [ ] M-04: `workflow-structure/SKILL.md`
-- [ ] M-05: `workflow-decompose/SKILL.md`
-- [ ] M-06: `workflow-execute/SKILL.md`
-- [ ] M-07: `workflow-track/SKILL.md`
+- [x] M-01: `workflow-analyze/SKILL.md` (crear dir + SKILL.md con frontmatter oficial + eliminar flat file) — 2026-04-09
+- [x] M-02: `workflow-strategy/SKILL.md` — 2026-04-09
+- [x] M-03: `workflow-plan/SKILL.md` — 2026-04-09
+- [x] M-04: `workflow-structure/SKILL.md` — 2026-04-09
+- [x] M-05: `workflow-decompose/SKILL.md` — 2026-04-09
+- [x] M-06: `workflow-execute/SKILL.md` — 2026-04-09
+- [x] M-07: `workflow-track/SKILL.md` — 2026-04-09
 
 ### Bloque R — Actualizar referencias externas (paralelo a M)
 
-- [ ] R-01: `session-start.sh` — 7 referencias `/workflow_*` → `/workflow-*`
-- [ ] R-02: `CLAUDE.md` — Addendum Locked Decision #5
-- [ ] R-03: `commands/workflow_init.md` — referencia a `/workflow_analyze`
-- [ ] R-04: `adr-016.md` — paths de skills
-- [ ] R-05: `technical-debt.md` — 22 referencias workflow_* en TD-019..TD-023
+- [x] R-01: `session-start.sh` — 7 referencias `/workflow_*` → `/workflow-*` — 2026-04-09
+- [x] R-02: `CLAUDE.md` — Addendum Locked Decision #5 — 2026-04-09
+- [x] R-03: `commands/workflow_init.md` — referencia a `/workflow_analyze` — 2026-04-09
+- [x] R-04: `adr-016.md` — Addendum FASE 23 — 2026-04-09
+- [x] R-05: `technical-debt.md` — TD-019..024 actualizados — 2026-04-09
 
 ### Bloque TD — Contenido faltante (TD-01 post-M-01; TD-02/TD-03 paralelas)
 
-- [ ] TD-01: Añadir tabla escalabilidad a `workflow-analyze/SKILL.md` (TD-020) ← requiere M-01
-- [ ] TD-02: Añadir `owner:` al frontmatter de 24 archivos en `references/` incluye `claude-code-components.md` (TD-023)
-- [ ] TD-03: Actualizar `agent-spec.md` — model válido, tools opcional per docs oficiales (TD-024)
+- [x] TD-01: Añadir tabla escalabilidad a `workflow-analyze/SKILL.md` (TD-020) — 2026-04-09
+- [x] TD-02: Añadir `owner:` al frontmatter de 24 archivos en `references/` (TD-023) — 2026-04-09
+- [x] TD-03: Actualizar `agent-spec.md` — model/tools Opcional (TD-024) — 2026-04-09
 
 ### Bloque S — Reducción SKILL.md (post M+R+TD-01)
 
-- [ ] S-01: Reducir `pm-thyrox/SKILL.md` ~471 → ~130 líneas (T-027): eliminar lógica Phase 1..7 + "Limitaciones conocidas", conservar catálogo + artefactos + naming
+- [x] S-01: Reducir `pm-thyrox/SKILL.md` ~471 → 148 líneas (T-027): Catálogo de fases, artefactos, naming — 2026-04-09

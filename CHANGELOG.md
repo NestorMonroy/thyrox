@@ -3,13 +3,55 @@ type: Historial de Cambios
 category: Proyecto
 version: 1.0.0
 purpose: Registro de cambios notables del proyecto
-updated_at: 2026-04-07 02:22:27
+updated_at: 2026-04-09 02:48:38
 ```
 
 # CHANGELOG — THYROX
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [2.0.0] - 2026-04-09
+
+### Added — Workflow Restructure: migración a workflow-*/SKILL.md + reducción SKILL.md (WP workflow-restructure / FASE 23)
+
+**Bloque M — Migración de skills:**
+- `.claude/skills/workflow-analyze/SKILL.md` (nuevo) — `name: workflow-analyze`, description actualizado, `## Escalabilidad` section con tabla de tamaños. `/workflow_analyze.md` eliminado.
+- `.claude/skills/workflow-strategy/SKILL.md` (nuevo) — `name: workflow-strategy`, description actualizado. `/workflow_strategy.md` eliminado.
+- `.claude/skills/workflow-plan/SKILL.md` (nuevo) — `name: workflow-plan`, description actualizado. `/workflow_plan.md` eliminado.
+- `.claude/skills/workflow-structure/SKILL.md` (nuevo) — `name: workflow-structure`, description actualizado. `/workflow_structure.md` eliminado.
+- `.claude/skills/workflow-decompose/SKILL.md` (nuevo) — `name: workflow-decompose`, description actualizado. `/workflow_decompose.md` eliminado.
+- `.claude/skills/workflow-execute/SKILL.md` (nuevo) — `name: workflow-execute`, description actualizado, `/loop` section refs actualizados. `/workflow_execute.md` eliminado.
+- `.claude/skills/workflow-track/SKILL.md` (nuevo) — `name: workflow-track`, description actualizado. `/workflow_track.md` eliminado.
+
+**Bloque R — Referencias actualizadas:**
+- `scripts/session-start.sh` — `_phase_to_command()` (8 refs), línea 82 y comentarios: `/workflow_*` → `/workflow-*`
+- `CLAUDE.md` — Locked Decision #5 Addendum FASE 23: nomenclatura resuelta a kebab-case hyphens, TD-019 cerrado
+- `commands/workflow_init.md` — línea 108: `/workflow_analyze` → `/workflow-analyze`
+- `context/decisions/adr-016.md` — Addendum FASE 23: cambio de nomenclatura documentado, justificación `name:` field solo acepta `a-z 0-9 -`
+
+**Bloque TD — Deuda técnica resuelta:**
+- `references/agent-spec.md` — campos `model` y `tools` corregidos: ambos `Opcional` (no prohibido/requerido). Nota de corrección añadida. TD-024 resuelto.
+- `references/*.md` (24 archivos) — campo `owner:` añadido al frontmatter de todos los archivos en references/. TD-023 resuelto.
+- `workflow-analyze/SKILL.md` — sección `## Escalabilidad` con tabla micro/pequeño/mediano/grande. TD-020 resuelto.
+
+**Bloque S — Reducción SKILL.md:**
+- `skills/pm-thyrox/SKILL.md` — reducido de ~471 a 148 líneas. Eliminadas: "Limitaciones conocidas" y "Las 7 Fases" (lógica detallada migrada a `workflow-*/SKILL.md`). Añadida: tabla `## Catálogo de fases` con links a 7 `/workflow-*` skills. TD-022 resuelto.
+
+### Removed
+
+- `.claude/skills/workflow_analyze.md`, `workflow_strategy.md`, `workflow_plan.md`, `workflow_structure.md`, `workflow_decompose.md`, `workflow_execute.md`, `workflow_track.md` — reemplazados por `workflow-*/SKILL.md` subdirectorios
+
+### Fixed
+
+- TD-019 resuelto: naming inconsistente (`_` vs `-`) — todos los workflow skills usan kebab-case hyphens
+- TD-020..TD-023 resueltos: contenido faltante en workflow skills, owner: en references/, agent-spec correcciones
+
+### Lessons Learned
+
+- Lecciones L-094..L-097 documentadas (UTF-8 encoding en Python, validación T-numbers en DAG, verificación line count antes de commit, ADRs son inmutables — usar addendum)
 
 ---
 

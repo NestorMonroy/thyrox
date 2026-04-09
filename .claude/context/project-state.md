@@ -1,19 +1,19 @@
 ```yml
 type: Dashboard de Proyecto
 category: Estado Actual
-version: 1.9.0
+version: 2.0.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-08 23:09:59
+updated_at: 2026-04-09 02:48:38
 ```
 
 # Project State — THYROX
 
 ## Status General
 
-**Versión:** 1.9.0
-**Estado:** Activo — framework pm-thyrox con 22 FASEs completadas
-**Última actualización:** 2026-04-08 23:09:59
+**Versión:** 2.0.0
+**Estado:** Activo — framework pm-thyrox con 23 FASEs completadas
+**Última actualización:** 2026-04-09 02:48:38
 **Branch activo:** `claude/check-merge-status-Dcyvj`
 
 ---
@@ -56,6 +56,7 @@ updated_at: 2026-04-08 23:09:59
 | FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) ✓ |
 | FASE 21: Skill Architecture Review — decisión arquitectónica pm-thyrox (2026-04-08) |
 | FASE 22: Framework Evolution — hooks Stop/PostCompact, 7 workflow_* skills hidden, Step 0 END USER CONTEXT (2026-04-08) |
+| FASE 23: Workflow Restructure — 7 workflow-*/SKILL.md (kebab hyphens), SKILL.md 148 líneas catálogo, TD-019..024 cerrados (2026-04-09) |
 
 Ver ROADMAP.md para detalle de cada FASE.
 
@@ -82,7 +83,7 @@ Ver ROADMAP.md para detalle de cada FASE.
 
 ## Deuda técnica registrada
 
-Ver `.claude/context/technical-debt.md` para TD-001 a TD-023.
+Ver `.claude/context/technical-debt.md` para TD-001 a TD-024 (TD-019..024 cerrados en FASE 23).
 
 ---
 
