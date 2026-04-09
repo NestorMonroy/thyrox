@@ -56,11 +56,17 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 
 1. Leer la descripción y el SPEC referenciado
 2. Verificar dependencias: ¿las tareas previas requeridas están `[x]`?
-3. **⚠ GATE OPERACIÓN** — antes de operaciones destructivas, STOP y describir qué se va a hacer:
+3. **⚠ GATE OPERACIÓN** — antes de **ediciones decision** en archivos que afectan todas las sesiones, STOP y describir qué se va a hacer:
    - Eliminar archivos/directorios, sobreescribir config con `--force`
-   - Modificar `.mcp.json`, `CLAUDE.md`, archivos que afectan todas las sesiones
+   - Cambiar instrucciones, pasos o criterios en `CLAUDE.md`, `SKILL.md`, `.mcp.json`
+   - Cambiar `description`, `allowed-tools` u otro frontmatter de comportamiento en un skill
    - `git push --force` o cualquier operación que reescriba historia
    - Cualquier operación no reversible con `git revert`
+
+   **NO requieren GATE OPERACIÓN (ediciones consecuencia — auto):**
+   - Actualizar `updated_at` o `version` en frontmatter como resultado de un cambio aprobado
+   - Corregir links rotos o typos sin cambiar instrucciones
+   - Agregar una entrada a una lista de referencias sin modificar las existentes
 4. Implementar el cambio respetando las reglas de los tech skills activos
 5. Si falla: crear `context/errors/ERR-NNN-descripcion.md` usando `assets/error-report.md.template` antes de reintentar con otro approach
 6. Commit con Conventional Commits: `type(scope): T-NNN — descripción`

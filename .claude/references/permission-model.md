@@ -46,6 +46,20 @@ incluso despues de que el humano ya dijo "SI" al gate de fase.
 
 ---
 
+## Tres tipos de edicion
+
+No toda edicion tiene el mismo peso. Antes de decidir si una operacion necesita gate:
+
+| Tipo | Definicion | Ejemplos | Gate |
+|------|-----------|---------|------|
+| **Edicion decision** | Cambia comportamiento futuro del framework o del proyecto | Instrucciones en SKILL.md, pasos de Phase, GATE OPERACION en workflow-execute, `description` en frontmatter | GATE OPERACION + `ask` rule |
+| **Edicion consecuencia** | Metadata que refleja un cambio ya aprobado — nunca ocurre sola | `updated_at`, `version`, checkboxes en ROADMAP, entrada en CHANGELOG, lecciones aprendidas | Auto — es el resultado de una decision anterior |
+| **Edicion correctiva** | Corrige sin cambiar semantica — typo, link roto, formato | Arreglar path en `references/*.md`, corregir nombre de archivo | Auto si no cambia instrucciones |
+
+**Regla:** Si la edicion SOLO actualiza `updated_at` u otros campos de metadata como consecuencia de otro cambio, NO requiere GATE OPERACION. El prompt del `ask` rule (si aplica) se aprueba sin deliberacion.
+
+---
+
 ## Tabla de comportamiento por categoria
 
 | Categoria | Ejemplos | Comportamiento | Mecanismo |
@@ -56,7 +70,8 @@ incluso despues de que el humano ya dijo "SI" al gate de fase.
 | Scripts del framework | `bash .claude/scripts/*` | Auto | `allow` |
 | Scripts de validacion de fase | `bash .claude/skills/*/scripts/*` | Auto | `allow` |
 | Git rutinario | `git add/commit/push/status/log/diff` | Auto | `allow` |
-| Config del framework | `SKILL.md`, `CLAUDE.md`, `scripts/*.sh`, `settings.json` | Prompt | `ask` |
+| Config del framework — edicion decision | Cambiar instrucciones en `SKILL.md`, `CLAUDE.md` | Prompt | GATE OPERACION + `ask` |
+| Config del framework — edicion consecuencia | Actualizar `updated_at` en `SKILL.md`, `CLAUDE.md` | Prompt ligero (1 click) | `ask` rule — sin GATE OPERACION |
 | Operaciones destructivas | `git push --force`, `git reset --hard`, `rm -rf` | Bloqueado | `deny` |
 
 **Relacion entre planos:**
