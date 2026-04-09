@@ -9,8 +9,9 @@ created_at: 2026-04-09 10:25:55
 
 | ID | Riesgo | P | I | Score | Estado | Mitigación |
 |----|--------|---|---|-------|--------|-----------|
-| R-01 | `allowed-tools: Bash` sin restricciones permite operaciones fuera del scope del skill | Baja | Alto | 6 | Abierto | Documentar explícitamente qué comandos Bash están en scope; mantener GATE OPERACIÓN del workflow-execute para destructivos |
-| R-02 | `git push` automático en Phase 7 envía estado incorrecto al remoto | Baja | Alto | 6 | Abierto | Mantener gate para push O requerir validate-session-close exitoso como precondición explícita |
-| R-03 | Cambio en `allowed-tools` rompe comportamiento de skills existentes | Baja | Medio | 3 | Abierto | Aplicar a workflow-track primero; validar en sesión antes de extender a workflow-execute |
-| R-04 | La solución de Capa 1 (allowed-tools) y Capa 2 (documentación) divergen en el tiempo | Media | Medio | 6 | Abierto | Vincular la tabla de categorías en SKILL.md directamente con el frontmatter; los dos deben actualizarse juntos |
-| R-05 | El usuario no sabe qué se va a ejecutar automáticamente post-gate | Media | Medio | 6 | Abierto | Agregar en el mensaje del gate de fase un listado explícito de las operaciones que seguirán |
+| R-01 | `permissions.allow: Bash(bash .claude/scripts/*)` permite scripts maliciosos si alguien agrega scripts al directorio | Muy baja | Alto | 3 | Abierto | Los scripts son parte del repo (git), requieren commit para existir. El riesgo es equivalente al de cualquier código en el repo. Wildcard es seguro dada la documentación: `&&` no se concatena. |
+| R-02 | `git push` sin gate envía commits incorrectos al remoto | Baja | Alto | 6 | **Mitigado** | `git push` se deja en `ask` (no en allow ni deny) → gate intencional, 1 prompt por sesión |
+| R-03 | `acceptEdits` mode auto-acepta ediciones fuera del WP (ej: archivos de framework) | Media | Alto | 9 | Abierto | `acceptEdits` aplica a todo el directorio de trabajo — incluyendo SKILL.md, CLAUDE.md. Contramedida: `deny` rules para rutas específicas protegidas o usar GATE OPERACIÓN en el SKILL |
+| R-04 | La configuración en settings.json y la documentación en SKILL.md divergen en el tiempo | Media | Medio | 6 | Abierto | Agregar en SKILL.md referencia explícita a settings.json con las reglas vigentes; actualizar ambos juntos |
+| R-05 | `defaultMode: acceptEdits` puede ser overrideado por user settings — comportamiento diferente por desarrollador | Baja | Bajo | 2 | Abierto | Documentar en CLAUDE.md y README el modo recomendado; el project settings.json tiene precedencia sobre user settings |
+| R-06 | Nuevo: `.claude/skills/` es EXEMPT en bypassPermissions — SKILL.md puede editarse sin confirmación | Baja | Alto | 6 | Abierto | Implica que en `bypassPermissions` mode, Claude puede modificar la metodología del framework sin prompt. Documentar esta limitación y NO usar bypassPermissions en producción. |

@@ -251,6 +251,23 @@ Esto es una sub-decisión de diseño que requiere resolver: ¿el push de cierre 
 
 ---
 
+## 9. Correcciones post-documentación oficial
+
+Ver sub-análisis completo en [permission-system-analysis.md](permission-system-analysis.md).
+
+**Correcciones al análisis inicial:**
+
+- **Edit tool SÍ requiere aprobación** — la documentación confirma que File modification requiere prompt (hasta fin de sesión). El análisis inicial estaba equivocado al asumir que Edit era auto.
+- **`allowed-tools` en SKILL frontmatter es secundario** — `permissions.allow` en settings.json es la solución principal, aplica siempre independientemente del skill activo.
+- **`acceptEdits` mode resuelve los 2 archivos** — configurable como `defaultMode` en settings.json, auto-acepta Edit/Write y comandos filesystem básicos (mkdir, touch, mv, cp).
+- **El wildcard de Bash es confiable** — `Bash(bash .claude/scripts/*)` no puede ser ampliado con `&&` según la documentación: Claude Code es consciente de operadores shell.
+- **PreToolUse hooks** son un mecanismo alternativo más expresivo si las reglas de wildcard no son suficientes.
+- **`.claude/skills/` es EXEMPT en bypassPermissions** — el diseño de Claude Code asume que SKILL.md files son output normal de Claude, no config protegida.
+
+**Reducción de prompts proyectada:**
+- Sin configuración: 7 prompts al cerrar Phase 7
+- Con `acceptEdits` + `permissions.allow`: **1 prompt** (solo `git push` — gate correcto)
+
 ## Stopping Point Manifest
 
 | ID | Fase | Tipo | Evento | Acción requerida |
