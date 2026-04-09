@@ -40,7 +40,7 @@ Secciones de SKILL.md y su destino post-reducción:
 |-----------------|--------------|---------|--------|
 | Header + descripción + escalabilidad table | 1-35 | workflow-analyze/SKILL.md | Mover escalabilidad; conservar header reducido |
 | Mermaid flowchart | 36-50 | SKILL.md | Conservar (visión global) |
-| Limitaciones conocidas | 51-57 | SKILL.md | Conservar (aplica al SKILL, no a la fase) |
+| Limitaciones conocidas | 51-57 | — | **Eliminar** — strategy D-04: "no relevante para ejecución directa vía SKILL"; pm-thyrox ya no es el entry point principal post-reducción |
 | Las 7 Fases (Phase 1..7 detallado) | 60-345 | workflow-*/SKILL.md (ya está) | **Eliminar** → reemplazar con catálogo ~3 líneas/fase |
 | Dónde viven los artefactos (tabla) | 348-375 | SKILL.md | Conservar (referencia cross-phase) |
 | Estructura de un WP (árbol) | 377-407 | SKILL.md | Conservar |
@@ -49,14 +49,40 @@ Secciones de SKILL.md y su destino post-reducción:
 
 **Resultado esperado:** ~471 → ~130 líneas (eliminando ~285 líneas de lógica de fases).
 
+## Dependencias críticas (D-01 + revisión Phase 2)
+
+```
+M-01..M-07 ──┐
+             ├── TD-01 (escalabilidad en workflow-analyze)
+             │   └── S-01 (eliminar escalabilidad de SKILL.md + reducir)
+R-01..R-05 ──┘
+TD-02 (owner en references/) ← independiente, paralelo a M+R
+TD-03 (agent-spec.md) ← independiente, paralelo a M+R
+```
+
+**Regla:** S-01 NO puede iniciar hasta que TD-01 completa. TD-01 NO puede iniciar hasta que M-01 completa.
+
+## Bloque R — corregido (5 tareas reales per strategy)
+
+- R-01: `session-start.sh` — 7 referencias `/workflow_*` → `/workflow-*`
+- R-02: `CLAUDE.md` — Addendum Locked Decision #5
+- R-03: `commands/workflow_init.md` — 1 referencia a `/workflow_analyze`
+- R-04: `adr-016.md` — paths de skills
+- R-05: `technical-debt.md` — 22 referencias workflow_* en descripciones TD-019..TD-023
+
+**Bloque TD — ampliado a 3 tareas:**
+- TD-01: Añadir tabla escalabilidad a `workflow-analyze/SKILL.md` (TD-020) ← requiere M-01
+- TD-02: Añadir `owner:` a frontmatter de 24 archivos en `references/` (TD-023) — incluye `claude-code-components.md` → owner: `pm-thyrox (cross-phase)`
+- TD-03: Actualizar `agent-spec.md` — `model` válido, `tools` opcional (TD-024)
+
 ## Estimación de esfuerzo
 
 - Bloque M: 7 tareas × ~15 min = ~105 min (paralelas: ~15 min efectivos)
-- Bloque R: 4 tareas × ~10 min = ~40 min (paralelas: ~10 min efectivos)
-- Bloque TD: 2 tareas × ~20 min = ~40 min (secuencial)
-- Bloque S: 1 tarea × ~30 min = ~30 min
+- Bloque R: 5 tareas × ~10 min = ~50 min (paralelas: ~10 min efectivos)
+- Bloque TD: 3 tareas × ~20 min = ~60 min (TD-01 secuencial post-M-01; TD-02/TD-03 paralelas)
+- Bloque S: 1 tarea × ~30 min = ~30 min (post TD-01)
 - Overhead (commits, validaciones): ~20 min
-- **Total estimado:** ~2h (real, con context switches entre sesiones)
+- **Total estimado:** ~2.5h (real, con context switches entre sesiones)
 
 Tamaño: **Mediano** — todas las 7 fases aplican.
 
@@ -75,6 +101,7 @@ WP: `context/work/2026-04-08-23-55-52-workflow-restructure/`
 | TD-023 | Owner en references/ frontmatter | TD-02 |
 | T-027 | Reducir SKILL.md pm-thyrox | S-01 |
 | TD-024 | agent-spec.md desactualizado | R-05 |
-| Implícito | Referencias externas al cambio de nombre | R-01..R-04 |
+| Implícito | Referencias externas al cambio de nombre | R-01..R-05 |
+| TD-024 | agent-spec.md desactualizado | TD-03 |
 
 - [x] Scope aprobado por usuario

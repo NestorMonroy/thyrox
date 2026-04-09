@@ -796,19 +796,20 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 - [ ] M-06: `workflow-execute/SKILL.md`
 - [ ] M-07: `workflow-track/SKILL.md`
 
-### Bloque R — Actualizar referencias externas
+### Bloque R — Actualizar referencias externas (paralelo a M)
 
 - [ ] R-01: `session-start.sh` — 7 referencias `/workflow_*` → `/workflow-*`
 - [ ] R-02: `CLAUDE.md` — Addendum Locked Decision #5
 - [ ] R-03: `commands/workflow_init.md` — referencia a `/workflow_analyze`
 - [ ] R-04: `adr-016.md` — paths de skills
-- [ ] R-05: `agent-spec.md` — corregir `model` (válido) y `tools` (opcional) per docs oficiales
+- [ ] R-05: `technical-debt.md` — 22 referencias workflow_* en TD-019..TD-023
 
-### Bloque TD — Contenido faltante
+### Bloque TD — Contenido faltante (TD-01 post-M-01; TD-02/TD-03 paralelas)
 
-- [ ] TD-01: Añadir tabla escalabilidad a `workflow-analyze/SKILL.md` (TD-020)
-- [ ] TD-02: Añadir `owner:` al frontmatter de cada archivo en `references/` (TD-023)
+- [ ] TD-01: Añadir tabla escalabilidad a `workflow-analyze/SKILL.md` (TD-020) ← requiere M-01
+- [ ] TD-02: Añadir `owner:` al frontmatter de 24 archivos en `references/` incluye `claude-code-components.md` (TD-023)
+- [ ] TD-03: Actualizar `agent-spec.md` — model válido, tools opcional per docs oficiales (TD-024)
 
-### Bloque S — Reducción SKILL.md
+### Bloque S — Reducción SKILL.md (post M+R+TD-01)
 
-- [ ] S-01: Reducir `pm-thyrox/SKILL.md` ~471 → ~130 líneas (T-027): eliminar lógica Phase 1..7, conservar catálogo + artefactos + naming
+- [ ] S-01: Reducir `pm-thyrox/SKILL.md` ~471 → ~130 líneas (T-027): eliminar lógica Phase 1..7 + "Limitaciones conocidas", conservar catálogo + artefactos + naming
