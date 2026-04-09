@@ -892,3 +892,23 @@ FASE 17: Análisis de referencia mise                              — 100% si
 ### Style — Limpieza de emojis/iconos
 
 - [x] S-01: 49 archivos (.sh, .md, .py) — eliminados todos los emojis y caracteres unicode decorativos — 2026-04-09
+
+---
+
+## FASE 26: write-gates — Modelo de permisos Claude Code (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-09-10-25-55-write-gates/`
+**Causa raiz:** Phase 7 generaba 7 prompts de tool permissions despues del gate Phase 6→7. Dos planos de aprobacion (gates SKILL + Claude Code permissions) nunca documentados ni configurados juntos.
+
+### T-001 — settings.json: defaultMode + permissions
+
+- [x] `defaultMode: acceptEdits` — auto-acepta Edit/Write en artefactos WP — 2026-04-09
+- [x] `permissions.allow` — bash scripts/*, git add/commit/push/status/log/diff/fetch/branch, date/mkdir/ls/echo — 2026-04-09
+- [x] `permissions.ask` — Edit CLAUDE.md, SKILL.md, scripts/*.sh, settings.json — 2026-04-09
+- [x] `permissions.deny` — git push --force, git reset --hard, rm -rf — 2026-04-09
+
+### T-002 — pm-thyrox/SKILL.md: seccion "Modelo de permisos"
+
+- [x] Tabla de comportamiento por categoria de archivo — 2026-04-09
+- [x] Distincion Plano A (gates de decision) vs Plano B (permisos de herramienta) — 2026-04-09
+- [x] Relacion: gate Phase 6→7 aprueba todo Phase 7 (push incluido) — 2026-04-09

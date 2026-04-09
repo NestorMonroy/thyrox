@@ -6,7 +6,7 @@ updated_at: 2026-04-09 10:00:00
 
 # Focus
 
-FASE 25 completada. Framework v2.2.0 — distribución de 37 templates a `workflow-*/assets/`, skills autocontenidos con anatomia completa. Limpieza total de emojis/iconos en 49 archivos.
+FASE 26 completada. Framework v2.3.0 — distribución de 37 templates a `workflow-*/assets/`, skills autocontenidos con anatomia completa. Limpieza total de emojis/iconos en 49 archivos.
 
 ## Completado (2026-04-09)
 
@@ -17,18 +17,18 @@ FASE 25 completada. Framework v2.2.0 — distribución de 37 templates a `workfl
 - FASE 23: workflow-restructure — 7 workflow-*/SKILL.md (kebab hyphens), SKILL.md 148 líneas, TD-019..024 cerrados, lecciones L-094..L-097
 - FASE 24: skill-references-restructure — 3 niveles arquitectónicos (global/.claude/refs, fase/workflow-*/refs, infra/.claude/scripts), pm-thyrox/references/ eliminado, CLAUDE.md ## Estructura expandida, ADR-017, lecciones L-098..L-101
 - FASE 25: assets-restructure — 37/38 templates distribuidos a workflow-*/assets/, 7 dirs creados, ADR-018, limpieza emojis 49 archivos, lecciones L-102..L-105
+- FASE 26: write-gates — settings.json con defaultMode:acceptEdits + permissions allow/ask/deny, SKILL.md modelo de permisos, 7→0 prompts en Phase 7, lecciones L-106..L-109
 
 ## Estado del framework
 
 - 9 agentes nativos en `.claude/agents/`
-- Versión: v2.2.0
-- Lecciones: L-001..L-105
-- Deuda técnica: TD-001..TD-027 (TD-018 baja; TD-026 media; TD-027 alta — próxima prioridad)
+- Versión: v2.3.0
+- Lecciones: L-001..L-109
+- Deuda técnica: TD-001..TD-027 (TD-018 baja; TD-026 media; TD-027 cerrado en FASE 26)
 
 ## Sin WP activo
 
 ## Próximos pasos (ROADMAP)
 
-1. **TD-027 (alta):** Criterio auto-write vs gate humano — agregar sección explícita en pm-thyrox/SKILL.md con tabla de categorías de archivo y vincular SPs
-2. **TD-026 (media):** ROADMAP.md > 10000 tokens — evaluar split en ROADMAP-history.md o estructura por era
-3. **TD-018 (baja):** execution-log — usar timestamp completo `YYYY-MM-DD HH:MM:SS` en frontmatter y headers de sesión
+1. **TD-026 (media):** ROADMAP.md > 10000 tokens — evaluar split en ROADMAP-history.md o estructura por era
+2. **TD-018 (baja):** execution-log — usar timestamp completo `YYYY-MM-DD HH:MM:SS` en frontmatter y headers de sesión

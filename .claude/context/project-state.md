@@ -1,19 +1,19 @@
 ```yml
 type: Dashboard de Proyecto
 category: Estado Actual
-version: 2.2.0
+version: 2.3.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-09 10:19:45
+updated_at: 2026-04-09 10:49:08
 ```
 
 # Project State — THYROX
 
 ## Status General
 
-**Versión:** 2.2.0
-**Estado:** Activo — framework pm-thyrox con 25 FASEs completadas
-**Última actualización:** 2026-04-09 10:19:45
+**Versión:** 2.3.0
+**Estado:** Activo — framework pm-thyrox con 26 FASEs completadas
+**Última actualización:** 2026-04-09 10:49:08
 **Branch activo:** `claude/check-merge-status-Dcyvj`
 
 ---
@@ -32,7 +32,7 @@ updated_at: 2026-04-09 10:19:45
 
 ---
 
-## FASEs completadas (25 total)
+## FASEs completadas (26 total)
 
 | FASE 1: Framework Base (v0.1.0) |
 | FASE 2: Consolidación y Coherencia (v0.2.0) — Sesión 2026-03-27 |
@@ -59,6 +59,7 @@ updated_at: 2026-04-09 10:19:45
 | FASE 23: workflow-restructure — Migración workflow-* a subdirectorios + reducción SKILL.md (2026-04-09) |
 | FASE 24: skill-references-restructure — Redistribución arquitectónica de references y scripts (2026-04-09) |
 | FASE 25: assets-restructure — Distribución de templates a workflow-*/assets/ (2026-04-09) |
+| FASE 26: write-gates — Modelo de permisos Claude Code (2026-04-09) |
 
 Ver ROADMAP.md para detalle de cada FASE.
 

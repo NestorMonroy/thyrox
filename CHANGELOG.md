@@ -13,6 +13,28 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.3.0] - 2026-04-09
+
+### Added — Write Gates: modelo de permisos de herramienta (WP write-gates / FASE 26)
+
+- `settings.json`: `defaultMode: acceptEdits` — auto-acepta Edit/Write en artefactos WP y archivos de proyecto
+- `settings.json` `permissions.allow`: bash scripts del framework, git add/commit/push/status/log/diff/fetch/branch, date/mkdir/ls/echo
+- `settings.json` `permissions.ask`: Edit en CLAUDE.md, SKILL.md, scripts/*.sh, settings.json — prompt forzado para configuracion del framework
+- `settings.json` `permissions.deny`: git push --force, git push --force-with-lease, git reset --hard, rm -rf
+- `pm-thyrox/SKILL.md`: seccion "Modelo de permisos" — tabla de comportamiento por categoria + distincion Plano A (gates de decision) vs Plano B (permisos de herramienta)
+
+### Fixed
+
+- Phase 7 normal: 7 prompts de tool permissions → 0 prompts post-gate Phase 6→7
+- git push incluido en allow — consecuencia del gate, no nueva decision
+
+### Lessons Learned
+
+- L-106..L-109 documentadas (ver WP write-gates-lessons-learned.md)
+- TD-027 cerrado
+
+---
+
 ## [2.2.0] - 2026-04-09
 
 ### Added — Assets Restructure: templates distribuidos a workflow-*/assets/ (WP assets-restructure / FASE 25)
