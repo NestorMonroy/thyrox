@@ -1,9 +1,10 @@
 ```yml
 created_at: 2026-04-09 04:30:00
+updated_at: 2026-04-09 05:15:00
 project: THYROX
-architecture_version: 2.1
+architecture_version: 2.2
 architect: Claude
-status: Propuesta
+status: Propuesta — pendiente confirmación usuario
 work_package: 2026-04-09-03-17-55-skill-references-restructure
 ```
 
@@ -51,11 +52,22 @@ Después de cada batch, ejecutar `detect_broken_references.py` para verificar qu
 no quedaron links rotos. Los scripts de validación se mueven en el último batch
 (Batch D), así siguen disponibles en su ubicación original durante toda la migración.
 
-### Idea 4: CLAUDE.md se actualiza en el commit final
+### Idea 4: CLAUDE.md se actualiza en el commit final — incluyendo directorios no documentados
 
 La sección `## Estructura` de CLAUDE.md describe la anatomía del proyecto.
 Se actualiza una sola vez al final, cuando la estructura nueva está estabilizada.
 Esto evita que CLAUDE.md quede inconsistente en commits intermedios.
+
+**Alcance de la actualización** (hallazgo del Phase 1 review):
+CLAUDE.md actualmente omite 4 directorios que ya existen en `.claude/`:
+- `.claude/guidelines/` — reglas siempre-activas por tech domain (generadas por registry)
+- `.claude/registry/` — generador de skills/agentes desde templates YAML
+- `.claude/commands/` — comando `workflow_init` (pendiente migración, ver TD-020)
+- `.claude/memory/` — auto-creado por Claude Code Web (vacío)
+- `.claude/scripts/` — NUEVO en esta FASE
+- `.claude/references/` — NUEVO en esta FASE
+
+El commit final actualiza el diagrama de estructura para reflejar la realidad completa.
 
 ---
 
@@ -95,8 +107,9 @@ moverlos al final reduce el tiempo en que los hooks están en estado transitorio
 4. Eliminar pm-thyrox/references/ (verificado vacío)
 5. Batch C: 2 scripts de Phase 7 → workflow-track/scripts/
 6. Batch D: 13 scripts de infraestructura → .claude/scripts/ + actualizar settings.json
-7. Actualizar CLAUDE.md + pm-thyrox/SKILL.md
+7. Actualizar CLAUDE.md (nueva estructura completa) + pm-thyrox/SKILL.md
 8. Crear ADR-017
+9. Registrar TD-020 (workflow_init.md sin migrar) en technical-debt.md
 
 ---
 
@@ -238,8 +251,23 @@ ambos se mueven en el mismo batch, por lo que el link relativo entre ellos se ma
 Documenta:
 - Por qué se crea `.claude/references/` (global — plataforma Claude Code y patrones reutilizables)
 - Por qué se crea `.claude/scripts/` (infraestructura Claude Code del proyecto)
-- Por qué se eliminan pm-thyrox/references/ y se conserva pm-thyrox/scripts/
-- Evidencia de proyectos reales que confirman el patrón
+- Por qué `.claude/guidelines/` es diferente (siempre-cargado, generado por registry — nivel distinto)
+- Por qué se elimina pm-thyrox/references/ y se conserva pm-thyrox/scripts/
+- Evidencia de 6 proyectos reales que confirman el patrón `.claude/scripts/`
+
+## Tareas técnicas identificadas
+
+**TD-020** (hallazgo Phase 1 review — NO bloquea FASE 24):
+> Migrar `.claude/commands/workflow_init.md` → `.claude/skills/workflow_init/SKILL.md`
+> Estado: Abierto. Independiente. workflow_init usa formato antiguo de command;
+> debería ser skill hidden para consistencia con los 7 workflow-* skills de FASE 23.
+
+## Backlog — FASE 25 candidato
+
+**session-compressor** (patrón de claude-compress):
+> Adaptar `ccomp_chat.py` como `.claude/scripts/compress-session.py` con defaults THYROX:
+> `--focus "Phase context, work package progress, ADR decisions, ROADMAP tasks"`.
+> Depende de FASE 24 (`.claude/scripts/` debe existir primero).
 
 ---
 
@@ -251,6 +279,10 @@ Documenta:
 - [x] Patrones de migración definidos
 - [x] Trazabilidad a Phase 1 (tablas 24/24 y 20/20)
 - [x] ADR identificado
+- [x] Phase 1 review completo — 4 directorios no inventariados evaluados
+- [x] Adaptaciones de ejemplos externos evaluadas (ccomp → FASE 25, resto descartado)
+- [x] TD-020 registrado (workflow_init.md no migrado)
+- [x] Backlog FASE 25 candidato documentado
 - [ ] Usuario confirma explícitamente esta estrategia
 
 ---
