@@ -870,3 +870,39 @@ El SKILL.md define Stopping Points (SP-NNN) para gates de fase, pero no los vinc
 **Criterio de cierre:**
 
 `pm-thyrox/SKILL.md` tiene sección explícita de gates de escritura. En una sesión de prueba, Claude aplica los gates correctamente sin instrucción adicional del usuario.
+
+---
+
+## TD-028: Creación del work package en Phase 1 ANALYZE no es automática
+
+```
+Severidad: media
+Origen: FASE 27 — observación durante arranque de agentic-loop WP (2026-04-09)
+Fase afectada: Phase 1 ANALYZE — todos los WPs
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+Al iniciar un nuevo WP en Phase 1 ANALYZE, Claude crea el directorio `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` manualmente (llamada a `mkdir`). Este paso debería ser completamente automático — es una consecuencia determinista de iniciar Phase 1, no una decisión que requiera intervención.
+
+Actualmente:
+- No hay script `create-wp.sh` o equivalente que genere el directorio y la estructura base.
+- El timestamp del nombre del WP se genera ad-hoc en cada sesión, sin garantía de consistencia.
+- El subdirectorio `analysis/` también se crea manualmente.
+- `now.md` se actualiza manualmente después.
+
+**Resolución propuesta:**
+
+Crear script `.claude/scripts/create-wp.sh` que:
+1. Recibe `nombre-wp` como argumento.
+2. Genera timestamp con `date +%Y-%m-%d-%H-%M-%S`.
+3. Crea `context/work/{timestamp}-{nombre}/` y `context/work/{timestamp}-{nombre}/analysis/`.
+4. Actualiza `now.md` con `current_work: work/{timestamp}-{nombre}/` y `phase: Phase 1`.
+5. Retorna el path del WP creado.
+
+El script es invocado por `workflow-analyze/SKILL.md` al inicio de Phase 1, reemplazando los mkdir manuales.
+
+**Criterio de cierre:**
+
+`bash .claude/scripts/create-wp.sh nombre-wp` crea el directorio correcto, actualiza `now.md`, y el path resultante es consistente con lo que espera `validate-session-close.sh`.

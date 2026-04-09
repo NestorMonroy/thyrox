@@ -1,7 +1,7 @@
 ```yml
 type: Estado Operacional
 version: 1.0
-updated_at: 2026-04-09 10:00:00
+updated_at: 2026-04-09 18:00:00
 ```
 
 # Focus
@@ -26,7 +26,10 @@ FASE 26 completada. Framework v2.3.0 — distribución de 37 templates a `workfl
 - Lecciones: L-001..L-109
 - Deuda técnica: TD-001..TD-027 (TD-018 baja; TD-026 media; TD-027 cerrado en FASE 26)
 
-## Sin WP activo
+## WP activo
+
+FASE 27: agentic-loop — Phase 1 ANALYZE en curso
+Objetivo: integrar patrón Gather→Execute→Verify en workflow-execute/SKILL.md + references/
 
 ## Próximos pasos (ROADMAP)
 
