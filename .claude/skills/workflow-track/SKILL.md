@@ -1,15 +1,16 @@
 ---
-description: /workflow_track — Phase 7: TRACK. Documenta lecciones aprendidas, genera changelog, y cierra el work package activo.
+name: workflow-track
+description: Phase 7 TRACK — documenta lecciones aprendidas, genera changelog y cierra el work package activo.
 disable-model-invocation: true
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
     command: "echo 'phase: Phase 7' >> .claude/context/now.md"
-updated_at: 2026-04-08 22:00:00
+updated_at: 2026-04-09 00:00:00
 ---
 
-# /workflow_track — Phase 7: TRACK
+# /workflow-track — Phase 7: TRACK
 
 Documenta lecciones aprendidas, genera changelog, y cierra el work package activo.
 

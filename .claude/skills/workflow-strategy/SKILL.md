@@ -1,15 +1,16 @@
 ---
-description: /workflow_strategy — Phase 2: SOLUTION_STRATEGY. Inicia o retoma estrategia de solución del work package activo.
+name: workflow-strategy
+description: Phase 2 SOLUTION_STRATEGY — inicia o retoma la estrategia del work package activo.
 disable-model-invocation: true
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
     command: "echo 'phase: Phase 2' >> .claude/context/now.md"
-updated_at: 2026-04-08 22:00:00
+updated_at: 2026-04-09 00:00:00
 ---
 
-# /workflow_strategy — Phase 2: SOLUTION_STRATEGY
+# /workflow-strategy — Phase 2: SOLUTION_STRATEGY
 
 Inicia o retoma Phase 2 SOLUTION_STRATEGY del work package activo.
 
@@ -21,7 +22,7 @@ Inicia o retoma Phase 2 SOLUTION_STRATEGY del work package activo.
 2. Leer analysis existente: `cat .claude/context/work/[WP]/analysis/*-analysis.md`
 3. Leer `context/now.md` — verificar `phase`
 4. Verificar si ya existe `*-solution-strategy.md`:
-   - Si existe con decisiones documentadas → Phase 2 ya completó. Proponer `/workflow_plan`.
+   - Si existe con decisiones documentadas → Phase 2 ya completó. Proponer `/workflow-plan`.
 5. Listar tech skills activos: `ls .claude/skills/ | grep -v pm-thyrox`
 
 ---
@@ -72,4 +73,4 @@ Phase 2 completa cuando:
 - Usuario confirmó la estrategia explícitamente en esta sesión
 
 **Detectar:** Si `work/.../*-solution-strategy.md` existe con decisiones documentadas, Phase 2 ya completó.
-Al terminar: proponer `/workflow_plan` para Phase 3.
+Al terminar: proponer `/workflow-plan` para Phase 3.

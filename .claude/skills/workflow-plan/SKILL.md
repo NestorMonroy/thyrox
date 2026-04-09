@@ -1,15 +1,16 @@
 ---
-description: /workflow_plan — Phase 3: PLAN. Inicia o retoma Phase 3 PLAN del work package activo.
+name: workflow-plan
+description: Phase 3 PLAN — inicia o retoma el plan del work package activo.
 disable-model-invocation: true
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
     command: "echo 'phase: Phase 3' >> .claude/context/now.md"
-updated_at: 2026-04-08 22:00:00
+updated_at: 2026-04-09 00:00:00
 ---
 
-# /workflow_plan — Phase 3: PLAN
+# /workflow-plan — Phase 3: PLAN
 
 Inicia o retoma Phase 3 PLAN del work package activo.
 
@@ -20,7 +21,7 @@ Inicia o retoma Phase 3 PLAN del work package activo.
 1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
 2. Leer `context/now.md` — verificar `phase`
 3. Verificar si ya existe `*-plan.md` con `[x] Scope aprobado`:
-   - Si existe aprobado → Phase 3 ya completó. Proponer `/workflow_structure`.
+   - Si existe aprobado → Phase 3 ya completó. Proponer `/workflow-structure`.
 4. Verificar que ROADMAP.md tiene el WP linkeado.
 
 ---
@@ -67,4 +68,4 @@ Phase 3 completa cuando:
 - Usuario confirmó el scope explícitamente en esta sesión
 
 **Detectar:** Si `work/.../*-plan.md` existe con `[x] Scope aprobado`, Phase 3 ya completó.
-Al terminar: proponer `/workflow_structure` para Phase 4.
+Al terminar: proponer `/workflow-structure` para Phase 4.

@@ -1,15 +1,16 @@
 ---
-description: /workflow_analyze — Phase 1: ANALYZE. Inicia o retoma análisis del work package activo.
+name: workflow-analyze
+description: Phase 1 ANALYZE — inicia o retoma el análisis del work package activo.
 disable-model-invocation: true
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
     command: "echo 'phase: Phase 1' >> .claude/context/now.md"
-updated_at: 2026-04-08 22:00:00
+updated_at: 2026-04-09 00:00:00
 ---
 
-# /workflow_analyze — Phase 1: ANALYZE
+# /workflow-analyze — Phase 1: ANALYZE
 
 Inicia o retoma Phase 1 ANALYZE del work package activo.
 
@@ -22,7 +23,7 @@ Inicia o retoma Phase 1 ANALYZE del work package activo.
 3. Listar tech skills activos: `ls .claude/skills/ | grep -v pm-thyrox`
 4. Verificar si ya existe `*-analysis.md` en el WP:
    - `ls .claude/context/work/[WP-activo]/analysis/ 2>/dev/null`
-   - Si existe sin `[NEEDS CLARIFICATION]` → Phase 1 ya completó. Proponer `/workflow_strategy`.
+   - Si existe sin `[NEEDS CLARIFICATION]` → Phase 1 ya completó. Proponer `/workflow-strategy`.
    - Si no existe → iniciar Phase 1.
 
 ---
@@ -90,4 +91,4 @@ Phase 1 completa cuando:
 - Usuario confirmó los hallazgos explícitamente en esta sesión
 
 **Detectar:** Si `work/.../analysis/` tiene `*-analysis.md` sin `[NEEDS CLARIFICATION]`, Phase 1 ya completó.
-Al terminar: proponer `/workflow_strategy` para Phase 2.
+Al terminar: proponer `/workflow-strategy` para Phase 2.

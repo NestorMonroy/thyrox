@@ -1,15 +1,16 @@
 ---
-description: /workflow_execute — Phase 6: EXECUTE. Toma la siguiente tarea pendiente del work package activo y la ejecuta.
+name: workflow-execute
+description: Phase 6 EXECUTE — toma la siguiente tarea pendiente del work package activo y la ejecuta.
 disable-model-invocation: true
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
     command: "echo 'phase: Phase 6' >> .claude/context/now.md"
-updated_at: 2026-04-08 22:00:00
+updated_at: 2026-04-09 00:00:00
 ---
 
-# /workflow_execute — Phase 6: EXECUTE
+# /workflow-execute — Phase 6: EXECUTE
 
 Toma la siguiente tarea pendiente del work package activo y la ejecuta.
 
@@ -91,18 +92,18 @@ Phase 6 completa cuando:
 - Validación pre-Phase 7 pasada
 
 **Detectar:** Si todas las checkboxes en `*-task-plan.md` están `[x]`, Phase 6 ya completó.
-Al terminar: proponer `/workflow_track` para Phase 7.
+Al terminar: proponer `/workflow-track` para Phase 7.
 
 ---
 
 ## Sinergia con /loop
 
-Una vez que los workflow_* están en `.claude/skills/` (TD-008 completo), es posible ejecutar:
+Una vez que los workflow-* están en `.claude/skills/` (TD-008 completo), es posible ejecutar:
 
 ```
-/loop 10m /workflow_execute
+/loop 10m /workflow-execute
 ```
 
-Esto invoca `/workflow_execute` cada 10 minutos de forma automática — útil para WPs con muchas tareas que se ejecutan en batches. El skill `once: true` del hook garantiza que `now.md::phase` solo se actualiza en el primer disparo de la sesión.
+Esto invoca `/workflow-execute` cada 10 minutos de forma automática — útil para WPs con muchas tareas que se ejecutan en batches. El skill `once: true` del hook garantiza que `now.md::phase` solo se actualiza en el primer disparo de la sesión.
 
 > Nota: requiere que el task-plan no tenga gates humanos pendientes (las tareas deben ser automáticas). Para WPs con gates obligatorios, usar `/loop` solo para el batch de tareas entre gates.

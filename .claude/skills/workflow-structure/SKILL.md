@@ -1,15 +1,16 @@
 ---
-description: /workflow_structure — Phase 4: STRUCTURE. Inicia o retoma Phase 4 STRUCTURE del work package activo.
+name: workflow-structure
+description: Phase 4 STRUCTURE — inicia o retoma la especificación del work package activo.
 disable-model-invocation: true
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
     command: "echo 'phase: Phase 4' >> .claude/context/now.md"
-updated_at: 2026-04-08 22:00:00
+updated_at: 2026-04-09 00:00:00
 ---
 
-# /workflow_structure — Phase 4: STRUCTURE
+# /workflow-structure — Phase 4: STRUCTURE
 
 Inicia o retoma Phase 4 STRUCTURE del work package activo.
 
@@ -21,7 +22,7 @@ Inicia o retoma Phase 4 STRUCTURE del work package activo.
 2. Leer plan y solution-strategy del WP para entender el scope
 3. Leer `context/now.md` — verificar `phase`
 4. Verificar si ya existe `*-requirements-spec.md` sin `[NEEDS CLARIFICATION]`:
-   - Si existe con spec-checklist al 100% → Phase 4 ya completó. Proponer `/workflow_decompose`.
+   - Si existe con spec-checklist al 100% → Phase 4 ya completó. Proponer `/workflow-decompose`.
 5. Listar tech skills activos para orientar la spec técnica.
 
 ---
@@ -70,4 +71,4 @@ Phase 4 completa cuando:
 - Usuario confirmó la especificación explícitamente en esta sesión
 
 **Detectar:** Si `work/.../*-requirements-spec.md` tiene user stories y acceptance criteria sin `[NEEDS CLARIFICATION]`, Phase 4 ya completó.
-Al terminar: proponer `/workflow_decompose` para Phase 5.
+Al terminar: proponer `/workflow-decompose` para Phase 5.
