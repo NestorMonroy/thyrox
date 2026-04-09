@@ -2,8 +2,8 @@
 # update-state.sh — Regenera project-state.md desde el estado real del repo
 #
 # Uso:
-#   bash .claude/skills/pm-thyrox/scripts/update-state.sh            # escribe project-state.md
-#   bash .claude/skills/pm-thyrox/scripts/update-state.sh --dry-run  # muestra sin escribir
+#   bash .claude/scripts/update-state.sh            # escribe project-state.md
+#   bash .claude/scripts/update-state.sh --dry-run  # muestra sin escribir
 #
 # Lee:
 #   .claude/agents/*.md       → agentes nativos activos
@@ -16,7 +16,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && cd .. && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 AGENTS_DIR="${PROJECT_ROOT}/.claude/agents"
 CHANGELOG="${PROJECT_ROOT}/CHANGELOG.md"
 ROADMAP="${PROJECT_ROOT}/ROADMAP.md"

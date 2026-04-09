@@ -1,19 +1,19 @@
 ```yml
 type: Dashboard de Proyecto
 category: Estado Actual
-version: 2.0.0
+version: 2.1.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-09 02:48:38
+updated_at: 2026-04-09 06:34:51
 ```
 
 # Project State — THYROX
 
 ## Status General
 
-**Versión:** 2.0.0
-**Estado:** Activo — framework pm-thyrox con 23 FASEs completadas
-**Última actualización:** 2026-04-09 02:48:38
+**Versión:** 2.1.0
+**Estado:** Activo — framework pm-thyrox con 24 FASEs completadas
+**Última actualización:** 2026-04-09 06:34:51
 **Branch activo:** `claude/check-merge-status-Dcyvj`
 
 ---
@@ -27,12 +27,12 @@ updated_at: 2026-04-09 02:48:38
 - `skill-generator` — Genera archivos de skill (.claude/skills/ o .claude/agents/) para una tecnologí
 - `task-executor` — Ejecuta tareas atómicas de un task-plan.md. Usar cuando hay un task-plan con ch
 - `task-planner` — Descompone trabajo en tareas atómicas con IDs trazables. Usar cuando el usuario
-- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
+- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
 - `webpack-expert` — Tech-expert para Webpack y bundling de assets. Conoce configuración de entry/ou
 
 ---
 
-## FASEs completadas (21 total)
+## FASEs completadas (24 total)
 
 | FASE 1: Framework Base (v0.1.0) |
 | FASE 2: Consolidación y Coherencia (v0.2.0) — Sesión 2026-03-27 |
@@ -55,8 +55,9 @@ updated_at: 2026-04-09 02:48:38
 | FASE 19: Async Gates — gates para agentes en background (2026-04-08) |
 | FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) ✓ |
 | FASE 21: Skill Architecture Review — decisión arquitectónica pm-thyrox (2026-04-08) |
-| FASE 22: Framework Evolution — hooks Stop/PostCompact, 7 workflow_* skills hidden, Step 0 END USER CONTEXT (2026-04-08) |
-| FASE 23: Workflow Restructure — 7 workflow-*/SKILL.md (kebab hyphens), SKILL.md 148 líneas catálogo, TD-019..024 cerrados (2026-04-09) |
+| FASE 22: Framework Evolution — Integración documentación oficial + TDs prioritarios (2026-04-08) ✓ |
+| FASE 23: workflow-restructure — Migración workflow-* a subdirectorios + reducción SKILL.md (2026-04-09) |
+| FASE 24: skill-references-restructure — Redistribución arquitectónica de references y scripts (2026-04-09) |
 
 Ver ROADMAP.md para detalle de cada FASE.
 
@@ -83,7 +84,7 @@ Ver ROADMAP.md para detalle de cada FASE.
 
 ## Deuda técnica registrada
 
-Ver `.claude/context/technical-debt.md` para TD-001 a TD-024 (TD-019..024 cerrados en FASE 23).
+Ver `.claude/context/technical-debt.md` para TD-001 a TD-007.
 
 ---
 
