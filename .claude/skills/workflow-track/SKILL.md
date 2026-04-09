@@ -6,8 +6,8 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "echo 'phase: Phase 7' >> .claude/context/now.md"
-updated_at: 2026-04-09 00:00:00
+    command: "bash .claude/scripts/set-session-phase.sh 'Phase 7'"
+updated_at: 2026-04-09 22:00:00
 ---
 
 # /workflow-track — Phase 7: TRACK
@@ -62,7 +62,7 @@ bash .claude/scripts/project-status.sh
 
 | Archivo | Contenido mínimo requerido |
 |---------|---------------------------|
-| `context/now.md` | `current_work: null` · `phase: null` · `updated_at: timestamp` |
+| `context/now.md` | Ejecutar: `bash .claude/scripts/close-wp.sh` (setea phase y current_work a null) |
 | `context/focus.md` | `## Completado`: FASE N + WP + qué se logró. `## Sin WP activo`: versión actual + próximo en ROADMAP |
 | `context/project-state.md` | Ejecutar `bash .claude/scripts/update-state.sh` |
 

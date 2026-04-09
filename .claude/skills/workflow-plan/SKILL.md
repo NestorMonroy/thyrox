@@ -6,8 +6,8 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "echo 'phase: Phase 3' >> .claude/context/now.md"
-updated_at: 2026-04-09 00:00:00
+    command: "bash .claude/scripts/set-session-phase.sh 'Phase 3'"
+updated_at: 2026-04-09 22:00:00
 ---
 
 # /workflow-plan — Phase 3: PLAN
