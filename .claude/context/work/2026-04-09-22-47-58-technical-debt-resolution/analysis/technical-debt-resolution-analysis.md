@@ -60,8 +60,11 @@ de refuerzo — ni en SKILL.md (instrucciones incompletas) ni en hooks (sin auto
 | TD-030 | baja | [ ] | Análisis de impacto de renombrar Phase N | investigación |
 | TD-031 | alta | [ ] | workflow-*/SKILL.md sin deep review pre-gate | todos workflow-*/SKILL.md |
 | TD-032 | alta | [ ] | GAPs Phase 6 no prevenidos (4 tracking gaps) | workflow-execute/SKILL.md |
+| TD-033 | alta | [ ] | now.md modificado por hook no se incluye en commits | workflow-*/SKILL.md |
+| TD-034 | alta | [ ] | CHANGELOG.md supera límite Read tool (11,866 tokens) | CHANGELOG |
+| TD-035 | media | [ ] | Sin regla de longevidad para archivos vivos | conventions |
 
-**Pendientes reales: 24** (32 total − 4 resueltos ya)
+**Pendientes reales: 27** (35 total − 4 resueltos ya — TDs 033-035 agregados en FASE 29 Phase 1)
 
 ---
 

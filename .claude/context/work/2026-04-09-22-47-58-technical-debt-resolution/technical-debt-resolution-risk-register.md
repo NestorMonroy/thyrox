@@ -95,3 +95,38 @@ Este es el mismo problema de TD-026 (ROADMAP.md) pero afectando a technical-debt
 **Mitigación:** Split de technical-debt.md como parte de esta FASE:
 - `technical-debt.md` → solo items pendientes ([ ])
 - `technical-debt-resolved.md` → items cerrados ([-] o [x])
+
+---
+
+## R-07: CHANGELOG.md también supera límite de lectura (11,866 tokens)
+
+```
+Probabilidad: confirmada (ya ocurrió)
+Impacto: alto
+Severidad: alta
+```
+
+`CHANGELOG.md` tiene 38,566 bytes (~11,866 tokens) — superó el límite del Read tool.
+Tercer archivo crítico identificado en deep review del 2026-04-09.
+Registrado como TD-034.
+
+**Mitigación:** Split de CHANGELOG.md:
+- `CHANGELOG-archive.md` → versiones v0.x + v1.x (históricas)
+- `CHANGELOG.md` → versiones v2.x en adelante (actuales)
+
+---
+
+## R-08: Sin regla de longevidad — próximos archivos también crecerán
+
+```
+Probabilidad: alta (patrón confirmado en 3 archivos)
+Impacto: medio
+Severidad: media
+```
+
+`conventions.md` y `skill-authoring.md` ya están al 68-69% del límite.
+Sin una regla de umbral de tamaño, es probable que en 5-10 FASEs también
+superen el límite.
+
+**Mitigación:** Registrar TD-035 y agregar REGLA-LONGEV-001 en conventions.md
+antes de cerrar Phase 6 de esta FASE.

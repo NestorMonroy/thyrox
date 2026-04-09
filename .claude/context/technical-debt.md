@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-09 23:05:00
+updated_at: 2026-04-09 23:20:00
 ```
 
 # Deuda Técnica — THYROX
@@ -1320,3 +1320,69 @@ En una sesión de prueba con WP mediano:
 - El stop hook no reporta uncommitted changes en now.md al finalizar ninguna fase
 - Al presentar cada gate, `git status` muestra "nothing to commit"
 - now.md::current_work está commiteado antes de cada ⏸ STOP
+
+---
+
+## TD-034: CHANGELOG.md supera límite de lectura del Read tool
+
+```yml
+id: TD-034
+severidad: alta
+estado: "[ ] Pendiente"
+detectado_en: FASE 29
+area: CHANGELOG
+```
+
+`CHANGELOG.md` tiene 38,566 bytes (~11,866 tokens) — supera el límite de 10,000 tokens
+del Read tool. No se puede leer en una sola llamada. Es el tercer archivo crítico después
+de `technical-debt.md` (TD-026-B) y `ROADMAP.md` (TD-026).
+
+**Root cause:** Keep a Changelog no tiene convención de split — el archivo crece
+indefinidamente con cada versión publicada. Con 20 versiones a 1,928 bytes/versión,
+ya superó el límite en la versión ~17.
+
+**Fix:**
+- Crear `CHANGELOG-archive.md` con versiones v0.x + v1.x (13 versiones históricas)
+- `CHANGELOG.md` mantiene solo versiones v2.x en adelante
+- Agregar regla: al publicar nueva major version → archivar major anterior completa
+
+**Criterio de cierre:**
+- `CHANGELOG.md` ≤ 25,000 bytes (margen de seguridad)
+- `CHANGELOG-archive.md` existe y contiene versiones archivadas
+- SKILL.md actualizado con regla de archivado
+
+---
+
+## TD-035: Sin regla de longevidad para archivos vivos (REGLA-LONGEV-001)
+
+```yml
+id: TD-035
+severidad: media
+estado: "[ ] Pendiente"
+detectado_en: FASE 29
+area: conventions
+```
+
+El framework no tiene ninguna convención que prevenga la acumulación indefinida de
+contenido en archivos vivos (archivos que se editan en cada FASE). Esto causó que
+`technical-debt.md`, `ROADMAP.md` y `CHANGELOG.md` superaran el límite del Read tool
+sin que nadie lo detectara ni previniera.
+
+**Root cause:** `conventions.md` no documenta un umbral de tamaño máximo para archivos
+vivos, ni un proceso de archivado/purga periódico.
+
+**Fix — Agregar REGLA-LONGEV-001 en conventions.md:**
+
+```
+REGLA-LONGEV-001: Archivos vivos con umbral de tamaño
+- Si un archivo vivo (que se edita cada FASE) supera 25,000 bytes:
+  → Crear archivo de archivo (nombre-archive.md o nombre-history.md)
+  → Mover contenido histórico/cerrado al archivo de archivo
+  → El archivo original mantiene solo estado activo/reciente
+- Trigger de revisión: cada 5 FASEs, ejecutar wc -c en archivos vivos clave
+  Archivos a monitorear: ROADMAP.md, CHANGELOG.md, technical-debt.md
+```
+
+**Criterio de cierre:**
+- `conventions.md` contiene la regla REGLA-LONGEV-001
+- `project-status.sh` o script equivalente alerta si archivo vivo supera 25,000 bytes
