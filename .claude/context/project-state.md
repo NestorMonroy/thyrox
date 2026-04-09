@@ -1,19 +1,19 @@
 ```yml
 type: Dashboard de Proyecto
 category: Estado Actual
-version: 2.1.0
+version: 2.2.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-09 09:46:45
+updated_at: 2026-04-09 10:19:45
 ```
 
 # Project State — THYROX
 
 ## Status General
 
-**Versión:** 2.1.0
-**Estado:** Activo — framework pm-thyrox con 24 FASEs completadas
-**Última actualización:** 2026-04-09 09:46:45
+**Versión:** 2.2.0
+**Estado:** Activo — framework pm-thyrox con 25 FASEs completadas
+**Última actualización:** 2026-04-09 10:19:45
 **Branch activo:** `claude/check-merge-status-Dcyvj`
 
 ---
@@ -32,7 +32,7 @@ updated_at: 2026-04-09 09:46:45
 
 ---
 
-## FASEs completadas (24 total)
+## FASEs completadas (25 total)
 
 | FASE 1: Framework Base (v0.1.0) |
 | FASE 2: Consolidación y Coherencia (v0.2.0) — Sesión 2026-03-27 |
@@ -53,11 +53,12 @@ updated_at: 2026-04-09 09:46:45
 | FASE 17: Análisis de referencia — mise (jdx/mise) (2026-04-07) |
 | FASE 18: Human Gates — autorización explícita por fase (2026-04-07) |
 | FASE 19: Async Gates — gates para agentes en background (2026-04-08) |
-| FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) +|
+| FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) si |
 | FASE 21: Skill Architecture Review — decisión arquitectónica pm-thyrox (2026-04-08) |
-| FASE 22: Framework Evolution — Integración documentación oficial + TDs prioritarios (2026-04-08) +|
+| FASE 22: Framework Evolution — Integración documentación oficial + TDs prioritarios (2026-04-08) si |
 | FASE 23: workflow-restructure — Migración workflow-* a subdirectorios + reducción SKILL.md (2026-04-09) |
 | FASE 24: skill-references-restructure — Redistribución arquitectónica de references y scripts (2026-04-09) |
+| FASE 25: assets-restructure — Distribución de templates a workflow-*/assets/ (2026-04-09) |
 
 Ver ROADMAP.md para detalle de cada FASE.
 

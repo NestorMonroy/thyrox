@@ -1,12 +1,12 @@
 ```yml
 type: Estado Operacional
 version: 1.0
-updated_at: 2026-04-09 07:30:00
+updated_at: 2026-04-09 10:00:00
 ```
 
 # Focus
 
-FASE 24 completada. Framework v2.1.0 — arquitectura de 3 niveles para references y scripts. `pm-thyrox/references/` eliminado, `.claude/references/` y `.claude/scripts/` creados.
+FASE 25 completada. Framework v2.2.0 — distribución de 37 templates a `workflow-*/assets/`, skills autocontenidos con anatomia completa. Limpieza total de emojis/iconos en 49 archivos.
 
 ## Completado (2026-04-09)
 
@@ -16,13 +16,14 @@ FASE 24 completada. Framework v2.1.0 — arquitectura de 3 niveles para referenc
 - FASE 22: framework-evolution — hooks Stop/PostCompact (R-05 cerrado), atomicidad Phase 5, ADR-015 addendum + ADR-016, TD-008 completo (7 workflow_* → skills hidden), Step 0 END USER CONTEXT, lecciones L-087..L-093
 - FASE 23: workflow-restructure — 7 workflow-*/SKILL.md (kebab hyphens), SKILL.md 148 líneas, TD-019..024 cerrados, lecciones L-094..L-097
 - FASE 24: skill-references-restructure — 3 niveles arquitectónicos (global/.claude/refs, fase/workflow-*/refs, infra/.claude/scripts), pm-thyrox/references/ eliminado, CLAUDE.md ## Estructura expandida, ADR-017, lecciones L-098..L-101
+- FASE 25: assets-restructure — 37/38 templates distribuidos a workflow-*/assets/, 7 dirs creados, ADR-018, limpieza emojis 49 archivos, lecciones L-102..L-105
 
 ## Estado del framework
 
 - 9 agentes nativos en `.claude/agents/`
-- Versión: v2.1.0
-- Lecciones: L-001..L-101
-- Deuda técnica: TD-001..TD-024 (TD-020 cerrado en FASE 24; TD-018 pendiente — baja prioridad)
+- Versión: v2.2.0
+- Lecciones: L-001..L-105
+- Deuda técnica: TD-001..TD-024 (TD-018 pendiente — baja prioridad)
 
 ## Sin WP activo
 

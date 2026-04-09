@@ -13,6 +13,49 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [2.2.0] - 2026-04-09
+
+### Added — Assets Restructure: templates distribuidos a workflow-*/assets/ (WP assets-restructure / FASE 25)
+
+**Batch A — 14 templates → workflow-analyze/assets/:**
+- introduction, risk-register, exit-conditions, constitution, requirements-analysis, use-cases, quality-goals, stakeholders, basic-usage, constraints, context, end-user-context, project.json, adr
+
+**Batch B — 7 templates → workflow-strategy/plan/structure/assets/:**
+- workflow-strategy: solution-strategy
+- workflow-plan: plan, epic
+- workflow-structure: requirements-specification, design, spec-quality-checklist, document
+
+**Batch C — 11 templates → workflow-decompose/execute/assets/:**
+- workflow-decompose: tasks, categorization-plan
+- workflow-execute: execution-log, commit-message-main, feature, bugfix, refactor, documentation, ad-hoc-tasks, multiple-files, task-completion
+
+**Batch D — 5 templates → workflow-track/assets/ + pm-thyrox/assets/ reducido:**
+- workflow-track: lessons-learned, changelog, final-report, refactors, analysis-phase
+- pm-thyrox/assets/: solo error-report.md.template queda (cross-phase)
+
+**Commit final — Documentacion + ADR:**
+- Links actualizados: pm-thyrox/SKILL.md (14 paths), workflow-strategy/SKILL.md (adr cross-ref), references/conventions.md, references/examples.md, incremental-correction.md, reference-validation.md, setup-template.sh, docs/architecture/decisions/README.md
+- ADR-018: documenta distribucion de templates a 3 niveles, caso especial error-report cross-phase
+
+### Changed — Emoji/icon removal: 49 archivos limpiados
+
+- Todos los scripts `.sh`: simbolos ASCII para estados ([OK], [ERROR], [WARN], [FAIL])
+- Todos los archivos `.md`: tablas con texto plano (si/-, HACER/EVITAR)
+- `.py` scripts: [OK]/[FAIL] en lugar de unicode
+- ROADMAP.md, CHANGELOG.md: sin emojis/iconos decorativos
+
+### Fixed
+
+- `references/conventions.md` y `references/examples.md`: paths `../assets/X.md` rotos desde FASE 24 (apuntaban a `.claude/assets/` inexistente) — corregidos
+- `update-state.sh`: PROJECT_ROOT corregido de `../../..` + cd (4 niveles) a `../..` (2 niveles desde `.claude/scripts/`)
+- `context/decisions.md` (x3): adr.md.template path actualizado tras move a workflow-analyze
+
+### Lessons Learned
+
+- L-102..L-105 documentadas (ver WP assets-restructure-lessons-learned.md)
+
+---
+
 ## [2.1.0] - 2026-04-09
 
 ### Added — References Restructure: 3-level architecture for references & scripts (WP skill-references-restructure / FASE 24)

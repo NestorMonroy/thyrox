@@ -851,3 +851,44 @@ FASE 17: Análisis de referencia mise                              — 100% si
 - [x] F-01: Actualizar `CLAUDE.md` `## Estructura` (9 dirs reales) + pm-thyrox/SKILL.md paths — 2026-04-09
 - [x] F-02: Crear `ADR-017` (3 niveles de artefactos: .claude/references/, .claude/scripts/, workflow-*/references/) — 2026-04-09
 - [x] F-03: Cerrar TD-020 — `.claude/commands/` documentado en CLAUDE.md — 2026-04-09
+
+---
+
+## FASE 25: assets-restructure — Distribución de templates a workflow-*/assets/ (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-09-07-15-48-assets-restructure/`
+**Causa raíz:** 38 templates centralizados en `pm-thyrox/assets/` — workflow-* skills con referencias rotas silenciosas a `assets/X.md.template` (directorios inexistentes).
+
+### Batch A — 14 templates → workflow-analyze/assets/
+
+- [x] A-01: `git mv` 14 templates (introduction, risk-register, exit-conditions, constitution, requirements-analysis, use-cases, quality-goals, stakeholders, basic-usage, constraints, context, end-user-context, project.json, adr) — 2026-04-09
+- [x] A-02: Actualizar links en `decisions.md` (x3) tras move de adr.md.template — 2026-04-09
+
+### Batch B — 7 templates → workflow-strategy/plan/structure/assets/
+
+- [x] B-01: `git mv` solution-strategy → workflow-strategy/assets/ — 2026-04-09
+- [x] B-02: `git mv` plan, epic → workflow-plan/assets/ — 2026-04-09
+- [x] B-03: `git mv` requirements-specification, design, spec-quality-checklist, document → workflow-structure/assets/ — 2026-04-09
+
+### Batch C — 11 templates → workflow-decompose/execute/assets/
+
+- [x] C-01: `git mv` tasks, categorization-plan → workflow-decompose/assets/ — 2026-04-09
+- [x] C-02: `git mv` execution-log, commit-message-main, feature, bugfix, refactor, documentation, ad-hoc-tasks, multiple-files, task-completion → workflow-execute/assets/ — 2026-04-09
+
+### Batch D — 5 templates → workflow-track/assets/
+
+- [x] D-01: `git mv` lessons-learned, changelog, final-report, refactors, analysis-phase → workflow-track/assets/ — 2026-04-09
+- [x] D-02: `pm-thyrox/assets/` reducido a 1 archivo: error-report.md.template (cross-phase) — 2026-04-09
+
+### Batch E — Actualizaciones de links externos
+
+- [x] E-01: `pm-thyrox/SKILL.md` — 14 links en tabla artefactos actualizados a `../workflow-*/assets/` — 2026-04-09
+- [x] E-02: `workflow-strategy/SKILL.md` — adr cross-ref a `../workflow-analyze/assets/adr.md.template` — 2026-04-09
+- [x] E-03: `references/conventions.md`, `references/examples.md` — paths rotos desde FASE 24 corregidos — 2026-04-09
+- [x] E-04: `incremental-correction.md`, `reference-validation.md` — cp commands y links actualizados — 2026-04-09
+- [x] E-05: `setup-template.sh`, `docs/architecture/decisions/README.md` — paths actualizados — 2026-04-09
+- [x] E-06: `ADR-018` — documenta distribución de templates, caso especial error-report — 2026-04-09
+
+### Style — Limpieza de emojis/iconos
+
+- [x] S-01: 49 archivos (.sh, .md, .py) — eliminados todos los emojis y caracteres unicode decorativos — 2026-04-09
