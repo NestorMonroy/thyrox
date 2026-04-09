@@ -778,3 +778,37 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 - [x] Step 0 en SKILL.md Phase 1
 - [x] Template `end-user-context.md.template`
+
+---
+
+## FASE 23: workflow-restructure — Migración workflow-* a subdirectorios + reducción SKILL.md (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-08-23-55-52-workflow-restructure/`
+**Causa raíz:** TD-019 (flat files inconsistentes), Option B elegida en FASE 22, docs oficiales confirman kebab-case en `name` field.
+
+### Bloque M — Migración 7 skills (flat → subdirectorio)
+
+- [ ] M-01: `workflow-analyze/SKILL.md` (crear dir + SKILL.md con frontmatter oficial + eliminar flat file)
+- [ ] M-02: `workflow-strategy/SKILL.md`
+- [ ] M-03: `workflow-plan/SKILL.md`
+- [ ] M-04: `workflow-structure/SKILL.md`
+- [ ] M-05: `workflow-decompose/SKILL.md`
+- [ ] M-06: `workflow-execute/SKILL.md`
+- [ ] M-07: `workflow-track/SKILL.md`
+
+### Bloque R — Actualizar referencias externas
+
+- [ ] R-01: `session-start.sh` — 7 referencias `/workflow_*` → `/workflow-*`
+- [ ] R-02: `CLAUDE.md` — Addendum Locked Decision #5
+- [ ] R-03: `commands/workflow_init.md` — referencia a `/workflow_analyze`
+- [ ] R-04: `adr-016.md` — paths de skills
+- [ ] R-05: `agent-spec.md` — corregir `model` (válido) y `tools` (opcional) per docs oficiales
+
+### Bloque TD — Contenido faltante
+
+- [ ] TD-01: Añadir tabla escalabilidad a `workflow-analyze/SKILL.md` (TD-020)
+- [ ] TD-02: Añadir `owner:` al frontmatter de cada archivo en `references/` (TD-023)
+
+### Bloque S — Reducción SKILL.md
+
+- [ ] S-01: Reducir `pm-thyrox/SKILL.md` ~471 → ~130 líneas (T-027): eliminar lógica Phase 1..7, conservar catálogo + artefactos + naming
