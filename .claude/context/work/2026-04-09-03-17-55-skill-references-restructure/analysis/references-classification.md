@@ -62,99 +62,101 @@ CREAR o MODIFICAR componentes del sistema, no al USAR el framework en el día a 
 
 ---
 
+## Criterio de clasificación (revisado)
+
+La distinción no es "¿pertenece a pm-thyrox?" sino **"¿quién se beneficia si esto existe?"**:
+
+| Nivel | Criterio | Ejemplo |
+|-------|---------|---------|
+| **Fase** (`workflow-*/references/`) | Solo útil durante una fase específica del SDLC | `scalability.md` — solo al iniciar Phase 1 |
+| **Global** (`.claude/references/`) | Útil en **cualquier proyecto Claude Code**, independientemente del framework | `skill-vs-agent.md`, `conventions.md` |
+
+`pm-thyrox/references/` **queda vacío** — todos los docs o son de fase o son globales.
+
+---
+
 ## Clasificación completa — 24 referencias
 
-### Nivel 2B: Skill-específico → mover a `workflow-*/references/`
+### Nivel FASE → mover a `workflow-*/references/`
 
 Criterio: el contenido describe cómo ejecutar UNA fase específica del SDLC.
-Quien lo lee es el skill de esa fase — no tiene sentido en otro contexto.
+No tiene sentido fuera de ese contexto de fase.
 
-| Archivo | Destino | Razón |
-|---------|---------|-------|
-| `introduction.md` | `workflow-analyze/references/` | Guía de análisis inicial — solo Phase 1 |
-| `basic-usage.md` | `workflow-analyze/references/` | Patrones de uso operacional — solo Phase 1 |
-| `constraints.md` | `workflow-analyze/references/` | Análisis de restricciones — solo Phase 1 |
-| `context.md` | `workflow-analyze/references/` | Análisis de contexto/sistemas vecinos — solo Phase 1 |
-| `quality-goals.md` | `workflow-analyze/references/` | Análisis de atributos de calidad — solo Phase 1 |
-| `requirements-analysis.md` | `workflow-analyze/references/` | Análisis de requisitos — solo Phase 1 |
-| `stakeholders.md` | `workflow-analyze/references/` | Análisis de stakeholders — solo Phase 1 |
-| `use-cases.md` | `workflow-analyze/references/` | Casos de uso — solo Phase 1 |
-| `scalability.md` | `workflow-analyze/references/` | Tabla micro/pequeño/mediano/grande — se consulta al iniciar Phase 1 |
-| `solution-strategy.md` | `workflow-strategy/references/` | Cómo estructurar la estrategia de solución — solo Phase 2 |
-| `spec-driven-development.md` | `workflow-structure/references/` | SDD, especificación compleja — solo Phase 4 |
-| `commit-convention.md` | `workflow-execute/references/` | Conventional Commits — solo Phase 6 |
-| `commit-helper.md` | `workflow-execute/references/` | Helper de commits — solo Phase 6 |
-| `reference-validation.md` | `workflow-track/references/` | Validar referencias rotas — solo Phase 7 |
-| `incremental-correction.md` | `workflow-track/references/` | Corrección incremental — solo Phase 7 |
+| Archivo | Destino |
+|---------|---------|
+| `introduction.md` | `workflow-analyze/references/` |
+| `basic-usage.md` | `workflow-analyze/references/` |
+| `constraints.md` | `workflow-analyze/references/` |
+| `context.md` | `workflow-analyze/references/` |
+| `quality-goals.md` | `workflow-analyze/references/` |
+| `requirements-analysis.md` | `workflow-analyze/references/` |
+| `stakeholders.md` | `workflow-analyze/references/` |
+| `use-cases.md` | `workflow-analyze/references/` |
+| `scalability.md` | `workflow-analyze/references/` |
+| `solution-strategy.md` | `workflow-strategy/references/` |
+| `spec-driven-development.md` | `workflow-structure/references/` |
+| `commit-convention.md` | `workflow-execute/references/` |
+| `commit-helper.md` | `workflow-execute/references/` |
+| `reference-validation.md` | `workflow-track/references/` |
+| `incremental-correction.md` | `workflow-track/references/` |
 
-**Total: 15 archivos** con destino en sus skills correspondientes.
-
----
-
-### Nivel 2A: Framework pm-thyrox → quedan en `pm-thyrox/references/`
-
-Criterio: el contenido describe la METODOLOGÍA del framework pm-thyrox en sí.
-Se usa desde CUALQUIER fase (cross-phase) pero es específico del framework pm-thyrox.
-
-| Archivo | Justificación |
-|---------|--------------|
-| `conventions.md` | Define convenciones de naming, commits, ROADMAP del proyecto — reglas del framework |
-| `examples.md` | 8 casos de uso del framework pm-thyrox — ejemplos de cómo usarlo |
-| `state-management.md` | Cómo actualizar now.md, focus.md — infraestructura de estado del framework |
-| `long-context-tips.md` | Tips para usar Claude en documentos largos — usado transversalmente por pm-thyrox |
-| `prompting-tips.md` | Tips de prompting cuando Claude no entiende instrucciones — soporte del framework |
-
-**Total: 5 archivos** que se quedan en pm-thyrox/references/.
-
-`conventions.md` y `state-management.md` son especialmente críticos de mantener aquí porque
-los SKILL.md de workflow-* los referencian (o podrían referenciarlos) para guiar la ejecución.
+**Total: 15 archivos** en sus skills de fase.
 
 ---
 
-### Nivel 1: Claude Code sistema → mover a `.claude/references/`
+### Nivel GLOBAL → mover a `.claude/references/`
 
-Criterio: el contenido documenta el sistema Claude Code en sí — no una fase, no el framework
-pm-thyrox, sino la plataforma. Son docs que se consultan al CREAR o AUDITAR componentes
-(skills, agentes, hooks). Relevantes para cualquier skill o proyecto que use Claude Code.
+Criterio: el contenido es **reutilizable en cualquier proyecto Claude Code** — no está
+atado a pm-thyrox ni a una fase. Incluye tanto docs de la plataforma Claude Code como
+patrones y convenciones que cualquier proyecto con un workflow similar adoptaría.
 
-| Archivo | Razón para nivel global |
-|---------|------------------------|
-| `skill-vs-agent.md` | Guía de decisión arquitectónica: cuándo crear un skill vs un agente. Aplica a cualquier proyecto Claude Code, no solo a pm-thyrox. |
-| `agent-spec.md` | Especificación de formato de agentes nativos Claude Code. Aplica al directorio `.claude/agents/`, que es sistema, no pm-thyrox. |
-| `claude-code-components.md` | Referencia oficial de Skills, Subagents y Context de Claude Code. Documentación de la plataforma. |
-| `skill-authoring.md` | Mejores prácticas de Anthropic para crear skills. Aplica a cualquier skill en cualquier proyecto. |
+| Archivo | Por qué es global |
+|---------|-------------------|
+| `skill-vs-agent.md` | Decisión arquitectónica de plataforma: cuándo crear skill vs agente |
+| `agent-spec.md` | Spec de formato para agentes Claude Code — aplica a `.claude/agents/` siempre |
+| `claude-code-components.md` | Referencia oficial de Skills, Subagents, Context — documentación de plataforma |
+| `skill-authoring.md` | Mejores prácticas Anthropic para crear skills — aplica a cualquier proyecto |
+| `conventions.md` | Convenciones de naming, work packages, commits — cualquier proyecto adopta esto |
+| `state-management.md` | Patrón para gestionar now.md / focus.md — cualquier proyecto con sesiones complejas |
+| `prompting-tips.md` | Tips de prompting cuando Claude no responde bien — aplica en cualquier contexto |
+| `long-context-tips.md` | Gestión de contexto con documentos grandes — aplica en cualquier proyecto |
+| `examples.md` | Patrones de workflow reutilizables — referencia de diseño general |
 
-**Total: 4 archivos** que migran a `.claude/references/`.
+**Total: 9 archivos** que migran a `.claude/references/`.
 
-**Nota sobre lint-agents.py**: El script es referenciado desde `agent-spec.md` con path completo.
-Si agent-spec.md se mueve a `.claude/references/`, el path del script en el doc necesita
-actualizarse a `.claude/skills/pm-thyrox/scripts/lint-agents.py` (o el script también se mueve).
+**Resultado neto**: `pm-thyrox/references/` queda **vacío** y se elimina.
+pm-thyrox pasa a ser un skill con solo `SKILL.md` + `assets/` + `scripts/`.
+
+**Nota sobre lint-agents.py**: Referenciado desde `agent-spec.md` con path completo.
+Si agent-spec.md se mueve a `.claude/references/`, actualizar el path en el doc a
+`.claude/skills/pm-thyrox/scripts/lint-agents.py`.
 
 ---
 
-## Resumen de clasificación
+## Resumen visual
 
 ```
-.claude/references/                  (NUEVO — 4 archivos: sistema Claude Code)
+.claude/references/                      (NUEVO — 9 archivos: global Claude Code)
   skill-vs-agent.md
   agent-spec.md
   claude-code-components.md
   skill-authoring.md
-
-.claude/skills/pm-thyrox/references/ (QUEDA — 5 archivos: framework pm-thyrox)
   conventions.md
-  examples.md
   state-management.md
-  long-context-tips.md
   prompting-tips.md
+  long-context-tips.md
+  examples.md
+
+.claude/skills/pm-thyrox/references/     (VACÍO → eliminar directorio)
+  [ninguno]
 
 .claude/skills/workflow-analyze/references/  (NUEVO DIR — 9 archivos)
-  basic-usage.md, constraints.md, context.md, introduction.md
-  quality-goals.md, requirements-analysis.md, scalability.md
-  stakeholders.md, use-cases.md
+  basic-usage.md  constraints.md  context.md  introduction.md
+  quality-goals.md  requirements-analysis.md  scalability.md
+  stakeholders.md  use-cases.md
 
 .claude/skills/workflow-execute/references/  (NUEVO DIR — 2 archivos)
-  commit-convention.md, commit-helper.md
+  commit-convention.md  commit-helper.md
 
 .claude/skills/workflow-strategy/references/ (NUEVO DIR — 1 archivo)
   solution-strategy.md
@@ -163,7 +165,7 @@ actualizarse a `.claude/skills/pm-thyrox/scripts/lint-agents.py` (o el script ta
   spec-driven-development.md
 
 .claude/skills/workflow-track/references/    (NUEVO DIR — 2 archivos)
-  reference-validation.md, incremental-correction.md
+  reference-validation.md  incremental-correction.md
 ```
 
 ---
@@ -172,66 +174,46 @@ actualizarse a `.claude/skills/pm-thyrox/scripts/lint-agents.py` (o el script ta
 
 ### Scripts de infraestructura → quedan en `pm-thyrox/scripts/`
 
-Referenciados por `settings.json` con paths hard-coded. Moverlos requiere actualizar settings.json.
-Son propiedad del framework pm-thyrox (no de un skill de fase).
+Referenciados por `settings.json` con paths hard-coded. Son la infraestructura del framework.
 
-| Script | Hook event | Riesgo de mover |
-|--------|-----------|----------------|
-| `session-start.sh` | SessionStart | Alto — settings.json roto = sin contexto de sesión |
-| `session-resume.sh` | PostCompact | Alto — idem |
-| `stop-hook-git-check.sh` | Stop | Alto — idem |
-| `commit-msg-hook.sh` | (git hook, no settings.json) | Medio |
+| Script | Hook event |
+|--------|-----------|
+| `session-start.sh` | SessionStart |
+| `session-resume.sh` | PostCompact |
+| `stop-hook-git-check.sh` | Stop |
+| `commit-msg-hook.sh` | git hook directo |
 
-**Decisión: quedan en pm-thyrox/scripts/**. Son la infraestructura del framework, no de una fase.
+### Scripts de workflow-track → mover a `workflow-track/scripts/` (B2)
 
-### Scripts de workflow-track → candidatos a `workflow-track/scripts/`
-
-Referenciados solo en `workflow-track/SKILL.md`. Si se mueven, solo hay que actualizar ese SKILL.md.
+Referenciados solo en `workflow-track/SKILL.md` — bajo riesgo de mover.
 
 | Script | Referenciado en |
 |--------|----------------|
-| `validate-session-close.sh` | workflow-track/SKILL.md línea 57 |
-| `validate-phase-readiness.sh` | workflow-track/SKILL.md línea 25 |
-| `project-status.sh` | workflow-track/SKILL.md líneas 22, 58 |
-| `update-state.sh` | workflow-track/SKILL.md línea 67 |
-
-**Candidatos para B2** (si el usuario aprueba mover scripts de workflow-track).
+| `validate-session-close.sh` | workflow-track/SKILL.md |
+| `validate-phase-readiness.sh` | workflow-track/SKILL.md |
+| `project-status.sh` | workflow-track/SKILL.md |
+| `update-state.sh` | workflow-track/SKILL.md |
 
 ### Scripts cross-framework → quedan en `pm-thyrox/scripts/`
 
-No pertenecen a una fase específica. Son herramientas del framework.
-
 | Script | Propósito |
 |--------|----------|
-| `lint-agents.py` | Valida formato de agentes — cross-phase, referenciado en agent-spec.md |
-| `validate-broken-references.py` | Health check de referencias — cross-phase |
-| `detect_broken_references.py` | Ídem |
-| `convert-broken-references.py` | Fix de referencias rotas |
-| `validate-missing-md-links.sh` | Health check de links |
-| `detect-missing-md-links.sh` | Ídem |
-| `convert-missing-md-links.sh` | Fix de links |
-| `run-functional-evals.sh` | Evaluaciones del framework |
-| `run-multi-evals.sh` | Ídem |
-| `update-state.sh` | *Ver candidatos workflow-track arriba* |
-| `project-status.sh` | *Ver candidatos workflow-track arriba* |
-| `migrate-metadata-keys.py` | Migración legacy — puede archivarse |
-| `verify-skill-mapping.sh` | Validación de mapping — puede archivarse |
+| `lint-agents.py` | Valida formato de agentes — referenciado en agent-spec.md |
+| `validate-broken-references.py` + `detect_broken_references.py` + `convert-broken-references.py` | Health check y fix de referencias |
+| `validate-missing-md-links.sh` + `detect-missing-md-links.sh` + `convert-missing-md-links.sh` | Health check y fix de links |
+| `run-functional-evals.sh` + `run-multi-evals.sh` | Evaluaciones del framework |
+| `migrate-metadata-keys.py` + `verify-skill-mapping.sh` | Legacy — pueden archivarse |
 | `tests/` | Tests del framework |
 
 ---
 
-## Respuesta a las preguntas del gate
+## Decisiones resueltas
 
-**Pregunta A → A2 con matiz:**
-No todo lo `cross-phase` va a `.claude/references/` — solo los docs de la **plataforma Claude Code**.
-Los docs de la **metodología pm-thyrox** quedan en `pm-thyrox/references/`.
+**Pregunta A → A2 extendido:**
+`.claude/references/` recibe 9 archivos: 4 docs de plataforma + 5 docs de patrón reutilizable.
+`pm-thyrox/references/` queda vacío y se elimina.
 
-| Sub-categoría | Destino | Archivos |
-|---------------|---------|---------|
-| Plataforma Claude Code | `.claude/references/` | skill-vs-agent, agent-spec, claude-code-components, skill-authoring |
-| Metodología pm-thyrox | `pm-thyrox/references/` | conventions, examples, state-management, long-context-tips, prompting-tips |
-
-**Pregunta B → B2 (parcial):**
-- Scripts de infraestructura (hooks) → quedan en pm-thyrox/scripts/ (sin mover)
-- Scripts de workflow-track → candidatos a mover a workflow-track/scripts/ (riesgo bajo, solo actualizar SKILL.md)
+**Pregunta B → B2:**
+- Scripts de infraestructura (hooks) → quedan en pm-thyrox/scripts/
+- 4 scripts de workflow-track → mueven a workflow-track/scripts/
 - Scripts cross-framework → quedan en pm-thyrox/scripts/
