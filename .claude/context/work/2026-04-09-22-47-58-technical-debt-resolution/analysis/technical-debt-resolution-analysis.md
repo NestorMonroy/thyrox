@@ -10,10 +10,14 @@ version: 1.0
 
 ## 1. Problema central
 
-El framework pm-thyrox acumula 32 ítems de deuda técnica (TD-001..TD-032).
-La mayoría afectan directamente la confiabilidad del ciclo SDLC: fases que se saltan,
-documentos incompletos que pasan gates, artefactos de tracking desincronizados, y scripts
-que necesitan reglas más robustas.
+El framework pm-thyrox acumula 35 ítems de deuda técnica (TD-001..TD-035).
+Deep review en FASE 29 Phase 1 confirmó que **5 TDs ya estaban implementados pero sin marcar**
+(TD-002, TD-004, TD-016, TD-017, TD-021), evidenciando un gap de proceso: no existe
+un procedimiento que enlace "implementar algo" → "cerrar el TD correspondiente".
+
+Los TDs activos afectan directamente la confiabilidad del ciclo SDLC: fases que se saltan,
+documentos incompletos que pasan gates, artefactos de tracking desincronizados, y archivos
+que crecen indefinidamente hasta superar el límite del Read tool.
 
 En las últimas 3 FASEs (26, 27, 28) el usuario tuvo que corregir manualmente:
 - 4 transiciones de fase donde Claude propuso saltar fases obligatorias (TD-029)
@@ -23,6 +27,12 @@ En las últimas 3 FASEs (26, 27, 28) el usuario tuvo que corregir manualmente:
 
 **Problema raíz unificado:** El framework tiene instrucciones correctas pero sin mecanismos
 de refuerzo — ni en SKILL.md (instrucciones incompletas) ni en hooks (sin automatización).
+Adicionalmente: los archivos vivos (ROADMAP, CHANGELOG, technical-debt) crecen sin umbral
+de control, degradando la capacidad de lectura con el Read tool.
+
+**Hallazgo arquitectónico nuevo (FASE 29):** ROADMAP.md y CHANGELOG.md raíz tienen rol
+mal definido — deberían ser artefactos de producción (root) y deberían existir CHANGELOG.md
+por WP como artefacto de desarrollo. Ver sección 3G.
 
 ---
 
@@ -30,45 +40,108 @@ de refuerzo — ni en SKILL.md (instrucciones incompletas) ni en hooks (sin auto
 
 ### Estado de cada TD
 
-| TD | Severidad | Estado | Descripción resumida | Área |
-|----|-----------|--------|---------------------|------|
-| TD-001 | media | [ ] | Timestamps incompletos en artefactos | conventions |
-| TD-002 | alta | [ ] | Phase 3 no produce plan.md en WP | SKILL.md Phase 3 |
-| TD-003 | baja | [ ] | Templates huérfanos sin flujo asignado | assets/ |
-| TD-004 | alta | [ ] | SKILL.md supera ~700 líneas (confiabilidad) | arquitectura |
-| TD-005 | media | [ ] | Arquitectura monolítica — evaluar alternativas | investigación |
-| TD-006 | media | [ ] | pm-thyrox debe ser thin orchestrator | arquitectura |
-| TD-007 | media | [ ] | Phase 1 sin Step 0 END USER CONTEXT | SKILL.md Phase 1 |
-| TD-008 | alta | [ ] | /workflow_* commands desactualizados | commands/ |
-| TD-009 | media | [ ] | now-{agent-name}.md no implementado en agentes | agents/ |
-| TD-010 | baja | [ ] | Benchmark empírico SKILL vs CLAUDE.md | investigación |
-| TD-011 | alta | [ ] | Task-plan sin granularidad atómica (instrucción débil) | SKILL.md Phase 5 |
-| TD-016 | alta | [ ] | Phase 3 no verifica existencia de archivos | SKILL.md Phase 3 |
-| TD-017 | media | [ ] | Criterios de cambio de FASE no documentados | CLAUDE.md |
-| TD-018 | baja | [ ] | execution-log sin timestamp completo | conventions |
-| TD-019 | alta | [-] | Nomenclatura workflow_* → RESUELTO FASE 23 | — |
-| TD-020 | media | [-] | Escalabilidad en workflow_* → RESUELTO FASE 23 | — |
-| TD-021 | media | [ ] | Phase N no mapea explícitamente a /workflow_* | pm-thyrox SKILL |
-| TD-022 | baja | [ ] | Limitaciones conocidas no en workflow_* skills | workflow-*/SKILL.md |
-| TD-023 | media | [-] | References sin propietario → RESUELTO FASE 23 | — |
-| TD-024 | media | [-] | agent-spec.md desactualizado → RESUELTO FASE 23 | — |
-| TD-025 | baja | [ ] | skill-authoring.md desactualizado | references/ |
-| TD-026 | media | [ ] | ROADMAP.md supera límite Read tool | ROADMAP |
-| TD-027 | alta | [ ] | Criterio auto-write vs validación humana | SKILL.md / settings |
-| TD-028 | media | [ ] | Sin re-evaluación de tamaño WP post-estrategia | workflow-strategy/SKILL.md |
-| TD-029 | alta | [ ] | Sin doble validación al transitar entre fases | todos workflow-*/SKILL.md |
-| TD-030 | baja | [ ] | Análisis de impacto de renombrar Phase N | investigación |
-| TD-031 | alta | [ ] | workflow-*/SKILL.md sin deep review pre-gate | todos workflow-*/SKILL.md |
-| TD-032 | alta | [ ] | GAPs Phase 6 no prevenidos (4 tracking gaps) | workflow-execute/SKILL.md |
-| TD-033 | alta | [ ] | now.md modificado por hook no se incluye en commits | workflow-*/SKILL.md |
-| TD-034 | alta | [ ] | CHANGELOG.md supera límite Read tool (11,866 tokens) | CHANGELOG |
-| TD-035 | media | [ ] | Sin regla de longevidad para archivos vivos | conventions |
+**Leyenda de verificación (deep review FASE 29 Phase 1):**
+- `[x]` = CERRADO / implementado verificado con grep
+- `[-]` = PARCIAL / implementado pero incompleto
+- `[ ]` = PENDIENTE / no implementado
 
-**Pendientes reales: 27** (35 total − 4 resueltos ya — TDs 033-035 agregados en FASE 29 Phase 1)
+| TD | Severidad | Estado | Descripción resumida | Área | Verificación FASE 29 |
+|----|-----------|--------|---------------------|------|---------------------|
+| TD-001 | media | [ ] | Timestamps incompletos en artefactos | conventions | No verificado |
+| TD-002 | alta | [x] | Phase 3 no produce plan.md en WP | SKILL.md Phase 3 | **IMPLEMENTADO** — workflow-plan/SKILL.md línea 41-46 + template existe |
+| TD-003 | baja | [ ] | Templates huérfanos sin flujo asignado | assets/ | No verificado |
+| TD-004 | alta | [x] | SKILL.md supera ~700 líneas (confiabilidad) | arquitectura | **IMPLEMENTADO** — pm-thyrox 194 líneas; todos workflow-*/SKILL.md < 120 líneas |
+| TD-005 | media | [ ] | Arquitectura monolítica — evaluar alternativas | investigación | Pendiente investigación |
+| TD-006 | media | [ ] | pm-thyrox debe ser thin orchestrator | arquitectura | Pendiente investigación |
+| TD-007 | media | [ ] | Phase 1 sin Step 0 END USER CONTEXT | SKILL.md Phase 1 | **PENDIENTE** — sin "Step 0" en workflow-analyze/SKILL.md |
+| TD-008 | alta | [ ] | /workflow_* commands desactualizados | commands/ | FASE 30 — out of scope |
+| TD-009 | media | [ ] | now-{agent-name}.md no implementado en agentes | agents/ | No verificado |
+| TD-010 | baja | [ ] | Benchmark empírico SKILL vs CLAUDE.md | investigación | Pendiente investigación |
+| TD-011 | alta | [-] | Task-plan sin granularidad atómica (instrucción débil) | SKILL.md Phase 5 | **PARCIAL** — checklist existe en workflow-decompose/SKILL.md línea 58-62, pero no automatizado |
+| TD-016 | alta | [x] | Phase 3 no verifica existencia de archivos | SKILL.md Phase 3 | **IMPLEMENTADO** — workflow-plan/SKILL.md línea 46 |
+| TD-017 | media | [x] | Criterios de cambio de FASE no documentados | CLAUDE.md | **IMPLEMENTADO** — exit criteria en cada SKILL.md + CLAUDE.md línea 72-84 |
+| TD-018 | baja | [ ] | execution-log sin timestamp completo | conventions | No verificado |
+| TD-019 | alta | [x] | Nomenclatura workflow_* → RESUELTO FASE 23 | — | Verificado: kebab-case activo |
+| TD-020 | media | [x] | Escalabilidad en workflow_* → RESUELTO FASE 23 | — | Verificado |
+| TD-021 | media | [x] | Phase N no mapea explícitamente a /workflow_* | pm-thyrox SKILL | **IMPLEMENTADO** — tabla Phase→skill en pm-thyrox/SKILL.md línea 34-46 |
+| TD-022 | baja | [ ] | Limitaciones conocidas no en workflow_* skills | workflow-*/SKILL.md | **PENDIENTE** — 0 matches en búsqueda de "limitaciones" |
+| TD-023 | media | [x] | References sin propietario → RESUELTO FASE 23 | — | Verificado |
+| TD-024 | media | [x] | agent-spec.md desactualizado → RESUELTO FASE 23 | — | Verificado |
+| TD-025 | baja | [ ] | skill-authoring.md desactualizado | references/ | **PENDIENTE** — genérico, no cita estructura THYROX actual |
+| TD-026 | media | [ ] | ROADMAP.md supera límite Read tool | ROADMAP | Pendiente split |
+| TD-027 | alta | [-] | Criterio auto-write vs validación humana | SKILL.md / settings | **PARCIAL** — tabla gates async existe, sin criterio granular de auto-write |
+| TD-028 | media | [ ] | Sin re-evaluación de tamaño WP post-estrategia | workflow-strategy/SKILL.md | **PENDIENTE** — 0 matches en workflow-strategy |
+| TD-029 | alta | [ ] | Sin doble validación al transitar entre fases | todos workflow-*/SKILL.md | **PENDIENTE** — sin sección explícita de validación pre-gate |
+| TD-030 | media | [ ] | Renombrar comandos workflow-* a patrón /flow:* + meta-comandos | commands/ | Revisado — ver sección 3F |
+| TD-031 | alta | [ ] | workflow-*/SKILL.md sin deep review pre-gate | todos workflow-*/SKILL.md | **PENDIENTE** — 0 matches "deep review" |
+| TD-032 | alta | [-] | GAPs Phase 6 no prevenidos (4 tracking gaps) | workflow-execute/SKILL.md | **PARCIAL** — checklist pre-gate existe línea 84-89, mejorable |
+| TD-033 | alta | [ ] | now.md modificado por hook no se incluye en commits | workflow-*/SKILL.md | **PENDIENTE** — sin instrucción git add now.md |
+| TD-034 | alta | [ ] | CHANGELOG.md supera límite Read tool (11,866 tokens) | CHANGELOG | Pendiente split + redefinir rol (ver sección 3G) |
+| TD-035 | media | [ ] | Sin regla de longevidad para archivos vivos | conventions | Pendiente REGLA-LONGEV-001 |
+
+**Resumen real (post-verificación FASE 29):**
+- Implementados (cerrar): TD-002, TD-004, TD-016, TD-017, TD-021 = **5 nuevos a cerrar**
+- Ya cerrados antes: TD-019, TD-020, TD-023, TD-024 = 4
+- Parciales: TD-011, TD-027, TD-032 = 3
+- Pendientes reales: TD-001, TD-003, TD-005–TD-010, TD-018, TD-022, TD-025–TD-031, TD-033–TD-035 = **23 pendientes**
 
 ---
 
 ## 3. Deep Review — Análisis de cada TD pendiente
+
+### 3F. Revisión de arquitectura CHANGELOG/ROADMAP + TD-030 (nuevo hallazgo FASE 29)
+
+**Problema detectado: confusión de niveles de artefacto**
+
+El proyecto escribe en `CHANGELOG.md` raíz y `ROADMAP.md` raíz con cada FASE de desarrollo,
+pero ninguna FASE ha sido "released" a producción (todo está en rama `claude/check-merge-status-Dcyvj`).
+El patrón "Keep a Changelog" establece que el root CHANGELOG es historial de RELEASES a producción,
+no de iteraciones de desarrollo internas.
+
+**Arquitectura propuesta:**
+
+```
+Nivel producción (root):                    Nivel WP (context/work/):
+─────────────────────────────               ──────────────────────────────────
+ROADMAP.md   → plan de alto nivel del       {wp}-plan.md → scope del WP (ya existe)
+               producto final
+CHANGELOG.md → [Unreleased] hasta           {wp}-changelog.md → NUEVO artefacto:
+               primer merge a main           cambios realizados en este WP
+```
+
+**TD-030 revisado: no solo renombrar — nuevo vocabulario de comandos**
+
+El renombrado de Phase N implica también adoptar un patrón más rico de comandos:
+
+```
+Comandos de fase (reemplazan /workflow-*):
+  /flow:analyze    → Phase 1: ANALYZE
+  /flow:strategy   → Phase 2: SOLUTION STRATEGY
+  /flow:plan       → Phase 3: PLAN
+  /flow:spec       → Phase 4: STRUCTURE (spec + interview)
+  /flow:decompose  → Phase 5: DECOMPOSE
+  /flow:execute    → Phase 6: EXECUTE
+  /flow:track      → Phase 7: TRACK
+
+Meta-comandos nuevos (no existen en workflow-*):
+  /flow:next          → detecta fase activa → ejecuta la siguiente automáticamente
+  /flow:review-plan   → revisión crítica del plan antes de ejecutar (Plano A: pre-gate)
+  /flow:review-impl   → revisión crítica de la implementación (Plano A: pre-gate)
+  /flow:sync          → detecta drift plan↔implementación → actualiza task-plan
+  /flow:prime         → pre-flight check de readiness antes de empezar WP
+```
+
+El meta-comando `/flow:next` reduce la fricción de invocar la fase correcta manualmente.
+
+### 3G. TD-034 + Redefinición del rol de CHANGELOG.md raíz
+
+**Fix correcto (más que solo split):**
+
+1. `CHANGELOG.md` raíz → limpiar, dejar solo `[Unreleased]` + instrucción
+2. Crear `{wp}-changelog.md` como nuevo artefacto WP (Phase 7 lo cierra con resumen)
+3. Cuando se haga el primer merge a `main`: el contenido `[Unreleased]` del root se convierte en `[1.0.0]`
+
+Esto resuelve TD-034 (tamaño) y el problema arquitectónico a la vez.
 
 ### 3A. TD Items que tocan workflow-*/SKILL.md (ALTA prioridad operacional)
 
