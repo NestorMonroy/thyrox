@@ -107,9 +107,9 @@ moverlos al final reduce el tiempo en que los hooks están en estado transitorio
 4. Eliminar pm-thyrox/references/ (verificado vacío)
 5. Batch C: 2 scripts de Phase 7 → workflow-track/scripts/
 6. Batch D: 13 scripts de infraestructura → .claude/scripts/ + actualizar settings.json
-7. Actualizar CLAUDE.md (nueva estructura completa) + pm-thyrox/SKILL.md
+7. Actualizar CLAUDE.md (nueva estructura completa incluyendo `.claude/commands/` y los 4 dirs faltantes) + pm-thyrox/SKILL.md — este commit también cierra TD-020
 8. Crear ADR-017
-9. Registrar TD-020 (workflow_init.md sin migrar) en technical-debt.md
+9. (eliminado — TD-020 se resuelve en Paso 7, no requiere entrada en technical-debt.md)
 
 ---
 
@@ -257,10 +257,16 @@ Documenta:
 
 ## Tareas técnicas identificadas
 
-**TD-020** (hallazgo Phase 1 review — NO bloquea FASE 24):
-> Migrar `.claude/commands/workflow_init.md` → `.claude/skills/workflow_init/SKILL.md`
-> Estado: Abierto. Independiente. workflow_init usa formato antiguo de command;
-> debería ser skill hidden para consistencia con los 7 workflow-* skills de FASE 23.
+**TD-020** (hallazgo Phase 1 review — SE RESUELVE en commit final de FASE 24):
+> ~~Migrar `.claude/commands/workflow_init.md` → `.claude/skills/workflow_init/SKILL.md`~~
+> **Revisado**: NO migrar — `.claude/commands/` es el mecanismo correcto para workflow_init.
+> `workflow_init` es un procedimiento one-time de bootstrapping; requiere que Claude ejecute
+> lógica de detección (no es un prompt puro). `disable-model-invocation: true` no aplica.
+> Los commands siguen siendo válidos y soportados (no deprecated).
+> **Acción real de TD-020**: Documentar `.claude/commands/` en `## Estructura` de CLAUDE.md
+> con descripción: "Comandos de setup one-time — distinto de skills, sin frontmatter, sin
+> disparo automático". Se hace en el commit final (Paso 7). TD-020 se cierra en FASE 24.
+> Ver análisis completo: `analysis/commands-vs-skills-analysis.md`
 
 ## Backlog — FASE 25 candidato
 
@@ -281,7 +287,7 @@ Documenta:
 - [x] ADR identificado
 - [x] Phase 1 review completo — 4 directorios no inventariados evaluados
 - [x] Adaptaciones de ejemplos externos evaluadas (ccomp → FASE 25, resto descartado)
-- [x] TD-020 registrado (workflow_init.md no migrado)
+- [x] TD-020 revisado y reclasificado — documentar .claude/commands/ en FASE 24, no migrar
 - [x] Backlog FASE 25 candidato documentado
 - [ ] Usuario confirma explícitamente esta estrategia
 
