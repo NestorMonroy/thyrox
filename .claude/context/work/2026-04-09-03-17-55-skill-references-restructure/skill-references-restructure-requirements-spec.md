@@ -74,7 +74,7 @@ Then los links desde pm-thyrox/SKILL.md usan: [scalability](../workflow-analyze/
 - `.claude/skills/workflow-structure/references/` (1 archivo)
 - `.claude/skills/workflow-track/references/` (2 archivos)
 
-**Archivos modificados (links):** `pm-thyrox/SKILL.md`, `workflow-analyze/SKILL.md`
+**Archivos modificados (links):** `pm-thyrox/SKILL.md`, `workflow-analyze/SKILL.md` línea 30, `workflow-strategy/SKILL.md` línea 34
 
 **Esfuerzo:** 2 commits (A-01 + A-02 en ROADMAP)
 **Complejidad:** Media (git mv con historial, 15 operaciones + link updates)
@@ -111,13 +111,23 @@ Then pm-thyrox/references/ ya no existe en el repositorio
 Given que skill-vs-agent.md, agent-spec.md, conventions.md, etc. están en .claude/references/
 When Claude lee un skill y necesita consultar una referencia global
 Then puede acceder a .claude/references/{file}.md sin depender de pm-thyrox
+
+Given que CLAUDE.md línea 105 tiene [conventions](skills/pm-thyrox/references/conventions.md)
+  Y workflow-track/SKILL.md línea 69 tiene `references/state-management.md`
+When se ejecuta Batch B
+Then CLAUDE.md apunta a references/conventions.md (relativo a .claude/)
+  Y workflow-track/SKILL.md apunta a ../../references/state-management.md
+  Y ambos links son válidos inmediatamente después del commit
 ```
 
 ### Componentes Afectados
 
 **Directorio nuevo:** `.claude/references/` (9 archivos)
 **Directorio eliminado:** `.claude/skills/pm-thyrox/references/` (post-verificación)
-**Archivos modificados (links):** `pm-thyrox/SKILL.md`
+**Archivos modificados (links):**
+- `pm-thyrox/SKILL.md` — References por dominio (9 paths)
+- `CLAUDE.md` línea 105 — `[conventions](skills/pm-thyrox/references/conventions.md)` → `[conventions](references/conventions.md)` ← gap encontrado en validación Phase 3→4
+- `workflow-track/SKILL.md` línea 69 — `` `references/state-management.md` `` → `` `../../references/state-management.md` `` ← state-management.md es global, NO va a workflow-track/references/
 
 **Esfuerzo:** 2 commits (B-01 + B-02 en ROADMAP)
 **Complejidad:** Media

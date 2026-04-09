@@ -46,7 +46,10 @@ Crear los 5 nuevos directorios `references/` en los skills de fase que los neces
 | `workflow-structure/references/` (nuevo dir, 1 archivo) | spec-driven-development |
 | `workflow-track/references/` (nuevo dir, 2 archivos) | reference-validation, incremental-correction |
 
-Actualización de links en cada commit de batch: `pm-thyrox/SKILL.md` + `workflow-*/SKILL.md` que referencien estos archivos.
+Actualización de links en el MISMO commit:
+- `pm-thyrox/SKILL.md` — links a las 15 referencias (sección References por dominio)
+- `workflow-analyze/SKILL.md` línea 30 — `../../pm-thyrox/references/scalability.md` → `references/scalability.md`
+- `workflow-strategy/SKILL.md` línea 34 — `skills/pm-thyrox/references/solution-strategy.md` → `skills/workflow-strategy/references/solution-strategy.md` ← **G3: explicitado en validación Phase 3→4**
 
 Acción post-commit: `detect_broken_references.py` ← verificación Batch A (G5)
 
@@ -55,8 +58,10 @@ Acción post-commit: `detect_broken_references.py` ← verificación Batch A (G5
 Crear `.claude/references/` (nuevo dir, 9 archivos): agent-spec, claude-code-components,
 conventions, examples, long-context-tips, prompting-tips, skill-authoring, skill-vs-agent, state-management.
 
-Actualización de links: `pm-thyrox/SKILL.md` (sección `## References por dominio`) — paths
-relativos cambian de `references/X.md` a `../../references/X.md`.
+Actualización de links en el MISMO commit:
+- `pm-thyrox/SKILL.md` (sección `## References por dominio`) — paths de `references/X.md` → `../../references/X.md`
+- `CLAUDE.md` línea 105 — `[conventions](skills/pm-thyrox/references/conventions.md)` → `[conventions](references/conventions.md)` ← **G1: brecha encontrada en validación Phase 3→4**
+- `workflow-track/SKILL.md` línea 69 — `` `references/state-management.md` `` → `` `../../references/state-management.md` `` ← **G2: state-management.md va a .claude/references/, no a workflow-track/references/**
 
 Acción post-commit: `detect_broken_references.py` ← verificación Batch B (G5)
 

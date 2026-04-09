@@ -823,13 +823,13 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 
 ### Batch A — 15 referencias de fase → workflow-*/references/
 
-- [ ] A-01: Crear dirs + `git mv` 9 refs → `workflow-analyze/references/` + actualizar links en pm-thyrox/SKILL.md + workflow-analyze/SKILL.md
+- [ ] A-01: Crear dirs + `git mv` 9 refs → `workflow-analyze/references/` + actualizar links en pm-thyrox/SKILL.md + workflow-analyze/SKILL.md línea 30 + workflow-strategy/SKILL.md línea 34
 - [ ] A-02: Crear dirs + `git mv` 6 refs → workflow-execute/strategy/structure/track references/ + actualizar links
 - [ ] A-VAL: `detect_broken_references.py` — verificación post-Batch A
 
 ### Batch B — 9 referencias globales → .claude/references/
 
-- [ ] B-01: Crear `.claude/references/` + `git mv` 9 refs + actualizar links en pm-thyrox/SKILL.md
+- [ ] B-01: Crear `.claude/references/` + `git mv` 9 refs + actualizar links en pm-thyrox/SKILL.md + CLAUDE.md línea 105 (conventions) + workflow-track/SKILL.md línea 69 (state-management)
 - [ ] B-02: Eliminar `pm-thyrox/references/` (verificado vacío — 24/24 destinos presentes)
 - [ ] B-VAL: `detect_broken_references.py` — verificación post-Batch B
 
