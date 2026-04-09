@@ -38,11 +38,11 @@ echo "╚═══════════════════════�
 
 case "$SPECIFIC" in
     all)
-        run_test "${TESTS_DIR}/test-phase-readiness.sh"   "test-phase-readiness"
+        run_test "${TESTS_DIR}/../../../workflow-track/scripts/tests/test-phase-readiness.sh"   "test-phase-readiness"
         run_test "${TESTS_DIR}/test-skill-mapping.sh"     "test-skill-mapping"
         ;;
     test-phase-readiness)
-        run_test "${TESTS_DIR}/test-phase-readiness.sh" "test-phase-readiness"
+        run_test "${TESTS_DIR}/../../../workflow-track/scripts/tests/test-phase-readiness.sh" "test-phase-readiness"
         ;;
     test-skill-mapping)
         run_test "${TESTS_DIR}/test-skill-mapping.sh" "test-skill-mapping"

@@ -14,7 +14,7 @@ owner: pm-thyrox (cross-phase)
 | Archivo | Pregunta que responde | Quién lo lee |
 |---------|----------------------|-------------|
 | `context/now.md` | ¿Qué WP está activo y en qué Phase? | `session-start.sh` (hook), Claude al iniciar sesión |
-| `context/focus.md` | ¿En qué estamos trabajando y qué se completó? | Claude al iniciar sesión, `validate-session-close.sh` |
+| `context/focus.md` | ¿En qué estamos trabajando y qué se completó? | Claude al iniciar sesión, `.claude/skills/workflow-track/scripts/validate-session-close.sh` |
 | `context/project-state.md` | ¿Qué hay en el framework hoy? | Claude al necesitar contexto del proyecto |
 
 ---

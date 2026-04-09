@@ -22,7 +22,7 @@ Documenta lecciones aprendidas, genera changelog, y cierra el work package activ
 2. Revisar progreso: `bash .claude/skills/pm-thyrox/scripts/project-status.sh`
 3. Verificar que todas las tareas están `[x]` en `*-task-plan.md`
 4. Leer `context/now.md` — verificar `phase`
-5. Gate soft: `bash .claude/skills/pm-thyrox/scripts/validate-phase-readiness.sh 7`
+5. Gate soft: `bash .claude/skills/workflow-track/scripts/validate-phase-readiness.sh 7`
 
 ---
 
@@ -54,7 +54,7 @@ Documentar lecciones previene repetir los mismos errores.
 
 **Validaciones de cierre:**
 ```bash
-bash .claude/skills/pm-thyrox/scripts/validate-session-close.sh
+bash .claude/skills/workflow-track/scripts/validate-session-close.sh
 bash .claude/skills/pm-thyrox/scripts/project-status.sh
 ```
 
