@@ -53,23 +53,23 @@ Ver [escalabilidad](../workflow-analyze/references/scalability.md) para reglas d
 
 | Fase | Artefacto | Ubicación | Template |
 |------|-----------|-----------|----------|
-| 1 | Síntesis de análisis | `work/.../analysis/{nombre-wp}-analysis.md` | [introduction.md.template](assets/introduction.md.template) |
-| 1 | Registro de riesgos | `work/../{nombre-wp}-risk-register.md` | [risk-register.md.template](assets/risk-register.md.template) |
+| 1 | Síntesis de análisis | `work/.../analysis/{nombre-wp}-analysis.md` | [introduction.md.template](../workflow-analyze/assets/introduction.md.template) |
+| 1 | Registro de riesgos | `work/../{nombre-wp}-risk-register.md` | [risk-register.md.template](../workflow-analyze/assets/risk-register.md.template) |
 | 1 | Sub-análisis (opcional) | `work/.../analysis/*.md` | stakeholders, requirements-analysis, use-cases, quality-goals, constraints, context, basic-usage |
-| 1 | Gates de 7 fases (mediano/grande) | `work/../{nombre-wp}-exit-conditions.md` | [exit-conditions.md.template](assets/exit-conditions.md.template) |
-| 1 | Principios globales del proyecto | `constitution.md` (raíz) | [constitution.md.template](assets/constitution.md.template) |
-| 1–2 | Decisiones arquitectónicas | `{adr_path}/adr-NNN.md` (ver CLAUDE.md o default `docs/architecture/decisions/`) | [adr.md.template](assets/adr.md.template) |
+| 1 | Gates de 7 fases (mediano/grande) | `work/../{nombre-wp}-exit-conditions.md` | [exit-conditions.md.template](../workflow-analyze/assets/exit-conditions.md.template) |
+| 1 | Principios globales del proyecto | `constitution.md` (raíz) | [constitution.md.template](../workflow-analyze/assets/constitution.md.template) |
+| 1–2 | Decisiones arquitectónicas | `{adr_path}/adr-NNN.md` (ver CLAUDE.md o default `docs/architecture/decisions/`) | [adr.md.template](../workflow-analyze/assets/adr.md.template) |
 | 1 | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` | — |
-| 2 | Estrategia de solución | `work/../{nombre-wp}-solution-strategy.md` | [solution-strategy.md.template](assets/solution-strategy.md.template) |
-| 3 | Scope del trabajo | `work/../{nombre-wp}-plan.md` | [plan.md.template](assets/plan.md.template) |
-| 4 | Especificación de requisitos | `work/../{nombre-wp}-requirements-spec.md` | [requirements-specification.md.template](assets/requirements-specification.md.template) |
-| 4 | Diseño técnico (complejo) | `work/../{nombre-wp}-design.md` | [design.md.template](assets/design.md.template) |
-| 5 | Plan de tareas | `work/../{nombre-wp}-task-plan.md` | [tasks.md.template](assets/tasks.md.template) |
-| 6 | Log de ejecución | `work/../{nombre-wp}-execution-log.md` | [execution-log.md.template](assets/execution-log.md.template) |
+| 2 | Estrategia de solución | `work/../{nombre-wp}-solution-strategy.md` | [solution-strategy.md.template](../workflow-strategy/assets/solution-strategy.md.template) |
+| 3 | Scope del trabajo | `work/../{nombre-wp}-plan.md` | [plan.md.template](../workflow-plan/assets/plan.md.template) |
+| 4 | Especificación de requisitos | `work/../{nombre-wp}-requirements-spec.md` | [requirements-specification.md.template](../workflow-structure/assets/requirements-specification.md.template) |
+| 4 | Diseño técnico (complejo) | `work/../{nombre-wp}-design.md` | [design.md.template](../workflow-structure/assets/design.md.template) |
+| 5 | Plan de tareas | `work/../{nombre-wp}-task-plan.md` | [tasks.md.template](../workflow-decompose/assets/tasks.md.template) |
+| 6 | Log de ejecución | `work/../{nombre-wp}-execution-log.md` | [execution-log.md.template](../workflow-execute/assets/execution-log.md.template) |
 | 6 | Código | Repositorio (git) | — |
-| 7 | Lecciones aprendidas | `work/../{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](assets/lessons-learned.md.template) |
-| 7 | Changelog | [CHANGELOG](CHANGELOG.md) | [changelog.md.template](assets/changelog.md.template) |
-| 7 | Reporte final (grande) | `work/../{nombre-wp}-final-report.md` | [final-report.md.template](assets/final-report.md.template) |
+| 7 | Lecciones aprendidas | `work/../{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](../workflow-track/assets/lessons-learned.md.template) |
+| 7 | Changelog | [CHANGELOG](CHANGELOG.md) | [changelog.md.template](../workflow-track/assets/changelog.md.template) |
+| 7 | Reporte final (grande) | `work/../{nombre-wp}-final-report.md` | [final-report.md.template](../workflow-track/assets/final-report.md.template) |
 | — | Errores | `context/errors/ERR-NNN-descripcion.md` | [error-report.md.template](assets/error-report.md.template) |
 
 ## Estructura de un work package

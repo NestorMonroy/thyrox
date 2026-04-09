@@ -48,7 +48,7 @@ Investigar alternativas antes de decidir previene decisiones sin evidencia.
 
 5. **Decisions** — documentar decisiones fundamentales con justificación
    - Para decisiones arquitectónicas importantes: crear ADR en `context/decisions/`
-   - Usar `assets/adr.md.template`
+   - Usar `../workflow-analyze/assets/adr.md.template`
 
 6. **Post-design re-check** — re-verificar después de diseñar
    (las decisiones pueden cambiar al profundizar — revisar consistency con Phase 1)

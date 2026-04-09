@@ -510,7 +510,7 @@ Update ROADMAP.md:
 ### Option 1: Add to refactors.md
 
 ```
-../assets/refactors.md.template:
+../skills/workflow-track/assets/refactors.md.template:
 
 ## Database Query Optimization
 
@@ -552,7 +552,7 @@ refactor(auth): consolidate auth logic into single module
 
 ### Small Feature (1-2 hours)
 - No PHASE update needed
-- Use [ad-hoc-tasks](../assets/ad-hoc-tasks.md.template)
+- Use [ad-hoc-tasks](../skills/workflow-execute/assets/ad-hoc-tasks.md.template)
 - One Claude Code session
 - One commit or two
 
@@ -570,7 +570,7 @@ refactor(auth): consolidate auth logic into single module
 - Track blockers and velocity
 
 ### Bug Fix
-- Use [ad-hoc-tasks](../assets/ad-hoc-tasks.md.template) for documentation
+- Use [ad-hoc-tasks](../skills/workflow-execute/assets/ad-hoc-tasks.md.template) for documentation
 - Fix and commit immediately
 - No task creation needed unless complex
 - Update CHANGELOG.md in next release

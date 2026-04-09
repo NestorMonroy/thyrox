@@ -544,7 +544,7 @@ All notable changes to this project will be documented in this file.
 
 ## Error Tracking (AP-06)
 
-Errores se documentan en `context/errors/ERR-NNN.md` usando el template [error-report.md.template](../assets/error-report.md.template).
+Errores se documentan en `context/errors/ERR-NNN.md` usando el template [error-report.md.template](../skills/pm-thyrox/assets/error-report.md.template).
 
 **Campos obligatorios:** Qué pasó / Por qué / **Prevención** / Insight
 

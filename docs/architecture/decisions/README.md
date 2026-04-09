@@ -8,7 +8,7 @@ una tecnología, patrón, o enfoque sobre las alternativas consideradas.
 ## Convención
 
 Cada ADR sigue el formato `adr-NNN-titulo.md` y usa el template
-`.claude/skills/pm-thyrox/assets/adr.md.template`.
+`.claude/skills/workflow-analyze/assets/adr.md.template`.
 
 ## Nota para THYROX
 

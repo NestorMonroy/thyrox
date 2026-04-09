@@ -212,7 +212,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Después de completar analysis-phase.md
 
-**Ubicación**: [categorization-plan.md.template](../assets/categorization-plan.md.template)
+**Ubicación**: [categorization-plan.md.template](../../workflow-decompose/assets/categorization-plan.md.template)
 
 ---
 
@@ -301,10 +301,10 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 ```bash
 # Copiar templates según necesites
-cp .claude/skills/pm-thyrox/assets/analysis-phase.md.template ./ANALISIS_issues_$(date +%Y-%m-%d).md
-cp .claude/skills/pm-thyrox/assets/categorization-plan.md.template ./PLAN_categorizacion_$(date +%Y-%m-%d).md
-cp .claude/skills/pm-thyrox/assets/execution-log.md.template ./LOG_ejecucion_$(date +%Y-%m-%d).md
-cp .claude/skills/pm-thyrox/assets/final-report.md.template ./REPORTE_final_$(date +%Y-%m-%d).md
+cp .claude/skills/workflow-track/assets/analysis-phase.md.template ./ANALISIS_issues_$(date +%Y-%m-%d).md
+cp .claude/skills/workflow-decompose/assets/categorization-plan.md.template ./PLAN_categorizacion_$(date +%Y-%m-%d).md
+cp .claude/skills/workflow-execute/assets/execution-log.md.template ./LOG_ejecucion_$(date +%Y-%m-%d).md
+cp .claude/skills/workflow-track/assets/final-report.md.template ./REPORTE_final_$(date +%Y-%m-%d).md
 ```
 
 ### Paso 2: Completar analysis-phase.md
@@ -552,7 +552,7 @@ A: Usa el Decision Framework al inicio. Si dudas → MANUAL. Scripts sin las 8 P
 - PM-THYROX SKILL.md - PHASE 7: TRACK
 - Templates en `/assets/`:
   - [analysis-phase.md.template](../assets/analysis-phase.md.template)
-  - [categorization-plan.md.template](../assets/categorization-plan.md.template)
+  - [categorization-plan.md.template](../../workflow-decompose/assets/categorization-plan.md.template)
   - [execution-log.md.template](../assets/execution-log.md.template)
   - [final-report.md.template](../assets/final-report.md.template)
 - commit-helper.md - Para commits documentados después de cada lote
