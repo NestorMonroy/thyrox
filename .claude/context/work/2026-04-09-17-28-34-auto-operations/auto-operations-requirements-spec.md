@@ -243,6 +243,9 @@ sed -i \
   "$NOW_FILE"
 ```
 
+**Campos no modificados por este script:** `cold_boot`, `last_session`, `blockers`
+(gestionados por session-start.sh / session-resume.sh — fuera del scope de este WP).
+
 **Dependencias:** `sed`, `date`
 **Complejidad:** Baja
 
@@ -278,24 +281,21 @@ Note:  si el campo 'if' funciona correctamente, el script ni se lanza
 
 ### Implementacion
 
-**Archivo:** `.claude/settings.json` — agregar en la seccion existente de hooks:
+**Archivo:** `.claude/settings.json` — settings.json ya tiene hooks SessionStart, Stop y
+PostCompact. El cambio agrega la clave `"PostToolUse"` dentro de `"hooks"` existente:
 
 ```json
-{
-  "hooks": {
-    "PostToolUse": [
+"PostToolUse": [
+  {
+    "matcher": "Write",
+    "hooks": [
       {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/scripts/sync-wp-state.sh"
-          }
-        ]
+        "type": "command",
+        "command": "bash .claude/scripts/sync-wp-state.sh"
       }
     ]
   }
-}
+]
 ```
 
 Nota: el campo `if` se omite en la primera implementacion porque su comportamiento
@@ -365,20 +365,25 @@ cierre del WP (lessons-learned, final-report si aplica).
 ### Criterios de Aceptacion
 
 ```
-Given: workflow-track/SKILL.md con instrucciones de cierre de WP
-When:  se agrega la instruccion de close-wp.sh
-Then:  la instruccion aparece en la seccion de cierre, DESPUES de la lista de artefactos
-And:   la instruccion especifica que debe llamarse "DESPUES del ultimo Write al WP"
+Given: workflow-track/SKILL.md con tabla "REQUERIDO al cerrar WP"
+       (fila actual: now.md | current_work: null · phase: null · updated_at: timestamp)
+When:  se aplica el cambio de SPEC-006
+Then:  la fila de now.md en la tabla se reemplaza por:
+       now.md | Ejecutar: bash .claude/scripts/close-wp.sh
+And:   la instruccion aparece ANTES de la fila de focus.md en la tabla
+And:   la instruccion LLM original (escribir campos manualmente) es eliminada
 
-Given: Claude sigue las instrucciones de workflow-track
-When:  Phase 7 llega al paso de cierre
-Then:  Claude ejecuta bash .claude/scripts/close-wp.sh
+Given: Claude sigue las instrucciones de workflow-track en Phase 7
+When:  llega al paso "REQUERIDO al cerrar WP"
+Then:  Claude ejecuta bash .claude/scripts/close-wp.sh DESPUES del ultimo Write al WP
 And:   now.md::current_work = null
 And:   now.md::phase = null
 ```
 
 **Archivos afectados:** `.claude/skills/workflow-track/SKILL.md`
-**Complejidad:** Baja (agregar seccion de texto)
+**Ubicacion exacta:** tabla en seccion "REQUERIDO al cerrar WP", fila `context/now.md`
+**Tipo de cambio:** REEMPLAZO de instruccion LLM por llamada a script
+**Complejidad:** Baja
 
 ---
 

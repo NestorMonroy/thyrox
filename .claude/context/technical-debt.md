@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-09 21:15:00
+updated_at: 2026-04-09 21:50:00
 ```
 
 # Deuda Técnica — THYROX
@@ -1061,4 +1061,80 @@ Analisis de impacto completado con:
 - Conteo de archivos afectados por opcion
 - Decision documentada en ADR (adoptar A, B, o mantener actual)
 - Si se adopta cambio: plan de migracion con sed commands y criterio de validacion
+
+---
+
+## TD-031: workflow-*/SKILL.md no incluyen instruccion de deep review pre-gate
+
+```
+Severidad: alta
+Origen: FASE 28 — gaps encontrados en Phase 4 que no fueron detectados por el checklist inicial (2026-04-09)
+Fase afectada: Todas las fases (cross-phase)
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+
+Los `workflow-*/SKILL.md` tienen una seccion de "Gate humano" pero no tienen una
+instruccion de deep review antes del gate. El flujo actual es:
+
+```
+Crear documento de Phase N → Gate → Phase N+1
+```
+
+Lo que deberia ser:
+
+```
+Crear documento de Phase N → Deep review (verificar contra fases anteriores) → Corregir gaps → Gate → Phase N+1
+```
+
+Evidencia concreta en FASE 28:
+- Phase 4 produjo requirements-spec.md y spec-checklist (20/20)
+- El spec-checklist se marco como 20/20 sin verificar archivos reales
+- Al hacer el deep review manual, se encontraron 4 gaps: design.md faltaba,
+  SPEC-003 incompleto, SPEC-004 JSON incorrecto, SPEC-006 sin ubicacion exacta
+- Sin el deep review, estos gaps hubieran llegado a Phase 5 DECOMPOSE y luego
+  a Phase 6 EXECUTE donde habrian causado errores durante la implementacion
+
+**Impacto:**
+
+Especificaciones incompletas o incorrectas pasan el gate y llegan a Phase 5/6,
+donde los errores son mas costosos de corregir.
+
+**Resolucion propuesta:**
+
+Agregar en cada `workflow-*/SKILL.md` una seccion entre la produccion del documento
+y el gate humano:
+
+```markdown
+## Deep review pre-gate (OBLIGATORIO)
+
+Antes de presentar el gate:
+
+1. Verificar que TODOS los elementos identificados en fases anteriores
+   tienen cobertura en el documento de esta fase:
+   - Phase 1: cada bug/riesgo identificado tiene una solucion especificada
+   - Phase 2: cada decision de diseno (D-NN) tiene un SPEC correspondiente
+   - Phase 3: cada item del scope tiene representacion en la spec
+
+2. Verificar contra archivos REALES del repositorio (no asumir):
+   - Si la spec menciona una estructura JSON → leer el archivo real
+   - Si la spec dice "reemplazar linea X" → confirmar que la linea X existe
+   - Si la spec dice "agregar en seccion Y" → confirmar que la seccion Y existe
+
+3. Si se encuentran gaps: corregir el documento antes de presentar el gate
+
+Solo despues de completar el deep review → presentar gate humano
+```
+
+Para Phase 4 STRUCTURE especificamente, agregar al final de workflow-structure/SKILL.md:
+- Verificar spec contra archivos reales: settings.json, SKILL.md afectados, etc.
+- Verificar que se creo design.md si WP es Complejo (10+ tareas)
+- Verificar que el spec-checklist se completo con verificacion real, no asumida
+
+**Criterio de cierre:**
+
+Cada `workflow-*/SKILL.md` tiene seccion de deep review pre-gate. En una sesion de
+prueba, Claude detecta un gap en la spec (campo real del archivo no reconocido) y
+lo corrige antes de presentar el gate, sin que el usuario tenga que indicarlo.
 

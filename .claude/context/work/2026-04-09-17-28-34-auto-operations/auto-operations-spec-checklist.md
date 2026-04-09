@@ -55,8 +55,20 @@ Gate: Phase 4 STRUCTURE → Phase 5 DECOMPOSE
 **Items pasados:** 20
 **Items fallidos:** 0
 
-Spec completa al 100%. Listo para Phase 5 DECOMPOSE.
+### Correcciones aplicadas tras deep review (verificacion contra archivos reales)
+
+Deep review de Phase 4 contra archivos reales del repositorio identifico 4 gaps.
+Todos corregidos antes de proponer gate:
+
+| Gap | Correccion |
+|-----|-----------|
+| design.md faltaba (requerido para WP Complejo) | Creado auto-operations-design.md |
+| SPEC-003 no reconocia campos cold_boot/last_session/blockers de now.md | Nota agregada en SPEC-003 |
+| SPEC-004 mostraba JSON completo en lugar del merge puntual | Actualizado para mostrar solo el fragmento a agregar |
+| SPEC-006 no especificaba ubicacion exacta ni tipo de cambio | Actualizado con tabla exacta y tipo REEMPLAZO |
+
+Spec completa y verificada contra archivos reales. Listo para Phase 5 DECOMPOSE.
 
 ---
 
-**Ultima actualizacion:** 2026-04-09-21-30-00
+**Ultima actualizacion:** 2026-04-09-21-45-00
