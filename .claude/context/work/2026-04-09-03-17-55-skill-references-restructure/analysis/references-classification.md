@@ -212,34 +212,34 @@ Referenciados solo en `workflow-track/SKILL.md` — bajo riesgo de mover.
 **Regla de eliminación**: `pm-thyrox/references/` solo se elimina cuando TODOS los 24 archivos
 estén presentes en su destino y verificados. Ningún archivo se pierde — solo se reubica.
 
-| # | Archivo origen (`pm-thyrox/references/`) | Destino | Nivel |
-|---|------------------------------------------|---------|-------|
-| 1 | `agent-spec.md` | `.claude/references/` | global |
-| 2 | `basic-usage.md` | `workflow-analyze/references/` | fase |
-| 3 | `claude-code-components.md` | `.claude/references/` | global |
-| 4 | `commit-convention.md` | `workflow-execute/references/` | fase |
-| 5 | `commit-helper.md` | `workflow-execute/references/` | fase |
-| 6 | `constraints.md` | `workflow-analyze/references/` | fase |
-| 7 | `context.md` | `workflow-analyze/references/` | fase |
-| 8 | `conventions.md` | `.claude/references/` | global |
-| 9 | `examples.md` | `.claude/references/` | global |
-| 10 | `incremental-correction.md` | `workflow-track/references/` | fase |
-| 11 | `introduction.md` | `workflow-analyze/references/` | fase |
-| 12 | `long-context-tips.md` | `.claude/references/` | global |
-| 13 | `prompting-tips.md` | `.claude/references/` | global |
-| 14 | `quality-goals.md` | `workflow-analyze/references/` | fase |
-| 15 | `reference-validation.md` | `workflow-track/references/` | fase |
-| 16 | `requirements-analysis.md` | `workflow-analyze/references/` | fase |
-| 17 | `scalability.md` | `workflow-analyze/references/` | fase |
-| 18 | `skill-authoring.md` | `.claude/references/` | global |
-| 19 | `skill-vs-agent.md` | `.claude/references/` | global |
-| 20 | `solution-strategy.md` | `workflow-strategy/references/` | fase |
-| 21 | `spec-driven-development.md` | `workflow-structure/references/` | fase |
-| 22 | `stakeholders.md` | `workflow-analyze/references/` | fase |
-| 23 | `state-management.md` | `.claude/references/` | global |
-| 24 | `use-cases.md` | `workflow-analyze/references/` | fase |
+| # | Archivo origen | Destino completo |
+|---|----------------|-----------------|
+| 1 | `agent-spec.md` | `.claude/references/agent-spec.md` |
+| 2 | `basic-usage.md` | `.claude/skills/workflow-analyze/references/basic-usage.md` |
+| 3 | `claude-code-components.md` | `.claude/references/claude-code-components.md` |
+| 4 | `commit-convention.md` | `.claude/skills/workflow-execute/references/commit-convention.md` |
+| 5 | `commit-helper.md` | `.claude/skills/workflow-execute/references/commit-helper.md` |
+| 6 | `constraints.md` | `.claude/skills/workflow-analyze/references/constraints.md` |
+| 7 | `context.md` | `.claude/skills/workflow-analyze/references/context.md` |
+| 8 | `conventions.md` | `.claude/references/conventions.md` |
+| 9 | `examples.md` | `.claude/references/examples.md` |
+| 10 | `incremental-correction.md` | `.claude/skills/workflow-track/references/incremental-correction.md` |
+| 11 | `introduction.md` | `.claude/skills/workflow-analyze/references/introduction.md` |
+| 12 | `long-context-tips.md` | `.claude/references/long-context-tips.md` |
+| 13 | `prompting-tips.md` | `.claude/references/prompting-tips.md` |
+| 14 | `quality-goals.md` | `.claude/skills/workflow-analyze/references/quality-goals.md` |
+| 15 | `reference-validation.md` | `.claude/skills/workflow-track/references/reference-validation.md` |
+| 16 | `requirements-analysis.md` | `.claude/skills/workflow-analyze/references/requirements-analysis.md` |
+| 17 | `scalability.md` | `.claude/skills/workflow-analyze/references/scalability.md` |
+| 18 | `skill-authoring.md` | `.claude/references/skill-authoring.md` |
+| 19 | `skill-vs-agent.md` | `.claude/references/skill-vs-agent.md` |
+| 20 | `solution-strategy.md` | `.claude/skills/workflow-strategy/references/solution-strategy.md` |
+| 21 | `spec-driven-development.md` | `.claude/skills/workflow-structure/references/spec-driven-development.md` |
+| 22 | `stakeholders.md` | `.claude/skills/workflow-analyze/references/stakeholders.md` |
+| 23 | `state-management.md` | `.claude/references/state-management.md` |
+| 24 | `use-cases.md` | `.claude/skills/workflow-analyze/references/use-cases.md` |
 
-**Conteo:** 9 globales + 15 de fase = 24. Cero archivos sin destino.
+**Conteo:** 9 a `.claude/references/` + 15 a `.claude/skills/workflow-*/references/` = 24. Cero archivos sin destino.
 
 ---
 
