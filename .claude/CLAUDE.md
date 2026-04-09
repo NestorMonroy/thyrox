@@ -41,7 +41,8 @@ REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
 ```
 .claude/
 ├── CLAUDE.md              ← Este archivo (Level 2)
-├── agents/                ← Agentes nativos Claude Code (6 agentes, spec: agent-spec.md)
+├── agents/                ← Agentes nativos Claude Code (ver references/agent-spec.md)
+├── commands/              ← Comandos slash disponibles (sin frontmatter, sin disparo automático)
 ├── context/
 │   ├── project-state.md   ← Metadata del proyecto
 │   ├── focus.md           ← Dirección actual
@@ -49,11 +50,13 @@ REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
 │   ├── now-{agent-id}.md  ← Estado por agente (ejecución paralela)
 │   ├── decisions/         ← ADRs (global/ api/ db/ ui/ deploy/ framework/ + raíz legacy)
 │   └── work/              ← Paquetes de trabajo (YYYY-MM-DD-HH-MM-SS-nombre/)
-└── skills/pm-thyrox/      ← El SKILL (Level 1)
-    ├── SKILL.md            Motor — metodología 7 fases
-    ├── references/         Documentación bajo demanda
-    ├── scripts/            Código ejecutable
-    └── assets/             Templates de output
+├── guidelines/            ← Directivas siempre cargadas (generadas por registry, no on-demand)
+├── memory/                ← Memoria persistente entre sesiones
+├── references/            ← Documentación global de plataforma Claude Code (on-demand)
+├── registry/              ← Registro de tech skills y agentes
+├── scripts/               ← Scripts de infraestructura Claude Code (hooks, utilidades)
+└── skills/                ← Skills del framework (pm-thyrox + workflow-*)
+    └── pm-thyrox/         ← El SKILL (Level 1): SKILL.md + references/ + scripts/ + assets/
 ```
 
 ## Flujo de sesión — OBLIGATORIO
