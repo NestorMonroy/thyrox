@@ -813,3 +813,35 @@ FASE 17: Análisis de referencia mise                              — 100% ✓
 ### Bloque S — Reducción SKILL.md (post M+R+TD-01)
 
 - [x] S-01: Reducir `pm-thyrox/SKILL.md` ~471 → 148 líneas (T-027): Catálogo de fases, artefactos, naming — 2026-04-09
+
+---
+
+## FASE 24: skill-references-restructure — Redistribución arquitectónica de references y scripts (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-09-03-17-55-skill-references-restructure/`
+**Causa raíz:** workflow-* skills no autocontenidos — 24 references y 20 scripts centralizados en pm-thyrox sin distinción de owner.
+
+### Batch A — 15 referencias de fase → workflow-*/references/
+
+- [ ] A-01: Crear dirs + `git mv` 9 refs → `workflow-analyze/references/` + actualizar links
+- [ ] A-02: Crear dirs + `git mv` 6 refs → workflow-execute/strategy/structure/track references/ + actualizar links
+
+### Batch B — 9 referencias globales → .claude/references/
+
+- [ ] B-01: Crear `.claude/references/` + `git mv` 9 refs + actualizar links en pm-thyrox/SKILL.md
+- [ ] B-02: Eliminar `pm-thyrox/references/` (verificado vacío — 24/24 destinos presentes)
+
+### Batch C — 2 scripts → workflow-track/scripts/
+
+- [ ] C-01: Crear `workflow-track/scripts/` + `git mv` 2 scripts + actualizar links en SKILL.md
+
+### Batch D — 13 scripts → .claude/scripts/ + settings.json
+
+- [ ] D-01: Crear `.claude/scripts/` + `git mv` 13 scripts
+- [ ] D-02: Actualizar `settings.json` (3 paths) + links en workflow-track/SKILL.md, agent-spec.md, reference-validation.md, state-management.md
+
+### Commit final — Documentación + ADR
+
+- [ ] F-01: Actualizar `CLAUDE.md` `## Estructura` (9 dirs reales) + pm-thyrox/SKILL.md paths
+- [ ] F-02: Crear `ADR-017` (3 niveles de artefactos: .claude/references/, .claude/scripts/, workflow-*/references/)
+- [ ] F-03: Cerrar TD-020 — `.claude/commands/` documentado en CLAUDE.md
