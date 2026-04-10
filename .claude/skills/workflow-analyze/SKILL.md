@@ -43,6 +43,17 @@ Ver [escalabilidad](references/scalability.md) para detalles y casos de borde.
 
 ---
 
+## Step 0 — Contexto del usuario final (TD-007)
+
+Antes de analizar: preguntar brevemente al usuario:
+- ¿Quién usará el sistema? (rol, contexto)
+- ¿Qué quieren lograr en concreto?
+- ¿Hay restricciones o contexto no obvio?
+
+Documentar en `{nombre-wp}-analysis.md` sección "Contexto del usuario final". Omitir si el usuario ya lo explicó en el mensaje inicial.
+
+---
+
 ## Fase a ejecutar: Phase 1 ANALYZE
 
 Entender el problema antes de proponer soluciones evita construir lo incorrecto.
@@ -88,6 +99,13 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
 Tech skills activos: si hay `frontend-react` investigar componentes; `backend-nodejs` investigar endpoints; `db-postgresql` investigar tablas y relaciones.
 
 ---
+
+## Validaciones pre-gate (TD-029, TD-031, TD-033)
+
+Antes de presentar el gate 1→2:
+- **TD-031 deep review**: revisar `{nombre-wp}-analysis.md` — ¿cubre los 8 aspectos sin [NEEDS CLARIFICATION]?
+- **TD-029 criterios**: `{nombre-wp}-risk-register.md` existe · Stopping Point Manifest documentado · `now.md::phase = Phase 1`
+- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
 
 ## Gate humano
 
