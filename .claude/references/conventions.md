@@ -4,10 +4,10 @@ category: Convenciones
 version: 1.0
 purpose: Define convenciones del proyecto: ubicaciones de archivos, nombrado, estructura.
 goal: Asegurar consistencia en todo el proyecto.
-updated_at: 2026-04-10 03:30:00
+updated_at: 2026-04-10 05:00:00
 ```
 
-# PM-THYROX Conventions
+# THYROX Conventions
 
 ## Propósito
 
@@ -19,7 +19,7 @@ Define convenciones del proyecto: ubicaciones de archivos, nombrado, estructura.
 
 ## File Locations
 
-All PM-THYROX workflow files are stored in the THYROX project structure:
+All THYROX workflow files are stored in the THYROX project structure:
 
 ```
 /project/

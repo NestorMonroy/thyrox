@@ -2,23 +2,23 @@
 type: Ejemplos Prácticos
 category: Casos de Uso
 version: 1.0
-purpose: Colección de ejemplos reales de cómo usar PM-THYROX en diferentes escenarios.
+purpose: Colección de ejemplos reales de cómo usar THYROX en diferentes escenarios.
 goal: Demostrar aplicación práctica del skill con casos concretos.
-updated_at: 2026-03-25
+updated_at: 2026-04-10 05:00:00
 owner: thyrox (cross-phase)
 ```
 
-# PM-THYROX Use Cases & Examples
+# THYROX Use Cases & Examples
 
 ## Propósito
 
-Colección de ejemplos reales de cómo usar PM-THYROX en diferentes escenarios.
+Colección de ejemplos reales de cómo usar THYROX en diferentes escenarios.
 
 > Objetivo: Demostrar aplicación práctica del skill con casos concretos.
 
 ---
 
-This document provides real-world examples of using PM-THYROX across different scenarios.
+This document provides real-world examples of using THYROX across different scenarios.
 
 Each use case follows the 7-phase methodology: **ANALYZE → SOLUTION_STRATEGY → PLAN → STRUCTURE → DECOMPOSE → EXECUTE → TRACK**
 
@@ -31,7 +31,7 @@ Each use case follows the 7-phase methodology: **ANALYZE → SOLUTION_STRATEGY �
 ```
 User: "We need to add password reset functionality"
 
-PM-THYROX:
+THYROX:
   Q1: When users forget password, what happens?
   Q2: Email verification or SMS?
   Q3: Token expiry time?
@@ -40,13 +40,13 @@ PM-THYROX:
 
 User: Email verification, 1 hour token, 5 resends/hour
 
-PM-THYROX Updates ROADMAP.md:
+THYROX Updates ROADMAP.md:
 ```
 
 ### Phase 5: DECOMPOSE (5 min)
 
 ```
-PM-THYROX: Breaking down into tasks...
+THYROX: Breaking down into tasks...
 
 /task:create "Database: add password_reset_tokens table"
 /task:create "Service: create reset token" --depends-on "task-1"
@@ -131,7 +131,7 @@ Day 3 - Session 5 (Docs):
 ```
 User: "What's our status?"
 
-PM-THYROX reads ROADMAP.md:
+THYROX reads ROADMAP.md:
   Password Reset Feature - COMPLETE
   - [x] Database schema (2025-03-24)
   - [x] Reset service (2025-03-24)
@@ -178,11 +178,11 @@ PM-THYROX reads ROADMAP.md:
 ```
 User: "We need to build a payment system for subscriptions"
 
-PM-THYROX: [Asks 10 detailed questions about Stripe, billing cycles, etc.]
+THYROX: [Asks 10 detailed questions about Stripe, billing cycles, etc.]
 
 User: [Provides detailed context]
 
-PM-THYROX: "This looks complex. Should we create a PRD?"
+THYROX: "This looks complex. Should we create a PRD?"
 
 User: "Yes, let's do that"
 ```
@@ -190,7 +190,7 @@ User: "Yes, let's do that"
 ### Phase 4: STRUCTURE (1 hour)
 
 ```
-PM-THYROX creates .claude/prds/payment-system.md with:
+THYROX creates .claude/prds/payment-system.md with:
 - Overview
 - Stripe integration requirements
 - Billing cycles (monthly/yearly)
@@ -205,7 +205,7 @@ User reviews and refines PRD
 ### Phase 5: DECOMPOSE (30 min)
 
 ```
-PM-THYROX analyzes PRD and identifies work streams:
+THYROX analyzes PRD and identifies work streams:
 
 Stream A (Database):
 /task:create "Database: customers table"
@@ -278,7 +278,7 @@ Dependencies ensure Sequential work only where needed.
 ```
 User: "What's our status on payments?"
 
-PM-THYROX shows:
+THYROX shows:
 
 Payment System - 90% Complete
 
@@ -330,7 +330,7 @@ Next: Complete tests, then API docs
 ```
 User: "There's a bug in token handling - race condition on expiry"
 
-PM-THYROX: "Got it. This is a quick fix. Should I add it to ad-hoc-tasks.md?"
+THYROX: "Got it. This is a quick fix. Should I add it to ad-hoc-tasks.md?"
 
 User: "Just fix it"
 
@@ -350,7 +350,7 @@ Updates ROADMAP.md or ad-hoc-tasks.md:
 ```
 User: "Standup"
 
-PM-THYROX reads ROADMAP.md and git log:
+THYROX reads ROADMAP.md and git log:
 
 Daily Standup - 2025-03-24
 
@@ -423,7 +423,7 @@ Result: Can execute in ~3-4 days instead of 8 (5 work streams in parallel)
 ```
 User: "Generate changelog for this week"
 
-PM-THYROX:
+THYROX:
   1. Reads recent commits: git log v0.1.0..HEAD
   2. Groups by type:
   
@@ -488,11 +488,11 @@ Next day:
 
 User: "What's the status?"
 
-PM-THYROX: "Email notifications blocked on SMTP credentials, waiting on devops"
+THYROX: "Email notifications blocked on SMTP credentials, waiting on devops"
 
 When credentials arrive:
 
-PM-THYROX: Update ROADMAP.md
+THYROX: Update ROADMAP.md
 - [-] Email sending (BLOCKED → IN PROGRESS)
 
 Dev: Complete and commit

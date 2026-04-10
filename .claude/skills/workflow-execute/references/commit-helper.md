@@ -85,7 +85,7 @@ Claude te dirá cuál template usar según el tipo de cambio que hayas hecho.
 - Se menciona "commit", "guardar cambios", "versionar"
 - Después de completar tarea
 - Al finalizar traducción o modificación
-- Al terminar fase de PM-THYROX
+- Al terminar fase de THYROX
 
 ---
 
@@ -152,7 +152,7 @@ Usar los templates en `/assets/` para casos específicos:
 | **bugfix.template** | fix | Corrección de errores |
 | **refactor.template** | refactor | Refactorización de código |
 | **documentation.template** | docs | Cambios de documentación |
-| **task-completion.template** | feat | Al completar una tarea de PM-THYROX |
+| **task-completion.template** | feat | Al completar una tarea de THYROX |
 | **multiple-files.template** | multiple | Múltiples archivos modificados |
 
 ---
@@ -191,7 +191,7 @@ Centralizar todas las queries de usuarios en UserRepository
 para evitar duplicacion y mejorar mantenibilidad.
 ```
 
-### Completar Tarea PM-THYROX
+### Completar Tarea THYROX
 
 ```
 feat(api): implement user authentication (Phase 4: EXECUTE)
@@ -308,7 +308,7 @@ git commit -m "random changes"
 
 ---
 
-## Integración con PM-THYROX
+## Integración con THYROX
 
 **Cuando completas una tarea:**
 
