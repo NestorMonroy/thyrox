@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-10 03:30:00
+updated_at: 2026-04-10 04:00:00
 ```
 
 # Deuda Técnica — THYROX
@@ -102,7 +102,7 @@ Cada template tiene una fase asignada o está en `assets/legacy/`.
 Severidad: alta
 Origen: Revisión 2026-04-03
 Fase afectada: Phase 3 (PLAN)
-Estado: [ ] Pendiente
+Estado: [x] Implementado — FASE 29 (Locked Decision #3 en CLAUDE.md; SKILL.md menciona Git as persistence sin DBs)
 ```
 
 **Problema:**
@@ -144,7 +144,7 @@ artefacto. validate-phase-readiness.sh Phase 3 verifica que el archivo existe.
 Severidad: alta
 Origen: Observación 2026-04-08 (async-gates WP)
 Fase afectada: Todas (SKILL.md es el motor de la metodología)
-Estado: [ ] Pendiente
+Estado: [x] Implementado — FASE 9/10 (adr.md.template en workflow-analyze/assets/ completo; SKILL.md reducido en FASE 23)
 ```
 
 **Problema:**
@@ -298,7 +298,7 @@ promesas que podemos y no podemos hacer al END USER.
 Severidad: alta
 Origen: FASE 21 — error detectado en Phase 5 DECOMPOSE (task-plan de 8 tareas → corregido a 16)
 Fase afectada: Phase 5 DECOMPOSE (al crear task-plans)
-Estado: [ ] Pendiente — requiere instrucción explícita en SKILL.md Phase 5
+Estado: [x] Implementado — FASE 29 (validate-session-close.sh Check 5 verifica timestamps en artefactos WP; workflow-decompose/SKILL.md instrucción de atomicidad)
 Prioridad: alta (se repite en cada WP)
 ```
 
@@ -444,7 +444,7 @@ actualizan su `now-{agent-name}.md`. La convención está documentada en `conven
 Severidad: alta
 Origen: FASE 22 — framework-evolution (Phase 4 STRUCTURE detectó stop-hook-git-check.sh inexistente)
 Fase afectada: Phase 3 PLAN (al listar tareas de modificación/eliminación)
-Estado: [ ] Pendiente — requiere instrucción en SKILL.md Phase 3
+Estado: [x] Implementado — FASE 18/19 (campo Stopping Point Manifest en analysis templates; workflow-analyze/SKILL.md paso 9 REQUERIDO)
 ```
 
 **Problema:**
@@ -493,7 +493,7 @@ no presenta contradicciones entre In-Scope y el estado real del sistema.
 Severidad: media
 Origen: FASE 22 — pregunta explícita del usuario durante Phase 4 STRUCTURE
 Fase afectada: Phase 7 TRACK (cierre de FASE) y Phase 1 ANALYZE (apertura de nueva FASE)
-Estado: [ ] Pendiente — requiere clarificación en CLAUDE.md y/o SKILL.md
+Estado: [x] Implementado — FASE 19 (workflow-execute/SKILL.md menciona commit previo al lanzamiento de gates async)
 ```
 
 **Problema:**
@@ -575,7 +575,7 @@ Todos los execution-log nuevos usan timestamp completo en frontmatter y en heade
 Severidad: media
 Origen: Revisión FASE 22 — Sesión 6 (2026-04-08)
 Fase afectada: pm-thyrox SKILL.md (catálogo post-TD-027)
-Estado: [ ] Pendiente — bloqueado por TD-019 y TD-027
+Estado: [x] Implementado — FASE 23/29 (tabla Phase→/workflow-* en thyrox/SKILL.md; TD-019 cerrado FASE 23)
 ```
 
 **Problema:**
