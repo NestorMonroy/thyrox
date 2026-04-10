@@ -48,7 +48,7 @@ El archivo `reference-validation-report.txt` tiene 3 secciones principales:
 decisions.md:
   -> decisions/adr-001.md
   -> decisions/adr-002.md
-  -> ../skills/pm-thyrox/SKILL.md
+  -> ../skills/thyrox/SKILL.md
 ```
 Estas referencias funcionan correctamente.
 

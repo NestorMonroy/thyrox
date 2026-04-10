@@ -103,9 +103,9 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 ### Grupo 6 — Splits de archivos sobredimensionados
 
 - [x] ROADMAP.md → ROADMAP-history.md (FASEs 1–26) — 2026-04-10
-- [ ] CHANGELOG.md → CHANGELOG-archive.md (versiones históricas)
-- [ ] technical-debt.md: mover TDs resueltos al WP correspondiente
+- [x] CHANGELOG.md → CHANGELOG-archive.md (versiones históricas) — 2026-04-10
+- [x] technical-debt.md: mover TDs resueltos al WP correspondiente — 2026-04-10
 
 ### Grupo 7 — Cerrar TDs ya implementados
 
-- [ ] Marcar [x] TD-002, TD-004, TD-011, TD-016, TD-017, TD-021 en technical-debt.md
+- [x] Marcar [x] TD-002, TD-004, TD-011, TD-016, TD-017, TD-021 en technical-debt.md — 2026-04-10

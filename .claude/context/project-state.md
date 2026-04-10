@@ -4,15 +4,15 @@ category: Estado Actual
 version: 2.3.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-09 22:30:00
+updated_at: 2026-04-10 04:00:00
 ```
 
 # Project State — THYROX
 
 ## Status General
 
-**Versión:** 2.4.0
-**Estado:** Activo — framework pm-thyrox con 28 FASEs (26 completas + FASE 27 en Phase 1 + FASE 28 completada)
+**Versión:** 2.5.0
+**Estado:** Activo — framework thyrox con 29 FASEs (26 completas + FASE 27 en Phase 1 + FASE 28-29 completadas)
 **Última actualización:** 2026-04-09 22:30:00
 **Branch activo:** `claude/check-merge-status-Dcyvj`
 
@@ -54,13 +54,14 @@ updated_at: 2026-04-09 22:30:00
 | FASE 18: Human Gates — autorización explícita por fase (2026-04-07) |
 | FASE 19: Async Gates — gates para agentes en background (2026-04-08) |
 | FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) |
-| FASE 21: Skill Architecture Review — decisión arquitectónica pm-thyrox (2026-04-08) |
+| FASE 21: Skill Architecture Review — decisión arquitectónica thyrox (2026-04-08) |
 | FASE 22: Framework Evolution — Integración documentación oficial + TDs prioritarios (2026-04-08) |
 | FASE 23: workflow-restructure — Migración workflow-* a subdirectorios + reducción SKILL.md (2026-04-09) |
 | FASE 24: skill-references-restructure — Redistribución arquitectónica de references y scripts (2026-04-09) |
 | FASE 25: assets-restructure — Distribución de templates a workflow-*/assets/ (2026-04-09) |
 | FASE 26: write-gates — Modelo de permisos Claude Code (2026-04-09) |
 | FASE 28: auto-operations — Sincronización determinista now.md via hooks reactivos (v2.4.0) (2026-04-09) |
+| FASE 29: technical-debt-resolution — Renombrado thyrox, validaciones pre-gate, REGLA-LONGEV-001 (v2.5.0) (2026-04-10) |
 
 Ver ROADMAP.md para detalle de cada FASE.
 
@@ -69,14 +70,14 @@ Ver ROADMAP.md para detalle de cada FASE.
 ## Componentes del framework
 
 ### Skills activos (`.claude/skills/`)
-- `pm-thyrox/` — Framework principal 7 fases (motor del proyecto)
+- `thyrox/` — Framework principal 7 fases (motor del proyecto)
 - Tech skills: backend-nodejs, db-mysql, db-postgresql, frontend-react, frontend-webpack, python-mcp, sphinx
 
 ### MCP servers
 - `thyrox-memory` — Memoria semántica FAISS (store/retrieve)
 - `thyrox-executor` — Ejecución subprocess con blocklist
 
-### Scripts de gestión (`.claude/skills/pm-thyrox/scripts/`)
+### Scripts de gestión (`.claude/skills/thyrox/scripts/`)
 - `update-state.sh` — Regenera este archivo desde el repo real
 - `validate-session-close.sh` — Valida cierre de sesión
 - `validate-phase-readiness.sh` — Valida readiness por fase
@@ -87,8 +88,8 @@ Ver ROADMAP.md para detalle de cada FASE.
 
 ## Deuda técnica registrada
 
-Ver `.claude/context/technical-debt.md` para TD-001 a TD-032.
-Alta prioridad activa: TD-029 (doble validación), TD-031 (deep review pre-gate), TD-032 (Phase 6 tracking automation).
+Ver `.claude/context/technical-debt.md` para TD-001 a TD-035.
+Alta prioridad resuelta en FASE 29: TD-029, TD-031, TD-032, TD-033 implementados.
 
 ---
 

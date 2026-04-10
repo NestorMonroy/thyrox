@@ -3,7 +3,7 @@
 # Unit tests para validate-phase-readiness.sh
 # Crea fixtures temporales, ejecuta el script, verifica exit code y output.
 #
-# Uso: bash .claude/skills/pm-thyrox/scripts/tests/test-phase-readiness.sh
+# Uso: bash .claude/skills/thyrox/scripts/tests/test-phase-readiness.sh
 
 set -euo pipefail
 

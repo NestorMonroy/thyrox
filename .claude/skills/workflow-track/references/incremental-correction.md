@@ -36,7 +36,7 @@ Metodología validada para corrección de 100+ issues a gran escala con análisi
 - [Filosofía Fundamental](#filosofia-fundamental)
 - [Beneficios de la Metodología](#beneficios-de-la-metodologia)
 - [Ejemplo de Proyecto Real](#ejemplo-de-proyecto-real)
-- [Integración con PM-THYROX](#integracion-con-pm-thyrox)
+- [Integración con THYROX](#integracion-con-thyrox)
 - [FAQ](#faq)
 - [Ver También](#ver-tambien)
 
@@ -502,9 +502,9 @@ Proyecto Sphinx con 230 warnings detectados en build.
 
 ---
 
-## Integración con PM-THYROX
+## Integración con THYROX
 
-Esta metodología es parte de **PHASE 7: TRACK** del skill PM-THYROX.
+Esta metodología es parte de **PHASE 7: TRACK** del skill THYROX.
 
 Usar cuando:
 - Completes PHASE 6: EXECUTE
@@ -512,7 +512,7 @@ Usar cuando:
 - Necesitas planificar corrección incremental
 
 Workflow:
-1. PHASE 7: TRACK (PM-THYROX) te guía inicialmente
+1. PHASE 7: TRACK (THYROX) te guía inicialmente
 2. Si tienes 100+ issues → Usa incremental-correction-methodology
 3. Usa los 4 templates para documentar cada fase
 4. Cuando termines → Incluye final-report.md en tu commit
@@ -549,7 +549,7 @@ A: Usa el Decision Framework al inicio. Si dudas → MANUAL. Scripts sin las 8 P
 
 ## Ver También
 
-- PM-THYROX SKILL.md - PHASE 7: TRACK
+- THYROX SKILL.md - PHASE 7: TRACK
 - Templates en `/assets/`:
   - [analysis-phase.md.template](../assets/analysis-phase.md.template)
   - [categorization-plan.md.template](../../workflow-decompose/assets/categorization-plan.md.template)

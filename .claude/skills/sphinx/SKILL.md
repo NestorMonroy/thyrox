@@ -1,6 +1,6 @@
 ```yml
 name: sphinx
-description: "Tech skill para documentación con Sphinx. Usar cuando el proyecto necesite configurar Sphinx, crear estructura docs/, escribir RST/Markdown para docs, o generar documentación HTML. Complementa pm-thyrox: mientras pm-thyrox gestiona el proceso, sphinx define cómo se estructura y publica la documentación."
+description: "Tech skill para documentación con Sphinx. Usar cuando el proyecto necesite configurar Sphinx, crear estructura docs/, escribir RST/Markdown para docs, o generar documentación HTML. Complementa thyrox: mientras thyrox gestiona el proceso, sphinx define cómo se estructura y publica la documentación."
 status: stub
 implementado: false
 pendiente_wp: sphinx-implementation
@@ -9,7 +9,7 @@ pendiente_wp: sphinx-implementation
 # SPHINX: Documentación con Sphinx
 
 Tech skill para proyectos que usan Sphinx como generador de documentación.
-Complementa pm-thyrox: pm-thyrox gestiona el proceso de trabajo (fases SDLC),
+Complementa thyrox: thyrox gestiona el proceso de trabajo (fases SDLC),
 sphinx define cómo estructurar y publicar la documentación del proyecto.
 
 ---
@@ -43,9 +43,9 @@ Cuándo usar `.rst` vs `.md`, estructura de headings, links entre docs.
 
 ---
 
-## Integración con pm-thyrox [PENDIENTE — WP sphinx-implementation]
+## Integración con thyrox [PENDIENTE — WP sphinx-implementation]
 
-Cómo los ADRs de pm-thyrox se convierten en páginas de Sphinx.
+Cómo los ADRs de thyrox se convierten en páginas de Sphinx.
 Dónde referencia CLAUDE.md el `adr_path` para que Sphinx los indexe.
 
 ---

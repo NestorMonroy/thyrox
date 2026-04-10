@@ -48,7 +48,7 @@ Metodología para trabajo complejo que requiere planificación estructurada. Apl
 - [TASK-008: Validación final](#task-008-validacion-final)
 - [Checkpoints](#checkpoints)
 - [Rollback](#rollback)
-- [Integración con PM-THYROX](#integracion-con-pm-thyrox)
+- [Integración con THYROX](#integracion-con-thyrox)
 - [FAQ](#faq)
 - [Ver También](#ver-tambien)
 
@@ -581,9 +581,9 @@ git commit -m "feat(architecture-docs): implement TASK-008 - final validation se
 
 ---
 
-## Integración con PM-THYROX
+## Integración con THYROX
 
-Spec-Driven Development es **OPCION dentro de PHASE 4: STRUCTURE** de PM-THYROX.
+Spec-Driven Development es **OPCION dentro de PHASE 4: STRUCTURE** de THYROX.
 
 **Flujo**:
 1. User: "Voy a trabajar en una feature compleja"
@@ -638,7 +638,7 @@ A: No. Es inversión:
 
 ## Ver También
 
-- PM-THYROX SKILL.md - PHASE 4: STRUCTURE
+- THYROX SKILL.md - PHASE 4: STRUCTURE
 - Templates en `/assets/`:
   - [requirements-analysis.md.template](../assets/requirements-analysis.md.template)
   - [requirements-specification.md.template](../assets/requirements-specification.md.template)

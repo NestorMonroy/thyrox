@@ -212,13 +212,13 @@ No implementar sin análisis — este ítem registra la deuda, no la resuelve.
 
 ---
 
-## TD-006: pm-thyrox debe ser thin orchestrator — mover lógica de fases a workflow_* commands
+## TD-006: thyrox debe ser thin orchestrator — mover lógica de fases a workflow_* commands
 
 ```
 Severidad: media
 Origen: Análisis SKILL vs AGENTE 2026-04-08 (context-hygiene WP)
 Fase afectada: Arquitectura del SKILL principal
-Estado: [ ] Pendiente — trigger: pm-thyrox llega a ~600 líneas
+Estado: [ ] Pendiente — trigger: thyrox SKILL.md llega a ~600 líneas (actualmente 198, OK)
 ```
 
 **Problema:**
@@ -569,12 +569,12 @@ Todos los execution-log nuevos usan timestamp completo en frontmatter y en heade
 
 ---
 
-## TD-021: Terminología Phase N debe mapear explícitamente a /workflow_* en pm-thyrox
+## TD-021: Terminología Phase N debe mapear explícitamente a /workflow_* en thyrox
 
 ```
 Severidad: media
 Origen: Revisión FASE 22 — Sesión 6 (2026-04-08)
-Fase afectada: pm-thyrox SKILL.md (catálogo post-TD-027)
+Fase afectada: thyrox/SKILL.md (catálogo post-TD-027)
 Estado: [x] Implementado — FASE 23/29 (tabla Phase→/workflow-* en thyrox/SKILL.md; TD-019 cerrado FASE 23)
 ```
 
@@ -695,7 +695,7 @@ ROADMAP.md (o su reemplazo) puede leerse en una sola llamada sin `offset`/`limit
 
 ---
 
-## TD-027: Criterio de auto-write vs validación humana no implementado en pm-thyrox
+## TD-027: Criterio de auto-write vs validación humana no implementado en thyrox
 
 ```
 Severidad: alta

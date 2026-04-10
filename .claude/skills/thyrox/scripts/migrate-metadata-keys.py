@@ -151,17 +151,17 @@ KEY_MAP = dict(
 # ---------------------------------------------------------------------------
 # Capas de migración
 # ---------------------------------------------------------------------------
-REPO_ROOT = Path(__file__).parent.parent.parent  # .claude/skills/pm-thyrox/scripts/ → repo root
+REPO_ROOT = Path(__file__).parent.parent.parent  # .claude/skills/thyrox/scripts/ → repo root
 
 LAYERS = {
     1: {
         "name": "templates (assets/)",
-        "patterns": [".claude/skills/pm-thyrox/assets/*.template",
-                     ".claude/skills/pm-thyrox/assets/*.md.template"],
+        "patterns": [".claude/skills/thyrox/assets/*.template",
+                     ".claude/skills/thyrox/assets/*.md.template"],
     },
     2: {
         "name": "references/",
-        "patterns": [".claude/skills/pm-thyrox/references/*.md"],
+        "patterns": [".claude/skills/thyrox/references/*.md"],
     },
     4: {
         "name": "context activo",

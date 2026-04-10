@@ -35,7 +35,7 @@ Guía para crear commits siguiendo **Conventional Commits** en el proyecto THYRO
 - [Proceso de Commit](#proceso-de-commit)
 - [Validación Pre-Commit](#validacion-pre-commit)
 - [Best Practices](#best-practices)
-- [Integración con PM-THYROX](#integracion-con-pm-thyrox)
+- [Integración con THYROX](#integracion-con-thyrox)
 - [Referencias Externas](#referencias-externas)
 - [Ver También](#ver-tambien)
 
@@ -52,14 +52,14 @@ Ahora que necesites hacer un commit, haz esto:
 - ¿Bug fix? → Usa **bugfix.template**
 - ¿Refactoring? → Usa **refactor.template**
 - ¿Documentación? → Usa **documentation.template**
-- ¿Completar tarea PM-THYROX entera? → Usa **task-completion.template**
+- ¿Completar tarea THYROX entera? → Usa **task-completion.template**
 - ¿Múltiples archivos con cambios transversales? → Usa **multiple-files.template**
 - ¿Necesitas referencia completa? → Usa **commit-message-main.template**
 
 ### Paso 2: Consulta el template
 
 ```bash
-cat .claude/skills/pm-thyrox/assets/[template-nombre].template
+cat .claude/skills/thyrox/assets/[template-nombre].template
 ```
 
 ### Paso 3: Completa el template
