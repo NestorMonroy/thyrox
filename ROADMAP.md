@@ -954,3 +954,48 @@ FASE 17: Análisis de referencia mise                              — 100% si
 ### Fase D — Cierre
 
 - [x] T-020: git push — 2026-04-09
+
+---
+
+## FASE 29: technical-debt-resolution — Resolución de Deuda Técnica del Framework (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-09-22-47-58-technical-debt-resolution/`
+**Causa raíz:** 35 TDs acumulados durante FASEs 1–28; 3 archivos críticos superan límite Read tool; skill orquestador con nombre incorrecto; workflows sin validaciones pre-gate.
+
+### Grupo 1 — Renombrado pm-thyrox → thyrox
+
+- [ ] Mover directorio `.claude/skills/pm-thyrox/` → `.claude/skills/thyrox/`
+- [ ] Actualizar referencias en CLAUDE.md (6), scripts (5), workflow-*/SKILL.md (3), references/*.md (~10)
+- [ ] Actualizar Locked Decision #5 addendum en CLAUDE.md
+
+### Grupo 2 — Validaciones pre-gate en 7 workflow-*/SKILL.md
+
+- [ ] Step 0 END USER CONTEXT en workflow-analyze/SKILL.md (TD-007)
+- [ ] Validación pre-gate en los 7 SKILL.md (TD-029, TD-031, TD-033)
+- [ ] Re-evaluación tamaño WP en workflow-strategy/SKILL.md (TD-028)
+- [ ] Criterio auto-write + pre-flight checklist en workflow-execute/SKILL.md (TD-027 A, TD-032)
+
+### Grupo 3 — Mejoras a scripts existentes
+
+- [ ] project-status.sh: alerta ROADMAP entry faltante (B-08)
+- [ ] session-start.sh: alerta execution-log faltante en Phase 6 (B-09)
+
+### Grupo 4 — Nuevos artefactos Phase 7
+
+- [ ] Crear wp-changelog.md.template + technical-debt-resolved.md.template
+- [ ] Actualizar workflow-track/SKILL.md + thyrox/SKILL.md con nuevos artefactos
+
+### Grupo 5 — Reglas de longevidad y timestamps
+
+- [ ] REGLA-LONGEV-001 en conventions.md (TD-035)
+- [ ] Timestamps en artefactos: conventions.md (TD-001) + validate-session-close.sh (TD-018)
+
+### Grupo 6 — Splits de archivos sobredimensionados
+
+- [ ] ROADMAP.md → ROADMAP-history.md (FASEs 1–26)
+- [ ] CHANGELOG.md → CHANGELOG-archive.md (versiones históricas)
+- [ ] technical-debt.md: mover TDs resueltos al WP correspondiente
+
+### Grupo 7 — Cerrar TDs ya implementados
+
+- [ ] Marcar [x] TD-002, TD-004, TD-011, TD-016, TD-017, TD-021 en technical-debt.md
