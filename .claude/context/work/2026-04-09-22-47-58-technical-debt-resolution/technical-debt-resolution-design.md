@@ -32,15 +32,27 @@ No hay código de aplicación involucrado — todos los cambios son en archivos 
 
 ## 2. Decisiones de Diseño
 
-### DA-001: Secuencia de ejecución — SPEC-001 primero
+### DA-000: Gate SP-02 antes de cualquier ejecución
 
-**Contexto:** SPEC-002 y SPEC-004 necesitan editar `thyrox/SKILL.md`, que no existe hasta que SPEC-001 complete el renombrado.
+**Contexto (GAP-02):** El Plan define SP-02 (GATE OPERACION) como obligatorio antes de editar SKILL.md y scripts. Sin él, se ejecutaría Phase 6 sin aprobación explícita.
 
-**Decisión:** SPEC-001 debe completarse en su totalidad (incluyendo el git commit de verificación) antes de iniciar cualquier otro SPEC.
+**Decisión:** La primera tarea del task plan de Phase 5 DECOMPOSE es el item "⏸ SP-02 GATE OPERACION — presentar resumen de cambios y esperar aprobación explícita del usuario". NINGÚN lote de ejecución comienza hasta que ese gate sea aprobado.
 
 **Consecuencias:**
-- Positivas: no hay conflictos de ruta durante la ejecución
-- Negativas: serializa el inicio (no se puede paralelizar Lote 1)
+- Positivas: el usuario tiene visibilidad completa antes de que se modifiquen archivos de configuración del framework
+- Negativas: ninguna
+
+---
+
+### DA-001: Secuencia de ejecución — SPEC-001 primero, SPEC-003 parcial integrado
+
+**Contexto:** SPEC-002 y SPEC-004 necesitan editar `thyrox/SKILL.md`, que no existe hasta que SPEC-001 complete el renombrado. Adicionalmente, SPEC-001 y SPEC-003 comparten archivos objetivo (`session-start.sh`, `project-status.sh`) — editarlos en dos lotes distintos viola el principio de un solo Edit por archivo.
+
+**Decisión (GAP-03):** SPEC-001 se completa primero. Las ediciones a `session-start.sh` y `project-status.sh` combinan el renombrado (SPEC-001) Y las alertas (SPEC-003) en **una sola operación**. Los otros archivos de SPEC-003 (`update-state.sh`, `commit-msg-hook.sh`) van en Lote 3.
+
+**Consecuencias:**
+- Positivas: cada archivo se edita exactamente una vez; no hay dos commits para el mismo archivo
+- Negativas: SPEC-001 y parte de SPEC-003 deben coordinarse en el mismo lote
 
 ---
 

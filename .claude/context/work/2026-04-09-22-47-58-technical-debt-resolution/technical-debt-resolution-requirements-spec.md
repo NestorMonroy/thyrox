@@ -337,10 +337,12 @@ Then CHANGELOG.md tiene solo sección [Unreleased] y versiones v2.x+
 And CHANGELOG-archive.md contiene v0.x y v1.x
 And CHANGELOG.md tiene < 25,000 bytes
 
-Given technical-debt.md tiene TDs con marcador [-] ya resueltos (TD-019..TD-021, TD-023, TD-024)
+Given technical-debt.md tiene TDs con marcador [-] ya resueltos en FASE 23 (TD-019, TD-020, TD-023, TD-024)
 When se mueven al {wp}-technical-debt-resolved.md de FASE 29
-Then technical-debt.md solo tiene items [ ] pendientes y [x] de esta FASE
+Then technical-debt.md ya no contiene esas entradas [-]
 And el archivo tiene < 25,000 bytes
+
+Note (GAP-01 corregido): TD-021 NO está en este grupo. Phase 1 lo encontró marcado [ ] (implementado sin marcar formalmente), por lo que va a SPEC-007 para cierre formal. Solo van aquí los marcados [-] sin verificación adicional: TD-019, TD-020, TD-023, TD-024.
 
 Given conventions.md no documenta que root CHANGELOG.md solo se actualiza en releases
 When se agrega la regla
@@ -351,7 +353,7 @@ Then conventions.md tiene sección que establece: root CHANGELOG.md = producció
 
 - ROADMAP split: grep recursivo antes → `grep -r "ROADMAP" .claude/ --include="*.md"` para identificar links
 - CHANGELOG split: verificar si algún script referencia el archivo por ruta específica
-- technical-debt split: los TDs `[-]` (TD-019..TD-024) se mueven al {wp}-technical-debt-resolved.md que se crea en SPEC-004/Grupo 7
+- technical-debt split: los TDs `[-]` a mover son TD-019, TD-020, TD-023, TD-024 (NO TD-021 — este va a SPEC-007)
 
 ### Implementación
 
@@ -442,13 +444,29 @@ flowchart TD
 
 ---
 
+## Gate obligatorio antes de ejecutar
+
+**⏸ SP-02 GATE OPERACION (GAP-02 corregido):** Antes de iniciar Phase 6 EXECUTE, el usuario debe aprobar explícitamente. Ningún SPEC comienza sin este gate. Este gate debe aparecer como primera tarea en Phase 5 DECOMPOSE (task plan).
+
 ## Orden de implementación recomendado
 
 ```
-Lote 1 (sin dependencias):   SPEC-001 (renombrado completo)
+⏸ GATE OPERACION SP-02 — aprobación explícita requerida antes de iniciar
+
+Lote 1 (sin dependencias):   SPEC-001 (renombrado)
+                             + SPEC-003 para session-start.sh y project-status.sh
+                             ← GAP-03 corregido: scripts compartidos se editan UNA SOLA VEZ
+                             (rename + alert en la misma edición, no en lotes separados)
+
 Lote 2 (post-SPEC-001):      SPEC-004 (templates + SKILL.md)
-Lote 3 (post-SPEC-004):      SPEC-002, SPEC-003, SPEC-005 (en secuencia por R-01)
-Lote 4 (post-SPEC-004):      SPEC-006 (splits)
+
+Lote 3 (post-SPEC-004):      SPEC-002 en secuencia R-01 (7 SKILL.md, uno por commit)
+                             + SPEC-003 solo para update-state.sh y commit-msg-hook.sh
+                             (los que no fueron editados en Lote 1)
+                             + SPEC-005 (conventions.md + validate-session-close.sh)
+
+Lote 4 (post-SPEC-004):      SPEC-006 (splits: ROADMAP, CHANGELOG, technical-debt)
+
 Lote 5 (post-SPEC-004+006):  SPEC-007 (cerrar TDs)
 ```
 

@@ -2,7 +2,7 @@
 created_at: 2026-04-10 01:00:00
 feature: technical-debt-resolution
 wp: 2026-04-09-22-47-58-technical-debt-resolution
-iteración: 1
+iteración: 2
 status: Pendiente
 ```
 
@@ -52,18 +52,24 @@ Validar calidad de la especificación ANTES de descomponer en tasks. Gate Phase 
 
 ---
 
-## Resultado
+## Resultado (Iteración 1 → gaps encontrados → Iteración 2)
 
 **Items totales:** 20
-**Items pasados:** 20
-**Items fallidos:** 0
+**Items pasados (iteración 2):** 20
+**Items fallidos (iteración 1):** 3 → corregidos en deep review Phase 3 → Phase 4
 
-### Análisis: ¿por qué 0 fallidos?
+### Items fallidos en iteración 1 (ya corregidos):
 
-Este WP es un trabajo de mantenimiento de documentación y configuración del framework — no hay código de aplicación, APIs, ni bases de datos. Los criterios de aceptación son verificables con comandos de shell simples (grep, wc, bash). La especificación es derivada directamente de análisis previos (Phases 1 y 2 con 8 gaps corregidos cada una), lo que da alta confianza en que los requisitos son completos y correctos.
+| Item | Razón de fallo en iteración 1 | Acción tomada |
+|------|-------------------------------|---------------|
+| Consistencia — Requisitos no se contradicen | TD-021 aparecía en SPEC-006 ([-]) Y SPEC-007 ([ ]) con estados contradictorios | GAP-01: TD-021 removido de SPEC-006, queda solo en SPEC-007 |
+| Completitud — Dependencias identificadas | SP-02 GATE OPERACION ausente de SPEC y design | GAP-02: agregado como DA-000 en design y gate obligatorio en SPEC orden de implementación |
+| Consistencia — Requisitos no se contradicen | Orden de implementación (Lote 1 y Lote 3) implicaba dos ediciones a session-start.sh y project-status.sh | GAP-03: DA-001 actualizado, Lote 1 combina rename + alert en una sola edición |
 
-El único riesgo estructural remanente es que el grep pre-split de ROADMAP (DA-005, R-03) puede encontrar referencias no anticipadas — eso se resuelve en Phase 6 EXECUTE, no en la spec.
+### Estado final (iteración 2):
+
+Todos los gaps del deep review corregidos. La spec es consistente con el Plan de Phase 3 y no tiene contradicciones internas.
 
 ---
 
-**Última actualización:** 2026-04-10 01:00:00
+**Última actualización:** 2026-04-10 01:30:00
