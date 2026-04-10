@@ -59,6 +59,15 @@ Definir scope antes de estructurar previene scope creep.
 
 ---
 
+## Validaciones pre-gate (TD-029, TD-031, TD-033)
+
+Antes de presentar el gate 3→4:
+- **TD-031 deep review**: revisar `{nombre-wp}-solution-strategy.md` de Phase 2 — ¿el scope refleja todas las decisiones?
+- **TD-029 criterios**: `{nombre-wp}-plan.md` existe · ROADMAP.md tiene el WP · scope sin ambigüedades pendientes
+- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+
+---
+
 ## Exit criteria
 
 Phase 3 completa cuando:
