@@ -91,7 +91,7 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 
 ### SPEC-002 — 7 SKILL.md en secuencia (analyze → strategy → plan → structure → decompose → execute → track)
 
-- [ ] [T-022] `workflow-analyze/SKILL.md`: wc -l antes; agregar Step 0 END USER CONTEXT (TD-007) + validación pre-gate (TD-029) + deep review phase anterior (TD-031) + git add now.md (TD-033); wc -l después (≤200); `git commit "docs(analyze): TD-007 Step0 + TD-029/031/033 validaciones pre-gate"` (SPEC-002)
+- [x] [T-022] `workflow-analyze/SKILL.md`: wc -l antes (109); agregar Step 0 END USER CONTEXT (TD-007) + validación pre-gate (TD-029) + deep review phase anterior (TD-031) + git add now.md (TD-033); wc -l después (127 ≤200 ✓); `git commit "docs(analyze): TD-007 Step0 + TD-029/031/033 validaciones pre-gate"` (SPEC-002)
 - [ ] [T-023] `workflow-strategy/SKILL.md`: wc -l antes; agregar re-evaluación tamaño WP (TD-028) + TD-029 + TD-031 + TD-033; wc -l después (≤200); `git commit "docs(strategy): TD-028 WP size + TD-029/031/033 validaciones pre-gate"` (SPEC-002)
 - [ ] [T-024] `workflow-plan/SKILL.md`: wc -l antes; agregar TD-029 + TD-031 + TD-033; wc -l después (≤200); `git commit "docs(plan): TD-029/031/033 validaciones pre-gate"` (SPEC-002)
 - [ ] [T-025] `workflow-structure/SKILL.md`: wc -l antes; agregar TD-029 + TD-031 + TD-033; wc -l después (≤200); `git commit "docs(structure): TD-029/031/033 validaciones pre-gate"` (SPEC-002)

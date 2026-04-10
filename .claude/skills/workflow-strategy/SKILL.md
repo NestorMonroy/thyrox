@@ -57,6 +57,14 @@ Ver `references/solution-strategy.md` para estructura completa (Tech Stack, Patt
 
 ---
 
+## Validaciones pre-gate (TD-028, TD-029, TD-031, TD-033)
+
+Antes de presentar el gate 2→3:
+- **TD-031 deep review**: revisar `{nombre-wp}-analysis.md` de Phase 1 — ¿la estrategia responde a todos los hallazgos?
+- **TD-028 re-evaluación de tamaño**: ¿el WP sigue siendo micro/pequeño/mediano/grande? Si cambió, ajustar fases activas
+- **TD-029 criterios**: `{nombre-wp}-solution-strategy.md` existe con 5 secciones · ADRs creados si aplica
+- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+
 ## Gate humano
 
 ⏸ STOP — Presentar las decisiones clave (Key Ideas, Decisions, alternativas descartadas).
