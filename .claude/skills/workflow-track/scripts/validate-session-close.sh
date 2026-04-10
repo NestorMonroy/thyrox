@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # validate-session-close.sh
 # Validar que la sesión se cierra con estado actualizado.
-# Uso: bash .claude/skills/pm-thyrox/scripts/validate-session-close.sh
+# Uso: bash .claude/skills/thyrox/scripts/validate-session-close.sh
 #
 # Checks (soft warns):
 #   1. focus.md actualizado hoy
@@ -80,6 +80,23 @@ if [ -f "${CONTEXT_DIR}/now.md" ]; then
         fi
     else
         pass "No hay work package activo (OK si no hay trabajo en curso)"
+    fi
+fi
+
+# 5. Timestamps en artefactos WP — verificar placeholders sin resolver (TD-018)
+if [ -f "${CONTEXT_DIR}/now.md" ]; then
+    CURRENT_WORK=$(grep "^current_work:" "${CONTEXT_DIR}/now.md" | head -1 | sed 's/current_work: *//' || echo "null")
+    if [ "$CURRENT_WORK" != "null" ] && [ -n "$CURRENT_WORK" ]; then
+        WORK_PATH="${CONTEXT_DIR}/${CURRENT_WORK}"
+        if [ -d "$WORK_PATH" ]; then
+            # Buscar placeholders de timestamp sin resolver en artefactos WP
+            PLACEHOLDER_FILES=$(grep -rl "\[YYYY-MM-DD" "$WORK_PATH" 2>/dev/null | head -5 || true)
+            if [ -n "$PLACEHOLDER_FILES" ]; then
+                warn "Artefactos WP con timestamps sin resolver (TD-018): $PLACEHOLDER_FILES"
+            else
+                pass "Artefactos WP sin placeholders de timestamp"
+            fi
+        fi
     fi
 fi
 

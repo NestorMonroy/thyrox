@@ -4,7 +4,7 @@ category: Convenciones
 version: 1.0
 purpose: Define convenciones del proyecto: ubicaciones de archivos, nombrado, estructura.
 goal: Asegurar consistencia en todo el proyecto.
-updated_at: 2026-03-25
+updated_at: 2026-04-10 03:30:00
 ```
 
 # PM-THYROX Conventions
@@ -716,3 +716,43 @@ Define qué archivo de estado usa cada tipo de entidad en ejecución. Convenció
 **Cuándo crear el archivo:** Al inicio de la ejecución. Cuándo eliminarlo: al completar (o moverlo a `work/{wp}/` como evidencia).
 
 Ver también: [state-management.md](state-management.md) para el trigger map completo de cuándo actualizar cada campo.
+
+---
+
+## Longevidad de archivos (REGLA-LONGEV-001) (TD-026)
+
+Los archivos vivos (ROADMAP.md, CHANGELOG.md, technical-debt.md) se degradan en performance del LLM cuando crecen sin límite. Aplicar REGLA-LONGEV-001:
+
+**Umbral de tamaño:** 25,000 bytes (≈10,000 tokens).
+
+**Acción cuando se supera el umbral:**
+1. Crear archivo de historial: `{archivo}-history.md` o `{archivo}-archive.md`
+2. Mover contenido histórico/cerrado al archivo de historial
+3. El archivo original mantiene solo estado activo/reciente
+4. Commit: `docs: split {archivo} — contenido histórico archivado`
+
+**Archivos a monitorear:** `ROADMAP.md`, `CHANGELOG.md`, `technical-debt.md`.
+
+**Trigger de revisión:** cada 5 FASEs, ejecutar: `wc -c ROADMAP.md CHANGELOG.md .claude/context/technical-debt.md`
+
+---
+
+## Timestamps en artefactos WP (TD-001)
+
+Los artefactos de work package usan `created_at` (no `updated_at`) en su frontmatter YAML:
+
+```yml
+created_at: YYYY-MM-DD HH:MM:SS  # timestamp real del sistema — NO estimar
+```
+
+**Regla:** obtener timestamp real: `date '+%Y-%m-%d %H:%M:%S'`. NUNCA inventar ni estimar.
+
+Los archivos de configuración del framework (CLAUDE.md, skills/*.md, references/) usan `updated_at` y se actualiza en cada edición.
+
+---
+
+## CHANGELOG.md (raíz) — solo en releases (D2, FASE 29)
+
+`CHANGELOG.md` (raíz del proyecto) se actualiza ÚNICAMENTE cuando hay un release con bump de versión (MAJOR, MINOR, o PATCH).
+
+**Para el progreso de desarrollo de un WP:** usar `{nombre-wp}-changelog.md` en el directorio del WP (Phase 7). Ver template en `.claude/skills/workflow-track/assets/wp-changelog.md.template`.

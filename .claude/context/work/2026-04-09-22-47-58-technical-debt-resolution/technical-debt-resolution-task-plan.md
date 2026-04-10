@@ -97,14 +97,14 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 - [x] [T-025] `workflow-structure/SKILL.md`: wc -l antes (74); agregar TD-029 + TD-031 + TD-033; wc -l después (81 ≤200 ✓); `git commit "docs(structure): TD-029/031/033 validaciones pre-gate"` (SPEC-002)
 - [x] [T-026] `workflow-decompose/SKILL.md`: wc -l antes (86); agregar TD-029 + TD-031 + TD-033; wc -l después (93 ≤200 ✓); `git commit "docs(decompose): TD-029/031/033 validaciones pre-gate"` (SPEC-002)
 - [x] [T-027] `workflow-execute/SKILL.md`: wc -l antes (115); agregar criterio auto-write (TD-027A) + TD-029 + TD-031 + pre-flight checklist (TD-032) + TD-033; wc -l después (129 ≤200 ✓); `git commit "docs(execute): TD-027A auto-write + TD-029/031/032/033 validaciones"` (SPEC-002)
-- [ ] [T-028] `workflow-track/SKILL.md`: wc -l antes; agregar TD-029 + TD-031 + TD-033; wc -l después (≤200); `git commit "docs(track): TD-029/031/033 validaciones pre-gate"` (SPEC-002)
+- [x] [T-028] `workflow-track/SKILL.md`: wc -l antes (91); agregar TD-029 + TD-031 + TD-033; wc -l después (100 ≤200 ✓); `git commit "docs(track): TD-029/031/033 validaciones pre-gate"` (SPEC-002)
 
 **Checkpoint Lote 3A:** `wc -l .claude/skills/workflow-*/SKILL.md .claude/skills/thyrox/SKILL.md` — todos ≤ 200 líneas.
 
 ### SPEC-005 — Convenciones y timestamps
 
-- [ ] [T-029] `.claude/references/conventions.md` — agregar REGLA-LONGEV-001 (25,000 bytes umbral) + regla timestamps artefactos (TD-001) + regla root CHANGELOG.md solo en releases (SPEC-005+006 parcial)
-- [ ] [T-030] `.claude/scripts/validate-session-close.sh` — agregar verificación de timestamps en artefactos WP (TD-018) (SPEC-005)
+- [x] [T-029] `.claude/references/conventions.md` — agregar REGLA-LONGEV-001 (25,000 bytes umbral) + regla timestamps artefactos (TD-001) + regla root CHANGELOG.md solo en releases (SPEC-005+006 parcial)
+- [x] [T-030] `.claude/scripts/validate-session-close.sh` — agregar verificación de timestamps en artefactos WP (TD-018) (SPEC-005)
 - [ ] [T-031] `git add` + `git commit "docs(conventions): REGLA-LONGEV-001 + timestamps + CHANGELOG root rule"` (SPEC-005)
 
 ---
