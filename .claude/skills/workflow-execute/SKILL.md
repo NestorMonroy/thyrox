@@ -22,7 +22,7 @@ Toma la siguiente tarea pendiente del work package activo y la ejecuta.
 2. Leer `*-task-plan.md` del WP activo
 3. Encontrar la siguiente tarea pendiente: primera línea con `- [ ] [T-`
 4. Leer `context/now.md` — verificar `phase`
-5. Listar tech skills activos: `ls .claude/skills/ | grep -v pm-thyrox`
+5. Listar tech skills activos: `ls .claude/skills/ | grep -v thyrox`
 6. REQUERIDO al inicio de sesión: crear o actualizar `{nombre-wp}-execution-log.md` usando `assets/execution-log.md.template`
 
 ---
@@ -51,6 +51,14 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 | `documentation` | `Explore` / cualquiera | **Ligero** — resultado + opción de objetar |
 
 > Ausencia de respuesta ≠ aprobación. Si el usuario no responde, esperar — no auto-continuar.
+
+**Criterio auto-write (TD-027A):** Claude puede escribir/editar sin preguntar cuando:
+- La tarea está en `*-task-plan.md` como `- [ ]` y ya fue aprobada en el gate 5→6
+- El cambio es consecuencia directa de una tarea aprobada (no extiende el scope)
+- `reversibility: documentation` o `reversible` (no `irreversible`)
+- No es un GATE OPERACIÓN (ver arriba)
+
+Claude DEBE preguntar antes cuando: la tarea no estaba en el plan, el cambio es `irreversible`, o el scope se expande.
 
 **Para cada tarea pendiente:**
 
@@ -81,11 +89,17 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 5. REQUERIDO: registrar SP-NNN en el Stopping Point Manifest por cada agente background
    — hacer commit del manifest actualizado ANTES de lanzar el primer agente
 
-**Validación pre-Phase 7 — REQUERIDO antes de proponer TRACK:**
-- [ ] `*-task-plan.md` — todas las tareas completadas tienen `[x]`
-- [ ] `*-execution-log.md` — estado final de cada tarea registrado
-- [ ] `ROADMAP.md` — todos los checkboxes de la FASE actual en `[x]`
-- [ ] Stopping Point Manifest — SP-NNN de Phase 6 marcados como `si`
+**Validaciones pre-gate 6→7 (TD-029, TD-031, TD-032, TD-033):**
+- **TD-031 deep review**: revisar `{nombre-wp}-task-plan.md` — ¿todas las tareas del plan completadas?
+- **TD-032 pre-flight checklist**:
+  - [ ] `*-task-plan.md` — todas las tareas en `[x]` (sin `[ ]` o `[~]` restantes)
+  - [ ] `*-execution-log.md` — existe y documenta sesiones de Phase 6
+  - [ ] `context/now.md::phase` = `Phase 6` y `current_work` apunta al WP
+  - [ ] Branch activo es el branch del WP (no main)
+  - [ ] `ROADMAP.md` — checkboxes de la FASE actual actualizados
+  - [ ] Stopping Point Manifest — SP-NNN de Phase 6 marcados como `si`
+- **TD-029 criterios**: todos los ítems del pre-flight en `[x]`
+- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
 Si algún ítem falla → corregir antes de avanzar.
 
 ---

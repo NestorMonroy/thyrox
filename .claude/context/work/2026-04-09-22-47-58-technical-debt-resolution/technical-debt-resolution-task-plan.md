@@ -95,7 +95,7 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 - [x] [T-023] `workflow-strategy/SKILL.md`: wc -l antes (76); agregar re-evaluación tamaño WP (TD-028) + TD-029 + TD-031 + TD-033; wc -l después (84 ≤200 ✓); `git commit "docs(strategy): TD-028 WP size + TD-029/031/033 validaciones pre-gate"` (SPEC-002)
 - [x] [T-024] `workflow-plan/SKILL.md`: wc -l antes (71); agregar TD-029 + TD-031 + TD-033; wc -l después (80 ≤200 ✓); `git commit "docs(plan): TD-029/031/033 validaciones pre-gate"` (SPEC-002)
 - [x] [T-025] `workflow-structure/SKILL.md`: wc -l antes (74); agregar TD-029 + TD-031 + TD-033; wc -l después (81 ≤200 ✓); `git commit "docs(structure): TD-029/031/033 validaciones pre-gate"` (SPEC-002)
-- [ ] [T-026] `workflow-decompose/SKILL.md`: wc -l antes; agregar TD-029 + TD-031 + TD-033; wc -l después (≤200); `git commit "docs(decompose): TD-029/031/033 validaciones pre-gate"` (SPEC-002)
+- [x] [T-026] `workflow-decompose/SKILL.md`: wc -l antes (86); agregar TD-029 + TD-031 + TD-033; wc -l después (93 ≤200 ✓); `git commit "docs(decompose): TD-029/031/033 validaciones pre-gate"` (SPEC-002)
 - [ ] [T-027] `workflow-execute/SKILL.md`: wc -l antes; agregar criterio auto-write (TD-027A) + TD-029 + TD-031 + pre-flight checklist (TD-032) + TD-033; wc -l después (≤200); `git commit "docs(execute): TD-027A auto-write + TD-029/031/032/033 validaciones"` (SPEC-002)
 - [ ] [T-028] `workflow-track/SKILL.md`: wc -l antes; agregar TD-029 + TD-031 + TD-033; wc -l después (≤200); `git commit "docs(track): TD-029/031/033 validaciones pre-gate"` (SPEC-002)
 
