@@ -54,6 +54,13 @@ NO avanzar si quedan ítems sin +o marcadores `[NEEDS CLARIFICATION]` sin resolv
 
 ---
 
+## Validaciones pre-gate (TD-029, TD-031, TD-033)
+
+Antes de presentar el gate 4→5:
+- **TD-031 deep review**: revisar `{nombre-wp}-plan.md` de Phase 3 — ¿la spec cubre TODO el scope aprobado?
+- **TD-029 criterios**: spec sin `[NEEDS CLARIFICATION]` · spec-checklist 100% · diseño técnico si era complejo
+- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+
 ## Gate humano
 
 ⏸ STOP — Presentar la especificación completa (user stories, acceptance criteria, diseño si aplica).
