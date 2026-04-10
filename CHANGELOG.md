@@ -3,13 +3,53 @@ type: Historial de Cambios
 category: Proyecto
 version: 1.0.0
 purpose: Registro de cambios notables del proyecto
-updated_at: 2026-04-09 22:30:00
+updated_at: 2026-04-10 04:30:00
 ```
 
 # CHANGELOG — THYROX
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [2.5.0] - 2026-04-10
+
+### Added — Technical Debt Resolution: rename thyrox + validaciones pre-gate + REGLA-LONGEV-001 (WP technical-debt-resolution / FASE 29)
+
+- `wp-changelog.md.template` — nuevo artefacto Phase 7: registro de cambios por WP (D2)
+- `technical-debt-resolved.md.template` — nuevo artefacto Phase 7: TDs cerrados/archivados (D3)
+- `ROADMAP-history.md` — FASEs 1–26 archivadas (REGLA-LONGEV-001)
+- `CHANGELOG-archive.md` — versiones v0.x/v1.x archivadas (REGLA-LONGEV-001)
+- Alerta B-08 en `project-status.sh` — detecta WP activo sin entrada en ROADMAP.md
+- Alerta B-09 en `session-start.sh` — detecta Phase 6 sin execution-log.md
+- Step 0 END USER CONTEXT en `workflow-analyze/SKILL.md` (TD-007)
+- Validaciones pre-gate (TD-029/031/033) en los 7 `workflow-*/SKILL.md`
+- Criterio auto-write (TD-027A) + pre-flight checklist (TD-032) en `workflow-execute/SKILL.md`
+- Re-evaluación tamaño WP en `workflow-strategy/SKILL.md` (TD-028)
+- REGLA-LONGEV-001 en `conventions.md` — umbral 25,000 bytes + procedimiento de split (TD-035)
+- Check 5 timestamps en `validate-session-close.sh` (TD-018)
+
+### Changed
+
+- `pm-thyrox/` → `thyrox/` — skill orquestador renombrado; prefijo `pm-` eliminado (no es PM de PMI, es la metodología THYROX)
+- `ROADMAP.md` → trimmed a FASEs 27-29 activas (4,611 bytes)
+- `CHANGELOG.md` → trimmed a v2.x (11,491 bytes)
+- `thyrox/SKILL.md` — `name: thyrox`, Phase 7 templates D2+D3 añadidos
+
+### Fixed
+
+- TD-002, TD-004, TD-011, TD-016, TD-017, TD-021 marcados [x] Implementado en technical-debt.md
+- TD-019, TD-020, TD-023, TD-024 ([-] desde FASE 23) movidos al WP resolved
+
+### Technical Debt Registered / Closed
+
+- 6 TDs cerrados [x]: TD-002, TD-004, TD-011, TD-016, TD-017, TD-021
+- 4 TDs archivados [-]: TD-019, TD-020, TD-023, TD-024
+
+### Lessons Learned
+
+- L-118..L-122 documentadas (ver WP technical-debt-resolution-lessons-learned.md)
 
 ---
 
