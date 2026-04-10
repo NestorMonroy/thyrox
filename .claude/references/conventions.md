@@ -4,7 +4,7 @@ category: Convenciones
 version: 1.0
 purpose: Define convenciones del proyecto: ubicaciones de archivos, nombrado, estructura.
 goal: Asegurar consistencia en todo el proyecto.
-updated_at: 2026-04-10 05:00:00
+updated_at: 2026-04-10 05:30:00
 ```
 
 # THYROX Conventions
@@ -584,6 +584,13 @@ Cuando Claude necesita una decisión del usuario que no puede resolverse en la s
 - **Keep task scope small** — Ideally 2-4 hours of work per task
 - **Review ROADMAP.md before starting session** — Context transfer is essential
 - **Before deleting files, grep for references** — Run `grep -r "filename" .claude/` to find all mentions and update them. Use [detect_broken_references.py](../scripts/detect_broken_references.py) to validate after
+- **Rename verification: usar siempre `grep -ri` (case-insensitive)** — `grep -r "term"` (minúsculas) no detecta `TERM` ni `Term` en headings H1/H2 ni cuerpos de documentos. Comando correcto para verificación post-rename:
+  ```bash
+  grep -ri "nombre-anterior" .claude/skills/ .claude/CLAUDE.md .claude/scripts/ .claude/references/ \
+    --include="*.md" --include="*.sh" --include="*.json" --include="*.py" | \
+    grep -v "context/work/" | grep -v "context/decisions/"
+  ```
+  Excluir `context/work/` (archivos históricos de WPs — correctos) y `context/decisions/` (ADRs inmutables). Resultado esperado: 0 líneas en archivos activos.
 
 ## When to Update What
 
