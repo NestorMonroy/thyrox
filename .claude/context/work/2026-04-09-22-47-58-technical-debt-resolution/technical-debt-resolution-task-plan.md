@@ -118,13 +118,13 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 - [x] [T-032] `grep -rn "ROADMAP" .claude/ --include="*.md"` — identificar todos los archivos con links a ROADMAP; documentar si algún link apunta a FASEs 1–26 (mitigación R-03) (SPEC-006) [resultado: solo referencias genéricas, sin links a FASEs 1-26 específicas — split seguro]
 - [x] [T-033] Crear `ROADMAP-history.md` — copiar FASEs 1–26 completas desde ROADMAP.md (SPEC-006)
 - [x] [T-034] `ROADMAP.md` — eliminar FASEs 1–26; verificar `wc -c ROADMAP.md` < 25,000 bytes (SPEC-006) [4,611 bytes ✓]
-- [ ] [T-035] `git add` + `git commit "docs: split ROADMAP.md — FASEs 1-26 archivadas en ROADMAP-history.md"` (SPEC-006)
+- [x] [T-035] `git add` + `git commit "docs: split ROADMAP.md — FASEs 1-26 archivadas en ROADMAP-history.md"` (SPEC-006)
 
 ### CHANGELOG.md split
 
-- [ ] [T-036] `grep -rn "CHANGELOG" .claude/ --include="*.md" --include="*.sh"` — identificar referencias antes del split (SPEC-006)
-- [ ] [T-037] Crear `CHANGELOG-archive.md` — copiar versiones v0.x y v1.x desde CHANGELOG.md (SPEC-006)
-- [ ] [T-038] `CHANGELOG.md` — eliminar v0.x y v1.x; verificar estructura [Unreleased] + v2.x+; verificar `wc -c CHANGELOG.md` < 25,000 bytes (SPEC-006)
+- [x] [T-036] `grep -rn "CHANGELOG" .claude/ --include="*.md" --include="*.sh"` — identificar referencias antes del split (SPEC-006) [sin links a versiones específicas — split seguro]
+- [x] [T-037] Crear `CHANGELOG-archive.md` — copiar versiones v0.x y v1.x desde CHANGELOG.md (SPEC-006)
+- [x] [T-038] `CHANGELOG.md` — eliminar v0.x y v1.x; verificar estructura [Unreleased] + v2.x+; verificar `wc -c CHANGELOG.md` < 25,000 bytes (SPEC-006) [11,491 bytes ✓]
 - [ ] [T-039] `git add` + `git commit "docs: split CHANGELOG.md — v0.x/v1.x archivadas en CHANGELOG-archive.md"` (SPEC-006)
 
 ### technical-debt.md split (TDs [-] ya marcados)
