@@ -140,23 +140,31 @@ archivos globales. Cada WP documenta qué deuda técnica saldó — parte de su 
 
 ---
 
-### Decision 4: Fixes de SKILL.md — Plano A (instrucciones) sin Plano B (hooks) para esta FASE
+### Decision 4: Fixes de SKILL.md y scripts — Plano A (instrucciones + scripts) sin Plano B (hooks nuevos)
 
 **Alternatives Considered:**
-- Solo Plano B (hooks automáticos) — Pros: determinístico. Cons: más complejo, riesgo de side effects, fuera de scope FASE 29
+- Solo Plano B (hooks automáticos nuevos) — Pros: determinístico. Cons: más complejo, side effects, fuera de scope
 - Plano A + Plano B — Cons: desborda scope, riesgo R-05 (scope creep)
-- Solo Plano A (instrucciones en SKILL.md) — Pros: costo bajo, suficiente para los TDs operacionales (TD-029, TD-031, TD-033)
+- Solo Plano A (instrucciones SKILL.md + mejoras a scripts existentes) — Pros: costo bajo, suficiente
 
 **Justification:**
-Plano A es la intervención correcta para TDs de "instrucción débil". Hooks automáticos son
-para automatización de operaciones repetitivas — no para guiar análisis. TD-029, TD-031, TD-033
-son déficits de instrucción de Claude, no de automatización.
+Plano A es la intervención correcta para TDs de "instrucción débil". Hooks NUEVOS son para
+automatización de operaciones repetitivas — no para guiar análisis. Pero B-08 y B-09 (Phase 1
+sección 5) son mejoras a scripts YA EXISTENTES (`project-status.sh`, `session-start.sh`), no
+hooks nuevos. Se incluyen en Plano A por su bajo costo.
 
 **Implications:**
-- 7 archivos `workflow-*/SKILL.md` reciben secciones de validación pre-gate (TD-029)
-- `workflow-execute/SKILL.md` recibe deep review pre-gate explícito (TD-031/TD-032)
-- Todos los `workflow-*/SKILL.md` reciben instrucción `git add now.md` (TD-033)
-- Hooks: sin cambios en esta FASE
+- 7 archivos `workflow-*/SKILL.md`: secciones de validación pre-gate (TD-029)
+- `workflow-execute/SKILL.md`: deep review pre-gate explícito (TD-031) + pre-flight checklist mejorado (TD-032)
+- Todos `workflow-*/SKILL.md`: instrucción `git add now.md` antes de commits y gates (TD-033)
+- `workflow-execute/SKILL.md`: criterio granular de auto-write vs validación humana (TD-027 Plano A)
+- `project-status.sh`: alerta si ROADMAP no tiene entry del WP activo (B-08)
+- `session-start.sh`: alerta si execution-log falta cuando Phase 6 está activa (B-09)
+- Hooks nuevos: sin cambios en esta FASE
+
+**Nota TD-027:** Solo Plano A (instrucción en SKILL.md). Plano B (hook automático) → FASE 30.
+**Nota TD-011:** Checklist de atomicidad ya existe (PARCIAL). No requiere acción adicional en FASE 29
+— se marca como implementado suficiente. Solo si hay evidencia de fallas reales se escala.
 
 ---
 
@@ -188,26 +196,30 @@ La REGLA-LONGEV-001 previene que el próximo archivo supere el límite sin alert
 |-------|--------------|-------------------|
 | Renombrado `pm-thyrox` → `thyrox` | TD-030 (parcial) | ~20 archivos activos |
 | Validación pre-gate (instrucciones) | TD-029, TD-031, TD-033 | 7 workflow-*/SKILL.md |
-| Pre-flight checklist execute | TD-032 | workflow-execute/SKILL.md |
+| Pre-flight checklist execute + criterio auto-write | TD-032, TD-027 Plano A | workflow-execute/SKILL.md |
 | WP size re-evaluation | TD-028 | workflow-strategy/SKILL.md |
 | Step 0 END USER CONTEXT | TD-007 | workflow-analyze/SKILL.md |
+| Timestamps en artefactos y execution-log | TD-001, TD-018 | conventions.md, validate-session-close.sh |
+| Mejoras a scripts existentes (B-08, B-09) | TD-032-B | project-status.sh, session-start.sh |
 | Templates faltantes | — | 2 nuevos templates |
 | Artefacto {wp}-changelog.md | TD-034 (parcial) | workflow-track/SKILL.md, thyrox/SKILL.md |
 | Artefacto {wp}-technical-debt-resolved.md | — | workflow-track/SKILL.md, thyrox/SKILL.md |
 | Splits de archivos sobredimensionados | TD-026, TD-034 | ROADMAP.md, CHANGELOG.md, technical-debt.md |
 | REGLA-LONGEV-001 | TD-035 | conventions.md |
-| Cerrar TDs ya implementados | TD-002, TD-004, TD-016, TD-017, TD-021 | technical-debt.md |
+| Cerrar TDs ya implementados | TD-002, TD-004, TD-011, TD-016, TD-017, TD-021 | technical-debt.md |
 
 ### OUT OF SCOPE (próximas FASEs)
 
 | TD | Razón |
 |----|-------|
-| TD-008 | WP propio — FASE 30 |
+| TD-003 | Templates huérfanos — baja prioridad, FASE 31+ |
 | TD-005, TD-006 | Investigación arquitectónica — FASE 31+ |
+| TD-008 | WP propio — FASE 30 |
 | TD-009 | now-{agent-name} — scope separado |
-| TD-010, TD-030 (completo) | Investigación — FASE 31+ |
-| TD-027 Plano B | Hooks de auto-write — FASE 30+ |
-| TD-022, TD-025 | Baja severidad, siguientes FASEs |
+| TD-010 | Benchmark empírico — FASE 31+ |
+| TD-022, TD-025 | Baja severidad — FASE 31+ |
+| TD-027 Plano B | Hook de auto-write — FASE 30+ |
+| TD-030 meta-comandos | /thyrox:next, :sync, :prime, :review → FASE 30 (junto con TD-008 commands) |
 
 ---
 
@@ -233,11 +245,24 @@ mover detalle a una referencia y dejar solo el checklist en el SKILL.
 
 ## Traceability to Analysis
 
-- TD-029, TD-031 → Decision 4 (Plano A en SKILL.md)
+- TD-007 → Decision 4 (Step 0 en workflow-analyze/SKILL.md)
+- TD-001, TD-018 → Decision 4 + Decision 5 (regla en conventions.md)
+- TD-027 Plano A → Decision 4 (criterio en workflow-execute/SKILL.md)
+- TD-028 → Decision 4 (re-evaluación en workflow-strategy/SKILL.md)
+- TD-029, TD-031, TD-033 → Decision 4 (validación pre-gate en 7 SKILL.md)
+- TD-032 + B-08 + B-09 → Decision 4 (SKILL.md + scripts existentes)
 - TD-026, TD-034, TD-035 → Decision 5 (splits + REGLA-LONGEV-001)
-- TD-030 → Decision 1 (renombrado)
-- R-06, R-07, R-08 → Decision 5 (splits)
+- TD-030 (renombrado) → Decision 1
+- TD-030 (meta-comandos) → OUT OF SCOPE, FASE 30
+- R-01 → mitigado: editar SKILL.md en secuencia, 1 commit por archivo
+- R-02 → mitigado: medir wc -l antes y después, extraer a references/ si supera 200 líneas
+- R-03 → mitigado: grep recursivo de ROADMAP.md antes del split
+- R-04 → mitigado: verificar grep de TD-019..TD-024 en Phase 4 STRUCTURE
 - R-05 (scope creep TD-008) → mitigado por tabla OUT OF SCOPE
+- R-06, R-07, R-08 → Decision 5 (splits)
+- SP-01 → Gate actual (Phase 2→3)
+- SP-02 → Gate Phase 5→6 (GATE OPERACION): requerirá aprobación explícita antes de editar SKILL.md
+- SP-03 → Gate Phase 6→7: confirmar que todos los cambios son correctos
 
 ---
 
@@ -247,7 +272,13 @@ mover detalle a una referencia y dejar solo el checklist en el SKILL.
 - [x] Decisiones fundamentales documentadas (5 decisiones)
 - [x] Alternativas consideradas para cada decisión
 - [x] Justificaciones claras con referencia a análisis Phase 1
-- [x] Scope delimitado — IN y OUT OF SCOPE explícito
+- [x] Scope delimitado — IN y OUT OF SCOPE explícito (todos los TDs clasificados)
 - [x] Constraints respetados
-- [x] Trazabilidad a TDs de Phase 1
+- [x] Trazabilidad a TDs de Phase 1 — incluyendo R-01..R-08 y SP-01..SP-03
+- [x] B-08, B-09 correctamente clasificados como mejoras a scripts (no hooks)
+- [x] TD-001, TD-018 incluidos en scope (eran categoría 2 en Phase 1)
+- [x] TD-011 PARCIAL resuelto — implementado suficiente, sin acción adicional
+- [x] TD-027 Plano A incluido, Plano B diferido a FASE 30
+- [x] TD-030 meta-comandos diferidos a FASE 30 (junto con TD-008 commands)
+- [x] Deep review Phase 1 → Phase 2 completado (8 gaps identificados y corregidos)
 - [x] Clara guía para Phase 3 PLAN
