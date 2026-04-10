@@ -43,7 +43,7 @@ Cada fase vive en su propio skill. Invocar directamente para ejecutar:
 | Phase 4: STRUCTURE | `/workflow-structure` | Especificar. Requirements spec + design (si complejo). |
 | Phase 5: DECOMPOSE | `/workflow-decompose` | Crear tareas atómicas. Task plan + DAG + trazabilidad. |
 | Phase 6: EXECUTE | `/workflow-execute` | Ejecutar. Commits + actualizar task plan + gates async. |
-| Phase 7: TRACK | `/workflow-track` | Cerrar WP. Lessons learned + CHANGELOG + estado. |
+| Phase 7: TRACK | `/workflow-track` | Cerrar WP. Lessons learned + {wp}-changelog + estado. |
 
 Ver [escalabilidad](../workflow-analyze/references/scalability.md) para reglas de qué fases omitir según tamaño del WP.
 
@@ -68,7 +68,8 @@ Ver [escalabilidad](../workflow-analyze/references/scalability.md) para reglas d
 | 6 | Log de ejecución | `work/../{nombre-wp}-execution-log.md` | [execution-log.md.template](../workflow-execute/assets/execution-log.md.template) |
 | 6 | Código | Repositorio (git) | — |
 | 7 | Lecciones aprendidas | `work/../{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](../workflow-track/assets/lessons-learned.md.template) |
-| 7 | Changelog | [CHANGELOG](CHANGELOG.md) | [changelog.md.template](../workflow-track/assets/changelog.md.template) |
+| 7 | WP Changelog | `work/../{nombre-wp}-changelog.md` | [wp-changelog.md.template](../workflow-track/assets/wp-changelog.md.template) |
+| 7 | TDs resueltos (si aplica) | `work/../{nombre-wp}-technical-debt-resolved.md` | [technical-debt-resolved.md.template](../workflow-track/assets/technical-debt-resolved.md.template) |
 | 7 | Reporte final (grande) | `work/../{nombre-wp}-final-report.md` | [final-report.md.template](../workflow-track/assets/final-report.md.template) |
 | — | Errores | `context/errors/ERR-NNN-descripcion.md` | [error-report.md.template](assets/error-report.md.template) |
 
@@ -88,6 +89,8 @@ context/work/YYYY-MM-DD-HH-MM-SS-nombre/
 ├── {nombre}-task-plan.md             ← Tareas con checkboxes (Phase 5) — REQUERIDO
 ├── {nombre}-execution-log.md         ← Log de sesiones de ejecución (Phase 6)
 ├── {nombre}-lessons-learned.md       ← Lecciones aprendidas (Phase 7) — REQUERIDO
+├── {nombre}-changelog.md             ← WP changelog (Phase 7) — REQUERIDO
+├── {nombre}-technical-debt-resolved.md ← TDs cerrados/archivados (Phase 7, si aplica)
 └── {nombre}-final-report.md          ← Reporte final con métricas (Phase 7, grande)
 ```
 
@@ -108,9 +111,10 @@ Errores:         ERR-NNN-descripcion.md
 {nombre-wp} = parte descriptiva del WP (sin timestamp)
 {tipo}      = analysis | solution-strategy | plan | requirements-spec | design |
               task-plan | execution-log | lessons-learned | risk-register |
-              exit-conditions | final-report | spec-checklist
+              exit-conditions | final-report | spec-checklist |
+              changelog | technical-debt-resolved
 
-Excepción: CHANGELOG.md — nombre global, convención universal (Keep a Changelog)
+Excepción: CHANGELOG.md (raíz) — nombre global, actualizar SOLO en releases con bump de versión.
 ```
 
 Ver [conventions](../../references/conventions.md) para detalles completos.

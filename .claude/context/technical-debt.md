@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-09 23:20:00
+updated_at: 2026-04-10 03:30:00
 ```
 
 # Deuda Técnica — THYROX
@@ -1386,3 +1386,30 @@ REGLA-LONGEV-001: Archivos vivos con umbral de tamaño
 **Criterio de cierre:**
 - `conventions.md` contiene la regla REGLA-LONGEV-001
 - `project-status.sh` o script equivalente alerta si archivo vivo supera 25,000 bytes
+
+---
+
+## Procedimiento de cierre de TD (FASE 29)
+
+Cuando un TD se implementa y verifica, seguir este procedimiento:
+
+### Cierre en este archivo
+
+1. Marcar `[x]` con fecha: `[x] 2026-MM-DD`
+2. Agregar nota breve: "Implementado en FASE N — {descripción de la corrección}"
+
+### Movimiento al WP resolved (si aplica REGLA-LONGEV-001)
+
+Si `technical-debt.md` supera 25,000 bytes, mover entradas `[-]` y `[x]` antiguas a:
+`context/work/{wp-implementador}/{wp}-technical-debt-resolved.md`
+
+Pasos:
+1. Verificar: `wc -c .claude/context/technical-debt.md` — si ≥ 25,000 bytes, aplicar split
+2. Crear o actualizar `{wp}-technical-debt-resolved.md` desde template (`workflow-track/assets/technical-debt-resolved.md.template`)
+3. Copiar entradas `[-]` marcadas en FASEs anteriores a la sección "archivados"
+4. Eliminar esas entradas de este archivo
+5. Commit: `docs: mover TDs [-] de FASE N a WP resolved`
+
+### Template disponible
+
+`{wp}-technical-debt-resolved.md` — ver `.claude/skills/workflow-track/assets/technical-debt-resolved.md.template`

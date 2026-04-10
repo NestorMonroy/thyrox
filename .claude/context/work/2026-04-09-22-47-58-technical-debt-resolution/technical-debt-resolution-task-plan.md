@@ -66,7 +66,7 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 - [x] [T-012] `.claude/commands/` — verificar referencias a pm-thyrox; actualizar si existen; documentar si no hay (SPEC-001)
 - [x] [T-013] `.claude/settings.json` — verificar referencias a pm-thyrox; actualizar si existen (SPEC-001) [sin referencias — verificado]
 - [x] [T-014] Verificación: `grep -r "pm-thyrox" .claude/skills/thyrox/ .claude/CLAUDE.md .claude/scripts/ .claude/references/ --include="*.md" --include="*.sh" --include="*.json"` → 0 resultados ✓ (SPEC-001)
-- [ ] [T-015] `git add` + `git commit "refactor(thyrox): renombrar pm-thyrox → thyrox en archivos activos"` (SPEC-001)
+- [x] [T-015] `git add` + `git commit "refactor(thyrox): renombrar pm-thyrox → thyrox en archivos activos"` (SPEC-001)
 
 **Checkpoint Lote 1:** T-014 debe dar 0 resultados antes de continuar a Lote 2.
 
@@ -76,11 +76,11 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 
 > Pre-requisito: Lote 1 completo (thyrox/ existe).
 
-- [ ] [T-016] Crear `.claude/skills/workflow-track/assets/wp-changelog.md.template` — estructura Keep a Changelog adaptada a WPs (SPEC-004)
-- [ ] [T-017] Crear `.claude/skills/workflow-track/assets/technical-debt-resolved.md.template` — frontmatter + tabla TDs resueltos + sección notas (SPEC-004)
-- [ ] [T-018] `.claude/skills/workflow-track/SKILL.md` — [D2] cambiar target a `{wp}-changelog.md` + [D3] agregar paso "mover TDs cerrados a `{wp}-technical-debt-resolved.md`" (ambos en un solo Edit) (SPEC-004)
-- [ ] [T-019] `.claude/skills/thyrox/SKILL.md` — agregar `{wp}-changelog.md` y `{wp}-technical-debt-resolved.md` a tabla de artefactos Phase 7 (SPEC-004)
-- [ ] [T-020] `.claude/context/technical-debt.md` — agregar sección de procedimiento de cierre de TD (SPEC-004)
+- [x] [T-016] Crear `.claude/skills/workflow-track/assets/wp-changelog.md.template` — estructura Keep a Changelog adaptada a WPs (SPEC-004)
+- [x] [T-017] Crear `.claude/skills/workflow-track/assets/technical-debt-resolved.md.template` — frontmatter + tabla TDs resueltos + sección notas (SPEC-004)
+- [x] [T-018] `.claude/skills/workflow-track/SKILL.md` — [D2] cambiar target a `{wp}-changelog.md` + [D3] agregar paso "mover TDs cerrados a `{wp}-technical-debt-resolved.md`" (ambos en un solo Edit) (SPEC-004)
+- [x] [T-019] `.claude/skills/thyrox/SKILL.md` — agregar `{wp}-changelog.md` y `{wp}-technical-debt-resolved.md` a tabla de artefactos Phase 7 (SPEC-004)
+- [x] [T-020] `.claude/context/technical-debt.md` — agregar sección de procedimiento de cierre de TD (SPEC-004)
 - [ ] [T-021] `git add` + `git commit "feat(track): templates Phase 7 + artefactos {wp}-changelog y {wp}-td-resolved"` (SPEC-004)
 
 ---

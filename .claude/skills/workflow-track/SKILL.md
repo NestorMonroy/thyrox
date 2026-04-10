@@ -40,17 +40,23 @@ Documentar lecciones previene repetir los mismos errores.
    - Patrones reutilizables identificados
    - Errores encontrados y cómo se resolvieron
 
-2. REQUERIDO: Generar `CHANGELOG.md` desde commits usando `assets/changelog.md.template`
-   - Formato Keep a Changelog
+2. REQUERIDO: Generar `work/../{nombre-wp}-changelog.md` desde commits usando `assets/wp-changelog.md.template` — [D2]
+   - Formato Keep a Changelog adaptado a WPs
    - Agrupar por tipo: Added, Changed, Fixed, Removed
+   - NOTA: `CHANGELOG.md` (raíz) se actualiza SOLO en releases (cuando hay bump de versión)
 
 3. Actualizar `work/../{nombre-wp}-risk-register.md`:
    - Cerrar riesgos que no se materializaron
    - Documentar los que sí ocurrieron con su impacto real
 
-4. Para proyectos grandes o con métricas relevantes: crear `{nombre-wp}-final-report.md` usando `assets/final-report.md.template`
+4. Si hay TDs cerrados o archivados en este WP: crear `work/../{nombre-wp}-technical-debt-resolved.md` usando `assets/technical-debt-resolved.md.template` — [D3]
+   - Incluir TDs marcados `[x]` (cerrados en este WP)
+   - Incluir TDs marcados `[-]` movidos desde `technical-debt.md` por REGLA-LONGEV-001
+   - Eliminar esas entradas de `technical-debt.md` después de moverlas
 
-5. Para deuda técnica identificada: usar `assets/refactors.md.template`
+5. Para proyectos grandes o con métricas relevantes: crear `{nombre-wp}-final-report.md` usando `assets/final-report.md.template`
+
+6. Para deuda técnica identificada: usar `assets/refactors.md.template`
 
 **Validaciones de cierre:**
 ```bash
@@ -74,8 +80,9 @@ Ver `../../references/state-management.md` para tabla de triggers completa.
 
 Phase 7 completa cuando:
 - `{nombre-wp}-lessons-learned.md` existe
-- `CHANGELOG.md` actualizado
+- `{nombre-wp}-changelog.md` creado (CHANGELOG.md raíz solo si hay release)
 - `{nombre-wp}-risk-register.md` actualizado
+- Si hubo TDs cerrados: `{nombre-wp}-technical-debt-resolved.md` creado
 - `validate-session-close.sh` pasa sin errores
 - Archivos de estado actualizados: `now.md`, `focus.md`, `project-state.md`
 - No quedaron archivos temporales fuera de `context/work/`
