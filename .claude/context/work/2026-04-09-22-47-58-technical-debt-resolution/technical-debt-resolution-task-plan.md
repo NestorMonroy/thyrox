@@ -57,7 +57,7 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 - [ ] [T-003] `.claude/CLAUDE.md` — actualizar 6 referencias pm-thyrox + addendum Locked Decision #5 (SPEC-001)
 - [ ] [T-004] `.claude/scripts/session-start.sh` — rename pm-thyrox → thyrox + agregar alerta B-09 (Phase 6 sin execution-log) (SPEC-001+003)
 - [ ] [T-005] `.claude/scripts/project-status.sh` — rename pm-thyrox → thyrox + agregar alerta B-08 (WP sin entry en ROADMAP) (SPEC-001+003)
-- [ ] [T-006] `.claude/scripts/update-state.sh` — rename si referencia pm-thyrox (verificar primero) (SPEC-001)
+- [ ] [T-006] `.claude/scripts/update-state.sh` + `.claude/scripts/session-resume.sh` — verificar si referencian pm-thyrox; renombrar en cada uno si aplica (batch aceptado: misma operación idéntica en ambos, mismo rationale que T-011) (GAP-01 corregido) (SPEC-001)
 - [ ] [T-007] `.claude/scripts/commit-msg-hook.sh` — rename si referencia pm-thyrox (verificar primero) (SPEC-001)
 - [ ] [T-008] `.claude/skills/workflow-analyze/SKILL.md` — grep filter pm-thyrox → thyrox (SPEC-001)
 - [ ] [T-009] `.claude/skills/workflow-strategy/SKILL.md` — grep filter pm-thyrox → thyrox (SPEC-001)
