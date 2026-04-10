@@ -5,7 +5,7 @@ version: 1.0
 purpose: Colección de ejemplos reales de cómo usar PM-THYROX en diferentes escenarios.
 goal: Demostrar aplicación práctica del skill con casos concretos.
 updated_at: 2026-03-25
-owner: pm-thyrox (cross-phase)
+owner: thyrox (cross-phase)
 ```
 
 # PM-THYROX Use Cases & Examples

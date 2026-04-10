@@ -3,14 +3,14 @@
 # Ejecuta los 3 functional evals en workspace simulado (aislado del repo real).
 #
 # Uso:
-#   bash .claude/skills/pm-thyrox/scripts/run-functional-evals.sh
-#   bash .claude/skills/pm-thyrox/scripts/run-functional-evals.sh FE-02  # solo uno
+#   bash .claude/skills/thyrox/scripts/run-functional-evals.sh
+#   bash .claude/skills/thyrox/scripts/run-functional-evals.sh FE-02  # solo uno
 
 set -euo pipefail
 
 WORKSPACE="/tmp/thyrox-functional-eval-workspace"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
-SKILL_DIR="${PROJECT_ROOT}/.claude/skills/pm-thyrox"
+SKILL_DIR="${PROJECT_ROOT}/.claude/skills/thyrox"
 SPECIFIC_EVAL="${1:-all}"
 
 TOTAL_PASS=0
@@ -21,8 +21,8 @@ setup_workspace() {
     local eval_id="$1"
     local dir="${WORKSPACE}/${eval_id}"
     rm -rf "$dir"
-    mkdir -p "$dir/.claude/skills/pm-thyrox"
-    cp "$SKILL_DIR/SKILL.md" "$dir/.claude/skills/pm-thyrox/"
+    mkdir -p "$dir/.claude/skills/thyrox"
+    cp "$SKILL_DIR/SKILL.md" "$dir/.claude/skills/thyrox/"
     cp "${PROJECT_ROOT}/.claude/CLAUDE.md" "$dir/.claude/"
     mkdir -p "$dir/.claude/context"
     echo "$dir"
@@ -214,7 +214,7 @@ EOF
 
 # ===== MAIN =====
 echo "============================================"
-echo " Functional Evals — pm-thyrox (isolated)"
+echo " Functional Evals — thyrox (isolated)"
 echo "============================================"
 
 if [ "$SPECIFIC_EVAL" = "all" ]; then

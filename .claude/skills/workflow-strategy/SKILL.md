@@ -23,7 +23,7 @@ Inicia o retoma Phase 2 SOLUTION_STRATEGY del work package activo.
 3. Leer `context/now.md` — verificar `phase`
 4. Verificar si ya existe `*-solution-strategy.md`:
    - Si existe con decisiones documentadas → Phase 2 ya completó. Proponer `/workflow-plan`.
-5. Listar tech skills activos: `ls .claude/skills/ | grep -v pm-thyrox`
+5. Listar tech skills activos: `ls .claude/skills/ | grep -v thyrox`
 
 ---
 

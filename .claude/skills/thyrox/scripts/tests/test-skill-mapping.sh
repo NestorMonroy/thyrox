@@ -3,7 +3,7 @@
 # Tests para verify-skill-mapping.sh y estructura de SKILL.md
 # Verifica: references enlazadas, assets enlazados, naming en tipos, tamaño < 500 líneas.
 #
-# Uso: bash .claude/skills/pm-thyrox/scripts/tests/test-skill-mapping.sh
+# Uso: bash .claude/skills/thyrox/scripts/tests/test-skill-mapping.sh
 
 set -euo pipefail
 

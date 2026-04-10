@@ -76,7 +76,7 @@ updated_at: ${TODAY}
 ## Status General
 
 **Versión:** ${VERSION}
-**Estado:** Activo — framework pm-thyrox con ${FASES_COUNT} FASEs completadas
+**Estado:** Activo — framework thyrox con ${FASES_COUNT} FASEs completadas
 **Última actualización:** ${TODAY}
 **Branch activo:** \`claude/check-merge-status-Dcyvj\`
 
@@ -99,14 +99,14 @@ Ver ROADMAP.md para detalle de cada FASE.
 ## Componentes del framework
 
 ### Skills activos (\`.claude/skills/\`)
-- \`pm-thyrox/\` — Framework principal 7 fases (motor del proyecto)
+- \`thyrox/\` — Framework principal 7 fases (motor del proyecto)
 - Tech skills: backend-nodejs, db-mysql, db-postgresql, frontend-react, frontend-webpack, python-mcp, sphinx
 
 ### MCP servers
 - \`thyrox-memory\` — Memoria semántica FAISS (store/retrieve)
 - \`thyrox-executor\` — Ejecución subprocess con blocklist
 
-### Scripts de gestión (\`.claude/skills/pm-thyrox/scripts/\`)
+### Scripts de gestión (\`.claude/skills/thyrox/scripts/\`)
 - \`update-state.sh\` — Regenera este archivo desde el repo real
 - \`validate-session-close.sh\` — Valida cierre de sesión
 - \`validate-phase-readiness.sh\` — Valida readiness por fase

@@ -45,7 +45,7 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 
 ## ⏸ GATE OPERACION — Phase 5 → 6
 
-- [ ] [T-001] SP-02: presentar resumen de cambios al usuario y esperar aprobación explícita antes de iniciar ejecución — ninguna tarea de Lote 1+ comienza sin esta aprobación (SP-02, DA-000)
+- [x] [T-001] SP-02: presentar resumen de cambios al usuario y esperar aprobación explícita antes de iniciar ejecución — ninguna tarea de Lote 1+ comienza sin esta aprobación (SP-02, DA-000)
 
 ---
 
@@ -53,19 +53,19 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 
 > Pre-requisito: T-001 aprobado. Constraint: archivos históricos (WPs anteriores, ADRs) NO se modifican.
 
-- [ ] [T-002] `git mv .claude/skills/pm-thyrox .claude/skills/thyrox` — preservar historial con git mv (DA-002) (SPEC-001)
-- [ ] [T-003] `.claude/CLAUDE.md` — actualizar 6 referencias pm-thyrox + addendum Locked Decision #5 (SPEC-001)
-- [ ] [T-004] `.claude/scripts/session-start.sh` — rename pm-thyrox → thyrox + agregar alerta B-09 (Phase 6 sin execution-log) (SPEC-001+003)
-- [ ] [T-005] `.claude/scripts/project-status.sh` — rename pm-thyrox → thyrox + agregar alerta B-08 (WP sin entry en ROADMAP) (SPEC-001+003)
-- [ ] [T-006] `.claude/scripts/update-state.sh` + `.claude/scripts/session-resume.sh` — verificar si referencian pm-thyrox; renombrar en cada uno si aplica (batch aceptado: misma operación idéntica en ambos, mismo rationale que T-011) (GAP-01 corregido) (SPEC-001)
-- [ ] [T-007] `.claude/scripts/commit-msg-hook.sh` — rename si referencia pm-thyrox (verificar primero) (SPEC-001)
-- [ ] [T-008] `.claude/skills/workflow-analyze/SKILL.md` — grep filter pm-thyrox → thyrox (SPEC-001)
-- [ ] [T-009] `.claude/skills/workflow-strategy/SKILL.md` — grep filter pm-thyrox → thyrox (SPEC-001)
-- [ ] [T-010] `.claude/skills/workflow-track/SKILL.md` — grep filter pm-thyrox → thyrox (SPEC-001)
-- [ ] [T-011] `.claude/references/*.md` — actualizar `owner: pm-thyrox` → `owner: thyrox` en frontmatter (~10 archivos, batch) (SPEC-001)
-- [ ] [T-012] `.claude/commands/` — verificar referencias a pm-thyrox; actualizar si existen; documentar si no hay (SPEC-001)
-- [ ] [T-013] `.claude/settings.json` — verificar referencias a pm-thyrox; actualizar si existen (SPEC-001)
-- [ ] [T-014] Verificación: `grep -r "pm-thyrox" .claude/skills/thyrox/ .claude/CLAUDE.md .claude/scripts/ .claude/references/ --include="*.md" --include="*.sh" --include="*.json"` → debe retornar 0 resultados (SPEC-001)
+- [x] [T-002] `git mv .claude/skills/pm-thyrox .claude/skills/thyrox` — preservar historial con git mv (DA-002) (SPEC-001)
+- [x] [T-003] `.claude/CLAUDE.md` — actualizar 6 referencias pm-thyrox + addendum Locked Decision #5 (SPEC-001)
+- [x] [T-004] `.claude/scripts/session-start.sh` — rename pm-thyrox → thyrox + agregar alerta B-09 (Phase 6 sin execution-log) (SPEC-001+003)
+- [x] [T-005] `.claude/scripts/project-status.sh` — rename pm-thyrox → thyrox + agregar alerta B-08 (WP sin entry en ROADMAP) (SPEC-001+003)
+- [x] [T-006] `.claude/scripts/update-state.sh` + `.claude/scripts/session-resume.sh` — verificar si referencian pm-thyrox; renombrar en cada uno si aplica (batch aceptado: misma operación idéntica en ambos, mismo rationale que T-011) (GAP-01 corregido) (SPEC-001)
+- [x] [T-007] `.claude/scripts/commit-msg-hook.sh` — rename si referencia pm-thyrox (verificar primero) (SPEC-001)
+- [x] [T-008] `.claude/skills/workflow-analyze/SKILL.md` — grep filter pm-thyrox → thyrox (SPEC-001)
+- [x] [T-009] `.claude/skills/workflow-strategy/SKILL.md` — grep filter pm-thyrox → thyrox (SPEC-001)
+- [x] [T-010] `.claude/skills/workflow-track/SKILL.md` — grep filter pm-thyrox → thyrox (SPEC-001) [sin referencias — verificado]
+- [x] [T-011] `.claude/references/*.md` — actualizar `owner: pm-thyrox` → `owner: thyrox` en frontmatter (~10 archivos, batch) (SPEC-001)
+- [x] [T-012] `.claude/commands/` — verificar referencias a pm-thyrox; actualizar si existen; documentar si no hay (SPEC-001)
+- [x] [T-013] `.claude/settings.json` — verificar referencias a pm-thyrox; actualizar si existen (SPEC-001) [sin referencias — verificado]
+- [x] [T-014] Verificación: `grep -r "pm-thyrox" .claude/skills/thyrox/ .claude/CLAUDE.md .claude/scripts/ .claude/references/ --include="*.md" --include="*.sh" --include="*.json"` → 0 resultados ✓ (SPEC-001)
 - [ ] [T-015] `git add` + `git commit "refactor(thyrox): renombrar pm-thyrox → thyrox en archivos activos"` (SPEC-001)
 
 **Checkpoint Lote 1:** T-014 debe dar 0 resultados antes de continuar a Lote 2.

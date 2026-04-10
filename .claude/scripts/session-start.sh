@@ -50,7 +50,7 @@ if [ -z "$ACTIVE_WP" ] && [ "$PHASE" != "complete" ] && [ -d "${CONTEXT_DIR}/wor
 fi
 
 echo ""
-echo "=== PM-THYROX — ACTIVAR SKILL ANTES DE TRABAJAR ==="
+echo "=== THYROX — ACTIVAR SKILL ANTES DE TRABAJAR ==="
 echo ""
 if [ -n "$ACTIVE_WP" ]; then
     echo "  Work package activo: context/work/${ACTIVE_WP}/"
@@ -63,11 +63,20 @@ if [ -n "$ACTIVE_WP" ]; then
         NEXT=$(grep -m1 "^\- \[ \]" "$TASK_PLAN" 2>/dev/null | sed 's/- \[ \] //')
         [ -n "$NEXT" ] && echo "  Próxima tarea: ${NEXT}"
     fi
+    # Alerta B-09: Phase 6 activa sin execution-log (TD-014, SPEC-003)
+    if [ "$PHASE" = "Phase 6" ]; then
+        EXEC_LOG=$(find "$WP_DIR" -maxdepth 1 -name "*-execution-log.md" 2>/dev/null | head -1)
+        if [ -z "$EXEC_LOG" ]; then
+            echo ""
+            echo "  ⚠  ALERTA B-09: Phase 6 activa pero no existe execution-log en el WP."
+            echo "     Crear ${ACTIVE_WP}-execution-log.md antes de continuar."
+        fi
+    fi
     echo ""
     # Mostrar las dos rutas de ejecución (ADR-015 D-04 + D-06)
     WF_CMD=$(_phase_to_command "$PHASE")
     echo "  Opciones de ejecución:"
-    echo "    A (calidad alta HOY):    invocar pm-thyrox SKILL → ${PHASE}"
+    echo "    A (calidad alta HOY):    invocar thyrox SKILL → ${PHASE}"
     if [ "$COMMANDS_SYNCED" = "true" ]; then
         echo "    B (determinístico):      ${WF_CMD}"
     else
@@ -77,7 +86,7 @@ else
     echo "  Sin work package activo"
     echo ""
     echo "  Opciones de ejecución:"
-    echo "    A (calidad alta HOY):    invocar pm-thyrox SKILL → Phase 1: ANALYZE"
+    echo "    A (calidad alta HOY):    invocar thyrox SKILL → Phase 1: ANALYZE"
     if [ "$COMMANDS_SYNCED" = "true" ]; then
         echo "    B (determinístico):      /workflow-analyze"
     else
@@ -91,8 +100,8 @@ TECH_SKILLS=""
 if [ -d "$SKILLS_DIR" ]; then
     for skill_dir in "$SKILLS_DIR"/*/; do
         skill_name="$(basename "$skill_dir")"
-        # Excluir pm-thyrox (management skill)
-        if [ "$skill_name" != "pm-thyrox" ] && [ -f "${skill_dir}SKILL.md" ]; then
+        # Excluir thyrox (management skill)
+        if [ "$skill_name" != "thyrox" ] && [ -f "${skill_dir}SKILL.md" ]; then
             TECH_SKILLS="${TECH_SKILLS} ${skill_name}"
         fi
     done

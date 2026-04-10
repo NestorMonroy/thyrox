@@ -5,7 +5,7 @@ version: 1.0
 purpose: Compilación de mejores prácticas de Anthropic para escribir prompts efectivos con Claude 4.5.
 goal: Maximizar calidad de respuestas de Claude con prompts bien estructurados.
 updated_at: 2026-03-25
-owner: pm-thyrox (cross-phase)
+owner: thyrox (cross-phase)
 ```
 
 # Prompting Tips - Mejores Prácticas para Claude 4.5

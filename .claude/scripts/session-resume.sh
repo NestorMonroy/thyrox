@@ -74,7 +74,7 @@ if [ -n "$TASK_PLAN" ]; then
 fi
 
 echo ""
-echo "  Continúa con el work package activo. Activa pm-thyrox SKILL si es necesario."
+echo "  Continúa con el work package activo. Activa thyrox SKILL si es necesario."
 echo ""
 echo "=============================================="
 echo ""

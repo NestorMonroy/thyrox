@@ -5,7 +5,7 @@ work_package: 2026-04-07-03-08-03-agent-format-spec
 created_at: 2026-04-07 05:22:12
 status: Activo
 covers: R-006
-owner: pm-thyrox (cross-phase)
+owner: thyrox (cross-phase)
 ```
 
 # SKILL vs Agente — Distinción y regla de decisión
@@ -38,7 +38,7 @@ owner: pm-thyrox (cross-phase)
 
 | Nombre | Path | Propósito |
 |--------|------|-----------|
-| `pm-thyrox` | `.claude/skills/pm-thyrox/SKILL.md` | Metodología de gestión de proyectos en 7 fases (ANALYZE → TRACK). Motor del framework. |
+| `thyrox` | `.claude/skills/thyrox/SKILL.md` | Metodología de gestión de proyectos en 7 fases (ANALYZE → TRACK). Motor del framework. |
 | `python-mcp` | `.claude/skills/python-mcp/SKILL.md` | Guía para implementar servidores MCP en Python: estructura, registro de tools, patrones de testing. |
 
 ### Agentes activos
@@ -54,7 +54,7 @@ owner: pm-thyrox (cross-phase)
 
 ## Las 5 capas y sus rutas de ejecución
 
-Arquitectura de 5 capas de pm-thyrox (ADR-015). Cada capa tiene un mecanismo de triggering distinto.
+Arquitectura de 5 capas de thyrox (ADR-015). Cada capa tiene un mecanismo de triggering distinto.
 
 ### Tabla de capas
 
@@ -70,7 +70,7 @@ Arquitectura de 5 capas de pm-thyrox (ADR-015). Cada capa tiene un mecanismo de 
 
 | Ruta | Mecanismo | Calidad HOY | Confiabilidad HOY | Criterio de uso |
 |------|-----------|-------------|-------------------|----------------|
-| A — pm-thyrox SKILL | Capa 2, probabilístico | Alta (lógica completa) | Media (puede no disparar) | Usar HOY cuando se necesita calidad máxima |
+| A — thyrox SKILL | Capa 2, probabilístico | Alta (lógica completa) | Media (puede no disparar) | Usar HOY cuando se necesita calidad máxima |
 | B — /workflow_* commands | Capa 3, determinístico | Baja (desactualizados) | Alta (si el usuario los invoca) | No recomendar hasta TD-008 completado |
 | C — /workflow_* post-TD-008 | Capa 3, determinístico | Alta (sincronizados) | Alta | Ruta preferida cuando TD-008 esté completo |
 
@@ -80,20 +80,20 @@ Arquitectura de 5 capas de pm-thyrox (ADR-015). Cada capa tiene un mecanismo de 
 
 La documentación oficial de Claude Code documenta 4 tipos de hook. Solo `command` es 100% determinístico ejecutado por el harness.
 
-| Tipo | Comportamiento | Determinístico | Uso en pm-thyrox |
+| Tipo | Comportamiento | Determinístico | Uso en thyrox |
 |------|----------------|----------------|-----------------|
 | `command` | Ejecuta shell command vía harness | Sí | SessionStart, Stop, PostCompact |
 | `prompt` | Inyecta texto en el próximo prompt de Claude | Probabilístico (interpretación de Claude) | No usado actualmente |
 | `agent` | Invoca un agente Claude Code | Determinístico (lanzamiento del agente) | No usado actualmente |
 | `http` | Llama a un endpoint HTTP externo | Determinístico (llamada HTTP) | No usado actualmente |
 
-**Regla:** pm-thyrox solo usa `type: command` → la garantía de determinismo de Capa 0 aplica. Si en el futuro se usan hooks `prompt`, esa garantía no aplica para esos hooks.
+**Regla:** thyrox solo usa `type: command` → la garantía de determinismo de Capa 0 aplica. Si en el futuro se usan hooks `prompt`, esa garantía no aplica para esos hooks.
 
 ---
 
 ## 5 hallazgos externos sobre SKILLs
 
-Evidencia recopilada en FASE 21 que impacta las decisiones arquitectónicas de pm-thyrox.
+Evidencia recopilada en FASE 21 que impacta las decisiones arquitectónicas de thyrox.
 Fuentes: artículo "The Ultimate Guide to Claude Code Skills" (Mar 2026) + análisis FASE 21.
 
 | ID | Hallazgo | Evidencia | Fuente |
@@ -104,7 +104,7 @@ Fuentes: artículo "The Ultimate Guide to Claude Code Skills" (Mar 2026) + anál
 | H4 | **SKILLs son prompt injection** — No hay magia arquitectónica. 40 de 47 skills probados empeoraron el output. | "Skills are prompt injections. That's it. Nothing more magical than that." | Artículo Mar 2026 |
 | H5 | **CLAUDE.md como alternativa más simple** — Siempre cargado, sin triggering probabilístico, sin riesgo de truncación. | "Why not just stick with a well-written system prompt in your CLAUDE.md? It's simpler, always loads..." | Artículo Mar 2026 |
 
-**Implicación para pm-thyrox:** Los hallazgos H1/H3/H4 justifican la arquitectura de 5 capas (ADR-015):
+**Implicación para thyrox:** Los hallazgos H1/H3/H4 justifican la arquitectura de 5 capas (ADR-015):
 Hooks (100% determinísticos) + CLAUDE.md (siempre cargado) compensan la confiabilidad media del SKILL.
 
 ---

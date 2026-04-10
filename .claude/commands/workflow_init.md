@@ -9,7 +9,7 @@ Detecta el stack tecnológico del proyecto, genera tech skills desde el registry
 Antes de detectar, verificar si ya existen tech skills generados:
 
 ```bash
-ls .claude/skills/ | grep -v pm-thyrox
+ls .claude/skills/ | grep -v thyrox
 ```
 
 Si existen skills (`frontend-react`, `backend-nodejs`, etc.):

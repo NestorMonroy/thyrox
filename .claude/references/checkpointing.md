@@ -5,7 +5,7 @@ category: Cross-phase
 version: 1.0
 created_at: 2026-04-09 19:30:00
 updated_at: 2026-04-09 19:30:00
-owner: pm-thyrox (cross-phase)
+owner: thyrox (cross-phase)
 purpose: Entender el mecanismo de checkpointing de Claude Code y sus limitaciones criticas. Especialmente relevante al disenar hooks que modifican archivos via bash, ya que esos cambios NO son revertibles via /rewind.
 source: https://code.claude.com/docs/checkpointing
 ```
@@ -76,7 +76,7 @@ capturadas por checkpointing.
 Los hooks `PostToolUse`, `SessionStart`, etc. que ejecutan scripts bash y modifican
 archivos NO seran revertibles.
 
-Ejemplo del impacto en pm-thyrox:
+Ejemplo del impacto en thyrox:
 - `sync-wp-state.sh` modifica `now.md` via `sed -i` → no revertible via /rewind
 - `mkdir` para crear directorios WP → no revertible via /rewind
 - Si el usuario hace /rewind a "antes de crear el WP", los archivos WP escritos con
@@ -108,9 +108,9 @@ concurrentes normalmente no se capturan.
 | Colaboracion | Local | Compartido |
 | Reversion | Quick undo | Branches, cherry-pick |
 | Bash changes | No captura | Si captura (si se commitea) |
-| Uso en pm-thyrox | Quick recovery en sesion | Persistencia real del proyecto |
+| Uso en thyrox | Quick recovery en sesion | Persistencia real del proyecto |
 
-El framework pm-thyrox usa Git como mecanismo de persistencia (Locked Decision #3).
+El framework thyrox usa Git como mecanismo de persistencia (Locked Decision #3).
 El checkpointing complementa pero no reemplaza los commits convencionales.
 
 ---

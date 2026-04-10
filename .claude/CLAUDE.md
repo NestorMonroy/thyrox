@@ -1,12 +1,12 @@
 ```yml
 type: Contexto Persistente
 version: 3.2
-updated_at: 2026-04-09 12:00:00
+updated_at: 2026-04-10 03:00:00
 ```
 
 # CLAUDE.md — THYROX
 
-**Level 2 — Puente entre [SKILL](skills/pm-thyrox/SKILL.md) (Level 1) y proyecto.**
+**Level 2 — Puente entre [SKILL](skills/thyrox/SKILL.md) (Level 1) y proyecto.**
 
 ## Locked Decisions (no revisitar)
 
@@ -17,9 +17,10 @@ Los ADRs del proyecto viven en el path declarado por `adr_path` en este archivo 
 2. **Anatomía oficial** — SKILL.md + scripts/ + references/ + assets/
 3. **Git as persistence** — Zero archivos backup, historial en git
 4. **Markdown only** — Sin bases de datos, sin formatos propietarios
-5. **Single skill** — Un pm-thyrox con references, no 15 skills separados
+5. **Single skill** — Un `thyrox` con references, no 15 skills separados
    *Addendum FASE 22:* Los 7 `workflow-*` skills (workflow-analyze, …, workflow-track) son la excepción intencional: son herramientas de ejecución por fase, no skills de dominio tecnológico. Esta excepción está documentada en ADR-016. La regla original sigue vigente para tech skills (python, react, etc.).
    *Addendum FASE 23:* Nomenclatura resuelta a kebab-case hyphens — `workflow-*/SKILL.md`. TD-019 cerrado (FASE 23).
+   *Addendum FASE 29:* Skill renombrado → `thyrox` (prefijo `pm-` eliminado — no es PM de PMI, es la metodología THYROX misma). TD-020 cerrado (FASE 29).
 6. **Work packages with timestamp** — context/work/YYYY-MM-DD-HH-MM-SS-nombre/
 7. **Conventional Commits** — `type(scope): description`
 
@@ -55,8 +56,8 @@ REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
 ├── references/            ← Documentación global de plataforma Claude Code (on-demand)
 ├── registry/              ← Registro de tech skills y agentes
 ├── scripts/               ← Scripts de infraestructura Claude Code (hooks, utilidades)
-└── skills/                ← Skills del framework (pm-thyrox + workflow-*)
-    └── pm-thyrox/         ← El SKILL (Level 1): SKILL.md + references/ + scripts/ + assets/
+└── skills/                ← Skills del framework (thyrox + workflow-*)
+    └── thyrox/            ← El SKILL (Level 1): SKILL.md + references/ + scripts/ + assets/
 ```
 
 ## Reglas de edición — OBLIGATORIO
@@ -74,8 +75,8 @@ Aplicar en TODA edición de archivo, sin excepción:
 SIEMPRE seguir este flujo. NO omitir pasos.
 
 1. **Inicio** — Leer focus.md + now.md + ROADMAP.md.
-2. **Activar SKILL** — ANTES de responder cualquier tarea: invocar Skill tool → pm-thyrox.
-   Si el Skill tool no está disponible: leer [SKILL.md](skills/pm-thyrox/SKILL.md) completo y seguirlo paso a paso.
+2. **Activar SKILL** — ANTES de responder cualquier tarea: invocar Skill tool → thyrox.
+   Si el Skill tool no está disponible: leer [SKILL.md](skills/thyrox/SKILL.md) completo y seguirlo paso a paso.
 3. **Identificar fase activa** — Revisar `context/work/`:
    - Hay work package activo → continuar en la fase donde quedó.
    - No hay work package → empezar Phase 1: ANALYZE.
@@ -112,7 +113,7 @@ Un proyecto con 20 FASEs tiene 20 WPs; cada WP recorre hasta 7 Phases internamen
 
 ## Para más contexto
 
-- Metodología completa: [SKILL](skills/pm-thyrox/SKILL.md)
+- Metodología completa: [SKILL](skills/thyrox/SKILL.md)
 - Estado del proyecto: [project-state](context/project-state.md)
 - Decisiones: [decisions](context/decisions.md)
 - Convenciones: [conventions](references/conventions.md)

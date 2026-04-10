@@ -35,7 +35,7 @@ Ver [escalabilidad](references/scalability.md) para detalles y casos de borde.
 
 1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
 2. Leer `context/now.md` — verificar `phase` y `current_work`
-3. Listar tech skills activos: `ls .claude/skills/ | grep -v pm-thyrox`
+3. Listar tech skills activos: `ls .claude/skills/ | grep -v thyrox`
 4. Verificar si ya existe `*-analysis.md` en el WP:
    - `ls .claude/context/work/[WP-activo]/analysis/ 2>/dev/null`
    - Si existe sin `[NEEDS CLARIFICATION]` → Phase 1 ya completó. Proponer `/workflow-strategy`.

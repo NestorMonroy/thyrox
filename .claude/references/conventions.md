@@ -37,7 +37,7 @@ All PM-THYROX workflow files are stored in the THYROX project structure:
     │   ├── epics/               Planned work (Phase 3, 4, 5)
     │   └── work-logs/           Session journals (Phase 6)
     │
-    └── skills/pm-thyrox/        The SKILL (Level 1)
+    └── skills/thyrox/        The SKILL (Level 1)
         ├── SKILL.md             Motor — canonical source
         ├── references/          Documentation loaded on demand
         ├── scripts/             Executable code (detect/convert/validate)
@@ -544,7 +544,7 @@ All notable changes to this project will be documented in this file.
 
 ## Error Tracking (AP-06)
 
-Errores se documentan en `context/errors/ERR-NNN.md` usando el template [error-report.md.template](../skills/pm-thyrox/assets/error-report.md.template).
+Errores se documentan en `context/errors/ERR-NNN.md` usando el template [error-report.md.template](../skills/thyrox/assets/error-report.md.template).
 
 **Campos obligatorios:** Qué pasó / Por qué / **Prevención** / Insight
 

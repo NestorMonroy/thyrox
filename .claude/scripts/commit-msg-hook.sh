@@ -3,7 +3,7 @@
 # Pre-commit hook for conventional commits validation.
 #
 # Install:
-#   cp .claude/skills/pm-thyrox/scripts/commit-msg-hook.sh .git/hooks/commit-msg
+#   cp .claude/skills/thyrox/scripts/commit-msg-hook.sh .git/hooks/commit-msg
 #   chmod +x .git/hooks/commit-msg
 
 COMMIT_MSG_FILE="$1"

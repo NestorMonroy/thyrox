@@ -5,7 +5,7 @@ category: Cross-phase
 version: 1.0
 created_at: 2026-04-09 19:30:00
 updated_at: 2026-04-09 19:30:00
-owner: pm-thyrox (cross-phase)
+owner: thyrox (cross-phase)
 purpose: Referencia de hooks de Claude Code para configurar comportamiento deterministico. Usar cuando se disenian automatizaciones, PostToolUse reactivos, gates de validacion o sincronizacion de estado.
 source: https://code.claude.com/docs/hooks-guide y /hooks
 ```
@@ -32,7 +32,7 @@ de que el LLM decida ejecutarlas.
 
 ## Eventos del ciclo de vida
 
-### Eventos de mayor relevancia para pm-thyrox
+### Eventos de mayor relevancia para thyrox
 
 | Evento | Cuando dispara | Puede bloquear | Uso tipico |
 |--------|---------------|----------------|-----------|
@@ -165,7 +165,7 @@ Campos universales:
 
 ---
 
-## Patrones de uso para pm-thyrox
+## Patrones de uso para thyrox
 
 ### PostToolUse para sincronizar estado (Automatico-B)
 

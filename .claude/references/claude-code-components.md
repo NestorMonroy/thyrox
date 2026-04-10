@@ -1,7 +1,7 @@
 ```yml
 type: Reference
 title: Claude Code — Referencia oficial de componentes (Skills, Agents, Context)
-owner: pm-thyrox
+owner: thyrox
 source: Documentación oficial Claude Code (code.claude.com/docs)
 version: 1.0
 created_at: 2026-04-09 00:30:00
@@ -303,7 +303,7 @@ Reglas que deben persistir  → CLAUDE.md (no conversación)
 ```
 Skills de fase:    workflow-analyze/SKILL.md  (kebab-case, name: workflow-analyze)
 Tech skills:       backend-nodejs/SKILL.md    (kebab-case)
-Framework skill:   pm-thyrox/SKILL.md         (kebab-case)
+Framework skill:   thyrox/SKILL.md         (kebab-case)
 Agentes:           task-executor.md           (kebab-case, en .claude/agents/)
 ```
 

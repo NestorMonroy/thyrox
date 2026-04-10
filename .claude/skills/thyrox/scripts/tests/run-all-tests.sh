@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # run-all-tests.sh
-# Ejecuta todos los tests unitarios del framework pm-thyrox.
+# Ejecuta todos los tests unitarios del framework thyrox.
 #
 # Uso:
-#   bash .claude/skills/pm-thyrox/scripts/tests/run-all-tests.sh
-#   bash .claude/skills/pm-thyrox/scripts/tests/run-all-tests.sh test-skill-mapping  # solo uno
+#   bash .claude/skills/thyrox/scripts/tests/run-all-tests.sh
+#   bash .claude/skills/thyrox/scripts/tests/run-all-tests.sh test-skill-mapping  # solo uno
 
 set -euo pipefail
 
@@ -33,7 +33,7 @@ run_test() {
 }
 
 echo "╔══════════════════════════════════════════╗"
-echo "║     pm-thyrox Unit Tests                 ║"
+echo "║     thyrox Unit Tests                 ║"
 echo "╚══════════════════════════════════════════╝"
 
 case "$SPECIFIC" in

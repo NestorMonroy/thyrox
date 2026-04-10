@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # project-status.sh
 # Resumen del estado del proyecto en <50 líneas.
-# Uso: bash .claude/skills/pm-thyrox/scripts/project-status.sh
+# Uso: bash .claude/skills/thyrox/scripts/project-status.sh
 
 set -euo pipefail
 
@@ -55,6 +55,15 @@ if [ -f "${CONTEXT_DIR}/now.md" ]; then
             echo "--- Work Package Progress ---"
             echo "Tasks: $DONE/$TOTAL completed"
             echo "Next:  $NEXT"
+        fi
+        # Alerta B-08: WP activo no aparece en ROADMAP.md (TD-014, SPEC-003)
+        WP_NAME=$(basename "$CURRENT_WORK")
+        if [ -f "${PROJECT_ROOT}/ROADMAP.md" ]; then
+            if ! grep -q "$WP_NAME" "${PROJECT_ROOT}/ROADMAP.md" 2>/dev/null; then
+                echo ""
+                echo "⚠  ALERTA B-08: El WP activo '${WP_NAME}' no aparece en ROADMAP.md."
+                echo "   Agregar entrada en ROADMAP.md antes de continuar."
+            fi
         fi
     fi
 fi

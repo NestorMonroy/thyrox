@@ -4,7 +4,7 @@ category: Cross-phase
 version: 1.0
 purpose: Define cuándo y cómo actualizar los archivos de estado del proyecto
 updated_at: 2026-04-09
-owner: pm-thyrox (cross-phase)
+owner: thyrox (cross-phase)
 ```
 
 # State Management — Archivos de Estado del Proyecto

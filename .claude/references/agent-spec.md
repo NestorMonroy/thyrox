@@ -5,7 +5,7 @@ work_package: 2026-04-07-03-08-03-agent-format-spec
 created_at: 2026-04-07 05:22:12
 status: Activo
 covers: R-001, R-002, R-003, R-006
-owner: pm-thyrox (cross-phase)
+owner: thyrox (cross-phase)
 ```
 
 # Especificación de formato — Agentes nativos de Claude Code
@@ -76,7 +76,7 @@ Los nombres de archivo siguen kebab-case y el campo `name` debe coincidir con el
 | Patrón | Formato | Cuándo usar | Ejemplos |
 |--------|---------|-------------|---------|
 | Tech-expert | `{tech}-expert.md` | Agente de conocimiento de tecnología específica | `nodejs-expert.md`, `react-expert.md` |
-| Workflow | `{tarea}-{rol}.md` | Paso del flujo pm-thyrox | `task-executor.md`, `task-planner.md` |
+| Workflow | `{tarea}-{rol}.md` | Paso del flujo thyrox | `task-executor.md`, `task-planner.md` |
 | Utility | `{dominio}-{función}.md` | Utilidad de propósito específico | `tech-detector.md`, `skill-generator.md` |
 
 ---

@@ -3,7 +3,7 @@
 # Verifica que SKILL.md enlaza a todas las references y detecta >300 líneas sin TOC.
 #
 # Uso:
-#   bash .claude/skills/pm-thyrox/scripts/verify-skill-mapping.sh
+#   bash .claude/skills/thyrox/scripts/verify-skill-mapping.sh
 
 set -euo pipefail
 

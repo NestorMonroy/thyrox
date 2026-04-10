@@ -5,7 +5,7 @@ category: Cross-phase
 version: 1.0
 created_at: 2026-04-09
 work_package: 2026-04-09-10-25-55-write-gates
-owner: pm-thyrox (cross-phase)
+owner: thyrox (cross-phase)
 purpose: Explicar los dos planos de aprobacion del framework y la configuracion vigente de settings.json
 ```
 
