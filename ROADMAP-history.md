@@ -1,0 +1,921 @@
+```yml
+Tipo: Historial Archivado
+Categoría: Gestión de Proyecto
+Propósito: FASEs 1-26 archivadas por REGLA-LONGEV-001 (ROADMAP.md superó 25,000 bytes)
+Archivado: 2026-04-10
+Fuente: ROADMAP.md (split FASE 29)
+```
+
+# ROADMAP History — THYROX (FASEs 1-26)
+
+> **Archivo histórico.** FASEs activas (27+) en [ROADMAP.md](ROADMAP.md).
+> Archivado en FASE 29 por REGLA-LONGEV-001 (ROADMAP.md superó 25,000 bytes).
+
+---
+
+## Propósito
+
+Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del trabajo.
+
+---
+
+## Convenciones
+
+- `[ ]` = Pendiente
+- `[-]` = En Progreso
+- `[x]` = Completado (YYYY-MM-DD)
+
+---
+
+## FASE 1: Framework Base (v0.1.0)
+
+### Estructura del proyecto
+
+- [x] Crear estructura de directorios (2026-03-25)
+- [x] Inicializar repositorio Git (2026-03-25)
+- [x] Crear README.md, ROADMAP.md, CHANGELOG.md (2026-03-25)
+- [x] Crear ARCHITECTURE.md, CONTRIBUTING.md (2026-03-25)
+- [x] Crear docs/API.md, docs/BUILD.md (2026-03-25)
+- [x] Crear api/README.md, build/README.md (2026-03-25)
+
+### Skill pm-thyrox
+
+- [x] SKILL.md con 7 fases SDLC (2026-03-25)
+- [x] 20 references de documentación por fase (2026-03-25)
+- [x] 30 assets/templates para output (2026-03-25)
+- [x] ADRs iniciales (9 decisiones documentadas) (2026-03-25)
+
+---
+
+## FASE 2: Consolidación y Coherencia (v0.2.0) — Sesión 2026-03-27
+
+### Limpieza de contenido
+
+- [x] Eliminar referencias arc42 — 85 ocurrencias en 16 archivos (2026-03-27)
+- [x] Convertir backtick refs a markdown links — 37 refs en 8 archivos (2026-03-27)
+- [x] Limpiar .md del texto visible de links — 63 links en 19 archivos (2026-03-27)
+
+### Unificación de fases
+
+- [x] Análisis de coherencia del proyecto completo (2026-03-27)
+- [x] Análisis detallado de 20 references (2026-03-27)
+- [x] Unificar orden de fases: ANALYZE primero en todos los archivos (2026-03-27)
+- [x] Corregir numeración en SKILL.md tabla, exit conditions, project-state.md (2026-03-27)
+- [x] Corregir phase headers en solution-strategy, spec-driven-dev, incremental-correction, context (2026-03-27)
+- [x] Eliminar residuos de renombrado (requirements.md, requirements.md.template) (2026-03-27)
+
+### Integración y flujo
+
+- [x] Integrar use-cases.md al flujo de Phase 1 (8 subsecciones) (2026-03-27)
+- [x] Actualizar metadata genéricos Anthropic: ADT → THYROX (2026-03-27)
+- [x] Conectar CLAUDE.md y README.md al SKILL (jerarquía SKILL > CLAUDE > README) (2026-03-27)
+- [x] Corregir links rotos en decisions.md y docs/BUILD.md (2026-03-27)
+
+### Reorganización según anatomía oficial
+
+- [x] templates/ → assets/ (30 archivos) (2026-03-27)
+- [x] Crear scripts/ en pm-thyrox (mover scripts desde raíz y utils) (2026-03-27)
+- [x] tracking/ → assets/ (AD_HOC_TASKS, REFACTORS como .template) (2026-03-27)
+- [x] Mover epic example y templates sueltos a assets/ (2026-03-27)
+- [x] Eliminar utils/ (reportes obsoletos), START-HERE.md (2026-03-27)
+- [x] Mover validation guide a references/reference-validation.md (2026-03-27)
+
+### Scripts con responsabilidad única
+
+- [x] detect/convert/validate para md-links (3 scripts Bash) (2026-03-27)
+- [x] detect/convert/validate para broken-references (3 scripts Python) (2026-03-27)
+
+### Estructura context/
+
+- [x] Crear context/analysis/ y mover análisis existentes (2026-03-27)
+- [x] Crear context/epics/ para trabajo planificado (2026-03-27)
+- [x] Documentar "Where Outputs Live" por fase en SKILL.md (2026-03-27)
+- [x] Agregar `<br>` consistentes en metadata blocks (2026-03-27)
+
+### Documentación Phase 1-2
+
+- [x] Phase 1: ANALYZE — 8 documentos completos (2026-03-27)
+- [x] Phase 2: SOLUTION_STRATEGY — solution-strategy.md (2026-03-27)
+- [x] Phase 3: PLAN — ROADMAP.md reescrito (2026-03-27)
+
+---
+
+## FASE 3: Completar documentación del framework
+
+### SKILL.md optimización
+
+- [x] Reducir SKILL.md a <500 líneas — 1084 → 246 (2026-03-27)
+- [x] Mover contenido extenso a references/scalability.md (2026-03-27)
+
+### Documentación pública
+
+- [x] Reescribir ARCHITECTURE.md reflejando estado real (2026-03-27)
+- [x] Reescribir CONTRIBUTING.md con flujo actualizado (2026-03-27)
+- [x] Actualizar CHANGELOG.md con trabajo real v0.1.0 y v0.2.0 (2026-03-27)
+
+### Covariancia — Consistencia entre archivos
+
+- [x] Análisis de covariancia: 5 leyes verificadas en 9 archivos (2026-03-28)
+- [x] Solution strategy: fuente canónica + referencia (2026-03-28)
+- [x] LAW 4: Jerarquía — Level 1/2/3 en SKILL, CLAUDE, README (2026-03-28)
+- [x] LAW 2: Estructura — scripts/ en SKILL.md, prds/ eliminado de CLAUDE.md (2026-03-28)
+- [x] LAW 3: Naming — convenciones explícitas en SKILL.md (2026-03-28)
+- [x] LAW 2: conventions.md — estructura actualizada (2026-03-28)
+- [x] Verificación: 5 leyes invariantes confirmadas por grep (2026-03-28)
+
+### Validación final
+
+- [x] Ejecutar detect_broken_references.py — 0 links rotos en core (422 son menciones textuales/documentales) (2026-03-28)
+- [x] Ejecutar validate-missing-md-links.sh — 134 backtick refs en análisis, core files OK (2026-03-28)
+- [x] Verificar covariancia: 5 leyes, 1 gap corregido (assets/ en SKILL.md) (2026-03-28)
+
+### Tracking de errores
+
+- [x] ERR-001: Análisis no documentado en context/analysis/ (2026-03-28)
+- [x] ERR-002: Clasificación incorrecta de tamaño del proyecto (2026-03-28)
+- [x] ERR-006: Saltar fases de nuevo — reincidencia de ERR-002 (2026-03-28)
+
+---
+
+## FASE 3b: Adopción de conceptos spec-kit
+
+**Epic:** context/analysis/spec-kit-adoption-solution-strategy.md
+
+### Nuevos templates
+
+- [x] Crear `assets/spec-quality-checklist.md.template` (ERR-003) (2026-03-28)
+- [x] Crear `assets/constitution.md.template` (ERR-004) (2026-03-28)
+
+### Mejorar artefactos existentes
+
+- [x] `assets/EXIT_CONDITIONS.md.template` — gates mandatorios + constitution check (ERR-008) (2026-03-28)
+- [x] `references/solution-strategy.md` — Research Step explícito (ERR-006) (2026-03-28)
+- [x] `references/conventions.md` — convención ROADMAP → epic link (ERR-007) (2026-03-28)
+- [x] `SKILL.md` — constitution y checklist en flujo de fases (ERR-003, ERR-004) (2026-03-28)
+
+### Enriquecer fases con pasos ejecutables
+
+- [x] Phase 3 (PLAN): pasos numerados en SKILL.md (ERR-005) (2026-03-28)
+- [x] Phase 5 (DECOMPOSE): pasos numerados en SKILL.md (ERR-005) (2026-03-28)
+- [x] Phase 6 (EXECUTE): pasos numerados en SKILL.md (ERR-005) (2026-03-28)
+
+### Tracking de errores (spec-kit adoption)
+
+- [x] ERR-003: Sin validación de specs → checklist template creado (2026-03-28)
+- [x] ERR-004: Sin constitution → constitution template creado (2026-03-28)
+- [x] ERR-005: Fases no ejecutables → pasos numerados en SKILL.md (2026-03-28)
+- [x] ERR-006: Saltar fases de nuevo → documentado como reincidencia (2026-03-28)
+- [x] ERR-007: ROADMAP sin links a epics → convención agregada (2026-03-28)
+- [x] ERR-008: Exit conditions informativas → gates mandatorios (2026-03-28)
+
+---
+
+## FASE 3c: Adopción profunda de spec-kit (mecanismos de calidad)
+
+**Epic:** context/analysis/spec-kit-deep-adoption-strategy.md
+
+### Script nuevo
+
+- [x] Crear `scripts/validate-phase-readiness.sh` — verifica artefactos por fase (D4) (2026-03-28)
+
+### Mejorar templates existentes
+
+- [x] `assets/tasks.md.template` — traceability T-NNN → R-N (D3) (2026-03-28)
+- [x] `assets/spec-quality-checklist.md.template` — [NEEDS CLARIFICATION] check + [Spec §] refs (D1, D3) (2026-03-28)
+- [x] `assets/EXIT_CONDITIONS.md.template` — double constitution check + markers gate (D2) (2026-03-28)
+
+### Mejorar references
+
+- [x] `references/conventions.md` — priority mapping + traceability IDs table (D5) (2026-03-28)
+
+### SKILL.md updates
+
+- [x] Phase 2: double constitution check pre + post design (D2) (2026-03-28)
+- [x] Phase 4: zero [NEEDS CLARIFICATION] markers gate (D1) (2026-03-28)
+- [x] Phase 5: task traceability T-NNN → R-N (D3) (2026-03-28)
+
+### Tracking de errores (deep analysis)
+
+- [x] ERR-012: No hay cadena input/output entre fases → validate-phase-readiness.sh (2026-03-28)
+- [x] ERR-013: No hay [NEEDS CLARIFICATION] mechanism → checklist + convención (2026-03-28)
+- [x] ERR-016: No hay double constitution check → pre + post design (2026-03-28)
+- [x] ERR-017: No hay priority→phase mapping → convención documentada (2026-03-28)
+- [x] ERR-018: No hay trazabilidad req→task→checklist → IDs en templates (2026-03-28)
+
+---
+
+## FASE 3d: Resolver riesgos de referencia (anti-patterns de 14 proyectos)
+
+**Work package:** context/work/2026-03-28-15-51-08-reference-errors-analysis/
+**Análisis:** 12 anti-patterns identificados, 6 riesgos activos, 4 requieren acción
+
+### Enforcement ejecutable (AP-01 + AP-09)
+
+- [x] Crear validate-session-close.sh (hard gate) (2026-03-28)
+- [x] Documentar en SKILL.md cómo usar validate-phase-readiness.sh como gate soft (2026-03-28)
+
+### Error-to-prevention feedback loop (AP-06)
+
+- [x] Crear template ERR mejorado con campo "Prevención" obligatorio (2026-03-28)
+- [x] Actualizar convenciones de error tracking en conventions.md (2026-03-28)
+
+### Handoff humano persistente (AP-04)
+
+- [x] Documentar convención: blockers en now.md + sección en focus.md (2026-03-28)
+
+### Token efficiency (AP-10)
+
+- [x] Crear scripts/project-status.sh — resumen <50 líneas del estado (2026-03-28)
+
+### No requiere acción
+
+- [x] AP-05: SKILL.md mezcla capas — 191 líneas es manejable, no separar (2026-03-28)
+
+---
+
+## FASE 4: Template listo para reutilización
+
+### Generalización
+
+- [x] Análisis de contenido THYROX-específico vs genérico (85-90% genérico) (2026-03-28)
+- [x] Crear setup-template.sh — script interactivo de personalización (2026-03-28)
+- [x] Actualizar README.md con Quick Start usando setup-template.sh (2026-03-28)
+- [x] Testear copiando repo a directorio limpio y ejecutando script (2026-03-28)
+
+### CI/CD
+
+- [x] GitHub Actions workflow validate.yml (skill integrity + conventional commits) (2026-03-28)
+- [x] Pre-commit hook commit-msg-hook.sh para conventional commits (2026-03-28)
+- [x] Documentar setup de hooks en CONTRIBUTING.md (2026-03-28)
+- [x] Automatización de changelog — excluido del template: depende del tipo de proyecto destino (2026-03-28)
+
+---
+
+## FASE 5: Compatibilidad multi-modelo (Haiku + activación automática)
+
+**Work package:** context/work/2026-04-01-18-39-56-skill-activation-failure/
+
+### Activación automática del SKILL (D1)
+
+- [x] [T-001] CLAUDE.md — flujo de sesión obligatorio + Skill tool + fallback inline — 2026-04-01
+- [x] [T-002] Crear session-start.sh — startup hook de sesión — 2026-04-01
+- [x] [T-003] Configurar SessionStart hook en settings.json — 2026-04-01
+
+### SKILL.md — gates Baja Libertad por fase (D2)
+
+- [x] [T-004] Phase 1: 8 aspectos + decisión arquitectónica + REQUERIDO template + exit criteria — 2026-04-01
+- [x] [T-005] Phase 2: PASO 0 REQUERIDO solution-strategy + Key Ideas desde analysis/ — 2026-04-01
+- [x] [T-006] Phase 3: verificación WP explícita — 2026-04-01
+- [x] [T-007] Phase 4: checklist REQUERIDO + exit criteria verificable — 2026-04-01
+- [x] [T-008] Phase 5: WP activo = más reciente en context/work/ — 2026-04-01
+- [x] [T-009] Phase 6: fuente de tareas + ERR-NNN con template + renumerar pasos — 2026-04-01
+- [x] [T-010] Escalabilidad: tabla explícita tamaño → fases activas — 2026-04-01
+
+### Verificación (no degradación)
+
+- [x] [T-011] Re-ejecutar evals — 14/14 (100%) — 2026-04-01
+
+### Deuda técnica
+
+- [ ] [T-DT-001] examples.md — actualizar nomenclatura de fases (fuera de scope FASE 5)
+
+---
+
+## FASE 6: Integración de templates por fase (Reveal Intent + contrato fase→template→output)
+
+**Work package:** context/work/2026-04-01-22-15-43-template-phase-integration/
+
+### Templates faltantes (PM perspective)
+
+- [x] lessons-learned.md.template — Phase 7 — 2026-04-01
+- [x] changelog.md.template — Phase 7 — 2026-04-01
+- [x] risk-register.md.template — Phase 1 — 2026-04-01
+
+### SKILL.md — contrato fase→template→output
+
+- [x] Referenciar templates existentes por fase (Phase 2, 4, 5, 6, 7) — 2026-04-01
+- [x] Reveal Intent en output filenames: patrón {nombre-wp}-{tipo}.md — 2026-04-01
+- [x] Detección de fases via glob *-{tipo}.md — 2026-04-01
+
+### Templates — estandarización
+
+- [x] Timestamps YYYY-MM-DD-HH-MM-SS en todos los templates (19 archivos) — 2026-04-01
+
+### Formalización del patrón (D3 + D4)
+
+- [x] [T-001] SKILL.md sección Naming — regla explícita del patrón {nombre-wp}-{tipo}.md (D3) — 2026-04-02
+- [x] [T-002] SKILL.md — nota de compatibilidad WPs históricos (D4) — 2026-04-02
+
+---
+
+## FASE 7: Meta-Framework Generativo (tech skills auto-generados)
+
+**Work package:** context/work/2026-04-03-00-49-34-voltfactory-adaptation/
+
+Inspirado en el análisis de Volt Factory. Objetivo: pm-thyrox como orquestador de gestión +
+N tech skills auto-generados desde un registry centralizado, persistentes como artefactos git.
+
+### Registry base
+
+- [x] Crear estructura `.claude/registry/` con README (2026-04-04)
+- [x] Crear `_generator.sh` — instancia templates en project skills (2026-04-04)
+- [x] Template `frontend/react.template.md` (SKILL.md + instructions.md) (2026-04-04)
+- [x] Template `backend/nodejs.template.md` (SKILL.md + instructions.md) (2026-04-04)
+- [x] Template `db/postgresql.template.md` (SKILL.md + instructions.md) (2026-04-04)
+
+### Bootstrap command
+
+- [x] Crear `/workflow_init` — detecta stack, instancia skills desde registry, git commit (2026-04-04)
+- [x] Tech detector integrado en `/workflow_init` (scan package.json, requirements.txt, etc.) (2026-04-04)
+- [x] Modo manual override para proyectos polyglot o sin config estándar (2026-04-04)
+
+### Workflow commands (Phase entry points)
+
+- [x] `/workflow_analyze` — Phase 1: ANALYZE con context pre-cargado (2026-04-04)
+- [x] `/workflow_strategy` — Phase 2: SOLUTION_STRATEGY (2026-04-04)
+- [x] `/workflow_plan` — Phase 3: PLAN con ROADMAP check (2026-04-04)
+- [x] `/workflow_structure` — Phase 4: STRUCTURE con spec template (2026-04-04)
+- [x] `/workflow_decompose` — Phase 5: DECOMPOSE con task template (2026-04-04)
+- [x] `/workflow_execute` — Phase 6: EXECUTE con next task automático (2026-04-04)
+- [x] `/workflow_track` — Phase 7: TRACK con validate-phase-readiness (2026-04-04)
+
+### session-start.sh actualizado
+
+- [x] Detectar tech skills activos en `.claude/skills/` (2026-04-04)
+- [x] Mostrar lista de tech skills activos en startup display (2026-04-04)
+
+### ADR-012
+
+- [x] Crear `context/decisions/adr-012.md` — refinamiento de ADR-004 (management vs tech skills) (2026-04-04)
+
+---
+
+## FASE 8: Resolución de Deuda Técnica (2026-04-04)
+
+**WP:** `.claude/context/work/2026-04-04-04-16-29-technical-debt-resolution/`
+
+### Templates huérfanos — mapeo completo (SPEC-001)
+
+- [x] Headers `Fase:` en 6 templates: ad-hoc-tasks, analysis-phase, categorization-plan, document, project.json, refactors (2026-04-04)
+- [x] SKILL.md tabla artefactos — 6 rows nuevas con condición de activación (2026-04-04)
+- [x] SKILL.md Phase 1 — links a analysis-phase.md.template y project.json.template (2026-04-04)
+- [x] SKILL.md Phase 4/5/6/7 — links a document, categorization-plan, ad-hoc-tasks, refactors (2026-04-04)
+
+### D-001: examples.md nomenclatura (SPEC-002)
+
+- [x] 8 headers de fase corregidos (Phase 1-5 → Phase 3-7) (2026-04-04)
+- [x] Nota con los 7 nombres oficiales: ANALYZE → SOLUTION_STRATEGY → ... → TRACK (2026-04-04)
+
+### D-002: scalability.md referencias (SPEC-003)
+
+- [x] project.json → opcional con threshold >50 issues (2026-04-04)
+- [x] exit_conditions.md → exit-conditions.md (2026-04-04)
+
+### TD-001: Timestamp conventions y validación (SPEC-004)
+
+- [x] references/conventions.md — sección "Timestamp Format" con YYYY-MM-DD-HH-MM-SS (2026-04-04)
+- [x] scripts/validate-session-close.sh — check de placeholders sin resolver (2026-04-04)
+
+### TD-002: validate-phase-readiness.sh Phase 3 (SPEC-005)
+
+- [x] Phase 3 case verifica existencia de *-plan.md y scope aprobado [x] (2026-04-04)
+
+### Cierre formal de WPs históricos (SPEC-006)
+
+- [x] 2026-03-27-coherencia-unificacion-fases — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-covariancia — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-spec-kit-adoption — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-spec-kit-deep-adoption — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-multi-interaction-evals — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-cicd-setup — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-28-skill-flow-analysis — 0 checkboxes abiertos (2026-04-04)
+- [x] 2026-03-31-skill-consistency — 0 checkboxes abiertos (2026-04-04)
+
+---
+
+## FASE 9: Boundary SKILL vs ADR — compatibilidad multi-modelo (2026-04-04)
+
+**WP:** `.claude/context/work/2026-04-04-07-17-37-skill-adr-boundary/`
+
+### Capa 1 — CLAUDE.md
+
+- [x] Nueva seccion `## SKILL vs ADR — Regla de uso` con tabla 4 filas (2026-04-04)
+
+### Capa 2 — SKILL.md
+
+- [x] Step 8 Phase 1 reemplazado con lista SI/NO (7 items, sin texto vago) (2026-04-04)
+
+### Capa 3 — adr.md.template
+
+- [x] Campo `Uso:` en frontmatter YAML con restriccion de uso explicita (2026-04-04)
+
+### Correcciones de proceso Phase 3 (reapertura WP)
+
+- [x] SKILL.md Phase 3 — paso 5: tabla trazabilidad RC→tarea condicional (SPEC-001) (2026-04-04)
+- [x] SKILL.md Phase 3 — Nota DECOMPOSE: no saltable si hay RC con prioridades distintas (SPEC-002) (2026-04-04)
+- [x] SKILL.md Phase 3 — exit criteria: gate de cobertura RC integrado (SPEC-003) (2026-04-04)
+- [x] plan.md.template — sección condicional trazabilidad RC→tarea (SPEC-004) (2026-04-04)
+- [x] process-error-analysis.md eliminado de raíz WP (SPEC-005) (2026-04-04)
+
+---
+
+## FASE 10: Separación .claude/ vs docs/ — adr_path configurable (2026-04-04)
+
+**WP:** `.claude/context/work/2026-04-04-08-46-36-doc-structure/`
+
+- [x] CLAUDE.md — sección `## Configuración del Proyecto` con campo `adr_path` (2026-04-04)
+- [x] CLAUDE.md — limpiar referencias a IDs de ADRs en "Locked Decisions" (2026-04-04)
+- [x] SKILL.md Phase 1 Step 8 — regla SI/NO para `adr_path` (2026-04-04)
+- [x] [README](docs/architecture/decisions/README.md) — estructura mínima (2026-04-04)
+- [x] [SKILL](.claude/skills/sphinx/SKILL.md) — stub tech skill (2026-04-04)
+- [x] ADR-013: docs/ como documentación canónica del proyecto (2026-04-04)
+
+---
+
+## Métricas de Progreso
+
+```
+FASE 1: Framework Base           — 100% si
+FASE 2: Consolidación            — 100% si
+FASE 3: Completar docs           — 100% si
+FASE 3b: spec-kit adoption       — 100% si
+FASE 3c: spec-kit deep           — 100% si
+FASE 3d: Riesgos referencia      — 100% si
+FASE 4: Template reutilizable    — 100% si
+FASE 5: Compatibilidad multi-modelo — 100% si
+FASE 6: Template phase integration  — 100% si
+FASE 7: Meta-framework generativo   — 100% si
+FASE 8: Resolución de deuda técnica — 100% si
+FASE 9: Boundary SKILL vs ADR + correcciones proceso Phase 3 — 100% si
+FASE 10: Separación .claude/ vs docs/ — adr_path configurable  — 100% si
+FASE 11: Integración de Capacidades — MCP + Native Agents        — 100% si
+FASE 12: Estandarización de Keys de Metadata YAML                 — 100% si
+FASE 13: Convenciones para Ejecución Paralela de Agentes          — 100% si
+FASE 14: Correcciones al flujo — post-mortem FASE 13              — 100% si
+FASE 15: Unificación de Registry                                  — 100% si
+FASE 16: Separación semántica del Registry + docs públicos        — 100% si
+
+Sesión 2026-03-27: ~30 cambios implementados, 20+ commits
+Sesión 2026-03-28 (s2): SKILL.md rewrite + 54 evals + corrections
+Sesión 2026-03-28 (s3): 5 corrections + reference errors analysis
+Sesión 2026-04-03: voltfactory analysis + solution strategy + tests (55/55)
+Sesión 2026-04-04: boundary SKILL vs ADR — 3 capas, mermaid flows, compatibilidad Haiku
+Sesión 2026-04-07: parallel agents dogfooding + flow corrections + registry unification
+```
+
+---
+
+## FASE 11: Integración de Capacidades — MCP + Native Agents (2026-04-05)
+
+**WP:** `.claude/context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/`
+**Decisiones:** D-1..D-10 (solution-strategy v3.1)
+**Brechas cerradas:** BRECHA-1 (ejecución), BRECHA-2 (memoria), BRECHA-3 (agentes)
+
+### MCP Infrastructure
+
+- [x] `registry/mcp/thyrox_core.py` — ExecResult/MemoryResult, FAISS memory, exec_cmd blocklist (2026-04-06)
+- [x] `registry/mcp/memory_server.py` — MCP server: store + retrieve (FAISS) (2026-04-06)
+- [x] `registry/mcp/executor_server.py` — MCP server: exec_cmd + exec_python (2026-04-06)
+- [x] `.mcp.json` mcpServers + `requirements.txt` (2026-04-06)
+
+### Native Agents — Core
+
+- [x] `.claude/agents/task-planner.md` — gate de atomicidad (T-NNN + deps) (2026-04-06)
+- [x] `.claude/agents/task-executor.md` — ejecuta T-NNN (nativas + exec_cmd) (2026-04-06)
+- [x] `.claude/agents/tech-detector.md` — detecta stack (pure-native: Glob/Read) (2026-04-06)
+- [x] `.claude/agents/skill-generator.md` — genera SKILL.md + agent desde YAML (2026-04-06)
+
+### Registry
+
+- [x] `registry/agents/*.yml` — 7 definiciones YAML (4 core + 3 tech-experts) (2026-04-06)
+- [x] `registry/{frontend,backend,database}/*.skill.template.md` — 3 tech stacks (2026-04-06)
+- [x] `registry/bootstrap.py` — `--stack --model --force`, idempotente (2026-04-06)
+
+### Validación
+
+- [x] Test end-to-end: bootstrap → agents generados → idempotencia → blocklist (2026-04-06)
+
+---
+
+---
+
+## FASE 12: Estandarización de Keys de Metadata YAML (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-01-41-49-metadata-keys-standardization/`
+**Decisiones:** D-01..D-05 (solution-strategy)
+**Objetivo:** Keys en inglés snake_case, valores en español, formato ISO 8601 para fechas
+
+### Script de migración
+
+- [x] `scripts/migrate-metadata-keys.py` — dry-run + --layer N + verificación integrada (2026-04-07)
+
+### Migración por capas
+
+- [x] Capa 1: 35 templates en `assets/` (2026-04-07)
+- [x] Capa 2: 20 references en `skills/pm-thyrox/references/` (2026-04-07)
+- [x] Capa 3: `SKILL.md` + `conventions.md` — mapa completo + nota legacy + comandos date (2026-04-07)
+- [x] Capa 4: context/ activo — 5 archivos (2026-04-07)
+- [x] Capa 5: 13 ADRs en `context/decisions/` (2026-04-07)
+- [x] Capa 6: 28 error reports en `context/errors/` (2026-04-07)
+- [x] Capa 7: WP activo `thyrox-capabilities-integration` — 12 artefactos (2026-04-07)
+- [x] `scripts/project-status.sh` — patrones sed actualizados (2026-04-07)
+- [x] `CLAUDE.md` — frontmatter propio (2026-04-07)
+
+### Verificación final
+
+- [x] VERIFY OK: cero keys españoles en todas las capas (2026-04-07)
+
+---
+
+---
+
+## FASE 13: Convenciones para Ejecución Paralela de Agentes (2026-04-07)
+
+**WP-1:** `.claude/context/work/2026-04-07-03-08-03-parallel-agent-conventions/`
+**WP-2:** `.claude/context/work/2026-04-07-03-08-03-agent-format-spec/`
+**ADR:** ADR-014 — scope coordination entre ambos WPs
+**Dogfooding:** ambos WPs ejecutados en paralelo como experimento del problema que resuelven
+
+### WP-2: agent-format-spec
+
+- [x] `references/agent-spec.md` — spec formal de campos (obligatorio/opcional/prohibido) (2026-04-07)
+- [x] `scripts/lint-agents.py` — linter Python: 0 errores en 6 agentes (2026-04-07)
+- [x] `references/skill-vs-agent.md` — distinción formal SKILL vs Agente (2026-04-07)
+- [x] `.claude/agents/nodejs-expert.md` — corregido: description + quitar model (2026-04-07)
+- [x] `.claude/agents/react-expert.md` — corregido: description + quitar model (2026-04-07)
+- [x] `.claude/agents/skill-generator.md` — no propaga model al output nativo (2026-04-07)
+
+### WP-1: parallel-agent-conventions
+
+- [x] `assets/tasks.md.template` — estado `[~]` con claim protocol y recovery (2026-04-07)
+- [x] `references/conventions.md` — sección "Parallel Agent Execution": now-{agent-id}.md, ROADMAP readonly, ADR namespacing, handoff, recovery de claims (2026-04-07)
+- [x] `SKILL.md` — Phase 5-6 con notas de ejecución paralela (section owner markers) (2026-04-07)
+- [x] `scripts/project-status.sh` — lee glob now-*.md con retrocompatibilidad (2026-04-07)
+- [x] `CLAUDE.md` — adr_path con guidance de namespacing por capa (2026-04-07)
+- [x] `.claude/agents/task-executor.md` — claim protocol para ejecución paralela (2026-04-07)
+- [x] `.claude/agents/task-planner.md` — awareness de claims activos (2026-04-07)
+
+### Lecciones clave (L-039..L-049)
+
+- [x] 5 gaps de fricción detectados independientemente por ambos agentes en Phase 1 (2026-04-07)
+- [x] T-012 (recovery de claims) emergió por dogfooding — no estaba en el plan original (2026-04-07)
+- [x] Prompts cortos = sin timeout; prompts largos = timeouts en ejecución paralela (2026-04-07)
+
+---
+
+---
+
+## FASE 14: Correcciones al flujo — post-mortem FASE 13 (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-05-41-41-flow-corrections/`
+**Origen:** 8 gaps detectados durante dogfooding de ejecución paralela
+
+- [x] `SKILL.md` Phase 6: rol coordinador + pre-flight scope check + claim `[~]` obligatorio (2026-04-07)
+- [x] `SKILL.md` Phase 7: single-agent por diseño en ejecución paralela (2026-04-07)
+- [x] `conventions.md`: límite 800 palabras para prompts de agentes (2026-04-07)
+- [x] `conventions.md`: sufijo -a/-b para WPs creados en el mismo segundo (2026-04-07)
+- [x] `conventions.md`: protocolo Write bloqueado — agente reporta contenido, coordinador crea archivo (2026-04-07)
+
+---
+
+---
+
+## FASE 15: Unificación de Registry (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-06-15-20-registry-unification/`
+**Decisión:** `.claude/registry/` como único registry canónico — `registry/` raíz eliminado
+
+### Migración
+
+- [x] `registry/agents/*.yml` (7 archivos) → `.claude/registry/agents/` (2026-04-07)
+- [x] `registry/mcp/*.py` (3 archivos) → `.claude/registry/mcp/` (2026-04-07)
+- [x] `registry/bootstrap.py` → `.claude/registry/bootstrap.py` + PROJECT_ROOT fix (2026-04-07)
+- [x] `.mcp.json` — 2 paths actualizados a `.claude/registry/mcp/` (2026-04-07)
+- [x] `registry/` (raíz) — eliminado tras migración (2026-04-07)
+- [x] 3 YMLs `skill_template:` — paths rotos corregidos tras migración (2026-04-07)
+- [x] `context/work/INDEX.md` — índice de WPs por FASE (T-007) (2026-04-07)
+
+### Conceptual
+
+- [x] Distinción `agents/*.yml` (agente spawnable) vs `backend/*.template.md` (SKILL de metodología) documentada — L-055 (2026-04-07)
+
+---
+
+---
+
+## FASE 16: Separación semántica del Registry + Documentación pública (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-06-30-37-registry-separation/`
+**Referencia:** mise (jdx/mise) — principio datos/comportamiento
+**Objetivo:** Documentar los 3 flujos del registry y crear referencia pública en `/docs`
+
+- [x] `.claude/registry/README.md` — reescrito: 3 flujos (Agents/Skills/MCP) con lenguaje datos/comportamiento (2026-04-07)
+- [x] `.claude/registry/agents/README.md` — creado: campos YML, agentes disponibles, cómo agregar uno (2026-04-07)
+- [x] `.claude/registry/mcp/README.md` — creado: servidores, herramientas expuestas, setup, extensión (2026-04-07)
+- [x] `docs/registry.md` — creado: referencia pública de los 3 flujos, bootstrap completo (2026-04-07)
+- [x] `docs/architecture/registry-design.md` — creado: decisión arquitectónica con paralelo mise (2026-04-07)
+
+### Lecciones clave (L-057..L-060)
+
+- [x] Referencia externa (mise) enriqueció el scope antes de ejecutar — esperar análisis fue correcto (2026-04-07)
+- [x] Principio datos/comportamiento: templates = datos, agents = comportamiento, MCP = runtime (2026-04-07)
+- [x] Futuro FASE 17: `skill.toml` + JSON Schema + `thyrox doctor` (documentado en registry-design.md) (2026-04-07)
+
+---
+
+---
+
+## FASE 17: Análisis de referencia — mise (jdx/mise) (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-17-20-33-mise-reference-analysis/`
+**Fuente:** https://github.com/jdx/mise — gestor de versiones de herramientas de desarrollo
+**Propósito:** Extraer principios de diseño aplicables a THYROX (registry, datos/comportamiento, extensibilidad)
+
+- [x] `analysis/mise-reference-analysis.md` — análisis completo (8 patrones, 8 inspiraciones, tabla de paralelos) (2026-04-07)
+- [x] `docs/references/mise.md` — copia pública para contributors (2026-04-07)
+- [x] Todos los artefactos del WP (7 fases) (2026-04-07)
+
+### Inspiraciones documentadas → backlog FASE 18
+
+- [ ] **I-1:** `skill.toml` por skill — metadata declarativo consultable programáticamente
+- [ ] **I-2:** Merge semántico diferenciado por sección en CLAUDE.md
+- [ ] **I-3:** Auto-detection por `detect = [...]` en `skill.toml`
+- [ ] **I-4:** `package.toml` por work package — metadata de WP consultable
+- [ ] **I-5:** JSON Schema para `skill.toml` y `package.toml` con autocompletion
+- [ ] **I-6:** `thyrox doctor` — verificación integrada del setup
+- [ ] **I-7:** Hooks de lifecycle declarativos en `.claude/hooks.toml`
+- [ ] **I-8:** Modularización de SKILL.md via `[phases].includes`
+
+---
+
+## FASE 16 métricas actualizadas
+
+```
+FASE 16: Separación semántica del Registry + docs públicos        — 100% si
+FASE 17: Análisis de referencia mise                              — 100% si
+```
+
+---
+
+---
+
+## FASE 18: Human Gates — autorización explícita por fase (2026-04-07)
+
+**WP:** `.claude/context/work/2026-04-07-18-49-50-human-gates/`
+**Causa raíz:** "SI" previo interpretado como autorización en blanco para todo el WP
+
+### Cambios en SKILL.md
+
+- [x] Phase 1 exit: `⏸ GATE HUMANO` + campo `reversibility` en frontmatter del WP (2026-04-07)
+- [x] Phase 2 exit: `⏸ GATE HUMANO` (2026-04-07)
+- [x] Phase 4 exit: `⏸ GATE HUMANO` con excepción para WPs `documentation` (2026-04-07)
+- [x] Phase 5 exit: `⏸ GATE HUMANO CRÍTICO` — sin excepciones, transición más peligrosa (2026-04-07)
+- [x] Phase 6: `⚠ GATE OPERACIÓN` para operaciones destructivas con lista explícita (2026-04-07)
+- [x] Lecciones L-064..L-067 documentadas (2026-04-07)
+
+---
+
+**Última actualización:** 2026-04-07 (FASE 18 completada — human gates en SKILL.md v1.5.0)
+
+---
+
+## FASE 19: Async Gates — gates para agentes en background (2026-04-08)
+
+**WP:** `.claude/context/work/2026-04-07-19-03-31-async-gates/`
+**Causa raíz:** `<task-notification>` procesado automáticamente sin parar para revisión humana
+
+### Cambios en SKILL.md
+
+- [x] Phase 1: paso 9 — crear Stopping Point Manifest en el archivo de análisis del WP (2026-04-08)
+- [x] Phase 1: definir formato estándar del manifest (tabla ID | Fase | Tipo | Evento | Acción) (2026-04-08)
+- [x] Phase 5: pre-flight amplía registro de SP-NNN por cada agente background (2026-04-08)
+- [x] Phase 6: instrucción explícita para `<task-notification>` — presentar → STOP → esperar (2026-04-08)
+- [x] Phase 6: tabla de calibración de gates async (reversibilidad × tipo de agente) (2026-04-08)
+- [x] Phase 3: nota metodológica — Phase 2 orienta scope, Phase 3 lo declara (2026-04-08)
+
+### Documentación
+
+- [x] Stopping Point Manifest en analysis de este WP (primer ejemplo canónico) (2026-04-08)
+- [x] Lecciones L-068..L-073 documentadas (2026-04-08)
+- [x] CHANGELOG actualizado (2026-04-08)
+
+---
+
+**Última actualización:** 2026-04-08 (FASE 19 completada — async gates en SKILL.md v1.6.0)
+
+---
+
+**Última actualización:** 2026-04-08 (FASE 20 completada — context-hygiene, state automation en SKILL.md v1.7.0)
+
+---
+
+## FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) si
+
+**WP:** `.claude/context/work/2026-04-08-02-05-03-context-hygiene/`
+**Causa raíz:** Phase 7 no instruía actualizar focus.md/now.md/project-state.md — congelados desde FASE 15
+
+### Cambios
+
+- [x] `references/state-management.md` — tabla de triggers por archivo × evento (2026-04-08)
+- [x] `scripts/update-state.sh` — script de regeneración automática de project-state.md (2026-04-08)
+- [x] `SKILL.md` Phase 1 — instrucción REQUERIDA: actualizar now.md al crear WP (2026-04-08)
+- [x] `SKILL.md` gates de fase — actualizar now.md::phase en cada transición (2026-04-08)
+- [x] `SKILL.md` Phase 7 — tabla REQUERIDA con contenido mínimo por archivo al cerrar WP (2026-04-08)
+- [x] `focus.md` — actualizado a FASE 19 completada, WP context-hygiene activo (2026-04-08)
+- [x] `now.md` — actualizado a WP context-hygiene activo, Phase 6 (2026-04-08)
+- [x] `project-state.md` — regenerado: 9 agentes, 20 FASEs, v1.6.0 → v1.7.0 (2026-04-08)
+- [x] `CLAUDE.md` — glosario FASE (WP secuencial) vs Phase (SDLC 1-7) (2026-04-08)
+- [x] `SKILL.md` — nota FASE vs Phase con referencia al glosario (2026-04-08)
+- [x] Lecciones L-075..L-081 documentadas (2026-04-08)
+- [x] CHANGELOG v1.7.0 actualizado (2026-04-08)
+
+---
+
+## FASE 21: Skill Architecture Review — decisión arquitectónica pm-thyrox (2026-04-08)
+
+**WP:** `.claude/context/work/2026-04-08-03-51-36-skill-architecture-review/`
+**Causa raíz:** Análisis FASE 20 tenía errores de framing (SKILL probabilístico no considerado, CLAUDE.md como alternativa ignorada, multi-skill no modelado)
+
+### Entregables
+
+- [x] ADR: decisión arquitectónica D-01..D-09 (5 capas, humano en el loop, PTC-proof) — adr-015.md
+- [x] `session-start.sh` — muestra ambas rutas (SKILL + /workflow_*) con estado de calidad
+- [x] `CLAUDE.md` — sección de guía multi-skill (D-09: máx simultáneos, ordering, section owners)
+- [x] `pm-thyrox SKILL` — nota de limitaciones + arquitectura objetivo (D-02 diferido a TD-008)
+- [x] `technical-debt.md` — TD-006 corregido + TD-008/009/010/011 registrados
+- [x] `skill-vs-agent-analysis.md` — 3 conclusiones incorrectas corregidas con referencia a ADR-015
+- [x] `references/skill-vs-agent.md` — 5 capas, 5 hallazgos externos, tabla de decisión
+- [x] `references/conventions.md` — naming conventions state files (now-{agent-name}.md)
+- [ ] Lecciones aprendidas + CHANGELOG — pendiente Phase 7
+
+---
+
+## FASE 22: Framework Evolution — Integración documentación oficial + TDs prioritarios (2026-04-08) si
+
+**WP:** `.claude/context/work/2026-04-08-17-04-20-framework-evolution/`
+**Completada:** 2026-04-08 — versión v1.9.0
+**Causa raíz:** Nueva documentación oficial de Claude Code revela inaccuraccias en ADR-015 + habilita estrategia superior para TD-008. R-05 (loop infinito en stop-hook) era riesgo activo.
+
+### Bloque E — Correcciones de hooks urgentes (R-05 activo)
+
+- [x] TD-013: `stop_hook_active` check en `stop-hook-git-check.sh`
+- [x] TD-012: Hook `PostCompact` con re-inyección condicional via `compact_summary`
+
+### Bloque B — Mejora SKILL.md
+
+- [x] TD-011: Checklist de atomicidad en SKILL.md Phase 5
+
+### Bloque A — Correcciones ADR-015 y referencias
+
+- [x] ADR-015 Addendum: 5 correcciones (H1 triggering, Capa 0 tipos, rules/, agent teams, Capa 3)
+- [x] skill-vs-agent.md: tabla triggering + hooks 4 tipos + agent teams
+- [x] ADR-016: decisión commands → skills hidden
+
+### Bloque C — TD-008 completo (commands → skills hidden)
+
+- [x] Spike: verificar `/<name>` desde skills en Claude Code Web (PASS)
+- [x] Migrar 7 `/workflow_*` a `.claude/skills/` + `disable-model-invocation: true` + hooks `once:true`
+- [x] Sincronizar contenido de 7 skills con lógica actual SKILL.md (gates, manifest, calibración)
+- [~] Reducir pm-thyrox SKILL → ~40 líneas catálogo (DIFERIDO → FASE 23, bloqueado por TD-019..TD-023)
+
+### Bloque D — TD-007: END USER CONTEXT
+
+- [x] Step 0 en SKILL.md Phase 1
+- [x] Template `end-user-context.md.template`
+
+---
+
+## FASE 23: workflow-restructure — Migración workflow-* a subdirectorios + reducción SKILL.md (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-08-23-55-52-workflow-restructure/`
+**Causa raíz:** TD-019 (flat files inconsistentes), Option B elegida en FASE 22, docs oficiales confirman kebab-case en `name` field.
+
+### Bloque M — Migración 7 skills (flat → subdirectorio)
+
+- [x] M-01: `workflow-analyze/SKILL.md` (crear dir + SKILL.md con frontmatter oficial + eliminar flat file) — 2026-04-09
+- [x] M-02: `workflow-strategy/SKILL.md` — 2026-04-09
+- [x] M-03: `workflow-plan/SKILL.md` — 2026-04-09
+- [x] M-04: `workflow-structure/SKILL.md` — 2026-04-09
+- [x] M-05: `workflow-decompose/SKILL.md` — 2026-04-09
+- [x] M-06: `workflow-execute/SKILL.md` — 2026-04-09
+- [x] M-07: `workflow-track/SKILL.md` — 2026-04-09
+
+### Bloque R — Actualizar referencias externas (paralelo a M)
+
+- [x] R-01: `session-start.sh` — 7 referencias `/workflow_*` → `/workflow-*` — 2026-04-09
+- [x] R-02: `CLAUDE.md` — Addendum Locked Decision #5 — 2026-04-09
+- [x] R-03: `commands/workflow_init.md` — referencia a `/workflow_analyze` — 2026-04-09
+- [x] R-04: `adr-016.md` — Addendum FASE 23 — 2026-04-09
+- [x] R-05: `technical-debt.md` — TD-019..024 actualizados — 2026-04-09
+
+### Bloque TD — Contenido faltante (TD-01 post-M-01; TD-02/TD-03 paralelas)
+
+- [x] TD-01: Añadir tabla escalabilidad a `workflow-analyze/SKILL.md` (TD-020) — 2026-04-09
+- [x] TD-02: Añadir `owner:` al frontmatter de 24 archivos en `references/` (TD-023) — 2026-04-09
+- [x] TD-03: Actualizar `agent-spec.md` — model/tools Opcional (TD-024) — 2026-04-09
+
+### Bloque S — Reducción SKILL.md (post M+R+TD-01)
+
+- [x] S-01: Reducir `pm-thyrox/SKILL.md` ~471 → 148 líneas (T-027): Catálogo de fases, artefactos, naming — 2026-04-09
+
+---
+
+## FASE 24: skill-references-restructure — Redistribución arquitectónica de references y scripts (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-09-03-17-55-skill-references-restructure/`
+**Causa raíz:** workflow-* skills no autocontenidos — 24 references y 20 scripts centralizados en pm-thyrox sin distinción de owner.
+
+### Batch A — 15 referencias de fase → workflow-*/references/
+
+- [x] A-01: Crear dirs + `git mv` 9 refs → `workflow-analyze/references/` + actualizar links en pm-thyrox/SKILL.md + workflow-analyze/SKILL.md línea 30 + workflow-strategy/SKILL.md línea 34 — 2026-04-09
+- [x] A-02: Crear dirs + `git mv` 6 refs → workflow-execute/strategy/structure/track references/ + actualizar links — 2026-04-09
+- [x] A-VAL: `detect_broken_references.py` — verificación post-Batch A — 2026-04-09
+
+### Batch B — 9 referencias globales → .claude/references/
+
+- [x] B-01: Crear `.claude/references/` + `git mv` 9 refs + actualizar links en pm-thyrox/SKILL.md + CLAUDE.md línea 105 (conventions) + workflow-track/SKILL.md línea 69 (state-management) — 2026-04-09
+- [x] B-02: Eliminar `pm-thyrox/references/` (verificado vacío — 24/24 destinos presentes) — 2026-04-09
+- [x] B-VAL: `detect_broken_references.py` — verificación post-Batch B — 2026-04-09
+
+### Batch C — 2 scripts + tests split → workflow-track/scripts/
+
+- [x] C-01: Crear `workflow-track/scripts/` + `git mv` 2 scripts + `test-phase-readiness.sh` → `workflow-track/scripts/tests/` — 2026-04-09
+- [x] C-02: Actualizar links — `workflow-track/SKILL.md` ×4, `state-management.md` ×1 (validate-session-close), `run-all-tests.sh` path a test-phase-readiness — 2026-04-09
+- [x] C-VAL: `detect_broken_references.py` — verificación post-Batch C — 2026-04-09
+
+### Batch D — 13 scripts → .claude/scripts/ + settings.json
+
+- [x] D-01: Crear `.claude/scripts/` + `git mv` 13 scripts — 2026-04-09
+- [x] D-02: Actualizar `settings.json` (3 paths) + links en `workflow-track/SKILL.md` (update-state, project-status), `agent-spec.md` ×3, `reference-validation.md` ×5, `state-management.md` ×3 (update-state) — 2026-04-09
+- [x] D-03: Reinstalar git hook — `cp .claude/scripts/commit-msg-hook.sh .git/hooks/commit-msg` — 2026-04-09
+- [x] D-VAL: `detect_broken_references.py` — verificación post-Batch D — 2026-04-09
+
+### Commit final — Documentación + ADR
+
+- [x] F-01: Actualizar `CLAUDE.md` `## Estructura` (9 dirs reales) + pm-thyrox/SKILL.md paths — 2026-04-09
+- [x] F-02: Crear `ADR-017` (3 niveles de artefactos: .claude/references/, .claude/scripts/, workflow-*/references/) — 2026-04-09
+- [x] F-03: Cerrar TD-020 — `.claude/commands/` documentado en CLAUDE.md — 2026-04-09
+
+---
+
+## FASE 25: assets-restructure — Distribución de templates a workflow-*/assets/ (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-09-07-15-48-assets-restructure/`
+**Causa raíz:** 38 templates centralizados en `pm-thyrox/assets/` — workflow-* skills con referencias rotas silenciosas a `assets/X.md.template` (directorios inexistentes).
+
+### Batch A — 14 templates → workflow-analyze/assets/
+
+- [x] A-01: `git mv` 14 templates (introduction, risk-register, exit-conditions, constitution, requirements-analysis, use-cases, quality-goals, stakeholders, basic-usage, constraints, context, end-user-context, project.json, adr) — 2026-04-09
+- [x] A-02: Actualizar links en `decisions.md` (x3) tras move de adr.md.template — 2026-04-09
+
+### Batch B — 7 templates → workflow-strategy/plan/structure/assets/
+
+- [x] B-01: `git mv` solution-strategy → workflow-strategy/assets/ — 2026-04-09
+- [x] B-02: `git mv` plan, epic → workflow-plan/assets/ — 2026-04-09
+- [x] B-03: `git mv` requirements-specification, design, spec-quality-checklist, document → workflow-structure/assets/ — 2026-04-09
+
+### Batch C — 11 templates → workflow-decompose/execute/assets/
+
+- [x] C-01: `git mv` tasks, categorization-plan → workflow-decompose/assets/ — 2026-04-09
+- [x] C-02: `git mv` execution-log, commit-message-main, feature, bugfix, refactor, documentation, ad-hoc-tasks, multiple-files, task-completion → workflow-execute/assets/ — 2026-04-09
+
+### Batch D — 5 templates → workflow-track/assets/
+
+- [x] D-01: `git mv` lessons-learned, changelog, final-report, refactors, analysis-phase → workflow-track/assets/ — 2026-04-09
+- [x] D-02: `pm-thyrox/assets/` reducido a 1 archivo: error-report.md.template (cross-phase) — 2026-04-09
+
+### Batch E — Actualizaciones de links externos
+
+- [x] E-01: `pm-thyrox/SKILL.md` — 14 links en tabla artefactos actualizados a `../workflow-*/assets/` — 2026-04-09
+- [x] E-02: `workflow-strategy/SKILL.md` — adr cross-ref a `../workflow-analyze/assets/adr.md.template` — 2026-04-09
+- [x] E-03: `references/conventions.md`, `references/examples.md` — paths rotos desde FASE 24 corregidos — 2026-04-09
+- [x] E-04: `incremental-correction.md`, `reference-validation.md` — cp commands y links actualizados — 2026-04-09
+- [x] E-05: `setup-template.sh`, `docs/architecture/decisions/README.md` — paths actualizados — 2026-04-09
+- [x] E-06: `ADR-018` — documenta distribución de templates, caso especial error-report — 2026-04-09
+
+### Style — Limpieza de emojis/iconos
+
+- [x] S-01: 49 archivos (.sh, .md, .py) — eliminados todos los emojis y caracteres unicode decorativos — 2026-04-09
+
+---
+
+## FASE 26: write-gates — Modelo de permisos Claude Code (2026-04-09)
+
+**WP:** `.claude/context/work/2026-04-09-10-25-55-write-gates/`
+**Causa raiz:** Phase 7 generaba 7 prompts de tool permissions despues del gate Phase 6→7. Dos planos de aprobacion (gates SKILL + Claude Code permissions) nunca documentados ni configurados juntos.
+
+### T-001 — settings.json: defaultMode + permissions
+
+- [x] `defaultMode: acceptEdits` — auto-acepta Edit/Write en artefactos WP — 2026-04-09
+- [x] `permissions.allow` — bash scripts/*, git add/commit/push/status/log/diff/fetch/branch, date/mkdir/ls/echo — 2026-04-09
+- [x] `permissions.ask` — Edit CLAUDE.md, SKILL.md, scripts/*.sh, settings.json — 2026-04-09
+- [x] `permissions.deny` — git push --force, git reset --hard, rm -rf — 2026-04-09
+
+### T-002 — pm-thyrox/SKILL.md: seccion "Modelo de permisos"
+
+- [x] Tabla de comportamiento por categoria de archivo — 2026-04-09
+- [x] Distincion Plano A (gates de decision) vs Plano B (permisos de herramienta) — 2026-04-09
+- [x] Relacion: gate Phase 6→7 aprueba todo Phase 7 (push incluido) — 2026-04-09
+
+---
+

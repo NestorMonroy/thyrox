@@ -105,7 +105,7 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 
 - [x] [T-029] `.claude/references/conventions.md` — agregar REGLA-LONGEV-001 (25,000 bytes umbral) + regla timestamps artefactos (TD-001) + regla root CHANGELOG.md solo en releases (SPEC-005+006 parcial)
 - [x] [T-030] `.claude/scripts/validate-session-close.sh` — agregar verificación de timestamps en artefactos WP (TD-018) (SPEC-005)
-- [ ] [T-031] `git add` + `git commit "docs(conventions): REGLA-LONGEV-001 + timestamps + CHANGELOG root rule"` (SPEC-005)
+- [x] [T-031] `git add` + `git commit "docs(conventions): REGLA-LONGEV-001 + timestamps + CHANGELOG root rule"` (SPEC-005)
 
 ---
 
@@ -115,9 +115,9 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 
 ### ROADMAP.md split
 
-- [ ] [T-032] `grep -rn "ROADMAP" .claude/ --include="*.md"` — identificar todos los archivos con links a ROADMAP; documentar si algún link apunta a FASEs 1–26 (mitigación R-03) (SPEC-006)
-- [ ] [T-033] Crear `ROADMAP-history.md` — copiar FASEs 1–26 completas desde ROADMAP.md (SPEC-006)
-- [ ] [T-034] `ROADMAP.md` — eliminar FASEs 1–26; verificar `wc -c ROADMAP.md` < 25,000 bytes (SPEC-006)
+- [x] [T-032] `grep -rn "ROADMAP" .claude/ --include="*.md"` — identificar todos los archivos con links a ROADMAP; documentar si algún link apunta a FASEs 1–26 (mitigación R-03) (SPEC-006) [resultado: solo referencias genéricas, sin links a FASEs 1-26 específicas — split seguro]
+- [x] [T-033] Crear `ROADMAP-history.md` — copiar FASEs 1–26 completas desde ROADMAP.md (SPEC-006)
+- [x] [T-034] `ROADMAP.md` — eliminar FASEs 1–26; verificar `wc -c ROADMAP.md` < 25,000 bytes (SPEC-006) [4,611 bytes ✓]
 - [ ] [T-035] `git add` + `git commit "docs: split ROADMAP.md — FASEs 1-26 archivadas en ROADMAP-history.md"` (SPEC-006)
 
 ### CHANGELOG.md split
