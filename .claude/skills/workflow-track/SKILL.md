@@ -76,6 +76,15 @@ Ver `../../references/state-management.md` para tabla de triggers completa.
 
 ---
 
+## Validaciones pre-cierre (TD-029, TD-031, TD-033)
+
+Antes de marcar Phase 7 completa:
+- **TD-031 deep review**: revisar pre-flight de Phase 6 — ¿`validate-session-close.sh` pasa? ¿todos los artefactos existen?
+- **TD-029 criterios**: lessons-learned · {wp}-changelog · risk-register actualizado · TDs movidos si aplica · estado actualizado
+- **TD-033 now.md**: `git add .claude/context/now.md` antes del commit de cierre de FASE
+
+---
+
 ## Exit criteria
 
 Phase 7 completa cuando:
