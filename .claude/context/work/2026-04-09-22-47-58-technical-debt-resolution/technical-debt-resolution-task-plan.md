@@ -125,13 +125,13 @@ Basado en: `technical-debt-resolution-requirements-spec.md` + `technical-debt-re
 - [x] [T-036] `grep -rn "CHANGELOG" .claude/ --include="*.md" --include="*.sh"` — identificar referencias antes del split (SPEC-006) [sin links a versiones específicas — split seguro]
 - [x] [T-037] Crear `CHANGELOG-archive.md` — copiar versiones v0.x y v1.x desde CHANGELOG.md (SPEC-006)
 - [x] [T-038] `CHANGELOG.md` — eliminar v0.x y v1.x; verificar estructura [Unreleased] + v2.x+; verificar `wc -c CHANGELOG.md` < 25,000 bytes (SPEC-006) [11,491 bytes ✓]
-- [ ] [T-039] `git add` + `git commit "docs: split CHANGELOG.md — v0.x/v1.x archivadas en CHANGELOG-archive.md"` (SPEC-006)
+- [x] [T-039] `git add` + `git commit "docs: split CHANGELOG.md — v0.x/v1.x archivadas en CHANGELOG-archive.md"` (SPEC-006)
 
 ### technical-debt.md split (TDs [-] ya marcados)
 
-- [ ] [T-040] Crear `context/work/2026-04-09-22-47-58-technical-debt-resolution/technical-debt-resolution-technical-debt-resolved.md` desde template T-017 — poblar con entradas [-] de TD-019, TD-020, TD-023, TD-024 (SPEC-006)
-- [ ] [T-041] `.claude/context/technical-debt.md` — eliminar entradas de TD-019, TD-020, TD-023, TD-024 (ya movidas a T-040) (SPEC-006)
-- [ ] [T-042] Verificar `wc -c .claude/context/technical-debt.md` < 25,000 bytes; `git add` + `git commit "docs: split technical-debt — TDs [-] de FASE 23 a WP resolved FASE 29"` (SPEC-006)
+- [x] [T-040] Crear `context/work/2026-04-09-22-47-58-technical-debt-resolution/technical-debt-resolution-technical-debt-resolved.md` desde template T-017 — poblar con entradas [-] de TD-019, TD-020, TD-023, TD-024 (SPEC-006)
+- [x] [T-041] `.claude/context/technical-debt.md` — eliminar entradas de TD-019, TD-020, TD-023, TD-024 (ya movidas a T-040) (SPEC-006)
+- [x] [T-042] Verificar `wc -c .claude/context/technical-debt.md`; resultado: 54,810 bytes — NO cumple < 25,000 bytes (el criterio de SPEC-006 era incorrecto: técnico-debt.md tiene 35 TDs totales; 4 TDs removidos ≈ 5K bytes; gap de planning). TDs [-] movidos correctamente. Continuar — criterio de Lote 4 no alcanzable solo con estos 4 TDs; `git commit "docs: split technical-debt — TDs [-] de FASE 23 a WP resolved FASE 29"` (SPEC-006)
 
 **Checkpoint Lote 4:** `wc -c ROADMAP.md CHANGELOG.md .claude/context/technical-debt.md` — todos < 25,000 bytes.
 
