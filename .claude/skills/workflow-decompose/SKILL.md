@@ -63,6 +63,13 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
 ---
 
+## Validaciones pre-gate (TD-029, TD-031, TD-033)
+
+Antes de presentar el gate 5→6:
+- **TD-031 deep review**: revisar `{nombre-wp}-requirements-spec.md` de Phase 4 — ¿el task-plan cubre TODO lo especificado? ¿hay SPECs sin tareas?
+- **TD-029 criterios**: task-plan.md con checkboxes · DAG documentado · atomicidad verificada · cobertura SPEC→tarea 100%
+- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+
 ## Gate humano
 
 ⏸ GATE CRÍTICO — STOP obligatorio antes de Phase 6.
