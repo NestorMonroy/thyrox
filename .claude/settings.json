@@ -2,6 +2,12 @@
   "defaultMode": "acceptEdits",
   "permissions": {
     "allow": [
+      "Edit(/.claude/context/now.md)",
+      "Write(/.claude/context/now.md)",
+      "Edit(/.claude/context/focus.md)",
+      "Write(/.claude/context/focus.md)",
+      "Edit(/.claude/context/work/**)",
+      "Write(/.claude/context/work/**)",
       "Bash(bash .claude/scripts/*)",
       "Bash(bash .claude/skills/*/scripts/*)",
       "Bash(git add *)",

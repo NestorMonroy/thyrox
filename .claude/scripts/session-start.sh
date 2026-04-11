@@ -3,7 +3,7 @@
 # Inyecta contexto de activación del SKILL al inicio de cada sesión.
 # Install: configurar en .claude/settings.json como hook SessionStart
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
 
 # ─── ARQUITECTURA DE RUTAS (ADR-015) ───────────────────────────────────────
