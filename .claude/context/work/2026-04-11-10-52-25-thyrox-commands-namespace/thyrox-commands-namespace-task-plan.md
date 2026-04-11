@@ -83,13 +83,14 @@ Cada tarea toca exactamente 1 archivo. Ninguna descripción combina dos operacio
 
 ---
 
-## Grupo 4 — Validación (requiere Grupos 1+2+3 done)
+## Grupo 4 — Validación (requiere Grupos 1+2 done; Grupo 3 docs no afecta criterios)
 
 > Criterios de éxito globales del plan Phase 3.
 
 - [ ] [T-019] Ejecutar `bash .claude/scripts/session-start.sh` y verificar que opción B muestra `/thyrox:analyze` (criterio global 2)
-- [ ] [T-020] Ejecutar grep de criterio global 3 y confirmar 0 resultados en interfaces públicas:
+- [ ] [T-020] Ejecutar grep de criterio global 3 y confirmar 0 resultados en interfaces públicas (SPEC-003, SPEC-010):
   `grep -ri "/workflow-analyze\|/workflow-strategy\|/workflow-plan\|/workflow-structure\|/workflow-decompose\|/workflow-execute\|/workflow-track" .claude/scripts/ .claude/commands/ .claude/skills/thyrox/SKILL.md`
+  > **Nota:** `.claude/references/` excluido intencionalmente — esos archivos contienen `/workflow-*` como referencias históricas/documentación de arquitectura (D-4 out-of-scope: actualizar en FASE 32+). El exit-criterion de Phase 6 en `exit-conditions.md` fue corregido para usar este mismo scope. Si se incluye `.claude/references/` el grep encontrará resultados en `references/hooks.md`, `references/command-execution-model.md` y `references/plugins.md` — eso es comportamiento esperado y no es un fallo de FASE 31.
 
 ---
 
@@ -144,8 +145,8 @@ flowchart TD
 
     T002 & T003 & T004 & T005 & T006 & T007 & T008 & T009 --> T019
     T010 & T011 & T012 & T013 --> T019
-    T011 --> T020
-    T013 --> T020
+    T010 & T011 & T013 --> T020
+    T014 & T015 & T016 & T017 & T018 --> T019
 ```
 
 ---

@@ -76,7 +76,7 @@ wp_size: mediano
 - [ ] `thyrox-commands-namespace-task-plan.md` existe
 - [ ] Cada tarea tiene ID T-NNN y referencia al UC/TD correspondiente
 - [ ] Tareas atómicas — ninguna toca más de 1-2 archivos
-- [ ] Orden de ejecución: `session-start.sh` primero (fuente de verdad), docs después
+- [ ] Prioridad de ejecución: `session-start.sh` antes que docs (recomendación, no dependencia técnica estricta)
 - [ ] Usuario aprobó task plan + GATE OPERACION (Gate SP-05)
 
 **Transition:** → Phase 6 EXECUTE
@@ -87,7 +87,7 @@ wp_size: mediano
 
 **Exit conditions:**
 - [ ] Todas las T-NNN en `[x]`
-- [ ] `grep -ri "/workflow-analyze\|/workflow-strategy\|/workflow-plan\|/workflow-structure\|/workflow-decompose\|/workflow-execute\|/workflow-track" .claude/scripts/ .claude/references/ .claude/commands/ .claude/skills/thyrox/SKILL.md` → 0 resultados (los `workflow-*/SKILL.md` internos quedan intactos — son implementación, no interfaz)
+- [ ] `grep -ri "/workflow-analyze\|/workflow-strategy\|/workflow-plan\|/workflow-structure\|/workflow-decompose\|/workflow-execute\|/workflow-track" .claude/scripts/ .claude/commands/ .claude/skills/thyrox/SKILL.md` → 0 resultados (los `workflow-*/SKILL.md` internos quedan intactos — son implementación, no interfaz). Nota: `.claude/references/` excluida — actualización de references es D-4 out-of-scope para FASE 31 (FASE 32+).
 - [ ] `bash .claude/scripts/session-start.sh` → muestra `/thyrox:analyze` en opción B
 - [ ] TD-036 implementado: `workflow-analyze/SKILL.md` tiene paso 1.5
 - [ ] `thyrox-commands-namespace-execution-log.md` documentado
