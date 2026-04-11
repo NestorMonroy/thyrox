@@ -39,7 +39,7 @@ reversibility: reversible
 - [ ] Estrategia de split para `technical-debt.md` (REGLA-LONGEV-001) definida
 - [ ] Abordaje de TD-008 (parcial) clarificado — alcance reducido documentado
 - [ ] Traceabilidad TDs → Groups A/B/C/D completa
-- [ ] **Usuario aprobó estrategia** ← Gate SP-02
+- [x] **Usuario aprobó estrategia** ← Gate SP-02 aprobado 2026-04-11
 
 **Transition:** → Phase 3 PLAN
 
