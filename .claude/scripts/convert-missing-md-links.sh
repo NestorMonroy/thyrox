@@ -164,6 +164,8 @@ echo ""
 echo -e "${BOLD}============================================${NC}"
 if $DRY_RUN; then
     echo -e "${BOLD} DRY RUN: ${YELLOW}${TOTAL_CONVERTED}${NC}${BOLD} conversiones en ${TOTAL_FILES} archivos${NC}"
+elif [ "$TOTAL_CONVERTED" -eq 0 ]; then
+    echo -e "${BOLD} Total: ${GREEN}0${NC}${BOLD} referencias sin link en 0 archivos${NC}"
 else
     echo -e "${BOLD} Convertidos: ${GREEN}${TOTAL_CONVERTED}${NC}${BOLD} en ${TOTAL_FILES} archivos${NC}"
 fi

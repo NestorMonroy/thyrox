@@ -18,9 +18,9 @@ wp_size: mediano
 
 **Exit conditions:**
 - [x] 8 aspectos documentados (objetivo, stakeholders, uso operacional, atributos de calidad, restricciones, contexto/sistemas vecinos, fuera de alcance, criterios de éxito)
-- [x] `analysis/thyrox-commands-namespace-analysis.md` sin `[NEEDS CLARIFICATION]`
-- [x] `thyrox-commands-namespace-risk-register.md` existe (7 riesgos)
-- [x] `thyrox-commands-namespace-exit-conditions.md` existe (este archivo)
+- [x] [thyrox-commands-namespace-analysis](analysis/thyrox-commands-namespace-analysis.md) sin `[NEEDS CLARIFICATION]`
+- [x] [thyrox-commands-namespace-risk-register](thyrox-commands-namespace-risk-register.md) existe (7 riesgos)
+- [x] [thyrox-commands-namespace-exit-conditions](thyrox-commands-namespace-exit-conditions.md) existe (este archivo)
 - [x] Stopping Point Manifest documentado (SP-01..SP-06)
 - [x] `reversibility: reversible` y `wp_size: mediano` en frontmatter
 - [x] **Usuario aprobó hallazgos explícitamente** ← Gate SP-01 aprobado 2026-04-11
@@ -32,7 +32,7 @@ wp_size: mediano
 ## Phase 2: SOLUTION_STRATEGY
 
 **Exit conditions:**
-- [x] `thyrox-commands-namespace-solution-strategy.md` existe (5 secciones obligatorias del template)
+- [x] [thyrox-commands-namespace-solution-strategy](thyrox-commands-namespace-solution-strategy.md) existe (5 secciones obligatorias del template)
 - [x] Decisión documentada: Opción D — Plugin (con justificación y alternativas A/B/C descartadas)
 - [x] ADR-019 borrador creado (`context/decisions/adr-019.md`) + amendment ADR-016 planificado
 - [x] UC-003 (meta-comandos): fuera de scope FASE 31 → FASE 32+
@@ -102,7 +102,7 @@ wp_size: mediano
 **Exit conditions:**
 - [ ] `thyrox-commands-namespace-lessons-learned.md` existe
 - [ ] `thyrox-commands-namespace-wp-changelog.md` existe (commits documentados)
-- [ ] `CHANGELOG.md` actualizado con entrada de release si aplica
+- [ ] [CHANGELOG](../../../../CHANGELOG.md) actualizado con entrada de release si aplica
 - [ ] `context/now.md` → `current_work: null`, `phase: null`
 - [ ] `context/focus.md` actualizado
 - [ ] Commit + push del cierre del WP

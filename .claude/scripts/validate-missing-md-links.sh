@@ -48,6 +48,11 @@ while IFS= read -r mdfile; do
                 [[ "$ref" == *"*"* ]] && continue
                 [[ "$ref" == *"{"*"}"* ]] && continue
 
+                # Skip if the referenced file does not exist (naming examples, patterns)
+                file_dir=$(dirname "$mdfile")
+                resolved_path="${file_dir}/${ref}"
+                [ ! -f "$resolved_path" ] && [ ! -f "${SEARCH_DIR}/${ref}" ] && continue
+
                 if echo "$content" | grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)"; then
                     continue
                 fi
