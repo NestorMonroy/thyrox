@@ -5,6 +5,8 @@ project: thyrox-framework
 feature: thyrox-commands-namespace
 fase: FASE 31
 phase: Phase 1 — ANALYZE
+reversibility: reversible
+wp_size: mediano
 ```
 
 # Análisis: Namespace `/thyrox:*` para comandos del framework
@@ -158,7 +160,35 @@ Tabla de decisión usa columna `/workflow_*` en múltiples filas. Debe reflejar 
 
 ---
 
-## 5. Atributos de calidad
+## 5. Contexto / Sistemas vecinos
+
+### 5.1 Cómo Claude Code resuelve nombres de comandos
+
+En Claude Code, los slash commands se resuelven con esta jerarquía de nombres:
+
+- **Skill** (`.claude/skills/{name}/SKILL.md`) → invocado como `/{name}` via Skill tool
+- **Command** (`.claude/commands/{name}.md`) → invocado como `/{name}` directamente
+- **Namespace de proyecto** → si el proyecto tiene nombre configurado, Claude Code permite `/{project}:{command}` para diferenciar comandos del proyecto de comandos globales
+
+El namespace `/thyrox:*` usa el segundo mecanismo: requiere archivos en `.claude/commands/` con nombres como `analyze.md`, `strategy.md`, etc., invocados como `/thyrox:analyze`. Los directorios de skills (`workflow-analyze/`, etc.) son independientes del nombre del command.
+
+### 5.2 Rol del registry
+
+`.claude/registry/` define qué skills están disponibles para proyectos bootstrapped con THYROX. Si se cambia el nombre de los skills (Opción A — rename de directorios), el registry también debe actualizarse para que los proyectos nuevos reciban los skills con el nuevo nombre.
+
+### 5.3 ADR-016 y la excepción "Single skill"
+
+ADR-016 documenta que los 7 `workflow-*` skills son la excepción aprobada a la regla "Single skill" (Locked Decision #5 en CLAUDE.md). El razonamiento fue: son herramientas de ejecución por fase, no skills de dominio. Si se migra al namespace `/thyrox:*` cambiando los directorios (Opción A), ADR-016 necesita un amendment que cambie el naming de la excepción de `workflow-*` a `thyrox-*` (o `thyrox/{phase}`).
+
+Si se adopta la Opción B (aliases en commands/), ADR-016 no cambia porque los directorios `workflow-*` permanecen.
+
+### 5.4 Relación con session-start.sh
+
+`session-start.sh` tiene una función `_phase_to_command()` que mapea `Phase N` → nombre de comando. Es el único punto donde el mapping Phase→command está centralizado como lógica ejecutable. Cambiar el namespace requiere actualizar exactamente esa función — el resto de archivos que referencian `/workflow-*` son documentación que sigue a ese mapping.
+
+---
+
+## 6. Atributos de calidad  <!-- was: 5 -->
 
 | Atributo | Importancia | Cómo se aborda |
 |----------|-------------|----------------|
@@ -169,7 +199,7 @@ Tabla de decisión usa columna `/workflow_*` en múltiples filas. Debe reflejar 
 
 ---
 
-## 6. Restricciones
+## 7. Restricciones
 
 | Restricción | Impacto |
 |-------------|---------|
@@ -180,7 +210,7 @@ Tabla de decisión usa columna `/workflow_*` en múltiples filas. Debe reflejar 
 
 ---
 
-## 7. Fuera de alcance
+## 8. Fuera de alcance
 
 - Cambiar el contenido lógico de los workflow-*/SKILL.md (eso es TD-008, ya completado)
 - Renombrar las fases internas (Phase 1..7) a otro esquema (eso es TD-030 en technical-debt.md)
@@ -189,7 +219,16 @@ Tabla de decisión usa columna `/workflow_*` en múltiples filas. Debe reflejar 
 
 ---
 
-## 8. Criterios de éxito
+## Artefactos pendientes de decisión
+
+| Artefacto | Condición | Fase |
+|-----------|-----------|------|
+| ADR nuevo o amendment de ADR-016 | Solo si se elige Opción A (rename directorios) o si el cambio de namespace se considera decisión arquitectónica permanente | Phase 2 STRATEGY |
+| Spec de meta-comandos (UC-003) | Solo si el usuario decide incluirlos en FASE 31 (y no diferirlos a FASE 32) | Phase 4 STRUCTURE |
+
+---
+
+## 9. Criterios de éxito
 
 | Criterio | Verificación |
 |----------|-------------|
@@ -262,10 +301,13 @@ Antes de Phase 2 (STRATEGY), el usuario debe decidir:
 
 ## Stopping Point Manifest
 
+WP clasificado como **mediano** (2–8h, ~13 archivos): todas las 7 fases activas.
+
 | ID | Fase | Tipo | Evento | Acción requerida |
 |----|------|------|--------|-----------------|
 | SP-01 | Phase 1 → 2 | gate-fase | Análisis presentado | Usuario aprueba hallazgos, decide opción A/B/C para implementación, y aprueba spec de meta-comandos (o decide diferir UC-003) |
-| SP-02 | Phase 2 → 3 | gate-fase | Strategy completa | Usuario aprueba decisión arquitectónica (A/B/C) antes de planificar |
-| SP-03 | Phase 3 → 6 | gate-fase | Plan aprobado | Scope definido — ¿incluye meta-comandos en este FASE o se defieren? |
-| SP-04 | Phase 5 → 6 | gate-fase | Task plan listo | GATE OPERACION antes de modificar `session-start.sh` y `workflow-*/SKILL.md` |
-| SP-05 | Phase 6 → 7 | gate-fase | Implementación completa | Confirmar que `/thyrox:analyze` funciona y `session-start.sh` muestra namespace correcto |
+| SP-02 | Phase 2 → 3 | gate-fase | Strategy completa | Usuario aprueba decisión arquitectónica (A/B/C) y confirma si se requiere ADR nuevo o amendment de ADR-016 |
+| SP-03 | Phase 3 → 4 | gate-fase | Plan aprobado | Scope definido — ¿incluye meta-comandos en este FASE o se defieren a FASE 32? |
+| SP-04 | Phase 4 → 5 | gate-fase | Spec completa | Usuario aprueba spec antes de descomponer en tareas atómicas |
+| SP-05 | Phase 5 → 6 | gate-operacion | Task plan listo | GATE OPERACION antes de modificar `session-start.sh`, `workflow-*/SKILL.md` y `workflow_init.md` |
+| SP-06 | Phase 6 → 7 | gate-fase | Implementación completa | Confirmar que `/thyrox:analyze` funciona via Skill tool y `session-start.sh` muestra nuevo namespace |
