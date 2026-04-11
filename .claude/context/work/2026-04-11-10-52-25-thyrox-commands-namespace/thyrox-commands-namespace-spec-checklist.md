@@ -2,7 +2,7 @@
 created_at: 2026-04-11 20:26:31
 feature: thyrox-commands-namespace
 wp: context/work/2026-04-11-10-52-25-thyrox-commands-namespace/
-Iteración: 2/2
+Iteración: 3/3
 status: Pasó
 ```
 
@@ -73,7 +73,15 @@ Deep-review identificó 5 gaps entre Phase 3 PLAN y la spec v1.0. Todos corregid
 | SPEC-008 no mencionaba TD-021 | Agregado TD-021 explícitamente junto a TD-008 y TD-030 |
 | Inventario por estimación, no por grep | Sección "Inventario Verificado con Grep" con 23 ocurrencias mapeadas a SPECs |
 
-Nota adicional: Decisión `:spec` vs `:structure` documentada en sección dedicada para confirmación en gate SP-04.
+**Iteración 3 — SPEC-011 agregado (usuario solicitó durante gate SP-04):**
+
+| Adición | Detalle |
+|---------|---------|
+| SPEC-011 nuevo | Agente `deep-review` + command wrapper `/thyrox:deep-review` |
+| Análisis `:spec` vs `:structure` | Guardado en `analysis/spec-vs-structure-decision.md` — 3 opciones mapeadas |
+
+Nota: SPEC-011 es adición al plan original (no estaba en Phase 3). Los archivos `.claude/agents/deep-review.md` y `commands/deep-review.md` ya fueron creados durante el gate SP-04.
+Decisión `:spec` vs `:structure` documentada en sección dedicada — pendiente respuesta del usuario.
 
 ### Nota sobre diseño técnico (Complejo):
 

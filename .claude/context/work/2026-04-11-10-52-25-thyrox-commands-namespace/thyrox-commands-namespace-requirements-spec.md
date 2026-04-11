@@ -39,6 +39,7 @@ correcto en la opción B.
 | UC-005: TD-030 + TDs legacy (TD-008, TD-021) | SPEC-008 | Actualizar `technical-debt.md` — TD-036 resuelto, TDs afectados |
 | UC-006: Referencias `/workflow_*` | SPEC-009 | Actualizar tabla de `skill-vs-agent.md` con `/thyrox:*` |
 | UC-001: `thyrox/SKILL.md` tabla de fases | SPEC-010 | Actualizar columna Skill en tabla de fases (líneas 40-46) |
+| Plugin + tooling: agente deep-review | SPEC-011 | Crear `.claude/agents/deep-review.md` + `commands/deep-review.md` |
 
 ---
 
@@ -530,6 +531,55 @@ grep -rn "/workflow-\|/workflow_" .claude/scripts/ .claude/commands/ .claude/ski
 
 ---
 
+## SPEC-011: Agente Deep-Review
+
+**ID:** SPEC-011
+**Requisito Origen:** Patrón de trabajo del framework — deep-review es una operación recurrente antes de cada gate de fase
+**Prioridad:** Medium
+**Estado:** Pendiente
+
+### Descripción
+
+Crear el agente nativo `deep-review` en `.claude/agents/` y su command wrapper
+`commands/deep-review.md` → `/thyrox:deep-review`. El agente analiza cobertura entre
+fases consecutivas y referencias externas. Solo análisis — nunca escribe ni edita archivos.
+
+### Criterios de Aceptación
+
+```
+Given que .claude/agents/deep-review.md existe con name, description y tools correctos
+When el usuario invoca /thyrox:deep-review (o el agente es seleccionado automáticamente)
+Then el agente analiza el WP activo identificando el artefacto de Phase N y Phase N+1
+And reporta gaps con archivo:línea exacta
+And NO crea ni edita ningún archivo (solo análisis)
+
+Given que commands/deep-review.md existe en el repo root
+When el usuario escribe /thyrox:deep-review en el menú /
+Then el comando aparece junto a analyze, strategy, plan, structure, decompose, execute, track, init
+And ejecuta el agente deep-review
+
+Given que el agente tiene tools: Read, Glob, Grep, Bash
+When analiza un WP con inventario de archivos
+Then ejecuta grep real (no estimado) para verificar inventario
+```
+
+### Consideraciones Técnicas
+
+- `tools: Read, Glob, Grep, Bash` — sin Edit ni Write (agente de análisis puro)
+- `description` sigue el patrón `{qué hace}. Usar cuando {condición}.` (regla agent-spec.md)
+- El comando `/thyrox:deep-review` es el 9º en el plugin (fuera del ciclo de 7 fases)
+
+### Implementación
+
+**Archivos a Crear:**
+- `.claude/agents/deep-review.md` — agente nativo (ya creado)
+- `commands/deep-review.md` — command wrapper (ya creado)
+
+**Esfuerzo Estimado:** 1 tarea atómica (ambos archivos en un commit)
+**Complejidad:** Baja
+
+---
+
 ## Nota de Decisión — `:spec` vs `:structure`
 
 Phase 1 §UC-001 documenta: "El user usa `:spec` (no `:structure`) — más corto y más descriptivo".
@@ -551,6 +601,7 @@ SPEC-002 + SPEC-003 + SPEC-010 → Criterio de éxito del plan (grep 0 resultado
 SPEC-006, SPEC-007 → independientes (documentación, sin dependencia técnica)
 SPEC-009 → independiente (documentación, sin dependencia técnica)
 SPEC-010 → independiente (solo modifica tabla en thyrox/SKILL.md)
+SPEC-011 → independiente (nuevos archivos, sin dependencia técnica con otros SPECs)
 ```
 
 ---
@@ -572,6 +623,7 @@ SPEC-010 → independiente (solo modifica tabla en thyrox/SKILL.md)
 - SPEC-007 — CLAUDE.md addendum
 - SPEC-008 — technical-debt.md (TD-008, TD-021, TD-030, TD-036)
 - SPEC-009 — skill-vs-agent.md
+- SPEC-011 — deep-review agent + command
 
 ---
 
