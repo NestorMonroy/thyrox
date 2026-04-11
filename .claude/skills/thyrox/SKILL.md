@@ -200,6 +200,8 @@ Ver [permission-model](../../references/permission-model.md) para la referencia 
 [memory-hierarchy](../../references/memory-hierarchy.md) — Sistema de 8 niveles de memoria CLAUDE.md, imports @path, auto-memory, managed settings enterprise
 [mcp-integration](../../references/mcp-integration.md) — Servidores MCP (HTTP/stdio/SSE), OAuth, elicitation, canales push, límites de herramientas
 [tool-execution-model](../../references/tool-execution-model.md) — Todos los flujos de Edit/Write: permission model (settings.json, allow/ask/deny, precedencia) vs context isolation (subagente, background, hook, worktree)
+[command-execution-model](../../references/command-execution-model.md) — Flujo de ejecución de commands (parse→shell→LLM), fat vs thin wrapper, delegación explícita (context:fork) vs probabilística, restricciones plugin commands
+[sdd](../../references/sdd.md) — Specification-Driven Development (TDD + DbC): collaborative tests vs contratos, ciclo SDD, amplificación de tests, cuándo usar cada tipo de spec
 
 ### Avanzado (leer cuando Claude tiene dificultades)
 [prompting-tips](../../references/prompting-tips.md) — Cuando Claude no entiende instrucciones
