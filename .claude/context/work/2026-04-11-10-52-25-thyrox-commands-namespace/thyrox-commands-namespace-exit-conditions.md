@@ -34,7 +34,7 @@ wp_size: mediano
 **Exit conditions:**
 - [x] `thyrox-commands-namespace-solution-strategy.md` existe (5 secciones obligatorias del template)
 - [x] Decisión documentada: Opción D — Plugin (con justificación y alternativas A/B/C descartadas)
-- [x] ADR-017 planificado + amendment ADR-016 planificado (crear borrador en Phase 3)
+- [x] ADR-019 borrador creado (`context/decisions/adr-019.md`) + amendment ADR-016 planificado
 - [x] UC-003 (meta-comandos): fuera de scope FASE 31 → FASE 32+
 - [x] UC-008 (investigar confirmación mkdir): observar en Phase 6, sin cambios de config previos
 - [x] Traceabilidad completa UC-001..UC-008 + TD-036 documentada
