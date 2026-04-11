@@ -199,6 +199,7 @@ Ver [permission-model](../../references/permission-model.md) para la referencia 
 [scheduled-tasks](../../references/scheduled-tasks.md) — /loop, CronCreate, cloud tasks persistentes, print mode (-p), CI/CD integration, auto mode
 [memory-hierarchy](../../references/memory-hierarchy.md) — Sistema de 8 niveles de memoria CLAUDE.md, imports @path, auto-memory, managed settings enterprise
 [mcp-integration](../../references/mcp-integration.md) — Servidores MCP (HTTP/stdio/SSE), OAuth, elicitation, canales push, límites de herramientas
+[tool-execution-model](../../references/tool-execution-model.md) — Todos los flujos de Edit/Write: permission model (settings.json, allow/ask/deny, precedencia) vs context isolation (subagente, background, hook, worktree)
 
 ### Avanzado (leer cuando Claude tiene dificultades)
 [prompting-tips](../../references/prompting-tips.md) — Cuando Claude no entiende instrucciones
