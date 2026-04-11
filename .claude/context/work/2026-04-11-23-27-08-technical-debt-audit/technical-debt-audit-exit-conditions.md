@@ -25,7 +25,7 @@ reversibility: reversible
 - [x] `technical-debt-audit-exit-conditions.md` existe (este archivo)
 - [x] Stopping Point Manifest documentado (SP-01..SP-06)
 - [x] `reversibility: reversible` y `wp_size: mediano` en frontmatter
-- [ ] **Usuario aprobó hallazgos explícitamente** ← Gate SP-01 pendiente
+- [x] **Usuario aprobó hallazgos explícitamente** ← Gate SP-01 aprobado 2026-04-11
 
 **Transition:** → Phase 2 SOLUTION STRATEGY (`/thyrox:strategy`)
 
