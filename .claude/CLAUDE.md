@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
 version: 3.2
-updated_at: 2026-04-10 03:00:00
+updated_at: 2026-04-11 22:10:00
 ```
 
 # CLAUDE.md — THYROX
@@ -21,6 +21,7 @@ Los ADRs del proyecto viven en el path declarado por `adr_path` en este archivo 
    *Addendum FASE 22:* Los 7 `workflow-*` skills (workflow-analyze, …, workflow-track) son la excepción intencional: son herramientas de ejecución por fase, no skills de dominio tecnológico. Esta excepción está documentada en ADR-016. La regla original sigue vigente para tech skills (python, react, etc.).
    *Addendum FASE 23:* Nomenclatura resuelta a kebab-case hyphens — `workflow-*/SKILL.md`. TD-019 cerrado (FASE 23).
    *Addendum FASE 29:* Skill renombrado → `thyrox` (prefijo `pm-` eliminado — no es PM de PMI, es la metodología THYROX misma). TD-020 cerrado (FASE 29).
+   *Addendum FASE 31:* Interfaz pública del framework → `/thyrox:*` (plugin namespace via `.claude-plugin/plugin.json`). Los 7 `workflow-*` skills permanecen como implementación interna. Capa de presentación complementa ADR-016. Ver ADR-019. TD-036 cerrado (FASE 31).
 6. **Work packages with timestamp** — context/work/YYYY-MM-DD-HH-MM-SS-nombre/
 7. **Conventional Commits** — `type(scope): description`
 

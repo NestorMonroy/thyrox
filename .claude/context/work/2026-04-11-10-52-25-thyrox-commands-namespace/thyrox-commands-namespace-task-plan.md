@@ -75,11 +75,11 @@ Cada tarea toca exactamente 1 archivo. Ninguna descripción combina dos operacio
 
 > SPEC-005..SPEC-009. Todos independientes entre sí.
 
-- [ ] [T-014] [P] Cambiar `status: Draft` → `status: Accepted` en `.claude/context/decisions/adr-019.md` + fecha de aceptación (SPEC-005)
-- [ ] [T-015] [P] Agregar Addendum FASE 31 en `.claude/context/decisions/adr-016.md` — plugin como interfaz pública sobre `workflow-*` (SPEC-006)
-- [ ] [T-016] [P] Agregar Addendum FASE 31 en `.claude/CLAUDE.md` Locked Decision #5 — plugin namespace como interfaz pública, referencia ADR-019 (SPEC-007)
-- [ ] [T-017] [P] Actualizar `.claude/context/technical-debt.md` — cerrar TD-036, actualizar TD-008, TD-021, TD-030 con interfaz `/thyrox:*` (SPEC-008)
-- [ ] [T-018] [P] Actualizar tabla en `.claude/references/skill-vs-agent.md` — `/workflow-*` → `/thyrox:*` como interfaz pública (SPEC-009)
+- [x] [T-014] [P] Cambiar `status: Draft` → `status: Accepted` en `.claude/context/decisions/adr-019.md` + fecha de aceptación (SPEC-005)
+- [x] [T-015] [P] Agregar Addendum FASE 31 en `.claude/context/decisions/adr-016.md` — plugin como interfaz pública sobre `workflow-*` (SPEC-006)
+- [x] [T-016] [P] Agregar Addendum FASE 31 en `.claude/CLAUDE.md` Locked Decision #5 — plugin namespace como interfaz pública, referencia ADR-019 (SPEC-007)
+- [x] [T-017] [P] Actualizar `.claude/context/technical-debt.md` — cerrar TD-036, actualizar TD-008, TD-021, TD-030 con interfaz `/thyrox:*` (SPEC-008)
+- [x] [T-018] [P] Actualizar tabla en `.claude/references/skill-vs-agent.md` — `/workflow-*` → `/thyrox:*` como interfaz pública (SPEC-009)
 
 ---
 

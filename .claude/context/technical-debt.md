@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-11 21:55:00
+updated_at: 2026-04-11 22:10:00
 ```
 
 # Deuda Técnica — THYROX
@@ -368,6 +368,8 @@ Flag `COMMANDS_SYNCED=false` en `session-start.sh` → cambiar a `true` cuando e
 Los 7 /workflow_* commands tienen la lógica completa y actualizada de su fase.
 `COMMANDS_SYNCED=true` en `session-start.sh`. pm-thyrox SKILL reducido a catálogo (≤80 líneas).
 
+**Addendum FASE 31:** La interfaz pública es ahora `/thyrox:*` (plugin namespace). Los `workflow-*/SKILL.md` tienen la lógica completa de cada fase y son la implementación interna. `COMMANDS_SYNCED=true` establecido en FASE 31 (T-011). El bloque `[outdated]` ya no aparece en `session-start.sh`.
+
 ---
 
 ## TD-010: Benchmark empírico — SKILL vs CLAUDE.md vs baseline sin framework
@@ -607,6 +609,8 @@ Y actualizar el glosario de CLAUDE.md para incluir la tercera categoría: `/work
 
 **Trigger para ejecutar:**
 Después de TD-019 y TD-027 (reducción SKILL.md).
+
+**Addendum FASE 31:** La tabla de fases en `thyrox/SKILL.md` fue actualizada de `/workflow-*` → `/thyrox:*` (T-013, SPEC-010). La columna "Skill" del catálogo ahora muestra la interfaz pública del plugin.
 
 ---
 
@@ -929,6 +933,8 @@ Analisis de impacto completado con:
 - Conteo de archivos afectados por opcion
 - Decision documentada en ADR (adoptar A, B, o mantener actual)
 - Si se adopta cambio: plan de migracion con sed commands y criterio de validacion
+
+**Addendum FASE 31:** La interfaz pública del usuario es ahora `/thyrox:*` — no `/workflow-*`. La opción B (renombrar `Phase N` a nombres semánticos `workflow-*`) pierde relevancia dado que el usuario final no ve `/workflow-*` en el menú. Análisis deferred: evaluar si este TD sigue siendo necesario con el nuevo namespace de plugin.
 
 ---
 
@@ -1262,7 +1268,7 @@ REGLA-LONGEV-001: Archivos vivos con umbral de tamaño
 ```yml
 id: TD-036
 severidad: media
-estado: "[ ] Pendiente — integrado en FASE 31"
+estado: "[x] Resuelto 2026-04-11 (FASE 31, SPEC-004)"
 detectado_en: FASE 31 (análisis profundo 2026-04-11)
 area: workflow-analyze / Phase 1
 ```

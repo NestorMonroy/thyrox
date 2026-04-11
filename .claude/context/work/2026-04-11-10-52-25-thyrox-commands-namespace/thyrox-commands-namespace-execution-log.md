@@ -35,10 +35,10 @@ phase: Phase 6
 - ALERTA B-09 resuelta al crear este execution-log
 - Grupos 3 (docs) pendientes: T-014..T-018
 
-### Pendiente
+| T-014 | ADR-019 status Draft → Accepted + accepted_at | `.claude/context/decisions/adr-019.md` | [x] |
+| T-015 | Addendum FASE 31 en ADR-016 | `.claude/context/decisions/adr-016.md` | [x] |
+| T-016 | Addendum FASE 31 en CLAUDE.md Locked Decision #5 | `.claude/CLAUDE.md` | [x] |
+| T-017 | TD-036 cerrado, TD-008/TD-021/TD-030 addendums /thyrox:* | `.claude/context/technical-debt.md` | [x] |
+| T-018 | Tabla `/workflow-*` → `/thyrox:*` (Capa 3, Rutas, Decisión, Naturaleza) | `.claude/references/skill-vs-agent.md` | [x] |
 
-- T-014: adr-019.md status → Accepted
-- T-015: adr-016.md Addendum FASE 31
-- T-016: CLAUDE.md Addendum FASE 31
-- T-017: technical-debt.md (TD-036 cerrado, TD-008/021/030 actualizados)
-- T-018: skill-vs-agent.md tabla actualizada
+### Grupo 3 completado — 2026-04-11

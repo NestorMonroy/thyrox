@@ -63,7 +63,7 @@ Arquitectura de 5 capas de thyrox (ADR-015). Cada capa tiene un mecanismo de tri
 | 0 — Hooks | shell scripts (harness) | 100% determinístico | Negligible | Sí |
 | 1 — CLAUDE.md | system prompt declarativo | Siempre cargado | Bajo (~80 líneas) | Sí |
 | 2 — SKILLs (N) | text injection on-demand | Probabilístico | Bajo (solo si se invocan) | Sí |
-| 3 — /workflow_* | slash commands | Determinístico (usuario lo invoca) | Bajo (solo si se usan) | Sí (independiente por fase) |
+| 3 — /thyrox:* (plugin) / workflow-* (interno) | slash commands | Determinístico (usuario lo invoca) | Bajo (solo si se usan) | Sí (independiente por fase) |
 | 4 — Agentes nativos | subprocesos Claude | Determinístico (una vez lanzados) | 0 (contexto propio) | Sí |
 
 ### Tabla de rutas (hoy vs objetivo)
@@ -71,10 +71,10 @@ Arquitectura de 5 capas de thyrox (ADR-015). Cada capa tiene un mecanismo de tri
 | Ruta | Mecanismo | Calidad HOY | Confiabilidad HOY | Criterio de uso |
 |------|-----------|-------------|-------------------|----------------|
 | A — thyrox SKILL | Capa 2, probabilístico | Alta (lógica completa) | Media (puede no disparar) | Usar HOY cuando se necesita calidad máxima |
-| B — /workflow_* commands | Capa 3, determinístico | Baja (desactualizados) | Alta (si el usuario los invoca) | No recomendar hasta TD-008 completado |
-| C — /workflow_* post-TD-008 | Capa 3, determinístico | Alta (sincronizados) | Alta | Ruta preferida cuando TD-008 esté completo |
+| B — /thyrox:* commands (plugin) | Capa 3, determinístico | Alta (thin wrappers → workflow-* SKILL.md) | Alta (si el usuario los invoca) | Ruta preferida (FASE 31+, interfaz pública) |
+| C — /workflow-* (interno) | Capa 2 hidden skills | Alta (implementación completa) | Alta | Uso interno — no exponer al usuario final |
 
-**session-start.sh** (Capa 0) muestra las opciones A y B al inicio de cada sesión con etiqueta `[outdated]` en B mientras TD-008 no esté completo.
+**session-start.sh** (Capa 0) muestra las opciones A y B al inicio de cada sesión. A partir de FASE 31, B muestra `/thyrox:*` como interfaz pública (sin etiqueta `[outdated]`).
 
 ### Tipos de hook en Capa 0
 
@@ -117,7 +117,7 @@ Cuándo usar cada mecanismo. Usar la primera fila que aplique.
 |-----------|-----------|-------|
 | Instrucciones que deben aplicarse en TODA sesión sin excepción | CLAUDE.md (Capa 1) | Siempre cargado, sin triggering probabilístico |
 | Metodología de trabajo que se activa on-demand por dominio | SKILL (Capa 2) | Inyección de texto con conocimiento especializado |
-| Ejecutar una fase específica del ciclo PM de forma determinística | /workflow_* command (Capa 3) | Determinístico cuando el usuario lo invoca |
+| Ejecutar una fase específica del ciclo PM de forma determinística | `/thyrox:*` command (Capa 3, plugin) | Determinístico cuando el usuario lo invoca |
 | Especialista autónomo con tools acotadas, ejecutable en paralelo | Agente nativo (Capa 4) | Subproceso con contexto propio, tools declaradas |
 | Múltiples agentes coordinados sin orquestador central | Agent teams (experimental) | Agentes peer-to-peer vía `Agent` tool — no usar en producción hasta estabilización |
 | Notificación o trigger al inicio/fin de sesión | Hook (Capa 0) | 100% determinístico, ejecutado por el harness |
@@ -128,7 +128,7 @@ Cuándo usar cada mecanismo. Usar la primera fila que aplique.
 |-----------|-----------|---------------|---------|
 | CLAUDE.md | Declarativo, siempre en contexto | Alta (siempre) | Bajo (~80 líneas fijas) |
 | SKILL | Probabilístico, on-demand | Media (puede no disparar) | Bajo (solo si se invoca) |
-| /workflow_* command | Determinístico, usuario lo invoca explícitamente | Alta (si se usa) | 0 (solo cuando se usa) |
+| `/thyrox:*` command (plugin) | Determinístico, usuario lo invoca explícitamente | Alta (si se usa) | 0 (solo cuando se usa) |
 | Agente nativo | Determinístico una vez lanzado, contexto propio | Alta | 0 (contexto separado) |
 | Agent teams | Experimental — agentes peer-to-peer vía `Agent` tool | Media (experimental) | 0 por agente (contextos separados) |
 
