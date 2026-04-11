@@ -1,15 +1,15 @@
 ```yml
 type: Artefacto de Investigación
-title: Edit tool — Imposibilidad de suprimir output de éxito en Claude Code
+title: Edit tool — Output de éxito y solución via aislamiento de contexto (subagentes)
 created_at: 2026-04-11
 fase: FASE 31
 work_package: 2026-04-11-10-52-25-thyrox-commands-namespace
 td: TD-037
 severidad: baja
-estado: feature request pendiente
+estado: RESUELTO — solución arquitectónica documentada
 ```
 
-# Edit tool — Imposibilidad de suprimir output de éxito
+# Edit tool — Output de éxito y solución via aislamiento de contexto
 
 ## Contexto
 
@@ -183,23 +183,61 @@ En lugar de la cadena verbosa actual.
 
 ---
 
+## Solución real — Aislamiento de contexto via subagentes
+
+**La solución existe y está documentada en claude-howto.**
+
+El punto clave es que el problema de clutter es un problema de *en qué contexto* corre el Edit,
+no de *si el Edit puede suprimir su output*.
+
+### Cómo funciona el aislamiento
+
+Cuando el Edit tool corre **en el contexto principal** (conversación directa):
+```
+Usuario ve: "The file /path/to/file has been updated successfully."  ← clutter
+```
+
+Cuando el Edit tool corre **dentro de un subagente** (Agent tool):
+```
+Subagente ejecuta Edit → output queda en el contexto aislado del subagente
+Usuario ve: solo el resultado final que el subagente reporta al padre ← limpio
+```
+
+**Referencia directa de claude-howto/04-subagents/README.md:**
+> "**Context preservation** — Operates in separate context, preventing pollution of main conversation"
+> "Each subagent gets a **fresh context window** without the main conversation history"
+> "Results are **distilled** back to the main agent"
+
+### Por qué las tareas programadas funcionan
+
+Las tareas programadas (scheduled tasks, background tasks) funcionan porque:
+1. Si la tarea invoca un **subagente** para hacer los edits → los outputs quedan en el contexto del subagente
+2. El subagente completa y devuelve solo el resumen al contexto principal
+3. El usuario no ve el spam de "The file has been updated successfully." — ve el resultado
+
+En nuestro proyecto, el agente `task-executor` ya implementa este patrón:
+corre edits en su propio contexto y reporta solo el resultado.
+
+### Patrón arquitectónico correcto
+
+```
+❌ Mal: Claude (contexto principal) → Edit × N  → N mensajes de éxito en pantalla
+✅ Bien: Claude (contexto principal) → Agent(task-executor) → Edit × N → resumen al padre
+```
+
+### `suppressOutput` — aclaración final
+
+El campo `suppressOutput: true` en el JSON output de los hooks suprime el **stdout del hook**
+del debug log interno de Claude Code. No está relacionado con el tool result del Edit.
+Confirmado en claude-howto/06-hooks/README.md.
+
+---
+
 ## Estado y seguimiento
 
 | Campo | Valor |
 |-------|-------|
-| TD | TD-037 en `technical-debt.md` |
-| Prioridad | Baja — es DX, no correctitud funcional |
-| Acción inmediata | Ninguna — limitación de plataforma |
-| Acción futura | Monitorear release notes de Claude Code; crear issue en anthropics/claude-code si no se resuelve en próximos releases |
-| Resolución esperada | Cuando Claude Code exponga control de verbosidad del Edit tool |
-
----
-
-## Referencia rápida
-
-Para verificar si la plataforma ya lo soporta en una sesión futura:
-
-```bash
-# Test: agregar PostToolUse Edit hook con suppressToolOutput: true en settings.json
-# Si el Edit ya no muestra el mensaje verboso → TD-037 cerrado
-```
+| TD | TD-037 en `technical-debt.md` — actualizar a RESUELTO |
+| Solución | Arquitectónica — usar subagentes para operaciones Edit intensivas |
+| Acción | Documentar patrón en referencias del framework (best practice) |
+| Feature request | No necesario — la plataforma ya tiene el mecanismo correcto |

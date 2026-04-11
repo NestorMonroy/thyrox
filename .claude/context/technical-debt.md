@@ -1311,10 +1311,10 @@ El resultado: cuando el usuario dice "crea un WP", Claude:
 ```yml
 id: TD-037
 severidad: baja
-estado: "[ ] Pendiente — seguimiento de feature request plataforma Claude Code"
+estado: "[x] Resuelto 2026-04-11 — solución arquitectónica: usar subagentes"
 detectado_en: FASE 31 (investigación 2026-04-11)
 area: plataforma / DX (developer experience)
-tipo: limitación de plataforma — no resoluble localmente
+tipo: patrón arquitectónico — resoluble localmente via subagentes
 ```
 
 **Problema:**
@@ -1343,24 +1343,28 @@ La diferencia de comportamiento entre herramientas genera ruido visual asimétri
 Sustituir Edit por `Bash(sed/python)` — rompe diff visible, validación de edits y UX de
 revisión. Peor trade-off que aceptar el mensaje verboso.
 
-**Fix requerido (plataforma):**
+**Solución (arquitectónica — disponible hoy):**
 
-Claude Code debería exponer uno de:
-- Flag en settings.json: `"editTool.silentSuccess": true`
-- Campo en PostToolUse hook: `"suppressToolOutput": true`
-- Comportamiento built-in: si el edit tuvo 0 cambios reales → no emitir mensaje; si tuvo
-  cambios → emitir diff compacto similar a `(Bash completed with N changes)`
+Usar subagentes (Agent tool) para operaciones que requieren múltiples edits. El Edit tool
+corre en el contexto aislado del subagente — su output queda interno y no contamina la
+conversación principal. El padre solo ve el resultado final del subagente.
+
+```
+❌ Mal: contexto principal → Edit × N → N mensajes en pantalla
+✅ Bien: contexto principal → Agent → Edit × N → resumen al padre
+```
+
+Confirmado en claude-howto/04-subagents: "Context preservation — Operates in separate
+context, preventing pollution of main conversation."
+
+El agente `task-executor` en este proyecto ya implementa este patrón correctamente.
 
 **Referencia:**
 
 Ver análisis completo en:
 `context/work/2026-04-11-10-52-25-thyrox-commands-namespace/analysis/edit-tool-silent-mode-finding.md`
 
-**Criterio de cierre:**
-
-- Claude Code lanza soporte para suppressOutput o equivalente en PostToolUse para Edit
-- O: Edit tool adopta comportamiento asimétrico similar a Bash (silencioso cuando éxito trivial)
-- Verificar en release notes de Claude Code
+**Criterio de cierre:** ✅ Cerrado 2026-04-11 — solución arquitectónica documentada.
 
 ---
 
