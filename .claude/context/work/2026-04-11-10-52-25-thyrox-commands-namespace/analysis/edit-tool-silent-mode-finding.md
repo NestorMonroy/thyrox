@@ -58,7 +58,31 @@ un resultado no-vacío. La plataforma no tiene lógica condicional del tipo "si 
 
 ## Mecanismos evaluados
 
-### 1. PostToolUse hook con `suppressOutput`
+### 1. `suppressOutput: true` en hook (evaluado vs claude-howto)
+
+El campo existe en el JSON output schema de los hooks:
+
+```json
+{
+  "continue": true,
+  "suppressOutput": false,
+  "systemMessage": "...",
+  "hookSpecificOutput": { ... }
+}
+```
+
+**Semántica real** (confirmada en claude-howto/06-hooks/README.md): suprime el stdout
+del **propio hook** en el debug log de Claude Code. No afecta el tool result del Edit tool.
+
+Distinción crítica:
+- **Tool result del Edit** = `"The file has been updated successfully."` → producido por la plataforma, antes de que el hook corra
+- **Hook stdout** = el JSON que devuelve el script del hook → esto sí lo suprime `suppressOutput: true`
+
+Son dos canales distintos. `suppressOutput` solo controla el segundo.
+
+**Resultado:** No funciona para el objetivo.
+
+### 2. PostToolUse hook con command
 
 ```json
 {
@@ -73,20 +97,12 @@ un resultado no-vacío. La plataforma no tiene lógica condicional del tipo "si 
 }
 ```
 
-**Resultado:** No funciona. El hook corre **después** de que el tool result ya fue emitido
-y ya es visible en la conversación. `PostToolUse` puede agregar output adicional pero no
-puede retirar ni reemplazar el ya emitido.
+**Resultado:** No funciona. El hook corre **después** de que el tool result ya fue emitido.
+PostToolUse solo puede agregar `additionalContext` (más contenido), no reemplazar ni retirar
+lo ya emitido.
 
-**Referencia hooks.md:**
-> `PostToolUse` — Después de herramienta exitosa — No puede bloquear (ya ocurrió)
-
-### 2. `suppressOutput: true` en hook
-
-Campo disponible en hooks, pero su semántica es:
-> "omite stdout del debug log"
-
-Solo afecta el log interno de Claude Code, no el tool result visible en la conversación.
-**No aplica.**
+**Referencia claude-howto:** *"PostToolUse — Runs immediately after tool completion. Cannot
+block (already occurred)."*
 
 ### 3. PreToolUse hook para interceptar Edit
 
