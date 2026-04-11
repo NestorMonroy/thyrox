@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-11 10:52:25
+updated_at: 2026-04-11 21:55:00
 ```
 
 # Deuda Técnica — THYROX
@@ -1365,6 +1365,88 @@ Ver análisis completo en:
 `context/work/2026-04-11-10-52-25-thyrox-commands-namespace/analysis/edit-tool-silent-mode-finding.md`
 
 **Criterio de cierre:** ✅ Cerrado 2026-04-11 — solución arquitectónica documentada.
+
+---
+
+## TD-038: Reglas `Edit(...)` redundantes en settings.json — ya cubiertas por `defaultMode: acceptEdits`
+
+```yml
+id: TD-038
+severidad: alta
+estado: "[ ] Pendiente"
+detectado_en: FASE 31 (análisis 2026-04-11 — Mecanismo A vs B)
+area: configuración / settings.json
+tipo: deuda de limpieza — reglas redundantes que generan confusión
+```
+
+**Problema:**
+
+`settings.json` tiene `"defaultMode": "acceptEdits"`, que auto-aprueba **todas** las operaciones
+Edit sin importar la ruta. Las reglas `Edit(...)` en la lista `allow` son por tanto redundantes —
+ya están cubiertas por el defaultMode y nunca serán evaluadas individualmente.
+
+Reglas redundantes actuales:
+
+| Regla en `allow` | ¿Necesaria? | Razón |
+|-----------------|-------------|-------|
+| `Edit(/.claude/context/now.md)` | **No** — redundante | `defaultMode: acceptEdits` ya auto-aprueba este Edit |
+| `Edit(/.claude/context/focus.md)` | **No** — redundante | Mismo motivo |
+| `Edit(/.claude/context/work/**)` | **No** — redundante | Mismo motivo |
+
+Reglas **necesarias** (deben permanecer):
+
+| Regla en `allow` | ¿Necesaria? | Razón |
+|-----------------|-------------|-------|
+| `Write(/.claude/context/now.md)` | **Sí** | `acceptEdits` NO cubre Write — solo Edit |
+| `Write(/.claude/context/focus.md)` | **Sí** | Mismo motivo |
+| `Write(/.claude/context/work/**)` | **Sí** | Mismo motivo |
+
+**Impacto:**
+
+Las reglas redundantes no causan fallos funcionales (la precedencia deny→ask→allow→defaultMode hace
+que `allow` gane antes de llegar a defaultMode, produciendo el mismo resultado). Pero:
+
+1. **Confusión conceptual:** Al leer settings.json parece que los Edit necesitan reglas explícitas,
+   cuando en realidad `defaultMode: acceptEdits` ya los cubre todos. Esto llevó a registrar reglas
+   innecesarias y puede llevar a futuras regresiones si alguien "limpia" settings.json mal.
+2. **Falsa sensación de seguridad:** Las reglas Edit explícitas dan la impresión de que solo esos
+   paths específicos están auto-permitidos, ocultando que `acceptEdits` auto-permite TODOS los Edit.
+3. **Documentación engañosa:** El reference `tool-execution-model.md` usa este settings.json como
+   ejemplo canónico — las reglas redundantes propagan el patrón incorrecto.
+
+**Solución:**
+
+Eliminar las 3 reglas `Edit(...)` redundantes de `allow` en `settings.json`. El resultado
+funcional es idéntico — `defaultMode: acceptEdits` los cubre. Las reglas `Write(...)` permanecen.
+
+```json
+// Antes (con redundancias):
+"allow": [
+  "Edit(/.claude/context/now.md)",       ← eliminar
+  "Write(/.claude/context/now.md)",
+  "Edit(/.claude/context/focus.md)",     ← eliminar
+  "Write(/.claude/context/focus.md)",
+  "Edit(/.claude/context/work/**)",      ← eliminar
+  "Write(/.claude/context/work/**)",
+  ...
+]
+
+// Después (limpio):
+"allow": [
+  "Write(/.claude/context/now.md)",
+  "Write(/.claude/context/focus.md)",
+  "Write(/.claude/context/work/**)",
+  ...
+]
+```
+
+Adicionalmente, actualizar `tool-execution-model.md` sección "Configuración Recomendada" para
+reflejar el settings.json correcto sin las reglas Edit redundantes.
+
+**Criterio de cierre:**
+- `settings.json` no tiene reglas `Edit(...)` en `allow` que sean subconjunto de `defaultMode: acceptEdits`
+- `tool-execution-model.md` muestra el ejemplo sin redundancias
+- Verificación: `bash .claude/scripts/session-start.sh` sigue funcionando (smoke test)
 
 ---
 

@@ -73,11 +73,11 @@ wp_size: mediano
 ## Phase 5: DECOMPOSE
 
 **Exit conditions:**
-- [ ] `thyrox-commands-namespace-task-plan.md` existe
-- [ ] Cada tarea tiene ID T-NNN y referencia al UC/TD correspondiente
-- [ ] Tareas atómicas — ninguna toca más de 1-2 archivos
-- [ ] Prioridad de ejecución: `session-start.sh` antes que docs (recomendación, no dependencia técnica estricta)
-- [ ] Usuario aprobó task plan + GATE OPERACION (Gate SP-05)
+- [x] `thyrox-commands-namespace-task-plan.md` existe
+- [x] Cada tarea tiene ID T-NNN y referencia al UC/TD correspondiente
+- [x] Tareas atómicas — ninguna toca más de 1-2 archivos
+- [x] Prioridad de ejecución: `session-start.sh` antes que docs (recomendación, no dependencia técnica estricta)
+- [x] Usuario aprobó task plan + GATE OPERACION (Gate SP-05) ← aprobado 2026-04-11
 
 **Transition:** → Phase 6 EXECUTE
 
