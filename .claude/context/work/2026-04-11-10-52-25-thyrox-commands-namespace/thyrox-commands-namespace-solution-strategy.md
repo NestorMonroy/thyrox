@@ -3,7 +3,7 @@ created_at: 2026-04-11 17:20:53
 project: thyrox-framework
 feature: thyrox-commands-namespace
 architecture_version: 1.0
-status: En revisión
+status: Aprobado — 2026-04-11
 fase: FASE 31
 phase: Phase 2 — SOLUTION_STRATEGY
 ```

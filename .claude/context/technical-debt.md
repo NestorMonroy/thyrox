@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-11 22:10:00
+updated_at: 2026-04-11 22:20:00
 ```
 
 # Deuda Técnica — THYROX
@@ -1511,6 +1511,73 @@ Opcionalmente: añadir anotación `async_suitable: true` en agentes como `deep-r
 - `subagent-patterns.md` distingue frontmatter `background: true` de invocación `run_in_background: true`
 - Documenta el output del sistema (agentId, output_file, SendMessage) con ejemplo real
 - Al menos 2 agentes tienen anotación de suitability async (o se documenta la regla de cuándo usar async)
+
+---
+
+## TD-040: Gates de fase no instruyen actualizar el artefacto principal al aprobar
+
+```yml
+id: TD-040
+severidad: media
+estado: "[ ] Pendiente"
+detectado_en: FASE 31 (pre-gate SP-06, 2026-04-11)
+area: workflow-*/SKILL.md — instrucciones de gate (Phase 2→3, 3→4, 4→5, 5→6, 6→7)
+tipo: gap de instrucción — now.md se actualiza, artefacto principal no
+```
+
+**Problema:**
+
+Todos los `workflow-*/SKILL.md` tienen un gate que dice:
+```
+Al aprobar: actualizar `context/now.md::phase` a `Phase N+1`.
+```
+
+Pero **ninguno** incluye: "también actualizar el artefacto principal de la fase".
+
+Los templates tienen los campos correctos:
+- `plan.md.template`: `status: [Pendiente aprobación | Aprobado — YYYY-MM-DD]` + `- [ ] Scope aprobado por usuario — PENDIENTE`
+- `solution-strategy.md.template`: `status: [Propuesta/En revisión/Aprobado]`
+
+Pero la instrucción del gate no conecta la acción de aprobación con la actualización de esos campos.
+
+**Caso adicional — `workflow-plan/SKILL.md` no tiene sección "Gate humano":**
+
+A diferencia de los otros 6 workflow skills, `workflow-plan/SKILL.md` no tiene bloque `## Gate humano` ni instrucción `⏸ STOP`. Solo tiene:
+- `## Validaciones pre-gate`
+- `## Exit criteria` (que menciona `[x] Scope aprobado` como criterio de detección)
+
+El gate está implícito pero no instruccionado → el campo nunca se actualiza.
+
+**Artefactos afectados por WP (patrón sistemático):**
+
+| Artefacto | Campo que queda desactualizado | SKILL que debe corregirse |
+|-----------|-------------------------------|--------------------------|
+| `*-solution-strategy.md` | `status: En revisión` → debería ser `Aprobado — fecha` | `workflow-strategy/SKILL.md` gate |
+| `*-plan.md` | `status: Pendiente aprobación` + `[ ] Scope aprobado` | `workflow-plan/SKILL.md` (añadir Gate humano) |
+| `*-requirements-spec.md` | Ningún `status` en frontmatter (gap de template) | `workflow-structure/SKILL.md` gate + template |
+| `*-task-plan.md` | No tiene `status` — gate usa exit-conditions.md | Aceptable (exit-conditions cubre) |
+
+**Fix corregido en FASE 31 (WP actual):**
+- `plan.md`: `created_at` corregido a `2026-04-11 18:05:14` + `status: Aprobado — 2026-04-11` + `[x] Scope aprobado`
+- `solution-strategy.md`: `status: Aprobado — 2026-04-11`
+
+**Solución sistemática:**
+
+Para cada `workflow-*/SKILL.md` con gate, añadir al bloque `Al aprobar`:
+```markdown
+Al aprobar:
+1. Actualizar `context/now.md::phase` a `Phase N+1`
+2. Actualizar `{artefacto}::status = Aprobado — {fecha}`  ← AÑADIR ESTO
+3. Marcar `[x] {campo-aprobacion}` en el artefacto         ← SI APLICA
+```
+
+Adicionalmente, añadir `## Gate humano` a `workflow-plan/SKILL.md` (actualmente ausente).
+
+**Criterio de cierre:**
+- `workflow-strategy/SKILL.md` gate incluye actualización de `solution-strategy.md::status`
+- `workflow-plan/SKILL.md` tiene sección `## Gate humano` con `Al aprobar` que actualiza `plan.md::status` y `[x] Scope aprobado`
+- `workflow-structure/SKILL.md` gate incluye actualización de `requirements-spec.md` (o template añade campo `status`)
+- Template `requirements-specification.md.template` tiene campo `status: [Pendiente aprobación | Aprobado — YYYY-MM-DD]`
 
 ---
 

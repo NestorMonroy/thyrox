@@ -1,8 +1,8 @@
 ```yml
-created_at: 2026-04-11
+created_at: 2026-04-11 18:05:14
 wp: thyrox-commands-namespace
 phase: 3 - PLAN
-status: Pendiente aprobación
+status: Aprobado — 2026-04-11
 ```
 
 # Plan — Namespace /thyrox:* mediante Plugin Claude Code (FASE 31)
@@ -128,4 +128,4 @@ Ver tracking: [ROADMAP](../../../../ROADMAP.md) — sección FASE 31
 
 ## Estado de aprobación
 
-- [ ] Scope aprobado por usuario — PENDIENTE
+- [x] Scope aprobado por usuario — 2026-04-11
