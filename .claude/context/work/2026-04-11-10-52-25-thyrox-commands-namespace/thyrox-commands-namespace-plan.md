@@ -22,7 +22,7 @@ comandos del framework en el menú `/`.
 
 - `/thyrox:analyze` (y los 7 comandos equivalentes) aparecen en el menú `/` de Claude Code
 - `bash .claude/scripts/session-start.sh` muestra `/thyrox:analyze` en la opción B
-- `grep -ri "/workflow-analyze\|/workflow-strategy\|/workflow-plan\|/workflow-strategy\|/workflow-structure\|/workflow-decompose\|/workflow-execute\|/workflow-track" .claude/scripts/ .claude/references/ .claude/commands/ .claude/skills/thyrox/SKILL.md` → 0 resultados
+- `grep -ri "/workflow-analyze\|/workflow-strategy\|/workflow-plan\|/workflow-structure\|/workflow-decompose\|/workflow-execute\|/workflow-track" .claude/scripts/ .claude/references/ .claude/commands/ .claude/skills/thyrox/SKILL.md` → 0 resultados
 - `workflow-analyze/SKILL.md` tiene el paso 1.5 ⏸ STOP pre-creación WP
 - Los `workflow-*` skills internos siguen funcionando sin cambios
 
@@ -46,12 +46,19 @@ comandos del framework en el menú `/`.
 
 **Archivos existentes a modificar:**
 
-- `.claude/scripts/session-start.sh` — actualizar strings de display: `/workflow-analyze` → `/thyrox:analyze` (y equivalentes)
+- `.claude/scripts/session-start.sh` — 5 cambios concretos:
+  1. Función `_phase_to_command()` (líneas 18–25): 8 returns `/workflow-*` → `/thyrox:*`
+  2. Línea 91: echo opción B display `/workflow-analyze` → `/thyrox:analyze`
+  3. Línea 93: remover echo "outdated TD-008" (TD-008 ya completado en FASE 22)
+  4. Línea 113: `/workflow_init` → `/thyrox:init`
+  5. Comentarios de encabezado (líneas 10–15): actualizar referencias `workflow-*` → `thyrox:*`
 - `.claude/skills/workflow-analyze/SKILL.md` — agregar paso 1.5 ⏸ STOP pre-creación WP (TD-036)
-- `.claude/skills/thyrox/SKILL.md` — actualizar tabla de fases (referencias `/workflow-*` → `/thyrox:*`)
+- `.claude/skills/thyrox/SKILL.md` — actualizar tabla de fases (columna Skill: `/workflow-*` → `/thyrox:*`)
 - `.claude/context/decisions/adr-019.md` — cambiar `status: Draft` → `status: Accepted`
-- `ROADMAP.md` — agregar entrada FASE 31 (este WP)
-- `technical-debt.md` — marcar TD-036 como resuelto
+- `.claude/context/decisions/adr-016.md` — agregar Addendum FASE 31 (interfaz pública `/thyrox:*` vs implementación `workflow-*`)
+- `.claude/CLAUDE.md` — agregar Addendum FASE 31 en Locked Decision #5 (plugin namespace como interfaz pública)
+- `ROADMAP.md` — agregar entrada FASE 31 (este WP) ← ya hecho en Phase 3
+- `technical-debt.md` — marcar TD-036 como resuelto; actualizar texto TDs afectados (TD-008, TD-030)
 - [thyrox-commands-namespace-exit-conditions](thyrox-commands-namespace-exit-conditions.md) — marcar checkboxes de Phase 6 y 7
 
 **Archivos de trazabilidad a actualizar en Phase 6:**
@@ -84,9 +91,11 @@ comandos del framework en el menú `/`.
 | `workflow-analyze/SKILL.md` — paso 1.5 TD-036 | 1 |
 | `thyrox/SKILL.md` — tabla de fases | 1 |
 | Referencias de trazabilidad (technical-debt.md, skill-vs-agent.md) | 2 |
-| ADR-019 formalizar + amendment ADR-016 | 1 |
+| ADR-019 formalizar | 1 |
+| ADR-016 addendum FASE 31 | 1 |
+| CLAUDE.md addendum FASE 31 | 1 |
 | Verification grep + test session-start.sh | 1 |
-| **Total** | **~16 tareas atómicas** |
+| **Total** | **~18 tareas atómicas** |
 
 Clasificación: mediano
 Fases activas: 7 (todas, per exit-conditions.md)

@@ -47,10 +47,10 @@ wp_size: mediano
 ## Phase 3: PLAN
 
 **Exit conditions:**
-- [ ] [thyrox-commands-namespace-plan](thyrox-commands-namespace-plan.md) existe
-- [ ] Scope statement: qué archivos se modifican, cuáles no
-- [ ] Scope incluye / excluye meta-comandos (UC-003) explícitamente
-- [ ] ROADMAP.md actualizado con tarea de FASE 31
+- [x] [thyrox-commands-namespace-plan](thyrox-commands-namespace-plan.md) existe
+- [x] Scope statement: qué archivos se modifican, cuáles no
+- [x] Scope incluye / excluye meta-comandos (UC-003) explícitamente
+- [x] ROADMAP.md actualizado con tarea de FASE 31
 - [ ] Usuario aprobó plan (Gate SP-03)
 
 **Transition:** → Phase 4 STRUCTURE
