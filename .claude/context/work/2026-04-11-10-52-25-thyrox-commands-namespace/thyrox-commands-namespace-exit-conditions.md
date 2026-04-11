@@ -23,7 +23,7 @@ wp_size: mediano
 - [x] `thyrox-commands-namespace-exit-conditions.md` existe (este archivo)
 - [x] Stopping Point Manifest documentado (SP-01..SP-06)
 - [x] `reversibility: reversible` y `wp_size: mediano` en frontmatter
-- [ ] **Usuario aprobó hallazgos explícitamente** ← PENDIENTE (Gate SP-01)
+- [x] **Usuario aprobó hallazgos explícitamente** ← Gate SP-01 aprobado 2026-04-11
 
 **Transition:** → Phase 2 SOLUTION STRATEGY (`/thyrox:strategy`)
 
