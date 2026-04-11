@@ -20,8 +20,6 @@
       "Bash(echo *)"
     ],
     "ask": [
-      "Edit(/.claude/CLAUDE.md)",
-      "Edit(/.claude/skills/*/SKILL.md)",
       "Edit(/.claude/scripts/*.sh)",
       "Edit(/.claude/settings.json)"
     ],
