@@ -105,4 +105,4 @@ Mostrar resumen final:
 - Skills generados: [lista con archivos]
 - Próximas sesiones: los skills se activan automáticamente
 - Para actualizar un skill en el futuro: `.claude/registry/_generator.sh [layer] [framework] --force`
-- Siguiente paso sugerido: `/workflow-analyze` para empezar Phase 1
+- Siguiente paso sugerido: `/thyrox:analyze` para empezar Phase 1

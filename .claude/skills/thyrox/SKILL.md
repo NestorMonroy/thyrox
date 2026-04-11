@@ -37,13 +37,13 @@ Cada fase vive en su propio skill. Invocar directamente para ejecutar:
 
 | Fase | Skill | Descripción |
 |------|-------|-------------|
-| Phase 1: ANALYZE | `/workflow-analyze` | Entender el problema. 8 aspectos + WP + análisis + risk register. |
-| Phase 2: SOLUTION_STRATEGY | `/workflow-strategy` | Investigar alternativas. Key Ideas + Research + Decisions. |
-| Phase 3: PLAN | `/workflow-plan` | Definir scope. Scope statement + in/out-of-scope + ROADMAP. |
-| Phase 4: STRUCTURE | `/workflow-structure` | Especificar. Requirements spec + design (si complejo). |
-| Phase 5: DECOMPOSE | `/workflow-decompose` | Crear tareas atómicas. Task plan + DAG + trazabilidad. |
-| Phase 6: EXECUTE | `/workflow-execute` | Ejecutar. Commits + actualizar task plan + gates async. |
-| Phase 7: TRACK | `/workflow-track` | Cerrar WP. Lessons learned + {wp}-changelog + estado. |
+| Phase 1: ANALYZE | `/thyrox:analyze` | Entender el problema. 8 aspectos + WP + análisis + risk register. |
+| Phase 2: SOLUTION_STRATEGY | `/thyrox:strategy` | Investigar alternativas. Key Ideas + Research + Decisions. |
+| Phase 3: PLAN | `/thyrox:plan` | Definir scope. Scope statement + in/out-of-scope + ROADMAP. |
+| Phase 4: STRUCTURE | `/thyrox:structure` | Especificar. Requirements spec + design (si complejo). |
+| Phase 5: DECOMPOSE | `/thyrox:decompose` | Crear tareas atómicas. Task plan + DAG + trazabilidad. |
+| Phase 6: EXECUTE | `/thyrox:execute` | Ejecutar. Commits + actualizar task plan + gates async. |
+| Phase 7: TRACK | `/thyrox:track` | Cerrar WP. Lessons learned + {wp}-changelog + estado. |
 
 Ver [escalabilidad](../workflow-analyze/references/scalability.md) para reglas de qué fases omitir según tamaño del WP.
 

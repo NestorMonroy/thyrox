@@ -6,23 +6,23 @@
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
 
-# ─── ARQUITECTURA DE RUTAS (ADR-015) ───────────────────────────────────────
-# COMMANDS_SYNCED=false → /workflow-* commands desactualizados vs SKILL.md
-# COMMANDS_SYNCED=true  → /workflow-* sincronizados (post-TD-008), eliminar etiqueta [outdated]
-# TD-008 completado (FASE 22). workflow_* ahora en .claude/skills/ (Capa 2, hidden).
+# ─── ARQUITECTURA DE RUTAS (ADR-015, ADR-019) ──────────────────────────────
+# Interfaz pública: /thyrox:* commands (plugin namespace, FASE 31)
+# Implementación interna: workflow-* skills (no expuestos directamente al usuario)
+# TD-008 completado (FASE 22). ADR-019 aceptado (FASE 31).
 COMMANDS_SYNCED=true
 
-# Mapa phase → /workflow_* command
+# Mapa phase → /thyrox:* command (interfaz pública del plugin)
 _phase_to_command() {
     case "$1" in
-        "Phase 1") echo "/workflow-analyze" ;;
-        "Phase 2") echo "/workflow-strategy" ;;
-        "Phase 3") echo "/workflow-plan" ;;
-        "Phase 4") echo "/workflow-structure" ;;
-        "Phase 5") echo "/workflow-decompose" ;;
-        "Phase 6") echo "/workflow-execute" ;;
-        "Phase 7") echo "/workflow-track" ;;
-        *) echo "/workflow-analyze" ;;
+        "Phase 1") echo "/thyrox:analyze" ;;
+        "Phase 2") echo "/thyrox:strategy" ;;
+        "Phase 3") echo "/thyrox:plan" ;;
+        "Phase 4") echo "/thyrox:structure" ;;
+        "Phase 5") echo "/thyrox:decompose" ;;
+        "Phase 6") echo "/thyrox:execute" ;;
+        "Phase 7") echo "/thyrox:track" ;;
+        *) echo "/thyrox:analyze" ;;
     esac
 }
 # ───────────────────────────────────────────────────────────────────────────
@@ -88,9 +88,7 @@ else
     echo "  Opciones de ejecución:"
     echo "    A (calidad alta HOY):    invocar thyrox SKILL → Phase 1: ANALYZE"
     if [ "$COMMANDS_SYNCED" = "true" ]; then
-        echo "    B (determinístico):      /workflow-analyze"
-    else
-        echo "    B (determinístico):      /workflow_analyze  [outdated — esperar TD-008]"
+        echo "    B (determinístico):      /thyrox:analyze"
     fi
 fi
 
@@ -110,7 +108,7 @@ fi
 if [ -n "$TECH_SKILLS" ]; then
     echo "  Tech skills activos:$(echo "$TECH_SKILLS" | tr ' ' '\n' | grep -v '^$' | sed 's/^/    - /')"
 else
-    echo "  Tech skills: ninguno — ejecuta /workflow_init para configurar"
+    echo "  Tech skills: ninguno — ejecuta /thyrox:init para configurar"
 fi
 echo ""
 echo "===================================================="

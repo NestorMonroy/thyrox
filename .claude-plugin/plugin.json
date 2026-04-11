@@ -1,0 +1,6 @@
+{
+  "name": "thyrox",
+  "description": "Framework THYROX — gestión de proyectos con metodología SDLC de 7 fases",
+  "version": "2.5.0",
+  "author": { "name": "NestorMonroy" }
+}

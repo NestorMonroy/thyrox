@@ -7,7 +7,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 1'"
-updated_at: 2026-04-09 22:00:00
+updated_at: 2026-04-11 22:05:00
 ---
 
 # /workflow-analyze — Phase 1: ANALYZE
@@ -67,6 +67,16 @@ Entender el problema antes de proponer soluciones evita construir lo incorrecto.
    - **Contexto/sistemas vecinos** — ¿dónde se sitúa, qué lo rodea?
    - **Fuera de alcance** — ¿qué NO se va a hacer?
    - **Criterios de éxito** — ¿cómo sabremos que está bien hecho?
+
+### 1.5 ⏸ STOP pre-creación — Gate obligatorio
+
+Antes de crear el directorio del WP o cualquier archivo:
+
+1. Presentar al usuario el nombre propuesto del WP y el timestamp.
+2. Esperar confirmación explícita (sí/no).
+3. NO crear ningún archivo hasta recibir respuesta.
+
+Excepción: si el WP ya existe (retomar work package), saltar este gate.
 
 2. Crear work package — obtener timestamp real del sistema:
    - Directorio: `date +%Y-%m-%d-%H-%M-%S` → `context/work/{timestamp}-nombre/`
