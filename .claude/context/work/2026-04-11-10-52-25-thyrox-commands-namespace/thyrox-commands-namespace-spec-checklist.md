@@ -2,7 +2,7 @@
 created_at: 2026-04-11 20:26:31
 feature: thyrox-commands-namespace
 wp: context/work/2026-04-11-10-52-25-thyrox-commands-namespace/
-Iteración: 1/2
+Iteración: 2/2
 status: Pasó
 ```
 
@@ -55,23 +55,33 @@ iterar la spec (máximo 2 veces).
 
 ---
 
-## Resultado
+## Resultado (Iteración 2)
 
 **Items totales:** 20
 **Items pasados:** 20
 **Items fallidos:** 0
 
+### Correcciones aplicadas en iteración 2 (deep-review Phase 3 → Phase 4)
+
+Deep-review identificó 5 gaps entre Phase 3 PLAN y la spec v1.0. Todos corregidos:
+
+| Gap | Corrección |
+|-----|-----------|
+| SPEC-010 faltaba (`thyrox/SKILL.md` tabla) | Agregado SPEC-010 con grep verificado (7 líneas, lines 40-46) |
+| SPEC-003 tenía 3 cambios, Phase 3 requería 5 | Agregados Cambio 4 (remover línea 93 outdated) y Cambio 5 (comentarios encabezado) |
+| `workflow_init.md` sin disposición | Aclarado en SPEC-002: conservar archivo, actualizar sugerencia línea 108 |
+| SPEC-008 no mencionaba TD-021 | Agregado TD-021 explícitamente junto a TD-008 y TD-030 |
+| Inventario por estimación, no por grep | Sección "Inventario Verificado con Grep" con 23 ocurrencias mapeadas a SPECs |
+
+Nota adicional: Decisión `:spec` vs `:structure` documentada en sección dedicada para confirmación en gate SP-04.
+
 ### Nota sobre diseño técnico (Complejo):
 
 El WP tiene ~18 tareas (clasificación: Complejo → requiere design.md según SKILL.md).
 Sin embargo, `thyrox-commands-namespace-solution-strategy.md` (Phase 2) ya contiene
-la arquitectura completa:
-- Plugin Facade, Namespace Isolation, Additive Extension, Single Authority patterns
-- Estructura de directorios completa
-- Mapeo UC → Componente con justificación de alternativas
-
-Crear un `design.md` adicional duplicaría información ya documentada. La solución-strategy
-cumple el rol del design.md para este WP. Esta excepción se registra aquí para trazabilidad.
+la arquitectura completa (Plugin Facade, Namespace Isolation, Additive Extension, Single Authority).
+Crear un `design.md` duplicaría información ya documentada. La solución-strategy
+cumple el rol del design.md para este WP.
 
 ---
 

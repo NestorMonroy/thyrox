@@ -31,13 +31,14 @@ correcto en la opción B.
 |---------------------|---------|---------------------|
 | UC-007: Implementar plugin THYROX | SPEC-001 | Plugin manifest `.claude-plugin/plugin.json` |
 | UC-001,002,004,007: Comandos `/thyrox:*` | SPEC-002 | 8 command files en `commands/` (thin wrappers) |
-| UC-001,002,004: Display en session-start | SPEC-003 | Actualizar `session-start.sh` — 3 cambios de strings |
+| UC-001,002,004: Display en session-start | SPEC-003 | Actualizar `session-start.sh` — 5 cambios de strings/comentarios |
 | TD-036: Gate pre-creación WP | SPEC-004 | Paso 1.5 ⏸ STOP en `workflow-analyze/SKILL.md` |
 | Framework: ADR-019 formalizar | SPEC-005 | Cambiar `status: Draft` → `Accepted` en `adr-019.md` |
 | Framework: ADR-016 amendment | SPEC-006 | Agregar Addendum FASE 31 en `adr-016.md` |
 | Framework: CLAUDE.md amendment | SPEC-007 | Agregar Addendum FASE 31 en Locked Decision #5 |
-| UC-005: TD-030 + TDs legacy | SPEC-008 | Actualizar `technical-debt.md` — TD-036 resuelto, TDs afectados |
+| UC-005: TD-030 + TDs legacy (TD-008, TD-021) | SPEC-008 | Actualizar `technical-debt.md` — TD-036 resuelto, TDs afectados |
 | UC-006: Referencias `/workflow_*` | SPEC-009 | Actualizar tabla de `skill-vs-agent.md` con `/thyrox:*` |
+| UC-001: `thyrox/SKILL.md` tabla de fases | SPEC-010 | Actualizar columna Skill en tabla de fases (líneas 40-46) |
 
 ---
 
@@ -136,6 +137,7 @@ Then se ejecuta el bootstrap de tech skills equivalente a /workflow_init
 - Sin duplicar la lógica del skill — thin wrapper puro
 - `commands/init.md` invoca skill `workflow_init` (underscore, no hyphen — nombre del skill existente)
 - No crear `commands/next.md` — UC-003 es out-of-scope en FASE 31
+- **`.claude/commands/workflow_init.md` (existente):** Phase 1 §UC-002 requiere actualizar la sugerencia de la línea 108 (`"/workflow-analyze para empezar Phase 1"`) → cambiar a `/thyrox:analyze`. El archivo se conserva (backward-compat, Additive Extension), no se elimina.
 
 **Mapa de command files:**
 
@@ -203,10 +205,11 @@ Then el bloque outdated de TD-008 ya no aparece (TD-008 completado en FASE 22)
 
 ### Consideraciones Técnicas
 
-- **Cambio 1:** `_phase_to_command()` — 7 returns `/workflow-*` → `/thyrox:*` + default `/thyrox:analyze`
-- **Cambio 2:** Línea de "Sin work package activo" — `/workflow-analyze` → `/thyrox:analyze`
-- **Cambio 3:** Línea de tech skills — `/workflow_init` → `/thyrox:init`
-- El bloque `COMMANDS_SYNCED=false` puede eliminarse (TD-008 completado en FASE 22); simplificar la lógica
+- **Cambio 1:** `_phase_to_command()` (líneas 18-25) — 7 returns `/workflow-*` → `/thyrox:*` + default `/thyrox:analyze`
+- **Cambio 2:** Línea 91 — opción B "Sin work package activo" — `/workflow-analyze` → `/thyrox:analyze`
+- **Cambio 3:** Línea 113 — tech skills — `/workflow_init` → `/thyrox:init`
+- **Cambio 4:** Línea 93 — eliminar echo de opción B outdated (`/workflow_analyze [outdated — esperar TD-008]`). TD-008 completado en FASE 22; el branch `COMMANDS_SYNCED=false` es dead code.
+- **Cambio 5:** Líneas 10-15 (comentarios de encabezado) — actualizar referencias `/workflow-*` y `/workflow_*` a `/thyrox:*`. Grep confirmó: líneas 10, 11, 15 contienen `/workflow-*` o `/workflow_*`.
 
 ### Implementación
 
@@ -398,9 +401,16 @@ Then TD-036 está marcado como "Resuelto" con fecha y referencia a FASE 31
 
 Given que technical-debt.md tiene TDs que mencionan "/workflow_*" o "workflow-*" en su descripción
 When se completa FASE 31
-Then los TDs afectados tienen su texto actualizado para reflejar "/thyrox:*" como interfaz pública
+Then TD-008 tiene su texto actualizado para reflejar "/thyrox:*" como interfaz pública (implementación queda en workflow-*)
+And TD-021 tiene su texto actualizado de la misma manera (Phase 1 §UC-005 lo identificó explícitamente)
+And TD-030 colisión de IDs está resuelta (texto clarificado para evitar ambigüedad con meta-comandos)
 And se mantiene la referencia histórica a workflow-* como implementación interna
 ```
+
+### Consideraciones Técnicas
+
+- TDs a actualizar explícitamente: **TD-008, TD-021, TD-030** (Phase 1 §UC-005), **TD-036** (cerrar)
+- TD-021 fue identificado en Phase 1 pero omitido en la spec inicial — gap corregido en v1.1
 
 ### Implementación
 
@@ -443,15 +453,104 @@ And se mantiene la nota de que workflow-* son la implementación interna
 
 ---
 
+## SPEC-010: Tabla de fases en thyrox/SKILL.md
+
+**ID:** SPEC-010
+**Requisito Origen:** UC-001 (Phase 3 In-Scope explícito: "`.claude/skills/thyrox/SKILL.md` — actualizar tabla de fases")
+**Prioridad:** High
+**Estado:** Pendiente
+
+### Descripción
+
+Actualizar la columna "Skill" del "Catálogo de fases" en `thyrox/SKILL.md` (líneas 40-46)
+para que muestre `/thyrox:*` en lugar de `/workflow-*`. Los paths de implementación interna
+(`../workflow-analyze/assets/...`, `../workflow-analyze/references/...`) NO se modifican —
+son paths a archivos, no nombres de comandos.
+
+### Criterios de Aceptación
+
+```
+Given que thyrox/SKILL.md tiene una tabla "Catálogo de fases" con columna "Skill"
+When se completa FASE 31
+Then las 7 filas de la columna Skill muestran /thyrox:analyze ... /thyrox:track
+And los paths internos ../workflow-analyze/ en el resto del archivo permanecen sin cambios
+And updated_at del SKILL.md se actualiza (regla CLAUDE.md)
+```
+
+### Implementación
+
+**Archivos a Modificar:**
+- `.claude/skills/thyrox/SKILL.md` — solo tabla de fases, líneas 40-46
+
+**Grep verificado:** 7 líneas afectadas (40-46), más las referencias de paths internos (en-scope: solo las 7 de la tabla).
+
+**Esfuerzo Estimado:** 1 tarea atómica
+**Complejidad:** Baja
+
+---
+
+## Inventario Verificado con Grep
+
+> Requerido por exit-condition Phase 4: "Inventario verificado con grep (no estimado)"
+
+```bash
+grep -rn "/workflow-\|/workflow_" .claude/scripts/ .claude/commands/ .claude/skills/thyrox/SKILL.md
+```
+
+**Resultados reales (2026-04-11):**
+
+| Archivo | Línea | Contenido | SPEC que lo cubre |
+|---------|-------|-----------|-------------------|
+| `session-start.sh` | 10 | `# COMMANDS_SYNCED=false → /workflow-*` | SPEC-003 Cambio 5 |
+| `session-start.sh` | 11 | `# COMMANDS_SYNCED=true  → /workflow-*` | SPEC-003 Cambio 5 |
+| `session-start.sh` | 15 | `# Mapa phase → /workflow_* command` | SPEC-003 Cambio 5 |
+| `session-start.sh` | 18 | `echo "/workflow-analyze"` | SPEC-003 Cambio 1 |
+| `session-start.sh` | 19 | `echo "/workflow-strategy"` | SPEC-003 Cambio 1 |
+| `session-start.sh` | 20 | `echo "/workflow-plan"` | SPEC-003 Cambio 1 |
+| `session-start.sh` | 21 | `echo "/workflow-structure"` | SPEC-003 Cambio 1 |
+| `session-start.sh` | 22 | `echo "/workflow-decompose"` | SPEC-003 Cambio 1 |
+| `session-start.sh` | 23 | `echo "/workflow-execute"` | SPEC-003 Cambio 1 |
+| `session-start.sh` | 24 | `echo "/workflow-track"` | SPEC-003 Cambio 1 |
+| `session-start.sh` | 25 | `*) echo "/workflow-analyze"` | SPEC-003 Cambio 1 |
+| `session-start.sh` | 91 | `B (determinístico): /workflow-analyze` | SPEC-003 Cambio 2 |
+| `session-start.sh` | 93 | `B (determinístico): /workflow_analyze [outdated]` | SPEC-003 Cambio 4 |
+| `session-start.sh` | 113 | `ejecuta /workflow_init` | SPEC-003 Cambio 3 |
+| `commands/workflow_init.md` | 1 | `# /workflow_init — Bootstrap` | No se modifica nombre del archivo |
+| `commands/workflow_init.md` | 108 | `"/workflow-analyze para empezar Phase 1"` | SPEC-002 (workflow_init.md sugerencia) |
+| `thyrox/SKILL.md` | 40 | `/workflow-analyze` en tabla | SPEC-010 |
+| `thyrox/SKILL.md` | 41 | `/workflow-strategy` en tabla | SPEC-010 |
+| `thyrox/SKILL.md` | 42 | `/workflow-plan` en tabla | SPEC-010 |
+| `thyrox/SKILL.md` | 43 | `/workflow-structure` en tabla | SPEC-010 |
+| `thyrox/SKILL.md` | 44 | `/workflow-decompose` en tabla | SPEC-010 |
+| `thyrox/SKILL.md` | 45 | `/workflow-execute` en tabla | SPEC-010 |
+| `thyrox/SKILL.md` | 46 | `/workflow-track` en tabla | SPEC-010 |
+| `thyrox/SKILL.md` | 48,56-73,172+ | `../workflow-analyze/` (paths internos) | **No en scope** — son paths de archivos, no comandos |
+
+**Total ocurrencias de interfaz pública a actualizar: 23 en 3 archivos** (todas cubiertas por SPECs).
+
+---
+
+## Nota de Decisión — `:spec` vs `:structure`
+
+Phase 1 §UC-001 documenta: "El user usa `:spec` (no `:structure`) — más corto y más descriptivo".
+Phase 3 plan decidió implementar `commands/structure.md` → `/thyrox:structure`.
+
+**Decisión vigente:** `/thyrox:structure` (per Phase 3 aprobado).
+**Si se desea cambiar a `/thyrox:spec`:** actualizar `commands/structure.md` → `commands/spec.md` antes de Phase 5.
+Esta decisión debe confirmarse en el gate SP-04 (aprobación de este spec).
+
+---
+
 ## Dependencias Entre Requisitos
 
 ```
 SPEC-001 → SPEC-002 (plugin.json debe existir antes de que los commands tengan namespace)
 SPEC-001 + SPEC-002 → SPEC-005 (ADR-019 se acepta cuando el plugin está implementado)
 SPEC-004 → SPEC-008 (TD-036 se cierra cuando el paso 1.5 existe en el SKILL)
-SPEC-002 + SPEC-003 → Criterio de éxito del plan (grep 0 resultados en interfaces públicas)
+SPEC-002 + SPEC-003 + SPEC-010 → Criterio de éxito del plan (grep 0 resultados en interfaces públicas)
 SPEC-006, SPEC-007 → independientes (documentación, sin dependencia técnica)
 SPEC-009 → independiente (documentación, sin dependencia técnica)
+SPEC-010 → independiente (solo modifica tabla en thyrox/SKILL.md)
 ```
 
 ---
@@ -460,17 +559,18 @@ SPEC-009 → independiente (documentación, sin dependencia técnica)
 
 ### Fase 1: Plugin core (bloqueante)
 - SPEC-001 — `.claude-plugin/plugin.json`
-- SPEC-002 — 8 command files
+- SPEC-002 — 8 command files + `workflow_init.md` sugerencia
 
 ### Fase 2: Scripts y metodología (paralelo)
-- SPEC-003 — `session-start.sh` display
+- SPEC-003 — `session-start.sh` (5 cambios)
 - SPEC-004 — TD-036 gate pre-WP
+- SPEC-010 — `thyrox/SKILL.md` tabla de fases
 
 ### Fase 3: Documentación y cierre (tras Fase 1+2)
 - SPEC-005 — ADR-019 Accepted
 - SPEC-006 — ADR-016 addendum
 - SPEC-007 — CLAUDE.md addendum
-- SPEC-008 — technical-debt.md
+- SPEC-008 — technical-debt.md (TD-008, TD-021, TD-030, TD-036)
 - SPEC-009 — skill-vs-agent.md
 
 ---
