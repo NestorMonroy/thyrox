@@ -1,14 +1,14 @@
 ```yml
 type: Estado Operacional
 version: 1.0
-updated_at: 2026-04-10 04:30:00
+updated_at: 2026-04-11 22:30:00
 ```
 
 # Focus
 
-FASE 29 completada. Framework v2.5.0 — renombrado thyrox, validaciones pre-gate en 7 SKILL.md, REGLA-LONGEV-001, templates Phase 7 (D2 wp-changelog, D3 td-resolved).
+FASE 31 completada. Plugin namespace `/thyrox:*` operativo. Framework v2.5.0.
 
-## Completado (2026-04-09)
+## Completado (2026-04-11)
 
 - FASE 19: async-gates — Stopping Point Manifest, task-notification gate, calibración fuerte/estándar/ligero
 - FASE 20: context-hygiene — state-management.md (trigger map), update-state.sh (script), gates de fase actualizan now.md, Phase 7 obliga cerrar estado, glosario FASE vs Phase
@@ -21,19 +21,22 @@ FASE 29 completada. Framework v2.5.0 — renombrado thyrox, validaciones pre-gat
 - FASE 28: auto-operations — set-session-phase.sh, sync-wp-state.sh, close-wp.sh, PostToolUse hook, 7 SKILL.md corregidos, TD-028..032, lecciones L-110..L-117
 - FASE 29: technical-debt-resolution — thyrox rename, 7 SKILL.md validaciones pre-gate, REGLA-LONGEV-001, templates Phase 7, 6 TDs cerrados, lecciones L-118..L-122
 
+- FASE 31: thyrox-commands-namespace — plugin namespace `/thyrox:*`, deep-review agent, SDD commands, 8 platform references, TD-036 cerrado, L-123..L-127
+
 ## Estado del framework
 
-- 9 agentes nativos en `.claude/agents/`
+- 10 agentes nativos en `.claude/agents/` (+ deep-review añadido en FASE 31)
 - Versión: v2.5.0
-- Lecciones: L-001..L-122 (L-118..L-122 = FASE 29)
-- TDs activos alta prioridad: TD-006, TD-008, TD-022
+- Lecciones: L-001..L-127 (L-123..L-127 = FASE 31)
+- TDs activos alta prioridad: TD-006, TD-008, TD-038
 
 ## Sin WP activo
 
-FASE 29 cerrada. FASE 27 (agentic-loop) en Phase 1, gate 1→2 pendiente.
+FASE 31 cerrada. Interfaz pública `/thyrox:*` operativa.
 
 ## Próximos pasos (ROADMAP)
 
-1. **FASE 27 (agentic-loop):** Retomar Phase 1 → gate 1→2 → Phase 2
-2. **TD-006 (media):** thyrox thin orchestrator — trigger cuando SKILL.md acerque 200 líneas
-3. **TD-022 (baja):** Limitaciones conocidas en workflow-* skills
+1. **FASE 32+ (references-refactor):** Actualizar 12 `.claude/references/` con `/thyrox:*` (D-4, out-of-scope FASE 31)
+2. **TD-038 (alta):** Eliminar 3 reglas `Edit(...)` redundantes de `settings.json`
+3. **TD-040 (media):** Añadir Gate humano a `workflow-plan/SKILL.md` + instrucción artefact-update a todos los gates
+4. **FASE 27 (agentic-loop):** Retomar Phase 1 → gate 1→2 → Phase 2

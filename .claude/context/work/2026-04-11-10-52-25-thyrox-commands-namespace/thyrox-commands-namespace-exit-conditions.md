@@ -91,7 +91,7 @@ wp_size: mediano
 - [x] `bash .claude/scripts/session-start.sh` → muestra `/thyrox:execute` en opción B (WP activo Phase 6); sin WP activo muestra `/thyrox:analyze`. Verificado: ninguna rama muestra `/workflow-*`.
 - [x] TD-036 implementado: `workflow-analyze/SKILL.md` tiene paso 1.5
 - [x] `thyrox-commands-namespace-execution-log.md` documentado
-- [ ] Usuario aprobó resultado (Gate SP-06)
+- [x] Usuario aprobó resultado (Gate SP-06) — aprobado 2026-04-11
 
 **Transition:** → Phase 7 TRACK
 
