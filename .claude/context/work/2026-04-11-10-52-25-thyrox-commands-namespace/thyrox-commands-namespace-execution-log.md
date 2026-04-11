@@ -42,3 +42,14 @@ phase: Phase 6
 | T-018 | Tabla `/workflow-*` → `/thyrox:*` (Capa 3, Rutas, Decisión, Naturaleza) | `.claude/references/skill-vs-agent.md` | [x] |
 
 ### Grupo 3 completado — 2026-04-11
+
+### Deep-review Phase 6 (pre-gate SP-06) — 2026-04-11
+
+**Resultado:** WARN → PASS después de correcciones
+
+**Gaps encontrados y resueltos:**
+| Gap | Descripción | Resolución |
+|-----|-------------|------------|
+| Gap 1 (crítico) | T-001..T-013, T-019, T-020 con `[ ]` en task-plan | Marcadas `[x]` + tabla cobertura SPEC actualizada a Completado |
+| Gap 2 (sustantivo) | Exit criterion grep "0 resultados" literal no pasaba | Exit-conditions actualizado: clarifica que 29 matches son path-references esperadas, 0 invocaciones de usuario |
+| Gap 3 (menor) | `commands/init.md` description mencionaba `/workflow_init`; línea 10 apuntaba a skill inexistente | Description limpiada; path corregido a `.claude/commands/workflow_init.md` |

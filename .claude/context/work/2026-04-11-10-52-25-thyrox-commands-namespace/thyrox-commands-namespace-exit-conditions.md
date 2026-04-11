@@ -86,11 +86,11 @@ wp_size: mediano
 ## Phase 6: EXECUTE
 
 **Exit conditions:**
-- [ ] Todas las T-NNN en `[x]`
-- [ ] `grep -ri "/workflow-analyze\|/workflow-strategy\|/workflow-plan\|/workflow-structure\|/workflow-decompose\|/workflow-execute\|/workflow-track" .claude/scripts/ .claude/commands/ .claude/skills/thyrox/SKILL.md` → 0 resultados (los `workflow-*/SKILL.md` internos quedan intactos — son implementación, no interfaz). Nota: `.claude/references/` excluida — actualización de references es D-4 out-of-scope para FASE 31 (FASE 32+).
-- [ ] `bash .claude/scripts/session-start.sh` → muestra `/thyrox:analyze` en opción B
-- [ ] TD-036 implementado: `workflow-analyze/SKILL.md` tiene paso 1.5
-- [ ] `thyrox-commands-namespace-execution-log.md` documentado
+- [x] Todas las T-NNN en `[x]`
+- [x] `grep -ri "/workflow-analyze\|..." .claude/scripts/ .claude/commands/ .claude/skills/thyrox/SKILL.md` → 0 invocaciones de usuario. Verificado: 29 matches retornados, todos path-references a implementación interna (e.g., `commands/analyze.md` contiene `.claude/skills/workflow-analyze/SKILL.md` como path de archivo). 0 invocaciones `/workflow-*` como comandos de usuario. Nota: `.claude/references/` excluida — D-4 out-of-scope para FASE 31 (FASE 32+).
+- [x] `bash .claude/scripts/session-start.sh` → muestra `/thyrox:execute` en opción B (WP activo Phase 6); sin WP activo muestra `/thyrox:analyze`. Verificado: ninguna rama muestra `/workflow-*`.
+- [x] TD-036 implementado: `workflow-analyze/SKILL.md` tiene paso 1.5
+- [x] `thyrox-commands-namespace-execution-log.md` documentado
 - [ ] Usuario aprobó resultado (Gate SP-06)
 
 **Transition:** → Phase 7 TRACK
