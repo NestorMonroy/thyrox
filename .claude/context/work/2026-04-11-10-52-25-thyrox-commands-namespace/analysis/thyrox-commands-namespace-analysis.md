@@ -101,13 +101,18 @@ Mencionados en artefactos de FASE 29 (plan.md, solution-strategy.md) como "TD-03
 - `skill-vs-agent.md` — tabla de decisión
 - `commands/workflow_init.md` — sugiere `/workflow-analyze` en el siguiente paso
 
-**Decisión de implementación — Opción A vs B:**
+**Decisión de implementación — Opciones A/B/C/D:**
+
+> Hallazgo de referencia (`luongnv89/claude-howto`): el `:` en comandos es **exclusivamente**
+> el separador de namespace de plugins (`/plugin-name:command`). No existe "project namespace"
+> para skills ni commands standalone. Ver `analysis/claude-howto-reference-analysis.md`.
 
 | Opción | Descripción | Pros | Contras |
 |--------|-------------|------|---------|
-| **A — Rename directorios** | `skills/workflow-analyze/` → `skills/thyrox/analyze/` (o `thyrox-analyze/`) | Namespace coherente con carpetas | Rompe referencias de path actuales en todos los SKILL.md; git mv complejo |
-| **B — Alias en commands/** | Crear `.claude/commands/analyze.md` (invocado como `/thyrox:analyze`) que delega al skill existente | Sin cambio de paths; compatible con nomenclatura actual | Doble indirección; skills siguen llamándose `workflow-*` internamente |
-| **C — Solo convención textual** | Mantener skills con nombre `workflow-*` pero renombrar la invocación recomendada en docs a `/thyrox:analyze` | Cero impacto en archivos de skill | Incoherencia entre nombre del directorio y nombre del comando |
+| **A — Rename directorios** | `skills/workflow-analyze/` → nombre nuevo | Coherencia interna | Rompe paths en todos los SKILL.md; git mv complejo; namespace sigue plano (`/nuevo-nombre`) |
+| **B — Alias en commands/** | Crear `.claude/commands/analyze.md` | Sin cambio de paths | **INVÁLIDO**: si el skill tiene el mismo nombre, el skill gana siempre (skills > commands) |
+| **C — Solo convención textual** | Mantener `workflow-*` pero documentar como `/thyrox:analyze` | Cero impacto | Falso — `/thyrox:analyze` no existe, solo existe `/workflow-analyze` |
+| **D — Plugin (NUEVA)** | Crear `.claude-plugin/plugin.json` + `commands/` con wrappers que invocan los `workflow-*` skills | Namespace `/thyrox:*` auténtico · skills existentes intactos · distributable | Nueva capa de indirección plugin→skill · requiere spec de plugin.json |
 
 ---
 
@@ -277,12 +282,14 @@ Si se adopta la Opción B (aliases en commands/), ADR-016 no cambia porque los d
 
 | Prioridad | UC | Descripción | Esfuerzo |
 |-----------|-----|-------------|---------|
-| P1 — Crítico | UC-001 | Renombrar invocaciones a `/thyrox:*` en docs y scripts | Medio |
+| P1 — Crítico | UC-001 | Renombrar invocaciones a `/thyrox:*` en docs y scripts (requiere decidir A/C/D primero) | Medio |
 | P1 — Crítico | UC-004 | Actualizar `session-start.sh` | Bajo |
 | P1 — Crítico | TD-036 | Gate pre-creación de WP en `workflow-analyze/SKILL.md` | Bajo |
+| P1 — Crítico | UC-007 (nuevo) | Implementar plugin THYROX si se elige Opción D — `plugin.json` + command wrappers | Alto |
 | P2 — Alto | UC-002 | Renombrar `/workflow_init` → `/thyrox:init` | Bajo |
 | P2 — Alto | UC-005 | Resolver colisión TD-030 y actualizar TDs legacy | Bajo |
 | P2 — Alto | UC-006 | Actualizar `skill-vs-agent.md` | Bajo |
+| P2 — Alto | UC-008 (nuevo) | Investigar causa exacta de confirmación de `mkdir`/`Write` (ver `claude-howto-reference-analysis.md` §4) | Bajo |
 | P3 — Medio | UC-003 | Definir e implementar meta-comandos | Alto |
 
 ---
