@@ -105,7 +105,7 @@ Mencionados en artefactos de FASE 29 (plan.md, solution-strategy.md) como "TD-03
 
 > Hallazgo de referencia (`luongnv89/claude-howto`): el `:` en comandos es **exclusivamente**
 > el separador de namespace de plugins (`/plugin-name:command`). No existe "project namespace"
-> para skills ni commands standalone. Ver `analysis/claude-howto-reference-analysis.md`.
+> para skills ni commands standalone. Ver [claude-howto-reference-analysis](analysis/claude-howto-reference-analysis.md).
 
 | Opción | Descripción | Pros | Contras |
 |--------|-------------|------|---------|
@@ -289,7 +289,7 @@ Si se adopta la Opción B (aliases en commands/), ADR-016 no cambia porque los d
 | P2 — Alto | UC-002 | Renombrar `/workflow_init` → `/thyrox:init` | Bajo |
 | P2 — Alto | UC-005 | Resolver colisión TD-030 y actualizar TDs legacy | Bajo |
 | P2 — Alto | UC-006 | Actualizar `skill-vs-agent.md` | Bajo |
-| P2 — Alto | UC-008 (nuevo) | Investigar causa exacta de confirmación de `mkdir`/`Write` (ver `claude-howto-reference-analysis.md` §4) | Bajo |
+| P2 — Alto | UC-008 (nuevo) | Investigar causa exacta de confirmación de `mkdir`/`Write` (ver [claude-howto-reference-analysis](claude-howto-reference-analysis.md) §4) | Bajo |
 | P3 — Medio | UC-003 | Definir e implementar meta-comandos | Alto |
 
 ---

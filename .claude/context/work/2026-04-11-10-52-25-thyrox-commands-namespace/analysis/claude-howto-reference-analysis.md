@@ -199,7 +199,7 @@ Si el problema es C-02 (mkdir path absoluto), solución: verificar si el pattern
 
 ## 6. Nueva Opción D — Plugin architecture
 
-Añadir a la tabla de opciones de implementación en `thyrox-commands-namespace-analysis.md`:
+Añadir a la tabla de opciones de implementación en [thyrox-commands-namespace-analysis](thyrox-commands-namespace-analysis.md):
 
 | Opción | Descripción | Pros | Contras |
 |--------|-------------|------|---------|

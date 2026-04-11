@@ -12,7 +12,7 @@ alimenta: FASE 32 (references-refactor) — Phase 5 task-plan
 # Plan de Corrección — Archivos de Referencia
 
 Orden de intervención y cambios concretos requeridos en cada uno de los 12
-archivos de `.claude/references/`. Derivado del análisis `references-quality-analysis.md`.
+archivos de `.claude/references/`. Derivado del análisis [references-quality-analysis](references-quality-analysis.md).
 
 Los cambios se aplican en grupos secuenciales: cada grupo puede ejecutarse en
 paralelo dentro del grupo, pero el Grupo A debe completarse antes del Grupo B.
