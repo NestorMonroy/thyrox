@@ -1456,6 +1456,64 @@ reflejar el settings.json correcto sin las reglas Edit redundantes.
 
 ---
 
+## TD-039: subagent-patterns.md no documenta el mecanismo de invocación async (run_in_background vs background: true)
+
+```yml
+id: TD-039
+severidad: media
+estado: "[ ] Pendiente"
+detectado_en: FASE 31 (uso de deep-review agent en background 2026-04-11)
+area: references / subagent-patterns.md + agents/*.md
+tipo: documentación incompleta — dos planos de async no diferenciados
+```
+
+**Problema:**
+
+Hay dos planos de invocación asíncrona de subagentes que `subagent-patterns.md` no distingue:
+
+| Plano | Mecanismo | Quién lo controla |
+|-------|-----------|-------------------|
+| **Agente** (definición) | `background: true` en frontmatter del `.claude/agents/*.md` | El autor del agente |
+| **Orquestador** (invocación) | `run_in_background: true` en la llamada al Agent tool | El agente padre en tiempo de ejecución |
+
+`subagent-patterns.md` Patrón 4 solo muestra `background: true` en el frontmatter, sin documentar la invocación async desde el orquestador.
+
+**Comportamiento del orquestador al usar `run_in_background: true`:**
+
+Cuando el orquestador llama `Agent(run_in_background: true, ...)`, el sistema devuelve:
+```
+Async agent launched successfully.
+agentId: <id>  (internal — usar SendMessage con to: '<id>' para continuar)
+output_file: /tmp/.../<id>.output  (JSONL completo — NO leer con Read/Bash)
+Do not duplicate this agent's work — avoid working with the same files
+```
+
+Este patrón (agentId + SendMessage + output_file) no está documentado en nuestras referencias.
+
+**Gaps específicos:**
+
+1. `subagent-patterns.md` Patrón 4: no menciona `run_in_background` como alternativa al frontmatter
+2. `subagent-patterns.md` Patrón 5 (Resumable Agents): menciona `agentId` pero no en contexto de background async
+3. Ninguno de los 10 agentes en `.claude/agents/` documenta si es suitable para invocación async
+4. El comportamiento de `output_file` (JSONL transcript — no leer directamente, desborda contexto) no está documentado
+
+**Solución propuesta:**
+
+Actualizar `subagent-patterns.md` Patrón 4 para distinguir los dos planos:
+- Lado agente: `background: true` en frontmatter (declara compatibilidad)
+- Lado orquestador: `run_in_background: true` en el tool call (invocación efectiva)
+- Añadir sección sobre el `output_file` y por qué no debe leerse directamente
+- Integrar con Patrón 5 el flujo `SendMessage(to: agentId)` para continuar agentes async
+
+Opcionalmente: añadir anotación `async_suitable: true` en agentes como `deep-review`, `task-planner` que son candidatos naturales para background.
+
+**Criterio de cierre:**
+- `subagent-patterns.md` distingue frontmatter `background: true` de invocación `run_in_background: true`
+- Documenta el output del sistema (agentId, output_file, SendMessage) con ejemplo real
+- Al menos 2 agentes tienen anotación de suitability async (o se documenta la regla de cuándo usar async)
+
+---
+
 ## Procedimiento de cierre de TD (FASE 29)
 
 Cuando un TD se implementa y verifica, seguir este procedimiento:
