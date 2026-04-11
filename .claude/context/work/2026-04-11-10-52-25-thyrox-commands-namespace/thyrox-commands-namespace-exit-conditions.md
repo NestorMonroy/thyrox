@@ -38,7 +38,7 @@ wp_size: mediano
 - [x] UC-003 (meta-comandos): fuera de scope FASE 31 → FASE 32+
 - [x] UC-008 (investigar confirmación mkdir): observar en Phase 6, sin cambios de config previos
 - [x] Traceabilidad completa UC-001..UC-008 + TD-036 documentada
-- [ ] Usuario aprobó strategy (Gate SP-02)
+- [x] **Usuario aprobó strategy** ← Gate SP-02 aprobado 2026-04-11
 
 **Transition:** → Phase 3 PLAN
 
@@ -47,7 +47,7 @@ wp_size: mediano
 ## Phase 3: PLAN
 
 **Exit conditions:**
-- [ ] `thyrox-commands-namespace-plan.md` existe
+- [ ] [thyrox-commands-namespace-plan](thyrox-commands-namespace-plan.md) existe
 - [ ] Scope statement: qué archivos se modifican, cuáles no
 - [ ] Scope incluye / excluye meta-comandos (UC-003) explícitamente
 - [ ] ROADMAP.md actualizado con tarea de FASE 31

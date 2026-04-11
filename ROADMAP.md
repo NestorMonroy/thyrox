@@ -4,7 +4,7 @@ Categoría: Gestión de Proyecto
 Versión: 0.2.0
 Propósito: Plan maestro de trabajo y tracking de progreso — FASEs activas (27+)
 Objetivo: Documentar fases, epics, y estado actual del proyecto
-Fecha actualización: 2026-04-10
+Fecha actualización: 2026-04-11
 ```
 
 # ROADMAP - THYROX
@@ -109,3 +109,27 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 ### Grupo 7 — Cerrar TDs ya implementados
 
 - [x] Marcar [x] TD-002, TD-004, TD-011, TD-016, TD-017, TD-021 en technical-debt.md — 2026-04-10
+
+---
+
+## FASE 30: uv-adoption — Adopción de uv como gestor de entorno Python (2026-04-10)
+
+**WP:** `.claude/context/work/2026-04-10-03-32-38-uv-adoption/`
+**Causa raíz:** pip/venv/pyenv inconsistentes entre proyectos; uv ofrece velocidad y reproducibilidad superiores.
+
+- [ ] Phase 1 ANALYZE — completado, gate 1→2 pendiente aprobación usuario
+
+---
+
+## FASE 31: thyrox-commands-namespace — Namespace /thyrox:* mediante Plugin Claude Code (2026-04-11)
+
+**WP:** `.claude/context/work/2026-04-11-10-52-25-thyrox-commands-namespace/`
+**Causa raíz:** Sin namespace propio, los comandos `/workflow-*` no están agrupados, colisionan con proyectos externos y no permiten distribución como plugin.
+
+- [x] Phase 1 ANALYZE — completado, Gate SP-01 aprobado 2026-04-11
+- [x] Phase 2 SOLUTION_STRATEGY — completado, Gate SP-02 aprobado 2026-04-11 (Opción D: Plugin)
+- [-] Phase 3 PLAN — en progreso
+- [ ] Phase 4 STRUCTURE
+- [ ] Phase 5 DECOMPOSE
+- [ ] Phase 6 EXECUTE
+- [ ] Phase 7 TRACK
