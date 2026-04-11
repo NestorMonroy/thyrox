@@ -70,7 +70,7 @@ Los cambios se ejecutarán en Phase 6 EXECUTE modificando archivos de configurac
 |-------------|---------|
 | `technical-debt.md` = 70,360 bytes (REGLA-LONGEV-001 activa) | El split del archivo es parte obligatoria de este WP |
 | TD-005, TD-010 requieren WP propio por su naturaleza estratégica | Quedan fuera de scope de este WP |
-| TD-006 bloqueado por TD-008 | Solo ejecutar si TD-008 se cierra completamente en este WP |
+| TD-006 evaluable: TD-008 resuelto, thyrox/SKILL.md es catálogo (209 líneas) | Verificar si criterio se considera cumplido en este WP |
 | workflow-*/SKILL.md son archivos de configuración del framework | Requieren prompt (ask) según settings.json — no auto-allow |
 | Sesión única — contexto finito | Priorizar TDs por impacto, no intentar los 24 en una sola sesión |
 
@@ -105,8 +105,8 @@ technical-debt-audit WP
 | TD-005: Arquitectura orquestador+agentes | Requiere WP propio de investigación estratégica |
 | TD-010: Benchmark empírico SKILL vs CLAUDE.md | Trigger: caso de uso real que justifique el tiempo |
 | TD-030: Renombrar "Phase N" a nomenclatura semántica | Baja relevancia post-FASE 31 (/thyrox:* es interfaz pública); requiere análisis de impacto separado |
-| TD-022: Limitaciones triggering en workflow-* | Baja severidad; posponer hasta TD-008 completado |
-| TD-006: pm-thyrox thin orchestrator | Trigger = TD-008 completado. Si TD-008 se cierra aquí, evaluar en FASE 33 |
+| TD-022: Limitaciones triggering en workflow-* | Baja severidad; posponer |
+| TD-006: thyrox thin orchestrator | TD-008 resuelto — evaluar si TD-006 también se cierra en Grupo A |
 
 ---
 
@@ -115,7 +115,7 @@ technical-debt-audit WP
 - [ ] Los 24 TDs tienen veredicto explícito (pendiente / implementado / diferido / archivado)
 - [ ] `technical-debt.md` < 25,000 bytes (REGLA-LONGEV-001 cumplida)
 - [ ] TDs de alta prioridad (TD-029, TD-031, TD-032, TD-033, TD-038, TD-040) implementados
-- [ ] TDs con status `[ ] Pendiente` pero ya implementados marcados `[x]` (TD-007, TD-008*)
+- [ ] TDs con status `[ ] Pendiente` pero ya implementados marcados `[x]` (TD-007, TD-008, TD-006*)
 - [ ] `settings.json` sin reglas `Edit(...)` redundantes
 - [ ] `workflow-plan/SKILL.md` tiene sección `## Gate humano`
 
@@ -128,7 +128,8 @@ technical-debt-audit WP
 | TD | Estado en archivo | Estado real | Evidencia |
 |----|-------------------|-------------|-----------|
 | TD-007 | `[ ] Pendiente` | **Implementado** | `workflow-analyze/SKILL.md` líneas 46-53: "Step 0 — Contexto del usuario final (TD-007)" ya existe |
-| TD-008 | `[ ] Pendiente` | **Parcialmente implementado** | Addendum FASE 31: COMMANDS_SYNCED=true. Criterio original (pm-thyrox ≤ 80 líneas) no cumplido — TD permanece abierto con alcance reducido |
+| TD-008 | `[ ] Pendiente` | **Implementado** | `workflow-*/SKILL.md` tienen lógica completa por fase. `thyrox/SKILL.md` es catálogo (209 líneas, sin lógica de fase). `COMMANDS_SYNCED=true` en `session-start.sh`. Criterio "≤80 líneas" era para arquitectura anterior — arquitectura actual es correcta |
+| TD-006 | `[ ] Pendiente` | **Implementado** | Trigger era TD-008. Objetivo: `thyrox` sea thin orchestrator con lógica en `workflow-*/SKILL.md`. Arquitectura lograda en FASE 23+29+31. `thyrox/SKILL.md` = catálogo; `workflow-*/SKILL.md` = implementación |
 | TD-039 | `[ ] Pendiente` | **Parcialmente implementado** | `subagent-patterns.md` Patrón 4+5 actualizados en FASE 31. Pendiente: anotaciones `async_suitable` en 2 agentes |
 
 ### Grupo B: Alta prioridad — implementar en este WP
@@ -159,10 +160,10 @@ technical-debt-audit WP
 | TD | Razón de diferimiento |
 |----|----------------------|
 | TD-005 | Requiere WP de investigación estratégica propio |
-| TD-006 | Trigger = TD-008 completado + análisis de reducción a catálogo |
+| TD-006 | Movido a Grupo A — evaluado como implementado (ver arriba) |
 | TD-009 | Trigger = WP formal de agentes |
 | TD-010 | Trigger = caso de uso real |
-| TD-022 | Baja prioridad; depende de TD-008 |
+| TD-022 | Baja prioridad; diferir |
 | TD-030 | Baja relevancia post-FASE 31; requiere análisis de impacto |
 
 ### Grupo E: REGLA-LONGEV-001 (aplica en Phase 7 TRACK de este WP)
