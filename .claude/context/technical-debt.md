@@ -1306,6 +1306,64 @@ El resultado: cuando el usuario dice "crea un WP", Claude:
 
 ---
 
+## TD-037: Edit tool no tiene modo silencioso — imposible suprimir "The file has been updated successfully"
+
+```yml
+id: TD-037
+severidad: baja
+estado: "[ ] Pendiente — seguimiento de feature request plataforma Claude Code"
+detectado_en: FASE 31 (investigación 2026-04-11)
+area: plataforma / DX (developer experience)
+tipo: limitación de plataforma — no resoluble localmente
+```
+
+**Problema:**
+
+El Edit tool siempre emite `"The file /path/to/file has been updated successfully."` como
+tool result. No existe ningún mecanismo (hook, setting, flag) que permita suprimir o
+reemplazar este mensaje — a diferencia del Bash tool que muestra `(Bash completed with
+no output)` cuando no hay stdout/stderr.
+
+La diferencia de comportamiento entre herramientas genera ruido visual asimétrico:
+- Bash silencioso → `(Bash completed with no output)` — limpio, informativo
+- Edit exitoso → `"The file /path/to/file has been updated successfully."` — verboso en secuencias de múltiples edits
+
+**Por qué no se puede resolver con hooks:**
+
+1. `PostToolUse` hooks ejecutan **después** de que el tool result ya fue emitido — no pueden
+   suprimir ni reemplazar la salida ya producida.
+2. `suppressOutput: true` en hooks solo omite stdout del debug log interno, no el tool result
+   visible en la conversación.
+3. `PreToolUse` hooks pueden bloquear la herramienta, pero no modificar su output.
+4. No existe en Claude Code (a 2026-04-11) un mecanismo de `outputFilter` o equivalente
+   para PostToolUse que permita transformar el resultado.
+
+**Workaround descartado:**
+
+Sustituir Edit por `Bash(sed/python)` — rompe diff visible, validación de edits y UX de
+revisión. Peor trade-off que aceptar el mensaje verboso.
+
+**Fix requerido (plataforma):**
+
+Claude Code debería exponer uno de:
+- Flag en settings.json: `"editTool.silentSuccess": true`
+- Campo en PostToolUse hook: `"suppressToolOutput": true`
+- Comportamiento built-in: si el edit tuvo 0 cambios reales → no emitir mensaje; si tuvo
+  cambios → emitir diff compacto similar a `(Bash completed with N changes)`
+
+**Referencia:**
+
+Ver análisis completo en:
+`context/work/2026-04-11-10-52-25-thyrox-commands-namespace/analysis/edit-tool-silent-mode-finding.md`
+
+**Criterio de cierre:**
+
+- Claude Code lanza soporte para suppressOutput o equivalente en PostToolUse para Edit
+- O: Edit tool adopta comportamiento asimétrico similar a Bash (silencioso cuando éxito trivial)
+- Verificar en release notes de Claude Code
+
+---
+
 ## Procedimiento de cierre de TD (FASE 29)
 
 Cuando un TD se implementa y verifica, seguir este procedimiento:
