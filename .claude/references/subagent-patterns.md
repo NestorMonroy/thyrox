@@ -78,7 +78,9 @@ Consulta tu MEMORY.md al inicio de cada sesión para recordar contexto previo.
 
 ## Patrón 4 — Background Subagents
 
-El subagente corre sin bloquear la conversación principal.
+El subagente corre sin bloquear la conversación principal. **Hay dos planos independientes — no confundirlos.**
+
+### Plano A — Agente declara compatibilidad (frontmatter)
 
 ```yaml
 ---
@@ -88,30 +90,81 @@ description: Análisis de larga duración en background
 ---
 ```
 
-**Shortcuts:**
-- `Ctrl+B` — Poner en background un subagente que está corriendo
+`background: true` en el frontmatter declara que este agente es apto para ejecución async. Efecto: auto-deniega cualquier permiso que no esté pre-aprobado al correr en background. Ninguno de los agentes actuales de THYROX usa este campo — es opcional.
+
+### Plano B — Orquestador invoca en background (tool call)
+
+El orquestador pasa `run_in_background: true` al Agent tool, independientemente de si el agente tiene `background: true` en su frontmatter:
+
+```
+Agent({
+  description: "...",
+  run_in_background: true,
+  prompt: "Analiza cobertura Phase 5→6 del WP activo"
+})
+```
+
+**Output del sistema al lanzar:**
+
+```
+Async agent launched successfully.
+agentId: abc123  (internal ID — no mencionar al usuario.
+                  Usar SendMessage con to: 'abc123' para continuar.)
+output_file: /tmp/claude-0/.../tasks/abc123.output
+Do not duplicate this agent's work — avoid working with the same
+files or topics it is using. Continue with other work or respond
+to the user instead.
+```
+
+**Reglas de operación obligatorias:**
+
+| Regla | Razón |
+|-------|-------|
+| **NO leer `output_file`** | Es el JSONL completo del transcript — desborda el context window |
+| **NO duplicar trabajo** | Evitar tocar los mismos archivos que el agente en background |
+| **NO hacer sleep/poll** | El sistema notifica automáticamente al completar |
+| **Continuar con otra tarea** | El propósito del background es paralelismo — usarlo |
+
+**Shortcuts interactivos:**
+- `Ctrl+B` — Poner en background un subagente que está corriendo síncronamente
 - `Ctrl+F` (dos veces) — Matar todos los agentes en background
 
-**Comportamiento:** Los subagentes en background auto-deniegan cualquier permiso que no esté pre-aprobado. Útil para auditorías largas, builds, test suites.
+**Cuándo usar `run_in_background: true`:** Análisis largos (deep-review, auditorías), builds, test suites, research paralela — cualquier tarea ≥ 30s que no bloquea el hilo principal.
 
-**Cuándo usar:** Operaciones que tardan minutos y no necesitan respuesta inmediata; paralelismo real con la conversación principal.
+**Cuándo NO:** Si necesitas el resultado antes de continuar (el agente padre depende del output), usar invocación síncrona.
+
+---
 
 ## Patrón 5 — Resumable Agents
 
-El subagente puede continuar una conversación previa con contexto completo.
+El subagente puede continuar una conversación previa con contexto completo. Se integra con el Patrón 4: los agentes lanzados en background son continuables vía `SendMessage`.
+
+### Continuar un agente en background (misma sesión)
+
+```
+# El agente ya fue lanzado con run_in_background: true
+# Notificación de completado llega automáticamente
+# Para continuar o enviar trabajo adicional antes de que termine:
+
+SendMessage(to: 'abc123', message: "Analiza también el módulo de autorización")
+```
+
+El `agentId` devuelto al lanzar es el token de continuación — guardarlo si se quiere reanudar.
+
+### Continuar en sesión posterior
 
 ```bash
-# Primera invocación
+# Primera invocación (sesión A)
 > Use the code-analyzer agent to start reviewing the auth module
 # Returns agentId: "abc123"
 
-# Continuar más tarde
+# Continuar más tarde (sesión B)
 > Resume agent abc123 and analyze the authorization logic as well
 ```
 
 Los transcripts se guardan en `~/.claude/projects/{project}/{sessionId}/subagents/agent-{agentId}.jsonl`.
 
-**Cuándo usar:** Investigaciones largas distribuidas en múltiples sesiones, refinamiento iterativo sin perder contexto.
+**Cuándo usar:** Investigaciones largas en múltiples sesiones, refinamiento iterativo sin perder contexto, continuar agentes background con trabajo adicional.
 
 ## Patrón 6 — Agent Chaining
 
@@ -222,7 +275,7 @@ tools: Read, Bash(npm test:*), Bash(pytest:*)
 - [ ] La `description` incluye "use PROACTIVELY" si se quiere invocación automática
 - [ ] Solo se otorgan los tools necesarios para su tarea
 - [ ] Si necesita estado persistente → usar `memory` field
-- [ ] Si puede correr sin bloquear → considerar `background: true`
+- [ ] Si puede correr sin bloquear → considerar `background: true` en frontmatter (declara compatibilidad) o `run_in_background: true` en la invocación (activa async inmediatamente). Son planos independientes — ver Patrón 4.
 - [ ] Si hay riesgo de conflictos git → usar `isolation: worktree`
 
 ## Referencias
