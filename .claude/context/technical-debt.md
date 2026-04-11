@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-10 04:00:00
+updated_at: 2026-04-11 10:52:25
 ```
 
 # Deuda Técnica — THYROX
@@ -1254,6 +1254,55 @@ REGLA-LONGEV-001: Archivos vivos con umbral de tamaño
 **Criterio de cierre:**
 - `conventions.md` contiene la regla REGLA-LONGEV-001
 - `project-status.sh` o script equivalente alerta si archivo vivo supera 25,000 bytes
+
+---
+
+## TD-036: No existe gate pre-creación de WP en workflow-analyze
+
+```yml
+id: TD-036
+severidad: media
+estado: "[ ] Pendiente — integrado en FASE 31"
+detectado_en: FASE 31 (análisis profundo 2026-04-11)
+area: workflow-analyze / Phase 1
+```
+
+**Problema:**
+
+`workflow-analyze/SKILL.md` instruye a Claude a crear los artefactos del WP (directorio,
+`analysis.md`, `risk-register.md`, actualizar `now.md`) ANTES de cualquier gate con el usuario.
+El único `⏸ STOP` de Phase 1 ocurre AL FINAL — aprueba "continuar a Phase 2", no "crear el WP".
+
+El resultado: cuando el usuario dice "crea un WP", Claude:
+1. Crea `context/work/[timestamp]-[nombre]/` (mkdir auto-allow)
+2. Crea `analysis/[nombre]-analysis.md` (Write auto-acceptEdits)
+3. Crea `[nombre]-risk-register.md` (Write auto-acceptEdits)
+4. Actualiza `now.md` (hook sync-wp-state.sh silencioso)
+...sin que el usuario haya aprobado nombre, clasificación ni scope del WP.
+
+**Root causes:**
+
+1. Phase 1 fue diseñada como "crear primero, validar después" — el gate al final valida
+   calidad del análisis, no la creación en sí.
+2. `acceptEdits` + `PostToolUse Write` hook = artefactos WP se crean y sincronizan
+   sin ningún prompt de sistema.
+3. No existe instrucción en el SKILL que diga "antes de crear, confirmar con usuario".
+
+**Fix — Añadir paso 1.5 en `workflow-analyze/SKILL.md`:**
+
+```
+1.5 ⚠ GATE PRE-WP — Antes de crear ningún archivo, confirmar con el usuario:
+  - Nombre propuesto: [nombre] (formato kebab-case)
+  - Archivos que se crearán: analysis/[nombre]-analysis.md, [nombre]-risk-register.md
+  - Reversibilidad: documentation | reversible | irreversible
+  - Si now.md tiene WP activo distinto: indicar que se suspende FASE N y se abre FASE M
+  Esperar confirmación explícita antes de mkdir ni Write.
+```
+
+**Criterio de cierre:**
+- `workflow-analyze/SKILL.md` contiene paso 1.5 con gate pre-WP
+- El gate ocurre antes de cualquier `mkdir` o `Write` de artefactos WP
+- Verificado en al menos una sesión: Claude pide confirmación antes de crear el directorio
 
 ---
 

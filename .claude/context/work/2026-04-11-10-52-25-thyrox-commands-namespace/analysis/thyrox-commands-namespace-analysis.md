@@ -197,6 +197,7 @@ Tabla de decisión usa columna `/workflow_*` en múltiples filas. Debe reflejar 
 | `/thyrox:analyze` ... `/thyrox:track` funcional via Skill tool | Invocación manual en sesión de prueba |
 | `session-start.sh` muestra `/thyrox:analyze` en "Opción B" | `bash .claude/scripts/session-start.sh` |
 | TD-030 colisión de IDs resuelta | `technical-debt.md` tiene IDs sin ambigüedad |
+| TD-036 implementado: `workflow-analyze/SKILL.md` tiene paso 1.5 con gate pre-WP | Leer SKILL.md y verificar el paso |
 | Si se implementan meta-comandos: `/thyrox:next` ejecuta la fase correcta | Test manual |
 
 ---
@@ -239,6 +240,7 @@ Tabla de decisión usa columna `/workflow_*` en múltiples filas. Debe reflejar 
 |-----------|-----|-------------|---------|
 | P1 — Crítico | UC-001 | Renombrar invocaciones a `/thyrox:*` en docs y scripts | Medio |
 | P1 — Crítico | UC-004 | Actualizar `session-start.sh` | Bajo |
+| P1 — Crítico | TD-036 | Gate pre-creación de WP en `workflow-analyze/SKILL.md` | Bajo |
 | P2 — Alto | UC-002 | Renombrar `/workflow_init` → `/thyrox:init` | Bajo |
 | P2 — Alto | UC-005 | Resolver colisión TD-030 y actualizar TDs legacy | Bajo |
 | P2 — Alto | UC-006 | Actualizar `skill-vs-agent.md` | Bajo |
