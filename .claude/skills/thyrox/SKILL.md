@@ -192,6 +192,14 @@ Ver [permission-model](../../references/permission-model.md) para la referencia 
 [claude-code-components](../../references/claude-code-components.md) — Referencia oficial de Skills, Subagents y Context (docs oficiales)
 [permission-model](../../references/permission-model.md) — Dos planos de aprobacion: gates de decision (SKILL) vs permisos de herramienta (settings.json)
 
+### Plataforma Claude Code — arquitectura y extensión (leer cuando se trabaja con la plataforma)
+[plugins](../../references/plugins.md) — Arquitectura de plugin: manifest plugin.json, namespace /name:cmd, distribución, seguridad de subagentes en plugins
+[hook-output-control](../../references/hook-output-control.md) — Semántica de suppressOutput (stdout del hook, NO el tool result), additionalContext, updatedInput, permissionDecision
+[subagent-patterns](../../references/subagent-patterns.md) — Patrones de aislamiento de contexto, worktree isolation, persistent memory, agent teams, background agents
+[scheduled-tasks](../../references/scheduled-tasks.md) — /loop, CronCreate, cloud tasks persistentes, print mode (-p), CI/CD integration, auto mode
+[memory-hierarchy](../../references/memory-hierarchy.md) — Sistema de 8 niveles de memoria CLAUDE.md, imports @path, auto-memory, managed settings enterprise
+[mcp-integration](../../references/mcp-integration.md) — Servidores MCP (HTTP/stdio/SSE), OAuth, elicitation, canales push, límites de herramientas
+
 ### Avanzado (leer cuando Claude tiene dificultades)
 [prompting-tips](../../references/prompting-tips.md) — Cuando Claude no entiende instrucciones
 [long-context-tips](../../references/long-context-tips.md) — Documentos >5,000 palabras
