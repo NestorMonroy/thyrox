@@ -43,7 +43,7 @@ agrega una capa de namespace encima sin duplicar lógica.
 El formato `/thyrox:analyze` no puede lograrse con skills standalone ni con commands
 en `.claude/commands/`. El separador `:` solo existe en el contexto de plugins Claude Code.
 
-Esta constraintarquitectónica elimina las opciones A, B y C:
+Esta constraint arquitectónica elimina las opciones A, B y C:
 - Opción A (`/thyrox-analyze` con guión) → namespace incorrecto
 - Opción B (commands que delegan a skills) → inválida, skills ganan precedencia
 - Opción C (instrucción de texto) → no cambia el menú `/`
@@ -221,8 +221,22 @@ sin usar la arquitectura de plugin.
 | `commands/next.md` | `/thyrox:next` | meta-comando (fuera de scope FASE 31) |
 | `commands/init.md` | `/thyrox:init` | skill `workflow_init` |
 
-Los meta-comandos (`next`, `sync`, `prime`, `review`) se difieren a FASE 32+ por ser
-out-of-scope en FASE 31 (UC-005 marcado como out-of-scope en Phase 1).
+Los meta-comandos (`next`, `sync`, `prime`, `review`) se difieren a FASE 32+ —
+UC-003 está fuera de scope de FASE 31. El entry `next.md` se elimina de la tabla
+de command files de FASE 31 para evitar confusión.
+
+**Mapa de comandos en scope de FASE 31:**
+
+| Command file | Comando resultante | Skill invocado |
+|-------------|-------------------|----------------|
+| `commands/analyze.md` | `/thyrox:analyze` | `workflow-analyze` |
+| `commands/strategy.md` | `/thyrox:strategy` | `workflow-strategy` |
+| `commands/plan.md` | `/thyrox:plan` | `workflow-plan` |
+| `commands/structure.md` | `/thyrox:structure` | `workflow-structure` |
+| `commands/decompose.md` | `/thyrox:decompose` | `workflow-decompose` |
+| `commands/execute.md` | `/thyrox:execute` | `workflow-execute` |
+| `commands/track.md` | `/thyrox:track` | `workflow-track` |
+| `commands/init.md` | `/thyrox:init` | skill `workflow_init` |
 
 **Implicaciones:** `session-start.sh` debe actualizarse para mostrar `/thyrox:analyze`
 en la opción B en lugar de `/workflow-analyze`.
@@ -266,6 +280,53 @@ no se corrigen en FASE 31 — lo hará FASE 32.
 
 ---
 
+## Technology Stack
+
+No se introduce tecnología nueva. El "stack" es el conjunto de componentes de la
+plataforma Claude Code que se utilizan para implementar la solución:
+
+```
+Plugin manifest     → .claude-plugin/plugin.json (JSON estándar, sin dependencias)
+Command interface   → commands/*.md (Markdown, frontmatter YAML)
+Skills (impl.)      → .claude/skills/workflow-*/SKILL.md (existentes, sin modificar)
+Shell scripts       → .claude/scripts/session-start.sh (bash, actualización de strings)
+Plataforma          → Claude Code (Skills, Plugin API, Skill tool)
+```
+
+**Componentes nuevos:** `plugin.json` (1 archivo) + 8 command files Markdown.
+**Componentes modificados:** `session-start.sh` (strings de display), `workflow-analyze/SKILL.md` (un paso).
+**Sin dependencias externas:** todo es Markdown, JSON y bash dentro del repo.
+
+---
+
+## Architecture Patterns
+
+### Plugin Facade (interfaz → implementación)
+
+Cada command file actúa como fachada sobre el skill correspondiente.
+El usuario interactúa con `/thyrox:analyze`; el skill `workflow-analyze` ejecuta
+la lógica real. La interfaz pública es intercambiable sin tocar la implementación.
+
+### Namespace Isolation
+
+El prefijo `thyrox:` en todos los comandos los agrupa bajo un namespace único.
+Ningún otro comando del sistema puede colisionar con `/thyrox:*` — el namespace
+es propiedad exclusiva del plugin por diseño de la plataforma.
+
+### Additive Extension (extensión aditiva)
+
+La implementación solo agrega archivos nuevos. No renombra, no elimina, no modifica
+los skills existentes. Los usuarios que usan `/workflow-analyze` directamente siguen
+funcionando sin cambios.
+
+### Single Authority per Concern
+
+- **Namespace**: `plugin.json::name` es la única fuente de verdad del prefijo `thyrox:`
+- **Lógica de fase**: cada `workflow-*/SKILL.md` es la única fuente de verdad de su fase
+- **Display de comandos**: `session-start.sh::_phase_to_command()` es la única fuente de verdad del mapeo phase→comando
+
+---
+
 ## Arquitectura de la solución
 
 ### Estructura de archivos a crear/modificar
@@ -300,6 +361,18 @@ thyrox/                              ← repo root (ya existe)
 
 ## Atributos de calidad — cómo se alcanzan
 
+### Descubribilidad (Alta — Phase 1 §6)
+
+**Mecanismo:** El namespace `thyrox:` agrupa todos los comandos del framework bajo
+un prefijo común. Al escribir `/thyrox:` en el menú `/`, el usuario ve los 8 comandos
+de fase sin necesidad de conocer cada nombre. Esto es una mejora sobre la situación
+actual donde `/workflow-*` no señala visualmente que pertenecen a THYROX.
+
+**Verificación:** En sesión con plugin activo, escribir `/thyrox:` y confirmar que
+el autocompletado muestra los 8 commands.
+
+---
+
 ### Compatibilidad hacia atrás
 
 **Mecanismo:** Los `workflow-*` skills NO se renombran ni modifican. Los usuarios que
@@ -328,17 +401,30 @@ a modificar (`session-start.sh`, `workflow-analyze/SKILL.md`) son reversibles co
 
 ---
 
+## Adherence to Constraints
+
+| Restricción (Phase 1 §7) | Cómo se respeta en Phase 2 |
+|--------------------------|---------------------------|
+| FASE 30 (uv-adoption) tiene gate abierto | FASE 31 no depende de FASE 30. Son paralelas e independientes. El plugin es aditivo y no toca code paths de FASE 30. |
+| `workflow-*/SKILL.md` editados requieren `updated_at` automático | La única edición a un SKILL.md es el paso 1.5 en `workflow-analyze/SKILL.md`. La regla de `updated_at` automático de CLAUDE.md aplica. No requiere paso especial. |
+| Artefactos WP históricos son inmutables | Opción D no toca `context/work/`. Solo agrega archivos nuevos en root y modifica scripts/skills activos. |
+| ADR-016 documenta `workflow-*` como excepción a "Single skill" | Amendment planificado como ADR-019. El texto de ADR-016 no cambia — se agrega nota. |
+
+---
+
 ## Traceabilidad
 
-| UC / TD | Hallazgo Phase 1 | Decisión Phase 2 |
-|---------|-----------------|-----------------|
-| UC-001 | Namespace `/thyrox:*` requiere plugin | D-1: Opción D — Plugin |
-| UC-002 | `session-start.sh` muestra formato incorrecto | D-2: actualizar display string |
-| UC-003 | Referencias con problemas de calidad | Separado → FASE 32 (D-4) |
-| UC-004 | ADR-016 necesita amendment | Pendiente — definir en Phase 3 si aplica |
-| UC-005 | Meta-comandos (`next`, `sync`, etc.) | Out-of-scope FASE 31 (confirmado) |
-| UC-006 | Bootstrapped projects rompen con rename | Irrelevante — Opción D no renombra skills |
-| TD-036 | No existe gate pre-creación WP | D-3: paso 1.5 en workflow-analyze/SKILL.md |
+| UC / TD | Hallazgo Phase 1 (prioridad) | Decisión Phase 2 |
+|---------|------------------------------|-----------------|
+| UC-001 | Namespace `/thyrox:*` requiere plugin (P1) | D-1: Opción D — Plugin + 8 command files |
+| UC-002 | Renombrar `/workflow_init` → `/thyrox:init` (P2) | D-2: `commands/init.md` en command files |
+| UC-003 | Meta-comandos `next/sync/prime/review` sin spec (P3) | Fuera de scope FASE 31 → FASE 32+ |
+| UC-004 | `session-start.sh` muestra formato incorrecto (P1) | D-2: actualizar `_phase_to_command()` + strings |
+| UC-005 | TD-030 colisión IDs + TDs legacy con `/workflow_*` (P2) | Incluido en Phase 6: actualizar `technical-debt.md` como parte del rename |
+| UC-006 | `skill-vs-agent.md` tiene referencias `/workflow_*` en tabla (P2) | Incluido en Phase 6: actualizar columna de tabla a `/thyrox:*` |
+| UC-007 | Implementar plugin THYROX si Opción D (P1) | D-1: cubierto — `.claude-plugin/` + `commands/` |
+| UC-008 | Investigar confirmación `mkdir`/`Write` pese a `acceptEdits` (P2) | Observar durante Phase 6: documentar comportamiento real en execution-log. Sin cambios de configuración hasta tener evidencia. |
+| TD-036 | No existe gate pre-creación WP en workflow-analyze | D-3: paso ⏸ STOP 1.5 en `workflow-analyze/SKILL.md` |
 
 ---
 
@@ -346,17 +432,20 @@ a modificar (`session-start.sh`, `workflow-analyze/SKILL.md`) son reversibles co
 
 | ADR | Tema | Acción |
 |-----|------|--------|
-| Nuevo ADR-017 | Arquitectura de plugin THYROX — por qué Opción D | Crear en Phase 3 |
+| Nuevo ADR-019 | Arquitectura de plugin THYROX — por qué Opción D | Crear en Phase 3 |
 | Amendment ADR-016 | Excepción de `workflow-*` skills — agregar nota de plugin commands | Phase 3 |
 
 ---
 
-## Checklist de validación
+## Checklist de validación (TD-029)
 
-- [x] Key ideas claramente articuladas
-- [x] Decisiones fundamentales documentadas con alternativas y justificación
-- [x] Unknowns investigados con evidencia (claude-howto reference)
-- [x] Traceabilidad a UC/TD de Phase 1
-- [x] Restricciones respetadas (no romper workflow-* existentes)
-- [x] ADRs identificados (pendientes de crear en Phase 3)
-- [x] Scope de FASE 31 delimitado (sin meta-comandos, sin corrección de referencias)
+- [x] Key Ideas claramente articuladas (3 ideas)
+- [x] Research Step — unknowns investigados con evidencia (claude-howto reference)
+- [x] Fundamental Decisions documentadas con alternativas y justificación (D-1..D-4)
+- [x] Technology Stack documentado (componentes Claude Code, sin dependencias externas)
+- [x] Architecture Patterns documentados (Facade, Namespace Isolation, Additive Extension, Single Authority)
+- [x] Atributos de calidad — todos los 4 de Phase 1 §6 tienen estrategia (Descubribilidad, Compatibilidad, Consistencia, Reversibilidad)
+- [x] Adherence to Constraints — las 4 restricciones de Phase 1 §7 mapeadas
+- [x] Traceabilidad completa a todos los UC/TD de Phase 1 (UC-001..UC-008 + TD-036)
+- [x] Scope de FASE 31 delimitado (sin meta-comandos UC-003, sin corrección de referencias UC-003bis)
+- [x] ADRs identificados para Phase 3 (ADR-019 nuevo + amendment ADR-016)

@@ -32,10 +32,12 @@ wp_size: mediano
 ## Phase 2: SOLUTION_STRATEGY
 
 **Exit conditions:**
-- [ ] `thyrox-commands-namespace-solution-strategy.md` existe
-- [ ] Decisión documentada: Opción A / Opción B / Opción C (con justificación)
-- [ ] Si aplica: ADR borrador creado o amendment de ADR-016 planificado
-- [ ] Meta-comandos (UC-003): decisión documentada — ¿en FASE 31 o diferir FASE 32?
+- [x] `thyrox-commands-namespace-solution-strategy.md` existe (5 secciones obligatorias del template)
+- [x] Decisión documentada: Opción D — Plugin (con justificación y alternativas A/B/C descartadas)
+- [x] ADR-017 planificado + amendment ADR-016 planificado (crear borrador en Phase 3)
+- [x] UC-003 (meta-comandos): fuera de scope FASE 31 → FASE 32+
+- [x] UC-008 (investigar confirmación mkdir): observar en Phase 6, sin cambios de config previos
+- [x] Traceabilidad completa UC-001..UC-008 + TD-036 documentada
 - [ ] Usuario aprobó strategy (Gate SP-02)
 
 **Transition:** → Phase 3 PLAN
@@ -85,7 +87,7 @@ wp_size: mediano
 
 **Exit conditions:**
 - [ ] Todas las T-NNN en `[x]`
-- [ ] `grep -ri "/workflow-analyze\|/workflow-strategy\|/workflow-plan\|/workflow-structure\|/workflow-decompose\|/workflow-execute\|/workflow-track" .claude/skills/ .claude/scripts/ .claude/references/ .claude/commands/` → 0 resultados (excepto paths de directorio)
+- [ ] `grep -ri "/workflow-analyze\|/workflow-strategy\|/workflow-plan\|/workflow-structure\|/workflow-decompose\|/workflow-execute\|/workflow-track" .claude/scripts/ .claude/references/ .claude/commands/ .claude/skills/thyrox/SKILL.md` → 0 resultados (los `workflow-*/SKILL.md` internos quedan intactos — son implementación, no interfaz)
 - [ ] `bash .claude/scripts/session-start.sh` → muestra `/thyrox:analyze` en opción B
 - [ ] TD-036 implementado: `workflow-analyze/SKILL.md` tiene paso 1.5
 - [ ] `thyrox-commands-namespace-execution-log.md` documentado
