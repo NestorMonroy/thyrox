@@ -48,7 +48,7 @@ reversibility: reversible
 - [x] DAG de dependencias documentado en solution-strategy.md
 - [x] Criterios de no-duplicación documentados
 - [x] Decisión sobre TD-010: nota de evaluación redactada
-- [ ] **Usuario aprobó estrategia de contenido** ← Gate SP-02
+- [x] **Usuario aprobó estrategia de contenido** ← Gate SP-02 aprobado 2026-04-12
 
 **Transition:** → Phase 3 PLAN
 
@@ -57,9 +57,9 @@ reversibility: reversible
 ## Phase 3: PLAN
 
 **Exit conditions:**
-- [ ] Scope statement con lista de archivos a crear/modificar
-- [ ] Archivos existentes verificados con grep (referencias cruzadas)
-- [ ] ROADMAP.md actualizado con entrada FASE 33
+- [x] Scope statement con lista de archivos a crear/modificar (14 archivos + 2 adicionales)
+- [x] Archivos existentes verificados con grep (referencias cruzadas — solo thyrox/SKILL.md y scheduled-tasks.md requieren update)
+- [x] ROADMAP.md actualizado con entrada FASE 33
 - [ ] **Usuario aprobó plan** ← Gate SP-03
 
 **Transition:** → Phase 4 STRUCTURE
