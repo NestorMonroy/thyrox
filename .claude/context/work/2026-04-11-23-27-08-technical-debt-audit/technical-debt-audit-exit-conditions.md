@@ -66,7 +66,7 @@ reversibility: reversible
 - [ ] Cada TD implementado (Grupo B) tiene SPEC-NNN con acceptance criteria verificable
 - [ ] SPEC para split de `technical-debt.md` (qué mover, formato archive)
 - [ ] Inventario de archivos afectados verificado con grep (no estimado)
-- [ ] **Usuario aprobó spec** ← Gate SP-04
+- [x] **Usuario aprobó spec** ← Gate SP-04 aprobado 2026-04-12
 
 **Transition:** → Phase 5 DECOMPOSE
 
