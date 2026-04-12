@@ -113,26 +113,45 @@ Identificar una tarea recurrente de THYROX (e.g., "escribir un commit message", 
 | `agent-spec.md` | Spec formal de agentes. Coherencia necesaria (GAP-007/008). |
 | `thyrox/SKILL.md` | Referencia skill-authoring.md en sección Avanzado. |
 
-## 9. Fuera de alcance
+## 9. Decisión de estructura — Opción B (aprobada SP-01)
+
+5 archivos de authoring dedicados — uno por tipo de componente:
+
+| Archivo | Tipo | Estado |
+|---------|------|--------|
+| `skill-authoring.md` | SKILL best practices | Actualizar (15 gaps, parte de ellos) |
+| `agent-authoring.md` | AGENT/Subagent best practices | Crear nuevo |
+| `claude-authoring.md` | CLAUDE.md best practices | Crear nuevo |
+| `hook-authoring.md` | HOOK best practices | Crear nuevo |
+| `component-decision.md` | Cuándo usar cada tipo | Crear nuevo (absorbe GAP-013) |
+
+**Razón:** Cada archivo es autónomo, bien-dimensionado y descubrible por nombre. Sigue el patrón que el propio skill-authoring.md enseña (progressive disclosure).
+
+Ya existen y NO se modifican: `plugins.md`, `skill-vs-agent.md`, `claude-code-components.md`, `hooks.md`, `hook-output-control.md`.
+
+## 10. Fuera de alcance
 
 - Ejecutar el benchmark TD-010 (trigger no activado)
-- Modificar los 10 agentes existentes (pertenece a otro WP)
+- Modificar los 10 agentes existentes (pertenece a TD-009)
 - Actualizar templates de skills existentes
 - Modificar `agent-spec.md` (pertenece a TD-009)
+- Modificar `plugins.md` (ya existe y está correcto)
 
-## 10. Criterios de éxito
+## 11. Criterios de éxito
 
-- `skill-authoring.md` contiene los 7 gaps de alta prioridad
-- Si el documento supera 700 líneas → split en `skill-authoring-subagents.md`
-- `thyrox/SKILL.md` referencia actualizada para apuntar al archivo split (si aplica)
+- 5 archivos creados/actualizados cubriendo todos los tipos de componentes
 - Ningún campo documentado contradice `claude-code-components.md`
+- `thyrox/SKILL.md` referencia los 5 archivos en sección "Avanzado"
 - TD-025 marcado `[x]` en `technical-debt.md`
-- TD-010 mantiene estado `[ ]` con nota de evaluación registrada
+- TD-010 mantiene estado `[ ]` con nota de evaluación
 
-## 11. Stopping Point Manifest
+## 12. Stopping Point Manifest
 
 | SP | Momento | Descripción |
 |----|---------|-------------|
-| SP-01 | Phase 1 → 2 | Usuario aprueba hallazgos y veredicto TD-010 |
-| SP-02 | Phase 2 → 6 | Usuario aprueba estrategia de split y qué gaps incluir |
-| SP-03 | Phase 6 → 7 | Usuario confirma resultado de la actualización |
+| SP-01 | Phase 1 → 2 | Usuario aprueba hallazgos, veredicto TD-010 y estructura Opción B ← **aprobado 2026-04-12** |
+| SP-02 | Phase 2 → 3 | Usuario aprueba estrategia de contenido (qué va en cada archivo) |
+| SP-03 | Phase 3 → 4 | Usuario aprueba plan y scope |
+| SP-04 | Phase 4 → 5 | Usuario aprueba requirements spec |
+| SP-05 | Phase 5 → 6 | Usuario aprueba task-plan |
+| SP-06 | Phase 6 → 7 | Usuario confirma resultado de los 5 archivos |
