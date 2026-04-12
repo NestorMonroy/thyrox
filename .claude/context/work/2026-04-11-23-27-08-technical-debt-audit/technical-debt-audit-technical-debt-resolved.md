@@ -3,7 +3,7 @@ created_at: 2026-04-12 00:00:00
 feature: technical-debt-audit
 wp: 2026-04-11-23-27-08-technical-debt-audit
 fase: FASE 32
-tds_resueltos: 10
+tds_resueltos: 15
 ```
 
 # TDs Resueltos — technical-debt-audit
@@ -41,8 +41,25 @@ tds_resueltos: 10
 
 ---
 
+---
+
+## Grupo C — TDs cancelados (deep analysis post-FASE 32, 2026-04-12)
+
+> `[x]` = cancelado — ya no aplica al contexto actual o fue resuelto de otra forma (sin haber sido marcado `[x]` en su momento).
+
+| TD | Descripción | Motivo de cancelación | Evidencia |
+|----|-------------|----------------------|-----------|
+| TD-005 | Arquitectura monolítica — evaluar evolución a orquestador + agentes | ADR-015 tomó la decisión (Opción C: 5 capas). 7 `workflow-*` skills + 10 agentes nativos implementan la arquitectura. Criterio de cierre satisfecho sin ser marcado. | `context/decisions/adr-015.md` existe. `.claude/agents/` = 10 agentes. |
+| TD-022 | Limitaciones triggering no integradas en workflow-* skills | Self-cancelling: el propio TD tenía addendum "revisar si necesario." Con plugin `/thyrox:*` (FASE 31), los `workflow-*` son implementación interna — el usuario ya no los ve directamente. El entry point `thyrox/SKILL.md` cubre la arquitectura. | Addendum en TD-022. FASE 31 completada. `thyrox/SKILL.md` referencia ADR-015. |
+| TD-026 | ROADMAP.md supera límite de lectura del Read tool | Resuelto en FASE 29 sin haberse marcado `[x]`. `ROADMAP.md` = 6,599 bytes. `ROADMAP-history.md` existe con FASEs 1-26. Los tres criterios de cierre están cumplidos. | `wc -c ROADMAP.md` = 6,599 bytes. `ROADMAP-history.md` existe. |
+| TD-030 | Renombrar "Phase N" a nomenclatura alineada con workflow-* | Self-cancelling: addendum post-FASE 31 en el propio TD concluye que con `/thyrox:*` como interfaz pública, renombrar fases internas tiene costo masivo (cientos de archivos) y cero beneficio visible al usuario. | Addendum en TD-030. FASE 31 completada. Glosario FASE/Phase en CLAUDE.md sigue siendo válido. |
+| TD-034 | CHANGELOG.md supera límite de lectura del Read tool | Resuelto en FASE 29 sin haberse marcado `[x]`. `CHANGELOG.md` = 15,358 bytes. `CHANGELOG-archive.md` existe con versiones históricas. Los tres criterios de cierre están cumplidos. | `wc -c CHANGELOG.md` = 15,358 bytes. `CHANGELOG-archive.md` existe. |
+
+---
+
 ## Notas
 
 - TD-006/007/008/029/031/032/033: status actualizado en `technical-debt.md` con fecha de auditoría `2026-04-11` (fecha del descubrimiento, no de ejecución).
 - TD-038/039/040: implementados y verificados en Phase 6 EXECUTE de FASE 32.
 - REGLA-LONGEV-001: tras crear este archivo, se eliminaron de `technical-debt.md` todas las entradas `[x]` de FASE 29, FASE 31 y FASE 32 (22 entradas en total).
+- TD-005/022/026/030/034: cancelados en deep analysis post-FASE 32 (2026-04-12). Se eliminaron de `technical-debt.md`. `tds_resueltos` actualizado de 10 → 15.

@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-11 22:20:00
+updated_at: 2026-04-12 10:30:00
 ```
 
 # Deuda Técnica — THYROX
@@ -25,7 +25,7 @@ ser atendidos. Cada ítem tiene un ID, descripción, impacto, y criterio de reso
 Severidad: media
 Origen: Revisión 2026-04-03
 Fase afectada: Todas (al crear artefactos desde templates)
-Estado: [ ] Pendiente
+Estado: [-] En progreso — regla en conventions.md ✓ — falta detección de fechas reales sin hora en validate-session-close.sh
 ```
 
 **Problema:**
@@ -59,7 +59,7 @@ en place.
 Severidad: baja
 Origen: Auditoría 2026-04-03
 Fase afectada: Cross-phase (confusión al buscar templates)
-Estado: [ ] Pendiente
+Estado: [-] En progreso — 5/6 templates referenciados ✓ — falta ad-hoc-tasks.md.template en SKILL.md activo
 ```
 
 **Problema:**
@@ -93,49 +93,6 @@ task-plan. Candidato a eliminar: `analysis-phase.md.template` (duplica introduct
 **Criterio de cierre:**
 Cero templates en `assets/` sin referencia en SKILL.md o en un reference activo.
 Cada template tiene una fase asignada o está en `assets/legacy/`.
-
----
-
-## TD-005: Arquitectura monolítica — evaluar evolución a orquestador + agentes por fase
-
-```
-Severidad: media
-Origen: Observación estratégica 2026-04-08 (async-gates WP)
-Fase afectada: Arquitectura general de pm-thyrox
-Estado: [ ] Pendiente — requiere WP propio
-```
-
-**Problema:**
-Diseño actual: "un SKILL que hace todo" (monolítico). A medida que el framework
-crece (7 fases, paralelo, gates, agentes especializados), la brecha entre lo que
-SKILL.md instruye y lo que los agentes hacen crece también.
-
-Anti-patrones activos:
-- **Monolithic SKILL**: crece sin control, no escala a 10+ agentes en paralelo
-- **Lógica de coordinación inline**: SKILL contiene lógica que debería estar en agentes especializados
-- **Paralelismo sin coordinación formal**: N agentes sin state compartido explícito
-
-**Alternativas a evaluar en WP propio:**
-```
-A) Todo en 1 SKILL (actual)                → no escala
-B) SKILL = orquestador + agentes por fase  → separación de concerns
-C) SKILL = solo entrada + agentes todo     → máximo desacoplamiento
-D) Hybrid: Agent & Repository + CSP        → decisiones dinámicas con backtracking
-E) Event-Driven                            → descartado (no disponible en Claude Code)
-```
-
-**Agentes especializados candidatos (si se elige B o D):**
-- `Agent-Phase1` — ANALYZE + Stopping Point Manifest
-- `Agent-Phase2-3` — SOLUTION_STRATEGY + PLAN
-- `Agent-Phase4-5` — STRUCTURE + DECOMPOSE
-- `Agent-Phase6` — EXECUTE + manejo de gates async
-- `Agent-Phase7` — TRACK + actualización de context files
-
-**Constraint clave:** Solo Claude Code. Coordinación vía `context/now.md` + git.
-
-**Criterio de cierre:**
-WP propio analiza 5 alternativas, decide arquitectura, produce ADR permanente.
-No implementar sin análisis — este ítem registra la deuda, no la resuelve.
 
 ---
 
@@ -179,7 +136,7 @@ ADR-015 actualizado si los datos contradicen los hallazgos externos.
 Severidad: media
 Origen: FASE 21 — skill-architecture-review (ADR-015 D-08)
 Fase afectada: Capa 4 — Agentes nativos (.claude/agents/)
-Estado: [ ] Pendiente — trigger: al abrir WP de agentes
+Estado: [-] En progreso — convención en conventions.md + CLAUDE.md ✓ — falta agent-spec.md campo state_file + instrucciones en task-executor/task-planner
 ```
 
 **Problema:**
@@ -213,7 +170,7 @@ actualizan su `now-{agent-name}.md`. La convención está documentada en `conven
 Severidad: baja
 Origen: Revisión FASE 22 — Phase 6 EXECUTE (2026-04-08)
 Fase afectada: Phase 6 EXECUTE (al crear execution-log)
-Estado: [ ] Pendiente
+Estado: [-] En progreso — template corregido ✓ — falta corrección retroactiva framework-evolution-execution-log.md
 ```
 
 **Problema:**
@@ -244,30 +201,6 @@ Todos los execution-log nuevos usan timestamp completo en frontmatter y en heade
 
 ---
 
-## TD-022: Limitaciones conocidas (triggering probabilístico) no integradas en workflow_* skills
-
-```
-Severidad: baja
-Origen: Revisión FASE 22 — Sesión 6 (2026-04-08)
-Fase afectada: workflow-* skills (todos)
-Estado: [ ] Pendiente — la sección "Limitaciones conocidas" fue eliminada de pm-thyrox/SKILL.md en FASE 23 (D-04). Revisar si es necesario integrar en workflow-* skills.
-```
-
-**Problema:**
-
-La sección "Limitaciones conocidas y arquitectura objetivo" de pm-thyrox SKILL.md documenta que el triggering de skills es probabilístico (H1/H3). Esta información debe estar en cada workflow_* para que el usuario que llegue directamente a `/workflow_analyze` comprenda el contexto arquitectónico.
-
-La sección también menciona "Arquitectura objetivo (post-TD-008)" que ya fue completado — este texto debe actualizarse.
-
-**Solución:**
-1. Integrar en cada workflow_* una nota breve sobre la arquitectura de capas (opcional) y referencia a ADR-015.
-2. Actualizar la sección en pm-thyrox para reflejar que TD-008 está completo.
-
-**Trigger para ejecutar:**
-Después de TD-019 (estructura definida).
-
----
-
 ## TD-025: skill-authoring.md desactualizado — pre-docs oficiales Claude Code
 
 ```
@@ -294,48 +227,13 @@ Estado: [ ] Pendiente
 
 ---
 
-## TD-026: ROADMAP.md supera el límite del Read tool (10000 tokens)
-
-```
-Severidad: media
-Origen: FASE 25 Phase 7 — error al leer ROADMAP.md completo (2026-04-09)
-Fase afectada: Phase 3 PLAN y Phase 7 TRACK (requieren leer/actualizar ROADMAP.md)
-Estado: [ ] Pendiente
-```
-
-**Problema:**
-
-ROADMAP.md supera los 10000 tokens que el Read tool puede leer en una sola llamada. El error obliga a usar `offset` + `limit` para navegar el archivo por partes, lo que fragmenta el contexto y aumenta el riesgo de omitir secciones relevantes.
-
-Error observado:
-```
-File content (15204 tokens) exceeds maximum allowed tokens (10000).
-Use offset and limit parameters to read specific portions of the file.
-```
-
-**Causa raíz:**
-
-ROADMAP.md acumula todo el historial de FASEs en un único archivo flat. Con 25+ FASEs el archivo seguirá creciendo indefinidamente.
-
-**Opciones de resolución (a evaluar en Phase 1 del WP correspondiente):**
-
-1. **Archivo de resumen + archivo de historial**: `ROADMAP.md` contiene solo FASEs activas/pendientes + próximos pasos. `ROADMAP-history.md` (o `context/roadmap-history.md`) acumula FASEs completadas. Read tool puede leer cada parte independientemente.
-2. **Secciones por era**: `ROADMAP-v1.md` (FASEs 1-15), `ROADMAP-v2.md` (FASEs 16-30), etc. Rotación cada ~15 FASEs.
-3. **ROADMAP.md como índice + archivos por FASE**: Cada WP tiene su sección en `context/work/TIMESTAMP-nombre/FASE-roadmap-entry.md`. ROADMAP.md apunta a ellos. Más fragmentado pero elimina el problema de raíz.
-
-**Criterio de cierre:**
-
-ROADMAP.md (o su reemplazo) puede leerse en una sola llamada sin `offset`/`limit`. El flujo Phase 7 TRACK actualiza el archivo sin errores de token.
-
----
-
 ## TD-027: Criterio de auto-write vs validación humana no implementado en thyrox
 
 ```
 Severidad: alta
 Origen: FASE 25 — comportamiento inconsistente en gates de escritura (2026-04-09)
 Fase afectada: Todas — especialmente Phase 3 PLAN, Phase 5 DECOMPOSE, Phase 7 TRACK
-Estado: [ ] Pendiente
+Estado: [-] En progreso — Plano A/B en thyrox/SKILL.md ✓ — falta tabla metodológica de categorías + linkage SP→archivo
 ```
 
 **Problema:**
@@ -381,7 +279,7 @@ El SKILL.md define Stopping Points (SP-NNN) para gates de fase, pero no los vinc
 Severidad: media
 Origen: FASE 28 — WP reclasificado de pequeno a mediano en Phase 2 (2026-04-09)
 Fase afectada: Phase 2 SOLUTION STRATEGY — transition 2→3
-Estado: [ ] Pendiente
+Estado: [-] En progreso — bullet de re-evaluación en workflow-strategy/SKILL.md ✓ — falta tabla formal de decisión
 ```
 
 **Problema:**
@@ -434,94 +332,12 @@ lugar de saltar a Phase 5/6.
 
 ---
 
-## TD-030: Impacto de renombrar "Phase N" a nomenclatura alineada con workflow-*
-
-```
-Severidad: baja
-Origen: Sugerencia de usuario (2026-04-09)
-Fase afectada: Cross-phase (nomenclatura global del framework)
-Estado: [ ] Pendiente — requiere analisis de impacto antes de decidir
-```
-
-**Problema / Motivacion:**
-
-La nomenclatura actual usa "Phase 1" ... "Phase 7" para las etapas internas del SDLC.
-Las alternativas propuestas son:
-
-| Opcion | Ejemplo | Alineacion con skills |
-|--------|---------|----------------------|
-| Actual | `Phase 1`, `Phase 2`, ..., `Phase 7` | No alineada (numerica) |
-| A — kebab numerico | `phase-1`, `phase-2`, ..., `phase-7` | Parcial (kebab-case) |
-| B — semantic | `workflow-analyze`, `workflow-strategy`, ..., `workflow-track` | Total (igual que skills) |
-
-**Preguntas a responder en el analisis:**
-
-1. **Frecuencia de uso**: En cuantos archivos aparece "Phase N" con numero?
-   (SKILL.md x7, CLAUDE.md, now.md, exit-conditions, plan, task-plan, execution-log, etc.)
-2. **Costo de migracion**: Cuantos archivos tendrian que actualizarse?
-3. **Beneficio de Opcion B**: "workflow-analyze" es mas semantico que "Phase 1" — pero
-   tambien es mas largo. Al escribir `now.md::phase: workflow-execute` vs `phase: Phase 6`,
-   cual es mas legible?
-4. **Consistencia con glosario**: El glosario en CLAUDE.md distingue FASE (numero global)
-   de Phase (etapa interna). Cambiar Phase a workflow-* podria confundir los dos planos.
-5. **Impacto en hooks**: Los UserPromptSubmit hooks en workflow-*/SKILL.md actualmente
-   ejecutan `set-session-phase.sh "Phase N"`. Con Opcion B seria `set-session-phase.sh "workflow-execute"`.
-   El campo `now.md::phase` contendria el nombre semantico — mas legible pero mas largo.
-6. **Retrocompatibilidad**: ADRs existentes, artefactos WP y contexto de sesion usan
-   "Phase N". Una migracion requeriria sed masivo o convivencia de dos nomenclaturas.
-
-**Beneficio potencial:**
-
-Opcion B elimina la necesidad de memorizar que Phase 6 = EXECUTE. El nombre del skill
-invocado y el valor en now.md serian identicos. Reduce friccion cognitiva.
-
-**Criterio de cierre:**
-
-Analisis de impacto completado con:
-- Conteo de archivos afectados por opcion
-- Decision documentada en ADR (adoptar A, B, o mantener actual)
-- Si se adopta cambio: plan de migracion con sed commands y criterio de validacion
-
-**Addendum FASE 31:** La interfaz pública del usuario es ahora `/thyrox:*` — no `/workflow-*`. La opción B (renombrar `Phase N` a nombres semánticos `workflow-*`) pierde relevancia dado que el usuario final no ve `/workflow-*` en el menú. Análisis deferred: evaluar si este TD sigue siendo necesario con el nuevo namespace de plugin.
-
----
-
-## TD-034: CHANGELOG.md supera límite de lectura del Read tool
-
-```yml
-id: TD-034
-severidad: alta
-estado: "[ ] Pendiente"
-detectado_en: FASE 29
-area: CHANGELOG
-```
-
-`CHANGELOG.md` tiene 38,566 bytes (~11,866 tokens) — supera el límite de 10,000 tokens
-del Read tool. No se puede leer en una sola llamada. Es el tercer archivo crítico después
-de `technical-debt.md` (TD-026-B) y `ROADMAP.md` (TD-026).
-
-**Root cause:** Keep a Changelog no tiene convención de split — el archivo crece
-indefinidamente con cada versión publicada. Con 20 versiones a 1,928 bytes/versión,
-ya superó el límite en la versión ~17.
-
-**Fix:**
-- Crear `CHANGELOG-archive.md` con versiones v0.x + v1.x (13 versiones históricas)
-- `CHANGELOG.md` mantiene solo versiones v2.x en adelante
-- Agregar regla: al publicar nueva major version → archivar major anterior completa
-
-**Criterio de cierre:**
-- `CHANGELOG.md` ≤ 25,000 bytes (margen de seguridad)
-- `CHANGELOG-archive.md` existe y contiene versiones archivadas
-- SKILL.md actualizado con regla de archivado
-
----
-
 ## TD-035: Sin regla de longevidad para archivos vivos (REGLA-LONGEV-001)
 
 ```yml
 id: TD-035
 severidad: media
-estado: "[ ] Pendiente"
+estado: "[-] En progreso — REGLA-LONGEV-001 en conventions.md ✓ — falta alerta de tamaño en project-status.sh"
 detectado_en: FASE 29
 area: conventions
 ```
