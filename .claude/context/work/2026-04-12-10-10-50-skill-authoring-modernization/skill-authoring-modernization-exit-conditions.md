@@ -57,9 +57,10 @@ reversibility: reversible
 ## Phase 3: PLAN
 
 **Exit conditions:**
-- [x] Scope statement con lista de archivos a crear/modificar (14 archivos + 2 adicionales)
-- [x] Archivos existentes verificados con grep (referencias cruzadas — solo thyrox/SKILL.md y scheduled-tasks.md requieren update)
+- [x] Scope statement con lista de archivos a crear/modificar (15 archivos + 2 adicionales)
+- [x] Archivos existentes verificados con grep (referencias cruzadas — thyrox/SKILL.md y scheduled-tasks.md requieren update)
 - [x] ROADMAP.md actualizado con entrada FASE 33
+- [x] Deep-review Phase 2→3 aplicado: 6 gaps + 1 inconsistencia + 1 scope creep resueltos
 - [ ] **Usuario aprobó plan** ← Gate SP-03
 
 **Transition:** → Phase 4 STRUCTURE
