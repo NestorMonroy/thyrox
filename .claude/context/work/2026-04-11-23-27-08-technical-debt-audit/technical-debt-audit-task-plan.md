@@ -180,7 +180,7 @@ graph TD
 
 ## REGLA-LONGEV-001 (SPEC-007)
 
-- [ ] T-013: Crear `technical-debt-audit-technical-debt-resolved.md` con todos los TDs de FASE 32 (SPEC-007A)
+- [x] T-013: Crear `technical-debt-audit-technical-debt-resolved.md` con todos los TDs de FASE 32 (SPEC-007A)
   - **Archivo (crear):** `context/work/2026-04-11-23-27-08-technical-debt-audit/technical-debt-audit-technical-debt-resolved.md`
   - **Depende de:** T-001, T-004, T-007, T-012
   - **Estructura requerida:** Frontmatter (`created_at`, `wp`, `fase`) + tabla con columnas: `| TD | Descripción breve | Grupo | Cómo se resolvió | Fecha |`
@@ -188,7 +188,7 @@ graph TD
   - **Referencia de formato:** Ver `technical-debt-resolution-technical-debt-resolved.md` de FASE 29 como ejemplo de estructura
   - **Verificación:** Archivo existe con 10 entradas (una por TD)
 
-- [ ] T-014: Eliminar todas las entradas `[x]` de `technical-debt.md` (SPEC-007B)
+- [x] T-014: Eliminar todas las entradas `[x]` de `technical-debt.md` (SPEC-007B)
   - **Archivo:** `.claude/context/technical-debt.md`
   - **Depende de:** T-013
   - **Entradas a eliminar:**
@@ -198,7 +198,7 @@ graph TD
   - **Total:** 22 entradas [x] a eliminar
   - **Verificación:** `grep -c "\[x\]" .claude/context/technical-debt.md` → 0
 
-- [ ] T-015: Verificar que `technical-debt.md` cumple REGLA-LONGEV-001 (SPEC-007B acceptance)
+- [x] T-015: Verificar que `technical-debt.md` cumple REGLA-LONGEV-001 (SPEC-007B acceptance)
   - **Archivo:** `.claude/context/technical-debt.md`
   - **Depende de:** T-014
   - **Verificación 1:** `wc -c .claude/context/technical-debt.md` → valor < 25000
