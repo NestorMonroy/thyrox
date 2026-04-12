@@ -352,18 +352,15 @@ quadrantChart
 
 ## Configuración Recomendada para Eliminar Prompts en Context Files
 
-Para archivos que Claude edita frecuentemente (state files, WP artifacts):
+Para archivos que Claude edita frecuentemente (state files, WP artifacts), con `defaultMode: acceptEdits` las reglas `Edit(...)` son redundantes. Solo se necesitan las reglas `Write(...)`:
 
 ```json
 {
   "defaultMode": "acceptEdits",
   "permissions": {
     "allow": [
-      "Edit(/.claude/context/now.md)",
       "Write(/.claude/context/now.md)",
-      "Edit(/.claude/context/focus.md)",
       "Write(/.claude/context/focus.md)",
-      "Edit(/.claude/context/work/**)",
       "Write(/.claude/context/work/**)"
     ],
     "ask": [
@@ -377,6 +374,8 @@ Para archivos que Claude edita frecuentemente (state files, WP artifacts):
   }
 }
 ```
+
+**Nota:** Las reglas `Edit(/.claude/context/*)` en `allow` son redundantes cuando `defaultMode: acceptEdits` está activo — el defaultMode ya aprueba todos los Edit automáticamente. Solo agregar `Edit(...)` explícitos en `allow` para sobreescribir un `deny` específico.
 
 Esta configuración:
 - ✅ Auto-acepta edits en archivos de sesión y WP artifacts (sin prompts)

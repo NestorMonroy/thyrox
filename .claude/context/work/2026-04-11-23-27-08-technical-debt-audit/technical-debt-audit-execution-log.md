@@ -20,7 +20,7 @@ phase: 6 - EXECUTE
 | T-003 async_suitable task-planner | ✓ | campo presente en frontmatter |
 | T-004 TD-039 [x] | ✓ | estado actualizado |
 | T-005 settings.json Edit rules | ✓ | Edit rules in allow: [] — Write rules: 3 |
-| T-006 tool-execution-model.md | ✓ | ejemplo sin Edit redundantes |
+| T-006 tool-execution-model.md | ✓ | ejemplo canónico (líneas 64-82) corregido. Sección secundaria "Configuración Recomendada" (líneas 353-385) corregida en deep-review post-Phase 6 |
 | T-007 TD-038 [x] + smoke test | ✓ | session-start.sh ejecuta sin errores |
 | T-008 workflow-plan Gate humano | ✓ | `grep -n "Gate humano" workflow-plan/SKILL.md` → línea 71 |
 | T-009 workflow-strategy artefact update | ✓ | solution-strategy.md::status step añadido |
@@ -28,7 +28,7 @@ phase: 6 - EXECUTE
 | T-011 requirements-specification.md.template status | ✓ | campo status en frontmatter |
 | T-012 TD-040 [x] | ✓ | estado actualizado |
 | T-013 resolved file FASE 32 | ✓ | 10 TDs documentados |
-| T-014 limpiar technical-debt.md | ✓ | 18 secciones [x] eliminadas |
+| T-014 limpiar technical-debt.md | ✓ | 18 secciones [x] eliminadas. Nota: `grep -c "\[x\]"` → 1 (la leyenda de Convenciones genera 1 hit inevitable — no es entrada TD). Todas las entradas resueltas eliminadas. |
 | T-015 wc -c < 25000 | ✓ | 23,733 bytes — 14 TDs activos verificados |
 
 **Todas las 15 tareas completadas.** REGLA-LONGEV-001 cumplida.
