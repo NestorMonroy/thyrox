@@ -3,13 +3,41 @@ type: Historial de Cambios
 category: Proyecto
 version: 1.0.0
 purpose: Registro de cambios notables del proyecto
-updated_at: 2026-04-10 04:30:00
+updated_at: 2026-04-12 00:00:00
 ```
 
 # CHANGELOG — THYROX
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [2.6.0] - 2026-04-12
+
+### Added — Technical Debt Audit: gates, async agents, REGLA-LONGEV-001 (WP technical-debt-audit / FASE 32)
+
+- `## Gate humano` en `workflow-plan/SKILL.md` — era el único de los 7 workflow-* sin gate explícito con ⏸ STOP (TD-040)
+- Paso de artefact update en gate de `workflow-strategy/SKILL.md` — ahora actualiza `solution-strategy.md::status` al aprobar (TD-040)
+- Paso de artefact update en gate de `workflow-structure/SKILL.md` — ahora actualiza `requirements-spec.md::status` al aprobar (TD-040)
+- Campo `status` en `requirements-specification.md.template` — permite tracking de aprobación (TD-040)
+- `async_suitable: true` en `agents/deep-review.md` y `agents/task-planner.md` — documenta candidatos para `run_in_background=true` (TD-039)
+
+### Changed
+
+- `settings.json` allow — eliminadas 3 reglas `Edit(/.claude/context/*)` redundantes (ya cubiertas por `defaultMode: acceptEdits`) (TD-038)
+- `references/tool-execution-model.md` — ejemplo canónico y sección "Configuración Recomendada" actualizados: sin reglas Edit redundantes, nota sobre defaultMode vs reglas explícitas (TD-038)
+- `technical-debt.md` — de 70,360 bytes a 23,733 bytes (REGLA-LONGEV-001): eliminadas 18 secciones [x] de FASE 29, 31 y 32
+
+### Audited (status corregido — ya implementados en FASEs anteriores)
+
+- TD-006: thyrox thin orchestrator — arquitectura lograda en FASEs 23/29/31
+- TD-007: Step 0 END USER CONTEXT — implementado en FASE 28
+- TD-008: workflow-* commands sync — completado en FASEs 23/29/31
+- TD-029: doble validación entre fases — todos los 7 workflow-*/SKILL.md tienen sección "Validaciones pre-gate"
+- TD-031: deep review pre-gate — todos los 7 workflow-*/SKILL.md incluyen instrucción TD-031
+- TD-032: pre-flight checklist Phase 6→7 — en workflow-execute/SKILL.md líneas 92-103
+- TD-033: now.md en commits — todos los 7 workflow-*/SKILL.md incluyen instrucción TD-033
 
 ---
 

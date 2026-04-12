@@ -93,7 +93,7 @@ reversibility: reversible
 - [ ] `settings.json` sin reglas `Edit(...)` redundantes (TD-038)
 - [ ] `workflow-plan/SKILL.md` tiene sección `## Gate humano` (TD-040)
 - [ ] `technical-debt-audit-execution-log.md` documentado
-- [ ] **Usuario aprobó resultado** ← Gate SP-06
+- [x] **Usuario aprobó resultado** ← Gate SP-06 aprobado 2026-04-12
 
 **Transition:** → Phase 7 TRACK
 
@@ -102,9 +102,8 @@ reversibility: reversible
 ## Phase 7: TRACK
 
 **Exit conditions:**
-- [ ] `technical-debt-audit-lessons-learned.md` existe
-- [ ] `technical-debt-audit-changelog.md` existe (commits documentados)
-- [ ] `technical-debt-audit-technical-debt-resolved.md` existe (TDs cerrados en este WP)
-- [ ] `context/now.md` → `current_work: null`, `phase: null`
-- [ ] `context/focus.md` actualizado con FASE 32
-- [ ] Commit + push del cierre del WP
+- [x] `technical-debt-audit-lessons-learned.md` existe
+- [x] `technical-debt-audit-technical-debt-resolved.md` existe (TDs cerrados en este WP)
+- [x] `context/now.md` → `current_work: null`, `phase: null`
+- [x] `context/focus.md` actualizado con FASE 32
+- [x] Commit + push del cierre del WP
