@@ -136,6 +136,15 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## FASE 33: skill-authoring-modernization — Actualización skill-authoring.md + benchmark TD-010/TD-025 (2026-04-12)
+
+**WP:** `.claude/context/work/2026-04-12-10-10-50-skill-authoring-modernization/`
+**Causa raíz:** TD-010 (benchmark SKILL vs CLAUDE.md, trigger: caso de uso real) + TD-025 (skill-authoring.md 2026-03-25, pre-docs oficiales). Repo externo `claude-howto` como referencia de casos reales.
+
+- [-] Phase 1 ANALYZE — deep-review en progreso
+
+---
+
 ## FASE 32: technical-debt-audit — Auditoría y resolución de deuda técnica ✓ COMPLETADO 2026-04-12
 
 **WP:** `.claude/context/work/2026-04-11-23-27-08-technical-debt-audit/`
