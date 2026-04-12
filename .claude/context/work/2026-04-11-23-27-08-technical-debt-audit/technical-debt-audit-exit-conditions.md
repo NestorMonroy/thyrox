@@ -53,7 +53,7 @@ reversibility: reversible
 - [ ] Lista In-Scope: TDs Grupo A+B con archivos verificados que existen
 - [ ] Lista Out-of-Scope: TDs Grupos C/D con justificación
 - [ ] ROADMAP.md actualizado con entrada FASE 32
-- [ ] **Usuario aprobó plan** ← Gate SP-03
+- [x] **Usuario aprobó plan** ← Gate SP-03 aprobado 2026-04-11
 
 **Transition:** → Phase 4 STRUCTURE
 

@@ -2,7 +2,7 @@
 created_at: 2026-04-11 23:27:08
 wp: 2026-04-11-23-27-08-technical-debt-audit
 phase: 3 - PLAN
-status: Pendiente aprobación
+status: Aprobado — 2026-04-11
 ```
 
 # Plan — technical-debt-audit (FASE 32)
@@ -98,4 +98,4 @@ Ver tracking: [ROADMAP.md — FASE 32](../../../../../ROADMAP.md)
 
 ## Estado de aprobación
 
-- [ ] Scope aprobado por usuario — PENDIENTE
+- [x] Scope aprobado por usuario — 2026-04-11
