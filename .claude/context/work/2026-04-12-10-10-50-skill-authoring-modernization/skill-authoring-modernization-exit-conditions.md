@@ -111,6 +111,9 @@ reversibility: reversible
 - [ ] `testing-patterns.md` creado
 - [ ] `multimodal.md` creado
 - [ ] `output-formats.md` creado
+- [ ] `stream-resilience.md` creado
+- [ ] `streaming-errors.md` creado
+- [ ] `long-running-calls.md` creado
 
 ### Grupo D — Actualizaciones de existentes
 - [ ] `mcp-integration.md` actualizado (code-execution-with-MCP, claude mcp serve)
