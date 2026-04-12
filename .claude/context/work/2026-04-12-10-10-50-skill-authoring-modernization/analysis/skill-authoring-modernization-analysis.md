@@ -113,9 +113,11 @@ Identificar una tarea recurrente de THYROX (e.g., "escribir un commit message", 
 | `agent-spec.md` | Spec formal de agentes. Coherencia necesaria (GAP-007/008). |
 | `thyrox/SKILL.md` | Referencia skill-authoring.md en sección Avanzado. |
 
-## 9. Decisión de estructura — Opción B (aprobada SP-01)
+## 9. Decisión de estructura — Opción B + Expansión (aprobada SP-01 + scope ampliado 2026-04-12)
 
-5 archivos de authoring dedicados — uno por tipo de componente:
+**12 archivos** en total — 5 de componentes + 2 referencias avanzadas + 5 guías de patrones/referencia + 2 actualizaciones:
+
+### Grupo A — Authoring por tipo de componente (5 archivos)
 
 | Archivo | Tipo | Estado |
 |---------|------|--------|
@@ -125,9 +127,31 @@ Identificar una tarea recurrente de THYROX (e.g., "escribir un commit message", 
 | `hook-authoring.md` | HOOK best practices | Crear nuevo |
 | `component-decision.md` | Cuándo usar cada tipo | Crear nuevo (absorbe GAP-013) |
 
-**Razón:** Cada archivo es autónomo, bien-dimensionado y descubrible por nombre. Sigue el patrón que el propio skill-authoring.md enseña (progressive disclosure).
+### Grupo B — Referencias de plataforma (2 archivos nuevos)
 
-Ya existen y NO se modifican: `plugins.md`, `skill-vs-agent.md`, `claude-code-components.md`, `hooks.md`, `hook-output-control.md`.
+| Archivo | Tipo | Estado |
+|---------|------|--------|
+| `advanced-features.md` | Features avanzadas Claude Code | Crear nuevo — 12 features sin cobertura (Planning Mode, Extended Thinking, Git Worktrees, Sandboxing, Agent Teams, Remote Control, Web Sessions, Desktop App, Channels, Voice Dictation) |
+| `cli-reference.md` | Referencia CLI completa | Crear nuevo — 30+ flags, 30+ env vars, patterns de auth/auto-mode |
+
+### Grupo C — Guías de patrones (5 archivos nuevos)
+
+| Archivo | Tipo | Estado |
+|---------|------|--------|
+| `memory-patterns.md` | Patrones de memoria y estado | Crear nuevo — user/project/local memory, now.md patterns, persistent state |
+| `tool-patterns.md` | Patrones de uso de herramientas | Crear nuevo — tool selection, parallel calls, error handling, tool restrictions |
+| `testing-patterns.md` | Patrones de testing con Claude | Crear nuevo — SDD, TDD integration, test amplification, assertion patterns |
+| `multimodal.md` | Capacidades multimodales | Crear nuevo — image reading, PDF, notebook, screenshots |
+| `output-formats.md` | Formatos de output | Crear nuevo — JSON mode, streaming, print mode (-p), structured output |
+
+### Grupo D — Actualizaciones de existentes (2 archivos)
+
+| Archivo | Actualización | Estado |
+|---------|---------------|--------|
+| `mcp-integration.md` | + patrón code-execution-with-MCP (98.7% token reduction), `claude mcp serve`, env var expansion | Actualizar |
+| `plugins.md` | + restricciones de seguridad para subagentes en plugins (hooks/mcpServers/permissionMode bloqueados), directorio `bin/` | Actualizar |
+
+**Razón de la expansión:** Segunda deep-review del repo `claude-howto` identificó gaps significativos en áreas de plataforma (features avanzadas, CLI) y patrones de uso (memory, tools, testing, multimodal, output) que no tienen un archivo natural en THYROX.
 
 ## 10. Fuera de alcance
 
@@ -135,13 +159,12 @@ Ya existen y NO se modifican: `plugins.md`, `skill-vs-agent.md`, `claude-code-co
 - Modificar los 10 agentes existentes (pertenece a TD-009)
 - Actualizar templates de skills existentes
 - Modificar `agent-spec.md` (pertenece a TD-009)
-- Modificar `plugins.md` (ya existe y está correcto)
 
 ## 11. Criterios de éxito
 
-- 5 archivos creados/actualizados cubriendo todos los tipos de componentes
+- 12 archivos creados/actualizados cubriendo componentes, features avanzadas y patrones
 - Ningún campo documentado contradice `claude-code-components.md`
-- `thyrox/SKILL.md` referencia los 5 archivos en sección "Avanzado"
+- `thyrox/SKILL.md` referencias actualizadas con los nuevos archivos
 - TD-025 marcado `[x]` en `technical-debt.md`
 - TD-010 mantiene estado `[ ]` con nota de evaluación
 
@@ -154,4 +177,4 @@ Ya existen y NO se modifican: `plugins.md`, `skill-vs-agent.md`, `claude-code-co
 | SP-03 | Phase 3 → 4 | Usuario aprueba plan y scope |
 | SP-04 | Phase 4 → 5 | Usuario aprueba requirements spec |
 | SP-05 | Phase 5 → 6 | Usuario aprueba task-plan |
-| SP-06 | Phase 6 → 7 | Usuario confirma resultado de los 5 archivos |
+| SP-06 | Phase 6 → 7 | Usuario confirma resultado de los 12 archivos |

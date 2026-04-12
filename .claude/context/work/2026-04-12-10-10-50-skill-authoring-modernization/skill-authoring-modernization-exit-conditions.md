@@ -36,13 +36,18 @@ reversibility: reversible
 ## Phase 2: SOLUTION_STRATEGY
 
 **Exit conditions:**
-- [ ] Contenido de cada archivo definido (qué secciones, qué gaps van dónde)
-- [ ] `component-decision.md` — estructura y fuentes definidas
-- [ ] `agent-authoring.md` — secciones mapeadas desde claude-code-components.md
-- [ ] `claude-authoring.md` — secciones mapeadas desde repo + skill-vs-agent.md
-- [ ] `hook-authoring.md` — secciones mapeadas desde hooks.md + hook-output-control.md
-- [ ] `skill-authoring.md` — gaps asignados (cuáles de los 15 quedan aquí vs se mueven)
-- [ ] Decisión sobre TD-010: nota de evaluación en technical-debt.md
+- [x] Contenido de cada 14 archivo definido (qué secciones, qué gaps van dónde)
+- [x] `component-decision.md` — estructura y fuentes definidas
+- [x] `agent-authoring.md` — secciones mapeadas desde claude-code-components.md
+- [x] `claude-authoring.md` — secciones mapeadas desde repo + skill-vs-agent.md
+- [x] `hook-authoring.md` — secciones mapeadas desde hooks.md + hook-output-control.md
+- [x] `skill-authoring.md` — gaps asignados (GAP-001..008,014,015 aquí; GAP-007..012 → agent-authoring; GAP-013 → component-decision)
+- [x] Grupo B: `advanced-features.md` + `cli-reference.md` — secciones y fuentes mapeadas
+- [x] Grupo C: 5 patrones files — secciones y fuentes mapeadas
+- [x] Grupo D: `mcp-integration.md` + `plugins.md` — adiciones definidas
+- [x] DAG de dependencias documentado en solution-strategy.md
+- [x] Criterios de no-duplicación documentados
+- [x] Decisión sobre TD-010: nota de evaluación redactada
 - [ ] **Usuario aprobó estrategia de contenido** ← Gate SP-02
 
 **Transition:** → Phase 3 PLAN
@@ -87,12 +92,31 @@ reversibility: reversible
 ## Phase 6: EXECUTE
 
 **Exit conditions:**
+
+### Grupo A — Authoring por componente
 - [ ] `skill-authoring.md` actualizado (gaps alta prioridad que quedan aquí)
 - [ ] `agent-authoring.md` creado
 - [ ] `claude-authoring.md` creado
 - [ ] `hook-authoring.md` creado
 - [ ] `component-decision.md` creado
-- [ ] `thyrox/SKILL.md` referencias actualizadas con los 5 archivos
+
+### Grupo B — Referencias de plataforma
+- [ ] `advanced-features.md` creado
+- [ ] `cli-reference.md` creado
+
+### Grupo C — Guías de patrones
+- [ ] `memory-patterns.md` creado
+- [ ] `tool-patterns.md` creado
+- [ ] `testing-patterns.md` creado
+- [ ] `multimodal.md` creado
+- [ ] `output-formats.md` creado
+
+### Grupo D — Actualizaciones de existentes
+- [ ] `mcp-integration.md` actualizado (code-execution-with-MCP, claude mcp serve)
+- [ ] `plugins.md` actualizado (security restrictions subagents-in-plugins)
+
+### Cierre
+- [ ] `thyrox/SKILL.md` referencias actualizadas con los 12 archivos
 - [ ] `technical-debt.md` TD-025 marcado `[x]`
 - [ ] `technical-debt.md` TD-010 actualizado con nota de evaluación
 - [ ] Commit(s) con mensajes convencionales
