@@ -103,7 +103,7 @@ graph TD
 
 ## Grupo B.2 — TD-038: Limpiar settings.json (SPEC-003)
 
-- [ ] T-005: Eliminar 3 reglas `Edit(...)` redundantes de `settings.json` (SPEC-003)
+- [x] T-005: Eliminar 3 reglas `Edit(...)` redundantes de `settings.json` (SPEC-003)
   - **Archivo:** `.claude/settings.json`
   - **Cambio:** Eliminar SOLO las 3 líneas con `"Edit(/.claude/context/now.md)"`, `"Edit(/.claude/context/focus.md)"`, `"Edit(/.claude/context/work/**)"`
   - **IMPORTANTE — NO tocar:** Las reglas `Write(...)` deben permanecer intactas: `Write(/.claude/context/now.md)`, `Write(/.claude/context/focus.md)`, `Write(/.claude/context/work/**)`
@@ -112,13 +112,13 @@ graph TD
   - **Verificación 2:** `grep -c "Write(/.claude/context" .claude/settings.json` → 3 (las Write permanecen)
   - **GATE OPERACIÓN:** Este archivo requiere prompt(ask) — confirmar antes de editar
 
-- [ ] T-006: Actualizar ejemplo canónico en `tool-execution-model.md` (SPEC-003)
+- [x] T-006: Actualizar ejemplo canónico en `tool-execution-model.md` (SPEC-003)
   - **Archivo:** `.claude/references/tool-execution-model.md`
   - **Cambio:** Sección "Estructura de settings.json" (líneas 64-82) — remover `Edit(/.claude/context/now.md)` del ejemplo, mostrar solo reglas `Write(...)` como ejemplo de paths con permisos
   - **Depende de:** T-005
   - **Verificación:** El ejemplo no muestra reglas `Edit(...)` redundantes
 
-- [ ] T-007: Marcar TD-038 como `[x]` en `technical-debt.md` + smoke test de `session-start.sh` (SPEC-003 completion)
+- [x] T-007: Marcar TD-038 como `[x]` en `technical-debt.md` + smoke test de `session-start.sh` (SPEC-003 completion)
   - **Archivo:** `.claude/context/technical-debt.md`
   - **Depende de:** T-005, T-006
   - **Cambio:** TD-038 `Estado: "[ ] Pendiente"` → `Estado: "[x] Resuelto 2026-04-12 (FASE 32)"`

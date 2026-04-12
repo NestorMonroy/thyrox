@@ -65,7 +65,6 @@ stateDiagram-v2
   "defaultMode": "acceptEdits",
   "permissions": {
     "allow": [
-      "Edit(/.claude/context/now.md)",
       "Write(/.claude/context/work/**)",
       "Bash(git add *)",
       "Bash(git commit *)"
@@ -82,8 +81,10 @@ stateDiagram-v2
 }
 ```
 
+**Nota:** Con `defaultMode: acceptEdits`, las reglas `Edit(...)` en `allow` son redundantes — ya están cubiertas por el defaultMode. Solo agregar reglas `Edit(...)` explícitas en `allow` cuando se necesite sobreescribir un `deny` específico.
+
 **Semántica de patrones:**
-- `Edit(/.claude/context/now.md)` — ruta absoluta desde raíz del proyecto, soporta `*` y `**`
+- `Write(/.claude/context/work/**)` — ruta absoluta desde raíz del proyecto, soporta `*` y `**`
 - `Bash(git add *)` — el `*` después del espacio acepta cualquier argumento
 - Las reglas en `allow`/`ask`/`deny` anulan el `defaultMode` para los patrones que coinciden
 

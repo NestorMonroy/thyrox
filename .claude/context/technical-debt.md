@@ -1379,7 +1379,7 @@ Ver análisis completo en:
 ```yml
 id: TD-038
 severidad: alta
-estado: "[ ] Pendiente"
+estado: "[x] Resuelto 2026-04-12 (FASE 32)"
 detectado_en: FASE 31 (análisis 2026-04-11 — Mecanismo A vs B)
 area: configuración / settings.json
 tipo: deuda de limpieza — reglas redundantes que generan confusión
