@@ -1,6 +1,7 @@
 ---
 name: deep-review
 description: Analiza cobertura entre artefactos de fases consecutivas del WP, o profundidad de referencias externas. Usar cuando el usuario pide un deep-review antes de avanzar de Phase N a Phase N+1, o cuando quiere analizar patrones arquitectónicos en documentación externa (README, specs, repos).
+async_suitable: true  # Read-only analysis — safe for run_in_background=true invocation
 tools: Read, Glob, Grep, Bash
 ---
 

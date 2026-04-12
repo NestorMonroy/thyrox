@@ -73,7 +73,7 @@ graph TD
 
 ## Grupo A — Status updates (SPEC-001)
 
-- [ ] T-001: Marcar TD-006, TD-007, TD-008, TD-029, TD-031, TD-032, TD-033 como `[x]` en `technical-debt.md` (SPEC-001)
+- [x] T-001: Marcar TD-006, TD-007, TD-008, TD-029, TD-031, TD-032, TD-033 como `[x]` en `technical-debt.md` (SPEC-001)
   - **Archivo:** `.claude/context/technical-debt.md`
   - **Cambio:** 7 entradas `Estado: "[ ] Pendiente"` → `Estado: "[x] Resuelto 2026-04-11 (FASE 32, auditado — implementado en FASEs anteriores)"`
   - **Nota:** Fecha `2026-04-11` = fecha real de la auditoría (cuando se descubrió la implementación existente), no la fecha de ejecución de este WP
@@ -83,17 +83,17 @@ graph TD
 
 ## Grupo B.1 — TD-039: async_suitable en agentes (SPEC-002)
 
-- [ ] T-002: Añadir `async_suitable: true` al frontmatter de `agents/deep-review.md` (SPEC-002)
+- [x] T-002: Añadir `async_suitable: true` al frontmatter de `agents/deep-review.md` (SPEC-002)
   - **Archivo:** `.claude/agents/deep-review.md`
   - **Cambio:** Insertar `async_suitable: true  # Read-only analysis — safe for run_in_background=true` después del campo `description`
   - **Verificación:** `grep "async_suitable" .claude/agents/deep-review.md` → match
 
-- [ ] T-003: Añadir `async_suitable: true` al frontmatter de `agents/task-planner.md` (SPEC-002)
+- [x] T-003: Añadir `async_suitable: true` al frontmatter de `agents/task-planner.md` (SPEC-002)
   - **Archivo:** `.claude/agents/task-planner.md`
   - **Cambio:** Insertar `async_suitable: true  # Planning-only — writes WP artefacts, safe for background` después del campo `description`
   - **Verificación:** `grep "async_suitable" .claude/agents/task-planner.md` → match
 
-- [ ] T-004: Marcar TD-039 como `[x]` en `technical-debt.md` (SPEC-002 completion)
+- [x] T-004: Marcar TD-039 como `[x]` en `technical-debt.md` (SPEC-002 completion)
   - **Archivo:** `.claude/context/technical-debt.md`
   - **Depende de:** T-002, T-003
   - **Cambio:** TD-039 `Estado: "[ ] Parcialmente implementado"` → `Estado: "[x] Resuelto 2026-04-12 (FASE 32)"`

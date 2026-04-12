@@ -79,7 +79,7 @@ reversibility: reversible
 - [ ] Cada tarea tiene ID T-NNN y referencia al TD correspondiente
 - [ ] Tareas atómicas — ninguna toca más de 1-2 archivos
 - [ ] Grupo A (status updates) separado de Grupo B (implementaciones)
-- [ ] **Usuario aprobó task-plan** ← Gate SP-05 GATE OPERACION
+- [x] **Usuario aprobó task-plan** ← Gate SP-05 aprobado 2026-04-12
 
 **Transition:** → Phase 6 EXECUTE
 

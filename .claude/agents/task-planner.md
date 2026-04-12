@@ -1,6 +1,7 @@
 ---
 name: task-planner
 description: Descompone trabajo en tareas atómicas con IDs trazables. Usar cuando el usuario quiere planificar un feature, bug fix, refactoring, o cualquier trabajo que requiera más de un paso. Produce task-plan.md con checkboxes T-NNN. NUNCA ejecuta — solo planifica.
+async_suitable: true  # Planning-only — writes WP artefacts, safe for background
 tools:
   - Read
   - Write

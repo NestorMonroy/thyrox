@@ -218,7 +218,7 @@ No implementar sin análisis — este ítem registra la deuda, no la resuelve.
 Severidad: media
 Origen: Análisis SKILL vs AGENTE 2026-04-08 (context-hygiene WP)
 Fase afectada: Arquitectura del SKILL principal
-Estado: [ ] Pendiente — trigger: thyrox SKILL.md llega a ~600 líneas (actualmente 198, OK)
+Estado: [x] Resuelto 2026-04-11 (FASE 32, auditado — implementado en FASEs anteriores)
 ```
 
 **Problema:**
@@ -263,7 +263,7 @@ El análisis original (context-hygiene WP, FASE 20) tenía 3 errores de framing:
 Severidad: media
 Origen: Análisis de cadena de requisitos 2026-04-08 (context-hygiene WP)
 Fase afectada: Phase 1 ANALYZE (y por cascada, todas las demás)
-Estado: [ ] Pendiente — requiere WP propio
+Estado: [x] Resuelto 2026-04-11 (FASE 32, auditado — implementado en FASEs anteriores)
 ```
 
 **Problema:**
@@ -337,7 +337,7 @@ SKILL.md Phase 5 incluye el checklist de atomicidad. El siguiente WP tiene tarea
 Severidad: alta
 Origen: FASE 21 — skill-architecture-review (ADR-015)
 Fase afectada: Capa 3 — /workflow_* commands (todas las fases)
-Estado: [ ] Pendiente — prerequisito bloqueante para TD-006 (reducir pm-thyrox SKILL)
+Estado: [x] Resuelto 2026-04-11 (FASE 32, auditado — implementado en FASEs anteriores)
 Prioridad: alta
 ```
 
@@ -810,7 +810,7 @@ lugar de saltar a Phase 5/6.
 Severidad: alta
 Origen: FASE 28 — Phase 3→4 omitida dos veces (2026-04-09)
 Fase afectada: Todas las transiciones de fase
-Estado: [ ] Pendiente
+Estado: [x] Resuelto 2026-04-11 (FASE 32, auditado — implementado en FASEs anteriores)
 ```
 
 **Problema:**
@@ -944,7 +944,7 @@ Analisis de impacto completado con:
 Severidad: alta
 Origen: FASE 28 — gaps encontrados en Phase 4 que no fueron detectados por el checklist inicial (2026-04-09)
 Fase afectada: Todas las fases (cross-phase)
-Estado: [ ] Pendiente
+Estado: [x] Resuelto 2026-04-11 (FASE 32, auditado — implementado en FASEs anteriores)
 ```
 
 **Problema:**
@@ -1021,7 +1021,7 @@ lo corrige antes de presentar el gate, sin que el usuario tenga que indicarlo.
 Severidad: alta
 Origen: Deep review Phase 6 — FASE 28 (2026-04-09)
 Fase afectada: Phase 6 EXECUTE (toda WP mediana o grande)
-Estado: [ ] Pendiente
+Estado: [x] Resuelto 2026-04-11 (FASE 32, auditado — implementado en FASEs anteriores)
 ```
 
 **Problema:**
@@ -1109,7 +1109,7 @@ En una sesión de prueba, Phase 6 completa con:
 Severidad: alta
 Origen: Deep review FASE 28 — gap identificado en FASE 29 Phase 1 (2026-04-09)
 Fase afectada: Todas — especialmente al hacer commits en Phase 6 EXECUTE
-Estado: [ ] Pendiente
+Estado: [x] Resuelto 2026-04-11 (FASE 32, auditado — implementado en FASEs anteriores)
 ```
 
 **Problema:**
@@ -1461,7 +1461,7 @@ reflejar el settings.json correcto sin las reglas Edit redundantes.
 ```yml
 id: TD-039
 severidad: media
-estado: "[ ] Pendiente"
+estado: "[x] Resuelto 2026-04-12 (FASE 32)"
 detectado_en: FASE 31 (uso de deep-review agent en background 2026-04-11)
 area: references / subagent-patterns.md + agents/*.md
 tipo: documentación incompleta — dos planos de async no diferenciados
