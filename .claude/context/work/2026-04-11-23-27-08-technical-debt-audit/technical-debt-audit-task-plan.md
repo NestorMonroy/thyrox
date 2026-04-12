@@ -75,8 +75,9 @@ graph TD
 
 - [ ] T-001: Marcar TD-006, TD-007, TD-008, TD-029, TD-031, TD-032, TD-033 como `[x]` en `technical-debt.md` (SPEC-001)
   - **Archivo:** `.claude/context/technical-debt.md`
-  - **Cambio:** 7 entradas `Estado: "[ ] Pendiente"` → `Estado: "[x] Resuelto 2026-04-12 (FASE 32, auditado — implementado en FASEs anteriores)"`
-  - **Verificación:** `grep -c "\[x\] Resuelto 2026-04-12" technical-debt.md` → 7
+  - **Cambio:** 7 entradas `Estado: "[ ] Pendiente"` → `Estado: "[x] Resuelto 2026-04-11 (FASE 32, auditado — implementado en FASEs anteriores)"`
+  - **Nota:** Fecha `2026-04-11` = fecha real de la auditoría (cuando se descubrió la implementación existente), no la fecha de ejecución de este WP
+  - **Verificación:** `grep -c "\[x\] Resuelto 2026-04-11" technical-debt.md` → 7
 
 ---
 
@@ -104,8 +105,11 @@ graph TD
 
 - [ ] T-005: Eliminar 3 reglas `Edit(...)` redundantes de `settings.json` (SPEC-003)
   - **Archivo:** `.claude/settings.json`
-  - **Cambio:** Eliminar líneas con `"Edit(/.claude/context/now.md)"`, `"Edit(/.claude/context/focus.md)"`, `"Edit(/.claude/context/work/**)"`
-  - **Verificación:** `grep -c "Edit(/.claude" .claude/settings.json` → 0
+  - **Cambio:** Eliminar SOLO las 3 líneas con `"Edit(/.claude/context/now.md)"`, `"Edit(/.claude/context/focus.md)"`, `"Edit(/.claude/context/work/**)"`
+  - **IMPORTANTE — NO tocar:** Las reglas `Write(...)` deben permanecer intactas: `Write(/.claude/context/now.md)`, `Write(/.claude/context/focus.md)`, `Write(/.claude/context/work/**)`
+  - **Referencia:** Ver `design.md D-03` para el estado final exacto esperado de `settings.json`
+  - **Verificación 1:** `grep -c "Edit(/.claude" .claude/settings.json` → 0
+  - **Verificación 2:** `grep -c "Write(/.claude/context" .claude/settings.json` → 3 (las Write permanecen)
   - **GATE OPERACIÓN:** Este archivo requiere prompt(ask) — confirmar antes de editar
 
 - [ ] T-006: Actualizar ejemplo canónico en `tool-execution-model.md` (SPEC-003)
@@ -114,10 +118,11 @@ graph TD
   - **Depende de:** T-005
   - **Verificación:** El ejemplo no muestra reglas `Edit(...)` redundantes
 
-- [ ] T-007: Marcar TD-038 como `[x]` en `technical-debt.md` (SPEC-003 completion)
+- [ ] T-007: Marcar TD-038 como `[x]` en `technical-debt.md` + smoke test de `session-start.sh` (SPEC-003 completion)
   - **Archivo:** `.claude/context/technical-debt.md`
   - **Depende de:** T-005, T-006
   - **Cambio:** TD-038 `Estado: "[ ] Pendiente"` → `Estado: "[x] Resuelto 2026-04-12 (FASE 32)"`
+  - **Smoke test post-settings:** `bash .claude/scripts/session-start.sh` ejecuta sin errores (verifica que eliminar las 3 Edit rules no rompió nada)
 
 ---
 
@@ -178,8 +183,10 @@ graph TD
 - [ ] T-013: Crear `technical-debt-audit-technical-debt-resolved.md` con todos los TDs de FASE 32 (SPEC-007A)
   - **Archivo (crear):** `context/work/2026-04-11-23-27-08-technical-debt-audit/technical-debt-audit-technical-debt-resolved.md`
   - **Depende de:** T-001, T-004, T-007, T-012
-  - **Contenido:** Tabla con TDs cerrados en FASE 32: TD-006/007/008/029/031/032/033 (Grupo A) + TD-038/039/040 (Grupo B)
-  - **Verificación:** Archivo existe con 10 entradas
+  - **Estructura requerida:** Frontmatter (`created_at`, `wp`, `fase`) + tabla con columnas: `| TD | Descripción breve | Grupo | Cómo se resolvió | Fecha |`
+  - **Contenido:** 10 filas — Grupo A (TD-006/007/008/029/031/032/033 — "auditado, ya implementado en FASEs anteriores") + Grupo B (TD-038/039/040 — "implementado en FASE 32")
+  - **Referencia de formato:** Ver `technical-debt-resolution-technical-debt-resolved.md` de FASE 29 como ejemplo de estructura
+  - **Verificación:** Archivo existe con 10 entradas (una por TD)
 
 - [ ] T-014: Eliminar todas las entradas `[x]` de `technical-debt.md` (SPEC-007B)
   - **Archivo:** `.claude/context/technical-debt.md`
@@ -194,7 +201,12 @@ graph TD
 - [ ] T-015: Verificar que `technical-debt.md` cumple REGLA-LONGEV-001 (SPEC-007B acceptance)
   - **Archivo:** `.claude/context/technical-debt.md`
   - **Depende de:** T-014
-  - **Verificación:** `wc -c .claude/context/technical-debt.md` → valor < 25000
+  - **Verificación 1:** `wc -c .claude/context/technical-debt.md` → valor < 25000
+  - **Verificación 2 (integridad):** Los 14 TDs activos de `design.md D-04` siguen presentes — verificar con:
+    ```
+    grep -l "TD-001\|TD-003\|TD-005\|TD-009\|TD-010\|TD-018\|TD-022\|TD-025\|TD-026\|TD-027\|TD-028\|TD-030\|TD-034\|TD-035" .claude/context/technical-debt.md
+    ```
+    → debe devolver el archivo (todos los TDs activos permanecen)
   - **Nota:** Si > 25000 bytes, revisar si quedaron entradas [x] sin eliminar o secciones de metadata innecesarias
 
 ---
@@ -209,7 +221,8 @@ graph TD
 | SPEC-004 (TD-040A workflow-plan) | T-008 | [ ] |
 | SPEC-005 (TD-040B workflow-strategy) | T-009 | [ ] |
 | SPEC-006 (TD-040C workflow-structure + template) | T-010, T-011 | [ ] |
-| SPEC-007 (REGLA-LONGEV-001) | T-012, T-013, T-014, T-015 | [ ] |
+| SPEC-004/005/006 completion | T-012 | [ ] |
+| SPEC-007 (REGLA-LONGEV-001) | T-013, T-014, T-015 | [ ] |
 
 ---
 
