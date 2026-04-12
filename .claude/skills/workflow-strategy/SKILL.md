@@ -7,7 +7,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 2'"
-updated_at: 2026-04-09 22:00:00
+updated_at: 2026-04-12 00:00:00
 ---
 
 # /workflow-strategy — Phase 2: SOLUTION_STRATEGY
@@ -69,7 +69,9 @@ Antes de presentar el gate 2→3:
 
 ⏸ STOP — Presentar las decisiones clave (Key Ideas, Decisions, alternativas descartadas).
 Esperar confirmación explícita. NO continuar sin respuesta.
-Al aprobar: actualizar `context/now.md::phase` a `Phase 3`.
+Al aprobar:
+1. Actualizar `context/now.md::phase` a `Phase 3`
+2. Actualizar `{nombre-wp}-solution-strategy.md::status` a `Aprobado — {fecha}`
 
 ---
 

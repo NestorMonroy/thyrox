@@ -1519,7 +1519,7 @@ Opcionalmente: añadir anotación `async_suitable: true` en agentes como `deep-r
 ```yml
 id: TD-040
 severidad: media
-estado: "[ ] Pendiente"
+estado: "[x] Resuelto 2026-04-12 (FASE 32)"
 detectado_en: FASE 31 (pre-gate SP-06, 2026-04-11)
 area: workflow-*/SKILL.md — instrucciones de gate (Phase 2→3, 3→4, 4→5, 5→6, 6→7)
 tipo: gap de instrucción — now.md se actualiza, artefacto principal no

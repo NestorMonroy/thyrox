@@ -7,7 +7,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 3'"
-updated_at: 2026-04-09 22:00:00
+updated_at: 2026-04-12 00:00:00
 ---
 
 # /workflow-plan — Phase 3: PLAN
@@ -65,6 +65,17 @@ Antes de presentar el gate 3→4:
 - **TD-031 deep review**: revisar `{nombre-wp}-solution-strategy.md` de Phase 2 — ¿el scope refleja todas las decisiones?
 - **TD-029 criterios**: `{nombre-wp}-plan.md` existe · ROADMAP.md tiene el WP · scope sin ambigüedades pendientes
 - **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+
+---
+
+## Gate humano
+
+⏸ STOP — Presentar scope statement (problema, in-scope, out-of-scope, criterios de éxito) al usuario.
+Esperar confirmación explícita. NO continuar sin respuesta.
+Al aprobar:
+1. Actualizar `context/now.md::phase` a `Phase 4`
+2. Actualizar `{nombre-wp}-plan.md::status` a `Aprobado — {fecha}`
+3. Marcar `[x] Scope aprobado por usuario — {fecha}` en `{nombre-wp}-plan.md`
 
 ---
 

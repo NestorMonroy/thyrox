@@ -128,7 +128,7 @@ graph TD
 
 ## Grupo B.3 — TD-040: Gates en workflow-*/SKILL.md (SPEC-004/005/006)
 
-- [ ] T-008: Añadir sección `## Gate humano` a `workflow-plan/SKILL.md` (SPEC-004)
+- [x] T-008: Añadir sección `## Gate humano` a `workflow-plan/SKILL.md` (SPEC-004)
   - **Archivo:** `.claude/skills/workflow-plan/SKILL.md`
   - **Cambio:** Insertar entre `## Validaciones pre-gate` y `## Exit criteria`:
     ```markdown
@@ -143,7 +143,7 @@ graph TD
     ```
   - **Verificación:** `grep -n "Gate humano" .claude/skills/workflow-plan/SKILL.md` → match
 
-- [ ] T-009: Actualizar gate de `workflow-strategy/SKILL.md` con paso de artefacto (SPEC-005)
+- [x] T-009: Actualizar gate de `workflow-strategy/SKILL.md` con paso de artefacto (SPEC-005)
   - **Archivo:** `.claude/skills/workflow-strategy/SKILL.md`
   - **Cambio:** Reemplazar `Al aprobar: actualizar \`context/now.md::phase\` a \`Phase 3\`.` con:
     ```markdown
@@ -153,7 +153,7 @@ graph TD
     ```
   - **Verificación:** `grep "solution-strategy.md::status" .claude/skills/workflow-strategy/SKILL.md` → match
 
-- [ ] T-010: Actualizar gate de `workflow-structure/SKILL.md` con paso de artefacto (SPEC-006A)
+- [x] T-010: Actualizar gate de `workflow-structure/SKILL.md` con paso de artefacto (SPEC-006A)
   - **Archivo:** `.claude/skills/workflow-structure/SKILL.md`
   - **Cambio:** Reemplazar `Al aprobar: actualizar \`context/now.md::phase\` a \`Phase 5\`.` con:
     ```markdown
@@ -163,7 +163,7 @@ graph TD
     ```
   - **Verificación:** `grep "requirements-spec.md::status" .claude/skills/workflow-structure/SKILL.md` → match
 
-- [ ] T-011: Añadir campo `status` al frontmatter de `requirements-specification.md.template` (SPEC-006B)
+- [x] T-011: Añadir campo `status` al frontmatter de `requirements-specification.md.template` (SPEC-006B)
   - **Archivo:** `.claude/skills/workflow-structure/assets/requirements-specification.md.template`
   - **Cambio:** Insertar después de `updated_at`:
     ```yml
@@ -171,7 +171,7 @@ graph TD
     ```
   - **Verificación:** `grep "status:" .claude/skills/workflow-structure/assets/requirements-specification.md.template` → match
 
-- [ ] T-012: Marcar TD-040 como `[x]` en `technical-debt.md` (SPEC-004/005/006 completion)
+- [x] T-012: Marcar TD-040 como `[x]` en `technical-debt.md` (SPEC-004/005/006 completion)
   - **Archivo:** `.claude/context/technical-debt.md`
   - **Depende de:** T-008, T-009, T-010, T-011
   - **Cambio:** TD-040 `Estado: "[ ] Pendiente"` → `Estado: "[x] Resuelto 2026-04-12 (FASE 32)"`

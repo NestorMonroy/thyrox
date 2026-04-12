@@ -7,7 +7,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 4'"
-updated_at: 2026-04-09 22:00:00
+updated_at: 2026-04-12 00:00:00
 ---
 
 # /workflow-structure — Phase 4: STRUCTURE
@@ -66,7 +66,9 @@ Antes de presentar el gate 4→5:
 ⏸ STOP — Presentar la especificación completa (user stories, acceptance criteria, diseño si aplica).
 Esperar confirmación explícita. NO continuar sin respuesta.
 Excepción: si el WP es `reversibility: documentation` y la spec no tiene ambigüedades, el gate puede ser ligero.
-Al aprobar: actualizar `context/now.md::phase` a `Phase 5`.
+Al aprobar:
+1. Actualizar `context/now.md::phase` a `Phase 5`
+2. Actualizar `{nombre-wp}-requirements-spec.md::status` a `Aprobado — {fecha}`
 
 ---
 
