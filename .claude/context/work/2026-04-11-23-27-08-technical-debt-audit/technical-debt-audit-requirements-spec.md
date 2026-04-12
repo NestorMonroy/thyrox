@@ -160,6 +160,14 @@ Then session-start.sh ejecuta sin errores (smoke test)
 
 `workflow-plan/SKILL.md` es el único de los 7 `workflow-*/SKILL.md` sin sección `## Gate humano`. Solo tiene `## Validaciones pre-gate` y `## Exit criteria` — el gate está implícito pero sin instrucción de ⏸ STOP ni de actualización de artefacto.
 
+**Scope de TD-040 (justificación de exclusiones):** TD-040 afecta solo 3 de los 7 workflow-* skills. Los 4 restantes son aceptables sin cambio:
+- `workflow-analyze`: gate 1→2 no tiene artefacto principal aprobable explícito (`*-analysis.md` no tiene campo `status`). Aceptable per TD-040.
+- `workflow-decompose`: gate 5→6 usa `exit-conditions.md` como artefacto de gate, no `task-plan.md`. Aceptable per TD-040.
+- `workflow-execute`: no tiene gate humano de transición de fase (tiene gates internos de GATE OPERACIÓN, no de artefacto).
+- `workflow-track`: Phase 7 no tiene gate de transición hacia otra fase; es el cierre.
+
+Solo `workflow-plan` (falta gate completo), `workflow-strategy` (falta artefact update), y `workflow-structure` (falta artefact update) requieren cambio.
+
 **Ubicación:** Entre `## Validaciones pre-gate` y `## Exit criteria`.
 
 **Contenido exacto a insertar:**

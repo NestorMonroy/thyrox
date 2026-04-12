@@ -42,7 +42,7 @@ status: Pendiente
 
 - [x] Flujos principales documentados (Grupo A → B → REGLA-LONGEV-001)
 - [x] Edge case: WP de FASE 29 y 31 ya tienen resolved files (no duplicar)
-- [x] Escenarios de error: settings.json requiere prompt (ask) — documentado en R-05
+- [x] Escenarios de error: settings.json requiere prompt (ask) — documentado en SPEC-003 (settings.json está en `ask`, no en `allow`)
 - [x] Todos los stakeholders representados (framework users + agentes futuros)
 
 ---
