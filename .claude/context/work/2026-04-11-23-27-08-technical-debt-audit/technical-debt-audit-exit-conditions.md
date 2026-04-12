@@ -104,6 +104,8 @@ reversibility: reversible
 **Exit conditions:**
 - [x] `technical-debt-audit-lessons-learned.md` existe
 - [x] `technical-debt-audit-technical-debt-resolved.md` existe (TDs cerrados en este WP)
-- [x] `context/now.md` → `current_work: null`, `phase: null`
+- [x] `technical-debt-audit-changelog.md` existe (commits del WP agrupados) ← agregado post deep-review
+- [x] `technical-debt-audit-risk-register.md` cerrado (`closed_risks: 5`) ← agregado post deep-review
+- [x] `context/now.md` → `current_work: null`, `phase: null`, historial reciente actualizado
 - [x] `context/focus.md` actualizado con FASE 32
 - [x] Commit + push del cierre del WP

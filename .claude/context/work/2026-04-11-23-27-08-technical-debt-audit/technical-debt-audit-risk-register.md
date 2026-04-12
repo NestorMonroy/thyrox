@@ -2,10 +2,10 @@
 project: thyrox-framework
 work_package: 2026-04-11-23-27-08-technical-debt-audit
 created_at: 2026-04-11 23:27:08
-current_phase: Phase 1 — ANALYZE
-open_risks: 5
+current_phase: Phase 7 — TRACK (cerrado)
+open_risks: 0
 mitigated_risks: 0
-closed_risks: 0
+closed_risks: 5
 ```
 
 # Risk Register — technical-debt-audit (FASE 32)
@@ -14,11 +14,11 @@ closed_risks: 0
 
 | ID | Descripción | Probabilidad | Impacto | Severidad | Estado |
 |----|-------------|:------------:|:-------:|:---------:|--------|
-| R-01 | Split de technical-debt.md rompe referencias existentes | baja | alto | alta | abierto |
-| R-02 | Cambios en workflow-*/SKILL.md causan regresiones en nuevas sesiones | media | alto | alta | abierto |
-| R-03 | Scope creep — 24 TDs intentados en una sesión = ninguno bien hecho | alta | alto | crítica | abierto |
-| R-04 | TDs marcados [x] que en realidad no estaban implementados | media | medio | media | abierto |
-| R-05 | settings.json edición requiere prompt (ask) — puede interrumpir flujo | media | bajo | baja | abierto |
+| R-01 | Split de technical-debt.md rompe referencias existentes | baja | alto | alta | cerrado |
+| R-02 | Cambios en workflow-*/SKILL.md causan regresiones en nuevas sesiones | media | alto | alta | cerrado |
+| R-03 | Scope creep — 24 TDs intentados en una sesión = ninguno bien hecho | alta | alto | crítica | cerrado |
+| R-04 | TDs marcados [x] que en realidad no estaban implementados | media | medio | media | cerrado (parcialmente materializado) |
+| R-05 | settings.json edición requiere prompt (ask) — puede interrumpir flujo | media | bajo | baja | cerrado (materializado, manejado) |
 
 ---
 
@@ -31,8 +31,9 @@ closed_risks: 0
 **Probabilidad:** baja
 **Impacto:** alto (pérdida de trazabilidad si no se gestiona)
 **Severidad:** alta
-**Estado:** abierto
+**Estado:** cerrado — 2026-04-12
 **Fase de identificación:** Phase 1
+**Cierre:** No materializado. Se eligió mover TDs `[x]` a `technical-debt-resolved.md` por WP (no a un único archive), lo que preserva trazabilidad por FASE. Referencias a TDs específicos usan IDs (TD-NNN), no anclas de sección.
 
 **Señales de alerta**
 - Una referencia tipo `context/technical-debt.md#TD-00X` apunta a una entrada que fue movida
@@ -55,8 +56,9 @@ closed_risks: 0
 **Probabilidad:** media
 **Impacto:** alto (afecta todas las sesiones futuras)
 **Severidad:** alta
-**Estado:** abierto
+**Estado:** cerrado — 2026-04-12
 **Fase de identificación:** Phase 1
+**Cierre:** No materializado. Solo 3 SKILL.md modificados (workflow-plan, workflow-strategy, workflow-structure). Cambios añadidos fueron concretos y cortos (2-3 líneas por gate). Ninguno superó el umbral de 150 líneas.
 
 **Señales de alerta**
 - Un SKILL.md supera 150 líneas tras los cambios (riesgo de TD-004 regresión)
@@ -80,8 +82,9 @@ closed_risks: 0
 **Probabilidad:** alta (el impulso natural es "hacer todo")
 **Impacto:** alto (trabajo incorrecto genera más deuda)
 **Severidad:** crítica
-**Estado:** abierto
+**Estado:** cerrado — 2026-04-12
 **Fase de identificación:** Phase 1
+**Cierre:** Mitigado exitosamente. Phase 3 PLAN limitó scope a Grupos A+B (10 TDs). Groups C/D diferidos a FASE 33. 15 tareas atómicas ejecutadas, todas completadas. Ningún TD de Grupo C/D fue tocado.
 
 **Señales de alerta**
 - El task-plan tiene más de 30 tareas
@@ -104,8 +107,9 @@ closed_risks: 0
 **Probabilidad:** media
 **Impacto:** medio (falsa sensación de cierre)
 **Severidad:** media
-**Estado:** abierto
+**Estado:** cerrado — 2026-04-12 (parcialmente materializado)
 **Fase de identificación:** Phase 1
+**Cierre:** Parcialmente materializado. TD-029, TD-031, TD-032, TD-033 tenían estado `[ ] Pendiente` pero la implementación ya existía. Corrección: T-001 los marcó `[x]` con verificación grep. El riesgo inverso (TD `[x]` pero no implementado) no se observó.
 
 **Señales de alerta**
 - Un TD marcado `[x]` no tiene criterio de cierre documentado
@@ -127,8 +131,9 @@ closed_risks: 0
 **Probabilidad:** media
 **Impacto:** bajo (interrupción menor, no bloqueo)
 **Severidad:** baja
-**Estado:** abierto
+**Estado:** cerrado — 2026-04-12 (materializado, manejado)
 **Fase de identificación:** Phase 1
+**Cierre:** Materializado. Claude solicitó aprobación para editar `settings.json`. El usuario aprobó (GATE OPERACIÓN manejado correctamente). Interrupción fue menor y esperada.
 
 **Señales de alerta**
 - Claude pide confirmación al intentar editar settings.json
