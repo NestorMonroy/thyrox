@@ -1,25 +1,27 @@
 ```yml
 type: Dashboard de Proyecto
 category: Estado Actual
-version: 2.3.0
+version: 2.6.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-10 04:00:00
+updated_at: 2026-04-13 19:58:23
 ```
 
 # Project State — THYROX
 
 ## Status General
 
-**Versión:** 2.5.0
-**Estado:** Activo — framework thyrox con 29 FASEs (26 completas + FASE 27 en Phase 1 + FASE 28-29 completadas)
-**Última actualización:** 2026-04-09 22:30:00
+**Versión:** 2.6.0
+**Estado:** Activo — framework thyrox con 7 FASEs completadas
+**Última actualización:** 2026-04-13 19:58:23
 **Branch activo:** `claude/check-merge-status-Dcyvj`
 
 ---
 
-## Agentes nativos (`9` agentes en `.claude/agents/`)
+## Agentes nativos (`11` agentes en `.claude/agents/`)
 
+- `deep-review` — Analiza cobertura entre artefactos de fases consecutivas del WP, o profundidad d
+- `diagrama-ishikawa` — Especialista en análisis de causa raíz con diagramas de Ishikawa (espina de pe
 - `mysql-expert` — Tech-expert para MySQL y bases de datos relacionales. Conoce SQL, diseño de sch
 - `nodejs-expert` — Experto en Node.js, Express y ecosistema npm. Usar cuando el usuario necesite im
 - `postgresql-expert` — Tech-expert para PostgreSQL. Conoce SQL, migrations, índices, transacciones y c
@@ -27,41 +29,20 @@ updated_at: 2026-04-10 04:00:00
 - `skill-generator` — Genera archivos de skill (.claude/skills/ o .claude/agents/) para una tecnologí
 - `task-executor` — Ejecuta tareas atómicas de un task-plan.md. Usar cuando hay un task-plan con ch
 - `task-planner` — Descompone trabajo en tareas atómicas con IDs trazables. Usar cuando el usuario
-- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
+- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
 - `webpack-expert` — Tech-expert para Webpack y bundling de assets. Conoce configuración de entry/ou
 
 ---
 
-## FASEs completadas (26 total + FASE 28)
+## FASEs completadas (7 total)
 
-| FASE 1: Framework Base (v0.1.0) |
-| FASE 2: Consolidación y Coherencia (v0.2.0) — Sesión 2026-03-27 |
-| FASE 3: Completar documentación del framework |
-| FASE 4: Template listo para reutilización |
-| FASE 5: Compatibilidad multi-modelo (Haiku + activación automática) |
-| FASE 6: Integración de templates por fase (Reveal Intent + contrato fase→template→output) |
-| FASE 7: Meta-Framework Generativo (tech skills auto-generados) |
-| FASE 8: Resolución de Deuda Técnica (2026-04-04) |
-| FASE 9: Boundary SKILL vs ADR — compatibilidad multi-modelo (2026-04-04) |
-| FASE 10: Separación .claude/ vs docs/ — adr_path configurable (2026-04-04) |
-| FASE 11: Integración de Capacidades — MCP + Native Agents (2026-04-05) |
-| FASE 12: Estandarización de Keys de Metadata YAML (2026-04-07) |
-| FASE 13: Convenciones para Ejecución Paralela de Agentes (2026-04-07) |
-| FASE 14: Correcciones al flujo — post-mortem FASE 13 (2026-04-07) |
-| FASE 15: Unificación de Registry (2026-04-07) |
-| FASE 16: Separación semántica del Registry + Documentación pública (2026-04-07) |
-| FASE 17: Análisis de referencia — mise (jdx/mise) (2026-04-07) |
-| FASE 18: Human Gates — autorización explícita por fase (2026-04-07) |
-| FASE 19: Async Gates — gates para agentes en background (2026-04-08) |
-| FASE 20: Context Hygiene — sincronización de archivos de estado (2026-04-08) |
-| FASE 21: Skill Architecture Review — decisión arquitectónica thyrox (2026-04-08) |
-| FASE 22: Framework Evolution — Integración documentación oficial + TDs prioritarios (2026-04-08) |
-| FASE 23: workflow-restructure — Migración workflow-* a subdirectorios + reducción SKILL.md (2026-04-09) |
-| FASE 24: skill-references-restructure — Redistribución arquitectónica de references y scripts (2026-04-09) |
-| FASE 25: assets-restructure — Distribución de templates a workflow-*/assets/ (2026-04-09) |
-| FASE 26: write-gates — Modelo de permisos Claude Code (2026-04-09) |
-| FASE 28: auto-operations — Sincronización determinista now.md via hooks reactivos (v2.4.0) (2026-04-09) |
-| FASE 29: technical-debt-resolution — Renombrado thyrox, validaciones pre-gate, REGLA-LONGEV-001 (v2.5.0) (2026-04-10) |
+| FASE 27: agentic-loop — Mecanismo de ejecución continua con /loop (2026-04-09) |
+| FASE 28: auto-operations — Sincronización determinista de now.md via hooks reactivos (2026-04-09) |
+| FASE 29: technical-debt-resolution — Resolución de Deuda Técnica del Framework (2026-04-09) |
+| FASE 30: uv-adoption — Adopción de uv como gestor de entorno Python (2026-04-10) |
+| FASE 31: thyrox-commands-namespace — Namespace /thyrox:* mediante Plugin Claude Code (2026-04-11) |
+| FASE 33: skill-authoring-modernization — Actualización skill-authoring.md + benchmark TD-010/TD-025 (2026-04-12) |
+| FASE 32: technical-debt-audit — Auditoría y resolución de deuda técnica ✓ COMPLETADO 2026-04-12 |
 
 Ver ROADMAP.md para detalle de cada FASE.
 
@@ -88,8 +69,7 @@ Ver ROADMAP.md para detalle de cada FASE.
 
 ## Deuda técnica registrada
 
-Ver `.claude/context/technical-debt.md` para TD-001 a TD-035.
-Alta prioridad resuelta en FASE 29: TD-029, TD-031, TD-032, TD-033 implementados.
+Ver `.claude/context/technical-debt.md` para TD-001 a TD-007.
 
 ---
 

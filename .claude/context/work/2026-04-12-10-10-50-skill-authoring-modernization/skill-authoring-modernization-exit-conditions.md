@@ -140,6 +140,6 @@ reversibility: reversible
 - [x] `skill-authoring-modernization-changelog.md` existe (21 commits, 14 added + 6 changed + 2 fixed)
 - [x] `skill-authoring-modernization-technical-debt-resolved.md` existe (TD-025 cerrado)
 - [x] `skill-authoring-modernization-risk-register.md` actualizado (4/4 riesgos cerrados/mitigados)
-- [ ] `context/now.md` → `current_work: null`, `phase: null`
-- [ ] `context/focus.md` actualizado con FASE 33
+- [x] `context/now.md` → `current_work: null`, `phase: null` — cerrado con close-wp.sh
+- [x] `context/focus.md` actualizado con FASE 33 completada
 - [ ] Commit + push del cierre del WP
