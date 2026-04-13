@@ -136,18 +136,33 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## FASE 33: skill-authoring-modernization — Actualización skill-authoring.md + benchmark TD-010/TD-025 (2026-04-12)
+## FASE 34: technical-debt-resolution — Resolución 7 TDs activos (2026-04-13)
+
+**WP:** `.claude/context/work/2026-04-13-20-17-28-technical-debt-resolution/`
+**Causa raíz:** 7 TDs activos (TD-001, TD-003, TD-009, TD-018, TD-027, TD-028, TD-035) con soluciones concretas identificadas en FASEs anteriores. TD-010 diferido (trigger no activado).
+
+- [x] Phase 1 ANALYZE — completado 2026-04-13
+- [ ] Phase 2 SOLUTION_STRATEGY — **OMITIDA** (WP pequeño, soluciones ya identificadas)
+- [x] Phase 3 PLAN — completado 2026-04-13
+- [ ] Phase 4 STRUCTURE — **OMITIDA** (cambios quirúrgicos, plan suficiente)
+- [ ] Phase 5 DECOMPOSE
+- [ ] Phase 6 EXECUTE
+- [ ] Phase 7 TRACK
+
+---
+
+## FASE 33: skill-authoring-modernization — Actualización skill-authoring.md + benchmark TD-010/TD-025 ✓ COMPLETADO 2026-04-13
 
 **WP:** `.claude/context/work/2026-04-12-10-10-50-skill-authoring-modernization/`
-**Causa raíz:** TD-010 (benchmark SKILL vs CLAUDE.md, trigger: caso de uso real) + TD-025 (skill-authoring.md 2026-03-25, pre-docs oficiales). Repo externo `claude-howto` como referencia de casos reales.
+**Resultado:** 14 nuevas referencias creadas, 5 actualizadas. TD-025 cerrado. CLAUDE_STREAM_IDLE_TIMEOUT_MS=120000 fix. diagrama-ishikawa agent agregado. 8 lecciones documentadas.
 
 - [x] Phase 1 ANALYZE — completado, Gate SP-01 aprobado 2026-04-12
 - [x] Phase 2 SOLUTION_STRATEGY — completado, Gate SP-02 aprobado 2026-04-12
 - [x] Phase 3 PLAN — completado, Gate SP-03 aprobado 2026-04-12
-- [ ] Phase 4 STRUCTURE
-- [ ] Phase 5 DECOMPOSE
-- [ ] Phase 6 EXECUTE
-- [ ] Phase 7 TRACK
+- [x] Phase 4 STRUCTURE — **OMITIDA** (stream timeout × 4 intentos — aprobado por usuario)
+- [x] Phase 5 DECOMPOSE — **OMITIDA** (WP mediano → pequeño post-timeout)
+- [x] Phase 6 EXECUTE — completado, Gate SP-06 aprobado 2026-04-13
+- [x] Phase 7 TRACK — completado 2026-04-13
 
 ---
 

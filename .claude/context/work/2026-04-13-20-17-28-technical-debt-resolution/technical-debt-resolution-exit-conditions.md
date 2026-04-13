@@ -41,8 +41,8 @@ reversibility: reversible
 ## Phase 3: PLAN
 
 **Exit conditions:**
-- [ ] Scope statement: lista de 7 TDs + archivos afectados por cada uno
-- [ ] ROADMAP.md actualizado con entrada FASE 34
+- [x] Scope statement: lista de 7 TDs + archivos afectados por cada uno
+- [x] ROADMAP.md actualizado con entrada FASE 34
 - [ ] **Usuario aprobó plan** ← Gate SP-02 (combinado con SP de Phase 5)
 
 **Transition:** → Phase 5 DECOMPOSE (saltando Phase 4 STRUCTURE)
