@@ -136,8 +136,10 @@ reversibility: reversible
 ## Phase 7: TRACK
 
 **Exit conditions:**
-- [ ] `skill-authoring-modernization-lessons-learned.md` existe
-- [ ] `skill-authoring-modernization-changelog.md` existe
+- [x] `skill-authoring-modernization-lessons-learned.md` existe (8 lecciones)
+- [x] `skill-authoring-modernization-changelog.md` existe (21 commits, 14 added + 6 changed + 2 fixed)
+- [x] `skill-authoring-modernization-technical-debt-resolved.md` existe (TD-025 cerrado)
+- [x] `skill-authoring-modernization-risk-register.md` actualizado (4/4 riesgos cerrados/mitigados)
 - [ ] `context/now.md` → `current_work: null`, `phase: null`
 - [ ] `context/focus.md` actualizado con FASE 33
 - [ ] Commit + push del cierre del WP
