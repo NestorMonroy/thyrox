@@ -95,35 +95,36 @@ reversibility: reversible
 **Exit conditions:**
 
 ### Grupo A — Authoring por componente
-- [ ] `skill-authoring.md` actualizado (gaps alta prioridad que quedan aquí)
-- [ ] `agent-authoring.md` creado
-- [ ] `claude-authoring.md` creado
-- [ ] `hook-authoring.md` creado
-- [ ] `component-decision.md` creado
+- [x] `skill-authoring.md` actualizado (GAP-001..006,014,015 — 8 secciones nuevas) — commit 850d1d8
+- [x] `agent-authoring.md` creado (420 líneas) — commit d02fb5f
+- [x] `claude-authoring.md` creado (381 líneas) — commit d02fb5f
+- [x] `hook-authoring.md` creado (607 líneas) — commit d02fb5f
+- [x] `component-decision.md` creado (239 líneas) — commit 850d1d8
 
 ### Grupo B — Referencias de plataforma
-- [ ] `advanced-features.md` creado
-- [ ] `cli-reference.md` creado
+- [x] `advanced-features.md` creado (584 líneas) — commit 0e8174b
+- [x] `cli-reference.md` creado (511 líneas) — commit 0e8174b
 
 ### Grupo C — Guías de patrones
-- [ ] `memory-patterns.md` creado
-- [ ] `tool-patterns.md` creado
-- [ ] `testing-patterns.md` creado
-- [ ] `multimodal.md` creado
-- [ ] `output-formats.md` creado
-- [ ] `stream-resilience.md` creado
-- [ ] `streaming-errors.md` creado
-- [ ] `long-running-calls.md` creado
+- [x] `memory-patterns.md` creado — commit 583a937
+- [x] `tool-patterns.md` creado — commit 583a937
+- [x] `testing-patterns.md` creado — commit 583a937
+- [x] `multimodal.md` creado — commit 583a937
+- [x] `output-formats.md` creado — commit 583a937
+- [x] `stream-resilience.md` creado (396 líneas) — commit 1f18ea8
+- [x] `streaming-errors.md` creado (346 líneas) — commit 1f18ea8
+- [x] `long-running-calls.md` creado — commit 1357f3c
 
 ### Grupo D — Actualizaciones de existentes
-- [ ] `mcp-integration.md` actualizado (code-execution-with-MCP, claude mcp serve)
-- [ ] `plugins.md` actualizado (security restrictions subagents-in-plugins)
+- [x] `mcp-integration.md` actualizado (+85 líneas: claude mcp serve, code-execution-with-MCP) — commit 1357f3c
+- [x] `plugins.md` actualizado (+81 líneas: security restrictions, bin/, claude plugin commands) — commit 1c2f29d
+- [x] `scheduled-tasks.md` fix L284 — ref temporal → advanced-features.md local — commit 0e8174b
 
 ### Cierre
-- [ ] `thyrox/SKILL.md` referencias actualizadas con los 12 archivos
-- [ ] `technical-debt.md` TD-025 marcado `[x]`
-- [ ] `technical-debt.md` TD-010 actualizado con nota de evaluación
-- [ ] Commit(s) con mensajes convencionales
+- [x] `thyrox/SKILL.md` referencias actualizadas con 15 archivos en 4 grupos — commit 127ca2b
+- [x] `technical-debt.md` TD-025 marcado `[x]` — commit 127ca2b
+- [x] `technical-debt.md` TD-010 actualizado con nota de evaluación FASE 33 — commit 127ca2b
+- [x] Commits C1..C6 completados con mensajes convencionales
 - [ ] **Usuario aprobó resultado** ← Gate SP-06
 
 **Transition:** → Phase 7 TRACK
