@@ -240,6 +240,91 @@ claude "Create a PR for branch feature-auth"
 claude "Get the diff for PR #123"
 ```
 
+
+## `claude mcp serve` — Exponer Claude Code como servidor MCP
+
+```bash
+# Lanzar Claude Code como servidor MCP al que otros clientes pueden conectarse
+claude mcp serve
+```
+
+**Que hace:** Convierte Claude Code en un servidor MCP. Otros clientes MCP (IDEs,
+herramientas externas, otros agentes) pueden conectarse y usar las herramientas
+de Claude Code a traves del protocolo MCP.
+
+**Casos de uso:**
+- Integrar Claude Code como backend en IDEs con soporte MCP
+- Exponer capacidades de Claude Code a herramientas de terceros
+- Arquitecturas multi-agente donde Claude Code actua como servidor de herramientas
+
+## Code-execution-with-MCP pattern
+
+Patron para ejecutar codigo de forma segura via un servidor MCP especializado:
+
+```json
+{
+  "mcpServers": {
+    "code-executor": {
+      "command": "npx",
+      "args": ["@mcp/sandbox-executor"],
+      "env": {
+        "SANDBOX_IMAGE": "python:3.11-slim",
+        "TIMEOUT_SECONDS": "30"
+      }
+    }
+  }
+}
+```
+
+El patron: Claude analiza el codigo, delega la ejecucion al MCP server (corriendo
+en Docker/sandbox), el server devuelve stdout/stderr/exit code, Claude interpreta
+el resultado. Esto aisla la ejecucion de codigo del filesystem del host.
+
+## Env var expansion en `mcpServers`
+
+Las variables de entorno se pueden referenciar en la configuracion de MCP servers:
+
+```json
+{
+  "mcpServers": {
+    "mi-server": {
+      "command": "node",
+      "args": ["./mcp-server.js"],
+      "env": {
+        "API_KEY": "${MY_API_KEY}",
+        "DATABASE_URL": "${DB_URL:-postgresql://localhost/dev}",
+        "REGION": "${AWS_REGION}"
+      }
+    }
+  }
+}
+```
+
+**Sintaxis:**
+- `${VAR}` — error si VAR no esta definida en el entorno
+- `${VAR:-default}` — usa `default` si VAR no esta definida
+
+Mantiene secretos fuera de los archivos de configuracion commitados al repositorio.
+
+## `--strict-mcp-config` — Validacion estricta de config MCP
+
+```bash
+# Solo usar los servidores MCP del archivo especificado (ignora user/project config)
+claude --strict-mcp-config --mcp-config ./production-mcp.json "consulta"
+```
+
+**Comportamiento:**
+- Carga solo los servidores MCP del archivo especificado en `--mcp-config`
+- Ignora `~/.claude.json` y `.mcp.json` del proyecto
+- Rechaza configuraciones MCP invalidas en lugar de ignorarlas silenciosamente
+
+**Cuando usar:**
+- Entornos de produccion: garantizar que solo servidores aprobados esten disponibles
+- CI/CD: configuracion deterministica sin dependencias de archivos locales del usuario
+- Auditorias de seguridad: control exacto de que servidores MCP tiene acceso Claude
+
+---
+
 ## Comparación: MCP vs Hooks vs Skills para integraciones
 
 | Aspecto | MCP | Hook | Skill |

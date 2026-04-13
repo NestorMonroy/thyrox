@@ -834,7 +834,330 @@ El proceso más efectivo involucra a Claude mismo.
 
 ---
 
+---
+
+## Frontmatter completo (GAP-001)
+
+Todos los campos disponibles del frontmatter de skills post-2026-03-25. Los marcados como opcionales se omiten si no son necesarios.
+
+```yaml
+---
+name: mi-skill              # Opcional. Si se omite: usa nombre del directorio.
+                            # Solo a-z, 0-9, - (hyphens). Max 64 chars.
+                            # NOTA: underscores NO son válidos en el campo name.
+description: |              # Recomendado. Claude lo usa para auto-seleccionar.
+  Qué hace el skill. Usar cuando condición específica.
+  Max 250 chars visibles en listado (se trunca si excede).
+argument-hint: "[nombre] [formato]"  # Opcional. Hint en autocomplete del menú /.
+disable-model-invocation: true       # Opcional. Ver §Modos de invocación.
+user-invocable: false                # Opcional. Ver §Modos de invocación.
+allowed-tools: Read Grep             # Opcional. Herramientas pre-aprobadas mientras el skill está activo.
+model: sonnet                        # Opcional. Modelo mientras el skill está activo.
+effort: high                         # Opcional. low|medium|high|max (Opus 4.6 only).
+context: fork                        # Opcional. Ejecuta en subagente aislado. Ver §Context isolation.
+agent: Explore                       # Opcional. Qué subagente usar con context: fork.
+shell: bash                          # Opcional. bash (default) o powershell.
+hooks:                               # Opcional. Hooks del lifecycle de este skill.
+  - event: UserPromptSubmit
+    once: true
+    type: command
+    command: "echo 'skill activado' >> .claude/context/now.md"
+paths: "src/**/*.ts"                 # Opcional. Ver §Activación condicional.
+---
+```
+
+**Campos básicos requeridos/recomendados:**
+
+| Campo | Estado | Notas |
+|-------|--------|-------|
+| `name` | Opcional | Si se omite usa el nombre del directorio. Respetar formato kebab-case. |
+| `description` | Recomendado | Sin description, Claude no puede auto-seleccionar el skill. |
+| Resto | Opcional | Solo agregar si hay razón concreta. |
+
+---
+
+## Modos de invocación (GAP-002 + GAP-003)
+
+Tres modos disponibles controlados por dos campos de frontmatter:
+
+| Frontmatter | Usuario invoca | Claude invoca | Description en context |
+|-------------|---------------|---------------|------------------------|
+| (default) | Sí — `/<name>` | Sí — auto-selección | Siempre cargada |
+| `disable-model-invocation: true` | Sí — `/<name>` | No | NUNCA cargada |
+| `user-invocable: false` | No — oculto del menú | Sí — auto-selección | Siempre cargada |
+
+**`disable-model-invocation: true` — doble efecto:**
+
+1. **Control de invocación:** Claude no puede auto-seleccionar el skill
+2. **Optimización de context budget:** La description NO se incluye en el context hasta que el usuario lo invoca
+
+Este doble efecto es la razón principal para usarlo en skills de workflow pesados:
+
+```yaml
+# Skill que el usuario invoca manualmente, con body extenso:
+---
+name: workflow-execute
+description: Phase 6 EXECUTE — implementa el task-plan.md
+disable-model-invocation: true   # Control + context budget: zero costo hasta /workflow-execute
+---
+```
+
+**`user-invocable: false` — skill invisible para el usuario:**
+
+```yaml
+# Skill que solo Claude activa, oculto del menú /:
+---
+name: legacy-context
+description: Contexto del sistema legacy para Claude. Solo útil como referencia de Claude.
+user-invocable: false
+---
+```
+
+**Regla de context budget (GAP-003):**
+
+Las descriptions de todos los skills model-invocable se cargan al inicio de sesión. El budget total es **~1% de la context window** (~8,000 caracteres como fallback). Con muchos skills instalados, las descriptions se truncan automáticamente.
+
+Estrategia para conservar budget:
+- Skills pesados de uso manual → `disable-model-invocation: true` (0 costo)
+- Skills de conocimiento siempre relevante → mantener model-invocable con description corta
+- Skills de workflow → usar `disable-model-invocation: true` siempre
+
+---
+
+## Variables de sustitución (GAP-004)
+
+Disponibles en el body de SKILL.md, se resuelven antes de que Claude vea el contenido:
+
+| Variable | Descripción | Ejemplo de uso |
+|----------|-------------|----------------|
+| `$ARGUMENTS` | Todos los argumentos al invocar | `/fix-issue 123` → `$ARGUMENTS` = `123` |
+| `$ARGUMENTS[N]` o `$N` | Argumento por índice (0-based) | `$ARGUMENTS[0]` = primer argumento |
+| `${CLAUDE_SESSION_ID}` | ID de la sesión actual | Para logging o nombres únicos |
+| `${CLAUDE_SKILL_DIR}` | Directorio del SKILL.md | Para referenciar scripts relativos al skill |
+
+**Ejemplo completo:**
+
+```yaml
+---
+name: fix-issue
+description: Corrige un issue de GitHub por número. Usar cuando se quiere implementar un fix.
+argument-hint: "[issue-number]"
+---
+
+## Contexto
+- Issue a resolver: $ARGUMENTS
+- Directorio del skill: ${CLAUDE_SKILL_DIR}
+- Sesión: ${CLAUDE_SESSION_ID}
+
+## Tarea
+Implementar fix para el issue #$ARGUMENTS:
+1. Leer el issue con `gh issue view $ARGUMENTS`
+2. Identificar archivos afectados
+3. Implementar la corrección
+4. Escribir tests
+5. Crear commit con referencia al issue
+
+## Scripts disponibles
+Ver ${CLAUDE_SKILL_DIR}/scripts/ para utilidades de validación.
+```
+
+**Uso de `${CLAUDE_SKILL_DIR}` para referenciar scripts:**
+
+```markdown
+Ejecutar validaciones del proyecto:
+!`bash ${CLAUDE_SKILL_DIR}/scripts/validate.sh`
+```
+
+---
+
+## Inyección dinámica de contexto (GAP-005)
+
+La sintaxis `!`backtick`ejecuta comandos shell antes de que Claude vea el contenido del skill. Claude solo ve el output del comando, no el comando en sí.
+
+**Sintaxis inline:**
+```
+Estado actual del repositorio: !`git status --short`
+Branch activo: !`git branch --show-current`
+```
+
+**Sintaxis de bloque multi-línea (backtick triple con `!`):**
+```
+Estado del entorno:
+!`node --version`
+!`git log --oneline -5`
+```
+
+**Ejemplo de skill que usa inyección dinámica:**
+
+```yaml
+---
+name: pr-summary
+description: Genera resumen de un pull request. Usar cuando se quiere describir los cambios de un PR.
+context: fork
+agent: Explore
+---
+
+## Contexto del pull request
+- Archivos modificados: !`gh pr diff --name-only`
+- Status CI: !`gh pr checks`
+
+## Tarea
+Con el contexto anterior, genera un resumen del PR que incluya:
+1. Qué cambia y por qué
+2. Impacto potencial
+3. Areas que requieren revisión cuidadosa
+```
+
+**Por defecto el shell es `bash`.** Para usar PowerShell:
+
+```yaml
+---
+shell: powershell
+---
+Estado: !`Get-Location`
+```
+
+---
+
+## Context isolation con `context: fork` (GAP-006)
+
+El campo `context: fork` ejecuta el skill en un subagente aislado, no inline en el contexto principal.
+
+**Sin `context: fork` (default):**
+- El skill corre inline — su output queda en el contexto principal
+- Útil para skills cortos de referencia
+- Riesgo: output verboso (tests, análisis extenso) contamina el contexto
+
+**Con `context: fork`:**
+- El skill content se convierte en el task del subagente
+- El subagente corre en su propio context window
+- Solo el resumen final vuelve al contexto principal
+- El campo `agent:` especifica qué tipo de subagente usar
+
+```yaml
+---
+name: deep-analysis
+context: fork
+agent: Explore          # Explore: Haiku, read-only, bajo costo
+---
+
+Analiza el codebase para identificar:
+1. Patrones de arquitectura
+2. Dependencias circulares
+3. Módulos con alta complejidad ciclomática
+
+Retorna un resumen estructurado con hallazgos específicos.
+```
+
+**Tipos de subagente disponibles para `agent:`:**
+
+| Agent | Modelo | Herramientas | Ideal para |
+|-------|--------|--------------|-----------|
+| `Explore` | Haiku (rápido, económico) | Read-only | Exploración, búsqueda, análisis |
+| `Plan` | Hereda del parent | Lectura | Crear planes de implementación |
+| `general-purpose` | Hereda del parent | Todas | Tareas que requieren modificar archivos |
+| Agente custom | Según definición | Según definición | Workflows especializados |
+
+**Diferencia con `skills:` en agents:**
+- `context: fork` en SKILL → el skill invoca un subagente cuando se activa
+- `skills:` en Agent → el agente tiene el skill precargado en su contexto desde el inicio
+
+---
+
+## Description budget (GAP-014)
+
+**Límite de UI:** La description de un skill está limitada a **250 caracteres** visibles en el listado del menú `/`. Si excede, se trunca en la UI.
+
+**Budget de context window:** Las descriptions de todos los skills model-invocable se incluyen en el context al inicio. El budget total es `~1% del context window` (~8,000 caracteres como fallback). Si hay muchos skills, las descriptions se truncan para caber en el budget.
+
+**Estrategia de description efectiva — front-load el trigger:**
+
+```yaml
+# Malo — el trigger está al final (puede truncarse)
+description: "Metodología validada para análisis de builds Sphinx, gestión de warnings,
+generación de reportes y corrección incremental. Usar cuando trabajas con Sphinx."
+
+# Bueno — trigger al inicio (front-loaded)
+description: "Usar cuando trabajas con docs Sphinx o architecture docs. Ejecuta builds,
+analiza warnings y genera reportes de corrección incremental."
+```
+
+**Verificar el tamaño:**
+
+```bash
+echo -n "Tu description aquí" | wc -c
+# Si > 250: se trunca en UI
+# Si > 8000 chars totales de descriptions: el modelo puede no ver todas
+```
+
+**Para skills con `disable-model-invocation: true`:**
+La description nunca se incluye en el context window (cero costo de budget). El límite de 250 chars sigue aplicando al menú `/`, pero no afecta el context budget del modelo.
+
+**Override del budget (avanzado):**
+```bash
+export SLASH_COMMAND_TOOL_CHAR_BUDGET=12000  # Aumentar el budget de descriptions
+```
+
+---
+
+## Activación condicional con `paths:` (GAP-015)
+
+El campo `paths:` limita cuándo Claude auto-activa el skill basándose en los archivos que el usuario tiene en scope.
+
+```yaml
+---
+name: api-conventions
+description: Convenciones de la API para este codebase.
+paths: "src/api/**/*.ts"    # Solo se activa cuando el usuario trabaja con archivos en src/api/
+---
+
+Cuando escribas endpoints de API en este proyecto:
+- Usar Zod para validación de input
+- Retornar errores con formato {success: false, error: {code, message}}
+- Incluir paginación cursor-based en listas
+```
+
+**Formatos válidos para `paths:`:**
+
+```yaml
+# String simple (un patrón)
+paths: "src/**/*.ts"
+
+# String con múltiples patrones (comma-separated)
+paths: "src/**/*.ts, tests/**/*.test.ts"
+
+# Lista YAML
+paths:
+  - "src/api/**"
+  - "tests/api/**"
+```
+
+**Patrones glob comunes:**
+
+| Patrón | Qué coincide |
+|--------|-------------|
+| `src/**/*.ts` | Todos los .ts en src/ recursivamente |
+| `src/**` | Todos los archivos en src/ |
+| `*.{ts,tsx}` | Archivos .ts o .tsx |
+| `{src,lib}/**/*.ts` | .ts en src/ o lib/ |
+
+**Cuándo usar `paths:`:**
+
+- Skills de convenciones específicas a un módulo (ej: `paths: "src/api/**"` para convenciones de API)
+- Skills de guías técnicas por tipo de archivo (ej: `paths: "**/*.sql"` para patrones SQL)
+- Evitar que skills de un módulo aparezcan en sesiones donde no son relevantes
+
+**Diferencia con `.claude/rules/` con `paths:`:**
+
+- `skill paths:` → hint al modelo para auto-activación (probabilístico)
+- `.claude/rules/` con `paths:` frontmatter → carga determinística cuando ciertos archivos están en scope
+
+Para garantías determinísticas, usar `.claude/rules/`. Para hints al modelo, usar `skill paths:`.
+
+---
+
 **Documento basado en**: Anthropic Skill Authoring Best Practices
 **Adaptado para**: THYROX
 **Fecha**: 2026-02-01
-**Ver también**: prompting-tips.md, long-context-tips.md
+**Actualizado con**: GAP-001..006, GAP-014, GAP-015 (FASE 33)
+**Ver también**: claude-code-components.md, component-decision.md, prompting-tips.md
