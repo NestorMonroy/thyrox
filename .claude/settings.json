@@ -1,5 +1,8 @@
 {
   "defaultMode": "acceptEdits",
+  "env": {
+    "CLAUDE_STREAM_IDLE_TIMEOUT_MS": "120000"
+  },
   "permissions": {
     "allow": [
       "Write(/.claude/context/now.md)",
