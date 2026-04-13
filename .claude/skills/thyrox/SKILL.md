@@ -203,7 +203,29 @@ Ver [permission-model](../../references/permission-model.md) para la referencia 
 [command-execution-model](../../references/command-execution-model.md) — Flujo de ejecución de commands (parse→shell→LLM), fat vs thin wrapper, delegación explícita (context:fork) vs probabilística, restricciones plugin commands
 [sdd](../../references/sdd.md) — Specification-Driven Development (TDD + DbC): collaborative tests vs contratos, ciclo SDD, amplificación de tests, cuándo usar cada tipo de spec
 
+### Authoring — crear o modificar componentes Claude Code
+[skill-authoring](../../references/skill-authoring.md) — Crear o mejorar skills (frontmatter completo, modos, variables, paths:)
+[agent-authoring](../../references/agent-authoring.md) — Crear agentes nativos (GAP-007..012: skills:, memory:, background:, isolation:, permissionMode)
+[claude-authoring](../../references/claude-authoring.md) — Cuándo y cómo crear CLAUDE.md (jerarquía, @imports, /init, anti-patrones)
+[hook-authoring](../../references/hook-authoring.md) — Crear hooks (eventos, output control, patrones, errores comunes)
+[component-decision](../../references/component-decision.md) — Flowchart SKILL vs CLAUDE.md vs Agent vs Hook vs Plugin vs Command
+
+### Plataforma avanzada — features y CLI completo
+[advanced-features](../../references/advanced-features.md) — Planning Mode, Extended Thinking, Auto Mode, Worktrees, Sandboxing, Agent Teams, Channels
+[cli-reference](../../references/cli-reference.md) — Todos los flags, 30+ env vars, subcomandos claude auth/mcp/agents
+
+### Patrones — cómo implementar correctamente
+[memory-patterns](../../references/memory-patterns.md) — Estado de sesión, @imports, auto-memory, memory: en subagents
+[tool-patterns](../../references/tool-patterns.md) — Herramienta correcta por tarea, parallel calls, Edit vs Write
+[testing-patterns](../../references/testing-patterns.md) — SDD práctico, CI/CD con claude -p, code review automation
+[multimodal](../../references/multimodal.md) — Leer imágenes, PDFs, notebooks y screenshots con Read tool
+[output-formats](../../references/output-formats.md) — --output-format, --json-schema, jq patterns, structured output
+
+### Streaming y llamadas largas
+[stream-resilience](../../references/stream-resilience.md) — CLAUDE_STREAM_IDLE_TIMEOUT_MS, TTFToken, --fallback-model, recovery patterns
+[streaming-errors](../../references/streaming-errors.md) — Catálogo de errores con causas/fixes, matriz de diagnóstico rápido
+[long-running-calls](../../references/long-running-calls.md) — --max-turns, background vs print mode, síntesis del padre, worktrees, checkpoints
+
 ### Avanzado (leer cuando Claude tiene dificultades)
 [prompting-tips](../../references/prompting-tips.md) — Cuando Claude no entiende instrucciones
 [long-context-tips](../../references/long-context-tips.md) — Documentos >5,000 palabras
-[skill-authoring](../../references/skill-authoring.md) — Crear o mejorar skills
