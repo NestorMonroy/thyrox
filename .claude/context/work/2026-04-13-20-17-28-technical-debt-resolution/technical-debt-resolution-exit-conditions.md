@@ -58,9 +58,9 @@ reversibility: reversible
 ## Phase 5: DECOMPOSE
 
 **Exit conditions:**
-- [ ] `technical-debt-resolution-task-plan.md` existe
-- [ ] Tareas atómicas T-NNN — una tarea por cambio concreto en archivo
-- [ ] DAG de dependencias documentado (TD-027 antes que TD-035 por settings.json)
+- [x] `technical-debt-resolution-task-plan.md` existe (17 tareas T-001..T-017)
+- [x] Tareas atómicas T-NNN — una tarea por cambio concreto en archivo
+- [x] DAG de dependencias documentado (TD-027 antes que TD-035 por settings.json)
 - [ ] **Usuario aprobó task-plan** ← Gate SP-02
 
 **Transition:** → Phase 6 EXECUTE
