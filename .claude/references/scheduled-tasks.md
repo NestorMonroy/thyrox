@@ -281,7 +281,7 @@ claude --enable-auto-mode
 
 ## Referencias
 
-- [09-advanced-features/README.md](/tmp/reference/claude-howto/09-advanced-features/README.md) — Documentación oficial de advanced features
-- [10-cli/README.md](/tmp/reference/claude-howto/10-cli/README.md) — Referencia completa del CLI
+- [advanced-features](advanced-features.md) — Planning Mode, Extended Thinking, Auto Mode, Worktrees, Sandboxing, Agent Teams, Remote/Web, Channels, Voice, Task List
+- [cli-reference](cli-reference.md) — Referencia completa del CLI: flags, subcomandos y env vars
 - [subagent-patterns](subagent-patterns.md) — Aislamiento de contexto (por qué Edit funciona en scheduled tasks)
 - [permission-model](permission-model.md) — Modelo de permisos en dos planos
