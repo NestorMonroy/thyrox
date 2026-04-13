@@ -20,4 +20,4 @@ Espacio para exploración, notas y análisis ad-hoc relacionados con la resoluci
 
 ## WP formal activo
 
-`context/work/2026-04-13-20-17-28-technical-debt-resolution/` — FASE 34
+[technical-debt-resolution (FASE 34)](../../work/2026-04-13-20-17-28-technical-debt-resolution/analysis/technical-debt-resolution-analysis.md)
