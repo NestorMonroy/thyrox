@@ -18,6 +18,16 @@ Espacio para exploración, notas y análisis ad-hoc relacionados con la resoluci
 - Análisis comparativos entre opciones
 - Borradores descartados con valor de referencia
 
+## Artefactos de investigación
+
+| Archivo | Descripción |
+|---------|-------------|
+| [skill-authoring-modernization-requirements-spec.md](./skill-authoring-modernization-requirements-spec.md) | Phase 4 STRUCTURE que nunca se pudo crear en FASE 33 por stream timeout. Reconstruida retrospectivamente. |
+
 ## WP formal activo
 
 [technical-debt-resolution (FASE 34)](../../work/2026-04-13-20-17-28-technical-debt-resolution/analysis/technical-debt-resolution-analysis.md)
+
+## WP de referencia (cerrado)
+
+[skill-authoring-modernization (FASE 33)](../../work/2026-04-12-10-10-50-skill-authoring-modernization/skill-authoring-modernization-exit-conditions.md)
