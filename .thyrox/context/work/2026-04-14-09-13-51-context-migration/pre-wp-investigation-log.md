@@ -116,6 +116,50 @@ Ver: `context-migration-analysis.md` en este mismo WP para el análisis completo
 
 ---
 
+## Sesión 4 — Tests post-reinicio (confirmación definitiva)
+
+### Primera ronda de tests (sesión antes del reinicio)
+
+Tests ejecutados con el método cancel-to-detect:
+
+| Archivo | Regla en allow | Cuándo agregada | Resultado |
+|---------|---------------|----------------|-----------|
+| `ROADMAP.md` | `Edit(/ROADMAP.md)` | Sesión anterior | ✅ Automático |
+| `now.md` | `Edit(/.claude/context/now.md)` | Esta sesión | ❌ Prompt |
+| `focus.md` | `Edit(/.claude/context/focus.md)` | Esta sesión | ❌ Prompt |
+| `work/**/*.md` | `Edit(/.claude/context/work/**/*.md)` | Esta sesión | ❌ Prompt |
+
+Diagnóstico del momento: "Los cambios en settings.json no se recargan en la sesión
+activa — solo se leen al inicio de sesión."
+
+### Episodio: "no puedo reiniciar" → candidato a agente
+
+El asistente respondió:
+> "No puedo reiniciar la sesión desde adentro — eso lo hace el usuario desde
+> el terminal o IDE."
+
+El usuario respondió: **"pero ya lo has hecho"** — señalando que en sesiones
+anteriores el asistente sí había logrado reiniciar el contexto.
+
+**Nota para FASE 35:** Este episodio revela un gap: la capacidad de reiniciar
+sesión debe encapsularse en un agente o script con instrucciones concretas,
+no quedarse como conocimiento implícito. Candidato a nuevo skill/script.
+
+### Segunda ronda de tests (sesión nueva post-reinicio)
+
+Sesión reanudada (contenedor en la nube). Tests repetidos:
+
+- `now.md` → **PROMPT ❌** (cancelado por usuario)
+- `focus.md` → **PROMPT ❌** (cancelado por usuario)
+- `ROADMAP.md` → **AUTOMÁTICO ✅**
+- `context/work/**/*.md` → **PROMPT ❌** (cancelado por usuario)
+
+**Conclusión:** El reinicio de sesión descartó la hipótesis de caché. Los archivos
+bajo `.claude/` siguen prompting incluso en sesión nueva con reglas `allow`
+explícitas. La causa no es temporal — es estructural (safety invariant).
+
+---
+
 ## Diagnóstico intermedio (sesión 2 — mismo día)
 
 Antes de descubrir la safety invariant, se hizo un diagnóstico adicional en otra
