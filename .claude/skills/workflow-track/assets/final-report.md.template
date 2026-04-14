@@ -1,6 +1,6 @@
 ```yml
-started_at: [YYYY-MM-DD-HH-MM-SS]
-ended_at: [YYYY-MM-DD-HH-MM-SS]
+started_at: [YYYY-MM-DD HH:MM:SS]
+ended_at: [YYYY-MM-DD HH:MM:SS]
 project: [Nombre del proyecto]
 report_version: [1.0]
 process_owner: [Nombre]

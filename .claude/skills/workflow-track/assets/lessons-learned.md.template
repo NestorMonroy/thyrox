@@ -1,6 +1,6 @@
 ```yml
 work_package_id: [YYYY-MM-DD-HH-MM-SS-nombre]
-closed_at: [YYYY-MM-DD-HH-MM-SS]
+closed_at: [YYYY-MM-DD HH:MM:SS]
 project: [Nombre del proyecto]
 source_phase: [Phase N — PHASE_NAME]
 total_lessons: [N]

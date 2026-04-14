@@ -1,10 +1,10 @@
 ```yml
-created_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
 project: [Nombre del proyecto]
 context_version: [1.0]
 owner: [Nombre]
 external_systems: [N]
-integration_updated_at: [YYYY-MM-DD-HH-MM-SS]
+integration_updated_at: [YYYY-MM-DD HH:MM:SS]
 ```
 
 # Context: [PROJECT_NAME]

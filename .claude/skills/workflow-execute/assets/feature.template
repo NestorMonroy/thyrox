@@ -1,5 +1,5 @@
 ```yml
-created_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
 type: feature
 feature: [Nombre corto]
 Ticket: [ID ticket, ej: PROJ-123]

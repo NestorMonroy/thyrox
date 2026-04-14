@@ -1,5 +1,5 @@
 ```yml
-created_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
 type: [feature/fix/refactor/etc]
 related_to: [Nombre/descripción]
 author: [Nombre]

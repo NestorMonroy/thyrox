@@ -4,7 +4,7 @@ category: Documentación General
 version: 1.0
 purpose: Template base para crear nuevos documentos en THYROX
 goal: Proporcionar estructura consistente para todos los documentos
-updated_at: [YYYY-MM-DD-HH-MM-SS]
+updated_at: [YYYY-MM-DD HH:MM:SS]
 phase: 4 - STRUCTURE
 activate_if: documento técnico que no encaja en ningún template específico (requirements-spec, design, lessons-learned, etc.)
 ```

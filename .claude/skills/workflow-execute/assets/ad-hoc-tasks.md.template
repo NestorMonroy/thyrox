@@ -4,7 +4,7 @@ category: Tareas Ad-hoc
 version: 1.0
 purpose: Registro de tareas pequeñas, enhancements y mejoras ad-hoc
 goal: Trackear y organizar trabajo pequeño que surge durante desarrollo
-updated_at: [YYYY-MM-DD-HH-MM-SS]
+updated_at: [YYYY-MM-DD HH:MM:SS]
 phase: 5 - DECOMPOSE / 6 - EXECUTE
 activate_if: tareas pequeñas (<2h) que no justifican work package completo
 ```
@@ -76,4 +76,4 @@ Tareas pequeñas, enhancements y mejoras que surgen durante el desarrollo.
 
 **Prioridad:** Baja a Media
 **Owner:** TODO
-**Fecha Creación:** [YYYY-MM-DD-HH-MM-SS]
+**Fecha Creación:** [YYYY-MM-DD HH:MM:SS]

@@ -1,5 +1,5 @@
 ```yml
-created_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
 project: [Nombre del proyecto]
 constraints_version: [1.0]
 author: [Nombre]

@@ -1,5 +1,5 @@
 ```yml
-created_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
 wp: [nombre-del-work-package]
 phase: 3 - PLAN
 status: [Pendiente aprobación | Aprobado — YYYY-MM-DD]

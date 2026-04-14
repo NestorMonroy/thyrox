@@ -4,7 +4,7 @@ category: Epic Documentation
 version: 1.0
 purpose: Ejemplo de cómo documentar un epic en THYROX
 goal: Proporcionar template para nuevos epics del proyecto
-updated_at: [YYYY-MM-DD-HH-MM-SS]
+updated_at: [YYYY-MM-DD HH:MM:SS]
 ```
 
 # Epic Example: User Authentication System

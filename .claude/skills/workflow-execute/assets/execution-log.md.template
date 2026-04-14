@@ -1,6 +1,6 @@
 ```yml
-session_started_at: [YYYY-MM-DD-HH-MM-SS]
-session_ended_at: [YYYY-MM-DD-HH-MM-SS]
+session_started_at: [YYYY-MM-DD HH:MM:SS]
+session_ended_at: [YYYY-MM-DD HH:MM:SS]
 project: [Nombre del proyecto]
 version: [1.0]
 executor: [Nombre]
@@ -10,7 +10,7 @@ in_progress_issues: [N]
 delayed_issues: [N]
 Problemas encontrados: [N]
 total_session_time: [horas]
-next_session: [YYYY-MM-DD-HH-MM-SS]
+next_session: [YYYY-MM-DD HH:MM:SS]
 ```
 
 # Log de Ejecución - [Nombre del Proyecto/Tarea]
@@ -47,7 +47,7 @@ Basado en: categorization-plan.md ([fecha del plan])
 
 | Lote | Estado | Issues Resueltos | Tiempo | Build Status | Fecha Completado |
 |------|--------|------------------|--------|--------------|------------------|
-| 1 | [✓ Completado / ⏸ En progreso / ⏱ Pendiente] | [X/Y] | [Xh] | [✓ Pass / ✗ Fail] | [YYYY-MM-DD-HH-MM-SS] |
+| 1 | [✓ Completado / ⏸ En progreso / ⏱ Pendiente] | [X/Y] | [Xh] | [✓ Pass / ✗ Fail] | [YYYY-MM-DD HH:MM:SS] |
 | 2 | [Estado] | [X/Y] | [Xh] | [Status] | [Fecha] |
 | 3 | [Estado] | [X/Y] | [Xh] | [Status] | [Fecha] |
 | 4 | [Estado] | [X/Y] | [Xh] | [Status] | [Fecha] |
@@ -385,7 +385,7 @@ Pasos para validación completa:
 
 | Fecha | Cambio | Autor |
 |-------|--------|-------|
-| [YYYY-MM-DD-HH-MM-SS] | Log creado | [Nombre] |
-| [YYYY-MM-DD-HH-MM-SS] | Lote 1 completado | [Nombre] |
-| [YYYY-MM-DD-HH-MM-SS] | Lote 2 completado | [Nombre] |
-| [YYYY-MM-DD-HH-MM-SS] | Actualización de métricas | [Nombre] |
+| [YYYY-MM-DD HH:MM:SS] | Log creado | [Nombre] |
+| [YYYY-MM-DD HH:MM:SS] | Lote 1 completado | [Nombre] |
+| [YYYY-MM-DD HH:MM:SS] | Lote 2 completado | [Nombre] |
+| [YYYY-MM-DD HH:MM:SS] | Actualización de métricas | [Nombre] |

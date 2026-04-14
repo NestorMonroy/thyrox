@@ -4,7 +4,7 @@ category: Decisión Técnica/Arquitectónica
 version: 1.0
 purpose: Documentar decisión arquitectónica importante
 goal: Registrar contexto, opciones, decisión y consecuencias
-updated_at: YYYY-MM-DD-HH-MM-SS
+updated_at: [YYYY-MM-DD HH:MM:SS]
 usage: Solo para decisiones arquitectonicas permanentes del PROYECTO (stack, patrones, componentes principales).
      NO usar para decisiones de metodologia — esas van en SKILL.md.
      NO usar para decisiones que solo afectan el WP actual — esas van en design.md o plan.md del WP.
@@ -133,8 +133,8 @@ Para las consecuencias negativas:
 - [Sistema/Componente 3]
 
 **Esfuerzo de implementación:** [Bajo/Medio/Alto]<br>
-**Fecha planeada de implementación:** [YYYY-MM-DD-HH-MM-SS]<br>
-**Fecha real de implementación:** [YYYY-MM-DD-HH-MM-SS]
+**Fecha planeada de implementación:** [YYYY-MM-DD HH:MM:SS]<br>
+**Fecha real de implementación:** [YYYY-MM-DD HH:MM:SS]
 
 ---
 

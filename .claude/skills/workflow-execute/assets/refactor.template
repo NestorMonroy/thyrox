@@ -1,5 +1,5 @@
 ```yml
-created_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
 type: refactor
 component: [Nombre componente refactorizado]
 Razón: [Descripción breve por qué]

@@ -1,11 +1,11 @@
 ```yml
-completed_at: [YYYY-MM-DD-HH-MM-SS]
+completed_at: [YYYY-MM-DD HH:MM:SS]
 type: task
 Task ID: [ID de la tarea, ej: TASK-789]
 Feature relacionada: [Nombre feature]
 owner: [Nombre]
-started_at: [YYYY-MM-DD-HH-MM-SS]
-ended_at: [YYYY-MM-DD-HH-MM-SS]
+started_at: [YYYY-MM-DD HH:MM:SS]
+ended_at: [YYYY-MM-DD HH:MM:SS]
 hours_spent: [N]
 tests: [SI/NO]
 Code review: [Pendiente/Completo]

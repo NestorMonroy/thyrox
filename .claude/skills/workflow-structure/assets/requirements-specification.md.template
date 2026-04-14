@@ -4,7 +4,7 @@ category: Requisitos de Sistema
 version: 1.0
 purpose: Especificación técnica de requisitos del proyecto
 goal: Traducir requisitos de análisis a especificaciones técnicas implementables
-updated_at: YYYY-MM-DD-HH-MM-SS
+updated_at: [YYYY-MM-DD HH:MM:SS]
 status: [Pendiente aprobación | Aprobado — YYYY-MM-DD]
 ```
 

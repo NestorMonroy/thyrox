@@ -1,6 +1,6 @@
 ```yml
-created_at: [YYYY-MM-DD-HH-MM-SS]
-updated_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
+updated_at: [YYYY-MM-DD HH:MM:SS]
 project: [Nombre del proyecto]
 requirements_version: [1.0]
 analysis_owner: [Nombre]

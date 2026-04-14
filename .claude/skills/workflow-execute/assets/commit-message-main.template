@@ -1,5 +1,5 @@
 ```yml
-created_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
 Hash commit: [hash SHA-1 abreviado, ej: a1b2c3d]
 author: [Nombre]
 project: [Nombre del proyecto]

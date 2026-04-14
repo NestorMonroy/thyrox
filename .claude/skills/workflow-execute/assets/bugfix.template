@@ -1,5 +1,5 @@
 ```yml
-created_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
 type: fix
 Bug ID: [ID del bug, ej: BUG-456]
 severity: [Critical/High/Medium/Low]

@@ -4,7 +4,7 @@ category: Casos de Uso
 version: 1.0
 purpose: Template para documentar casos de uso del proyecto
 goal: Capturar flujos usuario-sistema de forma consistente
-updated_at: YYYY-MM-DD-HH-MM-SS
+updated_at: [YYYY-MM-DD HH:MM:SS]
 ```
 
 # Casos de Uso - [Nombre del Proyecto]

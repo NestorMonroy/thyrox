@@ -1,13 +1,13 @@
 ```yml
-created_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
 project: [Nombre del proyecto]
 feature: [Nombre de la feature]
 breakdown_version: [1.0]
 tasks_creator: [Nombre]
 total_tasks: [N]
 critical_dependencies: [N]
-planned_start: [YYYY-MM-DD-HH-MM-SS]
-planned_end: [YYYY-MM-DD-HH-MM-SS]
+planned_start: [YYYY-MM-DD HH:MM:SS]
+planned_end: [YYYY-MM-DD HH:MM:SS]
 implementation_owner: [Nombre/equipo]
 ```
 

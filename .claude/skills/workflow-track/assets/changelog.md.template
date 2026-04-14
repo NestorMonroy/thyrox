@@ -1,7 +1,7 @@
 ```yml
 project: [Nombre del proyecto]
 version: [X.Y.Z]
-created_at: [YYYY-MM-DD-HH-MM-SS]
+created_at: [YYYY-MM-DD HH:MM:SS]
 Commits incluidos: [N]
 author: [Nombre]
 branch: [nombre-rama]
