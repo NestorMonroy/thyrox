@@ -34,4 +34,9 @@ if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; th
     echo "⚠ Hay cambios sin commitear. Considera hacer commit antes de cerrar."
 fi
 
+# TD-001: validar artefactos de WP (timestamps, etc.)
+if [ -f ".claude/scripts/validate-session-close.sh" ]; then
+    bash .claude/scripts/validate-session-close.sh
+fi
+
 exit 0
