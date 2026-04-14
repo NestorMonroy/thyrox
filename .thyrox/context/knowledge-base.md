@@ -2,7 +2,7 @@
 type: Índice de Base de Conocimiento
 version: 1.0
 created_at: 2026-04-14 20:34:23
-updated_at: 2026-04-14 20:34:23
+updated_at: 2026-04-14 20:40:00
 ```
 
 # Base de Conocimiento — THYROX
@@ -107,10 +107,10 @@ Evento ocurre durante ejecución
 
 | Tipo | Formato | Ejemplo |
 |------|---------|---------|
-| ADR | `adr-NNN.md` (en `decisions/`) | `adr-019.md` |
+| ADR | `adr-{tema}.md` (en `decisions/`) | `adr-plugin-namespace-thyrox.md` |
 | Lección | `L-NNN-descripcion-corta.md` | `L-001-script-huerfano.md` |
 | Patrón | `P-NNN-nombre-del-patron.md` | `P-001-agent-bound.md` |
-| Error | `ERR-NNN-descripcion.md` | `ERR-016-stream-timeout.md` |
+| Error | `{descripcion}.md` (en `errors/`) | `stream-timeout-idle.md` |
 
 Los NNN son secuenciales por tipo, independientes entre sí.
 

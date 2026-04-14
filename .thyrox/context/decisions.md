@@ -1,145 +1,71 @@
 ```yml
 type: Contexto de Proyecto
 category: Decisiones Arquitectónicas
-version: 1.0
-purpose: Índice y registro de decisiones arquitectónicas importantes
-goal: Proporcionar visión clara de decisiones técnicas del proyecto
-updated_at: 2026-03-25
+version: 2.0
+purpose: Índice de decisiones arquitectónicas del proyecto THYROX
+updated_at: 2026-04-14 20:40:00
 ```
 
 # Decisiones de Arquitectura
 
-## Propósito
-
-Registro de decisiones arquitectónicas y técnicas importantes del proyecto THYROX. Documenta el razonamiento detrás de cada decisión clave.
-
-> Objetivo: Proporcionar historial claro de decisiones para auditoría, comprensión de trade-offs, y referencia futura.
+Registro de todas las ADRs del proyecto. Cada archivo documenta el razonamiento
+detrás de una decisión permanente. Ver [knowledge-base.md](knowledge-base.md)
+para el sistema de conocimiento completo.
 
 ---
 
 ## Índice de ADRs
 
-### Aprobados y Activos
+### Fundamentos del Proyecto
 
-1. [ADR-001: Markdown para Documentación](decisions/adr-001.md)+
-   - Usar Markdown como formato estándar de documentación
-   - Status: Aprobado | Fecha: 2025-03-24
+| Archivo | Decisión | Status | Fecha |
+|---------|----------|--------|-------|
+| [adr-markdown-documentacion](decisions/adr-markdown-documentacion.md) | Markdown como formato estándar de documentación | Aprobado | 2025-03-24 |
+| [adr-roadmap-source-of-truth](decisions/adr-roadmap-source-of-truth.md) | ROADMAP.md como single source of truth para tracking | Aprobado | 2025-03-24 |
+| [adr-conventional-commits](decisions/adr-conventional-commits.md) | Conventional Commits como estándar de mensajes | Aprobado | 2025-03-24 |
+| [adr-yaml-configuracion](decisions/adr-yaml-configuracion.md) | YAML para archivos de configuración | Pendiente Fase 2 | 2025-03-24 |
 
-2. [ADR-002: ROADMAP como Single Source of Truth](decisions/adr-002.md)+
-   - ROADMAP.md es la fuente única de verdad para tracking
-   - Status: Aprobado | Fecha: 2025-03-24
+### Arquitectura del Sistema
 
-3. [ADR-003: Conventional Commits](decisions/adr-003.md)+
-   - Estandarizar formato de commits
-   - Status: Aprobado | Fecha: 2025-03-24
+| Archivo | Decisión | Status | Fecha |
+|---------|----------|--------|-------|
+| [adr-separacion-subproyectos](decisions/adr-separacion-subproyectos.md) | API y Build como sub-proyectos independientes | Aprobado | 2025-03-24 |
+| [adr-postgresql](decisions/adr-postgresql.md) | PostgreSQL como motor de base de datos principal | Aprobado | 2025-03-24 |
+| [adr-docker-containerizacion](decisions/adr-docker-containerizacion.md) | Docker para containerización y deployment | Aprobado Fase 2 | 2025-03-24 |
+| [adr-github-actions-cicd](decisions/adr-github-actions-cicd.md) | GitHub Actions para CI/CD | Aprobado Fase 2 | 2025-03-24 |
+| [adr-docs-documentacion-canonica](decisions/adr-docs-documentacion-canonica.md) | docs/ como directorio de documentación canónica | Aprobado | 2026-03-28 |
 
-4. [ADR-004: Separación de Sub-proyectos](decisions/adr-004.md)+
-   - API y Build como sub-proyectos independientes
-   - Status: Aprobado | Fecha: 2025-03-24
+### Framework THYROX — Metodología
 
-5. [ADR-005: Claude Code como Development Agent](decisions/adr-005.md)+
-   - Automatización de desarrollo con Claude Code
-   - Status: Aprobado | Fecha: 2025-03-24
+| Archivo | Decisión | Status | Fecha |
+|---------|----------|--------|-------|
+| [adr-claude-code-development-agent](decisions/adr-claude-code-development-agent.md) | Claude Code como agente principal de desarrollo | Aprobado | 2025-03-24 |
+| [adr-analyze-first](decisions/adr-analyze-first.md) | Phase 1 es siempre ANALYZE — orden canónico fijo | Aprobado | 2026-03-27 |
+| [adr-anatomia-oficial-skill](decisions/adr-anatomia-oficial-skill.md) | Anatomía oficial del skill: SKILL.md + scripts/ + references/ + assets/ | Aprobado | 2026-03-27 |
+| [adr-management-skill-n-tech-skills](decisions/adr-management-skill-n-tech-skills.md) | Refinamiento ADR-004 — Management Skill + N Tech Skills | Aprobado | 2026-03-28 |
+| [adr-separacion-scope-wp](decisions/adr-separacion-scope-wp.md) | Separación de scope y dependencia entre WPs agent-format-spec y parallel-agent-conventions | Aprobado | 2026-03-30 |
 
-7. [ADR-007: PostgreSQL como Base de Datos](decisions/adr-007.md)+
-   - Motor de base de datos principal
-   - Status: Aprobado | Fecha: 2025-03-24
+### Framework THYROX — Arquitectura de Skills
 
-### Planeados para Fases Futuras
-
-6. [ADR-006: YAML para Configuración](decisions/adr-006.md) ⏳
-   - Usar YAML para archivos de configuración
-   - Status: Pendiente (Fase 2) | Fecha: 2025-03-24
-
-8. [ADR-008: Docker para Containerización](decisions/adr-008.md) ⏳
-   - Reproducibilidad y deployment con Docker
-   - Status: Aprobado (Fase 2) | Fecha: 2025-03-24
-
-9. [ADR-009: GitHub Actions para CI/CD](decisions/adr-009.md) ⏳
-   - Automatización de tests y deployment
-   - Status: Aprobado (Fase 2) | Fecha: 2025-03-24
-
-### Sesión 2026-03-27/28
-
-10. [ADR-010: ANALYZE primero, siempre](decisions/adr-010.md)+
-    - Phase 1 es ANALYZE, orden canónico fijo
-    - Status: Aprobado | Fecha: 2026-03-27
-
-11. [ADR-011: Anatomía oficial de Anthropic](decisions/adr-011.md)+
-    - SKILL.md + scripts/ + references/ + assets/
-    - Status: Aprobado | Fecha: 2026-03-27
-
-12. [ADR-012: Work-log obligatorio por sesión](decisions/adr-012.md)+
-    - Cada sesión debe tener work-log, no opcional
-    - Status: Aprobado | Fecha: 2026-03-28
+| Archivo | Decisión | Status | Fecha |
+|---------|----------|--------|-------|
+| [adr-arquitectura-orquestacion-thyrox](decisions/adr-arquitectura-orquestacion-thyrox.md) | Arquitectura de 5 capas — mecanismo de orquestación SKILL vs CLAUDE.md | Aprobado | 2026-04-07 |
+| [adr-workflow-commands-a-skills](decisions/adr-workflow-commands-a-skills.md) | Migración /workflow_* commands → workflow-* skills hidden | Aprobado | 2026-04-08 |
+| [adr-referencias-scripts-tres-niveles](decisions/adr-referencias-scripts-tres-niveles.md) | Referencias y scripts en 3 niveles arquitectónicos | Aprobado | 2026-04-09 |
+| [adr-templates-workflow-assets](decisions/adr-templates-workflow-assets.md) | Templates distribuidos en workflow-*/assets/ — assets autocontenidos por fase | Aprobado | 2026-04-09 |
+| [adr-plugin-namespace-thyrox](decisions/adr-plugin-namespace-thyrox.md) | Namespace /thyrox:* mediante Claude Code Plugin (Opción D) | Aprobado | 2026-04-10 |
 
 ---
 
-## Cambios Futuros
+## Cómo Crear una Nueva ADR
 
-### Pendientes de Decisión
-
-- [ ] Frontend framework (React, Vue, Svelte, etc.)
-- [ ] Estrategia de caching (Redis, Memcached, etc.)
-- [ ] Monitoreo y logging strategy
-- [ ] Feature flag system
-- [ ] Autenticación/Autorización estándar
-- [ ] Versionado de API
+1. Usar template: [adr.md.template](../skills/workflow-analyze/assets/adr.md.template)
+2. Nombre del archivo: `adr-{tema-descriptivo}.md` — sin números, kebab-case
+3. Guardar en `decisions/`
+4. Agregar fila en la tabla del índice correspondiente de este archivo
+5. Commit: `docs(adr): add adr-{tema} — [título breve]`
 
 ---
 
-## Cómo Usar Este Sistema
-
-### Crear una Nueva ADR
-
-1. Usa el template: [adr.template](../skills/workflow-analyze/assets/adr.md.template)
-2. Copia a `decisions/adr-NNN.md`
-3. Completa todas las secciones
-4. Agrega el link aquí en el índice
-5. Commit con mensaje: `docs(adr): add ADR-NNN [título]`
-
-### Actualizar una ADR
-
-1. Edita el archivo correspondiente
-2. Actualiza el versionado
-3. Commit con mensaje: `docs(adr): update ADR-NNN [cambio]`
-
-### Deprecar una ADR
-
-1. Cambia Status a "Deprecado"
-2. Agrega nota sobre qué la reemplaza
-3. Mueve a sección "Deprecadas"
-
----
-
-## Estadísticas
-
-**Total ADRs:** 9<br>
-**Aprobadas:** 7<br>
-**Pendientes:** 2<br>
-**Deprecadas:** 0<br>
-**Activas en producción:** 7
-
----
-
-## Convenciones
-
-- **Formato:** ADR-XXX (Architecture Decision Record)
-- **Basado en:** [ADRs by Michael Nygard](https://adr.github.io/)
-- **Template:** [adr.template](../skills/workflow-analyze/assets/adr.md.template)
-- **Ubicación:** `.claude/context/decisions/`
-
----
-
-## Referencias Relacionadas
-
-- [ROADMAP](../../ROADMAP.md) - Plan del proyecto
-- [ARCHITECTURE](../../ARCHITECTURE.md) - Decisiones arquitectónicas detalladas
-- [commit-convention](../skills/workflow-execute/references/commit-convention.md) - Convenciones de commits (ADR-003)
-- [adr.template](../skills/workflow-analyze/assets/adr.md.template) - Template para nuevas ADRs
-
----
-
-**Convención:** ADR-XXX (Architecture Decision Record)<br>
-**Próxima Review:** 2025-04-24<br>
-**Última Actualización:** 2026-03-25
+**Total ADRs:** 19 · **Aprobadas:** 16 · **Pendientes:** 2 · **Deprecadas:** 0
+**Ubicación:** `.thyrox/context/decisions/`
