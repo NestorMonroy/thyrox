@@ -66,8 +66,10 @@ No toda edicion tiene el mismo peso. Antes de decidir si una operacion necesita 
 
 | Categoria | Ejemplos | Comportamiento | Mecanismo |
 |-----------|---------|---------------|-----------|
-| Artefactos WP | `context/work/**/*.md` | Auto | `acceptEdits` |
-| Estado de sesion | `now.md`, `focus.md` | Auto | `acceptEdits` |
+| Artefactos WP | `context/work/**/*.md` fuera de `.claude/` | Auto | `acceptEdits` |
+| Estado de sesion | `now.md`, `focus.md` fuera de `.claude/` | Auto | `acceptEdits` |
+| Artefactos WP dentro de `.claude/` | `.claude/context/work/**/*.md` | **Prompt siempre** | Safety invariant |
+| Estado de sesion dentro de `.claude/` | `.claude/context/now.md`, `focus.md` | **Prompt siempre** | Safety invariant |
 | Historial del proyecto | `CHANGELOG.md`, `ROADMAP.md` | Auto | `acceptEdits` |
 | Scripts del framework | `bash .claude/scripts/*` | Auto | `allow` |
 | Scripts de validacion de fase | `bash .claude/skills/*/scripts/*` | Auto | `allow` |
@@ -87,16 +89,11 @@ Son consecuencia de la decision, no nuevas decisiones.
 
 ```json
 {
-  "defaultMode": "acceptEdits",
+  "env": { "CLAUDE_STREAM_IDLE_TIMEOUT_MS": "120000" },
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
       "Edit(/ROADMAP.md)",
-      "Edit(/.claude/context/now.md)",
-      "Edit(/.claude/context/focus.md)",
-      "Edit(/.claude/context/work/**/*.md)",
-      "Write(/.claude/context/now.md)",
-      "Write(/.claude/context/focus.md)",
-      "Write(/.claude/context/work/**)",
       "Write(/.claude/references/**)",
       "Bash(bash .claude/scripts/*)",
       "Bash(bash .claude/skills/*/scripts/*)",
@@ -129,7 +126,7 @@ Son consecuencia de la decision, no nuevas decisiones.
 }
 ```
 
-**Nota (FASE 35 — 2026-04-14):** Se agregaron reglas `Edit` explícitas en `allow` porque `defaultMode: acceptEdits` no cubre por sí solo las ediciones a context files. Patrón validado: `Edit(/.claude/context/work/**/*.md)` con extensión explícita (no bare `**`). Ver lecciones L-XXX.
+**Nota (FASE 35 — 2026-04-14):** Las reglas `Edit` y `Write` para `.claude/context/` fueron eliminadas porque son inefectivas. La safety invariant del binario protege `.claude/` completo (excepto `.claude/worktrees/`) independientemente de cualquier regla `allow` o del valor de `defaultMode`. La solución real es migrar los archivos de estado fuera de `.claude/` (ver WP `2026-04-14-09-13-51-context-migration`).
 
 ---
 
@@ -156,13 +153,13 @@ reconoce operadores shell y los trata como comandos separados.
 
 ## Modos disponibles
 
-| Modo | Descripcion | Usar cuando |
-|------|-------------|-------------|
-| `default` | Prompt en primer uso de cada herramienta | Nunca — maxima friccion sin beneficio |
-| `acceptEdits` | Auto-acepta Edit/Write + mkdir/touch/mv/cp | **Modo recomendado** para este proyecto |
-| `plan` | Solo lectura y analisis, no puede modificar ni ejecutar | Revisiones de seguridad o auditorias |
-| `auto` | Auto-aprueba con clasificador de seguridad (preview) | Experimento — no usar en produccion |
-| `bypassPermissions` | Salta todos los prompts excepto dirs protegidos | Solo en contenedores aislados |
+| Modo | Valido en `permissions.defaultMode` | Valido en agent `permissionMode` | Descripcion | Usar cuando |
+|------|--------------------------------------|----------------------------------|-------------|-------------|
+| `default` | ✅ | ✅ | Prompt en primer uso de cada herramienta | Nunca — maxima friccion sin beneficio |
+| `acceptEdits` | ✅ | ✅ | Auto-acepta Edit/Write + mkdir/touch/mv/cp | **Modo recomendado** para este proyecto |
+| `plan` | ✅ | ✅ | Solo lectura y analisis, no puede modificar ni ejecutar | Revisiones de seguridad o auditorias |
+| `dontAsk` | ❌ | ✅ | Auto-deniega herramientas no pre-aprobadas sin prompt | Agentes que deben ser estrictamente no-interactivos |
+| `bypassPermissions` | ✅ | ✅ | Salta todos los prompts excepto dirs de la safety invariant | Solo en contenedores aislados |
 
 **Nota sobre `bypassPermissions`:** Salta todos los prompts de herramientas.
 La safety invariant del binario (v2.1.78+) protege ciertos subdirectorios de `.claude/`
