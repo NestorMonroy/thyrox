@@ -64,11 +64,26 @@ Templates del listado original y su estado actual:
 
 ---
 
+## TDs en revisión
+
+### TD-010: Benchmark empírico — SKILL vs CLAUDE.md vs baseline
+
+```
+Estado anterior: [ ] Pendiente
+Estado nuevo:    [-] En progreso — trigger activado FASE 35 (2026-04-14)
+```
+
+**Decisión:** La migración `.claude/context/` → `.thyrox/context/` cumple el trigger
+original (≥1 semana de trabajo, decisión arquitectónica real). El formato del benchmark
+cambia de sintético (3×3) a instrumentación de la migración en curso.
+
+- Artefacto de salida: `references/benchmark-skill-vs-claude.md` al cerrar FASE 35
+- Se instrumenta la migración misma como caso de estudio empírico
+
 ## TDs pendientes de revisión
 
 | ID | Descripción | Estado declarado |
 |----|-------------|-----------------|
-| TD-010 | Benchmark empírico SKILL vs CLAUDE.md vs baseline | `[ ]` Pendiente |
 | TD-009 | Patrón now-{agent-name}.md no implementado | `[x]` Resuelto |
 | TD-018 | execution-log no respeta timestamp completo | `[x]` Resuelto |
 | TD-025 | skill-authoring.md desactualizado | `[x]` Cerrado |

@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-14 18:03:26
+updated_at: 2026-04-14 18:29:19
 ```
 
 # Deuda Técnica — THYROX
@@ -25,37 +25,34 @@ ser atendidos. Cada ítem tiene un ID, descripción, impacto, y criterio de reso
 Severidad: baja
 Origen: FASE 21 — skill-architecture-review (ADR-015 H1/H2/H3)
 Fase afectada: Metodología general (decisión de arquitectura)
-Estado: [ ] Pendiente — trigger: caso de uso real que justifique el tiempo
+Estado: [-] En progreso — FASE 35 (2026-04-14) — trigger activado: migración context/ es el caso de uso real
 ```
 
-**Problema:**
+**Problema original:**
 ADR-015 documenta hallazgos de terceros sobre SKILL vs CLAUDE.md (H1: triggering probabilístico,
 H2: prompt injection, H3: CLAUDE.md alternativa más confiable). Sin embargo, no existe evidencia
 empírica propia del proyecto THYROX que compare las tres opciones en condiciones equivalentes.
 
-Las decisiones actuales se basan en evidencia externa (artículo Mar 2026: 40/47 skills empeoran
-output, 0/20 disparos en prueba controlada). Un benchmark propio validaría o refutaría esos datos
-en el contexto específico de pm-thyrox y el stack de THYROX.
+**Trigger activado — FASE 35:**
+La migración `.claude/context/` → `.thyrox/context/` es el caso de uso real que activa el
+benchmark. Cumple los criterios: ≥1 semana de trabajo, decisión arquitectónica real con
+consecuencias permanentes.
 
-**Benchmark propuesto:**
-- 3 tareas equivalentes de gestión PM (analyze, plan, execute)
-- 3 condiciones: (A) pm-thyrox SKILL activo, (B) solo CLAUDE.md, (C) sin framework
-- Métricas: calidad de output (rubrica 1-5), tasa de activación, líneas de instrucción seguidas
+**Cambio de formato — de sintético a instrumentación real:**
+El benchmark 3×3 original (3 tareas × 3 condiciones) no es aplicable a la migración en
+curso (ya está en condición A). En su lugar se instrumenta la migración misma:
 
-**Trigger para ejecutar:**
-Cuando haya caso de uso real que justifique el tiempo (≥1 semana de trabajo).
-No ejecutar como ejercicio académico — solo si hay decisión arquitectónica pendiente
-que requiera datos propios.
+- Registrar cuántas decisiones fueron guiadas por el SKILL vs por CLAUDE.md vs por criterio propio
+- Registrar dónde el framework ayudó y dónde generó fricción
+- Registrar si la migración habría sido viable sin el framework, o con solo CLAUDE.md
+- Capturar evidencia de activación real del SKILL durante la FASE
 
-**Evaluación FASE 33 (2026-04-13):**
-THYROX completó FASE 33 con éxito usando el framework (18 archivos, 4 agentes paralelos,
-múltiples sesiones). La evidencia observacional apoya que el framework mejora organización
-y trazabilidad en proyectos de documentación a gran escala. El trigger original (decisión
-arquitectónica pendiente) no se activó — el benchmark formal sigue pendiente para cuando
-haya una pregunta concreta que requiera datos empíricos propios.
+**Artefacto de salida:**
+`references/benchmark-skill-vs-claude.md` — se escribe al cerrar FASE 35, con datos
+reales de la migración como caso de estudio.
 
 **Criterio de cierre:**
-Benchmark ejecutado con ≥3 tareas reales. Resultados en `references/benchmark-skill-vs-claude.md`.
+`references/benchmark-skill-vs-claude.md` existe con evidencia empírica de la migración.
 ADR-015 actualizado si los datos contradicen los hallazgos externos.
 
 ---
