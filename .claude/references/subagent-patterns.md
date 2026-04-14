@@ -129,9 +129,51 @@ to the user instead.
 - `Ctrl+B` — Poner en background un subagente que está corriendo síncronamente
 - `Ctrl+F` (dos veces) — Matar todos los agentes en background
 
-**Cuándo usar `run_in_background: true`:** Análisis largos (deep-review, auditorías), builds, test suites, research paralela — cualquier tarea ≥ 30s que no bloquea el hilo principal.
+**Cuándo usar `run_in_background: true`:** Tareas "fire-and-forget" donde perder la notificación es tolerable — análisis, auditorías, builds, test suites, research paralela. Cualquier tarea ≥ 30s que no bloquea el hilo principal.
 
-**Cuándo NO:** Si necesitas el resultado antes de continuar (el agente padre depende del output), usar invocación síncrona.
+**Cuándo NO:** Si necesitas el resultado antes de continuar (el agente padre depende del output), usar invocación síncrona. Si la tarea requiere garantía de entrega de notificación, ver sección siguiente.
+
+### Limitaciones de notificación y compactación
+
+**Las notificaciones son intra-sesión.** El modelo de notificación asume que la sesión sigue activa cuando el agente termina. Si la sesión se compacta antes de que el agente complete, la notificación se pierde — no hay queue ni re-entrega documentada.
+
+**Tres bugs documentados** (fuente: `guide/core/claude-code-releases.md`):
+
+| Bug | Versión fix | Descripción |
+|-----|-------------|-------------|
+| Invisibilidad post-compactación | v2.1.83 | El agente se vuelve invisible para la sesión padre durante compactación — puede causar duplicados |
+| Race condition en polling | v2.1.81 | Output cuelga si el agente completa exactamente entre dos polling intervals |
+| Streaming SDK mode | post-v2.1.83 | Notificaciones no entregadas cuando se usa Agent tool vía SDK con streaming |
+
+**Patrón de mitigación — state file como fuente de verdad:**
+
+El agente background escribe su resultado a un archivo en disco antes de terminar. El orquestador lee el archivo en el siguiente turno, independientemente de si la notificación llegó.
+
+```
+# El agente background escribe al WP activo antes de terminar:
+Write({file: "{wp-path}/{topic}-result.md", content: hallazgos})
+
+# El orquestador lee el archivo en el siguiente turno:
+Read("{wp-path}/{topic}-result.md")
+```
+
+> "The state file survives context resets, /compact operations, and even full session restarts."
+> — `guide/workflows/iterative-refinement.md:542`
+
+**Anti-patrón — no prometer notificación verbal:**
+
+```
+# ❌ Incorrecto
+"El agente corre en background — te aviso cuando complete."
+→ Si la sesión se compacta, el aviso nunca llega.
+
+# ✅ Correcto
+"El agente corre en background — resultado en {ruta-del-artefacto} cuando termine."
+→ El usuario sabe dónde buscar independientemente de la sesión.
+```
+
+**`SubagentStop` hook como intercepción robusta:**
+Si se necesita reaccionar programáticamente a la completación de un subagente, `SubagentStop` en `settings.json` es el único punto de intercepción documentado que puede bloquear. Recibe `last_assistant_message` con el output final del subagente.
 
 ---
 
