@@ -1,7 +1,7 @@
 ---
 name: diagrama-ishikawa
 description: Especialista en análisis de causa raíz con diagramas de Ishikawa (espina de pescado / causa-efecto). Usar cuando se necesite identificar causas raíz de cualquier problema — técnico, organizacional, de proceso, de producto, de ventas, de calidad, o de investigación. Se auto-adapta al dominio del problema detectando el contexto. Puede invocar sub-agentes para investigar causas específicas. Usar PROACTIVAMENTE cuando aparezcan errores recurrentes, fallas sistémicas o cuando se quiera analizar por qué no se alcanza un objetivo.
-tools: Read, Grep, Glob, Bash, Agent
+tools: Read, Write, Grep, Glob, Bash, Agent
 model: sonnet
 ---
 
@@ -123,6 +123,83 @@ Siempre cerrar con una tabla priorizada:
 | 2 (alta) | ... | ... | ... | Corto plazo |
 | 3 (media) | ... | ... | ... | Mediano plazo |
 
+### Paso 8 — Guardar el análisis como markdown
+
+**Toda ejecución de diagrama-ishikawa DEBE terminar creando un archivo markdown con el análisis completo.**
+
+#### Protocolo de destino del archivo
+
+1. **Detectar WP en curso** — leer `.thyrox/context/now.md` (campo `current_work`).
+2. **Si hay WP en curso** → guardar en ese directorio:
+   ```
+   {current_work}/{efecto-kebab}-ishikawa.md
+   ```
+   Ejemplo: si el efecto es "hook-authoring.md tuvo stream idle timeout", guardar en:
+   `.thyrox/context/work/2026-04-14-09-13-51-context-migration/hook-authoring-timeout-ishikawa.md`
+3. **Si `current_work` está vacío o no existe** → preguntar al usuario dónde guardarlo antes de crear el archivo.
+
+#### Naming del archivo
+
+- Derivar el nombre del **efecto analizado**, en kebab-case, sin artículos
+- Siempre terminar en `-ishikawa.md`
+- Ejemplos: `tasa-conversion-baja-ishikawa.md`, `timeout-stream-idle-ishikawa.md`, `bug-login-recurrente-ishikawa.md`
+
+#### Frontmatter obligatorio
+
+```yaml
+---
+type: Ishikawa Analysis
+created_at: {timestamp}
+efecto: {efecto específico y observable analizado}
+dominio: [Técnico|Organizacional|Calidad|Ventas|Investigación|Mixto]
+variante_6m: [Estándar|Software/LLM|Ventas|Custom]
+causas_raiz: N  # número de causas raíz identificadas
+fase: FASE {N}  # FASE del WP activo, si aplica
+---
+```
+
+#### Estructura del contenido del archivo
+
+```markdown
+# Ishikawa: {efecto}
+
+## Efecto analizado
+
+{Descripción específica del efecto — observable y medible}
+
+## Diagrama
+
+{Diagrama Mermaid completo del Paso 6}
+
+## Análisis por categoría (6M)
+
+### {M1}
+- **{Causa}**: {explicación}
+  - Sub-causa: ...
+
+### {M2}
+...
+
+## Causas raíz — 5 Porqués
+
+### Causa raíz 1: {nombre}
+| Por qué | Respuesta |
+|---------|-----------|
+| ¿Por qué ocurre el efecto? | ... |
+| ¿Por qué ocurre lo anterior? | ... |
+...
+
+## Acciones correctivas
+
+| Prioridad | Causa raíz | Acción | Responsable | Plazo |
+|-----------|-----------|--------|-------------|-------|
+...
+
+## Síntesis
+
+{2-3 párrafos: qué causa raíz es la más crítica y por qué, qué acción tiene mayor impacto}
+```
+
 ## Sub-agentes disponibles
 
 Cuando necesites investigación específica, puedes delegar:
@@ -145,6 +222,8 @@ Cuando necesites investigación específica, puedes delegar:
 
 ## Reglas operativas
 
+- **Crear artefacto siempre** — toda ejecución genera un markdown de hallazgos en el WP activo (Paso 8)
+- **Preguntar solo sin WP activo** — si no hay WP en curso, preguntar destino antes de crear el archivo
 - **Máximo 2 Ishikawa por sesión** si el problema es de timeout/contexto: más análisis = más contexto = agrava el problema
 - **Verificar CLAUDE_STREAM_IDLE_TIMEOUT_MS** al inicio si el dominio es técnico/LLM
 - **Sesión nueva** si el problema que analizas es timeout de la sesión actual
