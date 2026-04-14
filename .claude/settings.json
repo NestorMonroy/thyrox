@@ -1,9 +1,9 @@
 {
-  "defaultMode": "acceptEdits",
   "env": {
     "CLAUDE_STREAM_IDLE_TIMEOUT_MS": "120000"
   },
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
       "Edit(/ROADMAP.md)",
       "Edit(/.claude/context/now.md)",

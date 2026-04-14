@@ -164,8 +164,12 @@ reconoce operadores shell y los trata como comandos separados.
 | `auto` | Auto-aprueba con clasificador de seguridad (preview) | Experimento — no usar en produccion |
 | `bypassPermissions` | Salta todos los prompts excepto dirs protegidos | Solo en contenedores aislados |
 
-**Nota sobre `bypassPermissions`:** `.claude/skills/` es EXEMPT — Claude puede editar SKILL.md
-sin prompt en ese modo. No usar en entornos de produccion por este motivo.
+**Nota sobre `bypassPermissions`:** Salta todos los prompts de herramientas.
+La safety invariant del binario (v2.1.78+) protege ciertos subdirectorios de `.claude/`
+independientemente del modo — pero el criterio exacto de qué paths están protegidos
+no está documentado públicamente. Comportamiento observado empíricamente: `.claude/context/`
+siempre prompts; `.claude/agents/` y `.claude/skills/` automáticos — sin respaldo documental
+conocido. No usar en entornos de produccion.
 
 ---
 
