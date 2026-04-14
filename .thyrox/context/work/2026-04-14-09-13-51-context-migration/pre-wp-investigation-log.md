@@ -116,6 +116,42 @@ Ver: `context-migration-analysis.md` en este mismo WP para el análisis completo
 
 ---
 
+## Diagnóstico intermedio (sesión 2 — mismo día)
+
+Antes de descubrir la safety invariant, se hizo un diagnóstico adicional en otra
+sesión que planteó la hipótesis de formato de glob:
+
+> "Edit(/ROADMAP.md) → funciona (la regla que agregué sí aplica)
+> Edit(/.claude/context/now.md) y Edit(/.claude/context/work/**) → siguen pidiendo confirmación.
+> El problema está en que Edit(/.claude/context/work/**) en allow no está haciendo match.
+> El defaultMode: acceptEdits tampoco los cubre automáticamente para paths bajo .claude/.
+> Probablemente el formato del glob ** o la ruta con .claude/ tiene un problema de matching."
+
+Esta hipótesis derivó en el commit `e477135` (glob fix: `**` → `**/*.md`) que
+resultó igualmente inefectivo.
+
+### Stop hook feedback detectado en esa sesión
+
+```
+⚠ TD-001: timestamps incompletos encontrados (fecha sin hora):
+  .claude/context/work/2026-04-11-10-52-25-thyrox-commands-namespace/analysis/edit-tool-silent-mode-finding.md
+  .claude/context/work/2026-04-12-10-10-50-skill-authoring-modernization/analysis/stream-timeout-root-cause.md
+  .claude/context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/thyrox-capabilities-integration-task-plan.md
+  [... 9 archivos más]
+```
+
+TD-001 sigue detectando artefactos con `created_at: YYYY-MM-DD` sin hora.
+Son artefactos de FASEs anteriores (2026-04-05 a 2026-04-12). Pendiente de
+resolución fuera del scope de FASE 35.
+
+### Incidente ROADMAP.md test2
+
+Durante las pruebas de esa sesión, quedó un `# test2` en `ROADMAP.md` sin
+commitear. El stop hook lo detectó. El revert ya estaba aplicado — `git diff`
+mostró el archivo limpio, no hubo commit necesario.
+
+---
+
 ## Fix inútil aplicado (a limpiar en Phase 6)
 
 Las siguientes reglas en `.claude/settings.json` fueron agregadas como intento de
