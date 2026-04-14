@@ -6,7 +6,9 @@
   "permissions": {
     "allow": [
       "Edit(/ROADMAP.md)",
-      "Edit(/.claude/context/work/**)",
+      "Edit(/.claude/context/now.md)",
+      "Edit(/.claude/context/focus.md)",
+      "Edit(/.claude/context/work/**/*.md)",
       "Write(/.claude/context/now.md)",
       "Write(/.claude/context/focus.md)",
       "Write(/.claude/context/work/**)",

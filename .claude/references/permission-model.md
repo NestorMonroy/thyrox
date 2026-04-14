@@ -90,6 +90,14 @@ Son consecuencia de la decision, no nuevas decisiones.
   "defaultMode": "acceptEdits",
   "permissions": {
     "allow": [
+      "Edit(/ROADMAP.md)",
+      "Edit(/.claude/context/now.md)",
+      "Edit(/.claude/context/focus.md)",
+      "Edit(/.claude/context/work/**/*.md)",
+      "Write(/.claude/context/now.md)",
+      "Write(/.claude/context/focus.md)",
+      "Write(/.claude/context/work/**)",
+      "Write(/.claude/references/**)",
       "Bash(bash .claude/scripts/*)",
       "Bash(bash .claude/skills/*/scripts/*)",
       "Bash(git add *)",
@@ -108,8 +116,6 @@ Son consecuencia de la decision, no nuevas decisiones.
       "Bash(echo *)"
     ],
     "ask": [
-      "Edit(/.claude/CLAUDE.md)",
-      "Edit(/.claude/skills/*/SKILL.md)",
       "Edit(/.claude/scripts/*.sh)",
       "Edit(/.claude/settings.json)"
     ],
@@ -122,6 +128,8 @@ Son consecuencia de la decision, no nuevas decisiones.
   }
 }
 ```
+
+**Nota (FASE 35 — 2026-04-14):** Se agregaron reglas `Edit` explícitas en `allow` porque `defaultMode: acceptEdits` no cubre por sí solo las ediciones a context files. Patrón validado: `Edit(/.claude/context/work/**/*.md)` con extensión explícita (no bare `**`). Ver lecciones L-XXX.
 
 ---
 
