@@ -115,9 +115,9 @@ reversibility: reversible
 ## Phase 7: TRACK
 
 **Exit conditions:**
-- [ ] `technical-debt-resolution-lessons-learned.md` existe
-- [ ] `technical-debt-resolution-changelog.md` existe
-- [ ] `technical-debt-resolution-technical-debt-resolved.md` existe (7 TDs)
-- [ ] `context/now.md` → `current_work: null`, `phase: null`
-- [ ] `context/focus.md` actualizado con FASE 34
-- [ ] Commit + push del cierre del WP
+- [x] `technical-debt-resolution-lessons-learned.md` existe (4 lecciones)
+- [x] `technical-debt-resolution-changelog.md` existe (9 commits)
+- [x] `technical-debt-resolution-technical-debt-resolved.md` existe (7 TDs)
+- [x] `context/now.md` → `current_work: null`, `phase: null`
+- [x] `context/focus.md` actualizado con FASE 34
+- [x] Commit + push del cierre del WP

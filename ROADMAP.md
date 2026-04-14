@@ -142,12 +142,12 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 **Causa raíz:** 7 TDs activos (TD-001, TD-003, TD-009, TD-018, TD-027, TD-028, TD-035) con soluciones concretas identificadas en FASEs anteriores. TD-010 diferido (trigger no activado).
 
 - [x] Phase 1 ANALYZE — completado 2026-04-13
-- [ ] Phase 2 SOLUTION_STRATEGY — **OMITIDA** (WP pequeño, soluciones ya identificadas)
+- [x] Phase 2 SOLUTION_STRATEGY — **OMITIDA** (WP pequeño, soluciones ya identificadas)
 - [x] Phase 3 PLAN — completado 2026-04-13
-- [ ] Phase 4 STRUCTURE — **OMITIDA** (cambios quirúrgicos, plan suficiente)
-- [ ] Phase 5 DECOMPOSE
-- [ ] Phase 6 EXECUTE
-- [ ] Phase 7 TRACK
+- [x] Phase 4 STRUCTURE — **OMITIDA** (cambios quirúrgicos, plan suficiente)
+- [x] Phase 5 DECOMPOSE — completado 2026-04-14
+- [x] Phase 6 EXECUTE — completado 2026-04-14 (9 commits, 7 TDs resueltos)
+- [x] Phase 7 TRACK — completado 2026-04-14
 
 ---
 
