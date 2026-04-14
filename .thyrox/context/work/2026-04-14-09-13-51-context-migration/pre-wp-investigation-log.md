@@ -152,6 +152,51 @@ mostró el archivo limpio, no hubo commit necesario.
 
 ---
 
+## Sesión 3 — Investigación de patrones glob en referencias
+
+### Búsquedas ejecutadas
+
+**grep en cli-reference.md:**
+```
+--allowedTools  → Tools que ejecutan sin confirmación → "Bash(git log:*)" "Read"
+--permission-mode → Iniciar en modo de permiso especificado
+acceptEdits → Lectura y edición automática; pide confirmación para comandos
+```
+
+**grep de `Edit(/` en todo .claude/:**
+Hallazgo clave en `tool-execution-model.md:378`:
+> "Las reglas `Edit(/.claude/context/*)` en `allow` son redundantes cuando
+> `defaultMode: acceptEdits` está activo — el defaultMode ya aprueba todos los
+> Edit automáticamente. Solo agregar `Edit(...)` explícitos en `allow` para
+> sobreescribir un `deny` específico."
+
+Esto contradecía la hipótesis de glob format. Sin embargo, el asistente priorizó
+el hallazgo de `permission-model.md L138`:
+> `Edit(/src/**/*.ts)` — con extensión explícita
+
+Y concluyó que el bare `**` no era suficiente. Hipótesis incorrecta — en realidad
+el problema era la safety invariant, no el formato de glob.
+
+### Sesión compactada y reanudada
+
+La sesión se compactó (context limit) y reanudó. El PostCompact hook cargó el
+contexto desde `now.md`. Al reanudar, se releyó `permission-model.md` completo
+(219 líneas) y se aplicó el fix de glob (`e477135`).
+
+### Fix aplicado (commit e477135)
+
+```
+fix(permissions): corregir glob Edit en settings.json para context files
+- Edit(/.claude/context/work/**) → Edit(/.claude/context/work/**/*.md)
+- Agregar Edit(/.claude/context/now.md) explícito
+- Agregar Edit(/.claude/context/focus.md) explícito
+- Actualizar permission-model.md "Configuración vigente"
+```
+
+**Resultado post-reinicio de sesión:** Sigue prompting. Hipótesis glob incorrecta.
+
+---
+
 ## Fix inútil aplicado (a limpiar en Phase 6)
 
 Las siguientes reglas en `.claude/settings.json` fueron agregadas como intento de
