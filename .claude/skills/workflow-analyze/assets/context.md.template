@@ -86,28 +86,24 @@ Documentar DÓNDE se inserta el sistema en el ecosistema. Define límites (scope
 
 ## Diagrama de Contexto
 
-```
-┌─────────────────────────────────────────┐
-│         OUR SYSTEM                      │
-│    [Core ecommerce platform]            │
-└─────────────────────────────────────────┘
-    ↓↓         ↑↑         ↓↓         ↑↑
-    ↓↓         ↑↑         ↓↓         ↑↑
+<!-- Crear diagrama cuando hay ≥2 sistemas externos. Para 1 sistema externo, descripción textual es suficiente. Usar los sistemas identificados en la tabla "Technical Context" arriba. -->
 
-┌──────────┐  ┌──────────┐  ┌──────────┐
-│Customer  │  │Payment   │  │Inventory │
-│Portal    │  │Gateway   │  │System    │
-│(Inbound) │  │(Out)     │  │(Out)     │
-└──────────┘  └──────────┘  └──────────┘
+```mermaid
+flowchart LR
+    ExtA["[External System A]\n(Inbound)"]
+    ExtB["[External System B]\n(Outbound)"]
+    ExtC["[External System C]\n(Bidirectional)"]
 
-┌──────────┐  ┌──────────┐  ┌──────────┐
-│Shipping  │  │Analytics │  │Email     │
-│Partner   │  │Warehouse │  │Service   │
-│(Bidirect)│  │(Out)     │  │(Out)     │
-└──────────┘  └──────────┘  └──────────┘
+    subgraph Sys["[PROJECT_NAME]"]
+        Core["Core System"]
+    end
+
+    ExtA --> Core
+    Core --> ExtB
+    Core <--> ExtC
 ```
 
-[Reemplazar con diagrama específico de tu proyecto]
+[Reemplazar nodos con los sistemas reales del proyecto — ver tabla "Technical Context" arriba. Usar `-->` para unidireccional, `<-->` para bidireccional.]
 
 ---
 

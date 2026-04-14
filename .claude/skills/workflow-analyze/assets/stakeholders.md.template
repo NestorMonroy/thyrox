@@ -37,6 +37,27 @@ Identificar QUIÉN usa el sistema y QUÉ necesita. Documentar roles, necesidades
 
 ---
 
+## Mapa de Stakeholders
+
+<!-- Crear cuando hay ≥3 roles con relaciones entre sí. Para 1-2 roles, la matriz es suficiente. Agrupar por tipo de relación con el sistema. -->
+
+```mermaid
+mindmap
+    root((Sistema))
+        Internos
+            [Role 1]
+            [Role 2]
+        Externos
+            [Role 3]
+            [Role 4]
+        Regulatorios
+            [Role 5]
+```
+
+[Adaptar con los roles identificados en la "Matriz de Stakeholders" — eliminar grupos que no apliquen]
+
+---
+
 ## Descripción Detallada de Cada Rol
 
 ### [Role Name]

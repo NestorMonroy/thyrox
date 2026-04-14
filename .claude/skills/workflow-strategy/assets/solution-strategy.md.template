@@ -139,6 +139,34 @@ Logging:                [e.g., ELK Stack]
 
 ---
 
+## Diagrama de Arquitectura
+
+<!-- Crear cuando la solución tiene ≥2 capas o ≥3 componentes. Elegir el tipo: `graph TB` para arquitectura en capas, `flowchart LR` para flujo de datos entre servicios, `C4Context` si el renderizador lo soporta. -->
+
+```mermaid
+graph TB
+    subgraph FE["Frontend Layer"]
+        UI["Client Application"]
+    end
+    subgraph BE["Backend Layer"]
+        API["API Gateway"]
+        BL["Business Logic"]
+    end
+    subgraph DA["Data Layer"]
+        DB[("Database")]
+        Cache[("Cache")]
+    end
+
+    UI --> API
+    API --> BL
+    BL --> DB
+    BL --> Cache
+```
+
+[Adaptar capas y componentes según el stack documentado en "Technology Stack" — eliminar capas que no apliquen, agregar servicios externos si corresponde]
+
+---
+
 ## How We Achieve Quality Goals
 
 ### Quality Goal 1: [Attribute]

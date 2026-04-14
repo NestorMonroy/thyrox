@@ -30,6 +30,18 @@ updated_at: [YYYY-MM-DD HH:MM:SS]
 ...
 ```
 
+<!-- Cuando el UC tiene ≥4 pasos o actores secundarios: agregar diagrama Mermaid complementario al texto. -->
+
+```mermaid
+sequenceDiagram
+    actor A as [Actor Primario]
+    participant Sys as Sistema
+
+    A->>+Sys: [Acción inicial]
+    Sys->>Sys: [Validación / proceso interno]
+    Sys-->>-A: [Respuesta / resultado]
+```
+
 **Flujos Alternativos:**
 
 Alternativa 2a: Si [condición específica]

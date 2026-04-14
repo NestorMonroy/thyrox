@@ -113,11 +113,23 @@ def funcion_publica(param1: tipo, param2: tipo) -> tipo:
 
 ### 6.1 Flujo Principal
 
-```
-Usuario -> Input -> Componente A -> Procesamiento -> Componente B -> Output
+<!-- Cuando el flujo tiene ≥3 participantes o lógica condicional: usar sequenceDiagram. Para flujos lineales simples, descripción textual es suficiente. -->
+
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant CompA as Componente A
+    participant CompB as Componente B
+
+    Usuario->>+CompA: Acción principal
+    CompA->>+CompB: Procesamiento
+    CompB-->>-CompA: Resultado
+    CompA-->>-Usuario: Respuesta
 ```
 
 ### 6.2 Flujos Secundarios
+
+<!-- Cuando hay ≥2 flujos alternativos con bifurcaciones: usar flowchart. -->
 
 [Describir otros flujos importantes]
 
