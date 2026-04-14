@@ -61,9 +61,22 @@ Ver `references/solution-strategy.md` para estructura completa (Tech Stack, Patt
 
 Antes de presentar el gate 2→3:
 - **TD-031 deep review**: revisar `{nombre-wp}-analysis.md` de Phase 1 — ¿la estrategia responde a todos los hallazgos?
-- **TD-028 re-evaluación de tamaño**: ¿el WP sigue siendo micro/pequeño/mediano/grande? Si cambió, ajustar fases activas
+- **TD-028 re-evaluación de tamaño**: ¿el WP sigue siendo micro/pequeño/mediano/grande? Si cambió, ajustar fases activas (ver tabla abajo)
 - **TD-029 criterios**: `{nombre-wp}-solution-strategy.md` existe con 5 secciones · ADRs creados si aplica
 - **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+
+## Re-evaluación de tamaño post-estrategia
+
+Después de completar la estrategia, revisar si el scope cambió respecto al tamaño estimado en Phase 1:
+
+| Si el scope cambió a...    | Siguiente fase | Fases a agregar |
+|---------------------------|----------------|-----------------|
+| Sigue siendo micro/pequeño | Phase 6 EXECUTE | Ninguna |
+| Pasó a mediano/grande      | Phase 3 PLAN   | 3, 4, 5 |
+
+Si el tamaño sube: actualizar `{nombre-wp}-exit-conditions.md` agregando las fases adicionales antes de continuar.
+
+---
 
 ## Gate humano
 
