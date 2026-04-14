@@ -80,12 +80,58 @@ cambia de sintético (3×3) a instrumentación de la migración en curso.
 - Artefacto de salida: `references/benchmark-skill-vs-claude.md` al cerrar FASE 35
 - Se instrumenta la migración misma como caso de estudio empírico
 
+### TD-009: Patrón now-{agent-name}.md no implementado
+
+```
+Estado declarado: [x] Resuelto — FASE 34 (2026-04-14)
+Verificado: 2026-04-14
+```
+
+**Evidencia de implementación:**
+
+1. `references/agent-spec.md:29` — campo `state_file` documentado:
+   `context/now-{agent-name}.md`, instrucciones de crear/actualizar al inicio de sesión.
+
+2. `agents/task-executor.md:22,31` — instrucciones explícitas de crear y actualizar
+   `now-task-executor.md` con tarea activa, próximo paso y WP.
+
+3. `agents/task-planner.md:21` — instrucciones explícitas de crear
+   `now-task-planner.md` con WP activo y fase del plan.
+
+4. `references/conventions.md` — tabla completa de qué entidad escribe en qué
+   archivo de estado, ciclo de vida y protocolo de recovery de claims abandonados.
+
+**Nota para FASE 35:** `task-executor.md:22` y `task-planner.md:21` tienen rutas
+hardcodeadas a `.claude/context/`. Se actualizan durante la migración.
+
+**Veredicto:** Resuelto y verificado.
+
+### TD-018: execution-log no respeta formato de timestamp completo
+
+```
+Estado declarado: [x] Resuelto — FASE 34 (2026-04-14)
+Verificado: 2026-04-14
+```
+
+**Evidencia de implementación:**
+
+1. `framework-evolution-execution-log.md:4` — corregido a `created_at: 2026-04-08 17:04:20` ✅
+2. Execution-logs recientes tienen timestamp completo:
+   - `technical-debt-audit-execution-log.md` → `2026-04-12 00:00:00` ✅
+   - `thyrox-commands-namespace-execution-log.md` → `2026-04-11 22:05:00` ✅
+
+**Hallazgo adicional:** 12 artefactos de WPs cerrados (task-plans, specs) tienen `created_at`
+sin hora — son deuda histórica aceptada en el cierre de TD-001, no scope de TD-018.
+
+**Nota menor:** `auto-operations-execution-log.md` usa guiones en lugar de espacio ISO 8601
+(`2026-04-09-20-00-00` vs `2026-04-09 20:00:00`). Inconsistencia de formato menor.
+
+**Veredicto:** Resuelto y verificado para su alcance (execution-logs).
+
 ## TDs pendientes de revisión
 
 | ID | Descripción | Estado declarado |
 |----|-------------|-----------------|
-| TD-009 | Patrón now-{agent-name}.md no implementado | `[x]` Resuelto |
-| TD-018 | execution-log no respeta timestamp completo | `[x]` Resuelto |
 | TD-025 | skill-authoring.md desactualizado | `[x]` Cerrado |
 | TD-027 | Criterio auto-write vs validación humana | `[x]` Resuelto |
 | TD-028 | Sin mecanismo para reclasificación de tamaño de WP | `[x]` Resuelto |
