@@ -104,8 +104,8 @@ reversibility: reversible
 - [ ] Commit
 
 ### Cierre
-- [ ] `technical-debt.md` — 7 TDs marcados `[x]` con fecha
-- [ ] Commit
+- [x] `technical-debt.md` — 7 TDs marcados `[x]` con fecha 2026-04-14
+- [x] Commit C8
 - [ ] **Usuario aprobó resultado** ← Gate SP-03
 
 **Transition:** → Phase 7 TRACK

@@ -25,7 +25,7 @@ ser atendidos. Cada ítem tiene un ID, descripción, impacto, y criterio de reso
 Severidad: media
 Origen: Revisión 2026-04-03
 Fase afectada: Todas (al crear artefactos desde templates)
-Estado: [-] En progreso — regla en conventions.md ✓ — falta detección de fechas reales sin hora en validate-session-close.sh
+Estado: [x] Resuelto — FASE 34 (2026-04-14) — validate-session-close.sh + integración stop-hook
 ```
 
 **Problema:**
@@ -59,7 +59,7 @@ en place.
 Severidad: baja
 Origen: Auditoría 2026-04-03
 Fase afectada: Cross-phase (confusión al buscar templates)
-Estado: [-] En progreso — 5/6 templates referenciados ✓ — falta ad-hoc-tasks.md.template en SKILL.md activo
+Estado: [x] Resuelto — FASE 34 (2026-04-14) — 4 templates a legacy/, ad-hoc-tasks mapeado en workflow-execute/SKILL.md
 ```
 
 **Problema:**
@@ -143,7 +143,7 @@ ADR-015 actualizado si los datos contradicen los hallazgos externos.
 Severidad: media
 Origen: FASE 21 — skill-architecture-review (ADR-015 D-08)
 Fase afectada: Capa 4 — Agentes nativos (.claude/agents/)
-Estado: [-] En progreso — convención en conventions.md + CLAUDE.md ✓ — falta agent-spec.md campo state_file + instrucciones en task-executor/task-planner
+Estado: [x] Resuelto — FASE 34 (2026-04-14) — state_file en agent-spec.md + now-{agent-name}.md en task-executor y task-planner
 ```
 
 **Problema:**
@@ -177,7 +177,7 @@ actualizan su `now-{agent-name}.md`. La convención está documentada en `conven
 Severidad: baja
 Origen: Revisión FASE 22 — Phase 6 EXECUTE (2026-04-08)
 Fase afectada: Phase 6 EXECUTE (al crear execution-log)
-Estado: [-] En progreso — template corregido ✓ — falta corrección retroactiva framework-evolution-execution-log.md
+Estado: [x] Resuelto — FASE 34 (2026-04-14) — timestamp corregido a 2026-04-08 17:04:20
 ```
 
 **Problema:**
@@ -240,7 +240,7 @@ Estado: [x] Cerrado — FASE 33 (2026-04-13)
 Severidad: alta
 Origen: FASE 25 — comportamiento inconsistente en gates de escritura (2026-04-09)
 Fase afectada: Todas — especialmente Phase 3 PLAN, Phase 5 DECOMPOSE, Phase 7 TRACK
-Estado: [-] En progreso — Plano A/B en thyrox/SKILL.md ✓ — falta tabla metodológica de categorías + linkage SP→archivo
+Estado: [x] Resuelto — FASE 34 (2026-04-14) — tabla completa (References/ADRs/Scripts), Write(/.claude/references/**) en allow
 ```
 
 **Problema:**
@@ -286,7 +286,7 @@ El SKILL.md define Stopping Points (SP-NNN) para gates de fase, pero no los vinc
 Severidad: media
 Origen: FASE 28 — WP reclasificado de pequeno a mediano en Phase 2 (2026-04-09)
 Fase afectada: Phase 2 SOLUTION STRATEGY — transition 2→3
-Estado: [-] En progreso — bullet de re-evaluación en workflow-strategy/SKILL.md ✓ — falta tabla formal de decisión
+Estado: [x] Resuelto — FASE 34 (2026-04-14) — sección Re-evaluación con tabla micro/pequeño→Phase 6, mediano/grande→Phase 3
 ```
 
 **Problema:**
@@ -344,7 +344,7 @@ lugar de saltar a Phase 5/6.
 ```yml
 id: TD-035
 severidad: media
-estado: "[-] En progreso — REGLA-LONGEV-001 en conventions.md ✓ — falta alerta de tamaño en project-status.sh"
+estado: "[x] Resuelto — FASE 34 (2026-04-14) — bloque REGLA-LONGEV-001 agregado en project-status.sh"
 detectado_en: FASE 29
 area: conventions
 ```
