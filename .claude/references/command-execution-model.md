@@ -4,7 +4,7 @@ category: Claude Code Platform — Command Architecture
 version: 1.0
 purpose: Flujo de ejecución de commands, responsabilidades por componente, y patrones fat vs thin
 source: claude-howto deep-review (01-slash-commands, 03-skills, 04-subagents, 07-plugins)
-updated_at: 2026-04-11 20:41:54
+updated_at: 2026-04-14 20:07:24
 ```
 
 # Command Execution Model — Responsabilidades y Flujo
@@ -17,6 +17,43 @@ tiene cada componente, y cuándo usar cada patrón.
 > - `tool-execution-model.md` — flujos de Edit/Write y permission model
 > - `plugins.md` — estructura de plugins y distribución
 > Este document cubre: qué ocurre en runtime cuando el usuario escribe `/command`.
+
+---
+
+## Tipos de Commands
+
+Existen cuatro tipos distintos de commands en Claude Code:
+
+| Tipo | Ejemplo | Origen |
+|------|---------|--------|
+| **Built-in** | `/help`, `/clear`, `/model` | Incluido en el binario de Claude Code |
+| **Skill / Legacy Command** | `/optimize`, `/pr` | `.claude/skills/<name>/SKILL.md` o `.claude/commands/<name>.md` |
+| **Plugin Command** | `/thyrox:analyze` | `plugin/commands/<name>.md` + `plugin.json::name` |
+| **MCP Prompt** | `/mcp__github__list_prs` | Expuesto por un MCP server activo |
+
+> Fuente: `01-slash-commands/README.md:10-16`
+
+### MCP Prompts como Commands
+
+Los MCP servers pueden exponer prompts como slash commands con la sintaxis:
+
+```
+/mcp__<server-name>__<prompt-name> [arguments]
+```
+
+**Ejemplos:**
+```bash
+/mcp__github__list_prs
+/mcp__github__pr_review 456
+/mcp__jira__create_issue "Bug title" high
+```
+
+El control de acceso a MCP servers sigue la misma sintaxis de permisos:
+- `mcp__github` — acceso completo al server GitHub
+- `mcp__github__*` — wildcard a todos los tools del server
+- `mcp__github__get_issue` — acceso a un tool específico
+
+> Fuente: `01-slash-commands/README.md:283-302`
 
 ---
 
@@ -71,10 +108,66 @@ sequenceDiagram
 | Variable | Valor |
 |----------|-------|
 | `$ARGUMENTS` | Todo lo que el usuario escribió después del nombre del comando |
-| `$1`, `$2`, `$N` | Argumentos posicionales |
+| `$0`, `$1`, `$N` | Argumentos posicionales (base-0) |
 | `${CLAUDE_SESSION_ID}` | ID único de la sesión actual |
 | `${CLAUDE_SKILL_DIR}` | Path absoluto al directorio del skill |
 | `` !`comando bash` `` | Ejecutado en shell; Claude ve el output, no el comando |
+| `@path/to/file` | Incluye el contenido del archivo referenciado (contexto estático) |
+
+**Ejemplos de argumentos posicionales:**
+```yaml
+# /review-pr 456 high → $0="456", $1="high"
+Review PR #$0 with priority $1
+```
+
+**Ejemplos de file references:**
+```markdown
+Review the implementation in @src/utils/helpers.js
+Compare @src/old-version.js with @src/new-version.js
+```
+
+> Fuente: `01-slash-commands/README.md:208-265`
+
+---
+
+## Frontmatter Fields — Referencia Completa
+
+| Campo | Propósito | Default |
+|-------|-----------|---------|
+| `name` | Nombre del command (se convierte en `/name`) | Nombre del directorio |
+| `description` | Descripción breve (guía al LLM para auto-invocar) | Primer párrafo |
+| `argument-hint` | Argumentos esperados para auto-completado | Ninguno |
+| `allowed-tools` | Tools que el command puede usar sin pedir permiso | Hereda |
+| `model` | Modelo específico a usar | Hereda |
+| `context` | `fork` para ejecutar en subagente aislado | Ninguno |
+| `agent` | Tipo de agente cuando se usa `context: fork` | `general-purpose` |
+| `disable-model-invocation` | Si `true`, solo el usuario puede invocar (no Claude automáticamente) | `false` |
+| `user-invocable` | Si `false`, oculta el command del menú `/` | `true` |
+| `hooks` | Hooks con scope de skill (PreToolUse, PostToolUse, Stop) | Ninguno |
+
+> Fuente: `01-slash-commands/README.md:193-203`
+
+### Control de invocación: `disable-model-invocation` vs `user-invocable`
+
+Estos dos campos controlan **quién puede invocar** el command:
+
+| Campo | Efecto |
+|-------|--------|
+| `disable-model-invocation: true` | Claude NO puede invocar automáticamente. Solo el usuario. Usar para commands con side effects (deploy, push). |
+| `user-invocable: false` | No aparece en el menú `/`. Solo accesible si Claude lo invoca internamente. |
+
+**Ejemplo: command de deploy con side effects**
+```yaml
+---
+name: deploy
+description: Deploy to production
+disable-model-invocation: true
+allowed-tools: Bash(npm *), Bash(git *)
+---
+Deploy the application to production...
+```
+
+> Fuente: `01-slash-commands/README.md:493-511`
 
 ---
 
@@ -264,6 +357,40 @@ Los agentes standalone en `.claude/agents/` no tienen estas restricciones.
 
 ---
 
+## Scope de Instalación — Global vs Project
+
+Los commands y skills pueden instalarse en dos scopes:
+
+| Scope | Path | Disponibilidad |
+|-------|------|----------------|
+| **Project** | `.claude/skills/<name>/` o `.claude/commands/<name>.md` | Solo en este proyecto |
+| **Global** | `~/.claude/skills/<name>/` o `~/.claude/commands/<name>.md` | En todos los proyectos del usuario |
+
+**Regla de precedencia cuando hay conflicto:** Los commands de proyecto tienen prioridad
+sobre los globales.
+
+> Fuente: `01-slash-commands/README.md:449-458`
+
+---
+
+## Bundled Skills (Built-in)
+
+Claude Code incluye 5 skills predefinidos accesibles como commands desde cualquier proyecto:
+
+| Skill | Propósito |
+|-------|-----------|
+| `/batch <instruction>` | Orquesta cambios en paralelo a gran escala usando worktrees |
+| `/claude-api` | Carga referencia de Claude API para el lenguaje del proyecto |
+| `/debug [description]` | Habilita debug logging |
+| `/loop [interval] <prompt>` | Ejecuta un prompt repetidamente en intervalos |
+| `/simplify [focus]` | Revisa archivos modificados para calidad de código |
+
+Estos skills no requieren configuración — vienen con el binario.
+
+> Fuente: `01-slash-commands/README.md:91-100`
+
+---
+
 ## Árbol de Decisión: ¿Qué tipo de componente crear?
 
 ```mermaid
@@ -314,10 +441,39 @@ El skill (`workflow-analyze/SKILL.md`) tiene responsabilidad de **metodología y
 ✅ DO:   Keep commands focused on single task
 ✅ DO:   Use $ARGUMENTS for parameterization
 ✅ DO:   Add argument-hint in frontmatter for discoverability
+✅ DO:   Use disable-model-invocation for commands with side effects
+✅ DO:   Use ! prefix for dynamic context (shell output in body)
+✅ DO:   Organize related files in skill directories
 ❌ DON'T: Build complex logic that should be in a skill/agent
 ❌ DON'T: Duplicate logic that already exists in a skill
 ❌ DON'T: Create commands for one-off tasks (use chat instead)
+❌ DON'T: Hardcode sensitive information in command files
+❌ DON'T: Skip the description field (breaks auto-invocation)
 ```
+
+---
+
+## Troubleshooting
+
+### Command not found
+
+- Verificar que el archivo está en `.claude/skills/<name>/SKILL.md` o `.claude/commands/<name>.md`
+- Verificar que el campo `name` en frontmatter coincide con el nombre esperado
+- Reiniciar la sesión de Claude Code
+- Ejecutar `/help` para ver los commands disponibles
+
+### Command no ejecuta como se esperaba
+
+- Agregar instrucciones más específicas al body
+- Incluir ejemplos en el skill file
+- Verificar `allowed-tools` si el command usa bash
+- Probar con inputs simples primero
+
+### Conflicto skill vs command con mismo nombre
+
+Si ambos existen con el mismo nombre, el **skill tiene prioridad**. Eliminar uno o renombrarlo.
+
+> Fuente: `01-slash-commands/README.md:524-544`
 
 ---
 

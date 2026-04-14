@@ -316,9 +316,15 @@ tools: Read, Bash(npm test:*), Bash(pytest:*)
 - [ ] El subagente tiene UNA responsabilidad clara
 - [ ] La `description` incluye "use PROACTIVELY" si se quiere invocación automática
 - [ ] Solo se otorgan los tools necesarios para su tarea
+- [ ] Si hay tools que deben bloquearse explícitamente → usar `disallowedTools`
+- [ ] Si necesita un modelo específico → declarar `model` (sonnet / opus / haiku / inherit)
+- [ ] Si debe limitarse el número de turns → declarar `maxTurns`
+- [ ] Si necesita skills precargados en contexto → usar `skills`
 - [ ] Si necesita estado persistente → usar `memory` field
 - [ ] Si puede correr sin bloquear → considerar `background: true` en frontmatter (declara compatibilidad) o `run_in_background: true` en la invocación (activa async inmediatamente). Son planos independientes — ver Patrón 4.
 - [ ] Si hay riesgo de conflictos git → usar `isolation: worktree`
+- [ ] Si el agente necesita hooks propios → definirlos en el frontmatter (no en settings.json global)
+- [ ] Si viene de un plugin → verificar que no usa `hooks`, `mcpServers`, ni `permissionMode`
 
 ## Referencias
 

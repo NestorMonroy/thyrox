@@ -21,6 +21,8 @@ Referencia para integrar servidores MCP (Model Context Protocol) con Claude Code
 | **Stdio** | stdin/stdout local | Herramientas locales (git, database local) |
 | **SSE** | Server-Sent Events | Streaming de datos en tiempo real |
 
+> **Nota:** El transporte SSE está deprecado en favor de `http`. Sigue siendo soportado para compatibilidad con servidores legacy.
+
 ## Instalación básica
 
 ```bash
@@ -76,6 +78,8 @@ Los servidores MCP se configuran en `.mcp.json` (proyecto) o `~/.claude.json` (u
 | Plugin `.mcp.json` | Plugin (cuando activo) | Con el plugin |
 
 **Deduplicación por nombre:** Local > Proyecto > Usuario (el primero gana). Si `github` está en `.mcp.json` y en `~/.claude.json`, usa el de `.mcp.json`.
+
+> **Nota de nomenclatura (v2.1+):** Los nombres de alcance cambiaron en versiones recientes. Lo que antes se llamaba `project` ahora se llama `local` (privado al usuario actual, almacenado en `~/.claude.json` bajo el path del proyecto). Lo que antes era `global` ahora es `user` (todos los proyectos, en `~/.claude.json`). Los servidores en `.mcp.json` del proyecto requieren aprobación explícita en el primer uso.
 
 ## Autenticación OAuth
 
@@ -335,6 +339,196 @@ claude --strict-mcp-config --mcp-config ./production-mcp.json "consulta"
 | **Push notifications** | ✅ (Channels) | ❌ | ❌ |
 | **Configuración** | `.mcp.json` | `settings.json` | `SKILL.md` |
 | **Invocación** | Auto por Claude | Event-driven | Por Claude o usuario |
+
+
+## Instalación HTTP con header de autenticación
+
+```bash
+# HTTP con header de autorización estático
+claude mcp add --transport http secure-api https://api.example.com/mcp \
+  --header "Authorization: Bearer your-token"
+```
+
+## Nota Windows — transporte stdio
+
+En Windows nativo (no WSL), usar `cmd /c` para comandos `npx`:
+
+```bash
+claude mcp add --transport stdio my-server -- cmd /c npx -y @some/mcp-package
+```
+
+## Claude.ai MCP Connectors
+
+Los servidores MCP configurados en la cuenta de Claude.ai están disponibles automáticamente en Claude Code sin configuración adicional.
+
+- Disponible también en modo `--print` (v2.1.83+) para uso no interactivo y scripts.
+- Para deshabilitar: `ENABLE_CLAUDEAI_MCP_SERVERS=false claude`
+- Solo disponible para usuarios autenticados con cuenta Claude.ai.
+
+## Comandos CLI adicionales
+
+```bash
+# Ver detalles de un servidor específico
+claude mcp get github
+
+# Eliminar un servidor
+claude mcp remove github
+
+# Resetear aprobaciones de servidores del proyecto
+claude mcp reset-project-choices
+
+# Importar configuración desde Claude Desktop
+claude mcp add-from-claude-desktop
+```
+
+## MCP Prompts como slash commands
+
+Los servidores MCP pueden exponer prompts que aparecen como slash commands en Claude Code:
+
+```
+/mcp__<server>__<prompt>
+```
+
+Ejemplo: si el servidor `github` expone un prompt `review`, se invoca como `/mcp__github__review`.
+
+## Env var expansion — campos adicionales
+
+La expansión de variables de entorno funciona en `command`, `args`, `env`, `url` y `headers`:
+
+```json
+{
+  "mcpServers": {
+    "api-server": {
+      "type": "http",
+      "url": "${API_BASE_URL:-https://api.example.com}/mcp",
+      "headers": {
+        "Authorization": "Bearer ${API_KEY}",
+        "X-Custom": "${CUSTOM_HEADER:-default-value}"
+      }
+    }
+  }
+}
+```
+
+## MCP Apps
+
+MCP Apps es la primera extensión oficial de MCP: permite que las llamadas a herramientas MCP devuelvan componentes UI interactivos que se renderizan directamente en el chat. En lugar de respuestas de texto plano, los servidores MCP pueden entregar dashboards, formularios, visualizaciones de datos y flujos multi-paso — todo inline en la conversación.
+
+## Subagent-scoped MCP
+
+Los servidores MCP pueden definirse en el frontmatter de un subagente usando la clave `mcpServers:`, limitando su alcance a ese agente específico:
+
+```yaml
+---
+mcpServers:
+  my-tool:
+    type: http
+    url: https://my-tool.example.com/mcp
+---
+
+You are an agent with access to my-tool for specialized operations.
+```
+
+Los servidores MCP de subagente solo están disponibles dentro del contexto de ejecución de ese agente. Ver también [claude-code-components](claude-code-components.md).
+
+## Plugin-provided MCP servers
+
+Los plugins pueden incluir sus propios servidores MCP. Se pueden definir de dos formas:
+
+1. **`.mcp.json` standalone** — archivo `.mcp.json` en el directorio raíz del plugin
+2. **Inline en `plugin.json`** — dentro del manifiesto del plugin
+
+Usar `${CLAUDE_PLUGIN_ROOT}` para referenciar paths relativos al directorio del plugin:
+
+```json
+{
+  "mcpServers": {
+    "plugin-tools": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/mcp-server.js"],
+      "env": {
+        "CONFIG_PATH": "${CLAUDE_PLUGIN_ROOT}/config.json"
+      }
+    }
+  }
+}
+```
+
+## `settings.json` — claves MCP
+
+Claves configurables en `settings.json` (o managed settings):
+
+| Clave | Tipo | Scope | Descripción |
+|-------|------|-------|-------------|
+| `enableAllProjectMcpServers` | boolean | all | Aprobar automáticamente todos los servidores en `.mcp.json` del proyecto (evita prompts de confirmación) |
+| `enabledMcpjsonServers` | string[] | all | Allowlist de servidores específicos de `.mcp.json` a aprobar |
+| `disabledMcpjsonServers` | string[] | all | Blocklist de servidores específicos de `.mcp.json` a rechazar |
+| `allowedMcpServers` | array | managed | Allowlist de servidores que los usuarios pueden configurar (por `serverName`, `serverCommand` o `serverUrl`) |
+| `deniedMcpServers` | array | managed | Blocklist de servidores bloqueados; toma precedencia sobre `allowedMcpServers` |
+| `allowManagedMcpServersOnly` | boolean | managed | Solo los servidores definidos en managed settings son usables |
+| `channelsEnabled` | boolean | managed | Habilitar canales para usuarios Team/Enterprise |
+| `allowedChannelPlugins` | array | managed | Allowlist de plugins de canal que pueden enviar mensajes (vacío = bloquea todos) |
+
+```json
+{
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["github", "database"],
+  "disabledMcpjsonServers": ["untrusted-server"]
+}
+```
+
+## Variables de entorno — MCP
+
+| Variable | Descripción |
+|----------|-------------|
+| `MAX_MCP_OUTPUT_TOKENS` | Máximo tokens de output por llamada MCP (default: 25000) |
+| `ENABLE_TOOL_SEARCH` | Umbral para tool search: `auto` (default, 10% del context), `auto:<N>` (activa al superar N tools), `true` (siempre activo), `false` (desactivado). Requiere Sonnet 4 o Opus 4 — Haiku no soportado |
+| `MCP_TIMEOUT` | Timeout de arranque del servidor MCP (ms) |
+| `MCP_TOOL_TIMEOUT` | Timeout de ejecución de tool MCP (ms) |
+| `MCP_CLIENT_SECRET` | Client secret OAuth para MCP |
+| `MCP_OAUTH_CALLBACK_PORT` | Puerto para callback OAuth de MCP |
+| `ENABLE_CLAUDEAI_MCP_SERVERS` | Habilitar servidores MCP de Claude.ai (`false` para deshabilitar) |
+| `CLAUDE_CODE_DISABLE_MCP` | Deshabilitar todos los servidores MCP (`1` para deshabilitar) |
+
+## Managed MCP — configuración completa
+
+Rutas del archivo `managed-mcp.json` por sistema operativo:
+
+| OS | Path |
+|----|------|
+| macOS | `/Library/Application Support/ClaudeCode/managed-mcp.json` |
+| Linux | `~/.config/ClaudeCode/managed-mcp.json` |
+| Windows | `%APPDATA%\ClaudeCode\managed-mcp.json` |
+
+**Claves soportadas:**
+- `allowedMcpServers` — whitelist; matching por `serverName`, `serverCommand`, `serverUrl` (soporta glob)
+- `deniedMcpServers` — blocklist; toma precedencia cuando ambas reglas coinciden
+
+```json
+{
+  "allowedMcpServers": [
+    { "serverName": "github", "serverUrl": "https://api.github.com/mcp" },
+    { "serverCommand": "company-mcp-server" }
+  ],
+  "deniedMcpServers": [
+    { "serverName": "untrusted-*" },
+    { "serverUrl": "http://*" }
+  ]
+}
+```
+
+## OAuth — clientes pre-configurados
+
+Claude Code incluye clientes OAuth pre-configurados para servicios comunes como Notion y Stripe (v2.1.30+). Para estos servicios, el flujo OAuth funciona sin necesidad de registrar manualmente un `client-id` / `client-secret`.
+
+## Solución de problemas comunes
+
+| Síntoma | Causa probable | Solución |
+|---------|----------------|----------|
+| Servidor no encontrado | Package no instalado | `npm install -g @modelcontextprotocol/server-github` |
+| Authentication failed | Token no definido | `echo $GITHUB_TOKEN` — re-exportar si vacío |
+| Connection timeout | Red o firewall | `ping api.github.com` — verificar proxy/firewall |
+| MCP server crashes | Env vars faltantes | Verificar todas las variables requeridas; revisar logs en `~/.claude/logs/` |
 
 ## Referencias
 
