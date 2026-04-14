@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
-version: 3.2
-updated_at: 2026-04-11 22:10:00
+version: 3.3
+updated_at: 2026-04-14 16:51:48
 ```
 
 # CLAUDE.md — THYROX
@@ -95,6 +95,35 @@ Reglas cuando hay más de un skill activo en la misma sesión.
   - Orquestador / estado compartido → `context/now.md`
   - Agente nativo en ejecución → `context/now-{agent-name}.md` (e.g. `now-task-executor.md`)
   - Skill especializado → `context/now-{skill-name}-{wp-id}.md` (e.g. `now-security-audit-wp-auth.md`)
+
+## Convenciones de escritura — OBLIGATORIO
+
+Estas convenciones aplican a TODO el código y texto generado por Claude en esta sesión
+y en sesiones de agentes hijos. CLAUDE.md es el único artefacto cargado automáticamente
+en todas las sesiones y heredado por agentes — por eso las convenciones universales viven aquí,
+no en references/ (on-demand) ni en guidelines/ (on-demand).
+
+### Parámetro `description` del Agent tool
+
+**Convención:** minúscula consistente (sentence case — primera palabra y nombres propios).
+
+```python
+# Correcto
+Agent(description="deep-review de permisos en claude-howto", ...)
+Agent(description="análisis de cobertura Phase 3 → Phase 4", ...)
+
+# Incorrecto
+Agent(description="Deep-review de permisos...", ...)
+Agent(description="ANÁLISIS DE COBERTURA...", ...)
+```
+
+**Respaldo documental:**
+- claude-howto `STYLE_GUIDE.md:144` — P3.1: sentence case para todos los encabezados y labels
+- claude-code-ultimate-guide — ningún repo documenta explícitamente este parámetro,
+  pero el ecosistema usa minúsculas para todos los valores de configuración
+  (model names: `sonnet`, effort values: `low/medium/high`, kebab-case names)
+- Fuente: `conventions-review-claude-howto.md` y `conventions-review-ultimate-guide.md`
+  en WP `2026-04-14-09-13-51-context-migration/`
 
 ## Configuración del Proyecto
 
