@@ -318,7 +318,7 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "echo 'phase: Phase 1' >> .claude/context/now.md"
+    command: "echo 'phase: Phase 1' >> .thyrox/context/now.md"
 updated_at: YYYY-MM-DD HH:MM:SS
 ---
 ```

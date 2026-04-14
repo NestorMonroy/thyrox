@@ -33,7 +33,7 @@ Ver [memory-hierarchy.md](memory-hierarchy.md) para detalles de precedencia y ca
 El patrón más usado en THYROX: archivos de estado efímero que persisten entre mensajes.
 
 ```
-.claude/context/
+.thyrox/context/
 ├── now.md          ← Estado de la sesión actual (qué está pasando AHORA)
 ├── focus.md        ← Dirección del proyecto (objetivo de largo plazo)
 └── project-state.md ← Metadata del proyecto (FASE actual, etc.)

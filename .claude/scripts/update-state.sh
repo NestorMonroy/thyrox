@@ -11,7 +11,7 @@
 #   ROADMAP.md                → FASEs completadas
 #
 # Escribe:
-#   .claude/context/project-state.md
+#   .thyrox/context/project-state.md
 
 set -euo pipefail
 
@@ -20,7 +20,7 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 AGENTS_DIR="${PROJECT_ROOT}/.claude/agents"
 CHANGELOG="${PROJECT_ROOT}/CHANGELOG.md"
 ROADMAP="${PROJECT_ROOT}/ROADMAP.md"
-OUTPUT="${PROJECT_ROOT}/.claude/context/project-state.md"
+OUTPUT="${PROJECT_ROOT}/.thyrox/context/project-state.md"
 DRY_RUN=false
 TODAY=$(date '+%Y-%m-%d %H:%M:%S')
 
@@ -117,7 +117,7 @@ Ver ROADMAP.md para detalle de cada FASE.
 
 ## Deuda técnica registrada
 
-Ver \`.claude/context/technical-debt.md\` para TD-001 a TD-007.
+Ver \`.thyrox/context/technical-debt.md\` para TD-001 a TD-007.
 
 ---
 

@@ -18,7 +18,7 @@ Toma la siguiente tarea pendiente del work package activo y la ejecuta.
 
 ## Contexto de sesión
 
-1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
+1. Identificar WP activo: `ls -t .thyrox/context/work/ | head -1`
 2. Leer `*-task-plan.md` del WP activo
 3. Encontrar la siguiente tarea pendiente: primera línea con `- [ ] [T-`
 4. Leer `context/now.md` — verificar `phase`
@@ -100,7 +100,7 @@ Claude DEBE preguntar antes cuando: la tarea no estaba en el plan, el cambio es 
   - [ ] `ROADMAP.md` — checkboxes de la FASE actual actualizados
   - [ ] Stopping Point Manifest — SP-NNN de Phase 6 marcados como `si`
 - **TD-029 criterios**: todos los ítems del pre-flight en `[x]`
-- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+- **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
 Si algún ítem falla → corregir antes de avanzar.
 
 ---

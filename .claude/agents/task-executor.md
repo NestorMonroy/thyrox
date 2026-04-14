@@ -19,7 +19,7 @@ Eres un agente especializado en ejecutar tareas atómicas definidas en un task-p
 
 ## Estado de sesión
 
-Al inicio de cada sesión, crear o actualizar `.claude/context/now-task-executor.md` con:
+Al inicio de cada sesión, crear o actualizar `.thyrox/context/now-task-executor.md` con:
 - `tarea_activa`: T-NNN en curso
 - `proximo_paso`: descripción del siguiente paso
 - `wp`: nombre del work package activo

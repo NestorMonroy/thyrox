@@ -67,10 +67,10 @@
       "prompt": "Ya hicimos el análisis de requisitos y stakeholders. ¿Qué falta para completar el análisis?",
       "context_setup": {
         "files": {
-          ".claude/context/focus.md": "Phase 1 ANALYZE en progreso. Requisitos y stakeholders documentados.",
-          ".claude/context/now.md": "cold_boot: false\nlast_session: 2026-03-28\ncurrent_work: work/2026-03-28-100000-inventario/\nphase: analyze\nblockers: []",
-          ".claude/context/work/2026-03-28-100000-inventario/analysis/requirements.md": "# Requisitos\n- R-01: CRUD productos\n- R-02: Control de stock\n- R-03: Alertas stock bajo",
-          ".claude/context/work/2026-03-28-100000-inventario/analysis/stakeholders.md": "# Stakeholders\n- Dueño de tienda (decision maker)\n- 2 empleados (end users)"
+          ".thyrox/context/focus.md": "Phase 1 ANALYZE en progreso. Requisitos y stakeholders documentados.",
+          ".thyrox/context/now.md": "cold_boot: false\nlast_session: 2026-03-28\ncurrent_work: work/2026-03-28-100000-inventario/\nphase: analyze\nblockers: []",
+          ".thyrox/context/work/2026-03-28-100000-inventario/analysis/requirements.md": "# Requisitos\n- R-01: CRUD productos\n- R-02: Control de stock\n- R-03: Alertas stock bajo",
+          ".thyrox/context/work/2026-03-28-100000-inventario/analysis/stakeholders.md": "# Stakeholders\n- Dueño de tienda (decision maker)\n- 2 empleados (end users)"
         },
         "description": "Phase 1 parcialmente completada: requisitos y stakeholders hechos, faltan constraints, context, quality-goals, use-cases"
       },

@@ -343,4 +343,4 @@ Write tool (sintesis directa)
 - [stream-resilience.md](stream-resilience.md) — Recovery patterns y configuracion preventiva
 - [long-running-calls.md](long-running-calls.md) — Estrategias para llamadas largas
 - [hooks.md](hooks.md) — StopFailure y otros eventos de error
-- Analisis FASE 33: `.claude/context/work/2026-04-13-19-18-59-ishikawa-stream-analysis/analysis/ishikawa-stream-analysis.md`
+- Analisis FASE 33: `.thyrox/context/work/2026-04-13-19-18-59-ishikawa-stream-analysis/analysis/ishikawa-stream-analysis.md`

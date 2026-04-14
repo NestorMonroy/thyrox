@@ -5,7 +5,7 @@
 # Fix de Bug 4: cierre determinista, no LLM-dependiente
 # Nota: no modifica cold_boot, last_session ni blockers (gestionados por session-start.sh)
 
-NOW_FILE=".claude/context/now.md"
+NOW_FILE=".thyrox/context/now.md"
 DATE=$(date '+%Y-%m-%d %H:%M:%S')
 
 if [ ! -f "$NOW_FILE" ]; then

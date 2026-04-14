@@ -20,7 +20,7 @@ setup() {
     local name="$1"
     local dir="${WORKSPACE}/${name}"
     rm -rf "$dir"
-    mkdir -p "$dir/.claude/context/work" "$dir/.git"
+    mkdir -p "$dir/.thyrox/context/work" "$dir/.git"
     echo "ref: refs/heads/main" > "$dir/.git/HEAD"
     echo "$dir"
 }
@@ -28,7 +28,7 @@ setup() {
 make_wp() {
     local root="$1"
     local wp_name="${2:-2026-04-01-00-00-00-test-feature}"
-    local wp_dir="${root}/.claude/context/work/${wp_name}"
+    local wp_dir="${root}/.thyrox/context/work/${wp_name}"
     mkdir -p "${wp_dir}/analysis"
     echo "$wp_dir"
 }

@@ -441,7 +441,7 @@ Next: Task Z (ready to start)
 
 ## Architectural Decisions
 
-Use [.claude/context/decisions](../../../context/decisions.md) to document ADRs:
+Use [.thyrox/context/decisions](../../../context/decisions.md) to document ADRs:
 
 ```markdown
 # Architectural Decision Records
@@ -740,7 +740,7 @@ Los archivos vivos (ROADMAP.md, CHANGELOG.md, technical-debt.md) se degradan en 
 
 **Archivos a monitorear:** `ROADMAP.md`, `CHANGELOG.md`, `technical-debt.md`.
 
-**Trigger de revisión:** cada 5 FASEs, ejecutar: `wc -c ROADMAP.md CHANGELOG.md .claude/context/technical-debt.md`
+**Trigger de revisión:** cada 5 FASEs, ejecutar: `wc -c ROADMAP.md CHANGELOG.md .thyrox/context/technical-debt.md`
 
 ---
 

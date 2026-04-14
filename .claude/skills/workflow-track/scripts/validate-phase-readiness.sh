@@ -22,7 +22,7 @@ fi
 
 # Auto-detect latest work package if not provided
 if [ -z "$WP_DIR" ]; then
-    WP_DIR=$(find "$REPO_ROOT/.claude/context/work" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -r | head -1)
+    WP_DIR=$(find "$REPO_ROOT/.thyrox/context/work" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -r | head -1)
 fi
 
 BOLD='\033[1m'

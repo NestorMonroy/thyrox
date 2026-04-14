@@ -90,22 +90,22 @@ run_MI01() {
     local dir
     dir=$(setup_workspace "MI-01")
 
-    mkdir -p "$dir/.claude/context/work/2026-03-25-100000-migracion-db"
+    mkdir -p "$dir/.thyrox/context/work/2026-03-25-100000-migracion-db"
 
-    cat > "$dir/.claude/context/focus.md" << 'EOF'
+    cat > "$dir/.thyrox/context/focus.md" << 'EOF'
 # Focus
 Dirección: migración de base de datos PostgreSQL a nueva versión.
 Phase 6 en progreso. T-002 completado.
 EOF
 
-    cat > "$dir/.claude/context/now.md" << 'EOF'
+    cat > "$dir/.thyrox/context/now.md" << 'EOF'
 cold_boot: false
 last_session: 2026-03-27
 current_work: work/2026-03-25-100000-migracion-db/
 phase: execute
 EOF
 
-    cat > "$dir/.claude/context/work/2026-03-25-100000-migracion-db/plan.md" << 'EOF'
+    cat > "$dir/.thyrox/context/work/2026-03-25-100000-migracion-db/plan.md" << 'EOF'
 # Plan: Migración DB
 
 - [x] [T-001] Backup de datos existentes (R-01)
@@ -136,7 +136,7 @@ run_MI02() {
     local dir
     dir=$(setup_workspace "MI-02")
 
-    cat > "$dir/.claude/context/focus.md" << 'EOF'
+    cat > "$dir/.thyrox/context/focus.md" << 'EOF'
 # Focus
 5 work packages completados. Proyecto de e-commerce en desarrollo.
 
@@ -144,7 +144,7 @@ run_MI02() {
 Implementar sistema de pagos (Phase 3: PLAN pendiente).
 EOF
 
-    cat > "$dir/.claude/context/now.md" << 'EOF'
+    cat > "$dir/.thyrox/context/now.md" << 'EOF'
 cold_boot: true
 last_session: 2026-03-20
 current_work: null
@@ -186,21 +186,21 @@ run_MI05() {
     local dir
     dir=$(setup_workspace "MI-05")
 
-    mkdir -p "$dir/.claude/context/work/2026-03-27-090000-auth-system"
+    mkdir -p "$dir/.thyrox/context/work/2026-03-27-090000-auth-system"
 
-    cat > "$dir/.claude/context/focus.md" << 'EOF'
+    cat > "$dir/.thyrox/context/focus.md" << 'EOF'
 # Focus
 Auth system en Phase 6. T-005 completado. Siguiente: T-006 refresh tokens.
 EOF
 
-    cat > "$dir/.claude/context/now.md" << 'EOF'
+    cat > "$dir/.thyrox/context/now.md" << 'EOF'
 cold_boot: false
 last_session: 2026-03-27
 current_work: work/2026-03-27-090000-auth-system/
 phase: execute
 EOF
 
-    cat > "$dir/.claude/context/work/2026-03-27-090000-auth-system/plan.md" << 'EOF'
+    cat > "$dir/.thyrox/context/work/2026-03-27-090000-auth-system/plan.md" << 'EOF'
 # Plan: Sistema de Autenticación
 
 - [x] [T-001] Setup proyecto base (R-01)
@@ -236,15 +236,15 @@ run_MI13() {
     local dir
     dir=$(setup_workspace "MI-13")
 
-    mkdir -p "$dir/.claude/context/work/2026-03-27-090000-auth-system"
+    mkdir -p "$dir/.thyrox/context/work/2026-03-27-090000-auth-system"
 
-    cat > "$dir/.claude/context/focus.md" << 'EOF'
+    cat > "$dir/.thyrox/context/focus.md" << 'EOF'
 # Focus
 Auth system. T-006 refresh tokens FALLÓ.
 Error: token expiry calculation incorrect — tests failing.
 EOF
 
-    cat > "$dir/.claude/context/now.md" << 'EOF'
+    cat > "$dir/.thyrox/context/now.md" << 'EOF'
 cold_boot: false
 last_session: 2026-03-28
 current_work: work/2026-03-27-090000-auth-system/
@@ -252,7 +252,7 @@ phase: execute
 blockers: [T-006 failed]
 EOF
 
-    cat > "$dir/.claude/context/work/2026-03-27-090000-auth-system/plan.md" << 'EOF'
+    cat > "$dir/.thyrox/context/work/2026-03-27-090000-auth-system/plan.md" << 'EOF'
 # Plan: Sistema de Autenticación
 
 - [x] [T-001] Setup proyecto base (R-01)
@@ -285,21 +285,21 @@ run_MI21() {
     local dir
     dir=$(setup_workspace "MI-21")
 
-    mkdir -p "$dir/.claude/context/work/2026-03-28-inventario/analysis"
+    mkdir -p "$dir/.thyrox/context/work/2026-03-28-inventario/analysis"
 
-    cat > "$dir/.claude/context/focus.md" << 'EOF'
+    cat > "$dir/.thyrox/context/focus.md" << 'EOF'
 # Focus
 Sistema de inventario. Phase 1 ANALYZE completado.
 EOF
 
-    cat > "$dir/.claude/context/now.md" << 'EOF'
+    cat > "$dir/.thyrox/context/now.md" << 'EOF'
 cold_boot: false
 last_session: 2026-03-28
 current_work: work/2026-03-28-inventario/
 phase: analyze (completed)
 EOF
 
-    cat > "$dir/.claude/context/work/2026-03-28-inventario/analysis/requirements.md" << 'EOF'
+    cat > "$dir/.thyrox/context/work/2026-03-28-inventario/analysis/requirements.md" << 'EOF'
 # Análisis: Sistema de Inventario
 
 ## Respuestas del usuario
@@ -334,21 +334,21 @@ run_MI22() {
     local dir
     dir=$(setup_workspace "MI-22")
 
-    mkdir -p "$dir/.claude/context/work/2026-03-26-cache-system"
+    mkdir -p "$dir/.thyrox/context/work/2026-03-26-cache-system"
 
-    cat > "$dir/.claude/context/focus.md" << 'EOF'
+    cat > "$dir/.thyrox/context/focus.md" << 'EOF'
 # Focus
 Sistema de caché Redis en Phase 6. T-003 completado.
 EOF
 
-    cat > "$dir/.claude/context/now.md" << 'EOF'
+    cat > "$dir/.thyrox/context/now.md" << 'EOF'
 cold_boot: false
 last_session: 2026-03-28
 current_work: work/2026-03-26-cache-system/
 phase: execute
 EOF
 
-    cat > "$dir/.claude/context/work/2026-03-26-cache-system/plan.md" << 'EOF'
+    cat > "$dir/.thyrox/context/work/2026-03-26-cache-system/plan.md" << 'EOF'
 # Plan: Sistema de Caché Redis
 
 - [x] [T-001] Evaluar Redis vs Memcached (R-01)

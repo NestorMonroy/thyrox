@@ -861,7 +861,7 @@ hooks:                               # Opcional. Hooks del lifecycle de este ski
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "echo 'skill activado' >> .claude/context/now.md"
+    command: "echo 'skill activado' >> .thyrox/context/now.md"
 paths: "src/**/*.ts"                 # Opcional. Ver §Activación condicional.
 ---
 ```

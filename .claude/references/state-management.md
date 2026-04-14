@@ -40,9 +40,9 @@ phase: Phase 1
 updated_at: YYYY-MM-DD HH:MM:SS
 ```
 
-> `current_work` es relativo a `.claude/context/` — NO al repo root.
+> `current_work` es relativo a `.thyrox/context/` — NO al repo root.
 > `validate-session-close.sh` construye: `CONTEXT_DIR + "/" + current_work`.
-> Si escribes `context/work/...` el path queda duplicado: `.claude/context/context/work/...` (roto).
+> Si escribes `context/work/...` el path queda duplicado: `.thyrox/context/context/work/...` (roto).
 
 ### `now.md` — al cerrar WP (Phase 7)
 ```yaml
@@ -104,4 +104,4 @@ No requieren confirmación adicional después del gate de fase. Ver [permission-
 > Si `now.md::current_work` es incorrecto, el hook arranca con el WP equivocado.
 > Actualizar `now.md` es la operación de mayor impacto en la continuidad de sesión.
 
-> `current_work` es siempre relativo a `.claude/context/` — usar `work/TIMESTAMP-nombre/`, nunca `context/work/TIMESTAMP-nombre/`.
+> `current_work` es siempre relativo a `.thyrox/context/` — usar `work/TIMESTAMP-nombre/`, nunca `context/work/TIMESTAMP-nombre/`.

@@ -117,7 +117,7 @@ Bash("git log --oneline -5")
 Bash("npm install")
 Bash("python script.py")
 Bash("date '+%Y-%m-%d %H:%M:%S'")
-Bash("mkdir -p .claude/context/work/nuevo-wp/")
+Bash("mkdir -p .thyrox/context/work/nuevo-wp/")
 
 # MAL — hay herramienta dedicada
 Bash("cat file.md")        # → Read("file.md")

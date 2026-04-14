@@ -18,7 +18,7 @@ Documenta lecciones aprendidas, genera changelog, y cierra el work package activ
 
 ## Contexto de sesión
 
-1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
+1. Identificar WP activo: `ls -t .thyrox/context/work/ | head -1`
 2. Revisar progreso: `bash .claude/scripts/project-status.sh`
 3. Verificar que todas las tareas están `[x]` en `*-task-plan.md`
 4. Leer `context/now.md` — verificar `phase`
@@ -81,7 +81,7 @@ Ver `../../references/state-management.md` para tabla de triggers completa.
 Antes de marcar Phase 7 completa:
 - **TD-031 deep review**: revisar pre-flight de Phase 6 — ¿`validate-session-close.sh` pasa? ¿todos los artefactos existen?
 - **TD-029 criterios**: lessons-learned · {wp}-changelog · risk-register actualizado · TDs movidos si aplica · estado actualizado
-- **TD-033 now.md**: `git add .claude/context/now.md` antes del commit de cierre de FASE
+- **TD-033 now.md**: `git add .thyrox/context/now.md` antes del commit de cierre de FASE
 
 ---
 

@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
-version: 3.3
-updated_at: 2026-04-14 16:51:48
+version: 3.4
+updated_at: 2026-04-14 20:15:00
 ```
 
 # CLAUDE.md — THYROX
@@ -22,7 +22,8 @@ Los ADRs del proyecto viven en el path declarado por `adr_path` en este archivo 
    *Addendum FASE 23:* Nomenclatura resuelta a kebab-case hyphens — `workflow-*/SKILL.md`. TD-019 cerrado (FASE 23).
    *Addendum FASE 29:* Skill renombrado → `thyrox` (prefijo `pm-` eliminado — no es PM de PMI, es la metodología THYROX misma). TD-020 cerrado (FASE 29).
    *Addendum FASE 31:* Interfaz pública del framework → `/thyrox:*` (plugin namespace via `.claude-plugin/plugin.json`). Los 7 `workflow-*` skills permanecen como implementación interna. Capa de presentación complementa ADR-016. Ver ADR-019. TD-036 cerrado (FASE 31).
-6. **Work packages with timestamp** — context/work/YYYY-MM-DD-HH-MM-SS-nombre/
+   *Addendum FASE 35:* Estado de sesión y work packages migrados a `.thyrox/context/` — fuera de `.claude/` (zona de configuración de Claude Code). Ver ADR en `.thyrox/context/decisions/`.
+6. **Work packages with timestamp** — `.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
 7. **Conventional Commits** — `type(scope): description`
 
 ## SKILL vs ADR — Regla de uso
@@ -41,25 +42,35 @@ REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
 ## Estructura
 
 ```
-.claude/
-├── CLAUDE.md              ← Este archivo (Level 2)
-├── agents/                ← Agentes nativos Claude Code (ver references/agent-spec.md)
-├── commands/              ← Comandos slash disponibles (sin frontmatter, sin disparo automático)
-├── context/
-│   ├── project-state.md   ← Metadata del proyecto
-│   ├── focus.md           ← Dirección actual
-│   ├── now.md             ← Estado de sesión single-agent
-│   ├── now-{agent-id}.md  ← Estado por agente (ejecución paralela)
-│   ├── decisions/         ← ADRs (global/ api/ db/ ui/ deploy/ framework/ + raíz legacy)
-│   └── work/              ← Paquetes de trabajo (YYYY-MM-DD-HH-MM-SS-nombre/)
-├── guidelines/            ← Directivas siempre cargadas (generadas por registry, no on-demand)
-├── memory/                ← Memoria persistente entre sesiones
-├── references/            ← Documentación global de plataforma Claude Code (on-demand)
-├── registry/              ← Registro de tech skills y agentes
-├── scripts/               ← Scripts de infraestructura Claude Code (hooks, utilidades)
-└── skills/                ← Skills del framework (thyrox + workflow-*)
-    └── thyrox/            ← El SKILL (Level 1): SKILL.md + references/ + scripts/ + assets/
+.claude/                       ← Configuración y extensiones de Claude Code (solo esto)
+├── CLAUDE.md                  ← Este archivo (Level 2)
+├── agents/                    ← Agentes nativos Claude Code (ver references/agent-spec.md)
+├── commands/                  ← Comandos slash disponibles (sin frontmatter, sin disparo automático)
+├── guidelines/                ← Directivas siempre cargadas (generadas por registry, no on-demand)
+├── memory/                    ← Memoria persistente entre sesiones
+├── references/                ← Documentación global de plataforma Claude Code (on-demand)
+├── registry/                  ← Registro de tech skills y agentes
+├── scripts/                   ← Scripts de infraestructura Claude Code (hooks, utilidades)
+└── skills/                    ← Skills del framework (thyrox + workflow-*)
+    └── thyrox/                ← El SKILL (Level 1): SKILL.md + references/ + scripts/ + assets/
+
+.thyrox/                       ← Estado de trabajo del proyecto (fuera de .claude/)
+└── context/                   ← Estado de sesión y artefactos de trabajo
+    ├── project-state.md       ← Metadata del proyecto
+    ├── focus.md               ← Dirección actual
+    ├── now.md                 ← Estado de sesión single-agent
+    ├── now-{agent-id}.md      ← Estado por agente (ejecución paralela)
+    ├── decisions/             ← ADRs (raíz legacy — nuevos proyectos usar subdirs por capa)
+    ├── errors/                ← Registros de errores (ERR-NNN)
+    ├── research/              ← Investigaciones y sandboxes
+    ├── technical-debt.md      ← Backlog de deuda técnica
+    └── work/                  ← Paquetes de trabajo (YYYY-MM-DD-HH-MM-SS-nombre/)
 ```
+
+**Por qué `.thyrox/` y no `.claude/context/`:**
+`.claude/` está protegido por una safety invariant del binario de Claude Code — genera un prompt
+de confirmación en cada escritura, incluso con `acceptEdits`. El estado de sesión (now.md, work packages)
+se escribe frecuentemente: la solución correcta es moverlo fuera de `.claude/`. Ver FASE 35 y ADR al respecto.
 
 ## Reglas de edición — OBLIGATORIO
 
@@ -69,20 +80,20 @@ Aplicar en TODA edición de archivo, sin excepción:
 
 2. **Un solo Edit por archivo** — Nunca hacer dos Edits separados al mismo archivo: uno para el contenido y otro para `updated_at`. Ambos cambios van en la misma llamada.
 
-3. **`updated_at` no aplica a artefactos WP** — Los archivos en `context/work/` tienen `created_at` en su frontmatter y no se actualizan como documentos vivos. No agregar `updated_at` donde no existía.
+3. **`updated_at` no aplica a artefactos WP** — Los archivos en `.thyrox/context/work/` tienen `created_at` en su frontmatter y no se actualizan como documentos vivos. No agregar `updated_at` donde no existía.
 
 ## Flujo de sesión — OBLIGATORIO
 
 SIEMPRE seguir este flujo. NO omitir pasos.
 
-1. **Inicio** — Leer focus.md + now.md + ROADMAP.md.
+1. **Inicio** — Leer `.thyrox/context/focus.md` + `.thyrox/context/now.md` + ROADMAP.md.
 2. **Activar SKILL** — ANTES de responder cualquier tarea: invocar Skill tool → thyrox.
    Si el Skill tool no está disponible: leer [SKILL.md](skills/thyrox/SKILL.md) completo y seguirlo paso a paso.
-3. **Identificar fase activa** — Revisar `context/work/`:
+3. **Identificar fase activa** — Revisar `.thyrox/context/work/`:
    - Hay work package activo → continuar en la fase donde quedó.
    - No hay work package → empezar Phase 1: ANALYZE.
 4. **Trabajar** — Seguir cada fase hasta su exit criteria. NO saltarse fases. Commits convencionales. Actualizar ROADMAP.md.
-5. **Cierre** — Actualizar focus.md + now.md.
+5. **Cierre** — Actualizar `.thyrox/context/focus.md` + `.thyrox/context/now.md`.
 
 ## Multi-skill orchestration
 
@@ -92,9 +103,9 @@ Reglas cuando hay más de un skill activo en la misma sesión.
 - **Cuándo secuenciar:** Si skill B necesita output de skill A (e.g. tech-detector → python-mcp), ejecutar A hasta completar y commitear antes de activar B.
 - **Section owners disjuntos:** Cada skill escribe en archivos distintos. Si dos skills necesitan tocar el mismo archivo, uno lo hace y el otro espera (o usa una sección marcada con `<!-- SECTION OWNER: {skill} -->`).
 - **Naming de state files por skill:**
-  - Orquestador / estado compartido → `context/now.md`
-  - Agente nativo en ejecución → `context/now-{agent-name}.md` (e.g. `now-task-executor.md`)
-  - Skill especializado → `context/now-{skill-name}-{wp-id}.md` (e.g. `now-security-audit-wp-auth.md`)
+  - Orquestador / estado compartido → `.thyrox/context/now.md`
+  - Agente nativo en ejecución → `.thyrox/context/now-{agent-name}.md` (e.g. `now-task-executor.md`)
+  - Skill especializado → `.thyrox/context/now-{skill-name}-{wp-id}.md` (e.g. `now-security-audit-wp-auth.md`)
 
 ## Convenciones de escritura — OBLIGATORIO
 
@@ -127,7 +138,7 @@ Agent(description="ANÁLISIS DE COBERTURA...", ...)
 
 ## Configuración del Proyecto
 
-adr_path: .claude/context/decisions/   # THYROX: retrocompat. Nuevos proyectos: usar subdirectorios por capa (global/, api/, db/, ui/, deploy/, framework/)
+adr_path: .thyrox/context/decisions/   # THYROX: retrocompat. Nuevos proyectos: usar subdirectorios por capa (global/, api/, db/, ui/, deploy/, framework/)
 
 ## Glosario
 
@@ -135,7 +146,7 @@ adr_path: .claude/context/decisions/   # THYROX: retrocompat. Nuevos proyectos: 
 |---------|-------------|---------|
 | **FASE N** | Unidad de trabajo del proyecto — número secuencial global. Cada WP ocupa una FASE. | FASE 19: async-gates · FASE 20: context-hygiene |
 | **Phase N** | Etapa del ciclo SDLC dentro de un WP (1-ANALYZE … 7-TRACK). Se reinicia en cada FASE. | FASE 20 está en Phase 6: EXECUTE |
-| **WP** | Work package — directorio `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` que contiene todos los artefactos de una FASE | `context/work/2026-04-08-02-05-03-context-hygiene/` |
+| **WP** | Work package — directorio `.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/` que contiene todos los artefactos de una FASE | `.thyrox/context/work/2026-04-08-02-05-03-context-hygiene/` |
 | **SP-NNN** | Stopping Point — punto de parada explícito definido en el Stopping Point Manifest de Phase 1 | SP-06: gate 6→7, esperar aprobación humana |
 
 **Regla mnemotécnica:** FASE es el "qué proyecto", Phase es el "en qué paso del proyecto".
@@ -144,6 +155,6 @@ Un proyecto con 20 FASEs tiene 20 WPs; cada WP recorre hasta 7 Phases internamen
 ## Para más contexto
 
 - Metodología completa: [SKILL](skills/thyrox/SKILL.md)
-- Estado del proyecto: [project-state](context/project-state.md)
-- Decisiones: [decisions](context/decisions.md)
+- Estado del proyecto: [project-state](.thyrox/context/project-state.md)
+- Decisiones: [decisions](.thyrox/context/decisions.md)
 - Convenciones: [conventions](references/conventions.md)

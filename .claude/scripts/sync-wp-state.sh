@@ -5,7 +5,7 @@
 # Fix de Bug 2: current_work se actualiza deterministicamente, no via instruccion LLM
 
 INPUT=$(cat)
-NOW_FILE=".claude/context/now.md"
+NOW_FILE=".thyrox/context/now.md"
 
 # Extraer file_path — jq con fallback a python3
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
@@ -16,7 +16,7 @@ if [ -z "$FILE_PATH" ]; then
 fi
 
 # Si no se pudo extraer o no es archivo WP, salir sin cambios
-if [[ "$FILE_PATH" != *"/.claude/context/work/"* ]]; then
+if [[ "$FILE_PATH" != *"/.thyrox/context/work/"* ]]; then
   exit 0
 fi
 

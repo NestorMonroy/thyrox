@@ -33,11 +33,11 @@ Ver [escalabilidad](references/scalability.md) para detalles y casos de borde.
 
 ## Contexto de sesión
 
-1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
+1. Identificar WP activo: `ls -t .thyrox/context/work/ | head -1`
 2. Leer `context/now.md` — verificar `phase` y `current_work`
 3. Listar tech skills activos: `ls .claude/skills/ | grep -v thyrox`
 4. Verificar si ya existe `*-analysis.md` en el WP:
-   - `ls .claude/context/work/[WP-activo]/analysis/ 2>/dev/null`
+   - `ls .thyrox/context/work/[WP-activo]/analysis/ 2>/dev/null`
    - Si existe sin `[NEEDS CLARIFICATION]` → Phase 1 ya completó. Proponer `/workflow-strategy`.
    - Si no existe → iniciar Phase 1.
 
@@ -97,7 +97,7 @@ Excepción: si el WP ya existe (retomar work package), saltar este gate.
 
 7. Si hay principios arquitectónicos globales: crear/actualizar `constitution.md` en la raíz
 
-8. ADR: crear solo si aplica (cambio de stack, nuevo patrón arquitectónico, decisión que afecta todos los WPs futuros). Path: `adr_path` en CLAUDE.md → `.claude/context/decisions/`
+8. ADR: crear solo si aplica (cambio de stack, nuevo patrón arquitectónico, decisión que afecta todos los WPs futuros). Path: `adr_path` en CLAUDE.md → `.thyrox/context/decisions/`
 
 9. REQUERIDO: Añadir `## Stopping Point Manifest` al final del `*-analysis.md`:
    - Registrar gates obligatorios: 1→2, 2→3, 4→5, 5→6, 6→7
@@ -115,7 +115,7 @@ Tech skills activos: si hay `frontend-react` investigar componentes; `backend-no
 Antes de presentar el gate 1→2:
 - **TD-031 deep review**: revisar `{nombre-wp}-analysis.md` — ¿cubre los 8 aspectos sin [NEEDS CLARIFICATION]?
 - **TD-029 criterios**: `{nombre-wp}-risk-register.md` existe · Stopping Point Manifest documentado · `now.md::phase = Phase 1`
-- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+- **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
 
 ## Gate humano
 

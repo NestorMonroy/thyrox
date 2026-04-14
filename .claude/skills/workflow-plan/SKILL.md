@@ -18,7 +18,7 @@ Inicia o retoma Phase 3 PLAN del work package activo.
 
 ## Contexto de sesión
 
-1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
+1. Identificar WP activo: `ls -t .thyrox/context/work/ | head -1`
 2. Leer `context/now.md` — verificar `phase`
 3. Verificar si ya existe `*-plan.md` con `[x] Scope aprobado`:
    - Si existe aprobado → Phase 3 ya completó. Proponer `/workflow-structure`.
@@ -64,7 +64,7 @@ Definir scope antes de estructurar previene scope creep.
 Antes de presentar el gate 3→4:
 - **TD-031 deep review**: revisar `{nombre-wp}-solution-strategy.md` de Phase 2 — ¿el scope refleja todas las decisiones?
 - **TD-029 criterios**: `{nombre-wp}-plan.md` existe · ROADMAP.md tiene el WP · scope sin ambigüedades pendientes
-- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+- **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
 
 ---
 

@@ -393,4 +393,4 @@ Error de stream detectado
 - [streaming-errors.md](streaming-errors.md) — Catalogo completo de errores con diagnostico
 - [long-running-calls.md](long-running-calls.md) — `--max-turns`, background agents, worktrees
 - [hooks.md](hooks.md) — Configuracion completa de hooks (StopFailure, SessionEnd)
-- FASE 33 analisis: `.claude/context/work/2026-04-13-19-18-59-ishikawa-stream-analysis/`
+- FASE 33 analisis: `.thyrox/context/work/2026-04-13-19-18-59-ishikawa-stream-analysis/`

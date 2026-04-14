@@ -18,8 +18,8 @@ Inicia o retoma Phase 2 SOLUTION_STRATEGY del work package activo.
 
 ## Contexto de sesión
 
-1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
-2. Leer analysis existente: `cat .claude/context/work/[WP]/analysis/*-analysis.md`
+1. Identificar WP activo: `ls -t .thyrox/context/work/ | head -1`
+2. Leer analysis existente: `cat .thyrox/context/work/[WP]/analysis/*-analysis.md`
 3. Leer `context/now.md` — verificar `phase`
 4. Verificar si ya existe `*-solution-strategy.md`:
    - Si existe con decisiones documentadas → Phase 2 ya completó. Proponer `/workflow-plan`.
@@ -63,7 +63,7 @@ Antes de presentar el gate 2→3:
 - **TD-031 deep review**: revisar `{nombre-wp}-analysis.md` de Phase 1 — ¿la estrategia responde a todos los hallazgos?
 - **TD-028 re-evaluación de tamaño**: ¿el WP sigue siendo micro/pequeño/mediano/grande? Si cambió, ajustar fases activas (ver tabla abajo)
 - **TD-029 criterios**: `{nombre-wp}-solution-strategy.md` existe con 5 secciones · ADRs creados si aplica
-- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+- **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
 
 ## Re-evaluación de tamaño post-estrategia
 

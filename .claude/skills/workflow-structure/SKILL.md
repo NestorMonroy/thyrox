@@ -18,7 +18,7 @@ Inicia o retoma Phase 4 STRUCTURE del work package activo.
 
 ## Contexto de sesión
 
-1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
+1. Identificar WP activo: `ls -t .thyrox/context/work/ | head -1`
 2. Leer plan y solution-strategy del WP para entender el scope
 3. Leer `context/now.md` — verificar `phase`
 4. Verificar si ya existe `*-requirements-spec.md` sin `[NEEDS CLARIFICATION]`:
@@ -59,7 +59,7 @@ NO avanzar si quedan ítems sin +o marcadores `[NEEDS CLARIFICATION]` sin resolv
 Antes de presentar el gate 4→5:
 - **TD-031 deep review**: revisar `{nombre-wp}-plan.md` de Phase 3 — ¿la spec cubre TODO el scope aprobado?
 - **TD-029 criterios**: spec sin `[NEEDS CLARIFICATION]` · spec-checklist 100% · diseño técnico si era complejo
-- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+- **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
 
 ## Gate humano
 

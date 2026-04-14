@@ -166,26 +166,26 @@ LAYERS = {
     4: {
         "name": "context activo",
         "files": [
-            ".claude/context/focus.md",
-            ".claude/context/now.md",
-            ".claude/context/project-state.md",
-            ".claude/context/technical-debt.md",
-            ".claude/context/decisions.md",
+            ".thyrox/context/focus.md",
+            ".thyrox/context/now.md",
+            ".thyrox/context/project-state.md",
+            ".thyrox/context/technical-debt.md",
+            ".thyrox/context/decisions.md",
         ],
     },
     5: {
         "name": "ADRs",
-        "patterns": [".claude/context/decisions/adr-*.md"],
+        "patterns": [".thyrox/context/decisions/adr-*.md"],
     },
     6: {
         "name": "error reports",
-        "patterns": [".claude/context/errors/ERR-*.md"],
+        "patterns": [".thyrox/context/errors/ERR-*.md"],
     },
     7: {
         "name": "WP activo thyrox-capabilities-integration",
         "patterns": [
-            ".claude/context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/**/*.md",
-            ".claude/context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/*.md",
+            ".thyrox/context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/**/*.md",
+            ".thyrox/context/work/2026-04-05-01-09-22-thyrox-capabilities-integration/*.md",
         ],
     },
 }

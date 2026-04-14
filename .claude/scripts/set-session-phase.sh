@@ -11,7 +11,7 @@ if [ -z "$1" ]; then
 fi
 
 PHASE="$1"
-NOW_FILE=".claude/context/now.md"
+NOW_FILE=".thyrox/context/now.md"
 DATE=$(date '+%Y-%m-%d %H:%M:%S')
 
 if [ ! -f "$NOW_FILE" ]; then

@@ -69,7 +69,7 @@ if [ -f "${CONTEXT_DIR}/now.md" ]; then
         WORK_PATH="${CONTEXT_DIR}/${CURRENT_WORK}"
         if [ -d "$WORK_PATH" ]; then
             # Check if there are commits today touching this work package
-            RECENT_COMMITS=$(git -C "$PROJECT_ROOT" log --oneline --since="$TODAY" -- ".claude/context/${CURRENT_WORK}" 2>/dev/null | wc -l)
+            RECENT_COMMITS=$(git -C "$PROJECT_ROOT" log --oneline --since="$TODAY" -- ".thyrox/context/${CURRENT_WORK}" 2>/dev/null | wc -l)
             if [ "$RECENT_COMMITS" -gt 0 ]; then
                 pass "Work package activo tiene $RECENT_COMMITS commits hoy"
             else

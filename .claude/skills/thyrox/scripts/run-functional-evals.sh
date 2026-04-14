@@ -66,12 +66,12 @@ run_FE01() {
     dir=$(setup_workspace "FE-01")
 
     # Simular un proyecto vacío (nuevo) — solo SKILL + CLAUDE.md
-    cat > "$dir/.claude/context/focus.md" << 'EOF'
+    cat > "$dir/.thyrox/context/focus.md" << 'EOF'
 # Focus
 Proyecto nuevo. Sin trabajo previo.
 EOF
 
-    cat > "$dir/.claude/context/now.md" << 'EOF'
+    cat > "$dir/.thyrox/context/now.md" << 'EOF'
 cold_boot: true
 last_session: null
 current_work: null
@@ -102,7 +102,7 @@ run_FE02() {
     dir=$(setup_workspace "FE-02")
 
     # Simular proyecto con progreso real
-    cat > "$dir/.claude/context/focus.md" << 'EOF'
+    cat > "$dir/.thyrox/context/focus.md" << 'EOF'
 # Focus
 API de pagos en desarrollo. Phase 6 en progreso.
 
@@ -117,7 +117,7 @@ API de pagos en desarrollo. Phase 6 en progreso.
 3. Tests de integración
 EOF
 
-    cat > "$dir/.claude/context/now.md" << 'EOF'
+    cat > "$dir/.thyrox/context/now.md" << 'EOF'
 cold_boot: true
 last_session: 2026-03-27
 current_work: work/2026-03-25-140000-pagos-stripe/
@@ -125,8 +125,8 @@ phase: execute
 blockers: []
 EOF
 
-    mkdir -p "$dir/.claude/context/work/2026-03-25-140000-pagos-stripe"
-    cat > "$dir/.claude/context/work/2026-03-25-140000-pagos-stripe/plan.md" << 'EOF'
+    mkdir -p "$dir/.thyrox/context/work/2026-03-25-140000-pagos-stripe"
+    cat > "$dir/.thyrox/context/work/2026-03-25-140000-pagos-stripe/plan.md" << 'EOF'
 # Plan: Integración Stripe
 
 - [x] [T-001] Configurar cuenta Stripe y API keys (R-01)
@@ -174,13 +174,13 @@ run_FE03() {
     dir=$(setup_workspace "FE-03")
 
     # Simular proyecto de app donde i18n tiene sentido
-    cat > "$dir/.claude/context/focus.md" << 'EOF'
+    cat > "$dir/.thyrox/context/focus.md" << 'EOF'
 # Focus
 App de e-commerce móvil. 30 pantallas en React Native.
 Textos hardcodeados en español. Se necesita soporte multi-idioma.
 EOF
 
-    cat > "$dir/.claude/context/now.md" << 'EOF'
+    cat > "$dir/.thyrox/context/now.md" << 'EOF'
 cold_boot: true
 last_session: 2026-03-27
 current_work: null

@@ -106,13 +106,13 @@ touch docs/ROADMAP.md
 
 ### Problema 2: Templates no instanciados
 
-**Ubicación**: `.claude/context/`
+**Ubicación**: `.thyrox/context/`
 **Archivos**: `exit-conditions.md`, `project.json`
 
 **Solución**:
 ```bash
 # Existen as .template in assets/, crear instancias
-cd /home/thyrox/.claude/context/
+cd /home/thyrox/.thyrox/context/
 cp ../skills/workflow-analyze/assets/exit-conditions.md.template exit-conditions.md
 cp ../skills/workflow-analyze/assets/project.json.template project.json
 ```
@@ -228,4 +228,4 @@ Potenciales features para futuras versiones:
 Para problemas o mejoras:
 1. Revisar el reporte detallado en `reference-validation-report.txt`
 2. Ejecutar con `--debug` para ver más detalle
-3. Revisar la estructura esperada en `.claude/context/`
+3. Revisar la estructura esperada en `.thyrox/context/`

@@ -18,7 +18,7 @@ Inicia o retoma Phase 5 DECOMPOSE del work package activo.
 
 ## Contexto de sesión
 
-1. Identificar WP activo: `ls -t .claude/context/work/ | head -1`
+1. Identificar WP activo: `ls -t .thyrox/context/work/ | head -1`
 2. Leer `*-requirements-spec.md` del WP para obtener los SPECs
 3. Leer `context/now.md` — verificar `phase`
 4. Verificar si ya existe `*-task-plan.md` con checkboxes `- [ ] [T-NNN]`:
@@ -68,7 +68,7 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 Antes de presentar el gate 5→6:
 - **TD-031 deep review**: revisar `{nombre-wp}-requirements-spec.md` de Phase 4 — ¿el task-plan cubre TODO lo especificado? ¿hay SPECs sin tareas?
 - **TD-029 criterios**: task-plan.md con checkboxes · DAG documentado · atomicidad verificada · cobertura SPEC→tarea 100%
-- **TD-033 now.md**: `git add .claude/context/now.md` antes de commits y gates
+- **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
 
 ## Gate humano
 

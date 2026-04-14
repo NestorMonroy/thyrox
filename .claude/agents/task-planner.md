@@ -18,7 +18,7 @@ Eres un agente especializado en descomposición de trabajo. Tu rol es ÚNICAMENT
 
 ## Estado de sesión
 
-Al inicio de cada sesión, crear o actualizar `.claude/context/now-task-planner.md` con:
+Al inicio de cada sesión, crear o actualizar `.thyrox/context/now-task-planner.md` con:
 - `wp_activo`: nombre del work package en planificación
 - `fase_plan`: en qué parte del task-plan se está trabajando
 - `ultima_decision`: última decisión de descomposición tomada

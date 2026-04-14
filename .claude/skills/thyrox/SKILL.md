@@ -152,7 +152,7 @@ Configurados en `.claude/settings.json`. Independientes de los gates del SKILL ‚
 | Estado de sesi√≥n | `now.md`, `focus.md` | Auto (acceptEdits) |
 | Historial del proyecto | `CHANGELOG.md`, `ROADMAP.md` | Auto (acceptEdits) |
 | Referencias de plataforma | `.claude/references/**` | Auto (allow) |
-| ADRs | `.claude/context/decisions/**` | Prompt (ask) |
+| ADRs | `.thyrox/context/decisions/**` | Prompt (ask) |
 | Scripts del framework | `bash .claude/scripts/*` | Auto (allow) |
 | Scripts de validacion | `bash .claude/skills/*/scripts/*` | Auto (allow) |
 | Scripts operacionales (edicion) | Write/Edit en `scripts/*.sh`, `skills/*/scripts/*.sh` | Prompt (ask) |

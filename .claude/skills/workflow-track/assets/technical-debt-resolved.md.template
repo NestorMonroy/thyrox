@@ -9,7 +9,7 @@ tds_resueltos: [N]
 # TDs Resueltos — {nombre-wp}
 
 > Registro de deudas técnicas cerradas o movidas durante este work package.
-> Fuente: `.claude/context/technical-debt.md` — entradas marcadas `[x]` o `[-]` por este WP.
+> Fuente: `.thyrox/context/technical-debt.md` — entradas marcadas `[x]` o `[-]` por este WP.
 
 ---
 
