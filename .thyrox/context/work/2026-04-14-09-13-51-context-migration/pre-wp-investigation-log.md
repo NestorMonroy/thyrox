@@ -196,6 +196,70 @@ mostró el archivo limpio, no hubo commit necesario.
 
 ---
 
+## Sesión 5 — Identificación definitiva de causa raíz
+
+### Tests post-reinicio (tercera ronda)
+
+| Archivo | Resultado |
+|---------|-----------|
+| `now.md` | ❌ Prompt (nueva sesión, misma regla) |
+| `focus.md` | ❌ Prompt |
+| `ROADMAP.md` | ✅ Automático (revertido después) |
+
+Patrón consistente: `Edit(/ROADMAP.md)` (raíz, no-dotfile) → auto.
+`Edit(/.claude/...)` → siempre prompt.
+
+### Agente claude-code-guide (respuesta parcialmente incorrecta)
+
+Se lanzó un agente especializado. Conclusión inicial del agente:
+> "Solo en `bypassPermissions` mode. En `acceptEdits` debe funcionarte con
+> `allow` rules explícitas."
+
+Esta respuesta era **incorrecta** — el agente no había encontrado la documentación
+de la safety invariant en la fuente correcta. Sirvió sin embargo para identificar
+las dos hipótesis a verificar en paralelo.
+
+### Hipótesis 1 — ~/.claude/settings.json con ask rules
+
+Verificado via Bash. Contenido confirmado:
+```json
+{ "permissions": { "allow": ["Skill"] } }
+```
+Sin `ask` rules ocultas. **Hipótesis 1 descartada.**
+
+### Hipótesis 2 — settings.local.json con mayor prioridad
+
+Glob encontró `.claude/settings.local.json`. Contenido: reglas `Bash` legacy de
+FASEs anteriores (operaciones puntuales). Sin `defaultMode`. **Sin conflicto.**
+**Hipótesis 2 descartada.**
+
+### Test de CHANGELOG.md (control definitivo)
+
+`CHANGELOG.md` (sin `allow` explícito, sin dotfile path) → **AUTOMÁTICO**.
+Confirmación: `acceptEdits` funciona correctamente para archivos fuera de `.claude/`.
+
+### Causa raíz identificada en esta sesión
+
+| Archivo | Ubicación | Resultado |
+|---------|-----------|-----------|
+| `CHANGELOG.md` | Raíz del proyecto | ✅ Auto (`acceptEdits`) |
+| `ROADMAP.md` | Raíz del proyecto | ✅ Auto (allow + `acceptEdits`) |
+| `now.md` | `.claude/context/` | ❌ allow explícito ignorado |
+| `focus.md` | `.claude/context/` | ❌ allow explícito ignorado |
+| `work/**/*.md` | `.claude/context/work/` | ❌ allow explícito ignorado |
+
+**Conclusión de sesión:** `.claude/` tiene protección especial — los allow explícitos
+son ignorados para paths bajo `/.claude/`. Hipótesis de trabajo: mecanismo de
+seguridad hardcodeado. Pendiente verificar en documentación externa.
+
+### Derivación a deep-review
+
+Para confirmar, se lanzó un deep-review sobre
+`/tmp/reference/claude-code-ultimate-guide/` buscando documentación de la
+safety invariant. Resultado documentado en `context-migration-analysis.md`.
+
+---
+
 ## Sesión 3 — Investigación de patrones glob en referencias
 
 ### Búsquedas ejecutadas
