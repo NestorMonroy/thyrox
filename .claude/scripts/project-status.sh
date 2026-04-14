@@ -81,3 +81,25 @@ if [ -f "${PROJECT_ROOT}/ROADMAP.md" ]; then
     echo "--- ROADMAP ---"
     grep -E '^\s*(FASE|FASE )' "${PROJECT_ROOT}/ROADMAP.md" 2>/dev/null | head -10 || true
 fi
+
+echo ""
+
+# 6. REGLA-LONGEV-001: alertar si archivos vivos superan 25,000 bytes
+echo "--- Tamaño archivos vivos ---"
+LONGEV_WARNED=0
+for f in \
+    "${PROJECT_ROOT}/ROADMAP.md" \
+    "${PROJECT_ROOT}/CHANGELOG.md" \
+    "${CONTEXT_DIR}/technical-debt.md" \
+    "${PROJECT_ROOT}/.claude/references/conventions.md"; do
+    [ -f "$f" ] || continue
+    size=$(wc -c < "$f")
+    label=$(basename "$f")
+    if [ "$size" -gt 25000 ]; then
+        echo "⚠ REGLA-LONGEV-001: $label supera 25,000 bytes (${size} bytes) — considerar split"
+        LONGEV_WARNED=1
+    else
+        echo "  ✓ $label: ${size} bytes"
+    fi
+done
+[ "$LONGEV_WARNED" -eq 0 ] && echo "  Todos los archivos vivos dentro del límite."
