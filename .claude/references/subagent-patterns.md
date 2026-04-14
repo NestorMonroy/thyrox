@@ -327,3 +327,281 @@ tools: Read, Bash(npm test:*), Bash(pytest:*)
 - [hook-output-control](hook-output-control.md) — Por qué PostToolUse no puede suprimir tool results
 - [agent-spec](agent-spec.md) — Spec formal de campos de agentes (obligatorios/prohibidos)
 - [edit-tool-silent-mode-finding](../context/work/2026-04-11-10-52-25-thyrox-commands-namespace/analysis/edit-tool-silent-mode-finding.md) — Investigación de TD-037 (RESUELTO)
+
+---
+
+## Ubicación de archivos y prioridad de carga
+
+Los archivos de subagentes pueden almacenarse en múltiples ubicaciones con distintos alcances:
+
+| Prioridad | Tipo | Ubicación | Alcance |
+|-----------|------|-----------|---------|
+| 1 (mayor) | **CLI-defined** | Via `--agents` flag (JSON) | Solo la sesión |
+| 2 | **Project subagents** | `.claude/agents/` | Proyecto actual |
+| 3 | **User subagents** | `~/.claude/agents/` | Todos los proyectos |
+| 4 (menor) | **Plugin agents** | Directorio `agents/` del plugin | Via plugins |
+
+Cuando hay nombres duplicados, la fuente de mayor prioridad prevalece. El comando `claude agents` muestra los overrides explícitamente.
+
+**CLI-based configuration** — Define agentes para una sola sesión sin crear archivos:
+
+```bash
+claude --agents '{
+  "code-reviewer": {
+    "description": "Expert code reviewer. Use proactively after code changes.",
+    "prompt": "You are a senior code reviewer. Focus on code quality, security, and best practices.",
+    "tools": ["Read", "Grep", "Glob", "Bash"],
+    "model": "sonnet"
+  }
+}'
+```
+
+---
+
+## Campos de configuración completos
+
+El frontmatter soporta más campos de los que muestra el checklist básico:
+
+| Campo | Requerido | Descripción |
+|-------|-----------|-------------|
+| `name` | Sí | Identificador único (lowercase, hyphens) |
+| `description` | Sí | Descripción de propósito. Incluir "use PROACTIVELY" para invocación automática |
+| `tools` | No | Lista de tools. Omitir = heredar todos. Soporta `Agent(name)` para restringir subagentes hijos |
+| `disallowedTools` | No | Lista de tools explícitamente prohibidos |
+| `model` | No | `sonnet`, `opus`, `haiku`, model ID completo, o `inherit`. Default: subagent model configurado |
+| `permissionMode` | No | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan` |
+| `maxTurns` | No | Máximo de turns agentic que puede ejecutar el subagente |
+| `skills` | No | Lista de skills a precargar — inyecta el contenido completo del skill al context del subagente al iniciar |
+| `mcpServers` | No | MCP servers disponibles para el subagente |
+| `hooks` | No | Hooks con alcance al componente (PreToolUse, PostToolUse, Stop) |
+| `memory` | No | Scope de memoria persistente: `user`, `project`, o `local` |
+| `background` | No | `true` = siempre correr como background task |
+| `effort` | No | Nivel de razonamiento: `low`, `medium`, `high`, o `max` |
+| `isolation` | No | `worktree` = dar al subagente su propio git worktree |
+| `initialPrompt` | No | Primer turn auto-enviado cuando el subagente corre como agente principal |
+
+**Nota:** En v2.1.63, la herramienta `Task` fue renombrada a `Agent`. Las referencias `Task(...)` existentes siguen funcionando como alias.
+
+### `disallowedTools` — bloqueo explícito
+
+```yaml
+---
+name: safe-analyzer
+description: Analizador de seguridad sin capacidad de modificación
+tools: Read, Grep, Glob
+disallowedTools: Write, Edit, Bash
+---
+```
+
+Útil cuando se quiere que el subagente herede tools del padre pero bloquear específicamente algunos.
+
+### `hooks` en subagentes — alcance por componente
+
+```yaml
+---
+name: audited-runner
+description: Runner con logging de seguridad
+tools: Read, Bash, Edit
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "./scripts/security-check.sh"
+---
+```
+
+Los hooks definidos en el frontmatter del subagente tienen alcance solo a ese subagente — no afectan al agente padre ni a otros subagentes.
+
+---
+
+## Subagentes built-in
+
+Claude Code incluye varios subagentes built-in siempre disponibles:
+
+| Agente | Modelo | Propósito |
+|--------|--------|-----------|
+| **general-purpose** | Hereda | Tareas complejas multi-step con exploración y modificación |
+| **Plan** | Hereda | Investigación de codebase para Plan Mode |
+| **Explore** | Haiku | Exploración read-only del codebase (rápido, bajo latencia) |
+| **Bash** | Hereda | Comandos de terminal en contexto separado |
+| **statusline-setup** | Sonnet | Configurar el status line de Claude Code |
+| **Claude Code Guide** | Haiku | Responder preguntas sobre features de Claude Code |
+
+### Explore — niveles de profundidad
+
+El subagente `Explore` acepta tres niveles de thoroughness explícitos:
+
+- **"quick"** — Búsquedas rápidas con exploración mínima, bueno para encontrar patrones específicos
+- **"medium"** — Exploración moderada, balance entre velocidad y completitud (default)
+- **"very thorough"** — Análisis comprensivo en múltiples ubicaciones y convenciones de naming, puede tardar más
+
+---
+
+## Gestión de subagentes
+
+### Comando `/agents` (recomendado)
+
+```bash
+/agents
+```
+
+Abre un menú interactivo para:
+- Ver todos los subagentes disponibles (built-in, user, project)
+- Crear nuevos subagentes con setup guiado
+- Editar subagentes existentes y su acceso a tools
+- Eliminar subagentes custom
+- Ver cuáles están activos cuando hay duplicados entre fuentes
+
+### Comando CLI `claude agents`
+
+```bash
+claude agents
+```
+
+Lista todos los agentes configurados agrupados por fuente (built-in, user-level, project-level). Indica **overrides** cuando un agente de mayor prioridad sombrea uno de menor prioridad con el mismo nombre.
+
+### Session-wide agent via `settings.json`
+
+Además del `--agent` flag en CLI, se puede configurar en `settings.json`:
+
+```json
+{
+  "agent": "code-reviewer"
+}
+```
+
+Toda la sesión usará ese agente como agente principal.
+
+---
+
+## Seguridad de subagentes en plugins
+
+Los subagentes provistos por plugins tienen restricciones en su frontmatter por seguridad. Los siguientes campos **no están permitidos** en definiciones de subagentes de plugins:
+
+- `hooks` — No pueden definir lifecycle hooks
+- `mcpServers` — No pueden configurar MCP servers
+- `permissionMode` — No pueden override de permission settings
+
+Esto previene que plugins escalen privilegios o ejecuten comandos arbitrarios vía hooks de subagentes.
+
+---
+
+## Auto-compactación de contexto
+
+El contexto de un subagente se compacta automáticamente al alcanzar ~95% de capacidad. Para override:
+
+```bash
+export CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80
+```
+
+Útil para subagentes de larga duración que necesitan más margen antes de compactar.
+
+---
+
+## Agent Teams — campos adicionales (complementa Patrón 7)
+
+### Habilitar via `settings.json`
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+### Modos de display
+
+| Modo | Flag | Descripción |
+|------|------|-------------|
+| **auto** | `--teammate-mode auto` | Elige automáticamente el mejor modo para el terminal |
+| **in-process** (default) | `--teammate-mode in-process` | Output inline en el terminal actual |
+| **split-panes** | `--teammate-mode tmux` | Abre cada teammate en un pane separado de tmux o iTerm2 |
+
+```bash
+claude --teammate-mode tmux
+```
+
+O via `settings.json`:
+
+```json
+{
+  "teammateMode": "tmux"
+}
+```
+
+**Restricción:** Split-pane mode requiere tmux o iTerm2. No disponible en VS Code terminal, Windows Terminal, ni Ghostty.
+
+**Navegación:** `Shift+Down` para navegar entre teammates en split-pane mode.
+
+**Almacenamiento de configuración de teams:** `~/.claude/teams/{team-name}/config.json`
+
+### Plan approval workflow
+
+Para tareas complejas, el Team Lead crea un plan de ejecución antes de que los teammates comiencen. El usuario revisa y aprueba el plan, garantizando que el enfoque del equipo sea correcto antes de hacer cambios al código.
+
+### Limitaciones documentadas
+
+| Limitación | Descripción |
+|------------|-------------|
+| Sin session resumption | Teammates in-process no pueden reanudarse al terminar la sesión |
+| Un equipo por sesión | No se pueden crear equipos anidados ni múltiples equipos en la misma sesión |
+| Liderazgo fijo | El rol de Team Lead no puede transferirse a un teammate |
+| Sin cross-session teams | Los teammates existen solo dentro de la sesión actual |
+| Split-pane restrictions | Requiere tmux/iTerm2; no disponible en VS Code terminal, Windows Terminal, ni Ghostty |
+
+---
+
+## Mejores prácticas de system prompt
+
+### Principios de diseño del prompt
+
+**Hacer:**
+- Iniciar con el agente generado por Claude, luego iterar para customizar
+- Diseñar subagentes focalizados — UNA responsabilidad clara
+- Escribir prompts detallados con instrucciones específicas, ejemplos y restricciones
+- Limitar el acceso a tools — solo los necesarios para el propósito
+- Versionar los project subagents en control de versiones para colaboración en equipo
+
+**No hacer:**
+- Crear subagentes con roles superpuestos
+- Dar acceso innecesario a tools
+- Usar subagentes para tareas simples de un solo paso
+- Mezclar responsabilidades en el prompt de un subagente
+- Olvidar pasar el contexto necesario
+
+### Estructura de un prompt efectivo
+
+1. **Ser específico sobre el rol**
+   ```
+   You are an expert code reviewer specializing in [specific areas]
+   ```
+
+2. **Definir prioridades claramente**
+   ```
+   Review priorities (in order):
+   1. Security Issues
+   2. Performance Problems
+   3. Code Quality
+   ```
+
+3. **Especificar el formato de output**
+   ```
+   For each issue provide: Severity, Category, Location, Description, Fix, Impact
+   ```
+
+4. **Incluir pasos de acción**
+   ```
+   When invoked:
+   1. Run git diff to see recent changes
+   2. Focus on modified files
+   3. Begin review immediately
+   ```
+
+### Estrategia de acceso a tools
+
+1. **Empezar restrictivo** — Comenzar con solo los tools esenciales
+2. **Expandir solo cuando sea necesario** — Agregar tools cuando los requisitos lo demanden
+3. **Read-only cuando sea posible** — Usar Read/Grep para agentes de análisis
+4. **Ejecución sandboxed** — Limitar Bash a patrones específicos de comandos
