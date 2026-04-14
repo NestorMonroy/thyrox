@@ -10,8 +10,14 @@ status: Pendiente aprobación SP-02
 
 ## Resumen
 
-7 TDs → 8 commits → 17 tareas atómicas.
+7 TDs → 8 commits → 18 tareas atómicas (T-001..T-017 + T-012b).
 Orden: C1 (TD-027) → C2 (TD-028) → C3 (TD-009) → C4 (TD-001) → C5 (TD-003) → C6 (TD-018) → C7 (TD-035) → C8 (cierre).
+
+**Correcciones post deep-review:**
+- T-011: paths de origen/destino corregidos por skill (workflow-track, workflow-decompose, workflow-structure, workflow-analyze)
+- T-012b: nueva tarea para `refactors.md.template` (sin disposición previa)
+- T-003: nota operacional sobre Prompt ask independiente
+- T-016: fecha dinámica (no hardcodeada)
 
 ---
 
@@ -30,6 +36,7 @@ Orden: C1 (TD-027) → C2 (TD-028) → C3 (TD-009) → C4 (TD-001) → C5 (TD-00
 - [ ] **T-003** Editar `.claude/settings.json` — agregar `"Write(/.claude/references/**)": "allow"` en el bloque `permissions.allow`
 - **Archivos:** `.claude/settings.json`
 - **Referencia:** `analysis.md §TD-027`, L-005 de FASE 33 (sub-agentes background no podían escribir en references/)
+- **Nota operacional:** `settings.json` requiere Prompt (ask) independiente del de T-002. No batchar ambas ediciones — esperar aprobación entre T-002 y T-003.
 - **Commit:** `fix(framework): completar tabla auto-write en SKILL.md + allow references en settings.json`
 
 ---
@@ -95,20 +102,26 @@ Orden: C1 (TD-027) → C2 (TD-028) → C3 (TD-009) → C4 (TD-001) → C5 (TD-00
 ### T-010 — Listar y verificar todos los templates en assets/
 - [ ] **T-010** Glob `.claude/skills/workflow-*/assets/*.template` — listar todos los templates y verificar cuáles están referenciados vs huérfanos
 
-### T-011 — Crear directorio assets/legacy/ y mover 4 templates
-- [ ] **T-011** Crear `.claude/skills/workflow-analyze/assets/legacy/` y mover:
-  - `analysis-phase.md.template` → legacy/ (duplica `introduction.md.template`)
-  - `categorization-plan.md.template` → legacy/ (sin fase asignada)
-  - `document.md.template` → legacy/ (template genérico sin uso)
-  - `project.json.template` → legacy/ (JSON, no aplica stack actual)
-- **Archivos:** `.claude/skills/workflow-analyze/assets/legacy/` (crear)
-- **Nota:** Mover, no eliminar — conservar en legacy/ para referencia histórica
+### T-011 — Crear directorios assets/legacy/ y mover 4 templates
+- [ ] **T-011** Crear `legacy/` en cada skill correspondiente y mover cada template a su propio legacy:
+  - `workflow-track/assets/legacy/` ← `workflow-track/assets/analysis-phase.md.template` (duplica `introduction.md.template`)
+  - `workflow-decompose/assets/legacy/` ← `workflow-decompose/assets/categorization-plan.md.template` (sin fase asignada)
+  - `workflow-structure/assets/legacy/` ← `workflow-structure/assets/document.md.template` (template genérico sin uso)
+  - `workflow-analyze/assets/legacy/` ← `workflow-analyze/assets/project.json.template` (JSON, no aplica stack actual)
+- **Nota:** Mover, no eliminar — conservar en `legacy/` del skill original para referencia histórica.
 
 ### T-012 — Mapear ad-hoc-tasks.md.template a Phase 6 en SKILL.md
 - [ ] **T-012** Editar `.claude/skills/workflow-execute/SKILL.md` — agregar referencia a `ad-hoc-tasks.md.template` en la sección correspondiente (tareas fuera del task-plan formal)
 - **Archivos:** `.claude/skills/workflow-execute/SKILL.md`
 - **Referencia:** `analysis.md §TD-003`
-- **Commit:** `fix(templates): mapear ad-hoc-tasks a Phase 6 + mover 4 templates huérfanos a legacy/`
+
+### T-012b — Evaluar y disponer refactors.md.template
+- [ ] **T-012b** Leer `.claude/skills/workflow-track/assets/refactors.md.template` y `.claude/skills/workflow-track/SKILL.md` — determinar si tiene uso documentado en Phase 7 TRACK:
+  - Si tiene referencia activa en SKILL.md → dejar en su lugar y documentar su uso
+  - Si no tiene referencia → mover a `workflow-track/assets/legacy/`
+- **Archivos:** `.claude/skills/workflow-track/assets/refactors.md.template`, `.claude/skills/workflow-track/SKILL.md`
+- **Referencia:** `analysis.md §TD-003` ("refactors.md.template → posible uso en Phase 6 → evaluar")
+- **Commit:** `fix(templates): mapear ad-hoc-tasks a Phase 6 + mover 4 templates huérfanos a legacy/ + disponer refactors`
 
 ---
 
@@ -148,7 +161,7 @@ Orden: C1 (TD-027) → C2 (TD-028) → C3 (TD-009) → C4 (TD-001) → C5 (TD-00
 ## Commit C8 — Cierre: technical-debt.md 7 TDs [x]
 
 ### T-016 — Marcar 7 TDs resueltos en technical-debt.md
-- [ ] **T-016** Editar `.claude/context/technical-debt.md` — marcar `[x]` con fecha 2026-04-13:
+- [ ] **T-016** Editar `.claude/context/technical-debt.md` — marcar `[x]` con la fecha del día de ejecución (no hardcodear 2026-04-13 — usar `date +%Y-%m-%d`):
   - TD-001, TD-003, TD-009, TD-018, TD-027, TD-028, TD-035
 - **Archivos:** `.claude/context/technical-debt.md`
 
@@ -165,7 +178,7 @@ Orden: C1 (TD-027) → C2 (TD-028) → C3 (TD-009) → C4 (TD-001) → C5 (TD-00
 |-------|----|--------|-------------------|
 | T-001 | TD-027 | C1 | `skills/thyrox/SKILL.md` (lectura) |
 | T-002 | TD-027 | C1 | `skills/thyrox/SKILL.md` |
-| T-003 | TD-027 | C1 | `settings.json` |
+| T-003 | TD-027 | C1 | `settings.json` ⚠ Prompt ask independiente |
 | T-004 | TD-028 | C2 | `skills/workflow-strategy/SKILL.md` |
 | T-005 | TD-009 | C3 | `references/agent-spec.md` |
 | T-006 | TD-009 | C3 | `agents/task-executor.md` |
@@ -173,10 +186,11 @@ Orden: C1 (TD-027) → C2 (TD-028) → C3 (TD-009) → C4 (TD-001) → C5 (TD-00
 | T-008 | TD-001 | C4 | `scripts/validate-session-close.sh` (lectura) |
 | T-009 | TD-001 | C4 | `scripts/validate-session-close.sh` |
 | T-010 | TD-003 | C5 | glob assets/ (lectura) |
-| T-011 | TD-003 | C5 | `assets/legacy/` (crear + mover) |
+| T-011 | TD-003 | C5 | `workflow-track/`, `workflow-decompose/`, `workflow-structure/`, `workflow-analyze/` assets/legacy/ |
 | T-012 | TD-003 | C5 | `skills/workflow-execute/SKILL.md` |
+| T-012b | TD-003 | C5 | `skills/workflow-track/assets/refactors.md.template` |
 | T-013 | TD-018 | C6 | `framework-evolution-execution-log.md` |
 | T-014 | TD-035 | C7 | `scripts/project-status.sh` (lectura) |
 | T-015 | TD-035 | C7 | `scripts/project-status.sh` |
-| T-016 | cierre | C8 | `context/technical-debt.md` |
+| T-016 | cierre | C8 | `context/technical-debt.md` (fecha dinámica) |
 | T-017 | cierre | C8 | `exit-conditions.md` |
