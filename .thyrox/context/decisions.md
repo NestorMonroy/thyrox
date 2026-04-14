@@ -3,7 +3,7 @@ type: Contexto de Proyecto
 category: Decisiones Arquitectónicas
 version: 2.0
 purpose: Índice de decisiones arquitectónicas del proyecto THYROX
-updated_at: 2026-04-14 21:30:00
+updated_at: 2026-04-14 22:23:22
 ```
 
 # Decisiones de Arquitectura
@@ -45,6 +45,12 @@ para el sistema de conocimiento completo.
 | [adr-management-skill-n-tech-skills](decisions/adr-management-skill-n-tech-skills.md) | Refinamiento ADR-004 — Management Skill + N Tech Skills | Aprobado | 2026-03-28 |
 | [adr-separacion-scope-wp](decisions/adr-separacion-scope-wp.md) | Separación de scope y dependencia entre WPs agent-format-spec y parallel-agent-conventions | Aprobado | 2026-03-30 |
 
+### Framework THYROX — Hooks y Automatización
+
+| Archivo | Decisión | Status | Fecha |
+|---------|----------|--------|-------|
+| [adr-bound-detector-preToolUse](decisions/adr-bound-detector-preToolUse.md) | PreToolUse hook sobre Agent para detectar instrucciones sin bound | Aprobado | 2026-04-14 |
+
 ### Framework THYROX — Arquitectura de Skills
 
 | Archivo | Decisión | Status | Fecha |
@@ -67,5 +73,5 @@ para el sistema de conocimiento completo.
 
 ---
 
-**Total ADRs:** 19 · **Aprobadas:** 16 · **Pendientes:** 2 · **Deprecadas:** 0
+**Total ADRs:** 20 · **Aprobadas:** 17 · **Pendientes:** 2 · **Deprecadas:** 0
 **Ubicación:** `.thyrox/context/decisions/`
