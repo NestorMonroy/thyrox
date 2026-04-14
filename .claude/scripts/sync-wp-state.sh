@@ -20,8 +20,9 @@ if [[ "$FILE_PATH" != *"/.thyrox/context/work/"* ]]; then
   exit 0
 fi
 
-# Extraer WP path relativo (work/YYYY-MM-DD-HH-MM-SS-nombre/)
-WP_PATH=$(echo "$FILE_PATH" | grep -oP 'work/[^/]+/')
+# Extraer WP path relativo (.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre)
+# Sin trailing slash — consistente con validate-session-close.sh [ -d "$CURRENT_WORK" ]
+WP_PATH=$(echo "$FILE_PATH" | grep -oP '\.thyrox/context/work/[^/]+')
 
 if [ -z "$WP_PATH" ]; then
   exit 0
