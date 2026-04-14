@@ -8,6 +8,7 @@
       "Write(/.claude/context/now.md)",
       "Write(/.claude/context/focus.md)",
       "Write(/.claude/context/work/**)",
+      "Write(/.claude/references/**)",
       "Bash(bash .claude/scripts/*)",
       "Bash(bash .claude/skills/*/scripts/*)",
       "Bash(git add *)",

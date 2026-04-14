@@ -151,10 +151,13 @@ Configurados en `.claude/settings.json`. Independientes de los gates del SKILL ‚
 | Artefactos WP | `context/work/**/*.md` | Auto (acceptEdits) |
 | Estado de sesi√≥n | `now.md`, `focus.md` | Auto (acceptEdits) |
 | Historial del proyecto | `CHANGELOG.md`, `ROADMAP.md` | Auto (acceptEdits) |
+| Referencias de plataforma | `.claude/references/**` | Auto (allow) |
+| ADRs | `.claude/context/decisions/**` | Prompt (ask) |
 | Scripts del framework | `bash .claude/scripts/*` | Auto (allow) |
 | Scripts de validacion | `bash .claude/skills/*/scripts/*` | Auto (allow) |
+| Scripts operacionales (edicion) | Write/Edit en `scripts/*.sh`, `skills/*/scripts/*.sh` | Prompt (ask) |
 | Git rutinario | `git add/commit/push/status/log` | Auto (allow) |
-| Configuracion del framework | `SKILL.md`, `CLAUDE.md`, `settings.json`, `scripts/*.sh` | Prompt (ask) |
+| Configuracion del framework | `SKILL.md`, `CLAUDE.md`, `settings.json` | Prompt (ask) |
 | Operaciones destructivas | `git push --force`, `git reset --hard`, `rm -rf` | Bloqueado (deny) |
 
 **Relacion entre planos:**
