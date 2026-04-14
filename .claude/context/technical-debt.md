@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-13 19:42:39
+updated_at: 2026-04-14 18:03:26
 ```
 
 # Deuda Técnica — THYROX
@@ -16,83 +16,6 @@ ser atendidos. Cada ítem tiene un ID, descripción, impacto, y criterio de reso
 - `[x]` = Resuelto (YYYY-MM-DD)
 - Severidad: alta | media | baja
 - Origen: error registrado (ERR-NNN) o identificado en revisión
-
----
-
-## TD-001: Timestamps incompletos en metadatos de artefactos
-
-```
-Severidad: media
-Origen: Revisión 2026-04-03
-Fase afectada: Todas (al crear artefactos desde templates)
-Estado: [x] Resuelto — FASE 34 (2026-04-14) — validate-session-close.sh + integración stop-hook
-```
-
-**Problema:**
-Los templates definen `Fecha: [YYYY-MM-DD-HH-mm-ss]` pero al instanciar artefactos
-se usa con frecuencia solo la fecha (`YYYY-MM-DD`) sin el componente de hora.
-
-Ejemplo detectado:
-- `voltfactory-adaptation-analysis.md` → `Fecha: 2026-04-03-00-49-34` (correcto)
-- `voltfactory-adaptation-solution-strategy.md` → `Fecha: 2026-04-03` (incompleto)
-
-**Impacto:**
-Sin el timestamp completo no es posible ordenar artefactos creados el mismo día ni
-reconstruir el orden de creación dentro de una sesión. Rompe la trazabilidad temporal.
-
-**Resolución:**
-- Corregir todos los artefactos existentes con fecha incompleta
-- Agregar regla explícita en `conventions.md`: el campo `Fecha:` en artefactos WP
-  debe usar siempre `YYYY-MM-DD-HH-MM-SS` (timestamp real, no estimado)
-- Agregar validación en `validate-session-close.sh`: detectar `Fecha: \d{4}-\d{2}-\d{2}$`
-  (fecha sin hora) en archivos dentro de `context/work/`
-
-**Criterio de cierre:**
-Todos los artefactos en WPs activos tienen timestamp completo. Validación automática
-en place.
-
----
-
-## TD-003: Templates huérfanos en assets/ no referenciados en ningún flujo
-
-```
-Severidad: baja
-Origen: Auditoría 2026-04-03
-Fase afectada: Cross-phase (confusión al buscar templates)
-Estado: [x] Resuelto — FASE 34 (2026-04-14) — 4 templates a legacy/, ad-hoc-tasks mapeado en workflow-execute/SKILL.md
-```
-
-**Problema:**
-Seis templates en `.claude/skills/pm-thyrox/assets/` no están referenciados en
-SKILL.md ni en ningún reference activo del flujo. Generan ruido y confusión:
-- `ad-hoc-tasks.md.template` — tracking de tareas ad-hoc sin WP formal
-- `analysis-phase.md.template` — duplica funcionalidad de `introduction.md.template`
-- `categorization-plan.md.template` — no corresponde a ninguna fase del SKILL
-- `document.md.template` — template genérico sin fase asignada
-- `project.json.template` — metadata de proyecto en JSON (no Markdown)
-- `refactors.md.template` — tracking de refactors (podría ser útil en Phase 6)
-
-Nota: `bugfix`, `feature`, `refactor`, `documentation`, `multiple-files`,
-`task-completion`, `commit-message-main` son templates de commit — sí están
-referenciados en `references/commit-helper.md`.
-
-**Impacto:**
-Cuando alguien busca "qué template usar para X", encuentra templates huérfanos
-que no tienen instrucciones de uso. Aumenta la fricción y la incertidumbre.
-
-**Resolución:**
-Para cada template huérfano, decidir uno de:
-1. Mapear a una fase en SKILL.md (si tiene uso legítimo)
-2. Mover a `assets/legacy/` con un README explicando que están deprecados
-3. Eliminar si no tienen valor (ADR-008: Git as persistence, el historial preserva)
-
-Candidato a mapear: `ad-hoc-tasks.md.template` → Phase 6 para tareas fuera del
-task-plan. Candidato a eliminar: `analysis-phase.md.template` (duplica introduction),
-`categorization-plan.md.template`, `document.md.template`.
-
-**Criterio de cierre:**
-Cero templates en `assets/` sin referencia en SKILL.md o en un reference activo.
-Cada template tiene una fase asignada o está en `assets/legacy/`.
 
 ---
 
