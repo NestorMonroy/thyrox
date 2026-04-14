@@ -65,7 +65,7 @@ stateDiagram-v2
   "defaultMode": "acceptEdits",
   "permissions": {
     "allow": [
-      "Write(/.thyrox/context/work/**)",
+      "Write(/context/work/**)",
       "Bash(git add *)",
       "Bash(git commit *)"
     ],
@@ -84,7 +84,7 @@ stateDiagram-v2
 **Nota:** Con `defaultMode: acceptEdits`, las reglas `Edit(...)` en `allow` son redundantes — ya están cubiertas por el defaultMode. Solo agregar reglas `Edit(...)` explícitas en `allow` cuando se necesite sobreescribir un `deny` específico.
 
 **Semántica de patrones:**
-- `Write(/.thyrox/context/work/**)` — ruta absoluta desde raíz del proyecto, soporta `*` y `**`
+- `Write(/context/work/**)` — ruta absoluta desde raíz del proyecto, soporta `*` y `**`
 - `Bash(git add *)` — el `*` después del espacio acepta cualquier argumento
 - Las reglas en `allow`/`ask`/`deny` anulan el `defaultMode` para los patrones que coinciden
 
@@ -359,9 +359,9 @@ Para archivos que Claude edita frecuentemente (state files, WP artifacts), con `
   "defaultMode": "acceptEdits",
   "permissions": {
     "allow": [
-      "Write(/.thyrox/context/now.md)",
-      "Write(/.thyrox/context/focus.md)",
-      "Write(/.thyrox/context/work/**)"
+      "Write(/context/now.md)",
+      "Write(/context/focus.md)",
+      "Write(/context/work/**)"
     ],
     "ask": [
       "Edit(/.claude/scripts/*.sh)",
@@ -375,7 +375,7 @@ Para archivos que Claude edita frecuentemente (state files, WP artifacts), con `
 }
 ```
 
-**Nota:** Las reglas `Edit(/.thyrox/context/*)` en `allow` son redundantes cuando `defaultMode: acceptEdits` está activo — el defaultMode ya aprueba todos los Edit automáticamente. Solo agregar `Edit(...)` explícitos en `allow` para sobreescribir un `deny` específico.
+**Nota:** Las reglas `Edit(/context/*)` en `allow` son redundantes cuando `defaultMode: acceptEdits` está activo — el defaultMode ya aprueba todos los Edit automáticamente. Solo agregar `Edit(...)` explícitos en `allow` para sobreescribir un `deny` específico.
 
 Esta configuración:
 - ✅ Auto-acepta edits en archivos de sesión y WP artifacts (sin prompts)

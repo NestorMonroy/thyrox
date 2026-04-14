@@ -422,8 +422,8 @@ Re-inyectar contexto crítico después de compactación.
 ```bash
 #!/bin/bash
 # Leer estado del proyecto y retornar como additionalContext
-if [ -f ".thyrox/context/now.md" ]; then
-    NOW_CONTENT=$(cat .thyrox/context/now.md)
+if [ -f "context/now.md" ]; then
+    NOW_CONTENT=$(cat context/now.md)
     python3 -c "
 import json, sys
 output = {
@@ -513,14 +513,14 @@ fi
 hooks:
   - event: UserPromptSubmit
     type: command
-    command: "echo 'phase: Phase 1' >> .thyrox/context/now.md"
+    command: "echo 'phase: Phase 1' >> context/now.md"
 
 # Correcto — solo corre una vez por sesión
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "echo 'phase: Phase 1' >> .thyrox/context/now.md"
+    command: "echo 'phase: Phase 1' >> context/now.md"
 ```
 
 ---
@@ -538,7 +538,7 @@ echo '{
   "hook_event_name": "PostToolUse",
   "tool_name": "Write",
   "tool_input": {
-    "file_path": "/home/user/project/.thyrox/context/work/2026-04-13-test/file.md",
+    "file_path": "/home/user/project/context/work/2026-04-13-test/file.md",
     "content": "contenido de prueba"
   },
   "tool_response": { "success": true }

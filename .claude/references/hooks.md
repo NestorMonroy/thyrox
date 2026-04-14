@@ -110,7 +110,7 @@ Solo aplica en eventos de herramienta: `PreToolUse`, `PostToolUse`, `PostToolUse
 
 Ejemplos de sintaxis `if`:
 - `Bash(git *)` — cualquier comando git
-- `Write(/.thyrox/context/work/*)` — escrituras en WP directory
+- `Write(/context/work/*)` — escrituras en WP directory
 - `Edit(/*.md)` — edicion de cualquier markdown
 - `Bash(rm *)` — cualquier rm
 
@@ -130,7 +130,7 @@ Cada evento envia campos comunes + campos especificos:
   "permission_mode": "acceptEdits",
   "tool_name": "Write",
   "tool_input": {
-    "file_path": "/home/user/project/.thyrox/context/work/2026-04-09-nombre/analysis/file.md",
+    "file_path": "/home/user/project/context/work/2026-04-09-nombre/analysis/file.md",
     "content": "..."
   },
   "tool_response": { "filePath": "...", "success": true }

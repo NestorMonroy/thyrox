@@ -108,7 +108,7 @@ Por qué: Tarea acotada que produce output verboso (análisis de archivos). El r
 
 ### Caso: Sincronizar estado cuando Claude escribe un archivo de WP
 
-**Componente:** Hook (`PostToolUse Write` + matcher `/.thyrox/context/work/*`)
+**Componente:** Hook (`PostToolUse Write` + matcher `/context/work/*`)
 
 Por qué: Debe ocurrir automáticamente cada vez que Claude escribe un archivo WP. Determinístico. No requiere razonamiento del LLM.
 

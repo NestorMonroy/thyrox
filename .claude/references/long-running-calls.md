@@ -458,4 +458,4 @@ claude --debug "api" "tarea"
 - [subagent-patterns.md](subagent-patterns.md) — Patrones de sub-agentes
 - [scheduled-tasks.md](scheduled-tasks.md) — Tareas programadas completo
 - [checkpointing.md](checkpointing.md) — Checkpoints y rewind
-- Analisis FASE 33: `.thyrox/context/work/2026-04-12-10-10-50-skill-authoring-modernization/analysis/stream-timeout-root-cause.md`
+- Ejemplo THYROX (FASE 33): `.thyrox/context/work/2026-04-12-10-10-50-skill-authoring-modernization/analysis/stream-timeout-root-cause.md`
