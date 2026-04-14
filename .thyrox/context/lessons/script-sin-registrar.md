@@ -61,4 +61,4 @@ Si el script debe ejecutarse automáticamente (Stop, SessionStart, PostToolUse):
 
 - WP: `.thyrox/context/work/2026-04-14-09-13-51-context-migration/`
 - Commit fix: `fix(hooks): registrar validate-session-close.sh en Stop hook`
-- Patrón derivado: [P-001 — Validate-Wire-Test](../patterns/P-001-validate-wire-test.md)
+- Patrón derivado: [validate-wire-test](../patterns/validate-wire-test.md)

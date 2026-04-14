@@ -83,6 +83,6 @@ sin bound y presenta las 5 opciones al usuario.
 
 ## Referencias
 
-- Lección origen: [L-004](../lessons/L-004-bound-en-instrucciones-agente.md)
+- Lección origen: [bound-agente-timeout](../lessons/bound-agente-timeout.md)
 - Análisis Ishikawa: sesión FASE 35
 - Script de enforcement: `.claude/scripts/bound-detector.py`

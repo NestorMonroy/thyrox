@@ -10,11 +10,10 @@ usage: Solo para decisiones arquitectonicas permanentes del PROYECTO (stack, pat
      NO usar para decisiones que solo afectan el WP actual — esas van en design.md o plan.md del WP.
 ```
 
-# ADR-NNN: [Título de la Decisión]
+# ADR: [Título de la Decisión]
 
 ## Metadatos
 
-**ADR ID:** ADR-NNN<br>
 **Título:** [Título descriptivo de la decisión]<br>
 **Fecha:** YYYY-MM-DD-HH-MM-SS<br>
 **Status:** Propuesto | Aprobado | Deprecado | Reemplazado<br>
@@ -185,4 +184,4 @@ Para las consecuencias negativas:
 
 **Última Actualización:** YYYY-MM-DD-HH-MM-SS<br>
 **Próxima Revisión:** YYYY-MM-DD-HH-MM-SS<br>
-**Archivado en:** [.thyrox/context/decisions/adr-NNN.md]
+**Archivado en:** [.thyrox/context/decisions/adr-{tema}.md]

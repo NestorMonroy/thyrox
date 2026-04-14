@@ -1,8 +1,8 @@
 ```yml
 type: Índice de Lecciones Aprendidas
-version: 1.0
+version: 1.1
 created_at: 2026-04-14 20:34:23
-updated_at: 2026-04-14 20:40:00
+updated_at: 2026-04-14 21:30:00
 ```
 
 # Lecciones Aprendidas — Índice Global
@@ -36,46 +36,21 @@ Para lecciones locales de un WP específico, ver el WP directamente.
 
 ---
 
+## Cuándo Promover una Lección
+
+| Momento | Acción | Criterio |
+|---------|--------|----------|
+| Phase 7: TRACK | Revisar `{wp}-lessons-learned.md` | ¿Esta lección evitaría el mismo error en futuros WPs? Si sí → promover |
+| Phase 6: EXECUTE | Detectar recurrencia cross-WP | Si la misma lección ya está documentada, reforzar en `patterns/` |
+
 ## Cómo Promover una Lección
 
 1. La lección debe haber ocurrido en un WP (está en `work/.../lessons-learned.md`)
 2. Debe tener impacto cross-WP: evitaría el mismo error en futuros WPs
-3. Crear `L-NNN-descripcion-corta.md` con el template de abajo
+3. Crear `{descripcion-corta}.md` (kebab-case, sin números, auto-explicativo)
+   usando el template: `.claude/skills/workflow-track/assets/lesson.md.template`
 4. Agregar al índice de este README
 5. Si generó un patrón de solución, crear también en `patterns/`
 
-### Template de Lección
-
-```markdown
----
-id: L-NNN
-titulo: Una frase que describe el aprendizaje
-categoria: [Infraestructura|Referencias|Configuración|Agentes|Git|Metodología]
-origen_wp: YYYY-MM-DD-nombre-del-wp
-origen_fase: FASE N
-fecha: YYYY-MM-DD
----
-
-## Contexto
-Qué estábamos haciendo cuando ocurrió.
-
-## Qué Pasó
-El evento concreto (bug, error, descubrimiento).
-
-## Causa Raíz
-Por qué pasó.
-
-## Solución Aplicada
-Cómo se resolvió.
-
-## Clave del Aprendizaje
-La regla o principio que se extrae. Una oración.
-
-## Aplicación Futura
-Cómo prevenir o aprovechar esto en próximos WPs.
-
-## Referencias
-- WP origen
-- ADR si aplica
-- Patrón derivado si aplica
-```
+**Naming:** El nombre del archivo = la lección en sí (sin prefijo L-NNN).
+Los `id: L-NNN` son referencias internas documentales, no nombres de archivo.

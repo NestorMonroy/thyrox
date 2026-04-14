@@ -3,7 +3,7 @@ type: Contexto de Proyecto
 category: Decisiones Arquitectónicas
 version: 2.0
 purpose: Índice de decisiones arquitectónicas del proyecto THYROX
-updated_at: 2026-04-14 20:40:00
+updated_at: 2026-04-14 21:30:00
 ```
 
 # Decisiones de Arquitectura

@@ -71,5 +71,5 @@ Bash(git mv archivo destino)
 
 ## Referencias
 
-- Lección origen: [L-001](../lessons/L-001-script-huerfano.md)
+- Lección origen: [script-sin-registrar](../lessons/script-sin-registrar.md)
 - Commit: `fix(hooks): registrar validate-session-close.sh en Stop hook`
