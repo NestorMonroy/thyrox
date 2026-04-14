@@ -629,6 +629,11 @@ Conectores de servicios externos para contexto enriquecido:
 - [Documentación oficial Advanced Features](https://code.claude.com/docs/en/interactive-mode)
 - [Documentación oficial Agent Teams](https://code.claude.com/docs/en/agent-teams)
 - [Documentación oficial Remote Control](https://code.claude.com/docs/en/remote-control)
+- [Documentación oficial Scheduled Tasks](https://code.claude.com/docs/en/scheduled-tasks)
+- [Documentación oficial Chrome Integration](https://code.claude.com/docs/en/chrome)
+- [Documentación oficial Headless Mode](https://code.claude.com/docs/en/headless)
+- [Documentación oficial Desktop App](https://code.claude.com/docs/en/desktop)
+- [Documentación oficial Keybindings](https://code.claude.com/docs/en/keybindings)
 
 ---
 
