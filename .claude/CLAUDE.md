@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
 version: 3.4
-updated_at: 2026-04-14 20:15:00
+updated_at: 2026-04-14 20:40:00
 ```
 
 # CLAUDE.md — THYROX
@@ -60,8 +60,8 @@ REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
     ├── focus.md               ← Dirección actual
     ├── now.md                 ← Estado de sesión single-agent
     ├── now-{agent-id}.md      ← Estado por agente (ejecución paralela)
-    ├── decisions/             ← ADRs (raíz legacy — nuevos proyectos usar subdirs por capa)
-    ├── errors/                ← Registros de errores (ERR-NNN)
+    ├── decisions/             ← ADRs (adr-{tema}.md — sin números)
+    ├── errors/                ← Registros de errores ({descripcion}.md — sin números)
     ├── research/              ← Investigaciones y sandboxes
     ├── technical-debt.md      ← Backlog de deuda técnica
     └── work/                  ← Paquetes de trabajo (YYYY-MM-DD-HH-MM-SS-nombre/)

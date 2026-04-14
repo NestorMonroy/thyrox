@@ -1,10 +1,10 @@
 ```yml
 type: Metodología General
 category: Convenciones
-version: 1.0
+version: 1.1
 purpose: Define convenciones del proyecto: ubicaciones de archivos, nombrado, estructura.
 goal: Asegurar consistencia en todo el proyecto.
-updated_at: 2026-04-10 05:30:00
+updated_at: 2026-04-14 20:40:00
 ```
 
 # THYROX Conventions
@@ -202,9 +202,50 @@ Mapa completo en `scripts/migrate-metadata-keys.py` → `KEY_MAP`.
 
 ---
 
+## Nomenclatura de Archivos
+
+### Regla general
+
+Los nombres de archivo deben ser:
+- **Auto-explicativos** — el nombre describe el contenido sin abrirlo
+- **Sin números secuenciales** — no NNN, no contadores arbitrarios
+- **Equilibrados** — 2 a 5 palabras (ni una sola palabra ambigua, ni una frase)
+- **kebab-case** — palabras en minúscula separadas por guiones
+
+> **Scope:** aplica a archivos de proyecto (markdown, configs, scripts).
+> **No aplica** a código fuente — cada lenguaje tiene su propia nomenclatura
+> (Python: `snake_case.py`, JS: `camelCase.js` o `kebab-case.js`, etc.).
+
+### Por tipo de artefacto
+
+| Artefacto | Patrón | Ejemplo correcto | Ejemplo incorrecto |
+|-----------|--------|------------------|--------------------|
+| ADR | `adr-{tema}.md` | `adr-plugin-namespace.md` | `adr-019.md` |
+| Error | `{descripcion}.md` (en `errors/`) | `stream-timeout-idle.md` | `ERR-016.md` |
+| Lección | `{descripcion}.md` (en `lessons/`) | `script-sin-registrar.md` | `L-001-script-huerfano.md` |
+| Patrón | `{nombre-patron}.md` (en `patterns/`) | `validate-wire-test.md` | `P-001-validate-wire-test.md` |
+| WP dir | `YYYY-MM-DD-HH-MM-SS-{nombre}/` | `2026-04-14-09-13-51-context-migration/` | — (timestamp es funcional, no arbitrario) |
+| Script | `{accion}-{objeto}.sh/.py` | `validate-session-close.sh` | `script1.sh` |
+| Template | `{tipo}.md.template` | `task-plan.md.template` | `template-tasks.md` |
+| Reference | `{tema}.md` | `tool-execution-model.md` | `ref-tools.md` |
+
+### Nota sobre timestamps en WP
+
+`YYYY-MM-DD-HH-MM-SS-{nombre}/` no viola la regla "sin números" porque el timestamp
+es un dato objetivo (cuándo se creó), no un contador arbitrario. Provee ordenación
+natural y unicidad sin coordinación manual.
+
+### Nota sobre IDs internos de documentos
+
+Los IDs de trazabilidad **dentro** de un documento (T-NNN en task-plan.md,
+R-N en requirements, FR-NNN) son referencias internas, no nombres de archivo.
+La regla de nomenclatura NO aplica a estos identificadores.
+
+---
+
 ## Traceability IDs
 
-Cada artefacto usa IDs para trazabilidad cruzada:
+IDs para trazabilidad cruzada dentro de documentos (no son nombres de archivo):
 
 | Tipo | Formato | Ejemplo | Dónde se usa |
 |------|---------|---------|-------------|
@@ -214,7 +255,6 @@ Cada artefacto usa IDs para trazabilidad cruzada:
 | Success Criteria | SC-NNN | SC-001 | quality-goals/spec |
 | Tasks | T-NNN | T-001 | tasks.md |
 | Checklist Items | CHK-NNN | CHK-001 | checklists |
-| ADRs | adr-NNN | adr-001 | decisions/ |
 
 **Regla:** Cada task (T-NNN) DEBE referenciar el requirement que satisface (R-N o FR-NNN).
 

@@ -2,7 +2,7 @@
 type: Índice de Lecciones Aprendidas
 version: 1.0
 created_at: 2026-04-14 20:34:23
-updated_at: 2026-04-14 20:34:23
+updated_at: 2026-04-14 20:40:00
 ```
 
 # Lecciones Aprendidas — Índice Global
@@ -14,12 +14,12 @@ Para lecciones locales de un WP específico, ver el WP directamente.
 
 ## Índice
 
-| ID | Lección | Origen | Categoría | Fecha |
-|----|---------|--------|-----------|-------|
-| [L-001](L-001-script-huerfano.md) | Script creado sin registrar en settings.json | FASE 35 | Infraestructura | 2026-04-14 |
-| [L-002](L-002-referencias-abstractas.md) | Bulk-sed en docs de plataforma con paths del proyecto | FASE 35 | Referencias | 2026-04-14 |
-| [L-003](L-003-env-var-propagacion.md) | `settings.json` env vars no propagan a subagentes de sesión activa | FASE 35 | Configuración | 2026-04-14 |
-| [L-004](L-004-bound-en-instrucciones-agente.md) | Instrucciones de agente sin scope bound causan timeouts | FASE 35 | Agentes | 2026-04-14 |
+| Archivo | Lección | Origen | Categoría | Fecha |
+|---------|---------|--------|-----------|-------|
+| [script-sin-registrar](script-sin-registrar.md) | Script creado sin registrar en settings.json | FASE 35 | Infraestructura | 2026-04-14 |
+| [referencias-abstractas](referencias-abstractas.md) | Bulk-sed en docs de plataforma con paths del proyecto | FASE 35 | Referencias | 2026-04-14 |
+| [env-var-sesion-activa](env-var-sesion-activa.md) | `settings.json` env vars no propagan a subagentes de sesión activa | FASE 35 | Configuración | 2026-04-14 |
+| [bound-agente-timeout](bound-agente-timeout.md) | Instrucciones de agente sin scope bound causan timeouts | FASE 35 | Agentes | 2026-04-14 |
 
 ---
 

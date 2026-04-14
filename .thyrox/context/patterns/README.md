@@ -2,7 +2,7 @@
 type: Índice de Patrones
 version: 1.0
 created_at: 2026-04-14 20:34:23
-updated_at: 2026-04-14 20:34:23
+updated_at: 2026-04-14 20:40:00
 ```
 
 # Patrones — Índice Global
@@ -14,11 +14,11 @@ ha sido aplicado ≥2 veces o cuando tiene impacto estratégico en el proyecto.
 
 ## Índice
 
-| ID | Nombre | Problema que resuelve | Fecha |
-|----|--------|-----------------------|-------|
-| [P-001](P-001-validate-wire-test.md) | Validate-Wire-Test | Script creado sin conectar al sistema | 2026-04-14 |
-| [P-002](P-002-bound-explicito-agente.md) | Bound Explícito en Agentes | Instrucciones ilimitadas causan timeouts | 2026-04-14 |
-| [P-003](P-003-git-mv-migracion.md) | git mv para Migraciones | Mover archivos sin perder historial | 2026-04-14 |
+| Archivo | Nombre | Problema que resuelve | Fecha |
+|---------|--------|-----------------------|-------|
+| [validate-wire-test](validate-wire-test.md) | Validate-Wire-Test | Script creado sin conectar al sistema | 2026-04-14 |
+| [bound-explicito-agente](bound-explicito-agente.md) | Bound Explícito en Agentes | Instrucciones ilimitadas causan timeouts | 2026-04-14 |
+| [git-mv-migracion](git-mv-migracion.md) | git mv para Migraciones | Mover archivos sin perder historial | 2026-04-14 |
 
 ---
 
