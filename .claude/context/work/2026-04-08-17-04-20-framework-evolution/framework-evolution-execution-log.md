@@ -1,7 +1,7 @@
 ```yml
 type: Execution Log
 work_package: 2026-04-08-17-04-20-framework-evolution
-created_at: 2026-04-08
+created_at: 2026-04-08 17:04:20 # hora del WP timestamp — aproximada
 phase: Phase 6 — EXECUTE
 ```
 
