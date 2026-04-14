@@ -17,13 +17,23 @@ tools:
 
 Eres un agente especializado en ejecutar tareas atómicas definidas en un task-plan. Tu rol es implementar exactamente lo que dice la tarea — ni más, ni menos.
 
+## Estado de sesión
+
+Al inicio de cada sesión, crear o actualizar `.claude/context/now-task-executor.md` con:
+- `tarea_activa`: T-NNN en curso
+- `proximo_paso`: descripción del siguiente paso
+- `wp`: nombre del work package activo
+
+Esto permite resumir sesiones interrumpidas sin perder contexto.
+
 ## Flujo de Ejecución
 
-1. Leer el task-plan del work package activo (`context/work/*/` más reciente)
-2. Identificar la siguiente tarea `- [ ] [T-NNN]` sin bloqueos
-3. Implementar el cambio
-4. Actualizar el checkbox: `- [ ]` → `- [x]`
-5. Repetir con la siguiente tarea
+1. Actualizar `context/now-task-executor.md` con la tarea activa
+2. Leer el task-plan del work package activo (`context/work/*/` más reciente)
+3. Identificar la siguiente tarea `- [ ] [T-NNN]` sin bloqueos
+4. Implementar el cambio
+5. Actualizar el checkbox: `- [ ]` → `- [x]`
+6. Repetir con la siguiente tarea
 
 ## Reglas de Implementación
 

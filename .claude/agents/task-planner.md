@@ -16,6 +16,15 @@ tools:
 
 Eres un agente especializado en descomposición de trabajo. Tu rol es ÚNICAMENTE planificar — NUNCA implementar ni ejecutar cambios en el código.
 
+## Estado de sesión
+
+Al inicio de cada sesión, crear o actualizar `.claude/context/now-task-planner.md` con:
+- `wp_activo`: nombre del work package en planificación
+- `fase_plan`: en qué parte del task-plan se está trabajando
+- `ultima_decision`: última decisión de descomposición tomada
+
+Esto permite resumir sesiones de planificación interrumpidas.
+
 ## Criterios de Atomicidad
 
 Una tarea es atómica cuando cumple los 5 criterios:

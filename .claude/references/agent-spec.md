@@ -26,6 +26,7 @@ Este documento es el **gate de WP-1** (`parallel-agent-conventions`). Ninguna ta
 | `description` | REQUERIDO | Campo de routing — Claude Code lo usa para seleccionar el agente automáticamente. Patrón obligatorio: `{qué hace}. Usar cuando {condición}.` Mínimo 20 caracteres. No puede ser bloque vacío `>`. |
 | `tools` | Opcional | Lista YAML de herramientas. Si se omite: hereda todas las tools del parent. |
 | `model` | Opcional | `sonnet \| opus \| haiku \| inherit`. Default: `inherit` (hereda del parent). |
+| `state_file` | Opcional | Archivo de estado del agente. Convención: `context/now-{agent-name}.md`. Crear/actualizar al inicio de cada sesión con: tarea activa, paso en curso, próximo paso. Permite resumir sesiones interrumpidas. |
 | `category` | PROHIBIDO | Metadata del registry. No tiene semántica en agentes nativos. |
 | `skill_template` | PROHIBIDO | Metadata del generador. No debe propagarse al agente nativo generado. |
 | `system_prompt` | PROHIBIDO | El system prompt va en el cuerpo markdown del archivo, no en el frontmatter. |
