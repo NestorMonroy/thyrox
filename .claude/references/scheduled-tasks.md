@@ -135,14 +135,17 @@ Claude: Linter found 12 issues (bg-5002) ⚠️
 
 ## Modo headless / Print Mode (`claude -p`)
 
-Para scripts, CI/CD, y automatización sin interacción del usuario:
+Para scripts, CI/CD, y automatización sin interacción del usuario. El flag `-p` es el modo no-interactivo actual; `--headless` es el flag legacy que reemplaza.
 
 ```bash
 # Query simple y salir
 claude -p "what does this function do?"
 
-# Procesar contenido piped
+# Procesar contenido piped desde archivo
 cat error.log | claude -p "explain this error"
+
+# Procesar contenido piped desde stdin (echo)
+echo "function foo() { return null; }" | claude -p "explain this"
 
 # Continuar última conversación en modo print
 claude -c -p "check for type errors"
@@ -419,6 +422,32 @@ Las operaciones peligrosas (`rm -rf`, `sudo`, force push, `DROP TABLE`, `terrafo
   }
 }
 ```
+
+### Configuración headless para CI/CD
+
+Para pipelines CI/CD que usan `claude -p`, las siguientes claves controlan el comportamiento de la sesión no-interactiva:
+
+```json
+{
+  "headless": {
+    "exitOnError": true,
+    "verbose": true,
+    "timeout": 3600
+  },
+  "logging": {
+    "level": "debug",
+    "file": "./ci-claude.log"
+  }
+}
+```
+
+| Clave | Tipo | Descripción |
+|-------|------|-------------|
+| `headless.exitOnError` | `boolean` | Terminar con exit code no-cero si Claude encuentra un error |
+| `headless.verbose` | `boolean` | Emitir output detallado del proceso |
+| `headless.timeout` | `number` | Timeout de la sesión en segundos (default: sin límite) |
+| `logging.level` | `string` | Nivel de log: `debug`, `info`, `warn`, `error` |
+| `logging.file` | `string` | Path del archivo de log para la sesión |
 
 ## Variables de entorno relevantes
 
