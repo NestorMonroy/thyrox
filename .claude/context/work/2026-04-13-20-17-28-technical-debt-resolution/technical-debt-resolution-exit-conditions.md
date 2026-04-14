@@ -121,3 +121,4 @@ reversibility: reversible
 - [x] `context/now.md` → `current_work: null`, `phase: null`
 - [x] `context/focus.md` actualizado con FASE 34
 - [x] Commit + push del cierre del WP
+- [x] Prueba de Edit automático confirmada — 2026-04-14
