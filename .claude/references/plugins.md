@@ -303,3 +303,265 @@ Los skills `workflow-*` son implementación interna; los comandos del plugin son
 - [skill-vs-agent](skill-vs-agent.md) — Cuándo usar skill, subagente, o comando
 - [claude-code-components](claude-code-components.md) — Frontmatter completo de skills y agentes
 - [ADR-019](../context/decisions/adr-019.md) — Decisión de arquitectura plugin namespace THYROX
+
+## LSP — Referencia completa de campos
+
+Los plugins pueden incluir servidores LSP. Hay dos ubicaciones válidas de configuración:
+- Archivo `.lsp.json` en el directorio raíz del plugin
+- Clave inline `lsp` dentro de `plugin.json`
+
+### Tabla de campos
+
+| Campo | Requerido | Descripción |
+|-------|-----------|-------------|
+| `command` | Sí | Binario del servidor LSP (debe estar en PATH) |
+| `extensionToLanguage` | Sí | Mapea extensiones de archivo a language IDs |
+| `args` | No | Argumentos de línea de comando para el servidor |
+| `transport` | No | Método de comunicación: `stdio` (default) o `socket` |
+| `env` | No | Variables de entorno para el proceso del servidor |
+| `initializationOptions` | No | Opciones enviadas durante la inicialización LSP |
+| `settings` | No | Configuración de workspace pasada al servidor |
+| `workspaceFolder` | No | Override del path de workspace folder |
+| `startupTimeout` | No | Tiempo máximo (ms) para esperar el inicio del servidor |
+| `shutdownTimeout` | No | Tiempo máximo (ms) para shutdown graceful |
+| `restartOnCrash` | No | Reiniciar automáticamente si el servidor falla |
+| `maxRestarts` | No | Máximo de intentos de restart antes de abandonar |
+
+### Ejemplos por lenguaje
+
+**Go (gopls):**
+
+```json
+{
+  "go": {
+    "command": "gopls",
+    "args": ["serve"],
+    "extensionToLanguage": {
+      ".go": "go"
+    }
+  }
+}
+```
+
+**TypeScript:**
+
+```json
+{
+  "typescript": {
+    "command": "typescript-language-server",
+    "args": ["--stdio"],
+    "extensionToLanguage": {
+      ".ts": "typescript",
+      ".tsx": "typescriptreact",
+      ".js": "javascript",
+      ".jsx": "javascriptreact"
+    }
+  }
+}
+```
+
+### Plugins LSP del marketplace oficial
+
+| Plugin | Lenguaje | Binario | Instalación |
+|--------|----------|---------|-------------|
+| `pyright-lsp` | Python | `pyright-langserver` | `pip install pyright` |
+| `typescript-lsp` | TypeScript/JavaScript | `typescript-language-server` | `npm install -g typescript-language-server typescript` |
+| `rust-lsp` | Rust | `rust-analyzer` | `rustup component add rust-analyzer` |
+
+### Capacidades LSP disponibles
+
+Una vez configurado, el servidor LSP provee:
+- **Diagnósticos instantáneos** — errores y warnings aparecen inmediatamente después de editar
+- **Navegación de código** — ir a definición, buscar referencias, implementaciones
+- **Información al hover** — type signatures y documentación al pasar el cursor
+- **Listado de símbolos** — explorar símbolos en el archivo actual o workspace
+
+## Marketplace — Schema de `marketplace.json`
+
+Los marketplaces de plugins se definen en `.claude-plugin/marketplace.json`:
+
+```json
+{
+  "name": "my-team-plugins",
+  "owner": "my-org",
+  "plugins": [
+    {
+      "name": "code-standards",
+      "source": "./plugins/code-standards",
+      "description": "Enforce team coding standards",
+      "version": "1.2.0",
+      "author": "platform-team"
+    },
+    {
+      "name": "deploy-helper",
+      "source": {
+        "source": "github",
+        "repo": "my-org/deploy-helper",
+        "ref": "v2.0.0"
+      },
+      "description": "Deployment automation workflows"
+    }
+  ]
+}
+```
+
+| Campo | Requerido | Descripción |
+|-------|-----------|-------------|
+| `name` | Sí | Nombre del marketplace en kebab-case |
+| `owner` | Sí | Organización o usuario que mantiene el marketplace |
+| `plugins` | Sí | Array de entradas de plugins |
+| `plugins[].name` | Sí | Nombre del plugin (kebab-case) |
+| `plugins[].source` | Sí | Fuente del plugin (string de path u objeto source) |
+| `plugins[].description` | No | Descripción breve del plugin |
+| `plugins[].version` | No | String de versión semántica |
+| `plugins[].author` | No | Nombre del autor del plugin |
+
+**Nota sobre fuentes `github`/`url`:** Además del campo `ref` (branch/tag), soportan `sha` (commit hash) para pinning exacto de versión.
+
+### Modo strict en marketplace
+
+| Configuración | Comportamiento |
+|---------------|----------------|
+| `strict: true` (default) | El `plugin.json` local es autoritativo; la entrada del marketplace lo complementa |
+| `strict: false` | La entrada del marketplace es la definición completa del plugin |
+
+### Distribución del marketplace
+
+**GitHub (recomendado):**
+```bash
+/plugin marketplace add owner/repo-name
+```
+
+**Otros servicios git** (URL completa requerida):
+```bash
+/plugin marketplace add https://gitlab.com/org/marketplace-repo.git
+```
+
+**Repositorios privados:** Soportados via git credential helpers o tokens de entorno. El usuario debe tener acceso de lectura al repositorio.
+
+**Submission al marketplace oficial:** [claude.ai/settings/plugins/submit](https://claude.ai/settings/plugins/submit) o [platform.claude.com/plugins/submit](https://platform.claude.com/plugins/submit).
+
+## Configuración administrada — Settings para plugins
+
+Administradores pueden controlar el comportamiento de plugins a nivel organización:
+
+| Setting | Tipo | Alcance | Descripción |
+|---------|------|---------|-------------|
+| `enabledPlugins` | object | all | Habilitar/deshabilitar plugins por clave `plugin-name@marketplace-name` |
+| `extraKnownMarketplaces` | object | project | Agregar marketplaces adicionales (soporta `source: "settings"` para inline) |
+| `strictKnownMarketplaces` | array | managed only | Allowlist de marketplaces permitidos; array vacío bloquea todos |
+| `blockedMarketplaces` | array | managed only | Blocklist de fuentes de marketplace (verificado antes de descargar) |
+| `deniedPlugins` | — | managed only | Blocklist de plugins específicos que no pueden instalarse |
+| `enabledPlugins` | object | all | Allowlist de plugins habilitados por defecto |
+| `allowedChannelPlugins` | array | managed only | Allowlist de channel plugins que pueden enviar mensajes |
+| `pluginTrustMessage` | string | managed only | Mensaje personalizado agregado al warning de confianza de plugin antes de instalar |
+
+```json
+{
+  "enabledPlugins": {
+    "formatter@acme-tools": true,
+    "experimental@acme-tools": false
+  },
+  "strictKnownMarketplaces": [
+    "my-org/*",
+    "github.com/trusted-vendor/*"
+  ]
+}
+```
+
+**Nota:** Con `strictKnownMarketplaces` configurado, los usuarios solo pueden instalar plugins de marketplaces en el allowlist — útil para entornos enterprise que requieren distribución controlada.
+
+## Variables de entorno para plugins
+
+| Variable | Descripción |
+|----------|-------------|
+| `CLAUDE_CODE_PLUGIN_GIT_TIMEOUT_MS` | Timeout de git clone del marketplace en ms (default: 120000) |
+| `FORCE_AUTOUPDATE_PLUGINS` | Forzar auto-updates de plugins (`1` para habilitar) |
+
+## Ciclo de vida completo — Comandos adicionales
+
+Comandos slash adicionales no listados en la sección de instalación:
+
+```bash
+# Ver detalles de un plugin
+/plugin info plugin-name
+
+# Actualizar plugin a nueva versión
+/plugin update plugin-name
+
+# Listar solo plugins instalados
+/plugin list --installed
+```
+
+## Publicar un plugin
+
+Pasos para publicar:
+
+1. Crear estructura del plugin con todos sus componentes
+2. Escribir el manifest `.claude-plugin/plugin.json`
+3. Crear `README.md` con documentación y ejemplos de uso
+4. Probar localmente con `claude --plugin-dir ./my-plugin`
+5. Verificar todos los componentes (comandos, agentes, MCP, hooks, LSP)
+6. Hacer submit al marketplace
+7. Esperar revisión y aprobación
+8. Publicado — los usuarios pueden instalar con un comando
+
+## Buenas prácticas
+
+### Hacer
+- Usar nombres de plugin claros y descriptivos (kebab-case)
+- Incluir README completo con ejemplos de uso
+- Versionar el plugin con semver (MAJOR.MINOR.PATCH)
+- Probar todos los componentes integrados antes de publicar
+- Documentar todos los requisitos explícitamente
+- Mantener compatibilidad hacia atrás
+- Mantener el plugin cohesivo y enfocado en un dominio
+- Prefijar ejecutables de `bin/` con el nombre del plugin para evitar colisiones
+
+### No hacer
+- No agrupar features no relacionados en un mismo plugin
+- No hardcodear credenciales — usar `userConfig` con `sensitive: true`
+- No omitir tests
+- No ignorar el versionado
+- No sobrecomplicar las dependencias entre componentes
+- No olvidar manejar errores gracefully
+
+## Troubleshooting
+
+### Plugin no instala
+- Verificar compatibilidad de versión de Claude Code: `/version`
+- Validar sintaxis de `plugin.json` con un JSON validator
+- Verificar conexión a internet (para plugins remotos)
+- Revisar permisos del directorio: `ls -la plugin/`
+
+### Componentes no cargan
+- Verificar que los paths en `plugin.json` coincidan con la estructura real de directorios
+- Revisar permisos de scripts: `chmod +x scripts/`
+- Revisar sintaxis de los archivos de componentes
+- Revisar logs: `/plugin debug plugin-name`
+
+### MCP no conecta
+- Verificar que las variables de entorno están configuradas
+- Verificar instalación y salud del servidor MCP
+- Probar la conexión MCP independientemente: `/mcp test`
+- Revisar configuración en el directorio `mcp/`
+
+### Comandos no disponibles después de instalar
+- Confirmar que el plugin se instaló correctamente: `/plugin list --installed`
+- Verificar que el plugin está habilitado: `/plugin status plugin-name`
+- Reiniciar Claude Code: `exit` y reabrir
+- Revisar conflictos de nombres con comandos existentes
+
+### Problemas de ejecución de hooks
+- Verificar permisos de los archivos de hook
+- Revisar sintaxis del hook y nombres de eventos
+- Revisar logs de hooks para detalles de errores
+- Probar hooks manualmente si es posible
+
+## Notas de versión
+
+| Feature | Versión mínima |
+|---------|---------------|
+| `userConfig` con `sensitive` | v2.1.83+ |
+| `${CLAUDE_PLUGIN_DATA}` | v2.1.78+ |
+| Inline plugin via `source: 'settings'` | v2.1.80+ |

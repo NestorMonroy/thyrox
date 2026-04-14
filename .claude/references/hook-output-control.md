@@ -260,6 +260,95 @@ def main():
 main()
 ```
 
+## PermissionRequest — Output format propio
+
+El evento `PermissionRequest` usa una estructura diferente a `PreToolUse`. En lugar de `permissionDecision`, su output va bajo `decision` anidado dentro de `hookSpecificOutput`:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PermissionRequest",
+    "decision": {
+      "behavior": "allow",
+      "updatedInput": {},
+      "message": "Permiso concedido automáticamente para archivos en src/",
+      "interrupt": false
+    }
+  }
+}
+```
+
+| Campo en `decision` | Tipo | Efecto |
+|---------------------|------|--------|
+| `behavior` | `"allow"` \| `"deny"` | Aprueba o bloquea la solicitud de permiso |
+| `updatedInput` | object | Modifica el input del tool antes de ejecutar (igual que `updatedInput` en PreToolUse) |
+| `message` | string | Mensaje mostrado al usuario |
+| `interrupt` | boolean | Si `true`, interrumpe el flujo e interrumpe al usuario |
+
+**Distinción clave:** `PreToolUse` usa `hookSpecificOutput.permissionDecision` (`"allow"/"deny"/"ask"`). `PermissionRequest` usa `hookSpecificOutput.decision.behavior` (`"allow"/"deny"`). Son estructuras distintas para eventos distintos.
+
+## PostToolUse — decision: "block"
+
+Además de `additionalContext`, PostToolUse soporta un `decision: "block"` que detiene el flujo y muestra el feedback a Claude:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolUse",
+    "additionalContext": "El archivo contiene secretos hardcodeados en línea 42"
+  },
+  "continue": false,
+  "stopReason": "Operación bloqueada por política de seguridad"
+}
+```
+
+O con `decision` explícito en el nivel raíz del `hookSpecificOutput` (según el contexto de integración):
+
+```json
+{
+  "decision": "block",
+  "reason": "Secreto detectado en archivo escrito"
+}
+```
+
+**Cuándo usar `decision: "block"` vs `additionalContext`:**
+
+| Mecanismo | Efecto | Cuándo usarlo |
+|-----------|--------|---------------|
+| `additionalContext` | Claude recibe el contexto y continúa | Advertencias no bloqueantes (audit, lint) |
+| `continue: false` + `stopReason` | Detiene la sesión con mensaje | Violación de política severa |
+| `decision: "block"` + `reason` | Detiene y muestra reason | Bloqueo de paso en pipeline |
+
+**Restricción:** PostToolUse no puede deshacer lo que el tool ya hizo — solo puede agregar contexto o detener el flujo antes del próximo paso.
+
+## Stop / SubagentStop — campo `last_assistant_message` en el input
+
+Los hooks de `Stop` y `SubagentStop` reciben un campo adicional en el JSON de entrada:
+
+```json
+{
+  "session_id": "abc123",
+  "hook_event_name": "Stop",
+  "transcript_path": "/path/to/transcript.jsonl",
+  "last_assistant_message": "He creado los 3 archivos solicitados y ejecutado las pruebas. Todos pasan."
+}
+```
+
+`last_assistant_message` contiene el último mensaje completo de Claude (o del subagente) antes de detenerse. Esto permite que los prompt hooks evalúen si la tarea está realmente completa sin necesidad de parsear el transcript completo.
+
+**Uso típico en un prompt hook:**
+
+```json
+{
+  "type": "prompt",
+  "prompt": "El último mensaje de Claude fue: {{last_assistant_message}}. ¿Completó todas las tareas solicitadas? Devuelve decision: approve o continue: true con feedback.",
+  "timeout": 30
+}
+```
+
+**Nota:** `last_assistant_message` solo está disponible en `Stop` y `SubagentStop` — no en `PreToolUse`, `PostToolUse`, ni `UserPromptSubmit`.
+
+
 ## Referencias
 
 - [06-hooks/README.md](/tmp/reference/claude-howto/06-hooks/README.md) — Documentación oficial de hooks

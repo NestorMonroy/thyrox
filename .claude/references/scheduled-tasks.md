@@ -51,6 +51,8 @@ in 45 minutes, run the integration tests
 export CLAUDE_CODE_DISABLE_CRON=1
 ```
 
+> **Tip:** Las tareas programadas son session-scoped. Para automatización que debe sobrevivir reinicios, usar CI/CD pipelines, GitHub Actions, o Desktop App scheduled tasks.
+
 ## Cloud Scheduled Tasks — `/schedule`
 
 Las Cloud Scheduled Tasks persisten entre reinicios y corren en infraestructura de Anthropic:
@@ -60,6 +62,19 @@ Las Cloud Scheduled Tasks persisten entre reinicios y corren en infraestructura 
 ```
 
 **Diferencia clave:** No requiere que Claude Code esté corriendo localmente. Para automatización que debe sobrevivir reinicios o ejecutarse sin presencia del usuario.
+
+## Desktop App — Tareas programadas
+
+El Desktop App soporta tareas recurrentes (independientes de `/loop`) que corren mientras la aplicación está abierta:
+
+| Frecuencia | Ejemplos |
+|------------|---------|
+| `hourly` | Chequeo de build status |
+| `daily` | Reportes de errores, backups |
+| `weekdays` | Revisión de PRs pendientes |
+| `weekly` | Resumen de métricas |
+
+A diferencia de `/loop`, estas tareas sobreviven entre sesiones del REPL mientras el Desktop App esté corriendo.
 
 ## Por qué Edit tool funciona en tareas programadas
 
@@ -134,6 +149,9 @@ claude -c -p "check for type errors"
 
 # Limitar turnos autónomos
 claude -p --max-turns 3 "refactor this module"
+
+# Deshabilitar persistencia de sesión (análisis one-off)
+claude -p --no-session-persistence "one-off analysis"
 ```
 
 ### Formatos de output
@@ -155,7 +173,51 @@ claude -p --json-schema '{"type":"object","properties":{"bugs":{"type":"array"}}
 
 ### Integración con CI/CD
 
-**GitHub Actions:**
+**GitHub Actions — workflow completo:**
+
+```yaml
+# .github/workflows/code-review.yml
+name: AI Code Review
+
+on: [pull_request]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run Claude Code Review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude -p --output-format json \
+            --max-turns 3 \
+            "Review this PR for:
+            - Code quality issues
+            - Security vulnerabilities
+            - Performance concerns
+            - Test coverage
+            Output results as JSON" > review.json
+
+      - name: Post Review Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const review = JSON.parse(fs.readFileSync('review.json', 'utf8'));
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: JSON.stringify(review, null, 2)
+            });
+```
+
+**Snippet rápido (snippet anterior):**
 
 ```yaml
 - name: AI Code Review
@@ -194,6 +256,13 @@ claude --resume feature-auth --fork-session "try OAuth instead"
 claude --session-id "550e8400-..." "continue"
 ```
 
+### Comandos de sesión dentro del REPL
+
+```
+/rename auth-refactor        # Nombrar la sesión actual
+/fork                        # Fork inline — rama sin afectar el original
+```
+
 ### Session Fork
 
 ```bash
@@ -204,6 +273,19 @@ claude --resume abc123 --fork-session "test alternative approach"
 La sesión original queda intacta. El fork se convierte en una sesión independiente nueva.
 
 ## Permission modes para automatización
+
+### Tabla completa de modos
+
+| Modo | Comportamiento |
+|------|----------------|
+| `default` | Solo lectura; solicita aprobación para todo lo demás |
+| `acceptEdits` | Lee y edita archivos; solicita aprobación para comandos |
+| `plan` | Solo lectura (modo research, sin edits) |
+| `auto` | Todas las acciones con classifier de seguridad en background (Research Preview) |
+| `dontAsk` | Solo tools pre-aprobados ejecutan; el resto se deniega |
+| `bypassPermissions` | Todas las acciones sin verificación (peligroso) |
+
+Ciclar modos con `Shift+Tab` en el REPL. Establecer default con `--permission-mode` o `permissions.defaultMode`.
 
 ```bash
 # Solo lectura — audit sin modificaciones
@@ -224,12 +306,41 @@ claude --disallowedTools "Bash(rm -rf:*)" "Bash(git push --force:*)"
 
 ## Auto Mode — Safety Classifier
 
-Auto Mode (Research Preview) usa un clasificador de seguridad en background para revisar cada acción:
+Auto Mode (Research Preview, marzo 2026) usa un clasificador de seguridad en background para revisar cada acción.
+
+### Requisitos
+
+| Requisito | Detalle |
+|-----------|---------|
+| **Plan** | Team, Enterprise, o API (no disponible en Pro ni Max) |
+| **Modelo** | Claude Sonnet 4.6 o Opus 4.6 |
+| **Provider** | Anthropic API únicamente (no compatible con Bedrock, Vertex ni Foundry) |
+| **Costo adicional** | El classifier corre sobre Sonnet 4.6 — agrega tokens extra por sesión |
+
+### Activación
 
 ```bash
 claude --enable-auto-mode
 # Luego Shift+Tab para ciclar hasta "auto" mode
+
+# O directamente:
+claude --permission-mode auto
 ```
+
+```json
+{
+  "permissions": {
+    "defaultMode": "auto"
+  }
+}
+```
+
+### Orden de evaluación del classifier
+
+1. **Allow/deny rules** — Las reglas de permiso explícitas se evalúan primero
+2. **Read-only/edits** — Lecturas de archivo y edits se aprueban automáticamente
+3. **Classifier** — El classifier revisa la acción
+4. **Fallback** — Después de 3 bloqueos consecutivos o 20 totales, vuelve a preguntar al usuario
 
 **Acciones bloqueadas por defecto:**
 - `curl | bash` (pipe-to-shell installs)
@@ -244,6 +355,54 @@ claude --enable-auto-mode
 - `npm install`, `pip install` desde manifests
 - HTTP de solo lectura
 - Push a la rama actual
+
+### Comandos de inspección
+
+```bash
+# Ver las reglas por defecto del classifier como JSON
+claude auto-mode defaults
+```
+
+### `autoMode.environment` — enterprise
+
+Para deployments enterprise, la managed setting `autoMode.environment` permite definir infraestructura confiable (CI/CD environments, deployment targets):
+
+```json
+{
+  "autoMode": {
+    "environment": "ci"
+  }
+}
+```
+
+### Alternativa sin plan Team — seeding manual de permisos
+
+Si no se tiene un plan Team/Enterprise o se prefiere evitar el classifier, se puede sembrar `~/.claude/settings.json` con una baseline conservadora usando el script `setup-auto-mode-permissions.py`:
+
+```bash
+# Preview sin escribir cambios
+python3 setup-auto-mode-permissions.py --dry-run
+
+# Aplicar baseline conservadora (read-only + inspección local)
+python3 setup-auto-mode-permissions.py
+
+# Agregar capacidades adicionales solo cuando se necesitan
+python3 setup-auto-mode-permissions.py --include-edits --include-tests
+python3 setup-auto-mode-permissions.py --include-git-write --include-packages
+python3 setup-auto-mode-permissions.py --include-gh-read --include-gh-write
+```
+
+| Categoría | Ejemplos incluidos |
+|-----------|-------------------|
+| Core read-only | `Read(*)`, `Glob(*)`, `Grep(*)`, `Agent(*)`, `WebSearch(*)`, `WebFetch(*)` |
+| Inspección local | `Bash(git status:*)`, `Bash(git log:*)`, `Bash(cat:*)`, `Bash(find:*)` |
+| Edits opcionales | `Edit(*)`, `Write(*)`, `NotebookEdit(*)` |
+| Test/build opcionales | `Bash(pytest:*)`, `Bash(cargo test:*)`, `Bash(make:*)` |
+| Git write opcionales | `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git stash:*)` |
+| Package managers opcionales | `Bash(npm install:*)`, `Bash(pip install:*)` |
+| GitHub CLI opcionales | `Bash(gh pr view:*)`, `Bash(gh pr create:*)` |
+
+Las operaciones peligrosas (`rm -rf`, `sudo`, force push, `DROP TABLE`, `terraform destroy`) están excluidas intencionalmente. El script es idempotente.
 
 **Fallback:** Después de 3 bloqueos consecutivos o 20 totales, vuelve a preguntar al usuario.
 
@@ -269,6 +428,9 @@ claude --enable-auto-mode
 | `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` | Deshabilita background tasks |
 | `CLAUDE_CODE_EFFORT_LEVEL` | Nivel de razonamiento (`low`/`medium`/`high`/`max`) |
 | `MAX_THINKING_TOKENS` | Budget de tokens para extended thinking |
+| `CLAUDE_CODE_ENABLE_TASKS` | Habilita task list persistente |
+| `CLAUDE_CODE_TASK_LIST_ID` | Nombre del directorio de tareas compartido entre sesiones |
+| `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION` | `false` para deshabilitar sugerencias de prompts |
 
 ## Ejemplo completo — monitoring de deployment
 

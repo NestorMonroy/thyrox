@@ -6,7 +6,7 @@ Referencia para el sistema de memoria de 8 niveles de Claude Code. Controla qué
 
 | Prioridad | Tipo | Ubicación | Alcance |
 |-----------|------|-----------|---------|
-| 1 (máxima) | **Managed Policy** | `/Library/Application Support/ClaudeCode/CLAUDE.md` (macOS) | Organización |
+| 1 (máxima) | **Managed Policy** | `/Library/Application Support/ClaudeCode/CLAUDE.md` (macOS) · `/etc/claude-code/CLAUDE.md` (Linux/WSL) · `C:\Program Files\ClaudeCode\CLAUDE.md` (Windows) | Organización |
 | 2 | **Managed Drop-ins** | `managed-settings.d/*.md` (v2.1.83+) | Organización (modular) |
 | 3 | **Project Memory** | `./CLAUDE.md` o `./.claude/CLAUDE.md` | Proyecto (equipo) |
 | 4 | **Project Rules** | `./.claude/rules/*.md` (glob patterns) | Proyecto (modular) |
@@ -19,7 +19,7 @@ Referencia para el sistema de memoria de 8 niveles de Claude Code. Controla qué
 
 ## Cargado automático vs on-demand
 
-Los archivos CLAUDE.md se cargan automáticamente al inicio de sesión. Los archivos en subdirectorios se cargan cuando Claude accede a esos directorios (traversal contextual).
+Los archivos CLAUDE.md se cargan automáticamente al inicio de sesión. Claude traversa hacia arriba desde el directorio de trabajo actual para descubrir CLAUDE.md — no solo el directorio raíz. Los archivos en subdirectorios se cargan cuando Claude accede a esos directorios (traversal contextual).
 
 ```
 /project-root/
@@ -53,20 +53,47 @@ Los archivos CLAUDE.md pueden importar otros archivos para modularidad:
 
 ## Auto Memory — Claude escribe su propia memoria
 
-Claude puede auto-actualizar su memoria persistente para recordar preferencias y contexto entre sesiones:
+Claude puede auto-actualizar su memoria persistente para recordar preferencias y contexto entre sesiones.
 
+**Estructura oficial:**
 ```
 ~/.claude/projects/<hash-del-proyecto>/memory/
-├── preferences.md     ← preferencias aprendidas
-├── patterns.md        ← patrones del proyecto descubiertos
-└── context.md         ← contexto acumulado
+├── MEMORY.md              ← entrypoint principal (primeras 200 líneas / 25KB cargadas al inicio)
+├── debugging.md           ← topic file (cargado on-demand)
+├── api-conventions.md     ← topic file (cargado on-demand)
+└── testing-patterns.md    ← topic file (cargado on-demand)
 ```
+
+**Importante:** El archivo entrypoint se llama `MEMORY.md` (no `preferences.md` ni `patterns.md`). Los topic files adicionales son on-demand, no se cargan al inicio.
+
+**Versión mínima requerida:** v2.1.59
 
 **Control:**
 ```bash
 # Deshabilitar auto memory
-export CLAUDE_CODE_DISABLE_AUTO_MEMORY=1
+CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 claude
+
+# Forzar auto memory on explícitamente
+CLAUDE_CODE_DISABLE_AUTO_MEMORY=0 claude
 ```
+
+| Valor | Comportamiento |
+|-------|---------------|
+| `0` | Fuerza auto memory **on** |
+| `1` | Fuerza auto memory **off** |
+| *(sin definir)* | Comportamiento por defecto (activado) |
+
+**Directorio personalizado** (`autoMemoryDirectory`, disponible desde v2.1.74):
+
+```jsonc
+// Solo en ~/.claude/settings.json o .claude/settings.local.json
+// NO en project settings ni managed policy
+{
+  "autoMemoryDirectory": "/path/to/custom/memory/directory"
+}
+```
+
+**Worktrees:** Todos los worktrees y subdirectorios del mismo repositorio git comparten un único directorio de auto memory.
 
 **Cuándo es útil:** Claude aprende convenciones del proyecto (naming, patterns preferidos) y las retiene entre sesiones sin que el usuario deba repetirlas.
 
@@ -76,8 +103,8 @@ Los administradores pueden hacer cumplir políticas a nivel de organización:
 
 ```
 macOS:   /Library/Application Support/ClaudeCode/
-Linux:   ~/.config/ClaudeCode/
-Windows: %APPDATA%\ClaudeCode\
+Linux/WSL:  /etc/claude-code/
+Windows: C:\Program Files\ClaudeCode\
 
 Archivos disponibles:
 ├── CLAUDE.md               # Memoria de política org (nivel 1)
@@ -89,24 +116,90 @@ Archivos disponibles:
     └── integrations.json
 ```
 
-**Jerarquía de settings:**
-```
-managed-settings.json (más alto)
-  ↓
-~/.claude/settings.json
-  ↓
-.claude/settings.json
-  ↓
-.claude/settings.local.json (más bajo)
-```
+**Jerarquía de settings (5 niveles):**
 
-Las organizaciones pueden usar `claudeMdExcludes` para filtrar CLAUDE.md irrelevantes en monorepos:
+| Nivel | Ubicación | Scope |
+|-------|-----------|-------|
+| 1 (más alto) | Managed policy (system-level) | Organización — enforcement obligatorio |
+| 2 | `managed-settings.d/` (v2.1.83+) | Org modular — merged alfabéticamente |
+| 3 | `~/.claude/settings.json` | Usuario |
+| 4 | `.claude/settings.json` | Proyecto (commiteado) |
+| 5 (más bajo) | `.claude/settings.local.json` | Local (git-ignored) |
+
+**Settings nativos de plataforma (v2.1.51+):** En macOS pueden usarse archivos plist; en Windows, el Registry. Se leen junto a los JSON y siguen las mismas reglas de precedencia.
+
+`claudeMdExcludes` puede definirse en cualquier nivel de settings (no solo en managed policy):
 
 ```json
 {
   "claudeMdExcludes": ["vendor/**", "node_modules/**", "packages/legacy/**"]
 }
 ```
+
+Útil para monorepos donde algunas CLAUDE.md son irrelevantes para el trabajo actual. Los patrones se evalúan relativos a la raíz del proyecto.
+
+## Sistema de rules modulares
+
+Las rules en `.claude/rules/` admiten dos características organizativas:
+
+- **Subdirectorios:** Las rules se descubren recursivamente. Se pueden organizar en carpetas por tema (`rules/api/`, `rules/testing/`, `rules/security/`)
+- **Symlinks:** Soportados para compartir rules entre proyectos desde una ubicación central
+
+Las rules de usuario en `~/.claude/rules/` se cargan antes que las de proyecto, permitiendo defaults personales que los proyectos pueden sobreescribir.
+
+**Path-specific rules con YAML frontmatter:**
+
+Las rules pueden limitarse a rutas específicas usando frontmatter:
+
+```markdown
+---
+paths: src/api/**/*.ts
+---
+
+# API Development Rules
+
+- All API endpoints must include input validation
+- Use Zod for schema validation
+```
+
+Glob patterns soportados: `**/*.ts`, `src/**/*`, `src/**/*.{ts,tsx}`, `{src,lib}/**/*.ts`.
+
+## Comandos de memoria en sesión
+
+| Comando | Propósito | Cuándo usar |
+|---------|-----------|-------------|
+| `/init` | Inicializar CLAUDE.md del proyecto | Primera vez, proyecto nuevo |
+| `/memory` | Editar archivos de memoria en editor | Actualizaciones extensas, revisión |
+| `@path/to/file` | Importar contenido externo | Referenciar docs existentes en CLAUDE.md |
+
+**`/init` con modo interactivo:**
+```bash
+CLAUDE_CODE_NEW_INIT=1 claude
+/init
+```
+Activa un flujo multi-fase que guía el setup paso a paso.
+
+**`#` prefix — discontinuado:** El shortcut `# texto` para agregar reglas en línea ya no funciona. Usar `/memory` o pedir conversacionalmente ("remember that we always use TypeScript strict mode").
+
+**Agregar memoria conversacionalmente:**
+```
+Remember that we always use TypeScript strict mode in this project.
+```
+Claude preguntará en qué archivo de memoria guardar y actualizará el CLAUDE.md correspondiente.
+
+## Carga desde directorios adicionales — `--add-dir`
+
+El flag `--add-dir` permite cargar CLAUDE.md de directorios adicionales más allá del directorio de trabajo. Útil para monorepos o setups multi-proyecto.
+
+```bash
+# Activar el feature
+export CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1
+
+# Lanzar Claude con directorio adicional
+claude --add-dir /path/to/other/project
+```
+
+Claude carga el CLAUDE.md del directorio adicional junto con los archivos de memoria del directorio de trabajo actual.
 
 ## Memoria de subagentes — scope por agente
 
@@ -129,6 +222,17 @@ memory: project    # user | project | local
 - Las primeras **200 líneas** (o 25KB) de `MEMORY.md` se inyectan automáticamente en el system prompt del subagente
 - Archivos de temas adicionales se cargan on-demand
 - El subagente tiene Read/Write/Edit habilitados para gestionar su propia memoria
+
+## Memory tool (beta) — recuperación dinámica
+
+Desde Claude Sonnet 4.5, existe un Memory tool en beta público. Es distinto de CLAUDE.md:
+
+| Mecanismo | Carga | Naturaleza |
+|-----------|-------|-----------|
+| CLAUDE.md | Al inicio de sesión (siempre) | Contexto estático — configuración |
+| Memory tool | On-demand, al consultar | Contexto dinámico — recuperación |
+
+El Memory tool mantiene un knowledge store estructurado que Claude consulta cuando necesita contexto específico. Reduce la necesidad de codificar manualmente todo el conocimiento en archivos de configuración, especialmente en workflows de agentes.
 
 ## Niveles de memoria para diferentes audiencias
 

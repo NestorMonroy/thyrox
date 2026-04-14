@@ -4,7 +4,7 @@ category: Metodología de Especificación
 version: 2.0
 purpose: Specification-Driven Development (SDD) — combina TDD y DbC para especificaciones completas y verificables. Incluye tres niveles de rigor y workflow Specify→Plan→Implement→Validate.
 source: "Ostroff, Makalsky, Paige — Agile Specification-Driven Development; Spec-Driven Development: From Code to Contract in the Age of AI"
-updated_at: 2026-04-11 21:45:00
+updated_at: 2026-04-14 20:05:39
 ```
 
 # Specification-Driven Development (SDD)
@@ -341,12 +341,213 @@ flowchart TD
     Q4 -->|Code gen| SS[Spec-as-Source]
 ```
 
+
+---
+
+## Herramientas SDD — Tooling de referencia
+
+> Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide
+
+Tres herramientas principales han emergido para formalizar SDD en proyectos reales:
+
+| Herramienta | Caso de uso | Docs | Integración Claude |
+|-------------|-------------|------|--------------------|
+| **Spec Kit** | Greenfield, governance | [github.blog/spec-kit](https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/) | `/speckit.constitution`, `/speckit.specify`, `/speckit.plan` |
+| **OpenSpec** | Brownfield, gestión de cambios | [github.com/Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec) | `/openspec:proposal`, `/openspec:apply`, `/openspec:archive` |
+| **Specmatic** | API contract testing | [specmatic.io](https://specmatic.io) | MCP agent disponible |
+| **Spec-to-Code Factory** | Greenfield, enforcement multi-agente | [github.com/SylvainChabaud/spec-to-code-factory](https://github.com/SylvainChabaud/spec-to-code-factory) | Ciclo BREAK→MODEL→ACT→DEBRIEF |
+
+### Spec Kit (Greenfield)
+
+Workflow 5 fases:
+1. **Constitution** (`/speckit.constitution`) → guardrails del proyecto
+2. **Specify** (`/speckit.specify`) → requisitos
+3. **Plan** (`/speckit.plan`) → arquitectura
+4. **Tasks** (`/speckit.tasks`) → descomposición
+5. **Implement** (`/speckit.implement`) → código
+
+### OpenSpec (Brownfield)
+
+Arquitectura de dos directorios:
+```
+openspec/
+├── specs/      ← Verdad actual (estable)
+└── changes/    ← Propuestas (temporales)
+```
+
+Workflow: Proposal → Review → Apply → Archive
+
+### Specmatic (API Contracts)
+
+- **Contract as Test**: genera miles de tests automáticamente desde una especificación OpenAPI
+- **Contract as Stub**: mock server para desarrollo en paralelo
+- **Backward Compatibility**: detecta breaking changes entre versiones
+
+---
+
+## Verificación autónoma — Verification Loops
+
+> Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide, Tier 5: Implementation
+
+**Principio central:** darle a Claude un mecanismo para verificar su propio output.
+
+```
+Código generado → Herramienta de verificación → Feedback loop → Mejora
+```
+
+> "An agent that can 'see' what it has done produces better results." — Boris Cherny
+
+**Relación con SDD:** En el ciclo Specify → Plan → Implement → **Validate**, los Verification Loops son el mecanismo concreto de la fase Validate. Sin un mecanismo de verificación, Claude no puede converger hacia la solución correcta — itera a ciegas.
+
+**Mecanismos por dominio:**
+
+| Dominio | Herramienta | Qué "ve" Claude |
+|---------|-------------|-----------------|
+| **Backend** | Tests (unit/integration) | Estado pass/fail, mensajes de error |
+| **Frontend** | Browser preview (live reload) | Renderizado visual, layout, interacciones |
+| **Tipos** | Compilador TypeScript | Errores de tipo, incompatibilidades |
+| **Estilo** | Linters (ESLint, Prettier) | Violaciones de estilo, formato |
+| **Performance** | Profilers, benchmarks | Tiempo de ejecución, uso de memoria |
+| **Accesibilidad** | axe-core, screen readers | Violaciones WCAG, navegación |
+| **Seguridad** | Analizadores estáticos (Semgrep) | Patrones de vulnerabilidad |
+
+**Implementación práctica:**
+- **Hooks**: `PostToolUse` hook ejecuta verificación después de cada edición
+- **Test watchers**: Jest/Vitest en modo watch proveen feedback instantáneo
+- **CI/CD gates**: GitHub Actions ejecuta la suite completa
+- **Multi-Claude verification**: un Claude codifica, otro revisa
+
+**Anti-patrón:** iteración ciega sin feedback. Sin mecanismo de verificación, Claude adivina.
+
+---
+
+## ATDD en desarrollo agentico
+
+> Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide, Tier 3: Behavior & Acceptance
+
+**ATDD (Acceptance Test-Driven Development)** es especialmente efectivo en desarrollo agentico porque los agentes necesitan condiciones de éxito sin ambigüedad. El flujo mapea limpiamente a tareas de agentes:
+
+1. **Definir acceptance criteria** en Gherkin (legible por humanos, ejecutable por máquinas)
+2. **Agente escribe tests fallantes** basados en los escenarios (no en la implementación)
+3. **Agente implementa** hasta que los tests pasen
+
+```gherkin
+Feature: Password Reset
+  Scenario: User resets via email
+    Given a registered user with email "user@example.com"
+    When they request a password reset
+    Then they receive a reset email within 60 seconds
+    And the reset link expires after 24 hours
+```
+
+Este escenario Gherkin es el **contrato entre intención e implementación**. El agente no puede malinterpretar el alcance porque "done" está definido antes de escribir una línea de código.
+
+> **Aplicado a Claude Code**: Pasar el archivo Gherkin antes de implementar: "Write failing tests for this feature file, then implement until they pass." El rol de escritor de escenarios (humano o agente) fuerza el alcance explícito antes de que comience la ejecución.
+
+**Relación con SDD:** ATDD extiende la capa Collaborative Specifications (TDD) con un proceso colaborativo — los escenarios Gherkin son la versión ejecutable y formal del `Given/When/Then` que SDD ya usa. En proyectos con múltiples stakeholders, ATDD es el mecanismo para escribir esas collaborative specs en conjunto.
+
+### JiTTesting — Tests efímeros para código generado por agentes
+
+TDD/BDD/ATDD asumen que el desarrollador controla el ritmo de autoría. El desarrollo agentico rompe esa suposición: un agente puede generar 200 líneas por hora.
+
+**JiTTesting (Just-in-Time Testing):** tests generados en el momento del PR, diseñados para fallar, descartados después del merge. Sin costo de mantenimiento, sin crecimiento del test suite.
+
+**Mecanismo:**
+1. Al momento del PR, un LLM infiere el intent del diff
+2. Genera mutantes de código (variantes deliberadamente rotas)
+3. Escribe tests que atrapen esos mutantes
+4. Ejecuta assessors para filtrar falsos positivos
+5. Surfacea solo regresiones reales al engineer
+6. Los tests nunca llegan al codebase
+
+**Escala:** Meta lo desplegó en 100M+ LoC: 4x mejora en detección de regresiones, 70% reducción en carga de revisión humana.
+
+**Aproximación hoy:** antes de mergear un PR generado por agente, prompt a Claude: "generate tests that would catch regressions introduced by this diff specifically — I'll run them locally and discard them after the PR closes."
+
+> Referencia: [Just-in-Time Catching Test Generation at Meta](https://arxiv.org/abs/2601.22832) — Harman, 2026.
+
+---
+
+## Escribir specs efectivas
+
+> Fuente: Addy Osmani — *How to Write Good Specs for AI Agents* (análisis de 2500+ archivos de configuración)
+
+### Los seis componentes esenciales
+
+| Componente | Qué incluir | Ejemplo |
+|------------|-------------|---------|
+| **Commands** | Ejecutables con flags | `npm test -- --coverage` |
+| **Testing** | Framework, cobertura, ubicaciones | `vitest, 80%, tests/` |
+| **Estructura del proyecto** | Directorios explícitos | `src/`, `lib/`, `tests/` |
+| **Estilo de código** | Un ejemplo > párrafos de descripción | Mostrar una función real |
+| **Git workflow** | Branch, commit, formato de PR | `feat/name`, conventional commits |
+| **Boundaries** | Permission tiers | Ver abajo |
+
+### Permission tiers en specs
+
+| Tier | Símbolo | Para |
+|------|---------|------|
+| Siempre hacer | ✅ | Acciones seguras, sin aprobación (lint, format) |
+| Preguntar primero | ⚠️ | Cambios de alto impacto (delete, publish) |
+| Nunca hacer | 🚫 | Hard stops (commit secrets, force push main) |
+
+### Curse of Instructions
+
+> ⚠️ La investigación muestra que **más instrucciones = peor adherencia** a cada una.
+>
+> Solución: servir solo las secciones de spec relevantes por tarea, no el documento completo.
+
+### Specs monolíticas vs modulares
+
+| Tamaño del proyecto | Enfoque |
+|--------------------|---------|
+| Pequeño (<10 archivos) | Un único archivo de spec |
+| Mediano (10-50 archivos) | Spec por secciones, servir por tarea |
+| Grande (50+ archivos) | Routing por sub-agente según dominio |
+
+---
+
+## Patrones de combinación
+
+> Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide
+
+Stacks recomendados según contexto:
+
+| Situación | Stack recomendado | Notas |
+|-----------|------------------|-------|
+| Solo MVP | SDD + TDD | Overhead mínimo, foco en calidad |
+| Equipo 5-10, greenfield | Spec Kit + TDD + BDD | Governance + calidad + colaboración |
+| Microservicios | CDD + Specmatic | Contract-first, desarrollo en paralelo |
+| SaaS existente (100+ features) | OpenSpec + BDD | Change tracking, sin spec drift |
+| Alta complejidad / compliance | BMAD + Spec Kit + Specmatic | Governance completo + contratos |
+| Producto LLM-native | Eval-Driven + Multi-Agent | Sistemas auto-mejorables |
+
 ---
 
 ## Referencias
 
+### Fuentes académicas y papers
 - Paper 1: Ostroff, Makalsky, Paige — *Agile Specification-Driven Development* (York University / University of York)
 - Paper 2: *Spec-Driven Development: From Code to Contract in the Age of AI*
+- Harman, 2026 — [Just-in-Time Catching Test Generation at Meta](https://arxiv.org/abs/2601.22832)
+
+### Documentación oficial
+- GitHub: [Spec-Driven Development Toolkit](https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/)
+- Microsoft: [Spec-Driven Development with Spec Kit](https://developer.microsoft.com/blog/spec-driven-development-spec-kit)
+- OpenSpec: [github.com/Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec)
+- Spec Kit: [github.com/github/spec-kit](https://github.com/github/spec-kit)
+- Specmatic: [specmatic.io](https://specmatic.io)
+- Specmatic Article: [Spec-Driven Development with GitHub Spec Kit and Specmatic MCP](https://specmatic.io/article/spec-driven-development-api-design-first-with-github-spec-kit-and-specmatic-mcp/)
+
+### Referencias de metodología
+- Addy Osmani: [How to Write Good Specs for AI Agents](https://addyosmani.com/blog/good-spec/)
+- Addy Osmani: [My AI Coding Workflow in 2026](https://addyosmani.com/blog/ai-coding-workflow/) — Workflow end-to-end: spec-first, context packing, TDD, git checkpoints
+- Martin Fowler: [SDD Tools Analysis](https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html)
+- InfoQ: [Spec-Driven Development](https://www.infoq.com/articles/spec-driven-development/)
+- Kinde: [Beyond TDD - Why SDD is the Next Step](https://kinde.com/learn/ai-for-software-engineering/best-practice/beyond-tdd-why-spec-driven-development-is-the-next-step/)
+- Tessl.io: [Spec-Driven Dev with Claude Code](https://tessl.io/blog/spec-driven-dev-with-claude-code/)
+
+### Comandos y skills THYROX
 - [`workflow-structure/SKILL.md`](../skills/workflow-structure/SKILL.md) — Phase 4 STRUCTURE (TDD puro)
 - `commands/spec-driven.md` → `/thyrox:spec-driven` — SDD completo (TDD + DbC, tres niveles)
 - `commands/test-driven-development.md` → `/thyrox:test-driven-development` — TDD puro
