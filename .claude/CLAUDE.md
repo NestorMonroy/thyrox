@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
 version: 3.4
-updated_at: 2026-04-14 20:40:00
+updated_at: 2026-04-14 22:38:05
 ```
 
 # CLAUDE.md — THYROX
@@ -46,26 +46,43 @@ REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
 ├── CLAUDE.md                  ← Este archivo (Level 2)
 ├── agents/                    ← Agentes nativos Claude Code (ver references/agent-spec.md)
 ├── commands/                  ← Comandos slash disponibles (sin frontmatter, sin disparo automático)
-├── guidelines/                ← Directivas siempre cargadas (generadas por registry, no on-demand)
 ├── memory/                    ← Memoria persistente entre sesiones
 ├── references/                ← Documentación global de plataforma Claude Code (on-demand)
-├── registry/                  ← Registro de tech skills y agentes
 ├── scripts/                   ← Scripts de infraestructura Claude Code (hooks, utilidades)
 └── skills/                    ← Skills del framework (thyrox + workflow-*)
     └── thyrox/                ← El SKILL (Level 1): SKILL.md + references/ + scripts/ + assets/
 
-.thyrox/                       ← Estado de trabajo del proyecto (fuera de .claude/)
-└── context/                   ← Estado de sesión y artefactos de trabajo
-    ├── project-state.md       ← Metadata del proyecto
-    ├── focus.md               ← Dirección actual
-    ├── now.md                 ← Estado de sesión single-agent
-    ├── now-{agent-id}.md      ← Estado por agente (ejecución paralela)
-    ├── decisions/             ← ADRs (adr-{tema}.md — sin números)
-    ├── errors/                ← Registros de errores ({descripcion}.md — sin números)
-    ├── research/              ← Investigaciones y sandboxes
-    ├── technical-debt.md      ← Backlog de deuda técnica
-    └── work/                  ← Paquetes de trabajo (YYYY-MM-DD-HH-MM-SS-nombre/)
+.thyrox/                       ← Estado de trabajo + tooling del proyecto
+├── context/                   ← Estado de sesión y artefactos de trabajo
+│   ├── project-state.md       ← Metadata del proyecto
+│   ├── focus.md               ← Dirección actual
+│   ├── now.md                 ← Estado de sesión single-agent
+│   ├── now-{agent-id}.md      ← Estado por agente (ejecución paralela)
+│   ├── decisions/             ← ADRs (adr-{tema}.md — sin números)
+│   ├── errors/                ← Registros de errores ({descripcion}.md — sin números)
+│   ├── research/              ← Investigaciones y sandboxes
+│   ├── technical-debt.md      ← Backlog de deuda técnica
+│   └── work/                  ← Paquetes de trabajo (YYYY-MM-DD-HH-MM-SS-nombre/)
+├── guidelines/                ← Directivas tech-stack (generadas por registry/_generator.sh)
+│   └── {layer}-{framework}.instructions.md  ← cargadas vía @imports abajo
+└── registry/                  ← Fuente de verdad y generadores
+    ├── agents/                ← Definiciones YML de agentes (Flujo A)
+    ├── {layer}/               ← Templates de metodología (Flujo B)
+    ├── mcp/                   ← Servidores MCP de runtime (Flujo C)
+    ├── bootstrap.py           ← Genera .claude/agents/ desde agents/*.yml
+    └── _generator.sh          ← Genera .claude/skills/ + .thyrox/guidelines/ desde templates
 ```
+
+## Tech-stack guidelines — @imports
+
+Directivas siempre activas para el stack del proyecto. Generadas por `registry/_generator.sh`.
+
+@.thyrox/guidelines/backend-nodejs.instructions.md
+@.thyrox/guidelines/db-mysql.instructions.md
+@.thyrox/guidelines/db-postgresql.instructions.md
+@.thyrox/guidelines/frontend-react.instructions.md
+@.thyrox/guidelines/frontend-webpack.instructions.md
+@.thyrox/guidelines/python-mcp.instructions.md
 
 **Por qué `.thyrox/` y no `.claude/context/`:**
 `.claude/` está protegido por una safety invariant del binario de Claude Code — genera un prompt

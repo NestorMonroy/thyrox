@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-14 18:29:19
+updated_at: 2026-04-14 22:38:05
 ```
 
 # Deuda Técnica — THYROX
@@ -292,5 +292,105 @@ REGLA-LONGEV-001: Archivos vivos con umbral de tamaño
 **Criterio de cierre:**
 - `conventions.md` contiene la regla REGLA-LONGEV-001
 - `project-status.sh` o script equivalente alerta si archivo vivo supera 25,000 bytes
+
+---
+
+## TD-037: agents/*.yml tienen campo `model:` prohibido por README del registry
+
+```
+Severidad: media
+Origen: FASE 36 — análisis registry (2026-04-14)
+Fase afectada: .thyrox/registry/agents/
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+El README de `registry/agents/` declara `model` como campo **PROHIBIDO** en los YMLs:
+> "model: PROHIBIDO — bootstrap.py no lo propaga a agentes nativos"
+
+Sin embargo, todos los YMLs de tech-experts tienen `model: claude-sonnet-4-6`.
+Hay divergencia entre la spec del registry y los archivos actuales.
+
+**Archivos afectados:**
+`nodejs-expert.yml`, `react-expert.yml`, `webpack-expert.yml`,
+`postgresql-expert.yml`, `mysql-expert.yml`, `task-executor.yml`
+
+**Criterio de cierre:**
+Campo `model:` eliminado de todos los YMLs, o README actualizado si la prohibición
+fue revertida (con justificación en ADR).
+
+---
+
+## TD-038: webpack-expert no tiene .yml en registry (agente existe en .claude/agents/)
+
+```
+Severidad: media
+Origen: FASE 36 — análisis registry (2026-04-14)
+Fase afectada: .thyrox/registry/agents/
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+El README de `registry/agents/` lista `webpack-expert` en la tabla de tech-experts
+como si fuera generado por `bootstrap.py`, pero el archivo `agents/webpack-expert.yml`
+existe directamente y no sigue el flujo de generación. El agente `.claude/agents/webpack-expert.md`
+fue creado manualmente, no mediante `bootstrap.py`.
+
+**Criterio de cierre:**
+Decidir: (A) crear `webpack-expert.yml` formal en registry para generación consistente,
+o (B) documentar en README que webpack-expert es un agente manual (fuera del flujo A).
+
+---
+
+## TD-039: Sin mecanismo de sincronización entre Flow A (agents) y Flow B (templates)
+
+```
+Severidad: baja
+Origen: FASE 36 — análisis registry (2026-04-14)
+Fase afectada: .thyrox/registry/
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+`nodejs-expert.yml` (Flujo A) y `backend/nodejs.template.md` (Flujo B) describen
+el mismo dominio tecnológico (Node.js) pero son artefactos independientes con
+convenciones distintas. Un cambio en el template no actualiza el agente, y viceversa.
+
+Si el sistema escala (10+ stacks), la divergencia entre las convenciones del agente
+y las del template se vuelve un problema de mantenimiento.
+
+**Criterio de cierre:**
+Definir regla explícita: ¿deben estar sincronizados? ¿El agent YML debería importar
+las convenciones del template como sección? Documentar en `registry/README.md`.
+
+---
+
+## TD-040: .instructions.md en .thyrox/guidelines/ no cargadas por mecanismo verificado
+
+```
+Severidad: alta
+Origen: FASE 36 — análisis de carga de guidelines (2026-04-14)
+Fase afectada: .thyrox/guidelines/ + .claude/CLAUDE.md
+Estado: [-] En progreso — @imports agregados en CLAUDE.md (FASE 36), verificación pendiente
+```
+
+**Problema:**
+Los archivos `{layer}-{framework}.instructions.md` en `.thyrox/guidelines/` están
+diseñados como "directivas siempre activas". Sin embargo, nunca se verificó que
+el mecanismo de carga funcione en sesiones reales.
+
+Con la migración de FASE 36 se agregaron `@imports` explícitos en CLAUDE.md.
+Pero el comportamiento de `@path` para `.instructions.md` no está documentado
+en las referencias de plataforma como "verificado en producción".
+
+**Trabajo requerido:**
+1. Verificar en una sesión real que los `@imports` en CLAUDE.md activan las guidelines
+2. Confirmar que Claude aplica las reglas de Node.js/React/etc. sin ser instruido
+3. Si `@imports` no funciona para `.instructions.md`, migrar a `.claude/rules/` (mecanismo oficial de Project Rules)
+
+**Criterio de cierre:**
+En una sesión de prueba, Claude aplica reglas de las guidelines (ej: "no lógica de negocio
+en handlers") sin instrucción explícita. O las guidelines se mueven a `.claude/rules/`
+con el mecanismo oficial verificado.
 
 ---

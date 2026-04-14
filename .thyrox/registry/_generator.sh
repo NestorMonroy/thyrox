@@ -11,7 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REGISTRY_DIR="$SCRIPT_DIR"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SKILLS_DIR="$PROJECT_ROOT/.claude/skills"
-GUIDELINES_DIR="$PROJECT_ROOT/.claude/guidelines"
+GUIDELINES_DIR="$PROJECT_ROOT/.thyrox/guidelines"
 
 # ── Ayuda ──────────────────────────────────────────────────────────────────
 usage() {

@@ -4,7 +4,7 @@ Categoría: Gestión de Proyecto
 Versión: 0.2.0
 Propósito: Plan maestro de trabajo y tracking de progreso — FASEs activas (27+)
 Objetivo: Documentar fases, epics, y estado actual del proyecto
-Fecha actualización: 2026-04-11
+Fecha actualización: 2026-04-14
 ```
 
 # ROADMAP - THYROX
@@ -22,6 +22,35 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 - `[ ]` = Pendiente
 - `[-]` = En Progreso
 - `[x]` = Completado (YYYY-MM-DD)
+
+---
+
+## FASE 36: guidelines-registry-migration — Migrar .claude/guidelines/ y .claude/registry/ a .thyrox/ (2026-04-14)
+
+**WP:** `.thyrox/context/work/2026-04-14-22-38-05-guidelines-registry-migration/`
+**Alcance:** Separar generadores/tooling de la zona de config Claude Code. Mover guidelines/ y registry/ a .thyrox/. Actualizar paths en _generator.sh, bootstrap.py, .mcp.json. Agregar TDs de registry inconsistencies.
+
+- [x] Phase 6 EXECUTE — completado 2026-04-14
+- [x] Phase 7 TRACK — completado 2026-04-14
+
+---
+
+## FASE 35: context-migration — Migración .claude/context/ → .thyrox/context/ ✓ COMPLETADO 2026-04-14
+
+**WP:** `.thyrox/context/work/2026-04-14-09-13-51-context-migration/`
+**Resultado:** 52 WPs + 19 ADRs + 16 ERRs migrados. 19 ADRs + 18 errores renombrados. 11 refs de plataforma actualizadas. Knowledge base creada. bound-detector.py implementado. FASE 35 formalmente cerrada.
+
+- [x] Phase 6 EXECUTE — completado, Gate SP-06 aprobado 2026-04-14
+- [x] Phase 7 TRACK — completado 2026-04-14
+
+---
+
+## FASE 34: technical-debt-resolution — Resolución 7 TDs activos ✓ COMPLETADO 2026-04-14
+
+**WP:** `.thyrox/context/work/2026-04-14-*-technical-debt-resolution/`
+
+- [x] Phase 6 EXECUTE — completado 2026-04-14
+- [x] Phase 7 TRACK — completado 2026-04-14
 
 ---
 

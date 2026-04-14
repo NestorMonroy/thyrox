@@ -21,11 +21,11 @@ from pathlib import Path
 # ─── Constantes ──────────────────────────────────────────────────────────────
 
 REGISTRY_DIR = Path(__file__).parent
-PROJECT_ROOT = REGISTRY_DIR.parent.parent  # .claude/registry/ → .claude/ → repo root
+PROJECT_ROOT = REGISTRY_DIR.parent.parent  # .thyrox/registry/ → .thyrox/ → repo root
 AGENTS_DIR = PROJECT_ROOT / ".claude" / "agents"
 MEMORY_DIR = PROJECT_ROOT / ".claude" / "memory"
 MCP_JSON = PROJECT_ROOT / ".mcp.json"
-PROJECT_STATE = PROJECT_ROOT / ".claude" / "context" / "project-state.md"
+PROJECT_STATE = PROJECT_ROOT / ".thyrox" / "context" / "project-state.md"
 
 SUPPORTED_MODELS = ["claude"]
 TECH_CATEGORIES = {
@@ -46,14 +46,14 @@ CORE_AGENTS = ["task-planner", "task-executor", "tech-detector", "skill-generato
 MCP_SERVERS = {
     "thyrox-memory": {
         "command": "python",
-        "args": [".claude/registry/mcp/memory_server.py"],
+        "args": [".thyrox/registry/mcp/memory_server.py"],
         "env": {
             "MEMORY_INDEX_PATH": ".claude/memory/thyrox.faiss"
         }
     },
     "thyrox-executor": {
         "command": "python",
-        "args": [".claude/registry/mcp/executor_server.py"]
+        "args": [".thyrox/registry/mcp/executor_server.py"]
     }
 }
 
