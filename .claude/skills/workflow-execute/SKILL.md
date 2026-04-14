@@ -24,6 +24,7 @@ Toma la siguiente tarea pendiente del work package activo y la ejecuta.
 4. Leer `context/now.md` — verificar `phase`
 5. Listar tech skills activos: `ls .claude/skills/ | grep -v thyrox`
 6. REQUERIDO al inicio de sesión: crear o actualizar `{nombre-wp}-execution-log.md` usando `assets/execution-log.md.template`
+7. Para tareas ad-hoc fuera del task-plan formal: usar `assets/ad-hoc-tasks.md.template` (tracking ligero sin T-NNN)
 
 ---
 
