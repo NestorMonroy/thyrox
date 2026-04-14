@@ -4,7 +4,7 @@ category: Claude Code Platform — Tool Execution
 version: 1.0
 purpose: Documentar todos los flujos de ejecución de Edit/Write y el modelo de permisos de herramientas
 source: claude-howto deep-review + comportamiento observado
-updated_at: 2026-04-11 20:26:31
+updated_at: 2026-04-14 20:08:02
 ```
 
 # Tool Execution Model — Edit/Write Flows y Permission Model
@@ -120,6 +120,103 @@ flowchart TD
 "Pre-aprobado" = explícitamente en la lista `allow` de `settings.json`. Los modos
 `acceptEdits` o `auto` NO son suficientes para background agents — las reglas `allow`
 son el único mecanismo.
+
+### Scopes de settings.json y Precedencia
+
+Claude Code aplica configuración desde 5 scopes en orden de prioridad (mayor → menor):
+
+| Prioridad | Scope | Ubicación | Compartido? |
+|-----------|-------|-----------|-------------|
+| 1 | **Managed** | Server, MDM, registry o `managed-settings.json` del sistema | Sí (IT) |
+| 2 | **Command line** | Flags `--` al arrancar | No |
+| 3 | **Local** | `.claude/settings.local.json` | No (gitignored) |
+| 4 | **Project** | `.claude/settings.json` | Sí (committed) |
+| 5 | **User** | `~/.claude/settings.json` | No |
+
+**Merging de arrays:** `permissions.allow`, `permissions.deny`, `permissions.ask` y
+`sandbox.filesystem.allowWrite` se **concatenan y deduplicen** entre scopes — no se reemplazan.
+El `deny` de cualquier scope tiene precedencia sobre el `allow` de cualquier otro scope.
+
+**Managed delivery methods:** Server (Claude.ai admin console) · macOS MDM (`com.anthropic.claudecode`)
+· Windows registry (`HKLM\SOFTWARE\Policies\ClaudeCode`) · archivo `managed-settings.json` en path
+de sistema · directorio `managed-settings.d/*.json` (merged alfabéticamente).
+
+**`allowManagedPermissionRulesOnly`** (managed only, default `false`) — Si `true`, las reglas
+`allow`/`ask`/`deny` de user y project settings son ignoradas; solo aplican reglas del scope managed.
+
+**`permissions.disableBypassPermissionsMode`** — Set a `"disable"` para bloquear el modo
+`bypassPermissions` y el flag `--dangerously-skip-permissions`. Útil en managed deployments.
+
+### Sintaxis Completa de Reglas de Permisos
+
+Formato: `Tool` o `Tool(specifier)`. La evaluación es: deny primero → ask → allow → defaultMode.
+El primer match determina el resultado.
+
+| Tool | Patrón | Ejemplo |
+|------|--------|---------|
+| `Bash` | Command pattern con wildcards | `Bash(npm run *)`, `Bash(git *)` |
+| `Read` | File path pattern | `Read(.env)`, `Read(./secrets/**)` |
+| `Edit` | File path pattern | `Edit(src/**)`, `Edit(*.ts)` |
+| `Write` | File path pattern | `Write(*.md)`, `Write(/context/work/**)` |
+| `WebFetch` | `domain:hostname` | `WebFetch(domain:example.com)` |
+| `WebSearch` | Sin specifier | `WebSearch` |
+| `Task` | Agent name | `Task(Explore)` |
+| `Agent` | Agent name | `Agent(researcher)` |
+| `MCP` | `mcp__server__tool` o `MCP(server:tool)` | `mcp__memory__*` |
+
+**Prefijos de path para Read/Edit/Write:**
+
+| Prefijo | Significado |
+|---------|-------------|
+| `//` | Path absoluto desde raíz del filesystem |
+| `~/` | Relativo al home directory |
+| `/` | Relativo al project root |
+| `./` o sin prefijo | Path relativo (directorio actual) |
+
+**Notas sobre Bash wildcards:**
+- `*` hace match en cualquier posición del string.
+- `Bash(ls *)` (espacio antes de `*`) hace match de `ls -la` pero NO de `lsof`.
+- `Bash(*)` equivale a `Bash` (hace match de todos los comandos).
+- El sufijo legacy `:*` (ej: `Bash(npm:*)`) está deprecado.
+
+**`permissions.additionalDirectories`** — Array de paths adicionales que Claude puede acceder
+más allá del project root actual. Útil cuando el proyecto usa múltiples repos o shared libraries.
+
+```json
+{ "permissions": { "additionalDirectories": ["../shared-libs/"] } }
+```
+
+### Hook PermissionRequest — Override Dinámico de Permisos
+
+Además de las reglas estáticas en `settings.json`, existe el hook event **`PermissionRequest`**
+que se ejecuta cuando se muestra el dialog de permiso. Permite aprobar/denegar permisos
+programáticamente desde un script:
+
+```json
+{
+  "hooks": {
+    "PermissionRequest": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/permission-check.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+El hook retorna `hookSpecificOutput` con `decision.behavior: "allow"` o `"deny"`.
+A diferencia de las reglas estáticas, este hook puede acceder al contexto completo del tool call
+(path del archivo, comando exacto) para decisiones dinámicas.
+
+**Diferencia vs reglas estáticas:**
+- Reglas `allow`/`ask`/`deny` en settings.json: evaluación estática por patrón, antes del prompt.
+- Hook `PermissionRequest`: evaluación dinámica vía script, cuando el prompt ya se iba a mostrar.
 
 ---
 
@@ -382,6 +479,102 @@ Esta configuración:
 - ✅ Pide confirmación para scripts y settings (cambios sensibles)
 - ✅ Bloquea operaciones destructivas siempre
 - ℹ️ No resuelve el context pollution — ese es el Mecanismo B (subagente)
+
+---
+
+## Mecanismo C — Sandbox (Layer 4)
+
+La arquitectura de permisos tiene 4 capas. Los Mecanismos A y B documentados arriba
+corresponden a las capas 1-2. Las capas 3-4 son complementarias:
+
+| Capa | Mecanismo | Descripción |
+|------|-----------|-------------|
+| 1 | Interactive prompts | Dialog al usuario cuando no hay regla match |
+| 2 | Allow/Deny/Ask rules (`settings.json`) | Reglas estáticas — **Mecanismo A** |
+| 3 | Hooks (PreToolUse, PermissionRequest) | Scripts programáticos dinámicos |
+| 4 | Sandbox (OS-level isolation) | Aislamiento a nivel de proceso — **Mecanismo C** |
+
+### Native Sandbox (v2.1.0+)
+
+Habilitado via `sandbox.enabled: true` en settings.json. Usa primitivas del OS:
+
+| Platform | Mecanismo | Notas |
+|----------|-----------|-------|
+| macOS | Seatbelt (TrustedBSD MAC) | Kernel-level system call filtering |
+| Linux/WSL2 | bubblewrap (namespaces + seccomp) | Requiere: `sudo apt-get install bubblewrap socat` |
+| WSL1 | No soportado | bubblewrap requiere features de kernel no disponibles |
+| Windows | Planificado | No disponible aún |
+
+**Isolation model del sandbox:**
+- Filesystem: read todo, write solo CWD (configurable via `sandbox.filesystem.allowWrite`)
+- Network: SOCKS5 proxy + domain filtering (`sandbox.network.allowedDomains`)
+- Process: entorno aislado; child processes heredan las mismas restricciones
+
+**Interacción con Mecanismo A:**
+- `sandbox.autoAllowBashIfSandboxed: true` (default) — Si sandbox está activo, los Bash commands
+  que normalmente pedirían confirmación son auto-aprobados (el sandbox provee la seguridad).
+- `sandbox.filesystem.allowWrite` se merges con las reglas `Edit(...)` en allow rules.
+- `sandbox.filesystem.denyWrite` se merges con las reglas `Edit(...)` en deny rules.
+
+**Cuándo usar sandbox vs reglas de permisos:**
+
+| Necesidad | Herramienta |
+|-----------|-------------|
+| Bloquear comandos específicos | `deny` rules en settings.json |
+| Aislar filesystem/network a nivel OS | `sandbox.enabled: true` |
+| Auto-aprobar todo dentro del sandbox | `sandbox.autoAllowBashIfSandboxed: true` |
+| Máxima seguridad (código no confiable) | Docker sandboxes (microVM, no native sandbox) |
+
+---
+
+## Variables de Entorno Relevantes al Permission Model
+
+Estas env vars se pueden configurar en la shell antes de `claude`, o en `settings.json`
+bajo la key `env` (que aplica a cada sesión automáticamente).
+
+### Permission y modo de ejecución
+
+| Variable | Descripción |
+|----------|-------------|
+| `CLAUDE_CODE_PLAN_MODE_REQUIRED` | Fuerza plan mode para la sesión |
+| `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` | Deshabilita background tasks (`1` para deshabilitar) |
+| `CLAUDE_CODE_DISABLE_CRON` | Deshabilita scheduled/cron tasks (`1` para deshabilitar) |
+
+### Detección de contexto de ejecución
+
+| Variable | Descripción |
+|----------|-------------|
+| `CLAUDECODE` | Seteada a `1` en entornos que Claude Code spawna (Bash tool, tmux). **No** seteada en hooks ni en status line commands. Usarla para detectar si un script corre dentro de Claude Code |
+| `CLAUDE_CODE_REMOTE` | `"true"` si corre en remote environments. En remote, `permissions.defaultMode` solo acepta `acceptEdits` y `plan` |
+
+### Timeouts relevantes para tool execution
+
+| Variable | Descripción |
+|----------|-------------|
+| `BASH_DEFAULT_TIMEOUT_MS` | Timeout default de comandos bash (en ms) |
+| `BASH_MAX_TIMEOUT_MS` | Timeout máximo de comandos bash (en ms) |
+| `CLAUDE_CODE_MAX_OUTPUT_TOKENS` | Max output tokens por respuesta (default: 32K; 64K para Opus 4.6) |
+
+---
+
+## Nota: `permissions.defaultMode` vs Modos Runtime
+
+La tabla "Los 6 Permission Modes" lista 6 modos, pero solo 4 pueden configurarse en
+`permissions.defaultMode` de `settings.json`:
+
+| Modo | Configurable en `settings.json`? | Descripción |
+|------|----------------------------------|-------------|
+| `default` | ✅ | Read auto; Edit/Write/Bash piden confirmación |
+| `acceptEdits` | ✅ | Read+Edit+Write auto; Bash pide confirmación |
+| `plan` | ✅ | Solo lectura, sin edits ni commands |
+| `bypassPermissions` | ✅ (bloqueado si `disableBypassPermissionsMode`) | Sin checks — peligroso |
+| `dontAsk` | ❌ (runtime/legacy) | Solo tools pre-aprobados en `allow` list |
+| `auto` | ❌ (runtime, Team/Enterprise) | Safety classifier — no configurable via settings |
+
+`dontAsk` y `auto` son modos que se activan via CLI flags o la interfaz de Claude Code,
+no a través de `settings.json`. Las reglas `allow` en settings son el equivalente funcional
+de `dontAsk` para tools específicos: permiten auto-aprobar herramientas concretas sin
+necesidad de activar el modo `dontAsk` globalmente.
 
 ---
 
