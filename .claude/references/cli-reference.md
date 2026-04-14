@@ -1,6 +1,7 @@
 ---
 type: Referencia
 created_at: 2026-04-13
+updated_at: 2026-04-14 20:07:36
 scope: Claude Code — CLI Reference
 ---
 
@@ -29,6 +30,7 @@ Referencia completa de todos los flags, env vars y subcomandos del CLI de Claude
 | `claude auto-mode defaults` | Imprimir reglas default de auto mode como JSON | `claude auto-mode defaults` |
 | `claude remote-control` | Iniciar servidor Remote Control | `claude remote-control` |
 | `claude plugin` | Gestionar plugins (install, enable, disable) | `claude plugin install my-plugin` |
+| `claude doctor` | Diagnóstico de instalación y configuración | `claude doctor` |
 
 ---
 
@@ -385,6 +387,145 @@ export CLAUDE_CODE_TASK_LIST_ID=my-project
 export CLAUDE_CODE_DISABLE_TERMINAL_TITLE=true
 export CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION=false
 ```
+
+### Autenticación — variables adicionales
+
+| Variable | Descripción |
+|----------|-------------|
+| `ANTHROPIC_AUTH_TOKEN` | OAuth token (alternativa a API key) |
+| `ANTHROPIC_BASE_URL` | Endpoint API custom (proxies, deployments privados) |
+| `ANTHROPIC_CUSTOM_HEADERS` | Headers custom para requests API. Formato: `Name: Value`, newline-separated |
+| `CLAUDE_CODE_USER_EMAIL` | Email de usuario para autenticación sincrónica |
+| `CLAUDE_CODE_ORGANIZATION_UUID` | UUID de organización para autenticación sincrónica |
+| `CLAUDE_CODE_ACCOUNT_UUID` | Override del UUID de cuenta para autenticación |
+| `CLAUDE_CONFIG_DIR` | Path custom del directorio de config (override de `~/.claude`) |
+| `CLAUDE_ENV_FILE` | Path custom del archivo de environment |
+
+### Cloud providers (Bedrock, Vertex, Foundry)
+
+| Variable | Descripción |
+|----------|-------------|
+| `CLAUDE_CODE_USE_BEDROCK` | Usar AWS Bedrock (`1` para habilitar) |
+| `CLAUDE_CODE_USE_VERTEX` | Usar Google Vertex AI (`1` para habilitar) |
+| `CLAUDE_CODE_USE_FOUNDRY` | Usar Microsoft Foundry (`1` para habilitar) |
+| `AWS_BEARER_TOKEN_BEDROCK` | API key de Bedrock para autenticación |
+| `CLAUDE_CODE_SKIP_BEDROCK_AUTH` | Saltar auth AWS para Bedrock (`1` para saltar) |
+| `CLAUDE_CODE_SKIP_FOUNDRY_AUTH` | Saltar auth Azure para Foundry (`1` para saltar) |
+| `CLAUDE_CODE_SKIP_VERTEX_AUTH` | Saltar auth Google para Vertex (`1` para saltar) |
+| `ANTHROPIC_FOUNDRY_API_KEY` | API key para Microsoft Foundry |
+| `ANTHROPIC_FOUNDRY_BASE_URL` | Base URL del recurso Foundry |
+| `ANTHROPIC_FOUNDRY_RESOURCE` | Nombre del recurso Foundry |
+| `VERTEX_REGION_CLAUDE_3_5_HAIKU` | Override de región Vertex AI para Claude 3.5 Haiku |
+| `VERTEX_REGION_CLAUDE_3_7_SONNET` | Override de región Vertex AI para Claude 3.7 Sonnet |
+| `VERTEX_REGION_CLAUDE_4_0_OPUS` | Override de región Vertex AI para Claude 4.0 Opus |
+| `VERTEX_REGION_CLAUDE_4_0_SONNET` | Override de región Vertex AI para Claude 4.0 Sonnet |
+| `VERTEX_REGION_CLAUDE_4_1_OPUS` | Override de región Vertex AI para Claude 4.1 Opus |
+
+### Timeouts y límites
+
+| Variable | Descripción |
+|----------|-------------|
+| `BASH_DEFAULT_TIMEOUT_MS` | Timeout default para comandos bash (ms) |
+| `BASH_MAX_TIMEOUT_MS` | Timeout máximo para comandos bash (ms) |
+| `BASH_MAX_OUTPUT_LENGTH` | Longitud máxima del output de bash |
+| `CLAUDE_CODE_MAX_OUTPUT_TOKENS` | Tokens máximos de output por respuesta (default: 32 000; hasta 128 000 para Opus/Sonnet 4.6) |
+| `CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS` | Override del límite de tokens para lectura de archivos |
+| `CLAUDE_CODE_EXIT_AFTER_STOP_DELAY` | Auto-exit de SDK mode después de esta duración idle (ms) |
+| `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` | Timeout para hooks SessionEnd (ms) |
+| `CLAUDE_CODE_API_KEY_HELPER_TTL_MS` | Intervalo de refresh de credenciales para `apiKeyHelper` (ms) |
+| `CLAUDE_CODE_PLUGIN_GIT_TIMEOUT_MS` | Timeout de git clone de plugin marketplace (ms, default: 120000) |
+| `MCP_TIMEOUT` | Timeout de inicio de servidor MCP (ms) |
+| `MCP_TOOL_TIMEOUT` | Timeout de ejecución de tool MCP (ms) |
+
+### Control de comportamiento
+
+| Variable | Descripción |
+|----------|-------------|
+| `CLAUDECODE` | Establecido en `1` en entornos que Claude Code spawna (Bash tool, tmux). Usar para detectar si un script corre dentro de Claude Code |
+| `CLAUDE_CODE_SHELL` | Override de detección automática del shell |
+| `CLAUDE_CODE_SHELL_PREFIX` | Prefijo de comando añadido a todos los comandos bash |
+| `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR` | Mantener working directory entre llamadas bash (`1` para habilitar) |
+| `CLAUDE_CODE_PLAN_MODE_REQUIRED` | Requerir plan mode para sesiones |
+| `CLAUDE_CODE_SKIP_FAST_MODE_NETWORK_ERRORS` | Permitir fast mode cuando el status check de org falla por error de red (`1`; útil con proxies corporativos) |
+| `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` | Directorios adicionales desde los que cargar archivos CLAUDE.md |
+| `CLAUDE_CODE_TMPDIR` | Directorio temporal custom para operaciones de Claude Code |
+| `USE_BUILTIN_RIPGREP` | Usar el binario ripgrep built-in en lugar del del sistema |
+
+### Context window y compactación — variables adicionales
+
+| Variable | Descripción |
+|----------|-------------|
+| `CLAUDE_CODE_AUTO_COMPACT_WINDOW` | Capacidad en tokens usada para cálculos de compactación. Valor menor que la ventana real del modelo trata a este como si fuera más pequeño a efectos de compactación |
+
+### Telemetría y observabilidad
+
+| Variable | Descripción |
+|----------|-------------|
+| `CLAUDE_CODE_ENABLE_TELEMETRY` | Habilitar telemetría (`1` para habilitar) |
+| `DISABLE_TELEMETRY` | Deshabilitar telemetría (`1` para deshabilitar) |
+| `DISABLE_ERROR_REPORTING` | Deshabilitar reporte de errores (`1` para deshabilitar) |
+| `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` | Equivale a `DISABLE_AUTOUPDATER` + `DISABLE_FEEDBACK_COMMAND` + `DISABLE_ERROR_REPORTING` + `DISABLE_TELEMETRY` juntos |
+
+### Feature toggles — variables adicionales
+
+| Variable | Descripción |
+|----------|-------------|
+| `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` | Deshabilitar adaptive thinking (`1` para deshabilitar) |
+| `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` | Deshabilitar beta features experimentales (`1` para deshabilitar) |
+| `CLAUDE_CODE_DISABLE_FAST_MODE` | Deshabilitar fast mode completamente (`1` para deshabilitar) |
+| `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY` | Deshabilitar prompts de feedback survey (`1` para deshabilitar) |
+| `ENABLE_CLAUDEAI_MCP_SERVERS` | Habilitar servidores MCP de Claude.ai |
+| `CLAUDE_CODE_USE_POWERSHELL_TOOL` | Habilitar la herramienta PowerShell en Windows (requiere `defaultShell: "powershell"` en settings) |
+| `FORCE_AUTOUPDATE_PLUGINS` | Forzar auto-update de plugins (`1` para habilitar) |
+| `IS_DEMO` | Habilitar modo demo |
+
+### Prompt caching
+
+| Variable | Descripción |
+|----------|-------------|
+| `DISABLE_PROMPT_CACHING` | Deshabilitar todo el prompt caching (`1` para deshabilitar) |
+| `DISABLE_PROMPT_CACHING_HAIKU` | Deshabilitar prompt caching para requests al modelo Haiku |
+| `DISABLE_PROMPT_CACHING_SONNET` | Deshabilitar prompt caching para requests al modelo Sonnet |
+| `DISABLE_PROMPT_CACHING_OPUS` | Deshabilitar prompt caching para requests al modelo Opus |
+
+### Proxy y red
+
+| Variable | Descripción |
+|----------|-------------|
+| `HTTP_PROXY` | URL de proxy HTTP para requests de red |
+| `HTTPS_PROXY` | URL de proxy HTTPS para requests de red |
+| `NO_PROXY` | Lista de hosts que bypass el proxy (comma-separated) |
+| `CLAUDE_CODE_PROXY_RESOLVES_HOSTS` | Permitir que el proxy resuelva DNS |
+| `CLAUDE_CODE_CLIENT_CERT` | Path del certificado cliente para mTLS |
+| `CLAUDE_CODE_CLIENT_KEY` | Path de la clave privada cliente para mTLS |
+| `CLAUDE_CODE_CLIENT_KEY_PASSPHRASE` | Passphrase para clave mTLS encriptada |
+
+### UI y display — variables adicionales
+
+| Variable | Descripción |
+|----------|-------------|
+| `DISABLE_COST_WARNINGS` | Deshabilitar mensajes de aviso de costo |
+| `DISABLE_INSTALLATION_CHECKS` | Deshabilitar avisos de instalación |
+| `DISABLE_AUTOUPDATER` | Deshabilitar el auto-updater |
+| `DISABLE_FEEDBACK_COMMAND` | Deshabilitar el comando `/feedback` (también acepta el nombre legacy `DISABLE_BUG_COMMAND`) |
+| `CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL` | Saltar instalación automática de extensión IDE (`1` para saltar) |
+
+### Agent teams — variables adicionales
+
+| Variable | Descripción |
+|----------|-------------|
+| `CLAUDE_CODE_TEAM_NAME` | Nombre del equipo para agent teams |
+
+### Variables no verificadas (community/legacy)
+
+| Variable | Descripción |
+|----------|-------------|
+| `CLAUDE_CODE_MAX_TURNS` | Turnos agénticos máximos antes de detener |
+| `CLAUDE_CODE_SKIP_SETTINGS_SETUP` | Saltar el flujo de configuración del primer uso |
+| `CLAUDE_CODE_DISABLE_TOOLS` | Lista de tools a deshabilitar (comma-separated) |
+| `CLAUDE_CODE_DISABLE_MCP` | Deshabilitar todos los servidores MCP (`1` para deshabilitar) |
+| `CLAUDE_CODE_HIDE_ACCOUNT_INFO` | Ocultar email/org de la UI |
+| `DISABLE_NON_ESSENTIAL_MODEL_CALLS` | Deshabilitar flavor text y llamadas no esenciales al modelo |
 
 ---
 

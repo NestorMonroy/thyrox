@@ -4,7 +4,7 @@ category: Metodología de Especificación
 version: 2.0
 purpose: Specification-Driven Development (SDD) — combina TDD y DbC para especificaciones completas y verificables. Incluye tres niveles de rigor y workflow Specify→Plan→Implement→Validate.
 source: "Ostroff, Makalsky, Paige — Agile Specification-Driven Development; Spec-Driven Development: From Code to Contract in the Age of AI"
-updated_at: 2026-04-14 20:05:39
+updated_at: 2026-04-14 20:07:55
 ```
 
 # Specification-Driven Development (SDD)
@@ -344,6 +344,41 @@ flowchart TD
 
 ---
 
+## Mapa de metodologías — Posicionamiento de SDD
+
+> Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide
+
+Dos ejes: **Spec-First vs Code-First** (Y) y **Lean/Solo vs Enterprise/Governed** (X).
+
+```
+                      SPEC / PLANNING FIRST
+                                ▲
+  ── lean · spec ──             │             ── governed · spec ──
+
+  [Doc-Driven]  [SDD]           │    [BDD]  [ATDD]   [Req-Driven]
+  [GSD]  [Plan-First]           │ [CDD] [ADR-Driven]  [DDD]  [BMAD]
+                                │
+  LEAN ─────────────────────────┼────────────────────────────────► ENTERPRISE
+                                │
+  ── lean · code ──             │             ── governed · code ──
+
+  [Context Eng.]   [TDD]        │       [Multi-Agent]
+  [Prompt Eng.]  [Iterative]    │       [Eval-Driven]       [FDD]
+  [Ralph Loop]                  │           [JiTTesting]
+                                │
+                         CODE / EMERGENT
+```
+
+**Cómo leerlo:**
+
+- **Arriba-izquierda** — Spec-first lean: `SDD`, `Doc-Driven`, `Plan-First`. Punto de entrada natural para devs solos y equipos pequeños que se alejan del "code first".
+- **Arriba-derecha** — Spec-first governed: `BMAD`, `Req-Driven`, `ATDD`, `DDD`. Governance real, pero costoso de instalar. El ROI lo impulsa la complejidad del proyecto y la estabilidad de requisitos, no solo el headcount.
+- **Abajo-izquierda** — Code-first lean: el terreno natural de Claude Code. `TDD` + `Ralph Loop` + `Iterative` = workflow core en solitario.
+- **Abajo-derecha** — Code-first at scale: `Multi-Agent`, `Eval-Driven`, `JiTTesting` (Meta, 100M+ LoC). Patrones emergentes para equipos de alto volumen.
+- **Sobre el eje** — `Plan-First`, `CDD`, `ADR-Driven`, `GSD`: enfoques híbridos que se adaptan a cualquier contexto.
+
+---
+
 ## Herramientas SDD — Tooling de referencia
 
 > Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide
@@ -410,6 +445,9 @@ Código generado → Herramienta de verificación → Feedback loop → Mejora
 | **Performance** | Profilers, benchmarks | Tiempo de ejecución, uso de memoria |
 | **Accesibilidad** | axe-core, screen readers | Violaciones WCAG, navegación |
 | **Seguridad** | Analizadores estáticos (Semgrep) | Patrones de vulnerabilidad |
+| **UX** | User testing, recordings | Problemas de usabilidad, puntos de confusión |
+
+> **Guía oficial Anthropic:** *"Tell Claude to keep going until all tests pass. It will usually take a few iterations."* — [Anthropic Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices)
 
 **Implementación práctica:**
 - **Hooks**: `PostToolUse` hook ejecuta verificación después de cada edición
@@ -466,6 +504,38 @@ TDD/BDD/ATDD asumen que el desarrollador controla el ritmo de autoría. El desar
 
 > Referencia: [Just-in-Time Catching Test Generation at Meta](https://arxiv.org/abs/2601.22832) — Harman, 2026.
 
+### Calidad de tests — F.I.R.S.T. y Arrange-Act-Assert
+
+> Fuente: *Clean Code Rules for AI Code Generation* — claude-howto
+
+**F.I.R.S.T.** — cinco propiedades que todo test unitario debe cumplir:
+
+| Propiedad | Significado |
+|-----------|-------------|
+| **F**ast | Los tests son rápidos; si son lentos, no se ejecutan con frecuencia |
+| **I**ndependent | Sin dependencias entre tests; cada uno puede correr en cualquier orden |
+| **R**epeatable | Mismo resultado en cualquier entorno (local, CI, producción) |
+| **S**elf-validating | Resultado booleano claro: pasa o falla, sin interpretación manual |
+| **T**imely | Escritos antes o junto con el código que validan (no después del hecho) |
+
+**Arrange-Act-Assert (AAA)** — estructura interna de cada test:
+
+```
+// Arrange — preparar estado inicial
+const cuenta = new Cuenta(balance: 900)
+
+// Act — ejecutar la acción
+const resultado = cuenta.retirar(500)
+
+// Assert — verificar resultado
+expect(resultado.exito).toBe(true)
+expect(cuenta.balance).toBe(400)
+```
+
+**Relación con SDD:** F.I.R.S.T. aplica tanto a los Collaborative Tests (TDD) como a los tests que amplifican los contratos DbC. AAA mapea directamente a la estructura `Given/When/Then` de las Collaborative Specifications.
+
+**Consejo para Claude:** usar el adjetivo explícito: "Write **failing** tests that don't exist yet. Follow the AAA pattern." Sin "failing", Claude puede escribir tests que ya pasan — lo cual no da cobertura real.
+
 ---
 
 ## Escribir specs efectivas
@@ -504,6 +574,168 @@ TDD/BDD/ATDD asumen que el desarrollador controla el ritmo de autoría. El desar
 | Pequeño (<10 archivos) | Un único archivo de spec |
 | Mediano (10-50 archivos) | Spec por secciones, servir por tarea |
 | Grande (50+ archivos) | Routing por sub-agente según dominio |
+
+---
+
+## BDD — Desarrollo orientado a comportamiento
+
+> Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide, Tier 3: Behavior & Acceptance
+
+**BDD (Behavior-Driven Development)** va más allá de los tests: es un proceso de colaboración. Tres fases:
+
+1. **Discovery** — Involucrar developers y expertos de negocio para explorar el dominio
+2. **Formulation** — Escribir ejemplos `Given/When/Then` en un lenguaje compartido
+3. **Automation** — Convertir los ejemplos a tests ejecutables (Gherkin/Cucumber)
+
+```gherkin
+Feature: Order Management
+  Scenario: Cannot buy without stock
+    Given product with 0 stock
+    When customer attempts purchase
+    Then system refuses with error message
+```
+
+**Diferencia clave BDD vs ATDD:**
+
+| | BDD | ATDD |
+|--|-----|------|
+| Foco | Proceso colaborativo upstream | Criteria de aceptación ejecutables |
+| Quién lo escribe | Devs + business experts juntos | "Three Amigos": Business, Dev, Test |
+| Cuándo | Durante discovery, antes de spec | Antes del ciclo de implementación |
+| Output | Escenarios Gherkin como lenguaje compartido | Tests de aceptación ejecutables |
+
+**Relación con SDD:** BDD es el proceso para escribir las Collaborative Specifications. En proyectos multi-stakeholder, BDD define cómo llegar a los `Given/When/Then` que SDD luego formaliza con contratos DbC.
+
+---
+
+## CDD — Desarrollo orientado a contratos de API
+
+> Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide, Tier 3: Behavior & Acceptance
+
+**CDD (Contract-Driven Development)** usa los contratos de API (especificaciones OpenAPI) como interfaz ejecutable entre equipos. Patrones principales:
+
+- **Contract as Test**: genera automáticamente miles de tests desde una spec OpenAPI
+- **Contract as Stub**: mock server que permite desarrollo en paralelo sin dependencias reales entre equipos
+
+```
+Equipo A (consumer)    ←→   Contrato OpenAPI   ←→   Equipo B (provider)
+  usa Contract Stub                                  valida con Contract Test
+```
+
+**Relación con SDD:** CDD es SDD aplicado a boundaries de microservicios. Los contratos OpenAPI son contratos DbC en formato estándar de la industria. Specmatic implementa CDD con integración Claude.
+
+**Cuándo usar:** microservicios con equipos paralelos, APIs públicas, boundaries entre dominios.
+
+---
+
+## Plan-First — Disciplina fundacional
+
+> Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide, Foundational Discipline
+> Cita: *"Once the plan is good, the code is good."* — Boris Cherny, creador de Claude Code
+
+**Plan-First no es solo un comando `/plan` — es una disciplina sistemática.** El modelo mental:
+
+- ❌ Sin planificar: 8 iteraciones de "intentar → corregir → reintentar → corregir de nuevo"
+- ✅ Con plan: 1 iteración de "planificar → validar → ejecutar limpio"
+
+**Cuándo planificar primero:**
+
+| Complejidad de tarea | ¿Plan primero? | Por qué |
+|---------------------|----------------|---------|
+| >3 archivos modificados | Si | Las dependencias cruzadas requieren arquitectura |
+| >50 líneas cambiadas | Si | Suficiente complejidad para cometer errores |
+| Cambios arquitectónicos | Si | Se requiere análisis de impacto |
+| Codebase desconocido | Si | Exploración antes de acción |
+| Typo / fix obvio | No | El overhead de planificación supera la tarea |
+| Cambio de una línea | No | Hacerlo directo |
+
+**Las tres fases del Plan-First:**
+
+1. **Exploración** (Plan Mode via `Shift+Tab`): Claude lee archivos, explora la arquitectura, no puede hacer edits — fuerza pensar antes de actuar. Propone enfoque con trade-offs.
+2. **Validación** (revisión humana): el plan expone supuestos y gaps. Más fácil corregir dirección ahora que después de 100 líneas escritas.
+3. **Ejecución** (Normal Mode): plan → código se convierte en traducción mecánica. Menos sorpresas, implementación más limpia.
+
+**Workflow Boris Cherny:**
+> *"I run many sessions, start in plan mode, then switch into execution once the plan looks right. The signature upgrade is verification — giving Claude a way to test and confirm its own output."*
+
+**Plantilla CLAUDE.md para planning policy:**
+
+```markdown
+## Planning Policy
+- ALWAYS plan first: API changes, database migrations, new features
+- OPTIONAL planning: Bug fixes <10 lines, test additions
+- NEVER skip: Changes affecting >2 modules
+```
+
+**Relación con SDD:** Plan-First es el puente entre la fase Specify (SDD) y la fase Implement. Un plan bien construido es la traducción de la spec a tareas concretas — equivalente a la fase Plan del workflow Specify → Plan → Implement → Validate.
+
+---
+
+## Eval-Driven Development
+
+> Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide, Tier 5: Implementation
+
+**Eval-Driven Development** es TDD para outputs de LLMs. En lugar de tests de software tradicionales, usa *evals* para validar el comportamiento de agentes y sistemas AI.
+
+**Tipos de evals:**
+
+| Tipo | Mecanismo | Cuándo usar |
+|------|-----------|-------------|
+| **Code-based** | `output == golden_answer` | Outputs determinísticos |
+| **LLM-based** | Otro Claude evalúa el output | Outputs subjetivos o complejos |
+| **Human grading** | Revisión humana como referencia | Calibración inicial, casos edge |
+
+**Eval Harness** — infraestructura que ejecuta evaluaciones end-to-end: provee instrucciones y herramientas, ejecuta tareas concurrentemente, registra pasos, califica outputs, agrega resultados.
+
+> Referencia: [Demystifying Evals for AI Agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) — Anthropic
+
+**Relación con SDD:** Eval-Driven es la extensión natural de SDD para productos LLM-native. Los acceptance criteria del ciclo ATDD/SDD se convierten en evals cuando el componente bajo especificación es un agente o sistema AI, no código determinístico tradicional.
+
+---
+
+## ADR-Driven Development
+
+> Fuente: *Development Methodologies Reference* — claude-code-ultimate-guide
+
+**Patrón:** escribir ADRs en inglés simple → alimentar al skill `implement-adr` → Claude ejecuta de forma nativa.
+
+Los Architecture Decision Records (ADRs) combinados con skills de Claude Code crean un workflow donde las decisiones arquitectónicas dirigen la implementación directamente.
+
+**Workflow:**
+
+```
+1. Documentar decisión en formato ADR (contexto, decisión, consecuencias)
+2. Crear skill de implementación (genérico o especializado implement-adr)
+3. Alimentar ADR como prompt con acceptance criteria claros
+4. Claude ejecuta guiado por la decisión arquitectónica del ADR
+```
+
+**Plantilla ADR:**
+
+```markdown
+# ADR-001: Database Migration Strategy
+
+## Context
+Legacy MySQL schema needs migration to PostgreSQL for better JSON support.
+
+## Decision
+Use incremental dual-write pattern with feature flags.
+
+## Consequences
+- Positive: Zero-downtime migration
+- Negative: Temporary code complexity during transition
+```
+
+**Beneficios:**
+
+- Documentación y código permanecen sincronizados
+- Ejecución nativa sin frameworks externos
+- Trazabilidad clara desde decisión hasta implementación
+- Los ADRs comunican la intención tanto a humanos como a Claude
+
+**Relación con SDD:** ADR-Driven Development complementa SDD en la capa arquitectónica. Los ADRs son specs contractuales de arquitectura — definen el "qué" y "por qué" de decisiones de diseño, mientras SDD define el "cómo" de componentes individuales.
+
+> Fuente: [Gur Sannikov embedded engineering workflow](https://www.linkedin.com/posts/gursannikov_claudecode-embeddedengineering-aiagents-activity-7423851983331328001-DrFb)
 
 ---
 
@@ -546,6 +778,14 @@ Stacks recomendados según contexto:
 - InfoQ: [Spec-Driven Development](https://www.infoq.com/articles/spec-driven-development/)
 - Kinde: [Beyond TDD - Why SDD is the Next Step](https://kinde.com/learn/ai-for-software-engineering/best-practice/beyond-tdd-why-spec-driven-development-is-the-next-step/)
 - Tessl.io: [Spec-Driven Dev with Claude Code](https://tessl.io/blog/spec-driven-dev-with-claude-code/)
+
+### Referencias adicionales
+- Steve Kinney: [TDD with Claude](https://stevekinney.com/courses/ai-development/test-driven-development-with-claude)
+- Alex Soyes: [BDD Behavior-Driven Development](https://alexsoyes.com/bdd-behavior-driven-development/)
+- Fireworks AI: [Eval-Driven Development with Claude Code](https://fireworks.ai/blog/eval-driven-development-with-claude-code)
+- Anthropic: [Demystifying Evals for AI Agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+- Gur Sannikov: [ADR-Driven embedded workflow](https://www.linkedin.com/posts/gursannikov_claudecode-embeddedengineering-aiagents-activity-7423851983331328001-DrFb)
+- Thoughtworks Technology Radar Vol 33 Nov 2025: [Context Engineering](https://www.thoughtworks.com/content/dam/thoughtworks/documents/radar/2025/11/tr_technology_radar_vol_33_en.pdf)
 
 ### Comandos y skills THYROX
 - [`workflow-structure/SKILL.md`](../skills/workflow-structure/SKILL.md) — Phase 4 STRUCTURE (TDD puro)
