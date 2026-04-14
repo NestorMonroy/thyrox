@@ -2,7 +2,7 @@
 type: Lecciones Aprendidas
 work_package: 2026-04-09-03-17-55-skill-references-restructure
 fase: FASE 24
-created_at: 2026-04-09
+created_at: 2026-04-09 23:00:00  # hora estimada — corregido FASE 35 (2026-04-14), WP histórico sin hora original
 version: 2.1.0
 ```
 

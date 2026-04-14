@@ -1,5 +1,5 @@
 ```yml
-created_at: 2026-04-05
+created_at: 2026-04-05 23:00:00  # hora estimada — corregido FASE 35 (2026-04-14), WP histórico sin hora original
 wp: thyrox-capabilities-integration
 version: 1.0
 components: 12

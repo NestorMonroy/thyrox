@@ -1,7 +1,7 @@
 ```yml
 type: Artefacto de Investigación
 title: Edit tool — Output de éxito y solución via aislamiento de contexto (subagentes)
-created_at: 2026-04-11
+created_at: 2026-04-11 23:00:00  # hora estimada — corregido FASE 35 (2026-04-14), WP histórico sin hora original
 fase: FASE 31
 work_package: 2026-04-11-10-52-25-thyrox-commands-namespace
 td: TD-037

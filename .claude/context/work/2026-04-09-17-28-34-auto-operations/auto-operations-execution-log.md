@@ -1,5 +1,5 @@
 ```yml
-created_at: 2026-04-09-20-00-00
+created_at: 2026-04-09 20:00:00  # formato corregido de guiones a ISO 8601 — FASE 35 (2026-04-14)
 session_ended_at: 2026-04-09-22-00-00
 project: thyrox
 feature: auto-operations
