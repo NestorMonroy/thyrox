@@ -2,12 +2,13 @@
 name: deep-review
 description: Analiza cobertura entre artefactos de fases consecutivas del WP, o profundidad de referencias externas. Usar cuando el usuario pide un deep-review antes de avanzar de Phase N a Phase N+1, o cuando quiere analizar patrones arquitectónicos en documentación externa (README, specs, repos).
 async_suitable: true  # Read-only analysis — safe for run_in_background=true invocation
+updated_at: 2026-04-14 16:44:07
 tools: Read, Glob, Grep, Bash
 ---
 
 # Deep-Review Agent
 
-Agente de análisis de cobertura. NO escribe ni edita archivos — solo analiza y reporta.
+Agente de análisis de cobertura. Lee y analiza; crea un archivo markdown de hallazgos en el WP en curso al finalizar.
 
 ## Modo 1: Cross-Phase Coverage (Phase N → Phase N+1)
 
@@ -100,9 +101,42 @@ El contexto o hipótesis que trae el usuario es una referencia para **filtrar y 
 
 ---
 
+## Salida obligatoria — Markdown de hallazgos
+
+**Toda ejecución de deep-review DEBE terminar creando un archivo markdown con los hallazgos.**
+
+### Protocolo de destino del archivo
+
+1. **Detectar WP en curso** — leer `context/now.md` (campo `current_work`) para obtener el path del WP actualmente en trabajo. Este es el WP de la sesión activa, no cualquier WP existente.
+2. **Si hay WP en curso** → guardar el archivo en ese directorio:
+   ```
+   {current_work}/{topic}-deep-review.md
+   ```
+   Ejemplo: si `current_work = .thyrox/context/work/2026-04-14-09-13-51-context-migration/`, entonces guardar en `.thyrox/context/work/2026-04-14-09-13-51-context-migration/permissions-deep-review.md`
+3. **Si `current_work` está vacío o no existe** → preguntar al usuario dónde guardarlo antes de crear el archivo.
+
+### Frontmatter obligatorio del archivo de hallazgos
+
+```yaml
+---
+type: Deep-Review Artifact
+created_at: {timestamp}
+source: {path o URL analizado}
+topic: {tema del deep-review}
+fase: FASE {N}
+---
+```
+
+### Formato del contenido
+
+Usar el formato de reporte del modo aplicable (Modo 1 o Modo 2). El archivo debe ser autocontenido — legible sin necesidad de releer este agente.
+
+---
+
 ## Reglas de comportamiento
 
-- **Solo análisis** — nunca crear ni editar archivos
+- **Crear artefacto siempre** — toda ejecución genera un markdown de hallazgos en el WP activo
+- **Preguntar solo sin WP activo** — si no hay WP, preguntar destino antes de crear
 - **Citar siempre** — todo hallazgo con archivo:línea exacta
 - **Completitud sobre velocidad** — leer artefactos completos, no asumir
 - **Grep sobre estimación** — para inventarios, ejecutar grep real
