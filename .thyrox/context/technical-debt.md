@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-14 22:38:05
+updated_at: 2026-04-15 02:05:52
 ```
 
 # Deuda Técnica — THYROX
@@ -362,6 +362,49 @@ y las del template se vuelve un problema de mantenimiento.
 **Criterio de cierre:**
 Definir regla explícita: ¿deben estar sincronizados? ¿El agent YML debería importar
 las convenciones del template como sección? Documentar en `registry/README.md`.
+
+---
+
+## TD-041: 16 reference gaps de impacto medio — FASE 37 out-of-scope
+
+```
+Severidad: media
+Origen: FASE 37 — deep-review claude-code-ultimate-guide + claude-howto (2026-04-15)
+Fase afectada: .claude/references/
+Estado: [ ] Pendiente — diferido a FASE 38
+```
+
+**Problema:**
+El deep-review de `claude-code-ultimate-guide` y `claude-howto` identificó 16 gaps
+de impacto medio que no fueron cubiertos en FASE 37 (que se focalizó en los 10 gaps
+de impacto alto). Estos gaps requieren nuevos reference files o actualizaciones
+a archivos existentes.
+
+**Gaps pendientes (fuente: `research/claude-platform-deep-review/`):**
+
+| # | Tema | Tipo | Fuente |
+|---|------|------|--------|
+| 1 | enterprise-governance | Nuevo archivo | ultimate-guide |
+| 2 | session-observability | Nuevo archivo | ultimate-guide |
+| 3 | devops-sre | Nuevo archivo | ultimate-guide |
+| 4 | team-metrics | Nuevo archivo | ultimate-guide |
+| 5 | adoption-approaches | Nuevo archivo | ultimate-guide |
+| 6 | context-optimization-tools | Nuevo archivo | ultimate-guide |
+| 7 | event-driven-automation | Nuevo archivo | howto |
+| 8 | settings-reference | Nuevo archivo | howto |
+| 9 | agent-evaluation | Nuevo archivo | howto |
+| 10 | code-quality-rules | Nuevo archivo | howto |
+| 11 | refactoring-patterns | Nuevo archivo | howto |
+| 12 | mcp-integration-updates | Actualizar existente | ultimate-guide + howto |
+| 13 | plugins-updates | Actualizar existente | howto |
+| 14 | advanced-features-updates | Actualizar existente | howto |
+| 15 | long-context-tips-updates | Actualizar existente | ultimate-guide |
+| 16 | agent-teams (experimental) | Diferido — feature inestable | ultimate-guide |
+
+**Criterio de cierre:**
+Los 16 gaps documentados tienen su reference file o actualización correspondiente
+en `.claude/references/`. Agent-teams puede cerrarse cuando el feature salga de
+experimental.
 
 ---
 

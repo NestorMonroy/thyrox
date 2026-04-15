@@ -19,14 +19,14 @@ fase: FASE 37
 
 ## Actualizaciones a references existentes
 
-- [ ] T-008 Actualizar `memory-hierarchy.md` — agregar Auto Memory + `claudeMdExcludes` (R-3, R-4)
-- [ ] T-009 Actualizar `skill-authoring.md` — agregar `` !`command` `` dynamic context injection (R-3, R-4)
-- [ ] T-010 Actualizar `subagent-patterns.md` — agregar `isolation: worktree` (R-3, R-4)
+- [x] T-008 Actualizar `memory-hierarchy.md` — agregar Auto Memory + `claudeMdExcludes` (R-3, R-4)
+- [x] T-009 Actualizar `skill-authoring.md` — agregar `` !`command` `` dynamic context injection (R-3, R-4) ← ya documentado en GAP-005, sin cambios
+- [x] T-010 Actualizar `subagent-patterns.md` — agregar `isolation: worktree` (R-3, R-4)
 
 ## Cierre
 
-- [ ] T-011 Registrar TDs medios en `technical-debt.md` (17 gaps out-of-scope)
-- [ ] T-012 Actualizar ROADMAP.md — agregar FASE 37
+- [x] T-011 Registrar TDs medios en `technical-debt.md` (17 gaps out-of-scope)
+- [x] T-012 Actualizar ROADMAP.md — agregar FASE 37
 
 ---
 

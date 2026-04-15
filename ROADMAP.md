@@ -4,7 +4,7 @@ Categoría: Gestión de Proyecto
 Versión: 0.2.0
 Propósito: Plan maestro de trabajo y tracking de progreso — FASEs activas (27+)
 Objetivo: Documentar fases, epics, y estado actual del proyecto
-Fecha actualización: 2026-04-14
+Fecha actualización: 2026-04-15
 ```
 
 # ROADMAP - THYROX
@@ -22,6 +22,15 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 - `[ ]` = Pendiente
 - `[-]` = En Progreso
 - `[x]` = Completado (YYYY-MM-DD)
+
+---
+
+## FASE 37: platform-references-expansion — Expansión de reference files de plataforma Claude Code (2026-04-15)
+
+**WP:** `.thyrox/context/work/2026-04-14-23-40-08-platform-references-expansion/`
+**Alcance:** 7 nuevos reference files + 3 actualizaciones en `.claude/references/`. Cobertura de 10 gaps de impacto alto del deep-review de `claude-code-ultimate-guide` y `claude-howto`. 16 gaps de impacto medio diferidos como TD-041.
+
+- [-] Phase 6 EXECUTE — en progreso 2026-04-15
 
 ---
 
