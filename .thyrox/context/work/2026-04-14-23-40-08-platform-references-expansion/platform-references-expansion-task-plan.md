@@ -13,9 +13,9 @@ fase: FASE 37
 - [ ] T-002 Crear `security-hardening.md` — CVEs, MCP vetting, supply chain, data retention (R-1)
 - [ ] T-003 Crear `production-safety.md` — 6 reglas no-negociables con implementaciones (R-1)
 - [ ] T-004 Crear `multi-instance-workflows.md` — Boris pattern, dual-instance, Agent Teams (R-1)
-- [ ] T-005 Crear `development-methodologies.md` — 15 metodologías, pirámide, framework decisión (R-1)
-- [ ] T-006 Crear `github-actions.md` — claude-code-action, 5 patterns CI/CD (R-1)
-- [ ] T-007 Crear `known-issues.md` — 3 bugs Prompt Cache, GitHub Issue privacy bug (R-1)
+- [x] T-005 Crear `development-methodologies.md` — 15 metodologías, pirámide, framework decisión (R-1)
+- [x] T-006 Crear `github-actions.md` — claude-code-action, 5 patterns CI/CD (R-1)
+- [x] T-007 Crear `known-issues.md` — 3 bugs Prompt Cache, GitHub Issue privacy bug (R-1)
 
 ## Actualizaciones a references existentes
 
