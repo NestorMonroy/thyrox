@@ -368,7 +368,7 @@ tools: Read, Bash(npm test:*), Bash(pytest:*)
 
 ## Referencias
 
-- [04-subagents/README.md](/tmp/reference/claude-howto/04-subagents/README.md) — Documentación oficial de subagentes
+- `claude-howto/04-subagents/README.md` — Documentación oficial de subagentes (fuente externa)
 - [skill-vs-agent](skill-vs-agent.md) — Cuándo crear SKILL vs agente nativo
 - [hook-output-control](hook-output-control.md) — Por qué PostToolUse no puede suprimir tool results
 - [agent-spec](agent-spec.md) — Spec formal de campos de agentes (obligatorios/prohibidos)

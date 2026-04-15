@@ -292,7 +292,7 @@ El `context/now.md` y `context/focus.md` de THYROX NO son memoria de Claude Code
 
 ## Referencias
 
-- [02-memory/README.md](/tmp/reference/claude-howto/02-memory/README.md) — Documentación oficial de memoria
+- `claude-howto/02-memory/README.md` — Documentación oficial de memoria (fuente externa)
 - [claude-code-components](claude-code-components.md) — Frontmatter de skills y agentes
 - [state-management](state-management.md) — Archivos de estado de sesión (now.md, focus.md)
 - [subagent-patterns](subagent-patterns.md) — Memoria persistente de subagentes

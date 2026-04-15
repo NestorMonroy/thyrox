@@ -361,7 +361,7 @@ Los hooks de `Stop` y `SubagentStop` reciben un campo adicional en el JSON de en
 
 ## Referencias
 
-- [06-hooks/README.md](/tmp/reference/claude-howto/06-hooks/README.md) — Documentación oficial de hooks
+- `claude-howto/06-hooks/README.md` — Documentación oficial de hooks (fuente externa)
 - [hooks](hooks.md) — Tipos de hooks, eventos, configuración general en THYROX
 - [subagent-patterns](subagent-patterns.md) — Solución arquitectónica para tool result clutter
 - [TD-037](../context/technical-debt.md) — Investigación Edit tool silent mode (RESUELTO)

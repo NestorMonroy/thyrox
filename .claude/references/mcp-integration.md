@@ -542,7 +542,7 @@ Claude Code incluye clientes OAuth pre-configurados para servicios comunes como 
 
 ## Referencias
 
-- [05-mcp/README.md](/tmp/reference/claude-howto/05-mcp/README.md) — Documentación oficial de MCP
+- `claude-howto/05-mcp/README.md` — Documentación oficial de MCP (fuente externa)
 - [hooks](hooks.md) — Eventos de Elicitation en hooks
 - [plugins](plugins.md) — Bundling de MCP servers en plugins
 - [claude-code-components](claude-code-components.md) — Frontmatter `mcpServers` en subagentes
