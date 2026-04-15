@@ -216,6 +216,10 @@ Ver [permission-model](../../references/permission-model.md) para la referencia 
 ### Plataforma avanzada — features y CLI completo
 [advanced-features](../../references/advanced-features.md) — Planning Mode, Extended Thinking, Auto Mode, Worktrees, Sandboxing, Agent Teams, Channels
 [cli-reference](../../references/cli-reference.md) — Todos los flags, 30+ env vars, subcomandos claude auth/mcp/agents
+[settings-reference](../../references/settings-reference.md) — Referencia exhaustiva de todas las keys de settings.json (scope, defaults, sandbox, hooks, MCP)
+[slash-commands-reference](../../references/slash-commands-reference.md) — Catálogo de 60+ built-in commands, bundled skills, sintaxis de argumentos $ARGUMENTS/$0/$1
+[glossary](../../references/glossary.md) — Glosario de 130+ términos Claude Code (sintaxis, modelos, patrones, seguridad, ecosistema)
+[visual-reference](../../references/visual-reference.md) — 19 diagramas consolidados: Master Loop, context zones, permission modes, árboles de decisión
 
 ### Patrones — cómo implementar correctamente
 [memory-patterns](../../references/memory-patterns.md) — Estado de sesión, @imports, auto-memory, memory: en subagents
