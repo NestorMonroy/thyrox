@@ -25,6 +25,24 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## FASE 39: plugin-distribution — Migración THYROX a plugin puro de Claude Code (2026-04-15)
+
+**WP:** `.thyrox/context/work/2026-04-15-08-29-58-plugin-distribution/`
+**Alcance:** Investigar y migrar distribución de THYROX de "git clone + setup-template.sh" a plugin puro. Eliminar `setup-template.sh`. Implementar `bin/thyrox-init.sh` + `hooks/hooks.json` como reemplazo idempotente.
+
+- [-] Phase 1 ANALYZE — en curso 2026-04-15
+
+---
+
+## FASE 38: commands-rellinks — Fix broken links y referencias relativas en commands (2026-04-15)
+
+**WP:** `.thyrox/context/work/2026-04-15-02-23-24-commands-rellinks/`
+**Alcance:** Reparar links rotos y referencias relativas en `.claude/references/`. Fix de `detect_broken_references.py`. Gate 1→3 pendiente.
+
+- [-] Phase 1 ANALYZE — en curso, gate 1→3 pendiente
+
+---
+
 ## FASE 37: platform-references-expansion — Expansión de reference files de plataforma Claude Code (2026-04-15)
 
 **WP:** `.thyrox/context/work/2026-04-14-23-40-08-platform-references-expansion/`
