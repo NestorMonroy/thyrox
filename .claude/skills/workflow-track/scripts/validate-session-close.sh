@@ -11,7 +11,7 @@
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
-CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
+CONTEXT_DIR="${PROJECT_ROOT}/.thyrox/context"
 TODAY=$(date +%Y-%m-%d)
 
 WARNS=0

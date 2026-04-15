@@ -1,6 +1,6 @@
 {
   "name": "thyrox",
-  "description": "Framework THYROX — gestión de proyectos con metodología SDLC de 7 fases",
+  "description": "THYROX — meta-framework de gestión estructurada (SDLC 7 fases · PMBOK 8 · Proceso Unificado)",
   "version": "2.5.0",
   "author": { "name": "NestorMonroy" }
 }

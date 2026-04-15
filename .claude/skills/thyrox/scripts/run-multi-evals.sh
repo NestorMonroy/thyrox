@@ -24,7 +24,7 @@ setup_workspace() {
     mkdir -p "$dir/.claude/skills/thyrox"
     cp "$SKILL_DIR/SKILL.md" "$dir/.claude/skills/thyrox/"
     cp "${PROJECT_ROOT}/.claude/CLAUDE.md" "$dir/.claude/"
-    mkdir -p "$dir/.claude/context"
+    mkdir -p "$dir/.thyrox/context"
     echo "$dir"
 }
 
