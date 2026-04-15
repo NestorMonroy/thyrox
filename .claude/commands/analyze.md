@@ -8,4 +8,4 @@ description: Phase 1 ANALYZE — entender el problema antes de planificar. Docum
 Invoca el skill `workflow-analyze` para ejecutar Phase 1 ANALYZE del work package activo
 o iniciar uno nuevo.
 
-Sigue todas las instrucciones de `.claude/skills/workflow-analyze/SKILL.md`.
+Sigue todas las instrucciones de [workflow-analyze/SKILL.md](../skills/workflow-analyze/SKILL.md).

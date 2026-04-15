@@ -181,6 +181,6 @@ Then  [error específico]
 
 ## Referencia metodológica
 
-Ver [`sdd.md`](.claude/references/sdd.md) para el fundamento teórico completo:
+Ver [`sdd.md`](../references/sdd.md) para el fundamento teórico completo:
 - Ostroff, Makalsky, Paige — *Agile Specification-Driven Development*
 - Tres niveles de rigor y framework Specify → Plan → Implement → Validate

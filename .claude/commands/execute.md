@@ -7,4 +7,4 @@ description: Phase 6 EXECUTE — implementar las tareas T-NNN del task-plan con 
 
 Invoca el skill `workflow-execute` para ejecutar Phase 6 EXECUTE del work package activo.
 
-Sigue todas las instrucciones de `.claude/skills/workflow-execute/SKILL.md`.
+Sigue todas las instrucciones de [workflow-execute/SKILL.md](../skills/workflow-execute/SKILL.md).

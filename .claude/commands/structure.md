@@ -7,4 +7,4 @@ description: Phase 4 STRUCTURE — especificar requisitos con Given/When/Then. P
 
 Invoca el skill `workflow-structure` para ejecutar Phase 4 STRUCTURE del work package activo.
 
-Sigue todas las instrucciones de `.claude/skills/workflow-structure/SKILL.md`.
+Sigue todas las instrucciones de [workflow-structure/SKILL.md](../skills/workflow-structure/SKILL.md).

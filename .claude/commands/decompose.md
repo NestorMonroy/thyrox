@@ -7,4 +7,4 @@ description: Phase 5 DECOMPOSE — crear tareas atómicas con IDs trazables T-NN
 
 Invoca el skill `workflow-decompose` para ejecutar Phase 5 DECOMPOSE del work package activo.
 
-Sigue todas las instrucciones de `.claude/skills/workflow-decompose/SKILL.md`.
+Sigue todas las instrucciones de [workflow-decompose/SKILL.md](../skills/workflow-decompose/SKILL.md).

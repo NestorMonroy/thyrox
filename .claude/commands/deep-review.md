@@ -21,7 +21,7 @@ Reporta gaps, items faltantes, y recomienda si es seguro avanzar al gate.
 /thyrox:deep-review [path/to/reference]
 ```
 Analiza documentación externa (README, specs, repos) para identificar patrones
-arquitectónicos no cubiertos en `.claude/references/`.
+arquitectónicos no cubiertos en [`../references/`](../references/).
 
 ## Cuándo usar
 

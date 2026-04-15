@@ -7,4 +7,4 @@ description: Phase 2 SOLUTION STRATEGY — investigar alternativas y tomar decis
 
 Invoca el skill `workflow-strategy` para ejecutar Phase 2 SOLUTION STRATEGY del work package activo.
 
-Sigue todas las instrucciones de `.claude/skills/workflow-strategy/SKILL.md`.
+Sigue todas las instrucciones de [workflow-strategy/SKILL.md](../skills/workflow-strategy/SKILL.md).

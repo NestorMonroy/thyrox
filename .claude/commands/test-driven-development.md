@@ -141,7 +141,7 @@ Then  [error específico]
 
 ## Referencia metodológica
 
-Ver [`sdd.md`](.claude/references/sdd.md) — sección "Collaborative Specifications (TDD)":
+Ver [`sdd.md`](../references/sdd.md) — sección "Collaborative Specifications (TDD)":
 - Ventajas: closure claro (test pasa = listo), collaborative-friendly
 - Limitaciones: incompleto (un test = un escenario, no todos los inputs)
 - Cuándo complementar con DbC → usar `/thyrox:spec-driven`

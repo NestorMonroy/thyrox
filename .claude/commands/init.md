@@ -7,4 +7,4 @@ description: Bootstrap de tech skills para el proyecto. Detecta el stack tecnol√
 
 Invoca el skill `workflow_init` para inicializar los tech skills del proyecto.
 
-Sigue todas las instrucciones de `.claude/commands/workflow_init.md`.
+Sigue todas las instrucciones de [workflow_init.md](workflow_init.md).

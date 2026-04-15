@@ -7,4 +7,4 @@ description: Phase 7 TRACK — cerrar el work package. Produce lessons-learned.m
 
 Invoca el skill `workflow-track` para ejecutar Phase 7 TRACK del work package activo.
 
-Sigue todas las instrucciones de `.claude/skills/workflow-track/SKILL.md`.
+Sigue todas las instrucciones de [workflow-track/SKILL.md](../skills/workflow-track/SKILL.md).
