@@ -4,7 +4,7 @@
 # Install: configurar en .claude/settings.json como hook SessionStart
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
+CONTEXT_DIR="${PROJECT_ROOT}/.thyrox/context"
 
 # ─── ARQUITECTURA DE RUTAS (ADR-015, ADR-019) ──────────────────────────────
 # Interfaz pública: /thyrox:* commands (plugin namespace, FASE 31)

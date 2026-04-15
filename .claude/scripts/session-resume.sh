@@ -5,8 +5,8 @@
 # Siempre exit 0 (nunca bloquear)
 # DA-002: duplica mínima lógica de detección de WP (no hacer source de session-start.sh)
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && cd .. && pwd)"
-CONTEXT_DIR="${PROJECT_ROOT}/.claude/context"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+CONTEXT_DIR="${PROJECT_ROOT}/.thyrox/context"
 
 INPUT=$(cat)
 
