@@ -1160,4 +1160,4 @@ Para garantías determinísticas, usar `.claude/rules/`. Para hints al modelo, u
 **Adaptado para**: THYROX
 **Fecha**: 2026-02-01
 **Actualizado con**: GAP-001..006, GAP-014, GAP-015 (FASE 33)
-**Ver también**: claude-code-components.md, component-decision.md, prompting-tips.md
+**Ver también**: [claude-code-components.md](./claude-code-components.md), [component-decision.md](./component-decision.md), [prompting-tips.md](./prompting-tips.md)

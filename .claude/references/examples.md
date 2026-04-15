@@ -577,4 +577,4 @@ refactor(auth): consolidate auth logic into single module
 
 ---
 
-See conventions.md for detailed formatting and structure requirements.
+See [conventions.md](./conventions.md) for detailed formatting and structure requirements.
