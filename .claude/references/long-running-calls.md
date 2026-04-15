@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Long-Running Calls — Estrategias para Llamadas y Tareas Largas
+category: Claude Code Platform — Reliability
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Llamadas largas y estrategias de agentes
----
+owner: thyrox (cross-phase)
+purpose: --max-turns, background vs print mode, síntesis del padre, worktrees y checkpoints para tareas largas
+```
 
 # Long-Running Calls — Estrategias para Llamadas y Tareas Largas
 

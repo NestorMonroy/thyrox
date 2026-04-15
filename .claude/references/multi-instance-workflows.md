@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: Multi-Instance Workflows — Escalado con Múltiples Sesiones
+category: Claude Code Platform — Arquitectura
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: Patrones para escalar más allá de una sesión — worktrees, parallel agents, git coordination
+```
+
 # Multi-Instance Workflows
 
 Patrones para escalar más allá de una sola sesión de Claude Code. Cubre cuatro estrategias distintas con sus trade-offs, costos, y criterios de elección.

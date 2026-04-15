@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Agent Authoring — Guía para Crear Agentes Nativos Claude Code
+category: Authoring — Agentes
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Creación y configuración de agentes nativos
----
+owner: thyrox (cross-phase)
+purpose: Crear agentes nativos Claude Code con GAP-007..012 — skills:, memory:, background:, isolation:, permissionMode
+```
 
 # Agent Authoring — Guía para Crear Agentes Nativos Claude Code
 

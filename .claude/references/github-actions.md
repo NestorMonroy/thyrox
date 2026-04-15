@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: GitHub Actions Integration
+category: Desarrollo — CI/CD
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: Automatizar code reviews, issue triage y quality gates con anthropics/claude-code-action
+```
+
 # GitHub Actions Integration
 
 Referencia para automatizar code reviews, issue triage y quality gates conectando Claude directamente a workflows de GitHub mediante `anthropics/claude-code-action`.

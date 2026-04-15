@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Streaming Errors — Catálogo Completo con Causas y Fixes
+category: Claude Code Platform — Reliability
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Catalogo de errores de streaming
----
+owner: thyrox (cross-phase)
+purpose: Catálogo de errores de streaming con causas, fixes y matriz de diagnóstico rápido
+```
 
 # Streaming Errors — Catalogo Completo con Causas y Fixes
 

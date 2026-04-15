@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Testing Patterns — Patrones Prácticos de Testing con Claude Code
+category: Desarrollo — Testing
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Testing Patterns
----
+owner: thyrox (cross-phase)
+purpose: SDD práctico, CI/CD con claude -p, code review automation y patrones de testing
+```
 
 # Testing Patterns — Patrones Prácticos de Testing con Claude Code
 

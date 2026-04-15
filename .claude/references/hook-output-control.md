@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: Hook Output Control — Campos de Salida y Semánticas
+category: Claude Code Platform — Hooks
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: Semántica de suppressOutput (stdout del hook), additionalContext, updatedInput y permissionDecision
+```
+
 # Hook Output Control — Campos de Salida y Semánticas
 
 Referencia para controlar el comportamiento de los hooks mediante su JSON output.

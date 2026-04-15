@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Hook Authoring — Guía para Crear Hooks de Claude Code
+category: Authoring — Hooks
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Creación y configuración de hooks
----
+owner: thyrox (cross-phase)
+purpose: Crear hooks — eventos disponibles, output control, patrones, errores comunes
+```
 
 # Hook Authoring — Guía para Crear Hooks de Claude Code
 

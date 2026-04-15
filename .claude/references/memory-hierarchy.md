@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: Memory Hierarchy — Sistema de Memoria en Claude Code
+category: Claude Code Platform — Memoria y Estado
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: Sistema de 8 niveles de memoria — CLAUDE.md, @imports, auto-memory, managed settings enterprise
+```
+
 # Memory Hierarchy — Sistema de Memoria en Claude Code
 
 Referencia para el sistema de memoria de 8 niveles de Claude Code. Controla qué instrucciones se cargan automáticamente, en qué orden, y con qué precedencia.

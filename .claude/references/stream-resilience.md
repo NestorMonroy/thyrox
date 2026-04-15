@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Stream Resilience — Recovery Patterns para Streams y Llamadas Largas
+category: Claude Code Platform — Reliability
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Stream resilience y recovery patterns
----
+owner: thyrox (cross-phase)
+purpose: CLAUDE_STREAM_IDLE_TIMEOUT_MS, TTFToken, --fallback-model y recovery patterns
+```
 
 # Stream Resilience — Recovery Patterns para Streams y Llamadas Largas
 

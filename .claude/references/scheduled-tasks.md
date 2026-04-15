@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: Scheduled Tasks y Automatización
+category: Claude Code Platform — Automatización
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: /loop, CronCreate, tareas programadas persistentes, print mode (-p) y CI/CD integration
+```
+
 # Scheduled Tasks y Automatización
 
 Referencia para tareas programadas, automatización sin intervención y ejecución headless de Claude Code.

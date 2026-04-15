@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: Context Engineering
+category: Desarrollo — Metodología
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: La disciplina de llenar el context window con la información correcta en el momento correcto
+```
+
 # Context Engineering
 
 > La disciplina de llenar el context window con la información correcta en el momento correcto.

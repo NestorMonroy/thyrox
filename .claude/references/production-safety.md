@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: Production Safety — Reglas No-Negociables para Entornos Productivos
+category: Claude Code Platform — Seguridad
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: Reglas no-negociables para equipos que usan Claude Code en entornos productivos
+```
+
 # Production Safety
 
 Reglas no-negociables para equipos que usan Claude Code en entornos productivos.

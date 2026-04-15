@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: Plugins — Arquitectura y Distribución
+category: Claude Code Platform — Extensibilidad
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: Arquitectura de plugin — manifest plugin.json, namespace /name:cmd, distribución, seguridad de subagentes
+```
+
 # Plugins — Arquitectura y Distribución
 
 Referencia para crear, estructurar y distribuir plugins de Claude Code.
@@ -299,7 +309,7 @@ Los skills `workflow-*` son implementación interna; los comandos del plugin son
 
 ## Referencias
 
-- [07-plugins/README.md](/tmp/reference/claude-howto/07-plugins/README.md) — Documentación oficial claude-howto
+- `claude-howto/07-plugins/README.md` — Documentación oficial claude-howto (fuente externa)
 - [skill-vs-agent](skill-vs-agent.md) — Cuándo usar skill, subagente, o comando
 - [claude-code-components](claude-code-components.md) — Frontmatter completo de skills y agentes
 - ADR-019 — Decisión de arquitectura plugin namespace THYROX

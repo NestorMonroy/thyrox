@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Known Issues — Bugs Conocidos y Workarounds
+category: Claude Code Platform — Reliability
+version: 1.0
 created_at: 2026-04-15
-scope: Claude Code — Bugs conocidos y activos con workarounds
----
+owner: thyrox (cross-phase)
+purpose: Bugs conocidos y activos de Claude Code con workarounds verificados
+```
 
 # Known Issues
 

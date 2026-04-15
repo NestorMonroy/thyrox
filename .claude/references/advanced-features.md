@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Advanced Features — Claude Code
+category: Claude Code Platform — Features Avanzadas
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Advanced Features
----
+owner: thyrox (cross-phase)
+purpose: Planning Mode, Extended Thinking, Auto Mode, Worktrees, Sandboxing, Agent Teams y Channels
+```
 
 # Advanced Features — Claude Code
 

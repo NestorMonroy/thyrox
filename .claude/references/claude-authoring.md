@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Claude Authoring — Guía para Crear y Mantener CLAUDE.md
+category: Authoring — CLAUDE.md
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Creación y mantenimiento de CLAUDE.md
----
+owner: thyrox (cross-phase)
+purpose: Cuándo y cómo crear CLAUDE.md — jerarquía, @imports, /init, anti-patrones, herencia por agentes
+```
 
 # Claude Authoring — Guía para Crear y Mantener CLAUDE.md
 

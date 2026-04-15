@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Multimodal — Leer Imágenes, PDFs, Notebooks y Screenshots
+category: Claude Code Platform — I/O
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Multimodal Input
----
+owner: thyrox (cross-phase)
+purpose: Leer imágenes, PDFs, notebooks Jupyter y screenshots con el Read tool
+```
 
 # Multimodal — Leer Imágenes, PDFs, Notebooks y Screenshots
 

@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: MCP Integration — Model Context Protocol
+category: Claude Code Platform — MCP
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: Servidores MCP (HTTP/stdio/SSE), OAuth, elicitation, canales push y límites de herramientas
+```
+
 # MCP Integration — Model Context Protocol
 
 Referencia para integrar servidores MCP (Model Context Protocol) con Claude Code. MCP proporciona acceso en tiempo real a APIs externas, bases de datos y servicios — a diferencia de la memoria (estática), MCP es live.

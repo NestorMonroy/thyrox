@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: Development Methodologies — 15 Metodologías para Desarrollo AI-Asistido
+category: Desarrollo — Metodología
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: 15 metodologías estructuradas para desarrollo AI-asistido, organizadas en pirámide de 6 tiers
+```
+
 # Development Methodologies
 
 > 15 metodologías estructuradas para desarrollo AI-asistido, organizadas en pirámide de 6 tiers.

@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: Security Hardening — Amenazas, CVEs y Configuración Defensiva
+category: Claude Code Platform — Seguridad
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: Amenazas activas, CVEs, patrones de ataque MCP, configuración defensiva y privacidad de datos
+```
+
 # Security Hardening
 
 Guia de seguridad para Claude Code: amenazas activas, CVEs, patrones de ataque MCP, configuracion defensiva y privacidad de datos.

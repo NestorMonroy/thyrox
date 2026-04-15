@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Tool Patterns — Herramienta Correcta por Tarea
+category: Claude Code Platform — Herramientas
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Tool Patterns
----
+owner: thyrox (cross-phase)
+purpose: Herramienta correcta por tarea, parallel calls y Edit vs Write
+```
 
 # Tool Patterns — Herramienta Correcta por Tarea
 

@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Memory Patterns — Patrones de Uso del Sistema de Memoria
+category: Claude Code Platform — Memoria y Estado
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Memory Patterns
----
+owner: thyrox (cross-phase)
+purpose: Estado de sesión, @imports, auto-memory y memory: en subagents
+```
 
 # Memory Patterns — Patrones de Uso del Sistema de Memoria
 

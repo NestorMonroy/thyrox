@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Output Formats — Formatos de Salida y Structured Output
+category: Claude Code Platform — I/O
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Output Formats
----
+owner: thyrox (cross-phase)
+purpose: --output-format, --json-schema, jq patterns y structured output en Claude Code
+```
 
 # Output Formats — Formatos de Salida y Structured Output
 

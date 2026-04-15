@@ -1,8 +1,12 @@
----
-type: Referencia
+```yml
+type: Reference
+title: Component Decision — Flowchart SKILL vs CLAUDE.md vs Agent vs Hook vs Plugin vs Command
+category: Authoring — Decisión de componente
+version: 1.0
 created_at: 2026-04-13
-scope: Claude Code — Decisión entre SKILL, CLAUDE.md, Agent, Hook, Plugin, Command
----
+owner: thyrox (cross-phase)
+purpose: Flowchart para elegir el componente correcto según el tipo de automatización o instrucción
+```
 
 # Component Decision — Flowchart SKILL vs CLAUDE.md vs Agent vs Hook vs Plugin vs Command
 

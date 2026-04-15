@@ -1,9 +1,13 @@
----
-type: Referencia
+```yml
+type: Reference
+title: CLI Reference — Claude Code
+category: Claude Code Platform — CLI
+version: 1.0
 created_at: 2026-04-13
 updated_at: 2026-04-14 20:07:36
-scope: Claude Code — CLI Reference
----
+owner: thyrox (cross-phase)
+purpose: Todos los flags, 30+ env vars y subcomandos del CLI — claude auth, mcp, agents
+```
 
 # CLI Reference — Claude Code
 

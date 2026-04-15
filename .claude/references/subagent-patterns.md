@@ -1,3 +1,13 @@
+```yml
+type: Reference
+title: Subagent Patterns — Aislamiento de Contexto y Delegación
+category: Claude Code Platform — Arquitectura
+version: 1.0
+created_at: 2026-04-13
+owner: thyrox (cross-phase)
+purpose: Patrones de aislamiento de contexto, worktree isolation, persistent memory, agent teams y background agents
+```
+
 # Subagent Patterns — Aislamiento de Contexto y Delegación
 
 Patrones arquitectónicos para usar subagentes correctamente. Este archivo cubre el *cómo* usar subagentes para resultados concretos — no el *cuándo* elegir subagente vs skill (ver [skill-vs-agent](skill-vs-agent.md)).
