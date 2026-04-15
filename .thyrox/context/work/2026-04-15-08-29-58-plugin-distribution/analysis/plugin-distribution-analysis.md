@@ -154,6 +154,129 @@ hook o desde un skill `/thyrox:init` como `bash thyrox-init.sh`.
 
 ---
 
+## Audit interno — Estado actual de la implementación
+
+### 1. `plugin.json` — namespace-only, NO es un plugin funcional
+
+El manifest actual tiene solo 4 campos:
+
+```json
+{
+  "name": "thyrox",
+  "description": "...",
+  "version": "2.5.0",
+  "author": { "name": "NestorMonroy" }
+}
+```
+
+**Campos faltantes para un plugin funcional:** `hooks`, `skills`, `agents`, `commands`, `bin`.
+THYROX hoy usa el plugin system solo para el namespace `/thyrox:*` — no es un plugin
+instalable vía `claude plugin install`.
+
+### 2. Inventario de componentes actuales
+
+**Skills (`.claude/skills/` — 16 directorios):**
+
+| Categoría | Skills |
+|-----------|--------|
+| Meta-framework | `thyrox/` (SKILL.md + assets/ + evals/ + scripts/) |
+| Workflow SDLC | `workflow-analyze/`, `workflow-decompose/`, `workflow-execute/`, `workflow-plan/`, `workflow-strategy/`, `workflow-structure/`, `workflow-track/` |
+| Tech stack (proyecto-específicos) | `backend-nodejs/`, `db-mysql/`, `db-postgresql/`, `frontend-react/`, `frontend-webpack/`, `python-mcp/`, `sphinx/` |
+
+**Agentes (`.claude/agents/` — 11 archivos `.md`):**
+deep-review, diagrama-ishikawa, mysql-expert, nodejs-expert, postgresql-expert,
+react-expert, skill-generator, task-executor, task-planner, tech-detector, webpack-expert
+
+**Scripts (`.claude/scripts/` — 18 archivos):**
+
+| Tipo | Scripts |
+|------|---------|
+| Hooks activos | `session-start.sh`, `session-resume.sh`, `validate-session-close.sh`, `stop-hook-git-check.sh`, `sync-wp-state.sh`, `bound-detector.py` |
+| Utilidades | `project-status.sh`, `update-state.sh`, `close-wp.sh`, `set-session-phase.sh` |
+| Validación/detección | `detect_broken_references.py`, `lint-agents.py`, `detect-missing-md-links.sh` y otros |
+
+**Hooks configurados (`.claude/settings.json`):**
+
+| Evento | Script | Propósito |
+|--------|--------|-----------|
+| SessionStart | `session-start.sh` | Inyecta contexto WP activo al inicio de sesión |
+| Stop (x2) | `validate-session-close.sh` + `stop-hook-git-check.sh` | Valida cierre + verifica commits pendientes |
+| PostCompact | `session-resume.sh` | Restaura contexto tras compactación |
+| PreToolUse (Agent) | `bound-detector.py` | Detecta uso de Agent tool |
+| PostToolUse (Write) | `sync-wp-state.sh` | Sincroniza estado WP tras escritura |
+
+**Permisos (`.claude/settings.json` — proyecto-nivel):**
+- `defaultMode: acceptEdits`
+- Allow: Edit ROADMAP.md, Write references/, git operations, bash scripts, mkdir, ls, echo
+- Ask: Edit `.claude/scripts/*.sh`, Edit `.claude/settings.json`
+- Deny: git push --force, git reset --hard, rm -rf
+
+### 3. Gaps críticos para plugin-pure
+
+#### GAP-001: No existe `hooks/hooks.json` en el plugin
+
+Los hooks de THYROX viven en `.claude/settings.json` (project-level). En modelo plugin,
+deben migrar a `<plugin-dir>/hooks/hooks.json`. Sin esto, instalar el plugin NO configura
+los hooks SessionStart, Stop, PostCompact.
+
+#### GAP-002: No existe `bin/` directory
+
+No hay `bin/thyrox-init.sh` ni equivalente. El reemplazo de `setup-template.sh` no existe.
+
+#### GAP-003: `settings.json` del plugin solo soporta `agent` key
+
+Las reglas de permisos (`allow/ask/deny`) no se pueden distribuir vía plugin `settings.json`.
+**Solución viable:** `bin/thyrox-init.sh` crea `.claude/settings.json` en el proyecto destino
+— un script bash puede escribir ahí sin triggear la safety invariant (el invariant solo bloquea
+el Write *tool* del LLM, no operaciones de filesystem desde hooks).
+
+#### GAP-004: Tech skills son proyecto-específicos
+
+Los 7 tech skills (`backend-nodejs`, `db-mysql`, etc.) y `.thyrox/guidelines/` son generados
+por `registry/_generator.sh` para el stack del usuario. No deben ir en el plugin — el usuario
+los genera con `/thyrox:init` o equivalente.
+
+#### GAP-005: `setup-template.sh` tiene 4 bugs acumulados
+
+| Bug | Problema |
+|-----|---------|
+| Paths `.claude/context/` | Deberían ser `.thyrox/context/` (FASE 35) |
+| Skill name `pm-thyrox` | Debería ser `thyrox` (FASE 29) |
+| Branding "PM-THYROX" | Debería ser "THYROX" |
+| Crea estado en `.claude/context/` | El estado vive en `.thyrox/context/` |
+
+#### GAP-006: Separación plugin vs. proyecto destino no definida
+
+En modelo template (hoy), el usuario obtiene TODO el repo THYROX incluyendo WPs de desarrollo,
+ADRs internos, y decisions de implementación del framework. En modelo plugin, hay separación clara:
+
+| Qué | Dónde vive | Quién lo provee |
+|-----|-----------|-----------------|
+| Skills (`thyrox/`, `workflow-*/`) | Plugin | THYROX (actualizable) |
+| Agentes (deep-review, etc.) | Plugin | THYROX (actualizable) |
+| Scripts de hooks | Plugin + `hooks/hooks.json` | THYROX (actualizable) |
+| Tech skills (`backend-nodejs/`, etc.) | Proyecto destino | Usuario genera con `/thyrox:init` |
+| `.thyrox/context/` (estado) | Proyecto destino | `bin/thyrox-init.sh` crea en primera sesión |
+| `.claude/settings.json` (permisos) | Proyecto destino | `bin/thyrox-init.sh` crea en instalación |
+| WPs, ADRs, decisions | Proyecto destino | Usuario genera trabajando |
+
+### 4. Qué hace `setup-template.sh` que el modelo plugin elimina
+
+El sed-replacement (`THYROX` → `{PROJECT_NAME}`) era necesario porque el usuario clonaba
+el REPO THYROX completo (con toda la referencia al nombre THYROX en archivos core).
+En modelo plugin el usuario no clona el repo THYROX — instala el plugin. No hay nada
+que renombrar. **Esta funcionalidad desaparece completamente.**
+
+El cleanup de WPs/errors/decisions era necesario por el mismo motivo (el usuario recibía el
+historial de desarrollo de THYROX). En plugin mode, el usuario parte de un repo vacío y la
+estructura la crea `bin/thyrox-init.sh`. **Esta funcionalidad también desaparece.**
+
+Lo que SIGUE siendo necesario: crear los archivos de estado inicial (`.thyrox/context/now.md`,
+`focus.md`, `project-state.md`) y el `ROADMAP.md` + `CHANGELOG.md` iniciales. Esto pasa a
+`bin/thyrox-init.sh`.
+
+---
+
 ## Arquitectura propuesta (para evaluar en Phase 2)
 
 ```

@@ -2,9 +2,9 @@
 project: THYROX
 Work package: 2026-04-15-08-29-58-plugin-distribution
 created_at: 2026-04-15 08:29:58
-updated_at: 2026-04-15 08:29:58
+updated_at: 2026-04-15 08:35:00
 current_phase: Phase 1 — ANALYZE
-open_risks: 4
+open_risks: 6
 mitigated_risks: 0
 closed_risks: 0
 author: NestorMonroy
@@ -22,6 +22,8 @@ author: NestorMonroy
 | R-002 | Safety invariant bloquea escritura de `.thyrox/` desde hook | media | alto | alta | abierto | NestorMonroy |
 | R-003 | Marketplace no disponible / cambio de API de plugins | baja | alto | alta | abierto | NestorMonroy |
 | R-004 | compound-engineering usa mecanismo no documentado — difícil de replicar | alta | medio | alta | abierto | NestorMonroy |
+| R-005 | Tech skills proyecto-específicos incluidos en plugin por error | alta | medio | alta | abierto | NestorMonroy |
+| R-006 | `hooks/hooks.json` migración rompe hooks existentes en usuarios template | media | medio | media | abierto | NestorMonroy |
 
 ---
 
@@ -170,6 +172,74 @@ la arquitectura propuesta puede ser inviable.
 | Fecha | Fase | Cambio | Autor |
 |-------|------|--------|-------|
 | 2026-04-15 08:29:58 | Phase 1 | Identificado | NestorMonroy |
+
+---
+
+### R-005: Tech skills proyecto-específicos incluidos en plugin por error
+
+**Descripción**
+
+Los 7 tech skills (`backend-nodejs`, `db-mysql`, etc.) son generados por
+`registry/_generator.sh` para el stack del usuario. Si se incluyen en el plugin,
+todos los proyectos que instalen THYROX tendrían skills de Node.js, React, MySQL
+aunque no los usen. Contamina el autocomplete y el contexto de sesión.
+
+**Probabilidad**: alta
+**Impacto**: medio
+**Severidad**: alta
+**Estado**: abierto
+**Fase de identificación**: Phase 1
+**Última actualización**: 2026-04-15 08:29:58
+
+**Señales de alerta**
+- Plugin incluye skills que generan guidelines de tech irrelevante para el proyecto
+
+**Mitigación**
+- Separar explícitamente: plugin incluye solo `thyrox/` + `workflow-*/` + agents
+- Tech skills los genera el usuario con `/thyrox:init` tras la instalación
+
+**Plan de contingencia**
+- Si ya se incluyeron: agregar `.pluginignore` o flag en `plugin.json` para skills opcionales
+
+**Historial**
+
+| Fecha | Fase | Cambio | Autor |
+|-------|------|--------|-------|
+| 2026-04-15 08:29:58 | Phase 1 | Identificado en audit interno | NestorMonroy |
+
+---
+
+### R-006: Migración de hooks rompe setup en repos que usaron template
+
+**Descripción**
+
+Usuarios actuales que clonaron el template tienen los hooks en `.claude/settings.json`.
+Al migrar a plugin, los hooks migran a `hooks/hooks.json`. Si un usuario instala el plugin
+Y tiene el template, los hooks duplicados pueden causar ejecución doble.
+
+**Probabilidad**: media
+**Impacto**: medio
+**Severidad**: media
+**Estado**: abierto
+**Fase de identificación**: Phase 1
+**Última actualización**: 2026-04-15 08:29:58
+
+**Señales de alerta**
+- `session-start.sh` se ejecuta dos veces al inicio de sesión
+- Output duplicado en mensajes de contexto
+
+**Mitigación**
+- Documentar migration guide para usuarios existentes
+- `bin/thyrox-init.sh` detecta si ya hay hooks en `.claude/settings.json` y omite duplicar
+
+**Plan de contingencia**
+- Agregar deduplication check en `session-start.sh`
+
+**Historial**
+
+| Fecha | Fase | Cambio | Autor |
+|-------|------|--------|-------|
+| 2026-04-15 08:29:58 | Phase 1 | Identificado en audit interno | NestorMonroy |
 
 ---
 
