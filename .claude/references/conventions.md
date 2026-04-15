@@ -481,7 +481,7 @@ Next: Task Z (ready to start)
 
 ## Architectural Decisions
 
-Use [.thyrox/context/decisions](../../.thyrox/context/decisions) to document ADRs:
+Use `.thyrox/context/decisions` to document ADRs:
 
 ```markdown
 # Architectural Decision Records
@@ -638,10 +638,10 @@ Cuando Claude necesita una decisión del usuario que no puede resolverse en la s
 |--------|------|-----------|
 | ROADMAP.md | Task starts, task completes | Daily |
 | CHANGELOG.md | After commit sequence | Weekly |
-| [decisions.md](../../.thyrox/context/decisions) | Major architectural decision | As-needed |
-| [project-state.md](../../.thyrox/context/project-state.md) | End of session | Weekly |
-| [focus.md](../../.thyrox/context/focus.md) | End of session | Every session |
-| [now.md](../../.thyrox/context/now.md) | Start and end of session | Every session |
+| decisions.md | Major architectural decision | As-needed |
+| project-state.md | End of session | Weekly |
+| focus.md | End of session | Every session |
+| now.md | Start and end of session | Every session |
 | context/errors/ | When error occurs | As-needed |
 | Git tag | Release to production | With version bump |
 
