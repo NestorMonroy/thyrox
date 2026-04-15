@@ -1,24 +1,36 @@
 ```yml
 created_at: 2026-04-15 09:30:00
 project: THYROX
-topic: Deep-review de patrones viables para multi-metodología
+topic: Deep-review v2.0 de patrones viables para meta-framework multi-metodología
 author: NestorMonroy
-status: Borrador
+status: Validado v2.0
 ```
 
-# Deep-review: Patrones viables para meta-framework multi-metodología
+# Deep-review v2.0: Patrones viables para meta-framework multi-metodología
 
-## Metodologías en scope
+> Actualizado con hallazgos de sub-análisis 2-9 (universal-pattern, markov-registry, jsonl-worktrees, frameworks cat1-6, técnicas)
 
-| Metodología | Tipo de flujo | Pasos | Skills |
-|-------------|--------------|-------|--------|
-| **SDLC** (existente) | Secuencial estricto | 7 fases | analyze, strategy, plan, structure, decompose, execute, track |
-| **PMBOK 8** | Secuencial con solapamiento | 5 process groups | pm-init, pm-plan, pm-execute, pm-monitor, pm-close |
-| **RUP** | Iterativo secuencial | 5 fases | rup-inception, rup-elaboration, rup-construction, rup-transition |
-| **RM** | Secuencial con feedback | 7 pasos | rm-inception, rm-elicitation, rm-elaboration, rm-negotiation, rm-specification, rm-validation, rm-management |
-| **BA/BABOK** | **No-secuencial (task-driven)** | 6 áreas | ba-planning, ba-elicitation, ba-lifecycle, ba-strategy, ba-analysis, ba-evaluation |
+---
 
-`requirements` es transversal a RUP y RM — skill independiente (ver análisis anterior).
+## Scope de metodologías — v2.0
+
+El análisis original cubría 5 metodologías. El scope ampliado es:
+
+| Bloque | Metodologías / Técnicas | Skills propuestos |
+|--------|------------------------|-------------------|
+| **Cat 1 — Software Dev** | SDLC (1 marco) | 7 existentes |
+| **Cat 2 — Mejora Calidad** | PDCA (4) + DMAIC (5) + Lean Six Sigma (5) | 14 nuevos |
+| **Cat 3 — Resolución Problemas** | Problem Solving 8-step (8) + VACANTE | 8 nuevos |
+| **Cat 4 — Planeación Estratégica** | Strategic Planning (5) + Strategic Management (4) | 9 nuevos |
+| **Cat 5 — Consultoría** | Consulting General (5) + Consulting Thoucentric (7) | 12 nuevos |
+| **Cat 6 — Análisis de Negocios** | Business Analysis Process (7) + BPA (6) | 13 nuevos |
+| **BA/BABOK** | 6 knowledge areas (fuera de taxonomía de 12, dentro de scope THYROX) | 6 skills |
+| **PMBOK / RUP / RM** | De análisis multi-flow previo | 17 skills |
+| **Técnicas (T1-T3)** | RCA + Framework Analysis + NASA Logical Decomposition | 0 skills independientes |
+
+**Total en registry post-FASE 39: ~73 skills** (66 Cat1-6 + 7 SDLC ya existente) o ~86 si incluyes PMBOK/RUP/RM de análisis anterior.
+
+**BA/BABOK nota:** No pertenece a la taxonomía de 12 marcos (el usuario la excluyó del conteo final), pero sigue siendo relevante para THYROX como flujo no-secuencial con comportamiento especial. Ver sección BA/BABOK más adelante.
 
 ---
 
@@ -27,37 +39,45 @@ status: Borrador
 | Hallazgo | Dato | Fuente |
 |----------|------|--------|
 | `skills:` inyecta contenido completo | Full content, no lazy loading | `claude-howto/04-subagents:96` + `ultimate-guide:6496` |
-| Cada skill up to 5k tokens | SKILL.md < 500 líneas / < 5k tokens | `claude-howto/03-skills:59,578` |
-| Límite de skills por agente | **No documentado** | — |
+| Cada skill hasta 5k tokens | SKILL.md < 500 líneas / < 5k tokens | `claude-howto/03-skills:59,578` |
+| Límite de skills por agente | No documentado | — |
 | No nested spawning | max depth=1 | `claude-howto/04-subagents:823` |
 | Selección de agente | `description:` matching + `@name` explícito | `claude-howto:326-356` |
 | Budget global Level 1 | 1% contexto ≈ 8,000 chars, 250 chars/skill | `claude-howto/03-skills:103` |
-| Flujos no-secuenciales/DAG | **No documentado** — Agent Teams (experimental) es lo más cercano | `claude-howto/04-subagents:572-695` |
-| BMAD implementación | **No documentada** en referencias | `competitive-analysis:15` |
-
-**Cálculo de impacto en contexto (200k tokens):**
-
-| Escenario | Skills cargados | Tokens usados | % contexto |
-|-----------|----------------|---------------|-----------|
-| Un coordinator global (todos) | ~25 skills × 5k | ~125k tokens | ~62% |
-| Un coordinator por metodología | 5-7 skills × 5k | ~25-35k tokens | ~12-17% |
-| Skill individual sin coordinator | 1 skill | ~5k tokens | ~2.5% |
-
-**Conclusión crítica:** Un solo coordinator con todos los skills es inviable — consume 62% del contexto en carga inicial.
+| Flujos no-secuenciales/DAG | No documentado — Agent Teams (experimental) es lo más cercano | `claude-howto/04-subagents:572-695` |
+| JSONL nativo en Claude Code | Session transcripts, activity logs, analytics metrics | `ultimate-guide:10856` + hooks |
+| WorktreeCreate/WorktreeRemove hooks | Hooks para ciclo de vida de worktrees | `claude-howto/06-hooks:179` |
+| CLAUDE.md en worktrees | Compartido automáticamente en todos los worktrees del repo | `claude-howto/02-memory:481` |
+| `isolation: worktree` en agentes | Subagente opera en branch aislada, auto-cleanup si sin cambios | `claude-howto/04-subagents:497` |
+| transcript_path en hooks | Hooks reciben path del JSONL de la sesión actual en stdin | `claude-howto/06-hooks:437` |
 
 ---
 
-## Análisis de los 4 patrones
+## Tabla de impacto en contexto — v2.0 (200k tokens)
+
+Con el scope actualizado de ~73 skills (vs ~25 del análisis original):
+
+| Escenario | Skills cargados | Tokens usados | % contexto (200k) | Viable |
+|-----------|----------------|---------------|-------------------|--------|
+| Coordinator global (TODOS) | ~73 skills × 5k | ~365k tokens | ~182% | ❌ OVERFLOW |
+| Coordinator global (25 del análisis original) | ~25 skills × 5k | ~125k tokens | ~62% | ❌ Inviable |
+| Coordinator por metodología | 4-8 skills × 5k | ~20-40k tokens | ~10-20% | ✅ Viable |
+| State Machine + Registry lazy | 1 skill activo + coordinator | ~5-10k tokens | ~2.5-5% | ✅ Óptimo |
+
+**Conclusión crítica reforzada:** Con 73 skills, el Patrón 2 (coordinator global) no es simplemente ineficiente — es físicamente imposible. La ventana de 200k se desborda. El argumento que ya era válido con 25 skills (62%) se vuelve irrebatible con 73 (182% de overflow real).
+
+---
+
+## Análisis de los 5 patrones
 
 ### Patrón 1 — Skills independientes (sin delegación)
 
 **Estructura:**
 ```
 .claude/skills/
-├── pm-init/SKILL.md       ← instrucciones PMBOK Initiating completas
-├── pm-plan/SKILL.md       ← instrucciones PMBOK Planning completas
-├── rup-inception/SKILL.md ← instrucciones RUP Inception completas
-├── ba-planning/SKILL.md   ← instrucciones BA Planning completas
+├── pdca-plan/SKILL.md     ← instrucciones PDCA Plan completas
+├── dmaic-define/SKILL.md  ← instrucciones DMAIC Define completas
+├── ba-context/SKILL.md    ← instrucciones BA Context & Understanding
 └── ...                    ← cada skill: autónomo, sin dependencias
 ```
 
@@ -68,18 +88,18 @@ status: Borrador
 - Backward compatible con el sistema actual de `phase == skill name`
 
 **Contras:**
-- Duplicación: "analizar antes de planificar" se repite en 25+ SKILL.md
+- Duplicación: "analizar antes de planificar" se repite en 73+ SKILL.md
 - Sin coordinación metodológica — Claude no sabe qué skill viene después
-- Para BA/BABOK (no-secuencial): el flujo queda completamente en manos del usuario saber qué invocar
+- Para BA/BABOK (no-secuencial): el flujo queda en manos del usuario
+- No escala documentalmente: 73 SKILL.md sin conexión entre ellos
 
-**Fit por metodología:**
-- SDLC: ✅ Excelente (ya funciona así)
-- PMBOK: ✅ Bueno (5 pasos secuenciales, fácil de seguir)
-- RUP: ✅ Bueno (5 fases claras)
-- RM: ✅ Bueno (7 pasos secuenciales)
-- BA/BABOK: ⚠️ Pobre — el usuario debe saber qué knowledge area invocar
+**Fit por bloque:**
+- Cat 1-3 (SDLC, PDCA, DMAIC, LSS, PS8): ✅ Bueno (flujos secuenciales, fácil de seguir)
+- Cat 4-5 (Strategic Planning, Consulting): ✅ Bueno (secuenciales, aunque más complejos)
+- Cat 6 BA/BPA: ⚠️ Limitado (el usuario debe saber qué área invocar en BA)
+- BA/BABOK no-secuencial: ⚠️ Pobre — sin routing inteligente
 
-**Veredicto: Viable para SDLC/PMBOK/RUP/RM. Insuficiente para BA/BABOK.**
+**Veredicto: Viable como capa de implementación de cada skill. Insuficiente como arquitectura completa.**
 
 ---
 
@@ -89,66 +109,63 @@ status: Borrador
 ```
 .claude/agents/
 └── thyrox-coordinator.md
-    skills: pm-init, pm-plan, pm-execute, pm-monitor, pm-close,
-            rup-inception, requirements, rup-elaboration, rup-construction, rup-transition,
-            rm-inception, rm-elicitation, ...,
-            ba-planning, ba-elicitation, ba-lifecycle, ba-strategy, ba-analysis, ba-evaluation
+    skills: pdca-plan, pdca-do, pdca-check, pdca-act,
+            dmaic-define, dmaic-measure, dmaic-analyze, dmaic-improve, dmaic-control,
+            lss-define, lss-measure, ...,
+            ps-identify, ps-clarify, ...,
+            sp-identify, sp-prioritize, ...,
+            sm-scan, sm-formulate, ...,
+            cp-initiation, cp-diagnosis, ...,
+            ct-understand, ct-scope, ...,
+            ba-context, ba-elicitation, ...,
+            bpa-identify, bpa-map, ...,
+            ... (~73 skills total)
 ```
 
-**Pros:**
-- Un único punto de entrada
-- El coordinator puede leer `now.md::phase` y saber cuál flujo está activo
-- Puede hacer routing entre metodologías
-
 **Contras (críticos):**
-- **Context fatal:** 25 skills × 5k tokens = 125k tokens ≈ 62% del contexto en arranque
+- **Context fatal:** ~73 skills × 5k tokens = ~365k tokens ≈ 182% del contexto en arranque
 - Los skills en `skills:` se inyectan COMPLETOS al contexto inicial (confirmado)
-- Con 62% del contexto ocupado por skills, queda poco espacio para el trabajo real
-- No hay lazy loading — no se puede cargar "solo el skill que se necesita" dinámicamente
+- El desbordamiento es físico — la ventana de 200k no puede contener 365k de skills
+- No hay lazy loading en Claude Code — no se puede cargar "solo el skill que se necesita"
 
-**Veredicto: Inviable por consumo de contexto.**
+**Veredicto: Inviable por overflow real del context window. Con 73 skills es matemáticamente imposible, no solo ineficiente.**
 
 ---
 
-### Patrón 3 — Un agente coordinator por metodología ✓ Recomendado
+### Patrón 3 — Un agente coordinator por metodología ✓ Recomendado (corto plazo)
 
 **Estructura:**
 ```
 .claude/agents/
-├── sdlc-coordinator.md    (skills: analyze, strategy, plan, structure, decompose, execute, track)
-├── pmbok-coordinator.md   (skills: pm-init, pm-plan, pm-execute, pm-monitor, pm-close)
-├── rup-coordinator.md     (skills: rup-inception, requirements, rup-elaboration, rup-construction, rup-transition)
-├── rm-coordinator.md      (skills: rm-inception, rm-elicitation, rm-elaboration, rm-negotiation,
-│                                   rm-specification, rm-validation, rm-management)
-└── ba-coordinator.md      (skills: ba-planning, ba-elicitation, ba-lifecycle,
-                                    ba-strategy, ba-analysis, ba-evaluation)
+├── sdlc-coordinator.md     (skills: analyze, strategy, plan, structure, decompose, execute, track)
+├── pdca-coordinator.md     (skills: pdca-plan, pdca-do, pdca-check, pdca-act)
+├── dmaic-coordinator.md    (skills: dmaic-define, dmaic-measure, dmaic-analyze, dmaic-improve, dmaic-control)
+├── lss-coordinator.md      (skills: lss-define, lss-measure, lss-analyze, lss-improve, lss-control)
+├── ps-coordinator.md       (skills: ps-identify, ps-clarify, ps-target, ps-analyze, ps-implement, ps-check, ps-standardize, ps-reflect)
+├── sp-coordinator.md       (skills: sp-identify, sp-prioritize, sp-develop, sp-implement, sp-update)
+├── sm-coordinator.md       (skills: sm-scan, sm-formulate, sm-implement, sm-evaluate)
+├── cp-coordinator.md       (skills: cp-initiation, cp-diagnosis, cp-planning, cp-implementation, cp-evaluation)
+├── ct-coordinator.md       (skills: ct-understand, ct-scope, ct-analyze, ct-solutions, ct-plan, ct-implement, ct-monitor)
+├── ba-coordinator.md       (skills: ba-context, ba-elicitation, ba-analysis, ba-design, ba-implementation, ba-testing, ba-evaluation)
+├── bpa-coordinator.md      (skills: bpa-identify, bpa-map, bpa-analyze, bpa-improve, bpa-implement, bpa-monitor)
+└── babok-coordinator.md    (skills: ba-planning, ba-elicitation, ba-lifecycle, ba-strategy, ba-analysis, ba-evaluation)
 ```
 
 **Pros:**
-- **Context controlado:** Solo el coordinator activo carga sus skills (~12-17% del contexto)
-- Selección explícita: `@pmbok-coordinator` o via `description:` matching
+- Context controlado: Solo el coordinator activo carga sus skills (~10-20% del contexto)
+- Selección explícita: `@pdca-coordinator` o via `description:` matching
 - Cada coordinator puede tener instrucciones específicas para su metodología
-- BA-coordinator puede implementar lógica de routing no-secuencial (ver sección BA)
-- Extensible: añadir Scrum, Kanban = añadir un coordinator + sus skills
+- BA/BABOK coordinator puede implementar lógica de routing no-secuencial
+- Extensible: añadir metodología = añadir un coordinator + sus skills
 
-**Contras:**
-- 5 agentes adicionales en `.claude/agents/`
-- El usuario necesita saber qué coordinator invocar (o que Claude lo detecte por `description:`)
-- Max depth=1: el coordinator no puede lanzar sub-coordinators
+**Contras con 12+ metodologías:**
+- ~12 coordinators en `.claude/agents/` — mantenimiento no trivial
+- ~73 skills nuevos en `.claude/skills/`
+- Cada coordinator hardcodea la lista de skills de su metodología
+- Agregar metodología nueva requiere modificar la lista de coordinators conocidos
+- Mantenimiento de 12 coordinators × múltiples skills = acoplamiento fuerte
 
-**Fit para BA/BABOK:**
-El `ba-coordinator` puede implementar routing no-secuencial:
-
-```markdown
-# ba-coordinator
-Lee .thyrox/context/now.md::phase y .thyrox/context/focus.md.
-Si la tarea del usuario es estratégica → invocar ba-strategy
-Si la tarea es de elicitación → invocar ba-elicitation
-Si no hay fase activa → preguntar cuál knowledge area abordar
-No hay orden fijo — BA puede empezar con cualquier área.
-```
-
-**Veredicto: Patrón óptimo. Contexto controlado + soporte para no-secuencial.**
+**Veredicto: Patrón óptimo a corto plazo (5-6 metodologías prioritarias). No escala a 12+ sin el Patrón 5.**
 
 ---
 
@@ -157,14 +174,14 @@ No hay orden fijo — BA puede empezar con cualquier área.
 **Estructura:** Dentro del SKILL.md de cualquier skill de metodología:
 
 ```markdown
-# pm-init/SKILL.md
+# pdca-plan/SKILL.md
 
 ## Instrucciones
 
-Seguir el proceso de workflow-analyze/SKILL.md con estas adaptaciones PMBOK:
-- Artefacto principal: {wp}-project-charter.md (no {wp}-analysis.md)
-- Los "8 aspectos SDLC" se mapean a: Business Case, Feasibility, Stakeholder Register...
-- Gate obligatorio: Project Charter aprobado por sponsor antes de continuar
+Seguir el proceso de workflow-analyze/SKILL.md con estas adaptaciones PDCA:
+- Artefacto principal: {wp}-pdca-problem.md (no {wp}-analysis.md)
+- El "problema" se identifica y planifica en esta fase, no se resuelve
+- Gate obligatorio: Problema articulado y plan de mejora documentado antes de continuar
 ```
 
 **Pros:**
@@ -181,82 +198,280 @@ Seguir el proceso de workflow-analyze/SKILL.md con estas adaptaciones PMBOK:
 
 ---
 
-## BA/BABOK — Las 6 Knowledge Areas
+### Patrón 5 — State Machine genérica con Methodology Registry ✓ Objetivo largo plazo
+
+**Motivación:** El Patrón 3 con 12+ coordinators hardcodeados es mantenimiento exponencial.
+La solución correcta es una State Machine configurable basada en el fundamento de Markov chains.
+
+**Fundamento teórico (de markov-probabilistic-registry-design.md):**
+
+Un LLM es formalmente equivalente a una cadena de Markov de orden k (k = tamaño del context window):
+- Sin THYROX: transiciones probabilísticas, memoria efímera, sin garantía de orden
+- Con THYROX Registry: transiciones determinísticas via YAML, estado persistido en `now.md::phase`, memoria externa en git
+
+```
+LLM (cadena Markov probabilística)
+  + Registry YAML (matriz de transición determinística)
+  + now.md::phase (variable de estado en git)
+  + Artefactos WP (memoria externa ilimitada)
+  = Sistema determinístico con LLM como motor de ejecución
+```
+
+**Estructura:**
+```
+.thyrox/registry/methodologies/
+├── sdlc.yml               # type: sequential, 7 steps
+├── pdca.yml               # type: cyclic, 4 steps
+├── dmaic.yml              # type: sequential, 5 steps
+├── lean-six-sigma.yml     # type: sequential, 5 steps (Lean + DMAIC)
+├── problem-solving-8.yml  # type: conditional, 8 steps
+├── strategic-planning.yml # type: sequential, 5 steps
+├── strategic-mgmt.yml     # type: cyclic, 4 steps
+├── consulting-general.yml # type: sequential, 5 steps (alta flexibilidad)
+├── consulting-thoucentric.yml  # type: sequential, 7 steps
+├── business-analysis.yml  # type: sequential, 7 steps
+├── bpa.yml                # type: iterative, 6 steps
+└── babok.yml              # type: non-sequential, 6 knowledge areas
+
+.claude/agents/
+└── thyrox-coordinator.md  # UN SOLO coordinator genérico — lee el registry
+```
+
+**El coordinator genérico:**
+```
+1. Lee now.md::phase → estado actual (ej: "pdca-do")
+2. Extrae prefijo → "pdca"
+3. Carga .thyrox/registry/methodologies/pdca.yml
+4. Busca step con id = "pdca-do" → next = ["pdca-check"]
+5. Para type: conditional → evalúa condición del WP actual
+6. Muestra estado actual + siguiente válido
+7. Al confirmar → actualiza now.md::phase
+```
+
+El coordinator NO hardcodea ninguna metodología. Todo el conocimiento de flujo vive en los YAMLs.
+
+**Agregar metodología #16:** crear 1 archivo YAML. Zero cambios en infraestructura.
+
+---
+
+## Los 5 tipos de flujo documentados
+
+Identificados en el análisis de 12 marcos metodológicos:
+
+| Tipo | Característica | Ejemplo | Patrón en Markov |
+|------|---------------|---------|-----------------|
+| **Secuencial** | A→B→C siempre, sin retorno | SDLC, DMAIC, LSS, PMBOK | Cadena lineal con estado absorbente al final |
+| **Cíclico** | A→B→C→A, sin fin | PDCA, Strategic Management | Cadena recurrente, sin estado absorbente |
+| **Iterativo** | Puede repetir fases o reiniciar ciclo | BPA, RUP | Estados recurrentes + posibles loops hacia atrás |
+| **No-secuencial** | Cualquier orden válido | BA/BABOK | Grafo completo (todas las transiciones posibles) |
+| **Condicional** | Siguiente depende de resultado | Problem Solving 8-step | Transiciones con condiciones de guardia (`on_success`/`on_failure`) |
+
+**Schema YAML por tipo:**
+
+```yaml
+# Tipo: condicional (PS8 — si verificación falla, regresa a root cause)
+- id: ps8-verify
+  display: "PS8 — Verify & Validate"
+  next:
+    on_success: [ps8-prevent]
+    on_failure: [ps8-rootcause]  # regresa si no resuelve
+
+# Tipo: no-secuencial (BA/BABOK — todas las áreas son accesibles desde cualquier otra)
+- id: ba-planning
+  display: "BABOK — BA Planning & Monitoring"
+  next: [ba-elicitation, ba-lifecycle, ba-strategy, ba-analysis, ba-evaluation]
+```
+
+---
+
+## BA/BABOK — Flujo no-secuencial especial
 
 Business Analysis según BABOK v3 — el diferenciador clave: **no hay orden prescrito**.
 
 | Skill | Knowledge Area | Descripción |
 |-------|---------------|-------------|
-| `ba-planning` | Business Analysis Planning & Monitoring | Organizar esfuerzos BA, outputs como inputs a otras tareas |
+| `ba-planning` | BA Planning & Monitoring | Organizar esfuerzos BA, outputs como inputs a otras tareas |
 | `ba-elicitation` | Elicitation & Collaboration | Actividades de elicitación, confirmar resultados, comunicación con stakeholders |
 | `ba-lifecycle` | Requirements Life Cycle Management | Mantener requirements desde inception hasta retirement, traceability |
 | `ba-strategy` | Strategy Analysis | Identificar business need, habilitar cambio, alinear estrategia |
 | `ba-analysis` | Requirements Analysis & Design Definition | Estructurar requirements, modelar, validar, identificar opciones de solución |
 | `ba-evaluation` | Solution Evaluation | Evaluar performance del sistema en uso, recomendar mejoras |
 
-**Técnicas transversales (no son skills separados — se usan dentro de cada área):**
-- Use Case Modeling (Jacobson/UML)
-- Business Process Modeling
-- Data Dictionary
-- Decision Analysis
-
 **Diferencia crítica frente a otras metodologías:**
 
 > *"Business analysts perform tasks from all knowledge areas sequentially, iteratively, or simultaneously. The BABOK® Guide does not prescribe a process or an order in which tasks are performed."*
 
-Esto rompe el modelo `phase == skill name` de `now.md`. En BA, el "estado" no es una fase lineal sino qué knowledge areas han sido tocadas y cuáles tienen outputs listos como inputs para otras.
+Esto rompe el modelo `phase == skill name` lineal de `now.md`. En BA/BABOK, el "estado" no es una fase en secuencia sino qué knowledge areas han sido tocadas y cuáles tienen outputs listos como inputs para otras.
 
-**Tarea de entrada sugerida:**
-> *"Although a business analysis initiative may start with any task, likely candidates are Analyze Current State or Measure Solution Performance."*
+**Implicación para el coordinator:**
 
-Esto mapea a `ba-strategy` (Analyze Current State) o `ba-evaluation` (Measure Solution Performance).
+El `babok-coordinator` es el único que necesita lógica de routing inteligente:
+```markdown
+Lee .thyrox/context/now.md::phase y .thyrox/context/focus.md.
+Si la tarea del usuario es estratégica → invocar ba-strategy
+Si la tarea es de elicitación → invocar ba-elicitation
+Si no hay fase activa → preguntar cuál knowledge area abordar
+No hay orden fijo — BA puede empezar con cualquier área.
+```
 
-### `now.md` extendido para BA
+Con Patrón 5, el type `non-sequential` en el YAML maneja esto automáticamente: el coordinator presenta todas las áreas disponibles y el usuario elige.
 
-En lugar de `phase: ba-planning` (implica secuencia), usar estado de áreas completadas:
-
+**`now.md` extendido para BA/BABOK:**
 ```yaml
-flow: ba
-# En BA, el "phase" es la tarea activa, no la fase en secuencia
-phase: ba-elicitation
-# Estado de knowledge areas completadas
+flow: babok
+phase: ba-elicitation          # tarea activa actual
 ba_areas_touched: [ba-planning, ba-strategy]
 ba_areas_pending: [ba-elicitation, ba-lifecycle, ba-analysis, ba-evaluation]
 ```
 
-O más simple: `phase: ba-elicitation` funciona igual — indica la tarea activa sin prescribir lo que viene antes/después.
+---
+
+## Nueva infraestructura: JSONL + worktrees
+
+### JSONL para observabilidad
+
+Claude Code usa JSONL nativamente (session transcripts, activity logs, analytics metrics, calibration/learning). Adoptar JSONL en THYROX está alineado con los patrones nativos de la plataforma.
+
+**`phase-history.jsonl` — log de transiciones de estado:**
+```json
+{"timestamp": "2026-04-15T09:30:00Z", "from": "sdlc-analyze", "to": "sdlc-strategy", "wp": "2026-04-15-...", "fase": 39}
+```
+
+- **Ubicación:** `.thyrox/context/phase-history.jsonl`
+- **Implementación:** ~5 líneas adicionales en `sync-wp-state.sh` (ya existe y conoce el estado)
+- **Habilitaría:** detección de stalls, tiempo por fase, validación de transiciones válidas
+- **Patrón caliber:** `eventos → JSONL → análisis LLM periódico → CLAUDE.md` para aprendizaje continuo
+
+**Arquitectura completa de capas de datos:**
+
+| Capa | Formato | Propósito |
+|------|---------|-----------|
+| Configuración hermética | JSON | `settings.json`, permisos |
+| Memoria viva | Markdown | `CLAUDE.md`, artefactos WP, ADRs |
+| Governance/Registry | YAML | `registry/methodologies/*.yml` |
+| Eventos raw | JSONL | `phase-history.jsonl`, transiciones |
+
+Las tres primeras capas ya están implementadas. La capa JSONL es el gap que completa la arquitectura.
+
+### `isolation: worktree` en subagentes
+
+```yaml
+---
+name: dmaic-coordinator
+isolation: worktree
+description: "Coordinador DMAIC. Sigue Define→Measure→Analyze→Improve→Control."
+---
+```
+
+- Cada metodología coordinator opera en su propio worktree (rama aislada)
+- Auto-cleanup si sin cambios al terminar
+- Si hay cambios: retorna path + branch name al agente principal para review/merge
+- **CLAUDE.md compartido:** todos los worktrees del repo comparten el CLAUDE.md automáticamente — las convenciones THYROX están disponibles en todos los worktrees sin configuración adicional
+
+**WorktreeCreate hook para testing:**
+```bash
+# .claude/hooks/hooks.json → WorktreeCreate
+if [ ! -d ".thyrox" ]; then
+  bash .thyrox/registry/bootstrap.sh --init
+fi
+```
+
+Permite simular "primera instalación" en cada worktree de testing — habilita el testing de idempotencia de `thyrox-init.sh` sin contaminar el repo principal.
 
 ---
 
-## Recomendación final: Patrón 3 + Patrón 4 como complemento
+## GAPs identificados — tabla completa
 
-```
-Arquitectura recomendada:
-├── Patrón 1 (skills independientes) → implementación de cada skill
-├── Patrón 3 (un coordinator por metodología) → orquestación y dispatch
-└── Patrón 4 (referencia documental) → dentro de cada skill, referenciar workflow-*
-```
+| GAP | Descripción | Origen | Urgencia |
+|-----|-------------|--------|----------|
+| GAP-001 | plugin.json no soporta 73+ skills en `content` | plugin-distribution-analysis.md | Alta |
+| GAP-002 | No hay coordinator para PMBOK/RUP/RM | análisis multi-flow | Alta |
+| GAP-003 | `_phase_to_display()` no tiene display names para ~73 nuevos skills | session-start.sh | Media |
+| GAP-004 | `now.md` no tiene campo `flow:` para metodologías no-SDLC | now.md structure | Media |
+| GAP-005 | No hay registry de metodologías en `.thyrox/registry/methodologies/` | — | Media (largo plazo) |
+| GAP-006 | SDLC skills existentes no tienen prefijo de metodología (`analyze` vs `sdlc-analyze`) | naming consistency | Baja |
+| **GAP-007** | `WorktreeCreate`/`WorktreeRemove` hooks no están en `hooks.json` | jsonl-worktrees-analysis.md | Alta (bloquea testing) |
+| **GAP-008** | `transcript_path` en hooks no está siendo usado por THYROX | jsonl-worktrees-analysis.md | Media |
+| **GAP-009** | `isolation: worktree` en agentes de metodología no configurado | jsonl-worktrees-analysis.md | Media |
+| **GAP-010** | `.claude/worktrees/` no está en `.gitignore` | jsonl-worktrees-analysis.md | Alta (riesgo de repo) |
 
-**Por qué Patrón 3:**
-1. Context controlado: un coordinator activo = 5-7 skills × 5k = 25-35k tokens (~15%)
-2. BA-coordinator maneja la no-secuencialidad nativamente
-3. Cada coordinator puede tener lógica de "qué sigue" específica a su metodología
-4. Extensible sin tocar session-start.sh (solo añadir coordinator + skills)
-
-**Para BA específicamente:**
-El `ba-coordinator` es el único que necesita lógica de routing inteligente.
-Los otros coordinators (PMBOK, RUP, RM) son simples dispatchers secuenciales.
+**GAP-010** es el más urgente por ser riesgo de contaminación de repo sin ningún costo de remediación (una línea en `.gitignore`). **GAP-007** bloquea el testing de idempotencia.
 
 ---
 
-## Impacto en infraestructura existente
+## Recomendación final — arquitectura v2.0
 
-| Componente | Cambio con Patrón 3 |
-|-----------|---------------------|
-| `now.md` | Agregar campo `flow:` opcional para BA (fase sigue siendo el skill activo) |
-| `session-start.sh` | `_phase_to_command()` ya funciona con `phase == skill name` |
-| `_phase_to_display()` | Agregar display names para los ~25 nuevos skills |
-| `workflow-*/SKILL.md` | Sin cambios |
-| `.claude/agents/` | +5 coordinators (pmbok, rup, rm, ba, sdlc) |
-| `.claude/skills/` | +25 nuevos SKILL.md de metodología |
-| `plugin.json` | Listado de todos los skills |
+```
+Arquitectura para Phase 2 SOLUTION STRATEGY:
+
+Corto plazo (FASE 39, Phase 6 EXECUTE):
+├── Patrón 3: 4-5 coordinators para metodologías prioritarias
+│   SDLC existente + PMBOK + RUP + DMAIC + BA/BABOK
+├── Patrón 4: referencia documental dentro de cada skill
+│   (reducir duplicación de workflow-* en phase-skills)
+├── JSONL: phase-history.jsonl como infraestructura base
+│   (~5 líneas en sync-wp-state.sh → observabilidad desde el inicio)
+└── GAP-010: agregar .claude/worktrees/ a .gitignore (zero costo)
+
+Largo plazo (FASE 40+):
+├── Patrón 5: State Machine con Registry
+│   Un coordinator genérico + YAML por metodología
+│   Agregar metodología = crear 1 YAML, zero cambios de infraestructura
+├── isolation: worktree para coordinators de metodología
+│   Desarrollo paralelo real (DMAIC en worktree A, RUP en B)
+├── WorktreeCreate hook → auto-init de estado THYROX (GAP-007)
+└── Patrón caliber: JSONL → análisis periódico → CLAUDE.md learning
+    (aprendizaje continuo sobre qué metodologías funcionan por tipo de proyecto)
+```
+
+**Consideración de compatibilidad crítica:**
+El diseño del Registry (Patrón 5) debe comenzar durante la implementación del Patrón 3.
+Los coordinators del Patrón 3 deben ser diseñados para ser reemplazables por el coordinator
+genérico del Patrón 5 sin cambios en los skills. La interfaz `now.md::phase = "{metodologia}-{step}"`
+es el contrato que hace compatible la transición Patrón 3 → Patrón 5.
+
+---
+
+## Impacto en infraestructura existente — v2.0
+
+| Componente | Cambio con Patrón 3 (corto plazo) | Cambio con Patrón 5 (largo plazo) |
+|-----------|----------------------------------|----------------------------------|
+| `now.md` | Agregar campo `flow:` para metodologías no-SDLC | Sin cambio adicional |
+| `session-start.sh` `_phase_to_command()` | Agregar prefijos de las 4-5 metodologías prioritarias | Reemplazar por `resolve-phase.py` que lee registry |
+| `_phase_to_display()` | +display names para ~30-40 skills de corto plazo | Leer `display:` del YAML directamente |
+| `sync-wp-state.sh` | +5 líneas para append a `phase-history.jsonl` | Sin cambio adicional |
+| `workflow-*/SKILL.md` | Sin cambios | Sin cambios |
+| `.claude/agents/` | +4-5 coordinators (PMBOK, RUP, DMAIC, BABOK) | Reemplazar por 1 coordinator genérico |
+| `.claude/skills/` | +30-40 SKILL.md prioritarios | +73 total o incremental |
+| `.thyrox/registry/methodologies/` | No existe → crear para diseño inicial | Poblar con YAML por metodología |
+| `plugin.json` | Actualizar listado de skills | Dinámico desde registry |
+| `.gitignore` | Agregar `.claude/worktrees/` (GAP-010) | Sin cambio adicional |
+
+---
+
+## Patrón universal de 9 pasos — implicación para THYROX SDLC
+
+El sub-análisis `universal-pattern-methodology-landscape.md` confirmó que todos los marcos
+metodológicos siguen el mismo patrón universal:
+
+```
+1. IDENTIFY / RECOGNIZE / INITIATE  — detectar necesidad o problema
+2. DEFINE / CLARIFY                 — precisar scope, propósito
+3. UNDERSTAND CONTEXT              — historia, stakeholders, sistemas
+4. MEASURE / ASSESS                — cuantificar estado actual
+5. ANALYZE                         — causas raíz, dinámicas
+6. PLAN / STRATEGY / PRIORITIZE    — diseñar solución
+7. EXECUTE / IMPLEMENT             — poner en acción
+8. MONITOR / TRACK / CHECK         — evaluar resultados
+9. STANDARDIZE / UPDATE / SUSTAIN  — hacer permanente
+```
+
+**La Phase 1 ANALYZE de THYROX ya implementa los pasos 1-3 implícitamente.** Los 8 aspectos
+del análisis incluyen Objetivo, Stakeholders, Uso operacional, Restricciones y Contexto.
+El nombre "ANALYZE" es impreciso para lo que realmente hace — debería llamarse "UNDERSTAND"
+o "DISCOVER", pero es un cambio de naming que requiere su propia FASE y ADR.
+
+**Esto valida que todos los flujos son instancias del mismo meta-proceso.** La State Machine
+del Patrón 5 con un SKILL.md genérico por tipo de paso (identify, define, analyze, plan, execute,
+monitor) inyectando el contexto de la metodología via registry es arquitectónicamente coherente
+con este hallazgo.

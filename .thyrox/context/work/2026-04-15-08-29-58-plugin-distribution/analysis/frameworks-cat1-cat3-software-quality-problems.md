@@ -21,6 +21,23 @@ status: Borrador
 
 ---
 
+## Taxonomía de flexibilidad y arquitectura de coordinación
+
+La flexibilidad de un framework determina directamente el tipo YAML del registry y el comportamiento del coordinator. Un coordinator que simplemente dice "tu siguiente paso es X" es correcto para SDLC (BAJA) pero **incorrecto para PDCA (ALTA)**, donde el "Do" es experimentación a pequeña escala y puede volver a "Plan" antes de completar "Check".
+
+| Nivel | Tipo YAML | Comportamiento del Coordinator | Ejemplos en Cat1-3 |
+|-------|-----------|-------------------------------|-------------------|
+| **BAJA** | `sequential` | "Tu siguiente paso es: {next[0]}" — determinístico | SDLC, DMAIC |
+| **BAJA-MEDIA** | `sequential-conditional` | "Siguiente: {next[0]}. Si la condición X, puede volver a {step_back}" | Problem Solving 8-step |
+| **MEDIA** | `sequential-adaptive` | "Siguiente: {next[0]}. La profundidad de esta fase depende del contexto" | Lean Six Sigma |
+| **MEDIA-ALTA** | `adaptive` | "Opciones: {next}. Elige según tu contexto actual" | — (no en Cat1-3) |
+| **ALTA** | `adaptive-free` | "Fase completada cuando el objetivo se cumple, no cuando se completan actividades fijas" | PDCA |
+| **No-secuencial** | `non-sequential` | "Todas las áreas disponibles: {all_steps}" | — (BA/BABOK, fuera de Cat1-3) |
+
+**Consecuencia arquitectónica clave:** El tipo YAML del registry no es solo metadata — define qué lógica usa el coordinator para generar su próximo mensaje. Un `sequential` no necesita lógica condicional; un `sequential-conditional` necesita evaluar predicados; un `adaptive-free` necesita preguntar al usuario sobre su estado en lugar de presumir el siguiente paso.
+
+---
+
 ## Categoría 1: Software Development
 
 ### SDLC — Software Development Life Cycle
@@ -70,6 +87,23 @@ Los 7 skills actuales de THYROX mapean directamente a las 7 fases del SDLC:
 | Maintenance | track | `/thyrox:track` |
 
 **Nota:** SDLC ya está implementado como el flujo base de THYROX. No requiere nuevos skills.
+
+#### Implicaciones para el coordinator y el skill
+
+- **Coordinator:** lineal estricto — el `next` es siempre el paso inmediatamente siguiente. No hay bifurcaciones ni loops.
+- **Skill:** instrucciones de completar todos los entregables definidos antes de pasar a la fase siguiente.
+- **Gate:** hard gate — los artefactos deben existir antes de continuar (SRS antes de Design, etc.).
+- **Registry YAML:** `type: sequential`
+
+```yaml
+type: sequential
+steps:
+  - id: sdlc-planning
+    next: [sdlc-analysis]
+  - id: sdlc-analysis
+    next: [sdlc-design]
+  # … cada paso apunta exactamente al siguiente
+```
 
 ---
 
@@ -127,6 +161,45 @@ Skills propuestos: 4 skills nuevos (uno por fase)
 | Check | pdca-check | `/thyrox:pdca-check` |
 | Act | pdca-act | `/thyrox:pdca-act` |
 
+#### Implicaciones para el coordinator y el skill
+
+PDCA es el caso **más complejo** de Cat1-3 por su flexibilidad ALTA y naturaleza cíclica.
+
+- **Do** es EXPERIMENTACIÓN A PEQUEÑA ESCALA — puede durar 1 hora o 1 semana; no hay duración predeterminada.
+- **Check** puede revelar que el **Plan** era incorrecto → el ciclo vuelve a Plan sin completar Act. Este no es un fallo; es el mecanismo esperado del framework.
+- El ciclo completo puede ejecutarse en minutos (kaizen rápido) o meses (transformación organizacional).
+- **Coordinator:** pregunta al usuario sobre sus hallazgos en lugar de presumir el siguiente paso.
+
+  > "¿Qué encontraste en esta fase? ¿El resultado sugiere continuar al siguiente paso o ajustar el Plan?"
+
+- **Gate:** soft gate — "¿Tienes suficiente información/resultado para avanzar?" No hay lista de entregables obligatoria.
+- **Registry YAML:** `type: cyclic-adaptive` (no solo `cyclic` — la naturaleza adaptativa es parte del tipo)
+
+```yaml
+type: cyclic-adaptive
+steps:
+  - id: pdca-plan
+    next:
+      - default: [pdca-do]
+  - id: pdca-do
+    next:
+      - default: [pdca-check]
+  - id: pdca-check
+    next:
+      - condition: "resultado_positivo"
+        then: [pdca-act]
+      - condition: "plan_incorrecto"
+        then: [pdca-plan]   # loop explícito de vuelta a Plan
+  - id: pdca-act
+    next:
+      - condition: "mejora_completa"
+        then: [__end__]
+      - condition: "mejora_continua"
+        then: [pdca-plan]   # nuevo ciclo
+```
+
+- **Skill:** "Esta fase es completa cuando el objetivo específico se cumple, no cuando se completan actividades predeterminadas. Las actividades son guías, no mandatos."
+
 ---
 
 ### DMAIC — Define, Measure, Analyze, Improve, Control
@@ -181,6 +254,41 @@ Skills propuestos: 5 skills nuevos (uno por fase)
 | Improve | dmaic-improve | `/thyrox:dmaic-improve` |
 | Control | dmaic-control | `/thyrox:dmaic-control` |
 
+#### Implicaciones para el coordinator y el skill
+
+- **Control** puede durar semanas o meses dependiendo del proceso — el coordinator no puede presumir que se completa rápido.
+- **Analyze** puede iterarse si las causas raíz no quedan claramente identificadas tras el primer análisis estadístico.
+- **Coordinator:** mayormente lineal, pero con preguntas de verificación en Analyze ("¿Las causas raíz identificadas explican el problema?") y en Control ("¿El proceso se ha estabilizado?").
+- **Gate:**
+  - Hard gate en Define y Measure — el Project Charter debe existir; la baseline de datos debe estar validada antes de continuar.
+  - Soft gate en Analyze — continuar cuando "suficientes" causas raíz están identificadas (juicio experto, no lista predefinida).
+  - Soft gate en Control — continuar (cerrar el proyecto) cuando el proceso demuestra estabilidad estadística.
+- **Registry YAML:** `type: sequential` con `gate: conditional` en Analyze y Control.
+
+```yaml
+type: sequential
+steps:
+  - id: dmaic-define
+    gate: hard
+    next: [dmaic-measure]
+  - id: dmaic-measure
+    gate: hard
+    next: [dmaic-analyze]
+  - id: dmaic-analyze
+    gate: conditional          # soft: "¿causas raíz identificadas?"
+    next:
+      - condition: "causas_identificadas"
+        then: [dmaic-improve]
+      - condition: "causas_insuficientes"
+        then: [dmaic-analyze]  # re-iteración interna
+  - id: dmaic-improve
+    gate: hard
+    next: [dmaic-control]
+  - id: dmaic-control
+    gate: conditional          # soft: "¿proceso estabilizado?"
+    next: [__end__]
+```
+
 ---
 
 ### Lean Six Sigma
@@ -227,6 +335,34 @@ Skills propuestos: 5 skills nuevos (mismo patrón DMAIC + extensión Lean)
 | Analyze | lss-analyze | `/thyrox:lss-analyze` |
 | Improve | lss-improve | `/thyrox:lss-improve` |
 | Control | lss-control | `/thyrox:lss-control` |
+
+#### Implicaciones para el coordinator y el skill
+
+- Las herramientas Lean dentro de cada fase (5S, Kanban, VSM) varían según el tipo de desperdicio identificado — el skill no puede prescribir una herramienta fija.
+- La profundidad de **Improve** depende del gap entre el estado As-Is y To-Be: un gap pequeño requiere menos iteración que uno estructural.
+- **Coordinator:** lineal en secuencia pero con preguntas de profundidad en cada fase.
+
+  > "¿Qué desperdicios específicos identificaste en esta fase? ¿Cuál es el impacto cuantificado?"
+
+- **Gate:** soft gate en Improve — "¿Es suficiente la mejora alcanzada para proceder a Control?" La respuesta depende del objetivo establecido en Define.
+- **Registry YAML:** `type: sequential-adaptive` con `depth_variable: true`
+
+```yaml
+type: sequential-adaptive
+depth_variable: true          # la profundidad de cada fase varía por contexto
+steps:
+  - id: lss-define
+    next: [lss-measure]
+  - id: lss-measure
+    next: [lss-analyze]
+  - id: lss-analyze
+    next: [lss-improve]
+  - id: lss-improve
+    gate: conditional          # soft: "¿mejora suficiente?"
+    next: [lss-control]
+  - id: lss-control
+    next: [__end__]
+```
 
 ---
 
@@ -293,6 +429,45 @@ Skills propuestos: 8 skills nuevos (uno por paso)
 | Check | ps-check | `/thyrox:ps-check` |
 | Standardize | ps-standardize | `/thyrox:ps-standardize` |
 | Reflect | ps-reflect | `/thyrox:ps-reflect` |
+
+#### Implicaciones para el coordinator y el skill
+
+El paso **Check** (paso 6) tiene un loop explícito: si el resultado no alcanza el target definido en el paso 3 → volver al paso 4 "Analyze Root Cause". Este es un flujo **condicional**, no solo secuencial.
+
+- **Coordinator:**
+
+  > "¿El resultado del Check alcanza el target establecido en 'Set Target'? Si sí, procedemos a Standardize. Si no, volvemos a Analyze Root Cause."
+
+- **Gate:** conditional gate en Check → bifurcación a Analyze o a Standardize según el resultado.
+- **Registry YAML:** `type: sequential-conditional`
+
+```yaml
+type: sequential-conditional
+steps:
+  - id: ps-identify
+    next: [ps-clarify]
+  - id: ps-clarify
+    next: [ps-target]
+  - id: ps-target
+    next: [ps-analyze]
+  - id: ps-analyze
+    next: [ps-implement]
+  - id: ps-implement
+    next: [ps-check]
+  - id: ps-check
+    display: "PS8 — Check"
+    next:
+      - condition: "resultado >= target"
+        then: [ps-standardize]
+      - condition: "resultado < target"
+        then: [ps-analyze]     # loop back a causa raíz
+  - id: ps-standardize
+    next: [ps-reflect]
+  - id: ps-reflect
+    next: [__end__]
+```
+
+- **Skill:** las instrucciones de `ps-check` deben incluir explícitamente la comparación contra el target y el criterio de decisión para el loop de vuelta.
 
 ---
 
@@ -361,3 +536,70 @@ Para cada framework multi-fase se requiere:
 /thyrox:dmaic-improve            ← phase 4
 /thyrox:dmaic-control            ← phase 5
 ```
+
+---
+
+## Skills adaptativos vs skills determinísticos
+
+La flexibilidad del framework determina cómo se escriben los criterios de completitud en el SKILL.md. Esta distinción es arquitectónica: un skill con criterios incorrectos (hard para un framework flexible, soft para uno rígido) producirá un coordinator que bloquea innecesariamente o que avanza prematuramente.
+
+### Para BAJA flexibilidad (SDLC, DMAIC)
+
+Los criterios son explícitos y verificables. El coordinator puede confirmar completitud sin preguntar.
+
+```markdown
+# En el SKILL.md:
+## Criterios de completitud (hard)
+Esta fase está completa cuando TODOS los siguientes entregables existen:
+- [ ] {entregable-1.md}
+- [ ] {entregable-2.md}
+No continuar hasta que todos estén presentes y aprobados.
+```
+
+**Comportamiento resultante:** el coordinator verifica artefactos y bloquea el avance hasta que existan. Predecible, auditable.
+
+### Para ALTA flexibilidad (PDCA)
+
+Los criterios son orientados a objetivo, no a lista de entregables. El coordinator debe preguntar, no presumir.
+
+```markdown
+# En el SKILL.md:
+## Criterios de completitud (adaptive)
+Esta fase está completa cuando el OBJETIVO de la fase se cumple, no cuando se completan
+actividades predeterminadas. Pregunta clave: ¿Tienes suficiente información/resultado
+para avanzar al siguiente paso?
+
+Las actividades listadas son guías, no mandatos. Adapta la profundidad al contexto:
+- Problema simple → menos actividades, ciclo más rápido
+- Problema complejo → más iteraciones dentro de la fase antes de avanzar
+```
+
+**Comportamiento resultante:** el coordinator hace preguntas abiertas sobre el estado del usuario, no verifica listas. El avance lo decide el usuario con su juicio.
+
+### Para BAJA-MEDIA flexibilidad (Problem Solving 8-step, DMAIC parcial)
+
+Los criterios son mixtos: hard en la mayoría de pasos, condicional en los de loop.
+
+```markdown
+# En el SKILL.md — sección para ps-check:
+## Criterios de completitud (conditional)
+Esta fase requiere comparar el resultado medido contra el target establecido en ps-target.
+
+- Si resultado >= target: fase completa, avanzar a Standardize.
+- Si resultado < target: la causa raíz no fue correctamente identificada. Volver a
+  Analyze Root Cause con nueva información del resultado fallido como entrada.
+
+Documentar siempre: resultado medido, target, decisión tomada y justificación.
+```
+
+**Comportamiento resultante:** el coordinator evalúa un predicado explícito y elige el siguiente paso según el resultado. La lógica de bifurcación es parte del skill, no del coordinator.
+
+### Tabla resumen — Tipo de criterio por framework
+
+| Framework | Tipo de criterio | Razón |
+|-----------|-----------------|-------|
+| SDLC | Hard (todos los entregables) | Secuencial estricto; los artefactos de una fase son entrada obligatoria de la siguiente |
+| PDCA | Adaptive (objetivo cumplido) | Alta flexibilidad; la duración y profundidad son variables; el piloto puede durar minutos o semanas |
+| DMAIC | Mixto: hard en Define/Measure, conditional en Analyze/Control | Rigor estadístico requiere baseline sólida; pero "suficientes causas raíz" es un juicio |
+| Lean Six Sigma | Sequential-adaptive (profundidad variable) | Las herramientas Lean varían por tipo de desperdicio; la profundidad de Improve depende del gap |
+| Problem Solving 8-step | Conditional en Check | El loop Check → Analyze es el mecanismo central del framework; requiere evaluación explícita |

@@ -48,23 +48,23 @@ Cada metodología define su **matriz de transiciones** (qué fase sigue a cuál)
 
 > *"No hay excepciones"*
 
-| # | Marco | Primer paso | Tipo | Clasificación |
-|---|-------|------------|------|---------------|
-| 1 | SDLC | Planning (identificar objetivos) | Secuencial | MARCO |
-| 2 | PDCA | Plan (planificar/identificar problema) | Cíclico | MARCO |
-| 3 | DMAIC / Six Sigma | Define (identificar/clarificar) | Secuencial | MARCO |
-| 4 | Lean Six Sigma | Define (igual que DMAIC + desperdicios) | Secuencial | MARCO |
-| 5 | Problem Solving 8-step (Toyota) | Identify (detectar anomalías) | Secuencial | MARCO |
-| 6 | Strategic Planning | Identification (propósito, objetivos) | Secuencial | MARCO |
-| 7 | Strategic Management | Environmental Scanning | Cíclico | MARCO |
-| 8 | Consulting Process (General) | Initiation (diagnóstico preliminar) | Adaptable | MARCO |
-| 9 | Consulting Process (Thoucentric) | Initial Understanding | Secuencial | MARCO |
-| 10 | Business Analysis Process | Context & Understanding | Adaptable | MARCO |
-| 11 | Business Process Analysis (BPA) | Identify (seleccionar proceso) | Iterativo | MARCO |
-| 12 | (Vacante) | — | — | MARCO |
-| T1 | RCA | Define Problem | Iterativo | TÉCNICA |
-| T2 | Framework Analysis | Familiarization | Flexible | TÉCNICA |
-| T3 | NASA Logical Decomposition | Establish System Architecture Model | Secuencial/Jerárquico | TÉCNICA* |
+| # | Marco | Primer paso | Tipo | Clasificación | Flexibilidad | YAML Type |
+|---|-------|------------|------|---------------|-------------|-----------|
+| 1 | SDLC | Planning (identificar objetivos) | Secuencial | MARCO | BAJA | `sequential` |
+| 2 | PDCA | Plan (planificar/identificar problema) | Cíclico | MARCO | ALTA | `cyclic-adaptive` |
+| 3 | DMAIC / Six Sigma | Define (identificar/clarificar) | Secuencial | MARCO | BAJA-MEDIA | `sequential` |
+| 4 | Lean Six Sigma | Define (igual que DMAIC + desperdicios) | Secuencial | MARCO | MEDIA | `sequential-adaptive` |
+| 5 | Problem Solving 8-step (Toyota) | Identify (detectar anomalías) | Secuencial | MARCO | BAJA-MEDIA | `conditional` |
+| 6 | Strategic Planning | Identification (propósito, objetivos) | Secuencial | MARCO | MEDIA | `sequential-adaptive` |
+| 7 | Strategic Management | Environmental Scanning | Cíclico | MARCO | MEDIA-ALTA | `adaptive-cyclic` |
+| 8 | Consulting Process (General) | Initiation (diagnóstico preliminar) | Adaptable | MARCO | ALTA | `adaptive-free` |
+| 9 | Consulting Process (Thoucentric) | Initial Understanding | Secuencial | MARCO | MEDIA-ALTA | `adaptive` |
+| 10 | Business Analysis Process | Context & Understanding | Adaptable | MARCO | ALTA | `adaptive-contextual` |
+| 11 | Business Process Analysis (BPA) | Identify (seleccionar proceso) | Iterativo | MARCO | MEDIA-ALTA | `iterative-adaptive` |
+| 12 | (Vacante) | — | — | MARCO | — | — |
+| T1 | RCA | Define Problem | Iterativo | TÉCNICA | MEDIA | N/A (no genera skill) |
+| T2 | Framework Analysis | Familiarization | Flexible | TÉCNICA | MEDIA-ALTA | N/A |
+| T3 | NASA Logical Decomposition | Establish System Architecture Model | Secuencial/Jerárquico | TÉCNICA* | BAJA | N/A |
 
 *NASA asume que los requisitos de alto nivel YA están definidos — no es proceso end-to-end.
 
@@ -89,6 +89,38 @@ llamarse "UNDERSTAND" o "DISCOVER" para reflejar que incluye Identify+Define+Con
 
 ---
 
+## Flexibilidad como dimensión arquitectónica
+
+**¿Por qué la flexibilidad importa para el Skills Registry?**
+
+No todos los frameworks se comportan igual en producción. Un coordinator que simplemente
+"lee el YAML y propone el siguiente paso" funciona para frameworks secuenciales, pero FALLA
+para frameworks adaptativos. La flexibilidad del framework determina:
+
+1. **El tipo YAML del registry**: qué tipo de `next:` se define
+2. **El modo del coordinator**: prescriptivo (dice) vs inquisitivo (pregunta)
+3. **El criterio de completitud del skill**: hard (lista de artefactos) vs soft (objetivo cumplido)
+4. **El tipo de gate**: obligatorio vs consultivo
+
+**Los 6 tipos de flujo y su relación con flexibilidad:**
+
+| YAML Type | Flexibilidad | Coordinator | Criterio completitud | Gate |
+|-----------|-------------|-------------|---------------------|------|
+| `sequential` | BAJA | "Siguiente: {next[0]}" | Hard: artefactos deben existir | Obligatorio |
+| `sequential-adaptive` | MEDIA | "Siguiente: {next[0]}. Ajusta profundidad al contexto" | Soft: objetivo cumplido + artefactos mínimos | Consultivo |
+| `conditional` | BAJA-MEDIA | "¿Condición X? Si sí: {A}. Si no: {B}" | Hard en branches | Condicional |
+| `cyclic-adaptive` | ALTA | "¿Objetivo del ciclo cumplido? Opciones: {next}" | Soft: objetivo específico | Consultivo |
+| `adaptive` / `adaptive-free` / `adaptive-contextual` | ALTA | "¿Qué lograste? ¿Suficiente para: {completion_question}?" | Soft: pregunta de competencia | Conversacional |
+| `non-sequential` | Total | "¿Qué área corresponde al objetivo actual?" | Soft: área relevante abordada | Ninguno (flujo libre) |
+| `iterative-adaptive` | MEDIA-ALTA | "¿KPI alcanzado? Si no, ¿qué iterar?" | Condicionado por KPI | Medición |
+
+**La "trampa de flexibilidad"**: Tratar un framework ALTA flexibilidad (Consulting General)
+como si fuera `sequential` produce un coordinator que frustra al usuario ("pero este cliente
+ya hizo el Diagnosis, no necesita hacerlo"). Tratar un framework BAJA flexibilidad (SDLC)
+como `adaptive` produce un coordinator que no garantiza la completitud necesaria para cada fase.
+
+---
+
 ## Inventario completo: 12 MARCOS + 3 TÉCNICAS
 
 ### MARCOS METODOLÓGICOS (12, con #12 Vacante)
@@ -100,9 +132,14 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 
 #### Categoría 1: Software Development (1 marco)
 
+| Flujo | Skills | Tipo | Flexibilidad | YAML Type |
+|-------|--------|------|-------------|-----------|
+| SDLC | analyze, strategy, plan, structure, decompose, execute, track | Secuencial | BAJA | `sequential` |
+
 **#1 — SDLC**
 - **Tipo:** Secuencial/Waterfall
 - **Flexibilidad:** BAJA
+- **YAML Type:** `sequential`
 - **Primer paso:** Planning (identificar objetivos, alcance, viabilidad)
 - **Fases:** Planning → Analysis/Requirements → Design → Development/Implementation → Testing → Deployment → Maintenance
 - **Características clave:** Proceso formal con entregables por fase; cada fase debe completarse antes de continuar; documentación extensiva; cambios de requisitos son costosos una vez iniciado.
@@ -112,9 +149,16 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 
 #### Categoría 2: Mejora de Procesos y Calidad (3 marcos)
 
+| Flujo | Skills | Tipo | Flexibilidad | YAML Type |
+|-------|--------|------|-------------|-----------|
+| PDCA | pdca-plan, pdca-do, pdca-check, pdca-act | Cíclico | ALTA | `cyclic-adaptive` |
+| DMAIC | dmaic-define, dmaic-measure, dmaic-analyze, dmaic-improve, dmaic-control | Secuencial | BAJA-MEDIA | `sequential` |
+| Lean Six Sigma | lss-define, lss-measure, lss-analyze, lss-improve, lss-control | Secuencial | MEDIA | `sequential-adaptive` |
+
 **#2 — PDCA (Plan-Do-Check-Act)**
 - **Tipo:** Cíclico/Iterativo
 - **Flexibilidad:** ALTA
+- **YAML Type:** `cyclic-adaptive`
 - **Primer paso:** Plan (identificar el problema, planificar mejora)
 - **Fases:** Plan → Do → Check → Act (infinitamente repetible)
 - **Características clave:** El ciclo no termina — Act lleva de vuelta a Plan; cada ciclo mejora el proceso; diseñado para mejora continua; Deming/Shewhart; aplicable a cualquier proceso.
@@ -125,6 +169,7 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 **#3 — DMAIC (= Six Sigma)**
 - **Tipo:** Secuencial
 - **Flexibilidad:** BAJA-MEDIA
+- **YAML Type:** `sequential`
 - **Primer paso:** Define (identificar/clarificar el problema)
 - **Fases:** Define → Measure → Analyze → Improve → Control
 - **Características clave:** DMAIC ES Six Sigma — no son diferentes metodologías; DMADV es la variante para procesos/productos nuevos (Design for Six Sigma); herramientas estadísticas intensivas; reduce variación en procesos existentes; 3.4 defectos por millón de oportunidades como objetivo.
@@ -135,6 +180,7 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 **#4 — Lean Six Sigma**
 - **Tipo:** Secuencial (Lean + DMAIC integrados)
 - **Flexibilidad:** MEDIA
+- **YAML Type:** `sequential-adaptive`
 - **Primer paso:** Define (problema + desperdicios identificados)
 - **Fases:** Define (problema + desperdicios) → Measure (rendimiento + flujo de valor) → Analyze (causas raíz + variación + flujo) → Improve (herramientas Lean + Six Sigma) → Control
 - **Características clave:** Combina dos enfoques distintos: Lean = velocidad/eficiencia/eliminación de desperdicios (7 tipos: sobreproducción, espera, transporte, procesamiento, inventario, movimiento, defectos); Six Sigma = precisión/calidad/reducción de variación. Lean Six Sigma ≠ DMAIC puro — las fases tienen contenido diferente.
@@ -144,9 +190,15 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 
 #### Categoría 3: Resolución de Problemas (2 marcos — #12 Vacante)
 
+| Flujo | Skills | Tipo | Flexibilidad | YAML Type |
+|-------|--------|------|-------------|-----------|
+| Problem Solving 8-step | ps8-identify, ps8-clarify, ps8-target, ps8-analyze, ps8-implement, ps8-check, ps8-standardize, ps8-reflect | Secuencial | BAJA-MEDIA | `conditional` |
+| (Vacante #12) | TBD | — | — | — |
+
 **#5 — Problem Solving 8-step (Toyota Way)**
 - **Tipo:** Secuencial
 - **Flexibilidad:** BAJA-MEDIA
+- **YAML Type:** `conditional`
 - **Primer paso:** Identify (detectar la anomalía o gap)
 - **Fases:** Identify → Clarify → Set Target → Analyze Root Cause (5 Whys) → Implement → Check → Standardize → Reflect
 - **Características clave:** Origen: Taiichi Ohno / Toyota Production System; diseñado para manufacturing y operaciones; Reflect (paso 8) como aprendizaje organizacional explícito; usa 5 Whys integrado en el análisis de causa raíz; separar Identify de Clarify evita saltar a soluciones prematuramente.
@@ -162,9 +214,15 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 
 #### Categoría 4: Planeación Estratégica (2 marcos)
 
+| Flujo | Skills | Tipo | Flexibilidad | YAML Type |
+|-------|--------|------|-------------|-----------|
+| Strategic Planning | sp-identification, sp-prioritization, sp-development, sp-implementation, sp-update | Secuencial | MEDIA | `sequential-adaptive` |
+| Strategic Management | sm-scanning, sm-formulation, sm-implementation, sm-evaluation | Cíclico | MEDIA-ALTA | `adaptive-cyclic` |
+
 **#6 — Strategic Planning**
 - **Tipo:** Secuencial
 - **Flexibilidad:** MEDIA
+- **YAML Type:** `sequential-adaptive`
 - **Primer paso:** Identification (propósito, objetivos, desafíos actuales)
 - **Fases:** Identification → Prioritization → Development → Implementation → Update
 - **Características clave:** Proceso periódico (revisión cada 3-5 años); el paso de Identification precede explícitamente al análisis — documentación web frecuentemente omite este paso inicial, mostrando "Analyze" como primero (error de documentación). CORRECCIÓN v3.0: comienza con IDENTIFICACIÓN, no con análisis.
@@ -175,6 +233,7 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 **#7 — Strategic Management**
 - **Tipo:** Secuencial/Cíclico (continuo)
 - **Flexibilidad:** MEDIA-ALTA
+- **YAML Type:** `adaptive-cyclic`
 - **Primer paso:** Environmental Scanning (SWOT, PESTEL, análisis del entorno)
 - **Fases:** Environmental Scanning → Strategy Formulation → Strategy Implementation → Evaluation and Control
 - **Características clave:** Diferencia clave con Strategic Planning: Planning = periódico (ciclo 3-5 años); Management = continuo, adaptativo, monitoreo permanente. Environmental Scanning incluye análisis externo (oportunidades/amenazas) e interno (fortalezas/debilidades).
@@ -184,9 +243,15 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 
 #### Categoría 5: Consultoría (2 marcos)
 
+| Flujo | Skills | Tipo | Flexibilidad | YAML Type |
+|-------|--------|------|-------------|-----------|
+| Consulting Process General | cp-initiation, cp-diagnosis, cp-action-planning, cp-implementation, cp-evaluation | Adaptable | ALTA | `adaptive-free` |
+| Consulting Process Thoucentric | ct-understanding, ct-scope, ct-collect-analyze, ct-solutions, ct-action-plan, ct-implementation, ct-monitoring | Secuencial | MEDIA-ALTA | `adaptive` |
+
 **#8 — Consulting Process General**
 - **Tipo:** Secuencial altamente adaptable
 - **Flexibilidad:** ALTA
+- **YAML Type:** `adaptive-free`
 - **Primer paso:** Initiation (diagnóstico preliminar, entender necesidad del cliente)
 - **Fases:** Initiation → Diagnosis → Action Planning → Implementation → Evaluation
 - **Características clave:** Marco genérico aplicable a cualquier tipo de consultoría; alta adaptabilidad permite expandir o comprimir fases según contexto; Diagnosis como fase separada de Initiation distingue "conocer el cliente" de "entender el problema a fondo".
@@ -197,6 +262,7 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 **#9 — Consulting Process Thoucentric (7 pasos)**
 - **Tipo:** Secuencial adaptable
 - **Flexibilidad:** MEDIA-ALTA
+- **YAML Type:** `adaptive`
 - **Primer paso:** Initial Understanding (context framing, stakeholder mapping)
 - **Fases:** Initial Understanding → Define Scope & Objectives → Collect & Analyze Data → Develop Solutions → Create Action Plan → Implementation → Monitoring & Adjustment
 - **Características clave:** Versión más detallada que el proceso general; separa explícitamente "Define Scope" de "Initial Understanding"; incluye Monitoring & Adjustment como fase final activa (no solo evaluación pasiva); 7 pasos vs 5 del proceso general.
@@ -206,9 +272,15 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 
 #### Categoría 6: Análisis de Negocios (2 marcos)
 
+| Flujo | Skills | Tipo | Flexibilidad | YAML Type |
+|-------|--------|------|-------------|-----------|
+| Business Analysis Process | ba-context, ba-elicitation, ba-analysis, ba-design, ba-implementation, ba-testing, ba-evaluation | Adaptable | ALTA | `adaptive-contextual` |
+| Business Process Analysis | bpa-identify, bpa-map, bpa-analyze, bpa-improve, bpa-implement, bpa-monitor | Iterativo | MEDIA-ALTA | `iterative-adaptive` |
+
 **#10 — Business Analysis Process**
 - **Tipo:** Secuencial contextual
 - **Flexibilidad:** ALTA
+- **YAML Type:** `adaptive-contextual`
 - **Primer paso:** Context & Understanding (entender el problema de negocio, stakeholders, entorno)
 - **Fases:** Context & Understanding → Elicitation → Analysis → Design → Implementation → Testing → Evaluation
 - **Características clave:** Diferencia clave con BPA: BA = análisis de requisitos para NUEVAS soluciones o sistemas; BPA = análisis de procesos EXISTENTES para optimizarlos. BA incluye diseño e implementación de la solución. Nota: BA/BABOK es un framework independiente con 6 knowledge areas no-secuenciales — fue analizado en multi-methodology-patterns-analysis.md como flujo separado para THYROX, pero NO pertenece a esta taxonomía de 12 marcos.
@@ -219,6 +291,7 @@ resolución y aprendizaje. Son candidatos directos para skills en el registry de
 **#11 — Business Process Analysis (BPA)**
 - **Tipo:** Secuencial/Iterativo
 - **Flexibilidad:** MEDIA-ALTA
+- **YAML Type:** `iterative-adaptive`
 - **Primer paso:** Identify (seleccionar el proceso a analizar, definir alcance)
 - **Fases:** Identify → Map (As-Is) → Analyze → Improve (To-Be) → Implement → Monitor
 - **Características clave:** Foco en procesos EXISTENTES (vs BA que trabaja con soluciones nuevas); As-Is mapping como paso explícito — documentar cómo funciona actualmente antes de proponer mejoras; la fase Improve genera el modelo To-Be como contraste al As-Is; iterativo porque el Monitor puede detectar necesidad de reiniciar.
@@ -374,7 +447,22 @@ Con 5 metodologías era razonable. Con 12+ marcos:
 - Cada coordinador es un archivo SKILL.md con instrucciones específicas
 - Mantener 12 coordinators × 85 skills = mantenimiento exponencial
 
-**El patrón 3 no escala.**
+**El patrón 3 no escala — por cantidad Y por heterogeneidad de tipos.**
+
+El problema no es solo cuantitativo. Es también de **heterogeneidad de tipos de flujo**:
+
+- Los 12 marcos cubren 6 YAML types distintos (`sequential`, `cyclic-adaptive`, `conditional`,
+  `sequential-adaptive`, `adaptive-free`, `adaptive-contextual`, `iterative-adaptive`)
+- Un coordinator hardcodeado con lógica "propone el siguiente paso" solo funciona para `sequential`
+- Un coordinator para `cyclic-adaptive` (PDCA) necesita preguntar si el objetivo del ciclo fue cumplido
+- Un coordinator para `adaptive-free` (Consulting General) necesita modo inquisitivo, no prescriptivo
+- Un coordinator para `iterative-adaptive` (BPA) necesita verificar KPIs antes de avanzar
+
+**Un coordinator hardcodeado único no puede manejar los 6 tipos de flujo.**
+El State Machine genérico necesita **lógica por tipo**, no lógica por metodología.
+Esto refuerza la necesidad del Patrón 5 (State Machine + Registry): el registry
+declara el `type:` de cada metodología, y el coordinator aplica la lógica correspondiente
+al tipo, sin hardcodear instrucciones por metodología específica.
 
 ---
 

@@ -456,7 +456,7 @@ son herramientas que se usan DENTRO de las fases de una metodología, no metodol
 con ciclo de vida propio.
 ```
 
-### Schema YAML: Cuatro Tipos de Flujo
+### Schema YAML: Seis Tipos de Flujo
 
 La taxonomía de tipos de flujo cubre todos los patrones de las 15 metodologías:
 
@@ -602,15 +602,95 @@ steps:
     next: []  # terminal
 ```
 
+#### Tipo 6 — Adaptive (fases son guías, profundidad variable por contexto)
+
+Ejemplo: Consulting Process General. Las fases existen pero su duración, profundidad y
+si se ejecutan depende del cliente/contexto. El coordinator no prescribe — pregunta.
+
+```yaml
+# Tipo 6 — Adaptive (Consulting Process General)
+name: Consulting Process General
+type: adaptive
+display: "Consulting — General Process"
+coordinator_mode: "inquiry"  # no prescribe, pregunta
+completion_criteria: deliverable_based  # no activity_based
+
+steps:
+  - id: cp-initiation
+    display: "Consulting — Initiation"
+    next: [cp-diagnosis, cp-action-planning]  # puede saltar Diagnosis
+    depth: client-variable
+    deliverables_required: [engagement-letter]  # mínimo siempre
+    skip_condition: "cliente ya tiene diagnóstico validado"
+
+  - id: cp-diagnosis
+    display: "Consulting — Diagnosis"
+    next: [cp-action-planning, cp-diagnosis]  # puede iterar
+    depth: client-variable
+    completion_question: "¿Entiendes el problema lo suficiente para proponer soluciones?"
+
+  - id: cp-action-planning
+    display: "Consulting — Action Planning"
+    next: [cp-implementation, cp-diagnosis]  # puede volver si plan requiere más info
+    depth: client-variable
+
+  - id: cp-implementation
+    display: "Consulting — Implementation"
+    next: [cp-evaluation]
+    mode: variable  # advisory | collaborative | full-implementation
+
+  - id: cp-evaluation
+    display: "Consulting — Evaluation"
+    next: []  # terminal, pero puede reiniciar engagement
+    reengagement: possible
+```
+
+Subtipo `adaptive-contextual`: el host_methodology varía (el proceso se adapta a la
+metodología del cliente — Waterfall, Agile, Iterative).
+
+```yaml
+# Subtipo: adaptive-contextual
+name: Business Analysis Process
+type: adaptive-contextual
+display: "Business Analysis Process"
+host_methodology: variable  # waterfall | agile | iterative
+
+steps:
+  - id: ba-elicitation
+    display: "BA — Elicitation"
+    next: [ba-analysis]
+    iteration_policy:
+      agile: "se repite cada sprint — no es un paso único"
+      waterfall: "una vez por fase de requisitos"
+      iterative: "según cada iteración de desarrollo"
+```
+
 ### Tabla de Tipos de Flujo y Su State Machine
 
-| Tipo | Característica | Ejemplo | Patrón en Markov |
-|------|---------------|---------|-----------------|
-| Secuencial | A→B→C siempre | SDLC, PMBOK, DMAIC | Cadena lineal con un estado absorbente |
-| Cíclico | A→B→C→A | PDCA, Strategic Mgmt | Cadena recurrente, sin estado absorbente |
-| Iterativo | Puede repetir fases o reiniciar | RUP, BPA | Estados recurrentes + posibles loops |
-| No-secuencial | Cualquier orden | BA/BABOK | Grafo completo (todas transiciones posibles) |
-| Condicional | Siguiente depende de resultado | Problem Solving | Transiciones con condiciones de guardia |
+| Tipo | Característica | Ejemplo | Estado siguiente | YAML type |
+|------|---------------|---------|-----------------|-----------|
+| Secuencial | A→B→C siempre | SDLC, PMBOK, DMAIC | Un solo `next` | `sequential` |
+| Cíclico | A→B→C→A | PDCA, Strategic Mgmt | Regresa al inicio | `cyclic` |
+| Iterativo | Puede repetir fases | RUP, BPA | `next` incluye misma fase | `iterative` |
+| No-secuencial | Cualquier orden | BA/BABOK | `next = todos` | `non-sequential` |
+| Condicional | Depende de resultado | PS8 (Check→Analyze si falla) | `next` depende de condición | `conditional` |
+| **Adaptive** | **Fases son guías, profundidad variable** | **Consulting, BA Process** | **Coordinator pregunta el estado, no prescribe** | **`adaptive`** |
+
+### Por Qué "Adaptive" No Es Solo "Non-Sequential"
+
+La distinción es crítica para el diseño del coordinator:
+
+| Característica | Non-sequential (BA/BABOK) | Adaptive (Consulting General) |
+|---------------|--------------------------|-------------------------------|
+| Orden | Completamente libre | Existe un orden preferido pero flexible |
+| Profundidad | Igual en todas las áreas | Variable por contexto |
+| Skip de fases | Sí (cualquiera) | Condicional (si ya existe el deliverable) |
+| Repetición | Sí (cualquiera) | En fases específicas (Diagnosis puede iterar) |
+| Coordinator | "¿Qué área?" | "¿Qué encontraste? ¿Suficiente para avanzar?" |
+| Deliverables | Cada área tiene los suyos | Mínimos requeridos + opcionales por contexto |
+
+**Non-sequential = libertad total de ORDEN.**
+**Adaptive = libertad de PROFUNDIDAD y DURACIÓN dentro de un orden sugerido.**
 
 ### El Coordinator Genérico
 
@@ -620,20 +700,32 @@ Un único coordinator lee el registry y determina el flujo sin conocer las metod
 .claude/agents/thyrox-coordinator.md
 ```
 
-Algoritmo del coordinator:
+Algoritmo del coordinator por tipo de flujo:
 
 ```
-1. Leer now.md → extraer phase (ej: "pdca-do")
-2. Extraer prefijo de metodología (ej: "pdca")
-3. Cargar .thyrox/registry/methodologies/pdca.yml
-4. Buscar step con id = "pdca-do"
-5. Leer campo next → ["pdca-check"]
-6. Para type: conditional → evaluar condición del WP actual
-7. Mostrar:
-   - Estado actual: "PDCA — Do"
-   - Siguiente válido: "PDCA — Check"
-   - (Si hay múltiples next) → presentar opciones al usuario
-8. Al confirmar transición → actualizar now.md::phase = "pdca-check"
+Para type: sequential / cyclic / iterative:
+  1. Leer now.md → extraer phase (ej: "pdca-do")
+  2. Extraer prefijo de metodología (ej: "pdca")
+  3. Cargar .thyrox/registry/methodologies/pdca.yml
+  4. Buscar step con id = "pdca-do"
+  5. Leer campo next → ["pdca-check"]
+  6. Mostrar: "Has completado {phase}. Siguiente: {next[0]}"
+  7. Al confirmar → actualizar now.md::phase = "pdca-check"
+
+Para type: conditional:
+  Mismo flujo base, pero en paso 6:
+  "¿Se cumplió la condición? Si sí: {next_if_true}. Si no: {next_if_false}"
+
+Para type: non-sequential:
+  Mismo flujo base, pero en paso 6:
+  "Áreas disponibles: {all_steps}. ¿Cuál corresponde al objetivo actual?"
+
+Para type: adaptive / adaptive-contextual / adaptive-cyclic:
+  1-5 igual que sequential
+  6. Mostrar: "¿Qué lograste en {phase}? ¿Tienes suficiente para responder:
+              {completion_question}? Si sí: opciones disponibles son {next}.
+              Si no: ¿qué te falta en {phase}?"
+  7. Al confirmar → actualizar now.md::phase según elección
 ```
 
 El coordinator NO hardcodea ninguna metodología. Todo el conocimiento de flujo está en
@@ -781,8 +873,22 @@ que usa un LLM probabilístico como motor de ejecución
 pero no depende de su probabilismo para su corrección.
 ```
 
+Expresado con la dimensión de flexibilidad descubierta en el análisis de frameworks reales:
+
+```
+THYROX = {
+  registry: YAML con 6 tipos de flujo
+            (sequential | cyclic | iterative | non-sequential | conditional | adaptive),
+  skills:   determinísticos para flexibilidad BAJA + adaptativos para flexibilidad ALTA,
+  coordinator: prescriptivo para sequential ("siguiente: X")
+               + inquisitivo para adaptive ("¿qué encontraste? ¿suficiente para avanzar?"),
+  state:    now.md::phase + phase-history.jsonl (observabilidad de transiciones),
+  memory:   artefactos en git + CLAUDE.md compartido en worktrees
+}
+```
+
 THYROX no elimina la naturaleza probabilística del LLM — la usa para generación de texto,
-análisis, y razonamiento, donde la probabilismo es una ventaja (creatividad, adaptabilidad).
+análisis, y razonamiento, donde el probabilismo es una ventaja (creatividad, adaptabilidad).
 THYROX elimina el probabilismo donde es un problema: en el flujo de trabajo, las decisiones
 de estado, y la memoria de largo plazo.
 
