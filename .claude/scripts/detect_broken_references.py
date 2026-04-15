@@ -71,20 +71,45 @@ class ReferenceValidator:
         return False
     
     def is_inside_code_block(self, content, position):
-        """Detecta si una posición está dentro de un bloque de código (triple backtick)"""
-        # Encontrar todos los bloques de código
-        code_blocks = []
-        pattern = r'```[a-z]*\n(.*?)\n```'
-        
-        for match in re.finditer(pattern, content, re.DOTALL):
-            start, end = match.span()
-            code_blocks.append((start, end))
-        
-        # Verificar si la posición está dentro de algún bloque
-        for start, end in code_blocks:
-            if start <= position <= end:
-                return True
-        
+        """Detecta si una posición está dentro de un bloque de código.
+        Usa state machine línea por línea para manejar correctamente bloques anidados.
+        Soporta backticks (```) y tildes (~~~) como delimitadores de fence.
+        Una fence de cierre debe tener >= fence_len del mismo carácter, sin info string."""
+        in_code_block = False
+        fence_char = None
+        fence_len = 0
+        current_pos = 0
+
+        for line in content.split('\n'):
+            line_start = current_pos
+            line_end = current_pos + len(line)
+
+            # Si la posición está en esta línea, retornar estado actual
+            # (antes de procesar cambios de estado de esta línea)
+            if line_start <= position <= line_end:
+                return in_code_block
+
+            if current_pos > position:
+                break
+
+            # Actualizar estado según la línea actual
+            if not in_code_block:
+                m = re.match(r'^(`{3,}|~{3,})', line)
+                if m:
+                    fence_char = m.group(1)[0]
+                    fence_len = len(m.group(1))
+                    in_code_block = True
+            else:
+                # Closing fence: mismo carácter, >= fence_len, sin info string
+                closing_pattern = r'^' + re.escape(fence_char) + r'{' + str(fence_len) + r',}\s*$'
+                if re.match(closing_pattern, line):
+                    in_code_block = False
+                    fence_char = None
+                    fence_len = 0
+
+            current_pos += len(line) + 1  # +1 por newline
+
+
         return False
     
     def is_inside_html_comment(self, content, position):

@@ -260,7 +260,7 @@ incremental-correction-methodology/
 
 ### Patrón 1: Guía de Alto Nivel con Referencias
 
-```markdown
+````markdown
 ---
 name: sphinx-documentation
 description: "Construye y valida documentación Sphinx para architecture docs. Usar cuando trabajas con docs Sphinx o architecture docs."
@@ -280,7 +280,7 @@ make clean && make html
 **Análisis de warnings**: Ver [ANALYSIS](ANALYSIS.md) para guía completa
 **Validación de links**: Ver [LINKCHECK](LINKCHECK.md) para todos los métodos
 **Ejemplos**: Ver [EXAMPLES](EXAMPLES.md) para patrones comunes
-```
+````
 
 Claude carga ANALYSIS.md, LINKCHECK.md o EXAMPLES.md solo cuando necesario.
 
