@@ -50,7 +50,37 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 - Si el subagente no hace cambios → worktree se limpia automáticamente
 - Si hay cambios → devuelve el path del worktree y el nombre de la rama al padre
 
-**Cuándo usar:** Experimentos que pueden fallar, features paralelas, probar enfoques alternativos sin arriesgar el trabajo actual.
+**Valores de retorno cuando hay cambios:**
+```
+worktree_path: /path/to/.git/worktrees/branch-name
+branch_name:   subagent-feature-xyz-<timestamp>
+```
+
+El agente padre puede entonces revisar, testear o hacer merge del branch antes de integrarlo.
+
+**Ciclo de vida:**
+
+```
+Main Working Tree
+    │
+    └─ Subagente con isolation: worktree
+        │
+        └─ Git Worktree (rama separada)
+            │
+            ├─ Sin cambios → limpieza automática
+            └─ Con cambios → devuelve worktree_path + branch_name
+                    │
+                    └─ Padre revisa / testea / hace merge
+```
+
+**Buenas prácticas:**
+- Usar cuando el trabajo del subagente es especulativo o puede conflictuar con cambios concurrentes
+- Limpiar worktrees manualmente si es necesario: `git worktree prune`
+- Siempre revisar el branch devuelto antes de hacer merge al main
+
+**Cuándo usar:** Experimentos que pueden fallar, features paralelas, refactorings grandes que pueden necesitar iteración, probar enfoques alternativos sin arriesgar el trabajo actual.
+
+Source: howto/04-subagents/README.md
 
 ## Patrón 3 — Persistent Memory
 

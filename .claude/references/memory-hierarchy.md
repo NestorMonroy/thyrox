@@ -68,7 +68,7 @@ Claude puede auto-actualizar su memoria persistente para recordar preferencias y
 
 **Versión mínima requerida:** v2.1.59
 
-**Control:**
+**Control via env var:**
 ```bash
 # Deshabilitar auto memory
 CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 claude
@@ -82,6 +82,19 @@ CLAUDE_CODE_DISABLE_AUTO_MEMORY=0 claude
 | `0` | Fuerza auto memory **on** |
 | `1` | Fuerza auto memory **off** |
 | *(sin definir)* | Comportamiento por defecto (activado) |
+
+**Control via settings — `claudeMdAutoSave`:**
+
+```jsonc
+// En ~/.claude/settings.json o .claude/settings.local.json
+{
+  "claudeMdAutoSave": true    // Habilitar auto-save (default: true)
+}
+```
+
+- Controla si Claude guarda aprendizajes automáticamente al final de la sesión y cada ~30 minutos
+- Escribe en el entrypoint `MEMORY.md`; crea topic files on-demand (`api-conventions.md`, `debugging.md`, etc.)
+- Equivalente persistente al env var `CLAUDE_CODE_DISABLE_AUTO_MEMORY`
 
 **Directorio personalizado** (`autoMemoryDirectory`, disponible desde v2.1.74):
 
@@ -130,13 +143,27 @@ Archivos disponibles:
 
 `claudeMdExcludes` puede definirse en cualquier nivel de settings (no solo en managed policy):
 
-```json
+```jsonc
 {
-  "claudeMdExcludes": ["vendor/**", "node_modules/**", "packages/legacy/**"]
+  "claudeMdExcludes": [
+    "packages/legacy-app/CLAUDE.md",
+    "vendors/**/CLAUDE.md",
+    "archived/**/CLAUDE.md",
+    "{deprecated,examples}/**"
+  ]
 }
 ```
 
-Útil para monorepos donde algunas CLAUDE.md son irrelevantes para el trabajo actual. Los patrones se evalúan relativos a la raíz del proyecto.
+**Patrones soportados** (glob relativo a la raíz del proyecto):
+- `packages/*/CLAUDE.md` — excluir todas las sub-packages
+- `**/node_modules/**` — excluir dependencias vendoreadas
+- `{deprecated,archived}/**` — múltiples raíces con brace expansion
+
+**Cuándo usar:**
+- Monorepos con sub-proyectos donde solo algunos son relevantes al trabajo actual
+- Repos con CLAUDE.md de terceros o vendoreadas
+- Reducir ruido en el context window excluyendo instrucciones obsoletas
+- Equipos trabajando en servicios específicos de un polyrepo
 
 ## Sistema de rules modulares
 
