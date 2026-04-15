@@ -21,6 +21,27 @@ status: Borrador
 
 ---
 
+## El problema de la flexibilidad adaptativa
+
+Los frameworks en Cat4-6 comparten una característica que los hace fundamentalmente distintos de Cat1-3: **las fases son guías, no mandatos**. El nivel de profundidad, la duración, y en algunos casos el orden, dependen del contexto del proyecto, cliente u organización.
+
+Esto rompe el modelo simple de registry `type: sequential` donde `next:` es determinístico. Un coordinator que dice "tu siguiente paso es X" es **correcto para SDLC (BAJA flexibilidad) pero INCORRECTO para Consulting General (ALTA flexibilidad)**, donde las fases varían en duración, profundidad, y a veces en orden, según el cliente.
+
+### Tipos de registry necesarios para Cat4-6
+
+| Framework | Tipo actual | Tipo correcto | Por qué |
+|-----------|------------|---------------|---------|
+| Strategic Planning | sequential | sequential-adaptive | "Update" es continuo — no hay end state fijo |
+| Strategic Management | cyclic | adaptive-cyclic | Puede entrar en cualquier fase según las condiciones del mercado |
+| Consulting General | sequential | adaptive-free | Fases varían en profundidad y orden por cliente |
+| Consulting Thoucentric | sequential | adaptive | 7 pasos pero duración y profundidad variables |
+| Business Analysis Process | sequential | adaptive-contextual | Se adapta a la metodología del proyecto (Waterfall/Agile) |
+| BPA | iterative | iterative-adaptive | Número de iteraciones no está predefinido |
+
+Esta distinción determina no solo la estructura YAML del registry sino también el comportamiento del coordinator: si hace transiciones determinísticas o si hace preguntas de estado antes de avanzar.
+
+---
+
 ## Categoría 4: Planeación Estratégica
 
 ### Strategic Planning
@@ -69,6 +90,38 @@ La documentación web incompleta sobre este framework sugería que comenzaba con
 
 Comienza con **Identification** = identificar propósito organizacional, objetivos, problemas y oportunidades antes de cualquier acción. ✓
 
+#### Registry YAML y comportamiento del coordinator
+
+```yaml
+type: sequential-adaptive
+steps:
+  - id: sp-identify
+    display: "Strategic Planning — Identification"
+    next: [sp-prioritize]
+    depth: adaptive
+    duration_hint: "días a semanas"
+  - id: sp-prioritize
+    display: "Strategic Planning — Prioritization"
+    next: [sp-develop]
+    depth: adaptive
+  - id: sp-develop
+    display: "Strategic Planning — Development"
+    next: [sp-implement]
+    depth: adaptive
+  - id: sp-implement
+    display: "Strategic Planning — Implementation"
+    next: [sp-update]
+    depth: adaptive
+  - id: sp-update
+    display: "Strategic Planning — Update"
+    next: [sp-identify]  # puede reiniciar todo el ciclo
+    trigger: "revisión periódica (trimestral/anual) o cambio de contexto significativo"
+```
+
+**Coordinator:** "¿La identificación refleja el estado actual? ¿Hay cambios en el contexto organizacional desde la última revisión?"
+
+La fase `sp-update` no es terminal — es el punto de reentrada al ciclo. El coordinator no asume que el plan está "terminado"; pregunta si el contexto organizacional ha cambiado suficientemente para justificar revisión del ciclo completo.
+
 #### Mapeo a Skills de THYROX
 
 Skills propuestos: 5 skills nuevos (uno por fase)
@@ -116,6 +169,34 @@ Environmental Scanning asume que **ya se identificó** que se necesita gestión 
 
 Comienza con **Environmental Scanning** = análisis sistemático del contexto (identificación implícita de dónde está la organización y qué la rodea). La identificación de la necesidad de gestión estratégica es prerrequisito implícito. ✓
 
+#### Registry YAML y comportamiento del coordinator
+
+Strategic Management es **continuo y adaptativo** — puede entrar en cualquier fase sin recorrer las anteriores. Environmental Scanning puede dispararse por un evento externo (crisis, oportunidad) incluso si el ciclo anterior no ha terminado.
+
+```yaml
+type: adaptive-cyclic
+entry_point: any  # puede entrar en cualquier fase
+steps:
+  - id: sm-scan
+    display: "Strategic Management — Environmental Scanning"
+    next: [sm-formulate, sm-evaluate]  # puede ir a formular O a evaluar directamente
+    trigger: "cambio en SWOT/PESTEL, evento de mercado, resultado de evaluación"
+  - id: sm-formulate
+    display: "Strategic Management — Strategy Formulation"
+    next: [sm-implement, sm-scan]  # puede necesitar más datos
+  - id: sm-implement
+    display: "Strategic Management — Strategy Implementation"
+    next: [sm-evaluate]
+  - id: sm-evaluate
+    display: "Strategic Management — Evaluation and Control"
+    next: [sm-scan, sm-formulate]  # retroalimenta a scan o reformulación directa
+    trigger: "resultados de implementación, KPIs, cambio de contexto"
+```
+
+**Coordinator:** "¿Qué cambio desencadenó esta sesión? Basado en eso, ¿estamos en Scanning o directamente en Formulation?"
+
+A diferencia de frameworks secuenciales, el coordinator de Strategic Management NO dice "completaste scan, ahora formula". En su lugar, diagnostica el disparador de la sesión actual y determina el punto de entrada apropiado.
+
 #### Mapeo a Skills de THYROX
 
 Skills propuestos: 4 skills nuevos (uno por fase)
@@ -160,6 +241,42 @@ Skills propuestos: 4 skills nuevos (uno por fase)
 #### Verificación del Patrón Universal
 
 Comienza con **Initiation** = diagnóstico preliminar que identifica el problema o necesidad del cliente antes de proponer soluciones. ✓
+
+#### Registry YAML y comportamiento del coordinator
+
+Consulting Process General es el framework con **mayor complejidad adaptativa** del inventario. Cada cliente requiere una configuración diferente: la fase Diagnosis puede tomar 2 días o 3 meses; Action Planning puede omitirse si el cliente ya tiene un plan claro; Implementation puede ser solo advisory (el consultor NO implementa).
+
+```yaml
+type: adaptive-free
+steps:
+  - id: cp-initiation
+    display: "Consulting — Initiation"
+    next: [cp-diagnosis, cp-action-planning]  # puede saltar Diagnosis
+    depth: client-variable
+    deliverable_required: ["engagement-letter"]  # mínimo siempre requerido
+  - id: cp-diagnosis
+    display: "Consulting — Diagnosis"
+    next: [cp-action-planning, cp-diagnosis]  # puede iterar
+    depth: client-variable
+    skip_condition: "cliente tiene diagnóstico propio validado"
+  - id: cp-action-planning
+    display: "Consulting — Action Planning"
+    next: [cp-implementation, cp-evaluation]  # puede saltar a evaluation si es advisory
+    depth: client-variable
+    skip_condition: "cliente tiene plan de implementación propio"
+  - id: cp-implementation
+    display: "Consulting — Implementation"
+    next: [cp-evaluation]
+    depth: client-variable  # advisory | consultative | collaborative
+  - id: cp-evaluation
+    display: "Consulting — Evaluation"
+    next: []  # terminal, pero puede reiniciar todo el engagement
+    reengagement_possible: true
+```
+
+**Coordinator:** NO dice "tu siguiente paso es X". Dice: "¿Qué entregable de esta fase existe? ¿El cliente está listo para la siguiente fase? ¿Hay factores que justifiquen ajustar la profundidad?"
+
+Este es el caso más extremo de coordinator adaptativo: las preguntas de estado reemplazan completamente las transiciones determinísticas. El coordinator debe determinar el modo de interacción (advisory/consultativo/colaborativo) al inicio del engagement y configurar las expectativas de profundidad en consecuencia.
 
 #### Mapeo a Skills de THYROX
 
@@ -220,6 +337,43 @@ Thoucentric es una variante específica del Consulting Process general, más est
 #### Verificación del Patrón Universal
 
 Comienza con **Initial Understanding** = identificación explícita de necesidades, problemas y objetivos del cliente. ✓
+
+#### Registry YAML y comportamiento del coordinator
+
+Thoucentric tiene 7 pasos claros pero la duración por paso varía enormemente. El paso "Collect & Analyze Data" puede iterar si los datos son insuficientes; "Monitoring & Adjustment" puede durar semanas o años.
+
+```yaml
+type: adaptive
+steps:
+  - id: ct-understand
+    display: "Consulting Thoucentric — Initial Understanding"
+    next: [ct-scope]
+    depth: client-variable
+  - id: ct-scope
+    display: "Consulting Thoucentric — Define Scope & Objectives"
+    next: [ct-analyze]
+    depth: client-variable
+  - id: ct-analyze
+    display: "Consulting Thoucentric — Collect & Analyze Data"
+    next: [ct-solutions, ct-analyze]  # puede volver a analizar más datos
+    depth: data-driven  # profundidad determinada por suficiencia de datos
+    loop_condition: "¿Los datos recopilados son suficientes para desarrollar soluciones?"
+  - id: ct-solutions
+    display: "Consulting Thoucentric — Develop Solutions"
+    next: [ct-plan, ct-analyze]  # puede necesitar más datos
+  - id: ct-plan
+    display: "Consulting Thoucentric — Create Action Plan"
+    next: [ct-implement]
+  - id: ct-implement
+    display: "Consulting Thoucentric — Implementation"
+    next: [ct-monitor]
+  - id: ct-monitor
+    display: "Consulting Thoucentric — Monitoring & Adjustment"
+    next: [ct-analyze, ct-solutions]  # puede revelar nuevos gaps
+    duration_hint: "semanas a años según el engagement"
+```
+
+**Coordinator:** "¿Los datos recopilados en ct-analyze son suficientes para desarrollar soluciones robustas? Si hay gaps de información, iterar ct-analyze antes de avanzar."
 
 #### Mapeo a Skills de THYROX
 
@@ -283,6 +437,45 @@ Esta distinción es fundamental para el Skills Registry:
 
 Comienza con **Context & Understanding** = identificación del contexto, historia y sistemas existentes antes de recopilar requisitos. ✓
 
+#### Registry YAML y comportamiento del coordinator
+
+Business Analysis Process se adapta a la metodología del proyecto host. En Agile, Elicitation ocurre por sprint (no una sola vez). En Waterfall, la secuencia es más lineal, pero con regresos a Analysis desde Testing. La metodología host configura el flujo completo.
+
+```yaml
+type: adaptive-contextual
+host_methodology: variable  # waterfall | agile | iterative | other
+steps:
+  - id: ba-context
+    display: "Business Analysis — Context & Understanding"
+    next: [ba-elicitation]
+  - id: ba-elicitation
+    display: "Business Analysis — Elicitation"
+    next: [ba-analysis]
+    iteration_policy:
+      agile: "por sprint — se repite cada iteración"
+      waterfall: "una vez por fase de requirements"
+      iterative: "por iteración, con profundidad creciente"
+  - id: ba-analysis
+    display: "Business Analysis — Analysis"
+    next: [ba-design, ba-elicitation]  # puede necesitar más elicitation
+  - id: ba-design
+    display: "Business Analysis — Design"
+    next: [ba-implementation]
+  - id: ba-implementation
+    display: "Business Analysis — Implementation"
+    next: [ba-testing]
+  - id: ba-testing
+    display: "Business Analysis — Testing"
+    next: [ba-evaluation, ba-analysis]  # puede revelar requisitos faltantes
+  - id: ba-evaluation
+    display: "Business Analysis — Evaluation"
+    next: []  # terminal para este ciclo
+```
+
+**Coordinator:** "¿Bajo qué metodología está trabajando el proyecto? Basado en eso, ¿cómo se configura el flujo de Business Analysis?"
+
+La pregunta de contexto metodológico es obligatoria al inicio. La respuesta (waterfall/agile/iterative) determina el `iteration_policy` de `ba-elicitation` y los posibles `next` de `ba-testing`.
+
 #### Mapeo a Skills de THYROX
 
 Skills propuestos: 7 skills nuevos (uno por fase)
@@ -334,6 +527,39 @@ BPA comparte herramientas con Lean Six Sigma (VSM, identificación de desperdici
 
 Comienza con **Identify** = identificar la necesidad de análisis y seleccionar el proceso objetivo. ✓
 
+#### Registry YAML y comportamiento del coordinator
+
+El ciclo Improve→Implement→Monitor puede repetirse N veces. Monitor puede revelar que Improve fue insuficiente y volver a Improve, o que los problemas son más profundos y volver al inicio completo (Identify). No hay un número predefinido de iteraciones.
+
+```yaml
+type: iterative-adaptive
+steps:
+  - id: bpa-identify
+    display: "BPA — Identify"
+    next: [bpa-map]
+  - id: bpa-map
+    display: "BPA — Map"
+    next: [bpa-analyze]
+  - id: bpa-analyze
+    display: "BPA — Analyze"
+    next: [bpa-improve, bpa-map]  # puede necesitar re-mapeo si el proceso es complejo
+  - id: bpa-improve
+    display: "BPA — Improve"
+    next: [bpa-implement]
+  - id: bpa-implement
+    display: "BPA — Implement"
+    next: [bpa-monitor]
+  - id: bpa-monitor
+    display: "BPA — Monitor"
+    next: [bpa-identify, bpa-improve]  # puede volver a inicio completo O solo a Improve
+    loop_condition: "¿El proceso alcanzó los KPIs objetivo?"
+    max_iterations: null  # sin límite predefinido
+```
+
+**Coordinator:** "¿El proceso mejorado alcanzó los KPIs definidos en bpa-identify? Si no, ¿el gap es de implementación (→ bpa-improve) o de identificación del problema raíz (→ bpa-identify)?"
+
+La distinción entre volver a `bpa-improve` vs `bpa-identify` es la decisión clave del coordinator en cada ciclo de Monitor.
+
 #### Mapeo a Skills de THYROX
 
 Skills propuestos: 6 skills nuevos (uno por fase)
@@ -346,6 +572,77 @@ Skills propuestos: 6 skills nuevos (uno por fase)
 | Improve | bpa-improve | `/thyrox:bpa-improve` |
 | Implement | bpa-implement | `/thyrox:bpa-implement` |
 | Monitor | bpa-monitor | `/thyrox:bpa-monitor` |
+
+---
+
+## Coordinator adaptativo vs determinístico — diferencia de implementación
+
+Para frameworks con flexibilidad ALTA, el coordinator necesita un modelo de interacción fundamentalmente diferente al de frameworks BAJA/MEDIA.
+
+### 1. Preguntas de estado en lugar de comandos de transición
+
+| Modelo | Ejemplo |
+|--------|---------|
+| Determinístico | "Has completado analyze, el siguiente paso es strategy" |
+| Adaptativo | "¿Qué encontraste en esta fase? ¿Estás listo para avanzar?" |
+
+El coordinator determinístico (SDLC, DMAIC) conoce el siguiente paso antes de que el usuario termine la fase actual. El coordinator adaptativo (Consulting General, BA Process) necesita información del estado actual para determinar si avanzar, iterar, o saltar una fase.
+
+### 2. Deliverable-based completion en lugar de step-based
+
+| Modelo | Ejemplo |
+|--------|---------|
+| Determinístico | "Completa estas 5 actividades y luego avanza" |
+| Adaptativo | "La fase está completa cuando tienes suficiente información para tomar la siguiente decisión" |
+
+Los frameworks ALTA no tienen un checklist fijo de actividades por fase. La completitud es una función del contexto: en un cliente con diagnóstico propio validado, cp-diagnosis puede completarse en horas; en otro, puede tomar semanas.
+
+### 3. Context injection en el skill
+
+El skill debe preguntar al inicio: "¿Qué tipo de proyecto/cliente/organización es este?"
+
+La respuesta configura:
+- La profundidad de las actividades dentro de la fase
+- Las condiciones de skip de fases opcionales
+- El modo de interacción (advisory/consultativo/colaborativo para Consulting)
+- La metodología host (para BA Process)
+
+### 4. Soft gates en lugar de hard gates
+
+| Tipo | Descripción | Aplicable a |
+|------|-------------|-------------|
+| Hard gate | "El artefacto X DEBE existir antes de continuar" | SDLC, DMAIC, frameworks BAJA flexibilidad |
+| Soft gate | "¿Tienes suficiente para continuar? ¿Qué te falta?" | Consulting, BA Process, frameworks ALTA flexibilidad |
+
+Los soft gates no bloquean el avance — orientan la conversación sobre si el avance es apropiado dado el contexto actual.
+
+### Skills adaptativos — plantilla de instrucciones
+
+Para cualquier skill en un framework de flexibilidad ALTA, la estructura de SKILL.md debe seguir esta plantilla:
+
+```markdown
+# [nombre-skill]/SKILL.md para frameworks ALTA flexibilidad
+
+## Contexto adaptativo
+Antes de comenzar, determina:
+- ¿Qué tipo de proyecto/cliente/organización?
+- ¿Qué profundidad requiere este contexto?
+- ¿Hay fases anteriores que se pueden omitir dado el contexto?
+
+## Actividades (guías, no mandatos)
+Las siguientes actividades son referencia. Adapta según el contexto:
+...
+
+## Criterio de completitud (soft)
+Esta fase está completa cuando PUEDES responder:
+[pregunta específica de la fase]
+No cuando todas las actividades están checked.
+
+## Actualizar phase al completar
+bash .claude/scripts/set-session-phase.sh '[siguiente-fase]'
+```
+
+La diferencia clave con skills de frameworks BAJA flexibilidad: el criterio de completitud es una pregunta de capacidad decisional ("¿puedes responder X?"), no un checklist de actividades.
 
 ---
 
@@ -363,25 +660,44 @@ Skills propuestos: 6 skills nuevos (uno por fase)
 | Cat 6 — Análisis de Negocios | Business Process Analysis | 6 | Sí (bpa-coordinator) |
 | **TOTAL Cat 4-6** | **6 frameworks** | **34 skills nuevos** | **6 coordinators** |
 
+### Tipos de Registry — Resumen actualizado
+
+Los tipos YAML necesarios para soportar la flexibilidad de Cat4-6 van más allá del `type: sequential` estándar:
+
+| Framework | Tipo registry | Coordinator | Complejidad |
+|-----------|--------------|-------------|-------------|
+| Strategic Planning | `sequential-adaptive` | Preguntas de revisión periódica | Baja-Media |
+| Strategic Management | `adaptive-cyclic` | `entry_point: any`, diagnóstico de disparador | Media-Alta |
+| Consulting General | `adaptive-free` | Sin transiciones determinísticas — solo preguntas de estado | Alta |
+| Consulting Thoucentric | `adaptive` | Iterable en ct-analyze por suficiencia de datos | Media-Alta |
+| Business Analysis Process | `adaptive-contextual` | Pregunta obligatoria de metodología host al inicio | Media-Alta |
+| Business Process Analysis | `iterative-adaptive` | `max_iterations: null`, decisión Improve vs Identify en Monitor | Media |
+
 ### Estimado de Tokens de Contexto
 
-Asumiendo ~2,000 tokens promedio por SKILL.md:
+Asumiendo ~2,000 tokens promedio por SKILL.md (skills adaptativos pueden ser ~2,500 por la lógica adicional):
 
 | Componente | Skills | Tokens estimados |
 |------------|--------|-----------------|
 | Strategic Planning (5 + coordinator) | 6 | ~12,000 |
 | Strategic Management (4 + coordinator) | 5 | ~10,000 |
-| Consulting General (5 + coordinator) | 6 | ~12,000 |
+| Consulting General (5 + coordinator) | 6 | ~15,000 |
 | Consulting Thoucentric (7 + coordinator) | 8 | ~16,000 |
 | Business Analysis (7 + coordinator) | 8 | ~16,000 |
 | Business Process Analysis (6 + coordinator) | 7 | ~14,000 |
-| **Subtotal Cat 4-6** | **40 skills** | **~80,000 tokens** |
+| **Subtotal Cat 4-6** | **40 skills** | **~83,000 tokens** |
 
 ### Patrón de Composición Aplicable
 
-Todos los frameworks de Cat 4-6 presentan fases secuenciales con transiciones entre fases — aplica **Pattern 3: Multi-Phase Sequential** del análisis de composición del WP.
+Todos los frameworks de Cat 4-6 presentan fases con transiciones entre fases, pero el patrón varía:
 
-**Consideración adicional para consultoría:** Los frameworks de Cat 5 (Consulting) tienen alta flexibilidad en duración de fases. El coordinator de consultoría necesita lógica de estado más robusta que frameworks rígidos como DMAIC, ya que el tiempo en cada fase puede variar significativamente por proyecto.
+- **Pattern 3: Multi-Phase Sequential** — aplica a Strategic Planning (con la variante `sequential-adaptive`)
+- **Pattern 4: Cyclic** — aplica a Strategic Management (con `adaptive-cyclic`, `entry_point: any`)
+- **Pattern 5: Adaptive-Free** — nuevo patrón requerido para Consulting General
+- **Pattern 6: Adaptive-Contextual** — nuevo patrón requerido para BA Process (configurable por metodología host)
+- **Pattern 7: Iterative-Adaptive** — nuevo patrón requerido para BPA (iteraciones sin límite predefinido)
+
+**Consideración adicional para consultoría:** Los frameworks de Cat 5 (Consulting) tienen alta flexibilidad en duración de fases. El coordinator de consultoría necesita lógica de estado más robusta que frameworks rígidos como DMAIC, ya que el tiempo en cada fase puede variar significativamente por proyecto. Esto implica SKILL.md más largos con más lógica condicional.
 
 **Consideración para BA vs BPA:** Aunque ambos son de Cat 6 y tienen estructuras similares (6-7 fases), sus coordinators deben ser completamente independientes dado que atienden casos de uso distintos (nuevo vs existente). No se deben compartir phase-skills entre ba-* y bpa-* aunque haya fases con nombres similares (ej: ba-analysis ≠ bpa-analyze).
 
