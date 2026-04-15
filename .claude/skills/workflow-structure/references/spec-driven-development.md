@@ -182,7 +182,7 @@ Usar cuando:
 
 ## Templates Disponibles
 
-### 1. requirements-analysis.md.template
+### 1. requirements-specification.md.template
 
 **Propósito**: Definir QUÉ se necesita (PHASE 1: ANALYZE)
 
@@ -198,7 +198,7 @@ Usar cuando:
 
 **Cuándo usar**: Al iniciar análisis de requisitos
 
-**Ubicación**: [requirements-analysis.md.template](../assets/requirements-analysis.md.template)
+**Ubicación**: [requirements-specification.md.template](../assets/requirements-specification.md.template)
 
 ---
 
@@ -274,7 +274,7 @@ Usar cuando:
 **Objetivo**: Documento claro de qué se necesita
 
 **Pasos**:
-1. Usar [requirements-analysis.md.template](../assets/requirements-analysis.md.template)
+1. Usar [requirements-specification.md.template](../assets/requirements-specification.md.template)
 2. Completar:
    - Contexto y problema
    - Objetivos claros
@@ -640,7 +640,7 @@ A: No. Es inversión:
 
 - THYROX SKILL.md - PHASE 4: STRUCTURE
 - Templates en `/assets/`:
-  - [requirements-analysis.md.template](../assets/requirements-analysis.md.template)
+  - [requirements-specification.md.template](../assets/requirements-specification.md.template)
   - [requirements-specification.md.template](../assets/requirements-specification.md.template)
   - [design.md.template](../assets/design.md.template)
   - [tasks.md.template](../assets/tasks.md.template)

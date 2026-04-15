@@ -597,4 +597,4 @@ necesidad de activar el modo `dontAsk` globalmente.
 - [`subagent-patterns.md`](subagent-patterns.md) — 8 patrones de subagentes incluyendo context isolation
 - [`hook-output-control.md`](hook-output-control.md) — semántica de suppressOutput y PostToolUse
 - [`scheduled-tasks.md`](scheduled-tasks.md) — `/loop`, CronCreate, background tasks
-- [`permission-model.md`](../../references/permission-model.md) — modelo de dos planos de THYROX (gates metodológicos vs settings.json)
+- [`permission-model.md`](./permission-model.md) — modelo de dos planos de THYROX (gates metodológicos vs settings.json)

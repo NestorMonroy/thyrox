@@ -362,7 +362,7 @@ tools: Read, Bash(npm test:*), Bash(pytest:*)
 - [skill-vs-agent](skill-vs-agent.md) — Cuándo crear SKILL vs agente nativo
 - [hook-output-control](hook-output-control.md) — Por qué PostToolUse no puede suprimir tool results
 - [agent-spec](agent-spec.md) — Spec formal de campos de agentes (obligatorios/prohibidos)
-- [edit-tool-silent-mode-finding](../context/work/2026-04-11-10-52-25-thyrox-commands-namespace/analysis/edit-tool-silent-mode-finding.md) — Investigación de TD-037 (RESUELTO)
+- `edit-tool-silent-mode-finding` — Investigación de TD-037 (RESUELTO)
 
 ---
 

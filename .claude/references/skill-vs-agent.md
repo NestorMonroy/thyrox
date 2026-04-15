@@ -132,7 +132,7 @@ Cuándo usar cada mecanismo. Usar la primera fila que aplique.
 | Agente nativo | Determinístico una vez lanzado, contexto propio | Alta | 0 (contexto separado) |
 | Agent teams | Experimental — agentes peer-to-peer vía `Agent` tool | Media (experimental) | 0 por agente (contextos separados) |
 
-**Referencia completa:** [ADR-015](../../context/decisions/adr-015.md) documenta el razonamiento
+**Referencia completa:** ADR-015 documenta el razonamiento
 completo detrás de la arquitectura de 5 capas y las opciones descartadas.
 
 ---

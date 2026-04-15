@@ -302,7 +302,7 @@ Los skills `workflow-*` son implementación interna; los comandos del plugin son
 - [07-plugins/README.md](/tmp/reference/claude-howto/07-plugins/README.md) — Documentación oficial claude-howto
 - [skill-vs-agent](skill-vs-agent.md) — Cuándo usar skill, subagente, o comando
 - [claude-code-components](claude-code-components.md) — Frontmatter completo de skills y agentes
-- [ADR-019](../context/decisions/adr-019.md) — Decisión de arquitectura plugin namespace THYROX
+- ADR-019 — Decisión de arquitectura plugin namespace THYROX
 
 ## LSP — Referencia completa de campos
 

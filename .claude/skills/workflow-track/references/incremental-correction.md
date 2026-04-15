@@ -212,7 +212,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Después de completar analysis-phase.md
 
-**Ubicación**: [categorization-plan.md.template](../../workflow-decompose/assets/categorization-plan.md.template)
+**Ubicación**: `categorization-plan.md.template`
 
 ---
 
@@ -230,7 +230,7 @@ Esta metodología incluye 4 templates para documentar cada fase:
 
 **Cuándo usar**: Durante toda la ejecución, actualizar después de cada lote
 
-**Ubicación**: [execution-log.md.template](../assets/execution-log.md.template)
+**Ubicación**: [execution-log.md.template](../../workflow-execute/assets/execution-log.md.template)
 
 ---
 

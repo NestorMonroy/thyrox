@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
 version: 3.4
-updated_at: 2026-04-14 22:38:05
+updated_at: 2026-04-15 03:10:00
 ```
 
 # CLAUDE.md — THYROX
@@ -172,6 +172,6 @@ Un proyecto con 20 FASEs tiene 20 WPs; cada WP recorre hasta 7 Phases internamen
 ## Para más contexto
 
 - Metodología completa: [SKILL](skills/thyrox/SKILL.md)
-- Estado del proyecto: [project-state](.thyrox/context/project-state.md)
-- Decisiones: [decisions](.thyrox/context/decisions.md)
+- Estado del proyecto: [project-state](../.thyrox/context/project-state.md)
+- Decisiones: [decisions](../.thyrox/context/decisions.md)
 - Convenciones: [conventions](references/conventions.md)

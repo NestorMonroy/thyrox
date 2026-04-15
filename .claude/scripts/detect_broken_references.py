@@ -130,6 +130,56 @@ class ReferenceValidator:
         
         return False
     
+    def is_documentary_context(self, ref_path, source_rel_path):
+        """
+        Returns True si la referencia debe tratarse como documental por contexto.
+
+        Reglas:
+        1. Bare filename (sin ./ o ../ y sin componente de directorio) en cualquier
+           archivo bajo .claude/ → mención textual, no link navegable. Las SKILL.md,
+           templates y documentación de referencias mencionan nombres de archivo como
+           conceptos. Solo se consideran navegables los que tienen prefijo explícito.
+        2. Cualquier referencia en archivos .template → documentación de ejemplo.
+        3. Absolute /tmp/ paths → source material citations, no parte del repo.
+        """
+        ref_clean = ref_path.strip()
+        # Construir path absoluto para checks confiables independiente del root_path
+        source_abs = str(self.root_path / source_rel_path)
+
+        # Regla 3: absolute /tmp/ paths → source material citations
+        if ref_clean.startswith('/tmp/'):
+            return True
+
+        # Regla 2: en archivos .template todo es contenido de ejemplo
+        if source_abs.endswith('.template'):
+            return True
+
+        # Regla 4: en .claude/references/, refs sin prefijo explícito son documentales.
+        # Los docs de references/ son abstractos; mencionan paths como ejemplos/conceptos.
+        # Los links reales (navegables) usan ./ o ../ explícito.
+        # Excepción adicional: refs a .txt en .claude/references/ son args de CLI o ejemplos.
+        if '/.claude/references/' in source_abs:
+            if not ref_clean.startswith('./') and not ref_clean.startswith('../'):
+                return True
+            if ref_clean.endswith('.txt'):
+                return True
+
+        # Regla 5: archivos .json → las refs son valores de datos, no links navegables
+        if source_abs.endswith('.json'):
+            return True
+
+        # Regla 1: bare filename (sin directorio) en .claude/ → documental
+        # Los que tienen ./ ../ o / son refs concretas y se validan normalmente
+        is_bare = (
+            not ref_clean.startswith('./')
+            and not ref_clean.startswith('../')
+            and '/' not in ref_clean
+        )
+        if is_bare and '/.claude/' in source_abs:
+            return True
+
+        return False
+
     def find_all_files(self):
         """Encuentra todos los archivos MD relevantes"""
         self.log_report("Escaneando archivos...")
@@ -168,7 +218,10 @@ class ReferenceValidator:
         
         # Patrón 2: Referencias a archivos con extensión
         # Pero SOLO si están en contexto de referencia real (no documentación)
-        for match in re.finditer(r'(?<![`\[\(])(?:\.\.?/)?[a-zA-Z0-9._/-]*\.(?:md|template|json|txt)(?![`\]\)])', content):
+        # Lookbehind incluye [a-zA-Z0-9.] para evitar fragmentos: LAUDE.md desde CLAUDE.md,
+        # y el phantom "./../" que surge del segundo "." de "../../".
+        # Lookahead incluye "." para evitar falso match "adr.md" desde "adr.md.template".
+        for match in re.finditer(r'(?<![a-zA-Z0-9`\[\(/.])(?:\.\.?/)?[a-zA-Z0-9._/-]*\.(?:md|template|json|txt)(?![a-zA-Z0-9`\]\).])', content):
             ref = match.group(0).strip()
             start_pos = match.start()
             
@@ -228,6 +281,10 @@ class ReferenceValidator:
             refs = self.extract_references_with_context(content)
             
             for ref_type, ref_path, start_pos, is_example in refs:
+                # Aplicar regla documental por contexto de fuente
+                if not is_example:
+                    is_example = self.is_documentary_context(ref_path, rel_path)
+
                 # Clasificar la referencia
                 if is_example and self.ignore_examples:
                     self.ignored_refs.append((rel_path, ref_path, "documentacional"))
