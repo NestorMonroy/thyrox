@@ -1,16 +1,18 @@
 ---
 name: workflow-track
-description: Phase 7 TRACK — documenta lecciones aprendidas, genera changelog y cierra el work package activo.
+description: "Use when evaluating results and closing a work package after execution. Phase 11 TRACK/EVALUATE — evalúa resultados vs baseline MEASURE, documenta lecciones aprendidas y genera changelog."
+allowed-tools: Read Glob Grep Bash
 disable-model-invocation: true
+effort: medium
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 7'"
-updated_at: 2026-04-09 22:00:00
+    command: "bash .claude/scripts/set-session-phase.sh 'Phase 11'"
+updated_at: 2026-04-16 00:00:00
 ---
 
-# /workflow-track — Phase 7: TRACK
+# /workflow-track — Phase 11: TRACK/EVALUATE
 
 Documenta lecciones aprendidas, genera changelog, y cierra el work package activo.
 
@@ -22,11 +24,11 @@ Documenta lecciones aprendidas, genera changelog, y cierra el work package activ
 2. Revisar progreso: `bash .claude/scripts/project-status.sh`
 3. Verificar que todas las tareas están `[x]` en `*-task-plan.md`
 4. Leer `context/now.md` — verificar `phase`
-5. Gate soft: `bash .claude/skills/workflow-track/scripts/validate-phase-readiness.sh 7`
+5. Gate soft: `bash .claude/skills/workflow-track/scripts/validate-phase-readiness.sh 11`
 
 ---
 
-## Fase a ejecutar: Phase 7 TRACK
+## Fase a ejecutar: Phase 11 TRACK/EVALUATE
 
 Documentar lecciones previene repetir los mismos errores.
 
@@ -78,8 +80,8 @@ Ver `../../references/state-management.md` para tabla de triggers completa.
 
 ## Validaciones pre-cierre (TD-029, TD-031, TD-033)
 
-Antes de marcar Phase 7 completa:
-- **TD-031 deep review**: revisar pre-flight de Phase 6 — ¿`validate-session-close.sh` pasa? ¿todos los artefactos existen?
+Antes de marcar Phase 11 completa:
+- **TD-031 deep review**: revisar pre-flight de Phase 10 — ¿`validate-session-close.sh` pasa? ¿todos los artefactos existen?
 - **TD-029 criterios**: lessons-learned · {wp}-changelog · risk-register actualizado · TDs movidos si aplica · estado actualizado
 - **TD-033 now.md**: `git add .thyrox/context/now.md` antes del commit de cierre de FASE
 
@@ -87,14 +89,15 @@ Antes de marcar Phase 7 completa:
 
 ## Exit criteria
 
-Phase 7 completa cuando:
-- `{nombre-wp}-lessons-learned.md` existe
-- `{nombre-wp}-changelog.md` creado (CHANGELOG.md raíz solo si hay release)
+Phase 11 completa cuando:
+- `work/.../track/{nombre-wp}-lessons-learned.md` existe
+- `work/.../track/{nombre-wp}-changelog.md` creado (CHANGELOG.md raíz solo si hay release)
 - `{nombre-wp}-risk-register.md` actualizado
-- Si hubo TDs cerrados: `{nombre-wp}-technical-debt-resolved.md` creado
+- Si hubo TDs cerrados: `work/.../track/{nombre-wp}-technical-debt-resolved.md` creado
 - `validate-session-close.sh` pasa sin errores
 - Archivos de estado actualizados: `now.md`, `focus.md`, `project-state.md`
 - No quedaron archivos temporales fuera de `context/work/`
 
-**La FASE cierra cuando Phase 7 TRACK completa** — `now.md::phase` → `null`, `now.md::current_work` → `null`.
+**Transition → Phase 12 STANDARDIZE**: proponer `/thyrox:standardize` para cerrar el WP definitivamente.
+**La FASE cierra cuando Phase 12 STANDARDIZE completa** — `now.md::phase` → `null`, `now.md::current_work` → `null`.
 Una nueva FASE empieza cuando se crea un nuevo WP (nuevo directorio en `context/work/`).

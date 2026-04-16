@@ -1,6 +1,6 @@
 ```yml
 name: db-postgresql
-description: "Skill de tecnología para bases de datos PostgreSQL. Usar cuando se trabaje en migraciones, queries, índices, o schema en el proyecto thyrox. Invocar durante Phase 4 STRUCTURE para especificar el schema y relaciones, durante Phase 6 EXECUTE para implementar migraciones y queries, y durante Phase 7 TRACK para revisar performance y consistencia de la base de datos."
+description: "Skill de tecnología para bases de datos PostgreSQL. Usar cuando se trabaje en migraciones, queries, índices, o schema en el proyecto thyrox. Invocar durante Phase 7 DESIGN/SPECIFY para especificar el schema y relaciones, durante Phase 10 EXECUTE para implementar migraciones y queries, y durante Phase 11 TRACK/EVALUATE para revisar performance y consistencia de la base de datos."
 layer: db
 framework: postgresql
 project: thyrox
@@ -12,7 +12,7 @@ Guía fase-por-fase para trabajar con PostgreSQL en el proyecto thyrox.
 
 ---
 
-## Phase 1: ANALYZE — Qué investigar en features con PostgreSQL
+## Phase 3: ANALYZE — Qué investigar en features con PostgreSQL
 
 Al analizar un feature que toca la base de datos, cubrir:
 - Tablas afectadas — ¿nuevas, modificadas, eliminadas?
@@ -21,7 +21,7 @@ Al analizar un feature que toca la base de datos, cubrir:
 - Queries principales — ¿qué consultas hará este feature con más frecuencia?
 - Índices necesarios — ¿qué columnas se filtran o se ordenan?
 
-## Phase 4: STRUCTURE — Qué especificar para features de DB
+## Phase 7: DESIGN/SPECIFY — Qué especificar para features de DB
 
 En `requirements-spec.md`, incluir por cada tabla nueva/modificada:
 - Nombre (snake_case), propósito, columnas con tipo y constraints
@@ -29,7 +29,7 @@ En `requirements-spec.md`, incluir por cada tabla nueva/modificada:
 - Índices necesarios con justificación
 - Migraciones requeridas: UP (aplicar) y DOWN (revertir)
 
-## Phase 6: EXECUTE — Convenciones de implementación
+## Phase 10: EXECUTE — Convenciones de implementación
 
 Ver sección INSTRUCTIONS para reglas específicas.
 
@@ -40,7 +40,7 @@ Orden de implementación recomendado:
 4. Migración DOWN — revertir todo lo del UP
 5. Test: aplicar UP, verificar, aplicar DOWN, verificar
 
-## Phase 7: TRACK — Qué revisar al cerrar
+## Phase 11: TRACK/EVALUATE — Qué revisar al cerrar
 
 - Todas las migraciones tienen UP y DOWN funcionales
 - Queries nuevas tienen `EXPLAIN ANALYZE` verificado (sin Seq Scan en tablas grandes)

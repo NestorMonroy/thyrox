@@ -5,7 +5,7 @@ version: 1.0
 purpose: Guía de cómo identificar QUÉ LIMITA el sistema (técnico, plataforma, org, regulatorio, negocio).
 goal: Documentar todas las limitaciones que afectan el diseño.
 updated_at: 2026-03-25
-owner: workflow-analyze
+owner: workflow-discover
 ```
 
 # Constraints

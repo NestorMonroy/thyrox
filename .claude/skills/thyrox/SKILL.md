@@ -11,22 +11,28 @@ Framework de gestión para organizar trabajo de cualquier tamaño con Claude Cod
 
 **Nomenclatura:** "FASE" y "Phase" son niveles distintos — no confundir.
 `FASE N` = número secuencial global del proyecto (cada WP ocupa una FASE).
-`Phase N` = etapa interna del ciclo SDLC dentro de ese WP (1–7, se reinicia en cada FASE).
-Ejemplo: "FASE 20 está en Phase 6" = el WP #20 del proyecto está ejecutándose.
+`Phase N` = etapa interna del ciclo THYROX dentro de ese WP (1–12, se reinicia en cada FASE).
+Ejemplo: "FASE 20 está en Phase 10" = el WP #20 del proyecto está ejecutándose.
 Ver glosario completo en [CLAUDE.md](../../../CLAUDE.md#glosario).
 
 ```mermaid
 flowchart LR
-    P1([ANALYZE]) --> P2([SOLUTION\nSTRATEGY])
-    P2 --> P3([PLAN])
-    P3 --> P4([STRUCTURE])
-    P4 --> P5([DECOMPOSE])
-    P5 --> P6([EXECUTE])
-    P6 --> P7([TRACK])
-    P6 -->|más tareas| P6
+    P1([DISCOVER]) --> P2([MEASURE])
+    P2 --> P3([ANALYZE])
+    P3 --> P4([CONSTRAINTS])
+    P4 --> P5([STRATEGY])
+    P5 --> P6([PLAN])
+    P6 --> P7([DESIGN/\nSPECIFY])
+    P7 --> P8([PLAN\nEXECUTION])
+    P8 --> P9([PILOT/\nVALIDATE])
+    P9 --> P10([EXECUTE])
+    P10 --> P11([TRACK/\nEVALUATE])
+    P11 --> P12([STANDARDIZE])
+    P10 -->|más tareas| P10
 
-    P1 -.->|micro: saltar 2-5| P6
-    P2 -.->|pequeño: saltar 3-5| P6
+    P1 -.->|micro: saltar 2-9| P10
+    P3 -.->|pequeño: saltar 4-9| P10
+    P5 -.->|mediano: saltar 9| P10
 ```
 
 ---
@@ -37,15 +43,29 @@ Cada fase vive en su propio skill. Invocar directamente para ejecutar:
 
 | Fase | Skill | Descripción |
 |------|-------|-------------|
-| Phase 1: ANALYZE | `/thyrox:analyze` | Entender el problema. 8 aspectos + WP + análisis + risk register. |
-| Phase 2: SOLUTION_STRATEGY | `/thyrox:strategy` | Investigar alternativas. Key Ideas + Research + Decisions. |
-| Phase 3: PLAN | `/thyrox:plan` | Definir scope. Scope statement + in/out-of-scope + ROADMAP. |
-| Phase 4: STRUCTURE | `/thyrox:structure` | Especificar. Requirements spec + design (si complejo). |
-| Phase 5: DECOMPOSE | `/thyrox:decompose` | Crear tareas atómicas. Task plan + DAG + trazabilidad. |
-| Phase 6: EXECUTE | `/thyrox:execute` | Ejecutar. Commits + actualizar task plan + gates async. |
-| Phase 7: TRACK | `/thyrox:track` | Cerrar WP. Lessons learned + {wp}-changelog + estado. |
+| Phase 1: DISCOVER | `/thyrox:discover` | Explorar contexto, stakeholders, síntomas. Crear WP + risk register. |
+| Phase 2: MEASURE | `/thyrox:measure` | Recopilar datos, definir baseline + métricas de éxito. |
+| Phase 3: ANALYZE | `/thyrox:analyze` | Análisis profundo de causa raíz. Sub-análisis por dominio. |
+| Phase 4: CONSTRAINTS | `/thyrox:constraints` | Documentar restricciones técnicas, de negocio y de plataforma. |
+| Phase 5: STRATEGY | `/thyrox:strategy` | Investigar alternativas. Key Ideas + Research + Decisions. |
+| Phase 6: PLAN | `/thyrox:plan` | Definir scope. Scope statement + in/out-of-scope + ROADMAP. |
+| Phase 7: DESIGN/SPECIFY | `/thyrox:design` | Especificar. Requirements spec + design técnico (si complejo). |
+| Phase 8: PLAN EXECUTION | `/thyrox:decompose` | Crear tareas atómicas. Task plan + DAG + trazabilidad. |
+| Phase 9: PILOT/VALIDATE | `/thyrox:pilot` | Validar solución con PoC. Confirmar supuestos antes de ejecutar. |
+| Phase 10: EXECUTE | `/thyrox:execute` | Ejecutar. Commits + actualizar task plan + gates async. |
+| Phase 11: TRACK/EVALUATE | `/thyrox:track` | Evaluar resultados. Lessons learned + changelog + cierre WP. |
+| Phase 12: STANDARDIZE | `/thyrox:standardize` | Documentar patrones. Propagar aprendizajes al framework. |
 
-Ver [escalabilidad](../workflow-analyze/references/scalability.md) para reglas de qué fases omitir según tamaño del WP.
+**Escalabilidad** — cuántas fases usar según tamaño del WP:
+
+| Tamaño | Fases | Descripción |
+|--------|-------|-------------|
+| Micro | 1, 10, 11 | Fix rápido, tarea puntual |
+| Pequeño | 1, 3, 10, 11 | Feature simple con análisis |
+| Mediano | 1, 3, 5, 6, 8, 10, 11 | Feature con estrategia y descomposición |
+| Grande | 1–12 completo | Proyecto complejo multi-sesión |
+
+Ver [escalabilidad](../workflow-discover/references/scalability.md) para reglas detalladas.
 
 ---
 
@@ -53,15 +73,15 @@ Ver [escalabilidad](../workflow-analyze/references/scalability.md) para reglas d
 
 | Fase | Artefacto | Ubicación | Template |
 |------|-----------|-----------|----------|
-| 1 DISCOVER | Síntesis | `work/.../discover/{nombre-wp}-analysis.md` | [introduction.md.template](../workflow-analyze/assets/introduction.md.template) |
+| 1 DISCOVER | Síntesis | `work/.../discover/{nombre-wp}-analysis.md` | [introduction.md.template](../workflow-discover/assets/introduction.md.template) |
 | 1 DISCOVER | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` | — |
-| — | Registro de riesgos (transversal) | `work/../{nombre-wp}-risk-register.md` | [risk-register.md.template](../workflow-analyze/assets/risk-register.md.template) |
-| — | Gates de fases (mediano/grande) | `work/../{nombre-wp}-exit-conditions.md` | [exit-conditions.md.template](../workflow-analyze/assets/exit-conditions.md.template) |
-| — | Principios globales del proyecto | `constitution.md` (raíz) | [constitution.md.template](../workflow-analyze/assets/constitution.md.template) |
-| — | Decisiones arquitectónicas | `{adr_path}/adr-{tema}.md` (ver CLAUDE.md) | [adr.md.template](../workflow-analyze/assets/adr.md.template) |
+| — | Registro de riesgos (transversal) | `work/../{nombre-wp}-risk-register.md` | [risk-register.md.template](../workflow-discover/assets/risk-register.md.template) |
+| — | Gates de fases (mediano/grande) | `work/../{nombre-wp}-exit-conditions.md` | [exit-conditions.md.template](../workflow-discover/assets/exit-conditions.md.template) |
+| — | Principios globales del proyecto | `constitution.md` (raíz) | [constitution.md.template](../workflow-discover/assets/constitution.md.template) |
+| — | Decisiones arquitectónicas | `{adr_path}/adr-{tema}.md` (ver CLAUDE.md) | [adr.md.template](../workflow-discover/assets/adr.md.template) |
 | 2 MEASURE | Baseline + métricas | `work/.../measure/*.md` | — |
 | 3 ANALYZE | Sub-análisis por dominio | `work/.../analyze/{subdomain}/*.md` | — |
-| 4 CONSTRAINTS | Restricciones | `work/.../constraints/*.md` | [constraints.md.template](../workflow-analyze/assets/constraints.md.template) |
+| 4 CONSTRAINTS | Restricciones | `work/.../constraints/*.md` | [constraints.md.template](../workflow-discover/assets/constraints.md.template) |
 | 5 STRATEGY | Estrategia de solución | `work/.../strategy/{nombre-wp}-solution-strategy.md` | [solution-strategy.md.template](../workflow-strategy/assets/solution-strategy.md.template) |
 | 6 PLAN | Scope del trabajo | `work/.../plan/{nombre-wp}-plan.md` | [plan.md.template](../workflow-plan/assets/plan.md.template) |
 | 7 DESIGN/SPECIFY | Especificación de requisitos | `work/.../design/{nombre-wp}-requirements-spec.md` | [requirements-specification.md.template](../workflow-structure/assets/requirements-specification.md.template) |
@@ -206,11 +226,14 @@ Puntos donde el humano decide si continuar. Definidos en cada `workflow-*/SKILL.
 
 | Gate | Momento | Propósito |
 |------|---------|-----------|
-| Phase 1 → 2 | Después de análisis | Validar hallazgos antes de diseñar |
-| Phase 2 → 3 | Después de estrategia | Aprobar dirección antes de planificar |
-| Phase 4 → 5 | Después de spec | Aprobar spec antes de descomponer |
-| Phase 5 → 6 | Antes de ejecutar | Autorizar inicio de ejecución |
-| Phase 6 → 7 | Antes de TRACK | Confirmar que la ejecución fue correcta |
+| Phase 1 → 2 | Después de DISCOVER | Validar contexto antes de medir |
+| Phase 2 → 3 | Después de MEASURE | Validar baseline antes de analizar |
+| Phase 3 → 4 | Después de ANALYZE | Validar causas antes de documentar restricciones |
+| Phase 4 → 5 | Después de CONSTRAINTS | Validar restricciones antes de diseñar estrategia |
+| Phase 5 → 6 | Después de STRATEGY | Aprobar dirección antes de planificar scope |
+| Phase 7 → 8 | Después de DESIGN/SPECIFY | Aprobar spec antes de descomponer |
+| Phase 8 → 10 | Antes de EXECUTE | Autorizar inicio de ejecución (Phase 9 opcional) |
+| Phase 10 → 11 | Antes de TRACK/EVALUATE | Confirmar que la ejecución fue correcta |
 | GATE OPERACION | Operación destructiva | Aprobar antes de acción irreversible |
 
 Estos gates son **correctos e intencionales**. No se eliminan.
@@ -246,24 +269,27 @@ Ver [permission-model](../../references/permission-model.md) para la referencia 
 
 ## References por dominio
 
-### Phase 1: ANALYZE (leer cuando se investiga un problema)
-[introduction](../workflow-analyze/references/introduction.md) · [requirements-analysis](../workflow-analyze/references/requirements-analysis.md) · [use-cases](../workflow-analyze/references/use-cases.md) · [quality-goals](../workflow-analyze/references/quality-goals.md) · [stakeholders](../workflow-analyze/references/stakeholders.md) · [basic-usage](../workflow-analyze/references/basic-usage.md) · [constraints](../workflow-analyze/references/constraints.md) · [context](../workflow-analyze/references/context.md)
+### Phase 1: DISCOVER (leer cuando se explora el problema)
+[introduction](../workflow-discover/references/introduction.md) · [requirements-analysis](../workflow-discover/references/requirements-analysis.md) · [use-cases](../workflow-discover/references/use-cases.md) · [quality-goals](../workflow-discover/references/quality-goals.md) · [stakeholders](../workflow-discover/references/stakeholders.md) · [basic-usage](../workflow-discover/references/basic-usage.md) · [constraints](../workflow-discover/references/constraints.md) · [context](../workflow-discover/references/context.md)
 
-### Phase 2: SOLUTION (leer cuando se toman decisiones arquitectónicas)
+### Phase 3: ANALYZE (leer cuando se hace análisis profundo)
+[introduction](../workflow-discover/references/introduction.md) — análisis de causa raíz, sub-análisis por dominio
+
+### Phase 5: STRATEGY (leer cuando se toman decisiones arquitectónicas)
 [solution-strategy](../workflow-strategy/references/solution-strategy.md)
 
-### Phase 4: STRUCTURE (leer cuando se crean especificaciones complejas)
+### Phase 7: DESIGN/SPECIFY (leer cuando se crean especificaciones complejas)
 [spec-driven-development](../workflow-structure/references/spec-driven-development.md)
 
-### Phase 6: EXECUTE (leer cuando se hacen commits)
+### Phase 10: EXECUTE (leer cuando se hacen commits)
 [commit-helper](../workflow-execute/references/commit-helper.md) · [commit-convention](../workflow-execute/references/commit-convention.md)
 
-### Phase 7: TRACK (leer cuando se valida o corrige)
+### Phase 11: TRACK/EVALUATE (leer cuando se valida o corrige)
 [reference-validation](../workflow-track/references/reference-validation.md) · [incremental-correction](../workflow-track/references/incremental-correction.md)
 
 ### Cross-phase (leer según necesidad)
 [conventions](../../references/conventions.md) — Convenciones de archivos, commits, ROADMAP, ejecución paralela
-[scalability](../workflow-analyze/references/scalability.md) — Cómo escalar el framework según complejidad
+[scalability](../workflow-discover/references/scalability.md) — Cómo escalar el framework según complejidad
 [examples](../../references/examples.md) — 8 casos de uso reales
 [agent-spec](../../references/agent-spec.md) — Spec formal de agentes nativos Claude Code (campos obligatorios/prohibidos, naming)
 [skill-vs-agent](../../references/skill-vs-agent.md) — Cuándo crear un SKILL vs un agente nativo

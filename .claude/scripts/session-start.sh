@@ -15,14 +15,19 @@ COMMANDS_SYNCED=true
 # Mapa phase → /thyrox:* command (interfaz pública del plugin)
 _phase_to_command() {
     case "$1" in
-        "Phase 1") echo "/thyrox:analyze" ;;
-        "Phase 2") echo "/thyrox:strategy" ;;
-        "Phase 3") echo "/thyrox:plan" ;;
-        "Phase 4") echo "/thyrox:structure" ;;
-        "Phase 5") echo "/thyrox:decompose" ;;
-        "Phase 6") echo "/thyrox:execute" ;;
-        "Phase 7") echo "/thyrox:track" ;;
-        *) echo "/thyrox:analyze" ;;
+        "Phase 1")  echo "/thyrox:discover" ;;
+        "Phase 2")  echo "/thyrox:measure" ;;
+        "Phase 3")  echo "/thyrox:analyze" ;;
+        "Phase 4")  echo "/thyrox:constraints" ;;
+        "Phase 5")  echo "/thyrox:strategy" ;;
+        "Phase 6")  echo "/thyrox:plan" ;;
+        "Phase 7")  echo "/thyrox:design" ;;
+        "Phase 8")  echo "/thyrox:decompose" ;;
+        "Phase 9")  echo "/thyrox:pilot" ;;
+        "Phase 10") echo "/thyrox:execute" ;;
+        "Phase 11") echo "/thyrox:track" ;;
+        "Phase 12") echo "/thyrox:standardize" ;;
+        *)          echo "/thyrox:discover" ;;
     esac
 }
 # ───────────────────────────────────────────────────────────────────────────
@@ -63,12 +68,12 @@ if [ -n "$ACTIVE_WP" ]; then
         NEXT=$(grep -m1 "^\- \[ \]" "$TASK_PLAN" 2>/dev/null | sed 's/- \[ \] //')
         [ -n "$NEXT" ] && echo "  Próxima tarea: ${NEXT}"
     fi
-    # Alerta B-09: Phase 6 activa sin execution-log (TD-014, SPEC-003)
-    if [ "$PHASE" = "Phase 6" ]; then
+    # Alerta B-09: Phase 10 activa sin execution-log (TD-014, SPEC-003)
+    if [ "$PHASE" = "Phase 10" ]; then
         EXEC_LOG=$(find "$WP_DIR" -maxdepth 1 -name "*-execution-log.md" 2>/dev/null | head -1)
         if [ -z "$EXEC_LOG" ]; then
             echo ""
-            echo "  ⚠  ALERTA B-09: Phase 6 activa pero no existe execution-log en el WP."
+            echo "  ⚠  ALERTA B-09: Phase 10 activa pero no existe execution-log en el WP."
             echo "     Crear ${ACTIVE_WP}-execution-log.md antes de continuar."
         fi
     fi
@@ -86,9 +91,9 @@ else
     echo "  Sin work package activo"
     echo ""
     echo "  Opciones de ejecución:"
-    echo "    A (calidad alta HOY):    invocar thyrox SKILL → Phase 1: ANALYZE"
+    echo "    A (calidad alta HOY):    invocar thyrox SKILL → Phase 1: DISCOVER"
     if [ "$COMMANDS_SYNCED" = "true" ]; then
-        echo "    B (determinístico):      /thyrox:analyze"
+        echo "    B (determinístico):      /thyrox:discover"
     fi
 fi
 

@@ -1,18 +1,20 @@
 ---
 name: workflow-decompose
-description: Phase 5 DECOMPOSE — inicia o retoma la descomposición del work package activo.
+description: "Use when breaking down approved specs into atomic executable tasks. Phase 8 PLAN EXECUTION — produce task-plan.md con T-NNN, DAG de dependencias y trazabilidad SPEC→tarea."
+allowed-tools: Read Glob Grep Bash
 disable-model-invocation: true
+effort: medium
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 5'"
-updated_at: 2026-04-09 22:00:00
+    command: "bash .claude/scripts/set-session-phase.sh 'Phase 8'"
+updated_at: 2026-04-16 00:00:00
 ---
 
-# /workflow-decompose — Phase 5: DECOMPOSE
+# /workflow-decompose — Phase 8: PLAN EXECUTION
 
-Inicia o retoma Phase 5 DECOMPOSE del work package activo.
+Inicia o retoma Phase 8 PLAN EXECUTION del work package activo.
 
 ---
 
@@ -22,11 +24,11 @@ Inicia o retoma Phase 5 DECOMPOSE del work package activo.
 2. Leer `*-requirements-spec.md` del WP para obtener los SPECs
 3. Leer `context/now.md` — verificar `phase`
 4. Verificar si ya existe `*-task-plan.md` con checkboxes `- [ ] [T-NNN]`:
-   - Si existe → Phase 5 ya completó. Proponer `/workflow-execute`.
+   - Si existe → Phase 8 ya completó. Proponer `/thyrox:execute`.
 
 ---
 
-## Fase a ejecutar: Phase 5 DECOMPOSE
+## Fase a ejecutar: Phase 8 PLAN EXECUTION
 
 Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
@@ -65,29 +67,29 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
 ## Validaciones pre-gate (TD-029, TD-031, TD-033)
 
-Antes de presentar el gate 5→6:
-- **TD-031 deep review**: revisar `{nombre-wp}-requirements-spec.md` de Phase 4 — ¿el task-plan cubre TODO lo especificado? ¿hay SPECs sin tareas?
+Antes de presentar el gate 8→10:
+- **TD-031 deep review**: revisar `{nombre-wp}-requirements-spec.md` de Phase 7 — ¿el task-plan cubre TODO lo especificado? ¿hay SPECs sin tareas?
 - **TD-029 criterios**: task-plan.md con checkboxes · DAG documentado · atomicidad verificada · cobertura SPEC→tarea 100%
 - **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
 
 ## Gate humano
 
-⏸ GATE CRÍTICO — STOP obligatorio antes de Phase 6.
+⏸ GATE CRÍTICO — STOP obligatorio antes de Phase 10.
 Presentar el task-plan completo con TODAS las tareas listadas.
 Esperar confirmación explícita. Este gate NO tiene excepciones.
-Razón: Phase 6 modifica el repositorio — el usuario debe aprobar antes de que se ejecute.
-Al aprobar: actualizar `context/now.md::phase` a `Phase 6`.
+Razón: Phase 10 modifica el repositorio — el usuario debe aprobar antes de que se ejecute.
+Al aprobar: actualizar `context/now.md::phase` a `Phase 10` (o `Phase 9` si hay supuestos de alto riesgo que validar).
 
 ---
 
 ## Exit criteria
 
-Phase 5 completa cuando:
-- `work/.../*-task-plan.md` existe con checkboxes `- [ ] [T-NNN]`
+Phase 8 completa cuando:
+- `work/.../plan-execution/*-task-plan.md` existe con checkboxes `- [ ] [T-NNN]`
 - Todas las tareas tienen referencia a su SPEC
 - DAG de dependencias documentado en Mermaid
 - Atomicidad verificada (3 ítems del checklist)
 - Usuario aprobó el plan explícitamente en esta sesión
 
-**Detectar:** Si `work/.../*-task-plan.md` tiene checkboxes `- [ ] [T-NNN]`, Phase 5 ya completó.
-Al terminar: proponer `/workflow-execute` para Phase 6.
+**Detectar:** Si `work/.../plan-execution/*-task-plan.md` tiene checkboxes `- [ ] [T-NNN]`, Phase 8 ya completó.
+Al terminar: proponer `/thyrox:pilot` para Phase 9 (riesgo técnico alto) o `/thyrox:execute` para Phase 10.

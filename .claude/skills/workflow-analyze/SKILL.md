@@ -1,137 +1,120 @@
 ---
 name: workflow-analyze
-description: Phase 1 ANALYZE — inicia o retoma el análisis del work package activo.
+description: "Use when doing deep analysis of a problem after initial discovery. Phase 3 ANALYZE — análisis sistemático de causa raíz por dominio. Crea sub-análisis en cajón analyze/ del WP."
+allowed-tools: Read Glob Grep Bash
 disable-model-invocation: true
+effort: high
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 1'"
-updated_at: 2026-04-11 22:05:00
+    command: "bash .claude/scripts/set-session-phase.sh 'Phase 3'"
+updated_at: 2026-04-16 00:00:00
 ---
 
-# /workflow-analyze — Phase 1: ANALYZE
+# /workflow-analyze — Phase 3: ANALYZE
 
-Inicia o retoma Phase 1 ANALYZE del work package activo.
-
----
-
-## Escalabilidad
-
-Determinar qué fases son obligatorias antes de empezar el análisis:
-
-| Tamaño | Duración | Fases activas | Qué omitir |
-|--------|----------|---------------|------------|
-| Micro | <30 min | 1, 6, 7 | Phases 2, 3, 4, 5 (spec y plan opcionales) |
-| Pequeño | 30 min – 2h | 1, 2, 6, 7 | Phases 3, 4, 5 (no requiere plan formal) |
-| Mediano | 2h – 8h | 1, 2, 3, 4, 5, 6, 7 | Ninguna — seguir las 7 fases completas |
-| Grande | >8h | 1, 2, 3, 4, 5, 6, 7 | Ninguna — usar epic.md para agrupar features |
-
-Ver [escalabilidad](references/scalability.md) para detalles y casos de borde.
+Inicia o retoma Phase 3 ANALYZE del work package activo.
 
 ---
 
 ## Contexto de sesión
 
 1. Identificar WP activo: `ls -t .thyrox/context/work/ | head -1`
-2. Leer `context/now.md` — verificar `phase` y `current_work`
-3. Listar tech skills activos: `ls .claude/skills/ | grep -v thyrox`
-4. Verificar si ya existe `*-analysis.md` en el WP:
-   - `ls .thyrox/context/work/[WP-activo]/analysis/ 2>/dev/null`
-   - Si existe sin `[NEEDS CLARIFICATION]` → Phase 1 ya completó. Proponer `/workflow-strategy`.
-   - Si no existe → iniciar Phase 1.
+2. Leer síntesis DISCOVER: `cat .thyrox/context/work/[WP]/discover/*-analysis.md`
+3. Leer `context/now.md` — verificar `phase`
+4. Verificar si ya existe contenido en `work/.../analyze/`:
+   - Si existe con análisis completos → Phase 3 ya avanzó. Revisar pendientes.
+5. Revisar MEASURE si se ejecutó: `ls work/.../measure/ 2>/dev/null`
 
 ---
 
-## Step 0 — Contexto del usuario final (TD-007)
+## Fase a ejecutar: Phase 3 ANALYZE
 
-Antes de analizar: preguntar brevemente al usuario:
-- ¿Quién usará el sistema? (rol, contexto)
-- ¿Qué quieren lograr en concreto?
-- ¿Hay restricciones o contexto no obvio?
+Analizar en profundidad antes de definir estrategia previene soluciones a problemas equivocados.
 
-Documentar en `{nombre-wp}-analysis.md` sección "Contexto del usuario final". Omitir si el usuario ya lo explicó en el mensaje inicial.
+**Enfoque:** Análisis sistemático por dominio. Cada dominio = subdirectorio dentro de `analyze/`.
 
----
+### Patrones de análisis
 
-## Fase a ejecutar: Phase 1 ANALYZE
+1. **Root Cause Analysis (RCA)** — para problemas con causas conocidas
+   - 5 Whys: preguntar "¿por qué?" 5 veces hasta llegar a la causa raíz
+   - Fishbone/Ishikawa: categorizar causas (People, Process, Technology, Environment)
 
-Entender el problema antes de proponer soluciones evita construir lo incorrecto.
+2. **Domain decomposition** — para problemas complejos con múltiples dimensiones
+   - Dividir el espacio del problema en dominios independientes
+   - Analizar cada dominio por separado con sub-documentos
+   - Integrar hallazgos en síntesis cross-domain
 
-1. Investigar estos **8 aspectos** — preguntar al usuario lo que no esté claro:
-   - **Objetivo/Por qué** — ¿qué se quiere lograr y por qué importa?
-   - **Stakeholders** — ¿quiénes son los usuarios y qué necesitan?
-   - **Uso operacional** — ¿cómo se usará el sistema en la práctica?
-   - **Atributos de calidad** — ¿qué importa más: velocidad, seguridad, confiabilidad?
-   - **Restricciones** — ¿qué limita la solución (tech, tiempo, presupuesto)?
-   - **Contexto/sistemas vecinos** — ¿dónde se sitúa, qué lo rodea?
-   - **Fuera de alcance** — ¿qué NO se va a hacer?
-   - **Criterios de éxito** — ¿cómo sabremos que está bien hecho?
+3. **Architectural analysis** — para decisiones técnicas complejas
+   - Patrones actuales vs patrones propuestos
+   - Trade-offs: simplicidad vs extensibilidad, consistencia vs flexibilidad
+   - Impacto en sistemas existentes
 
-### 1.5 ⏸ STOP pre-creación — Gate obligatorio
+4. **Landscape analysis** — para entender el ecosistema
+   - Inventario de opciones existentes
+   - Comparación de alternativas con criterios explícitos
+   - Identificación de brechas
 
-Antes de crear el directorio del WP o cualquier archivo:
+### Estructura de artefactos
 
-1. Presentar al usuario el nombre propuesto del WP y el timestamp.
-2. Esperar confirmación explícita (sí/no).
-3. NO crear ningún archivo hasta recibir respuesta.
+```
+work/.../analyze/
+├── {dominio1}/
+│   ├── {nombre-descriptivo}.md     ← sub-análisis libre
+│   └── {otro-subtema}.md
+├── {dominio2}/
+│   └── {nombre-descriptivo}.md
+└── {dominio3}/
+    └── {nombre-descriptivo}.md
+```
 
-Excepción: si el WP ya existe (retomar work package), saltar este gate.
+Naming libre para documentos en cajón — no requieren prefijo `{nombre-wp}`.
+Ejemplo: `analyze/architecture-patterns/multi-flow-detection.md`
 
-2. Crear work package — obtener timestamp real del sistema:
-   - Directorio: `date +%Y-%m-%d-%H-%M-%S` → `context/work/{timestamp}-nombre/`
-   - Metadata: `date '+%Y-%m-%d %H:%M:%S'` → ISO 8601 para `created_at`
-   - NUNCA inventar ni estimar el timestamp
-   - REQUERIDO: actualizar `context/now.md` con `current_work` y `phase: Phase 1`
-   - Clasificar reversibilidad: `documentation` | `reversible` | `irreversible`
+### Ejecución
 
-3. REQUERIDO: Crear `work/.../analysis/{nombre-wp}-analysis.md` usando `assets/introduction.md.template`
-   - El nombre debe revelar QUÉ se analiza: `skill-activation-analysis.md`, no `introduction.md`
+1. Identificar dominios relevantes basado en síntesis DISCOVER
+2. Para cada dominio: crear subdirectorio + documento(s) de análisis
+3. Cada documento usa el bloque de metadata estándar:
 
-4. REQUERIDO: Crear `work/../{nombre-wp}-risk-register.md` usando `assets/risk-register.md.template`
+```yml
+created_at: YYYY-MM-DD HH:MM:SS
+project: [Nombre del proyecto]
+work_package: YYYY-MM-DD-HH-MM-SS-nombre
+phase: Phase 3 — ANALYZE
+author: [Nombre]
+status: Borrador
+```
 
-5. Si el análisis es complejo: crear sub-documentos en `work/.../analysis/` según necesidad
-   (stakeholders, requirements-analysis, use-cases, quality-goals, constraints, context)
-
-6. Para proyectos medianos/grandes: Crear `work/../{nombre-wp}-exit-conditions.md` usando `assets/exit-conditions.md.template`
-
-7. Si hay principios arquitectónicos globales: crear/actualizar `constitution.md` en la raíz
-
-8. ADR: crear solo si aplica (cambio de stack, nuevo patrón arquitectónico, decisión que afecta todos los WPs futuros). Path: `adr_path` en CLAUDE.md → `.thyrox/context/decisions/`
-
-9. REQUERIDO: Añadir `## Stopping Point Manifest` al final del `*-analysis.md`:
-   - Registrar gates obligatorios: 1→2, 2→3, 4→5, 5→6, 6→7
-   - Si hay agentes async: añadir SP-NNN por cada agente background
-   - Si hay ambigüedades de scope: añadir gate-decision
-   - Formato: `ID | Fase | Tipo | Evento | Acción requerida`
-   - Tipos: `gate-fase` | `async-completion` | `gate-operacion` | `gate-decision`
-
-Tech skills activos: si hay `frontend-react` investigar componentes; `backend-nodejs` investigar endpoints; `db-postgresql` investigar tablas y relaciones.
+4. Crear síntesis cross-domain: `analyze/{nombre-wp}-analyze-synthesis.md`
+5. Actualizar `{nombre-wp}-risk-register.md` con riesgos descubiertos
 
 ---
 
-## Validaciones pre-gate (TD-029, TD-031, TD-033)
+## Validaciones pre-gate
 
-Antes de presentar el gate 1→2:
-- **TD-031 deep review**: revisar `{nombre-wp}-analysis.md` — ¿cubre los 8 aspectos sin [NEEDS CLARIFICATION]?
-- **TD-029 criterios**: `{nombre-wp}-risk-register.md` existe · Stopping Point Manifest documentado · `now.md::phase = Phase 1`
-- **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
+Antes de presentar el gate 3→4:
+- Todos los dominios relevantes tienen análisis documentado
+- Causas raíz identificadas (no solo síntomas)
+- Riesgos nuevos registrados en risk-register
+- Síntesis cross-domain creada
 
 ## Gate humano
 
-⏸ STOP — Presentar resumen de hallazgos (objetivos, gaps, riesgos, criterios de éxito).
+⏸ STOP — Presentar hallazgos clave del análisis: causas raíz, dominios analizados, riesgos identificados.
 Esperar confirmación explícita. NO continuar sin respuesta.
-Al aprobar: actualizar `context/now.md::phase` a `Phase 2`.
+Al aprobar: actualizar `context/now.md::phase` a `Phase 4`.
 
 ---
 
 ## Exit criteria
 
-Phase 1 completa cuando:
-- `work/.../analysis/{nombre-wp}-analysis.md` existe sin `[NEEDS CLARIFICATION]`
-- `{nombre-wp}-risk-register.md` existe
-- Stopping Point Manifest documentado
+Phase 3 completa cuando:
+- `work/.../analyze/` tiene contenido por dominio
+- Síntesis cross-domain existe
+- `{nombre-wp}-risk-register.md` actualizado con hallazgos del análisis
 - Usuario confirmó los hallazgos explícitamente en esta sesión
 
-**Detectar:** Si `work/.../analysis/` tiene `*-analysis.md` sin `[NEEDS CLARIFICATION]`, Phase 1 ya completó.
-Al terminar: proponer `/workflow-strategy` para Phase 2.
+**Detectar:** Si `work/.../analyze/` tiene documentos, Phase 3 ya comenzó.
+Al terminar: proponer `/thyrox:constraints` para Phase 4.

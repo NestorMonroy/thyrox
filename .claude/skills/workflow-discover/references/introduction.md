@@ -5,7 +5,7 @@ version: 1.0
 purpose: Introduce los conceptos fundamentales del análisis. Base para entender las 8 subsecciones de PHASE 1.
 goal: Proporcionar context general y explicar estructura de análisis de requisitos.
 updated_at: 2026-03-25
-owner: workflow-analyze
+owner: workflow-discover
 ```
 
 # Introduction and Goals

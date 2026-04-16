@@ -1,18 +1,20 @@
 ---
 name: workflow-structure
-description: Phase 4 STRUCTURE — inicia o retoma la especificación del work package activo.
+description: "Use when specifying requirements with Given/When/Then after plan is approved. Phase 7 DESIGN/SPECIFY — produce requirements-spec.md y opcionalmente design.md para WPs complejos."
+allowed-tools: Read Glob Grep Bash
 disable-model-invocation: true
+effort: high
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 4'"
-updated_at: 2026-04-12 00:00:00
+    command: "bash .claude/scripts/set-session-phase.sh 'Phase 7'"
+updated_at: 2026-04-16 00:00:00
 ---
 
-# /workflow-structure — Phase 4: STRUCTURE
+# /workflow-structure — Phase 7: DESIGN/SPECIFY
 
-Inicia o retoma Phase 4 STRUCTURE del work package activo.
+Inicia o retoma Phase 7 DESIGN/SPECIFY del work package activo.
 
 ---
 
@@ -22,12 +24,12 @@ Inicia o retoma Phase 4 STRUCTURE del work package activo.
 2. Leer plan y solution-strategy del WP para entender el scope
 3. Leer `context/now.md` — verificar `phase`
 4. Verificar si ya existe `*-requirements-spec.md` sin `[NEEDS CLARIFICATION]`:
-   - Si existe con spec-checklist al 100% → Phase 4 ya completó. Proponer `/workflow-decompose`.
+   - Si existe con spec-checklist al 100% → Phase 7 ya completó. Proponer `/thyrox:decompose`.
 5. Listar tech skills activos para orientar la spec técnica.
 
 ---
 
-## Fase a ejecutar: Phase 4 STRUCTURE
+## Fase a ejecutar: Phase 7 DESIGN/SPECIFY
 
 Especificar antes de descomponer previene ambigüedad en las tareas.
 
@@ -56,8 +58,8 @@ NO avanzar si quedan ítems sin +o marcadores `[NEEDS CLARIFICATION]` sin resolv
 
 ## Validaciones pre-gate (TD-029, TD-031, TD-033)
 
-Antes de presentar el gate 4→5:
-- **TD-031 deep review**: revisar `{nombre-wp}-plan.md` de Phase 3 — ¿la spec cubre TODO el scope aprobado?
+Antes de presentar el gate 7→8:
+- **TD-031 deep review**: revisar `{nombre-wp}-plan.md` de Phase 6 — ¿la spec cubre TODO el scope aprobado?
 - **TD-029 criterios**: spec sin `[NEEDS CLARIFICATION]` · spec-checklist 100% · diseño técnico si era complejo
 - **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
 
@@ -67,17 +69,17 @@ Antes de presentar el gate 4→5:
 Esperar confirmación explícita. NO continuar sin respuesta.
 Excepción: si el WP es `reversibility: documentation` y la spec no tiene ambigüedades, el gate puede ser ligero.
 Al aprobar:
-1. Actualizar `context/now.md::phase` a `Phase 5`
+1. Actualizar `context/now.md::phase` a `Phase 8`
 2. Actualizar `{nombre-wp}-requirements-spec.md::status` a `Aprobado — {fecha}`
 
 ---
 
 ## Exit criteria
 
-Phase 4 completa cuando:
-- `work/.../*-requirements-spec.md` existe sin `[NEEDS CLARIFICATION]`
+Phase 7 completa cuando:
+- `work/.../design/*-requirements-spec.md` existe sin `[NEEDS CLARIFICATION]`
 - `{nombre-wp}-spec-checklist.md` completado al 100%
 - Usuario confirmó la especificación explícitamente en esta sesión
 
-**Detectar:** Si `work/.../*-requirements-spec.md` tiene user stories y acceptance criteria sin `[NEEDS CLARIFICATION]`, Phase 4 ya completó.
-Al terminar: proponer `/workflow-decompose` para Phase 5.
+**Detectar:** Si `work/.../design/*-requirements-spec.md` tiene user stories y acceptance criteria sin `[NEEDS CLARIFICATION]`, Phase 7 ya completó.
+Al terminar: proponer `/thyrox:decompose` para Phase 8.

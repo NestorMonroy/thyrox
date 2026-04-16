@@ -53,18 +53,24 @@ El análisis original cubría 5 metodologías. El scope ampliado es:
 
 ---
 
-## Tabla de impacto en contexto — v2.0 (200k tokens)
+## Tabla de impacto en contexto — v3.0 (200k tokens, modelo lazy-load corregido)
+
+⚠️ **CORRECCIÓN v3.0:** El análisis v2.0 asumía carga eager de skills (Level 2 completo en arranque).
+Confirmado en `claude-howto/03-skills/README.md:56-60`: los skills usan **3 niveles de carga**:
+- **Level 1** (metadata): ~100 tokens/skill en startup — siempre en contexto
+- **Level 2** (instructions): ~5k tokens — SOLO cuando el skill es invocado/activado
+- **Level 3** (references): carga on-demand adicional
 
 Con el scope actualizado de ~73 skills (vs ~25 del análisis original):
 
-| Escenario | Skills cargados | Tokens usados | % contexto (200k) | Viable |
-|-----------|----------------|---------------|-------------------|--------|
-| Coordinator global (TODOS) | ~73 skills × 5k | ~365k tokens | ~182% | ❌ OVERFLOW |
-| Coordinator global (25 del análisis original) | ~25 skills × 5k | ~125k tokens | ~62% | ❌ Inviable |
-| Coordinator por metodología | 4-8 skills × 5k | ~20-40k tokens | ~10-20% | ✅ Viable |
-| State Machine + Registry lazy | 1 skill activo + coordinator | ~5-10k tokens | ~2.5-5% | ✅ Óptimo |
+| Escenario | Skills en contexto | Tokens (Level 1 startup) | Tokens (Level 2 cuando activo) | % contexto arranque | Viable |
+|-----------|-------------------|--------------------------|-------------------------------|--------------------|----|
+| Coordinator global con 73 skills | 73 × Level 1 | **~7.3k tokens** | +5k por skill activo | **~3.6%** | ✅ Tokens OK |
+| Coordinator global (análisis v2.0 — INCORRECTO) | ~~73 × 5k~~ | ~~365k~~ | — | ~~182%~~ | ❌ Cálculo inválido |
+| Coordinator por metodología (4-8 skills) | 4-8 × Level 1 | ~400-800 tokens | +5k por skill activo | ~0.2-0.4% | ✅ Óptimo |
+| State Machine + Registry (Pattern 5) | 1 coordinator + registry | ~500 tokens | +5k skill activo | ~0.25% | ✅ Óptimo |
 
-**Conclusión crítica reforzada:** Con 73 skills, el Patrón 2 (coordinator global) no es simplemente ineficiente — es físicamente imposible. La ventana de 200k se desborda. El argumento que ya era válido con 25 skills (62%) se vuelve irrebatible con 73 (182% de overflow real).
+**Conclusión corregida:** El Patrón 2 NO es inviable por tokens. Los 73 skills consumen solo ~7.3k tokens en Level 1 (3.6%). La razón para no usar Patrón 2 es **arquitectónica**: un solo coordinator para 6 tipos de flujo distintos (sequential, cyclic-adaptive, adaptive, non-sequential, etc.) produce lógica de routing compleja e imposible de mantener. Ver `pattern-decision-deep-review.md` para análisis completo.
 
 ---
 

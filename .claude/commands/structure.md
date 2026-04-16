@@ -1,10 +1,10 @@
 ---
 name: Structure
-description: Phase 4 STRUCTURE — especificar requisitos con Given/When/Then. Produce requirements-spec.md y opcionalmente design.md para WPs complejos. Requiere Phase 3 aprobado.
+description: Phase 7 DESIGN/SPECIFY — especificar requisitos con Given/When/Then. Produce requirements-spec.md y opcionalmente design.md. Requiere Phase 6 PLAN aprobado. Alias de /thyrox:design.
 ---
 
-# /thyrox:structure — Phase 4: STRUCTURE
+# /thyrox:structure — Phase 7: DESIGN/SPECIFY
 
-Invoca el skill `workflow-structure` para ejecutar Phase 4 STRUCTURE del work package activo.
+Invoca el skill `workflow-structure` para ejecutar Phase 7 DESIGN/SPECIFY del work package activo.
 
 Sigue todas las instrucciones de [workflow-structure/SKILL.md](../skills/workflow-structure/SKILL.md).

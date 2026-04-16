@@ -113,13 +113,13 @@ touch docs/ROADMAP.md
 ```bash
 # Existen as .template in assets/, crear instancias
 cd /home/thyrox/.thyrox/context/
-cp ../skills/workflow-analyze/assets/exit-conditions.md.template exit-conditions.md
-cp ../skills/workflow-analyze/assets/project.json.template project.json
+cp ../skills/workflow-discover/assets/exit-conditions.md.template exit-conditions.md
+cp ../skills/workflow-discover/assets/legacy/project.json.template project.json
 ```
 
 ### Problema 3: Archivos en skills/ que faltan
 
-**Ubicación**: `.claude/skills/workflow-analyze/assets/` (y otros `workflow-*/assets/`)
+**Ubicación**: `.claude/skills/workflow-discover/assets/` (y otros `workflow-*/assets/`)
 **Nota**: Estos archivos ya existen como `.template` en assets/.
 Los archivos `modes/` son aspiracionales (referenciados en skill-authoring.md pero no creados).
 ```

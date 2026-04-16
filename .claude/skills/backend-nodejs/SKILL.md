@@ -1,6 +1,6 @@
 ```yml
 name: backend-nodejs
-description: "Skill de tecnología para proyectos Node.js. Usar cuando se trabaje en endpoints, middleware, servicios, o lógica de negocio del backend Node.js en el proyecto thyrox. Invocar durante Phase 4 STRUCTURE para especificar APIs y contratos, durante Phase 6 EXECUTE para implementar handlers y servicios, y durante Phase 7 TRACK para revisar calidad y seguridad del código Node."
+description: "Skill de tecnología para proyectos Node.js. Usar cuando se trabaje en endpoints, middleware, servicios, o lógica de negocio del backend Node.js en el proyecto thyrox. Invocar durante Phase 7 DESIGN/SPECIFY para especificar APIs y contratos, durante Phase 10 EXECUTE para implementar handlers y servicios, y durante Phase 11 TRACK/EVALUATE para revisar calidad y seguridad del código Node."
 layer: backend
 framework: nodejs
 project: thyrox
@@ -12,7 +12,7 @@ Guía fase-por-fase para implementar en Node.js dentro del proyecto thyrox.
 
 ---
 
-## Phase 1: ANALYZE — Qué investigar en proyectos Node.js
+## Phase 3: ANALYZE — Qué investigar en proyectos Node.js
 
 Al analizar un feature de backend, cubrir:
 - Endpoints afectados — método HTTP, ruta, parámetros, body
@@ -21,7 +21,7 @@ Al analizar un feature de backend, cubrir:
 - Autenticación/autorización — ¿qué roles pueden acceder?
 - Casos de error — ¿qué puede fallar y cómo responder?
 
-## Phase 4: STRUCTURE — Qué especificar para features Node.js
+## Phase 7: DESIGN/SPECIFY — Qué especificar para features Node.js
 
 En `requirements-spec.md`, incluir por cada endpoint:
 - Contrato de entrada: método, ruta, headers requeridos, body schema (JSON)
@@ -29,7 +29,7 @@ En `requirements-spec.md`, incluir por cada endpoint:
 - Validaciones de input: campos requeridos, tipos, rangos
 - Efectos secundarios: qué se escribe en BD, qué eventos se emiten
 
-## Phase 6: EXECUTE — Convenciones de implementación
+## Phase 10: EXECUTE — Convenciones de implementación
 
 Ver sección INSTRUCTIONS para reglas específicas.
 
@@ -41,7 +41,7 @@ Orden de implementación recomendado:
 5. Tests de integración del endpoint
 6. Documentar en OpenAPI/Swagger si el proyecto lo usa
 
-## Phase 7: TRACK — Qué revisar al cerrar
+## Phase 11: TRACK/EVALUATE — Qué revisar al cerrar
 
 - Todos los inputs externos validados (no confiar en el cliente)
 - No hay secrets hardcodeados (usar `process.env`)

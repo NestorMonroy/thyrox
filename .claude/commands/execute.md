@@ -1,10 +1,10 @@
 ---
 name: Execute
-description: Phase 6 EXECUTE — implementar las tareas T-NNN del task-plan con commits convencionales. Actualiza checkboxes y execution-log. Requiere Phase 5 aprobado por el usuario.
+description: Phase 10 EXECUTE — implementar las tareas T-NNN del task-plan con commits convencionales. Actualiza checkboxes y execution-log. Requiere Phase 8 o 9 aprobado.
 ---
 
-# /thyrox:execute — Phase 6: EXECUTE
+# /thyrox:execute — Phase 10: EXECUTE
 
-Invoca el skill `workflow-execute` para ejecutar Phase 6 EXECUTE del work package activo.
+Invoca el skill `workflow-execute` para ejecutar Phase 10 EXECUTE del work package activo.
 
 Sigue todas las instrucciones de [workflow-execute/SKILL.md](../skills/workflow-execute/SKILL.md).

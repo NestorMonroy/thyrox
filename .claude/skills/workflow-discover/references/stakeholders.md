@@ -5,7 +5,7 @@ version: 1.0
 purpose: Guía de cómo identificar y documentar QUIÉN usa el sistema y QUÉ necesita.
 goal: Asegurar que todas las necesidades de stakeholders estén consideradas.
 updated_at: 2026-03-25
-owner: workflow-analyze
+owner: workflow-discover
 ```
 
 # Stakeholders

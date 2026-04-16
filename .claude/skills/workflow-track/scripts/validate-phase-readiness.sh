@@ -6,7 +6,7 @@
 # Uso:
 #   ./validate-phase-readiness.sh <phase-number> [wp-dir]
 #   ./validate-phase-readiness.sh 2                          # ¿Listo para Phase 2?
-#   ./validate-phase-readiness.sh 5 context/work/2026-04-01-18-39-56-mi-feature/
+#   ./validate-phase-readiness.sh 11 context/work/2026-04-01-18-39-56-mi-feature/
 
 set -euo pipefail
 
@@ -16,7 +16,9 @@ WP_DIR="${2:-}"
 
 if [ -z "$PHASE" ]; then
     echo "Usage: validate-phase-readiness.sh <phase-number> [wp-dir]"
-    echo "Phases: 1=ANALYZE, 2=SOLUTION_STRATEGY, 3=PLAN, 4=STRUCTURE, 5=DECOMPOSE, 6=EXECUTE, 7=TRACK"
+    echo "Phases: 1=DISCOVER, 2=MEASURE, 3=ANALYZE, 4=CONSTRAINTS, 5=STRATEGY,"
+    echo "        6=PLAN, 7=DESIGN/SPECIFY, 8=PLAN_EXECUTION, 9=PILOT/VALIDATE,"
+    echo "        10=EXECUTE, 11=TRACK/EVALUATE, 12=STANDARDIZE"
     exit 1
 fi
 
@@ -92,19 +94,19 @@ check_content() {
     fi
 }
 
-PHASE_NAMES=("" "ANALYZE" "SOLUTION_STRATEGY" "PLAN" "STRUCTURE" "DECOMPOSE" "EXECUTE" "TRACK")
-echo -e "${BOLD}Checking readiness for Phase $PHASE: ${PHASE_NAMES[$PHASE]}${NC}"
+PHASE_NAMES=("" "DISCOVER" "MEASURE" "ANALYZE" "CONSTRAINTS" "STRATEGY" "PLAN" "DESIGN/SPECIFY" "PLAN_EXECUTION" "PILOT/VALIDATE" "EXECUTE" "TRACK/EVALUATE" "STANDARDIZE")
+echo -e "${BOLD}Checking readiness for Phase $PHASE: ${PHASE_NAMES[$PHASE]:-UNKNOWN}${NC}"
 echo -e "Work package: ${WP_DIR:-none detected}"
 echo ""
 
 case "$PHASE" in
     1)
-        echo "Phase 1: ANALYZE — analysis document + risk register"
+        echo "Phase 1: DISCOVER — analysis document + risk register"
         if [ -n "$WP_DIR" ]; then
-            check_glob "*-analysis.md" "$WP_DIR/analysis" "*-analysis.md"
+            check_glob "*-analysis.md" "$WP_DIR/discover" "*-analysis.md"
             check_glob "*-risk-register.md" "$WP_DIR" "*-risk-register.md"
-            if [ -d "$WP_DIR/analysis" ]; then
-                check_no_pattern "No [NEEDS CLARIFICATION] in analysis" "$WP_DIR/analysis" "\[NEEDS CLARIFICATION\]"
+            if [ -d "$WP_DIR/discover" ]; then
+                check_no_pattern "No [NEEDS CLARIFICATION] in discover/" "$WP_DIR/discover" "\[NEEDS CLARIFICATION\]"
             fi
         else
             echo -e "  [FAIL] No work package directory found in context/work/"
@@ -112,13 +114,13 @@ case "$PHASE" in
         fi
         ;;
     2)
-        echo "Phase 2: SOLUTION_STRATEGY — solution strategy with research"
+        echo "Phase 2: MEASURE — baseline document with quantitative data"
         if [ -n "$WP_DIR" ]; then
-            check_glob "*-solution-strategy.md" "$WP_DIR" "*-solution-strategy.md"
-            local_file=$(find "$WP_DIR" -maxdepth 1 -name "*-solution-strategy.md" 2>/dev/null | head -1)
+            check_glob "*-baseline.md" "$WP_DIR/measure" "*-baseline.md"
+            local_file=$(find "$WP_DIR/measure" -maxdepth 1 -name "*-baseline.md" 2>/dev/null | head -1)
             if [ -n "$local_file" ]; then
-                check_content "Research documented" "$local_file" "research\|alternatives\|unknown\|alternativ"
-                check_content "Decisions documented" "$local_file" "decision\|Decision"
+                check_content "Métrica de éxito documentada" "$local_file" "mejorará\|target\|baseline\|métrica"
+                check_content "Método de medición documentado" "$local_file" "medido por\|método\|cómo\|verificar"
             fi
         else
             echo -e "  [FAIL] No work package directory found"
@@ -126,13 +128,66 @@ case "$PHASE" in
         fi
         ;;
     3)
-        echo "Phase 3: PLAN — plan.md con scope aprobado + ROADMAP actualizado"
+        echo "Phase 3: ANALYZE — domain analysis with synthesis"
+        if [ -n "$WP_DIR" ]; then
+            if [ -d "$WP_DIR/analyze" ]; then
+                local count
+                count=$(find "$WP_DIR/analyze" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+                if [ "$count" -gt 0 ]; then
+                    echo -e "  [OK] analyze/ has $count document(s)"
+                    PASS=$((PASS + 1))
+                else
+                    echo -e "  [FAIL] analyze/ exists but has no .md files"
+                    FAIL=$((FAIL + 1))
+                fi
+            else
+                echo -e "  [FAIL] analyze/ directory missing in WP"
+                FAIL=$((FAIL + 1))
+            fi
+            check_glob "*-analyze-synthesis.md" "$WP_DIR/analyze" "*-analyze-synthesis.md"
+            check_glob "*-risk-register.md updated" "$WP_DIR" "*-risk-register.md"
+        else
+            echo -e "  [FAIL] No work package directory found"
+            FAIL=$((FAIL + 3))
+        fi
+        ;;
+    4)
+        echo "Phase 4: CONSTRAINTS — constraints document (HARD vs SOFT)"
+        if [ -n "$WP_DIR" ]; then
+            check_glob "*-constraints.md" "$WP_DIR/constraints" "*-constraints.md"
+            local_file=$(find "$WP_DIR/constraints" -maxdepth 1 -name "*-constraints.md" 2>/dev/null | head -1)
+            if [ -n "$local_file" ]; then
+                check_content "HARD constraints documented" "$local_file" "HARD\|hard\|dura"
+                check_content "SOFT constraints documented" "$local_file" "SOFT\|soft\|blanda"
+            fi
+        else
+            echo -e "  [FAIL] No work package directory found"
+            FAIL=$((FAIL + 3))
+        fi
+        ;;
+    5)
+        echo "Phase 5: STRATEGY — solution strategy with research and decisions"
+        if [ -n "$WP_DIR" ]; then
+            check_glob "*-solution-strategy.md" "$WP_DIR/strategy" "*-solution-strategy.md"
+            local_file=$(find "$WP_DIR/strategy" -maxdepth 1 -name "*-solution-strategy.md" 2>/dev/null | head -1)
+            if [ -n "$local_file" ]; then
+                check_content "Key Ideas documented" "$local_file" "[Kk]ey [Ii]dea\|ideas clave"
+                check_content "Research documented" "$local_file" "research\|Research\|alternativ\|unknown"
+                check_content "Decisions documented" "$local_file" "[Dd]ecision\|decisión"
+            fi
+        else
+            echo -e "  [FAIL] No work package directory found"
+            FAIL=$((FAIL + 4))
+        fi
+        ;;
+    6)
+        echo "Phase 6: PLAN — scope approved + ROADMAP updated"
         check "ROADMAP.md" "$REPO_ROOT/ROADMAP.md"
         if [ -n "$WP_DIR" ]; then
             WP_NAME=$(basename "$WP_DIR")
             check_content "ROADMAP references work package" "$REPO_ROOT/ROADMAP.md" "$WP_NAME"
-            check_glob "*-plan.md exists" "$WP_DIR" "*-plan.md"
-            local_plan=$(find "$WP_DIR" -maxdepth 1 -name "*-plan.md" 2>/dev/null | head -1)
+            check_glob "*-plan.md exists" "$WP_DIR/plan" "*-plan.md"
+            local_plan=$(find "$WP_DIR/plan" -maxdepth 1 -name "*-plan.md" 2>/dev/null | head -1)
             if [ -n "$local_plan" ]; then
                 check_content "Scope aprobado [x] en plan.md" "$local_plan" "\[x\].*[Aa]probado\|[Aa]probado.*[0-9]\{4\}"
             fi
@@ -141,34 +196,48 @@ case "$PHASE" in
             FAIL=$((FAIL + 3))
         fi
         ;;
-    4)
-        echo "Phase 4: STRUCTURE — requirements spec without [NEEDS CLARIFICATION]"
+    7)
+        echo "Phase 7: DESIGN/SPECIFY — requirements spec without [NEEDS CLARIFICATION]"
         if [ -n "$WP_DIR" ]; then
-            check_glob "*-requirements-spec.md" "$WP_DIR" "*-requirements-spec.md"
-            check_no_pattern "No [NEEDS CLARIFICATION] markers" "$WP_DIR" "\[NEEDS CLARIFICATION\]"
+            check_glob "*-requirements-spec.md" "$WP_DIR/design" "*-requirements-spec.md"
+            check_no_pattern "No [NEEDS CLARIFICATION] markers" "$WP_DIR/design" "\[NEEDS CLARIFICATION\]"
         else
             echo -e "  [FAIL] No work package directory found"
             FAIL=$((FAIL + 2))
         fi
         ;;
-    5)
-        echo "Phase 5: DECOMPOSE — task plan with IDs and checkboxes"
+    8)
+        echo "Phase 8: PLAN EXECUTION — task plan with IDs and checkboxes"
         if [ -n "$WP_DIR" ]; then
-            check_glob "*-task-plan.md" "$WP_DIR" "*-task-plan.md"
-            local_file=$(find "$WP_DIR" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
+            check_glob "*-task-plan.md" "$WP_DIR/plan-execution" "*-task-plan.md"
+            local_file=$(find "$WP_DIR/plan-execution" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
             if [ -n "$local_file" ]; then
                 check_content "Tasks have IDs [T-NNN]" "$local_file" "\[T-[0-9]"
                 check_content "Tasks have checkboxes" "$local_file" "^\- \["
+                check_content "DAG documented (mermaid)" "$local_file" "mermaid\|flowchart\|graph"
             fi
         else
             echo -e "  [FAIL] No work package directory found"
-            FAIL=$((FAIL + 3))
+            FAIL=$((FAIL + 4))
         fi
         ;;
-    6)
-        echo "Phase 6: EXECUTE — all tasks completed"
+    9)
+        echo "Phase 9: PILOT/VALIDATE — pilot report with GO/NO-GO decision"
         if [ -n "$WP_DIR" ]; then
-            local_file=$(find "$WP_DIR" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
+            check_glob "*-pilot-report.md" "$WP_DIR/pilot" "*-pilot-report.md"
+            local_file=$(find "$WP_DIR/pilot" -maxdepth 1 -name "*-pilot-report.md" 2>/dev/null | head -1)
+            if [ -n "$local_file" ]; then
+                check_content "GO/NO-GO decision documented" "$local_file" "GO\|NO-GO\|no-go"
+            fi
+        else
+            echo -e "  [FAIL] No work package directory found"
+            FAIL=$((FAIL + 2))
+        fi
+        ;;
+    10)
+        echo "Phase 10: EXECUTE — all tasks completed"
+        if [ -n "$WP_DIR" ]; then
+            local_file=$(find "$WP_DIR/plan-execution" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
             if [ -n "$local_file" ]; then
                 TOTAL=$(grep -c '^\- \[' "$local_file" 2>/dev/null || echo 0)
                 DONE=$(grep -c '^\- \[x\]' "$local_file" 2>/dev/null || echo 0)
@@ -180,28 +249,39 @@ case "$PHASE" in
                     FAIL=$((FAIL + 1))
                 fi
             else
-                echo -e "  [FAIL] No *-task-plan.md found in $WP_DIR"
+                echo -e "  [FAIL] No *-task-plan.md found in plan-execution/"
                 FAIL=$((FAIL + 1))
             fi
+            check_glob "*-execution-log.md" "$WP_DIR/execute" "*-execution-log.md"
         else
             echo -e "  [FAIL] No work package directory found"
-            FAIL=$((FAIL + 1))
+            FAIL=$((FAIL + 2))
         fi
         check_content "ROADMAP has completed tasks" "$REPO_ROOT/ROADMAP.md" "\[x\]"
         ;;
-    7)
-        echo "Phase 7: TRACK — lessons learned + changelog"
+    11)
+        echo "Phase 11: TRACK/EVALUATE — lessons learned + changelog"
         if [ -n "$WP_DIR" ]; then
-            check_glob "*-lessons-learned.md" "$WP_DIR" "*-lessons-learned.md"
+            check_glob "*-lessons-learned.md" "$WP_DIR/track" "*-lessons-learned.md"
+            check_glob "*-changelog.md" "$WP_DIR/track" "*-changelog.md"
+            check_glob "*-risk-register.md updated" "$WP_DIR" "*-risk-register.md"
         else
             echo -e "  [FAIL] No work package directory found"
-            FAIL=$((FAIL + 1))
+            FAIL=$((FAIL + 3))
         fi
-        check "CHANGELOG.md" "$REPO_ROOT/CHANGELOG.md"
-        check_content "CHANGELOG has version entry" "$REPO_ROOT/CHANGELOG.md" "## \[0\.\|## \[1\.\|## \[2\."
+        ;;
+    12)
+        echo "Phase 12: STANDARDIZE — patterns document + WP closure"
+        if [ -n "$WP_DIR" ]; then
+            check_glob "*-patterns.md" "$WP_DIR/standardize" "*-patterns.md"
+            check_content "ROADMAP has WP marked complete" "$REPO_ROOT/ROADMAP.md" "\[x\]"
+        else
+            echo -e "  [FAIL] No work package directory found"
+            FAIL=$((FAIL + 2))
+        fi
         ;;
     *)
-        echo "Invalid phase: $PHASE (use 1-7)"
+        echo "Invalid phase: $PHASE (use 1-12)"
         exit 1
         ;;
 esac

@@ -1,16 +1,18 @@
 ---
 name: workflow-execute
-description: Phase 6 EXECUTE — toma la siguiente tarea pendiente del work package activo y la ejecuta.
+description: "Use when implementing tasks from the approved task plan. Phase 10 EXECUTE — toma la siguiente tarea T-NNN del task-plan y ejecuta con commits convencionales. Actualiza checkboxes y execution-log."
+allowed-tools: Read Glob Grep Bash Write Edit
 disable-model-invocation: true
+effort: low
 hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 6'"
-updated_at: 2026-04-09 22:00:00
+    command: "bash .claude/scripts/set-session-phase.sh 'Phase 10'"
+updated_at: 2026-04-16 00:00:00
 ---
 
-# /workflow-execute — Phase 6: EXECUTE
+# /workflow-execute — Phase 10: EXECUTE
 
 Toma la siguiente tarea pendiente del work package activo y la ejecuta.
 
@@ -28,7 +30,7 @@ Toma la siguiente tarea pendiente del work package activo y la ejecuta.
 
 ---
 
-## Fase a ejecutar: Phase 6 EXECUTE
+## Fase a ejecutar: Phase 10 EXECUTE
 
 Commits frecuentes con mensajes descriptivos crean un historial navegable.
 
@@ -54,7 +56,7 @@ Commits frecuentes con mensajes descriptivos crean un historial navegable.
 > Ausencia de respuesta ≠ aprobación. Si el usuario no responde, esperar — no auto-continuar.
 
 **Criterio auto-write (TD-027A):** Claude puede escribir/editar sin preguntar cuando:
-- La tarea está en `*-task-plan.md` como `- [ ]` y ya fue aprobada en el gate 5→6
+- La tarea está en `*-task-plan.md` como `- [ ]` y ya fue aprobada en el gate 8→10
 - El cambio es consecuencia directa de una tarea aprobada (no extiende el scope)
 - `reversibility: documentation` o `reversible` (no `irreversible`)
 - No es un GATE OPERACIÓN (ver arriba)
@@ -90,15 +92,15 @@ Claude DEBE preguntar antes cuando: la tarea no estaba en el plan, el cambio es 
 5. REQUERIDO: registrar SP-NNN en el Stopping Point Manifest por cada agente background
    — hacer commit del manifest actualizado ANTES de lanzar el primer agente
 
-**Validaciones pre-gate 6→7 (TD-029, TD-031, TD-032, TD-033):**
+**Validaciones pre-gate 10→11 (TD-029, TD-031, TD-032, TD-033):**
 - **TD-031 deep review**: revisar `{nombre-wp}-task-plan.md` — ¿todas las tareas del plan completadas?
 - **TD-032 pre-flight checklist**:
   - [ ] `*-task-plan.md` — todas las tareas en `[x]` (sin `[ ]` o `[~]` restantes)
-  - [ ] `*-execution-log.md` — existe y documenta sesiones de Phase 6
-  - [ ] `context/now.md::phase` = `Phase 6` y `current_work` apunta al WP
+  - [ ] `*-execution-log.md` — existe y documenta sesiones de Phase 10
+  - [ ] `context/now.md::phase` = `Phase 10` y `current_work` apunta al WP
   - [ ] Branch activo es el branch del WP (no main)
   - [ ] `ROADMAP.md` — checkboxes de la FASE actual actualizados
-  - [ ] Stopping Point Manifest — SP-NNN de Phase 6 marcados como `si`
+  - [ ] Stopping Point Manifest — SP-NNN de Phase 10 marcados como `si`
 - **TD-029 criterios**: todos los ítems del pre-flight en `[x]`
 - **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
 Si algún ítem falla → corregir antes de avanzar.
@@ -107,13 +109,13 @@ Si algún ítem falla → corregir antes de avanzar.
 
 ## Exit criteria
 
-Phase 6 completa cuando:
+Phase 10 completa cuando:
 - Todas las checkboxes en `*-task-plan.md` están `[x]`
 - Todos los cambios están commiteados
-- Validación pre-Phase 7 pasada
+- Validación pre-Phase 11 pasada
 
-**Detectar:** Si todas las checkboxes en `*-task-plan.md` están `[x]`, Phase 6 ya completó.
-Al terminar: proponer `/workflow-track` para Phase 7.
+**Detectar:** Si todas las checkboxes en `*-task-plan.md` están `[x]`, Phase 10 ya completó.
+Al terminar: proponer `/thyrox:track` para Phase 11.
 
 ---
 
@@ -122,7 +124,7 @@ Al terminar: proponer `/workflow-track` para Phase 7.
 Una vez que los workflow-* están en `.claude/skills/` (TD-008 completo), es posible ejecutar:
 
 ```
-/loop 10m /workflow-execute
+/loop 10m /thyrox:execute
 ```
 
 Esto invoca `/workflow-execute` cada 10 minutos de forma automática — útil para WPs con muchas tareas que se ejecutan en batches. El skill `once: true` del hook garantiza que `now.md::phase` solo se actualiza en el primer disparo de la sesión.

@@ -1,10 +1,10 @@
 ---
 name: Decompose
-description: Phase 5 DECOMPOSE — crear tareas atómicas con IDs trazables T-NNN. Produce task-plan.md con DAG de dependencias y cobertura SPEC→tarea. Requiere Phase 4 aprobado.
+description: Phase 8 PLAN EXECUTION — crear tareas atómicas T-NNN con DAG y trazabilidad SPEC→tarea. Requiere Phase 7 DESIGN/SPECIFY aprobado.
 ---
 
-# /thyrox:decompose — Phase 5: DECOMPOSE
+# /thyrox:decompose — Phase 8: PLAN EXECUTION
 
-Invoca el skill `workflow-decompose` para ejecutar Phase 5 DECOMPOSE del work package activo.
+Invoca el skill `workflow-decompose` para ejecutar Phase 8 PLAN EXECUTION del work package activo.
 
 Sigue todas las instrucciones de [workflow-decompose/SKILL.md](../skills/workflow-decompose/SKILL.md).

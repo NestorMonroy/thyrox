@@ -5,7 +5,7 @@ version: 1.0
 purpose: Guía de cómo definir límites del sistema y sistemas externos que se integran.
 goal: Clarificar dónde se inserta el sistema en el ecosistema.
 updated_at: 2026-03-25
-owner: workflow-analyze
+owner: workflow-discover
 ```
 
 # Context

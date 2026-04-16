@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
-version: 3.4
-updated_at: 2026-04-15 03:10:00
+version: 3.5
+updated_at: 2026-04-16 00:00:00
 ```
 
 # CLAUDE.md — THYROX
@@ -18,11 +18,12 @@ Los ADRs del proyecto viven en el path declarado por `adr_path` en este archivo 
 3. **Git as persistence** — Zero archivos backup, historial en git
 4. **Markdown only** — Sin bases de datos, sin formatos propietarios
 5. **Single skill** — Un `thyrox` con references, no 15 skills separados
-   *Addendum FASE 22:* Los 7 `workflow-*` skills (workflow-analyze, …, workflow-track) son la excepción intencional: son herramientas de ejecución por fase, no skills de dominio tecnológico. Esta excepción está documentada en ADR-016. La regla original sigue vigente para tech skills (python, react, etc.).
+   *Addendum FASE 22:* Los 7 `workflow-*` skills (workflow-discover, …, workflow-track) son la excepción intencional: son herramientas de ejecución por fase, no skills de dominio tecnológico. Esta excepción está documentada en ADR-016. La regla original sigue vigente para tech skills (python, react, etc.).
    *Addendum FASE 23:* Nomenclatura resuelta a kebab-case hyphens — `workflow-*/SKILL.md`. TD-019 cerrado (FASE 23).
    *Addendum FASE 29:* Skill renombrado → `thyrox` (prefijo `pm-` eliminado — no es PM de PMI, es la metodología THYROX misma). TD-020 cerrado (FASE 29).
-   *Addendum FASE 31:* Interfaz pública del framework → `/thyrox:*` (plugin namespace via `.claude-plugin/plugin.json`). Los 7 `workflow-*` skills permanecen como implementación interna. Capa de presentación complementa ADR-016. Ver ADR-019. TD-036 cerrado (FASE 31).
+   *Addendum FASE 31:* Interfaz pública del framework → `/thyrox:*` (plugin namespace via `.claude-plugin/plugin.json`). Los 12 `workflow-*` skills permanecen como implementación interna. Capa de presentación complementa ADR-016. Ver ADR-019. TD-036 cerrado (FASE 31).
    *Addendum FASE 35:* Estado de sesión y work packages migrados a `.thyrox/context/` — fuera de `.claude/` (zona de configuración de Claude Code). Ver ADR en `.thyrox/context/decisions/`.
+   *Addendum FASE 39:* 12 fases THYROX propias (DISCOVER → STANDARDIZE). `workflow-analyze` renombrado a `workflow-discover`. Nuevos skills: workflow-measure, workflow-analyze (Phase 3), workflow-constraints, workflow-pilot, workflow-standardize. Sistema `.claude/rules/` creado para invariantes globales.
 6. **Work packages with timestamp** — `.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
 7. **Conventional Commits** — `type(scope): description`
 
@@ -108,7 +109,7 @@ SIEMPRE seguir este flujo. NO omitir pasos.
    Si el Skill tool no está disponible: leer [SKILL.md](skills/thyrox/SKILL.md) completo y seguirlo paso a paso.
 3. **Identificar fase activa** — Revisar `.thyrox/context/work/`:
    - Hay work package activo → continuar en la fase donde quedó.
-   - No hay work package → empezar Phase 1: ANALYZE.
+   - No hay work package → empezar Phase 1: DISCOVER.
 4. **Trabajar** — Seguir cada fase hasta su exit criteria. NO saltarse fases. Commits convencionales. Actualizar ROADMAP.md.
 5. **Cierre** — Actualizar `.thyrox/context/focus.md` + `.thyrox/context/now.md`.
 
@@ -162,12 +163,12 @@ adr_path: .thyrox/context/decisions/   # THYROX: retrocompat. Nuevos proyectos: 
 | Término | Significado | Ejemplo |
 |---------|-------------|---------|
 | **FASE N** | Unidad de trabajo del proyecto — número secuencial global. Cada WP ocupa una FASE. | FASE 19: async-gates · FASE 20: context-hygiene |
-| **Phase N** | Etapa del ciclo SDLC dentro de un WP (1-ANALYZE … 7-TRACK). Se reinicia en cada FASE. | FASE 20 está en Phase 6: EXECUTE |
+| **Phase N** | Etapa del ciclo THYROX dentro de un WP (1-DISCOVER … 12-STANDARDIZE). Se reinicia en cada FASE. | FASE 20 está en Phase 10: EXECUTE |
 | **WP** | Work package — directorio `.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/` que contiene todos los artefactos de una FASE | `.thyrox/context/work/2026-04-08-02-05-03-context-hygiene/` |
 | **SP-NNN** | Stopping Point — punto de parada explícito definido en el Stopping Point Manifest de Phase 1 | SP-06: gate 6→7, esperar aprobación humana |
 
 **Regla mnemotécnica:** FASE es el "qué proyecto", Phase es el "en qué paso del proyecto".
-Un proyecto con 20 FASEs tiene 20 WPs; cada WP recorre hasta 7 Phases internamente.
+Un proyecto con 20 FASEs tiene 20 WPs; cada WP recorre hasta 12 Phases internamente (escalabilidad: micro usa 5, grande usa las 12).
 
 ## Para más contexto
 

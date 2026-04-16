@@ -1,6 +1,8 @@
 {
+  "effortLevel": "medium",
   "env": {
-    "CLAUDE_STREAM_IDLE_TIMEOUT_MS": "420000"
+    "CLAUDE_STREAM_IDLE_TIMEOUT_MS": "420000",
+    "CLAUDE_CODE_EFFORT_LEVEL": "medium"
   },
   "permissions": {
     "defaultMode": "acceptEdits",

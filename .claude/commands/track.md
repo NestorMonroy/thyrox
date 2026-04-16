@@ -1,10 +1,10 @@
 ---
 name: Track
-description: Phase 7 TRACK — cerrar el work package. Produce lessons-learned.md, wp-changelog.md y actualiza CHANGELOG.md y ROADMAP.md. Requiere Phase 6 aprobado por el usuario.
+description: Phase 11 TRACK/EVALUATE — evaluar resultados vs baseline MEASURE, documentar lecciones y cerrar el WP. Requiere Phase 10 EXECUTE aprobado.
 ---
 
-# /thyrox:track — Phase 7: TRACK
+# /thyrox:track — Phase 11: TRACK/EVALUATE
 
-Invoca el skill `workflow-track` para ejecutar Phase 7 TRACK del work package activo.
+Invoca el skill `workflow-track` para ejecutar Phase 11 TRACK/EVALUATE del work package activo.
 
 Sigue todas las instrucciones de [workflow-track/SKILL.md](../skills/workflow-track/SKILL.md).
