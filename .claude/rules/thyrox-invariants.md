@@ -90,3 +90,17 @@ status: Borrador | En revisión | Aprobado
 ```
 
 Usar bloques \`\`\`yml \`\`\` — NUNCA `---` YAML frontmatter en artefactos WP.
+
+## I-011: Un WP solo se cierra cuando el ejecutor lo ordena explícitamente
+
+NUNCA cerrar un work package por inferencia — ni por tareas completadas al 100%,
+ni por "Próximo: Stage 11", ni por resumen de sesión anterior.
+
+```
+PROHIBIDO: cerrar WP porque task-plan tiene todas las tareas [x]
+PROHIBIDO: cerrar WP porque now.md dice "Próximo: Stage 11 TRACK"
+CORRECTO:  esperar instrucción explícita del ejecutor: "cierra el WP" / "ejecuta Stage 11"
+```
+
+Un WP puede contener múltiples iniciativas y ángulos de trabajo. El ejecutor
+es el único que sabe cuándo el WP está realmente completo.
