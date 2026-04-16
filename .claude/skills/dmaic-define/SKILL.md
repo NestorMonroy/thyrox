@@ -4,7 +4,7 @@ description: "Use when starting a DMAIC Six Sigma project. dmaic:define — defi
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 22:30:00
 ---
 
 # /dmaic-define — DMAIC: Define
@@ -231,6 +231,15 @@ status: Borrador
 - **Scope que incluye todo** — garantiza que el proyecto se alargue indefinidamente
 - **Charter sin sponsor real** — si el sponsor es nominal, el proyecto no tendrá respaldo cuando necesite recursos
 - **Sin RACI definido** — cuando hay decisiones difíciles, la falta de RACI genera parálisis
+
+### Anti-racionalización — excusas comunes para saltarse la disciplina
+
+| Racionalización | Por qué es trampa | Respuesta correcta |
+|----------------|-------------------|--------------------|
+| *"Los CTQs son obvios, no necesitamos VOC"* | Los CTQs sin VOC real son suposiciones del equipo, no necesidades del cliente | Validar con al menos 3 fuentes de voz del cliente antes de declarar CTQs |
+| *"El sponsor está muy ocupado, avanzamos sin su aprobación"* | Sin tollgate formal, el proyecto no tiene autorización real y puede ser cancelado o redirigido | Agendar un checkpoint de 30 minutos — el tollgate es no-negociable |
+| *"El scope es amplio, pero lo iremos acotando"* — | Un scope sin límites claros crece indefinidamente; Define es el único momento de establecer límites | Definir explícitamente qué está fuera de scope en el Charter |
+| *"El problem statement menciona la solución, pero todos entendemos qué queremos"* | Mezclar problema y solución cierra opciones antes de Analyze; puede invalidar el DMAIC completo | Reescribir el problem statement sin mencionar causas ni soluciones |
 
 ---
 

@@ -234,6 +234,15 @@ status: Borrador
 - **Use Cases especificados al 100% en Elaboration** — el 20% restante es válido especificarlo en Construction; sobrespecificar en Elaboration retrasa el inicio de Construction
 - **"Architecture Astronaut"** — arquitectura sobrediseñada con patrones no justificados por los riesgos reales; la arquitectura debe ser impulsada por los riesgos, no por la estética técnica
 
+### Anti-racionalización — excusas comunes para saltarse la disciplina
+
+| Racionalización | Por qué es trampa | Respuesta correcta |
+|----------------|-------------------|--------------------|
+| *"El Architecture Prototype toma demasiado tiempo, usamos un diagrama"* | Un diagrama no prueba que la arquitectura funciona bajo carga; el LCA requiere código ejecutable | El prototype puede ser minimal — el criterio es ejecutable, no completo |
+| *"Confiamos en la tecnología X, no necesitamos probarla"* | "Confiamos en" es una hipótesis de riesgo, no evidencia; los componentes "confiables" generan sorpresas en Construction | Incluir en el scope del prototype los componentes de mayor riesgo, incluyendo los "conocidos" |
+| *"Los UC restantes son simples, especificarlos en Elaboration es overhead"* | Sin el 80% de UCs especificados, el plan de Construction no puede ser realista | Especificar el 80% según prioridad; los UC de bajo riesgo van al 20% de Construction |
+| *"Pasamos a Construction para no perder tiempo; ajustamos la arquitectura si hace falta"* | Cambiar la arquitectura en Construction es 5-10× más costoso que en Elaboration | Completar el LCA aunque tome una iteración adicional de Elaboration |
+
 ---
 
 ## Estado en now.md

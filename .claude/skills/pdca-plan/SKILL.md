@@ -4,7 +4,7 @@ description: "Use when starting a PDCA cycle or planning an improvement. pdca:pl
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 22:30:00
 ---
 
 # /pdca-plan — PDCA: Plan
@@ -162,6 +162,15 @@ Ciclo N de M estimados. Lección incorporada del ciclo anterior: [si aplica / N/
 - **Acciones = solución directa** (ej: "escalar servidores") antes de validar la causa raíz
 - **Una sola persona define el Problem Statement** sin revisión — el sesgo individual puede distorsionar el IS/IS NOT
 - **Copiar el objetivo del ciclo anterior sin ajustar** — si el ciclo anterior no alcanzó el objetivo, el nuevo Plan debe incorporar la lección, no simplemente repetir
+
+### Anti-racionalización — excusas comunes para saltarse la disciplina
+
+| Racionalización | Por qué es trampa | Respuesta correcta |
+|----------------|-------------------|--------------------|
+| *"Ya sabemos la causa, no necesitamos datos"* | El conocimiento del experto es una hipótesis, no evidencia | Documentar la hipótesis en el IS/IS NOT y validarla con datos en Do |
+| *"El objetivo es claro, no hace falta número"* | Sin métrica, el Check no puede verificar si el Plan funcionó | Añadir baseline y target numérico antes de avanzar |
+| *"Probamos dos cosas a la vez para ahorrar tiempo"* | Con dos variables, no es posible saber cuál causó el cambio | Un ciclo = una hipótesis; las demás van al backlog |
+| *"La solución es obvia, vamos directo a Do"* | Saltar Plan convierte Do en implementación ad hoc sin hipótesis verificable | Completar el Problem Statement e hipótesis aunque sea en 15 minutos |
 
 ---
 
