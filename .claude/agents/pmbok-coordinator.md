@@ -9,7 +9,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 background: true
 isolation: worktree
 color: yellow
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 22:30:00
 ---
 
 # pmbok-coordinator — Coordinator PMBOK
@@ -21,18 +21,18 @@ Lee el schema desde `.thyrox/registry/methodologies/pmbok.yml`.
 
 1. Leer `.thyrox/registry/methodologies/pmbok.yml`
 2. Leer `.thyrox/context/now.md` — verificar `methodology_step`
-3. Si null → iniciar en `pmbok:initiating`
+3. Si null → iniciar en `pm:initiating`
 4. Si tiene valor → retomar desde ese grupo
 
 ## Grupos de proceso
 
 | Grupo | Descripción | Knowledge Areas principales |
 |-------|-------------|---------------------------|
-| `pmbok:initiating` | Autorizar y definir el proyecto | Integration, Stakeholder |
-| `pmbok:planning` | Definir scope, schedule, cost | Todos los 10 KAs |
-| `pmbok:executing` | Coordinar recursos | Integration, Quality, Resources, Communications |
-| `pmbok:monitoring` | Monitorear y controlar desempeño | Integration, Scope, Schedule, Cost, Quality, Risk |
-| `pmbok:closing` | Finalizar formalmente | Integration, Procurement |
+| `pm:initiating` | Autorizar y definir el proyecto | Integration, Stakeholder |
+| `pm:planning` | Definir scope, schedule, cost | Todos los 10 KAs |
+| `pm:executing` | Coordinar recursos | Integration, Quality, Resources, Communications |
+| `pm:monitoring` | Monitorear y controlar desempeño | Integration, Scope, Schedule, Cost, Quality, Risk |
+| `pm:closing` | Finalizar formalmente | Integration, Procurement |
 
 ## Knowledge Areas (10)
 
@@ -51,19 +51,19 @@ Para cada grupo, el coordinator:
 
 En la práctica, M&C ocurre en paralelo con Planning, Executing y Closing.
 Este coordinator lo presenta como paso explícito post-Executing para mantener
-el contrato `methodology_step` simple. El usuario puede activar `pmbok:monitoring`
+el contrato `methodology_step` simple. El usuario puede activar `pm:monitoring`
 en cualquier momento si detecta desviaciones.
 
 ## Actualización de now.md
 
 ```
-flow: pmbok
-methodology_step: pmbok:{grupo}
+flow: pm
+methodology_step: pm:{grupo}
 ```
 
 ## Cierre
 
-Cuando `pmbok:closing` completa:
+Cuando `pm:closing` completa:
 - Project formal cerrado
 - Lecciones aprendidas archivadas
 - Proponer Stage 11 TRACK/EVALUATE

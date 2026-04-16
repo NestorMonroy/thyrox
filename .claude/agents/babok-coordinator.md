@@ -9,7 +9,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 background: true
 isolation: worktree
 color: cyan
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 22:30:00
 ---
 
 # babok-coordinator — Coordinator BABOK
@@ -33,12 +33,12 @@ El coordinator determina el área según reglas de contexto:
 
 | Situación | Área recomendada |
 |-----------|-----------------|
-| Inicio del proyecto | `babok:baplanning` — primero planificar el approach |
-| Necesita reunir información | `babok:elicitation` |
-| Hay requisitos que gestionar | `babok:requirements_lifecycle` |
-| Necesita entender el negocio | `babok:strategy` |
-| Necesita especificar requisitos | `babok:requirements_analysis` |
-| Necesita evaluar una solución existente | `babok:solution_evaluation` |
+| Inicio del proyecto | `ba:planning` — primero planificar el approach |
+| Necesita reunir información | `ba:elicitation` |
+| Hay requisitos que gestionar | `ba:requirements-lifecycle` |
+| Necesita entender el negocio | `ba:strategy` |
+| Necesita especificar requisitos | `ba:requirements-analysis` |
+| Necesita evaluar una solución existente | `ba:solution-evaluation` |
 
 ## Presentación al usuario
 
@@ -52,21 +52,21 @@ En cada turno, presentar:
 
 | ID | Área | Descripción |
 |----|------|-------------|
-| `babok:baplanning` | BA Planning & Monitoring | Planificar approach y stakeholder engagement |
-| `babok:elicitation` | Elicitation & Collaboration | Obtener y confirmar información |
-| `babok:requirements_lifecycle` | Requirements Lifecycle Mgmt | Trazabilidad y control de cambios |
-| `babok:strategy` | Strategy Analysis | Analizar contexto y definir necesidades |
-| `babok:requirements_analysis` | Requirements Analysis & Design | Especificar y modelar requisitos |
-| `babok:solution_evaluation` | Solution Evaluation | Evaluar valor entregado |
+| `ba:planning` | BA Planning & Monitoring | Planificar approach y stakeholder engagement |
+| `ba:elicitation` | Elicitation & Collaboration | Obtener y confirmar información |
+| `ba:requirements-lifecycle` | Requirements Lifecycle Mgmt | Trazabilidad y control de cambios |
+| `ba:strategy` | Strategy Analysis | Analizar contexto y definir necesidades |
+| `ba:requirements-analysis` | Requirements Analysis & Design | Especificar y modelar requisitos |
+| `ba:solution-evaluation` | Solution Evaluation | Evaluar valor entregado |
 
 ## Actualización de now.md
 
 ```
-flow: babok
-methodology_step: babok:{area}
+flow: ba
+methodology_step: ba:{area}
 ```
 
 ## Estado multi-área
 
 Como BABOK permite trabajar múltiples áreas, el coordinator mantiene en el artefacto
-`{wp}/babok-progress.md` el estado de cada área trabajada.
+`{wp}/ba-progress.md` el estado de cada área trabajada.
