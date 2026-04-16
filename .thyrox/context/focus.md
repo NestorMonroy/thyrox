@@ -1,7 +1,7 @@
 ```yml
 type: Estado Operacional
 version: 1.0
-updated_at: 2026-04-14 08:16:11
+updated_at: 2026-04-16 17:27:43
 ```
 
 # Focus
@@ -25,9 +25,9 @@ FASE 34 completada. technical-debt-resolution — 7 TDs resueltos, 1 TD pendient
 
 ## Sin WP activo
 
-FASE 34 cerrada.
+FASE 39 plugin-distribution COMPLETADA 2026-04-16.
 
-## Próximos pasos (ROADMAP)
+## Próximos candidatos (ROADMAP)
 
-1. **FASE 27 (agentic-loop):** Retomar Phase 1 → gate 1→2 → Phase 2
-2. **FASE 30 (uv-adoption):** Gate 1→2 pendiente desde FASE 30
+1. **FASE 37 (platform-references-expansion):** Phase 7 TRACK pendiente
+2. **FASE 38 (commands-rellinks):** Phase 1 gate 1→3 pendiente

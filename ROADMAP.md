@@ -30,7 +30,10 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 **WP:** `.thyrox/context/work/2026-04-15-08-29-58-plugin-distribution/`
 **Alcance:** Investigar y migrar distribución de THYROX de "git clone + setup-template.sh" a plugin puro. Eliminar `setup-template.sh`. Implementar `bin/thyrox-init.sh` + `hooks/hooks.json` como reemplazo idempotente.
 
-- [-] Phase 1 ANALYZE — en curso 2026-04-15
+- [x] Phase 1 ANALYZE — completado 2026-04-15
+- [x] Phase 10 EXECUTE — completado 2026-04-16 (T-001..T-014)
+- [x] Phase 11 TRACK — completado 2026-04-16
+- [x] Phase 12 STANDARDIZE — completado 2026-04-16
 
 ---
 

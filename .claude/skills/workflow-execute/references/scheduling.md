@@ -203,7 +203,42 @@ claude -p --max-turns 2 \
 
 ---
 
-## 5. Patrones combinados
+## 5. Loop externo con `claude -p` — sin ScheduleWakeup
+
+Para entornos donde `ScheduleWakeup`/`CronCreate` no están disponibles (no Desktop App),
+la estrategia correcta es un script shell externo que invoca `claude -p` en loop:
+
+```bash
+# bin/thyrox-loop.sh — ejecutar desde terminal, no desde Claude Code
+bash bin/thyrox-loop.sh
+```
+
+El script lee el output de cada iteración y para cuando detecta un gate o completitud.
+Fuente confirmada: `claude-howto/10-cli/README.md:34`, `09-advanced-features/README.md:782`
+
+### Eliminación de prompts de herramientas (dentro del loop)
+
+Para que cada iteración de `claude -p` no pida confirmaciones de herramientas,
+el `settings.json` del proyecto ya tiene `permissions.allow` con `Edit(*)`, `Write(*)`, `Bash(git *)`.
+Con `defaultMode: acceptEdits` + allow list, Phase 10 corre sin interrupciones de permisos.
+
+Fuente: `setup-auto-mode-permissions.py:27-66`, `settings-reference.md:318-354`
+
+**Nota sobre `ScheduleWakeup`:** No documentado en ninguna referencia (`claude-howto` ni `claude-code-ultimate-guide`). Probable feature interna no publicada. No usar como dependencia.
+
+---
+
+## 6. Patrones combinados
+
+### Pattern: "Loop externo hasta gate" (sin Desktop App)
+
+```bash
+# Terminal externo — no requiere sesión Claude Code activa
+bash bin/thyrox-loop.sh
+
+# O con API key explícita:
+ANTHROPIC_API_KEY=... bash bin/thyrox-loop.sh
+```
 
 ### Pattern: "Auto-advance hasta el gate"
 
