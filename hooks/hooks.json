@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"WorktreeCreate\"},\"systemMessage\":\"Worktree creado por coordinator THYROX. .thyrox/context compartido desde el repo principal.\"}'"
+            "command": "echo '{\"systemMessage\":\"Worktree creado por coordinator THYROX. .thyrox/context compartido desde el repo principal.\"}'"
           }
         ]
       }
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"WorktreeRemove\"},\"systemMessage\":\"Worktree eliminado. Estado en now.md del repo principal no modificado.\"}'"
+            "command": "echo '{\"systemMessage\":\"Worktree eliminado. Estado en now.md del repo principal no modificado.\"}'"
           }
         ]
       }

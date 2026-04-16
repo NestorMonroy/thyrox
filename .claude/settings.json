@@ -89,7 +89,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/scripts/sync-wp-state.sh"
+            "command": "MAIN=$(dirname $(git rev-parse --git-common-dir 2>/dev/null || echo '.')); bash \"$MAIN/.claude/scripts/sync-wp-state.sh\""
           }
         ]
       }
