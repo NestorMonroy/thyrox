@@ -151,8 +151,8 @@ graph TD
 
 ## Grupo 7 — Validación y documentación
 
-- [ ] [T-031] Test `pdca-coordinator` con `isolation: worktree` — verificar creación de worktree, ejecución de pdca:plan, actualización de `now.md::methodology_step`, cleanup **[GATE SP-03: requiere runtime — validación estática OK, pendiente prueba en sesión nueva]**
-- [ ] [T-032] Test `thyrox-coordinator` — verificar lectura dinámica de `pdca.yml` y `dmaic.yml`, presentación correcta de transiciones por tipo de flujo **[requiere runtime]**
+- [x] [T-031] Test `pdca-coordinator` con `isolation: worktree` — verificar creación de worktree, ejecución de pdca:plan, actualización de `now.md::methodology_step`, cleanup **[PASS — worktree branch aislado, pdca.yml válido, methodology_step actualizado, sin contaminación]**
+- [x] [T-032] Test `thyrox-coordinator` — verificar lectura dinámica de `pdca.yml` y `dmaic.yml`, presentación correcta de transiciones por tipo de flujo **[PASS — 7/7 YAMLs válidos, 5/5 tipos de flujo resueltos, contrato methodology_step consistente]**
 - [x] [T-033] Actualizar `.claude/references/agent-authoring.md` — agregar: `isolation: worktree`, `background: true`, `color` (hallazgo L), `context: fork` en skills, ejemplos de coordinator con todos los campos
 - [x] [T-034] Actualizar `.claude/references/hook-authoring.md` — agregar `WorktreeCreate`/`WorktreeRemove` con ejemplo de implementación
 
