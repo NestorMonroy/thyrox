@@ -63,9 +63,9 @@ GAPs identificados en `discover/plugin-distribution-analysis.md`:
 
 ### Grupo 5 — Validación
 
-- [ ] [T-013] Probar `bin/thyrox-init.sh` en directorio temporal vacío — verificar que crea la estructura completa
+- [x] [T-013] Probar `bin/thyrox-init.sh` en directorio temporal vacío — verificar que crea la estructura completa
   - Depende de: T-011
-- [ ] [T-014] Probar idempotencia — ejecutar `thyrox-init.sh` dos veces en el mismo directorio, verificar que no duplica ni corrompe estado
+- [x] [T-014] Probar idempotencia — ejecutar `thyrox-init.sh` dos veces en el mismo directorio, verificar que no duplica ni corrompe estado
   - Depende de: T-013
 
 ---
@@ -96,4 +96,4 @@ graph TD
 | SP | Tarea | Tipo | Descripción | Estado |
 |----|-------|------|-------------|--------|
 | SP-01 | Pre T-012 | GATE OPERACIÓN | Confirmar eliminación de `setup-template.sh` (irreversible) | pendiente |
-| SP-02 | Post T-014 | gate-fase 10→11 | Validar que init flow funciona completo antes de TRACK | pendiente |
+| SP-02 | Post T-014 | gate-fase 10→11 | Validar que init flow funciona completo antes de TRACK | si |
