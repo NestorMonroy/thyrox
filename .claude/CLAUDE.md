@@ -162,13 +162,21 @@ adr_path: .thyrox/context/decisions/   # THYROX: retrocompat. Nuevos proyectos: 
 
 | Término | Significado | Ejemplo |
 |---------|-------------|---------|
-| **FASE N** | Unidad de trabajo del proyecto — número secuencial global. Cada WP ocupa una FASE. | FASE 19: async-gates · FASE 20: context-hygiene |
-| **Phase N** | Etapa del ciclo THYROX dentro de un WP (1-DISCOVER … 12-STANDARDIZE). Se reinicia en cada FASE. | FASE 20 está en Phase 10: EXECUTE |
-| **WP** | Work package — directorio `.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/` que contiene todos los artefactos de una FASE | `.thyrox/context/work/2026-04-08-02-05-03-context-hygiene/` |
-| **SP-NNN** | Stopping Point — punto de parada explícito definido en el Stopping Point Manifest de Phase 1 | SP-06: gate 6→7, esperar aprobación humana |
+| **ÉPICA N** | Iniciativa de trabajo del proyecto — número secuencial global. Cada WP ocupa una ÉPICA. Antes llamado "FASE N" (retrocompat). | ÉPICA 39: plugin-distribution · ÉPICA 40: multi-methodology |
+| **Stage N** | Etapa del ciclo THYROX dentro de un WP (1-DISCOVER … 12-STANDARDIZE). Se reinicia en cada ÉPICA. Antes llamado "Phase N". | ÉPICA 40 está en Stage 5: STRATEGY |
+| **WP** | Work package — directorio `.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/` que contiene todos los artefactos de una ÉPICA | `.thyrox/context/work/2026-04-16-18-54-38-multi-methodology/` |
+| **flow** | Metodología activa dentro de un WP (pdca, dmaic, pmbok, babok, rup, rm) | `flow: pdca` en now.md |
+| **methodology_step** | Paso actual de la metodología activa, con prefijo namespace | `pdca:do`, `dmaic:analyze`, `pmbok:executing` |
+| **SP-NNN** | Stopping Point — punto de parada explícito definido en el Stopping Point Manifest de Stage 1 | SP-06: gate 6→7, esperar aprobación humana |
 
-**Regla mnemotécnica:** FASE es el "qué proyecto", Phase es el "en qué paso del proyecto".
-Un proyecto con 20 FASEs tiene 20 WPs; cada WP recorre hasta 12 Phases internamente (escalabilidad: micro usa 5, grande usa las 12).
+**Regla mnemotécnica:** ÉPICA es el "qué proyecto", Stage es el "en qué etapa del proyecto".
+Un proyecto con 40 ÉPICAs tiene 40 WPs; cada WP recorre hasta 12 Stages internamente.
+
+**Stages con renaming (desambiguación con metodologías):**
+Stage 2 BASELINE (antes MEASURE) · Stage 3 DIAGNOSE (antes ANALYZE) ·
+Stage 6 SCOPE (antes PLAN) · Stage 10 IMPLEMENT (antes EXECUTE)
+
+**Retrocompatibilidad:** Los documentos históricos que usan "FASE N" y "Phase N" son válidos — se leen como sinónimos de ÉPICA y Stage respectivamente.
 
 ## Para más contexto
 
