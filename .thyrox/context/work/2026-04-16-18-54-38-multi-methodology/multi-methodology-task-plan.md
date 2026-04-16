@@ -51,41 +51,41 @@ Checklist de calidad a aplicar en cada skill: ver plan, sección "Checklist de c
 
 ## BATCH 2 — RUP (4 skills)
 
-- [ ] T-019 Crear rup-inception (Vision Doc, LCO criteria, tabla disciplinas, iteración counter, stakeholder workshops)
-- [ ] T-020 Crear rup-elaboration (SAD, architecture prototype, LCA criteria, BDUF prevention, 80% use cases)
-- [ ] T-021 Crear rup-construction (iterative releases, IOC criteria, deuda técnica documentada, UAT)
-- [ ] T-022 Crear rup-transition (PD criteria, deployment, acceptance sign-off, lecciones por iteración)
-- [ ] T-023 Commit Batch 2 RUP
+- [x] T-019 Crear rup-inception (Vision Doc, LCO criteria, tabla disciplinas, iteración counter, stakeholder workshops)
+- [x] T-020 Crear rup-elaboration (SAD, architecture prototype, LCA criteria, BDUF prevention, 80% use cases)
+- [x] T-021 Crear rup-construction (iterative releases, IOC criteria, deuda técnica documentada, UAT)
+- [x] T-022 Crear rup-transition (PD criteria, deployment, acceptance sign-off, lecciones por iteración)
+- [x] T-023 Commit Batch 2 RUP
 
 ---
 
 ## BATCH 3 — PMBOK (5 skills)
 
-- [ ] T-024 Crear pmbok-initiating (Project Charter, stakeholder register, Power/Interest grid, high-level risks)
-- [ ] T-025 Crear pmbok-closing (final acceptance, lessons learned por KA, archive checklist, contract closure)
-- [ ] T-026 Crear pmbok-executing (Direct&Manage, quality audits, resource assignment, stakeholder engagement)
-- [ ] T-027 Crear pmbok-monitoring (EVM completo 10 métricas, Integrated Change Control, causalidad vs correlación)
-- [ ] T-028 Crear pmbok-planning (10 KAs, WBS, CPM/PERT, cost estimation, P×I risk matrix, RACI, Comms Plan)
-- [ ] T-029 Commit Batch 3 PMBOK
+- [x] T-024 Crear pmbok-initiating (Project Charter, stakeholder register, Power/Interest grid, high-level risks)
+- [x] T-025 Crear pmbok-closing (final acceptance, lessons learned por KA, archive checklist, contract closure)
+- [x] T-026 Crear pmbok-executing (Direct&Manage, quality audits, resource assignment, stakeholder engagement)
+- [x] T-027 Crear pmbok-monitoring (EVM completo 10 métricas, Integrated Change Control, causalidad vs correlación)
+- [x] T-028 Crear pmbok-planning (10 KAs, WBS, CPM/PERT, cost estimation, P×I risk matrix, RACI, Comms Plan)
+- [x] T-029 Commit Batch 3 PMBOK
 
 ---
 
 ## BATCH 4 — BABOK (6 skills)
 
-- [ ] T-030 Crear babok-baplanning (BA Plan, stakeholder engagement matrix, RACI, babok-progress.md structure)
-- [ ] T-031 Crear babok-elicitation (7 técnicas con criterios, confirmación, Routing Table)
-- [ ] T-032 Crear babok-requirements-lifecycle (trazabilidad, MoSCoW, change impact, Routing Table)
-- [ ] T-033 Crear babok-strategy (current/future state, gap analysis, SWOT, Business Need, Routing Table)
-- [ ] T-034 Crear babok-requirements-analysis (use cases, INVEST, verificación vs validación, Routing Table)
-- [ ] T-035 Crear babok-solution-evaluation (KPI dashboard, value realization, lecciones BA process, Routing Table)
-- [ ] T-036 Commit Batch 4 BABOK
+- [x] T-030 Crear babok-baplanning (BA Plan, stakeholder engagement matrix, RACI, babok-progress.md structure)
+- [x] T-031 Crear babok-elicitation (7 técnicas con criterios, confirmación, Routing Table)
+- [x] T-032 Crear babok-requirements-lifecycle (trazabilidad, MoSCoW, change impact, Routing Table)
+- [x] T-033 Crear babok-strategy (current/future state, gap analysis, SWOT, Business Need, Routing Table)
+- [x] T-034 Crear babok-requirements-analysis (use cases, INVEST, verificación vs validación, Routing Table)
+- [x] T-035 Crear babok-solution-evaluation (KPI dashboard, value realization, lecciones BA process, Routing Table)
+- [x] T-036 Commit Batch 4 BABOK
 
 ---
 
 ## FASE FINAL
 
-- [ ] T-037 Push total a remote
-- [ ] T-038 Actualizar now.md con estado completado
+- [x] T-037 Push total a remote
+- [x] T-038 Actualizar now.md con estado completado
 
 ---
 
@@ -96,8 +96,8 @@ Checklist de calidad a aplicar en cada skill: ver plan, sección "Checklist de c
 | FASE 0 (PDCA/DMAIC corrections) | 10 | 10 | 100% |
 | FASE 1 (Plan) | 2 | 2 | 100% |
 | Batch 1 — RM | 6 | 6 | 100% |
-| Batch 2 — RUP | 5 | 0 | 0% |
-| Batch 3 — PMBOK | 6 | 0 | 0% |
-| Batch 4 — BABOK | 7 | 0 | 0% |
-| FASE FINAL | 2 | 0 | 0% |
-| **Total** | **38** | **18** | **47%** |
+| Batch 2 — RUP | 5 | 5 | 100% |
+| Batch 3 — PMBOK | 6 | 6 | 100% |
+| Batch 4 — BABOK | 7 | 7 | 100% |
+| FASE FINAL | 2 | 2 | 100% |
+| **Total** | **38** | **38** | **100%** |
