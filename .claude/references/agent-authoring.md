@@ -387,7 +387,62 @@ skills:
 
 ---
 
-## 12. Forma canónica mínima (THYROX)
+## 12. Ejemplo canónico: coordinator de metodología (Patrón 3)
+
+Coordinators que gestionan el flujo de una metodología completa. Usan `isolation: worktree`,
+`background: true`, y precargan los skills de la metodología.
+
+```yaml
+---
+name: pdca-coordinator
+description: |
+  Coordinator del ciclo PDCA (Plan-Do-Check-Act). Usar cuando el usuario quiere ejecutar
+  una mejora continua con la metodología PDCA. Gestiona las 4 etapas del ciclo y actualiza
+  now.md::methodology_step en cada transición.
+tools: Read, Write, Edit, Glob, Grep, Bash
+skills:
+  - pdca-plan
+  - pdca-do
+  - pdca-check
+  - pdca-act
+background: true
+isolation: worktree
+color: blue
+---
+
+# pdca-coordinator
+
+Gestiona el ciclo Plan-Do-Check-Act completo.
+
+1. Leer .thyrox/context/now.md — verificar flow y methodology_step
+2. Si methodology_step es null → iniciar en pdca:plan
+3. En cada paso: activar el skill correspondiente, producir artefacto, actualizar now.md
+4. Al completar pdca:act: preguntar si estandarizar o nuevo ciclo
+```
+
+**Patrón 5 — coordinator genérico:**
+
+```yaml
+---
+name: thyrox-coordinator
+description: |
+  Coordinator genérico que lee .thyrox/registry/methodologies/{flow}.yml dinámicamente.
+  Usar cuando la metodología está en el registry pero no tiene coordinator dedicado.
+tools: Read, Write, Edit, Glob, Grep, Bash
+background: true
+isolation: worktree
+---
+
+# thyrox-coordinator
+
+1. Leer now.md::flow → leer .thyrox/registry/methodologies/{flow}.yml
+2. Resolver transiciones según type: cyclic|sequential|iterative|non-sequential|conditional
+3. Actualizar now.md::methodology_step en cada transición
+```
+
+---
+
+## 13. Forma canónica mínima (THYROX)
 
 ```yaml
 ---

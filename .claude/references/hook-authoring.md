@@ -602,6 +602,60 @@ cat .claude/settings.json | python3 -m json.tool | grep -A 20 '"hooks"'
 
 ---
 
+## WorktreeCreate y WorktreeRemove — Ciclo de vida de worktrees
+
+Los coordinators con `isolation: worktree` (Patrón 3/5) crean y destruyen worktrees automáticamente.
+Estos hooks permiten inyectar comportamiento en ese ciclo de vida.
+
+### Configuración en hooks/hooks.json (no en settings.json)
+
+A diferencia de los demás hooks, `WorktreeCreate` y `WorktreeRemove` se configuran
+en `hooks/hooks.json` del repositorio (no en `.claude/settings.json`):
+
+```json
+{
+  "hooks": {
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\":\"Worktree creado. .thyrox/context compartido desde el repo principal.\"}'"
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\":\"Worktree eliminado.\"}'"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Casos de uso
+
+| Hook | Caso de uso | Ejemplo |
+|------|-------------|---------|
+| `WorktreeCreate` | Notificar al coordinator que el worktree está listo | Inyectar mensaje de contexto |
+| `WorktreeCreate` | Setup específico del worktree | Crear symlinks, copiar .env |
+| `WorktreeRemove` | Cleanup de recursos del worktree | Eliminar archivos temporales |
+| `WorktreeRemove` | Notificar cierre del ciclo | Log del resultado |
+
+### Notas importantes
+
+- El worktree comparte `.thyrox/context/` con el repo principal — `now.md` es el mismo archivo
+- Si el coordinator no hace cambios: el worktree se limpia automáticamente (sin hook necesario)
+- `systemMessage` en el output inyecta texto en el contexto del agente del worktree
+
+---
+
 ## Referencias
 
 - [hooks.md](hooks.md) — Referencia técnica de hooks en THYROX (configuración, patrones, limitaciones)
