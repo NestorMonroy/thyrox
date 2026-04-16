@@ -1,5 +1,5 @@
 ---
-name: workflow-measure
+name: workflow-baseline
 description: "Use when you need to establish baselines and quantify the current state before analyzing. Phase 2 MEASURE — recopila datos cuantitativos, define métricas de éxito y baseline del WP."
 allowed-tools: Read Glob Grep Bash
 disable-model-invocation: true

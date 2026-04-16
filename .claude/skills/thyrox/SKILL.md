@@ -83,12 +83,12 @@ Ver [escalabilidad](../workflow-discover/references/scalability.md) para reglas 
 | 3 ANALYZE | Sub-análisis por dominio | `work/.../analyze/{subdomain}/*.md` | — |
 | 4 CONSTRAINTS | Restricciones | `work/.../constraints/*.md` | [constraints.md.template](../workflow-discover/assets/constraints.md.template) |
 | 5 STRATEGY | Estrategia de solución | `work/.../strategy/{nombre-wp}-solution-strategy.md` | [solution-strategy.md.template](../workflow-strategy/assets/solution-strategy.md.template) |
-| 6 PLAN | Scope del trabajo | `work/.../plan/{nombre-wp}-plan.md` | [plan.md.template](../workflow-plan/assets/plan.md.template) |
+| 6 PLAN | Scope del trabajo | `work/.../plan/{nombre-wp}-plan.md` | [plan.md.template](../workflow-scope/assets/plan.md.template) |
 | 7 DESIGN/SPECIFY | Especificación de requisitos | `work/.../design/{nombre-wp}-requirements-spec.md` | [requirements-specification.md.template](../workflow-structure/assets/requirements-specification.md.template) |
 | 7 DESIGN/SPECIFY | Diseño técnico (complejo) | `work/.../design/{nombre-wp}-design.md` | [design.md.template](../workflow-structure/assets/design.md.template) |
 | 8 PLAN EXECUTION | Plan de tareas | `work/.../plan-execution/{nombre-wp}-task-plan.md` | [tasks.md.template](../workflow-decompose/assets/tasks.md.template) |
 | 9 PILOT/VALIDATE | Resultados del PoC | `work/.../pilot/*.md` | — |
-| 10 EXECUTE | Log de ejecución | `work/.../execute/{nombre-wp}-execution-log.md` | [execution-log.md.template](../workflow-execute/assets/execution-log.md.template) |
+| 10 EXECUTE | Log de ejecución | `work/.../execute/{nombre-wp}-execution-log.md` | [execution-log.md.template](../workflow-implement/assets/execution-log.md.template) |
 | 10 EXECUTE | Código | Repositorio (git) | — |
 | 11 TRACK/EVALUATE | Lecciones aprendidas | `work/.../track/{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](../workflow-track/assets/lessons-learned.md.template) |
 | 11 TRACK/EVALUATE | WP Changelog | `work/.../track/{nombre-wp}-changelog.md` | [wp-changelog.md.template](../workflow-track/assets/wp-changelog.md.template) |
@@ -285,7 +285,7 @@ Ver references en `workflow-discover/references/` — introduction, requirements
 [spec-driven-development](../workflow-structure/references/spec-driven-development.md)
 
 ### Phase 10: EXECUTE (leer cuando se hacen commits)
-[commit-helper](../workflow-execute/references/commit-helper.md) · [commit-convention](../workflow-execute/references/commit-convention.md)
+[commit-helper](../workflow-implement/references/commit-helper.md) · [commit-convention](../workflow-implement/references/commit-convention.md)
 
 ### Phase 11: TRACK/EVALUATE (leer cuando se valida o corrige)
 [reference-validation](../workflow-track/references/reference-validation.md) · [incremental-correction](../workflow-track/references/incremental-correction.md)

@@ -5,6 +5,6 @@ description: Phase 2 MEASURE — recopilar datos cuantitativos, definir baseline
 
 # /thyrox:measure — Phase 2: MEASURE
 
-Invoca el skill `workflow-measure` para ejecutar Phase 2 MEASURE del work package activo.
+Invoca el skill `workflow-baseline` para ejecutar Phase 2 MEASURE del work package activo.
 
-Sigue todas las instrucciones de [workflow-measure/SKILL.md](../skills/workflow-measure/SKILL.md).
+Sigue todas las instrucciones de [workflow-baseline/SKILL.md](../skills/workflow-baseline/SKILL.md).

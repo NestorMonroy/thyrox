@@ -45,3 +45,13 @@ sed -i \
   -e "s|^current_work: .*|current_work: $WP_PATH|" \
   -e "s|^updated_at: .*|updated_at: $DATE|" \
   "$NOW_FILE"
+
+# T-038: Observabilidad — append transición a phase-history.jsonl
+HISTORY_FILE=".thyrox/context/phase-history.jsonl"
+FLOW=$(grep "^flow:" "$NOW_FILE" 2>/dev/null | sed 's/flow: *//' | tr -d '[:space:]')
+METHODOLOGY_STEP=$(grep "^methodology_step:" "$NOW_FILE" 2>/dev/null | sed 's/methodology_step: *//')
+WP_NAME=$(basename "$WP_PATH")
+EPIC=$(echo "$WP_NAME" | grep -oP '^\d+' || echo "")
+printf '{"timestamp":"%s","from":"%s","to":"%s","flow":"%s","epic":"%s","wp":"%s"}\n' \
+  "$DATE" "$CURRENT" "$WP_PATH" "${FLOW:-null}" "${EPIC:-null}" "$WP_NAME" \
+  >> "$HISTORY_FILE" 2>/dev/null || true

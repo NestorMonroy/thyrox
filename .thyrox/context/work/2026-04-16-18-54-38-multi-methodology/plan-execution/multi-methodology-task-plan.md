@@ -90,7 +90,7 @@ graph TD
 - [x] [T-001] Agregar `WorktreeCreate` y `WorktreeRemove` a `hooks/hooks.json` con handlers vacíos listos para extender (GAP-007)
 - [x] [T-002] Extender template de `now.md` con campos `stage`, `flow`, `methodology_step` + actualizar `session-start.sh` (banner: mostrar stage y methodology_step) + actualizar `validate-session-close.sh` (reconocer campo `stage` además de `phase` por retrocompatibilidad). **Absorbe T-004 de v1** — un solo commit para evitar conflicto en session-start.sh. [SP-01]
 - [x] [T-003] Crear directorio `.thyrox/registry/methodologies/` con `README.md` que documente el schema completo (5 tipos de flujo: cyclic, sequential, iterative, non-sequential, conditional)
-- [ ] [T-038] Agregar observabilidad: ~5 líneas en `sync-wp-state.sh` para append a `.thyrox/context/phase-history.jsonl` en cada transición de `methodology_step`. Formato: `{"timestamp":"...","from":"...","to":"...","flow":"...","epic":N,"wp":"..."}`
+- [x] [T-038] Agregar observabilidad: ~5 líneas en `sync-wp-state.sh` para append a `.thyrox/context/phase-history.jsonl` en cada transición de `methodology_step`. Formato: `{"timestamp":"...","from":"...","to":"...","flow":"...","epic":N,"wp":"..."}`
 
 ## Grupo 2 — Registry YAML (7 metodologías + 1 tipo condicional)
 
@@ -143,11 +143,11 @@ graph TD
 
 > Independiente. Paralelo con Grupo 4. Incluye actualización de SKILL.md y referencias.
 
-- [ ] [T-027] Renombrar `workflow-measure` → `workflow-baseline`: directorio, SKILL.md, referencias internas, skills list en settings
-- [ ] [T-028] Renombrar `workflow-analyze` → `workflow-diagnose`: mismo proceso
-- [ ] [T-029] Renombrar `workflow-plan` → `workflow-scope`: mismo proceso
-- [ ] [T-030] Renombrar `workflow-execute` → `workflow-implement`: mismo proceso
-- [ ] [T-037] Actualizar `thyrox/SKILL.md` — reemplazar "Phase N" → "Stage N" y "FASE N" → "ÉPICA N" en el cuerpo del skill (no solo el glosario). Alcance limitado: etiquetas en flujos y ejemplos.
+- [x] [T-027] Renombrar `workflow-measure` → `workflow-baseline`: directorio, SKILL.md, referencias internas, skills list en settings
+- [x] [T-028] Renombrar `workflow-analyze` → `workflow-diagnose`: mismo proceso
+- [x] [T-029] Renombrar `workflow-plan` → `workflow-scope`: mismo proceso
+- [x] [T-030] Renombrar `workflow-execute` → `workflow-implement`: mismo proceso
+- [x] [T-037] Actualizar `thyrox/SKILL.md` — reemplazar "Phase N" → "Stage N" y "FASE N" → "ÉPICA N" en el cuerpo del skill (no solo el glosario). Alcance limitado: etiquetas en flujos y ejemplos.
 
 ## Grupo 7 — Validación y documentación
 

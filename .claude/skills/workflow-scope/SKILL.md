@@ -1,5 +1,5 @@
 ---
-name: workflow-plan
+name: workflow-scope
 description: "Use when defining scope after strategy is approved. Phase 6 PLAN — define scope in/out explícito, produce plan.md y actualiza ROADMAP.md."
 allowed-tools: Read Glob Grep Bash
 disable-model-invocation: true

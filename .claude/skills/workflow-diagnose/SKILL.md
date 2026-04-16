@@ -1,5 +1,5 @@
 ---
-name: workflow-analyze
+name: workflow-diagnose
 description: "Use when doing deep analysis of a problem after initial discovery. Phase 3 ANALYZE — análisis sistemático de causa raíz por dominio. Crea sub-análisis en cajón analyze/ del WP."
 allowed-tools: Read Glob Grep Bash
 disable-model-invocation: true

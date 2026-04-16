@@ -83,4 +83,4 @@ El loop se detiene automáticamente cuando:
 > Requiere que el task-plan no tenga gates humanos en las tareas pendientes.
 > Para WPs con gates obligatorios, usar solo para el batch de tareas entre gates.
 
-Ver [scheduling](../skills/workflow-execute/references/scheduling.md) para patrones avanzados.
+Ver [scheduling](../skills/workflow-implement/references/scheduling.md) para patrones avanzados.

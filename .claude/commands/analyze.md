@@ -5,6 +5,6 @@ description: Phase 3 ANALYZE — análisis profundo de causa raíz. Sub-análisi
 
 # /thyrox:analyze — Phase 3: ANALYZE
 
-Invoca el skill `workflow-analyze` para ejecutar Phase 3 ANALYZE del work package activo.
+Invoca el skill `workflow-diagnose` para ejecutar Phase 3 ANALYZE del work package activo.
 
-Sigue todas las instrucciones de [workflow-analyze/SKILL.md](../skills/workflow-analyze/SKILL.md).
+Sigue todas las instrucciones de [workflow-diagnose/SKILL.md](../skills/workflow-diagnose/SKILL.md).

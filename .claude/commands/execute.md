@@ -5,6 +5,6 @@ description: Phase 10 EXECUTE — implementar las tareas T-NNN del task-plan con
 
 # /thyrox:execute — Phase 10: EXECUTE
 
-Invoca el skill `workflow-execute` para ejecutar Phase 10 EXECUTE del work package activo.
+Invoca el skill `workflow-implement` para ejecutar Phase 10 EXECUTE del work package activo.
 
-Sigue todas las instrucciones de [workflow-execute/SKILL.md](../skills/workflow-execute/SKILL.md).
+Sigue todas las instrucciones de [workflow-implement/SKILL.md](../skills/workflow-implement/SKILL.md).

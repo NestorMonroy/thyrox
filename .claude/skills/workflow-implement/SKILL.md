@@ -1,5 +1,5 @@
 ---
-name: workflow-execute
+name: workflow-implement
 description: "Use when implementing tasks from the approved task plan. Phase 10 EXECUTE — toma la siguiente tarea T-NNN del task-plan y ejecuta con commits convencionales. Actualiza checkboxes y execution-log."
 allowed-tools: Read Glob Grep Bash Write Edit
 disable-model-invocation: true
