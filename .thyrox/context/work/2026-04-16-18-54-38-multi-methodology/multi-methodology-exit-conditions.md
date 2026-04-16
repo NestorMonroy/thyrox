@@ -44,15 +44,15 @@ author: NestorMonroy
 
 ## Stage 10 IMPLEMENT → Stage 11 TRACK
 
-- [ ] `now.md` tiene campos `stage`, `flow`, `methodology_step` implementados (T-002)
-- [ ] `WorktreeCreate`/`WorktreeRemove` en hooks.json (T-001)
-- [ ] Registry YAML con pdca.yml y dmaic.yml funcionales (T-005, T-006)
-- [ ] Al menos 1 coordinator (pdca-coordinator) funcional con `isolation: worktree` (T-020, T-031)
-- [ ] 9 skills base PDCA+DMAIC creados (T-011..T-019)
-- [ ] `thyrox-coordinator` lee YAML dinámicamente (T-026, T-032)
-- [ ] 4 workflow-* renombrados sin referencias rotas (T-027..T-030)
-- [ ] `phase-history.jsonl` activo (T-038)
-- [ ] **GAP-010 (`.gitignore`) — OUT-OF-SCOPE por decisión del usuario**
+- [x] `now.md` tiene campos `stage`, `flow`, `methodology_step` implementados (T-002)
+- [x] `WorktreeCreate`/`WorktreeRemove` en hooks.json (T-001)
+- [x] Registry YAML con pdca.yml y dmaic.yml funcionales (T-005, T-006)
+- [ ] Al menos 1 coordinator (pdca-coordinator) funcional con `isolation: worktree` (T-020 ✓, T-031 pendiente runtime)
+- [x] 9 skills base PDCA+DMAIC creados (T-011..T-019)
+- [ ] `thyrox-coordinator` lee YAML dinámicamente (T-026 ✓, T-032 pendiente runtime)
+- [x] 4 workflow-* renombrados sin referencias rotas (T-027..T-030)
+- [x] `phase-history.jsonl` activo (T-038)
+- [x] **GAP-010 (`.gitignore`) — OUT-OF-SCOPE por decisión del usuario**
 
 ## Phase 11 TRACK → Phase 12 STANDARDIZE
 
