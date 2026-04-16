@@ -30,9 +30,9 @@ updated_at: 2026-04-16 23:19:43
 - Metodologías soportadas: PDCA, DMAIC, RUP, RM, PMBOK, BABOK
 - TDs activos: 1 (TD-010 — benchmark empírico, trigger no activado)
 
-## Sin WP activo
+## WP activo
 
-ÉPICA 40 multi-methodology COMPLETADA 2026-04-16.
+ÉPICA 40 multi-methodology — en curso. Batch CSO completado. WP aún abierto.
 
 ## Próximos candidatos (ROADMAP)
 
