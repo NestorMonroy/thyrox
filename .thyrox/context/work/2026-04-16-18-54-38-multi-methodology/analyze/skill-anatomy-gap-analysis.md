@@ -229,22 +229,108 @@ Ver referencia completa: [nombre-archivo](./references/nombre-archivo.md)
 
 ---
 
-## Batches de ejecución propuestos
+---
 
-| Batch | Skills | Assets | Scripts | References | Total |
-|-------|--------|--------|---------|------------|-------|
-| B1 — PDCA | 4 | 4 | 4 | 4 | 12 + 4 SKILL updates |
-| B2 — DMAIC | 5 | 5 | 5 | 8 | 18 + 5 SKILL updates |
-| B3 — RUP | 4 | 4 | 4 | 5 | 13 + 4 SKILL updates |
-| B4 — RM | 5 | 5 | 5 | 5 | 15 + 5 SKILL updates |
-| B5 — PMBOK | 5 | 5 | 5 | 3 | 13 + 5 SKILL updates |
-| B6 — BABOK | 6 | 6 | 6 | 6 | 18 + 6 SKILL updates |
+## Hallazgos del deep-review — `/tmp/reference/`
+
+> Fuentes: `claude-howto/03-skills/` (6 skills) + `claude-code-ultimate-guide/examples/skills/` (14 skills) + READMEs canónicos
+
+### assets/ — correcciones al análisis inicial
+
+**Naming real:** `{artefacto}-template.md`, NO `{skill-name}.md.template`.
+- ✅ `project-charter-template.md` (dmaic-define)
+- ✅ `pdca-plan-template.md` (pdca-plan)
+- ❌ ~~`pdca-plan.md.template`~~ (naming incorrecto)
+
+**Referencia en SKILL.md:** Sección `## Reference Files` al final, con descripción:
+```markdown
+## Reference Files
+- `assets/pdca-plan-template.md` — Template del Plan PDCA con secciones obligatorias
+- `references/problem-analysis-techniques.md` — 5-Why, Fishbone, Pareto
+```
+
+**Importante:** Los assets NO se cargan automáticamente. Se referencian explícitamente en el workflow de SKILL.md con relative link o backtick path.
+
+### scripts/ — calibración crítica
+
+**El deep-review revela que los scripts NO son principalmente para phase readiness.**
+Son para **cálculos determinísticos** que vale la pena externalizar:
+- `analyze-metrics.py` — métricas de código
+- `detect-smells.py` — detección automatizada de patrones
+- `check-install.sh` — validar instalación de dependencias
+
+**Para methodology skills, la mayoría de los "scripts" que imaginé son innecesarios:**
+- "¿Hay un sponsor identificado?" → no es cálculo determinístico, es juicio del BA
+- "¿El Problem Statement menciona causas?" → Claude lo evalúa leyendo el doc, no un script
+
+**Scripts con valor real para methodology skills (pocos):**
+| Skill | Script útil | Qué calcularía |
+|-------|-------------|----------------|
+| dmaic-measure | `calculate-capability.py` | Cp/Cpk desde datos CSV |
+| dmaic-control | `check-control-limits.py` | Western Electric Rules sobre serie de datos |
+| rup-inception | `check-lco-criteria.sh` | Verificar presencia de artefactos LCO en WP |
+| rm-management | `count-requirements.sh` | Contar requisitos por estado en traceability matrix |
+
+**Conclusión:** scripts/ es **opcional** para methodology skills. Solo crear cuando hay cálculo determinístico real. El `validate-phase-readiness.sh` genérico ya existe en `workflow-track` — no duplicar para cada skill.
+
+### references/ — confirmado y ampliado
+
+**Tipos de contenido observados en el ecosystem:**
+
+| Tipo | Tamaño típico | Para metodología |
+|------|---------------|-----------------|
+| Catálogos de dominio | 500-1000 líneas | ✅ (code-smells.md → pdca-problem-tools.md) |
+| Reglas de transformación | 50-100 líneas | ✅ (VOC→CTQ mapping, gap analysis rules) |
+| Reglas de evaluación/criterios | 30-50 líneas | ✅ (LCO/LCA/IOC criteria, tollgate checklists) |
+| Índices YAML machine-readable | variable | ❌ (viola I-003, innecesario para BA/PM) |
+
+**Patrón de link inline en SKILL.md** (dentro del workflow, donde aplica):
+```markdown
+### 1. Recopilar VOC
+Ver técnicas detalladas: [references/voc-techniques.md](./references/voc-techniques.md)
+```
+
+### Corrección al scope total
+
+El deep-review revela que **scripts/ debe ser selectivo**, no universal. Esto reduce el scope:
+
+| Componente | Antes | Después (ajustado) |
+|------------|-------|-------------------|
+| `assets/*-template.md` | 29 | 29 (sin cambio) |
+| `scripts/*.sh` o `*.py` | 29 | ~6 (solo donde hay cálculo real) |
+| `references/*.md` | ~35 | ~35 (sin cambio) |
+| Actualizaciones `SKILL.md` | 29 | 29 |
+| **Total** | **~95** | **~70** |
+
+### Gaps del ecosystem que NO replicar en THYROX
+
+| Gap | Descripción | Decisión |
+|-----|-------------|----------|
+| `templates/` vs `assets/` inconsistencia | `claude-howto` usa `templates/`, `ultimate-guide` usa `assets/` | Usar `assets/` (estándar canónico de `skill-creator`) |
+| YAML en references/ | Solo skills avanzados, viola I-003 | No aplicar — Markdown suficiente |
+| `scoring/` como directorio extra | Ad-hoc en un skill específico | No replicar |
+
+---
+
+## Batches de ejecución (revisados)
+
+| Batch | Skills | Assets | Scripts | References | Total archivos |
+|-------|--------|--------|---------|------------|----------------|
+| B1 — PDCA | 4 | 4 | 0 | 4 | 8 + 4 SKILL.md updates |
+| B2 — DMAIC | 5 | 5 | 2 | 8 | 15 + 5 SKILL.md updates |
+| B3 — RUP | 4 | 4 | 1 | 5 | 10 + 4 SKILL.md updates |
+| B4 — RM | 5 | 5 | 1 | 5 | 11 + 5 SKILL.md updates |
+| B5 — PMBOK | 5 | 5 | 0 | 3 | 8 + 5 SKILL.md updates |
+| B6 — BABOK | 6 | 6 | 0 | 6 | 12 + 6 SKILL.md updates |
+| **Total** | **29** | **29** | **4** | **31** | **64 + 29 updates** |
 
 ---
 
 ## Pendiente
 
-- [ ] Incorporar hallazgos del deep-review de `/tmp/reference/` (en curso)
-- [ ] Validar naming conventions de templates contra lo que dicen las referencias externas
-- [ ] Confirmar estructura exacta de `validate-phase-readiness.sh` para methodology skills vs workflow skills
-- [ ] Definir si los scripts deben poder invocarse standalone o solo desde SKILL.md
+- [x] Incorporar hallazgos del deep-review de `/tmp/reference/`
+- [x] Validar naming conventions de templates contra referencias externas → `{artefacto}-template.md`
+- [x] Confirmar estructura de scripts → selectivos, solo cálculo determinístico
+- [x] Definir si scripts son standalone → sí, invocables por CLI y desde SKILL.md
+- [ ] Crear task-plan con T-NNN para los 6 batches
+- [ ] Ejecutar B1 (PDCA) como batch piloto para validar el patrón
