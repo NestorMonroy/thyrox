@@ -78,42 +78,17 @@ Requiere: `{wp}/pm-planning.md` con:
 
 ### 1. Earned Value Management (EVM)
 
-EVM es la herramienta de performance más poderosa de PMBOK. Integra scope, schedule y cost en una sola visión:
+EVM integra scope, schedule y cost en una sola visión de desempeño. Referencia detallada con todas las fórmulas: [references/evm-and-change-control.md](references/evm-and-change-control.md).
 
-#### Variables fundamentales
+**Variables clave:** PV · EV · AC · BAC
 
-| Variable | Nombre | Definición | Fórmula |
-|----------|--------|-----------|---------|
-| **PV** | Planned Value | Valor del trabajo planificado a la fecha de corte | Costo presupuestado del trabajo planificado |
-| **EV** | Earned Value | Valor del trabajo realmente completado | % completado × Budget at Completion (BAC) |
-| **AC** | Actual Cost | Costo real del trabajo completado a la fecha | Dato del sistema de costos |
-| **BAC** | Budget at Completion | Presupuesto total del proyecto | Costo baseline total |
+**Métricas de varianza:** SV = EV−PV · CV = EV−AC · SPI = EV/PV · CPI = EV/AC
+> SPI/CPI = 1.0 perfecto · > 1.0 ahead · < 1.0 behind. Umbral de alerta: < 0.85.
 
-#### Métricas de varianza (negativo = problema)
+**Métricas de proyección:** EAC = BAC/CPI · ETC = EAC−AC · VAC = BAC−EAC · TCPI = (BAC−EV)/(BAC−AC)
+> TCPI > 1.10 → BAC prácticamente inalcanzable; ajustar EAC con el sponsor.
 
-| Métrica | Fórmula | Interpretación | Umbral de alerta |
-|---------|---------|---------------|-----------------|
-| **SV** | EV − PV | Varianza de cronograma en $ | SV < −10% del PV |
-| **CV** | EV − AC | Varianza de costo en $ | CV < −10% del EV |
-| **SPI** | EV / PV | Eficiencia del cronograma | SPI < 0.85 |
-| **CPI** | EV / AC | Eficiencia del costo | CPI < 0.85 |
-
-> **Regla de interpretación:** SPI/CPI = 1.0 es perfecto. > 1.0 es ahead of schedule / under budget. < 1.0 es behind schedule / over budget.
-
-#### Métricas de proyección
-
-| Métrica | Fórmula | Significado |
-|---------|---------|------------|
-| **EAC** (asumiendo CPI actual continúa) | BAC / CPI | Estimación más probable del costo total |
-| **EAC** (con nueva estimación) | AC + ETC (bottom-up) | Cuando el CPI histórico no es representativo |
-| **ETC** | EAC − AC | Cuánto más costará completar el proyecto |
-| **VAC** | BAC − EAC | Varianza de costo al final del proyecto |
-| **TCPI** (basado en BAC) | (BAC − EV) / (BAC − AC) | Eficiencia de costo necesaria para terminar dentro del presupuesto |
-| **TCPI** (basado en EAC) | (BAC − EV) / (EAC − AC) | Eficiencia de costo necesaria para terminar dentro del EAC |
-
-> **Interpretación de TCPI:** Si TCPI > 1.10, el presupuesto original (BAC) es prácticamente inalcanzable; reportar al sponsor y ajustar EAC.
-
-> **ADVERTENCIA sobre causalidad:** EVM detecta correlaciones entre work performance y cost/schedule. Una SPI baja puede tener muchas causas (recursos insuficientes, scope mal estimado, impedimentos externos). EVM identifica QUÉ está pasando y con qué magnitud — no explica POR QUÉ. El análisis de causas requiere investigación adicional (conversaciones con el equipo, revisión del issue log, análisis de impedimentos).
+> **ADVERTENCIA:** EVM identifica QUÉ está pasando, no POR QUÉ. El análisis de causas requiere investigación adicional.
 
 ### 2. Control Schedule
 
@@ -135,35 +110,9 @@ Además de la perspectiva EVM, controlar el cronograma en términos de actividad
 
 ### 3. Perform Integrated Change Control
 
-Todo cambio al scope, schedule o cost baseline debe pasar por el Change Control Board (CCB):
+Todo cambio al scope, schedule o cost baseline pasa por el CCB (Change Control Board). Proceso completo y template CR en [references/evm-and-change-control.md](references/evm-and-change-control.md).
 
-**Proceso de Change Control:**
-
-| Paso | Descripción | Responsable |
-|------|-------------|-------------|
-| **Identificar cambio** | Cualquier miembro del equipo puede identificar una solicitud de cambio | Equipo / stakeholders |
-| **Crear Change Request** | Documentar el cambio propuesto con impacto en scope/schedule/cost/quality | PM |
-| **Evaluar impacto** | Analizar el impacto en todas las áreas del proyecto | PM + equipo técnico |
-| **Presentar al CCB** | Presentar el Change Request al Change Control Board para decisión | PM |
-| **Decisión CCB** | Approve / Reject / Defer | CCB |
-| **Implementar si aprobado** | Actualizar el Project Management Plan y los baselines afectados | PM + equipo |
-| **Comunicar decisión** | Notificar a todos los stakeholders afectados | PM |
-
-**Change Request template:**
-
-| Campo | Descripción |
-|-------|-------------|
-| **CR ID** | CR-001, CR-002, ... |
-| **Solicitante** | Quién solicita el cambio |
-| **Descripción** | Qué cambio se solicita |
-| **Justificación** | Por qué se necesita el cambio |
-| **Impacto en Scope** | Qué se agrega, modifica o elimina del scope |
-| **Impacto en Schedule** | Días adicionales o reducción de tiempo |
-| **Impacto en Cost** | Costo adicional o ahorro |
-| **Impacto en Calidad** | Efecto sobre los criterios de calidad |
-| **Riesgos** | Nuevos riesgos introducidos por el cambio |
-| **Recomendación del PM** | Approve / Reject con justificación |
-| **Decisión del CCB** | Aprobado / Rechazado / Diferido + fecha |
+**Flujo resumido:** Identificar cambio → Crear Change Request → Evaluar impacto → Presentar al CCB → Decisión (Approve/Reject/Defer) → Implementar si aprobado → Comunicar → Actualizar baselines.
 
 ### 4. Control Quality (QC)
 
