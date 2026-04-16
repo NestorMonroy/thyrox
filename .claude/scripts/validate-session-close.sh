@@ -69,6 +69,10 @@ if [ -n "$NOW_FILE" ]; then
     ACTIVE_LIST=""
     ACTIVE_COUNT=0
     while IFS= read -r -d '' wp_dir; do
+      # Completado = tiene *-lessons-learned.md en cualquier nivel (raíz o track/)
+      has_lessons=$(find "$wp_dir" -maxdepth 2 -name "*-lessons-learned.md" 2>/dev/null | head -1)
+      [ -n "$has_lessons" ] && continue
+      # Activo = sin lessons-learned Y con tareas pendientes en task-plan
       task_plan=$(find "$wp_dir" -maxdepth 2 -name "*-task-plan.md" 2>/dev/null | head -1)
       if [ -n "$task_plan" ] && grep -q "^- \[ \]" "$task_plan" 2>/dev/null; then
         ACTIVE_LIST="${ACTIVE_LIST}${wp_dir}"$'\n'
