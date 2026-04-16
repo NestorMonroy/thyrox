@@ -4,7 +4,7 @@ description: "Use when evaluating whether a solution delivered the expected busi
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /ba-solution-evaluation — BABOK: Solution Evaluation
@@ -16,6 +16,18 @@ Ejecuta la Knowledge Area **Solution Evaluation** de BABOK v3. Mide el performan
 **THYROX Stage:** Stage 11 TRACK/EVALUATE / Stage 12 STANDARDIZE.
 
 **Outputs clave:** Solution Performance Assessment · Value Realization Report · Recommendations · BA Lessons Learned.
+
+---
+
+## KAs relacionadas — contexto de uso
+
+| KA | Intensidad relativa | Relación |
+|----|-------------------|---------|
+| **Solution Evaluation** | **Alta** (esta KA) | Medir si la solución entregó el valor de negocio esperado |
+| Strategy Analysis | Alta | Provee el baseline del estado actual y las métricas de éxito a comparar |
+| Business Analysis Planning | Media | Provee el plan de evaluación y los stakeholders a consultar |
+| Requirements Analysis | Baja | Las especificaciones sirven de referencia para verificar la cobertura de la solución |
+| Requirements Life Cycle | Baja | Verifica que los requisitos validados corresponden a los implementados |
 
 ---
 
@@ -191,6 +203,17 @@ status: Borrador
 - **Evaluación realizada demasiado pronto** — evaluar la solución a los 3 días de implementación no da tiempo a que los usuarios se adapten; mínimo 2-4 semanas de uso real
 - **Limitaciones ignoradas por presión política** — documentar que la solución tiene limitaciones no es fracaso del proyecto; ignorar las limitaciones es un fracaso del BA
 - **Lecciones aprendidas del BA omitidas** — las lecciones de la propia práctica de BA son el input más valioso para mejorar el siguiente proyecto; omitirlas por presión de cierre es una oportunidad perdida
+
+---
+
+## Criterio de completitud
+
+**Solution Evaluation está completo cuando:**
+1. KPI Dashboard completado con baseline, target y valor actual para cada KPI del Business Need original
+2. Value Realization Summary con veredicto claro (Sí / Parcialmente / No) y evidencia cuantitativa
+3. Limitaciones documentadas con prioridad de resolución
+4. Lecciones aprendidas del proceso de BA completadas por KA
+5. Recomendación clara sobre próximos pasos (nueva iniciativa / mejora / cierre)
 
 ---
 

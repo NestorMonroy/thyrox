@@ -4,7 +4,7 @@ description: "Use when starting requirements gathering or when stakeholder needs
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /rm-elicitation — Requirements Management: Elicitation
@@ -14,6 +14,18 @@ updated_at: 2026-04-16 00:00:00
 Ejecuta el paso **Elicitation** del ciclo de Requirements Management. Recopila necesidades de stakeholders usando técnicas estructuradas y confirma los resultados antes de avanzar al análisis.
 
 **THYROX Stage:** Stage 1 DISCOVER / Stage 3 DIAGNOSE.
+
+---
+
+## Foco en el ciclo RM
+
+| Paso | Intensidad relativa | Rol en el ciclo |
+|------|-------------------|----------------|
+| **Elicitation** | **Alta** (este paso) | Recopilación de necesidades de stakeholders — punto de entrada |
+| Analysis | Media | Consume los resultados de elicitación para evaluar calidad y prioridad |
+| Specification | Baja | Formaliza los requisitos analizados — requiere elicitación completa |
+| Validation | Baja | Confirma que la especificación resuelve las necesidades elicitadas |
+| Management | Baja | Gestiona cambios que pueden requerir re-elicitar nuevas necesidades |
 
 ---
 

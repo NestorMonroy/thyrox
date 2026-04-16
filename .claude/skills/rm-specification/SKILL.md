@@ -4,7 +4,7 @@ description: "Use when formalizing analyzed requirements into a specification do
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /rm-specification — Requirements Management: Specification
@@ -14,6 +14,18 @@ updated_at: 2026-04-16 00:00:00
 Ejecuta el paso **Specification** del ciclo de Requirements Management. Formaliza los requisitos analizados en documentos estándar con acceptance criteria verificables y trazabilidad completa.
 
 **THYROX Stage:** Stage 7 DESIGN/SPECIFY.
+
+---
+
+## Foco en el ciclo RM
+
+| Paso | Intensidad relativa | Rol en el ciclo |
+|------|-------------------|----------------|
+| Elicitation | Baja | Provee las necesidades que este paso convierte en especificación formal |
+| Analysis | Alta | Provee los requisitos priorizados y con calidad verificada como input directo |
+| **Specification** | **Alta** (este paso) | Formalización — produce el documento que guía diseño, desarrollo y tests |
+| Validation | Alta | Verifica y valida la especificación producida por este paso |
+| Management | Media | Gestiona los cambios al baseline que este paso establece |
 
 ---
 

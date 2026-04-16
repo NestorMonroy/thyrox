@@ -4,7 +4,7 @@ description: "Use when modeling and specifying requirements in BABOK. ba:require
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /ba-requirements-analysis — BABOK: Requirements Analysis & Design Definition
@@ -16,6 +16,18 @@ Ejecuta la Knowledge Area **Requirements Analysis & Design Definition** de BABOK
 **THYROX Stage:** Stage 7 DESIGN/SPECIFY.
 
 **Outputs clave:** Specified Requirements · Use Case Model · User Stories · Design Options.
+
+---
+
+## KAs relacionadas — contexto de uso
+
+| KA | Intensidad relativa | Relación |
+|----|-------------------|---------|
+| **Requirements Analysis & Design Definition** | **Alta** (esta KA) | Modelado, especificación y verificación de requisitos |
+| Elicitation & Collaboration | Alta | Provee las necesidades que esta KA convierte en requisitos especificados |
+| Strategy Analysis | Alta | Provee el gap analysis y capacidades requeridas como punto de partida |
+| Requirements Life Cycle | Alta | Consume los requisitos especificados para gestionar su trazabilidad y cambios |
+| Solution Evaluation | Baja | Verifica a posteriori si los requisitos especificados fueron implementados correctamente |
 
 ---
 
@@ -209,11 +221,29 @@ status: Borrador
 
 ---
 
+## Criterio de completitud
+
+**Requirements Analysis está completo cuando:**
+1. Todos los requisitos tienen ID único y criterios de aceptación verificables
+2. Use Case Model o User Stories cubren el 100% de las capacidades del gap analysis de Strategy
+3. Verificación completada: todos los requisitos son completos, consistentes, no ambiguos, verificables y factibles
+4. Validación completada: stakeholders clave confirmaron que los requisitos representan sus necesidades
+5. Priorización MoSCoW documentada con Must Have ≤ 60% del total
+
+---
+
 ## Estado en now.md
 
 **Al INICIAR este step:**
 ```yaml
 methodology_step: ba:requirements-analysis
+flow: ba
+ba_ka: requirements_analysis_design
+```
+
+**Al COMPLETAR:**
+```yaml
+methodology_step: ba:requirements-analysis  # completado — requisitos especificados y validados
 flow: ba
 ba_ka: requirements_analysis_design
 ```

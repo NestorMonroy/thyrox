@@ -4,7 +4,7 @@ description: "Use when managing requirements baseline, changes and traceability 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /rm-management — Requirements Management: Management
@@ -14,6 +14,18 @@ updated_at: 2026-04-16 00:00:00
 Ejecuta el paso **Management** del ciclo de Requirements Management. Mantiene el baseline de requisitos, gestiona cambios a través del CCB, y asegura la trazabilidad hacia diseño, código y tests.
 
 **THYROX Stage:** Stage 10 IMPLEMENT / Stage 11 TRACK/EVALUATE (activo durante toda la implementación).
+
+---
+
+## Foco en el ciclo RM
+
+| Paso | Intensidad relativa | Rol en el ciclo |
+|------|-------------------|----------------|
+| Elicitation | Media | Los change requests pueden requerir re-elicitar nuevas necesidades |
+| Analysis | Media | Cambios mayores al scope requieren re-análisis de impacto |
+| Specification | Media | Los CRs aprobados actualizan el documento de especificación |
+| Validation | Media | Cambios significativos requieren re-validación con stakeholders |
+| **Management** | **Alta** (este paso) | Gobernanza del baseline — trazabilidad, change control, CCB |
 
 ---
 

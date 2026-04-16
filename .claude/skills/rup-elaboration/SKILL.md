@@ -4,7 +4,7 @@ description: "Use when establishing the architectural foundation of a RUP projec
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /rup-elaboration — RUP: Elaboration
@@ -77,6 +77,15 @@ El SAD es el artefacto central de Elaboration — captura las decisiones arquite
 
 > **Regla anti-Architecture Astronaut:** El SAD debe ser la arquitectura mínima suficiente para mitigar los riesgos críticos, no la arquitectura perfecta. Si el SAD tiene > 20 páginas en Elaboration, probablemente está sobrediseñado.
 
+**SAD review y aprobación:**
+
+| Rol | Responsabilidad | Deliverable de confirmación |
+|-----|----------------|---------------------------|
+| **Arquitecto / Tech Lead** | Crea el SAD y garantiza su completitud | SAD con todas las secciones completas |
+| **Equipo de desarrollo** | Revisa la viabilidad técnica de cada decisión | Comentarios y ACK en cada sección |
+| **Project Manager** | Verifica que el SAD cubre los riesgos del Risk List | Checklist de cobertura de riesgos |
+| **Sponsor / Product Owner** | Aprueba los Quality Attributes y constraints de negocio | Sign-off en la sección Architectural Goals |
+
 ### 2. Architecture Prototype — probar, no diseñar
 
 El Architecture Prototype es ejecutable — prueba que la arquitectura funciona bajo las condiciones del escenario más riesgoso:
@@ -89,6 +98,18 @@ El Architecture Prototype es ejecutable — prueba que la arquitectura funciona 
 | **Escalabilidad** | El componente que más crecerá bajo carga | No degrada bajo 2× el volumen esperado |
 
 > El Architecture Prototype NO es un prototipo de UI, un spike de 2h, ni un diagrama. Es código ejecutable que prueba los escenarios de mayor riesgo.
+
+**Matriz de selección de UCs para el Architecture Prototype:**
+
+| Criterio | Puntos | UC X | UC Y | UC Z |
+|---------|--------|------|------|------|
+| Riesgo técnico (Alto=3, Medio=2, Bajo=1) | 3 | | | |
+| Impacto en arquitectura (Alto=3, Medio=2, Bajo=1) | 3 | | | |
+| Tecnología nueva o no probada (Sí=2, No=0) | 2 | | | |
+| Requisito de performance crítico (Sí=2, No=0) | 2 | | | |
+| **Score total (máx 10)** | | | | |
+
+> Incluir en el Architecture Prototype los 1-3 UCs con mayor score. Un score ≥ 7 indica UC obligatorio para el prototype.
 
 ### 3. Especificar el Use Case Model al 80%
 

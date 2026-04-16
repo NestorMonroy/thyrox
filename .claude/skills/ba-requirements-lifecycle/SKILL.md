@@ -19,6 +19,20 @@ Ejecuta la Knowledge Area **Requirements Life Cycle Management** de BABOK v3. Ge
 
 ---
 
+## KAs relacionadas — contexto de uso
+
+Esta KA corre en paralelo con otras durante el proyecto:
+
+| KA | Intensidad relativa | Relación |
+|----|-------------------|---------|
+| **Requirements Life Cycle** | **Alta** (esta KA) | Eje de trazabilidad y gobernanza |
+| Requirements Analysis | Alta | Provee los requisitos que esta KA traza |
+| Elicitation & Collaboration | Media | Fuente de nuevos requisitos y datos para CRs |
+| Strategy Analysis | Baja | Consume la RTM para análisis de impacto estratégico |
+| Solution Evaluation | Baja | Lee el estado de la RTM para medir cobertura |
+
+---
+
 ## Pre-condición
 
 Requiere requisitos documentados con al menos:
@@ -195,11 +209,30 @@ status: Borrador
 
 ---
 
+## Criterio de completitud (por ciclo)
+
+Esta KA es continua — cada ciclo termina cuando:
+
+| Condición | Acción |
+|-----------|--------|
+| CR procesado + RTM actualizada + stakeholders notificados | Ciclo completo; continuar monitoring o transicionar |
+| No hay CRs activos + todos los requisitos en baseline | Estado estable; activar siguiente KA vía Routing Table |
+| Todos los requisitos alcanzan estado "Validado" | Inputs listos para `ba:solution-evaluation` |
+
+---
+
 ## Estado en now.md
 
 **Al INICIAR este step:**
 ```yaml
 methodology_step: ba:requirements-lifecycle
+flow: ba
+ba_ka: requirements_lifecycle_management
+```
+
+**Al COMPLETAR (cada ciclo):**
+```yaml
+methodology_step: ba:requirements-lifecycle  # ciclo completado
 flow: ba
 ba_ka: requirements_lifecycle_management
 ```

@@ -4,7 +4,7 @@ description: "Use when verifying that requirements meet quality standards and st
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /rm-validation — Requirements Management: Validation
@@ -14,6 +14,18 @@ updated_at: 2026-04-16 00:00:00
 Ejecuta el paso **Validation** del ciclo de Requirements Management. Confirma que los requisitos especificados son correctos (verificación) y que resuelven la necesidad real (validación). Obtiene el sign-off formal antes de avanzar a gestión.
 
 **THYROX Stage:** Stage 9 PILOT/VALIDATE.
+
+---
+
+## Foco en el ciclo RM
+
+| Paso | Intensidad relativa | Rol en el ciclo |
+|------|-------------------|----------------|
+| Elicitation | Baja | Provee el contexto de necesidades que la validación debe confirmar |
+| Analysis | Media | El checklist IEEE 830 de análisis es la base de la verificación formal |
+| Specification | Alta | Provee el artefacto que este paso verifica y valida |
+| **Validation** | **Alta** (este paso) | Gate de calidad y sign-off — confirma corrección y pertinencia |
+| Management | Alta | Consume el baseline aprobado producido por este paso |
 
 ---
 

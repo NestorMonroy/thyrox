@@ -19,6 +19,18 @@ Ejecuta la Knowledge Area **Strategy Analysis** de BABOK v3. Analiza el estado a
 
 ---
 
+## KAs relacionadas — contexto de uso
+
+| KA | Intensidad relativa | Relación |
+|----|-------------------|---------|
+| **Strategy Analysis** | **Alta** (esta KA) | Análisis del problema de negocio y definición del cambio |
+| Elicitation & Collaboration | Alta | Provee el conocimiento del estado actual; re-elicitar si faltan datos |
+| Requirements Analysis | Alta | Consume el gap analysis para especificar requisitos |
+| Requirements Life Cycle | Baja | Gestiona los requisitos que emergen del strategy |
+| Solution Evaluation | Baja | Verifica a posteriori si la solución cerró los gaps identificados |
+
+---
+
 ## Pre-condición
 
 Requiere comprensión del dominio de negocio, obtenida de:
@@ -200,11 +212,28 @@ status: Borrador
 
 ---
 
+## Criterio de completitud
+
+**Strategy Analysis está completo cuando:**
+1. Gap analysis documentado con métricas cuantitativas (estado actual vs target para cada gap)
+2. Business Need con impacto cuantificado ($, tiempo, o métrica de negocio)
+3. Recomendación de solución con ≥ 2 opciones evaluadas y justificación
+4. Risk Assessment del cambio con al menos 3 riesgos y planes de respuesta
+
+---
+
 ## Estado en now.md
 
 **Al INICIAR este step:**
 ```yaml
 methodology_step: ba:strategy
+flow: ba
+ba_ka: strategy_analysis
+```
+
+**Al COMPLETAR:**
+```yaml
+methodology_step: ba:strategy  # completado — gaps definidos, recomendación lista
 flow: ba
 ba_ka: strategy_analysis
 ```

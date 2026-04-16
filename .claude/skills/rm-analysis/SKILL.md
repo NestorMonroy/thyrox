@@ -4,7 +4,7 @@ description: "Use when reviewing and prioritizing collected requirements. rm:ana
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /rm-analysis — Requirements Management: Analysis
@@ -14,6 +14,18 @@ updated_at: 2026-04-16 00:00:00
 Ejecuta el paso **Analysis** del ciclo de Requirements Management. Evalúa la calidad de los requisitos recopilados, resuelve conflictos, prioriza y decide si avanzar a especificación o retornar a elicitación.
 
 **THYROX Stage:** Stage 3 DIAGNOSE / Stage 5 STRATEGY.
+
+---
+
+## Foco en el ciclo RM
+
+| Paso | Intensidad relativa | Rol en el ciclo |
+|------|-------------------|----------------|
+| Elicitation | Alta | Provee los requisitos candidatos que este paso evalúa |
+| **Analysis** | **Alta** (este paso) | Calidad, priorización y resolución de conflictos — gate de calidad |
+| Specification | Media | Consume el análisis para producir el documento formal |
+| Validation | Baja | Verifica que los requisitos analizados y especificados son correctos |
+| Management | Baja | Puede requerir re-análisis cuando cambian los requisitos base |
 
 ---
 

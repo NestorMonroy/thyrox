@@ -4,7 +4,7 @@ description: "Use when deploying the system to end users in RUP. rup:transition 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /rup-transition — RUP: Transition
@@ -91,6 +91,18 @@ El beta testing con usuarios reales es el corazón de Transition:
 | **2 — Major** | Feature importante no funciona; workaround muy costoso | Corregir si es posible antes del PD; documentar si se difiere |
 | **3 — Minor** | Feature funciona pero con limitaciones; workaround existe | Puede deferirse a release posterior |
 | **4 — Cosmetic** | Estético o de UX menor | Diferir a release posterior |
+
+**Priorización intra-severidad — cuando hay múltiples defectos del mismo nivel:**
+
+| Criterio de priorización | Descripción | Peso |
+|--------------------------|-------------|------|
+| **Frecuencia de impacto** | ¿Cuántos usuarios o flujos afecta? (alto = más usuarios afectados) | Alto |
+| **Bloqueo de UC crítico** | ¿Bloquea un UC Must Have del Vision Document? | Alto |
+| **Costo de corrección** | ¿Qué tan complejo es corregir? (menor costo → antes) | Medio |
+| **Disponibilidad de workaround** | ¿Hay forma alternativa de completar el flujo? (sin workaround → antes) | Medio |
+| **Risk de regresión** | ¿La corrección puede introducir nuevos defectos? (alto risk → más tarde) | Bajo |
+
+> **Regla:** Dentro de Severity 1 y Severity 2, priorizar por frecuencia de impacto × bloqueo de UC crítico. No corregir Severity 2 antes de que todos los Severity 1 estén cerrados.
 
 ### 3. Training y transferencia de conocimiento
 

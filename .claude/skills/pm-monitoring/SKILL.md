@@ -262,6 +262,18 @@ status: Borrador
 
 ---
 
+## Criterio de completitud
+
+Monitoring & Controlling es **continuo** — no tiene completitud propia sino condiciones de cierre:
+
+| Condición | Acción |
+|-----------|--------|
+| Todos los deliverables verificados y aceptados por QC | Activar `pm:closing` |
+| Varianza crítica (SPI/CPI < 0.85) | Change Request + acción correctiva + continuar Monitoring |
+| Todos los contratos cerrados (si aplica) | Iniciar `pm:closing` en paralelo |
+
+---
+
 ## Estado en now.md
 
 **Al INICIAR este step:**
@@ -276,6 +288,13 @@ pm_process_group: monitoring_controlling
 methodology_step: pm:executing+monitoring
 flow: pm
 pm_process_group: executing+monitoring_controlling
+```
+
+**Al COMPLETAR** (todos los deliverables verificados → cierre):
+```yaml
+methodology_step: pm:monitoring  # completado → activar pm:closing
+flow: pm
+pm_process_group: monitoring_controlling
 ```
 
 ## Siguiente paso

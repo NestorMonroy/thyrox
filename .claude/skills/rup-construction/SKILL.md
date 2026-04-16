@@ -4,7 +4,7 @@ description: "Use when building the system incrementally in RUP. rup:constructio
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /rup-construction — RUP: Construction
@@ -125,6 +125,18 @@ Al final de cada iteración de Construction:
 | **Deuda técnica** | ¿Cuánta deuda se acumuló? ¿Es manejable? |
 | **Proceso** | ¿Qué impedimentos hubo? ¿Qué funcionó bien? |
 | **Riesgos** | ¿Surgieron nuevos riesgos técnicos? |
+
+---
+
+## Aprobación del milestone IOC — roles y responsabilidades
+
+| Rol | Responsabilidad en IOC |
+|-----|----------------------|
+| **Project Manager** | Presenta el IOC review con métricas de calidad y cobertura de UC |
+| **Arquitecto / Tech Lead** | Confirma que la arquitectura del SAD se mantiene íntegra en el sistema construido |
+| **QA Lead** | Valida que la tasa de defectos cumple el umbral de calidad para beta |
+| **Product Owner / Sponsor** | Evalúa si la funcionalidad beta es suficiente para iniciar Transition |
+| **Usuarios beta (representantes)** | Confirman disponibilidad para participar en la fase de Transition |
 
 ---
 

@@ -4,7 +4,7 @@ description: "Use when planning Business Analysis activities in BABOK. ba:baplan
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 21:44:29
 ---
 
 # /ba-baplanning — BABOK: Business Analysis Planning & Monitoring
@@ -16,6 +16,19 @@ Ejecuta la Knowledge Area **Business Analysis Planning & Monitoring** de BABOK v
 **THYROX Stage:** Stage 5 STRATEGY / Stage 6 SCOPE.
 
 **Outputs clave:** BA Plan · Stakeholder Engagement Approach · Governance Approach · babok-progress.md.
+
+---
+
+## Cuándo usar este paso
+
+- Al inicio de cualquier iniciativa de Business Analysis — antes de elicitar, analizar o especificar
+- Cuando el BA necesita acordar explícitamente el enfoque de trabajo con los stakeholders clave
+- Cuando el proyecto es complejo o tiene múltiples stakeholders con intereses divergentes
+
+## Cuándo NO usar este paso
+
+- En proyectos muy pequeños o de alcance completamente conocido donde la planificación formal sería overhead desproporcionado — en ese caso ir directamente a `ba:elicitation` o `ba:strategy`
+- Si el BA Plan ya está definido y aprobado y solo se necesita actualizar el progreso — actualizar `babok-progress.md` directamente
 
 ---
 
