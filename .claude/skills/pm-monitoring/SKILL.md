@@ -21,6 +21,21 @@ Ejecuta el **Grupo de Proceso Monitoring & Controlling** de PMBOK. Mide el rendi
 
 ---
 
+## Ciclo de Monitoring & Controlling
+
+```mermaid
+flowchart TD
+    E[Executing\nWork in progress] --> COL[Recopilar\ndatos de desempeño]
+    COL --> EVM[Calcular EVM\nSV/CV/SPI/CPI]
+    EVM --> VAR{Varianza\nacceptable?}
+    VAR -->|Sí| REP[Informe de\ndesempeño]
+    VAR -->|No| CA[Acción correctiva\no preventiva]
+    CA --> ICC[Integrated\nChange Control]
+    ICC --> REP
+    REP --> E
+    style EVM fill:#4a9eff,color:#fff
+```
+
 ## Pre-condición
 
 Requiere: `{wp}/pm-planning.md` con:

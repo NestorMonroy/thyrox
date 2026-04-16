@@ -17,6 +17,18 @@ Ejecuta el paso **Plan** del ciclo PDCA. Produce un plan de mejora con objetivos
 
 ---
 
+## Ciclo PDCA — foco en Plan
+
+```mermaid
+flowchart LR
+    P[Plan\nHipótesis + objetivo]:::active --> D[Do\nExperimento controlado]
+    D --> C[Check\nComparar vs objetivo]
+    C -->|Hipótesis confirmada| A[Act\nEstandarizar]
+    C -->|Hipótesis no confirmada| P
+    A -->|Mejora continua| P2[Plan\nnuevo ciclo]
+    classDef active fill:#4a9eff,color:#fff
+```
+
 ## Pre-condición
 
 - **Primer ciclo:** work package activo con descripción inicial del problema.

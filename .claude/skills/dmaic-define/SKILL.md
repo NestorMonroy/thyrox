@@ -19,6 +19,17 @@ Ejecuta la fase **Define** de DMAIC. Produce el Project Charter aprobado que aut
 
 ---
 
+## Ciclo DMAIC — foco en Define
+
+```mermaid
+flowchart LR
+    D[Define\nCharter + CTQs]:::active --> M[Measure\nBaseline + MSA]
+    M --> A[Analyze\nCausa raíz]
+    A --> I[Improve\nSolución]
+    I --> C[Control\nSostenibilidad]
+    classDef active fill:#4a9eff,color:#fff
+```
+
 ## Pre-condición
 
 - **Primer ciclo:** work package activo con descripción inicial del problema y sponsor identificado.

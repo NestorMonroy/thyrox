@@ -21,6 +21,19 @@ Ejecuta la fase **Elaboration** de RUP. Estabiliza la arquitectura base, especif
 
 ---
 
+## Ciclo de fases RUP — foco en Elaboration
+
+```mermaid
+flowchart LR
+    I[Inception\nLCO] --> E1[Elaboration\niter 1]
+    E1 -->|LCA no alcanzado| E2[Elaboration\niter 2]
+    E1 -->|LCA alcanzado| C[Construction\nIOC]
+    E2 --> C
+    C --> T[Transition\nPD]
+    style E1 fill:#4a9eff,color:#fff
+    style E2 fill:#4a9eff,color:#fff
+```
+
 ## Pre-condición
 
 Requiere: `{wp}/rup-inception.md` con:

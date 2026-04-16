@@ -21,6 +21,22 @@ Ejecuta la Knowledge Area **Business Analysis Planning & Monitoring** de BABOK v
 
 ---
 
+## Flujo de navegación BABOK
+
+```mermaid
+flowchart LR
+    P[ba:planning] --> E[ba:elicitation]
+    P --> S[ba:strategy]
+    P --> RA[ba:requirements-analysis]
+    P --> RL[ba:requirements-lifecycle]
+    E --> RA
+    S --> RA
+    RA --> RL
+    RL --> RA
+    RA --> SE[ba:solution-evaluation]
+    style P fill:#4a9eff,color:#fff
+```
+
 ## Cuándo usar este paso
 
 - Al inicio de cualquier iniciativa de Business Analysis — antes de elicitar, analizar o especificar

@@ -21,6 +21,20 @@ Ejecuta la fase **Construction** de RUP. Implementa los Use Cases de forma incre
 
 ---
 
+## Ciclo de iteraciones en Construction
+
+```mermaid
+flowchart LR
+    LCA[LCA\nElaboration] --> I1[Iteración 1\nUC Must Have]
+    I1 --> I2[Iteración 2\nUC Must/Should]
+    I2 -->|IOC no alcanzado| I3[Iteración N]
+    I2 -->|IOC alcanzado| TR[Transition\nPD]
+    I3 --> TR
+    style I1 fill:#4a9eff,color:#fff
+    style I2 fill:#4a9eff,color:#fff
+    style I3 fill:#4a9eff,color:#fff
+```
+
 ## Pre-condición
 
 Requiere: `{wp}/rup-elaboration.md` con:

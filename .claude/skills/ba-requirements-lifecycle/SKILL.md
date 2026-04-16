@@ -44,6 +44,21 @@ Requiere requisitos documentados con al menos:
 
 ---
 
+## Ciclo de vida de un requisito
+
+```mermaid
+stateDiagram-v2
+    [*] --> Borrador: Elicitar
+    Borrador --> EnRevisión: Análisis
+    EnRevisión --> Aprobado: Sign-off stakeholder
+    EnRevisión --> Borrador: Correcciones
+    Aprobado --> EnCambio: Change Request
+    EnCambio --> Aprobado: CCB aprueba
+    EnCambio --> Diferido: CCB difiere
+    Aprobado --> Implementado: Development done
+    Implementado --> [*]
+```
+
 ## Cuándo usar este paso
 
 - Cuando los requisitos comienzan a aprobarse y necesitan ser rastreados

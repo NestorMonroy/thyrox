@@ -40,6 +40,19 @@ Requiere: `{wp}/rm-validation.md` con:
 
 ---
 
+## Flujo de gestión de cambios (CCB)
+
+```mermaid
+flowchart TD
+    CR[Change Request] --> IA[Análisis de impacto]
+    IA --> CCB{CCB Decision}
+    CCB -->|Aprobado| BL[Actualizar baseline]
+    CCB -->|Rechazado| LOG[Registrar en log]
+    CCB -->|Diferido| BCK[Backlog próxima release]
+    BL --> TM[Actualizar Traceability Matrix]
+    TM --> NT[Notificar stakeholders]
+```
+
 ## Cuándo usar este paso
 
 - Cuando el baseline de requisitos está aprobado y el desarrollo ha comenzado
