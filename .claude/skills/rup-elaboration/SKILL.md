@@ -1,0 +1,245 @@
+---
+name: rup-elaboration
+description: "Use when establishing the architectural foundation of a RUP project. rup:elaboration — stabilize architecture, specify 80% of use cases, mitigate top technical risks, reach LCA milestone."
+allowed-tools: Read Glob Grep Bash Write Edit
+effort: medium
+disable-model-invocation: true
+updated_at: 2026-04-16 00:00:00
+---
+
+# /rup-elaboration — RUP: Elaboration
+
+> *"Elaboration is about proving the architecture works — not designing the perfect architecture. An executable prototype that handles the risky scenarios is worth more than a beautiful diagram that hasn't been tested."*
+
+Ejecuta la fase **Elaboration** de RUP. Estabiliza la arquitectura base, especifica los Use Cases críticos, mitiga los riesgos técnicos top-5 con un prototype ejecutable, y obtiene el milestone **LCA (Lifecycle Architecture)** para autorizar Construction.
+
+**THYROX Stage:** Stage 5 STRATEGY / Stage 7 DESIGN/SPECIFY.
+
+**Milestone:** LCA — Lifecycle Architecture.
+
+---
+
+## Pre-condición
+
+Requiere: `{wp}/rup-inception.md` con:
+- LCO alcanzado (Vision aprobada, business case validado, riesgos críticos identificados)
+- Use Case Model al 10% (UC críticos nombrados)
+- Risk List con top riesgos y planes de respuesta
+
+---
+
+## Cuándo usar este paso
+
+- Cuando el LCO de Inception está alcanzado
+- Para establecer la arquitectura que guiará Construction
+- Cuando el LCA de una iteración anterior no fue alcanzado y se requiere una iteración adicional
+
+## Cuándo NO usar este paso
+
+- Sin LCO alcanzado — Elaboration sin visión validada construye la arquitectura para el problema equivocado
+- Si la arquitectura ya está estabilizada y los riesgos técnicos mitigados → ir a `rup:construction`
+
+---
+
+## Tabla de intensidad de disciplinas en Elaboration
+
+| Disciplina | Intensidad en Elaboration | Foco principal |
+|-----------|--------------------------|----------------|
+| Business Modeling | Media | Refinamiento del dominio si es necesario |
+| Requirements | **Alta** | Especificar 80% del Use Case Model |
+| Analysis & Design | **Alta** | SAD, Architecture Prototype |
+| Implementation | Media | Architecture Prototype ejecutable |
+| Test | Media | Test del Architecture Prototype |
+| Deployment | Baja | Planeación del deployment en construcción |
+| Config & Change Mgmt | Media | Branching strategy, CI/CD setup |
+| Project Management | **Alta** | Plan detallado de Construction |
+| Environment | Media | Entorno de desarrollo estable |
+
+> Si Implementation es **Alta** en Elaboration, revisar si el equipo está construyendo features en lugar de probar la arquitectura — es BDUF disfrazado de Elaboration.
+
+---
+
+## Actividades
+
+### 1. Software Architecture Document (SAD)
+
+El SAD es el artefacto central de Elaboration — captura las decisiones arquitectónicas con su justificación:
+
+| Sección del SAD | Contenido | Nivel de detalle en Elaboration |
+|-----------------|-----------|--------------------------------|
+| **Architectural Goals** | Calidad atributos que guían la arquitectura (performance, security, scalability) | Definidos con métricas |
+| **Architectural Constraints** | Tecnologías mandatadas, regulaciones, integraciones fijas | Exhaustivo |
+| **Architectural Patterns** | Patterns elegidos (layered, microservices, event-driven, etc.) con justificación | Justificación de cada decisión |
+| **Key Subsystems** | Componentes principales y sus responsabilidades | Diagrama de alto nivel |
+| **Critical Use Case Realizations** | Cómo los UC arquitecturalmente significativos se implementan | Solo los top UC de Inception |
+| **Deployment View** | Dónde corren los componentes | Suficiente para el Architecture Prototype |
+| **Architecture Risks Addressed** | Los riesgos técnicos del Risk List y cómo el diseño los mitiga | Cada riesgo crítico debe estar abordado |
+
+> **Regla anti-Architecture Astronaut:** El SAD debe ser la arquitectura mínima suficiente para mitigar los riesgos críticos, no la arquitectura perfecta. Si el SAD tiene > 20 páginas en Elaboration, probablemente está sobrediseñado.
+
+### 2. Architecture Prototype — probar, no diseñar
+
+El Architecture Prototype es ejecutable — prueba que la arquitectura funciona bajo las condiciones del escenario más riesgoso:
+
+| Objetivo del prototype | Qué debe probar | Criterio de éxito |
+|----------------------|----------------|-------------------|
+| **Performance crítica** | El path más cargado del sistema bajo carga realista | Cumple el NFR de performance del Vision Document |
+| **Integración riesgosa** | La integración con el sistema externo más complejo | Datos fluyen correctamente end-to-end |
+| **Tecnología no probada** | La feature que usa la tecnología menos familiar | Funciona en el equipo en el entorno objetivo |
+| **Escalabilidad** | El componente que más crecerá bajo carga | No degrada bajo 2× el volumen esperado |
+
+> El Architecture Prototype NO es un prototipo de UI, un spike de 2h, ni un diagrama. Es código ejecutable que prueba los escenarios de mayor riesgo.
+
+### 3. Especificar el Use Case Model al 80%
+
+Para cada Use Case del modelo (priorizando los arquitecturalmente significativos):
+
+| Sección del Use Case | Contenido |
+|---------------------|-----------|
+| **Nombre** | Verbo + objeto: "Procesar Pago", "Registrar Usuario" |
+| **Actor principal** | Quién inicia el UC |
+| **Precondiciones** | Estado del sistema antes de que el UC pueda ejecutarse |
+| **Flujo principal (Happy Path)** | Pasos numerados del escenario nominal |
+| **Flujos alternativos** | Variaciones del flujo principal que también son exitosas |
+| **Flujos de excepción** | Qué pasa cuando algo falla |
+| **Postcondiciones** | Estado del sistema después de que el UC termina con éxito |
+
+> **80% al final de Elaboration:** Los UC restantes (20%) son los de menor riesgo — se pueden especificar en Construction sin riesgo arquitectural.
+
+### 4. Revisar y actualizar el Risk List
+
+Los riesgos evolucionan. Al final de Elaboration:
+
+| Acción | Criterio |
+|--------|----------|
+| **Cerrar riesgos** | El Architecture Prototype demostró que el riesgo fue mitigado |
+| **Actualizar probabilidad/impacto** | La investigación de Elaboration cambió la evaluación |
+| **Agregar nuevos riesgos** | Riesgos descubiertos durante la arquitectura |
+| **Escalar riesgos no mitigados** | Si un riesgo crítico sigue abierto al final de Elaboration → considerar nueva iteración |
+
+### 5. Plan de Construction
+
+Al final de Elaboration, el plan de Construction debe tener:
+
+| Elemento | Nivel de detalle |
+|----------|-----------------|
+| **Iteraciones** | Número de iteraciones y duración de cada una |
+| **Features por iteración** | Use Cases y features asignados a cada iteración |
+| **Criterio IOC** | Qué funcionalidad mínima habilita la transición a Transition |
+| **Equipo** | Roles y asignaciones específicas |
+| **Estimación** | ±20% accuracy (mejor que el ±50% de Inception) |
+
+---
+
+## Criterio de milestone LCA — ¿avanzar o nueva iteración?
+
+**Avanzar a Construction (todos los siguientes deben cumplirse):**
+1. Architecture Prototype ejecutable estable bajo las cargas del escenario crítico
+2. ≥ 80% del Use Case Model especificado (happy + alternate + exception paths)
+3. Riesgos técnicos top-5 mitigados o con plan concreto y creíble
+4. SAD completo con decisiones arquitectónicas justificadas
+5. Plan de Construction con iteraciones definidas y estimación razonable aceptada por el sponsor
+
+**Nueva iteración de Elaboration (cualquiera de los siguientes):**
+- Architecture Prototype falla bajo la carga del escenario crítico
+- Riesgos técnicos abiertos que bloquean la arquitectura (ej: integración clave sin demostrar)
+- Use Cases críticos sin especificar que impactan decisiones arquitectónicas
+- Plan de Construction rechazado por sponsor como no realista
+
+---
+
+## Artefacto esperado
+
+`{wp}/rup-elaboration.md`
+
+```yml
+created_at: [timestamp]
+project: [nombre]
+work_package: [wp-id]
+phase: rup:elaboration
+rup_iteration: [N]
+author: [nombre]
+status: Borrador
+```
+
+```markdown
+## SAD (Software Architecture Document)
+### Architectural Goals y Quality Attributes
+### Architectural Constraints
+### Patterns y decisiones arquitectónicas (con justificación)
+### Diagrama de subsistemas
+### Critical Use Case Realizations
+### Architecture Risks Addressed
+
+## Architecture Prototype
+- Escenario probado: [descripción]
+- Resultado: [pasó / falló / resultados de performance]
+- Código/repo: [referencia]
+
+## Use Case Model (80%)
+[UC completados — con flujos principal, alternativo, excepción]
+
+## Risk List (actualizada)
+| Risk ID | Estado (Abierto/Cerrado/Actualizado) | Cambio |
+
+## Plan de Construction
+[Iteraciones / features / criterio IOC / equipo / estimación]
+
+## Evaluación milestone LCA
+- [ ] Architecture Prototype estable
+- [ ] ≥ 80% Use Case Model especificado
+- [ ] Top-5 riesgos técnicos mitigados
+- [ ] SAD completo
+- [ ] Plan de Construction aceptado
+
+## Decisión
+- [ ] Avanzar a rup:construction (LCA alcanzado)
+- [ ] Nueva iteración de Elaboration (motivo: ...)
+
+## Retrospectiva de iteración
+[Qué funcionó / qué fue difícil / qué cambiar]
+```
+
+---
+
+## Red Flags — señales de Elaboration mal ejecutada
+
+- **Architecture Prototype solo prueba el happy path** — probar solo lo que funciona confirma supuestos, no mitiga riesgos
+- **SAD de 50+ páginas** — sobrediseño; la arquitectura mínima suficiente es la correcta en Elaboration
+- **LCA declarado sin Architecture Prototype ejecutable** — "confiamos en que la arquitectura funciona" no es LCA
+- **Riesgos técnicos abiertos al pasar a Construction** — cada riesgo técnico crítico no mitigado en Elaboration se convierte en una crisis en Construction
+- **Use Cases especificados al 100% en Elaboration** — el 20% restante es válido especificarlo en Construction; sobrespecificar en Elaboration retrasa el inicio de Construction
+- **"Architecture Astronaut"** — arquitectura sobrediseñada con patrones no justificados por los riesgos reales; la arquitectura debe ser impulsada por los riesgos, no por la estética técnica
+
+---
+
+## Estado en now.md
+
+**Al INICIAR este step:**
+```yaml
+methodology_step: rup:elaboration
+flow: rup
+rup_phase: elaboration
+rup_iteration: 1
+```
+
+**Al COMPLETAR** (LCA alcanzado):
+```yaml
+methodology_step: rup:elaboration  # completado → listo para rup:construction
+flow: rup
+rup_phase: elaboration
+rup_iteration: [N]
+```
+
+## Siguiente paso
+
+- LCA alcanzado → `rup:construction`
+- LCA no alcanzado → nueva iteración de `rup:elaboration` con lecciones documentadas
+
+---
+
+## Limitaciones
+
+- El Architecture Prototype requiere conocimiento técnico profundo del dominio — si el equipo no tiene experiencia con las tecnologías, puede necesitar spikes adicionales antes de poder probar la arquitectura
+- Las métricas de performance del Architecture Prototype son en el entorno de desarrollo, no de producción — escalar con factor conservador
+- En proyectos muy pequeños, SAD + Architecture Prototype puede ser overhead; adaptar la formalidad al riesgo real del proyecto
