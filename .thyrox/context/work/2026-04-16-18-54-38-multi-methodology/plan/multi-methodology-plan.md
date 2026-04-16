@@ -70,12 +70,16 @@ garantiza la secuencia correcta de pasos.
 
 | Item | Razón |
 |------|-------|
-| Skills Cat 2-6 completos (~67 skills) | Fuera del scope de esta ÉPICA — se crean en ÉPICAs posteriores por metodología |
-| UI/interfaz gráfica de selección de metodología | No existe UI en Claude Code — la selección es via `@agente` o descripción |
+| Skills Cat 2-6 completos (~67 skills) | Fuera del scope de esta ÉPICA — ÉPICAs posteriores por metodología |
+| UI/interfaz gráfica de selección de metodología | No existe UI en Claude Code — selección via `@agente` o descripción |
 | Integración con herramientas externas (Jira, Monday, etc.) | Fuera del scope THYROX core |
 | `.gitignore` para `.claude/worktrees/` | Decisión explícita del usuario: trackear todo |
-| Migración big-bang de FASE→ÉPICA en documentos históricos | Retrocompatibilidad — se migra incrementalmente |
-| Metodologías fuera del scope aprobado (Kanban, SAFe, etc.) | Se añaden en ÉPICAs posteriores |
+| Migración big-bang de FASE→ÉPICA en documentos históricos | Retrocompatibilidad — migración incremental al tocar cada archivo |
+| Metodologías fuera del scope aprobado (Kanban, SAFe, etc.) | ÉPICAs posteriores |
+| GAP-006: SDLC skills sin prefijo metodología (`analyze` vs `sdlc-analyze`) | Renaming masivo de skills existentes — ÉPICA futura |
+| GAP-008: `transcript_path` en hooks no usado por THYROX | `/permisos-sugeridos` ya cubre el caso principal — ÉPICA futura |
+| `monitors:` en plugin.json para coordinator Patrón 5 | Hallazgo M del repo oficial: formato desconocido, sin ejemplos — no implementar hasta documentación oficial |
+| Tipo `adaptive` de flujo (Consulting, Strategic Mgmt, BPA) | Sin metodología del scope que lo requiera — ÉPICA futura Cat 4-5 |
 
 ---
 
