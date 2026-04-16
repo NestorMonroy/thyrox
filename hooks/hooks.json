@@ -1,0 +1,12 @@
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "[ -d .thyrox/context ] || bash \"$PLUGIN_DIR/bin/thyrox-init.sh\""
+        }
+      ]
+    }
+  ]
+}

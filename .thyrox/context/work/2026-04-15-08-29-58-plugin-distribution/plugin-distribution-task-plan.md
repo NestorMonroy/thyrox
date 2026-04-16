@@ -28,13 +28,13 @@ GAPs identificados en `discover/plugin-distribution-analysis.md`:
 
 ### Grupo 1 — Plugin manifest (GAP-001, GAP-006)
 
-- [ ] [T-001] Actualizar `.claude-plugin/plugin.json` — agregar campos `hooks`, `bin` con rutas relativas al plugin (GAP-001)
-- [ ] [T-002] Verificar que el campo `skills` en plugin.json apunta correctamente a `.claude/skills/` para carga in-situ (GAP-006)
+- [x] [T-001] Actualizar `.claude-plugin/plugin.json` — agregar campos `hooks`, `bin` con rutas relativas al plugin (GAP-001)
+- [x] [T-002] Verificar que el campo `skills` en plugin.json apunta correctamente a `.claude/skills/` para carga in-situ (GAP-006)
 
 ### Grupo 2 — Hooks de sesión (GAP-001)
 
-- [ ] [T-003] Crear directorio `hooks/` en la raíz del proyecto (GAP-001)
-- [ ] [T-004] Crear `hooks/hooks.json` con evento `SessionStart` que llama a `bin/thyrox-init.sh` condicionalmente (GAP-001)
+- [x] [T-003] Crear directorio `hooks/` en la raíz del proyecto (GAP-001)
+- [x] [T-004] Crear `hooks/hooks.json` con evento `SessionStart` que llama a `bin/thyrox-init.sh` condicionalmente (GAP-001)
   - Condición: `[ -d .thyrox/context ] || bash "$PLUGIN_DIR/bin/thyrox-init.sh"`
   - Depende de: T-003
 
