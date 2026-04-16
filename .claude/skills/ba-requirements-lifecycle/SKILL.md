@@ -1,13 +1,13 @@
 ---
-name: babok-requirements-lifecycle
-description: "Use when managing requirements through their lifecycle in BABOK. babok:requirements-lifecycle — trace requirements, manage changes, maintain traceability matrix, control baselines, assess change impact."
+name: ba-requirements-lifecycle
+description: "Use when managing requirements through their lifecycle in BABOK. ba:requirements-lifecycle — trace requirements, manage changes, maintain traceability matrix, control baselines, assess change impact."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /babok-requirements-lifecycle — BABOK: Requirements Life Cycle Management
+# /ba-requirements-lifecycle — BABOK: Requirements Life Cycle Management
 
 > *"Requirements don't live forever unchanged — they are approved, deferred, modified, superseded, and sometimes retired. Managing this lifecycle is what separates a BA who documents requirements from one who governs them."*
 
@@ -36,7 +36,7 @@ Requiere requisitos documentados con al menos:
 
 ## Cuándo NO usar este paso
 
-- Si no hay requisitos documentados — primero ir a `babok:elicitation` + `babok:requirements-analysis`
+- Si no hay requisitos documentados — primero ir a `ba:elicitation` + `ba:requirements-analysis`
 - Si el proyecto es tan pequeño que la trazabilidad formal sería overhead excesivo
 
 ---
@@ -136,23 +136,23 @@ Una baseline es un snapshot aprobado de los requisitos en un momento dado:
 
 | Situación | Próxima KA recomendada |
 |-----------|----------------------|
-| Los requisitos necesitan ser re-analizados por cambios mayores | `babok:requirements-analysis` |
-| Se necesita información adicional para evaluar el impacto de un cambio | `babok:elicitation` |
-| Se necesita analizar si los cambios afectan la estrategia | `babok:strategy` |
-| Se necesita evaluar si la implementación actual cumple los requisitos | `babok:solution-evaluation` |
+| Los requisitos necesitan ser re-analizados por cambios mayores | `ba:requirements-analysis` |
+| Se necesita información adicional para evaluar el impacto de un cambio | `ba:elicitation` |
+| Se necesita analizar si los cambios afectan la estrategia | `ba:strategy` |
+| Se necesita evaluar si la implementación actual cumple los requisitos | `ba:solution-evaluation` |
 | El ciclo de vida de los requisitos está bajo control | Continuar en esta KA de forma continua |
 
 ---
 
 ## Artefacto esperado
 
-`{wp}/babok-requirements-lifecycle.md`
+`{wp}/ba-requirements-lifecycle.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: babok:requirements-lifecycle
+phase: ba:requirements-lifecycle
 author: [nombre]
 status: Borrador
 ```
@@ -199,9 +199,9 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: babok:requirements-lifecycle
-flow: babok
-babok_ka: requirements_lifecycle_management
+methodology_step: ba:requirements-lifecycle
+flow: ba
+ba_ka: requirements_lifecycle_management
 ```
 
 ## Siguiente paso

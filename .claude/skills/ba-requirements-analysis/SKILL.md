@@ -1,13 +1,13 @@
 ---
-name: babok-requirements-analysis
-description: "Use when modeling and specifying requirements in BABOK. babok:requirements-analysis — model requirements with use cases and user stories, apply INVEST, verify and validate requirements, define design options."
+name: ba-requirements-analysis
+description: "Use when modeling and specifying requirements in BABOK. ba:requirements-analysis — model requirements with use cases and user stories, apply INVEST, verify and validate requirements, define design options."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /babok-requirements-analysis — BABOK: Requirements Analysis & Design Definition
+# /ba-requirements-analysis — BABOK: Requirements Analysis & Design Definition
 
 > *"The purpose of requirements analysis is not to produce a perfect document — it is to create a shared understanding between business and technology of what needs to be built and why. The document is the artifact; the understanding is the goal."*
 
@@ -22,8 +22,8 @@ Ejecuta la Knowledge Area **Requirements Analysis & Design Definition** de BABOK
 ## Pre-condición
 
 Requiere necesidades articuladas de al menos una de:
-- `{wp}/babok-elicitation.md` con stakeholder needs confirmados
-- `{wp}/babok-strategy.md` con gap analysis y capacidades requeridas
+- `{wp}/ba-elicitation.md` con stakeholder needs confirmados
+- `{wp}/ba-strategy.md` con gap analysis y capacidades requeridas
 
 ---
 
@@ -35,8 +35,8 @@ Requiere necesidades articuladas de al menos una de:
 
 ## Cuándo NO usar este paso
 
-- Si las necesidades del negocio no están claras — ir primero a `babok:elicitation` o `babok:strategy`
-- Si el trabajo es gestionar requisitos ya especificados — ir a `babok:requirements-lifecycle`
+- Si las necesidades del negocio no están claras — ir primero a `ba:elicitation` o `ba:strategy`
+- Si el trabajo es gestionar requisitos ya especificados — ir a `ba:requirements-lifecycle`
 
 ---
 
@@ -138,23 +138,23 @@ El BA define opciones de diseño de alto nivel (qué, no cómo):
 
 | Situación | Próxima KA recomendada |
 |-----------|----------------------|
-| Los requisitos especificados necesitan trazabilidad y gestión de cambios | `babok:requirements-lifecycle` |
-| Se necesita información adicional para completar la especificación | `babok:elicitation` |
-| La solución fue implementada y se necesita evaluar el valor entregado | `babok:solution-evaluation` |
-| Los requisitos especificados requieren análisis estratégico adicional | `babok:strategy` |
-| Hay una brecha en la especificación identificada en revisión | Nueva iteración de `babok:requirements-analysis` |
+| Los requisitos especificados necesitan trazabilidad y gestión de cambios | `ba:requirements-lifecycle` |
+| Se necesita información adicional para completar la especificación | `ba:elicitation` |
+| La solución fue implementada y se necesita evaluar el valor entregado | `ba:solution-evaluation` |
+| Los requisitos especificados requieren análisis estratégico adicional | `ba:strategy` |
+| Hay una brecha en la especificación identificada en revisión | Nueva iteración de `ba:requirements-analysis` |
 
 ---
 
 ## Artefacto esperado
 
-`{wp}/babok-requirements-analysis.md`
+`{wp}/ba-requirements-analysis.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: babok:requirements-analysis
+phase: ba:requirements-analysis
 author: [nombre]
 status: Borrador
 ```
@@ -213,11 +213,11 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: babok:requirements-analysis
-flow: babok
-babok_ka: requirements_analysis_design
+methodology_step: ba:requirements-analysis
+flow: ba
+ba_ka: requirements_analysis_design
 ```
 
 ## Siguiente paso
 
-Usar la **Routing Table** — la transición más frecuente es hacia `babok:requirements-lifecycle` para gestionar los requisitos especificados, o hacia `babok:solution-evaluation` cuando la solución ya está implementada.
+Usar la **Routing Table** — la transición más frecuente es hacia `ba:requirements-lifecycle` para gestionar los requisitos especificados, o hacia `ba:solution-evaluation` cuando la solución ya está implementada.

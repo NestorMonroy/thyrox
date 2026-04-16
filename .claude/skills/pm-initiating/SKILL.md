@@ -1,13 +1,13 @@
 ---
-name: pmbok-initiating
-description: "Use when starting a PMBOK project or phase. pmbok:initiating — develop Project Charter, identify stakeholders, define high-level scope and risks, obtain formal authorization to proceed."
+name: pm-initiating
+description: "Use when starting a PMBOK project or phase. pm:initiating — develop Project Charter, identify stakeholders, define high-level scope and risks, obtain formal authorization to proceed."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /pmbok-initiating — PMBOK: Initiating
+# /pm-initiating — PMBOK: Initiating
 
 > *"Without a Project Charter, there is no project — only work. The Charter is the formal authorization that transforms effort into a managed initiative with accountability and scope."*
 
@@ -156,13 +156,13 @@ En Initiating, el análisis de riesgos es preliminar:
 
 ## Artefacto esperado
 
-`{wp}/pmbok-initiating.md`
+`{wp}/pm-initiating.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: pmbok:initiating
+phase: pm:initiating
 author: [nombre]
 status: Borrador
 ```
@@ -218,8 +218,8 @@ status: Borrador
 - [ ] Equipo confirmado para Planning
 
 ## Decisión
-- [ ] Avanzar a pmbok:planning
-- [ ] Permanecer en pmbok:initiating (motivo: ...)
+- [ ] Avanzar a pm:planning
+- [ ] Permanecer en pm:initiating (motivo: ...)
 ```
 
 ---
@@ -239,22 +239,22 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: pmbok:initiating
-flow: pmbok
-pmbok_process_group: initiating
+methodology_step: pm:initiating
+flow: pm
+pm_process_group: initiating
 ```
 
 **Al COMPLETAR** (Charter firmado):
 ```yaml
-methodology_step: pmbok:initiating  # completado → listo para pmbok:planning
-flow: pmbok
-pmbok_process_group: initiating
+methodology_step: pm:initiating  # completado → listo para pm:planning
+flow: pm
+pm_process_group: initiating
 ```
 
 ## Siguiente paso
 
-- Charter firmado → `pmbok:planning`
-- Charter no firmado / business need no claro → permanecer en `pmbok:initiating`
+- Charter firmado → `pm:planning`
+- Charter no firmado / business need no claro → permanecer en `pm:initiating`
 
 ---
 

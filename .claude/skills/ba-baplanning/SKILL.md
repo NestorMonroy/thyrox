@@ -1,13 +1,13 @@
 ---
-name: babok-baplanning
-description: "Use when planning Business Analysis activities in BABOK. babok:baplanning — develop the BA Plan, define stakeholder engagement approach, establish governance, create babok-progress tracking structure."
+name: ba-baplanning
+description: "Use when planning Business Analysis activities in BABOK. ba:baplanning — develop the BA Plan, define stakeholder engagement approach, establish governance, create babok-progress tracking structure."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /babok-baplanning — BABOK: Business Analysis Planning & Monitoring
+# /ba-baplanning — BABOK: Business Analysis Planning & Monitoring
 
 > *"Planning is not about predicting the future — it's about creating a framework for making good decisions when the unexpected happens. The BA Plan is the agreement between the BA and the stakeholders about how business analysis will be conducted."*
 
@@ -33,22 +33,22 @@ A diferencia de RUP o PMBOK, BABOK no tiene fases secuenciales fijas. Las 6 Know
 
 | Knowledge Area | Skill | Cuándo activar |
 |---------------|-------|----------------|
-| **Business Analysis Planning & Monitoring** | `babok:baplanning` | Al inicio — define el marco de trabajo |
-| **Elicitation & Collaboration** | `babok:elicitation` | Cuando se necesita recopilar información de stakeholders |
-| **Requirements Life Cycle Management** | `babok:requirements-lifecycle` | Cuando hay requisitos que gestionar y trazar |
-| **Strategy Analysis** | `babok:strategy` | Cuando se necesita analizar el estado actual y definir el estado futuro |
-| **Requirements Analysis & Design Definition** | `babok:requirements-analysis` | Cuando se modelan y especifican requisitos |
-| **Solution Evaluation** | `babok:solution-evaluation` | Cuando se evalúa si la solución entregó el valor esperado |
+| **Business Analysis Planning & Monitoring** | `ba:baplanning` | Al inicio — define el marco de trabajo |
+| **Elicitation & Collaboration** | `ba:elicitation` | Cuando se necesita recopilar información de stakeholders |
+| **Requirements Life Cycle Management** | `ba:requirements-lifecycle` | Cuando hay requisitos que gestionar y trazar |
+| **Strategy Analysis** | `ba:strategy` | Cuando se necesita analizar el estado actual y definir el estado futuro |
+| **Requirements Analysis & Design Definition** | `ba:requirements-analysis` | Cuando se modelan y especifican requisitos |
+| **Solution Evaluation** | `ba:solution-evaluation` | Cuando se evalúa si la solución entregó el valor esperado |
 
 > **Routing Table** — desde baplanning, los próximos pasos dependen del contexto:
 
 | Situación | Próxima KA recomendada |
 |-----------|----------------------|
-| Dominio poco conocido — hay que entender el negocio | `babok:elicitation` |
-| Existe un problema de negocio claro que analizar | `babok:strategy` |
-| Hay requisitos iniciales pero sin modelar | `babok:requirements-analysis` |
-| Hay requisitos existentes que gestionar o actualizar | `babok:requirements-lifecycle` |
-| Se entregó una solución y hay que evaluar su valor | `babok:solution-evaluation` |
+| Dominio poco conocido — hay que entender el negocio | `ba:elicitation` |
+| Existe un problema de negocio claro que analizar | `ba:strategy` |
+| Hay requisitos iniciales pero sin modelar | `ba:requirements-analysis` |
+| Hay requisitos existentes que gestionar o actualizar | `ba:requirements-lifecycle` |
+| Se entregó una solución y hay que evaluar su valor | `ba:solution-evaluation` |
 
 ---
 
@@ -124,12 +124,12 @@ El archivo `babok-progress.md` es el artefacto de tracking multi-KA para proyect
 
 | KA | Skill | Estado | Última activación | Artefacto |
 |----|-------|--------|------------------|-----------|
-| Business Analysis Planning | babok:baplanning | ✅ Completado | [fecha] | babok-baplanning.md |
-| Elicitation & Collaboration | babok:elicitation | ⬜ No iniciado | — | — |
-| Requirements Life Cycle | babok:requirements-lifecycle | ⬜ No iniciado | — | — |
-| Strategy Analysis | babok:strategy | ⬜ No iniciado | — | — |
-| Requirements Analysis | babok:requirements-analysis | ⬜ No iniciado | — | — |
-| Solution Evaluation | babok:solution-evaluation | ⬜ No iniciado | — | — |
+| Business Analysis Planning | ba:baplanning | ✅ Completado | [fecha] | babok-baplanning.md |
+| Elicitation & Collaboration | ba:elicitation | ⬜ No iniciado | — | — |
+| Requirements Life Cycle | ba:requirements-lifecycle | ⬜ No iniciado | — | — |
+| Strategy Analysis | ba:strategy | ⬜ No iniciado | — | — |
+| Requirements Analysis | ba:requirements-analysis | ⬜ No iniciado | — | — |
+| Solution Evaluation | ba:solution-evaluation | ⬜ No iniciado | — | — |
 
 ## Routing History
 [Registro de activaciones y sus razones]
@@ -153,13 +153,13 @@ El archivo `babok-progress.md` es el artefacto de tracking multi-KA para proyect
 
 ## Artefacto esperado
 
-`{wp}/babok-baplanning.md`
+`{wp}/ba-baplanning.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: babok:baplanning
+phase: ba:baplanning
 author: [nombre]
 status: Borrador
 ```
@@ -214,16 +214,16 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: babok:baplanning
-flow: babok
-babok_ka: business_analysis_planning
+methodology_step: ba:baplanning
+flow: ba
+ba_ka: business_analysis_planning
 ```
 
 **Al COMPLETAR:**
 ```yaml
-methodology_step: babok:baplanning  # completado
-flow: babok
-babok_ka: business_analysis_planning
+methodology_step: ba:baplanning  # completado
+flow: ba
+ba_ka: business_analysis_planning
 ```
 
 ## Siguiente paso

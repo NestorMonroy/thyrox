@@ -1,13 +1,13 @@
 ---
-name: babok-solution-evaluation
-description: "Use when evaluating whether a solution delivered the expected business value in BABOK. babok:solution-evaluation — measure solution performance with KPIs, assess value realization, identify limitations, recommend next steps."
+name: ba-solution-evaluation
+description: "Use when evaluating whether a solution delivered the expected business value in BABOK. ba:solution-evaluation — measure solution performance with KPIs, assess value realization, identify limitations, recommend next steps."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /babok-solution-evaluation — BABOK: Solution Evaluation
+# /ba-solution-evaluation — BABOK: Solution Evaluation
 
 > *"A solution is only as good as the value it delivers. Building the right thing correctly is not enough — the BA must confirm that the solution actually resolved the business need that justified the investment."*
 
@@ -23,7 +23,7 @@ Ejecuta la Knowledge Area **Solution Evaluation** de BABOK v3. Mide el performan
 
 Requiere:
 - La solución implementada en producción o en uso real (no en staging)
-- Métricas del estado actual (baseline) definidas en `babok:strategy` o `babok:baplanning`
+- Métricas del estado actual (baseline) definidas en `ba:strategy` o `ba:baplanning`
 - Datos reales de uso de la solución (mínimo 2-4 semanas de datos en producción)
 
 ---
@@ -116,8 +116,8 @@ Basadas en la evaluación, definir los próximos pasos:
 | Tipo de recomendación | Criterio | Acción |
 |----------------------|---------|--------|
 | **Iniciativa nueva** | KPIs logrados; business need resuelto; usuarios satisfechos; nuevo gap identificado | Iniciar nueva KA de Strategy Analysis |
-| **Mejora de la solución** | KPIs parcialmente logrados; limitaciones funcionales que deben resolverse | Re-iniciar `babok:requirements-analysis` con los gaps identificados |
-| **Corrección** | KPIs no logrados; solución no usada como diseñada | Investigar con `babok:elicitation` + `babok:strategy` |
+| **Mejora de la solución** | KPIs parcialmente logrados; limitaciones funcionales que deben resolverse | Re-iniciar `ba:requirements-analysis` con los gaps identificados |
+| **Corrección** | KPIs no logrados; solución no usada como diseñada | Investigar con `ba:elicitation` + `ba:strategy` |
 | **Cierre** | KPIs logrados; business need resuelto; no hay nuevas necesidades identificadas | Cerrar la iniciativa de BA |
 
 ---
@@ -126,23 +126,23 @@ Basadas en la evaluación, definir los próximos pasos:
 
 | Situación | Próxima KA recomendada |
 |-----------|----------------------|
-| Evaluación positiva; nueva necesidad identificada | `babok:strategy` (nueva iniciativa) |
-| Evaluación parcial; hay gaps que resolver | `babok:requirements-analysis` (nueva iteración) |
-| Evaluación negativa; necesita re-análisis del problema | `babok:elicitation` + `babok:strategy` |
+| Evaluación positiva; nueva necesidad identificada | `ba:strategy` (nueva iniciativa) |
+| Evaluación parcial; hay gaps que resolver | `ba:requirements-analysis` (nueva iteración) |
+| Evaluación negativa; necesita re-análisis del problema | `ba:elicitation` + `ba:strategy` |
 | Evaluación positiva; no hay nuevas necesidades | Cierre de la iniciativa BABOK |
-| Limitaciones de datos que impiden la evaluación | `babok:elicitation` para obtener más datos |
+| Limitaciones de datos que impiden la evaluación | `ba:elicitation` para obtener más datos |
 
 ---
 
 ## Artefacto esperado
 
-`{wp}/babok-solution-evaluation.md`
+`{wp}/ba-solution-evaluation.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: babok:solution-evaluation
+phase: ba:solution-evaluation
 evaluation_date: [fecha]
 author: [nombre]
 status: Borrador
@@ -198,16 +198,16 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: babok:solution-evaluation
-flow: babok
-babok_ka: solution_evaluation
+methodology_step: ba:solution-evaluation
+flow: ba
+ba_ka: solution_evaluation
 ```
 
 **Al COMPLETAR:**
 ```yaml
-methodology_step: babok:solution-evaluation  # completado
-flow: babok
-babok_ka: solution_evaluation
+methodology_step: ba:solution-evaluation  # completado
+flow: ba
+ba_ka: solution_evaluation
 ```
 
 ## Siguiente paso

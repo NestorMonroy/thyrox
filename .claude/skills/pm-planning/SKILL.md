@@ -1,13 +1,13 @@
 ---
-name: pmbok-planning
-description: "Use when developing the project management plan in PMBOK. pmbok:planning — develop all subsidiary plans across 10 knowledge areas, create WBS, define schedule with CPM/PERT, estimate costs, plan quality/risks/communications/stakeholders."
+name: pm-planning
+description: "Use when developing the project management plan in PMBOK. pm:planning — develop all subsidiary plans across 10 knowledge areas, create WBS, define schedule with CPM/PERT, estimate costs, plan quality/risks/communications/stakeholders."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /pmbok-planning — PMBOK: Planning
+# /pm-planning — PMBOK: Planning
 
 > *"Planning is the most undervalued process group in project management. Every hour spent in solid planning eliminates three to ten hours of rework during execution. The plan is not the goal — the plan is the tool that makes the goal achievable."*
 
@@ -21,7 +21,7 @@ Ejecuta el **Grupo de Proceso Planning** de PMBOK. Desarrolla todos los planes s
 
 ## Pre-condición
 
-Requiere: `{wp}/pmbok-initiating.md` con:
+Requiere: `{wp}/pm-initiating.md` con:
 - Project Charter firmado por el sponsor
 - Stakeholder Register inicial completo
 - PM asignado con autoridad delegada
@@ -212,13 +212,13 @@ Para cada deliverable o actividad clave del WBS:
 
 ## Artefacto esperado
 
-`{wp}/pmbok-planning.md`
+`{wp}/pm-planning.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: pmbok:planning
+phase: pm:planning
 author: [nombre]
 status: Borrador
 ```
@@ -276,7 +276,7 @@ status: Borrador
 - [ ] Project Management Plan aprobado
 
 ## Decisión
-- [ ] Avanzar a pmbok:executing
+- [ ] Avanzar a pm:executing
 - [ ] Más iteración de planning (motivo: ...)
 ```
 
@@ -297,22 +297,22 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: pmbok:planning
-flow: pmbok
-pmbok_process_group: planning
+methodology_step: pm:planning
+flow: pm
+pm_process_group: planning
 ```
 
 **Al COMPLETAR** (Project Management Plan aprobado):
 ```yaml
-methodology_step: pmbok:planning  # completado → listo para pmbok:executing
-flow: pmbok
-pmbok_process_group: planning
+methodology_step: pm:planning  # completado → listo para pm:executing
+flow: pm
+pm_process_group: planning
 ```
 
 ## Siguiente paso
 
-- Project Management Plan aprobado → `pmbok:executing` (+ `pmbok:monitoring` en paralelo)
-- Plan no aprobado → más iteración de `pmbok:planning` con gaps documentados
+- Project Management Plan aprobado → `pm:executing` (+ `pm:monitoring` en paralelo)
+- Plan no aprobado → más iteración de `pm:planning` con gaps documentados
 
 ---
 

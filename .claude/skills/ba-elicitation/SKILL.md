@@ -1,13 +1,13 @@
 ---
-name: babok-elicitation
-description: "Use when collecting information from stakeholders in BABOK. babok:elicitation — plan and execute elicitation activities, confirm results with stakeholders, communicate findings."
+name: ba-elicitation
+description: "Use when collecting information from stakeholders in BABOK. ba:elicitation — plan and execute elicitation activities, confirm results with stakeholders, communicate findings."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /babok-elicitation — BABOK: Elicitation & Collaboration
+# /ba-elicitation — BABOK: Elicitation & Collaboration
 
 > *"Elicitation is not just asking questions — it is the art of helping stakeholders articulate needs they may not fully understand themselves. The most important requirements are often the ones stakeholders cannot express without facilitation."*
 
@@ -21,7 +21,7 @@ Ejecuta la Knowledge Area **Elicitation & Collaboration** de BABOK v3. Planifica
 
 ## Pre-condición
 
-Requiere: `{wp}/babok-baplanning.md` con:
+Requiere: `{wp}/ba-baplanning.md` con:
 - Stakeholder Engagement Approach definido
 - Técnicas de elicitación seleccionadas
 - Governance Approach con proceso de confirmación
@@ -36,8 +36,8 @@ Requiere: `{wp}/babok-baplanning.md` con:
 
 ## Cuándo NO usar este paso
 
-- Si los requisitos ya están bien documentados y confirmados → ir a `babok:requirements-analysis`
-- Si el trabajo es evaluar si una solución funcionó → ir a `babok:solution-evaluation`
+- Si los requisitos ya están bien documentados y confirmados → ir a `ba:requirements-analysis`
+- Si el trabajo es evaluar si una solución funcionó → ir a `ba:solution-evaluation`
 
 ---
 
@@ -116,11 +116,11 @@ La confirmación es un paso obligatorio que cierra cada actividad de elicitació
 
 | Situación | Próxima KA recomendada |
 |-----------|----------------------|
-| La elicitación reveló que hay un problema estratégico sin análisis | `babok:strategy` |
-| Hay suficiente información para modelar y especificar requisitos | `babok:requirements-analysis` |
-| Los requisitos elicitados necesitan trazabilidad y gestión de cambios | `babok:requirements-lifecycle` |
-| La elicitación fue insuficiente (gaps, stakeholders faltantes) | Nueva ronda de `babok:elicitation` |
-| La solución ya existe y se necesita evaluar si cumplió las necesidades | `babok:solution-evaluation` |
+| La elicitación reveló que hay un problema estratégico sin análisis | `ba:strategy` |
+| Hay suficiente información para modelar y especificar requisitos | `ba:requirements-analysis` |
+| Los requisitos elicitados necesitan trazabilidad y gestión de cambios | `ba:requirements-lifecycle` |
+| La elicitación fue insuficiente (gaps, stakeholders faltantes) | Nueva ronda de `ba:elicitation` |
+| La solución ya existe y se necesita evaluar si cumplió las necesidades | `ba:solution-evaluation` |
 
 ---
 
@@ -136,13 +136,13 @@ La confirmación es un paso obligatorio que cierra cada actividad de elicitació
 
 ## Artefacto esperado
 
-`{wp}/babok-elicitation.md`
+`{wp}/ba-elicitation.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: babok:elicitation
+phase: ba:elicitation
 iteration: [N]
 author: [nombre]
 status: Borrador
@@ -186,16 +186,16 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: babok:elicitation
-flow: babok
-babok_ka: elicitation_collaboration
+methodology_step: ba:elicitation
+flow: ba
+ba_ka: elicitation_collaboration
 ```
 
 **Al COMPLETAR:**
 ```yaml
-methodology_step: babok:elicitation  # completado — resultados confirmados
-flow: babok
-babok_ka: elicitation_collaboration
+methodology_step: ba:elicitation  # completado — resultados confirmados
+flow: ba
+ba_ka: elicitation_collaboration
 ```
 
 ## Siguiente paso

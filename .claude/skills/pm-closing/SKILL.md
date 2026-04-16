@@ -1,13 +1,13 @@
 ---
-name: pmbok-closing
-description: "Use when formally closing a PMBOK project or phase. pmbok:closing — obtain final acceptance, document lessons learned by knowledge area, archive project artifacts, release resources, close contracts."
+name: pm-closing
+description: "Use when formally closing a PMBOK project or phase. pm:closing — obtain final acceptance, document lessons learned by knowledge area, archive project artifacts, release resources, close contracts."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /pmbok-closing — PMBOK: Closing
+# /pm-closing — PMBOK: Closing
 
 > *"A project that ends without formal closure leaves loose ends: contracts still open, lessons not captured, and team members uncertain whether the work is truly done. Closing is the discipline of making endings official."*
 
@@ -21,7 +21,7 @@ Ejecuta el **Grupo de Proceso Closing** de PMBOK. Obtiene la aceptación formal 
 
 ## Pre-condición
 
-Requiere: `{wp}/pmbok-executing.md` o `{wp}/pmbok-monitoring.md` con:
+Requiere: `{wp}/pm-executing.md` o `{wp}/pm-monitoring.md` con:
 - Todos los deliverables verificados contra el scope baseline
 - Defectos críticos resueltos o formalmente aceptados
 - Performance dentro de los umbrales aprobados de EVM
@@ -181,13 +181,13 @@ Un reporte de cierre conciso para el registro de la organización:
 
 ## Artefacto esperado
 
-`{wp}/pmbok-closing.md`
+`{wp}/pm-closing.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: pmbok:closing
+phase: pm:closing
 author: [nombre]
 status: Borrador
 ```
@@ -259,16 +259,16 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: pmbok:closing
-flow: pmbok
-pmbok_process_group: closing
+methodology_step: pm:closing
+flow: pm
+pm_process_group: closing
 ```
 
 **Al COMPLETAR** (proyecto cerrado):
 ```yaml
-methodology_step: pmbok:closing  # completado — proyecto PMBOK cerrado
-flow: pmbok
-pmbok_process_group: closing
+methodology_step: pm:closing  # completado — proyecto PMBOK cerrado
+flow: pm
+pm_process_group: closing
 ```
 
 ## Siguiente paso

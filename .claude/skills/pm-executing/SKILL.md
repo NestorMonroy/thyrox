@@ -1,13 +1,13 @@
 ---
-name: pmbok-executing
-description: "Use when managing the execution of a PMBOK project. pmbok:executing — direct and manage project work, conduct quality audits, manage team and stakeholder engagement, implement approved changes."
+name: pm-executing
+description: "Use when managing the execution of a PMBOK project. pm:executing — direct and manage project work, conduct quality audits, manage team and stakeholder engagement, implement approved changes."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /pmbok-executing — PMBOK: Executing
+# /pm-executing — PMBOK: Executing
 
 > *"Executing is where plans meet reality. The PM's job is not to protect the plan — it's to produce deliverables while managing the inevitable gap between what was planned and what is actually happening."*
 
@@ -21,7 +21,7 @@ Ejecuta el **Grupo de Proceso Executing** de PMBOK. Dirige y gestiona el trabajo
 
 ## Pre-condición
 
-Requiere: `{wp}/pmbok-planning.md` con:
+Requiere: `{wp}/pm-planning.md` con:
 - Project Management Plan aprobado (scope baseline, schedule baseline, cost baseline)
 - Roles y responsabilidades definidos (RACI)
 - Plan de calidad con estándares definidos
@@ -173,13 +173,13 @@ Executing no "termina" en una fecha — continúa hasta que todos los deliverabl
 
 ## Artefacto esperado
 
-`{wp}/pmbok-executing.md`
+`{wp}/pm-executing.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: pmbok:executing
+phase: pm:executing
 iteration: [N]
 author: [nombre]
 status: Borrador
@@ -227,22 +227,22 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: pmbok:executing
-flow: pmbok
-pmbok_process_group: executing
+methodology_step: pm:executing
+flow: pm
+pm_process_group: executing
 ```
 
 **Al COMPLETAR** (todos los deliverables completados):
 ```yaml
-methodology_step: pmbok:executing  # completado → listo para pmbok:closing
-flow: pmbok
-pmbok_process_group: executing
+methodology_step: pm:executing  # completado → listo para pm:closing
+flow: pm
+pm_process_group: executing
 ```
 
 ## Siguiente paso
 
-- Todos los deliverables completados → `pmbok:closing`
-- En paralelo continuo → `pmbok:monitoring` (Monitoring & Controlling corre en paralelo con Executing)
+- Todos los deliverables completados → `pm:closing`
+- En paralelo continuo → `pm:monitoring` (Monitoring & Controlling corre en paralelo con Executing)
 
 ---
 

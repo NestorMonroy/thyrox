@@ -1,13 +1,13 @@
 ---
-name: pmbok-monitoring
-description: "Use when tracking and controlling a PMBOK project. pmbok:monitoring — measure project performance with EVM, manage integrated change control, control scope/schedule/cost/quality, implement corrective actions."
+name: pm-monitoring
+description: "Use when tracking and controlling a PMBOK project. pm:monitoring — measure project performance with EVM, manage integrated change control, control scope/schedule/cost/quality, implement corrective actions."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /pmbok-monitoring — PMBOK: Monitoring & Controlling
+# /pm-monitoring — PMBOK: Monitoring & Controlling
 
 > *"Monitoring without controlling is just watching a car drive off a cliff. The value of performance measurement is not the measurement itself — it's the corrective action it enables before the project goes too far off course."*
 
@@ -21,7 +21,7 @@ Ejecuta el **Grupo de Proceso Monitoring & Controlling** de PMBOK. Mide el rendi
 
 ## Pre-condición
 
-Requiere: `{wp}/pmbok-planning.md` con:
+Requiere: `{wp}/pm-planning.md` con:
 - Baselines aprobadas: scope baseline, schedule baseline, cost baseline
 - EAC inicial calculado para comparar con performance actual
 
@@ -188,13 +188,13 @@ En Monitoring & Controlling, el Risk Register se revisa y actualiza periódicame
 
 ## Artefacto esperado
 
-`{wp}/pmbok-monitoring.md`
+`{wp}/pm-monitoring.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: pmbok:monitoring
+phase: pm:monitoring
 reporting_period: [YYYY-MM-DD a YYYY-MM-DD]
 author: [nombre]
 status: Borrador
@@ -266,21 +266,21 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: pmbok:monitoring
-flow: pmbok
-pmbok_process_group: monitoring_controlling
+methodology_step: pm:monitoring
+flow: pm
+pm_process_group: monitoring_controlling
 ```
 
 **Activo en paralelo con Executing:**
 ```yaml
-methodology_step: pmbok:executing+monitoring
-flow: pmbok
-pmbok_process_group: executing+monitoring_controlling
+methodology_step: pm:executing+monitoring
+flow: pm
+pm_process_group: executing+monitoring_controlling
 ```
 
 ## Siguiente paso
 
-- Todos los deliverables verificados y aceptados → `pmbok:closing`
+- Todos los deliverables verificados y aceptados → `pm:closing`
 - Varianza crítica detectada → Change Request + acción correctiva + continuar Monitoring
 
 ---

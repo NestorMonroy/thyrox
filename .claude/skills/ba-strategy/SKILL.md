@@ -1,13 +1,13 @@
 ---
-name: babok-strategy
-description: "Use when analyzing the business problem and defining the change strategy in BABOK. babok:strategy — analyze current state, define future state, assess risks of the change, identify gaps, recommend solution approach."
+name: ba-strategy
+description: "Use when analyzing the business problem and defining the change strategy in BABOK. ba:strategy — analyze current state, define future state, assess risks of the change, identify gaps, recommend solution approach."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
-# /babok-strategy — BABOK: Strategy Analysis
+# /ba-strategy — BABOK: Strategy Analysis
 
 > *"Strategy Analysis is the bridge between understanding the current state and defining what needs to change. Without this bridge, requirements are solutions in search of a problem."*
 
@@ -22,7 +22,7 @@ Ejecuta la Knowledge Area **Strategy Analysis** de BABOK v3. Analiza el estado a
 ## Pre-condición
 
 Requiere comprensión del dominio de negocio, obtenida de:
-- `{wp}/babok-elicitation.md` con necesidades de los stakeholders articuladas, O
+- `{wp}/ba-elicitation.md` con necesidades de los stakeholders articuladas, O
 - Documentación del negocio disponible (procesos, métricas, restricciones)
 
 ---
@@ -35,8 +35,8 @@ Requiere comprensión del dominio de negocio, obtenida de:
 
 ## Cuándo NO usar este paso
 
-- Si el estado futuro ya está definido y acordado — ir directamente a `babok:requirements-analysis`
-- Si el trabajo es solo gestionar requisitos existentes sin análisis estratégico — ir a `babok:requirements-lifecycle`
+- Si el estado futuro ya está definido y acordado — ir directamente a `ba:requirements-analysis`
+- Si el trabajo es solo gestionar requisitos existentes sin análisis estratégico — ir a `ba:requirements-lifecycle`
 
 ---
 
@@ -128,22 +128,22 @@ Basada en el análisis, recomendar el enfoque:
 
 | Situación | Próxima KA recomendada |
 |-----------|----------------------|
-| La estrategia está definida y se necesita especificar los requisitos | `babok:requirements-analysis` |
-| Se necesita más información del estado actual | `babok:elicitation` |
-| Los requisitos del cambio estratégico necesitan trazabilidad | `babok:requirements-lifecycle` |
-| La solución fue implementada y se necesita evaluar si cerró los gaps | `babok:solution-evaluation` |
+| La estrategia está definida y se necesita especificar los requisitos | `ba:requirements-analysis` |
+| Se necesita más información del estado actual | `ba:elicitation` |
+| Los requisitos del cambio estratégico necesitan trazabilidad | `ba:requirements-lifecycle` |
+| La solución fue implementada y se necesita evaluar si cerró los gaps | `ba:solution-evaluation` |
 
 ---
 
 ## Artefacto esperado
 
-`{wp}/babok-strategy.md`
+`{wp}/ba-strategy.md`
 
 ```yml
 created_at: [timestamp]
 project: [nombre]
 work_package: [wp-id]
-phase: babok:strategy
+phase: ba:strategy
 author: [nombre]
 status: Borrador
 ```
@@ -204,11 +204,11 @@ status: Borrador
 
 **Al INICIAR este step:**
 ```yaml
-methodology_step: babok:strategy
-flow: babok
-babok_ka: strategy_analysis
+methodology_step: ba:strategy
+flow: ba
+ba_ka: strategy_analysis
 ```
 
 ## Siguiente paso
 
-Usar la **Routing Table** — la transición más frecuente desde Strategy Analysis es hacia `babok:requirements-analysis` con los gaps bien definidos como punto de partida.
+Usar la **Routing Table** — la transición más frecuente desde Strategy Analysis es hacia `ba:requirements-analysis` con los gaps bien definidos como punto de partida.
