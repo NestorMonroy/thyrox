@@ -2,11 +2,11 @@
 project: THYROX
 Work package: 2026-04-15-08-29-58-plugin-distribution
 created_at: 2026-04-15 08:29:58
-updated_at: 2026-04-15 08:35:00
-current_phase: Phase 1 — ANALYZE
-open_risks: 6
-mitigated_risks: 0
-closed_risks: 0
+updated_at: 2026-04-16 17:24:02
+current_phase: Phase 11 — TRACK/EVALUATE
+open_risks: 2
+mitigated_risks: 2
+closed_risks: 2
 author: NestorMonroy
 ```
 
@@ -18,12 +18,12 @@ author: NestorMonroy
 
 | ID | Descripción | Probabilidad | Impacto | Severidad | Estado | Dueño |
 |----|-------------|:------------:|:-------:|:---------:|--------|-------|
-| R-001 | SessionStart hook no idempotente — crea estado duplicado | media | alto | alta | abierto | NestorMonroy |
-| R-002 | Safety invariant bloquea escritura de `.thyrox/` desde hook | media | alto | alta | abierto | NestorMonroy |
-| R-003 | Marketplace no disponible / cambio de API de plugins | baja | alto | alta | abierto | NestorMonroy |
-| R-004 | compound-engineering usa mecanismo no documentado — difícil de replicar | alta | medio | alta | abierto | NestorMonroy |
-| R-005 | Tech skills proyecto-específicos incluidos en plugin por error | alta | medio | alta | abierto | NestorMonroy |
-| R-006 | `hooks/hooks.json` migración rompe hooks existentes en usuarios template | media | medio | media | abierto | NestorMonroy |
+| R-001 | SessionStart hook no idempotente — crea estado duplicado | media | alto | alta | **cerrado** | NestorMonroy |
+| R-002 | Safety invariant bloquea escritura de `.thyrox/` desde hook | media | alto | alta | **abierto** | NestorMonroy |
+| R-003 | Marketplace no disponible / cambio de API de plugins | baja | alto | alta | **abierto** | NestorMonroy |
+| R-004 | compound-engineering usa mecanismo no documentado — difícil de replicar | alta | medio | alta | **mitigado** | NestorMonroy |
+| R-005 | Tech skills proyecto-específicos incluidos en plugin por error | alta | medio | alta | **cerrado** | NestorMonroy |
+| R-006 | `hooks/hooks.json` migración rompe hooks existentes en usuarios template | media | medio | media | **mitigado** | NestorMonroy |
 
 ---
 
@@ -245,7 +245,21 @@ Y tiene el template, los hooks duplicados pueden causar ejecución doble.
 
 ## Riesgos cerrados
 
-_(ninguno en Phase 1)_
+### R-001: SessionStart hook sin idempotencia — CERRADO
+
+Guard `[ -d .thyrox/context ] && exit 0` implementado en `bin/thyrox-init.sh`. T-014 confirmó idempotencia: segunda ejecución sale inmediatamente sin tocar ningún archivo.
+
+### R-005: Tech skills incluidos en plugin por error — CERRADO
+
+`plugin.json` apunta a `../.claude/skills/` donde solo viven `thyrox/` y `workflow-*/`. Los tech skills generados por `registry/_generator.sh` viven en el proyecto destino, no en el plugin. Separación implementada por diseño.
+
+### R-004: compound-engineering usa mecanismo no documentado — MITIGADO
+
+No fue necesario replicar el mecanismo exacto. `hooks/hooks.json` + `bin/thyrox-init.sh` son primitivas documentadas que logran el mismo resultado. La arquitectura no depende de mecanismos no documentados.
+
+### R-006: Migración de hooks rompe repos template — MITIGADO
+
+`bin/thyrox-init.sh` solo crea `.claude/settings.json` si no existe. Repos que ya tienen el archivo (usuarios template) no son afectados.
 
 ---
 
