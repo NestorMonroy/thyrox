@@ -57,7 +57,7 @@ GAPs identificados en `discover/plugin-distribution-analysis.md`:
 
 ### Grupo 4 — Eliminar setup-template.sh (GAP-005)
 
-- [ ] [T-012] Eliminar `setup-template.sh` del repositorio (GAP-005)
+- [x] [T-012] Eliminar `setup-template.sh` del repositorio (GAP-005)
   - ⚠ GATE OPERACIÓN — operación irreversible con git. Confirmar antes de ejecutar.
   - Depende de: T-011 (thyrox-init.sh debe estar listo antes de eliminar el reemplazo)
 
