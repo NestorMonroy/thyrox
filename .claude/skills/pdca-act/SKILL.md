@@ -3,6 +3,7 @@ name: pdca-act
 description: "Use when deciding whether to standardize or adjust a PDCA improvement. pdca:act — standardize and scale if successful, or adjust and plan next cycle if not. Document lessons learned."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
+disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
@@ -10,20 +11,31 @@ updated_at: 2026-04-16 00:00:00
 
 > *"Standardize what works, or you'll lose the gain. Every successful improvement that isn't standardized will regress."*
 
-Ejecuta el paso **Act** del ciclo PDCA. Decide estandarizar y escalar, o ajustar y repetir. En ambos casos, documenta lo aprendido.
+Ejecuta el paso **Act** del ciclo PDCA. Decide estandarizar y escalar, o ajustar y repetir. En ambos casos, documenta lo aprendido y comunica el resultado.
+
+**THYROX Stage:** Stage 10 IMPLEMENT / Stage 12 STANDARDIZE (si estandarización completa).
+
+---
+
+## Pre-condición
+
+Requiere: `{wp}/pdca-check.md` con:
+- Veredicto claro (éxito / parcial / falla) respaldado por datos
+- Análisis de causas del resultado
+- Recomendación para Act
 
 ---
 
 ## Cuándo usar este paso
 
-- Cuando Check ha producido un veredicto claro (éxito / parcial / falla) con datos
+- Cuando Check ha producido un veredicto claro con datos
 - Para cerrar el ciclo actual y determinar el siguiente paso
 - Para que la mejora sobreviva más allá del piloto
 
 ## Cuándo NO usar este paso
 
 - Sin Check completado — Act sin datos es una decisión ciega
-- Si el Check identificó contaminación externa que invalida los datos — repetir Do primero
+- Si el Check identificó contaminación externa que invalida los datos → repetir Do primero
 
 ---
 
@@ -40,6 +52,7 @@ Check resultado
 │   ├── La hipótesis era correcta, implementación incompleta → NUEVO CICLO con plan ajustado
 │   └── La hipótesis era parcialmente correcta → NUEVO CICLO con hipótesis refinada
 └── Sin mejora o regresión
+    ├── Regresión revertida durante Do → documentar causa, NUEVO CICLO con análisis de estabilidad
     ├── Hipótesis incorrecta → NUEVO CICLO con análisis de Plan
     └── Implementación incorrecta → NUEVO CICLO con Do mejorado
 ```
@@ -68,9 +81,21 @@ Antes de escalar, preguntar: *¿Cómo evito que alguien revierta este cambio sin
 | **Constraint de sistema** | Hacer imposible el comportamiento anterior (ej: constraint de BD, type check) |
 | **Automatización** | El nuevo proceso corre automáticamente, no requiere acción manual |
 | **Alerta de regresión** | Monitor que avisa si la métrica vuelve al estado anterior |
-| **Documentación prominente** | Comentario o aviso en el código/config que explica por qué no revertir |
+| **Documentación prominente** | Aviso en el código/config que explica por qué no revertir |
 
-### 3. Escalar al ámbito completo
+### 3. Yokoten — despliegue horizontal
+
+Antes de escalar dentro del proceso, evaluar si la mejora es transferible a procesos análogos:
+
+| Pregunta | Acción |
+|----------|--------|
+| ¿Hay otros equipos/servicios con el mismo problema? | Identificarlos y notificarles el aprendizaje |
+| ¿La hipótesis aplica a procesos similares? | Proponer aplicar la misma solución, adaptada |
+| ¿Se puede generalizar la técnica más allá del caso concreto? | Documentar el patrón en el repositorio de mejoras |
+
+> Yokoten (横展開, despliegue horizontal) es el principio Lean de propagar aprendizajes entre procesos análogos. No es obligatorio, pero maximiza el valor de cada ciclo PDCA.
+
+### 4. Escalar al ámbito completo
 
 El piloto corrió en un subconjunto. Para escalar:
 
@@ -81,7 +106,15 @@ El piloto corrió en un subconjunto. Para escalar:
 | Training | ¿Alguien necesita aprender el nuevo proceso? |
 | Monitoreo post-rollout | ¿Qué métricas vigilar los primeros días? |
 
-### 4. Establecer nuevo baseline
+### 5. Comunicar el resultado a stakeholders
+
+| Audiencia | Qué comunicar | Cuándo |
+|-----------|---------------|--------|
+| Sponsor / dueño del proceso | Resultado vs objetivo SMART, impacto en negocio | Al finalizar Act |
+| Equipo operativo | El nuevo estándar, qué cambia en su trabajo | Antes del rollout |
+| Áreas análogas (si aplica Yokoten) | El aprendizaje clave y cómo replicarlo | Después de estabilizar |
+
+### 6. Establecer nuevo baseline
 
 Después de escalar, el resultado del ciclo se convierte en el nuevo baseline. Documentar:
 - Nueva métrica baseline (valor, fecha)
@@ -99,6 +132,7 @@ Después de escalar, el resultado del ciclo se convierte en el nuevo baseline. D
 | Implementación incompleta | Identificar por qué Do no ejecutó el plan completo |
 | Objetivo no realista | Ajustar la meta al alcance demostrado por los datos |
 | Condiciones externas | Aislar mejor el piloto o esperar condiciones más estables |
+| Regresión total revertida | Documentar la señal de parada, analizar qué variable causó la regresión antes de replantear la hipótesis |
 
 ### 2. Documentar el aprendizaje para el próximo ciclo
 
@@ -122,9 +156,36 @@ Documentar al final de cada ciclo:
 
 ---
 
+## A3 Report (opcional)
+
+Para comunicar el ciclo PDCA completo en una sola página, usar el formato **A3 Report**:
+
+| Sección | Contenido |
+|---------|-----------|
+| **Contexto** | Por qué el problema importa al negocio |
+| **Situación actual** | Baseline + Problem Statement |
+| **Objetivo** | SMART goal del Plan |
+| **Análisis** | Causa raíz identificada en Plan |
+| **Contramedidas** | Plan de acción y piloto Do |
+| **Resultado** | Comparativa Check (antes/después) |
+| **Próximos pasos** | Decisión Act: estandarizar / nuevo ciclo |
+
+> El A3 Report es el artefacto de comunicación estándar en Kaizen y Toyota Production System. Útil cuando el ciclo PDCA involucra múltiples stakeholders o cuando el resultado debe presentarse formalmente.
+
+---
+
 ## Artefacto esperado
 
-`{wp}/pdca-act.md` — Estructura mínima:
+`{wp}/pdca-act.md`
+
+```yml
+created_at: [timestamp]
+project: [nombre]
+work_package: [wp-id]
+phase: pdca:act
+author: [nombre]
+status: Borrador
+```
 
 ```markdown
 ## Decisión
@@ -134,7 +195,9 @@ Documentar al final de cada ciclo:
 ### Cambios al estándar
 - SOP/doc actualizado: [qué cambió]
 - Poka-yoke aplicado: [qué mecanismo previene regresión]
+- Yokoten evaluado: [áreas análogas notificadas / N/A]
 - Plan de rollout: [cómo se escala]
+- Comunicación a stakeholders: [sponsor / equipo / áreas análogas]
 - Nuevo baseline: [métrica = valor (fecha)]
 
 ## Si Nuevo ciclo:
@@ -155,16 +218,23 @@ Documentar al final de cada ciclo:
 - **Escalar sin poka-yoke** — sin mecanismo de protección, cualquier cambio posterior puede revertir la mejora accidentalmente
 - **"Nuevo ciclo" sin lección** — repetir el ciclo sin entender por qué falló el anterior es solo más tiempo desperdiciado
 - **Cerrar el WP con "parcialmente exitoso" sin definir qué sigue** — ambigüedad en Act produce entropía; siempre concluir con una acción clara
-- **Ajustar el objetivo para que "parezca éxito"** — es una trampa; si no alcanzó la meta, decirlo directamente y explicar qué se aprendió
+- **Ajustar el objetivo para que "parezca éxito"** — si no alcanzó la meta, decirlo directamente y explicar qué se aprendió
 - **No comunicar el resultado a stakeholders** — el ciclo PDCA tiene valor de aprendizaje organizacional, no solo técnico
+- **Ignorar Yokoten** — estandarizar solo en el proceso piloto cuando hay procesos análogos con el mismo problema desaprovecha el aprendizaje
 
 ---
 
 ## Estado en now.md
 
-Actualizar al completar:
-```
+**Al INICIAR este step:**
+```yaml
 methodology_step: pdca:act
+flow: pdca
+```
+
+**Al COMPLETAR** (decisión tomada, documentada y comunicada):
+```yaml
+methodology_step: pdca:act  # completado → estandarizar o nuevo ciclo
 flow: pdca
 ```
 
@@ -180,3 +250,4 @@ Si ciclo requiere ajuste → `pdca:plan` con hipótesis ajustada y lecciones inc
 - Act no puede compensar un Check sin datos; si los datos de Do son pobres, la decisión de Act será débil
 - La estandarización es responsabilidad del equipo dueño del proceso — este skill guía qué documentar, pero el ownership de los cambios debe ser claro
 - Para cambios que afectan múltiples equipos, el rollout requiere coordinación fuera del scope de este skill
+- Yokoten requiere que haya áreas análogas con problemas similares — no siempre aplica

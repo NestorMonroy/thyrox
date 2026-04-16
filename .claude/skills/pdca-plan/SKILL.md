@@ -3,6 +3,7 @@ name: pdca-plan
 description: "Use when starting a PDCA cycle or planning an improvement. pdca:plan — define the problem, analyze current state, establish measurable objectives, and design the improvement plan."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
+disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
@@ -12,26 +13,35 @@ updated_at: 2026-04-16 00:00:00
 
 Ejecuta el paso **Plan** del ciclo PDCA. Produce un plan de mejora con objetivos medibles y una hipótesis verificable.
 
+**THYROX Stage:** Stage 3 DIAGNOSE (primer ciclo, análisis de problema) · Stage 10 IMPLEMENT (ciclos subsiguientes de mejora continua).
+
+---
+
+## Pre-condición
+
+- **Primer ciclo:** work package activo con descripción inicial del problema.
+- **Ciclos subsiguientes:** `{wp}/pdca-act.md` del ciclo anterior con lecciones aprendidas y la hipótesis ajustada.
+
 ---
 
 ## Cuándo usar este paso
 
-- Al iniciar un ciclo PDCA nuevo (primer ciclo o ciclo ajustado)
+- Al iniciar un ciclo PDCA nuevo (primer ciclo o ciclo ajustado tras `pdca:act`)
 - Cuando hay un problema recurrente sin causa raíz identificada
 - Cuando una métrica de proceso está fuera del objetivo
-- Al recibir un requerimiento de mejora de un stakeholder
 
 ## Cuándo NO usar este paso
 
 - Si el problema ya está definido y el equipo tiene consenso → ir directo a `pdca:do`
 - Si el problema requiere análisis estadístico profundo → considerar DMAIC en su lugar
 - Si no hay datos disponibles del proceso → recopilar datos primero, luego planificar
+- Si el equipo es de una sola persona sin validación externa → buscar al menos una segunda perspectiva antes de fijar el Problem Statement
 
 ---
 
 ## Actividades
 
-### 1. Definir el problema (sin asumir causas)
+### 1. Definir el problema — sin asumir causas
 
 Usar la técnica **IS / IS NOT** para delimitar con precisión:
 
@@ -46,6 +56,7 @@ Usar la técnica **IS / IS NOT** para delimitar con precisión:
 - ✅ Describe el síntoma observable con datos: *"El tiempo de respuesta de la API supera 2s en el 30% de requests desde el 2026-03-01"*
 - ❌ Asume causa: *"La base de datos está lenta"* — esto es hipótesis, no problema
 - ❌ Implica solución: *"Necesitamos escalar los servidores"* — aún no sabemos
+- ❌ Sin magnitud: *"La API es lenta"* — no hay baseline
 
 ### 2. Analizar la situación actual
 
@@ -84,7 +95,7 @@ Ejemplo: *"Si agregamos índice compuesto en orders(user_id, created_at), entonc
 
 ### 5. Diseñar el plan de mejora
 
-Para cada acción del plan, definir:
+Para cada acción del plan:
 
 | Acción | Responsable | Fecha | Recursos | Criterio de éxito |
 |--------|-------------|-------|----------|-------------------|
@@ -99,16 +110,29 @@ Para cada acción del plan, definir:
 | **5 Whys** | El síntoma es claro pero la causa no |
 | **Fishbone / Ishikawa** | Múltiples causas potenciales; equipo necesita brainstorm estructurado |
 | **Pareto 80/20** | Hay muchos defectos/causas; identificar las pocas vitales |
-| **5W2H** | El problema es difuso y necesita delimitación completa |
+| **IS / IS NOT** | El problema es difuso o el equipo tiene visiones distintas de qué es el problema |
+| **5W2H** | Who, What, Where, When, Why + How, How Much — para delimitar el contexto completo del problema cuando el IS/IS NOT no es suficiente |
 | **Diagrama de flujo** | El proceso es complejo o poco conocido por el equipo |
 
 ---
 
 ## Artefacto esperado
 
-`{wp}/pdca-plan.md` — Estructura mínima:
+`{wp}/pdca-plan.md`
+
+```yml
+created_at: [timestamp]
+project: [nombre]
+work_package: [wp-id]
+phase: pdca:plan
+author: [nombre]
+status: Borrador
+```
 
 ```markdown
+## Ciclo
+Ciclo N de M estimados. Lección incorporada del ciclo anterior: [si aplica / N/A]
+
 ## Problem Statement
 [IS / IS NOT completado — sin causas asumidas]
 
@@ -129,21 +153,29 @@ Para cada acción del plan, definir:
 
 ---
 
-## Red Flags — señales de que el Plan está mal
+## Red Flags
 
 - **"Sabemos cuál es la causa"** sin datos que lo confirmen — es hipótesis, no hecho
 - **Objetivo sin número** ("mejorar la velocidad") — no se puede verificar en Check
 - **Objetivo sin baseline** — sin punto de partida, no hay referencia para medir mejora
-- **Múltiples hipótesis en un solo Plan** — cada ciclo prueba *una* hipótesis; más de una contamina los resultados
+- **Múltiples hipótesis en un solo Plan** — cada ciclo prueba *una* hipótesis
 - **Acciones = solución directa** (ej: "escalar servidores") antes de validar la causa raíz
+- **Una sola persona define el Problem Statement** sin revisión — el sesgo individual puede distorsionar el IS/IS NOT
+- **Copiar el objetivo del ciclo anterior sin ajustar** — si el ciclo anterior no alcanzó el objetivo, el nuevo Plan debe incorporar la lección, no simplemente repetir
 
 ---
 
 ## Estado en now.md
 
-Actualizar al completar:
-```
+**Al INICIAR este step:**
+```yaml
 methodology_step: pdca:plan
+flow: pdca
+```
+
+**Al COMPLETAR** (Plan aprobado, baseline + objetivo SMART + hipótesis definidos):
+```yaml
+methodology_step: pdca:plan  # completado → listo para pdca:do
 flow: pdca
 ```
 

@@ -3,6 +3,7 @@ name: dmaic-define
 description: "Use when starting a DMAIC Six Sigma project. dmaic:define — define project scope, create Project Charter, identify CTQs, map SIPOC, and get stakeholder alignment."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
+disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
@@ -12,7 +13,16 @@ updated_at: 2026-04-16 00:00:00
 
 Ejecuta la fase **Define** de DMAIC. Produce el Project Charter aprobado que autoriza el proyecto de mejora.
 
+**THYROX Stage:** Stage 3 DIAGNOSE.
+
 **Tollgate:** Project Charter aprobado por sponsor antes de avanzar a Measure.
+
+---
+
+## Pre-condición
+
+- **Primer ciclo:** work package activo con descripción inicial del problema y sponsor identificado.
+- Antes de completar Define, el VOC debe estar recopilado con al menos una técnica de elicitación directa.
 
 ---
 
@@ -25,16 +35,58 @@ Ejecuta la fase **Define** de DMAIC. Produce el Project Charter aprobado que aut
 ## Cuándo NO usar este paso
 
 - Para mejoras simples que se pueden resolver en un ciclo PDCA — DMAIC es overhead para problemas pequeños
-- Si el problema ya tiene causa raíz confirmada — ir directamente a Improve (o PDCA:Do)
+- Si el problema ya tiene causa raíz confirmada → ir directamente a Improve (o PDCA:Do)
 - Sin sponsor identificado — DMAIC requiere autorización y recursos; sin sponsor, el proyecto no tiene tracción
 
 ---
 
 ## Actividades
 
-### 1. Problem Statement — sin causas asumidas
+### 1. VOC — Voice of Customer (CRÍTICO)
 
-El Problem Statement describe el síntoma observable con datos. Criterios de calidad:
+El VOC es el insumo fundamental de Define. Sin VOC real, los CTQs son supuestos del equipo, no necesidades del cliente.
+
+**Técnicas de recopilación VOC:**
+
+| Técnica | Cuándo usar | Cómo ejecutar |
+|---------|-------------|---------------|
+| **Entrevistas directas** | Siempre que sea posible; mayor profundidad | Preguntas abiertas: "¿Qué es más importante para usted?", "¿Cuándo se siente insatisfecho?" |
+| **Encuestas / cuestionarios** | Base de clientes grande; validar hipótesis | Likert 1-5 o NPS; incluir preguntas de importancia + satisfacción |
+| **Análisis de quejas y reclamos** | Datos históricos disponibles | Categorizar y cuantificar frecuencia por tipo |
+| **Gemba (observación directa)** | Proceso operacional; comportamiento real vs declarado | Ir donde el cliente usa el producto/servicio; observar sin intervenir |
+| **Focus groups** | Explorar percepciones; antes de encuesta masiva | 6-8 participantes; moderador neutral |
+| **Datos de soporte / tickets** | Datos ya recopilados por la organización | Analizar categorías de problemas reportados; no sustituto de VOC directo |
+
+**Conversión VOC → CTQ:**
+
+```
+VOC (qué dice el cliente) → Necesidad (qué necesita realmente) → CTQ (cómo se mide)
+```
+
+| VOC | Necesidad | CTQ |
+|-----|-----------|-----|
+| *"Los pedidos llegan tarde"* | Entrega puntual | % pedidos en fecha prometida |
+| *"Nunca sé en qué estado está mi pedido"* | Visibilidad del estado | % pedidos con tracking actualizado ≤ 4h |
+| *"El producto llega dañado"* | Integridad del producto | % pedidos sin daño visible |
+
+> Sin datos VOC directos, documentar explícitamente que los CTQs son hipótesis del equipo y planificar validación con clientes reales en la fase Measure.
+
+### 2. VOB — Voice of Business
+
+Complementario al VOC. Las necesidades del negocio también definen el alcance del proyecto:
+
+| Dimensión VOB | Pregunta | Ejemplo |
+|---------------|----------|---------|
+| **Financiera** | ¿Cuánto cuesta el problema al negocio? | $45K/mes en créditos por entregas tardías |
+| **Operacional** | ¿Qué métricas internas están fuera de objetivo? | % on-time delivery = 82% vs objetivo 95% |
+| **Regulatoria** | ¿Hay cumplimiento en riesgo? | SLA contractual con cliente clave al 90% |
+| **Estratégica** | ¿Afecta objetivos del plan anual? | Retención de clientes en riesgo |
+
+> El VOC dice qué quiere el cliente; el VOB dice qué puede y necesita hacer el negocio. Los CTQs se definen en la intersección.
+
+### 3. Problem Statement — sin causas asumidas
+
+El Problem Statement describe el síntoma observable con datos:
 
 | ✅ Buen Problem Statement | ❌ Mal Problem Statement |
 |--------------------------|------------------------|
@@ -46,37 +98,29 @@ El Problem Statement describe el síntoma observable con datos. Criterios de cal
 
 > Regla: si el Problem Statement menciona una solución o una causa, está mal — es hipótesis, no problema.
 
-### 2. CTQ — Critical to Quality
+### 4. CTQ — Critical to Quality
 
-CTQs son los atributos del proceso que el cliente considera críticos. Se derivan de la Voz del Cliente (VOC):
+CTQs son los atributos del proceso que el cliente considera críticos, derivados del VOC:
 
-```
-VOC (qué dice el cliente) → Necesidad (qué necesita realmente) → CTQ (cómo se mide)
-```
+| CTQ | Unidad de medida | Especificación objetivo | Fuente VOC |
+|-----|-----------------|------------------------|------------|
+| [CTQ 1] | [métrica] | [umbral] | [técnica VOC usada] |
+| [CTQ 2] | [métrica] | [umbral] | [técnica VOC usada] |
 
-Ejemplo:
-- VOC: *"Los pedidos llegan tarde"*
-- Necesidad: Entrega puntual
-- CTQ: % de pedidos entregados en la fecha prometida ≥ 95%
-
-### 3. SIPOC — mapa de alto nivel del proceso
-
-El SIPOC define el alcance del proceso en 5 elementos:
+### 5. SIPOC — mapa de alto nivel del proceso
 
 | S — Suppliers | I — Inputs | P — Process | O — Outputs | C — Customers |
 |---------------|-----------|------------|-------------|--------------|
 | ¿Quién provee las entradas? | ¿Qué entra al proceso? | ¿Cuáles son los pasos principales (5-7 max)? | ¿Qué produce el proceso? | ¿Quién recibe los outputs? |
 
 **Cómo construir el SIPOC:**
-1. Empezar por el **Process** (columna del medio) — definir los 5-7 pasos de alto nivel
+1. Empezar por el **Process** — definir los 5-7 pasos de alto nivel
 2. Definir los **Outputs** — qué produce ese proceso
 3. Definir los **Customers** — quién usa esos outputs
 4. Definir los **Inputs** — qué necesita el proceso para funcionar
 5. Definir los **Suppliers** — quién provee esos inputs
 
-### 4. Goal Statement — objetivo medible
-
-Complementario al Problem Statement. Define adónde se quiere llegar:
+### 6. Goal Statement — objetivo medible
 
 ```
 Reducir [métrica CTQ] de [baseline] a [meta] para [fecha], 
@@ -85,7 +129,7 @@ manteniendo [otras métricas críticas] por encima de [umbral].
 
 Ejemplo: *"Reducir el % de pedidos entregados fuera de plazo de 18% a menos de 5% para 2026-07-01, sin incrementar el costo de logística por unidad."*
 
-### 5. Business Case — justificación formal
+### 7. Business Case — justificación formal
 
 | Elemento | Contenido |
 |----------|-----------|
@@ -95,56 +139,112 @@ Ejemplo: *"Reducir el % de pedidos entregados fuera de plazo de 18% a menos de 5
 | ROI estimado | Beneficio / Inversión |
 | Riesgo de no hacer nada | ¿Qué pasa si el problema continúa? |
 
-### 6. Scope — in / out
-
-Delimitar explícitamente qué incluye y qué excluye el proyecto:
+### 8. Scope — in / out
 
 | In Scope | Out of Scope |
 |----------|-------------|
 | [Procesos, sistemas, áreas incluidos] | [Qué no se va a tocar] |
 
-> Scope demasiado amplio = proyecto que nunca termina. Scope demasiado estrecho = solución parcial. El SIPOC ayuda a delimitar el scope.
+> Scope demasiado amplio = proyecto que nunca termina. El SIPOC ayuda a delimitar el scope.
 
-### 7. Project Charter — documento formal
+### 9. RACI del proyecto
 
-El charter integra todos los elementos anteriores:
+| Rol | Responsable (R) | Aprobador (A) | Consultado (C) | Informado (I) |
+|-----|----------------|--------------|----------------|--------------|
+| **Sponsor** | Aprueba charter | | | Recibe informes de avance |
+| **Black Belt / Green Belt** | Lidera el proyecto | | | |
+| **Process Owner** | Ejecuta acciones de mejora | | Revisa soluciones | |
+| **Equipo técnico** | Implementa cambios técnicos | | | |
+| **Clientes afectados** | | | Validan CTQs | Comunicación de resultados |
+
+> Un RACI incompleto en Define significa que cuando hay decisiones difíciles en Improve o Control, no habrá claridad sobre quién decide.
+
+### 10. Project Charter — documento formal
 
 | Campo | Contenido |
 |-------|-----------|
 | Proyecto | Nombre del proyecto |
 | Sponsor | Quién autoriza y provee recursos |
-| Team | Green Belt, Black Belt, miembros |
-| Problem Statement | Ver actividad 1 |
-| Goal Statement | Ver actividad 4 |
-| Business Case | Ver actividad 5 |
-| Scope | In / Out |
-| CTQs | Ver actividad 2 |
-| SIPOC | Ver actividad 3 |
+| Team / RACI | Green Belt, Black Belt, miembros con roles |
+| Problem Statement | Ver actividad 3 |
+| Goal Statement | Ver actividad 6 |
+| Business Case | Ver actividad 7 |
+| Scope | In / Out (actividad 8) |
+| CTQs | Con fuente VOC (actividad 4) |
+| SIPOC | Ver actividad 5 |
 | Timeline | Fechas estimadas por fase DMAIC |
 
 ---
 
 ## Artefacto esperado
 
-`{wp}/dmaic-define.md` con el Project Charter completo siguiendo la estructura de las actividades.
+`{wp}/dmaic-define.md`
+
+```yml
+created_at: [timestamp]
+project: [nombre]
+work_package: [wp-id]
+phase: dmaic:define
+author: [nombre]
+status: Borrador
+```
+
+```markdown
+## VOC recopilado
+| Técnica | Muestra | Hallazgos clave |
+
+## CTQs (derivados de VOC)
+| CTQ | Métrica | Objetivo | Fuente VOC |
+
+## SIPOC
+[Tabla S-I-P-O-C]
+
+## Problem Statement
+[Síntoma + magnitud + período + impacto]
+
+## Goal Statement
+[Reducir X de baseline a meta para fecha]
+
+## Business Case
+[Costo actual / beneficio esperado / ROI]
+
+## Scope
+- In: [lista]
+- Out: [lista]
+
+## RACI
+[Tabla de roles]
+
+## Project Charter aprobado
+- Sponsor: [nombre] — Fecha de aprobación: [fecha]
+```
 
 ---
 
 ## Red Flags — señales de Define mal ejecutado
 
-- **Problem Statement que menciona una solución** — ej: *"Necesitamos un nuevo sistema"* es solución, no problema
+- **CTQs sin VOC real** — CTQs decididos en sala sin hablar con clientes son hipótesis, no requisitos
+- **Problem Statement que menciona una solución** — *"Necesitamos un nuevo sistema"* es solución, no problema
 - **CTQs sin número** — un CTQ sin métrica no se puede medir en Measure
 - **SIPOC con demasiados pasos** — si el proceso tiene 20+ pasos en el SIPOC, el scope es demasiado amplio
 - **Business case sin números** — *"mejorará la satisfacción del cliente"* no justifica un proyecto DMAIC
-- **Scope que incluye todo** — *"todo el proceso de supply chain"* garantiza que el proyecto se alargue indefinidamente
-- **Charter sin sponsor real** — si el sponsor es nominal (firma pero no se involucra), el proyecto no tendrá respaldo cuando necesite recursos
+- **Scope que incluye todo** — garantiza que el proyecto se alargue indefinidamente
+- **Charter sin sponsor real** — si el sponsor es nominal, el proyecto no tendrá respaldo cuando necesite recursos
+- **Sin RACI definido** — cuando hay decisiones difíciles, la falta de RACI genera parálisis
 
 ---
 
 ## Estado en now.md
 
-```
+**Al INICIAR este step:**
+```yaml
 methodology_step: dmaic:define
+flow: dmaic
+```
+
+**Al COMPLETAR** (Project Charter aprobado por sponsor):
+```yaml
+methodology_step: dmaic:define  # completado → listo para dmaic:measure
 flow: dmaic
 ```
 
@@ -159,3 +259,4 @@ Cuando el Project Charter está aprobado por el sponsor → `dmaic:measure`
 - Define produce el alcance del proyecto; si el scope cambia significativamente durante Measure o Analyze, puede ser necesario regresar a revisar el charter
 - La calidad del SIPOC depende del conocimiento del proceso — si el equipo no conoce bien el proceso, considerar Gemba walks o entrevistas antes de completar Define
 - El tollgate (aprobación del sponsor) no es un formalismo; sin él, el proyecto no tiene autorización real para continuar
+- VOC de un solo tipo de técnica puede tener sesgo — combinar datos cualitativos (entrevistas) con cuantitativos (encuestas/quejas) para mayor validez

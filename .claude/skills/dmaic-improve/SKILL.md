@@ -3,6 +3,7 @@ name: dmaic-improve
 description: "Use when implementing solutions in a DMAIC project. dmaic:improve — generate improvement alternatives, select optimal solution, implement pilot, validate improvement vs baseline."
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
+disable-model-invocation: true
 updated_at: 2026-04-16 00:00:00
 ---
 
@@ -12,7 +13,18 @@ updated_at: 2026-04-16 00:00:00
 
 Ejecuta la fase **Improve** de DMAIC. Diseña, selecciona e implementa soluciones que eliminan las causas raíz identificadas en Analyze. Valida la mejora con datos.
 
+**THYROX Stage:** Stage 10 IMPLEMENT.
+
 **Tollgate:** Mejora validada con datos post-implementación vs baseline de Measure.
+
+---
+
+## Pre-condición
+
+Requiere: `{wp}/dmaic-analyze.md` con:
+- Causas raíz confirmadas estadísticamente
+- Lista priorizada por impacto y esfuerzo
+- Mecanismo causal documentado para cada causa raíz
 
 ---
 
@@ -34,7 +46,7 @@ Ejecuta la fase **Improve** de DMAIC. Diseña, selecciona e implementa solucione
 
 ### 1. Generar alternativas de solución
 
-Para cada causa raíz confirmada, generar múltiples opciones. No diseñar con una sola solución:
+Para cada causa raíz confirmada, generar múltiples opciones:
 
 | Causa raíz confirmada | Solución A | Solución B | Solución C |
 |----------------------|-----------|-----------|-----------|
@@ -44,42 +56,94 @@ Para cada causa raíz confirmada, generar múltiples opciones. No diseñar con u
 **Técnicas para generar alternativas:**
 - Brainstorming estructurado (equipo multifuncional)
 - Benchmarking (¿cómo lo resuelven otros?)
-- Transferencia de soluciones de industrias análogas
-- Poka-yoke (error-proofing): ¿cómo hacer imposible que la causa vuelva a ocurrir?
+- Herramientas Lean (ver sección siguiente)
+- Poka-yoke: ¿cómo hacer imposible que la causa vuelva a ocurrir?
 
-### 2. Evaluar y seleccionar solución
+### 2. Herramientas Lean — catálogo de soluciones para waste
 
-**Matriz de decisión (Impact × Effort):**
+Para causas raíz relacionadas con waste de flujo o proceso, aplicar herramientas Lean antes de recurrir a soluciones tecnológicas complejas:
 
-| Solución | Impacto esperado (1-5) | Esfuerzo/Costo (1-5, 5=alto) | Riesgo (1-5, 5=alto) | Score (Impacto / (Esfuerzo × Riesgo)^0.5) |
-|---------|----------------------|------------------------------|---------------------|------------------------------------------|
-| [Opción A] | | | | |
-| [Opción B] | | | | |
+| Herramienta Lean | Tipo de waste que resuelve | Cómo aplicar |
+|-----------------|---------------------------|-------------|
+| **5S** (Clasificar, Ordenar, Limpiar, Estandarizar, Sostener) | Desorden, búsquedas, errores por entorno caótico | Implementar en el área de trabajo; toma 1-2 semanas en un área |
+| **Kanban** | Sobreproducción, WIP excesivo | Limitar WIP con tarjetas/columnas; visualizar el flujo de trabajo |
+| **SMED** (Single-Minute Exchange of Die) | Tiempos de setup largos | Separar actividades internas (máquina parada) de externas (máquina corriendo); convertir internas a externas |
+| **Eliminación de MUDA** (7 desperdicios) | Cualquier actividad que no agrega valor | Mapear actividades VA vs NVA; eliminar NVA pura; minimizar NVA necesaria |
+| **Jidoka** (autonomación) | Defectos que pasan desapercibidos | Mecanismos que paran el proceso automáticamente ante defectos |
+| **Heijunka** (nivelación) | Demanda variable que genera cuellos de botella | Distribuir volumen de trabajo uniformemente en el tiempo |
+
+> Las herramientas Lean son frecuentemente la solución más rápida y de menor costo para problemas de flujo y proceso. Evaluar antes de diseñar soluciones tecnológicas.
+
+### 3. Evaluar y seleccionar solución — Cuadrante Impacto × Esfuerzo
+
+Clasificar cada alternativa en el cuadrante de decisión:
+
+```
+                    IMPACTO ALTO
+                         │
+          PROYECTOS    │  VICTORIAS
+          MAYORES      │  RÁPIDAS
+    (planificar bien)   │  (hacer ahora)
+                         │
+ESFUERZO ─────────────────────────── ESFUERZO
+ALTO                     │                    BAJO
+                         │
+         EVITAR /       │  RELLENO
+         DESCARTAR      │  (hacer si hay tiempo)
+    (poco impacto,      │  (bajo impacto,
+     mucho esfuerzo)     │   bajo esfuerzo)
+                         │
+                    IMPACTO BAJO
+```
+
+| Cuadrante | Descripción | Acción |
+|-----------|-------------|--------|
+| **Victorias Rápidas** | Alto impacto, bajo esfuerzo | Implementar primero — máximo ROI |
+| **Proyectos Mayores** | Alto impacto, alto esfuerzo | Planificar cuidadosamente; justificar con business case |
+| **Relleno** | Bajo impacto, bajo esfuerzo | Implementar solo si hay capacidad libre |
+| **Evitar** | Bajo impacto, alto esfuerzo | No implementar — desproporción de recursos |
 
 **Criterios adicionales de selección:**
 
-| Criterio | Descripción |
-|----------|-------------|
+| Criterio | Pregunta |
+|----------|----------|
 | **Ataca la causa raíz** | ¿La solución elimina la causa o solo mitiga el síntoma? |
 | **Sostenibilidad** | ¿La solución puede mantenerse sin esfuerzo continuo? |
 | **Reversibilidad** | ¿Se puede deshacer si no funciona? |
 | **Efectos colaterales** | ¿Podría crear nuevos problemas? |
 | **Poka-yoke level** | ¿Hace imposible la recurrencia, o solo más difícil? |
 
-### 3. FMEA — Failure Mode and Effects Analysis (antes del piloto)
+### 4. FMEA — Failure Mode and Effects Analysis (antes del piloto)
 
 Para la solución seleccionada, evaluar los modos de falla antes de implementar:
 
 | Paso del proceso | Modo de falla potencial | Efecto | Severidad (1-10) | Ocurrencia (1-10) | Detección (1-10) | RPN (S×O×D) | Acción preventiva |
 |-----------------|------------------------|--------|------------------|-------------------|------------------|-------------|------------------|
 
-**Criterio:** RPN > 100 → requiere acción preventiva antes del piloto.
+**Escala RPN:**
+
+| RPN | Clasificación | Acción requerida |
+|-----|--------------|-----------------|
+| > 200 | **Crítico** | Acción preventiva obligatoria antes del piloto |
+| 100 – 200 | **Importante** | Acción preventiva fuertemente recomendada |
+| < 100 | **Monitorear** | Incluir en plan de monitoreo del piloto |
 
 > El FMEA es opcional para soluciones de bajo riesgo, pero obligatorio si la implementación puede afectar procesos críticos o clientes.
 
-### 4. Diseñar y ejecutar el piloto
+### 5. Criterio piloto vs implementación completa
 
-Principios del piloto (igual que PDCA:Do, aplicados con rigor estadístico):
+Decidir el alcance antes de implementar:
+
+| Criterio | Piloto (subconjunto) | Implementación completa |
+|----------|---------------------|------------------------|
+| **Reversibilidad** | Solución nueva o no probada | Solución validada en contexto similar |
+| **Riesgo** | RPN > 100 o impacto en producción | RPN < 100, proceso no crítico |
+| **Costo de error** | Alto (impacta clientes o procesos críticos) | Bajo (impacto contenible) |
+| **Incertidumbre** | Causa raíz probable pero no 100% confirmada | Causa raíz confirmada con alta confianza |
+
+> Por defecto, implementar en piloto primero. La excepción es cuando el contexto es idéntico a uno donde ya se validó la solución.
+
+### 6. Diseñar y ejecutar el piloto
 
 | Elemento | Decisión |
 |----------|----------|
@@ -89,11 +153,7 @@ Principios del piloto (igual que PDCA:Do, aplicados con rigor estadístico):
 | **Control de variables** | Solo cambiar lo definido en la solución; nada más |
 | **Rollback** | Condición y procedimiento para revertir |
 
-**Poka-yoke en el piloto:** si la solución requiere que las personas hagan algo diferente, automatizarla o hacer imposible el comportamiento anterior, no solo pedir que cambien el hábito.
-
-### 5. Validar mejora — comparación estadística rigurosa
-
-Recopilar datos post-implementación con las mismas métricas de Measure:
+### 7. Validar mejora — comparación estadística rigurosa
 
 | Métrica | Baseline (Measure) | Post-Improve | Delta | Significancia |
 |---------|-------------------|--------------|-------|--------------|
@@ -111,33 +171,39 @@ Recopilar datos post-implementación con las mismas métricas de Measure:
 
 **Calcular el nuevo Sigma Level y comparar con baseline de Measure.**
 
-### 6. DOE — Design of Experiments (si múltiples factores)
-
-Si la solución involucra múltiples variables que interactúan:
-
-| Cuándo usar DOE | Ejemplo |
-|-----------------|---------|
-| Múltiples factores con posibles interacciones | Temperatura + tiempo + presión en proceso de manufactura |
-| Se quiere optimizar niveles, no solo eliminar la causa | ¿Cuál es el nivel óptimo de cada factor? |
-| Recursos limitados y se quiere maximizar información | Diseño fraccionado para explorar con pocas corridas |
-
-> DOE es overhead si la causa raíz es simple y la solución obvia. Usar cuando hay genuina incertidumbre sobre qué combinación de factores da el mejor resultado.
-
 ---
 
 ## Artefacto esperado
 
-`{wp}/dmaic-improve.md` — Estructura mínima:
+`{wp}/dmaic-improve.md`
+
+```yml
+created_at: [timestamp]
+project: [nombre]
+work_package: [wp-id]
+phase: dmaic:improve
+author: [nombre]
+status: Borrador
+```
 
 ```markdown
 ## Alternativas de solución evaluadas
 [Tabla: causa raíz → opciones A/B/C]
 
+## Cuadrante Impacto × Esfuerzo
+[Clasificación de cada opción en el cuadrante]
+
 ## Solución seleccionada
-[Opción elegida + justificación con matriz de decisión]
+[Opción elegida + justificación]
+
+## Herramientas Lean aplicadas (si aplica)
+[5S / Kanban / SMED / MUDA — descripción de la intervención]
 
 ## FMEA (si aplica)
-[Tabla RPN — acciones preventivas para RPN > 100]
+[Tabla RPN con escala: >200 crítico, 100-200 importante, <100 monitorear]
+
+## Criterio piloto vs completo
+[Decisión justificada según tabla de criterios]
 
 ## Diseño del piloto
 [Scope, duración, métricas, rollback]
@@ -157,24 +223,33 @@ Si la solución involucra múltiples variables que interactúan:
 ## Red Flags — señales de Improve mal ejecutado
 
 - **Solución que no ataca la causa raíz confirmada** — la solución favorita del equipo vs la causa real no siempre coinciden
+- **Omitir herramientas Lean** — para problemas de flujo y proceso, la solución tecnológica compleja suele ser la segunda mejor opción
 - **Piloto sin control de variables** — si cambiaron otras cosas durante el piloto, no se puede atribuir la mejora a la solución
-- **Validación solo con promedio** — verificar también si cambió la variabilidad (desviación estándar); un proceso puede mejorar el promedio pero volverse más errático
+- **Validación solo con promedio** — verificar también si cambió la variabilidad (desviación estándar)
 - **Sin comparación estadística** — *"claramente mejoró"* sin p-value no es validación en DMAIC
-- **Solución que requiere disciplina continua** — las soluciones que dependen de que las personas recuerden hacer algo diferente degradan con el tiempo; preferir poka-yoke
-- **Comparar contra objetivo del charter, no contra el baseline de Measure** — el tollgate de Improve es mejorar vs baseline, no necesariamente alcanzar el objetivo final (eso se confirma en Control)
+- **RPN > 200 ignorado en FMEA** — implementar sin mitigar modos de falla críticos es riesgo innecesario
+- **Implementar al 100% sin piloto cuando RPN > 100** — el piloto existe para limitar el blast radius si algo sale mal
+- **Comparar contra objetivo del charter, no contra baseline de Measure** — el tollgate de Improve es mejorar vs baseline
 
 ---
 
 ## Estado en now.md
 
-```
+**Al INICIAR este step:**
+```yaml
 methodology_step: dmaic:improve
+flow: dmaic
+```
+
+**Al COMPLETAR** (mejora validada estadísticamente, nuevo Sigma Level documentado):
+```yaml
+methodology_step: dmaic:improve  # completado → listo para dmaic:control
 flow: dmaic
 ```
 
 ## Siguiente paso
 
-Cuando la mejora está validada estadísticamente (nuevo Sigma Level documentado) → `dmaic:control`
+Cuando la mejora está validada estadísticamente → `dmaic:control`
 
 ---
 
@@ -183,3 +258,4 @@ Cuando la mejora está validada estadísticamente (nuevo Sigma Level documentado
 - DOE completo y análisis multivariante avanzado requieren herramientas especializadas (Minitab, R, Python)
 - FMEA detallado para procesos críticos de seguridad requiere conocimiento profundo del dominio
 - La validación estadística asume independencia de las observaciones — si los datos tienen autocorrelación temporal, usar Series de Tiempo en lugar de t-test
+- Las herramientas Lean requieren cambio cultural además de técnico — la implementación técnica es solo la mitad del trabajo
