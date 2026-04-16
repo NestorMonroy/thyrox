@@ -1,12 +1,15 @@
 {
-  "SessionStart": [
-    {
-      "hooks": [
-        {
-          "type": "command",
-          "command": "[ -d .thyrox/context ] || bash \"$PLUGIN_DIR/bin/thyrox-init.sh\""
-        }
-      ]
-    }
-  ]
+  "description": "Hooks de THYROX — inicialización idempotente del proyecto destino en cada sesión",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -d .thyrox/context ] || bash \"${CLAUDE_PLUGIN_ROOT}/bin/thyrox-init.sh\""
+          }
+        ]
+      }
+    ]
+  }
 }
