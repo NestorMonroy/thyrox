@@ -25,6 +25,19 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## FASE 40: multi-methodology — Meta-framework multi-metodología (Patrón 3 → Patrón 5) (2026-04-16)
+
+**WP:** `.thyrox/context/work/2026-04-16-18-54-38-multi-methodology/`
+**Alcance:** Extender THYROX para soportar ~79 metodologías adicionales (PDCA, DMAIC, PMBOK, BABOK, Consulting, BA). Implementar Patrón 3 (coordinators por metodología) a corto plazo. Diseñar Patrón 5 (State Machine + Registry YAML) como objetivo largo plazo.
+
+- [-] Phase 1 DISCOVER — en curso 2026-04-16
+- [ ] Phase 5 STRATEGY
+- [ ] Phase 6 PLAN
+- [ ] Phase 8 PLAN EXECUTION
+- [ ] Phase 10 EXECUTE
+- [ ] Phase 11 TRACK
+- [ ] Phase 12 STANDARDIZE
+
 ## FASE 39: plugin-distribution — Migración THYROX a plugin puro de Claude Code (2026-04-15)
 
 **WP:** `.thyrox/context/work/2026-04-15-08-29-58-plugin-distribution/`
