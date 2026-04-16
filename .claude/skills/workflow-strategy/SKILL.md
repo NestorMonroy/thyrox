@@ -55,7 +55,7 @@ Investigar alternativas antes de decidir previene decisiones sin evidencia.
 6. **Post-design re-check** — re-verificar después de diseñar
    (las decisiones pueden cambiar al profundizar — revisar consistency con Phase 1)
 
-Ver `references/solution-strategy.md` para estructura completa (Tech Stack, Patterns, Quality Goals).
+Ver [solution-strategy](references/solution-strategy.md) para estructura completa (Tech Stack, Patterns, Quality Goals).
 
 ---
 

@@ -375,7 +375,7 @@ directamente vía `bash`, ese cambio no pasa por el Mecanismo A (permission chec
 el Mecanismo B (context isolation) — es una operación shell directa. El context del padre
 **no verá** "The file has been updated successfully." — el hook es opaco al LLM.
 
-Ver `hook-output-control.md` para la semántica completa de `suppressOutput`.
+Ver [hook-output-control](hook-output-control.md) para la semántica completa de `suppressOutput`.
 
 ### Flujo 5: Edit en Scheduled Task (/loop)
 
@@ -395,7 +395,7 @@ flowchart LR
 - Si el permiso requiere aprobación humana (`ask`), la tarea falla — debe estar en `allow`
 - El Edit es funcional pero el usuario no ve el resultado hasta revisarlo explícitamente
 
-Ver `scheduled-tasks.md` para detalles de `/loop` y `CronCreate`.
+Ver [scheduled-tasks](scheduled-tasks.md) para detalles de `/loop` y `CronCreate`.
 
 ### Flujo 6: Edit en worktree Isolation
 
@@ -414,7 +414,7 @@ flowchart LR
 - Context isolation aplica igual (resultados en subagente, resumen al padre)
 - Permite descartar trabajo experimental limpiamente
 
-Ver `subagent-patterns.md` — sección "Worktree Isolation".
+Ver [subagent-patterns](subagent-patterns.md) — sección "Worktree Isolation".
 
 ---
 

@@ -45,7 +45,7 @@ Especificar antes de descomponer previene ambigüedad en las tareas.
 1. `work/../{nombre-wp}-requirements-spec.md` — qué construir (SPECs con Given/When/Then)
 2. `work/../{nombre-wp}-design.md` — cómo construirlo usando `assets/design.md.template`:
    - Visión arquitectónica, componentes afectados, decisiones de diseño
-   - Ver `references/spec-driven-development.md` para guía completa
+   - Ver [spec-driven-development](references/spec-driven-development.md) para guía completa
 
 **Reglas de formato:**
 - Todos los flujos, modelos y diagramas deben usar **Mermaid** (no ASCII art)

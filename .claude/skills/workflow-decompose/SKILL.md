@@ -47,7 +47,7 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
 4. Marcar tareas paralelas `[P]`
    - En ejecución paralela: usar `[~]` para reclamar tareas antes de ejecutarlas
-   - Ver `../../references/conventions.md#parallel-agent-execution`
+   - Ver [conventions — parallel-agent-execution](../../references/conventions.md#parallel-agent-execution)
 
 5. Definir checkpoints de validación por grupo de tareas
    - Si hay >50 issues: usar `assets/categorization-plan.md.template` para categorizar primero

@@ -13,9 +13,9 @@ Referencia de cómo se ejecutan los commands en Claude Code, qué responsabilida
 tiene cada componente, y cuándo usar cada patrón.
 
 > **Relación con otros references:**
-> - `skill-vs-agent.md` — cuándo crear un skill vs un agente (decisión estática de diseño)
-> - `tool-execution-model.md` — flujos de Edit/Write y permission model
-> - `plugins.md` — estructura de plugins y distribución
+> - [skill-vs-agent](skill-vs-agent.md) — cuándo crear un skill vs un agente (decisión estática de diseño)
+> - [tool-execution-model](tool-execution-model.md) — flujos de Edit/Write y permission model
+> - [plugins](plugins.md) — estructura de plugins y distribución
 > Este document cubre: qué ocurre en runtime cuando el usuario escribe `/command`.
 
 ---

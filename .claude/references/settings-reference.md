@@ -12,7 +12,7 @@ purpose: Referencia exhaustiva de todas las keys de settings.json — tipos, def
 
 Referencia completa de `settings.json` para Claude Code v2.1.81+.
 
-**Complementa:** `cli-reference.md` (env vars + flags) · `permission-model.md` (lógica allow/ask/deny) · `hooks.md` (configuración de hooks)
+**Complementa:** [cli-reference](cli-reference.md) (env vars + flags) · [permission-model](permission-model.md) (lógica allow/ask/deny) · [hooks](hooks.md) (configuración de hooks)
 
 ---
 
@@ -134,7 +134,7 @@ Formato: `Tool` o `Tool(specifier)`. Evaluación: deny > ask > allow. Primera re
 
 | Key | Tipo | Default | Scope | Descripción |
 |-----|------|---------|-------|-------------|
-| `hooks` | object | none | all | Comandos a ejecutar en lifecycle events. Ver `hooks.md` para formato completo, 19 eventos y env vars |
+| `hooks` | object | none | all | Comandos a ejecutar en lifecycle events. Ver [hooks](hooks.md) para formato completo, 19 eventos y env vars |
 | `disableAllHooks` | boolean | `false` | all | Deshabilitar todos los hooks y custom status line |
 | `allowedHttpHookUrls` | array | none | all | URL patterns permitidos para HTTP hooks. Empty = bloquear todos. Arrays se concatenan |
 | `httpHookAllowedEnvVars` | array | none | all | Env vars que HTTP hooks pueden interpolar en headers |
@@ -332,7 +332,7 @@ Estas keys van en `~/.claude.json`, NO en `settings.json` (causaría error de sc
 
 ## Env Vars Clave
 
-Las env vars se pueden poner en el dict `env` de `settings.json` o en el shell. Ver `cli-reference.md` para la lista completa (+100 variables).
+Las env vars se pueden poner en el dict `env` de `settings.json` o en el shell. Ver [cli-reference](cli-reference.md) para la lista completa (+100 variables).
 
 | Variable | Descripción |
 |----------|-------------|
