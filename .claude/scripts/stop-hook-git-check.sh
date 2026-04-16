@@ -30,13 +30,10 @@ if [ "$STOP_HOOK_ACTIVE" = "true" ]; then
 fi
 
 # Verificar cambios sin commitear
+# Nota: validate-session-close.sh ya es llamado directamente por el Stop hook en settings.json
+# No llamar aquí para evitar ejecución duplicada.
 if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
     echo "⚠ Hay cambios sin commitear. Considera hacer commit antes de cerrar."
-fi
-
-# TD-001: validar artefactos de WP (timestamps, etc.)
-if [ -f ".claude/scripts/validate-session-close.sh" ]; then
-    bash .claude/scripts/validate-session-close.sh
 fi
 
 exit 0
