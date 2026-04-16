@@ -7,9 +7,9 @@ author: NestorMonroy
 status: Borrador
 ```
 
-# Plan de mejoras — CSO + Anti-Rationalization + Tier2 + Rename
+# Plan de mejoras — CSO + Anti-Rationalization + Tier2 + Rename + Mermaid + Fixes
 
-Basado en el análisis de `/tmp/references/antigravity-awesome-skills/` (catálogo community con 500+ skills + guías de authoring profesional). Se aplican 4 mejoras a los 20 skills de metodología nuevos (PM, BA, RM, RUP).
+Basado en el análisis de `/tmp/references/antigravity-awesome-skills/` (catálogo community con 500+ skills + guías de authoring profesional). Se aplican mejoras a los 20 skills de metodología nuevos (PM, BA, RM, RUP) + correcciones de consistencia encontradas en la búsqueda.
 
 ---
 
@@ -170,6 +170,106 @@ El cambio D de la referencia es "naming alineado con el nuestro" — confirmaci�
 | `ba-` | ba-planning (post-rename), ba-elicitation, ba-requirements-analysis, ba-requirements-lifecycle, ba-strategy, ba-solution-evaluation | ✓ Correcto post-rename |
 | `rm-` | rm-elicitation, rm-analysis, rm-specification, rm-validation, rm-management | ✓ Correcto |
 | `rup-` | rup-inception, rup-elaboration, rup-construction, rup-transition | ✓ Correcto |
+
+---
+
+---
+
+## Cambio E — Mermaid diagrams en skills que lo necesitan
+
+**Problema:** Los flujos de decisión, ciclos y relaciones entre KAs/fases se describen en texto o tablas, pero son más claros como diagramas. Los skills de disciplina y los de flujo no-lineal son los principales candidatos.
+
+**Skills candidatos y tipo de diagrama:**
+
+| Skill | Diagrama propuesto | Valor |
+|-------|-------------------|-------|
+| `ba-baplanning` (→ `ba-planning`) | `flowchart LR` — navegación no-secuencial entre las 6 KAs | Muestra que BABOK no es lineal |
+| `ba-requirements-lifecycle` | `stateDiagram-v2` — ciclo de vida de estados de un requisito (Identificado → Analizado → Aprobado → ... → Validado) | Visualiza las transiciones |
+| `rm-management` | `flowchart TD` — proceso de Change Request a través del CCB | Clarifica el flujo de aprobación |
+| `rup-elaboration` | `flowchart TD` — decisión LCA alcanzado/nueva iteración | Gate de milestone visual |
+| `rup-construction` | `flowchart TD` — ciclo de iteración Construction (plan → implementar → testear → retro → ¿IOC?) | Ciclo iterativo visual |
+| `pm-monitoring` | `flowchart TD` — rama de acción según SPI/CPI (normal / alerta / crítico) | Umbrales de varianza como árbol de decisión |
+| `pdca-plan` | `flowchart LR` — el ciclo PDCA completo con el paso actual destacado | Orientación en el ciclo |
+| `dmaic-define` | `flowchart LR` — el ciclo DMAIC completo con el paso actual destacado | Orientación en el ciclo |
+
+**Formato estándar para el bloque mermaid en cada skill:**
+
+```markdown
+## Flujo visual
+
+\`\`\`mermaid
+flowchart LR
+    A([PASO]) --> B([PASO]) --> C([PASO])
+    style A fill:#f9f,stroke:#333
+\`\`\`
+```
+
+**Criterio de inclusión:** Solo agregar diagrama si reduce texto explicativo o si el flujo tiene ≥ 3 nodos de decisión. No agregar "por decoración".
+
+---
+
+## Cambio F — Correcciones de consistencia `pmbok:*` → `pm:*` y `babok:*` → `ba:*`
+
+### Hallazgo
+
+La búsqueda reveló una **inconsistencia de namespace** entre los skills y los coordinators/registry:
+
+| Componente | Namespace actual | Namespace correcto |
+|-----------|-----------------|-------------------|
+| Skills `pm-*` (frontmatter) | `flow: pm`, `methodology_step: pm:initiating` | ✓ Ya correcto |
+| Registry `pmbok.yml` | `id: pmbok`, steps `pmbok:initiating` etc. | ❌ Debe ser `pm:*` |
+| Agent `pmbok-coordinator.md` | `pmbok:initiating`, references `pmbok.yml` | ❌ Debe ser `pm:*` |
+| Skills `ba-*` (frontmatter) | `flow: ba`, `methodology_step: ba:strategy` | ✓ Ya correcto |
+| Registry `babok.yml` | `id: babok`, areas `babok:baplanning` etc. | ❌ Debe ser `ba:*` |
+| Agent `babok-coordinator.md` | `babok:baplanning`, `flow: babok` | ❌ Debe ser `ba:*` |
+
+### Archivos a corregir
+
+**`.thyrox/registry/methodologies/pmbok.yml`** — actualizar todos los `pmbok:*` step IDs:
+```yaml
+# Antes           → Después
+id: pmbok          → id: pm
+pmbok:initiating   → pm:initiating
+pmbok:planning     → pm:planning
+pmbok:executing    → pm:executing
+pmbok:monitoring   → pm:monitoring
+pmbok:closing      → pm:closing
+```
+
+**`.thyrox/registry/methodologies/babok.yml`** — actualizar todos los `babok:*` area IDs:
+```yaml
+# Antes                      → Después
+id: babok                    → id: ba
+babok:baplanning             → ba:planning
+babok:elicitation            → ba:elicitation
+babok:requirements_lifecycle → ba:requirements_lifecycle
+babok:strategy               → ba:strategy
+babok:requirements_analysis  → ba:requirements_analysis
+babok:solution_evaluation    → ba:solution_evaluation
+```
+
+**`.claude/agents/pmbok-coordinator.md`** — actualizar referencias internas:
+- Todos los `pmbok:*` → `pm:*`
+- `flow: pmbok` → `flow: pm`
+- Referencia a `pmbok.yml` permanece (nombre del archivo de registry no necesita cambiar)
+
+**`.claude/agents/babok-coordinator.md`** — actualizar referencias internas:
+- Todos los `babok:*` → `ba:*`
+- `babok:baplanning` → `ba:planning`
+- `flow: babok` → `flow: ba`
+- `babok-progress.md` → `ba-progress.md`
+- Referencia a `babok.yml` permanece
+
+### Cambio F.1 — `babok-progress.md` → `ba-progress.md`
+
+**Hallazgo:** Solo `ba-baplanning/SKILL.md` (9 ocurrencias) y `babok-coordinator.md` (1 ocurrencia) referencian `babok-progress.md`. Ningún otro skill lo menciona.
+
+| Archivo | Ocurrencias | Acción |
+|---------|------------|--------|
+| `ba-baplanning/SKILL.md` (→ `ba-planning`) | 9 | Renombrar todas a `ba-progress.md` como parte del Cambio 0 |
+| `babok-coordinator.md` | 1 | Renombrar a `ba-progress.md` como parte del Cambio F |
+
+**Nota:** El archivo físico `{wp}/babok-progress.md` no existe todavía (se crea al ejecutar el skill). El cambio es solo en las instrucciones.
 
 ---
 
