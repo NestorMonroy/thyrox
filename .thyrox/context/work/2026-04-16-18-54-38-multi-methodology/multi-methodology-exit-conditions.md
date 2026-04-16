@@ -22,19 +22,19 @@ author: NestorMonroy
 
 ## Stage 5 STRATEGY → Stage 6 SCOPE
 
-- [ ] Contrato `now.md::phase = "{metodologia}-{step}"` definido y documentado
-- [ ] Patrón 3 vs Patrón 5 con decisión formal (ADR)
-- [ ] 4-5 metodologías prioritarias seleccionadas para implementación corto plazo
-- [ ] Schema YAML de registry diseñado (aunque no implementado aún)
-- [ ] Campo `flow:` en now.md especificado
+- [x] Contrato `now.md::methodology_step = "{flow}:{step-id}"` definido
+- [x] ADR terminología ÉPICA/Stage aprobado
+- [x] 6 metodologías confirmadas: PDCA, DMAIC, PMBOK, BABOK, RUP, RM
+- [x] Schema YAML del registry diseñado para los 5 tipos de flujo
+- [x] Campos `flow`, `methodology_step` especificados
 
-## Phase 6 PLAN → Phase 8 PLAN EXECUTION
+## Stage 6 SCOPE → Stage 8 PLAN EXECUTION
 
-> Saltamos Phase 7 DESIGN (la spec es el contrato definido en Strategy + los SKILL.md individuales).
+> Saltamos Stage 7 DESIGN/SPECIFY — spec es el contrato de Stage 5 + SKILL.md individuales.
 
-- [ ] Scope declarado: qué entra y qué queda fuera de este WP
-- [ ] ROADMAP.md actualizado con FASE 40
-- [ ] Decisión sobre GAP-010 (`.gitignore`) incluida en scope
+- [x] Scope declarado: in-scope y out-of-scope explícitos
+- [x] ROADMAP.md actualizado con ÉPICA 40
+- [x] GAP-010 (`.gitignore`) explícitamente out-of-scope por decisión del usuario
 
 ## Phase 8 PLAN EXECUTION → Phase 10 EXECUTE
 
