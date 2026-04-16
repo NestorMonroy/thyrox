@@ -93,6 +93,7 @@ Ver [escalabilidad](../workflow-discover/references/scalability.md) para reglas 
 | 11 TRACK/EVALUATE | Lecciones aprendidas | `work/.../track/{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](../workflow-track/assets/lessons-learned.md.template) |
 | 11 TRACK/EVALUATE | WP Changelog | `work/.../track/{nombre-wp}-changelog.md` | [wp-changelog.md.template](../workflow-track/assets/wp-changelog.md.template) |
 | 11 TRACK/EVALUATE | TDs resueltos (si aplica) | `work/.../track/{nombre-wp}-technical-debt-resolved.md` | [technical-debt-resolved.md.template](../workflow-track/assets/technical-debt-resolved.md.template) |
+| 12 STANDARDIZE | Patrones reutilizables | `work/.../standardize/{nombre-wp}-patterns.md` | [patterns.md.template](../workflow-standardize/assets/patterns.md.template) |
 | 12 STANDARDIZE | Reporte final (grande) | `work/.../standardize/{nombre-wp}-final-report.md` | [final-report.md.template](../workflow-track/assets/final-report.md.template) |
 | — | Errores | `context/errors/{descripcion}.md` | [error-report.md.template](assets/error-report.md.template) |
 
@@ -231,9 +232,11 @@ Puntos donde el humano decide si continuar. Definidos en cada `workflow-*/SKILL.
 | Phase 3 → 4 | Después de ANALYZE | Validar causas antes de documentar restricciones |
 | Phase 4 → 5 | Después de CONSTRAINTS | Validar restricciones antes de diseñar estrategia |
 | Phase 5 → 6 | Después de STRATEGY | Aprobar dirección antes de planificar scope |
+| Phase 6 → 7 | Después de PLAN | Aprobar scope antes de especificar |
 | Phase 7 → 8 | Después de DESIGN/SPECIFY | Aprobar spec antes de descomponer |
-| Phase 8 → 10 | Antes de EXECUTE | Autorizar inicio de ejecución (Phase 9 opcional) |
+| Phase 8 → 9/10 | Antes de EXECUTE | Autorizar inicio (Phase 9 si hay riesgo alto, Phase 10 directo) |
 | Phase 10 → 11 | Antes de TRACK/EVALUATE | Confirmar que la ejecución fue correcta |
+| Phase 11 → 12 | Antes de STANDARDIZE | Confirmar cierre del WP antes de propagar |
 | GATE OPERACION | Operación destructiva | Aprobar antes de acción irreversible |
 
 Estos gates son **correctos e intencionales**. No se eliminan.
@@ -273,7 +276,7 @@ Ver [permission-model](../../references/permission-model.md) para la referencia 
 [introduction](../workflow-discover/references/introduction.md) · [requirements-analysis](../workflow-discover/references/requirements-analysis.md) · [use-cases](../workflow-discover/references/use-cases.md) · [quality-goals](../workflow-discover/references/quality-goals.md) · [stakeholders](../workflow-discover/references/stakeholders.md) · [basic-usage](../workflow-discover/references/basic-usage.md) · [constraints](../workflow-discover/references/constraints.md) · [context](../workflow-discover/references/context.md)
 
 ### Phase 3: ANALYZE (leer cuando se hace análisis profundo)
-[introduction](../workflow-discover/references/introduction.md) — análisis de causa raíz, sub-análisis por dominio
+Ver references en `workflow-discover/references/` — introduction, requirements-analysis, use-cases, quality-goals, stakeholders, constraints, context
 
 ### Phase 5: STRATEGY (leer cuando se toman decisiones arquitectónicas)
 [solution-strategy](../workflow-strategy/references/solution-strategy.md)

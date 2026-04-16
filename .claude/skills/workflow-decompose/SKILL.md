@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 8'"
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 16:22:04
 ---
 
 # /workflow-decompose — Phase 8: PLAN EXECUTION
@@ -67,18 +67,18 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 
 ## Validaciones pre-gate (TD-029, TD-031, TD-033)
 
-Antes de presentar el gate 8→10:
+Antes de presentar el gate 8→9/10:
 - **TD-031 deep review**: revisar `{nombre-wp}-requirements-spec.md` de Phase 7 — ¿el task-plan cubre TODO lo especificado? ¿hay SPECs sin tareas?
 - **TD-029 criterios**: task-plan.md con checkboxes · DAG documentado · atomicidad verificada · cobertura SPEC→tarea 100%
 - **TD-033 now.md**: `git add .thyrox/context/now.md` antes de commits y gates
 
 ## Gate humano
 
-⏸ GATE CRÍTICO — STOP obligatorio antes de Phase 10.
+⏸ GATE CRÍTICO — STOP obligatorio antes de ejecutar.
 Presentar el task-plan completo con TODAS las tareas listadas.
 Esperar confirmación explícita. Este gate NO tiene excepciones.
 Razón: Phase 10 modifica el repositorio — el usuario debe aprobar antes de que se ejecute.
-Al aprobar: actualizar `context/now.md::phase` a `Phase 10` (o `Phase 9` si hay supuestos de alto riesgo que validar).
+Al aprobar: actualizar `context/now.md::phase` a `Phase 9` (si hay supuestos de alto riesgo que validar) o `Phase 10` (ejecución directa).
 
 ---
 

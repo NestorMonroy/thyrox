@@ -18,12 +18,12 @@ Los ADRs del proyecto viven en el path declarado por `adr_path` en este archivo 
 3. **Git as persistence** — Zero archivos backup, historial en git
 4. **Markdown only** — Sin bases de datos, sin formatos propietarios
 5. **Single skill** — Un `thyrox` con references, no 15 skills separados
-   *Addendum FASE 22:* Los 7 `workflow-*` skills (workflow-discover, …, workflow-track) son la excepción intencional: son herramientas de ejecución por fase, no skills de dominio tecnológico. Esta excepción está documentada en ADR-016. La regla original sigue vigente para tech skills (python, react, etc.).
+   *Addendum FASE 22:* Los `workflow-*` skills son la excepción intencional: son herramientas de ejecución por fase, no skills de dominio tecnológico. Esta excepción está documentada en ADR-016. La regla original sigue vigente para tech skills (python, react, etc.).
    *Addendum FASE 23:* Nomenclatura resuelta a kebab-case hyphens — `workflow-*/SKILL.md`. TD-019 cerrado (FASE 23).
    *Addendum FASE 29:* Skill renombrado → `thyrox` (prefijo `pm-` eliminado — no es PM de PMI, es la metodología THYROX misma). TD-020 cerrado (FASE 29).
-   *Addendum FASE 31:* Interfaz pública del framework → `/thyrox:*` (plugin namespace via `.claude-plugin/plugin.json`). Los 12 `workflow-*` skills permanecen como implementación interna. Capa de presentación complementa ADR-016. Ver ADR-019. TD-036 cerrado (FASE 31).
+   *Addendum FASE 31:* Interfaz pública del framework → `/thyrox:*` (plugin namespace via `.claude-plugin/plugin.json`). Los `workflow-*` skills permanecen como implementación interna. Capa de presentación complementa ADR-016. Ver ADR-019. TD-036 cerrado (FASE 31).
    *Addendum FASE 35:* Estado de sesión y work packages migrados a `.thyrox/context/` — fuera de `.claude/` (zona de configuración de Claude Code). Ver ADR en `.thyrox/context/decisions/`.
-   *Addendum FASE 39:* 12 fases THYROX propias (DISCOVER → STANDARDIZE). `workflow-analyze` renombrado a `workflow-discover`. Nuevos skills: workflow-measure, workflow-analyze (Phase 3), workflow-constraints, workflow-pilot, workflow-standardize. Sistema `.claude/rules/` creado para invariantes globales.
+   *Addendum FASE 39:* 12 fases THYROX propias (DISCOVER → STANDARDIZE). `workflow-analyze` renombrado a `workflow-discover`. 12 skills workflow-* totales: workflow-discover, workflow-measure, workflow-analyze, workflow-constraints, workflow-strategy, workflow-plan, workflow-structure, workflow-decompose, workflow-pilot, workflow-execute, workflow-track, workflow-standardize. Sistema `.claude/rules/` creado para invariantes globales.
 6. **Work packages with timestamp** — `.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
 7. **Conventional Commits** — `type(scope): description`
 

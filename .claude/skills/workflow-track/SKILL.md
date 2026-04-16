@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 11'"
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-16 16:22:04
 ---
 
 # /workflow-track — Phase 11: TRACK/EVALUATE
@@ -75,6 +75,17 @@ bash .claude/scripts/project-status.sh
 | `context/project-state.md` | Ejecutar `bash .claude/scripts/update-state.sh` |
 
 Ver `../../references/state-management.md` para tabla de triggers completa.
+
+---
+
+## Gate humano
+
+⏸ STOP — Presentar resumen de Phase 11: artefactos creados, lecciones clave, métricas vs baseline.
+Esperar confirmación explícita antes de transicionar a Phase 12 STANDARDIZE.
+Razón: Phase 12 propaga cambios al framework — el usuario debe confirmar el cierre del WP.
+Al aprobar:
+1. Actualizar `context/now.md::phase` a `Phase 12`
+2. Ejecutar `bash .claude/scripts/close-wp.sh` — setea estado de cierre
 
 ---
 
