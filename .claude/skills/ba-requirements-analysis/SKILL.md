@@ -4,6 +4,8 @@ description: "Use when modeling and specifying requirements in BABOK. ba:require
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["requirements modeling", "requirements specification BABOK", "use case model", "BABOK analysis", "requirements design"]
 updated_at: 2026-04-16 21:44:29
 ---
 

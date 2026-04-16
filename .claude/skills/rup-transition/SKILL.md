@@ -4,6 +4,8 @@ description: "Use when deploying the system to end users in RUP. rup:transition 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["RUP transition", "PD milestone", "product release RUP", "UAT user acceptance", "beta deployment"]
 updated_at: 2026-04-16 21:44:29
 ---
 

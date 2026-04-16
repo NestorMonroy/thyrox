@@ -4,6 +4,8 @@ description: "Use when formalizing analyzed requirements into a specification do
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["requirements specification RM", "SRS", "BRD", "RM specification", "acceptance criteria definition"]
 updated_at: 2026-04-16 21:44:29
 ---
 

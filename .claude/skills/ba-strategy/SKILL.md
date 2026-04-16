@@ -4,7 +4,9 @@ description: "Use when analyzing the business problem and defining the change st
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+metadata:
+  triggers: ["business need analysis", "current state analysis", "future state definition", "BABOK strategy", "change strategy BA"]
+updated_at: 2026-04-16 22:30:00
 ---
 
 # /ba-strategy — BABOK: Strategy Analysis

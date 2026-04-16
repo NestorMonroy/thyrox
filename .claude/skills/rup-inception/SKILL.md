@@ -4,7 +4,9 @@ description: "Use when starting a RUP project or iteration. rup:inception — es
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+metadata:
+  triggers: ["RUP inception", "vision document", "LCO milestone", "business case RUP", "project kickoff RUP"]
+updated_at: 2026-04-16 22:30:00
 ---
 
 # /rup-inception — RUP: Inception

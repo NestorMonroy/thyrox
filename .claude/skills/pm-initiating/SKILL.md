@@ -4,7 +4,9 @@ description: "Use when starting a PMBOK project or phase. pm:initiating — deve
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+metadata:
+  triggers: ["project charter", "project authorization", "stakeholder identification", "PMBOK initiating", "project kickoff"]
+updated_at: 2026-04-16 22:30:00
 ---
 
 # /pm-initiating — PMBOK: Initiating

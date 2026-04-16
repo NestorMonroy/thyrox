@@ -4,7 +4,9 @@ description: "Use when managing requirements through their lifecycle in BABOK. b
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+metadata:
+  triggers: ["requirements traceability", "requirements lifecycle", "change control BABOK", "BABOK lifecycle", "requirements management BABOK"]
+updated_at: 2026-04-16 22:30:00
 ---
 
 # /ba-requirements-lifecycle — BABOK: Requirements Life Cycle Management

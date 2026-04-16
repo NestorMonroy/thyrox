@@ -4,7 +4,9 @@ description: "Use when managing the execution of a PMBOK project. pm:executing â
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+metadata:
+  triggers: ["project execution", "deliverables management", "direct and manage", "PMBOK executing", "resource coordination"]
+updated_at: 2026-04-16 22:30:00
 ---
 
 # /pm-executing â€” PMBOK: Executing

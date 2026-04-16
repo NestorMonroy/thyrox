@@ -4,6 +4,8 @@ description: "Use when establishing the architectural foundation of a RUP projec
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["RUP elaboration", "architecture prototype", "LCA milestone", "SAD software architecture", "use case specification"]
 updated_at: 2026-04-16 21:44:29
 ---
 

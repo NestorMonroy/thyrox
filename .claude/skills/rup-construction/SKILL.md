@@ -4,6 +4,8 @@ description: "Use when building the system incrementally in RUP. rup:constructio
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["RUP construction", "IOC milestone", "iterative development RUP", "use case implementation", "build increment"]
 updated_at: 2026-04-16 21:44:29
 ---
 

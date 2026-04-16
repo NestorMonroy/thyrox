@@ -4,6 +4,8 @@ description: "Use when starting requirements gathering or when stakeholder needs
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["RM elicitation", "requirements discovery", "requirements collection RM", "requirements lifecycle", "RM cycle"]
 updated_at: 2026-04-16 21:44:29
 ---
 

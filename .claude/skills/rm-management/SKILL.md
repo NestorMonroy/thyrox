@@ -4,6 +4,8 @@ description: "Use when managing requirements baseline, changes and traceability 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["requirements management RM", "change request CCB", "traceability matrix", "RM management", "requirements baseline"]
 updated_at: 2026-04-16 21:44:29
 ---
 

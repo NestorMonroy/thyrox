@@ -4,7 +4,9 @@ description: "Use when tracking and controlling a PMBOK project. pm:monitoring â
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+metadata:
+  triggers: ["earned value management", "EVM", "project monitoring", "schedule variance", "PMBOK controlling"]
+updated_at: 2026-04-16 22:30:00
 ---
 
 # /pm-monitoring â€” PMBOK: Monitoring & Controlling

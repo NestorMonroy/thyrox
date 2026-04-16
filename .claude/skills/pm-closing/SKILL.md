@@ -4,7 +4,9 @@ description: "Use when formally closing a PMBOK project or phase. pm:closing —
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+metadata:
+  triggers: ["project closure", "project closeout", "lessons learned PMBOK", "PMBOK closing", "final acceptance"]
+updated_at: 2026-04-16 22:30:00
 ---
 
 # /pm-closing — PMBOK: Closing

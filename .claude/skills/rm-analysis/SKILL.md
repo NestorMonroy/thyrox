@@ -4,6 +4,8 @@ description: "Use when reviewing and prioritizing collected requirements. rm:ana
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["requirements analysis RM", "RM analysis", "requirements prioritization", "conflict resolution requirements", "requirements completeness"]
 updated_at: 2026-04-16 21:44:29
 ---
 

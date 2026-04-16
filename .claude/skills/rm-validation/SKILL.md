@@ -4,6 +4,8 @@ description: "Use when verifying that requirements meet quality standards and st
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["requirements validation", "requirements review RM", "sign-off requirements", "RM validation", "requirements approval"]
 updated_at: 2026-04-16 21:44:29
 ---
 

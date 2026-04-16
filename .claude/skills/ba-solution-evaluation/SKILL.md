@@ -4,6 +4,8 @@ description: "Use when evaluating whether a solution delivered the expected busi
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["solution evaluation", "value realization", "solution performance KPI", "BABOK evaluation", "solution assessment"]
 updated_at: 2026-04-16 21:44:29
 ---
 

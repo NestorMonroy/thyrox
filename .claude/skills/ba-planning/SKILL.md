@@ -4,6 +4,8 @@ description: "Use when planning Business Analysis activities in BABOK. ba:planni
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
+metadata:
+  triggers: ["BA plan", "business analysis planning", "stakeholder engagement", "BABOK planning", "BA approach"]
 updated_at: 2026-04-16 22:30:00
 ---
 
