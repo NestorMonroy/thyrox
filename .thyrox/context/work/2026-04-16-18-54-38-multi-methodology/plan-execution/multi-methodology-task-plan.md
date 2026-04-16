@@ -109,17 +109,17 @@ graph TD
 > Requiere T-003. Paralelo con Grupo 2. Descriptions ≤1,536 chars (v2.1.105).
 
 ### PDCA (4 skills)
-- [ ] [T-011] Crear `.claude/skills/pdca-plan/SKILL.md` — Plan: identificar problema y diseñar mejora
-- [ ] [T-012] Crear `.claude/skills/pdca-do/SKILL.md` — Do: ejecutar el plan a escala pequeña
-- [ ] [T-013] Crear `.claude/skills/pdca-check/SKILL.md` — Check: verificar resultados vs objetivos
-- [ ] [T-014] Crear `.claude/skills/pdca-act/SKILL.md` — Act: estandarizar si exitoso, ajustar si no
+- [x] [T-011] Crear `.claude/skills/pdca-plan/SKILL.md` — Plan: identificar problema y diseñar mejora
+- [x] [T-012] Crear `.claude/skills/pdca-do/SKILL.md` — Do: ejecutar el plan a escala pequeña
+- [x] [T-013] Crear `.claude/skills/pdca-check/SKILL.md` — Check: verificar resultados vs objetivos
+- [x] [T-014] Crear `.claude/skills/pdca-act/SKILL.md` — Act: estandarizar si exitoso, ajustar si no
 
 ### DMAIC (5 skills)
-- [ ] [T-015] Crear `.claude/skills/dmaic-define/SKILL.md` — Define: alcance del problema
-- [ ] [T-016] Crear `.claude/skills/dmaic-measure/SKILL.md` — Measure: baseline cuantitativo del proceso
-- [ ] [T-017] Crear `.claude/skills/dmaic-analyze/SKILL.md` — Analyze: causas raíz estadísticas
-- [ ] [T-018] Crear `.claude/skills/dmaic-improve/SKILL.md` — Improve: implementar soluciones validadas
-- [ ] [T-019] Crear `.claude/skills/dmaic-control/SKILL.md` — Control: sostener las mejoras
+- [x] [T-015] Crear `.claude/skills/dmaic-define/SKILL.md` — Define: alcance del problema
+- [x] [T-016] Crear `.claude/skills/dmaic-measure/SKILL.md` — Measure: baseline cuantitativo del proceso
+- [x] [T-017] Crear `.claude/skills/dmaic-analyze/SKILL.md` — Analyze: causas raíz estadísticas
+- [x] [T-018] Crear `.claude/skills/dmaic-improve/SKILL.md` — Improve: implementar soluciones validadas
+- [x] [T-019] Crear `.claude/skills/dmaic-control/SKILL.md` — Control: sostener las mejoras
 
 ## Grupo 4 — Coordinators Patrón 3
 
