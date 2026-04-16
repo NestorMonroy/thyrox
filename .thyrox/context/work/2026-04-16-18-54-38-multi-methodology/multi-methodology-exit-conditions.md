@@ -18,9 +18,9 @@ author: NestorMonroy
 - [x] Análisis de referencia localizado y documentado en discover/
 - [x] GAPs priorizados y numerados
 - [x] Riesgos registrados en risk-register.md
-- [ ] **GATE: usuario valida scope y ruta de fases** (Phase 1 → Phase 5 directamente)
+- [x] **GATE: usuario valida scope y ruta de fases** — aprobado 2026-04-16
 
-## Phase 5 STRATEGY → Phase 6 PLAN
+## Stage 5 STRATEGY → Stage 6 SCOPE
 
 - [ ] Contrato `now.md::phase = "{metodologia}-{step}"` definido y documentado
 - [ ] Patrón 3 vs Patrón 5 con decisión formal (ADR)
