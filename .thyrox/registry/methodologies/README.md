@@ -89,8 +89,8 @@ pdca:plan          # PDCA, paso Plan
 dmaic:analyze      # DMAIC, paso Analyze
 rup:elaboration    # RUP, fase Elaboration
 rm:validation      # RM, paso Validation
-pmbok:executing    # PMBOK, grupo Executing
-babok:elicitation  # BABOK, área Elicitation & Collaboration
+pm:executing       # PMBOK, grupo Executing
+ba:elicitation     # BABOK, área Elicitation & Collaboration
 ```
 
 ## Archivos disponibles

@@ -166,7 +166,7 @@ adr_path: .thyrox/context/decisions/   # THYROX: retrocompat. Nuevos proyectos: 
 | **Stage N** | Etapa del ciclo THYROX dentro de un WP (1-DISCOVER … 12-STANDARDIZE). Se reinicia en cada ÉPICA. Antes llamado "Phase N". | ÉPICA 40 está en Stage 5: STRATEGY |
 | **WP** | Work package — directorio `.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/` que contiene todos los artefactos de una ÉPICA | `.thyrox/context/work/2026-04-16-18-54-38-multi-methodology/` |
 | **flow** | Metodología activa dentro de un WP (pdca, dmaic, pmbok, babok, rup, rm) | `flow: pdca` en now.md |
-| **methodology_step** | Paso actual de la metodología activa, con prefijo namespace | `pdca:do`, `dmaic:analyze`, `pmbok:executing` |
+| **methodology_step** | Paso actual de la metodología activa, con prefijo namespace | `pdca:do`, `dmaic:analyze`, `pm:executing` |
 | **SP-NNN** | Stopping Point — punto de parada explícito definido en el Stopping Point Manifest de Stage 1 | SP-06: gate 6→7, esperar aprobación humana |
 
 **Regla mnemotécnica:** ÉPICA es el "qué proyecto", Stage es el "en qué etapa del proyecto".

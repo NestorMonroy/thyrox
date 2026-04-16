@@ -37,7 +37,7 @@ Ejecuta la Knowledge Area **Solution Evaluation** de BABOK v3. Mide el performan
 
 Requiere:
 - La solución implementada en producción o en uso real (no en staging)
-- Métricas del estado actual (baseline) definidas en `ba:strategy` o `ba:baplanning`
+- Métricas del estado actual (baseline) definidas en `ba:strategy` o `ba:planning`
 - Datos reales de uso de la solución (mínimo 2-4 semanas de datos en producción)
 
 ---
