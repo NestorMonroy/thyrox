@@ -126,18 +126,18 @@ graph TD
 > Requiere YAML + skills correspondientes. PDCA y DMAIC primero.
 > Todos con `isolation: worktree` y `background: true`.
 
-- [ ] [T-020] Crear `.claude/agents/pdca-coordinator.md` con `isolation: worktree`, `background: true`, `color: blue` (requiere T-005, T-011..T-014)
-- [ ] [T-021] Crear `.claude/agents/dmaic-coordinator.md` con `isolation: worktree`, `background: true`, `color: green` (requiere T-006, T-015..T-019)
-- [ ] [T-022] Crear `.claude/agents/rup-coordinator.md` con `isolation: worktree`, `background: true` (requiere T-007)
-- [ ] [T-023] Crear `.claude/agents/rm-coordinator.md` con `isolation: worktree`, `background: true` (requiere T-008)
-- [ ] [T-024] Crear `.claude/agents/pmbok-coordinator.md` con `isolation: worktree`, `background: true` (requiere T-009)
-- [ ] [T-025] Crear `.claude/agents/babok-coordinator.md` con lógica de routing no-secuencial (requiere T-010) **[GATE SP-02: revisar lógica antes de continuar]**
+- [x] [T-020] Crear `.claude/agents/pdca-coordinator.md` con `isolation: worktree`, `background: true`, `color: blue` (requiere T-005, T-011..T-014)
+- [x] [T-021] Crear `.claude/agents/dmaic-coordinator.md` con `isolation: worktree`, `background: true`, `color: green` (requiere T-006, T-015..T-019)
+- [x] [T-022] Crear `.claude/agents/rup-coordinator.md` con `isolation: worktree`, `background: true` (requiere T-007)
+- [x] [T-023] Crear `.claude/agents/rm-coordinator.md` con `isolation: worktree`, `background: true` (requiere T-008)
+- [x] [T-024] Crear `.claude/agents/pmbok-coordinator.md` con `isolation: worktree`, `background: true` (requiere T-009)
+- [x] [T-025] Crear `.claude/agents/babok-coordinator.md` con lógica de routing no-secuencial (requiere T-010) **[GATE SP-02: revisar lógica antes de continuar]**
 
 ## Grupo 5 — Coordinator genérico Patrón 5
 
 > Requiere T-031 (contrato validado). NO usa `monitors:` — formato no documentado (hallazgo M).
 
-- [ ] [T-026] Crear `.claude/agents/thyrox-coordinator.md` — coordinator genérico que lee `.thyrox/registry/methodologies/{flow}.yml` desde `now.md::flow`, resuelve transiciones por tipo de flujo, actualiza `now.md::methodology_step`. Sin `monitors:` hasta documentación oficial. (requiere T-031, T-036)
+- [x] [T-026] Crear `.claude/agents/thyrox-coordinator.md` — coordinator genérico que lee `.thyrox/registry/methodologies/{flow}.yml` desde `now.md::flow`, resuelve transiciones por tipo de flujo, actualiza `now.md::methodology_step`. Sin `monitors:` hasta documentación oficial. (requiere T-031, T-036)
 
 ## Grupo 6 — Renaming de stages conflictivos
 
