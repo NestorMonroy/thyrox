@@ -40,19 +40,19 @@ GAPs identificados en `discover/plugin-distribution-analysis.md`:
 
 ### Grupo 3 — Script de inicialización (GAP-002, GAP-003)
 
-- [ ] [T-005] Crear directorio `bin/` en la raíz del proyecto (GAP-002)
-- [ ] [T-006] Crear `bin/thyrox-init.sh` — esqueleto con guard de idempotencia y logging (GAP-002)
+- [x] [T-005] Crear directorio `bin/` en la raíz del proyecto (GAP-002)
+- [x] [T-006] Crear `bin/thyrox-init.sh` — esqueleto con guard de idempotencia y logging (GAP-002)
   - Depende de: T-005
-- [ ] [T-007] Implementar en `bin/thyrox-init.sh` — creación de `.thyrox/context/` con subdirectorios (`work/`, `decisions/`, `errors/`, `research/`) (GAP-002)
+- [x] [T-007] Implementar en `bin/thyrox-init.sh` — creación de `.thyrox/context/` con subdirectorios (`work/`, `decisions/`, `errors/`, `research/`) (GAP-002)
   - Depende de: T-006
-- [ ] [T-008] Implementar en `bin/thyrox-init.sh` — creación de `now.md`, `focus.md`, `project-state.md` con valores iniciales (GAP-002)
+- [x] [T-008] Implementar en `bin/thyrox-init.sh` — creación de `now.md`, `focus.md`, `project-state.md` con valores iniciales (GAP-002)
   - Depende de: T-007
-- [ ] [T-009] Implementar en `bin/thyrox-init.sh` — creación de `ROADMAP.md` y `CHANGELOG.md` iniciales si no existen (GAP-002)
+- [x] [T-009] Implementar en `bin/thyrox-init.sh` — creación de `ROADMAP.md` y `CHANGELOG.md` iniciales si no existen (GAP-002)
   - Depende de: T-007
-- [ ] [T-010] Implementar en `bin/thyrox-init.sh` — creación de `.claude/settings.json` con permisos mínimos THYROX si no existe (GAP-003)
+- [x] [T-010] Implementar en `bin/thyrox-init.sh` — creación de `.claude/settings.json` con permisos mínimos THYROX si no existe (GAP-003)
   - Permisos: `defaultMode: acceptEdits`, allow git/bash, deny push --force/reset --hard/rm -rf
   - Depende de: T-007
-- [ ] [T-011] Agregar `chmod +x bin/thyrox-init.sh` y verificar que el script es ejecutable (GAP-002)
+- [x] [T-011] Agregar `chmod +x bin/thyrox-init.sh` y verificar que el script es ejecutable (GAP-002)
   - Depende de: T-010
 
 ### Grupo 4 — Eliminar setup-template.sh (GAP-005)
