@@ -1,5 +1,5 @@
 {
-  "description": "Hooks de THYROX — inicialización idempotente del proyecto destino en cada sesión",
+  "description": "Hooks de THYROX — inicialización idempotente y ciclo de vida de worktrees",
   "hooks": {
     "SessionStart": [
       {
@@ -7,6 +7,26 @@
           {
             "type": "command",
             "command": "[ -d .thyrox/context ] || bash \"${CLAUDE_PLUGIN_ROOT}/bin/thyrox-init.sh\""
+          }
+        ]
+      }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"WorktreeCreate\"},\"systemMessage\":\"Worktree creado por coordinator THYROX. .thyrox/context compartido desde el repo principal.\"}'"
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"WorktreeRemove\"},\"systemMessage\":\"Worktree eliminado. Estado en now.md del repo principal no modificado.\"}'"
           }
         ]
       }
