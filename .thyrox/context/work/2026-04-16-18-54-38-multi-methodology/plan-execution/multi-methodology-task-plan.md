@@ -88,21 +88,21 @@ graph TD
 ## Grupo 1 — Infraestructura base
 
 - [x] [T-001] Agregar `WorktreeCreate` y `WorktreeRemove` a `hooks/hooks.json` con handlers vacíos listos para extender (GAP-007)
-- [ ] [T-002] Extender template de `now.md` con campos `stage`, `flow`, `methodology_step` + actualizar `session-start.sh` (banner: mostrar stage y methodology_step) + actualizar `validate-session-close.sh` (reconocer campo `stage` además de `phase` por retrocompatibilidad). **Absorbe T-004 de v1** — un solo commit para evitar conflicto en session-start.sh. [SP-01]
-- [ ] [T-003] Crear directorio `.thyrox/registry/methodologies/` con `README.md` que documente el schema completo (5 tipos de flujo: cyclic, sequential, iterative, non-sequential, conditional)
+- [x] [T-002] Extender template de `now.md` con campos `stage`, `flow`, `methodology_step` + actualizar `session-start.sh` (banner: mostrar stage y methodology_step) + actualizar `validate-session-close.sh` (reconocer campo `stage` además de `phase` por retrocompatibilidad). **Absorbe T-004 de v1** — un solo commit para evitar conflicto en session-start.sh. [SP-01]
+- [x] [T-003] Crear directorio `.thyrox/registry/methodologies/` con `README.md` que documente el schema completo (5 tipos de flujo: cyclic, sequential, iterative, non-sequential, conditional)
 - [ ] [T-038] Agregar observabilidad: ~5 líneas en `sync-wp-state.sh` para append a `.thyrox/context/phase-history.jsonl` en cada transición de `methodology_step`. Formato: `{"timestamp":"...","from":"...","to":"...","flow":"...","epic":N,"wp":"..."}`
 
 ## Grupo 2 — Registry YAML (7 metodologías + 1 tipo condicional)
 
 > Requiere T-003 (todos) y T-035 (T-007, T-008).
 
-- [ ] [T-005] Crear `.thyrox/registry/methodologies/pdca.yml` — tipo `cyclic`, 4 pasos (schema ya definido en strategy)
-- [ ] [T-006] Crear `.thyrox/registry/methodologies/dmaic.yml` — tipo `sequential`, 5 pasos (schema ya definido en strategy)
+- [x] [T-005] Crear `.thyrox/registry/methodologies/pdca.yml` — tipo `cyclic`, 4 pasos (schema ya definido en strategy)
+- [x] [T-006] Crear `.thyrox/registry/methodologies/dmaic.yml` — tipo `sequential`, 5 pasos (schema ya definido en strategy)
 - [x] [T-007] Crear `.thyrox/registry/methodologies/rup.yml` — tipo `iterative`, 4 fases × N iteraciones (requiere T-035 para schema)
 - [x] [T-008] Crear `.thyrox/registry/methodologies/rm.yml` — tipo `sequential` con retorno, 5 pasos reales de RM (requiere T-035 para schema)
-- [ ] [T-009] Crear `.thyrox/registry/methodologies/pmbok.yml` — tipo `sequential`, 5 grupos de proceso: Initiating, Planning, Executing, Monitoring&Controlling, Closing
-- [ ] [T-010] Crear `.thyrox/registry/methodologies/babok.yml` — tipo `non-sequential`, 6 knowledge areas (schema ya definido en strategy)
-- [ ] [T-036] Crear `.thyrox/registry/methodologies/ps8.yml` — tipo `conditional`, 8 pasos con `on_success`/`on_failure` (schema ya definido en strategy). Ejemplo canónico del tipo condicional para el coordinator genérico. (requiere T-003)
+- [x] [T-009] Crear `.thyrox/registry/methodologies/pmbok.yml` — tipo `sequential`, 5 grupos de proceso: Initiating, Planning, Executing, Monitoring&Controlling, Closing
+- [x] [T-010] Crear `.thyrox/registry/methodologies/babok.yml` — tipo `non-sequential`, 6 knowledge areas (schema ya definido en strategy)
+- [x] [T-036] Crear `.thyrox/registry/methodologies/ps8.yml` — tipo `conditional`, 8 pasos con `on_success`/`on_failure` (schema ya definido en strategy). Ejemplo canónico del tipo condicional para el coordinator genérico. (requiere T-003)
 
 ## Grupo 3 — Skills de metodología base
 

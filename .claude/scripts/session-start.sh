@@ -12,22 +12,26 @@ CONTEXT_DIR="${PROJECT_ROOT}/.thyrox/context"
 # TD-008 completado (FASE 22). ADR-019 aceptado (FASE 31).
 COMMANDS_SYNCED=true
 
-# Mapa phase → /thyrox:* command (interfaz pública del plugin)
+# Mapa stage/phase → /thyrox:* command (interfaz pública del plugin)
+# Acepta tanto "Stage N" (nuevo) como "Phase N" (retrocompat)
 _phase_to_command() {
-    case "$1" in
-        "Phase 1")  echo "/thyrox:discover" ;;
-        "Phase 2")  echo "/thyrox:measure" ;;
-        "Phase 3")  echo "/thyrox:analyze" ;;
-        "Phase 4")  echo "/thyrox:constraints" ;;
-        "Phase 5")  echo "/thyrox:strategy" ;;
-        "Phase 6")  echo "/thyrox:plan" ;;
-        "Phase 7")  echo "/thyrox:design" ;;
-        "Phase 8")  echo "/thyrox:decompose" ;;
-        "Phase 9")  echo "/thyrox:pilot" ;;
-        "Phase 10") echo "/thyrox:execute" ;;
-        "Phase 11") echo "/thyrox:track" ;;
-        "Phase 12") echo "/thyrox:standardize" ;;
-        *)          echo "/thyrox:discover" ;;
+    # Normalizar: extraer número de "Stage N" o "Phase N"
+    local n
+    n=$(echo "$1" | grep -oE '[0-9]+' | head -1)
+    case "$n" in
+        1)  echo "/thyrox:discover" ;;
+        2)  echo "/thyrox:measure" ;;
+        3)  echo "/thyrox:analyze" ;;
+        4)  echo "/thyrox:constraints" ;;
+        5)  echo "/thyrox:strategy" ;;
+        6)  echo "/thyrox:plan" ;;
+        7)  echo "/thyrox:design" ;;
+        8)  echo "/thyrox:decompose" ;;
+        9)  echo "/thyrox:pilot" ;;
+        10) echo "/thyrox:execute" ;;
+        11) echo "/thyrox:track" ;;
+        12) echo "/thyrox:standardize" ;;
+        *)  echo "/thyrox:discover" ;;
     esac
 }
 # ───────────────────────────────────────────────────────────────────────────
@@ -37,9 +41,13 @@ _phase_to_command() {
 # Fuente 2 (fallback): directorio más reciente por nombre (YYYY-MM-DD prefijo), no por mtime
 ACTIVE_WP=""
 PHASE=""
+METHODOLOGY_STEP=""
 
 if [ -f "${CONTEXT_DIR}/now.md" ]; then
-    PHASE=$(grep "^phase:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/phase: *//')
+    # stage: toma precedencia sobre phase: (retrocompat)
+    PHASE=$(grep "^stage:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/stage: *//')
+    [ -z "$PHASE" ] && PHASE=$(grep "^phase:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/phase: *//')
+    METHODOLOGY_STEP=$(grep "^methodology_step:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/methodology_step: *//')
     if [ "$PHASE" != "complete" ] && [ -n "$PHASE" ]; then
         CURRENT_WORK=$(grep "^current_work:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/current_work: *//')
         if [ -n "$CURRENT_WORK" ] && [ "$CURRENT_WORK" != "null" ]; then
@@ -59,7 +67,8 @@ echo "=== THYROX — ACTIVAR SKILL ANTES DE TRABAJAR ==="
 echo ""
 if [ -n "$ACTIVE_WP" ]; then
     echo "  Work package activo: context/work/${ACTIVE_WP}/"
-    [ -n "$PHASE" ] && echo "  Fase actual: ${PHASE}"
+    [ -n "$PHASE" ] && echo "  Stage actual: ${PHASE}"
+    [ -n "$METHODOLOGY_STEP" ] && [ "$METHODOLOGY_STEP" != "null" ] && echo "  Methodology step: ${METHODOLOGY_STEP}"
     # Mostrar próxima tarea pendiente si existe task-plan.md (o fallback plan.md)
     WP_DIR="${CONTEXT_DIR}/work/${ACTIVE_WP}"
     TASK_PLAN=$(find "$WP_DIR" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
@@ -68,8 +77,8 @@ if [ -n "$ACTIVE_WP" ]; then
         NEXT=$(grep -m1 "^\- \[ \]" "$TASK_PLAN" 2>/dev/null | sed 's/- \[ \] //')
         [ -n "$NEXT" ] && echo "  Próxima tarea: ${NEXT}"
     fi
-    # Alerta B-09: Phase 10 activa sin execution-log (TD-014, SPEC-003)
-    if [ "$PHASE" = "Phase 10" ]; then
+    # Alerta B-09: Stage/Phase 10 activa sin execution-log (TD-014, SPEC-003)
+    if [ "$PHASE" = "Phase 10" ] || [ "$PHASE" = "Stage 10" ] || echo "$PHASE" | grep -qE "^Stage 10"; then
         EXEC_LOG=$(find "$WP_DIR" -maxdepth 1 -name "*-execution-log.md" 2>/dev/null | head -1)
         if [ -z "$EXEC_LOG" ]; then
             echo ""

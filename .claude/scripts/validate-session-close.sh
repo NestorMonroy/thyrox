@@ -59,6 +59,9 @@ NOW_FILE=""
 
 if [ -n "$NOW_FILE" ]; then
   CURRENT_WORK=$(grep "^current_work:" "$NOW_FILE" | sed 's/^current_work:[[:space:]]*//')
+  # Retrocompat: reconocer stage: (nuevo) o phase: (legacy)
+  NOW_STAGE=$(grep "^stage:" "$NOW_FILE" 2>/dev/null | sed 's/^stage:[[:space:]]*//')
+  [ -z "$NOW_STAGE" ] && NOW_STAGE=$(grep "^phase:" "$NOW_FILE" 2>/dev/null | sed 's/^phase:[[:space:]]*//')
 
   # Un WP se considera ACTIVO si tiene un *-task-plan.md con tareas pendientes (- [ ]).
   # WPs sin task-plan (abandonados en Phase 1-4) o con todas las tareas [x] no se cuentan.
