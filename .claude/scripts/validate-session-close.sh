@@ -60,16 +60,26 @@ NOW_FILE=""
 if [ -n "$NOW_FILE" ]; then
   CURRENT_WORK=$(grep "^current_work:" "$NOW_FILE" | sed 's/^current_work:[[:space:]]*//')
 
-  # Solo contar WPs en .thyrox/context/work/ — son los activos (la migración los pone ahí).
-  # .claude/context/work/ contiene WPs históricos cerrados — ignorar para este check.
+  # Un WP se considera ACTIVO si tiene un *-task-plan.md con tareas pendientes (- [ ]).
+  # WPs sin task-plan (abandonados en Phase 1-4) o con todas las tareas [x] no se cuentan.
+  # Este criterio es más preciso que buscar lessons-learned, que depende de estructura de fases.
   THYROX_WPS=0
   THYROX_WP_LIST=""
   if [ -d ".thyrox/context/work" ]; then
-    THYROX_WPS=$(find ".thyrox/context/work" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
-    THYROX_WP_LIST=$(find ".thyrox/context/work" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
+    ACTIVE_LIST=""
+    ACTIVE_COUNT=0
+    while IFS= read -r -d '' wp_dir; do
+      task_plan=$(find "$wp_dir" -maxdepth 2 -name "*-task-plan.md" 2>/dev/null | head -1)
+      if [ -n "$task_plan" ] && grep -q "^- \[ \]" "$task_plan" 2>/dev/null; then
+        ACTIVE_LIST="${ACTIVE_LIST}${wp_dir}"$'\n'
+        ACTIVE_COUNT=$((ACTIVE_COUNT + 1))
+      fi
+    done < <(find ".thyrox/context/work" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null)
+    THYROX_WPS=$ACTIVE_COUNT
+    THYROX_WP_LIST="$ACTIVE_LIST"
   fi
 
-  # now.md dice null pero hay WPs activos en .thyrox/context/work/
+  # now.md dice null pero hay WPs incompletos en .thyrox/context/work/
   if [ "$CURRENT_WORK" = "null" ] && [ "$THYROX_WPS" -gt 0 ]; then
     echo "⚠ INCONSISTENCIA: $NOW_FILE::current_work es null pero existen $THYROX_WPS WP(s) activo(s):"
     echo "$THYROX_WP_LIST" | sed 's/^/  /'
