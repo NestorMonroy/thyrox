@@ -1,11 +1,11 @@
 ```yml
 name: thyrox
-description: "Meta-framework de gestión estructurada que integra múltiples metodologías (SDLC 7 fases, PMBOK 8, Proceso Unificado). Usar este skill cuando el usuario quiera planificar, analizar, diseñar, organizar, trackear o gestionar CUALQUIER tipo de trabajo — features, bug fixes, refactoring, documentación, investigación o setup de proyecto. También usar cuando el usuario pregunte '¿qué hago primero?', '¿cómo organizo esto?', '¿cuál es el estado?', 'crea un plan para X', 'analiza X', 'descompón X en tareas', 'documenta esta decisión', o cualquier cosa relacionada con workflow de proyecto, tracking de trabajo, registros de decisiones o desarrollo estructurado. Siempre empezar con ANALYZE antes de planificar."
+description: "Framework de gestión THYROX con 12 fases propias (DISCOVER → STANDARDIZE). Usar este skill cuando el usuario quiera planificar, analizar, diseñar, organizar, trackear o gestionar CUALQUIER tipo de trabajo — features, bug fixes, refactoring, documentación, investigación o setup de proyecto. También usar cuando el usuario pregunte '¿qué hago primero?', '¿cómo organizo esto?', '¿cuál es el estado?', 'crea un plan para X', 'analiza X', 'descompón X en tareas', 'documenta esta decisión', o cualquier cosa relacionada con workflow de proyecto, tracking de trabajo, registros de decisiones o desarrollo estructurado. Siempre empezar con DISCOVER antes de planificar."
 ```
 
 # THYROX: Gestión de Proyectos
 
-Framework de gestión para organizar trabajo de cualquier tamaño con Claude Code. Sigue una metodología de 7 fases donde entender viene antes que planificar, y planificar viene antes que ejecutar.
+Framework de gestión para organizar trabajo de cualquier tamaño con Claude Code. Sigue 12 fases propias (DISCOVER → STANDARDIZE) donde entender viene antes que planificar, y planificar viene antes que ejecutar.
 
 **Principio core:** Analizar antes de actuar. Cada fase produce artefactos que alimentan la siguiente. Saltar fases produce trabajo sin fundamento.
 
@@ -53,45 +53,65 @@ Ver [escalabilidad](../workflow-analyze/references/scalability.md) para reglas d
 
 | Fase | Artefacto | Ubicación | Template |
 |------|-----------|-----------|----------|
-| 1 | Síntesis de análisis | `work/.../analysis/{nombre-wp}-analysis.md` | [introduction.md.template](../workflow-analyze/assets/introduction.md.template) |
-| 1 | Registro de riesgos | `work/../{nombre-wp}-risk-register.md` | [risk-register.md.template](../workflow-analyze/assets/risk-register.md.template) |
-| 1 | Sub-análisis (opcional) | `work/.../analysis/*.md` | stakeholders, requirements-analysis, use-cases, quality-goals, constraints, context, basic-usage |
-| 1 | Gates de 7 fases (mediano/grande) | `work/../{nombre-wp}-exit-conditions.md` | [exit-conditions.md.template](../workflow-analyze/assets/exit-conditions.md.template) |
-| 1 | Principios globales del proyecto | `constitution.md` (raíz) | [constitution.md.template](../workflow-analyze/assets/constitution.md.template) |
-| 1–2 | Decisiones arquitectónicas | `{adr_path}/adr-NNN.md` (ver CLAUDE.md o default `docs/architecture/decisions/`) | [adr.md.template](../workflow-analyze/assets/adr.md.template) |
-| 1 | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` | — |
-| 2 | Estrategia de solución | `work/../{nombre-wp}-solution-strategy.md` | [solution-strategy.md.template](../workflow-strategy/assets/solution-strategy.md.template) |
-| 3 | Scope del trabajo | `work/../{nombre-wp}-plan.md` | [plan.md.template](../workflow-plan/assets/plan.md.template) |
-| 4 | Especificación de requisitos | `work/../{nombre-wp}-requirements-spec.md` | [requirements-specification.md.template](../workflow-structure/assets/requirements-specification.md.template) |
-| 4 | Diseño técnico (complejo) | `work/../{nombre-wp}-design.md` | [design.md.template](../workflow-structure/assets/design.md.template) |
-| 5 | Plan de tareas | `work/../{nombre-wp}-task-plan.md` | [tasks.md.template](../workflow-decompose/assets/tasks.md.template) |
-| 6 | Log de ejecución | `work/../{nombre-wp}-execution-log.md` | [execution-log.md.template](../workflow-execute/assets/execution-log.md.template) |
-| 6 | Código | Repositorio (git) | — |
-| 7 | Lecciones aprendidas | `work/../{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](../workflow-track/assets/lessons-learned.md.template) |
-| 7 | WP Changelog | `work/../{nombre-wp}-changelog.md` | [wp-changelog.md.template](../workflow-track/assets/wp-changelog.md.template) |
-| 7 | TDs resueltos (si aplica) | `work/../{nombre-wp}-technical-debt-resolved.md` | [technical-debt-resolved.md.template](../workflow-track/assets/technical-debt-resolved.md.template) |
-| 7 | Reporte final (grande) | `work/../{nombre-wp}-final-report.md` | [final-report.md.template](../workflow-track/assets/final-report.md.template) |
-| — | Errores | `context/errors/ERR-NNN-descripcion.md` | [error-report.md.template](assets/error-report.md.template) |
+| 1 DISCOVER | Síntesis | `work/.../discover/{nombre-wp}-analysis.md` | [introduction.md.template](../workflow-analyze/assets/introduction.md.template) |
+| 1 DISCOVER | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` | — |
+| — | Registro de riesgos (transversal) | `work/../{nombre-wp}-risk-register.md` | [risk-register.md.template](../workflow-analyze/assets/risk-register.md.template) |
+| — | Gates de fases (mediano/grande) | `work/../{nombre-wp}-exit-conditions.md` | [exit-conditions.md.template](../workflow-analyze/assets/exit-conditions.md.template) |
+| — | Principios globales del proyecto | `constitution.md` (raíz) | [constitution.md.template](../workflow-analyze/assets/constitution.md.template) |
+| — | Decisiones arquitectónicas | `{adr_path}/adr-{tema}.md` (ver CLAUDE.md) | [adr.md.template](../workflow-analyze/assets/adr.md.template) |
+| 2 MEASURE | Baseline + métricas | `work/.../measure/*.md` | — |
+| 3 ANALYZE | Sub-análisis por dominio | `work/.../analyze/{subdomain}/*.md` | — |
+| 4 CONSTRAINTS | Restricciones | `work/.../constraints/*.md` | [constraints.md.template](../workflow-analyze/assets/constraints.md.template) |
+| 5 STRATEGY | Estrategia de solución | `work/.../strategy/{nombre-wp}-solution-strategy.md` | [solution-strategy.md.template](../workflow-strategy/assets/solution-strategy.md.template) |
+| 6 PLAN | Scope del trabajo | `work/.../plan/{nombre-wp}-plan.md` | [plan.md.template](../workflow-plan/assets/plan.md.template) |
+| 7 DESIGN/SPECIFY | Especificación de requisitos | `work/.../design/{nombre-wp}-requirements-spec.md` | [requirements-specification.md.template](../workflow-structure/assets/requirements-specification.md.template) |
+| 7 DESIGN/SPECIFY | Diseño técnico (complejo) | `work/.../design/{nombre-wp}-design.md` | [design.md.template](../workflow-structure/assets/design.md.template) |
+| 8 PLAN EXECUTION | Plan de tareas | `work/.../plan-execution/{nombre-wp}-task-plan.md` | [tasks.md.template](../workflow-decompose/assets/tasks.md.template) |
+| 9 PILOT/VALIDATE | Resultados del PoC | `work/.../pilot/*.md` | — |
+| 10 EXECUTE | Log de ejecución | `work/.../execute/{nombre-wp}-execution-log.md` | [execution-log.md.template](../workflow-execute/assets/execution-log.md.template) |
+| 10 EXECUTE | Código | Repositorio (git) | — |
+| 11 TRACK/EVALUATE | Lecciones aprendidas | `work/.../track/{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](../workflow-track/assets/lessons-learned.md.template) |
+| 11 TRACK/EVALUATE | WP Changelog | `work/.../track/{nombre-wp}-changelog.md` | [wp-changelog.md.template](../workflow-track/assets/wp-changelog.md.template) |
+| 11 TRACK/EVALUATE | TDs resueltos (si aplica) | `work/.../track/{nombre-wp}-technical-debt-resolved.md` | [technical-debt-resolved.md.template](../workflow-track/assets/technical-debt-resolved.md.template) |
+| 12 STANDARDIZE | Reporte final (grande) | `work/.../standardize/{nombre-wp}-final-report.md` | [final-report.md.template](../workflow-track/assets/final-report.md.template) |
+| — | Errores | `context/errors/{descripcion}.md` | [error-report.md.template](assets/error-report.md.template) |
 
 ## Estructura de un work package
 
+Estructura plana por fase (flat-by-phase): cada cajón = una fase THYROX.
+Los cajones se crean a medida que el WP avanza — no se crean vacíos por adelantado.
+
 ```
 context/work/YYYY-MM-DD-HH-MM-SS-nombre/
-├── analysis/
-│   ├── {nombre}-analysis.md          ← Síntesis del análisis (Phase 1) — REQUERIDO
-│   └── {nombre}-{subtema}.md         ← Sub-análisis opcionales (stakeholders, constraints, etc.)
-├── {nombre}-risk-register.md         ← Riesgos vivos Phase 1→6 — REQUERIDO
-├── {nombre}-exit-conditions.md       ← Gates de las 7 fases (Phase 1, mediano/grande)
-├── {nombre}-solution-strategy.md     ← Estrategia arquitectónica (Phase 2)
-├── {nombre}-plan.md                  ← Scope aprobado (Phase 3)
-├── {nombre}-requirements-spec.md     ← Especificación de requisitos (Phase 4)
-├── {nombre}-design.md                ← Diseño técnico (Phase 4, complejo)
-├── {nombre}-task-plan.md             ← Tareas con checkboxes (Phase 5) — REQUERIDO
-├── {nombre}-execution-log.md         ← Log de sesiones de ejecución (Phase 6)
-├── {nombre}-lessons-learned.md       ← Lecciones aprendidas (Phase 7) — REQUERIDO
-├── {nombre}-changelog.md             ← WP changelog (Phase 7) — REQUERIDO
-├── {nombre}-technical-debt-resolved.md ← TDs cerrados/archivados (Phase 7, si aplica)
-└── {nombre}-final-report.md          ← Reporte final con métricas (Phase 7, grande)
+│
+│  ARTEFACTOS TRANSVERSALES (raíz — sin cajón)
+├── {nombre}-risk-register.md         ← Riesgos vivos Phase 1→12 — REQUERIDO
+├── {nombre}-exit-conditions.md       ← Gates de fases (mediano/grande)
+│
+│  CAJONES DE FASE (aparecen cuando la fase produce contenido)
+├── discover/                         ← Phase 1: contexto, stakeholders, síntomas
+│   └── {nombre}-analysis.md          ← Síntesis — REQUERIDO
+├── measure/                          ← Phase 2: baseline + métricas
+├── analyze/                          ← Phase 3: root cause
+│   └── {subdomain}/                  ← Subdomains libres dentro del cajón
+├── constraints/                      ← Phase 4: restricciones
+├── strategy/                         ← Phase 5: decisión arquitectónica
+│   └── {nombre}-solution-strategy.md
+├── plan/                             ← Phase 6: scope + roadmap
+│   └── {nombre}-plan.md
+├── design/                           ← Phase 7: especificación técnica
+│   ├── {nombre}-requirements-spec.md
+│   └── {nombre}-design.md
+├── plan-execution/                   ← Phase 8: tareas atómicas
+│   └── {nombre}-task-plan.md
+├── pilot/                            ← Phase 9: PoC + validación
+├── execute/                          ← Phase 10: ejecución
+│   └── {nombre}-execution-log.md
+├── track/                            ← Phase 11: evaluación + lecciones
+│   ├── {nombre}-lessons-learned.md
+│   └── {nombre}-changelog.md
+└── standardize/                      ← Phase 12: documentar + propagar
+    └── {nombre}-final-report.md
 ```
 
 ## Naming
@@ -99,25 +119,80 @@ context/work/YYYY-MM-DD-HH-MM-SS-nombre/
 ```
 Archivos:        kebab-case.md
 Work packages:   YYYY-MM-DD-HH-MM-SS-nombre/   ← timestamp real: `date +%Y-%m-%d-%H-%M-%S`
+Cajones de fase: discover/ measure/ analyze/ constraints/ strategy/ plan/
+                 design/ plan-execution/ pilot/ execute/ track/ standardize/
 Commits:         type(scope): description
-ADRs:            adr-NNN.md
+ADRs:            adr-{tema}.md  (sin números)
 Tareas:          [T-NNN] Descripción (R-N)
-Errores:         ERR-NNN-descripcion.md
+Errores:         {descripcion}.md  (sin números)
 ```
 
-**Artefactos de work package — patrón `{nombre-wp}-{tipo}.md`:**
+**Artefactos principales del WP — patrón `{nombre-wp}-{tipo}.md`:**
 
 ```
 {nombre-wp} = parte descriptiva del WP (sin timestamp)
 {tipo}      = analysis | solution-strategy | plan | requirements-spec | design |
               task-plan | execution-log | lessons-learned | risk-register |
-              exit-conditions | final-report | spec-checklist |
-              changelog | technical-debt-resolved
+              exit-conditions | final-report | changelog | technical-debt-resolved
 
 Excepción: CHANGELOG.md (raíz) — nombre global, actualizar SOLO en releases con bump de versión.
 ```
 
+**Documentos en cajones** — nombre descriptivo libre (no requieren prefijo `{nombre-wp}`):
+```
+analyze/methodology-landscape/universal-pattern.md     ← subdomain + nombre descriptivo
+constraints/technical-constraints.md                   ← cajón + nombre descriptivo
+```
+
 Ver [conventions](../../references/conventions.md) para detalles completos.
+
+---
+
+## Metadata de documentos
+
+### Artefactos principales del WP (raíz)
+
+```yml
+```yml
+project: [Nombre del proyecto]
+work_package: YYYY-MM-DD-HH-MM-SS-nombre
+created_at: YYYY-MM-DD HH:MM:SS
+updated_at: YYYY-MM-DD HH:MM:SS   ← solo en documentos vivos (risk-register, exit-conditions)
+current_phase: Phase N — PHASE_NAME
+author: [Nombre]
+```
+```
+
+### Síntesis de fase (`discover/{nombre}-analysis.md`)
+
+```yml
+```yml
+created_at: YYYY-MM-DD HH:MM:SS
+project: [Nombre del proyecto]
+analysis_version: 1.0
+author: [Nombre]
+status: Borrador | En revisión | Aprobado
+```
+```
+
+### Documentos en cajones (`{cajon}/{subdomain}/*.md`)
+
+```yml
+```yml
+created_at: YYYY-MM-DD HH:MM:SS
+project: [Nombre del proyecto]
+work_package: YYYY-MM-DD-HH-MM-SS-nombre
+phase: Phase N — PHASE_NAME
+author: [Nombre]
+status: Borrador | En revisión | Aprobado
+```
+```
+
+**Reglas:**
+- `created_at` siempre presente — timestamp completo `YYYY-MM-DD HH:MM:SS`
+- `updated_at` **solo** en artefactos vivos (risk-register, exit-conditions) — NO en documentos de cajones
+- `status` obligatorio: `Borrador` al crear, `Aprobado` cuando el gate de la fase lo valida
+- Usar bloques ` ```yml ``` ` (no `---` YAML front matter)
 
 ---
 

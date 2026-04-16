@@ -1,10 +1,11 @@
----
-title: "SDLC — Software Development Life Cycle: Fases y Estructura"
-type: analysis
-domain: sdlc
-created_at: 2026-04-15
-status: draft
----
+```yml
+created_at: 2026-04-15 00:00:00
+project: THYROX
+work_package: 2026-04-15-08-29-58-plugin-distribution
+phase: Phase 3 — ANALYZE
+author: NestorMonroy
+status: Borrador
+```
 
 # SDLC — Software Development Life Cycle
 

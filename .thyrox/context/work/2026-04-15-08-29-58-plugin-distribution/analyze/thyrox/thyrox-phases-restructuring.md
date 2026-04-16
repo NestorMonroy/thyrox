@@ -1,10 +1,11 @@
----
-title: "THYROX — Reestructuración de 7 a 12 fases propias"
-type: analysis
-domain: thyrox-phases
-created_at: 2026-04-15
+```yml
+created_at: 2026-04-15 00:00:00
+project: THYROX
+work_package: 2026-04-15-08-29-58-plugin-distribution
+phase: Phase 3 — ANALYZE
+author: NestorMonroy
 status: Aprobado — pendiente de implementación
----
+```
 
 # Reestructuración de fases THYROX: 7 → 12
 
