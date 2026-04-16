@@ -419,7 +419,7 @@ Fuente: `guide/workflows/agent-teams.md:726-752`
 
 ## 4. Subagentes simples — Task tool / Agent tool
 
-Para completar la comparación: subagentes son la herramienta estándar para delegación intra-sesión. Ver [subagent-patterns](subagent-patterns.md) para documentación completa.
+Para completar la comparación: subagentes son la herramienta estándar para delegación intra-sesión. Ver `references/subagent-patterns.md` para documentación completa.
 
 **En qué se diferencian de los patrones anteriores:**
 - El padre espera el resultado antes de continuar (o usa `run_in_background: true` para async)
