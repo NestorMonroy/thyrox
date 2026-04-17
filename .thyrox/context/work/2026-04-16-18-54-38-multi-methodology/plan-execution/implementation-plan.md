@@ -52,23 +52,23 @@ GAP-022..027 (meta-framework orchestration) ─── Tier 4, arquitectura mayor
 
 ## Tier 1 — Registry YAMLs + Coordinator Agents (5 namespaces)
 
-### T-001 — Resolver GAP-005: reescribir ps8.yml para Toyota TBP
-- [ ] **T-001** Reescribir `.thyrox/registry/methodologies/ps8.yml` alineando con 6 pasos TBP (ps8:clarify, ps8:target, ps8:analyze, ps8:countermeasures, ps8:implement, ps8:evaluate). Incluir `type: sequential`, `display: "PS8 — Toyota Business Practices"`, tollgates y outputs por paso.
+### T-001 — Resolver GAP-005: reescribir ps8.yml → pps.yml para Toyota TBP
+- [x] **T-001** Renombrar `ps8.yml` → `pps.yml` (Practical Problem Solving), reescribir alineando con 6 pasos TBP (pps:clarify, pps:target, pps:analyze, pps:countermeasures, pps:implement, pps:evaluate). Renombrar todos los skills ps8-* → pps-*. Actualizar SKILL.md y scalability.md.
 
 ### T-002..005 — Crear YAMLs de registry faltantes
-- [ ] **T-002** Crear `.thyrox/registry/methodologies/lean.yml` — `type: sequential`, 5 pasos: lean:define, lean:measure, lean:analyze, lean:improve, lean:control. Tollgates y outputs basados en los SKILL.md de cada skill.
-- [ ] **T-003** Crear `.thyrox/registry/methodologies/sp.yml` — `type: sequential`, 8 pasos: sp:context, sp:analysis, sp:gaps, sp:formulate, sp:plan, sp:execute, sp:monitor, sp:adjust. Nota: sp:adjust puede retornar a sp:analysis (ciclo estratégico).
-- [ ] **T-004** Crear `.thyrox/registry/methodologies/cp.yml` — `type: sequential`, 7 pasos: cp:initiation, cp:diagnosis, cp:structure, cp:recommend, cp:plan, cp:implement, cp:evaluate.
-- [ ] **T-005** Crear `.thyrox/registry/methodologies/bpa.yml` — `type: sequential`, 6 pasos: bpa:identify, bpa:map, bpa:analyze, bpa:design, bpa:implement, bpa:monitor.
+- [x] **T-002** Crear `.thyrox/registry/methodologies/lean.yml` — `type: sequential`, 5 pasos: lean:define, lean:measure, lean:analyze, lean:improve, lean:control. Tollgates y outputs basados en los SKILL.md de cada skill.
+- [x] **T-003** Crear `.thyrox/registry/methodologies/sp.yml` — `type: sequential`, 8 pasos: sp:context, sp:analysis, sp:gaps, sp:formulate, sp:plan, sp:execute, sp:monitor, sp:adjust. Nota: sp:adjust puede retornar a sp:analysis (ciclo estratégico).
+- [x] **T-004** Crear `.thyrox/registry/methodologies/cp.yml` — `type: sequential`, 7 pasos: cp:initiation, cp:diagnosis, cp:structure, cp:recommend, cp:plan, cp:implement, cp:evaluate.
+- [x] **T-005** Crear `.thyrox/registry/methodologies/bpa.yml` — `type: sequential`, 6 pasos: bpa:identify, bpa:map, bpa:analyze, bpa:design, bpa:implement, bpa:monitor.
 
 ### T-006..010 — Crear coordinator agents faltantes
 Cada coordinator debe seguir el patrón de `dmaic-coordinator.md`: frontmatter con `skills:` array, `isolation: worktree`, lógica de routing por paso nativo, actualización de `now.md`, tollgate verification.
 
-- [ ] **T-006** Crear `.claude/agents/lean-coordinator.md` — `skills: [lean-define, lean-measure, lean-analyze, lean-improve, lean-control]`. Flow sequential con tollgates por fase Lean. Stage THYROX anchor: stages 2, 3, 10, 11.
-- [ ] **T-007** Crear `.claude/agents/ps8-coordinator.md` — `skills: [ps8-clarify, ps8-target, ps8-analyze, ps8-countermeasures, ps8-implement, ps8-evaluate]`. Flow sequential. Stage THYROX anchor: stages 1, 2, 3, 6, 10, 11. Destacar A3 Report como artefacto central.
-- [ ] **T-008** Crear `.claude/agents/sp-coordinator.md` — `skills: [sp-context, sp-analysis, sp-gaps, sp-formulate, sp-plan, sp-execute, sp-monitor, sp-adjust]`. Flow sequential con retorno cíclico sp:adjust → sp:analysis en ciclos estratégicos subsiguientes. Stage THYROX anchor: stages 1, 2, 3, 5, 6, 10, 11, 12.
-- [ ] **T-009** Crear `.claude/agents/cp-coordinator.md` — `skills: [cp-initiation, cp-diagnosis, cp-structure, cp-recommend, cp-plan, cp-implement, cp-evaluate]`. Flow sequential. Stage THYROX anchor: stages 1, 2, 3, 5, 6, 10, 11.
-- [ ] **T-010** Crear `.claude/agents/bpa-coordinator.md` — `skills: [bpa-identify, bpa-map, bpa-analyze, bpa-design, bpa-implement, bpa-monitor]`. Flow sequential. Stage THYROX anchor: stages 1, 2, 3, 5, 10, 11.
+- [x] **T-006** Crear `.claude/agents/lean-coordinator.md` — `skills: [lean-define, lean-measure, lean-analyze, lean-improve, lean-control]`. Flow sequential con tollgates por fase Lean. Color: cyan.
+- [x] **T-007** Crear `.claude/agents/pps-coordinator.md` — `skills: [pps-clarify, pps-target, pps-analyze, pps-countermeasures, pps-implement, pps-evaluate]`. Flow sequential. Destacar A3 Report como artefacto central. Color: orange.
+- [x] **T-008** Crear `.claude/agents/sp-coordinator.md` — `skills: [sp-context, sp-analysis, sp-gaps, sp-formulate, sp-plan, sp-execute, sp-monitor, sp-adjust]`. Flow sequential con retorno cíclico sp:adjust → sp:analysis. Color: purple.
+- [x] **T-009** Crear `.claude/agents/cp-coordinator.md` — `skills: [cp-initiation, cp-diagnosis, cp-structure, cp-recommend, cp-plan, cp-implement, cp-evaluate]`. Flow sequential. Color: yellow.
+- [x] **T-010** Crear `.claude/agents/bpa-coordinator.md` — `skills: [bpa-identify, bpa-map, bpa-analyze, bpa-design, bpa-implement, bpa-monitor]`. Flow sequential. Color: teal.
 
 ---
 
@@ -81,18 +81,18 @@ Cada coordinator debe seguir el patrón de `dmaic-coordinator.md`: frontmatter c
 - [ ] **T-014** Agregar `skills: [rm-elicitation, rm-analysis, rm-specification, rm-validation, rm-management]` al frontmatter de `.claude/agents/rm-coordinator.md`.
 
 ### T-015 — Agregar `metadata.triggers` a 32 skills nuevos
-- [ ] **T-015** Agregar `metadata.triggers` (3-5 keywords cada uno) al frontmatter de los 32 SKILL.md en namespaces lean/ps8/sp/cp/bpa. Palabras clave basadas en nombre de metodología + artefactos clave + dominio (ej: lean-define → `["lean", "waste reduction", "TIMWOOD", "lean charter", "muda"]`).
+- [ ] **T-015** Agregar `metadata.triggers` (3-5 keywords cada uno) al frontmatter de los 32 SKILL.md en namespaces lean/pps/sp/cp/bpa. Palabras clave basadas en nombre de metodología + artefactos clave + dominio (ej: lean-define → `["lean", "waste reduction", "TIMWOOD", "lean charter", "muda"]`).
 
 ---
 
 ## Tier 3 — Documentación y Quick Wins
 
-- [ ] **T-016** Marcar T-011 y T-016 como completados en `plan-execution/skill-anatomy-task-plan.md` (GAP-031 — stale checkboxes).
-- [ ] **T-017** Actualizar label `*(pendiente)*` en `.claude/skills/thyrox/SKILL.md` para los 5 namespaces: de "*(pendiente)*" a "*(coordinator pendiente)*" con nota aclaratoria que los skills están completos (GAP-016).
-- [ ] **T-018** Extender sección "Selección por necesidad" en `.claude/skills/thyrox/SKILL.md` para incluir lean, ps8, sp, cp, bpa con cuándo usar cada uno (GAP-017).
-- [ ] **T-019** Corregir nombres de workflow skills en `.claude/CLAUDE.md` Locked Decision #5 Addendum FASE 39: workflow-baseline, workflow-diagnose, workflow-scope, workflow-implement (GAP-019).
-- [ ] **T-020** Crear `.claude/skills/workflow-diagnose/references/root-cause-analysis-methodology.md` — guía de análisis de causa raíz como reference file faltante (GAP-018).
-- [ ] **T-021** Actualizar descripción en `.claude-plugin/plugin.json` para mencionar todos los namespaces activos (GAP-028).
+- [ ] **T-016** Actualizar label `*(pendiente)*` en `.claude/skills/thyrox/SKILL.md` para los 5 namespaces: de "*(pendiente)*" a texto que refleje el estado real (skills completos, coordinator activo) (GAP-016).
+- [ ] **T-017** Extender sección "Selección por necesidad" en `.claude/skills/thyrox/SKILL.md` para incluir lean, pps, sp, cp, bpa con cuándo usar cada uno (GAP-017).
+- [ ] **T-018** Corregir nombres de workflow skills en `.claude/CLAUDE.md` Locked Decision #5 Addendum FASE 39: workflow-baseline, workflow-diagnose, workflow-scope, workflow-implement (GAP-019).
+- [ ] **T-019** Crear `.claude/skills/workflow-diagnose/references/root-cause-analysis-methodology.md` — guía de análisis de causa raíz como reference file faltante (GAP-018).
+- [ ] **T-020** Actualizar descripción en `.claude-plugin/plugin.json` para mencionar todos los namespaces activos: lean, pps, sp, cp, bpa (GAP-028).
+- [ ] **T-021** Corregir stale checkboxes en artefactos WP relevantes, incluyendo este plan y `multi-methodology-namespaces-task-plan.md` (GAP-031).
 
 ---
 
@@ -113,23 +113,23 @@ Cada coordinator debe seguir el patrón de `dmaic-coordinator.md`: frontmatter c
 
 ---
 
-## Resumen de Tareas por Tier
+## Estado de progreso (actualizado 2026-04-17)
 
-| Tier | Tareas | Effort total estimado | Valor |
-|------|--------|-----------------------|-------|
-| **Tier 1** | T-001..T-010 (10 tareas) | ~3h | Desbloquea 5 namespaces completos |
-| **Tier 2** | T-011..T-015 (5 tareas) | ~1h | Completa coordinators existentes |
-| **Tier 3** | T-016..T-021 (6 tareas) | ~30m | Documentación precisa |
-| **Tier 4** | T-022..T-031 (10 tareas) | ~8-12h | Arquitectura meta-framework |
-| **Total** | **31 tareas** | **~13-17h** | THYROX meta-framework completo |
+| Tier | Tareas | Completadas | Pendientes | Effort restante |
+|------|--------|-------------|------------|-----------------|
+| **Tier 1** | T-001..T-010 (10 tareas) | **10 ✓** | 0 | — |
+| **Tier 2** | T-011..T-015 (5 tareas) | 0 | 5 | ~1h |
+| **Tier 3** | T-016..T-021 (6 tareas) | 0 | 6 | ~30m |
+| **Tier 4** | T-022..T-031 (10 tareas) | 0 | 10 | ~8-12h |
+| **Total** | **31 tareas** | **10** | **21** | **~9-13h** |
 
 ---
 
 ## Criterios de Éxito por Tier
 
-### Tier 1 completado cuando:
+### Tier 1 completado cuando: ✓ DONE
 - Los 5 namespaces nuevos tienen YAML en registry y coordinator agent
-- `thyrox-coordinator` puede rutear a lean/ps8/sp/cp/bpa leyendo sus YAMLs
+- `thyrox-coordinator` puede rutear a lean/pps/sp/cp/bpa leyendo sus YAMLs
 - Cada coordinator declara su `skills:` array
 
 ### Tier 2 completado cuando:
