@@ -4,7 +4,14 @@ description: "Use when designing and implementing Lean improvements. lean:improv
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "5S"
+    - "kaizen"
+    - "kanban"
+    - "poka-yoke"
+    - "lean implementation"
 ---
 
 # /lean-improve — Lean: Improve

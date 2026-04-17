@@ -4,7 +4,14 @@ description: "Use when tracking a redesigned business process performance. bpa:m
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "process monitoring"
+    - "process KPI"
+    - "process performance dashboard"
+    - "before after process"
+    - "process continuous improvement"
 ---
 
 # /bpa-monitor — BPA: Monitor

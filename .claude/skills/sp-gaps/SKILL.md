@@ -4,7 +4,14 @@ description: "Use when analyzing strategic gaps. sp:gaps — identify where the 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "strategic gap"
+    - "gap analysis strategy"
+    - "capability gap"
+    - "strategic aspiration"
+    - "current vs desired state"
 ---
 
 # /sp-gaps — Strategic Planning: Gap Analysis

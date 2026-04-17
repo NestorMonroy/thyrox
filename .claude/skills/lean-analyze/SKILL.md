@@ -4,7 +4,14 @@ description: "Use when identifying root causes of waste in a Lean process. lean:
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "future state VSM"
+    - "NVA elimination"
+    - "kaizen events"
+    - "lean root cause"
+    - "waste analysis"
 ---
 
 # /lean-analyze — Lean: Analyze

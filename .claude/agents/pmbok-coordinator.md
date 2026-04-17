@@ -6,10 +6,16 @@ description: |
   de proceso (Initiating, Planning, Executing, Monitoring & Controlling, Closing) con
   sus knowledge areas correspondientes.
 tools: Read, Write, Edit, Glob, Grep, Bash
+skills:
+  - pm-initiating
+  - pm-planning
+  - pm-executing
+  - pm-monitoring
+  - pm-closing
 background: true
 isolation: worktree
 color: yellow
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 14:30:24
 ---
 
 # pmbok-coordinator — Coordinator PMBOK

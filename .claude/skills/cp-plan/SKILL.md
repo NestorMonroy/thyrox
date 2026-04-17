@@ -4,7 +4,14 @@ description: "Use when building the implementation plan after recommendations ar
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "implementation plan consulting"
+    - "consulting roadmap"
+    - "quick wins"
+    - "workstreams"
+    - "change management plan"
 ---
 
 # /cp-plan — Consulting Process: Plan

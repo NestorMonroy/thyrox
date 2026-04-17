@@ -6,10 +6,16 @@ description: |
   y gestión de cambios. Soporta retornos condicionales (gaps → re-elicitación,
   correcciones → re-análisis, change requests → re-análisis).
 tools: Read, Write, Edit, Glob, Grep, Bash
+skills:
+  - rm-elicitation
+  - rm-analysis
+  - rm-specification
+  - rm-validation
+  - rm-management
 background: true
 isolation: worktree
 color: orange
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-17 14:30:24
 ---
 
 # rm-coordinator — Coordinator Requirements Management

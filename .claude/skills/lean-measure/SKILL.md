@@ -4,7 +4,14 @@ description: "Use when mapping the current state of a Lean process. lean:measure
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "value stream map"
+    - "VSM"
+    - "current state map"
+    - "lead time"
+    - "takt time"
 ---
 
 # /lean-measure — Lean: Measure

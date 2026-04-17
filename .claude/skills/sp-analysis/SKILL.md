@@ -4,7 +4,14 @@ description: "Use when doing environmental scanning for strategic planning. sp:a
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "PESTEL"
+    - "SWOT"
+    - "Porter five forces"
+    - "environmental analysis"
+    - "strategic analysis"
 ---
 
 # /sp-analysis — Strategic Planning: Environmental Analysis

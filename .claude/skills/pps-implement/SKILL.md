@@ -4,7 +4,14 @@ description: "Use when solving a structured problem with Toyota TBP. pps:impleme
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "TBP implement"
+    - "A3 implement"
+    - "contramedidas"
+    - "implementation log"
+    - "TBP execution"
 ---
 
 # /pps-implement — PS8: See Countermeasures Through

@@ -4,7 +4,14 @@ description: "Use when implementing a redesigned business process. bpa:implement
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "process implementation"
+    - "process change"
+    - "SOP process"
+    - "process training"
+    - "process rollout"
 ---
 
 # /bpa-implement — BPA: Implement

@@ -4,7 +4,14 @@ description: "Use when starting a Lean project focused on waste reduction. lean:
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "lean"
+    - "waste reduction"
+    - "TIMWOOD"
+    - "lean charter"
+    - "muda"
 ---
 
 # /lean-define — Lean: Define

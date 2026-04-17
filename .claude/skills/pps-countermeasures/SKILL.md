@@ -4,7 +4,14 @@ description: "Use when solving a structured problem with Toyota TBP. pps:counter
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "countermeasures"
+    - "TBP action plan"
+    - "corrective action"
+    - "A3 countermeasures"
+    - "action matrix"
 ---
 
 # /pps-countermeasures — PS8: Develop Countermeasures

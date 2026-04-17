@@ -4,7 +4,14 @@ description: "Use when supporting client implementation of approved recommendati
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 03:00:00
+updated_at: 2026-04-17 14:30:24
+metadata:
+  triggers:
+    - "consulting implementation"
+    - "steering committee"
+    - "change management consulting"
+    - "workstream management"
+    - "implementation momentum"
 ---
 
 # /cp-implement — Consulting Process: Implement

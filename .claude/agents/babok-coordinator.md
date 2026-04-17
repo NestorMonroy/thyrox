@@ -6,10 +6,17 @@ description: |
   BABOK es no-secuencial: el coordinator selecciona la knowledge area más relevante según
   el contexto, o presenta las 6 áreas para que el usuario elija. Corre en worktree aislado.
 tools: Read, Write, Edit, Glob, Grep, Bash
+skills:
+  - ba-planning
+  - ba-elicitation
+  - ba-requirements-analysis
+  - ba-requirements-lifecycle
+  - ba-strategy
+  - ba-solution-evaluation
 background: true
 isolation: worktree
 color: cyan
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 14:30:24
 ---
 
 # babok-coordinator — Coordinator BABOK

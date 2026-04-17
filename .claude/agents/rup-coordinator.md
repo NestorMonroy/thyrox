@@ -6,10 +6,15 @@ description: |
   Construction, Transition) con milestones LCO/LCA/IOC/PD, soporta múltiples iteraciones
   por fase, y corre en worktree aislado.
 tools: Read, Write, Edit, Glob, Grep, Bash
+skills:
+  - rup-inception
+  - rup-elaboration
+  - rup-construction
+  - rup-transition
 background: true
 isolation: worktree
 color: purple
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-17 14:30:24
 ---
 
 # rup-coordinator — Coordinator RUP
