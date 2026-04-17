@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["requirements management RM", "change request CCB", "traceability matrix", "RM management", "requirements baseline"]
-updated_at: 2026-04-17 00:00:00
+updated_at: 2026-04-17 01:00:00
 ---
 
 # /rm-management — Requirements Management: Management
@@ -237,3 +237,18 @@ flow: rm
 
 ### References
 - [change-control-process.md](./references/change-control-process.md) — CCB composición y quórum, pipeline de CR, impact assessment template, change log format, CR patterns por tipo
+
+### Scripts
+- [count-requirements.sh](./scripts/count-requirements.sh) — Cuenta requisitos por estado en la traceability matrix
+
+```bash
+# Conteo detallado por estado
+bash .claude/skills/rm-management/scripts/count-requirements.sh \
+  .thyrox/context/work/YYYY-MM-DD-nombre/rm-management.md
+
+# Solo totales (sin detalle por estado)
+bash .claude/skills/rm-management/scripts/count-requirements.sh \
+  .thyrox/context/work/YYYY-MM-DD-nombre/rm-management.md --summary
+```
+
+**Output:** conteo por estado (10 estados RTM) + métricas de cobertura (% verificado, % implementado) + señales de salud (Propuesto alto, cobertura baja, Diferido acumulado).

@@ -4,7 +4,7 @@ description: "Use when establishing a quantitative baseline in a DMAIC project. 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 00:00:00
+updated_at: 2026-04-17 01:00:00
 ---
 
 # /dmaic-measure — DMAIC: Measure
@@ -225,3 +225,17 @@ Cuando el baseline está establecido y el MSA validado → `dmaic:analyze`
 ### References
 - [msa-gage-rr.md](./references/msa-gage-rr.md) — Gauge R&R completo: componentes, tabla de decisión (%GR&R), Kappa de Cohen, diseño de estudio, sistemas automatizados
 - [process-capability.md](./references/process-capability.md) — Cp/Cpk/Pp/Ppk: fórmulas, interpretación, tabla DPMO→Sigma Level, convención 1.5σ, prerequisitos
+
+### Scripts
+- [calculate-capability.py](./scripts/calculate-capability.py) — Calcula Cp/Cpk/Pp/Ppk desde CSV con límites de especificación
+
+```bash
+# Uso básico — primera columna numérica, con límites de especificación
+python .claude/skills/dmaic-measure/scripts/calculate-capability.py measurements.csv --lsl 9.5 --usl 10.5
+
+# Especificando columna
+python .claude/skills/dmaic-measure/scripts/calculate-capability.py data.csv diameter --lsl 49.8 --usl 50.2
+
+# Sin límites — muestra solo media y desviación estándar
+python .claude/skills/dmaic-measure/scripts/calculate-capability.py data.csv
+```

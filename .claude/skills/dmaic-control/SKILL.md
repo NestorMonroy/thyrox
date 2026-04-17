@@ -4,7 +4,7 @@ description: "Use when sustaining improvements in a DMAIC project. dmaic:control
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 00:00:00
+updated_at: 2026-04-17 01:00:00
 ---
 
 # /dmaic-control — DMAIC: Control
@@ -228,3 +228,16 @@ DMAIC completado. Iniciar Stage 11 TRACK/EVALUATE del WP → lecciones aprendida
 
 ### References
 - [control-chart-guide.md](./references/control-chart-guide.md) — Selección de gráfica SPC (7 tipos), UCL/LCL fórmulas, 8 Reglas de Western Electric, causas típicas por regla, Plan de Reacción completo
+
+### Scripts
+- [check-control-limits.py](./scripts/check-control-limits.py) — Detecta violaciones de las 8 Reglas de Western Electric en datos de proceso CSV
+
+```bash
+# Uso básico — primera columna numérica
+python .claude/skills/dmaic-control/scripts/check-control-limits.py process_data.csv
+
+# Especificando columna
+python .claude/skills/dmaic-control/scripts/check-control-limits.py measurements.csv cycle_time
+```
+
+**Output:** estadísticas de la gráfica (n, media, sigma, UCL, LCL) + lista de violaciones con regla, puntos afectados (base 1) y guía de reacción.

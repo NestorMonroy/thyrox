@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["RUP inception", "vision document", "LCO milestone", "business case RUP", "project kickoff RUP"]
-updated_at: 2026-04-17 00:00:00
+updated_at: 2026-04-17 01:00:00
 ---
 
 # /rup-inception — RUP: Inception
@@ -214,3 +214,14 @@ rup_iteration: [N]
 
 ### References
 - [lco-criteria.md](./references/lco-criteria.md) — Criterios de evaluación LCO: 5 criterios con sub-criterios, checklist de concurrencia, decisiones típicas, límites de tiempo
+
+### Scripts
+- [check-lco-criteria.sh](./scripts/check-lco-criteria.sh) — Verifica readiness del milestone LCO inspeccionando el work package
+
+```bash
+# Verificar LCO readiness del WP activo
+bash .claude/skills/rup-inception/scripts/check-lco-criteria.sh \
+  .thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/
+```
+
+**Criterios verificados:** Vision Document con indicador de aprobación · Business Case con datos financieros · Risk List con ≥3 riesgos · Use Case Model con ≥1 UC · Plan con milestones LCA/IOC/PD. Sale con código 0 si todos pasan, 1 si hay criterios faltantes.

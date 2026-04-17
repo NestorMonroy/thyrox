@@ -90,14 +90,14 @@ Cada T-NNN cubre un skill completo:
 - [x] T-032 `ba-requirements-lifecycle` — assets: requirements-lifecycle-template.md · references: traceability-matrix.md (traceability matrix template, coverage analysis, impact assessment) · SKILL.md update
 - [x] T-033 `ba-strategy` — assets: strategy-analysis-template.md · references: gap-analysis-guide.md (Current/Future state templates, gap categorization — capability/performance/knowledge/process, SWOT, Business Need tabla 4 elementos) · SKILL.md update
 - [x] T-034 `ba-solution-evaluation` — assets: solution-evaluation-template.md · references: evaluation-techniques.md (KPI measurement framework, ROI calculation, adoption metrics, survey design) · SKILL.md update
-- [ ] T-035 Commit B6: `feat(babok): complete skill anatomy — assets, references, SKILL.md updates`
+- [x] T-035 Commit B6: `feat(babok): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B7 — Scripts selectivos (4 scripts independientes)
 
-- [ ] T-036 `dmaic-measure/scripts/calculate-capability.py` — Cp/Cpk desde CSV · SKILL.md update con invocación
-- [ ] T-037 `dmaic-control/scripts/check-control-limits.py` — Western Electric Rules · SKILL.md update
-- [ ] T-038 `rup-inception/scripts/check-lco-criteria.sh` — artefactos LCO en WP · SKILL.md update
-- [ ] T-039 `rm-management/scripts/count-requirements.sh` — conteo por estado en traceability matrix · SKILL.md update
+- [x] T-036 `dmaic-measure/scripts/calculate-capability.py` — Cp/Cpk desde CSV · SKILL.md update con invocación
+- [x] T-037 `dmaic-control/scripts/check-control-limits.py` — Western Electric Rules · SKILL.md update
+- [x] T-038 `rup-inception/scripts/check-lco-criteria.sh` — artefactos LCO en WP · SKILL.md update
+- [x] T-039 `rm-management/scripts/count-requirements.sh` — conteo por estado en traceability matrix · SKILL.md update
 - [ ] T-040 Commit B7: `feat(scripts): add selective deterministic scripts to dmaic-measure, dmaic-control, rup-inception, rm-management`
 
 ## Cierre
