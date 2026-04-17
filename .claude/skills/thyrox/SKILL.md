@@ -86,7 +86,7 @@ correspondiente **dentro** del workflow stage apropiado. Cada skill declara su
 | `pm:` | PMBOK | pm-initiating, pm-planning, pm-executing, pm-monitoring, pm-closing | 1, 3, 5, 6, 7, 10, 11, 12 |
 | `ba:` | BABOK / Business Analysis | ba-planning, ba-elicitation, ba-requirements-analysis, ba-requirements-lifecycle, ba-solution-evaluation, ba-strategy | 1, 2, 3, 5, 6, 7, 10, 11, 12 |
 | `lean:` *(pendiente)* | Lean Six Sigma | lean-define, lean-measure, lean-analyze, lean-improve, lean-control | 2, 3, 10, 11 |
-| `ps8:` *(pendiente)* | Problem Solving 8-step (Toyota TBP) | ps8-clarify, ps8-target, ps8-analyze, ps8-countermeasures, ps8-implement, ps8-evaluate | 1, 2, 3, 6, 10, 11 |
+| `pps:` *(pendiente)* | Practical Problem Solving (Toyota TBP) | pps-clarify, pps-target, pps-analyze, pps-countermeasures, pps-implement, pps-evaluate | 1, 2, 3, 6, 10, 11 |
 | `sp:` *(pendiente)* | Strategic Planning | sp-context, sp-analysis, sp-gaps, sp-formulate, sp-plan, sp-execute, sp-monitor, sp-adjust | 1, 2, 3, 5, 6, 10, 11, 12 |
 | `cp:` *(pendiente)* | Consulting Process | cp-initiation, cp-diagnosis, cp-structure, cp-recommend, cp-plan, cp-implement, cp-evaluate | 1, 2, 3, 5, 6, 10, 11 |
 | `bpa:` *(pendiente)* | Business Process Analysis | bpa-identify, bpa-map, bpa-analyze, bpa-design, bpa-implement, bpa-monitor | 1, 2, 3, 5, 10, 11 |
