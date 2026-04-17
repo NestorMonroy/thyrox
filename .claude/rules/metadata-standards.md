@@ -7,6 +7,23 @@
 TODOS los documentos en `.thyrox/context/work/` usan bloques \`\`\`yml\`\`\` para metadata.
 NUNCA usar `---` YAML frontmatter en artefactos WP.
 
+## Naming de archivos en cajones
+
+**Principio:** el cajón ya provee el tipo — el nombre del archivo describe solo el contenido.
+
+```
+CORRECTO:   analyze/use-cases-analysis.md          ← contenido
+CORRECTO:   analyze/discover-to-diagnose-coverage.md  ← contenido-subtipo
+PROHIBIDO:  analyze/deep-review-use-cases-analysis.md ← tipo-contenido (invertido)
+PROHIBIDO:  analyze/final-validation-review.md        ← término temporal ("final")
+```
+
+**Patrón:** `{contenido-descriptivo}.md` o `{contenido}-{subtipo}.md`
+
+El subtipo (review, coverage, analysis, ishikawa) va **al final**, nunca al principio.
+Usar stage names en lugar de números: `discover-to-diagnose`, no `stage1-to-stage3`.
+No usar términos temporales relativos: no "final", no "last", no "v2" en el nombre.
+
 ## Templates por tipo de documento
 
 ### 1. Artefactos principales del WP (en raíz del WP)

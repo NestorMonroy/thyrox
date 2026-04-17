@@ -14,19 +14,19 @@ version: 1.3.0
 > **Alcance:** 30 problemas en 4 clusters — migración parcial acumulada ÉPICAs 29/31/35/39
 > **Ruta crítica:** T-001 → T-002 → T-003 → T-004 (Batch 1) → Batches 2-5 en paralelo
 
-> **v1.3.0** — Actualizado tras deep-review `analyze/deep-review-final-validation.md`. Cambios:
+> **v1.3.0** — Actualizado tras `analyze/discover-to-plan-execution-coverage.md`. Cambios:
 > - T-015: agregar comportamientos no-lineales (BABOK, RM/PPS state machines, RUP milestones, SP ciclo, artefactos ×11) (Gap F-1)
 > - T-017: agregar greps A-1/A-3/A-6/B-2/B-4 (Gap F-3)
 > - T-021: corregir hooks reales — `close-wp.sh` es script manual, no StopHook (Gap F-2 bloqueante)
 > - B1 header: agregar nota de referencias Tier 1 (Gap F-4)
 
-> **v1.2.0** — Actualizado tras deep-review `analyze/deep-review-audit-coverage.md`. Cambios:
+> **v1.2.0** — Actualizado tras `analyze/audit-coverage-review.md`. Cambios:
 > - T-009: agregar cifras exactas 47 referencias + 23 agentes (Gap R-1)
 > - T-011: agregar documentación de `.thyrox/registry/` como fuente de verdad (Gap R-2)
 > - T-015: aclarar campo interno `steps:` en YAMLs (Gap R-4)
 > - T-021: nueva tarea — documentar hooks en ARCHITECTURE.md (Gap R-3)
 
-> **v1.1.0** — Actualizado tras deep-review `analyze/deep-review-task-plan-coverage.md`. Cambios:
+> **v1.1.0** — Actualizado tras `analyze/task-plan-coverage-review.md`. Cambios:
 > - T-001: agregar declaración `PROJECT_ROOT` + paths absolutos (Gap 1 bloqueante)
 > - T-007: especificar destino `state-management.md` (Gap 5)
 > - T-009: agregar prerequisito lectura previa + opción de split (Gap 3 bloqueante)
