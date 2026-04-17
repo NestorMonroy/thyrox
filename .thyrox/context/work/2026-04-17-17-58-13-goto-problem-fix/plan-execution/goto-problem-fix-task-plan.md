@@ -5,7 +5,7 @@ work_package: 2026-04-17-17-58-13-goto-problem-fix
 phase: Stage 8 — PLAN EXECUTION
 author: NestorMonroy
 status: Borrador
-version: 1.3.0
+version: 1.4.0
 ```
 
 # Task Plan — goto-problem-fix (ÉPICA 41)
@@ -14,7 +14,13 @@ version: 1.3.0
 > **Alcance:** 30 problemas en 4 clusters — migración parcial acumulada ÉPICAs 29/31/35/39
 > **Ruta crítica:** T-001 → T-002 → T-003 → T-004 (Batch 1) → Batches 2-5 en paralelo
 
-> **v1.3.0** — Actualizado tras `analyze/discover-to-plan-execution-coverage.md`. Cambios:
+> **v1.4.0** — Actualizado tras sesión de naming + terminología. Cambios:
+> - Terminología "cajón" → "stage directory" en metadata-standards.md
+> - Sub-análisis del WP reorganizados bajo domain subdirectories (`analyze/coverage/`, `analyze/naming/`)
+> - T-023/T-024/T-025: nuevo Batch B7 — auditoría y fix de skill templates (E-1)
+> - Regla de flat namespace collapse y taxonomía de 3 niveles documentadas
+
+> **v1.3.0** — Actualizado tras `analyze/coverage/discover-to-plan-execution-coverage.md`. Cambios:
 > - T-015: agregar comportamientos no-lineales (BABOK, RM/PPS state machines, RUP milestones, SP ciclo, artefactos ×11) (Gap F-1)
 > - T-017: agregar greps A-1/A-3/A-6/B-2/B-4 (Gap F-3)
 > - T-021: corregir hooks reales — `close-wp.sh` es script manual, no StopHook (Gap F-2 bloqueante)
@@ -158,6 +164,17 @@ T-003 (session-resume.sh A-2+A-3)                                     │
 
 ---
 
+## B7 — Skill templates (metadata-standards alignment)
+
+> Independiente de todos los demás batches. Auditar y actualizar templates de skills que usan
+> terminología "cajón" o no reflejan la taxonomía de 3 niveles (stage directory → domain subdirectory → artifact).
+
+- [ ] **T-023** Auditar todos los `assets/*.md.template` en skills `workflow-*`: listar los que referencian "cajón", usan estructura plana sin domain subdirectories, o tienen ejemplos de naming invertido (`{type}-{content}.md`); producir tabla con: skill, template, hallazgo, fix requerido (E-1)
+- [ ] **T-024** Aplicar fixes en templates afectados: reemplazar "cajón" → "stage directory", actualizar ejemplos de naming al patrón correcto, agregar nota de domain subdirectories donde aplique (E-1)
+- [ ] **T-025** Commit B7: `docs(goto-problem-fix): align skill templates with stage-directory naming convention E-1`
+
+---
+
 ## Out-of-scope
 
 - Índice de referencias (47 docs) y agents (23) → ÉPICA 42
@@ -176,5 +193,6 @@ T-003 (session-resume.sh A-2+A-3)                                     │
 | **B4 — ARCHITECTURE.md** | 2 | 0 | 2 |
 | **B5 — DECISIONS + guides** | 4 | 0 | 4 |
 | **B6 — Hooks + registry** | 2 | 0 | 2 |
+| **B7 — Skill templates** | 3 | 0 | 3 |
 | **Cierre** | 4 | 0 | 4 |
-| **Total** | **22** | **0** | **22** |
+| **Total** | **25** | **0** | **25** |
