@@ -1,11 +1,11 @@
 ```yml
 type: Estado de Sesión
 version: 1.1
-updated_at: 2026-04-17 17:04:17
+updated_at: 2026-04-17 18:06:00
 cold_boot: false
 last_session: 2026-04-17
-current_work: null
-stage: null
+current_work: .thyrox/context/work/2026-04-17-17-58-13-goto-problem-fix
+stage: Stage 1 — DISCOVER
 flow: null
 methodology_step: null
 blockers: []
@@ -36,26 +36,17 @@ coordinators:
 
 # Contexto
 
-ÉPICA 40 multi-methodology — **EN CURSO**. Iniciativa `skill-anatomy-task-plan.md` v2 completada (42 tasks, 7 batches). La ÉPICA aún está activa.
+ÉPICA 41 goto-problem-fix — **Stage 1 DISCOVER en curso**. Análisis completo de GO-TO problem (scripts de sesión + README desactualizado). Pendiente: gate SP-01 (1→3) con aprobación del usuario.
 
-**Completado en ÉPICA 40 (total):**
-- Cambio 0+F: ba-baplanning→ba-planning, pmbok:*→pm:*, babok:*→ba:*, ba-progress.md
-- Cambio A: metadata.triggers en 20 skills de metodología
-- Cambio B: anti-rationalization tables en pdca-plan, dmaic-define, rup-elaboration
-- Cambio C: Tier 2 refactor pm-planning y pm-monitoring
-- Cambio E: Mermaid diagrams en 8 skills
-- Cambio D: naming validation — no cambios necesarios
-- **Anatomía completa: 29 skills × (SKILL.md + assets/ + references/) — 30 assets, 32 references**
-- **4 scripts determinísticos: calculate-capability.py, check-control-limits.py, check-lco-criteria.sh, count-requirements.sh**
-- Deep-review: 28/29 completos (pdca-do sin references — intencional per T-002)
-- Zero broken links confirmado
-
-NOTA PENDIENTE: ÉPICA 37 (platform-references-expansion) — T-001..T-004 y Stage 11 TRACK pendientes.
-NOTA PENDIENTE: ÉPICA 38 (commands-rellinks) — Stage 1 gate 1→3 pendiente.
+**Alcance descubierto:**
+- Cluster A: 4 bugs en scripts (session-start fallback, session-resume phase→stage, close-wp sed pattern + body stale + update-state missing)
+- Cluster B: README v0.1.0 vs framework v2.8.0 — 11 inconsistencias verificadas
+- Análisis externo recibido: clasificado como ~50% correcto, ~50% desactualizado (pre-ÉPICA 39/40)
 
 ## Historial reciente
 
 - ÉPICA 37: platform-references-expansion — Stage 6 COMPLETADO, Stage 11 pendiente
-- ÉPICA 38: commands-rellinks — Stage 1 en curso
+- ÉPICA 38: commands-rellinks — Stage 1 gate 1→3 pendiente
 - ÉPICA 39: plugin-distribution — COMPLETADO 2026-04-16
-- ÉPICA 40: multi-methodology — Stage 10 IMPLEMENT completo (31/31 tasks). **Pendiente: Stage 11 TRACK/EVALUATE → Stage 12 STANDARDIZE**
+- ÉPICA 40: multi-methodology — COMPLETADO 2026-04-17 — v2.8.0
+- ÉPICA 41: goto-problem-fix — Stage 1 DISCOVER en curso
