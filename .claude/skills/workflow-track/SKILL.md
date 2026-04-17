@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 11'"
-updated_at: 2026-04-16 16:22:04
+updated_at: 2026-04-17 17:02:50
 ---
 
 # /workflow-track — Phase 11: TRACK/EVALUATE
@@ -46,6 +46,8 @@ Documentar lecciones previene repetir los mismos errores.
    - Formato Keep a Changelog adaptado a WPs
    - Agrupar por tipo: Added, Changed, Fixed, Removed
    - NOTA: `CHANGELOG.md` (raíz) se actualiza SOLO en releases (cuando hay bump de versión)
+
+**PAT-004 — Checkbox-at-commit:** Al hacer el commit que completa T-NNN, incluir en ese mismo commit el `[x]` en el task-plan. Nunca acumular checkboxes para una "sesión de auditoría" posterior — el drift crece exponencialmente con task-plans activos simultáneos.
 
 3. Actualizar `work/../{nombre-wp}-risk-register.md`:
    - Cerrar riesgos que no se materializaron

@@ -25,18 +25,27 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## ÉPICA 40: multi-methodology — Meta-framework multi-metodología (Patrón 3 → Patrón 5) (2026-04-16)
+## ÉPICA 41: goto-problem-fix — Consolidar fuente única de estado del framework (2026-04-17)
+
+**WP:** pendiente de crear
+**Alcance:** Resolver inconsistencia entre `now.md`, `focus.md`, `project-state.md`, `ROADMAP.md`. Un solo "GO-TO" determinístico al inicio de sesión. Ver lección L-135 de ÉPICA 40.
+
+- [ ] Stage 1 DISCOVER
+
+---
+
+## ÉPICA 40: multi-methodology — Meta-framework multi-metodología ✓ COMPLETADO 2026-04-17
 
 **WP:** `.thyrox/context/work/2026-04-16-18-54-38-multi-methodology/`
-**Alcance:** 6 metodologías (PDCA, DMAIC, PMBOK, BABOK, RUP, RM) con coordinators + registry YAML. Patrón 3 corto plazo → Patrón 5 (coordinator genérico) largo plazo. Renaming 4 stages conflictivos.
+**Resultado:** 11 namespaces (lean/pps/sp/cp/bpa + 6 existentes), 32 skills nuevos con anatomía completa, 5 coordinator agents, routing-rules.yml, thyrox-coordinator reworked, artifact-ready signals. Versión: v2.8.0.
 
 - [x] Stage 1 DISCOVER — 2026-04-16
 - [x] Stage 5 STRATEGY — 2026-04-16
 - [x] Stage 6 SCOPE — 2026-04-16
 - [x] Stage 8 PLAN EXECUTION — 2026-04-16
-- [ ] Stage 10 IMPLEMENT
-- [ ] Stage 11 TRACK
-- [ ] Stage 12 STANDARDIZE
+- [x] Stage 10 IMPLEMENT — 2026-04-17
+- [x] Stage 11 TRACK — 2026-04-17
+- [x] Stage 12 STANDARDIZE — 2026-04-17
 
 ## FASE 39: plugin-distribution — Migración THYROX a plugin puro de Claude Code (2026-04-15)
 
