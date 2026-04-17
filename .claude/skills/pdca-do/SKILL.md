@@ -4,7 +4,7 @@ description: "Use when executing a PDCA improvement plan. pdca:do — implement 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /pdca-do — PDCA: Do
@@ -113,38 +113,7 @@ Definir antes de empezar:
 
 ## Artefacto esperado
 
-`{wp}/pdca-do.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: pdca:do
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Diseño del piloto
-- Scope: [qué subconjunto]
-- Duración: [inicio → fin]
-- Rollback: [condición + procedimiento]
-
-## Baseline del piloto
-- [Métrica]: [valor antes de cambio] (medido el [fecha])
-
-## Registro de implementación
-| Timestamp | Acción | Estado antes | Estado después | Observación |
-
-## Datos recopilados
-| Período | [Métrica principal] | [Métrica control] |
-
-## Desviaciones del plan
-| Acción planificada | Lo que ocurrió | Causa |
-
-## Observaciones generales
-[Qué fue inesperado, positivo o negativo]
-```
+`{wp}/pdca-do.md` — usar template: [pdca-do-template.md](./assets/pdca-do-template.md)
 
 ---
 
@@ -185,3 +154,9 @@ Cuando el piloto está completo y los datos están recopilados → `pdca:check`
 - El juicio de cuándo un piloto es "suficientemente representativo" requiere conocimiento del dominio
 - Para procesos con alta variabilidad estacional, la duración del piloto debe cubrir al menos un ciclo completo del patrón
 - Si el piloto no puede aislarse del proceso productivo, documentar cuidadosamente las condiciones externas que podrían contaminar los datos
+
+---
+
+## Reference Files
+
+- `assets/pdca-do-template.md` — Template del artefacto `{wp}/pdca-do.md` con secciones: diseño del piloto, baseline, registro de implementación, datos recopilados, desviaciones y observaciones

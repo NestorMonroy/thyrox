@@ -4,7 +4,7 @@ description: "Use when reviewing results of a PDCA pilot. pdca:check — compare
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /pdca-check — PDCA: Check
@@ -83,6 +83,8 @@ Para evitar concluir que "mejoró" cuando la diferencia es ruido:
 
 > **Run Chart para PDCA:** Graficar cada punto de medición en el tiempo, marcar la mediana del período pre-cambio como línea de referencia. Si ≥ 8 puntos consecutivos caen por debajo (para métricas donde menor = mejor), la mejora es estadísticamente significativa por la regla de corridas.
 
+Ver construcción detallada, árbol de selección de test y tabla de tamaños de muestra: [measurement-tools.md](./references/measurement-tools.md)
+
 ### 5. Analizar causas del resultado
 
 **Si fue exitoso:**
@@ -107,39 +109,7 @@ La conclusión debe ser una afirmación directa:
 
 ## Artefacto esperado
 
-`{wp}/pdca-check.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: pdca:check
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Comparativa objetivo vs resultado
-| Métrica | Baseline | Objetivo | Resultado | Delta | ¿Alcanzado? |
-
-## Validación de suficiencia de datos
-[n observaciones / duración → ¿suficiente para concluir?]
-
-## Evaluación de significancia
-[Run Chart / rango histórico / t-test — ¿la diferencia supera la variabilidad natural?]
-
-## Análisis de causas del resultado
-[Hipótesis confirmada o refutada — por qué]
-
-## Factores no anticipados
-[Qué salió diferente a lo esperado]
-
-## Conclusión del piloto
-[Afirmación directa: hipótesis confirmada / refutada / resultado mixto]
-
-## Recomendación para Act
-[Estandarizar / Nuevo ciclo con ajuste X / Revertir cambio]
-```
+`{wp}/pdca-check.md` — usar template: [pdca-check-template.md](./assets/pdca-check-template.md)
 
 ---
 
@@ -180,3 +150,10 @@ Cuando el análisis de resultados está completo con conclusión directa → `pd
 - Para procesos con alta variabilidad natural, la significancia estadística requiere mayor rigor que la comparación simple de promedios
 - Si el piloto fue contaminado por eventos externos (incidentes, cambios de infraestructura, estacionalidad), documentar la contaminación y considerar repetir el Do
 - El Check no puede ser más confiable que la calidad de los datos recopilados en Do
+
+---
+
+## Reference Files
+
+- `assets/pdca-check-template.md` — Template del artefacto `{wp}/pdca-check.md` con comparativa antes/después, validación de suficiencia, significancia y conclusión
+- `references/measurement-tools.md` — Run Chart (regla de 8 corridas, construcción), tamaños de muestra por tipo de proceso, tabla antes/después, árbol de selección de test estadístico

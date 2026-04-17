@@ -4,7 +4,7 @@ description: "Use when deciding whether to standardize or adjust a PDCA improvem
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /pdca-act — PDCA: Act
@@ -84,6 +84,8 @@ Antes de escalar, preguntar: *¿Cómo evito que alguien revierta este cambio sin
 | **Documentación prominente** | Aviso en el código/config que explica por qué no revertir |
 
 ### 3. Yokoten — despliegue horizontal
+
+Ver proceso completo de Yokoten, adaptación y transferencia: [standardization-patterns.md](./references/standardization-patterns.md)
 
 Antes de escalar dentro del proceso, evaluar si la mejora es transferible a procesos análogos:
 
@@ -176,39 +178,7 @@ Para comunicar el ciclo PDCA completo en una sola página, usar el formato **A3 
 
 ## Artefacto esperado
 
-`{wp}/pdca-act.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: pdca:act
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Decisión
-[Estandarizar / Nuevo ciclo con ajuste X / Revertir cambio]
-
-## Si Estandarizar:
-### Cambios al estándar
-- SOP/doc actualizado: [qué cambió]
-- Poka-yoke aplicado: [qué mecanismo previene regresión]
-- Yokoten evaluado: [áreas análogas notificadas / N/A]
-- Plan de rollout: [cómo se escala]
-- Comunicación a stakeholders: [sponsor / equipo / áreas análogas]
-- Nuevo baseline: [métrica = valor (fecha)]
-
-## Si Nuevo ciclo:
-### Ajuste al Plan
-- Lo que falló: [hipótesis / implementación / condiciones]
-- Hipótesis ajustada: [nueva hipótesis para el próximo ciclo]
-- Cambios al próximo Plan: [qué será diferente]
-
-## Lecciones aprendidas del ciclo
-| Dimensión | Lección |
-```
+`{wp}/pdca-act.md` — usar template: [pdca-act-template.md](./assets/pdca-act-template.md)
 
 ---
 
@@ -251,3 +221,10 @@ Si ciclo requiere ajuste → `pdca:plan` con hipótesis ajustada y lecciones inc
 - La estandarización es responsabilidad del equipo dueño del proceso — este skill guía qué documentar, pero el ownership de los cambios debe ser claro
 - Para cambios que afectan múltiples equipos, el rollout requiere coordinación fuera del scope de este skill
 - Yokoten requiere que haya áreas análogas con problemas similares — no siempre aplica
+
+---
+
+## Reference Files
+
+- `assets/pdca-act-template.md` — Template del artefacto `{wp}/pdca-act.md` con árbol de decisión, sección estandarizar (SOPs, poka-yoke, Yokoten, rollout) y sección nuevo ciclo
+- `references/standardization-patterns.md` — Yokoten (4 pasos: identificar/adaptar/transferir/verificar), A3 Report template, ciclo SDCA, estructura de SOP con antipatrones

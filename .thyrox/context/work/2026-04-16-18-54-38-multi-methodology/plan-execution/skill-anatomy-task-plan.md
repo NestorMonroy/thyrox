@@ -42,9 +42,9 @@ Cada T-NNN cubre un skill completo:
 ## B1 — PDCA (4 skills)
 
 - [x] T-001 `pdca-plan` — assets: pdca-plan-template.md · references: problem-analysis-techniques.md (5-Why, Fishbone 6M, Pareto), action-planning.md (SMART, Gantt mínimo, asignación responsables) · SKILL.md update
-- [ ] T-002 `pdca-do` — assets: pdca-do-template.md · *(sin references — contenido procedimental, no catálogo Tier 2)* · SKILL.md update
-- [ ] T-003 `pdca-check` — assets: pdca-check-template.md · references: measurement-tools.md (Run chart, Control chart tipos, before/after table, sample size) · SKILL.md update
-- [ ] T-004 `pdca-act` — assets: pdca-act-template.md · references: standardization-patterns.md (Yokoten, A3 Report template, SDCA cycle, SOP estructura) · SKILL.md update
+- [x] T-002 `pdca-do` — assets: pdca-do-template.md · *(sin references — contenido procedimental, no catálogo Tier 2)* · SKILL.md update
+- [x] T-003 `pdca-check` — assets: pdca-check-template.md · references: measurement-tools.md (Run chart, Control chart tipos, before/after table, sample size) · SKILL.md update
+- [x] T-004 `pdca-act` — assets: pdca-act-template.md · references: standardization-patterns.md (Yokoten, A3 Report template, SDCA cycle, SOP estructura) · SKILL.md update
 - [ ] T-005 Commit B1: `feat(pdca): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B2 — DMAIC (5 skills)
