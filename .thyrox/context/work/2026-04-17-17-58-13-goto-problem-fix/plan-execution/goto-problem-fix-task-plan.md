@@ -5,7 +5,7 @@ work_package: 2026-04-17-17-58-13-goto-problem-fix
 phase: Stage 8 — PLAN EXECUTION
 author: NestorMonroy
 status: Borrador
-version: 1.1.0
+version: 1.2.0
 ```
 
 # Task Plan — goto-problem-fix (ÉPICA 41)
@@ -13,6 +13,12 @@ version: 1.1.0
 > **Generado desde:** `plan/goto-problem-fix-plan.md`
 > **Alcance:** 30 problemas en 4 clusters — migración parcial acumulada ÉPICAs 29/31/35/39
 > **Ruta crítica:** T-001 → T-002 → T-003 → T-004 (Batch 1) → Batches 2-5 en paralelo
+
+> **v1.2.0** — Actualizado tras deep-review `analyze/deep-review-audit-coverage.md`. Cambios:
+> - T-009: agregar cifras exactas 47 referencias + 23 agentes (Gap R-1)
+> - T-011: agregar documentación de `.thyrox/registry/` como fuente de verdad (Gap R-2)
+> - T-015: aclarar campo interno `steps:` en YAMLs (Gap R-4)
+> - T-021: nueva tarea — documentar `hooks/hooks.json` en ARCHITECTURE.md (Gap R-3)
 
 > **v1.1.0** — Actualizado tras deep-review `analyze/deep-review-task-plan-coverage.md`. Cambios:
 > - T-001: agregar declaración `PROJECT_ROOT` + paths absolutos (Gap 1 bloqueante)
@@ -61,7 +67,7 @@ Formato: `T-NNN Descripción (ID-problema)`
 > Independiente de B2, B4 y B5. Leer README.md completo justo antes del Edit para garantizar contexto fresco.
 > Si el Edit resulta demasiado extenso, dividir: T-009a (fixes puntuales B-1/B-2/B-3/B-4/B-5/B-6/B-9) y T-009b (reescritura de secciones B-7/B-8).
 
-- [ ] **T-009** Leer `README.md` completo, luego aplicar todos los fixes B-1..B-9 en un Edit: renombrar `pm-thyrox`→`thyrox` (×5 ocurrencias), actualizar Quick Start con nota de migración `setup-template.sh` y alternativa correcta, corregir "Phase 1: ANALYZE"→"Stage 1: DISCOVER", reemplazar `/task:show`/`/task:next` por equivalentes actuales, actualizar árbol de directorios `.claude/context/`→`.thyrox/context/`, reemplazar "7 fases SDLC"→"12 stages THYROX" con descripción actualizada, agregar sección Coordinators nueva con tabla de 11 coordinators, actualizar versión a v2.8.0 y fecha actual (B-1, B-2, B-3, B-4, B-5, B-6, B-7, B-8, B-9)
+- [ ] **T-009** Leer `README.md` completo, luego aplicar todos los fixes B-1..B-9 en un Edit: renombrar `pm-thyrox`→`thyrox` (×5 ocurrencias), actualizar Quick Start con nota de migración `setup-template.sh` y alternativa correcta, corregir "Phase 1: ANALYZE"→"Stage 1: DISCOVER", reemplazar `/task:show`/`/task:next` por equivalentes actuales, actualizar árbol de directorios `.claude/context/`→`.thyrox/context/`, reemplazar "7 fases SDLC"→"12 stages THYROX" con descripción actualizada, agregar sección Coordinators nueva con tabla de 11 coordinators, actualizar versión a v2.8.0 y fecha actual, **actualizar cifras: "47 referencias, 23 agentes"** (B-1, B-2, B-3, B-4, B-5, B-6, B-7, B-8, B-9)
 - [ ] **T-010** Commit B3: `docs(goto-problem-fix): update README for ÉPICA 29/31/35/39 migrations B-1..B-9`
 
 ---
@@ -70,7 +76,7 @@ Formato: `T-NNN Descripción (ID-problema)`
 
 > Independiente de B2, B3 y B5.
 
-- [ ] **T-011** Actualizar `ARCHITECTURE.md` (B-10): agregar sección de arquitectura coordinator con las 4 capas (intake → routing-rules.yml → coordinators → artifact-ready signals), diagrama de flujo `methodology_step` → coordinator → worktree, campos `flow`/`methodology_step` en now.md, lista de 11 coordinators con su metodología y tipo de flujo (secuencial/cíclico/no-secuencial/state-machine/iterativo) (B-10)
+- [ ] **T-011** Actualizar `ARCHITECTURE.md` (B-10): agregar sección de arquitectura coordinator con las 4 capas (intake → routing-rules.yml → coordinators → artifact-ready signals), diagrama de flujo `methodology_step` → coordinator → worktree, campos `flow`/`methodology_step` en now.md, lista de 11 coordinators con su metodología y tipo de flujo (secuencial/cíclico/no-secuencial/state-machine/iterativo); **documentar `.thyrox/registry/` como fuente de verdad**: subdirectorios `agents/` y `methodologies/` (11 YAMLs), roles de `bootstrap.py` y `_generator.sh`, referencia a `routing-rules.yml`; corregir ADR-004: `pm-thyrox`→`thyrox` y "21 references"→"47" (B-10)
 - [ ] **T-012** Commit B4: `docs(goto-problem-fix): update ARCHITECTURE.md with coordinator pattern B-10`
 
 ---
@@ -81,14 +87,23 @@ Formato: `T-NNN Descripción (ID-problema)`
 
 - [ ] **T-013** Crear `DECISIONS.md` en la raíz del proyecto (el archivo no existe): tabla-índice de los 22 ADRs en `.thyrox/context/decisions/` con columnas: ADR, título, estado, ÉPICA donde se tomó la decisión, y link relativo al archivo (B-11)
 - [ ] **T-014** Crear `.claude/references/methodology-selection-guide.md` (D-2): tabla de 11 metodologías con columnas: cuándo usar, tipo de flujo, señales de contexto que activan el coordinator, output principal, coordinador a invocar (D-2)
-- [ ] **T-015** Crear `.claude/references/coordinator-integration.md` (D-3): contrato de invocación (cómo llamar a un coordinator via `@coordinator-name`), campos `now.md::flow` + `now.md::methodology_step`, ciclo de vida del coordinator (activate → steps → artifact-ready signal), sección `now.md::coordinators` para tracking multi-coordinator, `isolation: worktree` y su significado, ejemplo paso a paso con dmaic-coordinator (D-3)
+- [ ] **T-015** Crear `.claude/references/coordinator-integration.md` (D-3): contrato de invocación (cómo llamar a un coordinator via `@coordinator-name`), campos `now.md::flow` + `now.md::methodology_step`, ciclo de vida del coordinator (activate → steps → artifact-ready signal), sección `now.md::coordinators` para tracking multi-coordinator, `isolation: worktree` y su significado, ejemplo paso a paso con dmaic-coordinator; **aclarar que el campo interno en YAMLs de metodología es `steps:` (no `phases:` ni `etapas:`)** — distinguir terminología interna de terminología pública (D-3)
 - [ ] **T-016** Commit B5: `docs(goto-problem-fix): add methodology guides and DECISIONS.md index B-11 D-2 D-3`
+
+---
+
+## B6 — Infraestructura del framework (hooks + registry)
+
+> Independiente de todos los demás batches. Documenta infraestructura existente que ningún batch anterior cubre.
+
+- [ ] **T-021** Agregar sección "Hooks del framework" en `ARCHITECTURE.md`: ubicación real `hooks/hooks.json`, hooks configurados (SessionStart→session-start.sh, PostCompact→session-resume.sh, StopHook→close-wp.sh), propósito de cada hook, y referencia a cómo extenderlos (Gap R-3)
+- [ ] **T-022** Commit B6: `docs(goto-problem-fix): document hooks and registry infrastructure in ARCHITECTURE.md`
 
 ---
 
 ## Cierre
 
-- [ ] **T-017** Verificar cobertura final: `grep -r "pm-thyrox" README.md; grep "^phase:" .claude/scripts/session-resume.sh .claude/scripts/close-wp.sh; grep "7 fases" README.md; grep ".claude/context/" README.md` — todos deben retornar vacío
+- [ ] **T-017** Verificar cobertura final: `grep -r "pm-thyrox" README.md; grep "^phase:" .claude/scripts/session-resume.sh .claude/scripts/close-wp.sh; grep "7 fases" README.md; grep ".claude/context/" README.md; grep "19 guías" README.md` — todos deben retornar vacío
 - [ ] **T-018** Actualizar `now.md` y `focus.md`: stage → `Stage 11 — TRACK/EVALUATE`, cuerpo al estado post-ÉPICA 41
 - [ ] **T-019** Commit cierre + push: `chore(goto-problem-fix): advance to Stage 11 TRACK/EVALUATE` + `git push -u origin claude/check-merge-status-Dcyvj`
 - [ ] **T-020** Actualizar `ROADMAP.md`: marcar ÉPICA 41 con todos los stages completados, WP real `2026-04-17-17-58-13-goto-problem-fix`, estado COMPLETADO y fecha de cierre
@@ -102,15 +117,15 @@ T-001 (close-wp.sh A-4+A-5+A-6)
 T-002 (session-start.sh A-1+GAP-02)  ──→ T-004 (validar) ──→ T-005 (commit B1)
 T-003 (session-resume.sh A-2+A-3)                                     │
                                                                        ↓
-                          ┌────────────────────────────────────────────┤
-                          │                   │                        │
-                    T-006 (D-1)        T-009 (README)          T-013 (DECISIONS)
-                    T-007 (D-4)        T-010 (commit B3)       T-014 (guide D-2)
-                    T-008 (commit B2)  T-011 (ARCH)            T-015 (guide D-3)
-                          │            T-012 (commit B4)       T-016 (commit B5)
-                          └────────────────────────────────────────────┘
+                   ┌───────────────────────────────────────────────────┤
+                   │              │                │                   │
+             T-006 (D-1)   T-009 (README)   T-013 (DECISIONS)   T-021 (hooks)
+             T-007 (D-4)   T-010 (B3)       T-014 (guide D-2)   T-022 (B6)
+             T-008 (B2)    T-011 (ARCH)     T-015 (guide D-3)
+                           T-012 (B4)       T-016 (B5)
+                   └───────────────────────────────────────────────────┘
                                                 │
-                                    T-017 (verificar) → T-018 (now+focus) → T-019 (push) → T-020 (ROADMAP)
+                                   T-017 (verificar) → T-018 (now+focus) → T-019 (push) → T-020 (ROADMAP)
 ```
 
 ---
@@ -140,5 +155,6 @@ T-003 (session-resume.sh A-2+A-3)                                     │
 | **B3 — README** | 2 | 0 | 2 |
 | **B4 — ARCHITECTURE.md** | 2 | 0 | 2 |
 | **B5 — DECISIONS + guides** | 4 | 0 | 4 |
+| **B6 — Hooks + registry** | 2 | 0 | 2 |
 | **Cierre** | 4 | 0 | 4 |
-| **Total** | **20** | **0** | **20** |
+| **Total** | **22** | **0** | **22** |
