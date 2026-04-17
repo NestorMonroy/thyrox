@@ -4,7 +4,7 @@ description: "Use when starting a PDCA cycle or planning an improvement. pdca:pl
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-16 23:58:00
 ---
 
 # /pdca-plan — PDCA: Plan
@@ -113,6 +113,8 @@ Para cada acción del plan:
 |--------|-------------|-------|----------|-------------------|
 | Acción 1 | Quién | Cuándo | Qué necesita | Cómo saber que está lista |
 
+Ver guía de construcción de acciones y Gantt mínimo: [action-planning.md](./references/action-planning.md)
+
 ---
 
 ## Técnicas de apoyo
@@ -123,45 +125,16 @@ Para cada acción del plan:
 | **Fishbone / Ishikawa** | Múltiples causas potenciales; equipo necesita brainstorm estructurado |
 | **Pareto 80/20** | Hay muchos defectos/causas; identificar las pocas vitales |
 | **IS / IS NOT** | El problema es difuso o el equipo tiene visiones distintas de qué es el problema |
-| **5W2H** | Who, What, Where, When, Why + How, How Much — para delimitar el contexto completo del problema cuando el IS/IS NOT no es suficiente |
+| **5W2H** | Delimitar el contexto completo cuando IS/IS NOT no es suficiente |
 | **Diagrama de flujo** | El proceso es complejo o poco conocido por el equipo |
+
+Ver guías paso a paso: [problem-analysis-techniques.md](./references/problem-analysis-techniques.md)
 
 ---
 
 ## Artefacto esperado
 
-`{wp}/pdca-plan.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: pdca:plan
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Ciclo
-Ciclo N de M estimados. Lección incorporada del ciclo anterior: [si aplica / N/A]
-
-## Problem Statement
-[IS / IS NOT completado — sin causas asumidas]
-
-## Situación actual
-- Métrica baseline: [valor actual con fecha]
-- Frecuencia: [veces/período]
-- Impacto: [en cliente/negocio]
-
-## Objetivo SMART
-[Texto completo del objetivo]
-
-## Hipótesis de mejora
-[Si... entonces... porque...]
-
-## Plan de acción
-| Acción | Responsable | Fecha | Recursos |
-```
+`{wp}/pdca-plan.md` — usar template: [pdca-plan-template.md](./assets/pdca-plan-template.md)
 
 ---
 
@@ -211,3 +184,11 @@ Cuando el plan esté definido con baseline + objetivo SMART + hipótesis → `pd
 - Este skill guía el proceso de planificación; no reemplaza el juicio experto del dominio
 - Para problemas con variabilidad estadística compleja, DMAIC ofrece herramientas más robustas
 - Si no hay datos históricos disponibles, la primera iteración de Plan puede ser solo *"definir cómo recopilar datos"*
+
+---
+
+## Reference Files
+
+- `assets/pdca-plan-template.md` — Template del artefacto `{wp}/pdca-plan.md` con todas las secciones
+- `references/problem-analysis-techniques.md` — Guías paso a paso: 5 Whys, Fishbone 6M/4S, Pareto 80/20, IS/IS NOT, 5W2H
+- `references/action-planning.md` — Objetivos SMART con ejemplos, diseño de acciones atómicas, Gantt mínimo, señales de plan débil
