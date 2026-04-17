@@ -85,17 +85,16 @@ correspondiente **dentro** del workflow stage apropiado. Cada skill declara su
 | `rm:` | Requirements Management | rm-elicitation, rm-analysis, rm-specification, rm-validation, rm-management | 1, 3, 5, 7, 9, 10, 11 |
 | `pm:` | PMBOK | pm-initiating, pm-planning, pm-executing, pm-monitoring, pm-closing | 1, 3, 5, 6, 7, 10, 11, 12 |
 | `ba:` | BABOK / Business Analysis | ba-planning, ba-elicitation, ba-requirements-analysis, ba-requirements-lifecycle, ba-solution-evaluation, ba-strategy | 1, 2, 3, 5, 6, 7, 10, 11, 12 |
-| `lean:` *(pendiente)* | Lean Six Sigma | lean-define, lean-measure, lean-analyze, lean-improve, lean-control | 2, 3, 10, 11 |
-| `pps:` *(pendiente)* | Practical Problem Solving (Toyota TBP) | pps-clarify, pps-target, pps-analyze, pps-countermeasures, pps-implement, pps-evaluate | 1, 2, 3, 6, 10, 11 |
-| `sp:` *(pendiente)* | Strategic Planning | sp-context, sp-analysis, sp-gaps, sp-formulate, sp-plan, sp-execute, sp-monitor, sp-adjust | 1, 2, 3, 5, 6, 10, 11, 12 |
-| `cp:` *(pendiente)* | Consulting Process | cp-initiation, cp-diagnosis, cp-structure, cp-recommend, cp-plan, cp-implement, cp-evaluate | 1, 2, 3, 5, 6, 10, 11 |
-| `bpa:` *(pendiente)* | Business Process Analysis | bpa-identify, bpa-map, bpa-analyze, bpa-design, bpa-implement, bpa-monitor | 1, 2, 3, 5, 10, 11 |
+| `lean:` | Lean Six Sigma | lean-define, lean-measure, lean-analyze, lean-improve, lean-control | 2, 3, 10, 11 |
+| `pps:` | Practical Problem Solving (Toyota TBP) | pps-clarify, pps-target, pps-analyze, pps-countermeasures, pps-implement, pps-evaluate | 1, 2, 3, 6, 10, 11 |
+| `sp:` | Strategic Planning | sp-context, sp-analysis, sp-gaps, sp-formulate, sp-plan, sp-execute, sp-monitor, sp-adjust | 1, 2, 3, 5, 6, 10, 11, 12 |
+| `cp:` | Consulting Process (McKinsey/BCG) | cp-initiation, cp-diagnosis, cp-structure, cp-recommend, cp-plan, cp-implement, cp-evaluate | 1, 2, 3, 5, 6, 10, 11 |
+| `bpa:` | Business Process Analysis | bpa-identify, bpa-map, bpa-analyze, bpa-design, bpa-implement, bpa-monitor | 1, 2, 3, 5, 10, 11 |
 
-> **Framework extensible:** Los 6 namespaces sin marca son los methodology skills
-> implementados (ÉPICA 40). Los 5 marcados *(pendiente)* están diseñados con stages de anclaje
-> definidos y son candidatos a la siguiente implementación. El framework soporta incorporar
-> cualquier marco metodológico adicional siguiendo el patrón `{metodología}-{paso}` con
-> declaración de `THYROX Stage:` en su SKILL.md y anatomía completa
+> **Framework extensible:** Los 11 namespaces implementados cubren las principales metodologías
+> de mejora continua, gestión de proyectos, análisis de negocio, estrategia y consultoría.
+> El framework soporta incorporar cualquier marco metodológico adicional siguiendo el patrón
+> `{metodología}-{paso}` con declaración de `THYROX Stage:` en su SKILL.md y anatomía completa
 > (SKILL.md + assets/ + references/).
 >
 > SDLC no aplica como methodology skill: el ciclo de 12 stages de THYROX ya ES el ciclo
@@ -107,11 +106,16 @@ El skill actualiza `now.md::flow` y `now.md::methodology_step`.
 
 **Selección por necesidad:**
 - Mejora continua con ciclos rápidos → `pdca-*`
-- Reducción de variabilidad con datos → `dmaic-*`
-- Desarrollo iterativo con milestones → `rup-*`
-- Gestión formal de requisitos → `rm-*`
-- Gestión de proyectos PMI → `pm-*`
-- Análisis de negocio BABOK → `ba-*`
+- Reducción de variabilidad con datos estadísticos → `dmaic-*`
+- Eliminación de desperdicios (TIMWOOD, VSM) → `lean-*`
+- Resolución estructurada de problemas (Go-and-See, A3) → `pps-*`
+- Desarrollo iterativo de software con milestones → `rup-*`
+- Gestión formal de requisitos (elicitación→validación) → `rm-*`
+- Gestión de proyectos PMI (grupos de proceso) → `pm-*`
+- Análisis de negocio BABOK (knowledge areas) → `ba-*`
+- Planificación estratégica (PESTEL/SWOT/BSC/OKR) → `sp-*`
+- Resolución de problemas complejos estilo consultoría → `cp-*`
+- Análisis y rediseño de procesos (BPMN/ESIA) → `bpa-*`
 
 ---
 

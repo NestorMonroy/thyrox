@@ -1,6 +1,6 @@
 {
   "name": "thyrox",
-  "description": "THYROX — framework de gestión de proyectos con 12 fases propias (DISCOVER → STANDARDIZE). Soporta múltiples metodologías: SDLC, DMAIC, Problem Solving 8-step, Lean Six Sigma, PDCA y más.",
+  "description": "THYROX — framework de gestión de proyectos con 12 fases propias (DISCOVER → STANDARDIZE). Soporta 11 namespaces de metodología: pdca, dmaic, lean, pps (Toyota TBP), rup, rm, pm (PMBOK), ba (BABOK), sp (Strategic Planning), cp (Consulting Process), bpa (Business Process Analysis).",
   "version": "3.0.0",
   "author": { "name": "NestorMonroy" },
   "skills": "../.claude/skills",

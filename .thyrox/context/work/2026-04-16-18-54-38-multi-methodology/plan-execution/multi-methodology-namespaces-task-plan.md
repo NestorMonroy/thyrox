@@ -4,7 +4,7 @@ project: THYROX
 work_package: 2026-04-16-18-54-38-multi-methodology
 phase: Stage 10 — IMPLEMENT
 author: NestorMonroy
-status: Activo — Tier 2 en progreso (Tier 1 completo)
+status: Activo — Tier 4 pendiente decisión (Tier 1+2+3 completos)
 ```
 
 # Task Plan — ÉPICA 40: Multi-Methodology (Namespaces v2)
@@ -40,24 +40,24 @@ status: Activo — Tier 2 en progreso (Tier 1 completo)
 ## Tier 2 — Correcciones a Coordinators Existentes
 
 ### T-011..014 — Agregar `skills:` array a 4 coordinators
-- [ ] **T-011** Agregar `skills: [pm-initiating, pm-planning, pm-executing, pm-monitoring, pm-closing]` al frontmatter de `.claude/agents/pmbok-coordinator.md`.
-- [ ] **T-012** Agregar `skills: [ba-planning, ba-elicitation, ba-requirements-analysis, ba-requirements-lifecycle, ba-strategy, ba-solution-evaluation]` al frontmatter de `.claude/agents/babok-coordinator.md`.
-- [ ] **T-013** Agregar `skills: [rup-inception, rup-elaboration, rup-construction, rup-transition]` al frontmatter de `.claude/agents/rup-coordinator.md`.
-- [ ] **T-014** Agregar `skills: [rm-elicitation, rm-analysis, rm-specification, rm-validation, rm-management]` al frontmatter de `.claude/agents/rm-coordinator.md`.
+- [x] **T-011** Agregar `skills: [pm-initiating, pm-planning, pm-executing, pm-monitoring, pm-closing]` al frontmatter de `.claude/agents/pmbok-coordinator.md`.
+- [x] **T-012** Agregar `skills: [ba-planning, ba-elicitation, ba-requirements-analysis, ba-requirements-lifecycle, ba-strategy, ba-solution-evaluation]` al frontmatter de `.claude/agents/babok-coordinator.md`.
+- [x] **T-013** Agregar `skills: [rup-inception, rup-elaboration, rup-construction, rup-transition]` al frontmatter de `.claude/agents/rup-coordinator.md`.
+- [x] **T-014** Agregar `skills: [rm-elicitation, rm-analysis, rm-specification, rm-validation, rm-management]` al frontmatter de `.claude/agents/rm-coordinator.md`.
 
 ### T-015 — Agregar `metadata.triggers` a 32 skills nuevos
-- [ ] **T-015** Agregar `metadata.triggers` (3-5 keywords cada uno) al frontmatter de los 32 SKILL.md en namespaces lean/pps/sp/cp/bpa. Keywords basadas en metodología + artefactos clave + dominio.
+- [x] **T-015** Agregar `metadata.triggers` (3-5 keywords cada uno) al frontmatter de los 32 SKILL.md en namespaces lean/pps/sp/cp/bpa. Keywords basadas en metodología + artefactos clave + dominio.
 
 ---
 
 ## Tier 3 — Documentación y Quick Wins
 
-- [ ] **T-016** Actualizar label `*(pendiente)*` en `.claude/skills/thyrox/SKILL.md` para los 5 namespaces: de "*(pendiente)*" a "*(coordinator pendiente)*" con nota aclaratoria que los skills están completos (GAP-016).
-- [ ] **T-017** Extender sección "Selección por necesidad" en `.claude/skills/thyrox/SKILL.md` para incluir lean, pps, sp, cp, bpa con cuándo usar cada uno (GAP-017).
-- [ ] **T-018** Corregir nombres de workflow skills en `.claude/CLAUDE.md` Locked Decision #5 Addendum FASE 39: workflow-baseline, workflow-diagnose, workflow-scope, workflow-implement (GAP-019).
-- [ ] **T-019** Crear `.claude/skills/workflow-diagnose/references/root-cause-analysis-methodology.md` — guía de análisis de causa raíz como reference file faltante (GAP-018).
-- [ ] **T-020** Actualizar descripción en `.claude-plugin/plugin.json` para mencionar todos los namespaces activos (GAP-028).
-- [ ] **T-021** Marcar tareas completadas como `[x]` en artefactos WP relevantes (GAP-031 — stale checkboxes).
+- [x] **T-016** Actualizar label `*(pendiente)*` en `.claude/skills/thyrox/SKILL.md` para los 5 namespaces: eliminado "*(pendiente)*", tabla refleja estado real (GAP-016).
+- [x] **T-017** Extender sección "Selección por necesidad" en `.claude/skills/thyrox/SKILL.md` para incluir lean, pps, sp, cp, bpa con cuándo usar cada uno (GAP-017).
+- [x] **T-018** Nombres de workflow skills en `.claude/CLAUDE.md` Addendum FASE 39 ya son correctos. No requirió edición (GAP-019).
+- [x] **T-019** Crear `.claude/skills/workflow-diagnose/references/root-cause-analysis-methodology.md` — guía con 5 Whys, Ishikawa, Pareto, validación y relación con methodology skills (GAP-018).
+- [x] **T-020** Actualizar descripción en `.claude-plugin/plugin.json` — menciona 11 namespaces activos: pdca, dmaic, lean, pps, rup, rm, pm, ba, sp, cp, bpa (GAP-028).
+- [x] **T-021** Marcar tareas completadas como `[x]` en artefactos WP. Tier 1 y Tier 2 completos. Tier 3 completo con este ítem (GAP-031).
 
 ---
 
@@ -83,10 +83,10 @@ status: Activo — Tier 2 en progreso (Tier 1 completo)
 | Tier | Tareas | Completadas | Pendientes |
 |------|--------|-------------|------------|
 | **Tier 1** | T-001..T-010 (10 tareas) | **10** ✓ | 0 |
-| **Tier 2** | T-011..T-015 (5 tareas) | 0 | 5 |
-| **Tier 3** | T-016..T-021 (6 tareas) | 0 | 6 |
-| **Tier 4** | T-022..T-031 (10 tareas) | 0 | 10 |
-| **Total** | **31 tareas** | **10** | **21** |
+| **Tier 2** | T-011..T-015 (5 tareas) | **5** ✓ | 0 |
+| **Tier 3** | T-016..T-021 (6 tareas) | **6** ✓ | 0 |
+| **Tier 4** | T-022..T-031 (10 tareas) | 0 | 10 ⚠️ requiere decisión arquitectónica |
+| **Total** | **31 tareas** | **21** | **10** |
 
 ---
 
