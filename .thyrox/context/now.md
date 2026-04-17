@@ -1,11 +1,11 @@
 ```yml
 type: Estado de Sesión
 version: 1.1
-updated_at: 2026-04-17 19:15:00
+updated_at: 2026-04-17 19:35:00
 cold_boot: false
 last_session: 2026-04-17
 current_work: .thyrox/context/work/2026-04-17-17-58-13-goto-problem-fix
-stage: Stage 3 — DIAGNOSE
+stage: Stage 8 — PLAN EXECUTION
 flow: null
 methodology_step: null
 blockers: []
@@ -36,7 +36,7 @@ coordinators:
 
 # Contexto
 
-ÉPICA 41 goto-problem-fix — **Stage 3 DIAGNOSE en curso**. SP-01 + SP-02 aprobados. TODO en ÉPICA 41. 30 problemas confirmados en 4 clusters.
+ÉPICA 41 goto-problem-fix — **Stage 8 PLAN EXECUTION**. Deep-review GO CONDICIONAL (gaps resueltos). Task plan con 19 tareas en 5 batches listo. Próximo: T-001 (close-wp.sh fixes A-4+A-5+A-6).
 
 **Scope confirmado (todo en ÉPICA 41):**
 - Cluster A: 6 bugs scripts (session-start fallback, session-resume phase→stage×2, close-wp sed+body+update-state)
