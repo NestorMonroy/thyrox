@@ -1,5 +1,5 @@
 ---
-name: babok-coordinator
+name: ba-coordinator
 description: |
   Coordinator de BABOK (Business Analysis Body of Knowledge). Usar cuando el usuario
   quiere realizar análisis de negocio siguiendo BABOK v3. A diferencia de otros coordinators,
@@ -19,7 +19,7 @@ color: cyan
 updated_at: 2026-04-17 14:30:24
 ---
 
-# babok-coordinator — Coordinator BABOK
+# ba-coordinator — Coordinator BABOK
 
 Gestiona las 6 knowledge areas del **Business Analysis Body of Knowledge**.
 Lee el schema desde `.thyrox/registry/methodologies/babok.yml`.
@@ -83,7 +83,7 @@ Como BABOK permite trabajar múltiples áreas, el coordinator mantiene en el art
 Cuando el usuario decide cerrar el engagement BABOK, emitir señal estructurada:
 
 ```
-[babok-coordinator COMPLETED]
+[ba-coordinator COMPLETED]
 Artifacts produced (solo áreas trabajadas):
   - {wp}/ba-planning.md              (BA Plan + Stakeholder Engagement Plan)
   - {wp}/ba-elicitation.md           (Elicitation Results)
@@ -96,4 +96,4 @@ Summary: Áreas completadas [N/6] | Business Need [definida/pendiente]
 Ready for: Stage 11 TRACK/EVALUATE
 ```
 
-Actualizar `now.md::coordinators.babok-coordinator.status = completed` y registrar en orchestration-log si existe.
+Actualizar `now.md::coordinators.ba-coordinator.status = completed` y registrar en orchestration-log si existe.

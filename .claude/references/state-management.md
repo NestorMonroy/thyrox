@@ -143,8 +143,8 @@ exacto de la fase/etapa de esa metodología. Campo interno en los YAMLs de regis
 |-----------|-------------|---------------|---------------|
 | `dmaic` | dmaic-coordinator | `define` `measure` `analyze` `improve` `control` | secuencial |
 | `pdca` | pdca-coordinator | `plan` `do` `check` `act` | cíclico |
-| `pm` | pmbok-coordinator | `initiating` `planning` `executing` `monitoring` `closing` | secuencial |
-| `ba` | babok-coordinator | `planning` `elicitation` `requirements-lifecycle` `strategy` `requirements-analysis` `solution-evaluation` | no-secuencial |
+| `pm` | pm-coordinator | `initiating` `planning` `executing` `monitoring` `closing` | secuencial |
+| `ba` | ba-coordinator | `planning` `elicitation` `requirements-lifecycle` `strategy` `requirements-analysis` `solution-evaluation` | no-secuencial |
 | `rup` | rup-coordinator | `inception` `elaboration` `construction` `transition` | iterativo (milestones LCO/LCA/IOC/PD) |
 | `rm` | rm-coordinator | `elicitation` `analysis` `specification` `validation` `management` | state-machine (retornos condicionales) |
 | `lean` | lean-coordinator | `define` `measure` `analyze` `improve` `control` | secuencial |

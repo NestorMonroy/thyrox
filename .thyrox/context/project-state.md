@@ -4,7 +4,7 @@ category: Estado Actual
 version: 2.6.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-17 17:04:59
+updated_at: 2026-04-17 23:50:00
 ```
 
 # Project State — THYROX
@@ -20,7 +20,7 @@ updated_at: 2026-04-17 17:04:59
 
 ## Agentes nativos (`23` agentes en `.claude/agents/`)
 
-- `babok-coordinator` — |
+- `ba-coordinator` — |
 - `bpa-coordinator` — |
 - `cp-coordinator` — |
 - `deep-review` — Analiza cobertura entre artefactos de fases consecutivas del WP, o profundidad d
@@ -30,7 +30,7 @@ updated_at: 2026-04-17 17:04:59
 - `mysql-expert` — Tech-expert para MySQL y bases de datos relacionales. Conoce SQL, diseño de sch
 - `nodejs-expert` — Experto en Node.js, Express y ecosistema npm. Usar cuando el usuario necesite im
 - `pdca-coordinator` — |
-- `pmbok-coordinator` — |
+- `pm-coordinator` — |
 - `postgresql-expert` — Tech-expert para PostgreSQL. Conoce SQL, migrations, índices, transacciones y c
 - `pps-coordinator` — |
 - `react-expert` — Experto en React, hooks y ecosistema frontend. Usar cuando el usuario necesite i
@@ -40,7 +40,7 @@ updated_at: 2026-04-17 17:04:59
 - `sp-coordinator` — |
 - `task-executor` — Ejecuta tareas atómicas de un task-plan.md. Usar cuando hay un task-plan con ch
 - `task-planner` — Descompone trabajo en tareas atómicas con IDs trazables. Usar cuando el usuario
-- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
+- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
 - `thyrox-coordinator` — |
 - `webpack-expert` — Tech-expert para Webpack y bundling de assets. Conoce configuración de entry/ou
 

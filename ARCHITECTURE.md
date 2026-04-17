@@ -77,8 +77,8 @@ Ejemplo: DMAIC en analyze
 |-------------|-------------|---------------|-----------|
 | `dmaic-coordinator` | DMAIC Six Sigma | Secuencial | `dmaic` |
 | `pdca-coordinator` | PDCA Deming | Cíclico | `pdca` |
-| `pmbok-coordinator` | PMBOK PMI | Secuencial | `pm` |
-| `babok-coordinator` | BABOK v3 | No-secuencial | `ba` |
+| `pm-coordinator` | PMBOK PMI | Secuencial | `pm` |
+| `ba-coordinator` | BABOK v3 | No-secuencial | `ba` |
 | `rup-coordinator` | RUP iterativo | Iterativo | `rup` |
 | `rm-coordinator` | Requirements Management | State-machine | `rm` |
 | `lean-coordinator` | Lean Six Sigma | Secuencial | `lean` |

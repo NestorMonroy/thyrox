@@ -111,7 +111,7 @@ Este guide ayuda a decidir cuál es más adecuada basándose en las característ
 │       Señales: milestones LCO/LCA/IOC, iteraciones por fase, arquitectura base
 │
 ├─ SÍ y es un proyecto genérico (no necesariamente software)
-│   └─ → PMBOK (pmbok-coordinator)
+│   └─ → PMBOK (pm-coordinator)
 │       Señales: Project Charter, WBS, triple restricción, PMI, RACI
 │
 ├─ El foco es gestionar requisitos (no el proyecto completo)
@@ -119,7 +119,7 @@ Este guide ayuda a decidir cuál es más adecuada basándose en las característ
 │       Señales: elicitación, SRS, trazabilidad, change control de requisitos
 │
 └─ El foco es análisis de negocio (qué necesita la organización, no cómo construirlo)
-    └─ → BABOK (babok-coordinator)
+    └─ → BABOK (ba-coordinator)
         Señales: business case, necesidad de negocio, value delivery, solution evaluation
 ```
 
@@ -145,10 +145,10 @@ Este guide ayuda a decidir cuál es más adecuada basándose en las característ
 | Resolver problema operacional con causa raíz | PPS / Toyota TBP | pps-coordinator |
 | Resolver problema complejo con hipótesis | Consulting Process | cp-coordinator |
 | Planificar estrategia de largo plazo | Strategic Planning | sp-coordinator |
-| Gestionar proyecto PMI | PMBOK | pmbok-coordinator |
+| Gestionar proyecto PMI | PMBOK | pm-coordinator |
 | Desarrollar software iterativamente | RUP | rup-coordinator |
 | Gestionar ciclo de vida de requisitos | RM | rm-coordinator |
-| Análisis de negocio integral | BABOK | babok-coordinator |
+| Análisis de negocio integral | BABOK | ba-coordinator |
 
 ---
 

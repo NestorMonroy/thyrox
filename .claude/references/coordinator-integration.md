@@ -207,8 +207,8 @@ steps:
 |-------------|----------------------|
 | `dmaic-coordinator` | dmaic-define.md, dmaic-measure.md, dmaic-analyze.md, dmaic-improve.md, dmaic-control.md |
 | `pdca-coordinator` | pdca-plan.md, pdca-do.md, pdca-check.md, pdca-act.md |
-| `pmbok-coordinator` | pm-initiating.md, pm-planning.md, pm-executing.md, pm-monitoring.md, pm-closing.md |
-| `babok-coordinator` | ba-planning.md, ba-elicitation.md, ba-requirements-lifecycle.md, ba-strategy.md, ba-requirements-analysis.md, ba-solution-evaluation.md |
+| `pm-coordinator` | pm-initiating.md, pm-planning.md, pm-executing.md, pm-monitoring.md, pm-closing.md |
+| `ba-coordinator` | ba-planning.md, ba-elicitation.md, ba-requirements-lifecycle.md, ba-strategy.md, ba-requirements-analysis.md, ba-solution-evaluation.md |
 | `rup-coordinator` | rup-inception.md, rup-elaboration.md, rup-construction.md, rup-transition.md |
 | `rm-coordinator` | rm-elicitation.md, rm-analysis.md, rm-specification.md, rm-validation.md, rm-management.md |
 | `lean-coordinator` | lean-define.md, lean-measure.md, lean-analyze.md, lean-improve.md, lean-control.md |

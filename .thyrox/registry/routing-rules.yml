@@ -117,7 +117,7 @@ rules:
 
   - id: route-pm
     problem_type: "project-management"
-    coordinator: pmbok-coordinator
+    coordinator: pm-coordinator
     trigger_keywords:
       - "gestión de proyecto"
       - "project management"
@@ -163,7 +163,7 @@ rules:
 
   - id: route-ba
     problem_type: "business-analysis"
-    coordinator: babok-coordinator
+    coordinator: ba-coordinator
     trigger_keywords:
       - "análisis de negocio"
       - "business analysis"

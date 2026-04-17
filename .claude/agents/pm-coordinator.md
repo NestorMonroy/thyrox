@@ -1,5 +1,5 @@
 ---
-name: pmbok-coordinator
+name: pm-coordinator
 description: |
   Coordinator de PMBOK (Project Management Body of Knowledge). Usar cuando el usuario
   quiere gestionar un proyecto siguiendo las buenas prácticas del PMI. Gestiona los 5 grupos
@@ -18,7 +18,7 @@ color: yellow
 updated_at: 2026-04-17 14:30:24
 ---
 
-# pmbok-coordinator — Coordinator PMBOK
+# pm-coordinator — Coordinator PMBOK
 
 Gestiona los 5 grupos de proceso del **Project Management Body of Knowledge**.
 Lee el schema desde `.thyrox/registry/methodologies/pmbok.yml`.
@@ -72,7 +72,7 @@ methodology_step: pm:{grupo}
 Cuando `pm:closing` completa, emitir señal estructurada:
 
 ```
-[pmbok-coordinator COMPLETED]
+[pm-coordinator COMPLETED]
 Artifacts produced:
   - {wp}/pm-initiating.md    (Project Charter + Registro de Stakeholders)
   - {wp}/pm-planning.md      (Project Management Plan + todas las líneas base)
@@ -83,4 +83,4 @@ Summary: Project [cerrado formalmente] | Entregables [X/Y completados]
 Ready for: Stage 11 TRACK/EVALUATE
 ```
 
-Actualizar `now.md::coordinators.pmbok-coordinator.status = completed` y registrar en orchestration-log si existe.
+Actualizar `now.md::coordinators.pm-coordinator.status = completed` y registrar en orchestration-log si existe.
