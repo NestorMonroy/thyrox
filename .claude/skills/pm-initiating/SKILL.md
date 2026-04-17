@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["project charter", "project authorization", "stakeholder identification", "PMBOK initiating", "project kickoff"]
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /pm-initiating — PMBOK: Initiating
@@ -160,69 +160,7 @@ En Initiating, el análisis de riesgos es preliminar:
 
 `{wp}/pm-initiating.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: pm:initiating
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Project Charter
-
-### Project Purpose
-[Business need / opportunity / regulatory requirement]
-
-### Measurable Objectives
-1. [Objetivo SMART 1]
-2. [Objetivo SMART 2]
-
-### High-Level Requirements
-| Stakeholder | Necesidad | Prioridad |
-
-### High-Level Description
-[Qué se va a construir — sin arquitectura]
-
-### High-Level Risks
-| Risk ID | Descripción | Categoría | P | I |
-
-### Summary Milestone Schedule
-| Milestone | Fecha tentativa |
-
-### Summary Budget
-[Rango estimado — orden de magnitud]
-
-### Sponsor Authorization
-- Sponsor: [nombre]
-- Fecha: [fecha]
-- Firma: [firma o confirmación]
-
-### Project Manager Assigned
-- PM: [nombre]
-- Nivel de autoridad: [descripción]
-
-## Stakeholder Register
-| Nombre | Rol | Organización | Influence | Interest | Current Engagement | Desired Engagement |
-
-## Power/Interest Grid
-[Clasificación visual o tabla por cuadrante]
-
-## High-Level Risk Log
-| Risk ID | Descripción | Categoría | P | I | Respuesta preliminar |
-
-## Evaluación de completitud
-- [ ] Project Charter firmado
-- [ ] Stakeholders de Poder Alto identificados
-- [ ] PM asignado con autoridad
-- [ ] Top riesgos identificados
-- [ ] Equipo confirmado para Planning
-
-## Decisión
-- [ ] Avanzar a pm:planning
-- [ ] Permanecer en pm:initiating (motivo: ...)
-```
+usar template: [pm-initiating-template.md](./assets/pm-initiating-template.md)
 
 ---
 
@@ -265,3 +203,13 @@ pm_process_group: initiating
 - El Project Charter establece el baseline pero no detalla el plan — el plan detallado de scope, tiempo, costo y calidad se desarrolla en Planning
 - Los stakeholders identificados en Initiating pueden cambiar durante el proyecto — revisar y actualizar el Stakeholder Register en cada proceso group
 - Las estimaciones de costo y tiempo en el Charter tienen ±50% de accuracy — no comprometer fechas ni presupuestos fijos basados en estas estimaciones
+
+---
+
+## Reference Files
+
+### Assets
+- [pm-initiating-template.md](./assets/pm-initiating-template.md) — Template completo: Project Charter, Stakeholder Register, Power/Interest Grid, High-Level Risk Log, evaluación de completitud
+
+### References
+- [project-charter-guide.md](./references/project-charter-guide.md) — Técnicas de identificación de stakeholders, Power/Interest Grid 4 cuadrantes, objetivos SMART, ROM estimating, señales de Charter incompleto

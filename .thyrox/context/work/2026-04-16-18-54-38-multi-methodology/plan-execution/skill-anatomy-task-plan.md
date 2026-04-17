@@ -71,15 +71,15 @@ Cada T-NNN cubre un skill completo:
 - [x] T-019 `rm-specification` — assets: requirements-spec-template.md · references: specification-standards.md (IEEE 830 estructura, Gherkin avanzado, acceptance criteria patterns) · SKILL.md update
 - [x] T-020 `rm-validation` — assets: validation-report-template.md · references: validation-checklist.md (20-item checklist por tipo de requisito, defect taxonomy) · SKILL.md update
 - [x] T-021 `rm-management` — assets: change-request-template.md · references: change-control-process.md (CCB proceso detallado, impact assessment template, change log format) · SKILL.md update
-- [ ] T-022 Commit B4: `feat(rm): complete skill anatomy — assets, references, SKILL.md updates`
+- [x] T-022 Commit B4: `feat(rm): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B5 — PMBOK (5 skills)
 
-- [ ] T-023 `pm-initiating` — assets: **pm-initiating-template.md** (cubre artefacto completo: Charter + Stakeholder Register + Power/Interest Grid + High-Level Risk Log) · references: project-charter-guide.md *(debe incluir: charter template completo + Power/Interest Grid 4 cuadrantes con estrategia + técnicas identificación de stakeholders)* · SKILL.md update
-- [ ] T-024 `pm-planning` — assets: project-plan-template.md · references: verificar `planning-techniques.md` (ya existe) — debe cubrir: WBS/regla 8-80, CPM, PERT, Fast Tracking/Crashing, Three-point estimation (triangular/beta), P×I Matrix 8 estrategias de respuesta, RACI regla 1-A · SKILL.md update (agregar `## Reference Files` si no existe)
-- [ ] T-025 `pm-executing` — assets: status-report-template.md · references: team-management.md *(debe incluir: tabla 5 técnicas de conflicto PMBOK con cuándo usar cada una, RACI con regla 1-A, señales de desengagement de stakeholders)* · SKILL.md update
-- [ ] T-026 `pm-monitoring` — assets: performance-report-template.md · references: verificar `evm-and-change-control.md` (ya existe) — debe cubrir: todas las fórmulas EVM (PV/EV/AC/SV/CV/SPI/CPI/EAC/ETC/VAC/TCPI), umbrales de varianza, flujo CCB completo, template Change Request · SKILL.md update (agregar `## Reference Files` si no existe)
-- [ ] T-027 `pm-closing` — assets: closure-report-template.md · references: project-closure-guide.md (closure checklist, lessons learned facilitation, contract closure, knowledge transfer) · SKILL.md update
+- [x] T-023 `pm-initiating` — assets: **pm-initiating-template.md** (cubre artefacto completo: Charter + Stakeholder Register + Power/Interest Grid + High-Level Risk Log) · references: project-charter-guide.md *(debe incluir: charter template completo + Power/Interest Grid 4 cuadrantes con estrategia + técnicas identificación de stakeholders)* · SKILL.md update
+- [x] T-024 `pm-planning` — assets: project-plan-template.md · references: verificar `planning-techniques.md` (ya existe) — debe cubrir: WBS/regla 8-80, CPM, PERT, Fast Tracking/Crashing, Three-point estimation (triangular/beta), P×I Matrix 8 estrategias de respuesta, RACI regla 1-A · SKILL.md update (agregar `## Reference Files` si no existe)
+- [x] T-025 `pm-executing` — assets: status-report-template.md · references: team-management.md *(debe incluir: tabla 5 técnicas de conflicto PMBOK con cuándo usar cada una, RACI con regla 1-A, señales de desengagement de stakeholders)* · SKILL.md update
+- [x] T-026 `pm-monitoring` — assets: performance-report-template.md · references: verificar `evm-and-change-control.md` (ya existe) — debe cubrir: todas las fórmulas EVM (PV/EV/AC/SV/CV/SPI/CPI/EAC/ETC/VAC/TCPI), umbrales de varianza, flujo CCB completo, template Change Request · SKILL.md update (agregar `## Reference Files` si no existe)
+- [x] T-027 `pm-closing` — assets: closure-report-template.md · references: project-closure-guide.md (closure checklist, lessons learned facilitation, contract closure, knowledge transfer) · SKILL.md update
 - [ ] T-028 Commit B5: `feat(pmbok): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B6 — BABOK (6 skills)

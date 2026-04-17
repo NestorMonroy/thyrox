@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["project management plan", "WBS", "schedule planning", "PMBOK planning", "cost estimation"]
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /pm-planning — PMBOK: Planning
@@ -98,71 +98,7 @@ Siete knowledge areas activas en Planning. Detalles de técnicas en [references/
 
 `{wp}/pm-planning.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: pm:planning
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Project Management Plan — Resumen
-
-### Scope Baseline
-- WBS (summary view): [top 2 niveles]
-- Scope exclusions: [qué está explícitamente fuera del scope]
-- Constraints: [limitaciones de scope]
-
-### Schedule Baseline
-- Duración total: [semanas/meses]
-- Critical Path: [actividades en el CP]
-- Key milestones: | Milestone | Fecha baseline |
-- Fecha de completion: [fecha]
-
-### Cost Baseline
-- BAC total: $[valor]
-- Contingency reserves: $[valor]
-- Management reserves: $[valor]
-- Distribución por componente principal: | Componente | Costo |
-
-### Quality Management Plan
-- Estándares aplicables: [lista]
-- Métricas de calidad: | Métrica | Objetivo | Umbral |
-- QA activities: [lista]
-- QC activities: [lista]
-
-### Resource Management / RACI
-[RACI por deliverable clave]
-
-### Risk Register (top 10)
-| Risk ID | Descripción | P | I | Score | Estrategia | Plan de respuesta |
-
-### Communications Plan
-| Información | Audiencia | Frecuencia | Formato |
-
-### Stakeholder Engagement Plan
-| Stakeholder | Estado actual | Estado deseado | Acciones |
-
-## Aprobación del Project Management Plan
-- Sponsor: [nombre]
-- Fecha: [fecha]
-- Aprobado: Sí / No / Con condiciones
-
-## Evaluación de completitud
-- [ ] WBS completo
-- [ ] Critical Path identificado
-- [ ] Cost Baseline dentro del budget
-- [ ] Risk Register con planes de respuesta
-- [ ] RACI completo
-- [ ] Communications Plan completo
-- [ ] Project Management Plan aprobado
-
-## Decisión
-- [ ] Avanzar a pm:executing
-- [ ] Más iteración de planning (motivo: ...)
-```
+usar template: [project-plan-template.md](./assets/project-plan-template.md)
 
 ---
 
@@ -205,3 +141,13 @@ pm_process_group: planning
 - El nivel de detalle del plan debe ser proporcional al tamaño y complejidad del proyecto — un proyecto pequeño no necesita 50 páginas de plan; un proyecto de $10M sí
 - Las estimaciones de Planning tienen ±10-20% de accuracy (vs ±50% de Initiating) — son más precisas pero siguen siendo estimaciones; comprometer fechas y costos exactos en contratos basados en estimaciones de Planning es riesgoso
 - El Project Management Plan es una baseline, no una camisa de fuerza — está diseñado para ser actualizado mediante el proceso de Change Control cuando la realidad difiere del plan
+
+---
+
+## Reference Files
+
+### Assets
+- [project-plan-template.md](./assets/project-plan-template.md) — Template del Project Management Plan: WBS, schedule baseline, cost baseline, RACI, risk register, communications plan
+
+### References
+- [planning-techniques.md](./references/planning-techniques.md) — WBS regla 8-80, CPM, PERT, Fast Tracking/Crashing, Three-point estimation, Probability×Impact Matrix, RACI regla 1-A

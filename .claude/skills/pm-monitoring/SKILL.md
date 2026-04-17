@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["earned value management", "EVM", "project monitoring", "schedule variance", "PMBOK controlling"]
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /pm-monitoring — PMBOK: Monitoring & Controlling
@@ -156,65 +156,7 @@ En Monitoring & Controlling, el Risk Register se revisa y actualiza periódicame
 
 `{wp}/pm-monitoring.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: pm:monitoring
-reporting_period: [YYYY-MM-DD a YYYY-MM-DD]
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## EVM — Periodo [YYYY-MM-DD]
-
-| Variable | Valor |
-|----------|-------|
-| BAC | $ |
-| PV | $ |
-| EV | $ |
-| AC | $ |
-| SV (EV−PV) | $ |
-| CV (EV−AC) | $ |
-| SPI (EV/PV) | |
-| CPI (EV/AC) | |
-| EAC (BAC/CPI) | $ |
-| ETC (EAC−AC) | $ |
-| VAC (BAC−EAC) | $ |
-| TCPI (BAC) | |
-
-**Interpretación:**
-[Análisis del estado del proyecto basado en EVM]
-
-**Nota sobre causalidad:**
-[Posibles causas de las varianzas observadas — requiere validación con el equipo]
-
-## Schedule Control
-- Hitos completados en periodo: [lista]
-- Hitos retrasados: [lista con días de retraso]
-- Float del Critical Path: [días]
-- Acciones de compresión tomadas: [lista]
-
-## Change Requests del periodo
-| CR ID | Descripción | Estado CCB |
-
-## Quality Control — resultados
-| Deliverable | Técnica | Defectos encontrados | Estado |
-
-## Risk Register — actualizaciones
-| Risk ID | Cambio | Nuevo estado |
-
-## Acciones correctivas/preventivas implementadas
-| Acción | Causa | Impacto esperado | Responsable |
-
-## RAG Status
-- Scope: 🟢 / 🟡 / 🔴
-- Schedule: 🟢 / 🟡 / 🔴
-- Cost: 🟢 / 🟡 / 🔴
-- Quality: 🟢 / 🟡 / 🔴
-- Risks: 🟢 / 🟡 / 🔴
-```
+usar template: [performance-report-template.md](./assets/performance-report-template.md)
 
 ---
 
@@ -275,3 +217,13 @@ pm_process_group: monitoring_controlling
 - EVM requiere que el proyecto tenga un presupuesto y cronograma baseline aprobado con suficiente granularidad para calcular % completado por actividad — sin esta granularidad, el EV es estimado y el EVM pierde precisión
 - EVM en proyectos ágiles requiere adaptación: el "% completado" se mide por story points o features completados, no por horas; las métricas SPI/CPI aplican con la misma interpretación
 - Las varianzas de schedule en EVM están en unidades monetarias ($), no en días — una varianza de schedule en $ no dice cuántos días está retrasado el proyecto; para eso se necesita el Schedule Network Analysis (Critical Path)
+
+---
+
+## Reference Files
+
+### Assets
+- [performance-report-template.md](./assets/performance-report-template.md) — Template de reporte de performance: EVM completo (BAC/PV/EV/AC/SV/CV/SPI/CPI/EAC/ETC/VAC/TCPI), schedule control, QC, risk updates, RAG status
+
+### References
+- [evm-and-change-control.md](./references/evm-and-change-control.md) — Fórmulas EVM, interpretación de índices, umbrales de alerta, proceso de Change Control integrado

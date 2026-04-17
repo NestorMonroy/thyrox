@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["project execution", "deliverables management", "direct and manage", "PMBOK executing", "resource coordination"]
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /pm-executing — PMBOK: Executing
@@ -177,41 +177,7 @@ Executing no "termina" en una fecha — continúa hasta que todos los deliverabl
 
 `{wp}/pm-executing.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: pm:executing
-iteration: [N]
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Deliverables completados en este periodo
-| Deliverable | Descripción | Fecha | Asignado a | Estado |
-
-## Issue Log (activo)
-| Issue ID | Descripción | Fecha | Asignado a | Prioridad | Estado |
-
-## Quality Assurance — resultados
-| Área auditada | Findings | Recomendaciones | Estado |
-
-## Team Performance
-[Observaciones de desempeño, conflictos resueltos, coaching]
-
-## Stakeholder Engagement (cambios)
-| Stakeholder | Estado anterior | Estado actual | Acciones tomadas |
-
-## Change Requests generadas este periodo
-| CR ID | Descripción | Impacto en scope/schedule/cost | Estado |
-
-## Status Report (último periodo)
-- Hitos completados: [lista]
-- Hitos en riesgo: [lista]
-- Issues activos críticos: [lista]
-- Riesgos materializados: [lista]
-```
+usar template: [status-report-template.md](./assets/status-report-template.md)
 
 ---
 
@@ -253,3 +219,13 @@ pm_process_group: executing
 - Executing y Monitoring & Controlling son paralelos, no secuenciales — en la práctica, el PM está ejecutando y monitoreando simultáneamente en cada periodo de trabajo
 - La resolución de conflictos documentada aquí es para conflictos del equipo del proyecto; los conflictos con stakeholders externos siguen un proceso diferente dependiendo de si hay contrato
 - En proyectos ágiles, los "sprints" o "iteraciones" son instancias de Executing + Monitoring que se repiten; PMBOK describe el contenido de estas actividades, no la cadencia específica
+
+---
+
+## Reference Files
+
+### Assets
+- [status-report-template.md](./assets/status-report-template.md) — Template de status report: RAG status, hitos, deliverables, issue log, QA results, team performance, stakeholder engagement, CRs
+
+### References
+- [team-management.md](./references/team-management.md) — 5 técnicas de resolución de conflictos PMBOK, selector por contexto, escalation path, issue log gestión, QA vs QC, scope creep control

@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["project closure", "project closeout", "lessons learned PMBOK", "PMBOK closing", "final acceptance"]
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /pm-closing — PMBOK: Closing
@@ -185,64 +185,7 @@ Un reporte de cierre conciso para el registro de la organización:
 
 `{wp}/pm-closing.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: pm:closing
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Final Acceptance
-- Sponsor/Cliente: [nombre]
-- Fecha: [fecha]
-- Deliverables aceptados: [lista]
-- Outstanding issues transferidos a operaciones: [lista]
-
-## Performance vs Baseline (resumen final)
-- Schedule Variance (SV) final: [valor]
-- Cost Variance (CV) final: [valor]
-- SPI final: [valor]
-- CPI final: [valor]
-
-## Lecciones Aprendidas
-### Integration Management
-### Scope Management
-### Schedule Management
-### Cost Management
-### Quality Management
-### HR / Resource Management
-### Communications Management
-### Risk Management
-### Procurement Management (si aplica)
-### Stakeholder Management
-
-## Artefactos Archivados
-| Categoría | Artefacto | Ubicación |
-
-## Release del Equipo
-| Miembro | Fecha de release | Próxima asignación |
-
-## Cierre de Contratos (si aplica)
-| Contrato | Proveedor | Estado | Fecha de cierre |
-
-## Final Project Report
-[Resumen ejecutivo + objectives achieved + recommendations]
-
-## Checklist de cierre
-- [ ] Final Acceptance firmado
-- [ ] Lecciones aprendidas documentadas
-- [ ] Artefactos archivados
-- [ ] Equipo liberado
-- [ ] Contratos cerrados
-- [ ] Final Project Report entregado
-
-## Decisión
-- [ ] Proyecto cerrado formalmente
-- [ ] Fase cerrada — continuar con siguiente fase
-```
+usar template: [closure-report-template.md](./assets/closure-report-template.md)
 
 ---
 
@@ -285,3 +228,13 @@ pm_process_group: closing
 - La aceptación formal del producto no garantiza satisfacción del usuario a largo plazo — planificar una revisión post-implementación 30-60 días después del cierre
 - Las lecciones aprendidas solo tienen valor si son accesibles y consultadas en proyectos futuros — el archivo debe estar en un repositorio organizacional, no en el repositorio personal del PM
 - En proyectos cancelados, el cierre es igualmente importante: documentar por qué se canceló, qué se completó, qué se entregó, y las lecciones para no repetir el patrón
+
+---
+
+## Reference Files
+
+### Assets
+- [closure-report-template.md](./assets/closure-report-template.md) — Template completo: Final Acceptance, EVM final, lecciones aprendidas por área PMBOK, artefactos archivados, release del equipo, cierre de contratos
+
+### References
+- [project-closure-guide.md](./references/project-closure-guide.md) — Checklist de cierre paso a paso, lecciones aprendidas efectivas, cierre de fase vs cierre de proyecto, proyectos cancelados, post-implementation review
