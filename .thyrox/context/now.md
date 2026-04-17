@@ -1,11 +1,11 @@
 ```yml
 type: Estado de Sesión
 version: 1.1
-updated_at: 2026-04-17 18:06:00
+updated_at: 2026-04-17 19:15:00
 cold_boot: false
 last_session: 2026-04-17
 current_work: .thyrox/context/work/2026-04-17-17-58-13-goto-problem-fix
-stage: Stage 1 — DISCOVER
+stage: Stage 3 — DIAGNOSE
 flow: null
 methodology_step: null
 blockers: []
@@ -36,12 +36,13 @@ coordinators:
 
 # Contexto
 
-ÉPICA 41 goto-problem-fix — **Stage 1 DISCOVER en curso**. Análisis completo de GO-TO problem (scripts de sesión + README desactualizado). Pendiente: gate SP-01 (1→3) con aprobación del usuario.
+ÉPICA 41 goto-problem-fix — **Stage 3 DIAGNOSE en curso**. SP-01 + SP-02 aprobados. TODO en ÉPICA 41. 30 problemas confirmados en 4 clusters.
 
-**Alcance descubierto:**
-- Cluster A: 4 bugs en scripts (session-start fallback, session-resume phase→stage, close-wp sed pattern + body stale + update-state missing)
-- Cluster B: README v0.1.0 vs framework v2.8.0 — 11 inconsistencias verificadas
-- Análisis externo recibido: clasificado como ~50% correcto, ~50% desactualizado (pre-ÉPICA 39/40)
+**Scope confirmado (todo en ÉPICA 41):**
+- Cluster A: 6 bugs scripts (session-start fallback, session-resume phase→stage×2, close-wp sed+body+update-state)
+- Cluster B: 11 ítems README (pm-thyrox, setup-template.sh, 7 fases, comandos obsoletos, paths, coordinators ausentes…)
+- Cluster C: ✅ Ya resuelto — 3 deep-reviews commiteados
+- Cluster D: state-management.md + guías coordinator + decision tree + methodology_step docs
 
 ## Historial reciente
 
