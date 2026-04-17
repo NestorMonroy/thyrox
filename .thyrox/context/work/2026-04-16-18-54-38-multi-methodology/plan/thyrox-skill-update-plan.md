@@ -13,6 +13,7 @@ status: Borrador
 > - `analyze/thyrox-skill-problem-statement.md` — definición del problema (2 capas)
 > - `analyze/thyrox-skill-update-review.md` — deep-review 1: gaps de terminología y visibilidad (Capa A)
 > - `analyze/thyrox-skill-escalability-review.md` — deep-review 2: mapa de anclaje completo y lógica de escalabilidad (Capa B)
+> - `analyze/methodology-landscape-analysis.md` — origen V3.1: los 6 namespaces son subset de 15 frameworks; extensibilidad requerida
 
 ---
 
@@ -37,6 +38,7 @@ status: Borrador
 | A4 | `thyrox/SKILL.md` | Nota bajo tabla de escalabilidad: "Con flow activo, stages con anclaje son no-saltables" |
 | A5 | `thyrox/SKILL.md` | Adición en tabla de artefactos: fila con artefactos de methodology skills vs artefactos THYROX |
 | A6 | `workflow-discover/references/scalability.md` | Nueva sección "Escalabilidad con methodology skill activo" — reglas detalladas |
+| A7 | `thyrox/SKILL.md` | Nota de extensibilidad en sección "Methodology skills" — el set de 6 es estado actual, no conjunto cerrado |
 
 ### Out-of-scope
 
@@ -123,13 +125,33 @@ Ejemplo inline: "Con `flow: dmaic` en Stage 3: artefacto es `{wp}/dmaic-define.m
 - Regla de convivencia: workflow stage + methodology skill son complementarios, no excluyentes
 - Referencia al campo `flow:` en `now.md` como fuente de verdad
 
+### A7 — Nota de extensibilidad en sección "Methodology skills"
+
+**Ubicación:** inmediatamente después de la tabla de 6 metodologías en la sección A1
+
+**Origen:** `analyze/methodology-landscape-analysis.md` — los 6 namespaces son la implementación actual de un universo de 15 frameworks investigados en V3.1. El framework no es de conjunto cerrado.
+
+**Contenido:**
+
+```markdown
+> **Framework extensible:** Los 6 namespaces listados son los methodology skills
+> implementados actualmente (ÉPICA 40). El framework soporta incorporar cualquier
+> marco metodológico adicional siguiendo el patrón `{metodología}-{paso}` con
+> declaración de `THYROX Stage:` en su SKILL.md y anatomía completa
+> (SKILL.md + assets/ + references/).
+>
+> Frameworks del landscape original (V3.1) pendientes de implementación:
+> SDLC, Lean Six Sigma, Problem Solving 8-step, Strategic Planning,
+> Strategic Management, Consulting Process, Business Process Analysis.
+```
+
 ---
 
 ## Evaluación de tamaño
 
 | Criterio | Valor |
 |----------|-------|
-| Archivos modificados | 2 (`thyrox/SKILL.md`, `scalability.md`) |
+| Archivos modificados | 2 (`thyrox/SKILL.md`, `scalability.md`) — A7 va dentro de A1, sin archivo nuevo |
 | Tipo de cambio | Adiciones de texto (no reescrituras) — bajo riesgo de regresión |
 | Fuente de contenido | Derivado directamente de los dos deep-reviews — no hay investigación pendiente |
 | Sesiones estimadas | 1 sesión corta |
@@ -142,12 +164,13 @@ Ejemplo inline: "Con `flow: dmaic` en Stage 3: artefacto es `{wp}/dmaic-define.m
 
 El trabajo está completo cuando:
 
-1. `thyrox/SKILL.md` tiene sección "Methodology skills" con tabla de 6 metodologías y stages reales
-2. `thyrox/SKILL.md` tiene sección "Arquitectura de orquestación" con los dos niveles y ejemplo concreto
-3. `thyrox/SKILL.md` tiene nota bajo la tabla de escalabilidad referenciando stages no-saltables
-4. `thyrox/SKILL.md` tiene fila en artefactos documentando artefactos con flow activo
-5. `thyrox/SKILL.md` tiene subsección en "References por dominio" para methodology skills
-6. `scalability.md` tiene sección "Escalabilidad con methodology skill activo" con reglas detalladas y tablas por flow
+1. `thyrox/SKILL.md` tiene sección "Methodology skills" con tabla de 6 metodologías y stages reales (A1)
+2. `thyrox/SKILL.md` tiene nota de extensibilidad con frameworks pendientes de V3.1 (A7, dentro de A1)
+3. `thyrox/SKILL.md` tiene sección "Arquitectura de orquestación" con los dos niveles y ejemplo concreto (A2)
+4. `thyrox/SKILL.md` tiene nota bajo la tabla de escalabilidad referenciando stages no-saltables (A4)
+5. `thyrox/SKILL.md` tiene fila en artefactos documentando artefactos con flow activo (A5)
+6. `thyrox/SKILL.md` tiene subsección en "References por dominio" para methodology skills (A3)
+7. `scalability.md` tiene sección "Escalabilidad con methodology skill activo" con reglas detalladas y tablas por flow (A6)
 
 ---
 
@@ -155,5 +178,6 @@ El trabajo está completo cuando:
 
 | Riesgo | Probabilidad | Mitigación |
 |--------|-------------|------------|
-| La tabla de anclaje A1 queda desactualizada si se agregan nuevas metodologías | Baja | La sección A2 señala que cada skill declara su `THYROX Stage:` — la fuente de verdad está en los skills individuales |
+| La tabla de anclaje A1 queda desactualizada si se agregan nuevas metodologías | Baja | A7 aclara que es estado actual, no conjunto cerrado; cada skill declara su `THYROX Stage:` como fuente de verdad |
 | La nota A4 es insuficiente y un usuario igual salta stages incorrectamente | Media | La referencia a scalability.md (A6) provee el detalle — el SKILL.md señala, scalability.md explica |
+| La lista de frameworks pendientes en A7 genera expectativas de implementación | Baja | La nota aclara que son "pendientes de implementación" — no compromisos |
