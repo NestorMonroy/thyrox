@@ -4,7 +4,7 @@ description: "Use when implementing solutions in a DMAIC project. dmaic:improve 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /dmaic-improve — DMAIC: Improve
@@ -73,6 +73,8 @@ Para causas raíz relacionadas con waste de flujo o proceso, aplicar herramienta
 | **Heijunka** (nivelación) | Demanda variable que genera cuellos de botella | Distribuir volumen de trabajo uniformemente en el tiempo |
 
 > Las herramientas Lean son frecuentemente la solución más rápida y de menor costo para problemas de flujo y proceso. Evaluar antes de diseñar soluciones tecnológicas.
+
+Ver catálogo completo con aplicación paso a paso: [lean-tools-guide.md](./references/lean-tools-guide.md)
 
 ### 3. Evaluar y seleccionar solución — Cuadrante Impacto × Esfuerzo
 
@@ -175,48 +177,7 @@ Decidir el alcance antes de implementar:
 
 ## Artefacto esperado
 
-`{wp}/dmaic-improve.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: dmaic:improve
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Alternativas de solución evaluadas
-[Tabla: causa raíz → opciones A/B/C]
-
-## Cuadrante Impacto × Esfuerzo
-[Clasificación de cada opción en el cuadrante]
-
-## Solución seleccionada
-[Opción elegida + justificación]
-
-## Herramientas Lean aplicadas (si aplica)
-[5S / Kanban / SMED / MUDA — descripción de la intervención]
-
-## FMEA (si aplica)
-[Tabla RPN con escala: >200 crítico, 100-200 importante, <100 monitorear]
-
-## Criterio piloto vs completo
-[Decisión justificada según tabla de criterios]
-
-## Diseño del piloto
-[Scope, duración, métricas, rollback]
-
-## Datos post-implementación
-[Tabla: baseline vs resultado]
-
-## Validación estadística
-[Herramienta usada, resultado, conclusión]
-
-## Nuevo Sigma Level
-[Baseline Measure → Post-Improve → Delta]
-```
+`{wp}/dmaic-improve.md` — usar template: [dmaic-improve-template.md](./assets/dmaic-improve-template.md)
 
 ---
 
@@ -259,3 +220,15 @@ Cuando la mejora está validada estadísticamente → `dmaic:control`
 - FMEA detallado para procesos críticos de seguridad requiere conocimiento profundo del dominio
 - La validación estadística asume independencia de las observaciones — si los datos tienen autocorrelación temporal, usar Series de Tiempo en lugar de t-test
 - Las herramientas Lean requieren cambio cultural además de técnico — la implementación técnica es solo la mitad del trabajo
+
+---
+
+## Reference Files
+
+### Assets
+- [dmaic-improve-template.md](./assets/dmaic-improve-template.md) — Template del artefacto Improve: alternativas, cuadrante I×E, FMEA, diseño del piloto, validación estadística, nuevo Sigma Level
+
+### References
+- [lean-tools-guide.md](./references/lean-tools-guide.md) — 7 MUDA, 5S paso a paso, Kanban (WIP limits), SMED, Jidoka, Heijunka, eliminación VA/NVA
+- [fmea-guide.md](./references/fmea-guide.md) — Escala S/O/D (1-10), RPN thresholds (>200 crítico), ejemplo completo, cuándo FMEA es obligatorio
+- [doe-guide.md](./references/doe-guide.md) — Factorial 2ᵏ, fraccional 2ᵏ⁻ᵖ (resolución III/IV/V), planificación DOE, DOE vs experimento secuencial

@@ -4,7 +4,7 @@ description: "Use when identifying root causes in a DMAIC project. dmaic:analyze
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /dmaic-analyze — DMAIC: Analyze
@@ -126,6 +126,8 @@ Antes de cada prueba estadística, declarar explícitamente:
 
 Si p-value < 0.05 → rechazar H0 → la diferencia es estadísticamente significativa → causa candidata confirmada.
 
+Ver templates H0/H1 por tipo de test y árbol de selección estadístico: [hypothesis-testing.md](./references/hypothesis-testing.md)
+
 | Tipo de causa | Herramienta de validación | H0 | Criterio |
 |---------------|--------------------------|-----|----------|
 | Categórica (turno A vs B) | ANOVA / t-test | No hay diferencia entre grupos | p-value < 0.05 |
@@ -157,40 +159,7 @@ Si p-value < 0.05 → rechazar H0 → la diferencia es estadísticamente signifi
 
 ## Artefacto esperado
 
-`{wp}/dmaic-analyze.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: dmaic:analyze
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## VSM / análisis de flujo (si aplica)
-[Waste identificado en el flujo — dónde enfocar el análisis estadístico]
-
-## Hipótesis de causas (Ishikawa)
-[Tabla por categoría 5M/6M]
-
-## Análisis de Pareto
-[Tabla: categorías, frecuencia, % acumulado — pocas vitales identificadas]
-
-## 5 Whys (por causa vital)
-[Cadena de por qués hasta causa raíz]
-
-## Validación estadística
-| Causa hipotética | H0 | Herramienta | Resultado (p-value) | ¿Confirmada? |
-|-----------------|-----|-------------|---------------------|-------------|
-
-## Causalidad verificada
-[Mecanismo causal para cada causa confirmada]
-
-## Causas raíz confirmadas (priorizadas)
-| Causa raíz | Impacto estimado | Esfuerzo de solución | Prioridad |
-```
+`{wp}/dmaic-analyze.md` — usar template: [dmaic-analyze-template.md](./assets/dmaic-analyze-template.md)
 
 ---
 
@@ -233,3 +202,14 @@ Cuando las causas raíz están validadas con datos y priorizadas → `dmaic:impr
 - El número de "Whys" en 5 Whys no es literal — puede requerir más o menos de 5 iteraciones
 - Si los datos de Measure no tienen suficiente estratificación, Analyze no podrá identificar las fuentes de variación
 - La verificación de causalidad requiere conocimiento del dominio que este skill no puede proveer — el equipo debe tener expertos del proceso
+
+---
+
+## Reference Files
+
+### Assets
+- [dmaic-analyze-template.md](./assets/dmaic-analyze-template.md) — Template del artefacto Analyze: VSM, Ishikawa 6M, Pareto, 5-Whys, validación estadística H0/H1, causas priorizadas
+
+### References
+- [hypothesis-testing.md](./references/hypothesis-testing.md) — Templates H0/H1 por situación, tabla de decisión p-value, árbol de selección estadístico, prerequisitos por prueba
+- [root-cause-tools.md](./references/root-cause-tools.md) — VSM (símbolos + métricas + flujo), Ishikawa 6M con preguntas detalladas, 5-Why protocolo, patrones de diagrama de dispersión

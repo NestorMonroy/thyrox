@@ -4,7 +4,7 @@ description: "Use when establishing a quantitative baseline in a DMAIC project. 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /dmaic-measure — DMAIC: Measure
@@ -103,6 +103,8 @@ El MSA valida que el sistema de medición es confiable antes de confiar en los d
 - `10% ≤ %GR&R < 30%` → Aceptable condicionalmente; documentar y monitorear
 - `%GR&R ≥ 30%` → Sistema de medición no confiable → corregir antes de continuar
 
+Ver tabla de decisión completa y cómo ejecutar el Gauge R&R: [msa-gage-rr.md](./references/msa-gage-rr.md)
+
 **Para datos de atributo — Kappa de Cohen:**
 
 El Kappa de Cohen mide la concordancia entre evaluadores para datos categóricos (pasa/no pasa, categoría A/B/C):
@@ -170,43 +172,7 @@ Cpk > 1.33 → proceso capaz
 
 ## Artefacto esperado
 
-`{wp}/dmaic-measure.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: dmaic:measure
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Process Map / VSM
-[Tipo de mapa usado, hallazgos clave — tiempos de ciclo, WIP, ratio VA/NVA]
-
-## Plan de medición
-[Tabla: qué, cómo, cuándo, quién, fuente]
-
-## Tipo de dato
-[Continuo / Discreto — justificación]
-
-## Resultados del MSA
-- Datos continuos: %GR&R = [valor] → [aceptable / condicional / rechazado]
-- Datos atributo: Kappa de Cohen = [valor] → [excelente / aceptable / insuficiente]
-
-## Datos recopilados
-- Período: [inicio → fin]
-- Tamaño de muestra: [n]
-- Resumen estadístico: [media, desviación, rango]
-
-## Baseline del proceso
-- DPU: [valor] / DPMO: [valor] / Sigma Level: [valor]  ← datos atributo
-- Cp: [valor] / Cpk: [valor]  ← datos continuos
-
-## Análisis de capacidad
-[Histograma + conclusión: proceso capaz / no capaz]
-```
+`{wp}/dmaic-measure.md` — usar template: [dmaic-measure-template.md](./assets/dmaic-measure-template.md)
 
 ---
 
@@ -248,3 +214,14 @@ Cuando el baseline está establecido y el MSA validado → `dmaic:analyze`
 - Este skill guía el proceso de medición; las herramientas estadísticas específicas (Minitab, R, Python statsmodels) están fuera de scope
 - Para procesos con alta complejidad estadística (múltiples correlaciones, no-normalidad severa), considerar la ayuda de un Black Belt o estadístico
 - El cálculo de Sigma Level asume la convención Six Sigma estándar (shift de 1.5σ de largo plazo) — documentar explícitamente si se usa otra convención
+
+---
+
+## Reference Files
+
+### Assets
+- [dmaic-measure-template.md](./assets/dmaic-measure-template.md) — Template del artefacto Measure: VSM, Plan de medición, Gauge R&R, baseline DPU/DPMO/Sigma, Cp/Cpk
+
+### References
+- [msa-gage-rr.md](./references/msa-gage-rr.md) — Gauge R&R completo: componentes, tabla de decisión (%GR&R), Kappa de Cohen, diseño de estudio, sistemas automatizados
+- [process-capability.md](./references/process-capability.md) — Cp/Cpk/Pp/Ppk: fórmulas, interpretación, tabla DPMO→Sigma Level, convención 1.5σ, prerequisitos

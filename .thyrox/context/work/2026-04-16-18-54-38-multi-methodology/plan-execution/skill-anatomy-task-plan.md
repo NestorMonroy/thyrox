@@ -45,15 +45,15 @@ Cada T-NNN cubre un skill completo:
 - [x] T-002 `pdca-do` — assets: pdca-do-template.md · *(sin references — contenido procedimental, no catálogo Tier 2)* · SKILL.md update
 - [x] T-003 `pdca-check` — assets: pdca-check-template.md · references: measurement-tools.md (Run chart, Control chart tipos, before/after table, sample size) · SKILL.md update
 - [x] T-004 `pdca-act` — assets: pdca-act-template.md · references: standardization-patterns.md (Yokoten, A3 Report template, SDCA cycle, SOP estructura) · SKILL.md update
-- [ ] T-005 Commit B1: `feat(pdca): complete skill anatomy — assets, references, SKILL.md updates`
+- [x] T-005 Commit B1: `feat(pdca): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B2 — DMAIC (5 skills)
 
-- [ ] T-006 `dmaic-define` — assets: **dmaic-project-charter-template.md** (Charter con CTQs + VOC + SIPOC — distinto del Charter PMBOK) · references: voc-techniques.md (VOC→CTQ conversion tabla, 6 técnicas), sipoc-guide.md (SIPOC paso a paso, ejemplos, errores comunes) · SKILL.md update
-- [ ] T-007 `dmaic-measure` — assets: dmaic-measure-template.md · references: msa-gage-rr.md (Gage R&R tabla de decisión, Kappa Cohen, % contribution thresholds), process-capability.md (Cp/Cpk/Pp/Ppk fórmulas, tabla interpretación, 1.5σ shift) · SKILL.md update
-- [ ] T-008 `dmaic-analyze` — assets: dmaic-analyze-template.md · references: hypothesis-testing.md (H0/H1 templates, p-value decision table, test selection matrix), root-cause-tools.md (VSM symbols, Fishbone profundo, 5-Why con verificación, Scatter plot) · SKILL.md update
-- [ ] T-009 `dmaic-improve` — assets: dmaic-improve-template.md · references: doe-guide.md (full factorial vs fractional, factors/levels/runs), **lean-tools-guide.md** (5S/Kanban/SMED/MUDA 7 desperdicios/Jidoka/Heijunka — catálogo con tipo de waste que resuelve), **fmea-guide.md** (tabla RPN, escala Severidad/Ocurrencia/Detección, criterio >200 crítico/100-200 importante/<100 monitorear) · SKILL.md update
-- [ ] T-010 `dmaic-control` — assets: dmaic-control-template.md · references: control-chart-guide.md *(debe incluir: (1) 8 Reglas Western Electric completas con señal, (2) Plan de Reacción por señal — quién actúa/qué hace, (3) tabla selección tipo gráfica SPC por tipo de dato y tamaño de subgrupo)* · SKILL.md update
+- [x] T-006 `dmaic-define` — assets: **dmaic-project-charter-template.md** (Charter con CTQs + VOC + SIPOC — distinto del Charter PMBOK) · references: voc-techniques.md (VOC→CTQ conversion tabla, 6 técnicas), sipoc-guide.md (SIPOC paso a paso, ejemplos, errores comunes) · SKILL.md update
+- [x] T-007 `dmaic-measure` — assets: dmaic-measure-template.md · references: msa-gage-rr.md (Gage R&R tabla de decisión, Kappa Cohen, % contribution thresholds), process-capability.md (Cp/Cpk/Pp/Ppk fórmulas, tabla interpretación, 1.5σ shift) · SKILL.md update
+- [x] T-008 `dmaic-analyze` — assets: dmaic-analyze-template.md · references: hypothesis-testing.md (H0/H1 templates, p-value decision table, test selection matrix), root-cause-tools.md (VSM symbols, Fishbone profundo, 5-Why con verificación, Scatter plot) · SKILL.md update
+- [x] T-009 `dmaic-improve` — assets: dmaic-improve-template.md · references: doe-guide.md (full factorial vs fractional, factors/levels/runs), **lean-tools-guide.md** (5S/Kanban/SMED/MUDA 7 desperdicios/Jidoka/Heijunka — catálogo con tipo de waste que resuelve), **fmea-guide.md** (tabla RPN, escala Severidad/Ocurrencia/Detección, criterio >200 crítico/100-200 importante/<100 monitorear) · SKILL.md update
+- [x] T-010 `dmaic-control` — assets: dmaic-control-template.md · references: control-chart-guide.md *(debe incluir: (1) 8 Reglas Western Electric completas con señal, (2) Plan de Reacción por señal — quién actúa/qué hace, (3) tabla selección tipo gráfica SPC por tipo de dato y tamaño de subgrupo)* · SKILL.md update
 - [ ] T-011 Commit B2: `feat(dmaic): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B3 — RUP (4 skills)

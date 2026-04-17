@@ -4,7 +4,7 @@ description: "Use when starting a DMAIC Six Sigma project. dmaic:define — defi
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /dmaic-define — DMAIC: Define
@@ -67,6 +67,8 @@ El VOC es el insumo fundamental de Define. Sin VOC real, los CTQs son supuestos 
 | **Gemba (observación directa)** | Proceso operacional; comportamiento real vs declarado | Ir donde el cliente usa el producto/servicio; observar sin intervenir |
 | **Focus groups** | Explorar percepciones; antes de encuesta masiva | 6-8 participantes; moderador neutral |
 | **Datos de soporte / tickets** | Datos ya recopilados por la organización | Analizar categorías de problemas reportados; no sustituto de VOC directo |
+
+Ver catálogo detallado de las 6 técnicas con protocolos y limitaciones: [voc-techniques.md](./references/voc-techniques.md)
 
 **Conversión VOC → CTQ:**
 
@@ -189,46 +191,7 @@ Ejemplo: *"Reducir el % de pedidos entregados fuera de plazo de 18% a menos de 5
 
 ## Artefacto esperado
 
-`{wp}/dmaic-define.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: dmaic:define
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## VOC recopilado
-| Técnica | Muestra | Hallazgos clave |
-
-## CTQs (derivados de VOC)
-| CTQ | Métrica | Objetivo | Fuente VOC |
-
-## SIPOC
-[Tabla S-I-P-O-C]
-
-## Problem Statement
-[Síntoma + magnitud + período + impacto]
-
-## Goal Statement
-[Reducir X de baseline a meta para fecha]
-
-## Business Case
-[Costo actual / beneficio esperado / ROI]
-
-## Scope
-- In: [lista]
-- Out: [lista]
-
-## RACI
-[Tabla de roles]
-
-## Project Charter aprobado
-- Sponsor: [nombre] — Fecha de aprobación: [fecha]
-```
+`{wp}/dmaic-define.md` — usar template: [dmaic-project-charter-template.md](./assets/dmaic-project-charter-template.md)
 
 ---
 
@@ -280,3 +243,14 @@ Cuando el Project Charter está aprobado por el sponsor → `dmaic:measure`
 - La calidad del SIPOC depende del conocimiento del proceso — si el equipo no conoce bien el proceso, considerar Gemba walks o entrevistas antes de completar Define
 - El tollgate (aprobación del sponsor) no es un formalismo; sin él, el proyecto no tiene autorización real para continuar
 - VOC de un solo tipo de técnica puede tener sesgo — combinar datos cualitativos (entrevistas) con cuantitativos (encuestas/quejas) para mayor validez
+
+---
+
+## Reference Files
+
+### Assets
+- [dmaic-project-charter-template.md](./assets/dmaic-project-charter-template.md) — Template del Project Charter con VOC, CTQs, SIPOC, Goal Statement, Business Case, RACI y Timeline
+
+### References
+- [voc-techniques.md](./references/voc-techniques.md) — 6 técnicas de recopilación VOC con protocolos, limitaciones y conversión VOC→CTQ
+- [sipoc-guide.md](./references/sipoc-guide.md) — Guía de construcción SIPOC: orden correcto, 5 pasos, errores comunes, uso para delimitar scope

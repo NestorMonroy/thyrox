@@ -4,7 +4,7 @@ description: "Use when sustaining improvements in a DMAIC project. dmaic:control
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /dmaic-control — DMAIC: Control
@@ -90,6 +90,8 @@ Para CTQs continuos críticos, implementar gráficas de control:
 
 > En la práctica, usar las reglas 1 y 4 como mínimo. Agregar las demás si el proceso tiene alta criticidad o si se quiere sensibilidad para detectar causas especiales sutiles.
 
+Ver tabla de selección de tipo de gráfica SPC, causas típicas por regla y Plan de Reacción completo: [control-chart-guide.md](./references/control-chart-guide.md)
+
 ### 3. Respuesta ante señales de alarma — Plan de reacción
 
 El valor de las gráficas de control está en el Plan de Reacción: qué hace *exactamente* alguien cuando aparece una señal. Sin plan de reacción, las gráficas son decoración.
@@ -171,48 +173,7 @@ El proyecto DMAIC se cierra cuando:
 
 ## Artefacto esperado
 
-`{wp}/dmaic-control.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: dmaic:control
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Control Plan
-[Tabla: característica, método, frecuencia, responsable, límites, acción ante desvío]
-
-## Gráficas de control configuradas
-[Tipo de gráfica, límites calculados desde datos de Improve, herramienta/sistema]
-
-## Plan de reacción
-[Señal (Regla Western Electric) → quién actúa → qué hace → cuándo escalar]
-
-## Gestión visual implementada
-[Dashboard / tablero / semáforo — dónde y cómo]
-
-## SOPs actualizados
-[Lista de documentos modificados con referencia]
-
-## Training realizado
-[Quién, cuándo, contenido]
-
-## Lecciones aprendidas del proyecto DMAIC
-[Por dimensión: Define / Measure / Analyze / Improve / Control]
-
-## Transferencia al dueño del proceso
-[Nombre del dueño, fecha de aceptación formal]
-
-## Resultados finales del proyecto
-[Tabla: baseline → resultado final → % mejora → beneficio realizado]
-
-## Cierre formal
-[Fecha de cierre, aprobación del sponsor]
-```
+`{wp}/dmaic-control.md` — usar template: [dmaic-control-template.md](./assets/dmaic-control-template.md)
 
 ---
 
@@ -257,3 +218,13 @@ DMAIC completado. Iniciar Stage 11 TRACK/EVALUATE del WP → lecciones aprendida
 - El monitoreo post-proyecto debe mantenerse mínimo 3-6 meses para confirmar que la mejora es sostenida; este skill cubre la configuración, no el monitoreo ongoing
 - En procesos con alta complejidad regulatoria (FDA, ISO), los cambios a SOPs pueden requerir aprobaciones adicionales fuera del scope del proyecto DMAIC
 - Las 8 reglas de Western Electric aplicadas simultáneamente aumentan la tasa de falsas alarmas — calibrar según el nivel de criticidad del proceso
+
+---
+
+## Reference Files
+
+### Assets
+- [dmaic-control-template.md](./assets/dmaic-control-template.md) — Template del artefacto Control: Control Plan, configuración SPC, Plan de Reacción, gestión visual, SOPs, training, cierre formal
+
+### References
+- [control-chart-guide.md](./references/control-chart-guide.md) — Selección de gráfica SPC (7 tipos), UCL/LCL fórmulas, 8 Reglas de Western Electric, causas típicas por regla, Plan de Reacción completo
