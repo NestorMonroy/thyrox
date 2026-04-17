@@ -5,7 +5,7 @@ version: 1.0
 purpose: Registro de tareas pequeñas, enhancements y mejoras ad-hoc
 goal: Trackear y organizar trabajo pequeño que surge durante desarrollo
 updated_at: [YYYY-MM-DD HH:MM:SS]
-phase: 5 - DECOMPOSE / 6 - EXECUTE
+phase: Phase 10 — IMPLEMENT
 activate_if: tareas pequeñas (<2h) que no justifican work package completo
 ```
 

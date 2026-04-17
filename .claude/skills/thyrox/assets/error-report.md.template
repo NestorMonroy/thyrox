@@ -1,7 +1,7 @@
 ```yml
 id: ERR-NNN
 created_at: [YYYY-MM-DD HH:MM:SS]
-phase: Phase N (PHASE_NAME)
+phase: Phase N — PHASE_NAME
 severity: alta | media | baja
 recurrence: primera | reincidencia de ERR-XXX
 ```

@@ -5,7 +5,7 @@ version: 1.0
 purpose: Tracking de refactorizaciones, mejoras de código y deuda técnica
 goal: Documentar oportunidades de mejora y deuda técnica con priorización
 updated_at: [YYYY-MM-DD HH:MM:SS]
-phase: 5 - DECOMPOSE / 6 - EXECUTE
+phase: Phase 11 — TRACK/EVALUATE
 activate_if: hay deuda técnica o refactors identificados durante análisis que necesitan tracking estructurado
 ```
 

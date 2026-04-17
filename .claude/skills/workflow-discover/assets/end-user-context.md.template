@@ -3,12 +3,12 @@ project: [Nombre del proyecto]
 work_package: [YYYY-MM-DD-HH-MM-SS-nombre]
 created_at: [YYYY-MM-DD HH:MM:SS]
 updated_at: [YYYY-MM-DD HH:MM:SS]
-phase: Phase 1 — ANALYZE (Step 0)
+phase: Phase 1 — DISCOVER
 ```
 
 # END USER CONTEXT: [Nombre del Work Package]
 
-Documento de contexto de usuario final. Se crea en **Step 0 de Phase 1 ANALYZE**, antes del análisis de los 8 aspectos. Su propósito es anclar el trabajo en las necesidades reales del usuario final, no en las del implementador.
+Documento de contexto de usuario final. Se crea en **Stage 1 DISCOVER**, antes del análisis de los 8 aspectos. Su propósito es anclar el trabajo en las necesidades reales del usuario final, no en las del implementador.
 
 > **Regla:** El "usuario final" no es quien escribe el código ni quien gestiona el proyecto. Es la persona que usa el sistema resultante para resolver un problema real.
 
