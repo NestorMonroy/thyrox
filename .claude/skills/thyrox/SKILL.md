@@ -1,6 +1,7 @@
 ```yml
 name: thyrox
 description: "Framework de gestión THYROX con 12 fases propias (DISCOVER → STANDARDIZE). Usar este skill cuando el usuario quiera planificar, analizar, diseñar, organizar, trackear o gestionar CUALQUIER tipo de trabajo — features, bug fixes, refactoring, documentación, investigación o setup de proyecto. También usar cuando el usuario pregunte '¿qué hago primero?', '¿cómo organizo esto?', '¿cuál es el estado?', 'crea un plan para X', 'analiza X', 'descompón X en tareas', 'documenta esta decisión', o cualquier cosa relacionada con workflow de proyecto, tracking de trabajo, registros de decisiones o desarrollo estructurado. Siempre empezar con DISCOVER antes de planificar."
+updated_at: 2026-04-17 23:15:00
 ```
 
 # THYROX: Gestión de Proyectos
@@ -53,8 +54,16 @@ Cada fase vive en su propio skill. Invocar directamente para ejecutar:
 | Phase 8: PLAN EXECUTION | `/thyrox:decompose` | Crear tareas atómicas. Task plan + DAG + trazabilidad. |
 | Phase 9: PILOT/VALIDATE | `/thyrox:pilot` | Validar solución con PoC. Confirmar supuestos antes de ejecutar. |
 | Phase 10: EXECUTE | `/thyrox:execute` | Ejecutar. Commits + actualizar task plan + gates async. |
-| Phase 11: TRACK/EVALUATE | `/thyrox:track` | Evaluar resultados. Lessons learned + changelog + cierre WP. |
+| Phase 11: TRACK/EVALUATE | `/thyrox:track` | Evaluar resultados. Lessons learned + changelog + cierre WP. Usar /thyrox:audit antes de STANDARDIZE para gate de calidad. |
 | Phase 12: STANDARDIZE | `/thyrox:standardize` | Documentar patrones. Propagar aprendizajes al framework. |
+
+## Herramientas de calidad
+
+Herramientas transversales que no pertenecen al ciclo de 12 fases. Se invocan cuando el ejecutor necesita verificar o validar el trabajo.
+
+| Herramienta | Skill | Cuándo usar |
+|------------|-------|-------------|
+| **AUDIT** | `/thyrox:audit` | Antes de Stage 12, o cuando el ejecutor quiere verificar calidad del WP. Produce `track/{wp}-audit-report.md` con score y action plan. |
 
 **Escalabilidad** — cuántas fases usar según tamaño del WP:
 

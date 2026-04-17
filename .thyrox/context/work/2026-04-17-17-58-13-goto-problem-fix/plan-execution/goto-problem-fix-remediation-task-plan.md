@@ -27,19 +27,19 @@ Formato: `T-NNN Descripción (ID-problema)`
 
 > Cierra los hallazgos del audit report. Bajo riesgo — sin cambios a SKILL.md ni scripts críticos.
 
-- [ ] **T-026** Sincronizar checkboxes en `plan-execution/goto-problem-fix-task-plan.md`: marcar `[x]` en T-001..T-025 (todos implementados y verificados). Usar un único Edit sobre el archivo. (A-1, PAT-004 retroactivo)
+- [x] **T-026** Sincronizar checkboxes en `plan-execution/goto-problem-fix-task-plan.md`: marcar `[x]` en T-001..T-025 (todos implementados y verificados). Usar un único Edit sobre el archivo. (A-1, PAT-004 retroactivo)
 
-- [ ] **T-027** Fix README: eliminar Opción A (líneas 93-95 con `bash setup-template.sh`), conservar Opción B y la nota de migración. Resultado esperado: `grep "setup-template" README.md` → solo la nota informativa, no como instrucción ejecutable. (A-2/A-3, T-009/T-017 definitivo)
+- [x] **T-027** Fix README: eliminar Opción A (líneas 93-95 con `bash setup-template.sh`), conservar Opción B y la nota de migración. Resultado esperado: `grep "setup-template" README.md` → solo la nota informativa, no como instrucción ejecutable. (A-2/A-3, T-009/T-017 definitivo)
 
-- [ ] **T-028** Actualizar `track/goto-problem-fix-audit-report.md`:
+- [x] **T-028** Actualizar `track/goto-problem-fix-audit-report.md`:
   - T-023: mover de FAIL → PASS (artefacto creado en `analyze/templates/skill-templates-phase-fields-audit.md`)
   - T-020: mover de PARTIAL → SKIP (política ROADMAP confirmada: milestones, no estado de sesión)
   - Recalcular score: 23 PASS + 1 PARTIAL → ~96% Grade A
   - Actualizar Executive Summary y Dimension Scores (A-4/A-5)
 
-- [ ] **T-029** Actualizar `analyze/templates/skill-templates-phase-fields-audit.md`: marcar los 3 templates en `legacy/` como SKIP con justificación (están archivados — no son templates activos). Actualizar el total: 5 FIXED + 3 SKIP + 0 PENDING. (A-5 complemento)
+- [x] **T-029** Actualizar `analyze/templates/skill-templates-phase-fields-audit.md`: marcar los 3 templates en `legacy/` como SKIP con justificación (están archivados — no son templates activos). Actualizar el total: 5 FIXED + 3 SKIP + 0 PENDING. (A-5 complemento)
 
-- [ ] **T-030** Commit B8: `fix(goto-problem-fix): close audit findings — sync checkboxes, readme opcionA, audit-report scores`
+- [x] **T-030** Commit B8: `fix(goto-problem-fix): close audit findings — sync checkboxes, readme opcionA, audit-report scores`
 
 ---
 
@@ -48,7 +48,7 @@ Formato: `T-NNN Descripción (ID-problema)`
 > Mejoras estructurales derivadas del análisis. Modifican SKILL.md y un script.
 > Pueden ejecutarse en paralelo con B8 (archivos distintos).
 
-- [ ] **T-031** Actualizar `thyrox/SKILL.md` (C-1):
+- [x] **T-031** Actualizar `thyrox/SKILL.md` (C-1):
   - En la tabla del catálogo, modificar la entrada de Phase 11:
     `| Phase 11: TRACK/EVALUATE | /thyrox:track | Evaluar resultados. Lessons learned + changelog + cierre WP. Usar /thyrox:audit antes de STANDARDIZE para gate de calidad. |`
   - Agregar sección nueva "## Herramientas de calidad" después del catálogo de las 12 fases:
@@ -61,7 +61,7 @@ Formato: `T-NNN Descripción (ID-problema)`
   - Actualizar `updated_at` en frontmatter (regla CLAUDE.md obligatoria)
   - (C-1, Opción B + referencia Opción C aprobada)
 
-- [ ] **T-032** Actualizar `workflow-implement/SKILL.md` (C-2):
+- [x] **T-032** Actualizar `workflow-implement/SKILL.md` (C-2):
   - Antes del paso 7 ("Actualizar checkbox en *-task-plan.md"), agregar bloque destacado:
     ```
     **PAT-004 — Checkbox-at-commit (OBLIGATORIO):** El `[x]` va en el MISMO commit que
@@ -70,13 +70,13 @@ Formato: `T-NNN Descripción (ID-problema)`
   - Actualizar `updated_at` en frontmatter
   - (C-2, Fix 1 de `analyze/process/task-plan-sync-root-cause.md`)
 
-- [ ] **T-033** Fix `session-start.sh` (C-3):
+- [x] **T-033** Fix `session-start.sh` (C-3):
   - Línea 61: cambiar `maxdepth 1` → `maxdepth 2`
   - Línea 69: cambiar `maxdepth 1` → `maxdepth 2` (también busca execution-log — misma corrección para consistencia)
   - Verificar: `bash -n .claude/scripts/session-start.sh` → PASS
   - (C-3, Fix 2 de `analyze/process/task-plan-sync-root-cause.md`)
 
-- [ ] **T-034** Agregar TD-042 a `technical-debt.md` (C-4):
+- [x] **T-034** Agregar TD-042 a `technical-debt.md` (C-4):
   ```
   ## TD-042: validate-session-close.sh sin verificación PAT-004
   Agregar verificación: si hay commits T-NNN en el log sin [x] en task-plan, emitir
@@ -85,7 +85,7 @@ Formato: `T-NNN Descripción (ID-problema)`
   ```
   - (C-4, Fix 3 — va al backlog, no a esta ÉPICA)
 
-- [ ] **T-035** Commit B9: `feat(goto-problem-fix): framework improvements — audit in SKILL catalog, PAT-004 enforce, session-start fix`
+- [x] **T-035** Commit B9: `feat(goto-problem-fix): framework improvements — audit in SKILL catalog, PAT-004 enforce, session-start fix`
 
 ---
 
