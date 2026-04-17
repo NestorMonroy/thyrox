@@ -93,8 +93,11 @@ correspondiente **dentro** del workflow stage apropiado. Cada skill declara su
 > (SKILL.md + assets/ + references/).
 >
 > Frameworks del landscape original (V3.1) pendientes de implementación:
-> SDLC, Lean Six Sigma, Problem Solving 8-step, Strategic Planning,
+> Lean Six Sigma, Problem Solving 8-step, Strategic Planning,
 > Strategic Management, Consulting Process, Business Process Analysis.
+> (SDLC no aplica: el ciclo de 12 stages de THYROX ya ES el ciclo de vida universal
+> destilado del flujo crítico — SDLC waterfall está subsumed en la estructura propia del framework.
+> SDLC iterativo está cubierto por `rup:`)
 
 **Cómo activar:** invocar directamente el skill del paso, ej. `/dmaic-define`.
 El skill actualiza `now.md::flow` y `now.md::methodology_step`.

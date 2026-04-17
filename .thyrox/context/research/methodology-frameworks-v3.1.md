@@ -420,13 +420,18 @@ Estructuras/esqueletos reutilizables, técnicas de descomposición y análisis:
 | Strategic Planning / PMBOK | `pm:` | pm-initiating, pm-planning, pm-executing, pm-monitoring, pm-closing |
 | Requirements Management | `rm:` | rm-elicitation, rm-analysis, rm-specification, rm-validation, rm-management |
 
-## Pendientes de implementación (6 de 12 marcos):
-- SDLC — namespace futuro: `sdlc:`
+## Pendientes de implementación (5 de 12 marcos):
 - Lean Six Sigma — namespace futuro: `lean:` o extensión de `dmaic:`
-- Problem Solving 8-step — namespace futuro: `ps8:`
+- Problem Solving 8-step (Toyota) — namespace futuro: `ps8:`
 - Strategic Planning (standalone) — namespace futuro: `sp:`
 - Consulting Process (General + Thoucentric) — namespace futuro: sin definir
 - Business Process Analysis — namespace futuro: `bpa:`
+
+## No implementar como methodology skill:
+- **SDLC** — El ciclo de 12 stages de THYROX ya ES el ciclo de vida universal destilado del
+  flujo crítico de los 15 frameworks. SDLC waterfall está subsumed en la propia estructura del
+  framework. SDLC iterativo está cubierto por `rup:`. Agregar `sdlc:` sería anidar un
+  ciclo de vida dentro de sí mismo.
 
 ## Técnicas (no requieren skill propio):
 - Root Cause Analysis — herramienta dentro de pdca y dmaic
