@@ -68,10 +68,22 @@ flow: pps
 methodology_step: pps:{fase}
 ```
 
-## Cierre
+## Cierre — artifact-ready signal
 
-Cuando `pps:evaluate` completa y el target se alcanzó:
-- Reportar estado de A3 Report (secciones 1-8 completas)
-- Confirmar SOP generado si aplica
-- Documentar Yokoten (difusión de aprendizajes)
-- Proponer Stage 11 TRACK/EVALUATE
+Cuando `pps:evaluate` completa y el target se alcanzó, emitir señal estructurada:
+
+```
+[pps-coordinator COMPLETED]
+Artifacts produced:
+  - {wp}/pps-clarify.md        (Problem Clarification Sheet — A3 §1-2)
+  - {wp}/pps-target.md         (Target Sheet — A3 §3)
+  - {wp}/pps-analyze.md        (RCA Worksheet — A3 §4)
+  - {wp}/pps-countermeasures.md (Countermeasures Matrix — A3 §5)
+  - {wp}/pps-implement.md      (Implementation Log — A3 §6)
+  - {wp}/pps-evaluate.md       (Effect Confirmation + A3 §7-8 complete)
+  - {wp}/pps-sop.md            (SOP si se estandarizó)
+Summary: A3 Report completo | Target [alcanzado/no alcanzado] | Yokoten documentado
+Ready for: Stage 11 TRACK/EVALUATE
+```
+
+Actualizar `now.md::coordinators.pps-coordinator.status = completed` y registrar en orchestration-log si existe.

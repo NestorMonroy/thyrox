@@ -70,9 +70,22 @@ flow: cp
 methodology_step: cp:{fase}
 ```
 
-## Cierre
+## Cierre — artifact-ready signal
 
-Cuando `cp:evaluate` completa y el engagement cierra:
-- Reportar impacto real vs KPIs acordados
-- Confirmar Knowledge Transfer completado
-- Proponer Stage 11 TRACK/EVALUATE
+Cuando `cp:evaluate` completa y el engagement cierra, emitir señal estructurada:
+
+```
+[cp-coordinator COMPLETED]
+Artifacts produced:
+  - {wp}/cp-initiation.md    (Engagement Charter)
+  - {wp}/cp-diagnosis.md     (Issue Tree + Data Collection Plan)
+  - {wp}/cp-structure.md     (Key Findings Document)
+  - {wp}/cp-recommend.md     (Storyline + Storyboard aprobado)
+  - {wp}/cp-plan.md          (Recommendation Deck + Implementation Roadmap)
+  - {wp}/cp-implement.md     (Implementation Progress Report)
+  - {wp}/cp-evaluate.md      (Impact Assessment + Knowledge Transfer Package)
+Summary: Impacto [vs KPIs acordados] | Knowledge Transfer [completado/pendiente]
+Ready for: Stage 11 TRACK/EVALUATE
+```
+
+Actualizar `now.md::coordinators.cp-coordinator.status = completed` y registrar en orchestration-log si existe.

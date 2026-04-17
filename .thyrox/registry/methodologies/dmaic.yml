@@ -10,6 +10,18 @@ note: >
   cada fase produce un entregable formal (tollgate) antes de avanzar.
   El coordinator verifica que el tollgate esté completo antes de transicionar.
 
+native_phase_count: 5
+produces:
+  - Project Charter
+  - Baseline Data (DPU/DPMO/Sigma Level)
+  - Root Cause Analysis
+  - Improvement Solution
+  - Control Plan
+consumes:
+  - problem-statement
+  - process-data
+  - quality-metrics
+
 steps:
   - id: dmaic:define
     display: "Define — Definir alcance del problema y proyecto"

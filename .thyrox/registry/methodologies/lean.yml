@@ -12,6 +12,18 @@ note: >
   es el artefacto transversal. Énfasis en identificar los 8 desperdicios (TIMWOOD)
   y crear flujo continuo. Integra herramientas 5S, Kaizen, Kanban, Poka-Yoke.
 
+native_phase_count: 5
+produces:
+  - Lean Charter
+  - Current State VSM
+  - Future State VSM
+  - Improvement Data (pre/post comparison)
+  - SOPs + Visual Management System
+consumes:
+  - process-scope
+  - value-stream-data
+  - waste-observations
+
 steps:
   - id: lean:define
     display: "Define — Definir el problema y el valor para el cliente"

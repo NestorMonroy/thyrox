@@ -12,6 +12,18 @@ note: >
   gaps en análisis → elicitación adicional; validación fallida → re-análisis;
   change request → re-análisis desde el cambio.
 
+native_phase_count: 5
+produces:
+  - Requirements List (raw)
+  - Refined + Prioritized Requirements
+  - SRS/BRD/User Stories Document
+  - Approved Requirements Baseline
+  - Requirements Traceability Matrix
+consumes:
+  - stakeholder-needs
+  - business-context
+  - system-scope
+
 steps:
   - id: rm:elicitation
     display: "Elicitation — Recopilar requisitos de stakeholders"

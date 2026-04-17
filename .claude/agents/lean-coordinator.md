@@ -60,9 +60,20 @@ flow: lean
 methodology_step: lean:{fase}
 ```
 
-## Cierre
+## Cierre — artifact-ready signal
 
-Cuando `lean:control` completa y el tollgate está OK:
-- Reportar reducción de desperdicios vs baseline (Lead Time, eficiencia de flujo)
-- Documentar Yokoten (plan de difusión de aprendizajes)
-- Proponer Stage 11 TRACK/EVALUATE
+Cuando `lean:control` completa y el tollgate está OK, emitir señal estructurada:
+
+```
+[lean-coordinator COMPLETED]
+Artifacts produced:
+  - {wp}/lean-define.md    (Lean Charter + VOC + métricas de flujo base)
+  - {wp}/lean-measure.md   (Current State VSM + desperdicios cuantificados)
+  - {wp}/lean-analyze.md   (Root Cause Analysis + Future State VSM)
+  - {wp}/lean-improve.md   (Implementación + datos pre/post mejora)
+  - {wp}/lean-control.md   (SOPs + visual management + plan Yokoten)
+Summary: [reducción de Lead Time] | [mejora en eficiencia de flujo] | [desperdicios eliminados]
+Ready for: Stage 11 TRACK/EVALUATE
+```
+
+Actualizar `now.md::coordinators.lean-coordinator.status = completed` y registrar en orchestration-log si existe.

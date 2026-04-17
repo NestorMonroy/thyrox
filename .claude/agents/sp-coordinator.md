@@ -69,9 +69,24 @@ flow: sp
 methodology_step: sp:{fase}
 ```
 
-## Cierre
+## Cierre — artifact-ready signal
 
-Cuando el ciclo estratégico cierra:
-- Reportar KPIs estratégicos alcanzados vs targets
-- Listar iniciativas completadas vs planificadas
-- Proponer Stage 11 TRACK/EVALUATE
+Cuando el ciclo estratégico cierra (sp:adjust → Opción A), emitir señal estructurada:
+
+```
+[sp-coordinator COMPLETED]
+Artifacts produced:
+  - {wp}/sp-context.md    (Strategic Context Brief)
+  - {wp}/sp-analysis.md   (PESTEL + SWOT + Five Forces)
+  - {wp}/sp-gaps.md       (Strategic Gap Analysis)
+  - {wp}/sp-formulate.md  (Strategy Map + Objetivos estratégicos)
+  - {wp}/sp-plan.md       (Strategic Plan + Balanced Scorecard + Roadmap)
+  - {wp}/sp-execute.md    (Reporte de avance de iniciativas)
+  - {wp}/sp-monitor.md    (Strategy Review Report + BSC actualizado)
+  - {wp}/sp-adjust.md     (Ajustes + Lessons Learned)
+  - {wp}/sp-cycle-history.md (si hubo múltiples ciclos)
+Summary: [N] ciclos estratégicos | KPIs [X/Y alcanzados] | Iniciativas [Z completadas]
+Ready for: Stage 11 TRACK/EVALUATE
+```
+
+Actualizar `now.md::coordinators.sp-coordinator.status = completed` y registrar en orchestration-log si existe.

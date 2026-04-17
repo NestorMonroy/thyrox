@@ -77,3 +77,23 @@ methodology_step: ba:{area}
 
 Como BABOK permite trabajar múltiples áreas, el coordinator mantiene en el artefacto
 `{wp}/ba-progress.md` el estado de cada área trabajada.
+
+## Cierre — artifact-ready signal
+
+Cuando el usuario decide cerrar el engagement BABOK, emitir señal estructurada:
+
+```
+[babok-coordinator COMPLETED]
+Artifacts produced (solo áreas trabajadas):
+  - {wp}/ba-planning.md              (BA Plan + Stakeholder Engagement Plan)
+  - {wp}/ba-elicitation.md           (Elicitation Results)
+  - {wp}/ba-requirements-lifecycle.md (Traceability Matrix + Change Log)
+  - {wp}/ba-strategy.md              (Business Need + Change Strategy)
+  - {wp}/ba-requirements-analysis.md (Requirements Specification + Design Options)
+  - {wp}/ba-solution-evaluation.md   (Solution Evaluation Report)
+  - {wp}/ba-progress.md              (Estado de todas las áreas trabajadas)
+Summary: Áreas completadas [N/6] | Business Need [definida/pendiente]
+Ready for: Stage 11 TRACK/EVALUATE
+```
+
+Actualizar `now.md::coordinators.babok-coordinator.status = completed` y registrar en orchestration-log si existe.

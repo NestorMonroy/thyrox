@@ -62,9 +62,19 @@ flow: pdca
 methodology_step: pdca:{step}
 ```
 
-## Ciclo completado
+## Ciclo completado — artifact-ready signal
 
-Cuando `pdca:act` concluye y el usuario elige cerrar:
-- El worktree se limpia automáticamente (isolation: worktree)
-- El resultado se reporta al contexto principal
-- Proponer Stage 11 TRACK/EVALUATE del WP si aplica
+Cuando `pdca:act` concluye y el usuario elige cerrar, emitir señal estructurada:
+
+```
+[pdca-coordinator COMPLETED]
+Artifacts produced:
+  - {wp}/pdca-plan.md     (Plan de mejora con objetivos e hipótesis)
+  - {wp}/pdca-do.md       (Resultados del piloto con datos)
+  - {wp}/pdca-check.md    (Análisis de brecha resultados vs esperado)
+  - {wp}/pdca-act.md      (Estándar actualizado o plan próximo ciclo)
+Summary: Ciclo [N] completado | Objetivo [alcanzado/no alcanzado] | Siguiente: [estándar/nuevo ciclo]
+Ready for: Stage 11 TRACK/EVALUATE del WP (si aplica)
+```
+
+Actualizar `now.md::coordinators.pdca-coordinator.status = completed` y registrar en orchestration-log si existe.

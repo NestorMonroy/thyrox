@@ -4,7 +4,7 @@ project: THYROX
 work_package: 2026-04-16-18-54-38-multi-methodology
 phase: Stage 10 — IMPLEMENT
 author: NestorMonroy
-status: Activo — Tier 4 pendiente decisión (Tier 1+2+3 completos)
+status: COMPLETADO — Todos los Tiers (1+2+3+4) completos
 ```
 
 # Task Plan — ÉPICA 40: Multi-Methodology (Namespaces v2)
@@ -65,16 +65,16 @@ status: Activo — Tier 4 pendiente decisión (Tier 1+2+3 completos)
 
 > Estos gaps requieren decisiones arquitectónicas. Implementar en ÉPICA separada o con aprobación explícita.
 
-- [ ] **T-022** Agregar `native_phase_count`, `produces:`, `consumes:` a los 7 YAMLs de registry existentes (GAP-022). Requiere definición del schema de artifacts.
-- [ ] **T-023** Extender `now.md` con sección `coordinators:` para tracking per-coordinator o crear `orchestration-state.md` (GAP-023).
-- [ ] **T-024** Crear template `artifact-registry.md` en `workflow-discover/assets/` para inter-coordinator coordination (GAP-025).
-- [ ] **T-025** Crear template `orchestration-log.md` para historial de activaciones de coordinators (GAP-027).
-- [ ] **T-026** Actualizar todos los coordinator agents para emitir artifact-ready signal en lugar de "Proponer Stage 11" (GAP-024).
-- [ ] **T-027** Crear `.thyrox/registry/routing-rules.yml` con mapeo problema→coordinator (GAP-020).
-- [ ] **T-028** Rework de `thyrox-coordinator.md` con intake de 4-6 preguntas diagnósticas y routing automático basado en routing-rules.yml (GAP-021). Esfuerzo: L.
-- [ ] **T-029** Crear `.claude/skills/thyrox/references/methodology-selection-guide.md` con árboles de decisión entre metodologías similares (GAP-029).
-- [ ] **T-030** Actualizar `scalability.md` sección "Stages obligatorios por flow activo" para reflejar que el anclaje es una guía, no constraint hard (GAP-026).
-- [ ] **T-031** Decidir e implementar política de generación de coordinator agents vía bootstrap.py (GAP-030 + GAP-032).
+- [x] **T-022** Agregar `native_phase_count`, `produces:`, `consumes:` a los 11 YAMLs de registry existentes (GAP-022). Schema de artifacts definido e implementado en todos los flows.
+- [x] **T-023** Extender `now.md` con sección `coordinators:` para tracking per-coordinator (GAP-023). Formato con status/started_at/artifacts_produced documentado en comentario.
+- [x] **T-024** Crear template `artifact-registry.md` en `workflow-discover/assets/` para inter-coordinator coordination (GAP-025).
+- [x] **T-025** Crear template `orchestration-log.md` para historial de activaciones de coordinators (GAP-027).
+- [x] **T-026** Actualizar todos los 11 coordinator agents para emitir artifact-ready signal estructurado (GAP-024). Todos tienen sección "Cierre — artifact-ready signal".
+- [x] **T-027** Crear `.thyrox/registry/routing-rules.yml` con mapeo problema→coordinator (GAP-020).
+- [x] **T-028** Rework de `thyrox-coordinator.md` con 5 preguntas diagnósticas de intake y routing automático basado en routing-rules.yml (GAP-021).
+- [x] **T-029** Crear `.claude/skills/thyrox/references/methodology-selection-guide.md` con árboles de decisión entre metodologías similares (GAP-029).
+- [x] **T-030** Actualizar `scalability.md`: eliminados *(pendiente)* en lean/pps/sp/cp/bpa; "no-saltables" → "recomendados con alta prioridad" (GAP-026).
+- [x] **T-031** Política de coordinator agents documentada en `bootstrap.py`: coordinators son estáticos, no generados dinámicamente (GAP-030 + GAP-032).
 
 ---
 
@@ -85,8 +85,8 @@ status: Activo — Tier 4 pendiente decisión (Tier 1+2+3 completos)
 | **Tier 1** | T-001..T-010 (10 tareas) | **10** ✓ | 0 |
 | **Tier 2** | T-011..T-015 (5 tareas) | **5** ✓ | 0 |
 | **Tier 3** | T-016..T-021 (6 tareas) | **6** ✓ | 0 |
-| **Tier 4** | T-022..T-031 (10 tareas) | 0 | 10 ⚠️ requiere decisión arquitectónica |
-| **Total** | **31 tareas** | **21** | **10** |
+| **Tier 4** | T-022..T-031 (10 tareas) | **10** ✓ | 0 |
+| **Total** | **31 tareas** | **31** ✓ | **0** |
 
 ---
 

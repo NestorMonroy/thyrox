@@ -72,9 +72,21 @@ flow: bpa
 methodology_step: bpa:{fase}
 ```
 
-## Cierre
+## Cierre — artifact-ready signal
 
-Cuando `bpa:monitor` completa y el proceso está estabilizado:
-- Reportar mejora real: Lead Time, eficiencia VA, tasas de error (antes vs después)
-- Confirmar SOPs actualizados y equipo capacitado
-- Proponer Stage 11 TRACK/EVALUATE
+Cuando `bpa:monitor` completa y el proceso está estabilizado, emitir señal estructurada:
+
+```
+[bpa-coordinator COMPLETED]
+Artifacts produced:
+  - {wp}/bpa-identify.md    (Process Inventory + Prioritization Matrix)
+  - {wp}/bpa-map.md         (As-Is BPMN Process Model)
+  - {wp}/bpa-analyze.md     (VA/BVA/NVA Analysis + GAP Analysis)
+  - {wp}/bpa-design.md      (To-Be BPMN + ESIA Recommendations)
+  - {wp}/bpa-implement.md   (SOPs + Training Materials)
+  - {wp}/bpa-monitor.md     (Process Performance Dashboard + Before/After)
+Summary: Lead Time [antes vs después] | VA% [antes vs después] | Error rate [antes vs después]
+Ready for: Stage 11 TRACK/EVALUATE
+```
+
+Actualizar `now.md::coordinators.bpa-coordinator.status = completed` y registrar en orchestration-log si existe.

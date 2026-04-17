@@ -52,8 +52,20 @@ flow: dmaic
 methodology_step: dmaic:{fase}
 ```
 
-## Cierre
+## Cierre — artifact-ready signal
 
-Cuando `dmaic:control` completa y el tollgate está OK:
-- Reportar Sigma Level final vs baseline
-- Proponer Stage 11 TRACK/EVALUATE
+Cuando `dmaic:control` completa y el tollgate está OK, emitir señal estructurada:
+
+```
+[dmaic-coordinator COMPLETED]
+Artifacts produced:
+  - {wp}/dmaic-define.md    (Project Charter + CTQs + SIPOC)
+  - {wp}/dmaic-measure.md   (Baseline: DPU/DPMO/Sigma Level + MSA)
+  - {wp}/dmaic-analyze.md   (Root Cause Analysis validada estadísticamente)
+  - {wp}/dmaic-improve.md   (Solución implementada + datos pre/post)
+  - {wp}/dmaic-control.md   (Control Plan + SOPs + sistema de monitoreo)
+Summary: Sigma Level [baseline → final] | DPMO [antes → después]
+Ready for: Stage 11 TRACK/EVALUATE
+```
+
+Actualizar `now.md::coordinators.dmaic-coordinator.status = completed` y registrar en orchestration-log si existe.

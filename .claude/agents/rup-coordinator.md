@@ -64,8 +64,19 @@ flow: rup
 methodology_step: rup:{fase}
 ```
 
-## Cierre
+## Cierre — artifact-ready signal
 
-Cuando `rup:transition` alcanza el milestone PD:
-- Producto entregado
-- Proponer Stage 11 TRACK/EVALUATE
+Cuando `rup:transition` alcanza el milestone PD, emitir señal estructurada:
+
+```
+[rup-coordinator COMPLETED]
+Artifacts produced:
+  - {wp}/rup-inception.md      (Vision Document + Risk List — LCO milestone)
+  - {wp}/rup-elaboration.md    (Architecture Baseline + Risk Mitigation — LCA milestone)
+  - {wp}/rup-construction.md   (Beta Release + IOC Report — IOC milestone)
+  - {wp}/rup-transition.md     (Product Release + Deployment Package — PD milestone)
+Summary: [N] iteraciones totales | Milestones alcanzados: LCO, LCA, IOC, PD
+Ready for: Stage 11 TRACK/EVALUATE
+```
+
+Actualizar `now.md::coordinators.rup-coordinator.status = completed` y registrar en orchestration-log si existe.

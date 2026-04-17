@@ -43,6 +43,29 @@ TECH_CATEGORIES = {
 
 CORE_AGENTS = ["task-planner", "task-executor", "tech-detector", "skill-generator"]
 
+# ─── Política de generación de coordinator agents ────────────────────────────
+#
+# DECISIÓN: Los coordinator agents NO se generan dinámicamente desde bootstrap.py.
+# Son archivos estáticos en .claude/agents/ mantenidos manualmente (o via script).
+#
+# Justificación:
+#   1. Los coordinators tienen lógica compleja (retornos condicionales, ciclos,
+#      iteraciones) que no se puede expresar solo con campos del registry YAML.
+#   2. Cada coordinator tiene secciones únicas: Principios ESIA, Checkpoint de
+#      sponsor, Gemba, Ciclo estratégico — lógica que varía por metodología.
+#   3. Los YAML de registry describen los pasos, no la lógica de orquestación.
+#
+# Cuándo crear un nuevo coordinator:
+#   - Al agregar una nueva metodología a .thyrox/registry/methodologies/{flow}.yml
+#   - Usar dmaic-coordinator.md como template base (patrón más completo)
+#   - Seguir el schema: skills[], isolation:worktree, background:true, color:
+#   - Agregar sección "Cierre — artifact-ready signal" con lista de artefactos
+#
+# Convención de naming:
+#   {flow-id}-coordinator.md  → lean-coordinator.md, pps-coordinator.md, etc.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
 MCP_SERVERS = {
     "thyrox-memory": {
         "command": "python",

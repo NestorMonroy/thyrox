@@ -13,6 +13,19 @@ note: >
   El A3 Report es el artefacto transversal que documenta todo el ciclo.
   Énfasis en Gemba (observación directa) y evidencia antes de actuar.
 
+native_phase_count: 6
+produces:
+  - A3 Report
+  - Problem Clarification Sheet
+  - Target Sheet
+  - Root Cause Analysis Worksheet
+  - Countermeasures Matrix
+  - SOP (if standardization applies)
+consumes:
+  - problem-statement
+  - gemba-observation
+  - process-data
+
 steps:
   - id: pps:clarify
     display: "Clarify — Clarificar y descomponer el problema"

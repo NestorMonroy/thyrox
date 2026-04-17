@@ -12,6 +12,19 @@ note: >
   Herramientas: BPMN 2.0, Value Stream Mapping, Swim Lane Diagrams, ESIA Framework,
   VA/BVA/NVA classification, Process Mining. Artefacto central: Process Model BPMN.
 
+native_phase_count: 6
+produces:
+  - Process Inventory + Prioritization Matrix
+  - As-Is BPMN Process Model
+  - VA/BVA/NVA Analysis + GAP Analysis
+  - To-Be BPMN Process Model + ESIA Recommendations
+  - SOPs + Training Materials
+  - Process Performance Dashboard + Before/After Comparison
+consumes:
+  - process-scope
+  - stakeholder-interviews
+  - process-metrics
+
 steps:
   - id: bpa:identify
     display: "Identify — Identificar y priorizar procesos a analizar"

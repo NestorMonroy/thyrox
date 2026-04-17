@@ -10,6 +10,16 @@ note: >
   si el act determina que se necesita más mejora, el coordinator inicia el siguiente
   ciclo automáticamente volviendo a pdca:plan.
 
+native_phase_count: 4
+produces:
+  - Improvement Plan
+  - Pilot Results
+  - Gap Analysis
+  - Standard Update or New Cycle Plan
+consumes:
+  - problem-statement
+  - current-state-data
+
 steps:
   - id: pdca:plan
     display: "Plan — Identificar problema y diseñar mejora"

@@ -14,6 +14,19 @@ note: >
   El coordinator presenta las áreas disponibles y el analista/usuario elige
   qué trabajar en función del estado del proyecto.
 
+native_phase_count: 6
+produces:
+  - BA Plan + Stakeholder Engagement Plan
+  - Elicitation Results + Stakeholder Collaboration Records
+  - Requirements Traceability Matrix + Change Log
+  - Business Need + Change Strategy
+  - Requirements Specification + Design Options
+  - Solution Evaluation Report + Value Recommendations
+consumes:
+  - organizational-context
+  - stakeholder-needs
+  - existing-solutions
+
 areas:
   - id: ba:planning
     display: "BA Planning & Monitoring — Planificar y monitorear actividades de BA"

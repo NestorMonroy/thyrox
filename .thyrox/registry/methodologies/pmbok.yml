@@ -13,6 +13,18 @@ note: >
   Knowledge Areas (Scope, Schedule, Cost, Quality, Resources, Communications,
   Risk, Procurement, Stakeholders, Integration) se trabajan dentro de cada grupo.
 
+native_phase_count: 5
+produces:
+  - Project Charter + Stakeholder Register
+  - Project Management Plan (all baselines)
+  - Project Deliverables + Performance Data
+  - Performance Reports + Approved Change Requests
+  - Project Closure Package + Lessons Learned
+consumes:
+  - business-case
+  - project-brief
+  - stakeholder-register
+
 steps:
   - id: pm:initiating
     display: "Initiating — Autorizar y definir el proyecto"

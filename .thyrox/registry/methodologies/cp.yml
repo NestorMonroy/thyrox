@@ -12,6 +12,20 @@ note: >
   Herramientas: Issue Tree, MECE, Hypothesis-driven analysis, Pyramid Principle (SCQA),
   Decision Matrix, Storyboard. Artefacto central: Recommendation Deck.
 
+native_phase_count: 7
+produces:
+  - Engagement Charter
+  - Issue Tree + Data Collection Plan
+  - Key Findings Document
+  - Recommendation Deck (Pyramid Principle)
+  - Implementation Roadmap + Risk Register
+  - Implementation Progress Report
+  - Impact Assessment Report + Knowledge Transfer Package
+consumes:
+  - problem-statement
+  - sponsor-brief
+  - stakeholder-interviews
+
 steps:
   - id: cp:initiation
     display: "Initiation — Definir el problema y establecer el engagement"

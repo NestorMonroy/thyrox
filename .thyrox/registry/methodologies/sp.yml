@@ -13,6 +13,21 @@ note: >
   Herramientas: PESTEL, SWOT, Porter's Five Forces, Balanced Scorecard, OKRs.
   Artefactos centrales: Strategic Plan Document y Strategy Map.
 
+native_phase_count: 8
+produces:
+  - Strategic Context Brief
+  - PESTEL Analysis + SWOT Matrix
+  - Strategic Gap Analysis
+  - Strategy Map + Objectives
+  - Strategic Plan Document + Balanced Scorecard + Roadmap
+  - Implementation Progress Reports
+  - Strategy Review Reports
+  - Lessons Learned + Next Cycle Decision
+consumes:
+  - organizational-context
+  - business-goals
+  - competitive-landscape
+
 steps:
   - id: sp:context
     display: "Context — Establecer contexto estratégico y mandato"

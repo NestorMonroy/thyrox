@@ -12,6 +12,17 @@ note: >
   En cada iteración se trabajan todas las disciplinas (Requirements, Analysis & Design,
   Implementation, Test). El avance es por milestone, no por iteración fija.
 
+native_phase_count: 4
+produces:
+  - Vision Document + Risk List (LCO milestone)
+  - Architecture Baseline + Technical Risk Mitigation (LCA milestone)
+  - Beta Release + IOC Report (IOC milestone)
+  - Product Release + Deployment Package (PD milestone)
+consumes:
+  - business-case
+  - stakeholder-requirements
+  - technical-constraints
+
 steps:
   - id: rup:inception
     display: "Inception — Visión, alcance y factibilidad"

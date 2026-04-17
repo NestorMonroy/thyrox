@@ -82,3 +82,21 @@ rm:management
 flow: rm
 methodology_step: rm:{paso}
 ```
+
+## Cierre — artifact-ready signal
+
+Cuando `rm:management` alcanza el estado `on_stable`, emitir señal estructurada:
+
+```
+[rm-coordinator COMPLETED]
+Artifacts produced:
+  - {wp}/rm-elicitation.md    (Requirements List — raw stakeholder needs)
+  - {wp}/rm-analysis.md       (Refined + Prioritized Requirements)
+  - {wp}/rm-specification.md  (SRS/BRD/User Stories — documento formal)
+  - {wp}/rm-validation.md     (Approved Requirements — validado con stakeholders)
+  - {wp}/rm-management.md     (Requirements Baseline + Traceability Matrix)
+Summary: [N] requisitos gestionados | Retornos: [elicitation X veces, analysis Y veces]
+Ready for: Stage 11 TRACK/EVALUATE
+```
+
+Actualizar `now.md::coordinators.rm-coordinator.status = completed` y registrar en orchestration-log si existe.

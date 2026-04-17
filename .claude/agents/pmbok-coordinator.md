@@ -67,9 +67,20 @@ flow: pm
 methodology_step: pm:{grupo}
 ```
 
-## Cierre
+## Cierre — artifact-ready signal
 
-Cuando `pm:closing` completa:
-- Project formal cerrado
-- Lecciones aprendidas archivadas
-- Proponer Stage 11 TRACK/EVALUATE
+Cuando `pm:closing` completa, emitir señal estructurada:
+
+```
+[pmbok-coordinator COMPLETED]
+Artifacts produced:
+  - {wp}/pm-initiating.md    (Project Charter + Registro de Stakeholders)
+  - {wp}/pm-planning.md      (Project Management Plan + todas las líneas base)
+  - {wp}/pm-executing.md     (Entregables del proyecto + datos de desempeño)
+  - {wp}/pm-monitoring.md    (Informes de desempeño + change requests)
+  - {wp}/pm-closing.md       (Acta de cierre + lecciones aprendidas)
+Summary: Project [cerrado formalmente] | Entregables [X/Y completados]
+Ready for: Stage 11 TRACK/EVALUATE
+```
+
+Actualizar `now.md::coordinators.pmbok-coordinator.status = completed` y registrar en orchestration-log si existe.
