@@ -5,7 +5,7 @@ work_package: 2026-04-17-17-58-13-goto-problem-fix
 phase: Stage 8 — PLAN EXECUTION
 author: NestorMonroy
 status: Borrador
-version: 1.2.0
+version: 1.3.0
 ```
 
 # Task Plan — goto-problem-fix (ÉPICA 41)
@@ -14,11 +14,17 @@ version: 1.2.0
 > **Alcance:** 30 problemas en 4 clusters — migración parcial acumulada ÉPICAs 29/31/35/39
 > **Ruta crítica:** T-001 → T-002 → T-003 → T-004 (Batch 1) → Batches 2-5 en paralelo
 
+> **v1.3.0** — Actualizado tras deep-review `analyze/deep-review-final-validation.md`. Cambios:
+> - T-015: agregar comportamientos no-lineales (BABOK, RM/PPS state machines, RUP milestones, SP ciclo, artefactos ×11) (Gap F-1)
+> - T-017: agregar greps A-1/A-3/A-6/B-2/B-4 (Gap F-3)
+> - T-021: corregir hooks reales — `close-wp.sh` es script manual, no StopHook (Gap F-2 bloqueante)
+> - B1 header: agregar nota de referencias Tier 1 (Gap F-4)
+
 > **v1.2.0** — Actualizado tras deep-review `analyze/deep-review-audit-coverage.md`. Cambios:
 > - T-009: agregar cifras exactas 47 referencias + 23 agentes (Gap R-1)
 > - T-011: agregar documentación de `.thyrox/registry/` como fuente de verdad (Gap R-2)
 > - T-015: aclarar campo interno `steps:` en YAMLs (Gap R-4)
-> - T-021: nueva tarea — documentar `hooks/hooks.json` en ARCHITECTURE.md (Gap R-3)
+> - T-021: nueva tarea — documentar hooks en ARCHITECTURE.md (Gap R-3)
 
 > **v1.1.0** — Actualizado tras deep-review `analyze/deep-review-task-plan-coverage.md`. Cambios:
 > - T-001: agregar declaración `PROJECT_ROOT` + paths absolutos (Gap 1 bloqueante)
@@ -42,6 +48,7 @@ Formato: `T-NNN Descripción (ID-problema)`
 
 > Orden interno: close-wp.sh primero (más bugs), luego session-start.sh, luego session-resume.sh.
 > Prerequisito de todos los demás batches: si los scripts están rotos, los docs describen comportamiento incorrecto.
+> **Leer antes de editar:** `.claude/references/state-management.md` (reglas de now.md) y `.claude/references/hooks.md` (semántica SessionStart/PostCompact).
 
 - [ ] **T-001** Fix `close-wp.sh` (A-4 + A-5 + A-6): agregar al inicio `PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"` y `NOW_FILE="${PROJECT_ROOT}/.thyrox/context/now.md"`; agregar patrones `sed -i'' -e` para `stage:`, `flow:`, `methodology_step:` (con retrocompat `phase:`); agregar cleanup bash-puro del body `# Contexto` con `head`/`printf`/`mv` (DS-02, sin python3); agregar llamada `bash "${PROJECT_ROOT}/.claude/scripts/update-state.sh" || true` al final (A-4, A-5, A-6)
 - [ ] **T-002** Fix `session-start.sh` (A-1 + GAP-02): eliminar fallback líneas 61-63; comprimir comentarios L9-12→1 línea, eliminar separador L37, eliminar L40-41 — resultado exacto: 120 líneas (A-1, GAP-02)
@@ -87,7 +94,7 @@ Formato: `T-NNN Descripción (ID-problema)`
 
 - [ ] **T-013** Crear `DECISIONS.md` en la raíz del proyecto (el archivo no existe): tabla-índice de los 22 ADRs en `.thyrox/context/decisions/` con columnas: ADR, título, estado, ÉPICA donde se tomó la decisión, y link relativo al archivo (B-11)
 - [ ] **T-014** Crear `.claude/references/methodology-selection-guide.md` (D-2): tabla de 11 metodologías con columnas: cuándo usar, tipo de flujo, señales de contexto que activan el coordinator, output principal, coordinador a invocar (D-2)
-- [ ] **T-015** Crear `.claude/references/coordinator-integration.md` (D-3): contrato de invocación (cómo llamar a un coordinator via `@coordinator-name`), campos `now.md::flow` + `now.md::methodology_step`, ciclo de vida del coordinator (activate → steps → artifact-ready signal), sección `now.md::coordinators` para tracking multi-coordinator, `isolation: worktree` y su significado, ejemplo paso a paso con dmaic-coordinator; **aclarar que el campo interno en YAMLs de metodología es `steps:` (no `phases:` ni `etapas:`)** — distinguir terminología interna de terminología pública (D-3)
+- [ ] **T-015** Crear `.claude/references/coordinator-integration.md` (D-3): contrato de invocación (cómo llamar a un coordinator via `@coordinator-name`), campos `now.md::flow` + `now.md::methodology_step`, ciclo de vida del coordinator (activate → steps → artifact-ready signal), sección `now.md::coordinators` para tracking multi-coordinator, `isolation: worktree` y su significado, ejemplo paso a paso con dmaic-coordinator; aclarar que el campo interno en YAMLs es `steps:` (no `phases:`); **documentar comportamientos no-lineales**: (a) BABOK no-secuencial (6 knowledge areas sin orden fijo, routing por contexto), (b) RM y PPS como state machines con retornos condicionales (RM: analysis→elicitation si gaps, validation→analysis si falla; PPS: evaluate→analyze si target no alcanzado), (c) RUP con milestones formales LCO/LCA/IOC/PD como tollgates, (d) SP con ciclo estratégico `sp:adjust → sp:analysis`; **tabla de artefactos producidos por cada uno de los 11 coordinators** (D-3)
 - [ ] **T-016** Commit B5: `docs(goto-problem-fix): add methodology guides and DECISIONS.md index B-11 D-2 D-3`
 
 ---
@@ -96,14 +103,27 @@ Formato: `T-NNN Descripción (ID-problema)`
 
 > Independiente de todos los demás batches. Documenta infraestructura existente que ningún batch anterior cubre.
 
-- [ ] **T-021** Agregar sección "Hooks del framework" en `ARCHITECTURE.md`: ubicación real `hooks/hooks.json`, hooks configurados (SessionStart→session-start.sh, PostCompact→session-resume.sh, StopHook→close-wp.sh), propósito de cada hook, y referencia a cómo extenderlos (Gap R-3)
+- [ ] **T-021** Agregar sección "Hooks del framework" en `ARCHITECTURE.md` — **⚠ ejecutar DESPUÉS de T-011, ambos tocan el mismo archivo**: documentar los 3 hooks reales registrados en `.claude/settings.json` (SessionStart→session-start.sh, PostCompact→session-resume.sh, Stop→stop-hook-git-check.sh) con propósito de cada uno; documentar `close-wp.sh` como **script de cierre manual del WP** (no es un hook — se invoca explícitamente, no por evento); documentar `.thyrox/registry/` como fuente de verdad (subdirectorios, roles de bootstrap.py y _generator.sh) (Gap R-2 + Gap R-3)
 - [ ] **T-022** Commit B6: `docs(goto-problem-fix): document hooks and registry infrastructure in ARCHITECTURE.md`
 
 ---
 
 ## Cierre
 
-- [ ] **T-017** Verificar cobertura final: `grep -r "pm-thyrox" README.md; grep "^phase:" .claude/scripts/session-resume.sh .claude/scripts/close-wp.sh; grep "7 fases" README.md; grep ".claude/context/" README.md; grep "19 guías" README.md` — todos deben retornar vacío
+- [ ] **T-017** Verificar cobertura final — todos los greps deben retornar vacío excepto donde se indica:
+  ```bash
+  grep "pm-thyrox" README.md                                         # vacío
+  grep "^phase:" .claude/scripts/session-resume.sh                   # vacío
+  grep "^phase:" .claude/scripts/close-wp.sh                        # vacío
+  grep "7 fases" README.md                                           # vacío
+  grep "\.claude/context/" README.md                                 # vacío
+  grep "19 guías\|25 templates" README.md                           # vacío
+  grep "setup-template\.sh\|/task:show\|/task:next" README.md       # vacío
+  grep "fallback\|ls -1.*work" .claude/scripts/session-start.sh     # vacío (A-1)
+  grep "fallback\|ls -1.*work" .claude/scripts/session-resume.sh    # vacío (A-3)
+  grep "update-state" .claude/scripts/close-wp.sh                   # con match (A-6)
+  wc -l .claude/scripts/session-start.sh                            # ≤120
+  ```
 - [ ] **T-018** Actualizar `now.md` y `focus.md`: stage → `Stage 11 — TRACK/EVALUATE`, cuerpo al estado post-ÉPICA 41
 - [ ] **T-019** Commit cierre + push: `chore(goto-problem-fix): advance to Stage 11 TRACK/EVALUATE` + `git push -u origin claude/check-merge-status-Dcyvj`
 - [ ] **T-020** Actualizar `ROADMAP.md`: marcar ÉPICA 41 con todos los stages completados, WP real `2026-04-17-17-58-13-goto-problem-fix`, estado COMPLETADO y fecha de cierre
