@@ -187,9 +187,9 @@ Después de PHASE 7, puedes:
 
 ## Escalabilidad con methodology skill activo
 
-Cuando `now.md::flow` tiene un valor (`pdca`, `dmaic`, `rup`, `rm`, `pm`, `ba`),
-la lógica de escalabilidad cambia: los stages donde el flow tiene methodology skills
-anclados son **no-saltables**, independientemente del tamaño del WP.
+Cuando `now.md::flow` tiene un valor activo, la lógica de escalabilidad cambia:
+los stages donde el flow tiene methodology skills anclados son **no-saltables**,
+independientemente del tamaño del WP.
 
 **Regla de precedencia:** stages con anclaje de methodology skill > regla de tamaño.
 
@@ -203,6 +203,13 @@ anclados son **no-saltables**, independientemente del tamaño del WP.
 | `rm` | `rm:` | 1, 3, 5, 7, 9, 10, 11 | 2, 4, 6, 8, 12 |
 | `pm` | `pm:` | 1, 3, 5, 6, 7, 10, 11, 12 | 2, 4, 8, 9 |
 | `ba` | `ba:` | 1, 2, 3, 5, 6, 7, 10, 11, 12 | 4, 8, 9 |
+| `lean` *(pendiente)* | `lean:` | 2, 3, 10, 11 | 1, 4, 5, 6, 7, 8, 9, 12 |
+| `ps8` *(pendiente)* | `ps8:` | 1, 2, 3, 6, 10, 11 | 4, 5, 7, 8, 9, 12 |
+| `sp` *(pendiente)* | `sp:` | 1, 2, 3, 5, 6, 10, 11, 12 | 4, 7, 8, 9 |
+| `cp` *(pendiente)* | `cp:` | 1, 2, 3, 5, 6, 10, 11 | 4, 7, 8, 9, 12 |
+| `bpa` *(pendiente)* | `bpa:` | 1, 2, 3, 5, 10, 11 | 4, 6, 7, 8, 9, 12 |
+
+*Los flows marcados *(pendiente)* tienen stages de anclaje definidos pero los skills aún no están implementados. Una vez implementados, sus stages obligatorios aplican igual que los 6 flows existentes.*
 
 ### Regla de convivencia
 
@@ -216,3 +223,4 @@ El workflow stage y el methodology skill son **complementarios**, no excluyentes
 El campo `flow:` en `now.md` determina si aplica esta regla.
 - `flow: null` → escalabilidad normal (solo regla de tamaño)
 - `flow: dmaic` → stages 2, 3, 10, 11, 12 son no-saltables para este WP
+- `flow: sp` → stages 1, 2, 3, 5, 6, 10, 11, 12 son no-saltables para este WP

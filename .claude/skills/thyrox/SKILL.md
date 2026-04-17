@@ -85,19 +85,22 @@ correspondiente **dentro** del workflow stage apropiado. Cada skill declara su
 | `rm:` | Requirements Management | rm-elicitation, rm-analysis, rm-specification, rm-validation, rm-management | 1, 3, 5, 7, 9, 10, 11 |
 | `pm:` | PMBOK | pm-initiating, pm-planning, pm-executing, pm-monitoring, pm-closing | 1, 3, 5, 6, 7, 10, 11, 12 |
 | `ba:` | BABOK / Business Analysis | ba-planning, ba-elicitation, ba-requirements-analysis, ba-requirements-lifecycle, ba-solution-evaluation, ba-strategy | 1, 2, 3, 5, 6, 7, 10, 11, 12 |
+| `lean:` *(pendiente)* | Lean Six Sigma | lean-define, lean-measure, lean-analyze, lean-improve, lean-control | 2, 3, 10, 11 |
+| `ps8:` *(pendiente)* | Problem Solving 8-step (Toyota TBP) | ps8-clarify, ps8-target, ps8-analyze, ps8-countermeasures, ps8-implement, ps8-evaluate | 1, 2, 3, 6, 10, 11 |
+| `sp:` *(pendiente)* | Strategic Planning | sp-context, sp-analysis, sp-gaps, sp-formulate, sp-plan, sp-execute, sp-monitor, sp-adjust | 1, 2, 3, 5, 6, 10, 11, 12 |
+| `cp:` *(pendiente)* | Consulting Process | cp-initiation, cp-diagnosis, cp-structure, cp-recommend, cp-plan, cp-implement, cp-evaluate | 1, 2, 3, 5, 6, 10, 11 |
+| `bpa:` *(pendiente)* | Business Process Analysis | bpa-identify, bpa-map, bpa-analyze, bpa-design, bpa-implement, bpa-monitor | 1, 2, 3, 5, 10, 11 |
 
-> **Framework extensible:** Los 6 namespaces listados son los methodology skills
-> implementados actualmente (ÉPICA 40). El framework soporta incorporar cualquier
-> marco metodológico adicional siguiendo el patrón `{metodología}-{paso}` con
+> **Framework extensible:** Los 6 namespaces sin marca son los methodology skills
+> implementados (ÉPICA 40). Los 5 marcados *(pendiente)* están diseñados con stages de anclaje
+> definidos y son candidatos a la siguiente implementación. El framework soporta incorporar
+> cualquier marco metodológico adicional siguiendo el patrón `{metodología}-{paso}` con
 > declaración de `THYROX Stage:` en su SKILL.md y anatomía completa
 > (SKILL.md + assets/ + references/).
 >
-> Frameworks del landscape original (V3.1) pendientes de implementación:
-> Lean Six Sigma, Problem Solving 8-step, Strategic Planning,
-> Strategic Management, Consulting Process, Business Process Analysis.
-> (SDLC no aplica: el ciclo de 12 stages de THYROX ya ES el ciclo de vida universal
-> destilado del flujo crítico — SDLC waterfall está subsumed en la estructura propia del framework.
-> SDLC iterativo está cubierto por `rup:`)
+> SDLC no aplica como methodology skill: el ciclo de 12 stages de THYROX ya ES el ciclo
+> de vida universal destilado del flujo crítico — SDLC waterfall está subsumed en la
+> estructura del framework; SDLC iterativo está cubierto por `rup:`.
 
 **Cómo activar:** invocar directamente el skill del paso, ej. `/dmaic-define`.
 El skill actualiza `now.md::flow` y `now.md::methodology_step`.
