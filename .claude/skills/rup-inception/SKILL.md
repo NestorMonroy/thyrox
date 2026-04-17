@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["RUP inception", "vision document", "LCO milestone", "business case RUP", "project kickoff RUP"]
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /rup-inception — RUP: Inception
@@ -159,53 +159,7 @@ En Inception, el plan es rough (±50% de accuracy es aceptable):
 
 ## Artefacto esperado
 
-`{wp}/rup-inception.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: rup:inception
-rup_iteration: 1
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Vision Document
-### Problem Statement
-### System Overview
-### Stakeholders y actores
-### Scope (IN / OUT)
-### Key Features (5-10)
-### Assumptions & Constraints
-
-## Use Case Model (10%)
-| Use Case | Actor principal | Objetivo | Por qué es crítico en Inception |
-
-## Risk List
-| Risk ID | Descripción | P | I | Plan de respuesta | Fase target |
-
-## Business Case
-[Problema + ROI estimado + costo de no hacer nada + top-5 riesgos]
-
-## Plan inicial de proyecto
-[Fases / milestones / estimación rough / roles]
-
-## Evaluación milestone LCO
-- [ ] Vision aprobada por stakeholders
-- [ ] Business case aprobado por sponsor
-- [ ] Riesgos críticos con plan de respuesta
-- [ ] ≥ 10% Use Case Model
-- [ ] Recursos disponibles para Elaboration
-
-## Decisión
-- [ ] Avanzar a rup:elaboration (LCO alcanzado)
-- [ ] Nueva iteración de Inception (motivo: ...)
-
-## Retrospectiva de iteración
-[Qué funcionó / qué fue difícil / qué cambiar en la próxima iteración]
-```
+`{wp}/rup-inception.md` — usar template: [rup-inception-template.md](./assets/rup-inception-template.md)
 
 ---
 
@@ -250,3 +204,13 @@ rup_iteration: [N]
 - La calidad de Inception depende de la disponibilidad y compromiso de los stakeholders — sin acceso a los tomadores de decisión, Inception produce un Vision Document hipotético
 - Las estimaciones en Inception tienen ±50% de accuracy — no comprometer fechas ni presupuestos basados en estas estimaciones; mejorarán en Elaboration
 - RUP es un framework, no una metodología rígida — en proyectos pequeños, Inception puede completarse en días; en proyectos grandes, puede tomar semanas
+
+---
+
+## Reference Files
+
+### Assets
+- [rup-inception-template.md](./assets/rup-inception-template.md) — Template completo: Vision Document, Use Case Model 10%, Risk List, Business Case, Plan inicial, checklist LCO
+
+### References
+- [lco-criteria.md](./references/lco-criteria.md) — Criterios de evaluación LCO: 5 criterios con sub-criterios, checklist de concurrencia, decisiones típicas, límites de tiempo

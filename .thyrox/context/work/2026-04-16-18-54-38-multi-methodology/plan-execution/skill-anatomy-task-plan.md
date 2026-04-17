@@ -58,10 +58,10 @@ Cada T-NNN cubre un skill completo:
 
 ## B3 — RUP (4 skills)
 
-- [ ] T-012 `rup-inception` — assets: **rup-inception-template.md** (cubre artefacto completo: Vision + UC Model + Risk List + Business Case + Plan inicial + LCO checklist) · references: lco-criteria.md (LCO evaluation criteria, concurrence checklist, decisiones típicas) · SKILL.md update
-- [ ] T-013 `rup-elaboration` — assets: elaboration-report-template.md · references: lca-criteria.md (LCA evaluation criteria, architecture baseline checklist, riesgos arquitectónicos), architecture-baseline.md (SAD estructura, 4+1 view model, ADR template para RUP) · SKILL.md update
-- [ ] T-014 `rup-construction` — assets: construction-report-template.md · references: ioc-criteria.md (IOC evaluation criteria, feature complete checklist, test coverage thresholds) · SKILL.md update
-- [ ] T-015 `rup-transition` — assets: transition-report-template.md · references: pd-criteria.md (PD evaluation criteria, deployment checklist, user acceptance criteria) · SKILL.md update
+- [x] T-012 `rup-inception` — assets: **rup-inception-template.md** (cubre artefacto completo: Vision + UC Model + Risk List + Business Case + Plan inicial + LCO checklist) · references: lco-criteria.md (LCO evaluation criteria, concurrence checklist, decisiones típicas) · SKILL.md update
+- [x] T-013 `rup-elaboration` — assets: elaboration-report-template.md · references: lca-criteria.md (LCA evaluation criteria, architecture baseline checklist, riesgos arquitectónicos), architecture-baseline.md (SAD estructura, 4+1 view model, ADR template para RUP) · SKILL.md update
+- [x] T-014 `rup-construction` — assets: construction-report-template.md · references: ioc-criteria.md (IOC evaluation criteria, feature complete checklist, test coverage thresholds) · SKILL.md update
+- [x] T-015 `rup-transition` — assets: transition-report-template.md · references: pd-criteria.md (PD evaluation criteria, deployment checklist, user acceptance criteria) · SKILL.md update
 - [ ] T-016 Commit B3: `feat(rup): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B4 — RM (5 skills)

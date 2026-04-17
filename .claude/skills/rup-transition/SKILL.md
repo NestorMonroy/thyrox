@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["RUP transition", "PD milestone", "product release RUP", "UAT user acceptance", "beta deployment"]
-updated_at: 2026-04-16 21:44:29
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /rup-transition — RUP: Transition
@@ -156,54 +156,7 @@ Al alcanzar el PD, documentar lecciones por fase y por disciplina:
 
 ## Artefacto esperado
 
-`{wp}/rup-transition.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: rup:transition
-rup_iteration: [N]
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Plan de deployment
-[Pasos / rollback plan / comunicación]
-
-## UAT Results
-| UC / Scenario | Usuarios participantes | Resultado | Defectos encontrados |
-
-## Defect log (post-beta)
-| ID | Severity | Descripción | Estado | Versión corregida |
-
-## Training realizado
-| Audiencia | Formato | Fecha | Participantes |
-
-## Lecciones aprendidas del proyecto
-### Inception
-### Elaboration
-### Construction
-### Transition
-### Proceso RUP
-
-## Product Acceptance Sign-off
-- Sponsor/Cliente: [nombre]
-- Fecha: [fecha]
-- Sistema aceptado: [versión]
-
-## Evaluación milestone PD
-- [ ] Sistema en producción
-- [ ] Severity 1 = 0
-- [ ] Product Acceptance Sign-off obtenido
-- [ ] Training completado
-- [ ] Documentación entregada
-
-## Decisión
-- [ ] PD alcanzado — proyecto cerrado
-- [ ] Nueva iteración de Transition (motivo: ...)
-```
+`{wp}/rup-transition.md` — usar template: [transition-report-template.md](./assets/transition-report-template.md)
 
 ---
 
@@ -248,3 +201,13 @@ rup_iteration: [N]
 - La aceptación de usuarios no garantiza el éxito a largo plazo — monitorear métricas de adopción y satisfacción 30-90 días después del deployment
 - Defectos encontrados post-deployment en producción (no en staging) revelan limitaciones del entorno de prueba — mejorar la paridad staging/producción para el próximo proyecto
 - El período post-PD de soporte inmediato (hypercare) no está cubierto en este skill — planificarlo como actividad de operaciones separada
+
+---
+
+## Reference Files
+
+### Assets
+- [transition-report-template.md](./assets/transition-report-template.md) — Template completo: plan de deployment, UAT results, defect log, training, lecciones aprendidas RUP completo, Product Acceptance Sign-off, checklist PD
+
+### References
+- [pd-criteria.md](./references/pd-criteria.md) — Criterios de evaluación PD: sistema en producción, Severity 1=0, Product Acceptance Sign-off, training completo, user acceptance criteria, límites de tiempo para Transition

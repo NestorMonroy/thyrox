@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["RUP construction", "IOC milestone", "iterative development RUP", "use case implementation", "build increment"]
-updated_at: 2026-04-16 21:44:29
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /rup-construction — RUP: Construction
@@ -175,52 +175,7 @@ Al final de cada iteración de Construction:
 
 ## Artefacto esperado
 
-`{wp}/rup-construction.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: rup:construction
-rup_iteration: [N]
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Plan de iteración [N]
-- UC / Features: [lista]
-- Criterio de éxito: [qué define "done" para esta iteración]
-- Definition of Done: [checklist]
-
-## UC implementados en esta iteración
-| UC | Flujos completados | Tests | Estado |
-
-## Defectos encontrados y resueltos
-| ID | Severidad | Componente | Estado |
-
-## Deuda técnica acumulada
-| ID | Tipo | Descripción | Estimación para pagar | Sprint target |
-
-## Métricas de la iteración
-- Velocidad: [UC/story points completados]
-- Defectos: [encontrados / resueltos / pendientes por severidad]
-- Cobertura de tests: [%]
-
-## Retrospectiva de iteración
-[Velocidad / Calidad / Deuda / Proceso / Riesgos]
-
-## Evaluación milestone IOC
-- [ ] Funcionalidad suficiente para beta
-- [ ] Severity 1 = 0
-- [ ] Deuda técnica documentada y acotada
-- [ ] Performance cumple NFR en staging
-- [ ] PO / Usuario beta aprueba inicio de Transition
-
-## Decisión
-- [ ] Avanzar a rup:transition (IOC alcanzado)
-- [ ] Nueva iteración de Construction (motivo: ...)
-```
+`{wp}/rup-construction.md` — usar template: [construction-report-template.md](./assets/construction-report-template.md)
 
 ---
 
@@ -265,3 +220,13 @@ rup_iteration: [N]
 - La velocidad de las primeras iteraciones de Construction no es representativa — el equipo acelera a medida que aprende el dominio y la arquitectura; no comprometer fechas basadas en la primera iteración
 - La gestión de deuda técnica requiere disciplina del equipo completo, no solo del arquitecto — sin buy-in del equipo, la deuda se acumula silenciosamente
 - Los defectos de Severity 1 en staging no garantizan ausencia de defectos en producción — el entorno de producción puede exponer condiciones no replicadas en staging
+
+---
+
+## Reference Files
+
+### Assets
+- [construction-report-template.md](./assets/construction-report-template.md) — Template por iteración: plan de iteración, UC implementados, defectos, deuda técnica, métricas, retrospectiva, checklist IOC
+
+### References
+- [ioc-criteria.md](./references/ioc-criteria.md) — Criterios de evaluación IOC: funcionalidad Must Have, Severity 1=0, deuda técnica acotada, performance en staging, feature complete checklist por tipo de UC, test coverage thresholds

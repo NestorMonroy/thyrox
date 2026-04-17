@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["RUP elaboration", "architecture prototype", "LCA milestone", "SAD software architecture", "use case specification"]
-updated_at: 2026-04-16 21:44:29
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /rup-elaboration — RUP: Elaboration
@@ -186,55 +186,7 @@ Al final de Elaboration, el plan de Construction debe tener:
 
 ## Artefacto esperado
 
-`{wp}/rup-elaboration.md`
-
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: rup:elaboration
-rup_iteration: [N]
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## SAD (Software Architecture Document)
-### Architectural Goals y Quality Attributes
-### Architectural Constraints
-### Patterns y decisiones arquitectónicas (con justificación)
-### Diagrama de subsistemas
-### Critical Use Case Realizations
-### Architecture Risks Addressed
-
-## Architecture Prototype
-- Escenario probado: [descripción]
-- Resultado: [pasó / falló / resultados de performance]
-- Código/repo: [referencia]
-
-## Use Case Model (80%)
-[UC completados — con flujos principal, alternativo, excepción]
-
-## Risk List (actualizada)
-| Risk ID | Estado (Abierto/Cerrado/Actualizado) | Cambio |
-
-## Plan de Construction
-[Iteraciones / features / criterio IOC / equipo / estimación]
-
-## Evaluación milestone LCA
-- [ ] Architecture Prototype estable
-- [ ] ≥ 80% Use Case Model especificado
-- [ ] Top-5 riesgos técnicos mitigados
-- [ ] SAD completo
-- [ ] Plan de Construction aceptado
-
-## Decisión
-- [ ] Avanzar a rup:construction (LCA alcanzado)
-- [ ] Nueva iteración de Elaboration (motivo: ...)
-
-## Retrospectiva de iteración
-[Qué funcionó / qué fue difícil / qué cambiar]
-```
+`{wp}/rup-elaboration.md` — usar template: [elaboration-report-template.md](./assets/elaboration-report-template.md)
 
 ---
 
@@ -288,3 +240,14 @@ rup_iteration: [N]
 - El Architecture Prototype requiere conocimiento técnico profundo del dominio — si el equipo no tiene experiencia con las tecnologías, puede necesitar spikes adicionales antes de poder probar la arquitectura
 - Las métricas de performance del Architecture Prototype son en el entorno de desarrollo, no de producción — escalar con factor conservador
 - En proyectos muy pequeños, SAD + Architecture Prototype puede ser overhead; adaptar la formalidad al riesgo real del proyecto
+
+---
+
+## Reference Files
+
+### Assets
+- [elaboration-report-template.md](./assets/elaboration-report-template.md) — Template completo: SAD (4+1 views, ADRs), Architecture Prototype, UC Model 80%, Risk List actualizada, Plan de Construction, checklist LCA
+
+### References
+- [lca-criteria.md](./references/lca-criteria.md) — Criterios de evaluación LCA: 5 criterios con sub-criterios, distribución 80% UC, estado esperado de riesgos, checklist de concurrencia
+- [architecture-baseline.md](./references/architecture-baseline.md) — SAD estructura completa, modelo 4+1 views (lógica/proceso/desarrollo/física/escenarios), ADR format para RUP, guía del Architecture Prototype
