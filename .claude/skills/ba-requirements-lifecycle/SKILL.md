@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["requirements traceability", "requirements lifecycle", "change control BABOK", "BABOK lifecycle", "requirements management BABOK"]
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /ba-requirements-lifecycle — BABOK: Requirements Life Cycle Management
@@ -179,40 +179,7 @@ Una baseline es un snapshot aprobado de los requisitos en un momento dado:
 
 `{wp}/ba-requirements-lifecycle.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: ba:requirements-lifecycle
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Traceability Matrix (RTM)
-| Req ID | Descripción | Origen | Prioridad | MoSCoW | Componente | Test Case | Estado |
-
-## Baseline actual
-- Versión: [v1.0]
-- Fecha de baseline: [fecha]
-- Aprobado por: [stakeholder]
-- Requisitos en baseline: [#]
-
-## Change Requests activos
-| CR ID | Descripción | Tipo | Análisis de impacto | Estado |
-
-## Métricas del ciclo de vida
-- Total requisitos identificados: [#]
-- Aprobados: [#]
-- Implementados: [#]
-- Verificados: [#]
-- Validados: [#]
-- Diferidos: [#]
-- Cancelados: [#]
-
-## Routing — próxima KA
-[Aplicar Routing Table según estado actual]
-```
+usar template: [requirements-lifecycle-template.md](./assets/requirements-lifecycle-template.md)
 
 ---
 
@@ -257,3 +224,13 @@ ba_ka: requirements_lifecycle_management
 ## Siguiente paso
 
 Usar la **Routing Table** — esta KA es continua durante el proyecto; la "siguiente KA" depende de los eventos que ocurran (nuevas solicitudes de cambio, necesidad de re-elicitar, evaluación de la solución).
+
+---
+
+## Reference Files
+
+### Assets
+- [requirements-lifecycle-template.md](./assets/requirements-lifecycle-template.md) — Template completo: RTM con 10 estados del ciclo de vida, baseline actual con versión y aprobador, Change Requests activos con análisis de impacto, métricas de cobertura, routing
+
+### References
+- [traceability-matrix.md](./references/traceability-matrix.md) — Construcción RTM paso a paso (4 pasos), template de Change Request completo, máquina de estados del ciclo de vida de requisito, métricas de salud (cobertura backward/forward/tests), señales de RTM problemática, gestión de baselines con versionado

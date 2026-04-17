@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["business need analysis", "current state analysis", "future state definition", "BABOK strategy", "change strategy BA"]
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /ba-strategy — BABOK: Strategy Analysis
@@ -153,54 +153,7 @@ Basada en el análisis, recomendar el enfoque:
 
 `{wp}/ba-strategy.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: ba:strategy
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Current State Analysis
-### Procesos actuales
-[Process map o descripción de pasos]
-
-### Métricas actuales
-| KPI | Valor actual | Fuente |
-
-### Pain points identificados
-| Pain point | Stakeholder afectado | Impacto (cuantificado) |
-
-### SWOT
-| | Positivo | Negativo |
-|Interno| Fortalezas | Debilidades |
-|Externo| Oportunidades | Amenazas |
-
-## Business Need
-- Problema: [descripción]
-- Impacto cuantificado: [$/tiempo/satisfacción]
-- Stakeholders afectados: [lista]
-
-## Future State Definition
-### Objetivos del cambio
-### Métricas de éxito
-### Capacidades requeridas
-### Restricciones y asunciones
-
-## Gap Analysis
-| Dimensión | Estado actual | Estado futuro | Gap | Categoría | Prioridad |
-
-## Risk Assessment del cambio
-| Riesgo | P | I | Respuesta |
-
-## Recomendación de solución
-[Opción recomendada con justificación basada en el gap analysis]
-
-## Routing — próxima KA
-[Aplicar Routing Table]
-```
+usar template: [strategy-analysis-template.md](./assets/strategy-analysis-template.md)
 
 ---
 
@@ -243,3 +196,13 @@ ba_ka: strategy_analysis
 ## Siguiente paso
 
 Usar la **Routing Table** — la transición más frecuente desde Strategy Analysis es hacia `ba:requirements-analysis` con los gaps bien definidos como punto de partida.
+
+---
+
+## Reference Files
+
+### Assets
+- [strategy-analysis-template.md](./assets/strategy-analysis-template.md) — Template completo: Current State (procesos/métricas/pain points/SWOT), Business Need con impacto cuantificado, Future State (objetivos/métricas de éxito/capacidades/restricciones), Gap Analysis con categorización, Risk Assessment, ≥2 opciones de solución con ROI, routing
+
+### References
+- [gap-analysis-guide.md](./references/gap-analysis-guide.md) — Dimensiones del estado actual (7 dimensiones), cómo cuantificar (métricas de tiempo/calidad/costo/satisfacción), Business Need formato preciso (qué es vs qué no es), categorías de gaps BABOK (capability/performance/knowledge/process), SWOT aplicado al dominio, evaluación comparativa de opciones con matriz de dimensiones

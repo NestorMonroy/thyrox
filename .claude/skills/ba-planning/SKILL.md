@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["BA plan", "business analysis planning", "stakeholder engagement", "BABOK planning", "BA approach"]
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /ba-planning — BABOK: Business Analysis Planning & Monitoring
@@ -186,48 +186,9 @@ El archivo `ba-progress.md` es el artefacto de tracking multi-KA para proyectos 
 
 `{wp}/ba-planning.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: ba:planning
-author: [nombre]
-status: Borrador
-```
+usar template: [ba-plan-template.md](./assets/ba-plan-template.md)
 
-```markdown
-## BA Plan
-
-### Approach
-[Planificado / Adaptativo — justificación]
-
-### BA Activities y técnicas
-| Actividad | Técnica | KA BABOK | Timing |
-
-### Deliverables de BA
-| Deliverable | Destinatario | Criterio de aceptación |
-
-## Stakeholder Engagement Approach
-| Stakeholder | Rol | Influencia | Técnica | Frecuencia |
-
-## RACI — Actividades de BA
-| Actividad | BA | Sponsor | SME | Usuario |
-
-## Governance Approach
-- Decisiones del BA autónomo: [lista]
-- Requieren aprobación del sponsor: [lista]
-- Change Request process: [descripción]
-
-## Evaluación de completitud
-- [ ] Enfoque definido con justificación
-- [ ] Stakeholders de influencia alta cubiertos
-- [ ] Governance con proceso de decisión claro
-- [ ] ba-progress.md creado
-- [ ] Acuerdo con sponsor sobre formalidad
-
-## Routing — próxima KA
-[Ver Routing Table arriba — seleccionar según contexto del proyecto]
-```
+Tracking multi-KA: usar template: [ba-progress-template.md](./assets/ba-progress-template.md)
 
 ---
 
@@ -260,3 +221,14 @@ ba_ka: business_analysis_planning
 ## Siguiente paso
 
 Usar la **Routing Table** para seleccionar la siguiente KA según el contexto del proyecto. No hay un "siguiente paso" fijo en BABOK — el BA navega las KAs según las necesidades del trabajo.
+
+---
+
+## Reference Files
+
+### Assets
+- [ba-plan-template.md](./assets/ba-plan-template.md) — Template completo del BA Plan: Approach (planificado vs adaptativo), BA Activities, Deliverables, Stakeholder Engagement, RACI, Governance Approach, evaluación de completitud, routing
+- [ba-progress-template.md](./assets/ba-progress-template.md) — Tracking multi-KA: tabla de 6 KAs con estado (⬜/🔄/✅/🔁), Routing History, métricas de requisitos bajo gestión
+
+### References
+- [ba-approach-techniques.md](./references/ba-approach-techniques.md) — Selección planificado vs adaptativo con criterios, Stakeholder Engagement Matrix 4 cuadrantes, técnicas de estimación de esfuerzo de BA, matriz de decisión de governance, RACI patterns para waterfall y ágil

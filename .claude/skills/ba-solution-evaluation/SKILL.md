@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["solution evaluation", "value realization", "solution performance KPI", "BABOK evaluation", "solution assessment"]
-updated_at: 2026-04-16 21:44:29
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /ba-solution-evaluation — BABOK: Solution Evaluation
@@ -152,49 +152,7 @@ Basadas en la evaluación, definir los próximos pasos:
 
 `{wp}/ba-solution-evaluation.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: ba:solution-evaluation
-evaluation_date: [fecha]
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## KPI Dashboard
-| KPI | Baseline | Target | Actual | % mejora | Estado |
-
-## Value Realization Summary
-- Business Need original: [descripción del problema que justificó el proyecto]
-- ¿Fue resuelto?: [Sí / Parcialmente / No] — justificación
-- Satisfacción de stakeholders: [puntaje / evidencia]
-- ROI estimado: [% o $/valor]
-- Adopción: [% usuarios activos / features usadas]
-
-## Evaluación por técnica
-### Encuesta de satisfacción
-[NPS/CSAT + observaciones]
-
-### Análisis de adopción
-[métricas de uso real]
-
-### Entrevistas post-implementación
-[insights cualitativos]
-
-## Limitaciones identificadas
-| Tipo | Descripción | Impacto | Prioridad para resolución |
-
-## Lecciones aprendidas del proceso de BA
-| KA BABOK | Situación | Impacto | Recomendación |
-
-## Recomendaciones
-[Basadas en la evaluación: nueva iniciativa / mejora / corrección / cierre]
-
-## Routing — próxima KA
-[Aplicar Routing Table según los resultados de la evaluación]
-```
+usar template: [solution-evaluation-template.md](./assets/solution-evaluation-template.md)
 
 ---
 
@@ -238,3 +196,13 @@ ba_ka: solution_evaluation
 ## Siguiente paso
 
 Usar la **Routing Table** — esta es la última KA del ciclo BABOK típico. Si la evaluación es positiva y no hay nuevas necesidades, el trabajo de BA para esta iniciativa está completo. Si hay nuevas necesidades o mejoras identificadas, iniciar un nuevo ciclo de BA.
+
+---
+
+## Reference Files
+
+### Assets
+- [solution-evaluation-template.md](./assets/solution-evaluation-template.md) — Template completo: KPI Dashboard (baseline/target/actual/% mejora/estado), Value Realization Summary, evaluación por técnica (encuesta/adopción/entrevistas), limitaciones por tipo, lecciones aprendidas por KA BABOK, recomendaciones con 4 tipos de acción, routing
+
+### References
+- [evaluation-techniques.md](./references/evaluation-techniques.md) — Marco de evaluación BABOK (3 preguntas), clasificación de KPIs (leading/lagging/process/outcome), períodos de medición por tipo de proyecto, NPS/CSAT/CES con cálculos y benchmarks, métricas de adopción por tipo de solución, workarounds como señal de adopción, cálculo ROI/payback, protocolo de entrevistas post-implementación, agenda de PIR

@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["elicitation", "requirements gathering", "stakeholder interviews", "BABOK elicitation", "information collection"]
-updated_at: 2026-04-16 22:30:00
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /ba-elicitation — BABOK: Elicitation & Collaboration
@@ -23,7 +23,7 @@ Ejecuta la Knowledge Area **Elicitation & Collaboration** de BABOK v3. Planifica
 
 ## Pre-condición
 
-Requiere: `{wp}/ba-baplanning.md` con:
+Requiere: `{wp}/ba-planning.md` con:
 - Stakeholder Engagement Approach definido
 - Técnicas de elicitación seleccionadas
 - Governance Approach con proceso de confirmación
@@ -140,37 +140,7 @@ La confirmación es un paso obligatorio que cierra cada actividad de elicitació
 
 `{wp}/ba-elicitation.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: ba:elicitation
-iteration: [N]
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Actividades de elicitación ejecutadas
-
-### [Técnica 1 — ej: Entrevistas]
-| Stakeholder | Fecha | Temas cubiertos | Hallazgos clave |
-
-### [Técnica 2 — ej: Taller]
-| Fecha | Participantes | Temas cubiertos | Acuerdos alcanzados |
-
-## Resultados confirmados
-| Hallazgo | Confirmado por | Fecha | Método |
-
-## Necesidades articuladas (sin solución)
-| Need ID | Stakeholder | Necesidad | Contexto | Prioridad |
-
-## Gaps identificados
-| Gap | Stakeholder faltante / información faltante | Plan para cerrar |
-
-## Routing — próxima KA
-[Aplicar Routing Table según el estado de los resultados]
-```
+usar template: [elicitation-notes-template.md](./assets/elicitation-notes-template.md)
 
 ---
 
@@ -203,3 +173,13 @@ ba_ka: elicitation_collaboration
 ## Siguiente paso
 
 Usar la **Routing Table** — la siguiente KA depende de lo que se encontró en la elicitación.
+
+---
+
+## Reference Files
+
+### Assets
+- [elicitation-notes-template.md](./assets/elicitation-notes-template.md) — Template de notas de elicitación: actividades por técnica, hallazgos confirmados, necesidades articuladas (sin solución), gaps identificados con plan, routing
+
+### References
+- [elicitation-techniques.md](./references/elicitation-techniques.md) — 7 técnicas BABOK con protocolos detallados: entrevistas (preguntas efectivas vs evitar), JAD (fases del taller, técnicas visuales), shadowing (protocolo paso a paso), encuestas, focus groups, brainstorming, análisis de documentos

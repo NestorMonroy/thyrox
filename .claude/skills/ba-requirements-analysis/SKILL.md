@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["requirements modeling", "requirements specification BABOK", "use case model", "BABOK analysis", "requirements design"]
-updated_at: 2026-04-16 21:44:29
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /ba-requirements-analysis — BABOK: Requirements Analysis & Design Definition
@@ -164,52 +164,7 @@ El BA define opciones de diseño de alto nivel (qué, no cómo):
 
 `{wp}/ba-requirements-analysis.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: ba:requirements-analysis
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Use Case Model
-| Use Case | Actor | Trigger | Prioridad MoSCoW |
-
-### UC-001: [Nombre]
-**Flujo principal:**
-1. [paso]
-2. [paso]
-
-**Flujos alternativos:**
-- [alt-1]: ...
-
-**Flujos de excepción:**
-- [exc-1]: ...
-
-## User Stories (si aplica contexto ágil)
-| Story ID | Historia | Criterios de aceptación (Given/When/Then) | INVEST check | Prioridad |
-
-## Verificación de requisitos
-| Req ID | Completo | Consistente | No ambiguo | Verificable | Factible | Trazable |
-
-## Validación con stakeholders
-| Req ID | Validado por | Fecha | Observaciones |
-
-## Priorización MoSCoW
-| Categoría | # Requisitos | % del total |
-| Must Have | | |
-| Should Have | | |
-| Could Have | | |
-| Won't Have | | |
-
-## Opciones de diseño de alto nivel
-| Opción | Descripción | Pros | Contras |
-
-## Routing — próxima KA
-[Aplicar Routing Table]
-```
+usar template: [ba-requirements-analysis-template.md](./assets/ba-requirements-analysis-template.md)
 
 ---
 
@@ -253,3 +208,13 @@ ba_ka: requirements_analysis_design
 ## Siguiente paso
 
 Usar la **Routing Table** — la transición más frecuente es hacia `ba:requirements-lifecycle` para gestionar los requisitos especificados, o hacia `ba:solution-evaluation` cuando la solución ya está implementada.
+
+---
+
+## Reference Files
+
+### Assets
+- [ba-requirements-analysis-template.md](./assets/ba-requirements-analysis-template.md) — Template completo: Use Case Model con UC-NNN detallado (flujo principal/alternativo/excepción), User Stories con Given/When/Then e INVEST check, verificación de 6 criterios, validación con stakeholders, MoSCoW con regla ≤60% Must Have, opciones de diseño alto nivel, routing
+
+### References
+- [analysis-techniques.md](./references/analysis-techniques.md) — Decision tables (estructura, verificación de completitud), decision trees (cuándo preferir sobre tabla), BPMN básico (elementos, swimlanes, VSM), modelado de datos (ERD crow's foot, data dictionary, reglas de negocio), checklist de verificación de modelos

@@ -80,16 +80,16 @@ Cada T-NNN cubre un skill completo:
 - [x] T-025 `pm-executing` — assets: status-report-template.md · references: team-management.md *(debe incluir: tabla 5 técnicas de conflicto PMBOK con cuándo usar cada una, RACI con regla 1-A, señales de desengagement de stakeholders)* · SKILL.md update
 - [x] T-026 `pm-monitoring` — assets: performance-report-template.md · references: verificar `evm-and-change-control.md` (ya existe) — debe cubrir: todas las fórmulas EVM (PV/EV/AC/SV/CV/SPI/CPI/EAC/ETC/VAC/TCPI), umbrales de varianza, flujo CCB completo, template Change Request · SKILL.md update (agregar `## Reference Files` si no existe)
 - [x] T-027 `pm-closing` — assets: closure-report-template.md · references: project-closure-guide.md (closure checklist, lessons learned facilitation, contract closure, knowledge transfer) · SKILL.md update
-- [ ] T-028 Commit B5: `feat(pmbok): complete skill anatomy — assets, references, SKILL.md updates`
+- [x] T-028 Commit B5: `feat(pmbok): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B6 — BABOK (6 skills)
 
-- [ ] T-029 `ba-planning` — assets: ba-plan-template.md + **ba-progress-template.md** (tracking multi-KA: tabla 6 KAs con estado inicial + Routing History) · references: ba-approach-techniques.md (stakeholder engagement matrix, BA plan template, governance) · SKILL.md update *(nota: preservar Routing Table en el cuerpo del SKILL.md — es instrucción de navegación, no Tier 2)*
-- [ ] T-030 `ba-elicitation` — assets: elicitation-notes-template.md · references: elicitation-techniques.md (9 técnicas BABOK con protocolos detallados de JAD y Shadowing) · SKILL.md update *(incluir corrección de typo en Pre-condición: `ba-baplanning.md` → `ba-planning.md`)*
-- [ ] T-031 `ba-requirements-analysis` — assets: **ba-requirements-analysis-template.md** (evita colisión de nombre con T-018) · references: analysis-techniques.md (decision table, decision tree, process modeling, data modeling) · SKILL.md update
-- [ ] T-032 `ba-requirements-lifecycle` — assets: requirements-lifecycle-template.md · references: traceability-matrix.md (traceability matrix template, coverage analysis, impact assessment) · SKILL.md update
-- [ ] T-033 `ba-strategy` — assets: strategy-analysis-template.md · references: gap-analysis-guide.md (Current/Future state templates, gap categorization — capability/performance/knowledge/process, SWOT, Business Need tabla 4 elementos) · SKILL.md update
-- [ ] T-034 `ba-solution-evaluation` — assets: solution-evaluation-template.md · references: evaluation-techniques.md (KPI measurement framework, ROI calculation, adoption metrics, survey design) · SKILL.md update
+- [x] T-029 `ba-planning` — assets: ba-plan-template.md + **ba-progress-template.md** (tracking multi-KA: tabla 6 KAs con estado inicial + Routing History) · references: ba-approach-techniques.md (stakeholder engagement matrix, BA plan template, governance) · SKILL.md update *(nota: preservar Routing Table en el cuerpo del SKILL.md — es instrucción de navegación, no Tier 2)*
+- [x] T-030 `ba-elicitation` — assets: elicitation-notes-template.md · references: elicitation-techniques.md (9 técnicas BABOK con protocolos detallados de JAD y Shadowing) · SKILL.md update *(incluir corrección de typo en Pre-condición: `ba-baplanning.md` → `ba-planning.md`)*
+- [x] T-031 `ba-requirements-analysis` — assets: **ba-requirements-analysis-template.md** (evita colisión de nombre con T-018) · references: analysis-techniques.md (decision table, decision tree, process modeling, data modeling) · SKILL.md update
+- [x] T-032 `ba-requirements-lifecycle` — assets: requirements-lifecycle-template.md · references: traceability-matrix.md (traceability matrix template, coverage analysis, impact assessment) · SKILL.md update
+- [x] T-033 `ba-strategy` — assets: strategy-analysis-template.md · references: gap-analysis-guide.md (Current/Future state templates, gap categorization — capability/performance/knowledge/process, SWOT, Business Need tabla 4 elementos) · SKILL.md update
+- [x] T-034 `ba-solution-evaluation` — assets: solution-evaluation-template.md · references: evaluation-techniques.md (KPI measurement framework, ROI calculation, adoption metrics, survey design) · SKILL.md update
 - [ ] T-035 Commit B6: `feat(babok): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B7 — Scripts selectivos (4 scripts independientes)
