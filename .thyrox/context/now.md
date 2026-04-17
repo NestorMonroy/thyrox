@@ -4,8 +4,8 @@ version: 1.0
 updated_at: 2026-04-17 01:00:00
 cold_boot: false
 last_session: 2026-04-17
-current_work: null
-stage: null
+current_work: .thyrox/context/work/2026-04-16-18-54-38-multi-methodology
+stage: Stage 10 — IMPLEMENT
 flow: null
 methodology_step: null
 blockers: []
@@ -13,7 +13,7 @@ blockers: []
 
 # Contexto
 
-ÉPICA 40 multi-methodology — **COMPLETADO**. Todos los 42 tasks del skill-anatomy-task-plan.md v2 ejecutados y commiteados en 7 batches (B1..B7) + cierre.
+ÉPICA 40 multi-methodology — **EN CURSO**. Iniciativa `skill-anatomy-task-plan.md` v2 completada (42 tasks, 7 batches). La ÉPICA aún está activa.
 
 **Completado en ÉPICA 40 (total):**
 - Cambio 0+F: ba-baplanning→ba-planning, pmbok:*→pm:*, babok:*→ba:*, ba-progress.md
