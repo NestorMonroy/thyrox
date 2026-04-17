@@ -54,7 +54,7 @@ audited_by: workflow-audit
   - Encontrado: ningún documento de auditoría de templates en el WP
   - Evidencia: `find .thyrox/context/work/2026-04-17-17-58-13-goto-problem-fix -name "*template*"` → sin resultados
   - Nota: T-024 (el fix) sí se implementó correctamente — los templates están corregidos. Solo falta el documento que registra el análisis previo al fix.
-  - Corrección sugerida: Crear `analyze/goto-problem-fix-templates-audit.md` con la tabla de hallazgos de los templates afectados (puede ser retrospectivo — los templates ya están corregidos).
+  - Corrección sugerida: Crear `analyze/templates/skill-templates-phase-fields-audit.md` con la tabla de hallazgos — ✅ **Resuelto** en commit 1467d01 (renombrado y movido a domain subdirectory en commit posterior).
 
 ---
 
