@@ -1,11 +1,11 @@
 ```yml
 type: Estado de Sesión
 version: 1.1
-updated_at: 2026-04-17 19:35:00
+updated_at: 2026-04-17 21:00:00
 cold_boot: false
 last_session: 2026-04-17
 current_work: .thyrox/context/work/2026-04-17-17-58-13-goto-problem-fix
-stage: Stage 8 — PLAN EXECUTION
+stage: Stage 11 — TRACK/EVALUATE
 flow: null
 methodology_step: null
 blockers: []
@@ -36,18 +36,10 @@ coordinators:
 
 # Contexto
 
-ÉPICA 41 goto-problem-fix — **Stage 8 PLAN EXECUTION**. Deep-review GO CONDICIONAL (gaps resueltos). Task plan con 19 tareas en 5 batches listo. Próximo: T-001 (close-wp.sh fixes A-4+A-5+A-6).
-
-**Scope confirmado (todo en ÉPICA 41):**
-- Cluster A: 6 bugs scripts (session-start fallback, session-resume phase→stage×2, close-wp sed+body+update-state)
-- Cluster B: 11 ítems README (pm-thyrox, setup-template.sh, 7 fases, comandos obsoletos, paths, coordinators ausentes…)
-- Cluster C: ✅ Ya resuelto — 3 deep-reviews commiteados
-- Cluster D: state-management.md + guías coordinator + decision tree + methodology_step docs
+ÉPICA 41 goto-problem-fix — **Stage 11 TRACK/EVALUATE**. Implementación completa (25 tareas en 7 batches). Todos los clusters A/B/C/D completados. Pendiente: ROADMAP.md y cierre formal.
 
 ## Historial reciente
 
-- ÉPICA 37: platform-references-expansion — Stage 6 COMPLETADO, Stage 11 pendiente
-- ÉPICA 38: commands-rellinks — Stage 1 gate 1→3 pendiente
 - ÉPICA 39: plugin-distribution — COMPLETADO 2026-04-16
 - ÉPICA 40: multi-methodology — COMPLETADO 2026-04-17 — v2.8.0
-- ÉPICA 41: goto-problem-fix — Stage 1 DISCOVER en curso
+- ÉPICA 41: goto-problem-fix — Stage 11 TRACK/EVALUATE

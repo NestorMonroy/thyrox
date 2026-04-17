@@ -25,12 +25,18 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## ÉPICA 41: goto-problem-fix — Consolidar fuente única de estado del framework (2026-04-17)
+## ÉPICA 41: goto-problem-fix — Consolidar fuente única de estado del framework ✓ COMPLETADO 2026-04-17
 
-**WP:** pendiente de crear
-**Alcance:** Resolver inconsistencia entre `now.md`, `focus.md`, `project-state.md`, `ROADMAP.md`. Un solo "GO-TO" determinístico al inicio de sesión. Ver lección L-135 de ÉPICA 40.
+**WP:** `.thyrox/context/work/2026-04-17-17-58-13-goto-problem-fix/`
+**Resultado:** 7 batches — fixes scripts (A-1..A-6/GAP-02), state-management.md v2.0.0, README 9 fixes, ARCHITECTURE.md coordinator+hooks, DECISIONS.md+guides, skill templates. Taxonomía 3 niveles codificada. 25 tareas completadas.
 
-- [ ] Stage 1 DISCOVER
+- [x] Stage 1 DISCOVER — 2026-04-17
+- [x] Stage 3 DIAGNOSE — 2026-04-17
+- [x] Stage 5 STRATEGY — 2026-04-17
+- [x] Stage 6 SCOPE — 2026-04-17
+- [x] Stage 8 PLAN EXECUTION — 2026-04-17
+- [x] Stage 10 IMPLEMENT — 2026-04-17
+- [x] Stage 11 TRACK/EVALUATE — 2026-04-17
 
 ---
 

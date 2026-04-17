@@ -1,12 +1,12 @@
 ```yml
 type: Estado Operacional
 version: 1.0
-updated_at: 2026-04-17 17:04:17
+updated_at: 2026-04-17 21:00:00
 ```
 
 # Focus
 
-Sin WP activo. ÉPICA 40 cerrada — v2.8.0.
+ÉPICA 41 goto-problem-fix en Stage 11 TRACK/EVALUATE. Implementación completa.
 
 ## Completado (2026-04-17)
 
@@ -31,8 +31,19 @@ Sin WP activo. ÉPICA 40 cerrada — v2.8.0.
 - 11 metodologías soportadas: PDCA, DMAIC, RUP, RM, PMBOK, BABOK, Lean, PPS, SP, CP, BPA
 - TDs activos: TD-010, TD-037, TD-038, TD-039, TD-040, TD-041
 
-## Sin WP activo — próximos candidatos
+## Completado (ÉPICA 41 — 2026-04-17)
 
-1. **ÉPICA 41 (goto-problem-fix):** Consolidar fuente única de estado — GO-TO problem (alta prioridad, L-135)
-2. **ÉPICA 37 (platform-references-expansion):** Stage 11 TRACK pendiente + T-001..T-004
-3. **ÉPICA 38 (commands-rellinks):** Stage 1 gate 1→3 pendiente
+- B1 Scripts: close-wp.sh (A-4/A-5/A-6), session-start.sh (A-1/GAP-02), session-resume.sh (A-2/A-3)
+- B2 State docs: state-management.md v2.0.0 (flow/methodology_step/# Contexto body)
+- B3 README: 9 fixes (pm-thyrox→thyrox, 12 stages, coordinators, 47 refs/23 agents)
+- B4 ARCHITECTURE.md: coordinator 4-layer pattern + registry documentation
+- B5 DECISIONS.md + methodology-selection-guide + coordinator-integration
+- B6 Hooks: 3 hooks reales documentados + close-wp.sh como script manual
+- B7 Templates: 5 templates con phase: field malformado corregidos
+- Naming: taxonomía 3 niveles (stage directory → domain subdirectory → artifact)
+- 6 artefactos renombrados a patrón {content}-{subtype}.md
+
+## Próximos candidatos
+
+1. **ÉPICA 37 (platform-references-expansion):** Stage 11 TRACK pendiente
+2. **ÉPICA 38 (commands-rellinks):** Stage 1 gate 1→3 pendiente
