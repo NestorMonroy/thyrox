@@ -74,6 +74,27 @@ status: Borrador
 | `track/` | Phase 11 | `Phase 11 — TRACK/EVALUATE` |
 | `standardize/` | Phase 12 | `Phase 12 — STANDARDIZE` |
 
+## Reglas de colocación de artefactos en cajones
+
+Cuando se crea o solicita un documento para un WP activo, colocarlo en el cajón correspondiente
+a su fase según la tabla anterior. Reglas críticas:
+
+| Tipo de documento solicitado | Cajón correcto | Template |
+|------------------------------|----------------|----------|
+| Plan estratégico, solución, scope, roadmap | `plan/` | — |
+| Task plan con T-NNN checkboxes | `plan-execution/` | `workflow-decompose/assets/plan-execution.md.template` |
+| Análisis, causa raíz, diagnóstico | `analyze/` | — |
+| Restricciones, constraints | `constraints/` | — |
+| Artefactos de cierre (lessons, changelog) | `track/` | — |
+
+**Regla para `plan-execution/`:** TODO task plan creado en este cajón DEBE usar
+`plan-execution.md.template`. El nombre del archivo es descriptivo: `{iniciativa}-task-plan.md`
+(ej: `skill-anatomy-task-plan.md`, no `task-plan.md`).
+
+**Regla para `plan/`:** Documentos en `plan/` son planes estratégicos o de solución —
+describen QUÉ y POR QUÉ, no T-NNN. Si el usuario pide "un plan para X" y el resultado
+tiene checkboxes T-NNN → va en `plan-execution/`, no en `plan/`.
+
 ## Anti-patrones prohibidos
 
 ```markdown

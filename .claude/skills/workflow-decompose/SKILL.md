@@ -35,8 +35,10 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 1. Leer `work/.../*-requirements-spec.md` del WP activo
    - Si el usuario pide descomposición directa sin spec previo: crear WP y descomponer desde la descripción — no cuestionar si el proyecto existe
 
-2. REQUERIDO: Crear `work/../{nombre-wp}-task-plan.md` usando `assets/tasks.md.template`
+2. REQUERIDO: Crear `work/../plan-execution/{nombre-descriptivo}-task-plan.md` usando `assets/plan-execution.md.template`
    - Nombre descriptivo: `skill-activation-task-plan.md`, no `task-plan.md`
+   - Cajón: `plan-execution/` (Phase 8). Los planes estratégicos van en `plan/` — son distintos.
+   - Si existe `plan/` con un plan de nivel superior, referenciar en el frontmatter como `Generado desde:`
 
 3. Crear lista de tareas con IDs trazables:
    ```
@@ -85,7 +87,7 @@ Al aprobar: actualizar `context/now.md::phase` a `Phase 9` (si hay supuestos de 
 ## Exit criteria
 
 Phase 8 completa cuando:
-- `work/.../plan-execution/*-task-plan.md` existe con checkboxes `- [ ] [T-NNN]`
+- `work/.../plan-execution/*-task-plan.md` existe usando `plan-execution.md.template`, con checkboxes `- [ ] [T-NNN]`
 - Todas las tareas tienen referencia a su SPEC
 - DAG de dependencias documentado en Mermaid
 - Atomicidad verificada (3 ítems del checklist)
