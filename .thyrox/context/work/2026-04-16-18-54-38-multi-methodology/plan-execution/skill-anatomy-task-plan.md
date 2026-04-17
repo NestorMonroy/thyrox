@@ -54,7 +54,7 @@ Cada T-NNN cubre un skill completo:
 - [x] T-008 `dmaic-analyze` — assets: dmaic-analyze-template.md · references: hypothesis-testing.md (H0/H1 templates, p-value decision table, test selection matrix), root-cause-tools.md (VSM symbols, Fishbone profundo, 5-Why con verificación, Scatter plot) · SKILL.md update
 - [x] T-009 `dmaic-improve` — assets: dmaic-improve-template.md · references: doe-guide.md (full factorial vs fractional, factors/levels/runs), **lean-tools-guide.md** (5S/Kanban/SMED/MUDA 7 desperdicios/Jidoka/Heijunka — catálogo con tipo de waste que resuelve), **fmea-guide.md** (tabla RPN, escala Severidad/Ocurrencia/Detección, criterio >200 crítico/100-200 importante/<100 monitorear) · SKILL.md update
 - [x] T-010 `dmaic-control` — assets: dmaic-control-template.md · references: control-chart-guide.md *(debe incluir: (1) 8 Reglas Western Electric completas con señal, (2) Plan de Reacción por señal — quién actúa/qué hace, (3) tabla selección tipo gráfica SPC por tipo de dato y tamaño de subgrupo)* · SKILL.md update
-- [ ] T-011 Commit B2: `feat(dmaic): complete skill anatomy — assets, references, SKILL.md updates`
+- [x] T-011 Commit B2: `feat(dmaic): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B3 — RUP (4 skills)
 
@@ -62,7 +62,7 @@ Cada T-NNN cubre un skill completo:
 - [x] T-013 `rup-elaboration` — assets: elaboration-report-template.md · references: lca-criteria.md (LCA evaluation criteria, architecture baseline checklist, riesgos arquitectónicos), architecture-baseline.md (SAD estructura, 4+1 view model, ADR template para RUP) · SKILL.md update
 - [x] T-014 `rup-construction` — assets: construction-report-template.md · references: ioc-criteria.md (IOC evaluation criteria, feature complete checklist, test coverage thresholds) · SKILL.md update
 - [x] T-015 `rup-transition` — assets: transition-report-template.md · references: pd-criteria.md (PD evaluation criteria, deployment checklist, user acceptance criteria) · SKILL.md update
-- [ ] T-016 Commit B3: `feat(rup): complete skill anatomy — assets, references, SKILL.md updates`
+- [x] T-016 Commit B3: `feat(rup): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B4 — RM (5 skills)
 

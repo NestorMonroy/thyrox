@@ -4,7 +4,7 @@ project: THYROX
 work_package: 2026-04-16-18-54-38-multi-methodology
 phase: Phase 8 — PLAN EXECUTION
 author: NestorMonroy
-status: Borrador
+status: Completado
 ```
 
 # Task Plan — Actualización thyrox/SKILL.md post ÉPICA 40
@@ -42,7 +42,7 @@ T-007 depende de T-001..T-006.
 
 ## Tareas
 
-- [ ] **[T-001]** Insertar sección "Methodology skills" (A1) + nota de extensibilidad (A7) en `thyrox/SKILL.md`
+- [x] **[T-001]** Insertar sección "Methodology skills" (A1) + nota de extensibilidad (A7) en `thyrox/SKILL.md`
 
   **Ubicación:** después del bloque `---` que cierra la sección "Catálogo de fases" (después de la línea `Ver [escalabilidad]... para reglas detalladas.` y el `---` siguiente, antes de `## Dónde viven los artefactos`).
 
@@ -88,7 +88,7 @@ T-007 depende de T-001..T-006.
   ---
   ```
 
-- [ ] **[T-002]** Insertar sección "Arquitectura de orquestación" (A2) en `thyrox/SKILL.md`
+- [x] **[T-002]** Insertar sección "Arquitectura de orquestación" (A2) en `thyrox/SKILL.md`
 
   **Ubicación:** inmediatamente antes de `## Modelo de permisos` (línea ~220 en el archivo actual).
 
@@ -124,7 +124,7 @@ T-007 depende de T-001..T-006.
   ---
   ```
 
-- [ ] **[T-003]** Insertar nota bajo tabla de escalabilidad (A4) en `thyrox/SKILL.md`
+- [x] **[T-003]** Insertar nota bajo tabla de escalabilidad (A4) en `thyrox/SKILL.md`
 
   **Ubicación:** inmediatamente después de la fila `| Grande | 1–12 completo | Proyecto complejo multi-sesión |` y antes de la línea `Ver [escalabilidad]...`.
 
@@ -136,7 +136,7 @@ T-007 depende de T-001..T-006.
   > Ver reglas detalladas en [scalability.md → Escalabilidad con flow activo](../workflow-discover/references/scalability.md).
   ```
 
-- [ ] **[T-004]** Agregar fila en tabla "Dónde viven los artefactos" (A5) en `thyrox/SKILL.md`
+- [x] **[T-004]** Agregar fila en tabla "Dónde viven los artefactos" (A5) en `thyrox/SKILL.md`
 
   **Ubicación:** antes de la última fila `| — | Errores | ...` en la tabla de artefactos.
 
@@ -148,7 +148,7 @@ T-007 depende de T-001..T-006.
 
   **Nota inline:** Ejemplo — con `flow: dmaic` en Stage 3: el artefacto es `analyze/dmaic-analyze.md`, producido por el skill `dmaic-analyze`, complementando los artefactos del workflow stage.
 
-- [ ] **[T-005]** Agregar subsección "Methodology skills" en "References por dominio" (A3) en `thyrox/SKILL.md`
+- [x] **[T-005]** Agregar subsección "Methodology skills" en "References por dominio" (A3) en `thyrox/SKILL.md`
 
   **Ubicación:** como primera subsección dentro de `## References por dominio`, antes de `### Phase 1: DISCOVER`.
 
@@ -170,7 +170,7 @@ T-007 depende de T-001..T-006.
   - `ba:` → [ba-planning](../ba-planning/SKILL.md)
   ```
 
-- [ ] **[T-006]** Agregar sección "Escalabilidad con methodology skill activo" (A6) en `scalability.md`
+- [x] **[T-006]** Agregar sección "Escalabilidad con methodology skill activo" (A6) en `scalability.md`
 
   **Archivo:** `.claude/skills/workflow-discover/references/scalability.md`
   **Ubicación:** al final del archivo (después de la línea `**Última actualización:** 2026-03-27`).
@@ -214,7 +214,7 @@ T-007 depende de T-001..T-006.
   - `flow: dmaic` → stages 2, 3, 10, 11, 12 son no-saltables para este WP
   ```
 
-- [ ] **[T-007]** Commit de todos los cambios
+- [x] **[T-007]** Commit de todos los cambios
 
   ```
   docs(thyrox): document methodology skills and orchestration architecture

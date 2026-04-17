@@ -75,24 +75,24 @@ Cada coordinator debe seguir el patrón de `dmaic-coordinator.md`: frontmatter c
 ## Tier 2 — Correcciones a Coordinators Existentes
 
 ### T-011..014 — Agregar `skills:` array a 4 coordinators
-- [ ] **T-011** Agregar `skills: [pm-initiating, pm-planning, pm-executing, pm-monitoring, pm-closing]` al frontmatter de `.claude/agents/pmbok-coordinator.md`.
-- [ ] **T-012** Agregar `skills: [ba-planning, ba-elicitation, ba-requirements-analysis, ba-requirements-lifecycle, ba-strategy, ba-solution-evaluation]` al frontmatter de `.claude/agents/babok-coordinator.md`.
-- [ ] **T-013** Agregar `skills: [rup-inception, rup-elaboration, rup-construction, rup-transition]` al frontmatter de `.claude/agents/rup-coordinator.md`.
-- [ ] **T-014** Agregar `skills: [rm-elicitation, rm-analysis, rm-specification, rm-validation, rm-management]` al frontmatter de `.claude/agents/rm-coordinator.md`.
+- [x] **T-011** Agregar `skills: [pm-initiating, pm-planning, pm-executing, pm-monitoring, pm-closing]` al frontmatter de `.claude/agents/pmbok-coordinator.md`.
+- [x] **T-012** Agregar `skills: [ba-planning, ba-elicitation, ba-requirements-analysis, ba-requirements-lifecycle, ba-strategy, ba-solution-evaluation]` al frontmatter de `.claude/agents/babok-coordinator.md`.
+- [x] **T-013** Agregar `skills: [rup-inception, rup-elaboration, rup-construction, rup-transition]` al frontmatter de `.claude/agents/rup-coordinator.md`.
+- [x] **T-014** Agregar `skills: [rm-elicitation, rm-analysis, rm-specification, rm-validation, rm-management]` al frontmatter de `.claude/agents/rm-coordinator.md`.
 
 ### T-015 — Agregar `metadata.triggers` a 32 skills nuevos
-- [ ] **T-015** Agregar `metadata.triggers` (3-5 keywords cada uno) al frontmatter de los 32 SKILL.md en namespaces lean/pps/sp/cp/bpa. Palabras clave basadas en nombre de metodología + artefactos clave + dominio (ej: lean-define → `["lean", "waste reduction", "TIMWOOD", "lean charter", "muda"]`).
+- [x] **T-015** Agregar `metadata.triggers` (3-5 keywords cada uno) al frontmatter de los 32 SKILL.md en namespaces lean/pps/sp/cp/bpa. Palabras clave basadas en nombre de metodología + artefactos clave + dominio (ej: lean-define → `["lean", "waste reduction", "TIMWOOD", "lean charter", "muda"]`).
 
 ---
 
 ## Tier 3 — Documentación y Quick Wins
 
-- [ ] **T-016** Actualizar label `*(pendiente)*` en `.claude/skills/thyrox/SKILL.md` para los 5 namespaces: de "*(pendiente)*" a texto que refleje el estado real (skills completos, coordinator activo) (GAP-016).
-- [ ] **T-017** Extender sección "Selección por necesidad" en `.claude/skills/thyrox/SKILL.md` para incluir lean, pps, sp, cp, bpa con cuándo usar cada uno (GAP-017).
-- [ ] **T-018** Corregir nombres de workflow skills en `.claude/CLAUDE.md` Locked Decision #5 Addendum FASE 39: workflow-baseline, workflow-diagnose, workflow-scope, workflow-implement (GAP-019).
-- [ ] **T-019** Crear `.claude/skills/workflow-diagnose/references/root-cause-analysis-methodology.md` — guía de análisis de causa raíz como reference file faltante (GAP-018).
-- [ ] **T-020** Actualizar descripción en `.claude-plugin/plugin.json` para mencionar todos los namespaces activos: lean, pps, sp, cp, bpa (GAP-028).
-- [ ] **T-021** Corregir stale checkboxes en artefactos WP relevantes, incluyendo este plan y `multi-methodology-namespaces-task-plan.md` (GAP-031).
+- [x] **T-016** Actualizar label `*(pendiente)*` en `.claude/skills/thyrox/SKILL.md` para los 5 namespaces: de "*(pendiente)*" a texto que refleje el estado real (skills completos, coordinator activo) (GAP-016).
+- [x] **T-017** Extender sección "Selección por necesidad" en `.claude/skills/thyrox/SKILL.md` para incluir lean, pps, sp, cp, bpa con cuándo usar cada uno (GAP-017).
+- [x] **T-018** Corregir nombres de workflow skills en `.claude/CLAUDE.md` Locked Decision #5 Addendum FASE 39: workflow-baseline, workflow-diagnose, workflow-scope, workflow-implement (GAP-019).
+- [x] **T-019** Crear `.claude/skills/workflow-diagnose/references/root-cause-analysis-methodology.md` — guía de análisis de causa raíz como reference file faltante (GAP-018).
+- [x] **T-020** Actualizar descripción en `.claude-plugin/plugin.json` para mencionar todos los namespaces activos: lean, pps, sp, cp, bpa (GAP-028).
+- [x] **T-021** Corregir stale checkboxes en artefactos WP relevantes, incluyendo este plan y `multi-methodology-namespaces-task-plan.md` (GAP-031).
 
 ---
 
@@ -100,16 +100,16 @@ Cada coordinator debe seguir el patrón de `dmaic-coordinator.md`: frontmatter c
 
 > Estos gaps requieren decisiones arquitectónicas antes de implementar. Documentados aquí para visibilidad; implementar en ÉPICA separada si se aprueba.
 
-- [ ] **T-022** Agregar `native_phase_count`, `produces:`, `consumes:` a los 7 YAMLs de registry existentes (GAP-022). Requiere definición del schema de artifacts.
-- [ ] **T-023** Extender `now.md` con sección `coordinators:` para tracking per-coordinator o crear `orchestration-state.md` (GAP-023).
-- [ ] **T-024** Crear template `artifact-registry.md` en `workflow-discover/assets/` para inter-coordinator coordination (GAP-025).
-- [ ] **T-025** Crear template `orchestration-log.md` para historial de activaciones de coordinators (GAP-027).
-- [ ] **T-026** Actualizar todos los coordinator agents para emitir artifact-ready signal en lugar de "Proponer Stage 11" (GAP-024).
-- [ ] **T-027** Crear `.thyrox/registry/routing-rules.yml` con mapeo problema→coordinator (GAP-020).
-- [ ] **T-028** Rework de `thyrox-coordinator.md` con intake de 4-6 preguntas diagnósticas y routing automático basado en routing-rules.yml (GAP-021). Esfuerzo: L.
-- [ ] **T-029** Crear `.claude/skills/thyrox/references/methodology-selection-guide.md` con árboles de decisión entre metodologías similares (GAP-029).
-- [ ] **T-030** Actualizar `scalability.md` sección "Stages obligatorios por flow activo" para reflejar que el anclaje es una guía, no constraint hard (GAP-026).
-- [ ] **T-031** Decidir e implementar política de generación de coordinator agents vía bootstrap.py (GAP-030 + GAP-032).
+- [x] **T-022** Agregar `native_phase_count`, `produces:`, `consumes:` a los 11 YAMLs de registry (GAP-022). Schema de artifacts implementado.
+- [x] **T-023** Extender `now.md` con sección `coordinators:` para tracking per-coordinator (GAP-023).
+- [x] **T-024** Crear template `artifact-registry.md` en `workflow-discover/assets/` para inter-coordinator coordination (GAP-025).
+- [x] **T-025** Crear template `orchestration-log.md` para historial de activaciones de coordinators (GAP-027).
+- [x] **T-026** Actualizar todos los 11 coordinator agents para emitir artifact-ready signal estructurado (GAP-024).
+- [x] **T-027** Crear `.thyrox/registry/routing-rules.yml` con mapeo problema→coordinator (GAP-020).
+- [x] **T-028** Rework de `thyrox-coordinator.md` con 5 preguntas diagnósticas y routing automático basado en routing-rules.yml (GAP-021).
+- [x] **T-029** Crear `.claude/skills/thyrox/references/methodology-selection-guide.md` con árboles de decisión entre metodologías similares (GAP-029).
+- [x] **T-030** Actualizar `scalability.md`: eliminados *(pendiente)*, lenguaje "no-saltables" → "recomendados con alta prioridad" (GAP-026).
+- [x] **T-031** Política de coordinator agents documentada en `bootstrap.py`: estáticos, no generados dinámicamente (GAP-030 + GAP-032).
 
 ---
 
@@ -118,10 +118,10 @@ Cada coordinator debe seguir el patrón de `dmaic-coordinator.md`: frontmatter c
 | Tier | Tareas | Completadas | Pendientes | Effort restante |
 |------|--------|-------------|------------|-----------------|
 | **Tier 1** | T-001..T-010 (10 tareas) | **10 ✓** | 0 | — |
-| **Tier 2** | T-011..T-015 (5 tareas) | 0 | 5 | ~1h |
-| **Tier 3** | T-016..T-021 (6 tareas) | 0 | 6 | ~30m |
-| **Tier 4** | T-022..T-031 (10 tareas) | 0 | 10 | ~8-12h |
-| **Total** | **31 tareas** | **10** | **21** | **~9-13h** |
+| **Tier 2** | T-011..T-015 (5 tareas) | **5 ✓** | 0 | — |
+| **Tier 3** | T-016..T-021 (6 tareas) | **6 ✓** | 0 | — |
+| **Tier 4** | T-022..T-031 (10 tareas) | **10 ✓** | 0 | — |
+| **Total** | **31 tareas** | **31 ✓** | **0** | **COMPLETADO** |
 
 ---
 
