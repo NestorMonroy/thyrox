@@ -91,7 +91,7 @@ Formato: `T-NNN Descripción (ID-problema)`
 
 ## Cierre
 
-- [ ] **T-036** Verificación final:
+- [x] **T-036** Verificación final:
   ```bash
   grep "Herramientas de calidad" .claude/skills/thyrox/SKILL.md           # con match
   grep "PAT-004.*OBLIGATORIO" .claude/skills/workflow-implement/SKILL.md  # con match
@@ -101,9 +101,9 @@ Formato: `T-NNN Descripción (ID-problema)`
   grep "setup-template.sh" README.md | grep "bash setup"                   # vacío
   ```
 
-- [ ] **T-037** Actualizar `now.md` y `focus.md`: reflejar B8/B9 completados, WP en Stage 11 continuando
+- [x] **T-037** Actualizar `now.md` y `focus.md`: reflejar B8/B9 completados, WP en Stage 11 continuando
 
-- [ ] **T-038** Commit cierre + push: `chore(goto-problem-fix): B8/B9 complete — remediation plan executed`
+- [x] **T-038** Commit cierre + push: `chore(goto-problem-fix): B8/B9 complete — remediation plan executed`
 
 ---
 

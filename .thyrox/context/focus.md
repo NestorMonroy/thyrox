@@ -1,12 +1,12 @@
 ```yml
 type: Estado Operacional
 version: 1.0
-updated_at: 2026-04-17 21:00:00
+updated_at: 2026-04-17 23:20:00
 ```
 
 # Focus
 
-ÉPICA 41 goto-problem-fix en Stage 11 TRACK/EVALUATE. Implementación completa.
+ÉPICA 41 goto-problem-fix en Stage 11 TRACK/EVALUATE. B8/B9 remediación completa. WP listo para cierre formal.
 
 ## Completado (2026-04-17)
 
@@ -42,6 +42,10 @@ updated_at: 2026-04-17 21:00:00
 - B7 Templates: 5 templates con phase: field malformado corregidos
 - Naming: taxonomía 3 niveles (stage directory → domain subdirectory → artifact)
 - 6 artefactos renombrados a patrón {content}-{subtype}.md
+- **workflow-audit skill**: creado completo (SKILL.md + references/ + assets/ + comando)
+- **Audit ÉPICA 41**: Grade A ~96%, 24 PASS + 1 SKIP (T-020 política ROADMAP)
+- **B8 Remediación**: sync checkboxes (PAT-004), README opción A eliminada, audit-report actualizado
+- **B9 Framework**: PAT-004 en workflow-implement, maxdepth 2 en session-start.sh, Herramientas de calidad en thyrox/SKILL.md, TD-042
 
 ## Próximos candidatos
 
