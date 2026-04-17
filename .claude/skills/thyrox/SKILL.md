@@ -65,7 +65,47 @@ Cada fase vive en su propio skill. Invocar directamente para ejecutar:
 | Mediano | 1, 3, 5, 6, 8, 10, 11 | Feature con estrategia y descomposición |
 | Grande | 1–12 completo | Proyecto complejo multi-sesión |
 
-Ver [escalabilidad](../workflow-discover/references/scalability.md) para reglas detalladas.
+> **Con `flow:` activo:** los stages donde el flow tiene methodology skills anclados
+> son **no-saltables**, independientemente del tamaño del WP.
+> Ver reglas detalladas en [scalability.md → Escalabilidad con flow activo](../workflow-discover/references/scalability.md).
+
+---
+
+## Methodology skills
+
+Cuando un WP requiere un marco metodológico específico, activar el skill de metodología
+correspondiente **dentro** del workflow stage apropiado. Cada skill declara su
+`THYROX Stage:` de anclaje.
+
+| Namespace | Metodología | Skills | Stages de anclaje |
+|-----------|------------|--------|-------------------|
+| `pdca:` | PDCA (Deming) | pdca-plan, pdca-do, pdca-check, pdca-act | 3, 10, 11, 12 |
+| `dmaic:` | DMAIC Six Sigma | dmaic-define, dmaic-measure, dmaic-analyze, dmaic-improve, dmaic-control | 2, 3, 10, 11, 12 |
+| `rup:` | RUP | rup-inception, rup-elaboration, rup-construction, rup-transition | 1, 3, 5, 7, 10, 11, 12 |
+| `rm:` | Requirements Management | rm-elicitation, rm-analysis, rm-specification, rm-validation, rm-management | 1, 3, 5, 7, 9, 10, 11 |
+| `pm:` | PMBOK | pm-initiating, pm-planning, pm-executing, pm-monitoring, pm-closing | 1, 3, 5, 6, 7, 10, 11, 12 |
+| `ba:` | BABOK / Business Analysis | ba-planning, ba-elicitation, ba-requirements-analysis, ba-requirements-lifecycle, ba-solution-evaluation, ba-strategy | 1, 2, 3, 5, 6, 7, 10, 11, 12 |
+
+> **Framework extensible:** Los 6 namespaces listados son los methodology skills
+> implementados actualmente (ÉPICA 40). El framework soporta incorporar cualquier
+> marco metodológico adicional siguiendo el patrón `{metodología}-{paso}` con
+> declaración de `THYROX Stage:` en su SKILL.md y anatomía completa
+> (SKILL.md + assets/ + references/).
+>
+> Frameworks del landscape original (V3.1) pendientes de implementación:
+> SDLC, Lean Six Sigma, Problem Solving 8-step, Strategic Planning,
+> Strategic Management, Consulting Process, Business Process Analysis.
+
+**Cómo activar:** invocar directamente el skill del paso, ej. `/dmaic-define`.
+El skill actualiza `now.md::flow` y `now.md::methodology_step`.
+
+**Selección por necesidad:**
+- Mejora continua con ciclos rápidos → `pdca-*`
+- Reducción de variabilidad con datos → `dmaic-*`
+- Desarrollo iterativo con milestones → `rup-*`
+- Gestión formal de requisitos → `rm-*`
+- Gestión de proyectos PMI → `pm-*`
+- Análisis de negocio BABOK → `ba-*`
 
 ---
 
@@ -95,6 +135,7 @@ Ver [escalabilidad](../workflow-discover/references/scalability.md) para reglas 
 | 11 TRACK/EVALUATE | TDs resueltos (si aplica) | `work/.../track/{nombre-wp}-technical-debt-resolved.md` | [technical-debt-resolved.md.template](../workflow-track/assets/technical-debt-resolved.md.template) |
 | 12 STANDARDIZE | Patrones reutilizables | `work/.../standardize/{nombre-wp}-patterns.md` | [patterns.md.template](../workflow-standardize/assets/patterns.md.template) |
 | 12 STANDARDIZE | Reporte final (grande) | `work/.../standardize/{nombre-wp}-final-report.md` | [final-report.md.template](../workflow-track/assets/final-report.md.template) |
+| Con flow activo | Artefacto del methodology skill | `work/{wp}/{cajón-de-fase}/{methodology}-{step}.md` | Template del skill de metodología |
 | — | Errores | `context/errors/{descripcion}.md` | [error-report.md.template](assets/error-report.md.template) |
 
 ## Estructura de un work package
@@ -217,6 +258,34 @@ status: Borrador | En revisión | Aprobado
 
 ---
 
+## Arquitectura de orquestación
+
+THYROX opera en dos niveles simultáneos:
+
+**Nivel 1 — Workflow stages (ciclo THYROX):**
+Los 12 stages definen el marco macro del WP. Implementados por los `workflow-*` skills.
+Estado rastreado en `now.md::stage`.
+
+**Nivel 2 — Methodology skills (opcional, anidado):**
+Dentro de un workflow stage, se puede activar un methodology skill para aplicar
+un marco metodológico específico. Implementados por `{metodología}-{paso}` skills.
+Estado rastreado en `now.md::flow` + `now.md::methodology_step`.
+
+El workflow stage no se interrumpe — el methodology skill opera como sub-proceso
+dentro del stage activo.
+
+**Ejemplo concreto:** WP con `flow: dmaic` en Stage 3 DIAGNOSE:
+- `now.md::stage` → `Stage 3 — DIAGNOSE`
+- `now.md::flow` → `dmaic`
+- `now.md::methodology_step` → `dmaic:define`
+- Artefacto producido → `analyze/dmaic-define.md` (del skill dmaic-define)
+
+**Framework patterns:**
+Trabajo de mantenimiento del framework (ej: completar anatomía de skills, auditorías de references)
+se ejecuta como tareas del task-plan sin `flow:` declarado (`flow: null`). No requiere skill dedicado.
+
+---
+
 ## Modelo de permisos
 
 El framework opera en dos planos independientes. Confundirlos genera fricción innecesaria o falsa sensación de seguridad.
@@ -271,6 +340,20 @@ Ver [permission-model](../../references/permission-model.md) para la referencia 
 ---
 
 ## References por dominio
+
+### Methodology skills (activar cuando hay un `flow:` en now.md)
+
+Ver tabla completa en [Methodology skills](#methodology-skills) arriba.
+Selección por namespace: `pdca-*` · `dmaic-*` · `rup-*` · `rm-*` · `pm-*` · `ba-*`
+Cada namespace tiene su propio `references/` con guías del marco metodológico.
+
+Entradas rápidas por namespace:
+- `pdca:` → [pdca-plan](../pdca-plan/SKILL.md)
+- `dmaic:` → [dmaic-define](../dmaic-define/SKILL.md)
+- `rup:` → [rup-inception](../rup-inception/SKILL.md)
+- `rm:` → [rm-elicitation](../rm-elicitation/SKILL.md)
+- `pm:` → [pm-initiating](../pm-initiating/SKILL.md)
+- `ba:` → [ba-planning](../ba-planning/SKILL.md)
 
 ### Phase 1: DISCOVER (leer cuando se explora el problema)
 [introduction](../workflow-discover/references/introduction.md) · [requirements-analysis](../workflow-discover/references/requirements-analysis.md) · [use-cases](../workflow-discover/references/use-cases.md) · [quality-goals](../workflow-discover/references/quality-goals.md) · [stakeholders](../workflow-discover/references/stakeholders.md) · [basic-usage](../workflow-discover/references/basic-usage.md) · [constraints](../workflow-discover/references/constraints.md) · [context](../workflow-discover/references/context.md)

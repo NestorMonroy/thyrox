@@ -4,7 +4,7 @@ category: Escalabilidad
 version: 1.0
 purpose: Guía de cómo adaptar THYROX según complejidad del proyecto.
 goal: Decidir qué estructura y fases usar según tamaño del trabajo.
-updated_at: 2026-03-27
+updated_at: 2026-04-17 02:46:00
 owner: workflow-discover
 ```
 
@@ -181,4 +181,38 @@ Después de PHASE 7, puedes:
 
 ---
 
-**Última actualización:** 2026-03-27
+**Última actualización:** 2026-04-17
+
+---
+
+## Escalabilidad con methodology skill activo
+
+Cuando `now.md::flow` tiene un valor (`pdca`, `dmaic`, `rup`, `rm`, `pm`, `ba`),
+la lógica de escalabilidad cambia: los stages donde el flow tiene methodology skills
+anclados son **no-saltables**, independientemente del tamaño del WP.
+
+**Regla de precedencia:** stages con anclaje de methodology skill > regla de tamaño.
+
+### Stages obligatorios por flow activo
+
+| Flow | Namespace | Stages obligatorios | Stages opcionales (según tamaño) |
+|------|-----------|--------------------|---------------------------------|
+| `pdca` | `pdca:` | 3, 10, 11, 12 | 1, 2, 4, 5, 6, 7, 8, 9 |
+| `dmaic` | `dmaic:` | 2, 3, 10, 11, 12 | 1, 4, 5, 6, 7, 8, 9 |
+| `rup` | `rup:` | 1, 3, 5, 7, 10, 11, 12 | 2, 4, 6, 8, 9 |
+| `rm` | `rm:` | 1, 3, 5, 7, 9, 10, 11 | 2, 4, 6, 8, 12 |
+| `pm` | `pm:` | 1, 3, 5, 6, 7, 10, 11, 12 | 2, 4, 8, 9 |
+| `ba` | `ba:` | 1, 2, 3, 5, 6, 7, 10, 11, 12 | 4, 8, 9 |
+
+### Regla de convivencia
+
+El workflow stage y el methodology skill son **complementarios**, no excluyentes:
+- El workflow stage produce sus artefactos THYROX (ej: `analyze/*.md`)
+- El methodology skill produce sus artefactos metodológicos (ej: `analyze/dmaic-define.md`)
+- Ambos conviven en el mismo cajón de fase
+
+### Fuente de verdad
+
+El campo `flow:` en `now.md` determina si aplica esta regla.
+- `flow: null` → escalabilidad normal (solo regla de tamaño)
+- `flow: dmaic` → stages 2, 3, 10, 11, 12 son no-saltables para este WP
