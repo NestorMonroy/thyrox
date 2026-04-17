@@ -33,18 +33,14 @@ ACTIVE_WP=""
 PHASE=""
 
 if [ -f "${CONTEXT_DIR}/now.md" ]; then
-    PHASE=$(grep "^phase:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/phase: *//')
+    PHASE=$(grep "^stage:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/stage: *//')
+    [ -z "$PHASE" ] && PHASE=$(grep "^phase:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/phase: *//')
     if [ "$PHASE" != "complete" ] && [ -n "$PHASE" ]; then
         CURRENT_WORK=$(grep "^current_work:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/current_work: *//')
         if [ -n "$CURRENT_WORK" ] && [ "$CURRENT_WORK" != "null" ]; then
             ACTIVE_WP=$(basename "$CURRENT_WORK")
         fi
     fi
-fi
-
-# Fallback: sort por nombre (timestamp prefix garantiza orden cronológico)
-if [ -z "$ACTIVE_WP" ] && [ "$PHASE" != "complete" ] && [ -d "${CONTEXT_DIR}/work" ]; then
-    ACTIVE_WP=$(ls -1 "${CONTEXT_DIR}/work" 2>/dev/null | grep -E '^[0-9]{4}-' | sort -r | head -1)
 fi
 
 # Sin WP activo → salir silenciosamente

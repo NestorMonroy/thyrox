@@ -6,10 +6,7 @@
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CONTEXT_DIR="${PROJECT_ROOT}/.thyrox/context"
 
-# ─── ARQUITECTURA DE RUTAS (ADR-015, ADR-019) ──────────────────────────────
-# Interfaz pública: /thyrox:* commands (plugin namespace, FASE 31)
-# Implementación interna: workflow-* skills (no expuestos directamente al usuario)
-# TD-008 completado (FASE 22). ADR-019 aceptado (FASE 31).
+# Interfaz pública: /thyrox:* (plugin, FASE 31). Impl: workflow-* skills. ADR-015/019.
 COMMANDS_SYNCED=true
 
 # Mapa stage/phase → /thyrox:* command (interfaz pública del plugin)
@@ -34,11 +31,7 @@ _phase_to_command() {
         *)  echo "/thyrox:discover" ;;
     esac
 }
-# ───────────────────────────────────────────────────────────────────────────
-
 # Detectar work package activo
-# Fuente 1 (primaria): now.md::current_work si phase != complete
-# Fuente 2 (fallback): directorio más reciente por nombre (YYYY-MM-DD prefijo), no por mtime
 ACTIVE_WP=""
 PHASE=""
 METHODOLOGY_STEP=""
@@ -54,12 +47,6 @@ if [ -f "${CONTEXT_DIR}/now.md" ]; then
             ACTIVE_WP=$(basename "$CURRENT_WORK")
         fi
     fi
-fi
-
-# Fallback: sort por nombre (timestamp prefix garantiza orden cronológico)
-# Filtrar solo directorios con prefijo YYYY- para evitar que archivos como INDEX.md ganen el sort -r
-if [ -z "$ACTIVE_WP" ] && [ "$PHASE" != "complete" ] && [ -d "${CONTEXT_DIR}/work" ]; then
-    ACTIVE_WP=$(ls -1 "${CONTEXT_DIR}/work" 2>/dev/null | grep -E '^[0-9]{4}-' | sort -r | head -1)
 fi
 
 echo ""
