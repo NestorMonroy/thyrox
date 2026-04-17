@@ -98,12 +98,12 @@ Cada T-NNN cubre un skill completo:
 - [x] T-037 `dmaic-control/scripts/check-control-limits.py` — Western Electric Rules · SKILL.md update
 - [x] T-038 `rup-inception/scripts/check-lco-criteria.sh` — artefactos LCO en WP · SKILL.md update
 - [x] T-039 `rm-management/scripts/count-requirements.sh` — conteo por estado en traceability matrix · SKILL.md update
-- [ ] T-040 Commit B7: `feat(scripts): add selective deterministic scripts to dmaic-measure, dmaic-control, rup-inception, rm-management`
+- [x] T-040 Commit B7: `feat(scripts): add selective deterministic scripts to dmaic-measure, dmaic-control, rup-inception, rm-management`
 
 ## Cierre
 
-- [ ] T-041 Deep-review de cobertura: verificar que todos los 29 skills tienen anatomía completa y links válidos
-- [ ] T-042 Push final y actualizar `.thyrox/context/now.md` (campos: `stage`, `current_work`, `methodology_step: null`)
+- [x] T-041 Deep-review de cobertura: verificar que todos los 29 skills tienen anatomía completa y links válidos
+- [x] T-042 Push final y actualizar `.thyrox/context/now.md` (campos: `stage`, `current_work`, `methodology_step: null`)
 
 ---
 
