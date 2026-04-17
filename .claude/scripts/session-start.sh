@@ -58,7 +58,7 @@ if [ -n "$ACTIVE_WP" ]; then
     [ -n "$METHODOLOGY_STEP" ] && [ "$METHODOLOGY_STEP" != "null" ] && echo "  Methodology step: ${METHODOLOGY_STEP}"
     # Mostrar próxima tarea pendiente si existe task-plan.md (o fallback plan.md)
     WP_DIR="${CONTEXT_DIR}/work/${ACTIVE_WP}"
-    TASK_PLAN=$(find "$WP_DIR" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
+    TASK_PLAN=$(find "$WP_DIR" -maxdepth 2 -name "*-task-plan.md" 2>/dev/null | head -1)
     [ -z "$TASK_PLAN" ] && [ -f "${WP_DIR}/plan.md" ] && TASK_PLAN="${WP_DIR}/plan.md"
     if [ -n "$TASK_PLAN" ]; then
         NEXT=$(grep -m1 "^\- \[ \]" "$TASK_PLAN" 2>/dev/null | sed 's/- \[ \] //')
@@ -66,7 +66,7 @@ if [ -n "$ACTIVE_WP" ]; then
     fi
     # Alerta B-09: Stage/Phase 10 activa sin execution-log (TD-014, SPEC-003)
     if [ "$PHASE" = "Phase 10" ] || [ "$PHASE" = "Stage 10" ] || echo "$PHASE" | grep -qE "^Stage 10"; then
-        EXEC_LOG=$(find "$WP_DIR" -maxdepth 1 -name "*-execution-log.md" 2>/dev/null | head -1)
+        EXEC_LOG=$(find "$WP_DIR" -maxdepth 2 -name "*-execution-log.md" 2>/dev/null | head -1)
         if [ -z "$EXEC_LOG" ]; then
             echo ""
             echo "  ⚠  ALERTA B-09: Phase 10 activa pero no existe execution-log en el WP."

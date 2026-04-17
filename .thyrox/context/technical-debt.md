@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-15 02:05:52
+updated_at: 2026-04-17 22:37:43
 ```
 
 # Deuda Técnica — THYROX
@@ -435,5 +435,37 @@ en las referencias de plataforma como "verificado en producción".
 En una sesión de prueba, Claude aplica reglas de las guidelines (ej: "no lógica de negocio
 en handlers") sin instrucción explícita. O las guidelines se mueven a `.claude/rules/`
 con el mecanismo oficial verificado.
+
+---
+
+## TD-042: validate-session-close.sh sin verificación PAT-004
+
+```
+Severidad: media
+Origen: ÉPICA 41 — analyze/process/task-plan-sync-root-cause.md Fix 3 (2026-04-17)
+Fase afectada: .claude/scripts/validate-session-close.sh + cierre de WP
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+`validate-session-close.sh` no verifica si los checkboxes del task-plan están sincronizados
+con los commits del WP antes de cerrar. Es posible cerrar un WP con T-NNN marcados `[x]`
+sin evidencia en git, o con implementación sin checkbox (PAT-004 sistémico silencioso).
+
+**Impacto:**
+El task-plan queda como fuente de verdad falsa — indica estado que no refleja la realidad.
+El audit posterior encuentra el drift pero no puede prevenirlo.
+
+**Solución propuesta:**
+Agregar en `validate-session-close.sh` una verificación opcional:
+1. Extraer T-NNN marcados `[x]` del task-plan activo
+2. Para cada T-NNN, verificar que existe al menos un commit con ese ID en `git log`
+3. Si hay discrepancias: emitir advertencia (no bloquear — es validación soft)
+
+Requiere análisis de `git log` con grep sobre mensajes de commit.
+
+**Criterio de resolución:**
+`validate-session-close.sh` emite advertencia cuando detecta T-NNN marcados `[x]` sin
+commit correspondiente, o commits con T-NNN sin `[x]` en el task-plan.
 
 ---
