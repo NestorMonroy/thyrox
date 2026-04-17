@@ -27,9 +27,9 @@ author: NestorMonroy
 ```yml
 created_at: YYYY-MM-DD HH:MM:SS
 project: THYROX
-analysis_version: 1.0
 author: NestorMonroy
 status: Borrador
+version: 1.0.0
 ```
 
 ### 3. Documentos en cajones (`{cajon}/{subdomain}/{nombre}.md`)
@@ -56,6 +56,29 @@ status: Borrador
 | `project` | Siempre | Nombre del proyecto (THYROX para este repo) |
 | `phase` | En cajones | `Phase N — PHASE_NAME` (ej: `Phase 3 — ANALYZE`) |
 | `author` | Siempre | Nombre del autor |
+| `version` | En docs con revisiones | SemVer 2.0.0 (`MAJOR.MINOR.PATCH`) — ver regla abajo |
+
+## Versionado de documentos — SemVer 2.0.0
+
+Los documentos que evolucionan (deep-reviews, análisis iterativos, guías) usan `version:` con
+Semantic Versioning 2.0.0. Los archivos nunca se duplican con sufijo `-v2`, `-old`, etc. (I-002):
+el número vive en el metadata del archivo canónico.
+
+| Incremento | Cuándo | Ejemplo |
+|------------|--------|---------|
+| **MAJOR** (X.0.0) | La premisa, estructura o conclusiones cambian incompatiblemente — el doc contradice su versión anterior | Corregir error arquitectónico fundamental: `1.0.0 → 2.0.0` |
+| **MINOR** (x.Y.0) | Se agregan secciones o hallazgos nuevos sin contradecir los existentes | Agregar sección de artefactos: `2.0.0 → 2.1.0` |
+| **PATCH** (x.y.Z) | Correcciones menores: typos, clarificaciones, links rotos | Fix de typo: `2.0.0 → 2.0.1` |
+
+**Versión inicial:** `1.0.0` al crear. Omitir el campo si el documento no tiene revisiones previstas.
+
+**Nombres de archivo:** NUNCA incluir el número de versión en el nombre. El nombre es
+auto-descriptivo del contenido; la versión vive en el metadata.
+
+```
+PROHIBIDO: deep-review-use-cases-v2.md, analysis-v3.md
+CORRECTO:  deep-review-use-cases-analysis.md  (con version: 2.0.0 en metadata)
+```
 
 ## Cajones de fase y su código
 
