@@ -23,7 +23,7 @@ version: 1.0.0
 - Ejemplos de naming invertido (`{type}-{content}.md`)
 
 **Total templates auditados:** 46
-**Templates con hallazgos:** 8
+**Templates con hallazgos:** 8 (5 activos corregidos + 3 en legacy/ — SKIP)
 
 ---
 
@@ -36,9 +36,9 @@ version: 1.0.0
 | 3 | `workflow-scope` | `plan.md.template` | `phase: 3 - PLAN` → formato antiguo sin "Phase" y número de Stage incorrecto | Formato `phase:` + Stage incorrecto | Alta | ✅ Corregido en B7 |
 | 4 | `workflow-implement` | `ad-hoc-tasks.md.template` | `phase: 5 - DECOMPOSE / 6 - EXECUTE` → formato antiguo con múltiples Stages | Formato `phase:` obsoleto | Alta | ✅ Corregido en B7 |
 | 5 | `workflow-track` | `refactors.md.template` | `phase: 5 - DECOMPOSE / 6 - EXECUTE` → formato antiguo con múltiples Stages | Formato `phase:` obsoleto | Alta | ✅ Corregido en B7 |
-| 6 | `workflow-decompose` | `categorization-plan.md.template` | `phase: 5 - DECOMPOSE` → formato antiguo | Formato `phase:` obsoleto | Alta | ❌ **Pendiente** |
-| 7 | `workflow-structure` | `document.md.template` | `phase: 4 - STRUCTURE` → formato antiguo | Formato `phase:` obsoleto | Alta | ❌ **Pendiente** |
-| 8 | `workflow-track` | `analysis-phase.md.template` | `phase: 1 - ANALYZE` → Stage renombrado (ANALYZE → DISCOVER para Stage 1) | Nombre Stage obsoleto | Alta | ❌ **Pendiente** |
+| 6 | `workflow-decompose` | `categorization-plan.md.template` | `phase: 5 - DECOMPOSE` → formato antiguo | Formato `phase:` obsoleto | Alta | ⏭️ **SKIP** — archivado en `assets/legacy/` |
+| 7 | `workflow-structure` | `document.md.template` | `phase: 4 - STRUCTURE` → formato antiguo | Formato `phase:` obsoleto | Alta | ⏭️ **SKIP** — archivado en `assets/legacy/` |
+| 8 | `workflow-track` | `analysis-phase.md.template` | `phase: 1 - ANALYZE` → Stage renombrado (ANALYZE → DISCOVER para Stage 1) | Nombre Stage obsoleto | Alta | ⏭️ **SKIP** — archivado en `assets/legacy/` |
 
 **Sin hallazgos de:** cajón/cajon (0 en todos), naming invertido (0), campos `phase:` vacíos sin valor (aceptable — campo opcional si no hay fase fija).
 
@@ -69,26 +69,17 @@ Los siguientes templates no tienen campo `phase:` porque son multi-stage, reutil
 
 ---
 
-## Templates pendientes de corrección
+## Templates en legacy/ — justificación de SKIP
 
-Los 3 templates con ❌ deben corregirse en una tarea de seguimiento:
+Los 3 templates con ⏭️ SKIP están en `assets/legacy/` de sus respectivos skills. Son templates **archivados** (no activos) — no son referenciados por ningún SKILL.md ni proceso activo del framework. Corregirlos no aporta valor operativo.
 
-```bash
-# workflow-decompose/assets/categorization-plan.md.template
-# Cambiar: phase: 5 - DECOMPOSE
-# Por:     phase: Stage 8 — PLAN EXECUTION
-# (categorization-plan es artefacto de Phase 8, no Phase 5 del SDLC viejo)
-
-# workflow-structure/assets/document.md.template
-# Cambiar: phase: 4 - STRUCTURE
-# Por:     phase: Phase 7 — DESIGN/SPECIFY
-
-# workflow-track/assets/analysis-phase.md.template
-# Cambiar: phase: 1 - ANALYZE
-# Por:     phase: Phase 3 — ANALYZE  (Stage 3 DIAGNOSE en terminología THYROX)
-#          O: phase: Phase 1 — DISCOVER  (si el template aplica a Stage 1)
-#          → Revisar el contenido del template para determinar cuál aplica
 ```
+workflow-decompose/assets/legacy/categorization-plan.md.template  → archivado
+workflow-structure/assets/legacy/document.md.template             → archivado
+workflow-track/assets/legacy/analysis-phase.md.template           → archivado
+```
+
+**Política:** Templates en `legacy/` se auditan pero no se corrigen — su estado de `phase:` es irrelevante para el funcionamiento del framework. Si son eliminados en un WP futuro, el hallazgo desaparece con ellos.
 
 ---
 
@@ -100,4 +91,4 @@ Fecha: 2026-04-17 21:33:23
 Archivos: 5 templates corregidos
 ```
 
-Estado: **5/8 corregidos**. 3 pendientes (hallados post-commit — no estaban en scope inicial de B7).
+Estado: **5 FIXED + 3 SKIP (legacy/) + 0 PENDING**.

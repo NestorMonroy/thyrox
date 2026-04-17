@@ -90,14 +90,11 @@ thyrox/
 
 2. **Inicializar el proyecto:**
    ```bash
-   # Opción A — inicialización guiada (si setup-template.sh existe):
-   bash setup-template.sh
-
    # Opción B — manual:
    # Editar ROADMAP.md, CLAUDE.md y .thyrox/context/now.md con el nombre de tu proyecto
    ```
 
-   > **Nota de migración:** Si `setup-template.sh` no existe en tu versión, usa la Opción B.
+   > **Nota de migración:** `setup-template.sh` fue reemplazado por el flujo manual (Opción B).
    > El registry en `.thyrox/registry/` genera los componentes dinámicamente vía `bootstrap.py`.
 
 3. **Commit inicial:**
