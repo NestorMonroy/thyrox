@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["requirements validation", "requirements review RM", "sign-off requirements", "RM validation", "requirements approval"]
-updated_at: 2026-04-16 21:44:29
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /rm-validation — Requirements Management: Validation
@@ -151,37 +151,7 @@ La Inspección Fagan (Fagan, 1976) es el método de inspección formal más rigu
 
 `{wp}/rm-validation.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: rm:validation
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Técnica de validación seleccionada
-[Walkthrough / Inspección Fagan / Prototipo / UAT — justificación]
-
-## Resultados de verificación
-| Req ID | Criterio verificado | Resultado | Defecto (si aplica) |
-
-## Defect log (si Inspección Fagan)
-| ID | Tipo (Missing/Wrong/Extra/Ambiguous/Inconsistent) | Descripción | Estado |
-
-## Resultados de validación con stakeholders
-| Stakeholder | Método | Req validados | Observaciones |
-
-## Sign-off matrix
-| Stakeholder | Rol | Estado | Fecha | Observaciones |
-
-## Decisión de flujo
-- [ ] on_approved → rm:management (todos los criterios cumplidos)
-- [ ] on_corrections_needed → rm:analysis
-  - Defecto 1: [tipo + descripción]
-  - Defecto 2: ...
-```
+usar template: [validation-report-template.md](./assets/validation-report-template.md)
 
 ---
 
@@ -222,3 +192,13 @@ flow: rm
 - La Inspección Fagan requiere entrenamiento del equipo — sin moderador experimentado, la inspección degrada a un walkthrough informal
 - UAT con usuarios reales puede revelar necesidades no articuladas durante la elicitación — planificar iteraciones de elicitación si el UAT identifica gaps significativos
 - Sign-off formal no garantiza que los req sean correctos — solo que los stakeholders acordaron con lo que leyeron; la validación real ocurre cuando el sistema está en uso
+
+---
+
+## Reference Files
+
+### Assets
+- [validation-report-template.md](./assets/validation-report-template.md) — Template de reporte de validación: técnica, defect log, sign-off matrix, decisión de flujo
+
+### References
+- [validation-checklist.md](./references/validation-checklist.md) — Checklist de 40 ítems por tipo de req, defect taxonomy (7 tipos), Inspección Fagan 6 fases, señales de warning con stakeholders

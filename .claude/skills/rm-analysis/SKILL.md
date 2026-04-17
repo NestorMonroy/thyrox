@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["requirements analysis RM", "RM analysis", "requirements prioritization", "conflict resolution requirements", "requirements completeness"]
-updated_at: 2026-04-16 21:44:29
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /rm-analysis — Requirements Management: Analysis
@@ -129,38 +129,7 @@ Complementa MoSCoW con la perspectiva del valor percibido:
 
 `{wp}/rm-analysis.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: rm:analysis
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Checklist de calidad (resumen)
-| Criterio | Aprobados | Con issues | % Aprobación |
-|----------|-----------|-----------|-------------|
-
-## Requisitos con issues de calidad
-| Req ID | Criterio fallido | Descripción del issue | Acción requerida |
-
-## Conflictos identificados y resolución
-| Conflicto | Stakeholders involucrados | Resolución | Estado |
-
-## Priorización MoSCoW
-| Categoría | Cantidad | % del total | IDs de requisitos |
-
-## Análisis Kano (si aplica)
-| Categoría | Requisitos |
-
-## Decisión de flujo
-- [ ] Avanzar a rm:specification — criterios cumplidos
-- [ ] Retornar a rm:elicitation — gaps identificados:
-  - Gap 1: [descripción + stakeholders a consultar]
-  - Gap 2: ...
-```
+usar template: [rm-analysis-template.md](./assets/rm-analysis-template.md)
 
 ---
 
@@ -201,3 +170,13 @@ flow: rm
 - MoSCoW es subjetivo sin criterios de asignación claros — definir los criterios en el plan de RM antes de ejecutar la priorización
 - El modelo Kano requiere datos de usuarios reales para ser válido — en ausencia de datos, usar como framework de discusión, no como herramienta de decisión
 - Conflictos de negocio entre áreas de alta jerarquía pueden no resolverse dentro del proyecto — documentar la decisión pendiente y sus implicaciones en el diseño
+
+---
+
+## Reference Files
+
+### Assets
+- [rm-analysis-template.md](./assets/rm-analysis-template.md) — Template del artefacto de análisis: checklist de calidad, conflictos, priorización MoSCoW, Kano y decisión de flujo
+
+### References
+- [analysis-patterns.md](./references/analysis-patterns.md) — Patrones de análisis: MoSCoW tabla completa, conflict resolution (6 pasos), dependency mapping, priorización avanzada

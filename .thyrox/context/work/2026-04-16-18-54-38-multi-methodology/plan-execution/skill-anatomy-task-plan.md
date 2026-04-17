@@ -66,11 +66,11 @@ Cada T-NNN cubre un skill completo:
 
 ## B4 — RM (5 skills)
 
-- [ ] T-017 `rm-elicitation` — assets: elicitation-report-template.md · references: elicitation-techniques.md (7 técnicas con ventajas/limitaciones/output) · SKILL.md update
-- [ ] T-018 `rm-analysis` — assets: **rm-analysis-template.md** (evita colisión de nombre con T-031) · references: analysis-patterns.md (MoSCoW tabla completa, conflict resolution, dependency mapping) · SKILL.md update
-- [ ] T-019 `rm-specification` — assets: requirements-spec-template.md · references: specification-standards.md (IEEE 830 estructura, Gherkin avanzado, acceptance criteria patterns) · SKILL.md update
-- [ ] T-020 `rm-validation` — assets: validation-report-template.md · references: validation-checklist.md (20-item checklist por tipo de requisito, defect taxonomy) · SKILL.md update
-- [ ] T-021 `rm-management` — assets: change-request-template.md · references: change-control-process.md (CCB proceso detallado, impact assessment template, change log format) · SKILL.md update
+- [x] T-017 `rm-elicitation` — assets: elicitation-report-template.md · references: elicitation-techniques.md (7 técnicas con ventajas/limitaciones/output) · SKILL.md update
+- [x] T-018 `rm-analysis` — assets: **rm-analysis-template.md** (evita colisión de nombre con T-031) · references: analysis-patterns.md (MoSCoW tabla completa, conflict resolution, dependency mapping) · SKILL.md update
+- [x] T-019 `rm-specification` — assets: requirements-spec-template.md · references: specification-standards.md (IEEE 830 estructura, Gherkin avanzado, acceptance criteria patterns) · SKILL.md update
+- [x] T-020 `rm-validation` — assets: validation-report-template.md · references: validation-checklist.md (20-item checklist por tipo de requisito, defect taxonomy) · SKILL.md update
+- [x] T-021 `rm-management` — assets: change-request-template.md · references: change-control-process.md (CCB proceso detallado, impact assessment template, change log format) · SKILL.md update
 - [ ] T-022 Commit B4: `feat(rm): complete skill anatomy — assets, references, SKILL.md updates`
 
 ## B5 — PMBOK (5 skills)

@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["requirements management RM", "change request CCB", "traceability matrix", "RM management", "requirements baseline"]
-updated_at: 2026-04-16 21:44:29
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /rm-management — Requirements Management: Management
@@ -186,35 +186,7 @@ Cuando un CR es aprobado e implementado:
 
 `{wp}/rm-management.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: rm:management
-author: [nombre]
-status: Activo
-```
-
-```markdown
-## Baseline actual
-- Versión: [v1.x]
-- Fecha de última actualización: [fecha]
-- Aprobado por: [nombres + fechas]
-
-## Log de Change Requests
-| CR ID | Solicitante | Fecha | Descripción | Estado CCB | Versión baseline |
-
-## Matriz de trazabilidad (resumen)
-[Tabla req → design → code → test con estado]
-
-## Kanban de CRs activos
-[Estado actual de cada CR en el pipeline]
-
-## Decisión de flujo
-- [ ] on_stable → cierre de RM (baseline estable, todos los CRs cerrados o diferidos)
-- [ ] on_change_request → rm:analysis (CR aprobado que requiere re-análisis)
-  - CR: [ID + descripción del cambio a analizar]
-```
+usar template: [change-request-template.md](./assets/change-request-template.md)
 
 ---
 
@@ -255,3 +227,13 @@ flow: rm
 - El proceso CCB añade overhead — en proyectos muy pequeños o con un solo stakeholder, un proceso CCB formal puede ser innecesario; adaptar la formalidad al contexto
 - La trazabilidad completa requiere disciplina de todo el equipo (developers, testers, designers) — el analista de RM no puede mantenerla solo
 - Los CRs aprobados que aumentan el scope significativamente deben renegociarse con el sponsor (cronograma, presupuesto) — RM no puede aprobar scope sin negociar capacidad
+
+---
+
+## Reference Files
+
+### Assets
+- [change-request-template.md](./assets/change-request-template.md) — Template de gestión: baseline status, CR log, CR detallado con impact assessment, Kanban de CRs activos
+
+### References
+- [change-control-process.md](./references/change-control-process.md) — CCB composición y quórum, pipeline de CR, impact assessment template, change log format, CR patterns por tipo

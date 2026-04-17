@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["requirements specification RM", "SRS", "BRD", "RM specification", "acceptance criteria definition"]
-updated_at: 2026-04-16 21:44:29
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /rm-specification — Requirements Management: Specification
@@ -144,33 +144,7 @@ Al completar la especificación, establecer el baseline:
 
 `{wp}/rm-specification.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: rm:specification
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Formato de especificación seleccionado
-[IEEE 830 SRS / BRD / User Stories / Híbrido — justificación]
-
-## Requisitos funcionales
-[Según formato elegido — con ID, descripción, prioridad, origen, acceptance criteria]
-
-## Requisitos no funcionales
-| Categoría | Req ID | Descripción | Métrica | Método de verificación |
-
-## Trazabilidad inicial
-| Req ID | Stakeholder origen | Prioridad MoSCoW | Dependencias |
-
-## Baseline
-- Versión: 1.0
-- Aprobado por: [nombre + fecha]
-- Cambios posteriores: vía rm:management (CCB)
-```
+usar template: [requirements-spec-template.md](./assets/requirements-spec-template.md)
 
 ---
 
@@ -211,3 +185,13 @@ Cuando la especificación tiene baseline con sign-off → `rm:validation`
 - La especificación solo puede ser tan buena como la elicitación y el análisis que la preceden — garbage in, garbage out
 - IEEE 830 SRS es costoso de mantener en proyectos con cambios frecuentes — en contextos ágiles, preferir User Stories con un nivel mínimo de SRS para los NFR
 - El formato de la especificación debe alinearse con el proceso de desarrollo del equipo — una spec perfecta que nadie lee no tiene valor
+
+---
+
+## Reference Files
+
+### Assets
+- [requirements-spec-template.md](./assets/requirements-spec-template.md) — Template IEEE 830-style: requisitos funcionales, NFR, trazabilidad, baseline y sign-off
+
+### References
+- [specification-standards.md](./references/specification-standards.md) — IEEE 830 estructura, User Stories INVEST+splitting, Gherkin avanzado, AC patterns para NFR

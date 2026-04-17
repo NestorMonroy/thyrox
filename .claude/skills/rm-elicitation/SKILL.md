@@ -6,7 +6,7 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["RM elicitation", "requirements discovery", "requirements collection RM", "requirements lifecycle", "RM cycle"]
-updated_at: 2026-04-16 21:44:29
+updated_at: 2026-04-17 00:00:00
 ---
 
 # /rm-elicitation — Requirements Management: Elicitation
@@ -117,36 +117,7 @@ Antes de avanzar al análisis, confirmar que lo recopilado es correcto:
 
 `{wp}/rm-elicitation.md`
 
-```yml
-created_at: [timestamp]
-project: [nombre]
-work_package: [wp-id]
-phase: rm:elicitation
-author: [nombre]
-status: Borrador
-```
-
-```markdown
-## Plan de elicitación
-- Stakeholders participantes: [lista con roles]
-- Técnicas seleccionadas: [lista con justificación]
-- Calendario: [sesiones con fechas]
-
-## Hallazgos por stakeholder / sesión
-| Stakeholder | Técnica | Necesidades identificadas | Observaciones |
-
-## Requisitos candidatos (sin analizar)
-[Lista numerada de necesidades tal como fueron expresadas — sin interpretar ni filtrar]
-
-## Conflictos identificados
-[Stakeholders con necesidades contradictorias o tensiones a resolver en análisis]
-
-## Confirmación con stakeholders
-| Stakeholder | Fecha | Método | Feedback recibido | ¿Aprobado? |
-
-## Gaps pendientes
-[Qué quedó sin responder — puede generar nueva sesión de elicitación]
-```
+usar template: [elicitation-report-template.md](./assets/elicitation-report-template.md)
 
 ---
 
@@ -189,3 +160,13 @@ Si en `rm:analysis` se identifican gaps → retornar a `rm:elicitation` con list
 - La elicitación no puede capturar requisitos que los stakeholders no conocen aún — las necesidades latentes emergen durante el diseño o las pruebas; planificar validaciones iterativas
 - El sesgo cultural puede afectar la elicitación en entornos multinacionales — adaptar las técnicas al contexto
 - La observación directa solo es posible para procesos existentes; para sistemas nuevos, usar prototipos o workshops de visión
+
+---
+
+## Reference Files
+
+### Assets
+- [elicitation-report-template.md](./assets/elicitation-report-template.md) — Template del reporte de elicitación: plan, hallazgos por sesión, requisitos candidatos, confirmación con stakeholders
+
+### References
+- [elicitation-techniques.md](./references/elicitation-techniques.md) — 7 técnicas de elicitación con árbol de decisión, protocolos, ventajas/limitaciones y patrones de combinación
