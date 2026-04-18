@@ -4,7 +4,7 @@ category: Estado Actual
 version: 2.6.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-17 23:50:00
+updated_at: 2026-04-18 02:00:46
 ```
 
 # Project State — THYROX
@@ -13,7 +13,7 @@ updated_at: 2026-04-17 23:50:00
 
 **Versión:** 2.6.0
 **Estado:** Activo — framework thyrox con 14 FASEs completadas
-**Última actualización:** 2026-04-17 17:04:59
+**Última actualización:** 2026-04-18 02:00:46
 **Branch activo:** `claude/check-merge-status-Dcyvj`
 
 ---
@@ -40,7 +40,7 @@ updated_at: 2026-04-17 23:50:00
 - `sp-coordinator` — |
 - `task-executor` — Ejecuta tareas atómicas de un task-plan.md. Usar cuando hay un task-plan con ch
 - `task-planner` — Descompone trabajo en tareas atómicas con IDs trazables. Usar cuando el usuario
-- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
+- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
 - `thyrox-coordinator` — |
 - `webpack-expert` — Tech-expert para Webpack y bundling de assets. Conoce configuración de entry/ou
 

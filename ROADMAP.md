@@ -13,7 +13,7 @@ Fecha actualización: 2026-04-15
 
 Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del trabajo.
 
-> **FASEs 1-26 archivadas** en [ROADMAP-history.md](ROADMAP-history.md) por REGLA-LONGEV-001 (archivo superó 25,000 bytes — FASE 29).
+> **FASEs 1-26** disponibles en `git log --oneline --follow -- ROADMAP.md` (historial completo en git — I-002).
 
 ---
 
@@ -25,10 +25,10 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## ÉPICA 41: goto-problem-fix — Consolidar fuente única de estado del framework ✓ COMPLETADO 2026-04-17
+## ÉPICA 41: goto-problem-fix — Consolidar fuente única de estado del framework ✓ COMPLETADO 2026-04-18
 
 **WP:** `.thyrox/context/work/2026-04-17-17-58-13-goto-problem-fix/`
-**Resultado:** 7 batches — fixes scripts (A-1..A-6/GAP-02), state-management.md v2.0.0, README 9 fixes, ARCHITECTURE.md coordinator+hooks, DECISIONS.md+guides, skill templates. Taxonomía 3 niveles codificada. 25 tareas completadas.
+**Resultado:** scripts phase→stage fix, workflow-audit skill, domain subdirectories, PAT-004 enforcement, REGLA-LONGEV-001 revisada, CHANGELOG/ROADMAP policy, coordinator rename (ba/pm), coverage analysis. 40 commits.
 
 - [x] Stage 1 DISCOVER — 2026-04-17
 - [x] Stage 3 DIAGNOSE — 2026-04-17
@@ -37,6 +37,7 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 - [x] Stage 8 PLAN EXECUTION — 2026-04-17
 - [x] Stage 10 IMPLEMENT — 2026-04-17
 - [x] Stage 11 TRACK/EVALUATE — 2026-04-17
+- [x] Stage 12 STANDARDIZE — 2026-04-18
 
 ---
 
