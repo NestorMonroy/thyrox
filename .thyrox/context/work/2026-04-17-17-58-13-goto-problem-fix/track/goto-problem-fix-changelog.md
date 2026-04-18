@@ -3,13 +3,14 @@ created_at: 2026-04-18 01:58:20
 feature: goto-problem-fix
 wp: 2026-04-17-17-58-13-goto-problem-fix
 fase: ÉPICA 41
-commits: 40
+commits: 45
 ```
 
 # WP Changelog — goto-problem-fix (ÉPICA 41)
 
 > Cambios producidos por ÉPICA 41: corrección de goto-problems en scripts de sesión,
-> remediación de audit, creación de workflow-audit skill, y mejoras al framework.
+> remediación de audit, creación de workflow-audit skill, mejoras al sistema,
+> y reposicionamiento de identidad THYROX de "framework" a sistema de Agentic AI.
 
 ---
 
@@ -17,6 +18,10 @@ commits: 40
 
 ### Added
 
+- `adr-thyrox-agentic-ai-identity.md` — ADR identidad canónica THYROX como sistema de Agentic AI, independiente de plataforma (b482033)
+- Addendum `adr-arquitectura-orquestacion-thyrox.md` — pm-thyrox→thyrox, 7 fases→12 stages, Agentic AI platform-independent (b482033)
+- `analyze/framework/thyrox-agentic-ai-positioning-review.md` — inventario completo P1-P4 (b6d627f)
+- `analyze/framework/thyrox-agentic-ai-deep-review-v2.md` — 18 ocurrencias residuales con clasificación CAMBIAR/CORRECTO/DUDOSO (17f5013)
 - `workflow-audit` skill — auditor crítico de WPs con scoring PASS/FAIL/PARTIAL/SKIP (ccbd772)
 - `analyze/coverage/use-cases-recommendations-coverage.md` — 8/9 recomendaciones implementadas (1867d81)
 - `analyze/framework/changelog-roadmap-policy-analysis.md` — benchmarking industrial + action plan (52e7e79)
@@ -29,6 +34,8 @@ commits: 40
 
 ### Changed
 
+- `README.md`, `ARCHITECTURE.md`, `.claude/skills/thyrox/SKILL.md`, `CONTRIBUTING.md` — identidad THYROX: "framework" → "sistema de Agentic AI" + desacople de plataforma Claude Code (9516573, 4ce2d37)
+- 19 archivos adicionales (`references/`, `skills/`, `project-state.md`, `focus.md`, `CLAUDE.md`, etc.) — "del framework/al framework" → "del sistema/al sistema", versioning "7 fases" → "12 stages" (17f5013)
 - `session-start.sh`, `session-resume.sh`, `project-status.sh` — migración `phase:` → `stage:` (A-1..A-6) (1f6986f)
 - `README.md` — removida Opción A (`bash setup-template.sh`), actualizada nota de migración (107e65d)
 - `.claude/agents/babok-coordinator.md` → `ba-coordinator.md` — rename + todos los campos internos (1867d81)
@@ -59,6 +66,14 @@ commits: 40
 
 | Hash | Tipo | Descripción |
 |------|------|-------------|
+| b482033 | docs | ADR identidad THYROX como sistema de Agentic AI |
+| 17f5013 | refactor | deep-review-v2 — eliminar framework restantes (19 archivos) |
+| 4ce2d37 | refactor | desacoplar identidad THYROX de plataforma Claude Code |
+| 9516573 | refactor | reposicionar THYROX de framework a Agentic AI (9 archivos) |
+| b6d627f | docs | deep-review THYROX positioning — framework → Agentic AI system |
+| bbe3afa | fix | resolve audit v3.0.0 PARTIALs P-01..P-04 |
+| 03022a0 | docs | audit v3.0.0 — Grade A 96% post Stage 12 (4 PARTIAL, 0 FAIL) |
+| b34d9b7 | docs | Ishikawa analysis — WP premature close violating I-011 |
 | bce1b03 | fix | remove broken CHANGELOG-archive.md reference |
 | e5a2cb7 | chore | remove -archive/-history files, fix REGLA-LONGEV-001 |
 | 52e7e79 | docs | changelog-roadmap policy analysis |

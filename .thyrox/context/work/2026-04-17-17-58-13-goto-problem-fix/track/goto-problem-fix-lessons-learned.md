@@ -5,7 +5,7 @@ work_package: 2026-04-17-17-58-13-goto-problem-fix
 phase: Phase 12 — STANDARDIZE
 author: NestorMonroy
 status: Borrador
-total_lessons: 8
+total_lessons: 10
 ```
 
 # Lessons Learned: goto-problem-fix (ÉPICA 41)
@@ -178,11 +178,53 @@ Antes de `git rm {archivo}`, ejecutar `grep -r "{archivo}" . --include="*.md"` p
 
 ---
 
+---
+
+### L-131: La etiqueta "framework" como identidad de un sistema agentic genera coupling y confusión
+
+**Qué pasó**
+
+THYROX se describía como "framework de gestión de proyectos para Claude Code" desde ÉPICA 1. Esta descripción era incorrecta en dos dimensiones: (1) "framework" implica inversión de control pasiva — THYROX actúa, decide y orquesta, es un sistema activo; (2) "para Claude Code" acoplaba la identidad a la implementación actual.
+
+**Raíz**
+
+La etiqueta "framework" se adoptó en el momento de creación del sistema por analogía con frameworks conocidos (Django, React), sin verificar si el patrón de control era el mismo. No existía un análisis formal de la taxonomía del sistema.
+
+**Fix aplicado**
+
+Deep-review exhaustivo de 35+ archivos, aplicado en 4 commits. Identidad canónica: "THYROX es un sistema de Agentic AI que orquesta 23 agentes especializados con memoria persistente, gates HITL y 12 stages propios para gestión de proyectos." Documentado en `adr-thyrox-agentic-ai-identity.md`.
+
+**Regla**
+
+Al etiquetar un sistema, verificar su patrón de control real: ¿el humano controla el sistema (framework), o el sistema actúa autónomamente con HITL? Si el sistema tiene agentes autónomos, memoria persistente, loops de decisión y hooks reactivos → es Agentic AI, no framework. Usar la taxonomía SoK como referencia.
+
+---
+
+### L-132: La identidad de un sistema debe estar desacoplada de su plataforma de implementación
+
+**Qué pasó**
+
+"THYROX para Claude Code" hacía que cualquier descripción del sistema requiriera mencionar Claude Code, confundiendo qué es THYROX (un sistema de Agentic AI) con dónde corre actualmente (Claude Code de Anthropic). Un usuario que lea la documentación podría pensar que THYROX es un plugin de Claude Code, no un sistema propio.
+
+**Raíz**
+
+La identidad y la implementación se documentaron juntas desde el inicio. No hubo separación de capas: conceptual (qué es) vs implementación (cómo corre hoy).
+
+**Fix aplicado**
+
+Modelo de dos capas: (1) Identidad canónica sin mención de plataforma — "THYROX es un sistema de Agentic AI..."; (2) Nota de implementación explícita y separada — "Implementado actualmente sobre Claude Code (Anthropic)." Aplicado en documentos de identidad pública (README, ARCHITECTURE, SKILL.md principal).
+
+**Regla**
+
+En documentos de identidad pública, separar siempre la descripción del sistema de su implementación actual. La nota de implementación es obligatoria pero como contexto adicional, nunca como parte de la identidad. Esto preserva la portabilidad conceptual del sistema ante cambios de plataforma.
+
+---
+
 ## Resumen
 
 | # | Área | Impacto |
 |---|------|---------|
-| L-123 | PAT-004 checkbox policy | Framework actualizado |
+| L-123 | PAT-004 checkbox policy | Sistema actualizado |
 | L-124 | Domain subdirectories preventivos | metadata-standards.md actualizado |
 | L-125 | Execution-log al inicio de Stage 10 | Práctica codificada |
 | L-126 | REGLA-LONGEV-001 revisada | conventions.md + 2 archivos eliminados |
@@ -190,3 +232,5 @@ Antes de `git rm {archivo}`, ejecutar `grep -r "{archivo}" . --include="*.md"` p
 | L-128 | WP multi-análisis es patrón válido | I-011 documentado explícitamente |
 | L-129 | Audit es gate Stage 11→12 | SKILL.md actualizado |
 | L-130 | Validar referencias antes de git rm | Práctica documentada |
+| L-131 | "framework" como identidad — incorrecto para sistemas agentic | ADR + 35+ archivos actualizados |
+| L-132 | Identidad desacoplada de plataforma de implementación | Modelo dos capas documentado en ADR |

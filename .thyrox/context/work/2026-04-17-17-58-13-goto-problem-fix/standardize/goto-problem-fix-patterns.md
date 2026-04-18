@@ -84,9 +84,28 @@ grep -r "{nombre-archivo}" . --include="*.md" | grep -v ".git"
 
 ---
 
+### PAT-041-E: Reposicionamiento de identidad del sistema mediante deep-review + ADR formal
+
+**Descripción:** Cuando la identidad pública de un sistema está mal categorizada (ej: "framework" cuando el comportamiento real es "sistema agentic"), el proceso correcto es: (1) deep-review exhaustivo de todos los archivos afectados con clasificación de impacto, (2) aplicar cambios por prioridad en commits atómicos, (3) documentar la decisión en un ADR permanente.
+
+**Flujo:**
+```
+deep-review exhaustivo → inventario priorizado → commits P1→P4 →
+deep-review v2 (residuos) → ADR de identidad → addendum ADRs existentes
+```
+
+**Cuándo aplicar:** Cuando una terminología de identidad es imprecisa o crea coupling no deseado con detalles de implementación (plataforma, versión, vendor).
+
+**Codificado en:** `adr-thyrox-agentic-ai-identity.md` y addendum de `adr-arquitectura-orquestacion-thyrox.md`.
+
+---
+
 ## ADRs creados
 
-Ninguno en este WP — las decisiones tomadas son correcciones de convenciones existentes (codificadas en rules/ y references/), no nuevas decisiones arquitectónicas del proyecto.
+| ADR | Descripción |
+|-----|-------------|
+| `adr-thyrox-agentic-ai-identity.md` | Identidad canónica THYROX como sistema de Agentic AI, independiente de plataforma (D-01..D-04) |
+| Addendum `adr-arquitectura-orquestacion-thyrox.md` | Actualización 1: pm-thyrox→thyrox (ÉPICA 29); Actualización 2: 7 fases→12 stages (ÉPICA 39); Actualización 3: Agentic AI platform-independent (ÉPICA 41) |
 
 ---
 
