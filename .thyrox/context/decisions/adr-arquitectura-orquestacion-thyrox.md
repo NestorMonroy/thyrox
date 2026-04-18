@@ -223,7 +223,49 @@ Cuando **Programmatic Tool Calling** esté disponible en Claude Code:
 
 ---
 
-## Addendum 2026-04-08 — 5 Correcciones
+## Addendum 2026-04-18 — 3 Actualizaciones estructurales (ÉPICA 29, 39, 41)
+
+*Las decisiones D-01..D-09 no se modifican. Este addendum registra cambios de naming, conteo y posicionamiento que afectan las referencias de este ADR.*
+
+### Actualización 1 — pm-thyrox → thyrox (ÉPICA 29)
+
+Todas las referencias a `pm-thyrox` en este ADR son históricas. El skill fue renombrado a `thyrox` en ÉPICA 29:
+
+| Este ADR dice | Estado actual |
+|---------------|---------------|
+| `pm-thyrox SKILL` | `thyrox SKILL` (`.claude/skills/thyrox/SKILL.md`) |
+| `pm-thyrox/references/` | `thyrox/references/` |
+| Capa 2: `pm-thyrox SKILL + N skills` | Capa 2: `thyrox SKILL + N skills` |
+
+El prefijo `pm-` fue eliminado porque THYROX no es Project Management (PMI) — es el nombre propio del sistema.
+
+### Actualización 2 — 7 fases → 12 stages (ÉPICA 39)
+
+El ADR describe un ciclo de 7 fases. En ÉPICA 39 se restructuró el ciclo THYROX a 12 stages propios:
+
+| Antes (7 fases) | Ahora (12 stages) |
+|----------------|-------------------|
+| ANALYZE | DISCOVER (Stage 1) |
+| SOLUTION_STRATEGY | BASELINE (Stage 2) / DIAGNOSE (Stage 3) |
+| PLAN | CONSTRAINTS (Stage 4) / STRATEGY (Stage 5) / SCOPE (Stage 6) |
+| STRUCTURE | DESIGN/SPECIFY (Stage 7) |
+| DECOMPOSE | PLAN EXECUTION (Stage 8) |
+| EXECUTE | PILOT/VALIDATE (Stage 9) / IMPLEMENT (Stage 10) |
+| TRACK | TRACK/EVALUATE (Stage 11) / STANDARDIZE (Stage 12) |
+
+La nomenclatura cambió: "FASE N" → "ÉPICA N" (número secuencial global), "Phase N" → "Stage N" (etapa dentro del WP).
+
+La Tabla Estado Actual vs Objetivo (sección final) referencia "7 fases" y "pm-thyrox SKILL ~430 líneas" — esos números corresponden al estado en 2026-04-08. El estado actual es:
+- `thyrox SKILL` — ciclo de 12 stages, ~430+ líneas con referencias completas
+- `/workflow_*` skills — renombrados y restructurados (12 skills: workflow-discover...workflow-standardize)
+
+### Actualización 3 — THYROX como sistema de Agentic AI (ÉPICA 41)
+
+El posicionamiento implícito en este ADR ("pm-thyrox SKILL para gestión de proyectos") fue revisado en ÉPICA 41. La decisión formal se documenta en `adr-thyrox-agentic-ai-identity.md`.
+
+Resumen: THYROX no es un "framework de gestión" pasivo — es un **sistema de Agentic AI** con 23 agentes, multi-agent coordination, HITL gates, memoria persistente (FAISS) y hooks reactivos. La implementación actual es sobre Claude Code (Anthropic); la identidad del sistema es independiente de la plataforma.
+
+Esta actualización no modifica las decisiones arquitectónicas D-01..D-09. La arquitectura de 5 capas sigue vigente; el cambio es de naming y posicionamiento conceptual.
 
 *Fuente: nueva documentación oficial de Claude Code (FASE 22 — framework-evolution). Las decisiones D-01..D-09 no se modifican.*
 
