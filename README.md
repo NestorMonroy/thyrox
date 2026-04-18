@@ -13,7 +13,9 @@ Fecha actualización: 2026-04-17
 
 ## Propósito
 
-Sistema de Agentic AI para gestión y planificación de proyectos sobre Claude Code, con metodología de 12 stages propia (DISCOVER → STANDARDIZE) y soporte nativo para 11 metodologías formales.
+Sistema de Agentic AI para gestión y planificación de proyectos, con metodología de 12 stages propia (DISCOVER → STANDARDIZE) y soporte nativo para 11 metodologías formales.
+
+> Implementado actualmente sobre Claude Code (Anthropic). La naturaleza agentic del sistema es independiente de la plataforma.
 
 > Objetivo: Que nuevos usuarios comprendan qué es THYROX, cómo funciona, y cómo comenzar a usarlo.
 
@@ -21,7 +23,7 @@ Sistema de Agentic AI para gestión y planificación de proyectos sobre Claude C
 
 ## Descripción General
 
-Un sistema de Agentic AI para gestión y planificación de proyectos sobre Claude Code, con 23 agentes especializados, memoria persistente, gates HITL y coordinators para metodologías formales (DMAIC, PDCA, PMBOK, BABOK, RUP, RM, Lean, BPA, PPS, SP, CP).
+Un sistema de Agentic AI para gestión y planificación de proyectos, con 23 agentes especializados, memoria persistente, gates HITL y coordinators para metodologías formales (DMAIC, PDCA, PMBOK, BABOK, RUP, RM, Lean, BPA, PPS, SP, CP). Implementado actualmente sobre Claude Code (Anthropic).
 
 ## Qué es THYROX
 

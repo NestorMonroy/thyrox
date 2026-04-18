@@ -1,12 +1,12 @@
 ```yml
 name: thyrox
 description: "Sistema agentic THYROX con 12 stages propios (DISCOVER → STANDARDIZE). Usar este skill cuando el usuario quiera planificar, analizar, diseñar, organizar, trackear o gestionar CUALQUIER tipo de trabajo — features, bug fixes, refactoring, documentación, investigación o setup de proyecto. También usar cuando el usuario pregunte '¿qué hago primero?', '¿cómo organizo esto?', '¿cuál es el estado?', 'crea un plan para X', 'analiza X', 'descompón X en tareas', 'documenta esta decisión', o cualquier cosa relacionada con workflow de proyecto, tracking de trabajo, registros de decisiones o desarrollo estructurado. Siempre empezar con DISCOVER antes de planificar."
-updated_at: 2026-04-18 04:30:00
+updated_at: 2026-04-18 05:00:00
 ```
 
 # THYROX: Gestión de Proyectos
 
-Sistema agentic para organizar trabajo de cualquier tamaño sobre Claude Code. Sigue 12 stages propios (DISCOVER → STANDARDIZE) donde entender viene antes que planificar, y planificar viene antes que ejecutar.
+Sistema agentic para organizar trabajo de cualquier tamaño. Implementado actualmente sobre Claude Code (Anthropic); los Skills actúan como políticas de comportamiento del agente, no como APIs para desarrolladores. Sigue 12 stages propios (DISCOVER → STANDARDIZE) donde entender viene antes que planificar, y planificar viene antes que ejecutar.
 
 **Principio core:** Analizar antes de actuar. Cada fase produce artefactos que alimentan la siguiente. Saltar fases produce trabajo sin fundamento.
 
