@@ -1,14 +1,14 @@
 ```yml
 created_at: 2026-04-18 16:49:14
-updated_at: 2026-04-18 23:37:47
+updated_at: 2026-04-18 23:55:00
 project: THYROX
 work_package: 2026-04-18-07-12-50-methodology-calibration
 phase: Phase 1 — DISCOVER
 author: NestorMonroy
 status: Borrador
-version: 2.0.0
+version: 2.1.0
 fuente: Capítulo 6 — "Planificación" (libro agentic design patterns, versión ajustada)
-nota: Versión ajustada del capítulo. Cambios clave vs v1: eliminada Sec.9 "síntesis 4 patrones" (jerarquía), conclusión reescrita con escalabilidad, DeepResearch amplía con casos concretos.
+nota: v2.1.0 — completa DeepResearch con integración de docs privados + "no concatenación" + evaluación crítica. Agrega párrafo de cierre de casos de uso. v2.0.0 había comprimido en exceso esas secciones.
 ```
 
 # Input: Capítulo 6 — Planificación (versión ajustada)
@@ -59,6 +59,8 @@ El capítulo usa la analogía de organizar una reunión: el usuario define el *q
 | Robótica/navegación | Ruta de robot con obstáculos, restricciones de tráfico | Optimización de métricas (tiempo, energía) |
 | Síntesis de información | Informe de investigación: recopilación → resumen → estructuración → refinamiento iterativo | Fases diferenciadas con bucle iterativo |
 | Soporte al cliente | Diagnóstico → implementación de soluciones → escalamiento | Plan sistemático multi-paso |
+
+> "En esencia, el patrón de planificación permite a un agente ir más allá de acciones simples y reactivas hacia un comportamiento orientado al objetivo. Proporciona el marco lógico necesario para resolver problemas que requieren una secuencia coherente de operaciones interdependientes."
 
 ---
 
@@ -112,10 +114,13 @@ print(result)
 **Descripción funcional del sistema:**
 - Múltiples pasos: consulta → deconstrucción en plan multipunto → revisión colaborativa → bucle iterativo de búsqueda/análisis → síntesis asíncrona → informe estructurado
 - **Revisión colaborativa**: el plan se presenta al usuario para modificación antes de ejecutar
-- **Bucle iterativo**: el agente reformula consultas dinámicamente según brechas de conocimiento
-- **Asincronismo**: resiliente a fallos de punto único, notificación al completarse
-- **Síntesis crítica**: identificación de temas principales, organización en narrativa coherente (no concatenación de hallazgos)
-- **Output interactivo**: resumen de audio, gráficos, links a fuentes originales
+- **Bucle iterativo**: el agente reformula consultas dinámicamente según brechas de conocimiento; identifica activamente brechas de conocimiento, corrobora puntos de datos y resuelve discrepancias
+- **Asincronismo**: resiliente a fallos de punto único, notificación al completarse; el usuario puede desconectarse durante el proceso
+- **Integración de documentos privados**: el sistema puede integrar documentos proporcionados por el usuario, combinando información de fuentes privadas con su investigación basada en web
+- **Síntesis crítica** (no mera concatenación): durante la fase de síntesis, el modelo realiza una evaluación crítica de la información recopilada, identificando temas principales y organizando el contenido en una narrativa coherente con secciones lógicas
+- **Output interactivo**: resumen de audio, gráficos, enlaces a fuentes citadas originales, permitiendo verificación y exploración adicional por el usuario
+
+**Eficiencia declarada:** automatización del ciclo iterativo de búsqueda y filtrado (cuello de botella central en investigación manual); permite analizar mayor volumen y variedad de fuentes que lo viable para un investigador humano en el mismo marco de tiempo.
 
 **Casos de uso documentados:**
 

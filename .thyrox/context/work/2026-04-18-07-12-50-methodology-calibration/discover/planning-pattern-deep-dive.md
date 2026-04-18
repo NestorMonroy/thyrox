@@ -1,18 +1,19 @@
 ```yml
 created_at: 2026-04-18 16:52:29
-updated_at: 2026-04-18 23:37:47
+updated_at: 2026-04-18 23:55:00
 project: THYROX
 work_package: 2026-04-18-07-12-50-methodology-calibration
 phase: Phase 1 — DISCOVER
 author: deep-dive
 status: Borrador
-version: 2.0.0
-fuente: Capítulo 6 — "Planificación" (libro agentic design patterns, versión ajustada v2)
+version: 2.1.0
+fuente: Capítulo 6 — "Planificación" (libro agentic design patterns, versión ajustada v2.1)
 veredicto_síntesis: PARCIALMENTE VÁLIDO
-saltos_lógicos: 4
+saltos_lógicos: 5
 contradicciones: 3
-engaños_estructurales: 4
-delta_vs_v1: "SALTO-3 RESUELTO (jerarquía eliminada del texto). SALTO-4 DEBILITADO (DeepResearch añade casos concretos). Conteo total: 5→4 saltos. Veredicto sin cambio."
+engaños_estructurales: 5
+delta_vs_v2.0: "SALTO-6 NUEVO: integración de documentos privados etiquetada como Planning (es RAG+Planning, no solo Planning). ENGAÑO-5 NUEVO: 'no mera concatenación' como garantía de síntesis crítica sin mecanismo de validación."
+delta_vs_v1: "SALTO-3 RESUELTO (jerarquía eliminada). SALTO-4 DEBILITADO (casos concretos). SALTO-6 NUEVO. ENGAÑO-5 NUEVO. Veredicto sin cambio."
 ```
 
 # Deep-Dive: Capítulo 6 — Planificación (Planning Pattern) v2.0.0
@@ -153,6 +154,18 @@ Conclusión: Planning es el "puente esencial entre intención humana y ejecució
 
 ---
 
+### SALTO-6: De integración de documentos privados a "esto es Planning" *(NUEVO en v2.1 — MEDIO)*
+
+**Premisa:** DeepResearch "puede integrar documentos proporcionados por el usuario, combinando información de fuentes privadas con su investigación basada en web."
+**Conclusión:** Esta capacidad es presentada como parte del patrón Planning.
+**Ubicación:** Sección DeepResearch — arquitectura del sistema.
+**Tipo de salto:** EXPANSIÓN DE ALCANCE SIN SEPARACIÓN. La integración de documentos privados con búsqueda web es Retrieval-Augmented Generation (RAG), no Planning. El capítulo presenta RAG + Planning como si fueran el mismo patrón — sin aclarar que la integración de documentos privados agrega una capa arquitectónica distinta al Planning descrito formalmente.
+**Tamaño:** MEDIO
+**Justificación que debería existir:** Una distinción explícita entre las capacidades de Planning (planificación dinámica) y las capacidades RAG (integración de fuentes privadas). DeepResearch implementa ambas — pero el capítulo atribuye ambas al patrón "Planning."
+**Implicación THYROX:** Si un WP necesita combinar análisis de artefactos internos con investigación web, eso es Planning + RAG — no solo Planning. Distinguir estas capas afecta cómo se diseñaría el agente.
+
+---
+
 ### SALTO-5: De `budget_tokens` (extended thinking) a capacidades de Planning *(PERSISTE — CRÍTICO)*
 
 **Premisa:** La API de OpenAI tiene `reasoning={"type": "enabled", "budget_tokens": 10000}`.
@@ -220,7 +233,18 @@ Conclusión: Planning es el "puente esencial entre intención humana y ejecució
 ### ENGAÑO-3: DeepResearch como evidencia arquitectónica de Planning *(PERSISTE, DEBILITADO)*
 
 **Patrón:** Notación formal encubriendo especulación.
-**Operación:** La v2 añade casos de uso funcionales (análisis competitivo, exploración académica) que son plausibles. Pero siguen siendo descripciones de la UX del producto, no de la arquitectura interna. El engaño es menos severo porque los casos concretos añaden plausibilidad funcional — pero la conclusión arquitectónica sigue sin respaldo.
+**Operación:** La v2.1 añade casos de uso funcionales (análisis competitivo, exploración académica) con descripción detallada que son plausibles. Pero siguen siendo descripciones de la UX del producto, no de la arquitectura interna. El engaño es menos severo porque los casos concretos añaden plausibilidad funcional — pero la conclusión arquitectónica sigue sin respaldo.
+
+---
+
+### ENGAÑO-5: "No mera concatenación" como garantía de síntesis crítica *(NUEVO en v2.1)*
+
+**Patrón:** Negación de defecto como afirmación de calidad.
+**Operación:** El capítulo afirma: "La salida final no es meramente una lista concatenada de hallazgos, sino un informe estructurado de múltiples páginas. Durante la fase de síntesis, el modelo realiza una evaluación crítica de la información recopilada." La negación de concatenación ("no meramente") se usa como evidencia implícita de síntesis crítica genuina.
+**Ubicación:** Sección DeepResearch — descripción del output.
+**Por qué es engañoso:** Afirmar que el output NO es concatenación no prueba que la alternativa (síntesis crítica con evaluación) ocurra mecánicamente de forma verificable. Un LLM puede generar texto con apariencia de síntesis crítica sin que exista un mecanismo separado de "evaluación crítica" — exactamente el mismo problema del código CrewAI (ENGAÑO-2): el LLM genera texto que parece el output de un proceso, sin que el proceso exista arquitectónicamente.
+**Efecto:** El lector infiere que DeepResearch tiene un componente de "evaluación crítica" separado de la generación. No hay evidencia de que esto sea una fase arquitectónica distinguible vs. simplemente el output del modelo con instrucciones de síntesis.
+**Tamaño:** MEDIO — relevante para claims de calidad del output, no de arquitectura del patrón.
 
 ---
 
@@ -351,20 +375,21 @@ La escalabilidad es una descripción cualitativa sin umbral definido.
 
 ---
 
-## Conteo final (v2)
+## Conteo final (v2.1)
 
-- **Saltos lógicos identificados:** 4 (SALTO-1, 2, 4, 5 — SALTO-3 resuelto)
+- **Saltos lógicos identificados:** 5 (SALTO-1, 2, 4, 5, 6 — SALTO-3 resuelto)
   - Críticos: 2 (SALTO-1: código CrewAI; SALTO-5: budget_tokens)
-  - Medios: 1 (SALTO-2: regla de selección)
+  - Medios: 2 (SALTO-2: regla de selección; SALTO-6: RAG presentado como Planning)
   - Menores: 1 (SALTO-4: DeepResearch, debilitado desde MEDIO)
 - **Contradicciones identificadas:** 3 (CONTRADICCIÓN-1 a CONTRADICCIÓN-3) — sin cambio
   - Planning vs. implementación CrewAI: crítica
   - Autonomía vs. revisión colaborativa: media
   - "Herramienta específica" vs. "puente esencial": menor (retórica)
-- **Engaños estructurales:** 4 (ENGAÑO-1 a ENGAÑO-4) — sin cambio numérico
+- **Engaños estructurales:** 5 (ENGAÑO-1 a ENGAÑO-5)
   - Credibilidad prestada IA clásica: domina el capítulo
   - Código CrewAI como demostración del patrón: afecta aplicabilidad práctica
   - DeepResearch como evidencia arquitectónica: debilitado pero persiste
   - `budget_tokens` renombrado: potencialmente confunde implementaciones
+  - "No mera concatenación" como garantía implícita de síntesis crítica: nuevo en v2.1
 
-**Veredicto (sin cambio):** PARCIALMENTE VÁLIDO — La distinción conceptual central (Planning cuando el workflow debe ser descubierto) es correcta y adoptable. La eliminación de la jerarquía Planning→otros tres es una mejora real (SALTO-3 resuelto). Las implementaciones concretas (CrewAI, OpenAI con `budget_tokens`) siguen sin demostrar el patrón como fue definido.
+**Veredicto (sin cambio):** PARCIALMENTE VÁLIDO — La distinción conceptual central (Planning cuando el workflow debe ser descubierto) es correcta y adoptable. La eliminación de la jerarquía Planning→otros tres es una mejora real (SALTO-3 resuelto). Las implementaciones concretas (CrewAI, OpenAI con `budget_tokens`) siguen sin demostrar el patrón como fue definido. La integración de documentos privados (RAG) y la síntesis crítica son capacidades adicionales no distinguidas del patrón Planning.

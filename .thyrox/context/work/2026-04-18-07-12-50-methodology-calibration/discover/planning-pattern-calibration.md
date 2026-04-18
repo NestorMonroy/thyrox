@@ -5,10 +5,11 @@ work_package: 2026-04-18-07-12-50-methodology-calibration
 phase: Phase 1 — DISCOVER
 author: agentic-reasoning
 status: Borrador
-version: 1.0.0
-fuente: Capítulo 6 — "Planificación" (v2.0.0 ajustado) + deep-dive v2.0.0
-ratio_calibracion: "11/17 = 65%"
+version: 1.1.0
+fuente: Capítulo 6 — "Planificación" (v2.1.0 ajustado) + deep-dive v2.1.0
+ratio_calibracion: "8.5/19 = 45%"
 patron_dominante: "Evidencia funcional sin derivación arquitectónica (EFsA)"
+delta_v1.0: "Añadidos C-18 (integración docs privados) y C-19 (no-concatenación como garantía). Ratio corregido: 8.25/17=49% → 8.5/19=45%."
 ```
 
 # Análisis de Calibración: Capítulo 6 — Planificación (v2.0.0)
@@ -40,6 +41,8 @@ patron_dominante: "Evidencia funcional sin derivación arquitectónica (EFsA)"
 | C-15 | Soporte al cliente como caso de Planning | Funcional |
 | C-16 | "Planning escala de tareas simples a sistemas complejos" | Cualitativo |
 | C-17 | "Herramienta específica, no solución universal" (principio de equilibrio) | Normativo |
+| C-18 | Integración de documentos privados como capacidad de Planning | Arquitectónico |
+| C-19 | "No mera concatenación" → evaluación crítica garantizada | Calidad output |
 
 ---
 
@@ -223,10 +226,28 @@ patron_dominante: "Evidencia funcional sin derivación arquitectónica (EFsA)"
 | C-16 | Escalabilidad del patrón | 0.5 | Plausible sin derivación |
 | C-17 | Herramienta específica | 1.0 | Correctamente fundamentado |
 
-**Suma de scores:** 8.25 / 17
-**Ratio de calibración:** **8.25/17 = 49%**
+### C-18: Integración de documentos privados como capacidad de Planning
 
-> **Nota de ajuste:** Los claims retóricos (C-10, C-11) contribuyen negativamente a la calibración pero se discutirían diferente si se excluyen como "marketing". Excluyendo los dos claims retóricos (C-10, C-11), el ratio sube a **8.0/15 = 53%**.
+**Evidencia presente:** Descripción funcional: "puede integrar documentos proporcionados por el usuario, combinando información de fuentes privadas con su investigación basada en web."
+**Derivación:** La integración de documentos privados con búsqueda web es RAG (Retrieval-Augmented Generation) — un patrón arquitectónico distinto al Planning. El capítulo presenta RAG + Planning como si fueran una sola capacidad del "patrón Planning."
+**Calibración:** MISCLASSIFICACIÓN DE PATRÓN — la integración de fuentes privadas es RAG, no Planning. Presentarlas juntas sin distinguirlas confunde la arquitectura.
+**Score:** 0.0 / 1.0
+
+---
+
+### C-19: "No mera concatenación" → síntesis crítica garantizada
+
+**Evidencia presente:** "La salida final no es meramente una lista concatenada de hallazgos, sino un informe estructurado de múltiples páginas."
+**Derivación:** La negación de un defecto ("no concatenación") se usa como garantía implícita de una cualidad ("evaluación crítica"). No hay mecanismo de validación de que la síntesis sea genuinamente crítica vs. texto generado por LLM con apariencia de síntesis crítica.
+**Calibración:** GARANTÍA SIN MECANISMO — exactamente el mismo patrón del código CrewAI (C-03): el LLM genera texto que tiene apariencia de un proceso, sin que el proceso exista arquitectónicamente de forma verificable.
+**Score:** 0.25 / 1.0
+
+---
+
+**Suma de scores:** 8.5 / 19
+**Ratio de calibración:** **8.5/19 = 45%**
+
+> **Nota de ajuste:** Los claims retóricos (C-10, C-11) contribuyen negativamente a la calibración pero se discutirían diferente si se excluyen como "marketing". Excluyendo los dos claims retóricos (C-10, C-11), el ratio sube a **8.25/17 = 49%**.
 
 ---
 
