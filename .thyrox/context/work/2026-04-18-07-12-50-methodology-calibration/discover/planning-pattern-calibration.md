@@ -5,11 +5,11 @@ work_package: 2026-04-18-07-12-50-methodology-calibration
 phase: Phase 1 — DISCOVER
 author: agentic-reasoning
 status: Borrador
-version: 1.1.0
-fuente: Capítulo 6 — "Planificación" (v2.1.0 ajustado) + deep-dive v2.1.0
-ratio_calibracion: "8.5/19 = 45%"
+version: 1.2.0
+fuente: Capítulo 6 — "Planificación" (v2.2.0 ajustado) + deep-dive v2.1.0
+ratio_calibracion: "8.75/20 = 44%"
 patron_dominante: "Evidencia funcional sin derivación arquitectónica (EFsA)"
-delta_v1.0: "Añadidos C-18 (integración docs privados) y C-19 (no-concatenación como garantía). Ratio corregido: 8.25/17=49% → 8.5/19=45%."
+delta_v1.1: "Añadido C-20 (LLMs = capacidad central para Planning — premisa fundacional). Ratio: 8.5/19=45% → 8.75/20=44%."
 ```
 
 # Análisis de Calibración: Capítulo 6 — Planificación (v2.0.0)
@@ -43,6 +43,7 @@ delta_v1.0: "Añadidos C-18 (integración docs privados) y C-19 (no-concatenaci�
 | C-17 | "Herramienta específica, no solución universal" (principio de equilibrio) | Normativo |
 | C-18 | Integración de documentos privados como capacidad de Planning | Arquitectónico |
 | C-19 | "No mera concatenación" → evaluación crítica garantizada | Calidad output |
+| C-20 | "LLMs proporcionan la capacidad central para Planning" (premisa fundacional) | Fundacional |
 
 ---
 
@@ -244,10 +245,22 @@ delta_v1.0: "Añadidos C-18 (integración docs privados) y C-19 (no-concatenaci�
 
 ---
 
-**Suma de scores:** 8.5 / 19
-**Ratio de calibración:** **8.5/19 = 45%**
+### C-20: "LLMs proporcionan la capacidad central para Planning"
 
-> **Nota de ajuste:** Los claims retóricos (C-10, C-11) contribuyen negativamente a la calibración pero se discutirían diferente si se excluyen como "marketing". Excluyendo los dos claims retóricos (C-10, C-11), el ratio sube a **8.25/17 = 49%**.
+**Evidencia presente:** Descripción de capacidades de LLMs modernos: "descomponiendo de forma autónoma objetivos de alto nivel en pasos coherentes y accionables."
+**Derivación:** PARCIAL VERDADERA / PARCIAL CONFLACIÓN.
+- Verdadero: los LLMs pueden descomponer objetivos de alto nivel en pasos — demostrado empíricamente en benchmarks de task decomposition (ToolBench, AgentBench).
+- Conflación: "proporcionar la capacidad central para Planning" ≠ "implementar el Planning Pattern arquitectónicamente". Los LLMs proveen una capacidad general de razonamiento; el Planning Pattern requiere separación planner/executor, plan como objeto separable, y mecanismo de revisión antes de ejecución.
+**Función del claim en el capítulo:** Es la premisa fundacional que justifica por qué el código CrewAI de agente único (C-03) "implementa" Planning. Sin C-20, la conexión entre LLM y Planning Pattern es directamente inválida. Con C-20, el capítulo puede afirmar que "el LLM proporciona el planning" aunque el código no tenga separación arquitectónica.
+**Calibración:** CONFLACIÓN FUNDACIONAL — verdadera en la mitad (LLMs pueden descomponer tareas), falsa en la mitad (capacidad de descomposición ≠ implementación del patrón).
+**Score:** 0.25 / 1.0
+
+---
+
+**Suma de scores:** 8.75 / 20
+**Ratio de calibración:** **8.75/20 = 44%**
+
+> **Nota de ajuste:** Los claims retóricos (C-10, C-11) contribuyen negativamente a la calibración pero se discutirían diferente si se excluyen como "marketing". Excluyendo los dos claims retóricos (C-10, C-11), el ratio sube a **8.5/18 = 47%**.
 
 ---
 

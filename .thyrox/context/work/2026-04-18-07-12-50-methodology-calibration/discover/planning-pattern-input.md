@@ -1,14 +1,14 @@
 ```yml
 created_at: 2026-04-18 16:49:14
-updated_at: 2026-04-18 23:55:00
+updated_at: 2026-04-18 23:49:30
 project: THYROX
 work_package: 2026-04-18-07-12-50-methodology-calibration
 phase: Phase 1 — DISCOVER
 author: NestorMonroy
 status: Borrador
-version: 2.1.0
+version: 2.2.0
 fuente: Capítulo 6 — "Planificación" (libro agentic design patterns, versión ajustada)
-nota: v2.1.0 — completa DeepResearch con integración de docs privados + "no concatenación" + evaluación crítica. Agrega párrafo de cierre de casos de uso. v2.0.0 había comprimido en exceso esas secciones.
+nota: v2.2.0 — completa conclusión con claim "LLMs proporcionan la capacidad central para Planning" (premisa fundacional que justifica el código CrewAI). v2.1.0 capturó la conclusión solo en sus frases finales.
 ```
 
 # Input: Capítulo 6 — Planificación (versión ajustada)
@@ -163,15 +163,31 @@ print(final_report)
 
 ---
 
-## 8. Conclusión del capítulo (nueva en v2)
+## 8. Conclusión del capítulo
 
 > "El patrón de planificación es un componente fundamental que eleva los sistemas agenticos de meros respondedores reactivos a ejecutores estratégicos y orientados a objetivos."
 
-**Escalabilidad declarada:**
-- Escala desde ejecución de tareas secuencial y directa (agente CrewAI creando y siguiendo un plan de escritura)
-- Hasta sistemas más complejos y dinámicos (Google DeepResearch, planes iterativos que se adaptan)
+**Premisa fundacional sobre LLMs (claim nuevo — v2.2.0):**
+> "Los modelos modernos de lenguaje grande proporcionan la capacidad central para esto, descomponiendo de forma autónoma objetivos de alto nivel en pasos coherentes y accionables."
+
+**Escalabilidad declarada con ejemplos:**
+- Desde ejecución de tareas secuencial y directa — "como se demuestra por el agente CrewAI creando y siguiendo un plan de escritura"
+- Hasta sistemas complejos y dinámicos — "El agente Google DeepResearch ejemplifica esta aplicación avanzada, creando planes de investigación iterativos que se adaptan y evolucionan basados en recopilación continua de información"
 
 > "En última instancia, la planificación proporciona el puente esencial entre la intención humana y la ejecución automatizada para problemas complejos."
+
+**Cadena lógica de la conclusión:**
+```
+LLMs "proporcionan la capacidad central" para Planning
+   ↓
+Planning "se demuestra" con el agente CrewAI (un LLM con rol combinado)
+   ↓
+Planning "escala" hasta DeepResearch (sistema complejo)
+   ↓
+Planning = "puente esencial" entre intención humana y ejecución automatizada
+```
+
+**Nota analítica:** La premisa "LLMs proporcionan la capacidad central para Planning" es la justificación fundacional que conecta el código CrewAI de agente único con el patrón Planning. Sin esta premisa, la conexión entre "LLM que genera texto con estructura de plan" y "Planning Pattern arquitectónicamente definido" es directamente inválida.
 
 ---
 

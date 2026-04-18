@@ -4,7 +4,7 @@ description: Analiza artefactos de THYROX para detectar realismo performativo �
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 async_suitable: true
-updated_at: 2026-04-18 07:20:00
+updated_at: 2026-04-18 23:49:30
 ---
 
 # Agentic Reasoning Agent
@@ -135,6 +135,21 @@ topic: [artefacto analizado]
 ratio_calibracion: X/Y (Z%)
 clasificacion: [CALIBRADO | PARCIALMENTE CALIBRADO | REALISMO PERFORMATIVO]
 ```
+
+---
+
+## Verificación de completitud del input
+
+**Cuándo aplica:** Cuando el artefacto a evaluar es un `input.md` (resumen estructurado preparado por el orquestador), no el texto fuente original.
+
+**Problema documentado:** Un orquestador puede comprimir el texto original al estructurarlo, perdiendo claims con impacto en calibración. El agente evalúa claims que existen en el input — no puede detectar claims que fueron omitidos en la compresión.
+
+**Protocolo:**
+1. Si el input es un `input.md`, verificar señales de compresión: secciones con "...", frases de resumen en lugar de citas directas, ausencia de conclusiones o párrafos de cierre.
+2. Si se detecta compresión → señalarlo en el reporte: "ADVERTENCIA: Input potencialmente incompleto en sección X. Claims de esa sección pueden no estar representados en este análisis."
+3. En el ratio de calibración, añadir nota: "Ratio calculado sobre N claims del input disponible. Claims adicionales del texto fuente no disponibles."
+
+**Regla cardinal:** El ratio de calibración refleja el input recibido. Si el input está comprimido, el ratio puede sobreestimar la calibración real del texto fuente completo.
 
 ---
 

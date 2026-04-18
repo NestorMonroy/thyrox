@@ -2,7 +2,7 @@
 name: deep-dive
 description: Análisis exhaustivo y estratificado que expone estructuras ocultas, contradicciones internas y diferencias entre afirmación vs. realidad. Aplica a cualquier artefacto: documentos formales, papers académicos, frameworks matemáticos, código, arquitecturas, decisiones, problemas, artefactos THYROX. Ejecuta mínimo 6 capas de verificación adversarial — extensibles cuando el artefacto requiere capas adicionales (probabilística, calibración, basin-conditional, etc.). Produce veredicto trazable con evidencia exacta. Usar cuando se necesita saber qué es verdadero, qué es falso y qué es incierto — y POR QUÉ cada categoría.
 async_suitable: true
-updated_at: 2026-04-18 10:45:00
+updated_at: 2026-04-18 23:49:30
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 ---
@@ -181,6 +181,37 @@ Tres categorías con evidencia exacta de por qué cada claim pertenece ahí:
 [El patrón estructural que genera la apariencia de rigor]
 [Cómo opera en este documento específicamente]
 ```
+
+---
+
+## Verificación de completitud del input — ANTES de las 6 capas
+
+**Cuándo aplica:** Cuando el artefacto a analizar es un documento `input.md` (resumen estructurado de un texto externo preparado por el orquestador), NO el texto fuente original.
+
+**Problema documentado:** Un orquestador puede comprimir excesivamente secciones del texto original al preparar el input.md, perdiendo claims con peso analítico real. El agente no puede analizar lo que no recibió.
+
+**Protocolo de verificación previo a Capa 1:**
+
+1. Identificar si el input es un `input.md` estructurado vs. el texto fuente original
+2. Si es `input.md`, buscar señales de compresión:
+   - Secciones con "..." o "[...]"
+   - Frases como "el capítulo dice que..." en lugar de citas directas
+   - Ausencia de código completo cuando el texto probablemente tiene código
+   - Tablas de resumen donde debería haber párrafos con claims específicos
+   - Párrafos de conclusión omitidos o resumidos en una línea
+
+3. Si se detecta compresión potencial en secciones críticas:
+   - **Señalarlo explícitamente** antes de proceder: "ADVERTENCIA: La sección X del input parece estar comprimida. Los siguientes elementos pueden no estar representados: [lista]. Procediendo con el análisis del input disponible — los hallazgos pueden estar incompletos."
+   - **No detener el análisis** — continuar con lo disponible y señalar las brechas en el veredicto final
+
+4. En el veredicto (Capa 6), incluir una nota explícita si se detectó compresión:
+   ```
+   ### Nota de completitud del input
+   Secciones potencialmente comprimidas: [lista]
+   Saltos no analizables por compresión: [lista o "ninguno detectado"]
+   ```
+
+**Regla cardinal:** El agente analiza lo que recibe — no puede recuperar lo que no está. Si el input está comprimido, el análisis está limitado por esa compresión, no por el agente.
 
 ---
 

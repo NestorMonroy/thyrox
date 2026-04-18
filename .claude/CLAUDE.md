@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
 version: 3.5
-updated_at: 2026-04-18 04:30:00
+updated_at: 2026-04-18 23:49:30
 ```
 
 # CLAUDE.md — THYROX
@@ -131,6 +131,29 @@ Estas convenciones aplican a TODO el código y texto generado por Claude en esta
 y en sesiones de agentes hijos. CLAUDE.md es el único artefacto cargado automáticamente
 en todas las sesiones y heredado por agentes — por eso las convenciones universales viven aquí,
 no en references/ (on-demand) ni en guidelines/ (on-demand).
+
+### Preparación de inputs para análisis (input.md de textos externos)
+
+**Regla:** Cuando se prepara un documento `input.md` que estructura un capítulo, paper o texto externo para análisis por agentes (`deep-dive`, `agentic-reasoning`, etc.), NO comprimir.
+
+**Qué preservar verbatim:**
+- Todo párrafo que contenga un claim técnico, arquitectónico, cuantitativo o de calidad
+- Conclusiones completas (no solo la última frase)
+- Párrafos de cierre de secciones (suelen contener las afirmaciones más fuertes)
+- Código completo (no pseudocódigo ni resumen del código)
+- Frases que niegan un defecto ("no meramente X") — son claims de calidad implícitos
+
+**Qué puede estructurarse/comprimirse:**
+- Introducción narrativa sin claims verificables
+- Repeticiones de afirmaciones ya capturadas
+- Ejemplos ilustrativos cuando el claim principal ya está captado
+
+**Por qué esta regla existe:**
+Las elecciones editoriales de qué comprimir son elecciones de qué NO analizar. Los agentes solo pueden evaluar lo que reciben. Si el input.md está incompleto, el análisis lo estará también — y el error será del orquestador, no del agente.
+
+**Anti-patrón específico documentado:** En la sesión ÉPICA 42 (2026-04-18), al preparar el input de Cap.6 Planning v2.0.0, se comprimió la sección DeepResearch perdiendo: (1) integración de documentos privados, (2) "no mera concatenación" como garantía implícita de calidad, (3) párrafo de cierre de casos de uso. Cada uno generó claims adicionales no analizados inicialmente.
+
+---
 
 ### Parámetro `description` del Agent tool
 
