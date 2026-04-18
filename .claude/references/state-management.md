@@ -15,7 +15,7 @@ owner: thyrox (cross-phase)
 |---------|----------------------|-------------|
 | `context/now.md` | ¿Qué WP está activo y en qué Stage? | `session-start.sh` (hook), Claude al iniciar sesión |
 | `context/focus.md` | ¿En qué estamos trabajando y qué se completó? | Claude al iniciar sesión, `validate-session-close.sh` |
-| `context/project-state.md` | ¿Qué hay en el framework hoy? | Claude al necesitar contexto del proyecto |
+| `context/project-state.md` | ¿Qué hay en el sistema hoy? | Claude al necesitar contexto del proyecto |
 
 ---
 

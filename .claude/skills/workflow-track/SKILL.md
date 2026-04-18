@@ -84,7 +84,7 @@ Ver [state-management](../../references/state-management.md) para tabla de trigg
 
 ⏸ STOP — Presentar resumen de Phase 11: artefactos creados, lecciones clave, métricas vs baseline.
 Esperar confirmación explícita antes de transicionar a Phase 12 STANDARDIZE.
-Razón: Phase 12 propaga cambios al framework — el usuario debe confirmar el cierre del WP.
+Razón: Phase 12 propaga cambios al sistema — el usuario debe confirmar el cierre del WP.
 Al aprobar:
 1. Actualizar `context/now.md::phase` a `Phase 12`
 2. Ejecutar `bash .claude/scripts/close-wp.sh` — setea estado de cierre

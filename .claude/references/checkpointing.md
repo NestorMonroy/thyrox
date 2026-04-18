@@ -110,7 +110,7 @@ concurrentes normalmente no se capturan.
 | Bash changes | No captura | Si captura (si se commitea) |
 | Uso en thyrox | Quick recovery en sesion | Persistencia real del proyecto |
 
-El framework thyrox usa Git como mecanismo de persistencia (Locked Decision #3).
+El sistema THYROX usa Git como mecanismo de persistencia (Locked Decision #3).
 El checkpointing complementa pero no reemplaza los commits convencionales.
 
 ---

@@ -1,6 +1,6 @@
 ```yml
 name: sphinx
-description: "Tech skill para documentación con Sphinx. Usar cuando el proyecto necesite configurar Sphinx, crear estructura docs/, escribir RST/Markdown para docs, o generar documentación HTML. Complementa thyrox: mientras thyrox gestiona el proceso, sphinx define cómo se estructura y publica la documentación."
+description: "Tech skill para documentación con Sphinx. Usar cuando el proyecto necesite configurar Sphinx, crear estructura docs/, escribir RST/Markdown para docs, o generar documentación HTML. Complementa thyrox: mientras thyrox gestiona el proceso (12 stages propios), sphinx define cómo se estructura y publica la documentación."
 status: stub
 implementado: false
 pendiente_wp: sphinx-implementation
@@ -9,7 +9,7 @@ pendiente_wp: sphinx-implementation
 # SPHINX: Documentación con Sphinx
 
 Tech skill para proyectos que usan Sphinx como generador de documentación.
-Complementa thyrox: thyrox gestiona el proceso de trabajo (fases SDLC),
+Complementa thyrox: thyrox gestiona el proceso de trabajo (12 stages propios: DISCOVER → STANDARDIZE),
 sphinx define cómo estructurar y publicar la documentación del proyecto.
 
 ---

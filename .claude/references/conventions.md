@@ -267,7 +267,7 @@ IDs para trazabilidad cruzada dentro de documentos (no son nombres de archivo):
 | **Analysis** | Diagnóstico, hallazgos, investigación | `context/analysis/` | Phase 1 (ANALYZE) o Phase 7 (TRACK) |
 | **Epic** | Plan de trabajo con spec + tasks + execution | `context/epics/YYYY-MM-DD-nombre/` | Phase 3+ (tiene epic.md + tasks.md) |
 
-**Regla:** Si el trabajo tiene las 7 fases completas (analysis + strategy + plan + structure + tasks + execute + track) → es un epic. Si es solo hallazgos → es un analysis.
+**Regla:** Si el trabajo tiene plan completo + tasks + ejecución + track (WP multi-stage) → es un epic. Si es solo hallazgos → es un analysis.
 **Notes:** Any relevant context or decisions
 **PRD:** Link to .claude/prds/feature.md if exists
 **Epic:** Link to .claude/epics/feature/ if exists
@@ -803,7 +803,7 @@ created_at: YYYY-MM-DD HH:MM:SS  # timestamp real del sistema — NO estimar
 
 **Regla:** obtener timestamp real: `date '+%Y-%m-%d %H:%M:%S'`. NUNCA inventar ni estimar.
 
-Los archivos de configuración del framework (CLAUDE.md, skills/*.md, references/) usan `updated_at` y se actualiza en cada edición.
+Los archivos de configuración del sistema (CLAUDE.md, skills/*.md, references/) usan `updated_at` y se actualiza en cada edición.
 
 ---
 

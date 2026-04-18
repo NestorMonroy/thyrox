@@ -1,6 +1,6 @@
 ---
 name: workflow-standardize
-description: "Use when closing a work package and propagating learnings to the framework. Phase 12 STANDARDIZE — documenta patrones reutilizables y actualiza guidelines del proyecto."
+description: "Use when closing a work package and propagating learnings to the system. Phase 12 STANDARDIZE — documenta patrones reutilizables y actualiza guidelines del proyecto."
 allowed-tools: Read Glob Grep Bash Write Edit
 disable-model-invocation: true
 effort: medium
@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 12'"
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-18 05:30:00
 ---
 
 # /workflow-standardize — Phase 12: STANDARDIZE
@@ -33,7 +33,7 @@ Inicia o retoma Phase 12 STANDARDIZE del work package activo.
 Sin standardize, cada WP aprende de forma aislada. Con standardize, el proyecto mejora estructuralmente.
 
 **En ejecución paralela:** Phase 12 es single-agent por diseño. El coordinador propaga
-patrones al framework y actualiza guidelines como único escritor.
+patrones al sistema y actualiza guidelines como único escritor.
 
 ### Qué standardizar
 
@@ -72,7 +72,7 @@ status: Borrador
 ```
 
 Contenido:
-- **Patrones adoptados**: lista de patrones que se propagan al framework
+- **Patrones adoptados**: lista de patrones que se propagan al sistema
 - **Updates a guidelines**: qué archivos se modificaron y por qué
 - **Updates a skills**: qué skills se actualizaron
 - **ADRs creados**: lista de nuevas decisiones arquitectónicas permanentes
@@ -107,7 +107,7 @@ Antes de marcar Phase 12 completa:
 
 ## Gate humano
 
-⏸ STOP — Presentar lista de patrones y actualizaciones al framework.
+⏸ STOP — Presentar lista de patrones y actualizaciones al sistema.
 Esperar confirmación explícita. NO continuar sin respuesta.
 Al aprobar:
 1. Ejecutar cierre de WP

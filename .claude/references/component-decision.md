@@ -80,7 +80,7 @@ flowchart TD
 
 ## 4. Casos concretos del proyecto THYROX
 
-### Caso: Metodología de gestión de proyectos (7 fases)
+### Caso: Sistema de gestión de proyectos (12 stages)
 
 **Componente:** SKILL (`thyrox/SKILL.md`)
 

@@ -6,7 +6,7 @@ version: 1.0
 created_at: 2026-04-09
 work_package: 2026-04-09-10-25-55-write-gates
 owner: thyrox (cross-phase)
-purpose: Explicar los dos planos de aprobacion del framework y la configuracion vigente de settings.json
+purpose: Explicar los dos planos de aprobacion del sistema THYROX y la configuracion vigente de settings.json
 ```
 
 # Modelo de Permisos — Gates de decision vs permisos de herramienta
@@ -52,7 +52,7 @@ No toda edicion tiene el mismo peso. Antes de decidir si una operacion necesita 
 
 | Tipo | Definicion | Ejemplos | Gate |
 |------|-----------|---------|------|
-| **Edicion decision** | Cambia comportamiento futuro del framework o del proyecto | Instrucciones en SKILL.md, pasos de Phase, GATE OPERACION en workflow-execute, `description` en frontmatter | GATE OPERACION + `ask` rule |
+| **Edicion decision** | Cambia comportamiento futuro del sistema o del proyecto | Instrucciones en SKILL.md, pasos de Phase, GATE OPERACION en workflow-execute, `description` en frontmatter | GATE OPERACION + `ask` rule |
 | **Edicion consecuencia** | Metadata que refleja un cambio ya aprobado — nunca ocurre sola | `updated_at`, `version`, checkboxes en ROADMAP, entrada en CHANGELOG, lecciones aprendidas | Auto — es el resultado de una decision anterior |
 | **Edicion correctiva** | Corrige sin cambiar semantica — typo, link roto, formato | Arreglar path en `references/*.md`, corregir nombre de archivo | Auto si no cambia instrucciones |
 
@@ -210,8 +210,8 @@ Al disenar un flujo con gates de fase, definir explicitamente que pasa en Plano 
 cada fase. El gate de fase debe ser la unica friccion para operaciones rutinarias post-gate.
 
 **L-108 — ask > deny para archivos de uso frecuente:**
-`deny` bloquea incluso cuando el uso es legitimo (framework maintenance ocurre en ~80% FASEs).
-`ask` fuerza un prompt sin bloquear — correcto para config del framework.
+`deny` bloquea incluso cuando el uso es legitimo (mantenimiento del sistema ocurre en ~80% FASEs).
+`ask` fuerza un prompt sin bloquear — correcto para config del sistema.
 `deny` es correcto solo para operaciones que nunca deben ocurrir en flujo normal (force push, rm -rf).
 
 **L-109 — git push es consecuencia del gate, no una nueva decision:**

@@ -284,7 +284,7 @@ El Memory tool mantiene un knowledge store estructurado que Claude consulta cuan
 ## Contexto THYROX
 
 En THYROX, la memoria sigue este patrón:
-- **Nivel 3 (Project):** `.claude/CLAUDE.md` — reglas del framework (Locked Decisions, estructura)
+- **Nivel 3 (Project):** `.claude/CLAUDE.md` — reglas del sistema (Locked Decisions, estructura)
 - **Nivel 4 (Rules):** Potencialmente `.claude/rules/` para modularizar reglas por capa
 - **Nivel 7 (Local):** `CLAUDE.local.md` si existe — overrides locales no commiteados
 

@@ -97,7 +97,7 @@ Ejemplo: DMAIC en analyze
 
 ## `.thyrox/registry/` — Fuente de verdad
 
-El directorio `.thyrox/registry/` es la fuente de verdad del framework. Todo lo que aparece en `.claude/agents/` y `.thyrox/guidelines/` se genera a partir de él.
+El directorio `.thyrox/registry/` es la fuente de verdad del sistema. Todo lo que aparece en `.claude/agents/` y `.thyrox/guidelines/` se genera a partir de él.
 
 ```
 .thyrox/registry/
@@ -118,7 +118,7 @@ El directorio `.thyrox/registry/` es la fuente de verdad del framework. Todo lo 
 
 ---
 
-## Hooks del framework
+## Hooks del sistema
 
 Los hooks están registrados en `.claude/settings.json`. THYROX usa 3 hooks:
 
