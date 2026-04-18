@@ -6,15 +6,15 @@ phase: Phase 11 — TRACK/EVALUATE
 author: NestorMonroy
 status: Borrador
 audited_by: workflow-audit
-audit_version: 2.1.0
+audit_version: 3.0.0
 ```
 
 # Audit Report — goto-problem-fix (ÉPICA 41)
 
-**Fecha:** 2026-04-17 23:30:00
+**Fecha:** 2026-04-18 02:30:00
 **WP auditado:** `.thyrox/context/work/2026-04-17-17-58-13-goto-problem-fix/`
-**Stages cubiertos:** Stage 1 DISCOVER → Stage 11 TRACK/EVALUATE (WP abierto)
-**Versión del reporte:** 2.0.0 — Re-auditoría post B8/B9 remediación completa
+**Stages cubiertos:** Stage 1 DISCOVER → Stage 12 STANDARDIZE (WP reabierto — en curso)
+**Versión del reporte:** 3.0.0 — Re-auditoría completa post Stage 12 + trabajo adicional (Ishikawa, CHANGELOG cleanup, reapertura WP)
 
 ---
 
@@ -22,83 +22,134 @@ audit_version: 2.1.0
 
 | Métrica | Valor |
 |---------|-------|
-| **Score global** | **100%** |
+| **Score global** | **96.0%** |
 | **Grade** | **A** |
-| **Items evaluados** | 21 (sin contar 3 SKIP) |
-| **PASS** | 21 (100%) |
-| **PARTIAL** | 0 |
+| **Items evaluados** | 25 (excluyendo 1 SKIP) |
+| **PASS** | 22 |
+| **PARTIAL** | 4 |
 | **FAIL** | 0 |
-| **SKIP** | 3 (artefactos de cierre pendientes + T-020 política) |
-| **Recomendación** | WP listo para Stage 12 STANDARDIZE. Sin gaps activos. |
+| **SKIP** | 1 (exit-conditions.md — intencional desde v2.0.0) |
+| **Recomendación** | WP activo — 4 PARTIALs de baja criticidad. Sin FAILs. |
 
-> **Comparación vs auditoría anterior (v1.0.0):** Score 94% → 100%. FAILs resueltos: 1. PARTIALs resueltos: 4 de 4. execution-log creado retroactivamente en `execute/`.
+> **Comparación vs v2.1.0 (Grade A 100%):** El trabajo adicional de Stage 12 introduce 4 PARTIALs nuevos:
+> metadata no-estándar en lessons-learned, naming ambiguo en un análisis, ROADMAP y now.md stale post-reapertura.
 
 ---
 
 ## Dimension Scores
 
-| Dimensión | Items | PASS | PARTIAL | FAIL | SKIP | Score |
-|-----------|-------|------|---------|------|------|-------|
-| Task Plan (30%) | 2 planes (38 tasks) | 2 | 0 | 0 | 0 | 100% |
-| Artifacts (25%) | 10 artefactos | 10 | 0 | 0 | 2 | 100% |
-| Commits (20%) | 31 commits | 31 | 0 | 0 | 0 | 100% |
-| Scripts (15%) | 3 scripts | 3 | 0 | 0 | 0 | 100% |
-| State (10%) | 4 docs | 4 | 0 | 0 | 1 | 100% |
-| **TOTAL** | **—** | **21** | **0** | **0** | **3** | **100%** |
+| Dimensión | Items eval. | PASS | PARTIAL | FAIL | SKIP | Score |
+|-----------|-------------|------|---------|------|------|-------|
+| Task Plan (30%) | 5 | 5 | 0 | 0 | 0 | 100% |
+| Artifacts (25%) | 9 | 7 | 2 | 0 | 1 | 88.9% |
+| Commits (20%) | 4 | 4 | 0 | 0 | 0 | 100% |
+| Scripts (15%) | 3 | 3 | 0 | 0 | 0 | 100% |
+| State (10%) | 5 | 3 | 2 | 0 | 0 | 80% |
+| **TOTAL** | **26** | **22** | **4** | **0** | **1** | **96.0%** |
 
 ---
 
 ## Critical Failures — ❌ FAIL
 
-> Sin failures activos. WP libre de FAILs post-remediación B8/B9.
+> Sin failures. WP libre de FAILs.
 
 ---
 
 ## Partial Items — ⚠️ PARTIAL
 
-> Sin items parciales activos. execution-log resuelto retroactivamente.
+### ⚠️ P-01 — `track/goto-problem-fix-lessons-learned.md` metadata no-estándar
 
-### Historial — Resuelto post v2.0.0
+**Hallazgo:** El template `lessons-learned.md.template` usa campos no-estándar que no coinciden con `metadata-standards.md` (I-010).
 
-- ✅ **`execute/goto-problem-fix-execution-log.md`** — PASS
-  - Creado retroactivamente en Stage 11 con 2 sesiones documentadas (B1-B7 + B8-B9).
-  - Path: `execute/goto-problem-fix-execution-log.md`
+| Campo en archivo | Campo estándar requerido |
+|-----------------|--------------------------|
+| `work_package_id:` | `work_package:` |
+| `closed_at:` | `created_at:` |
+| `source_phase:` | `phase:` |
+| (ausente) | `status:` |
+
+**Impacto adicional:** `closed_at:` presupone que el WP está cerrado — es exactamente el factor agravante identificado en `analyze/process/wp-premature-close-ishikawa.md` (causa M3 del cierre prematuro).
+
+**Evidencia:** `track/goto-problem-fix-lessons-learned.md` líneas 1-7.
+
+**Corrección sugerida:** Actualizar el template `workflow-track/assets/lessons-learned.md.template` a campos estándar. Actualizar el artefacto del WP actual.
+
+---
+
+### ⚠️ P-02 — `analyze/process/task-plan-sync-root-cause.md` — naming ambiguo
+
+**Hallazgo:** El archivo contiene "task-plan" en su nombre pero es un documento de análisis (causa raíz de PAT-004), no un task plan con checkboxes T-NNN. Viola el principio content-first: el nombre debe describir el contenido, no el tipo.
+
+**Nombre correcto sugerido:** `pat-004-root-cause-analysis.md`
+
+**Evidencia:** `find "$WP_DIR" -name "*task-plan*"` devuelve este archivo junto con los task plans reales, causando ambigüedad.
+
+---
+
+### ⚠️ P-03 — `ROADMAP.md` stale post-reapertura del WP
+
+**Hallazgo:** ROADMAP.md dice `✓ COMPLETADO 2026-04-18` y `Stage 12 [x]` pero el WP fue reabierto explícitamente (commit `1a13d6f`) porque aún hay trabajo pendiente (I-011). El estado en ROADMAP no refleja la realidad actual.
+
+**Evidencia:** ROADMAP.md línea 28 — "COMPLETADO 2026-04-18". `now.md::stage = Stage 12 — STANDARDIZE` (en curso).
+
+**Corrección sugerida:** Revertir Stage 12 a `[-]` y "en curso" hasta que el ejecutor ordene cierre definitivo.
+
+---
+
+### ⚠️ P-04 — `now.md` Contexto body vacío
+
+**Hallazgo:** El cuerpo `# Contexto` en `now.md` está vacío — solo tiene el encabezado, sin descripción del estado actual del WP.
+
+**Evidencia:** `sed -n '/^# Contexto/,$ p' .thyrox/context/now.md` → solo el header.
+
+**Corrección sugerida:** Actualizar el cuerpo con estado actual: WP reabierto, Ishikawa completado, pendientes de Stage 12.
 
 ---
 
 ## Hallazgos Sistémicos
 
-> Sin hallazgos sistémicos nuevos. El hallazgo PAT-004 detectado en v1.0.0 fue resuelto en B9 con fix al framework (workflow-implement/SKILL.md + session-start.sh).
+### ℹ️ Hallazgo sistémico — Template lessons-learned con campos no-estándar (P-01)
+
+El template oficial produce artefactos con metadata incompatible con `metadata-standards.md` (I-010). Este es un problema del template, no del WP. El artefacto fue creado siguiendo el template fielmente.
+
+**Archivos afectados:** `workflow-track/assets/lessons-learned.md.template`
+
+**Corrección al framework:** Actualizar template con campos estándar (`work_package:`, `created_at:`, `phase:`, `status:`). Eliminar `closed_at:` del template — el cierre vive en `now.md`, no en artefactos.
+
+**Prioridad:** Alta — este mismo campo fue identificado como factor contribuyente al cierre prematuro de I-011 en el Ishikawa (M5).
 
 ---
 
 ## Drift de Scope
 
-### ℹ️ Drift positivo — workflow-audit skill (fuera del task plan original)
+### ℹ️ Drift positivo — Stage 12 (sin T-NNN, todo válido)
 
-- Se creó el skill `workflow-audit` completo (SKILL.md + references/ + assets/ + command) sin T-NNN en el task plan de ÉPICA 41.
-- Evidencia: `ccbd772 feat(workflow-audit): create critical WP auditor skill`
-- Evaluación: Trabajo de alta calidad derivado del análisis de Stage 11. Valioso para el framework.
-
-### ℹ️ Drift positivo — Análisis de domain subdirectories (fuera del task plan)
-
-- 6 artefactos de analyze/ renombrados con nombres content-first y organizados en domain subdirectories.
-- Evidencia: `07c33d3 refactor(goto-problem-fix): reorganize analyze/ docs into domain subdirectories`
-- Evaluación: Mejora al framework — codifica las convenciones de metadata-standards.md.
+| Artefacto | Commit | Evaluación |
+|-----------|--------|------------|
+| `track/goto-problem-fix-lessons-learned.md` | `b6b9765` | ✅ Stage 12 STANDARDIZE requerido |
+| `track/goto-problem-fix-changelog.md` | `b6b9765` | ✅ Stage 12 STANDARDIZE requerido |
+| `standardize/goto-problem-fix-patterns.md` | `b6b9765` | ✅ Stage 12 STANDARDIZE requerido |
+| `analyze/process/wp-premature-close-ishikawa.md` | `b34d9b7` | ✅ Análisis de causa raíz válido |
+| `CHANGELOG-archive.md` eliminado | `e5a2cb7` | ✅ I-002 correctivo |
+| `ROADMAP-history.md` eliminado | `e5a2cb7` | ✅ I-002 correctivo |
+| `conventions.md` REGLA-LONGEV-001 corregida | `e5a2cb7` | ✅ Framework improvement |
+| `CHANGELOG.md` link roto corregido | `bce1b03` | ✅ Fix inmediato correcto |
+| `analyze/framework/changelog-roadmap-policy-analysis.md` | `52e7e79` | ✅ Policy analysis válido |
 
 ---
 
 ## Action Plan
 
-> Sin items P1 ni P2. WP libre de FAILs.
+### P3 — Medio
 
-### P3 — Medio (opcional antes de STANDARDIZE)
+- [ ] **Corregir `track/goto-problem-fix-lessons-learned.md`** — actualizar campos a estándar: `work_package:`, `created_at:`, `phase:`, agregar `status: Borrador` (P-01)
+- [ ] **Corregir template `workflow-track/assets/lessons-learned.md.template`** — mismos campos (hallazgo sistémico)
+- [ ] **Actualizar `ROADMAP.md`** — revertir Stage 12 a `[-]` y quitar "COMPLETADO" hasta cierre definitivo (P-03)
+- [ ] **Actualizar `now.md` Contexto body** — describir estado actual real del WP (P-04)
 
-- [ ] Crear `execute/goto-problem-fix-execution-log.md` retroactivo documentando las 2 sesiones de Stage 10 (sesión B1-B7 y sesión B8-B9 remediación).
+### P4 — Bajo
 
-### P4 — Bajo (ya en backlog)
-
-- [x] TD-042: validate-session-close.sh debe verificar consistencia PAT-004 antes del cierre. Implementado en technical-debt.md.
+- [ ] **Renombrar** `analyze/process/task-plan-sync-root-cause.md` → `pat-004-root-cause-analysis.md` (P-02)
 
 ---
 
@@ -106,71 +157,41 @@ audit_version: 2.1.0
 
 ### Task Plan
 
-- ✅ `goto-problem-fix-task-plan.md` — 25/25 tareas `[x]`. `grep -c "\[ \]"` → 0.
-- ✅ `goto-problem-fix-remediation-task-plan.md` — 13/13 tareas `[x]` (T-026..T-038). `grep -c "\[ \]"` → 0.
+- ✅ `plan-execution/goto-problem-fix-task-plan.md` — T-001..T-025 todos `[x]`, evidencia en git
+- ✅ `plan-execution/goto-problem-fix-remediation-task-plan.md` — T-026..T-038 todos `[x]`, evidencia en git
+- ✅ Numeración continua T-001..T-038 — sin saltos inexplicables
+- ✅ Sin T-NNN `[ ]` sin justificación
+- ✅ T-NNN con evidencia de commit verificada (via `git log --oneline --no-merges`)
 
 ### Artifacts
 
-- ✅ `discover/goto-problem-fix-analysis.md` — síntesis con prefijo WP ✓, metadata yml ✓
-- ✅ `discover/references-relevance-review.md` — sub-análisis content-first ✓
+- ✅ `discover/goto-problem-fix-analysis.md` — síntesis con prefijo WP, metadata yml ✓
 - ✅ `discover/use-cases-analysis.md` — sub-análisis content-first ✓
-- ✅ `analyze/goto-problem-fix-diagnose.md` — síntesis con prefijo WP ✓
-- ✅ `analyze/goto-problem-fix-remediation-analysis.md` — síntesis con prefijo WP ✓
-- ✅ `analyze/` — 7 domain subdirectories (coverage, naming, process, framework, templates, readme, audit-design) ✓
-- ✅ `goto-problem-fix-risk-register.md` — en raíz del WP ✓, metadata yml ✓
-- ✅ `track/goto-problem-fix-audit-report.md` — en `track/` (Stage 11) ✓
-- ✅ `plan-execution/goto-problem-fix-task-plan.md` + `goto-problem-fix-remediation-task-plan.md` — en stage directory correcto ✓
+- ✅ `discover/references-relevance-review.md` — sub-análisis content-first ✓
+- ✅ `goto-problem-fix-risk-register.md` — en raíz WP, metadata yml ✓
+- ✅ `execute/goto-problem-fix-execution-log.md` — en stage directory correcto ✓
+- ✅ `track/goto-problem-fix-changelog.md` — Stage 12 requerido ✓, metadata yml ✓
+- ✅ `standardize/goto-problem-fix-patterns.md` — Stage 12 requerido ✓, metadata estándar ✓
+- ⏭️ `{wp}-exit-conditions.md` — SKIP intencional (documentado desde v2.0.0)
 
-### Artifacts — SKIP (esperados al cierre formal)
+### Commits
 
-- ⏭️ `goto-problem-fix-lessons-learned.md` — WP aún abierto; se crea al cerrar Stage 11
-- ⏭️ `goto-problem-fix-changelog.md` — WP aún abierto; se crea al cerrar Stage 11
-
-### Commits — 31 commits, todos PASS
-
-- ✅ `7b96d27` chore(goto-problem-fix): B8/B9 complete — remediation plan executed
-- ✅ `9525ce0` feat(goto-problem-fix): framework improvements — audit in SKILL catalog, PAT-004 enforce, session-start fix
-- ✅ `107e65d` fix(goto-problem-fix): close audit findings — sync checkboxes, readme opcionA, audit-report scores
-- ✅ `273ce55` fix(goto-problem-fix): PAT-004 framework fixes T-032/T-033/T-034
-- ✅ `fd0b3f0` docs(goto-problem-fix): add remediation analysis + B8/B9 task plan (T-026..T-038)
-- ✅ `07c33d3` refactor(goto-problem-fix): reorganize analyze/ docs into domain subdirectories
-- ✅ `1467d01` docs(goto-problem-fix): add 4 analysis documents
-- ✅ `6d0fd32` docs(goto-problem-fix): add audit report
-- ✅ `ccbd772` feat(workflow-audit): create critical WP auditor skill
-- ✅ `a0fe13b` chore(goto-problem-fix): advance to Stage 11 TRACK/EVALUATE
-- ✅ `cbc261f` docs(goto-problem-fix): align skill templates with stage-directory naming convention E-1
-- ✅ `4086161` docs(goto-problem-fix): add methodology guides and DECISIONS.md index B-11 D-2 D-3
-- ✅ `75376be` docs(goto-problem-fix): update ARCHITECTURE.md coordinator pattern + hooks B-10 + B6
-- ✅ `657ee67` docs(goto-problem-fix): update README for ÉPICA 29/31/35/39 migrations B-1..B-9
-- ✅ `f33207c` docs(goto-problem-fix): document now.md body and methodology_step namespacing D-1 D-4
-- ✅ `1f6986f` fix(goto-problem-fix): fix session scripts phase→stage migration A-1..A-6 GAP-02
-- ✅ `e99cc5e` refactor(goto-problem-fix): stage directory taxonomy + domain subdirectories + B7
-- ✅ `3e6eea9` refactor(goto-problem-fix): rename artifacts to content-first naming
-- ✅ + 13 commits adicionales (todos `type(scope): descripción` ✓)
+- ✅ 42 commits, todos `type(scope): description` ✓
+- ✅ Scopes correctos: `goto-problem-fix`, `workflow-audit`, `root`, `standardize`
+- ✅ Descripciones informativas — ningún "update", "fix stuff", "WIP"
+- ✅ Stage 12 commits incluidos: `b6b9765`, `1a13d6f`, `b34d9b7`, `bce1b03`, `e5a2cb7`
 
 ### Scripts
 
-- ✅ `session-start.sh` — `#!/usr/bin/env bash` ✓, `bash -n` PASS ✓, `PROJECT_ROOT` ✓, `maxdepth 2` (×2) ✓
-- ✅ `close-wp.sh` — `#!/bin/bash` ✓, `bash -n` PASS ✓, `PROJECT_ROOT` ✓
-- ✅ `session-resume.sh` — `#!/usr/bin/env bash` ✓, `bash -n` PASS ✓
+- ✅ `session-start.sh` — shebang ✓, `bash -n` PASS ✓, `PROJECT_ROOT` ✓, `maxdepth 2` ✓
+- ✅ `close-wp.sh` — shebang ✓, `bash -n` PASS ✓, `PROJECT_ROOT` ✓
+- ✅ `session-resume.sh` — shebang ✓, `bash -n` PASS ✓, fallback `stage:`/`phase:` ✓
 
 ### State
 
-- ✅ `now.md` — `stage: Stage 11 — TRACK/EVALUATE` ✓, `current_work` apunta al WP ✓, `updated_at: 2026-04-17 23:20:00` ✓
-- ✅ `focus.md` — refleja B8/B9 completos, estado consistente ✓
-- ✅ `ROADMAP.md` — ÉPICA 41 con Stage 11 `[x]` ✓, todos los stages cubiertos marcados ✓
-- ✅ `technical-debt.md` — TD-042 agregado ✓
-
-### Framework — mejoras producidas por ÉPICA 41
-
-- ✅ `workflow-audit/SKILL.md` — skill creado con anatomía completa ✓
-- ✅ `workflow-audit/references/` — audit-checklist.md + audit-scoring.md ✓
-- ✅ `workflow-audit/assets/` — audit-report.md.template ✓
-- ✅ `commands/audit.md` — `/thyrox:audit` comando disponible ✓
-- ✅ `workflow-implement/SKILL.md` — PAT-004 bloque OBLIGATORIO agregado ✓
-- ✅ `session-start.sh` — maxdepth 1 → maxdepth 2 (detecta task-plan en subdirectorios) ✓
-- ✅ `thyrox/SKILL.md` — Phase 11 referencia `/thyrox:audit`; sección "Herramientas de calidad" ✓
-- ✅ `README.md` — Opción A (`bash setup-template.sh`) eliminada; solo Opción B ✓
+- ✅ `now.md::current_work` = `.thyrox/context/work/2026-04-17-17-58-13-goto-problem-fix` ✓
+- ✅ `now.md::stage` = `Stage 12 — STANDARDIZE` ✓
+- ✅ `focus.md` — refleja WP reabierto, Stage 12 en curso ✓
 
 ---
 
@@ -178,8 +199,7 @@ audit_version: 2.1.0
 
 > Completar después de revisar este reporte.
 
-**Decisión:** [x] Cerrar WP con Grade A (100%) — avanzar a Stage 12 STANDARDIZE
+**Decisión:** [ ] Aprobar con 4 PARTIALs (P3/P4) — continuar Stage 12
+**Alternativa:** [ ] Corregir PARTIALs P3 antes de continuar
 
-**Notas:** Sin FAILs activos. El único PARTIAL (execution-log) es process hygiene y no bloquea. WP puede cerrarse directamente.
-
-**Fecha de decisión:** 2026-04-17
+**Notas:** Sin FAILs. Los PARTIALs P-03 y P-04 (ROADMAP + now.md stale) son los más urgentes — afectan la coherencia del estado del proyecto. P-01 (lessons-learned metadata) es un problema de template que aplica al framework. P-02 (naming) es cosmético.
