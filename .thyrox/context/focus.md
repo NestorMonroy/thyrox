@@ -1,12 +1,12 @@
 ```yml
 type: Estado Operacional
 version: 1.0
-updated_at: 2026-04-18 02:00:43
+updated_at: 2026-04-18 07:15:00
 ```
 
 # Focus
 
-ÉPICA 41 goto-problem-fix — Stage 12 STANDARDIZE en curso. WP sigue abierto: puede acumular N task plans y N plan-execution adicionales. Pendiente: conventions.md (27KB > umbral), R-6 PARTIAL (ARCHITECTURE.md coordinators detalle).
+Sin WP activo.
 
 ## Completado (2026-04-17)
 
