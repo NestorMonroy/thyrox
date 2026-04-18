@@ -1,132 +1,100 @@
 ```yml
 created_at: 2026-04-18 17:32:00
+updated_at: 2026-04-18 23:55:00
 project: THYROX
 work_package: 2026-04-18-07-12-50-methodology-calibration
 phase: Phase 1 — DISCOVER
 author: NestorMonroy
 status: Borrador
-version: 1.0.0
-fuente: Capítulo 7 — "Colaboración Multiagente" (libro agentic design patterns, traducción profesional)
-nota: Quinto patrón analizado. Complementa Cap.1 Chaining, Cap.2 Routing, Cap.3 Parallelization, Cap.6 Planning.
+version: 2.0.0
+fuente: Capítulo 7 — "Colaboración Multiagente" (libro agentic design patterns, versión ajustada)
+nota: Versión ajustada. Input preservado verbatim según regla de no-compresión documentada en CLAUDE.md. Ver deep-dive v2 para delta respecto a análisis anterior.
 ```
 
-# Input: Capítulo 7 — Colaboración Multiagente
+# Input: Capítulo 7 — Colaboración Multiagente (versión ajustada, texto completo)
 
 ---
 
-## 1. Posición del capítulo en la secuencia del libro
+## Texto fuente completo (preservado verbatim)
 
-El capítulo se posiciona como el quinto patrón analizado, que opera a un nivel de abstracción superior:
-- Cap. 1 Chaining → secuencia lineal predeterminada
-- Cap. 2 Routing → lógica condicional dinámica
-- Cap. 3 Parallelization → ejecución concurrente con merger
-- Cap. 6 Planning → generación autónoma del workflow
-- **Cap. 7 Multi-Agent Collaboration → arquitectura de múltiples agentes especializados**
+### Sección 1: Problema y solución propuesta
 
-La tesis del capítulo:
-> "Aunque una arquitectura monolítica de agentes puede ser efectiva para problemas bien definidos, sus capacidades a menudo se ven limitadas cuando se enfrenta a tareas complejas y multidominio."
+"Aunque una arquitectura monolítica de agentes puede ser efectiva para problemas bien definidos, sus capacidades a menudo se ven limitadas cuando se enfrenta a tareas complejas y multidominio. El patrón de Colaboración Multiagente aborda estas limitaciones al estructurar un sistema como un conjunto cooperativo de agentes distintos y especializados. Este enfoque se basa en el principio de descomposición de tareas, donde un objetivo de alto nivel se desglosa en subproblemas discretos. Cada subproblema se asigna entonces a un agente que posee las herramientas específicas, acceso a datos o capacidades de razonamiento más adecuadas para esa tarea."
 
----
+### Sección 2: Ejemplo y mecanismo crítico
 
-## 2. El problema que motiva el patrón
+"Por ejemplo, una consulta de investigación compleja podría descomponerse y asignarse a un agente de Investigación para la recuperación de información, un agente de Análisis de Datos para el procesamiento estadístico, y un agente de Síntesis para generar el informe final. La eficacia de tal sistema no depende únicamente de la división del trabajo, sino que es crítica respecto a los mecanismos de comunicación entre agentes. Esto requiere un protocolo de comunicación estandarizado y una ontología compartida, permitiendo que los agentes intercambien datos, deleguen subtareas y coordinen sus acciones para garantizar que la salida final sea coherente."
 
-**Limitación del agente único:** Las capacidades de un agente monolítico están limitadas por el alcance y los recursos del agente individual. Un objetivo de alto nivel complejo y multidominio requiere conocimiento especializado que ningún agente único puede cubrir óptimamente.
+### Sección 3: Ventajas declaradas
 
-**Solución propuesta:**
-> "El patrón de Colaboración Multiagente aborda estas limitaciones al estructurar un sistema como un conjunto cooperativo de agentes distintos y especializados."
+"Esta arquitectura distribuida ofrece varias ventajas, incluyendo modularidad mejorada, escalabilidad y robustez, ya que la falla de un único agente no necesariamente causa una falla total del sistema. La colaboración permite un resultado sinérgico donde el desempeño colectivo del sistema multiagente supera las capacidades potenciales de cualquier agente individual dentro del conjunto."
 
-**Principio fundacional:** descomposición de tareas — un objetivo de alto nivel se desglosa en subproblemas discretos, cada uno asignado al agente con las herramientas, datos o capacidades de razonamiento más adecuadas.
+### Sección 4: Definición del patrón
 
----
+"El patrón de Colaboración Multiagente implica diseñar sistemas donde múltiples agentes independientes o semiindependientes trabajan juntos para lograr un objetivo común. Cada agente típicamente tiene un rol definido, objetivos específicos alineados con el objetivo general, y potencialmente acceso a diferentes herramientas o bases de conocimiento. El poder de este patrón radica en la interacción y sinergia entre estos agentes."
 
-## 3. Las 5 formas de colaboración
+### Sección 5: Las 5 formas de colaboración
 
-| Forma | Descripción | Análogo a |
-|-------|-------------|-----------|
-| **Secuencial** | Un agente completa y pasa su salida al siguiente | Chaining (Cap.1) con agentes distintos |
-| **Paralela** | Múltiples agentes trabajan simultáneamente; resultados se combinan | Parallelization (Cap.3) con agentes distintos |
-| **Consenso** | Agentes con perspectivas variadas discuten y llegan a decisión informada | Nuevo — sin equivalente en caps anteriores |
-| **Basada en herramientas** | Cada agente maneja un grupo relevante de herramientas | Especialización funcional del agente |
-| **Especialización por dominio** | Agentes con conocimiento de dominio distinto (investigador, escritor, editor) | Especialización disciplinar del agente |
+"La colaboración puede tomar varias formas:
 
----
+1. **Secuencial**: Un agente completa una tarea y pasa su salida a otro agente para el siguiente paso en un canal (similar al patrón de planificación, pero involucrando explícitamente diferentes agentes).
 
-## 4. Los 5 modelos de interrelación y comunicación
+2. **Paralela**: Múltiples agentes trabajan en diferentes partes de un problema simultáneamente, y sus resultados se combinan posteriormente.
 
-El capítulo distingue un espectro desde el más simple hasta el más complejo:
+3. **Consenso**: Agentes con perspectivas variadas y fuentes de información se involucran en discusiones para evaluar opciones, llegando finalmente a un consenso o a una decisión más informada.
 
-### 4.1 Agente Único
-- Opera autónomamente sin interacción con otras entidades
-- Adecuado para subproblemas independientes y autosuficientes
-- Limitación: capacidades acotadas por un único agente
+4. **Basada en Herramientas**: Cada agente puede manejar grupos relevantes de herramientas, en lugar de que un único agente maneje todas las herramientas.
 
-### 4.2 Red
-- Múltiples agentes interactúan directamente entre sí de forma descentralizada
-- Comunicación "de persona a persona" (peer-to-peer)
-- Ventaja: resiliencia ante fallo de un agente
-- Desafío: gestión de sobrecarga de comunicación y coherencia en red grande
+5. **Especialización por Dominio**: Agentes con conocimiento especializado en diferentes dominios (p. ej., un investigador, un escritor, un editor) colaboran para producir una salida compleja."
 
-### 4.3 Supervisor
-- Un agente supervisor coordina a agentes subordinados
-- Estructura jerárquica: centro para comunicación, asignación y resolución de conflictos
-- Ventaja: líneas claras de autoridad
-- Riesgo: **punto único de falla** + cuello de botella si abrumado
+### Sección 6: Requisitos fundamentales del sistema
 
-### 4.4 Supervisor como Herramienta
-- El supervisor provee recursos, orientación o soporte analítico (no mando y control)
-- Habilita a los agentes sin dictar cada acción
-- Busca capacidades del supervisor sin control rígido de arriba hacia abajo
+"Un sistema multiagente fundamentalmente comprende la delineación de roles y responsabilidades de agentes, el establecimiento de canales de comunicación a través de los cuales los agentes intercambien información, y la formulación de un flujo de tareas o protocolo de interacción que dirija sus esfuerzos colaborativos."
 
-### 4.5 Jerárquico
-- Estructura multicapa: múltiples niveles de supervisores
-- Supervisores de nivel superior supervisan a los de nivel inferior
-- Base: agentes operacionales
-- Adecuado para: problemas descomponibles en subproblemas con gestión por capa
+### Sección 7: Frameworks y cuándo aplicar
 
-**Regla de selección de modelo:**
+"Marcos de trabajo como CrewAI y Google ADK están diseñados para facilitar este paradigma proporcionando estructuras para la especificación de agentes, tareas y sus procedimientos interactivos. Este enfoque es particularmente efectivo para desafíos que requieren una variedad de conocimiento especializado, que abarcan múltiples fases discretas, o que aprovechan las ventajas del procesamiento concurrente y la corroboración de información entre agentes."
 
-| Situación | Modelo recomendado |
-|-----------|-------------------|
-| Problemas simples y bien estructurados | Agente Único o Supervisor |
-| Entornos complejos y dinámicos | Red o Jerárquico |
+### Sección 8: Casos de uso documentados (verbatim)
 
----
+"**Investigación**: Un equipo de agentes podría colaborar en un proyecto de investigación. Un agente podría especializarse en búsqueda en bases de datos académicas, otro en resumir hallazgos, un tercero en identificar tendencias, y un cuarto en sintetizar la información en un informe. Esto refleja cómo un equipo de investigación humano podría operar.
 
-## 5. Requisitos fundamentales del sistema
+**Desarrollo de Software**: Imagina agentes colaborando en la construcción de software. Un agente podría ser un analista de requisitos, otro un generador de código, un tercero un probador, y un cuarto un escritor de documentación. Podrían pasar salidas entre sí para construir y verificar componentes.
 
-> "Un sistema multiagente fundamentalmente comprende:
-> 1. La delineación de roles y responsabilidades de agentes
-> 2. El establecimiento de canales de comunicación a través de los cuales los agentes intercambien información
-> 3. La formulación de un flujo de tareas o protocolo de interacción que dirija sus esfuerzos colaborativos"
+**Marketing**: Crear una campaña de marketing podría implicar un agente de investigación de mercado, un agente de copywriter, un agente de diseño gráfico (utilizando herramientas de generación de imágenes), y un agente de programación en redes sociales, todos trabajando juntos.
 
-**Condición técnica crítica:**
-> "Es crítica respecto a los mecanismos de comunicación entre agentes. Esto requiere un protocolo de comunicación estandarizado y una ontología compartida, permitiendo que los agentes intercambien datos, deleguen subtareas y coordinen sus acciones."
+**Finanzas**: Un sistema multiagente podría analizar mercados financieros. Los agentes podrían especializarse en obtener datos de acciones, analizar sentimiento de noticias, realizar análisis técnico y generar recomendaciones de inversión.
 
----
+**Cadena de Suministro**: Los agentes podrían representar diferentes nodos en una cadena de suministro (proveedores, fabricantes, distribuidores) y colaborar para optimizar niveles de inventario, logística y programación en respuesta a cambios de demanda o disrupciones.
 
-## 6. Casos de uso documentados
+**Operaciones Autónomas**: Las operaciones autónomas se benefician enormemente de una arquitectura agentica, particularmente en el diagnóstico de fallas. Múltiples agentes pueden colaborar para clasificar y remediar problemas, sugiriendo acciones óptimas. Estos agentes también pueden integrarse con modelos de aprendizaje automático tradicionales y herramientas, aprovechando sistemas existentes mientras ofrecen simultáneamente las ventajas de la IA Generativa."
 
-| Dominio | Agentes especializados |
-|---------|----------------------|
-| Investigación | búsqueda BD académicas + resumidor + identificador de tendencias + sintetizador |
-| Desarrollo de software | analista de requisitos + generador de código + probador + escritor de documentación |
-| Marketing | investigación de mercado + copywriter + diseño gráfico + programación RRSS |
-| Finanzas | datos de acciones + análisis de sentimiento de noticias + análisis técnico + recomendaciones |
-| Cadena de suministro | proveedores + fabricantes + distribuidores (nodos representados por agentes) |
-| Operaciones autónomas | diagnóstico de fallas + clasificación + remediación + integración con ML tradicional |
+### Sección 9: Modelos de interrelación y comunicación (verbatim)
 
----
+"Entender las formas intrincadas en que los agentes interactúan y se comunican es fundamental para diseñar sistemas multiagentes efectivos. Como se muestra en la Fig. 2, existe un espectro de modelos de interrelación y comunicación, que va desde el escenario más simple de agente único hasta marcos colaborativos complejos y diseñados a medida. Cada modelo presenta ventajas y desafíos únicos, influyendo en la eficiencia general, robustez y adaptabilidad del sistema multiagente.
 
-## 7. Implementación con CrewAI
+1. **Agente Único**: En el nivel más básico, un 'Agente Único' opera autónomamente sin interacción directa o comunicación con otras entidades. Aunque este modelo es sencillo de implementar y gestionar, sus capacidades están inherentemente limitadas por el alcance y recursos del agente individual. Es adecuado para tareas que pueden descomponerse en subproblemas independientes, cada uno resoluble por un agente único y autosuficiente.
+
+2. **Red**: El modelo de 'Red' representa un paso significativo hacia la colaboración, donde múltiples agentes interactúan directamente entre sí de manera descentralizada. La comunicación típicamente ocurre de persona a persona, permitiendo el intercambio de información, recursos e incluso tareas. Este modelo fomenta la resiliencia, ya que la falla de un agente no necesariamente incapacita el sistema completo. Sin embargo, gestionar la sobrecarga de comunicación y asegurar toma de decisiones coherente en una red grande y desestructurada puede ser desafiante.
+
+3. **Supervisor**: En el modelo de 'Supervisor', un agente dedicado, el 'supervisor', supervisa y coordina las actividades de un grupo de agentes subordinados. El supervisor actúa como un centro central para comunicación, asignación de tareas y resolución de conflictos. Esta estructura jerárquica ofrece líneas claras de autoridad y puede simplificar la gestión y control. Sin embargo, introduce un punto único de falla (el supervisor) y puede convertirse en un cuello de botella si el supervisor es abrumado por un gran número de subordinados o tareas complejas.
+
+4. **Supervisor como Herramienta**: Este modelo es una extensión matizada del concepto de 'Supervisor', donde el rol del supervisor es menos sobre mando y control directo y más sobre proporcionar recursos, orientación o soporte analítico a otros agentes. El supervisor podría ofrecer herramientas, datos o servicios computacionales que habiliten a otros agentes para realizar sus tareas más efectivamente, sin necesariamente dictarles cada acción. Este enfoque busca aprovechar las capacidades del supervisor sin imponer control rígido de arriba hacia abajo.
+
+5. **Jerárquico**: El modelo 'Jerárquico' expande el concepto de supervisor para crear una estructura organizativa multicapa. Esto implica múltiples niveles de supervisores, con supervisores de nivel superior supervisando a los de nivel inferior, y finalmente, una colección de agentes operacionales en el nivel más bajo. Esta estructura es bien adecuada para problemas complejos que pueden descomponerse en subproblemas, cada uno gestionado por una capa específica de la jerarquía. Proporciona un enfoque estructurado para la escalabilidad y gestión de la complejidad, permitiendo toma de decisiones distribuida dentro de límites definidos."
+
+"La elección del modelo depende de la complejidad del problema, la cantidad de agentes requeridos y la naturaleza de la comunicación entre agentes. Para problemas simples y bien estructurados, un modelo de Agente Único o Supervisor puede ser suficiente. Para entornos más complejos y dinámicos, los modelos de Red o Jerárquico pueden ser más apropiados."
+
+### Sección 10: Implementación CrewAI (código completo)
 
 ```python
 from crewai import Agent, Task, Crew, Process
 
-# Tres agentes especializados con herramientas distintas
+# Definir agentes con roles específicos
 researcher_agent = Agent(
     role="Research Analyst",
     goal="Conduct thorough research and gather relevant information",
-    backstory="Expert researcher with strong analytical skills.",
+    backstory="You are an expert researcher with strong analytical skills.",
     tools=[web_search_tool, database_query_tool],
     allow_delegation=False
 )
@@ -134,7 +102,7 @@ researcher_agent = Agent(
 writer_agent = Agent(
     role="Content Writer",
     goal="Write clear, engaging content based on research findings",
-    backstory="Professional writer specializing in technical documentation.",
+    backstory="You are a professional writer specializing in technical documentation.",
     tools=[word_processor_tool],
     allow_delegation=False
 )
@@ -142,12 +110,12 @@ writer_agent = Agent(
 editor_agent = Agent(
     role="Editor",
     goal="Review and refine content for clarity and coherence",
-    backstory="Experienced editor ensuring quality and consistency.",
-    tools=[review_tool, grammar_check_tool],
+    backstory="You are an experienced editor ensuring quality and consistency.",
+    tools=[review_tool, grammar_check_tool]
     allow_delegation=False
 )
 
-# Tareas encadenadas: cada tarea tiene un agente específico
+# Definir tareas para cada agente
 research_task = Task(
     description="Research the topic and compile findings",
     expected_output="Comprehensive research document",
@@ -166,62 +134,29 @@ editing_task = Task(
     agent=editor_agent
 )
 
-# Crew con proceso secuencial
+# Crear equipo con proceso secuencial
 crew = Crew(
     agents=[researcher_agent, writer_agent, editor_agent],
     tasks=[research_task, writing_task, editing_task],
     process=Process.sequential
 )
 
+# Ejecutar el equipo
 result = crew.kickoff()
+print(result)
 ```
 
-**Principios arquitectónicos del código:**
-1. Tres agentes con `role` y `tools` distintos → especialización
-2. `allow_delegation=False` en todos → sin re-delegación lateral
-3. `Process.sequential` → ejecución en orden: researcher → writer → editor
-4. Cada tarea tiene un `agent` asignado explícitamente → contrato claro
+### Sección 11: Conclusión (verbatim)
+
+"En conclusión, el patrón de Colaboración Multiagente representa un cambio de paradigma en cómo diseñamos y desarrollamos sistemas inteligentes. Al orquestar múltiples agentes especializados, podemos abordar problemas complejos de manera más efectiva que con enfoques monolíticos. La flexibilidad para elegir diferentes modelos de comunicación y colaboración permite a los desarrolladores adaptar sus sistemas a requisitos específicos. A medida que la IA y la automatización continúan evolucionando, la capacidad de diseñar y gestionar sistemas multiagentes será cada vez más crucial para resolver desafíos del mundo real en diversos dominios."
 
 ---
 
-## 8. Ventajas declaradas de la arquitectura multiagente
+## Diferencias clave v1.0.0 → v2.0.0
 
-| Ventaja | Descripción |
-|---------|-------------|
-| **Modularidad** | Cada agente es un componente independiente y reemplazable |
-| **Escalabilidad** | Se pueden agregar agentes sin rediseñar el sistema completo |
-| **Robustez** | Fallo de un agente no causa falla total del sistema |
-| **Sinergia** | "El desempeño colectivo supera las capacidades potenciales de cualquier agente individual" |
-
----
-
-## 9. Relación con los patrones anteriores
-
-El capítulo posiciona Multi-Agent Collaboration como una capa sobre los patrones individuales:
-
-```
-Multi-Agent Collaboration (organización y roles)
-├── Secuencial → usa Chaining internamente
-├── Paralela → usa Parallelization internamente
-├── Con workflow dinámico → usa Planning internamente
-└── Con decisiones condicionales → usa Routing internamente
-```
-
-Diferencia clave respecto a Parallelization (Cap.3):
-- Cap.3: múltiples invocaciones del **mismo** contexto de agente, resultados se fusionan
-- Cap.7: múltiples **agentes distintos** con roles, herramientas y conocimiento diferente
-
----
-
-## 10. Implicaciones directas para THYROX
-
-| Concepto del capítulo | Aplicación THYROX | Notas |
-|----------------------|------------------|-------|
-| Modelo Supervisor | Gate calibrado: evaluadores paralelos → merger grounded | Ya implementado en el análisis de Cap.3 |
-| Modelo Jerárquico | WP con sub-WPs: coordinator → workflow stages → agentes especializados | ÉPICA 40 ya implementó coordinators |
-| Especialización por dominio | Agentes `deep-dive`, `agentic-reasoning`, `task-executor` como agentes especializados | Ya existentes en el sistema |
-| "Ontología compartida" | `now.md` como estado compartido entre agentes + `output_key` como contrato | Ya implementado con `now-{agent}.md` |
-| `allow_delegation=False` | Evaluadores en gate no delegan — producen su evaluación directamente | Contrato del merger (grounded exclusively) |
-| Resiliencia: fallo de un agente | Router → ruta `unclear` si evaluador no puede clasificar | Ya documentado en arquitectura del gate |
-| Modelo Consenso | Múltiples evaluadores con perspectivas distintas → merger produce decisión | Equivale al Merger grounded del gate THYROX |
-| Punto único de falla en Supervisor | El merger del gate es un punto de síntesis — mitigación: merger con prompt verificable | Pendiente de definición formal |
+| Elemento | v1.0.0 | v2.0.0 |
+|----------|--------|--------|
+| Forma Secuencial | Sin distinción de Planning | Añade "(similar al patrón de planificación, pero involucrando explícitamente diferentes agentes)" |
+| Operaciones Autónomas | Solo diagnóstico/clasificación/remediación | Añade: "también pueden integrarse con modelos de aprendizaje automático tradicionales y herramientas, aprovechando sistemas existentes mientras ofrecen simultáneamente las ventajas de la IA Generativa" |
+| Conclusión | No disponible en v1 input | Párrafo completo: "cambio de paradigma", flexibilidad de modelos, evolución de IA/automatización |
+| Modelos de interrelación | Descripción estructurada en tabla | Descripción en prosa extensa con matices adicionales por modelo |
