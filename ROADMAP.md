@@ -25,10 +25,10 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## ÉPICA 41: goto-problem-fix — Consolidar fuente única de estado del framework ✓ COMPLETADO 2026-04-18
+## ÉPICA 41: goto-problem-fix — Consolidar fuente única de estado del framework [-] EN CURSO
 
 **WP:** `.thyrox/context/work/2026-04-17-17-58-13-goto-problem-fix/`
-**Resultado:** scripts phase→stage fix, workflow-audit skill, domain subdirectories, PAT-004 enforcement, REGLA-LONGEV-001 revisada, CHANGELOG/ROADMAP policy, coordinator rename (ba/pm), coverage analysis. 40 commits.
+**Resultado:** scripts phase→stage fix, workflow-audit skill, domain subdirectories, PAT-004 enforcement, REGLA-LONGEV-001 revisada, CHANGELOG/ROADMAP policy, coordinator rename (ba/pm), coverage analysis, Ishikawa I-011. 42+ commits.
 
 - [x] Stage 1 DISCOVER — 2026-04-17
 - [x] Stage 3 DIAGNOSE — 2026-04-17
@@ -37,7 +37,7 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 - [x] Stage 8 PLAN EXECUTION — 2026-04-17
 - [x] Stage 10 IMPLEMENT — 2026-04-17
 - [x] Stage 11 TRACK/EVALUATE — 2026-04-17
-- [x] Stage 12 STANDARDIZE — 2026-04-18
+- [-] Stage 12 STANDARDIZE — en curso (reabierto — I-011)
 
 ---
 

@@ -1,10 +1,11 @@
 ```yml
-work_package_id: 2026-04-17-17-58-13-goto-problem-fix
-closed_at: 2026-04-18 01:58:20
+created_at: 2026-04-18 01:58:20
 project: THYROX
-source_phase: Phase 12 — STANDARDIZE
-total_lessons: 8
+work_package: 2026-04-17-17-58-13-goto-problem-fix
+phase: Phase 12 — STANDARDIZE
 author: NestorMonroy
+status: Borrador
+total_lessons: 8
 ```
 
 # Lessons Learned: goto-problem-fix (ÉPICA 41)
