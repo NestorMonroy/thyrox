@@ -1,87 +1,75 @@
 ```yml
 created_at: 2026-04-18 16:49:14
+updated_at: 2026-04-18 23:37:47
 project: THYROX
 work_package: 2026-04-18-07-12-50-methodology-calibration
 phase: Phase 1 — DISCOVER
 author: NestorMonroy
 status: Borrador
-version: 1.0.0
-fuente: Capítulo 6 — "Planificación" (libro agentic design patterns, traducción profesional)
-nota: Cuarto patrón agentic del libro. Complementa Cap.1 Chaining, Cap.2 Routing, Cap.3 Parallelization.
+version: 2.0.0
+fuente: Capítulo 6 — "Planificación" (libro agentic design patterns, versión ajustada)
+nota: Versión ajustada del capítulo. Cambios clave vs v1: eliminada Sec.9 "síntesis 4 patrones" (jerarquía), conclusión reescrita con escalabilidad, DeepResearch amplía con casos concretos.
 ```
 
-# Input: Capítulo 6 — Deep-Review Completo de Planificación
+# Input: Capítulo 6 — Planificación (versión ajustada)
 
 ---
 
-## 1. Posición del capítulo en la secuencia del libro
-
-El capítulo se posiciona como el cuarto patrón agentic, complementando los anteriores:
-- Cap. 1 Chaining → secuencia lineal con validación por eslabón
-- Cap. 2 Routing → lógica condicional dinámica
-- Cap. 3 Parallelization → ejecución concurrente con merger grounded
-- **Cap. 6 Planning → descomposición autónoma de objetivos en secuencias de acciones**
-
-La síntesis del capítulo:
-> "El patrón de planificación proporciona el puente esencial entre la intención humana y la ejecución automatizada para problemas complejos."
-
----
-
-## 2. El problema que motiva el patrón — formulación precisa
+## 1. Tesis central
 
 > "El comportamiento inteligente a menudo implica más que solo reaccionar a la entrada inmediata. Requiere previsión, descomposición de tareas complejas en pasos más pequeños y manejables, y estrategia sobre cómo lograr un resultado deseado."
 
-La distinción clave respecto a los patrones anteriores:
-- Chaining/Routing/Parallelization → el flujo de trabajo **ya se conoce** de antemano
-- **Planning → el "cómo" debe ser descubierto autónomamente**
-
-> "La decisión de usar un agente de planificación versus un agente simple de ejecución de tareas depende de una única pregunta: ¿necesita el 'cómo' ser descubierto, o ya se conoce?"
-
----
-
-## 3. Definición técnica del patrón
-
+**Definición del patrón:**
 > "El patrón de planificación es un proceso computacional fundamental en sistemas autónomos, que permite a un agente sintetizar una secuencia de acciones para lograr un objetivo especificado, particularmente en entornos dinámicos o complejos. Este proceso transforma un objetivo de alto nivel en un plan estructurado compuesto de pasos discretos y ejecutables."
 
+---
+
+## 2. El "agente de planificación" como delegado de objetivo
+
+El capítulo usa la analogía de organizar una reunión: el usuario define el *qué*, el agente descubre el *cómo*.
+
 **Elementos del plan:**
-- **Estado inicial**: condiciones actuales del problema (presupuesto, participantes, fechas disponibles)
+- **Estado inicial**: condiciones actuales (presupuesto, participantes, fechas disponibles)
 - **Estado objetivo**: resultado deseado (reunión organizada exitosamente)
-- **Secuencia de acciones**: pasos discretos que conectan estado inicial con objetivo
-- **Adaptabilidad**: el plan inicial es un punto de partida, no un guion rígido
+- **Secuencia de acciones**: pasos que conectan estado inicial con objetivo
+- **Adaptabilidad**: el plan inicial es punto de partida, no guion rígido — el agente adapta ante obstáculos (lugar reservado, proveedor ocupado)
 
 ---
 
-## 4. Principio de equilibrio: flexibilidad vs. predictibilidad
+## 3. Principio de equilibrio: flexibilidad vs. predictibilidad
 
-El capítulo introduce una tensión explícita que diferencia Planning de los otros patrones:
-
-> "Es crucial reconocer el equilibrio entre flexibilidad y predictibilidad. La planificación dinámica es una herramienta específica, no una solución universal. Cuando la solución de un problema ya se comprende bien y es repetible, es más efectivo limitar al agente a un flujo de trabajo fijo predeterminado."
+> "La planificación dinámica es una herramienta específica, no una solución universal."
 
 **Regla de selección del patrón:**
 
 | Situación | Patrón correcto |
 |-----------|----------------|
-| "Cómo" ya se conoce, solución repetible | Chaining / Routing / Parallelization |
+| "Cómo" ya se conoce, solución repetible | Workflow fijo predeterminado (Chaining/Routing/Parallelization) |
 | "Cómo" debe ser descubierto, entorno dinámico | **Planning** |
+
+> "La decisión de usar un agente de planificación versus un agente simple de ejecución de tareas depende de una única pregunta: ¿necesita el 'cómo' ser descubierto, o ya se conoce?"
 
 ---
 
-## 5. Casos de uso documentados
+## 4. Casos de uso documentados
 
 | Dominio | Aplicación | Característica planning |
 |---------|-----------|------------------------|
 | Automatización procedimental | Onboarding de empleado: crear cuentas, asignar capacitaciones, coordinar departamentos | Dependencias ordenadas, herramientas externas |
 | Robótica/navegación | Ruta de robot con obstáculos, restricciones de tráfico | Optimización de métricas (tiempo, energía) |
 | Síntesis de información | Informe de investigación: recopilación → resumen → estructuración → refinamiento iterativo | Fases diferenciadas con bucle iterativo |
-| Soporte al cliente | Diagnóstico → solución → escalamiento | Plan sistemático multi-paso |
+| Soporte al cliente | Diagnóstico → implementación de soluciones → escalamiento | Plan sistemático multi-paso |
 
 ---
 
-## 6. Implementación con CrewAI
+## 5. Implementación con CrewAI
 
 ```python
+from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, Process
 from langchain_openai import ChatOpenAI
+
+load_dotenv()
 
 llm = ChatOpenAI(model="gpt-4-turbo")
 
@@ -108,36 +96,39 @@ crew = Crew(
     verbose=True
 )
 
+print("## Running the planning and writing task ##")
 result = crew.kickoff()
+print("\n---\n## Task Result ##\n---")
+print(result)
 ```
 
-**Principios del código CrewAI:**
-1. Un solo agente tiene el rol combinado de planner + writer — el plan emerge del propio LLM
-2. El objetivo de alto nivel (`topic`) se delega sin especificar los pasos intermedios
-3. `Process.sequential` — el agente crea y luego ejecuta su propio plan internamente
+**Descripción del patrón en el código (según el capítulo):**
+"Este patrón implica un agente que primero formula un plan de múltiples pasos para abordar una consulta compleja y luego ejecuta ese plan secuencialmente."
 
 ---
 
-## 7. Google DeepResearch — Planning avanzado asíncrono
+## 6. Google Gemini DeepResearch — Planning avanzado asíncrono
 
-Gemini DeepResearch ejemplifica el patrón en su forma más sofisticada:
-
-**Fases del pipeline agentico:**
-1. **Deconstrucción**: convierte la solicitud del usuario en un plan de investigación multipunto
-2. **Revisión colaborativa**: el plan se presenta al usuario para modificación antes de ejecutar
-3. **Bucle iterativo**: el agente reformula consultas dinámicamente según brechas de conocimiento
-4. **Síntesis asíncrona**: procesamiento resiliente — el usuario puede desconectarse
-5. **Informe estructurado**: narrativa coherente con secciones lógicas + citas verificables
-
-**Características arquitectónicas clave:**
+**Descripción funcional del sistema:**
+- Múltiples pasos: consulta → deconstrucción en plan multipunto → revisión colaborativa → bucle iterativo de búsqueda/análisis → síntesis asíncrona → informe estructurado
+- **Revisión colaborativa**: el plan se presenta al usuario para modificación antes de ejecutar
+- **Bucle iterativo**: el agente reformula consultas dinámicamente según brechas de conocimiento
 - **Asincronismo**: resiliente a fallos de punto único, notificación al completarse
-- **Integración de documentos privados**: combina fuentes web con documentos del usuario
-- **Evaluación crítica**: identifica temas principales, organiza contenido, no concatena hallazgos
+- **Síntesis crítica**: identificación de temas principales, organización en narrativa coherente (no concatenación de hallazgos)
 - **Output interactivo**: resumen de audio, gráficos, links a fuentes originales
 
+**Casos de uso documentados:**
+
+| Caso | Descripción |
+|------|-------------|
+| **Análisis competitivo** | Recopila y coteja datos sobre tendencias de mercado, especificaciones de competidores, sentimiento público, estrategias de marketing. Reemplaza monitoreo manual de múltiples competidores. |
+| **Exploración académica** | Revisión de literatura: identifica artículos fundamentales, rastrea desarrollo de conceptos, mapea frentes de investigación emergentes. |
+
+**Fuente de eficiencia declarada:** automatización del ciclo iterativo de búsqueda y filtrado (cuello de botella central en investigación manual).
+
 ---
 
-## 8. OpenAI Deep Research — implementación con API
+## 7. OpenAI Deep Research — implementación con API
 
 ```python
 from openai import OpenAI
@@ -158,36 +149,32 @@ response = client.responses.create(
 )
 
 final_report = response.content[-1].text
+print("## Final Report ##")
+print(final_report)
 ```
 
-**Principios del código OpenAI:**
-1. `reasoning={"budget_tokens": 10000}` — tokens dedicados al proceso de planificación interno
-2. `tools=[{"type": "web_search"}]` — herramientas disponibles para el agente durante ejecución
-3. El agente descompone autónomamente `user_query` en subpreguntas y ejecuta el plan
+**Descripción del sistema (según el capítulo):**
+"Toma una consulta de alto nivel y la desglosa autónomamente en subpreguntas, realiza búsquedas web utilizando sus herramientas integradas y entrega un informe final estructurado y rico en citas."
 
 ---
 
-## 9. Síntesis: los cuatro patrones como arquitectura completa
+## 8. Conclusión del capítulo (nueva en v2)
 
-| Patrón | Función principal | Cómo combina con los otros |
-|--------|-----------------|--------------------------|
-| Chaining | Secuencia predeterminada con validación | Eslabones del plan |
-| Routing | Decisión condicional en cada nodo | Rama del plan según estado |
-| Parallelization | Evaluación concurrente | Pasos del plan sin dependencia mutua |
-| **Planning** | **Generación autónoma del flujo de trabajo** | **Produce el chaining/routing/parallelization a seguir** |
+> "El patrón de planificación es un componente fundamental que eleva los sistemas agenticos de meros respondedores reactivos a ejecutores estratégicos y orientados a objetivos."
 
-La relación jerárquica es clave:
-> Planning → genera el workflow → que se ejecuta mediante Chaining + Routing + Parallelization
+**Escalabilidad declarada:**
+- Escala desde ejecución de tareas secuencial y directa (agente CrewAI creando y siguiendo un plan de escritura)
+- Hasta sistemas más complejos y dinámicos (Google DeepResearch, planes iterativos que se adaptan)
+
+> "En última instancia, la planificación proporciona el puente esencial entre la intención humana y la ejecución automatizada para problemas complejos."
 
 ---
 
-## Implicaciones directas para THYROX
+## 9. Diferencias v1.0.0 → v2.0.0
 
-| Concepto del capítulo | Aplicación THYROX | Notas |
-|----------------------|------------------|-------|
-| "¿Necesita el cómo ser descubierto?" | Criterio de selección Stage 8 PLAN EXECUTION vs. Stage 1 DISCOVER | Distingue WPs que necesitan exploración de los que tienen path claro |
-| Plan = estado inicial + objetivo + secuencia | Exit conditions = estado objetivo con predicados verificables | Cada EC debe tener estado inicial implícito |
-| Plan inicial es punto de partida, no guion rígido | Gates con routing 4 rutas (pass/rework/escalate/unclear) | El routing implementa la adaptabilidad del plan |
-| Revisión colaborativa antes de ejecutar | Gate SP-N humano antes de Stage 10 IMPLEMENT | Aprobar el plan antes de la ejecución irreversible |
-| Asincronismo + notificación al completar | Agentes en background con task-notifications | Patrón ya implementado en el sistema THYROX actual |
-| Budget de reasoning tokens | `reasoning={"budget_tokens": N}` en llamadas de alto nivel | Relevar para Stage 9 PILOT si se usa Claude API directamente |
+| Elemento | v1.0.0 (original) | v2.0.0 (ajustado) |
+|----------|-------------------|-------------------|
+| Sección síntesis 4 patrones | Presente: tabla explícita "Planning → genera workflow → ejecutan Chaining+Routing+Parallelization" | **ELIMINADA** |
+| DeepResearch ejemplos | Solo descripción funcional del pipeline | **AMPLIADA** con análisis competitivo y exploración académica |
+| Código CrewAI | Sin `dotenv`, sin print statements | **Con** `load_dotenv()` + print statements de output |
+| Conclusión | Síntesis de 4 patrones con jerarquía | Escalabilidad del patrón sin jerarquía |
