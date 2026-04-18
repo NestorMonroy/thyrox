@@ -257,4 +257,4 @@ Versionado con [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-> **Versiones v0.x y v1.x archivadas** en [CHANGELOG-archive.md](CHANGELOG-archive.md) por REGLA-LONGEV-001 (FASE 29).
+> **Versiones v0.x y v1.x** disponibles en `git log --oneline --follow -- CHANGELOG.md` (historial completo en git — I-002).
