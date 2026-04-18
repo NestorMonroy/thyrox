@@ -13,7 +13,7 @@ Fecha actualización: 2026-04-17
 
 ## Propósito
 
-Framework profesional para gestión y planificación de proyectos con Claude Code, con metodología de 12 stages propia (DISCOVER → STANDARDIZE) y soporte nativo para 11 metodologías de gestión.
+Sistema de Agentic AI para gestión y planificación de proyectos sobre Claude Code, con metodología de 12 stages propia (DISCOVER → STANDARDIZE) y soporte nativo para 11 metodologías formales.
 
 > Objetivo: Que nuevos usuarios comprendan qué es THYROX, cómo funciona, y cómo comenzar a usarlo.
 
@@ -21,18 +21,18 @@ Framework profesional para gestión y planificación de proyectos con Claude Cod
 
 ## Descripción General
 
-Un framework completo para gestión y planificación de proyectos con Claude Code, incluyendo documentación automática, changelog tracking, gestión de cambios, y coordinators especializados para metodologías formales (DMAIC, PDCA, PMBOK, BABOK, RUP, RM, Lean, BPA, PPS, SP, CP).
+Un sistema de Agentic AI para gestión y planificación de proyectos sobre Claude Code, con 23 agentes especializados, memoria persistente, gates HITL y coordinators para metodologías formales (DMAIC, PDCA, PMBOK, BABOK, RUP, RM, Lean, BPA, PPS, SP, CP).
 
 ## Qué es THYROX
 
-THYROX es un framework completo para:
+THYROX es un sistema de Agentic AI que:
 
-- **Automatización** de workflows con Claude Code
-- **Documentación** estructurada y versionada
-- **Gestión** de proyectos con ROADMAP.md y tasks
-- **Ejecución** con commits convencionales y changelog automático
-- **Metodologías** formales via coordinators especializados (DMAIC, PDCA, PMBOK, BABOK, RUP, RM, Lean, BPA, PPS, SP, CP)
-- **Estructura** clara con 12 stages THYROX propios
+- **Orquesta** 23 agentes especializados con ejecución autónoma y coordinación multi-agent
+- **Automatiza** workflows con decisión autónoma en bucles agentic (/loop)
+- **Persiste** estado entre sesiones via Work Packages + thyrox-memory MCP (FAISS semántico)
+- **Controla** calidad con gates HITL en cada transición Stage N→N+1
+- **Integra** 11 metodologías formales via coordinators especializados (DMAIC, PDCA, PMBOK, BABOK, RUP, RM, Lean, BPA, PPS, SP, CP)
+- **Reacciona** a eventos con hooks (SessionStart, PostCompact, Stop)
 
 ## Características
 
@@ -60,7 +60,7 @@ thyrox/
 │   ├── references/          # 47 referencias de metodología y plataforma
 │   ├── scripts/             # Scripts de infraestructura (hooks, utilidades)
 │   └── skills/
-│       └── thyrox/          # Skill principal del framework
+│       └── thyrox/          # Skill principal del sistema
 │           ├── SKILL.md     # Motor — 12 stages THYROX (Level 1)
 │           ├── references/  # Guías de metodología
 │           └── assets/      # Templates de artefactos
@@ -73,7 +73,7 @@ thyrox/
 │   │   ├── decisions/       # ADRs
 │   │   ├── errors/          # Error tracking
 │   │   └── work/            # Work packages (YYYY-MM-DD-HH-MM-SS-nombre/)
-│   └── registry/            # Fuente de verdad del framework
+│   └── registry/            # Fuente de verdad del sistema
 │       ├── agents/          # Definiciones YML de agentes
 │       ├── methodologies/   # 11 YAMLs de metodologías
 │       ├── bootstrap.py     # Genera .claude/agents/ desde agents/*.yml

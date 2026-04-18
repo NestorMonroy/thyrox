@@ -24,7 +24,7 @@ updated_at: 2026-04-18 02:00:43
   - plan-execution.md.template + categorización WP cajones en metadata-standards.md
   - 5 patrones propagados: PAT-001..PAT-005. ADR: meta-framework-orchestration
 
-## Estado del framework
+## Estado del sistema
 
 - 23 agentes nativos en `.claude/agents/`
 - **Versión: v2.8.0** (MINOR — 5 nuevos namespaces metodológicos + meta-framework layer)

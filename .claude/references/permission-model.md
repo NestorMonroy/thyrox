@@ -11,7 +11,7 @@ purpose: Explicar los dos planos de aprobacion del framework y la configuracion 
 
 # Modelo de Permisos — Gates de decision vs permisos de herramienta
 
-El framework opera en dos planos de aprobacion independientes. Cada uno tiene una funcion
+El sistema THYROX opera en dos planos de aprobacion independientes. Cada uno tiene una funcion
 distinta. Configurarlos juntos es lo que elimina la friccion innecesaria sin sacrificar seguridad.
 
 ---
@@ -71,11 +71,11 @@ No toda edicion tiene el mismo peso. Antes de decidir si una operacion necesita 
 | Artefactos WP dentro de `.claude/` | `.claude/context/work/**/*.md` | **Prompt siempre** | Safety invariant |
 | Estado de sesion dentro de `.claude/` | `.claude/context/now.md`, `focus.md` | **Prompt siempre** | Safety invariant |
 | Historial del proyecto | `CHANGELOG.md`, `ROADMAP.md` | Auto | `acceptEdits` |
-| Scripts del framework | `bash .claude/scripts/*` | Auto | `allow` |
+| Scripts del sistema | `bash .claude/scripts/*` | Auto | `allow` |
 | Scripts de validacion de fase | `bash .claude/skills/*/scripts/*` | Auto | `allow` |
 | Git rutinario | `git add/commit/push/status/log/diff` | Auto | `allow` |
-| Config del framework — edicion decision | Cambiar instrucciones en `SKILL.md`, `CLAUDE.md` | Prompt | GATE OPERACION + `ask` |
-| Config del framework — edicion consecuencia | Actualizar `updated_at` en `SKILL.md`, `CLAUDE.md` | Prompt ligero (1 click) | `ask` rule — sin GATE OPERACION |
+| Config del sistema — edicion decision | Cambiar instrucciones en `SKILL.md`, `CLAUDE.md` | Prompt | GATE OPERACION + `ask` |
+| Config del sistema — edicion consecuencia | Actualizar `updated_at` en `SKILL.md`, `CLAUDE.md` | Prompt ligero (1 click) | `ask` rule — sin GATE OPERACION |
 | Operaciones destructivas | `git push --force`, `git reset --hard`, `rm -rf` | Bloqueado | `deny` |
 
 **Relacion entre planos:**

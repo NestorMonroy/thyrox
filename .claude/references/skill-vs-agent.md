@@ -17,7 +17,7 @@ owner: thyrox (cross-phase)
 | Dimensión | SKILL | Agente |
 |-----------|-------|--------|
 | **Qué es** | Documento de metodología que define cómo trabajar en un dominio. Instrucciones que Claude lee y sigue en la sesión activa. | Subagente nativo de Claude Code con identidad, tools propios y scope de ejecución acotado. Se invoca en paralelo o como especialista puntual. |
-| **Dónde vive** | `.claude/skills/{nombre}/SKILL.md` — dentro del framework de gestión | `.claude/agents/{nombre}.md` — directorio de agentes nativos de Claude Code |
+| **Dónde vive** | `.claude/skills/{nombre}/SKILL.md` — dentro del sistema THYROX | `.claude/agents/{nombre}.md` — directorio de agentes nativos de Claude Code |
 | **Cómo se activa** | 3 modos: (1) **model-invocable** — Claude decide por `description`; (2) **user-invocable** — usuario escribe `/<name>`; (3) **hidden** — solo `/<name>`, modelo no lo auto-selecciona (`disable-model-invocation: true`) | Claude Code lo selecciona automáticamente por `description` (routing), o el usuario lo invoca explícitamente |
 | **Acceso a tools** | No declara tools propios — usa los del contexto de la sesión principal | Declara su propio conjunto de `tools` en el frontmatter; solo tiene acceso a esos tools |
 | **Ejecución en paralelo** | No — es metodología que el agente principal integra en su razonamiento | Sí — Claude Code puede lanzar múltiples agentes en paralelo con el `Task` tool |
@@ -38,7 +38,7 @@ owner: thyrox (cross-phase)
 
 | Nombre | Path | Propósito |
 |--------|------|-----------|
-| `thyrox` | `.claude/skills/thyrox/SKILL.md` | Metodología de gestión de proyectos en 7 fases (ANALYZE → TRACK). Motor del framework. |
+| `thyrox` | `.claude/skills/thyrox/SKILL.md` | Sistema agentic de gestión de proyectos con 12 stages (DISCOVER → STANDARDIZE). Motor del sistema THYROX. |
 | `python-mcp` | `.claude/skills/python-mcp/SKILL.md` | Guía para implementar servidores MCP en Python: estructura, registro de tools, patrones de testing. |
 
 ### Agentes activos

@@ -10,16 +10,21 @@ Fecha actualización: 2026-03-27
 
 ## Flujo de Trabajo
 
-THYROX usa una metodología de 7 fases SDLC definida en el [SKILL](.claude/skills/pm-thyrox/SKILL.md):
+THYROX es un sistema de Agentic AI con 12 stages propios definidos en el [SKILL](.claude/skills/thyrox/SKILL.md):
 
 ```
-1. ANALYZE           → Entender requisitos
-2. SOLUTION_STRATEGY → Decidir arquitectura
-3. PLAN              → Definir scope, actualizar ROADMAP.md
-4. STRUCTURE         → Crear PRD o specs
-5. DECOMPOSE         → Descomponer en tasks
-6. EXECUTE           → Implementar + commits
-7. TRACK             → Validar + changelog
+Stage 1  — DISCOVER          → Explorar el problema y contexto
+Stage 2  — BASELINE          → Medir estado actual y métricas
+Stage 3  — DIAGNOSE          → Análisis causal, causa raíz
+Stage 4  — CONSTRAINTS       → Restricciones técnicas y de negocio
+Stage 5  — STRATEGY          → Plan arquitectónico, decisiones técnicas
+Stage 6  — SCOPE             → Scope, brainstorm, actualizar ROADMAP.md
+Stage 7  — DESIGN/SPECIFY    → PRDs o Spec-Driven docs
+Stage 8  — PLAN EXECUTION    → Descomponer en tasks atómicas (T-NNN)
+Stage 9  — PILOT/VALIDATE    → Validar enfoque con piloto
+Stage 10 — IMPLEMENT         → Implementar + commits convencionales
+Stage 11 — TRACK/EVALUATE    → Monitorear, changelog, cierre
+Stage 12 — STANDARDIZE       → Documentar lecciones, codificar mejoras
 ```
 
 **Siempre empezar por ANALYZE.**
@@ -50,7 +55,7 @@ git checkout -b feature/descripcion
 
 ### 4. Trabajar siguiendo las fases
 
-Consultar [SKILL](.claude/skills/pm-thyrox/SKILL.md) para saber qué fase aplica.
+Consultar [SKILL](.claude/skills/thyrox/SKILL.md) para saber qué stage aplica.
 
 ### 5. Commits con Conventional Commits
 

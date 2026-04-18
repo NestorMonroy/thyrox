@@ -1,12 +1,12 @@
 ```yml
 name: thyrox
-description: "Framework de gestión THYROX con 12 fases propias (DISCOVER → STANDARDIZE). Usar este skill cuando el usuario quiera planificar, analizar, diseñar, organizar, trackear o gestionar CUALQUIER tipo de trabajo — features, bug fixes, refactoring, documentación, investigación o setup de proyecto. También usar cuando el usuario pregunte '¿qué hago primero?', '¿cómo organizo esto?', '¿cuál es el estado?', 'crea un plan para X', 'analiza X', 'descompón X en tareas', 'documenta esta decisión', o cualquier cosa relacionada con workflow de proyecto, tracking de trabajo, registros de decisiones o desarrollo estructurado. Siempre empezar con DISCOVER antes de planificar."
-updated_at: 2026-04-17 23:15:00
+description: "Sistema agentic THYROX con 12 stages propios (DISCOVER → STANDARDIZE). Usar este skill cuando el usuario quiera planificar, analizar, diseñar, organizar, trackear o gestionar CUALQUIER tipo de trabajo — features, bug fixes, refactoring, documentación, investigación o setup de proyecto. También usar cuando el usuario pregunte '¿qué hago primero?', '¿cómo organizo esto?', '¿cuál es el estado?', 'crea un plan para X', 'analiza X', 'descompón X en tareas', 'documenta esta decisión', o cualquier cosa relacionada con workflow de proyecto, tracking de trabajo, registros de decisiones o desarrollo estructurado. Siempre empezar con DISCOVER antes de planificar."
+updated_at: 2026-04-18 04:30:00
 ```
 
 # THYROX: Gestión de Proyectos
 
-Framework de gestión para organizar trabajo de cualquier tamaño con Claude Code. Sigue 12 fases propias (DISCOVER → STANDARDIZE) donde entender viene antes que planificar, y planificar viene antes que ejecutar.
+Sistema agentic para organizar trabajo de cualquier tamaño sobre Claude Code. Sigue 12 stages propios (DISCOVER → STANDARDIZE) donde entender viene antes que planificar, y planificar viene antes que ejecutar.
 
 **Principio core:** Analizar antes de actuar. Cada fase produce artefactos que alimentan la siguiente. Saltar fases produce trabajo sin fundamento.
 
@@ -55,7 +55,7 @@ Cada fase vive en su propio skill. Invocar directamente para ejecutar:
 | Phase 9: PILOT/VALIDATE | `/thyrox:pilot` | Validar solución con PoC. Confirmar supuestos antes de ejecutar. |
 | Phase 10: EXECUTE | `/thyrox:execute` | Ejecutar. Commits + actualizar task plan + gates async. |
 | Phase 11: TRACK/EVALUATE | `/thyrox:track` | Evaluar resultados. Lessons learned + changelog + cierre WP. Usar /thyrox:audit antes de STANDARDIZE para gate de calidad. |
-| Phase 12: STANDARDIZE | `/thyrox:standardize` | Documentar patrones. Propagar aprendizajes al framework. |
+| Phase 12: STANDARDIZE | `/thyrox:standardize` | Documentar patrones. Propagar aprendizajes al sistema. |
 
 ## Herramientas de calidad
 
@@ -100,15 +100,15 @@ correspondiente **dentro** del workflow stage apropiado. Cada skill declara su
 | `cp:` | Consulting Process (McKinsey/BCG) | cp-initiation, cp-diagnosis, cp-structure, cp-recommend, cp-plan, cp-implement, cp-evaluate | 1, 2, 3, 5, 6, 10, 11 |
 | `bpa:` | Business Process Analysis | bpa-identify, bpa-map, bpa-analyze, bpa-design, bpa-implement, bpa-monitor | 1, 2, 3, 5, 10, 11 |
 
-> **Framework extensible:** Los 11 namespaces implementados cubren las principales metodologías
+> **Sistema extensible:** Los 11 namespaces implementados cubren las principales metodologías
 > de mejora continua, gestión de proyectos, análisis de negocio, estrategia y consultoría.
-> El framework soporta incorporar cualquier marco metodológico adicional siguiendo el patrón
+> El sistema soporta incorporar cualquier marco metodológico adicional siguiendo el patrón
 > `{metodología}-{paso}` con declaración de `THYROX Stage:` en su SKILL.md y anatomía completa
 > (SKILL.md + assets/ + references/).
 >
 > SDLC no aplica como methodology skill: el ciclo de 12 stages de THYROX ya ES el ciclo
 > de vida universal destilado del flujo crítico — SDLC waterfall está subsumed en la
-> estructura del framework; SDLC iterativo está cubierto por `rup:`.
+> estructura del sistema; SDLC iterativo está cubierto por `rup:`.
 
 **Cómo activar:** invocar directamente el skill del paso, ej. `/dmaic-define`.
 El skill actualiza `now.md::flow` y `now.md::methodology_step`.
@@ -299,15 +299,15 @@ dentro del stage activo.
 - `now.md::methodology_step` → `dmaic:define`
 - Artefacto producido → `analyze/dmaic-define.md` (del skill dmaic-define)
 
-**Framework patterns:**
-Trabajo de mantenimiento del framework (ej: completar anatomía de skills, auditorías de references)
+**Sistema patterns:**
+Trabajo de mantenimiento del sistema (ej: completar anatomía de skills, auditorías de references)
 se ejecuta como tareas del task-plan sin `flow:` declarado (`flow: null`). No requiere skill dedicado.
 
 ---
 
 ## Modelo de permisos
 
-El framework opera en dos planos independientes. Confundirlos genera fricción innecesaria o falsa sensación de seguridad.
+El sistema THYROX opera en dos planos independientes. Confundirlos genera fricción innecesaria o falsa sensación de seguridad.
 
 ### Plano A — Gates de decisión del SKILL (metodológico)
 
@@ -342,11 +342,11 @@ Configurados en `.claude/settings.json`. Independientes de los gates del SKILL �
 | Historial del proyecto | `CHANGELOG.md`, `ROADMAP.md` | Auto (acceptEdits) |
 | Referencias de plataforma | `.claude/references/**` | Auto (allow) |
 | ADRs | `.thyrox/context/decisions/**` | Prompt (ask) |
-| Scripts del framework | `bash .claude/scripts/*` | Auto (allow) |
+| Scripts del sistema | `bash .claude/scripts/*` | Auto (allow) |
 | Scripts de validacion | `bash .claude/skills/*/scripts/*` | Auto (allow) |
 | Scripts operacionales (edicion) | Write/Edit en `scripts/*.sh`, `skills/*/scripts/*.sh` | Prompt (ask) |
 | Git rutinario | `git add/commit/push/status/log` | Auto (allow) |
-| Configuracion del framework | `SKILL.md`, `CLAUDE.md`, `settings.json` | Prompt (ask) |
+| Configuracion del sistema | `SKILL.md`, `CLAUDE.md`, `settings.json` | Prompt (ask) |
 | Operaciones destructivas | `git push --force`, `git reset --hard`, `rm -rf` | Bloqueado (deny) |
 
 **Relacion entre planos:**

@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
 version: 3.5
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-18 04:30:00
 ```
 
 # CLAUDE.md — THYROX
@@ -21,7 +21,7 @@ Los ADRs del proyecto viven en el path declarado por `adr_path` en este archivo 
    *Addendum FASE 22:* Los `workflow-*` skills son la excepción intencional: son herramientas de ejecución por fase, no skills de dominio tecnológico. Esta excepción está documentada en ADR-016. La regla original sigue vigente para tech skills (python, react, etc.).
    *Addendum FASE 23:* Nomenclatura resuelta a kebab-case hyphens — `workflow-*/SKILL.md`. TD-019 cerrado (FASE 23).
    *Addendum FASE 29:* Skill renombrado → `thyrox` (prefijo `pm-` eliminado — no es PM de PMI, es la metodología THYROX misma). TD-020 cerrado (FASE 29).
-   *Addendum FASE 31:* Interfaz pública del framework → `/thyrox:*` (plugin namespace via `.claude-plugin/plugin.json`). Los `workflow-*` skills permanecen como implementación interna. Capa de presentación complementa ADR-016. Ver ADR-019. TD-036 cerrado (FASE 31).
+   *Addendum FASE 31:* Interfaz pública del sistema → `/thyrox:*` (plugin namespace via `.claude-plugin/plugin.json`). Los `workflow-*` skills permanecen como implementación interna. Capa de presentación complementa ADR-016. Ver ADR-019. TD-036 cerrado (FASE 31).
    *Addendum FASE 35:* Estado de sesión y work packages migrados a `.thyrox/context/` — fuera de `.claude/` (zona de configuración de Claude Code). Ver ADR en `.thyrox/context/decisions/`.
    *Addendum FASE 39:* 12 fases THYROX propias (DISCOVER → STANDARDIZE). `workflow-analyze` renombrado a `workflow-discover`. 12 skills workflow-* totales: workflow-discover, workflow-measure, workflow-analyze, workflow-constraints, workflow-strategy, workflow-plan, workflow-structure, workflow-decompose, workflow-pilot, workflow-execute, workflow-track, workflow-standardize. Sistema `.claude/rules/` creado para invariantes globales.
 6. **Work packages with timestamp** — `.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/`
@@ -32,9 +32,9 @@ Los ADRs del proyecto viven en el path declarado por `adr_path` en este archivo 
 |                  | SKILL.md                                     | ADR en {adr_path}                              |
 |------------------|----------------------------------------------|--------------------------------------------------------|
 | Que es           | Instrucciones de metodologia (como trabajar) | Registro de decision tomada (por que se eligio X)      |
-| Quien lo escribe | Mantenedor del framework                     | Claude en Phase 1-2, cuando hay decision permanente    |
+| Quien lo escribe | Mantenedor del sistema                       | Claude en Phase 1-2, cuando hay decision permanente    |
 | Cuando modificar | Solo si cambia la metodologia de gestion     | Al tomar una decision arquitectonica del proyecto      |
-| Duracion         | Vive con el framework                        | Inmutable una vez aprobado                             |
+| Duracion         | Vive con el sistema                          | Inmutable una vez aprobado                             |
 
 REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
 - Cambia COMO se trabaja en general -> SKILL.md
@@ -50,7 +50,7 @@ REGLA: Si la duda es "documento esto en SKILL.md o en un ADR?":
 ├── memory/                    ← Memoria persistente entre sesiones
 ├── references/                ← Documentación global de plataforma Claude Code (on-demand)
 ├── scripts/                   ← Scripts de infraestructura Claude Code (hooks, utilidades)
-└── skills/                    ← Skills del framework (thyrox + workflow-*)
+└── skills/                    ← Skills del sistema (thyrox + workflow-*)
     └── thyrox/                ← El SKILL (Level 1): SKILL.md + references/ + scripts/ + assets/
 
 .thyrox/                       ← Estado de trabajo + tooling del proyecto

@@ -10,7 +10,7 @@ Fecha actualización: 2026-04-17
 
 ## Visión General
 
-THYROX es un framework de gestión de proyectos para Claude Code. No es una aplicación — es una **metodología empaquetada como un Anthropic Skill** que se copia a cualquier proyecto, con soporte nativo para 11 metodologías de gestión vía coordinators especializados.
+THYROX es un sistema de Agentic AI para gestión de proyectos sobre Claude Code. No es una aplicación — es un **sistema agentic empaquetado como Anthropic Skills** con soporte nativo para 11 metodologías formales vía coordinators especializados.
 
 ---
 
