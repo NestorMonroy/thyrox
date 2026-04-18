@@ -768,19 +768,28 @@ Ver también: [state-management.md](state-management.md) para el trigger map com
 
 ## Longevidad de archivos (REGLA-LONGEV-001) (TD-026)
 
-Los archivos vivos (ROADMAP.md, CHANGELOG.md, technical-debt.md) se degradan en performance del LLM cuando crecen sin límite. Aplicar REGLA-LONGEV-001:
+Los archivos vivos (ROADMAP.md, CHANGELOG.md, technical-debt.md) se degradan en performance del LLM cuando crecen sin límite.
 
 **Umbral de tamaño:** 25,000 bytes (≈10,000 tokens).
 
-**Acción cuando se supera el umbral:**
-1. Crear archivo de historial: `{archivo}-history.md` o `{archivo}-archive.md`
-2. Mover contenido histórico/cerrado al archivo de historial
-3. El archivo original mantiene solo estado activo/reciente
-4. Commit: `docs: split {archivo} — contenido histórico archivado`
+**Acción cuando se supera el umbral (revisada — ÉPICA 41):**
+
+Evaluar qué porción del archivo es **historial** vs. **estado activo**. El historial se elimina del archivo activo — NO se mueve a un archivo `-archive` o `-history`. El historial vive en git.
+
+```bash
+# Para ver el historial completo de cualquier archivo:
+git log --oneline --follow -- ROADMAP.md
+git log --oneline --follow -- CHANGELOG.md
+git show HEAD~30:ROADMAP.md   # estado en cualquier punto del pasado
+```
+
+**Prohibido:** `{archivo}-history.md`, `{archivo}-archive.md` — violan I-002 (git es el historial).
+
+**Excepción:** si el historial debe ser navegable sin acceso a git (documentación publicada, sitio estático), se puede mantener un `-archive`. THYROX no tiene este caso.
 
 **Archivos a monitorear:** `ROADMAP.md`, `CHANGELOG.md`, `technical-debt.md`.
 
-**Trigger de revisión:** cada 5 FASEs, ejecutar: `wc -c ROADMAP.md CHANGELOG.md .thyrox/context/technical-debt.md`
+**Trigger de revisión:** cada 5 ÉPICAs, ejecutar: `wc -c ROADMAP.md CHANGELOG.md .thyrox/context/technical-debt.md`
 
 ---
 
@@ -798,8 +807,18 @@ Los archivos de configuración del framework (CLAUDE.md, skills/*.md, references
 
 ---
 
-## CHANGELOG.md (raíz) — solo en releases (D2, FASE 29)
+## CHANGELOG.md (raíz) — solo en releases (D2, ÉPICA 29, ÉPICA 41)
 
-`CHANGELOG.md` (raíz del proyecto) se actualiza ÚNICAMENTE cuando hay un release con bump de versión (MAJOR, MINOR, o PATCH).
+`CHANGELOG.md` (raíz del proyecto) se actualiza ÚNICAMENTE cuando hay un release con bump de versión semántico (`git tag vX.Y.Z`).
 
-**Para el progreso de desarrollo de un WP:** usar `{nombre-wp}-changelog.md` en el directorio del WP (Phase 7). Ver template en `.claude/skills/workflow-track/assets/wp-changelog.md.template`.
+| Evento | Acción correcta |
+|--------|-----------------|
+| `git tag v2.9.0` (MINOR) | ✅ Actualizar `CHANGELOG.md` raíz |
+| `git tag v3.0.0` (MAJOR) | ✅ Actualizar `CHANGELOG.md` raíz |
+| Cierre de WP | ✅ Crear `{nombre-wp}-changelog.md` en Stage 12 |
+| Sesión de trabajo | ❌ NO tocar `CHANGELOG.md` raíz |
+| Stage 12 STANDARDIZE | ❌ NO tocar `CHANGELOG.md` raíz (excepto si el WP es un release completo) |
+
+**Para el progreso de desarrollo de un WP:** usar `{nombre-wp}-changelog.md` en el WP (Stage 12). Ver template en `.claude/skills/workflow-track/assets/wp-changelog.md.template`.
+
+**Prohibido:** `CHANGELOG-archive.md`, `CHANGELOG-history.md` — violan I-002. El historial de versiones vive en `git log --follow -- CHANGELOG.md`.
