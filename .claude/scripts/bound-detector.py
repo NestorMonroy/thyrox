@@ -93,12 +93,18 @@ def extract_snippet(text: str, pattern: str, window: int = 60) -> str:
 
 
 def allow() -> None:
-    print(json.dumps({"hookSpecificOutput": {"permissionDecision": "allow"}}))
+    print(json.dumps({
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "allow",
+        }
+    }))
 
 
 def deny(reason: str) -> None:
     print(json.dumps({
         "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
             "permissionDecision": "deny",
             "reason": reason,
         }
