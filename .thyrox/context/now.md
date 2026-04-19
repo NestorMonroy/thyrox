@@ -1,11 +1,11 @@
 ```yml
 type: Estado de Sesión
 version: 1.1
-updated_at: 2026-04-19 11:28:01
+updated_at: 2026-04-19 17:23:19
 cold_boot: false
 last_session: 2026-04-19
 current_work: .thyrox/context/work/2026-04-18-07-12-50-methodology-calibration
-stage: Stage 3 — DIAGNOSE
+stage: Stage 8 — PLAN EXECUTION
 flow: null
 methodology_step: null
 blockers: []
@@ -36,4 +36,4 @@ coordinators:
 
 # Contexto
 
-ÉPICA 42 methodology-calibration — **Stage 3 DIAGNOSE completado**. Stage 1 DISCOVER: 90+ artefactos, Cap.9-20, 30 AP en 8 categorías, promedio 63.3%. Stage 2 BASELINE: 0/30 cobertura. Stage 3 DIAGNOSE: causa raíz = scope drift (python-mcp.instructions.md MCP-only). 3 ejes causales con árbol 5-Whys. Solución: (1) agentic-python.instructions.md, (2) agentic-validator.md agent, (3) patrones consultables. Próximo: Stage 5 STRATEGY → decidir diseño de implementación.
+ÉPICA 42 methodology-calibration — **Stage 8 PLAN EXECUTION**. Stage 1-3 completos. Deep-dive (PARCIALMENTE VÁLIDO): mapa corregido a 13 cambios reales + 2 falsos positivos eliminados + 3 faltantes agregados (ARCHITECTURE.md, README.md, decisión bootstrap.py). Deep-review (52% cobertura Stage 3→Stage 5): TD-040 bloqueador para Eje 1. Task-plan: T-001..T-013. Siguiente: ejecutar T-001 (verificar @imports) para desbloquear T-002.
