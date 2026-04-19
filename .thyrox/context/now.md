@@ -36,4 +36,4 @@ coordinators:
 
 # Contexto
 
-ÉPICA 42 methodology-calibration — **Stage 3 DIAGNOSE**. Stage 1 DISCOVER completo (90+ artefactos, Cap.9-20 analizados, 30 anti-patrones catalogados en 8 categorías, promedio calibración serie: 63.3%). Stage 2 BASELINE completo: cobertura actual 0/30 (0%), 3 ejes causales identificados. Próximo: análisis causal de los 3 ejes — ausencia de guidelines agentic, ausencia de agente validador, ausencia de patrones consultables.
+ÉPICA 42 methodology-calibration — **Stage 3 DIAGNOSE completado**. Stage 1 DISCOVER: 90+ artefactos, Cap.9-20, 30 AP en 8 categorías, promedio 63.3%. Stage 2 BASELINE: 0/30 cobertura. Stage 3 DIAGNOSE: causa raíz = scope drift (python-mcp.instructions.md MCP-only). 3 ejes causales con árbol 5-Whys. Solución: (1) agentic-python.instructions.md, (2) agentic-validator.md agent, (3) patrones consultables. Próximo: Stage 5 STRATEGY → decidir diseño de implementación.
