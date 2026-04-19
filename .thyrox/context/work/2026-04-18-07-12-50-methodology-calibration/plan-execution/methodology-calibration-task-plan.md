@@ -130,6 +130,37 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ---
 
+## Bloque 7 — Consistencia de nomenclatura de stages (nuevo hallazgo)
+
+- [ ] T-014 Corregir nombres de stages viejos en 12 archivos — 26 ocurrencias
+  - **Contexto:** El rename Stage 2→BASELINE, Stage 3→DIAGNOSE, Stage 6→SCOPE, Stage 10→IMPLEMENT
+    está documentado en CLAUDE.md glosario pero los skills **no fueron actualizados**.
+    El resultado: README.md dice "Stage 6 — SCOPE" y SKILL.md dice "Phase 6: PLAN" — fuente única de
+    verdad partida. Exactamente el anti-patrón AP-25 (Named Mechanism vs. Implementation) aplicado
+    a la propia documentación del sistema.
+  - **Archivos a actualizar (12):**
+    1. `.claude/skills/thyrox/SKILL.md` — tabla catálogo, mermaid (P2→BASELINE, P3→DIAGNOSE), references section
+    2. `.claude/skills/workflow-baseline/SKILL.md` — header: `# /workflow-measure — Phase 2: MEASURE` → nuevo
+    3. `.claude/skills/workflow-diagnose/SKILL.md` — header: `# /workflow-analyze — Phase 3: ANALYZE` → nuevo
+    4. `.claude/skills/workflow-scope/SKILL.md` — header: `# /workflow-plan — Phase 6: PLAN` → nuevo
+    5. `.claude/skills/workflow-implement/SKILL.md` — header: `# /workflow-execute — Phase 10: EXECUTE` → nuevo
+    6. `.claude/skills/workflow-track/scripts/validate-phase-readiness.sh` — mensajes de validación
+    7. `.claude/skills/python-mcp/SKILL.md` — sección headers
+    8. `.claude/skills/db-postgresql/SKILL.md` — sección headers
+    9. `.claude/skills/db-mysql/SKILL.md` — sección headers
+    10. `.claude/skills/frontend-react/SKILL.md` — sección headers
+    11. `.claude/skills/frontend-webpack/SKILL.md` — sección headers
+    12. `.claude/skills/backend-nodejs/SKILL.md` — sección headers
+  - **Regla de sustitución:**
+    - `Phase 2: MEASURE` → `Stage 2: BASELINE`
+    - `Phase 3: ANALYZE` → `Stage 3: DIAGNOSE`
+    - `Phase 6: PLAN` → `Stage 6: SCOPE`
+    - `Phase 10: EXECUTE` → `Stage 10: IMPLEMENT`
+    - Mermaid nodes: `P2([MEASURE])` → `P2([BASELINE])`, `P3([ANALYZE])` → `P3([DIAGNOSE])`
+  - **Independiente, no bloqueador — pero alta prioridad** (confusión activa para cualquier usuario del sistema)
+
+---
+
 ## DAG de dependencias
 
 ```
@@ -150,6 +181,7 @@ T-010 (focus.md) — independiente
 T-011 (project-state.md) — depende de T-005 (para conteo final)
 T-012 (ROADMAP.md) — independiente
 T-013 (workflow-standardize) — independiente
+T-014 (consistencia stage names) — independiente, alta prioridad
 ```
 
 ## Orden de ejecución sugerido
@@ -157,7 +189,7 @@ T-013 (workflow-standardize) — independiente
 1. T-001 → (decisión) → T-002 → T-003
 2. T-004 → T-005
 3. T-006 (paralelo con 1-2)
-4. T-007, T-013 (paralelo, independientes)
+4. T-007, T-013, T-014 (paralelo, independientes — T-014 alta prioridad)
 5. T-008 → T-009 → T-010 → T-011 → T-012
 
 ## Trazabilidad
