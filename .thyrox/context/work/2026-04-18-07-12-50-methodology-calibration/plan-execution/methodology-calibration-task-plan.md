@@ -192,6 +192,42 @@ como guidelines accionables, agente validador, y patrones consultables.
     de razonamiento del agente (no solo la implementación)?"
   - **Depende de T-016** (la referencia define los criterios antes de que los templates los citen)
 
+- [ ] T-018 Crear `ARCHITECTURE.md` sección / documento `.claude/references/agentic-mandate.md`
+  — Definición operacional del mandato de THYROX como Sistema de Agentic AI
+  - **Problema:** README.md y ARCHITECTURE.md declaran "Sistema de Agentic AI" pero ningún archivo
+    define qué significa eso en términos verificables. El mandato es un label, no una propiedad del sistema.
+    Sin definición operacional, no hay forma de evaluar si THYROX cumple su identidad declarada.
+  - **Contenido del documento:**
+    - Definición verificable: "THYROX es agentic cuando [criterio 1..N medibles]"
+      - C1: el motor puede rechazar su propio output (bound-detector.py — CUMPLE)
+      - C2: el motor razona sobre incertidumbre en cada artefacto (exit criteria con umbral de confianza — NO CUMPLE todavía)
+      - C3: el motor persiste estado entre sesiones sin intervención humana (sync-wp-state.sh, git — CUMPLE)
+      - C4: el motor puede orquestar agentes especializados con scope acotado (25 agentes, bound-detector — CUMPLE)
+      - C5: las instrucciones del motor están verificadas en producción (TD-040 — NO VERIFICADO)
+      - C6: la arquitectura del motor corresponde a la documentación del sistema (ARCHITECTURE.md vs disco — NO CUMPLE)
+    - Estado actual por criterio: CUMPLE / NO CUMPLE / NO VERIFICADO
+    - Brechas activas: qué ÉPICAs deben cerrarse para alcanzar cada criterio
+    - PESTEL relevante: qué fuerzas externas afectan este mandato (Claude Code evolución, AI governance, ADK)
+    - Amenaza principal: la brecha "declarado vs real" crece cada ÉPICA que no cierra un criterio
+  - **Ubicación:** `.claude/references/agentic-mandate.md` — cargado on-demand, no automático
+  - **Depende de:** T-016 (define qué es "agentic" en el contexto de diseño de sistemas)
+  - **Alimenta:** T-008 (ARCHITECTURE.md), T-009 (README.md) — ambos deben citar este documento
+
+---
+
+## Bloque 9 — Deuda de plataforma (PESTEL-T y SWOT-Amenazas)
+
+> **Contexto:** THYROX corre sobre Claude Code, que evoluciona por release. Las referencias son
+> estáticas. AP-01..AP-30 pueden quedar obsoletos. No hay mecanismo de refresh.
+
+- [ ] T-019 Crear `.claude/references/platform-evolution-tracking.md`
+  — Mecanismo de tracking de cambios de Claude Code que afectan THYROX
+  - Lista de componentes THYROX con dependencia directa de plataforma:
+    `@imports` (CLAUDE.md), hooks API (settings.json), agent frontmatter, slash commands
+  - Por componente: versión verificada, comportamiento esperado, cómo detectar cambio
+  - Proceso: al inicio de cada ÉPICA, verificar si hay cambios de plataforma relevantes
+  - **Independiente** — no bloquea ningún task anterior, pero es la red de seguridad contra TD-040 recurrentes
+
 ---
 
 ## DAG de dependencias
@@ -208,8 +244,8 @@ T-004 (agentic-validator.yml)
 
 T-006 (6 patrones) — independiente
 T-007 (TD-042 validate-session-close.sh) — independiente
-T-008 (ARCHITECTURE.md) — depende de T-005 (necesita saber qué crear)
-T-009 (README.md) — depende de T-005
+T-008 (ARCHITECTURE.md) — depende de T-005 + T-018
+T-009 (README.md) — depende de T-005 + T-018
 T-010 (focus.md) — independiente
 T-011 (project-state.md) — depende de T-005 (para conteo final)
 T-012 (ROADMAP.md) — independiente
@@ -218,6 +254,8 @@ T-014 (consistencia stage names) — independiente, alta prioridad
 T-015 (árbol Agentic AI en methodology-selection-guide) — independiente
 T-016 (referencia agentic-system-design.md) — independiente
 T-017 (exit criteria agentic en Stage 3 + Stage 5 templates) — depende de T-016
+T-018 (agentic-mandate.md — definición operacional) — depende de T-016
+T-019 (platform-evolution-tracking.md) — independiente
 ```
 
 ## Orden de ejecución sugerido
@@ -226,8 +264,9 @@ T-017 (exit criteria agentic en Stage 3 + Stage 5 templates) — depende de T-01
 2. T-004 → T-005
 3. T-006 (paralelo con 1-2)
 4. T-007, T-013, T-014 (paralelo, independientes — T-014 alta prioridad)
-5. T-015, T-016 → T-017 (paralelo con paso 4)
-6. T-008 → T-009 → T-010 → T-011 → T-012
+5. T-015, T-016 → T-017 → T-018 (paralelo con paso 4)
+6. T-019 (independiente, cualquier momento)
+7. T-008 → T-009 → T-010 → T-011 → T-012
 
 ## Trazabilidad
 
