@@ -161,6 +161,39 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ---
 
+## Bloque 8 — THYROX como Sistema de Agentic AI (gap estratégico)
+
+> **Contexto:** Las 95 referencias del sistema cubren Lean, DMAIC, BPA, PDCA, PMBOK, RUP, RM, BABOK,
+> SP, CP, PPS. **Ninguna habla de diseño de sistemas Agentic AI.** El methodology-selection-guide no
+> tiene árbol de decisión para "¿estás construyendo un sistema agentic?". Las exit criteria de los stages
+> no tienen criterios específicos para WPs de arquitectura agentic. T-001..T-006 resuelven calidad de
+> código agentic, pero no identidad del sistema.
+
+- [ ] T-015 Agregar Árbol 5 "Sistemas Agentic AI" en `.claude/skills/thyrox/references/methodology-selection-guide.md`
+  - Árbol de decisión: "¿El WP construye o diseña un sistema donde un agente toma decisiones autónomas?"
+  - Ramas por tipo de problema: orchestración multi-agente, HITL design, tool use contracts, observabilidad
+  - Regla de desempate: cuándo usar sp: vs rup: vs el ciclo THYROX nativo para WPs agentic
+  - Conectar con los patrones consultables de T-006 (AP-01..AP-30) como referencia de implementación
+  - **Independiente**
+
+- [ ] T-016 Crear `.claude/skills/workflow-strategy/references/agentic-system-design.md`
+  - Referencia de diseño para WPs cuyo output es un sistema agentic
+  - Secciones: qué hace a un sistema "agentic" (autonomía, tool use, incertidumbre), diferencia entre
+    agente-como-herramienta vs agente-como-arquitectura, preguntas de Stage 5 STRATEGY para sistemas agentic
+  - Criterios de Stage 3 DIAGNOSE para gaps en sistemas agentic (observable vs inferido)
+  - Exit criteria adicionales para Stage 5: "¿la estrategia resuelve el mecanismo de decisión del agente
+    o solo el código que lo rodea?"
+  - **Independiente**
+
+- [ ] T-017 Agregar exit criteria agentic en templates Stage 3 y Stage 5
+  - `workflow-diagnose/assets/` — agregar sección "Si el WP es un sistema agentic: verificar..."
+    con checklist derivado de AP-01..AP-30: callbacks, tipo contracts, error handling, observabilidad
+  - `workflow-strategy/assets/` — agregar pregunta obligatoria: "¿la estrategia especifica el mecanismo
+    de razonamiento del agente (no solo la implementación)?"
+  - **Depende de T-016** (la referencia define los criterios antes de que los templates los citen)
+
+---
+
 ## DAG de dependencias
 
 ```
@@ -182,6 +215,9 @@ T-011 (project-state.md) — depende de T-005 (para conteo final)
 T-012 (ROADMAP.md) — independiente
 T-013 (workflow-standardize) — independiente
 T-014 (consistencia stage names) — independiente, alta prioridad
+T-015 (árbol Agentic AI en methodology-selection-guide) — independiente
+T-016 (referencia agentic-system-design.md) — independiente
+T-017 (exit criteria agentic en Stage 3 + Stage 5 templates) — depende de T-016
 ```
 
 ## Orden de ejecución sugerido
@@ -190,7 +226,8 @@ T-014 (consistencia stage names) — independiente, alta prioridad
 2. T-004 → T-005
 3. T-006 (paralelo con 1-2)
 4. T-007, T-013, T-014 (paralelo, independientes — T-014 alta prioridad)
-5. T-008 → T-009 → T-010 → T-011 → T-012
+5. T-015, T-016 → T-017 (paralelo con paso 4)
+6. T-008 → T-009 → T-010 → T-011 → T-012
 
 ## Trazabilidad
 
