@@ -27,8 +27,20 @@ como guidelines accionables, agente validador, y patrones consultables.
 - [ ] T-001 Verificar TD-040: probar que @imports en CLAUDE.md carga `.instructions.md` en sesión real
   - Acción: crear archivo temporal `.thyrox/guidelines/test-import-verification.md` con una regla única, verificar que Claude la aplica sin instrucción explícita en la siguiente sesión
   - Si PASA → continuar con T-002 (crear nuevo guideline)
-  - Si FALLA → ejecutar T-001b: mover `.thyrox/guidelines/*.instructions.md` a `.claude/rules/` y actualizar CLAUDE.md eliminando @imports
+  - Si FALLA → ejecutar T-001b
   - **Bloqueador para T-002, T-003**
+
+- [ ] T-001b *(rama FAIL de T-001)* Migrar guidelines a `.claude/rules/` — mecanismo verificado
+  - Mover los 6 archivos `.thyrox/guidelines/*.instructions.md` a `.claude/rules/`
+  - Actualizar `.claude/CLAUDE.md` sección `Tech-stack guidelines`: eliminar los 6 @imports, agregar nota de que las reglas ahora cargan desde `.claude/rules/` automáticamente
+  - Verificar que `.claude/settings.json` no tenga exclusión de `.claude/rules/` para los nuevos archivos
+  - Actualizar T-019 (`platform-evolution-tracking.md`) para documentar que el mecanismo canónico es `.claude/rules/` (no @imports)
+  - **Solo ejecutar si T-001 FALLA. Bloquea T-003b.**
+
+- [ ] T-003b *(rama FAIL de T-001)* Actualizar CLAUDE.md post-migración
+  - Eliminar líneas @imports de la sección `Tech-stack guidelines — @imports`
+  - Agregar sección `Tech-stack rules (cargadas automáticamente)` con listado de archivos en `.claude/rules/`
+  - **Depende de T-001b**
 
 ---
 
@@ -230,43 +242,153 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ---
 
-## DAG de dependencias
+## Bloque 10 — Calibración de incertidumbre en artefactos (DIM-A — CRÍTICA)
+
+> **Contexto:** Este es el objetivo central de ÉPICA 42 según Sec. 8 del DISCOVER:
+> *"Los templates de las 3 stages de mayor riesgo tienen sección de evidencia estructurada"*
+> y *"exit-conditions.md.template tiene umbral de confianza con protocolo de verificación"*.
+> **Ninguno de T-001..T-019 toca un solo template**. Sin este bloque, ÉPICA 42 no cumple
+> sus propios criterios de éxito.
+
+- [ ] T-020 Agregar sección "Evidencia de respaldo" en 3 templates de stage de mayor riesgo
+  - Archivos a modificar:
+    1. `.claude/skills/workflow-diagnose/assets/` — template de Stage 3 DIAGNOSE
+    2. `.claude/skills/workflow-strategy/assets/` — template de Stage 5 STRATEGY
+    3. `.claude/skills/workflow-decompose/assets/` — template de Stage 8 PLAN EXECUTION
+  - Sección a agregar en cada template:
+    ```markdown
+    ## Evidencia de respaldo
+    | Claim | Tipo | Fuente | Confianza |
+    |-------|------|--------|-----------|
+    | [afirmación] | observación/inferencia/gate-humano | [tool output / documento / decisión] | alta/media/baja |
+    ```
+  - Regla derivada: claims sin fuente → status `Borrador` bloqueado (no puede avanzar al gate)
+  - **Depende de T-017** (para no editar los mismos templates en conflicto)
+
+- [ ] T-021 Actualizar `exit-conditions.md.template` con umbral de confianza derivado
+  - Archivo: `.claude/skills/workflow-discover/assets/exit-conditions.md.template`
+  - Cambio: cada gate binario (PASS/FAIL) debe incluir campo `confidence_threshold`
+    con protocolo de verificación (herramienta ejecutada, triangulación, human gate)
+  - Anti-patrón a eliminar: gates como "¿El análisis está completo?" → reemplazar con
+    "¿El análisis tiene ≥N claims con fuente observable verificada?"
+  - Ejemplo concreto del nuevo formato:
+    ```
+    Gate Stage 3→4: DIAGNOSE completo
+    - [ ] Causa raíz principal con trazabilidad a ≥2 observaciones independientes
+    - [ ] Sección "Evidencia de respaldo" con ≥3 claims clasificados
+    - confidence_threshold: 0.80 (requiere tool_use confirmatorio, no solo LLM)
+    ```
+  - **Independiente de T-020** (editan archivos diferentes)
+
+---
+
+## Bloque 11 — Enforcement técnico de invariantes (DIM-B)
+
+> **Contexto:** I-001..I-011 son instrucciones de texto. `validate-session-close.sh`
+> no detecta violación de I-001 (task-plan sin discover/ en el mismo WP). SALTO-03
+> del solidez deep-dive: el enforcement es 100% LLM-dependiente.
+
+- [ ] T-022 Agregar warning de I-001 en `validate-session-close.sh`
+  - Agregar Check 4: para cada WP con `plan-execution/` existente, verificar que
+    `discover/` también existe en el mismo WP
+  - Si falta discover/ → emitir warning (no bloquear, pero sí registrar en output)
+  - Formato del warning: `⚠ WP {nombre}: task-plan sin DISCOVER — viola I-001`
+  - **Independiente**
+
+---
+
+## Bloque 12 — Solidez del registro de agentes (DIM-C)
+
+> **Contexto:** CONTRADICCIÓN-01 del solidez deep-dive: 16/25 agentes (64%) no tienen
+> YML fuente en el registry. ARCHITECTURE.md declara "el registry es fuente de verdad"
+> — eso es FALSO para 64% de los agentes. T-008 actualiza ARCHITECTURE.md pero no
+> puede corregir el claim si los YMLs no existen.
+
+- [ ] T-023 Crear YMLs de documentación para los 16 agentes sin origen en registry
+  - Los 16 agentes: todos los coordinators (dmaic, pdca, lean, rup, rm, pm, ba, pps,
+    sp, cp, bpa + thyrox-coordinator) y agentes de análisis (deep-dive, deep-review,
+    diagrama-ishikawa, agentic-reasoning)
+  - Formato: YML mínimo con `name`, `description`, `tools`, `installation: manual`
+    (campo nuevo para distinguir de los generados por bootstrap.py)
+  - No incluir `model:` (TD-037)
+  - **Depende de T-008** (T-008 debe actualizar ARCHITECTURE.md antes de que T-023
+    corrija el claim de fuente de verdad)
+
+---
+
+## Bloque 13 — Cobertura de bound-detector en inglés (DIM-D)
+
+> **Contexto:** SALTO-06 del solidez deep-dive: UNBOUNDED_SIGNALS tiene cobertura
+> completa en español pero solo 2 patrones en inglés. "process all", "analyze every",
+> "check each", "read all files" no son interceptados.
+
+- [ ] T-024 Ampliar UNBOUNDED_SIGNALS en `bound-detector.py` — cobertura inglés
+  - Agregar a `UNBOUNDED_SIGNALS` en `.claude/scripts/bound-detector.py`:
+    ```python
+    r"\bprocess all\b", r"\banalyze every\b", r"\bcheck each\b",
+    r"\bread all\b", r"\blist all\b", r"\bfind all\b",
+    r"\bfor each\b", r"\bevery file\b", r"\ball files\b",
+    r"\bwithout limit\b", r"\bexhaustively\b",
+    ```
+  - Agregar comment en el código: `# English unbounded patterns — updated ÉPICA 42`
+  - Actualizar docstring del archivo para declarar cobertura: `# Cobertura: español (completo) + inglés (extenso)`
+  - **Independiente**
+
+---
+
+## DAG de dependencias completo
 
 ```
 T-001 (verificar @imports)
   ├── PASS → T-002 (agentic-python.instructions.md)
   │             └── T-003 (CLAUDE.md @import)
-  └── FAIL → T-001b (migrar guidelines a rules/)
+  └── FAIL → T-001b (migrar guidelines a .claude/rules/)
                └── T-003b (actualizar CLAUDE.md eliminar @imports)
 
 T-004 (agentic-validator.yml)
   └── T-005 (agentic-validator.md directo)
 
 T-006 (6 patrones) — independiente
+  └── T-015 depende de T-006 (árbol usa patrones como referencia)
+
 T-007 (TD-042 validate-session-close.sh) — independiente
+T-022 (Check I-001 en validate-session-close.sh) — independiente
+  └── T-007 y T-022 editan el mismo script — T-022 ejecutar después de T-007
+
 T-008 (ARCHITECTURE.md) — depende de T-005 + T-018
+  └── T-023 (YMLs 16 agentes) — depende de T-008
+
 T-009 (README.md) — depende de T-005 + T-018
 T-010 (focus.md) — independiente
 T-011 (project-state.md) — depende de T-005 (para conteo final)
 T-012 (ROADMAP.md) — independiente
 T-013 (workflow-standardize) — independiente
 T-014 (consistencia stage names) — independiente, alta prioridad
-T-015 (árbol Agentic AI en methodology-selection-guide) — independiente
+T-015 (árbol Agentic AI en methodology-selection-guide) — depende de T-006
 T-016 (referencia agentic-system-design.md) — independiente
 T-017 (exit criteria agentic en Stage 3 + Stage 5 templates) — depende de T-016
+  └── T-020 (sección Evidencia en templates) — depende de T-017
+        └── editan mismos templates: T-020 ejecutar después de T-017
 T-018 (agentic-mandate.md — definición operacional) — depende de T-016
 T-019 (platform-evolution-tracking.md) — independiente
+T-020 (sección Evidencia en 3 templates) — depende de T-017
+T-021 (exit-conditions.md.template con umbral confianza) — independiente
+T-022 (I-001 warning en validate-session-close.sh) — después de T-007
+T-023 (YMLs 16 agentes sin registry) — depende de T-008
+T-024 (bound-detector.py cobertura inglés) — independiente
 ```
 
 ## Orden de ejecución sugerido
 
-1. T-001 → (decisión) → T-002 → T-003
+1. T-001 → (decisión bifurca) → PASS: T-002 → T-003 | FAIL: T-001b → T-003b
 2. T-004 → T-005
 3. T-006 (paralelo con 1-2)
-4. T-007, T-013, T-014 (paralelo, independientes — T-014 alta prioridad)
-5. T-015, T-016 → T-017 → T-018 (paralelo con paso 4)
-6. T-019 (independiente, cualquier momento)
-7. T-008 → T-009 → T-010 → T-011 → T-012
+4. T-007 → T-022 (secuencial, mismo script) | T-013 | T-014 | T-024 (paralelo)
+5. T-016 → T-017 → T-020 (secuencial, mismos templates)
+6. T-016 → T-018 (paralelo con paso 5)
+7. T-015 (después de T-006) | T-019 | T-021 (paralelo)
+8. T-005 + T-016 → T-018 → T-008 → T-023 (secuencial)
+9. T-018 → T-009 → T-010 → T-011 → T-012
 
 ## Trazabilidad
 
