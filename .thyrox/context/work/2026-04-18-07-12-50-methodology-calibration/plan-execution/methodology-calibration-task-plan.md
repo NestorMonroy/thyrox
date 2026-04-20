@@ -533,7 +533,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** T-021 (estructura base del template)
 
-- [~] T-038 Crear `.claude/references/calibration-framework.md` — mapeo Eval-type × Stage @task-executor (claimed: 2026-04-20 13:49:43)
+- [x] T-038 Crear `.claude/references/calibration-framework.md` — mapeo Eval-type × Stage @task-executor (done: 2026-04-20 13:53:30)
   - **Fuentes:** cluster-e (E1-A CRÍTICO — calibration-framework.md referenciado pero no existe; E1-C ALTO — mapeo eval-type × stage incompleto)
   - Crear `.claude/references/calibration-framework.md`:
     - Tabla: Stage THYROX | Tipo de evaluación apropiada | Criterio de confianza mínimo | Método de verificación
@@ -980,7 +980,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 29 — Cherry-Pick en plan-execution.md.template (ALTO)
 
-- [~] T-079 Incorporar algoritmo Cherry-Pick Consciente en `plan-execution.md.template` @task-executor (claimed: 2026-04-20 13:52:45)
+- [x] T-079 Incorporar algoritmo Cherry-Pick Consciente en `plan-execution.md.template` @task-executor (done: 2026-04-20 13:53:34)
   - **Fuentes:** cluster-a (H-G1 ALTO)
   - **Hallazgo:** Algoritmo con umbrales (≥0.80 preservar; 0.60–0.80 evaluar; <0.60 reescribir) y break-even ratio existen en `discover/agentic-claims-management-patterns.md` pero ningún template los referencia. T-078 solo cubre la guideline de código, no el template de task-plans.
   - Agregar sección "Protocolo de iteración calibrada" en `.claude/skills/workflow-decompose/assets/plan-execution.md.template`
@@ -1004,7 +1004,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 31 — Referencias de calibración en skills de stages de riesgo (ALTO)
 
-- [~] T-081 Referenciar `agentic-calibration-workflow-example.md` desde skills de stages de mayor riesgo @task-executor (claimed: 2026-04-20 13:51:04)
+- [x] T-081 Referenciar `agentic-calibration-workflow-example.md` desde skills de stages de mayor riesgo @task-executor (done: 2026-04-20 13:54:12)
   - **Fuentes:** harvest-cluster-e (E3-A/B/C ALTO)
   - **Hallazgo:** T-075 crea el vínculo en `deep-dive.md`, pero los 6 patrones operacionales son relevantes para agentes que generan artefactos iterativos. Sin referencia en SKILL.md de stages de producción, el documento queda solo como referencia de análisis.
   - Agregar nota en sección "Artefactos de salida" de workflow-diagnose, workflow-strategy, workflow-decompose SKILL.md.
@@ -1093,7 +1093,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 36 — PreToolUse hook I-001: efectividad 100% vs 30% (ALTO)
 
-- [ ] T-091 Agregar PreToolUse hook para verificar I-001 antes de crear task-plan
+- [~] T-091 Agregar PreToolUse hook para verificar I-001 antes de crear task-plan @task-executor (claimed: 2026-04-20 13:53:34)
   - **Fuentes:** harvest-cluster-e (H-E10 ALTO)
   - **Hallazgo:** T-022 implementa I-001 como Stop hook (~30% efectividad). PreToolUse en Write tendría 100%.
   - Crear `.claude/scripts/check-i001-prewrite.sh` + entrada PreToolUse en `.claude/settings.json`.
