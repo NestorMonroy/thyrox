@@ -105,10 +105,38 @@ CORRECTO:  esperar instrucción explícita del ejecutor: "cierra el WP" / "ejecu
 Un WP puede contener múltiples iniciativas y ángulos de trabajo. El ejecutor
 es el único que sabe cuándo el WP está realmente completo.
 
-## I-012: Claims con fuente invalidada no propagables
+## I-012: Claims SPECULATIVE no avanzan gates
 
-Valores y claims de fuentes con contradicción interna demostrada no pueden usarse
-como fundamento en artefactos THYROX. Ver `prohibited-claims-registry.md` para lista.
+Un claim clasificado como SPECULATIVE (sin observable de origen en evidence-classification.md)
+no puede ser fundamento de una decisión de Stage gate. Si el gate requiere claim OBSERVABLE
+o INFERRED, el WP permanece en el stage actual hasta que el claim se respalde o se descarte.
 
-Claims SPECULATIVE (sin fuente observable) no pueden avanzar gates Stage→Stage.
-Ver `evidence-classification.md` para protocolo de clasificación.
+```
+PROHIBIDO: gate aprobado basado en "se espera que..." sin observable de origen
+CORRECTO:  gate bloqueado hasta obtener claim OBSERVABLE o INFERRED explícito
+```
+
+Valores y claims de fuentes con contradicción interna demostrada tampoco son propagables.
+Ver `prohibited-claims-registry.md` para lista. Ver `evidence-classification.md` para protocolo.
+
+## I-013: Context pruning en gates Stage→Stage
+
+Al avanzar de Stage N a Stage N+1, los claims con Confianza=baja y Origen=heredado
+de stages anteriores deben ser explícitamente descartados o re-verificados.
+No propagarlos implícitamente al siguiente stage sin marcarlos como "pendiente de re-verificación".
+
+```
+PROHIBIDO: propagar claims heredados sin re-verificar al siguiente stage
+CORRECTO:  marcar claims heredados con "pendiente:re-verificar" o descartarlos explícitamente
+```
+
+## I-014: Framework mismatch en insumos externos
+
+Cuando un documento analizado contiene fases numeradas (FASE N, Phase N, Stage N),
+NO interpretar esas fases como stages del WP activo en THYROX.
+Registrar como hallazgo de Stage 1 DISCOVER con nota: "FASE N en documento externo ≠ Stage N del WP".
+
+```
+PROHIBIDO: saltar Stage 4 porque el documento externo analizado menciona "FASE 4 completada"
+CORRECTO:  nota en discover/-analysis.md: "el documento usa FASE 4 con semántica propia, no aplica al WP"
+```

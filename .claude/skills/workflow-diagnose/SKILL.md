@@ -92,6 +92,21 @@ status: Borrador
 
 ---
 
+## Si el WP es un sistema agentic: verificar antes de avanzar Stage 3→4
+
+Si el WP construye o diseña un sistema donde un agente toma decisiones autónomas, completar este checklist adicional antes del gate 3→4:
+
+- [ ] **AP-01/02 — Callbacks sin side-effects**: ¿se analizó si los callbacks del sistema modifican estado externo de forma no controlada?
+- [ ] **AP-03..06 — Type contracts en herramientas**: ¿los inputs y outputs de las herramientas del agente tienen contratos de tipo definidos?
+- [ ] **AP-09..12 — Error handling**: ¿el análisis identificó si el sistema silencia excepciones en lugar de propagarlas correctamente?
+- [ ] **AP-13..15 — Observabilidad**: ¿están definidas métricas de drift, latency y quality para evaluar el comportamiento del agente?
+
+Si algún ítem está sin resolver, documentarlo como CR con status `SPECULATIVE` y marcarlo como bloqueante antes de avanzar.
+
+Ver referencia: `workflow-strategy/references/agentic-system-design.md`
+
+---
+
 ## Validaciones pre-gate
 
 Antes de presentar el gate 3→4:

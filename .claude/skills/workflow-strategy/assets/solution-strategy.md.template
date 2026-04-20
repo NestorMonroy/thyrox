@@ -259,6 +259,19 @@ How we respect it: Entire solution uses Java 17 + Spring ecosystem
 
 ---
 
+## Si el WP es un sistema agentic: checklist obligatorio
+
+> Completar si el WP construye o diseña un sistema donde un agente toma decisiones autónomas.
+> Ver: `workflow-strategy/references/agentic-system-design.md`
+
+- [ ] **Mecanismo de razonamiento especificado**: ¿la estrategia define cuándo el agente usará Planning vs Routing vs RAG? (no solo el código que lo rodea, sino el mecanismo de decisión)
+- [ ] **Callbacks sin side-effects documentados**: ¿la estrategia garantiza que los callbacks no modifican estado externo de forma no controlada? (AP-01/02)
+- [ ] **Type contracts de herramientas**: ¿la estrategia especifica los contratos de tipo para inputs/outputs de herramientas del agente? (AP-03..06)
+- [ ] **Estrategia de observabilidad**: ¿la estrategia incluye cómo medir drift, latency y quality del agente en producción? (AP-13..15)
+- [ ] **HITL/HOTL/HIC especificado**: ¿la estrategia define los puntos de aprobación o override humano? (AP-07/08)
+
+---
+
 ## Validation Checklist
 
 - [ ] Key ideas clearly articulated

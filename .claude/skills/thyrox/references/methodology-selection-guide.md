@@ -152,6 +152,64 @@ Este guide ayuda a decidir cuál es más adecuada basándose en las característ
 
 ---
 
+## Árbol 5: Sistemas Agentic AI
+
+```
+¿El WP construye o diseña un sistema donde un agente toma decisiones autónomas?
+│
+├─ NO → este árbol no aplica
+│
+└─ SÍ → ¿Cuál es el tipo de problema?
+         │
+         ├─ Orquestación multi-agente (coordinación de agentes especializados con scope acotado)
+         │   └─ → RUP (rup-coordinator) — iteraciones claras por fase
+         │       Referencias de implementación: discover/patterns/ (AP-01..AP-30)
+         │       Señales: orquestadores/subagentes, boundary contracts, scope acotado por rol
+         │
+         ├─ Diseño HITL/HOTL/HIC (Human-in-the-Loop / on-the-Loop / in-Command)
+         │   └─ → rup: o rm: según si hay ciclo de vida de requisitos activo
+         │       Ver HITL patterns en discover/patterns/hitl-* (AP-07, AP-08)
+         │       Señales: puntos de aprobación humana, escalation, override manual
+         │
+         ├─ Tool use contracts (especificar contratos de herramientas para el agente)
+         │   └─ → workflow Stage 7 DESIGN/SPECIFY con AP-31/32
+         │       Señales: inputs/outputs tipados, schemas de herramientas, invariantes de callback
+         │
+         └─ Observabilidad agentic (métricas, drift, latency, quality)
+             └─ → AP-13..15 en agentic-python.instructions.md
+                 Señales: ausencia de logs estructurados, sin métricas de drift, latency desconocida
+```
+
+**Regla de desempate para WPs agentic:**
+
+| Situación | Flow recomendado |
+|-----------|-----------------|
+| Incertidumbre alta en cómo el agente resolverá el problema | `sp:` — exploración estratégica primero |
+| Ciclo de vida software iterativo con fases claras (LCO, LCA, IOC) | `rup:` |
+| WP es el framework mismo (meta-nivel — ej: mejorar THYROX) | Ciclo THYROX nativo sin flow adicional |
+| Gestión de requisitos del sistema agentic (elicitación, trazabilidad) | `rm:` |
+
+**Regla de desempate sp: vs rup: para WPs agentic:**
+- ¿El problema de decisión del agente todavía no está definido (explorar qué mecanismo usar)? → `sp:`
+- ¿Ya se sabe qué construir y el reto es ejecutar iterativamente? → `rup:`
+- ¿El WP modifica o extiende THYROX mismo? → ciclo THYROX nativo (sin flow adicional)
+
+**Referencias de implementación — patrones consultables:**
+
+Los patrones AP-01..AP-30 en `discover/patterns/` del WP activo documentan implementaciones
+verificadas de los siguientes dominios:
+
+| Rango | Dominio | Archivo de referencia |
+|-------|---------|----------------------|
+| AP-01..AP-02 | Callback contracts (sin side effects) | adk-model-callback-contract.md |
+| AP-03..AP-06 | Type contracts en tool inputs/outputs | — (ver agentic-python.instructions.md) |
+| AP-07..AP-08 | HITL patterns (aprobación, escalation) | discover/patterns/hitl-* |
+| AP-09..AP-12 | Error handling (no silenciar excepciones) | — |
+| AP-13..AP-15 | Observabilidad: drift, latency, quality | agentic-python.instructions.md |
+| AP-16..AP-30 | Patrones multiagente, memoria, RAG, MCP | discover/patterns/ |
+
+---
+
 ## Cuándo NO usar una sola metodología
 
 Algunos WPs grandes requieren combinar metodologías en secuencia:
