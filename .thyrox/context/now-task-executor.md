@@ -1,6 +1,6 @@
 ```yml
-tarea_activa: T-041, T-042, T-044
-proximo_paso: ejecutar T-041 (agentic-pattern-selection.md), T-042 (CAD pattern + guideline), T-044 (fix-declared vs fix-verified)
+tarea_activa: T-066, T-068, T-070
+proximo_paso: Implementar T-066 check_python_deps, T-068 exit code, T-070 empty output check
 wp: 2026-04-18-07-12-50-methodology-calibration
-updated_at: 2026-04-20 13:41:37
+updated_at: 2026-04-20 13:42:28
 ```
