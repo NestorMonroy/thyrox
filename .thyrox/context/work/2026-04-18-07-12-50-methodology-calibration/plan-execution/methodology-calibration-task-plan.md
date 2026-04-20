@@ -943,7 +943,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICA
   - **Depende de:** independiente
 
-- [~] T-075 Convertir `agentic-calibration-workflow-example.md` en referencia oficial consultable @task-executor (claimed: 2026-04-20 13:40:40)
+- [x] T-075 Convertir `agentic-calibration-workflow-example.md` en referencia oficial consultable @task-executor (done: 2026-04-20 13:40:40)
   - **Fuentes:** `discover/agentic-calibration-workflow-example.md` (GAP-3 ALTO)
   - **Hallazgo:** Único artefacto empírico del WP con métricas reales (65%→79%→65.4%) y 6 patrones operacionales con sección "Implicación para el sistema". No está vinculado a ningún SKILL ni referencia consultable — sus hallazgos no se propagan al sistema.
   - Mover/copiar a `.claude/references/agentic-calibration-workflow-example.md` y agregar referencia en `deep-dive.md` como lectura recomendada para análisis de flujos multi-agente.
