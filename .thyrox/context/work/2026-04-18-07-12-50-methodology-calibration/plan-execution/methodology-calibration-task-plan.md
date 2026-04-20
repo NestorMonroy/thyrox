@@ -100,7 +100,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 4 — Deuda técnica operacional
 
-- [ ] T-007 Resolver TD-042: agregar verificación PAT-004 en `validate-session-close.sh`
+- [x] T-007 Resolver TD-042: agregar verificación PAT-004 en `validate-session-close.sh` @task-executor (done: 2026-04-20 13:16:31)
   - Verificar que checkboxes T-NNN en task-plan están sincronizados con commits del WP
   - Leer `technical-debt.md` para criterio exacto de cierre
   - **Independiente, no bloqueador**
@@ -135,7 +135,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 6 — Proceso de propagación sistémica
 
-- [~] T-013 Actualizar `.claude/skills/workflow-standardize/SKILL.md` @task-executor (claimed: 2026-04-20 13:13:58)
+- [x] T-013 Actualizar `.claude/skills/workflow-standardize/SKILL.md` @task-executor (done: 2026-04-20 13:16:57)
   - Agregar paso explícito en sección "Qué standardizar":
     "Si el WP descubrió anti-patrones de código agentic → actualizar `agentic-python.instructions.md`
     con las nuevas reglas y `agentic-validator.md` con los nuevos APs"
@@ -233,7 +233,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > **Contexto:** THYROX corre sobre Claude Code, que evoluciona por release. Las referencias son
 > estáticas. AP-01..AP-30 pueden quedar obsoletos. No hay mecanismo de refresh.
 
-- [~] T-019 Crear `.claude/references/platform-evolution-tracking.md` @task-executor (claimed: 2026-04-20 13:13:58)
+- [x] T-019 Crear `.claude/references/platform-evolution-tracking.md` @task-executor (done: 2026-04-20 13:16:57)
   — Mecanismo de tracking de cambios de Claude Code que afectan THYROX
   - Lista de componentes THYROX con dependencia directa de plataforma:
     `@imports` (CLAUDE.md), hooks API (settings.json), agent frontmatter, slash commands
@@ -266,7 +266,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - Regla derivada: claims sin fuente → status `Borrador` bloqueado (no puede avanzar al gate)
   - **Depende de T-017** (para no editar los mismos templates en conflicto)
 
-- [~] T-021 Actualizar `exit-conditions.md.template` con umbral de confianza derivado @task-executor (claimed: 2026-04-20 13:13:58)
+- [x] T-021 Actualizar `exit-conditions.md.template` con umbral de confianza derivado @task-executor (done: 2026-04-20 13:16:57)
   - Archivo: `.claude/skills/workflow-discover/assets/exit-conditions.md.template`
   - Cambio: cada gate binario (PASS/FAIL) debe incluir campo `confidence_threshold`
     con protocolo de verificación (herramienta ejecutada, triangulación, human gate)
@@ -289,7 +289,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > no detecta violación de I-001 (task-plan sin discover/ en el mismo WP). SALTO-03
 > del solidez deep-dive: el enforcement es 100% LLM-dependiente.
 
-- [ ] T-022 Agregar warning de I-001 en `validate-session-close.sh`
+- [x] T-022 Agregar warning de I-001 en `validate-session-close.sh` @task-executor (done: 2026-04-20 13:16:31)
   - Agregar Check 4: para cada WP con `plan-execution/` existente, verificar que
     `discover/` también existe en el mismo WP
   - Si falta discover/ → emitir warning (no bloquear, pero sí registrar en output)

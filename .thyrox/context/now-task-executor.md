@@ -1,8 +1,6 @@
 ```yml
-tarea_activa: T-007, T-022
-proximo_paso: editar validate-session-close.sh con check PAT-004 e I-001, luego marcar [x] en task-plan
+tarea_activa: T-013, T-019, T-021
+proximo_paso: T-013 ya presente — ejecutar T-019 (crear platform-evolution-tracking.md) y T-021 (actualizar exit-conditions.md.template), luego marcar [x] en task-plan
 wp: 2026-04-18-07-12-50-methodology-calibration
-updated_at: 2026-04-20 13:13:48
+updated_at: 2026-04-20 13:15:37
 ```
-
-T-007 + T-022 en ejecución — agregar checks PAT-004 (sync T-NNN vs commits) e I-001 (discover/ requerido si existe plan-execution/) en validate-session-close.sh.

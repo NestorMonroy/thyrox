@@ -215,3 +215,14 @@
 2. **Durante cada fase:** marcar `[x]` cuando la condición se cumple
 3. **Al completar una fase:** verificar que TODAS las exit conditions aplican
 4. **Al cerrar el WP:** Phase 12 pasa todas las validaciones
+
+---
+
+## Nota de calibración
+
+Cada gate debe incluir `confidence_threshold` con protocolo de verificación:
+- `0.80` → requiere tool_use confirmatorio (bash output, grep result)
+- `0.60` → inferencia calibrada con referencia citada
+- `0.40` → estimación explícita (hipótesis marcada)
+
+Anti-patrón eliminado: gates como "¿El análisis está completo?" sin criterio verificable.
