@@ -41,7 +41,7 @@ echo ""
 if [ -f "${CONTEXT_DIR}/now.md" ]; then
     CURRENT_WORK=$(grep "^current_work:" "${CONTEXT_DIR}/now.md" 2>/dev/null | head -1 | sed 's/current_work: *//' || echo "null")
     if [ "$CURRENT_WORK" != "null" ] && [ -n "$CURRENT_WORK" ]; then
-        WP_DIR="${CONTEXT_DIR}/${CURRENT_WORK}"
+        WP_DIR="${PROJECT_ROOT}/${CURRENT_WORK}"
         # New naming: *-task-plan.md; legacy fallback: tasks.md / plan.md
         TARGET=$(find "$WP_DIR" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
         [ -z "$TARGET" ] && [ -f "${WP_DIR}tasks.md" ] && TARGET="${WP_DIR}tasks.md"

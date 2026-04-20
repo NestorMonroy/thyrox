@@ -44,6 +44,10 @@
           {
             "type": "command",
             "command": "bash .claude/scripts/session-start.sh"
+          },
+          {
+            "type": "command",
+            "command": "python3 .claude/scripts/lint-agents.py || true"
           }
         ]
       }
@@ -79,6 +83,15 @@
           {
             "type": "command",
             "command": "python3 .claude/scripts/bound-detector.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/validate-commit-message.sh"
           }
         ]
       }

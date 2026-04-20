@@ -1,7 +1,7 @@
 # Agentic Python — Guidelines
 > Cargado automáticamente via @imports en CLAUDE.md.
-> Fuente: AP-01..AP-39 descubiertos en ÉPICA 42 (análisis Cap.9-20) y calibración epistémica.
-> 39 reglas / 13 secciones. Última actualización: 2026-04-20
+> Fuente: AP-01..AP-42 descubiertos en ÉPICA 42 (análisis Cap.9-20) y calibración epistémica.
+> 42 reglas / 14 secciones. Última actualización: 2026-04-20
 
 ---
 
@@ -566,4 +566,38 @@ logger.info("15 successful executions")  # ¿de cuántos?
 
 # CORRECTO — siempre declarar denominador
 logger.info(f"15/{total} executions succeeded ({15/total:.0%})")
+```
+
+---
+
+## Sección 14: Scoring Cuantitativo Verificable — CAD (AP-42)
+
+**AP-42 (ALTO):** Scoring cuantitativo verificable (CAD — Calibración Asincrónica por Dominio)
+
+**Problema:** Scores cuantitativos sin aritmética visible son performativos — no verificables.
+
+**Reglas:**
+- Mostrar fórmula y valores de entrada para cada score calculado
+- No cambiar el criterio de scoring entre dominios del mismo análisis sin declararlo
+- Cuando rango(scores por dominio) > 0.35 → reportar CAD, no solo score global
+- Claims de dominio con score < 0.50 no pueden fundamentar gates de stage
+
+**Anti-patrón (AP-42A):** `score_global = promedio(dominios)` sin reportar distribución
+
+```python
+# INCORRECTO — score global sin distribución (AP-42A)
+report = {"score": 0.72}  # oculta que técnico=0.91, casos_uso=0.43
+
+# CORRECTO — distribución explícita con detección CAD
+scores = {"tecnico": 0.91, "casos_uso": 0.43}
+rango = max(scores.values()) - min(scores.values())  # 0.48
+score_global = sum(scores.values()) / len(scores)    # 0.67
+cad_detectado = rango > 0.35
+report = {
+    "score_global": score_global,
+    "distribucion": scores,
+    "rango": rango,
+    "cad": cad_detectado,  # True — reportar por dominio
+}
+# output: score_global=0.67 [dist: tecnico=0.91, casos_uso=0.43, rango=0.48 → CAD detectado]
 ```
