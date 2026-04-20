@@ -335,8 +335,14 @@ def install_tech_agent(tech: str, force: bool, model: str, project_name: str) ->
     return True, 0
 
 
-def update_mcp_json(force: bool) -> None:
-    """Actualiza .mcp.json con los MCP servers de Thyrox."""
+def update_mcp_json(force: bool, deps: dict[str, bool] | None = None) -> None:
+    """Actualiza .mcp.json con los MCP servers de Thyrox.
+
+    Si deps contiene dependencias faltantes, omite los servers que las requieren.
+    """
+    if deps is None:
+        deps = {}
+
     existing = {}
     if MCP_JSON.exists():
         try:
@@ -348,6 +354,13 @@ def update_mcp_json(force: bool) -> None:
 
     changed = False
     for server_name, config in MCP_SERVERS.items():
+        # Verificar si las dependencias requeridas por este server están disponibles
+        required_deps = MCP_SERVER_DEPS.get(server_name, [])
+        missing = [d for d in required_deps if not deps.get(d, True)]
+        if missing:
+            print(f"  [SKIP] {server_name} — dependencias faltantes: {', '.join(missing)}")
+            continue
+
         if server_name not in mcp_servers or force:
             mcp_servers[server_name] = config
             changed = True
@@ -355,7 +368,7 @@ def update_mcp_json(force: bool) -> None:
     if changed:
         existing["mcpServers"] = mcp_servers
         MCP_JSON.write_text(json.dumps(existing, indent=2) + "\n")
-        print(f"  [OK] .mcp.json actualizado con thyrox-memory y thyrox-executor")
+        print(f"  [OK] .mcp.json actualizado")
     else:
         print(f"  [OK] .mcp.json — MCP servers ya configurados — skip")
 
@@ -416,16 +429,22 @@ def main() -> int:
     AGENTS_DIR.mkdir(parents=True, exist_ok=True)
     ensure_memory_dir()
 
-    # 2. Agentes core
-    print("Agentes core:")
-    install_core_agents(force=args.force, model=args.model)
+    # 2. Verificar dependencias Python para MCP servers
+    print("Verificando dependencias MCP:")
+    deps = check_python_deps()
     print()
 
-    # 3. Agentes de tecnología
+    # 3. Agentes core
+    print("Agentes core:")
+    core_installed, core_failures = install_core_agents(force=args.force, model=args.model)
+    print()
+
+    # 4. Agentes de tecnología
     print("Agentes de tecnología:")
     tech_installed = 0
+    tech_failures = 0
     for tech in techs:
-        installed = install_tech_agent(
+        installed, failed = install_tech_agent(
             tech=tech,
             force=args.force,
             model=args.model,
@@ -433,23 +452,29 @@ def main() -> int:
         )
         if installed:
             tech_installed += 1
+        tech_failures += failed
     print()
 
-    # 4. MCP servers
+    # 5. MCP servers
     print("MCP Servers:")
-    update_mcp_json(force=args.force)
+    update_mcp_json(force=args.force, deps=deps)
     print()
 
-    # 5. Resumen
-    total_agents = len(CORE_AGENTS) + tech_installed
+    # 6. Resumen
+    total_failures = core_failures + tech_failures
+    installed_this_run = len(core_installed) + tech_installed
+    total_on_disk = len(list(AGENTS_DIR.glob("*.md")))
     print(f"Bootstrap completado.")
-    print(f"  Agentes core:       {len(CORE_AGENTS)}")
-    print(f"  Agentes de tech:    {tech_installed}/{len(techs)}")
-    print(f"  Total en .claude/agents/: {len(list(AGENTS_DIR.glob('*.md')))}")
+    print(f"  Agentes core:            {len(core_installed)}/{len(CORE_AGENTS)}")
+    print(f"  Agentes de tech:         {tech_installed}/{len(techs)}")
+    print(f"  Instalados esta ejecución: {installed_this_run}")
+    print(f"  Total en .claude/agents/: {total_on_disk}")
+    if total_failures > 0:
+        print(f"  Fallos: {total_failures}")
     print()
     print("Siguiente paso: reinicia Claude Code para activar los agentes y MCP servers.")
 
-    return 0
+    return 1 if total_failures > 0 else 0
 
 
 if __name__ == "__main__":

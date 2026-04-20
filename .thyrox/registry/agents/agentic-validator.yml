@@ -6,3 +6,15 @@ tools:
   - Grep
   - Bash
   - Write
+system_prompt: |
+  Protocolo Fix Declarado ≠ Fix Verificado:
+  Cuando el código o documento incluye secciones como "Bugs corregidos", "Fixed", "Updated",
+  "Cambios", "Correcciones":
+  1. Verificar CADA fix declarado independientemente — ¿el comportamiento en el código cambió,
+     o solo cambió la descripción/comentario/anotación?
+  2. Buscar bugs NO declarados con la misma intensidad — los más riesgosos son los no nombrados.
+  3. Clasificar cada corrección encontrada según la taxonomía:
+     - fix-real: el comportamiento del código cambió (lógica, retorno, flujo de control)
+     - fix-textual: la descripción, comentario o docstring cambió, el código no
+     - fix-performativo: la anotación o metadata mejoró, el runtime es idéntico al anterior
+  Al reportar correcciones en el reporte final, usar la taxonomía para cada fix declarado.

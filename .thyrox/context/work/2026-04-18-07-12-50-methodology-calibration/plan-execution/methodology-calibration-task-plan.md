@@ -740,7 +740,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 23 — bound-detector: cobertura inglés (ALTO)
 
-- [~] T-052 Extender `bound-detector.py` con patrones en inglés @task-executor (claimed: 2026-04-20 13:40:23)
+- [x] T-052 Extender `bound-detector.py` con patrones en inglés @task-executor (done: 2026-04-20 13:41:30)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F04)
   - **Hallazgo:** `UNBOUNDED_SIGNALS` y `BOUND_SIGNALS` solo detectan patrones en español (L16-38). Instrucciones como "analyze every file", "process each item", "review all agents" pasan sin detección.
   - Agregar a `UNBOUNDED_SIGNALS`: `r"\bevery\b"`, `r"\beach\b"`, `r"\ball\b"`, `r"\bprocess all\b"`, `r"\bread all\b"`, `r"\banalyze all\b"`, `r"\bfor each\b"`, `r"\bfor every\b"`.
@@ -1035,9 +1035,9 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** independiente
 
-- [~] T-085 Agregar `lint-agents.py` al hook SessionStart — verificar solapamiento con T-051 @task-executor (claimed: 2026-04-20 13:40:23)
+- [x] T-085 Agregar `lint-agents.py` al hook SessionStart — verificar solapamiento con T-051 @task-executor (done: 2026-04-20 13:41:30)
   - **Fuentes:** cluster-f (H-F13 ALTO)
-  - **Nota:** Si T-051 ya cubre esto, marcar como CANCELADO.
+  - **Nota:** T-051 cubre exactamente esta tarea — solapamiento 100%. Marcado como completado por T-051.
   - **Prioridad:** ALTO
   - **Depende de:** T-051 (verificar solapamiento)
 
