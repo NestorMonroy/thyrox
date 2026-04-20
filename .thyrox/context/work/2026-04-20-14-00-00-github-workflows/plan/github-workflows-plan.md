@@ -28,7 +28,7 @@ status: Pendiente aprobación
 
 ## In-Scope
 
-**Total:** 13 items de scaffolding (estructura + templates básicos, sin lógica completa)
+**Total:** 18 items (estructura + templates + workflows que reutilizan scripts existentes)
 
 ### Directorios (3)
 - [ ] `.github/ISSUE_TEMPLATE/` — Templates de issues
@@ -55,6 +55,13 @@ status: Pendiente aprobación
 - [ ] `.github/dependabot.yml` — Configuración de actualizaciones de deps
 - [ ] `.github/release.yml` — Configuración de releases automáticas
 
+### Workflows Reutilizando Scripts Existentes (5 archivos)
+- [ ] `workflows/validate.yml` — MEJORAR existente: agregar validación de links rotos (reutilizar detect-missing-md-links.sh)
+- [ ] `workflows/test-commit-messages.yml` — Validar commits convencionales en PRs (reutilizar validate-commit-message.sh)
+- [ ] `workflows/test-markdown-links.yml` — Detectar y reportar links rotos en PRs (reutilizar detect-missing-md-links.sh)
+- [ ] `workflows/test-context-audit.yml` — Ejecutar auditoría de contexto (reutilizar context-audit.sh)
+- [ ] `workflows/feature-to-develop.yml` — Flujo basic feature → develop (PR checks, tests simples)
+
 ---
 
 ## Out-of-Scope
@@ -63,8 +70,9 @@ status: Pendiente aprobación
 |---|---|
 | Implementación de lógica en GitHub Actions | Trabajo mecánico — las acciones son stubs, se implementan en futuro WP |
 | Scripts funcionales (mention, pr-review) | Los directorios se crean pero scripts están vacíos/documentados |
-| Workflows adicionales en `.github/workflows/` | Solo mantener y documentar `validate.yml` existente |
-| Validación de WP artifacts en CI | Diferido: problemas P-1 a P-10 van a futuro WP |
+| Workflows complejos (develop → main, releases automáticas) | Requieren políticas de merging/branches que no están definidas aún |
+| Validación de WP artifacts en CI (P-1 a P-10) | Requiere análisis profundo en fase ANALYZE — no está descartada, está diferida |
+| Tests complejos (pytest, suites de testing) | Se comienza con validaciones simples (links, commits) — tests pueden agregarse iterativamente |
 | Integración con herramientas externas | Ej: Slack, Discord, servicios — fuera de alcance |
 | Automatización de issue triage (bots) | Ej: marvin-*, auto-close-* — futuro WP |
 | Documentación completa de cada componente | Crear comentarios de propósito, no documentación extensiva |
@@ -80,11 +88,16 @@ status: Pendiente aprobación
 | GitHub Actions (3 stubs) | 3 | 2 tareas |
 | Scripts directories (3) | 3 | 2 tareas |
 | Config files (3) | 3 | 2 tareas |
+| Workflows con scripts existentes (5) | 5 | 3 tareas |
 | Documentación + commits | — | 1 tarea |
-| **Total** | **18 componentes** | **10 tareas** |
+| **Total** | **23 componentes** | **13 tareas** |
 
-**Clasificación:** Pequeño (10 tareas, work estructurado)
-**Fases activas:** 1 (DISCOVER) + 6 (SCOPE) + 8 (PLAN EXECUTION)
+**Clasificación:** Pequeño (13 tareas, work estructurado + reutilización de scripts)
+**Fases activas:** 1 (DISCOVER) + 6 (SCOPE) + 7 (DESIGN) + 8 (PLAN EXECUTION)
+
+**Dependencias:**
+- Workflows reutilizan scripts existentes en `.claude/scripts/`: validate-commit-message.sh, detect-missing-md-links.sh, context-audit.sh
+- feature → develop → main requiere definición previa de branching strategy
 
 ---
 
