@@ -55,3 +55,5 @@ EPIC=$(echo "$WP_NAME" | grep -oP '^\d+' || echo "")
 printf '{"timestamp":"%s","from":"%s","to":"%s","flow":"%s","epic":"%s","wp":"%s"}\n' \
   "$DATE" "$CURRENT" "$WP_PATH" "${FLOW:-null}" "${EPIC:-null}" "$WP_NAME" \
   >> "$HISTORY_FILE" 2>/dev/null || true
+
+exit 0
