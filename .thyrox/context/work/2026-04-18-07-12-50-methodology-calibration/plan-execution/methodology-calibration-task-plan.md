@@ -305,7 +305,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > — eso es FALSO para 64% de los agentes. T-008 actualiza ARCHITECTURE.md pero no
 > puede corregir el claim si los YMLs no existen.
 
-- [ ] T-023 Crear YMLs de documentación para los 16 agentes sin origen en registry
+- [~] T-023 Crear YMLs de documentación para los 16 agentes sin origen en registry @task-executor (claimed: 2026-04-20 13:42:50)
   - Los 16 agentes: todos los coordinators (dmaic, pdca, lean, rup, rm, pm, ba, pps,
     sp, cp, bpa + thyrox-coordinator) y agentes de análisis (deep-dive, deep-review,
     diagrama-ishikawa, agentic-reasoning)
@@ -860,7 +860,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 26 — Registry pipeline: integridad y ADRs (CRÍTICO/ALTO)
 
-- [ ] T-066 Agregar verificación de dependencias MCP en `bootstrap.py`
+- [~] T-066 Agregar verificación de dependencias MCP en `bootstrap.py` @task-executor (claimed: 2026-04-20 13:42:28)
   - **Fuentes:** cluster-i-registry-adr-gaps.md (H-03)
   - **Hallazgo:** `faiss-cpu` y `sentence-transformers` no están instalados. `thyrox-memory` MCP server falla al iniciar con `ModuleNotFoundError`. `bootstrap.py` no verifica ni advierte — el MCP server queda inoperativo en entorno limpio sin error claro.
   - Agregar función `check_python_deps()` en `bootstrap.py` que verifique con `importlib.util.find_spec()` si `faiss` y `sentence_transformers` están disponibles. Si no: imprimir warning y omitir registro del server en `.mcp.json`.
