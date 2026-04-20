@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
 version: 3.5
-updated_at: 2026-04-20 13:47:00
+updated_at: 2026-04-20 13:53:00
 ```
 
 # CLAUDE.md — THYROX
@@ -126,6 +126,9 @@ Reglas cuando hay más de un skill activo en la misma sesión.
   - Orquestador / estado compartido → `.thyrox/context/now.md`
   - Agente nativo en ejecución → `.thyrox/context/now-{agent-name}.md` (e.g. `now-task-executor.md`)
   - Skill especializado → `.thyrox/context/now-{skill-name}-{wp-id}.md` (e.g. `now-security-audit-wp-auth.md`)
+  - Gate evaluador (paralelo) → `.thyrox/context/gate-{stage}-eval-{n}.json` (e.g. `gate-3-eval-1.json`)
+  - Gate Merger output → `.thyrox/context/gate-{stage}-merged.json` (e.g. `gate-3-merged.json`)
+- **Campos requeridos en state files de agentes paralelos:** `agent_id`, `status` (running/completed/failed), `output_key`, `started_at`, `timeout_at`. Ver detalle: `.claude/references/parallel-agent-state-files.md`
 
 ## Convenciones de escritura — OBLIGATORIO
 
