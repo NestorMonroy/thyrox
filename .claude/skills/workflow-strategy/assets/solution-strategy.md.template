@@ -279,7 +279,17 @@ How we respect it: Entire solution uses Java 17 + Spring ecosystem
 
 | Claim | Tipo | Fuente | Confianza | Origen |
 |-------|------|--------|-----------|--------|
-| [decisión estratégica principal] | PROVEN/INFERRED/SPECULATIVE | [tool output citado / documento / inferencia] | alta/media/baja | nuevo/heredado |
+| [decisión estratégica principal] | PROVEN/INFERRED/SPECULATIVE | [tool output citado / documento / inferencia] | alta/media/baja | nuevo/heredado/externo |
+
+**Criterios de Confianza:**
+- alta: claim OBSERVABLE con herramienta ejecutada y output citado textualmente
+- media: claim INFERRED con razonamiento explícito y fuente documentada
+- baja: claim SPECULATIVE o inferencia sin fuente primaria verificable
+
+**Criterios de Origen:**
+- nuevo: generado en este WP con evidencia directa
+- heredado: propagado de un stage anterior sin re-verificación en este stage
+- externo: proveniente de documento o referencia fuera del WP (citar fuente)
 
 > PROVEN = producido por tool_use ejecutado en este WP (Bash, Read, Grep output citado textualmente)
 > INFERRED = derivado de observables con razonamiento explícito documentado
