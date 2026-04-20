@@ -375,7 +375,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-020, T-025
 
-- [ ] T-027 Agregar I-012 e I-013 en `.claude/rules/thyrox-invariants.md`
+- [~] T-027 Agregar I-012 e I-013 en `.claude/rules/thyrox-invariants.md` @task-executor (claimed: 2026-04-20 13:40:10)
   - **Fuentes:** cluster-a (H-A2 CRÍTICO — brecha entre claim y observable como invariante sistémica), cluster-b (B-MA-2 ALTO — context pruning sin mecanismo formal)
   - Agregar en `.claude/rules/thyrox-invariants.md`:
     ```
@@ -497,7 +497,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-033, T-034
 
-- [ ] T-036 Documentar loops de rework y context pruning en `exit-conditions.md.template` y `workflow-track`
+- [~] T-036 Documentar loops de rework y context pruning en `exit-conditions.md.template` y `workflow-track` @task-executor (claimed: 2026-04-20 13:40:10)
   - **Fuentes:** cluster-b (B-MA-5 ALTO — loops de rework sin límite; B-MA-6 ALTO — context pruning ausente)
   - En `exit-conditions.md.template` (mismo archivo que T-021):
     - Agregar campo `max_rework_iterations: N` en cada gate — si el WP llega al gate N veces sin aprobación, escalar a decisión humana con resumen de los N intentos
@@ -516,7 +516,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > discover/ no existe, y que los exit criteria actuales mezclan condición de entrada con
 > umbral de salida — no son separables.
 
-- [ ] T-037 Agregar separabilidad de exit criteria en `exit-conditions.md.template`
+- [~] T-037 Agregar separabilidad de exit criteria en `exit-conditions.md.template` @task-executor (claimed: 2026-04-20 13:40:10)
   - **Fuentes:** cluster-e (E1-B ALTO — separabilidad: condición entrada ≠ umbral salida)
   - En `exit-conditions.md.template` (mismo archivo que T-021 y T-036):
     - Para cada gate, distinguir explícitamente:
@@ -991,7 +991,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 30 — I-014 framework mismatch en insumos externos (ALTO)
 
-- [ ] T-080 Agregar I-014 "Framework mismatch en insumos externos" en `thyrox-invariants.md`
+- [~] T-080 Agregar I-014 "Framework mismatch en insumos externos" en `thyrox-invariants.md` @task-executor (claimed: 2026-04-20 13:40:10)
   - **Fuentes:** harvest-cluster-e (H-E1 ALTO)
   - **Hallazgo:** I-001 prohíbe saltar stages por decisión interna; no cubre el vector donde un insumo externo analizado contiene "FASE N" de otro framework, induciendo salto sin violar I-001 explícitamente.
   - Agregar I-014: "Cuando un documento analizado contiene fases numeradas (FASE N, Phase N), NO interpretar como stages del WP activo. Registrar como hallazgo de Stage 1 DISCOVER."
