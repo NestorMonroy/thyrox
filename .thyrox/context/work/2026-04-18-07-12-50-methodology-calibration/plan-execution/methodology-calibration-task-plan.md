@@ -182,7 +182,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > no tienen criterios específicos para WPs de arquitectura agentic. T-001..T-006 resuelven calidad de
 > código agentic, pero no identidad del sistema.
 
-- [ ] T-015 Agregar Árbol 5 "Sistemas Agentic AI" en `.claude/skills/thyrox/references/methodology-selection-guide.md`
+- [~] T-015 Agregar Árbol 5 "Sistemas Agentic AI" en `.claude/skills/thyrox/references/methodology-selection-guide.md` @task-executor (claimed: 2026-04-20 13:39:10)
   - Árbol de decisión: "¿El WP construye o diseña un sistema donde un agente toma decisiones autónomas?"
   - Ramas por tipo de problema: orchestración multi-agente, HITL design, tool use contracts, observabilidad
   - Regla de desempate: cuándo usar sp: vs rup: vs el ciclo THYROX nativo para WPs agentic
@@ -198,14 +198,14 @@ como guidelines accionables, agente validador, y patrones consultables.
     o solo el código que lo rodea?"
   - **Independiente**
 
-- [ ] T-017 Agregar exit criteria agentic en templates Stage 3 y Stage 5
+- [~] T-017 Agregar exit criteria agentic en templates Stage 3 y Stage 5 @task-executor (claimed: 2026-04-20 13:39:10)
   - `workflow-diagnose/assets/` — agregar sección "Si el WP es un sistema agentic: verificar..."
     con checklist derivado de AP-01..AP-30: callbacks, tipo contracts, error handling, observabilidad
   - `workflow-strategy/assets/` — agregar pregunta obligatoria: "¿la estrategia especifica el mecanismo
     de razonamiento del agente (no solo la implementación)?"
   - **Depende de T-016** (la referencia define los criterios antes de que los templates los citen)
 
-- [ ] T-018 Crear `ARCHITECTURE.md` sección / documento `.claude/references/agentic-mandate.md`
+- [~] T-018 Crear `ARCHITECTURE.md` sección / documento `.claude/references/agentic-mandate.md` @task-executor (claimed: 2026-04-20 13:39:10)
   — Definición operacional del mandato de THYROX como Sistema de Agentic AI
   - **Problema:** README.md y ARCHITECTURE.md declaran "Sistema de Agentic AI" pero ningún archivo
     define qué significa eso en términos verificables. El mandato es un label, no una propiedad del sistema.

@@ -1,6 +1,6 @@
 ```yml
-tarea_activa: completado T-071, T-072, T-073, T-082, T-083, T-084, T-086
-proximo_paso: siguiente bloque de tareas independientes del task-plan
+tarea_activa: T-015, T-017, T-018
+proximo_paso: claim tasks, execute T-015 (árbol agentic AI), T-017 (exit criteria agentic), T-018 (agentic-mandate.md)
 wp: 2026-04-18-07-12-50-methodology-calibration
-updated_at: 2026-04-20 13:35:06
+updated_at: 2026-04-20 13:39:10
 ```
