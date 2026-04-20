@@ -980,7 +980,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 29 — Cherry-Pick en plan-execution.md.template (ALTO)
 
-- [ ] T-079 Incorporar algoritmo Cherry-Pick Consciente en `plan-execution.md.template`
+- [~] T-079 Incorporar algoritmo Cherry-Pick Consciente en `plan-execution.md.template` @task-executor (claimed: 2026-04-20 13:52:45)
   - **Fuentes:** cluster-a (H-G1 ALTO)
   - **Hallazgo:** Algoritmo con umbrales (≥0.80 preservar; 0.60–0.80 evaluar; <0.60 reescribir) y break-even ratio existen en `discover/agentic-claims-management-patterns.md` pero ningún template los referencia. T-078 solo cubre la guideline de código, no el template de task-plans.
   - Agregar sección "Protocolo de iteración calibrada" en `.claude/skills/workflow-decompose/assets/plan-execution.md.template`
