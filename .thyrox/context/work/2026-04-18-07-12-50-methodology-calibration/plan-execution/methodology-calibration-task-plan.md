@@ -251,7 +251,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > **Ninguno de T-001..T-019 toca un solo template**. Sin este bloque, ÉPICA 42 no cumple
 > sus propios criterios de éxito.
 
-- [ ] T-020 Agregar sección "Evidencia de respaldo" en 3 templates de stage de mayor riesgo
+- [~] T-020 Agregar sección "Evidencia de respaldo" en 3 templates de stage de mayor riesgo @task-executor (claimed: 2026-04-20 13:49:43)
   - Archivos a modificar:
     1. `.claude/skills/workflow-diagnose/assets/` — template de Stage 3 DIAGNOSE
     2. `.claude/skills/workflow-strategy/assets/` — template de Stage 5 STRATEGY
@@ -533,7 +533,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** T-021 (estructura base del template)
 
-- [ ] T-038 Crear `.claude/references/calibration-framework.md` — mapeo Eval-type × Stage
+- [~] T-038 Crear `.claude/references/calibration-framework.md` — mapeo Eval-type × Stage @task-executor (claimed: 2026-04-20 13:49:43)
   - **Fuentes:** cluster-e (E1-A CRÍTICO — calibration-framework.md referenciado pero no existe; E1-C ALTO — mapeo eval-type × stage incompleto)
   - Crear `.claude/references/calibration-framework.md`:
     - Tabla: Stage THYROX | Tipo de evaluación apropiada | Criterio de confianza mínimo | Método de verificación
@@ -568,7 +568,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-040 Agregar protocolo de tracking de versiones y tabla de riesgo por característica agentic
+- [~] T-040 Agregar protocolo de tracking de versiones y tabla de riesgo por característica agentic @task-executor (claimed: 2026-04-20 13:49:43)
   - **Fuentes:** cluster-a (H-C3 MEDIO — tracking de versiones; H-F2 MEDIO — tabla de riesgo por característica), cluster-d (L1-C — autonomía condicional vs. plena)
   - Agregar en `.claude/agents/deep-dive.md` sección "Comparativa de versiones (cuando aplica)":
     - Tabla: Dimensión | V(N-1) | V(N) | Estado (MEJORA/REGRESIÓN/SIN CAMBIO)
