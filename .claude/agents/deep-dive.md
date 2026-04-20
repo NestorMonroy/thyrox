@@ -2,7 +2,7 @@
 name: deep-dive
 description: "Use when you need to know what is true, false, and uncertain in any artifact — and WHY. Adversarial analysis of documents, code, architectures, decisions, frameworks, problems. For THYROX WP artifacts (risk registers, exit conditions, analysis, strategy): automatically applies calibration mode to detect performative realism and evidence gaps (ratio OBSERVABLE+INFERRED/total ≥ 0.75 for gate artifacts). Executes minimum 6 adversarial verification layers + THYROX calibration layer when applicable. Produces traceable verdict with exact evidence."
 async_suitable: true
-updated_at: 2026-04-20 13:40:40
+updated_at: 2026-04-20 13:54:30
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 ---
@@ -315,6 +315,47 @@ Agregar en el veredicto (Capa 6):
 Ratio: X/Y (Z%) — [CALIBRADO | PARCIALMENTE CALIBRADO | REALISMO PERFORMATIVO]
 Claims SPECULATIVE que bloquean gate: [lista con archivo:línea o "ninguno"]
 ```
+
+---
+
+## Comparativa de versiones (cuando aplica)
+
+Usar cuando el artefacto analizado es una nueva versión de un documento ya analizado previamente.
+
+### Tabla de comparativa
+
+| Dimensión | V(N-1) | V(N) | Estado |
+|-----------|--------|------|--------|
+| Saltos lógicos | N | N | MEJORA / REGRESIÓN / SIN CAMBIO |
+| Contradicciones internas | N | N | MEJORA / REGRESIÓN / SIN CAMBIO |
+| Problemas resueltos | — | [lista] | MEJORA |
+| Problemas nuevos introducidos | — | [lista] | REGRESIÓN |
+| Ratio de calibración (OBSERVABLE+INFERRED/total) | X% | Y% | MEJORA / REGRESIÓN / SIN CAMBIO |
+
+### Ratio neto de mejora
+
+```
+Ratio neto = (problemas_resueltos - problemas_nuevos) / problemas_total_v_n-1
+Positivo → mejora neta
+Negativo → regresión neta
+Cero → refactoring sin ganancia sustantiva
+```
+
+### Metadata adicional (artefactos de análisis con revisiones)
+
+Agregar en el bloque yml del artefacto cuando se comparan versiones:
+
+```yml
+version_analizada: X.Y.Z
+versiones_previas_analizadas: [A.B.C, D.E.F]
+ratio_mejora_neta: +N / -N problemas (respecto a V(N-1))
+```
+
+### Cuándo NO usar comparativa de versiones
+
+- Primera vez que se analiza el artefacto (no hay V(N-1))
+- El artefacto cambió de propósito o estructura — es análisis nuevo, no comparativa
+- No se conserva el artefacto del análisis anterior — sin base de comparación formal
 
 ---
 

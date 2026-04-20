@@ -109,6 +109,28 @@ graph TD
 
 ---
 
+## Calibración epistémica del task-plan
+
+### Algoritmo Cherry-Pick Consciente
+
+Al crear tareas derivadas de análisis de clusters o hallazgos, aplicar este criterio:
+
+| Score de similaridad | Acción |
+|---------------------|--------|
+| ≥ 0.80 | Preservar exactamente — la tarea está bien definida |
+| 0.60 - 0.79 | Evaluar — puede necesitar adaptación al contexto del WP |
+| < 0.60 | Reescribir — el hallazgo original no aplica directamente |
+
+### Efecto Denominador
+
+Al reportar cobertura del task-plan, SIEMPRE declarar el denominador:
+- Correcto: "13 de 91 tareas pendientes (14.3%)"
+- Incorrecto: "13 tareas pendientes" (sin total)
+
+Al reportar hallazgos positivos: verificar que no se está excluyendo selectivamente los casos negativos del denominador.
+
+---
+
 ## Evidencia de respaldo
 
 > Todo claim que fundamente la viabilidad del plan o los criterios de completitud debe clasificarse aquí.

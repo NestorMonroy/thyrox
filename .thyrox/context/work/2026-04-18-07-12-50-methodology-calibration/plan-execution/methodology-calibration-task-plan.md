@@ -323,7 +323,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > completa en español pero solo 2 patrones en inglés. "process all", "analyze every",
 > "check each", "read all files" no son interceptados.
 
-- [~] T-024 Ampliar UNBOUNDED_SIGNALS en `bound-detector.py` — cobertura inglés @task-executor (claimed: 2026-04-20 13:51:04)
+- [x] T-024 Ampliar UNBOUNDED_SIGNALS en `bound-detector.py` — cobertura inglés @task-executor (done: 2026-04-20 13:54:12)
   - Agregar a `UNBOUNDED_SIGNALS` en `.claude/scripts/bound-detector.py`:
     ```python
     r"\bprocess all\b", r"\banalyze every\b", r"\bcheck each\b",
@@ -568,7 +568,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [~] T-040 Agregar protocolo de tracking de versiones y tabla de riesgo por característica agentic @task-executor (claimed: 2026-04-20 13:49:43)
+- [x] T-040 Agregar protocolo de tracking de versiones y tabla de riesgo por característica agentic @task-executor (done: 2026-04-20 13:55:45)
   - **Fuentes:** cluster-a (H-C3 MEDIO — tracking de versiones; H-F2 MEDIO — tabla de riesgo por característica), cluster-d (L1-C — autonomía condicional vs. plena)
   - Agregar en `.claude/agents/deep-dive.md` sección "Comparativa de versiones (cuando aplica)":
     - Tabla: Dimensión | V(N-1) | V(N) | Estado (MEJORA/REGRESIÓN/SIN CAMBIO)
@@ -1064,16 +1064,16 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 34 — Agent quality: gaps residuales (MEDIO)
 
-- [~] T-088 YMLs de agentes de análisis sin registry — verificar solapamiento con T-023 @task-executor (claimed: 2026-04-20 13:51:04)
+- [x] T-088 YMLs de agentes de análisis sin registry — verificar solapamiento con T-023 @task-executor (done: 2026-04-20 13:54:12)
   - **Fuentes:** cluster-h (18/27 agentes sin YML)
-  - **Nota:** Si T-023 ya cubre deep-dive, deep-review, diagrama-ishikawa, pattern-harvester → marcar CANCELADO.
+  - **Nota:** CANCELADO — T-023 ya creó YMLs para estos agentes. Los 5 YMLs existen en `.thyrox/registry/agents/`: deep-dive.yml, deep-review.yml, diagrama-ishikawa.yml, pattern-harvester.yml, task-synthesizer.yml.
   - **Prioridad:** MEDIO
   - **Depende de:** T-023 (verificar solapamiento)
 
-- [~] T-089 Agregar `tech-detector` y `skill-generator` al inventario de ARCHITECTURE.md @task-executor (claimed: 2026-04-20 13:51:04)
+- [x] T-089 Agregar `tech-detector` y `skill-generator` al inventario de ARCHITECTURE.md @task-executor (done: 2026-04-20 13:54:12)
   - **Fuentes:** cluster-h (H-04)
-  - **Hallazgo:** T-060 crea ARCHITECTURE.md pero puede omitir tech-detector y skill-generator como tipo `infra`.
-  - **Archivo a modificar:** `.claude/ARCHITECTURE.md` (cuando T-060 lo cree)
+  - **Hallazgo:** CANCELADO — ARCHITECTURE.md ya contiene tech-detector y skill-generator como tipo `infra`, con YML y origen `bootstrap` documentados. T-060 los incluyó correctamente.
+  - **Archivo a modificar:** `.claude/ARCHITECTURE.md` (verificado — ya existe)
   - **Prioridad:** MEDIO
   - **Depende de:** T-060
 
