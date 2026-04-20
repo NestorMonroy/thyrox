@@ -17,9 +17,12 @@ status: Borrador
 | Gate evaluador (paralelo) | `.thyrox/context/gate-{stage}-eval-{n}.json` | Evaluador N |
 | Gate Merger output | `.thyrox/context/gate-{stage}-merged.json` | Merger |
 
-## Campos requeridos en now-{agent-name}.md
+## Dos tipos de state files — ciclos de vida distintos
 
-Todo state file de agente en ejecución paralela DEBE incluir estos campos:
+### Tipo A — Gate evaluadores paralelos (coordinación Merger)
+
+Agentes que operan en paralelo y son consumidos por un Merger antes de avanzar un gate.
+Ejemplo: `gate-consistency-evaluator`, evaluadores de completitud/separabilidad.
 
 ```yml
 agent_id: {agent-name}           # identificador único del agente
@@ -29,7 +32,27 @@ started_at: YYYY-MM-DD HH:MM:SS  # timestamp de inicio
 timeout_at: YYYY-MM-DD HH:MM:SS  # timestamp de expiración (started_at + límite)
 ```
 
-## Protocolo de lectura por el Merger
+**Lifecycle:** orquestador lanza → agente escribe `status: running` → agente completa → Merger lee → Merger elimina el file.
+
+### Tipo B — Agente secuencial con bookmark de sesión
+
+Agentes que usan `now-{agent}.md` como bookmark de reanudación (para continuar si la sesión se interrumpe), NO como coordinación con un Merger.
+Ejemplo: `task-executor`.
+
+```yml
+agent_id: task-executor
+status: running                  # REQUERIDO — permite auto-cleanup en validate-session-close.sh
+tarea_activa: T-NNN en curso
+proximo_paso: descripción
+wp: YYYY-MM-DD-HH-MM-SS-nombre
+started_at: YYYY-MM-DD HH:MM:SS
+```
+
+**Lifecycle:** agente escribe al inicio → actualiza durante ejecución → al completar: actualiza `status: completed` → **elimina el file** (`rm .thyrox/context/now-task-executor.md`).
+
+**Regla crítica:** `status: running|completed` es OBLIGATORIO en ambos tipos. Sin él, `validate-session-close.sh` no puede distinguir un agente activo de uno terminado.
+
+## Protocolo de lectura por el Merger (Tipo A)
 
 1. Leer todos los `now-{evaluator-N}.md` de los evaluadores paralelos
 2. Verificar `status=completed` en cada uno antes de consolidar
@@ -39,15 +62,17 @@ timeout_at: YYYY-MM-DD HH:MM:SS  # timestamp de expiración (started_at + límit
 
 ## Reglas de cleanup
 
-- Gate files (`gate-{stage}-eval-*.json`) se eliminan después de que el Merger los consume
-- `now-{agent}.md` se elimina cuando el agente termina correctamente Y el Merger confirmó recepción
-- Si el agente termina con error, `now-{agent}.md` persiste para diagnóstico
+| Tipo | Quién elimina | Cuándo |
+|------|--------------|--------|
+| Gate eval (`gate-*-eval-*.json`) | Merger | Al consumir el resultado |
+| now-{agent}.md Tipo A | Merger | Al confirmar recepción |
+| now-{agent}.md Tipo B | El agente mismo | Al actualizar `status: completed` |
+| now-{agent}.md con error | Persiste | Para diagnóstico manual |
 
 ## Verificación en validate-session-close.sh
 
-`validate-session-close.sh` detecta dos tipos de archivos huérfanos:
+`validate-session-close.sh` Check 2 lee el campo `status` antes de emitir WARN:
 
-1. `now-{agent}.md` huérfanos — agente terminó pero archivo persiste → WARN (puede ser evidencia diagnóstica)
-2. `gate-{stage}-eval-*.json` sin su `gate-{stage}-merged.json` correspondiente → WARN "gate files huérfanos"
-
-Ambos son WARN (no BLOCK) — el archivo puede ser evidencia de diagnóstico.
+- `status: completed` → **auto-cleanup silencioso** (el script lo elimina sin WARN)
+- `status: running` o `status` ausente → **WARN** (riesgo real de pérdida de resultado)
+- `gate-{stage}-eval-*.json` sin su `gate-{stage}-merged.json` → **WARN** "gate files huérfanos"

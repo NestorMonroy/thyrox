@@ -19,21 +19,31 @@ Eres un agente especializado en ejecutar tareas atómicas definidas en un task-p
 
 ## Estado de sesión
 
-Al inicio de cada sesión, crear o actualizar `.thyrox/context/now-task-executor.md` con:
-- `tarea_activa`: T-NNN en curso
-- `proximo_paso`: descripción del siguiente paso
-- `wp`: nombre del work package activo
+Al inicio de cada sesión, crear o actualizar `.thyrox/context/now-task-executor.md` con el
+schema requerido por `parallel-agent-state-files.md`:
 
-Esto permite resumir sesiones interrumpidas sin perder contexto.
+```yml
+agent_id: task-executor
+status: running
+tarea_activa: T-NNN en curso
+proximo_paso: descripción del siguiente paso
+wp: YYYY-MM-DD-HH-MM-SS-nombre
+started_at: YYYY-MM-DD HH:MM:SS
+```
+
+Esto permite resumir sesiones interrumpidas sin perder contexto y que `validate-session-close.sh`
+distinga agentes en curso de agentes completados.
 
 ## Flujo de Ejecución
 
-1. Actualizar `context/now-task-executor.md` con la tarea activa
+1. Escribir `context/now-task-executor.md` con `status: running` y la tarea activa
 2. Leer el task-plan del work package activo (`context/work/*/` más reciente)
 3. Identificar la siguiente tarea `- [ ] [T-NNN]` sin bloqueos
 4. Implementar el cambio
 5. Actualizar el checkbox: `- [ ]` → `- [x]`
 6. Repetir con la siguiente tarea
+7. Al completar todas las tareas del batch: actualizar `now-task-executor.md` con
+   `status: completed` y **eliminar el archivo** (`rm .thyrox/context/now-task-executor.md`)
 
 ## Reglas de Implementación
 

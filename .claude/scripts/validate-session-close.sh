@@ -32,25 +32,44 @@ done
 # ── Check 2: Agentes en background — now-{agent-id}.md huérfanos ──────────────
 # Si exists now-{agent-id}.md al cerrar sesión, el agente puede:
 #   a) Seguir corriendo — sus notificaciones se pierden si la sesión se compacta
-#   b) Haber terminado — su resultado puede no haber sido recolectado
+#   b) Haber terminado con status: completed — auto-limpiable
+#   c) Haber terminado sin limpiar su archivo — WARN
 # Referencia: subagent-patterns.md — "Limitaciones de notificación y compactación"
+# Fix: now los agentes DEBEN incluir status: running|completed en su state file.
+#   status: completed → auto-cleanup silencioso (no es riesgo real)
+#   sin status o status: running → WARN (riesgo real de pérdida de resultado)
 ORPHANED=()
+AUTO_CLEANED=()
 for CTX_DIR in "${CONTEXT_DIRS[@]}"; do
   while IFS= read -r -d '' f; do
-    ORPHANED+=("$f")
+    STATUS=$(grep -m1 "^status:" "$f" 2>/dev/null | sed 's/^status:[[:space:]]*//')
+    if [ "$STATUS" = "completed" ]; then
+      AUTO_CLEANED+=("$f")
+      rm -f "$f"
+    else
+      ORPHANED+=("$f")
+    fi
   done < <(find "$CTX_DIR" -maxdepth 1 -name "now-*.md" -print0 2>/dev/null)
 done
+
+if [ ${#AUTO_CLEANED[@]} -gt 0 ]; then
+  echo "[INFO] AGENTES COMPLETADOS: ${#AUTO_CLEANED[@]} state file(s) con status:completed eliminados:"
+  for f in "${AUTO_CLEANED[@]}"; do
+    echo "  $f"
+  done
+fi
 
 if [ ${#ORPHANED[@]} -gt 0 ]; then
   echo "[WARN] AGENTES EN BACKGROUND: ${#ORPHANED[@]} state file(s) de agente sin cerrar:"
   for f in "${ORPHANED[@]}"; do
-    echo "  $f"
+    STATUS=$(grep -m1 "^status:" "$f" 2>/dev/null | sed 's/^status:[[:space:]]*//')
+    echo "  $f  [status: ${STATUS:-ausente}]"
   done
   echo ""
   echo "  Riesgo: si la sesión se compacta antes de que el agente complete,"
   echo "  las notificaciones se pierden (bug documentado v2.1.83)."
   echo "  Antes de cerrar: verificar que el artefacto de resultado existe."
-  echo "  Si el agente ya terminó y el resultado fue recolectado: eliminar el now-*.md."
+  echo "  Si el agente ya terminó: actualizar status: completed — el script lo eliminará solo."
   ERRORS=$((ERRORS + 1))
 fi
 
