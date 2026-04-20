@@ -819,13 +819,9 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-061 Desambiguar descripciones de `deep-dive` y `agentic-reasoning`
-  - **Fuentes:** cluster-h-agent-quality-gaps.md (H-04)
-  - **Hallazgo:** Ambos agentes analizan artefactos buscando afirmaciones no sustentadas. Para un risk register de THYROX, el runtime puede elegir cualquiera — análisis duplicados o incorrecto.
-  - Modificar `agentic-reasoning` para incluir: "Use when artifact IS a THYROX WP document and goal is calibration ratio + evidence gap report. For adversarial analysis of any artifact type, use deep-dive instead." Modificar `deep-dive` para excluir explícitamente el dominio de calibración THYROX de su trigger.
-  - **Archivos:** `.claude/agents/agentic-reasoning.md`, `.claude/agents/deep-dive.md`
-  - **Prioridad:** CRÍTICO
-  - **Depende de:** independiente
+- [x] T-061 ~~Desambiguar descripciones de `deep-dive` y `agentic-reasoning`~~ — **CANCELADO / RESUELTO**
+  - **Resolución (2026-04-20):** `agentic-reasoning` fue deprecado completamente. Su protocolo de calibración (ratio OBSERVABLE+INFERRED, detección de realismo performativo) fue absorbido en `deep-dive` como Capa 7. La ambigüedad de trigger desapareció — solo existe `deep-dive`, que aplica calibración automáticamente cuando el artefacto es un documento WP de THYROX.
+  - **Archivos modificados:** `.claude/agents/deep-dive.md` (nueva Capa 7), `.claude/agents/agentic-reasoning.md` (marcado DEPRECATED)
 
 - [ ] T-062 Corregir descripciones de `mysql-expert` y `postgresql-expert`
   - **Fuentes:** cluster-h-agent-quality-gaps.md (H-02)

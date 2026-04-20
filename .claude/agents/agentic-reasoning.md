@@ -1,11 +1,21 @@
 ---
 name: agentic-reasoning
-description: Analiza artefactos de THYROX para detectar realismo performativo — claims sin evidencia, P values inventados, exit conditions sin umbral derivado. Produce un reporte de brechas de calibración con recomendaciones de evidencia observable. Usar cuando se quiere evaluar si un artefacto (análisis, risk register, exit condition, estrategia) afirma calidad sin derivarla, o cuando se diseña un mecanismo de evidence-backed validation para stages de THYROX.
+description: "DEPRECATED — Use deep-dive instead. The calibration protocol for THYROX WP artifacts (performative realism detection, evidence gap report, calibration ratio) has been absorbed into deep-dive as Capa 7. deep-dive auto-applies calibration mode when the artifact is a THYROX WP document."
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
-async_suitable: true
-updated_at: 2026-04-18 23:49:30
+async_suitable: false
+updated_at: 2026-04-20 12:47:27
 ---
+
+# Agentic Reasoning Agent — DEPRECATED
+
+> **Este agente está obsoleto.** Su funcionalidad fue absorbida por `deep-dive` (Capa 7 — Calibración THYROX).
+>
+> **Por qué se eliminó:** El trigger de `agentic-reasoning` solapaba con `deep-dive` para artefactos THYROX, impidiendo auto-invocación confiable. Un agente que requiere invocación manual explícita no agrega valor agentic real.
+>
+> **Usar en su lugar:** `deep-dive` — cuando el artefacto es un documento WP de THYROX, aplica automáticamente el protocolo de calibración epistémica (ratio OBSERVABLE+INFERRED/total, clasificación CALIBRADO/REALISMO PERFORMATIVO).
+
+**Decisión registrada en:** ÉPICA 42, sesión 2026-04-20.
 
 # Agentic Reasoning Agent
 

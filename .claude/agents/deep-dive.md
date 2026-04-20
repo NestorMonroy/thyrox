@@ -1,8 +1,8 @@
 ---
 name: deep-dive
-description: Análisis exhaustivo y estratificado que expone estructuras ocultas, contradicciones internas y diferencias entre afirmación vs. realidad. Aplica a cualquier artefacto: documentos formales, papers académicos, frameworks matemáticos, código, arquitecturas, decisiones, problemas, artefactos THYROX. Ejecuta mínimo 6 capas de verificación adversarial — extensibles cuando el artefacto requiere capas adicionales (probabilística, calibración, basin-conditional, etc.). Produce veredicto trazable con evidencia exacta. Usar cuando se necesita saber qué es verdadero, qué es falso y qué es incierto — y POR QUÉ cada categoría.
+description: "Use when you need to know what is true, false, and uncertain in any artifact — and WHY. Adversarial analysis of documents, code, architectures, decisions, frameworks, problems. For THYROX WP artifacts (risk registers, exit conditions, analysis, strategy): automatically applies calibration mode to detect performative realism and evidence gaps (ratio OBSERVABLE+INFERRED/total ≥ 0.75 for gate artifacts). Executes minimum 6 adversarial verification layers + THYROX calibration layer when applicable. Produces traceable verdict with exact evidence."
 async_suitable: true
-updated_at: 2026-04-18 23:49:30
+updated_at: 2026-04-20 12:47:27
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 ---
@@ -258,9 +258,49 @@ engaños_estructurales: K
 
 ---
 
+## Modo THYROX: Calibración de artefactos WP
+
+**Cuándo aplica:** El artefacto es un documento del WP activo de THYROX — risk register, exit conditions, análisis, estrategia, task-plan, o cualquier archivo en `.thyrox/context/work/`.
+
+**Adición post-Capa 6:** Ejecutar siempre esta capa 7 para artefactos THYROX. Es la absorción del protocolo que existía en `agentic-reasoning` (eliminado por overlap de trigger).
+
+### Capa 7: Calibración epistémica (solo artefactos WP THYROX)
+
+Clasificar cada claim del artefacto en tres tipos:
+
+| Tipo | Definición | Señal |
+|------|------------|-------|
+| **OBSERVABLE** | Derivado de herramienta ejecutada o output citado textualmente | "bash ls muestra N archivos" — reproducible |
+| **INFERRED** | Derivado de observables mediante razonamiento explícito documentado | cadena de evidencia visible |
+| **SPECULATIVE** | Sin observable de origen — presentado como hecho sin fuente verificable | "el análisis está completo", "P=0.30" sin derivación |
+
+Calcular ratio de calibración:
+```
+Ratio = (OBSERVABLE + INFERRED) / Total claims
+Objetivo: ≥ 0.75 para artefactos de gate (exit conditions, estrategias, risk registers)
+          ≥ 0.50 para artefactos de exploración (análisis, brainstorming, discover)
+```
+
+Para cada claim SPECULATIVE: citar texto exacto + archivo:línea + impacto (Alto/Medio/Bajo) + evidencia observable que lo convertiría en INFERRED u OBSERVABLE.
+
+Clasificación final:
+- **CALIBRADO** — ratio ≥ umbral, sin claims SPECULATIVE de impacto Alto en gates
+- **PARCIALMENTE CALIBRADO** — ratio en rango, pero hay claims SPECULATIVE de impacto Medio en gates
+- **REALISMO PERFORMATIVO** — ratio < umbral o claims SPECULATIVE de impacto Alto sostienen una decisión de gate
+
+Agregar en el veredicto (Capa 6):
+```
+### Calibración THYROX
+Ratio: X/Y (Z%) — [CALIBRADO | PARCIALMENTE CALIBRADO | REALISMO PERFORMATIVO]
+Claims SPECULATIVE que bloquean gate: [lista con archivo:línea o "ninguno"]
+```
+
+---
+
 ## Reglas de comportamiento
 
-- **Las 6 capas son el mínimo obligatorio** — no saltarse ninguna, incluso si el documento parece riguroso. Si el documento requiere capas adicionales (probabilística, calibración, basin-conditional), agregarlas después de Capa 6 con el mismo rigor.
+- **Las 6 capas son el mínimo obligatorio** — no saltarse ninguna, incluso si el documento parece riguroso. Si el documento requiere capas adicionales, agregarlas después de Capa 6 con el mismo rigor.
+- **Capa 7 obligatoria para artefactos WP THYROX** — detectar realismo performativo es parte del análisis, no opcional.
 - **Citar con sección exacta** — "Sec 3.3, tabla de resultados", no "el documento dice"
 - **Distinguir verbalmente** — usar siempre "VERDADERO / FALSO / INCIERTO", no "posiblemente" o "puede ser"
 - **Nombrar el patrón** — no solo describir el problema; identificar qué patrón estructural lo produce
