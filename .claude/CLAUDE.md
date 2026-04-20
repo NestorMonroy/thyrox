@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
 version: 3.5
-updated_at: 2026-04-20 13:22:17
+updated_at: 2026-04-20 13:47:00
 ```
 
 # CLAUDE.md — THYROX
@@ -84,6 +84,7 @@ Directivas siempre activas para el stack del proyecto. Generadas por `registry/_
 @.thyrox/guidelines/frontend-react.instructions.md
 @.thyrox/guidelines/frontend-webpack.instructions.md
 @.thyrox/guidelines/python-mcp.instructions.md
+<!-- python-mcp: guideline manual — no generada por _generator.sh. Ver adr-python-mcp-manual-skill.md -->
 @.thyrox/guidelines/agentic-python.instructions.md
 
 **Por qué `.thyrox/` y no `.claude/context/`:**
