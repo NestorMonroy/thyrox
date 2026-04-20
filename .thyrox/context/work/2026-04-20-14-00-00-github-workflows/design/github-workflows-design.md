@@ -4,7 +4,7 @@ project: THYROX
 feature: GitHub Workflows Infrastructure
 design_version: 1.0
 designer: Claude
-components: 21
+components: 20
 external_dependencies: 2
 status: En progreso
 ```
@@ -13,7 +13,7 @@ status: En progreso
 
 ## Propósito
 
-Documentar la arquitectura técnica de cómo implementar los 21 componentes de `.github/` especificados en `github-workflows-requirements-spec.md`. Cómo se estructura, dónde va cada archivo, decisiones de diseño, dependencias, y plan de rollout.
+Documentar la arquitectura técnica de cómo implementar los 20 componentes de `.github/` especificados en `github-workflows-requirements-spec.md` (3 issue templates + 3 actions + 8 scripts + 3 configs + 3 workflows). Cómo se estructura, dónde va cada archivo, decisiones de diseño, dependencias, y plan de rollout.
 
 ---
 
@@ -162,7 +162,7 @@ jobs:
 
 ## 3. Componentes Afectados
 
-### 3.1 Nuevos Componentes (21 totales)
+### 3.1 Nuevos Componentes (20 totales)
 
 | Componente | Ubicación | Propósito |
 |-----------|-----------|----------|
@@ -328,7 +328,7 @@ Eso es responsabilidad del Sistema Agentic AI (hooks locales).
 - [ ] Crear `.github/workflows/detect-secrets.yml` (git-secrets)
 
 #### Bloque 6: Validación + Cierre (T-012)
-- [ ] Verificar todos 21 componentes creados
+- [ ] Verificar todos 20 componentes creados
 - [ ] Validar YAML syntax en workflows y actions
 - [ ] Commit + push a rama
 - [ ] Crear PR: feature → develop (verifica que workflows se disparan)

@@ -12,7 +12,7 @@ version: 1.0.0
 
 ## Resumen Ejecutivo
 
-Este documento especifica la construcción de 21 componentes para la infraestructura de `.github/` en el proyecto THYROX. Los componentes se agrupan en 5 categorías: Issue Templates (3), GitHub Actions (3), Script Directories (3), Config Files (3), y Workflows (3).
+Este documento especifica la construcción de 20 componentes para la infraestructura de `.github/` en el proyecto THYROX. Los componentes se agrupan en 5 categorías: Issue Templates (3), GitHub Actions (3), Script Directories (8), Config Files (3), y Workflows (3).
 
 **Objetivo:** Establecer una estructura modular estándar que valide la integridad del repositorio a nivel de CI/CD (GitHub Actions) y del framework THYROX a nivel local (Sistema Agentic AI).
 

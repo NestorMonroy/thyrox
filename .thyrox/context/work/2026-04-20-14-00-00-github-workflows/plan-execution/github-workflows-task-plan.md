@@ -10,7 +10,7 @@ status: Pendiente aprobación
 # Task Plan — GitHub Workflows Infrastructure (ÉPICA 43)
 
 > **Generado desde:** `design/github-workflows-requirements-spec.md` + `design/github-workflows-design.md`
-> **Alcance:** Crear 21 componentes para `.github/` (issue templates, actions, scripts, configs, workflows)
+> **Alcance:** Crear 20 componentes para `.github/` (issue templates: 3, actions: 3, scripts: 8, configs: 3, workflows: 3)
 > **Ruta crítica:** T-001 → [parallel: T-002,T-003,T-004,T-005,T-006,T-007,T-008,T-009,T-010,T-011] → T-012
 > **Estimación total:** ~10.5 horas
 
@@ -183,14 +183,14 @@ Nota: `[P]` marca tareas paralelizables (pueden ejecutarse simultáneamente).
 ## Grupo 6 — Validación y Cierre
 
 > **Propósito:** Verify completeness and prepare for execution phase
-> **Alcance:** All 21 components
+> **Alcance:** All 20 components
 > **Depende de:** T-001 through T-011 (all prior tasks)
 
-- [ ] **T-012** Verificar 21 componentes + validación final (SPEC-001..SPEC-005)
+- [ ] **T-012** Verificar 20 componentes + validación final (SPEC-001..SPEC-005)
   - Verify directory structure:
     - [ ] `.github/ISSUE_TEMPLATE/` exists with 3 files
-    - [ ] `.github/actions/` exists with 3 subdirs
-    - [ ] `.github/scripts/` exists with 3 subdirs + 8 scripts
+    - [ ] `.github/actions/` exists with 3 action.yml files
+    - [ ] `.github/scripts/` exists with 3 subdirs + 8 scripts total
     - [ ] `.github/workflows/` exists with 3 files
     - [ ] Config files in `.github/` root (3 files)
   - Verify all files:
@@ -201,7 +201,7 @@ Nota: `[P]` marca tareas paralelizables (pueden ejecutarse simultáneamente).
     - [ ] All 5 SPECs mapped to tasks (SPEC-001..SPEC-005)
     - [ ] No orphaned components
   - Stage all files for commit
-  - Create final commit: `chore(github-workflows): Phase 8 complete - 21 components scaffolded`
+  - Create final commit: `chore(github-workflows): Phase 8 complete - 20 components scaffolded`
   - Update `.thyrox/context/now.md`: set `phase: Phase 9` (ready for pilot) or `Phase 10` (ready for execute)
   - Push to remote branch
 
@@ -244,8 +244,8 @@ graph TD
 | Cobertura | Validation & Close | T-012 | [ ] Pending |
 
 **Total tareas:** 12 (11 component creation + 1 validation)<br>
-**Total componentes:** 21 (asignados a tareas)<br>
-**Cobertura:** 100% (21 componentes / 21 requeridos)
+**Total componentes:** 20 (3+3+8+3+3 asignados a tareas)<br>
+**Cobertura:** 100% (20 componentes / 20 requeridos)
 
 ---
 
@@ -272,7 +272,7 @@ graph TD
 
 | Claim | Tipo | Fuente | Confianza | Origen |
 |-------|------|--------|-----------|--------|
-| 21 componentes especificados en SPEC | PROVEN | github-workflows-requirements-spec.md (5 SPEC sections) | alta | nuevo |
+| 20 componentes especificados en SPEC | PROVEN | github-workflows-requirements-spec.md (3+3+8+3+3 archivos) | alta | nuevo |
 | 12 tareas suficientes para completar scope | INFERRED | 10.5 horas estimado + design breakdown | media | nuevo |
 | Paralelización posible (T-002..T-011) | INFERRED | No hay dependencias cruzadas entre tareas | media | nuevo |
 | Test-markdown-links puede reutilizar script | PROVEN | Script path: `.claude/scripts/detect-missing-md-links.sh` | alta | referenciado en design.md |
@@ -282,15 +282,15 @@ graph TD
 
 ## Resumen de Progreso
 
-| Grupo | Tareas | Completadas | Pendientes |
-|-------|--------|-------------|------------|
-| **Grupo 1 (Issue Templates)** | 1 | 0 | 1 |
-| **Grupo 2 (Config Files)** | 1 | 0 | 1 |
-| **Grupo 3 (GitHub Actions)** | 3 | 0 | 3 |
-| **Grupo 4 (Script Directories)** | 3 | 0 | 3 |
-| **Grupo 5 (Workflows)** | 3 | 0 | 3 |
-| **Grupo 6 (Validación)** | 1 | 0 | 1 |
-| **Total** | **12** | **0** | **12** |
+| Grupo | Componentes | Tareas | Completadas | Pendientes |
+|-------|-------------|--------|-------------|------------|
+| **Grupo 1 (Issue Templates)** | 3 | 1 | 0 | 1 |
+| **Grupo 2 (Config Files)** | 3 | 1 | 0 | 1 |
+| **Grupo 3 (GitHub Actions)** | 3 | 3 | 0 | 3 |
+| **Grupo 4 (Script Directories)** | 8 | 3 | 0 | 3 |
+| **Grupo 5 (Workflows)** | 3 | 3 | 0 | 3 |
+| **Grupo 6 (Validación)** | — | 1 | 0 | 1 |
+| **Total** | **20** | **12** | **0** | **12** |
 
 ---
 
