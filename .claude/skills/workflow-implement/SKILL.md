@@ -9,10 +9,10 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 10'"
-updated_at: 2026-04-17 22:37:43
+updated_at: 2026-04-20 13:08:54
 ---
 
-# /workflow-execute — Phase 10: EXECUTE
+# /workflow-execute — Stage 10: IMPLEMENT
 
 Toma la siguiente tarea pendiente del work package activo y la ejecuta.
 

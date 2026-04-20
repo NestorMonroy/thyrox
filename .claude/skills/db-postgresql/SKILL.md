@@ -12,7 +12,7 @@ Guía fase-por-fase para trabajar con PostgreSQL en el proyecto thyrox.
 
 ---
 
-## Phase 3: ANALYZE — Qué investigar en features con PostgreSQL
+## Stage 3: DIAGNOSE — Qué investigar en features con PostgreSQL
 
 Al analizar un feature que toca la base de datos, cubrir:
 - Tablas afectadas — ¿nuevas, modificadas, eliminadas?
@@ -29,7 +29,7 @@ En `requirements-spec.md`, incluir por cada tabla nueva/modificada:
 - Índices necesarios con justificación
 - Migraciones requeridas: UP (aplicar) y DOWN (revertir)
 
-## Phase 10: EXECUTE — Convenciones de implementación
+## Stage 10: IMPLEMENT — Convenciones de implementación
 
 Ver sección INSTRUCTIONS para reglas específicas.
 

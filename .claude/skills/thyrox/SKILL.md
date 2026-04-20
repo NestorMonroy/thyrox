@@ -1,7 +1,7 @@
 ```yml
 name: thyrox
 description: "Sistema agentic THYROX con 12 stages propios (DISCOVER → STANDARDIZE). Usar este skill cuando el usuario quiera planificar, analizar, diseñar, organizar, trackear o gestionar CUALQUIER tipo de trabajo — features, bug fixes, refactoring, documentación, investigación o setup de proyecto. También usar cuando el usuario pregunte '¿qué hago primero?', '¿cómo organizo esto?', '¿cuál es el estado?', 'crea un plan para X', 'analiza X', 'descompón X en tareas', 'documenta esta decisión', o cualquier cosa relacionada con workflow de proyecto, tracking de trabajo, registros de decisiones o desarrollo estructurado. Siempre empezar con DISCOVER antes de planificar."
-updated_at: 2026-04-18 05:00:00
+updated_at: 2026-04-20 13:08:54
 ```
 
 # THYROX: Gestión de Proyectos
@@ -18,15 +18,15 @@ Ver glosario completo en [CLAUDE.md](../../../CLAUDE.md#glosario).
 
 ```mermaid
 flowchart LR
-    P1([DISCOVER]) --> P2([MEASURE])
-    P2 --> P3([ANALYZE])
+    P1([DISCOVER]) --> P2([BASELINE])
+    P2 --> P3([DIAGNOSE])
     P3 --> P4([CONSTRAINTS])
     P4 --> P5([STRATEGY])
-    P5 --> P6([PLAN])
+    P5 --> P6([SCOPE])
     P6 --> P7([DESIGN/\nSPECIFY])
     P7 --> P8([PLAN\nEXECUTION])
     P8 --> P9([PILOT/\nVALIDATE])
-    P9 --> P10([EXECUTE])
+    P9 --> P10([IMPLEMENT])
     P10 --> P11([TRACK/\nEVALUATE])
     P11 --> P12([STANDARDIZE])
     P10 -->|más tareas| P10
@@ -45,15 +45,15 @@ Cada fase vive en su propio skill. Invocar directamente para ejecutar:
 | Fase | Skill | Descripción |
 |------|-------|-------------|
 | Phase 1: DISCOVER | `/thyrox:discover` | Explorar contexto, stakeholders, síntomas. Crear WP + risk register. |
-| Phase 2: MEASURE | `/thyrox:measure` | Recopilar datos, definir baseline + métricas de éxito. |
-| Phase 3: ANALYZE | `/thyrox:analyze` | Análisis profundo de causa raíz. Sub-análisis por dominio. |
+| Stage 2: BASELINE | `/thyrox:measure` | Recopilar datos, definir baseline + métricas de éxito. |
+| Stage 3: DIAGNOSE | `/thyrox:analyze` | Análisis profundo de causa raíz. Sub-análisis por dominio. |
 | Phase 4: CONSTRAINTS | `/thyrox:constraints` | Documentar restricciones técnicas, de negocio y de plataforma. |
 | Phase 5: STRATEGY | `/thyrox:strategy` | Investigar alternativas. Key Ideas + Research + Decisions. |
-| Phase 6: PLAN | `/thyrox:plan` | Definir scope. Scope statement + in/out-of-scope + ROADMAP. |
+| Stage 6: SCOPE | `/thyrox:plan` | Definir scope. Scope statement + in/out-of-scope + ROADMAP. |
 | Phase 7: DESIGN/SPECIFY | `/thyrox:design` | Especificar. Requirements spec + design técnico (si complejo). |
 | Phase 8: PLAN EXECUTION | `/thyrox:decompose` | Crear tareas atómicas. Task plan + DAG + trazabilidad. |
 | Phase 9: PILOT/VALIDATE | `/thyrox:pilot` | Validar solución con PoC. Confirmar supuestos antes de ejecutar. |
-| Phase 10: EXECUTE | `/thyrox:execute` | Ejecutar. Commits + actualizar task plan + gates async. |
+| Stage 10: IMPLEMENT | `/thyrox:execute` | Ejecutar. Commits + actualizar task plan + gates async. |
 | Phase 11: TRACK/EVALUATE | `/thyrox:track` | Evaluar resultados. Lessons learned + changelog + cierre WP. Usar /thyrox:audit antes de STANDARDIZE para gate de calidad. |
 | Phase 12: STANDARDIZE | `/thyrox:standardize` | Documentar patrones. Propagar aprendizajes al sistema. |
 
@@ -377,7 +377,7 @@ Entradas rápidas por namespace:
 ### Phase 1: DISCOVER (leer cuando se explora el problema)
 [introduction](../workflow-discover/references/introduction.md) · [requirements-analysis](../workflow-discover/references/requirements-analysis.md) · [use-cases](../workflow-discover/references/use-cases.md) · [quality-goals](../workflow-discover/references/quality-goals.md) · [stakeholders](../workflow-discover/references/stakeholders.md) · [basic-usage](../workflow-discover/references/basic-usage.md) · [constraints](../workflow-discover/references/constraints.md) · [context](../workflow-discover/references/context.md)
 
-### Phase 3: ANALYZE (leer cuando se hace análisis profundo)
+### Stage 3: DIAGNOSE (leer cuando se hace análisis profundo)
 Ver references en `workflow-discover/references/` — introduction, requirements-analysis, use-cases, quality-goals, stakeholders, constraints, context
 
 ### Phase 5: STRATEGY (leer cuando se toman decisiones arquitectónicas)
@@ -386,7 +386,7 @@ Ver references en `workflow-discover/references/` — introduction, requirements
 ### Phase 7: DESIGN/SPECIFY (leer cuando se crean especificaciones complejas)
 [spec-driven-development](../workflow-structure/references/spec-driven-development.md)
 
-### Phase 10: EXECUTE (leer cuando se hacen commits)
+### Stage 10: IMPLEMENT (leer cuando se hacen commits)
 [commit-helper](../workflow-implement/references/commit-helper.md) · [commit-convention](../workflow-implement/references/commit-convention.md)
 
 ### Phase 11: TRACK/EVALUATE (leer cuando se valida o corrige)

@@ -12,7 +12,7 @@ Guía fase-por-fase para trabajar con MySQL en el proyecto thyrox.
 
 ---
 
-## Phase 3: ANALYZE — Qué investigar en features con MySQL
+## Stage 3: DIAGNOSE — Qué investigar en features con MySQL
 
 Al analizar un feature que toca la base de datos, cubrir:
 - Tablas afectadas — ¿nuevas, modificadas, eliminadas?
@@ -30,7 +30,7 @@ En `requirements-spec.md`, incluir por cada tabla nueva/modificada:
 - Charset: `utf8mb4 COLLATE utf8mb4_unicode_ci` por defecto
 - Migraciones requeridas: UP (aplicar) y DOWN (revertir si posible)
 
-## Phase 10: EXECUTE — Convenciones de implementación
+## Stage 10: IMPLEMENT — Convenciones de implementación
 
 Ver sección INSTRUCTIONS para reglas específicas.
 

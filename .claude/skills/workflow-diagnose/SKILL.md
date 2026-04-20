@@ -9,12 +9,12 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 3'"
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-20 13:08:54
 ---
 
-# /workflow-analyze — Phase 3: ANALYZE
+# /workflow-analyze — Stage 3: DIAGNOSE
 
-Inicia o retoma Phase 3 ANALYZE del work package activo.
+Inicia o retoma Stage 3 DIAGNOSE del work package activo.
 
 ---
 

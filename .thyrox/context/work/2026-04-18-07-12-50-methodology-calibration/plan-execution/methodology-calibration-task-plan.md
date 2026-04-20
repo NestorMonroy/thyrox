@@ -47,7 +47,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 1 — Guideline de agentic AI (Eje 1)
 
-- [~] T-002 Crear `.thyrox/guidelines/agentic-python.instructions.md` @task-executor (claimed: 2026-04-20 13:11:04)
+- [x] T-002 Crear `.thyrox/guidelines/agentic-python.instructions.md` @task-executor (done: 2026-04-20 13:14:38)
   - 30 reglas derivadas de AP-01..AP-30, agrupadas en 8 secciones
   - Cada regla: anti-patrón (INCORRECTO) + patrón correcto (CORRECTO) + AP-ID de origen
   - Sección 1: ADK Callbacks (AP-01, AP-02)
@@ -69,14 +69,14 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 2 — Agente validador (Eje 2)
 
-- [~] T-004 Crear `.thyrox/registry/agents/agentic-validator.yml` @task-executor (claimed: 2026-04-20 13:11:08)
+- [x] T-004 Crear `.thyrox/registry/agents/agentic-validator.yml` @task-executor (done: 2026-04-20 13:11:08)
   - Sin campo `model:` (constraint TD-037 — README del registry lo prohíbe)
   - `name`: agentic-validator
   - `description`: 20+ chars con patrón "Use when..." — valida código Python agentic contra catálogo AP-01..AP-30
   - `tools`: Read, Glob, Grep, Bash, Write
   - `system_prompt`: catálogo AP condensado (anti-patrón + correcto por AP) + protocolo de reporte
 
-- [~] T-005 Crear `.claude/agents/agentic-validator.md` directamente @task-executor (claimed: 2026-04-20 13:11:08)
+- [x] T-005 Crear `.claude/agents/agentic-validator.md` directamente @task-executor (done: 2026-04-20 13:11:08)
   - bootstrap.py no soporta este tipo de agente sin modificación — instalación manual
   - Formato idéntico a `.claude/agents/deep-dive.md` (leer como referencia)
   - Frontmatter: name, description, tools, model: sonnet, async_suitable: true, updated_at
@@ -135,7 +135,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 6 — Proceso de propagación sistémica
 
-- [ ] T-013 Actualizar `.claude/skills/workflow-standardize/SKILL.md`
+- [~] T-013 Actualizar `.claude/skills/workflow-standardize/SKILL.md` @task-executor (claimed: 2026-04-20 13:13:58)
   - Agregar paso explícito en sección "Qué standardizar":
     "Si el WP descubrió anti-patrones de código agentic → actualizar `agentic-python.instructions.md`
     con las nuevas reglas y `agentic-validator.md` con los nuevos APs"
@@ -145,7 +145,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 7 — Consistencia de nomenclatura de stages (nuevo hallazgo)
 
-- [~] T-014 Corregir nombres de stages viejos en 12 archivos — 26 ocurrencias @task-executor (claimed: 2026-04-20 13:08:54)
+- [x] T-014 Corregir nombres de stages viejos en 12 archivos — 26 ocurrencias @task-executor (done: 2026-04-20 13:08:54)
   - **Contexto:** El rename Stage 2→BASELINE, Stage 3→DIAGNOSE, Stage 6→SCOPE, Stage 10→IMPLEMENT
     está documentado en CLAUDE.md glosario pero los skills **no fueron actualizados**.
     El resultado: README.md dice "Stage 6 — SCOPE" y SKILL.md dice "Phase 6: PLAN" — fuente única de
@@ -233,7 +233,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > **Contexto:** THYROX corre sobre Claude Code, que evoluciona por release. Las referencias son
 > estáticas. AP-01..AP-30 pueden quedar obsoletos. No hay mecanismo de refresh.
 
-- [ ] T-019 Crear `.claude/references/platform-evolution-tracking.md`
+- [~] T-019 Crear `.claude/references/platform-evolution-tracking.md` @task-executor (claimed: 2026-04-20 13:13:58)
   — Mecanismo de tracking de cambios de Claude Code que afectan THYROX
   - Lista de componentes THYROX con dependencia directa de plataforma:
     `@imports` (CLAUDE.md), hooks API (settings.json), agent frontmatter, slash commands
@@ -266,7 +266,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - Regla derivada: claims sin fuente → status `Borrador` bloqueado (no puede avanzar al gate)
   - **Depende de T-017** (para no editar los mismos templates en conflicto)
 
-- [ ] T-021 Actualizar `exit-conditions.md.template` con umbral de confianza derivado
+- [~] T-021 Actualizar `exit-conditions.md.template` con umbral de confianza derivado @task-executor (claimed: 2026-04-20 13:13:58)
   - Archivo: `.claude/skills/workflow-discover/assets/exit-conditions.md.template`
   - Cambio: cada gate binario (PASS/FAIL) debe incluir campo `confidence_threshold`
     con protocolo de verificación (herramienta ejecutada, triangulación, human gate)

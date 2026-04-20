@@ -12,7 +12,7 @@ Guía fase-por-fase para trabajar con Webpack en el proyecto thyrox.
 
 ---
 
-## Phase 3: ANALYZE — Qué investigar en la configuración de build
+## Stage 3: DIAGNOSE — Qué investigar en la configuración de build
 
 Al analizar un feature que toca el build pipeline, cubrir:
 - Configuración actual — `webpack.config.js`, `webpack.common.js`, scripts de npm
@@ -29,7 +29,7 @@ En `requirements-spec.md`, incluir:
 - Variables de entorno — qué se inyecta con DefinePlugin por ambiente
 - Splits de bundle requeridos — chunks por ruta, vendors separados
 
-## Phase 10: EXECUTE — Convenciones de implementación
+## Stage 10: IMPLEMENT — Convenciones de implementación
 
 Ver sección INSTRUCTIONS para reglas específicas.
 

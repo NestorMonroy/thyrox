@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 12'"
-updated_at: 2026-04-18 05:30:00
+updated_at: 2026-04-20 13:13:58
 ---
 
 # /workflow-standardize — Phase 12: STANDARDIZE
@@ -51,6 +51,8 @@ patrones al sistema y actualiza guidelines como único escritor.
    - ¿Cambió cómo se hace DISCOVER? → actualizar workflow-discover/SKILL.md
    - ¿Nuevo tipo de análisis? → agregar a workflow-analyze/SKILL.md (Phase 3) o workflow-discover/SKILL.md (Phase 1)
    - ¿Nueva plantilla de artefacto? → agregar a assets/
+   - Si el WP descubrió anti-patrones de código agentic → actualizar `.thyrox/guidelines/agentic-python.instructions.md`
+     con las nuevas reglas y `.claude/agents/agentic-validator.md` con los nuevos APs.
 
 4. **Actualizaciones a ADRs** — si hay decisiones arquitectónicas permanentes
    - Crear ADR en `.thyrox/context/decisions/`

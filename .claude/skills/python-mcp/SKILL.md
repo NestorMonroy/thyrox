@@ -18,7 +18,7 @@ Guía fase-por-fase para implementar MCP servers y código Python del meta-frame
 
 ---
 
-## Phase 3: ANALYZE — Qué investigar antes de tocar Python
+## Stage 3: DIAGNOSE — Qué investigar antes de tocar Python
 
 - ¿El código es un MCP server (expone tools) o una librería interna (importada por otros)?
 - ¿Qué EvoAgentX APIs se necesitan? Verificar en `_evoagentx_adapter.py` si ya existe el método
@@ -35,7 +35,7 @@ En `requirements-spec.md`, para cada MCP tool:
 - Comportamiento en error — nunca raise sin capturar; retornar error en el dict
 - Timeout si la operación puede bloquearse
 
-## Phase 10: EXECUTE — Convenciones de implementación
+## Stage 10: IMPLEMENT — Convenciones de implementación
 
 Ver sección INSTRUCTIONS para reglas activas.
 

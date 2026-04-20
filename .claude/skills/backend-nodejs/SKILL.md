@@ -12,7 +12,7 @@ Guía fase-por-fase para implementar en Node.js dentro del proyecto thyrox.
 
 ---
 
-## Phase 3: ANALYZE — Qué investigar en proyectos Node.js
+## Stage 3: DIAGNOSE — Qué investigar en proyectos Node.js
 
 Al analizar un feature de backend, cubrir:
 - Endpoints afectados — método HTTP, ruta, parámetros, body
@@ -29,7 +29,7 @@ En `requirements-spec.md`, incluir por cada endpoint:
 - Validaciones de input: campos requeridos, tipos, rangos
 - Efectos secundarios: qué se escribe en BD, qué eventos se emiten
 
-## Phase 10: EXECUTE — Convenciones de implementación
+## Stage 10: IMPLEMENT — Convenciones de implementación
 
 Ver sección INSTRUCTIONS para reglas específicas.
 

@@ -9,12 +9,12 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 2'"
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-20 13:08:54
 ---
 
-# /workflow-measure — Phase 2: MEASURE
+# /workflow-measure — Stage 2: BASELINE
 
-Inicia o retoma Phase 2 MEASURE del work package activo.
+Inicia o retoma Stage 2 BASELINE del work package activo.
 
 ---
 

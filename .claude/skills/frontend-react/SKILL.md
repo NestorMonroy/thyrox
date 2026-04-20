@@ -12,7 +12,7 @@ Guía fase-por-fase para implementar en React dentro del proyecto thyrox.
 
 ---
 
-## Phase 3: ANALYZE — Qué investigar en proyectos React
+## Stage 3: DIAGNOSE — Qué investigar en proyectos React
 
 Al analizar un feature de frontend, cubrir:
 - Árbol de componentes afectados — ¿cuáles existen, cuáles hay que crear?
@@ -29,7 +29,7 @@ En `requirements-spec.md`, incluir por cada componente:
 - Eventos: qué dispara el componente hacia arriba (callbacks)
 - Criterio visual: descripción del comportamiento esperado en UI
 
-## Phase 10: EXECUTE — Convenciones de implementación
+## Stage 10: IMPLEMENT — Convenciones de implementación
 
 Ver sección INSTRUCTIONS para reglas específicas.
 

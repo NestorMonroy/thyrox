@@ -16,9 +16,9 @@ WP_DIR="${2:-}"
 
 if [ -z "$PHASE" ]; then
     echo "Usage: validate-phase-readiness.sh <phase-number> [wp-dir]"
-    echo "Phases: 1=DISCOVER, 2=MEASURE, 3=ANALYZE, 4=CONSTRAINTS, 5=STRATEGY,"
-    echo "        6=PLAN, 7=DESIGN/SPECIFY, 8=PLAN_EXECUTION, 9=PILOT/VALIDATE,"
-    echo "        10=EXECUTE, 11=TRACK/EVALUATE, 12=STANDARDIZE"
+    echo "Phases: 1=DISCOVER, 2=BASELINE, 3=DIAGNOSE, 4=CONSTRAINTS, 5=STRATEGY,"
+    echo "        6=SCOPE, 7=DESIGN/SPECIFY, 8=PLAN_EXECUTION, 9=PILOT/VALIDATE,"
+    echo "        10=IMPLEMENT, 11=TRACK/EVALUATE, 12=STANDARDIZE"
     exit 1
 fi
 
@@ -94,7 +94,7 @@ check_content() {
     fi
 }
 
-PHASE_NAMES=("" "DISCOVER" "MEASURE" "ANALYZE" "CONSTRAINTS" "STRATEGY" "PLAN" "DESIGN/SPECIFY" "PLAN_EXECUTION" "PILOT/VALIDATE" "EXECUTE" "TRACK/EVALUATE" "STANDARDIZE")
+PHASE_NAMES=("" "DISCOVER" "BASELINE" "DIAGNOSE" "CONSTRAINTS" "STRATEGY" "SCOPE" "DESIGN/SPECIFY" "PLAN_EXECUTION" "PILOT/VALIDATE" "IMPLEMENT" "TRACK/EVALUATE" "STANDARDIZE")
 echo -e "${BOLD}Checking readiness for Phase $PHASE: ${PHASE_NAMES[$PHASE]:-UNKNOWN}${NC}"
 echo -e "Work package: ${WP_DIR:-none detected}"
 echo ""
@@ -114,7 +114,7 @@ case "$PHASE" in
         fi
         ;;
     2)
-        echo "Phase 2: MEASURE — baseline document with quantitative data"
+        echo "Stage 2: BASELINE — baseline document with quantitative data"
         if [ -n "$WP_DIR" ]; then
             check_glob "*-baseline.md" "$WP_DIR/measure" "*-baseline.md"
             local_file=$(find "$WP_DIR/measure" -maxdepth 1 -name "*-baseline.md" 2>/dev/null | head -1)
@@ -128,7 +128,7 @@ case "$PHASE" in
         fi
         ;;
     3)
-        echo "Phase 3: ANALYZE — domain analysis with synthesis"
+        echo "Stage 3: DIAGNOSE — domain analysis with synthesis"
         if [ -n "$WP_DIR" ]; then
             if [ -d "$WP_DIR/analyze" ]; then
                 local count
@@ -181,7 +181,7 @@ case "$PHASE" in
         fi
         ;;
     6)
-        echo "Phase 6: PLAN — scope approved + ROADMAP updated"
+        echo "Stage 6: SCOPE — scope approved + ROADMAP updated"
         check "ROADMAP.md" "$REPO_ROOT/ROADMAP.md"
         if [ -n "$WP_DIR" ]; then
             WP_NAME=$(basename "$WP_DIR")
@@ -235,7 +235,7 @@ case "$PHASE" in
         fi
         ;;
     10)
-        echo "Phase 10: EXECUTE — all tasks completed"
+        echo "Stage 10: IMPLEMENT — all tasks completed"
         if [ -n "$WP_DIR" ]; then
             local_file=$(find "$WP_DIR/plan-execution" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
             if [ -n "$local_file" ]; then

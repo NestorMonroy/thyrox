@@ -9,12 +9,12 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 6'"
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-20 13:08:54
 ---
 
-# /workflow-plan — Phase 6: PLAN
+# /workflow-plan — Stage 6: SCOPE
 
-Inicia o retoma Phase 6 PLAN del work package activo.
+Inicia o retoma Stage 6 SCOPE del work package activo.
 
 ---
 
