@@ -109,6 +109,22 @@ graph TD
 
 ---
 
+## Evidencia de respaldo
+
+> Todo claim que fundamente la viabilidad del plan o los criterios de completitud debe clasificarse aquí.
+> Claims SPECULATIVE sin fuente observable bloquean el gate Stage 8→9 (I-012). Ver: `.claude/references/evidence-classification.md`
+
+| Claim | Tipo | Fuente | Confianza | Origen |
+|-------|------|--------|-----------|--------|
+| [afirmación sobre viabilidad o scope del plan] | PROVEN/INFERRED/SPECULATIVE | [tool output citado / documento / inferencia] | alta/media/baja | nuevo/heredado |
+
+> PROVEN = producido por tool_use ejecutado en este WP (Bash, Read, Grep output citado textualmente)
+> INFERRED = derivado de observables con razonamiento explícito documentado
+> SPECULATIVE = sin observable de origen — NO puede fundamentar gates de stage (I-012)
+> Origen heredado + Confianza baja → re-verificar en este stage antes de avanzar (I-013)
+
+---
+
 ## Stopping Points *(opcional — borrar sección si no hay gates explícitos)*
 
 | SP | Tarea | Condición de parada |

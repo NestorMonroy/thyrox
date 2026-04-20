@@ -46,6 +46,14 @@ sed -i \
   -e "s|^updated_at: .*|updated_at: $DATE|" \
   "$NOW_FILE"
 
+# T-050: Al detectar cambio de current_work, marcar stage_sync_required
+# para que session-start.sh alerte al agente sobre posible desincronizacion de stage.
+if grep -q "^stage_sync_required:" "$NOW_FILE" 2>/dev/null; then
+  sed -i "s|^stage_sync_required:.*|stage_sync_required: true|" "$NOW_FILE"
+else
+  echo "stage_sync_required: true" >> "$NOW_FILE"
+fi
+
 # T-038: Observabilidad — append transición a phase-history.jsonl
 HISTORY_FILE=".thyrox/context/phase-history.jsonl"
 FLOW=$(grep "^flow:" "$NOW_FILE" 2>/dev/null | sed 's/flow: *//' | tr -d '[:space:]')
