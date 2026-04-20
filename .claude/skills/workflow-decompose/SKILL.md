@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 8'"
-updated_at: 2026-04-20 13:30:36
+updated_at: 2026-04-20 13:51:04
 ---
 
 # /workflow-decompose — Phase 8: PLAN EXECUTION
@@ -95,3 +95,9 @@ Phase 8 completa cuando:
 
 **Detectar:** Si `work/.../plan-execution/*-task-plan.md` tiene checkboxes `- [ ] [T-NNN]`, Phase 8 ya completó.
 Al terminar: proponer `/thyrox:pilot` para Phase 9 (riesgo técnico alto) o `/thyrox:execute` para Phase 10.
+
+---
+
+## Referencias de calibración
+
+> Para análisis de flujos agentic con calibración real (6 patrones operacionales con evidencia de sesión): ver `.claude/references/agentic-calibration-workflow-example.md`

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # validate-session-close.sh — Valida estado del WP y agentes antes de cerrar sesión
 # TD-001: detecta timestamps incompletos (created_at sin hora)
+# T-034: detecta gate eval files huérfanos (sin merged correspondiente)
 # Uso: bash .claude/scripts/validate-session-close.sh
 # Exit 0 → todo OK (advertencias no bloquean Stop hook)
 
@@ -106,6 +107,20 @@ if [ -n "$NOW_FILE" ]; then
     fi
   fi
 fi
+
+# ── Check 4: Gate files huérfanos — eval sin merged (T-034) ──────────────────
+# gate-{stage}-eval-*.json sin gate-{stage}-merged.json → evaluadores sin consolidar
+# Ver: .claude/references/parallel-agent-state-files.md
+for CTX_DIR in "${CONTEXT_DIRS[@]}"; do
+  GATE_EVALS=$(find "$CTX_DIR" -name "gate-*-eval-*.json" 2>/dev/null | wc -l)
+  if [ "$GATE_EVALS" -gt 0 ]; then
+    echo "[WARN] $GATE_EVALS gate eval file(s) huérfanos detectados en $CTX_DIR:"
+    find "$CTX_DIR" -name "gate-*-eval-*.json" 2>/dev/null | sed 's/^/  /'
+    echo "  El Merger puede no haber consolidado estos evaluadores."
+    echo "  Ver: .claude/references/parallel-agent-state-files.md"
+    ERRORS=$((ERRORS + 1))
+  fi
+done
 
 # ── Resumen ───────────────────────────────────────────────────────────────────
 if [ "$ERRORS" -eq 0 ]; then

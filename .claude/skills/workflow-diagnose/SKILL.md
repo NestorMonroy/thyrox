@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 3'"
-updated_at: 2026-04-20 13:08:54
+updated_at: 2026-04-20 13:51:04
 ---
 
 # /workflow-analyze — Stage 3: DIAGNOSE
@@ -133,3 +133,9 @@ Phase 3 completa cuando:
 
 **Detectar:** Si `work/.../analyze/` tiene documentos, Phase 3 ya comenzó.
 Al terminar: proponer `/thyrox:constraints` para Phase 4.
+
+---
+
+## Referencias de calibración
+
+> Para análisis de flujos agentic con calibración real (6 patrones operacionales con evidencia de sesión): ver `.claude/references/agentic-calibration-workflow-example.md`

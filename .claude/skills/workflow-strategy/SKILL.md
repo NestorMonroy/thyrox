@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 5'"
-updated_at: 2026-04-20 13:30:36
+updated_at: 2026-04-20 13:51:04
 ---
 
 # /workflow-strategy — Phase 5: STRATEGY
@@ -99,3 +99,9 @@ Phase 5 completa cuando:
 
 **Detectar:** Si `work/.../*-solution-strategy.md` existe con decisiones documentadas, Phase 5 ya completó.
 Al terminar: proponer `/thyrox:plan` para Phase 6.
+
+---
+
+## Referencias de calibración
+
+> Para análisis de flujos agentic con calibración real (6 patrones operacionales con evidencia de sesión): ver `.claude/references/agentic-calibration-workflow-example.md`
