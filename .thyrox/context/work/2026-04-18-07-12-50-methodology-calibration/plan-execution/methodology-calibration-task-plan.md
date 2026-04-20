@@ -876,7 +876,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** independiente
 
-- [ ] T-068 Corregir exit code de `bootstrap.py` en instalaciones con fallos
+- [~] T-068 Corregir exit code de `bootstrap.py` en instalaciones con fallos @task-executor (claimed: 2026-04-20 13:42:28)
   - **Fuentes:** cluster-i-registry-adr-gaps.md (H-02, RP-3, RP-4)
   - **Hallazgo:** `main()` retorna exit code 0 incluso cuando hay `[FAIL]`. "Bootstrap completado" usa el conteo de todos los `.md` existentes, no solo los generados en esta ejecución — si 0 agentes fueron instalados exitosamente, el resumen es idéntico a una instalación completa.
   - Trackear fallos en `install_core_agents()` (L241-263) e `install_tech_agent()` (L266-312). Retornar exit code 1 si algún agente requerido falló. Ajustar conteo final para mostrar agentes generados en esta ejecución vs. total en disco.
@@ -892,7 +892,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-070 Agregar verificación de output no-vacío en `_generator.sh`
+- [~] T-070 Agregar verificación de output no-vacío en `_generator.sh` @task-executor (claimed: 2026-04-20 13:42:28)
   - **Fuentes:** cluster-i-registry-adr-gaps.md (H-08)
   - **Hallazgo:** Si el contenido entre marcadores `SKILL_START/SKILL_END` está vacío, `awk` produce archivo vacío sin error y `_generator.sh` reporta `[GREEN] Generated`.
   - Agregar verificación post-awk: `[ -s "$SKILL_FILE" ] || { echo "ERROR: $SKILL_FILE generado vacío" >&2; exit 1; }`.
