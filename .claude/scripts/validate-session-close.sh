@@ -5,6 +5,7 @@
 # Exit 0 → todo OK (advertencias no bloquean Stop hook)
 
 ERRORS=0
+BLOCK_COUNT=0
 
 # ── Directorios con soporte de migración ──────────────────────────────────────
 # Durante la migración .claude/context/ → .thyrox/context/ ambos pueden coexistir.
@@ -20,7 +21,7 @@ CONTEXT_DIRS=()
 for WORK_DIR in "${WORK_DIRS[@]}"; do
   INCOMPLETE=$(grep -rlE "^created_at: [0-9]{4}-[0-9]{2}-[0-9]{2}$" "$WORK_DIR" 2>/dev/null)
   if [ -n "$INCOMPLETE" ]; then
-    echo "⚠ TD-001: timestamps incompletos en $WORK_DIR (fecha sin hora):"
+    echo "[WARN] TD-001: timestamps incompletos en $WORK_DIR (fecha sin hora):"
     echo "$INCOMPLETE" | sed 's/^/  /'
     echo "  Corregir: created_at: YYYY-MM-DD → created_at: YYYY-MM-DD HH:MM:SS"
     ERRORS=$((ERRORS + 1))
@@ -40,7 +41,7 @@ for CTX_DIR in "${CONTEXT_DIRS[@]}"; do
 done
 
 if [ ${#ORPHANED[@]} -gt 0 ]; then
-  echo "⚠ AGENTES EN BACKGROUND: ${#ORPHANED[@]} state file(s) de agente sin cerrar:"
+  echo "[WARN] AGENTES EN BACKGROUND: ${#ORPHANED[@]} state file(s) de agente sin cerrar:"
   for f in "${ORPHANED[@]}"; do
     echo "  $f"
   done
@@ -88,7 +89,7 @@ if [ -n "$NOW_FILE" ]; then
 
   # now.md dice null pero hay WPs incompletos en .thyrox/context/work/
   if [ "$CURRENT_WORK" = "null" ] && [ "$THYROX_WPS" -gt 0 ]; then
-    echo "⚠ INCONSISTENCIA: $NOW_FILE::current_work es null pero existen $THYROX_WPS WP(s) activo(s):"
+    echo "[WARN] INCONSISTENCIA: $NOW_FILE::current_work es null pero existen $THYROX_WPS WP(s) activo(s):"
     echo "$THYROX_WP_LIST" | sed 's/^/  /'
     echo "  Actualizar current_work en $NOW_FILE antes de cerrar sesión."
     ERRORS=$((ERRORS + 1))
@@ -97,10 +98,11 @@ if [ -n "$NOW_FILE" ]; then
   # now.md apunta a WP que no existe en disco
   if [ -n "$CURRENT_WORK" ] && [ "$CURRENT_WORK" != "null" ]; then
     if [ ! -d "$CURRENT_WORK" ]; then
-      echo "⚠ INCONSISTENCIA: $NOW_FILE::current_work apunta a directorio inexistente:"
+      echo "[BLOCK] INCONSISTENCIA: $NOW_FILE::current_work apunta a directorio inexistente:"
       echo "  $CURRENT_WORK"
       echo "  Corregir la ruta o actualizar current_work a null si el WP cerró."
       ERRORS=$((ERRORS + 1))
+      BLOCK_COUNT=$((BLOCK_COUNT + 1))
     fi
   fi
 fi
@@ -110,7 +112,11 @@ if [ "$ERRORS" -eq 0 ]; then
   echo "✓ validate-session-close: sin problemas detectados"
 else
   echo ""
-  echo "  ($ERRORS advertencia(s) — el Stop hook no se bloquea, pero revisar antes de cerrar)"
+  if [ "$BLOCK_COUNT" -gt 0 ]; then
+    echo "  ($BLOCK_COUNT bloqueo(s) BLOCK, $((ERRORS - BLOCK_COUNT)) advertencia(s) WARN — sesion BLOQUEADA)"
+  else
+    echo "  ($ERRORS advertencia(s) WARN — el Stop hook no se bloquea, pero revisar antes de cerrar)"
+  fi
 fi
 
-exit 0  # Nunca bloquear Stop hook
+[ "$BLOCK_COUNT" -gt 0 ] && exit 2 || exit 0

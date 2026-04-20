@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 11'"
-updated_at: 2026-04-20 13:40:10
+updated_at: 2026-04-20 13:53:09
 ---
 
 # /workflow-track — Phase 11: TRACK/EVALUATE
@@ -73,7 +73,7 @@ Este paso implementa el `context_pruning_rule` del gate Stage 11→12 en exit-co
 
 **Validaciones de cierre:**
 ```bash
-bash .claude/skills/workflow-track/scripts/validate-session-close.sh
+bash .claude/scripts/validate-session-close.sh
 bash .claude/scripts/project-status.sh
 ```
 

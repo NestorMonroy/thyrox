@@ -462,7 +462,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > → Merger) tiene 4 brechas críticas: sin output_key contracts, sin state files definidos,
 > sin evaluador de consistencia, y Merger como SPOF sin instrucción anti-confabulación.
 
-- [~] T-033 Definir contratos de output_key para evaluadores y agregar instrucción anti-confabulación al Merger @task-executor (claimed: 2026-04-20 13:51:38)
+- [x] T-033 Definir contratos de output_key para evaluadores y agregar instrucción anti-confabulación al Merger @task-executor (done: 2026-04-20 13:52:46)
   - **Fuentes:** cluster-b (B-MA-1 CRÍTICO — output_key undefined; B-MA-4 CRÍTICO — Merger SPOF)
   - En `.claude/skills/workflow-diagnose/references/` o documento de referencia del gate paralelo:
     - Definir output_key contracts: cada evaluador paralelo debe producir exactamente los campos `{evaluator_id, score, claims[], confidence, gaps[]}` — sin campos adicionales no contratados
@@ -473,7 +473,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-017, T-020, T-021
 
-- [ ] T-034 Definir estructura de state files para ejecución paralela de agentes
+- [~] T-034 Definir estructura de state files para ejecución paralela de agentes @task-executor (claimed: 2026-04-20 13:53:00)
   - **Fuentes:** cluster-b (B-MA-2 CRÍTICO — state files sin estructura definida), cluster-b (B-MA-3 ALTO — protocolo de failure no especificado)
   - En `.thyrox/context/` documentar estructura canónica:
     - `now-{agent-name}.md` ya existe como convención — agregar campos requeridos: `agent_id`, `status` (running/completed/failed), `output_key`, `started_at`, `timeout_at`
@@ -687,7 +687,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > `exit 0` incondicionalmente — el hook detecta problemas pero nunca bloquea nada.
 > El nombre "validate" crea expectativa de enforcement que no existe.
 
-- [~] T-047 Diseñar política de severidad en `validate-session-close.sh` @task-executor (claimed: 2026-04-20 13:49:56)
+- [x] T-047 Diseñar política de severidad en `validate-session-close.sh` @task-executor (done: 2026-04-20 13:53:15)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F01, H-F02)
   - **Hallazgo:** `validate-session-close.sh` L116 y `stop-hook-git-check.sh` L39 retornan `exit 0` incondicionalmente. El hook detecta hasta 4 categorías de problemas reales pero no actúa sobre ninguno.
   - Introducir dos clases de severidad: WARN (exit 0) para timestamps incompletos y agentes huérfanos con resultado recolectado; BLOCK (exit 2) para `current_work` apuntando a directorio inexistente e inconsistencia crítica de estado.
@@ -720,7 +720,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** independiente
 
-- [~] T-050 Agregar `stage_sync_required` en `sync-wp-state.sh` al cambiar WP @task-executor (claimed: 2026-04-20 13:49:56)
+- [x] T-050 Agregar `stage_sync_required` en `sync-wp-state.sh` al cambiar WP @task-executor (done: 2026-04-20 13:53:15)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F03)
   - **Hallazgo:** `sync-wp-state.sh` actualiza `current_work` en `now.md` (L44-47) pero nunca actualiza `stage:` ni `phase:`. El estado de fase se desincroniza silenciosamente cuando el agente escribe en un WP sin actualizar el stage manualmente.
   - Cuando `sync-wp-state.sh` detecta cambio de `current_work`, agregar `stage_sync_required: true` en `now.md` para que `session-start.sh` lo detecte y alerte al agente.
@@ -777,7 +777,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [~] T-056 Unificar `validate-session-close.sh` en `workflow-track` y `workflow-standardize` @task-executor (claimed: 2026-04-20 13:49:56)
+- [x] T-056 Unificar `validate-session-close.sh` en `workflow-track` y `workflow-standardize` @task-executor (done: 2026-04-20 13:53:15)
   - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-006)
   - **Hallazgo:** Phase 11 ejecuta `workflow-track/scripts/validate-session-close.sh` (versión antigua). Phase 12 ejecuta `.claude/scripts/validate-session-close.sh` (versión actual). Las validaciones son distintas e incompatibles — una puede pasar lo que la otra rechaza.
   - Eliminar `workflow-track/scripts/validate-session-close.sh` y actualizar `workflow-track/SKILL.md` L27 para invocar `.claude/scripts/validate-session-close.sh`.
