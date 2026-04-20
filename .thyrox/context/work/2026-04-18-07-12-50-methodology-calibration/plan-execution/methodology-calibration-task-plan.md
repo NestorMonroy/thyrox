@@ -929,6 +929,53 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ---
 
+## Bloque 28 — Gaps discover/ no cubiertos por T-001..T-073 (CRÍTICO-MEDIO)
+
+> Hallazgos del deep-dive de cobertura discover/ → task-plan. Cobertura estimada previa: 72%.
+> Fuente: `analyze/discover-to-taskplan-coverage-gap.md` (2026-04-20)
+
+- [ ] T-074 Extender restricción de fórmulas exponenciales en `CLAUDE.md` para cubrir variante multiparámetro Part B
+  - **Fuentes:** `discover/reasoning-correctness-probability-calibration-gaps.md` (GAP-1 CRÍTICO)
+  - **Hallazgo:** `CLAUDE.md` prohíbe solo `P₀ × e^(-r×d)` (variante simple). La variante `P(correct) = P₀ × e^(-Σλᵢxᵢ)` con 5 parámetros tiene ratio de calibración del 8% y calibración circular (misma observación para ajuste y validación). Sin esta extensión, la variante agravada puede usarse en WPs futuros sin rechazo del sistema.
+  - Agregar sección en `CLAUDE.md` "Fórmulas probabilísticas prohibidas" cubriendo ambas variantes con criterio de rechazo explícito.
+  - **Archivo a modificar:** `.claude/CLAUDE.md`
+  - **Prioridad:** CRÍTICA
+  - **Depende de:** independiente
+
+- [ ] T-075 Convertir `agentic-calibration-workflow-example.md` en referencia oficial consultable
+  - **Fuentes:** `discover/agentic-calibration-workflow-example.md` (GAP-3 ALTO)
+  - **Hallazgo:** Único artefacto empírico del WP con métricas reales (65%→79%→65.4%) y 6 patrones operacionales con sección "Implicación para el sistema". No está vinculado a ningún SKILL ni referencia consultable — sus hallazgos no se propagan al sistema.
+  - Mover/copiar a `.claude/references/agentic-calibration-workflow-example.md` y agregar referencia en `deep-dive.md` como lectura recomendada para análisis de flujos multi-agente.
+  - **Archivo a modificar:** `.claude/references/` (crear) + `.claude/agents/deep-dive.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-076 Agregar sección de mapa epistémico al template de síntesis de Stage 1 DISCOVER
+  - **Fuentes:** `discover/methodology-calibration-analysis.md` Sec 8 criterio 4 (GAP-2 ALTO)
+  - **Hallazgo:** Criterio de éxito del WP pide que Stage 1 DISCOVER declare explícitamente observación vs. inferencia en su output. El vocabulario existe (T-025) pero ninguna T-NNN modifica el template de síntesis del stage — el criterio de éxito del WP mismo no está cubierto.
+  - Agregar sección `## Mapa epistémico` al template `workflow-discover/assets/introduction.md.template` con campos: `observaciones_directas`, `inferencias_calibradas`, `especulaciones_marcadas`.
+  - **Archivo a modificar:** `.claude/skills/workflow-discover/assets/introduction.md.template`
+  - **Prioridad:** ALTO
+  - **Depende de:** T-025 (vocabulario epistémico definido)
+
+- [ ] T-077 Documentar exclusión del Evaluador-Basin del gate calibrado como ADR
+  - **Fuentes:** `discover/clustering-basin-integration-analysis.md` (GAP-4 MEDIO)
+  - **Hallazgo:** El archivo propone un 4to evaluador para los gates con pseudocódigo completo y 5 experimentos PILOT. El gate de T-033..T-036 tiene 3 evaluadores. La exclusión no está documentada — no hay ADR que registre la decisión de diferirlo ni por qué.
+  - Crear `.thyrox/context/decisions/adr-gate-basin-evaluator-deferral.md` documentando la decisión de usar 3 evaluadores y diferir el Basin al próximo WP con criterio explícito de cuándo incorporarlo.
+  - **Archivo a crear:** `.thyrox/context/decisions/adr-gate-basin-evaluator-deferral.md`
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-033, T-034, T-035 (gate calibrado completado)
+
+- [ ] T-078 Agregar Cherry-Pick Consciente y Efecto Denominador a `agentic-python.instructions.md`
+  - **Fuentes:** `discover/` análisis de patrones (GAP parcial en T-042, T-044)
+  - **Hallazgo:** T-042 cubre Fix Declarado ≠ Fix Verificado y T-044 cubre patrones CAD. Cherry-Pick Consciente (seleccionar solo casos que confirman hipótesis) y Efecto Denominador (reportar fracción sin declarar denominador) están documentados en discover/ pero sin regla prohibitoria explícita en las guidelines.
+  - Agregar secciones en `.thyrox/guidelines/agentic-python.instructions.md` con ejemplos concretos de ambos patrones y criterio de detección.
+  - **Archivo a modificar:** `.thyrox/guidelines/agentic-python.instructions.md` (si existe) o `.claude/CLAUDE.md`
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-005 (guidelines consolidadas)
+
+---
+
 ## DAG de dependencias completo
 
 ```
@@ -1081,6 +1128,7 @@ T-073 (session-resume.sh maxdepth) — independiente
 17. **T-044** (después de T-004 + T-005 + T-013) | **T-046** (después de T-002 + T-005): paralelo
 18. **T-049** → T-047, T-050, T-071 (paralelo) → T-056 (después de T-047)
 19. **Independientes B21-27** (paralelo entre sí): T-048, T-051, T-052, T-053, T-054, T-055, T-057, T-058, T-059, T-060, T-061, T-062, T-063, T-064, T-065, T-066, T-067, T-068, T-069, T-070, T-072, T-073
+20. **Bloque 28** (después de prerequisitos): T-074, T-075 (independientes) | T-076 (después de T-025) | T-077 (después de T-033..T-035) | T-078 (después de T-005)
 
 ## Trazabilidad
 
@@ -1142,3 +1190,8 @@ T-073 (session-resume.sh maxdepth) — independiente
 | T-071 | — | cluster-f (H-F11) |
 | T-072 | — | cluster-f (H-F09) |
 | T-073 | — | cluster-f (H-F06) |
+| T-074 | — | reasoning-correctness-probability-calibration-gaps.md (GAP-1) |
+| T-075 | — | agentic-calibration-workflow-example.md (GAP-3) |
+| T-076 | — | methodology-calibration-analysis.md Sec 8 criterio 4 (GAP-2) |
+| T-077 | — | clustering-basin-integration-analysis.md (GAP-4) |
+| T-078 | — | discover/ patrones Cherry-Pick/Efecto Denominador |
