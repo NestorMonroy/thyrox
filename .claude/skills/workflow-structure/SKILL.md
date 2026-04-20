@@ -1,7 +1,7 @@
 ---
 name: workflow-structure
 description: "Use when specifying requirements with Given/When/Then after plan is approved. Phase 7 DESIGN/SPECIFY — produce requirements-spec.md y opcionalmente design.md para WPs complejos."
-allowed-tools: Read Glob Grep Bash
+allowed-tools: Read Glob Grep Bash Write Edit
 disable-model-invocation: true
 effort: high
 hooks:
@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 7'"
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-20 13:30:36
 ---
 
 # /workflow-structure — Phase 7: DESIGN/SPECIFY
@@ -37,13 +37,13 @@ Especificar antes de descomponer previene ambigüedad en las tareas.
 - < 10 tareas estimadas → **Simple**
 - 10+ tareas estimadas → **Complejo** (requiere también design.md)
 
-**Simple:** Crear `work/../{nombre-wp}-requirements-spec.md` usando `assets/requirements-specification.md.template`
+**Simple:** Crear `work/.../design/{nombre-wp}-requirements-spec.md` usando `assets/requirements-specification.md.template`
   - Con overview, user stories, acceptance criteria (Given/When/Then)
   - Nombre descriptivo: `skill-activation-requirements-spec.md`, no `requirements-spec.md`
 
 **Complejo:** Crear ambos:
-1. `work/../{nombre-wp}-requirements-spec.md` — qué construir (SPECs con Given/When/Then)
-2. `work/../{nombre-wp}-design.md` — cómo construirlo usando `assets/design.md.template`:
+1. `work/.../design/{nombre-wp}-requirements-spec.md` — qué construir (SPECs con Given/When/Then)
+2. `work/.../design/{nombre-wp}-design.md` — cómo construirlo usando `assets/design.md.template`:
    - Visión arquitectónica, componentes afectados, decisiones de diseño
    - Ver [spec-driven-development](references/spec-driven-development.md) para guía completa
 

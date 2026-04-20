@@ -189,7 +189,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - Conectar con los patrones consultables de T-006 (AP-01..AP-30) como referencia de implementación
   - **Independiente**
 
-- [~] T-016 Crear `.claude/skills/workflow-strategy/references/agentic-system-design.md` @task-executor (claimed: 2026-04-20 13:23:40)
+- [x] T-016 Crear `.claude/skills/workflow-strategy/references/agentic-system-design.md` @task-executor (done: 2026-04-20 13:25:41)
   - Referencia de diseño para WPs cuyo output es un sistema agentic
   - Secciones: qué hace a un sistema "agentic" (autonomía, tool use, incertidumbre), diferencia entre
     agente-como-herramienta vs agente-como-arquitectura, preguntas de Stage 5 STRATEGY para sistemas agentic
@@ -412,7 +412,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > no cubiertos por el catálogo AP-01..AP-30 de ÉPICA 42. T-002 y T-005 deben extenderse.
 > AP-39 (Advertencia Desconectada) se identifica en Cluster C y se agrega al catálogo.
 
-- [ ] T-029 Agregar AP-31 "Tool Description Mismatch" y AP-32 "Architectural Shell Without Behavioral Core"
+- [x] T-029 Agregar AP-31 "Tool Description Mismatch" y AP-32 "Architectural Shell Without Behavioral Core" @task-executor (done: 2026-04-20 13:27:44)
   - **Fuentes:** cluster-d (P2-A CRÍTICO — AP-31; H2-A CRÍTICO — AP-32), cluster-c (H-C06 ALTO — confirma AP-32)
   - Agregar en `.thyrox/guidelines/agentic-python.instructions.md` sección "Sección 9: Anti-patrones sistémicos agentic":
     - AP-31 Tool Description Mismatch: el agente recibe una descripción falsa de sus propias herramientas. Las decisiones de uso de herramientas se basan en un modelo mental incorrecto. No corregible en runtime sin redeploy. Detección: verificar que la descripción de cada tool en el agent_spec coincide con el comportamiento real del tool_handler.
@@ -422,7 +422,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-002 (PASS — guideline debe existir), T-005 (agente debe existir), T-006 (directorio patterns/ para referencia)
 
-- [ ] T-030 Agregar AP-33 "LLM-as-guardrail Prompt Injection" y AP-34 "Regulated Domain Caveat"
+- [x] T-030 Agregar AP-33 "LLM-as-guardrail Prompt Injection" y AP-34 "Regulated Domain Caveat" @task-executor (done: 2026-04-20 13:27:44)
   - **Fuentes:** cluster-c (H-C01 CRÍTICO — AP-33 LLM-as-guardrail; H-C02 ALTO — AP-34 caveat regulado), cluster-d (H2-B ALTO — confirma AP-33)
   - Agregar en `.thyrox/guidelines/agentic-python.instructions.md` continuando Sección 9:
     - AP-33 LLM-as-guardrail Prompt Injection: usar un LLM como único mecanismo de guardrail es vulnerable a prompt injection — el adversario puede instruir al LLM de guardrail a ignorar la violación. Correcto: guardrails deterministas (regex, schema validation, allowlist) para decisiones binarias críticas; LLM solo para clasificación semántica de alta tolerancia a error.
@@ -432,7 +432,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-002 (PASS), T-005
 
-- [ ] T-031 Agregar AP-35 "Silent Loop Termination" y AP-36 "Borrowed Nomenclature"
+- [x] T-031 Agregar AP-35 "Silent Loop Termination" y AP-36 "Borrowed Nomenclature" @task-executor (done: 2026-04-20 13:27:44)
   - **Fuentes:** cluster-e (E2-A CRÍTICO — AP-35 terminación silenciosa; E2-B ALTO — AP-36 nomenclatura prestada), cluster-c (H-C04 ALTO — confirma AP-35)
   - Agregar en `.thyrox/guidelines/agentic-python.instructions.md` continuando Sección 9:
     - AP-35 Silent Loop Termination: el loop de agente termina sin emitir output observable ni log de terminación. El agente que llamó al loop no puede distinguir "terminó correctamente" de "terminó silenciosamente por error". Correcto: todo loop de agente debe emitir al menos un evento de terminación con estado final (SUCCESS/FAIL/TIMEOUT) y razón.
@@ -442,7 +442,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-002 (PASS), T-005
 
-- [ ] T-032 Agregar AP-37 "MCP JSON-RPC Payload Mismatch" y AP-38 "Hardcoded Identifier"
+- [x] T-032 Agregar AP-37 "MCP JSON-RPC Payload Mismatch" y AP-38 "Hardcoded Identifier" @task-executor (done: 2026-04-20 13:27:44)
   - **Fuentes:** cluster-c (H-C05 ALTO — AP-37 JSON-RPC), cluster-d (H2-C ALTO — AP-38 hardcoded identifier), cluster-b (B-MCP-1 ALTO — confirma AP-37)
   - Agregar en `.thyrox/guidelines/agentic-python.instructions.md` continuando Sección 9:
     - AP-37 MCP JSON-RPC Payload Mismatch: el cliente MCP envía `method: "tool_name"` pero el protocolo espera `method: "tools/call"` con el nombre en el payload. Error silencioso — el servidor rechaza sin mensaje de error útil. Correcto: usar siempre el campo `method` del protocolo MCP actual; verificar con la versión específica del servidor MCP.
@@ -553,7 +553,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > evaluar admisiones (test de suficiencia), detectar realismo performativo, y comparar
 > versiones de documentos analizados.
 
-- [~] T-039 Agregar protocolo de evaluación de admisiones y realismo performativo en `deep-dive.md` @task-executor (claimed: 2026-04-20 13:23:40)
+- [x] T-039 Agregar protocolo de evaluación de admisiones y realismo performativo en `deep-dive.md` @task-executor (done: 2026-04-20 13:25:41)
   - **Fuentes:** cluster-a (H-C2 ALTO — principios 5-6 evaluación de admisiones; H-C1 ALTO — 5 componentes del realismo performativo)
   - Agregar en `.claude/agents/deep-dive.md` sección después de Capa 5 (Engaños Estructurales):
     - Test de suficiencia de admisiones: (A) ¿la admisión modifica el argumento o lo deja operacionalmente intacto? Si X es admitido como incierto pero luego usado como cierto → admisión insuficiente. (B) ¿Los experimentos de falsificación propuestos son ejecutables con los recursos declarados? Un experimento que requiere exactamente lo que el documento dice no tener = falsificabilidad decorativa.
@@ -629,7 +629,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** T-006 (directorio patterns/), T-002 (PASS)
 
-- [~] T-043 Agregar criterio de validación de referencias en `platform-evolution-tracking.md` @task-executor (claimed: 2026-04-20 13:23:40)
+- [x] T-043 Agregar criterio de validación de referencias en `platform-evolution-tracking.md` @task-executor (done: 2026-04-20 13:25:41)
   - **Fuentes:** cluster-b (B-A2A-3 MEDIO — Named Mechanism vs. Implementation como criterio de validación de referencias bibliográficas)
   - Agregar en `.claude/references/platform-evolution-tracking.md` (T-019) sección "Validación de referencias del libro de patrones":
     - Criterio: verificar que el mecanismo del código implementa el mecanismo del título (no solo que el concepto del título es correcto)
@@ -651,7 +651,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** T-004, T-005, T-013
 
-- [~] T-045 Agregar PROVEN/INFERRED/SPECULATIVE como vocabulario en `metadata-standards.md` @task-executor (claimed: 2026-04-20 13:23:40)
+- [x] T-045 Agregar PROVEN/INFERRED/SPECULATIVE como vocabulario en `metadata-standards.md` @task-executor (done: 2026-04-20 13:25:41)
   - **Fuentes:** cluster-a (H-A1 ALTO — esquema PROVEN/INFERRED; T-027 propuesta de cambio de terminología)
   - Agregar en `.claude/rules/metadata-standards.md` nota bajo template "Documentos en stage directories":
     ```
@@ -667,7 +667,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** T-025 (evidence-classification.md debe existir como referencia)
 
-- [ ] T-046 Documentar AP-39 "Advertencia Desconectada" en catálogo AP
+- [x] T-046 Documentar AP-39 "Advertencia Desconectada" en catálogo AP @task-executor (done: 2026-04-20 13:27:44)
   - **Fuentes:** cluster-c (H-C03 MEDIO — advertencia desconectada como patrón nombrado)
   - Agregar AP-39 en `.thyrox/guidelines/agentic-python.instructions.md`:
     - AP-39 "Advertencia Desconectada": un documento incluye un caveat honesto en una sección pero ese caveat nunca se conecta a las secciones que lo requieren. El efecto: el caveat existe para que el documento no parezca ingenuo, pero está contenido y nunca opera como condición en el material posterior.
@@ -752,7 +752,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 24 — Workflow skill anatomy: assets faltantes y rutas (ALTO)
 
-- [ ] T-053 Crear `workflow-structure/assets/document.md.template`
+- [x] T-053 Crear `workflow-structure/assets/document.md.template` @task-executor (done: 2026-04-20 13:31:20)
   - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-002)
   - **Hallazgo:** `workflow-structure/SKILL.md` L51 declara `assets/document.md.template` como instrucción directa. El archivo no existe — el agente no puede seguir la instrucción.
   - Crear template con metadata estándar WP + secciones genéricas (objetivo, contexto, decisión, impacto, referencias).
@@ -760,7 +760,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-054 Crear `workflow-implement/assets/error-report.md.template`
+- [x] T-054 Crear `workflow-implement/assets/error-report.md.template` @task-executor (done: 2026-04-20 13:31:20)
   - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-005)
   - **Hallazgo:** `workflow-implement/SKILL.md` L82 instruye explícitamente crear `context/errors/ERR-NNN-descripcion.md` usando `assets/error-report.md.template`. El template no existe — sin él, los ERR-NNN no tienen estructura consistente.
   - Crear template con campos: descripción del error, contexto, tarea que falló, approach intentado, resultado, siguiente approach propuesto.
@@ -768,7 +768,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-055 Resolver inconsistencia de ruta para `requirements-spec` en `workflow-structure`
+- [x] T-055 Resolver inconsistencia de ruta para `requirements-spec` en `workflow-structure` @task-executor (done: 2026-04-20 13:31:20)
   - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-003)
   - **Hallazgo:** Las instrucciones de creación (L40, L45) indican `work/../{nombre-wp}-requirements-spec.md` pero los exit criteria (L80, L84) verifican `work/.../design/*-requirements-spec.md`. Un agente que sigue las instrucciones falla el gate. Además, `workflow-decompose/SKILL.md` L24 consume el output de Phase 7 — la ruta ambigua rompe la cadena inter-stages.
   - Ubicación canónica: `design/` (consistente con el stage-directory estándar). Actualizar L40, L45, L80, L84 de `workflow-structure/SKILL.md`. Verificar y actualizar `workflow-decompose/SKILL.md` L24 si aplica.
@@ -784,7 +784,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** T-047 (modificar la versión global antes de unificar)
 
-- [ ] T-057 Agregar `Write Edit` a `allowed-tools` de workflow-structure, workflow-decompose, workflow-track
+- [x] T-057 Agregar `Write Edit` a `allowed-tools` de workflow-structure, workflow-decompose, workflow-track @task-executor (done: 2026-04-20 13:31:20)
   - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-008)
   - **Hallazgo:** Los tres skills instruyen creación de archivos pero no declaran `Write` ni `Edit` en `allowed-tools`. workflow-pilot, workflow-implement y workflow-standardize sí los declaran.
   - Agregar `Write Edit` al campo `allowed-tools` en el frontmatter de los tres SKILL.md.
@@ -792,7 +792,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** independiente
 
-- [ ] T-058 Corregir label "Phase 2 SOLUTION_STRATEGY" en `workflow-strategy`
+- [x] T-058 Corregir label "Phase 2 SOLUTION_STRATEGY" en `workflow-strategy` @task-executor (done: 2026-04-20 13:31:20)
   - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-001)
   - **Hallazgo:** `workflow-strategy/SKILL.md` L32 tiene encabezado `## Fase a ejecutar: Phase 2 SOLUTION_STRATEGY`. El frontmatter y todas las demás referencias dicen correctamente "Phase 5".
   - Corregir L32 a `## Fase a ejecutar: Phase 5 STRATEGY`.
@@ -800,7 +800,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** independiente
 
-- [ ] T-059 Crear `workflow-decompose/assets/categorization-plan.md.template`
+- [x] T-059 Crear `workflow-decompose/assets/categorization-plan.md.template` @task-executor (done: 2026-04-20 13:31:20)
   - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-004)
   - **Hallazgo:** `workflow-decompose/SKILL.md` L55 declara `assets/categorization-plan.md.template` para issues >50. El template no existe.
   - Crear template con estructura de categorización por tipo (feat/fix/refactor/docs/chore), prioridad (CRÍTICO/ALTO/MEDIO/BAJO) y dominio temático.
@@ -824,7 +824,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Resolución (2026-04-20):** `agentic-reasoning` fue deprecado completamente. Su protocolo de calibración (ratio OBSERVABLE+INFERRED, detección de realismo performativo) fue absorbido en `deep-dive` como Capa 7. La ambigüedad de trigger desapareció — solo existe `deep-dive`, que aplica calibración automáticamente cuando el artefacto es un documento WP de THYROX.
   - **Archivos modificados:** `.claude/agents/deep-dive.md` (nueva Capa 7), `.claude/agents/agentic-reasoning.md` (marcado DEPRECATED)
 
-- [ ] T-062 Corregir descripciones de `mysql-expert` y `postgresql-expert`
+- [x] T-062 Corregir descripciones de `mysql-expert` y `postgresql-expert` @task-executor (done: 2026-04-20 13:29:09)
   - **Fuentes:** cluster-h-agent-quality-gaps.md (H-02)
   - **Hallazgo:** `mysql-expert` y `postgresql-expert` describen capacidades sin condición de invocación. Sin patrón "Use when...", tasa de auto-invocación cae al 56%.
   - Añadir como primer elemento: "Use when the user needs MySQL/PostgreSQL-specific help: schema design, query optimization, migrations, or debugging." Actualizar también los YML fuente en registry.
@@ -832,7 +832,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-063 Desambiguar `task-planner` vs `task-synthesizer`
+- [x] T-063 Desambiguar `task-planner` vs `task-synthesizer` @task-executor (done: 2026-04-20 13:29:09)
   - **Fuentes:** cluster-h-agent-quality-gaps.md (H-05)
   - **Hallazgo:** "Crear un task-plan a partir de estos análisis" encaja en ambas descripciones — el runtime puede invocar el incorrecto.
   - Añadir a `task-planner`: "Use when starting fresh planning — no prior analysis outputs exist. If consolidating outputs from deep-dive or pattern-harvester agents, use task-synthesizer instead." Añadir a `task-synthesizer`: "Use only when consolidating existing agent analysis outputs (not for fresh planning — use task-planner for that)."
@@ -840,7 +840,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-064 Desambiguar `deep-review` vs `pattern-harvester`
+- [x] T-064 Desambiguar `deep-review` vs `pattern-harvester` @task-executor (done: 2026-04-20 13:29:09)
   - **Fuentes:** cluster-h-agent-quality-gaps.md (H-06)
   - **Hallazgo:** Ambos leen múltiples archivos de un WP. "Analiza este corpus de analysis/" encaja en ambos — el usuario puede recibir análisis de cobertura cuando necesita síntesis de patrones.
   - Clarificar en `deep-review`: "Use when checking coverage gaps between consecutive THYROX phases. For extracting actionable patterns from deep-dive or calibration files, use pattern-harvester." Clarificar en `pattern-harvester`: "Use only when processing already-analyzed files. For phase-to-phase coverage analysis, use deep-review."
@@ -848,7 +848,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-065 Estandarizar descripciones multilinea de 12 coordinadores a una sola línea
+- [x] T-065 Estandarizar descripciones multilinea de 12 coordinadores a una sola línea @task-executor (done: 2026-04-20 13:29:09)
   - **Fuentes:** cluster-h-agent-quality-gaps.md (H-03)
   - **Hallazgo:** Los 12 coordinadores de metodología usan descripción multilinea con "Usar cuando...". El runtime puede truncar descripciones multilinea — la condición de invocación quedaría fuera del campo analizado.
   - Convertir el bloque multilinea a una sola línea comenzando con "Use when [usuario quiere X metodología]. Coordinator para [nombre metodología]." Alcance: ba-, bpa-, cp-, dmaic-, lean-, pdca-, pm-, pps-, rm-, rup-, sp-, thyrox-coordinator.
@@ -904,7 +904,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 27 — Correcciones de scripts: fallos silenciosos y consistencia (MEDIO)
 
-- [ ] T-071 Agregar `exit 0` explícito al final de `sync-wp-state.sh`
+- [x] T-071 Agregar `exit 0` explícito al final de `sync-wp-state.sh` @task-executor (done: 2026-04-20 13:35:06)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F11)
   - **Hallazgo:** `sync-wp-state.sh` no tiene `exit 0` explícito (L57 es el último comando — append a `phase-history.jsonl`). Si el append falla, el PostToolUse hook retorna exit 1. Comportamiento de Claude Code ante PostToolUse con exit 1 no está documentado.
   - Agregar `exit 0` explícito como última línea del script.
@@ -912,7 +912,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** T-049 (el script se modifica en T-049 — consolidar edición)
 
-- [ ] T-072 Corregir branch hardcodeado en `update-state.sh`
+- [x] T-072 Corregir branch hardcodeado en `update-state.sh` @task-executor (done: 2026-04-20 13:35:06)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F09)
   - **Hallazgo:** `update-state.sh` L81 tiene hardcodeado el branch `claude/check-merge-status-Dcyvj`. El script declara "regenera project-state.md desde el estado real del repo" pero el branch es incorrecto en cualquier otra sesión.
   - Reemplazar el valor hardcodeado con `$(git branch --show-current 2>/dev/null || echo "unknown")`.
@@ -920,7 +920,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** independiente
 
-- [ ] T-073 Corregir inconsistencia de `maxdepth` en `session-resume.sh`
+- [x] T-073 Corregir inconsistencia de `maxdepth` en `session-resume.sh` @task-executor (done: 2026-04-20 13:35:06)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F06)
   - **Hallazgo:** `session-start.sh:61` usa `find "$WP_DIR" -maxdepth 2 -name "*-task-plan.md"` (encuentra task-plan en `plan-execution/`). `session-resume.sh:65` usa `maxdepth 1` — no encuentra el task-plan en subdirectorio. La "próxima tarea" difiere entre inicio de sesión y post-compactación.
   - Cambiar `maxdepth 1` a `maxdepth 2` en `session-resume.sh:65`.
@@ -967,13 +967,138 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** T-033, T-034, T-035 (gate calibrado completado)
 
-- [ ] T-078 Agregar Cherry-Pick Consciente y Efecto Denominador a `agentic-python.instructions.md`
+- [x] T-078 Agregar Cherry-Pick Consciente y Efecto Denominador a `agentic-python.instructions.md` @task-executor (done: 2026-04-20 13:27:44)
   - **Fuentes:** `discover/` análisis de patrones (GAP parcial en T-042, T-044)
   - **Hallazgo:** T-042 cubre Fix Declarado ≠ Fix Verificado y T-044 cubre patrones CAD. Cherry-Pick Consciente (seleccionar solo casos que confirman hipótesis) y Efecto Denominador (reportar fracción sin declarar denominador) están documentados en discover/ pero sin regla prohibitoria explícita en las guidelines.
   - Agregar secciones en `.thyrox/guidelines/agentic-python.instructions.md` con ejemplos concretos de ambos patrones y criterio de detección.
   - **Archivo a modificar:** `.thyrox/guidelines/agentic-python.instructions.md` (si existe) o `.claude/CLAUDE.md`
   - **Prioridad:** MEDIO
   - **Depende de:** T-005 (guidelines consolidadas)
+
+---
+
+## Bloque 29 — Cherry-Pick en plan-execution.md.template (ALTO)
+
+- [ ] T-079 Incorporar algoritmo Cherry-Pick Consciente en `plan-execution.md.template`
+  - **Fuentes:** cluster-a (H-G1 ALTO)
+  - **Hallazgo:** Algoritmo con umbrales (≥0.80 preservar; 0.60–0.80 evaluar; <0.60 reescribir) y break-even ratio existen en `discover/agentic-claims-management-patterns.md` pero ningún template los referencia. T-078 solo cubre la guideline de código, no el template de task-plans.
+  - Agregar sección "Protocolo de iteración calibrada" en `.claude/skills/workflow-decompose/assets/plan-execution.md.template`
+  - **Archivo a modificar:** `.claude/skills/workflow-decompose/assets/plan-execution.md.template`
+  - **Prioridad:** ALTO
+  - **Depende de:** T-025 (vocabulario base), T-026 (tabla evidencia con columna Origen)
+
+---
+
+## Bloque 30 — I-014 framework mismatch en insumos externos (ALTO)
+
+- [ ] T-080 Agregar I-014 "Framework mismatch en insumos externos" en `thyrox-invariants.md`
+  - **Fuentes:** harvest-cluster-e (H-E1 ALTO)
+  - **Hallazgo:** I-001 prohíbe saltar stages por decisión interna; no cubre el vector donde un insumo externo analizado contiene "FASE N" de otro framework, induciendo salto sin violar I-001 explícitamente.
+  - Agregar I-014: "Cuando un documento analizado contiene fases numeradas (FASE N, Phase N), NO interpretar como stages del WP activo. Registrar como hallazgo de Stage 1 DISCOVER."
+  - **Archivo a modificar:** `.claude/rules/thyrox-invariants.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+---
+
+## Bloque 31 — Referencias de calibración en skills de stages de riesgo (ALTO)
+
+- [ ] T-081 Referenciar `agentic-calibration-workflow-example.md` desde skills de stages de mayor riesgo
+  - **Fuentes:** harvest-cluster-e (E3-A/B/C ALTO)
+  - **Hallazgo:** T-075 crea el vínculo en `deep-dive.md`, pero los 6 patrones operacionales son relevantes para agentes que generan artefactos iterativos. Sin referencia en SKILL.md de stages de producción, el documento queda solo como referencia de análisis.
+  - Agregar nota en sección "Artefactos de salida" de workflow-diagnose, workflow-strategy, workflow-decompose SKILL.md.
+  - **Archivos a modificar:** `.claude/skills/workflow-diagnose/SKILL.md`, `.claude/skills/workflow-strategy/SKILL.md`, `.claude/skills/workflow-decompose/SKILL.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** T-075 (documento debe existir en `.claude/references/`)
+
+---
+
+## Bloque 32 — Hooks: gaps residuales (ALTO/MEDIO)
+
+- [x] T-082 Corregir `session-start.sh`: `COMMANDS_SYNCED` hardcodeado a `true` @task-executor (done: 2026-04-20 13:35:06)
+  - **Fuentes:** cluster-f (H-F06)
+  - **Hallazgo:** `session-start.sh` L10 `COMMANDS_SYNCED=true` hardcodeado — rama `else` es código muerto.
+  - Colapsar a mensaje estático o implementar detección real basada en git log de `.claude/commands/`.
+  - **Archivo a modificar:** `.claude/scripts/session-start.sh`
+  - **Prioridad:** MEDIO
+  - **Depende de:** independiente
+
+- [x] T-083 `session-resume.sh` maxdepth — **RESUELTO con T-073** (mismo cambio, misma línea) @task-executor (done: 2026-04-20 13:35:06)
+  - **Prioridad:** MEDIO — **marcar como [x] al completar T-073**
+
+- [x] T-084 Corregir bug de lógica en `bootstrap.py` (action siempre "sobreescrito") @task-executor (done: 2026-04-20 13:35:06)
+  - **Fuentes:** cluster-i (H-05)
+  - **Hallazgo:** `bootstrap.py` calcula `action` después de escribir el archivo — siempre vale "sobreescrito".
+  - Calcular `action` ANTES de `dest.write_text(content)`.
+  - **Archivo a modificar:** `.thyrox/registry/bootstrap.py` (L309-310)
+  - **Prioridad:** MEDIO
+  - **Depende de:** independiente
+
+- [ ] T-085 Agregar `lint-agents.py` al hook SessionStart — verificar solapamiento con T-051
+  - **Fuentes:** cluster-f (H-F13 ALTO)
+  - **Nota:** Si T-051 ya cubre esto, marcar como CANCELADO.
+  - **Prioridad:** ALTO
+  - **Depende de:** T-051 (verificar solapamiento)
+
+---
+
+## Bloque 33 — Registry: gaps residuales (MEDIO)
+
+- [x] T-086 Corregir docstring incorrecto en `bootstrap.py` @task-executor (done: 2026-04-20 13:35:06)
+  - **Fuentes:** cluster-i (H-06)
+  - **Hallazgo:** Docstring L9-11 dice `.claude/registry/bootstrap.py` — path incorrecto; real es `.thyrox/registry/bootstrap.py`.
+  - **Archivo a modificar:** `.thyrox/registry/bootstrap.py` (L9-11)
+  - **Prioridad:** MEDIO
+  - **Depende de:** independiente
+
+- [ ] T-087 Documentar 6 techs sin template como deuda técnica
+  - **Fuentes:** cluster-i (H-07)
+  - **Hallazgo:** bootstrap.py declara techs en TECH_CATEGORIES sin template — usa body genérico sin advertencia.
+  - Crear entrada TD-NNN en `.thyrox/context/technical-debt.md`.
+  - **Archivo a modificar:** `.thyrox/context/technical-debt.md`
+  - **Prioridad:** MEDIO
+  - **Depende de:** independiente
+
+---
+
+## Bloque 34 — Agent quality: gaps residuales (MEDIO)
+
+- [ ] T-088 YMLs de agentes de análisis sin registry — verificar solapamiento con T-023
+  - **Fuentes:** cluster-h (18/27 agentes sin YML)
+  - **Nota:** Si T-023 ya cubre deep-dive, deep-review, diagrama-ishikawa, pattern-harvester → marcar CANCELADO.
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-023 (verificar solapamiento)
+
+- [ ] T-089 Agregar `tech-detector` y `skill-generator` al inventario de ARCHITECTURE.md
+  - **Fuentes:** cluster-h (H-04)
+  - **Hallazgo:** T-060 crea ARCHITECTURE.md pero puede omitir tech-detector y skill-generator como tipo `infra`.
+  - **Archivo a modificar:** `.claude/ARCHITECTURE.md` (cuando T-060 lo cree)
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-060
+
+---
+
+## Bloque 35 — Evaluador-Basin: criterio de activación (MEDIO)
+
+- [ ] T-090 Agregar criterio de activación del Evaluador-Basin en ADR de deferral
+  - **Fuentes:** harvest-cluster-e (H-E8 ALTO)
+  - **Hallazgo:** T-077 crea el ADR pero sin criterio de activación → deferral indefinido.
+  - Agregar sección "Criterio de activación": embeddings operativos + ≥40 WPs completados + gate de 3 evaluadores estable por ≥3 ÉPICAs.
+  - **Archivo a modificar:** `.thyrox/context/decisions/adr-gate-basin-evaluator-deferral.md`
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-077
+
+---
+
+## Bloque 36 — PreToolUse hook I-001: efectividad 100% vs 30% (ALTO)
+
+- [ ] T-091 Agregar PreToolUse hook para verificar I-001 antes de crear task-plan
+  - **Fuentes:** harvest-cluster-e (H-E10 ALTO)
+  - **Hallazgo:** T-022 implementa I-001 como Stop hook (~30% efectividad). PreToolUse en Write tendría 100%.
+  - Crear `.claude/scripts/check-i001-prewrite.sh` + entrada PreToolUse en `.claude/settings.json`.
+  - **Archivos:** `.claude/scripts/check-i001-prewrite.sh` (crear), `.claude/settings.json` (modificar)
+  - **Prioridad:** ALTO
+  - **Depende de:** T-047 (política de severidad), T-049 (formato paths)
 
 ---
 
@@ -1130,6 +1255,7 @@ T-073 (session-resume.sh maxdepth) — independiente
 18. **T-049** → T-047, T-050, T-071 (paralelo) → T-056 (después de T-047)
 19. **Independientes B21-27** (paralelo entre sí): T-048, T-051, T-052, T-053, T-054, T-055, T-057, T-058, T-059, T-060, T-061, T-062, T-063, T-064, T-065, T-066, T-067, T-068, T-069, T-070, T-072, T-073
 20. **Bloque 28** (después de prerequisitos): T-074, T-075 (independientes) | T-076 (después de T-025) | T-077 (después de T-033..T-035) | T-078 (después de T-005)
+21. **Bloques 29-36** (T-079..T-091): T-079 (después de T-025+T-026) | T-080 (independiente) | T-081 (después de T-075) | T-082, T-083, T-084, T-086 (independientes) | T-087 (independiente) | T-088 (después de T-023) | T-089 (después de T-060) | T-090 (después de T-077) | T-091 (después de T-047+T-049)
 
 ## Trazabilidad
 
@@ -1196,3 +1322,16 @@ T-073 (session-resume.sh maxdepth) — independiente
 | T-076 | — | methodology-calibration-analysis.md Sec 8 criterio 4 (GAP-2) |
 | T-077 | — | clustering-basin-integration-analysis.md (GAP-4) |
 | T-078 | — | discover/ patrones Cherry-Pick/Efecto Denominador |
+| T-079 | — | cluster-a (H-G1) — Cherry-Pick algoritmo en plan-execution.md.template |
+| T-080 | — | harvest-cluster-e (H-E1) — I-014 framework mismatch insumos externos |
+| T-081 | — | harvest-cluster-e (E3-A/B/C) — referencia calibración en SKILL.md stages |
+| T-082 | — | cluster-f (H-F06) — session-start.sh COMMANDS_SYNCED hardcodeado |
+| T-083 | — | cluster-f (H-F06) — session-resume.sh maxdepth (resuelto con T-073) |
+| T-084 | — | cluster-i (H-05) — bootstrap.py bug action siempre "sobreescrito" |
+| T-085 | — | cluster-f (H-F13) — lint-agents.py SessionStart (verificar con T-051) |
+| T-086 | — | cluster-i (H-06) — bootstrap.py docstring path incorrecto |
+| T-087 | — | cluster-i (H-07) — 6 techs sin template en TECH_CATEGORIES |
+| T-088 | — | cluster-h (H-04) — YMLs agentes de análisis (verificar con T-023) |
+| T-089 | — | cluster-h (H-04) — tech-detector/skill-generator en ARCHITECTURE.md |
+| T-090 | — | harvest-cluster-e (H-E8) — criterio activación Evaluador-Basin en ADR |
+| T-091 | — | harvest-cluster-e (H-E10) — PreToolUse hook I-001 (100% vs 30%) |

@@ -1,6 +1,6 @@
 ---
 name: postgresql-expert
-description: Tech-expert para PostgreSQL. Conoce SQL, migrations, índices, transacciones y convenciones de naming. Usa psql y herramientas de migration.
+description: "Use when working with PostgreSQL queries, schema design, migrations, indexes, or transactions. Tech-expert for PostgreSQL."
 tools:
   - Read
   - Write

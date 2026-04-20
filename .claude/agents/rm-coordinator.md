@@ -1,10 +1,6 @@
 ---
 name: rm-coordinator
-description: |
-  Coordinator de RM (Requirements Management). Usar cuando el usuario quiere gestionar
-  el ciclo de vida completo de requisitos: elicitación, análisis, especificación, validación
-  y gestión de cambios. Soporta retornos condicionales (gaps → re-elicitación,
-  correcciones → re-análisis, change requests → re-análisis).
+description: "Use when RM methodology is active. Coordinator for RM — Requirements Management: elicitation, analysis, specification, validation, change management, with conditional returns (gaps → re-elicitation, change requests → re-analysis)."
 tools: Read, Write, Edit, Glob, Grep, Bash
 skills:
   - rm-elicitation

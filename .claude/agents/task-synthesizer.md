@@ -1,8 +1,8 @@
 ---
 name: task-synthesizer
-description: Use when multiple analysis outputs (cluster reports, pattern-harvester outputs, gap analyses) need to be consolidated into a single coherent task-plan addition. Deduplicates findings across sources, resolves conflicts between proposed tasks, builds the correct DAG, assigns T-NNN IDs continuing from the existing plan, and produces ready-to-paste task-plan blocks. Use after running pattern-harvester or deep-dive agents on multiple corpora — not for initial analysis.
+description: "Use when consolidating EXISTING analysis outputs (cluster reports, gap analyses) into a task-plan. Deduplicates findings across sources, resolves conflicts between proposed tasks, builds the correct DAG, assigns T-NNN IDs continuing from the existing plan, and produces ready-to-paste task-plan blocks. Use after running pattern-harvester or deep-dive agents on multiple corpora — not for initial analysis. Do NOT use for initial planning from scratch (use task-planner instead)."
 async_suitable: true
-updated_at: 2026-04-20 00:00:00
+updated_at: 2026-04-20 13:27:25
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 ---

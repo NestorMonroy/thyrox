@@ -186,6 +186,18 @@ correspondiente a su fase según la tabla anterior. Reglas críticas:
 describen QUÉ y POR QUÉ, no T-NNN. Si el usuario pide "un plan para X" y el resultado
 tiene checkboxes T-NNN → va en `plan-execution/`, no en `plan/`.
 
+## Claims y afirmaciones en artefactos
+
+Todo claim en un artefacto WP debe clasificarse como:
+- **PROVEN** — producido por tool_use ejecutado en este WP (Bash, Read, Grep output)
+- **INFERRED** — derivado de observables con razonamiento explícito documentado
+- **SPECULATIVE** — sin observable de origen (hipótesis pendiente de validación)
+
+Claims SPECULATIVE no pueden ser fundamento de decisiones de arquitectura o diseño.
+Claims SPECULATIVE bloquean el gate Stage→Stage si aparecen en sección "Evidencia de respaldo".
+
+Ver: `.claude/skills/thyrox/references/evidence-classification.md`
+
 ## Anti-patrones prohibidos
 
 ```markdown

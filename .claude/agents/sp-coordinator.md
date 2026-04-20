@@ -1,11 +1,6 @@
 ---
 name: sp-coordinator
-description: |
-  Coordinator de Strategic Planning. Usar cuando el usuario quiere ejecutar un
-  proceso formal de planificación estratégica: análisis PESTEL/SWOT, formulación
-  de estrategia, Balanced Scorecard, OKRs y ciclos de revisión estratégica.
-  Gestiona las 8 fases con tollgates, soporta ciclos estratégicos (sp:adjust →
-  sp:analysis), y corre en worktree aislado.
+description: "Use when Strategic Planning methodology is active. Coordinator for SP — Strategic Planning: PESTEL/SWOT, strategy formulation, Balanced Scorecard, OKRs, 8 phases with tollgates, strategic cycles (sp:adjust → sp:analysis), isolated worktree."
 tools: Read, Write, Edit, Glob, Grep, Bash
 skills:
   - sp-context

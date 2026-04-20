@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 5'"
-updated_at: 2026-04-16 00:00:00
+updated_at: 2026-04-20 13:30:36
 ---
 
 # /workflow-strategy — Phase 5: STRATEGY
@@ -29,7 +29,7 @@ Inicia o retoma Phase 5 STRATEGY del work package activo.
 
 ---
 
-## Fase a ejecutar: Phase 2 SOLUTION_STRATEGY
+## Fase a ejecutar: Phase 5 STRATEGY
 
 Investigar alternativas antes de decidir previene decisiones sin evidencia.
 

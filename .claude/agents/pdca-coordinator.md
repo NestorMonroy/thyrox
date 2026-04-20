@@ -1,10 +1,6 @@
 ---
 name: pdca-coordinator
-description: |
-  Coordinator del ciclo PDCA (Plan-Do-Check-Act). Usar cuando el usuario quiere ejecutar
-  una mejora continua con la metodología PDCA. Gestiona las 4 etapas del ciclo, actualiza
-  now.md::methodology_step en cada transición, y corre en worktree aislado para no
-  contaminar el contexto principal.
+description: "Use when PDCA methodology is active. Coordinator for PDCA — continuous improvement cycle (Plan/Do/Check/Act), 4 stages with methodology_step updates, isolated worktree."
 tools: Read, Write, Edit, Glob, Grep, Bash
 skills:
   - pdca-plan

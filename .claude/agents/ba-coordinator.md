@@ -1,10 +1,6 @@
 ---
 name: ba-coordinator
-description: |
-  Coordinator de BABOK (Business Analysis Body of Knowledge). Usar cuando el usuario
-  quiere realizar análisis de negocio siguiendo BABOK v3. A diferencia de otros coordinators,
-  BABOK es no-secuencial: el coordinator selecciona la knowledge area más relevante según
-  el contexto, o presenta las 6 áreas para que el usuario elija. Corre en worktree aislado.
+description: "Use when BABOK methodology is active. Coordinator for BABOK — Business Analysis Body of Knowledge (v3), non-sequential: selects the most relevant knowledge area or presents all 6 for the user to choose. Runs in isolated worktree."
 tools: Read, Write, Edit, Glob, Grep, Bash
 skills:
   - ba-planning

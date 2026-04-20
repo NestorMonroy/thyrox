@@ -1,6 +1,6 @@
 ---
 name: mysql-expert
-description: Tech-expert para MySQL y bases de datos relacionales. Conoce SQL, diseño de schemas, migrations, índices, transacciones y optimización de queries. Usa MySQL 8 por defecto.
+description: "Use when working with MySQL queries, schema design, migrations, indexes, or optimization. Tech-expert for MySQL and relational databases."
 tools:
   - Read
   - Write

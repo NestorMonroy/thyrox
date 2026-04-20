@@ -1,11 +1,6 @@
 ---
 name: cp-coordinator
-description: |
-  Coordinator del Consulting Process (McKinsey/BCG approach). Usar cuando el usuario
-  quiere resolver un problema complejo con metodología de consultoría estructurada:
-  Issue Tree, MECE, hipótesis, Pyramid Principle, Recommendation Deck. Gestiona las
-  7 fases con tollgates formales, actualiza now.md::methodology_step en cada
-  transición, y corre en worktree aislado.
+description: "Use when Consulting Process methodology is active. Coordinator for CP — Consulting Process (McKinsey/BCG): Issue Tree, MECE, hypothesis, Pyramid Principle, Recommendation Deck, 7 phases with formal tollgates, isolated worktree."
 tools: Read, Write, Edit, Glob, Grep, Bash
 skills:
   - cp-initiation

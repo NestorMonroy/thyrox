@@ -1,15 +1,10 @@
 ---
 name: thyrox-coordinator
-description: |
-  Coordinator genérico THYROX que soporta cualquier metodología registrada en
-  .thyrox/registry/methodologies/. Usar cuando el usuario quiere usar una metodología
-  sin invocar su coordinator específico, o cuando la metodología está en el registry
-  pero no tiene coordinator dedicado. Lee el YAML dinámicamente y resuelve transiciones
-  según el tipo de flujo (cyclic, sequential, iterative, non-sequential, conditional).
+description: "Use when any registered THYROX methodology is active but has no dedicated coordinator. Coordinator for THYROX — generic coordinator that reads methodology YAML dynamically and resolves transitions for any flow type (cyclic, sequential, iterative, non-sequential, conditional)."
 tools: Read, Write, Edit, Glob, Grep, Bash
 background: true
 isolation: worktree
-updated_at: 2026-04-17 15:00:00
+updated_at: 2026-04-20 13:27:25
 ---
 
 # thyrox-coordinator — Coordinator Genérico

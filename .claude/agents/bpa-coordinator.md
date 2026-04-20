@@ -1,12 +1,6 @@
 ---
 name: bpa-coordinator
-description: |
-  Coordinator de BPA — Business Process Analysis. Usar cuando el usuario quiere
-  analizar, rediseñar o mejorar procesos de negocio: documentar el proceso As-Is
-  en BPMN, identificar desperdicios VA/BVA/NVA, diseñar el proceso To-Be con
-  principios ESIA, e implementar mejoras. Gestiona las 6 fases con tollgates
-  formales, actualiza now.md::methodology_step en cada transición, y corre en
-  worktree aislado.
+description: "Use when BPA methodology is active. Coordinator for BPA — Business Process Analysis: As-Is (BPMN), VA/BVA/NVA waste identification, To-Be design (ESIA), 6 phases with formal tollgates, isolated worktree."
 tools: Read, Write, Edit, Glob, Grep, Bash
 skills:
   - bpa-identify

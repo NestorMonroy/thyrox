@@ -1,7 +1,7 @@
 ---
 name: workflow-decompose
 description: "Use when breaking down approved specs into atomic executable tasks. Phase 8 PLAN EXECUTION — produce task-plan.md con T-NNN, DAG de dependencias y trazabilidad SPEC→tarea."
-allowed-tools: Read Glob Grep Bash
+allowed-tools: Read Glob Grep Bash Write Edit
 disable-model-invocation: true
 effort: medium
 hooks:
@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 8'"
-updated_at: 2026-04-16 16:22:04
+updated_at: 2026-04-20 13:30:36
 ---
 
 # /workflow-decompose — Phase 8: PLAN EXECUTION

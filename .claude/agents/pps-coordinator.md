@@ -1,11 +1,6 @@
 ---
 name: pps-coordinator
-description: |
-  Coordinator de PPS — Practical Problem Solving (Toyota Business Practices).
-  Usar cuando el usuario quiere resolver un problema estructurado con el método
-  Toyota TBP: Go-and-See, 5 Whys, A3 Report. Gestiona las 6 fases con tollgates
-  formales, actualiza now.md::methodology_step en cada transición, y corre en
-  worktree aislado.
+description: "Use when PPS methodology is active. Coordinator for PPS — Practical Problem Solving (Toyota TBP): Go-and-See, 5 Whys, A3 Report, 6 phases with formal tollgates, isolated worktree."
 tools: Read, Write, Edit, Glob, Grep, Bash
 skills:
   - pps-clarify

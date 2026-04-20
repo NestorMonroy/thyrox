@@ -1,7 +1,7 @@
 ---
 name: workflow-track
 description: "Use when evaluating results and closing a work package after execution. Phase 11 TRACK/EVALUATE — evalúa resultados vs baseline MEASURE, documenta lecciones aprendidas y genera changelog."
-allowed-tools: Read Glob Grep Bash
+allowed-tools: Read Glob Grep Bash Write Edit
 disable-model-invocation: true
 effort: medium
 hooks:
@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 11'"
-updated_at: 2026-04-17 17:02:50
+updated_at: 2026-04-20 13:30:36
 ---
 
 # /workflow-track — Phase 11: TRACK/EVALUATE
