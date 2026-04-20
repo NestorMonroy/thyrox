@@ -25,6 +25,21 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## ÉPICA 43: github-workflows — Infraestructura modular de .github/ [-] EN CURSO
+
+**WP:** `.thyrox/context/work/2026-04-20-14-00-00-github-workflows/`
+**Resultado esperado:** Estructura de `.github/` con 3 directorios (ISSUE_TEMPLATE, actions, scripts), 6 archivos de configuración (templates, action.ymls, PR template, dependabot.yml, release.yml), scaffolding modular. Cobertura de `.github/` pasa de 14% a 50%. Out-of-scope: validación de WP artifacts en CI (diferido a futuro WP).
+
+- [-] Stage 1 DISCOVER — 2026-04-20
+- [-] Stage 6 SCOPE — 2026-04-20 (aprobación pendiente)
+- [ ] Stage 7 DESIGN/SPECIFY
+- [ ] Stage 8 PLAN EXECUTION
+- [ ] Stage 10 IMPLEMENT
+- [ ] Stage 11 TRACK/EVALUATE
+- [ ] Stage 12 STANDARDIZE
+
+---
+
 ## ÉPICA 42: methodology-calibration — Calibrar metodología THYROX con evidence-backed quality [-] EN CURSO
 
 **WP:** `.thyrox/context/work/2026-04-18-07-12-50-methodology-calibration/`
