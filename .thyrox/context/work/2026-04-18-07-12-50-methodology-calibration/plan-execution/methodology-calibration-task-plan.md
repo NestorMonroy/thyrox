@@ -251,7 +251,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > **Ninguno de T-001..T-019 toca un solo template**. Sin este bloque, ÉPICA 42 no cumple
 > sus propios criterios de éxito.
 
-- [~] T-020 Agregar sección "Evidencia de respaldo" en 3 templates de stage de mayor riesgo @task-executor (claimed: 2026-04-20 13:49:43)
+- [x] T-020 Agregar sección "Evidencia de respaldo" en 3 templates de stage de mayor riesgo @task-executor (done: 2026-04-20 13:50:45)
   - Archivos a modificar:
     1. `.claude/skills/workflow-diagnose/assets/` — template de Stage 3 DIAGNOSE
     2. `.claude/skills/workflow-strategy/assets/` — template de Stage 5 STRATEGY
@@ -462,7 +462,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > → Merger) tiene 4 brechas críticas: sin output_key contracts, sin state files definidos,
 > sin evaluador de consistencia, y Merger como SPOF sin instrucción anti-confabulación.
 
-- [ ] T-033 Definir contratos de output_key para evaluadores y agregar instrucción anti-confabulación al Merger
+- [~] T-033 Definir contratos de output_key para evaluadores y agregar instrucción anti-confabulación al Merger @task-executor (claimed: 2026-04-20 13:51:38)
   - **Fuentes:** cluster-b (B-MA-1 CRÍTICO — output_key undefined; B-MA-4 CRÍTICO — Merger SPOF)
   - En `.claude/skills/workflow-diagnose/references/` o documento de referencia del gate paralelo:
     - Definir output_key contracts: cada evaluador paralelo debe producir exactamente los campos `{evaluator_id, score, claims[], confidence, gaps[]}` — sin campos adicionales no contratados
