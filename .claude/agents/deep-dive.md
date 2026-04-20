@@ -2,7 +2,7 @@
 name: deep-dive
 description: "Use when you need to know what is true, false, and uncertain in any artifact — and WHY. Adversarial analysis of documents, code, architectures, decisions, frameworks, problems. For THYROX WP artifacts (risk registers, exit conditions, analysis, strategy): automatically applies calibration mode to detect performative realism and evidence gaps (ratio OBSERVABLE+INFERRED/total ≥ 0.75 for gate artifacts). Executes minimum 6 adversarial verification layers + THYROX calibration layer when applicable. Produces traceable verdict with exact evidence."
 async_suitable: true
-updated_at: 2026-04-20 12:47:27
+updated_at: 2026-04-20 13:23:40
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 ---
@@ -149,6 +149,27 @@ Patrones que crean apariencia de rigor sin sustancia. Catalogar cuáles aplican:
 | **Validación en contexto distinto** | Presentar resultados de experimento A como validación de claim B | AUROC de tarea X usado para respaldar claim sobre tarea Y |
 | **Limitación enterrada** | Admitir limitación que invalida resultado central, pero en sección separada, sin conexión explícita | Sec 4 admite que datos de Sec 3 son inaccesibles en práctica |
 | **Profecía auto-cumplida** | Framework define que algo debería ocurrir, luego lo "observa" bajo las condiciones del framework | Basin theory predice insensitivity; datos muestran insensitivity dentro de las condiciones del basin |
+
+### Test de suficiencia de admisiones
+
+Cuando el documento admite limitaciones, evaluar:
+
+**A. ¿La admisión modifica el argumento o lo deja operacionalmente intacto?**
+- Si X es admitido como incierto pero luego usado como cierto → admisión insuficiente
+- Si X es admitido como incierto y ese estatus se propaga en los usos → admisión suficiente
+
+**B. ¿Los experimentos de falsificación propuestos son ejecutables con los recursos declarados?**
+- Listar qué acceso requiere el experimento
+- Verificar contra lo que el propio documento declara inaccesible
+- Experimento que requiere exactamente lo que el documento dice no tener = falsificabilidad decorativa
+
+### Patrón: Realismo Performativo — 5 componentes operacionales
+
+1. Admisión general que no propaga a instancia concreta
+2. Clasificación de rigor con errores en las clasificaciones mismas
+3. Auto-evaluación que lista sesgos genéricos pero omite instancias técnicas concretas
+4. Experimentos de falsificación inejectuables con los recursos declarados en el mismo documento
+5. Nombre o etiqueta que opera como licencia de confianza previa (sin derivación)
 
 ---
 

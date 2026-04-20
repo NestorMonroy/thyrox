@@ -23,13 +23,13 @@ Sistema de Agentic AI para gestión y planificación de proyectos, con metodolog
 
 ## Descripción General
 
-Un sistema de Agentic AI para gestión y planificación de proyectos, con 23 agentes especializados, memoria persistente, gates HITL y coordinators para metodologías formales (DMAIC, PDCA, PMBOK, BABOK, RUP, RM, Lean, BPA, PPS, SP, CP). Implementado actualmente sobre Claude Code (Anthropic).
+Un sistema de Agentic AI para gestión y planificación de proyectos, con 28 agentes especializados, memoria persistente, gates HITL y coordinators para metodologías formales (DMAIC, PDCA, PMBOK, BABOK, RUP, RM, Lean, BPA, PPS, SP, CP). Implementado actualmente sobre Claude Code (Anthropic).
 
 ## Qué es THYROX
 
 THYROX es un sistema de Agentic AI que:
 
-- **Orquesta** 23 agentes especializados con ejecución autónoma y coordinación multi-agent
+- **Orquesta** 28 agentes especializados con ejecución autónoma y coordinación multi-agent
 - **Automatiza** workflows con decisión autónoma en bucles agentic (/loop)
 - **Persiste** estado entre sesiones via Work Packages + thyrox-memory MCP (FAISS semántico)
 - **Controla** calidad con gates HITL en cada transición Stage N→N+1
@@ -44,7 +44,7 @@ THYROX es un sistema de Agentic AI que:
 - Changelog automático desde commits
 - Conventional Commits integrado
 - CLAUDE.md como memoria persistente del proyecto
-- 47 referencias de metodología + 23 agentes nativos listos para usar
+- 47 referencias de metodología + 28 agentes nativos listos para usar
 
 ## Estructura
 
@@ -58,7 +58,7 @@ thyrox/
 │
 ├── .claude/                 # Configuración y extensiones de Claude Code
 │   ├── CLAUDE.md            # Contexto persistente (Level 2)
-│   ├── agents/              # Agentes nativos Claude Code (23 agentes)
+│   ├── agents/              # Agentes nativos Claude Code (28 agentes)
 │   ├── references/          # 47 referencias de metodología y plataforma
 │   ├── scripts/             # Scripts de infraestructura (hooks, utilidades)
 │   └── skills/

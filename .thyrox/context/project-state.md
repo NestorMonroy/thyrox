@@ -1,34 +1,38 @@
 ```yml
 type: Dashboard de Proyecto
 category: Estado Actual
-version: 2.6.0
+version: 2.9.0
 purpose: Dashboard del proyecto THYROX — estado actual y navegación
 goal: Punto de entrada para entender estado actual y próximos pasos
-updated_at: 2026-04-18 05:01:07
+updated_at: 2026-04-20 13:22:56
 ```
 
 # Project State — THYROX
 
 ## Status General
 
-**Versión:** 2.6.0
-**Estado:** Activo — framework thyrox con 14 FASEs completadas
-**Última actualización:** 2026-04-18 05:01:07
+**Versión:** 2.9.0
+**Estado:** Activo — ÉPICA 42 methodology-calibration en Stage 8 PLAN EXECUTION
+**Última actualización:** 2026-04-20 13:22:56
 **Branch activo:** `claude/check-merge-status-Dcyvj`
 
 ---
 
-## Agentes nativos (`23` agentes en `.claude/agents/`)
+## Agentes nativos (`28` agentes en `.claude/agents/`)
 
+- `agentic-reasoning` — Razonamiento profundo multi-paso para problemas complejos con cadenas de inferencia
+- `agentic-validator` — Valida implementaciones contra guidelines y patrones del proyecto; detecta anti-patrones
 - `ba-coordinator` — |
 - `bpa-coordinator` — |
 - `cp-coordinator` — |
+- `deep-dive` — Análisis profundo de un tema o artefacto con cobertura exhaustiva de aristas
 - `deep-review` — Analiza cobertura entre artefactos de fases consecutivas del WP, o profundidad d
 - `diagrama-ishikawa` — Especialista en análisis de causa raíz con diagramas de Ishikawa (espina de pe
 - `dmaic-coordinator` — |
 - `lean-coordinator` — |
 - `mysql-expert` — Tech-expert para MySQL y bases de datos relacionales. Conoce SQL, diseño de sch
 - `nodejs-expert` — Experto en Node.js, Express y ecosistema npm. Usar cuando el usuario necesite im
+- `pattern-harvester` — Extrae y documenta patrones recurrentes desde artefactos WP hacia referencias permanentes
 - `pdca-coordinator` — |
 - `pm-coordinator` — |
 - `postgresql-expert` — Tech-expert para PostgreSQL. Conoce SQL, migrations, índices, transacciones y c
@@ -40,7 +44,8 @@ updated_at: 2026-04-18 05:01:07
 - `sp-coordinator` — |
 - `task-executor` — Ejecuta tareas atómicas de un task-plan.md. Usar cuando hay un task-plan con ch
 - `task-planner` — Descompone trabajo en tareas atómicas con IDs trazables. Usar cuando el usuario
-- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
+- `task-synthesizer` — Sintetiza resultados de múltiples tareas paralelas en un artefacto coherente
+- `tech-detector` — Detecta el stack tecnológico de un proyecto analizando archivos de configuraci�
 - `thyrox-coordinator` — |
 - `webpack-expert` — Tech-expert para Webpack y bundling de assets. Conoce configuración de entry/ou
 

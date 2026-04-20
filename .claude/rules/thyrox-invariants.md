@@ -104,3 +104,11 @@ CORRECTO:  esperar instrucción explícita del ejecutor: "cierra el WP" / "ejecu
 
 Un WP puede contener múltiples iniciativas y ángulos de trabajo. El ejecutor
 es el único que sabe cuándo el WP está realmente completo.
+
+## I-012: Claims con fuente invalidada no propagables
+
+Valores y claims de fuentes con contradicción interna demostrada no pueden usarse
+como fundamento en artefactos THYROX. Ver `prohibited-claims-registry.md` para lista.
+
+Claims SPECULATIVE (sin fuente observable) no pueden avanzar gates Stage→Stage.
+Ver `evidence-classification.md` para protocolo de clasificación.

@@ -1,7 +1,7 @@
 ```yml
 type: Contexto Persistente
 version: 3.5
-updated_at: 2026-04-18 23:49:30
+updated_at: 2026-04-20 13:22:17
 ```
 
 # CLAUDE.md — THYROX
@@ -84,6 +84,7 @@ Directivas siempre activas para el stack del proyecto. Generadas por `registry/_
 @.thyrox/guidelines/frontend-react.instructions.md
 @.thyrox/guidelines/frontend-webpack.instructions.md
 @.thyrox/guidelines/python-mcp.instructions.md
+@.thyrox/guidelines/agentic-python.instructions.md
 
 **Por qué `.thyrox/` y no `.claude/context/`:**
 `.claude/` está protegido por una safety invariant del binario de Claude Code — genera un prompt
@@ -200,6 +201,17 @@ Stage 2 BASELINE (antes MEASURE) · Stage 3 DIAGNOSE (antes ANALYZE) ·
 Stage 6 SCOPE (antes PLAN) · Stage 10 IMPLEMENT (antes EXECUTE)
 
 **Retrocompatibilidad:** Los documentos históricos que usan "FASE N" y "Phase N" son válidos — se leen como sinónimos de ÉPICA y Stage respectivamente.
+
+## Restricciones de fórmulas probabilísticas
+
+Las siguientes fórmulas están prohibidas en artefactos THYROX:
+
+1. **Forma simple:** `P₀ × e^(-r×d)` — decay exponencial sin calibración empírica propia
+2. **Forma multiparámetro Part B:** `P(correct) = P₀ × e^(-Σλᵢxᵢ)` con 5+ parámetros — ratio de calibración 8%, calibración circular (misma observación para ajuste y validación)
+
+**Por qué:** Estas fórmulas proyectan precisión cuantitativa sin derivación empírica verificable. Constituyen realismo performativo (ÉPICA 42).
+
+**Alternativa válida:** afirmaciones calibradas con evidencia observable (`PROVEN/INFERRED/SPECULATIVE`) o estimaciones explícitamente marcadas como hipótesis.
 
 ## Para más contexto
 

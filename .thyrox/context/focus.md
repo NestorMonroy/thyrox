@@ -1,12 +1,13 @@
 ```yml
 type: Estado Operacional
 version: 1.0
-updated_at: 2026-04-18 07:15:00
+updated_at: 2026-04-20 13:22:56
 ```
 
 # Focus
 
-Sin WP activo.
+**ÉPICA 42 — methodology-calibration — Stage 8 PLAN EXECUTION**
+WP: `.thyrox/context/work/2026-04-18-07-12-50-methodology-calibration/`
 
 ## Completado (2026-04-17)
 
@@ -47,7 +48,12 @@ Sin WP activo.
 - **B8 Remediación**: sync checkboxes (PAT-004), README opción A eliminada, audit-report actualizado
 - **B9 Framework**: PAT-004 en workflow-implement, maxdepth 2 en session-start.sh, Herramientas de calidad en thyrox/SKILL.md, TD-042
 
-## Próximos candidatos
+## Próxima acción
+
+- Continuar ejecución del task-plan T-001..T-078 (ÉPICA 42)
+- Task-plan: `.thyrox/context/work/2026-04-18-07-12-50-methodology-calibration/plan-execution/methodology-calibration-task-plan.md`
+
+## Próximos candidatos (post ÉPICA 42)
 
 1. **ÉPICA 37 (platform-references-expansion):** Stage 11 TRACK pendiente
 2. **ÉPICA 38 (commands-rellinks):** Stage 1 gate 1→3 pendiente

@@ -95,6 +95,19 @@ Ejemplo: DMAIC en analyze
 
 ---
 
+## Familia 3: Domain Pattern Validators
+
+Agentes especializados en validar código o artefactos contra un catálogo de anti-patrones documentados.
+
+| Agente | Valida | Catálogo |
+|--------|--------|----------|
+| `agentic-validator` | Código Python agentic | AP-01..AP-30+ |
+
+**Diferencia con Familia 1 (coordinators):** no orquestan — validan.
+**Diferencia con Familia 2 (tech experts):** no implementan — detectan y reportan.
+
+---
+
 ## `.thyrox/registry/` — Fuente de verdad
 
 El directorio `.thyrox/registry/` es la fuente de verdad del sistema. Todo lo que aparece en `.claude/agents/` y `.thyrox/guidelines/` se genera a partir de él.

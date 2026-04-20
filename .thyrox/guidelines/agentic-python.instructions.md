@@ -1,7 +1,7 @@
 # Agentic Python — Guidelines
 > Cargado automáticamente via @imports en CLAUDE.md.
-> Fuente: AP-01..AP-30 descubiertos en ÉPICA 42 (análisis Cap.9-20).
-> 30 reglas / 8 secciones. Última actualización: 2026-04-20
+> Fuente: AP-01..AP-39 descubiertos en ÉPICA 42 (análisis Cap.9-20) y calibración epistémica.
+> 39 reglas / 13 secciones. Última actualización: 2026-04-20
 
 ---
 
@@ -409,3 +409,161 @@ de su citation inline. Sin citation inline:
 - No es posible verificar si la referencia realmente respalda el claim
 - El lector no sabe qué parte de la referencia aplica
 - La calibración epistémica del documento es baja, independientemente de la calidad de las fuentes
+
+---
+
+## Sección 9: Contrato de Herramienta (AP-31, AP-32)
+
+**AP-31 (ALTO):** Tool Description Mismatch — descripción no corresponde al comportamiento real
+
+```python
+# INCORRECTO — descripción no corresponde al comportamiento real
+@tool(description="Analyzes sentiment and returns positive/negative/neutral")
+def analyze_text(text: str) -> dict:
+    return {"word_count": len(text.split())}  # retorna word count, no sentiment
+
+# CORRECTO — descripción coincide con implementación
+@tool(description="Counts words in text and returns count as integer")
+def analyze_text(text: str) -> dict:
+    return {"word_count": len(text.split())}
+```
+
+**AP-32 (ALTO):** Architectural Shell Without Behavioral Core — clase nombrada como sistema complejo sin lógica real
+
+```python
+# INCORRECTO — clase nombrada como sistema complejo pero sin lógica real
+class MultiAgentOrchestrator:
+    def route(self, task): return "agent_a"  # routing siempre igual, no es "multi"
+
+# CORRECTO — nombre refleja la implementación real, o implementar el comportamiento
+class SimpleRouter:
+    def route(self, task): return "agent_a"
+```
+
+---
+
+## Sección 10: Guardrails (AP-33, AP-34)
+
+**AP-33 (CRÍTICO):** LLM-as-guardrail Prompt Injection — usar LLM para verificar outputs de otro LLM con mismo sistema de instrucciones
+
+```python
+# INCORRECTO — usar LLM para verificar outputs de otro LLM con mismo sistema de instrucciones
+safety_check = llm.invoke(f"Is this safe? {user_output}")  # injectable
+
+# CORRECTO — usar reglas determinísticas o modelo separado con sistema aislado
+def is_safe(text: str) -> bool:
+    return not any(pattern in text.lower() for pattern in BLOCKED_PATTERNS)
+```
+
+**AP-34 (MEDIO):** Regulated Domain Caveat — agente en dominio regulado (médico, legal) sin disclaimer ni escalada obligatoria
+
+```python
+# INCORRECTO — agente médico/legal sin disclaimer, sin escalada obligatoria
+def medical_advice(symptom: str) -> str:
+    return llm.invoke(f"What should I do for {symptom}?")
+
+# CORRECTO — disclaimer explícito + escalada a profesional
+def medical_guidance(symptom: str) -> str:
+    response = llm.invoke(f"General health info about {symptom}")
+    return f"NOTA: Esto es información general, no consejo médico. Consulta un profesional. {response}"
+```
+
+---
+
+## Sección 11: Flujo de Ejecución (AP-35, AP-36)
+
+**AP-35 (ALTO):** Silent Loop Termination — loop termina sin señal observable
+
+```python
+# INCORRECTO — loop termina sin señal observable
+for step in steps:
+    result = agent.run(step)
+    if result.done: break  # sin log, sin callback
+
+# CORRECTO — loop con señal observable en terminación
+for step in steps:
+    result = agent.run(step)
+    if result.done:
+        logger.info(f"Loop terminado en step {step}: {result.reason}")
+        break
+```
+
+**AP-36 (MEDIO):** Borrowed Nomenclature — usar término técnico del dominio sin implementar la semántica
+
+```python
+# INCORRECTO — usar término técnico del dominio sin implementar la semántica
+class ReinforcementLearningAgent:
+    def act(self, state): return random.choice(self.actions)  # no hay RL
+
+# CORRECTO — nombre descriptivo de la implementación real
+class RandomActionAgent:
+    def act(self, state): return random.choice(self.actions)
+```
+
+---
+
+## Sección 12: Protocolo MCP / A2A (AP-37, AP-38, AP-39)
+
+**AP-37 (CRÍTICO):** MCP JSON-RPC Payload Mismatch — payload no sigue esquema JSON-RPC 2.0
+
+```python
+# INCORRECTO — payload no sigue esquema JSON-RPC 2.0
+{"tool": "search", "query": "python"}  # falta jsonrpc, id, method
+
+# CORRECTO — payload JSON-RPC 2.0 completo
+{
+    "jsonrpc": "2.0",
+    "id": "req-001",
+    "method": "tools/call",
+    "params": {"name": "search", "arguments": {"query": "python"}}
+}
+```
+
+**AP-38 (ALTO):** Hardcoded Identifier — ID de sesión, agente o recurso hardcodeado en lugar de obtenido de configuración
+
+```python
+# INCORRECTO — ID de sesión, agente o recurso hardcodeado
+agent = AgentClient(agent_id="prod-agent-001")  # cambiará en producción
+
+# CORRECTO — ID obtenido de configuración o entorno
+agent = AgentClient(agent_id=os.environ["AGENT_ID"])
+```
+
+**AP-39 (ALTO):** Advertencia Desconectada — warning emitido pero el código continúa como si no hubiera problema
+
+```python
+# INCORRECTO — warning emitido pero el código continúa como si no hubiera problema
+logger.warning("API key not found, using fallback")
+api_key = "hardcoded-fallback-key"  # el warning no cambia nada
+
+# CORRECTO — warning conectado a comportamiento diferente
+if not api_key:
+    logger.warning("API key not found — operando en modo read-only")
+    return self._read_only_response(request)
+```
+
+---
+
+## Sección 13: Calibración Epistémica (AP-40, AP-41)
+
+**AP-40 (ALTO):** Cherry-Pick Consciente — seleccionar solo casos que confirman el resultado esperado
+
+```python
+# INCORRECTO — seleccionar solo casos que confirman el resultado esperado
+success_cases = [r for r in results if r.success]  # denominador ocultado
+accuracy = len(success_cases) / len(success_cases)  # siempre 100%
+
+# CORRECTO — reportar sobre el denominador completo
+accuracy = len([r for r in results if r.success]) / len(results)
+logger.info(f"Accuracy: {accuracy:.2%} ({len(results)} total cases)")
+```
+
+**AP-41 (MEDIO):** Efecto Denominador — reportar métricas de éxito sin declarar el denominador total
+
+```python
+# INCORRECTO — fracción sin declarar denominador
+logger.info("15 successful executions")  # ¿de cuántos?
+
+# CORRECTO — siempre declarar denominador
+logger.info(f"15/{total} executions succeeded ({15/total:.0%})")
+```

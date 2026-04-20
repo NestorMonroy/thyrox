@@ -30,11 +30,12 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 **WP:** `.thyrox/context/work/2026-04-18-07-12-50-methodology-calibration/`
 **Resultado esperado:** Templates de stages con sección de evidencia estructurada, risk register con P derivada, exit conditions con umbral de confianza. Eliminar realismo performativo — pasar de afirmar calidad a requerirla con evidencia.
 
-- [-] Stage 1 DISCOVER — en curso
-- [ ] Stage 3 ANALYZE
+- [x] Stage 1 DISCOVER — 2026-04-18
+- [x] Stage 2 BASELINE — 2026-04-18
+- [x] Stage 3 DIAGNOSE — 2026-04-18
 - [ ] Stage 5 STRATEGY
 - [ ] Stage 6 PLAN/SCOPE
-- [ ] Stage 8 PLAN EXECUTION
+- [-] Stage 8 PLAN EXECUTION
 - [ ] Stage 10 IMPLEMENT
 - [ ] Stage 11 TRACK/EVALUATE
 - [ ] Stage 12 STANDARDIZE

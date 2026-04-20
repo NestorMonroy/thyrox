@@ -60,7 +60,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - Sección 8: Agentic Design (AP-23, AP-24, AP-25, AP-26, AP-27, AP-28, AP-29, AP-30)
   - **Depende de T-001 PASS**
 
-- [ ] T-003 Actualizar `.claude/CLAUDE.md` — agregar @import
+- [x] T-003 Actualizar `.claude/CLAUDE.md` — agregar @import @task-executor (done: 2026-04-20 13:22:17)
   - Agregar línea en sección `Tech-stack guidelines — @imports`:
     `@.thyrox/guidelines/agentic-python.instructions.md`
   - **Depende de T-001 PASS y T-002**
@@ -109,25 +109,25 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 5 — Documentación del proyecto
 
-- [ ] T-008 Actualizar `ARCHITECTURE.md` — nueva familia de agentes
+- [x] T-008 Actualizar `ARCHITECTURE.md` — nueva familia de agentes
   - El deep-dive identificó que `agentic-validator` introduce una tercera familia: "domain pattern validators"
   - ARCHITECTURE.md actualmente describe: methodology coordinators + tech experts
   - Agregar sección que documente la nueva familia y su propósito
 
-- [ ] T-009 Actualizar `README.md` — conteo de agentes
+- [x] T-009 Actualizar `README.md` — conteo de agentes
   - De 23 a 24 agentes (o 26 si el conteo real es 25 + el nuevo)
   - Verificar conteo real antes de editar
 
-- [ ] T-010 Actualizar `.thyrox/context/focus.md`
+- [x] T-010 Actualizar `.thyrox/context/focus.md` @task-executor (done: 2026-04-20 13:24:47)
   - Reflejar ÉPICA 42 activa (actualmente dice "Sin WP activo")
   - Actualizar sección "Próximos candidatos"
 
-- [ ] T-011 Actualizar `.thyrox/context/project-state.md`
+- [x] T-011 Actualizar `.thyrox/context/project-state.md` @task-executor (done: 2026-04-20 13:24:47)
   - Bump versión: 2.6.0 → 2.9.0 (MINOR: nueva guideline + nuevo agente)
   - Actualizar conteo de agentes
   - Agregar agentic-validator en tabla de agentes
 
-- [ ] T-012 Actualizar `ROADMAP.md`
+- [x] T-012 Actualizar `ROADMAP.md`
   - Marcar Stage 1 DISCOVER, Stage 2 BASELINE, Stage 3 DIAGNOSE como `[x]`
   - Marcar Stage 8 PLAN EXECUTION como `[-]` (en curso)
 
@@ -189,7 +189,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - Conectar con los patrones consultables de T-006 (AP-01..AP-30) como referencia de implementación
   - **Independiente**
 
-- [ ] T-016 Crear `.claude/skills/workflow-strategy/references/agentic-system-design.md`
+- [~] T-016 Crear `.claude/skills/workflow-strategy/references/agentic-system-design.md` @task-executor (claimed: 2026-04-20 13:23:40)
   - Referencia de diseño para WPs cuyo output es un sistema agentic
   - Secciones: qué hace a un sistema "agentic" (autonomía, tool use, incertidumbre), diferencia entre
     agente-como-herramienta vs agente-como-arquitectura, preguntas de Stage 5 STRATEGY para sistemas agentic
@@ -343,7 +343,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > para clasificar el origen de los claims. Sin él, la columna "Tipo" de T-020 no tiene
 > criterio — reproduce exactamente el problema que ÉPICA 42 pretende resolver.
 
-- [ ] T-025 Crear `.claude/references/evidence-classification.md` — vocabulario epistémico
+- [x] T-025 Crear `.claude/references/evidence-classification.md` — vocabulario epistémico @task-executor (done: 2026-04-20 13:26:09)
   - **Fuentes:** cluster-a (H-A1 CRÍTICO — esquema OBSERVABLE/INFERRED/SPECULATIVE), cluster-b (B-A2A-1 ALTO — abstraction collapse, necesita taxonomía)
   - Crear `.claude/references/evidence-classification.md`:
     - Definición de OBSERVABLE: hay una herramienta ejecutada, output citado textualmente, acción registrada en git. Reproducible por cualquier agente con los mismos permisos.
@@ -393,7 +393,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-025 (evidence-classification.md debe existir como referencia)
 
-- [ ] T-028 Crear `.claude/references/prohibited-claims-registry.md`
+- [x] T-028 Crear `.claude/references/prohibited-claims-registry.md` @task-executor (done: 2026-04-20 13:26:09)
   - **Fuentes:** cluster-a (H-A3 ALTO — patrones de razonamiento prohibidos), cluster-b (B-MA-2 ALTO — abstraction collapse produce claims no trazables)
   - Crear `.claude/references/prohibited-claims-registry.md`:
     - Sección "Claims prohibidos como fundamentos de arquitectura": frases y estructuras que son invariablemente SPECULATIVE en artefactos THYROX (ej: "el sistema debería X", "es probable que X", "típicamente X")
@@ -553,7 +553,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > evaluar admisiones (test de suficiencia), detectar realismo performativo, y comparar
 > versiones de documentos analizados.
 
-- [ ] T-039 Agregar protocolo de evaluación de admisiones y realismo performativo en `deep-dive.md`
+- [~] T-039 Agregar protocolo de evaluación de admisiones y realismo performativo en `deep-dive.md` @task-executor (claimed: 2026-04-20 13:23:40)
   - **Fuentes:** cluster-a (H-C2 ALTO — principios 5-6 evaluación de admisiones; H-C1 ALTO — 5 componentes del realismo performativo)
   - Agregar en `.claude/agents/deep-dive.md` sección después de Capa 5 (Engaños Estructurales):
     - Test de suficiencia de admisiones: (A) ¿la admisión modifica el argumento o lo deja operacionalmente intacto? Si X es admitido como incierto pero luego usado como cierto → admisión insuficiente. (B) ¿Los experimentos de falsificación propuestos son ejecutables con los recursos declarados? Un experimento que requiere exactamente lo que el documento dice no tener = falsificabilidad decorativa.
@@ -629,7 +629,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** T-006 (directorio patterns/), T-002 (PASS)
 
-- [ ] T-043 Agregar criterio de validación de referencias en `platform-evolution-tracking.md`
+- [~] T-043 Agregar criterio de validación de referencias en `platform-evolution-tracking.md` @task-executor (claimed: 2026-04-20 13:23:40)
   - **Fuentes:** cluster-b (B-A2A-3 MEDIO — Named Mechanism vs. Implementation como criterio de validación de referencias bibliográficas)
   - Agregar en `.claude/references/platform-evolution-tracking.md` (T-019) sección "Validación de referencias del libro de patrones":
     - Criterio: verificar que el mecanismo del código implementa el mecanismo del título (no solo que el concepto del título es correcto)
@@ -651,7 +651,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** T-004, T-005, T-013
 
-- [ ] T-045 Agregar PROVEN/INFERRED/SPECULATIVE como vocabulario en `metadata-standards.md`
+- [~] T-045 Agregar PROVEN/INFERRED/SPECULATIVE como vocabulario en `metadata-standards.md` @task-executor (claimed: 2026-04-20 13:23:40)
   - **Fuentes:** cluster-a (H-A1 ALTO — esquema PROVEN/INFERRED; T-027 propuesta de cambio de terminología)
   - Agregar en `.claude/rules/metadata-standards.md` nota bajo template "Documentos en stage directories":
     ```
@@ -935,7 +935,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > Hallazgos del deep-dive de cobertura discover/ → task-plan. Cobertura estimada previa: 72%.
 > Fuente: `analyze/discover-to-taskplan-coverage-gap.md` (2026-04-20)
 
-- [ ] T-074 Extender restricción de fórmulas exponenciales en `CLAUDE.md` para cubrir variante multiparámetro Part B
+- [x] T-074 Extender restricción de fórmulas exponenciales en `CLAUDE.md` para cubrir variante multiparámetro Part B @task-executor (done: 2026-04-20 13:22:17)
   - **Fuentes:** `discover/reasoning-correctness-probability-calibration-gaps.md` (GAP-1 CRÍTICO)
   - **Hallazgo:** `CLAUDE.md` prohíbe solo `P₀ × e^(-r×d)` (variante simple). La variante `P(correct) = P₀ × e^(-Σλᵢxᵢ)` con 5 parámetros tiene ratio de calibración del 8% y calibración circular (misma observación para ajuste y validación). Sin esta extensión, la variante agravada puede usarse en WPs futuros sin rechazo del sistema.
   - Agregar sección en `CLAUDE.md` "Fórmulas probabilísticas prohibidas" cubriendo ambas variantes con criterio de rechazo explícito.
