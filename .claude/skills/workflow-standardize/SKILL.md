@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 12'"
-updated_at: 2026-04-20 13:13:58
+updated_at: 2026-04-20 13:43:15
 ---
 
 # /workflow-standardize — Phase 12: STANDARDIZE
@@ -53,6 +53,10 @@ patrones al sistema y actualiza guidelines como único escritor.
    - ¿Nueva plantilla de artefacto? → agregar a assets/
    - Si el WP descubrió anti-patrones de código agentic → actualizar `.thyrox/guidelines/agentic-python.instructions.md`
      con las nuevas reglas y `.claude/agents/agentic-validator.md` con los nuevos APs.
+   - Al registrar correcciones aplicadas durante el WP, usar la taxonomía de fix:
+     - `fix-completo` — el comportamiento del código cambió (lógica, retorno, flujo de control)
+     - `fix-parcial(documentación)` — solo cambió descripción/comentario/docstring, el código no
+     - `fix-pendiente` — el problema fue identificado pero no corregido en este WP
 
 4. **Actualizaciones a ADRs** — si hay decisiones arquitectónicas permanentes
    - Crear ADR en `.thyrox/context/decisions/`

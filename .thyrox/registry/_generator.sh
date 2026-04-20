@@ -134,7 +134,9 @@ replace_placeholders() {
 mkdir -p "$SKILL_DIR" "$GUIDELINES_DIR"
 
 extract_section "$TEMPLATE_PATH" "SKILL_START" "SKILL_END" | replace_placeholders > "$SKILL_FILE"
+[ -s "$SKILL_FILE" ] || { echo "[ERROR] $SKILL_FILE generado vacío — verificar marcadores SKILL_START/SKILL_END en template" >&2; exit 1; }
 extract_section "$TEMPLATE_PATH" "INSTRUCTIONS_START" "INSTRUCTIONS_END" | replace_placeholders > "$INSTRUCTIONS_FILE"
+[ -s "$INSTRUCTIONS_FILE" ] || { echo "[ERROR] $INSTRUCTIONS_FILE generado vacío — verificar marcadores INSTRUCTIONS_START/INSTRUCTIONS_END en template" >&2; exit 1; }
 
 # ── Output ─────────────────────────────────────────────────────────────────
 echo -e "${GREEN}Generated: $SKILL_NAME (2 files)${NC}"

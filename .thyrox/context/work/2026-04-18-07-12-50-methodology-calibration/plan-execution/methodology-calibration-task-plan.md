@@ -589,7 +589,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > agentic dentro de un WP (Planning vs. Routing vs. Planning+RAG), ni documentación de que
 > gate calibrado ≠ Consenso.
 
-- [~] T-041 Crear `agentic-pattern-selection.md` — heurístico Planning/Routing/RAG y HITL/HOTL/HIC @task-executor (claimed: 2026-04-20 13:41:37)
+- [x] T-041 Crear `agentic-pattern-selection.md` — heurístico Planning/Routing/RAG y HITL/HOTL/HIC @task-executor (done: 2026-04-20 13:43:15)
   - **Fuentes:** cluster-d (P1-A ALTO y P1-B ALTO — Planning vs. RAG, heurístico de selección; H1-B ALTO — taxonomía HITL/HOTL/HIC), cluster-b (B-MA-3 MEDIO — gate != Consenso)
   - Crear `.claude/skills/workflow-discover/references/agentic-pattern-selection.md`:
     - Árbol de decisión de patrones agentic para Stage 1 DISCOVER:
@@ -617,7 +617,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > Asimétrica por Dominio). El scoring cuantitativo en artefactos THYROX carece de criterios
 > de verificabilidad aritmética.
 
-- [~] T-042 Documentar patrón CAD y criterio de scoring verificable @task-executor (claimed: 2026-04-20 13:41:37)
+- [x] T-042 Documentar patrón CAD y criterio de scoring verificable @task-executor (done: 2026-04-20 13:43:15)
   - **Fuentes:** cluster-c (H-C06 ALTO — CAD confirmado por dos análisis independientes; H-C04 ALTO — scoring no reproducible), cluster-e (E3-D BAJO — CAD como patrón diagnóstico)
   - Crear `discover/patterns/calibracion-asincronica-por-dominio.md`:
     - Definición operacional: CAD = patrón donde distintos dominios internos de un artefacto tienen calibración significativamente diferente (ej. especificación técnica 0.91, casos de uso proyectados 0.43)
@@ -640,7 +640,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** T-019 (documento debe existir)
 
-- [ ] T-044 Agregar protocolo Fix Declarado ≠ Fix Verificado en agentes y workflow-standardize
+- [x] T-044 Agregar protocolo Fix Declarado ≠ Fix Verificado en agentes y workflow-standardize @task-executor (done: 2026-04-20 13:43:15)
   - **Fuentes:** cluster-a (H-G3 MEDIO — protocolo de revisión adversarial), cluster-e (E3-C MEDIO — fix textual vs. fix real), cluster-c (H-C16 ALTO — corrección performativa)
   - Actualizar `.thyrox/registry/agents/agentic-validator.yml` — agregar en `system_prompt`:
     - Cuando el código o documento incluye "Bugs corregidos" / "Fixed" / "Updated": verificar CADA fix declarado independientemente (¿corrige el problema en el código o solo en el texto?); buscar bugs NO declarados con la misma intensidad (los más riesgosos son los no nombrados)
