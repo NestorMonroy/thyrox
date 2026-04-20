@@ -680,6 +680,259 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ---
 
+## Bloque 21 — Stop Hook: enforcement real (CRÍTICO)
+
+> **Contexto:** Cluster F identifica que los dos scripts del Stop hook retornan
+> `exit 0` incondicionalmente — el hook detecta problemas pero nunca bloquea nada.
+> El nombre "validate" crea expectativa de enforcement que no existe.
+
+- [ ] T-047 Diseñar política de severidad en `validate-session-close.sh`
+  - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F01, H-F02)
+  - **Hallazgo:** `validate-session-close.sh` L116 y `stop-hook-git-check.sh` L39 retornan `exit 0` incondicionalmente. El hook detecta hasta 4 categorías de problemas reales pero no actúa sobre ninguno.
+  - Introducir dos clases de severidad: WARN (exit 0) para timestamps incompletos y agentes huérfanos con resultado recolectado; BLOCK (exit 2) para `current_work` apuntando a directorio inexistente e inconsistencia crítica de estado.
+  - **Archivo a modificar:** `.claude/scripts/validate-session-close.sh`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-049 (normalizar formato `current_work` primero)
+
+- [ ] T-048 Crear hook PreToolUse Bash para validar Conventional Commits
+  - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F05, Gap-2)
+  - **Hallazgo:** No existe hook PreToolUse para `Bash(git commit *)`. La invariante I-005 (Conventional Commits) es puramente declarativa — ningún script la verifica en el flujo automatizado.
+  - Crear `.claude/scripts/validate-commit-message.sh` que extraiga el mensaje del commit del comando, valide contra regex `^(feat|fix|refactor|docs|chore|test|perf)(\(.+\))?: .{1,72}$`, y retorne deny si no cumple.
+  - Agregar entrada PreToolUse en `.claude/settings.json` con matcher `Bash(git commit*)`.
+  - **Archivos:** `.claude/scripts/validate-commit-message.sh` (crear), `.claude/settings.json` (modificar)
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** independiente
+
+---
+
+## Bloque 22 — Sincronización de estado: stage y current_work (CRÍTICO)
+
+> **Contexto:** `sync-wp-state.sh` nunca actualiza `stage:` en `now.md` y el
+> campo `current_work` tiene formato incompatible entre 3 scripts distintos.
+
+- [ ] T-049 Normalizar formato del valor `current_work` en `now.md`
+  - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F07)
+  - **Hallazgo:** `sync-wp-state.sh:25` produce path relativo al repo root; `project-status.sh:44` espera path relativo a CONTEXT_DIR; `validate-session-close.sh:99` verifica con `[ -d "$CURRENT_WORK" ]`. Los tres scripts consumen `current_work` con convenciones distintas — inconsistencia estructural.
+  - Decidir formato canónico (Opción A: path relativo al repo root `.thyrox/context/work/NOMBRE`). Actualizar los tres scripts para usar el mismo formato. Actualizar también `close-wp.sh`.
+  - **Archivos:** `.claude/scripts/sync-wp-state.sh` (L25), `.claude/scripts/project-status.sh` (L44), `.claude/scripts/validate-session-close.sh` (L98-104), `.claude/scripts/close-wp.sh`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** independiente
+
+- [ ] T-050 Agregar `stage_sync_required` en `sync-wp-state.sh` al cambiar WP
+  - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F03)
+  - **Hallazgo:** `sync-wp-state.sh` actualiza `current_work` en `now.md` (L44-47) pero nunca actualiza `stage:` ni `phase:`. El estado de fase se desincroniza silenciosamente cuando el agente escribe en un WP sin actualizar el stage manualmente.
+  - Cuando `sync-wp-state.sh` detecta cambio de `current_work`, agregar `stage_sync_required: true` en `now.md` para que `session-start.sh` lo detecte y alerte al agente.
+  - **Archivo a modificar:** `.claude/scripts/sync-wp-state.sh`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-049
+
+- [ ] T-051 Agregar `lint-agents.py` al hook SessionStart
+  - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F13)
+  - **Hallazgo:** `lint-agents.py` no está en ningún hook. Los invariantes I-007 (allowed-tools) e I-008 (description pattern) solo se verifican si el desarrollador lo corre manualmente. El script corre en <1s.
+  - Agregar segunda entrada en el hook SessionStart en `.claude/settings.json` que ejecute `python3 .claude/scripts/lint-agents.py || true`.
+  - **Archivo a modificar:** `.claude/settings.json`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+---
+
+## Bloque 23 — bound-detector: cobertura inglés (ALTO)
+
+- [ ] T-052 Extender `bound-detector.py` con patrones en inglés
+  - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F04)
+  - **Hallazgo:** `UNBOUNDED_SIGNALS` y `BOUND_SIGNALS` solo detectan patrones en español (L16-38). Instrucciones como "analyze every file", "process each item", "review all agents" pasan sin detección.
+  - Agregar a `UNBOUNDED_SIGNALS`: `r"\bevery\b"`, `r"\beach\b"`, `r"\ball\b"`, `r"\bprocess all\b"`, `r"\bread all\b"`, `r"\banalyze all\b"`, `r"\bfor each\b"`, `r"\bfor every\b"`.
+  - Agregar a `BOUND_SIGNALS`: `r"\bmaximum\b"`, `r"\bmax\b"`, `r"\bonly these\b"`, `r"\bno more than\b"`, `r"\bfirst \d+\b"`, `r"\btop \d+\b"`, `r"\bat most\b"`.
+  - **Archivo a modificar:** `.claude/scripts/bound-detector.py`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+---
+
+## Bloque 24 — Workflow skill anatomy: assets faltantes y rutas (ALTO)
+
+- [ ] T-053 Crear `workflow-structure/assets/document.md.template`
+  - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-002)
+  - **Hallazgo:** `workflow-structure/SKILL.md` L51 declara `assets/document.md.template` como instrucción directa. El archivo no existe — el agente no puede seguir la instrucción.
+  - Crear template con metadata estándar WP + secciones genéricas (objetivo, contexto, decisión, impacto, referencias).
+  - **Archivo a crear:** `.claude/skills/workflow-structure/assets/document.md.template`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-054 Crear `workflow-implement/assets/error-report.md.template`
+  - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-005)
+  - **Hallazgo:** `workflow-implement/SKILL.md` L82 instruye explícitamente crear `context/errors/ERR-NNN-descripcion.md` usando `assets/error-report.md.template`. El template no existe — sin él, los ERR-NNN no tienen estructura consistente.
+  - Crear template con campos: descripción del error, contexto, tarea que falló, approach intentado, resultado, siguiente approach propuesto.
+  - **Archivo a crear:** `.claude/skills/workflow-implement/assets/error-report.md.template`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-055 Resolver inconsistencia de ruta para `requirements-spec` en `workflow-structure`
+  - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-003)
+  - **Hallazgo:** Las instrucciones de creación (L40, L45) indican `work/../{nombre-wp}-requirements-spec.md` pero los exit criteria (L80, L84) verifican `work/.../design/*-requirements-spec.md`. Un agente que sigue las instrucciones falla el gate. Además, `workflow-decompose/SKILL.md` L24 consume el output de Phase 7 — la ruta ambigua rompe la cadena inter-stages.
+  - Ubicación canónica: `design/` (consistente con el stage-directory estándar). Actualizar L40, L45, L80, L84 de `workflow-structure/SKILL.md`. Verificar y actualizar `workflow-decompose/SKILL.md` L24 si aplica.
+  - **Archivos:** `.claude/skills/workflow-structure/SKILL.md` (L40, L45, L80, L84), `.claude/skills/workflow-decompose/SKILL.md` (L24 si aplica)
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-056 Unificar `validate-session-close.sh` en `workflow-track` y `workflow-standardize`
+  - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-006)
+  - **Hallazgo:** Phase 11 ejecuta `workflow-track/scripts/validate-session-close.sh` (versión antigua). Phase 12 ejecuta `.claude/scripts/validate-session-close.sh` (versión actual). Las validaciones son distintas e incompatibles — una puede pasar lo que la otra rechaza.
+  - Eliminar `workflow-track/scripts/validate-session-close.sh` y actualizar `workflow-track/SKILL.md` L27 para invocar `.claude/scripts/validate-session-close.sh`.
+  - **Archivos:** `.claude/skills/workflow-track/SKILL.md` (L27), `.claude/skills/workflow-track/scripts/validate-session-close.sh` (eliminar)
+  - **Prioridad:** ALTO
+  - **Depende de:** T-047 (modificar la versión global antes de unificar)
+
+- [ ] T-057 Agregar `Write Edit` a `allowed-tools` de workflow-structure, workflow-decompose, workflow-track
+  - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-008)
+  - **Hallazgo:** Los tres skills instruyen creación de archivos pero no declaran `Write` ni `Edit` en `allowed-tools`. workflow-pilot, workflow-implement y workflow-standardize sí los declaran.
+  - Agregar `Write Edit` al campo `allowed-tools` en el frontmatter de los tres SKILL.md.
+  - **Archivos:** `.claude/skills/workflow-structure/SKILL.md` (L4), `.claude/skills/workflow-decompose/SKILL.md` (L4), `.claude/skills/workflow-track/SKILL.md` (L4)
+  - **Prioridad:** MEDIO
+  - **Depende de:** independiente
+
+- [ ] T-058 Corregir label "Phase 2 SOLUTION_STRATEGY" en `workflow-strategy`
+  - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-001)
+  - **Hallazgo:** `workflow-strategy/SKILL.md` L32 tiene encabezado `## Fase a ejecutar: Phase 2 SOLUTION_STRATEGY`. El frontmatter y todas las demás referencias dicen correctamente "Phase 5".
+  - Corregir L32 a `## Fase a ejecutar: Phase 5 STRATEGY`.
+  - **Archivo a modificar:** `.claude/skills/workflow-strategy/SKILL.md` (L32)
+  - **Prioridad:** MEDIO
+  - **Depende de:** independiente
+
+- [ ] T-059 Crear `workflow-decompose/assets/categorization-plan.md.template`
+  - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-004)
+  - **Hallazgo:** `workflow-decompose/SKILL.md` L55 declara `assets/categorization-plan.md.template` para issues >50. El template no existe.
+  - Crear template con estructura de categorización por tipo (feat/fix/refactor/docs/chore), prioridad (CRÍTICO/ALTO/MEDIO/BAJO) y dominio temático.
+  - **Archivo a crear:** `.claude/skills/workflow-decompose/assets/categorization-plan.md.template`
+  - **Prioridad:** MEDIO
+  - **Depende de:** independiente
+
+---
+
+## Bloque 25 — Agent quality: ARCHITECTURE.md y desambiguación (CRÍTICO/ALTO)
+
+- [ ] T-060 Crear `.claude/ARCHITECTURE.md` con inventario canónico de agentes
+  - **Fuentes:** cluster-h-agent-quality-gaps.md (H-01), cluster-i-registry-adr-gaps.md (H-01)
+  - **Hallazgo:** `.claude/ARCHITECTURE.md` no existe. El sistema tiene 27 agentes instalados sin inventario canónico. No es posible detectar agentes zombies ni agentes fantasmas. 18/27 agentes no tienen YML en registry.
+  - Crear `.claude/ARCHITECTURE.md` con tabla: nombre, función, tipo (coordinator/expert/analysis/infra), YML en registry (sí/no), origen (bootstrap/manual), solapamientos conocidos.
+  - **Archivo a crear:** `.claude/ARCHITECTURE.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-061 Desambiguar descripciones de `deep-dive` y `agentic-reasoning`
+  - **Fuentes:** cluster-h-agent-quality-gaps.md (H-04)
+  - **Hallazgo:** Ambos agentes analizan artefactos buscando afirmaciones no sustentadas. Para un risk register de THYROX, el runtime puede elegir cualquiera — análisis duplicados o incorrecto.
+  - Modificar `agentic-reasoning` para incluir: "Use when artifact IS a THYROX WP document and goal is calibration ratio + evidence gap report. For adversarial analysis of any artifact type, use deep-dive instead." Modificar `deep-dive` para excluir explícitamente el dominio de calibración THYROX de su trigger.
+  - **Archivos:** `.claude/agents/agentic-reasoning.md`, `.claude/agents/deep-dive.md`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** independiente
+
+- [ ] T-062 Corregir descripciones de `mysql-expert` y `postgresql-expert`
+  - **Fuentes:** cluster-h-agent-quality-gaps.md (H-02)
+  - **Hallazgo:** `mysql-expert` y `postgresql-expert` describen capacidades sin condición de invocación. Sin patrón "Use when...", tasa de auto-invocación cae al 56%.
+  - Añadir como primer elemento: "Use when the user needs MySQL/PostgreSQL-specific help: schema design, query optimization, migrations, or debugging." Actualizar también los YML fuente en registry.
+  - **Archivos:** `.claude/agents/mysql-expert.md`, `.claude/agents/postgresql-expert.md`, `.thyrox/registry/agents/mysql-expert.yml`, `.thyrox/registry/agents/postgresql-expert.yml`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-063 Desambiguar `task-planner` vs `task-synthesizer`
+  - **Fuentes:** cluster-h-agent-quality-gaps.md (H-05)
+  - **Hallazgo:** "Crear un task-plan a partir de estos análisis" encaja en ambas descripciones — el runtime puede invocar el incorrecto.
+  - Añadir a `task-planner`: "Use when starting fresh planning — no prior analysis outputs exist. If consolidating outputs from deep-dive or pattern-harvester agents, use task-synthesizer instead." Añadir a `task-synthesizer`: "Use only when consolidating existing agent analysis outputs (not for fresh planning — use task-planner for that)."
+  - **Archivos:** `.claude/agents/task-planner.md`, `.claude/agents/task-synthesizer.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-064 Desambiguar `deep-review` vs `pattern-harvester`
+  - **Fuentes:** cluster-h-agent-quality-gaps.md (H-06)
+  - **Hallazgo:** Ambos leen múltiples archivos de un WP. "Analiza este corpus de analysis/" encaja en ambos — el usuario puede recibir análisis de cobertura cuando necesita síntesis de patrones.
+  - Clarificar en `deep-review`: "Use when checking coverage gaps between consecutive THYROX phases. For extracting actionable patterns from deep-dive or calibration files, use pattern-harvester." Clarificar en `pattern-harvester`: "Use only when processing already-analyzed files. For phase-to-phase coverage analysis, use deep-review."
+  - **Archivos:** `.claude/agents/deep-review.md`, `.claude/agents/pattern-harvester.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-065 Estandarizar descripciones multilinea de 12 coordinadores a una sola línea
+  - **Fuentes:** cluster-h-agent-quality-gaps.md (H-03)
+  - **Hallazgo:** Los 12 coordinadores de metodología usan descripción multilinea con "Usar cuando...". El runtime puede truncar descripciones multilinea — la condición de invocación quedaría fuera del campo analizado.
+  - Convertir el bloque multilinea a una sola línea comenzando con "Use when [usuario quiere X metodología]. Coordinator para [nombre metodología]." Alcance: ba-, bpa-, cp-, dmaic-, lean-, pdca-, pm-, pps-, rm-, rup-, sp-, thyrox-coordinator.
+  - **Archivos (12):** `.claude/agents/ba-coordinator.md`, `.claude/agents/bpa-coordinator.md`, `.claude/agents/cp-coordinator.md`, `.claude/agents/dmaic-coordinator.md`, `.claude/agents/lean-coordinator.md`, `.claude/agents/pdca-coordinator.md`, `.claude/agents/pm-coordinator.md`, `.claude/agents/pps-coordinator.md`, `.claude/agents/rm-coordinator.md`, `.claude/agents/rup-coordinator.md`, `.claude/agents/sp-coordinator.md`, `.claude/agents/thyrox-coordinator.md`
+  - **Prioridad:** MEDIO
+  - **Depende de:** independiente
+
+---
+
+## Bloque 26 — Registry pipeline: integridad y ADRs (CRÍTICO/ALTO)
+
+- [ ] T-066 Agregar verificación de dependencias MCP en `bootstrap.py`
+  - **Fuentes:** cluster-i-registry-adr-gaps.md (H-03)
+  - **Hallazgo:** `faiss-cpu` y `sentence-transformers` no están instalados. `thyrox-memory` MCP server falla al iniciar con `ModuleNotFoundError`. `bootstrap.py` no verifica ni advierte — el MCP server queda inoperativo en entorno limpio sin error claro.
+  - Agregar función `check_python_deps()` en `bootstrap.py` que verifique con `importlib.util.find_spec()` si `faiss` y `sentence_transformers` están disponibles. Si no: imprimir warning y omitir registro del server en `.mcp.json`.
+  - **Archivo a modificar:** `.thyrox/registry/bootstrap.py`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** independiente
+
+- [ ] T-067 Crear ADR para política de coordinators como artefactos estáticos
+  - **Fuentes:** cluster-i-registry-adr-gaps.md (GAP-1, H-09)
+  - **Hallazgo:** La decisión de que los coordinators NO se generan desde bootstrap.py está documentada solo en un comentario de código (`bootstrap.py` L46-67). Sin ADR, un mantenedor puede intentar generarlos rompiendo el sistema, o no saber cómo crear un coordinator nuevo.
+  - Crear `.thyrox/context/decisions/adr-coordinators-static-artifacts.md` documentando: (a) por qué coordinators no se generan desde bootstrap.py, (b) cómo crear un nuevo coordinator usando dmaic-coordinator.md como template, (c) convención de naming y casos que la violan (pm→pmbok, ba→babok).
+  - **Archivo a crear:** `.thyrox/context/decisions/adr-coordinators-static-artifacts.md`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** independiente
+
+- [ ] T-068 Corregir exit code de `bootstrap.py` en instalaciones con fallos
+  - **Fuentes:** cluster-i-registry-adr-gaps.md (H-02, RP-3, RP-4)
+  - **Hallazgo:** `main()` retorna exit code 0 incluso cuando hay `[FAIL]`. "Bootstrap completado" usa el conteo de todos los `.md` existentes, no solo los generados en esta ejecución — si 0 agentes fueron instalados exitosamente, el resumen es idéntico a una instalación completa.
+  - Trackear fallos en `install_core_agents()` (L241-263) e `install_tech_agent()` (L266-312). Retornar exit code 1 si algún agente requerido falló. Ajustar conteo final para mostrar agentes generados en esta ejecución vs. total en disco.
+  - **Archivo a modificar:** `.thyrox/registry/bootstrap.py` (L241-263, L396-413, L425-429)
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-069 Crear ADR para `python-mcp` como skill manual fuera del pipeline
+  - **Fuentes:** cluster-i-registry-adr-gaps.md (GAP-2, H-04)
+  - **Hallazgo:** `python-mcp.instructions.md` está listada en `CLAUDE.md` como "generada por `registry/_generator.sh`" pero fue creada manualmente y no tiene template. La narrativa de "generado por registry" es performativa para este caso.
+  - Crear `.thyrox/context/decisions/adr-python-mcp-manual-skill.md`. Agregar nota aclaratoria en `CLAUDE.md` que distinga guidelines generadas (5) vs. manuales (python-mcp).
+  - **Archivos:** `.thyrox/context/decisions/adr-python-mcp-manual-skill.md` (crear), `.claude/CLAUDE.md` (nota en sección @imports)
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-070 Agregar verificación de output no-vacío en `_generator.sh`
+  - **Fuentes:** cluster-i-registry-adr-gaps.md (H-08)
+  - **Hallazgo:** Si el contenido entre marcadores `SKILL_START/SKILL_END` está vacío, `awk` produce archivo vacío sin error y `_generator.sh` reporta `[GREEN] Generated`.
+  - Agregar verificación post-awk: `[ -s "$SKILL_FILE" ] || { echo "ERROR: $SKILL_FILE generado vacío" >&2; exit 1; }`.
+  - **Archivo a modificar:** `.thyrox/registry/_generator.sh` (L138, inserción)
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+---
+
+## Bloque 27 — Correcciones de scripts: fallos silenciosos y consistencia (MEDIO)
+
+- [ ] T-071 Agregar `exit 0` explícito al final de `sync-wp-state.sh`
+  - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F11)
+  - **Hallazgo:** `sync-wp-state.sh` no tiene `exit 0` explícito (L57 es el último comando — append a `phase-history.jsonl`). Si el append falla, el PostToolUse hook retorna exit 1. Comportamiento de Claude Code ante PostToolUse con exit 1 no está documentado.
+  - Agregar `exit 0` explícito como última línea del script.
+  - **Archivo a modificar:** `.claude/scripts/sync-wp-state.sh`
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-049 (el script se modifica en T-049 — consolidar edición)
+
+- [ ] T-072 Corregir branch hardcodeado en `update-state.sh`
+  - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F09)
+  - **Hallazgo:** `update-state.sh` L81 tiene hardcodeado el branch `claude/check-merge-status-Dcyvj`. El script declara "regenera project-state.md desde el estado real del repo" pero el branch es incorrecto en cualquier otra sesión.
+  - Reemplazar el valor hardcodeado con `$(git branch --show-current 2>/dev/null || echo "unknown")`.
+  - **Archivo a modificar:** `.claude/scripts/update-state.sh` (L81)
+  - **Prioridad:** MEDIO
+  - **Depende de:** independiente
+
+- [ ] T-073 Corregir inconsistencia de `maxdepth` en `session-resume.sh`
+  - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F06)
+  - **Hallazgo:** `session-start.sh:61` usa `find "$WP_DIR" -maxdepth 2 -name "*-task-plan.md"` (encuentra task-plan en `plan-execution/`). `session-resume.sh:65` usa `maxdepth 1` — no encuentra el task-plan en subdirectorio. La "próxima tarea" difiere entre inicio de sesión y post-compactación.
+  - Cambiar `maxdepth 1` a `maxdepth 2` en `session-resume.sh:65`.
+  - **Archivo a modificar:** `.claude/scripts/session-resume.sh` (L65)
+  - **Prioridad:** MEDIO
+  - **Depende de:** independiente
+
+---
+
 ## DAG de dependencias completo
 
 ```
@@ -779,6 +1032,36 @@ T-004 + T-005 + T-013 ──► T-044 (Fix Declarado ≠ Fix Verificado)
 ⚠ T-025 debe ejecutarse ANTES de T-020 — T-025 provee vocabulario OBSERVABLE/INFERRED/SPECULATIVE
   que T-020 necesita para la columna "Tipo". Sin T-025, T-020 produce la misma
   ambigüedad que ÉPICA 42 pretende resolver.
+
+── BLOQUES 21-27 (T-047..T-073) ─────────────────────────────────────────────────
+T-049 (normalizar current_work) — independiente
+  └── T-047 (política severidad validate-session-close.sh)
+  └── T-050 (stage_sync_required en sync-wp-state.sh)
+  └── T-071 (exit 0 en sync-wp-state.sh — consolidar con T-049)
+        └── T-056 (unificar validate-session-close.sh) — depende de T-047
+
+T-048 (hook PreToolUse Conventional Commits) — independiente
+T-051 (lint-agents.py en SessionStart hook) — independiente
+T-052 (bound-detector.py inglés) — independiente
+T-053 (document.md.template) — independiente
+T-054 (error-report.md.template) — independiente
+T-055 (requirements-spec ruta consistente) — independiente
+T-057 (Write/Edit en allowed-tools) — independiente
+T-058 (Phase 2 → Phase 5 en workflow-strategy) — independiente
+T-059 (categorization-plan.md.template) — independiente
+T-060 (ARCHITECTURE.md inventario canónico) — independiente
+T-061 (deep-dive vs agentic-reasoning desambiguación) — independiente
+T-062 (mysql-expert/postgresql-expert trigger pattern) — independiente
+T-063 (task-planner vs task-synthesizer desambiguación) — independiente
+T-064 (deep-review vs pattern-harvester desambiguación) — independiente
+T-065 (coordinadores multilinea → una línea) — independiente
+T-066 (bootstrap.py check deps MCP) — independiente
+T-067 (ADR coordinators estáticos) — independiente
+T-068 (bootstrap.py exit code correcto) — independiente
+T-069 (ADR python-mcp manual) — independiente
+T-070 (_generator.sh output no-vacío) — independiente
+T-072 (update-state.sh branch hardcodeado) — independiente
+T-073 (session-resume.sh maxdepth) — independiente
 ```
 
 ## Orden de ejecución sugerido
@@ -800,6 +1083,8 @@ T-004 + T-005 + T-013 ──► T-044 (Fix Declarado ≠ Fix Verificado)
 15. **T-039** (independiente) | **T-041** (después de T-016): paralelo
 16. **T-040** (después de T-018) | **T-042** (después de T-006 + T-002) | **T-043** (después de T-019): paralelo
 17. **T-044** (después de T-004 + T-005 + T-013) | **T-046** (después de T-002 + T-005): paralelo
+18. **T-049** → T-047, T-050, T-071 (paralelo) → T-056 (después de T-047)
+19. **Independientes B21-27** (paralelo entre sí): T-048, T-051, T-052, T-053, T-054, T-055, T-057, T-058, T-059, T-060, T-061, T-062, T-063, T-064, T-065, T-066, T-067, T-068, T-069, T-070, T-072, T-073
 
 ## Trazabilidad
 
@@ -834,3 +1119,30 @@ T-004 + T-005 + T-013 ──► T-044 (Fix Declarado ≠ Fix Verificado)
 | T-044 | — | cluster-a (H-G3), cluster-e (E3-C), cluster-c (H-C16) |
 | T-045 | — | cluster-a (H-A1) |
 | T-046 | AP-39 | cluster-c (H-C03) |
+| T-047 | — | cluster-f (H-F01, H-F02) |
+| T-048 | — | cluster-f (H-F05) |
+| T-049 | — | cluster-f (H-F07) |
+| T-050 | — | cluster-f (H-F03) |
+| T-051 | — | cluster-f (H-F13) |
+| T-052 | — | cluster-f (H-F04) |
+| T-053 | — | cluster-g (GAP-002) |
+| T-054 | — | cluster-g (GAP-005) |
+| T-055 | — | cluster-g (GAP-003) |
+| T-056 | — | cluster-g (GAP-006) |
+| T-057 | — | cluster-g (GAP-008) |
+| T-058 | — | cluster-g (GAP-001) |
+| T-059 | — | cluster-g (GAP-004) |
+| T-060 | — | cluster-h (H-01), cluster-i (H-01) |
+| T-061 | — | cluster-h (H-04) |
+| T-062 | — | cluster-h (H-02) |
+| T-063 | — | cluster-h (H-05) |
+| T-064 | — | cluster-h (H-06) |
+| T-065 | — | cluster-h (H-03) |
+| T-066 | — | cluster-i (H-03) |
+| T-067 | — | cluster-i (GAP-1, H-09) |
+| T-068 | — | cluster-i (H-02, RP-3, RP-4) |
+| T-069 | — | cluster-i (GAP-2, H-04) |
+| T-070 | — | cluster-i (H-08) |
+| T-071 | — | cluster-f (H-F11) |
+| T-072 | — | cluster-f (H-F09) |
+| T-073 | — | cluster-f (H-F06) |
