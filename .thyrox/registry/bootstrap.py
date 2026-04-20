@@ -80,6 +80,12 @@ MCP_SERVERS = {
     }
 }
 
+# Dependencias Python requeridas por cada MCP server
+MCP_SERVER_DEPS = {
+    "thyrox-memory": ["faiss", "sentence_transformers"],
+    "thyrox-executor": [],
+}
+
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -219,6 +225,21 @@ def parse_field(yml_path: Path, field: str) -> str:
     return ""
 
 
+# ─── Verificación de dependencias ────────────────────────────────────────────
+
+def check_python_deps() -> dict[str, bool]:
+    """Verifica dependencias Python para MCP servers."""
+    import importlib.util
+    deps = {
+        "faiss": importlib.util.find_spec("faiss") is not None,
+        "sentence_transformers": importlib.util.find_spec("sentence_transformers") is not None,
+    }
+    for dep, available in deps.items():
+        if not available:
+            print(f"  [WARN] {dep} no disponible — MCP server thyrox-memory no funcionará")
+    return deps
+
+
 # ─── Generadores ─────────────────────────────────────────────────────────────
 
 def generate_agent_md(name: str, description: str, tools: list[str], body: str) -> str:
@@ -238,13 +259,14 @@ tools:
 """
 
 
-def install_core_agents(force: bool, model: str) -> list[str]:
+def install_core_agents(force: bool, model: str) -> tuple[list[str], int]:
     """
     Instala los 4 agentes core desde .claude/agents/ ya existentes.
     Si el archivo ya existe y no hay --force, reporta skip.
-    Retorna lista de agentes instalados.
+    Retorna (lista de agentes instalados, número de fallos).
     """
     installed = []
+    failed = 0
     source_dir = AGENTS_DIR
 
     # Los agentes core ya existen como .md en .claude/agents/
@@ -259,26 +281,27 @@ def install_core_agents(force: bool, model: str) -> list[str]:
             installed.append(agent_name)
         else:
             print(f"  [FAIL] {agent_name:<20} → no encontrado en .claude/agents/")
+            failed += 1
 
-    return installed
+    return installed, failed
 
 
-def install_tech_agent(tech: str, force: bool, model: str, project_name: str) -> bool:
+def install_tech_agent(tech: str, force: bool, model: str, project_name: str) -> tuple[bool, int]:
     """
     Genera .claude/agents/{tech}-expert.md desde registry YAML + template.
-    Retorna True si se generó, False si se saltó.
+    Retorna (instalado: bool, failed: int) — failed=1 si hubo error real, 0 si solo skip.
     """
     dest = AGENTS_DIR / f"{tech}-expert.md"
 
     if dest.exists() and not force:
         print(f"  [OK] {tech}-expert{' ' * max(0, 18 - len(tech))} → ya existe — skip")
-        return False
+        return False, 0
 
     # Buscar YAML en registry
     yml_path = REGISTRY_DIR / "agents" / f"{tech}-expert.yml"
     if not yml_path.exists():
         print(f"  [FAIL] {tech}-expert{' ' * max(0, 18 - len(tech))} → no hay YAML en registry/agents/{tech}-expert.yml")
-        return False
+        return False, 1
 
     # Leer campos del YAML
     name = parse_field(yml_path, "name") or f"{tech}-expert"
@@ -309,7 +332,7 @@ def install_tech_agent(tech: str, force: bool, model: str, project_name: str) ->
     action = "sobreescrito" if dest.exists() else "creado"
     dest.write_text(content)
     print(f"  [OK] {tech}-expert{' ' * max(0, 18 - len(tech))} → .claude/agents/{tech}-expert.md ({action})")
-    return True
+    return True, 0
 
 
 def update_mcp_json(force: bool) -> None:

@@ -305,7 +305,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > — eso es FALSO para 64% de los agentes. T-008 actualiza ARCHITECTURE.md pero no
 > puede corregir el claim si los YMLs no existen.
 
-- [~] T-023 Crear YMLs de documentación para los 16 agentes sin origen en registry @task-executor (claimed: 2026-04-20 13:42:50)
+- [x] T-023 Crear YMLs de documentación para los 16 agentes sin origen en registry @task-executor (done: 2026-04-20 13:43:52)
   - Los 16 agentes: todos los coordinators (dmaic, pdca, lean, rup, rm, pm, ba, pps,
     sp, cp, bpa + thyrox-coordinator) y agentes de análisis (deep-dive, deep-review,
     diagrama-ishikawa, agentic-reasoning)
@@ -695,7 +695,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-049 (normalizar formato `current_work` primero)
 
-- [~] T-048 Crear hook PreToolUse Bash para validar Conventional Commits @task-executor (claimed: 2026-04-20 13:40:23)
+- [x] T-048 Crear hook PreToolUse Bash para validar Conventional Commits @task-executor (done: 2026-04-20 13:41:30)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F05, Gap-2)
   - **Hallazgo:** No existe hook PreToolUse para `Bash(git commit *)`. La invariante I-005 (Conventional Commits) es puramente declarativa — ningún script la verifica en el flujo automatizado.
   - Crear `.claude/scripts/validate-commit-message.sh` que extraiga el mensaje del commit del comando, valide contra regex `^(feat|fix|refactor|docs|chore|test|perf)(\(.+\))?: .{1,72}$`, y retorne deny si no cumple.
@@ -711,11 +711,12 @@ como guidelines accionables, agente validador, y patrones consultables.
 > **Contexto:** `sync-wp-state.sh` nunca actualiza `stage:` en `now.md` y el
 > campo `current_work` tiene formato incompatible entre 3 scripts distintos.
 
-- [~] T-049 Normalizar formato del valor `current_work` en `now.md` @task-executor (claimed: 2026-04-20 13:40:23)
+- [x] T-049 Normalizar formato del valor `current_work` en `now.md` @task-executor (done: 2026-04-20 13:41:30)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F07)
   - **Hallazgo:** `sync-wp-state.sh:25` produce path relativo al repo root; `project-status.sh:44` espera path relativo a CONTEXT_DIR; `validate-session-close.sh:99` verifica con `[ -d "$CURRENT_WORK" ]`. Los tres scripts consumen `current_work` con convenciones distintas — inconsistencia estructural.
   - Decidir formato canónico (Opción A: path relativo al repo root `.thyrox/context/work/NOMBRE`). Actualizar los tres scripts para usar el mismo formato. Actualizar también `close-wp.sh`.
   - **Archivos:** `.claude/scripts/sync-wp-state.sh` (L25), `.claude/scripts/project-status.sh` (L44), `.claude/scripts/validate-session-close.sh` (L98-104), `.claude/scripts/close-wp.sh`
+  - **Resultado:** sync-wp-state.sh ya correcto. project-status.sh L44 corregido: `${CONTEXT_DIR}/` → `${PROJECT_ROOT}/`. validate-session-close.sh L99 correcto (path relativo funciona desde repo root). close-wp.sh no requiere cambio (solo escribe null).
   - **Prioridad:** CRÍTICO
   - **Depende de:** independiente
 
@@ -727,7 +728,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-049
 
-- [~] T-051 Agregar `lint-agents.py` al hook SessionStart @task-executor (claimed: 2026-04-20 13:40:23)
+- [x] T-051 Agregar `lint-agents.py` al hook SessionStart @task-executor (done: 2026-04-20 13:41:30)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F13)
   - **Hallazgo:** `lint-agents.py` no está en ningún hook. Los invariantes I-007 (allowed-tools) e I-008 (description pattern) solo se verifican si el desarrollador lo corre manualmente. El script corre en <1s.
   - Agregar segunda entrada en el hook SessionStart en `.claude/settings.json` que ejecute `python3 .claude/scripts/lint-agents.py || true`.
