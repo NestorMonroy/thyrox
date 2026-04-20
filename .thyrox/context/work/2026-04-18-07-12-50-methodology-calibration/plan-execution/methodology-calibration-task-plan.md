@@ -687,7 +687,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > `exit 0` incondicionalmente — el hook detecta problemas pero nunca bloquea nada.
 > El nombre "validate" crea expectativa de enforcement que no existe.
 
-- [ ] T-047 Diseñar política de severidad en `validate-session-close.sh`
+- [~] T-047 Diseñar política de severidad en `validate-session-close.sh` @task-executor (claimed: 2026-04-20 13:49:56)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F01, H-F02)
   - **Hallazgo:** `validate-session-close.sh` L116 y `stop-hook-git-check.sh` L39 retornan `exit 0` incondicionalmente. El hook detecta hasta 4 categorías de problemas reales pero no actúa sobre ninguno.
   - Introducir dos clases de severidad: WARN (exit 0) para timestamps incompletos y agentes huérfanos con resultado recolectado; BLOCK (exit 2) para `current_work` apuntando a directorio inexistente e inconsistencia crítica de estado.
@@ -720,7 +720,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** independiente
 
-- [ ] T-050 Agregar `stage_sync_required` en `sync-wp-state.sh` al cambiar WP
+- [~] T-050 Agregar `stage_sync_required` en `sync-wp-state.sh` al cambiar WP @task-executor (claimed: 2026-04-20 13:49:56)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F03)
   - **Hallazgo:** `sync-wp-state.sh` actualiza `current_work` en `now.md` (L44-47) pero nunca actualiza `stage:` ni `phase:`. El estado de fase se desincroniza silenciosamente cuando el agente escribe en un WP sin actualizar el stage manualmente.
   - Cuando `sync-wp-state.sh` detecta cambio de `current_work`, agregar `stage_sync_required: true` en `now.md` para que `session-start.sh` lo detecte y alerte al agente.
@@ -777,7 +777,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-056 Unificar `validate-session-close.sh` en `workflow-track` y `workflow-standardize`
+- [~] T-056 Unificar `validate-session-close.sh` en `workflow-track` y `workflow-standardize` @task-executor (claimed: 2026-04-20 13:49:56)
   - **Fuentes:** cluster-g-workflow-anatomy-gaps.md (GAP-006)
   - **Hallazgo:** Phase 11 ejecuta `workflow-track/scripts/validate-session-close.sh` (versión antigua). Phase 12 ejecuta `.claude/scripts/validate-session-close.sh` (versión actual). Las validaciones son distintas e incompatibles — una puede pasar lo que la otra rechaza.
   - Eliminar `workflow-track/scripts/validate-session-close.sh` y actualizar `workflow-track/SKILL.md` L27 para invocar `.claude/scripts/validate-session-close.sh`.
