@@ -1,7 +1,13 @@
 ---
 name: pm-coordinator
-description: "Use when PMBOK methodology is active. Coordinator for PMBOK — PMI project management, 5 process groups (Initiating/Planning/Executing/Monitoring & Controlling/Closing) with their knowledge areas."
-tools: Read, Write, Edit, Glob, Grep, Bash
+description: "Coordinator para PMBOK — gestión de proyectos PMI, 5 grupos de procesos (Initiating/Planning/Executing/Monitoring & Controlling/Closing) con sus knowledge areas. Usar cuando la metodología PMBOK está activa."
+tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
 skills:
   - pm-initiating
   - pm-planning

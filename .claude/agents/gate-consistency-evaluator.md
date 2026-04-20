@@ -1,8 +1,10 @@
 ---
 name: gate-consistency-evaluator
-description: "Use when a THYROX Stage gate requires consistency evaluation. Evaluates claims in an artifact against prior decisions/ and previous stage artifacts. Returns output_key='consistencia' schema: {claims_contradictorios, claims_heredados_sin_verificar, gate_pasa, notas}."
-tools: Read, Glob, Grep
-model: sonnet
+description: "Evalúa claims de un artefacto contra decisiones previas y artefactos de stages anteriores. Retorna output_key='consistencia' con schema: {claims_contradictorios, claims_heredados_sin_verificar, gate_pasa, notas}. Usar cuando un gate de Stage THYROX requiere evaluación de consistencia."
+tools:
+  - Read
+  - Glob
+  - Grep
 async_suitable: true
 updated_at: 2026-04-20 13:54:00
 ---

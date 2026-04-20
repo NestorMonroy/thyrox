@@ -1,6 +1,6 @@
 ---
 name: postgresql-expert
-description: "Use when working with PostgreSQL queries, schema design, migrations, indexes, or transactions. Tech-expert for PostgreSQL."
+description: "Tech-expert para PostgreSQL. Usar cuando se trabaja con PostgreSQL queries, schema design, migrations, indexes o transacciones."
 tools:
   - Read
   - Write

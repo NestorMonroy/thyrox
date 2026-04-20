@@ -1,6 +1,6 @@
 ---
 name: webpack-expert
-description: Tech-expert para Webpack y bundling de assets. Conoce configuración de entry/output, loaders, plugins, code splitting, optimización de bundles y resolución de módulos.
+description: "Tech-expert para Webpack y bundling de assets. Conoce configuración de entry/output, loaders, plugins, code splitting, optimización de bundles y resolución de módulos. Usar cuando se trabaja con Webpack: configuración, optimización de bundles o resolución de módulos."
 tools:
   - Read
   - Write

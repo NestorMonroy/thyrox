@@ -1,6 +1,6 @@
 ---
 name: mysql-expert
-description: "Use when working with MySQL queries, schema design, migrations, indexes, or optimization. Tech-expert for MySQL and relational databases."
+description: "Tech-expert para MySQL y bases de datos relacionales. Usar cuando se trabaja con MySQL queries, schema design, migrations, indexes u optimización."
 tools:
   - Read
   - Write

@@ -1,8 +1,12 @@
 ---
 name: agentic-validator
-description: "Use when you need to validate Python agentic code against the AP-01..AP-30 catalog. Detects: ADK callback contract violations (AP-01/02), type contract mismatches (AP-03/06), wrong classifier temperature (AP-07/08), missing error handling (AP-09/12), observability anti-patterns (AP-13/15), decorative HITL (AP-16/17), deprecated imports (AP-18/22), agentic design issues (AP-23/30). Returns a structured report with AP-ID, severity, file:line, and correction."
-tools: Read, Glob, Grep, Bash, Write
-model: sonnet
+description: "Valida código Python agentic contra el catálogo AP-01..AP-42. Detecta: violaciones de callback ADK (AP-01/02), type contracts (AP-03/06), temperatura incorrecta en clasificadores (AP-07/08), error handling faltante (AP-09/12), anti-patrones de observabilidad (AP-13/15), HITL decorativo (AP-16/17), imports deprecados (AP-18/22), diseño agentic (AP-23/30). Usar cuando se necesite validar código agentic Python: retorna reporte con AP-ID, severidad, file:line y corrección."
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - Write
 async_suitable: true
 updated_at: 2026-04-20 13:43:15
 ---

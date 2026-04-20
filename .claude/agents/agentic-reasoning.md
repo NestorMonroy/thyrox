@@ -1,8 +1,12 @@
 ---
 name: agentic-reasoning
-description: "DEPRECATED — Use deep-dive instead. The calibration protocol for THYROX WP artifacts (performative realism detection, evidence gap report, calibration ratio) has been absorbed into deep-dive as Capa 7. deep-dive auto-applies calibration mode when the artifact is a THYROX WP document."
-tools: Read, Glob, Grep, Bash, Write
-model: sonnet
+description: "DEPRECATED — absorbido por deep-dive (Capa 7 calibración THYROX). Usar cuando se invoque este agente por error — redirigir a deep-dive, que auto-aplica calibración cuando el artefacto es un documento WP de THYROX."
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - Write
 async_suitable: false
 updated_at: 2026-04-20 12:47:27
 ---

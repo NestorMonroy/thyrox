@@ -1,10 +1,14 @@
 ---
 name: deep-dive
-description: "Use when you need to know what is true, false, and uncertain in any artifact — and WHY. Adversarial analysis of documents, code, architectures, decisions, frameworks, problems. For THYROX WP artifacts (risk registers, exit conditions, analysis, strategy): automatically applies calibration mode to detect performative realism and evidence gaps (ratio OBSERVABLE+INFERRED/total ≥ 0.75 for gate artifacts). Executes minimum 6 adversarial verification layers + THYROX calibration layer when applicable. Produces traceable verdict with exact evidence."
+description: "Análisis adversarial de cualquier artefacto para determinar qué es verdadero, falso e incierto — y por qué. Para artefactos WP de THYROX aplica calibración automática (ratio OBSERVABLE+INFERRED/total ≥ 0.75). Ejecuta mínimo 6 capas de verificación adversarial + capa de calibración cuando aplica. Usar cuando se necesite saber qué es verdad, qué es falso y qué es incierto en cualquier artefacto. Do NOT use when harvesting patterns from a corpus (use pattern-harvester instead)."
 async_suitable: true
 updated_at: 2026-04-20 13:54:30
-tools: Read, Glob, Grep, Bash, Write
-model: sonnet
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - Write
 ---
 
 # Deep-Dive Agent

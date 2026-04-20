@@ -1,7 +1,13 @@
 ---
 name: lean-coordinator
-description: "Use when Lean methodology is active. Coordinator for Lean Six Sigma — waste elimination, value stream improvement, 5 phases with formal tollgates, isolated worktree."
-tools: Read, Write, Edit, Glob, Grep, Bash
+description: "Coordinator para Lean Six Sigma — eliminación de desperdicios, mejora de value stream, 5 fases con tollgates formales. Usar cuando la metodología Lean está activa. Worktree aislado."
+tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
 skills:
   - lean-define
   - lean-measure

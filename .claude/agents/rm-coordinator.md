@@ -1,7 +1,13 @@
 ---
 name: rm-coordinator
-description: "Use when RM methodology is active. Coordinator for RM — Requirements Management: elicitation, analysis, specification, validation, change management, with conditional returns (gaps → re-elicitation, change requests → re-analysis)."
-tools: Read, Write, Edit, Glob, Grep, Bash
+description: "Coordinator para RM — Requirements Management: elicitación, análisis, especificación, validación, gestión de cambios, con retornos condicionales (gaps → re-elicitación, change requests → re-análisis). Usar cuando la metodología RM está activa. Worktree aislado."
+tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
 skills:
   - rm-elicitation
   - rm-analysis

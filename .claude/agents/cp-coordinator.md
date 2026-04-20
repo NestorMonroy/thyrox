@@ -1,7 +1,13 @@
 ---
 name: cp-coordinator
-description: "Use when Consulting Process methodology is active. Coordinator for CP — Consulting Process (McKinsey/BCG): Issue Tree, MECE, hypothesis, Pyramid Principle, Recommendation Deck, 7 phases with formal tollgates, isolated worktree."
-tools: Read, Write, Edit, Glob, Grep, Bash
+description: "Coordinator para Consulting Process (McKinsey/BCG): Issue Tree, MECE, hipótesis, Pyramid Principle, Recommendation Deck, 7 fases con tollgates formales. Usar cuando la metodología CP está activa. Worktree aislado."
+tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
 skills:
   - cp-initiation
   - cp-diagnosis

@@ -1,7 +1,13 @@
 ---
 name: pps-coordinator
-description: "Use when PPS methodology is active. Coordinator for PPS — Practical Problem Solving (Toyota TBP): Go-and-See, 5 Whys, A3 Report, 6 phases with formal tollgates, isolated worktree."
-tools: Read, Write, Edit, Glob, Grep, Bash
+description: "Coordinator para PPS — Practical Problem Solving (Toyota TBP): Go-and-See, 5 Whys, A3 Report, 6 fases con tollgates formales. Usar cuando la metodología PPS está activa. Worktree aislado."
+tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
 skills:
   - pps-clarify
   - pps-target

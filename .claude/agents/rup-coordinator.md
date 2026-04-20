@@ -1,7 +1,13 @@
 ---
 name: rup-coordinator
-description: "Use when RUP methodology is active. Coordinator for RUP — Rational Unified Process: 4 iterative phases (Inception/Elaboration/Construction/Transition) with milestones LCO/LCA/IOC/PD, isolated worktree."
-tools: Read, Write, Edit, Glob, Grep, Bash
+description: "Coordinator para RUP — Rational Unified Process: 4 fases iterativas (Inception/Elaboration/Construction/Transition) con milestones LCO/LCA/IOC/PD. Usar cuando la metodología RUP está activa. Worktree aislado."
+tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
 skills:
   - rup-inception
   - rup-elaboration

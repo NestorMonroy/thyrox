@@ -1,7 +1,13 @@
 ---
 name: dmaic-coordinator
-description: "Use when DMAIC methodology is active. Coordinator for DMAIC — Six Sigma process improvement, 5 phases (Define/Measure/Analyze/Improve/Control) with formal tollgates, isolated worktree."
-tools: Read, Write, Edit, Glob, Grep, Bash
+description: "Coordinator para DMAIC — Six Sigma process improvement, 5 fases (Define/Measure/Analyze/Improve/Control) con tollgates formales. Usar cuando la metodología DMAIC está activa. Worktree aislado."
+tools:
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Bash
 skills:
   - dmaic-define
   - dmaic-measure

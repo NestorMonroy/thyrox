@@ -1,10 +1,14 @@
 ---
 name: pattern-harvester
-description: "Use when extracting actionable patterns from a corpus of deep-dive and calibration analysis files. Reads multiple file pairs (calibration + deep-dive), maps each finding to a THYROX component (skills, hooks, agents, guidelines, templates), and produces a structured harvest report distinguishing what's already covered in the task-plan vs. what's new. Specialized for converting large analysis corpora into implementable improvements. Do NOT use for phase-to-phase coverage analysis (use deep-review instead)."
+description: "Extrae patrones accionables de un corpus de archivos de análisis deep-dive y calibración, mapeando hallazgos a componentes THYROX (skills, hooks, agentes, guidelines, templates). Produce harvest report distinguiendo qué ya está cubierto vs. qué es nuevo. Usar cuando se consolidan outputs de análisis en mejoras implementables. Do NOT use for phase-to-phase coverage analysis (use deep-review instead)."
 async_suitable: true
 updated_at: 2026-04-20 13:27:25
-tools: Read, Glob, Grep, Bash, Write
-model: sonnet
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+  - Write
 ---
 
 # Pattern Harvester Agent
