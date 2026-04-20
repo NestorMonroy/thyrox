@@ -145,7 +145,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 7 — Consistencia de nomenclatura de stages (nuevo hallazgo)
 
-- [ ] T-014 Corregir nombres de stages viejos en 12 archivos — 26 ocurrencias
+- [~] T-014 Corregir nombres de stages viejos en 12 archivos — 26 ocurrencias @task-executor (claimed: 2026-04-20 13:08:54)
   - **Contexto:** El rename Stage 2→BASELINE, Stage 3→DIAGNOSE, Stage 6→SCOPE, Stage 10→IMPLEMENT
     está documentado en CLAUDE.md glosario pero los skills **no fueron actualizados**.
     El resultado: README.md dice "Stage 6 — SCOPE" y SKILL.md dice "Phase 6: PLAN" — fuente única de
