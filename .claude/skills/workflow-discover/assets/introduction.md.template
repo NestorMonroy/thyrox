@@ -53,6 +53,23 @@ Este documento es el inicio de PHASE 2: ANALYZE. Las subsecciones que siguen son
 
 ---
 
+## Mapa epistémico
+
+> Completar al finalizar Stage 1 DISCOVER. Distingue lo observado de lo inferido.
+
+| Categoría | Claims |
+|-----------|--------|
+| **Observaciones directas** (PROVEN) | *(Lista de claims derivados de tool output citado)* |
+| **Inferencias calibradas** (INFERRED) | *(Lista de claims derivados de evidencia + razonamiento explícito)* |
+| **Especulaciones marcadas** (SPECULATIVE) | *(Lista de hipótesis para validar en stages posteriores)* |
+
+**Ratio de calibración:** X observaciones + Y inferencias / Z total claims = [%]
+
+> Claims SPECULATIVE no pueden fundamentar gates de stage (I-012).
+> Claims con Confianza=baja y Origen=heredado deben re-verificarse en Stage N+1 (I-013).
+
+---
+
 ## Siguiente Paso
 
 Una vez completado este documento:
