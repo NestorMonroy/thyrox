@@ -272,6 +272,22 @@ How we respect it: Entire solution uses Java 17 + Spring ecosystem
 
 ---
 
+## Evidencia de respaldo
+
+> Todo claim que fundamente una decisión de gate Stage 5→6 debe estar clasificado aquí.
+> Claims SPECULATIVE sin fuente observable bloquean el gate (I-012). Ver: `.claude/references/evidence-classification.md`
+
+| Claim | Tipo | Fuente | Confianza | Origen |
+|-------|------|--------|-----------|--------|
+| [decisión estratégica principal] | PROVEN/INFERRED/SPECULATIVE | [tool output citado / documento / inferencia] | alta/media/baja | nuevo/heredado |
+
+> PROVEN = producido por tool_use ejecutado en este WP (Bash, Read, Grep output citado textualmente)
+> INFERRED = derivado de observables con razonamiento explícito documentado
+> SPECULATIVE = sin observable de origen — NO puede fundamentar gates de stage (I-012)
+> Origen heredado + Confianza baja → re-verificar en este stage antes de avanzar (I-013)
+
+---
+
 ## Validation Checklist
 
 - [ ] Key ideas clearly articulated
@@ -284,6 +300,7 @@ How we respect it: Entire solution uses Java 17 + Spring ecosystem
 - [ ] Constraints respected
 - [ ] Traceable to PHASE 2: ANALYZE
 - [ ] Clear guidance for PHASE 4: STRUCTURE
+- [ ] Sección "Evidencia de respaldo" con ≥3 claims clasificados (ninguno SPECULATIVE sin flag)
 
 ---
 

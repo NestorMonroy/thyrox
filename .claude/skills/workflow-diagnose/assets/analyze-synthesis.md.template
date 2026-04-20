@@ -90,6 +90,22 @@ graph TD
 
 ---
 
+## Evidencia de respaldo
+
+> Todo claim que fundamente una decisión de gate Stage 3→4 debe estar clasificado aquí.
+> Claims SPECULATIVE sin fuente observable bloquean el gate (I-012). Ver: `.claude/references/evidence-classification.md`
+
+| Claim | Tipo | Fuente | Confianza | Origen |
+|-------|------|--------|-----------|--------|
+| [afirmación principal sobre causa raíz] | PROVEN/INFERRED/SPECULATIVE | [tool output citado / documento / inferencia] | alta/media/baja | nuevo/heredado |
+
+> PROVEN = producido por tool_use ejecutado en este WP (Bash, Read, Grep output citado textualmente)
+> INFERRED = derivado de observables con razonamiento explícito documentado
+> SPECULATIVE = sin observable de origen — NO puede fundamentar gates de stage (I-012)
+> Origen heredado + Confianza baja → re-verificar en este stage antes de avanzar (I-013)
+
+---
+
 ## Stopping Point Manifest
 
 > Completar antes de presentar el gate 3→4.
@@ -98,3 +114,4 @@ graph TD
 |----|-------------|--------|
 | SP-01 | Gate 3→4: usuario valida causas raíz | pendiente |
 | SP-02 | Risk register actualizado con hallazgos | pendiente |
+| SP-03 | Sección "Evidencia de respaldo" con ≥3 claims clasificados (ninguno SPECULATIVE sin flag) | pendiente |

@@ -323,7 +323,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > completa en español pero solo 2 patrones en inglés. "process all", "analyze every",
 > "check each", "read all files" no son interceptados.
 
-- [ ] T-024 Ampliar UNBOUNDED_SIGNALS en `bound-detector.py` — cobertura inglés
+- [~] T-024 Ampliar UNBOUNDED_SIGNALS en `bound-detector.py` — cobertura inglés @task-executor (claimed: 2026-04-20 13:51:04)
   - Agregar a `UNBOUNDED_SIGNALS` en `.claude/scripts/bound-detector.py`:
     ```python
     r"\bprocess all\b", r"\banalyze every\b", r"\bcheck each\b",
@@ -1004,7 +1004,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 31 — Referencias de calibración en skills de stages de riesgo (ALTO)
 
-- [ ] T-081 Referenciar `agentic-calibration-workflow-example.md` desde skills de stages de mayor riesgo
+- [~] T-081 Referenciar `agentic-calibration-workflow-example.md` desde skills de stages de mayor riesgo @task-executor (claimed: 2026-04-20 13:51:04)
   - **Fuentes:** harvest-cluster-e (E3-A/B/C ALTO)
   - **Hallazgo:** T-075 crea el vínculo en `deep-dive.md`, pero los 6 patrones operacionales son relevantes para agentes que generan artefactos iterativos. Sin referencia en SKILL.md de stages de producción, el documento queda solo como referencia de análisis.
   - Agregar nota en sección "Artefactos de salida" de workflow-diagnose, workflow-strategy, workflow-decompose SKILL.md.
@@ -1064,13 +1064,13 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 34 — Agent quality: gaps residuales (MEDIO)
 
-- [ ] T-088 YMLs de agentes de análisis sin registry — verificar solapamiento con T-023
+- [~] T-088 YMLs de agentes de análisis sin registry — verificar solapamiento con T-023 @task-executor (claimed: 2026-04-20 13:51:04)
   - **Fuentes:** cluster-h (18/27 agentes sin YML)
   - **Nota:** Si T-023 ya cubre deep-dive, deep-review, diagrama-ishikawa, pattern-harvester → marcar CANCELADO.
   - **Prioridad:** MEDIO
   - **Depende de:** T-023 (verificar solapamiento)
 
-- [ ] T-089 Agregar `tech-detector` y `skill-generator` al inventario de ARCHITECTURE.md
+- [~] T-089 Agregar `tech-detector` y `skill-generator` al inventario de ARCHITECTURE.md @task-executor (claimed: 2026-04-20 13:51:04)
   - **Fuentes:** cluster-h (H-04)
   - **Hallazgo:** T-060 crea ARCHITECTURE.md pero puede omitir tech-detector y skill-generator como tipo `infra`.
   - **Archivo a modificar:** `.claude/ARCHITECTURE.md` (cuando T-060 lo cree)
