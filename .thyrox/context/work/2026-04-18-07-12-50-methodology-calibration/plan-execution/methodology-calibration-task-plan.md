@@ -1093,7 +1093,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 36 — PreToolUse hook I-001: efectividad 100% vs 30% (ALTO)
 
-- [~] T-091 Agregar PreToolUse hook para verificar I-001 antes de crear task-plan @task-executor (claimed: 2026-04-20 13:53:34)
+- [x] T-091 Agregar PreToolUse hook para verificar I-001 antes de crear task-plan @task-executor (done: 2026-04-20 13:56:26)
   - **Fuentes:** harvest-cluster-e (H-E10 ALTO)
   - **Hallazgo:** T-022 implementa I-001 como Stop hook (~30% efectividad). PreToolUse en Write tendría 100%.
   - Crear `.claude/scripts/check-i001-prewrite.sh` + entrada PreToolUse en `.claude/settings.json`.
