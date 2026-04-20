@@ -55,27 +55,29 @@ status: Pendiente aprobación
 - [ ] `.github/dependabot.yml` — Configuración de actualizaciones de deps
 - [ ] `.github/release.yml` — Configuración de releases automáticas
 
-### Workflows Reutilizando Scripts Existentes (5 archivos)
-- [ ] `workflows/validate.yml` — MEJORAR existente: agregar validación de links rotos (reutilizar detect-missing-md-links.sh)
-- [ ] `workflows/test-commit-messages.yml` — Validar commits convencionales en PRs (reutilizar validate-commit-message.sh)
-- [ ] `workflows/test-markdown-links.yml` — Detectar y reportar links rotos en PRs (reutilizar detect-missing-md-links.sh)
-- [ ] `workflows/test-context-audit.yml` — Ejecutar auditoría de contexto (reutilizar context-audit.sh)
-- [ ] `workflows/feature-to-develop.yml` — Flujo basic feature → develop (PR checks, tests simples)
+### Workflows para feature → develop (3 archivos)
+
+Validación a nivel de REPOSITORIO — NO del Sistema Agentic AI
+
+- [ ] `workflows/test-markdown-links.yml` — Detectar links rotos en documentación (reutilizar detect-missing-md-links.sh)
+- [ ] `workflows/validate-references.yml` — Validar referencias a archivos no existentes
+- [ ] `workflows/detect-secrets.yml` — Detectar secretos committeados (API keys, tokens, credenciales)
 
 ---
 
 ## Out-of-Scope
 
-| Excluido | Razón |
-|---|---|
-| Implementación de lógica en GitHub Actions | Trabajo mecánico — las acciones son stubs, se implementan en futuro WP |
-| Scripts funcionales (mention, pr-review) | Los directorios se crean pero scripts están vacíos/documentados |
-| Workflows complejos (develop → main, releases automáticas) | Requieren políticas de merging/branches que no están definidas aún |
-| Validación de WP artifacts en CI (P-1 a P-10) | Requiere análisis profundo en fase ANALYZE — no está descartada, está diferida |
-| Tests complejos (pytest, suites de testing) | Se comienza con validaciones simples (links, commits) — tests pueden agregarse iterativamente |
-| Integración con herramientas externas | Ej: Slack, Discord, servicios — fuera de alcance |
-| Automatización de issue triage (bots) | Ej: marvin-*, auto-close-* — futuro WP |
-| Documentación completa de cada componente | Crear comentarios de propósito, no documentación extensiva |
+| Excluido | Razón | Responsable |
+|---|---|---|
+| Validación de YAML sintaxis | Diferentes formatos: Claude Code skills vs THYROX internos | Sistema Agentic AI |
+| Validación de metadatos completos en WP artifacts | Requiere conocimiento de templates por tipo de archivo | Sistema Agentic AI |
+| Validación de estructura interna (.claude/ vs .thyrox/) | Depende de convenciones del sistema THYROX | Sistema Agentic AI |
+| Implementación de lógica en GitHub Actions | Acciones son stubs, se implementan en futuro WP | Futuro WP |
+| Scripts funcionales (mention, pr-review) | Los directorios se crean pero scripts están vacíos/documentados | Futuro WP |
+| Workflows complejos (develop → main) | main es producción, no en scope actual | Futuro WP |
+| Tests de funcionalidad (pytest, testing) | Se comienza con validaciones de repo, no lógica | Futuro WP |
+| Integración con servicios externos | Ej: Slack, Discord — fuera de alcance | Out of scope |
+| Automatización de issue triage (bots) | Ej: marvin-*, auto-close-* — futuro WP | Futuro WP |
 
 ---
 
@@ -88,16 +90,17 @@ status: Pendiente aprobación
 | GitHub Actions (3 stubs) | 3 | 2 tareas |
 | Scripts directories (3) | 3 | 2 tareas |
 | Config files (3) | 3 | 2 tareas |
-| Workflows con scripts existentes (5) | 5 | 3 tareas |
+| Workflows para feature → develop (3) | 3 | 2 tareas |
 | Documentación + commits | — | 1 tarea |
-| **Total** | **23 componentes** | **13 tareas** |
+| **Total** | **21 componentes** | **12 tareas** |
 
-**Clasificación:** Pequeño (13 tareas, work estructurado + reutilización de scripts)
+**Clasificación:** Pequeño (12 tareas, work estructurado + reutilización de scripts)
 **Fases activas:** 1 (DISCOVER) + 6 (SCOPE) + 7 (DESIGN) + 8 (PLAN EXECUTION)
 
 **Dependencias:**
-- Workflows reutilizan scripts existentes en `.claude/scripts/`: validate-commit-message.sh, detect-missing-md-links.sh, context-audit.sh
-- feature → develop → main requiere definición previa de branching strategy
+- test-markdown-links.yml reutiliza detect-missing-md-links.sh
+- detect-secrets.yml puede usar herramientas estándar (git secrets, truffleHog, etc.)
+- validate-references.yml es logic nueva (verificar archivos referenced existen)
 
 ---
 
