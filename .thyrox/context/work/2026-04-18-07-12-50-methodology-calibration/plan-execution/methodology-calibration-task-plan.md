@@ -356,7 +356,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** independiente — prerequisito de T-020 y T-026
 
-- [ ] T-026 Extender tabla "Evidencia de respaldo" de T-020 — columna Origen + criterios de Confianza
+- [~] T-026 Extender tabla "Evidencia de respaldo" de T-020 — columna Origen + criterios de Confianza @task-executor (claimed: 2026-04-20 13:59:00)
   - **Fuentes:** cluster-b (B-MA-1 CRÍTICO — contratos de output_key undefined; H-B5 ALTO — abstraction collapse en outputs)
   - Extender la tabla definida en T-020 con columna adicional:
     ```markdown
@@ -960,7 +960,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** T-025 (vocabulario epistémico definido)
 
-- [ ] T-077 Documentar exclusión del Evaluador-Basin del gate calibrado como ADR
+- [~] T-077 Documentar exclusión del Evaluador-Basin del gate calibrado como ADR @task-executor (claimed: 2026-04-20 13:59:00)
   - **Fuentes:** `discover/clustering-basin-integration-analysis.md` (GAP-4 MEDIO)
   - **Hallazgo:** El archivo propone un 4to evaluador para los gates con pseudocódigo completo y 5 experimentos PILOT. El gate de T-033..T-036 tiene 3 evaluadores. La exclusión no está documentada — no hay ADR que registre la decisión de diferirlo ni por qué.
   - Crear `.thyrox/context/decisions/adr-gate-basin-evaluator-deferral.md` documentando la decisión de usar 3 evaluadores y diferir el Basin al próximo WP con criterio explícito de cuándo incorporarlo.
@@ -1081,7 +1081,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 35 — Evaluador-Basin: criterio de activación (MEDIO)
 
-- [ ] T-090 Agregar criterio de activación del Evaluador-Basin en ADR de deferral
+- [~] T-090 Agregar criterio de activación del Evaluador-Basin en ADR de deferral @task-executor (claimed: 2026-04-20 13:59:00)
   - **Fuentes:** harvest-cluster-e (H-E8 ALTO)
   - **Hallazgo:** T-077 crea el ADR pero sin criterio de activación → deferral indefinido.
   - Agregar sección "Criterio de activación": embeddings operativos + ≥40 WPs completados + gate de 3 evaluadores estable por ≥3 ÉPICAs.
