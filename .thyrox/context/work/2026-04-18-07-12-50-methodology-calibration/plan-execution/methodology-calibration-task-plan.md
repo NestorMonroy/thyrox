@@ -336,9 +336,354 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ---
 
+## Bloque 14 — Vocabulario epistémico e infraestructura de evidencia (CRÍTICO)
+
+> **Contexto:** Clusters A y B identifican que el sistema carece de vocabulario operacional
+> para clasificar el origen de los claims. Sin él, la columna "Tipo" de T-020 no tiene
+> criterio — reproduce exactamente el problema que ÉPICA 42 pretende resolver.
+
+- [ ] T-025 Crear `.claude/references/evidence-classification.md` — vocabulario epistémico
+  - **Fuentes:** cluster-a (H-A1 CRÍTICO — esquema OBSERVABLE/INFERRED/SPECULATIVE), cluster-b (B-A2A-1 ALTO — abstraction collapse, necesita taxonomía)
+  - Crear `.claude/references/evidence-classification.md`:
+    - Definición de OBSERVABLE: hay una herramienta ejecutada, output citado textualmente, acción registrada en git. Reproducible por cualquier agente con los mismos permisos.
+    - Definición de INFERRED: derivado de OBSERVABLEs mediante razonamiento explícito. El claim es más fuerte que sus fuentes — si el razonamiento falla, el claim falla.
+    - Definición de SPECULATIVE: sin observable de origen documentado. No puede ser fundamento de una decisión de arquitectura. Puede aparecer en un análisis como hipótesis, pero debe marcarse explícitamente.
+    - Regla de propagación: un claim SPECULATIVE no puede avanzar gate Stage→Stage. Si el gate requiere claims de tipo OBSERVABLE o INFERRED, los claims SPECULATIVE quedan retenidos en el stage actual.
+    - Tabla de señales de identificación por tipo: ¿qué palabras/estructuras suelen indicar cada tipo? (ej. "el sistema hace X" sin citar tool output → SPECULATIVE)
+    - Relación con PROVEN/INFERRED de la literatura (cluster-a H-A1): OBSERVABLE ≈ PROVEN, INFERRED ≈ INFERRED, SPECULATIVE ≈ sin soporte
+  - **Archivo a crear:** `.claude/references/evidence-classification.md`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** independiente — prerequisito de T-020 y T-026
+
+- [ ] T-026 Extender tabla "Evidencia de respaldo" de T-020 — columna Origen + criterios de Confianza
+  - **Fuentes:** cluster-b (B-MA-1 CRÍTICO — contratos de output_key undefined; H-B5 ALTO — abstraction collapse en outputs)
+  - Extender la tabla definida en T-020 con columna adicional:
+    ```markdown
+    ## Evidencia de respaldo
+    | Claim | Tipo | Fuente | Confianza | Origen |
+    |-------|------|--------|-----------|--------|
+    | [afirmación] | OBSERVABLE/INFERRED/SPECULATIVE | [tool output/doc/gate] | alta/media/baja | heredado/nuevo |
+    ```
+  - Criterios de Confianza operacionales:
+    - alta: claim OBSERVABLE con herramienta ejecutada y output citado textualmente
+    - media: claim INFERRED con cadena de razonamiento explícita de ≥2 observables
+    - baja: claim INFERRED con un solo observable o razonamiento parcial
+    - Columna "Origen": `heredado` = tomado de stage anterior, `nuevo` = generado en este stage
+    - Regla: si Origen=heredado y Confianza=baja → el claim debe re-verificarse en este stage, no heredarse
+  - **Archivos a modificar:** los 3 templates de T-020 (workflow-diagnose, workflow-strategy, workflow-decompose)
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-020, T-025
+
+- [ ] T-027 Agregar I-012 e I-013 en `.claude/rules/thyrox-invariants.md`
+  - **Fuentes:** cluster-a (H-A2 CRÍTICO — brecha entre claim y observable como invariante sistémica), cluster-b (B-MA-2 ALTO — context pruning sin mecanismo formal)
+  - Agregar en `.claude/rules/thyrox-invariants.md`:
+    ```
+    ## I-012: Claims SPECULATIVE no avanzan gates
+    Un claim clasificado como SPECULATIVE (sin observable de origen en evidence-classification.md)
+    no puede ser fundamento de una decisión de Stage gate. Si el gate requiere claim OBSERVABLE
+    o INFERRED, el WP permanece en el stage actual hasta que el claim se respalde o se descarte.
+
+    ## I-013: Context pruning en gates Stage→Stage
+    Al avanzar de Stage N a Stage N+1, los claims con Confianza=baja y Origen=heredado
+    deben ser explícitamente descartados o re-verificados. No heredar silenciosamente
+    claims de baja confianza — propagan error sin trazabilidad.
+    ```
+  - **Archivo a modificar:** `.claude/rules/thyrox-invariants.md`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-025 (evidence-classification.md debe existir como referencia)
+
+- [ ] T-028 Crear `.claude/references/prohibited-claims-registry.md`
+  - **Fuentes:** cluster-a (H-A3 ALTO — patrones de razonamiento prohibidos), cluster-b (B-MA-2 ALTO — abstraction collapse produce claims no trazables)
+  - Crear `.claude/references/prohibited-claims-registry.md`:
+    - Sección "Claims prohibidos como fundamentos de arquitectura": frases y estructuras que son invariablemente SPECULATIVE en artefactos THYROX (ej: "el sistema debería X", "es probable que X", "típicamente X")
+    - Sección "Patrones de razonamiento prohibidos": escalada terminológica (hipótesis → hecho), overgeneralization (N casos → regla universal), cherry-picking (caso positivo → validación)
+    - Sección "Señales de advertencia en templates": indicadores textuales en artefactos WP que sugieren claim SPECULATIVE no marcado
+    - Proceso de uso: cómo un agente usa este registro durante análisis (checklist de 3 preguntas antes de avanzar gate)
+  - **Archivo a crear:** `.claude/references/prohibited-claims-registry.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** T-025 (evidence-classification.md como referencia base)
+
+---
+
+## Bloque 15 — Anti-patrones AP-31..AP-39 (CRÍTICO)
+
+> **Contexto:** Los clusters A, B, C, D y E identificaron 8 anti-patrones nuevos (AP-31..AP-38)
+> no cubiertos por el catálogo AP-01..AP-30 de ÉPICA 42. T-002 y T-005 deben extenderse.
+> AP-39 (Advertencia Desconectada) se identifica en Cluster C y se agrega al catálogo.
+
+- [ ] T-029 Agregar AP-31 "Tool Description Mismatch" y AP-32 "Architectural Shell Without Behavioral Core"
+  - **Fuentes:** cluster-d (P2-A CRÍTICO — AP-31; H2-A CRÍTICO — AP-32), cluster-c (H-C06 ALTO — confirma AP-32)
+  - Agregar en `.thyrox/guidelines/agentic-python.instructions.md` sección "Sección 9: Anti-patrones sistémicos agentic":
+    - AP-31 Tool Description Mismatch: el agente recibe una descripción falsa de sus propias herramientas. Las decisiones de uso de herramientas se basan en un modelo mental incorrecto. No corregible en runtime sin redeploy. Detección: verificar que la descripción de cada tool en el agent_spec coincide con el comportamiento real del tool_handler.
+    - AP-32 Architectural Shell Without Behavioral Core: la arquitectura existe (clases, métodos, flujos) pero los conectores de estado están ausentes. El fallback nunca activa porque el mecanismo de detección de fallo no está conectado a la decisión de activar el fallback. Detección: trazar el path de código desde "condición de fallo detectada" hasta "fallback ejecutado" — si hay un salto sin código real, es AP-32.
+  - Agregar ambos APs al catálogo de `.claude/agents/agentic-validator.md`
+  - **Archivos a modificar:** `.thyrox/guidelines/agentic-python.instructions.md`, `.claude/agents/agentic-validator.md`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-002 (PASS — guideline debe existir), T-005 (agente debe existir), T-006 (directorio patterns/ para referencia)
+
+- [ ] T-030 Agregar AP-33 "LLM-as-guardrail Prompt Injection" y AP-34 "Regulated Domain Caveat"
+  - **Fuentes:** cluster-c (H-C01 CRÍTICO — AP-33 LLM-as-guardrail; H-C02 ALTO — AP-34 caveat regulado), cluster-d (H2-B ALTO — confirma AP-33)
+  - Agregar en `.thyrox/guidelines/agentic-python.instructions.md` continuando Sección 9:
+    - AP-33 LLM-as-guardrail Prompt Injection: usar un LLM como único mecanismo de guardrail es vulnerable a prompt injection — el adversario puede instruir al LLM de guardrail a ignorar la violación. Correcto: guardrails deterministas (regex, schema validation, allowlist) para decisiones binarias críticas; LLM solo para clasificación semántica de alta tolerancia a error.
+    - AP-34 Regulated Domain Caveat: el documento incluye un aviso de dominio regulado (médico, legal, financiero) en la intro, pero las secciones posteriores no operacionalizan ese caveat — las recomendaciones no llevan el mismo caveat. Correcto: cada sección que produce output de dominio regulado debe reiterar el caveat o citar explícitamente las condiciones de validez.
+  - Agregar ambos APs al catálogo de `.claude/agents/agentic-validator.md`
+  - **Archivos a modificar:** `.thyrox/guidelines/agentic-python.instructions.md`, `.claude/agents/agentic-validator.md`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-002 (PASS), T-005
+
+- [ ] T-031 Agregar AP-35 "Silent Loop Termination" y AP-36 "Borrowed Nomenclature"
+  - **Fuentes:** cluster-e (E2-A CRÍTICO — AP-35 terminación silenciosa; E2-B ALTO — AP-36 nomenclatura prestada), cluster-c (H-C04 ALTO — confirma AP-35)
+  - Agregar en `.thyrox/guidelines/agentic-python.instructions.md` continuando Sección 9:
+    - AP-35 Silent Loop Termination: el loop de agente termina sin emitir output observable ni log de terminación. El agente que llamó al loop no puede distinguir "terminó correctamente" de "terminó silenciosamente por error". Correcto: todo loop de agente debe emitir al menos un evento de terminación con estado final (SUCCESS/FAIL/TIMEOUT) y razón.
+    - AP-36 Borrowed Nomenclature: el sistema usa el nombre de un mecanismo reconocido (ej. "consensus", "voting", "HITL") pero implementa algo estructuralmente diferente. El nombre opera como prestamo de credibilidad del mecanismo original. Correcto: cuando se usa un nombre de patrón establecido, verificar que al menos la propiedad definitoria del patrón está implementada (ej. "consensus" requiere rondas de acuerdo — no solo promediado de scores).
+  - Agregar ambos APs al catálogo de `.claude/agents/agentic-validator.md`
+  - **Archivos a modificar:** `.thyrox/guidelines/agentic-python.instructions.md`, `.claude/agents/agentic-validator.md`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-002 (PASS), T-005
+
+- [ ] T-032 Agregar AP-37 "MCP JSON-RPC Payload Mismatch" y AP-38 "Hardcoded Identifier"
+  - **Fuentes:** cluster-c (H-C05 ALTO — AP-37 JSON-RPC), cluster-d (H2-C ALTO — AP-38 hardcoded identifier), cluster-b (B-MCP-1 ALTO — confirma AP-37)
+  - Agregar en `.thyrox/guidelines/agentic-python.instructions.md` continuando Sección 9:
+    - AP-37 MCP JSON-RPC Payload Mismatch: el cliente MCP envía `method: "tool_name"` pero el protocolo espera `method: "tools/call"` con el nombre en el payload. Error silencioso — el servidor rechaza sin mensaje de error útil. Correcto: usar siempre el campo `method` del protocolo MCP actual; verificar con la versión específica del servidor MCP.
+    - AP-38 Hardcoded Identifier: el agente tiene IDs hardcoded (model names, endpoint URLs, tool names) que cambian por release de plataforma. Cuando el ID cambia, el agente falla silenciosamente o produce comportamiento inesperado. Correcto: IDs de plataforma en configuración externa verificable (settings.json, .env); no en el cuerpo del agente.
+  - Agregar ambos APs al catálogo de `.claude/agents/agentic-validator.md`
+  - Agregar en `discover/patterns/` un documento: `mcp-jsonrpc-contract.md` con el patrón correcto de llamada MCP
+  - **Archivos a modificar:** `.thyrox/guidelines/agentic-python.instructions.md`, `.claude/agents/agentic-validator.md`
+  - **Archivo a crear:** `discover/patterns/mcp-jsonrpc-contract.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** T-002 (PASS), T-005, T-006
+
+---
+
+## Bloque 16 — Gate calibrado: contratos, state files y evaluador de consistencia (CRÍTICO)
+
+> **Contexto:** Cluster B identifica que el gate paralelo de THYROX (múltiples evaluadores
+> → Merger) tiene 4 brechas críticas: sin output_key contracts, sin state files definidos,
+> sin evaluador de consistencia, y Merger como SPOF sin instrucción anti-confabulación.
+
+- [ ] T-033 Definir contratos de output_key para evaluadores y agregar instrucción anti-confabulación al Merger
+  - **Fuentes:** cluster-b (B-MA-1 CRÍTICO — output_key undefined; B-MA-4 CRÍTICO — Merger SPOF)
+  - En `.claude/skills/workflow-diagnose/references/` o documento de referencia del gate paralelo:
+    - Definir output_key contracts: cada evaluador paralelo debe producir exactamente los campos `{evaluator_id, score, claims[], confidence, gaps[]}` — sin campos adicionales no contratados
+    - El Merger debe verificar que recibió exactamente N outputs con los campos del contrato antes de consolidar
+    - Instrucción anti-confabulación para el Merger: "No inferir un claim que ningún evaluador produjo. Si los evaluadores difieren en un claim, reportar la diferencia — no sintetizar una posición que ninguno sostuvo."
+    - Protocolo de failure: si un evaluador no produce output en el tiempo límite → Merger procede con N-1 evaluadores y registra el timeout como gap en el reporte
+  - **Archivo a crear/modificar:** referencia del gate paralelo en workflow-diagnose o workflow-strategy
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-017, T-020, T-021
+
+- [ ] T-034 Definir estructura de state files para ejecución paralela de agentes
+  - **Fuentes:** cluster-b (B-MA-2 CRÍTICO — state files sin estructura definida), cluster-b (B-MA-3 ALTO — protocolo de failure no especificado)
+  - En `.thyrox/context/` documentar estructura canónica:
+    - `now-{agent-name}.md` ya existe como convención — agregar campos requeridos: `agent_id`, `status` (running/completed/failed), `output_key`, `started_at`, `timeout_at`
+    - Protocolo de lectura por el Merger: leer todos los `now-{evaluator-N}.md`, verificar `status=completed` antes de consolidar
+    - Protocolo de cleanup: borrar `now-{agent-name}.md` después de que el Merger confirma recepción del output
+  - Actualizar `.claude/CLAUDE.md` sección "Multi-skill orchestration" → "Naming de state files" con la nueva estructura
+  - **Archivos a modificar:** `.claude/CLAUDE.md`, documentación de THYROX multi-agent
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-033
+  - **Nota:** T-034 también edita `validate-session-close.sh` para verificar cleanup — ejecutar después de T-022
+
+- [ ] T-035 Crear evaluador de consistencia inter-agente y unclear-handler
+  - **Fuentes:** cluster-b (B-MA-3 CRÍTICO — evaluador de consistencia ausente; B-MA-4 ALTO — unclear routing sin handler)
+  - Definir el rol del evaluador de consistencia en el gate paralelo:
+    - Propósito: detectar contradicciones entre outputs de evaluadores paralelos — no sintetizar, sino identificar
+    - Input: los N outputs de evaluadores paralelos
+    - Output: `{contradictions: [{claim_a, evaluator_a, claim_b, evaluator_b}], consistency_score, recommendation}`
+    - Umbral de consistencia: si consistency_score < 0.70 → el gate no avanza, se reporta la contradicción al humano
+  - Definir unclear-handler: cuando un agente de routing recibe un input que no cae en ninguna categoría conocida → no rechazar silenciosamente, emitir evento `unclear_routing` con el input original para supervisión humana
+  - **Archivos a crear/modificar:** referencia del gate paralelo, workflow-diagnose SKILL.md
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-033, T-034
+
+- [ ] T-036 Documentar loops de rework y context pruning en `exit-conditions.md.template` y `workflow-track`
+  - **Fuentes:** cluster-b (B-MA-5 ALTO — loops de rework sin límite; B-MA-6 ALTO — context pruning ausente)
+  - En `exit-conditions.md.template` (mismo archivo que T-021):
+    - Agregar campo `max_rework_iterations: N` en cada gate — si el WP llega al gate N veces sin aprobación, escalar a decisión humana con resumen de los N intentos
+    - Agregar campo `context_pruning_rule`: qué claims con Confianza=baja y Origen=heredado se descartan al avanzar gate
+  - En `.claude/skills/workflow-track/SKILL.md`:
+    - Agregar paso en sección de evaluación: identificar claims heredados de stages anteriores que nunca se re-verificaron — listarlos como "deuda epistémica" en el lessons-learned
+  - **Archivos a modificar:** `exit-conditions.md.template`, `workflow-track/SKILL.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** T-021 (exit-conditions.md.template debe existir con la estructura base)
+
+---
+
+## Bloque 17 — Framework de calibración y separabilidad de exit criteria (ALTO)
+
+> **Contexto:** Cluster E identifica que `calibration-framework.md` referenciado en el
+> discover/ no existe, y que los exit criteria actuales mezclan condición de entrada con
+> umbral de salida — no son separables.
+
+- [ ] T-037 Agregar separabilidad de exit criteria en `exit-conditions.md.template`
+  - **Fuentes:** cluster-e (E1-B ALTO — separabilidad: condición entrada ≠ umbral salida)
+  - En `exit-conditions.md.template` (mismo archivo que T-021 y T-036):
+    - Para cada gate, distinguir explícitamente:
+      - `entry_condition`: qué debe ser verdad para que el stage empiece (prerequisitos)
+      - `exit_threshold`: qué debe ser verdad para que el stage termine (criterio medible)
+      - Anti-patrón a eliminar: "¿El análisis está completo?" mezcla entrada y salida — reemplazar con condiciones separadas
+    - Ejemplo del nuevo formato:
+      ```
+      Gate Stage 3→4:
+        entry_condition: "discover/ con análisis aprobado existe en el WP"
+        exit_threshold: "≥3 claims OBSERVABLE en evidencia de respaldo, causa raíz trazable"
+      ```
+  - **Archivo a modificar:** `exit-conditions.md.template`
+  - **Prioridad:** ALTO
+  - **Depende de:** T-021 (estructura base del template)
+
+- [ ] T-038 Crear `.claude/references/calibration-framework.md` — mapeo Eval-type × Stage
+  - **Fuentes:** cluster-e (E1-A CRÍTICO — calibration-framework.md referenciado pero no existe; E1-C ALTO — mapeo eval-type × stage incompleto)
+  - Crear `.claude/references/calibration-framework.md`:
+    - Tabla: Stage THYROX | Tipo de evaluación apropiada | Criterio de confianza mínimo | Método de verificación
+    - Filas: Stage 1-12 con su tipo de eval (G-1 Peer review, G-2 Tool-executed, G-3 Human gate, G-4 Automated)
+    - Columna G-2 (tool-executed): instrucción concreta de qué herramienta ejecutar y cómo citar su output
+    - Nota sobre validate-session-close.sh: actualmente opera como G-4 (automated) pero tiene efectividad del 30% — convertir en PreToolUse hook elevaría a 100% (deuda técnica documentada)
+    - Regla de uso: cuando un gate tiene confidence_threshold < 0.80, el Eval-type debe ser G-2 o G-3, no solo G-1 (peer review)
+  - **Archivo a crear:** `.claude/references/calibration-framework.md`
+  - **Prioridad:** CRÍTICO
+  - **Depende de:** T-020, T-021
+
+---
+
+## Bloque 18 — Agente deep-dive: protocolos de admisiones y versiones (ALTO)
+
+> **Contexto:** Cluster A identifica que el agente `deep-dive` carece de protocolos para
+> evaluar admisiones (test de suficiencia), detectar realismo performativo, y comparar
+> versiones de documentos analizados.
+
+- [ ] T-039 Agregar protocolo de evaluación de admisiones y realismo performativo en `deep-dive.md`
+  - **Fuentes:** cluster-a (H-C2 ALTO — principios 5-6 evaluación de admisiones; H-C1 ALTO — 5 componentes del realismo performativo)
+  - Agregar en `.claude/agents/deep-dive.md` sección después de Capa 5 (Engaños Estructurales):
+    - Test de suficiencia de admisiones: (A) ¿la admisión modifica el argumento o lo deja operacionalmente intacto? Si X es admitido como incierto pero luego usado como cierto → admisión insuficiente. (B) ¿Los experimentos de falsificación propuestos son ejecutables con los recursos declarados? Un experimento que requiere exactamente lo que el documento dice no tener = falsificabilidad decorativa.
+  - Agregar en Capa 5 el patrón "Realismo performativo" con 5 componentes operacionales:
+    - Admisión general que no propaga a instancia concreta
+    - Clasificación de rigor con errores en las clasificaciones mismas
+    - Auto-evaluación que lista sesgos genéricos pero omite instancias técnicas concretas
+    - Experimentos de falsificación inejecutables con recursos declarados
+    - Nombre o etiqueta que opera como licencia de confianza previa (ej. "Honest Edition")
+  - Agregar protocolo "Fix Declarado ≠ Fix Verificado": las declaraciones de "Bugs corregidos" son hipótesis a verificar, no hechos a aceptar. Taxonomía: fix-real (comportamiento cambió), fix-textual (solo descripción cambió), fix-performativo (anotación mejoró, runtime idéntico). El bug no declarado es el más riesgoso.
+  - **Archivo a modificar:** `.claude/agents/deep-dive.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** independiente
+
+- [ ] T-040 Agregar protocolo de tracking de versiones y tabla de riesgo por característica agentic
+  - **Fuentes:** cluster-a (H-C3 MEDIO — tracking de versiones; H-F2 MEDIO — tabla de riesgo por característica), cluster-d (L1-C — autonomía condicional vs. plena)
+  - Agregar en `.claude/agents/deep-dive.md` sección "Comparativa de versiones (cuando aplica)":
+    - Tabla: Dimensión | V(N-1) | V(N) | Estado (MEJORA/REGRESIÓN/SIN CAMBIO)
+    - Dimensiones: saltos lógicos, contradicciones, problemas resueltos, problemas nuevos, ratio neto
+    - Metadata adicional para artefactos de análisis (extensión opcional): `version_analizada`, `versiones_previas_analizadas`, `ratio_mejora_neta`
+  - Agregar en `.claude/references/agentic-mandate.md` (T-018) sección "Tabla de riesgo por característica":
+    - Por característica agentic: cómo contribuye al realismo performativo + criterio del mandato que lo mitiga
+    - Distinción "autonomía condicional" vs. "autonomía plena": THYROX actual está en autonomía condicional (bound-detector.py puede rechazar outputs). Declarar autonomía condicional como "autónomo" sin la distinción reproduce CONTRADICCIÓN-2 del análisis del libro.
+  - **Archivos a modificar:** `.claude/agents/deep-dive.md`, `.claude/references/agentic-mandate.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** T-018 (agentic-mandate.md debe existir)
+
+---
+
+## Bloque 19 — Diseño agentic: selección de patrones y heurísticos de arquitectura (ALTO)
+
+> **Contexto:** Cluster D identifica que el sistema no tiene criterios para seleccionar patrones
+> agentic dentro de un WP (Planning vs. Routing vs. Planning+RAG), ni documentación de que
+> gate calibrado ≠ Consenso.
+
+- [ ] T-041 Crear `agentic-pattern-selection.md` — heurístico Planning/Routing/RAG y HITL/HOTL/HIC
+  - **Fuentes:** cluster-d (P1-A ALTO y P1-B ALTO — Planning vs. RAG, heurístico de selección; H1-B ALTO — taxonomía HITL/HOTL/HIC), cluster-b (B-MA-3 MEDIO — gate != Consenso)
+  - Crear `.claude/skills/workflow-discover/references/agentic-pattern-selection.md`:
+    - Árbol de decisión de patrones agentic para Stage 1 DISCOVER:
+      - "¿El workflow de resolución se conoce de antemano?" → CONOCIDO: Chaining/Routing/Parallelization | A DESCUBRIR: Planning
+      - Sub-pregunta Planning: "¿necesita integrar fuentes internas + búsqueda externa?" → SÍ: Planning + RAG (dos capas distintas) | NO: Planning puro
+      - Señal de advertencia: si se usa Planning pero el workflow resultante siempre tiene la misma estructura → probablemente es Chaining o Routing disfrazado de Planning
+    - Taxonomía HITL/HOTL/HIC para Stage 5 STRATEGY:
+      - HITL: workflow se bloquea hasta que el humano revisa — requiere interrupt/resume pattern real (no solo flag)
+      - HOTL: workflow ejecuta; humano monitorea y puede intervenir — no requiere blocking
+      - HIC: humano define reglas; agente las ejecuta autónomamente — sin supervisión en tiempo real
+      - Señal de advertencia: si el diseño usa HITL conceptualmente pero no implementa interrupt/resume, el sistema es realmente HOTL
+    - Distinción gate calibrado THYROX ≠ Consenso:
+      - Gate THYROX implementa: Parallelization (evaluadores concurrentes) + Merger con grounding
+      - Consenso requeriría: rondas de discusión entre evaluadores con protocolo de terminación — THYROX NO implementa esto
+      - Regla de diseño: un agente es "distinto" de otro cuando tiene al menos un tool que el otro no tiene — distinción solo de system prompt NO es especialización real
+  - **Archivo a crear:** `.claude/skills/workflow-discover/references/agentic-pattern-selection.md`
+  - **Prioridad:** ALTO
+  - **Depende de:** T-016 (agentic-system-design.md debe existir como base)
+
+---
+
+## Bloque 20 — Calibración epistémica: patrones diagnósticos y análisis cuantitativo (MEDIO)
+
+> **Contexto:** Clusters C y E confirman independientemente el patrón CAD (Calibración
+> Asimétrica por Dominio). El scoring cuantitativo en artefactos THYROX carece de criterios
+> de verificabilidad aritmética.
+
+- [ ] T-042 Documentar patrón CAD y criterio de scoring verificable
+  - **Fuentes:** cluster-c (H-C06 ALTO — CAD confirmado por dos análisis independientes; H-C04 ALTO — scoring no reproducible), cluster-e (E3-D BAJO — CAD como patrón diagnóstico)
+  - Crear `discover/patterns/calibracion-asincronica-por-dominio.md`:
+    - Definición operacional: CAD = patrón donde distintos dominios internos de un artefacto tienen calibración significativamente diferente (ej. especificación técnica 0.91, casos de uso proyectados 0.43)
+    - Señales de detección: cuando el score global oculta la distribución real de riesgo por dominio
+    - Criterios de uso en Stage 3 DIAGNOSE: claims del dominio bien calibrado (>0.85) pueden usarse como fundamento; claims del dominio pobremente calibrado (<0.50) requieren validación adicional
+    - Umbrales CAD: score global ≥0.75, mínimo por dominio ≥0.60, rango (Máx − Mín) ≤0.35
+  - Agregar regla en `.thyrox/guidelines/agentic-python.instructions.md` nueva sección: cuando se produzcan scores cuantitativos propios, los cálculos deben ser verificables aritméticamente y el criterio de scoring no puede cambiar silenciosamente entre dominios del mismo análisis
+  - **Archivos:** crear `discover/patterns/calibracion-asincronica-por-dominio.md`, modificar guideline
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-006 (directorio patterns/), T-002 (PASS)
+
+- [ ] T-043 Agregar criterio de validación de referencias en `platform-evolution-tracking.md`
+  - **Fuentes:** cluster-b (B-A2A-3 MEDIO — Named Mechanism vs. Implementation como criterio de validación de referencias bibliográficas)
+  - Agregar en `.claude/references/platform-evolution-tracking.md` (T-019) sección "Validación de referencias del libro de patrones":
+    - Criterio: verificar que el mecanismo del código implementa el mecanismo del título (no solo que el concepto del título es correcto)
+    - Checklist: (1) ¿el código ejecutable hace lo que el título promete? (2) ¿imports completos? (3) ¿URLs raw content? (4) ¿métodos de protocolo de versión actual?
+    - Lista de patrones sistémicos detectados: Named Mechanism vs. Implementation (Cap.10-15), Implementation Facade (Cap.8), Credibilidad Prestada (Cap.7)
+    - Regla: cuando THYROX adopta un patrón de esta fuente, citar el hallazgo específico del deep-dive, no solo el capítulo
+  - **Archivo a modificar:** `.claude/references/platform-evolution-tracking.md`
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-019 (documento debe existir)
+
+- [ ] T-044 Agregar protocolo Fix Declarado ≠ Fix Verificado en agentes y workflow-standardize
+  - **Fuentes:** cluster-a (H-G3 MEDIO — protocolo de revisión adversarial), cluster-e (E3-C MEDIO — fix textual vs. fix real), cluster-c (H-C16 ALTO — corrección performativa)
+  - Actualizar `.thyrox/registry/agents/agentic-validator.yml` — agregar en `system_prompt`:
+    - Cuando el código o documento incluye "Bugs corregidos" / "Fixed" / "Updated": verificar CADA fix declarado independientemente (¿corrige el problema en el código o solo en el texto?); buscar bugs NO declarados con la misma intensidad (los más riesgosos son los no nombrados)
+    - Taxonomía: fix-real (comportamiento cambió), fix-textual (descripción cambió, código no), fix-performativo (anotación mejoró, runtime idéntico)
+  - Actualizar `.claude/agents/agentic-validator.md` para reflejar este protocolo
+  - Agregar en `.claude/skills/workflow-standardize/SKILL.md` distinción de tipos de fix: usar `fix-completo` / `fix-parcial(documentación)` / `fix-pendiente` al registrar correcciones
+  - **Archivos a modificar:** `.thyrox/registry/agents/agentic-validator.yml`, `.claude/agents/agentic-validator.md`, `.claude/skills/workflow-standardize/SKILL.md`
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-004, T-005, T-013
+
+- [ ] T-045 Agregar PROVEN/INFERRED/SPECULATIVE como vocabulario en `metadata-standards.md`
+  - **Fuentes:** cluster-a (H-A1 ALTO — esquema PROVEN/INFERRED; T-027 propuesta de cambio de terminología)
+  - Agregar en `.claude/rules/metadata-standards.md` nota bajo template "Documentos en stage directories":
+    ```
+    ### Claims y afirmaciones
+    Todo claim en un artefacto debe poder clasificarse como:
+    - PROVEN: hay observable verificado (herramienta ejecutada, output citado textualmente)
+    - INFERRED: derivado de observables documentados mediante razonamiento
+    - SPECULATIVE: sin observable de origen — no puede ser fundamento de decisiones de arquitectura
+    Claims SPECULATIVE no pueden avanzar gate Stage→Stage.
+    Ver evidence-classification.md para definición operacional.
+    ```
+  - **Archivo a modificar:** `.claude/rules/metadata-standards.md`
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-025 (evidence-classification.md debe existir como referencia)
+
+- [ ] T-046 Documentar AP-39 "Advertencia Desconectada" en catálogo AP
+  - **Fuentes:** cluster-c (H-C03 MEDIO — advertencia desconectada como patrón nombrado)
+  - Agregar AP-39 en `.thyrox/guidelines/agentic-python.instructions.md`:
+    - AP-39 "Advertencia Desconectada": un documento incluye un caveat honesto en una sección pero ese caveat nunca se conecta a las secciones que lo requieren. El efecto: el caveat existe para que el documento no parezca ingenuo, pero está contenido y nunca opera como condición en el material posterior.
+    - Anti-patrón: "Sec.2 — Advertencia: los resultados dependen de X. Sec.5 — Casos de uso: [9 casos sin mencionar la condición de Sec.2]"
+    - Correcto: cada sección posterior que depende del caveat debe citarlo o reiterarlo
+    - Para artefactos THYROX: cuando se declara "status: Borrador" o se admite incertidumbre, verificar que esa admisión esté operacionalizada en la sección de evidencia, no solo en el frontmatter
+  - Agregar AP-39 al catálogo de `.claude/agents/agentic-validator.md`
+  - **Archivos a modificar:** `.thyrox/guidelines/agentic-python.instructions.md`, `.claude/agents/agentic-validator.md`
+  - **Prioridad:** MEDIO
+  - **Depende de:** T-002 (PASS), T-005
+
+---
+
 ## DAG de dependencias completo
 
 ```
+── BLOQUE 0-13 (T-001..T-024) ──────────────────────────────────────────────────
 T-001 (verificar @imports)
   ├── PASS → T-002 (agentic-python.instructions.md)
   │             └── T-003 (CLAUDE.md @import)
@@ -350,10 +695,14 @@ T-004 (agentic-validator.yml)
 
 T-006 (6 patrones) — independiente
   └── T-015 depende de T-006 (árbol usa patrones como referencia)
+  └── T-029 depende de T-006 (Sección 9 de la guideline)
+  └── T-032 depende de T-006 (mcp-jsonrpc-contract.md en patterns/)
+  └── T-042 depende de T-006 (patrón CAD en patterns/)
 
 T-007 (TD-042 validate-session-close.sh) — independiente
 T-022 (Check I-001 en validate-session-close.sh) — independiente
   └── T-007 y T-022 editan el mismo script — T-022 ejecutar después de T-007
+  └── T-034 también edita validate-session-close.sh — ejecutar T-034 después de T-022
 
 T-008 (ARCHITECTURE.md) — depende de T-005 + T-018
   └── T-023 (YMLs 16 agentes) — depende de T-008
@@ -366,16 +715,70 @@ T-013 (workflow-standardize) — independiente
 T-014 (consistencia stage names) — independiente, alta prioridad
 T-015 (árbol Agentic AI en methodology-selection-guide) — depende de T-006
 T-016 (referencia agentic-system-design.md) — independiente
-T-017 (exit criteria agentic en Stage 3 + Stage 5 templates) — depende de T-016
-  └── T-020 (sección Evidencia en templates) — depende de T-017
-        └── editan mismos templates: T-020 ejecutar después de T-017
+  └── T-017 (exit criteria agentic en Stage 3 + Stage 5 templates) — depende de T-016
+        └── T-020 (sección Evidencia en templates) — depende de T-017
+              └── editan mismos templates: T-020 ejecutar después de T-017
+  └── T-041 (agentic-pattern-selection.md) — depende de T-016
 T-018 (agentic-mandate.md — definición operacional) — depende de T-016
+  └── T-040 (tabla riesgo + autonomía condicional) — depende de T-018
 T-019 (platform-evolution-tracking.md) — independiente
+  └── T-043 (criterio validación referencias) — depende de T-019
 T-020 (sección Evidencia en 3 templates) — depende de T-017
+  └── T-026 (columna Origen + criterios Confianza) — depende de T-020 + T-025
+  └── T-038 (calibration-framework.md) — depende de T-020 + T-021
 T-021 (exit-conditions.md.template con umbral confianza) — independiente
+  └── T-036 (loops rework + context pruning) — depende de T-021
+  └── T-037 (separabilidad exit criteria) — depende de T-021
+  └── T-038 (calibration-framework.md) — depende de T-020 + T-021
 T-022 (I-001 warning en validate-session-close.sh) — después de T-007
 T-023 (YMLs 16 agentes sin registry) — depende de T-008
 T-024 (bound-detector.py cobertura inglés) — independiente
+
+── BLOQUE 14 (Vocabulario epistémico) ──────────────────────────────────────────
+T-025 (evidence-classification.md) — INDEPENDIENTE — prerequisito de T-020 y T-026
+  └── T-020 (sección Evidencia) — ejecutar T-025 antes o en mismo batch que T-020 ⚠
+  └── T-026 (columna Origen + criterios Confianza) — depende de T-020, T-025
+  └── T-027 (I-012 + I-013 en thyrox-invariants.md) — depende de T-025
+  └── T-028 (prohibited-claims-registry.md) — depende de T-025
+  └── T-045 (PROVEN/INFERRED en metadata-standards.md) — depende de T-025
+
+── BLOQUE 15 (Anti-patrones AP-31..AP-39) ──────────────────────────────────────
+T-029 (AP-31 Tool Description Mismatch + AP-32 Architectural Shell) — depende de T-002 PASS, T-005, T-006
+T-030 (AP-33 Dominios Regulados + AP-34 LLM-as-guardrail injection) — depende de T-002 PASS, T-005
+T-031 (AP-35 Terminación Silenciosa + AP-36 Nomenclatura Prestada) — depende de T-002 PASS, T-005
+  └── T-029, T-030, T-031 pueden ejecutarse en paralelo (secciones distintas del mismo archivo)
+T-032 (AP-37 MCP JSON-RPC + AP-38 Hardcoded Identifier) — depende de T-002 PASS, T-005, T-006
+T-046 (AP-39 Advertencia Desconectada) — depende de T-002 PASS, T-005
+
+── BLOQUE 16 (Gate calibrado) ───────────────────────────────────────────────────
+T-017 (exit criteria agentic) ──┐
+T-020 (Evidencia de respaldo) ──┼──► T-033 (contratos evaluadores + Merger anti-confabulación)
+T-021 (exit-conditions.md) ─────┘        └──► T-034 (state files + protocolo failure)
+                                                    └──► T-035 (evaluador consistencia + unclear-handler)
+                                                    └──► T-036 (loops rework + context pruning)
+
+── BLOQUE 17 (Calibración y framework de evaluación) ───────────────────────────
+T-021 (exit-conditions.md.template) ──► T-037 (separabilidad de exit criteria — mismo archivo)
+T-020 + T-021 ──► T-038 (calibration-framework.md — mapeo Eval-type × Stage)
+
+── BLOQUE 18 (Agente deep-dive) ─────────────────────────────────────────────────
+T-039 (protocolo admisiones + realismo performativo en deep-dive.md) — independiente
+T-018 (agentic-mandate.md) ──► T-040 (tabla de riesgo + autonomía condicional)
+  └── T-040 también modifica deep-dive.md — independiente de T-039 (secciones distintas)
+
+── BLOQUE 19 (Diseño agentic) ───────────────────────────────────────────────────
+T-016 (agentic-system-design.md) ──► T-041 (agentic-pattern-selection.md)
+
+── BLOQUE 20 (Calibración epistémica y patrones diagnósticos) ───────────────────
+T-006 (directorio patterns/) ──► T-042 (CAD + scoring verificable)
+T-002 PASS ──► T-042 (modifica guideline)
+T-019 (platform-evolution-tracking.md) ──► T-043 (criterio validación referencias)
+T-004 + T-005 + T-013 ──► T-044 (Fix Declarado ≠ Fix Verificado)
+
+── CORRECCIÓN DAG CRÍTICA ────────────────────────────────────────────────────────
+⚠ T-025 debe ejecutarse ANTES de T-020 — T-025 provee vocabulario OBSERVABLE/INFERRED/SPECULATIVE
+  que T-020 necesita para la columna "Tipo". Sin T-025, T-020 produce la misma
+  ambigüedad que ÉPICA 42 pretende resolver.
 ```
 
 ## Orden de ejecución sugerido
@@ -384,11 +787,19 @@ T-024 (bound-detector.py cobertura inglés) — independiente
 2. T-004 → T-005
 3. T-006 (paralelo con 1-2)
 4. T-007 → T-022 (secuencial, mismo script) | T-013 | T-014 | T-024 (paralelo)
-5. T-016 → T-017 → T-020 (secuencial, mismos templates)
-6. T-016 → T-018 (paralelo con paso 5)
-7. T-015 (después de T-006) | T-019 | T-021 (paralelo)
-8. T-005 + T-016 → T-018 → T-008 → T-023 (secuencial)
-9. T-018 → T-009 → T-010 → T-011 → T-012
+5. **T-025** (independiente — prerequisito de T-020) ← NUEVO BATCH INICIAL
+6. T-016 → T-017 → T-020 (secuencial, mismos templates) — después de T-025
+7. T-016 → T-018 (paralelo con paso 6)
+8. T-015 (después de T-006) | T-019 | T-021 (paralelo)
+9. T-005 + T-016 → T-018 → T-008 → T-023 (secuencial)
+10. T-018 → T-009 → T-010 → T-011 → T-012
+11. **Batch T-025..T-028** (vocabulario epistémico): T-025 → T-026, T-027, T-028, T-045 (paralelo)
+12. **Batch T-029..T-032, T-046** (AP-31..AP-39): después de T-002 PASS + T-005 (paralelo entre sí)
+13. **T-033 → T-034 → T-035, T-036** (gate calibrado, secuencial)
+14. **T-037, T-038** (después de T-021): paralelo
+15. **T-039** (independiente) | **T-041** (después de T-016): paralelo
+16. **T-040** (después de T-018) | **T-042** (después de T-006 + T-002) | **T-043** (después de T-019): paralelo
+17. **T-044** (después de T-004 + T-005 + T-013) | **T-046** (después de T-002 + T-005): paralelo
 
 ## Trazabilidad
 
@@ -401,3 +812,25 @@ T-024 (bound-detector.py cobertura inglés) — independiente
 | T-006 AP-16,17 | AP-16, AP-17 | a2a-pattern-deep-dive.md |
 | T-006 AP-18 | AP-18 | prioritization-deep-dive.md |
 | T-006 AP-25 | AP-25 | resource-aware-optimization-deep-dive.md..reasoning-techniques-deep-dive.md |
+| T-025 | — | cluster-a (H-A1), cluster-b (B-A2A-1) |
+| T-026 | — | cluster-b (B-MA-1, H-B5) |
+| T-027 | — | cluster-a (H-A2), cluster-b (B-MA-2) |
+| T-028 | — | cluster-a (H-A3), cluster-b (B-MA-2) |
+| T-029 | AP-31, AP-32 | cluster-d (P2-A, H2-A), cluster-c (H-C06) |
+| T-030 | AP-33, AP-34 | cluster-c (H-C01, H-C02), cluster-d (H2-B) |
+| T-031 | AP-35, AP-36 | cluster-e (E2-A, E2-B), cluster-c (H-C04) |
+| T-032 | AP-37, AP-38 | cluster-c (H-C05), cluster-d (H2-C), cluster-b (B-MCP-1) |
+| T-033 | — | cluster-b (B-MA-1 CRÍTICO, B-MA-4 CRÍTICO) |
+| T-034 | — | cluster-b (B-MA-2 CRÍTICO, B-MA-3 ALTO) |
+| T-035 | — | cluster-b (B-MA-3 CRÍTICO, B-MA-4 ALTO) |
+| T-036 | — | cluster-b (B-MA-5, B-MA-6) |
+| T-037 | — | cluster-e (E1-B ALTO) |
+| T-038 | — | cluster-e (E1-A CRÍTICO, E1-C ALTO) |
+| T-039 | — | cluster-a (H-C1, H-C2) |
+| T-040 | — | cluster-a (H-C3, H-F2), cluster-d (L1-C) |
+| T-041 | — | cluster-d (P1-A, P1-B, H1-B), cluster-b (B-MA-3) |
+| T-042 | — | cluster-c (H-C06, H-C04), cluster-e (E3-D) |
+| T-043 | — | cluster-b (B-A2A-3) |
+| T-044 | — | cluster-a (H-G3), cluster-e (E3-C), cluster-c (H-C16) |
+| T-045 | — | cluster-a (H-A1) |
+| T-046 | AP-39 | cluster-c (H-C03) |
