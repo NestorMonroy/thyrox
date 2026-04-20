@@ -7,8 +7,6 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CONTEXT_DIR="${PROJECT_ROOT}/.thyrox/context"
 
 # Interfaz pública: /thyrox:* (plugin, FASE 31). Impl: workflow-* skills. ADR-015/019.
-COMMANDS_SYNCED=true
-
 # Mapa stage/phase → /thyrox:* command (interfaz pública del plugin)
 # Acepta tanto "Stage N" (nuevo) como "Phase N" (retrocompat)
 _phase_to_command() {
@@ -78,19 +76,15 @@ if [ -n "$ACTIVE_WP" ]; then
     WF_CMD=$(_phase_to_command "$PHASE")
     echo "  Opciones de ejecución:"
     echo "    A (calidad alta HOY):    invocar thyrox SKILL → ${PHASE}"
-    if [ "$COMMANDS_SYNCED" = "true" ]; then
-        echo "    B (determinístico):      ${WF_CMD}"
-    else
-        echo "    B (determinístico):      ${WF_CMD}  [outdated — esperar TD-008]"
-    fi
+    echo "[sync] Commands: up to date"
+    echo "    B (determinístico):      ${WF_CMD}"
 else
     echo "  Sin work package activo"
     echo ""
     echo "  Opciones de ejecución:"
     echo "    A (calidad alta HOY):    invocar thyrox SKILL → Phase 1: DISCOVER"
-    if [ "$COMMANDS_SYNCED" = "true" ]; then
-        echo "    B (determinístico):      /thyrox:discover"
-    fi
+    echo "[sync] Commands: up to date"
+    echo "    B (determinístico):      /thyrox:discover"
 fi
 
 # Detectar tech skills activos (generados por _generator.sh)

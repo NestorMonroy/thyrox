@@ -6,9 +6,9 @@ Genera agentes nativos en .claude/agents/ a partir del registry YAML + templates
 y actualiza .mcp.json con los MCP servers de Thyrox.
 
 Uso:
-    python .claude/registry/bootstrap.py --stack react,nodejs,postgresql
-    python .claude/registry/bootstrap.py --stack react --force
-    python .claude/registry/bootstrap.py --stack react --model claude
+    python .thyrox/registry/bootstrap.py --stack react,nodejs,postgresql
+    python .thyrox/registry/bootstrap.py --stack react --force
+    python .thyrox/registry/bootstrap.py --stack react --model claude
 """
 
 import argparse
@@ -306,8 +306,8 @@ def install_tech_agent(tech: str, force: bool, model: str, project_name: str) ->
 
     # Escribir el archivo
     content = generate_agent_md(name, description, tools, body)
-    dest.write_text(content)
     action = "sobreescrito" if dest.exists() else "creado"
+    dest.write_text(content)
     print(f"  [OK] {tech}-expert{' ' * max(0, 18 - len(tech))} → .claude/agents/{tech}-expert.md ({action})")
     return True
 

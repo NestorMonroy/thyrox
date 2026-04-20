@@ -62,7 +62,7 @@ echo "  Work package activo: context/work/${ACTIVE_WP}/"
 
 # Próxima tarea pendiente
 WP_DIR="${CONTEXT_DIR}/work/${ACTIVE_WP}"
-TASK_PLAN=$(find "$WP_DIR" -maxdepth 1 -name "*-task-plan.md" 2>/dev/null | head -1)
+TASK_PLAN=$(find "$WP_DIR" -maxdepth 2 -name "*-task-plan.md" 2>/dev/null | head -1)
 [ -z "$TASK_PLAN" ] && [ -f "${WP_DIR}/plan.md" ] && TASK_PLAN="${WP_DIR}/plan.md"
 if [ -n "$TASK_PLAN" ]; then
     NEXT=$(grep -m1 "^\- \[ \]" "$TASK_PLAN" 2>/dev/null | sed 's/- \[ \] //')

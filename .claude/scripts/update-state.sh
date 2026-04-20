@@ -23,6 +23,7 @@ ROADMAP="${PROJECT_ROOT}/ROADMAP.md"
 OUTPUT="${PROJECT_ROOT}/.thyrox/context/project-state.md"
 DRY_RUN=false
 TODAY=$(date '+%Y-%m-%d %H:%M:%S')
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'unknown')
 
 if [[ "${1:-}" == "--dry-run" ]]; then
     DRY_RUN=true
@@ -78,7 +79,7 @@ updated_at: ${TODAY}
 **Versión:** ${VERSION}
 **Estado:** Activo — framework thyrox con ${FASES_COUNT} FASEs completadas
 **Última actualización:** ${TODAY}
-**Branch activo:** \`claude/check-merge-status-Dcyvj\`
+**Branch activo:** \`${CURRENT_BRANCH}\`
 
 ---
 
