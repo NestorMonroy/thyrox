@@ -1,6 +1,6 @@
 ```yml
-tarea_activa: T-033 T-034 T-035
-proximo_paso: T-033 gate-calibrated-contracts.md → T-034 parallel-agent-state-files.md + validate-session-close.sh → T-035 gate-consistency-evaluator agent
+tarea_activa: completado T-081 T-088 T-089 T-024
+proximo_paso: siguiente tarea disponible en task-plan
 wp: 2026-04-18-07-12-50-methodology-calibration
-updated_at: 2026-04-20 13:51:38
+updated_at: 2026-04-20 13:54:12
 ```

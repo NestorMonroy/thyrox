@@ -473,7 +473,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-017, T-020, T-021
 
-- [~] T-034 Definir estructura de state files para ejecución paralela de agentes @task-executor (claimed: 2026-04-20 13:53:00)
+- [x] T-034 Definir estructura de state files para ejecución paralela de agentes @task-executor (done: 2026-04-20 13:53:00)
   - **Fuentes:** cluster-b (B-MA-2 CRÍTICO — state files sin estructura definida), cluster-b (B-MA-3 ALTO — protocolo de failure no especificado)
   - En `.thyrox/context/` documentar estructura canónica:
     - `now-{agent-name}.md` ya existe como convención — agregar campos requeridos: `agent_id`, `status` (running/completed/failed), `output_key`, `started_at`, `timeout_at`
@@ -485,7 +485,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Depende de:** T-033
   - **Nota:** T-034 también edita `validate-session-close.sh` para verificar cleanup — ejecutar después de T-022
 
-- [ ] T-035 Crear evaluador de consistencia inter-agente y unclear-handler
+- [~] T-035 Crear evaluador de consistencia inter-agente y unclear-handler @task-executor (claimed: 2026-04-20 13:54:00)
   - **Fuentes:** cluster-b (B-MA-3 CRÍTICO — evaluador de consistencia ausente; B-MA-4 ALTO — unclear routing sin handler)
   - Definir el rol del evaluador de consistencia en el gate paralelo:
     - Propósito: detectar contradicciones entre outputs de evaluadores paralelos — no sintetizar, sino identificar
