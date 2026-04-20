@@ -58,36 +58,75 @@ Sin estos controles, cambios rompen silenciosamente y usuarios no adoptan el fra
 
 ---
 
-## 4. Propuesta de implementación (3 fases)
+## 4. Detalle de brechas identificadas
 
-### Fase 1: CI/CD Enhancement (Quick Wins)
+### 4.1 Brecha 1: Testing Automation
 
-Workflows a crear:
+**Gap:** No existe ejecución automática de test suites en CI.
 
-1. **`tests.yml`** — Ejecuta test suite en PR/push
-2. **`lint.yml`** — ESLint, Prettier, markdownlint
-3. **`docs-validate.yml`** — Valida CLAUDE.md, decisions/, references/
+**Estado actual:** Ningún workflow ejecuta tests.
 
-Estimado: 2-3 sesiones
+**Impacto:** Bugs permanecen sin detectar hasta merge a main. Coordinators y agents pueden romperse silenciosamente.
 
-### Fase 2: Automation (Medium Priority)
+**Áreas afectadas:** `.claude/agents/`, `.claude/skills/`, scripts en `bin/` y `.thyrox/scripts/`
 
-Workflows a crear:
+**Criterio de resolución (futuro):** Workflow que ejecuta test suite en PR/push, reporta cobertura, bloquea merge si falla.
 
-1. **`pr-automation.yml`** — Auto-label, assign reviewers
-2. **`auto-merge.yml`** — Merge automático con condiciones
-3. **`release.yml`** — Semantic versioning + changelog
+---
 
-Estimado: 3-4 sesiones
+### 4.2 Brecha 2: Code Quality Enforcement
 
-### Fase 3: Integration & Monitoring (Long-term)
+**Gap:** No existe linting, formatting, o type-checking en CI.
 
-Workflows a crear:
+**Estado actual:** Validación limitada a SKILL.md size y formato de commits.
 
-1. **`status-report.yml`** — Reportes de salud del proyecto
-2. **`performance-track.yml`** — Benchmark tracking
+**Impacto:** Calidad de código inconsistente, errores de sintaxis, convenciones no aplicadas.
 
-Estimado: 2+ sesiones (bajo priori)
+**Áreas afectadas:** Markdown, YAML, Bash scripts, posibles Python/JavaScript en agents.
+
+**Criterio de resolución (futuro):** Workflow que valida linting (markdownlint, shellcheck), formatting (prettier), rechaza PRs no conformes.
+
+---
+
+### 4.3 Brecha 3: Documentation Structure Validation
+
+**Gap:** No existe validación automática de estructura de documentación.
+
+**Estado actual:** ADRs, references, work packages pueden crearse sin validar metadata, nombres de archivo, o estructura YAML.
+
+**Impacto:** Documentación inconsistente, broken links, violaciones de convenciones (ej: WP-ERR-001).
+
+**Áreas afectadas:** `.thyrox/context/decisions/`, `.thyrox/context/work/`, `.claude/references/`
+
+**Criterio de resolución (futuro):** Workflow que valida metadata frontmatter, nombres de archivo, referencias cruzadas, estructura de stage directories.
+
+---
+
+### 4.4 Brecha 4: Release Management & Versioning
+
+**Gap:** No existe versionado automático, changelog, o release automation.
+
+**Estado actual:** Releases son manuales. No hay semantic versioning.
+
+**Impacto:** Releases lentas, inconsistentes, sin changelog automatizado.
+
+**Áreas afectadas:** GitHub releases, CHANGELOG.md, version tags.
+
+**Criterio de resolución (futuro):** Workflow que genera releases, bumps versiones semánticas, crea changelog automáticamente.
+
+---
+
+### 4.5 Brecha 5: Branch Protection Rules
+
+**Gap:** No existe configuración de branch protection.
+
+**Estado actual:** PR puede mergearse sin approval, sin status checks verdes, force push es posible.
+
+**Impacto:** Riesgo de merge accidental de cambios incompletos o rotos.
+
+**Áreas afectadas:** main branch governance.
+
+**Criterio de resolución (futuro):** Branch protection que requiere 1 approval, status checks verdes, conversación resuelta.
 
 ---
 
