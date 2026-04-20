@@ -2,7 +2,7 @@
 created_at: 2026-04-20 21:30:00
 wp: 2026-04-20-14-00-00-github-workflows
 phase: Phase 6 — SCOPE
-status: Pendiente aprobación
+status: Aprobado — 2026-04-20
 ```
 
 # Plan — Crear Infraestructura Modular de .github/
@@ -121,7 +121,9 @@ Ver tracking: [ROADMAP.md](../../../../../ROADMAP.md)
 
 ## Estado de aprobación
 
-- [ ] Scope aprobado por usuario — PENDIENTE
+- [x] Scope aprobado por usuario — 2026-04-20
+- [x] Decisiones finales documentadas en scope-decisions-final.md
+- [x] Separación de responsabilidades clara
 
-Esperando confirmación de scope statement + in-scope + out-of-scope antes de pasar a Phase 7 (DESIGN/SPECIFY).
+Listo para: Phase 7 DESIGN/SPECIFY
 
