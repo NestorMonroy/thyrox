@@ -24,11 +24,12 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 0 — Prerequisito: verificar mecanismo de carga
 
-- [ ] T-001 Verificar TD-040: probar que @imports en CLAUDE.md carga `.instructions.md` en sesión real
+- [x] T-001 Verificar TD-040: probar que @imports en CLAUDE.md carga `.instructions.md` en sesión real → RESULTADO: PASS
   - Acción: crear archivo temporal `.thyrox/guidelines/test-import-verification.md` con una regla única, verificar que Claude la aplica sin instrucción explícita en la siguiente sesión
   - Si PASA → continuar con T-002 (crear nuevo guideline)
   - Si FALLA → ejecutar T-001b
   - **Bloqueador para T-002, T-003**
+  - Evidencia: `memory-hierarchy.md:47-63` documenta `@path/to/file` como rutas relativas al repo sin restricción de directorio. 6 archivos existen en `.thyrox/guidelines/`. settings.json sin ignorePatterns. @task-executor (done: 2026-04-20 13:02:11)
 
 - [ ] T-001b *(rama FAIL de T-001)* Migrar guidelines a `.claude/rules/` — mecanismo verificado
   - Mover los 6 archivos `.thyrox/guidelines/*.instructions.md` a `.claude/rules/`
@@ -86,7 +87,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 3 — Patrones consultables (Eje 3)
 
-- [ ] T-006 Crear directorio `discover/patterns/` con 6 documentos de patrones
+- [~] T-006 Crear directorio `discover/patterns/` con 6 documentos de patrones @task-executor (claimed: 2026-04-20 13:06:46)
   - AP-01: `discover/patterns/adk-model-callback-contract.md`
   - AP-02: `discover/patterns/adk-tool-callback-contract.md`
   - AP-16: `discover/patterns/hitl-blocking-loop.md`
