@@ -1,7 +1,7 @@
 ```yml
 type: Registro de Deuda Técnica
 created_at: 2026-04-03
-updated_at: 2026-04-17 22:37:43
+updated_at: 2026-04-20 13:47:30
 ```
 
 # Deuda Técnica — THYROX
@@ -469,3 +469,42 @@ Requiere análisis de `git log` con grep sobre mensajes de commit.
 commit correspondiente, o commits con T-NNN sin `[x]` en el task-plan.
 
 ---
+
+## TD-043: 6 tecnologías en bootstrap.py sin template en registry
+
+```
+Severidad: media
+Origen: ÉPICA 42 — cluster-i (H-07) — registry-adr-gaps
+Fase afectada: .thyrox/registry/ + bootstrap.py
+Estado: [ ] Pendiente
+```
+
+**Descripción:**
+`bootstrap.py` declara techs en `TECH_CATEGORIES` que no tienen template en el directorio correspondiente del registry. Cuando `install_tech_agent()` no encuentra el template, usa solo el `system_prompt` del YML — el agente generado carece de las instrucciones específicas de stack que provee el template.
+
+**Detectado:** 2026-04-20 — ÉPICA 42 cluster-i (H-07)
+
+**Impacto:**
+Skills generados para estas techs no tienen instrucciones específicas de convenciones — reducen la calidad del output agentic para esas tecnologías. El problema es silencioso: `bootstrap.py` no advierte que el template no existe y reporta el agente como instalado correctamente.
+
+**Techs afectadas:**
+`TECH_CATEGORIES` en `bootstrap.py` mapea tech → categoría. La ruta esperada es `registry/{categoría}/{tech}.skill.template.md`. Techs sin template:
+- `python` → `registry/backend/python.template.md` — no existe
+- `fastapi` → `registry/backend/fastapi.template.md` — no existe
+- `django` → `registry/backend/django.template.md` — no existe
+- `mongodb` → `registry/database/mongodb.template.md` — no existe
+- `redis` → `registry/database/redis.template.md` — no existe
+
+Adicionalmente: `postgresql` y `mysql` tienen templates en `registry/db/` pero `TECH_CATEGORIES` usa `"database"` como categoría — `bootstrap.py` busca en `registry/database/` que no existe. Los YMLs de ambos tech-experts tienen `system_prompt` extenso que suple parcialmente el template, pero la inconsistencia de categoría sigue siendo deuda.
+
+**Resolución propuesta:**
+Opción A: Crear template en `registry/backend/` o `registry/database/` para cada tech faltante.
+Opción B: Agregar advertencia en `bootstrap.py` al detectar tech sin template:
+```python
+if not template_path.exists():
+    print(f"  [WARN] {tech}: no template found at {template_path} — using system_prompt only")
+```
+Ver T-066 (verificación de dependencias MCP) como referencia de patrón de advertencia en bootstrap.py.
+
+**Prioridad:** MEDIO
+**Estado:** Abierto

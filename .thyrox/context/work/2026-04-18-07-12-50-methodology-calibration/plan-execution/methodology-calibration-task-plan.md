@@ -813,7 +813,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 25 — Agent quality: ARCHITECTURE.md y desambiguación (CRÍTICO/ALTO)
 
-- [~] T-060 Crear `.claude/ARCHITECTURE.md` con inventario canónico de agentes @task-executor (claimed: 2026-04-20 13:44:44)
+- [x] T-060 Crear `.claude/ARCHITECTURE.md` con inventario canónico de agentes @task-executor (done: 2026-04-20 13:49:23)
   - **Fuentes:** cluster-h-agent-quality-gaps.md (H-01), cluster-i-registry-adr-gaps.md (H-01)
   - **Hallazgo:** `.claude/ARCHITECTURE.md` no existe. El sistema tiene 27 agentes instalados sin inventario canónico. No es posible detectar agentes zombies ni agentes fantasmas. 18/27 agentes no tienen YML en registry.
   - Crear `.claude/ARCHITECTURE.md` con tabla: nombre, función, tipo (coordinator/expert/analysis/infra), YML en registry (sí/no), origen (bootstrap/manual), solapamientos conocidos.
@@ -869,7 +869,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** independiente
 
-- [~] T-067 Crear ADR para política de coordinators como artefactos estáticos @task-executor (claimed: 2026-04-20 13:44:44)
+- [x] T-067 Crear ADR para política de coordinators como artefactos estáticos @task-executor (done: 2026-04-20 13:49:23)
   - **Fuentes:** cluster-i-registry-adr-gaps.md (GAP-1, H-09)
   - **Hallazgo:** La decisión de que los coordinators NO se generan desde bootstrap.py está documentada solo en un comentario de código (`bootstrap.py` L46-67). Sin ADR, un mantenedor puede intentar generarlos rompiendo el sistema, o no saber cómo crear un coordinator nuevo.
   - Crear `.thyrox/context/decisions/adr-coordinators-static-artifacts.md` documentando: (a) por qué coordinators no se generan desde bootstrap.py, (b) cómo crear un nuevo coordinator usando dmaic-coordinator.md como template, (c) convención de naming y casos que la violan (pm→pmbok, ba→babok).
@@ -885,7 +885,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [~] T-069 Crear ADR para `python-mcp` como skill manual fuera del pipeline @task-executor (claimed: 2026-04-20 13:44:44)
+- [x] T-069 Crear ADR para `python-mcp` como skill manual fuera del pipeline @task-executor (done: 2026-04-20 13:49:23)
   - **Fuentes:** cluster-i-registry-adr-gaps.md (GAP-2, H-04)
   - **Hallazgo:** `python-mcp.instructions.md` está listada en `CLAUDE.md` como "generada por `registry/_generator.sh`" pero fue creada manualmente y no tiene template. La narrativa de "generado por registry" es performativa para este caso.
   - Crear `.thyrox/context/decisions/adr-python-mcp-manual-skill.md`. Agregar nota aclaratoria en `CLAUDE.md` que distinga guidelines generadas (5) vs. manuales (python-mcp).
@@ -1052,7 +1052,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** independiente
 
-- [~] T-087 Documentar 6 techs sin template como deuda técnica @task-executor (claimed: 2026-04-20 13:44:44)
+- [x] T-087 Documentar 6 techs sin template como deuda técnica @task-executor (done: 2026-04-20 13:49:23)
   - **Fuentes:** cluster-i (H-07)
   - **Hallazgo:** bootstrap.py declara techs en TECH_CATEGORIES sin template — usa body genérico sin advertencia.
   - Crear entrada TD-NNN en `.thyrox/context/technical-debt.md`.
