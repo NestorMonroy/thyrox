@@ -1034,7 +1034,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** independiente
 
-- [ ] T-085 Agregar `lint-agents.py` al hook SessionStart — verificar solapamiento con T-051
+- [~] T-085 Agregar `lint-agents.py` al hook SessionStart — verificar solapamiento con T-051 @task-executor (claimed: 2026-04-20 13:40:23)
   - **Fuentes:** cluster-f (H-F13 ALTO)
   - **Nota:** Si T-051 ya cubre esto, marcar como CANCELADO.
   - **Prioridad:** ALTO

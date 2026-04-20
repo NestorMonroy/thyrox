@@ -1,6 +1,6 @@
 ```yml
-tarea_activa: T-075, T-076
-proximo_paso: T-075 copiar agentic-calibration-workflow-example.md a .claude/references/ + agregar referencia en deep-dive.md; T-076 agregar sección mapa epistémico al template de Stage 1 DISCOVER
+tarea_activa: T-041, T-042, T-044
+proximo_paso: ejecutar T-041 (agentic-pattern-selection.md), T-042 (CAD pattern + guideline), T-044 (fix-declared vs fix-verified)
 wp: 2026-04-18-07-12-50-methodology-calibration
-updated_at: 2026-04-20 13:40:40
+updated_at: 2026-04-20 13:41:37
 ```
