@@ -485,7 +485,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Depende de:** T-033
   - **Nota:** T-034 también edita `validate-session-close.sh` para verificar cleanup — ejecutar después de T-022
 
-- [~] T-035 Crear evaluador de consistencia inter-agente y unclear-handler @task-executor (claimed: 2026-04-20 13:54:00)
+- [x] T-035 Crear evaluador de consistencia inter-agente y unclear-handler @task-executor (done: 2026-04-20 13:54:00)
   - **Fuentes:** cluster-b (B-MA-3 CRÍTICO — evaluador de consistencia ausente; B-MA-4 ALTO — unclear routing sin handler)
   - Definir el rol del evaluador de consistencia en el gate paralelo:
     - Propósito: detectar contradicciones entre outputs de evaluadores paralelos — no sintetizar, sino identificar
