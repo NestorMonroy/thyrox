@@ -94,6 +94,15 @@
             "command": "bash .claude/scripts/validate-commit-message.sh"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/check-i001-prewrite.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
