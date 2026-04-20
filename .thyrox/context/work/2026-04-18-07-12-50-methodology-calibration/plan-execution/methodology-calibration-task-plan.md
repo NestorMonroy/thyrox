@@ -375,7 +375,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-020, T-025
 
-- [~] T-027 Agregar I-012 e I-013 en `.claude/rules/thyrox-invariants.md` @task-executor (claimed: 2026-04-20 13:40:10)
+- [x] T-027 Agregar I-012 e I-013 en `.claude/rules/thyrox-invariants.md` @task-executor (done: 2026-04-20 13:40:10)
   - **Fuentes:** cluster-a (H-A2 CRÍTICO — brecha entre claim y observable como invariante sistémica), cluster-b (B-MA-2 ALTO — context pruning sin mecanismo formal)
   - Agregar en `.claude/rules/thyrox-invariants.md`:
     ```
@@ -497,7 +497,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-033, T-034
 
-- [~] T-036 Documentar loops de rework y context pruning en `exit-conditions.md.template` y `workflow-track` @task-executor (claimed: 2026-04-20 13:40:10)
+- [x] T-036 Documentar loops de rework y context pruning en `exit-conditions.md.template` y `workflow-track` @task-executor (done: 2026-04-20 13:40:10)
   - **Fuentes:** cluster-b (B-MA-5 ALTO — loops de rework sin límite; B-MA-6 ALTO — context pruning ausente)
   - En `exit-conditions.md.template` (mismo archivo que T-021):
     - Agregar campo `max_rework_iterations: N` en cada gate — si el WP llega al gate N veces sin aprobación, escalar a decisión humana con resumen de los N intentos
@@ -812,7 +812,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 25 — Agent quality: ARCHITECTURE.md y desambiguación (CRÍTICO/ALTO)
 
-- [ ] T-060 Crear `.claude/ARCHITECTURE.md` con inventario canónico de agentes
+- [~] T-060 Crear `.claude/ARCHITECTURE.md` con inventario canónico de agentes @task-executor (claimed: 2026-04-20 13:44:44)
   - **Fuentes:** cluster-h-agent-quality-gaps.md (H-01), cluster-i-registry-adr-gaps.md (H-01)
   - **Hallazgo:** `.claude/ARCHITECTURE.md` no existe. El sistema tiene 27 agentes instalados sin inventario canónico. No es posible detectar agentes zombies ni agentes fantasmas. 18/27 agentes no tienen YML en registry.
   - Crear `.claude/ARCHITECTURE.md` con tabla: nombre, función, tipo (coordinator/expert/analysis/infra), YML en registry (sí/no), origen (bootstrap/manual), solapamientos conocidos.
@@ -868,7 +868,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** independiente
 
-- [ ] T-067 Crear ADR para política de coordinators como artefactos estáticos
+- [~] T-067 Crear ADR para política de coordinators como artefactos estáticos @task-executor (claimed: 2026-04-20 13:44:44)
   - **Fuentes:** cluster-i-registry-adr-gaps.md (GAP-1, H-09)
   - **Hallazgo:** La decisión de que los coordinators NO se generan desde bootstrap.py está documentada solo en un comentario de código (`bootstrap.py` L46-67). Sin ADR, un mantenedor puede intentar generarlos rompiendo el sistema, o no saber cómo crear un coordinator nuevo.
   - Crear `.thyrox/context/decisions/adr-coordinators-static-artifacts.md` documentando: (a) por qué coordinators no se generan desde bootstrap.py, (b) cómo crear un nuevo coordinator usando dmaic-coordinator.md como template, (c) convención de naming y casos que la violan (pm→pmbok, ba→babok).
@@ -884,7 +884,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-069 Crear ADR para `python-mcp` como skill manual fuera del pipeline
+- [~] T-069 Crear ADR para `python-mcp` como skill manual fuera del pipeline @task-executor (claimed: 2026-04-20 13:44:44)
   - **Fuentes:** cluster-i-registry-adr-gaps.md (GAP-2, H-04)
   - **Hallazgo:** `python-mcp.instructions.md` está listada en `CLAUDE.md` como "generada por `registry/_generator.sh`" pero fue creada manualmente y no tiene template. La narrativa de "generado por registry" es performativa para este caso.
   - Crear `.thyrox/context/decisions/adr-python-mcp-manual-skill.md`. Agregar nota aclaratoria en `CLAUDE.md` que distinga guidelines generadas (5) vs. manuales (python-mcp).
@@ -951,7 +951,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [~] T-076 Agregar sección de mapa epistémico al template de síntesis de Stage 1 DISCOVER @task-executor (claimed: 2026-04-20 13:40:40)
+- [x] T-076 Agregar sección de mapa epistémico al template de síntesis de Stage 1 DISCOVER @task-executor (done: 2026-04-20 13:40:40)
   - **Fuentes:** `discover/methodology-calibration-analysis.md` Sec 8 criterio 4 (GAP-2 ALTO)
   - **Hallazgo:** Criterio de éxito del WP pide que Stage 1 DISCOVER declare explícitamente observación vs. inferencia en su output. El vocabulario existe (T-025) pero ninguna T-NNN modifica el template de síntesis del stage — el criterio de éxito del WP mismo no está cubierto.
   - Agregar sección `## Mapa epistémico` al template `workflow-discover/assets/introduction.md.template` con campos: `observaciones_directas`, `inferencias_calibradas`, `especulaciones_marcadas`.
@@ -1051,7 +1051,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** MEDIO
   - **Depende de:** independiente
 
-- [ ] T-087 Documentar 6 techs sin template como deuda técnica
+- [~] T-087 Documentar 6 techs sin template como deuda técnica @task-executor (claimed: 2026-04-20 13:44:44)
   - **Fuentes:** cluster-i (H-07)
   - **Hallazgo:** bootstrap.py declara techs en TECH_CATEGORIES sin template — usa body genérico sin advertencia.
   - Crear entrada TD-NNN en `.thyrox/context/technical-debt.md`.
