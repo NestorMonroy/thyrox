@@ -47,7 +47,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 1 — Guideline de agentic AI (Eje 1)
 
-- [ ] T-002 Crear `.thyrox/guidelines/agentic-python.instructions.md`
+- [~] T-002 Crear `.thyrox/guidelines/agentic-python.instructions.md` @task-executor (claimed: 2026-04-20 13:11:04)
   - 30 reglas derivadas de AP-01..AP-30, agrupadas en 8 secciones
   - Cada regla: anti-patrón (INCORRECTO) + patrón correcto (CORRECTO) + AP-ID de origen
   - Sección 1: ADK Callbacks (AP-01, AP-02)
@@ -69,14 +69,14 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 2 — Agente validador (Eje 2)
 
-- [ ] T-004 Crear `.thyrox/registry/agents/agentic-validator.yml`
+- [~] T-004 Crear `.thyrox/registry/agents/agentic-validator.yml` @task-executor (claimed: 2026-04-20 13:11:08)
   - Sin campo `model:` (constraint TD-037 — README del registry lo prohíbe)
   - `name`: agentic-validator
   - `description`: 20+ chars con patrón "Use when..." — valida código Python agentic contra catálogo AP-01..AP-30
   - `tools`: Read, Glob, Grep, Bash, Write
   - `system_prompt`: catálogo AP condensado (anti-patrón + correcto por AP) + protocolo de reporte
 
-- [ ] T-005 Crear `.claude/agents/agentic-validator.md` directamente
+- [~] T-005 Crear `.claude/agents/agentic-validator.md` directamente @task-executor (claimed: 2026-04-20 13:11:08)
   - bootstrap.py no soporta este tipo de agente sin modificación — instalación manual
   - Formato idéntico a `.claude/agents/deep-dive.md` (leer como referencia)
   - Frontmatter: name, description, tools, model: sonnet, async_suitable: true, updated_at
@@ -87,7 +87,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 3 — Patrones consultables (Eje 3)
 
-- [~] T-006 Crear directorio `discover/patterns/` con 6 documentos de patrones @task-executor (claimed: 2026-04-20 13:06:46)
+- [x] T-006 Crear directorio `discover/patterns/` con 6 documentos de patrones @task-executor (done: 2026-04-20 13:11:44)
   - AP-01: `discover/patterns/adk-model-callback-contract.md`
   - AP-02: `discover/patterns/adk-tool-callback-contract.md`
   - AP-16: `discover/patterns/hitl-blocking-loop.md`
