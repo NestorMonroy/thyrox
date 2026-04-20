@@ -695,7 +695,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-049 (normalizar formato `current_work` primero)
 
-- [ ] T-048 Crear hook PreToolUse Bash para validar Conventional Commits
+- [~] T-048 Crear hook PreToolUse Bash para validar Conventional Commits @task-executor (claimed: 2026-04-20 13:40:23)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F05, Gap-2)
   - **Hallazgo:** No existe hook PreToolUse para `Bash(git commit *)`. La invariante I-005 (Conventional Commits) es puramente declarativa — ningún script la verifica en el flujo automatizado.
   - Crear `.claude/scripts/validate-commit-message.sh` que extraiga el mensaje del commit del comando, valide contra regex `^(feat|fix|refactor|docs|chore|test|perf)(\(.+\))?: .{1,72}$`, y retorne deny si no cumple.
@@ -711,7 +711,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 > **Contexto:** `sync-wp-state.sh` nunca actualiza `stage:` en `now.md` y el
 > campo `current_work` tiene formato incompatible entre 3 scripts distintos.
 
-- [ ] T-049 Normalizar formato del valor `current_work` en `now.md`
+- [~] T-049 Normalizar formato del valor `current_work` en `now.md` @task-executor (claimed: 2026-04-20 13:40:23)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F07)
   - **Hallazgo:** `sync-wp-state.sh:25` produce path relativo al repo root; `project-status.sh:44` espera path relativo a CONTEXT_DIR; `validate-session-close.sh:99` verifica con `[ -d "$CURRENT_WORK" ]`. Los tres scripts consumen `current_work` con convenciones distintas — inconsistencia estructural.
   - Decidir formato canónico (Opción A: path relativo al repo root `.thyrox/context/work/NOMBRE`). Actualizar los tres scripts para usar el mismo formato. Actualizar también `close-wp.sh`.
@@ -727,7 +727,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICO
   - **Depende de:** T-049
 
-- [ ] T-051 Agregar `lint-agents.py` al hook SessionStart
+- [~] T-051 Agregar `lint-agents.py` al hook SessionStart @task-executor (claimed: 2026-04-20 13:40:23)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F13)
   - **Hallazgo:** `lint-agents.py` no está en ningún hook. Los invariantes I-007 (allowed-tools) e I-008 (description pattern) solo se verifican si el desarrollador lo corre manualmente. El script corre en <1s.
   - Agregar segunda entrada en el hook SessionStart en `.claude/settings.json` que ejecute `python3 .claude/scripts/lint-agents.py || true`.
@@ -739,7 +739,7 @@ como guidelines accionables, agente validador, y patrones consultables.
 
 ## Bloque 23 — bound-detector: cobertura inglés (ALTO)
 
-- [ ] T-052 Extender `bound-detector.py` con patrones en inglés
+- [~] T-052 Extender `bound-detector.py` con patrones en inglés @task-executor (claimed: 2026-04-20 13:40:23)
   - **Fuentes:** cluster-f-hooks-scripts-gaps.md (H-F04)
   - **Hallazgo:** `UNBOUNDED_SIGNALS` y `BOUND_SIGNALS` solo detectan patrones en español (L16-38). Instrucciones como "analyze every file", "process each item", "review all agents" pasan sin detección.
   - Agregar a `UNBOUNDED_SIGNALS`: `r"\bevery\b"`, `r"\beach\b"`, `r"\ball\b"`, `r"\bprocess all\b"`, `r"\bread all\b"`, `r"\banalyze all\b"`, `r"\bfor each\b"`, `r"\bfor every\b"`.
@@ -943,7 +943,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** CRÍTICA
   - **Depende de:** independiente
 
-- [ ] T-075 Convertir `agentic-calibration-workflow-example.md` en referencia oficial consultable
+- [~] T-075 Convertir `agentic-calibration-workflow-example.md` en referencia oficial consultable @task-executor (claimed: 2026-04-20 13:40:40)
   - **Fuentes:** `discover/agentic-calibration-workflow-example.md` (GAP-3 ALTO)
   - **Hallazgo:** Único artefacto empírico del WP con métricas reales (65%→79%→65.4%) y 6 patrones operacionales con sección "Implicación para el sistema". No está vinculado a ningún SKILL ni referencia consultable — sus hallazgos no se propagan al sistema.
   - Mover/copiar a `.claude/references/agentic-calibration-workflow-example.md` y agregar referencia en `deep-dive.md` como lectura recomendada para análisis de flujos multi-agente.
@@ -951,7 +951,7 @@ como guidelines accionables, agente validador, y patrones consultables.
   - **Prioridad:** ALTO
   - **Depende de:** independiente
 
-- [ ] T-076 Agregar sección de mapa epistémico al template de síntesis de Stage 1 DISCOVER
+- [~] T-076 Agregar sección de mapa epistémico al template de síntesis de Stage 1 DISCOVER @task-executor (claimed: 2026-04-20 13:40:40)
   - **Fuentes:** `discover/methodology-calibration-analysis.md` Sec 8 criterio 4 (GAP-2 ALTO)
   - **Hallazgo:** Criterio de éxito del WP pide que Stage 1 DISCOVER declare explícitamente observación vs. inferencia en su output. El vocabulario existe (T-025) pero ninguna T-NNN modifica el template de síntesis del stage — el criterio de éxito del WP mismo no está cubierto.
   - Agregar sección `## Mapa epistémico` al template `workflow-discover/assets/introduction.md.template` con campos: `observaciones_directas`, `inferencias_calibradas`, `especulaciones_marcadas`.
