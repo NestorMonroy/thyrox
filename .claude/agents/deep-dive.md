@@ -2,7 +2,7 @@
 name: deep-dive
 description: "Use when you need to know what is true, false, and uncertain in any artifact — and WHY. Adversarial analysis of documents, code, architectures, decisions, frameworks, problems. For THYROX WP artifacts (risk registers, exit conditions, analysis, strategy): automatically applies calibration mode to detect performative realism and evidence gaps (ratio OBSERVABLE+INFERRED/total ≥ 0.75 for gate artifacts). Executes minimum 6 adversarial verification layers + THYROX calibration layer when applicable. Produces traceable verdict with exact evidence."
 async_suitable: true
-updated_at: 2026-04-20 13:23:40
+updated_at: 2026-04-20 13:40:40
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 ---
@@ -327,3 +327,10 @@ Claims SPECULATIVE que bloquean gate: [lista con archivo:línea o "ninguno"]
 - **Nombrar el patrón** — no solo describir el problema; identificar qué patrón estructural lo produce
 - **Crear artefacto siempre** — sin excepción, toda ejecución genera un markdown en el WP activo
 - **No suavizar** — si algo es falso, decirlo. Si hay contradicción, nombrarla. Si hay engaño estructural, mapearlo.
+
+---
+
+## Lecturas recomendadas
+
+- Para análisis de flujos multi-agente con calibración real: `.claude/references/agentic-calibration-workflow-example.md`
+  (métricas reales 65%→79%→65.4%, 6 patrones operacionales con implicaciones para el sistema)

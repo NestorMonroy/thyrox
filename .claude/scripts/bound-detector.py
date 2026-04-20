@@ -20,6 +20,10 @@ UNBOUNDED_SIGNALS = [
     r"\bsin l[ií]mite\b", r"\bde forma exhaustiva\b",
     r"\bread ALL\b", r"\bleer todos\b", r"\bleer todas\b",
     r"\bprocesa todos\b", r"\brevisa todos\b", r"\banaliza todo\b",
+    # English patterns
+    r"\bevery\b", r"\beach\b", r"\ball\b",
+    r"\bprocess all\b", r"\bread all\b", r"\banalyze all\b",
+    r"\bfor each\b", r"\bfor every\b",
 ]
 
 # ── Señales de bound presente ──────────────────────────────────────────────────
@@ -29,6 +33,9 @@ BOUND_SIGNALS = [
     r"\bno m[áa]s de\b", r"\bprimeros \d+\b", r"\blos \d+ m[áa]s\b",
     r"\bhasta \d+\b", r"\bl[íi]mite de \d+\b", r"\bm[áa]ximo \d+\b",
     r"\bsolo: \[", r"\bsolo \[",
+    # English patterns
+    r"\bmaximum\b", r"\bmax\b", r"\bonly these\b",
+    r"\bno more than\b", r"\bfirst \d+\b", r"\btop \d+\b", r"\bat most\b",
 ]
 
 # ── Señales de bound difuso (presente pero no accionable) ─────────────────────

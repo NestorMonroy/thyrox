@@ -9,7 +9,7 @@ hooks:
     once: true
     type: command
     command: "bash .claude/scripts/set-session-phase.sh 'Phase 11'"
-updated_at: 2026-04-20 13:30:36
+updated_at: 2026-04-20 13:40:10
 ---
 
 # /workflow-track — Phase 11: TRACK/EVALUATE
@@ -48,6 +48,15 @@ Documentar lecciones previene repetir los mismos errores.
    - NOTA: `CHANGELOG.md` (raíz) se actualiza SOLO en releases (cuando hay bump de versión)
 
 **PAT-004 — Checkbox-at-commit:** Al hacer el commit que completa T-NNN, incluir en ese mismo commit el `[x]` en el task-plan. Nunca acumular checkboxes para una "sesión de auditoría" posterior — el drift crece exponencialmente con task-plans activos simultáneos.
+
+**Deuda epistémica — paso obligatorio de evaluación:**
+Antes de crear lessons-learned, revisar todos los stages anteriores del WP e identificar claims heredados que nunca se re-verificaron en ningún stage posterior. Listarlos en lessons-learned bajo la sección "Deuda epistémica":
+- Claim heredado: texto del claim original
+- Origen: Stage donde fue generado
+- Estado: `nunca-reverificado` | `descartado-en-stage-N` | `confirmado-en-stage-N`
+- Acción recomendada: convertir en TD si sigue siendo relevante, o documentar como descartado
+
+Este paso implementa el `context_pruning_rule` del gate Stage 11→12 en exit-conditions.md.template.
 
 3. Actualizar `work/../{nombre-wp}-risk-register.md`:
    - Cerrar riesgos que no se materializaron
