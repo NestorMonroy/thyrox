@@ -17,6 +17,9 @@ Markdown con pypdf (texto fiel; marcadores `<!-- pág i/n -->` conservan la pagi
 | [part3-rules.md](part3-rules.md) | Parte 3 | Reglas detalladas del MM (40 págs) |
 | [early-sizing-practitioners-guide.md](early-sizing-practitioners-guide.md) | Guía | Early Software Sizing — estimación temprana (18 págs) |
 | [guideline-web-analytics.md](guideline-web-analytics.md) | Guideline | Web Analytics — guía de dominio (8 págs) |
+| [early-sizing-practitioners-guide-en.md](early-sizing-practitioners-guide-en.md) | Guía | Early Sizing (EN, original May-2020) |
+| [guideline-requirements-cosmic-format.md](guideline-requirements-cosmic-format.md) | Guideline | Requisitos en COSMIC Format (8 págs) |
+| [llm-automation-cosmic-from-usecases.md](llm-automation-cosmic-from-usecases.md) | Paper | Automatización LLM de la medición COSMIC desde casos de uso (24 págs) |
 
 > Estas son la **fuente autoritativa** del skill `cosmic`. Reemplazan a los textos
 > v4.0.2 que tenía e-comerce. Pendientes otras partes que el ejecutor pueda pasar.
