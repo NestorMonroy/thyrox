@@ -62,17 +62,41 @@ status: Borrador
 > 1 R + 1 W (no por archivo). UC-ENG-05/08/09 son hooks sin Salida al usuario (W es el efecto);
 > cumplen ≥2 CFP por E+W/R. UC-ENG-03 = 2 CFP exactos (mínimo Regla 10c).
 
-## Resultado
+## Capas C y D (añadidas tras audit de cobertura — scope: producto completo)
 
-| Capa (FSM) | Procesos | CFP |
-|------------|----------|-----|
-| A — Interfaz | 20 | **108** |
-| B — Motor | 13 | **46** |
-| **Agregado (referencia, ver Principio 6)** | **33** | **154** |
+Medidas en `docs/requisitos/casos-uso/{methodology,agent}-ucs.md`. Conteo por **patrón
+homogéneo** (Average FP, MM v5.0 `estimation.md`), clasificación **INFERRED** (anclado en
+skills/agentes reales leídos; admisible para gate, I-012). Ver esos archivos para el roster.
 
-**Principio 6:** A y B son FSM distintos; el agregado **154 CFP** es una referencia de
-volumen total del framework, **no** un tamaño comparable contra una sola capa de otro sistema.
+| Capa (FSM) | Procesos | CFP | Patrón | Clasificación |
+|------------|----------|-----|--------|---------------|
+| C — Coordinators de metodología | 62 | **372** | 6 CFP/paso | INFERRED [early sizing] |
+| D — Agentes | 29 | **142** | 5 (escribe) / 4 (read-only) | INFERRED |
+
+## Resultado (4 capas — producto completo)
+
+| Capa (FSM) | Procesos | CFP | Clasificación |
+|------------|----------|-----|---------------|
+| A — Interfaz | 20 | **108** | OBSERVABLE |
+| B — Motor | 13 | **46** | OBSERVABLE |
+| C — Coordinators de metodología | 62 | **372** | INFERRED |
+| D — Agentes | 29 | **142** | INFERRED |
+| **THYROX completo (agregado)** | **124** | **668** | mixto |
+
+**Principio 6:** las 4 capas son FSM distintos; el agregado **668 CFP** es referencia de
+volumen total del producto, **no** un tamaño comparable contra una sola capa de otro sistema.
 Para benchmark, comparar capa-con-capa del mismo nivel.
+
+**Reconciliación con la estimación del audit:** el audit estimó 500-700 CFP para el producto
+completo; la medición da **668**, dentro del rango. El **core (A+B) = 154 CFP es el ~23%**
+del producto. La capa C (metodología) es la dominante (56%).
+
+**Pendiente de refinamiento OBSERVABLE:** capas C y D usan Average FP. Leer los 62 SKILL +
+29 agentes individualmente movería el total ≈ ±30 CFP (pasos de cierre con W a ROADMAP/CHANGELOG;
+agentes con corpus multi-input). El orden de magnitud (≈670) es estable.
+
+**Corrección del audit:** los comandos `structure` y `workflow_init` resultaron **alias** de
+`design` (UC-INT-07) e `init` (UC-INT-15) — no son UCs faltantes. La capa A está completa.
 
 ## Lecturas (medias por capa)
 
