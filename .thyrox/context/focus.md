@@ -1,26 +1,25 @@
 ```yml
 type: Estado Operacional
-version: 1.1
-updated_at: 2026-06-03 04:34:55
+version: 1.2
+updated_at: 2026-06-03 05:43:00
 ```
 
 # Focus
 
-**Sin WP activo** — ÉPICA 47 cerrada. Próximo: ÉPICA 48 (open-wp.sh, mata PAT-001 de raíz).
+<!-- WP-STATUS -->
+**WP activo:** open-wp-automation — Phase 1 — DISCOVER
+WP: `.thyrox/context/work/2026-06-03-05-42-51-open-wp-automation/`
+<!-- /WP-STATUS -->
 
 **Última ÉPICA cerrada: 47 — functional-size-signal ✓ (2026-06-03)**
 `workflow-discover` clasifica tamaño por 2 ejes (Duración + señal funcional objetiva) + regla de
 desempate "gana la mayor". Mitiga ERR-002/006. Audit GRADE A. Hallazgo del audit: PAT-001
-(focus.md stale al abrir) confirmado ×3 → ÉPICA 48.
+(focus.md stale al abrir) confirmado ×3 → ÉPICA 48 (este WP).
 
 **ÉPICA 46 — cosmic-review ✓** (calibración H-1..4 + skill F-1..3; verify-cosmic-baseline.sh).
-**ÉPICA 45 — ucs-detallados ✓** (123 UCs formales). **ÉPICA 44 — thyrox-ucs-cosmic ✓** (baseline 675 CFP).
-
-**ÉPICA 45 — ucs-detallados ✓** — 123 UCs a UC formal. **ÉPICA 44 — thyrox-ucs-cosmic ✓** —
-baseline COSMIC 675 CFP (4 capas FSM). Skill cosmic + UCs durables en `docs/requisitos/casos-uso/`.
-
-**ÉPICA 44 cerrada: thyrox-ucs-cosmic ✓** — primer baseline COSMIC (A 108 · B 46 · C 376 ·
-D 145, 123 procesos). ADR-009 + `decisions/adr-cosmic-baseline.md`. TD-044 resuelto.
+**ÉPICA 45 — ucs-detallados ✓** (123 UCs formales). **ÉPICA 44 — thyrox-ucs-cosmic ✓**
+(baseline COSMIC 675 CFP: A 108 · B 46 · C 376 · D 145, 123 procesos; ADR-009). Skill cosmic +
+UCs durables en `docs/requisitos/casos-uso/`.
 
 **Pendiente futuro (otra ÉPICA):** UC-ENG-14 (SubagentStop) tras merge de PR #4 → re-medir capa B (+1 proceso).
 

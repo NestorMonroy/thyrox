@@ -32,3 +32,15 @@ fi
 
 # A-6: sincronizar project-state.md
 bash "${PROJECT_ROOT}/.claude/scripts/update-state.sh" || true
+
+# A-7: focus.md — marcar "Sin WP activo" en el marcador gestionado (simétrico con open-wp.sh)
+FOCUS_FILE="${PROJECT_ROOT}/.thyrox/context/focus.md"
+if [ -f "$FOCUS_FILE" ] && grep -q "<!-- WP-STATUS -->" "$FOCUS_FILE"; then
+    awk '
+      /<!-- WP-STATUS -->/ {print; print "**Sin WP activo.**"; skip=1; next}
+      /<!-- \/WP-STATUS -->/ {skip=0; print; next}
+      skip {next}
+      {print}
+    ' "$FOCUS_FILE" > "${FOCUS_FILE}.tmp" && mv "${FOCUS_FILE}.tmp" "$FOCUS_FILE"
+    sed -i'' -e "s|^updated_at: .*|updated_at: $DATE|" "$FOCUS_FILE"
+fi

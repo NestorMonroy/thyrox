@@ -91,11 +91,14 @@ Antes de crear el directorio del WP o cualquier archivo:
 
 Excepción: si el WP ya existe (retomar work package), saltar este gate.
 
-2. Crear work package — obtener timestamp real del sistema:
-   - Directorio: `date +%Y-%m-%d-%H-%M-%S` → `context/work/{timestamp}-nombre/`
-   - Metadata: `date '+%Y-%m-%d %H:%M:%S'` → ISO 8601 para `created_at`
-   - NUNCA inventar ni estimar el timestamp
-   - REQUERIDO: actualizar `context/now.md` con `current_work` y `phase: Phase 1`
+2. Crear work package — **usar el script** (no manual, evita PAT-001):
+   ```bash
+   bash .claude/scripts/open-wp.sh <nombre-kebab> ["Phase 1 — DISCOVER"]
+   ```
+   - Genera el timestamp real (I-004), crea `context/work/{ts}-nombre/discover/`, fija
+     `now.md` (`current_work` + `stage`) y el marcador `WP-STATUS` de `focus.md` — todo de una.
+   - Es el inverso de `close-wp.sh`; mantiene el estado consistente al **abrir** (no solo al cerrar).
+   - Metadata de artefactos: `date '+%Y-%m-%d %H:%M:%S'` para `created_at`. NUNCA inventar timestamp.
    - Clasificar reversibilidad: `documentation` | `reversible` | `irreversible`
 
 3. REQUERIDO: Crear `work/.../discover/{nombre-wp}-analysis.md` usando `assets/introduction.md.template`

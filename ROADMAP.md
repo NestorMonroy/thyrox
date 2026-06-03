@@ -25,6 +25,21 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## ÉPICA 48: open-wp-automation — open-wp.sh, mata PAT-001 de raíz [-] EN CURSO
+
+**WP:** `.thyrox/context/work/2026-06-03-05-42-51-open-wp-automation/`
+**Resultado:** `.claude/scripts/open-wp.sh` (inverso de close-wp.sh): al abrir un WP fija
+timestamp real + crea dir + actualiza `now.md` (current_work/stage) y `focus.md::WP-STATUS`
+de una vez. `close-wp.sh` mantiene el mismo marcador. Elimina PAT-001 (focus.md stale al abrir,
+recurrente ×3). Propagado en `workflow-discover/SKILL.md`.
+
+- [x] Stage 1 DISCOVER — 2026-06-03 (asimetría open/close como raíz de PAT-001)
+- [x] Stage 10 IMPLEMENT — 2026-06-03 (open-wp.sh + marcador + close-wp.sh A-7 + SKILL)
+- [x] Stage 9 PILOT — 2026-06-03 (ciclo open→close de prueba con backup/restore, OK)
+- [-] Stage 12 STANDARDIZE — lessons hechas; cierre pendiente de orden del Ejecutor (I-011)
+
+---
+
 ## ÉPICA 47: functional-size-signal — Señal funcional de tamaño en DISCOVER ✓ COMPLETADO 2026-06-03 (cerrado)
 
 **WP:** `.thyrox/context/work/2026-06-03-05-34-28-functional-size-signal/`
