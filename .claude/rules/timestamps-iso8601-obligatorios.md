@@ -23,9 +23,9 @@ Flujo correcto:
 
 ## Campos afectados
 
-- `:fecha_creacion:` — en todo archivo RST nuevo
-- `:fecha_actualizacion:` — al actualizar cualquier artefacto
-- Entradas de bitácora en el SMD y en archivos de progreso
+- `created_at:` — en todo documento WP nuevo
+- `updated_at:` — al actualizar cualquier artefacto vivo
+- Entradas de bitácora en `now.md`, work-logs y archivos de progreso
 - Cualquier campo de fecha en documentos gestionados
 
 ## Señal de fabricación
@@ -44,8 +44,8 @@ como hallazgo y corregirlo con `date -u` en ese momento.
 El patrón de fabricación aparece más en estos contextos:
 
 - Escritura en paralelo con subagentes (el agente "adivina" la hora)
-- Actualización del SMD al final de un turno largo
-- Creación de archivos RST nuevos en lote
+- Actualización de `now.md`/work-log al final de un turno largo
+- Creación de documentos WP nuevos en lote
 
 En estos contextos: ejecutar `date -u` explícitamente antes de escribir
 cada archivo o sección que requiera timestamp.
