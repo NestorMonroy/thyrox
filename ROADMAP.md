@@ -25,7 +25,7 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## ÉPICA 45: ucs-detallados — Profundizar los 123 UCs a UC formal ✓ COMPLETADO 2026-06-03
+## ÉPICA 45: ucs-detallados — Profundizar los 123 UCs a UC formal ✓ COMPLETADO 2026-06-03 (cerrado)
 
 **WP:** `.thyrox/context/work/2026-06-03-04-45-00-ucs-detallados/`
 **Resultado:** Los 123 procesos funcionales de THYROX pasan de "granularidad COSMIC" a **UC
@@ -37,7 +37,8 @@ de aceptación Given-When-Then), anclados en comandos/SKILLs/agentes reales. 86 
 
 - [x] Stage 1 DISCOVER — 2026-06-03 (gaps de cobertura+profundidad; template UC formal)
 - [x] Stage 10 IMPLEMENT — 2026-06-03 (A 20 + B 13 propios; C 61 + D 29 vía 4 agentes paralelos)
-- [-] Stage 12 STANDARDIZE — propagación hecha; cierre pendiente de orden del Ejecutor (I-011)
+- [x] Stage 11 TRACK/EVALUATE — 2026-06-03 (audit GRADE A, 1 corrección aplicada en docs)
+- [x] Stage 12 STANDARDIZE — 2026-06-03 (propagación + lessons; baseline corregido 677→675)
 
 ---
 
