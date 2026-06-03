@@ -543,3 +543,46 @@ review por mensaje (no "escribir archivo") y documentarlo como agente read-only.
 
 **Prioridad:** MEDIO
 **Estado:** Abierto
+
+## TD-045: references/data-movements.md y layers.md delgadas en decisiones difíciles
+
+```
+Severidad: baja-media
+Origen: WP 2026-06-03-05-13-33-cosmic-calibration-review — review del skill cosmic (F-4, 2026-06-03)
+Fase afectada: .claude/skills/cosmic/references/{data-movements,layers}.md
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+- `data-movements.md` delega los casos límite a part3 (correcto) pero no expone inline los 2-3
+  más frecuentes: mensajes de error/confirmación (cuándo cuentan), y un movimiento que mueve
+  varios data groups del mismo OOI.
+- `layers.md` ejemplifica capas pero no da **criterio para decidir si algo es una capa o dos**
+  (la pregunta práctica más difícil); remite al precedente e-comerce.
+
+**Resolución propuesta:** añadir a `data-movements.md` una mini-tabla de 3 casos límite con su
+veredicto; a `layers.md`, una heurística de decisión de boundary (¿cruza un FSM distinto? ¿el
+usuario funcional cambia?).
+
+**Prioridad:** BAJA-MEDIA
+**Estado:** Abierto
+
+## TD-046: ruido de extracción PDF en references/manual/
+
+```
+Severidad: baja (cosmética)
+Origen: WP 2026-06-03-05-13-33-cosmic-calibration-review — review del skill cosmic (F-5, 2026-06-03)
+Fase afectada: .claude/skills/cosmic/references/manual/*.md
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+Los docs del manual extraídos con pypdf arrastran footers repetidos ("Manual de Medición
+COSMIC… Derechos de autor © 2020") y saltos de página. No es incorrecto (material de
+referencia citado, no leído cover-to-cover) pero ensucia grep y lectura.
+
+**Resolución propuesta:** script de limpieza que elimine las líneas de footer/encabezado
+repetidas, conservando el contenido. Opcional — bajo impacto.
+
+**Prioridad:** BAJA
+**Estado:** Abierto

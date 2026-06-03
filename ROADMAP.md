@@ -25,16 +25,19 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## ÉPICA 46: cosmic-calibration-review — Corregir calibración esfuerzo/CFP del skill [-] EN CURSO
+## ÉPICA 46: cosmic-review — Corregir calibración + skill del cosmic [-] EN CURSO
 
 **WP:** `.thyrox/context/work/2026-06-03-05-13-33-cosmic-calibration-review/`
-**Resultado:** Revisión de `cosmic/references/{estimation,calibration}.md`. 4 correcciones:
-H-1 frontera INFERRED/SPECULATIVE de estimaciones (alineada con evidence-classification.md);
-H-2 ejemplo de calibración propia de THYROX (bandas por capa + validación Average-FP ~1.3%);
-H-3 "tamaño ≠ esfuerzo" (sin histórico de horas, no convertir CFP a esfuerzo); H-4 N mínimo.
+**Resultado:** Review en 2 frentes del skill `cosmic`.
+*Calibración* (references): H-1 frontera INFERRED/SPECULATIVE de estimaciones; H-2 ejemplo de
+calibración propia de THYROX (bandas + validación Average-FP ~1.3%); H-3 "tamaño ≠ esfuerzo";
+H-4 N mínimo.
+*Skill* (anatomía/fidelidad): F-1 `scripts/tally-cfp.py` (suma+valida invariantes; verificado
+123 proc/675 CFP); F-2 `Write Edit` en allowed-tools; F-3 regla de dimensionamiento de cambios.
+F-4 (refs delgadas) y F-5 (ruido PDF) → TD-045/TD-046.
 
-- [x] Stage 1 DISCOVER — 2026-06-03 (4 hallazgos en review de calibración)
-- [x] Stage 10 IMPLEMENT — 2026-06-03 (2 references corregidas)
+- [x] Stage 1 DISCOVER — 2026-06-03 (4 hallazgos calibración + 5 del skill)
+- [x] Stage 10 IMPLEMENT — 2026-06-03 (2 refs + script + SKILL.md; F-4/F-5 a deuda)
 - [-] Stage 12 STANDARDIZE — lessons hechas; cierre pendiente de orden del Ejecutor (I-011)
 
 ---

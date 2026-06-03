@@ -14,7 +14,9 @@ coordinators: {}
 
 # Contexto
 
-ÉPICA 46 **cosmic-calibration-review**: corregida la calibración esfuerzo/CFP del skill cosmic.
-4 fixes en `references/{estimation,calibration}.md` — H-1 INFERRED/SPECULATIVE de estimaciones,
-H-2 bandas propias de THYROX (A 5.4·B 3.5·C 6.16·D 5.0 + validación Average-FP ~1.3%),
-H-3 tamaño≠esfuerzo (sin horas no convertir), H-4 N mínimo. Pendiente: orden de cierre (I-011).
+ÉPICA 46 **cosmic-review** (ampliada): review del skill cosmic en 2 frentes.
+- *Calibración* (refs): H-1 INFERRED/SPECULATIVE de estimaciones · H-2 bandas THYROX + validación
+  Average-FP ~1.3% · H-3 tamaño≠esfuerzo · H-4 N mínimo.
+- *Skill* (anatomía/fidelidad): F-1 `scripts/tally-cfp.py` (suma+valida; 123 proc/675 CFP) ·
+  F-2 Write/Edit en allowed-tools · F-3 regla de cambios. F-4/F-5 → TD-045/TD-046.
+Pendiente: orden de cierre (I-011).

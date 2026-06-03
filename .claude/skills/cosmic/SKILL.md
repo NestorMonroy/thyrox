@@ -1,7 +1,7 @@
 ```yml
 name: cosmic
 description: "Dimensionamiento funcional COSMIC v5.0 (ISO/IEC 19761) en CFP. Usar cuando se quiera medir el tamaño funcional de software desde sus FUR/casos de uso: mapear procesos funcionales y sus movimientos de datos (Entrada/Salida/Lectura/Escritura), estimar tamaño temprano cuando falta detalle, o calibrar benchmarks de esfuerzo. Encaja en la fase MEASURE/BASELINE."
-allowed-tools: Read Glob Grep Bash
+allowed-tools: Read Glob Grep Bash Write Edit
 ```
 
 # COSMIC — Dimensionamiento funcional (ISO/IEC 19761, v5.0)
@@ -47,6 +47,23 @@ De los **FUR** (fuente exclusiva — Regla 3; en THYROX: casos de uso / requirem
 - Registrar en la tabla **COSMIC Format** (`assets/cosmic-format-table.md.template`):
   columnas `Paso · Sub-proceso (FUR) · FU · OOI · Tipo(E/X/R/W) · CFP · FUR-fuente` + total.
 - Tamaño total = Σ procesos por capa.
+- **Verifica con el script** (no sumes a mano — el conteo manual se equivoca):
+  `python3 scripts/tally-cfp.py <archivo(s).md>` suma los CFP y valida los invariantes
+  (cada proceso ≥2 CFP, ≥1 Entrada). Con `--expect N` falla si la suma no cuadra.
+
+## Dimensionamiento de un CAMBIO (mantenimiento)
+
+COSMIC mide también el tamaño de una **modificación** a software ya medido. El tamaño del
+cambio = **movimientos de datos añadidos + modificados + borrados** (no es el tamaño del
+proceso completo). Reglas:
+- Un movimiento **añadido** o **borrado** = 1 CFP. Un movimiento **modificado** = 1 CFP.
+- Un movimiento sin tocar **no** cuenta.
+- Mínimo de cambio: 1 CFP (no aplica el mínimo de 2 CFP del proceso nuevo).
+- Para re-medir el baseline tras un cambio: nuevo total = total previo + añadidos − borrados
+  (los modificados no alteran el total, solo el esfuerzo).
+
+> Ej. THYROX: al mergear UC-ENG-14 (SubagentStop) se **añade** 1 proceso a capa B → el cambio
+> se dimensiona contando sus movimientos, y el baseline de capa B sube en ese CFP.
 
 ## Cuando falta detalle → estimación temprana
 
@@ -77,6 +94,12 @@ partes existentes. Garantiza trazabilidad y re-medición sin reescribir.
 
 - `measurement-strategy.md` (Fase A) · tabla COSMIC Format por proceso (Fase C) · total CFP
   por capa + resumen. Viven en el WP (`measure/` o anotados en el UC).
+
+## Scripts
+
+- `scripts/tally-cfp.py` — suma los CFP de una medición markdown y valida invariantes
+  (≥2 CFP/proceso, ≥1 Entrada). Determinístico: evita errores de suma manual. `--expect N`
+  para gate de reconciliación.
 
 ## Referencias
 

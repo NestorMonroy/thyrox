@@ -45,10 +45,32 @@ H-3: THYROX no tiene datos de esfuerzo. La reference ahora lo dice explícitamen
 invitar a una conversión horas/CFP sin insumo. **Lección:** una guía debe advertir qué NO
 hacer cuando falta el dato, no solo cómo hacerlo cuando está.
 
+## Segundo frente — review del skill cosmic (F-1..F-5)
+
+Tras la calibración, el Ejecutor pidió revisar el skill en sí. 5 hallazgos; aplicados F-1/F-2/F-3:
+
+- **F-1 (anatomía):** faltaba `scripts/`. Creado `scripts/tally-cfp.py` — suma CFP y valida
+  invariantes (≥2 CFP/proceso, ≥1 Entrada), con `--expect N` para gate de reconciliación.
+  Verificado: 123 procesos / 675 CFP. **Habría detectado** los subtotales mal sumados de los
+  agentes en ÉPICA 45 (110 vs 116; 144 vs 145).
+- **F-2 (consistencia):** `allowed-tools` no tenía `Write Edit` pese a que el skill escribe
+  artefactos (misma clase que TD-044). Corregido.
+- **F-3 (fidelidad):** SKILL.md no cubría el dimensionamiento de **cambios** (mantenimiento =
+  movimientos añadidos+modificados+borrados). Añadida la sección + ejemplo UC-ENG-14.
+- **F-4 / F-5:** refs delgadas (data-movements/layers) y ruido PDF del manual → TD-045 / TD-046.
+
+### L-4 — Un skill de medición sin script de verificación arrastra el error que pretende evitar
+COSMIC existe para dar números defendibles, pero el conteo manual del propio skill produjo
+sumas equivocadas (ÉPICA 45). Un skill cuya salida es numérica **debe** traer un verificador
+determinístico en `scripts/`. **Lección:** la anatomía `scripts/` no es decorativa; para skills
+cuantitativos es donde vive la garantía de correctitud.
+
 ## Propagación
 
-- `cosmic/references/estimation.md` v actualizada (tabla INFERRED/SPECULATIVE).
-- `cosmic/references/calibration.md` v actualizada (N mínimo, tamaño≠esfuerzo, ejemplo THYROX).
-- Sin cambios en SKILL.md (las references son carga on-demand; el procedimiento no cambió).
+- `cosmic/references/estimation.md` (tabla INFERRED/SPECULATIVE).
+- `cosmic/references/calibration.md` (N mínimo, tamaño≠esfuerzo, ejemplo THYROX).
+- `cosmic/SKILL.md` (allowed-tools +Write/Edit; sección cambios; ref a scripts/).
+- `cosmic/scripts/tally-cfp.py` (nuevo).
+- TD-045 (refs delgadas) + TD-046 (ruido PDF) abiertos.
 
 **Última actualización:** 2026-06-03 05:13:33
