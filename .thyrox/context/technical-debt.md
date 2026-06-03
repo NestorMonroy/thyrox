@@ -515,8 +515,13 @@ Ver T-066 (verificación de dependencias MCP) como referencia de patrón de adve
 Severidad: media
 Origen: WP 2026-06-03-03-55-02-thyrox-ucs-cosmic — medición COSMIC capa D (2026-06-03)
 Fase afectada: .claude/agents/deep-review.md
-Estado: [ ] Pendiente
+Estado: [x] Resuelto (2026-06-03) — Opción A
 ```
+
+**Resolución aplicada (2026-06-03):** añadido `Write` a `tools:` en la fuente
+`.thyrox/registry/agents/deep-review.yml` y en el generado `.claude/agents/deep-review.md`.
+El cuerpo (líneas 110, 142) exige crear el markdown de hallazgos → Write es coherente con el
+diseño. lint-agents.py: [OK]. No se añadió Edit (el agente solo crea, no actualiza).
 
 **Problema:**
 El cuerpo de `deep-review.md` indica que el agente escribe un artefacto de review en el WP,
