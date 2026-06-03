@@ -17,7 +17,7 @@ status: Borrador
 | T-004 assets (2 templates) | [x] | `assets/cosmic-format-table.md.template`, `assets/measurement-strategy.md.template` |
 | (referencias) Manual COSMIC v5.0 + guías + paper LLM | [x] | `references/manual/` (12 docs) |
 | T-005 registrar en registry/ARCHITECTURE | [ ] | pendiente (skill hand-authored, como python-mcp) |
-| T-006 piloto: medir 1 UC del buy-flow y checar vs medición e-comerce | [ ] | pendiente (UCs en e-comerce-docs; checar vs UC-INV-02=7 / UC-AUTH-02=8) |
+| T-006 piloto: medir 1 UC y checar vs medición e-comerce | [x] | pilot/uc-auth-02-validation.md — 8 CFP, COINCIDENCIA EXACTA vs e-comerce |
 
 **Skill funcional y auto-descubierto** (aparece como `/cosmic` / Skill cosmic). Pendientes
 T-005 (registro) y T-006 (validación piloto).
