@@ -66,6 +66,9 @@ Objetivo: escribir el **set completo** de UCs de THYROX para luego **medirlo con
 > Nota: el hook **SubagentStop** (registro de reportes) está en PR #4, aún no mergeado a la
 > canónica → UC futuro (UC-ENG-14) cuando se integre.
 
+> **Ubicación de los UCs (producto):** `docs/requisitos/casos-uso/{interface,engine}-ucs.md`
+> (documentación durable, NO en el work package). Este WP conserva el inventario/medición.
+
 ## Totales y plan
 
 - **Capa A:** 20 UCs · **Capa B:** 13 UCs · **Total: 33 UCs** (set completo).

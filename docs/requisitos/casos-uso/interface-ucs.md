@@ -1,10 +1,9 @@
 ```yml
-created_at: 2026-06-03T04:00:00Z
+Tipo: Requisitos — Casos de Uso (FUR)
 project: THYROX
-work_package: 2026-06-03-03-55-02-thyrox-ucs-cosmic
-phase: Phase 7 — DESIGN/SPECIFY
-author: NestorMonroy
 status: Borrador
+version: 1.0.0
+updated_at: 2026-06-03 04:05:00
 ```
 
 # UCs de THYROX — Capa A: Interfaz (comandos/skills)
