@@ -33,3 +33,6 @@ Evaluar el tamaño considerando el proyecto completo, no la tarea individual. Un
 ---
 
 **Detectado:** 2026-03-28
+**Mitigación (ÉPICA 47, 2026-06-03):** `workflow-discover` ahora clasifica el tamaño por DOS
+ejes — Duración + **señal funcional objetiva** (nº de procesos funcionales/capas), con regla de
+desempate "gana la mayor". Ataca la raíz: subestimar horas ya no basta para clasificar pequeño.

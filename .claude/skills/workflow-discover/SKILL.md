@@ -20,14 +20,25 @@ Inicia o retoma Phase 1 DISCOVER del work package activo.
 
 ## Escalabilidad
 
-Determinar qué fases son obligatorias antes de empezar el análisis:
+Determinar qué fases son obligatorias antes de empezar el análisis. Clasificar por **dos ejes**
+(no solo por horas — eso causó ERR-002 y su reincidencia ERR-006):
 
-| Tamaño | Duración | Fases activas | Qué omitir |
-|--------|----------|---------------|------------|
-| Micro | <30 min | 1, 10, 11 | Phases 2-9 |
-| Pequeño | 30 min – 2h | 1, 3, 10, 11 | Phases 2, 4-9 |
-| Mediano | 2h – 8h | 1, 3, 5, 6, 8, 10, 11 | Phases 2, 4, 7, 9, 12 |
-| Grande | >8h | 1–12 completo | Ninguna — usar epic.md para agrupar features |
+| Tamaño | Duración (subjetiva) | **Señal funcional (objetiva)** | Fases activas | Qué omitir |
+|--------|----------------------|-------------------------------|---------------|------------|
+| Micro | <30 min | 1 proceso funcional · 1 archivo · 1 capa | 1, 10, 11 | Phases 2-9 |
+| Pequeño | 30 min – 2h | 2–3 procesos · pocos archivos · 1 capa | 1, 3, 10, 11 | Phases 2, 4-9 |
+| Mediano | 2h – 8h | ~4–10 procesos **o** toca 2+ capas/componentes | 1, 3, 5, 6, 8, 10, 11 | Phases 2, 4, 7, 9, 12 |
+| Grande | >8h | >10 procesos **o** múltiples capas/features | 1–12 completo | Ninguna — usar epic.md para agrupar features |
+
+**Señal funcional** = ¿cuántos **procesos funcionales** (UCs / componentes / capas) crea o
+modifica el WP? Es objetiva y disponible ya en DISCOVER — no depende de "cuánto creo que tardaré".
+
+⚠ **Regla de desempate (anti ERR-002/006):** si la Duración y la señal funcional **discrepan**,
+usar la clasificación **MAYOR**. Nunca saltar fases por subestimar horas cuando el conteo
+funcional dice que el WP es grande. Evaluar el **contexto completo**, no la tarea aislada.
+
+> Bandas heurísticas, **no calibradas** (THYROX no tiene histórico de esfuerzo → es señal de
+> tamaño *relativo*, no estimación de horas; ver `cosmic/references/calibration.md`).
 
 Ver [escalabilidad](references/scalability.md) para detalles y casos de borde.
 

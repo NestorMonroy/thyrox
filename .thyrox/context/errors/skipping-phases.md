@@ -50,3 +50,6 @@ No "¿qué debería hacer ahora?" sino "¿qué dice el SKILL que toca?"
 
 **Detectado:** 2026-03-28
 **Reincidencia de:** ERR-002
+**Mitigación (ÉPICA 47, 2026-06-03):** señal funcional de tamaño + regla de desempate en
+`workflow-discover` (ver ERR-002). La causa común (subestimar tamaño → saltar fases) ahora tiene
+un contrapeso objetivo.

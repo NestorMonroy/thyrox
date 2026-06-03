@@ -1,10 +1,10 @@
 ```yml
 type: Referencia General
 category: Escalabilidad
-version: 1.0
+version: 1.1
 purpose: Guía de cómo adaptar THYROX según complejidad del proyecto.
 goal: Decidir qué estructura y fases usar según tamaño del trabajo.
-updated_at: 2026-04-17 02:46:00
+updated_at: 2026-06-03 05:38:00
 owner: workflow-discover
 ```
 
@@ -13,6 +13,35 @@ owner: workflow-discover
 ## Propósito
 
 THYROX se adapta al tamaño del proyecto. Esta guía explica qué estructura usar.
+
+---
+
+## Clasificar el tamaño por DOS ejes (no solo horas)
+
+Clasificar por horas **solo** es subjetivo y causó ERR-002 (un sub-esfuerzo "pequeño" dentro de
+un proyecto de 93 archivos / 30+ commits) y su reincidencia ERR-006. Usar **dos ejes**:
+
+1. **Duración (subjetiva):** estimación de horas. Útil pero sesgada a la baja.
+2. **Señal funcional (objetiva):** ¿cuántos **procesos funcionales** (UCs / componentes /
+   capas) crea o modifica el WP? Disponible ya en DISCOVER; no depende de la percepción de tiempo.
+
+| Tamaño | Duración | Señal funcional |
+|--------|----------|-----------------|
+| Micro | <30 min | 1 proceso · 1 archivo · 1 capa |
+| Pequeño | 30 min–2h | 2–3 procesos · pocos archivos · 1 capa |
+| Mediano | 2h–8h | ~4–10 procesos **o** 2+ capas/componentes |
+| Grande | >8h | >10 procesos **o** múltiples capas/features |
+
+**⚠ Regla de desempate:** si los dos ejes discrepan, gana la clasificación **MAYOR**. Evaluar el
+**contexto completo del proyecto**, no la tarea aislada (la lección literal de ERR-002).
+
+**Caveat:** la señal funcional usa **conteo de procesos** (objetivo), NO una conversión
+CFP→horas — THYROX no tiene histórico de esfuerzo (ver `cosmic/references/calibration.md`).
+Es tamaño *relativo*, no cronograma. Bandas heurísticas, no calibradas.
+
+> Conexión COSMIC: es el mismo principio del dimensionamiento funcional (ISO 19761) aplicado al
+> propio scoping de THYROX — el tamaño se mide por lo que el software hace, no por lo que se
+> tarda en hacerlo.
 
 ---
 

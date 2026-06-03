@@ -25,6 +25,20 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## ÉPICA 47: functional-size-signal — Señal funcional de tamaño en DISCOVER [-] EN CURSO
+
+**WP:** `.thyrox/context/work/2026-06-03-05-34-28-functional-size-signal/`
+**Resultado:** `workflow-discover` clasifica el tamaño del WP por DOS ejes — Duración +
+**señal funcional objetiva** (nº de procesos funcionales/capas) + regla de desempate "gana la
+mayor". Ataca la raíz de ERR-002/006 (subestimar horas → saltar fases). COSMIC aplicado al
+scoping. Mitigación anotada en ERR-002/006.
+
+- [x] Stage 1 DISCOVER — 2026-06-03 (raíz ERR-002/006; diseño del 2º eje)
+- [x] Stage 10 IMPLEMENT — 2026-06-03 (SKILL.md + scalability.md v1.1 + notas ERR)
+- [-] Stage 12 STANDARDIZE — lessons hechas; cierre pendiente de orden del Ejecutor (I-011)
+
+---
+
 ## ÉPICA 46: cosmic-review — Corregir calibración + skill del cosmic ✓ COMPLETADO 2026-06-03 (cerrado)
 
 **WP:** `.thyrox/context/work/2026-06-03-05-13-33-cosmic-calibration-review/`
