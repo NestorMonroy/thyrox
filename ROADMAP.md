@@ -25,7 +25,7 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## ÉPICA 46: cosmic-review — Corregir calibración + skill del cosmic [-] EN CURSO
+## ÉPICA 46: cosmic-review — Corregir calibración + skill del cosmic ✓ COMPLETADO 2026-06-03 (cerrado)
 
 **WP:** `.thyrox/context/work/2026-06-03-05-13-33-cosmic-calibration-review/`
 **Resultado:** Review en 2 frentes del skill `cosmic`.
@@ -38,7 +38,8 @@ F-4 (refs delgadas) y F-5 (ruido PDF) → TD-045/TD-046.
 
 - [x] Stage 1 DISCOVER — 2026-06-03 (4 hallazgos calibración + 5 del skill)
 - [x] Stage 10 IMPLEMENT — 2026-06-03 (2 refs + script + SKILL.md; F-4/F-5 a deuda)
-- [-] Stage 12 STANDARDIZE — lessons hechas; cierre pendiente de orden del Ejecutor (I-011)
+- [x] Stage 11 TRACK/EVALUATE — 2026-06-03 (audit GRADE A + verify-cosmic-baseline.sh 19/19)
+- [x] Stage 12 STANDARDIZE — 2026-06-03 (lessons + log de errores; E-f resuelto, E-g en cierre)
 
 ---
 
