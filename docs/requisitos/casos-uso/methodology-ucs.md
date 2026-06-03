@@ -809,7 +809,7 @@ updated_at: 2026-06-03 05:05:00
 | **Σ Capa C** | **61** | **376** |
 
 Fuente OBSERVABLE: los 61 SKILL leídos uno a uno. CFP por-paso del baseline ÉPICA 44
-(corrección RUP 27→25). 50 pasos = 6 CFP, 11 pasos = 7 CFP (2º precondición o 2º artefacto:
+(corrección RUP 27→25). 51 pasos = 6 CFP, 10 pasos = 7 CFP (2º precondición o 2º artefacto:
 a3-report en PPS, ROADMAP en sp-plan, cierre en dmaic-control/pdca-act/rup-transition,
 2º baseline en bpa-monitor/cp-evaluate).
 

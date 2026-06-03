@@ -76,7 +76,7 @@ pm/pps/rm/sp=149 → **C=378**; agentes → **D=145**.
 
 | Capa (FSM) | Procesos | CFP | Media | Clasificación |
 |------------|----------|-----|-------|---------------|
-| C — Coordinators de metodología | 61 | **378** | 6.2 CFP/paso (50×6 + 11×7) | OBSERVABLE |
+| C — Coordinators de metodología | 61 | **376** | 6.16 CFP/paso (51×6 + 10×7) | OBSERVABLE |
 | D — Agentes | 29 | **145** | 5.0 CFP/agente (rango 4–7) | OBSERVABLE |
 
 ## Resultado (4 capas — producto completo, OBSERVABLE)
@@ -100,7 +100,7 @@ buen estimador (error ~1.3%). El **core (A+B) = 154 CFP = ~23%** del producto; l
 
 **Correcciones del conteo OBSERVABLE:**
 - `pm-thyrox` **no tiene SKILL.md** (solo `evals/`+`scripts/`) → no es proceso funcional (62→61).
-- 11 pasos de capa C suben a 7 CFP (2º OOI de precondición o 2º artefacto: a3-report, ROADMAP).
+- 10 pasos de capa C suben a 7 CFP (2º OOI de precondición o 2º artefacto: a3-report, ROADMAP). *(corregido ÉPICA 45: eran 10, no 11; capa C = 376)*
 - Capa D no es uniforme: coordinators con schema `.yml` = 6 CFP, `thyrox-coordinator` = 7,
   tech-experts = 4.
 - ⚠ Hallazgo: `deep-review` declara crear markdown pero su `tools:` no incluye Write/Edit
