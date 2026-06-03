@@ -23,7 +23,7 @@ references + assets + manual oficial v5.0 vendorizado) → PILOT (UC-AUTH-02 = 8
 ## Lecciones
 
 1. **ANALYZE-first paga doble:** las referencias COSMIC ya existían (e-comerce-docs,
-   clonable directo de GitHub pese al  con proxy caído). Buscar primero
+   clonable directo de GitHub pese al .gitmodules con proxy caído). Buscar primero
    evitó re-derivar el método.
 2. **El ejecutor aportó la fuente autoritativa** (MM v5.0 PDFs) → se vendorizó como
    fuente del skill, superando la nota inicial de diseño ("no vendorizar").
