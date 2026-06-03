@@ -3,11 +3,11 @@ name: Validate Skill Integrity
 on:
   push:
     paths:
-      - '.claude/skills/pm-thyrox/**'
+      - '.claude/skills/thyrox/**'
       - '.claude/CLAUDE.md'
   pull_request:
     paths:
-      - '.claude/skills/pm-thyrox/**'
+      - '.claude/skills/thyrox/**'
       - '.claude/CLAUDE.md'
 
 jobs:
@@ -17,11 +17,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Verify skill mapping
-        run: bash .claude/skills/pm-thyrox/scripts/verify-skill-mapping.sh
+        run: bash .claude/skills/thyrox/scripts/verify-skill-mapping.sh
 
       - name: Check SKILL.md size
         run: |
-          LINES=$(wc -l < .claude/skills/pm-thyrox/SKILL.md)
+          LINES=$(wc -l < .claude/skills/thyrox/SKILL.md)
           echo "SKILL.md: $LINES lines"
           if [ "$LINES" -gt 500 ]; then
             echo "::error::SKILL.md exceeds 500 lines ($LINES)"
@@ -30,15 +30,15 @@ jobs:
 
       - name: Verify YAML frontmatter
         run: |
-          if ! head -1 .claude/skills/pm-thyrox/SKILL.md | grep -q '```yml'; then
+          if ! head -1 .claude/skills/thyrox/SKILL.md | grep -q '```yml'; then
             echo "::error::SKILL.md missing YAML frontmatter"
             exit 1
           fi
-          if ! grep -q '^name:' .claude/skills/pm-thyrox/SKILL.md; then
+          if ! grep -q '^name:' .claude/skills/thyrox/SKILL.md; then
             echo "::error::SKILL.md missing name field"
             exit 1
           fi
-          if ! grep -q '^description:' .claude/skills/pm-thyrox/SKILL.md; then
+          if ! grep -q '^description:' .claude/skills/thyrox/SKILL.md; then
             echo "::error::SKILL.md missing description field"
             exit 1
           fi
