@@ -6,13 +6,15 @@ updated_at: 2026-06-03 04:34:55
 
 # Focus
 
-**Sin WP activo** — ÉPICA 46 cerrada. Próximo: revisar los errores documentados en `.thyrox` para COSMIC.
+**Sin WP activo** — ÉPICA 47 cerrada. Próximo: ÉPICA 48 (open-wp.sh, mata PAT-001 de raíz).
 
-**Última ÉPICA cerrada: 46 — cosmic-review ✓ (2026-06-03)**
-Skill cosmic revisado en 2 frentes: *calibración* (H-1 INFERRED/SPECULATIVE, H-2 bandas THYROX,
-H-3 tamaño≠esfuerzo, H-4 N mínimo) y *skill* (F-1 `scripts/tally-cfp.py`, F-2 Write/Edit, F-3
-regla de cambios; F-4/F-5→TD-045/046). Gate reusable `.claude/scripts/verify-cosmic-baseline.sh`
-(19/19). Audit GRADE A. Errores de sesión registrados en `errors/cosmic-session-manual-errors.md`.
+**Última ÉPICA cerrada: 47 — functional-size-signal ✓ (2026-06-03)**
+`workflow-discover` clasifica tamaño por 2 ejes (Duración + señal funcional objetiva) + regla de
+desempate "gana la mayor". Mitiga ERR-002/006. Audit GRADE A. Hallazgo del audit: PAT-001
+(focus.md stale al abrir) confirmado ×3 → ÉPICA 48.
+
+**ÉPICA 46 — cosmic-review ✓** (calibración H-1..4 + skill F-1..3; verify-cosmic-baseline.sh).
+**ÉPICA 45 — ucs-detallados ✓** (123 UCs formales). **ÉPICA 44 — thyrox-ucs-cosmic ✓** (baseline 675 CFP).
 
 **ÉPICA 45 — ucs-detallados ✓** — 123 UCs a UC formal. **ÉPICA 44 — thyrox-ucs-cosmic ✓** —
 baseline COSMIC 675 CFP (4 capas FSM). Skill cosmic + UCs durables en `docs/requisitos/casos-uso/`.

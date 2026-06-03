@@ -25,7 +25,7 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
-## ÉPICA 47: functional-size-signal — Señal funcional de tamaño en DISCOVER [-] EN CURSO
+## ÉPICA 47: functional-size-signal — Señal funcional de tamaño en DISCOVER ✓ COMPLETADO 2026-06-03 (cerrado)
 
 **WP:** `.thyrox/context/work/2026-06-03-05-34-28-functional-size-signal/`
 **Resultado:** `workflow-discover` clasifica el tamaño del WP por DOS ejes — Duración +
@@ -35,7 +35,8 @@ scoping. Mitigación anotada en ERR-002/006.
 
 - [x] Stage 1 DISCOVER — 2026-06-03 (raíz ERR-002/006; diseño del 2º eje)
 - [x] Stage 10 IMPLEMENT — 2026-06-03 (SKILL.md + scalability.md v1.1 + notas ERR)
-- [-] Stage 12 STANDARDIZE — lessons hechas; cierre pendiente de orden del Ejecutor (I-011)
+- [x] Stage 11 TRACK/EVALUATE — 2026-06-03 (audit GRADE A; PAT-001 confirmado ×3)
+- [x] Stage 12 STANDARDIZE — 2026-06-03 (lessons; E-1 focus.md en cierre)
 
 ---
 
