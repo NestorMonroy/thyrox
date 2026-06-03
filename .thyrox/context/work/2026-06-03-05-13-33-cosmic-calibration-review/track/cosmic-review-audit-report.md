@@ -11,7 +11,7 @@ version: 1.0.0
 # Audit-report — WP cosmic-review (gate de cierre)
 
 > Gate formal de cierre del WP 46 (`/thyrox:audit`). Verificación, no inferencia: respaldado
-> por `track/verify.sh` (19 checks ejecutables, rc=0).
+> por `.claude/scripts/verify-cosmic-baseline.sh` (19 checks ejecutables, rc=0).
 
 ## Veredicto
 
@@ -47,7 +47,7 @@ al cerrar (reflejar ÉPICA 46 cerrada). Es el mismo patrón sistémico de los WP
 → 19 PASS, 0 FALLA, rc=0
 ```
 
-`track/verify.sh` queda como **gate reusable de no-regresión** (se puede re-correr en cualquier
+`.claude/scripts/verify-cosmic-baseline.sh` queda como **gate reusable de no-regresión** (se puede re-correr en cualquier
 sesión futura para detectar si algo de las ÉPICAs 44/45/46 regresó).
 
 ## Score

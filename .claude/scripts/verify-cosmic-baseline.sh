@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# verify.sh — gate de no-regresión de las ÉPICAs 44/45/46 (COSMIC).
-# Corre N checks ejecutables contra el repo. Sale 1 si algo regresó.
-# Uso: bash .thyrox/context/work/2026-06-03-05-13-33-cosmic-calibration-review/track/verify.sh
+# verify-cosmic-baseline.sh — gate de no-regresión del baseline COSMIC (ÉPICAs 44/45/46).
+# Corre checks ejecutables contra el repo. Sale 1 si algo regresó.
+# Uso: bash .claude/scripts/verify-cosmic-baseline.sh
 set -u
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT" || exit 2
 pass=0; fail=0
 chk(){ if eval "$2"; then echo "  ✓ $1"; pass=$((pass+1)); else echo "  ✗ FALLA: $1"; fail=$((fail+1)); fi; }
