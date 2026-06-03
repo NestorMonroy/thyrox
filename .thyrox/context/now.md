@@ -1,11 +1,11 @@
 ```yml
 type: Estado de Sesión
-version: 1.8
-updated_at: 2026-06-03 04:45:26
+version: 1.9
+updated_at: 2026-06-03 05:05:00
 cold_boot: false
 last_session: 2026-06-03
 current_work: .thyrox/context/work/2026-06-03-04-45-00-ucs-detallados
-stage: Phase 1 — DISCOVER (UCs detallados — profundizar 123 a UC formal)
+stage: Phase 12 — STANDARDIZE (UCs detallados — propagación hecha, cierre pendiente)
 flow: null
 methodology_step: null
 blockers: []
@@ -14,7 +14,9 @@ coordinators: {}
 
 # Contexto
 
-ÉPICA 45 **ucs-detallados**: profundizar los 123 UCs de THYROX a UC formal completo
-(precond/postcond/flujo alterno+excepción/criterios de aceptación/datos), conservando la
-anotación COSMIC del baseline 677 CFP. Template definido en `discover/ucs-detallados-analysis.md`.
-Plan: A interfaz (20) referencia → delegar B(13)/C(61)/D(29) en paralelo → consolidar por capa.
+ÉPICA 45 **ucs-detallados**: los 123 UCs de THYROX a **UC formal completo** — HECHO.
+A interfaz 20 (propio) · B motor 13 (propio) · C metodología 61 + D agentes 29 (4 agentes
+paralelos, anclados en SKILLs/agentes reales). En `docs/requisitos/casos-uso/`.
+**Corrección de baseline:** capa C 378→376, total **677→675 CFP** (RUP 25 no 27 — error
+aritmético ÉPICA 44). Propagado a ARCHITECTURE/ADR-009/ROADMAP/focus + addenda en WP44.
+Pendiente: orden explícita de cierre (I-011).

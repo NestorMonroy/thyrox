@@ -6,12 +6,15 @@ updated_at: 2026-06-03 04:34:55
 
 # Focus
 
-**Sin WP activo** — ÉPICA 44 cerrada. Listo para nueva iniciativa o continuar ÉPICA 43.
+**ÉPICA 45 — ucs-detallados — Stage 12 STANDARDIZE (propagación hecha, cierre pendiente)**
+WP: `.thyrox/context/work/2026-06-03-04-45-00-ucs-detallados/`
 
-**Última ÉPICA cerrada: 44 — thyrox-ucs-cosmic ✓ (2026-06-03)**
-Baseline COSMIC de THYROX = **677 CFP** en 4 capas FSM (A 108 · B 46 · C 378 · D 145, 123
-procesos). FUR en `docs/requisitos/casos-uso/`. ADR-009 + `decisions/adr-cosmic-baseline.md`.
-TD-044 resuelto. Audit de cierre GRADE A.
+Los 123 UCs de THYROX llevados a **UC formal completo** (precond/postcond/flujo
+alterno+excepción/criterios de aceptación), anclados en los comandos/SKILLs/agentes reales.
+Baseline COSMIC corregido: **675 CFP** (capa C 376, RUP 25 no 27 — error aritmético ÉPICA 44).
+
+**ÉPICA 44 cerrada: thyrox-ucs-cosmic ✓** — primer baseline COSMIC (A 108 · B 46 · C 376 ·
+D 145, 123 procesos). ADR-009 + `decisions/adr-cosmic-baseline.md`. TD-044 resuelto.
 
 **Pendiente futuro (otra ÉPICA):** UC-ENG-14 (SubagentStop) tras merge de PR #4 → re-medir capa B (+1 proceso).
 

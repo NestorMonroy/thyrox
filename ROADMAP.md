@@ -25,12 +25,28 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## ÉPICA 45: ucs-detallados — Profundizar los 123 UCs a UC formal ✓ COMPLETADO 2026-06-03
+
+**WP:** `.thyrox/context/work/2026-06-03-04-45-00-ucs-detallados/`
+**Resultado:** Los 123 procesos funcionales de THYROX pasan de "granularidad COSMIC" a **UC
+formal completo** (precondición/flujo principal+alterno+excepción/postcondición/datos/criterios
+de aceptación Given-When-Then), anclados en comandos/SKILLs/agentes reales. 86 UCs nuevos
+(59 metodología + 27 agentes) + profundización de los 37 existentes. Product docs durables en
+`docs/requisitos/casos-uso/`. **Corrección de baseline:** capa C 378→376, total **677→675 CFP**
+(RUP = 25, no 27 — error aritmético ÉPICA 44 detectado al profundizar).
+
+- [x] Stage 1 DISCOVER — 2026-06-03 (gaps de cobertura+profundidad; template UC formal)
+- [x] Stage 10 IMPLEMENT — 2026-06-03 (A 20 + B 13 propios; C 61 + D 29 vía 4 agentes paralelos)
+- [-] Stage 12 STANDARDIZE — propagación hecha; cierre pendiente de orden del Ejecutor (I-011)
+
+---
+
 ## ÉPICA 44: thyrox-ucs-cosmic — Baseline COSMIC de THYROX ✓ COMPLETADO 2026-06-03
 
 **WP:** `.thyrox/context/work/2026-06-03-03-55-02-thyrox-ucs-cosmic/`
 **Resultado:** Primer baseline de tamaño funcional de THYROX con COSMIC v5.0 (ISO/IEC 19761) =
-**677 CFP (OBSERVABLE)** en 4 capas FSM (A interfaz 108 · B motor 46 · C metodología 378 ·
-D agentes 145; 123 procesos). FUR como product docs durables en `docs/requisitos/casos-uso/`.
+**675 CFP (OBSERVABLE)** en 4 capas FSM (A interfaz 108 · B motor 46 · C metodología 376 ·
+D agentes 145; 123 procesos) — *corregido en ÉPICA 45 desde 677/378 (RUP 25 no 27).* FUR como product docs durables en `docs/requisitos/casos-uso/`.
 Propagado a ARCHITECTURE.md (ADR-009) + `decisions/adr-cosmic-baseline.md`. TD-044 (deep-review
 sin Write) resuelto. Auditoría de cierre: GRADE A.
 

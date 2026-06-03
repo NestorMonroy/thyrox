@@ -195,10 +195,11 @@ Los hooks están registrados en `.claude/settings.json`. THYROX usa 3 hooks:
 **Razón:** Git ya versiona todo.<br>
 **Consecuencia:** No hay `_backup_*.md` ni `SKILL.md.backup`.
 
-### ADR-009: Baseline COSMIC = 677 CFP (4 capas FSM)
+### ADR-009: Baseline COSMIC = 675 CFP (4 capas FSM)
 
-**Decisión:** El tamaño funcional de THYROX es **677 CFP (OBSERVABLE)**, medido con COSMIC
-v5.0 (ISO/IEC 19761) en 4 capas FSM independientes.<br>
+**Decisión:** El tamaño funcional de THYROX es **675 CFP (OBSERVABLE)** (corregido desde 677 en
+ÉPICA 45: capa C = 376, RUP = 25 no 27), medido con COSMIC v5.0 (ISO/IEC 19761) en 4 capas FSM
+independientes.<br>
 **Razón:** Primer baseline funcional del producto; permite medir crecimiento por ÉPICA y
 calibrar esfuerzo por capa.<br>
 **Consecuencia:** Ver detalle abajo y `decisions/adr-cosmic-baseline.md`. Al añadir comandos,
@@ -216,9 +217,13 @@ las "4 capas de coordinators" (Intake/Routing/Coordinators/Signals) de arriba �
 |----------|----------|-----|---|-----|
 | A — Interfaz (comandos/skills) | 20 | 108 | 16% | `interface-ucs.md` |
 | B — Motor (hooks/generadores) | 13 | 46 | 7% | `engine-ucs.md` |
-| C — Coordinators de metodología | 61 | 378 | 56% | `methodology-ucs.md` |
+| C — Coordinators de metodología | 61 | 376 | 56% | `methodology-ucs.md` |
 | D — Agentes | 29 | 145 | 21% | `agent-ucs.md` |
-| **THYROX completo** | **123** | **677** | 100% | — |
+| **THYROX completo** | **123** | **675** | 100% | — |
+
+> **Corrección (ÉPICA 45):** capa C = 376 (no 378) y total = 675 (no 677). RUP = 25 CFP
+> (6+6+6+7), no 27 — error aritmético del conteo ÉPICA 44 detectado al escribir los UCs
+> formales. Los CFP por-paso no cambiaron. Los 123 UCs son ahora UC formales completos.
 
 **Principio 6:** las capas son FSM distintos → comparar capa-con-capa, no el agregado contra
 una sola capa de otro sistema. El core (A+B = 154 CFP) es ~23% del producto; la capa de

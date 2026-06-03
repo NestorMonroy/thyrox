@@ -62,6 +62,11 @@ status: Borrador
 > 1 R + 1 W (no por archivo). UC-ENG-05/08/09 son hooks sin Salida al usuario (W es el efecto);
 > cumplen ≥2 CFP por E+W/R. UC-ENG-03 = 2 CFP exactos (mínimo Regla 10c).
 
+> **Corrección (ÉPICA 45):** capa C = **376** y total THYROX = **675 CFP** (no 378/677). RUP =
+> 25 CFP (6+6+6+7), no 27 — error aritmético en el subtotal de este conteo, detectado al
+> escribir los UCs formales en ÉPICA 45. Los CFP por-paso de abajo son correctos; solo el
+> subtotal de capa C y el agregado se corrigen. Ver `2026-06-03-04-45-00-ucs-detallados/`.
+
 ## Capas C y D — refinadas a OBSERVABLE (leídas una a una)
 
 Medidas en `docs/requisitos/casos-uso/{methodology,agent}-ucs.md`. Conteo **OBSERVABLE**:

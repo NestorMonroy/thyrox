@@ -6,6 +6,11 @@ created_at: 2026-06-03T04:28:08Z
 
 # ADR — Baseline COSMIC de THYROX: 677 CFP en 4 capas FSM
 
+> **Corrección (ÉPICA 45, 2026-06-03 — addendum, no reescribe la decisión):** el total correcto
+> es **675 CFP** y capa C = **376** (no 677/378). Causa: RUP = 25 CFP (6+6+6+7), reportado como
+> 27 por error aritmético en el conteo ÉPICA 44. Los CFP por-paso no cambiaron. Detectado al
+> escribir los UCs formales (ÉPICA 45). Lo demás de este ADR sigue vigente.
+
 ## Contexto
 
 Tras crear el skill `cosmic` (ver `adr-cosmic-skill.md`) y validarlo en un piloto, se midió el
