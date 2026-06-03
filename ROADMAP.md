@@ -4,7 +4,7 @@ Categoría: Gestión de Proyecto
 Versión: 0.2.0
 Propósito: Plan maestro de trabajo y tracking de progreso — FASEs activas (27+)
 Objetivo: Documentar fases, epics, y estado actual del proyecto
-Fecha actualización: 2026-04-15
+Fecha actualización: 2026-06-03
 ```
 
 # ROADMAP - THYROX
@@ -22,6 +22,25 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 - `[ ]` = Pendiente
 - `[-]` = En Progreso
 - `[x]` = Completado (YYYY-MM-DD)
+
+---
+
+## ÉPICA 44: thyrox-ucs-cosmic — Baseline COSMIC de THYROX ✓ COMPLETADO 2026-06-03
+
+**WP:** `.thyrox/context/work/2026-06-03-03-55-02-thyrox-ucs-cosmic/`
+**Resultado:** Primer baseline de tamaño funcional de THYROX con COSMIC v5.0 (ISO/IEC 19761) =
+**677 CFP (OBSERVABLE)** en 4 capas FSM (A interfaz 108 · B motor 46 · C metodología 378 ·
+D agentes 145; 123 procesos). FUR como product docs durables en `docs/requisitos/casos-uso/`.
+Propagado a ARCHITECTURE.md (ADR-009) + `decisions/adr-cosmic-baseline.md`. TD-044 (deep-review
+sin Write) resuelto. Auditoría de cierre: GRADE A.
+
+- [x] Stage 1 DISCOVER — 2026-06-03 (inventario superficie funcional)
+- [x] Stage 2 MEASURE — 2026-06-03 (4 capas, OBSERVABLE)
+- [x] Stage 11 TRACK/EVALUATE — 2026-06-03 (audit cobertura + audit cierre)
+- [x] Stage 12 STANDARDIZE — 2026-06-03 (ADR-009 + ARCHITECTURE + lessons)
+
+> Nota PAT-001 (del audit): el WP previo `cosmic-sizing` (skill `cosmic`, 2026-06-03-02-13-59)
+> quedó sin entrada en ROADMAP. Patrón: WPs de medición omiten el registro en ROADMAP.
 
 ---
 

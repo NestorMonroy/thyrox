@@ -1,13 +1,21 @@
 ```yml
 type: Estado Operacional
-version: 1.0
-updated_at: 2026-04-20 13:22:56
+version: 1.1
+updated_at: 2026-06-03 04:34:55
 ```
 
 # Focus
 
-**ÉPICA 42 — methodology-calibration — Stage 8 PLAN EXECUTION**
-WP: `.thyrox/context/work/2026-04-18-07-12-50-methodology-calibration/`
+**Sin WP activo** — ÉPICA 44 cerrada. Listo para nueva iniciativa o continuar ÉPICA 43.
+
+**Última ÉPICA cerrada: 44 — thyrox-ucs-cosmic ✓ (2026-06-03)**
+Baseline COSMIC de THYROX = **677 CFP** en 4 capas FSM (A 108 · B 46 · C 378 · D 145, 123
+procesos). FUR en `docs/requisitos/casos-uso/`. ADR-009 + `decisions/adr-cosmic-baseline.md`.
+TD-044 resuelto. Audit de cierre GRADE A.
+
+**Pendiente futuro (otra ÉPICA):** UC-ENG-14 (SubagentStop) tras merge de PR #4 → re-medir capa B (+1 proceso).
+
+**En curso (no cerrada): ÉPICA 43 — github-workflows — Stage 6 SCOPE.**
 
 ## Completado (2026-04-17)
 
