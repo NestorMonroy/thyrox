@@ -25,6 +25,20 @@ Plan maestro del proyecto THYROX. Fuente única de verdad para el estado del tra
 
 ---
 
+## ÉPICA 46: cosmic-calibration-review — Corregir calibración esfuerzo/CFP del skill [-] EN CURSO
+
+**WP:** `.thyrox/context/work/2026-06-03-05-13-33-cosmic-calibration-review/`
+**Resultado:** Revisión de `cosmic/references/{estimation,calibration}.md`. 4 correcciones:
+H-1 frontera INFERRED/SPECULATIVE de estimaciones (alineada con evidence-classification.md);
+H-2 ejemplo de calibración propia de THYROX (bandas por capa + validación Average-FP ~1.3%);
+H-3 "tamaño ≠ esfuerzo" (sin histórico de horas, no convertir CFP a esfuerzo); H-4 N mínimo.
+
+- [x] Stage 1 DISCOVER — 2026-06-03 (4 hallazgos en review de calibración)
+- [x] Stage 10 IMPLEMENT — 2026-06-03 (2 references corregidas)
+- [-] Stage 12 STANDARDIZE — lessons hechas; cierre pendiente de orden del Ejecutor (I-011)
+
+---
+
 ## ÉPICA 45: ucs-detallados — Profundizar los 123 UCs a UC formal ✓ COMPLETADO 2026-06-03 (cerrado)
 
 **WP:** `.thyrox/context/work/2026-06-03-04-45-00-ucs-detallados/`
