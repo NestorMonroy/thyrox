@@ -508,3 +508,33 @@ Ver T-066 (verificación de dependencias MCP) como referencia de patrón de adve
 
 **Prioridad:** MEDIO
 **Estado:** Abierto
+
+## TD-044: deep-review declara crear markdown pero `tools:` no incluye Write/Edit
+
+```
+Severidad: media
+Origen: WP 2026-06-03-03-55-02-thyrox-ucs-cosmic — medición COSMIC capa D (2026-06-03)
+Fase afectada: .claude/agents/deep-review.md
+Estado: [ ] Pendiente
+```
+
+**Problema:**
+El cuerpo de `deep-review.md` indica que el agente escribe un artefacto de review en el WP,
+pero su frontmatter `tools:` solo declara `Read Glob Grep Bash` — sin `Write` ni `Edit`. El
+agente no puede persistir el archivo que su propia instrucción le pide crear.
+
+**Detectado:** 2026-06-03 — al medir capa D con COSMIC (el conteo de movimientos W=0 reveló
+la inconsistencia entre lo declarado en `tools:` y lo que el cuerpo describe).
+
+**Impacto:**
+`deep-review` invocado para escribir un review fallará silenciosamente al persistir, o
+devolverá el contenido solo por el mensaje de retorno (sin artefacto trazable en el WP).
+Rompe la trazabilidad esperada de los reviews de cobertura entre fases.
+
+**Resolución propuesta:**
+Opción A: añadir `Write` (y `Edit` si actualiza) a `tools:` de `deep-review.md`.
+Opción B: si el diseño es read-only intencional, corregir el cuerpo para que retorne el
+review por mensaje (no "escribir archivo") y documentarlo como agente read-only.
+
+**Prioridad:** MEDIO
+**Estado:** Abierto

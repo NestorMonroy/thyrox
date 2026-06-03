@@ -2,18 +2,22 @@
 Tipo: Requisitos — Casos de Uso (FUR)
 project: THYROX
 status: Borrador
-version: 1.0.0
-updated_at: 2026-06-03 04:24:00
+version: 2.0.0
+updated_at: 2026-06-03 04:40:00
 ```
 
 # UCs de THYROX — Capa C: Coordinators de metodología
 
-> FSM = capa de orquestación de metodología (11 metodologías × sus pasos = 62 procesos
-> funcionales). **Usuario funcional:** Claude/contexto (el coordinator es invocado por
+> FSM = capa de orquestación de metodología (11 metodologías × sus pasos = **61 procesos
+> funcionales**). **Usuario funcional:** Claude/contexto (el coordinator es invocado por
 > señal de contexto o por el comando de fase). **Boundary:** señal de paso ↔ skill
 > coordinator. **OOIs:** SessionState (`now.md::methodology_step`/`flow`), WorkPackage,
 > Step-Artifact (charter, baseline, análisis, plan, …), prev-Step-Artifact (precondición),
 > ROADMAP, Tollgate-result.
+
+> **v2.0.0 — medición OBSERVABLE:** se leyeron los 61 SKILL uno a uno (no Average FP). El
+> total subió de 372 [estimado] a **378 [OBSERVABLE]**; `pm-thyrox` se excluyó (no tiene
+> SKILL.md → no es proceso funcional, 62→61 pasos).
 
 ## Patrón homogéneo de un paso de coordinator (fundamentado)
 
@@ -29,32 +33,36 @@ Leído de skills reales (`dmaic-define`, `dmaic-measure`): cada paso de coordina
 | 5 | actualiza `now.md::methodology_step` | **W** | SessionState |
 | 6 | emite el tollgate / siguiente paso | **X** | Tollgate-result |
 
-→ **6 CFP por paso** (estándar). Pasos de cierre que propagan a ROADMAP/CHANGELOG pueden
-añadir 1 W (refinamiento pendiente de lectura por-skill; conteo conservador = 6).
+→ **6 CFP por paso** (estándar). Algunos pasos suben a **7 CFP** por leer un segundo OOI de
+precondición (baseline de otra fase) o escribir un segundo artefacto (a3-report, ROADMAP).
+Medición OBSERVABLE: cada desviación está justificada con cita del SKILL.
 
-> **Granularidad / clasificación:** 62 procesos homogéneos → se aplica **Average FP**
-> (early sizing del MM v5.0, `estimation.md`) = **6 CFP/paso**, anclado en los 2 coordinators
-> leídos. Clasificación **INFERRED** (patrón observable + razonamiento documentado), no
-> SPECULATIVE — admisible para gate (I-012). Marca **[ESTIMACIÓN TEMPRANA por patrón]**.
-
-## Roster de pasos por metodología (62 procesos funcionales)
+## Roster de pasos por metodología (61 procesos funcionales — OBSERVABLE)
 
 Cada celda = un proceso funcional (1 paso de coordinator). Trigger = "avanzar a este paso".
+CFP = conteo real leyendo cada SKILL. **[+]** = paso de 7 CFP (desviación justificada).
 
 | Metodología | Pasos (procesos funcionales) | nº | CFP |
 |-------------|------------------------------|----|----|
 | **BABOK (ba)** | strategy · planning · elicitation · requirements-analysis · requirements-lifecycle · solution-evaluation | 6 | 36 |
-| **BPA (bpa)** | identify · map · analyze · design · implement · monitor | 6 | 36 |
-| **Consulting (cp)** | initiation · structure · diagnosis · plan · evaluate · recommend · implement | 7 | 42 |
-| **DMAIC (dmaic)** | define · measure · analyze · improve · control | 5 | 30 |
+| **BPA (bpa)** | identify · map · analyze · design · implement · monitor[+] | 6 | 37 |
+| **Consulting (cp)** | initiation · structure · diagnosis · plan · recommend · implement · evaluate[+] | 7 | 43 |
+| **DMAIC (dmaic)** | define · measure · analyze · improve · control[+] | 5 | 31 |
 | **Lean (lean)** | define · measure · analyze · improve · control | 5 | 30 |
-| **PDCA (pdca)** | plan · do · check · act | 4 | 24 |
-| **PMBOK (pm)** | initiating · planning · executing · monitoring · closing · pm-thyrox(routing) | 6 | 36 |
-| **PPS Toyota (pps)** | clarify · target · analyze · countermeasures · implement · evaluate | 6 | 36 |
+| **PDCA (pdca)** | plan · do · check · act[+] | 4 | 25 |
+| **PMBOK (pm)** | initiating · planning · executing · monitoring · closing | 5 | 30 |
+| **PPS Toyota (pps)** | clarify · target · analyze[+] · countermeasures[+] · implement[+] · evaluate[+] | 6 | 40 |
 | **RM (rm)** | elicitation · analysis · specification · validation · management | 5 | 30 |
-| **RUP (rup)** | inception · elaboration · construction · transition | 4 | 24 |
-| **Strategic Planning (sp)** | context · analysis · gaps · formulate · plan · execute · monitor · adjust | 8 | 48 |
-| **Σ Capa C** | | **62** | **372** |
+| **RUP (rup)** | inception · elaboration · construction · transition[+] | 4 | 27 |
+| **Strategic Planning (sp)** | context · analysis · gaps · formulate · plan[+] · execute · monitor · adjust | 8 | 49 |
+| **Σ Capa C** | | **61** | **378** |
+
+**Desviaciones de 7 CFP (justificadas con cita del SKILL):**
+- `bpa-monitor`, `cp-evaluate`: leen un 2º OOI de precondición (baseline de fase anterior) → +1 R.
+- `dmaic-control`, `pdca-act`, `rup-transition`: pasos de cierre que escriben ROADMAP/baseline → +1 W.
+- `pps-analyze/countermeasures/implement/evaluate`: cada uno escribe además `a3-report.md` (OOI distinto) → +1 W.
+- `sp-plan`: escribe además `ROADMAP.md` (línea 168 del SKILL) → +1 W.
+- **`pm-thyrox`: sin SKILL.md** (solo `evals/` + `scripts/`) → no es proceso funcional, excluido.
 
 ## Ejemplos detallados (anclas del patrón — OBSERVABLE)
 
@@ -77,9 +85,9 @@ Cada celda = un proceso funcional (1 paso de coordinator). Trigger = "avanzar a 
 
 ---
 
-**Nota de medición:** Capa C = **372 CFP** [ESTIMACIÓN TEMPRANA por patrón, INFERRED].
-Para convertir a conteo OBSERVABLE puro: leer los 62 SKILL y registrar W extra de pasos de
-cierre. El orden de magnitud (≈370) no cambia con ese refinamiento (±1 W en ~15 pasos de
-cierre ≈ +15 CFP).
+**Nota de medición:** Capa C = **378 CFP** [OBSERVABLE] en 61 procesos (media 6.2 CFP/paso).
+Conteo verificado leyendo los 61 SKILL uno a uno (3 lotes de agentes con regla de conteo
+idéntica). 50 pasos = 6 CFP, 11 pasos = 7 CFP. La estimación previa por Average FP (372)
+quedó a +6 del conteo real — confirma que el patrón homogéneo era buen estimador.
 
-**Última actualización:** 2026-06-03 04:24:00
+**Última actualización:** 2026-06-03 04:40:00

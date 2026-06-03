@@ -2,8 +2,8 @@
 Tipo: Requisitos — Casos de Uso (FUR)
 project: THYROX
 status: Borrador
-version: 1.0.0
-updated_at: 2026-06-03 04:24:00
+version: 2.0.0
+updated_at: 2026-06-03 04:40:00
 ```
 
 # UCs de THYROX — Capa D: Agentes
@@ -11,57 +11,63 @@ updated_at: 2026-06-03 04:24:00
 > FSM = capa de sub-agentes (runtime de Claude vía Agent tool). 29 agentes = 29 procesos
 > funcionales. **Usuario funcional:** Claude (orquestador) que invoca el agente. **Boundary:**
 > llamada `Agent(...)` ↔ ejecución del sub-agente. **OOIs:** Input-Artifact (artefacto/corpus
-> a analizar), WorkPackage/contexto, Report (output escrito), Result (mensaje/`output_key`
-> de retorno).
+> a analizar), WorkPackage/contexto, schema `.yml`, Report (output escrito), Result
+> (mensaje/`output_key` de retorno).
 
-## Dos patrones (fundamentados por capacidad de herramientas — OBSERVABLE)
+> **v2.0.0 — medición OBSERVABLE:** se leyó cada agente uno a uno (frontmatter `tools:` +
+> cuerpo). El conteo **no es uniforme**: rango **4–7 CFP** según cuántos inputs distintos
+> lee y cuántos outputs escribe. Total **145 CFP** (antes 142 [estimado]).
 
-Clasificación verificada con `grep` de `tools:` en cada `.claude/agents/*.md`:
+## Movimientos por agente (conteo real)
 
-| Patrón | Movimientos | CFP | Justificación |
-|--------|-------------|-----|---------------|
-| **Agente que escribe** (tiene Write/Edit) | E(invocación+task) + R(input) + R(WP/contexto) + W(report) + X(retorno) | **5** | produce un artefacto persistente |
-| **Agente read-only** (sin Write/Edit) | E(invocación+task) + R(input) + R(contexto) + X(retorno) | **4** | solo retorna `output_key`/mensaje |
+- **E** = invocación con la tarea/ref (1, siempre). **X** = retorno al orquestador (1, siempre).
+- **R** = cada input persistente distinto (artefacto/corpus, WP/`now.md`, schema `.yml`,
+  decisiones). Un corpus multi-archivo del mismo OOI = 1 R.
+- **W** = cada output persistente distinto (reporte + estado), **solo si** el agente tiene
+  Write/Edit en `tools:`.
 
-> Clasificación **INFERRED** (patrón anclado en 3 agentes leídos: `deep-dive`, `task-planner`,
-> `gate-consistency-evaluator`; el resto por capacidad de Write/Edit OBSERVABLE).
+## Roster de los 29 agentes (29 procesos funcionales — OBSERVABLE)
 
-## Roster de los 29 agentes (29 procesos funcionales)
+| Agente | Write? | E·R·W·X | CFP |
+|--------|--------|---------|-----|
+| agentic-reasoning | sí | 1·2·1·1 | 5 |
+| agentic-validator | sí | 1·1·1·1 | 4 |
+| ba-coordinator | sí | 1·2·2·1 | 6 |
+| bpa-coordinator | sí | 1·1·2·1 | 5 |
+| cp-coordinator | sí | 1·1·2·1 | 5 |
+| deep-dive | sí | 1·2·1·1 | 5 |
+| deep-review | **no** ⚠ | 1·3·0·1 | 5 |
+| diagrama-ishikawa | sí | 1·1·1·1 | 4 |
+| dmaic-coordinator | sí | 1·1·2·1 | 5 |
+| gate-consistency-evaluator | no | 1·3·0·1 | 5 |
+| lean-coordinator | sí | 1·1·2·1 | 5 |
+| mysql-expert | sí | 1·1·1·1 | 4 |
+| nodejs-expert | sí | 1·1·1·1 | 4 |
+| pattern-harvester | sí | 1·2·1·1 | 5 |
+| pdca-coordinator | sí | 1·1·2·1 | 5 |
+| pm-coordinator | sí | 1·2·2·1 | 6 |
+| postgresql-expert | sí | 1·1·1·1 | 4 |
+| pps-coordinator | sí | 1·1·2·1 | 5 |
+| react-expert | sí | 1·1·1·1 | 4 |
+| rm-coordinator | sí | 1·2·2·1 | 6 |
+| rup-coordinator | sí | 1·2·2·1 | 6 |
+| skill-generator | sí | 1·2·1·1 | 5 |
+| sp-coordinator | sí | 1·1·2·1 | 5 |
+| task-executor | sí | 1·2·2·1 | 6 |
+| task-planner | sí | 1·2·2·1 | 6 |
+| task-synthesizer | sí | 1·2·1·1 | 5 |
+| tech-detector | no | 1·2·0·1 | 4 |
+| thyrox-coordinator | sí | 1·3·2·1 | 7 |
+| webpack-expert | sí | 1·1·1·1 | 4 |
+| **Σ Capa D (29 agentes)** | 26 sí + 3 no | | **145** |
 
-| Agente | Patrón | CFP |
-|--------|--------|-----|
-| agentic-reasoning | escribe | 5 |
-| agentic-validator | escribe | 5 |
-| ba-coordinator | escribe | 5 |
-| bpa-coordinator | escribe | 5 |
-| cp-coordinator | escribe | 5 |
-| deep-dive | escribe | 5 |
-| deep-review | read-only | 4 |
-| diagrama-ishikawa | escribe | 5 |
-| dmaic-coordinator | escribe | 5 |
-| gate-consistency-evaluator | read-only | 4 |
-| lean-coordinator | escribe | 5 |
-| mysql-expert | escribe | 5 |
-| nodejs-expert | escribe | 5 |
-| pattern-harvester | escribe | 5 |
-| pdca-coordinator | escribe | 5 |
-| pm-coordinator | escribe | 5 |
-| postgresql-expert | escribe | 5 |
-| pps-coordinator | escribe | 5 |
-| react-expert | escribe | 5 |
-| rm-coordinator | escribe | 5 |
-| rup-coordinator | escribe | 5 |
-| skill-generator | escribe | 5 |
-| sp-coordinator | escribe | 5 |
-| task-executor | escribe | 5 |
-| task-planner | escribe | 5 |
-| task-synthesizer | escribe | 5 |
-| tech-detector | read-only | 4 |
-| thyrox-coordinator | escribe | 5 |
-| webpack-expert | escribe | 5 |
-| **Σ Capa D (29 agentes)** | 26 escribe + 3 read-only | **142** |
-
-Σ = 26×5 + 3×4 = 130 + 12 = **142 CFP**.
+**Notas del conteo OBSERVABLE:**
+- Coordinators con schema externo (`ba`,`pm`,`rm`,`rup`) leen `{x}.yml` + `now.md` = 2 R → 6 CFP.
+  `thyrox-coordinator` lee 3 (`now.md` + `{flow}.yml` + `routing-rules.yml`) → 7 CFP.
+- Agentes de corpus (`pattern-harvester`, `task-synthesizer`) leen corpus(1 OOI) + task-plan(1) = 2 R.
+- ⚠ **`deep-review` defecto:** el cuerpo pide "escribir review" pero `tools:` NO incluye
+  Write/Edit (solo Read/Glob/Grep/Bash) → W=0. Inconsistencia real del agente, registrada
+  como deuda técnica. Medido según lo declarado en `tools:` (W=0, los 3 R lo dejan en 5 CFP).
 
 ## Ejemplos detallados (anclas — OBSERVABLE)
 
@@ -87,8 +93,8 @@ interpretarlos como duplicados.
 
 ---
 
-**Nota de medición:** Capa D = **142 CFP** [INFERRED por patrón + capacidad OBSERVABLE].
-Refinamiento a OBSERVABLE puro: leer cada agente y contar R adicionales (corpus multi-input
-como `pattern-harvester`/`task-synthesizer` → +1 R). El orden (≈142) es estable.
+**Nota de medición:** Capa D = **145 CFP** [OBSERVABLE] en 29 agentes (media 5.0 CFP/agente,
+rango 4–7). Conteo verificado leyendo cada agente. La estimación previa (142) quedó a −3 del
+real. Hallazgo colateral: `deep-review` con `tools:` incompleto (deuda técnica).
 
-**Última actualización:** 2026-06-03 04:24:00
+**Última actualización:** 2026-06-03 04:40:00

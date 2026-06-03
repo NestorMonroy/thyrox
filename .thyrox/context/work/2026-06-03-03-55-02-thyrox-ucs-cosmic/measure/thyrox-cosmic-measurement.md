@@ -62,41 +62,47 @@ status: Borrador
 > 1 R + 1 W (no por archivo). UC-ENG-05/08/09 son hooks sin Salida al usuario (W es el efecto);
 > cumplen ≥2 CFP por E+W/R. UC-ENG-03 = 2 CFP exactos (mínimo Regla 10c).
 
-## Capas C y D (añadidas tras audit de cobertura — scope: producto completo)
+## Capas C y D — refinadas a OBSERVABLE (leídas una a una)
 
-Medidas en `docs/requisitos/casos-uso/{methodology,agent}-ucs.md`. Conteo por **patrón
-homogéneo** (Average FP, MM v5.0 `estimation.md`), clasificación **INFERRED** (anclado en
-skills/agentes reales leídos; admisible para gate, I-012). Ver esos archivos para el roster.
+Medidas en `docs/requisitos/casos-uso/{methodology,agent}-ucs.md`. Conteo **OBSERVABLE**:
+se leyeron los 61 SKILL + 29 agentes uno a uno (3 lotes de agentes capa C + 1 capa D, con
+regla de conteo idéntica). Subtotales por lote: ba/bpa/cp=116 · dmaic/lean/pdca/rup=113 ·
+pm/pps/rm/sp=149 → **C=378**; agentes → **D=145**.
 
-| Capa (FSM) | Procesos | CFP | Patrón | Clasificación |
-|------------|----------|-----|--------|---------------|
-| C — Coordinators de metodología | 62 | **372** | 6 CFP/paso | INFERRED [early sizing] |
-| D — Agentes | 29 | **142** | 5 (escribe) / 4 (read-only) | INFERRED |
+| Capa (FSM) | Procesos | CFP | Media | Clasificación |
+|------------|----------|-----|-------|---------------|
+| C — Coordinators de metodología | 61 | **378** | 6.2 CFP/paso (50×6 + 11×7) | OBSERVABLE |
+| D — Agentes | 29 | **145** | 5.0 CFP/agente (rango 4–7) | OBSERVABLE |
 
-## Resultado (4 capas — producto completo)
+## Resultado (4 capas — producto completo, OBSERVABLE)
 
 | Capa (FSM) | Procesos | CFP | Clasificación |
 |------------|----------|-----|---------------|
 | A — Interfaz | 20 | **108** | OBSERVABLE |
 | B — Motor | 13 | **46** | OBSERVABLE |
-| C — Coordinators de metodología | 62 | **372** | INFERRED |
-| D — Agentes | 29 | **142** | INFERRED |
-| **THYROX completo (agregado)** | **124** | **668** | mixto |
+| C — Coordinators de metodología | 61 | **378** | OBSERVABLE |
+| D — Agentes | 29 | **145** | OBSERVABLE |
+| **THYROX completo (agregado)** | **123** | **677** | OBSERVABLE |
 
-**Principio 6:** las 4 capas son FSM distintos; el agregado **668 CFP** es referencia de
+**Principio 6:** las 4 capas son FSM distintos; el agregado **677 CFP** es referencia de
 volumen total del producto, **no** un tamaño comparable contra una sola capa de otro sistema.
 Para benchmark, comparar capa-con-capa del mismo nivel.
 
-**Reconciliación con la estimación del audit:** el audit estimó 500-700 CFP para el producto
-completo; la medición da **668**, dentro del rango. El **core (A+B) = 154 CFP es el ~23%**
-del producto. La capa C (metodología) es la dominante (56%).
+**Reconciliación estimación → medición:** el early-sizing daba 668 CFP / 124 procesos; el
+conteo OBSERVABLE da **677 CFP / 123 procesos** (Δ +9 CFP, −1 proceso). El Average FP fue
+buen estimador (error ~1.3%). El **core (A+B) = 154 CFP = ~23%** del producto; la capa C
+(metodología) sigue siendo la dominante (56%).
 
-**Pendiente de refinamiento OBSERVABLE:** capas C y D usan Average FP. Leer los 62 SKILL +
-29 agentes individualmente movería el total ≈ ±30 CFP (pasos de cierre con W a ROADMAP/CHANGELOG;
-agentes con corpus multi-input). El orden de magnitud (≈670) es estable.
+**Correcciones del conteo OBSERVABLE:**
+- `pm-thyrox` **no tiene SKILL.md** (solo `evals/`+`scripts/`) → no es proceso funcional (62→61).
+- 11 pasos de capa C suben a 7 CFP (2º OOI de precondición o 2º artefacto: a3-report, ROADMAP).
+- Capa D no es uniforme: coordinators con schema `.yml` = 6 CFP, `thyrox-coordinator` = 7,
+  tech-experts = 4.
+- ⚠ Hallazgo: `deep-review` declara crear markdown pero su `tools:` no incluye Write/Edit
+  → **deuda técnica** (registrada en `technical-debt.md`).
 
-**Corrección del audit:** los comandos `structure` y `workflow_init` resultaron **alias** de
-`design` (UC-INT-07) e `init` (UC-INT-15) — no son UCs faltantes. La capa A está completa.
+**Corrección del audit:** `structure` y `workflow_init` resultaron **alias** de `design`
+(UC-INT-07) e `init` (UC-INT-15) — no son UCs faltantes. La capa A está completa.
 
 ## Lecturas (medias por capa)
 
