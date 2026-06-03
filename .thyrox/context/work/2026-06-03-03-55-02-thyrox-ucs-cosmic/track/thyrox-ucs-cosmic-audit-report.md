@@ -1,11 +1,16 @@
 ```yml
 created_at: 2026-06-03 04:14:00
+updated_at: 2026-06-03 04:32:00
 project: THYROX
 work_package: 2026-06-03-03-55-02-thyrox-ucs-cosmic
 phase: Phase 11 — TRACK/EVALUATE
 author: NestorMonroy
 status: Borrador
+version: 2.0.0
 ```
+
+> **v2.0.0:** se añade **Parte 2 — Auditoría de cierre del WP** (al final). La Parte 1
+> (cobertura de UCs) quedó RESUELTA: el scope se expandió a producto completo y se midió.
 
 # Audit-report — Cobertura de UCs vs superficie funcional real de THYROX
 
@@ -92,4 +97,58 @@ COSMIC ≈ 4-6 CFP/proceso, calibration.md):
 ⏸ **Gate Stage 11→12:** el ejecutor decide el scope (action item 1) antes de cerrar el WP.
 Si se elige producto completo, el WP vuelve a DISCOVER/MEASURE para capas C y D.
 
-**Última actualización:** 2026-06-03 04:14:00
+> **Resolución Parte 1:** el ejecutor eligió **producto completo**. Capas C y D escritas y
+> medidas (OBSERVABLE). Action item 1 (scope) CERRADO; items 2-5 resueltos o N/A (alias).
+
+---
+
+# Parte 2 — Auditoría de cierre del WP
+
+> Disparada por el ejecutor: «ejecuta /thyrox-audit para decidir si cierro el WP». Evalúa si
+> el WP está listo para STANDARDIZE/cierre. Verificación, no inferencia.
+
+## Veredicto
+
+**LISTO PARA CIERRE con 2 correcciones de estado triviales — GRADE B (→A tras fix).** El
+trabajo sustantivo está completo y trazable; fallan solo 2 ítems de consistencia de estado
+que deben corregirse en el acto de cierre.
+
+## Resultados por dimensión
+
+| Dimensión | Peso | Resultado | Evidencia |
+|-----------|------|-----------|-----------|
+| Task plan | 30% | **SKIP→PASS** | WP de medición/documentación, sin `plan-execution/` (correcto para este tipo). Trabajo trazable vía artefactos + 9 commits. |
+| Artefactos | 25% | **PASS** | 5 artefactos en stage dirs correctos (discover/measure/track/standardize); todos con bloque \`\`\`yml\`\`\`; naming OK (síntesis con prefijo WP, sub-análisis descriptivos). |
+| Commits | 20% | **PASS** | 9 commits `type(scope): description`; scopes válidos (thyrox-ucs-cosmic, standardize, deep-review); descripciones informativas. |
+| Scripts | 15% | **N/A→PASS** | Sin scripts nuevos; solo config (`deep-review.yml/.md`), lint [OK]. |
+| Estado | 10% | **FAIL** | 2 gaps (abajo). |
+
+## Hallazgos FAIL (con evidencia y corrección)
+
+1. **`now.md::stage` desactualizado.** Dice `Phase 2 — MEASURE` pero el WP recorrió TRACK
+   (audit) y STANDARDIZE (lessons + ADR-009 + ARCHITECTURE). **Corrección:** actualizar a
+   `Phase 12 — STANDARDIZE` (o resetear al cerrar).
+2. **WP ausente de `ROADMAP.md`.** `grep -niE 'cosmic|thyrox-ucs|677'` → 0 resultados. El
+   baseline 677 CFP no figura en el ROADMAP. (Nota: el WP previo `cosmic-sizing` tampoco está
+   → patrón pre-existente, no exclusivo de este WP.) **Corrección:** añadir entrada de la ÉPICA.
+
+## Hallazgo sistémico (PAT-001)
+
+Los 2 últimos WPs (cosmic-sizing, thyrox-ucs-cosmic) no se registraron en `ROADMAP.md`. El
+paso "actualizar ROADMAP" del flujo de sesión se está omitiendo en WPs de medición. Recomendado:
+reforzar en el cierre, no solo en EXECUTE.
+
+## Score
+
+`(0.30·1 + 0.25·1 + 0.20·1 + 0.15·1 + 0.10·0) / 1.0 = 90%` → **GRADE B** (el 10% de estado en
+0 lo deja en el borde A/B). Tras los 2 fixes → **100% / GRADE A**.
+
+## Decisión de cierre
+
+**Recomendación: CERRAR**, ejecutando como parte del cierre los 2 fixes de estado (now.md +
+ROADMAP). No hay deuda abierta del WP (TD-044 resuelto), el baseline está propagado
+(ADR-009 + ARCHITECTURE) y los FUR son product docs durables. No hay razón para dejarlo
+abierto salvo que el ejecutor quiera añadir el refinamiento diferido (UC-ENG-14 tras PR #4),
+que es trabajo de otra ÉPICA.
+
+**Última actualización:** 2026-06-03 04:32:00
