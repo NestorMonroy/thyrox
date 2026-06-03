@@ -1,20 +1,23 @@
 ```yml
 type: Estado Operacional
 version: 1.2
-updated_at: 2026-06-03 05:47:51
+updated_at: 2026-06-03 05:51:50
 ```
 
 # Focus
 
 <!-- WP-STATUS -->
-**WP activo:** open-wp-automation — Phase 12 — STANDARDIZE
-WP: `.thyrox/context/work/2026-06-03-05-42-51-open-wp-automation/`
+**Sin WP activo.**
 <!-- /WP-STATUS -->
 
-**Última ÉPICA cerrada: 47 — functional-size-signal ✓ (2026-06-03)**
-`workflow-discover` clasifica tamaño por 2 ejes (Duración + señal funcional objetiva) + regla de
-desempate "gana la mayor". Mitiga ERR-002/006. Audit GRADE A. Hallazgo del audit: PAT-001
-(focus.md stale al abrir) confirmado ×3 → ÉPICA 48 (este WP).
+**Última ÉPICA cerrada: 48 — open-wp-automation ✓ (2026-06-03)**
+`.claude/scripts/open-wp.sh` (inverso de close-wp.sh) + marcador `WP-STATUS` gestionado por
+ambos scripts → **PAT-001 eliminado** (focus.md/stage ya no quedan stale al abrir). Audit
+minucioso GRADE A: halló y corrigió E-2 (sed metachar en stage); E-3→TD-047. Este cierre
+estrenó el marcador automático.
+
+**ÉPICA 47 — functional-size-signal ✓** — señal funcional de tamaño + regla de desempate en
+`workflow-discover` (mitiga ERR-002/006).
 
 **ÉPICA 46 — cosmic-review ✓** (calibración H-1..4 + skill F-1..3; verify-cosmic-baseline.sh).
 **ÉPICA 45 — ucs-detallados ✓** (123 UCs formales). **ÉPICA 44 — thyrox-ucs-cosmic ✓**
