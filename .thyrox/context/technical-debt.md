@@ -586,3 +586,22 @@ repetidas, conservando el contenido. Opcional — bajo impacto.
 
 **Prioridad:** BAJA
 **Estado:** Abierto
+
+## TD-047: open-wp.sh no fija el campo retrocompat `phase:`
+
+```
+Severidad: baja
+Origen: WP 2026-06-03-05-42-51-open-wp-automation — audit minucioso (E-3, 2026-06-03)
+Fase afectada: .claude/scripts/open-wp.sh
+Estado: [ ] Pendiente
+```
+
+**Problema:** `open-wp.sh` fija `stage` en now.md pero no el campo retrocompat `phase:` que
+`close-wp.sh` sí resetea. Asimetría menor. Sin impacto hoy (el now.md actual no usa `phase:`),
+pero un proyecto que use el campo lo vería stale al abrir.
+
+**Resolución propuesta:** añadir `-e "s|^phase: .*|phase: ${STAGE}|"` al sed de open-wp.sh
+(condicional a que la línea exista), simétrico con close-wp.sh.
+
+**Prioridad:** BAJA
+**Estado:** Abierto

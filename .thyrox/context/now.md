@@ -17,5 +17,4 @@ coordinators: {}
 ÉPICA 48 **open-wp-automation**: creado `.claude/scripts/open-wp.sh` (inverso de close-wp.sh)
 + marcador `WP-STATUS` en focus.md gestionado por ambos scripts + propagación en
 workflow-discover. Mata PAT-001 (focus.md stale al abrir, recurrente ×3). Piloto open→close OK.
-Pendiente: orden de cierre (I-011).
-
+Audit minucioso halló E-2 (sed metachar en stage) → corregido. Pendiente: orden de cierre (I-011).

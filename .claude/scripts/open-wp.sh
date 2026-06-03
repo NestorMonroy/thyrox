@@ -20,6 +20,12 @@ if ! printf '%s' "$NAME" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$'; then
   echo "Error: nombre debe ser kebab-case (a-z 0-9 -): '$NAME'" >&2
   exit 2
 fi
+# E-2 fix: stage va a un `sed s|...|...|` → rechazar metacaracteres que romperían el sed
+# (| delimitador, & retro-referencia, \ escape). Un label de stage nunca los necesita.
+if printf '%s' "$STAGE" | grep -q '[|&\]'; then
+  echo "Error: stage no puede contener | & ni \\ : '$STAGE'" >&2
+  exit 2
+fi
 [ -f "$NOW_FILE" ] || { echo "Error: $NOW_FILE not found" >&2; exit 1; }
 
 TS=$(date '+%Y-%m-%d-%H-%M-%S')          # I-004: timestamp real, nunca inventado
