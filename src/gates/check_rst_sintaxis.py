@@ -70,7 +70,21 @@ import subprocess
 import sys
 import tempfile
 
-RAIZ = pathlib.Path(__file__).resolve().parents[3]
+# La raiz es la del CONSUMIDOR, no la del gate. Derivarla de la posicion del
+# propio archivo (`parents[3]`) acertaba mientras el gate vivia en
+# `kaupamex-docs/.claude/scripts/gates/`; al mudarlo a `thyrox/src/gates/` paso
+# a nombrar `/home/user`, y con ello el gate buscaba `.venv` y `source/` en un
+# directorio que no es ningun repo. El efecto NO fue silencioso —el guard de
+# H-DOCS-134 rehusa en vez de publicar un cero— pero si total: bloqueaba todo
+# commit con prosa staged (:ref:`h-docs-1103`).
+#
+# El sustituto es el mecanismo de alcance, que asciende detectando el clon en
+# vez de contar niveles: sobrevive a un refactor de anidamiento, que es
+# exactamente lo que aqui fallo.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+from paths import reach  # noqa: E402
+
+RAIZ = reach.root('docs')
 FUENTE = RAIZ / 'source'
 ANSI = re.compile(r'\x1b\[[0-9;]*m')
 
