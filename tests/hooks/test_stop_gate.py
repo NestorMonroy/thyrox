@@ -187,6 +187,51 @@ with tempfile.TemporaryDirectory() as c:
     check("pero nombra el código en stderr", True, "4" in err2.getvalue())
     check("y lo declara no medible", True, "no medible" in err2.getvalue())
 
+print("== 4-ter. el motor puede ser un INVOCABLE, no sólo un argv ==")
+# Los dos gates que quedan por portar no consultan a nadie: recorren los repos
+# y calculan el veredicto dentro. Un tercer modo los admitiría a costa de
+# duplicar la traducción; generalizar el motor los admite sin tocarla.
+llamadas: list[int] = []
+
+
+def barrido_con_hallazgo() -> tuple[int, str]:
+    llamadas.append(1)
+    return 1, "kaupamex-docs: 1 sin commitear"
+
+
+def barrido_limpio() -> tuple[int, str]:
+    return 0, ""
+
+
+v = sg.Gate(engine=barrido_con_hallazgo, block_on_output=True,
+            reason="Sin publicar:\n{output}").run("{}")
+check("el invocable bloquea igual", "block", v.get("decision"))
+check("y su texto viaja al motivo", True, "1 sin commitear" in v["reason"])
+check("el invocable con 0 emite {}", {},
+      sg.Gate(engine=barrido_limpio, block_on_output=True,
+              reason="x {output}").run("{}"))
+check("modo por código: el invocable también", "block",
+      sg.Gate(engine=barrido_con_hallazgo, block_exits=(1,),
+              reason="x {output}").run("{}").get("decision"))
+
+# DISCRIMINA: una reentrada NO debe invocarlo. Con un argv la evidencia era
+# que el motor no dejaba rastro; con un invocable se puede contar.
+antes = len(llamadas)
+check("una reentrada NO lo invoca", {},
+      sg.Gate(engine=barrido_con_hallazgo, block_on_output=True,
+              reason="x {output}").run('{"stop_hook_active": true}'))
+check("y el contador no se movió", antes, len(llamadas))
+
+print("== 4-quater. un invocable que revienta NO tumba el turno ==")
+def revienta() -> tuple[int, str]:
+    raise RuntimeError("el barrido falló")
+
+with redirect_stderr(io.StringIO()) as err:
+    check("emite {}", {},
+          sg.Gate(engine=revienta, block_on_output=True,
+                  reason="x {output}").run("{}"))
+check("y lo NOMBRA en stderr", True, "el barrido falló" in err.getvalue())
+
 print("== 5. DISCRIMINA: una reentrada NO consulta al motor ==")
 # Consultarlo sería, además de inútil, un bucle: el motivo devuelve el control
 # al agente, que vuelve a cerrar, que vuelve a bloquear.

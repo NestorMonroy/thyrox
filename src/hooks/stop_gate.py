@@ -42,6 +42,29 @@ Y por eso ``clean_exits`` se declara explícito en vez de derivarse: el stub de
 hasta que #95 decida»—, y un default que se lo tragara estaría resolviendo esa
 decisión sin que nadie la tomara.
 
+Dos formas de motor, un solo par de modos
+------------------------------------------
+
+Los dos gates portados consultan a un guion externo. Los dos que quedan
+—``trabajo-sin-publicar`` y ``hallazgo-pendiente``— **no consultan a nadie**:
+recorren los repos y calculan el veredicto dentro. Medido antes de decidir la
+forma: los dos invocan `reach_roots.py --paths` para saber qué repos hay, y a
+partir de ahí el predicado es suyo.
+
+Admitirlos con un **tercer modo** duplicaría la traducción, que es justo lo que
+este módulo existe para tener una sola vez. Lo que se generaliza es el otro eje:
+el motor es un ``argv`` **o** algo invocable que devuelve ``(código, salida)``.
+Los dos modos de veredicto lo leen igual, porque lo que traducen es el par
+código/salida y no de dónde vino.
+
+Un motor en proceso tiene **un** flujo, así que se le asigna ``stdout`` —el que
+gobierna el veredicto en modo por salida— y ``both()`` devuelve lo mismo. Y si
+revienta, el gate lo nombra y emite ``{}``: un gate que propaga la excepción de
+su motor deja el turno sin veredicto y sin aviso.
+
+El CLI sigue construyendo sólo la forma ``argv``: un invocable no cabe en una
+línea de comando. Un consumidor en proceso importa ``Gate`` y le pasa el suyo.
+
 Qué flujo decide, y cuál sólo redacta
 --------------------------------------
 
@@ -85,6 +108,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -96,12 +120,17 @@ from pathlib import Path
 if __package__ in (None, ""):  # sólo en invocación directa
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from hooks.process import run_guarded  # noqa: E402
+from hooks.process import Completed, run_guarded  # noqa: E402
 from hooks.stop_payload import is_reentry  # noqa: E402
 
 #: La ranura que el motivo puede reservar para la salida del motor. Los dos
 #: consumidores la incrustan en medio de su prosa, no al final.
 OUTPUT_SLOT = "{output}"
+
+
+#: El motor: o un argv que se lanza, o algo invocable que devuelve
+#: ``(código, salida)`` sin salir del proceso. Ver «Dos formas de motor».
+Engine = list[str] | Callable[[], tuple[int, str]]
 
 
 class ModeError(ValueError):
@@ -112,7 +141,7 @@ class ModeError(ValueError):
 class Gate:
     """Un gate de ``Stop``: un motor, un modo de veredicto y un motivo."""
 
-    engine: list[str]
+    engine: Engine
     reason: str
     clean_exits: tuple[int, ...] = ()
     block_exits: tuple[int, ...] = ()
@@ -123,6 +152,11 @@ class Gate:
     _stderr: object = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
+        if not callable(self.engine) and not self.engine:
+            raise ModeError(
+                "el motor está vacío: ni argv ni invocable.\n"
+                "  NO se emite un veredicto sobre un motor que no existe."
+            )
         if bool(self.block_exits) == bool(self.block_on_output):
             cuales = ("los dos" if self.block_exits else "ninguno")
             raise ModeError(
@@ -154,25 +188,8 @@ class Gate:
         if is_reentry(payload):
             return self._clean()
 
-        binary = Path(self.engine[0])
-        if not binary.is_file():
-            # Sin motor no hay nada que consultar. Callar es correcto; fingir
-            # un veredicto sobre un motor ausente, no.
-            self._warn(f"el motor no está en '{binary}' — sin veredicto")
-            return self._clean()
-
-        done = run_guarded(self.engine, self.timeout)
-        if not done.started:
-            self._warn(f"el motor '{binary.name}' no pudo correr: {done.stderr}")
-            return self._clean()
-        if done.timed_out:
-            # No bloquear es lo correcto —nadie sabría cómo resolverlo— pero
-            # callarlo no: un motor colgado y uno limpio publicarían el mismo
-            # `{}`, y ése es el verde que no discrimina.
-            self._warn(
-                f"'{binary.name}' agotó su plazo de {self.timeout} s y se "
-                "abandonó: sin veredicto, no es un verde."
-            )
+        done = self._consult()
+        if done is None:          # no hubo veredicto, y ya se avisó por qué
             return self._clean()
 
         code = done.exit_code
@@ -195,8 +212,9 @@ class Gate:
             if not veredicto:
                 if done.stderr.strip():
                     self._warn(
-                        f"'{binary.name}' salió {code} sin stdout, con aviso en "
-                        f"stderr: {done.stderr.strip().splitlines()[-1]}"
+                        f"'{self.engine_name}' salió {code} sin stdout, con "
+                        f"aviso en stderr: "
+                        f"{done.stderr.strip().splitlines()[-1]}"
                     )
                 return self._clean()
             return self._block(veredicto)
@@ -205,10 +223,54 @@ class Gate:
             return self._block(done.both())
 
         self._warn(
-            f"'{binary.name}' salió {code}, que no está declarado ni limpio ni "
-            "bloqueante: no medible. No se bloquea, pero tampoco es un verde."
+            f"'{self.engine_name}' salió {code}, que no está declarado ni "
+            "limpio ni bloqueante: no medible. No se bloquea, pero tampoco es "
+            "un verde."
         )
         return self._clean()
+
+
+    @property
+    def engine_name(self) -> str:
+        """Cómo se nombra el motor en un aviso — no es su identidad."""
+        if callable(self.engine):
+            return getattr(self.engine, "__name__", "motor en proceso")
+        return Path(self.engine[0]).name
+
+    def _consult(self) -> Completed | None:
+        """Interroga al motor. ``None`` = sin veredicto, y ya se avisó."""
+        if callable(self.engine):
+            try:
+                code, output = self.engine()
+            except Exception as err:   # noqa: BLE001 — un gate no revienta
+                self._warn(f"'{self.engine_name}' falló: {err}")
+                return None
+            # Un motor en proceso tiene UN flujo. Se le asigna stdout porque
+            # es el que gobierna el veredicto en modo por salida; `both()`
+            # devuelve lo mismo, así que el modo por código lo lee igual.
+            return Completed(code, output, "")
+
+        binary = Path(self.engine[0])
+        if not binary.is_file():
+            # Sin motor no hay nada que consultar. Callar es correcto; fingir
+            # un veredicto sobre un motor ausente, no.
+            self._warn(f"el motor no está en '{binary}' — sin veredicto")
+            return None
+
+        done = run_guarded(self.engine, self.timeout)
+        if not done.started:
+            self._warn(f"el motor '{binary.name}' no pudo correr: {done.stderr}")
+            return None
+        if done.timed_out:
+            # No bloquear es lo correcto —nadie sabría cómo resolverlo— pero
+            # callarlo no: un motor colgado y uno limpio publicarían el mismo
+            # `{}`, y ése es el verde que no discrimina.
+            self._warn(
+                f"'{binary.name}' agotó su plazo de {self.timeout} s y se "
+                "abandonó: sin veredicto, no es un verde."
+            )
+            return None
+        return done
 
 
 def main(argv: list[str] | None = None) -> int:
