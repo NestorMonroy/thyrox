@@ -1,5 +1,5 @@
 {
-  "name": "@kaupamex/packages",
+  "name": "@thyrox/packages",
   "private": true,
   "workspaces": [
     "agent",

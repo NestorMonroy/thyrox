@@ -1,5 +1,5 @@
 {
-  "name": "@kaupamex/harness",
+  "name": "@thyrox/harness",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -41,6 +41,6 @@
     "@types/bun": "^1.4.0"
   },
   "dependencies": {
-    "@kaupamex/agent": "workspace:*"
+    "@thyrox/agent": "workspace:*"
   }
 }

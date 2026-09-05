@@ -1,4 +1,4 @@
-# @kaupamex/harness
+# @thyrox/harness
 
 El **harness** propio: la capa que llama al modelo, atiende sus llamadas a
 herramienta y decide cuándo parar. No es un envoltorio del cliente de Claude

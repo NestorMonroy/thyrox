@@ -170,7 +170,7 @@ describe('modo conversacion (T-039)', () => {
   })
 })
 
-describe('la configuracion viene de @kaupamex/config (T-044)', () => {
+describe('la configuracion viene de @thyrox/config (T-044)', () => {
   test('project y local se ACUMULAN en hooks, con la precedencia del paquete', () => {
     const d = mkdtempSync(join(tmpdir(), 'cfg-'))
     const a = join(d, 'de-project.txt')

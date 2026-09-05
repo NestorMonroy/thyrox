@@ -41,7 +41,7 @@ import type { AssistantTurn, Provider, Usage } from '../src/types.ts'
 import { USAGE_CERO } from '../src/types.ts'
 import type { HookConfig } from '../src/hooks.ts'
 import type { PermissionPolicy } from '../src/permission.ts'
-import { loadSettings } from '@kaupamex/config/load'
+import { loadSettings } from '@thyrox/config/load'
 
 const AYUDA = `harness — el bucle de agente, nativo
 
@@ -140,7 +140,7 @@ function buildSkillRegistry(): SkillRegistry {
 type Settings = { hooks?: HookConfig; permissions?: PermissionPolicy }
 
 /**
- * La configuración, por `@kaupamex/config` (T-044).
+ * La configuración, por `@thyrox/config` (T-044).
  *
  * No se parsea JSON a mano: la precedencia de las fuentes, la acumulación de
  * hooks y el origen por clave son del paquete, y duplicarlos aquí sería una

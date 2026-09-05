@@ -3,24 +3,31 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@kaupamex/packages",
+      "name": "@thyrox/packages",
     },
     "agent": {
-      "name": "@kaupamex/agent",
+      "name": "@thyrox/agent",
       "version": "0.4.0",
       "dependencies": {
         "zod": "^4.3.6",
       },
     },
     "binary": {
-      "name": "@kaupamex/binary",
+      "name": "@thyrox/binary",
       "version": "0.1.0",
     },
-    "harness": {
-      "name": "@kaupamex/harness",
+    "config": {
+      "name": "@thyrox/config",
       "version": "0.1.0",
       "dependencies": {
-        "@kaupamex/agent": "workspace:*",
+        "zod": "^4.3.6",
+      },
+    },
+    "harness": {
+      "name": "@thyrox/harness",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/agent": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
@@ -28,11 +35,13 @@
     },
   },
   "packages": {
-    "@kaupamex/agent": ["@kaupamex/agent@workspace:agent"],
+    "@thyrox/agent": ["@thyrox/agent@workspace:agent"],
 
-    "@kaupamex/binary": ["@kaupamex/binary@workspace:binary"],
+    "@thyrox/binary": ["@thyrox/binary@workspace:binary"],
 
-    "@kaupamex/harness": ["@kaupamex/harness@workspace:harness"],
+    "@thyrox/config": ["@thyrox/config@workspace:config"],
+
+    "@thyrox/harness": ["@thyrox/harness@workspace:harness"],
 
     "@types/bun": ["@types/bun@1.4.1", "", { "dependencies": { "bun-types": "1.4.1" } }, "sha512-0AVGiTXGajf1rgKom3N+c5L7CBxuoyyv1i44M0nX4UDK0G/fnRAMiri93nHuVPIb429KKtAgj7HatVmmOjeQLA=="],
 

@@ -8,7 +8,7 @@
  *
  * De ahí la forma de esta función: **calcula el coste antes de aplicar** y se
  * lo entrega a `PreModelSwitch`, que puede vetar. El hook del propio repo
- * (`@kaupamex/agent`, `bin/preModelSwitch.ts`) es exactamente eso — un
+ * (`@thyrox/agent`, `bin/preModelSwitch.ts`) es exactamente eso — un
  * consumidor de esta carga, y por eso los nombres de campo son los suyos.
  */
 import { runHooks, type HookConfig } from '../hooks.ts'

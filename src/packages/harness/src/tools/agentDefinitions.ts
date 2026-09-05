@@ -1,5 +1,5 @@
 /**
- * Traducción de `@kaupamex/agent` a definiciones del harness (T-036).
+ * Traducción de `@thyrox/agent` a definiciones del harness (T-036).
  *
  * Las 31 definiciones del paquete ya son la fuente de verdad de los agentes de
  * este proyecto: se emiten a `.claude/agents/*.md` y a `--agents '<json>'`.
@@ -16,7 +16,7 @@
  *   hijo toma el del padre. Traducirlo a un identificador fijaría un modelo
  *   que la definición nunca eligió.
  */
-import type { AgentDefinition as PaqueteAgent } from '@kaupamex/agent/types'
+import type { AgentDefinition as PaqueteAgent } from '@thyrox/agent/types'
 import type { AgentDefinition } from './agent.ts'
 import { CORE_TOOLS } from './registry.ts'
 

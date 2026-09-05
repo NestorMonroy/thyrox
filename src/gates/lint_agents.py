@@ -10,7 +10,7 @@ que el ejecutable declara ``.strict()`` — 20 claves en 2.1.258, medidas en
   - OBLIGATORIAS: ``name`` y ``description`` (las únicas que el cliente exige;
     ``tools`` es opcional — omitirla significa «todas»).
   - ADMITIDAS: las 18 restantes del esquema, ``model`` incluida. El emisor
-    de ``@kaupamex/agent`` la escribe con el identificador completo del
+    de ``@thyrox/agent`` la escribe con el identificador completo del
     catálogo; prohibirla aquí contradecía el contrato (H-DOCS-1006).
   - DESCONOCIDAS: cualquier otra clave dispara en el cliente
     ``tengu_frontmatter_shadow_unknown_key`` y se ignora. Aquí es ERROR,

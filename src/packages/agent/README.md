@@ -1,4 +1,4 @@
-# @kaupamex/agent
+# @thyrox/agent
 
 La definición de nuestros agentes, en TypeScript. **El markdown dejó de ser la
 fuente** (directiva del ejecutor, 2026-08-29): `.claude/agents/*.md` es ahora

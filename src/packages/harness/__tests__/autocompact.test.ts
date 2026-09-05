@@ -2,7 +2,7 @@
  * Compactación automática (T-023): umbral, resumen y frontera.
  *
  * Fuente del porte: la decisión del ejecutable (`fZe`/`nxe`) más el catálogo de
- * `@kaupamex/agent`, del que sale la ventana. Los valores no se imaginan: el
+ * `@thyrox/agent`, del que sale la ventana. Los valores no se imaginan: el
  * umbral se deriva de la ventana del catálogo, no de una constante. El diseño
  * está en `analisis-portar-la-decision-de-compactacion.rst`.
  */

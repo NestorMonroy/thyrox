@@ -23,7 +23,7 @@ codificación, así que re-emitir un agente sin cambios no produce diff.
 > inejecutable, y su ejemplo emitía los marcadores `{tool1}`/`{tool2}` como si
 > fueran nombres de herramienta.
 
-La fuente es `@kaupamex/agent` (`.claude/packages/agent`):
+La fuente es `@thyrox/agent` (`.claude/packages/agent`):
 
 | Pieza | Qué es |
 |---|---|

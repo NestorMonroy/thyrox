@@ -16,7 +16,7 @@
  * Un modelo que el catálogo no conoce devuelve `null`, y `shouldAutoCompact`
  * responde `false`: el silencio del instrumento no es permiso para compactar.
  */
-import { MODELS } from '@kaupamex/agent/models'
+import { MODELS } from '@thyrox/agent/models'
 import type { ContentBlock, Message } from '../types.ts'
 import { estimateTokens } from './systemPrompt.ts'
 

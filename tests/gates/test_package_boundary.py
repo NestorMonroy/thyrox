@@ -70,7 +70,7 @@ def build_tree(base: pathlib.Path) -> pathlib.Path:
         pkg = root / name
         (pkg / "src").mkdir(parents=True, exist_ok=True)
         (pkg / "package.json").write_text(
-            json.dumps({"name": f"@kaupamex/{name}", "exports": exports}), encoding="utf-8"
+            json.dumps({"name": f"@thyrox/{name}", "exports": exports}), encoding="utf-8"
         )
     (root / "agent" / "src" / "models.ts").write_text("export const MODELS = {}\n", encoding="utf-8")
     (base / "config" / "settings").mkdir(parents=True, exist_ok=True)
@@ -108,7 +108,7 @@ with tempfile.TemporaryDirectory() as tmp:
     check(
         "nombre de paquete -> no-relativo",
         "no-relativo",
-        package_boundary.classify(consumer, "@kaupamex/agent/models", root),
+        package_boundary.classify(consumer, "@thyrox/agent/models", root),
     )
 
 print("\n2. La pertenencia la decide el paquete que declara, no la profundidad")
@@ -154,7 +154,7 @@ with tempfile.TemporaryDirectory() as tmp:
         "import { A } from '../../agent/src/models.ts'\n"
         'import type { B } from "../../agent/src/types.ts"\n'
         "import { C } from './local.ts'\n"
-        "import { D } from '@kaupamex/agent/models'\n"
+        "import { D } from '@thyrox/agent/models'\n"
         "const e = await import('../../agent/src/tarde.ts')\n"
         "// import { F } from '../../agent/src/comentado.ts'\n",
     )
@@ -171,7 +171,7 @@ with tempfile.TemporaryDirectory() as tmp:
     write(root / "harness" / "src" / "cost.ts",
           "import { A } from '../../agent/src/models.ts'\n")
     write(root / "harness" / "src" / "clean.ts",
-          "import { B } from '@kaupamex/agent/models'\n")
+          "import { B } from '@thyrox/agent/models'\n")
     write(root / "harness" / "bin" / "cli.ts",
           "import { C } from '../../../config/settings/load.ts'\n")
 
@@ -193,7 +193,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
     check("con el cruce, hay hallazgo", 1, len(package_boundary.scan(root).crossings))
     # Retirar la CAUSA: el import entra por la superficie declarada.
-    cruce.write_text("import { A } from '@kaupamex/agent/models'\n", encoding="utf-8")
+    cruce.write_text("import { A } from '@thyrox/agent/models'\n", encoding="utf-8")
     check("control — reescrito al nombre, el hallazgo desaparece",
           0, len(package_boundary.scan(root).crossings))
 

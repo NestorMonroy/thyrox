@@ -476,7 +476,7 @@ const GATES_BY_KIND: Record<RepoKind, string[]> = {
   ],
   docs: [
     'check_ids_entre_ramas · check-ids-duplicados (etiquetas de hallazgo)',
-    '@kaupamex/harness: bun run typecheck (src+bin, bloqueante) + bun test',
+    '@thyrox/harness: bun run typecheck (src+bin, bloqueante) + bun test',
     'make html (OPCIONAL — no es DoD)',
   ],
   shell: ['bash -n sobre los .sh tocados', 'tests estáticos del repo (sin root ni red)'],

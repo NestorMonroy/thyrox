@@ -1,7 +1,7 @@
 /**
- * Traducción de `@kaupamex/agent` a definiciones del harness (T-036).
+ * Traducción de `@thyrox/agent` a definiciones del harness (T-036).
  *
- * Fuente del porte: las 31 definiciones de `@kaupamex/agent`, que ya son la
+ * Fuente del porte: las 31 definiciones de `@thyrox/agent`, que ya son la
  * fuente de verdad de los agentes del proyecto (`.claude/agents/*.md`). El test
  * fija que la traducción preserve modelo, esfuerzo y herramientas — no un
  * formato nuevo.
@@ -11,7 +11,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { AGENTS } from '@kaupamex/agent'
+import { AGENTS } from '@thyrox/agent'
 import { agentDefinitionsFromRegistry, toHarnessDefinition } from '../src/tools/agentDefinitions.ts'
 import { openSession } from '../src/session.ts'
 import { runLoop } from '../src/loop.ts'
@@ -24,7 +24,7 @@ const uso = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0
 const texto = (t: string, model = 'claude-opus-5'): AssistantTurn =>
   ({ id: 'm1', model, stop_reason: 'end_turn', content: [{ type: 'text', text: t }], usage: uso })
 
-describe('las definiciones de @kaupamex/agent corren como agentes (T-036)', () => {
+describe('las definiciones de @thyrox/agent corren como agentes (T-036)', () => {
   test('cada definicion del paquete se traduce sin perder modelo, prompt ni herramientas', () => {
     const defs = agentDefinitionsFromRegistry(AGENTS)
     expect(Object.keys(defs).length).toBe(AGENTS.length)

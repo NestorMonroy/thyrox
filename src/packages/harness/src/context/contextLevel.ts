@@ -19,8 +19,8 @@
  * consulta. Apagarla quita el escalón intermedio y hace que `pctLeft` reporte
  * más margen del que hay — dos pérdidas, ninguna ganancia de ventana.
  */
-import { MODELS } from '@kaupamex/agent/models'
-import { fourLevels } from '@kaupamex/agent/cost/compaction'
+import { MODELS } from '@thyrox/agent/models'
+import { fourLevels } from '@thyrox/agent/cost/compaction'
 import { AUTOCOMPACT_BUFFER_TOKENS, effectiveContextWindow } from './autocompact.ts'
 
 /** El `k=y-20000` de `fZe`: cuánto antes de la referencia empieza a avisar. */

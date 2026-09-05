@@ -1,4 +1,4 @@
-# `@kaupamex/binary`
+# `@thyrox/binary`
 
 Análisis del ejecutable de Claude Code. Lee el contenedor que Bun escribe
 dentro del binario y lo deja en piezas nombradas, para que una medición cite
@@ -41,7 +41,7 @@ comentarios de ruta 0. Lo que sí hacía falta ahí era el reformateo.
 ## Uso
 
 ```ts
-import { findSection, readModuleTable, deriveVersion, SECTION_HEADER } from '@kaupamex/binary'
+import { findSection, readModuleTable, deriveVersion, SECTION_HEADER } from '@thyrox/binary'
 
 const bytes   = readFileSync('/opt/claude-code/bin/claude')
 const seccion = findSection(bytes, '.bun')!

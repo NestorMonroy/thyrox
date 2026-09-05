@@ -1,7 +1,7 @@
 /**
  * Coste por turno (T-031).
  *
- * El precio lo pone el catálogo de `@kaupamex/agent`, extraído del ejecutable
+ * El precio lo pone el catálogo de `@thyrox/agent`, extraído del ejecutable
  * — aquí no se transcribe ninguna cifra. Lo que sí vive aquí es la **traducción
  * de nombres**, que es un seam real: el API llama `cache_read_input_tokens` a
  * lo que el catálogo y el store llaman `cache_read_tokens`. Un campo que no
@@ -10,7 +10,7 @@
  * Por eso un modelo fuera del catálogo devuelve `null` con su razón, nunca 0:
  * el silencio del instrumento no es una factura de cero.
  */
-import { usageCostUsd, usageEquivalentTokens } from '@kaupamex/agent/models'
+import { usageCostUsd, usageEquivalentTokens } from '@thyrox/agent/models'
 import type { Usage } from '../types.ts'
 import { USAGE_CERO } from '../types.ts'
 

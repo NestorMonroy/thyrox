@@ -48,7 +48,7 @@ datos["hooks"] = {
         {"type": "command", "command": f"python3 {h}/register_agent_session.py --start"},
     ]}],
     # El diálogo de cambio de modelo con la cifra del catálogo y la vía que
-    # conserva la caché (bin/preModelSwitch.ts del paquete @kaupamex/agent).
+    # conserva la caché (bin/preModelSwitch.ts del paquete @thyrox/agent).
     "PreModelSwitch": [{"hooks": [
         {"type": "command", "command": f"bun run {os.path.dirname(h)}/packages/agent/bin/preModelSwitch.ts", "timeout": 10},
     ]}],

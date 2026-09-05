@@ -277,7 +277,7 @@ export function isHome(s: string): s is Home {
  *
  * El gate del hogar `source/…` que una DEFINICION de agente cita por su `flow`
  * —la clase de :ref:`h-docs-1021`— vive en el otro paquete:
- * `definitionsWithMissingHomes` de `@kaupamex/agent`, que valida la definicion
+ * `definitionsWithMissingHomes` de `@thyrox/agent`, que valida la definicion
  * (la causa), no el `.md` emitido (el sintoma).
  */
 export function docsLayer(layer: DocsLayer): string {

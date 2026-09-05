@@ -2,13 +2,13 @@
  * Cobertura del catálogo: cada modelo de `MODELS` cruza umbral, ventana efectiva
  * y coste por turno sin hueco.
  *
- * Fuente del porte: el catálogo `@kaupamex/agent` (`src/models.json`), extraído
+ * Fuente del porte: el catálogo `@thyrox/agent` (`src/models.json`), extraído
  * del ejecutable — aquí no se transcribe ninguna cifra. El test es una red
  * contra un modelo nuevo cuyo registro entre sin que las tres piezas lo cubran.
  */
 
 import { describe, expect, test } from 'bun:test'
-import { MODELS } from '@kaupamex/agent/models'
+import { MODELS } from '@thyrox/agent/models'
 import { autoCompactThreshold, effectiveContextWindow } from '../src/context/autocompact.ts'
 import { turnCost } from '../src/observability/cost.ts'
 import type { Usage } from '../src/types.ts'

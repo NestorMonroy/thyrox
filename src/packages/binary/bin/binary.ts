@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Interfaz de linea de comandos de `@kaupamex/binary`.
+ * Interfaz de linea de comandos de `@thyrox/binary`.
  *
  * Subcomandos:
  *   info                 version declarada, secciones, tamano de la tabla

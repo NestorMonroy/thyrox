@@ -295,7 +295,7 @@ else
     warn "Sucesores: check-hallazgo-sucesor.sh no encontrado"
 fi
 
-# --- Artefactos de agente derivados del paquete (@kaupamex/agent) ---
+# --- Artefactos de agente derivados del paquete (@thyrox/agent) ---
 tick "Artefactos de agente derivados del paquete"
 # Los `.claude/agents/*.md` se EMITEN desde `.claude/packages/agent`; un .md
 # editado a mano o una definición TS sin re-emitir divergen en silencio hasta

@@ -5,7 +5,7 @@ fix_agent_frontmatter.py — Batch-fix lint_agents.py errors in .claude/agents/*
 Fixes:
   1. tools: "X, Y, Z"  →  YAML list format
   2. (retirado 2026-09-02, H-DOCS-1006) — `model` PERTENECE al esquema
-     sombra del frontmatter; el emisor de @kaupamex/agent la escribe con el
+     sombra del frontmatter; el emisor de @thyrox/agent la escribe con el
      identificador completo del catálogo y este script ya no la quita.
   3. Restructure description to match: {qué hace}. Usar cuando {condición}.
 """
