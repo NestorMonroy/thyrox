@@ -2,6 +2,11 @@
   "name": "thyrox",
   "private": true,
   "type": "module",
+  "description": "THYROX — el Agentic AI y su project management: el mecanismo, sin el parametro del repo que lo consume (DEC-04).",
+  "exports": {
+    "./coordination/ledger": "./src/coordination/ledger.ts",
+    "./workbench/manifest": "./src/workbench/manifest.ts"
+  },
   "scripts": {
     "test": "bash tests/run.sh",
     "test:ts": "bun test tests/",
