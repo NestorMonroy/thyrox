@@ -40,8 +40,14 @@ import pathlib
 import sys
 import tempfile
 
-HERE = pathlib.Path(__file__).resolve()
-THYROX_ROOT = HERE.parents[2]
+_MARKER = pathlib.Path("src") / "paths" / "reach.py"
+_HERE = pathlib.Path(__file__).resolve()
+for _level in _HERE.parents:
+    if (_level / _MARKER).is_file():
+        THYROX_ROOT = _level
+        break
+else:
+    raise SystemExit(f"no se halló {_MARKER} ascendiendo desde {_HERE}")
 sys.path.insert(0, str(THYROX_ROOT / "src"))
 
 from paths import reach  # noqa: E402  (la ruta se compone arriba, a propósito)
@@ -214,6 +220,7 @@ with tempfile.TemporaryDirectory() as tmp:
 clean_env()
 
 print("\n8. El CLI sobrevive a que le cierren la salida")
+clean_env()  # el subproceso HEREDA el environ: sin esto dependería del bloque 7
 # Un consumidor que hace `reach.py --list | head -3` cierra el pipe antes de
 # que el guion termine de escribir. Sin tratarlo, Python vuelca un traceback de
 # BrokenPipeError por stderr: ruido que se lee como fallo del mecanismo cuando
@@ -226,6 +233,73 @@ _completado = subprocess.run(
 )
 check("no vuelca traceback por stderr", "", _completado.stderr.strip())
 check("y sale sin error", 0, _completado.returncode)
+
+print("\n9. thyrox se localiza a SÍ MISMO por mecanismo, no por aritmética (#146)")
+# `reach.root()` alcanza los clones kaupamex-*; lo que faltaba era la raíz de
+# thyrox, que hoy sólo se deriva con `parents[N]` — la aritmética que
+# H-DOCS-1103 midió apuntando a un directorio que nunca existió. La precedencia
+# es la misma que install.sh ya escribe: variable declarada, luego ascenso.
+with tempfile.TemporaryDirectory() as tmp:
+    base = pathlib.Path(tmp)
+    falso = base / "thyrox"                       # se LLAMA thyrox y no lo es
+    (falso / "src").mkdir(parents=True)
+    real = base / "otro-nombre"                   # NO se llama thyrox y sí lo es
+    (real / "src" / "paths").mkdir(parents=True)
+    (real / "src" / "paths" / "reach.py").write_text("", encoding="utf-8")
+    hondo = real / "src" / "gates" / "sub"
+    hondo.mkdir(parents=True)
+
+    clean_env()
+    os.environ["THYROX_ROOT"] = str(falso)
+    check("THYROX_ROOT declarada gana", falso, reach.thyrox_root(start=hondo))
+
+    # Control: retirada la variable, el veredicto DEBE cambiar al ascenso.
+    del os.environ["THYROX_ROOT"]
+    check("control — sin la variable, asciende hasta el marcador",
+          real, reach.thyrox_root(start=hondo))
+    check("y acierta desde cualquier profundidad",
+          real, reach.thyrox_root(start=real / "src"))
+
+    # El marcador es el ARCHIVO, no el nombre del directorio: por eso el
+    # localizador sobrevive a una copia o a un renombre del clon.
+    vacio = base / "sin-arbol"
+    vacio.mkdir()
+    os.environ["THYROX_REACH_ROOT"] = str(vacio)
+    check_raises("un directorio llamado thyrox sin el marcador no cuenta",
+                 reach.ReachRootError,
+                 lambda: reach.thyrox_root(start=falso / "src"))
+clean_env()
+
+print("\n10. desde un consumidor, lo resuelve el MECANISMO multi-repo (#146)")
+# El ascenso no puede alcanzar thyrox desde un kaupamex-*: es su HERMANO, no
+# su ancestro. Medido desde /home/user/kaupamex-api, el ascenso rehúsa. Pero
+# `tree_root()` ya sabe dónde está el padre de los clones, y ahí thyrox es un
+# hijo más — así que exigir THYROX_ROOT declarada era pedir un parámetro que
+# el mecanismo podía derivar. La variable queda como override, no como
+# requisito.
+with tempfile.TemporaryDirectory() as tmp:
+    base = pathlib.Path(tmp)
+    start = build_tree(base)                      # los clones kaupamex-*
+    proveedor = base / "thyrox"           # build_tree ya creó su src/paths
+    marcador = proveedor / "src" / "paths" / "reach.py"
+    marcador.write_text("", encoding="utf-8")
+
+    # El start es el CONSUMIDOR, no un archivo de thyrox: ahí el ascenso no
+    # llega, y por eso este bloque discrimina. Con start dentro de thyrox el
+    # caso pasaría sin implementar nada — el sub-patrón D en el propio control.
+    consumidor = base / "kaupamex-api"
+    clean_env()
+    os.environ["THYROX_REACH_ROOT"] = str(base)
+    check("sin THYROX_ROOT, lo halla como hermano de los clones",
+          proveedor, reach.thyrox_root(start=consumidor))
+
+    # Control: el hermano se valida por el MARCADOR, no por su nombre. Sin el
+    # archivo dentro, el veredicto DEBE cambiar a rehusar.
+    marcador.unlink()
+    check_raises("control — un hermano llamado thyrox sin marcador no basta",
+                 reach.ReachRootError,
+                 lambda: reach.thyrox_root(start=consumidor))
+clean_env()
 
 print(f"\nresultado: {PASS} de {PASS + FAIL} aserciones en verde")
 sys.exit(1 if FAIL else 0)

@@ -264,6 +264,70 @@ def tree_root(start: Path | None = None) -> Path:
     )
 
 
+#: La variable que declara la raíz de THYROX mismo — la que ``install.sh``
+#: escribe en el ``.env`` de cada consumidor. Es hermana de ``TREE_ROOT_VARS``
+#: y NO se mezcla con ellas: aquéllas nombran el padre de los clones
+#: ``kaupamex-*``; ésta nombra el proveedor.
+THYROX_ROOT_VAR = "THYROX_ROOT"
+
+#: El marcador por el que se reconoce la raíz de thyrox al ascender. Es un
+#: ARCHIVO y no el nombre del directorio a propósito: un clon renombrado o
+#: copiado sigue siendo thyrox, y un directorio que se llame ``thyrox`` sin su
+#: mecanismo dentro no lo es. Lo mismo que ``clone_names()`` hace para el
+#: árbol, pero con la evidencia dentro en vez del rótulo fuera.
+THYROX_MARKER = Path("src") / "paths" / "reach.py"
+
+
+def thyrox_root(start: Path | None = None) -> Path:
+    """La raíz de THYROX mismo, por variable declarada o por ascenso.
+
+    Cierra el hueco que la aritmética de ruta dejaba abierto: hasta hoy,
+    localizar thyrox desde uno de sus propios archivos se hacía con
+    ``Path(__file__).resolve().parents[N]`` —34 veces en ``tests/`` y 51 en
+    ``src/``—, y esa forma falla **en silencio** al mover el archivo un nivel.
+    Medido en H-DOCS-1103: un guion resolvía ``parents[3]/'tools'`` y apuntaba
+    a ``/home/user/tools/``, un directorio que nunca existió.
+
+    La precedencia es la que ``install.sh`` ya escribe, y en el mismo orden:
+    la variable del proceso, la declaración del ``.env``, y sólo entonces el
+    ascenso. ``start`` es un parámetro y no ``__file__`` por la misma razón que
+    en ``tree_root``: un mecanismo comprobable a cualquier profundidad, no uno
+    que sólo acierta desde donde su autor lo escribió.
+    """
+    declared = env_value(THYROX_ROOT_VAR, start)
+    if declared:
+        return Path(declared)
+    here = (start or Path(__file__).resolve().parent).resolve()
+    for level in (here, *here.parents):
+        if (level / THYROX_MARKER).is_file():
+            return level
+
+    # Tercer paso: preguntarle al mecanismo multi-repo. Desde un consumidor el
+    # ascenso NUNCA llega —thyrox es su HERMANO, no su ancestro; medido desde
+    # /home/user/kaupamex-api, rehúsa— pero ``tree_root`` ya sabe dónde está el
+    # padre de los clones, y ahí thyrox es un hijo más. Exigir la variable
+    # declarada era pedir un parámetro que el mecanismo podía derivar.
+    #
+    # El hermano se valida por el MARCADOR, no por su nombre: un directorio
+    # llamado ``thyrox`` sin el mecanismo dentro no lo es, y uno renombrado
+    # sigue siéndolo. Es el mismo criterio que el paso anterior.
+    try:
+        tree = tree_root(start)
+    except ReachRootError:
+        tree = None
+    if tree is not None:
+        for sibling in sorted(tree.iterdir()) if tree.is_dir() else ():
+            if sibling.is_dir() and (sibling / THYROX_MARKER).is_file():
+                return sibling
+
+    raise ReachRootError(
+        f"no se pudo derivar la raíz de thyrox desde {here}: ni la variable "
+        f"{THYROX_ROOT_VAR}, ni el ascenso por {THYROX_MARKER}, ni un hermano "
+        f"de los clones con ese marcador. Declara {THYROX_ROOT_VAR} o clona "
+        f"thyrox junto a los repos del árbol."
+    )
+
+
 def root(repo: str, start: Path | None = None) -> Path:
     """La ruta absoluta de una raíz declarada, por la cadena de precedencia.
 
