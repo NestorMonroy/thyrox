@@ -29,11 +29,12 @@ conducta; el default sería el fallo.
 """
 from __future__ import annotations
 
-import json
 import sys
 import os
 import subprocess
 from pathlib import Path
+
+from hooks.stop_payload import is_reentry
 
 #: Grafías admitidas del directorio vigilado, en orden: la propia primero, la
 #: heredada después. Misma forma que ``TREE_ROOT_VARS`` en ``paths.reach``.
@@ -53,21 +54,6 @@ def _from_env(names: tuple[str, ...]) -> str | None:
         if value:
             return value
     return None
-
-
-def is_reentry(payload: str) -> bool:
-    """¿El cliente ya está reentrando en el hook Stop?
-
-    Se lee del JSON, no por subcadena: ``"stop_hook_active": true`` puede venir
-    con cualquier espaciado, y un ``grep`` acertaría también dentro de una
-    cadena ajena. El bash original usaba el patrón laxo por no tener parser a
-    mano; aquí sí lo hay.
-    """
-    try:
-        data = json.loads(payload or "{}")
-    except (ValueError, TypeError):
-        return False
-    return bool(isinstance(data, dict) and data.get("stop_hook_active"))
 
 
 def touched(repo_root: Path, watched_dir: Path) -> bool:
