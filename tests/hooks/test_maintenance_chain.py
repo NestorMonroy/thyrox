@@ -28,8 +28,11 @@ from __future__ import annotations
 
 import io
 import json
+import pathlib
 import subprocess
 import sys
+import tempfile
+import time
 from contextlib import redirect_stderr
 from pathlib import Path
 
@@ -214,6 +217,30 @@ contexto = json.loads(mc.render_session_start(results))[
 check("sin etiqueta repetida", False, "reconciliar-store: reconciliar-store" in contexto)
 check("pero el resumen entero sigue ahí", True, "reconciliar-store: 0 altas" in contexto)
 check("y el que no se nombra sí la lleva", True, "otro: algo" in contexto)
+
+print("== 14. DISCRIMINA: un paso agotado NO deja el trabajo corriendo ==")
+# El bash mataba con `timeout(1)`, que senala al comando. `subprocess.run` con
+# `timeout=` manda SIGKILL SOLO al proceso lanzado — y si ese proceso es un
+# shell que forkeo, el hijo sobrevive: la cadena reporta «agotado» mientras el
+# trabajo sigue tocando la base.
+#
+# Se mide el FENOMENO, no el nombre del proceso. Un `pgrep -f <marca>` no sirve
+# por dos razones medidas: el `#` de un comentario no llega al argv del hijo, y
+# la marca hace juego con el argv de quien invoca la suite — el primer intento
+# reporto huerfano una linea de comando propia. El testigo es un archivo que el
+# trabajo crea si sigue vivo: si el grupo murio, no aparece.
+with tempfile.TemporaryDirectory() as carpeta:
+    testigo = pathlib.Path(carpeta) / "el-trabajo-siguio"
+    paso = mc.Step(
+        label="colgado",
+        command=["sh", "-c", f"(sleep 2; touch '{testigo}') & wait"],
+        timeout=1,
+    )
+    with redirect_stderr(io.StringIO()):
+        resultados = mc.Chain(steps=[paso], budget=30).run()
+    check("se reporta agotado", True, resultados[0].timed_out)
+    time.sleep(3)
+    check("y el trabajo NO siguio corriendo", False, testigo.exists())
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

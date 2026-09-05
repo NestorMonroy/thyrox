@@ -35,6 +35,21 @@ silencio no discrimina — sub-patrón D de ``metrica-decide-la-conclusion.md``.
 No bloquear el turno no obliga a callar lo que pasó; son dos ejes distintos, y
 el bash los había colapsado en uno.
 
+Por qué el paso agotado se mata por GRUPO
+-----------------------------------------
+
+El bash usaba ``timeout(1)``, que señala **al comando**. La traducción directa
+—``subprocess.run(..., timeout=)``— señala sólo al proceso que se lanzó, y con
+SIGKILL: si ese proceso es un shell que forkeó, el hijo sobrevive. La cadena
+reportaría «paso agotado» mientras el trabajo sigue tocando la base — un informe
+falso, y de los caros.
+
+Por eso el paso arranca en su propia sesión (``start_new_session=True``) y su
+grupo entero recibe SIGTERM, una gracia, y SIGKILL si hace falta. La escalera
+TERM→KILL **es una divergencia declarada** frente a ``subprocess``: recupera la
+señal que ``timeout(1)`` manda por defecto, y con ella el cierre ordenado del
+paso —cerrar una transacción, soltar un lock— que un SIGKILL directo le niega.
+
 Por qué la cadena vacía rehúsa
 -------------------------------
 
@@ -46,6 +61,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shlex
+import signal
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -59,6 +77,9 @@ NOT_FOUND_EXIT = 127
 
 #: Lo que se publica por un paso que terminó sin escribir una sola línea.
 NO_OUTPUT = "sin salida"
+
+#: Segundos que se le conceden al grupo para atender el SIGTERM antes del SIGKILL.
+GRACE_SECONDS = 2
 
 
 class EmptyChainError(RuntimeError):
@@ -132,18 +153,21 @@ class Chain:
 
     def _run_step(self, step: Step) -> Result:
         try:
-            proc = subprocess.run(
+            proc = subprocess.Popen(
                 step.command,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
-                timeout=step.timeout,
+                start_new_session=True,
             )
-        except subprocess.TimeoutExpired:
-            return Result(step.label, TIMEOUT_EXIT, "", timed_out=True)
         except OSError:
             return Result(step.label, NOT_FOUND_EXIT, "", timed_out=False)
-        return Result(step.label, proc.returncode, _tail(proc.stdout),
-                      timed_out=False)
+        try:
+            stdout, _ = proc.communicate(timeout=step.timeout)
+        except subprocess.TimeoutExpired:
+            _kill_group(proc)
+            return Result(step.label, TIMEOUT_EXIT, "", timed_out=True)
+        return Result(step.label, proc.returncode, _tail(stdout), timed_out=False)
 
     def _report(self, result: Result, step: Step) -> None:
         if result.timed_out:
@@ -156,6 +180,33 @@ class Chain:
                 f"maintenance_chain: el paso '{result.label}' salió en "
                 f"{result.exit_code}"
             )
+
+
+def _kill_group(proc: subprocess.Popen) -> None:
+    """Termina el grupo entero del paso agotado: SIGTERM, gracia, SIGKILL.
+
+    Se señala al **grupo** y no al proceso porque el paso puede ser un shell que
+    forkea: matar sólo al que se lanzó deja al hijo corriendo, y entonces la
+    cadena reporta «agotado» mientras el trabajo sigue tocando la base. Por eso
+    el paso arranca con ``start_new_session=True`` — sin grupo propio, un
+    ``killpg`` alcanzaría también a quien invoca.
+
+    El SIGTERM antes del SIGKILL es fidelidad al mecanismo que se adapta:
+    ``timeout(1)`` manda SIGTERM y sólo escala con ``-k``. ``subprocess.run``
+    con ``timeout=`` manda SIGKILL directo, que le niega al paso su cierre
+    ordenado — cerrar una transacción, soltar un lock.
+    """
+    for number, wait in ((signal.SIGTERM, GRACE_SECONDS),
+                         (signal.SIGKILL, GRACE_SECONDS)):
+        try:
+            os.killpg(os.getpgid(proc.pid), number)
+        except (ProcessLookupError, PermissionError):
+            return
+        try:
+            proc.communicate(timeout=wait)
+            return
+        except subprocess.TimeoutExpired:
+            continue
 
 
 def _tail(text: str) -> str:
@@ -215,7 +266,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     steps = [
-        Step(label=label, command=["sh", "-c", command], timeout=int(timeout))
+        Step(label=label, command=shlex.split(command), timeout=int(timeout))
         for label, timeout, command in args.step
     ]
     try:
