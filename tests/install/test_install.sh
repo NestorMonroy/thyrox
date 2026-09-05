@@ -171,5 +171,36 @@ printf '\n== install.sh — el parametro del consumidor no viaja al mecanismo ==
 check "install.sh no nombra al consumidor" "0" \
       "$(grep -ci 'kaupamex' "$INSTALL" || true)"
 
+printf '\n== install.sh — la raiz NO es "donde vive el guion" ==\n'
+# `SCRIPT_DIR` es aritmetica de ruta con offset cero: da la respuesta correcta
+# solo mientras el guion viva EN la raiz. Es la misma clase que `parents[N]`
+# (H-DOCS-1103), y falla igual de silenciosa el dia que alguien mueva el guion
+# o lo invoque por un enlace.
+#
+# Que haria fallar a este control: que el ascenso encuentre "algo" siempre. Por
+# eso el segundo caso parte de FUERA de todo arbol y exige que REHUSE — un
+# localizador que nunca falla no esta localizando, esta adivinando.
+
+TREE_HONDO="$(fake_tree hondo)"
+CONSUMER_HONDO="$(fake_consumer hondo)"
+mkdir -p "$TREE_HONDO/bin"
+cp "$INSTALL" "$TREE_HONDO/bin/install.sh"
+
+SALIDA_HONDO="$(env -u THYROX_ROOT bash "$TREE_HONDO/bin/install.sh" \
+    "$CONSUMER_HONDO" 2>&1)"
+check "desde un nivel mas hondo, resuelve la raiz igual" 0 "$?"
+check_contains "y el .env del consumidor apunta al arbol" \
+    "THYROX_ROOT=$TREE_HONDO" "$(cat "$CONSUMER_HONDO/.env" 2>/dev/null)"
+
+# Control: fuera de todo arbol NO hay raiz que hallar, y se dice.
+SUELTO="$WORK/suelto"
+mkdir -p "$SUELTO"
+cp "$INSTALL" "$SUELTO/install.sh"
+CONSUMER_SUELTO="$(fake_consumer suelto)"
+SALIDA_SUELTA="$(env -u THYROX_ROOT bash "$SUELTO/install.sh" \
+    "$CONSUMER_SUELTO" 2>&1)"
+check "control — fuera de todo arbol rehusa" 1 "$?"
+check_contains "y nombra la pieza que falta" "src/paths/reach.py" "$SALIDA_SUELTA"
+
 printf '\n%d aserciones: %d ok, %d fallidas\n' "$((PASS + FAIL))" "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]

@@ -96,11 +96,17 @@ fatal() {
 ROOT_SOURCES=(
     "variable THYROX_ROOT del proceso"
     "declaracion THYROX_ROOT del archivo de entorno"
-    "directorio de este guion"
+    "ascenso por marcador desde el directorio de este guion"
 )
 
 ENV_FILE_NAME=".env"
 ROOT_KEY="THYROX_ROOT"
+
+# El marcador se declara UNA vez: es a la vez lo que el ascenso busca y lo que
+# el paso 4 exige. Escribirlo dos veces daria dos definiciones de "esto es
+# thyrox" que nadie sincroniza — el mismo defecto que este guion ya evita con
+# el analizador del archivo de entorno.
+MARKER_REL="src/paths/reach.py"
 
 # El destino de la declaración tiene su PROPIA lista ordenada, y es la segunda
 # entrada de entorno. La forma la fija la referencia: un producto configurable
@@ -188,6 +194,27 @@ esac
 # analiza con la biblioteca estandar y honra `THYROX_ENV_FILE`. Escribir aqui
 # un segundo analizador en bash daria dos lectores del mismo archivo que nadie
 # sincroniza: discreparian en silencio, que es el modo de fallo caro.
+# `SCRIPT_DIR` NO es la raiz: es donde vive el guion, que coincide con la raiz
+# solo mientras nadie lo mueva. Es aritmetica de ruta con offset cero — la
+# misma clase que `parents[N]` (H-DOCS-1103), y falla igual de silenciosa.
+#
+# El ascenso por marcador es el bootstrap, y es lo UNICO que no se puede
+# delegar: hay que hallar el lector antes de poder llamarlo. Todo lo demas
+# —el orden de precedencia, el archivo de entorno— sigue delegado.
+ascend_to_marker() {
+    local dir="$1"
+    while :; do
+        if [ -f "$dir/$MARKER_REL" ]; then
+            printf '%s' "$dir"
+            return 0
+        fi
+        case "$dir" in
+            /|"") return 1 ;;
+        esac
+        dir="$(cd "$dir/.." 2>/dev/null && pwd)" || return 1
+    done
+}
+
 load_root_from_env_file() {
     local reader="$1/src/paths/reach.py"
     [ -f "$reader" ] || return 0
@@ -207,12 +234,18 @@ if [ -n "${THYROX_ROOT:-}" ]; then
     ROOT="$THYROX_ROOT"
     ROOT_ORIGIN="${ROOT_SOURCES[0]}"
 else
-    FROM_FILE="$(load_root_from_env_file "$SCRIPT_DIR")"
+    # El ascenso primero: sin el, un guion movido no encuentra ni el lector,
+    # asi que la fuente 2 (el archivo de entorno) tampoco seria alcanzable.
+    ASCENDED="$(ascend_to_marker "$SCRIPT_DIR" || true)"
+    FROM_FILE="$(load_root_from_env_file "${ASCENDED:-$SCRIPT_DIR}")"
     if [ -n "$FROM_FILE" ]; then
         ROOT="$FROM_FILE"
         ROOT_ORIGIN="${ROOT_SOURCES[1]}"
     else
-        ROOT="$SCRIPT_DIR"
+        # Sin marcador arriba, ROOT queda en SCRIPT_DIR a proposito: el paso 4
+        # falla nombrando la pieza que falta, que es mas informativo que un
+        # "no pude resolver" sin sujeto.
+        ROOT="${ASCENDED:-$SCRIPT_DIR}"
         ROOT_ORIGIN="${ROOT_SOURCES[2]}"
     fi
 fi
@@ -234,9 +267,9 @@ ROOT="$(cd "$ROOT" 2>/dev/null && pwd)" \
 # informativa. Éste sí — falla exactamente cuando la raíz apunta a otra cosa.
 # --------------------------------------------------------------------------
 
-REACH="$ROOT/src/paths/reach.py"
+REACH="$ROOT/$MARKER_REL"
 [ -f "$REACH" ] || fatal \
-    "la raíz $ROOT no contiene src/paths/reach.py — no parece ser thyrox ($ROOT_ORIGIN)" \
+    "la raíz $ROOT no contiene $MARKER_REL — no parece ser thyrox ($ROOT_ORIGIN)" \
     "declara THYROX_ROOT apuntando a la raíz del árbol de thyrox"
 
 # --------------------------------------------------------------------------
