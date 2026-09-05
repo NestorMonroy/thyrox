@@ -164,8 +164,60 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 HERE = pathlib.Path(__file__).resolve().parent
-BASELINE = HERE / 'vocabulario_prosa_baseline.txt'
+BASELINE_NAME = 'vocabulario_prosa_baseline.txt'
+BASELINE_VAR = 'VOCAB_GATE_BASELINE'
 FORBIDDEN = HERE / 'vocabulario_prohibido.txt'
+
+
+def resolve_baseline(measured=()):
+    """Localiza el baseline: variable, hogar propio, o el consumidor medido.
+
+    El baseline es **parametro del consumidor**, no mecanismo de thyrox:
+    congela la deuda de un arbol concreto, y un segundo consumidor tendria la
+    suya. Por eso el gate lo BUSCA en vez de codificar una ruta.
+
+    Origen (h-docs-1107): con la ruta fija `HERE / <nombre>` la mudanza a
+    thyrox dejo 638 entradas congeladas invisibles, y el pre-commit --strict
+    empezo a bloquear deuda historica como si fuera nueva.
+
+    Donde vive el baseline de forma definitiva es la tarea #162; esta funcion
+    no la adelanta — admite las tres ubicaciones sin mover el archivo.
+    """
+    declarado = os.environ.get(BASELINE_VAR, '').strip()
+    if declarado:
+        return pathlib.Path(declarado)
+
+    propio = HERE / BASELINE_NAME
+    if propio.is_file():
+        return propio
+
+    # El consumidor: se asciende desde cada archivo medido, y si no hay
+    # ninguno, desde el directorio de invocacion.
+    origenes = [pathlib.Path(f).resolve() for f in measured] or [pathlib.Path.cwd()]
+    for origen in origenes:
+        for base in [origen] + list(origen.parents):
+            candidato = base / '.claude' / 'baselines' / BASELINE_NAME
+            if candidato.is_file():
+                return candidato
+    return propio
+
+
+def refuse_without_baseline(ruta):
+    """Rehusa en vez de operar con un conjunto vacio.
+
+    Un cero de baseline NO distingue «no hay deuda congelada» de «no encontre
+    el congelamiento» — el sub-patron D de metrica-decide-la-conclusion.md.
+    Mismo criterio que el guard del lexico de este mismo archivo.
+    """
+    print(
+        f'ERROR — no se encontro el baseline ({BASELINE_NAME}).\n'
+        f'  Buscado: ${BASELINE_VAR} · {HERE} · <consumidor>/.claude/baselines/\n'
+        f'  Ultimo candidato: {ruta}\n'
+        '  NO se emite un conteo: sin baseline, toda la deuda heredada se\n'
+        '  publicaria como nueva. Ver h-docs-1107.',
+        file=sys.stderr,
+    )
+    raise SystemExit(2)
 
 # Sufijos que convierten una raíz en sustantivo abstracto. Una palabra que los
 # lleva ESTÁ afirmando ser un sustantivo español, así que su ausencia del
@@ -316,12 +368,12 @@ def attested(word, lexicon):
     return word.endswith('s') and word[:-1] in lexicon
 
 
-def load_baseline():
-    if not BASELINE.is_file():
-        return set()
+def load_baseline(ruta):
+    if not ruta.is_file():
+        refuse_without_baseline(ruta)
     return {
         line.strip()
-        for line in BASELINE.read_text(encoding='utf-8').splitlines()
+        for line in ruta.read_text(encoding='utf-8').splitlines()
         if line.strip() and not line.startswith('#')
     }
 
@@ -545,8 +597,22 @@ def main(argv=None):
     files = corpus_files(args.files)
     found = scan(files, lexicon, forbidden)
 
+    baseline_path = resolve_baseline(files)
+
     if args.write_baseline:
-        BASELINE.write_text(
+        if not baseline_path.is_file() and baseline_path == HERE / BASELINE_NAME:
+            print(
+                f'ERROR — no hay baseline que regenerar y el destino caeria en\n'
+                f'  {baseline_path}, el hogar del PROVEEDOR. Crearlo ahi lo haria\n'
+                f'  ganar sobre el del consumidor en la proxima lectura, que es\n'
+                f'  como 638 entradas se volvieron invisibles (h-docs-1107).\n'
+                f'  Declara el destino con ${BASELINE_VAR}. Donde vive de forma\n'
+                '  definitiva es la tarea #162.',
+                file=sys.stderr,
+            )
+            raise SystemExit(2)
+        baseline_path.parent.mkdir(parents=True, exist_ok=True)
+        baseline_path.write_text(
             '# Vocabulario congelado — prospectivo, se paga al tocar.\n'
             '# Regenerar: python3 .claude/scripts/gates/check_vocabulario_prosa.py --write-baseline\n'
             '#\n'
@@ -568,10 +634,10 @@ def main(argv=None):
             + '\n'.join(sorted(found)) + '\n',
             encoding='utf-8',
         )
-        print(f'baseline escrito: {len(found)} palabra(s) en {BASELINE}')
+        print(f'baseline escrito: {len(found)} palabra(s) en {baseline_path}')
         return 0
 
-    baseline = set() if args.no_baseline else load_baseline()
+    baseline = set() if args.no_baseline else load_baseline(baseline_path)
     fresh = {w: v for w, v in found.items() if w not in baseline}
 
     if args.quiet:
