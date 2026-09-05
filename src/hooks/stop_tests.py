@@ -30,6 +30,7 @@ conducta; el default sería el fallo.
 from __future__ import annotations
 
 import json
+import sys
 import os
 import subprocess
 from pathlib import Path
@@ -99,6 +100,23 @@ def resolve_watched_dir(watched_dir: Path | str | None) -> Path:
     )
 
 
+def resolve_repo_root(repo_root: Path | str | None, watched_dir: Path) -> Path:
+    """La raíz del repo, declarada o preguntada a git.
+
+    NO se supone que sea el padre del directorio vigilado: `.claude/scripts`
+    tiene por padre `.claude`, y un `git ... -- scripts` desde ahí mediría una
+    ruta que no existe. Preguntarle a git es barato y no puede equivocarse de
+    nivel; el fallback sólo actúa si el directorio no está en un repo.
+    """
+    if repo_root:
+        return Path(repo_root)
+    done = subprocess.run(["git", "-C", str(watched_dir), "rev-parse", "--show-toplevel"],
+                          capture_output=True, text=True)
+    if done.returncode == 0 and done.stdout.strip():
+        return Path(done.stdout.strip())
+    return watched_dir.parent
+
+
 def resolve_runner(runner: Path | str | None, watched_dir: Path) -> Path:
     if runner:
         return Path(runner)
@@ -120,7 +138,7 @@ def run(payload: str = "{}", repo_root: Path | str | None = None,
         return 0, ""
 
     watched = resolve_watched_dir(watched_dir)
-    root = Path(repo_root) if repo_root else watched.parent
+    root = resolve_repo_root(repo_root, watched)
 
     if not touched(root, watched):
         return 0, ""
@@ -142,7 +160,6 @@ def run(payload: str = "{}", repo_root: Path | str | None = None,
 
 def main(argv: list[str] | None = None) -> int:
     """Punto de entrada del hook: lee el payload por stdin, imprime, sale 0."""
-    import sys
     payload = ""
     try:
         payload = sys.stdin.read()
@@ -156,3 +173,7 @@ def main(argv: list[str] | None = None) -> int:
     if output:
         sys.stdout.write(output)
     return code
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))
