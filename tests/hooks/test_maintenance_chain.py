@@ -198,5 +198,22 @@ check("el paso mudo aparece", True, "mudo" in contexto)
 check("declarado como sin salida", True, "sin salida" in contexto)
 check("y el otro trae la suya", True, "dijo algo" in contexto)
 
+print("== 13. si el paso ya se nombra a sí mismo, la etiqueta no se repite ==")
+# Los guiones `--quiet` de kaupamex abren su resumen con su propio nombre
+# («reconciliar-store: 0 registrados…»). Anteponerle la etiqueta produce
+# «reconciliar-store: reconciliar-store: …», que es ruido, no información.
+results = mc.Chain(
+    steps=[
+        step("reconciliar-store", "printf 'reconciliar-store: 0 altas\\n'", 5),
+        step("otro", "printf 'algo\\n'", 5),
+    ],
+    budget=30,
+).run()
+contexto = json.loads(mc.render_session_start(results))[
+    "hookSpecificOutput"]["additionalContext"]
+check("sin etiqueta repetida", False, "reconciliar-store: reconciliar-store" in contexto)
+check("pero el resumen entero sigue ahí", True, "reconciliar-store: 0 altas" in contexto)
+check("y el que no se nombra sí la lleva", True, "otro: algo" in contexto)
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

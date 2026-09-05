@@ -164,12 +164,25 @@ def _tail(text: str) -> str:
     return lines[-1] if lines else ""
 
 
+def _line(result: Result) -> str:
+    """La línea de un paso, sin repetir su nombre si el propio paso ya lo abre.
+
+    Los guiones `--quiet` que esta cadena suele correr abren su resumen con su
+    propio nombre; anteponerle la etiqueta produce «store: store: …», que es
+    ruido y no información.
+    """
+    tail = result.tail or NO_OUTPUT
+    if tail.startswith(f"{result.label}:"):
+        return tail
+    return f"{result.label}: {tail}"
+
+
 def render_session_start(results: list[Result], preamble: str = "") -> str:
     """Publica las colas como ``additionalContext`` del evento SessionStart."""
     partes = [preamble] if preamble else []
     # Un paso mudo se declara, no se omite: si desapareciera de la lista, «no
     # dijo nada» y «no corrió» se leerían igual.
-    partes.extend(f"{r.label}: {r.tail or NO_OUTPUT}" for r in results)
+    partes.extend(_line(r) for r in results)
     return json.dumps(
         {
             "hookSpecificOutput": {
