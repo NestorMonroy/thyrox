@@ -115,6 +115,16 @@
           }
         ]
       }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/scripts/save-agent-report.py"
+          }
+        ]
+      }
     ]
   }
 }
