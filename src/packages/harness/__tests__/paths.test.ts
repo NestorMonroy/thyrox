@@ -86,6 +86,30 @@ describe('las rutas de la iniciativa se componen desde su raiz', () => {
       expect(submoduleBin('ui', 'lecciones-aprendidas')).toBe('/tmp/d/source/gestion/pm/ui/lecciones-aprendidas')
     })
   })
+
+  test('thyrox es la sexta raiz — ADR-THYROX-001, decision del ejecutor 2026-09-05', () => {
+    // `thyrox` NO es una capa del producto: es su proveedor de metodologia. Se
+    // aloja en el mismo arbol de PM porque el aparato del repo descubre las
+    // raices en vez de enumerarlas (`check-artefactos-minimos.sh:42` globea
+    // `pm/*/iniciativas/*/`). Este modulo era el unico consumidor que SI las
+    // enumeraba, y por eso el porte no era gratis. Ver h-docs-1097.
+    conRaiz('/tmp/d', () => {
+      expect(submoduleBin('thyrox', 'audits')).toBe('/tmp/d/source/gestion/pm/thyrox/audits')
+      expect(initiativeIndex('thyrox', 'construir-harness-propio'))
+        .toBe('/tmp/d/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/index.rst')
+      expect(findingPath('thyrox', 'construir-harness-propio', 'H-THYROX-001', 'algo'))
+        .toBe('/tmp/d/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-001-algo.rst')
+    })
+  })
+
+  test('CONTROL — el prefijo de thyrox discrimina: H-DOCS no se puede construir bajo thyrox', () => {
+    // Sin esta mitad el caso de arriba pasaria con FINDING_PREFIX ausente para
+    // `thyrox` si `findingPath` no validara — el verde no distinguiria
+    // «el prefijo es correcto» de «nadie lo comprueba».
+    conRaiz('/tmp/d', () => {
+      expect(() => findingPath('thyrox', 'x', 'H-DOCS-1', 'y')).toThrow()
+    })
+  })
 })
 
 describe('findingPath — la coherencia del submodulo, por construccion', () => {

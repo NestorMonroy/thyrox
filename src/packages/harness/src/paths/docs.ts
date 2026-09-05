@@ -31,8 +31,17 @@
 import { existsSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 
-/** Los cinco submodulos del monorepo. */
-export type Submodule = 'api' | 'db' | 'docs' | 'server' | 'ui'
+/**
+ * Las raices de trabajo que el arbol de docs documenta.
+ *
+ * Cinco son capas del **producto** kaupamex; `thyrox` es su **proveedor** de
+ * metodologia, alojado aqui por ADR-THYROX-001 (decision del ejecutor
+ * 2026-09-05). El nombre del tipo conserva `Submodule` porque es el vocabulario
+ * del arbol —la clave `submodulos:` de `.claude/CLAUDE.md`— y renombrarlo tiene
+ * su propio radio: tarea #169. Ninguna de las seis es un submodulo de git desde
+ * que el superproyecto quedo ausente por decision (2026-08-07).
+ */
+export type Submodule = 'api' | 'db' | 'docs' | 'server' | 'ui' | 'thyrox'
 
 /**
  * Los cuatro cajones que existen en los cinco submodulos, medido.
@@ -64,9 +73,18 @@ const PM = join('source', 'gestion', 'pm')
 /** kebab-case estable, sin prefijo numerico de secuencia (`convention-naming.md`). */
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
-/** Prefijo del ID de hallazgo por submodulo — los cinco medidos en el arbol. */
+/**
+ * Prefijo del ID de hallazgo por raiz — los cinco del producto medidos en el
+ * arbol, mas `H-THYROX` que ADR-THYROX-001 declara para la sexta.
+ *
+ * `check_hallazgo_submodulo.py:37` NO necesita esta tabla: deriva el prefijo
+ * del nombre del archivo con `hallazgo-H-(?P<prefijo>[A-Z]+)-`. Aqui existe
+ * para que `findingPath` pueda **rechazar** un ID cuyo prefijo no corresponda
+ * a la raiz — la coherencia por construccion, antes de que el gate la mida.
+ */
 const FINDING_PREFIX: Record<Submodule, string> = {
   api: 'H-API', db: 'H-DB', docs: 'H-DOCS', server: 'H-SERVER', ui: 'H-UI',
+  thyrox: 'H-THYROX',
 }
 
 let memoizedRoot: string | null = null
@@ -190,8 +208,11 @@ export function isUnderDocs(p: string): boolean {
 }
 
 /**
- * Las 15 capas de primer nivel bajo `source/` — el hogar de un artefacto que
+ * Las capas de primer nivel bajo `source/` — el hogar de un artefacto que
  * NO vive en una iniciativa (un ADR de backend, un caso de uso, una norma).
+ *
+ * El conteo **no se transcribe a esta prosa**: es propiedad de un arreglo que
+ * crece (`calibration-verified-numbers.md`). `DOCS_LAYERS.length` lo publica.
  *
  * **Es el disco entero, no una seleccion curada, y a proposito.** Curar exige
  * un criterio (p. ej. «solo las capas citadas por algun coordinador»), y ese
@@ -201,8 +222,11 @@ export function isUnderDocs(p: string): boolean {
  * disco` lo hace cumplir en los dos sentidos, filtrando las entradas `_`
  * (`_static`, `__pycache__` — artefactos de Sphinx/Python, no capas).
  *
- * `docs` coincide con el nombre de un `Submodule`, pero `Submodule` NO es
- * miembro de `Home` — no hay ambiguedad de tipo. Y `gestion` entra: es una
+ * `docs` y `thyrox` coinciden con nombres de `Submodule`, pero `Submodule` NO
+ * es miembro de `Home` — no hay ambiguedad de tipo. En los dos casos la
+ * coincidencia es real y no accidental: `source/docs/` documenta el stack de
+ * documentacion y `source/thyrox/` la implementacion de THYROX, mientras
+ * `pm/docs/` y `pm/thyrox/` llevan su gestion. Y `gestion` entra: es una
  * capa real (`plantilla-adr.rst`, `decisiones/` viven ahi), aunque su subarbol
  * `pm/` lo gobiernen los builders de iniciativa.
  *
@@ -217,14 +241,14 @@ export function isUnderDocs(p: string): boolean {
 export const DOCS_LAYERS = [
   'arquitectura-tecnica', 'backend', 'base-cognitiva', 'databases', 'devops',
   'docs', 'frontend', 'gestion', 'negocio', 'normativa', 'onboarding',
-  'operaciones', 'quality', 'requisitos', 'risks-technical-debt',
+  'operaciones', 'quality', 'requisitos', 'risks-technical-debt', 'thyrox',
 ] as const
 export type DocsLayer = typeof DOCS_LAYERS[number]
 
 /**
  * El vocabulario de hogares que un skill puede declarar. Cuatro clases:
  * los cuatro artefactos unicos de iniciativa, `analisis` (varios por
- * iniciativa), los cuatro cajones del submodulo, y las 15 capas de `source/`.
+ * iniciativa), los cuatro cajones de la raiz, y las capas de `source/`.
  */
 export type Home = UniqueArtifact | 'analisis' | Bin | DocsLayer
 
