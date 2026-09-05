@@ -59,6 +59,24 @@ def engine(carpeta: str, nombre: str, salida: str, codigo: int) -> Path:
     return ruta
 
 
+def two_stream_engine(folder: str, name: str, out: str, err: str,
+                      code: int) -> Path:
+    """Un motor que escribe por los dos flujos, con código declarado.
+
+    Existe porque el helper de arriba sólo habla por ``stdout``, y con eso no
+    se puede distinguir un veredicto que lee un flujo de uno que los funde.
+    """
+    ruta = Path(folder) / name
+    ruta.write_text(
+        "#!/bin/sh\n"
+        f"printf '%s' {json.dumps(out)}\n"
+        f"printf '%s' {json.dumps(err)} >&2\n"
+        f"exit {code}\n"
+    )
+    ruta.chmod(ruta.stat().st_mode | stat.S_IEXEC)
+    return ruta
+
+
 print("== 1. modo por CÓDIGO: el declarado bloquea, el limpio no ==")
 with tempfile.TemporaryDirectory() as c:
     bloquea = sg.Gate(engine=[str(engine(c, "rojo.sh", "880 varados", 1))],
@@ -102,6 +120,41 @@ with tempfile.TemporaryDirectory() as c:
     cero_sin = sg.Gate(engine=[str(engine(c, "cero2.sh", "ruido", 0))],
                        block_on_output=True, reason="x {output}")
     check("y sigue limpio SIN declarar el 0", {}, cero_sin.run("{}"))
+
+print("== 3-bis. DISCRIMINA: en modo por SALIDA decide stdout, NO stderr ==")
+# Las dos fuentes divergían y el porte las fundió: `evidencia-varada` invocaba
+# su motor con `2>&1` (stderr dentro del motivo) y `espera-pendiente` con
+# `2>/dev/null` (stderr descartado, sólo stdout decidía). Fundir los dos flujos
+# hacía que un motor no-cero con stdout vacío y un aviso en stderr se leyera
+# como incumplimiento — un bloqueo que la fuente nunca pidió.
+with tempfile.TemporaryDirectory() as c:
+    solo_err = two_stream_engine(c, "soloerr.sh", "", "aviso: no pude leer X", 1)
+    puerta = sg.Gate(engine=[str(solo_err)], block_on_output=True,
+                     clean_exits=(0, 4), reason="Pendientes:\n{output}")
+    with redirect_stderr(io.StringIO()) as err:
+        check("no-cero con stdout vacío y stderr lleno emite {}", {},
+              puerta.run("{}"))
+    check("y el aviso del motor se NOMBRA en stderr", True,
+          "aviso: no pude leer X" in err.getvalue())
+
+    # Control: el mismo motor CON stdout sí bloquea — el veredicto no es
+    # «nunca bloquea», es «lo decide el flujo correcto».
+    con_ambos = two_stream_engine(c, "ambos.sh", "trabajo-varado", "ruido", 1)
+    v = sg.Gate(engine=[str(con_ambos)], block_on_output=True,
+                clean_exits=(0, 4), reason="Pendientes:\n{output}").run("{}")
+    check("con stdout sí bloquea", "block", v.get("decision"))
+    check("y el motivo NO arrastra el stderr", False, "ruido" in v["reason"])
+
+print("== 3-ter. modo por CÓDIGO: el motivo SÍ funde los dos flujos ==")
+# La otra fuente pedía exactamente eso (`SALIDA=$(bash "$MOTOR" listar 2>&1)`).
+# El eje que cambia es el del VEREDICTO, no el de la redacción.
+with tempfile.TemporaryDirectory() as c:
+    motor = two_stream_engine(c, "codigo.sh", "880 varados", "y un aviso", 1)
+    v = sg.Gate(engine=[str(motor)], block_exits=(1,), clean_exits=(0, 2),
+                reason="Nacieron:\n{output}\nasentar").run("{}")
+    check("bloquea por código", "block", v.get("decision"))
+    check("con stdout en el motivo", True, "880 varados" in v["reason"])
+    check("y también con stderr", True, "y un aviso" in v["reason"])
 
 print("== 4. DISCRIMINA: el exit 4 declarado limpio NO se reclasifica ==")
 # El stub de `espera-pendiente` declara `--clean-exit 4` verbatim: «exit 4 se

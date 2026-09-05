@@ -42,6 +42,37 @@ Y por eso ``clean_exits`` se declara explícito en vez de derivarse: el stub de
 hasta que #95 decida»—, y un default que se lo tragara estaría resolviendo esa
 decisión sin que nadie la tomara.
 
+Qué flujo decide, y cuál sólo redacta
+--------------------------------------
+
+Las dos fuentes divergían aquí y el primer porte las fundió, con
+``output = stdout + stderr`` para todo. Medido contra ellas:
+
+- ``evidencia-varada`` invocaba su motor con ``2>&1`` — el stderr **entra** en
+  el motivo del bloqueo;
+- ``espera-pendiente`` con ``2>/dev/null`` — el stderr se **descarta**, y sólo
+  stdout decide.
+
+Fundirlos hace que un motor no-cero con stdout vacío y un aviso en stderr se lea
+como incumplimiento: un bloqueo que la fuente nunca pidió, y que ni la línea
+base ni el positivo sintético podían ver —en las dos corridas el motor no
+escribió nada por stderr—. El sub-patrón D sobre el propio control.
+
+Por eso el eje se parte en dos: **el veredicto** en modo por salida lee
+``stdout`` y nada más; **el motivo** en modo por código sigue fundiendo los dos
+(``Completed.both()``), que es lo que su fuente pedía.
+
+Por qué el motor se lanza con guarda de grupo
+----------------------------------------------
+
+Con ``subprocess.run(..., timeout=)`` el plazo mata al proceso lanzado y sólo a
+él. Los motores de los dos consumidores son guiones de shell que forkean: el
+hijo sobreviviría al plazo mientras el gate publica ``{}``. El mecanismo vive en
+``hooks.process.run_guarded``, compartido con ``hooks.maintenance_chain``, y su
+cabecera explica el porqué. Un motor agotado **no bloquea** —nadie sabría cómo
+resolverlo— pero **se nombra en stderr**: callarlo lo haría indistinguible de
+un motor limpio.
+
 Por qué no bloquea nunca el proceso
 ------------------------------------
 
@@ -53,7 +84,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -66,6 +96,7 @@ from pathlib import Path
 if __package__ in (None, ""):  # sólo en invocación directa
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from hooks.process import run_guarded  # noqa: E402
 from hooks.stop_payload import is_reentry  # noqa: E402
 
 #: La ranura que el motivo puede reservar para la salida del motor. Los dos
@@ -130,15 +161,21 @@ class Gate:
             self._warn(f"el motor no está en '{binary}' — sin veredicto")
             return self._clean()
 
-        try:
-            done = subprocess.run(self.engine, capture_output=True, text=True,
-                                  timeout=self.timeout)
-        except (OSError, subprocess.SubprocessError) as err:
-            self._warn(f"el motor '{binary.name}' no pudo correr: {err}")
+        done = run_guarded(self.engine, self.timeout)
+        if not done.started:
+            self._warn(f"el motor '{binary.name}' no pudo correr: {done.stderr}")
+            return self._clean()
+        if done.timed_out:
+            # No bloquear es lo correcto —nadie sabría cómo resolverlo— pero
+            # callarlo no: un motor colgado y uno limpio publicarían el mismo
+            # `{}`, y ése es el verde que no discrimina.
+            self._warn(
+                f"'{binary.name}' agotó su plazo de {self.timeout} s y se "
+                "abandonó: sin veredicto, no es un verde."
+            )
             return self._clean()
 
-        code = done.returncode
-        output = (done.stdout + done.stderr).strip()
+        code = done.exit_code
 
         if code in self.clean_exits:
             return self._clean()
@@ -152,11 +189,20 @@ class Gate:
             if code == 0:
                 return self._clean()
             # El no-cero SIN texto no es un incumplimiento: es un motor que
-            # salió por otra razón y no tiene nada que reportar.
-            return self._block(output) if output else self._clean()
+            # salió por otra razón y no tiene nada que reportar. Y lo que
+            # cuenta como texto es **stdout**, no la suma de los dos flujos.
+            veredicto = done.stdout.strip()
+            if not veredicto:
+                if done.stderr.strip():
+                    self._warn(
+                        f"'{binary.name}' salió {code} sin stdout, con aviso en "
+                        f"stderr: {done.stderr.strip().splitlines()[-1]}"
+                    )
+                return self._clean()
+            return self._block(veredicto)
 
         if code in self.block_exits:
-            return self._block(output)
+            return self._block(done.both())
 
         self._warn(
             f"'{binary.name}' salió {code}, que no está declarado ni limpio ni "
