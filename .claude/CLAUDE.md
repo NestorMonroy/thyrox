@@ -5,6 +5,14 @@ estado**: lo que la sesión lee y escribe. La partición es la DEC-01, con
 `claw-code` como precedente medido — su `.claude/` contiene `sessions/` y nada
 más.
 
+`_references/` es el material contra el que se construye: los cinco corpus
+vendorizados (`ccb`, `claude-code`, `harness-books`, `harness-engineering`,
+`how-claude-code-works`, cada uno con su `PROVENANCE.md`) más 55 documentos de
+autoría propia sobre la plataforma. **No es producto ni estado** — es apoyo a
+la construcción, el mismo papel que `odoo-tools` cumple para el producto de
+kaupamex, y por eso vive en la raíz y no bajo `src/` ni bajo `.claude/`.
+Directiva del ejecutor 2026-09-05.
+
 `_archived/` es el THYROX anterior (DEC-02). **No se lee como si fuera vigente**:
 se consulta una pieza sólo si hace falta verla, y lo que se recupere se porta
 con su procedencia declarada, no se restaura.
