@@ -222,6 +222,23 @@ check("una reentrada NO lo invoca", {},
               reason="x {output}").run('{"stop_hook_active": true}'))
 check("y el contador no se movió", antes, len(llamadas))
 
+print("== 4-ter-bis. DISCRIMINA: la SANGRÍA del motor sobrevive al motivo ==")
+# El `strip()` que decide si hay texto NO puede ser el que viaja al motivo: le
+# comía los dos espacios con que `repo.pending_work` abre cada línea, y esa
+# sangría es formato del consumidor. La suite estaba en verde con el defecto —
+# lo destapó comparar el stub contra su línea base, no un caso.
+def con_sangria() -> tuple[int, str]:
+    return 1, "  - kaupamex-docs: 1 sin commitear\n  - thyrox: 2 sin añadir\n"
+
+
+v = sg.Gate(engine=con_sangria, block_on_output=True,
+            reason="Sin publicar:\n\n{output}\n\nCerrá el ciclo.").run("{}")
+check("la sangría de la primera línea sobrevive", True,
+      "\n\n  - kaupamex-docs" in v["reason"])
+check("y la de la segunda", True, "\n  - thyrox" in v["reason"])
+check("sin dejar el salto de cola del motor", True,
+      "sin añadir\n\nCerrá" in v["reason"])
+
 print("== 4-quater. un invocable que revienta NO tumba el turno ==")
 def revienta() -> tuple[int, str]:
     raise RuntimeError("el barrido falló")

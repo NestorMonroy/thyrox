@@ -208,8 +208,11 @@ class Gate:
             # El no-cero SIN texto no es un incumplimiento: es un motor que
             # salió por otra razón y no tiene nada que reportar. Y lo que
             # cuenta como texto es **stdout**, no la suma de los dos flujos.
-            veredicto = done.stdout.strip()
-            if not veredicto:
+            # El `strip()` decide si HAY texto; el que viaja al motivo es el
+            # original. Recortarlo le come la sangría al render del motor, y
+            # esa sangría es formato del consumidor — medido al portar
+            # `trabajo-sin-publicar`, cuya lista empieza con dos espacios.
+            if not done.stdout.strip():
                 if done.stderr.strip():
                     self._warn(
                         f"'{self.engine_name}' salió {code} sin stdout, con "
@@ -217,7 +220,7 @@ class Gate:
                         f"{done.stderr.strip().splitlines()[-1]}"
                     )
                 return self._clean()
-            return self._block(veredicto)
+            return self._block(done.stdout.rstrip("\n"))
 
         if code in self.block_exits:
             return self._block(done.both())
