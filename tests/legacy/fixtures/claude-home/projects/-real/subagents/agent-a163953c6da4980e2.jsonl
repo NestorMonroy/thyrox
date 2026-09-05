@@ -1,0 +1,4 @@
+{"type":"user","version":"2.1.224","timestamp":"2026-01-01T00:00:00.000Z","message":{"role":"user"}}
+{"type":"attachment","version":"2.1.224","timestamp":"2026-01-01T00:00:00.002Z"}
+{"type":"attachment","version":"2.1.224","timestamp":"2026-01-01T00:00:00.003Z"}
+{"apiErrorStatus":429,"error":"rate_limit","isApiErrorMessage":true,"type":"assistant","version":"2.1.224","timestamp":"2026-01-01T00:00:00.312Z","message":{"id":"msg_0001","model":"<synthetic>","role":"assistant","stop_reason":"stop_sequence","usage":{"cache_creation":{"ephemeral_1h_input_tokens":0,"ephemeral_5m_input_tokens":0},"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"inference_geo":null,"input_tokens":0,"iterations":null,"output_tokens":0,"server_tool_use":{"web_fetch_requests":0,"web_search_requests":0},"service_tier":null,"speed":null},"content":[{"type":"text","text":"You've hit your session limit · resets 10:50am (UTC)"}]}}
