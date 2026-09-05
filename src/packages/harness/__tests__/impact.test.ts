@@ -28,7 +28,7 @@ const base: ImpactConfig = {
   strategy: 'text-reference',
   runner: (rutas) => `bun test ${rutas.join(' ')}`,
   fullRunner: 'bun test',
-  crossCutting: ['src/types.ts', 'src/config/**'],
+  crossCutting: ['src/types.ts', 'src/packages/config/**'],
 }
 
 describe('selectTests — el contrato (T-046)', () => {
@@ -114,9 +114,9 @@ describe('disparadores de transversalidad (T-049)', () => {
   })
 
   test('el patron glob tambien dispara, y nombra la regla que lo hizo', () => {
-    const r = selectTests(['src/config/settings.ts'], base, io)
+    const r = selectTests(['src/packages/config/settings.ts'], base, io)
     expect(r.crossCutting).toEqual({
-      triggered: true, byPath: 'src/config/settings.ts', rule: 'src/config/**',
+      triggered: true, byPath: 'src/packages/config/settings.ts', rule: 'src/packages/config/**',
     })
   })
 

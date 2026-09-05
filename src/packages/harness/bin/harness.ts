@@ -41,7 +41,7 @@ import type { AssistantTurn, Provider, Usage } from '../src/types.ts'
 import { USAGE_CERO } from '../src/types.ts'
 import type { HookConfig } from '../src/hooks.ts'
 import type { PermissionPolicy } from '../src/permission.ts'
-import { loadSettings } from '../../../config/settings/load.ts'
+import { loadSettings } from '@kaupamex/config/load'
 
 const AYUDA = `harness — el bucle de agente, nativo
 

@@ -1,5 +1,10 @@
 {
   "name": "@kaupamex/packages",
   "private": true,
-  "workspaces": ["agent", "harness", "binary"]
+  "workspaces": [
+    "agent",
+    "binary",
+    "config",
+    "harness"
+  ]
 }
