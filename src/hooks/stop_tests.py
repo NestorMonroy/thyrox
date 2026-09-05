@@ -34,7 +34,15 @@ import os
 import subprocess
 from pathlib import Path
 
-from hooks.stop_payload import is_reentry
+# El módulo se importa como ``hooks.stop_tests`` (con ``src`` en la ruta) y también
+# se ejecuta como guion —así lo invoca el stub del consumidor—, donde
+# ``sys.path[0]`` es ``src/hooks`` y ``hooks`` no resolvería. La composición va
+# ANTES del import a propósito; el import sigue siendo de nivel de módulo, que
+# es lo que ``no-lazy-imports.md`` exige.
+if __package__ in (None, ""):  # sólo en invocación directa
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from hooks.stop_payload import is_reentry  # noqa: E402
 
 #: Grafías admitidas del directorio vigilado, en orden: la propia primero, la
 #: heredada después. Misma forma que ``TREE_ROOT_VARS`` en ``paths.reach``.

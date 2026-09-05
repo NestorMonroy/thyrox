@@ -155,5 +155,17 @@ with tempfile.TemporaryDirectory() as d:
         check("y el mensaje nombra la variable ausente", True,
               stop_tests.WATCHED_DIR_VARS[0] in str(err))
 
+print("== N. CONTROL: el módulo ARRANCA como guion, que es como lo invoca el stub ==")
+# La suite lo importaba siempre, así que nada medía la vía por la que el
+# consumidor lo usa de verdad (`python3 <ruta>`). Al extraer `is_reentry` a
+# `stop_payload` el guion dejó de arrancar —`ModuleNotFoundError: hooks`— y
+# los 16 casos siguieron en verde: el verde no discriminaba «funciona» de
+# «la suite no pregunta». Sub-patrón D de `metrica-decide-la-conclusion.md`.
+proc = subprocess.run([sys.executable, str(Path(stop_tests.__file__).resolve())],
+                      input="{}", capture_output=True, text=True)
+check("sale 0", 0, proc.returncode)
+check("y NO muere importando su propio paquete", False,
+      "ModuleNotFoundError" in proc.stderr)
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
