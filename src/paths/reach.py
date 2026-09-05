@@ -102,15 +102,29 @@ REACH_ROOTS: tuple[str, ...] = ("api", "db", "docs", "server", "ui")
 #: que cambia.
 CLONE_PREFIX = "kaupamex-"
 
-#: Las grafías del árbol, EN ORDEN. Gana la primera declarada. Ver la nota 3 de
-#: la cabecera: una tupla ordenada en un sitio es lo contrario de cuatro
-#: grafías inventadas por cuatro guiones.
-TREE_ROOT_VARS: tuple[str, ...] = ("KAUPAMEX_ROOT", "THYROX_ROOT")
+#: Las grafías del árbol, EN ORDEN. Gana la primera declarada.
+#:
+#: El orden lo decide la referencia, no el gusto. Medido en el volcado del
+#: ejecutable 2.1.261: el cliente nombra sus variables **por su propio
+#: producto**, nunca por lo que apuntan — ``CLAUDE_PLUGIN_ROOT`` (49),
+#: ``CLAUDE_STAGE_FILE_ROOT`` (11), ``CLAUDE_CODE_TEST_FIXTURES_ROOT`` (4).
+#: Las que nombran el destino sin ese prefijo son de **otras** herramientas
+#: (``ANDROID_SDK_ROOT``, ``DOTNET_ROOT``, ``GOENV_ROOT``).
+#:
+#: La forma es ``<PRODUCTO>_<QUE ES>_ROOT``, y ``reach`` es la palabra del
+#: propio binario para este mecanismo. De ahí ``THYROX_REACH_ROOT``.
+#:
+#: ``KAUPAMEX_ROOT`` queda de segunda y no por cortesía: **15 sitios vivos la
+#: declaran**. Retirarla rompería a los consumidores de docs el día que
+#: migren. Es la diferencia con los alias en español que se retiraron del
+#: workbench, que tenían **cero**.
+TREE_ROOT_VARS: tuple[str, ...] = ("THYROX_REACH_ROOT", "KAUPAMEX_ROOT")
 
-#: La variable del tramo extensible, análoga a ``extraReachRoots``. Separada
-#: por ``:`` como ``PATH``, que es la convención que un consumidor de shell
-#: espera.
-EXTRA_ROOTS_VAR = "KAUPAMEX_EXTRA_ROOTS"
+#: Las grafías del tramo extensible, EN ORDEN — el análogo de
+#: ``extraReachRoots``. Separadas por ``:`` como ``PATH``, que es la convención
+#: que un consumidor de shell espera. Mismo criterio de orden que
+#: ``TREE_ROOT_VARS``.
+EXTRA_ROOTS_VARS: tuple[str, ...] = ("THYROX_EXTRA_REACH_ROOTS", "KAUPAMEX_EXTRA_ROOTS")
 
 #: Dónde buscar el archivo de entorno, si no se declara uno explícito.
 ENV_FILE_VAR = "THYROX_ENV_FILE"
@@ -211,15 +225,21 @@ def clone_names() -> tuple[str, ...]:
     return tuple(clone_name(r) for r in REACH_ROOTS)
 
 
-def env_name(repo: str) -> str:
-    """La constante por raíz: ``api`` -> ``KAUPAMEX_API``.
+def env_names(repo: str) -> tuple[str, ...]:
+    """Las constantes por raíz, EN ORDEN: ``api`` -> ``THYROX_REACH_API``.
 
-    Pública, a diferencia de la fuente, donde era ``_env_name`` porque su único
-    consumidor era ``--env``. Aquí la LEE ``root()``, así que forma parte del
-    contrato: un consumidor que quiera declarar una raíz necesita saber cómo se
+    Públicas, a diferencia de la fuente, donde ``_env_name`` era privada porque
+    su único consumidor era ``--env``. Aquí las LEE ``root()``, así que forman
+    parte del contrato: quien quiera declarar una raíz necesita saber cómo se
     llama su variable sin reconstruir la regla.
+
+    Mismo orden y misma razón que ``TREE_ROOT_VARS``: primero la del lector,
+    después la heredada, que tiene consumidores vivos.
     """
-    return f"KAUPAMEX_{repo.upper().replace('-', '_')}"
+    suffix = repo.upper().replace("-", "_")
+    return tuple(f"{var.removesuffix('_ROOT')}_{suffix}" if var.endswith("_ROOT")
+                 else f"{var}_{suffix}"
+                 for var in ("THYROX_REACH_ROOT", "KAUPAMEX"))
 
 
 def tree_root(start: Path | None = None) -> Path:
@@ -252,9 +272,10 @@ def root(repo: str, start: Path | None = None) -> Path:
     sobre todas usa ``require_all()``.
     """
     name = clone_name(repo)          # valida el repo antes de mirar el entorno
-    declared = env_value(env_name(repo), start)
-    if declared:
-        return Path(declared)
+    for var in env_names(repo):
+        declared = env_value(var, start)
+        if declared:
+            return Path(declared)
     return tree_root(start) / name
 
 
@@ -277,12 +298,12 @@ def extra_roots() -> dict[str, Path]:
     resolvería contra su propio directorio de trabajo — que es distinto en cada
     llamador.
     """
-    raw = os.environ.get(EXTRA_ROOTS_VAR, "")
+    raw = next((os.environ[v] for v in EXTRA_ROOTS_VARS if os.environ.get(v)), "")
     result: dict[str, Path] = {}
     for piece in (p for p in raw.split(":") if p):
         if not piece.startswith("/"):
             raise ReachRootError(
-                f"la raíz extra {piece!r} no es absoluta. {EXTRA_ROOTS_VAR} las "
+                f"la raíz extra {piece!r} no es absoluta. {EXTRA_ROOTS_VARS[0]} las "
                 "exige absolutas: una relativa se resolvería contra el "
                 "directorio de trabajo de cada consumidor, que es distinto."
             )
@@ -332,7 +353,7 @@ def main(argv: list[str]) -> int:
         # Para `eval` desde shell. Se citan las rutas: un padre con espacios
         # partiría la asignación en dos palabras sin que nada avise.
         for repo, path in reach().items():
-            print(f'export {env_name(repo) if repo in REACH_ROOTS else repo.upper()}="{path}"')
+            print(f'export {env_names(repo)[0] if repo in REACH_ROOTS else repo.upper()}="{path}"')
         return 0
 
     if mode == "--paths":
@@ -385,5 +406,28 @@ def main(argv: list[str]) -> int:
     return 2
 
 
+def _run(argv: list[str]) -> int:
+    """``main`` con la tubería cerrada tratada como lo que es: conducta normal.
+
+    Un consumidor que escribe ``reach.py --list | head -3`` cierra el pipe antes
+    de que el guion termine. Sin tratarlo, Python vuelca un ``BrokenPipeError``
+    por ``stderr`` **y además** el intérprete intenta vaciar ``stdout`` al salir
+    y vuelca un segundo aviso. Los dos se leen como fallo del mecanismo cuando
+    no lo son.
+
+    El código 141 es el convenio de shell para «terminado por SIGPIPE»
+    (128 + 13), que es lo que un consumidor espera de una tubería cortada.
+    """
+    try:
+        code = main(argv)
+        sys.stdout.flush()
+        return code
+    except BrokenPipeError:
+        # Se redirige el descriptor a /dev/null para que el vaciado final del
+        # intérprete no vuelva a fallar sobre el pipe ya cerrado.
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        return 141
+
+
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv))
+    raise SystemExit(_run(sys.argv))

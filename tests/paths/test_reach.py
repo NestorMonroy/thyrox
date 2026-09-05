@@ -100,14 +100,14 @@ with tempfile.TemporaryDirectory() as tmp:
     otro.mkdir()
 
     clean_env()
-    os.environ["KAUPAMEX_ROOT"] = str(base)
-    os.environ["KAUPAMEX_API"] = str(otro)
-    check("KAUPAMEX_API gana sobre el árbol", otro, reach.root("api", start=start))
+    os.environ["THYROX_REACH_ROOT"] = str(base)
+    os.environ["THYROX_REACH_API"] = str(otro)
+    check("THYROX_REACH_API gana sobre el árbol", otro, reach.root("api", start=start))
 
     # Control: retirada la constante, el veredicto DEBE cambiar al clon del árbol.
-    del os.environ["KAUPAMEX_API"]
+    del os.environ["THYROX_REACH_API"]
     check(
-        "control — sin KAUPAMEX_API cae al clon del árbol",
+        "control — sin la constante por raíz cae al clon del árbol",
         base / "kaupamex-api",
         reach.root("api", start=start),
     )
@@ -120,15 +120,15 @@ with tempfile.TemporaryDirectory() as tmp:
     via_process = base / "por-proceso"
     via_env.mkdir()
     via_process.mkdir()
-    (base / ".env").write_text(f"KAUPAMEX_API={via_env}\n")
+    (base / ".env").write_text(f"THYROX_REACH_API={via_env}\n")
 
     clean_env()
-    os.environ["KAUPAMEX_ROOT"] = str(base)
-    os.environ["KAUPAMEX_API"] = str(via_process)
+    os.environ["THYROX_REACH_ROOT"] = str(base)
+    os.environ["THYROX_REACH_API"] = str(via_process)
     check("el proceso gana", via_process, reach.root("api", start=start))
 
     # Control: retirado el proceso, el veredicto DEBE cambiar al valor del .env.
-    del os.environ["KAUPAMEX_API"]
+    del os.environ["THYROX_REACH_API"]
     check("control — sin proceso, manda el .env", via_env, reach.root("api", start=start))
 
 print("\n3. El ascenso NO depende de la profundidad")
@@ -153,21 +153,31 @@ with tempfile.TemporaryDirectory() as tmp:
     (base / ".env").write_text(
         "# un comentario\n"
         "\n"
-        "export KAUPAMEX_ROOT=/desde/export\n"
-        'KAUPAMEX_API="/entre/comillas"\n'
-        "KAUPAMEX_DOCS='/comilla/simple'\n"
+        "export THYROX_REACH_ROOT=/desde/export\n"
+        'THYROX_REACH_API="/entre/comillas"\n'
+        "THYROX_REACH_DOCS='/comilla/simple'\n"
         "MAL_FORMADA\n"
     )
     valores = reach.read_env_file(base / ".env")
     check("ignora el comentario y la línea en blanco", 3, len(valores))
-    check("acepta el prefijo export", "/desde/export", valores["KAUPAMEX_ROOT"])
-    check("quita la comilla doble", "/entre/comillas", valores["KAUPAMEX_API"])
-    check("quita la comilla simple", "/comilla/simple", valores["KAUPAMEX_DOCS"])
+    check("acepta el prefijo export", "/desde/export", valores["THYROX_REACH_ROOT"])
+    check("quita la comilla doble", "/entre/comillas", valores["THYROX_REACH_API"])
+    check("quita la comilla simple", "/comilla/simple", valores["THYROX_REACH_DOCS"])
     check("descarta la línea sin '='", False, "MAL_FORMADA" in valores)
 
-print("\n5. La grafía del árbol es una tupla ordenada declarada")
-check("hay más de una grafía declarada", True, len(reach.TREE_ROOT_VARS) >= 1)
-check("la primera es la vigente", "KAUPAMEX_ROOT", reach.TREE_ROOT_VARS[0])
+print("\n5. Las variables nombran al LECTOR, como el binario")
+# Medido en el volcado del ejecutable 2.1.261: el cliente nombra SIEMPRE por su
+# propio producto —CLAUDE_PLUGIN_ROOT 49, CLAUDE_STAGE_FILE_ROOT 11,
+# CLAUDE_CODE_TEST_FIXTURES_ROOT 4— y las que nombran el destino sin prefijo
+# son de otras herramientas (ANDROID_SDK_ROOT, DOTNET_ROOT, GOENV_ROOT). La
+# forma es <PRODUCTO>_<QUE ES>_ROOT, y `reach` es la palabra del propio binario
+# para el mecanismo.
+check("la primera es la del lector", "THYROX_REACH_ROOT", reach.TREE_ROOT_VARS[0])
+check("la heredada queda de segunda", "KAUPAMEX_ROOT", reach.TREE_ROOT_VARS[1])
+check("el tramo extra sigue la misma forma", "THYROX_EXTRA_REACH_ROOTS", reach.EXTRA_ROOTS_VARS[0])
+check("y su heredada", "KAUPAMEX_EXTRA_ROOTS", reach.EXTRA_ROOTS_VARS[1])
+check("la constante por raíz nombra al lector", "THYROX_REACH_API", reach.env_names("api")[0])
+check("y admite la heredada", "KAUPAMEX_API", reach.env_names("api")[1])
 with tempfile.TemporaryDirectory() as tmp:
     base = pathlib.Path(tmp)
     start = build_tree(base)
@@ -183,9 +193,9 @@ with tempfile.TemporaryDirectory() as tmp:
 
 print("\n6. El tramo extra exige rutas absolutas")
 clean_env()
-os.environ[reach.EXTRA_ROOTS_VAR] = "/home/user/thyrox"
+os.environ[reach.EXTRA_ROOTS_VARS[0]] = "/home/user/thyrox"
 check("una raíz extra absoluta entra", True, "thyrox" in reach.extra_roots())
-os.environ[reach.EXTRA_ROOTS_VAR] = "relativa/no"
+os.environ[reach.EXTRA_ROOTS_VARS[0]] = "relativa/no"
 check_raises("una relativa rehúsa", reach.ReachRootError, reach.extra_roots)
 clean_env()
 
@@ -195,13 +205,27 @@ with tempfile.TemporaryDirectory() as tmp:
     base = pathlib.Path(tmp)
     start = build_tree(base)
     clean_env()
-    os.environ["KAUPAMEX_ROOT"] = str(base)
+    os.environ["THYROX_REACH_ROOT"] = str(base)
     check_raises(
         "require_all rehúsa si falta una raíz",
         reach.ReachRootError,
         lambda: reach.require_all(start=start),
     )
 clean_env()
+
+print("\n8. El CLI sobrevive a que le cierren la salida")
+# Un consumidor que hace `reach.py --list | head -3` cierra el pipe antes de
+# que el guion termine de escribir. Sin tratarlo, Python vuelca un traceback de
+# BrokenPipeError por stderr: ruido que se lee como fallo del mecanismo cuando
+# es conducta normal de una tubería.
+import subprocess
+
+_completado = subprocess.run(
+    f"python3 {THYROX_ROOT / 'src' / 'paths' / 'reach.py'} --list | head -1",
+    shell=True, capture_output=True, text=True,
+)
+check("no vuelca traceback por stderr", "", _completado.stderr.strip())
+check("y sale sin error", 0, _completado.returncode)
 
 print(f"\nresultado: {PASS} de {PASS + FAIL} aserciones en verde")
 sys.exit(1 if FAIL else 0)
