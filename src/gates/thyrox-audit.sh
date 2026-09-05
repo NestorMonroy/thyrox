@@ -787,7 +787,7 @@ fi
 # --- corpus extraido contra el ejecutable instalado ------------------------
 tick "corpus extraido contra el ejecutable instalado"
 #
-# El corpus de `tools/claude-code-bin/` responde toda consulta sobre el
+# El corpus de `_references/claude-code-bin/` responde toda consulta sobre el
 # binario. Cuando el ejecutable avanza y el corpus no, sigue respondiendo —
 # con las respuestas del build anterior, y sin sintoma. Ocurrio: 2.1.241
 # extraido contra 2.1.246 servido, cinco versiones (H-DOCS-434).

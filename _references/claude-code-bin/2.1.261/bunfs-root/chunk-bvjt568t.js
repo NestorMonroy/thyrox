@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.261
+import{ln}from"/$bunfs/root/chunk-py8dsda5.js";var o=new Set(["localhost","localhost.localdomain","localhost4","localhost4.localdomain4","localhost6","localhost6.localdomain6","ip6-localhost","ip6-loopback","ip6-localnet","ip6-mcastprefix","ip6-allnodes","ip6-allrouters","broadcasthost","metadata.google.internal","instance-data.ec2.internal","host.docker.internal","gateway.docker.internal","kubernetes.docker.internal","vm.docker.internal","host.containers.internal","gateway.containers.internal","host.lima.internal","host.orb.internal","localtest.me","lvh.me","localho.st","vcap.me","traefik.me","fuf.me","lacolhost.com","my.local-ip.co","kubernetes.default","kubernetes.default.svc"]),l=new Set(["metadata","instance-data","kubernetes","_gateway","_outbound","_localdnsstub","_localdnsproxy"]),n=[".localhost",".local",".localdomain",".home.arpa",".internal",".nip.io",".sslip.io",".localtest.me",".lvh.me",".vcap.me",".localho.st",".traefik.me",".fuf.me",".lacolhost.com",".my.local-ip.co",".svc",".svc.cluster.local",".cluster.local"];function tle(t){let a=s(t.toLowerCase()).replace(/\.+$/,"");return o.has(a)||l.has(a)||a==="home.arpa"||n.some((e)=>a.endsWith(e))}function MZt(t){let a=t.toLowerCase().replace(/\.+$/,"");return o.has(a)||a.endsWith(".localhost")}function OBn(t){let a=t.toLowerCase().replace(/\.+$/,"");return tle(a)||[...o,...l,"home.arpa",...n].some((e)=>e.endsWith("."+a))}function NBn(t,a="address"){let e=s(t.trim().toLowerCase()).replace(/\.+$/,"");if(a==="address"?tle(e):MZt(e))return!0;return/^(?:(?:\d+|0x[0-9a-f]+)\.){1,3}(?:\d+|0x[0-9a-f]+)$/i.test(e)||/^(?:127\.|0\d+\.|0x[0-9a-f]*\.)[0-9a-fx.]*$/i.test(e)||/^0x[0-9a-f]+$/i.test(e)||/^\d{8,}$/.test(e)||/^0+$/.test(e)||/^[0-9a-f:.]+$/i.test(e)&&e.includes(":")&&(e.includes("::")||ln(e,":")>=2)}function s(t){return t.startsWith("[")&&t.endsWith("]")?t.slice(1,-1):t}
+export{tle,MZt,OBn,NBn};

@@ -46,7 +46,7 @@ Procedencia
 ===========
 
 ``page_rank`` es adaptación nativa de ``cytoscape.js``, leído en el bundle que
-el propio cliente empaqueta: ``docs: tools/claude-code-bin/2.1.246/
+el propio cliente empaqueta: ``_references/claude-code-bin/2.1.246/
 bunfs-root/mermaid.min.js`` (mermaid usa cytoscape para el layout de sus
 diagramas). **Es referencia para adaptar, nunca dependencia de runtime** — el
 mismo criterio con que se lee ``odoo-tools``: el stack aquí es Python, y el
@@ -354,7 +354,7 @@ def connected_components(nodes, edges):
 def page_rank(nodes, edges, damping=0.8, precision=1e-6, iterations=200):
     """El rango de cada nodo — adaptación nativa del ``pageRank`` de cytoscape.
 
-    ≙ ``cytoscape.js`` en ``docs: tools/claude-code-bin/2.1.246/bunfs-root/
+    ≙ ``cytoscape.js`` en ``_references/claude-code-bin/2.1.246/bunfs-root/
     mermaid.min.js``. Los tres defaults son los suyos, no los del artículo
     original: ``dampingFactor .8``, ``precision 1e-6``, ``iterations 200``.
 

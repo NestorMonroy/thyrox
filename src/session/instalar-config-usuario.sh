@@ -44,7 +44,7 @@ ORIGEN="$RAIZ/.claude"
 # lo que haya. La tercera columna es el dato que evita la premisa falsa: no
 # toda clase tiene un lector que la descubra en `~/.claude/`.
 #
-# Medido sobre `tools/claude-code-bin/2.1.246/claude_strings.txt` (lineas que
+# Medido sobre `_references/claude-code-bin/2.1.246/claude_strings.txt` (lineas que
 # contienen el literal, no ocurrencias): `.claude/rules` 9 · `.claude/agents`
 # 20 · `.claude/commands` 8 · `.claude/hooks` **0**. Los hooks no se descubren
 # por directorio: los declara `settings.json` con la ruta del comando, y por

@@ -1,0 +1,33 @@
+{
+  "name": "@kaupamex/agent",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "description": "Definiciones de agente de kaupamex: la fuente en TypeScript, y los dos emisores hacia las vías que el cliente acepta.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./schema": "./src/schema.ts",
+    "./registry": "./src/registry.ts",
+    "./emit/markdown": "./src/emit/markdown.ts",
+    "./emit/agentsJson": "./src/emit/agentsJson.ts",
+    "./definitions/migrationPorter": "./src/definitions/migrationPorter.ts",
+    "./models": "./src/models.ts",
+    "./cost/policy": "./src/cost/policy.ts",
+    "./cost/cacheBreak": "./src/cost/cacheBreak.ts",
+    "./cost/cacheRoutes": "./src/cost/cacheRoutes.ts",
+    "./cost/compaction": "./src/cost/compaction.ts"
+  },
+  "scripts": {
+    "emit": "bun run bin/emit.ts",
+    "check": "bun run bin/emit.ts --check",
+    "test": "bun test",
+    "pre-model-switch": "bun run bin/preModelSwitch.ts",
+    "gate:cross-model-read": "bun run bin/crossModelReadGate.ts"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  }
+}

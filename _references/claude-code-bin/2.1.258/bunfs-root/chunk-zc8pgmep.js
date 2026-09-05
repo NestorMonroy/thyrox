@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.258
+import{Ze}from"/$bunfs/root/chunk-b1z7jvb2.js";function TJn(n,e){return n!==void 0&&n.mode==="poll-event"&&n.pollEvent?.wake===!0&&!e}function Syn(n){return n==="prompt"||n==="orphaned-permission"||n==="task-notification"||n==="poll-event"}function fg(n){return n.agentId===Ze()}var CJn={kind:"task-notification",source:"goal-checkin"};function IJn(n){return n.origin?.kind==="task-notification"&&n.origin.source==="goal-checkin"}var RJn={kind:"task-notification",source:"worker-checkin"};function YEe(n){return n.origin?.kind==="task-notification"&&(n.origin.source==="goal-checkin"||n.origin.source==="worker-checkin")}function xJn(n){return fg(n)&&n.mode==="task-notification"}function x2(n){if(n?.kind!=="task-notification")return n;return{kind:"task-notification",...n.subkind!==void 0&&{subkind:n.subkind}}}function y6e(n){let e=n.queueOrigin??n.origin;return YEe({origin:e})?x2(e):e}function Hyn(n){return n.queueMode??t(y6e(n))}function QMe(n){return n.queueSkipAttachments===!0||Hyn(n)==="task-notification"?!0:void 0}function t(n){return n?.kind==="task-notification"?"task-notification":"prompt"}import{AsyncLocalStorage as o}from"async_hooks";var ZMe="X-CCR-Turn-Id",u=128,d=/^[\x21-\x7e]+$/,r=new o;function LJn(n,e){return r.run({id:n},e)}function _6e(){return r.getStore()?.id}function A_t(){let n=r.getStore();if(n)n.id=void 0}function eOe(n){let e=_6e();if(e===void 0)return;if(n.some((i)=>i.ccrTurnId!==e))A_t()}function PJn(n,{isRelayHuman:e}){if(!e)return;if(typeof n!=="object"||n===null||!("turn_id"in n))return;let i=n.turn_id;if(typeof i!=="string"||i===""||i.length>u||!d.test(i))return;return i}function v_t(n){if(n.length>0)A_t()}function DJn(n){let e=n[0]?.ccrTurnId;return n.every((i)=>i.ccrTurnId===e)?e:void 0}
+export{TJn,Syn,fg,CJn,IJn,RJn,YEe,xJn,x2,y6e,Hyn,QMe,ZMe,LJn,_6e,A_t,eOe,PJn,v_t,DJn};

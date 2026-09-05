@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{Jjd as n,Kjd as m,atd as c,zkd as s}from"/$bunfs/root/_826.js";import{ctd as h}from"/$bunfs/root/_827.js";import{pxd as e}from"/$bunfs/root/_836.js";import{xxd as p}from"/$bunfs/root/_837.js";class o{getCurrentMode=null;modeAtUnwire=void 0;onPeerHeld=null;onPeerHoldReleased=null;onPeerHoldDropped=null;sendPeerReceipt=null;recordCorrespondent=null;publishAvailability=null;unsubscribeAvailabilityRefresh=null;shutdownSettleHandle=null;shuttingDown=!1;held=[];announced=new WeakMap;reset(){this.held.length=0,this.getCurrentMode=null,this.modeAtUnwire=void 0,this.onPeerHeld=null,this.onPeerHoldReleased=null,this.onPeerHoldDropped=null,this.shutdownSettleHandle?.(),this.shutdownSettleHandle=null,this.shuttingDown=!1,this.sendPeerReceipt=null,this.recordCorrespondent=null,this.publishAvailability=null,this.unsubscribeAvailabilityRefresh?.(),this.unsubscribeAvailabilityRefresh=null}}class d{outstandingSends=[];awaitingTerminal=[];reset(){this.outstandingSends.length=0,this.awaitingTerminal.length=0}}class l{pacer=null;reset(){this.pacer=null}}class r{ownUdsHopToken=void 0;ownBridgePeerAddressResolver=void 0;messageDropped=e();reset(){this.ownUdsHopToken=void 0,this.ownBridgePeerAddressResolver=void 0,this.messageDropped.clear()}}class i{pending=new Map;pendingSandbox=new Map;clear(){this.pending.clear(),this.pendingSandbox.clear()}}class t{reportedDroppedEntries=new Set;pendingPrunes=new Map}class a{updated=e();leaderTeamName=void 0;reset(){if(this.leaderTeamName===void 0)return;this.leaderTeamName=void 0;try{this.updated.emit()}catch{}}}class u{inbound=new o;receipts=new d;outbound=new l;ingress=new r;swarmPermissions=new i;mailbox=new t;taskList=new a}function P(){return g.of(s().host)}var g;var y=p(()=>{c();m();h();g=new n(()=>new u)});
+export{P as zSb,y as ASb};

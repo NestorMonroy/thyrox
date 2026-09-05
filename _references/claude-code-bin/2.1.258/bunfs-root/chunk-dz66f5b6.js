@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.258
+var Gx={"consent.sync.title":"Sync this project directory to the cloud?","consent.sync.body":"Allow Claude Code to sync files from this project directory into cloud sessions, so Claude can work on them in the cloud.","consent.sync.detail":"Secrets, credentials, and gitignored files are never synced and all synced files are encrypted at rest. Whichever you choose, files Claude reads and command output from this computer become part of the cloud session: anyone you share the session with and, on Team or Enterprise plans, your organization's admins can see them.","while_closed.two_way":"While this computer is closed or offline, Claude keeps working in the cloud and tells you what it couldn't do on this computer until it's back.","while_closed.upload_only":"Changes Claude makes in the cloud are not copied back to this computer; while it is closed or offline, Claude keeps working in the cloud and tells you what it couldn't do here until it's back.","while_closed.through_this_computer":"This project's files stay on this computer, so while it's closed or offline Claude can't work on them and will say so.","sync_offline.title":"File sync is offline for this session","sync_offline.body":"Changes are no longer being copied between this project directory and the cloud session until service is restored. Your session will continue without file sync and Claude will run its tools on your local files only instead.","serving_off.muted":"Remote tool serving was turned off by Anthropic (emergency switch). Commands will not run on this computer until it is turned back on.","serving_on.unmuted":"Remote tool serving was turned back on by Anthropic. Commands can run on this computer again.",announce_unverified(e){return`The cloud session did not accept the device proof on this machine's requests, so commands meant for this machine are not routed here and the session uses its own environment instead \u2014 ${e}.`}};
+export{Gx};

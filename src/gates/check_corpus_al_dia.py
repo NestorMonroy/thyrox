@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Avisa cuando el corpus extraido se queda atras del ejecutable instalado.
 
-El corpus de ``tools/claude-code-bin/`` se organiza **por version** desde
+El corpus de ``_references/claude-code-bin/`` se organiza **por version** desde
 :ref:`h-docs-434`: un directorio por build, y una version ya extraida nunca se
 pisa. Esa disciplina resuelve el parcheo, y deja abierta la otra mitad: nada
 avisa cuando el ejecutable instalado avanza y el corpus se queda donde estaba.
@@ -31,7 +31,7 @@ EXIT_OK = 0
 EXIT_ATRASADO = 1
 EXIT_GUARD = 2
 
-RAIZ_DEFECTO = pathlib.Path(__file__).resolve().parents[3] / 'tools' / 'claude-code-bin'
+RAIZ_DEFECTO = pathlib.Path(__file__).resolve().parents[2] / '_references' / 'claude-code-bin'
 RE_VERSION = re.compile(r'// Version: (\d+\.\d+\.\d+)')
 RE_DIR_VERSION = re.compile(r'^(\d+\.\d+\.\d+)')
 
@@ -87,7 +87,7 @@ def versiones_extraidas(raiz: pathlib.Path) -> set[str]:
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--raiz', default=str(RAIZ_DEFECTO),
-                        help='raiz del corpus (default: tools/claude-code-bin)')
+                        help='raiz del corpus (default: _references/claude-code-bin)')
     parser.add_argument('--binario', default=None,
                         help='ejecutable a medir (default: el `claude` del PATH)')
     parser.add_argument('--strict', action='store_true',

@@ -30,7 +30,11 @@ from pathlib import Path
 
 # Las raíces cuya presencia en una cita significa «esto es evidencia»: material
 # que sostiene una afirmación y por tanto tiene que sobrevivir al contenedor.
-EVIDENCE_ROOTS = ('.claude/eventos/', 'tools/claude-code-bin/')
+# `tools/claude-code-bin/` se conserva porque la evidencia fechada de
+# kaupamex-docs la cita y no se reescribe; el corpus vive hoy en
+# `thyrox: _references/claude-code-bin/`.
+EVIDENCE_ROOTS = ('.claude/eventos/', '_references/claude-code-bin/',
+                  'tools/claude-code-bin/')
 
 # Una cita puede venir en literal doble-comilla-invertida, entre comillas o
 # desnuda; el patrón toma la ruta y la puntuación final se recorta aparte.

@@ -4,7 +4,7 @@ model_catalog.py — el catálogo de modelos del paquete, leído desde Python.
 
 La única fuente de precios, tiers, ventanas y esfuerzo es
 ``.claude/packages/agent/src/models.json``, que ``bin/extract_model_registry.py``
-deriva del ejecutable vendorizado (``tools/claude-code-bin/<build>/``) y cuya
+deriva del ejecutable vendorizado (``_references/claude-code-bin/<build>/``) y cuya
 suite exige igualdad byte a byte con una extracción fresca. Este módulo lo lee;
 no lo copia. Es el gemelo en Python de ``src/models.ts`` — misma función de
 coste de cuatro términos (la ``eke`` del ejecutable): entrada, escritura de
@@ -54,7 +54,7 @@ def try_catalog(path: Path = CATALOG_PATH) -> tuple[dict | None, str | None]:
     except (OSError, json.JSONDecodeError) as exc:
         return None, (f"no se puede leer el catálogo de modelos en {path}: {exc}. "
                       "Regenéralo con `python3 .claude/packages/agent/bin/extract_model_registry.py "
-                      "tools/claude-code-bin/<build>/claude_strings.txt --stdout > "
+                      "_references/claude-code-bin/<build>/claude_strings.txt --stdout > "
                       ".claude/packages/agent/src/models.json`")
     if "models" not in data or "pricing_tiers" not in data:
         return None, f"{path} no tiene la forma esperada (faltan `models` o `pricing_tiers`)"

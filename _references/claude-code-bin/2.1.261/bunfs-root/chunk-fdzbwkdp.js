@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.261
+import{bEt}from"/$bunfs/root/chunk-9j72twq2.js";function a(e){let t="plugin"in e?e.plugin:"no-plugin";return`${e.type}:${e.source}:${t}`}function l(e,t){let n=e.filter((r)=>r.source==="lsp-manager"||r.source.startsWith("plugin:")),s=new Set(t.map(g));return[...n.filter((r)=>!s.has(g(r))),...t]}function g(e){return e.type==="generic-error"?`generic-error:${e.source}:${e.error}`:`${e.type}:${e.source}`}function u(e,t){let n=e.filter((r)=>r.source.startsWith("plugin:")),s=new Set(t.map((r)=>`${r.type}:${r.source}`));return[...n.filter((r)=>!s.has(`${r.type}:${r.source}`)),...t]}class BU{#n;#t;constructor(e){this.#n=e.getState,this.#t=e.setState}static over(e){return new BU({getState:e.getState,setState:bEt(e.setState)})}get(){return this.#n().plugins}#e(e){this.#t((t)=>{let n=e(t.plugins);return n===t.plugins?t:{...t,plugins:n}})}addErrors(e){if(e.length===0)return;this.#e((t)=>{let n=new Set(t.errors.map((i)=>a(i))),s=e.filter((i)=>!n.has(a(i)));if(s.length===0)return t;return{...t,errors:[...t.errors,...s]}})}addWarnings(e){if(e.length===0)return;this.#e((t)=>{let n=new Set(t.warnings.map((i)=>a(i))),s=e.filter((i)=>!n.has(a(i)));if(s.length===0)return t;return{...t,warnings:[...t.warnings,...s]}})}markNeedsRefresh(){this.#e((e)=>e.needsRefresh?e:{...e,needsRefresh:!0})}setPendingMarketplaces(e){this.#e((t)=>({...t,installationStatus:{marketplaces:e.map((n)=>({name:n,status:"pending"})),plugins:[]}}))}setMarketplaceStatus(e,t,n){this.#e((s)=>({...s,installationStatus:{...s.installationStatus,marketplaces:s.installationStatus.marketplaces.map((i)=>i.name===e?{...i,status:t,error:n}:i)}}))}applyRefresh(e){this.#t((t)=>({...t,plugins:{...t.plugins,enabled:e.enabled,disabled:e.disabled,commands:e.commands,errors:l(t.plugins.errors,e.errors),warnings:u(t.plugins.warnings,e.warnings),needsRefresh:!1},agentDefinitions:e.agentDefinitions,mcp:{...t.mcp,pluginReconnectKey:t.mcp.pluginReconnectKey+1}}))}}
+export{BU};

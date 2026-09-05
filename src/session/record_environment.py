@@ -9,7 +9,7 @@ condiciones bajo las que se produjo: un resultado sin ellas es una foto, no un
 procedimiento repetible.
 
 Hasta hoy eso se compensaba por convención —el volcado de cadenas vive bajo
-``tools/claude-code-bin/<versión>/`` justo para que su versión conste— y una
+``_references/claude-code-bin/<versión>/`` justo para que su versión conste— y una
 convención no es un mecanismo: depende de que alguien la recuerde.
 
 **Una clave que no se pudo medir se declara ``null``, nunca se omite.** Ausente

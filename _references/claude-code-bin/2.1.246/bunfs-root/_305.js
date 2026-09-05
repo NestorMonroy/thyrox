@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{Qrc as m,zrc as s}from"/$bunfs/root/_668.js";import{G6c as n,Z6c as o,u6c as t}from"/$bunfs/root/_767.js";import{Ped as i,Qed as r}from"/$bunfs/root/_817.js";o();m();r();var e={poll_interval_ms_not_at_capacity:2000,poll_interval_ms_at_capacity:600000,non_exclusive_heartbeat_interval_ms:0,multisession_poll_interval_ms_not_at_capacity:2000,multisession_poll_interval_ms_partial_capacity:2000,multisession_poll_interval_ms_at_capacity:600000,reclaim_older_than_ms:5000,session_keepalive_interval_v2_ms:120000};var l={message:"must be 0 (disabled) or \u2265100ms"},c=i(()=>n({poll_interval_ms_not_at_capacity:t().int().min(100),poll_interval_ms_at_capacity:t().int().refine((_)=>_===0||_>=100,l),non_exclusive_heartbeat_interval_ms:t().int().min(0).default(0),multisession_poll_interval_ms_not_at_capacity:t().int().min(100).default(e.multisession_poll_interval_ms_not_at_capacity),multisession_poll_interval_ms_partial_capacity:t().int().min(100).default(e.multisession_poll_interval_ms_partial_capacity),multisession_poll_interval_ms_at_capacity:t().int().refine((_)=>_===0||_>=100,l).default(e.multisession_poll_interval_ms_at_capacity),reclaim_older_than_ms:t().int().min(1).default(5000),session_keepalive_interval_v2_ms:t().int().min(0).default(120000)}).refine((_)=>_.non_exclusive_heartbeat_interval_ms>0||_.poll_interval_ms_at_capacity>0,{message:"at-capacity liveness requires non_exclusive_heartbeat_interval_ms > 0 or poll_interval_ms_at_capacity > 0"}).refine((_)=>_.non_exclusive_heartbeat_interval_ms>0||_.multisession_poll_interval_ms_at_capacity>0,{message:"at-capacity liveness requires non_exclusive_heartbeat_interval_ms > 0 or multisession_poll_interval_ms_at_capacity > 0"}));function v(){let _=s("tengu_bridge_poll_interval_config",e,300000),a=c().safeParse(_);return a.success?a.data:e}
+export{v as SF};

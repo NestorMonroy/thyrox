@@ -1,0 +1,13 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.261
+import{pm,Bf,znt,CPn,RDn}from"/$bunfs/root/chunk-annedm50.js";import{xe}from"/$bunfs/root/chunk-dcawh0q4.js";import{V,qu,hPn}from"/$bunfs/root/chunk-y5pwxex8.js";import{JB,Jkn,P1e,SZe,$se}from"/$bunfs/root/chunk-hyqdn9c0.js";import{Wu}from"/$bunfs/root/chunk-1a7p190e.js";import{Za,_Tt,bTt,nCe}from"/$bunfs/root/chunk-tcap6yb8.js";import{kN}from"/$bunfs/root/chunk-d5174152.js";import{AS,DK}from"/$bunfs/root/chunk-h3jmzymx.js";import{mkt}from"/$bunfs/root/chunk-p3zwp1vp.js";import{DT}from"/$bunfs/root/chunk-16w4y03y.js";import{FSn}from"/$bunfs/root/chunk-229jbyns.js";import{sXn}from"/$bunfs/root/chunk-2nzgj2r9.js";import{fNn}from"/$bunfs/root/chunk-kmh3w4z2.js";import{SB}from"/$bunfs/root/chunk-thvvxhd8.js";import{createServer as f}from"net";function sot(e,m,o){return new Promise((n,c)=>{let t=(r)=>{i.close(),c(r)},i=f((r)=>{let a="";r.setEncoding("utf8"),r.on("data",(d)=>{if(a+=d,o&&a.length>8388608){r.destroy();return}let p=a.indexOf(`
+`);if(p<0)return;if(o){let s;try{s=V(a.slice(0,p))}catch{s=void 0}if(!s||!DT(s.auth,o)){r.destroy();return}i.close(),n(s);return}i.close();try{n(V(a.slice(0,p)))}catch(s){c(s)}}),r.on("error",o?()=>r.destroy():t)});if(i.on("error",t),m)i.once("listening",()=>{try{m()}catch(r){t(r)}});i.listen(e)})}async function iot(e,m){let o=await Wu(e.cwd,void 0);qu(o);let n={originalCwd:o,projectRoot:o,cwd:o};if(e.sessionId)Bf(pm(e.sessionId),"spare_claim",null,n);else znt(n);if(Za(),$se(),SZe(),CPn(),sXn(),kN({warm_spare_claimed:1}),xe(e.env.CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST)){for(let t of Object.keys(process.env))if(_Tt(t)||t==="ANTHROPIC_CUSTOM_HEADERS"||bTt(t)||nCe(t))delete process.env[t]}delete process.env.ANTHROPIC_AUTH_TOKEN,delete process.env.ANTHROPIC_API_KEY,delete process.env.CLAUDE_CODE_OAUTH_TOKEN,Object.assign(process.env,e.env),process.argv=[process.argv[0],process.argv[1],...e.argv],hPn(),await fNn(e.argv),RDn(),Jkn(),mkt(),SB(),P1e({preservePendingExposures:!0,preserveLoggedExposures:!0}),JB(),FSn(),DK(),AS();let{main:c}=await m;await c()}
+export{sot,iot};

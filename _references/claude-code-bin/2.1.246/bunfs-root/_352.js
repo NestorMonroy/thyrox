@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{CK as G,DK as eo}from"/$bunfs/root/_353.js";import{XAb as l,YAb as K}from"/$bunfs/root/_558.js";import{t2b as F,v2b as J}from"/$bunfs/root/_628.js";import{Ccc as a,Csc as S,Esc as z,Jcc as N,Pdc as E,Vcc as A,Wec as j,_cc as O,hdc as T,jfc as f,kdc as oo,rfc as to,wcc as R,xcc as C,xec as U,ycc as m}from"/$bunfs/root/_668.js";import{vzc as M,yzc as w}from"/$bunfs/root/_683.js";import{UFc as _,sGc as Z}from"/$bunfs/root/_701.js";import{BJc as i,gKc as D}from"/$bunfs/root/_708.js";import{s7c as k,v7c as g,y7c as Y}from"/$bunfs/root/_770.js";import{Pcd as B,Rcd as W}from"/$bunfs/root/_814.js";import{Ged as I,Oed as X}from"/$bunfs/root/_816.js";import{$od as v,apd as x,atd as V}from"/$bunfs/root/_826.js";import{fwd as h,nwd as Q}from"/$bunfs/root/_833.js";import{xxd as u}from"/$bunfs/root/_837.js";function y(o=!0,r=!1){if(!o)return i;let t=F(S("theme","dark").value);if(r)return M.dim(l("promptBorder",t)(i));return l("fastMode",t)(i)}var L=u(()=>{w();D();z();J();K()});function ro(o,r,t=!0,d){if(N(),!t)x({...v()??{},fastMode:o});if(g())k()?.sendControlRequest({subtype:"apply_flag_settings",settings:{fastMode:o?!0:null,...o&&{model:m()}}}).catch(I);else if(t)_("userSettings",{fastMode:o?!0:void 0},void 0,d);if(G({fastMode:o},r),o)r((e)=>{if(a(e.mainLoopModel))return e;let n=m(),s=f(n)===f(U());return{...e,mainLoopModel:s?null:n,mainLoopModelForSession:null}})}async function Bo(o,r,t,d,e=!0,n){let s=R();if(s)return`Fast mode unavailable: ${s}`;let{mainLoopModel:H}=r();if(ro(o,t,e,n),B("tengu_fast_mode_toggled",{enabled:o,source:h(d),remote:g()}),o){let c=y(!0),P=!a(H)?` \xB7 model set to ${C()}`:"",p=E(),b=a(p)?j(p):"claude-opus-5",q=T(O(b));return`${c} Fast mode ON${P} \xB7 ${q}${e?"":" (this session only)"}`}else return`Fast mode OFF${e?"":" (this session only)"}`}var no=u(()=>{V();L();Y();W();Q();eo();A();X();to();oo();Z()});
+export{y as xK,L as yK,ro as zK,Bo as AK,no as BK};

@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{vxd as h}from"/$bunfs/root/_837.js";var x=h(function(T){T.HttpAuthLocation=void 0;(function(t){t.HEADER="header",t.QUERY="query"})(T.HttpAuthLocation||(T.HttpAuthLocation={}));T.HttpApiKeyAuthLocation=void 0;(function(t){t.HEADER="header",t.QUERY="query"})(T.HttpApiKeyAuthLocation||(T.HttpApiKeyAuthLocation={}));T.EndpointURLScheme=void 0;(function(t){t.HTTP="http",t.HTTPS="https"})(T.EndpointURLScheme||(T.EndpointURLScheme={}));T.AlgorithmId=void 0;(function(t){t.MD5="md5",t.CRC32="crc32",t.CRC32C="crc32c",t.SHA1="sha1",t.SHA256="sha256"})(T.AlgorithmId||(T.AlgorithmId={}));var m=(t)=>{let o=[];if(t.sha256!==void 0)o.push({algorithmId:()=>T.AlgorithmId.SHA256,checksumConstructor:()=>t.sha256});if(t.md5!=null)o.push({algorithmId:()=>T.AlgorithmId.MD5,checksumConstructor:()=>t.md5});return{addChecksumAlgorithm(r){o.push(r)},checksumAlgorithms(){return o}}},E=(t)=>{let o={};return t.checksumAlgorithms().forEach((r)=>{o[r.algorithmId()]=r.checksumConstructor()}),o},a=(t)=>m(t),f=(t)=>E(t);T.FieldPosition=void 0;(function(t){t[t.HEADER=0]="HEADER",t[t.TRAILER=1]="TRAILER"})(T.FieldPosition||(T.FieldPosition={}));var C="__smithy_context";T.IniSectionType=void 0;(function(t){t.PROFILE="profile",t.SSO_SESSION="sso-session",t.SERVICES="services"})(T.IniSectionType||(T.IniSectionType={}));T.RequestHandlerProtocol=void 0;(function(t){t.HTTP_0_9="http/0.9",t.HTTP_1_0="http/1.0",t.TDS_8_0="tds/8.0"})(T.RequestHandlerProtocol||(T.RequestHandlerProtocol={}));T.SMITHY_CONTEXT_KEY=C;T.getDefaultClientConfiguration=a;T.resolveDefaultRuntimeConfig=f});var I=h(function(_){var d=x(),R=(t)=>t[d.SMITHY_CONTEXT_KEY]||(t[d.SMITHY_CONTEXT_KEY]={}),A=(t)=>{if(typeof t==="function")return t;let o=Promise.resolve(t);return()=>o};_.getSmithyContext=R;_.normalizeProvider=A});
+export{I as h$c};

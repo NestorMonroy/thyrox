@@ -1,0 +1,53 @@
+// ==========================================================================
+// memdir/paths.ts
+//
+// Codigo VERBATIM del bundle, delimitado por tree-sitter.
+//   estructura : tools/restored-src/src/memdir/paths.ts
+//   contenido  : tools/claude-code-bin/bunfs-root/cli
+//
+//   anclas utilizables : 11  (1 cadena, 10 nombre)
+//   descartadas por ruido (>400 aparic.) : 12
+//   sitios de co-ocurrencia : 14  (se emiten los 6 de mayor cruce)
+//   regiones emitidas  : 3
+//
+// COMO SE LOCALIZO. El minificador mangla los identificadores
+// locales y preserva los literales de cadena y las claves de
+// objeto. Un ancla frecuente no discrimina sola; se cruza con
+// las demas del mismo archivo en una ventana de 4000 B.
+//
+// La puntuacion de un sitio NO es su numero de anclas: es la
+// suma de log10(ventanas/apariciones)/grado de cada una. El
+// grado es en cuantos archivos del arbol aparece el ancla: un
+// nombre que citan doce fragmentos no es de ninguno. El umbral
+// se DERIVA del bundle — aqui 3.85 = log10(7062).
+// ==========================================================================
+
+// --- bundle[15972172:15973896]  (1724 B)
+//     especificidad 6.187 · 5 anclas — 'projects'(×286 g1), 'getMonth'(×17 g2), 'getFullYear'(×18 g2), 'getDate'(×23 g2), 'padStart'(×91 g2)
+async function uyE(e){if(e){let i=[];switch((await Wf((u)=>e.listEntries({namespace:"transcript"},u?{cursor:u}:void 0),(u)=>{for(let d of u)if(d.kind==="scope"&&d.scope.namespace==="transcript"&&d.scope.projectKey!==void 0)i.push(d.scope.projectKey)})).status){case"done":break;case"error":return[];case"capped":E(`insights: project listing truncated at ${t0} pages; scanning the ${i.length} projects seen`,{level:"warn"});break}let a=[],l={pagesLeft:t0},c=0;for(let u=0;u<i.length;u++){let d=i[u];switch((await Wf((f)=>e.listEntries({namespace:"transcript",projectKey:d},f?{cursor:f}:void 0),(f)=>{for(let m of f){if(m.kind!=="key"||m.key.namespace!=="transcript")continue;if(m.key.agentId!==void 0||m.key.journal===!0||m.key.projectKey!==d)continue;let h=g_(m.key.sessionId);if(!h)continue;a.push({sessionId:h,key:Pn.transcript(d,h),mtime:m.mtimeMs??0,size:m.size??0})}},{budget:l})).status){case"done":break;case"error":break;case"capped":if(c===0)E(`insights: session listing for project ${d} truncated (the scan's ${t0}-page session-listing budget is spent); keeping the sessions seen`,{level:"warn"});c++;break}if(u%10===9)await new Promise((f)=>setImmediate(f))}if(c>1)E(`insights: ${c-1} more ${c===2?"project was":"projects were"} left without a session listing after the scan's budget ran out`,{level:"warn"});return a.sort((u,d)=>d.mtime-u.mtime),a}let t=wH(),r;try{r=await NRe.readdir(t,{withFileTypes:!0})}catch{return[]}let n=r.filter((i)=>i.isDirectory()).map((i)=>xBe.join(t,i.name)),o=[];for(let i=0;i<n.length;i++){let s=await rwr(n[i]);for(let[a,l]of s)o.push({sessionId:a,path:l.path,mtime:l.mtime,size:l.size});if(i%10===9)await new Promise((a)=>setImmediate(a))}return o.sort((i,s)=>s.mtime-i.mtime),o}
+
+// --- bundle[20725151:20725425]  (274 B)
+//     especificidad 4.795 · 4 anclas — 'getMonth'(×17 g2), 'getFullYear'(×18 g2), 'getDate'(×23 g2), 'padStart'(×91 g2)
+function SUA(e){let t=e.getFullYear(),r=String(e.getMonth()+1).padStart(2,"0"),n=String(e.getDate()).padStart(2,"0"),o=String(e.getHours()).padStart(2,"0"),i=String(e.getMinutes()).padStart(2,"0"),s=String(e.getSeconds()).padStart(2,"0");return`${t}-${r}-${n}-${o}${i}${s}`}
+
+// --- bundle[14471681:14478577]  (6896 B)
+//     especificidad 4.095 · 2 anclas — 'projectsDir'(×14 g1), 'projects'(×286 g1)
+async function NNm(e,t,r,n={projectsDir:wH(),perFileCap:A3w,aggregateCap:H3w,deadlineMs:T3w,statCap:k3w,fileLimit:jNm},o){if(!e)return AM(tnn,'_NOT GATHERED \u2014 the user picked "just this project" (Q2), was not asked before this ran, or no permission context was available to enforce permissions.deny. No other project\u2019s transcripts were read. Do not read them yourself; use only the per-project section above._');if(t===void 0)return AM(tnn,"_NOT GATHERED \u2014 no permission context was available to enforce permissions.deny, so no other project\u2019s transcripts were read._");let i=zt(),s=(B)=>Gge(B,t),a=Vl(),l=o!==void 0&&n.projectsDir===wH()?o:void 0,c=Date.now()+n.deadlineMs,u=zge.realpath(n.projectsDir).catch(()=>n.projectsDir),d=(B)=>i==="windows"?B.toLowerCase():B,p=new Set((r?.projectDirs??[]).map(d)),f=new Set((r?.transcriptFiles??[]).map(d)),m=(async()=>{if(l){let se=0,Se=[],ge;do{if(Date.now()>=c)throw Error("enumeration deadline reached");let Ue=await l.listEntries({namespace:"transcript"},{skipScopeStats:!0,...ge&&{cursor:ge}});if(!Ue.ok)throw Error("projects enumeration failed");for(let je of Ue.value.items)if(je.kind==="scope"&&je.scope.namespace==="transcript"&&je.scope.projectKey!==void 0)Se.push(je.scope.projectKey);ge=Ue.value.cursor}while(ge);let he=Se.filter((Ue)=>!p.has(d(eF.join(n.projectsDir,Ue)))),fe=he.slice(0,n.statCap);if(se+=he.length-fe.length,Date.now()>=c)throw Error("enumeration deadline reached");let Ie=(await Promise.all(fe.map(async(Ue)=>{let je=eF.join(n.projectsDir,Ue),ze=[],Ge;do{if(Date.now()>=c)throw Error("enumeration deadline reached");let De=await l.listEntries({namespace:"transcript",projectKey:Ue},{skipScopeStats:!0,...Ge&&{cursor:Ge}});if(!De.ok)return se++,[];for(let We of De.value.items){if(We.kind!=="key"||We.key.namespace!=="transcript"||We.key.agentId!==void 0)continue;let Ze=eF.join(je,`${We.key.sessionId}.jsonl`);if(f.size>0&&f.has(d(Ze)))continue;ze.push({path:Ze,mtimeMs:We.mtimeMs??0})}Ge=De.value.cursor}while(Ge);return ze}))).flat(),xe=Ie.slice(0,n.statCap);if(Date.now()>=c)throw Error("enumeration deadline reached");let Ne=await u;if(Date.now()>=c)throw Error("enumeration deadline reached");let Ye=0;return{candidates:xe.filter(({path:Ue})=>{if(vAt(Ue,n.projectsDir,Ne,s,i))return Ye++,!1;return!0}),enumeratedTotal:Ie.length,deniedCount:Ye,unreadableDirCount:se,statFailedCount:0}}let Z=(await a.listEntries(n.projectsDir)).filter((se)=>se.isDirectory&&!p.has(d(eF.join(n.projectsDir,se.name)))),K=Z.slice(0,n.statCap),ne=Z.length-K.length;if(Date.now()>=c)throw Error("enumeration deadline reached");let X=(await Promise.all(K.map(async(se)=>{let Se=eF.join(n.projectsDir,se.name);try{let ge=await a.listEntries(Se),he=[];for(let fe of ge){if(!fe.isFile||!fe.name.endsWith(".jsonl"))continue;let we=eF.join(Se,fe.name);if(f.size>0&&f.has(d(we)))continue;he.push(we)}return he}catch{return ne++,[]}}))).flat(),te=X.slice(0,n.statCap);if(Date.now()>=c)throw Error("enumeration deadline reached");let re=await u;if(Date.now()>=c)throw Error("enumeration deadline reached");let de=0,oe=0;return{candidates:(await Promise.all(te.map(async(se)=>{if(vAt(se,n.projectsDir,re,s,i))return de++,null;try{let{mtimeMs:Se}=await a.stat(se);return{path:se,mtimeMs:Se}}catch{return oe++,null}}))).filter((se)=>se!==null),enumeratedTotal:X.length,deniedCount:de,unreadableDirCount:ne,statFailedCount:oe}})(),h;try{h=await tl(m,n.deadlineMs,"enumeration timed out")}catch{return AM(tnn,"_Not queryable here \u2014 the projects root under the config home is absent or unreadable, or enumerating it exceeded the deadline. Treat other-project usage as unknown, not empty._")}let{candidates:g,enumeratedTotal:y,unreadableDirCount:_,statFailedCount:b}=h,S=h.deniedCount,w=g.sort((B,Z)=>Z.mtimeMs-B.mtimeMs).slice(0,n.fileLimit),H=[],T=0,k=0,C=0,x=0,I=0,P=0,M=!1,D=!1,F=new AbortController,U=Ir(Math.max(0,c-Date.now()),F.signal).then(()=>t5t),G=await Promise.race([u,U]),Q=G===t5t?n.projectsDir:G;if(G===t5t)D=!0,P=w.length;try{for(let[B,{path:Z}]of w.entries()){if(D)break;if(C>=n.aggregateCap){M=!0,P=w.length-B;break}if(Date.now()>=c){D=!0,P=w.length-B;break}let K=await Promise.race([zge.realpath(Z).catch(()=>null),U]);if(K===t5t){D=!0,P=w.length-B;break}if(K===null){I++;continue}let ne=K;if(vAt(ne,Q,n.projectsDir,s,i)||!Jor(ne,Q)){S++;continue}let ie=await Promise.race([ERe(ne,n.perFileCap,{fromTail:!0,noFollow:!0,requireNlink1:!0,verifyHandlePath:(re)=>re===ne||!vAt(re,Q,n.projectsDir,s,i)&&Jor(re,Q)}),U]);if(ie===t5t){D=!0,P=w.length-B;break}if(ie===null||ie==="unreadable"){I++;continue}if(k++,ie.truncated)x++;C+=Buffer.byteLength(ie.content);let X=[];for(let re of ie.content.split(`
+`)){if(!re.includes(zNm))continue;try{let oe=ZH(re).message?.content;if(!Array.isArray(oe))continue;for(let ee of oe)if(ee.type==="tool_use"&&ee.name===Mi&&typeof ee.input?.command==="string")T++,X.push(xs(ee.input.command,`
+`))}catch{}}let te=NLl-H.length;if(te>0){let re=X.length>te?X.length-te:0;for(let de=re;de<X.length;de++)H.push(X[de])}}}finally{F.abort()}let{words:Y,hitDeadline:W}=BLl(H,"posix",performance.now()+Math.max(250,c-Date.now())),V=W||T>H.length,j=pvr(Y,WEe*2);return AM(tnn,[`Transcripts scanned: ${k} of ${w.length} selected (from ${y} enumerated); Bash commands seen: ${T}`,y>n.statCap?`
+_Enumeration cap reached \u2014 the ${n.statCap} first-enumerated of ${y} transcripts were considered; the most-recent selection is drawn from that subset, so a recent session in a project past the cap may be missing._`:"",b+_>0?`
+_${b} ${At(b,"transcript")} and ${_} project ${At(_,"directory","directories")} could not be enumerated (unreadable, transient error, or past the enumeration cap) \u2014 coverage is partial; treat missing projects as unknown, not empty._`:"",S>0?`
+_Skipped by the read-deny gate: ${S} ${At(S,"transcript")} not read \u2014 a permissions.deny rule covers the path, it is an untrusted network path, or it resolved outside the projects directory._`:"",I>0?`
+_${I} ${At(I,"transcript")} could not be read (removed mid-gather, or refused as a symlink/hardlink alias)._`:"",x>0?`
+_${x} ${At(x,"transcript")} exceeded the ${Math.round(n.perFileCap/1048576)} MiB per-file cap \u2014 only the most recent part of each was scanned._`:"",M?`
+_Aggregate byte cap reached (${Math.round(n.aggregateCap/1048576)} MiB) \u2014 remaining ${P} ${At(P,"transcript")} not scanned._`:"",D?`
+_Deadline reached \u2014 remaining ${P} ${At(P,"transcript")} not scanned._`:"",V?`
+_Command-word extraction hit its line cap or deadline \u2014 the list below may be incomplete._`:"",j.length?`
+#### Tools run in other projects
+${j.map(([B,Z])=>`- ${nBe(B)} (${Z}\xD7)`).join(`
+`)}`:"",`
+The user opted into this at Q2. Raw command lines were never read into the transcript \u2014 only the command words above. Merge these with the per-project counts in the section above.`].filter(Boolean).join(`
+`))}
+
+// Habia 14 sitios de co-ocurrencia; se emitieron los 6 de mayor cruce. Un contrato con muchas
+// realizaciones (una interfaz) los tiene por decenas.

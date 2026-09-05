@@ -1,0 +1,16 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{TWb as _,xWb as u}from"/$bunfs/root/_611.js";import{Dyc as h,xyc as f}from"/$bunfs/root/_678.js";import{xxd as A}from"/$bunfs/root/_837.js";function C(n){return`"${n.replace(/["\\\x00-\x1f\x7f]/g,(t)=>{switch(t){case'"':return"\\\"";case"\\":return"\\\\";case`
+`:return"\\n";case"\r":return"\\r";case"\t":return"\\t";default:return"\\"+t.charCodeAt(0).toString(8).padStart(3,"0")}})}"`}async function y(n,e,t,r){if(e.length===0||r<=0||t?.aborted===!0)return{pairs:[],spawns:0};let s=await u(n,["hash-object","--stdin-paths"],t,m,g,e.map(C).join(`
+`)+`
+`,{filterDriversOff:!0}),a=s.stdout.split(`
+`).map((o)=>o.replace(/\r$/,"")).filter((o)=>/^[0-9a-f]{40}([0-9a-f]{24})?$/.test(o)).slice(0,e.length),d=e.slice(0,a.length).map((o,i)=>[o,a[i]]);if(s.code===0&&a.length===e.length)return{pairs:d,spawns:1};let l=await y(n,e.slice(a.length+1),t,r-1);return{pairs:[...d,...l.pairs],spawns:1+l.spawns}}async function p(n,e,t){let r=await b(n,e,B,t);return r===null?[]:e.filter((s)=>r.answered.has(s)&&!r.claimed.has(s))}async function b(n,e,t,r,s=S){if(e.length===0)return{answered:new Set,claimed:new Set};let a=AbortSignal.any([...r===void 0?[]:[r],AbortSignal.timeout(s)]),d=await u(n,["check-attr","-z","--stdin",...t],a,e.reduce((i,c)=>i+t.length*(Buffer.byteLength(c)+2304),4096),g,e.join("\x00")+"\x00");if(d.code!==0)return null;let l=d.stdout.split("\x00"),o=f(l.slice(0,l.length-l.length%3),3).flatMap(([i,,c])=>i===void 0||c===void 0?[]:[{path:i,claimed:c!=="unspecified"&&c!=="unset"}]);return{answered:new Set(o.map((i)=>i.path)),claimed:new Set(o.flatMap((i)=>i.claimed?[i.path]:[]))}}function E(n,{timeoutMs:e=S}={}){return async(t,r)=>{let s=await b(n,t,["filter"],r,e);return s===null?null:new Set(t.filter((a)=>s.claimed.has(a)||!s.answered.has(a)))}}function I(n,e){return async(t,r,s)=>{if(!(e!==void 0?e.has(t):(await p(n,[t],s)).includes(t)))return null;let d=await u(n,["hash-object","--stdin","--path",t],s,m,g,r,{filterDriversOff:!0}),l=d.stdout.trim();return d.code===0&&/^[0-9a-f]{40}([0-9a-f]{24})?$/.test(l)?l:null}}async function O(n,e,t){return new Set(await p(n,e,t))}function H(n){return async(e,t)=>{let r=await p(n,e,t),s=f([...r],w),{pairs:a}=await s.reduce(async(d,l)=>{let o=await d,i=await y(n,l,t,T-o.spawns);return{pairs:[...o.pairs,...i.pairs],spawns:o.spawns+i.spawns}},Promise.resolve({pairs:[],spawns:0}));return new Map(a)}}async function R(n,e,t,r){return n.kind==="git_blob"&&(await t([e],r)).get(e)===n.blobId}var w=512,g,B,T=16,m,S=15000;var F=A(()=>{h();_();g={GIT_NO_LAZY_FETCH:"1"},B=["filter","working-tree-encoding","ident"],m=w*80+262144});
+export{C as oX,E as pX,I as qX,O as rX,H as sX,R as tX,F as uX};

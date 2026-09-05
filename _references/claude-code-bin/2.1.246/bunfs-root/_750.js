@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{f_c as h,g_c as v}from"/$bunfs/root/_777.js";import{jhd as d,mgd as f,ohd as k,ugd as y}from"/$bunfs/root/_820.js";import{xxd as A}from"/$bunfs/root/_837.js";function P(o,a=300000,u){let r=(i)=>typeof a==="function"?a(i):a,e=new Map,t=new Map,c=async(...i)=>{let n=f(i),s=e.get(n);if(s&&u&&!u(s.value,s.timestamp)){if(s.refreshPromise)return s.refreshPromise;e.delete(n),s=void 0}let p=Date.now();if(!s){let g=t.get(n);if(g)return g;let m=o(...i);t.set(n,m);try{let l=await m;if(t.get(n)===m)e.set(n,{value:l,timestamp:Date.now(),refreshing:!1,lifetimeMs:r(l)});return l}finally{if(t.get(n)===m)t.delete(n)}}if(s&&p-s.timestamp>s.lifetimeMs&&!s.refreshing){s.refreshing=!0;let g=s,m=o(...i);return g.refreshPromise=m,m.then((l)=>{if(e.get(n)===g)e.set(n,{value:l,timestamp:Date.now(),refreshing:!1,lifetimeMs:r(l)})}).catch((l)=>{if(d(String(l),{level:"error"}),e.get(n)===g)e.delete(n)}),s.value}return e.get(n).value};return c.cache={clear:()=>{e.clear(),t.clear()}},c}function C(o,a,u=100){let r=new h({max:u}),e=(...t)=>{let c=a(...t),i=r.get(c);if(i!==void 0)return i;let n=o(...t);return r.set(c,n),n};return e.cache={clear:()=>r.clear(),size:()=>r.size,delete:(t)=>r.delete(t),get:(t)=>r.peek(t),has:(t)=>r.has(t),set:(t,c)=>void r.set(t,c)},e}function S(o){return R.add(o),o}function E(o,a){let u=[];for(let r of a){let e=o.get(r);if(e!==void 0)u.push([r,e])}o.clear();for(let[r,e]of u)o.set(r,e)}function F(o,a,u){let r=u?.maxSize??w,e=new Map;R.add(e);function t(...c){let i=a?a(...c):c[0],n=e.get(i);if(n)return n;let s=o(...c);if(e.size>=r)e.delete(e.keys().next().value);return e.set(i,s),s.catch(()=>{if(e.get(i)===s)e.delete(i)}),s}return t.cache=e,t}var R,w=128;var x=A(()=>{v();k();y();R=new Set});
+export{P as oZc,C as pZc,S as qZc,E as rZc,F as sZc,x as tZc};

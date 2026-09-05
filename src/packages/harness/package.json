@@ -1,0 +1,46 @@
+{
+  "name": "@kaupamex/harness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "El harness propio: el bucle que llama al modelo, atiende sus llamadas a herramienta y decide cuando parar.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./transcript": "./src/transcript.ts",
+    "./session": "./src/session.ts",
+    "./hooks": "./src/hooks.ts",
+    "./permission": "./src/permission.ts",
+    "./tools/registry": "./src/tools/registry.ts",
+    "./provider": "./src/provider/index.ts",
+    "./loop": "./src/loop.ts",
+    "./context/systemPrompt": "./src/context/systemPrompt.ts",
+    "./context/microcompact": "./src/context/microcompact.ts",
+    "./context/autocompact": "./src/context/autocompact.ts",
+    "./sessions": "./src/sessions/index.ts",
+    "./observability/journal": "./src/observability/journal.ts",
+    "./observability/cost": "./src/observability/cost.ts",
+    "./observability/store": "./src/observability/store.ts",
+    "./tools/agent": "./src/tools/agent.ts",
+    "./tools/tasks": "./src/tools/tasks.ts",
+    "./tools/web": "./src/tools/web.ts",
+    "./sessions/modelSwitch": "./src/sessions/modelSwitch.ts",
+    "./cli/render": "./src/cli/render.ts",
+    "./cli/resume": "./src/cli/resume.ts",
+    "./tools/agentDefinitions": "./src/tools/agentDefinitions.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "harness": "bun run bin/harness.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0"
+  },
+  "dependencies": {
+    "@kaupamex/agent": "workspace:*"
+  }
+}

@@ -1,0 +1,14 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{AJ as m,zJ as i}from"/$bunfs/root/_343.js";import"/$bunfs/root/_748.js";import"/$bunfs/root/_749.js";import"/$bunfs/root/_750.js";import"/$bunfs/root/_751.js";import"/$bunfs/root/_752.js";import"/$bunfs/root/_754.js";import"/$bunfs/root/_755.js";import"/$bunfs/root/_756.js";import"/$bunfs/root/_777.js";import"/$bunfs/root/_778.js";import"/$bunfs/root/_779.js";import"/$bunfs/root/_780.js";import{Tbd as l}from"/$bunfs/root/_811.js";import"/$bunfs/root/_812.js";import"/$bunfs/root/_813.js";import"/$bunfs/root/_814.js";import"/$bunfs/root/_815.js";import"/$bunfs/root/_816.js";import"/$bunfs/root/_817.js";import"/$bunfs/root/_818.js";import"/$bunfs/root/_819.js";import"/$bunfs/root/_820.js";import"/$bunfs/root/_821.js";import"/$bunfs/root/_822.js";import"/$bunfs/root/_823.js";import"/$bunfs/root/_824.js";import"/$bunfs/root/_825.js";import"/$bunfs/root/_826.js";import"/$bunfs/root/_827.js";import"/$bunfs/root/_828.js";import"/$bunfs/root/_829.js";import"/$bunfs/root/_830.js";import"/$bunfs/root/_831.js";import"/$bunfs/root/_832.js";import"/$bunfs/root/_833.js";import"/$bunfs/root/_834.js";import"/$bunfs/root/_835.js";import"/$bunfs/root/_836.js";import{xxd as u}from"/$bunfs/root/_837.js";async function v(){let t=await i();if(!t.success)return{type:"text",value:`Failed to create heap dump: ${t.error}`};let e=[t.heapPath,t.diagPath,"",d(t.diagnostics)];return e.push("","Open the .heapsnapshot in Chrome DevTools \u2192 Memory \u2192 Load to inspect retainers."),{type:"text",value:e.join(`
+`)}}function d(t){let{memoryUsage:e,resourceUsage:a,analysis:o}=t,s=e.external-e.arrayBuffers,r=Math.max(0,e.rss-e.heapTotal-e.external),p=e.heapTotal>e.external+r?"\u2014 most memory is JS heap (inspect the .heapsnapshot)":"\u2014 most memory is native (NOT in the .heapsnapshot)",h=o.potentialLeaks.length?o.potentialLeaks.map((c)=>`  \u26A0 ${c}`).join(`
+`):"  (no obvious leak indicators)";return[`RSS ${n(e.rss)} (peak ${n(a.maxRSS)}) ${p}`,`  JS heap        ${n(e.heapTotal).padStart(8)}  in snapshot`,`  array buffers  ${n(e.arrayBuffers).padStart(8)}  not in snapshot`,`  other external ${n(s).padStart(8)}  not in snapshot`,`  unaccounted    ${n(r).padStart(8)}  not in snapshot (code/JIT/stacks/allocator)`,h].join(`
+`)}function n(t){return`${(t/1073741824).toFixed(2)} GB`}var y=u(()=>{l();m()});y();export{v as call};

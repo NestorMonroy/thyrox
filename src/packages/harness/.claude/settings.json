@@ -1,0 +1,14 @@
+{
+  "testImpact": {
+    "strategy": "text-reference",
+    "testGlob": "__tests__/**/*.test.ts",
+    "runner": "bun test",
+    "fullRunner": "bun test",
+    "crossCutting": [
+      "src/types.ts",
+      "src/loop.ts",
+      "src/tools/registry.ts",
+      "package.json"
+    ]
+  }
+}

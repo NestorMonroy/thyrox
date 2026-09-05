@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.258
+import{t}from"/$bunfs/root/chunk-5nyank6v.js";import{m}from"/$bunfs/root/chunk-ffgkv432.js";import{RTe}from"/$bunfs/root/chunk-64kpb0yv.js";import{L}from"/$bunfs/root/chunk-8qt7d28b.js";import{Yt,xf,m_t}from"/$bunfs/root/chunk-7yszx9hr.js";import{i,de,c,ge}from"/$bunfs/root/chunk-3qwvcykp.js";var f=m(()=>c({server_instructions:i().optional(),server_instructions_by_server:ge(i(),i()).optional(),tools:ge(i(),i()).optional(),search_hints:ge(i(),i()).optional(),param_descriptions:ge(i(),ge(i(),i())).optional(),prompts:ge(i(),i()).optional(),skills:ge(i(),i()).optional()})),l=m(()=>ge(i(),de()));function n9(e){if(!e.pluginSource)return;let{name:r,marketplace:n}=Yt(e.pluginSource);if(!xf(n)&&!m_t(r,n))return;let u=L("tengu_official_plugin_prompt_overrides",{}),o=l().safeParse(u);if(!o.success){t("tengu_official_plugin_prompt_overrides: GB payload is not an object; ignoring",{level:"error"});return}let a=o.data[r];if(a===void 0)return;let p=f().safeParse(a);if(!p.success){t(`tengu_official_plugin_prompt_overrides: entry for '${r}' failed schema (${p.error.issues[0]?.message}); using baked-in text`,{level:"error"});return}let s=p.data;if(Object.keys(s).length===0)return;return{...s,server_instructions_by_server:d(s.server_instructions_by_server),tools:d(s.tools),search_hints:d(s.search_hints),param_descriptions:d(s.param_descriptions),prompts:d(s.prompts),skills:d(s.skills)}}function d(e){if(e===void 0)return;let r=Object.create(null);return Object.assign(r,e)}function dlt(e,r){if(!e)return;let n=e.server_instructions_by_server;if(n){let u=RTe(r),o=u&&n[u.serverName];if(o!==void 0)return o}return e.server_instructions}function flt(e,r){if(!r||!e.properties)return e;let n={...e.properties},u=!1;for(let[o,a]of Object.entries(r)){let p=n[o];if(p!==null&&typeof p==="object")n[o]={...p,description:a},u=!0}if(!u)return e;return{...e,properties:n}}
+export{n9,dlt,flt};

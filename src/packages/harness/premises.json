@@ -1,0 +1,50 @@
+[
+  {
+    "id": "T-011",
+    "open": false,
+    "claims": [
+      { "kind": "symbol-present", "symbol": "parseSseEvents", "in": "src/provider/" },
+      { "kind": "symbol-present", "symbol": "accumulate", "in": "src/provider/" }
+    ]
+  },
+  {
+    "id": "T-015",
+    "open": false,
+    "claims": [
+      { "kind": "symbol-present", "symbol": "SessionStart", "in": "src/hooks.ts" },
+      { "kind": "symbol-present", "symbol": "SessionEnd", "in": "src/hooks.ts" },
+      { "kind": "symbol-present", "symbol": "PreCompact", "in": "src/hooks.ts" }
+    ]
+  },
+  {
+    "id": "T-017",
+    "open": true,
+    "blockedWhile": [
+      { "kind": "symbol-absent", "symbol": "writeTool", "in": "src/tools/" }
+    ]
+  },
+  {
+    "id": "T-021",
+    "open": true
+  },
+  {
+    "id": "T-045",
+    "open": true
+  },
+  {
+    "id": "T-046",
+    "open": false,
+    "claims": [
+      { "kind": "symbol-present", "symbol": "selectTests", "in": "src/testing/" },
+      { "kind": "path-exists", "path": "src/testing/impact.ts" }
+    ]
+  },
+  {
+    "id": "T-053",
+    "open": false,
+    "claims": [
+      { "kind": "symbol-present", "symbol": "assessPremise", "in": "src/tasks/" },
+      { "kind": "symbol-present", "symbol": "unmeasurable", "in": "src/tasks/" }
+    ]
+  }
+]

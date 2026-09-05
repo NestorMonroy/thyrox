@@ -1,0 +1,17 @@
+{
+  "name": "@kaupamex/binary",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Analisis del ejecutable de Claude Code: extrae el payload de Bun y lo deja legible por etapas.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./elf": "./src/elf.ts",
+    "./bunfs": "./src/bunfs.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}
