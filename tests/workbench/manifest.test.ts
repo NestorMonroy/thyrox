@@ -130,9 +130,53 @@ describe('la identidad y la fecha se verifican contra la ruta', () => {
   })
 })
 
-describe('el instrumento se verifica contra el disco', () => {
-  test('un instrumento que no existe se nombra', () => {
+describe('el instrumento se verifica cuando NOMBRA UN ARCHIVO, y sólo entonces', () => {
+  // Medido sobre los 26 bancos vivos de `api: scripts/workbench/`: 15 declaran
+  // un archivo dentro del banco y **11 declaran un comando** (`uv run pytest
+  // -n 4 --reuse-db`). Un check que exija archivo rechaza al 42 % del corpus
+  // que dice gobernar — el mismo defecto que H-DOCS-1073 midio en el gate del
+  // harness. El corte: se verifica si el primer token PARECE un archivo.
+  test('un archivo declarado que no existe se nombra', () => {
     const dir = makeWorkbench(ID, goodManifest())
+    expect(checkWorkbench(dir).map((p) => p.key)).toContain('instrument')
+  })
+
+  test('un archivo con su glosa tras el guion largo se resuelve', () => {
+    const m = { ...goodManifest(), instrument: 'measure.py — recorre los campos' }
+    const dir = makeWorkbench(ID, m, { instrumentOnDisk: 'measure.py' })
+    expect(checkWorkbench(dir)).toEqual([])
+  })
+
+  test('un COMANDO no se verifica contra disco: no es un archivo', () => {
+    const m = { ...goodManifest(), instrument: 'uv run pytest -n 4 -q --reuse-db' }
+    const dir = makeWorkbench(ID, m)
+    expect(checkWorkbench(dir)).toEqual([])
+  })
+
+  test('el instrumento como lista: basta que una pieza resuelva', () => {
+    const m = { ...goodManifest(), instrument: ['measure.py — mide', 'uv run pytest'] }
+    const dir = makeWorkbench(ID, m, { instrumentOnDisk: 'measure.py' })
+    expect(checkWorkbench(dir)).toEqual([])
+  })
+
+  test('una ruta relativa a la raiz del repo se resuelve por su nombre', () => {
+    // 2 de los 26 bancos vivos declaran asi: scripts/workbench/<id>/x.py, y el
+    // archivo esta en el banco. La ruta es otra forma de nombrarlo, no un
+    // archivo distinto.
+    const m = { ...goodManifest(), instrument: 'scripts/workbench/algo/measure.py' }
+    const dir = makeWorkbench(ID, m, { instrumentOnDisk: 'measure.py' })
+    expect(checkWorkbench(dir)).toEqual([])
+  })
+
+  test('pero un nombre mal escrito sigue fallando', () => {
+    const m = { ...goodManifest(), instrument: 'scripts/workbench/algo/mesure.py' }
+    const dir = makeWorkbench(ID, m, { instrumentOnDisk: 'measure.py' })
+    expect(checkWorkbench(dir).map((p) => p.key)).toContain('instrument')
+  })
+
+  test('una lista cuyo archivo declarado no existe SI falla', () => {
+    const m = { ...goodManifest(), instrument: ['no-existe.py — mide'] }
+    const dir = makeWorkbench(ID, m)
     expect(checkWorkbench(dir).map((p) => p.key)).toContain('instrument')
   })
 })

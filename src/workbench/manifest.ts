@@ -95,6 +95,62 @@ function declaresSomething(value: unknown): boolean {
   return false
 }
 
+/**
+ * Extensiones que hacen que un token se lea como archivo. Fuera de esta lista
+ * el token es prosa o un comando, y no hay nada que resolver contra el disco.
+ */
+const FILE_EXTENSIONS = ['.py', '.sh', '.ts', '.js', '.mjs', '.sql', '.json']
+
+/** El primer token de una pieza: lo que va antes de su glosa tras el guion largo. */
+function firstToken(piece: string): string {
+  return piece.split(/\s+[—-]\s+/)[0]!.trim()
+}
+
+/**
+ * Si un archivo declarado está en el banco, por cualquiera de las dos formas
+ * que el corpus usa para nombrarlo: relativa **al banco** (`measure.py`, 15 de
+ * los 26) o relativa **a la raíz del repo**
+ * (`scripts/workbench/<id>/measure.py`, 2 de los 26). Las dos nombran el mismo
+ * archivo; la segunda sólo lo hace desde más lejos.
+ *
+ * Resolver por el último segmento no afloja el check donde importa: un nombre
+ * mal escrito sigue sin existir y se sigue nombrando.
+ */
+function resolvesInWorkbench(dir: string, name: string): boolean {
+  return existsSync(join(dir, name)) || existsSync(join(dir, basename(name)))
+}
+
+/**
+ * Los archivos que el instrumento declara y no están en el banco.
+ *
+ * **Sólo se verifica lo que parece un archivo**, y el corte está medido: de los
+ * 26 bancos vivos de `api: scripts/workbench/`, **15 declaran un archivo dentro
+ * del banco y 11 declaran un comando** (`uv run pytest -n 4 --reuse-db`). Un
+ * check que exigiera archivo rechazaría al 42 % del corpus que dice gobernar —
+ * el mismo defecto que :ref:`h-docs-1073` midió en el gate del harness, con
+ * otro eje.
+ *
+ * El corte deja el check capaz de fallar donde importa: un nombre de archivo
+ * mal escrito no existe y se nombra; un comando no se toca. Lo que el check NO
+ * puede ver es si el comando declarado corre — eso vive en `reproducible`, y
+ * verificarlo exigiría ejecutarlo.
+ */
+function missingInstrumentFiles(dir: string, declared: unknown): string[] {
+  const pieces = Array.isArray(declared) ? declared : [declared]
+  const named: string[] = []
+  for (const piece of pieces) {
+    if (typeof piece !== 'string') continue
+    const token = firstToken(piece)
+    if (!FILE_EXTENSIONS.some((ext) => token.endsWith(ext))) continue
+    named.push(token)
+  }
+  // Basta con que UNA pieza resuelva: una lista puede mezclar el guion que mide
+  // con el comando que lo corre, y exigir las dos rechazaría esa forma.
+  if (named.length === 0) return []
+  if (named.some((name) => resolvesInWorkbench(dir, name))) return []
+  return named
+}
+
 /** La ruta del manifiesto, o `null` si no está. */
 function manifestPath(dir: string): string | null {
   const candidate = join(dir, MANIFEST_FILE_NAME)
@@ -136,9 +192,10 @@ export function checkWorkbench(dir: string): WorkbenchProblem[] {
     })
   }
 
-  const instrument = declaredValue(manifest, 'instrument') as string
-  if (!existsSync(join(dir, instrument.split(/\s+—\s+/)[0]!.trim()))) {
-    problems.push({ key: 'instrument', problem: `instrumento '${instrument}' no existe en el banco` })
+  const declared = declaredValue(manifest, 'instrument')
+  const missing = missingInstrumentFiles(dir, declared)
+  for (const name of missing) {
+    problems.push({ key: 'instrument', problem: `el instrumento '${name}' no existe en el banco` })
   }
 
   return problems
