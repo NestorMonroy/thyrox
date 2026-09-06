@@ -1,3 +1,38 @@
+import { NO_CONTENT_MESSAGE } from './constants/messages.ts'
+
+/**
+ * Las cuatro familias de etiqueta que se retiran del prompt. Son envoltorios
+ * de INYECCION DE PROMPT —ordenes del sistema—, no etiquetas de presentacion:
+ * esas las retira otro mecanismo, en el paquete de salida.
+ *
+ * La bandera `s` hace que `.` cruce saltos de linea, asi que un envoltorio
+ * multilinea se retira entero; la `g` retira todas sus apariciones; y el
+ * respaldo `\1` exige que la etiqueta de cierre sea la misma que la de
+ * apertura, no cualquiera de las cuatro.
+ */
+const STRIPPED_TAGS_RE =
+  /<(commit_analysis|context|function_analysis|pr_analysis)>.*?<\/\1>\n?/gs
+
+/** El texto sin sus envoltorios de prompt, recortado. */
+export function stripPromptXMLTags(content: string): string {
+  return content.replace(STRIPPED_TAGS_RE, '').trim()
+}
+
+/**
+ * Si el texto de un mensaje no aporta nada: queda en blanco tras retirar los
+ * envoltorios, o es exactamente el centinela `NO_CONTENT_MESSAGE`.
+ *
+ * La segunda mitad compara contra el texto ORIGINAL recortado, no contra el
+ * despojado: el centinela no lleva envoltorios, y compararlo tras el despojo
+ * daria el mismo resultado por casualidad, no por diseno. La comparacion es
+ * exacta —no de subcadena— y distingue caja.
+ */
+export function isEmptyMessageText(text: string): boolean {
+  return (
+    stripPromptXMLTags(text).trim() === '' || text.trim() === NO_CONTENT_MESSAGE
+  )
+}
+
 import type { AssistantMessage, Message } from './messageShapes.ts'
 
 /**
