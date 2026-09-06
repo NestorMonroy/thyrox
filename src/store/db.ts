@@ -12,6 +12,20 @@
  * - **#26 — apertura tardía.** Un store que no abre sólo se descubría en la
  *   primera purga (`sin-store`). `probeStore` lo detecta al arranque, que es un
  *   momento conocido, para que el harness lo diga en vez de degradarse callado.
+ *
+ * Vive en `src/store/` y no en el paquete `harness` porque **abrir el store no
+ * es asunto del harness**: sus cinco consumidores de hoy están repartidos
+ * (`loop.ts`, `tools/tasks.ts`, `observability/store.ts`,
+ * `observability/clearedResults.ts`, `index.ts`) y su mitad Python
+ * —`store/agent_sessions.py`, con su propio `connect` que fija `WAL` y
+ * `busy_timeout`— ya vivía aquí. Las dos mitades del mismo mecanismo bajo el
+ * mismo techo, como `paths/` ya hace con `reach.py` + `reach.ts` + `docs.ts`.
+ *
+ * El contra-precedente que hay que responder: `@thyrox/tasks` declaró que NO
+ * aterrizaba en `src/task/`, «que es la raíz Python homónima». No es el mismo
+ * caso: aquél era un PAQUETE con manifiesto propio, y un paquete no se mete
+ * dentro de una raíz de módulos sueltos. Éste es un módulo pelado, que es
+ * exactamente la forma que `src/store/` ya aloja.
  */
 import { Database } from 'bun:sqlite'
 

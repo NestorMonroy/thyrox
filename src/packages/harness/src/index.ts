@@ -31,7 +31,7 @@ export {
 export { Journal, readJournal, type JournalEntry } from './observability/journal.ts'
 export { costReport, turnCost, type CostReport, type TurnCost } from './observability/cost.ts'
 export { STORE_PATH, recordHarnessSession, reconcileStaleRunningRows, ensureUpdatedAtTrigger, type HarnessSessionRow, type StaleRow } from './observability/store.ts'
-export { openStore, probeStore, BUSY_TIMEOUT_MS, type StoreProbe } from './observability/db.ts'
+export { openStore, probeStore, BUSY_TIMEOUT_MS, type StoreProbe } from '../../../store/db.ts'
 export {
   TRANSCRIPT_MESSAGE_TYPES, transcriptShape, transcriptShapeOf, type TranscriptShape,
 } from './observability/transcriptShape.ts'

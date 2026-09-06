@@ -31,7 +31,7 @@
  * único que impide que el tablero acumule estados que nadie sabe leer.
  */
 import { Database } from 'bun:sqlite'
-import { openStore } from '../observability/db.ts'
+import { openStore } from '../../../../store/db.ts'
 import type { Tool, ToolContext, ToolResult } from '../types.ts'
 
 export const TASK_STATUSES = ['pending', 'in_progress', 'completed'] as const

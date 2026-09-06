@@ -17,7 +17,7 @@
  *   promoverse a sí mismo (`niveles-de-retencion.md`).
  */
 import { Database } from 'bun:sqlite'
-import { openStore } from './db.ts'
+import { openStore } from '../../../../store/db.ts'
 import { join, resolve } from 'node:path'
 import { docsRoot } from '../../../../paths/docs.ts'
 import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '../../../../paths/reach.ts'

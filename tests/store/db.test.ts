@@ -6,7 +6,7 @@ import { Database } from 'bun:sqlite'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { openStore, probeStore, BUSY_TIMEOUT_MS } from '../src/observability/db.ts'
+import { openStore, probeStore, BUSY_TIMEOUT_MS } from '../../src/store/db.ts'
 
 const tmp = () => join(mkdtempSync(join(tmpdir(), 'db-')), 's.sqlite3')
 

@@ -22,7 +22,7 @@ import { resumenTablero } from './tools/tasks.ts'
 import { MICROCOMPACT_MIN_FREED_TOKENS, projectMicrocompact } from './context/microcompact.ts'
 import { makeClearedPersister, toolCallIndex } from './observability/clearedResults.ts'
 import { STORE_PATH } from './observability/store.ts'
-import { probeStore } from './observability/db.ts'
+import { probeStore } from '../../../store/db.ts'
 import {
   THRASHING_MESSAGE, advanceTurn, contextLevel, markCompacted, rapidRefill,
   type RemoteAutocompactState,

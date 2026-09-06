@@ -26,7 +26,7 @@
  * `.rst`, por `build-logs.md`.
  */
 import { Database } from 'bun:sqlite'
-import { openStore } from './db.ts'
+import { openStore } from '../../../../store/db.ts'
 import { createHash } from 'node:crypto'
 import type { Message } from '../types.ts'
 import { CLEARED_MARKER } from '../context/microcompact.ts'
