@@ -26,6 +26,11 @@ set -uo pipefail
 
 CONSUMIDOR="${1:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
+# Git entrega en stdin una línea por ref (`<local> <sha> <remoto> <sha>`). Se
+# lee UNA vez, antes de cualquier gate: stdin no se puede rebobinar, y el gate
+# 3 lo necesita. `|| true` porque un push sin refs no es un error del gate.
+REFS_STDIN="$(cat || true)"
+
 # Localizador de thyrox: la variable si está declarada; si no, la raíz propia
 # de este guion, que vive en `<thyrox>/src/gates/`.
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -123,4 +128,19 @@ Emergencia: `git push --no-verify` (y anotar el motivo en el progreso).
 
 MSG
     exit 1
+fi
+
+# --- Gate 3: la rama de trabajo va en el push (H-DOCS-1129) ----------------
+#
+# Los dos gates de arriba miden el CONTENIDO del árbol; éste mide el DESTINO.
+# `git push -u origin <literal>` nombra una rama por una cadena tecleada: si
+# esa rama existe y está al día, git responde «Everything up-to-date» y el
+# trabajo se queda sin publicar con una salida que parece correcta.
+#
+# Medido el 2026-09-06 con el mismo comando en dos repos: en `thyrox` la rama
+# literal no existía y falló a gritos; en `kaupamex-docs` existía en
+# `9262c7608` y el push "tuvo éxito" dejando dos commits atrás.
+GATE_RAMA="$GATES/check_pushed_branch.py"
+if [ -f "$GATE_RAMA" ]; then
+    printf '%s' "$REFS_STDIN" | python3 "$GATE_RAMA" "$CONSUMIDOR" || exit $?
 fi
