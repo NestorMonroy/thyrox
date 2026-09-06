@@ -1,0 +1,20 @@
+──── tests/legacy/test_task_ids.py
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/tests/task/task_ids.py'
+   EXIT=0
+──── tests/legacy/test_task_source_citas.py
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/tests/task/task_source.py'
+   EXIT=0
+──── tests/legacy/test-closure-graph.sh
+  FALLA: sin store devolvio '' en vez de None: un 0 seria verde falso
+
+FAIL: 12 casos, 17 fallo(s)
+   EXIT=0
+──── tests/legacy/test-implementation-order.sh
+        esperado=[1] obtenido=[0]
+
+test-implementation-order.sh: 2 ok · 26 fallo(s)
+   EXIT=0
