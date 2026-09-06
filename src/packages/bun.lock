@@ -38,7 +38,6 @@
       "dependencies": {
         "@thyrox/agent": "workspace:*",
         "@thyrox/config": "workspace:*",
-        "@thyrox/tasks": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
@@ -58,10 +57,6 @@
         "env-paths": "^4.0.0",
       },
     },
-    "tasks": {
-      "name": "@thyrox/tasks",
-      "version": "0.1.0",
-    },
   },
   "packages": {
     "@thyrox/agent": ["@thyrox/agent@workspace:agent"],
@@ -79,8 +74,6 @@
     "@thyrox/shell": ["@thyrox/shell@workspace:shell"],
 
     "@thyrox/storage": ["@thyrox/storage@workspace:storage"],
-
-    "@thyrox/tasks": ["@thyrox/tasks@workspace:tasks"],
 
     "@types/bun": ["@types/bun@1.4.1", "", { "dependencies": { "bun-types": "1.4.1" } }, "sha512-0AVGiTXGajf1rgKom3N+c5L7CBxuoyyv1i44M0nX4UDK0G/fnRAMiri93nHuVPIb429KKtAgj7HatVmmOjeQLA=="],
 

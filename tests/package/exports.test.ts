@@ -55,7 +55,12 @@ function sourceModules(dir = join(ROOT, 'src')): string[] {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry)
     if (statSync(full).isDirectory()) {
-      if (entry === '__pycache__') continue
+      // `node_modules` NO es fuente: sus `.ts` son de terceros y su contenido
+      // lo fabrica el gestor de paquetes. Recorrerlo además hacía que un
+      // enlace colgado —el residuo que deja disolver un paquete del espacio de
+      // trabajo— reventara el recorrido con ENOENT y tiñera de rojo un control
+      // que no mide eso. Medido al disolver `@thyrox/tasks`.
+      if (entry === '__pycache__' || entry === 'node_modules') continue
       out.push(...sourceModules(full))
     } else if (entry.endsWith('.ts') && !entry.endsWith('.d.ts')) {
       out.push(relative(ROOT, full))

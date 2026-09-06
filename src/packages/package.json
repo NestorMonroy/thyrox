@@ -9,7 +9,6 @@
     "config",
     "harness",
     "shell",
-    "storage",
-    "tasks"
+    "storage"
   ]
 }

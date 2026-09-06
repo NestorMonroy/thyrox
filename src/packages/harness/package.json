@@ -42,7 +42,6 @@
   },
   "dependencies": {
     "@thyrox/agent": "workspace:*",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/tasks": "workspace:*"
+    "@thyrox/config": "workspace:*"
   }
 }
