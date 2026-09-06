@@ -11,14 +11,22 @@
  * propósito lo que el archivo dice para todas— y la declaración del `.env`
  * después. Mismo mecanismo que `agentsDir`, sin un tercer camino.
  *
- * Por qué NO hay default, que es la asimetría con `agentsDir`
- * -----------------------------------------------------------
- * `agentsDir` resuelve un hogar **de thyrox** —`src/agents/definitions`, su
- * propio árbol— y por eso puede caer a él: el producto es usable sin configurar
- * nada porque thyrox sí decide sobre lo suyo. Un banco vive en el árbol del
- * CONSUMIDOR y lo producen sus sesiones; un default aquí es exactamente la
- * decisión que la directiva retira al emisor. Por eso este módulo REHÚSA, y su
- * mensaje nombra la constante: rehusar sin decir qué declarar no sirve de nada.
+ * Su hermano exacto es `skills/paths.ts`, y de ahí sale la forma: un módulo
+ * `<subsistema>/paths.ts` que importa `envValue` de `paths/reach.ts`, declara
+ * su `*_DIR_VAR` y resuelve. Medido antes de nombrar este archivo: la familia
+ * es `skills/paths.ts`, `packages/storage/src/path.ts` y `cache-paths.ts`, más
+ * `memdir/paths.ts` en el corpus vendorizado. Ningún `home.ts` — así se llamó
+ * este archivo en su primera versión, y era invención.
+ *
+ * Por qué NO hay default, que es la divergencia con los dos hermanos
+ * ------------------------------------------------------------------
+ * `agentsDir` y `skillsDir` caen al hogar propio de thyrox —`src/agents/
+ * definitions`, `.claude/skills`— porque resuelven artefactos DE thyrox: su
+ * propio árbol, sobre el que sí decide, y así el producto es usable sin
+ * configurar nada. Un banco vive en el árbol del CONSUMIDOR y lo producen sus
+ * sesiones; un default aquí es exactamente la decisión que la directiva retira
+ * al emisor. Por eso este módulo REHÚSA, y su mensaje nombra la constante:
+ * rehusar sin decir qué declarar no sirve de nada.
  *
  * El defecto medido que lo motiva está en el árbol, no es hipotético:
  * `packages/harness/src/workbench/manifest.ts` cablea el hogar tres veces —el
@@ -32,7 +40,7 @@
  * llamador tiene que poder ver. Crearlo aquí escondería la divergencia que este
  * mecanismo existe para exponer.
  */
-import { envValue } from '../paths/reach'
+import { envValue } from '../paths/reach.ts'
 
 /** La constante. Una sola: dos nombres serían dos fuentes de verdad. */
 export const WORKBENCH_DIR_VAR = 'THYROX_WORKBENCH_DIR'

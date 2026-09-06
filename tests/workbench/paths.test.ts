@@ -32,7 +32,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { WORKBENCH_DIR_VAR, WorkbenchHomeError, workbenchDir } from '../../src/workbench/home'
+import { WORKBENCH_DIR_VAR, WorkbenchHomeError, workbenchDir } from '../../src/workbench/paths.ts'
 
 /** Corre `fn` con el entorno alterado y lo restaura pase lo que pase. */
 function withEnv(vars: Record<string, string | undefined>, fn: () => void): void {

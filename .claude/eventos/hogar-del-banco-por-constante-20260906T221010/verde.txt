@@ -6,3 +6,10 @@ bun test v1.3.11 (af24e281)
  0 fail
  178 expect() calls
 Ran 91 tests across 4 files. [127.00ms]
+
+# CORRECCIÓN DE NOMBRE — 2026-09-06T22:13:01
+# El módulo se llamó home.ts sin medir la convención. Medido después:
+#   home*.ts en todo src/ + _references : 1  (el mío)
+#   <subsistema>/paths.ts               : skills/paths.ts, storage/src/path.ts,
+#                                         storage/src/cache-paths.ts, memdir/paths.ts
+# Renombrado a src/workbench/paths.ts. 91 pass, 0 fail tras el renombre.
