@@ -1,0 +1,17 @@
+# 2026-09-06T23:02:40 — verde: el paralelo en segundo plano, con consumidor
+
+## las cuatro suites de la familia
+test_parallel   (rescate del legacy rojo): 16 ok, 0 fallos
+test_background (superficie nueva):        21 ok, 0 fallos
+test_job_ledger:                           38 ok, 0 fallos
+test_task_pool:                            27 ok, 0 fallos
+
+## consumidores REALES tras el cambio (por import, no por la palabra)
+   parallel: 2
+   task_pool: 1
+   job_ledger: 3
+   background: 0
+
+## lo que publica cada primitivo al invocarse como guion
+background: anchura por defecto 2 (alcance medido: nproc=4; marcador '^EXIT='; intervalo 1.0s)
+parallel: cap de anchura 2 (alcance medido: nproc=4; cota de vida 1000; cota de ítems 50)

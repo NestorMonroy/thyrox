@@ -1,0 +1,9 @@
+=== ANULACION A — la sonda vuelve al kill -0 pelado ===
+mutacion aplicada
+Terminated
+  COLGADO a los 45s — el zombi se lee vivo y la barrera nunca asienta
+
+=== ANULACION B — el marcador DENTRO del mismo shell del comando ===
+mutacion aplicada
+  FALLO y su marcador esta, con el codigo real
+17 ok, 1 fallos
