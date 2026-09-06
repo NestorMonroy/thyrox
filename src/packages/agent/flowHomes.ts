@@ -29,7 +29,9 @@
  * flow.
  */
 import { existsSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { join } from 'node:path'
+
+import { docsRoot, resetDocsRootCache } from '../../paths/docs.ts'
 import type { AgentDefinition } from './types.ts'
 
 /** Los 14 valores canonicos de `:flow:` con hogar de diseno (DEC-R-01). */
@@ -130,39 +132,21 @@ export function allDeclaredHomes(): string[] {
   return [...vistos]
 }
 
-let raizMemoizada: string | null = null
-
 /**
- * Raiz del repo de docs — el ancestro que contiene `source/`.
+ * La raiz del arbol NO se decide aqui.
  *
- * Mismo criterio que `docsRoot` de `src/paths/docs.ts`: no se supone
- * del cwd. `KAUPAMEX_DOCS_ROOT` gana; si no, se asciende desde este modulo y
- * desde el cwd. Si ninguna resuelve, lanza — una raiz inventada haria que
- * `homesMissingFromTree` midiera un arbol que no existe.
+ * Este modulo traia una copia verbatim de `docsRoot` —variable propia mas
+ * ascenso a `source/gestion/pm/`— que respondia la misma pregunta que
+ * `src/paths/docs.ts`, que a su vez delega en el alcance. Dos copias de una
+ * decision divergen sin avisar: un consumidor que declare la grafia canonica
+ * `THYROX_REACH_DOCS` movia una y dejaba la otra midiendo el arbol de siempre,
+ * y `homesMissingFromTree` publicaba cero hogares ausentes sobre un arbol que
+ * el llamador no habia pedido.
+ *
+ * `resetDocsRootCache` se re-exporta porque es parte del contrato que los
+ * consumidores de este modulo ya usaban; su implementacion es la del alcance.
  */
-function docsRoot(): string {
-  if (raizMemoizada !== null) return raizMemoizada
-  const declarada = process.env.KAUPAMEX_DOCS_ROOT
-  if (declarada) return (raizMemoizada = resolve(declarada))
-  const esRaiz = (d: string) => existsSync(join(d, 'source', 'gestion', 'pm'))
-  for (const arranque of [import.meta.dir, process.cwd()]) {
-    for (let d = resolve(arranque); ; d = dirname(d)) {
-      if (esRaiz(d)) return (raizMemoizada = d)
-      const hermano = join(d, 'kaupamex-docs')
-      if (esRaiz(hermano)) return (raizMemoizada = hermano)
-      if (dirname(d) === d) break
-    }
-  }
-  throw new Error(
-    'No se pudo resolver la raiz de kaupamex-docs: ningun ancestro contiene ' +
-    '`source/gestion/pm/`, y KAUPAMEX_DOCS_ROOT no esta declarada.',
-  )
-}
-
-/** Olvida la raiz memoizada. Para pruebas. */
-export function resetDocsRootCache(): void {
-  raizMemoizada = null
-}
+export { resetDocsRootCache }
 
 /**
  * Los hogares declarados que NO existen como directorio en el arbol.

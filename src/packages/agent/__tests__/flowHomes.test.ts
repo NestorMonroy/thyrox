@@ -9,6 +9,7 @@ import {
   definitionsWithMissingHomes,
   homesMissingFromTree,
   renderFlowHomes,
+  resetDocsRootCache,
   type Flow,
 } from '../flowHomes.ts'
 import { rupCoordinator } from '../definitions/rupCoordinator.ts'
@@ -134,5 +135,29 @@ describe('declaredHomes — la mitad consumidora: flow -> hogares', () => {
 
   test('una definicion sin flow no declara hogar de diseno (devuelve [])', () => {
     expect(declaredHomes({})).toEqual([])
+  })
+})
+
+/**
+ * La raiz del arbol NO se decide dos veces.
+ *
+ * `flowHomes` traia una copia verbatim de `docsRoot` —variable propia mas
+ * ascenso— que respondia la misma pregunta que `src/paths/docs.ts`, que a su
+ * vez delega en el alcance. Dos copias de una decision divergen: un consumidor
+ * que declare `THYROX_REACH_DOCS` mueve una y no la otra.
+ */
+describe('la raiz del arbol se resuelve por el alcance, no por una copia', () => {
+  test('honra la grafia canonica por raiz', () => {
+    const previo = { ...process.env }
+    try {
+      delete process.env.KAUPAMEX_DOCS_ROOT
+      process.env.THYROX_REACH_DOCS = '/canonica/docs'
+      resetDocsRootCache()
+      expect(homesMissingFromTree()).toEqual(allDeclaredHomes())
+    } finally {
+      for (const k of Object.keys(process.env)) if (!(k in previo)) delete process.env[k]
+      Object.assign(process.env, previo)
+      resetDocsRootCache()
+    }
   })
 })
