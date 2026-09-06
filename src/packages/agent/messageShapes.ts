@@ -67,3 +67,28 @@ export type ToolResultBlockParam = {
   content?: unknown
   is_error?: boolean
 }
+
+/**
+ * AMPLIADO: `NormalizedMessage`, que consumen `getToolUseID` y
+ * `getToolResultIDs` de `messages.ts`. En la fuente
+ * (`ccnmt: packages/agent/messageShapes.ts:80`) es un simple alias de
+ * `Message` — un mensaje ya separado por bloque tras `normalizeMessages`
+ * (no portada aqui). Se reproduce igual: el alias no le agrega forma
+ * propia, asi que no hay divergencia que declarar.
+ */
+export type NormalizedMessage = Message
+
+/**
+ * AMPLIADO: `ToolUseBlock`, el bloque que consume `getToolUseID` en la
+ * rama de asistente.
+ *
+ * DIVERGENCIA DECLARADA: la fuente lo toma del SDK de Anthropic
+ * (`@anthropic-ai/sdk`), ausente de este arbol. Se declara aqui la forma
+ * estructural minima — el discriminante `type`, `id`, y un indice para el
+ * resto de campos (`name`, `input`) que `getToolUseID` no necesita leer.
+ */
+export type ToolUseBlock = {
+  type: 'tool_use'
+  id: string
+  [key: string]: unknown
+}

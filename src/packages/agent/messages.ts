@@ -85,7 +85,7 @@ export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
  * que se porta **por consumidor**: cada test que aterriza trae consigo los
  * simbolos que ejercita, y este encabezado declara la cobertura.
  *
- * Cobertura acumulada — **38 de 115**, en siete grupos, cada uno traido por
+ * Cobertura acumulada — **40 de 115**, en ocho grupos, cada uno traido por
  * el test que lo ejercita:
  *
  * 1. **14 cadenas de contrato** del protocolo harness ↔ modelo (`INTERRUPT_*`,
@@ -117,8 +117,16 @@ export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
  *    exportado — divergencia declarada del
  *    `@claude-code-how-works/output/utils/displayTags.js` de la fuente,
  *    reproducido verbatim) y reusa `ContentBlockParam` del grupo 6.
+ * 8. **2 resolvedores de tool_use_id** traidos por
+ *    `getToolUseIDPure.test.ts`: `getToolUseID`, `getToolResultIDs`. Trae
+ *    consigo los tipos `NormalizedMessage` (alias de `Message`, igual que
+ *    la fuente) y `ToolUseBlock` (divergencia declarada, forma estructural
+ *    minima del SDK de Anthropic). DIVERGENCIA DE ALCANCE en
+ *    `getToolUseID`: omite la rama `attachment` de la fuente (depende de
+ *    `isHookAttachmentMessage`, ausente aqui) — sin consumidor en los
+ *    tests portados, cae al `default: return null`.
  *
- * Los 77 restantes NO estan portados y su ausencia es deliberada, no un
+ * Los 75 restantes NO estan portados y su ausencia es deliberada, no un
  * olvido: `porte-completo-no-parcial.md` admite el porte parcial
  * **declarado**, nunca el silencioso.
  *
@@ -231,8 +239,10 @@ import {
   LOCAL_COMMAND_STDOUT_TAG,
 } from '@thyrox/command-runtime/xml.js'
 import type {
+  NormalizedMessage,
   ProgressMessage,
   ToolResultBlockParam,
+  ToolUseBlock,
   UserMessage,
 } from './messageShapes.ts'
 
@@ -687,4 +697,84 @@ export function textForResubmit(
     return { text: `${cmd} ${args}`, mode: 'prompt' }
   }
   return { text: stripIdeContextTags(content), mode: 'prompt' }
+}
+
+/**
+ * El `tool_use_id` al que pertenece `message`, segun su tipo:
+ *
+ * - `assistant` — el `id` del primer bloque, si es `tool_use`.
+ * - `user` — `sourceToolUseID` si esta presente (gana SIEMPRE, aunque el
+ *   contenido tambien lleve un `tool_result`: lo etiqueto
+ *   `tagMessagesWithToolUseID`, no portada); si no, el `tool_use_id` del
+ *   primer bloque, si es `tool_result`.
+ * - `progress` — el campo `toolUseID`, sin resguardo (igual que la fuente:
+ *   un `progress` sin el campo devuelve `undefined`, no `null`).
+ * - `system` — el campo `toolUseID` SOLO si `subtype === 'informational'`;
+ *   cualquier otro subtipo (`init`, `compact_boundary`, ...) da `null`
+ *   aunque el campo este presente.
+ *
+ * DIVERGENCIA DE ALCANCE: la fuente tiene un quinto caso, `attachment`
+ * (via `isHookAttachmentMessage`, ausente de este arbol). Sin consumidor
+ * en los tests portados, cae al `default: return null` — mismo resultado
+ * que tendria un attachment que no fuera un hook.
+ */
+export function getToolUseID(message: NormalizedMessage): string | null {
+  switch (message.type) {
+    case 'assistant': {
+      const content = message.message?.content
+      const first = Array.isArray(content) ? content[0] : undefined
+      if (
+        !first ||
+        typeof first === 'string' ||
+        (first as ContentBlockParam).type !== 'tool_use'
+      ) {
+        return null
+      }
+      return (first as unknown as ToolUseBlock).id
+    }
+    case 'user': {
+      if (message.sourceToolUseID) {
+        return message.sourceToolUseID as string
+      }
+      const content = message.message?.content
+      const first = Array.isArray(content) ? content[0] : undefined
+      if (
+        !first ||
+        typeof first === 'string' ||
+        (first as ContentBlockParam).type !== 'tool_result'
+      ) {
+        return null
+      }
+      return (first as unknown as ToolResultBlockParam).tool_use_id
+    }
+    case 'progress':
+      return message.toolUseID as string
+    case 'system':
+      return (message.subtype as string) === 'informational'
+        ? ((message.toolUseID as string) ?? null)
+        : null
+    default:
+      return null
+  }
+}
+
+/**
+ * Mapa `tool_use_id → is_error` de todo mensaje de usuario cuyo PRIMER
+ * bloque sea un `tool_result`. Solo el primer bloque importa (documentado
+ * en la fuente); si el mismo `tool_use_id` aparece dos veces, gana el
+ * ULTIMO por la semantica de `Object.fromEntries`.
+ */
+export function getToolResultIDs(
+  normalizedMessages: NormalizedMessage[],
+): { [toolUseID: string]: boolean } {
+  return Object.fromEntries(
+    normalizedMessages.flatMap((m): [string, boolean][] => {
+      const content = m.type === 'user' ? m.message?.content : undefined
+      if (!Array.isArray(content)) return []
+      const first = (content as ContentBlockParam[])[0]
+      if (!first || first.type !== 'tool_result') return []
+      const block = first as unknown as ToolResultBlockParam
+      return [[block.tool_use_id, block.is_error ?? false]]
+    }),
+  )
 }
