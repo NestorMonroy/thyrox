@@ -102,11 +102,15 @@ describe('D. DISCRIMINA: un agente sin mensaje final PERO con uso SI se registra
   })
 })
 
-describe('E. Los TRES tipos de costo se declaran — no uno rotulado «el costo»', () => {
-  test('el módulo nombra los tres y dice dónde vive cada uno', () => {
+describe('E. Los CUATRO tipos de costo se declaran — no uno rotulado «el costo»', () => {
+  test('el módulo nombra los cuatro y dice dónde vive cada uno', () => {
     expect(Object.keys(sr.COST_KINDS).sort())
-      .toEqual(['equiv_tokens', 'titular_harness', 'usd'])
+      .toEqual(['equiv_tokens_fijos', 'equiv_tokens_por_tier', 'titular_harness', 'usd'])
     expect(sr.COST_KINDS.usd).toContain('model_catalog')
+    // Los dos «equivalentes» NO son el mismo: uno fija la vara para poder
+    // comparar filas, el otro la ajusta al tier real para acertar la ruta.
+    expect(sr.COST_KINDS.equiv_tokens_fijos).not.toBe(sr.COST_KINDS.equiv_tokens_por_tier)
+    expect(sr.COST_KINDS.equiv_tokens_por_tier).toContain('packages/agent/models.ts')
   })
 
   test('DISCRIMINA: el titular del harness y el ponderado NO son la misma cifra', () => {

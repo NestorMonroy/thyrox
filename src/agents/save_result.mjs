@@ -135,9 +135,18 @@ export function lastAssistantText(lines = []) {
  * que habilita comparaciones falsas. Los tres salen del MISMO uso y dan cifras
  * distintas.
  *
- * - `equiv_tokens` — el que este módulo calcula. Tokens equivalentes de
- *   entrada con los pesos de UN tier (`tier_3_15`: 1 / 1.25 / 0.1 / 5).
- *   Es columna del store y se compara entre filas; **no es un precio**.
+ * - `equiv_tokens_fijos` — el que este módulo calcula. Tokens equivalentes
+ *   de entrada con los pesos de UN tier (`tier_3_15`: 1 / 1.25 / 0.1 / 5)
+ *   aplicados a **todo** modelo. Es la columna `equiv_cost` del store y su
+ *   valor está en ser **comparable entre 800+ filas**; no es un precio, y su
+ *   peso fijo sobrevalora 4× la caché de `tier_10_50_cache_read_0_25`
+ *   (Fable 5.1). `src/agents/model_catalog.py:13-18` ya lo declara así y cita
+ *   este archivo por nombre.
+ * - `equiv_tokens_por_tier` — **otro** sentido de la misma palabra:
+ *   `src/packages/agent/models.ts` (`usageEquivalentTokens`) pondera con el
+ *   tier REAL del modelo y sirve para decidir rutas de caché, no para comparar
+ *   filas. Los dos se llaman «tokens equivalentes» y **no son intercambiables**:
+ *   uno fija la vara para poder comparar, el otro la ajusta para acertar.
  * - `usd` — el precio real, que depende del modelo y del TTL de caché.
  *   Vive en `src/agents/model_catalog.py` (`usage_cost_usd`), no aquí:
  *   `claude-fable-5-1` lee caché a 0.25 y `claude-opus-5` a 0.5, así que un
@@ -150,7 +159,8 @@ export function lastAssistantText(lines = []) {
  * El reparto de qué se cita en cada superficie es la tarea #118.
  */
 export const COST_KINDS = Object.freeze({
-  equiv_tokens: 'src/agents/save_result.mjs (aquí) — ponderado de un tier, comparable entre filas',
+  equiv_tokens_fijos: 'src/agents/save_result.mjs (aquí) — pesos de tier_3_15 para todo modelo; comparable entre filas',
+  equiv_tokens_por_tier: 'src/packages/agent/models.ts (usageEquivalentTokens) — pondera con el tier real; decide rutas, no compara filas',
   usd: 'src/agents/model_catalog.py — precio real por modelo y TTL',
   titular_harness: 'lo que reporta el harness — excluye cache_read; NO se cita como costo',
 })
