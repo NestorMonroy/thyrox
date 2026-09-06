@@ -13,6 +13,10 @@
         "zod": "^4.3.6",
       },
     },
+    "app-host": {
+      "name": "@thyrox/app-host",
+      "version": "0.1.0",
+    },
     "binary": {
       "name": "@thyrox/binary",
       "version": "0.1.0",
@@ -47,6 +51,8 @@
   },
   "packages": {
     "@thyrox/agent": ["@thyrox/agent@workspace:agent"],
+
+    "@thyrox/app-host": ["@thyrox/app-host@workspace:app-host"],
 
     "@thyrox/binary": ["@thyrox/binary@workspace:binary"],
 
