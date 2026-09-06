@@ -10,6 +10,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { AGENTS } from '../index.ts'
 import { toMarkdown } from '../emit/markdown.ts'
+import { diffSummary, parseArgs } from '../emit/plan.ts'
 import { agentsDir } from '../../../paths/reach.ts'
 
 // El hogar es un PARÁMETRO resuelto por `agentsDir()`: la variable del
@@ -39,7 +40,14 @@ function existingUpdatedAt(path: string): string | undefined {
 }
 
 function main(): void {
-  const check = process.argv.includes('--check')
+  const plan = parseArgs(process.argv.slice(2))
+  if ('error' in plan) {
+    // Muere con 2 y SIN emitir cifra: un conteo aquí se leería como que el
+    // emisor midió algo, y no llegó a mirar el disco.
+    console.error(`ERROR — ${plan.error} NO se emite un conteo.`)
+    process.exit(2)
+  }
+  const check = plan.check
   let differing = 0
 
   for (const agent of AGENTS) {
@@ -64,7 +72,10 @@ function main(): void {
 
     differing += 1
     if (check) {
+      // Publica EN QUÉ difiere. Sin esto, verlo exige re-emitir a mano — que
+      // es como se llegó a inventar una bandera que no existe.
       console.error(`DIFIERE      ${agent.name} — ${path}`)
+      console.error(diffSummary(held, current ?? ''))
       continue
     }
 

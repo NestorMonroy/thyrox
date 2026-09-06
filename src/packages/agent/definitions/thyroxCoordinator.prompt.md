@@ -127,6 +127,69 @@ ubicada en `.claude/references/methodology-selection-guide.md`.
    Qué se emitió y cuál es el paso siguiente.
 ```
 
+## Mapping THYROX -> artefactos de la iniciativa
+
+Las nueve familias con coordinador dedicado —`ba` `bpa` `cp` `dmaic` `lean`
+`pdca` `pps` `rup` `sp`— resuelven en su propia tabla dónde aterriza cada
+salida. Las cuatro que **no** lo tienen —los 12 `workflow-*` de las etapas
+THYROX, `thyrox`, `kanban-*` y `scrum-*`— las cubre este coordinador, por su
+propia descripción, y hasta ahora esa cobertura no llegaba al artefacto: el
+directorio lo fijó **#310** (`.thyrox/` no se importó; el equivalente del work
+package es `pm/<submodulo>/iniciativas/<slug>/`), y cuál de los artefactos del
+set mínimo recibía cada salida no lo decía nadie.
+
+El cajón de fase **no tiene contraparte**: la salida se mapea sobre el set
+mínimo de DEC-AM-01. Una fase cuyo contenido no existe **no fabrica el
+artefacto condicional** — exigir un `analisis` vacío por completitud es el
+anti-patrón inverso que esa misma decisión prohíbe.
+
+| Salida del skill | Dónde se materializa | Por qué ése |
+|---|---|---|
+| `kanban-board-setup` — `{wp}/plan-execution/kanban-board.md` | `decisiones-<slug>.rst` | un límite WIP, la forma del tablero o el DoD son criterios acordados con alternativas, no bitácora |
+| `kanban-flow-metrics` — `{wp}/kanban-flow-metrics.md` | `progreso-<slug>.rst` | el resultado de un piloto y una métrica de flujo son bitácora fechada |
+| `kanban-queue-management` — `{wp}/plan-execution/kanban-queue.md` | `decisiones-<slug>.rst` | un límite WIP, la forma del tablero o el DoD son criterios acordados con alternativas, no bitácora |
+| `kanban-wip-limits` — `{wp}/plan-execution/wip-limits.md` | `decisiones-<slug>.rst` | un límite WIP, la forma del tablero o el DoD son criterios acordados con alternativas, no bitácora |
+| `scrum-definition-of-done` — `{wp}/standardize/definition-of-done.md` | `decisiones-<slug>.rst` | un límite WIP, la forma del tablero o el DoD son criterios acordados con alternativas, no bitácora |
+| `thyrox` — `analyze/methodology-landscape/universal-pattern.md` | `analisis-<slug>.rst` | síntesis de fase: hallazgos calibrados, sin decisiones (el diseño además se cruza con :ref: a source/arquitectura-tecnica/**) |
+| `thyrox` — `constraints/technical-constraints.md` | `analisis-<slug>.rst` | una restricción se mide, no se elige: es hallazgo |
+| `thyrox` — `discover/{nombre}-analysis.md` | `analisis-<slug>.rst` | síntesis de fase: hallazgos calibrados, sin decisiones (el diseño además se cruza con :ref: a source/arquitectura-tecnica/**) |
+| `workflow-baseline` — `work/.../measure/{nombre-wp}-baseline.md` | `analisis-<slug>.rst` | la medición de partida es un hallazgo PROVEN, no una decisión |
+| `workflow-constraints` — `work/.../constraints/{nombre-wp}-constraints.md` | `analisis-<slug>.rst` | una restricción se mide, no se elige: es hallazgo |
+| `workflow-decompose` — `work/.../plan-execution/*-task-plan.md` | `tareas-<slug>.rst` | la plantilla es tpl-iniciativa-tareas.rst, con checkboxes `- [ ] [T-NNN]` |
+| `workflow-decompose` — `work/../plan-execution/{nombre-descriptivo}-task-plan.md` | `tareas-<slug>.rst` | la plantilla es tpl-iniciativa-tareas.rst, con checkboxes `- [ ] [T-NNN]` |
+| `workflow-diagnose` — `analyze/architecture-patterns/multi-flow-detection.md` | `analisis-<slug>.rst` | síntesis de fase: hallazgos calibrados, sin decisiones (el diseño además se cruza con :ref: a source/arquitectura-tecnica/**) |
+| `workflow-diagnose` — `analyze/{nombre-wp}-analyze-synthesis.md` | `analisis-<slug>.rst` | síntesis de fase: hallazgos calibrados, sin decisiones (el diseño además se cruza con :ref: a source/arquitectura-tecnica/**) |
+| `workflow-discover` — `work/.../discover/{nombre-wp}-analysis.md` | `analisis-<slug>.rst` | síntesis de fase: hallazgos calibrados, sin decisiones (el diseño además se cruza con :ref: a source/arquitectura-tecnica/**) |
+| `workflow-discover` — `work/../{nombre-wp}-exit-conditions.md` | `alcance-<slug>.rst` | la condición de salida ES el criterio de aceptación, y el alcance lo lleva |
+| `workflow-pilot` — `work/.../pilot/{nombre-wp}-pilot-report.md` | `progreso-<slug>.rst` | el resultado de un piloto y una métrica de flujo son bitácora fechada |
+| `workflow-scope` — `work/.../*-plan.md` | `decisiones-<slug>.rst` | una estrategia o un plan es la alternativa elegida: DEC-NN con sus descartadas |
+| `workflow-scope` — `work/.../plan/{nombre-wp}-plan.md` | `decisiones-<slug>.rst` | una estrategia o un plan es la alternativa elegida: DEC-NN con sus descartadas |
+| `workflow-standardize` — `work/.../standardize/{nombre-wp}-patterns.md` | `source/normativa/estandares/` | un patrón estandarizado sale de la iniciativa: es normativa, y la iniciativa lo cruza — mismo criterio que ba:requirements-analysis |
+| `workflow-strategy` — `work/.../*-solution-strategy.md` | `decisiones-<slug>.rst` | una estrategia o un plan es la alternativa elegida: DEC-NN con sus descartadas |
+| `workflow-strategy` — `work/.../strategy/{nombre-wp}-solution-strategy.md` | `decisiones-<slug>.rst` | una estrategia o un plan es la alternativa elegida: DEC-NN con sus descartadas |
+| `workflow-structure` — `work/.../design/*-requirements-spec.md` | `tareas-<slug>.rst` | la plantilla es tpl-iniciativa-tareas.rst, con checkboxes `- [ ] [T-NNN]` |
+| `workflow-structure` — `work/.../design/{nombre-wp}-design.md` | `analisis-<slug>.rst` | síntesis de fase: hallazgos calibrados, sin decisiones (el diseño además se cruza con :ref: a source/arquitectura-tecnica/**) |
+| `workflow-structure` — `work/.../design/{nombre-wp}-requirements-spec.md` | `tareas-<slug>.rst` | la plantilla es tpl-iniciativa-tareas.rst, con checkboxes `- [ ] [T-NNN]` |
+
+Tres destinos salen de la iniciativa y la iniciativa los **cruza** con `:ref:`,
+no los duplica — mismo criterio que la excepción `ba:requirements-analysis`:
+los patrones estandarizados van a `source/normativa/estandares/`, el diseño a
+`source/arquitectura-tecnica/**` y la deuda a `source/risks-technical-debt/`,
+que es donde el principio rector (Clausula 4) los busca.
+
+Los cuatro artefactos de **raíz** del work package cuyo hogar ninguna regla
+declaraba quedan resueltos arriba: `exit-conditions` en el `alcance`, `plan` y
+`solution-strategy` en `decisiones`, `requirements-spec` en `tareas`. Los otros
+cinco de esa raíz ya lo tenían por regla —changelog (`changelog-policy.md`),
+lecciones (`registro-reportes-agentes.md`), riesgos (`rup-coordinator`, tabla
+A), deuda técnica (capa 8) y reporte de audit (`coherence-audit-gate.md`)— y no
+se re-deciden aquí.
+
+La tabla **se genera**, no se escribe a mano:
+`.claude/eventos/mapeo-destinos-sin-coordinador-20260902T174252/gen.py`. Añadir
+una fila es añadir su patrón a `ARTEFACTO` y volver a correr, para que un diff
+mida el avance del reparto y no el paso del tiempo.
+
 ## Presentación estándar en cada paso
 
 ```
