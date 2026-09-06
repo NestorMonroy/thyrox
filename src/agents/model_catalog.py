@@ -38,22 +38,27 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from paths.reach import thyrox_root  # noqa: E402
+from paths.reach import env_value, thyrox_root  # noqa: E402
 
 # El catalogo es PRODUCTO de thyrox: se resuelve con su localizador, que
 # sobrevive a la copia. Antes salia de `parents[3]`, que describia el arbol
 # anterior —el guion vivia en `<clon>/.claude/scripts/agents/`— y tras la
 # mudanza resolvia `/home/user`, que no es raiz de nada (tarea #173).
 RAIZ = thyrox_root()
+# La variable se lee por el ACCESOR, no por `os.environ` a secas: el accesor
+# consulta el proceso y despues el `.env` del consumidor. Leer el entorno
+# directamente acierta en toda variable exportada y falla en el unico caso que
+# distingue —la declarada en el archivo—, que es como un consumidor la fija de
+# forma estable.
 CATALOG_PATH = Path(
-    os.environ.get("THYROX_MODEL_CATALOG")
-    or os.environ.get("KAUPAMEX_MODEL_CATALOG")
+    env_value("THYROX_MODEL_CATALOG")
+    or env_value("KAUPAMEX_MODEL_CATALOG")
     or RAIZ / "src" / "packages" / "agent" / "src" / "models.json")
 
 # El store es PARAMETRO del consumidor: vive en el clon que despacha, no aqui.
 # Sin declararlo no hay ruta que suponer — `None` es el veredicto, no un
 # default inventado que apuntaria a un archivo que no existe.
-_STORE_ENV = os.environ.get("THYROX_AGENT_STORE") or os.environ.get("KAUPAMEX_AGENT_STORE")
+_STORE_ENV = env_value("THYROX_AGENT_STORE") or env_value("KAUPAMEX_AGENT_STORE")
 STORE_PATH = Path(_STORE_ENV) if _STORE_ENV else None
 TTLS = ("5m", "1h")
 EFFORT_LEVELS = ("low", "medium", "high", "xhigh", "max")

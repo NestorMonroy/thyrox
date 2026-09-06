@@ -101,5 +101,55 @@ class ResolucionDeRutas(unittest.TestCase):
         self.assertIn(RAIZ, mc.CATALOG_PATH.parents)
 
 
+class ElAccesorDeConfiguracion(unittest.TestCase):
+    """La variable se lee por el accesor, no por ``os.environ`` a secas.
+
+    El patron es el de la referencia de litellm —``get_secret("WORKER_CONFIG")``,
+    ``get_secret_str("CONFIG_FILE_PATH")``—: un accesor unico que consulta el
+    proceso Y el archivo de configuracion. Leer ``os.environ`` directamente pasa
+    todos los casos de variable exportada y falla el unico que distingue: el
+    consumidor que la declara en su ``.env``.
+    """
+
+    def test_the_env_file_declares_the_catalog(self):
+        import os
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            otro = base / "desde-env.json"
+            otro.write_text("{}")
+            (base / ".env").write_text(f"THYROX_MODEL_CATALOG={otro}\n")
+            for name in (*VARIABLES, "THYROX_ENV_FILE"):
+                os.environ.pop(name, None)
+            os.environ["THYROX_ENV_FILE"] = str(base / ".env")
+            self.addCleanup(lambda: os.environ.pop("THYROX_ENV_FILE", None))
+            sys.modules.pop("agents.model_catalog", None)
+            mc = importlib.import_module("agents.model_catalog")
+            self.assertEqual(mc.CATALOG_PATH, otro)
+
+    def test_the_process_wins_over_the_env_file(self):
+        """Quien exporta para UNA invocacion esta corrigiendo a proposito."""
+        import os
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            del_archivo = base / "archivo.json"
+            del_proceso = base / "proceso.json"
+            for ruta in (del_archivo, del_proceso):
+                ruta.write_text("{}")
+            (base / ".env").write_text(f"THYROX_MODEL_CATALOG={del_archivo}\n")
+            for name in (*VARIABLES, "THYROX_ENV_FILE"):
+                os.environ.pop(name, None)
+            os.environ["THYROX_ENV_FILE"] = str(base / ".env")
+            os.environ["THYROX_MODEL_CATALOG"] = str(del_proceso)
+            self.addCleanup(lambda: [os.environ.pop(n, None)
+                                     for n in ("THYROX_ENV_FILE", "THYROX_MODEL_CATALOG")])
+            sys.modules.pop("agents.model_catalog", None)
+            mc = importlib.import_module("agents.model_catalog")
+            self.assertEqual(mc.CATALOG_PATH, del_proceso)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
