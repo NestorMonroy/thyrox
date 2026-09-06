@@ -69,7 +69,14 @@ import pathlib
 import sys
 import tempfile
 
-HOOK = pathlib.Path(__file__).resolve().parents[2] / "hooks" / "register_agent_session.py"
+# El arranque: un módulo siempre sabe su propio directorio, y desde ahí
+# `agents_paths` asciende al marcador. Antes `parents[2]` resolvía
+# `thyrox/hooks/`, que nunca existió — y como es una constante y no un
+# import, ningún control de import podía verlo.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
+
+HOOK = agents_paths.hooks_dir() / "register_agent_session.py"
 
 # Nivel superior: lo que el instrumento lee. Todo lo demas se descarta.
 TOP_KEPT = frozenset({

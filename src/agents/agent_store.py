@@ -88,7 +88,12 @@ from pathlib import Path, PurePosixPath
 # `convention-naming.md` ya documento —"nacio como ejecutable de una via y a la
 # semana tenia test"— asi que el modulo declara su propio directorio antes de
 # importar a su vecino. Es un statement a nivel de modulo, no un lazy import.
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'corpus'))
+# El arranque: un módulo siempre sabe su propio directorio, y desde ahí
+# `agents_paths` asciende al marcador. Sustituye la aritmética `parents[N]`,
+# que contaba niveles del árbol de ORIGEN y quedó rota en la mudanza.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
+sys.path.insert(0, str(agents_paths.CORPUS_DIR))
 
 from tipos_documentales import (  # noqa: E402  — vocabulario proyectado del canon
     DOCUMENT_TYPES,
@@ -97,14 +102,13 @@ from tipos_documentales import (  # noqa: E402  — vocabulario proyectado del c
 )
 
 SCRIPT_PATH = Path(__file__).resolve()
-DOCS_ROOT = SCRIPT_PATH.parents[3]  # .claude/scripts/agents/agent_store.py -> repo root
 
 # El alcance a un repo hermano NO se deriva aqui: lo resuelve ``reach_roots``,
 # que es el stub de reexportacion del duenno canonico (``thyrox: src/paths/reach.py``).
 # Antes este modulo componia su propia raiz (``DOCS_ROOT.parent``) y su propio
 # prefijo (``kaupamex-<repo>``) — dos copias de una verdad que ya vivia en otro
 # sitio, y que ningun ``.env`` podia redirigir. Ver H-DOCS-1074.
-sys.path.insert(0, str(SCRIPT_PATH.parents[1]))
+sys.path.insert(0, str(agents_paths.PATHS_DIR))
 
 import reach_roots  # noqa: E402  — statement a nivel de modulo tras fijar sys.path
 
@@ -2296,7 +2300,7 @@ def cmd_render_tablero(args: argparse.Namespace) -> None:
     # completa es la información.
     fuente = store_dir / DB_FILENAME
     try:
-        fuente = fuente.relative_to(Path(__file__).resolve().parents[3])
+        fuente = fuente.relative_to(agents_paths.consumer_root())
     except ValueError:
         pass
 

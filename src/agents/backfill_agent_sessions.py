@@ -62,8 +62,14 @@ import json
 import sys
 from pathlib import Path
 
+# El arranque: un módulo siempre sabe su propio directorio, y desde ahí
+# `agents_paths` asciende al marcador. Sustituye la aritmética `parents[N]`,
+# que contaba niveles del árbol de ORIGEN y quedó rota en la mudanza.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
+
 _g = importlib.util.spec_from_file_location(
-    "deprecado", Path(__file__).resolve().parents[1] / "deprecated.py")
+    "deprecado", agents_paths.LIB_DIR / "deprecated.py")
 _dep = importlib.util.module_from_spec(_g)
 _g.loader.exec_module(_dep)
 _dep.deprecated_guard("backfill_agent_sessions.py")
@@ -72,7 +78,7 @@ HERE = Path(__file__).resolve().parent  # .../.claude/scripts/agents
 # H-DOCS-494: mismo movimiento (docs@d566c180); aqui lo que dejo de
 # resolver fue `HERE.parent / "hooks"`. El guard se ancla a
 # `source/gestion/pm`, no a `.claude` — ver el hermano de `corpus/`.
-DOCS_ROOT = HERE.parents[2]  # kaupamex-docs/
+DOCS_ROOT = agents_paths.consumer_root()
 assert (DOCS_ROOT / "source" / "gestion" / "pm").is_dir(), (
     f"raiz mal anclada: {DOCS_ROOT} — no tiene source/gestion/pm")
 
@@ -81,7 +87,7 @@ agent_store = importlib.util.module_from_spec(_spec_store)
 _spec_store.loader.exec_module(agent_store)
 
 _spec_hook = importlib.util.spec_from_file_location(
-    "ras", HERE.parents[1] / "hooks" / "register_agent_session.py"
+    "ras", agents_paths.hooks_dir() / "register_agent_session.py"
 )
 ras = importlib.util.module_from_spec(_spec_hook)
 _spec_hook.loader.exec_module(ras)
@@ -173,7 +179,7 @@ def main() -> int:
         print(f"backfill-agent-sessions: 0 transcripts bajo {raiz}", file=sys.stderr)
         return 1
 
-    store_dir = DOCS_ROOT / ".claude" / "agent-results"
+    store_dir = agents_paths.agent_results_dir()
     ts_ahora = agent_store.now_iso()
     procesados = 0
     conn = None if args.dry_run else agent_store.connect(store_dir)
