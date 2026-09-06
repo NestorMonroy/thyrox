@@ -11,8 +11,30 @@
 # `git diff --cached`, que es su camino de produccion.
 set -uo pipefail
 
-RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+# El sujeto vive en OTRO repo: `.githooks/pre-commit` es de kaupamex-docs, y
+# esta suite vive en thyrox. Su raiz no se deriva por aritmetica desde aqui —
+# eso es lo que la rompio al mudarse (`../../..` valia la raiz del repo cuando
+# la suite estaba en `kaupamex-docs/.claude/scripts/tests/`, y desde
+# `thyrox/tests/legacy/` vale `/home/user`, que no es ningun repo). Se resuelve
+# como todo lo demas: la variable si esta declarada, si no el hermano.
+AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RAIZ="${KAUPAMEX_DOCS_ROOT:-}"
+if [[ -z "$RAIZ" ]]; then
+    NIVEL="$AQUI"
+    while [[ "$NIVEL" != "/" ]]; do
+        if [[ -f "$NIVEL/kaupamex-docs/.githooks/pre-commit" ]]; then
+            RAIZ="$NIVEL/kaupamex-docs"; break
+        fi
+        NIVEL="$(dirname "$NIVEL")"
+    done
+fi
 HOOK="$RAIZ/.githooks/pre-commit"
+if [[ -z "$RAIZ" || ! -f "$HOOK" ]]; then
+    echo "ERROR — no se encontro kaupamex-docs/.githooks/pre-commit." >&2
+    echo "  NO se emite un conteo: un 0 aqui seria un verde falso." >&2
+    echo "  Declara KAUPAMEX_DOCS_ROOT o clona kaupamex-docs como hermano." >&2
+    exit 2
+fi
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 

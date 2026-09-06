@@ -162,15 +162,23 @@ import re
 import subprocess
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[3]
+ROOT_VAR = 'VOCAB_GATE_ROOT'
 HERE = pathlib.Path(__file__).resolve().parent
 BASELINE_NAME = 'vocabulario_prosa_baseline.txt'
 BASELINE_VAR = 'VOCAB_GATE_BASELINE'
-FORBIDDEN = HERE / 'vocabulario_prohibido.txt'
+FORBIDDEN_NAME = 'vocabulario_prohibido.txt'
+FORBIDDEN_VAR = 'VOCAB_GATE_FORBIDDEN'
 
 
-def resolve_baseline(measured=()):
-    """Localiza el baseline: variable, hogar propio, o el consumidor medido.
+def resolve_parameter(name, var, measured=()):
+    """Localiza un parametro del consumidor: variable, hogar propio, o el arbol.
+
+    Sirve al baseline y a la lista de formas vetadas, que son el MISMO
+    problema: los dos congelan o declaran algo de un arbol concreto, y thyrox
+    -el proveedor- no los tiene. Tenerlo escrito dos veces es como divergen:
+    el baseline se arreglo en h-docs-1107 y la lista se quedo con la ruta fija
+    `HERE / <nombre>`, asi que el detector `prohibido` corria con CERO formas
+    y publicaba «0 hallazgos» sobre un texto que no habia comparado con nada.
 
     El baseline es **parametro del consumidor**, no mecanismo de thyrox:
     congela la deuda de un arbol concreto, y un segundo consumidor tendria la
@@ -183,41 +191,98 @@ def resolve_baseline(measured=()):
     Donde vive el baseline de forma definitiva es la tarea #162; esta funcion
     no la adelanta — admite las tres ubicaciones sin mover el archivo.
     """
-    declarado = os.environ.get(BASELINE_VAR, '').strip()
+    declarado = os.environ.get(var, '').strip()
     if declarado:
         return pathlib.Path(declarado)
 
-    propio = HERE / BASELINE_NAME
+    propio = HERE / name
     if propio.is_file():
         return propio
 
-    # El consumidor: se asciende desde cada archivo medido, y si no hay
-    # ninguno, desde el directorio de invocacion.
-    origenes = [pathlib.Path(f).resolve() for f in measured] or [pathlib.Path.cwd()]
+    # El consumidor: se asciende desde cada archivo medido, y si ninguno
+    # llega a un `.claude/baselines/`, desde el directorio de invocacion.
+    #
+    # El cwd es RESPALDO, no alternativa: antes se componia con un `or`, que
+    # solo dispara con `measured` vacio. Con un archivo medido FUERA del arbol
+    # del consumidor —un `.rst` en un temporal, que es como la suite del
+    # pre-commit lo ejercita— el ascenso fallaba y el cwd no se consultaba
+    # nunca: el gate rehusaba teniendo el baseline a un `cd` de distancia.
+    origenes = [pathlib.Path(f).resolve() for f in measured]
+    origenes.append(pathlib.Path.cwd())
     for origen in origenes:
         for base in [origen] + list(origen.parents):
-            candidato = base / '.claude' / 'baselines' / BASELINE_NAME
+            candidato = base / '.claude' / 'baselines' / name
             if candidato.is_file():
                 return candidato
     return propio
 
 
-def refuse_without_baseline(ruta):
+def consumer_root(measured=()):
+    """La raiz del ARBOL MEDIDO, que no es la del proveedor.
+
+    Gobierna dos cosas: la clave del baseline (`<relativa>::<forma>`) y, sin
+    argumentos, que corpus enumerar (`source/**.rst` + `.claude/rules/**.md`).
+
+    Era `parents[3]` del propio archivo: valia la raiz del repo cuando el gate
+    vivia en `kaupamex-docs/.claude/scripts/gates/`, y desde `thyrox/src/gates/`
+    vale `/home/user`. Con eso la clave salia `kaupamex-docs/source/x.rst::f`
+    y no emparejaba con las entradas congeladas, que dicen `source/x.rst::f`:
+    la deuda heredada se habria publicado entera como nueva.
+    """
+    declarada = os.environ.get(ROOT_VAR, '').strip()
+    if declarada:
+        return pathlib.Path(declarada).resolve()
+
+    origenes = [pathlib.Path(f).resolve() for f in measured]
+    origenes.append(pathlib.Path.cwd())
+    for origen in origenes:
+        for base in [origen] + list(origen.parents):
+            if (base / '.claude').is_dir():
+                return base
+    return pathlib.Path.cwd()
+
+
+def resolve_baseline(measured=()):
+    """El baseline de deuda congelada de este consumidor."""
+    return resolve_parameter(BASELINE_NAME, BASELINE_VAR, measured)
+
+
+def resolve_forbidden(measured=()):
+    """La lista de formas vetadas de este consumidor."""
+    return resolve_parameter(FORBIDDEN_NAME, FORBIDDEN_VAR, measured)
+
+
+def refuse_without_parameter(name, var, ruta, motivo):
     """Rehusa en vez de operar con un conjunto vacio.
 
-    Un cero de baseline NO distingue «no hay deuda congelada» de «no encontre
-    el congelamiento» — el sub-patron D de metrica-decide-la-conclusion.md.
-    Mismo criterio que el guard del lexico de este mismo archivo.
+    Un cero NO distingue «no hay nada que encontrar» de «no encontre el
+    archivo» — el sub-patron D de metrica-decide-la-conclusion.md. Mismo
+    criterio que el guard del lexico de este mismo archivo.
     """
     print(
-        f'ERROR — no se encontro el baseline ({BASELINE_NAME}).\n'
-        f'  Buscado: ${BASELINE_VAR} · {HERE} · <consumidor>/.claude/baselines/\n'
+        f'ERROR — no se encontro {name}.\n'
+        f'  Buscado: ${var} · {HERE} · <consumidor>/.claude/baselines/\n'
         f'  Ultimo candidato: {ruta}\n'
-        '  NO se emite un conteo: sin baseline, toda la deuda heredada se\n'
-        '  publicaria como nueva. Ver h-docs-1107.',
+        f'  NO se emite un conteo: {motivo}',
         file=sys.stderr,
     )
     raise SystemExit(2)
+
+
+def refuse_without_baseline(ruta):
+    refuse_without_parameter(
+        BASELINE_NAME, BASELINE_VAR, ruta,
+        'sin baseline, toda la deuda heredada se\n  publicaria como nueva. Ver h-docs-1107.',
+    )
+
+
+def refuse_without_forbidden(ruta):
+    refuse_without_parameter(
+        FORBIDDEN_NAME, FORBIDDEN_VAR, ruta,
+        'sin la lista, el detector `prohibido` compara\n'
+        '  contra CERO formas y todo texto pasa. Es la mitad del gate, y su\n'
+        '  ausencia lo dejaria midiendo un solo eje sin decirlo.',
+    )
 
 # Sufijos que convierten una raíz en sustantivo abstracto. Una palabra que los
 # lleva ESTÁ afirmando ser un sustantivo español, así que su ausencia del
@@ -378,7 +443,7 @@ def load_baseline(ruta):
     }
 
 
-def canonical_path(path):
+def canonical_path(path, root):
     """La clave de un archivo es su ruta relativa a la raiz del repo.
 
     El baseline se versiona, asi que su clave no puede depender ni del
@@ -395,28 +460,29 @@ def canonical_path(path):
     """
     resolved = pathlib.Path(path).resolve()
     try:
-        return str(resolved.relative_to(ROOT))
+        return str(resolved.relative_to(root))
     except ValueError:
         return str(resolved)
 
 
-def corpus_files(targets):
+def corpus_files(targets, root=None):
     """Los archivos de prosa: RST publicable y reglas siempre-cargadas."""
     if targets:
         return [pathlib.Path(t) for t in targets if pathlib.Path(t).is_file()]
+    root = root or consumer_root()
     return sorted(
-        list((ROOT / 'source').rglob('*.rst'))
-        + list((ROOT / '.claude' / 'rules').rglob('*.md'))
+        list((root / 'source').rglob('*.rst'))
+        + list((root / '.claude' / 'rules').rglob('*.md'))
     )
 
 
-def load_forbidden():
+def load_forbidden(ruta):
     """Las formas vetadas, leídas del registro — no escritas en el guion."""
-    if not FORBIDDEN.is_file():
-        return []
+    if not ruta.is_file():
+        refuse_without_forbidden(ruta)
     return [
         line.strip().lower()
-        for line in FORBIDDEN.read_text(encoding='utf-8').splitlines()
+        for line in ruta.read_text(encoding='utf-8').splitlines()
         if line.strip() and not line.startswith('#')
     ]
 
@@ -530,7 +596,7 @@ def block_spans(text):
     return tramos
 
 
-def scan(files, lexicon, forbidden):
+def scan(files, lexicon, forbidden, root):
     """Devuelve {clave: (apariciones, primer archivo)} de los DOS ejes.
 
     La clave de un inventado es la palabra suelta —el veredicto es global—; la
@@ -545,7 +611,7 @@ def scan(files, lexicon, forbidden):
             text = path.read_text(encoding='utf-8')
         except (OSError, UnicodeDecodeError):
             continue
-        key_path = canonical_path(path)
+        key_path = canonical_path(path, root)
         # Los tramos se calculan ANTES porque los dos ejes los usan. La
         # version anterior eximia la cita solo en el eje de formas vetadas, y
         # lo declaraba como eleccion. El positivo que la corrige es real y del
@@ -593,9 +659,10 @@ def main(argv=None):
 
     lexicon = load_lexicon(
         require_lexicon(auto_install=True if args.instalar_lexico else None))
-    forbidden = compile_forbidden(load_forbidden())
-    files = corpus_files(args.files)
-    found = scan(files, lexicon, forbidden)
+    raiz = consumer_root(args.files)
+    files = corpus_files(args.files, raiz)
+    forbidden = compile_forbidden(load_forbidden(resolve_forbidden(files)))
+    found = scan(files, lexicon, forbidden, raiz)
 
     baseline_path = resolve_baseline(files)
 
