@@ -18,22 +18,72 @@
  */
 import { Database } from 'bun:sqlite'
 import { openStore } from './db.ts'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { docsRoot } from '../../../../paths/docs.ts'
+import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '../../../../paths/reach.ts'
 import type { Usage } from '../types.ts'
 import type { TranscriptShape } from './transcriptShape.ts'
 import { verifyAdoption, readProcStart, type Adoption } from '../session/reconcile.ts'
 
+/** El nombre del archivo del store. Es contrato: el driver de merge
+ * `sqlite-union` está declarado sobre él en el `.gitattributes` del consumidor. */
+export const STORE_FILE = 'agent_store.sqlite3'
+
+/** El subdirectorio del consumidor donde vive la telemetría local. */
+export const STORE_DIR = join('.claude', 'agent-results')
+
+/** La grafía que declara la ruta del archivo, sin pasar por ninguna raíz. */
+export const STORE_PATH_VAR = 'THYROX_STORE'
+
 /**
- * El store vive en el repo de docs, junto al resto de la telemetría local.
+ * Dónde vive el store de sesiones — el CONSUMIDOR es parámetro, no literal.
  *
- * Era aritmética de ruta y resolvía a `<thyrox>/src/agent-results/`, un
- * directorio que no existe — el comentario decía docs y el cálculo apuntaba
- * a otro sitio. El resolutor `docsRoot()` ya existía; lo que faltaba era
- * usarlo. Mismo defecto que las rutas codificadas de `emit`, medido el mismo
- * día en tres subsistemas distintos.
+ * Las dos mitades de este mecanismo discrepaban. La mitad Python
+ * (`src/store/agent_sessions.py`) excluye la resolución de ruta a propósito y
+ * su docstring lo dice: *«`resolve_store_dir` — la resolución de rutas es del
+ * consumidor»*; su `connect` toma `store_dir` como parámetro. La mitad TS
+ * clavaba el clon de docs. Coincidían hoy sólo porque kaupamex-docs ES el
+ * consumidor; el día que otro clon aloje su propia telemetría, la mitad TS
+ * escribiría en el árbol equivocado sin que nada lo delate.
+ *
+ * Precedencia, de más específica a menos:
+ *
+ * 1. el valor pasado a mano — lo que hace `--store` de `bin/harness.ts`;
+ * 2. `THYROX_STORE`, la ruta del archivo, leída por `envValue` (proceso y
+ *    después `.env`);
+ * 3. `THYROX_CONSUMER`, la raíz del consumidor, compuesta con `STORE_DIR`;
+ * 4. el clon de docs — la conducta de hoy, ahora como último recurso NOMBRADO
+ *    en vez de como verdad incondicional.
+ *
+ * El ASCENSO de `consumerRoot` no participa, y es deliberado. Medido en este
+ * árbol el 2026-09-06: `/home/user/.claude`, `/home/user/thyrox/.claude` y
+ * `/home/user/kaupamex-docs/.claude` existen los tres, así que un ascenso
+ * desde thyrox devolvería al PROVEEDOR y uno desde `/home/user` un directorio
+ * que no es clon de nadie. Un artefacto que se escribe exige el valor
+ * declarado; el ascenso sirve a un proceso que ya corre dentro del consumidor,
+ * que es el caso del gate, no el de un escritor.
+ *
+ * *Métrica:* la ruta que la cadena devuelve.
+ * *Ciega a:* si el archivo existe y si es un sqlite válido — eso lo mide
+ * `probeStore`, que es otro instrumento y por otra razón.
  */
-export const STORE_PATH = join(docsRoot(), '.claude', 'agent-results', 'agent_store.sqlite3')
+export function storePath(declared?: string): string {
+  if (declared) return declared
+  const file = envValue(STORE_PATH_VAR)
+  if (file) return resolve(file)
+  const consumer = envValue(CONSUMER_ROOT_VAR)
+  if (consumer) return join(consumerRoot(consumer), STORE_DIR, STORE_FILE)
+  return join(docsRoot(), STORE_DIR, STORE_FILE)
+}
+
+/**
+ * La ruta resuelta al cargar el módulo — la que consumen `loop.ts`,
+ * `bin/harness.ts` y los tests que abren el store real.
+ *
+ * Se conserva como constante porque sus cuatro consumidores la leen así; quien
+ * necesite resolver con un entorno distinto llama a `storePath()`.
+ */
+export const STORE_PATH = storePath()
 
 export type HarnessSessionRow = {
   sessionId: string

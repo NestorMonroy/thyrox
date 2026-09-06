@@ -6,13 +6,16 @@
  * para que la ausencia de líneas se lea como falta y no como calma.
  */
 
-import { describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Journal, readJournal } from '../src/observability/journal.ts'
-import { STORE_PATH, recordHarnessSession } from '../src/observability/store.ts'
+import {
+  STORE_FILE, STORE_PATH, STORE_PATH_VAR, recordHarnessSession, storePath,
+} from '../src/observability/store.ts'
+import { CONSUMER_ROOT_VAR } from '../../../paths/reach.ts'
 import { costReport, turnCost } from '../src/observability/cost.ts'
 import type { Usage } from '../src/types.ts'
 
@@ -203,5 +206,56 @@ describe('las tres unidades, y ninguna sustituye a otra', () => {
     expect(r.usage.cache_read_input_tokens).toBe(800_000)   // crudo
     expect(r.equivalentTokens).not.toBeNull()               // comparable
     expect(r.usd).not.toBeNull()                            // factura
+  })
+})
+
+describe('storePath — el consumidor es parámetro, no el clon de docs', () => {
+  const guardado = { ...process.env }
+  const temporales: string[] = []
+
+  afterEach(() => {
+    for (const k of Object.keys(process.env)) if (!(k in guardado)) delete process.env[k]
+    Object.assign(process.env, guardado)
+    for (const d of temporales.splice(0)) rmSync(d, { recursive: true, force: true })
+  })
+
+  function raizTemporal(): string {
+    const d = mkdtempSync(join(tmpdir(), 'store-path-'))
+    temporales.push(d)
+    return d
+  }
+
+  test('el valor directo gana sobre todo', () => {
+    process.env[STORE_PATH_VAR] = '/de/la/variable.sqlite3'
+    expect(storePath('/pasado/a/mano.sqlite3')).toBe('/pasado/a/mano.sqlite3')
+  })
+
+  test('la variable del store gana sobre la del consumidor', () => {
+    process.env[STORE_PATH_VAR] = '/declarado/agent_store.sqlite3'
+    process.env[CONSUMER_ROOT_VAR] = '/otro/consumidor'
+    expect(storePath()).toBe('/declarado/agent_store.sqlite3')
+  })
+
+  test('sin la del store, el consumidor declarado compone la ruta', () => {
+    delete process.env[STORE_PATH_VAR]
+    const consumidor = raizTemporal()
+    process.env[CONSUMER_ROOT_VAR] = consumidor
+    expect(storePath()).toBe(join(consumidor, '.claude', 'agent-results', STORE_FILE))
+  })
+
+  test('sin ninguna de las dos, cae al clon de docs — la conducta de hoy', () => {
+    delete process.env[STORE_PATH_VAR]
+    delete process.env[CONSUMER_ROOT_VAR]
+    expect(storePath()).toBe(STORE_PATH)
+  })
+
+  test('el ascenso NO gobierna: tres árboles del sistema llevan el marcador', () => {
+    delete process.env[STORE_PATH_VAR]
+    delete process.env[CONSUMER_ROOT_VAR]
+    const consumidor = raizTemporal()
+    mkdirSync(join(consumidor, '.claude'), { recursive: true })
+    // Un ascenso desde aquí devolvería `consumidor`; la resolución del store
+    // exige el valor declarado, así que no lo hace.
+    expect(storePath()).not.toBe(join(consumidor, '.claude', 'agent-results', STORE_FILE))
   })
 })
