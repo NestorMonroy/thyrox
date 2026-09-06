@@ -187,12 +187,19 @@ def main(argv):
             fila['pricing_tier'] = None
         modelos.append(ordenar(fila))
 
-    # La fuente se registra desde `tools/` para que el JSON sea el mismo
+    # La fuente se registra desde `_references/` para que el JSON sea el mismo
     # se invoque con ruta absoluta o relativa: la suite del paquete compara
     # byte a byte y una ruta distinta la haría caer sin que cambie el catálogo.
+    #
+    # El ancla decía `tools/`, que era el hogar del corpus antes de mudarlo a
+    # `_references/`. Un ancla que ya no casa no falla: deja pasar la ruta
+    # entera, así que una invocación absoluta incrustaba `/home/user/...` en un
+    # artefacto versionado y rompía la comparación byte a byte sin que el
+    # catálogo hubiera cambiado.
+    CORPUS_ANCHOR = '_references/'
     fuente = str(ruta)
-    if 'tools/' in fuente:
-        fuente = fuente[fuente.index('tools/'):]
+    if CORPUS_ANCHOR in fuente:
+        fuente = fuente[fuente.index(CORPUS_ANCHOR):]
 
     salida_modelos = ordenar({
         'fuente': fuente,

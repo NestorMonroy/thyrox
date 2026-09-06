@@ -12,7 +12,7 @@ import type { AgentDefinition } from '../types.ts'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const PACKAGE = join(HERE, '..')
 const REPO_ROOT = join(PACKAGE, '..', '..', '..')
-const DUMP = join(REPO_ROOT, 'tools', 'claude-code-bin', '2.1.258', 'claude_strings.txt')
+const DUMP = join(REPO_ROOT, '_references', 'claude-code-bin', '2.1.258', 'claude_strings.txt')
 
 describe('src/models.json es derivado, no escrito a mano', () => {
   /**
@@ -28,7 +28,7 @@ describe('src/models.json es derivado, no escrito a mano', () => {
     ])
     expect(result.exitCode).toBe(0)
     const fresh = new TextDecoder().decode(result.stdout)
-    const vendored = readFileSync(join(PACKAGE, 'src', 'models.json'), 'utf8')
+    const vendored = readFileSync(join(PACKAGE, 'models.json'), 'utf8')
     expect(vendored).toBe(fresh)
   })
 
