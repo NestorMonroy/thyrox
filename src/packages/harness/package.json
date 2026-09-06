@@ -41,6 +41,8 @@
     "@types/bun": "^1.4.0"
   },
   "dependencies": {
-    "@thyrox/agent": "workspace:*"
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/tasks": "workspace:*"
   }
 }

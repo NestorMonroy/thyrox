@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, test } from 'bun:test'
-import { assessPremise, assessAll, type PremiseIo, type TaskPremise } from '../src/tasks/premises.ts'
+import { assessPremise, assessAll, type PremiseIo, type TaskPremise } from '../premises.ts'
 
 /**
  * La premisa de una tarea es una hipotesis fechada. Leerla no mide el arbol:

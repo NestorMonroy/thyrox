@@ -28,10 +28,16 @@
       "version": "0.1.0",
       "dependencies": {
         "@thyrox/agent": "workspace:*",
+        "@thyrox/config": "workspace:*",
+        "@thyrox/tasks": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
       },
+    },
+    "tasks": {
+      "name": "@thyrox/tasks",
+      "version": "0.1.0",
     },
   },
   "packages": {
@@ -42,6 +48,8 @@
     "@thyrox/config": ["@thyrox/config@workspace:config"],
 
     "@thyrox/harness": ["@thyrox/harness@workspace:harness"],
+
+    "@thyrox/tasks": ["@thyrox/tasks@workspace:tasks"],
 
     "@types/bun": ["@types/bun@1.4.1", "", { "dependencies": { "bun-types": "1.4.1" } }, "sha512-0AVGiTXGajf1rgKom3N+c5L7CBxuoyyv1i44M0nX4UDK0G/fnRAMiri93nHuVPIb429KKtAgj7HatVmmOjeQLA=="],
 
