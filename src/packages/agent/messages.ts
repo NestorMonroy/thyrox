@@ -85,7 +85,7 @@ export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
  * que se porta **por consumidor**: cada test que aterriza trae consigo los
  * simbolos que ejercita, y este encabezado declara la cobertura.
  *
- * Cobertura acumulada — **34 de 115**, en seis grupos, cada uno traido por
+ * Cobertura acumulada — **38 de 115**, en siete grupos, cada uno traido por
  * el test que lo ejercita:
  *
  * 1. **14 cadenas de contrato** del protocolo harness ↔ modelo (`INTERRUPT_*`,
@@ -111,8 +111,14 @@ export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
  *    declarada del `ContentBlockParam` del SDK de Anthropic) y dos
  *    ayudantes internos no exportados (`escapeRegExp`,
  *    `AUTO_MODE_REJECTION_PREFIX`).
+ * 7. **4 ayudantes de texto** traidos por `contentTextHelpers.test.ts`:
+ *    `extractTextContent`, `getContentText`, `getUserMessageText`,
+ *    `textForResubmit`. Trae consigo `stripIdeContextTags` (interno, no
+ *    exportado — divergencia declarada del
+ *    `@claude-code-how-works/output/utils/displayTags.js` de la fuente,
+ *    reproducido verbatim) y reusa `ContentBlockParam` del grupo 6.
  *
- * Los 81 restantes NO estan portados y su ausencia es deliberada, no un
+ * Los 77 restantes NO estan portados y su ausencia es deliberada, no un
  * olvido: `porte-completo-no-parcial.md` admite el porte parcial
  * **declarado**, nunca el silencioso.
  *
@@ -594,4 +600,91 @@ export function isToolUseResultMessage(
       (content as ContentBlockParam[])[0]?.type === 'tool_result') ||
       Boolean(message.toolUseResult))
   )
+}
+
+/**
+ * Extrae texto de un arreglo de bloques de contenido, uniendo los bloques
+ * de texto con el separador dado. Funciona con `ContentBlockParam` y
+ * cualquier variante de solo lectura via tipado estructural.
+ */
+export function extractTextContent(
+  blocks: readonly { readonly type: string; readonly [key: string]: unknown }[],
+  separator = '',
+): string {
+  return blocks
+    .filter((b): b is { type: 'text'; text: string } => b.type === 'text')
+    .map(b => b.text)
+    .join(separator)
+}
+
+/**
+ * `content` como texto plano: una cadena se devuelve verbatim (SIN
+ * `trim()` — solo la rama de arreglo lo recorta); un arreglo se une con
+ * salto de linea y se recorta, devolviendo `null` si queda vacio;
+ * cualquier otra cosa es `null`.
+ */
+export function getContentText(
+  content: string | ReadonlyArray<ContentBlockParam>,
+): string | null {
+  if (typeof content === 'string') {
+    return content
+  }
+  if (Array.isArray(content)) {
+    return extractTextContent(content, '\n').trim() || null
+  }
+  return null
+}
+
+/** El texto plano de un mensaje de USUARIO, o `null` si no lo es. */
+export function getUserMessageText(message: Message): string | null {
+  if (message.type !== 'user') {
+    return null
+  }
+  return getContentText(
+    message.message?.content as string | ReadonlyArray<ContentBlockParam>,
+  )
+}
+
+/**
+ * Patron de etiquetas de contexto inyectadas por el IDE
+ * (`ide_opened_file`, `ide_selection`). Solo estas dos — a diferencia del
+ * patron generico de `stripDisplayTags` de la fuente (ausente aqui) — para
+ * que `<code>foo</code>` escrito por el usuario sobreviva.
+ */
+const IDE_CONTEXT_TAGS_PATTERN =
+  /<(ide_opened_file|ide_selection)(?:\s[^>]*)?>[\s\S]*?<\/\1>\n?/g
+
+/**
+ * Retira SOLO las etiquetas de contexto inyectadas por el IDE. La usa
+ * `textForResubmit` para que el reenvio con flecha-arriba preserve
+ * contenido escrito por el usuario, incluido HTML en minusculas, mientras
+ * descarta el ruido del IDE.
+ *
+ * DIVERGENCIA DECLARADA: la fuente la importa de
+ * `@claude-code-how-works/output/utils/displayTags.js`, ausente de este
+ * arbol. El patron y el comportamiento se reproducen aqui verbatim.
+ */
+function stripIdeContextTags(text: string): string {
+  return text.replace(IDE_CONTEXT_TAGS_PATTERN, '').trim()
+}
+
+/**
+ * El texto que el reenvio con flecha-arriba le vuelve a poner al usuario
+ * en el prompt, y el modo en que se reenviaria: `bash-input` gana sobre
+ * `command-name`, que gana sobre el texto llano (pasado por
+ * `stripIdeContextTags`).
+ */
+export function textForResubmit(
+  msg: UserMessage,
+): { text: string; mode: 'bash' | 'prompt' } | null {
+  const content = getUserMessageText(msg)
+  if (content === null) return null
+  const bash = extractTag(content, 'bash-input')
+  if (bash) return { text: bash, mode: 'bash' }
+  const cmd = extractTag(content, COMMAND_NAME_TAG)
+  if (cmd) {
+    const args = extractTag(content, COMMAND_ARGS_TAG) ?? ''
+    return { text: `${cmd} ${args}`, mode: 'prompt' }
+  }
+  return { text: stripIdeContextTags(content), mode: 'prompt' }
 }
