@@ -11,19 +11,26 @@
  * que la consume, nunca aquí.
  *
  * DIVERGENCIA DE ALCANCE, declarada: la fuente importa `AgentHostBindings`
- * de `./contracts.ts` (285 líneas, con ocho tipos más de
- * `./internalTypes.ts`) — ninguno de los dos está portado todavía en este
+ * de `./contracts.ts` (285 líneas) — no está portado todavía en este
  * árbol. Este archivo declara el tipo **localmente**, acotado a los
  * bindings que los módulos ya portados de `internal/` consumen
  * (`runtimeSignals.ts`, `sdkRuntime.ts`, `sessionRuntime.ts`,
- * `runtimeBridges.ts`). Es un subconjunto, no una reinvención: cada campo
- * copia la firma exacta que `contracts.ts` declara para ese binding. Se
- * amplía según se porten más módulos de `internal/` que consuman bindings
- * adicionales — no se completa en un solo pase (mismo criterio que
+ * `runtimeBridges.ts`, `logging.ts`, `headlessRuntime.ts`, `commandQueue.ts`). Es un
+ * subconjunto, no una reinvención: cada campo copia la firma exacta que
+ * `contracts.ts` declara para ese binding. Se amplía según se porten más
+ * módulos de `internal/` que consuman bindings adicionales — no se
+ * completa en un solo pase (mismo criterio que
  * `atributos-de-clase-de-modelo.md` en el proyecto hermano `kaupamex-docs`:
  * lo que la fuente declara para el símbolo que se porta, ni más ni menos).
+ *
+ * `./internalTypes.ts` SÍ está portado (es autocontenido, sin
+ * dependencias externas) — por eso `AgentMessage` se importa de ahí en
+ * vez de repetir aquí una forma estructural abierta como
+ * `AgentMessageLike` (que sigue existiendo, sin tocar, para los bindings
+ * de `runtimeBridges.ts` que ya la usaban antes de este pase).
  */
 import { HostBindingsError } from './errors.ts'
+import type { AgentMessage } from './internalTypes.ts'
 
 /**
  * Forma mínima de un mensaje de agente para el binding
@@ -41,6 +48,15 @@ export type DumpPromptsFetch = (
 ) => Promise<Response>
 
 export type AgentHostBindings = {
+  // ── Logging (internal/logging.ts) ──────────────────────────────────────
+  logEvent?: (
+    event: string,
+    metadata: Record<string, string | number | boolean>,
+  ) => void
+  logError?: (error: unknown) => void
+  logAntError?: (message: string, error: unknown) => void
+  logDebug?: (message: string, metadata?: unknown) => void
+
   // ── Observabilidad (runtimeSignals.ts) ─────────────────────────────────
   headlessProfilerCheckpoint?: (name: string) => void
   queryCheckpoint?: (name: string) => void
@@ -88,6 +104,62 @@ export type AgentHostBindings = {
     agentId?: string,
   ) => Promise<void>
   createDumpPromptsFetch?: (agentIdOrSessionId: string) => DumpPromptsFetch
+
+  // ── Modo headless / --print (internal/headlessRuntime.ts) ──────────────
+  registerStructuredOutputEnforcement?: (
+    setAppState: (f: (prev: unknown) => unknown) => void,
+    sessionId: string,
+  ) => void
+  getMainLoopModel?: () => string
+  parseUserSpecifiedModel?: (model: string) => string
+  loadAllPluginsCacheOnly?: () => Promise<{
+    enabled: unknown[]
+    [key: string]: unknown
+  }>
+  processUserInput?: (params: unknown) => Promise<{
+    messages: AgentMessage[]
+    shouldQuery: boolean
+    allowedTools: unknown
+    model?: string
+    resultText?: string
+    [key: string]: unknown
+  }>
+  fetchSystemPromptParts?: (params: unknown) => Promise<{
+    defaultSystemPrompt: string[]
+    userContext: Record<string, string>
+    systemContext: Record<string, string>
+  }>
+  shouldEnableThinkingByDefault?: () => boolean | undefined
+  buildSystemInitMessage?: (params: unknown) => unknown
+  sdkCompatToolName?: (toolName: string) => string
+  handleOrphanedPermission?: (
+    orphanedPermission: unknown,
+    tools: unknown[],
+    messages: AgentMessage[],
+    context: unknown,
+  ) => AsyncGenerator<unknown>
+  isResultSuccessful?: (
+    result: AgentMessage | undefined,
+    lastStopReason: string | null,
+  ) => boolean
+  normalizeMessage?: (message: AgentMessage) => AsyncGenerator<unknown>
+  selectableUserMessagesFilter?: (message: AgentMessage) => boolean
+  getCoordinatorUserContext?: (
+    mcpClients: ReadonlyArray<{ name: string }>,
+    scratchpadDir?: string,
+  ) => Record<string, string>
+  isSnipBoundaryMessage?: (message: AgentMessage) => boolean
+  snipCompactIfNeeded?: (
+    messages: AgentMessage[],
+    options?: { force?: boolean },
+  ) => { messages: AgentMessage[]; executed: boolean } | undefined
+
+  // ── Cola de comandos (internal/commandQueue.ts) ─────────────────────────
+  getCommandsByMaxPriority?: (
+    maxPriority: 'now' | 'next' | 'later',
+  ) => AgentMessage[]
+  removeCommandsFromQueue?: (commands: AgentMessage[]) => void
+  isSlashCommand?: (command: AgentMessage) => boolean
 }
 
 let agentHostBindings: AgentHostBindings | null = null
