@@ -1,0 +1,20 @@
+{
+  "name": "@thyrox/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Porte parcial del paquete cli de claude-code-nestor-monroy-tools (TASK-DOCS-0205): la convención de códigos de salida (exitCodes.ts, patrón — no código — de packages/cli/src/exit.ts) y el reexport del análisis de argv temprano que la propia referencia consume de @claude-code-how-works/app-host, ya portado en @thyrox/app-host. Dos de los 111 módulos de la fuente; el análisis de la iniciativa declara por qué el resto no aplica. El hogar futuro de harness/bin/harness.ts (T-009) y su cli/render.ts — no movidos en este pase.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./exitCodes.js": "./src/exitCodes.ts",
+    "./argv.js": "./src/argv.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@thyrox/app-host": "workspace:*"
+  }
+}

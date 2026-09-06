@@ -5,6 +5,7 @@
     "agent",
     "app-host",
     "binary",
+    "cli",
     "command-runtime",
     "config",
     "harness",
