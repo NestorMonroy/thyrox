@@ -19,7 +19,7 @@
 import { Database } from 'bun:sqlite'
 import { openStore } from './db.ts'
 import { join } from 'node:path'
-import { docsRoot } from '../paths/docs.ts'
+import { docsRoot } from '../../../../paths/docs.ts'
 import type { Usage } from '../types.ts'
 import type { TranscriptShape } from './transcriptShape.ts'
 import { verifyAdoption, readProcStart, type Adoption } from '../session/reconcile.ts'

@@ -14,7 +14,7 @@ import { join } from 'node:path'
 import { parseRstTasks } from '@thyrox/tasks/rst'
 import { taskTools } from '../src/tools/tasks.ts'
 import { main } from '../bin/harness.ts'
-import { docsRoot } from '../src/paths/docs.ts'
+import { docsRoot } from '../../../paths/docs.ts'
 
 /** El archivo de tareas de esta misma iniciativa: control positivo real. */
 // El .rst vive en kaupamex-docs. La aritmetica resolvia a thyrox y el

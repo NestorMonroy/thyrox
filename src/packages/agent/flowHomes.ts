@@ -8,7 +8,7 @@
  * promueve a codigo para que las definiciones de coordinador lo consuman en
  * vez de repetir la tabla en prosa muerta dentro de cada `*.prompt.md`.
  *
- * Espeja la FORMA de `harness/src/paths/docs.ts`: el hogar no es «la cadena»
+ * Espeja la FORMA de `src/paths/docs.ts`: el hogar no es «la cadena»
  * suelta, es la cadena mas la pregunta de si existe en el arbol
  * (`homesMissingFromTree`). Un hogar `source/…` que no exista es el defecto
  * que :ref:`h-docs-1021` registro — el prompt de RUP citaba una raiz de
@@ -135,7 +135,7 @@ let raizMemoizada: string | null = null
 /**
  * Raiz del repo de docs — el ancestro que contiene `source/`.
  *
- * Mismo criterio que `docsRoot` de `harness/src/paths/docs.ts`: no se supone
+ * Mismo criterio que `docsRoot` de `src/paths/docs.ts`: no se supone
  * del cwd. `KAUPAMEX_DOCS_ROOT` gana; si no, se asciende desde este modulo y
  * desde el cwd. Si ninguna resuelve, lanza — una raiz inventada haria que
  * `homesMissingFromTree` midiera un arbol que no existe.

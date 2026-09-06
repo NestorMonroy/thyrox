@@ -19,7 +19,7 @@ import {
   docsLayer, docsRoot, findingPath, homeFor, initiativeAnalysis, initiativeArtifact,
   initiativeDir, initiativeIndex, isHome, isUnderDocs, resetDocsRootCache, submoduleBin,
   type Home,
-} from '../src/paths/docs.ts'
+} from '../../src/paths/docs.ts'
 
 const conRaiz = (raiz: string, f: () => void) => {
   const previo = process.env.KAUPAMEX_DOCS_ROOT
@@ -42,6 +42,39 @@ describe('docsRoot — la raiz se descubre, no se escribe', () => {
 
   test('la variable de entorno tiene precedencia', () => {
     conRaiz('/tmp/otro-docs', () => expect(docsRoot()).toBe('/tmp/otro-docs'))
+  })
+
+  test('honra las grafias canonicas del alcance, no solo la heredada', () => {
+    const previo = { ...process.env }
+    try {
+      delete process.env.KAUPAMEX_DOCS_ROOT
+      process.env.THYROX_REACH_DOCS = '/canonica/docs'
+      resetDocsRootCache()
+      expect(docsRoot()).toBe('/canonica/docs')
+
+      delete process.env.THYROX_REACH_DOCS
+      process.env.KAUPAMEX_DOCS = '/heredada/docs'
+      resetDocsRootCache()
+      expect(docsRoot()).toBe('/heredada/docs')
+    } finally {
+      for (const k of Object.keys(process.env)) if (!(k in previo)) delete process.env[k]
+      Object.assign(process.env, previo)
+      resetDocsRootCache()
+    }
+  })
+
+  test('el arbol declarado compone la raiz del clon', () => {
+    const previo = { ...process.env }
+    try {
+      delete process.env.KAUPAMEX_DOCS_ROOT
+      process.env.THYROX_REACH_ROOT = '/arbol'
+      resetDocsRootCache()
+      expect(docsRoot()).toBe('/arbol/kaupamex-docs')
+    } finally {
+      for (const k of Object.keys(process.env)) if (!(k in previo)) delete process.env[k]
+      Object.assign(process.env, previo)
+      resetDocsRootCache()
+    }
   })
 
   test('memoiza: la segunda llamada no vuelve a leer el entorno', () => {

@@ -28,8 +28,9 @@
  * declarado al builder correcto. Asi un skill nombra `alcance`, `audits` o
  * `backend`, no una ruta.
  */
-import { existsSync } from 'node:fs'
-import { dirname, join, relative, resolve, sep } from 'node:path'
+import { join, relative, resolve, sep } from 'node:path'
+
+import { root as reachRoot } from './reach.ts'
 
 /**
  * Las raices de trabajo que el arbol de docs documenta.
@@ -90,39 +91,44 @@ const FINDING_PREFIX: Record<Submodule, string> = {
 let memoizedRoot: string | null = null
 
 /**
+ * La grafia HEREDADA de la raiz de docs, con sus consumidores vivos.
+ *
+ * No es una de las dos canonicas que `envNames('docs')` deriva
+ * (`THYROX_REACH_DOCS`, `KAUPAMEX_DOCS`): es un tercer nombre, acunado aqui
+ * antes de que el alcance existiera, y en el se filtro al identificador del
+ * mecanismo el parametro que gobierna (tarea #142). Se conserva de PRIMERA por
+ * el mismo criterio con que `reach` conserva `KAUPAMEX_ROOT`: tiene sitios
+ * vivos que la declaran, y retirarla los rompe. Su retiro es la #142, no este
+ * pase.
+ */
+export const DOCS_ROOT_LEGACY_VAR = 'KAUPAMEX_DOCS_ROOT'
+
+/**
  * Raiz del repo de docs. Memoizada: no cambia en la vida del proceso.
  *
  * Path format: el directorio que contiene `source/gestion/pm/`.
  *
- * Tres vias, en orden de precedencia — el harness corre desde cualquiera de
- * los cinco repos, asi que la raiz **no se supone del cwd**:
+ * **La decision no vive aqui: la toma `reach.root('docs')`.** Hasta hoy este
+ * modulo tenia su propia cadena —una variable con grafia propia mas un ascenso
+ * a `source/gestion/pm/`—, o sea una segunda fuente de verdad para la misma
+ * pregunta que el alcance ya respondia. Un consumidor que declarara
+ * `THYROX_REACH_DOCS` movia todos los gates en Python y no movia esto.
  *
- * 1. `KAUPAMEX_DOCS_ROOT`, si esta declarada.
- * 2. Ascender desde este modulo: el harness vive dentro de `kaupamex-docs`.
- * 3. Ascender desde el cwd buscando el clon hermano `kaupamex-docs`.
+ * Quedan dos pasos, en orden:
  *
- * Si ninguna resuelve, **lanza**: devolver una raiz inventada haria que toda
- * ruta derivada apuntara a un arbol que no existe, y el fallo aparecerian
- * turnos despues como un archivo escrito en el sitio equivocado.
+ * 1. `KAUPAMEX_DOCS_ROOT`, la grafia heredada — ver arriba por que sigue.
+ * 2. `reach.root('docs')`: las dos grafias canonicas por raiz, y si ninguna,
+ *    el clon `kaupamex-docs` compuesto sobre el arbol (declarado o ascendido).
+ *
+ * Si ninguna resuelve, `reach` **lanza**: devolver una raiz inventada haria
+ * que toda ruta derivada apuntara a un arbol que no existe, y el fallo
+ * aparecerian turnos despues como un archivo escrito en el sitio equivocado.
  */
 export function docsRoot(): string {
   if (memoizedRoot !== null) return memoizedRoot
-  const declared = process.env.KAUPAMEX_DOCS_ROOT
+  const declared = process.env[DOCS_ROOT_LEGACY_VAR]
   if (declared) return (memoizedRoot = resolve(declared))
-
-  const isRoot = (d: string) => existsSync(join(d, PM))
-  for (const start of [import.meta.dir, process.cwd()]) {
-    for (let d = resolve(start); ; d = dirname(d)) {
-      if (isRoot(d)) return (memoizedRoot = d)
-      const sibling = join(d, 'kaupamex-docs')
-      if (isRoot(sibling)) return (memoizedRoot = sibling)
-      if (dirname(d) === d) break
-    }
-  }
-  throw new Error(
-    'No se pudo resolver la raiz de kaupamex-docs: ningun ancestro de este modulo ' +
-    'ni del cwd contiene `source/gestion/pm/`, y `KAUPAMEX_DOCS_ROOT` no esta declarada.',
-  )
+  return (memoizedRoot = reachRoot('docs', import.meta.dir))
 }
 
 /** Olvida la raiz memoizada. Para pruebas y para un cambio de raiz explicito. */

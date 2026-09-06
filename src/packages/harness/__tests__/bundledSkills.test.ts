@@ -15,7 +15,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { registerBundledSkills, bundledSkillNames } from '../src/skills/bundled.ts'
 import { SkillRegistry } from '../src/skills/registry.ts'
-import { docsRoot } from '../src/paths/docs.ts'
+import { docsRoot } from '../../../paths/docs.ts'
 
 /** El conjunto sólo-apoyo derivado del triaje más reciente — la fuente de verdad. */
 function soloApoyoFromTriage(): string[] {
