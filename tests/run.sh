@@ -34,6 +34,84 @@ descubrir_shell()  { find tests -name 'test*.sh' -not -path '*/node_modules/*' |
 
 only="${1:-}"
 
+# --- `--changed`: el subconjunto DERIVADO, no la suite entera ---------------
+#
+# `test-execution-protocol.md` manda correr «el modulo tocado mas sus
+# consumidores medidos» y NO la pila entera. Hasta hoy esa regla era prosa sin
+# comando: derivar el subconjunto costaba dos greps a mano, asi que lo barato
+# era lanzar todo.
+#
+# Medido el 2026-09-06 sobre un cambio de tres archivos: la suite completa
+# tardo 110 s y el subconjunto derivado 0.359 s —308x— y NINGUNO de los 97
+# rojos que publico venia del cambio. Ver :ref:`h-docs-1130`.
+#
+# Que deriva: los archivos que el arbol tiene tocados (sin publicar o sin
+# commitear) y, por cada uno, las suites que MENCIONAN su nombre de modulo.
+# Ciega a: un consumidor que llegue por herencia sin nombrar el simbolo — por
+# eso NO sustituye a la suite entera al cerrar un bloque, solo entre commits.
+if [ "$only" = "--changed" ] || [ "$only" = "--changed-list" ]; then
+  tocados="$( { git diff --name-only HEAD 2>/dev/null
+                git status --porcelain --untracked-files=all 2>/dev/null | cut -c4-
+              } | grep -E '\.(py|ts|sh)$' | sort -u )"
+  if [ -z "$tocados" ]; then
+    echo "run.sh --changed: el arbol no tiene archivos tocados. Nada que derivar."
+    exit 0
+  fi
+  # COMO se empareja, y por que no por el stem pelado. La primera version uso
+  # el stem sin extension y `tests/run.sh` derivo `run`, que como SUBCADENA
+  # casa con 150+ suites de 158 — una derivacion que no deriva nada y cuya
+  # salida parece un resultado. Se empareja por como un consumidor NOMBRA el
+  # archivo: la ruta, el basename con extension, o el import del modulo.
+  patron="$(printf '%s\n' "$tocados" | while read -r f; do
+              base="${f##*/}"; stem="${base%.*}"
+              printf '%s\n%s\n' "$(printf '%s' "$f" | sed 's|[./]|[./]|g')" "$base"
+              case "$f" in
+                *.py) printf 'import %s\n%s\.%s\n' "$stem" "[a-z_]*" "$stem" ;;
+              esac
+            done | grep -v '^$' | sort -u | paste -sd'|')"
+  derivadas="$( { descubrir_ts; descubrir_python; descubrir_shell; } \
+                | while read -r s; do
+                    grep -qE "$patron" "$s" 2>/dev/null && echo "$s"
+                  done )"
+  # Un archivo tocado que ES una suite entra aunque nadie lo mencione.
+  derivadas="$(printf '%s\n%s\n' "$derivadas" \
+                 "$(printf '%s\n' "$tocados" | grep -E '^tests/.*(test_.*\.py|test.*\.sh)$|\.test\.ts$')" \
+               | grep -v '^$' | sort -u)"
+  if [ "$only" = "--changed-list" ]; then
+    printf '%s\n' "$derivadas"
+    exit 0
+  fi
+  if [ -z "$derivadas" ]; then
+    echo "run.sh --changed: $(printf '%s\n' "$tocados" | wc -l) archivo(s) tocado(s)," \
+         "0 suites que los mencionen."
+    echo "NO se emite verde: cero suites derivadas no es «pasa», es «no medi nada»."
+    exit 2
+  fi
+  total_suites="$( { descubrir_ts; descubrir_python; descubrir_shell; } | wc -l )"
+  n_der="$(printf '%s\n' "$derivadas" | wc -l)"
+  if [ "$n_der" -gt $(( total_suites / 2 )) ]; then
+    echo "run.sh --changed: la derivacion trajo $n_der de $total_suites suites."
+    echo "Eso NO es un subconjunto: el patron no discrimino. No se corre nada —"
+    echo "un verde sobre media suite se leeria como «el cambio esta cubierto»."
+    exit 2
+  fi
+  echo "== subconjunto derivado: $(printf '%s\n' "$derivadas" | wc -l) suite(s) de" \
+       "$(printf '%s\n' "$tocados" | wc -l) archivo(s) tocado(s) =="
+  rojas=0
+  while read -r s; do
+    [ -n "$s" ] || continue
+    case "$s" in
+      *.test.ts) bun test "$s" >/dev/null 2>&1 ;;
+      *.py)      python3 "$s" >/dev/null 2>&1 ;;
+      *)         bash "$s" >/dev/null 2>&1 ;;
+    esac
+    if [ $? -eq 0 ]; then echo "-- $s"; else echo "-- ROJO $s"; rojas=$((rojas+1)); fi
+  done <<< "$derivadas"
+  echo "== $rojas en rojo de $(printf '%s\n' "$derivadas" | wc -l) derivadas =="
+  [ "$rojas" -eq 0 ] || exit 1
+  exit 0
+fi
+
 if [ "$only" = "--list" ]; then
   { descubrir_ts; descubrir_python; descubrir_shell; }
   exit 0
