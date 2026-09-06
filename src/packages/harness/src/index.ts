@@ -37,7 +37,10 @@ export {
 } from './observability/transcriptShape.ts'
 export { agentTool, DEFAULT_AGENT_DEFINITIONS, type AgentDefinition, type AgentToolOptions } from './tools/agent.ts'
 export { skillTool } from './tools/skill.ts'
-export { taskTools, TASK_STATUSES, type TaskStatus, type TaskToolOptions } from './tools/tasks.ts'
+export { taskTools, type TaskToolOptions } from './tools/tasks.ts'
+// El vocabulario de estados es del subsistema de tareas, no de su
+// superficie de herramienta: se reexporta desde donde se declara.
+export { TASK_STATUSES, type TaskStatus } from '../../../task/schema.ts'
 export {
   domainAllowed, webFetchTool, webSearchTool,
   type DomainPolicy, type SearchHit, type SearchProvider,

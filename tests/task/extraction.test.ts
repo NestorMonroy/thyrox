@@ -55,8 +55,14 @@ describe('la disolución del paquete es un movimiento, no una copia', () => {
 
   test('los cuatro módulos viven junto a sus hermanos Python', () => {
     const entradas = readdirSync(SUJETO)
-    expect(entradas.filter((f) => f.endsWith('.ts')).sort())
-      .toEqual(['index.ts', 'io.ts', 'premises.ts', 'rst.ts'])
+    // Se afirma la PRESENCIA de los cuatro que la disolución movió, no que el
+    // directorio tenga exactamente cuatro: el subsistema crece —`schema.ts`
+    // llegó con la partición de `tools/tasks.ts`— y una igualdad exacta
+    // convertiría cada incorporación legítima en un rojo. Sigue
+    // discriminando: si uno de los cuatro desapareciera, cae.
+    for (const modulo of ['index.ts', 'io.ts', 'premises.ts', 'rst.ts']) {
+      expect(entradas).toContain(modulo)
+    }
     // La cohabitación es el punto: es la forma de `src/paths/` y `src/store/`.
     expect(entradas.filter((f) => f.endsWith('.py')).length).toBeGreaterThan(0)
   })

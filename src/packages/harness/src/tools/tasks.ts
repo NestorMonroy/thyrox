@@ -2,7 +2,10 @@
  * Herramientas de tablero `Task*` (T-019, corregidas en T-061).
  *
  * El tablero no se reinventa: su esquema es el que `.claude/agent-results/`
- * ya tiene, declarado aquí una sola vez para que el harness sea autónomo —
+ * ya tiene, y desde la partición del sujeto vive en `src/task/schema.ts` —
+ * aquí queda la SUPERFICIE de herramienta, que es lo único propio del
+ * harness. La forma de la tabla la comparten dos lenguas, así que
+ * declararla dentro de su consumidor la ataba al sitio equivocado —
  * las tres herramientas morían con `no such table: tasks` en cualquier base
  * que no fuera la del proyecto, y un harness que sólo funciona dentro de un
  * repo concreto no es propio. Que el DDL de aquí y el del store coincidan lo
@@ -32,55 +35,12 @@
  */
 import { Database } from 'bun:sqlite'
 import { openStore } from '../../../../store/db.ts'
+import {
+  selectCitationId, TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
+} from '../../../../task/schema.ts'
 import type { Tool, ToolContext, ToolResult } from '../types.ts'
 
-export const TASK_STATUSES = ['pending', 'in_progress', 'completed'] as const
-export type TaskStatus = (typeof TASK_STATUSES)[number]
-
-/** Los estados que TaskUpdate acepta: los del tablero más la acción `deleted`. */
-export const UPDATE_STATUSES = [...TASK_STATUSES, 'deleted'] as const
-
 export type TaskToolOptions = { dbPath: string; sessionId?: string }
-
-/**
- * El esquema del tablero, con la forma del store real.
- *
- * `IF NOT EXISTS` para no pisar el del proyecto, que tiene las mismas columnas
- * más las que sus propios hooks añadieron (`submodule`, `opened_at`). La clave
- * compuesta es la parte que no se puede simplificar: sin ella el ordinal de una
- * sesión sobreescribe el de otra.
- */
-export const TABLERO_DDL = `CREATE TABLE IF NOT EXISTS tasks (
-  task_id         TEXT NOT NULL,
-  subject         TEXT NOT NULL,
-  description     TEXT,
-  status          TEXT NOT NULL,
-  active_form     TEXT,
-  owner           TEXT,
-  blocks_json     TEXT,
-  blocked_by_json TEXT,
-  session_id      TEXT NOT NULL DEFAULT 'desconocida',
-  source          TEXT,
-  metadata_json   TEXT,
-  created_at      TEXT NOT NULL,
-  updated_at      TEXT NOT NULL,
-  PRIMARY KEY (session_id, task_id)
-)`
-
-/**
- * La marca de agua contra reúso de id (DEC-TASK-02).
- *
- * `siguienteOrdinal` numera con `MAX(task_id)` sobre las filas presentes; si la
- * de id máximo se borrara, el siguiente `TaskCreate` reusaría ese id, con la
- * ambigüedad de referencia cruzada que el `.highwatermark` de la referencia
- * previene (`hccw: 11-task-system.md:154-186`). La tabla recuerda el máximo
- * histórico aunque se borre la fila. Es global —una sola clave— porque el
- * ordinal también lo es: dos sesiones no deben producir dos «#996».
- */
-export const TASK_HIGHWATER_DDL = `CREATE TABLE IF NOT EXISTS task_highwater (
-  clave  TEXT NOT NULL PRIMARY KEY DEFAULT '__global__',
-  max_id INTEGER NOT NULL DEFAULT 0
-)`
 
 /**
  * El `source` que separa la lista efímera del tablero durable (T-063).
@@ -232,20 +192,6 @@ function anadirArista(db: Database, sesion: string, destino: string, columna: 'b
 }
 
 /** La vista de una tarea: sus campos más sus dos listas de aristas resueltas. */
-/**
- * ``, citation_id`` si la base la tiene, y cadena vacía si no.
- *
- * La columna la acuña ``task_ids`` sobre el store de docs; ``TABLERO_DDL`` no
- * la declara, así que una base creada por este harness no la tiene y
- * seleccionarla a ciegas la rompería con ``no such column``. El mismo criterio
- * que ``resumenTablero``, en un solo sitio para que las tres superficies no
- * puedan divergir.
- */
-export function selectCitationId(db: Database): string {
-  const columnas = (db.query('PRAGMA table_info(tasks)').all() as { name: string }[]).map((c) => c.name)
-  return columnas.includes('citation_id') ? ', citation_id' : ''
-}
-
 function resolver(db: Database, sesion: string, fila: Fila) {
   const vecina = (id: string) => {
     const v = db.query('SELECT task_id, subject, status FROM tasks WHERE session_id = ? AND task_id = ?').get(sesion, id) as
