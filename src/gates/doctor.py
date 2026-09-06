@@ -104,16 +104,14 @@ def resolve_consumer(declared=None):
     `reach.env_value` ya lee). Sin ninguna de las dos, el respaldo es el
     directorio de invocación — nunca la raíz del PROVEEDOR, que es el error
     que dejaba a los gates midiendo un corpus ausente.
-    """
-    if declared:
-        return pathlib.Path(declared).resolve()
 
+    La cadena vive en `reach.consumer_root`, no aquí: los gates que miden
+    al consumidor la necesitan igual, y una segunda copia sería la fuente
+    de verdad paralela que nadie sincroniza.
+    """
     from paths import reach
 
-    value = os.environ.get(CONSUMER_VAR, '').strip() or reach.env_value(CONSUMER_VAR)
-    if value:
-        return pathlib.Path(value).resolve()
-    return pathlib.Path.cwd().resolve()
+    return reach.consumer_root(declared)
 
 
 def run_one(check, gates_dir, consumer):

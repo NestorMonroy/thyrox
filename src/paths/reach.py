@@ -328,6 +328,50 @@ def thyrox_root(start: Path | None = None) -> Path:
     )
 
 
+CONSUMER_ROOT_VAR = "THYROX_CONSUMER"
+
+#: El marcador por el que se reconoce un consumidor al ascender. Es el
+#: directorio de configuración, no el nombre del clon: un árbol que lo tenga es
+#: un consumidor aunque se llame de otra forma, y uno llamado ``kaupamex-x``
+#: sin él no lo es. Mismo criterio que ``THYROX_MARKER``, con la evidencia
+#: dentro en vez del rótulo fuera.
+CONSUMER_MARKER = ".claude"
+
+
+def consumer_root(declared: str | Path | None = None,
+                  start: Path | None = None) -> Path:
+    """La raíz del árbol MEDIDO, que no es la del proveedor.
+
+    Dos entradas de entorno, la forma que el proyecto ya adoptó: un valor
+    directo (``THYROX_CONSUMER``) y la ruta al archivo que lo declara
+    (``THYROX_ENV_FILE``, que ``env_value`` ya lee). Sin ninguna de las dos se
+    **asciende** desde el punto de partida hasta el marcador, y sólo si el
+    ascenso no encuentra nada se devuelve ese punto tal cual.
+
+    El ascenso no es adorno: un gate lo invoca el pre-commit desde cualquier
+    subdirectorio del consumidor, y el cwd literal apuntaría a media rama.
+
+    Cierra la familia que el corredor destapó por gate: siete gates componían
+    su corpus con ``Path(__file__).resolve().parents[N]``, calibrado para
+    ``kaupamex-docs/.claude/scripts/gates/``. Desde ``thyrox/src/gates/`` eso
+    da ``/home/user``, y el mensaje decía ``no existe la raíz
+    /home/user/source`` — que se lee como violación de la regla y es una ruta
+    rota: el gate no midió nada.
+    """
+    if declared:
+        return Path(declared).resolve()
+
+    value = env_value(CONSUMER_ROOT_VAR, start)
+    if value:
+        return Path(value).resolve()
+
+    here = (Path(start) if start else Path.cwd()).resolve()
+    for level in (here, *here.parents):
+        if (level / CONSUMER_MARKER).is_dir():
+            return level
+    return here
+
+
 def root(repo: str, start: Path | None = None) -> Path:
     """La ruta absoluta de una raíz declarada, por la cadena de precedencia.
 
