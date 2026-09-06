@@ -6,10 +6,20 @@
  * CONSTANTE, y con dos entradas, ambas de entorno … el cablear algo hace que el
  * usuario que usa thyrox pierda la decisión de dónde van las cosas»*.
  *
- * Las dos entradas son las que `envValue` de `paths/reach` ya fija: la variable
- * del proceso primero —quien exporta para UNA invocación está corrigiendo a
- * propósito lo que el archivo dice para todas— y la declaración del `.env`
- * después. Mismo mecanismo que `agentsDir`, sin un tercer camino.
+ * LAS DOS ENTRADAS, con el nombre de cada una. La ilustración de la directiva
+ * las nombra por separado y no son la misma cosa mirada dos veces:
+ *
+ *     worker_config   = get_secret("WORKER_CONFIG")        <- el VALOR, directo
+ *     env_config_yaml = get_secret_str("CONFIG_FILE_PATH") <- la RUTA del archivo
+ *                                                             que lo declara
+ *
+ * Aquí: `WORKBENCH_DIR_VAR` lleva el valor y `WORKBENCH_ENV_FILE_VAR` lleva la
+ * ruta del archivo que puede declararlo. `envValue` de `paths/reach` las
+ * consulta en ese orden — el proceso primero, porque quien exporta para UNA
+ * invocación está corrigiendo a propósito lo que el archivo dice para todas.
+ *
+ * NO son dos fuentes de verdad para el mismo dato: son dos VÍAS de declaración
+ * de un dato único. Una decide para esta invocación, la otra para el árbol.
  *
  * Su hermano exacto es `skills/paths.ts`, y de ahí sale la forma: un módulo
  * `<subsistema>/paths.ts` que importa `envValue` de `paths/reach.ts`, declara
@@ -42,8 +52,17 @@
  */
 import { envValue } from '../paths/reach.ts'
 
-/** La constante. Una sola: dos nombres serían dos fuentes de verdad. */
+/** Entrada 1 — el valor: el hogar declarado directamente. */
 export const WORKBENCH_DIR_VAR = 'THYROX_WORKBENCH_DIR'
+
+/**
+ * Entrada 2 — la ruta del archivo que puede declararlo.
+ *
+ * Se re-exporta desde `paths/reach` en vez de re-declararse: el nombre lo fija
+ * el localizador del `.env`, y escribirlo aquí otra vez crearía la segunda
+ * fuente de verdad que este módulo existe para no tener.
+ */
+export { ENV_FILE_VAR as WORKBENCH_ENV_FILE_VAR } from '../paths/reach.ts'
 
 /** Se rehúsa cuando el consumidor no declaró su hogar. No es un fallo del emisor. */
 export class WorkbenchHomeError extends Error {}
@@ -58,7 +77,8 @@ export function workbenchDir(start?: string): string {
   if (declared) return declared
   throw new WorkbenchHomeError(
     `El hogar del banco no está declarado. Es una decisión del consumidor, no de `
-    + `thyrox: declara ${WORKBENCH_DIR_VAR} en el proceso o en tu .env. `
+    + `thyrox: declara ${WORKBENCH_DIR_VAR} en el proceso, o en el archivo que `
+    + `nombra THYROX_ENV_FILE (por defecto el .env del árbol). `
     + `NO se emite un hogar por defecto: inventarlo decidiría por ti dónde van `
     + `tus piezas.`,
   )

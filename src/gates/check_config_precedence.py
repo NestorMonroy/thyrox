@@ -74,9 +74,10 @@ SKIP_DIRS = {'.git', 'node_modules', '.venv', 'build', 'dist', '__pycache__',
              '_archived', '_references'}
 
 # El banco se reconoce por el PAR `.claude/<nombre>`, no por el nombre suelto:
-# `workbench` nombra tambien a `src/workbench/`, que es producto.
+# La evidencia por el PAR `.claude/eventos` y el banco por su hogar
+# DECLARADO: el nombre suelto de un directorio casa tambien con producto.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from workbench.paths import is_bank_path  # noqa: E402
+from workbench.paths import is_measurement_artifact  # noqa: E402
 
 
 def _es_lectura_de_config(node: ast.AST) -> bool:
@@ -232,7 +233,7 @@ def disagrees(source: str) -> bool:
 def scan(root: Path) -> tuple[int, dict[str, tuple[list[str], list[str]]]]:
     medidos, discrepantes = 0, {}
     for path in sorted(root.rglob('*.py')):
-        if any(part in SKIP_DIRS for part in path.parts) or is_bank_path(path):
+        if any(part in SKIP_DIRS for part in path.parts) or is_measurement_artifact(path):
             continue
         if not path.is_file():
             continue

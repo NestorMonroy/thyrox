@@ -1,0 +1,49 @@
+=== ANULACION A — evidencia por nombre suelto ===
+== 1. la evidencia se reconoce por el par `.claude/eventos` ==
+  ok    una pieza de la evidencia propia
+  ok    el directorio de evidencia a secas
+  ok    la de un consumidor, con su prefijo de clon
+== 2. CONTROL que discrimina: el nombre SUELTO no basta ==
+  FALLO `src/eventos/` es producto, no evidencia
+        esperado=[False] obtenido=[True]
+  ok    `src/workbench/` tampoco lo es
+== 3. el hogar del banco REHUSA sin declaracion ==
+  ok    rehusa sin declaracion
+  ok    y el mensaje nombra la entrada 1 (el valor)
+  ok    y tambien la entrada 2 (la ruta del archivo)
+== 4. CONTROL DE ANULACION: declarada la entrada 1, SI resuelve ==
+  ok    devuelve el hogar declarado
+  ok    y una pieza suya SI es del banco
+  ok    una ruta ajena NO lo es
+== 5. sin declaracion el predicado del banco no excluye NADA ==
+  ok    una ruta cualquiera no es banco
+== 6. la union es lo que consume un gate ==
+  ok    evidencia entra por la primera mitad
+  ok    el banco declarado entra por la segunda
+  ok    y el producto no entra por ninguna
+
+14 ok, 1 fallos
+
+=== ANULACION B — el hogar cae a un default en vez de rehusar ===
+== 1. la evidencia se reconoce por el par `.claude/eventos` ==
+  ok    una pieza de la evidencia propia
+  ok    el directorio de evidencia a secas
+  ok    la de un consumidor, con su prefijo de clon
+== 2. CONTROL que discrimina: el nombre SUELTO no basta ==
+  ok    `src/eventos/` es producto, no evidencia
+  ok    `src/workbench/` tampoco lo es
+== 3. el hogar del banco REHUSA sin declaracion ==
+  FALLO rehusa sin declaracion
+        esperado=[WorkbenchHomeError] obtenido=[no lanzo]
+== 4. CONTROL DE ANULACION: declarada la entrada 1, SI resuelve ==
+  ok    devuelve el hogar declarado
+  ok    y una pieza suya SI es del banco
+  ok    una ruta ajena NO lo es
+== 5. sin declaracion el predicado del banco no excluye NADA ==
+  ok    una ruta cualquiera no es banco
+== 6. la union es lo que consume un gate ==
+  ok    evidencia entra por la primera mitad
+  ok    el banco declarado entra por la segunda
+  ok    y el producto no entra por ninguna
+
+12 ok, 1 fallos

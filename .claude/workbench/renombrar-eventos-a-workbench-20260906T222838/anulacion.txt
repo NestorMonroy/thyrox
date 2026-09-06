@@ -1,5 +1,0 @@
-# Control de anulacion — predicado por NOMBRE SUELTO en vez del PAR
-# 2026-09-06T22:30:35
-# Caen 5 de 10: los tres de 'src/workbench es producto', el del par no adyacente
-# y la ruta absoluta bajo producto. Sobreviven los que no dependen del par.
-5 ok, 5 fallos (exit=1)
