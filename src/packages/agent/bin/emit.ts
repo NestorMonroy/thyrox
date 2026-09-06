@@ -7,13 +7,17 @@
  */
 import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { AGENTS } from '../index.ts'
 import { toMarkdown } from '../emit/markdown.ts'
+import { agentsDir } from '../../../paths/reach.ts'
 
-const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..')
-const AGENTS_DIR = join(REPO_ROOT, '.claude', 'agents')
+// El hogar es un PARÁMETRO resuelto por `agentsDir()`: la variable del
+// proceso, la del `.env`, y sólo entonces el hogar propio de thyrox. Era
+// aritmética de ruta a `.claude/agents/`, un directorio que el renombre a
+// `src/agents/definitions/` dejó sin existir — y el emisor no lo notó porque
+// `writeFileSync` sobre un padre ausente falla, pero `--check` sólo leía.
+const AGENTS_DIR = agentsDir()
 
 /**
  * El timestamp se obtiene de `date -u`, nunca de memoria ni del reloj del

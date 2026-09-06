@@ -1,11 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { AGENTS, migrationPorter, toAgentsJson, toMarkdown } from '../index.ts'
+import { agentsDir } from '../../../paths/reach.ts'
 
-const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..')
-const ON_DISK = join(REPO_ROOT, '.claude', 'agents', 'migration-porter.md')
+// El control lee el hogar por el mismo mecanismo que el emisor escribe. Si
+// leyera una ruta propia, los dos podrían divergir sin que nada lo dijera —
+// que es exactamente lo que pasó cuando ambos codificaban `.claude/agents/`.
+const ON_DISK = join(agentsDir(), 'migration-porter.md')
 
 /** El `updated_at` que el archivo en disco declara hoy. */
 function diskUpdatedAt(text: string): string {
