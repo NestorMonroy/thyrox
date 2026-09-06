@@ -20,6 +20,24 @@
  * hay tipo ni firma que lo detecte — solo el valor fijado.
  */
 
+/**
+ * Deriva un identificador corto y estable (base36, 6 caracteres) desde un
+ * UUID. Lo consume la herramienta de recorte: se inyecta como etiqueta
+ * `[id:...]` en los mensajes que van al API para que el modelo pueda citar un
+ * mensaje anterior por su identificador.
+ *
+ * Determinista por construccion — el mismo UUID da siempre el mismo valor. No
+ * es una funcion resumen criptografica: 10 hexadecimales son ~40 bits, asi que
+ * hay colision posible y el test la admite en su margen.
+ */
+export function deriveShortMessageId(uuid: string): string {
+  // Los primeros 10 hexadecimales del UUID, sin los guiones. Retirarlos es
+  // parte del contrato: sin eso, el primer guion se leeria como digito.
+  const hex = uuid.replace(/-/g, '').slice(0, 10)
+  // Base36 acorta la representacion; el recorte a 6 fija la cota superior.
+  return parseInt(hex, 16).toString(36).slice(0, 6)
+}
+
 // Re-exportados desde su modulo propio, igual que la fuente (`messages.ts:358`):
 // quien solo pregunta si un mensaje es sintetico no arrastra este archivo.
 export { SYNTHETIC_MESSAGES, SYNTHETIC_MODEL } from './messagesConstants.ts'
