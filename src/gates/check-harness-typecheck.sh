@@ -18,8 +18,15 @@
 #   paquete — un commit que no toca el harness no paga nada.
 set -euo pipefail
 
-RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-PAQUETE="${CHECK_HARNESS_TYPECHECK_PKG_DIR:-$RAIZ/.claude/packages/harness}"
+# La raíz se DECLARA o se ancla en la ubicación del propio gate, que vive en
+# `<raíz>/src/gates/` — el mismo invariante que `src/paths/reach.py` usa como
+# marcador. Antes componía `../../..` + `.claude/packages/harness`: valía
+# cuando el gate era un stub en `kaupamex-docs/.claude/scripts/gates/`, y desde
+# `thyrox/src/gates/` daba `/home/user/.claude/packages/harness`, que no
+# existe. El corredor lo publicaba SIN MEDIR con esa ruta en el mensaje.
+RAIZ="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+PAQUETE_REL="src/packages/harness"
+PAQUETE="${CHECK_HARNESS_TYPECHECK_PKG_DIR:-$RAIZ/$PAQUETE_REL}"
 ESTRICTO=0
 ARCHIVOS=()
 for arg in "$@"; do
@@ -33,7 +40,7 @@ if [[ "${#ARCHIVOS[@]}" -gt 0 ]]; then
     TOCA=0
     for f in "${ARCHIVOS[@]}"; do
         rel="${f#"$RAIZ"/}"
-        case "$rel" in .claude/packages/harness/*) TOCA=1 ;; esac
+        case "$rel" in "$PAQUETE_REL"/*) TOCA=1 ;; esac
     done
     if [[ "$TOCA" -eq 0 ]]; then
         echo "check-harness-typecheck: sin cambios en el paquete" \
@@ -83,8 +90,8 @@ check-harness-typecheck: el harness no compila.
   El arreglo es el tipo, no el bypass. Un `as any` que tape el error deja el
   gate en verde midiendo otra cosa.
 
-      cd .claude/packages/harness && bun run typecheck && bun run typecheck:tests
 AVISO
+    echo "      cd $PAQUETE_REL && bun run typecheck && bun run typecheck:tests" >&2
     [[ "$ESTRICTO" -eq 1 ]] && exit 1
 fi
 exit 0

@@ -1,15 +1,23 @@
 #!/usr/bin/env bash
-# El .md de un agente es DERIVADO: su fuente es .claude/packages/agent/definitions.
+# El .md de un agente es DERIVADO: su fuente es src/packages/agent/definitions.
 # Este gate compara el disco contra lo que el emisor produce — mismo criterio
 # que `makemigrations --check`.
 #
 # Uso:  check-agent-artifacts.sh [--strict] [archivos...]
 #   Sin archivos mide siempre. Con archivos, sólo actúa si alguno pertenece a
-#   la superficie del paquete o a .claude/agents/.
+#   la superficie del paquete o al hogar de las definiciones.
 set -euo pipefail
 
-RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-PAQUETE="${CHECK_AGENT_ARTIFACTS_PKG_DIR:-$RAIZ/.claude/packages/agent}"
+# La raíz se DECLARA o se ancla en la ubicación del propio gate, que vive en
+# `<raíz>/src/gates/` — el mismo invariante que `src/paths/reach.py` usa como
+# marcador. Antes componía `../../..` + `.claude/packages/agent`: valía cuando
+# el gate era un stub en `kaupamex-docs/.claude/scripts/gates/`, y desde
+# `thyrox/src/gates/` daba `/home/user/.claude/packages/agent`, que no existe.
+# El corredor lo publicaba SIN MEDIR con esa ruta en el mensaje.
+RAIZ="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+PAQUETE_REL="src/packages/agent"
+AGENTES_REL="src/agents/definitions"
+PAQUETE="${CHECK_AGENT_ARTIFACTS_PKG_DIR:-$RAIZ/$PAQUETE_REL}"
 ESTRICTO=0
 ARCHIVOS=()
 for arg in "$@"; do
@@ -25,7 +33,7 @@ if [[ "${#ARCHIVOS[@]}" -gt 0 ]]; then
         # eximía de su propia superficie — verde que no discrimina.
         rel="${f#"$RAIZ"/}"
         case "$rel" in
-            .claude/packages/agent/*|.claude/agents/*) TOCA=1 ;;
+            "$PAQUETE_REL"/*|"$AGENTES_REL"/*) TOCA=1 ;;
         esac
     done
     if [[ "$TOCA" -eq 0 ]]; then
@@ -55,11 +63,11 @@ if [[ ! -d "$PAQUETE/node_modules/zod" ]]; then
     echo "  (--install=auto), no sobre el grafo fijado en el lockfile." >&2
     echo "  NO se emite un veredicto: un 0 aquí sería un verde no reproducible." >&2
     echo "  Materialízalo con:" >&2
-    echo "      (cd .claude/packages/agent && bun install --frozen-lockfile)" >&2
+    echo "      (cd $PAQUETE_REL && bun install --frozen-lockfile)" >&2
     exit 2
 fi
 
-SALIDA="$(cd "$RAIZ" && bun run .claude/packages/agent/bin/emit.ts --check 2>&1)" && CODIGO=0 || CODIGO=$?
+SALIDA="$(cd "$RAIZ" && bun run "$PAQUETE_REL/bin/emit.ts" --check 2>&1)" && CODIGO=0 || CODIGO=$?
 echo "$SALIDA"
 
 if [[ "$CODIGO" -ne 0 ]]; then
@@ -67,12 +75,12 @@ if [[ "$CODIGO" -ne 0 ]]; then
 
 check-agent-artifacts: el .md difiere de su definición.
 
-  El markdown de un agente NO es la fuente: lo emite .claude/packages/agent.
+  El markdown de un agente NO es la fuente: lo emite el paquete.
   Si el cambio es intencional, edítalo en su definición TypeScript y
   regenera:
 
-      bun run .claude/packages/agent/bin/emit.ts
 AVISO
+    echo "      bun run $PAQUETE_REL/bin/emit.ts" >&2
     [[ "$ESTRICTO" -eq 1 ]] && exit 1
 fi
 exit 0
