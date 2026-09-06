@@ -3,7 +3,7 @@
  * El digest que ancla un contenido a su atribucion.
  */
 import { describe, expect, test } from 'bun:test'
-import { computeContentHash } from '../commitAttribution.ts'
+import { buildSurfaceKey, computeContentHash } from '../commitAttribution.ts'
 
 describe('computeContentHash', () => {
   test('devuelve SHA-256 en hexadecimal de 64 caracteres', () => {
@@ -27,5 +27,24 @@ describe('computeContentHash', () => {
   })
   test('cien mil caracteres siguen dando 64', () => {
     expect(computeContentHash('x'.repeat(100_000))).toMatch(/^[0-9a-f]{64}$/)
+  })
+})
+
+describe('buildSurfaceKey', () => {
+  test('une superficie y modelo canonico con una barra', () => {
+    const r = buildSurfaceKey('cli', 'claude-opus-4-7')
+    expect(r).toMatch(/^cli\//)
+    expect(r.length).toBeGreaterThan(4)
+  })
+
+  test('la superficie se conserva verbatim', () => {
+    expect(buildSurfaceKey('vscode', 'claude-opus-4-7')).toMatch(/^vscode\//)
+    expect(buildSurfaceKey('sdk', 'claude-opus-4-7')).toMatch(/^sdk\//)
+  })
+
+  test('dos superficies dan claves distintas con el mismo modelo', () => {
+    expect(buildSurfaceKey('cli', 'claude-opus-4-7')).not.toBe(
+      buildSurfaceKey('vscode', 'claude-opus-4-7'),
+    )
   })
 })
