@@ -13,3 +13,9 @@ Ran 91 tests across 4 files. [127.00ms]
 #   <subsistema>/paths.ts               : skills/paths.ts, storage/src/path.ts,
 #                                         storage/src/cache-paths.ts, memdir/paths.ts
 # Renombrado a src/workbench/paths.ts. 91 pass, 0 fail tras el renombre.
+
+# FORMAS EN INGLÉS — 2026-09-06T22:17:06
+# Directiva: lo nuestro va en inglés; lo que docs tenga no se corrige.
+# corpus (ya inglés) · medicion->measurement · transformacion->transformation
+# pieza radio/ -> radius/ ; measurement exige tests/ y outputs/
+# 40 pass, 0 fail en tests/workbench/

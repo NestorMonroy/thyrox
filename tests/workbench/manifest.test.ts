@@ -31,6 +31,7 @@ import { join } from 'node:path'
 
 import {
   REQUIRED_KEYS,
+  WORKBENCH_FORMS,
   checkWorkbench,
   runIdDate,
   runIdFor,
@@ -220,5 +221,65 @@ describe('el andamiaje omite lo que no puede saber', () => {
   test('rehusa un slug que ya trae sufijo: acuñaria dos', () => {
     const base = mkdtempSync(join(tmpdir(), 'wb-'))
     expect(() => scaffoldWorkbench(base, ID)).toThrow()
+  })
+})
+
+
+/**
+ * Las FORMAS del banco — portadas del puerto en español con sus valores en
+ * inglés, y su mitad ROJA escrita antes.
+ *
+ * Directiva del ejecutor 2026-09-06: *«nosotros no vamos a corregir lo que
+ * tiene docs/.claude/eventos/ … nosotros vamos a hacer las claves en inglés»*.
+ * `identificadores-en-ingles.md` ya lo cubría —«claves de manifiesto: una clave
+ * es un atributo»— y las FORMAS son valores de una clave, así que el mismo
+ * criterio las alcanza: `medicion` → `measurement`, `transformacion` →
+ * `transformation`, y la pieza `radio/` → `radius/`.
+ *
+ * Traducir no es rebautizar: `corpus` ya estaba en inglés y no se toca.
+ */
+function bancoConforme(dir: string, extra: Record<string, unknown> = {}): void {
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, 'medir.py'), '# instrumento\n')
+  writeFileSync(join(dir, 'manifest.json'), JSON.stringify({
+    question: '¿?', instrument: 'medir.py', metric: 'qué cuenta',
+    blind_to: 'qué no ve', destination: 'a dónde va', ...extra,
+  }))
+}
+
+describe('las formas del banco, con valores en inglés', () => {
+  test('las tres formas, traducidas — corpus ya estaba en inglés', () => {
+    expect([...WORKBENCH_FORMS]).toEqual(['corpus', 'measurement', 'transformation'])
+  })
+
+  test('sin `form` no se exige ninguna pieza: la clave es opcional', () => {
+    const dir = join(mkdtempSync(join(tmpdir(), 'wf-')), 'x-20260906T000000')
+    bancoConforme(dir)
+    expect(checkWorkbench(dir)).toEqual([])
+  })
+
+  test('measurement sin tests/ ni outputs/ reporta las dos', () => {
+    const dir = join(mkdtempSync(join(tmpdir(), 'wf-')), 'x-20260906T000000')
+    bancoConforme(dir, { form: 'measurement' })
+    expect(checkWorkbench(dir).length).toBe(2)
+  })
+
+  test('transformation sin radius/ lo reporta, y con radius/ queda limpio', () => {
+    const sin = join(mkdtempSync(join(tmpdir(), 'wf-')), 'x-20260906T000000')
+    bancoConforme(sin, { form: 'transformation' })
+    expect(checkWorkbench(sin).length).toBe(1)
+
+    const con = join(mkdtempSync(join(tmpdir(), 'wf-')), 'x-20260906T000000')
+    bancoConforme(con, { form: 'transformation' })
+    mkdirSync(join(con, 'radius'))
+    expect(checkWorkbench(con)).toEqual([])
+  })
+
+  test('una forma que no existe se reporta, y nombra la clave', () => {
+    const dir = join(mkdtempSync(join(tmpdir(), 'wf-')), 'x-20260906T000000')
+    bancoConforme(dir, { form: 'medicion' })   // la del puerto viejo: ya no vale
+    const ps = checkWorkbench(dir)
+    expect(ps.length).toBe(1)
+    expect(ps[0]!.key).toBe('form')
   })
 })

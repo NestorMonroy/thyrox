@@ -54,6 +54,33 @@ export type RequiredKey = typeof REQUIRED_KEYS[number]
 /** El nombre del archivo del manifiesto. Uno, en inglés, como todo en THYROX. */
 export const MANIFEST_FILE_NAME = 'manifest.json'
 
+/**
+ * Las tres formas del banco, con sus valores en INGLÉS.
+ *
+ * Portadas del puerto que vivía en el paquete `harness` —`corpus`, `medicion`,
+ * `transformacion`—. `identificadores-en-ingles.md` cubre las claves de
+ * manifiesto («una clave es un atributo») y el mismo criterio alcanza a los
+ * valores de una clave cerrada: son vocabulario del contrato, no prosa.
+ *
+ * Traducir no es rebautizar: `corpus` ya estaba en inglés y no se toca.
+ *
+ * Directiva del ejecutor 2026-09-06: lo que otros consumidores tengan escrito
+ * en español es asunto suyo y no condiciona si esto puede ejecutarse; lo
+ * nuestro va en inglés.
+ */
+export const WORKBENCH_FORMS = ['corpus', 'measurement', 'transformation'] as const
+export type WorkbenchForm = typeof WORKBENCH_FORMS[number]
+
+/**
+ * Las piezas que cada forma exige. `corpus` no exige ninguna: su valor es el
+ * material, no un procedimiento.
+ */
+const PIECES_BY_FORM: Record<WorkbenchForm, string[]> = {
+  corpus: [],
+  measurement: ['tests/', 'outputs/'],
+  transformation: ['radius/'],
+}
+
 export type WorkbenchManifest = Record<string, unknown>
 
 /** Un problema del banco. `key` sólo cuando el defecto es de una clave. */
@@ -198,6 +225,22 @@ export function checkWorkbench(dir: string): WorkbenchProblem[] {
     problems.push({ key: 'instrument', problem: `el instrumento '${name}' no existe en el banco` })
   }
 
+  const declaredForm = manifest.form
+  if (declaredForm !== undefined) {
+    const form = declaredForm as WorkbenchForm
+    if (!WORKBENCH_FORMS.includes(form)) {
+      problems.push({
+        key: 'form',
+        problem: `form '${String(declaredForm)}' no es una de ${WORKBENCH_FORMS.join(' · ')}`,
+      })
+    } else {
+      for (const piece of PIECES_BY_FORM[form]) {
+        if (!existsSync(join(dir, piece.replace(/\/$/, '')))) {
+          problems.push({ problem: `${piece} lo exige la forma '${form}'` })
+        }
+      }
+    }
+  }
   return problems
 }
 
