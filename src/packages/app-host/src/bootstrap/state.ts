@@ -11,15 +11,13 @@
  * re-exportación — 229 símbolos exportados en total):
  *
  *   - Slice A (telemetría/`meterState`):    20 funciones + `AttributedCounter` = 21
+ *   - Slice B (captura de request/`requestCaptureState`): 14 funciones
  *   - Slice C (bypass mode):  2 funciones
  *   - Utilidad de test compartida: `resetStateForTests` = 1
  *   -------------------------------------------------------------
- *   TOTAL PORTADO EN ESTE COMMIT: 24 de 229 símbolos exportados por la fuente.
+ *   TOTAL PORTADO: 38 de 229 símbolos exportados por la fuente.
  *
- * Pendiente en el pase siguiente de este mismo WP (ya identificado, no
- * inventado): Slice B (captura de request/`requestCaptureState`, 14
- * símbolos) — trae su propio archivo de test característico
- * (`requestCaptureState.test.ts`) que aún no aterrizó en este árbol. El
+ * Con este commit se completan las tres slices que este WP cubre. El
  * resto de los 229 (cwd/projectRoot, contadores de costo/tokens, hooks
  * registrados, teams/cron/skills invocadas, plan mode, canales, latches
  * de cache-header, etc.) no tiene test característico en el alcance de
@@ -32,19 +30,20 @@
  * seguimiento de costo/tokens, no portado. Se omiten a propósito; ningún
  * test de este WP las ejercita.
  *
- * Los tipos externos de OTel (`@opentelemetry/api`, `@opentelemetry/api-logs`,
+ * Los tipos externos (`@opentelemetry/api`, `@opentelemetry/api-logs`,
  * `@opentelemetry/sdk-logs`, `@opentelemetry/sdk-metrics`,
- * `@opentelemetry/sdk-trace-base`) se importan `type`-only exactamente como
- * en la fuente, sin declarar un stand-in local: es la convención ya vigente
- * en este árbol para paquetes de tipo aún no instalados —
+ * `@opentelemetry/sdk-trace-base`, `@anthropic-ai/sdk/resources/beta/
+ * messages/messages.mjs`) se importan `type`-only exactamente como en la
+ * fuente, sin declarar un stand-in local: es la convención ya vigente en
+ * este árbol para paquetes de tipo aún no instalados —
  * `src/packages/agent/internal/messageHelpers.ts:15` y
  * `src/packages/command-runtime/src/types.ts:15` ya importan
  * `@anthropic-ai/sdk/resources/index.mjs` de la misma forma, y 62 archivos
  * más hacen lo mismo con `@claude-code-how-works/*`. Un import `type` no se
  * resuelve en runtime (Bun lo elimina al transpilar, verificado en esta
  * sesión con una sonda: `bun test` pasa con un import `type` de un paquete
- * ausente de `node_modules`), así que ninguno de los cinco necesita estar
- * instalado para que este test corra.
+ * ausente de `node_modules`), así que ninguno de los seis necesita estar
+ * instalado para que estos tests corran.
  */
 
 import type { Attributes, Meter, MetricOptions } from '@opentelemetry/api'
@@ -52,6 +51,7 @@ import type { logs } from '@opentelemetry/api-logs'
 import type { LoggerProvider } from '@opentelemetry/sdk-logs'
 import type { MeterProvider } from '@opentelemetry/sdk-metrics'
 import type { BasicTracerProvider } from '@opentelemetry/sdk-trace-base'
+import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 
 // DO NOT ADD MORE STATE HERE — BE JUDICIOUS WITH GLOBAL STATE (heredado de
 // la fuente; el resto del array de campos vive fuera de este porte parcial).
@@ -76,6 +76,14 @@ type State = {
   eventLogger: ReturnType<typeof logs.getLogger> | null
   meterProvider: MeterProvider | null
   tracerProvider: BasicTracerProvider | null
+  // Slice B — captura de request (requestCaptureState)
+  lastAPIRequest: Omit<BetaMessageStreamParams, 'messages'> | null
+  lastAPIRequestMessages: BetaMessageStreamParams['messages'] | null
+  lastClassifierRequests: unknown[] | null
+  cachedClaudeMdContent: string | null
+  lastMainRequestId: string | undefined
+  lastApiCompletionTimestamp: number | null
+  pendingPostCompaction: boolean
   // Slice C — bypass mode (bypassModeState)
   sessionBypassPermissionsMode: boolean
 }
@@ -97,6 +105,13 @@ function getInitialState(): State {
     eventLogger: null,
     meterProvider: null,
     tracerProvider: null,
+    lastAPIRequest: null,
+    lastAPIRequestMessages: null,
+    lastClassifierRequests: null,
+    cachedClaudeMdContent: null,
+    lastMainRequestId: undefined,
+    lastApiCompletionTimestamp: null,
+    pendingPostCompaction: false,
     sessionBypassPermissionsMode: false,
   }
 }
@@ -228,6 +243,81 @@ export function getTracerProvider(): BasicTracerProvider | null {
 
 export function setTracerProvider(provider: BasicTracerProvider | null): void {
   STATE.tracerProvider = provider
+}
+
+// ---------------------------------------------------------------------------
+// Slice B — captura de request (requestCaptureState)
+// ---------------------------------------------------------------------------
+
+export function setLastAPIRequest(
+  params: Omit<BetaMessageStreamParams, 'messages'> | null,
+): void {
+  STATE.lastAPIRequest = params
+}
+
+export function getLastAPIRequest(): Omit<
+  BetaMessageStreamParams,
+  'messages'
+> | null {
+  return STATE.lastAPIRequest
+}
+
+export function setLastAPIRequestMessages(
+  messages: BetaMessageStreamParams['messages'] | null,
+): void {
+  STATE.lastAPIRequestMessages = messages
+}
+
+export function getLastAPIRequestMessages():
+  | BetaMessageStreamParams['messages']
+  | null {
+  return STATE.lastAPIRequestMessages
+}
+
+export function setLastClassifierRequests(requests: unknown[] | null): void {
+  STATE.lastClassifierRequests = requests
+}
+
+export function getLastClassifierRequests(): unknown[] | null {
+  return STATE.lastClassifierRequests
+}
+
+export function setCachedClaudeMdContent(content: string | null): void {
+  STATE.cachedClaudeMdContent = content
+}
+
+export function getCachedClaudeMdContent(): string | null {
+  return STATE.cachedClaudeMdContent
+}
+
+export function getLastMainRequestId(): string | undefined {
+  return STATE.lastMainRequestId
+}
+
+export function setLastMainRequestId(requestId: string): void {
+  STATE.lastMainRequestId = requestId
+}
+
+export function getLastApiCompletionTimestamp(): number | null {
+  return STATE.lastApiCompletionTimestamp
+}
+
+export function setLastApiCompletionTimestamp(timestamp: number): void {
+  STATE.lastApiCompletionTimestamp = timestamp
+}
+
+/** Mark that a compaction just occurred. The next API success event will
+ *  include isPostCompaction=true, then the flag auto-resets. */
+export function markPostCompaction(): void {
+  STATE.pendingPostCompaction = true
+}
+
+/** Consume the post-compaction flag. Returns true once after compaction,
+ *  then returns false until the next compaction. */
+export function consumePostCompaction(): boolean {
+  const was = STATE.pendingPostCompaction
+  STATE.pendingPostCompaction = false
+  return was
 }
 
 // ---------------------------------------------------------------------------
