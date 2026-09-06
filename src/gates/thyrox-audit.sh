@@ -1084,6 +1084,29 @@ else
     warn "Precedencia de config: check_config_precedence.py no encontrado"
 fi
 
+# ----------------------------------------------------------------------
+# Copia en vez de consumo (:ref:`h-docs-1119`, TASK-DOCS-0410).
+# thyrox no gobierna el multi-repo si los consumidores lo COPIAN: una copia
+# diverge en silencio y hay que corregirla N veces. Medido el dia que se
+# cableo: 0 invocaciones apuntan a thyrox, y count-requirements.sh estaba
+# replicado en tres repos (:ref:`h-docs-1114`).
+tick "Copia en vez de consumo en los clones consumidores"
+if [[ -f src/gates/check_consumer_copies.py ]]; then
+    CCTOT=0; CCDET=""
+    for _c in "$PARENT"/kaupamex-*; do
+        [[ -d "$_c" ]] || continue
+        _n=$(python3 src/gates/check_consumer_copies.py --fuente . \
+                 --consumidor "$_c" --quiet 2>/dev/null)
+        [[ "$_n" =~ ^[0-9]+$ ]] || continue
+        CCTOT=$((CCTOT + _n))
+        [[ "$_n" -gt 0 ]] && CCDET="$CCDET $(basename "$_c"):$_n"
+    done
+    if [[ "$CCTOT" -eq 0 ]]; then ok "Copia en vez de consumo: ningun clon lleva copia byte a byte de thyrox"
+    else warn "Copia en vez de consumo: $CCTOT copia(s) —$CCDET; thyrox se consume, no se copia (una copia diverge en silencio)"; fi
+else
+    warn "Copia en vez de consumo: check_consumer_copies.py no encontrado"
+fi
+
 $TIMING && volcar_desglose
 
 echo ""
