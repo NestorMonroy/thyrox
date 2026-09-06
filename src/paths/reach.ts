@@ -12,10 +12,16 @@
  * (`KAUPAMEX_DOCS_ROOT` + ascenso a `source/gestion/pm/`) — una segunda
  * fuente de verdad para una decisión que este módulo ya tomaba.
  *
- * Lo que sigue SIN portar, y su razón: `consumerRoot` (su consumidor es la
- * familia de gates en Python), `paths`, `requireAll` y `main` (el CLI). Un
- * porte parcial declarado se completa cuando aparece su consumidor, no se
- * deja con la nota — `porte-completo-no-parcial.md`.
+ * `consumerRoot` se porta el 2026-09-06 por la misma razón: su docstring lo
+ * declaraba sin consumidor en TS, y apareció uno — la resolución del store de
+ * sesiones, cuya mitad Python (`store/agent_sessions.py`) excluye la ruta a
+ * propósito («la resolución de rutas es del consumidor») mientras la mitad TS
+ * la clavaba al clon de docs. Un porte parcial declarado se completa cuando
+ * aparece su consumidor, no se deja con la nota —
+ * `porte-completo-no-parcial.md`.
+ *
+ * Lo que sigue SIN portar, y su razón: `paths` y `requireAll` (su consumidor
+ * es la familia de gates en Python) y `main` (el CLI).
  *
  * Divergencia respecto de la fuente, declarada: `thyroxRoot` NO tiene el
  * tercer paso —el barrido de hermanos vía `treeRoot`—, que la mitad Python sí
@@ -313,4 +319,59 @@ export function extraRoots(): Record<string, string> {
 /** El conjunto RESUELTO: las declaradas más el tramo extra. */
 export function reach(start?: string): Record<string, string> {
   return { ...roots(start), ...extraRoots() }
+}
+
+/**
+ * La grafía que declara la raíz del árbol MEDIDO — el consumidor, no thyrox.
+ *
+ * Es hermana de `THYROX_ROOT_VAR` y no se mezcla con ella: aquélla nombra al
+ * PROVEEDOR (dónde vive el mecanismo), ésta al árbol sobre el que el mecanismo
+ * opera. Confundirlas es el defecto que el corredor de gates destapó: siete
+ * gates componían su corpus con aritmética de ruta calibrada para
+ * `kaupamex-docs/.claude/scripts/gates/`, y desde `thyrox/src/gates/` medían
+ * `/home/user/source`, que no existe.
+ */
+export const CONSUMER_ROOT_VAR = 'THYROX_CONSUMER'
+
+/**
+ * El marcador por el que se reconoce un consumidor al ascender.
+ *
+ * Es el directorio de configuración, no el nombre del clon: un árbol que lo
+ * tenga es un consumidor aunque se llame de otra forma, y uno llamado
+ * `kaupamex-x` sin él no lo es. Mismo criterio que `THYROX_MARKER`, con la
+ * evidencia dentro en vez del rótulo fuera.
+ */
+export const CONSUMER_MARKER = '.claude'
+
+/**
+ * La raíz del árbol MEDIDO, que no es la del proveedor.
+ *
+ * Contraparte de `consumer_root` de `reach.py`, con su misma precedencia de
+ * tres tramos: valor directo → variable declarada (`envValue`, que ya mira el
+ * proceso y después el `.env`) → ascenso hasta el marcador. Sólo si el ascenso
+ * no encuentra nada se devuelve el punto de partida tal cual.
+ *
+ * El ascenso no es adorno: un gate lo invoca el pre-commit desde cualquier
+ * subdirectorio del consumidor, y el cwd literal apuntaría a media rama.
+ *
+ * *Métrica:* presencia del directorio `.claude` subiendo desde el punto de
+ * partida.
+ * *Ciega a:* CUÁL de los consumidores es el correcto cuando hay varios en la
+ * cadena. Medido en este árbol el 2026-09-06: `/home/user/.claude`,
+ * `/home/user/thyrox/.claude` y `/home/user/kaupamex-docs/.claude` existen los
+ * tres, así que un ascenso desde thyrox devuelve al PROVEEDOR y uno desde
+ * `/home/user` devuelve un directorio que no es clon de nadie. Por eso quien
+ * resuelve un artefacto del consumidor no se apoya en el ascenso: exige el
+ * valor declarado y, sin él, cae a una raíz nombrada. El ascenso sirve al caso
+ * para el que se portó — un proceso que YA corre dentro del consumidor.
+ */
+export function consumerRoot(declared?: string, start?: string): string {
+  if (declared) return resolve(declared)
+  const value = envValue(CONSUMER_ROOT_VAR, start)
+  if (value) return resolve(value)
+  const here = resolve(start ?? defaultStart())
+  for (const level of levelsUpward(here)) {
+    if (existsSync(join(level, CONSUMER_MARKER))) return level
+  }
+  return here
 }

@@ -3,12 +3,12 @@
  * de TypeScript necesita hoy: la raíz de thyrox y el hogar de los artefactos
  * de agente.
  *
- * PORTE PARCIAL DECLARADO. De los símbolos de `reach.py` se portan tres
- * —`env_file_path`, `env_value`, `thyrox_root`— y se añade uno que la mitad
- * Python no tiene consumidor para declarar: `agentsDir()`. NO se portan
- * `tree_root`, `root`, `roots`, `extra_roots`, `clone_name(s)`, `env_names`
- * ni `reach`: nombran el árbol de clones `kaupamex-*`, y ningún `.ts` de este
- * paquete los consulta. Portarlos sin consumidor sería fabricar superficie.
+ * El porte parcial que este archivo declaraba ya se completó: el tramo del
+ * árbol de clones (`treeRoot`, `root`, `roots`, `extraRoots`, `cloneName(s)`,
+ * `envNames`, `reach`) llegó cuando `paths/docs.ts` apareció como su
+ * consumidor, y `consumerRoot` cuando lo hizo la resolución del store de
+ * sesiones. Siguen sin portar `paths` y `requireAll` —su consumidor es la
+ * familia de gates en Python— y `main`, que es el CLI.
  *
  * El defecto que cierra: los 12 `.ts` que resuelven su raíz por aritmética de
  * ruta (`'..','..','..','..'`) — la misma forma que el docstring de
@@ -23,6 +23,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   agentsDir, AGENTS_DIR_VAR, cloneName, cloneNames, envNames, envValue, root, roots,
+  CONSUMER_MARKER, CONSUMER_ROOT_VAR, consumerRoot,
   THYROX_ROOT_VAR, thyroxRoot, treeRoot,
 } from '../../src/paths/reach.ts'
 
@@ -186,5 +187,51 @@ describe('el tramo del árbol de clones — completa el porte parcial', () => {
       api: '/arbol/kaupamex-api', db: '/arbol/kaupamex-db', docs: '/arbol/kaupamex-docs',
       server: '/arbol/kaupamex-server', ui: '/arbol/kaupamex-ui',
     })
+  })
+})
+
+describe('consumerRoot — la raíz del árbol MEDIDO, que no es la del proveedor', () => {
+  test('el valor directo gana sobre todo, y se resuelve absoluto', () => {
+    const raiz = raizTemporal()
+    process.env[CONSUMER_ROOT_VAR] = '/de/la/variable'
+    expect(consumerRoot(raiz)).toBe(raiz)
+  })
+
+  test('la variable declarada gana sobre el ascenso', () => {
+    const raiz = raizTemporal()
+    mkdirSync(join(raiz, CONSUMER_MARKER), { recursive: true })
+    process.env[CONSUMER_ROOT_VAR] = '/declarada'
+    expect(consumerRoot(undefined, raiz)).toBe('/declarada')
+  })
+
+  test('sin ninguna de las dos, asciende hasta el marcador', () => {
+    const raiz = raizTemporal()
+    delete process.env[CONSUMER_ROOT_VAR]
+    mkdirSync(join(raiz, CONSUMER_MARKER), { recursive: true })
+    expect(consumerRoot(undefined, raiz)).toBe(raiz)
+  })
+
+  test('el ascenso arranca desde un subdirectorio profundo — el caso del gate', () => {
+    const raiz = raizTemporal()
+    delete process.env[CONSUMER_ROOT_VAR]
+    mkdirSync(join(raiz, CONSUMER_MARKER), { recursive: true })
+    const hondo = join(raiz, 'source', 'gestion', 'pm')
+    mkdirSync(hondo, { recursive: true })
+    expect(consumerRoot(undefined, hondo)).toBe(raiz)
+  })
+
+  test('sin marcador en ningún nivel, devuelve el punto de partida tal cual', () => {
+    const huerfano = raizTemporal()
+    delete process.env[CONSUMER_ROOT_VAR]
+    expect(consumerRoot(undefined, huerfano)).toBe(huerfano)
+  })
+
+  test('el marcador es el directorio de configuración, no el nombre del clon', () => {
+    const raiz = raizTemporal()
+    delete process.env[CONSUMER_ROOT_VAR]
+    mkdirSync(join(raiz, CONSUMER_MARKER), { recursive: true })
+    const rotulado = join(raiz, 'kaupamex-docs')
+    mkdirSync(rotulado, { recursive: true })
+    expect(consumerRoot(undefined, rotulado)).toBe(raiz)
   })
 })
