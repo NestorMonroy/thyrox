@@ -13,14 +13,33 @@
  *   - Slice A (telemetría/`meterState`):    20 funciones + `AttributedCounter` = 21
  *   - Slice B (captura de request/`requestCaptureState`): 14 funciones
  *   - Slice C (bypass mode):  2 funciones
+ *   - Slice D (cwd/originalCwd/projectRoot — normalización NFC): 6 funciones
  *   - Utilidad de test compartida: `resetStateForTests` = 1
  *   -------------------------------------------------------------
- *   TOTAL PORTADO: 38 de 229 símbolos exportados por la fuente.
+ *   TOTAL PORTADO: 44 de 229 símbolos exportados por la fuente.
  *
- * Con este commit se completan las tres slices que este WP cubre. El
- * resto de los 229 (cwd/projectRoot, contadores de costo/tokens, hooks
- * registrados, teams/cron/skills invocadas, plan mode, canales, latches
- * de cache-header, etc.) no tiene test característico en el alcance de
+ * Slice D — `stateNFCNormalization.behavior.test.ts` asevera contra el
+ * TEXTO literal de este archivo (regex sobre el cuerpo de cada función),
+ * así que se portó con su forma exacta: mismo nombre de campo
+ * (`originalCwd`, `projectRoot`, `cwd`), mismo cuerpo de setter
+ * (`STATE.<campo> = cwd.normalize('NFC')`) y el mismo docstring de
+ * `setProjectRoot` que advierte sobre `EnterWorktreeTool`. `cwd.ts`
+ * (`import { getCwdState, getOriginalCwd } from './state.js'`) ya
+ * asumía estos dos símbolos antes de este commit — la falta era la causa
+ * de que `cwd.test.ts` estuviera en rojo; queda resuelta como efecto
+ * colateral, no como alcance propio de este WP.
+ *
+ * El valor inicial de `originalCwd`/`projectRoot`/`cwd` se resuelve con
+ * `realpathSync(process.cwd())` normalizado a NFC, igual que la fuente
+ * (`getInitialState()` allá usa el mismo `try/catch` para el caso de
+ * montajes de almacenamiento en la nube que dan EPERM en `lstat` por
+ * componente de ruta — ambos, `fs` y `process`, son módulos nativos de
+ * Node, no dependencias externas por resolver).
+ *
+ * Con este commit se completan las cuatro slices que este WP cubre. El
+ * resto de los 229 (contadores de costo/tokens, hooks registrados,
+ * teams/cron/skills invocadas, plan mode, canales, latches de
+ * cache-header, etc.) no tiene test característico en el alcance de
  * este WP y se declara DESCONOCIDO/pendiente, no se inventa.
  *
  * `resetStateForTests()` en la fuente también reinicia tres variables de
@@ -52,6 +71,8 @@ import type { LoggerProvider } from '@opentelemetry/sdk-logs'
 import type { MeterProvider } from '@opentelemetry/sdk-metrics'
 import type { BasicTracerProvider } from '@opentelemetry/sdk-trace-base'
 import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import { realpathSync } from 'fs'
+import { cwd } from 'process'
 
 // DO NOT ADD MORE STATE HERE — BE JUDICIOUS WITH GLOBAL STATE (heredado de
 // la fuente; el resto del array de campos vive fuera de este porte parcial).
@@ -86,10 +107,36 @@ type State = {
   pendingPostCompaction: boolean
   // Slice C — bypass mode (bypassModeState)
   sessionBypassPermissionsMode: boolean
+  // Slice D — cwd/originalCwd/projectRoot (normalización NFC)
+  originalCwd: string
+  // Raíz de proyecto estable — fijada una vez al arranque (incluido por el
+  // flag --worktree); NUNCA la actualiza EnterWorktreeTool a mitad de
+  // sesión. Usar para identidad de proyecto (history, skills, sesiones),
+  // no para operaciones de archivo.
+  projectRoot: string
+  cwd: string
 }
 
 // ALSO HERE — THINK THRICE BEFORE MODIFYING (heredado de la fuente).
 function getInitialState(): State {
+  // Resuelve symlinks en cwd para calzar con el comportamiento de
+  // cwd.ts::runWithCwdOverride/getCwd — misma sanitización de ruta que
+  // usa la persistencia de sesión en la fuente.
+  let resolvedCwd = ''
+  if (
+    typeof process !== 'undefined' &&
+    typeof process.cwd === 'function' &&
+    typeof realpathSync === 'function'
+  ) {
+    const rawCwd = cwd()
+    try {
+      resolvedCwd = realpathSync(rawCwd).normalize('NFC')
+    } catch {
+      // EPERM de File Provider en montajes de CloudStorage (lstat por
+      // componente de ruta).
+      resolvedCwd = rawCwd.normalize('NFC')
+    }
+  }
   return {
     meter: null,
     sessionCounter: null,
@@ -113,6 +160,9 @@ function getInitialState(): State {
     lastApiCompletionTimestamp: null,
     pendingPostCompaction: false,
     sessionBypassPermissionsMode: false,
+    originalCwd: resolvedCwd,
+    projectRoot: resolvedCwd,
+    cwd: resolvedCwd,
   }
 }
 
@@ -333,7 +383,46 @@ export function getSessionBypassPermissionsMode(): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Utilidad de test compartida por las tres slices
+// Slice D — cwd/originalCwd/projectRoot (normalización NFC)
+// ---------------------------------------------------------------------------
+
+export function getOriginalCwd(): string {
+  return STATE.originalCwd
+}
+
+/**
+ * Get the stable project root directory.
+ * Unlike getOriginalCwd(), this is never updated by mid-session EnterWorktreeTool
+ * (so skills/history stay stable when entering a throwaway worktree).
+ * It IS set at startup by --worktree, since that worktree is the session's project.
+ * Use for project identity (history, skills, sessions) not file operations.
+ */
+export function getProjectRoot(): string {
+  return STATE.projectRoot
+}
+
+export function setOriginalCwd(cwd: string): void {
+  STATE.originalCwd = cwd.normalize('NFC')
+}
+
+/**
+ * Only for --worktree startup flag. Mid-session EnterWorktreeTool must NOT
+ * call this — skills/history should stay anchored to where the session started.
+ */
+export function setProjectRoot(cwd: string): void {
+  STATE.projectRoot = cwd.normalize('NFC')
+}
+
+export function getCwdState(): string {
+  return STATE.cwd
+}
+
+export function setCwdState(cwd: string): void {
+  STATE.cwd = cwd.normalize('NFC')
+}
+
+// ---------------------------------------------------------------------------
+// Utilidad de test compartida por las cuatro slices
 // ---------------------------------------------------------------------------
 
 // Only used in tests
