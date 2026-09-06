@@ -21,11 +21,12 @@
  * `busy_timeout`— ya vivía aquí. Las dos mitades del mismo mecanismo bajo el
  * mismo techo, como `paths/` ya hace con `reach.py` + `reach.ts` + `docs.ts`.
  *
- * El contra-precedente que hay que responder: `@thyrox/tasks` declaró que NO
- * aterrizaba en `src/task/`, «que es la raíz Python homónima». No es el mismo
- * caso: aquél era un PAQUETE con manifiesto propio, y un paquete no se mete
- * dentro de una raíz de módulos sueltos. Éste es un módulo pelado, que es
- * exactamente la forma que `src/store/` ya aloja.
+ * El contra-precedente que había que responder ya no existe: `@thyrox/tasks`
+ * declaraba que NO aterrizaba en `src/task/` «que es la raíz Python homónima»,
+ * y esa declaración cayó con el paquete — se disolvió en `src/task/` el mismo
+ * día, por el veredicto del análisis de la referencia. Las tres raíces del
+ * árbol que alojan un mecanismo de dos lenguas —`paths/`, `store/`, `task/`—
+ * comparten hoy la misma forma.
  */
 import { Database } from 'bun:sqlite'
 
