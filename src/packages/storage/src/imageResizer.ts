@@ -41,13 +41,19 @@
  *     `createCompressedImageResult`, `tryProgressiveResizing`,
  *     `applyFormatOptimizations`, `tryPalettePNG`, `tryJPEGConversion`,
  *     `createUltraCompressedJPEG`, las constantes `ERROR_TYPE_*`.
- *   - `ImageDimensions`, `createImageMetadataText` — sin dependencia
- *     externa (son puros), pero fuera del alcance de este agente hasta
- *     que `imageResizerHelpers.test.ts` los pida (otro test de la misma
- *     tarea, portado en un pase siguiente sobre este mismo archivo).
  *
- * Ninguno de esos símbolos lo ejercita `detectImageFormat.behavior.test.ts`
- * — es la única suite de este agente sobre este archivo hasta ahora.
+ * Ampliado (segundo pase, `imageResizerHelpers.test.ts`) con dos símbolos
+ * más — sin dependencia externa, puramente aritméticos:
+ *
+ *   - `ImageDimensions` — el tipo de entrada de `createImageMetadataText`,
+ *     portado VERBATIM.
+ *   - `createImageMetadataText` — portada VERBATIM (las cuatro guardas de
+ *     dimensión inválida, el cálculo del factor de escala, y el
+ *     ensamblado de las dos cláusulas "source:"/"original …").
+ *
+ * Ninguno de los símbolos restantes lo ejercitan
+ * `detectImageFormat.behavior.test.ts` ni `imageResizerHelpers.test.ts` —
+ * son las dos únicas suites de este agente sobre este archivo.
  */
 
 export type ImageMediaType = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp'
@@ -120,4 +126,65 @@ export function detectImageFormatFromBase64(
     // Default a PNG ante cualquier error
     return 'image/png'
   }
+}
+
+export type ImageDimensions = {
+  originalWidth?: number
+  originalHeight?: number
+  displayWidth?: number
+  displayHeight?: number
+}
+
+/**
+ * Crea una descripción textual de la metadata de una imagen, incluyendo
+ * dimensiones y ruta de origen. Devuelve `null` si no hay metadata útil
+ * disponible.
+ */
+export function createImageMetadataText(
+  dims: ImageDimensions,
+  sourcePath?: string,
+): string | null {
+  const { originalWidth, originalHeight, displayWidth, displayHeight } = dims
+  // Omitir si las dimensiones no están disponibles o son inválidas.
+  // Nota: verifica undefined/null y cero, para prevenir división entre cero.
+  if (
+    !originalWidth ||
+    !originalHeight ||
+    !displayWidth ||
+    !displayHeight ||
+    displayWidth <= 0 ||
+    displayHeight <= 0
+  ) {
+    // Si hay ruta de origen pero no dimensiones válidas, aun así devolver
+    // la información de origen.
+    if (sourcePath) {
+      return `[Image source: ${sourcePath}]`
+    }
+    return null
+  }
+  // Verificar si la imagen fue redimensionada.
+  const wasResized =
+    originalWidth !== displayWidth || originalHeight !== displayHeight
+
+  // Sólo incluir metadata si hay información útil (redimensionada o con
+  // ruta de origen).
+  if (!wasResized && !sourcePath) {
+    return null
+  }
+
+  // Ensamblar las partes de la metadata.
+  const parts: string[] = []
+
+  if (sourcePath) {
+    parts.push(`source: ${sourcePath}`)
+  }
+
+  if (wasResized) {
+    const scaleFactor = originalWidth / displayWidth
+    parts.push(
+      `original ${originalWidth}x${originalHeight}, displayed at ${displayWidth}x${displayHeight}. Multiply coordinates by ${scaleFactor.toFixed(2)} to map to original image.`,
+    )
+  }
+
+  return `[Image: ${parts.join(', ')}]`
 }
