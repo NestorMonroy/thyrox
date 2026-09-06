@@ -100,18 +100,27 @@ def archivos_python(porcelain):
     return rutas
 
 
-def arrancar(payload):
-    os.makedirs(BASE, exist_ok=True)
-    base = {r: estado(ruta) for r, ruta in REPOS.items() if os.path.isdir(ruta)}
-    destino = os.path.join(BASE, f".base-{payload.get('agent_id', 'sin-id')}.json")
+def arrancar(payload, repos, results_dir):
+    """Fotografía el estado de cada repo al ARRANCAR el subagente.
+
+    ``repos`` y ``results_dir`` son parámetros del consumidor (DEC-04):
+    thyrox no sabe qué árbol vigila un kaupamex-* ni dónde guarda su log.
+    """
+    os.makedirs(results_dir, exist_ok=True)
+    base = {r: estado(ruta) for r, ruta in repos.items() if os.path.isdir(ruta)}
+    destino = os.path.join(results_dir, f".base-{payload.get('agent_id', 'sin-id')}.json")
     with open(destino, 'w', encoding='utf-8') as fh:
         json.dump(base, fh)
 
 
-def parar(payload):
+def parar(payload, repos, results_dir):
+    """Compara contra la fotografía y apenda el delta al log."""
+    log = resolve_log(results_dir)
+    if log is None:
+        return
     agent_id = payload.get('agent_id', 'sin-id')
     tipo = payload.get('agent_type', '?')
-    origen = os.path.join(BASE, f'.base-{agent_id}.json')
+    origen = os.path.join(results_dir, f'.base-{agent_id}.json')
     previo = {}
     if os.path.exists(origen):
         try:
@@ -120,7 +129,7 @@ def parar(payload):
             previo = {}
 
     lineas = []
-    for repo, ruta in REPOS.items():
+    for repo, ruta in repos.items():
         if not os.path.isdir(ruta):
             continue
         head, porcelain = estado(ruta)
@@ -155,10 +164,10 @@ def parar(payload):
     if not lineas:
         lineas = ['- sin cambios en el disco']
 
-    os.makedirs(BASE, exist_ok=True)
+    os.makedirs(results_dir, exist_ok=True)
     marca = subprocess.run(['date', '-u', '+%Y-%m-%dT%H:%M:%S'],
                            capture_output=True, text=True).stdout.strip()
-    with open(LOG, 'a', encoding='utf-8') as fh:
+    with open(log, 'a', encoding='utf-8') as fh:
         fh.write(f'\n## {marca} · `{tipo}` · `{agent_id}`\n\n')
         fh.write('\n'.join(lineas) + '\n')
 
@@ -168,14 +177,46 @@ def parar(payload):
         pass
 
 
-def main():
-    modo = sys.argv[1] if len(sys.argv) > 1 else '--stop'
+def main(argv=None):
+    """Los parámetros llegan por línea de comandos; el consumidor los inyecta.
+
+    ``--repo <nombre>=<ruta>`` (repetible) y ``--results-dir <ruta>``. Sin
+    ninguno de los dos, rehúsa: medir un árbol que nadie declaró mediría el
+    equivocado, y publicarlo como delta sería peor que no publicar nada.
+    """
+    argv = list(sys.argv[1:] if argv is None else argv)
+    modo = '--start' if '--start' in argv else '--stop'
+
+    repos = {}
+    results_dir = None
+    i = 0
+    while i < len(argv):
+        if argv[i] == '--repo' and i + 1 < len(argv) and '=' in argv[i + 1]:
+            nombre, ruta = argv[i + 1].split('=', 1)
+            repos[nombre] = ruta
+            i += 2
+        elif argv[i] == '--results-dir' and i + 1 < len(argv):
+            results_dir = argv[i + 1]
+            i += 2
+        else:
+            i += 1
+
     try:
         payload = json.load(sys.stdin)
     except Exception:
         payload = {}
+
+    if not repos or not results_dir:
+        print('measure_delta: faltan parámetros del consumidor '
+              '(--repo <n>=<ruta> … --results-dir <ruta>)', file=sys.stderr)
+        print('{}')
+        return
+
     try:
-        (arrancar if modo == '--start' else parar)(payload)
+        if modo == '--start':
+            arrancar(payload, repos, results_dir)
+        else:
+            parar(payload, repos, results_dir)
     except Exception:
         pass
     print('{}')
