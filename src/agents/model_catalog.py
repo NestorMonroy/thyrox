@@ -37,11 +37,24 @@ import sqlite3
 import sys
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parents[3]
-CATALOG_PATH = Path(os.environ.get(
-    "KAUPAMEX_MODEL_CATALOG",
-    RAIZ / ".claude" / "packages" / "agent" / "src" / "models.json"))
-STORE_PATH = RAIZ / ".claude" / "agent-results" / "agent_store.sqlite3"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths.reach import thyrox_root  # noqa: E402
+
+# El catalogo es PRODUCTO de thyrox: se resuelve con su localizador, que
+# sobrevive a la copia. Antes salia de `parents[3]`, que describia el arbol
+# anterior —el guion vivia en `<clon>/.claude/scripts/agents/`— y tras la
+# mudanza resolvia `/home/user`, que no es raiz de nada (tarea #173).
+RAIZ = thyrox_root()
+CATALOG_PATH = Path(
+    os.environ.get("THYROX_MODEL_CATALOG")
+    or os.environ.get("KAUPAMEX_MODEL_CATALOG")
+    or RAIZ / "src" / "packages" / "agent" / "src" / "models.json")
+
+# El store es PARAMETRO del consumidor: vive en el clon que despacha, no aqui.
+# Sin declararlo no hay ruta que suponer — `None` es el veredicto, no un
+# default inventado que apuntaria a un archivo que no existe.
+_STORE_ENV = os.environ.get("THYROX_AGENT_STORE") or os.environ.get("KAUPAMEX_AGENT_STORE")
+STORE_PATH = Path(_STORE_ENV) if _STORE_ENV else None
 TTLS = ("5m", "1h")
 EFFORT_LEVELS = ("low", "medium", "high", "xhigh", "max")
 
@@ -348,7 +361,9 @@ def main(argv: list[str]) -> int:
     f.add_argument("model")
     m = sub.add_parser("por-modelo", help="consumo por turno y USD por modelo, del store")
     m.add_argument("--ttl", choices=TTLS, default="1h")
-    m.add_argument("--store", default=str(STORE_PATH))
+    m.add_argument("--store", default=str(STORE_PATH) if STORE_PATH else None,
+                   required=STORE_PATH is None,
+                   help="ruta del store del consumidor; sin THYROX_AGENT_STORE es obligatorio")
     m.add_argument("--referencia", default="claude-fable-5-1",
                    help="modelo cuyo precio se aplica al mismo consumo, para comparar")
     se = sub.add_parser("sesion", help="USD de la sesión principal, por modelo, desde su transcript")
