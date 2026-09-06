@@ -1,19 +1,27 @@
 /**
  * La contraparte TypeScript de `reach.py`, acotada a sus consumidores reales.
  *
- * PORTE PARCIAL DECLARADO — 3 de los 12 símbolos públicos de la mitad Python.
- * Se portan `envFilePath`, `envValue` y `thyroxRoot`, más `agentsDir`, que la
- * mitad Python no declara porque ningún consumidor suyo emite artefactos de
- * agente. NO se portan `treeRoot`, `root`, `roots`, `extraRoots`, `cloneName`,
- * `cloneNames`, `envNames` ni `reach`: todos nombran el árbol de clones
- * `kaupamex-*`, y ningún `.ts` de este paquete lo consulta. Portarlos sin
- * consumidor sería fabricar superficie, no fidelidad.
+ * PORTE PARCIAL DECLARADO, y su tramo de árbol YA NO lo es. Se portan
+ * `readEnvFile`, `envFilePath`, `envValue` y `thyroxRoot`, más `agentsDir`,
+ * que la mitad Python no declara porque ningún consumidor suyo emite
+ * artefactos de agente; y desde hoy también el tramo del árbol de clones
+ * —`cloneName`, `cloneNames`, `envNames`, `treeRoot`, `root`, `roots`,
+ * `extraRoots`, `reach`—, que la nota anterior daba por no portado *porque
+ * ningún `.ts` lo consultaba*. Ya lo consulta: `paths/docs.ts` resuelve la
+ * raíz de `kaupamex-docs`, y hasta hoy lo hacía con su PROPIA cadena
+ * (`KAUPAMEX_DOCS_ROOT` + ascenso a `source/gestion/pm/`) — una segunda
+ * fuente de verdad para una decisión que este módulo ya tomaba.
+ *
+ * Lo que sigue SIN portar, y su razón: `consumerRoot` (su consumidor es la
+ * familia de gates en Python), `paths`, `requireAll` y `main` (el CLI). Un
+ * porte parcial declarado se completa cuando aparece su consumidor, no se
+ * deja con la nota — `porte-completo-no-parcial.md`.
  *
  * Divergencia respecto de la fuente, declarada: `thyroxRoot` NO tiene el
- * tercer paso —el barrido de hermanos vía `treeRoot`— porque ese paso depende
- * de los símbolos que este porte no trae. Un consumidor TS que corra desde
- * fuera del árbol de thyrox declara `THYROX_ROOT`; es la misma exigencia que
- * la mitad Python tenía antes de añadir su tercer paso.
+ * tercer paso —el barrido de hermanos vía `treeRoot`—, que la mitad Python sí
+ * hace. Ahora que `treeRoot` está portado el paso es construible; queda fuera
+ * de este pase porque cambiaría la resolución de la raíz del PROVEEDOR, que
+ * no es lo que el consumidor nuevo necesita, y su control es otro.
  *
  * El defecto que cierra: 12 archivos `.ts` de este árbol resuelven su raíz con
  * aritmética de ruta (`join(dir, '..','..','..','..')`), que es la forma que
@@ -175,4 +183,134 @@ export function agentsDir(start?: string): string {
 export function agentArtifacts(dir: string = agentsDir()): string[] {
   if (!existsSync(dir) || !statSync(dir).isDirectory()) return []
   return readdirSync(dir).filter((f) => f.endsWith('.md')).sort()
+}
+
+/**
+ * Las raíces DECLARADAS del alcance, en el orden de `reach.py`.
+ *
+ * `thyrox` no está aquí a propósito: es el PROVEEDOR, y su raíz la resuelve
+ * `thyroxRoot()` por su propio marcador. Estas cinco son los consumidores.
+ */
+export const REACH_ROOTS = ['api', 'db', 'docs', 'server', 'ui'] as const
+export type ReachRoot = typeof REACH_ROOTS[number]
+
+/**
+ * El prefijo del nombre de clon. Vive aquí y no repetido en cada consumidor
+ * porque el rename `e-comerce-*` -> `kaupamex-*` (DEC-KX-06) ya demostró que
+ * cambia.
+ */
+export const CLONE_PREFIX = 'kaupamex-'
+
+/**
+ * Las grafías del árbol, EN ORDEN. Gana la primera declarada.
+ *
+ * `KAUPAMEX_ROOT` queda de segunda y no por cortesía: tiene consumidores vivos
+ * que se romperían al retirarla. Mismo criterio que la mitad Python.
+ */
+export const TREE_ROOT_VARS = ['THYROX_REACH_ROOT', 'KAUPAMEX_ROOT'] as const
+
+/** Las grafías del tramo extensible, EN ORDEN. Separadas por `:`, como `PATH`. */
+export const EXTRA_ROOTS_VARS = ['THYROX_EXTRA_REACH_ROOTS', 'KAUPAMEX_EXTRA_ROOTS'] as const
+
+/** El nombre largo del clon: `api` -> `kaupamex-api`. */
+export function cloneName(repo: string): string {
+  if (!(REACH_ROOTS as readonly string[]).includes(repo)) {
+    throw new ReachRootError(
+      `raíz desconocida: ${JSON.stringify(repo)}. Las declaradas son ${REACH_ROOTS.join(', ')}.`,
+    )
+  }
+  return `${CLONE_PREFIX}${repo}`
+}
+
+/** Los nombres largos de las raíces declaradas, en su orden. */
+export function cloneNames(): string[] {
+  return REACH_ROOTS.map(cloneName)
+}
+
+/**
+ * Las constantes por raíz, EN ORDEN: `docs` -> `THYROX_REACH_DOCS`, `KAUPAMEX_DOCS`.
+ *
+ * Públicas porque las LEE `root()`: forman parte del contrato, y quien quiera
+ * declarar una raíz necesita saber cómo se llama su variable sin reconstruir
+ * la regla.
+ */
+export function envNames(repo: string): string[] {
+  const suffix = repo.toUpperCase().replace(/-/g, '_')
+  return ['THYROX_REACH_ROOT', 'KAUPAMEX'].map((v) =>
+    v.endsWith('_ROOT') ? `${v.slice(0, -'_ROOT'.length)}_${suffix}` : `${v}_${suffix}`,
+  )
+}
+
+/**
+ * El padre de los clones, por variable declarada o por ascenso.
+ *
+ * `start` es un parámetro y no `import.meta.url` por la misma razón que en la
+ * mitad Python: un mecanismo comprobable a cualquier profundidad, no uno que
+ * sólo acierta desde donde su autor lo escribió.
+ */
+export function treeRoot(start?: string): string {
+  for (const v of TREE_ROOT_VARS) {
+    const declared = envValue(v, start)
+    if (declared) return declared
+  }
+  const here = resolve(start ?? defaultStart())
+  const names = cloneNames()
+  for (const level of levelsUpward(here)) {
+    if (names.some((n) => existsSync(join(level, n)) && statSync(join(level, n)).isDirectory())) {
+      return level
+    }
+  }
+  throw new ReachRootError(
+    `no se pudo derivar el padre de los clones ascendiendo desde ${here}. Ninguno de ` +
+      `${names.join(', ')} apareció en ningún nivel. Declara ${TREE_ROOT_VARS[0]} o ` +
+      'invoca desde dentro del árbol.',
+  )
+}
+
+/**
+ * La ruta absoluta de una raíz declarada, por la cadena de precedencia.
+ *
+ * NO comprueba que exista: un consumidor que sólo necesita componer una ruta
+ * no debe pagar una llamada al sistema de archivos por cada raíz.
+ */
+export function root(repo: string, start?: string): string {
+  const name = cloneName(repo)          // valida el repo antes de mirar el entorno
+  for (const v of envNames(repo)) {
+    const declared = envValue(v, start)
+    if (declared) return declared
+  }
+  return join(treeRoot(start), name)
+}
+
+/** Sólo las DECLARADAS, sin el tramo extra — la vista hermana de `reach()`. */
+export function roots(start?: string): Record<string, string> {
+  return Object.fromEntries(REACH_ROOTS.map((r) => [r, root(r, start)]))
+}
+
+/**
+ * El tramo extensible, leído del entorno.
+ *
+ * Cada ruta debe ser **absoluta**: sin esa verificación, el tramo extra sería
+ * la vía por la que una relativa entra al conjunto, y cada consumidor la
+ * resolvería contra su propio directorio de trabajo.
+ */
+export function extraRoots(): Record<string, string> {
+  const raw = EXTRA_ROOTS_VARS.map((v) => process.env[v]).find(Boolean) ?? ''
+  const result: Record<string, string> = {}
+  for (const piece of raw.split(':').filter(Boolean)) {
+    if (!piece.startsWith('/')) {
+      throw new ReachRootError(
+        `la raíz extra ${JSON.stringify(piece)} no es absoluta. ${EXTRA_ROOTS_VARS[0]} las ` +
+          'exige absolutas: una relativa se resolvería contra el directorio de trabajo de ' +
+          'cada consumidor, que es distinto.',
+      )
+    }
+    result[piece.split('/').filter(Boolean).pop() as string] = piece
+  }
+  return result
+}
+
+/** El conjunto RESUELTO: las declaradas más el tramo extra. */
+export function reach(start?: string): Record<string, string> {
+  return { ...roots(start), ...extraRoots() }
 }
