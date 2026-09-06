@@ -44,6 +44,13 @@
         "@types/bun": "^1.4.0",
       },
     },
+    "shell": {
+      "name": "@thyrox/shell",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/config": "workspace:*",
+      },
+    },
     "storage": {
       "name": "@thyrox/storage",
       "version": "0.1.0",
@@ -68,6 +75,8 @@
     "@thyrox/config": ["@thyrox/config@workspace:config"],
 
     "@thyrox/harness": ["@thyrox/harness@workspace:harness"],
+
+    "@thyrox/shell": ["@thyrox/shell@workspace:shell"],
 
     "@thyrox/storage": ["@thyrox/storage@workspace:storage"],
 

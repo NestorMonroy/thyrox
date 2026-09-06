@@ -8,6 +8,7 @@
     "command-runtime",
     "config",
     "harness",
+    "shell",
     "storage",
     "tasks"
   ]
