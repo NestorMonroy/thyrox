@@ -1,3 +1,45 @@
+import type { AssistantMessage, Message } from './messageShapes.ts'
+
+/**
+ * El ultimo mensaje de asistente del historial, o `undefined` si no hay.
+ *
+ * `findLast` sale temprano por el final: es notablemente mas barato que
+ * `filter().at(-1)` en historiales largos, y esto se llama en cada render.
+ */
+export function getLastAssistantMessage(
+  messages: Message[],
+): AssistantMessage | undefined {
+  return messages.findLast(
+    (msg): msg is AssistantMessage => msg.type === 'assistant',
+  )
+}
+
+/**
+ * Si el turno de asistente MAS RECIENTE llamo a alguna herramienta.
+ *
+ * Recorre hacia atras y se detiene en el primer mensaje de asistente que
+ * encuentra: la pregunta es sobre ese turno, no sobre el historial. Un
+ * `messages.some(...)` sobre todo el arreglo respondería otra cosa —
+ * «hubo alguna llamada alguna vez»— y es la confusion que el test fija.
+ *
+ * Contenido en cadena en vez de arreglo devuelve `false`: una cadena no
+ * lleva bloques, asi que no puede llevar un `tool_use`.
+ */
+export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i]
+    if (message && message.type === 'assistant') {
+      const content = (message as AssistantMessage).message.content
+      if (Array.isArray(content)) {
+        return content.some(
+          (block: { type?: string }) => block.type === 'tool_use',
+        )
+      }
+    }
+  }
+  return false
+}
+
 /**
  * Porte PARCIAL DECLARADO de `ccnmt: packages/agent/messages.ts`.
  *
