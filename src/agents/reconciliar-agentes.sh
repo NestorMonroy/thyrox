@@ -28,7 +28,7 @@
 # mayor calidad: `ccb: bgDaemon.ts:462-469` muestra que ese evento dispara
 # cuando el trabajo **muere antes de confirmar que arrancó**, para que quien
 # espera reciba el error real en vez de un timeout — eso vive ahora en
-# `esperar-marcador.sh`, no aquí. La anti-duplicación que sí hace este guion
+# `session/marker_wait.py`, no aquí. La anti-duplicación que sí hace este guion
 # es `tengu_bg_respawn_stale` (`:638-642`), y el contador de intentos de más
 # abajo es `respawn-stalled` (`:599-604`). Tres nombres, tres mecanismos.
 #

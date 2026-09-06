@@ -6,7 +6,7 @@
 #
 # Por qué existe
 # --------------
-# `esperar-marcador.sh` espera UN trabajo. Con N lanzados, esperarlos "de a
+# `session/marker_wait.py` espera UN trabajo. Con N lanzados, esperarlos "de a
 # uno" no es una barrera: el primero que se atasca deja a los demás sin
 # recoger, y el turno puede cerrar creyendo que sólo faltaba ese.
 #

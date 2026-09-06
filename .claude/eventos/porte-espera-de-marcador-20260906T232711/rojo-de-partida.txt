@@ -1,0 +1,50 @@
+== rojo de partida — la suite legacy contra su sujeto REAL ==
+$ SCRIPT_DIR de la suite legacy resuelve a:
+   $(dirname tests/legacy/test-esperar-marcador.sh)/.. -> tests/  ->  tests/session/esperar-marcador.sh
+ls: cannot access 'tests/session/esperar-marcador.sh': No such file or directory
+   el sujeto REAL vive en:
+src/session/esperar-marcador.sh
+
+== la conducta del sujeto, medida DIRECTO (no por la suite) ==
+$ estado del pid $P tras morir:
+   kill -0 dice: muerto
+
+$ ESPERAR_INTERVALO=1 bash src/session/esperar-marcador.sh $LOG --pid $P --timeout 6
+BAIL — el proceso 16440 no responde a kill -0 y el log no tiene '^EXIT=[0-9]+'.
+       El trabajo murió sin escribir su marcador. Esto NO es un
+       timeout: es el error real, disponible ahora y no en 6s.
+
+       últimas líneas de /tmp/tmp.17LX5O1Kqb/muere.log:
+       | arranco
+   exit=2   (esperado por su contrato: 2 = BAIL)
+== el caso que SÍ desprende: nieto huérfano (la forma de spawn_detached) ==
+   pid del nieto: 16486
+   /proc/16486/stat estado =    kill -0 dice: muerto
+   ppid = (sin /proc)
+   PID 1 es: /process_api --firecracker-init --addr 0.0.0.0:2024 --max-ws-buffer-size 32768 --block-local-connections --listen-vsock-port 2024 --log-vsock-port 5002 
+
+$ ESPERAR_INTERVALO=1 bash src/session/esperar-marcador.sh $LOG --pid 16486 --timeout 6
+BAIL — el proceso 16486 no responde a kill -0 y el log no tiene '^EXIT=[0-9]+'.
+       El trabajo murió sin escribir su marcador. Esto NO es un
+       timeout: es el error real, disponible ahora y no en 6s.
+
+       últimas líneas de /tmp/tmp.fdrTfNR3RX/huerfano.log:
+       | arranco
+   exit=2   (su contrato dice 2 = BAIL; 3 = TIMEOUT es el defecto)
+
+== el caso donde kill -0 SÍ miente: un zombi real (padre vivo que no cosecha) ==
+   Los dos casos de arriba fueron cosechados, así que kill -0 acertó. El
+   zombi exige un padre VIVO que no llame a wait(): ahí el pid existe para
+   siempre y kill -0 responde VIVO sobre un trabajo que ya terminó.
+   pid del hijo: 16535
+   /proc/16535/stat estado = (sin /proc)
+   kill -0 dice: VIVO   <- miente: el trabajo terminó
+
+$ ESPERAR_INTERVALO=1 bash src/session/esperar-marcador.sh $LOG --pid 16535 --timeout 6
+BAIL — el proceso 16535 no responde a kill -0 y el log no tiene '^EXIT=[0-9]+'.
+       El trabajo murió sin escribir su marcador. Esto NO es un
+       timeout: es el error real, disponible ahora y no en 6s.
+
+       últimas líneas de /tmp/tmp.XPsryhB58V/zombi.log:
+       | arranco
+   exit=2   (su contrato dice 2 = BAIL; 3 = TIMEOUT es el defecto)
