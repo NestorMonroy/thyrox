@@ -77,3 +77,39 @@ diagnostico individual las devuelve.
 | `test-parallel.sh` | `tests/session/test_parallel.py` | el zombie que `kill -0` reporta vivo; el marcador exige shell exterior |
 | `test-reference-root-resolution.sh` | `tests/gates/test_reference_root_resolution.py` | H-DOCS-1133: el gate mide evidencia congelada |
 | `test-censo-contraparte.sh` | `tests/corpus/test_censo_contraparte.py` | el censo llevaba dentro un parametro del consumidor |
+
+## Tercera medicion: OTRO no era una causa — era la ceguera del discriminador
+
+La segunda medicion partio la clase B en RUTA (22) y OTRO (13) con un
+discriminador que buscaba el **literal** `.claude/scripts`, la ruta previa al
+traslado. Al portar la primera de las 13 —`test-esperar-marcador.sh`— resulto
+que tambien moria por ruta: resuelve su sujeto con `dirname($BASH_SOURCE)/..`,
+que desde `tests/legacy/` apunta a `tests/session/` y no a `src/session/`. No
+nombra ninguna ruta vieja, asi que el discriminador no podia verla.
+
+Re-medidas las 12 restantes por la FORMA en vez del literal, las doce anclan
+por aritmetica de ruta:
+
+| Forma | n | A donde resuelve desde `tests/legacy/` |
+|---|---|---|
+| `dirname($BASH_SOURCE)/../../..` | 10 | `/home/user` — el padre de los clones, no el repo |
+| `dirname($BASH_SOURCE)/..` | 1 | `tests/` |
+| `dirname($BASH_SOURCE)` sin ascenso | 1 | `tests/legacy/` |
+
+`../../..` era la raiz del repo cuando estos guiones vivian en
+`.claude/scripts/tests/`: tres niveles arriba. La mudanza a `tests/legacy/` los
+dejo a dos, y la cuenta no se entero — **la aritmetica de ruta no sobrevive a
+una mudanza; el ascenso con deteccion si**, que es lo que `paths.reach` hace y
+por eso los portes lo usan.
+
+Con eso, la clase B queda: **RUTA 34 · OTRO 0 · CUELGA 0** sobre las 37 rojas.
+El reparto anterior —22/13— no describia dos causas: describia lo que un
+instrumento podia ver y lo que no.
+
+*Metrica:* presencia de `dirname("${BASH_SOURCE[0]}")` con su ascenso, por
+suite, sobre las 12 clasificadas OTRO que quedaban.
+*Ciega a:* una suite que ademas de la ruta tuviera un segundo defecto — el
+porte de la primera cerro dos (la ruta, y un caso que decia medir una guarda
+sin ejercerla), asi que «RUTA» acota la causa de la muerte, no el trabajo del
+porte. El guion de esta medicion es `medir_ruta_por_aritmetica.sh` del evento
+`porte-espera-de-marcador-20260906T232711`.
