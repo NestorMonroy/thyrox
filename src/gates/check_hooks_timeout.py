@@ -20,7 +20,13 @@ import json
 import sys
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parents[3]
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from paths import reach  # noqa: E402
+
+# El `settings.json` que se mide es el del CONSUMIDOR. Era `parents[3]`,
+# que desde `thyrox/src/gates/` daba `/home/user/.claude/settings.json`.
+RAIZ = reach.consumer_root()
 
 
 def collect_hooks(settings: dict):

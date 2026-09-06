@@ -60,6 +60,10 @@ import pathlib
 import re
 import sys
 
+HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from paths import reach  # noqa: E402
+
 CLASSES = ('producto', 'proceso')
 TYPES = (
     'flujo',
@@ -223,7 +227,10 @@ def main() -> int:
     parser.add_argument('--quiet', action='store_true')
     args = parser.parse_args()
 
-    root = pathlib.Path(args.root) if args.root else pathlib.Path(__file__).resolve().parents[3]
+    # `--root` sigue siendo la vía explícita de las pruebas; sin él, la raíz
+    # es la del consumidor y no `parents[3]`, que desde `thyrox/src/gates/`
+    # daba `/home/user`.
+    root = pathlib.Path(args.root) if args.root else reach.consumer_root()
     directories, files = collect(root)
 
     if not directories:

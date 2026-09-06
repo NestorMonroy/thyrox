@@ -23,7 +23,27 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# El repo medido es el CONSUMIDOR, no el proveedor: este gate corre el hook del
+# árbol donde se le invoca contra los commits de ESE árbol. Era
+# `$SCRIPT_DIR/..`, que valía cuando el guion vivía en `<clon>/scripts/` y desde
+# `thyrox/src/gates/` daba `thyrox/src`, sin `.githooks` dentro.
+#
+# La cadena la resuelve `reach.consumer_root` —variable declarada, `.env`, y
+# ascenso al marcador— y no se replica aquí: una segunda copia de la decisión
+# es la fuente de verdad paralela que nadie sincroniza. Se invoca desde el cwd
+# original a propósito, que es el punto de partida del ascenso.
+PROJECT_ROOT="$(PYTHONPATH="${SCRIPT_DIR}/.." python3 -c \
+    'from paths import reach; print(reach.consumer_root())' 2>/dev/null)" || {
+    echo "FATAL: no se pudo resolver la raíz del consumidor con reach." >&2
+    echo "       NO se emite un veredicto: un 0 aquí sería un verde falso." >&2
+    exit 2
+}
+[[ -n "$PROJECT_ROOT" ]] || {
+    echo "FATAL: reach devolvió una raíz vacía." >&2
+    echo "       NO se emite un veredicto: un 0 aquí sería un verde falso." >&2
+    exit 2
+}
 HOOK="$PROJECT_ROOT/.githooks/commit-msg"
 BASE="${1:-develop}"
 

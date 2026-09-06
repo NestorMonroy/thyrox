@@ -80,6 +80,10 @@ import posixpath
 import re
 import sys
 
+HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from paths import reach  # noqa: E402
+
 #: Destinos que Sphinx crea por su cuenta: no se declaran en el árbol.
 BUILTIN = {'genindex', 'search', 'modindex', 'py-modindex'}
 
@@ -92,7 +96,11 @@ DOC = re.compile(r':doc:`(?:[^`<]*<)?([^`>]+?)>?`')
 DIRECTIVA_LITERAL = re.compile(
     r'^(\s*)\.\.\s+(?:code-block|code|literalinclude|highlight|raw)::')
 
-RAIZ = pathlib.Path(__file__).resolve().parents[3] / 'source'
+# La raíz del árbol MEDIDO, no la del proveedor. Era `parents[3]`, que
+# valía cuando el gate vivía en `kaupamex-docs/.claude/scripts/gates/` y
+# desde `thyrox/src/gates/` daba `/home/user/source`.
+CONSUMIDOR = reach.consumer_root()
+RAIZ = CONSUMIDOR / 'source'
 
 
 def sin_bloques_literales(texto):
@@ -187,7 +195,7 @@ def main():
         print(len(rotas_doc))
     else:
         for f, r in rotas:
-            rel = f.relative_to(RAIZ.parent)
+            rel = f.relative_to(CONSUMIDOR)
             print(f'  ROTA  :ref:`{r}`  en {rel}')
         estado = 'OK — todas resuelven' if not rotas else f'{len(rotas)} rotas'
         print(f'check-rst-referencias: {estado}')
@@ -196,7 +204,7 @@ def main():
               f'{recortados} usos dentro de bloques literales, no contados)')
 
         for f, d, destino in rotas_doc:
-            rel = f.relative_to(RAIZ.parent)
+            rel = f.relative_to(CONSUMIDOR)
             print(f'  ROTA  :doc:`{d}` -> {destino}  en {rel}')
         estado_doc = ('OK — todos resuelven' if not rotas_doc
                       else f'{len(rotas_doc)} rotas')

@@ -49,6 +49,10 @@ import pathlib
 import re
 import sys
 
+HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from paths import reach  # noqa: E402
+
 # El instante o el azar tomados del entorno. Las formas salen de medir el árbol,
 # no de memoria: `datetime.now(timezone.utc)` vive en flujo-de-tiempo-*,
 # `time.time()` en spread_del_tiempo.py, `$(date …)` en los guiones de shell.
@@ -81,7 +85,10 @@ def event_root() -> pathlib.Path:
     override = os.environ.get('EVENTS_ROOT')
     if override:
         return pathlib.Path(override)
-    return pathlib.Path(__file__).resolve().parents[2] / 'eventos'
+    # El hogar de los eventos es del CONSUMIDOR. Era `parents[2]/'eventos'`,
+    # que valía desde `kaupamex-docs/.claude/scripts/gates/` —parents[2] era
+    # `.claude`— y desde `thyrox/src/gates/` da `thyrox/eventos`.
+    return reach.consumer_root() / '.claude' / 'eventos'
 
 
 def require_root(root: pathlib.Path) -> pathlib.Path:
