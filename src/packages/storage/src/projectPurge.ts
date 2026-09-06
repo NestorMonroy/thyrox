@@ -18,7 +18,7 @@
  * (`collectPurgeItems`, `executePurgeItems`, marcados `@deprecated` en la
  * propia fuente) — ningún test los ejercita.
  *
- * Cinco dependencias de la fuente no existen (aún) en este árbol y se
+ * Tres dependencias de la fuente no existen (aún) en este árbol y se
  * reimplementan aquí como funciones PRIVADAS (no exportadas), para no crear
  * ni tocar archivos fuera de mi propiedad en este pase (otro agente
  * concurrente trabaja la familia `session*` de este mismo paquete):
@@ -30,22 +30,23 @@
  *   - `sanitizePath`/`getProjectsDir`/`canonicalizePath`
  *     (`./sessionStoragePortable.js`, no existe en este árbol) — fieles,
  *     incluida la rama de hash para nombres >200 caracteres.
- *   - `getWorktreePathsPortable` (`./getWorktreePathsPortable.js`, no
- *     existe en este árbol) — fiel, vía `git worktree list --porcelain`.
- *   - `findGitRoot` (`./findGitRoot.js`, no existe en este árbol) — fiel en
- *     el algoritmo (camina hacia la raíz buscando `.git`), sin el
- *     memoize-LRU ni el logging de diagnóstico de la fuente (ningún test
- *     los ejercita, y ninguno de los dos cambia el resultado).
+ *
+ * Reconciliación (tarea #208, 2026-09-06): `getWorktreePathsPortable` y
+ * `findGitRoot` YA NO se reimplementan aquí — ambos módulos reales existen
+ * ahora en este mismo paquete (`./getWorktreePathsPortable.ts`,
+ * `./findGitRoot.ts`) y este archivo pasa a IMPORTARLOS. Sus copias
+ * privadas (idénticas en el primer caso; sin memoize-LRU ni logging de
+ * diagnóstico en el segundo, ninguno de los dos ejercitado por los tests
+ * de este archivo) se retiran — dos implementaciones del mismo mecanismo
+ * era la deuda que esta reconciliación cierra.
  */
-import { createReadStream, statSync } from 'fs'
+import { createReadStream } from 'fs'
 import { readdir, readFile, realpath, rm, stat, writeFile } from 'fs/promises'
-import { execFile as execFileCb } from 'child_process'
 import { homedir } from 'os'
 import { createInterface } from 'readline'
-import { dirname, join, resolve as pathResolve, sep as pathSep } from 'path'
-import { promisify } from 'util'
-
-const execFileAsync = promisify(execFileCb)
+import { join, resolve as pathResolve, sep as pathSep } from 'path'
+import { getWorktreePathsPortable } from './getWorktreePathsPortable.js'
+import { findGitRoot } from './findGitRoot.js'
 
 // ---------------------------------------------------------------------------
 // Helpers privados que en la fuente vienen de paquetes hermanos ausentes —
@@ -102,64 +103,6 @@ async function canonicalizePath(dir: string): Promise<string> {
   } catch {
     return dir.normalize('NFC')
   }
-}
-
-/**
- * Portable worktree detection using only child_process — no analytics, no
- * bootstrap deps, no execa.
- */
-async function getWorktreePathsPortable(cwd: string): Promise<string[]> {
-  try {
-    const { stdout } = await execFileAsync(
-      'git',
-      ['worktree', 'list', '--porcelain'],
-      { cwd, timeout: 5000 },
-    )
-    if (!stdout) return []
-    return stdout
-      .split('\n')
-      .filter(line => line.startsWith('worktree '))
-      .map(line => line.slice('worktree '.length).normalize('NFC'))
-  } catch {
-    return []
-  }
-}
-
-/**
- * Find the git root by walking up the directory tree. Looks for a .git
- * directory or file (worktrees/submodules use a file). Returns the
- * directory containing .git, or null if not found.
- */
-function findGitRoot(startPath: string): string | null {
-  let current = pathResolve(startPath)
-  const root = current.substring(0, current.indexOf(pathSep) + 1) || pathSep
-
-  while (current !== root) {
-    try {
-      const gitPath = join(current, '.git')
-      const s = statSync(gitPath)
-      if (s.isDirectory() || s.isFile()) {
-        return current.normalize('NFC')
-      }
-    } catch {
-      // .git doesn't exist at this level, continue up
-    }
-    const parent = dirname(current)
-    if (parent === current) break
-    current = parent
-  }
-
-  try {
-    const gitPath = join(root, '.git')
-    const s = statSync(gitPath)
-    if (s.isDirectory() || s.isFile()) {
-      return root.normalize('NFC')
-    }
-  } catch {
-    // .git doesn't exist at root
-  }
-
-  return null
 }
 
 /**
