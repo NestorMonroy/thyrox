@@ -31,10 +31,29 @@ OWNER_ROOT_VAR = "THYROX_ROOT"
 
 
 def _owner_path() -> Path:
-    """La ruta del módulo del dueño: la variable, o el clon hermano."""
+    """La ruta del módulo del dueño: la variable, el hermano, o el vecino.
+
+    El tercer paso es el que faltaba. Esta aritmética
+    —``SCRIPT_PATH.parents[3].parent / 'thyrox' / …``— valía cuando este gate
+    era un stub en ``kaupamex-docs/.claude/scripts/gates/``: parents[3] era el
+    clon, ``.parent`` el árbol, y ``+ thyrox`` el hermano. Desde
+    ``thyrox/src/gates/`` da ``/home/thyrox``, que no existe — el gate busca a
+    thyrox como hermano de SÍ MISMO.
+
+    Medido por el corredor contra el consumidor real: publicaba FALLA con «el
+    dueño canónico no está», que se lee como violación de la regla y es una
+    ruta rota. El dueño está **en el mismo directorio**, así que se prueba ahí
+    antes de componer nada.
+    """
     declared = os.environ.get(OWNER_ROOT_VAR)
     if declared:
         return Path(declared) / OWNER_MODULE
+
+    # El vecino: gate y dueño son hermanos desde que los dos viven en thyrox.
+    neighbour = SCRIPT_PATH.parent / Path(OWNER_MODULE).name
+    if neighbour.is_file():
+        return neighbour
+
     return SCRIPT_PATH.parents[3].parent / OWNER_CLONE / OWNER_MODULE
 
 

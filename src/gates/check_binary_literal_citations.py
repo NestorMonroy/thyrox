@@ -42,13 +42,23 @@ import subprocess
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent          # .../.claude/scripts/gates
-DOCS_ROOT = HERE.parents[2]                     # kaupamex-docs/
-assert (DOCS_ROOT / "source" / "gestion" / "pm").is_dir(), (
-    f"raiz mal anclada: {DOCS_ROOT} — no tiene source/gestion/pm")
-TREE_ROOT = DOCS_ROOT.parent                    # /home/user
-REPOS = ("kaupamex-docs", "kaupamex-api", "kaupamex-ui",
-         "kaupamex-db", "kaupamex-server")
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from paths import reach  # noqa: E402
+
+# El arbol y los clones se PIDEN, no se componen ni se enumeran.
+#
+# Antes: `DOCS_ROOT = HERE.parents[2]` con un `assert` detras, y los cinco
+# clones escritos como literales. Las dos formas se rompieron con la mudanza:
+# desde `thyrox/src/gates/` el `parents[2]` da `/home/user`, el `assert`
+# revienta con Traceback, y el corredor lo lee como violacion de la regla en
+# vez de como ruta rota. La lista literal es ademas lo que #170 nombra — un
+# consumidor que escribe los cinco nombres en vez de pedirlos.
+#
+# `reach` los resuelve con las dos entradas de entorno que el proyecto ya
+# fijo: el valor directo, y la ruta al `.env` que lo declara.
+TREE_ROOT = reach.tree_root()
+REPO_ROOTS = tuple(reach.roots().values())
 BASELINE = HERE / "binary_literal_baseline.txt"
 
 #: etiqueta -> (patron laxo en la prosa, patron de extraccion en el binario)
@@ -80,8 +90,8 @@ def executable_strings() -> str:
 
 def rule_files() -> list[Path]:
     encontrados: list[Path] = []
-    for repo in REPOS:
-        reglas = TREE_ROOT / repo / ".claude" / "rules"
+    for raiz in REPO_ROOTS:
+        reglas = raiz / ".claude" / "rules"
         if reglas.is_dir():
             encontrados.extend(sorted(reglas.glob("*.md")))
     return encontrados
@@ -153,7 +163,7 @@ def main() -> int:
         print(d)
     print(f"check-binary-literal-citations: {len(deriva)} cita(s) "
           f"parafraseada(s) (alcance medido: {len(archivos)} regla(s) en "
-          f"{len(REPOS)} repos; {laxos} linea(s) casan el patron laxo; "
+          f"{len(REPO_ROOTS)} repos; {laxos} linea(s) casan el patron laxo; "
           f"{len(LITERALS)} literal(es) declarado(s); {len(baseline)} en "
           "baseline)")
     return 1 if (deriva and args.strict) else 0
