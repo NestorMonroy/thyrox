@@ -1,0 +1,9 @@
+# Control positivo del cableado — el MISMO defecto en dos sitios
+# 2026-09-06T22:31:18
+# plantado: .claude/workbench/probe-de-exclusion/mal-nombre.py  (banco -> invisible)
+#           src/workbench/mal-nombre.py                          (producto -> visible)
+  src/workbench/mal-nombre.py  ->  mal_nombre.py
+1 archivo(s) .py con guion medio (alcance medido: 190 archivo(s) .py bajo .claude/scripts/src/tests/addons/provisioners/utils)
+
+# Retirados los dos plantados. Vuelta al estado limpio:
+0 archivo(s) .py con guion medio (alcance medido: 189 archivo(s) .py bajo .claude/scripts/src/tests/addons/provisioners/utils)

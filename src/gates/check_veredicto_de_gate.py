@@ -35,8 +35,9 @@ import pathlib
 import re
 import sys
 
-#: Raíces donde vive el tooling que consume gates. No se mide `.claude/eventos`:
-#: un evento es evidencia fechada de un episodio, no código vivo que se corrija.
+#: Raíces donde vive el tooling que consume gates. No se mide el banco
+#: (`.claude/workbench` aquí, `.claude/eventos` en un consumidor): una pieza de
+#: banco es evidencia fechada de un episodio, no código vivo que se corrija.
 RAICES = ('.claude/scripts', '.claude/hooks')
 
 #: Cómo se reconoce la invocación de un gate nuestro.

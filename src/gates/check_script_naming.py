@@ -83,7 +83,12 @@ import sys
 RAICES = ('.claude', 'scripts', 'src', 'tests', 'addons', 'provisioners', 'utils')
 
 EXCLUIR = ('node_modules', '.venv', 'venv', '__pycache__', 'build', 'dist',
-           'eventos', 'tools')
+           'tools')
+
+# El banco NO se excluye por el nombre suelto de su directorio: `workbench`
+# nombra tambien a `src/workbench/`, que es producto. Ver `workbench/paths.py`.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+from workbench.paths import is_bank_path  # noqa: E402
 
 # El léxico vive en el gate hermano de `api`, que es donde se mantiene. La
 # variable permite apuntarlo a otro sitio —o a ninguno, para probar el guard.
@@ -137,7 +142,7 @@ def scan_idioma(raiz):
             continue
         for patron in ('*.py', '*.sh'):
             for f in sorted(base.rglob(patron)):
-                if any(p in EXCLUIR for p in f.parts):
+                if any(p in EXCLUIR for p in f.parts) or is_bank_path(f):
                     continue
                 total += 1
                 relativa = str(f.relative_to(raiz))
@@ -158,7 +163,7 @@ def scan(raiz: pathlib.Path) -> tuple[list[pathlib.Path], int]:
         if not base.is_dir():
             continue
         for f in base.rglob('*.py'):
-            if any(p in EXCLUIR for p in f.parts):
+            if any(p in EXCLUIR for p in f.parts) or is_bank_path(f):
                 continue
             total += 1
             if '-' in f.name:
@@ -212,7 +217,7 @@ def scan_identifiers(root):
         if not base.is_dir():
             continue
         for f in sorted(base.rglob('*.py')):
-            if any(p in EXCLUIR for p in f.parts):
+            if any(p in EXCLUIR for p in f.parts) or is_bank_path(f):
                 continue
             try:
                 tree = ast.parse(f.read_text(encoding='utf-8'))

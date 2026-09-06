@@ -33,8 +33,11 @@ from pathlib import Path
 # `tools/claude-code-bin/` se conserva porque la evidencia fechada de
 # kaupamex-docs la cita y no se reescribe; el corpus vive hoy en
 # `thyrox: _references/claude-code-bin/`.
-EVIDENCE_ROOTS = ('.claude/eventos/', '_references/claude-code-bin/',
-                  'tools/claude-code-bin/')
+# `eventos/` y `workbench/` son el MISMO rol con dos nombres: asi llama cada
+# arbol a su banco —THYROX `workbench`, un consumidor `kaupamex-*` `eventos`—.
+# Estan los dos porque este gate mide citas de los dos arboles.
+EVIDENCE_ROOTS = ('.claude/workbench/', '.claude/eventos/',
+                  '_references/claude-code-bin/', 'tools/claude-code-bin/')
 
 # Una cita puede venir en literal doble-comilla-invertida, entre comillas o
 # desnuda; el patrón toma la ruta y la puntuación final se recorta aparte.

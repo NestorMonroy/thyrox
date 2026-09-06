@@ -31,7 +31,7 @@ for _ in range(2):                      # gates/ -> scripts/ -> .claude/
 
 
 def destino_del_reporte():
-    """Ruta del reporte: `.claude/eventos/<slug>-<ISO>/` bajo el arbol del guion.
+    """Ruta del reporte: `.claude/workbench/<slug>-<ISO>/` bajo el arbol del guion.
 
     `REFERENCE_REPORT_PATH` la sustituye; el default nunca depende del
     directorio de trabajo desde el que se invoque.
@@ -40,7 +40,7 @@ def destino_del_reporte():
     if ruta:
         return ruta
     sello = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
-    return str(_CLAUDE_DIR / "eventos" / f"validar-referencias-{sello}"
+    return str(_CLAUDE_DIR / "workbench" / f"validar-referencias-{sello}"
                / "reference-validation-report.txt")
 
 
@@ -492,7 +492,7 @@ class ReferenceValidator:
 
         El destino se DERIVA de la ubicacion del guion, no del directorio de
         trabajo. Con un nombre relativo pelado el reporte aterrizaba en la raiz
-        del repo —61 KB de evidencia fuera de ``.claude/eventos/``, que es el
+        del repo —61 KB de evidencia fuera del banco, que es el
         hogar que el grifo de :ref:`h-docs-456` fija—. Ver :ref:`h-docs-471`.
         """
         if output_file is None:

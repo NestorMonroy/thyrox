@@ -388,7 +388,11 @@ def main(argv: list[str]) -> int:
     p.add_argument("--advisor", default=None, help="modelo asesor: añade las llamadas con --advisor")
     p.add_argument("--control", action="store_true", help="cuarta llamada: reanudar con el MISMO modelo, para separar reanudar de cambiar")
     p.add_argument("--cwd", default="/home/user/probe-empty", help="directorio de trabajo del hijo: vacío, sin piso")
-    p.add_argument("--evento-root", default=str(pathlib.Path(__file__).resolve().parents[2] / "eventos"))
+    # `parents[2]` es la raiz de THYROX; el banco vive bajo su `.claude/`. Decia
+    # `parents[2] / "eventos"`, que apuntaba a `thyrox/eventos` — inexistente.
+    p.add_argument("--evento-root",
+                   default=str(pathlib.Path(__file__).resolve().parents[2]
+                               / ".claude" / "workbench"))
     p.add_argument("--claude-bin", default="claude")
     p.add_argument("--timeout", type=int, default=180)
     p.add_argument("--matriz", action="store_true",

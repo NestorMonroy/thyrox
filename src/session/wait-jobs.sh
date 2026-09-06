@@ -65,16 +65,23 @@ set -uo pipefail
 # reinicio del worker (época 247): el directorio de /tmp no sobrevivió al
 # reinicio —justo cuando el ledger importa—, así que un trabajo registrado y no
 # recogido se perdía sin rastro. El ledger VIVO es un directorio de trabajo por
-# sesión bajo `.claude/eventos/trabajos-ledger/<id>/`; lo que se COMMITEA como
-# evidencia es su archivo comprimido `<id>.tar.gz` bajo `.claude/eventos/trabajos/`,
+# sesión bajo `.claude/jobs-ledger/<id>/`; lo que se COMMITEA como evidencia es
+# su archivo comprimido `<id>.tar.gz` bajo `.claude/jobs/`,
 # uno por sesión —como el binario guarda `jobs/<short>/`, pero empaquetado, para
 # no cargar GitHub con muchos `.job` sueltos (directiva del ejecutor 2026-09-02)—.
 # El subcomando `archive` produce ese `.tar.gz`. Un test aísla el ledger vivo
 # con KX_TRABAJOS_DIR.
-_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+# La raiz es la de THYROX —`src/session/` esta dos niveles bajo ella—. Decia
+# `../../..` y resolvia a `/home/user`, un nivel POR ENCIMA del repo: el ledger
+# aterrizaba fuera del arbol versionado. Los dos tests lo sobreescriben con
+# `KX_TRABAJOS_DIR`, asi que el default equivocado nunca se ejercitaba.
+_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
-LEDGER="${KX_TRABAJOS_DIR:-$_ROOT/.claude/eventos/jobs-ledger/$_SESSION}"
-_ARCHIVE_DIR="${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/eventos/jobs}"
+# NO va bajo el banco: una pieza de banco es una PREGUNTA medida, y esto es
+# estado de sesion. Mezclarlos haria que el gate del manifiesto midiera
+# directorios que nunca van a tener uno.
+LEDGER="${KX_TRABAJOS_DIR:-$_ROOT/.claude/jobs-ledger/$_SESSION}"
+_ARCHIVE_DIR="${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/jobs}"
 DEFAULT_PATTERN='^EXIT=[0-9]+'
 INTERVAL="${WAIT_JOBS_INTERVAL:-2}"
 

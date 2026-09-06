@@ -4,7 +4,7 @@
 Es la mitad de ``shell-snapshots`` que sí conviene copiarle al cliente. Éste
 congela el entorno de shell —8 apariciones del literal en el ejecutable
 2.1.246— para que una ejecución posterior corra en el mismo. Nuestros eventos
-de ``.claude/eventos/`` guardan el **resultado** de una medición y no las
+del banco (``.claude/workbench/``) guardan el **resultado** de una medición y no las
 condiciones bajo las que se produjo: un resultado sin ellas es una foto, no un
 procedimiento repetible.
 
@@ -112,7 +112,7 @@ def capture(root: Path) -> dict[str, object]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('event', help='directorio del evento en .claude/eventos/')
+    parser.add_argument('event', help='directorio de la pieza en el banco')
     parser.add_argument('--force', action='store_true',
                         help='reemplaza un manifiesto ya escrito')
     options = parser.parse_args(argv)

@@ -71,7 +71,12 @@ FUENTES = {'get_secret', 'get_secret_str', 'getenv', 'get'}
 
 #: Directorios que no son sujeto: dependencia, artefacto y evidencia.
 SKIP_DIRS = {'.git', 'node_modules', '.venv', 'build', 'dist', '__pycache__',
-             '_archived', '_references', 'eventos'}
+             '_archived', '_references'}
+
+# El banco se reconoce por el PAR `.claude/<nombre>`, no por el nombre suelto:
+# `workbench` nombra tambien a `src/workbench/`, que es producto.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from workbench.paths import is_bank_path  # noqa: E402
 
 
 def _es_lectura_de_config(node: ast.AST) -> bool:
@@ -227,7 +232,7 @@ def disagrees(source: str) -> bool:
 def scan(root: Path) -> tuple[int, dict[str, tuple[list[str], list[str]]]]:
     medidos, discrepantes = 0, {}
     for path in sorted(root.rglob('*.py')):
-        if any(part in SKIP_DIRS for part in path.parts):
+        if any(part in SKIP_DIRS for part in path.parts) or is_bank_path(path):
             continue
         if not path.is_file():
             continue

@@ -50,13 +50,16 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from paths import reach  # noqa: E402
+# El banco por el PAR `.claude/<nombre>`: el nombre suelto `workbench`
+# casa tambien con `src/workbench/`, que es producto.
+from workbench.paths import is_bank_path  # noqa: E402
 
 #: Lo que se mide: donde vive el mecanismo ejecutable.
 SUFIJOS = ('.sh', '.py')
 
 #: Ni dependencia, ni artefacto, ni evidencia, ni el archivo de otro arbol.
 SKIP_DIRS = {'.git', 'node_modules', '.venv', 'build', 'dist', '__pycache__',
-             '_archived', '_references', 'eventos', 'agent-results'}
+             '_archived', '_references', 'agent-results'}
 
 
 def _digest(path: Path) -> str | None:
@@ -69,7 +72,8 @@ def _digest(path: Path) -> str | None:
 def _walk(root: Path):
     for p in sorted(root.rglob('*')):
         if p.is_file() and p.suffix in SUFIJOS \
-                and not any(part in SKIP_DIRS for part in p.parts):
+                and not any(part in SKIP_DIRS for part in p.parts) \
+                and not is_bank_path(p):
             yield p
 
 
