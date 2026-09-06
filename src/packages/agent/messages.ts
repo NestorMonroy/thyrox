@@ -85,7 +85,7 @@ export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
  * que se porta **por consumidor**: cada test que aterriza trae consigo los
  * simbolos que ejercita, y este encabezado declara la cobertura.
  *
- * Cobertura acumulada — **26 de 115**, en cinco grupos, cada uno traido por
+ * Cobertura acumulada — **34 de 115**, en seis grupos, cada uno traido por
  * el test que lo ejercita:
  *
  * 1. **14 cadenas de contrato** del protocolo harness ↔ modelo (`INTERRUPT_*`,
@@ -103,8 +103,16 @@ export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
  *    `createSyntheticUserCaveatMessage`, `formatCommandInputTags`,
  *    `createModelSwitchBreadcrumbs`, `createProgressMessage`,
  *    `createToolResultStopMessage`.
+ * 6. **8 ayudantes puros** traidos por `messagesPureHelpers.test.ts`:
+ *    `deriveUUID`, `extractTag`, `isNotEmptyMessage`, `isClassifierDenial`,
+ *    `buildYoloRejectionMessage`, `buildClassifierUnavailableMessage`,
+ *    `isToolUseRequestMessage`, `isToolUseResultMessage`. Trae consigo el
+ *    tipo `ContentBlockParam` (bloque de contenido generico, divergencia
+ *    declarada del `ContentBlockParam` del SDK de Anthropic) y dos
+ *    ayudantes internos no exportados (`escapeRegExp`,
+ *    `AUTO_MODE_REJECTION_PREFIX`).
  *
- * Los 89 restantes NO estan portados y su ausencia es deliberada, no un
+ * Los 81 restantes NO estan portados y su ausencia es deliberada, no un
  * olvido: `porte-completo-no-parcial.md` admite el porte parcial
  * **declarado**, nunca el silencioso.
  *
@@ -208,7 +216,7 @@ export const NO_RESPONSE_REQUESTED = 'No response requested.'
 export const SYNTHETIC_TOOL_RESULT_PLACEHOLDER =
   '[Tool result missing due to internal error]'
 
-import { randomUUID } from 'node:crypto'
+import { randomUUID, type UUID } from 'node:crypto'
 import {
   COMMAND_ARGS_TAG,
   COMMAND_MESSAGE_TAG,
@@ -361,4 +369,229 @@ export function createToolResultStopMessage(
     is_error: true,
     tool_use_id: toolUseID,
   }
+}
+
+/**
+ * Deriva un UUID hijo determinista a partir de un UUID padre y un indice.
+ * Preserva los primeros 24 caracteres del padre (los tres primeros grupos
+ * mas el guion que abre el cuarto) y sustituye el ultimo segmento de 12
+ * hex por el indice en base16, relleno con ceros a la izquierda. Lo usa
+ * `normalizeMessages` (no portado) para dar una clave estable a cada bloque
+ * cuando un mensaje con varios bloques se separa en varios mensajes.
+ */
+export function deriveUUID(parentUUID: UUID, index: number): UUID {
+  const hex = index.toString(16).padStart(12, '0')
+  return `${parentUUID.slice(0, 24)}${hex}` as UUID
+}
+
+/**
+ * Escapa los caracteres especiales de una expresion regular.
+ *
+ * DIVERGENCIA DECLARADA: la fuente la importa de
+ * `@claude-code-how-works/output/utils/stringUtils.js`, ausente de este
+ * arbol. La forma es la estandar (MDN `RegExp` guide).
+ */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * Extrae el contenido de la PRIMERA etiqueta `<tagName>...</tagName>` de
+ * `html` que este en profundidad de anidamiento cero, contando aperturas y
+ * cierres anteriores del mismo nombre en el texto que precede a la
+ * coincidencia.
+ *
+ * LIMITACIONES documentadas y conservadas de la fuente — no arregladas
+ * aqui, porque ninguna de las dos aplica a los usos reales
+ * (`<bash-input>`, `<command-name>`, que nunca llevan atributos ni se
+ * anidan consigo mismos): no distingue anidamiento del MISMO nombre de
+ * etiqueta (colapsa al primer cierre), y un `>` o `</tag>` crudo dentro de
+ * un atributo entre comillas rompe el analisis.
+ */
+export function extractTag(html: string, tagName: string): string | null {
+  if (!html.trim() || !tagName.trim()) {
+    return null
+  }
+
+  const escapedTag = escapeRegExp(tagName)
+
+  // Patron que admite etiquetas autocerradas implicitamente (no matchean),
+  // etiquetas con atributos, anidamiento del mismo tipo, y contenido
+  // multilinea.
+  const pattern = new RegExp(
+    `<${escapedTag}(?:\\s+[^>]*)?>` + // apertura con atributos opcionales
+      '([\\s\\S]*?)' + // contenido (coincidencia no-codiciosa)
+      `<\\/${escapedTag}>`, // cierre
+    'gi',
+  )
+
+  let match: RegExpExecArray | null
+  let depth = 0
+  let lastIndex = 0
+  const openingTag = new RegExp(`<${escapedTag}(?:\\s+[^>]*?)?>`, 'gi')
+  const closingTag = new RegExp(`<\\/${escapedTag}>`, 'gi')
+
+  while ((match = pattern.exec(html)) !== null) {
+    const content = match[1]
+    const beforeMatch = html.slice(lastIndex, match.index)
+
+    depth = 0
+
+    openingTag.lastIndex = 0
+    while (openingTag.exec(beforeMatch) !== null) {
+      depth++
+    }
+
+    closingTag.lastIndex = 0
+    while (closingTag.exec(beforeMatch) !== null) {
+      depth--
+    }
+
+    // Solo se incluye el contenido si estamos en el nivel de anidamiento
+    // correcto.
+    if (depth === 0 && content) {
+      return content
+    }
+
+    lastIndex = match.index + match[0].length
+  }
+
+  return null
+}
+
+/**
+ * Un bloque de contenido generico — texto, imagen, tool_use, tool_result u
+ * otro.
+ *
+ * DIVERGENCIA DECLARADA: la fuente tipa esto con `ContentBlockParam` del
+ * SDK de Anthropic (`@anthropic-ai/sdk`), ausente de este arbol. Se declara
+ * aqui la forma estructural minima —el discriminante `type`, el `text`
+ * opcional que consumen los ayudantes de texto, y un indice para el resto
+ * de campos— en vez de arrastrar el SDK entero por un tipo.
+ */
+export type ContentBlockParam = {
+  type: string
+  text?: string
+  [key: string]: unknown
+}
+
+/**
+ * Verdadero si `message` TIENE contenido — lo contrario del centinela de
+ * vacio que usa la persistencia al transcript. `progress`/`attachment`/
+ * `system` se consideran siempre no-vacios; un mensaje multi-bloque
+ * tambien, por guarda deliberada (el analisis bloque-a-bloque se pospone,
+ * ver el comentario `// Skip multi-block messages for now` de la fuente).
+ * El unico caso "vacio" es un unico bloque de texto en blanco, o igual al
+ * centinela `NO_CONTENT_MESSAGE` o a `INTERRUPT_MESSAGE_FOR_TOOL_USE`.
+ */
+export function isNotEmptyMessage(message: Message): boolean {
+  if (
+    message.type === 'progress' ||
+    message.type === 'attachment' ||
+    message.type === 'system'
+  ) {
+    return true
+  }
+
+  const content = message.message?.content
+  if (typeof content === 'string') {
+    return content.trim().length > 0
+  }
+
+  const blocks = content as ContentBlockParam[]
+  if (!Array.isArray(blocks) || blocks.length === 0) {
+    return false
+  }
+
+  // Se omiten los mensajes multi-bloque por ahora.
+  if (blocks.length > 1) {
+    return true
+  }
+
+  const first = blocks[0]!
+  if (first.type !== 'text') {
+    return true
+  }
+
+  const text = first.text ?? ''
+  return (
+    text.trim().length > 0 &&
+    text !== NO_CONTENT_MESSAGE &&
+    text !== INTERRUPT_MESSAGE_FOR_TOOL_USE
+  )
+}
+
+/** El prefijo con que la interfaz reconoce un rechazo del clasificador de auto-modo. */
+const AUTO_MODE_REJECTION_PREFIX =
+  'Permission for this action has been denied. Reason: '
+
+/**
+ * Si `content` es la salida de una denegacion del clasificador de
+ * auto-modo. Lo usa la interfaz para renderizar un resumen corto en vez
+ * del mensaje completo.
+ */
+export function isClassifierDenial(content: string): boolean {
+  return content.startsWith(AUTO_MODE_REJECTION_PREFIX)
+}
+
+/**
+ * Construye el mensaje de rechazo del clasificador de auto-modo.
+ *
+ * DIVERGENCIA DECLARADA: la fuente bifurca `ruleHint` con
+ * `feature('BASH_CLASSIFIER')` (`bun:bundle`, ausente de este arbol). Las
+ * dos ramas mencionan «permission rule» y «Bash» por igual, que es todo lo
+ * que el contrato exige — se colapsa a la rama de la bandera apagada.
+ */
+export function buildYoloRejectionMessage(reason: string): string {
+  const ruleHint =
+    'To allow this type of action in the future, the user can add a Bash permission rule to their settings.'
+
+  return (
+    `${AUTO_MODE_REJECTION_PREFIX}${reason}. ` +
+    `If you have other tasks that don't depend on this action, continue working on those. ` +
+    `${DENIAL_WORKAROUND_GUIDANCE} ` +
+    ruleHint
+  )
+}
+
+/**
+ * Mensaje para cuando el clasificador de auto-modo esta temporalmente no
+ * disponible. Dice al agente que espere y reintente, y sugiere trabajar en
+ * otras tareas mientras tanto.
+ */
+export function buildClassifierUnavailableMessage(
+  toolName: string,
+  classifierModel: string,
+): string {
+  return (
+    `${classifierModel} is temporarily unavailable, so auto mode cannot determine the safety of ${toolName} right now. ` +
+    `Wait briefly and then try this action again. ` +
+    `If it keeps failing, continue with other tasks that don't require this action and come back to it later. ` +
+    `Note: reading files, searching code, and other read-only operations do not require the classifier and can still be used.`
+  )
+}
+
+/** Verdadero si `message` es un turno de asistente que pide usar una herramienta. */
+export function isToolUseRequestMessage(
+  message: Message,
+): message is AssistantMessage {
+  const content = message.message?.content
+  return (
+    message.type === 'assistant' &&
+    Array.isArray(content) &&
+    (content as ContentBlockParam[]).some(b => b.type === 'tool_use')
+  )
+}
+
+/** Verdadero si `message` es el resultado de una herramienta previamente pedida. */
+export function isToolUseResultMessage(
+  message: Message,
+): message is UserMessage {
+  const content = message.message?.content
+  return (
+    message.type === 'user' &&
+    ((Array.isArray(content) &&
+      (content as ContentBlockParam[])[0]?.type === 'tool_result') ||
+      Boolean(message.toolUseResult))
+  )
 }
