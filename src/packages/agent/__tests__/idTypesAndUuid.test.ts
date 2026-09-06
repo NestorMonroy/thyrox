@@ -4,8 +4,8 @@
  * son la identidad— y el reconocedor de su forma.
  */
 import { describe, expect, test } from 'bun:test'
-import { asAgentId, asSessionId, toAgentId } from '../src/id/idTypes.ts'
-import { createAgentId, validateUuid } from '../src/id/uuid.ts'
+import { asAgentId, asSessionId, toAgentId } from '../src/idTypes.ts'
+import { createAgentId, validateUuid } from '../src/uuid.ts'
 
 describe('asSessionId y asAgentId son la identidad en ejecucion', () => {
   test('asSessionId devuelve su argumento', () => {

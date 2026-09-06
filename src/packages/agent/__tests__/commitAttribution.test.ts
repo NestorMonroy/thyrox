@@ -14,7 +14,7 @@ import {
   computeContentHash,
   sanitizeModelName,
   sanitizeSurfaceKey,
-} from '../src/attribution/commitAttribution.ts'
+} from '../src/commitAttribution.ts'
 
 describe('sanitizeModelName — familia Opus', () => {
   test('las variantes de opus-4-7 colapsan a claude-opus-4-7', () => {
