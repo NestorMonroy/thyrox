@@ -20,6 +20,10 @@
  * hay tipo ni firma que lo detecte — solo el valor fijado.
  */
 
+// Re-exportados desde su modulo propio, igual que la fuente (`messages.ts:358`):
+// quien solo pregunta si un mensaje es sintetico no arrastra este archivo.
+export { SYNTHETIC_MESSAGES, SYNTHETIC_MODEL } from './messagesConstants.ts'
+
 /** El modelo lo ve como mensaje de rol `user` al interrumpirse la peticion. */
 export const INTERRUPT_MESSAGE = '[Request interrupted by user]'
 
