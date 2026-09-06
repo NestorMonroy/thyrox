@@ -10,7 +10,10 @@
     "./xml.js": "./src/xml.ts",
     "./commands/plugin/parseArgs.js": "./src/commands/plugin/parseArgs.ts",
     "./commands/fork/fork.js": "./src/commands/fork/fork.ts",
-    "./createMovedToPluginCommand.js": "./src/createMovedToPluginCommand.ts"
+    "./createMovedToPluginCommand.js": "./src/createMovedToPluginCommand.ts",
+    "./promptShellExecution.js": "./src/promptShellExecution.ts",
+    "./commands/review/ultrareviewEnabled.js": "./src/commands/review/ultrareviewEnabled.ts",
+    "./skills/loadSkillsDir.js": "./src/skills/loadSkillsDir.ts"
   },
   "scripts": {
     "test": "bun test"
