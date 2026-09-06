@@ -25,14 +25,18 @@ import {
 } from '../src/cowork/claims.ts'
 import type { CollisionCheck, IntegrationRepo } from '../src/branchIntegration.ts'
 
-const DOCS_ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
+// La raiz del repo donde corre el test. Se llamaba `DOCS_ROOT` y eso era
+// cierto mientras el harness vivia en kaupamex-docs; tras la mudanza a
+// thyrox resuelve a thyrox y el nombre pasaba a mentir. El parametro se
+// habia filtrado al identificador — misma clase que la tarea #142.
+const REPO_ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
 const L2 = 'origin/feature/kaupamex-l2'
 const L0 = 'origin/feature/kaupamex-l0'
 const L3 = 'origin/feature/kaupamex-l3'
 
 function hasRef(ref: string): boolean {
   try {
-    execFileSync('git', ['-C', DOCS_ROOT, 'rev-parse', '--verify', '--quiet', ref], { encoding: 'utf8' })
+    execFileSync('git', ['-C', REPO_ROOT, 'rev-parse', '--verify', '--quiet', ref], { encoding: 'utf8' })
     return true
   } catch {
     return false
@@ -143,20 +147,20 @@ describe('whoHas / findOverlaps', () => {
 
 describe('fileOverlapGate — control con positivo real', () => {
   test.if(hasRef(L0) && hasRef(L2))('POSITIVO: l0 vs l2 ve el store como ruta solapada', () => {
-    const r = fileOverlapGate({ path: DOCS_ROOT, source: L0, target: L2 })
+    const r = fileOverlapGate({ path: REPO_ROOT, source: L0, target: L2 })
     expect(r.ran).toBe(true)
     expect(r.collisions).toBeGreaterThanOrEqual(1)
     expect(r.detail).toContain('agent_store.sqlite3')
    }, { timeout: 60000 })
 
   test.if(hasRef(L2) && hasRef(L3))('NEGATIVO: l2 vs l3 no solapa', () => {
-    const r = fileOverlapGate({ path: DOCS_ROOT, source: L2, target: L3 })
+    const r = fileOverlapGate({ path: REPO_ROOT, source: L2, target: L3 })
     expect(r.ran).toBe(true)
     expect(r.collisions).toBe(0)
    }, { timeout: 60000 })
 
   test('sin merge-base declara ran:false, no un 0 verde', () => {
-    const r = fileOverlapGate({ path: DOCS_ROOT, source: 'no/existe/ref', target: L2 })
+    const r = fileOverlapGate({ path: REPO_ROOT, source: 'no/existe/ref', target: L2 })
     expect(r.ran).toBe(false)
     expect(r.collisions).toBe(0)
   })
@@ -167,7 +171,7 @@ describe('fileOverlapGate — control con positivo real', () => {
 describe('combineGates', () => {
   const measuring = (n: number) => (): CollisionCheck => ({ ran: true, collisions: n, detail: `mide ${n}` })
   const notApplicable = (): CollisionCheck => ({ ran: false, collisions: 0, detail: 'no aplica' })
-  const repo: IntegrationRepo = { path: DOCS_ROOT, source: L0, target: L2 }
+  const repo: IntegrationRepo = { path: REPO_ROOT, source: L0, target: L2 }
 
   test('mide (2) + no-aplica → ran:true, collisions:2', () => {
     const r = combineGates(measuring(2), notApplicable)(repo)
@@ -254,7 +258,7 @@ describe('driverAwareFileOverlapGate — control sintético', () => {
   })
 
   test('sin merge-base declara ran:false, no un 0 verde', () => {
-    const r = driverAwareFileOverlapGate({ path: DOCS_ROOT, source: 'no/existe/ref', target: L2 })
+    const r = driverAwareFileOverlapGate({ path: REPO_ROOT, source: 'no/existe/ref', target: L2 })
     expect(r.ran).toBe(false)
     expect(r.collisions).toBe(0)
   })
@@ -272,9 +276,14 @@ describe('driverAwareFileOverlapGate — control sintético', () => {
  */
 describe('ledgerPathFor — el ledger vive en la raíz del repositorio', () => {
   test('raíz y subdirectorio resuelven al MISMO archivo', () => {
-    const sub = join(DOCS_ROOT, '.claude', 'packages', 'harness')
-    expect(ledgerPathFor(sub)).toBe(ledgerPathFor(DOCS_ROOT))
-    expect(ledgerPathFor(sub)).toBe(join(DOCS_ROOT, DEFAULT_LEDGER_REL))
+    // Cualquier subdirectorio real sirve: lo que el caso asevera es que la
+    // raiz y un descendiente suyo den EL MISMO archivo. Era
+    // `.claude/packages/harness`, que la mudanza a `src/packages/` dejo sin
+    // existir, y `ledgerPathFor` rehusa sobre una ruta inexistente — el caso
+    // moria antes de comparar nada.
+    const sub = join(REPO_ROOT, 'src', 'packages')
+    expect(ledgerPathFor(sub)).toBe(ledgerPathFor(REPO_ROOT))
+    expect(ledgerPathFor(sub)).toBe(join(REPO_ROOT, DEFAULT_LEDGER_REL))
   })
 
   test('fuera de un repositorio REHÚSA nombrando el directorio, y no escribe nada', () => {
