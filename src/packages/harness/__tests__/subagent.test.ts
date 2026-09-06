@@ -9,6 +9,7 @@
 
 import { describe, expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
+import { STORE_PATH } from '../src/observability/store.ts'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -212,7 +213,7 @@ describe('la captura nativa en el store (rama B, H-DOCS-1024)', () => {
 describe('herramientas de tablero Task* (T-019)', () => {
   function tableroTemporal(): string {
     const destino = join(dir(), 'store.sqlite3')
-    const real = new Database(join(import.meta.dir, '..', '..', '..', 'agent-results', 'agent_store.sqlite3'), { readonly: true })
+    const real = new Database(STORE_PATH, { readonly: true })
     const ddl = real.query("select sql from sqlite_master where type='table' and name='tasks'").get() as { sql: string }
     real.close()
     const db = new Database(destino)
@@ -268,7 +269,7 @@ describe('herramientas de tablero Task* (T-019)', () => {
 describe('tablero Task* — la asociación y el alcance por sesión (T-061)', () => {
   /** El DDL del tablero real, leído de su propio esquema. */
   function ddlReal(): string {
-    const real = new Database(join(import.meta.dir, '..', '..', '..', 'agent-results', 'agent_store.sqlite3'), { readonly: true })
+    const real = new Database(STORE_PATH, { readonly: true })
     const fila = real.query("select sql from sqlite_master where type='table' and name='tasks'").get() as { sql: string }
     real.close()
     return fila.sql

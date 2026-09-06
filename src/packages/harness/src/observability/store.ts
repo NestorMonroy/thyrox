@@ -19,12 +19,21 @@
 import { Database } from 'bun:sqlite'
 import { openStore } from './db.ts'
 import { join } from 'node:path'
+import { docsRoot } from '../paths/docs.ts'
 import type { Usage } from '../types.ts'
 import type { TranscriptShape } from './transcriptShape.ts'
 import { verifyAdoption, readProcStart, type Adoption } from '../session/reconcile.ts'
 
-/** El store vive en el repo de docs, junto al resto de la telemetría local. */
-export const STORE_PATH = join(import.meta.dir, '..', '..', '..', '..', 'agent-results', 'agent_store.sqlite3')
+/**
+ * El store vive en el repo de docs, junto al resto de la telemetría local.
+ *
+ * Era aritmética de ruta y resolvía a `<thyrox>/src/agent-results/`, un
+ * directorio que no existe — el comentario decía docs y el cálculo apuntaba
+ * a otro sitio. El resolutor `docsRoot()` ya existía; lo que faltaba era
+ * usarlo. Mismo defecto que las rutas codificadas de `emit`, medido el mismo
+ * día en tres subsistemas distintos.
+ */
+export const STORE_PATH = join(docsRoot(), '.claude', 'agent-results', 'agent_store.sqlite3')
 
 export type HarnessSessionRow = {
   sessionId: string

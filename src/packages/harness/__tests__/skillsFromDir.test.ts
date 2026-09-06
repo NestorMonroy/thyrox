@@ -20,9 +20,11 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fromSkillDir } from '../src/skills/fromDir.ts'
 import { SkillRegistry } from '../src/skills/registry.ts'
-import { docsRoot } from '../src/paths/docs.ts'
+import { thyroxRoot } from '../../../paths/reach.ts'
 
-const SKILLS = join(docsRoot(), '.claude', 'skills')
+// Los skills se mudaron a thyrox; el hogar viejo dejaba estos 9 casos en
+// ENOENT — el mismo defecto que las rutas codificadas de `emit`.
+const SKILLS = join(thyroxRoot(), '.claude', 'skills')
 const dirFor = (name: string) => join(SKILLS, name)
 
 /** Los archivos reales bajo un dir, con su ruta relativa posix — el control. */

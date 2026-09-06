@@ -23,12 +23,19 @@
  */
 
 import { join } from 'node:path'
-import { docsRoot } from '../paths/docs.ts'
+import { thyroxRoot } from '../../../../paths/reach.ts'
 import { fromSkillDir } from './fromDir.ts'
 import type { SkillDefinition } from './registry.ts'
 import type { SkillRegistry } from './registry.ts'
 
-/** Los cinco directorios sólo-apoyo, bajo `<docsRoot>/.claude/skills/`. */
+/**
+ * Los cinco directorios sólo-apoyo, bajo `<thyroxRoot>/.claude/skills/`.
+ *
+ * Era `<docsRoot>/…` y la mudanza de los skills a thyrox lo dejó atrás. El
+ * resolutor no estaba mal: lo que estaba mal era CUÁL se elegía. Medido al
+ * corregirlo: los cinco están en thyrox y ninguno en docs, y el hogar viejo
+ * dejaba 9 casos de `skillsFromDir.test.ts` en ENOENT.
+ */
 const SOLO_APOYO = ['cosmic', 'rup-inception', 'sp-adjust', 'sp-monitor', 'sphinx'] as const
 
 /** Los nombres empaquetados — el control los cotea contra el triaje. */
@@ -38,7 +45,7 @@ export function bundledSkillNames(): string[] {
 
 /** Adapta los cinco `SKILL.md` de disco a definiciones del sustrato. */
 export function bundledSkillDefs(): SkillDefinition[] {
-  const skillsRoot = join(docsRoot(), '.claude', 'skills')
+  const skillsRoot = join(thyroxRoot(), '.claude', 'skills')
   return SOLO_APOYO.map((name) => fromSkillDir(join(skillsRoot, name)))
 }
 
