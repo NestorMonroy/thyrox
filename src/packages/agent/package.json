@@ -24,7 +24,10 @@
     "./uuid": "./src/uuid.ts",
     "./agentIdUtils": "./src/agentIdUtils.ts",
     "./commitAttribution": "./src/commitAttribution.ts",
-    "./sanitizePathComponent": "./src/sanitizePathComponent.ts"
+    "./sanitizePathComponent": "./src/sanitizePathComponent.ts",
+    "./eventMetadata": "./src/eventMetadata.ts",
+    "./promptCategory": "./src/promptCategory.ts",
+    "./internal/tokenBudget": "./src/internal/tokenBudget.ts"
   },
   "scripts": {
     "emit": "bun run bin/emit.ts",
