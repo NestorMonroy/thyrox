@@ -28,7 +28,60 @@ import argparse
 import pathlib
 import sys
 
-DECLARACION = pathlib.Path(__file__).with_name("addon-alias.txt")
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
+from paths.reach import (  # noqa: E402
+    ENV_FILE_VAR, EXTRA_ROOTS_VARS, env_value, reach, root,
+)
+
+# --- El hogar de la declaración: un PARÁMETRO del consumidor (DEC-04) -------
+#
+# Qué addons tiene el árbol de la referencia, y con qué llave se emparejan con
+# los nuestros, es dato DEL CONSUMIDOR: thyrox no sabe qué addons hospeda un
+# kaupamex-* ni dónde guarda su declaración. La versión anterior la componía
+# como archivo hermano de este módulo (`__file__.with_name`), y al mudar el
+# censo a thyrox el archivo se quedó atrás: el censo moría con
+# `FileNotFoundError` sobre una ruta que nunca existió aquí.
+#
+# LAS DOS ENTRADAS, con el nombre de cada una — no son la misma cosa mirada dos
+# veces, son dos VÍAS de declaración de un dato único:
+#
+#     CONTRAPARTE_DECLARATION_VAR       <- el VALOR: la ruta del archivo
+#     CONTRAPARTE_DECLARATION_FILE_VAR  <- la RUTA DEL ARCHIVO que la declara
+#
+# `env_value` las consulta en ese orden: el proceso primero, porque quien
+# exporta para UNA invocación corrige a propósito lo que el archivo dice para
+# todas.
+#
+# NO hay default, y es la divergencia deliberada con `agents_dir`/`skills_dir`:
+# aquéllos resuelven artefactos DE thyrox, sobre cuyo árbol sí decide. Un
+# default aquí decidiría por el consumidor dónde vive su declaración, que es
+# exactamente la decisión que la directiva retira al emisor.
+CONTRAPARTE_DECLARATION_VAR = "THYROX_CONTRAPARTE_DECLARATION"
+CONTRAPARTE_DECLARATION_FILE_VAR = ENV_FILE_VAR
+
+
+class DeclarationHomeError(Exception):
+    """Se rehúsa cuando el consumidor no declaró dónde vive su declaración."""
+
+
+def declaration_path(start: pathlib.Path | None = None) -> pathlib.Path:
+    """La declaración declarada, o rehusar.
+
+    NO se verifica que el archivo exista: una declaración declarada y ausente
+    es un hecho del consumidor que su llamador tiene que poder ver. Crearla o
+    silenciarla aquí escondería la divergencia que este mecanismo expone.
+    """
+    declarado = env_value(CONTRAPARTE_DECLARATION_VAR, start)
+    if declarado:
+        return pathlib.Path(declarado)
+    raise DeclarationHomeError(
+        f"La declaración de contraparte no está declarada. Es una decisión del "
+        f"consumidor, no de thyrox: declara {CONTRAPARTE_DECLARATION_VAR} en el "
+        f"proceso, o en el archivo que nombra {CONTRAPARTE_DECLARATION_FILE_VAR} "
+        f"(por defecto el .env del árbol). NO se emite una ruta por defecto: "
+        f"inventarla decidiría por ti qué addons se censan."
+    )
 
 
 def parse_declaracion(ruta: pathlib.Path) -> tuple[dict, dict, list]:
@@ -91,19 +144,46 @@ def addons_de(raiz: pathlib.Path) -> set[str]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--nuestro", default="/home/user/kaupamex-api",
+    # Las tres rutas se RESUELVEN, no se codifican: `root()` las pide al
+    # mecanismo de alcance, que sobrevive a que el árbol cambie de sitio.
+    ap.add_argument("--nuestro", default=None,
                     help="repositorio propio cuyo árbol de addons se censa")
-    ap.add_argument("--referencia", default="/home/user/odoo-tools",
+    ap.add_argument("--referencia", default=None,
                     help="repositorio de referencia (sólo lectura)")
-    ap.add_argument("--declaracion", default=str(DECLARACION))
+    ap.add_argument("--declaracion", default=None)
     ap.add_argument("--quiet", action="store_true", help="sólo el resumen")
     ap.add_argument("--strict", action="store_true",
                     help="exit 1 si algún addon queda SIN-DECLARAR")
     args = ap.parse_args()
 
-    nuestro_repo = pathlib.Path(args.nuestro)
-    ref_repo = pathlib.Path(args.referencia)
-    raices, filas, ignoradas = parse_declaracion(pathlib.Path(args.declaracion))
+    try:
+        nuestro_repo = (pathlib.Path(args.nuestro) if args.nuestro
+                        else root("api"))
+        # La referencia NO es un clon declarado del árbol: entra por el tramo
+        # extensible del alcance, igual que en el ejecutable. Si no está, se
+        # rehúsa nombrando la variable — un censo sin referencia mediría
+        # «ninguna contraparte» y ese cero se leería como ausencia real.
+        if args.referencia:
+            ref_repo = pathlib.Path(args.referencia)
+        else:
+            alcanzables = reach()
+            if "odoo-tools" not in alcanzables:
+                raise DeclarationHomeError(
+                    f"la referencia 'odoo-tools' no está en el alcance. "
+                    f"Declárala en {EXTRA_ROOTS_VARS[0]} con su ruta absoluta, "
+                    f"o pásala con --referencia. NO se compone una ruta por "
+                    f"defecto: un censo contra una raíz vacía publica «sin "
+                    f"contraparte» y parece sano."
+                )
+            ref_repo = alcanzables["odoo-tools"]
+        decl = (pathlib.Path(args.declaracion) if args.declaracion
+                else declaration_path())
+    except (DeclarationHomeError, KeyError) as err:
+        # 2, no 1: «no emití veredicto» y no «encontré un defecto». Un 0 aquí
+        # se leería como «ningún addon SIN-DECLARAR», que es el verde falso.
+        print(f"ERROR: {err}", file=sys.stderr)
+        return 2
+    raices, filas, ignoradas = parse_declaracion(decl)
 
     if not raices:
         print("ERROR: la declaración no trae ninguna fila 'raiz:'", file=sys.stderr)
