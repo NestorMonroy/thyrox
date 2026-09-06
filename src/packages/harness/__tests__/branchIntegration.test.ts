@@ -19,6 +19,7 @@
  * test, con sus tres desenlaces que discriminan: merged, dirty-tree, wrong-committer.
  */
 
+import { thyroxRoot } from '../../../paths/reach.ts'
 import { describe, expect, test } from 'bun:test'
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs'
@@ -168,7 +169,8 @@ describe('verificationPlan — lista, nunca ejecución', () => {
 // renumerado sin tocar el árbol— deja la etiqueta duplicada, y el control lo
 // detecta y aborta en vez de sellar un árbol roto.
 
-const GATES_DIR = join(DOCS_ROOT, '.claude', 'scripts', 'gates')
+// El gate se mudo a thyrox/src/gates/; vivia en docs/.claude/scripts/gates/.
+const GATES_DIR = join(thyroxRoot(), 'src', 'gates')
 
 function rst(label: string, heading: string): string {
   const under = '='.repeat(Math.max(heading.length, 12))

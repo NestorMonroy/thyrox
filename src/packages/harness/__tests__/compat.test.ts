@@ -7,6 +7,7 @@
  * formato nuevo.
  */
 
+import { thyroxRoot } from '../../../paths/reach.ts'
 import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -82,7 +83,7 @@ describe('la instrumentacion existente lee nuestros transcripts (T-034)', () => 
       tools: CORE_TOOLS, cwd: d, transcriptDir: d,
     })
     const salida = Bun.spawnSync(['python3',
-      join(import.meta.dir, '..', '..', '..', 'scripts', 'agents', 'model_catalog.py'),
+      join(thyroxRoot(), 'src', 'agents', 'model_catalog.py'),
       'sesion', '--transcript', r.transcriptPath])
     expect(salida.exitCode).toBe(0)
     const texto_ = salida.stdout.toString()
