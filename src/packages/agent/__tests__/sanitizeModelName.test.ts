@@ -12,7 +12,7 @@ import {
   buildSurfaceKey,
   sanitizeModelName,
   sanitizeSurfaceKey,
-} from '../src/commitAttribution.ts'
+} from '../commitAttribution.ts'
 
 describe('sanitizeModelName — familia Opus', () => {
   test('las variantes de opus-4-7 colapsan a claude-opus-4-7', () => {

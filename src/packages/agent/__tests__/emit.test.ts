@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { AGENTS, migrationPorter, toAgentsJson, toMarkdown } from '../src/index.ts'
+import { AGENTS, migrationPorter, toAgentsJson, toMarkdown } from '../index.ts'
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..')
 const ON_DISK = join(REPO_ROOT, '.claude', 'agents', 'migration-porter.md')

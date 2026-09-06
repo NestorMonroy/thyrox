@@ -10,10 +10,10 @@ import {
   homesMissingFromTree,
   renderFlowHomes,
   type Flow,
-} from '../src/flowHomes.ts'
-import { rupCoordinator } from '../src/definitions/rupCoordinator.ts'
-import { AGENTS } from '../src/index.ts'
-import { toMarkdown } from '../src/emit/markdown.ts'
+} from '../flowHomes.ts'
+import { rupCoordinator } from '../definitions/rupCoordinator.ts'
+import { AGENTS } from '../index.ts'
+import { toMarkdown } from '../emit/markdown.ts'
 
 // Los flows canónicos de DEC-R-01 con hogar declarado (``ninguno`` no produce
 // artefactos, así que no lleva hogar).
@@ -72,7 +72,7 @@ describe('el coordinador de RUP consume el primitivo, no una tabla en prosa', ()
 
 describe('los prompts de coordinador ya no llevan el hogar en prosa muerta', () => {
   test('ningún *Coordinator.prompt.md cita source/implementacion (H-DOCS-1021)', () => {
-    const dir = join(import.meta.dir, '..', 'src', 'definitions')
+    const dir = join(import.meta.dir, '..', 'definitions')
     const offenders = readdirSync(dir)
       .filter((f) => f.endsWith('Coordinator.prompt.md'))
       .filter((f) => readFileSync(join(dir, f), 'utf8').includes('source/implementacion'))

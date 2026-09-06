@@ -3,7 +3,7 @@
 model_catalog.py — el catálogo de modelos del paquete, leído desde Python.
 
 La única fuente de precios, tiers, ventanas y esfuerzo es
-``.claude/packages/agent/src/models.json``, que ``bin/extract_model_registry.py``
+``.claude/packages/agent/models.json``, que ``bin/extract_model_registry.py``
 deriva del ejecutable vendorizado (``_references/claude-code-bin/<build>/``) y cuya
 suite exige igualdad byte a byte con una extracción fresca. Este módulo lo lee;
 no lo copia. Es el gemelo en Python de ``src/models.ts`` — misma función de
@@ -53,7 +53,7 @@ RAIZ = thyrox_root()
 CATALOG_PATH = Path(
     env_value("THYROX_MODEL_CATALOG")
     or env_value("KAUPAMEX_MODEL_CATALOG")
-    or RAIZ / "src" / "packages" / "agent" / "src" / "models.json")
+    or RAIZ / "src" / "packages" / "agent" / "models.json")
 
 # El store es PARAMETRO del consumidor: vive en el clon que despacha, no aqui.
 # Sin declararlo no hay ruta que suponer — `None` es el veredicto, no un
@@ -73,7 +73,7 @@ def try_catalog(path: Path = CATALOG_PATH) -> tuple[dict | None, str | None]:
         return None, (f"no se puede leer el catálogo de modelos en {path}: {exc}. "
                       "Regenéralo con `python3 .claude/packages/agent/bin/extract_model_registry.py "
                       "_references/claude-code-bin/<build>/claude_strings.txt --stdout > "
-                      ".claude/packages/agent/src/models.json`")
+                      ".claude/packages/agent/models.json`")
     if "models" not in data or "pricing_tiers" not in data:
         return None, f"{path} no tiene la forma esperada (faltan `models` o `pricing_tiers`)"
     return data, None

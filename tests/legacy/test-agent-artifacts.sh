@@ -23,7 +23,7 @@ check() {
 
 # CONTROL POSITIVO — ruta ABSOLUTA de la superficie, que es la forma en que el
 # pre-commit entrega sus archivos. El gate tiene que medir, no eximirse.
-SALIDA="$(bash "$GATE" "$RAIZ/.claude/packages/agent/src/schema.ts" 2>&1)"
+SALIDA="$(bash "$GATE" "$RAIZ/.claude/packages/agent/schema.ts" 2>&1)"
 case "$SALIDA" in
     *"sin cambios en la superficie"*) VEREDICTO=eximido ;;
     *) VEREDICTO=medido ;;
@@ -39,7 +39,7 @@ esac
 check "ruta absoluta del .md derivado: el gate MIDE" "$VEREDICTO" "medido"
 
 # La forma relativa tiene que seguir funcionando: es la de la línea de comandos.
-SALIDA="$(cd "$RAIZ" && bash "$GATE" .claude/packages/agent/src/schema.ts 2>&1)"
+SALIDA="$(cd "$RAIZ" && bash "$GATE" .claude/packages/agent/schema.ts 2>&1)"
 case "$SALIDA" in
     *"sin cambios en la superficie"*) VEREDICTO=eximido ;;
     *) VEREDICTO=medido ;;
@@ -63,7 +63,7 @@ check "archivo fuera de la superficie: el gate SE EXIME" "$VEREDICTO" "eximido"
 PKG_SIN_NODE_MODULES="$(mktemp -d)"
 trap 'rm -rf "$PKG_SIN_NODE_MODULES"' EXIT
 SALIDA="$(cd "$RAIZ" && CHECK_AGENT_ARTIFACTS_PKG_DIR="$PKG_SIN_NODE_MODULES" \
-    bash "$GATE" --strict .claude/packages/agent/src/schema.ts 2>&1)"
+    bash "$GATE" --strict .claude/packages/agent/schema.ts 2>&1)"
 CODIGO=$?
 check "guard sin node_modules/zod: exit 2" "$CODIGO" "2"
 case "$SALIDA" in

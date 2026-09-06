@@ -9,7 +9,7 @@ import {
   generateRequestId,
   parseAgentId,
   parseRequestId,
-} from '../src/agentIdUtils.ts'
+} from '../agentIdUtils.ts'
 
 describe('formatAgentId', () => {
   test('une el nombre del agente y el del equipo con arroba', () => {

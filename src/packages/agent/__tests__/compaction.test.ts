@@ -19,7 +19,7 @@ import {
   compactionCost,
   effectiveWindow,
   rapidRefillAction,
-} from '../src/cost/compaction.ts'
+} from '../cost/compaction.ts'
 
 describe('qZt — el techo de salida que la ventana efectiva reserva', () => {
   test('vale 20000', () => {

@@ -5,7 +5,7 @@
  * diga de que es sin consultar nada.
  */
 import { describe, expect, test } from 'bun:test'
-import { toTaggedId } from '../src/taggedId.ts'
+import { toTaggedId } from '../taggedId.ts'
 
 describe('toTaggedId', () => {
   test('produce el formato tag_<version><22 caracteres base58>', () => {

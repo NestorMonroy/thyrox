@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { MODELS, usageCostUsd, usageEquivalentTokens } from '../src/models.ts'
+import { MODELS, usageCostUsd, usageEquivalentTokens } from '../models.ts'
 
 /**
  * Precio y consumo son DOS unidades distintas, y hay una tercera.

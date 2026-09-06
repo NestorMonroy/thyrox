@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# El .md de un agente es DERIVADO: su fuente es .claude/packages/agent/src/definitions.
+# El .md de un agente es DERIVADO: su fuente es .claude/packages/agent/definitions.
 # Este gate compara el disco contra lo que el emisor produce — mismo criterio
 # que `makemigrations --check`.
 #

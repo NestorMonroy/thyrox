@@ -8,7 +8,7 @@
  * `tasks.ts` antes de portarlo seria inventar la particion.
  */
 import { describe, expect, test } from 'bun:test'
-import { sanitizePathComponent } from '../src/sanitizePathComponent.ts'
+import { sanitizePathComponent } from '../sanitizePathComponent.ts'
 
 describe('sanitizePathComponent — lo que la lista blanca admite', () => {
   test('lo alfanumerico pasa verbatim', () => {

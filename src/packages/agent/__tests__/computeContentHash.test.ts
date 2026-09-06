@@ -3,7 +3,7 @@
  * El digest que ancla un contenido a su atribucion.
  */
 import { describe, expect, test } from 'bun:test'
-import { computeContentHash } from '../src/commitAttribution.ts'
+import { computeContentHash } from '../commitAttribution.ts'
 
 describe('computeContentHash', () => {
   test('devuelve SHA-256 en hexadecimal de 64 caracteres', () => {

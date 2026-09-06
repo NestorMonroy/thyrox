@@ -9,8 +9,8 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { AGENTS } from '../src/index.ts'
-import { toMarkdown } from '../src/emit/markdown.ts'
+import { AGENTS } from '../index.ts'
+import { toMarkdown } from '../emit/markdown.ts'
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..')
 const AGENTS_DIR = join(REPO_ROOT, '.claude', 'agents')

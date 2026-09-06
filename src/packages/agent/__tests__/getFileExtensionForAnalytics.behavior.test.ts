@@ -4,7 +4,7 @@
  * extraccion equivocada reparte el uso en cubos que no corresponden.
  */
 import { describe, expect, test } from 'bun:test'
-import { getFileExtensionForAnalytics } from '../src/eventMetadata.ts'
+import { getFileExtensionForAnalytics } from '../eventMetadata.ts'
 
 describe('getFileExtensionForAnalytics', () => {
   test('normaliza a minusculas y quita el punto', () => {

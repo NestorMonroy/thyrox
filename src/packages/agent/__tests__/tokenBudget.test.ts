@@ -4,7 +4,7 @@
  * que ya no avanza— es la que un porcentaje solo no puede ver.
  */
 import { describe, expect, test } from 'bun:test'
-import { checkTokenBudget, createBudgetTracker } from '../src/internal/tokenBudget.ts'
+import { checkTokenBudget, createBudgetTracker } from '../internal/tokenBudget.ts'
 
 describe('tokenBudget', () => {
   test('createBudgetTracker devuelve el estado inicial', () => {

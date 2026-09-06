@@ -11,11 +11,11 @@
  * Exit 0 si no hay ninguna; exit 1 con la lista si la hay. Imprime el
  * denominador: un conteo sin universo no es un resultado.
  */
-import { CATALOG } from '../src/models.ts'
-import { routesForOtherModel } from '../src/cost/cacheRoutes.ts'
-import { dispatchPlan } from '../src/cost/policy.ts'
-import { AGENTS } from '../src/index.ts'
-import { crossModelReads, dispatchReadCredits, routeReadCredits, type ReadCredit } from '../src/cost/crossModelRead.ts'
+import { CATALOG } from '../models.ts'
+import { routesForOtherModel } from '../cost/cacheRoutes.ts'
+import { dispatchPlan } from '../cost/policy.ts'
+import { AGENTS } from '../index.ts'
+import { crossModelReads, dispatchReadCredits, routeReadCredits, type ReadCredit } from '../cost/crossModelRead.ts'
 
 const FLOOR = 126_029 // piso siempre-cargado de esta sesión (H-DOCS-99)
 const violations: ReadCredit[] = []

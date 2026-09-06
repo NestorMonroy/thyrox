@@ -12,7 +12,7 @@ import {
   ISOLATION_MODES,
   MEMORY_SCOPES,
   parseAgentJson,
-} from '../src/schema.ts'
+} from '../schema.ts'
 
 const valid = { description: 'Un agente de prueba', prompt: 'Haz el trabajo.' }
 

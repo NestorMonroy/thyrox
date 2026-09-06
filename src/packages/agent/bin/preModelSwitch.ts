@@ -16,8 +16,8 @@
  * (Remote Control, IDE, SDK) responde `allow`: esa sesión no puede preguntar
  * y un `ask` allí bloquea el cambio — ver `CANNOT_ASK`.
  */
-import { routesForOtherModel } from '../src/cost/cacheRoutes.ts'
-import { MODELS } from '../src/models.ts'
+import { routesForOtherModel } from '../cost/cacheRoutes.ts'
+import { MODELS } from '../models.ts'
 
 type Payload = {
   hook_event_name?: string

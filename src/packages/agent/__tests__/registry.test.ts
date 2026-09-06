@@ -16,8 +16,8 @@
 //
 //   names must not contain ':' (reserved for plugin namespacing)
 import { describe, expect, test } from 'bun:test'
-import { NAME_MUST_NOT_CONTAIN_COLON, NAME_MUST_NOT_START_WITH_DASH, buildRegistry } from '../src/registry.ts'
-import type { AgentDefinition } from '../src/types.ts'
+import { NAME_MUST_NOT_CONTAIN_COLON, NAME_MUST_NOT_START_WITH_DASH, buildRegistry } from '../registry.ts'
+import type { AgentDefinition } from '../types.ts'
 
 function agent(name: string): AgentDefinition {
   return { name, description: `Agente ${name}`, prompt: 'Haz el trabajo.' }

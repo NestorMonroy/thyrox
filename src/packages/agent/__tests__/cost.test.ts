@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { CACHE_BREAK_CAUSES, promptCacheKey, sharesPromptCache } from '../src/cost/cacheBreak.ts'
+import { CACHE_BREAK_CAUSES, promptCacheKey, sharesPromptCache } from '../cost/cacheBreak.ts'
 import {
   TASK_REQUIREMENTS,
   candidates,
@@ -9,9 +9,9 @@ import {
   recommend,
   switchCost,
   ttlBreakEvenExpiries,
-} from '../src/cost/policy.ts'
-import { MODELS, isModelId, usageCostUsd, usageEquivalentTokens } from '../src/models.ts'
-import type { AgentDefinition } from '../src/types.ts'
+} from '../cost/policy.ts'
+import { MODELS, isModelId, usageCostUsd, usageEquivalentTokens } from '../models.ts'
+import type { AgentDefinition } from '../types.ts'
 
 // El control positivo es real: el contexto del último turno de la sesión del
 // 2026-09-02 (508 503 tokens) y las cifras que `model_catalog.py sesion` publicó.

@@ -5,10 +5,10 @@
 //      sincroniza — el corolario de calibration-verified-numbers.md);
 //   2. el emisor de `agents.json` VALIDA, en vez de publicar cualquier objeto.
 import { describe, expect, test } from 'bun:test'
-import { AGENTS, toAgentsJson } from '../src/index.ts'
-import { EFFORT_LEVELS as EFFORT_FROM_SCHEMA } from '../src/schema.ts'
-import { EFFORT_LEVELS as EFFORT_FROM_TYPES } from '../src/types.ts'
-import type { AgentDefinition } from '../src/types.ts'
+import { AGENTS, toAgentsJson } from '../index.ts'
+import { EFFORT_LEVELS as EFFORT_FROM_SCHEMA } from '../schema.ts'
+import { EFFORT_LEVELS as EFFORT_FROM_TYPES } from '../types.ts'
+import type { AgentDefinition } from '../types.ts'
 
 describe('una sola fuente de verdad', () => {
   test('los niveles de effort son EL MISMO objeto, no dos listas iguales', () => {

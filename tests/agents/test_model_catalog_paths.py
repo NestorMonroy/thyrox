@@ -53,7 +53,7 @@ class ResolucionDeRutas(unittest.TestCase):
         mc = self._fresh()
         self.assertEqual(
             mc.CATALOG_PATH,
-            RAIZ / "src" / "packages" / "agent" / "src" / "models.json",
+            RAIZ / "src" / "packages" / "agent" / "models.json",
         )
 
     def test_the_resolved_catalog_exists_and_loads(self):

@@ -2,12 +2,12 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { buildRegistry, MODEL_MUST_BE_A_CATALOG_ID } from '../src/registry.ts'
+import { buildRegistry, MODEL_MUST_BE_A_CATALOG_ID } from '../registry.ts'
 import {
   CATALOG, MODELS, MODEL_IDS, effortCostIndex, isModelAlias, isModelId,
   resolveModel, usageCostUsd,
-} from '../src/models.ts'
-import type { AgentDefinition } from '../src/types.ts'
+} from '../models.ts'
+import type { AgentDefinition } from '../types.ts'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const PACKAGE = join(HERE, '..')

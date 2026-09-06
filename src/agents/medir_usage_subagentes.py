@@ -59,7 +59,7 @@ import sys
 # NO son un precio (H-DOCS-1008): en tier_10_50_cache_read_0_25 la caché leída
 # vale 0.025x del input, no 0.1x. Se conservan porque `equiv_cost` es una
 # columna del store comparable entre filas; el USD lo da model_catalog.py con
-# el catálogo vendorizado (.claude/packages/agent/src/models.json).
+# el catálogo vendorizado (.claude/packages/agent/models.json).
 PESO = {'input': 1.0, 'cache_creation': 1.25, 'cache_read': 0.1, 'output': 5.0}
 
 

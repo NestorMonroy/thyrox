@@ -4,11 +4,11 @@ import {
   dispatchReadCredits,
   routeReadCredits,
   type ReadCredit,
-} from '../src/cost/crossModelRead.ts'
-import { dispatchPlan } from '../src/cost/policy.ts'
-import { routesForOtherModel } from '../src/cost/cacheRoutes.ts'
-import type { AgentDefinition } from '../src/types.ts'
-import { CATALOG, MODELS } from '../src/models.ts'
+} from '../cost/crossModelRead.ts'
+import { dispatchPlan } from '../cost/policy.ts'
+import { routesForOtherModel } from '../cost/cacheRoutes.ts'
+import type { AgentDefinition } from '../types.ts'
+import { CATALOG, MODELS } from '../models.ts'
 
 const def = (name: string, model?: string): AgentDefinition =>
   ({ name, description: 'x', prompt: 'p', ...(model ? { model } : {}) }) as AgentDefinition

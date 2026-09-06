@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { DEFAULT_TTL_BY_SOURCE, aliasesReaching, canAdvise, routesForOtherModel } from '../src/cost/cacheRoutes.ts'
+import { DEFAULT_TTL_BY_SOURCE, aliasesReaching, canAdvise, routesForOtherModel } from '../cost/cacheRoutes.ts'
 import { decide } from '../bin/preModelSwitch.ts'
 
 const req = { from: 'claude-fable-5-1', to: 'claude-opus-5', contextTokens: 508_503, cacheTtl: '1h' as const, subagentFloorTokens: 126_029 }

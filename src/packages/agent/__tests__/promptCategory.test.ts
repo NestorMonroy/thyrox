@@ -5,7 +5,7 @@
  * agente deja de poder hacerse.
  */
 import { describe, expect, test } from 'bun:test'
-import { getQuerySourceForAgent } from '../src/promptCategory.ts'
+import { getQuerySourceForAgent } from '../promptCategory.ts'
 
 describe('getQuerySourceForAgent', () => {
   test('propio con tipo da agent:builtin:<tipo>', () => {
