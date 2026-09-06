@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# .claude/scripts/thyrox-audit.sh — auditoría mecánica de coherencia (kaupamex)
+# src/gates/thyrox-audit.sh — auditoría mecánica de coherencia (kaupamex)
 # =============================================================================
 # Corre los gates verificables del monorepo kaupamex y emite un score por
 # chequeo. NO corrige — documenta. El juicio cualitativo lo añade el agente
@@ -17,8 +17,8 @@
 # acepta y no cambia nada. Ver :ref:`h-docs-92`.
 #
 # Uso:
-#   bash .claude/scripts/thyrox-audit.sh            # reporte a stdout
-#   bash .claude/scripts/thyrox-audit.sh --strict   # exit 1 si algún FAIL
+#   bash src/gates/thyrox-audit.sh            # reporte a stdout
+#   bash src/gates/thyrox-audit.sh --strict   # exit 1 si algún FAIL
 # =============================================================================
 set -uo pipefail
 # La raíz sale de la ubicación del PROPIO guion, no del cwd. Resolverla por
@@ -34,7 +34,7 @@ for a in "$@"; do
   [[ "$a" == "--fast" ]]   && FAST=true   # reservado; ya no hay gate lento que omitir
   [[ "$a" == "--timing" ]] && TIMING=true
 done
-PASS=0; FAIL=0; WARN=0
+PASS=0; FAIL=0; WARN=0; SINMEDIR=0
 ok()   { echo "PASS  · $1"; PASS=$((PASS+1)); }
 bad()  { echo "FAIL  · $1"; FAIL=$((FAIL+1)); }
 warn() { echo "WARN  · $1"; WARN=$((WARN+1)); }
@@ -64,10 +64,27 @@ medir_gate() {
 gate_midio() {   # $1 = etiqueta que se publica
     if [[ "$GATE_RC" -eq 2 ]]; then
         warn "$1: SIN MEDIR — el gate rehusó con exit 2 (falta una precondición suya)"
+        SINMEDIR=$((SINMEDIR+1))
         return 1
     fi
     if [[ -z "$GATE_N" ]]; then
         warn "$1: SIN MEDIR — el gate no emitió conteo (código $GATE_RC)"
+        SINMEDIR=$((SINMEDIR+1))
+        return 1
+    fi
+    # El contrato de `--quiet` es un ENTERO PELADO (control: check_rst_sintaxis
+    # --quiet emite `413`). Un gate que no puede medir y lo dice en prosa saliendo
+    # 0 —check_rst_convenciones sin git: «git no disponible; --nuevos no aplica»—
+    # pasaba este filtro y llegaba al `[[ "$N" -eq 0 ]]` del llamador, donde bash
+    # evalua ARITMETICAMENTE el operando: la primera palabra se lee como nombre de
+    # variable. Con `set -u` revienta (ruidoso, que es como se encontro); sin el,
+    # habria valido 0 y publicado un PASS. Es el sub-patron D de
+    # `metrica-decide-la-conclusion.md` en el instrumento que audita a los demas.
+    # Se cierra aqui y no en el gate concreto porque los 17 llamadores que
+    # comparan con -eq heredan la misma trampa.
+    if [[ ! "$GATE_N" =~ ^-?[0-9]+$ ]]; then
+        warn "$1: SIN MEDIR — el gate emitió «$GATE_N» donde --quiet exige un entero"
+        SINMEDIR=$((SINMEDIR+1))
         return 1
     fi
     return 0
@@ -119,8 +136,8 @@ tick "Referencias cruzadas RST (:ref:) — el dominio real de este repo"
 # sólo `.md`/`.json`, así que su PASS hablaba de `.claude/` y callaba sobre los
 # 3564 `.rst` del producto. Además pasaba `--links-only`, un flag que ese
 # script NUNCA implementó (0 hits en todo `.py`). Ver :ref:`h-docs-92`.
-if [[ -f .claude/scripts/gates/check_rst_referencias.py ]]; then
-    REFOUT=$(python3 .claude/scripts/gates/check_rst_referencias.py 2>&1)
+if [[ -f src/gates/check_rst_referencias.py ]]; then
+    REFOUT=$(python3 src/gates/check_rst_referencias.py 2>&1)
     REFRC=$?
     REFN=$(echo "$REFOUT" | grep -oE '^check-rst-referencias: [0-9]+' | grep -oE '[0-9]+$')
     # `head -1`: desde la tarea #166 el guion publica DOS denominadores — el de
@@ -253,9 +270,9 @@ tick "Artefactos mínimos por iniciativa (DEC-AM-01) — surfacing, no bloqueant
 # Sólo audita iniciativas ACTIVAS (terminales exentas: retrofit prospectivo).
 # WARN por deuda heredada; graduar a FAIL/--strict cuando el conteo esté en 0.
 # Ver definir-artefactos-minimos-iniciativa.
-if [[ -f .claude/scripts/gates/check-artefactos-minimos.sh ]]; then
-    medir_gate bash .claude/scripts/gates/check-artefactos-minimos.sh --quiet; AMIN="$GATE_N"
-    AMDEN=$(bash .claude/scripts/gates/check-artefactos-minimos.sh 2>/dev/null | tail -1 | sed 's/^## Artefactos mínimos: //')
+if [[ -f src/gates/check-artefactos-minimos.sh ]]; then
+    medir_gate bash src/gates/check-artefactos-minimos.sh --quiet; AMIN="$GATE_N"
+    AMDEN=$(bash src/gates/check-artefactos-minimos.sh 2>/dev/null | tail -1 | sed 's/^## Artefactos mínimos: //')
     if ! gate_midio "Artefactos mínimos"; then :
     elif [[ "$AMIN" -eq 0 ]]; then ok "Artefactos mínimos: $AMDEN (DEC-AM-01)"
     else warn "Artefactos mínimos: $AMIN iniciativas activas sin index/alcance/Premisa/:flow:/progreso — corre check-artefactos-minimos.sh (deuda heredada; graduar a --strict en 0)"; fi
@@ -267,9 +284,9 @@ fi
 tick "Cobertura FR↔UC del subdominio admin — surfacing, no bloqueante"
 # Cada UC-ADM debe tener >=1 FR derivado. Iniciativa viva `derivar-frs-admin`
 # (SOL-012). Eje = dominio, no actor.
-if [[ -f .claude/scripts/gates/check-fr-admin-coverage.sh ]]; then
-    medir_gate bash .claude/scripts/gates/check-fr-admin-coverage.sh --quiet; FRADM="$GATE_N"
-    FRDEN=$(bash .claude/scripts/gates/check-fr-admin-coverage.sh 2>/dev/null | tail -1)
+if [[ -f src/gates/check-fr-admin-coverage.sh ]]; then
+    medir_gate bash src/gates/check-fr-admin-coverage.sh --quiet; FRADM="$GATE_N"
+    FRDEN=$(bash src/gates/check-fr-admin-coverage.sh 2>/dev/null | tail -1)
     if ! gate_midio "Cobertura FR admin"; then :
     elif [[ "$FRADM" -eq 0 ]]; then ok "Cobertura FR admin: $FRDEN (derivar-frs-admin)"
     else warn "Cobertura FR admin: $FRDEN — corre check-fr-admin-coverage.sh (deriva sus FRs en derivar-frs-admin)"; fi
@@ -285,9 +302,9 @@ tick "Hallazgo con alcance abierto sin sucesor registrado"
 # artefactos-mínimos, aquí NO hay deuda heredada que absorber, así que la
 # condición de graduación a --strict (pre-push) ya está cumplida; el cambio
 # de flujo de push es decisión del ejecutor, como lo fue en DEC-AM-01.
-if [[ -f .claude/scripts/gates/check-hallazgo-sucesor.sh ]]; then
-    medir_gate bash .claude/scripts/gates/check-hallazgo-sucesor.sh --quiet; SUC="$GATE_N"
-    SUCDEN=$(bash .claude/scripts/gates/check-hallazgo-sucesor.sh 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check-hallazgo-sucesor.sh ]]; then
+    medir_gate bash src/gates/check-hallazgo-sucesor.sh --quiet; SUC="$GATE_N"
+    SUCDEN=$(bash src/gates/check-hallazgo-sucesor.sh 2>/dev/null | tail -1 | sed 's/^ *//')
     if ! gate_midio "Sucesores"; then :
     elif [[ "$SUC" -eq 0 ]]; then ok "Sucesores: todo hallazgo con alcance abierto nombra el suyo $SUCDEN"
     else warn "Sucesores: $SUC hallazgo(s) declaran alcance abierto sin sucesor — corre check-hallazgo-sucesor.sh (registrar tarea/sub-iniciativa, NO borrar la declaración)"; fi
@@ -301,8 +318,8 @@ tick "Artefactos de agente derivados del paquete"
 # editado a mano o una definición TS sin re-emitir divergen en silencio hasta
 # el pre-commit. Aquí se publica cada sesión. El gate rehúsa con exit 2 sin el
 # runtime (bun + zod), y gate_midio lo reporta como SIN MEDIR, no como 0.
-if [[ -f .claude/scripts/gates/check-agent-artifacts.sh ]]; then
-    medir_gate bash .claude/scripts/gates/check-agent-artifacts.sh
+if [[ -f src/gates/check-agent-artifacts.sh ]]; then
+    medir_gate bash src/gates/check-agent-artifacts.sh
     ART_N="$(printf '%s' "$GATE_N" | sed -n 's/.*; \([0-9][0-9]*\) con diferencia.*/\1/p')"
     ART_DEN="$(printf '%s' "$GATE_N" | sed -n 's/^emit: \([0-9][0-9]*\) definici.*/\1/p')"
     GATE_N="$ART_N"
@@ -321,14 +338,14 @@ tick "Subagentes en disco que el store no registró"
 # /home/user) el hook no dispara y el store se queda atrás sin que nada lo
 # diga — medido: 12 subagentes de un día sin fila (:ref:`h-docs-1010`). El
 # reconciliador lee el disco; aquí sólo se publica cuánto falta.
-if [[ -f .claude/scripts/agents/reconciliar_store.py ]]; then
-    medir_gate python3 .claude/scripts/agents/reconciliar_store.py --dry-run
+if [[ -f src/agents/reconciliar_store.py ]]; then
+    medir_gate python3 src/agents/reconciliar_store.py --dry-run
     RS_FALTAN="$(printf '%s' "$GATE_N" | sed -n 's/.*faltan: \([0-9][0-9]*\).*/\1/p')"
     RS_DISCO="$(printf '%s' "$GATE_N" | sed -n 's/.*transcripts en disco: \([0-9][0-9]*\).*/\1/p')"
     GATE_N="$RS_FALTAN"
     if ! gate_midio "Store de agentes"; then :
     elif [[ "$RS_FALTAN" -eq 0 ]]; then ok "Store de agentes: los $RS_DISCO transcripts en disco tienen fila (alcance medido: $RS_DISCO transcripts)"
-    else warn "Store de agentes: $RS_FALTAN de $RS_DISCO transcripts sin fila — corre python3 .claude/scripts/agents/reconciliar_store.py"; fi
+    else warn "Store de agentes: $RS_FALTAN de $RS_DISCO transcripts sin fila — corre python3 src/agents/reconciliar_store.py"; fi
 else
     warn "Store de agentes: reconciliar_store.py no encontrado"
 fi
@@ -344,9 +361,9 @@ tick "Guion de workflow que escribe código sin fase de refutación"
 # graduación a --strict queda disponible, y es decisión del ejecutor como en
 # DEC-AM-01: aquí bloquearía el push de quien añada un guion sin declararlo,
 # que es exactamente el momento en que el gate sirve.
-if [[ -f .claude/scripts/gates/check-workflow-refutacion.sh ]]; then
-    medir_gate bash .claude/scripts/gates/check-workflow-refutacion.sh --quiet; WFR="$GATE_N"
-    WFRDEN=$(bash .claude/scripts/gates/check-workflow-refutacion.sh 2>/dev/null | grep -m1 'alcance medido' | sed 's/^ *//')
+if [[ -f src/gates/check-workflow-refutacion.sh ]]; then
+    medir_gate bash src/gates/check-workflow-refutacion.sh --quiet; WFR="$GATE_N"
+    WFRDEN=$(bash src/gates/check-workflow-refutacion.sh 2>/dev/null | grep -m1 'alcance medido' | sed 's/^ *//')
     if ! gate_midio "Refutación en workflows"; then :
     elif [[ "$WFR" -eq 0 ]]; then ok "Refutación en workflows: todo guion que escribe declara su fase $WFRDEN"
     else warn "Refutación en workflows: $WFR guion(es) sin declarar @escribe-codigo/@verifica-en, o cuya fase declarada NO aborta — corre check-workflow-refutacion.sh"; fi
@@ -361,9 +378,9 @@ fi
 # La forma accionable HOY es --nuevos, que acota a lo que el árbol de trabajo
 # toca.
 tick "Convenciones de artefacto RST: autoría canónica y tablas en list-table"
-if [[ -f .claude/scripts/gates/check_rst_convenciones.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_rst_convenciones.py --nuevos --quiet; RSTC="$GATE_N"
-    RSTCDEN=$(python3 .claude/scripts/gates/check_rst_convenciones.py --nuevos 2>/dev/null | grep -m1 'alcance medido' | sed 's/^ *//')
+if [[ -f src/gates/check_rst_convenciones.py ]]; then
+    medir_gate python3 src/gates/check_rst_convenciones.py --nuevos --quiet; RSTC="$GATE_N"
+    RSTCDEN=$(python3 src/gates/check_rst_convenciones.py --nuevos 2>/dev/null | grep -m1 'alcance medido' | sed 's/^ *//')
     if ! gate_midio "Convenciones RST"; then :
     elif [[ "$RSTC" -eq 0 ]]; then ok "Convenciones RST: autoría canónica y tablas en list-table $RSTCDEN"
     else warn "Convenciones RST: $RSTC archivo(s) modificado(s) con :autor: del agente o tabla plana — corre check_rst_convenciones.py --nuevos"; fi
@@ -381,9 +398,9 @@ fi
 # día uno — mismo criterio que los gates #9 y #10; el cambio de flujo de push
 # sigue siendo decisión del ejecutor, como en DEC-AM-01.
 tick "Unicidad de etiqueta de hallazgo y vigencia de las citas de tarea."
-if [[ -f .claude/scripts/gates/check-ids-duplicados.sh ]]; then
-    medir_gate bash .claude/scripts/gates/check-ids-duplicados.sh --quiet; IDS="$GATE_N"
-    IDSDEN=$(bash .claude/scripts/gates/check-ids-duplicados.sh 2>/dev/null | grep -m1 'etiquetas de hallazgo' | sed 's/^ *//')
+if [[ -f src/gates/check-ids-duplicados.sh ]]; then
+    medir_gate bash src/gates/check-ids-duplicados.sh --quiet; IDS="$GATE_N"
+    IDSDEN=$(bash src/gates/check-ids-duplicados.sh 2>/dev/null | grep -m1 'etiquetas de hallazgo' | sed 's/^ *//')
     if ! gate_midio "IDs"; then :
     elif [[ "$IDS" -eq 0 ]]; then ok "IDs: sin etiquetas duplicadas ni citas de tarea colgantes — $IDSDEN"
     else warn "IDs: $IDS colisión(es) de etiqueta o cita(s) colgante(s) — corre check-ids-duplicados.sh (renumerar el hallazgo MÁS NUEVO, no el citado)"; fi
@@ -403,9 +420,9 @@ fi
 # minutos y este audit se dispara en cada sesión. El barrido completo se corre
 # a mano (sin --nuevos) o desde CI.
 tick "Sintaxis RST verificada con el motor REAL de Sphinx (roles, directivas"
-if [[ -f .claude/scripts/gates/check_rst_sintaxis.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_rst_sintaxis.py --nuevos --quiet; RSTS="$GATE_N"
-    RSTSDEN=$(python3 .claude/scripts/gates/check_rst_sintaxis.py --nuevos 2>/dev/null | grep -m1 'alcance medido' | sed 's/^ *//')
+if [[ -f src/gates/check_rst_sintaxis.py ]]; then
+    medir_gate python3 src/gates/check_rst_sintaxis.py --nuevos --quiet; RSTS="$GATE_N"
+    RSTSDEN=$(python3 src/gates/check_rst_sintaxis.py --nuevos 2>/dev/null | grep -m1 'alcance medido' | sed 's/^ *//')
     if ! gate_midio "Sintaxis RST"; then :
     elif [[ "$RSTS" -eq 0 ]]; then ok "Sintaxis RST: sin errores de parseo — $RSTSDEN"
     else warn "Sintaxis RST: $RSTS archivo(s) no parsean con Sphinx — corre check_rst_sintaxis.py --nuevos"; fi
@@ -426,9 +443,9 @@ fi
 # todos los :ref: señalaba 7 de 17 índices y contar filas señala 3 — el
 # instrumento amplio mezclaba dos poblaciones.
 tick "La list-table de un hallazgos/index.rst y su toctree dicen lo mismo."
-if [[ -f .claude/scripts/gates/check_hallazgos_index.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_hallazgos_index.py --quiet; HIDX="$GATE_N"
-    HIDXDEN=$(python3 .claude/scripts/gates/check_hallazgos_index.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_hallazgos_index.py ]]; then
+    medir_gate python3 src/gates/check_hallazgos_index.py --quiet; HIDX="$GATE_N"
+    HIDXDEN=$(python3 src/gates/check_hallazgos_index.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if ! gate_midio "Índices de hallazgos"; then :
     elif [[ "$HIDX" -eq 0 ]]; then ok "Índices de hallazgos: tabla y toctree coinciden — $HIDXDEN"
     else warn "Índices de hallazgos: $HIDX índice(s) con desajuste tabla/toctree — corre check_hallazgos_index.py"; fi
@@ -443,9 +460,9 @@ fi
 # `severity:` para 4 niveles. Sobre ese corpus ningún agregado por tipo es
 # calculable, y ése es el estado al que este gate impide llegar.
 tick "Cada error-*.rst declara clase y tipo del vocabulario cerrado."
-if [[ -f .claude/scripts/gates/check_error_catalog.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_error_catalog.py --quiet; ECAT="$GATE_N"
-    ECATDEN=$(python3 .claude/scripts/gates/check_error_catalog.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_error_catalog.py ]]; then
+    medir_gate python3 src/gates/check_error_catalog.py --quiet; ECAT="$GATE_N"
+    ECATDEN=$(python3 src/gates/check_error_catalog.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if ! gate_midio "Catálogo de errores"; then :
     elif [[ "$ECAT" -eq 0 ]]; then ok "Catálogo de errores: vocabulario cerrado respetado — $ECATDEN"
     else warn "Catálogo de errores: $ECAT incumplidor(es) — corre check_error_catalog.py"; fi
@@ -461,9 +478,9 @@ fi
 # ausente frente al documento movido o borrado. Un encabezado único sobre las
 # dos es el sub-patrón A de metrica-decide-la-conclusion.
 tick ":doc: cuyo documento destino no existe (tarea #166)."
-if [[ -f .claude/scripts/gates/check_rst_referencias.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_rst_referencias.py --quiet-doc; DOCN="$GATE_N"
-    DOCDEN=$(python3 .claude/scripts/gates/check_rst_referencias.py 2>/dev/null \
+if [[ -f src/gates/check_rst_referencias.py ]]; then
+    medir_gate python3 src/gates/check_rst_referencias.py --quiet-doc; DOCN="$GATE_N"
+    DOCDEN=$(python3 src/gates/check_rst_referencias.py 2>/dev/null \
              | grep -oE '\(alcance medido: [0-9]+ usos de :doc:.*')
     if ! gate_midio "Documentos RST"; then :
     elif [[ "$DOCN" -eq 0 ]]; then ok "Documentos RST: todos los :doc: resuelven $DOCDEN"
@@ -495,9 +512,9 @@ tick "Hallazgo cuyo prefijo de ID no coincide con el <submodulo> de su ruta."
 #
 # Es el sub-patron D en su forma mas pura: el control pasa porque no existe.
 tick "Githooks activos en los cinco clones"
-if [[ -f .claude/scripts/gates/check_githooks_activos.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_githooks_activos.py --quiet; GHK="$GATE_N"
-    GHKDEN=$(python3 .claude/scripts/gates/check_githooks_activos.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_githooks_activos.py ]]; then
+    medir_gate python3 src/gates/check_githooks_activos.py --quiet; GHK="$GATE_N"
+    GHKDEN=$(python3 src/gates/check_githooks_activos.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if ! gate_midio "Githooks"; then :
     elif [[ "$GHK" -eq 0 ]]; then ok "Githooks: los cinco clones los tienen activos — $GHKDEN"
     else warn "Githooks: $GHK clon(es) con los hooks inactivos — corre check_githooks_activos.py y, en cada uno, bash scripts/install-hooks.sh"; fi
@@ -505,9 +522,9 @@ else
     warn "Githooks: check_githooks_activos.py no encontrado"
 fi
 
-if [[ -f .claude/scripts/gates/check_hallazgo_submodulo.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_hallazgo_submodulo.py --quiet; HSUB="$GATE_N"
-    HSUBDEN=$(python3 .claude/scripts/gates/check_hallazgo_submodulo.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_hallazgo_submodulo.py ]]; then
+    medir_gate python3 src/gates/check_hallazgo_submodulo.py --quiet; HSUB="$GATE_N"
+    HSUBDEN=$(python3 src/gates/check_hallazgo_submodulo.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if ! gate_midio "Submódulo del hallazgo"; then :
     elif [[ "$HSUB" -eq 0 ]]; then ok "Submódulo del hallazgo: ID, meta y carpeta coinciden — $HSUBDEN"
     else warn "Submódulo del hallazgo: $HSUB hallazgo(s) fuera de su submódulo — corre check_hallazgo_submodulo.py"; fi
@@ -523,9 +540,9 @@ fi
 # sería el verde falso que el sub-patrón D describe. Por eso aquí se
 # distingue "sin hallazgos" de "no se pudo medir".
 tick "Vocabulario de la prosa en sus dos ejes: sustantivo inventado (léxico)"
-if [[ -f .claude/scripts/gates/check_vocabulario_prosa.py ]]; then
-    VOC=$(python3 .claude/scripts/gates/check_vocabulario_prosa.py --quiet 2>/dev/null)
-    VOCDEN=$(python3 .claude/scripts/gates/check_vocabulario_prosa.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_vocabulario_prosa.py ]]; then
+    VOC=$(python3 src/gates/check_vocabulario_prosa.py --quiet 2>/dev/null)
+    VOCDEN=$(python3 src/gates/check_vocabulario_prosa.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if [[ -z "$VOC" ]]; then
         warn "Vocabulario de prosa: NO MEDIDO — falta spacy-lookups-data (pip install spacy-lookups-data)"
     elif [[ "$VOC" -eq 0 ]]; then
@@ -543,9 +560,9 @@ tick "nombre de archivo Python"
 # El nombre de un `.py` ES el nombre del módulo, así que un guion medio lo
 # vuelve inimportable. NO cubre el `.sh`: en este árbol conviven dos
 # convenciones de shell y ninguna es un defecto (ver el docstring del guion).
-if [[ -f .claude/scripts/gates/check_script_naming.py ]]; then
-    NAM=$(python3 .claude/scripts/gates/check_script_naming.py --quiet 2>/dev/null)
-    NAMDEN=$(python3 .claude/scripts/gates/check_script_naming.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_script_naming.py ]]; then
+    NAM=$(python3 src/gates/check_script_naming.py --quiet 2>/dev/null)
+    NAMDEN=$(python3 src/gates/check_script_naming.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if [[ -z "$NAM" ]]; then
         warn "Nombre de módulo Python: NO MEDIDO — el guion no devolvió conteo"
     elif [[ "$NAM" -eq 0 ]]; then
@@ -564,9 +581,9 @@ tick "idioma del nombre de archivo"
 # espanol (directiva del ejecutor 2026-08-28, decision #647). El lexico se
 # reusa de api/scripts/check_identifier_language.py; sin el, el gate rehusa
 # con 2 y NO emite cifra.
-if [[ -f .claude/scripts/gates/check_script_naming.py ]]; then
-    IDI=$(python3 .claude/scripts/gates/check_script_naming.py --idioma --quiet 2>/dev/null)
-    IDIDEN=$(python3 .claude/scripts/gates/check_script_naming.py --idioma 2>/dev/null | grep 'alcance medido' | sed 's/^ *//')
+if [[ -f src/gates/check_script_naming.py ]]; then
+    IDI=$(python3 src/gates/check_script_naming.py --idioma --quiet 2>/dev/null)
+    IDIDEN=$(python3 src/gates/check_script_naming.py --idioma 2>/dev/null | grep 'alcance medido' | sed 's/^ *//')
     if [[ -z "$IDI" ]]; then
         warn "Idioma del nombre: NO MEDIDO — falta el léxico de api"
     elif [[ "$IDI" -eq 0 ]]; then
@@ -586,9 +603,9 @@ tick "idioma de identificadores"
 # tooling de esta sesion. Sin este eje, un identificador nuevo en espanol
 # entraba ahi sin que nada lo viera. Mismo guard: sin lexico rehusa con 2 y
 # NO emite cifra.
-if [[ -f .claude/scripts/gates/check_script_naming.py ]]; then
-    IDD=$(python3 .claude/scripts/gates/check_script_naming.py --identifiers --quiet 2>/dev/null)
-    IDDDEN=$(python3 .claude/scripts/gates/check_script_naming.py --identifiers 2>/dev/null \
+if [[ -f src/gates/check_script_naming.py ]]; then
+    IDD=$(python3 src/gates/check_script_naming.py --identifiers --quiet 2>/dev/null)
+    IDDDEN=$(python3 src/gates/check_script_naming.py --identifiers 2>/dev/null \
         | grep 'alcance medido' | sed 's/^ *//')
     if [[ -z "$IDD" ]]; then
         warn "Idioma de identificadores: NO MEDIDO — falta el léxico de api"
@@ -608,9 +625,9 @@ tick "resolucion de raiz de referencia"
 # guion que componga la ruta a mano declara ausente lo que si existe, y su
 # mensaje lo llama pregunta de alcance (H-DOCS-507). La ruta se pide a
 # reference_roots.addons_de()/addon_root(), nunca se compone.
-if [[ -f .claude/scripts/gates/check_reference_root_resolution.py ]]; then
-    RRR=$(python3 .claude/scripts/gates/check_reference_root_resolution.py --quiet 2>/dev/null)
-    RRRDEN=$(python3 .claude/scripts/gates/check_reference_root_resolution.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_reference_root_resolution.py ]]; then
+    RRR=$(python3 src/gates/check_reference_root_resolution.py --quiet 2>/dev/null)
+    RRRDEN=$(python3 src/gates/check_reference_root_resolution.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if [[ -z "$RRR" ]]; then
         warn "Raíz de referencia: NO MEDIDO — el gate no emitió cifra"
     elif [[ "$RRR" -eq 0 ]]; then
@@ -624,9 +641,9 @@ fi
 
 # --- nombre del evento con que se declara cada hook -------------------------
 tick "nombre del evento de hook"
-if [[ -f .claude/scripts/gates/check_eventos_hook.py ]]; then
-    EVH=$(python3 .claude/scripts/gates/check_eventos_hook.py --quiet 2>/dev/null)
-    EVHDEN=$(python3 .claude/scripts/gates/check_eventos_hook.py 2>/dev/null | sed -n '2p' | sed 's/^ *//')
+if [[ -f src/gates/check_eventos_hook.py ]]; then
+    EVH=$(python3 src/gates/check_eventos_hook.py --quiet 2>/dev/null)
+    EVHDEN=$(python3 src/gates/check_eventos_hook.py 2>/dev/null | sed -n '2p' | sed 's/^ *//')
     if [[ -z "$EVH" ]]; then
         warn "Evento de hook: NO MEDIDO — sin universo derivable del binario"
     elif [[ "$EVH" -eq 0 ]]; then
@@ -645,9 +662,9 @@ tick "regla de permiso inalcanzable"
 # sigue en el archivo, se lee como concedida, y el permiso se vuelve a pedir
 # para siempre. Ver H-DOCS-480; la forma se adapta de `shadowedRuleDetection`
 # del corpus `ccb`, extendida a la cobertura por prefijo.
-if [[ -f .claude/scripts/gates/check_unreachable_rules.py ]]; then
-    UNREACH=$(python3 .claude/scripts/gates/check_unreachable_rules.py --quiet 2>/dev/null)
-    UNREACH_DEN=$(python3 .claude/scripts/gates/check_unreachable_rules.py 2>/dev/null | sed -n '2p' | sed 's/^ *//')
+if [[ -f src/gates/check_unreachable_rules.py ]]; then
+    UNREACH=$(python3 src/gates/check_unreachable_rules.py --quiet 2>/dev/null)
+    UNREACH_DEN=$(python3 src/gates/check_unreachable_rules.py 2>/dev/null | sed -n '2p' | sed 's/^ *//')
     if [[ -z "$UNREACH" ]]; then
         warn "Regla inalcanzable: NO MEDIDO — ningun archivo leido declara permisos"
     elif [[ "$UNREACH" -eq 0 ]]; then
@@ -665,9 +682,9 @@ tick "evidencia citada sin respaldo versionado"
 # El cliente deshace con `file-history`, guardando el delta de cada archivo
 # fuera de git. Nosotros NO copiamos ese mecanismo, y la consecuencia es que
 # una evidencia sólo-local muere con el contenedor: el defecto de H-DOCS-120.
-if [[ -f .claude/scripts/gates/check_evidence_tracked.py ]]; then
-    EVID=$(python3 .claude/scripts/gates/check_evidence_tracked.py --quiet 2>/dev/null)
-    EVID_DEN=$(python3 .claude/scripts/gates/check_evidence_tracked.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_evidence_tracked.py ]]; then
+    EVID=$(python3 src/gates/check_evidence_tracked.py --quiet 2>/dev/null)
+    EVID_DEN=$(python3 src/gates/check_evidence_tracked.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if [[ -z "$EVID" ]]; then
         warn "Evidencia versionada: NO MEDIDO — el gate rehusó (¿sin git?)"
     elif [[ "$EVID" -eq 0 ]]; then
@@ -685,8 +702,8 @@ tick "cota del peor caso de cada hook"
 # El turno ESPERA al hook, así que uno sin `timeout` no tiene peor caso
 # acotado: si se cuelga, cuelga el turno. Ver H-DOCS-449 y la forma que lo
 # destapó (claude-octopus, MIT, 39 de 43 con siete valores distintos).
-if [[ -f .claude/scripts/gates/check_hooks_timeout.py ]]; then
-    HTO=$(python3 .claude/scripts/gates/check_hooks_timeout.py 2>/dev/null | tail -1)
+if [[ -f src/gates/check_hooks_timeout.py ]]; then
+    HTO=$(python3 src/gates/check_hooks_timeout.py 2>/dev/null | tail -1)
     HTOE=${PIPESTATUS[0]:-0}
     if [[ -z "$HTO" ]]; then
         warn "Timeout de hooks: NO MEDIDO — el gate no devolvió conteo"
@@ -707,9 +724,9 @@ tick "coherencia de la declaración de deprecación"
 # gate mide que las dos mitades vayan juntas —la cabecera que declara y el
 # guard que aplica—, NO decide qué merece deprecarse: eso es juicio, y su cero
 # significa «ninguna declaración a medias», no «no queda deuda».
-if [[ -f .claude/scripts/gates/check_script_deprecated.py ]]; then
-    DEP=$(python3 .claude/scripts/gates/check_script_deprecated.py --quiet 2>/dev/null)
-    DEPDEN=$(python3 .claude/scripts/gates/check_script_deprecated.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_script_deprecated.py ]]; then
+    DEP=$(python3 src/gates/check_script_deprecated.py --quiet 2>/dev/null)
+    DEPDEN=$(python3 src/gates/check_script_deprecated.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if [[ -z "$DEP" ]]; then
         warn "Deprecación declarada: NO MEDIDO — el guion no devolvió conteo"
     elif [[ "$DEP" -eq 0 ]]; then
@@ -730,9 +747,9 @@ tick "aislamiento declarado vs anunciado en los agentes"
 # `description` discrepan, alguien opera sobre una premisa falsa. NO mide si el
 # aislamiento está justificado — ese criterio es de juicio y vive en
 # `.claude/references/coordinator-integration.md`.
-if [[ -f .claude/scripts/gates/check_agent_isolation.py ]]; then
-    AIS=$(python3 .claude/scripts/gates/check_agent_isolation.py --quiet 2>/dev/null)
-    AISDEN=$(python3 .claude/scripts/gates/check_agent_isolation.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_agent_isolation.py ]]; then
+    AIS=$(python3 src/gates/check_agent_isolation.py --quiet 2>/dev/null)
+    AISDEN=$(python3 src/gates/check_agent_isolation.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if [[ -z "$AIS" ]]; then
         warn "Aislamiento de agentes: NO MEDIDO — el guion no devolvió conteo"
     elif [[ "$AIS" -eq 0 ]]; then
@@ -750,9 +767,9 @@ tick "cifra que es propiedad de un artefacto vivo"
 # El corolario de `calibration-verified-numbers.md`: si el número lo produce
 # un comando, la prosa nombra EL COMANDO, no el número. Ciego al ordinal de
 # gate suelto a propósito — colisiona con los IDs de tarea (ver el docstring).
-if [[ -f .claude/scripts/gates/check_cifra_de_artefacto_vivo.py ]]; then
-    CIF=$(python3 .claude/scripts/gates/check_cifra_de_artefacto_vivo.py --quiet 2>/dev/null)
-    CIFDEN=$(python3 .claude/scripts/gates/check_cifra_de_artefacto_vivo.py 2>/dev/null | tail -1 | sed 's/^ *//')
+if [[ -f src/gates/check_cifra_de_artefacto_vivo.py ]]; then
+    CIF=$(python3 src/gates/check_cifra_de_artefacto_vivo.py --quiet 2>/dev/null)
+    CIFDEN=$(python3 src/gates/check_cifra_de_artefacto_vivo.py 2>/dev/null | tail -1 | sed 's/^ *//')
     if [[ -z "$CIF" ]]; then
         warn "Cifra-propiedad: NO MEDIDO — el guion no devolvió conteo"
     elif [[ "$CIF" -eq 0 ]]; then
@@ -771,8 +788,8 @@ tick "colisiones de etiqueta ENTRE ramas hermanas vivas"
 # paralelo eligen el numero siguiente cada una mirando el suyo: la colision no
 # existe en ninguna de las dos y NACE EN EL MERGE. Surfacing, no bloqueante:
 # al cablearlo habia 6 vivas y ninguna es de quien empuja.
-if [[ -f .claude/scripts/gates/check_ids_entre_ramas.py ]]; then
-    RAMAS=$(python3 .claude/scripts/gates/check_ids_entre_ramas.py --quiet 2>/dev/null)
+if [[ -f src/gates/check_ids_entre_ramas.py ]]; then
+    RAMAS=$(python3 src/gates/check_ids_entre_ramas.py --quiet 2>/dev/null)
     if [[ -z "$RAMAS" ]]; then
         warn "IDs entre ramas: NO MEDIDO — el guion no devolvio conteo"
     elif [[ "$RAMAS" -eq 0 ]]; then
@@ -791,8 +808,8 @@ tick "corpus extraido contra el ejecutable instalado"
 # binario. Cuando el ejecutable avanza y el corpus no, sigue respondiendo —
 # con las respuestas del build anterior, y sin sintoma. Ocurrio: 2.1.241
 # extraido contra 2.1.246 servido, cinco versiones (H-DOCS-434).
-if [[ -f .claude/scripts/gates/check_corpus_al_dia.py ]]; then
-    CORPUS=$(python3 .claude/scripts/gates/check_corpus_al_dia.py 2>/dev/null | head -1)
+if [[ -f src/gates/check_corpus_al_dia.py ]]; then
+    CORPUS=$(python3 src/gates/check_corpus_al_dia.py 2>/dev/null | head -1)
     CORPUS_RC=$?
     if [[ -z "$CORPUS" ]]; then
         warn "Corpus del binario: NO MEDIDO — el guion no devolvio veredicto"
@@ -812,10 +829,10 @@ tick "contrato de .gitattributes en los cinco clones"
 # `core.autocrlf` de `.git/config`, que no se versiona: el mismo archivo se
 # normaliza en un clon y no en el de al lado. El gate nombra los repos que NO
 # midio — un conteo sobre cero repos y uno sobre cinco publican la misma cifra.
-if [[ -f .claude/scripts/gates/check_gitattributes.py ]]; then
-    GAT=$(python3 .claude/scripts/gates/check_gitattributes.py --quiet 2>/dev/null \
+if [[ -f src/gates/check_gitattributes.py ]]; then
+    GAT=$(python3 src/gates/check_gitattributes.py --quiet 2>/dev/null \
               | grep -oE 'check_gitattributes: [0-9]+' | grep -oE '[0-9]+')
-    GATDEN=$(python3 .claude/scripts/gates/check_gitattributes.py --quiet 2>/dev/null \
+    GATDEN=$(python3 src/gates/check_gitattributes.py --quiet 2>/dev/null \
               | grep -oE "alcance medido: [^)]*")
     if [[ -z "$GAT" ]]; then
         warn "Contrato .gitattributes: NO MEDIDO — el guion no devolvio conteo"
@@ -835,10 +852,10 @@ tick "forma del comando de hook: el script tiene que ser identificable"
 # comando con `cat datos | bash hook.sh`, con `-c`, o con dos scripts encadenados
 # hace que ese token NO sea el script — y el diagnostico sale mal sin avisar.
 # Cero comandos medidos NO es un aprobado: el guion lo declara y --strict falla.
-if [[ -f .claude/scripts/gates/check_hook_script_token.py ]]; then
-    HTK=$(python3 .claude/scripts/gates/check_hook_script_token.py --quiet 2>/dev/null \
+if [[ -f src/gates/check_hook_script_token.py ]]; then
+    HTK=$(python3 src/gates/check_hook_script_token.py --quiet 2>/dev/null \
               | grep -oE 'check_hook_script_token: [0-9]+' | grep -oE '[0-9]+')
-    HTKDEN=$(python3 .claude/scripts/gates/check_hook_script_token.py --quiet 2>/dev/null \
+    HTKDEN=$(python3 src/gates/check_hook_script_token.py --quiet 2>/dev/null \
               | grep -oE "alcance medido: [^)]*")
     if [[ -z "$HTK" ]]; then
         warn "Forma del comando de hook: NO MEDIDO — el guion no devolvio conteo"
@@ -859,8 +876,8 @@ tick "mutante superviviente del medidor de suite"
 # Un mutante superviviente no rompe ningun test —su efecto es devolver el valor
 # que el llamador ya admite— asi que sin este gate vive hasta que alguien mire
 # `git status` por otro motivo. Es lo que paso en H-DOCS-307.
-if [[ -f .claude/scripts/gates/check_suite_discrimina.py ]]; then
-    MUTLINEA=$(python3 .claude/scripts/gates/check_suite_discrimina.py --verificar 2>/dev/null | head -1)
+if [[ -f src/gates/check_suite_discrimina.py ]]; then
+    MUTLINEA=$(python3 src/gates/check_suite_discrimina.py --verificar 2>/dev/null | head -1)
     # El patron se ancla al NOMBRE del gate, no al sustantivo: `: N mutante`
     # casaria dos veces el dia que el denominador diga «mutantes» en vez de
     # «archivos .py», y el bloque publicaria dos numeros pegados. Es el
@@ -888,8 +905,8 @@ tick "guion huerfano y catalogo de scripts reproducible"
 # instrumento de descripcion dejo de describir. El huerfano es el caso
 # extremo: nadie lo cita, y desde el listado se ve igual que uno critico.
 # Los 5 heredados van en baseline — uno NUEVO es lo que este gate atrapa.
-if [[ -f .claude/scripts/corpus/censar_scripts.py ]]; then
-    HUERLINEA=$(python3 .claude/scripts/corpus/censar_scripts.py --huerfanos 2>/dev/null | head -1)
+if [[ -f src/corpus/censar_scripts.py ]]; then
+    HUERLINEA=$(python3 src/corpus/censar_scripts.py --huerfanos 2>/dev/null | head -1)
     # Anclado al nombre del gate por la misma razon que el bloque de arriba
     # (H-DOCS-493, #941): `: N hu` es un sustantivo truncado, no un ancla.
     HUER=$(printf '%s' "$HUERLINEA" \
@@ -902,7 +919,7 @@ if [[ -f .claude/scripts/corpus/censar_scripts.py ]]; then
     else
         warn "Guion huerfano: $HUER nuevo(s) — declara su consumidor o retiralo (censar_scripts.py --huerfanos)"
     fi
-    if python3 .claude/scripts/corpus/censar_scripts.py --verificar >/dev/null 2>&1; then
+    if python3 src/corpus/censar_scripts.py --verificar >/dev/null 2>&1; then
         ok "Catalogo de scripts: reproduce byte a byte"
     else
         warn "Catalogo de scripts: NO reproduce — corre censar_scripts.py sin --verificar"
@@ -922,8 +939,8 @@ tick "determinismo del generador de evento"
 # Se mide con `medir_gate`/`gate_midio` — el mecanismo que trae H-DOCS-492: su
 # guarda rehusa con exit 2 cuando la raiz de eventos no existe, y ahi un 0
 # seria un verde falso.
-if [[ -f .claude/scripts/gates/check_generator_determinism.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_generator_determinism.py
+if [[ -f src/gates/check_generator_determinism.py ]]; then
+    medir_gate python3 src/gates/check_generator_determinism.py
     # El patron se ancla al NOMBRE del gate: `: N generador` casa dos veces
     # en la misma linea — el conteo y el denominador — y DET salia con dos
     # numeros. Ver H-DOCS-493.
@@ -952,8 +969,8 @@ tick "cita verbatim de literal del ejecutable"
 # Directiva del ejecutor 2026-08-28: *«si se escribe en prosa es dificil
 # recordar, es por eso que usamos los scripts»*. Este gate es esa forma: el
 # literal se RE-MIDE del ejecutable en cada pase, no se recuerda.
-if [[ -f .claude/scripts/gates/check_binary_literal_citations.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_binary_literal_citations.py
+if [[ -f src/gates/check_binary_literal_citations.py ]]; then
+    medir_gate python3 src/gates/check_binary_literal_citations.py
     CITA=$(printf '%s' "$GATE_N" \
         | grep -oE '^check-binary-literal-citations: [0-9]+' | grep -oE '[0-9]+$')
     CITADEN=$(printf '%s' "$GATE_N" | grep -oE "alcance medido: [^)]*")
@@ -992,9 +1009,9 @@ tick "Deriva de premisa: una ficha que cambio de veredicto desde el baseline"
 # El gate publica la DIFERENCIA contra un baseline, no los veredictos. Sin
 # baseline rehusa con 2 en vez de publicar un 0: «nada cambio» y «no habia
 # contra que medir» no se pueden colapsar.
-if [[ -f .claude/scripts/gates/check_premise_drift.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_premise_drift.py --quiet; PDR="$GATE_N"
-    PDRDEN=$(python3 .claude/scripts/gates/check_premise_drift.py 2>/dev/null \
+if [[ -f src/gates/check_premise_drift.py ]]; then
+    medir_gate python3 src/gates/check_premise_drift.py --quiet; PDR="$GATE_N"
+    PDRDEN=$(python3 src/gates/check_premise_drift.py 2>/dev/null \
              | grep -oE "alcance medido: [^)]*")
     if ! gate_midio "Deriva de premisa"; then :
     elif [[ "$PDR" -eq 0 ]]; then ok "Deriva de premisa: ningun veredicto cambio — $PDRDEN"
@@ -1004,9 +1021,9 @@ else
 fi
 
 tick "Veredicto de gate: no lee «no pude medir» como 0"
-if [[ -f .claude/scripts/gates/check_veredicto_de_gate.py ]]; then
-    medir_gate python3 .claude/scripts/gates/check_veredicto_de_gate.py --quiet; VDG="$GATE_N"
-    VDGDEN=$(python3 .claude/scripts/gates/check_veredicto_de_gate.py 2>/dev/null \
+if [[ -f src/gates/check_veredicto_de_gate.py ]]; then
+    medir_gate python3 src/gates/check_veredicto_de_gate.py --quiet; VDG="$GATE_N"
+    VDGDEN=$(python3 src/gates/check_veredicto_de_gate.py 2>/dev/null \
              | grep -oE "alcance medido: [^)]*")
     if ! gate_midio "Veredicto de gate"; then :
     elif [[ "$VDG" -eq 0 ]]; then ok "Veredicto de gate: ninguno colapsa el rechazo con un 0 — $VDGDEN"
@@ -1022,9 +1039,9 @@ fi
 # directorios adicionales. Un hook declarado ahí está escrito y no dispara —
 # y su ausencia no produce ningún error, así que se lee como que corrió.
 tick "Los hooks declarados en los clones llegan a la fuente viva de settings."
-if [[ -f .claude/scripts/bridge_hooks.py ]]; then
-    medir_gate python3 .claude/scripts/bridge_hooks.py --quiet; PHK="$GATE_N"
-    PHKDEN=$(python3 .claude/scripts/bridge_hooks.py --quiet 2>/dev/null | head -1)
+if [[ -f src/hooks/bridge_hooks.py ]]; then
+    medir_gate python3 src/hooks/bridge_hooks.py --quiet; PHK="$GATE_N"
+    PHKDEN=$(python3 src/hooks/bridge_hooks.py --quiet 2>/dev/null | head -1)
     if ! gate_midio "Puente de hooks"; then :
     elif [[ "$PHK" -eq 0 ]]; then ok "Puente de hooks: todo lo puenteable está en la fuente — $PHKDEN"
     else warn "Puente de hooks: $PHK sin puentear — $PHKDEN; corre bridge_hooks.py (dry-run) y --apply al arrancar sesión"; fi
@@ -1032,11 +1049,37 @@ else
     warn "Puente de hooks: bridge_hooks.py no encontrado"
 fi
 
+# ----------------------------------------------------------------------
+# Clase de corchetes con caracter multibyte en herramienta de bytes
+# (:ref:`h-docs-1114`, tarea #148).
+# grep/sed/awk operan sobre BYTES: `[eé]` no casa nada y devuelve 0 SIN aviso,
+# asi que el cero se lee como ausencia. Se encontro porque un
+# `grep -ciE 'm[eé]trica:'` dio 0 sobre un archivo con 6 ocurrencias.
+tick "Clase de corchetes con caracter multibyte en herramienta de bytes"
+if [[ -f src/gates/check_byte_oriented_class.py ]]; then
+    medir_gate python3 src/gates/check_byte_oriented_class.py --quiet; BOC="$GATE_N"
+    BOCDEN=$(python3 src/gates/check_byte_oriented_class.py 2>/dev/null | grep -m1 'alcance medido' | sed 's/^ *//')
+    if ! gate_midio "Clase de bytes"; then :
+    elif [[ "$BOC" -eq 0 ]]; then ok "Clase de bytes: ninguna clase con multibyte en herramienta de bytes — $BOCDEN"
+    else warn "Clase de bytes: $BOC guion(es) con una clase que no casa nada — $BOCDEN; sustituye la clase de corchetes por una alternancia o declara LC_ALL UTF-8"; fi
+else
+    warn "Clase de bytes: check_byte_oriented_class.py no encontrado"
+fi
+
 $TIMING && volcar_desglose
 
 echo ""
-echo "## Score: $PASS PASS · $FAIL FAIL · $WARN WARN"
-[[ "$FAIL" -eq 0 ]] && echo "Veredicto mecánico: VERDE (el juicio cualitativo lo añade increment-acceptor)" \
-                   || echo "Veredicto mecánico: hay FAIL — ver action plan"
+echo "## Score: $PASS PASS · $FAIL FAIL · $WARN WARN · $SINMEDIR SIN MEDIR"
+# Un VERDE sobre gates que no pudieron medir no discrimina «no hay defectos» de
+# «no pude verlo» — sub-patron D de `metrica-decide-la-conclusion.md`. El
+# veredicto NO se colapsa: nombra los dos, y el conteo de sin-medir es su
+# denominador. Sigue sin bloquear (surfacing, `coherence-audit-gate.md`).
+if [[ "$FAIL" -ne 0 ]]; then
+    echo "Veredicto mecánico: hay FAIL — ver action plan"
+elif [[ "$SINMEDIR" -ne 0 ]]; then
+    echo "Veredicto mecánico: VERDE PARCIAL — 0 FAIL sobre lo medido, pero $SINMEDIR gate(s) no pudieron medir"
+else
+    echo "Veredicto mecánico: VERDE (el juicio cualitativo lo añade increment-acceptor)"
+fi
 $STRICT && [[ "$FAIL" -gt 0 ]] && exit 1
 exit 0
