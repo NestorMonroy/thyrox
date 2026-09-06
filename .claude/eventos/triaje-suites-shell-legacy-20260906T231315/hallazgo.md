@@ -46,3 +46,34 @@ causa que `tests/legacy/test-parallel.sh`, retirada en `thyrox@da5bebb0`.
 El veredicto por archivo de las clases A, C y D. La clase B es trabajo
 mecanico con criterio ya fijado (portar a Python, con su control de anulacion);
 las otras tres son juicio.
+
+## Segunda medicion: la clase B se parte en dos causas
+
+De las 39 de clase B, 37 estaban rojas. Diagnosticadas con `timeout 20`:
+
+| Causa | n | Que es |
+|---|---|---|
+| **RUTA** | 22 | muere por ruta: el sujeto esta donde el guion ya no busca |
+| **OTRO** | 13 | falla por otra cosa — cada una exige diagnostico propio |
+| CUELGA | 0 | ninguna agota el timeout |
+
+Las 22 de RUTA son porte mecanico con criterio ya fijado. Las 13 de OTRO
+son donde se esconde el defecto real: el primer porte de esa clase
+(`censo_contraparte`) destapo que el mecanismo llevaba dentro un parametro
+del consumidor —la declaracion de contraparte, compuesta como archivo
+hermano— y por eso murio al mudarse. No era la ruta del test: era la del
+sujeto.
+
+*Metrica:* codigo de salida y salida combinada de cada suite bajo `timeout 20`,
+clasificada por presencia de un literal de archivo ausente.
+*Ciega a:* una suite que muera por ruta SIN emitir el literal —p. ej. la que
+compone la ruta y luego falla un `grep` sobre vacio—; esas caen en OTRO y el
+diagnostico individual las devuelve.
+
+## Portadas hasta ahora
+
+| Suite | Porte | Que destapo |
+|---|---|---|
+| `test-parallel.sh` | `tests/session/test_parallel.py` | el zombie que `kill -0` reporta vivo; el marcador exige shell exterior |
+| `test-reference-root-resolution.sh` | `tests/gates/test_reference_root_resolution.py` | H-DOCS-1133: el gate mide evidencia congelada |
+| `test-censo-contraparte.sh` | `tests/corpus/test_censo_contraparte.py` | el censo llevaba dentro un parametro del consumidor |
