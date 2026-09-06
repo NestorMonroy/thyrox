@@ -1,4 +1,5 @@
 import { NO_CONTENT_MESSAGE } from './constants/messages.ts'
+import { SYNTHETIC_MESSAGES } from './messagesConstants.ts'
 
 /**
  * Las cuatro familias de etiqueta que se retiran del prompt. Son envoltorios
@@ -85,7 +86,7 @@ export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
  * que se porta **por consumidor**: cada test que aterriza trae consigo los
  * simbolos que ejercita, y este encabezado declara la cobertura.
  *
- * Cobertura acumulada — **40 de 115**, en ocho grupos, cada uno traido por
+ * Cobertura acumulada — **41 de 115**, en nueve grupos, cada uno traido por
  * el test que lo ejercita:
  *
  * 1. **14 cadenas de contrato** del protocolo harness ↔ modelo (`INTERRUPT_*`,
@@ -125,8 +126,13 @@ export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
  *    `getToolUseID`: omite la rama `attachment` de la fuente (depende de
  *    `isHookAttachmentMessage`, ausente aqui) — sin consumidor en los
  *    tests portados, cae al `default: return null`.
+ * 9. **1 detector** traido por `isSyntheticMessage.test.ts`:
+ *    `isSyntheticMessage`. Reusa `SYNTHETIC_MESSAGES` del grupo 2 —esta
+ *    vez importado en binding local ademas de re-exportado, igual que la
+ *    fuente (`messages.ts:142` y `:358`)— y `ContentBlockParam` del
+ *    grupo 6.
  *
- * Los 75 restantes NO estan portados y su ausencia es deliberada, no un
+ * Los 74 restantes NO estan portados y su ausencia es deliberada, no un
  * olvido: `porte-completo-no-parcial.md` admite el porte parcial
  * **declarado**, nunca el silencioso.
  *
@@ -157,6 +163,28 @@ export function deriveShortMessageId(uuid: string): string {
 // Re-exportados desde su modulo propio, igual que la fuente (`messages.ts:358`):
 // quien solo pregunta si un mensaje es sintetico no arrastra este archivo.
 export { SYNTHETIC_MESSAGES, SYNTHETIC_MODEL } from './messagesConstants.ts'
+
+/**
+ * Si `message` es uno de los `SYNTHETIC_MESSAGES` canonicos: no un
+ * `progress`/`attachment`/`system` (esos retornan temprano), con
+ * contenido en ARREGLO cuyo primer bloque es de texto, y ese texto
+ * coincide EXACTO (sin trim, sensible a caja) con alguna de las cadenas
+ * del conjunto. Solo se revisa el primer bloque, sin importar el rol del
+ * mensaje — un asistente puede llevar el marcador igual que un usuario.
+ */
+export function isSyntheticMessage(message: Message): boolean {
+  const content = message.message?.content
+  return (
+    message.type !== 'progress' &&
+    message.type !== 'attachment' &&
+    message.type !== 'system' &&
+    Array.isArray(content) &&
+    (content as ContentBlockParam[])[0]?.type === 'text' &&
+    SYNTHETIC_MESSAGES.has(
+      ((content as ContentBlockParam[])[0] as { text: string }).text,
+    )
+  )
+}
 
 /** El modelo lo ve como mensaje de rol `user` al interrumpirse la peticion. */
 export const INTERRUPT_MESSAGE = '[Request interrupted by user]'
