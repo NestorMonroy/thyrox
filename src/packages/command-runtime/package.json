@@ -7,7 +7,10 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    "./xml.js": "./src/xml.ts"
+    "./xml.js": "./src/xml.ts",
+    "./commands/plugin/parseArgs.js": "./src/commands/plugin/parseArgs.ts",
+    "./commands/fork/fork.js": "./src/commands/fork/fork.ts",
+    "./createMovedToPluginCommand.js": "./src/createMovedToPluginCommand.ts"
   },
   "scripts": {
     "test": "bun test"
