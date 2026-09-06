@@ -1,0 +1,2234 @@
+== TypeScript (bun) ==
+bun test v1.3.11 (af24e281)
+
+tests/package/exports.test.ts:
+ 96 |     const exports = manifest().exports as Record<string, string>
+ 97 |     const expected = Object.fromEntries(
+ 98 |       sourceModules().map((m) => [subpathFor(m), './' + m]),
+ 99 |     )
+100 |     // Comparacion en las dos direcciones: falta un modulo, o sobra una entrada.
+101 |     expect(exports).toEqual(expected)
+                          ^
+error: expect(received).toEqual(expected)
+
+@@ -2,699 +2,3 @@
+    "./coordination/ledger": "./src/coordination/ledger.ts",
+-   "./packages/agent": "./src/packages/agent/index.ts",
+-   "./packages/agent/__tests__/AgentCore.test": "./src/packages/agent/__tests__/AgentCore.test.ts",
+-   "./packages/agent/__tests__/AgentLoop.test": "./src/packages/agent/__tests__/AgentLoop.test.ts",
+-   "./packages/agent/__tests__/abort.test": "./src/packages/agent/__tests__/abort.test.ts",
+-   "./packages/agent/__tests__/abortController.test": "./src/packages/agent/__tests__/abortController.test.ts",
+-   "./packages/agent/__tests__/agentContextGuards.test": "./src/packages/agent/__tests__/agentContextGuards.test.ts",
+-   "./packages/agent/__tests__/agentErrors.test": "./src/packages/agent/__tests__/agentErrors.test.ts",
+-   "./packages/agent/__tests__/agentIdUtils.test": "./src/packages/agent/__tests__/agentIdUtils.test.ts",
+-   "./packages/agent/__tests__/agentSwarmsEnabled.test": "./src/packages/agent/__tests__/agentSwarmsEnabled.test.ts",
+-   "./packages/agent/__tests__/attachmentConfig.behavior.test": "./src/packages/agent/__tests__/attachmentConfig.behavior.test.ts",
+-   "./packages/agent/__tests__/attribution.test": "./src/packages/agent/__tests__/attribution.test.ts",
+-   "./packages/agent/__tests__/attributionMetadata.test": "./src/packages/agent/__tests__/attributionMetadata.test.ts",
+-   "./packages/agent/__tests__/attributionSnapshotHelpers.test": "./src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts",
+-   "./packages/agent/__tests__/blockTaskAndCascade.test": "./src/packages/agent/__tests__/blockTaskAndCascade.test.ts",
+-   "./packages/agent/__tests__/cacheRoutes.test": "./src/packages/agent/__tests__/cacheRoutes.test.ts",
+-   "./packages/agent/__tests__/cachedMCConfig.test": "./src/packages/agent/__tests__/cachedMCConfig.test.ts",
+-   "./packages/agent/__tests__/claudeInChromeCommon.test": "./src/packages/agent/__tests__/claudeInChromeCommon.test.ts",
+-   "./packages/agent/__tests__/combinedAbortSignal.test": "./src/packages/agent/__tests__/combinedAbortSignal.test.ts",
+-   "./packages/agent/__tests__/compactWarningState.test": "./src/packages/agent/__tests__/compactWarningState.test.ts",
+-   "./packages/agent/__tests__/compaction.test": "./src/packages/agent/__tests__/compaction.test.ts",
+-   "./packages/agent/__tests__/computeContentHash.test": "./src/packages/agent/__tests__/computeContentHash.test.ts",
+-   "./packages/agent/__tests__/contentArray.test": "./src/packages/agent/__tests__/contentArray.test.ts",
+-   "./packages/agent/__tests__/contentTextHelpers.test": "./src/packages/agent/__tests__/contentTextHelpers.test.ts",
+-   "./packages/agent/__tests__/contextWindow.behavior.test": "./src/packages/agent/__tests__/contextWindow.behavior.test.ts",
+-   "./packages/agent/__tests__/contract.test": "./src/packages/agent/__tests__/contract.test.ts",
+-   "./packages/agent/__tests__/cost.test": "./src/packages/agent/__tests__/cost.test.ts",
+-   "./packages/agent/__tests__/createMessageHelpers.test": "./src/packages/agent/__tests__/createMessageHelpers.test.ts",
+-   "./packages/agent/__tests__/cronCore.test": "./src/packages/agent/__tests__/cronCore.test.ts",
+-   "./packages/agent/__tests__/cronJitterConfig.test": "./src/packages/agent/__tests__/cronJitterConfig.test.ts",
+-   "./packages/agent/__tests__/cronTasksJitter.test": "./src/packages/agent/__tests__/cronTasksJitter.test.ts",
+-   "./packages/agent/__tests__/crossModelRead.test": "./src/packages/agent/__tests__/crossModelRead.test.ts",
+-   "./packages/agent/__tests__/deriveShortMessageId.behavior.test": "./src/packages/agent/__tests__/deriveShortMessageId.behavior.test.ts",
+-   "./packages/agent/__tests__/diffPureHelpers.test": "./src/packages/agent/__tests__/diffPureHelpers.test.ts",
+-   "./packages/agent/__tests__/directMemberMessage.test": "./src/packages/agent/__tests__/directMemberMessage.test.ts",
+-   "./packages/agent/__tests__/effort.test": "./src/packages/agent/__tests__/effort.test.ts",
+-   "./packages/agent/__tests__/effortNativeVsProxy.test": "./src/packages/agent/__tests__/effortNativeVsProxy.test.ts",
+-   "./packages/agent/__tests__/emit.test": "./src/packages/agent/__tests__/emit.test.ts",
+-   "./packages/agent/__tests__/emitPlan.test": "./src/packages/agent/__tests__/emitPlan.test.ts",
+-   "./packages/agent/__tests__/equivalentTokens.test": "./src/packages/agent/__tests__/equivalentTokens.test.ts",
+-   "./packages/agent/__tests__/estimateTokens.test": "./src/packages/agent/__tests__/estimateTokens.test.ts",
+-   "./packages/agent/__tests__/eventMetadata.test": "./src/packages/agent/__tests__/eventMetadata.test.ts",
+-   "./packages/agent/__tests__/extractConversationText.test": "./src/packages/agent/__tests__/extractConversationText.test.ts",
+-   "./packages/agent/__tests__/fileStateCache.test": "./src/packages/agent/__tests__/fileStateCache.test.ts",
+-   "./packages/agent/__tests__/findInProcessTeammateTaskId.test": "./src/packages/agent/__tests__/findInProcessTeammateTaskId.test.ts",
+-   "./packages/agent/__tests__/fixtures/mockDeps": "./src/packages/agent/__tests__/fixtures/mockDeps.ts",
+-   "./packages/agent/__tests__/flowHomes.test": "./src/packages/agent/__tests__/flowHomes.test.ts",
+-   "./packages/agent/__tests__/fromAgentEvent.test": "./src/packages/agent/__tests__/fromAgentEvent.test.ts",
+-   "./packages/agent/__tests__/getDirectoriesToProcess.test": "./src/packages/agent/__tests__/getDirectoriesToProcess.test.ts",
+-   "./packages/agent/__tests__/getFileExtensionForAnalytics.behavior.test": "./src/packages/agent/__tests__/getFileExtensionForAnalytics.behavior.test.ts",
+-   "./packages/agent/__tests__/getToolUseIDPure.test": "./src/packages/agent/__tests__/getToolUseIDPure.test.ts",
+-   "./packages/agent/__tests__/goalStopHook.test": "./src/packages/agent/__tests__/goalStopHook.test.ts",
+-   "./packages/agent/__tests__/grouping.test": "./src/packages/agent/__tests__/grouping.test.ts",
+-   "./packages/agent/__tests__/hookMessages.behavior.test": "./src/packages/agent/__tests__/hookMessages.behavior.test.ts",
+-   "./packages/agent/__tests__/hookTypeGuards.test": "./src/packages/agent/__tests__/hookTypeGuards.test.ts",
+-   "./packages/agent/__tests__/idTypesAndUuid.test": "./src/packages/agent/__tests__/idTypesAndUuid.test.ts",
+-   "./packages/agent/__tests__/idleCollapse.test": "./src/packages/agent/__tests__/idleCollapse.test.ts",
+-   "./packages/agent/__tests__/internalCommandQueue.behavior.test": "./src/packages/agent/__tests__/internalCommandQueue.behavior.test.ts",
+-   "./packages/agent/__tests__/internalCronTasksCore.behavior.test": "./src/packages/agent/__tests__/internalCronTasksCore.behavior.test.ts",
+-   "./packages/agent/__tests__/internalHeadlessRuntime.behavior.test": "./src/packages/agent/__tests__/internalHeadlessRuntime.behavior.test.ts",
+-   "./packages/agent/__tests__/internalLogging.behavior.test": "./src/packages/agent/__tests__/internalLogging.behavior.test.ts",
+-   "./packages/agent/__tests__/internalLoopDynamicCore.behavior.test": "./src/packages/agent/__tests__/internalLoopDynamicCore.behavior.test.ts",
+-   "./packages/agent/__tests__/internalMacroFallback.behavior.test": "./src/packages/agent/__tests__/internalMacroFallback.behavior.test.ts",
+-   "./packages/agent/__tests__/internalQueryDeps.behavior.test": "./src/packages/agent/__tests__/internalQueryDeps.behavior.test.ts",
+-   "./packages/agent/__tests__/internalRuntimeBridges.behavior.test": "./src/packages/agent/__tests__/internalRuntimeBridges.behavior.test.ts",
+-   "./packages/agent/__tests__/internalRuntimeSignals.behavior.test": "./src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts",
+-   "./packages/agent/__tests__/internalSdkRuntime.behavior.test": "./src/packages/agent/__tests__/internalSdkRuntime.behavior.test.ts",
+-   "./packages/agent/__tests__/internalSessionRuntime.behavior.test": "./src/packages/agent/__tests__/internalSessionRuntime.behavior.test.ts",
+-   "./packages/agent/__tests__/internalUtils.test": "./src/packages/agent/__tests__/internalUtils.test.ts",
+-   "./packages/agent/__tests__/isEmptyMessageText.test": "./src/packages/agent/__tests__/isEmptyMessageText.test.ts",
+-   "./packages/agent/__tests__/isSyntheticMessage.test": "./src/packages/agent/__tests__/isSyntheticMessage.test.ts",
+-   "./packages/agent/__tests__/loopSentinelCore.test": "./src/packages/agent/__tests__/loopSentinelCore.test.ts",
+-   "./packages/agent/__tests__/mailbox.test": "./src/packages/agent/__tests__/mailbox.test.ts",
+-   "./packages/agent/__tests__/messageContractStrings.behavior.test": "./src/packages/agent/__tests__/messageContractStrings.behavior.test.ts",
+-   "./packages/agent/__tests__/messageFactories.test": "./src/packages/agent/__tests__/messageFactories.test.ts",
+-   "./packages/agent/__tests__/messageHelpers.behavior.test": "./src/packages/agent/__tests__/messageHelpers.behavior.test.ts",
+-   "./packages/agent/__tests__/messageHelpers.test": "./src/packages/agent/__tests__/messageHelpers.test.ts",
+-   "./packages/agent/__tests__/messagePredicates.test": "./src/packages/agent/__tests__/messagePredicates.test.ts",
+-   "./packages/agent/__tests__/messageQueries.test": "./src/packages/agent/__tests__/messageQueries.test.ts",
+-   "./packages/agent/__tests__/messagesPureHelpers.test": "./src/packages/agent/__tests__/messagesPureHelpers.test.ts",
+-   "./packages/agent/__tests__/microCompactUtils.test": "./src/packages/agent/__tests__/microCompactUtils.test.ts",
+-   "./packages/agent/__tests__/models.test": "./src/packages/agent/__tests__/models.test.ts",
+-   "./packages/agent/__tests__/parseTokenBudget.test": "./src/packages/agent/__tests__/parseTokenBudget.test.ts",
+-   "./packages/agent/__tests__/pillLabel.test": "./src/packages/agent/__tests__/pillLabel.test.ts",
+-   "./packages/agent/__tests__/portFidelity.test": "./src/packages/agent/__tests__/portFidelity.test.ts",
+-   "./packages/agent/__tests__/postSamplingHooks.test": "./src/packages/agent/__tests__/postSamplingHooks.test.ts",
+-   "./packages/agent/__tests__/preModelSwitch.test": "./src/packages/agent/__tests__/preModelSwitch.test.ts",
+-   "./packages/agent/__tests__/productionWiring.test": "./src/packages/agent/__tests__/productionWiring.test.ts",
+-   "./packages/agent/__tests__/promptCategory.test": "./src/packages/agent/__tests__/promptCategory.test.ts",
+-   "./packages/agent/__tests__/promptsModelIdLeak.test": "./src/packages/agent/__tests__/promptsModelIdLeak.test.ts",
+-   "./packages/agent/__tests__/registry.test": "./src/packages/agent/__tests__/registry.test.ts",
+-   "./packages/agent/__tests__/replHydrationK56.test": "./src/packages/agent/__tests__/replHydrationK56.test.ts",
+-   "./packages/agent/__tests__/sanitizeModelName.test": "./src/packages/agent/__tests__/sanitizeModelName.test.ts",
+-   "./packages/agent/__tests__/sanitizePathComponent.test": "./src/packages/agent/__tests__/sanitizePathComponent.test.ts",
+-   "./packages/agent/__tests__/schema.test": "./src/packages/agent/__tests__/schema.test.ts",
+-   "./packages/agent/__tests__/sdkCompatToolName.test": "./src/packages/agent/__tests__/sdkCompatToolName.test.ts",
+-   "./packages/agent/__tests__/sdkMappers.test": "./src/packages/agent/__tests__/sdkMappers.test.ts",
+-   "./packages/agent/__tests__/sessionUrl.test": "./src/packages/agent/__tests__/sessionUrl.test.ts",
+-   "./packages/agent/__tests__/snipProjection.test": "./src/packages/agent/__tests__/snipProjection.test.ts",
+-   "./packages/agent/__tests__/stopHookBlockCap.test": "./src/packages/agent/__tests__/stopHookBlockCap.test.ts",
+-   "./packages/agent/__tests__/stripImagesFromMessages.test": "./src/packages/agent/__tests__/stripImagesFromMessages.test.ts",
+-   "./packages/agent/__tests__/syntheticMessages.behavior.test": "./src/packages/agent/__tests__/syntheticMessages.behavior.test.ts",
+-   "./packages/agent/__tests__/systemDirectories.test": "./src/packages/agent/__tests__/systemDirectories.test.ts",
+-   "./packages/agent/__tests__/systemTheme.test": "./src/packages/agent/__tests__/systemTheme.test.ts",
+-   "./packages/agent/__tests__/taggedId.test": "./src/packages/agent/__tests__/taggedId.test.ts",
+-   "./packages/agent/__tests__/taskSchema.behavior.test": "./src/packages/agent/__tests__/taskSchema.behavior.test.ts",
+-   "./packages/agent/__tests__/tee.test": "./src/packages/agent/__tests__/tee.test.ts",
+-   "./packages/agent/__tests__/timeBasedMCConfig.test": "./src/packages/agent/__tests__/timeBasedMCConfig.test.ts",
+-   "./packages/agent/__tests__/tokenBudget.test": "./src/packages/agent/__tests__/tokenBudget.test.ts",
+-   "./packages/agent/__tests__/tokenEstimation.behavior.test": "./src/packages/agent/__tests__/tokenEstimation.behavior.test.ts",
+-   "./packages/agent/__tests__/tokenEstimation.test": "./src/packages/agent/__tests__/tokenEstimation.test.ts",
+-   "./packages/agent/__tests__/tokenStatsToStatsigMetrics.test": "./src/packages/agent/__tests__/tokenStatsToStatsigMetrics.test.ts",
+-   "./packages/agent/__tests__/toolSearchPure.test": "./src/packages/agent/__tests__/toolSearchPure.test.ts",
+-   "./packages/agent/__tests__/transcriptSearch.test": "./src/packages/agent/__tests__/transcriptSearch.test.ts",
+-   "./packages/agent/__tests__/userPromptKeywords.test": "./src/packages/agent/__tests__/userPromptKeywords.test.ts",
+-   "./packages/agent/__tests__/zodToJsonSchema.test": "./src/packages/agent/__tests__/zodToJsonSchema.test.ts",
+-   "./packages/agent/abortController": "./src/packages/agent/abortController.ts",
+-   "./packages/agent/agentContext": "./src/packages/agent/agentContext.ts",
+-   "./packages/agent/agentDeps": "./src/packages/agent/agentDeps.ts",
+-   "./packages/agent/agentEvents": "./src/packages/agent/agentEvents.ts",
+-   "./packages/agent/agentIdUtils": "./src/packages/agent/agentIdUtils.ts",
+-   "./packages/agent/agentMessages": "./src/packages/agent/agentMessages.ts",
+-   "./packages/agent/agentState": "./src/packages/agent/agentState.ts",
+-   "./packages/agent/agentSwarmsEnabled": "./src/packages/agent/agentSwarmsEnabled.ts",
+-   "./packages/agent/attachments": "./src/packages/agent/attachments.ts",
+-   "./packages/agent/attachments/mailbox": "./src/packages/agent/attachments/mailbox.ts",
+-   "./packages/agent/attribution": "./src/packages/agent/attribution.ts",
+-   "./packages/agent/attributionMetadata": "./src/packages/agent/attributionMetadata.ts",
+-   "./packages/agent/bin/crossModelReadGate": "./src/packages/agent/bin/crossModelReadGate.ts",
+-   "./packages/agent/bin/emit": "./src/packages/agent/bin/emit.ts",
+-   "./packages/agent/bin/preModelSwitch": "./src/packages/agent/bin/preModelSwitch.ts",
+-   "./packages/agent/claudeInChromeCommon": "./src/packages/agent/claudeInChromeCommon.ts",
+-   "./packages/agent/combinedAbortSignal": "./src/packages/agent/combinedAbortSignal.ts",
+-   "./packages/agent/commitAttribution": "./src/packages/agent/commitAttribution.ts",
+-   "./packages/agent/compaction/cachedMCConfig": "./src/packages/agent/compaction/cachedMCConfig.ts",
+-   "./packages/agent/compaction/compact": "./src/packages/agent/compaction/compact.ts",
+-   "./packages/agent/compaction/compactWarningState": "./src/packages/agent/compaction/compactWarningState.ts",
+-   "./packages/agent/compaction/estimateTokens": "./src/packages/agent/compaction/estimateTokens.ts",
+-   "./packages/agent/compaction/grouping": "./src/packages/agent/compaction/grouping.ts",
+-   "./packages/agent/compaction/microCompactUtils": "./src/packages/agent/compaction/microCompactUtils.ts",
+-   "./packages/agent/compaction/snipProjection": "./src/packages/agent/compaction/snipProjection.ts",
+-   "./packages/agent/compaction/timeBasedMCConfig": "./src/packages/agent/compaction/timeBasedMCConfig.ts",
+-   "./packages/agent/constants/messages": "./src/packages/agent/constants/messages.ts",
+-   "./packages/agent/contentArray": "./src/packages/agent/contentArray.ts",
+-   "./packages/agent/context": "./src/packages/agent/context.ts",
+-   "./packages/agent/contextAnalysis": "./src/packages/agent/contextAnalysis.ts",
+-   "./packages/agent/core/AgentCore": "./src/packages/agent/core/AgentCore.ts",
+-   "./packages/agent/core/AgentLoop": "./src/packages/agent/core/AgentLoop.ts",
+-   "./packages/agent/coreMessages": "./src/packages/agent/coreMessages.ts",
+-   "./packages/agent/coreTools": "./src/packages/agent/coreTools.ts",
+-   "./packages/agent/cost/cacheBreak": "./src/packages/agent/cost/cacheBreak.ts",
+-   "./packages/agent/cost/cacheRoutes": "./src/packages/agent/cost/cacheRoutes.ts",
+-   "./packages/agent/cost/compaction": "./src/packages/agent/cost/compaction.ts",
+-   "./packages/agent/cost/crossModelRead": "./src/packages/agent/cost/crossModelRead.ts",
+-   "./packages/agent/cost/policy": "./src/packages/agent/cost/policy.ts",
+-   "./packages/agent/createDeps": "./src/packages/agent/createDeps.ts",
+-   "./packages/agent/definitions/agenticReasoning": "./src/packages/agent/definitions/agenticReasoning.ts",
+-   "./packages/agent/definitions/agenticValidator": "./src/packages/agent/definitions/agenticValidator.ts",
+-   "./packages/agent/definitions/baCoordinator": "./src/packages/agent/definitions/baCoordinator.ts",
+-   "./packages/agent/definitions/bpaCoordinator": "./src/packages/agent/definitions/bpaCoordinator.ts",
+-   "./packages/agent/definitions/cpCoordinator": "./src/packages/agent/definitions/cpCoordinator.ts",
+-   "./packages/agent/definitions/deepDive": "./src/packages/agent/definitions/deepDive.ts",
+-   "./packages/agent/definitions/deepReview": "./src/packages/agent/definitions/deepReview.ts",
+-   "./packages/agent/definitions/diagramaIshikawa": "./src/packages/agent/definitions/diagramaIshikawa.ts",
+-   "./packages/agent/definitions/dmaicCoordinator": "./src/packages/agent/definitions/dmaicCoordinator.ts",
+-   "./packages/agent/definitions/gateConsistencyEvaluator": "./src/packages/agent/definitions/gateConsistencyEvaluator.ts",
+-   "./packages/agent/definitions/incrementAcceptor": "./src/packages/agent/definitions/incrementAcceptor.ts",
+-   "./packages/agent/definitions/leanCoordinator": "./src/packages/agent/definitions/leanCoordinator.ts",
+-   "./packages/agent/definitions/migrationPorter": "./src/packages/agent/definitions/migrationPorter.ts",
+-   "./packages/agent/definitions/packagingPorterHigh": "./src/packages/agent/definitions/packagingPorterHigh.ts",
+-   "./packages/agent/definitions/packagingPorterLow": "./src/packages/agent/definitions/packagingPorterLow.ts",
+-   "./packages/agent/definitions/patternHarvester": "./src/packages/agent/definitions/patternHarvester.ts",
+-   "./packages/agent/definitions/pdcaCoordinator": "./src/packages/agent/definitions/pdcaCoordinator.ts",
+-   "./packages/agent/definitions/pmCoordinator": "./src/packages/agent/definitions/pmCoordinator.ts",
+-   "./packages/agent/definitions/ppsCoordinator": "./src/packages/agent/definitions/ppsCoordinator.ts",
+-   "./packages/agent/definitions/pruebaPalancas": "./src/packages/agent/definitions/pruebaPalancas.ts",
+-   "./packages/agent/definitions/retroFacilitator": "./src/packages/agent/definitions/retroFacilitator.ts",
+-   "./packages/agent/definitions/rmCoordinator": "./src/packages/agent/definitions/rmCoordinator.ts",
+-   "./packages/agent/definitions/rupCoordinator": "./src/packages/agent/definitions/rupCoordinator.ts",
+-   "./packages/agent/definitions/skillGenerator": "./src/packages/agent/definitions/skillGenerator.ts",
+-   "./packages/agent/definitions/spCoordinator": "./src/packages/agent/definitions/spCoordinator.ts",
+-   "./packages/agent/definitions/taskExecutor": "./src/packages/agent/definitions/taskExecutor.ts",
+-   "./packages/agent/definitions/taskPlanner": "./src/packages/agent/definitions/taskPlanner.ts",
+-   "./packages/agent/definitions/taskSynthesizer": "./src/packages/agent/definitions/taskSynthesizer.ts",
+-   "./packages/agent/definitions/techDetector": "./src/packages/agent/definitions/techDetector.ts",
+-   "./packages/agent/definitions/thyroxCoordinator": "./src/packages/agent/definitions/thyroxCoordinator.ts",
+-   "./packages/agent/definitions/workbenchInstrumenter": "./src/packages/agent/definitions/workbenchInstrumenter.ts",
+-   "./packages/agent/diff": "./src/packages/agent/diff.ts",
+-   "./packages/agent/effort": "./src/packages/agent/effort.ts",
+-   "./packages/agent/emit/agentsJson": "./src/packages/agent/emit/agentsJson.ts",
+-   "./packages/agent/emit/markdown": "./src/packages/agent/emit/markdown.ts",
+-   "./packages/agent/emit/plan": "./src/packages/agent/emit/plan.ts",
+-   "./packages/agent/errors": "./src/packages/agent/errors.ts",
+-   "./packages/agent/eventMetadata": "./src/packages/agent/eventMetadata.ts",
+-   "./packages/agent/featureFlags": "./src/packages/agent/featureFlags.ts",
+-   "./packages/agent/flowHomes": "./src/packages/agent/flowHomes.ts",
+-   "./packages/agent/goalStopHook": "./src/packages/agent/goalStopHook.ts",
+-   "./packages/agent/hooks": "./src/packages/agent/hooks.ts",
+-   "./packages/agent/hooks/sessionHooks": "./src/packages/agent/hooks/sessionHooks.ts",
+-   "./packages/agent/hooksConfigSnapshot": "./src/packages/agent/hooksConfigSnapshot.ts",
+-   "./packages/agent/host": "./src/packages/agent/host.ts",
+-   "./packages/agent/idTypes": "./src/packages/agent/idTypes.ts",
+-   "./packages/agent/inProcessTeammateHelpers": "./src/packages/agent/inProcessTeammateHelpers.ts",
+-   "./packages/agent/internal/abort": "./src/packages/agent/internal/abort.ts",
+-   "./packages/agent/internal/commandQueue": "./src/packages/agent/internal/commandQueue.ts",
+-   "./packages/agent/internal/cronCore": "./src/packages/agent/internal/cronCore.ts",
+-   "./packages/agent/internal/cronTasksCore": "./src/packages/agent/internal/cronTasksCore.ts",
+-   "./packages/agent/internal/fileStateCache": "./src/packages/agent/internal/fileStateCache.ts",
+-   "./packages/agent/internal/headlessRuntime": "./src/packages/agent/internal/headlessRuntime.ts",
+-   "./packages/agent/internal/logging": "./src/packages/agent/internal/logging.ts",
+-   "./packages/agent/internal/loopDynamicCore": "./src/packages/agent/internal/loopDynamicCore.ts",
+-   "./packages/agent/internal/loopSentinelCore": "./src/packages/agent/internal/loopSentinelCore.ts",
+-   "./packages/agent/internal/macroFallback": "./src/packages/agent/internal/macroFallback.ts",
+-   "./packages/agent/internal/messageFactories": "./src/packages/agent/internal/messageFactories.ts",
+-   "./packages/agent/internal/messageHelpers": "./src/packages/agent/internal/messageHelpers.ts",
+-   "./packages/agent/internal/queryDeps": "./src/packages/agent/internal/queryDeps.ts",
+-   "./packages/agent/internal/runtimeBridges": "./src/packages/agent/internal/runtimeBridges.ts",
+-   "./packages/agent/internal/runtimeSignals": "./src/packages/agent/internal/runtimeSignals.ts",
+-   "./packages/agent/internal/sdkMappers": "./src/packages/agent/internal/sdkMappers.ts",
+-   "./packages/agent/internal/sdkRuntime": "./src/packages/agent/internal/sdkRuntime.ts",
+-   "./packages/agent/internal/sessionRuntime": "./src/packages/agent/internal/sessionRuntime.ts",
+-   "./packages/agent/internal/stopHooksCore": "./src/packages/agent/internal/stopHooksCore.ts",
+-   "./packages/agent/internal/systemTheme": "./src/packages/agent/internal/systemTheme.ts",
+-   "./packages/agent/internal/tokenBudget": "./src/packages/agent/internal/tokenBudget.ts",
+-   "./packages/agent/internalTypes": "./src/packages/agent/internalTypes.ts",
+-   "./packages/agent/internalUtils": "./src/packages/agent/internalUtils.ts",
+-   "./packages/agent/logsTypes": "./src/packages/agent/logsTypes.ts",
+-   "./packages/agent/messagePredicates": "./src/packages/agent/messagePredicates.ts",
+-   "./packages/agent/messageShapes": "./src/packages/agent/messageShapes.ts",
+-   "./packages/agent/messages": "./src/packages/agent/messages.ts",
+-   "./packages/agent/messages/systemInit": "./src/packages/agent/messages/systemInit.ts",
+-   "./packages/agent/messagesConstants": "./src/packages/agent/messagesConstants.ts",
+-   "./packages/agent/misc/cronJitterConfig": "./src/packages/agent/misc/cronJitterConfig.ts",
+-   "./packages/agent/misc/directMemberMessage": "./src/packages/agent/misc/directMemberMessage.ts",
+-   "./packages/agent/misc/systemDirectories": "./src/packages/agent/misc/systemDirectories.ts",
+-   "./packages/agent/models": "./src/packages/agent/models.ts",
+-   "./packages/agent/postSamplingHooks": "./src/packages/agent/postSamplingHooks.ts",
+-   "./packages/agent/promptCategory": "./src/packages/agent/promptCategory.ts",
+-   "./packages/agent/prompts": "./src/packages/agent/prompts.ts",
+-   "./packages/agent/querySource": "./src/packages/agent/querySource.ts",
+-   "./packages/agent/registry": "./src/packages/agent/registry.ts",
+-   "./packages/agent/replHydration": "./src/packages/agent/replHydration.ts",
+-   "./packages/agent/runtime/mailbox": "./src/packages/agent/runtime/mailbox.ts",
+-   "./packages/agent/sanitizePathComponent": "./src/packages/agent/sanitizePathComponent.ts",
+-   "./packages/agent/scheduler": "./src/packages/agent/scheduler.ts",
+-   "./packages/agent/schema": "./src/packages/agent/schema.ts",
+-   "./packages/agent/sessionTitle": "./src/packages/agent/sessionTitle.ts",
+-   "./packages/agent/sessionTools/transcriptSearch": "./src/packages/agent/sessionTools/transcriptSearch.ts",
+-   "./packages/agent/sessionUrl": "./src/packages/agent/sessionUrl.ts",
+-   "./packages/agent/taggedId": "./src/packages/agent/taggedId.ts",
+-   "./packages/agent/tasks": "./src/packages/agent/tasks.ts",
+-   "./packages/agent/tasks/pillLabel": "./src/packages/agent/tasks/pillLabel.ts",
+-   "./packages/agent/tee": "./src/packages/agent/tee.ts",
+-   "./packages/agent/tokenBudget": "./src/packages/agent/tokenBudget.ts",
+-   "./packages/agent/tokenEstimation": "./src/packages/agent/tokenEstimation.ts",
+-   "./packages/agent/toolSearch": "./src/packages/agent/toolSearch.ts",
+-   "./packages/agent/types": "./src/packages/agent/types.ts",
+-   "./packages/agent/types/hooks": "./src/packages/agent/types/hooks.ts",
+-   "./packages/agent/userPromptKeywords/userPromptKeywords": "./src/packages/agent/userPromptKeywords/userPromptKeywords.ts",
+-   "./packages/agent/uuid": "./src/packages/agent/uuid.ts",
+-   "./packages/agent/zodSchema/zodToJsonSchema": "./src/packages/agent/zodSchema/zodToJsonSchema.ts",
+-   "./packages/app-host/src": "./src/packages/app-host/src/index.ts",
+-   "./packages/app-host/src/activityManager": "./src/packages/app-host/src/activityManager.ts",
+-   "./packages/app-host/src/bootstrap/__tests__/bypassModeState.test": "./src/packages/app-host/src/bootstrap/__tests__/bypassModeState.test.ts",
+-   "./packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test": "./src/packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test.ts",
+-   "./packages/app-host/src/bootstrap/__tests__/cwd.test": "./src/packages/app-host/src/bootstrap/__tests__/cwd.test.ts",
+-   "./packages/app-host/src/bootstrap/__tests__/gracefulShutdown.behavior.test": "./src/packages/app-host/src/bootstrap/__tests__/gracefulShutdown.behavior.test.ts",
+-   "./packages/app-host/src/bootstrap/__tests__/meterState.test": "./src/packages/app-host/src/bootstrap/__tests__/meterState.test.ts",
+-   "./packages/app-host/src/bootstrap/__tests__/requestCaptureState.test": "./src/packages/app-host/src/bootstrap/__tests__/requestCaptureState.test.ts",
+-   "./packages/app-host/src/bootstrap/__tests__/stateNFCNormalization.behavior.test": "./src/packages/app-host/src/bootstrap/__tests__/stateNFCNormalization.behavior.test.ts",
+-   "./packages/app-host/src/bootstrap/additionalDirectories": "./src/packages/app-host/src/bootstrap/additionalDirectories.ts",
+-   "./packages/app-host/src/bootstrap/cleanupRegistry": "./src/packages/app-host/src/bootstrap/cleanupRegistry.ts",
+-   "./packages/app-host/src/bootstrap/cwd": "./src/packages/app-host/src/bootstrap/cwd.ts",
+-   "./packages/app-host/src/bootstrap/gracefulShutdown": "./src/packages/app-host/src/bootstrap/gracefulShutdown.ts",
+-   "./packages/app-host/src/bootstrap/state": "./src/packages/app-host/src/bootstrap/state.ts",
+-   "./packages/app-host/src/cliArgs": "./src/packages/app-host/src/cliArgs.ts",
+-   "./packages/app-host/src/commands/__tests__/init-verifiers.test": "./src/packages/app-host/src/commands/__tests__/init-verifiers.test.ts",
+-   "./packages/app-host/src/commands/init-verifiers": "./src/packages/app-host/src/commands/init-verifiers.ts",
+-   "./packages/app-host/src/contracts": "./src/packages/app-host/src/contracts.ts",
+-   "./packages/app-host/src/heapDumpService": "./src/packages/app-host/src/heapDumpService.ts",
+-   "./packages/app-host/src/host": "./src/packages/app-host/src/host.ts",
+-   "./packages/app-host/src/init": "./src/packages/app-host/src/init.ts",
+-   "./packages/app-host/src/main/cli/__tests__/options.test": "./src/packages/app-host/src/main/cli/__tests__/options.test.ts",
+-   "./packages/app-host/src/main/cli/__tests__/runtimeActivation.test": "./src/packages/app-host/src/main/cli/__tests__/runtimeActivation.test.ts",
+-   "./packages/app-host/src/main/cli/options": "./src/packages/app-host/src/main/cli/options.ts",
+-   "./packages/app-host/src/main/cli/runtimeActivation": "./src/packages/app-host/src/main/cli/runtimeActivation.ts",
+-   "./packages/app-host/src/main/startup/__tests__/context.test": "./src/packages/app-host/src/main/startup/__tests__/context.test.ts",
+-   "./packages/app-host/src/main/startup/__tests__/settings.test": "./src/packages/app-host/src/main/startup/__tests__/settings.test.ts",
+-   "./packages/app-host/src/main/startup/__tests__/telemetry.test": "./src/packages/app-host/src/main/startup/__tests__/telemetry.test.ts",
+-   "./packages/app-host/src/main/startup/context": "./src/packages/app-host/src/main/startup/context.ts",
+-   "./packages/app-host/src/main/startup/settings": "./src/packages/app-host/src/main/startup/settings.ts",
+-   "./packages/app-host/src/main/startup/telemetry": "./src/packages/app-host/src/main/startup/telemetry.ts",
+-   "./packages/app-host/src/packageHostSetup": "./src/packages/app-host/src/packageHostSetup.ts",
+-   "./packages/app-host/src/providerHostSetup": "./src/packages/app-host/src/providerHostSetup.ts",
+-   "./packages/app-host/src/runtime/appStateCompatShim": "./src/packages/app-host/src/runtime/appStateCompatShim.ts",
+-   "./packages/app-host/src/runtime/installBridgeBindings": "./src/packages/app-host/src/runtime/installBridgeBindings.ts",
+-   "./packages/app-host/src/runtime/installCliBindings": "./src/packages/app-host/src/runtime/installCliBindings.ts",
+-   "./packages/app-host/src/runtime/installCommandRuntimeBindings": "./src/packages/app-host/src/runtime/installCommandRuntimeBindings.ts",
+-   "./packages/app-host/src/runtime/installMcpRuntimeBindings": "./src/packages/app-host/src/runtime/installMcpRuntimeBindings.ts",
+-   "./packages/app-host/src/runtime/installNativeStdinReader": "./src/packages/app-host/src/runtime/installNativeStdinReader.ts",
+-   "./packages/app-host/src/runtime/installPluginBindings": "./src/packages/app-host/src/runtime/installPluginBindings.ts",
+-   "./packages/app-host/src/runtime/installProviderBindings": "./src/packages/app-host/src/runtime/installProviderBindings.ts",
+-   "./packages/app-host/src/runtime/installToolRegistryBindings": "./src/packages/app-host/src/runtime/installToolRegistryBindings.ts",
+-   "./packages/app-host/src/runtime/toolRegistryRuntime": "./src/packages/app-host/src/runtime/toolRegistryRuntime.ts",
+-   "./packages/app-host/src/runtimeGraph": "./src/packages/app-host/src/runtimeGraph.ts",
+-   "./packages/app-host/src/startup/__tests__/apiPreconnect.test": "./src/packages/app-host/src/startup/__tests__/apiPreconnect.test.ts",
+-   "./packages/app-host/src/startup/__tests__/caCertsConfig.test": "./src/packages/app-host/src/startup/__tests__/caCertsConfig.test.ts",
+-   "./packages/app-host/src/startup/__tests__/ghAuthStatus.test": "./src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts",
+-   "./packages/app-host/src/startup/__tests__/profilerBase.test": "./src/packages/app-host/src/startup/__tests__/profilerBase.test.ts",
+-   "./packages/app-host/src/startup/__tests__/skillLoadedEvent.test": "./src/packages/app-host/src/startup/__tests__/skillLoadedEvent.test.ts",
+-   "./packages/app-host/src/startup/__tests__/startupProfiler.test": "./src/packages/app-host/src/startup/__tests__/startupProfiler.test.ts",
+-   "./packages/app-host/src/startup/apiPreconnect": "./src/packages/app-host/src/startup/apiPreconnect.ts",
+-   "./packages/app-host/src/startup/caCertsConfig": "./src/packages/app-host/src/startup/caCertsConfig.ts",
+-   "./packages/app-host/src/startup/ghAuthStatus": "./src/packages/app-host/src/startup/ghAuthStatus.ts",
+-   "./packages/app-host/src/startup/profilerBase": "./src/packages/app-host/src/startup/profilerBase.ts",
+-   "./packages/app-host/src/startup/skillLoadedEvent": "./src/packages/app-host/src/startup/skillLoadedEvent.ts",
+-   "./packages/app-host/src/startup/startupProfiler": "./src/packages/app-host/src/startup/startupProfiler.ts",
+-   "./packages/app-host/src/state/AppStateStore": "./src/packages/app-host/src/state/AppStateStore.ts",
+-   "./packages/app-host/src/state/hostSessionState": "./src/packages/app-host/src/state/hostSessionState.ts",
+-   "./packages/app-host/src/state/mcpSelectors": "./src/packages/app-host/src/state/mcpSelectors.ts",
+-   "./packages/app-host/src/state/permissionSelectors": "./src/packages/app-host/src/state/permissionSelectors.ts",
+-   "./packages/app-host/src/state/pluginSelectors": "./src/packages/app-host/src/state/pluginSelectors.ts",
+-   "./packages/app-host/src/state/sessionSelectors": "./src/packages/app-host/src/state/sessionSelectors.ts",
+-   "./packages/app-host/src/state/taskSelectors": "./src/packages/app-host/src/state/taskSelectors.ts",
+-   "./packages/app-host/src/state/teamSelectors": "./src/packages/app-host/src/state/teamSelectors.ts",
+-   "./packages/app-host/src/state/uiSelectors": "./src/packages/app-host/src/state/uiSelectors.ts",
+-   "./packages/binary/__tests__/bunfs.test": "./src/packages/binary/__tests__/bunfs.test.ts",
+-   "./packages/binary/__tests__/corpus.test": "./src/packages/binary/__tests__/corpus.test.ts",
+-   "./packages/binary/__tests__/organize.test": "./src/packages/binary/__tests__/organize.test.ts",
+-   "./packages/binary/__tests__/reflow.test": "./src/packages/binary/__tests__/reflow.test.ts",
+-   "./packages/binary/bin/binary": "./src/packages/binary/bin/binary.ts",
+-   "./packages/binary/src": "./src/packages/binary/src/index.ts",
+-   "./packages/binary/src/bunfs": "./src/packages/binary/src/bunfs.ts",
+-   "./packages/binary/src/corpus": "./src/packages/binary/src/corpus.ts",
+-   "./packages/binary/src/elf": "./src/packages/binary/src/elf.ts",
+-   "./packages/binary/src/freshness": "./src/packages/binary/src/freshness.ts",
+-   "./packages/binary/src/graph": "./src/packages/binary/src/graph.ts",
+-   "./packages/binary/src/organize": "./src/packages/binary/src/organize.ts",
+-   "./packages/binary/src/reflow": "./src/packages/binary/src/reflow.ts",
+-   "./packages/cli/src": "./src/packages/cli/src/index.ts",
+-   "./packages/cli/src/argv": "./src/packages/cli/src/argv.ts",
+-   "./packages/cli/src/exitCodes": "./src/packages/cli/src/exitCodes.ts",
+-   "./packages/command-runtime/src/__tests__/argumentSubstitution.test": "./src/packages/command-runtime/src/__tests__/argumentSubstitution.test.ts",
+-   "./packages/command-runtime/src/__tests__/createMovedToPluginCommand.test": "./src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts",
+-   "./packages/command-runtime/src/__tests__/errors.test": "./src/packages/command-runtime/src/__tests__/errors.test.ts",
+-   "./packages/command-runtime/src/__tests__/forkSlug.test": "./src/packages/command-runtime/src/__tests__/forkSlug.test.ts",
+-   "./packages/command-runtime/src/__tests__/gitignore.test": "./src/packages/command-runtime/src/__tests__/gitignore.test.ts",
+-   "./packages/command-runtime/src/__tests__/parsePluginArgs.test": "./src/packages/command-runtime/src/__tests__/parsePluginArgs.test.ts",
+-   "./packages/command-runtime/src/__tests__/promptShellExecution.behavior.test": "./src/packages/command-runtime/src/__tests__/promptShellExecution.behavior.test.ts",
+-   "./packages/command-runtime/src/__tests__/skillHelpers.test": "./src/packages/command-runtime/src/__tests__/skillHelpers.test.ts",
+-   "./packages/command-runtime/src/__tests__/slashCommandParsing.test": "./src/packages/command-runtime/src/__tests__/slashCommandParsing.test.ts",
+-   "./packages/command-runtime/src/__tests__/types.test": "./src/packages/command-runtime/src/__tests__/types.test.ts",
+-   "./packages/command-runtime/src/__tests__/ultrareviewEnabled.test": "./src/packages/command-runtime/src/__tests__/ultrareviewEnabled.test.ts",
+-   "./packages/command-runtime/src/__tests__/xml.test": "./src/packages/command-runtime/src/__tests__/xml.test.ts",
+-   "./packages/command-runtime/src/argumentSubstitution": "./src/packages/command-runtime/src/argumentSubstitution.ts",
+-   "./packages/command-runtime/src/commands/fork/fork": "./src/packages/command-runtime/src/commands/fork/fork.ts",
+-   "./packages/command-runtime/src/commands/plugin/parseArgs": "./src/packages/command-runtime/src/commands/plugin/parseArgs.ts",
+-   "./packages/command-runtime/src/commands/review/featureFlags": "./src/packages/command-runtime/src/commands/review/featureFlags.ts",
+-   "./packages/command-runtime/src/commands/review/ultrareviewEnabled": "./src/packages/command-runtime/src/commands/review/ultrareviewEnabled.ts",
+-   "./packages/command-runtime/src/createMovedToPluginCommand": "./src/packages/command-runtime/src/createMovedToPluginCommand.ts",
+-   "./packages/command-runtime/src/errors": "./src/packages/command-runtime/src/errors.ts",
+-   "./packages/command-runtime/src/gitignore": "./src/packages/command-runtime/src/gitignore.ts",
+-   "./packages/command-runtime/src/promptShellExecution": "./src/packages/command-runtime/src/promptShellExecution.ts",
+-   "./packages/command-runtime/src/skills/loadSkillsDir": "./src/packages/command-runtime/src/skills/loadSkillsDir.ts",
+-   "./packages/command-runtime/src/skills/managedPath": "./src/packages/command-runtime/src/skills/managedPath.ts",
+-   "./packages/command-runtime/src/slashCommandParsing": "./src/packages/command-runtime/src/slashCommandParsing.ts",
+-   "./packages/command-runtime/src/types": "./src/packages/command-runtime/src/types.ts",
+-   "./packages/command-runtime/src/xml": "./src/packages/command-runtime/src/xml.ts",
+-   "./packages/config": "./src/packages/config/index.ts",
+-   "./packages/config/__tests__/config.test": "./src/packages/config/__tests__/config.test.ts",
+-   "./packages/config/__tests__/inventory.test": "./src/packages/config/__tests__/inventory.test.ts",
+-   "./packages/config/__tests__/testImpact.test": "./src/packages/config/__tests__/testImpact.test.ts",
+-   "./packages/config/env/utils": "./src/packages/config/env/utils.ts",
+-   "./packages/config/settings/constants": "./src/packages/config/settings/constants.ts",
+-   "./packages/config/settings/inventory": "./src/packages/config/settings/inventory.ts",
+-   "./packages/config/settings/load": "./src/packages/config/settings/load.ts",
+-   "./packages/config/settings/types": "./src/packages/config/settings/types.ts",
+-   "./packages/config/settings/validation": "./src/packages/config/settings/validation.ts",
+-   "./packages/harness/__tests__/attachments.test": "./src/packages/harness/__tests__/attachments.test.ts",
+-   "./packages/harness/__tests__/autocompact.test": "./src/packages/harness/__tests__/autocompact.test.ts",
+-   "./packages/harness/__tests__/bin.test": "./src/packages/harness/__tests__/bin.test.ts",
+-   "./packages/harness/__tests__/binAgentWiring.test": "./src/packages/harness/__tests__/binAgentWiring.test.ts",
+-   "./packages/harness/__tests__/binSkillWiring.test": "./src/packages/harness/__tests__/binSkillWiring.test.ts",
+-   "./packages/harness/__tests__/branchIntegration.test": "./src/packages/harness/__tests__/branchIntegration.test.ts",
+-   "./packages/harness/__tests__/bundledSkills.test": "./src/packages/harness/__tests__/bundledSkills.test.ts",
+-   "./packages/harness/__tests__/catalogCoverage.test": "./src/packages/harness/__tests__/catalogCoverage.test.ts",
+-   "./packages/harness/__tests__/claims.test": "./src/packages/harness/__tests__/claims.test.ts",
+-   "./packages/harness/__tests__/cli.test": "./src/packages/harness/__tests__/cli.test.ts",
+-   "./packages/harness/__tests__/compactionFidelity.test": "./src/packages/harness/__tests__/compactionFidelity.test.ts",
+-   "./packages/harness/__tests__/compat.test": "./src/packages/harness/__tests__/compat.test.ts",
+-   "./packages/harness/__tests__/contextLevel.test": "./src/packages/harness/__tests__/contextLevel.test.ts",
+-   "./packages/harness/__tests__/contextPressure.test": "./src/packages/harness/__tests__/contextPressure.test.ts",
+-   "./packages/harness/__tests__/hooks.test": "./src/packages/harness/__tests__/hooks.test.ts",
+-   "./packages/harness/__tests__/hooksEvents.test": "./src/packages/harness/__tests__/hooksEvents.test.ts",
+-   "./packages/harness/__tests__/impact.test": "./src/packages/harness/__tests__/impact.test.ts",
+-   "./packages/harness/__tests__/impactCli.test": "./src/packages/harness/__tests__/impactCli.test.ts",
+-   "./packages/harness/__tests__/loop.test": "./src/packages/harness/__tests__/loop.test.ts",
+-   "./packages/harness/__tests__/loopStreaming.test": "./src/packages/harness/__tests__/loopStreaming.test.ts",
+-   "./packages/harness/__tests__/microcompact.test": "./src/packages/harness/__tests__/microcompact.test.ts",
+-   "./packages/harness/__tests__/observability.test": "./src/packages/harness/__tests__/observability.test.ts",
+-   "./packages/harness/__tests__/permission.test": "./src/packages/harness/__tests__/permission.test.ts",
+-   "./packages/harness/__tests__/planMode.test": "./src/packages/harness/__tests__/planMode.test.ts",
+-   "./packages/harness/__tests__/premisesCli.test": "./src/packages/harness/__tests__/premisesCli.test.ts",
+-   "./packages/harness/__tests__/provider.test": "./src/packages/harness/__tests__/provider.test.ts",
+-   "./packages/harness/__tests__/providerStreaming.test": "./src/packages/harness/__tests__/providerStreaming.test.ts",
+-   "./packages/harness/__tests__/reconcile.test": "./src/packages/harness/__tests__/reconcile.test.ts",
+-   "./packages/harness/__tests__/reconcileWiring.test": "./src/packages/harness/__tests__/reconcileWiring.test.ts",
+-   "./packages/harness/__tests__/referenceTriple.test": "./src/packages/harness/__tests__/referenceTriple.test.ts",
+-   "./packages/harness/__tests__/rstTasks.test": "./src/packages/harness/__tests__/rstTasks.test.ts",
+-   "./packages/harness/__tests__/sessions.test": "./src/packages/harness/__tests__/sessions.test.ts",
+-   "./packages/harness/__tests__/skillTool.test": "./src/packages/harness/__tests__/skillTool.test.ts",
+-   "./packages/harness/__tests__/skills.test": "./src/packages/harness/__tests__/skills.test.ts",
+-   "./packages/harness/__tests__/skillsFromDir.test": "./src/packages/harness/__tests__/skillsFromDir.test.ts",
+-   "./packages/harness/__tests__/storeReconcile.test": "./src/packages/harness/__tests__/storeReconcile.test.ts",
+-   "./packages/harness/__tests__/stream.test": "./src/packages/harness/__tests__/stream.test.ts",
+-   "./packages/harness/__tests__/subagent.test": "./src/packages/harness/__tests__/subagent.test.ts",
+-   "./packages/harness/__tests__/systemPrompt.test": "./src/packages/harness/__tests__/systemPrompt.test.ts",
+-   "./packages/harness/__tests__/taskCitation.test": "./src/packages/harness/__tests__/taskCitation.test.ts",
+-   "./packages/harness/__tests__/taskReminder.test": "./src/packages/harness/__tests__/taskReminder.test.ts",
+-   "./packages/harness/__tests__/thinking.test": "./src/packages/harness/__tests__/thinking.test.ts",
+-   "./packages/harness/__tests__/todoWrite.test": "./src/packages/harness/__tests__/todoWrite.test.ts",
+-   "./packages/harness/__tests__/tools.test": "./src/packages/harness/__tests__/tools.test.ts",
+-   "./packages/harness/__tests__/transcript.test": "./src/packages/harness/__tests__/transcript.test.ts",
+-   "./packages/harness/__tests__/transcriptShape.test": "./src/packages/harness/__tests__/transcriptShape.test.ts",
+-   "./packages/harness/__tests__/web.test": "./src/packages/harness/__tests__/web.test.ts",
+-   "./packages/harness/__tests__/workbench.test": "./src/packages/harness/__tests__/workbench.test.ts",
+-   "./packages/harness/bin/harness": "./src/packages/harness/bin/harness.ts",
+-   "./packages/harness/src": "./src/packages/harness/src/index.ts",
+-   "./packages/harness/src/branchIntegration": "./src/packages/harness/src/branchIntegration.ts",
+-   "./packages/harness/src/cli/render": "./src/packages/harness/src/cli/render.ts",
+-   "./packages/harness/src/cli/resume": "./src/packages/harness/src/cli/resume.ts",
+-   "./packages/harness/src/context/attachments": "./src/packages/harness/src/context/attachments.ts",
+-   "./packages/harness/src/context/autocompact": "./src/packages/harness/src/context/autocompact.ts",
+-   "./packages/harness/src/context/compactionFidelity": "./src/packages/harness/src/context/compactionFidelity.ts",
+-   "./packages/harness/src/context/contextLevel": "./src/packages/harness/src/context/contextLevel.ts",
+-   "./packages/harness/src/context/microcompact": "./src/packages/harness/src/context/microcompact.ts",
+-   "./packages/harness/src/context/systemPrompt": "./src/packages/harness/src/context/systemPrompt.ts",
+-   "./packages/harness/src/cowork/claims": "./src/packages/harness/src/cowork/claims.ts",
+-   "./packages/harness/src/hooks": "./src/packages/harness/src/hooks.ts",
+-   "./packages/harness/src/loop": "./src/packages/harness/src/loop.ts",
+-   "./packages/harness/src/observability/clearedResults": "./src/packages/harness/src/observability/clearedResults.ts",
+-   "./packages/harness/src/observability/cost": "./src/packages/harness/src/observability/cost.ts",
+-   "./packages/harness/src/observability/journal": "./src/packages/harness/src/observability/journal.ts",
+-   "./packages/harness/src/observability/store": "./src/packages/harness/src/observability/store.ts",
+-   "./packages/harness/src/observability/transcriptShape": "./src/packages/harness/src/observability/transcriptShape.ts",
+-   "./packages/harness/src/permission": "./src/packages/harness/src/permission.ts",
+-   "./packages/harness/src/plan/mode": "./src/packages/harness/src/plan/mode.ts",
+-   "./packages/harness/src/provider": "./src/packages/harness/src/provider/index.ts",
+-   "./packages/harness/src/provider/anthropicHttp": "./src/packages/harness/src/provider/anthropicHttp.ts",
+-   "./packages/harness/src/provider/recorded": "./src/packages/harness/src/provider/recorded.ts",
+-   "./packages/harness/src/provider/sse": "./src/packages/harness/src/provider/sse.ts",
+-   "./packages/harness/src/reference/triple": "./src/packages/harness/src/reference/triple.ts",
+-   "./packages/harness/src/session": "./src/packages/harness/src/session.ts",
+-   "./packages/harness/src/session/reconcile": "./src/packages/harness/src/session/reconcile.ts",
+-   "./packages/harness/src/sessions": "./src/packages/harness/src/sessions/index.ts",
+-   "./packages/harness/src/sessions/modelSwitch": "./src/packages/harness/src/sessions/modelSwitch.ts",
+-   "./packages/harness/src/skills/bundled": "./src/packages/harness/src/skills/bundled.ts",
+-   "./packages/harness/src/skills/fromDir": "./src/packages/harness/src/skills/fromDir.ts",
+-   "./packages/harness/src/skills/registry": "./src/packages/harness/src/skills/registry.ts",
+-   "./packages/harness/src/testing/impact": "./src/packages/harness/src/testing/impact.ts",
+-   "./packages/harness/src/testing/io": "./src/packages/harness/src/testing/io.ts",
+-   "./packages/harness/src/tools/agent": "./src/packages/harness/src/tools/agent.ts",
+-   "./packages/harness/src/tools/agentDefinitions": "./src/packages/harness/src/tools/agentDefinitions.ts",
+-   "./packages/harness/src/tools/plan": "./src/packages/harness/src/tools/plan.ts",
+-   "./packages/harness/src/tools/registry": "./src/packages/harness/src/tools/registry.ts",
+-   "./packages/harness/src/tools/skill": "./src/packages/harness/src/tools/skill.ts",
+-   "./packages/harness/src/tools/tasks": "./src/packages/harness/src/tools/tasks.ts",
+-   "./packages/harness/src/tools/web": "./src/packages/harness/src/tools/web.ts",
+-   "./packages/harness/src/transcript": "./src/packages/harness/src/transcript.ts",
+-   "./packages/harness/src/types": "./src/packages/harness/src/types.ts",
+-   "./packages/harness/src/workbench/manifest": "./src/packages/harness/src/workbench/manifest.ts",
+-   "./packages/shell/src": "./src/packages/shell/src/index.ts",
+-   "./packages/shell/src/__tests__/heredocEdge.test": "./src/packages/shell/src/__tests__/heredocEdge.test.ts",
+-   "./packages/shell/src/__tests__/loadFigSpec.test": "./src/packages/shell/src/__tests__/loadFigSpec.test.ts",
+-   "./packages/shell/src/__tests__/peekForStdinData.test": "./src/packages/shell/src/__tests__/peekForStdinData.test.ts",
+-   "./packages/shell/src/__tests__/shellPrefix.test": "./src/packages/shell/src/__tests__/shellPrefix.test.ts",
+-   "./packages/shell/src/__tests__/subprocessEnv.test": "./src/packages/shell/src/__tests__/subprocessEnv.test.ts",
+-   "./packages/shell/src/bash/heredoc": "./src/packages/shell/src/bash/heredoc.ts",
+-   "./packages/shell/src/bash/registry": "./src/packages/shell/src/bash/registry.ts",
+-   "./packages/shell/src/bash/shellPrefix": "./src/packages/shell/src/bash/shellPrefix.ts",
+-   "./packages/shell/src/bash/shellQuote": "./src/packages/shell/src/bash/shellQuote.ts",
+-   "./packages/shell/src/process": "./src/packages/shell/src/process.ts",
+-   "./packages/shell/src/subprocessEnv": "./src/packages/shell/src/subprocessEnv.ts",
+-   "./packages/storage/src": "./src/packages/storage/src/index.ts",
+-   "./packages/storage/src/__tests__/agentMetadata.test": "./src/packages/storage/src/__tests__/agentMetadata.test.ts",
+-   "./packages/storage/src/__tests__/atomicWriteFile.test": "./src/packages/storage/src/__tests__/atomicWriteFile.test.ts",
+-   "./packages/storage/src/__tests__/browser.test": "./src/packages/storage/src/__tests__/browser.test.ts",
+-   "./packages/storage/src/__tests__/cache-paths.test": "./src/packages/storage/src/__tests__/cache-paths.test.ts",
+-   "./packages/storage/src/__tests__/classifyGuiEditor.test": "./src/packages/storage/src/__tests__/classifyGuiEditor.test.ts",
+-   "./packages/storage/src/__tests__/claudemd.behavior.test": "./src/packages/storage/src/__tests__/claudemd.behavior.test.ts",
+-   "./packages/storage/src/__tests__/claudemdHelpers.test": "./src/packages/storage/src/__tests__/claudemdHelpers.test.ts",
+-   "./packages/storage/src/__tests__/conversationChain.test": "./src/packages/storage/src/__tests__/conversationChain.test.ts",
+-   "./packages/storage/src/__tests__/detectImageFormat.behavior.test": "./src/packages/storage/src/__tests__/detectImageFormat.behavior.test.ts",
+-   "./packages/storage/src/__tests__/diskOutput.test": "./src/packages/storage/src/__tests__/diskOutput.test.ts",
+-   "./packages/storage/src/__tests__/errors.test": "./src/packages/storage/src/__tests__/errors.test.ts",
+-   "./packages/storage/src/__tests__/extractGlobBaseDirectory.test": "./src/packages/storage/src/__tests__/extractGlobBaseDirectory.test.ts",
+-   "./packages/storage/src/__tests__/fallbackStorage.test": "./src/packages/storage/src/__tests__/fallbackStorage.test.ts",
+-   "./packages/storage/src/__tests__/fileEncoding.test": "./src/packages/storage/src/__tests__/fileEncoding.test.ts",
+-   "./packages/storage/src/__tests__/filePureHelpers.test": "./src/packages/storage/src/__tests__/filePureHelpers.test.ts",
+-   "./packages/storage/src/__tests__/fileRead.test": "./src/packages/storage/src/__tests__/fileRead.test.ts",
+-   "./packages/storage/src/__tests__/fileReadCache.test": "./src/packages/storage/src/__tests__/fileReadCache.test.ts",
+-   "./packages/storage/src/__tests__/fileUtilities.behavior.test": "./src/packages/storage/src/__tests__/fileUtilities.behavior.test.ts",
+-   "./packages/storage/src/__tests__/findGitRoot.test": "./src/packages/storage/src/__tests__/findGitRoot.test.ts",
+-   "./packages/storage/src/__tests__/fsOperations.test": "./src/packages/storage/src/__tests__/fsOperations.test.ts",
+-   "./packages/storage/src/__tests__/getWorktreePaths.test": "./src/packages/storage/src/__tests__/getWorktreePaths.test.ts",
+-   "./packages/storage/src/__tests__/getWorktreePathsPortable.test": "./src/packages/storage/src/__tests__/getWorktreePathsPortable.test.ts",
+-   "./packages/storage/src/__tests__/imageResizerHelpers.test": "./src/packages/storage/src/__tests__/imageResizerHelpers.test.ts",
+-   "./packages/storage/src/__tests__/imageValidation.behavior.test": "./src/packages/storage/src/__tests__/imageValidation.behavior.test.ts",
+-   "./packages/storage/src/__tests__/index.test": "./src/packages/storage/src/__tests__/index.test.ts",
+-   "./packages/storage/src/__tests__/json.test": "./src/packages/storage/src/__tests__/json.test.ts",
+-   "./packages/storage/src/__tests__/jsonRead.test": "./src/packages/storage/src/__tests__/jsonRead.test.ts",
+-   "./packages/storage/src/__tests__/lockfile.behavior.test": "./src/packages/storage/src/__tests__/lockfile.behavior.test.ts",
+-   "./packages/storage/src/__tests__/macOsKeychainTimeout.behavior.test": "./src/packages/storage/src/__tests__/macOsKeychainTimeout.behavior.test.ts",
+-   "./packages/storage/src/__tests__/normalizeGitRemoteUrl.behavior.test": "./src/packages/storage/src/__tests__/normalizeGitRemoteUrl.behavior.test.ts",
+-   "./packages/storage/src/__tests__/normalizeGitRemoteUrl.test": "./src/packages/storage/src/__tests__/normalizeGitRemoteUrl.test.ts",
+-   "./packages/storage/src/__tests__/parseGitHubRepository.test": "./src/packages/storage/src/__tests__/parseGitHubRepository.test.ts",
+-   "./packages/storage/src/__tests__/parseGitRemote.test": "./src/packages/storage/src/__tests__/parseGitRemote.test.ts",
+-   "./packages/storage/src/__tests__/path.test": "./src/packages/storage/src/__tests__/path.test.ts",
+-   "./packages/storage/src/__tests__/pdfUtils.test": "./src/packages/storage/src/__tests__/pdfUtils.test.ts",
+-   "./packages/storage/src/__tests__/plans.test": "./src/packages/storage/src/__tests__/plans.test.ts",
+-   "./packages/storage/src/__tests__/projectPurge.test": "./src/packages/storage/src/__tests__/projectPurge.test.ts",
+-   "./packages/storage/src/__tests__/secretsRegistry.test": "./src/packages/storage/src/__tests__/secretsRegistry.test.ts",
+-   "./packages/storage/src/__tests__/secureStorage.test": "./src/packages/storage/src/__tests__/secureStorage.test.ts",
+-   "./packages/storage/src/__tests__/sessionActivity.test": "./src/packages/storage/src/__tests__/sessionActivity.test.ts",
+-   "./packages/storage/src/__tests__/sessionEnvVars.test": "./src/packages/storage/src/__tests__/sessionEnvVars.test.ts",
+-   "./packages/storage/src/__tests__/sessionEnvironment.test": "./src/packages/storage/src/__tests__/sessionEnvironment.test.ts",
+-   "./packages/storage/src/__tests__/sessionPaths.test": "./src/packages/storage/src/__tests__/sessionPaths.test.ts",
+-   "./packages/storage/src/__tests__/sessionRestoreHelpers.test": "./src/packages/storage/src/__tests__/sessionRestoreHelpers.test.ts",
+-   "./packages/storage/src/__tests__/sessionStart.test": "./src/packages/storage/src/__tests__/sessionStart.test.ts",
+-   "./packages/storage/src/__tests__/sessionState.test": "./src/packages/storage/src/__tests__/sessionState.test.ts",
+-   "./packages/storage/src/__tests__/sessionStorageHelpers.test": "./src/packages/storage/src/__tests__/sessionStorageHelpers.test.ts",
+-   "./packages/storage/src/__tests__/sessionStoragePortable.test": "./src/packages/storage/src/__tests__/sessionStoragePortable.test.ts",
+-   "./packages/storage/src/__tests__/sessionStoragePredicates.test": "./src/packages/storage/src/__tests__/sessionStoragePredicates.test.ts",
+-   "./packages/storage/src/__tests__/sessionWriteQueue.test": "./src/packages/storage/src/__tests__/sessionWriteQueue.test.ts",
+-   "./packages/storage/src/__tests__/stores.test": "./src/packages/storage/src/__tests__/stores.test.ts",
+-   "./packages/storage/src/__tests__/tempfile.test": "./src/packages/storage/src/__tests__/tempfile.test.ts",
+-   "./packages/storage/src/__tests__/toolResultStorageHelpers.test": "./src/packages/storage/src/__tests__/toolResultStorageHelpers.test.ts",
+-   "./packages/storage/src/__tests__/windowsPathsConversion.behavior.test": "./src/packages/storage/src/__tests__/windowsPathsConversion.behavior.test.ts",
+-   "./packages/storage/src/__tests__/xdg.test": "./src/packages/storage/src/__tests__/xdg.test.ts",
+-   "./packages/storage/src/agentMetadata": "./src/packages/storage/src/agentMetadata.ts",
+-   "./packages/storage/src/backends/__tests__/localFileBackend.test": "./src/packages/storage/src/backends/__tests__/localFileBackend.test.ts",
+-   "./packages/storage/src/backends/localFileBackend": "./src/packages/storage/src/backends/localFileBackend.ts",
+-   "./packages/storage/src/browser": "./src/packages/storage/src/browser.ts",
+-   "./packages/storage/src/cache-paths": "./src/packages/storage/src/cache-paths.ts",
+-   "./packages/storage/src/claudemd": "./src/packages/storage/src/claudemd.ts",
+-   "./packages/storage/src/contracts": "./src/packages/storage/src/contracts.ts",
+-   "./packages/storage/src/conversationChain": "./src/packages/storage/src/conversationChain.ts",
+-   "./packages/storage/src/detectRepository": "./src/packages/storage/src/detectRepository.ts",
+-   "./packages/storage/src/editor": "./src/packages/storage/src/editor.ts",
+-   "./packages/storage/src/errors": "./src/packages/storage/src/errors.ts",
+-   "./packages/storage/src/file": "./src/packages/storage/src/file.ts",
+-   "./packages/storage/src/fileEncoding": "./src/packages/storage/src/fileEncoding.ts",
+-   "./packages/storage/src/filePersistence/__tests__/filePersistence.test": "./src/packages/storage/src/filePersistence/__tests__/filePersistence.test.ts",
+-   "./packages/storage/src/filePersistence/__tests__/outputsScanner.test": "./src/packages/storage/src/filePersistence/__tests__/outputsScanner.test.ts",
+-   "./packages/storage/src/filePersistence/__tests__/types.test": "./src/packages/storage/src/filePersistence/__tests__/types.test.ts",
+-   "./packages/storage/src/filePersistence/filePersistence": "./src/packages/storage/src/filePersistence/filePersistence.ts",
+-   "./packages/storage/src/filePersistence/outputsScanner": "./src/packages/storage/src/filePersistence/outputsScanner.ts",
+-   "./packages/storage/src/filePersistence/types": "./src/packages/storage/src/filePersistence/types.ts",
+-   "./packages/storage/src/fileRead": "./src/packages/storage/src/fileRead.ts",
+-   "./packages/storage/src/fileReadCache": "./src/packages/storage/src/fileReadCache.ts",
+-   "./packages/storage/src/fileUtilities": "./src/packages/storage/src/fileUtilities.ts",
+-   "./packages/storage/src/findGitRoot": "./src/packages/storage/src/findGitRoot.ts",
+-   "./packages/storage/src/fsOperations": "./src/packages/storage/src/fsOperations.ts",
+-   "./packages/storage/src/getWorktreePaths": "./src/packages/storage/src/getWorktreePaths.ts",
+-   "./packages/storage/src/getWorktreePathsPortable": "./src/packages/storage/src/getWorktreePathsPortable.ts",
+-   "./packages/storage/src/git": "./src/packages/storage/src/git.ts",
+-   "./packages/storage/src/glob": "./src/packages/storage/src/glob.ts",
+-   "./packages/storage/src/imageResizer": "./src/packages/storage/src/imageResizer.ts",
+-   "./packages/storage/src/imageValidation": "./src/packages/storage/src/imageValidation.ts",
+-   "./packages/storage/src/internal/pendingCrossPackageDeps": "./src/packages/storage/src/internal/pendingCrossPackageDeps.ts",
+-   "./packages/storage/src/json": "./src/packages/storage/src/json.ts",
+-   "./packages/storage/src/jsonRead": "./src/packages/storage/src/jsonRead.ts",
+-   "./packages/storage/src/lockfile": "./src/packages/storage/src/lockfile.ts",
+-   "./packages/storage/src/logging": "./src/packages/storage/src/logging.ts",
+-   "./packages/storage/src/parseGitRemote": "./src/packages/storage/src/parseGitRemote.ts",
+-   "./packages/storage/src/path": "./src/packages/storage/src/path.ts",
+-   "./packages/storage/src/pdfUtils": "./src/packages/storage/src/pdfUtils.ts",
+-   "./packages/storage/src/plans": "./src/packages/storage/src/plans.ts",
+-   "./packages/storage/src/projectPurge": "./src/packages/storage/src/projectPurge.ts",
+-   "./packages/storage/src/safePatternMatch": "./src/packages/storage/src/safePatternMatch.ts",
+-   "./packages/storage/src/secretsRegistry": "./src/packages/storage/src/secretsRegistry.ts",
+-   "./packages/storage/src/secureStorage": "./src/packages/storage/src/secureStorage/index.ts",
+-   "./packages/storage/src/secureStorage/__tests__/index.test": "./src/packages/storage/src/secureStorage/__tests__/index.test.ts",
+-   "./packages/storage/src/secureStorage/__tests__/plainTextStorage.test": "./src/packages/storage/src/secureStorage/__tests__/plainTextStorage.test.ts",
+-   "./packages/storage/src/secureStorage/execHelpers": "./src/packages/storage/src/secureStorage/execHelpers.ts",
+-   "./packages/storage/src/secureStorage/fallbackStorage": "./src/packages/storage/src/secureStorage/fallbackStorage.ts",
+-   "./packages/storage/src/secureStorage/keychainPrefetch": "./src/packages/storage/src/secureStorage/keychainPrefetch.ts",
+-   "./packages/storage/src/secureStorage/macOsKeychainHelpers": "./src/packages/storage/src/secureStorage/macOsKeychainHelpers.ts",
+-   "./packages/storage/src/secureStorage/macOsKeychainStorage": "./src/packages/storage/src/secureStorage/macOsKeychainStorage.ts",
+-   "./packages/storage/src/secureStorage/plainTextStorage": "./src/packages/storage/src/secureStorage/plainTextStorage.ts",
+-   "./packages/storage/src/secureStorage/types": "./src/packages/storage/src/secureStorage/types.ts",
+-   "./packages/storage/src/sessionActivity": "./src/packages/storage/src/sessionActivity.ts",
+-   "./packages/storage/src/sessionEnvVars": "./src/packages/storage/src/sessionEnvVars.ts",
+-   "./packages/storage/src/sessionEnvironment": "./src/packages/storage/src/sessionEnvironment.ts",
+-   "./packages/storage/src/sessionPaths": "./src/packages/storage/src/sessionPaths.ts",
+-   "./packages/storage/src/sessionRestore": "./src/packages/storage/src/sessionRestore.ts",
+-   "./packages/storage/src/sessionStart": "./src/packages/storage/src/sessionStart.ts",
+-   "./packages/storage/src/sessionState": "./src/packages/storage/src/sessionState.ts",
+-   "./packages/storage/src/sessionStorage": "./src/packages/storage/src/sessionStorage.ts",
+-   "./packages/storage/src/sessionStoragePortable": "./src/packages/storage/src/sessionStoragePortable.ts",
+-   "./packages/storage/src/sessionStoragePredicates": "./src/packages/storage/src/sessionStoragePredicates.ts",
+-   "./packages/storage/src/sessionWriteQueue": "./src/packages/storage/src/sessionWriteQueue.ts",
+-   "./packages/storage/src/stores/artifactStore": "./src/packages/storage/src/stores/artifactStore.ts",
+-   "./packages/storage/src/stores/sessionMetadataStore": "./src/packages/storage/src/stores/sessionMetadataStore.ts",
+-   "./packages/storage/src/stores/transcriptStore": "./src/packages/storage/src/stores/transcriptStore.ts",
+-   "./packages/storage/src/task/diskOutput": "./src/packages/storage/src/task/diskOutput.ts",
+-   "./packages/storage/src/tempfile": "./src/packages/storage/src/tempfile.ts",
+-   "./packages/storage/src/testing": "./src/packages/storage/src/testing/index.ts",
+-   "./packages/storage/src/testing/__tests__/index.test": "./src/packages/storage/src/testing/__tests__/index.test.ts",
+-   "./packages/storage/src/toolResultStorage": "./src/packages/storage/src/toolResultStorage.ts",
+-   "./packages/storage/src/windowsPaths": "./src/packages/storage/src/windowsPaths.ts",
+-   "./packages/storage/src/xdg": "./src/packages/storage/src/xdg.ts",
+-   "./paths/docs": "./src/paths/docs.ts",
+-   "./paths/reach": "./src/paths/reach.ts",
+-   "./skills": "./src/skills/index.ts",
+-   "./skills/bin/emit": "./src/skills/bin/emit.ts",
+-   "./skills/bin/import": "./src/skills/bin/import.ts",
+-   "./skills/definitions/baElicitation": "./src/skills/definitions/baElicitation.ts",
+-   "./skills/definitions/baPlanning": "./src/skills/definitions/baPlanning.ts",
+-   "./skills/definitions/baRequirementsAnalysis": "./src/skills/definitions/baRequirementsAnalysis.ts",
+-   "./skills/definitions/baRequirementsLifecycle": "./src/skills/definitions/baRequirementsLifecycle.ts",
+-   "./skills/definitions/baSolutionEvaluation": "./src/skills/definitions/baSolutionEvaluation.ts",
+-   "./skills/definitions/baStrategy": "./src/skills/definitions/baStrategy.ts",
+-   "./skills/definitions/bpaAnalyze": "./src/skills/definitions/bpaAnalyze.ts",
+-   "./skills/definitions/bpaDesign": "./src/skills/definitions/bpaDesign.ts",
+-   "./skills/definitions/bpaIdentify": "./src/skills/definitions/bpaIdentify.ts",
+-   "./skills/definitions/bpaImplement": "./src/skills/definitions/bpaImplement.ts",
+-   "./skills/definitions/bpaMap": "./src/skills/definitions/bpaMap.ts",
+-   "./skills/definitions/bpaMonitor": "./src/skills/definitions/bpaMonitor.ts",
+-   "./skills/definitions/cpDiagnosis": "./src/skills/definitions/cpDiagnosis.ts",
+-   "./skills/definitions/cpEvaluate": "./src/skills/definitions/cpEvaluate.ts",
+-   "./skills/definitions/cpImplement": "./src/skills/definitions/cpImplement.ts",
+-   "./skills/definitions/cpInitiation": "./src/skills/definitions/cpInitiation.ts",
+-   "./skills/definitions/cpPlan": "./src/skills/definitions/cpPlan.ts",
+-   "./skills/definitions/cpRecommend": "./src/skills/definitions/cpRecommend.ts",
+-   "./skills/definitions/cpStructure": "./src/skills/definitions/cpStructure.ts",
+-   "./skills/definitions/dmaicAnalyze": "./src/skills/definitions/dmaicAnalyze.ts",
+-   "./skills/definitions/dmaicControl": "./src/skills/definitions/dmaicControl.ts",
+-   "./skills/definitions/dmaicDefine": "./src/skills/definitions/dmaicDefine.ts",
+-   "./skills/definitions/dmaicImprove": "./src/skills/definitions/dmaicImprove.ts",
+-   "./skills/definitions/dmaicMeasure": "./src/skills/definitions/dmaicMeasure.ts",
+-   "./skills/definitions/kanbanBoardSetup": "./src/skills/definitions/kanbanBoardSetup.ts",
+-   "./skills/definitions/kanbanFlowMetrics": "./src/skills/definitions/kanbanFlowMetrics.ts",
+-   "./skills/definitions/kanbanQueueManagement": "./src/skills/definitions/kanbanQueueManagement.ts",
+-   "./skills/definitions/kanbanWipLimits": "./src/skills/definitions/kanbanWipLimits.ts",
+-   "./skills/definitions/leanAnalyze": "./src/skills/definitions/leanAnalyze.ts",
+-   "./skills/definitions/leanControl": "./src/skills/definitions/leanControl.ts",
+-   "./skills/definitions/leanDefine": "./src/skills/definitions/leanDefine.ts",
+-   "./skills/definitions/leanImprove": "./src/skills/definitions/leanImprove.ts",
+-   "./skills/definitions/leanMeasure": "./src/skills/definitions/leanMeasure.ts",
+-   "./skills/definitions/pdcaAct": "./src/skills/definitions/pdcaAct.ts",
+-   "./skills/definitions/pdcaCheck": "./src/skills/definitions/pdcaCheck.ts",
+-   "./skills/definitions/pdcaDo": "./src/skills/definitions/pdcaDo.ts",
+-   "./skills/definitions/pdcaPlan": "./src/skills/definitions/pdcaPlan.ts",
+-   "./skills/definitions/pmClosing": "./src/skills/definitions/pmClosing.ts",
+-   "./skills/definitions/pmExecuting": "./src/skills/definitions/pmExecuting.ts",
+-   "./skills/definitions/pmInitiating": "./src/skills/definitions/pmInitiating.ts",
+-   "./skills/definitions/pmMonitoring": "./src/skills/definitions/pmMonitoring.ts",
+-   "./skills/definitions/pmPlanning": "./src/skills/definitions/pmPlanning.ts",
+-   "./skills/definitions/ppsAnalyze": "./src/skills/definitions/ppsAnalyze.ts",
+-   "./skills/definitions/ppsClarify": "./src/skills/definitions/ppsClarify.ts",
+-   "./skills/definitions/ppsCountermeasures": "./src/skills/definitions/ppsCountermeasures.ts",
+-   "./skills/definitions/ppsEvaluate": "./src/skills/definitions/ppsEvaluate.ts",
+-   "./skills/definitions/ppsImplement": "./src/skills/definitions/ppsImplement.ts",
+-   "./skills/definitions/ppsTarget": "./src/skills/definitions/ppsTarget.ts",
+-   "./skills/definitions/rmAnalysis": "./src/skills/definitions/rmAnalysis.ts",
+-   "./skills/definitions/rmElicitation": "./src/skills/definitions/rmElicitation.ts",
+-   "./skills/definitions/rmManagement": "./src/skills/definitions/rmManagement.ts",
+-   "./skills/definitions/rmSpecification": "./src/skills/definitions/rmSpecification.ts",
+-   "./skills/definitions/rmValidation": "./src/skills/definitions/rmValidation.ts",
+-   "./skills/definitions/rupConstruction": "./src/skills/definitions/rupConstruction.ts",
+-   "./skills/definitions/rupElaboration": "./src/skills/definitions/rupElaboration.ts",
+-   "./skills/definitions/rupInception": "./src/skills/definitions/rupInception.ts",
+-   "./skills/definitions/rupTransition": "./src/skills/definitions/rupTransition.ts",
+-   "./skills/definitions/scrumBacklogRefinement": "./src/skills/definitions/scrumBacklogRefinement.ts",
+-   "./skills/definitions/scrumDailyStandup": "./src/skills/definitions/scrumDailyStandup.ts",
+-   "./skills/definitions/scrumDefinitionOfDone": "./src/skills/definitions/scrumDefinitionOfDone.ts",
+-   "./skills/definitions/scrumRetrospective": "./src/skills/definitions/scrumRetrospective.ts",
+-   "./skills/definitions/scrumSprintPlanning": "./src/skills/definitions/scrumSprintPlanning.ts",
+-   "./skills/definitions/scrumSprintReview": "./src/skills/definitions/scrumSprintReview.ts",
+-   "./skills/definitions/spAdjust": "./src/skills/definitions/spAdjust.ts",
+-   "./skills/definitions/spAnalysis": "./src/skills/definitions/spAnalysis.ts",
+-   "./skills/definitions/spContext": "./src/skills/definitions/spContext.ts",
+-   "./skills/definitions/spExecute": "./src/skills/definitions/spExecute.ts",
+-   "./skills/definitions/spFormulate": "./src/skills/definitions/spFormulate.ts",
+-   "./skills/definitions/spGaps": "./src/skills/definitions/spGaps.ts",
+-   "./skills/definitions/spMonitor": "./src/skills/definitions/spMonitor.ts",
+-   "./skills/definitions/spPlan": "./src/skills/definitions/spPlan.ts",
+-   "./skills/emit/markdown": "./src/skills/emit/markdown.ts",
+-   "./skills/emit/plan": "./src/skills/emit/plan.ts",
+-   "./skills/paths": "./src/skills/paths.ts",
+-   "./skills/types": "./src/skills/types.ts",
+-   "./store/db": "./src/store/db.ts",
+-   "./task": "./src/task/index.ts",
+-   "./task/io": "./src/task/io.ts",
+-   "./task/premises": "./src/task/premises.ts",
+-   "./task/rst": "./src/task/rst.ts",
+-   "./task/schema": "./src/task/schema.ts",
+    "./workbench/manifest": "./src/workbench/manifest.ts",
+
+- Expected  - 697
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/tests/package/exports.test.ts:101:21)
+(fail) 2 — el mapa esta completo y su forma se deriva > cada modulo .ts de src/ tiene su subpath derivado [12.25ms]
+fatal: not a git repository (or any of the parent directories): .git
+listo, integré lo del hijo
+listo, integré lo del hijo
+segui el procedimiento del skill
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/integ-Igs892/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/integ-RMlxQt/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+Automatic merge went well; stopped before committing as requested
+fatal: Not a valid object name no/existe/ref
+fatal: Not a valid object name no/existe/ref
+
+src/packages/storage/src/__tests__/agentMetadata.test.ts:
+listRemoteAgentMetadata: skipping remote-agent-task-corrupto.meta.json: SyntaxError: JSON Parse error: Expected '}'
+
+src/packages/storage/src/__tests__/sessionStart.test.ts:
+Skipping plugin hooks - allowManagedHooksOnly is enabled
+Warning: Failed to load plugin hooks. SessionStart hooks from plugins will not execute. Error: ETIMEDOUT. This appears to be a network issue. Check your internet connection and try again.
+Warning: Failed to load plugin hooks. Setup hooks from plugins will not execute. Error: boom
+
+src/packages/storage/src/__tests__/sessionEnvironment.test.ts:
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment not yet supported on Windows
+Invalidating session environment cache
+Invalidating session environment cache
+No session environment scripts found
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from CLAUDE_ENV_FILE: /tmp/session-environment-02eoaH/env-padre.sh (20 chars)
+Session environment loaded from 3 hook file(s)
+Session environment script ready (63 chars total)
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from 1 hook file(s)
+No session environment scripts found
+Invalidating session environment cache
+Invalidating session environment cache
+No session environment scripts found
+Invalidating session environment cache
+Session environment loaded from 1 hook file(s)
+Session environment script ready (14 chars total)
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from 2 hook file(s)
+Session environment script ready (26 chars total)
+Invalidating session environment cache
+
+src/packages/storage/src/__tests__/fileEncoding.test.ts:
+detectFileEncoding failed for expected reason: ENOENT
+49 |     // Fuerza que readSync lance un error sin `code` — no matchea ningun
+50 |     // caso de isFsInaccessible, asi que toma la rama logError().
+51 |     const fake = {
+52 |       ...NodeFsOperations,
+53 |       readSync(): never {
+54 |         throw new Error('boom sin code')
+                       ^
+error: boom sin code
+      at readSync (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:54:19)
+      at detectEncodingForResolvedPath (/home/user/thyrox/src/packages/storage/src/fileRead.ts:31:55)
+      at detectFileEncoding (/home/user/thyrox/src/packages/storage/src/fileEncoding.ts:61:12)
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:60:12)
+
+
+src/packages/storage/src/__tests__/plans.test.ts:
+Plan file missing during resume: /tmp/plans-x8WVOW/plans/slug-recuperado-snap.md. Attempting recovery.
+Plan recovered from file snapshot, 16 chars
+Plan file missing during resume: /tmp/plans-hARI6g/plans/slug-recuperado-tooluse.md. Attempting recovery.
+Plan recovered from message history, 16 chars
+Plan file missing during resume: /tmp/plans-kScXky/plans/slug-recuperado-plancontent.md. Attempting recovery.
+Plan recovered from message history, 19 chars
+Plan file missing during resume: /tmp/plans-Cez35M/plans/slug-recuperado-attachment.md. Attempting recovery.
+Plan recovered from message history, 18 chars
+Plan file missing during resume: /tmp/plans-TDR365/plans/slug-sin-recuperacion-posible.md. Attempting recovery.
+Plan file recovery failed: no file snapshot or plan content found in message history
+
+src/packages/storage/src/filePersistence/__tests__/filePersistence.test.ts:
+[file-persistence] Persistence aborted before processing
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+[file-persistence] No files found in outputs directory
+[file-persistence] No modified files to persist
+[file-persistence] Found 10001 modified files since turn start (scanned 10001 total)
+[file-persistence] Found 10001 modified files
+[file-persistence] File count limit exceeded: 10001 > 10000
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] File persistence failed: Error: la Files API esta caida
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+
+src/packages/storage/src/filePersistence/__tests__/outputsScanner.test.ts:
+[file-persistence] No files found in outputs directory
+[file-persistence] Found 1 modified files since turn start (scanned 2 total)
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+
+ 4360 pass
+ 4 skip
+ 1 fail
+ 10833 expect() calls
+Ran 4365 tests across 281 files. [30.62s]
+
+== Python (stdlib) ==
+-- tests/agents/test_agents_module_paths.py
+test_every_agents_module_resolves_its_paths (__main__.AgentsModulePaths.test_every_agents_module_resolves_its_paths) ... ok
+test_no_module_constant_points_at_nothing (__main__.AgentsModulePaths.test_no_module_constant_points_at_nothing) ... FAIL
+test_the_census_is_not_empty (__main__.AgentsModulePaths.test_the_census_is_not_empty)
+Sin esto un directorio vacío daría verde: no discriminaría. ... ok
+
+======================================================================
+FAIL: test_no_module_constant_points_at_nothing (__main__.AgentsModulePaths.test_no_module_constant_points_at_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/agents/test_agents_module_paths.py", line 113, in test_no_module_constant_points_at_nothing
+    self.assertEqual(dangling, [], "constantes Path que no resuelven:\n  "
+AssertionError: Lists differ: ['reconciliar_store.py: la sonda no corrió (exit 1)'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'reconciliar_store.py: la sonda no corrió (exit 1)'
+
+- ['reconciliar_store.py: la sonda no corrió (exit 1)']
++ [] : constantes Path que no resuelven:
+  reconciliar_store.py: la sonda no corrió (exit 1)
+
+----------------------------------------------------------------------
+Ran 3 tests in 1.005s
+
+FAILED (failures=1)
+-- tests/agents/test_measure_delta.py
+== A. Los símbolos de un .py se extraen por AST, no por regex ==
+  ok    ve la función de nivel superior
+  ok    la clase lleva su prefijo
+  ok    y el método va con el nombre pelado
+  ok    un archivo que no parsea NO revienta: devuelve vacío
+== B. El delta discrimina en los dos sentidos ==
+  ok    nombra lo ganado
+  ok    y lo perdido
+  ok    sin cambios, nada ganado ni perdido (control)
+== C. El destino del log es PARÁMETRO, no `docs` ==
+  ok    sin destino declarado, rehúsa en vez de inventarlo
+  ok    con destino, compone la ruta del log
+  ok    y crea el directorio si falta
+
+10 ok, 0 fallos
+-- tests/agents/test_model_catalog_paths.py
+test_the_env_file_declares_the_catalog (__main__.ElAccesorDeConfiguracion.test_the_env_file_declares_the_catalog) ... ok
+test_the_process_wins_over_the_env_file (__main__.ElAccesorDeConfiguracion.test_the_process_wins_over_the_env_file)
+Quien exporta para UNA invocacion esta corrigiendo a proposito. ... ok
+test_no_resolved_path_reaches_outside_thyrox (__main__.ResolucionDeRutas.test_no_resolved_path_reaches_outside_thyrox)
+Control de anulacion: restaurar ``parents[3]`` hace caer este caso. ... ok
+test_the_catalog_resolves_inside_thyrox (__main__.ResolucionDeRutas.test_the_catalog_resolves_inside_thyrox) ... ok
+test_the_previous_variable_keeps_working (__main__.ResolucionDeRutas.test_the_previous_variable_keeps_working)
+El nombre anterior no se rompe: un consumidor puede tenerlo declarado. ... ok
+test_the_resolved_catalog_exists_and_loads (__main__.ResolucionDeRutas.test_the_resolved_catalog_exists_and_loads) ... ok
+test_the_store_has_no_thyrox_default (__main__.ResolucionDeRutas.test_the_store_has_no_thyrox_default)
+Sin declararlo no hay ruta que suponer: es parametro del consumidor. ... ok
+test_the_variable_declares_the_store (__main__.ResolucionDeRutas.test_the_variable_declares_the_store) ... ok
+test_the_variable_overrides_the_resolution (__main__.ResolucionDeRutas.test_the_variable_overrides_the_resolution) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.014s
+
+OK
+-- tests/agents/test_register_session.py
+== A. El destino es PARÁMETRO, no una constante del mecanismo ==
+  ok    un repo nombrado se compone como --repo
+  ok    un directorio explícito gana sobre el repo
+  ok    sin ninguno, rehúsa en vez de inventar un default
+== B. La normalización del modelo viaja intacta ==
+  ok    un identificador completo se conserva
+  ok    un alias NO es un identificador
+  ok    y el alias se normaliza por su propia vía
+== C. La invocación del store se COMPONE, no se ejecuta ==
+  ok    nombra el subcomando del store
+  ok    lleva el destino inyectado
+  ok    y el agent-id del payload
+  ok    sin agent_id NO compone comando
+== D. La procedencia del tipo se distingue de su valor ==
+  ok    con valor, la procedencia es el payload
+  ok    con la clave vacía, el vacío viene del origen
+  ok    sin la clave, está ausente
+
+13 ok, 0 fallos
+-- tests/board/test_graph.py
+
+1. El grafo se construye desde aristas, no desde una base de datos
+  ok    conserva los nodos declarados
+  ok    y las aristas
+  ok    un nodo aislado sigue siendo nodo
+
+2. Descendientes — a cuántas desbloquea cerrar una
+  ok    a desbloquea a las tres
+  ok    b sólo a d
+  ok    una hoja a ninguna
+  ok    un aislado a ninguna
+  ok    unblock_count es su tamaño
+  ok    un nodo desconocido se nombra
+
+3. Listas para trabajar — sin bloqueante pendiente
+  ok    sólo las que nadie bloquea
+  ok    cerrar a libera b y c
+  ok    un estado ausente cuenta como pendiente
+
+4. Orden topológico, y el ciclo que lo invalida
+  ok    los cinco aparecen una vez
+  ok    a va antes que b
+  ok    b va antes que d
+  ok    find_cycle NO ve ciclo donde no lo hay
+  ok    y SÍ lo ve donde lo hay
+  ok    el orden REHÚSA sobre un ciclo, no devuelve una lista corta
+
+5. Componentes — los grupos independientes de trabajo
+  ok    dos: {a,b,c,d} y {e}
+  ok    el aislado es su propio componente
+
+resultado: 20 de 20 aserciones en verde
+-- tests/gates/test_byte_class_gate.py
+  ok   el gate existe
+  ok   ve el control positivo real del repo
+  ok   y CITA la clase que rechaza
+  ok   --strict sale 1 con un incumplidor
+  ok   sin --strict sale 0 (surfacing)
+  ok   NO marca un .py, cuyo motor es de caracter
+  ok   NO marca la alternancia, que es el arreglo
+  ok   NO marca un guion que declara su locale UTF-8
+  ok   publica su DENOMINADOR junto al conteo
+  ok   un arbol limpio sale 0 incluso con --strict
+  ok   y el denominador NO miente en el arbol limpio
+
+resultado: 11 de 11 aserciones en verde
+-- tests/gates/test_config_precedence.py
+  ok   la asignacion pone WORKER_CONFIG antes que CONFIG_FILE_PATH
+  ok   la RAMA pone env_config_yaml antes que worker_config
+  ok   el auditor declara que los dos ordenes DISCREPAN
+  ok   dos `if` independientes no forman cadena
+  ok   la cadena se recorre por orelse
+  ok   y su asignacion va al reves
+  ok   por tanto discrepa
+  ok   no discrepa cuando coinciden
+  ok   la cadena por retorno temprano se reconoce
+  ok   y no discrepa cuando lee en el mismo orden
+  ok   una guarda que aplica al reves de como lee, discrepa
+  ok   un `if` con retorno SUELTO no es cadena
+  ok   un parametro homonimo no entra en la cadena
+  ok   el auditor NO cubre la precedencia por bucle de thyrox_root
+  ok   publica su denominador
+  ok   el arbol de thyrox sale 0 con --strict
+  ok   rehusa con exit 2 si la raiz no existe
+  ok   y NO emite conteo al rehusar
+
+resultado: 18 de 18 aserciones en verde
+-- tests/gates/test_consumer_copies.py
+  ok   ve la copia identica
+  ok   el divergente NO es copia: es fork
+  ok   el propio del consumidor no entra
+  ok   publica su denominador
+  ok   nombra la copia en su salida
+  ok   --strict sale 1 con copias
+  ok   un consumidor sin copias sale 0 con --strict
+  ok   rehusa con exit 2 si falta una raiz
+  ok   y NO emite conteo al rehusar
+  ok   ve copias reales en kaupamex-api
+  ok   sin argumentos NO rehusa por falta de argumentos
+  ok   sin argumentos SI emite su denominador
+
+resultado: 12 de 12 aserciones en verde
+-- tests/gates/test_consumer_root_gates.py
+test_ninguno_nombra_una_ruta_de_fuera (__main__.ConsumerRootGatesTest.test_ninguno_nombra_una_ruta_de_fuera)
+Cada gate resuelve su corpus DENTRO del consumidor que se le dio. ... ok
+test_ninguno_revienta_antes_de_resolver (__main__.ConsumerRootGatesTest.test_ninguno_revienta_antes_de_resolver)
+Un gate que crashea no nombra ninguna ruta — y eso NO es medir. ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.414s
+
+OK
+-- tests/gates/test_docs_root_resolution.py
+test_it_does_not_die_importing_from_a_foreign_cwd (__main__.DocsRootResolutionTest.test_it_does_not_die_importing_from_a_foreign_cwd)
+El corredor lo invoca con cwd = el consumidor. ... ok
+test_the_clone_list_is_asked_for_not_written (__main__.DocsRootResolutionTest.test_the_clone_list_is_asked_for_not_written)
+#170 — un consumidor que enumera los cinco literalmente. ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.040s
+
+OK
+-- tests/gates/test_doctor.py
+test_json_is_machine_readable (__main__.CliTest.test_json_is_machine_readable) ... ok
+test_list_prints_the_registry_and_exits_0 (__main__.CliTest.test_list_prints_the_registry_and_exits_0) ... ok
+test_only_without_match_exits_2 (__main__.CliTest.test_only_without_match_exits_2) ... ok
+test_every_gate_on_disk_is_registered (__main__.CoverageTest.test_every_gate_on_disk_is_registered) ... ok
+test_every_registered_gate_is_on_disk (__main__.CoverageTest.test_every_registered_gate_is_on_disk) ... ok
+test_every_registered_check_declares_its_rule (__main__.RegistryTest.test_every_registered_check_declares_its_rule)
+Sin la regla que lo documenta, un fallo no dice contra que mide. ... ok
+test_every_registered_id_is_unique (__main__.RegistryTest.test_every_registered_id_is_unique) ... ok
+test_the_registry_is_not_empty (__main__.RegistryTest.test_the_registry_is_not_empty) ... ok
+test_a_gate_that_refuses_with_2_is_not_measured (__main__.RunnerTest.test_a_gate_that_refuses_with_2_is_not_measured)
+Exit 2 = «no emití veredicto». Ni pass ni fail: sin medir. ... ok
+test_failing_gate_is_reported_as_fail (__main__.RunnerTest.test_failing_gate_is_reported_as_fail) ... ok
+test_missing_blocks_the_verdict (__main__.RunnerTest.test_missing_blocks_the_verdict)
+`missing` NO es un aprobado: sin esto, un gate borrado pasa en verde. ... ok
+test_passing_gate_is_reported_as_pass (__main__.RunnerTest.test_passing_gate_is_reported_as_pass) ... ok
+test_registered_gate_absent_from_disk_is_missing_not_pass (__main__.RunnerTest.test_registered_gate_absent_from_disk_is_missing_not_pass)
+El caso que la referencia resuelve con un tercer estado. ... ok
+test_the_consumer_is_passed_to_the_gate_as_its_cwd (__main__.RunnerTest.test_the_consumer_is_passed_to_the_gate_as_its_cwd)
+thyrox es proveedor: el arbol medido es un parametro, no su propio cwd. ... ok
+test_verdict_publishes_every_bucket (__main__.RunnerTest.test_verdict_publishes_every_bucket)
+El denominador. Un conteo sin el reparto no es un resultado. ... ok
+test_only_filters_by_substring_of_the_id (__main__.SelectionTest.test_only_filters_by_substring_of_the_id) ... ok
+test_only_with_no_match_refuses (__main__.SelectionTest.test_only_with_no_match_refuses)
+Un filtro que no selecciona nada NO aprueba en vacio. ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.181s
+
+OK
+-- tests/gates/test_gitattributes.py
+
+== read_directives ==
+  ok    una directiva sin comentario no está declarada
+  ok    el comentario en su PROPIA línea la declara
+  ok    una línea en blanco corta la adscripción
+  ok    el comentario en LÍNEA no declara — git descarta la línea entera
+  ok    el duplicado se conserva: es lista, no conjunto
+
+== review ==
+  ok    el contrato completo da ok
+  ok    sin .gitattributes da ausente_archivo
+  ok    con dos directivas de menos da divergente
+  ok    y el detalle NOMBRA las que faltan
+  ok    una extra CON comentario que la declare sigue siendo ok
+  ok    una extra SIN comentario es divergente
+  ok    un clon ausente da ausente_repo
+
+== controles de anulación ==
+  ok    retirar dos directivas cambia el veredicto
+  ok    retirar el comentario que declara la extra cambia el veredicto
+  ok    duplicar una directiva canónica cambia el veredicto
+
+== main ==
+  ok    los cinco en contrato salen 0
+  ok    y el conteo publica su DENOMINADOR
+  ok    --strict con una divergencia sale 1
+  ok    y sin --strict sigue saliendo 0
+  ok    el conteo nombra la divergencia
+  ok    con dos clones el denominador NO miente
+  ok    y los tres ausentes se NOMBRAN
+  ok    un clon ausente no cuenta como divergencia
+
+resultado: 23 de 23 aserciones en verde
+-- tests/gates/test_hook_script_token.py
+
+== classify ==
+  ok    la forma dominante es simple
+  ok    y devuelve el script como detalle
+  ok    sin ningún token de ruta: sin_ruta
+  ok    dos segmentos con ruta: varios_scripts
+  ok    una tubería también parte segmentos
+  ok    con -c la ruta viaja en una cadena: ruta_en_cadena
+  ok    la ruta tras una bandera es su valor, no el script
+  ok    un comando que shlex no separa: no_parseable
+
+== controles de anulación ==
+  ok    añadir un segundo script cambia la forma
+  ok    envolver en -c cambia la forma
+  ok    quitarle la ruta cambia la forma
+  ok    anteponerle una bandera cambia la forma
+
+== declared_commands ==
+  ok    lee los dos nombres de settings, en los dos clones
+  ok    y trae el evento con cada comando
+  ok    un settings ilegible se REPORTA, con evento None
+
+== main ==
+  ok    un solo comando sano sale 0
+  ok    y publica su DENOMINADOR
+  ok    --strict con una forma opaca sale 1
+  ok    y nombra la forma
+  ok    cero comandos NO se publica como aprobado en silencio
+  ok    y con --strict el cero sin medir sale 1
+
+resultado: 21 de 21 aserciones en verde
+-- tests/gates/test_owner_resolution.py
+test_the_owner_is_found_from_a_foreign_cwd (__main__.OwnerResolutionTest.test_the_owner_is_found_from_a_foreign_cwd)
+El corredor invoca con cwd = el consumidor, no thyrox. ... ok
+test_the_owner_module_is_a_sibling_on_disk (__main__.OwnerResolutionTest.test_the_owner_module_is_a_sibling_on_disk)
+La premisa del arreglo, medida: dueño y gate viven juntos. ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.222s
+
+OK
+-- tests/gates/test_package_boundary.py
+
+1. Las tres clases de import se separan
+  ok    cruce al src/ ajeno -> cruza-paquete
+  ok    salida de la raiz de paquetes -> sale-de-la-raiz
+  ok    dentro del propio paquete -> interno
+  ok    nombre de paquete -> no-relativo
+
+2. La pertenencia la decide el paquete que declara, no la profundidad
+  ok    un archivo hondo pertenece a su paquete
+  ok    uno somero, al mismo
+  ok    un archivo fuera de la raiz no pertenece a ninguno
+
+3. El especificador se resuelve contra el DIRECTORIO del archivo
+  ok    desde src/cost.ts cruza
+  ok    desde src/context/deep.ts NO cruza (se queda en harness)
+  ok    control — comparar la cadena daria el mismo veredicto para los dos
+
+4. El recorrido encuentra los especificadores, y sólo ésos
+  ok    cinco especificadores, no seis (el comentario no cuenta)
+  ok    el dinamico entra
+  ok    el numero de linea acompana
+
+5. El barrido publica su denominador
+  ok    un cruce de paquete
+  ok    una salida de la raiz
+  ok    cuatro archivos medidos (3 de harness + el models.ts de agent)
+  ok    tres especificadores vistos
+  ok    el cruce nombra su destino
+
+6. Controles de anulación — retirada la causa, el veredicto CAMBIA
+  ok    con el cruce, hay hallazgo
+  ok    control — reescrito al nombre, el hallazgo desaparece
+  ok    con dos paquetes, el cruce se ve
+  ok    control — sin package.json vecino, ya no es cruce de paquete
+
+7. Rehúsa nombrando cuando la raíz no es una raíz de paquetes
+  ok    raiz sin paquetes rehúsa con PackageRootError
+
+resultado: 23 de 23 aserciones en verde
+-- tests/gates/test_rst_gate_root.py
+  ok    test_el_gate_de_sintaxis_ya_no_deriva_su_raiz_de_su_posicion
+  ok    test_la_aritmetica_vieja_da_un_veredicto_DISTINTO
+  ok    test_la_raiz_del_consumidor_no_es_el_arbol_que_lo_contiene
+  ok    test_la_raiz_derivada_tiene_lo_que_el_gate_toca
+4/4 aserciones verdes
+-- tests/gates/test_script_deprecated.py
+
+== review ==
+  ok    un script que no declara nada NO es asunto del gate
+  ok    la declaración completa no tiene motivos
+  ok    cabecera sin guard: falta el guard
+  ok    guard sin cabecera: faltan las tres claves
+  ok    y cada clave ausente se NOMBRA por separado
+  ok    OBSOLETE vale igual que DEPRECATED
+  ok    una clave vacía no cuenta como declarada
+  ok    la cabecera fuera de inicio de línea no cuenta
+
+== controles de anulación ==
+  ok    retirar el guard de una declaración completa cambia el veredicto
+  ok    retirar una clave de la cabecera cambia el veredicto
+
+== scan ==
+  ok    mide las tres raíces y ninguna más
+  ok    y encuentra los dos incompletos
+  ok    el guard NO se mide a sí mismo
+  ok    node_modules queda excluido
+  ok    completar los dos cambia el veredicto
+
+== main ==
+  ok    una raíz nombrada sale 0
+  ok    y el desglose por raíz va AUNQUE el total sea cero
+  ok    el conteo publica cuántas raíces y cuántos scripts
+  ok    --strict con un infractor sale 1
+  ok    y sin --strict sigue saliendo 0
+  ok    --quiet publica sólo el conteo
+  ok    con un árbol sin clones REHÚSA con código propio
+  ok    y NO emite ninguna cifra por stdout
+
+resultado: 23 de 23 aserciones en verde
+-- tests/hooks/test_error_log.py
+
+1. Con el directorio declarado, el fallo deja su entrada
+  ok    log_path cuelga del directorio declarado
+  ok    devuelve el CompletedProcess aunque falle
+  ok    el nombre del hook queda registrado
+  ok    el detalle del stderr queda registrado
+  ok    el returncode queda registrado
+  ok    control — un comando en verde no apenda nada
+
+2. Sin declarar, REHÚSA — no cae a un default de Path(__file__)
+  ok    results_dir rehúsa
+  ok    log_path rehúsa
+  ok    spool_path rehúsa
+
+3. El control que discrimina: sin parámetro no escribe, y AVISA
+  ok    no aparece ningún rastro en el árbol de THYROX
+  ok    el comando corrió igual — el hook no se rompe
+  ok    avisa nombrando la variable ausente
+
+4. La precedencia es cadena: proceso, después .env
+  ok    el proceso gana
+  ok    control — sin la del proceso cae al .env
+  ok    THYROX_RESULTS_DIR gana a la grafía heredada
+  ok    control — sin ella, la heredada resuelve
+
+5. El carrete: su ruta, su forma y su tope
+  ok    por defecto cuelga del directorio declarado
+  ok    HOOK_SPOOL_PATH la redirige — la forma de la fuente se conserva
+  ok    el cmd se encola como LISTA, reproducible tal cual
+  ok    el nombre del hook viaja con el evento
+  ok    nace con cero intentos
+  ok    con el tope alcanzado NO se encola un segundo evento
+  ok    y el descarte queda en el registro de prosa
+  ok    control — con el tope alto sí encola
+
+6. run_and_log nunca lanza — devuelve None sólo si no pudo arrancar
+  ok    un binario inexistente devuelve None
+  ok    y deja su causa registrada
+
+7. El puente para hooks de shell y sus tres códigos de salida
+  ok    sin separador -- devuelve 2
+  ok    sin comando tras -- devuelve 2
+  ok    propaga el returncode del comando
+  ok    127 cuando el proceso no pudo lanzarse
+
+8. El CLI, invocado como lo haría un hook de shell
+  ok    reemite el stdout del comando
+  ok    y sale con su código
+
+resultado: 32 de 32 aserciones en verde
+-- tests/hooks/test_flow_selection.py
+== 1. coincidencia directa por nombre ==
+  ok    rup resuelve a su homónimo
+== 2. si no hay homónimo, la descripción decide ==
+  ok    babok encuentra a ba-coordinator
+== 3. sin candidato, no se inventa uno ==
+  ok    scrum no resuelve
+== 4. DISCRIMINA: la descripción hace juego por PALABRA, no por subcadena ==
+  ok    BABOKISMO no es BABOK
+  ok    «responsable» no contiene el flow sp
+== 5. DISCRIMINA: el homónimo gana sobre el que sólo lo menciona ==
+  ok    gana el homónimo
+== 6. resolve_all reparte en resueltos y sin resolver ==
+  ok    dos resueltos
+  ok    uno sin resolver
+== 7. los flows canónicos son los catorce de DEC-R-01 ==
+  ok    catorce
+  ok    y son estos
+== 8. la mención lleva el prefijo obligatorio del ejecutable ==
+  ok    mención con prefijo
+  ok    y sin él no aparece
+== 9. los flows sin coordinator se NOMBRAN ==
+  ok    scrum aparece como sin coordinator
+== 10. las notas del consumidor entran verbatim ==
+  ok    la nota de evidencia
+  ok    la nota de cierre
+== 11. DISCRIMINA: un directorio ausente REHÚSA, no publica catorce huérfanos ==
+  ok    rehúsa
+  ok    y nombra la variable que lo declara
+== 12. main emite un SessionStart válido ==
+  ok    exit 0
+  ok    evento SessionStart
+  ok    con el mapa dentro
+== 13. main con directorio ausente: {} y el motivo en stderr, nunca rompe ==
+  ok    exit 0 — un hook no rompe el turno
+  ok    stdout es {}
+  ok    stderr nombra el directorio
+== 14. el recorrido por descripción es estable ==
+  ok    siempre el mismo, y es el primero alfabético
+
+24 ok, 0 fallos
+-- tests/hooks/test_maintenance_chain.py
+== 1. los pasos corren en orden y cada uno trae su última línea ==
+  ok    dos resultados
+  ok    en el orden declarado
+  ok    cada uno con su última línea
+  ok    ninguno agotado
+  ok    ninguno en rojo
+== 2. un paso en rojo NO detiene la cadena ==
+  ok    los dos pasos corrieron
+  ok    el primero salió en rojo
+  ok    y el segundo entregó igual
+  ok    el rojo se nombra en stderr
+== 3. DISCRIMINA: un paso agotado se marca Y se nombra en stderr ==
+  ok    se marca como agotado
+  ok    el plazo se nombra en stderr
+  ok    y stderr dice cuántos segundos
+== 4. DISCRIMINA: la suma de plazos se comprueba contra el presupuesto ==
+  ok    la cadena se construye igual — avisar no es bloquear
+  ok    stderr nombra la suma
+  ok    stderr nombra el presupuesto
+== 5. dentro del presupuesto NO hay aviso ==
+  ok    stderr queda limpio
+== 6. render SessionStart: cada cola entra al additionalContext ==
+  ok    declara el evento
+  ok    trae la cola del primer paso
+  ok    trae la cola del segundo
+  ok    y el preámbulo del consumidor
+== 7. render Stop: descarta la salida y emite {} exacto ==
+  ok    emite el objeto vacío
+== 8. CONTROL: un comando inexistente no se lee como verde ==
+  ok    el paso NO reporta 0
+  ok    no se marca como agotado — murió, no se colgó
+  ok    y se nombra en stderr
+== 9. CONTROL: la cadena vacía rehúsa — no publica un verde sin pasos ==
+  ok    rehúsa sin pasos
+== 10. CLI: los pasos y el presupuesto se inyectan por argumento ==
+  ok    sale 0
+  ok    publica las dos colas
+  ok    y el preámbulo inyectado
+== 11. CLI: el render Stop emite {} y NUNCA rompe el turno ==
+  ok    sale 0 pese a los dos incidentes
+  ok    stdout es el objeto vacío
+  ok    stderr nombra el paso en rojo
+  ok    stderr nombra el paso agotado
+== 12. un paso SIN salida sigue apareciendo, nombrado ==
+  ok    el paso mudo aparece
+  ok    declarado como sin salida
+  ok    y el otro trae la suya
+== 13. si el paso ya se nombra a sí mismo, la etiqueta no se repite ==
+  ok    sin etiqueta repetida
+  ok    pero el resumen entero sigue ahí
+  ok    y el que no se nombra sí la lleva
+== 14. DISCRIMINA: un paso agotado NO deja el trabajo corriendo ==
+  ok    se reporta agotado
+  ok    y el trabajo NO siguio corriendo
+
+40 ok, 0 fallos
+-- tests/hooks/test_pretooluse_dispatch.py
+== 1. ninguno aporta: {} y ni una línea de formato ==
+  ok    devuelve {}
+== 2. la salida atribuye por detector, porque el cliente no lo hace ==
+  ok    etiqueta el primero
+  ok    etiqueta el segundo
+  ok    conserva el texto de ambos
+  ok    el evento va en hookEventName
+== 3. un detector mudo no gasta ni separador (cortocircuito) ==
+  ok    no aparece la etiqueta del mudo
+  ok    y no queda separador colgando
+== 4. un detector roto se AÍSLA: no tumba a sus compañeros ==
+  ok    el sano publica igual
+  ok    y la excepción no viaja al contexto
+== 5. la ventana es COMPARTIDA y el recorte se declara ==
+  ok    la salida cabe en el presupuesto
+  ok    y dice cuánto dejó fuera
+  ok    los dos siguen presentes — ninguno enmudece al otro
+== 6. CONTROL que discrimina: cero detectores REHÚSA, no devuelve {} ==
+  ok    rehúsa con lista vacía
+  ok    y el mensaje dice que NO es lo mismo que no tener hallazgos
+== 7. carga parcial: sigue con los que hay, pero LO DICE ==
+  ok    ninguno cargó
+  ok    y los nombra a los dos
+== 8. el CLI nunca rompe el flujo: entrada basura -> {} y exit 0 ==
+{}
+  ok    sale 0
+
+17 ok, 0 fallos
+-- tests/hooks/test_process.py
+== 1. DISCRIMINA: stdout y stderr salen SEPARADOS ==
+  ok    el código es el del hijo
+  ok    stdout trae SÓLO lo suyo
+  ok    stderr trae SÓLO lo suyo
+  ok    no se marca agotado
+  ok    y arrancó
+== 2. un hijo que termina bien no se marca ni agotado ni ausente ==
+  ok    código 0
+  ok    timed_out False
+  ok    started True
+== 3. DISCRIMINA: el hijo agotado NO deja su trabajo corriendo ==
+  ok    se reporta agotado
+  ok    con el código sintético
+  ok    y el trabajo NO siguió corriendo
+== 4. ANULACIÓN: sin el guard, ese mismo trabajo SÍ sigue ==
+  ok    el subprocess.run pelado SÍ deja al hijo vivo
+== 5. un binario ausente NO revienta: se declara que no arrancó ==
+  ok    started False
+  ok    código sintético de ausencia
+  ok    y el motivo va en stderr
+== 6. el hijo que ya murió se cosecha — no queda zombi ==
+  ok    el estado quedó leído
+
+16 ok, 0 fallos
+-- tests/hooks/test_stop_gate.py
+== 1. modo por CÓDIGO: el declarado bloquea, el limpio no ==
+  ok    bloquea
+  ok    y el motivo trae la salida del motor
+  ok    el código limpio emite {}
+== 2. modo por CÓDIGO: el 2 declarado limpio NO bloquea ==
+  ok    el 2 declarado limpio emite {}
+== 3. modo por SALIDA: no-cero con texto bloquea; sin texto, no ==
+  ok    no-cero CON texto bloquea
+  ok    y el texto viaja al motivo
+  ok    no-cero SIN texto emite {}
+  ok    exit 0 emite {} aunque haya texto
+  ok    y sigue limpio SIN declarar el 0
+== 3-bis. DISCRIMINA: en modo por SALIDA decide stdout, NO stderr ==
+  ok    no-cero con stdout vacío y stderr lleno emite {}
+  ok    y el aviso del motor se NOMBRA en stderr
+  ok    con stdout sí bloquea
+  ok    y el motivo NO arrastra el stderr
+== 3-ter. modo por CÓDIGO: el motivo SÍ funde los dos flujos ==
+  ok    bloquea por código
+  ok    con stdout en el motivo
+  ok    y también con stderr
+== 4. DISCRIMINA: el exit 4 declarado limpio NO se reclasifica ==
+  ok    declarado limpio: {} y stderr callado
+  ok    y no se nombra como no medible
+  ok    sin declarar el 4, el mismo motor bloquea
+== 4-bis. el código no declarado es `no medible`, no un verde ==
+  ok    no bloquea — nadie sabría cómo resolverlo
+  ok    pero nombra el código en stderr
+  ok    y lo declara no medible
+== 4-ter. el motor puede ser un INVOCABLE, no sólo un argv ==
+  ok    el invocable bloquea igual
+  ok    y su texto viaja al motivo
+  ok    el invocable con 0 emite {}
+  ok    modo por código: el invocable también
+  ok    una reentrada NO lo invoca
+  ok    y el contador no se movió
+== 4-ter-bis. DISCRIMINA: la SANGRÍA del motor sobrevive al motivo ==
+  ok    la sangría de la primera línea sobrevive
+  ok    y la de la segunda
+  ok    sin dejar el salto de cola del motor
+== 4-quater. un invocable que revienta NO tumba el turno ==
+  ok    emite {}
+  ok    y lo NOMBRA en stderr
+== 5. DISCRIMINA: una reentrada NO consulta al motor ==
+  ok    emite {}
+  ok    y el motor NO corrió
+== 6. CONTROL: sin motor el gate calla, no finge ==
+  ok    emite {}
+  ok    y lo nombra en stderr
+== 7. CONTROL: los dos modos son EXCLUYENTES ==
+  ok    rehúsa los dos modos a la vez
+  ok    rehúsa sin ningún modo
+== 8. el motivo SIN ranura {output} sigue siendo válido ==
+  ok    el motivo sale entero
+== 9. CLI: emite JSON por stdout y SIEMPRE sale 0 ==
+  ok    sale 0
+  ok    bloquea
+  ok    con la salida del motor dentro
+== 10. CLI: el modo por salida se declara con su propia bandera ==
+  ok    sale 0
+  ok    y sin texto NO bloquea
+== 11. CLI: los dos modos a la vez REHÚSAN, y no emiten un veredicto ==
+  ok    no sale 0
+  ok    y NO publica un {} que se lea como limpio
+  ok    nombra el conflicto en stderr
+
+48 ok, 0 fallos
+-- tests/hooks/test_stop_payload.py
+== 1. la reentrada se lee del JSON, no por subcadena ==
+  ok    true declarado
+  ok    false declarado
+  ok    clave ausente
+  ok    objeto vacío
+== 2. el espaciado no cambia el veredicto ==
+  ok    espaciado '{"stop_hook_active":true}'
+  ok    espaciado '{"stop_hook_active"  :   tru'
+  ok    espaciado '{\n "stop_hook_active": true\n'
+== 3. un payload roto NO se lee como reentrada ==
+  ok    no es JSON
+  ok    cadena vacía
+  ok    None
+  ok    JSON que no es objeto
+== 4. DISCRIMINA: la clave ANIDADA no es la reentrada del turno ==
+  ok    la clave vive un nivel abajo
+  ok    y el patrón del bash sí acierta ahí
+== 5. DISCRIMINA: el payload GRANDE y multilínea da el mismo veredicto ==
+  ok    supera los 2 MB
+  ok    y sigue siendo reentrada
+== 6. read_payload: stdin ilegible NO rompe el turno ==
+  ok    None se lee como objeto vacío
+  ok    basura se lee como objeto vacío
+  ok    un objeto se devuelve entero
+  ok    un no-objeto se descarta
+
+19 ok, 0 fallos
+-- tests/hooks/test_stop_pending_work.py
+== 1. CLI: un árbol limpio emite {} y SIEMPRE sale 0 ==
+  ok    sale 0
+  ok    emite el objeto vacío
+== 2. CLI: con trabajo bloquea, con la prosa del consumidor ==
+  ok    sale 0 igual
+  ok    bloquea
+  ok    nombra el repo
+  ok    con la etiqueta inyectada
+  ok    y la prosa del consumidor
+== 3. DISCRIMINA: una reentrada NO barre nada ==
+  ok    el mismo repo sucio emite {}
+== 4. CONTROL: sin raíces NO publica un verde ==
+  ok    sale 0
+  ok    emite {}
+  ok    y lo nombra en stderr
+== 5. CONTROL: una etiqueta ausente NO se rellena sola ==
+  ok    emite {}, no un motivo a medias
+  ok    y nombra las etiquetas que faltan
+== 6. CONTROL: una etiqueta mal formada rehúsa SIN stdout ==
+  ok    no sale 0
+  ok    y NO publica stdout
+
+15 ok, 0 fallos
+-- tests/hooks/test_stop_tests.py
+== 1. reentrada: stop_hook_active corta antes de medir nada ==
+  ok    sale 0
+  ok    y NO corrió el runner (su salida no aparece)
+== 2. el turno NO tocó el directorio vigilado: no se corre nada ==
+  ok    sale 0
+  ok    no corrió el runner
+  ok    y no imprime nada
+== 3. CONTROL que discrimina: con trabajo SUCIO sí corre ==
+  ok    sale 0
+  ok    corrió el runner y publica su última línea
+== 4. el trabajo recién COMMITEADO también cuenta ==
+  ok    el árbol está limpio
+  ok    y aun así corrió, por el último commit
+== 5. runner EN ROJO: informa y NO bloquea ==
+  ok    SALE 0 pese al rojo — informa, no bloquea
+  ok    nombra el código de salida real del runner
+  ok    y trae la salida del runner
+== 6. runner ausente: no se inventa un verde ==
+  ok    sale 0
+  ok    y no afirma que las pruebas pasaron
+== 7. CONTROL: sin parámetro de directorio, rehúsa — no mide otra cosa ==
+  ok    rehúsa sin directorio vigilado
+  ok    y el mensaje nombra la variable ausente
+== N. CONTROL: el módulo ARRANCA como guion, que es como lo invoca el stub ==
+  ok    sale 0
+  ok    y NO muere importando su propio paquete
+== O. El hook NO se invoca a sí mismo: guard de recursión POR PROCESO ==
+  ok    con el marcador puesto rehúsa: sale 0
+  ok    y NO corre el corredor (salida vacía)
+  ok    sin el marcador SÍ corre (control de anulación)
+  ok    y el marcador viaja al corredor hijo
+
+22 ok, 0 fallos
+-- tests/legacy/test_censar_scripts.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/legacy/test_censar_scripts.py", line 27, in <module>
+    spec.loader.exec_module(censar)
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/tests/corpus/censar_scripts.py'
+-- tests/legacy/test_clasificar_agentes.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/legacy/test_clasificar_agentes.py", line 42, in <module>
+    spec.loader.exec_module(clf)
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/tests/agents/clasificar_agentes.py'
+-- tests/legacy/test_derive_submodule.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/legacy/test_derive_submodule.py", line 40, in <module>
+    spec.loader.exec_module(store)
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/tests/agents/agent_store.py'
+-- tests/legacy/test_error_catalog.py
+ERROR — el gate no existe: /home/user/.claude/scripts/gates/check_error_catalog.py
+NO se emite conteo: un 0 aqui seria un verde falso.
+-- tests/legacy/test_probe_model_switch_cache.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/legacy/test_probe_model_switch_cache.py", line 43, in <module>
+    spec.loader.exec_module(probe)
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/tests/session/probe_model_switch_cache.py'
+-- tests/legacy/test_reach_roots_shim.py
+
+1. El stub declara a THYROX como dueño canónico
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/legacy/test_reach_roots_shim.py", line 58, in <module>
+    source = MODULE.read_text(encoding="utf-8")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/pathlib.py", line 1058, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/tests/reach_roots.py'
+-- tests/legacy/test_task_ids.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/legacy/test_task_ids.py", line 43, in <module>
+    _spec.loader.exec_module(kx)
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/tests/task/task_ids.py'
+-- tests/legacy/test_task_source_citas.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/legacy/test_task_source_citas.py", line 47, in <module>
+    _spec.loader.exec_module(ts)
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/tests/task/task_source.py'
+-- tests/legacy/test_vecinos_de_tarea.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/legacy/test_vecinos_de_tarea.py", line 47, in <module>
+    spec.loader.exec_module(vecinos)
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/tests/task/vecinos_de_tarea.py'
+-- tests/meta/test_runner_reach.py
+== el corredor sabe decir qué va a correr ==
+  ok  `run.sh --list` enumera archivos en vez de rehusar
+== ninguna lengua queda fuera del alcance ==
+  ok  TypeScript: hay archivos de test en disco (281)
+  ok  TypeScript: los 281 archivos están en el alcance
+  ok  Python: hay archivos de test en disco (49)
+  ok  Python: los 49 archivos están en el alcance
+  ok  shell: hay archivos de test en disco (92)
+  ok  shell: los 92 archivos están en el alcance
+== el corredor no promete más lenguas de las que invoca ==
+  ok  hay un solo mensaje de éxito (1)
+  ok  el mensaje de éxito dice «tres» — hay 3 lengua(s) en el alcance
+
+OK: alcance del corredor verificado (422 archivos enumerados)
+-- tests/paths/test_consumer_root.py
+test_asciende_al_marcador_desde_un_subdirectorio (__main__.ConsumerRootTest.test_asciende_al_marcador_desde_un_subdirectorio)
+Un gate invocado desde dentro del consumidor sigue midiéndolo. ... ok
+test_declarado_gana (__main__.ConsumerRootTest.test_declarado_gana)
+El argumento explícito precede a todo lo demás. ... ok
+test_sin_marcador_devuelve_el_punto_de_partida (__main__.ConsumerRootTest.test_sin_marcador_devuelve_el_punto_de_partida)
+Sin `.claude` en ningún ancestro no se inventa una raíz. ... ok
+test_variable_de_entorno (__main__.ConsumerRootTest.test_variable_de_entorno) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.007s
+
+OK
+-- tests/paths/test_reach.py
+
+1. La constante por raíz se LEE (H-DOCS-1070)
+  ok    THYROX_REACH_API gana sobre el árbol
+  ok    control — sin la constante por raíz cae al clon del árbol
+
+2. El proceso gana al archivo .env
+  ok    el proceso gana
+  ok    control — sin proceso, manda el .env
+
+3. El ascenso NO depende de la profundidad
+  ok    desde 2 niveles
+  ok    desde 5 niveles
+  ok    control — los dos coinciden (un offset fijo daría distinto)
+
+4. El .env se lee sin librería de terceros
+  ok    ignora el comentario y la línea en blanco
+  ok    acepta el prefijo export
+  ok    quita la comilla doble
+  ok    quita la comilla simple
+  ok    descarta la línea sin '='
+
+5. Las variables nombran al LECTOR, como el binario
+  ok    la primera es la del lector
+  ok    la heredada queda de segunda
+  ok    el tramo extra sigue la misma forma
+  ok    y su heredada
+  ok    la constante por raíz nombra al lector
+  ok    y admite la heredada
+  ok    gana la primera de la tupla
+  ok    control — retirada la primera, manda la segunda
+
+6. El tramo extra exige rutas absolutas
+  ok    una raíz extra absoluta entra
+  ok    una relativa rehúsa
+
+7. Rehúsa nombrando, nunca devuelve un conjunto corto
+  ok    raíz desconocida rehúsa
+  ok    require_all rehúsa si falta una raíz
+
+8. El CLI sobrevive a que le cierren la salida
+  ok    no vuelca traceback por stderr
+  ok    y sale sin error
+
+9. thyrox se localiza a SÍ MISMO por mecanismo, no por aritmética (#146)
+  ok    THYROX_ROOT declarada gana
+  ok    control — sin la variable, asciende hasta el marcador
+  ok    y acierta desde cualquier profundidad
+  ok    un directorio llamado thyrox sin el marcador no cuenta
+
+10. desde un consumidor, lo resuelve el MECANISMO multi-repo (#146)
+  ok    sin THYROX_ROOT, lo halla como hermano de los clones
+  ok    control — un hermano llamado thyrox sin marcador no basta
+
+11. El CLI publica la raíz de THYROX — el bootstrap que shell necesita
+  ok    desde su sitio, sale 0
+  ok    y publica la raíz real de thyrox
+  ok    la variable declarada gana sobre el ascenso
+  ok    una copia fuera del árbol halla al proveedor por el hermano
+  ok    y publica su raíz
+  ok    control — sin marcador en ningún hermano, rehúsa con 2
+  ok    control — y NO publica una ruta
+  ok    control — el motivo nombra el marcador, no «modo desconocido»
+
+resultado: 40 de 40 aserciones en verde
+-- tests/repo/test_pending_work.py
+== 1. un repo limpio no aparece en el barrido ==
+  ok    cero pendientes
+== 2. las cuatro cuentas se miden por separado ==
+  ok    los tres aparecen
+  ok    sucio cuenta 1 sin commitear
+  ok    stage cuenta 1 en stage
+  ok    suelto cuenta 1 sin añadir
+  ok    y ninguno tiene commits por delante
+== 3. DISCRIMINA: lo IGNORADO no cuenta como trabajo sin publicar ==
+  ok    un archivo ignorado NO aparece
+== 4. DISCRIMINA: cuenta los ARCHIVOS de un directorio nuevo, no el dir ==
+  ok    cuenta 3, no 1
+== 5. sin upstream, `ahead` es 0 y NO revienta ==
+  ok    mide lo demás sin caerse
+  ok    y ahead queda en 0
+== 6. con upstream, los commits locales por delante se cuentan ==
+  ok    un commit por delante
+  ok    y el árbol queda limpio
+== 7. un directorio que NO es repo se salta, no revienta ==
+  ok    sólo el repo real aparece
+== 8. CONTROL: la lista de raíces VACÍA rehúsa, no dice «nada pendiente» ==
+  ok    rehúsa sin raíces
+== 9. el render usa las etiquetas del CONSUMIDOR, y las exige ==
+  ok    una línea por repo
+  ok    con la etiqueta inyectada
+  ok    omite las cuentas en cero
+  ok    y compone las que sí
+  ok    el otro repo trae la suya
+  ok    una etiqueta ausente rehúsa
+== 10. `engine` es lo que `stop_gate.Gate` consume ==
+  ok    limpio devuelve (0, '')
+  ok    con trabajo devuelve código 1
+  ok    y nombra sólo al repo con trabajo
+
+23 ok, 0 fallos
+-- tests/roster/test_job_liveness.py
+== 1. shape terminado gana SIEMPRE, sin importar la antigüedad ==
+  ok    verdict terminated
+  ok    procedencia: el marcador decidió
+== 2. DISCRIMINA: 'cut' DENTRO de la ventana sigue siendo 'recent' ==
+  ok    no se declara muerto por el contenido solo
+  ok    procedencia: fue la antigüedad, no el marcador
+== 3. y 'pending' DENTRO de la ventana también es 'recent' ==
+  ok    mismo veredicto que 'cut' mientras es reciente
+== 4. DISCRIMINA: 'cut' FUERA de la ventana es evidencia POSITIVA ==
+  ok    stalled_evident, no stalled_unknown
+  ok    procedencia: el marcador decidió
+== 5. y 'pending' FUERA de la ventana es sólo AUSENCIA de evidencia ==
+  ok    stalled_unknown, no stalled_evident
+  ok    procedencia: sólo la antigüedad, ningún marcador
+== 6. DISCRIMINA: la holgura de reloj es una constante PROPIA, sumada ==
+  ok    950s con holgura de 60 sigue 'recent'
+  ok    el mismo caso SIN holgura ya es 'stalled_unknown'
+== 7. justo en el borde (900+60=960) sigue 'recent'; a 961 ya no ==
+  ok    960s exactos: recent
+  ok    961s: stalled_unknown
+== 8. un shape fuera del vocabulario rehúsa, no se adivina ==
+  ok    rehúsa shape desconocido
+== 9. is_alive() — el booleano ENCIMA del veredicto de 4 valores ==
+  ok    terminated no está vivo
+  ok    recent SÍ está vivo
+  ok    stalled_evident no está vivo
+  ok    stalled_unknown TAMPOCO está vivo — ausencia no es evidencia de vida
+== 10. DISCRIMINA: sweep() separa lo ilegible en cuarentena, NUNCA en diagnoses ==
+  ok    el legible aparece en diagnoses
+  ok    el corrupto NO aparece en diagnoses
+  ok    el corrupto aparece en quarantined, con su razón
+  ok    nada más en cuarentena
+== 11. un symlink roto se pone en cuarentena ANTES de leer su contenido ==
+  ok    el symlink roto queda en cuarentena, no en diagnoses
+== 12. sweep() con entradas de las TRES formas, contra un umbral real ==
+  ok    a: terminated pase lo que pase
+  ok    b: cut reciente = recent
+  ok    c: cut viejo = stalled_evident
+  ok    d: pending viejo = stalled_unknown
+  ok    sin cuarentena en este barrido
+== 13. una lista de entradas VACÍA no rehúsa — aquí SÍ es un estado legítimo ==
+  ok    sweep([]) no rehúsa
+
+29 ok, 0 fallos
+-- tests/roster/test_orphan_task.py
+== 1. el vocabulario de veredictos está declarado y es cerrado ==
+  ok    cinco veredictos nombrados por su causa
+== 2. el episodio real: 0 bytes, viejo, fd 0 en un socket ==
+  ok    veredicto
+  ok    la procedencia dice que decidió el fd 0
+  ok    el pid viaja con el veredicto
+== 3. MISMO proceso de 3 horas, pero su .output creció → no se marca ==
+  ok    un trabajo largo que avanza es progressing
+  ok    no lo decidió el fd 0
+== 4. 0 bytes y viejo, pero el fd 0 es un archivo real ==
+  ok    ausencia de evidencia ≠ evidencia
+== 5. dentro de la ventana no se juzga ==
+  ok    recién arrancado es recent
+== 6. la holgura de reloj es una constante propia, sumada al umbral ==
+  ok    930s con umbral 900 + holgura 60 sigue siendo recent
+== 7. la cadena de padres es transitiva ==
+  ok    7243 y 7241 descienden de 516; 999 no
+== 8. un ciclo en la tabla de padres no cuelga el barrido ==
+  ok    el recorrido termina
+== 9. una entrada sin proceso emparejable es unpaired, no un vacío ==
+  ok    veredicto
+  ok    sin pid que citar
+== 10. el barrido empareja por cadena de padres, no por orden ==
+  ok    la colgada
+  ok    la que avanza
+== 11. sweep([]) no rehúsa — un roster sin trabajo es normal ==
+  ok    vacío legítimo
+
+16 ok, 0 fallos
+-- tests/roster/test_process_liveness.py
+== 1. pid ausente: dead_pid, sin importar recorded_proc_start ==
+  ok    verdict dead_pid
+  ok    procedencia: no fue el starttime
+== 2. estado 'S', sin recorded_proc_start: live ==
+  ok    verdict live
+  ok    procedencia: no fue el starttime
+== 3. DISCRIMINA EL ORDEN: estado 'R' (parece vivo) + starttime que NO coincide == procstart_mismatch, NO live ==
+  ok    no se declara vivo por el estado solo
+  ok    procedencia: el starttime decidió
+== 4. estado 'R' + starttime que SÍ coincide: live ==
+  ok    coincide -> live
+  ok    procedencia: el match no la marca (sólo el mismatch la marca)
+== 5. estado 'Z': zombie (con o sin recorded_proc_start) ==
+  ok    verdict zombie
+  ok    zombie con starttime confirmado sigue siendo zombie
+== 6. estado 'T': stopped ==
+  ok    verdict stopped
+== 7. zombie y stopped se distinguen — no colapsan en uno solo ==
+  ok    zombie != stopped
+== 8. DISCRIMINA: recorded_proc_start=None SALTA el paso — read_start ni se llama ==
+  ok    live sin tocar read_start
+== 9. DISCRIMINA: read_state que LANZA OSError -> UnreadableProcessError ==
+  ok    lanza UnreadableProcessError
+  ok    trae el pid
+== 10. DISCRIMINA: read_start que LANZA OSError -> UnreadableProcessError ==
+  ok    lanza UnreadableProcessError
+== 11. is_alive() — sólo 'live' cuenta como vivo ==
+  ok    live está vivo
+  ok    dead_pid no está vivo
+  ok    procstart_mismatch no está vivo
+  ok    zombie no está vivo
+  ok    stopped no está vivo
+== 12. CONTROL: todo veredicto emitido está en VERDICTS ==
+  ok    los cinco veredictos posibles, todos declarados
+== 13. DISCRIMINA LA ARITMÉTICA: comm con espacio Y paréntesis dentro ==
+  ok    estado leído correctamente pese al comm raro
+  ok    starttime leído correctamente pese al comm raro
+  ok    el corte por el PRIMER ')' da un campo distinto — es lo que se evita
+== 14. lector por defecto: pid inexistente -> None (no revienta) ==
+  ok    read_process_state(pid inexistente) = None
+  ok    read_proc_start(pid inexistente) = None
+== 15. lector por defecto contra un pid real (este proceso) ==
+  ok    el estado propio es una letra sola, no None
+  ok    el starttime propio es numérico, no None
+
+29 ok, 0 fallos
+-- tests/session/test_installed_hooks_resolve.py
+test_every_command_names_a_file_that_exists (__main__.InstalledHooksResolve.test_every_command_names_a_file_that_exists) ... ok
+test_it_emits_the_three_events (__main__.InstalledHooksResolve.test_it_emits_the_three_events)
+Sin esto, un instalador que no escribiera nada daría verde. ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.131s
+
+OK
+-- tests/session/test_job_ledger.py
+== 1. register() + jobs() — un trabajo anotado se lista con sus datos ==
+  ok    un solo trabajo listado
+  ok    con la etiqueta correcta
+  ok    con el log correcto
+  ok    con el pid correcto
+  ok    con el proc_start correcto
+  ok    con el command correcto
+  ok    register() devuelve el mismo Job
+== 2. register('') — una etiqueta vacía no nombra un trabajo ==
+  ok    lanza EmptyLabelError
+== 3. DISCRIMINA (hecho 4): forget() sobre una etiqueta ausente REHÚSA ==
+  ok    lanza UnknownJobError
+== 4. forget() sobre un trabajo real lo retira y devuelve sus datos ==
+  ok    devuelve el Job soltado
+  ok    ya no aparece en jobs()
+== 5. settle(): marcador presente -> collected, sin importar 'alive' ==
+  ok    collected pese a 'alive=True'
+== 6. settle(): sin marcador y con vida -> waiting ==
+  ok    waiting
+== 7. DISCRIMINA (hecho 2): la carrera — el proceso escribe el marcador justo antes de que 'alive' diga que ya murió ==
+  ok    con la segunda mirada: collected, NO bailed
+== 8. sin la carrera: no vive y sin marcador -> bailed ==
+  ok    bailed
+== 9. settle(): el .job desapareció entre la instantánea y la pregunta -> forgotten ==
+  ok    forgotten
+== 10. DISCRIMINA (hecho 3): settle() sola NO retira nada del registro ==
+  ok    el veredicto es collected
+  ok    y AUN ASÍ sigue registrado — sólo wait()/forget() retiran
+== 11. wait(): sin trabajos registrados -> {} de inmediato ==
+  ok    diccionario vacío
+== 12. wait(): todos asientan antes del plazo -> veredicto + retiro del registro ==
+  ok    a: collected
+  ok    b: bailed (sin marcador, sin vida)
+  ok    los dos se retiraron del registro
+== 13. DISCRIMINA: el timeout NO se traga a los que ya asentaron ==
+  ok    a: collected pese al timeout
+  ok    b: bailed pese al timeout
+  ok    c: waiting — es el que nunca asentó
+  ok    los TRES siguen registrados — nada se retira sin el lote completo
+== 14. is-registered: un trabajo con vida ilimitada agota el plazo, no el número de vueltas ==
+  ok    agota el plazo con waiting
+== 15. DISCRIMINA (hecho 1): escritura atómica — un fallo simulado entre escribir el temporal y renombrarlo deja el .job anterior intacto y sin temporales huérfanos ==
+  ok    el registro propagó el OSError simulado
+  ok    el .job anterior sigue byte a byte igual tras el fallo
+  ok    ningún temporal quedó huérfano
+  ok    jobs() sigue viendo un solo trabajo, el de antes
+  ok    con el pid de antes, no el del intento fallido
+== 16. CONTROL: todo veredicto que settle()/wait() emiten está en SETTLEMENTS ==
+  ok    los cuatro veredictos posibles, todos dentro de SETTLEMENTS
+  ok    y se vieron los cuatro
+
+34 ok, 0 fallos
+-- tests/session/test_task_pool.py
+== 1. parse_commands — filtra vacías exactas y comentarios, NO espacios sueltos ==
+  ok    dos comandos reales + la línea de espacios sobrevive
+== 2. width <= 0 — DISCRIMINA (hecho 2): rehúsa antes de admitir nada ==
+  ok    width=0 lanza InvalidWidthError
+  ok    width=-1 lanza InvalidWidthError
+  ok    ningún spawn se llamó (rehusó ANTES de admitir)
+== 3. cero comandos tras filtrar — DISCRIMINA (hecho 3) ==
+  ok    [] lanza EmptyCommandListError
+  ok    ['', '# sólo comentarios', '#otro'] lanza EmptyCommandListError
+  ok    ningún spawn se llamó
+== 4. etiqueta, log y registro — un comando real, width amplia ==
+  ok    dos comandos filtrados llegaron a spawn (el comentario NO)
+  ok    el primero conserva su comando literal
+  ok    su log usa el prefijo y el índice 1-based con ceros
+  ok    el segundo etiqueta 002 (índice sobre la lista YA filtrada)
+  ok    dos Job registrados, en orden de lanzamiento
+  ok    el Job guarda el comando (divergencia declarada)
+  ok    el directorio de logs se creó
+== 5. anchura acotada — DISCRIMINA (hecho 4): sondea, no lanza de más ==
+  ok    los tres se lanzaron (tras liberar hueco)
+  ok    hubo exactamente UN sleep — el de la admisión del tercero (la barrera final no necesita ninguno: los tres ya asentaron)
+  ok    el sleep de admisión usó el interval inyectado
+  ok    cmd-3 fue el tercero en lanzarse
+  ok    y los tres verdict quedaron 'collected'
+== 6. verdict 'settled' — todos escriben su marcador ==
+  ok    verdict == settled
+  ok    los dos quedaron 'collected'
+== 7. verdict 'bailed' — uno muere sin marcador ==
+  ok    el que nunca escribió su marcador y no está vivo → verdict bailed
+== 8. verdict 'timed_out' — DISCRIMINA: gana sobre 'bailed' ==
+  ok    con uno 'bailed' Y otro sin asentar, gana timed_out
+  ok    el que se cuelga queda 'waiting' en el detalle
+== 9. adaptador Job→pid — el Job registrado SIEMPRE trae pid propio ==
+  ok    el único Job trae su pid
+== 10. DISCRIMINA (hecho 5): marcador en shell exterior, con bash REAL ==
+  ok    un solo shell: el comando que llama exit SE LLEVA el marcador
+  ok    shell exterior: el marcador sobrevive al exit del comando
+
+27 ok, 0 fallos
+-- tests/store/test_agent_sessions.py
+== 1. connect() crea el esquema núcleo: 8 columnas + 2 índices ==
+  ok    las 8 columnas núcleo
+  ok    los 2 índices declarados
+== 2. CONTROL: store_dir vacío rehúsa, no crea nada silenciosamente ==
+  ok    rehúsa store_dir vacío
+== 3. extra_columns — migración aditiva, idempotente ==
+  ok    las columnas extra aparecen
+  ok    reconectar es idempotente
+== 4. register_session — inserta una sesión nueva ==
+  ok    status por defecto
+  ok    subagent_type
+== 5. DISCRIMINA: el upsert NO revierte una sesión terminal a running ==
+  ok    status se queda completed
+  ok    output_key se queda out-1
+== 6. update_session — COALESCE por campo: sólo toca lo que se pasa ==
+  ok    outcome updated
+  ok    status cambia
+  ok    output_key no tocado
+== 7. DISCRIMINA: la guarda de no-op no mueve updated_at sin cambio real ==
+  ok    outcome unchanged
+  ok    updated_at NO se mueve
+== 8. update_session — el tercer desenlace: agent_id inexistente rehúsa ==
+  ok    rehúsa agent_id ausente
+== 9. update_session — columna desconocida rehúsa (no la interpola) ==
+  ok    rehúsa columna desconocida
+== 10. update_session — create_if_missing crea el stub y aplica el update ==
+  ok    outcome updated
+  ok    subagent_type del stub luego actualizado
+  ok    status aplicado
+== 11. list_sessions — orden por started_at, filtro por status, rehúsa inválido ==
+  ok    orden por started_at
+  ok    filtro por status
+  ok    rehúsa status inválido
+== 12. DISCRIMINA: usage_census — AND (no OR) en el predicado no-medido ==
+  ok    c1 sin ningún dato -> sin_clasificar
+  ok    c2 con un dato parcial -> huerfano, no sin_clasificar
+== 13. usage_census — rehúsa measure_columns vacío ==
+  ok    rehúsa measure_columns vacío
+== 14. usage_census — agregado es None (no cero fabricado) sin medidos ==
+  ok    sin filas medidas, aggregate es None
+== 15. usage_census — el agregado suma correctamente sobre los medidos ==
+  ok    n medidos
+  ok    suma de m1
+
+28 ok, 0 fallos
+-- tests/transcript/test_messages.py
+== 1. el último mensaje humano es el que se devuelve ==
+  ok    el último, no el primero
+== 2. CONTROL: un resumen de compactación NO es el último mensaje ==
+  ok    gana el humano, no el resumen
+== 3. las otras tres formas inyectadas tampoco cuentan ==
+  ok    ni meta ni notificación desplazan al humano
+== 4. un eco de herramienta no es un mensaje ==
+  ok    el bloque tool_result se salta
+== 5. bloques de texto: se concatenan ==
+  ok    se unen con salto de línea
+== 6. CONTROL: sin NINGÚN origin declarado, REHÚSA ==
+  ok    rehúsa sin procedencia
+== 7. un transcript sin humanos, pero CON procedencia, da vacío ==
+  ok    cadena vacía, no excepción
+== 8. una línea corrupta no tumba la lectura ==
+  ok    se salta y sigue
+== 9. un archivo que no existe da vacío, no revienta ==
+  ok    sin archivo, sin texto
+== 10. el último mensaje del ASISTENTE — la otra mitad ==
+  ok    devuelve el último, con su texto
+  ok    un transcript sin asistente da vacío
+
+11 ok, 0 fallos
+-- tests/transcript/test_model.py
+== 1. model_of — un assistant con modelo Claude real ==
+  ok    el identificador viaja verbatim
+== 2. model_of — un mensaje de usuario no aplica ==
+  ok    no es assistant
+== 3. model_of — assistant SIN el campo model ==
+  ok    sin la clave model
+== 4. model_of — un identificador de OTRO proveedor no pasa el prefijo ==
+  ok    gpt-4 no empieza con claude-
+== 5. model_of — DISCRIMINA: identificadores con la versión ADELANTE ==
+  ok    claude-3-5-sonnet se reconoce por prefijo, no por gramática de partes
+  ok    claude-3-5-haiku se reconoce por prefijo, no por gramática de partes
+  ok    claude-3-7-sonnet se reconoce por prefijo, no por gramática de partes
+== 6. accumulate_by_model — reparte por modelo, NO un total plano ==
+  ok    dos cubos, uno por modelo
+  ok    el cubo de sonnet NO incluye el gasto de opus
+  ok    el cubo de opus NO incluye el gasto de sonnet
+  ok    cada cubo cuenta su propio mensaje
+== 7. accumulate_by_model — DISCRIMINA: streaming del MISMO id cuenta UNA vez ==
+  ok    un solo cubo
+  ok    el input NO se triplica
+  ok    un solo id único, aunque aparezca 3 veces
+== 8. accumulate_by_model — un mensaje con usage y SIN modelo cae en UNKNOWN_MODEL ==
+  ok    el cubo ausente existe con su nombre propio
+  ok    su gasto NO se pierde
+  ok    y NO se mezcla con el cubo de sonnet
+  ok    UNKNOWN_MODEL no es la cadena vacía ni None (cubo nombrado, no ambiguo)
+== 9. accumulate_by_model — la deduplicación es GLOBAL, no por cubo ==
+  ok    sólo el cubo de la PRIMERA aparición existe
+  ok    el cubo de opus ni se crea (dedup global, antes de agrupar)
+== 10. accumulate_by_model — cero líneas da un dict vacío, sin excepción ==
+  ok    ningún cubo
+== 11. accumulate_by_model — ignora lo que no trae usage, sin romperse ==
+  ok    sólo el que trae usage cuenta
+== 12. ANULACIÓN — retirar el prefijo hace que TODO pase, y sólo eso cambia ==
+  ok    control previo — gpt-4 sigue sin pasar
+  ok    CAUSA RETIRADA — con el prefijo vacío, gpt-4 SÍ pasa
+  ok    y un identificador Claude real sigue pasando igual (no es lo que cambió)
+  ok    restaurado — gpt-4 vuelve a no pasar
+
+26 ok, 0 fallos
+-- tests/transcript/test_usage.py
+== 1. usage_of — un mensaje assistant con las cuatro claves ==
+  ok    las cuatro claves mapeadas
+== 2. usage_of — un mensaje sin type assistant da None ==
+  ok    un mensaje de usuario no aplica
+== 3. usage_of — un assistant SIN usage da None, no revienta ==
+  ok    sin la clave usage
+== 4. usage_of — clave AUSENTE dentro de usage cuenta 0, no revienta ==
+  ok    cache_creation en 0 cuando falta la clave
+== 5. accumulate — suma básica de dos mensajes con ids distintos ==
+  ok    input sumado
+  ok    cache_creation sumado
+  ok    cache_read sumado
+  ok    output sumado
+  ok    dos ids únicos aportaron
+  ok    total() suma los cuatro
+== 6. DISCRIMINA: tres líneas con el MISMO id cuentan UNA vez ==
+  ok    input NO se triplica
+  ok    cache_read NO se triplica
+  ok    un solo id único, aunque aparezca 3 veces
+== 7. accumulate ignora lo que no aplica sin romperse ==
+  ok    sólo el que trae usage cuenta
+  ok    y su input se refleja
+== 8. accumulate de CERO líneas da Usage en ceros, sin excepción ==
+  ok    los cuatro componentes en 0
+  ok    cero mensajes únicos
+  ok    total() también da 0
+== 9. un message.id AUSENTE no se deduplica — se cuenta igual ==
+  ok    las dos apariciones sin id se suman (no se puede deduplicar)
+  ok    y cada una cuenta como su propio mensaje
+== 10. weighted — con pesos inyectados da la combinación esperada ==
+  ok    weighted() combina cada componente con su peso
+== 11. weighted — SIN peso inyectado da 0.0, no hay precio oculto ==
+  ok    un mapping vacío no asume ningún peso por defecto
+
+22 ok, 0 fallos
+  (49 suite(s) de Python, 10 en rojo)
+
+== shell (bash) ==
+-- ROJO tests/legacy/test-agent-artifacts.sh
+-- ROJO tests/legacy/test-agent-store-auto-recall-limit.sh
+-- ROJO tests/legacy/test-agent-store-buscar-tareas.sh
+-- ROJO tests/legacy/test-agent-store-clasificar-documentos.sh
+-- ROJO tests/legacy/test-agent-store-compara-antes-de-escribir.sh
+-- ROJO tests/legacy/test-agent-store-fecha-apertura.sh
+-- ROJO tests/legacy/test-agent-store-fecha-documento.sh
+-- ROJO tests/legacy/test-agent-store-fts-degradation.sh
+-- ROJO tests/legacy/test-agent-store-reassignment-guard.sh
+-- ROJO tests/legacy/test-agent-store-render-tablero.sh
+-- ROJO tests/legacy/test-agent-store-sessions.sh
+-- ROJO tests/legacy/test-agent-store-tareas.sh
+-- ROJO tests/legacy/test-agent-store-transcript-path.sh
+-- ROJO tests/legacy/test-agent-store-type-source.sh
+-- ROJO tests/legacy/test-agent-store-usage-columns.sh
+-- ROJO tests/legacy/test-agent-store-usage-source.sh
+-- ROJO tests/legacy/test-arranque-de-clon.sh
+-- ROJO tests/legacy/test-audit-timing.sh
+-- ROJO tests/legacy/test-aviso-de-arranque.sh
+-- ROJO tests/legacy/test-bridge-hooks.sh
+-- ROJO tests/legacy/test-carrete-store.sh
+-- ROJO tests/legacy/test-censo-contraparte.sh
+-- ROJO tests/legacy/test-censo-sobres-mensaje.sh
+-- ROJO tests/legacy/test-cifra-de-artefacto-vivo.sh
+-- ROJO tests/legacy/test-closure-graph.sh
+-- ROJO tests/legacy/test-contrato-de-escotilla.sh
+-- ROJO tests/legacy/test-coordinator-sin-worktree.sh
+-- ROJO tests/legacy/test-corpus-al-dia.sh
+-- ROJO tests/legacy/test-costo-agente.sh
+-- ROJO tests/legacy/test-despachador-pretooluse.sh
+-- ROJO tests/legacy/test-destino-del-reporte.sh
+-- ROJO tests/legacy/test-enlace-directorio-sin-decidir.sh
+-- ROJO tests/legacy/test-esperar-marcador.sh
+-- ROJO tests/legacy/test-eventos-hook.sh
+-- ROJO tests/legacy/test-evidence-tracked.sh
+-- ROJO tests/legacy/test-evidencia-varada.sh
+-- ROJO tests/legacy/test-find-reference-home.sh
+-- ROJO tests/legacy/test-flow-coordinador.sh
+-- ROJO tests/legacy/test-generator-determinism.sh
+-- ROJO tests/legacy/test-gitattributes.sh
+-- ROJO tests/legacy/test-githooks-activos.sh
+-- ROJO tests/legacy/test-graph-metrics.sh
+-- ROJO tests/legacy/test-hallazgo-submodulo.sh
+-- ROJO tests/legacy/test-hallazgo-sucesor.sh
+-- ROJO tests/legacy/test-hook-error-log.sh
+-- ROJO tests/legacy/test-hook-script-token.sh
+-- ROJO tests/legacy/test-hooks-timeout.sh
+-- ROJO tests/legacy/test-ids-entre-ramas.sh
+-- ROJO tests/legacy/test-implementation-order.sh
+-- ROJO tests/legacy/test-inject-auto-recall.sh
+-- ROJO tests/legacy/test-instalar-config-usuario.sh
+-- ROJO tests/legacy/test-lib.sh
+-- ROJO tests/legacy/test-markdown-to-rst.sh
+-- ROJO tests/legacy/test-medir-disparo-de-hooks.sh
+-- ROJO tests/legacy/test-merge-sqlite-union.sh
+-- ROJO tests/legacy/test-model-catalog.sh
+-- ROJO tests/legacy/test-mutante-en-staging.sh
+-- ROJO tests/legacy/test-parallel.sh
+-- ROJO tests/legacy/test-premise-drift.sh
+-- ROJO tests/legacy/test-reconciliar-agentes.sh
+-- ROJO tests/legacy/test-reconciliar-store-journal.sh
+-- ROJO tests/legacy/test-reconciliar-store-status.sh
+-- ROJO tests/legacy/test-record-environment.sh
+-- ROJO tests/legacy/test-reference-root-resolution.sh
+-- ROJO tests/legacy/test-refrescar-tablero.sh
+-- ROJO tests/legacy/test-refresh-board.sh
+-- ROJO tests/legacy/test-register-agent-session.sh
+-- ROJO tests/legacy/test-rst-validation-gate.sh
+-- ROJO tests/legacy/test-run-task-pool.sh
+-- ROJO tests/legacy/test-script-deprecated.sh
+-- ROJO tests/legacy/test-script-naming.sh
+-- ROJO tests/legacy/test-sincronizar-settings-local.sh
+-- ROJO tests/legacy/test-snapshot-tasks.sh
+-- ROJO tests/legacy/test-stop-gate-tablero-desactualizado.sh
+-- ROJO tests/legacy/test-stop-gate-trabajo-sin-publicar.sh
+-- ROJO tests/legacy/test-suite-discrimina.sh
+-- ROJO tests/legacy/test-unreachable-rules.sh
+-- ROJO tests/legacy/test-veredicto-de-gate.sh
+-- ROJO tests/legacy/test-verificar-persistencia.sh
+-- ROJO tests/legacy/test-verificar-premisa.sh
+-- ROJO tests/legacy/test-verificar-rutas-de-hook.sh
+-- ROJO tests/legacy/test-verify-task-store.sh
+-- ROJO tests/legacy/test-vocabulario-gate-hook.sh
+-- ROJO tests/legacy/test-vocabulario-prosa.sh
+-- ROJO tests/legacy/test-volcar-tarea-al-store.sh
+-- ROJO tests/legacy/test-wait-jobs.sh
+  (92 suite(s) de shell, 86 en rojo)
+
+== alcance ==
+  TypeScript: 281 archivo(s), EN ROJO
+  Python: 49 suite(s), 10 en rojo
+  shell: 92 suite(s), 86 en rojo
+
+FALLA: 3 lengua(s) en rojo
+EXIT=1

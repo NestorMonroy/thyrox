@@ -197,7 +197,18 @@ class JobLedger:
         if not label:
             raise EmptyLabelError(
                 "una etiqueta vacía no nombra un trabajo; no se registra nada")
-        job = Job(label=label, log=Path(log), pid=pid,
+        # La ruta se ANCLA al cwd del registro. Una ruta relativa se resuelve
+        # contra el cwd de quien la usa, y el escritor y el lector rara vez
+        # comparten el suyo: un trabajo lanzado con `cd X && …` escribe en X,
+        # y la barrera —o el Stop gate, o una persona— lo busca desde donde
+        # esté parada. Medido 2026-09-06: un log de 141 559 bytes se leyó como
+        # vacío por eso, y de ese «vacío» salió un diagnóstico falso.
+        #
+        # `abspath` y no `resolve()`: hace falta anclar al cwd, no seguir
+        # symlinks. `resolve()` reescribiría `/tmp/x` a `/private/tmp/x` donde
+        # `/tmp` sea enlace, y el ledger dejaría de devolver la ruta que el
+        # llamador nombró.
+        job = Job(label=label, log=Path(os.path.abspath(log)), pid=pid,
                    proc_start=proc_start, command=command)
         self._write(job)
         return job

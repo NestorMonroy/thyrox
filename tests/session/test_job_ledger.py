@@ -35,6 +35,7 @@ cosa esté corriendo.
 """
 from __future__ import annotations
 
+import os
 import tempfile
 from pathlib import Path
 
@@ -306,6 +307,48 @@ with tempfile.TemporaryDirectory() as tmp:
     check("los cuatro veredictos posibles, todos dentro de SETTLEMENTS",
           True, veredictos <= set(jl.SETTLEMENTS))
     check("y se vieron los cuatro", set(jl.SETTLEMENTS), veredictos)
+
+print("== 17. DISCRIMINA: el log se ANCLA al cwd del registro, no al del lector ==")
+# Episodio medido 2026-09-06: un trabajo lanzado con `cd /home/user/thyrox && …`
+# escribió su salida en una ruta RELATIVA; el lector la buscó con la misma ruta
+# relativa desde `/home/user/kaupamex-docs` y no halló nada. Se leyó ese nada
+# como «el comando no produjo salida» —el archivo tenía 141 559 bytes— y de ahí
+# salió un diagnóstico falso (`AP-5`, el `| tail`). El defecto no está en el
+# pipe: una ruta relativa se resuelve contra el cwd de QUIEN LA USA, y aquí el
+# escritor y el lector tienen cwd distintos.
+#
+# El ledger es el punto donde la ambigüedad se puede cerrar de una vez: si
+# `register` ancla la ruta al cwd del registro, todo lector posterior —barrera,
+# `pending`, el Stop gate, una persona— recibe una ruta que no depende de dónde
+# esté parado.
+with tempfile.TemporaryDirectory() as tmp:
+    raiz = Path(tmp)
+    (raiz / "escritor").mkdir()
+    (raiz / "lector").mkdir()
+    log_real = raiz / "escritor" / "salida.log"
+    log_real.write_text("EXIT=0\n")
+
+    previo = os.getcwd()
+    try:
+        os.chdir(raiz / "escritor")
+        ledger = jl.JobLedger(raiz / "ledger")
+        job = ledger.register("relativo", Path("salida.log"), pid=1)
+        check("register() devuelve una ruta absoluta", True, job.log.is_absolute())
+
+        # El lector cambia de directorio: es el caso real, no uno fabricado.
+        os.chdir(raiz / "lector")
+        recuperado = ledger.jobs()[0]
+        check("y el ledger la sigue dando absoluta tras releerla",
+              True, recuperado.log.is_absolute())
+        check("apunta al archivo que el escritor creó",
+              log_real.read_text(), recuperado.log.read_text())
+        check("por eso el marcador se ve desde el otro cwd (control de anulación: "
+              "con la ruta relativa, esto daría 'bailed')",
+              "collected",
+              ledger.settle(recuperado, marker_pattern=PATTERN,
+                            alive=always(False)))
+    finally:
+        os.chdir(previo)
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
