@@ -51,6 +51,21 @@ WATCHED_DIR_VARS: tuple[str, ...] = ("THYROX_WATCHED_DIR", "KAUPAMEX_WATCHED_DIR
 #: Ídem para el runner de la suite.
 RUNNER_VARS: tuple[str, ...] = ("THYROX_TEST_RUNNER", "KAUPAMEX_TEST_RUNNER")
 
+#: Marcador de recursión POR PROCESO. Se pone en el entorno del corredor y se
+#: lee al arrancar: un `stop_tests` que nace bajo otro rehúsa sin correr nada.
+#:
+#: Por qué no basta `is_reentry(payload)`: aquélla mide la reentrada que el
+#: HARNESS declara (`stop_hook_active`), y el ciclo medido no pasa por el
+#: harness — pasa por la suite. Cadena PROVEN 2026-09-06 (`ps -eo pid,ppid`,
+#: 125 procesos vivos a los 56 minutos, aún engendrando):
+#:
+#:     stop_tests.py -> tests/run.sh -> test_stop_tests.py -> stop_tests.py
+#:
+#: El guard vive aquí y no en el consumidor porque CUALQUIER corredor que
+#: ejercite este módulo reabre el ciclo: ponerlo en el test taparía este caso
+#: y dejaría el mecanismo igual de expuesto al siguiente.
+RECURSION_VAR: str = "THYROX_STOP_TESTS_RUNNING"
+
 
 class WatchedDirError(RuntimeError):
     """El directorio vigilado no se declaró y no se deriva de nada."""
@@ -131,6 +146,10 @@ def run(payload: str = "{}", repo_root: Path | str | None = None,
     if is_reentry(payload):
         return 0, ""
 
+    # Recursión por proceso: este `stop_tests` nació bajo otro (ver RECURSION_VAR).
+    if os.environ.get(RECURSION_VAR):
+        return 0, ""
+
     watched = resolve_watched_dir(watched_dir)
     root = resolve_repo_root(repo_root, watched)
 
@@ -141,8 +160,10 @@ def run(payload: str = "{}", repo_root: Path | str | None = None,
     if not script.is_file():
         return 0, ""
 
+    entorno = {**os.environ, RECURSION_VAR: "1"}
     done = subprocess.run(["bash", str(script), "--quiet"],
-                          capture_output=True, text=True, cwd=str(root))
+                          capture_output=True, text=True, cwd=str(root),
+                          env=entorno)
     output = (done.stdout + done.stderr).rstrip("\n")
 
     if done.returncode == 0:

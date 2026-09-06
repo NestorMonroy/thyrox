@@ -161,11 +161,62 @@ print("== N. CONTROL: el módulo ARRANCA como guion, que es como lo invoca el st
 # `stop_payload` el guion dejó de arrancar —`ModuleNotFoundError: hooks`— y
 # los 16 casos siguieron en verde: el verde no discriminaba «funciona» de
 # «la suite no pregunta». Sub-patrón D de `metrica-decide-la-conclusion.md`.
+# El entorno se LIMPIA de las variables del corredor: este control mide que el
+# módulo arranca como guion, no que corra una suite. Heredarlas lo convertía en
+# el eslabón que cerraba el ciclo de recursión (ver el caso O).
+_limpio = {k: v for k, v in os.environ.items()
+           if k not in (*stop_tests.WATCHED_DIR_VARS, *stop_tests.RUNNER_VARS)}
 proc = subprocess.run([sys.executable, str(Path(stop_tests.__file__).resolve())],
-                      input="{}", capture_output=True, text=True)
+                      input="{}", capture_output=True, text=True, env=_limpio)
 check("sale 0", 0, proc.returncode)
 check("y NO muere importando su propio paquete", False,
       "ModuleNotFoundError" in proc.stderr)
+
+print("== O. El hook NO se invoca a sí mismo: guard de recursión POR PROCESO ==")
+# Episodio medido 2026-09-06: 125 procesos vivos, 63 corredores, 56 minutos y
+# aún engendrando. La cadena, PROVEN por `ps -eo pid,ppid`:
+#
+#   stop_tests.py -> tests/run.sh -> test_stop_tests.py -> stop_tests.py -> ...
+#
+# `is_reentry(payload)` NO lo cubre: mide la reentrada que el HARNESS declara
+# (`stop_hook_active`), y aquí el segundo proceso no viene del harness sino de
+# la propia suite, con payload `{}` limpio. El guard tiene que vivir en el
+# MECANISMO —no en el consumidor ni en el test— porque cualquier corredor que
+# ejercite este módulo reabre el ciclo.
+with tempfile.TemporaryDirectory() as tmpdir:
+    tmp = Path(tmpdir)
+    repo = make_repo(tmp)
+    (repo / "scripts" / "tocado.sh").write_text("#!/bin/sh\ntrue\n", encoding="utf-8")
+    runner = write_runner(repo, 0, "corri")
+
+    previo = os.environ.get(stop_tests.RECURSION_VAR)
+    os.environ[stop_tests.RECURSION_VAR] = "1"
+    try:
+        codigo, salida = stop_tests.run("{}", repo_root=repo,
+                                        watched_dir=repo / "scripts", runner=runner)
+        check("con el marcador puesto rehúsa: sale 0", 0, codigo)
+        check("y NO corre el corredor (salida vacía)", "", salida)
+    finally:
+        if previo is None:
+            os.environ.pop(stop_tests.RECURSION_VAR, None)
+        else:
+            os.environ[stop_tests.RECURSION_VAR] = previo
+
+    # CONTROL DE ANULACIÓN: sin el marcador, el mismo caso SÍ corre. Si no
+    # cambiara, el verde de arriba no mediría el guard sino otra cosa.
+    os.environ.pop(stop_tests.RECURSION_VAR, None)
+    codigo, salida = stop_tests.run("{}", repo_root=repo,
+                                    watched_dir=repo / "scripts", runner=runner)
+    check("sin el marcador SÍ corre (control de anulación)", True, "corri" in salida)
+
+    # Y el marcador viaja al hijo: el corredor lo ve en su entorno.
+    delator = repo / "scripts" / "delata-env.sh"
+    delator.write_text('#!/usr/bin/env bash\necho "MARCADOR=${'
+                       + stop_tests.RECURSION_VAR + ':-ausente}"\n', encoding="utf-8")
+    delator.chmod(0o755)
+    _, salida = stop_tests.run("{}", repo_root=repo,
+                               watched_dir=repo / "scripts", runner=delator)
+    check("y el marcador viaja al corredor hijo", True, "MARCADOR=1" in salida)
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
