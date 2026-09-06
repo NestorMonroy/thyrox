@@ -35,14 +35,24 @@ import re
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent  # .../.claude/scripts/corpus
-# H-DOCS-494: al mudar este guion a `corpus/` (docs@d566c180) el import
-# hermano de `agent_store.py` dejo de resolver y el guion murio ahi.
-# `parents[2]` SIGUE siendo la raiz — lo que estaba mal era el
-# comentario, que decia `.claude/scripts`. El guard de abajo se ancla
-# a `source/gestion/pm` y no a `.claude`, porque /home/user/.claude
-# tambien existe: un guard sobre `.claude` no discrimina.
-DOCS_ROOT = HERE.parents[2]  # kaupamex-docs/
+HERE = Path(__file__).resolve().parent  # thyrox/src/corpus
+
+# H-DOCS-494 dejo este anclaje en `HERE.parents[2]` y anadio el guard de
+# abajo, que es lo que hizo VISIBLE el fallo cuando el guion volvio a
+# mudarse — esta vez de `kaupamex-docs/.claude/scripts/corpus/` a
+# `thyrox/src/corpus/`. Desde aqui `parents[2]` resuelve a `/home/user`,
+# que no tiene `source/gestion/pm`, y el assert lo dijo en vez de
+# escribir en el sitio equivocado.
+#
+# La leccion no es corregir el offset: es que un offset NO puede anclar a
+# OTRO repo. El consumidor es un parametro (DEC-04) y su raiz la resuelve
+# el mecanismo de alcance, que lee la variable declarada, el `.env` y solo
+# entonces deriva. El guard se conserva: sigue siendo el unico control que
+# puede fallar si la resolucion devuelve algo que no es kaupamex-docs.
+sys.path.insert(0, str(HERE.parent / "paths"))
+import reach  # noqa: E402  (la ruta se compone arriba, a proposito)
+
+DOCS_ROOT = reach.root("docs")
 assert (DOCS_ROOT / "source" / "gestion" / "pm").is_dir(), (
     f"raiz mal anclada: {DOCS_ROOT} — no tiene source/gestion/pm")
 PM_ROOT = DOCS_ROOT / "source" / "gestion" / "pm"
