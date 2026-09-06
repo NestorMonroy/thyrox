@@ -9,11 +9,16 @@
       "name": "@thyrox/agent",
       "version": "0.4.0",
       "dependencies": {
+        "@thyrox/command-runtime": "workspace:*",
         "zod": "^4.3.6",
       },
     },
     "binary": {
       "name": "@thyrox/binary",
+      "version": "0.1.0",
+    },
+    "command-runtime": {
+      "name": "@thyrox/command-runtime",
       "version": "0.1.0",
     },
     "config": {
@@ -44,6 +49,8 @@
     "@thyrox/agent": ["@thyrox/agent@workspace:agent"],
 
     "@thyrox/binary": ["@thyrox/binary@workspace:binary"],
+
+    "@thyrox/command-runtime": ["@thyrox/command-runtime@workspace:command-runtime"],
 
     "@thyrox/config": ["@thyrox/config@workspace:config"],
 

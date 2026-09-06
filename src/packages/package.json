@@ -4,6 +4,7 @@
   "workspaces": [
     "agent",
     "binary",
+    "command-runtime",
     "config",
     "harness",
     "tasks"

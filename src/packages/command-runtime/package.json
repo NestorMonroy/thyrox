@@ -1,0 +1,15 @@
+{
+  "name": "@thyrox/command-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "El runtime de comandos: por ahora las etiquetas XML con que un comando marca su metadata dentro de un mensaje.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    "./xml.js": "./src/xml.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

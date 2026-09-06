@@ -43,3 +43,27 @@ export type AssistantMessage = Message & {
     [key: string]: unknown
   }
 }
+
+/**
+ * AMPLIADO: `ProgressMessage`, que devuelve `createProgressMessage`. Se porta
+ * con la forma exacta de la fuente (`ccnmt: packages/agent/messageShapes.ts:54`),
+ * incluido su parametro por defecto `unknown`.
+ */
+export type ProgressMessage<T = unknown> = Message & {
+  type: 'progress'
+  data: T
+}
+
+/**
+ * DIVERGENCIA DECLARADA: la fuente toma `ToolResultBlockParam` del SDK de
+ * Anthropic (`@anthropic-ai/sdk`), que este arbol no tiene. Se declara aqui
+ * la forma estructural que el protocolo exige —los cuatro campos que
+ * `createToolResultStopMessage` emite— en vez de arrastrar el SDK entero por
+ * un tipo. Cuando el SDK entre al arbol, este alias se sustituye por el suyo.
+ */
+export type ToolResultBlockParam = {
+  type: 'tool_result'
+  tool_use_id: string
+  content?: unknown
+  is_error?: boolean
+}

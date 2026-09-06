@@ -3,7 +3,7 @@
   "version": "0.4.0",
   "private": true,
   "type": "module",
-  "description": "Definiciones de agente de kaupamex: la fuente en TypeScript, y los dos emisores hacia las vías que el cliente acepta.",
+  "description": "Definiciones de agente de kaupamex: la fuente en TypeScript, y los dos emisores hacia las v\u00edas que el cliente acepta.",
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
@@ -42,6 +42,7 @@
     "gate:cross-model-read": "bun run bin/crossModelReadGate.ts"
   },
   "dependencies": {
+    "@thyrox/command-runtime": "workspace:*",
     "zod": "^4.3.6"
   }
 }
