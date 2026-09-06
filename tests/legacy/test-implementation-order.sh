@@ -35,9 +35,9 @@
 #     no lo es, y el ranking mandaría a trabajar sobre algo imposible.
 
 set -uo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../../.." || exit 1
+cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 
-GUION=.claude/scripts/task/implementation_order.py
+GUION=src/task/implementation_order.py
 OK=0; FALLO=0
 
 afirmar() {  # afirmar <descripción> <esperado> <obtenido>

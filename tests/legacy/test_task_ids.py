@@ -36,7 +36,7 @@ import sys
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
-MODULE_PATH = HERE.parent / "task" / "task_ids.py"
+MODULE_PATH = HERE.parents[1] / "src" / "task" / "task_ids.py"
 
 _spec = importlib.util.spec_from_file_location("task_ids", MODULE_PATH)
 kx = importlib.util.module_from_spec(_spec)

@@ -26,10 +26,10 @@
 #        termina publicando un ranking que depende de cuántas vueltas dio.
 # =============================================================================
 set -uo pipefail
-cd "$(dirname "$0")/../../.." || exit 2
+cd "$(dirname "$0")/../.." || exit 2
 
-SCRIPT=.claude/scripts/task/closure_graph.py
-FIXTURES=.claude/scripts/tests/fixtures/closure_graph
+SCRIPT=src/task/closure_graph.py
+FIXTURES=tests/legacy/fixtures/closure_graph
 fallos=0
 casos=0
 
@@ -165,7 +165,7 @@ python3 "$SCRIPT" --corpus "$FIXTURES/orden" --no-git 2>&1 \
 
 SIN_STORE=$(python3 -c "
 import sys
-sys.path.insert(0, '.claude/scripts/task')
+sys.path.insert(0, 'src/task')
 import closure_graph as cg
 print(cg.task_ambiguity({'h-x': ['#1']}, store='/no/existe/store.sqlite3'))
 " 2>/dev/null)

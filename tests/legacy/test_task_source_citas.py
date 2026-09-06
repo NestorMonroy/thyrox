@@ -33,14 +33,22 @@ Los bloques, y por que cada uno existe:
 from __future__ import annotations
 
 import importlib.util
+import os
 import pathlib
 import sqlite3
 import sys
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
-MODULE_PATH = HERE.parent / "task" / "task_source.py"
-STORE_REAL = HERE.parents[1] / "agent-results" / "agent_store.sqlite3"
+MODULE_PATH = HERE.parents[1] / "src" / "task" / "task_source.py"
+# El store real es PARAMETRO del consumidor, no del mecanismo: vive en el clon
+# que despacha. La aritmetica anterior lo buscaba en `.claude/agent-results/`
+# relativo a este archivo, que era su sitio cuando la suite vivia en
+# `docs: .claude/scripts/tests/`; desde `thyrox/tests/legacy/` no resuelve a
+# nada. Se declara con la misma variable que `agents/model_catalog.py`.
+_ENV_STORE = os.environ.get("THYROX_AGENT_STORE") or os.environ.get(
+    "KAUPAMEX_AGENT_STORE")
+STORE_REAL = pathlib.Path(_ENV_STORE) if _ENV_STORE else None
 
 _spec = importlib.util.spec_from_file_location("task_source", MODULE_PATH)
 ts = importlib.util.module_from_spec(_spec)
@@ -87,7 +95,7 @@ def ficha(task_id, subject):
 #     se repitiera con dos citas, el bloque 4 manda no resolver, y este bloque
 #     estaria midiendo la ambiguedad en vez del emparejamiento.
 sujeto_real = cita_real = None
-if STORE_REAL.is_file():
+if STORE_REAL is not None and STORE_REAL.is_file():
     conexion = sqlite3.connect(f"file:{STORE_REAL}?mode=ro", uri=True)
     columnas = {r[1] for r in conexion.execute("PRAGMA table_info(tasks)")}
     if "citation_id" in columnas:

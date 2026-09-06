@@ -97,7 +97,7 @@ import sys
 # lazy: `.claude/scripts/` no es un paquete y varias suites cargan este archivo
 # con `spec_from_file_location`, vía por la que el directorio no queda en la
 # ruta de búsqueda. Es el criterio que `agent_store.py` ya documenta.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "paths"))
 import reach_roots  # noqa: E402
 
 #: Un identificador de tarea, en cualquiera de las formas medidas en el corpus:

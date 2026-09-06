@@ -40,7 +40,7 @@ from contextlib import redirect_stdout
 # directorio de tests — mismo patron que test-clasificar_agentes.py. El
 # nombre del modulo lleva guiones, asi que no es importable con `import`
 # normal: se carga por ruta con importlib.
-HERE = pathlib.Path(__file__).resolve().parent.parent
+HERE = pathlib.Path(__file__).resolve().parents[2] / "src"
 spec = importlib.util.spec_from_file_location("vecinos", HERE / "task" / "vecinos_de_tarea.py")
 vecinos = importlib.util.module_from_spec(spec)
 assert spec.loader is not None

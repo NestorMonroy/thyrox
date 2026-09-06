@@ -29,6 +29,12 @@ import pathlib
 import sqlite3
 import sys
 
+# `src/` a la ruta de busqueda: varias suites cargan este archivo con
+# `spec_from_file_location`, via por la que su directorio no queda en
+# `sys.path`. Es el criterio que `closure_graph.py` ya documenta.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+from paths.reach import env_value  # noqa: E402
+
 #: La convención de CLI para «leer de stdin», compartida por los consumidores.
 STDIN_SOURCE = '-'
 
@@ -139,9 +145,14 @@ def load_records(source):
 # columna y sujeto que no casa dan lo mismo — ninguna cita — y ninguna de las
 # tres es un error del llamador.
 
-#: El store por defecto, relativo a la raíz del repo `docs`.
-DEFAULT_STORE = pathlib.Path(__file__).resolve().parents[3] \
-    / '.claude' / 'agent-results' / 'agent_store.sqlite3'
+#: El store es PARAMETRO del consumidor: vive en el clon que despacha, no aqui.
+#: La aritmetica anterior —``parents[3]`` mas ``.claude/agent-results/``—
+#: describia el arbol de `docs`, donde este guion vivia; desde
+#: ``thyrox/src/task/`` resuelve ``/home/user/.claude/…``, que no es de nadie.
+#: Sin variable declarada NO hay ruta que suponer: ``None`` es el veredicto,
+#: como ya hace ``agents/model_catalog.py`` con el mismo mecanismo.
+_STORE_ENV = env_value("THYROX_AGENT_STORE") or env_value("KAUPAMEX_AGENT_STORE")
+DEFAULT_STORE = pathlib.Path(_STORE_ENV) if _STORE_ENV else None
 
 
 def _subject_key(subject):
@@ -172,7 +183,11 @@ def citation_index(records, store_path=None, session_id=None):
     adivinar por ordinal, que es el defecto que este índice existe para evitar.
     """
     path = pathlib.Path(store_path) if store_path else DEFAULT_STORE
-    if not path.is_file():
+    # `None` = el consumidor no declaro su store. Es un caso distinto de «la
+    # ruta existe y no es archivo», y los dos devuelven el mismo indice vacio:
+    # sin store no hay cita que ofrecer, y publicar una vacia es el desenlace
+    # correcto — no se adivina por ordinal.
+    if path is None or not path.is_file():
         return {}
     try:
         conn = sqlite3.connect(f'file:{path}?mode=ro', uri=True)
