@@ -1,17 +1,15 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/sanitizeModelName.test.ts` y
- * `computeContentHash.test.ts`, que miden el mismo modulo y aqui viven
- * juntos: la atribucion de un cambio a una sesion y a una superficie.
+ * Porte de `ccnmt: packages/agent/__tests__/sanitizeModelName.test.ts`.
+ * El nombre interno de un modelo lleva variantes que no salen a un
+ * remolque de commit; se colapsa a su familia publica antes de escribirlo.
  *
  * Divergencia declarada: la tabla de familias es PARAMETRO, no mecanismo.
- * La de la referencia se porta verbatim y se le anaden las familias de
- * este catalogo (opus-5, sonnet-5, fable-5-1, mythos-5-1), que la
- * referencia no conoce. Ninguna asercion portada las nombra.
+ * La de la referencia se porta verbatim y se le anaden las de este
+ * catalogo. Ninguna asercion portada las nombra.
  */
 import { describe, expect, test } from 'bun:test'
 import {
   buildSurfaceKey,
-  computeContentHash,
   sanitizeModelName,
   sanitizeSurfaceKey,
 } from '../src/commitAttribution.ts'
@@ -88,31 +86,6 @@ describe('sanitizeSurfaceKey', () => {
   })
   test('el modelo vacio tras la barra colapsa a claude', () => {
     expect(sanitizeSurfaceKey('cli/')).toBe('cli/claude')
-  })
-})
-
-describe('computeContentHash', () => {
-  test('devuelve SHA-256 en hexadecimal de 64 caracteres', () => {
-    expect(computeContentHash('hello')).toMatch(/^[0-9a-f]{64}$/)
-  })
-  test('es determinista', () => {
-    expect(computeContentHash('hello')).toBe(computeContentHash('hello'))
-  })
-  test('entradas distintas dan digest distinto', () => {
-    expect(computeContentHash('a')).not.toBe(computeContentHash('b'))
-  })
-  test('la cadena vacia tiene su SHA-256 conocido', () => {
-    expect(computeContentHash('')).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
-  })
-  test('hashea los bytes UTF-8, no los puntos de codigo', () => {
-    expect(computeContentHash('hello')).not.toBe(computeContentHash('héllo'))
-  })
-  test('el hexadecimal sale en minusculas', () => {
-    const r = computeContentHash('test')
-    expect(r).toBe(r.toLowerCase())
-  })
-  test('cien mil caracteres siguen dando 64', () => {
-    expect(computeContentHash('x'.repeat(100_000))).toMatch(/^[0-9a-f]{64}$/)
   })
 })
 

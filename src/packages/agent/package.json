@@ -23,7 +23,8 @@
     "./idTypes": "./src/idTypes.ts",
     "./uuid": "./src/uuid.ts",
     "./agentIdUtils": "./src/agentIdUtils.ts",
-    "./commitAttribution": "./src/commitAttribution.ts"
+    "./commitAttribution": "./src/commitAttribution.ts",
+    "./sanitizePathComponent": "./src/sanitizePathComponent.ts"
   },
   "scripts": {
     "emit": "bun run bin/emit.ts",

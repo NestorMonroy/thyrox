@@ -1,15 +1,14 @@
 /**
  * Porte de `ccnmt: packages/agent/__tests__/sanitizePathComponent.test.ts`.
  *
- * Divergencia de SITIO, declarada: en la referencia el mecanismo vive en
- * el tablero, porque su tablero escribe un archivo por tarea y el nombre
- * del archivo es el identificador. El tablero de aqui persiste en sqlite
- * y no construye ninguna ruta, asi que ahi no tendria consumidor. Su rol
- * aqui es la CONSTRUCCION DE RUTAS, y por eso vive en `src/paths/`, junto
- * a los cuatro sitios que hoy arman una ruta con un componente variable.
+ * En la fuente el mecanismo vive dentro de `packages/agent/tasks.ts`, porque
+ * su tablero escribe un archivo por tarea y el nombre del archivo ES el
+ * identificador. Aqui vive suelto en el paquete agent, con el nombre del
+ * simbolo, hasta que el porte del tablero (#160) le de su archivo: partir
+ * `tasks.ts` antes de portarlo seria inventar la particion.
  */
 import { describe, expect, test } from 'bun:test'
-import { sanitizePathComponent } from '../src/paths/sanitize.ts'
+import { sanitizePathComponent } from '../src/sanitizePathComponent.ts'
 
 describe('sanitizePathComponent — lo que la lista blanca admite', () => {
   test('lo alfanumerico pasa verbatim', () => {
