@@ -1,0 +1,17 @@
+# Mitad ROJA — el módulo no existe todavía
+# 2026-09-06T22:10:10
+
+bun test v1.3.11 (af24e281)
+
+tests/workbench/home.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../src/workbench/home' from '/home/user/thyrox/tests/workbench/home.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [55.00ms]

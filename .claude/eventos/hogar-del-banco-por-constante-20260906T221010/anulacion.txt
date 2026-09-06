@@ -1,0 +1,9 @@
+# CONTROL DE ANULACIÓN — se le da un default, que es lo que la directiva prohíbe
+# 2026-09-06T22:10:55
+# Esperado: caen EXACTAMENTE los bloques 4 y 5 (los que miden la rehusa).
+
+5 pass / 2 fail — caen:
+  4. sin ninguna de las dos REHÚSA — no inventa un hogar por el consumidor
+  5. y al rehusar NOMBRA la constante
+
+Restaurado: git diff --stat src/workbench/home.ts -> vacío
