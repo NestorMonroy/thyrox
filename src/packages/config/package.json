@@ -11,7 +11,8 @@
     "./types": "./settings/types.ts",
     "./constants": "./settings/constants.ts",
     "./validation": "./settings/validation.ts",
-    "./load": "./settings/load.ts"
+    "./load": "./settings/load.ts",
+    "./env/utils": "./env/utils.ts"
   },
   "scripts": { "test": "bun test" },
   "dependencies": { "zod": "^4.3.6" }

@@ -1,0 +1,22 @@
+{
+  "name": "@thyrox/shell",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Porte parcial del paquete shell de claude-code-nestor-monroy-tools: extraccion/restauracion de heredocs de bash, carga de specs Fig, espera de stdin, formato de prefijo de shell citado y cribado de entorno de subproceso. Cinco de los muchos modulos de la fuente (TASK-DOCS-0200).",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./process.js": "./src/process.ts",
+    "./subprocessEnv.js": "./src/subprocessEnv.ts",
+    "./bash/heredoc.js": "./src/bash/heredoc.ts",
+    "./bash/registry.js": "./src/bash/registry.ts",
+    "./bash/shellPrefix.js": "./src/bash/shellPrefix.ts",
+    "./bash/shellQuote.js": "./src/bash/shellQuote.ts"
+  },
+  "scripts": { "test": "bun test" },
+  "dependencies": {
+    "@thyrox/config": "workspace:*"
+  }
+}
