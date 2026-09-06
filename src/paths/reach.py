@@ -469,6 +469,24 @@ def main(argv: list[str]) -> int:
             print(path)
         return 0
 
+    if mode == "--thyrox-root":
+        # El bootstrap que shell no puede hacer entero. Un hook localiza este
+        # archivo con un ascenso mínimo —no le queda otra: sin hallarlo no
+        # puede preguntar— y a partir de ahí delega, porque la PRECEDENCIA
+        # completa (variable del proceso, declaración del `.env`, hermano
+        # validado por marcador) vive aquí y no se reimplementa en trece
+        # guiones. Es el defecto de H-DOCS-1071 evitado antes de ocurrir.
+        #
+        # Rehúsa en vez de imprimir una ruta plausible: un consumidor que
+        # recibiera una ruta inexistente seguiría en verde apuntando al vacío,
+        # que es exactamente lo que la mudanza a thyrox dejó atrás.
+        try:
+            print(thyrox_root())
+        except ReachRootError as err:
+            print(f"reach: {err}", file=sys.stderr)
+            return 2
+        return 0
+
     if mode == "--names":
         for name in clone_names():
             print(name)
@@ -508,7 +526,8 @@ def main(argv: list[str]) -> int:
 
     print(
         f"reach: modo desconocido: {mode}\n"
-        "  --list (default) · --env · --paths · --declared · --names · --check",
+        "  --list (default) · --env · --paths · --declared · --names · --check\n"
+        "  --thyrox-root",
         file=sys.stderr,
     )
     return 2

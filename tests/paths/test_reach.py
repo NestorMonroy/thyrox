@@ -37,6 +37,7 @@ Uso:  python3 tests/paths/test_reach.py
 
 import os
 import pathlib
+import subprocess
 import sys
 import tempfile
 
@@ -299,6 +300,81 @@ with tempfile.TemporaryDirectory() as tmp:
     check_raises("control — un hermano llamado thyrox sin marcador no basta",
                  reach.ReachRootError,
                  lambda: reach.thyrox_root(start=consumidor))
+clean_env()
+
+
+print("\n11. El CLI publica la raíz de THYROX — el bootstrap que shell necesita")
+# Por qué existe: un hook de shell no puede llamar a `reach.thyrox_root()` sin
+# antes haber hallado `reach.py`, así que el ascenso mínimo se hace en shell.
+# Pero ahí se acaba lo que shell debe saber: la PRECEDENCIA completa —variable
+# del proceso, declaración del `.env`, hermano validado por marcador— vive
+# aquí. El modo la publica para que el consumidor no la reimplemente
+# (H-DOCS-1071: cuatro guiones inventando cuatro grafías).
+_CLI = str(THYROX_ROOT / "src" / "paths" / "reach.py")
+
+
+def _cli(guion, *args, entorno=None):
+    env = {k: v for k, v in os.environ.items()
+           if not (k.startswith("KAUPAMEX_") or k.startswith("THYROX_"))}
+    env.update(entorno or {})
+    r = subprocess.run([sys.executable, str(guion), *args],
+                       capture_output=True, text=True, env=env)
+    return r.returncode, r.stdout.strip(), r.stderr.strip()
+
+
+# a) Invocado desde su sitio, publica la raíz real. Es el caso que los hooks
+#    ejercitan, y su valor NO depende de ninguna variable: hallar el archivo ya
+#    prueba el árbol.
+code, out, _ = _cli(_CLI, "--thyrox-root")
+check("desde su sitio, sale 0", 0, code)
+check("y publica la raíz real de thyrox", str(THYROX_ROOT), out)
+
+# b) La variable declarada gana sobre el ascenso — la misma precedencia del
+#    resto del mecanismo, no una regla nueva para el CLI.
+with tempfile.TemporaryDirectory() as tmp:
+    otro = pathlib.Path(tmp) / "declarado"; otro.mkdir()
+    _, out, _ = _cli(_CLI, "--thyrox-root", entorno={"THYROX_ROOT": str(otro)})
+    check("la variable declarada gana sobre el ascenso", str(otro), out)
+
+# c) El tercer paso de la precedencia —hermano de los clones, validado por
+#    marcador— también viaja por el CLI. Se ejercita con una COPIA fuera de
+#    todo árbol: desde el archivo real el ascenso corta antes y este paso nunca
+#    correría.
+#
+# El control tuvo DOS formas equivocadas antes de discriminar, y las dos se
+# dejan escritas porque el error es reusable:
+#
+# 1. Exigía «thyrox in stderr». Un modo inexistente también sale 2 y también
+#    dice «thyrox» — está en el nombre del modo. Pasaba sin implementar nada.
+# 2. Apuntaba `THYROX_REACH_ROOT` a un árbol sintético esperando que el CLI
+#    real lo usara. No lo usa: el ascenso arranca en el propio archivo y
+#    HALLAR EL ARCHIVO YA PRUEBA EL ÁRBOL.
+with tempfile.TemporaryDirectory() as tmp:
+    base = pathlib.Path(tmp)
+    copia = base / "copia"; copia.mkdir()
+    (copia / "reach.py").write_text(
+        pathlib.Path(_CLI).read_text(encoding="utf-8"), encoding="utf-8")
+
+    arbol = base / "arbol"
+    build_tree(arbol)                                  # arbol/thyrox/src/paths
+    (arbol / "thyrox" / "src" / "paths" / "reach.py").write_text("", encoding="utf-8")
+    code, out, _ = _cli(copia / "reach.py", "--thyrox-root",
+                        entorno={"THYROX_REACH_ROOT": str(arbol)})
+    check("una copia fuera del árbol halla al proveedor por el hermano", 0, code)
+    check("y publica su raíz", str(arbol / "thyrox"), out)
+
+    # Control que PUEDE fallar: sin marcador en ningún hermano, REHÚSA. Un modo
+    # que imprimiera una ruta plausible aquí dejaría al hook apuntando al vacío
+    # y en verde, que es lo que la mudanza a thyrox dejó atrás.
+    (arbol / "thyrox" / "src" / "paths" / "reach.py").unlink()
+    code, out, err = _cli(copia / "reach.py", "--thyrox-root",
+                          entorno={"THYROX_REACH_ROOT": str(arbol)})
+    check("control — sin marcador en ningún hermano, rehúsa con 2", 2, code)
+    check("control — y NO publica una ruta", "", out)
+    check("control — el motivo nombra el marcador, no «modo desconocido»",
+          (True, False),
+          ("src/paths/reach.py" in err, "modo desconocido" in err))
+
 clean_env()
 
 print(f"\nresultado: {PASS} de {PASS + FAIL} aserciones en verde")
