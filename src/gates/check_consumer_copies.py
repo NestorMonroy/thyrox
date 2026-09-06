@@ -47,6 +47,10 @@ import hashlib
 import sys
 from pathlib import Path
 
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from paths import reach  # noqa: E402
+
 #: Lo que se mide: donde vive el mecanismo ejecutable.
 SUFIJOS = ('.sh', '.py')
 
@@ -112,15 +116,33 @@ def compare(fuente: Path, consumidor: Path) -> tuple[list[str], list[str], int]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--fuente', required=True, help='la raiz de thyrox')
-    parser.add_argument('--consumidor', required=True, help='el clon consumidor')
+    # Ninguna de las dos es obligatoria: las dos son DERIVABLES, y un gate del
+    # registro se invoca a secas —la convencion que la referencia fija al
+    # declarar su `Check` sin campo de argumentos—. Exigirlas hacia que el
+    # corredor lo publicara SIN MEDIR con el `usage:` de argparse por mensaje.
+    parser.add_argument('--fuente', default=None,
+                        help='la raiz de thyrox (por defecto, reach.thyrox_root)')
+    parser.add_argument('--consumidor', default=None,
+                        help='el clon consumidor (por defecto, reach.consumer_root)')
     parser.add_argument('--strict', action='store_true',
                         help='exit 1 si hay copias')
     parser.add_argument('--quiet', action='store_true',
                         help='emitir solo el conteo de copias, entero pelado')
     args = parser.parse_args()
 
-    fuente, consumidor = Path(args.fuente), Path(args.consumidor)
+    # La derivacion puede rehusar (`ReachRootError`): eso es un 2, no un
+    # traceback. Un gate que revienta no nombra nada, y un veredicto ausente se
+    # lee igual que uno limpio.
+    try:
+        fuente = Path(args.fuente) if args.fuente else reach.thyrox_root()
+        consumidor = (Path(args.consumidor) if args.consumidor
+                      else reach.consumer_root())
+    except Exception as exc:                       # noqa: BLE001
+        print(f'ERROR — no se pudieron derivar las dos raices: {exc}',
+              file=sys.stderr)
+        print('NO se emite un conteo: este gate mide ENTRE dos arboles.',
+              file=sys.stderr)
+        return 2
     for etiqueta, raiz in (('fuente', fuente), ('consumidor', consumidor)):
         if not raiz.is_dir():
             print(f'ERROR — la raiz {etiqueta} no existe: {raiz}', file=sys.stderr)

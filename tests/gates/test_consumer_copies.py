@@ -92,5 +92,22 @@ r = correr('--fuente', str(RAIZ), '--consumidor', '/home/user/kaupamex-api')
 check('ve copias reales en kaupamex-api', True,
       'copia(s)' in r.stdout and ': 0 copia(s)' not in r.stdout)
 
+# --- sin argumentos: el registro invoca los gates a secas ------------------
+# Es la convencion que fija la referencia: `ccnmt: scripts/doctor-architecture.ts`
+# declara su `Check` con id/layer/subsystem/script/doc y ningun campo de
+# argumentos, y su `runCheck` lanza el guion pelado. Este gate exigia --fuente
+# y --consumidor, asi que el corredor lo publicaba SIN MEDIR con el `usage:` de
+# argparse por mensaje.
+#
+# Que haria fallar a este control (sub-patron D): que sin argumentos el gate
+# rehuse por falta de argumentos en vez de derivar sus dos raices. Las dos son
+# derivables —`reach.thyrox_root()` y `reach.consumer_root()`— asi que
+# exigirlas era pedir un parametro que el mecanismo ya sabe resolver.
+r = correr()
+check('sin argumentos NO rehusa por falta de argumentos', False,
+      'the following arguments are required' in (r.stdout + r.stderr))
+check('sin argumentos SI emite su denominador', True, 'alcance medido' in r.stdout)
+
 print(f'\nresultado: {verdes} de {total} aserciones en verde')
 raise SystemExit(0 if verdes == total else 1)
+
