@@ -4,14 +4,9 @@ description: "Use when creating the strategic plan. sp:plan — define strategic
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "strategic plan"
-    - "strategic initiatives"
-    - "OKR"
-    - "strategic roadmap"
-    - "resource allocation strategy"
+  triggers: ["strategic plan", "strategic initiatives", "OKR", "strategic roadmap", "resource allocation strategy"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /sp-plan — Strategic Planning: Strategic Plan

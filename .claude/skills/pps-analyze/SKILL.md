@@ -4,14 +4,9 @@ description: "Use when solving a structured problem with Toyota TBP. pps:analyze
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "5 whys"
-    - "fishbone"
-    - "ishikawa"
-    - "root cause TBP"
-    - "A3 analysis"
+  triggers: ["5 whys", "fishbone", "ishikawa", "root cause TBP", "A3 analysis"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /pps-analyze — PS8: Analyze Root Cause

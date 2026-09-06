@@ -4,14 +4,9 @@ description: "Use when adapting strategy based on results. sp:adjust — update 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "strategy adjustment"
-    - "strategic pivot"
-    - "annual strategy review"
-    - "new strategic cycle"
-    - "strategy refresh"
+  triggers: ["strategy adjustment", "strategic pivot", "annual strategy review", "new strategic cycle", "strategy refresh"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /sp-adjust — Strategic Planning: Strategy Adjustment

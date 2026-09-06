@@ -4,14 +4,9 @@ description: "Use when solving a structured problem with Toyota TBP. pps:target 
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "SMART target"
-    - "baseline TBP"
-    - "performance gap"
-    - "problem target"
-    - "TBP target"
+  triggers: ["SMART target", "baseline TBP", "performance gap", "problem target", "TBP target"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /pps-target — PS8: Set a Target

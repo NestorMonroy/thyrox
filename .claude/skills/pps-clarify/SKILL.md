@@ -4,14 +4,9 @@ description: "Use when solving a structured problem with Toyota TBP. pps:clarify
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "practical problem solving"
-    - "Toyota TBP"
-    - "go-and-see"
-    - "A3 report"
-    - "gemba"
+  triggers: ["practical problem solving", "Toyota TBP", "go-and-see", "A3 report", "gemba"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /pps-clarify — PS8: Clarify + Break Down the Problem

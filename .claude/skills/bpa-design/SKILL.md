@@ -4,14 +4,9 @@ description: "Use when redesigning a business process. bpa:design — design the
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "to-be process"
-    - "ESIA"
-    - "process redesign"
-    - "eliminate simplify integrate automate"
-    - "process optimization"
+  triggers: ["to-be process", "ESIA", "process redesign", "eliminate simplify integrate automate", "process optimization"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /bpa-design — BPA: Design

@@ -4,14 +4,9 @@ description: "Use when synthesizing consulting findings into recommendations. cp
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "Pyramid Principle"
-    - "SCQA"
-    - "recommendation deck"
-    - "storyline consulting"
-    - "executive communication"
+  triggers: ["Pyramid Principle", "SCQA", "recommendation deck", "storyline consulting", "executive communication"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /cp-recommend — Consulting Process: Recommend

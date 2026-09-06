@@ -4,14 +4,9 @@ description: "Use when executing strategic initiatives. sp:execute — launch in
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "strategy execution"
-    - "cascading strategy"
-    - "strategic initiatives launch"
-    - "change management strategy"
-    - "strategy communication"
+  triggers: ["strategy execution", "cascading strategy", "strategic initiatives launch", "change management strategy", "strategy communication"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /sp-execute — Strategic Planning: Strategy Execution

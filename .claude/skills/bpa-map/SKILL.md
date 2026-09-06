@@ -4,14 +4,9 @@ description: "Use when documenting an As-Is business process. bpa:map — docume
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "BPMN"
-    - "process mapping"
-    - "swim lane diagram"
-    - "as-is process"
-    - "process documentation"
+  triggers: ["BPMN", "process mapping", "swim lane diagram", "as-is process", "process documentation"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /bpa-map — BPA: Map
