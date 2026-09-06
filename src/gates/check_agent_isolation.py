@@ -31,6 +31,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
+import reach  # noqa: E402
+
 # --- constantes de forma -----------------------------------------------------
 DIR_AGENTES = pathlib.Path(".claude") / "agents"
 EXTENSION_AGENTE = "*.md"
@@ -93,7 +96,8 @@ def main(argv=None):
     p.add_argument("--quiet", action="store_true", help="solo el conteo")
     args = p.parse_args(argv)
 
-    raiz = pathlib.Path(__file__).resolve().parents[3]
+    # El consumidor, no el proveedor: los agentes que se miden son los suyos.
+    raiz = reach.consumer_root()
     directorios = args.dir or [str(raiz / DIR_AGENTES)]
     medidos, declaran, incoherentes = revisar(directorios)
 

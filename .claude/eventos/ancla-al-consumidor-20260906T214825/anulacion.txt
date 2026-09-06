@@ -1,0 +1,10 @@
+=== CONTROL DE ANULACION: se repone el parents[3] en UN sitio ===
+-- el gate debe verlo (1, no 8, no 0) --
+check-consumer-anchor: 1 ancla(s) nueva(s) que salen de thyrox (alcance medido: 131 archivo(s) en src/; 1 en total; 0 en baseline)
+  src/gates/check_rst_convenciones.py:71 — parents[3] sale del árbol; usar reach.consumer_root() / reach.thyrox_root() / reach.root(<repo>)
+-- y el gate anulado debe volver a medir el arbol equivocado --
+check-rst-convenciones: OK — autoría canónica y tablas en list-table
+  (alcance medido: 0 archivos .rst bajo source/; 0 declaraciones :autor:; bloques literales excluidos del check de tabla)
+
+=== RESTAURADO ===
+check-consumer-anchor: 0 ancla(s) nueva(s) que salen de thyrox (alcance medido: 131 archivo(s) en src/; 0 en total; 0 en baseline)

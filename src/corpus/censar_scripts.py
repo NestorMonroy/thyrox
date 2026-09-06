@@ -28,7 +28,14 @@ import pathlib
 import subprocess
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
+import reach  # noqa: E402
+
+#: El árbol MEDIDO es el del consumidor, no el del proveedor. `parents[3]`
+#: describía `kaupamex-docs/.claude/scripts/corpus/`; desde `thyrox/src/corpus/`
+#: da `/home/user`, que EXISTE — así que el censo no reventaba: medía un árbol
+#: sin `source/` y publicaba su cero.
+ROOT = reach.consumer_root()
 CATALOGUE = ROOT / 'source/normativa/estandares/catalogo-de-scripts.rst'
 BASELINE = ROOT / '.claude/scripts/corpus/scripts_huerfanos_baseline.txt'
 SOURCE_ROOTS = ('.claude/scripts', 'scripts')

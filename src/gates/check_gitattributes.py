@@ -27,6 +27,9 @@ import os
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "paths"))
+import reach  # noqa: E402
+
 SCRIPT_PATH = Path(__file__).resolve()
 OWNER_CLONE = "thyrox"
 OWNER_MODULE = "src/gates/gitattributes.py"
@@ -60,7 +63,9 @@ def _owner_path() -> Path:
     if neighbour.is_file():
         return neighbour
 
-    return SCRIPT_PATH.parents[3].parent / OWNER_CLONE / OWNER_MODULE
+    # El dueño se localiza por su MARCADOR, no por aritmética: la forma
+    # anterior buscaba a thyrox como hermano de sí mismo (`/home/thyrox`).
+    return reach.thyrox_root() / OWNER_MODULE
 
 
 def _load_owner():

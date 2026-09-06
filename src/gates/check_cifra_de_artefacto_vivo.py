@@ -35,7 +35,11 @@ import pathlib
 import re
 import sys
 
-RAIZ_DEFECTO = pathlib.Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
+import reach  # noqa: E402
+
+#: El árbol medido por defecto es el del consumidor; `--raiz` lo sobreescribe.
+RAIZ_DEFECTO = reach.consumer_root()
 BASELINE = pathlib.Path(__file__).with_name('cifra_de_artefacto_vivo_baseline.txt')
 
 # (nombre, patrón, razón) — la razón se imprime junto al hallazgo.

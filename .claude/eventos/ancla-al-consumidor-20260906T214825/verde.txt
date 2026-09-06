@@ -1,0 +1,20 @@
+=== 1. el gate ahora ===
+check-consumer-anchor: 0 ancla(s) nueva(s) que salen de thyrox (alcance medido: 131 archivo(s) en src/; 0 en total; 0 en baseline)
+  censar_scripts.py                              OK
+  check_agent_isolation.py                       OK
+  check_cifra_de_artefacto_vivo.py               OK
+  check_rst_convenciones.py                      OK
+  check_gitattributes.py                         OK
+  check_hook_script_token.py                     OK
+  check_script_deprecated.py                     OK
+  arranque_de_clon.py                            OK
+=== check_rst_convenciones desde el CONSUMIDOR: ¿ve su source/? ===
+  source/gestion/pm/docs/audits/hallazgos-integrar-ramas-a-develop.rst  (líneas 190, 192, 198)
+  source/gestion/pm/docs/iniciativas/adoptar-cosmic-dimensionamiento/guia-atomicidad-proposito-b.rst  (líneas 301, 305, 307, 309, 311)
+  … y 16 más
+=== check_agent_isolation: ¿ve los agentes del consumidor? ===
+check-agent-isolation: OK — 0 incoherentes, 0 declaran aislamiento
+  (alcance medido: 0 agente(s) con frontmatter en 1 directorio(s))
+=== check_gitattributes: ¿localiza a su dueño? ===
+
+check_gitattributes: 0 divergencia(s) (alcance medido: 5 de 5 repos presentes)

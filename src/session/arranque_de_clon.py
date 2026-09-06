@@ -52,12 +52,18 @@ import json
 import pathlib
 import sys
 
-DOCS_ROOT = pathlib.Path(__file__).resolve().parents[3]
-PAYLOAD = DOCS_ROOT / ".claude-user" / "bitacora-de-aprobaciones.json"
-REPO_SETTINGS = DOCS_ROOT / ".claude" / "settings.json"
-SYNC_MODULE = DOCS_ROOT / ".claude" / "scripts" / "session" / "sincronizar_settings_local.py"
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
+import reach  # noqa: E402
 
-PLACEHOLDER_DOCS = "%%DOCS_ROOT%%"
+#: El clon que arranca es el CONSUMIDOR. Se llamaba `CONSUMER_ROOT` porque el
+#: guion vivía en `kaupamex-docs`: el parámetro se había filtrado al nombre del
+#: mecanismo. Desde `thyrox/src/session/` la aritmética daba `/home/user`.
+CONSUMER_ROOT = reach.consumer_root()
+PAYLOAD = CONSUMER_ROOT / ".claude-user" / "bitacora-de-aprobaciones.json"
+REPO_SETTINGS = CONSUMER_ROOT / ".claude" / "settings.json"
+SYNC_MODULE = CONSUMER_ROOT / ".claude" / "scripts" / "session" / "sincronizar_settings_local.py"
+
+PLACEHOLDER_DOCS = "%%CONSUMER_ROOT%%"
 PLACEHOLDER_ROOT = "%%RAIZ%%"
 RELATIVE_PREFIX = ".claude/"
 
@@ -232,7 +238,7 @@ def main(argv=None):
                         help="mostrar lo que haria y salir sin escribir")
     parser.add_argument("--capturar", action="store_true",
                         help="copia viva -> bitacora versionada")
-    parser.add_argument("--docs-root", type=pathlib.Path, default=DOCS_ROOT,
+    parser.add_argument("--docs-root", type=pathlib.Path, default=CONSUMER_ROOT,
                         help="raiz del clon de docs (para pruebas)")
     args = parser.parse_args(argv)
 

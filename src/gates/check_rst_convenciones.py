@@ -63,7 +63,14 @@ import re
 import subprocess
 import sys
 
-RAIZ = pathlib.Path(__file__).resolve().parents[3] / 'source'
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
+import reach  # noqa: E402
+
+#: `parents[3] / 'source'` daba `/home/user/source`, que no existe. Medido con
+#: el control de anulación: el gate NO rehusaba — publicaba
+#: `OK — autoría canónica y tablas en list-table (alcance medido: 0 archivos)`.
+#: Un verde sobre cero archivos, con su denominador declarado y nadie leyéndolo.
+RAIZ = reach.consumer_root() / 'source'
 
 #: Valor que el agente NUNCA debe escribir como autor. El canon positivo es
 #: ``Equipo Kaupamex``; el resto de valores humanos o de tercero son legítimos
