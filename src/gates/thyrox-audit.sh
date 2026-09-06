@@ -1066,6 +1066,24 @@ else
     warn "Clase de bytes: check_byte_oriented_class.py no encontrado"
 fi
 
+# ----------------------------------------------------------------------
+# Precedencia de configuracion derivada de RAMAS, no de lineas
+# (:ref:`h-docs-1117`, TASK-DOCS-0415).
+# Un modulo lee N fuentes y elige con una cadena; el orden de lectura NO es el
+# de aplicacion. Medido en la referencia: litellm lee WORKER_CONFIG primero y
+# aplica CONFIG_FILE_PATH primero. Quien copie la precedencia de la lectura la
+# invierte, y nada en el archivo se lo dice.
+tick "Precedencia de configuracion derivada de ramas"
+if [[ -f src/gates/check_config_precedence.py ]]; then
+    medir_gate python3 src/gates/check_config_precedence.py --quiet; CPR="$GATE_N"
+    CPRDEN=$(python3 src/gates/check_config_precedence.py 2>/dev/null | grep -m1 'alcance medido' | sed 's/^ *//')
+    if ! gate_midio "Precedencia de config"; then :
+    elif [[ "$CPR" -eq 0 ]]; then ok "Precedencia de config: lectura y aplicacion coinciden — $CPRDEN"
+    else warn "Precedencia de config: $CPR archivo(s) donde el orden de lectura NO es el de aplicacion — $CPRDEN; declara la precedencia real o reordena"; fi
+else
+    warn "Precedencia de config: check_config_precedence.py no encontrado"
+fi
+
 $TIMING && volcar_desglose
 
 echo ""
