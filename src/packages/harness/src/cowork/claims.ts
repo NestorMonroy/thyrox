@@ -25,13 +25,25 @@
 
 import { execFileSync } from 'node:child_process'
 import { appendFileSync, mkdirSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname } from 'node:path'
 import { randomUUID } from 'node:crypto'
 
 import type { CollisionCheck, CollisionGate, IntegrationRepo } from '../branchIntegration.ts'
+import { LEDGER_REL } from '../../../../coordination/ledger.ts'
 
-/** Ruta relativa por defecto del ledger, versionada (NO ``.claude/agent-results/*``, que está git-ignored). */
-export const DEFAULT_LEDGER_REL = '.claude/coordination/claims.jsonl'
+/**
+ * La ubicación del ledger y su resolución vienen del dueño canónico,
+ * `src/coordination/ledger.ts`, y este módulo sólo las reexporta.
+ *
+ * Aquí vivió una copia de los tres símbolos, declarada como temporal en su
+ * propia cabecera: el import cruzaba repositorios y estaba bloqueado. Ya no
+ * — `packages` vive en este mismo árbol, a la misma distancia que
+ * `store/db.ts`. `DEFAULT_LEDGER_REL` conserva su nombre heredado porque es
+ * lo que la superficie pública del harness ya publica; el VALOR es uno solo.
+ */
+export { CoordinationRootError, gitTopLevel, ledgerPathFor } from '../../../../coordination/ledger.ts'
+export const DEFAULT_LEDGER_REL = LEDGER_REL
+
 
 /** Una operación del ledger. Append-only: nada se edita, sólo se apende. */
 export interface ClaimRecord {
@@ -211,52 +223,6 @@ export function combineGates(...gates: CollisionGate[]): CollisionGate {
     const collisions = checks.filter((c) => c.ran).reduce((s, c) => s + c.collisions, 0)
     const detail = checks.map((c) => c.detail).join(' · ')
     return { ran, collisions, detail }
-  }
-}
-
-/**
- * El ledger vive en la RAÍZ del repositorio, no en el directorio de trabajo.
- *
- * El párrafo de cabecera declara la propiedad por la que este archivo existe:
- * «git lo fusiona línea a línea por defecto». Esa propiedad es de un archivo
- * versionado, así que anclar la ruta al ``cwd`` la pierde en silencio — desde
- * un subdirectorio se escribe un ledger distinto, y el overlap gate informa
- * cero solapes donde hay uno. Un cero de ese instrumento no distingue «nadie
- * reservó» de «leí otro archivo», que es el sub-patrón D de
- * ``metrica-decide-la-conclusion.md``.
- *
- * Fuera de un repositorio se REHÚSA en vez de escribir: sin git no hay fusión
- * línea a línea, y un ledger sin esa propiedad no es el mecanismo que la
- * cabecera describe.
- *
- * DUPLICADO TEMPORAL: el dueño canónico es ``thyrox: src/coordination/ledger.ts``
- * (``thyrox@a1a4fd8``). Este cuerpo se colapsa a una reexportación cuando P3c
- * mueva ``packages`` a thyrox y el import entre repos deje de estar bloqueado
- * — tarea #138.
- */
-export function ledgerPathFor(cwd: string, explicit?: string): string {
-  if (explicit !== undefined) return explicit
-  const top = gitTopLevel(cwd)
-  if (top === null) {
-    throw new Error(
-      `no hay repositorio git en '${cwd}' ni por encima: el ledger de ` +
-        'coordinación se fusiona línea a línea con git, así que fuera de un ' +
-        'repositorio no tiene la propiedad por la que existe. Nombra una ruta ' +
-        'explícita si de verdad quieres escribir ahí.',
-    )
-  }
-  return join(top, DEFAULT_LEDGER_REL)
-}
-
-/** La raíz del repositorio que contiene ``start``, o ``null`` si no hay ninguno. */
-export function gitTopLevel(start: string): string | null {
-  try {
-    return execFileSync('git', ['-C', start, 'rev-parse', '--show-toplevel'], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim()
-  } catch {
-    return null
   }
 }
 

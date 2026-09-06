@@ -392,7 +392,7 @@ function selectTestsCommand(argv: string[], cwd: string): number {
  * `echo` de la misma línea.
  */
 function claimsCommand(argv: string[], cwd: string): number {
-  const ledger = ledgerPathFor(cwd, arg(argv, 'ledger'))
+  const ledger = ledgerPathFor(cwd, { explicit: arg(argv, 'ledger') })
 
   if (argv.includes('--overlap')) {
     const pairs = findOverlaps(readLedger(ledger))

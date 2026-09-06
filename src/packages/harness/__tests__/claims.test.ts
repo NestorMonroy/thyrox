@@ -298,6 +298,6 @@ describe('ledgerPathFor — el ledger vive en la raíz del repositorio', () => {
 
   test('la ruta explícita es la salida de emergencia y no se comprueba', () => {
     const fuera = join(mkdtempSync(join(tmpdir(), 'sin-repo-')), 'propio.jsonl')
-    expect(ledgerPathFor(process.cwd(), fuera)).toBe(fuera)
+    expect(ledgerPathFor(process.cwd(), { explicit: fuera })).toBe(fuera)
   })
 })
