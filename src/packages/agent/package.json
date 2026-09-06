@@ -3,7 +3,7 @@
   "version": "0.4.0",
   "private": true,
   "type": "module",
-  "description": "Definiciones de agente de kaupamex: la fuente en TypeScript, y los dos emisores hacia las v\u00edas que el cliente acepta.",
+  "description": "Definiciones de agente de kaupamex: la fuente en TypeScript, y los dos emisores hacia las vías que el cliente acepta.",
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
@@ -27,7 +27,12 @@
     "./sanitizePathComponent": "./sanitizePathComponent.ts",
     "./eventMetadata": "./eventMetadata.ts",
     "./promptCategory": "./promptCategory.ts",
-    "./internal/tokenBudget": "./internal/tokenBudget.ts"
+    "./internal/tokenBudget": "./internal/tokenBudget.ts",
+    "./contentArray": "./contentArray.ts",
+    "./errors": "./errors.ts",
+    "./abortController": "./abortController.ts",
+    "./combinedAbortSignal": "./combinedAbortSignal.ts",
+    "./tee": "./tee.ts"
   },
   "scripts": {
     "emit": "bun run bin/emit.ts",
