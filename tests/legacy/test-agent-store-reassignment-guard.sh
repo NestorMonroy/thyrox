@@ -191,7 +191,7 @@ afirmar "ninguna cita quedó duplicada" "2" \
 # trabajo, sobre una COPIA del guion — el original no se toca. Un control que no
 # pudiera fallar no probaría nada (sub-patrón D).
 # El mutante NO puede vivir en cualquier sitio: `agent_store.py` resuelve su
-# hermano `corpus/tipos_documentales` con `Path(__file__).parents[1]`, así que
+# hermano `corpus/document_types` con `Path(__file__).parents[1]`, así que
 # una copia suelta muere en el import y su silencio se leería como «la cita no
 # se movió» — un verde falso del propio control. Se replica la forma del árbol.
 MUT_RAIZ="$TMP/scripts_mut"; mkdir -p "$MUT_RAIZ/agents"

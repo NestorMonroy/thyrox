@@ -23,7 +23,7 @@ set -uo pipefail
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RAIZ="$(cd "$AQUI/../.." && pwd)"          # .claude/
 STORE_CLI="$RAIZ/scripts/agents/agent_store.py"
-DRENADOR="$RAIZ/scripts/agents/drenar_carrete.py"
+DRENADOR="$RAIZ/scripts/agents/drain_spool.py"
 fallos=0
 casos=0
 
@@ -186,7 +186,7 @@ echo "== caso 9: CONTROL ANULADO — el hook de CIERRE DE TURNO tambien drena ==
 # encolado esperando a la proxima sesion; este slot dispara por TURNO.
 #
 # Prueba el CABLEADO del hook de Stop, no el drenador aislado: falla si
-# reconciliar-store-al-cerrar.sh no invoca drenar_carrete.py. Es el mismo
+# reconciliar-store-al-cerrar.sh no invoca drain_spool.py. Es el mismo
 # control que el caso 7 aplica al otro extremo del turno.
 #
 # El hook corre TAMBIEN el reconciliador. Se le desvian sus DOS acoplamientos,

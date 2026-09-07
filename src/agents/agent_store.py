@@ -95,7 +95,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
 sys.path.insert(0, str(agents_paths.CORPUS_DIR))
 
-from tipos_documentales import (  # noqa: E402  — vocabulario proyectado del canon
+from document_types import (  # noqa: E402  — vocabulario proyectado del canon
     DOCUMENT_TYPES,
     DOCUMENT_TYPE_UNKNOWN,
     document_type as _document_type_projected,
@@ -563,7 +563,7 @@ def _migrate_agent_sessions_usage_columns(conn: sqlite3.Connection) -> None:
     # Sólo rellena hacia arriba (fila CON tokens -> 'transcript'). La marca
     # inversa —'no_medido'— NO se pone aquí a propósito: exige saber si el
     # transcript sigue en disco, que es lo que separa «todavía no» de «ya no»,
-    # y este módulo no mira el filesystem. La pone `reconciliar_store.py`, que
+    # y este módulo no mira el filesystem. La pone `reconcile_store.py`, que
     # sí lo mira. Ver :ref:`h-docs-427`.
     if "usage_source" in {row[1] for row in
                           conn.execute("PRAGMA table_info(agent_sessions)")}:
@@ -632,7 +632,7 @@ DOCUMENT_TRIGGER_SOURCES = ("meta-declarada", "ambas", "git-commit")
 _CLAVE_ACTUALIZACION = re.compile(r"^\s*:fecha_actualizacion:\s*(\S+)", re.M)
 
 #: El vocabulario de tipos NO se declara aqui: se importa de
-#: `tipos_documentales`, donde cada fila cita la fila del canon de la que se
+#: `document_types`, donde cada fila cita la fila del canon de la que se
 #: proyecta. Declararlo aqui era vocabulario canonico viviendo en mecanismo,
 #: que es el defecto que H-DOCS-414 registro contra DEC-DOC-015.
 
@@ -1196,7 +1196,7 @@ def cmd_update_session(args: argparse.Namespace) -> None:
         # la fila aunque el resultado sea idéntico, y con ella `updated_at`. El
         # store es un binario versionado: cada arranque dejaba un diff de
         # megabytes que sólo movía un timestamp — medido, 113 filas por sesión,
-        # que son las que `reconciliar_store.py` reintenta porque su transcript
+        # que son las que `reconcile_store.py` reintenta porque su transcript
         # no tiene el dato que les falta y nunca lo tendrá.
         #
         # `IS NOT` y no `<>` porque la mitad de estas columnas admite NULL y
@@ -1378,7 +1378,7 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
     que alguna columna mutable difiera de verdad; sin él, ``updated_at`` se movía
     en las 702 filas en cada ejecución aunque ninguna hubiera cambiado, y el
     store es un binario versionado: cada Stop dejaba un diff de megabytes que
-    sólo movía un timestamp. Es el mismo defecto que ``reconciliar_store.py``
+    sólo movía un timestamp. Es el mismo defecto que ``reconcile_store.py``
     tiene sobre ``agent_sessions`` (:ref:`h-docs-277`, tarea #705).
 
     **Y el resumen separa los tres desenlaces.** Decir «702 tareas» tanto si se
@@ -1858,7 +1858,7 @@ def _document_section(rel: str, subtree: str):
 def _document_type(rel: str) -> str:
     """El tipo documental que declara el PREFIJO del nombre.
 
-    Delega en `tipos_documentales`, que es donde el vocabulario cita su canon.
+    Delega en `document_types`, que es donde el vocabulario cita su canon.
     El alias se conserva porque los llamadores de este modulo lo nombran asi.
 
     ``DOCUMENT_TYPE_UNKNOWN`` es un veredicto —"este nombre no declara tipo"—

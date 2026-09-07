@@ -440,7 +440,7 @@ cmd_kill() {
 # mismo estado.
 #
 # Adoptar NO relanza: sólo vuelve a anotar lo que ya corre. Es deliberado —
-# `reconciliar-agentes.sh` resuelve esto mismo para subagentes y su trampa está
+# `reconcile-agents.sh` resuelve esto mismo para subagentes y su trampa está
 # medida (H-DOCS-1004: el instrumento lee «atascado» un agente que trabaja), así
 # que aquí la única acción es la anotación, que no puede dañar nada. Terminar un
 # trabajo sigue siendo `kill`, con su confirmación.

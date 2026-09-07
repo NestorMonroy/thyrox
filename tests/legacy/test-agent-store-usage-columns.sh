@@ -341,7 +341,7 @@ echo "== 10. denominador: la suma declara sobre cuántos mensajes se computó (#
 # H-DOCS-427: una cifra de telemetría sin su universo no es un resultado. Un
 # transcript truncado publica el mismo `equiv_cost` que uno completo — el
 # conteo no dice sobre cuántos mensajes se computó. `_extract_usage` devuelve
-# ahora el ALCANCE junto a la suma, y `costo-agente.sh` lo imprime.
+# ahora el ALCANCE junto a la suma, y `agent-cost.sh` lo imprime.
 #
 # El hueco entre `assistant_messages` y `usage_messages` tiene DOS causas y van
 # por separado: un mensaje sin bloque `usage`, y un `message.id` repetido que el
@@ -383,7 +383,7 @@ afirmar "transcript real: 10 de 16, todo el hueco es dedup" "10 16 0" "$real"
 
 # Que el consumidor lo PUBLIQUE lo mide la suite de su propio guion
 # (`test-costo-agente.sh`, seccion 8): ahi vive el helper que corre
-# `costo-agente.sh` contra los fixtures reales. Aqui se mide el productor.
+# `agent-cost.sh` contra los fixtures reales. Aqui se mide el productor.
 
 # El resumen y el exit van AL FINAL, siempre. Estuvieron a media hoja y las
 # cinco aserciones de la sección 6 quedaron tras el `exit`: nunca corrieron, y

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pruebas de `reconciliar_store.py::_status` — el desenlace que la
+# Pruebas de `reconcile_store.py::_status` — el desenlace que la
 # reconciliación afirma sobre un transcript (H-DOCS-181).
 #
 # Qué protege, y por qué el defecto era invisible
@@ -49,7 +49,7 @@ fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 cd "$(thyrox_root)" || exit 1
 
-SCRIPT=.claude/scripts/agents/reconciliar_store.py
+SCRIPT=.claude/scripts/agents/reconcile_store.py
 OK=0; FALLO=0
 
 afirmar() {
@@ -76,7 +76,7 @@ print(mod._status(pathlib.Path(sys.argv[2])))
 PY
 }
 
-# Un transcript recién escrito está VIVO para `_sigue_escribiendo`, que corta
+# Un transcript recién escrito está VIVO para `_still_writing`, que corta
 # antes de leer sidecar ni rol y devuelve `running`. Sin envejecerlo, este test
 # mide la frescura del archivo y concluye sobre el canal — la ceguera exacta de
 # `metrica-decide-la-conclusion.md`, aquí dentro de su propia suite.
@@ -111,7 +111,7 @@ EOF
 }
 
 echo "== 1. sintaxis =="
-python3 -c "import ast; ast.parse(open('$SCRIPT').read())"; afirmar "reconciliar_store.py parsea" 0 $?
+python3 -c "import ast; ast.parse(open('$SCRIPT').read())"; afirmar "reconcile_store.py parsea" 0 $?
 
 echo "== 2. CON sidecar + cierre normal → completed =="
 T2="$TMP/agent-aaa.jsonl"; cerrado "$T2"; echo '{"agentType":"x"}' > "$TMP/agent-aaa.meta.json"
@@ -175,7 +175,7 @@ PY
 
 echo "== 8. el ancla del store, que la mudanza a agents/ rompio =="
 # Cuarta victima de `docs@d566c180` y la unica que no fallaba: `store_db()`
-# derivaba `.claude/scripts/agent-results/`, y el guard de `_ids_en_store`
+# derivaba `.claude/scripts/agent-results/`, y el guard de `_ids_in_store`
 # leia su ausencia como store vacio. El pase seguia en verde y volvia a dar
 # de alta los 278 transcripts cada vez: 54.6 s contra 11.6 s. Ver h-docs-498.
 afirmar "store_db() sin --claude-dir resuelve a un archivo que existe" \

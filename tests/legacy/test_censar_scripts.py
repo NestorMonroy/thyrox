@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Suite de ``corpus/censar_scripts.py`` — el censo ve el fondo REORGANIZADO.
+"""Suite de ``corpus/census_scripts.py`` — el censo ve el fondo REORGANIZADO.
 
 Origen: H-DOCS-1020. La mudanza ``d566c180`` agrupó el fondo por clase
 (``gates/ session/ agents/ task/ corpus/ graph/``) y el censo siguió leyendo
@@ -21,7 +21,7 @@ import sys
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent.parent
-spec = importlib.util.spec_from_file_location("censar", HERE / "corpus" / "censar_scripts.py")
+spec = importlib.util.spec_from_file_location("censar", HERE / "corpus" / "census_scripts.py")
 censar = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(censar)
@@ -66,7 +66,7 @@ def synthetic_repo() -> pathlib.Path:
     return root
 
 
-print("== censar_scripts.py — descubrimiento sobre el fondo agrupado por clase ==")
+print("== census_scripts.py — descubrimiento sobre el fondo agrupado por clase ==")
 repo = synthetic_repo()
 real_root = censar.ROOT
 censar.ROOT = repo

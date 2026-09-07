@@ -17,7 +17,7 @@ De donde sale cada pieza
 ``hooks``
     Del ``.claude/settings.json`` del repositorio, cuyas rutas son relativas, y
     de los disparadores de sincronizacion que declara el propio modulo
-    ``sincronizar_settings_local``. Las dos con la raiz de ESTE clon, no la del
+    ``sync_local_settings``. Las dos con la raiz de ESTE clon, no la del
     contenedor donde se genero — un comando de hook cuya ruta no existe no se
     queja y no corre, que es el fallo silencioso ya medido.
 
@@ -40,10 +40,10 @@ a quedar y el delta contra lo que hay, y se pide confirmacion — salvo con
 
 Uso::
 
-    arranque_de_clon.py                  # muestra y pregunta
-    arranque_de_clon.py --si             # desatendido
-    arranque_de_clon.py --solo-mostrar   # no escribe nunca
-    arranque_de_clon.py --capturar       # copia viva -> bitacora versionada
+    clone_bootstrap.py                  # muestra y pregunta
+    clone_bootstrap.py --si             # desatendido
+    clone_bootstrap.py --solo-mostrar   # no escribe nunca
+    clone_bootstrap.py --capturar       # copia viva -> bitacora versionada
 """
 
 import argparse
@@ -61,7 +61,7 @@ import reach  # noqa: E402
 CONSUMER_ROOT = reach.consumer_root()
 PAYLOAD = CONSUMER_ROOT / ".claude-user" / "bitacora-de-aprobaciones.json"
 REPO_SETTINGS = CONSUMER_ROOT / ".claude" / "settings.json"
-SYNC_MODULE = CONSUMER_ROOT / ".claude" / "scripts" / "session" / "sincronizar_settings_local.py"
+SYNC_MODULE = CONSUMER_ROOT / ".claude" / "scripts" / "session" / "sync_local_settings.py"
 
 PLACEHOLDER_DOCS = "%%CONSUMER_ROOT%%"
 PLACEHOLDER_ROOT = "%%RAIZ%%"
@@ -196,7 +196,7 @@ def capture(live_path, docs_root, root):
             "Bitacora de aprobaciones versionada (DEC-12). NO es la politica",
             "curada del repositorio: esa vive en .claude/settings.json con su",
             "defaultMode, ask y deny, y este archivo no la toca.",
-            "Se regenera con: python3 .claude/scripts/session/arranque_de_clon.py --capturar",
+            "Se regenera con: python3 .claude/scripts/session/clone_bootstrap.py --capturar",
         ],
         "allow": to_placeholders(allow, docs_root, root),
     }

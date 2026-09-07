@@ -61,7 +61,7 @@ PUBLIC_PATHS: tuple[str, ...] = (
     'src/agents/agent_store.py',
     'src/task/snapshot-tasks.sh',
     # Sesión: espera, evidencia, instalación.
-    'src/session/evidencia-varada.sh',
+    'src/session/stranded-evidence.sh',
     'src/session/instalar-config-usuario.sh',
     'src/session/wait-jobs.sh',
 )

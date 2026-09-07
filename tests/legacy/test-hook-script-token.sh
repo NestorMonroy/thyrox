@@ -8,7 +8,7 @@
 # informativo (ver caso 3).
 #
 # El caso 3 es el CONTROL ANULADO, y aqui tiene una forma particular: el
-# control que se anula es la PREMISA ORIGINAL de arranque_de_clon —«el primer
+# control que se anula es la PREMISA ORIGINAL de clone_bootstrap —«el primer
 # token de ruta es el script; si existe, el hook esta bien»—. Los insumos se
 # construyen con todos sus scripts presentes, asi que bajo esa premisa los
 # cinco pasan. El gate real los rechaza: eso es lo que demuestra que mide la

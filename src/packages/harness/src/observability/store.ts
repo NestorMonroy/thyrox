@@ -125,7 +125,7 @@ export type HarnessSessionRow = {
   /**
    * El pid del proceso dueño de esta sesión y su hora de arranque. Van a
    * `metadata_json`, no a columnas: `agent_sessions` es una tabla compartida
-   * por tres escritores (hooks, `reconciliar_store.py`, harness) y un
+   * por tres escritores (hooks, `reconcile_store.py`, harness) y un
    * `ALTER TABLE` sobre 847 filas es riesgo que el blob evita. Es lo que
    * `reconcileStaleRunningRows` lee para decidir si una fila `running`
    * corresponde a un proceso vivo. Por defecto, el proceso que escribe.

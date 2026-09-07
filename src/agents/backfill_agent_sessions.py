@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# OBSOLETE: 2026-08-28 — mismo insumo que reconciliar_store.py y 0 filas
-# SUCESOR: python3 .claude/scripts/agents/reconciliar_store.py
+# OBSOLETE: 2026-08-28 — mismo insumo que reconcile_store.py y 0 filas
+# SUCESOR: python3 .claude/scripts/agents/reconcile_store.py
 # HALLAZGO: H-DOCS-498
 """backfill_agent_sessions.py — reconstruye ``agent_sessions`` desde los
 transcripts ``.jsonl`` reales que el harness ya escribió en
@@ -8,7 +8,7 @@ transcripts ``.jsonl`` reales que el harness ya escribió en
 
 Por que se deprecia
 --------------------
-``reconciliar_store.py`` lee **el mismo insumo** —los transcripts bajo
+``reconcile_store.py`` lee **el mismo insumo** —los transcripts bajo
 ``~/.claude/projects/**/subagents/``— y ya corre en dos disparadores
 (``SessionStart`` y ``Stop``). Medido 2026-08-28 con los dos apuntando a la
 misma raíz (``HOME=/root``): de los **278** transcripts en disco, los que
@@ -39,7 +39,7 @@ embargo, SÍ existe: cada subagente deja su transcript completo
 container-efímero pero presente ahora.
 
 Este guion reusa exactamente la misma extracción de uso que ya está probada
-(``_extract_usage`` de ``register_agent_session.py``/``costo-agente.sh``,
+(``_extract_usage`` de ``register_agent_session.py``/``agent-cost.sh``,
 H-DOCS-135/136/168) para poblar la tabla retroactivamente, en vez de esperar
 a que el gap de los hooks se cierre. Es la misma lógica de
 ``backfill_findings_history.py`` aplicada a la otra tabla — DEC-07 ya declara

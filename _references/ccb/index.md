@@ -67,7 +67,7 @@ falta.
 | Fragmento | Qué fundó |
 |---|---|
 | `:462-469` `respawn_unconfirmed_bail` | `thyrox: src/session/marker_wait.py` — abortar con el error real en vez de agotar el timeout |
-| `:599-604` `respawn-stalled` + `EGAVEUP` | el ledger de intentos de `reconciliar-agentes.sh` — un solo relanzamiento por id |
+| `:599-604` `respawn-stalled` + `EGAVEUP` | el ledger de intentos de `reconcile-agents.sh` — un solo relanzamiento por id |
 | `:638-642` `respawn_stale` | el guard de `--confirmar-muerte` — anti-duplicación por comparación de pid |
 | `:357-414` retiro por memoria baja | **no adoptado**, DESCONOCIDO declarado en [H-DOCS-140](../../../source/gestion/pm/docs/iniciativas/integrar-referencia-how-claude-code-works/hallazgos/hallazgo-H-DOCS-140-tres-mecanismos-colapsados-en-un-nombre.rst) |
 | `:148-195` pool de repuestos | **no aplica** — presupone que nosotros lanzamos los procesos |

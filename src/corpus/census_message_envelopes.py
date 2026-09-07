@@ -36,20 +36,20 @@ UNIVERSO = {
 def leer_cadenas(ruta):
     """Las cadenas imprimibles del binario, vía `strings`."""
     try:
-        salida = subprocess.run(
+        output = subprocess.run(
             ['strings', '-n', '4', ruta],
             capture_output=True, text=True, errors='ignore', check=True,
         )
     except (subprocess.CalledProcessError, FileNotFoundError) as exc:
         print(f'ERROR — no se pudo leer {ruta}: {exc}', file=sys.stderr)
         raise SystemExit(2)
-    return salida.stdout
+    return output.stdout
 
 
-def censar(texto):
+def census(texto):
     """Por sobre presente: sus formas literales y el estado de su atributo."""
     hallado = {}
-    for sobre, atributo in UNIVERSO.items():
+    for sobre, attribute in UNIVERSO.items():
         formas = sorted(set(re.findall(
             r'[A-Za-z_<>/"= .-]{0,40}' + re.escape(sobre) + r'[A-Za-z_<>/"= .-]{0,40}',
             texto,
@@ -58,13 +58,13 @@ def censar(texto):
             continue
         hallado[sobre] = {
             'formas': formas,
-            'atributo': atributo,
-            'estado': estado_del_atributo(texto, sobre, atributo, formas),
+            'atributo': attribute,
+            'estado': attribute_state(texto, sobre, attribute, formas),
         }
     return hallado
 
 
-def estado_del_atributo(texto, sobre, atributo, formas):
+def attribute_state(texto, sobre, attribute, formas):
     """`adyacente` · `interpolado` · `indecidible` · `ausente`.
 
     El atributo se busca dentro de la **ventana de captura** de `censar()` —los
@@ -86,24 +86,24 @@ def estado_del_atributo(texto, sobre, atributo, formas):
     dentro del universo. Si lo comparten dos —el caso de `from`— el instrumento
     no puede atribuirlo, y lo declara: `indecidible` no es `ausente`.
     """
-    if any(atributo in f for f in formas):
+    if any(attribute in f for f in formas):
         return 'adyacente'
     if not re.search(r'<\$\{[A-Za-z_$][A-Za-z0-9_$]{0,3}\}\s*'
-                     + re.escape(atributo) + r'=', texto):
+                     + re.escape(attribute) + r'=', texto):
         return 'ausente'
-    comparten = [s for s, a in UNIVERSO.items() if a == atributo and s != sobre]
+    comparten = [s for s, a in UNIVERSO.items() if a == attribute and s != sobre]
     return 'indecidible' if comparten else 'interpolado'
 
 
 def main(argv):
     quieto = '--quiet' in argv
-    rutas = [a for a in argv[1:] if not a.startswith('--')]
-    if len(rutas) != 1:
-        print('uso: censo_sobres_mensaje.py [--quiet] <ruta-al-binario>',
+    paths = [a for a in argv[1:] if not a.startswith('--')]
+    if len(paths) != 1:
+        print('uso: census_message_envelopes.py [--quiet] <ruta-al-binario>',
               file=sys.stderr)
         return 2
 
-    hallado = censar(leer_cadenas(rutas[0]))
+    hallado = census(leer_cadenas(paths[0]))
 
     if quieto:
         print(len(hallado))

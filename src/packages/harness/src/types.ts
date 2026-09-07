@@ -4,7 +4,7 @@
  * La forma de los mensajes y de los bloques es la del API de mensajes, no una
  * invención: el harness los envía tal cual y los guarda tal cual, para que el
  * transcript sea legible por la instrumentación que ya existe
- * (`reconciliar_store.py`, `model_catalog.py sesion`).
+ * (`reconcile_store.py`, `model_catalog.py sesion`).
  */
 
 /** Un bloque de contenido dentro de un mensaje. */

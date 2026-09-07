@@ -9,8 +9,8 @@ escrito por el propio hook no puede hacer — si el hook no corre, no hay log.
 
 Uso::
 
-    python3 medir_disparo_de_hooks.py <transcript.jsonl> [--desde ISO] [--hasta ISO]
-    python3 medir_disparo_de_hooks.py <transcript.jsonl> --esperado <substring>
+    python3 measure_hook_firing.py <transcript.jsonl> [--desde ISO] [--hasta ISO]
+    python3 measure_hook_firing.py <transcript.jsonl> --esperado <substring>
 
 Con ``--esperado`` el guion sale 1 si NINGUNA entrada del rango nombra ese
 substring: sirve para preguntar «¿este hook mío llegó a correr?» y obtener un

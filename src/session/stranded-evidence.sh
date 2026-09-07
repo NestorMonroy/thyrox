@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# evidencia-varada.sh — el grifo de "la evidencia no nace en un directorio
+# stranded-evidence.sh — el grifo de "la evidencia no nace en un directorio
 # volátil" (tarea #910, :ref:`h-docs-456`).
 #
 # Por qué existe
@@ -26,9 +26,9 @@
 # llega cuando la decisión todavía es barata.
 #
 # Uso
-#   bash .claude/scripts/session/evidencia-varada.sh listar          # 0 limpio · 1 hay · 2 no medible
-#   bash .claude/scripts/session/evidencia-varada.sh olvidar <ruta>  # declararla efímera
-#   bash .claude/scripts/session/evidencia-varada.sh asentar         # marcar lo actual como triado
+#   bash .claude/scripts/session/stranded-evidence.sh listar          # 0 limpio · 1 hay · 2 no medible
+#   bash .claude/scripts/session/stranded-evidence.sh olvidar <ruta>  # declararla efímera
+#   bash .claude/scripts/session/stranded-evidence.sh asentar         # marcar lo actual como triado
 set -uo pipefail
 
 VOLATIL="${EV_VOLATIL:-/tmp}"
@@ -56,13 +56,13 @@ mkdir -p "$LEDGER"
 touch "$DESCARTADOS"
 
 hallar() {
-    local expresion=() ext
+    local expression=() ext
     for ext in "${ARTEFACTOS[@]}"; do
-        expresion+=(-o -name "*.$ext")
+        expression+=(-o -name "*.$ext")
     done
     # El primer -o sobra; se descarta con el recorte de abajo.
     find "$VOLATIL" -type f \
-        \( "${expresion[@]:1}" \) \
+        \( "${expression[@]:1}" \) \
         -not -path "$LEDGER/*" \
         "$@" 2>/dev/null | sort
 }
@@ -72,44 +72,44 @@ listar() {
     # verde que no distingue "no hay varados" de "no pude mirar" — el
     # sub-patrón D de `metrica-decide-la-conclusion.md`.
     if [[ ! -d "$VOLATIL" ]]; then
-        echo "evidencia-varada: '$VOLATIL' no existe — el gate no puede afirmar nada." >&2
+        echo "stranded-evidence: '$VOLATIL' no existe — el gate no puede afirmar nada." >&2
         return 2
     fi
 
-    local todos nuevos
-    todos=$(hallar)
+    local all new
+    all=$(hallar)
     if [[ -f "$MARCADOR" ]]; then
-        nuevos=$(hallar -newer "$MARCADOR")
+        new=$(hallar -newer "$MARCADOR")
     else
-        nuevos="$todos"
+        new="$all"
     fi
 
     # Lo declarado efímero se suelta, igual que `wait-jobs.sh forget`.
-    local varados=()
+    local stranded=()
     while IFS= read -r ruta; do
         [[ -n "$ruta" ]] || continue
         grep -Fxq "$ruta" "$DESCARTADOS" && continue
-        varados+=("$ruta")
-    done <<< "$nuevos"
+        stranded+=("$ruta")
+    done <<< "$new"
 
-    local universo
-    universo=$(grep -c . <<< "$todos")
-    [[ -n "$todos" ]] || universo=0
+    local universe
+    universe=$(grep -c . <<< "$all")
+    [[ -n "$all" ]] || universe=0
 
-    if [[ "${#varados[@]}" -eq 0 ]]; then
-        echo "evidencia-varada: OK — ningún artefacto nuevo varado en '$VOLATIL'."
-        echo "  (alcance medido: $universo archivo(s) ${ARTEFACTOS[*]} bajo '$VOLATIL', sin tope de profundidad)"
+    if [[ "${#stranded[@]}" -eq 0 ]]; then
+        echo "stranded-evidence: OK — ningún artefacto nuevo varado en '$VOLATIL'."
+        echo "  (alcance medido: $universe archivo(s) ${ARTEFACTOS[*]} bajo '$VOLATIL', sin tope de profundidad)"
         return 0
     fi
 
-    echo "evidencia-varada: ${#varados[@]} artefacto(s) viven SÓLO en un directorio volátil:"
-    printf '  %s\n' "${varados[@]:0:$TOPE_REPORTE}"
-    if [[ "${#varados[@]}" -gt "$TOPE_REPORTE" ]]; then
-        echo "  … y $(( ${#varados[@]} - TOPE_REPORTE )) más (el reporte se acota; el conteo no)"
+    echo "stranded-evidence: ${#stranded[@]} artefacto(s) viven SÓLO en un directorio volátil:"
+    printf '  %s\n' "${stranded[@]:0:$TOPE_REPORTE}"
+    if [[ "${#stranded[@]}" -gt "$TOPE_REPORTE" ]]; then
+        echo "  … y $(( ${#stranded[@]} - TOPE_REPORTE )) más (el reporte se acota; el conteo no)"
     fi
     # El denominador también aquí, no sólo en la rama verde: es justo cuando
     # hay incumplidores cuando alguien necesita saber sobre cuántos se midió.
-    echo "  (alcance medido: $universo archivo(s) ${ARTEFACTOS[*]} bajo '$VOLATIL', sin tope de profundidad)"
+    echo "  (alcance medido: $universe archivo(s) ${ARTEFACTOS[*]} bajo '$VOLATIL', sin tope de profundidad)"
     return 1
 }
 
@@ -122,11 +122,11 @@ case "${1:-listar}" in
         [[ $# -ge 2 ]] || { echo "uso: $0 olvidar <ruta>" >&2; exit 64; }
         shift
         printf '%s\n' "$@" >> "$DESCARTADOS"
-        echo "evidencia-varada: soltado(s) $# archivo(s)."
+        echo "stranded-evidence: soltado(s) $# archivo(s)."
         ;;
     asentar)
         touch "$MARCADOR"
-        echo "evidencia-varada: asentado — lo actual no vuelve a avisar."
+        echo "stranded-evidence: asentado — lo actual no vuelve a avisar."
         ;;
     *)
         echo "uso: $0 {listar|olvidar <ruta>|asentar}" >&2

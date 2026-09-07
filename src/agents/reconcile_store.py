@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""reconciliar_store.py — rellena ``agent_sessions`` con lo que el hook no vio.
+"""reconcile_store.py — rellena ``agent_sessions`` con lo que el hook no vio.
 
 El registro automático de subagentes depende de los hooks
 ``SubagentStart``/``SubagentStop`` (``register_agent_session.py``). Ese camino
@@ -30,8 +30,8 @@ termina en ``user``, a media frase. Esa firma está medida y documentada en
 
 Uso::
 
-    python3 .claude/scripts/agents/reconciliar_store.py            # registra lo que falte
-    python3 .claude/scripts/agents/reconciliar_store.py --dry-run  # sólo reporta
+    python3 .claude/scripts/agents/reconcile_store.py            # registra lo que falte
+    python3 .claude/scripts/agents/reconcile_store.py --dry-run  # sólo reporta
 """
 import argparse
 import json
@@ -52,7 +52,7 @@ import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar s
 HERE = Path(__file__).resolve().parent
 HOOKS = agents_paths.hooks_dir()
 AGENT_STORE = HERE / "agent_store.py"
-_PROJECTS_POR_DEFECTO = Path("/root/.claude/projects")
+_DEFAULT_PROJECTS = Path("/root/.claude/projects")
 
 # Los DOS acoplamientos externos del guion: de dónde LEE y en qué ESCRIBE.
 # `None` en ambos = el caso normal (transcripts del cliente, store de `docs`).
@@ -70,8 +70,8 @@ def projects_dir() -> Path:
     Misma pareja de vías que `_claude_dir`: la bandera para quien invoca
     directamente, la variable para quien invoca **a través de un hook**.
     """
-    destino = _PROJECTS_DIR or os.environ.get("AGENT_STORE_PROJECTS_DIR")
-    return Path(destino).expanduser().resolve() if destino else _PROJECTS_POR_DEFECTO
+    destination = _PROJECTS_DIR or os.environ.get("AGENT_STORE_PROJECTS_DIR")
+    return Path(destination).expanduser().resolve() if destination else _DEFAULT_PROJECTS
 
 
 def _claude_dir() -> "str | None":
@@ -107,19 +107,19 @@ def store_db() -> Path:
     ``if not db.exists()`` de ``_ids_en_store`` devolvía el conjunto vacío en
     vez de rehusar. Ver :ref:`h-docs-498`.
     """
-    destino = _claude_dir()
-    if not destino:
+    destination = _claude_dir()
+    if not destination:
         return agents_paths.agent_results_dir() / "agent_store.sqlite3"
-    raiz = Path(destino).expanduser().resolve()
+    raiz = Path(destination).expanduser().resolve()
     if raiz.name != "agent-results":
         raiz = raiz / "agent-results"
     return raiz / "agent_store.sqlite3"
 
 
-def _destino() -> list:
+def _destination() -> list:
     """Los argumentos con que se nombra el store al invocar `agent_store.py`."""
-    destino = _claude_dir()
-    return ["--claude-dir", destino] if destino else ["--repo", "docs"]
+    destination = _claude_dir()
+    return ["--claude-dir", destination] if destination else ["--repo", "docs"]
 
 # Silencio por encima del cual un transcript deja de considerarse en curso.
 # Derivado de medir el gap máximo entre líneas consecutivas sobre el corpus
@@ -153,7 +153,7 @@ def _cargar_hook():
     ruta = pathlib.Path(__file__).resolve().parent / "register_session.py"
     if not ruta.is_file():
         raise SystemExit(
-            f"reconciliar_store: no está el mecanismo en {ruta}. NO se emite un "
+            f"reconcile_store: no está el mecanismo en {ruta}. NO se emite un "
             "veredicto: reconciliar con la fórmula de costo ausente publicaría "
             "filas con el costo equivocado.")
     spec = importlib.util.spec_from_file_location("_register_session", ruta)
@@ -179,7 +179,7 @@ _normalize_model_alias = _hook.normalize_model_alias
 _api_error = _hook.api_error
 
 
-def _sigue_escribiendo(transcript: Path) -> bool:
+def _still_writing(transcript: Path) -> bool:
     """¿El transcript creció hace poco? Entonces su agente sigue vivo.
 
     Un agente en vuelo tiene un transcript **a medias**: su última línea es el
@@ -244,23 +244,23 @@ def _journal_index() -> dict:
                 lineas = j.read_text(encoding="utf-8", errors="ignore").splitlines()
             except OSError:
                 continue
-            for linea in lineas:
-                linea = linea.strip()
-                if not linea:
+            for line in lineas:
+                line = line.strip()
+                if not line:
                     continue
                 try:
-                    obj = json.loads(linea)
+                    obj = json.loads(line)
                 except Exception:
                     continue
-                agente, tipo = obj.get("agentId"), obj.get("type")
-                if not agente:
+                agent, tipo = obj.get("agentId"), obj.get("type")
+                if not agent:
                     continue
                 # `result` gana sobre `started` sin importar el orden de
                 # lectura: un agente que entregó tiene las dos líneas.
                 if tipo == "result":
-                    indice[agente] = "result"
-                elif agente not in indice:
-                    indice[agente] = "started"
+                    indice[agent] = "result"
+                elif agent not in indice:
+                    indice[agent] = "started"
     _JOURNAL_CACHE = indice
     return indice
 
@@ -290,7 +290,7 @@ def _final_role(transcript: Path) -> str:
     return ultimo
 
 
-def _ids_en_store() -> set:
+def _ids_in_store() -> set:
     """Los ``agent_id`` que el store ya tiene.
 
     El conjunto vacío tiene DOS causas que no se parecen en nada: un store
@@ -464,9 +464,9 @@ def _desenlace_contra_journal(transcripts: list) -> set:
     conn = sqlite3.connect(db)
     try:
         cols = {r[1] for r in conn.execute("PRAGMA table_info(agent_sessions)")}
-        tiene_procedencia = "outcome_source" in cols
-        campos = "agent_id, status" + (", outcome_source" if tiene_procedencia else "")
-        filas = {r[0]: r[1:] for r in conn.execute(f"SELECT {campos} FROM agent_sessions")}
+        has_provenance = "outcome_source" in cols
+        fields = "agent_id, status" + (", outcome_source" if has_provenance else "")
+        filas = {r[0]: r[1:] for r in conn.execute(f"SELECT {fields} FROM agent_sessions")}
     finally:
         conn.close()
     diverge = set()
@@ -479,7 +479,7 @@ def _desenlace_contra_journal(transcripts: list) -> set:
         esperado = "completed" if indice[aid] == "result" else "failed"
         # Dos motivos para re-pasar: el estado no coincide, o coincide pero la
         # procedencia nunca se escribió (toda fila anterior a #653).
-        if fila[0] != esperado or (tiene_procedencia and fila[1] is None):
+        if fila[0] != esperado or (has_provenance and fila[1] is None):
             diverge.add(aid)
     return diverge
 
@@ -500,7 +500,7 @@ def _transcripts() -> list:
     return sorted(raiz.rglob("subagents/agent-*.jsonl"))
 
 
-def _nivel_de_retencion(transcript: Path, status: str) -> int:
+def _retention_level(transcript: Path, status: str) -> int:
     """El nivel que el reconciliador PUEDE medir — nunca el 2.
 
     Ver ``.claude/rules/niveles-de-retencion.md``. Aquí sólo se distingue 3 de
@@ -524,11 +524,11 @@ def _nivel_de_retencion(transcript: Path, status: str) -> int:
 #: tres pobladas y una en NULL no es una fila sin medir, es una medición con
 #: un cero legítimo — y medido al declarar la columna, ese caso existe (12
 #: filas con ``cache_read_tokens = 0`` y el resto poblado).
-_COLUMNAS_DE_USO = ("input_tokens", "cache_creation_tokens",
+_USAGE_COLUMNS = ("input_tokens", "cache_creation_tokens",
                     "cache_read_tokens", "output_tokens")
 
 
-def _declarar_no_medido(en_disco: list) -> int:
+def _declarar_no_medido(on_disk: list) -> int:
     """Marca ``usage_source='no_medido'`` lo que ya no se puede medir.
 
     Tres condiciones, y las tres importan (:ref:`h-docs-427`):
@@ -550,20 +550,20 @@ def _declarar_no_medido(en_disco: list) -> int:
     db = store_db()
     if not db.exists():
         return 0
-    con_transcript = {t.name[len("agent-"):-len(".jsonl")] for t in en_disco}
+    with_transcript = {t.name[len("agent-"):-len(".jsonl")] for t in on_disk}
     conn = sqlite3.connect(db)
     try:
         cols = {row[1] for row in conn.execute("PRAGMA table_info(agent_sessions)")}
         if "usage_source" not in cols:
             return 0
-        sin_medir = " AND ".join(f"{c} IS NULL" for c in _COLUMNAS_DE_USO)
+        unmeasured = " AND ".join(f"{c} IS NULL" for c in _USAGE_COLUMNS)
         candidatos = [
             r[0] for r in conn.execute(
                 "SELECT agent_id FROM agent_sessions "
                 "WHERE status IN ('completed','failed') "
-                f"AND usage_source IS NULL AND {sin_medir}")
+                f"AND usage_source IS NULL AND {unmeasured}")
         ]
-        irrecuperables = [a for a in candidatos if a not in con_transcript]
+        irrecuperables = [a for a in candidatos if a not in with_transcript]
         if not irrecuperables:
             return 0
         conn.executemany(
@@ -583,7 +583,7 @@ def _cierre(transcript: Path, agent_id: str, status: str) -> list:
 
     cmd = [
         sys.executable, str(AGENT_STORE), "actualizar-sesion",
-        *_destino(),
+        *_destination(),
         "--agent-id", agent_id,
         "--status", status,
     ]
@@ -626,9 +626,9 @@ def _cierre(transcript: Path, agent_id: str, status: str) -> list:
     # se pierde: va a su propia columna. Este pase corre en cada Stop, asi que
     # la deuda de las filas ya escritas se paga sola mientras el transcript
     # siga en disco (:ref:`h-docs-219`).
-    modelo = uso.get("derived_model") or _normalize_model(meta.get("model"))
-    if modelo:
-        cmd += ["--model", modelo]
+    model = uso.get("derived_model") or _normalize_model(meta.get("model"))
+    if model:
+        cmd += ["--model", model]
     alias = _normalize_model_alias(meta.get("model"))
     if alias:
         cmd += ["--model-alias", alias]
@@ -648,13 +648,13 @@ def _cierre(transcript: Path, agent_id: str, status: str) -> list:
     ):
         if tele.get(key) is not None:
             cmd += [flag, str(tele[key])]
-    cmd += ["--retention-level", str(_nivel_de_retencion(transcript, status))]
+    cmd += ["--retention-level", str(_retention_level(transcript, status))]
     # Qué instrumento decidió ese nivel (#653). Va SIEMPRE que haya veredicto:
     # el nivel sin su procedencia no se puede auditar, y auditarlo es el único
     # modo de saber cuántos «murió sin entregar» eran en realidad «no se supo».
-    procedencia = _veredicto(transcript)[1]
-    if procedencia:
-        cmd += ["--outcome-source", procedencia]
+    provenance = _verdict(transcript)[1]
+    if provenance:
+        cmd += ["--outcome-source", provenance]
     extra = dict(meta.get("extra") or {})
     # La causa de muerte va a COLUMNA desde #600, no a `metadata_json`. Antes
     # vivía en el JSON, que responde «¿por qué murió ESTE?» pero no «¿cuántos
@@ -684,7 +684,7 @@ def _registrar(transcript: Path, agent_id: str, session_id: str) -> bool:
 
     alta = [
         sys.executable, str(AGENT_STORE), "registrar-sesion",
-        *_destino(),
+        *_destination(),
         "--agent-id", agent_id,
         "--subagent-type", meta.get("subagent_type") or "desconocido",
         "--session-id", session_id,
@@ -756,10 +756,10 @@ def _status(transcript: Path) -> str:
     mientras ese instrumento no existía; ahora existe, y seguir dejándolo sería
     declarar desconocido lo que está declarado.
     """
-    return _veredicto(transcript)[0]
+    return _verdict(transcript)[0]
 
 
-def _veredicto(transcript: Path) -> tuple:
+def _verdict(transcript: Path) -> tuple:
     """``(status, outcome_source)`` — el desenlace y QUÉ lo decidió.
 
     Los dos viajan juntos a propósito. Sin la procedencia, un
@@ -784,17 +784,17 @@ def _veredicto(transcript: Path) -> tuple:
         return ("failed", "api_error")
     # Antes de leer ninguna firma: un transcript que sigue creciendo no tiene
     # desenlace todavía. Cerrarlo es inventarlo.
-    if _sigue_escribiendo(transcript):
+    if _still_writing(transcript):
         return ("running", None)
     if not _tiene_sidecar(transcript):
         # Canal Workflow: su desenlace lo declara el journal, no el transcript.
         # `started` sin `result` es muerte REAL —el motor lo arrancó y nunca
         # recogió su valor—, y por eso `failed` aquí no es una firma calibrada
         # sino la ausencia de un registro que el motor sí escribe cuando hay.
-        segun_journal = _journal_index().get(_agent_id(transcript))
-        if segun_journal == "result":
+        by_journal = _journal_index().get(_agent_id(transcript))
+        if by_journal == "result":
             return ("completed", "journal")
-        if segun_journal == "started":
+        if by_journal == "started":
             return ("failed", "journal")
         return ("running", None)
     rol = _final_role(transcript)
@@ -829,14 +829,14 @@ def main() -> int:
     if args.projects_dir:
         _PROJECTS_DIR = args.projects_dir
 
-    presentes = _ids_en_store()
+    presentes = _ids_in_store()
     incompletos = _ids_incompletos()
-    en_disco = _transcripts()
+    on_disk = _transcripts()
 
     def _id(t: Path) -> str:
         return t.name[len("agent-"):-len(".jsonl")]
 
-    faltan = [t for t in en_disco if _id(t) not in presentes]
+    faltan = [t for t in on_disk if _id(t) not in presentes]
     # NO se exige sidecar para re-pasar una fila incompleta. La versión
     # anterior sí lo hacía —"sin él no hay nada nuevo que escribir"— y esa
     # premisa dejó de ser cierta cuando ``_extract_usage`` empezó a derivar el
@@ -846,21 +846,21 @@ def main() -> int:
     # porque el canal sin sidecar es el mismo que el canal sin modelo.
     # Una fila con el desenlace equivocado tampoco necesita sidecar: se corrige
     # leyendo el transcript.
-    erroneas = _desenlace_erroneo(en_disco) | _desenlace_contra_journal(en_disco)
+    erroneas = _desenlace_erroneo(on_disk) | _desenlace_contra_journal(on_disk)
     # Un transcript que sigue creciendo no se repara: su fila `running` es
     # correcta, y el pase sólo podría empeorarla escribiendo un conteo parcial.
-    vivos = [t for t in en_disco if _sigue_escribiendo(t)]
-    en_vuelo = {_id(t) for t in vivos}
-    reparables = [t for t in en_disco
-                  if _id(t) not in en_vuelo
+    vivos = [t for t in on_disk if _still_writing(t)]
+    in_flight = {_id(t) for t in vivos}
+    reparables = [t for t in on_disk
+                  if _id(t) not in in_flight
                   and (_id(t) in incompletos or _id(t) in erroneas)]
 
     if args.dry_run:
-        print(f"transcripts en disco: {len(en_disco)} · "
-              f"ya en el store: {len(en_disco) - len(faltan)} · "
+        print(f"transcripts en disco: {len(on_disk)} · "
+              f"ya en el store: {len(on_disk) - len(faltan)} · "
               f"faltan: {len(faltan)} · "
               f"a reparar: {len(reparables)} "
-              f"(de ellos {len(erroneas - en_vuelo)} con desenlace erróneo por "
+              f"(de ellos {len(erroneas - in_flight)} con desenlace erróneo por "
               f"error de API) · en vuelo, sin tocar: {len(vivos)}")
         return 0
 
@@ -887,13 +887,13 @@ def main() -> int:
 
     # Después de reparar, no antes: una fila que este mismo pase acaba de
     # medir no debe marcarse como no medida.
-    no_medidos = _declarar_no_medido(en_disco)
+    no_medidos = _declarar_no_medido(on_disk)
 
     print(f"reconciliar-store: {ok} registrados, {reparados} completados, "
           f"{intactos} sin cambios, {fallo} fallidos, "
-          f"{len(en_disco) - len(faltan)} ya presentes, "
+          f"{len(on_disk) - len(faltan)} ya presentes, "
           f"{no_medidos} declarados no medidos "
-          f"(alcance medido: {len(en_disco)} transcripts en disco)")
+          f"(alcance medido: {len(on_disk)} transcripts en disco)")
     return 0
 
 

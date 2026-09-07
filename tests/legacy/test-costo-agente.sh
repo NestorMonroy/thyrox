@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pruebas de costo-agente.sh (H-DOCS-170, H-DOCS-240).
+# Pruebas de agent-cost.sh (H-DOCS-170, H-DOCS-240).
 #
 # POR QUE HAY FIXTURES Y NO SOLO TRANSCRIPTS REALES. La primera version medía
 # la aritmetica contra cuatro transcripts reales del contenedor, por su ruta
@@ -41,7 +41,7 @@ fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 cd "$(thyrox_root)" || exit 1
 
-SCRIPT=.claude/scripts/agents/costo-agente.sh
+SCRIPT=.claude/scripts/agents/agent-cost.sh
 OK=0; FALLO=0; OMITIDOS=0
 
 TMP="$(mktemp -d)"
@@ -73,7 +73,7 @@ campo() {
 }
 
 echo "== 1. sintaxis =="
-bash -n "$SCRIPT"; afirmar "costo-agente.sh parsea" 0 $?
+bash -n "$SCRIPT"; afirmar "agent-cost.sh parsea" 0 $?
 
 echo "== 2. agent_id inexistente: error claro, exit 1 =="
 salida=$(bash "$SCRIPT" no-existe-abc123 2>&1); ec=$?

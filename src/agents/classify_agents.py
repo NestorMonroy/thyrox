@@ -3,7 +3,7 @@
 
 Por qué existe
 --------------
-``reconciliar-agentes.sh`` responde *"¿está vivo?"* con cinco estados mecánicos
+``reconcile-agents.sh`` responde *"¿está vivo?"* con cinco estados mecánicos
 (terminado / vivo / atascado / desaparecido / indecidible), medidos por mtime y
 marcador terminal. Es lo que hacía falta para no relanzar dos copias.
 
@@ -63,10 +63,10 @@ así que cada patrón lleva su contraparte en español, marcada ``[es]``.
 
 Uso
 ---
-    clasificar_agentes.py                 # reporte
-    clasificar_agentes.py --quiet         # sólo conteos, con denominador
-    clasificar_agentes.py --solo-bloqueados
-    clasificar_agentes.py --explicar <id> # el texto de cierre y qué regla ganó
+    classify_agents.py                 # reporte
+    classify_agents.py --quiet         # sólo conteos, con denominador
+    classify_agents.py --solo-bloqueados
+    classify_agents.py --explicar <id> # el texto de cierre y qué regla ganó
 """
 
 from __future__ import annotations

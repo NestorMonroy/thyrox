@@ -52,7 +52,7 @@ def consumidor(base: pathlib.Path, cuerpo: str) -> pathlib.Path:
 print('== 1. la declaración responde a las tres formas ==')
 check('el localizador es superficie', True, surface.is_public('src/paths/reach.py'))
 check('un hijo de un dir declarado también',
-      True, surface.is_public('src/agents/costo-agente.sh'))
+      True, surface.is_public('src/agents/agent-cost.sh'))
 check('un módulo interno NO lo es',
       False, surface.is_public('src/session/marker_wait.py'))
 check('y la forma ./ se normaliza',

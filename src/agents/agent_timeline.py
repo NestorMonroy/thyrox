@@ -2,13 +2,13 @@
 """La línea de tiempo de un subagente: sus llamadas únicas y sus huecos.
 
 El instrumento que faltaba para responder «¿el agente sigue vivo?» con una
-medición en vez de una impresión. `reconciliar-agentes.sh` clasifica el estado
+medición en vez de una impresión. `reconcile-agents.sh` clasifica el estado
 de un agente **en curso** por la mtime de su `.output`; esto lee el transcript
 **terminado** y publica dos cosas que aquél no puede dar:
 
 1. **Las llamadas únicas**, deduplicadas por `tool_use.id`. Un transcript repite
    el mismo bloque en cada mensaje de la cadena, así que contar bloques infla la
-   cifra — el mismo dedup que `costo-agente.sh` aplica al gasto.
+   cifra — el mismo dedup que `agent-cost.sh` aplica al gasto.
 2. **La distribución de huecos** entre eventos consecutivos. Un hueco suelto no
    dice nada; lo que informa es qué fracción del reloj de pared vive en huecos
    largos. Medido sobre el agente del léxico cerrado: la mediana es 0.0 s y aun

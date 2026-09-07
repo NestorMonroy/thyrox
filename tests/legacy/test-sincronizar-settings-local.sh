@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# test-sincronizar-settings-local.sh — prueba de sincronizar_settings_local.py
+# test-sincronizar-settings-local.sh — prueba de sync_local_settings.py
 # =============================================================================
 #
 # Todo corre sobre COPIAS DESECHABLES de las tres rutas. Ni el repositorio real
@@ -21,7 +21,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SUT="$SCRIPT_DIR/session/sincronizar_settings_local.py"
+SUT="$SCRIPT_DIR/session/sync_local_settings.py"
 
 PASS=0; FAIL=0
 check() {
@@ -58,7 +58,7 @@ check "el comando llega con ruta absoluta" \
 # Los disparadores de la propia sincronización sobreviven a su propio disparo:
 # es el defecto H-DOCS-287, que borraba el mecanismo en su primera ejecución.
 check "los 5 disparadores siguen en la copia viva" "5" \
-  "$(leer "$VIVA" 'sum(1 for e in j["hooks"].values() for m in e for h in m["hooks"] if "sincronizar_settings_local" in h["command"])')"
+  "$(leer "$VIVA" 'sum(1 for e in j["hooks"].values() for m in e for h in m["hooks"] if "sync_local_settings" in h["command"])')"
 
 echo "== 2. el segundo disparo no encuentra nada que hacer (idempotencia) =="
 # Sin esto, cada disparo reescribiría la copia viva y el diff nunca convergería.

@@ -5,7 +5,7 @@
  * eso dejaba dos defectos:
  *
  * - **#28 — contención.** El store es un archivo compartido por tres
- *   escritores (los hooks, `reconciliar_store.py`, el harness). Un `INSERT`
+ *   escritores (los hooks, `reconcile_store.py`, el harness). Un `INSERT`
  *   mientras otro tiene el lock lanza `SQLITE_BUSY` y se rendía. La respuesta
  *   idiomática de SQLite es `PRAGMA busy_timeout`: el driver **espera** el lock
  *   hasta N ms en vez de fallar al instante. Se fija aquí, una vez.

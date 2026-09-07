@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prueba de clasificar_agentes.py.
+"""Prueba de classify_agents.py.
 
 Dos bloques con propósitos distintos, y la distinción importa:
 
@@ -24,7 +24,7 @@ literales del banco de casos (``blocked: …``) — así que el conteo puede dar
 auto-excluye a propósito: la heurística que haría falta ("la entrada más
 reciente") taparía datos legítimos. Ver H-DOCS-142.
 
-Uso:  python3 .claude/scripts/test-clasificar_agentes.py
+Uso:  python3 .claude/scripts/test-classify_agents.py
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ import sys
 # El SUT vive un nivel arriba (``.claude/scripts/``); este archivo está en
 # ``tests/``, directorio hermano del código — no co-localizado.
 HERE = pathlib.Path(__file__).resolve().parent.parent
-spec = importlib.util.spec_from_file_location("clf", HERE / "agents" / "clasificar_agentes.py")
+spec = importlib.util.spec_from_file_location("clf", HERE / "agents" / "classify_agents.py")
 clf = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(clf)

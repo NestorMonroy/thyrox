@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Suite de `evidencia-varada.sh` — el motor del grifo de la tarea #910.
+# Suite de `stranded-evidence.sh` — el motor del grifo de la tarea #910.
 #
 # Escrita ANTES del guion (TDD). Su control positivo es material REAL: los
 # archivos que el triaje de #858 encontro de verdad en el directorio volatil
@@ -9,7 +9,7 @@
 set -uo pipefail
 
 RAIZ="${KX_DOCS_DIR:-/home/user/kaupamex-docs}"
-MOTOR="$RAIZ/.claude/scripts/session/evidencia-varada.sh"
+MOTOR="$RAIZ/.claude/scripts/session/stranded-evidence.sh"
 ACIERTOS=0
 FALLOS=0
 
@@ -34,7 +34,7 @@ montar() {
 
 desmontar() { rm -rf "$VOLATIL" "$LEDGER"; }
 
-echo "== evidencia-varada =="
+echo "== stranded-evidence =="
 
 # --- Caso 1: directorio volatil vacio -> silencio, exit 0 -------------------
 montar

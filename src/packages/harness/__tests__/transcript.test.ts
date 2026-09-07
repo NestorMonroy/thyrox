@@ -15,7 +15,7 @@ import { Transcript, readTranscript } from '../src/transcript.ts'
 import { transcriptShapeOf } from '../src/observability/transcriptShape.ts'
 
 // El formato se copia A PROPOSITO del cliente: una linea JSON por evento con
-// `type`, `timestamp`, `message` y `usage`. Asi `reconciliar_store.py` y
+// `type`, `timestamp`, `message` y `usage`. Asi `reconcile_store.py` y
 // `model_catalog.py sesion` leen nuestros transcripts sin cambios (T-002).
 const dir = () => mkdtempSync(join(tmpdir(), 'harness-'))
 

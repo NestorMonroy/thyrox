@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# test-medir-disparo-de-hooks.sh — casos de `medir_disparo_de_hooks.py`
+# test-medir-disparo-de-hooks.sh — casos de `measure_hook_firing.py`
 # =============================================================================
 #
 # Qué protege — y por qué existe
@@ -36,7 +36,7 @@ if [[ -z "$_thyrox_root" ]]; then
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 REPO="$(thyrox_root)" || exit 2
-GUION="$REPO/.claude/scripts/session/medir_disparo_de_hooks.py"
+GUION="$REPO/.claude/scripts/session/measure_hook_firing.py"
 
 fail=0
 ok()  { echo "  OK   $*"; }

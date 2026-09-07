@@ -24,7 +24,7 @@ const usage = {
 
 describe('tokens equivalentes — la unidad que NO depende de la tarifa', () => {
   test('los cocientes del tier 3/15 son los que el store ya usaba: 1 · 1.25 · 0.1 · 5', () => {
-    // Control contra un valor conocido fuera de este código: `costo-agente.sh`
+    // Control contra un valor conocido fuera de este código: `agent-cost.sh`
     // declara «in 1x, cc 1.25x, cr 0.1x, out 5x». Si la derivación por tier no
     // los reprodujera, esta función mediría otra cosa que la del store.
     //

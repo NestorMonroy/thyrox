@@ -14,7 +14,7 @@ Los casos que DISCRIMINAN, y por qué:
 - **4 y 5** — sólo FUERA de la ventana el contenido decide entre evidencia
   positiva (``stalled_evident``) y mera ausencia (``stalled_unknown``); las dos
   NO se colapsan en una, porque sólo la primera autoriza relanzar en
-  ``reconciliar-agentes.sh``.
+  ``reconcile-agents.sh``.
 - **6** — la holgura de reloj es una constante PROPIA, sumada al umbral: sin
   ella, una entrada apenas más vieja que el umbral se leería como muerta
   aunque el desfase de reloj entre quien escribe y quien mide la explique

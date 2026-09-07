@@ -5,7 +5,7 @@ de ellos quedaron apuntando a directorios inexistentes — el defecto que el
 docstring de ``reach.py`` declara y que falla **en silencio** hasta que alguien
 invoca el módulo. Medido antes de escribir esto: ``agent_store.py`` buscaba
 ``reach_roots`` en ``src/``, ``backfill_agent_sessions.py`` un
-``src/deprecated.py``, y ``drenar_carrete.py`` y ``reconciliar_store.py`` un
+``src/deprecated.py``, y ``drain_spool.py`` y ``reconcile_store.py`` un
 ``thyrox/hooks/`` que nunca existió.
 
 La forma que se retira es ``parents[N]`` con N > 0: cuenta niveles del árbol de

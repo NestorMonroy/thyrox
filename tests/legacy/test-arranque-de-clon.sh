@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pruebas de `arranque_de_clon.py` — el puente que deja a un clon nuevo con los
+# Pruebas de `clone_bootstrap.py` — el puente que deja a un clon nuevo con los
 # hooks de sesion cargados.
 #
 # Todo corre contra un CLON SINTETICO en un directorio temporal. Ni una sola
@@ -40,7 +40,7 @@ if [[ -z "$_thyrox_root" ]]; then
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 DOCS_ROOT="$(thyrox_root)" || exit 2
-GUION="$DOCS_ROOT/.claude/scripts/session/arranque_de_clon.py"
+GUION="$DOCS_ROOT/.claude/scripts/session/clone_bootstrap.py"
 OK=0; FALLOS=0
 
 comprobar() {  # comprobar <descripcion> <esperado> <obtenido>
@@ -63,11 +63,11 @@ CLON="$TMP/kaupamex-docs"
 # fallarian por la ruta, no por la conducta que miden.
 mkdir -p "$CLON/.claude/scripts/session" "$CLON/.claude/hooks" "$CLON/.claude-user"
 cp "$DOCS_ROOT/.claude/settings.json"                       "$CLON/.claude/"
-cp "$DOCS_ROOT/.claude/scripts/session/sincronizar_settings_local.py" \
+cp "$DOCS_ROOT/.claude/scripts/session/sync_local_settings.py" \
    "$CLON/.claude/scripts/session/"
 cp "$GUION"                                                  "$CLON/.claude/scripts/session/"
 cp "$DOCS_ROOT/.claude-user/bitacora-de-aprobaciones.json"    "$CLON/.claude-user/"
-GUION_SINT="$CLON/.claude/scripts/session/arranque_de_clon.py"
+GUION_SINT="$CLON/.claude/scripts/session/clone_bootstrap.py"
 VIVA="$TMP/.claude/settings.local.json"
 
 # --- Caso 1: clon limpio -> escribe, y NADA apunta al arbol real -------------

@@ -47,11 +47,11 @@ cp "$SCRIPT_DIR/deprecated.sh" "$REPO/.claude/scripts/deprecated.sh"
 # falso necesita el CLI del store por la misma razón que necesita el guion del
 # snapshot — el hook los resuelve bajo $RAIZ.
 cp "$SCRIPT_DIR/agents/agent_store.py" "$REPO/.claude/scripts/agents/agent_store.py"
-# `agent_store.py` importa `tipos_documentales` desde su propio directorio
+# `agent_store.py` importa `document_types` desde su propio directorio
 # (`sys.path.insert` en su cabecera). Sin el modulo, el render muere con
 # `ModuleNotFoundError` y el caso se lee como «el hook no disparo el
 # render» — un defecto de fixture disfrazado de defecto de conducta.
-cp "$SCRIPT_DIR/corpus/tipos_documentales.py" "$REPO/.claude/scripts/corpus/tipos_documentales.py"
+cp "$SCRIPT_DIR/corpus/document_types.py" "$REPO/.claude/scripts/corpus/document_types.py"
 # Y el puente de registro de fallos (#709), por la misma razón: el hook lo
 # resuelve bajo $RAIZ. Reubicarlo aquí además desvía su LOG_PATH —que se
 # resuelve relativo a `__file__` y NO por entorno— al fixture, así que la

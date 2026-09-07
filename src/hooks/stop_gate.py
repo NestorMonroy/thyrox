@@ -15,7 +15,7 @@ El plan del tramo suponía «un mecanismo, un veredicto». Medirlos lo desminti�
 ===========================  ==========================  =========================
 Motor                        Cómo decide                 Medido
 ===========================  ==========================  =========================
-``evidencia-varada listar``  código de salida            exit **1** con 880 varados
+``stranded-evidence listar``  código de salida            exit **1** con 880 varados
 ``wait-jobs pendientes``     salida en stdout            exit **0**, stdout vacío
 ===========================  ==========================  =========================
 

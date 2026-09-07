@@ -11,7 +11,7 @@ primer acierto, ``printf`` muere con SIGPIPE, y ``pipefail`` propaga el 141
 como salida del pipe. El ``if`` da FALSO *porque* encontró lo que buscaba.
 
 Medido antes de portar, con un payload real de 2.1 MB y el acierto en la
-línea 2: ``PIPESTATUS=141 0``, y ``stop-gate-evidencia-varada.sh`` **bloqueó
+línea 2: ``PIPESTATUS=141 0``, y ``stop-gate-stranded-evidence.sh`` **bloqueó
 siendo una reentrada** (:ref:`h-docs-1083`).
 
 Leer el JSON elimina la trampa por construcción — no hay pipe. Por eso el

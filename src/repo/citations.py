@@ -2,7 +2,7 @@
 """Quién cita un archivo, en los cinco clones, separando cita VIVA de evidencia.
 
 El problema que resuelve. Renombrar es la mitad barata; la cara es reapuntar a
-los consumidores. ``corpus/censar_scripts.py`` ya deriva los citantes —y por eso
+los consumidores. ``corpus/census_scripts.py`` ya deriva los citantes —y por eso
 este módulo no lo reimplementa— pero lo hace con ``git grep`` sobre **un** repo
 y con las raíces del consumidor. Un guion de thyrox invocado desde un githook de
 ``kaupamex-docs`` le es invisible: su cero significa «no miré ahí», no «no hay».

@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# reconciliar-agentes.sh — clasificar el trabajo en segundo plano por su
+# reconcile-agents.sh — clasificar el trabajo en segundo plano por su
 # estado real, y CONFIRMAR la muerte antes de relanzar
 # =============================================================================
 #
@@ -78,10 +78,10 @@
 #
 # Uso
 # ---
-#   bash .claude/scripts/agents/reconciliar-agentes.sh                  # reporte
-#   bash .claude/scripts/agents/reconciliar-agentes.sh --quiet          # sólo conteos
-#   bash .claude/scripts/agents/reconciliar-agentes.sh --vigilar 20     # 2 muestras
-#   bash .claude/scripts/agents/reconciliar-agentes.sh --confirmar-muerte <id>
+#   bash .claude/scripts/agents/reconcile-agents.sh                  # reporte
+#   bash .claude/scripts/agents/reconcile-agents.sh --quiet          # sólo conteos
+#   bash .claude/scripts/agents/reconcile-agents.sh --vigilar 20     # 2 muestras
+#   bash .claude/scripts/agents/reconcile-agents.sh --confirmar-muerte <id>
 #       exit 0 = muerte CONFIRMADA  → relanzar es seguro
 #       exit 2 = BAIL               → no se pudo confirmar, NO relanzar
 # =============================================================================
@@ -121,7 +121,7 @@ if [[ -z "$ROSTER" ]]; then
 fi
 
 if [[ -z "$ROSTER" || ! -d "$ROSTER" ]]; then
-  echo "reconciliar-agentes: no hay roster legible (probé: ${ROSTER:-<vacío>})" >&2
+  echo "reconcile-agents: no hay roster legible (probé: ${ROSTER:-<vacío>})" >&2
   exit 3
 fi
 
@@ -145,7 +145,7 @@ if [[ -z "$LECTOR" || ! -f "$LECTOR/roster/job_liveness.py" ]]; then
     # REHUSA en vez de degradar: sin el primitivo no se puede clasificar, y
     # publicar un roster sin veredictos se leeria como «no hay nada que
     # reconciliar» — el cero silencioso que este guion existe para no dar.
-    echo "reconciliar-agentes: no se encontro thyrox/src/roster/job_liveness.py" >&2
+    echo "reconcile-agents: no se encontro thyrox/src/roster/job_liveness.py" >&2
     exit 2
 fi
 
@@ -192,7 +192,7 @@ else:
 # --- Veredicto de UNA entrada --------------------------------------------
 # terminado | vivo | atascado | desaparecido | indecidible
 classify() {
-  local entry="$1" shape age mtime veredicto
+  local entry="$1" shape age mtime verdict
   shape=$(terminal_shape "$entry")
   # -L: la entrada de un subagente es un SYMLINK a su transcript, y `stat` sin
   # -L mide el enlace — que no cambia desde que el harness lo creo. Medido
@@ -204,7 +204,7 @@ classify() {
   # El veredicto lo decide `thyrox: src/roster/job_liveness.py`; aqui solo se
   # inyectan los parametros de este consumidor (la ventana y la holgura) y se
   # traduce al vocabulario que este guion ya publicaba.
-  veredicto=$(THYROX_SRC="$LECTOR" python3 - "$shape" "$age" "$WINDOW_SECONDS" "$CLOCK_SKEW_SECONDS" <<'DIAGNOSTICO'
+  verdict=$(THYROX_SRC="$LECTOR" python3 - "$shape" "$age" "$WINDOW_SECONDS" "$CLOCK_SKEW_SECONDS" <<'DIAGNOSTICO'
 import os, sys
 sys.path.insert(0, os.environ["THYROX_SRC"])
 from roster.job_liveness import diagnose
@@ -216,7 +216,7 @@ print(d.verdict)
 DIAGNOSTICO
 )
 
-  case "$veredicto" in
+  case "$verdict" in
     terminated)       echo "terminado" ;;
     stalled_evident)  echo "desaparecido" ;;   # hay evidencia POSITIVA del corte
     stalled_unknown)  echo "indecidible" ;;    # ausencia de marcador != muerte
@@ -322,7 +322,7 @@ while IFS= read -r entry; do
 done < <(find "$ROSTER" -maxdepth 1 -name '*.output' 2>/dev/null | sort)
 
 if [[ "$MODE" == "quiet" ]]; then
-  echo "reconciliar-agentes: desaparecidos=${COUNT[desaparecido]} atascados=${COUNT[atascado]} indecidibles=${COUNT[indecidible]} (alcance medido: $TOTAL entradas de roster)"
+  echo "reconcile-agents: desaparecidos=${COUNT[desaparecido]} atascados=${COUNT[atascado]} indecidibles=${COUNT[indecidible]} (alcance medido: $TOTAL entradas de roster)"
   exit 0
 fi
 

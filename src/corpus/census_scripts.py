@@ -16,11 +16,11 @@ cita, para que el catálogo no pueda mentir sobre un consumidor que ya no existe
 
 Uso
 ---
-    python3 .claude/scripts/corpus/censar_scripts.py             # regenera el catálogo
-    python3 .claude/scripts/corpus/censar_scripts.py --verificar # exit 1 si difiere
-    python3 .claude/scripts/corpus/censar_scripts.py --huerfanos # gate: sin citantes
-    python3 .claude/scripts/corpus/censar_scripts.py --huerfanos --strict
-    python3 .claude/scripts/corpus/censar_scripts.py --write-baseline
+    python3 .claude/scripts/corpus/census_scripts.py             # regenera el catálogo
+    python3 .claude/scripts/corpus/census_scripts.py --verificar # exit 1 si difiere
+    python3 .claude/scripts/corpus/census_scripts.py --huerfanos # gate: sin citantes
+    python3 .claude/scripts/corpus/census_scripts.py --huerfanos --strict
+    python3 .claude/scripts/corpus/census_scripts.py --write-baseline
 """
 import argparse
 import collections
@@ -134,7 +134,7 @@ def render(rows):
     a('===========================================================')
     a('')
     a('Documento **generado**. No se edita a mano: lo produce')
-    a('``.claude/scripts/corpus/censar_scripts.py``, y ``--verificar`` falla si el archivo')
+    a('``.claude/scripts/corpus/census_scripts.py``, y ``--verificar`` falla si el archivo')
     a('en disco difiere de lo que el árbol de hoy produciría.')
     a('')
     a('La frontera entre las dos raíces')

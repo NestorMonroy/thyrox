@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""medir_usage_subagentes.py — gasto real por subagente, leído de los transcripts.
+"""measure_subagent_usage.py — gasto real por subagente, leído de los transcripts.
 
 El CLI escribe un transcript por subagente bajo
 
@@ -41,9 +41,9 @@ cifra que no significa nada — el ``cache_read`` acumulado llega a miles de
 millones porque el contexto se relee en cada turno.
 
 Uso:
-    python3 .claude/scripts/agents/medir_usage_subagentes.py            # resumen por canal
-    python3 .claude/scripts/agents/medir_usage_subagentes.py --por-agente
-    python3 .claude/scripts/agents/medir_usage_subagentes.py --json
+    python3 .claude/scripts/agents/measure_subagent_usage.py            # resumen por canal
+    python3 .claude/scripts/agents/measure_subagent_usage.py --por-agente
+    python3 .claude/scripts/agents/measure_subagent_usage.py --json
 """
 import argparse
 import collections
@@ -63,12 +63,12 @@ import sys
 PESO = {'input': 1.0, 'cache_creation': 1.25, 'cache_read': 0.1, 'output': 5.0}
 
 
-def raiz_subagentes() -> pathlib.Path | None:
+def subagents_root() -> pathlib.Path | None:
     """Localiza el directorio subagents/ de la sesión más reciente."""
-    proyectos = pathlib.Path.home() / '.claude' / 'projects'
-    if not proyectos.is_dir():
+    projects = pathlib.Path.home() / '.claude' / 'projects'
+    if not projects.is_dir():
         return None
-    cands = [p for p in proyectos.glob('*/*/subagents') if p.is_dir()]
+    cands = [p for p in projects.glob('*/*/subagents') if p.is_dir()]
     if not cands:
         return None
     return max(cands, key=lambda p: p.stat().st_mtime)
@@ -80,27 +80,27 @@ CLAVE = {'input': 'input_tokens',
          'output': 'output_tokens'}
 
 
-def medir(ruta: str) -> dict:
+def measure(ruta: str) -> dict:
     """Suma los cuatro componentes de usage, deduplicando por ``message.id``.
 
     Un turno con varias herramientas emite varios mensajes ``assistant`` que
     comparten id y usage; sumarlos todos cuenta el turno N veces. Gana el
     último de cada id, según ``ccdoc: cost-tracking.md``.
     """
-    por_id: dict = {}
-    modelo: collections.Counter = collections.Counter()
+    by_id: dict = {}
+    model: collections.Counter = collections.Counter()
     attr: collections.Counter = collections.Counter()
     try:
         fh = open(ruta, encoding='utf-8', errors='replace')
     except OSError:
         return {k: 0 for k in CLAVE} | {'turnos': 0, 'modelo': '?', 'attr': '?'}
     with fh:
-        for linea in fh:
-            linea = linea.strip()
-            if not linea:
+        for line in fh:
+            line = line.strip()
+            if not line:
                 continue
             try:
-                obj = json.loads(linea)
+                obj = json.loads(line)
             except ValueError:
                 continue
             if obj.get('type') != 'assistant':
@@ -109,15 +109,15 @@ def medir(ruta: str) -> dict:
             u = msg.get('usage') or {}
             if not u:
                 continue
-            por_id[msg.get('id')] = {k: u.get(c, 0) for k, c in CLAVE.items()}
-            modelo[msg.get('model') or '?'] += 1
+            by_id[msg.get('id')] = {k: u.get(c, 0) for k, c in CLAVE.items()}
+            model[msg.get('model') or '?'] += 1
             attr[obj.get('attributionAgent') or '?'] += 1
-    acc = {k: sum(v[k] for v in por_id.values()) for k in CLAVE}
-    acc['turnos'] = len(por_id)
+    acc = {k: sum(v[k] for v in by_id.values()) for k in CLAVE}
+    acc['turnos'] = len(by_id)
     # Dimensiones que la referencia sí lleva y nosotros no llevábamos: el
     # acumulador de coste del CLI es **por modelo** (hccw: 16-observability:177)
     # y el propio transcript atribuye cada mensaje a su tipo de agente.
-    acc['modelo'] = modelo.most_common(1)[0][0] if modelo else '?'
+    acc['modelo'] = model.most_common(1)[0][0] if model else '?'
     acc['attr'] = attr.most_common(1)[0][0] if attr else '?'
     return acc
 
@@ -128,16 +128,16 @@ def equiv(a: dict) -> float:
 
 
 def recolectar(raiz: pathlib.Path) -> list[dict]:
-    en_wf = {os.path.basename(p)[:-6]
+    in_wf = {os.path.basename(p)[:-6]
              for p in glob.glob(str(raiz / 'workflows' / 'wf_*' / 'agent-*.jsonl'))}
     filas = []
     for p in sorted(glob.glob(str(raiz / 'agent-*.jsonl'))):
         aid = os.path.basename(p)[:-6]
-        a = medir(p)
+        a = measure(p)
         if a['turnos'] == 0:          # agente que murió sin emitir un solo turno
             continue
         a['agente'] = aid
-        a['canal'] = 'workflow' if aid in en_wf else 'directo'
+        a['canal'] = 'workflow' if aid in in_wf else 'directo'
         a['equiv'] = equiv(a)
         a['equiv_turno'] = a['equiv'] / a['turnos']
         filas.append(a)
@@ -174,7 +174,7 @@ def main() -> int:
     ap.add_argument('--raiz', help='directorio subagents/ explícito')
     args = ap.parse_args()
 
-    raiz = pathlib.Path(args.raiz) if args.raiz else raiz_subagentes()
+    raiz = pathlib.Path(args.raiz) if args.raiz else subagents_root()
     if raiz is None or not raiz.is_dir():
         # No se emite un 0: un cero aquí sería un verde falso (H-DOCS-134).
         print('medir-usage-subagentes: ERROR — no se encontró subagents/. '

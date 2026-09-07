@@ -37,7 +37,7 @@ import tempfile
 from contextlib import redirect_stdout
 
 # El SUT vive un nivel arriba (``.claude/scripts/``), hermano de este
-# directorio de tests — mismo patron que test-clasificar_agentes.py. El
+# directorio de tests — mismo patron que test-classify_agents.py. El
 # nombre del modulo lleva guiones, asi que no es importable con `import`
 # normal: se carga por ruta con importlib.
 HERE = pathlib.Path(__file__).resolve().parents[2] / "src"

@@ -38,7 +38,7 @@ source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 cd "$(thyrox_root)" || exit 1
 
 STORE=.claude/scripts/agents/agent_store.py
-RECONCILIAR=.claude/scripts/agents/reconciliar_store.py
+RECONCILIAR=.claude/scripts/agents/reconcile_store.py
 OK=0; FALLO=0
 
 afirmar() {

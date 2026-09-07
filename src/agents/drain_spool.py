@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""drenar_carrete.py — reenvia los eventos que la escritura al store perdio.
+"""drain_spool.py — reenvia los eventos que la escritura al store perdio.
 
 La otra mitad del *disk-persistent retry* de ``heng: part7/ch29.md`` §29.3.
 ``hook_error_log._spool`` apenda el evento cuando la escritura falla; este
@@ -28,9 +28,9 @@ Tres desenlaces por evento, y los tres dejan rastro:
 
 Uso::
 
-    python3 .claude/scripts/agents/drenar_carrete.py            # drena y reporta
-    python3 .claude/scripts/agents/drenar_carrete.py --quiet    # solo la linea final
-    python3 .claude/scripts/agents/drenar_carrete.py --dry-run  # no reenvia ni escribe
+    python3 .claude/scripts/agents/drain_spool.py            # drena y reporta
+    python3 .claude/scripts/agents/drain_spool.py --quiet    # solo la linea final
+    python3 .claude/scripts/agents/drain_spool.py --dry-run  # no reenvia ni escribe
 """
 from pathlib import Path
 import argparse
@@ -59,54 +59,54 @@ def _max_attempts() -> int:
         return 3
 
 
-def _read(destino: Path) -> list:
+def _read(destination: Path) -> list:
     """Lee el carrete. Una linea corrupta se descarta, no aborta el drenado.
 
     El carrete lo escribe un hook bajo fallo — el escenario en que una
     escritura puede quedar a medias. Abortar por una linea rota perderia
     todas las demas, que es exactamente lo que este mecanismo evita.
     """
-    if not destino.exists():
+    if not destination.exists():
         return []
-    eventos = []
-    for linea in destino.read_text(encoding="utf-8").splitlines():
-        if not linea.strip():
+    events = []
+    for line in destination.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
             continue
         try:
-            evento = json.loads(linea)
+            evento = json.loads(line)
         except json.JSONDecodeError:
             continue
         if isinstance(evento, dict) and evento.get("cmd"):
-            eventos.append(evento)
-    return eventos
+            events.append(evento)
+    return events
 
 
-def _write(destino: Path, eventos: list) -> None:
+def _write(destination: Path, events: list) -> None:
     """Reescribe el carrete de forma atomica: temporal y luego rename.
 
     Un corte a media escritura sobre el archivo definitivo dejaria el carrete
     truncado, perdiendo los eventos que aun no se habian reenviado.
     """
-    if not eventos:
-        destino.unlink(missing_ok=True)
+    if not events:
+        destination.unlink(missing_ok=True)
         return
-    temporal = destino.with_suffix(destino.suffix + ".tmp")
+    temporal = destination.with_suffix(destination.suffix + ".tmp")
     temporal.write_text(
-        "".join(json.dumps(e, ensure_ascii=False) + "\n" for e in eventos),
+        "".join(json.dumps(e, ensure_ascii=False) + "\n" for e in events),
         encoding="utf-8",
     )
-    temporal.replace(destino)
+    temporal.replace(destination)
 
 
 def drain(dry_run: bool = False) -> dict:
     """Reenvia cada evento del carrete. Devuelve el conteo por desenlace."""
-    destino = spool_path()
-    eventos = _read(destino)
+    destination = spool_path()
+    events = _read(destination)
     tope = _max_attempts()
     reenviados = abandonados = 0
     quedan = []
 
-    for evento in eventos:
+    for evento in events:
         if dry_run:
             quedan.append(evento)
             continue
@@ -126,17 +126,17 @@ def drain(dry_run: bool = False) -> dict:
         evento["last_error"] = (detalle or "").strip()[:500]
         if evento["attempts"] >= tope:
             abandonados += 1
-            _append("drenar_carrete.py", cmd, None,
+            _append("drain_spool.py", cmd, None,
                     f"abandonado tras {evento['attempts']} intento(s): "
                     f"{evento['last_error']}")
         else:
             quedan.append(evento)
 
     if not dry_run:
-        _write(destino, quedan)
+        _write(destination, quedan)
 
     return {
-        "medidos": len(eventos),
+        "medidos": len(events),
         "reenviados": reenviados,
         "pendientes": len(quedan),
         "abandonados": abandonados,

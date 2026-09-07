@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pruebas de censo_sobres_mensaje.py — el censo de sobres de mensaje entre
+# Pruebas de census_message_envelopes.py — el censo de sobres de mensaje entre
 # agentes que el ejecutable declara.
 #
 # Por qué existe: `bash-background-tasks.md` cita la forma del sobre
@@ -28,7 +28,7 @@ if [[ -z "$_thyrox_root" ]]; then
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
-CENSO="$RAIZ/.claude/scripts/censo_sobres_mensaje.py"
+CENSO="$RAIZ/.claude/scripts/census_message_envelopes.py"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 

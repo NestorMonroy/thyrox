@@ -1,12 +1,12 @@
 """Cuánto costó un transcript — el uso de tokens, no de quién es cada mensaje.
 
-Adaptación de ``kaupamex-docs: .claude/scripts/agents/medir_usage_subagentes.py``.
+Adaptación de ``kaupamex-docs: .claude/scripts/agents/measure_subagent_usage.py``.
 ``transcript.messages`` ya lee el JSONL para saber QUIÉN escribió cada línea;
 este módulo lo lee para la otra pregunta que la fuente respondía: **cuánto**
 gastó cada línea. Medido antes de portarlo: **5 consumidores** de
 ``kaupamex-docs: .claude/scripts/`` leen ``usage`` del transcript
-(``reconciliar_store.py``, ``costo-agente.sh``, ``backfill_agent_sessions.py``,
-``medir_usage_subagentes.py``, ``agent_store.py``), cada uno con su propia
+(``reconcile_store.py``, ``agent-cost.sh``, ``backfill_agent_sessions.py``,
+``measure_subagent_usage.py``, ``agent_store.py``), cada uno con su propia
 reimplementación de la extracción.
 
 Por qué la deduplicación por ``message.id`` no es opcional
@@ -32,7 +32,7 @@ Es una ceguera conocida, no un silencio.
 Por qué los pesos NO llevan un valor por defecto
 ----------------------------------------------------
 
-``medir_usage_subagentes.py:63`` declaraba una tabla de pesos con su propio
+``measure_subagent_usage.py:63`` declaraba una tabla de pesos con su propio
 comentario de advertencia (H-DOCS-1008): en el tier
 ``tier_10_50_cache_read_0_25`` la caché leída NO vale una fracción fija del
 input — el peso es una propiedad del **contrato de precio del modelo**, no

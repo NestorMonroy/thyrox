@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Pruebas del guard de comparación de `agent_store.py::cmd_update_session`, y
-# de los tres desenlaces que el resumen de `reconciliar_store.py` separa
+# de los tres desenlaces que el resumen de `reconcile_store.py` separa
 # (H-DOCS-277, tarea #705).
 #
 # Qué protege, y por qué el defecto era invisible
@@ -45,7 +45,7 @@ source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 cd "$(thyrox_root)" || exit 1
 
 STORE=.claude/scripts/agents/agent_store.py
-RECON=.claude/scripts/agents/reconciliar_store.py
+RECON=.claude/scripts/agents/reconcile_store.py
 OK=0; FALLO=0
 
 afirmar() {  # afirmar <descripción> <esperado> <obtenido>
@@ -74,7 +74,7 @@ print(fila[0] if fila else '<NULO>')
 
 echo "== 1. sintaxis =="
 python3 -c "import ast; ast.parse(open('$STORE').read())"; afirmar "agent_store.py parsea" 0 $?
-python3 -c "import ast; ast.parse(open('$RECON').read())"; afirmar "reconciliar_store.py parsea" 0 $?
+python3 -c "import ast; ast.parse(open('$RECON').read())"; afirmar "reconcile_store.py parsea" 0 $?
 
 python3 "$STORE" init --claude-dir "$CLAUDE" >/dev/null
 python3 "$STORE" registrar-sesion --claude-dir "$CLAUDE" \
@@ -136,16 +136,16 @@ PY
 afirmar "la copia anulada se pudo construir" 0 $?
 
 # La copia vive fuera de `.claude/scripts/`, y `agent_store.py` importa
-# `tipos_documentales` (el vocabulario proyectado del canon). Una copia de un
+# `document_types` (el vocabulario proyectado del canon). Una copia de un
 # modulo necesita esa pieza: sin esto la copia muere en el import y el control
 # pasaria en falso — daria "no defecto" porque no llego a ejecutarse, que es el
 # sub-patron D de `metrica-decide-la-conclusion.md`.
 #
 # Desde la organizacion por clase (2026-08-27) ya NO son vecinos: `agent_store`
-# vive en `scripts/agents/` y `tipos_documentales` en `scripts/corpus/`. La ruta
+# vive en `scripts/agents/` y `document_types` en `scripts/corpus/`. La ruta
 # se deriva de la raiz de `scripts/`, no del directorio del consumidor.
 mkdir -p "$TMP/espejo/.claude/scripts/corpus"
-cp "$(dirname "$(dirname "$STORE")")/corpus/tipos_documentales.py" \
+cp "$(dirname "$(dirname "$STORE")")/corpus/document_types.py" \
    "$TMP/espejo/.claude/scripts/corpus/"
 
 CLAUDE2="$TMP/.claude2/agent-results"

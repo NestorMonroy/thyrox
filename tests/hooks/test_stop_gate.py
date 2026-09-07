@@ -1,6 +1,6 @@
 """Pruebas de ``hooks.stop_gate`` — el gate de ``Stop`` que consulta un motor.
 
-Dos gates de kaupamex —``stop-gate-evidencia-varada.sh`` y
+Dos gates de kaupamex —``stop-gate-stranded-evidence.sh`` y
 ``stop-gate-espera-pendiente.sh``— comparten esqueleto: leer el payload,
 rehusar si es reentrada, rehusar si el motor no está, invocarlo, y traducir su
 resultado a ``{}`` o a ``{"decision": "block", "reason": …}``.
@@ -8,7 +8,7 @@ resultado a ``{}`` o a ``{"decision": "block", "reason": …}``.
 Lo que NO comparten es el **modo de veredicto**, y ahí estaba el riesgo del
 porte. Medido en este árbol antes de escribir una línea:
 
-- ``evidencia-varada.sh listar`` → **exit 1** con 880 artefactos: decide por
+- ``stranded-evidence.sh listar`` → **exit 1** con 880 artefactos: decide por
   **código de salida**;
 - ``wait-jobs.sh pendientes``   → **exit 0** y stdout vacío: decide por
   **salida**, porque su no-cero sin texto no es un incumplimiento.
@@ -91,7 +91,7 @@ with tempfile.TemporaryDirectory() as c:
     check("el código limpio emite {}", {}, limpio.run("{}"))
 
 print("== 2. modo por CÓDIGO: el 2 declarado limpio NO bloquea ==")
-# `evidencia-varada` usa el 2 para «no hay volátil que mirar». Bloquear ahí
+# `stranded-evidence` usa el 2 para «no hay volátil que mirar». Bloquear ahí
 # convertiría «no pude medir» en un bloqueo que nadie puede resolver.
 with tempfile.TemporaryDirectory() as c:
     g = sg.Gate(engine=[str(engine(c, "nomedible.sh", "sin volatil", 2))],
@@ -122,7 +122,7 @@ with tempfile.TemporaryDirectory() as c:
     check("y sigue limpio SIN declarar el 0", {}, cero_sin.run("{}"))
 
 print("== 3-bis. DISCRIMINA: en modo por SALIDA decide stdout, NO stderr ==")
-# Las dos fuentes divergían y el porte las fundió: `evidencia-varada` invocaba
+# Las dos fuentes divergían y el porte las fundió: `stranded-evidence` invocaba
 # su motor con `2>&1` (stderr dentro del motivo) y `espera-pendiente` con
 # `2>/dev/null` (stderr descartado, sólo stdout decidía). Fundir los dos flujos
 # hacía que un motor no-cero con stdout vacío y un aviso en stderr se leyera
@@ -287,7 +287,7 @@ except sg.ModeError as err:
     check("rehúsa sin ningún modo", "ModeError", type(err).__name__)
 
 print("== 8. el motivo SIN ranura {output} sigue siendo válido ==")
-# `espera-pendiente` incrusta la salida en medio de su prosa; `evidencia-varada`
+# `espera-pendiente` incrusta la salida en medio de su prosa; `stranded-evidence`
 # también. Pero un motivo que no la quiera no debe romper.
 with tempfile.TemporaryDirectory() as c:
     g = sg.Gate(engine=[str(engine(c, "r.sh", "detalle", 1))],

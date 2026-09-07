@@ -11,7 +11,7 @@ coste de cuatro términos (la ``eke`` del ejecutable): entrada, escritura de
 caché por TTL, lectura de caché y salida.
 
 Por qué existe: ``equiv_cost`` (hook ``save-agent-result.mjs``,
-``medir_usage_subagentes.py``) pondera con pesos fijos —in 1×, cc 1.25×,
+``measure_subagent_usage.py``) pondera con pesos fijos —in 1×, cc 1.25×,
 cr 0.1×, out 5×— que son los cocientes del tier 3/15 aplicados a **todo**
 modelo. En ``tier_10_50_cache_read_0_25`` (Fable 5.1, Mythos 5.1) la caché
 leída vale 0.025× de la entrada, no 0.1×: el peso fijo la sobrevalora 4×.

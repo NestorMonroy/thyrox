@@ -57,8 +57,8 @@ from paths.reach import (  # noqa: E402
 # aquéllos resuelven artefactos DE thyrox, sobre cuyo árbol sí decide. Un
 # default aquí decidiría por el consumidor dónde vive su declaración, que es
 # exactamente la decisión que la directiva retira al emisor.
-CONTRAPARTE_DECLARATION_VAR = "THYROX_CONTRAPARTE_DECLARATION"
-CONTRAPARTE_DECLARATION_FILE_VAR = ENV_FILE_VAR
+COUNTERPART_DECLARATION_VAR = "THYROX_CONTRAPARTE_DECLARATION"
+COUNTERPART_DECLARATION_FILE_VAR = ENV_FILE_VAR
 
 
 class DeclarationHomeError(Exception):
@@ -72,19 +72,19 @@ def declaration_path(start: pathlib.Path | None = None) -> pathlib.Path:
     es un hecho del consumidor que su llamador tiene que poder ver. Crearla o
     silenciarla aquí escondería la divergencia que este mecanismo expone.
     """
-    declarado = env_value(CONTRAPARTE_DECLARATION_VAR, start)
-    if declarado:
-        return pathlib.Path(declarado)
+    declared = env_value(COUNTERPART_DECLARATION_VAR, start)
+    if declared:
+        return pathlib.Path(declared)
     raise DeclarationHomeError(
         f"La declaración de contraparte no está declarada. Es una decisión del "
-        f"consumidor, no de thyrox: declara {CONTRAPARTE_DECLARATION_VAR} en el "
-        f"proceso, o en el archivo que nombra {CONTRAPARTE_DECLARATION_FILE_VAR} "
+        f"consumidor, no de thyrox: declara {COUNTERPART_DECLARATION_VAR} en el "
+        f"proceso, o en el archivo que nombra {COUNTERPART_DECLARATION_FILE_VAR} "
         f"(por defecto el .env del árbol). NO se emite una ruta por defecto: "
         f"inventarla decidiría por ti qué addons se censan."
     )
 
 
-def parse_declaracion(ruta: pathlib.Path) -> tuple[dict, dict, list]:
+def parse_declaration(ruta: pathlib.Path) -> tuple[dict, dict, list]:
     """Devuelve (raices, filas, ignoradas) desde el archivo de declaración.
 
     ``raices``   alias -> ruta relativa al repositorio de referencia
@@ -97,23 +97,23 @@ def parse_declaracion(ruta: pathlib.Path) -> tuple[dict, dict, list]:
     ignoradas: list[str] = []
 
     for cruda in ruta.read_text(encoding="utf-8").splitlines():
-        linea = cruda.split("#")[0].strip()
-        if not linea:
+        line = cruda.split("#")[0].strip()
+        if not line:
             continue
-        campos = linea.split()
+        fields = line.split()
 
-        if campos[0].startswith("raiz:"):
-            if len(campos) < 2:
+        if fields[0].startswith("raiz:"):
+            if len(fields) < 2:
                 continue
-            raices[campos[0][len("raiz:"):]] = campos[1]
+            raices[fields[0][len("raiz:"):]] = fields[1]
             continue
 
-        if len(campos) < 2:
+        if len(fields) < 2:
             continue
-        izquierda, nuestro = campos[0], campos[1]
+        izquierda, nuestro = fields[0], fields[1]
 
         if "." in nuestro:          # fila de MODELO, otra unidad
-            ignoradas.append(linea)
+            ignoradas.append(line)
             continue
 
         if izquierda == "-":
@@ -131,7 +131,7 @@ def parse_declaracion(ruta: pathlib.Path) -> tuple[dict, dict, list]:
     return raices, filas, ignoradas
 
 
-def addons_de(raiz: pathlib.Path) -> set[str]:
+def addons_of(raiz: pathlib.Path) -> set[str]:
     """Directorios con ``__manifest__.py`` — la única definición de addon."""
     if not raiz.is_dir():
         return set()
@@ -183,7 +183,7 @@ def main() -> int:
         # se leería como «ningún addon SIN-DECLARAR», que es el verde falso.
         print(f"ERROR: {err}", file=sys.stderr)
         return 2
-    raices, filas, ignoradas = parse_declaracion(decl)
+    raices, filas, ignoradas = parse_declaration(decl)
 
     if not raices:
         print("ERROR: la declaración no trae ninguna fila 'raiz:'", file=sys.stderr)
@@ -191,13 +191,13 @@ def main() -> int:
 
     # Población de cada raíz declarada. Una raíz que no resuelve se reporta:
     # su silencio no puede leerse como ausencia de contraparte.
-    poblacion: dict[str, set[str]] = {}
+    population: dict[str, set[str]] = {}
     sin_resolver: list[str] = []
     for alias, rel in sorted(raices.items()):
-        nombres = addons_de(ref_repo / rel)
+        nombres = addons_of(ref_repo / rel)
         if not nombres:
             sin_resolver.append(f"{alias} -> {rel}")
-        poblacion[alias] = nombres
+        population[alias] = nombres
 
     nuestros = sorted(
         {d.name
@@ -208,31 +208,31 @@ def main() -> int:
 
     conteo: dict[str, int] = {}
     sin_declarar: list[str] = []
-    for nombre in nuestros:
-        tipo, alias, ref = filas.get(nombre, (None, None, nombre))
+    for name in nuestros:
+        tipo, alias, ref = filas.get(name, (None, None, name))
 
         if tipo is None:
-            donde = [a for a, ns in poblacion.items() if nombre in ns]
+            donde = [a for a, ns in population.items() if name in ns]
             if donde:
-                tipo, ref = "identidad", nombre
+                tipo, ref = "identidad", name
             else:
                 tipo, ref = "SIN-DECLARAR", "—"
-                sin_declarar.append(nombre)
+                sin_declarar.append(name)
                 donde = []
         elif tipo == "sin-homonimo":
             donde = []
         else:
-            candidatas = [alias] if alias else list(poblacion)
-            donde = [a for a in candidatas if ref in poblacion.get(a, ())]
+            candidatas = [alias] if alias else list(population)
+            donde = [a for a in candidatas if ref in population.get(a, ())]
             if not donde:
                 tipo = f"{tipo}-NO-RESUELVE"
 
         conteo[tipo] = conteo.get(tipo, 0) + 1
         if not args.quiet:
-            print(f"{nombre}\t{tipo}\t{ref}\t{','.join(donde) or '—'}")
+            print(f"{name}\t{tipo}\t{ref}\t{','.join(donde) or '—'}")
 
     print(f"\n-- censo de contraparte: {len(nuestros)} addons propios "
-          f"contra {len(poblacion)} raíces declaradas")
+          f"contra {len(population)} raíces declaradas")
     for tipo, n in sorted(conteo.items()):
         print(f"   {tipo:24} {n}")
     if ignoradas:

@@ -1,4 +1,4 @@
-"""Pruebas de ``corpus.censo_contraparte``.
+"""Pruebas de ``corpus.census_counterparts``.
 
 Porte de ``tests/legacy/test-censo-contraparte.sh``. Aquella suite componía su
 raíz con ``../../..`` y buscaba el censo y su declaración en
@@ -21,7 +21,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from corpus import censo_contraparte  # noqa: E402
+from corpus import census_counterparts  # noqa: E402
 from paths import reach  # noqa: E402
 
 OK = 0
@@ -38,7 +38,7 @@ def check(label: str, expected, obtained) -> None:
         FAILED += 1
 
 
-CENSO = reach.thyrox_root() / "src" / "corpus" / "censo_contraparte.py"
+CENSO = reach.thyrox_root() / "src" / "corpus" / "census_counterparts.py"
 # La declaración es PARÁMETRO del consumidor (DEC-04): vive en su banco de
 # baselines, no en thyrox. Se resuelve por el mecanismo de alcance.
 DECL = reach.root("docs") / ".claude" / "baselines" / "addon-alias.txt"
@@ -118,21 +118,21 @@ print("== 6. las dos entradas del hogar de la declaración (DEC-04) ==")
 # La versión anterior la componía con `__file__.with_name` y por eso murió al
 # mudarse: el mecanismo llevaba dentro un parámetro del consumidor.
 check("nombra la entrada del VALOR", "THYROX_CONTRAPARTE_DECLARATION",
-      censo_contraparte.CONTRAPARTE_DECLARATION_VAR)
+      census_counterparts.COUNTERPART_DECLARATION_VAR)
 check("y la entrada de la RUTA del archivo que la declara", "THYROX_ENV_FILE",
-      censo_contraparte.CONTRAPARTE_DECLARATION_FILE_VAR)
+      census_counterparts.COUNTERPART_DECLARATION_FILE_VAR)
 
 # La referencia SÍ se declara aquí: el censo rehúsa en lo primero que falte,
 # así que sin ella el rehúse vendría del tramo extra y este caso mediría el
 # mensaje equivocado. Se aísla la variable bajo prueba.
 entorno_limpio = {k: v for k, v in os.environ.items()
-                  if k != censo_contraparte.CONTRAPARTE_DECLARATION_VAR}
+                  if k != census_counterparts.COUNTERPART_DECLARATION_VAR}
 entorno_limpio["THYROX_EXTRA_REACH_ROOTS"] = REFERENCIA
 hecho = subprocess.run([sys.executable, str(CENSO), "--quiet"],
                        capture_output=True, text=True, env=entorno_limpio)
 check("sin declarar REHÚSA con exit 2", 2, hecho.returncode)
 check("y el mensaje nombra la constante", True,
-      censo_contraparte.CONTRAPARTE_DECLARATION_VAR in hecho.stderr)
+      census_counterparts.COUNTERPART_DECLARATION_VAR in hecho.stderr)
 
 print("== 7. la referencia entra por el tramo extensible, o se rehúsa ==")
 codigo, salida = run("--quiet", "--declaracion", str(DECL), extra_roots=None)

@@ -88,10 +88,10 @@ def document_type(rel: str) -> str:
     ``DOCUMENT_TYPE_UNKNOWN``. Nunca ``None`` — la ausencia de tipo se declara,
     no se calla.
     """
-    nombre = PurePosixPath(rel).stem
-    for prefijo in DOCUMENT_TYPES:
-        if nombre == prefijo or nombre.startswith(prefijo + "-"):
-            return prefijo
+    name = PurePosixPath(rel).stem
+    for prefix in DOCUMENT_TYPES:
+        if name == prefix or name.startswith(prefix + "-"):
+            return prefix
     return DOCUMENT_TYPE_UNKNOWN
 
 

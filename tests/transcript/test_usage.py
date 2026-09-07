@@ -1,7 +1,7 @@
 """Pruebas de ``transcript.usage`` — cuánto costó un transcript, no de quién es.
 
 Adaptación de ``kaupamex-docs:
-.claude/scripts/agents/medir_usage_subagentes.py``. Lo que viaja: la lectura
+.claude/scripts/agents/measure_subagent_usage.py``. Lo que viaja: la lectura
 de ``message.usage`` por línea del JSONL, la deduplicación por
 ``message.id`` y el acumulado en los cuatro componentes que Anthropic factura
 por separado. Lo que se inyecta es la tabla de pesos — no hay un precio por
@@ -22,7 +22,7 @@ mismo id y el mismo ``usage`` tienen que contar como UNA.
 Por qué los pesos NO llevan un valor por defecto
 --------------------------------------------------
 
-``medir_usage_subagentes.py:63`` declaraba ``PESO = {..., 'cache_read': 0.1,
+``measure_subagent_usage.py:63`` declaraba ``PESO = {..., 'cache_read': 0.1,
 ...}`` y su propio comentario advertía (H-DOCS-1008) que en el tier
 ``tier_10_50_cache_read_0_25`` la caché leída NO vale 0.1× el input — el peso
 es una propiedad del **contrato de precio**, no del transcript. El caso 7

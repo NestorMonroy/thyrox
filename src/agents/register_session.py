@@ -925,7 +925,7 @@ def main() -> None:
         # el hook disparó, luego la fila la vio el hook.
         cmd += ["--source", "hook"]
     # `spool=True`: si la escritura falla, el evento se encola en disco y
-    # `drenar_carrete.py` lo reenvia al arrancar la proxima sesion (#652,
+    # `drain_spool.py` lo reenvia al arrancar la proxima sesion (#652,
     # `heng: part7/ch29.md` §29.3). Los dos comandos que este hook emite son
     # idempotentes —resuelven con COALESCE sobre la misma clave— asi que
     # reenviar uno ya aplicado no cambia la fila.

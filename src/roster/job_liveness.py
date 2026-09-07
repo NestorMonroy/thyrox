@@ -15,7 +15,7 @@ Lo que NO viaja, con su razón
 La vía del daemon y el sondeo por PID. Nuestros trabajos —subagentes y tareas
 de ``Bash(run_in_background)``— **no son procesos**: no hay PID que sondear ni
 daemon al que preguntar (``kaupamex-docs:
-.claude/scripts/agents/reconciliar-agentes.sh:73-74``). Se porta la FORMA —el
+.claude/scripts/agents/reconcile-agents.sh:73-74``). Se porta la FORMA —el
 veredicto por causa, la procedencia, la holgura, la cuarentena— no el sustrato
 que la produce allá.
 
@@ -72,7 +72,7 @@ VERDICTS = ("terminated", "recent", "stalled_evident", "stalled_unknown")
 
 #: Segundos a partir de los cuales una entrada sin marcador de cierre se
 #: considera vieja. Análogo a ``STALE_THRESHOLD_MS`` (120000 en el binario);
-#: aquí el valor por defecto es el de ``reconciliar-agentes.sh`` (``WINDOW_
+#: aquí el valor por defecto es el de ``reconcile-agents.sh`` (``WINDOW_
 #: SECONDS``, "ciclo largo del loop" = 900s), overridable por el consumidor.
 STALE_THRESHOLD_SECONDS = 900
 
@@ -80,7 +80,7 @@ STALE_THRESHOLD_SECONDS = 900
 #: del umbral de vejez, nunca sumada a él en silencio. Análogo a
 #: ``CLOCK_SKEW_ALLOWANCE_MS`` (60000 en el binario). Sin esta constante propia
 #: un desfase de reloj entre contenedores se lee como falta de avance, que es
-#: exactamente la ceguera que ``reconciliar-agentes.sh`` tiene hoy (no la
+#: exactamente la ceguera que ``reconcile-agents.sh`` tiene hoy (no la
 #: declara en absoluto).
 CLOCK_SKEW_SECONDS = 60
 
@@ -95,7 +95,7 @@ class UnreadableEntryError(OSError):
     NO es lo mismo que ``shape="pending"`` (contenido leído, sin marcador). Es
     el vacío-con-bandera del binario (``parseFailed: true``) aplicado a UNA
     entrada: un symlink roto, un JSON truncado, un archivo sin permiso de
-    lectura. Tratarlo como "pending" —lo que ``reconciliar-agentes.sh``
+    lectura. Tratarlo como "pending" —lo que ``reconcile-agents.sh``
     ``terminal_shape()`` hace hoy con un symlink de destino perdido, que
     devuelve el mismo ``sin-marcador`` que un archivo vacío— es la ceguera que
     esta clase existe para cerrar: la razón del fallo (``reason``) es el
@@ -116,7 +116,7 @@ class Diagnosis:
     (la señal fuerte) decidió el veredicto, o si sólo la antigüedad del
     archivo lo hizo (la señal débil, heurística). Quien lee el veredicto sabe
     sin adivinar cuál de las dos instrumentó la respuesta — ``ORIGEN_ROSTER``
-    en ``reconciliar-agentes.sh`` describe la RUTA del roster, nunca esto.
+    en ``reconcile-agents.sh`` describe la RUTA del roster, nunca esto.
     """
 
     verdict: str
@@ -144,7 +144,7 @@ def diagnose(shape: str,
        contenido: ``"cut"`` es evidencia positiva (``stalled_evident``);
        ``"pending"`` es sólo ausencia de evidencia (``stalled_unknown``), y
        las dos NO se colapsan en una — es el eje que separa "seguro relanzar"
-       de "no se puede confirmar" en ``reconciliar-agentes.sh``.
+       de "no se puede confirmar" en ``reconcile-agents.sh``.
     """
     if shape not in SHAPES:
         raise UnknownShapeError(shape)
@@ -200,7 +200,7 @@ def sweep(entries: Sequence[Path],
 
     Antes de leer el contenido de una entrada, se lee su ``mtime`` con
     ``Path.stat()`` (sigue symlinks, a diferencia de ``Path.lstat()``) — es
-    el ``stat -L`` que ``reconciliar-agentes.sh`` adoptó tras H-DOCS-1004
+    el ``stat -L`` que ``reconcile-agents.sh`` adoptó tras H-DOCS-1004
     (seis agentes vivos leídos como "atascados" por medir el enlace y no su
     destino). Si el ``stat`` falla —symlink roto, entrada borrada a mitad del
     barrido— la entrada se pone en cuarentena ANTES de intentar leer su

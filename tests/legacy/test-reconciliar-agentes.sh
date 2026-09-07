@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# test-reconciliar-agentes.sh — prueba de reconciliar-agentes.sh
+# test-reconciliar-agentes.sh — prueba de reconcile-agents.sh
 # =============================================================================
 #
 # Por qué este test existe y qué forma tiene
@@ -36,7 +36,7 @@ set -uo pipefail
 # El SUT vive un nivel arriba: los tests son un directorio hermano del
 # código, no viven junto a él (forma medida en ``ccb: daemon/src/__tests__/``).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SUT="$SCRIPT_DIR/agents/reconciliar-agentes.sh"
+SUT="$SCRIPT_DIR/agents/reconcile-agents.sh"
 
 PASS=0; FAIL=0
 check() {  # check <descripción> <esperado> <obtenido>

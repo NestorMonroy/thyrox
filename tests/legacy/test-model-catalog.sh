@@ -89,11 +89,11 @@ rm -rf "$FX"
 #    MEDIR en vez de morir con ModuleNotFoundError (falla medida en run-all).
 #    La copia vive en un ESPEJO de la estructura real, como en
 #    test-agent-store-compara-antes-de-escribir.sh: agent_store.py deriva la
-#    raíz y a su vecino tipos_documentales por Path(__file__), y una copia
-#    suelta moriría antes por otra causa (IndexError / tipos_documentales).
+#    raíz y a su vecino document_types por Path(__file__), y una copia
+#    suelta moriría antes por otra causa (IndexError / document_types).
 FX="$(mktemp -d)"; mkdir -p "$FX/.claude/scripts/agents" "$FX/.claude/scripts/corpus"
 cp "$RAIZ/.claude/scripts/agents/agent_store.py" "$FX/.claude/scripts/agents/"
-cp "$RAIZ/.claude/scripts/corpus/tipos_documentales.py" "$FX/.claude/scripts/corpus/"
+cp "$RAIZ/.claude/scripts/corpus/document_types.py" "$FX/.claude/scripts/corpus/"
 S="$(cd "$RAIZ" && python3 "$FX/.claude/scripts/agents/agent_store.py" censo-medicion --claude-dir "$RAIZ/.claude" 2>&1)"; RC=$?
 case "$S" in *"USD por modelo: SIN MEDIR"*) D=si ;; *) D=no ;; esac
 check "agent_store sin model_catalog al lado: censo corre (exit 0) y declara SIN MEDIR" "$RC/$D" "0/si"

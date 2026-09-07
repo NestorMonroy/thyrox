@@ -14,7 +14,7 @@
 set -uo pipefail
 
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GUION="$AQUI/../agents/reconciliar_store.py"
+GUION="$AQUI/../agents/reconcile_store.py"
 fallos=0
 casos=0
 
@@ -49,7 +49,7 @@ printf '%s\n' \
   '{"type":"started","key":"k2","agentId":"amurio22222222"}' \
   > "$SESION/workflows/wf_prueba/journal.jsonl"
 
-# Los transcripts tienen que parecer viejos: `_sigue_escribiendo` deja en
+# Los transcripts tienen que parecer viejos: `_still_writing` deja en
 # `running` todo lo que creció hace poco, y eso enmascararia el veredicto.
 find "$SESION" -name '*.jsonl' -exec touch -d '3 hours ago' {} +
 
@@ -59,7 +59,7 @@ import importlib.util, os, pathlib, sys
 spec = importlib.util.spec_from_file_location("rs", sys.argv[1])
 mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
 mod._JOURNAL_CACHE = None
-estado, fuente = mod._veredicto(pathlib.Path(sys.argv[2]))
+estado, fuente = mod._verdict(pathlib.Path(sys.argv[2]))
 print(f"{estado}|{fuente}")
 PY
 }
@@ -97,7 +97,7 @@ mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
 mod._journal_index = lambda: {}          # <- la guarda retirada
 base = pathlib.Path(sys.argv[2])
 for aid in ("aentrego111111", "amurio22222222", "aconsidecar333"):
-    estado, fuente = mod._veredicto(base / f"agent-{aid}.jsonl")
+    estado, fuente = mod._verdict(base / f"agent-{aid}.jsonl")
     print(f"{aid}={estado}|{fuente}")
 PY
 )"

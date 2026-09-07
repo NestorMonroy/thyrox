@@ -201,7 +201,7 @@ afirmar "sin agent_transcript_path cae a transcript_path" "2000" \
 # 4. La telemetría se escribe EN EL MOMENTO, no en un pase posterior (#587).
 #
 # Las cuatro columnas salen del mismo transcript que el hook ya lee para el
-# costo. Hasta #587 las poblaba `reconciliar_store.py` en un barrido posterior,
+# costo. Hasta #587 las poblaba `reconcile_store.py` en un barrido posterior,
 # así que su ventana dependía de cuándo se recicla ~/.claude/projects — medido
 # en H-DOCS-427: 353 de 353 filas del hook sin un solo token, y ninguna con su
 # transcript aún en disco. El agente que muere sin transcript no es

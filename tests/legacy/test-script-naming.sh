@@ -47,13 +47,13 @@ afirmar "ve el control positivo real (clasificar-agentes.py)" "1" \
 # ---------------------------------------------------------------- caso 2
 # El reporte propone el nombre corregido, no sólo señala.
 afirmar "propone el nombre en snake" "1" \
-    "$(python3 "$GATE" "$TMP/arbol" | grep -c 'clasificar_agentes\.py')"
+    "$(python3 "$GATE" "$TMP/arbol" | grep -c 'classify_agents\.py')"
 
 # ---------------------------------------------------------------- caso 3
 # Control negativo — el mismo archivo ya corregido NO se marca. Sin este caso
 # el verde no distinguiría «no hay kebab» de «el instrumento no mira los .py».
 rm "$TMP/arbol/.claude/scripts/clasificar-agentes.py"
-: > "$TMP/arbol/.claude/scripts/agents/clasificar_agentes.py"
+: > "$TMP/arbol/.claude/scripts/agents/classify_agents.py"
 afirmar "no marca el nombre correcto" "0" "$(python3 "$GATE" --quiet "$TMP/arbol")"
 
 # ---------------------------------------------------------------- caso 4
@@ -91,13 +91,13 @@ afirmar "el repo real no tiene infractores" "0" "$(python3 "$GATE" --quiet "$RAI
 # #647, que este gate declaraba explicitamente fuera de su alcance.
 
 # El arbol fabricado arrastra nombres del eje 1 que TAMBIEN son espanol
-# (`clasificar_agentes.py`, `mi_guion.sh`). Se parte de uno limpio para que el
+# (`classify_agents.py`, `mi_guion.sh`). Se parte de uno limpio para que el
 # conteo del eje 2 mida lo que cada caso pone, no el residuo del eje anterior.
 rm -rf "$TMP/arbol"
 mkdir -p "$TMP/arbol/.claude/scripts" "$TMP/arbol/scripts"
 
 # ---------------------------------------------------------------- caso 9
-# Control positivo REAL del arbol: `stop-gate-evidencia-varada.sh` y
+# Control positivo REAL del arbol: `stop-gate-stranded-evidence.sh` y
 # `check_rst_convenciones.py` son nombres vivos de este repo, no fabricados.
 : > "$TMP/arbol/.claude/scripts/check_rst_convenciones.py"
 afirmar "ve el nombre en espanol de un .py real del arbol" "1" \
@@ -106,7 +106,7 @@ afirmar "ve el nombre en espanol de un .py real del arbol" "1" \
 # ---------------------------------------------------------------- caso 10
 # El .sh SI entra en el eje de idioma, aunque su convencion de separador no
 # sea asunto de este gate. Son dos ejes distintos sobre el mismo nombre.
-: > "$TMP/arbol/scripts/stop-gate-evidencia-varada.sh"
+: > "$TMP/arbol/scripts/stop-gate-stranded-evidence.sh"
 afirmar "el eje de idioma tambien mide .sh" "2" \
     "$(python3 "$GATE" --idioma --quiet "$TMP/arbol")"
 
@@ -114,7 +114,7 @@ afirmar "el eje de idioma tambien mide .sh" "2" \
 # Control negativo DISCRIMINANTE: los dos mismos archivos ya traducidos. Sin
 # este caso el verde no distinguiria «no hay espanol» de «no miro el nombre».
 rm "$TMP/arbol/.claude/scripts/check_rst_convenciones.py" \
-   "$TMP/arbol/scripts/stop-gate-evidencia-varada.sh"
+   "$TMP/arbol/scripts/stop-gate-stranded-evidence.sh"
 : > "$TMP/arbol/.claude/scripts/check_rst_conventions.py"
 : > "$TMP/arbol/scripts/stop-gate-stranded-evidence.sh"
 afirmar "no marca el nombre ya traducido" "0" \

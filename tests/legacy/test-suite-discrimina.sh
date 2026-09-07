@@ -6,9 +6,9 @@
 # escribio el patron hereda su encuadre y confirma el instrumento en vez de
 # medirlo. Los dos positivos de aqui existen en el arbol:
 #
-#   - `reconciliar_store.py::_veredicto` — la funcion de H-DOCS-224, con tres
+#   - `reconcile_store.py::_verdict` — la funcion de H-DOCS-224, con tres
 #     retornos de ('running', None). El detector DEBE verla como candidata.
-#   - `clasificar_agentes.py` — tres funciones que `test-script-naming.sh`
+#   - `classify_agents.py` — tres funciones que `test-script-naming.sh`
 #     nombra sin ejecutar. El juez DEBE reportarlas SIN COBERTURA.
 #
 # Y se prueba EN LOS DOS SENTIDOS: que reporte donde hay defecto (caso 6) y que
@@ -60,22 +60,22 @@ ANTES="$(git status --porcelain .claude/scripts .claude/hooks | sort)"
 echo "== 1. sintaxis =="
 python3 -c "import ast; ast.parse(open('$GATE').read())"; afirmar "check_suite_discrimina.py parsea" 0 $?
 
-echo "== 2. CONTROL POSITIVO del detector — _veredicto, la funcion de H-DOCS-224 =="
+echo "== 2. CONTROL POSITIVO del detector — _verdict, la funcion de H-DOCS-224 =="
 # Sin la rama IfExp de literals_of el conteo seria 2, no 3: el retorno final de
-# _veredicto es un ternario, y ahi vive la mitad tardia del literal ambiguo.
+# _verdict es un ternario, y ahi vive la mitad tardia del literal ambiguo.
 # Esta asercion es la que atrapo al detector v2, que declaraba NADA sobre su
 # propio control positivo.
 sitios=$(python3 - "$GATE" <<'PY'
 import ast, importlib.util, pathlib, sys
 spec = importlib.util.spec_from_file_location("csd", sys.argv[1])
 m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
-arbol = ast.parse(pathlib.Path(".claude/scripts/agents/reconciliar_store.py").read_text())
+arbol = ast.parse(pathlib.Path(".claude/scripts/agents/reconcile_store.py").read_text())
 fn = next(n for n in ast.walk(arbol)
-          if isinstance(n, ast.FunctionDef) and n.name == "_veredicto")
+          if isinstance(n, ast.FunctionDef) and n.name == "_verdict")
 print(m.ambiguous_literals(fn).get("('running', None)", 0))
 PY
 )
-afirmar "_veredicto: el literal sale de 3 sitios de retorno" "3" "$sitios"
+afirmar "_verdict: el literal sale de 3 sitios de retorno" "3" "$sitios"
 
 echo "== 3. la mutacion va DESPUES del docstring, y el archivo sigue parseando =="
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
@@ -103,14 +103,14 @@ PY
 afirmar "la mutacion no pisa el docstring y el archivo parsea" "docstring-intacto" "$resultado"
 
 echo "== 4. suites_naming es cota SUPERIOR: nombrar no es ejecutar =="
-# test-script-naming.sh crea un archivo VACIO llamado clasificar_agentes.py en un
+# test-script-naming.sh crea un archivo VACIO llamado classify_agents.py en un
 # arbol temporal — lo nombra sin correrlo nunca. Por eso el veredicto no sale de
 # esta lista sino del sabotaje. Declarar la limitacion aqui la vuelve auditable.
 nombra=$(python3 - "$GATE" <<'PY'
 import importlib.util, pathlib, sys
 spec = importlib.util.spec_from_file_location("csd", sys.argv[1])
 m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
-suites = m.suites_naming(pathlib.Path(".claude/scripts/agents/clasificar_agentes.py"))
+suites = m.suites_naming(pathlib.Path(".claude/scripts/agents/classify_agents.py"))
 print("si" if any(s.name == "test-script-naming.sh" for s in suites) else "no")
 PY
 )
@@ -124,15 +124,15 @@ afirmar "register_agent_session: 0 sin discriminar" \
         "check-suite-discrimina: 0 sin discriminar, 0 sin cobertura" "$salida"
 
 echo "== 6. CONTROL NEGATIVO — el juez SI reporta un positivo real del repo =="
-# `test-script-naming.sh` crea un archivo VACIO llamado clasificar_agentes.py
+# `test-script-naming.sh` crea un archivo VACIO llamado classify_agents.py
 # (caso 4 de arriba) — lo nombra y no lo corre. Asi que el sabotaje de sus
 # funciones no enrojece a nadie, y ese es el veredicto que el juez debe emitir.
 # El positivo ejercita `judge()` ENTERA: la mutacion se escribe, la suite se
 # corre, y el archivo se restaura. Si esto deja de reportar, el instrumento se
 # quedo ciego.
-salida6=$(timeout 300 python3 "$GATE" --solo clasificar_agentes.py 2>&1)
-afirmar "clasificar_agentes se reporta SIN COBERTURA (el juez puede fallar)" "3" \
-        "$(printf '%s' "$salida6" | grep -c 'SIN COBERTURA    clasificar_agentes.py')"
+salida6=$(timeout 300 python3 "$GATE" --solo classify_agents.py 2>&1)
+afirmar "classify_agents se reporta SIN COBERTURA (el juez puede fallar)" "3" \
+        "$(printf '%s' "$salida6" | grep -c 'SIN COBERTURA    classify_agents.py')"
 # Y el conteo del titular concuerda con las filas: un titular que dijera 0 con
 # tres filas debajo seria el mismo defecto que este guion caza, en su reporte.
 afirmar "el titular concuerda con las filas que imprime" "1" \

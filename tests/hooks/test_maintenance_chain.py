@@ -21,7 +21,7 @@ verde que no discrimina—, y es el mismo defecto que se acaba de corregir en el
 despachador de PreToolUse. No bloquear no obliga a callar.
 
 Los pasos de estas pruebas son sondas (``true``, ``sleep``, ``printf``), nunca
-los guiones reales: ``reconciliar_store.py`` corre hasta 90 s y mide el store
+los guiones reales: ``reconcile_store.py`` corre hasta 90 s y mide el store
 compartido.
 """
 from __future__ import annotations
