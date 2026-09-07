@@ -53,20 +53,40 @@ if str(PATHS_DIR) not in sys.path:
 
 import reach  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
 
-#: El clon consumidor por defecto. `docs` porque ahí vive
-#: `.claude/agent-results/agent_store.sqlite3`.
-DEFAULT_CONSUMER = "docs"
+class ConsumerUnknownError(Exception):
+    """No se pudo determinar el clon consumidor, y no se inventa uno."""
 
 
 def consumer_root() -> Path:
-    """La raíz del clon consumidor: su variable si está, si no el clon `docs`.
+    """La raíz del clon consumidor: su variable si está, si no el cwd.
 
-    No se usa `reach.consumer_root` sin argumentos porque su ascenso busca un
-    `.claude` — y desde un módulo de thyrox el primero que encuentra es el de
-    thyrox, que es el proveedor y no el consumidor.
+    Nombraba un clon —`DEFAULT_CONSUMER = "docs"`, «porque ahí vive el
+    store»—. Las dos mitades caducaron el 2026-09-07: el store se mudó al
+    proveedor, y un clon concreto no se codifica en el mecanismo.
+
+    El ascenso arranca del **directorio de trabajo**, no del archivo: quien
+    llama aquí es un hook del cliente, y su cwd ES el clon consumidor. Partir
+    de `__file__` daría el árbol de thyrox, que es el proveedor — que es la
+    razón por la que la versión anterior no usaba `reach.consumer_root` sin
+    argumentos.
+
+    Y si el ascenso aterriza en el PROVEEDOR, se rehúsa. Devolverlo sería peor
+    que no responder: el llamador compondría `<thyrox>/.claude/hooks` y leería
+    su vacío como «el consumidor no tiene hooks». Es la forma de un cero que no
+    distingue «no hay» de «no pude saber».
     """
     declared = reach.env_value(reach.CONSUMER_ROOT_VAR)
-    return Path(declared) if declared else reach.root(DEFAULT_CONSUMER)
+    if declared:
+        return Path(declared)
+    ascended = reach.consumer_root(start=Path.cwd())
+    if ascended.resolve() == reach.thyrox_root().resolve():
+        raise ConsumerUnknownError(
+            f"El ascenso desde {Path.cwd()} aterriza en el proveedor, no en un "
+            f"consumidor. Declara {reach.CONSUMER_ROOT_VAR} con la raíz del clon, "
+            f"o invoca desde dentro de él. NO se devuelve la raíz de thyrox: el "
+            f"llamador leería su árbol como si fuera el del consumidor."
+        )
+    return ascended
 
 
 #: La misma grafía que `reach.ts` declara (`AGENTS_DIR_VAR`). La mitad Python

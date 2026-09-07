@@ -45,11 +45,34 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
 
-HOOKS = agents_paths.hooks_dir()
-if str(HOOKS) not in sys.path:
-    sys.path.insert(0, str(HOOKS))
+# El hogar de los hooks es del CONSUMIDOR, y desde el 2026-09-07
+# `consumer_root()` rehusa en vez de devolver la raiz del proveedor cuando no
+# puede saberlo. Aqui eso no puede reventar el import: este modulo tambien se
+# importa desde thyrox para medirlo, y un import que muere deja al llamador sin
+# distinguir «no hay hooks» de «no pude resolverlos».
+try:
+    HOOKS = agents_paths.hooks_dir()
+except agents_paths.ConsumerUnknownError:
+    HOOKS = None
+else:
+    if str(HOOKS) not in sys.path:
+        sys.path.insert(0, str(HOOKS))
 
-from hook_error_log import _append, spool_path  # noqa: E402
+try:
+    from hook_error_log import _append, spool_path  # noqa: E402
+except ModuleNotFoundError as err:  # pragma: no cover — depende del cwd
+    # Sin consumidor resuelto, `HOOKS` es None y su directorio nunca entro en
+    # `sys.path`. Se re-lanza nombrando LA CAUSA: un `ModuleNotFoundError`
+    # pelado manda a buscar un modulo ausente, cuando lo que falta es saber de
+    # que clon son los hooks.
+    if HOOKS is None:
+        raise agents_paths.ConsumerUnknownError(
+            f"No se resolvio el clon consumidor, asi que sus hooks no entraron "
+            f"en sys.path y `hook_error_log` no se encuentra. Declara "
+            f"{agents_paths.reach.CONSUMER_ROOT_VAR}, o invoca desde dentro del "
+            f"clon."
+        ) from err
+    raise
 
 
 def _max_attempts() -> int:

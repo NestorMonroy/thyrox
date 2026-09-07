@@ -50,7 +50,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
 
 HERE = Path(__file__).resolve().parent
-HOOKS = agents_paths.hooks_dir()
+# Perezoso: resolverlo al importar hacia que un cwd sin consumidor rompiera
+# el import entero, no la llamada que de verdad necesita el dato.
+def _hooks() -> "Path":
+    return agents_paths.hooks_dir()
 AGENT_STORE = HERE / "agent_store.py"
 _DEFAULT_PROJECTS = Path("/root/.claude/projects")
 
@@ -117,9 +120,25 @@ def store_db() -> Path:
 
 
 def _destination() -> list:
-    """Los argumentos con que se nombra el store al invocar `agent_store.py`."""
+    """Los argumentos con que se nombra el store al invocar `agent_store.py`.
+
+    Sin declaracion devuelve la lista VACIA, no `["--repo", "docs"]`. Fabricar
+    ese default metia el nombre de un consumidor dentro del proveedor **y**
+    desviaba las filas: el store es analitica de la sesion de thyrox, no dato
+    de un clon. Su hermano `register_session.destination_args()` ya devolvia
+    `None` por la misma razon, con el principio escrito en su docstring; este
+    se quedo atras.
+
+    Medido el 2026-09-07 antes de corregirlo: el store de thyrox congelado en
+    1152 filas desde las 03:01:19, y el de docs creciendo hasta 1201 a las
+    19:34:37. Las 49 de diferencia eran los agentes de esa misma sesion.
+
+    Vacia, y no `None`, porque el llamador la interpola en una linea de
+    comandos: una lista vacia se desdobla en nada, que es exactamente «no
+    nombres ningun destino» y deja ganar al localizador declarado.
+    """
     destination = _claude_dir()
-    return ["--claude-dir", destination] if destination else ["--repo", "docs"]
+    return ["--claude-dir", destination] if destination else []
 
 # Silencio por encima del cual un transcript deja de considerarse en curso.
 # Derivado de medir el gap máximo entre líneas consecutivas sobre el corpus
