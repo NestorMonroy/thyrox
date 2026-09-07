@@ -82,3 +82,52 @@ mcp-runtime::@thyrox/config
 mcp-runtime::@thyrox/provider
 mcp-runtime::@thyrox/shell
 mcp-runtime::@thyrox/storage
+
+# --- los 47 modulos portados, congelado 2026-09-07T08:14:09 ------------------------------
+# Los destapo el porte de provider(18)/config(15)/agent+cli(8)/shell+permission+
+# command-runtime(6). No son deuda nueva: son las aristas y los terceros que
+# esos modulos IMPORTAN y que el arbol todavia no tiene. Tres clases, tres
+# arreglos distintos:
+#
+#   ARISTA DE PAQUETE (18) — el hermano ESTA portado; falta que figure en las
+#     dependencies del consumidor. Lo cierra `workspaces` en la raiz + install,
+#     que es la tarea #239. NO se cablean symlinks a mano: viven en
+#     node_modules (gitignored) y resolverian aqui y no en un clon fresco.
+#
+#   HERMANO AUSENTE (1) — `config::@thyrox/tool-registry`. No es solo la
+#     arista: el paquete no esta portado (313 modulos, medido). Tarea #234.
+#
+#   TERCERO REAL (5) — @anthropic-ai/mcpb, axios, fflate,
+#     @aws-sdk/credential-provider-node, @smithy/node-http-handler. Ninguno
+#     instalado (Bun.resolveSync los rechaza). Ahi si aplica instalar /
+#     reimplementar / retirar, decision por paquete.
+#
+#   AMBITO DE LA FUENTE (2) — `agent::@claude-code-how-works/{repl,
+#     tool-registry}`. Se REAPUNTAN a @thyrox/* cuando el hermano exista
+#     (#235, #234), no se instalan.
+agent::@claude-code-how-works/repl
+agent::@claude-code-how-works/tool-registry
+agent::@thyrox/app-host
+cli::@thyrox/app-host
+config::@anthropic-ai/mcpb
+config::@thyrox/agent
+config::@thyrox/app-host
+config::@thyrox/local-observability
+config::@thyrox/provider
+config::@thyrox/shell
+config::@thyrox/storage
+config::@thyrox/tool-registry
+config::axios
+config::fflate
+permission::@thyrox/config
+permission::@thyrox/storage
+provider::@aws-sdk/credential-provider-node
+provider::@smithy/node-http-handler
+provider::@thyrox/agent
+provider::@thyrox/app-host
+provider::@thyrox/config
+provider::@thyrox/headless-sdk
+provider::@thyrox/local-observability
+provider::@thyrox/output
+shell::@thyrox/app-host
+shell::@thyrox/local-observability

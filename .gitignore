@@ -98,5 +98,10 @@ CHANGELOG-auto.md
 __pycache__/
 *.pyc
 .venv/
-env/
+# `env/` va ANCLADO a la raiz: sin la barra inicial git lo aplica a CUALQUIER
+# directorio llamado `env` a cualquier profundidad, y se trago los tres .ts de
+# `src/packages/config/env/` — codigo fuente, no un virtualenv. El agente que
+# los porto tuvo que forzarlos con `git add -f`; sin eso habrian desaparecido
+# del commit en silencio, que es la forma cara de perder trabajo.
+/env/
 venv/
