@@ -47,6 +47,13 @@ PROJECT_ROOT="$(PYTHONPATH="${SCRIPT_DIR}/.." python3 -c \
 HOOK="$PROJECT_ROOT/.githooks/commit-msg"
 BASE="${1:-develop}"
 
+# Deuda heredada congelada por SHA. Vive junto al gate —es su parametro, no del
+# consumidor— porque lo que congela es un commit ya publicado, y el historial no
+# se reescribe (I-002). Se DESCUENTA del veredicto y se PUBLICA en el conteo:
+# un descuento silencioso deja un gate que no puede fallar (sub-patron D de
+# `metrica-decide-la-conclusion.md`).
+BASELINE="${BRANCH_COMMIT_MESSAGES_BASELINE:-$SCRIPT_DIR/branch_commit_messages_baseline.tsv}"
+
 [[ -x "$HOOK" ]] || {
     echo "FATAL: $HOOK no es ejecutable o no existe" >&2
     echo "       Corre: bash scripts/install-hooks.sh" >&2
@@ -69,6 +76,7 @@ fi
 
 TOTAL=0
 FAIL=0
+CONGELADOS=0
 TMP="$(mktemp -t check-branch.XXXX)"
 trap 'rm -f "$TMP"' EXIT
 
@@ -91,19 +99,31 @@ for SHA in $COMMITS; do
         REASON=$(grep -m1 -E "^ERROR commit-msg:" "$ERR_LOG" \
                  | sed 's/^ERROR commit-msg: //')
         [[ -z "$REASON" ]] && REASON="(hook fallo sin razon especificada)"
-        printf "  FAIL %s  %s\n" "${SHA:0:7}" "$SUBJECT"
-        printf "       motivo: %s\n" "$REASON"
-        FAIL=$((FAIL + 1))
+        # ¿Congelado? Se compara el SHA COMPLETO contra la primera columna: el
+        # abreviado colisiona, y una colision aqui absolveria a un commit que
+        # nadie admitio.
+        if [[ -f "$BASELINE" ]] && grep -qE "^${SHA}[[:space:]]" "$BASELINE"; then
+            ADMITIDA="$(grep -E "^${SHA}[[:space:]]" "$BASELINE" | head -1 | cut -f2)"
+            printf "  BASE %s  %s\n" "${SHA:0:7}" "$SUBJECT"
+            printf "       congelado el %s — motivo: %s\n" "${ADMITIDA:-sin fecha}" "$REASON"
+            CONGELADOS=$((CONGELADOS + 1))
+        else
+            printf "  FAIL %s  %s\n" "${SHA:0:7}" "$SUBJECT"
+            printf "       motivo: %s\n" "$REASON"
+            FAIL=$((FAIL + 1))
+        fi
     fi
 done
 set -e
 
 echo ""
 if [[ "$FAIL" -eq 0 ]]; then
-    echo "ALL PASS — $TOTAL/$TOTAL commits respetan Tim Pope (vs $BASE)"
+    echo "ALL PASS — $((TOTAL - CONGELADOS))/$TOTAL commits respetan Tim Pope (vs $BASE)"
+    echo "           congelados en baseline: $CONGELADOS ($BASELINE)"
     exit 0
 else
     echo "FAIL — $FAIL/$TOTAL commits violan Tim Pope (vs $BASE)"
+    echo "       congelados en baseline (no cuentan): $CONGELADOS"
     echo ""
     echo "El historial NO se reescribe (I-002 + commit-conventions.md)."
     echo "Lo que SI se hace:"
