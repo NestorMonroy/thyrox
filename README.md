@@ -46,6 +46,37 @@ mucho más simple de verificar.
   arreglo trae su **control de anulación**: se retira, y tienen que caer
   exactamente las aserciones que dependen de él.
 
+## Portar cuando el hermano no existe
+
+El grafo de los paquetes que faltan **no tiene hoja**: 19 paquetes ausentes,
+41 pares mutuamente dependientes. Esperar a que el hermano exista es esperar
+indefinidamente, así que la **inyección del colaborador ausente** no es una
+preferencia — es el único método que corta la arista del ciclo, y queda
+adoptada por medición.
+
+Lo que la inyección **no** resuelve es a qué archivos aplica. Tres clases, y la
+frontera es si el archivo tiene lógica propia que un test pueda ejercitar:
+
+| Clase | Cómo se reconoce | Qué se hace |
+|---|---|---|
+| **lógica propia** | aritmética, precedencia, filtro, orden — hay algo que puede salir mal | se inyecta el colaborador ausente, se porta la lógica y **se testea** |
+| **cableado puro** | el cuerpo del archivo **es** el wiring de dos hermanos; sin ellos no queda nada que ejercitar | porte verbatim con la ausencia **declarada archivo por archivo**, y **sin test** |
+| **condición de compilación ausente** | depende de un macro que este entorno no tiene (`bun:bundle` → `Cannot find package 'bundle'`) | el gate se **omite**, no se sustituye |
+
+**Por qué el cableado puro no lleva test, y no es pereza.** Inyectarle sus dos
+hermanos daría una función que recibe todo y no hace nada: un control que no
+puede fallar, que es exactamente lo que las Convenciones de arriba prohíben. Un
+test ahí no mide el porte — mide que la inyección compila.
+
+**Por qué el macro ausente se omite en vez de sustituirse.** Sustituirlo por un
+valor fijo decide, en silencio y para siempre, la rama que el macro elegía en
+tiempo de compilación. Precedentes medidos: `runtimeActivation.ts` y
+`storage/sessionStoragePredicates.ts` quedaron permanentemente apagados por esa
+vía antes de que la clase tuviera nombre.
+
+La clase se declara **en el docstring del puerto**, junto a su procedencia: quien
+lo lea tiene que poder saber por qué no hay test sin ir a buscar el criterio.
+
 ## Correr las suites
 
 ```bash
