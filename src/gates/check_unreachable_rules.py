@@ -30,9 +30,38 @@ import os
 import re
 import sys
 
-REPOS = ['docs', 'api', 'ui', 'db', 'server']
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from paths import reach  # noqa: E402
+
 TREE = '/home/user'
-REPOS_BASE = TREE + '/kaupamex-'
+
+
+def raices_medidas():
+    """Los clones consumidores MÁS thyrox, que también declara reglas.
+
+    Componía la ruta con `TREE + '/kaupamex-' + repo`, y esa aritmética es la
+    que dejaba a thyrox fuera: no se llama `kaupamex-thyrox`, así que añadirlo
+    a una lista de nombres habría construido una ruta inexistente.
+
+    Lo que thyrox aporta HOY a este gate es cero, y se dice: sus 3 archivos de
+    `.claude/rules/` son reglas de gobierno en `.md`, y este gate lee reglas de
+    PERMISO de `settings.json`, que thyrox no declara. Confundir las dos —lo
+    hice al abrir esto— es medir un literal y concluir sobre otro fenómeno.
+    La raíz entra igual: el día que thyrox declare permisos, el gate ya los ve
+    en vez de descubrirse ciego.
+
+    `reach` ya separa las dos poblaciones —`roots()` da los consumidores por
+    nombre, `thyrox_root()` da el proveedor— así que aquí se componen, no se
+    reinventa el localizador.
+    """
+    raices = [str(p) for p in reach.roots().values()]
+    try:
+        raices.append(str(reach.thyrox_root()))
+    except Exception:
+        # Sin thyrox alcanzable el gate sigue midiendo a los consumidores; lo
+        # que NO hace es fingir una ruta compuesta que no existe.
+        pass
+    return raices
 RULE = re.compile(r'^([A-Za-z_][A-Za-z0-9_.-]*)\((.*)\)$', re.DOTALL)
 
 
@@ -175,7 +204,7 @@ def main(argv):
         # Mismas raíces que `check_eventos_hook.py`, y por la misma razón: la
         # copia que el cliente ejecuta vive en el árbol de trabajo, no en un
         # repositorio, y sus 186 reglas `allow` quedarían fuera del alcance.
-        roots = [REPOS_BASE + r for r in REPOS]
+        roots = raices_medidas()
         roots += [TREE, os.path.expanduser('~')]
 
     rules, files_read = declared_rules(roots)

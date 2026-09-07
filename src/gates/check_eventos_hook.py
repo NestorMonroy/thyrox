@@ -31,7 +31,23 @@ import re
 import subprocess
 import sys
 
-REPOS = ['docs', 'api', 'ui', 'db', 'server']
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from paths import reach  # noqa: E402
+
+
+def raices_medidas():
+    """Los clones consumidores MÁS thyrox, que también tiene `.claude/eventos/`.
+
+    La composición `ARBOL + '/kaupamex-' + repo` dejaba a thyrox fuera por su
+    nombre, no por su contenido: tiene banco de evidencia y este gate no lo
+    veía. `reach` ya distingue consumidores de proveedor.
+    """
+    raices = [str(p) for p in reach.roots().values()]
+    try:
+        raices.append(str(reach.thyrox_root()))
+    except Exception:
+        pass
+    return raices
 ARBOL = '/home/user'
 BASE_REPOS = ARBOL + '/kaupamex-'
 # Las dos anclas: nombres cuya condición de evento de hook no está en duda.
@@ -124,7 +140,7 @@ def main(argv):
         # La primera versión leía sólo las cinco de repositorio y esa copia
         # —10 eventos— quedaba fuera: su verde no distinguía «no hay typos» de
         # «no medí donde están los hooks» (H-DOCS-479).
-        raices = [BASE_REPOS + r for r in REPOS]
+        raices = raices_medidas()
         raices += [ARBOL, os.path.expanduser('~')]
 
     universo = universo_del_binario(binario)
