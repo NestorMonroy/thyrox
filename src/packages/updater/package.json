@@ -1,0 +1,42 @@
+{
+  "name": "@thyrox/updater",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./contracts": "./src/contracts.ts",
+    "./errors": "./src/errors.ts",
+    "./testing": "./testing/index.ts",
+    "./autoUpdater.js": "./src/autoUpdater.ts",
+    "./binaryCheck.js": "./src/binaryCheck.ts",
+    "./githubReleases.js": "./src/githubReleases.ts",
+    "./completionCache.js": "./src/completionCache.ts",
+    "./nativeInstaller/index.js": "./src/nativeInstaller/index.ts",
+    "./nativeInstaller/download.js": "./src/nativeInstaller/download.ts",
+    "./nativeInstaller/installer.js": "./src/nativeInstaller/installer.ts",
+    "./nativeInstaller/launcherOwnership.js": "./src/nativeInstaller/launcherOwnership.ts",
+    "./nativeInstaller/packageManagers.js": "./src/nativeInstaller/packageManagers.ts",
+    "./nativeInstaller/pidLock.js": "./src/nativeInstaller/pidLock.ts",
+    "./nativeInstaller/platform.js": "./src/nativeInstaller/platform.ts",
+    "./nativeInstaller/streamBinaryDownload.js": "./src/nativeInstaller/streamBinaryDownload.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@thyrox/app-host": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/storage": "workspace:*",
+    "axios": "^1.20.0",
+    "chalk": "^6.0.0",
+    "lodash-es": "^4.18.1",
+    "semver": "^7.6.0"
+  }
+}
