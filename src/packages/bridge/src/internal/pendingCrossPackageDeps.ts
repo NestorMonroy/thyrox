@@ -31,6 +31,7 @@ import { randomUUID } from 'node:crypto'
 import { execFile as execFileCb } from 'node:child_process'
 import { promisify } from 'node:util'
 import type { NonNullableUsage } from '@claude-code-how-works/headless-sdk/sdkUtilityTypes.js'
+import { toCompatSessionId } from '../sessionIdCompat.js'
 
 /**
  * `getOauthConfig` — de `@claude-code-how-works/provider/oauthConstants`.
@@ -375,9 +376,15 @@ export function setGetFeatureValueCachedWithRefreshFn(
  *   sólo encendidas cuando el build setea `FEATURE_CCR_AUTO_CONNECT=1`
  *   / `FEATURE_CCR_MIRROR=1` (`default-features.ts:73-77`). Default-OFF
  *   aquí (`=== '1'`) — lo contrario de `BRIDGE_MODE`.
+ * - `KAIROS` (bandera desnuda, distinta de `KAIROS_BRIEF`/`KAIROS_DREAM`/
+ *   etc. que sí son estables) tampoco está en `STABLE_FEATURES` — medido,
+ *   `grep -n "'KAIROS'" scripts/default-features.ts` da 0 hits. Gatea
+ *   `--session-id` ant-only en `bridgeMain()`
+ *   (`bridgeMain.ts:1520`: "sin la bandera, revierte al comportamiento
+ *   pre-PR"). Default-OFF aquí, mismo criterio que `CCR_AUTO_CONNECT`.
  */
 export function feature(
-  flag: 'BRIDGE_MODE' | 'CCR_AUTO_CONNECT' | 'CCR_MIRROR',
+  flag: 'BRIDGE_MODE' | 'CCR_AUTO_CONNECT' | 'CCR_MIRROR' | 'KAIROS',
 ): boolean {
   if (flag === 'BRIDGE_MODE') return process.env[`CCB_FEATURE_${flag}`] !== '0'
   return process.env[`CCB_FEATURE_${flag}`] === '1'
@@ -523,6 +530,21 @@ export function getClaudeAiBaseUrl(
     return CLAUDE_AI_STAGING_BASE_URL
   }
   return CLAUDE_AI_BASE_URL
+}
+
+/**
+ * `getRemoteSessionUrl` — de `@claude-code-how-works/config/product`
+ * (verbatim). Corregido H-DOCS-1: el docstring de este bloque ya
+ * prometía esta función y NUNCA se escribió — sólo estaban sus tres
+ * colaboradores (`getClaudeAiBaseUrl`, `isRemoteSession{Local,Staging}`).
+ */
+export function getRemoteSessionUrl(
+  sessionId: string,
+  ingressUrl?: string,
+): string {
+  const compatId = toCompatSessionId(sessionId)
+  const baseUrl = getClaudeAiBaseUrl(compatId, ingressUrl)
+  return `${baseUrl}/code/${compatId}`
 }
 
 /**
@@ -1267,3 +1289,341 @@ export function stripDisplayTagsAllowEmpty(text: string): string {
 export const BRIDGE_SPINNER_FRAMES = ['·|·', '·/·', '·—·', '·\\·']
 export const BRIDGE_READY_INDICATOR = '·✔︎·'
 export const BRIDGE_FAILED_INDICATOR = '×'
+
+/**
+ * `sleep` — de `@claude-code-how-works/config/sleep.ts` (verbatim). Sleep
+ * responsivo a abort: resuelve tras `ms`, o de inmediato cuando `signal`
+ * aborta. `@thyrox/config` sí porta este archivo, pero no resuelve en
+ * runtime sin membresía de workspace. Reimplementación fiel VERBATIM —
+ * pura, sin imports en la fuente. Se retira cuando `@thyrox/bridge` sea
+ * miembro del workspace.
+ */
+export function sleep(
+  ms: number,
+  signal?: AbortSignal,
+  opts?: { throwOnAbort?: boolean; abortError?: () => Error; unref?: boolean },
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      if (opts?.throwOnAbort || opts?.abortError) {
+        void reject(opts.abortError?.() ?? new Error('aborted'))
+      } else {
+        void resolve()
+      }
+      return
+    }
+    const timer = setTimeout(
+      (sig: AbortSignal | undefined, onAbort: () => void, res: () => void) => {
+        sig?.removeEventListener('abort', onAbort)
+        void res()
+      },
+      ms,
+      signal,
+      onAbort,
+      resolve,
+    )
+    function onAbort(): void {
+      clearTimeout(timer)
+      if (opts?.throwOnAbort || opts?.abortError) {
+        void reject(opts.abortError?.() ?? new Error('aborted'))
+      } else {
+        void resolve()
+      }
+    }
+    signal?.addEventListener('abort', onAbort, { once: true })
+    if (opts?.unref) {
+      timer.unref()
+    }
+  })
+}
+
+/**
+ * `isInBundledMode` — de `@claude-code-how-works/config/bundledMode.ts`
+ * (verbatim, incluido su helper puro `isBundledMainPath` — el fix de
+ * Windows del comentario original se conserva). `@thyrox/config` no
+ * porta este archivo. Reimplementación fiel VERBATIM. Se retira cuando
+ * `@thyrox/bridge` sea miembro del workspace.
+ */
+const BUNFS_PREFIXES = ['/$bunfs/', 'B:\\~BUN\\', 'B:/~BUN/'] as const
+
+function isBundledMainPath(main: string): boolean {
+  for (const prefix of BUNFS_PREFIXES) {
+    if (main.startsWith(prefix)) return true
+  }
+  return false
+}
+
+export function isInBundledMode(): boolean {
+  if (typeof Bun === 'undefined' || typeof Bun.main !== 'string') {
+    return false
+  }
+  return isBundledMainPath(Bun.main)
+}
+
+/**
+ * `isInProtectedNamespace` — de `@claude-code-how-works/config/env/utils.ts`
+ * (verbatim). Sonda ant-only host-injected sobre metadata de cluster
+ * interna; la fuente ya defaultea a `false` para builds externos —
+ * `@thyrox/config` no porta este archivo. Reimplementación fiel VERBATIM
+ * + punto de inyección (`_checkProtectedNamespace`, igual que la fuente).
+ * Se retira cuando `@thyrox/bridge` sea miembro del workspace.
+ */
+let _checkProtectedNamespace: () => boolean = () => false
+
+export function setCheckProtectedNamespaceFn(fn: () => boolean): void {
+  _checkProtectedNamespace = fn
+}
+
+export function isInProtectedNamespace(): boolean {
+  if (process.env.USER_TYPE !== 'ant') return false
+  return _checkProtectedNamespace()
+}
+
+/**
+ * `logEventAsync` / `shutdownEventLoggers` — de
+ * `@claude-code-how-works/local-observability` (`core.ts`) y su
+ * `compat.ts` respectivamente. Ya existen en `@thyrox/local-observability`
+ * con lógica real de telemetría/flush. Puntos de inyección — default
+ * no-op (equivale a "el evento se pierde" / "nada que drenar"), porque
+ * la implementación real hace I/O de red/disco que es dominio de
+ * `@thyrox/local-observability`, no de bridge. Se retiran cuando
+ * `@thyrox/bridge` sea miembro del workspace.
+ */
+let _logEventAsync: (
+  name: string,
+  metadata?: Record<string, unknown>,
+) => Promise<void> = async () => {}
+
+export function logEventAsync(
+  name: string,
+  metadata: Record<string, unknown> = {},
+): Promise<void> {
+  return _logEventAsync(name, metadata)
+}
+
+export function setLogEventAsyncFn(
+  fn: (name: string, metadata?: Record<string, unknown>) => Promise<void>,
+): void {
+  _logEventAsync = fn
+}
+
+let _shutdownEventLoggers: () => Promise<void> = async () => {}
+
+export function shutdownEventLoggers(): Promise<void> {
+  return _shutdownEventLoggers()
+}
+
+export function setShutdownEventLoggersFn(fn: () => Promise<void>): void {
+  _shutdownEventLoggers = fn
+}
+
+/**
+ * `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS` — de
+ * `@claude-code-how-works/local-observability/compat.ts` (verbatim: alias
+ * de `never`, un tipo "brand" que sólo sirve para forzar al llamador a
+ * castear explícitamente cada valor de metadata de `logEvent` — documenta
+ * en el sitio de uso que ese valor no es código ni un filepath sin
+ * sanitizar). Ya existe idéntico en `@thyrox/local-observability`.
+ */
+export type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS = never
+
+/**
+ * `logError` — de `@claude-code-how-works/local-observability/logging.js`
+ * (re-exportado desde `logging/error-log.ts`). Ya existe en
+ * `@thyrox/local-observability: src/logging/error-log.ts:132` con lógica
+ * real (clasificación de severidad + sink de telemetría). Punto de
+ * inyección — default: `console.error`, para no perder el error en
+ * silencio absoluto mientras no hay sink real. Se retira cuando
+ * `@thyrox/bridge` sea miembro del workspace.
+ */
+let _logError: (error: unknown) => void = (error: unknown) => {
+  console.error(error)
+}
+
+export function logError(error: unknown): void {
+  _logError(error)
+}
+
+export function setLogErrorFn(fn: (error: unknown) => void): void {
+  _logError = fn
+}
+
+/**
+ * `createAgentWorktree` / `removeAgentWorktree` — de
+ * `@claude-code-how-works/swarm/worktree/index.ts` (1516 líneas fuente).
+ * Genuinamente foráneo: worktrees de git, hooks WorktreeCreate/Remove,
+ * `execFileNoThrowWithCwd`, `getInitialSettings`, limpieza de worktrees
+ * viejos — un subsistema entero de `@thyrox/swarm`, no de bridge. NO
+ * declarado como "bloqueado" (lanzar un Error rompería `spawnMode:
+ * 'worktree'` de raíz) — se declara como punto de inyección: default
+ * inocuo para `removeAgentWorktree` (best-effort cleanup, ya está en un
+ * `.catch()` en el llamador) y un default que RECHAZA con mensaje
+ * explícito para `createAgentWorktree` (crear un worktree es una acción
+ * cuyo valor de retorno el llamador necesita de verdad; fingir éxito
+ * mentiría sobre dónde vive la sesión). Se retiran cuando `@thyrox/swarm`
+ * porte `worktree/index.ts` Y `@thyrox/bridge` sea miembro del workspace.
+ */
+export type AgentWorktreeResult = {
+  worktreePath: string
+  worktreeBranch?: string
+  headCommit?: string
+  gitRoot?: string
+  hookBased?: boolean
+}
+
+let _createAgentWorktree: (slug: string) => Promise<AgentWorktreeResult> =
+  async (slug: string) => {
+    throw new Error(
+      `createAgentWorktree: bloqueado — @thyrox/swarm aún no porta ` +
+        `worktree/index.ts (1516 líneas fuente en ccnmt). spawnMode: ` +
+        `'worktree' no está disponible en este porte (slug=${slug}).`,
+    )
+  }
+
+export function createAgentWorktree(slug: string): Promise<AgentWorktreeResult> {
+  return _createAgentWorktree(slug)
+}
+
+export function setCreateAgentWorktreeFn(
+  fn: (slug: string) => Promise<AgentWorktreeResult>,
+): void {
+  _createAgentWorktree = fn
+}
+
+let _removeAgentWorktree: (
+  worktreePath: string,
+  worktreeBranch?: string,
+  gitRoot?: string,
+  hookBased?: boolean,
+) => Promise<boolean> = async () => false
+
+export function removeAgentWorktree(
+  worktreePath: string,
+  worktreeBranch?: string,
+  gitRoot?: string,
+  hookBased?: boolean,
+): Promise<boolean> {
+  return _removeAgentWorktree(worktreePath, worktreeBranch, gitRoot, hookBased)
+}
+
+export function setRemoveAgentWorktreeFn(
+  fn: (
+    worktreePath: string,
+    worktreeBranch?: string,
+    gitRoot?: string,
+    hookBased?: boolean,
+  ) => Promise<boolean>,
+): void {
+  _removeAgentWorktree = fn
+}
+
+/**
+ * `installSwarmHost` — de
+ * `@claude-code-how-works/swarm/install/installSwarmHost.ts` (314 líneas
+ * fuente). Cablea ~120 símbolos de `@thyrox/{agent,tool-registry,repl,
+ * permission,storage,provider,config,app-host,shell}` al runtime del
+ * paquete swarm (team/task tools, mailbox de teammates) — un subsistema
+ * completo, no un mecanismo de bridge. bridgeMain.ts lo llama de forma
+ * idempotente (`if (installed) return`) al arrancar el loop; el propio
+ * mecanismo no lo consume bridge directamente, sólo lo activa. Default
+ * no-op: sin él, las herramientas de swarm (Task*, Team*) no funcionan
+ * dentro de una sesión de bridge, pero el bridge en sí (spawn/poll/status
+ * del proceso hijo `claude --print`) no lo necesita para operar. Se
+ * retira cuando `@thyrox/swarm` porte `install/installSwarmHost.ts` Y
+ * `@thyrox/bridge` sea miembro del workspace.
+ */
+let _installSwarmHost: () => void = () => {}
+
+export function installSwarmHost(): void {
+  _installSwarmHost()
+}
+
+export function setInstallSwarmHostFn(fn: () => void): void {
+  _installSwarmHost = fn
+}
+
+/**
+ * `enableConfigs` / `checkHasTrustDialogAccepted` — de
+ * `@claude-code-how-works/config` (barrel, módulo de settings ~2700
+ * líneas). `@thyrox/config` aún NO porta ninguna de las dos (medido:
+ * `grep -rln "enableConfigs\|checkHasTrustDialogAccepted" config/` → 0
+ * resultados). Puntos de inyección: `enableConfigs` default no-op — sin
+ * ella, las llamadas que dependan de config habilitada ya están fuera de
+ * alcance por otros stubs de este mismo archivo. `checkHasTrustDialogAccepted`
+ * default `false` (CONSERVADOR, no fail-open): sin wiring real, el host
+ * NO ha confirmado el diálogo de confianza del workspace — devolver
+ * `true` sería un bypass de seguridad silencioso. Con el default,
+ * `runBridgeHeadless` falla honestamente con
+ * `BridgeHeadlessPermanentError` (el comportamiento correcto cuando la
+ * confianza es de verdad desconocida) en vez de fingir que sí se
+ * verificó. Se retiran cuando `@thyrox/config` porte esas dos funciones.
+ */
+let _enableConfigs: () => void = () => {}
+
+export function enableConfigs(): void {
+  _enableConfigs()
+}
+
+export function setEnableConfigsFn(fn: () => void): void {
+  _enableConfigs = fn
+}
+
+let _checkHasTrustDialogAccepted: () => boolean = () => false
+
+export function checkHasTrustDialogAccepted(): boolean {
+  return _checkHasTrustDialogAccepted()
+}
+
+export function setCheckHasTrustDialogAcceptedFn(fn: () => boolean): void {
+  _checkHasTrustDialogAccepted = fn
+}
+
+/**
+ * `initSinks` — de `@claude-code-how-works/local-observability/sinks.ts`
+ * (14 líneas fuente, verbatim: llama a `initializeErrorLogSink()`). Ya
+ * existe idéntica en `@thyrox/local-observability: src/sinks.ts`. Punto
+ * de inyección — default no-op: acoplar el sink real de error-log es
+ * dominio de `@thyrox/local-observability`, no de bridge. Se retira
+ * cuando `@thyrox/bridge` sea miembro del workspace.
+ */
+let _initSinks: () => void = () => {}
+
+export function initSinks(): void {
+  _initSinks()
+}
+
+export function setInitSinksFn(fn: () => void): void {
+  _initSinks = fn
+}
+
+/**
+ * `setOriginalCwd` / `setCwdState` — de
+ * `@claude-code-how-works/app-host/bootstrap/state.ts:404,420` (verbatim:
+ * escriben en un STATE de módulo interno de app-host). Ya existen
+ * idénticas en `@thyrox/app-host: src/bootstrap/state.ts`. Puntos de
+ * inyección — default no-op: el STATE que escriben vive en
+ * `@thyrox/app-host`, y nada en este porte de bridge lee ese STATE
+ * (los sustitutos de git/worktree de `runBridgeHeadless` en
+ * `bridgeMain.ts` son también no-ops locales) — el efecto real de
+ * primar ese STATE ya está desconectado en este pase por esos otros
+ * stubs. Se retiran cuando `@thyrox/bridge` sea miembro del workspace y
+ * pueda importar `@thyrox/app-host` directo.
+ */
+let _setOriginalCwd: (cwd: string) => void = () => {}
+let _setCwdState: (cwd: string) => void = () => {}
+
+export function setOriginalCwd(cwd: string): void {
+  _setOriginalCwd(cwd)
+}
+
+export function setCwdState(cwd: string): void {
+  _setCwdState(cwd)
+}
+
+export function setSetOriginalCwdFn(fn: (cwd: string) => void): void {
+  _setOriginalCwd = fn
+}
+
+export function setSetCwdStateFn(fn: (cwd: string) => void): void {
+  _setCwdState = fn
+}
