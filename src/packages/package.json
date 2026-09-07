@@ -9,6 +9,7 @@
     "command-runtime",
     "config",
     "harness",
+    "local-observability",
     "observability",
     "permission",
     "plan",
