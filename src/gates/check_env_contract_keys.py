@@ -34,7 +34,13 @@ TEST_MARKERS = ("__tests__", "/tests/", "test_", ".test.", "-test.")
 SKIP_DIRS = ("/node_modules/", "/.git/", "/_archived/", "/_references/")
 
 #: Segunda via: el nombre vive en una CONSTANTE y se pasa a `env_value(name)`.
-NAME_CONSTANT = re.compile(r"""["'](THYROX_[A-Z0-9_]+)["']""")
+#: Un nombre que TERMINA en `_` no es una clave: es el PREFIJO de una familia
+#: que se compone en tiempo de ejecucion —`THYROX_WORKBENCH_` + el clon—, y
+#: nadie exporta esa variable. Sin esta exclusion el gate exigia declarar
+#: `THYROX_WORKBENCH_` en `.env.example`, que seria documentar una obligacion
+#: que no existe. La familia se documenta como familia, con su regla de
+#: composicion, igual que `THYROX_REACH_<CLON>`.
+NAME_CONSTANT = re.compile(r"""["'](THYROX_[A-Z0-9_]*[A-Z0-9])["']""")
 TS_MEMBER = re.compile(r"process\.env\.([A-Za-z_][A-Za-z0-9_]*)")
 TS_INDEX = re.compile(r"""process\.env\[\s*['"]([A-Za-z_][A-Za-z0-9_]*)['"]\s*\]""")
 SH_READ = re.compile(r"\$\{(" + PREFIX + r"[A-Z0-9_]+)[:}\-]|\$(" + PREFIX + r"[A-Z0-9_]+)\b")

@@ -53,6 +53,18 @@ class EnvContractKeysGate(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn(f'SIN DECLARAR  {REAL_KEY}', result.stdout)
 
+    def test_un_prefijo_de_familia_no_es_una_clave(self):
+        """`THYROX_WORKBENCH_` compone una familia; nadie exporta ese nombre.
+
+        Sin la exclusion el gate exigia declararlo en `.env.example`, o sea
+        documentar una obligacion que no existe. El control mide la ausencia:
+        si el prefijo volviera a contar, esta asercion cae.
+        """
+        result = run()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn('THYROX_WORKBENCH_ ', result.stdout)
+        self.assertNotIn('SIN DECLARAR  THYROX_WORKBENCH_', result.stdout)
+
     def test_sin_archivo_rehusa_sin_emitir_cifra(self):
         """Un 0 sin archivo no distinguiría «no falta ninguna» de «no pude medir»."""
         result = run('--env-example', '/no/existe/.env.example', '--strict')
