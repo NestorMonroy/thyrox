@@ -1627,3 +1627,23 @@ export function setSetOriginalCwdFn(fn: (cwd: string) => void): void {
 export function setSetCwdStateFn(fn: (cwd: string) => void): void {
   _setCwdState = fn
 }
+
+/**
+ * `registerCleanup` — de
+ * `@claude-code-how-works/app-host/bootstrap/cleanupRegistry.ts` (28
+ * líneas fuente, verbatim: un `Set` de módulo + registrar/desregistrar).
+ * Ya existe idéntica en `@thyrox/app-host: src/bootstrap/cleanupRegistry.ts`.
+ * Reimplementación fiel VERBATIM — es un registro local pero PROPIO de
+ * este archivo (no comparte el `Set` real de `@thyrox/app-host`), así
+ * que una limpieza registrada aquí NO la corre el barrido de graceful
+ * shutdown de `@thyrox/app-host` — divergencia declarada, no hay
+ * consumidor de `runCleanupFunctions()` dentro de este porte de bridge
+ * que la necesite. Se retira cuando `@thyrox/bridge` sea miembro del
+ * workspace.
+ */
+const _bridgeCleanupFunctions = new Set<() => Promise<void>>()
+
+export function registerCleanup(cleanupFn: () => Promise<void>): () => void {
+  _bridgeCleanupFunctions.add(cleanupFn)
+  return () => _bridgeCleanupFunctions.delete(cleanupFn)
+}
