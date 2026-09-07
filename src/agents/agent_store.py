@@ -395,17 +395,37 @@ def document_root(args: argparse.Namespace) -> Path:
 
 
 def resolve_store_dir(args: argparse.Namespace) -> Path:
-    """Resuelve .claude/agent-results/ del repo objetivo.
+    """Dónde escribir, de lo más específico a lo menos.
 
-    --claude-dir manda si se da (ruta absoluta explicita). Si no,
-    --repo se resuelve como ../kaupamex-<repo>/.claude/agent-results/
-    relativo a este script (layout de hermanos bajo el mismo padre).
+    1. ``--claude-dir`` — la ruta, sin resolver nada. Es lo que usa una prueba
+       para no contaminar el store real.
+    2. ``--repo`` — el clon consumidor, para leer o escribir su telemetría
+       heredada a propósito (lo que hace ``backfill``).
+    3. **nada** — el HOGAR: ``thyrox/agent-results/``.
+
+    El peldaño 3 es nuevo (2026-09-07) y sustituye a un rehúse. La razón del
+    rehúse era correcta —*«inventar un destino es peor que rehusar»*— y dejó de
+    aplicar cuando el ejecutor decidió que hay UN hogar: derivarlo del
+    localizador no es inventarlo.
+
+    Y era el rehúse el que sostenía el silo. Mientras cada llamador tenía que
+    declarar un destino, el hook vivo del consumidor declaraba ``--repo docs``;
+    ese literal es el peldaño MÁS específico, así que ganaba sobre
+    ``storePath()`` y sobre ``agent_store_path()`` — reapuntar los dos no
+    alcanzaba al escritor mayoritario. Ver :ref:`h-docs-1237`.
+
+    Lo que NO cambia: un ``--repo`` **inválido** sigue siendo un error. «No
+    declarar» pasa a tener destino; «declarar mal» no puede caer al hogar en
+    silencio, o el llamador creería haber escrito donde pidió.
     """
     if args.claude_dir:
         store_dir = Path(args.claude_dir).expanduser().resolve()
         if store_dir.name != "agent-results":
             store_dir = store_dir / "agent-results"
         return store_dir
+
+    if getattr(args, "repo", None) is None:
+        return agents_paths.agent_store_path().parent
 
     if args.repo not in VALID_REPOS:
         raise ValueError(f"repo invalido: {args.repo!r} (validos: {VALID_REPOS})")

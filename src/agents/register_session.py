@@ -45,6 +45,9 @@ if __package__ in (None, ""):  # invocación directa como guion
 
 from hooks.error_log import run_and_log  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import agents_paths  # noqa: E402 — el localizador del hogar del store
+
 #: El store es el hermano de este módulo — aritmética DENTRO de thyrox, que es
 #: legítima: el archivo y su vecino se mudan juntos. Lo que no sería legítimo es
 #: anclar al árbol del CONSUMIDOR por aritmética (H-DOCS-1126).
@@ -715,12 +718,20 @@ def main() -> None:
 
     destino = _destination_from_argv(sys.argv)
     if destino is None:
-        # Rehusar, no inventar: un destino fabricado escribiría en el store
-        # equivocado y nadie lo notaría. Sale 0 — el contrato del hook es no
-        # romper el flujo del consumidor.
-        print("register_session: destino no declarado "
-              "(--repo <nombre> | --claude-dir <ruta>)", file=sys.stderr)
-        return
+        # Sin destino declarado se usa EL HOGAR — `thyrox/agent-results/`,
+        # decidido por el ejecutor el 2026-09-07 para que no haya silos.
+        #
+        # Aquí había un rehúse, y su razón era correcta mientras no existía un
+        # hogar: *«un destino fabricado escribiría en el store equivocado y
+        # nadie lo notaría»*. Derivarlo del localizador no lo fabrica.
+        #
+        # Y era este rehúse el que sostenía el silo, no el de
+        # `resolve_store_dir`: obligaba a que cada llamador declarase destino,
+        # y el hook vivo del consumidor declaraba `--repo docs`. Lo destapó una
+        # SONDA DE CONDUCTA —invocar el hook y mirar dónde escribe—; el control
+        # unitario no podía verlo, porque llama a `resolve_store_dir` directo y
+        # este guard está aguas arriba. Ver :ref:`h-docs-1237`.
+        destino = ["--claude-dir", str(agents_paths.agent_store_path().parent)]
 
     try:
         payload = json.load(sys.stdin)

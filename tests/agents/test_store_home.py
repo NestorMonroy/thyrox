@@ -175,5 +175,62 @@ class TestHogarUnico(unittest.TestCase):
 
 
 
+    def test_8_el_hook_del_consumidor_invocado_DE_VERDAD_escribe_en_el_hogar(self):
+        """SONDA DE CONDUCTA: invoca el hook real y mira donde aterriza la fila.
+
+        Existe porque los casos 1-3 NO lo veian, y eso costo dos rehuses
+        escondidos. Miden lo que `storePath()` y `agent_store_path()`
+        resuelven; el hook vivo no los usa — llamaba a `register_session.py`
+        con `--repo docs`, que es el peldano MAS especifico y gana sobre los
+        dos. Reapuntar los localizadores no alcanzaba al escritor mayoritario,
+        y el unitario daba verde con el silo intacto.
+
+        Al ejercitarlo aparecieron DOS rehuses en cadena, no uno: el de
+        `resolve_store_dir` (que el caso unitario si veia) y otro aguas arriba
+        en `register_session.main`, que corta antes de llegar. El segundo solo
+        es visible invocando.
+
+        Se salta si el hook no esta: el consumidor es parametro, y un control
+        que exija su presencia mediria el arbol de quien lo corre.
+        """
+        import sqlite3
+        import subprocess
+
+        hook = Path("/home/user/kaupamex-docs/.claude/hooks/register_agent_session.py")
+        if not hook.is_file():
+            self.skipTest("el hook del consumidor no esta en este arbol")
+
+        marca = "sonda-de-conducta-store-home"
+        carga = ('{"hook_event_name":"SubagentStart","session_id":"%s",'
+                 '"agent_id":"%s","subagent_type":"general-purpose"}' % (marca, marca))
+        try:
+            subprocess.run([sys.executable, str(hook), "--start"],
+                           input=carga, capture_output=True, text=True, timeout=60)
+            for nombre, ruta in (
+                ("proveedor", HOGAR),
+                ("consumidor", Path("/home/user/kaupamex-docs/.claude/agent-results/"
+                                    "agent_store.sqlite3")),
+            ):
+                if not Path(ruta).is_file():
+                    continue
+                c = sqlite3.connect("file:%s?mode=ro" % ruta, uri=True)
+                try:
+                    hay = c.execute(
+                        "SELECT count(*) FROM agent_sessions WHERE agent_id = ?",
+                        (marca,)).fetchone()[0]
+                finally:
+                    c.close()
+                if nombre == "proveedor":
+                    self.assertTrue(hay, "el hook NO escribio en el hogar")
+                else:
+                    self.assertFalse(hay, "el hook escribio en el silo")
+        finally:
+            c = sqlite3.connect(HOGAR)
+            c.execute("DELETE FROM agent_sessions WHERE agent_id = ?", (marca,))
+            c.commit()
+            c.close()
+
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
