@@ -17,7 +17,7 @@ fi
 
 AGENT_ID="$1"
 CLAUDE_HOME="${CLAUDE_HOME:-$HOME/.claude}"
-HOOK="$(dirname "${BASH_SOURCE[0]}")/../../hooks/register_agent_session.py"
+HOOK="$(dirname "${BASH_SOURCE[0]}")/register_session.py"
 
 TRANSCRIPT=$(find "$CLAUDE_HOME/projects" -name "agent-${AGENT_ID}.jsonl" 2>/dev/null | head -1)
 if [[ -z "$TRANSCRIPT" ]]; then
@@ -48,7 +48,7 @@ print(f"factor:           {factor:.2f}x")
 # El USD sale del catálogo del paquete (una sola fuente de precios), con el
 # modelo que el transcript declara — no el alias con que se despachó.
 import pathlib
-sys.path.insert(0, str(pathlib.Path(hook_path).resolve().parents[1] / "scripts" / "agents"))
+sys.path.insert(0, str(pathlib.Path(hook_path).resolve().parent))
 import model_catalog as mc
 catalogo = mc.require_catalog()
 modelo = mc.model_of_transcript(pathlib.Path(transcript))
