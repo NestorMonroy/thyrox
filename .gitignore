@@ -105,3 +105,13 @@ __pycache__/
 # del commit en silencio, que es la forma cara de perder trabajo.
 /env/
 venv/
+
+# El diario de SQLite NO es el store: es su bitácora en vuelo. `-wal` y `-shm`
+# existen sólo mientras hay un escritor abierto, y su contenido pertenece al
+# `.sqlite3` en cuanto se consolida (`PRAGMA wal_checkpoint`). Versionarlos
+# no añade evidencia —la evidencia ya está en el store— y sí puede confundir:
+# un `-wal` viejo junto a un store consolidado describe un estado que no es.
+# NO contradice la directiva de arriba: lo que ella preserva es el store, y
+# esto no es el store.
+*.sqlite3-wal
+*.sqlite3-shm
