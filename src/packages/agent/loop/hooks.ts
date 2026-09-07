@@ -75,7 +75,7 @@ export type HookOutcome = {
  * Aquí la unidad es el segundo porque el campo `timeout` del propio hook se
  * declara en segundos; la conversión ocurre en `ejecutarUno`.
  */
-const TIMEOUT_POR_DEFECTO = 60
+const DEFAULT_TIMEOUT_S = 60
 
 /**
  * Prioridad por defecto — el 10 de VVV (`provision-helpers.sh:543`).
@@ -84,7 +84,7 @@ const TIMEOUT_POR_DEFECTO = 60
  * todos los que no la declaran, porque entonces el orden estable degenera en
  * el orden de declaración y la conducta de hoy se conserva byte a byte.
  */
-const PRIORIDAD_POR_DEFECTO = 10
+const DEFAULT_PRIORITY = 10
 
 function aplica(matcher: string | undefined, payload: Record<string, unknown>): boolean {
   if (!matcher) return true
@@ -123,7 +123,7 @@ export function orderedCommands(
     }
   }
   return comandos.sort(
-    (a, b) => (a.priority ?? PRIORIDAD_POR_DEFECTO) - (b.priority ?? PRIORIDAD_POR_DEFECTO),
+    (a, b) => (a.priority ?? DEFAULT_PRIORITY) - (b.priority ?? DEFAULT_PRIORITY),
   )
 }
 
@@ -176,7 +176,7 @@ export async function runHooks(
     // cierto también tras una salida normal. Y al vencer NO se leen las
     // tuberías: un nieto del hook (`sleep` bajo `bash -lc`) las mantiene
     // abiertas y la lectura colgaría el turno que el timeout venía a salvar.
-    const ms = (h.timeout ?? TIMEOUT_POR_DEFECTO) * 1000
+    const ms = (h.timeout ?? DEFAULT_TIMEOUT_S) * 1000
     let temporizador: ReturnType<typeof setTimeout> | undefined
     const vencido = new Promise<'timeout'>((r) => {
       temporizador = setTimeout(() => r('timeout'), ms)
