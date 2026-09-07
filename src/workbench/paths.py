@@ -85,7 +85,51 @@ EVIDENCE_DIR_VAR = "THYROX_EVIDENCE_DIR"
 EVIDENCE_DIR_DEFAULT = "eventos"
 
 #: Entrada 1 — el valor: el hogar del banco, declarado directamente.
+#:
+#: Es GLOBAL: una sola grafia para todos los arboles. Vale cuando la invocacion
+#: toca un solo repositorio; no vale para una sesion que cruza varios, y por eso
+#: existe la familia de abajo.
 WORKBENCH_DIR_VAR = "THYROX_WORKBENCH_DIR"
+
+#: El prefijo de la familia POR CLON: ``api`` -> ``THYROX_WORKBENCH_API``.
+WORKBENCH_CLONE_PREFIX = "THYROX_WORKBENCH_"
+
+
+def workbench_home_name(repo: str) -> str:
+    """La constante por raiz: ``api`` -> ``THYROX_WORKBENCH_API``.
+
+    Misma regla de composicion que ``reach.env_names``, y por la misma razon:
+    **un solo proceso resuelve varios arboles**, y una variable global no puede
+    decir dos verdades a la vez. Sin la familia, dos fallos MEDIDOS y silenciosos:
+
+    - ``THYROX_EVIDENCE_DIR=eventos`` exportada mezcla los segmentos de dos
+      arboles: api resuelve a ``scripts/eventos``, una ruta que no existe en
+      ningun repositorio.
+    - ``THYROX_ENV_FILE`` apuntando a un archivo unico —que es lo que
+      ``install.sh`` hace cuando esta declarada— da a docs el hogar de api, y
+      sus 274 piezas dejan de reconocerse.
+
+    Los dos pasan sin error. La familia los cierra porque declara el hogar
+    ENTERO de un clon nombrado: no hay segmento que mezclar ni arbol al que
+    aplicarlo por equivocacion.
+    """
+    return f"{WORKBENCH_CLONE_PREFIX}{repo.upper().replace('-', '_')}"
+
+
+def repo_of(path: str | Path) -> str | None:
+    """El nombre corto del clon al que pertenece una ruta, o ``None``.
+
+    Se resuelve por el PREFIJO del clon ascendiendo, no por el basename del
+    punto de partida: un gate se invoca desde cualquier subdirectorio, y el
+    basename ahi nombra la carpeta, no el repositorio.
+    """
+    from paths.reach import CLONE_PREFIX  # noqa: PLC0415 — evita el ciclo de import
+
+    here = Path(path).resolve()
+    for level in (here, *here.parents):
+        if level.name.startswith(CLONE_PREFIX):
+            return level.name[len(CLONE_PREFIX):]
+    return None
 
 #: Entrada 2, y es **una sola para las tres**: la ruta del archivo que puede
 #: declararlas. Se re-exporta del localizador del ``.env`` en vez de
@@ -155,6 +199,16 @@ def workbench_dir(start: str | Path | None = None) -> Path:
     tiene que poder ver.
     """
     inicio = Path(start) if start else None
+
+    # La familia POR CLON gana sobre la global: la declaracion mas especifica
+    # manda, y es lo unico que impide que una variable exportada para un arbol
+    # se aplique a otro. Ver `workbench_home_name`.
+    repo = repo_of(inicio or Path.cwd())
+    if repo:
+        per_clone = env_value(workbench_home_name(repo), inicio)
+        if per_clone:
+            return Path(per_clone)
+
     declared = env_value(WORKBENCH_DIR_VAR, inicio)
     if declared:
         return Path(declared)
