@@ -15,22 +15,24 @@
 //   simplifica a un `JSON.parse` con `try/catch`. La fuente puede validar
 //   más (esquema, etc.); esta forma cubre el contrato que este módulo usa:
 //   "parsear o fallar sin lanzar".
-// - `generateTempFilePath` (de `@claude-code-how-works/storage/tempfile.js`)
-//   — verbatim del ALGORITMO de `@thyrox/storage/src/tempfile.ts` (que ya
-//   porta esto fiel, sólo built-ins): hash SHA-256 de 16 hex cuando hay
-//   `contentHash`, si no un UUID. Se duplica en vez de importarse porque
-//   un sibling package no resuelve hoy desde `app-host` (medido: `import
-//   ('@thyrox/storage/tempfile.js')` da `Cannot find module`).
 // - `errorMessage`/`isENOENT` (de
 //   `@claude-code-how-works/local-observability/errorHelpers.js`) —
 //   verbatim, dos líneas cada una.
+// - `readFileSync`/`existsSync` — la fuente ya los toma de `'fs'` directo
+//   (no son sibling package); se usan igual.
+//
+// `generateTempFilePath` e `isEnvTruthy` YA NO se duplican: hasta este pase
+// (TASK-DOCS-0198) `@thyrox/storage/tempfile.js` y `@thyrox/config/env/utils`
+// no resolvían desde `app-host` (medido entonces: `Cannot find module`)
+// porque este paquete no los declaraba como dependencia — no porque el
+// hermano no existiera. Con la dependencia declarada y `bun install`
+// corrido, los dos resuelven y se importan; ver `dependencies` en
+// `package.json` de este paquete.
+//
 // - `parseSettingSourcesFlag` (de
 //   `@claude-code-how-works/config/settings/constants.ts:129-154`) —
 //   verbatim, salvo que lanza `Error` en vez de la `ValidationError`
 //   propia de ese paquete (no existe aquí; el mensaje se preserva).
-// - `readFileSync`/`existsSync` — la fuente ya los toma de `'fs'` directo
-//   (no son sibling package); se usan igual.
-// - `isEnvTruthy` — verbatim de `ccnmt: packages/config/env/utils.ts:43-48`.
 //
 // `chalk` (dependencia npm, instalarla está prohibido por la tarea) se
 // sustituye por un ANSI rojo mínimo local (`red()`), mismo efecto visual.
@@ -41,18 +43,11 @@
 // `storage/src/sessionStoragePredicates.ts`.
 
 import { existsSync, readFileSync } from 'node:fs'
-import { createHash, randomUUID } from 'node:crypto'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { generateTempFilePath } from '@thyrox/storage/tempfile.js'
 import { eagerParseCliFlag } from '../../cliArgs.js'
 import { profileCheckpoint } from '../../startup/startupProfiler.js'
-
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
 
 function red(text: string): string {
   return `\x1b[31m${text}\x1b[0m`
@@ -64,17 +59,6 @@ function safeParseJSON(json: string): unknown {
   } catch {
     return undefined
   }
-}
-
-function generateTempFilePath(
-  prefix = 'claude-prompt',
-  extension = '.md',
-  options?: { contentHash?: string },
-): string {
-  const id = options?.contentHash
-    ? createHash('sha256').update(options.contentHash).digest('hex').slice(0, 16)
-    : randomUUID()
-  return join(tmpdir(), `${prefix}-${id}${extension}`)
 }
 
 function errorMessage(e: unknown): string {

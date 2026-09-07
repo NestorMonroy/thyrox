@@ -7,9 +7,10 @@
 // `@claude-code-how-works/config/settings`). Ninguna de las dos existe en
 // este árbol — `@thyrox/config` tiene una forma distinta (`loadSettings`/
 // `mergeSettings` sobre specs explícitas, sin noción de "config global" ni
-// de "fuente por nombre") y, aun si la tuviera, un sibling package no
-// resuelve hoy desde `app-host` (medido: `import('@thyrox/storage/...')`
-// desde este mismo paquete da `Cannot find module`).
+// de "fuente por nombre"); el bloqueo es de FORMA, no de enlace entre
+// paquetes (`@thyrox/config` sí resuelve desde `app-host` desde
+// TASK-DOCS-0198 — ver `dependencies` en `package.json` de este paquete —
+// pero no expone ninguna de las dos funciones con esa forma).
 //
 // Se resuelve con inyección de dependencia: los dos lectores se reciben
 // como colaboradores opcionales (`ConfigEnvReaders`), con default
@@ -23,7 +24,11 @@
 // `readEnv`/`setEnv`/`logForDebugging` se reimplementan localmente (los dos
 // primeros verbatim de `ccnmt: packages/config/env/utils.ts:198-217`; el
 // tercero simplificado a un colaborador inyectable, ver docstring de
-// `startupProfiler.ts` punto 4 para el mismo patrón).
+// `startupProfiler.ts` punto 4 para el mismo patrón). `readEnv` SÍ resuelve
+// hoy desde `@thyrox/config/env/utils` (ver `main/startup/settings.ts`,
+// que ya lo importa); se mantiene local aquí, junto a `setEnv`, porque
+// `setEnv` no está portado ahí (ver el docstring de ese módulo) y partir
+// el par deja una mitad importada y la otra duplicada sin ganar nada.
 
 export type ConfigEnvReaders = {
   getGlobalConfigEnv?: () => Record<string, string> | undefined

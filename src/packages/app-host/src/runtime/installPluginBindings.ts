@@ -23,10 +23,17 @@
  *     `dxt/helpers.js`, `dxt/zip.js`, `gitFilesystem.js`,
  *     `outputStyles.js`, `plugin/_deps`, `plugin/builtin` ni
  *     `settings` con la forma que aquí se necesita.
+ *   - `@thyrox/command-runtime` SÍ existe y SÍ expone
+ *     `promptShellExecution.js` con el símbolo que este archivo importa
+ *     (`executeShellCommandsInPrompt`) — la cuarta excepción parcial,
+ *     que esta nota no traía. Reapuntado en este pase (TASK-DOCS-0198):
+ *     ver el `require` de `setExecuteShellCommandsInPromptFn` más abajo.
  *
  * `bridge`, `cli`, `ide`, `local-observability`, `mcp-runtime`,
  * `output`, `permission`, `provider`, `shell` y `tool-registry` no
- * existen como paquetes en absoluto.
+ * existen como paquetes en absoluto — salvo `permission` y `shell`, que
+ * sí existen pero no exponen `pathValidation.js`/`process.js` con
+ * `writeToStdout`.
  *
  * Los tres imports propios del paquete —`../bootstrap/state.js`,
  * `../bootstrap/cleanupRegistry.js`, `../bootstrap/cwd.js`— SÍ se
@@ -45,15 +52,18 @@
  * propia: cada uno se porta con el MISMO cuerpo que la fuente (el mismo
  * `require(...)` perezoso hacia el mismo paquete hermano), porque ese
  * cuerpo —qué función busca, con qué firma la llama— ES el contrato que
- * se está adaptando. Ninguna de las 33 rutas de `require`/`import` se
- * tradujo a `@thyrox/...`: se pinnearon literales contra la fuente,
- * mismo criterio que `agent/internal/macroFallback.ts` fija para
+ * se está adaptando. De las 33 rutas de `require`/`import`, UNA se
+ * reapuntó a `@thyrox/...` en este pase (`command-runtime/
+ * promptShellExecution.js`, arriba); las 32 restantes se pinnearon
+ * literales contra la fuente, mismo criterio que
+ * `agent/internal/macroFallback.ts` fija para
  * `@claude-code-how-works/config/env`.
  *
  * El auto-run `installPluginBindings()` al final del módulo (igual que
  * la fuente) agotaría el wiring completo al importar — pero el primer
  * import de valor del archivo (`@claude-code-how-works/config/plugin/_deps`)
- * ya agota la resolución de módulos antes de eso.
+ * ya agota la resolución de módulos antes de eso, así que el reapunte
+ * de arriba NO vuelve importable este archivo por sí solo.
  *
  * Sin test: no hay ninguna combinación de estos 33 destinos que
  * resuelva hoy en este árbol. Mismo estado que
@@ -352,7 +362,7 @@ export function installPluginBindings(): void {
   })
   setExecuteShellCommandsInPromptFn(async (prompt: string, ...rest: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { executeShellCommandsInPrompt } = require('@claude-code-how-works/command-runtime/promptShellExecution.js')
+    const { executeShellCommandsInPrompt } = require('@thyrox/command-runtime/promptShellExecution.js')
     return executeShellCommandsInPrompt(prompt, ...rest)
   })
   setParseFrontmatterFn((...args: unknown[]) => {

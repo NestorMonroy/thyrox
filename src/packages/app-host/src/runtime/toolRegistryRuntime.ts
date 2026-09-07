@@ -76,7 +76,7 @@ import { SendMessageTool } from '@claude-code-how-works/tool-registry/tools/Send
 import { SYNTHETIC_OUTPUT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
 import { TaskStopTool } from '@claude-code-how-works/tool-registry/tools/TaskStopTool/TaskStopTool.js'
 import { ListMcpResourcesTool } from '@claude-code-how-works/tool-registry/tools/ListMcpResourcesTool/ListMcpResourcesTool.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getDenyRuleForTool } from '@claude-code-how-works/permission/permissions'
 
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */

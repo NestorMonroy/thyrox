@@ -92,7 +92,7 @@ import { logForDebugging } from '@claude-code-how-works/local-observability/debu
 import { detectCurrentRepository } from '@claude-code-how-works/storage/detectRepository.js'
 import { logForDiagnosticsNoPII } from '@claude-code-how-works/local-observability/logging'
 import { initJetBrainsDetection } from '@claude-code-how-works/config/env/dynamic'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getPlatform } from '@claude-code-how-works/config/platform'
 import { getCachedPowerShellPath, isPowerShellToolEnabled } from '@claude-code-how-works/shell'
 import { ConfigParseError, errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
@@ -116,7 +116,7 @@ import {
 import { configureGlobalAgents } from '@claude-code-how-works/provider/proxy.js'
 import { isBetaTracingEnabled } from '@claude-code-how-works/local-observability/betaSessionTracing.js'
 import { getTelemetryAttributes } from '@claude-code-how-works/local-observability/telemetry'
-import { setShellIfWindows, findGitBashPath } from '@claude-code-how-works/storage/windowsPaths.js'
+import { setShellIfWindows, findGitBashPath } from '@thyrox/storage/windowsPaths.js'
 import { initSentry } from '@claude-code-how-works/local-observability/sentry.js'
 
 // initialize1PEventLogging se importa dinámicamente para diferir sdk-logs/resources de OpenTelemetry
@@ -309,7 +309,7 @@ export const init = memoize(async (): Promise<void> => {
           '@claude-code-how-works/server/upstreamproxy/upstreamproxy.js'
         )
         const { registerUpstreamProxyEnvFn } = await import(
-          '@claude-code-how-works/shell/subprocessEnv.js'
+          '@thyrox/shell/subprocessEnv.js'
         )
         registerUpstreamProxyEnvFn(getUpstreamProxyEnv)
         await initUpstreamProxy()

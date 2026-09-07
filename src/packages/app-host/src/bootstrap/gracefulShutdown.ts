@@ -67,7 +67,7 @@ type AppState = unknown
 import { runCleanupFunctions } from './cleanupRegistry.js'
 import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
 import { logForDiagnosticsNoPII } from '@claude-code-how-works/local-observability/logging'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getInvokedBinaryName } from '@claude-code-how-works/config'
 import { getCurrentSessionTitle, sessionIdExists } from '@claude-code-how-works/storage/sessionStorage.js'
 import { sleep } from '@claude-code-how-works/config/sleep'
