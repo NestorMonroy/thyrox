@@ -44,19 +44,29 @@ def check(label: str, expected, obtained) -> None:
         FAILED += 1
 
 
-print("== 1. la evidencia se reconoce por el par `.claude/eventos` ==")
+# El par se COMPONE de los dos segmentos declarados, no se cablea: el default
+# de evidencia paso de `eventos` a `workbench` el 2026-09-07, y un caso con la
+# cadena escrita a mano habria medido el nombre de ayer. Ver
+# `analisis-hogar-del-workbench-en-thyrox.rst`.
+PAR = f"{paths.state_dir()}/{paths.evidence_dir()}"
+print(f"== 1. la evidencia se reconoce por el par `{PAR}` ==")
 check("una pieza de la evidencia propia", True,
-      paths.is_evidence_path(".claude/eventos/medir-algo-20260906T000000/verde.txt"))
+      paths.is_evidence_path(f"{PAR}/medir-algo-20260906T000000/verde.txt"))
 check("el directorio de evidencia a secas", True,
-      paths.is_evidence_path(".claude/eventos"))
+      paths.is_evidence_path(PAR))
 check("la de un consumidor, con su prefijo de clon", True,
-      paths.is_evidence_path("kaupamex-docs/.claude/eventos/censo/gen.py"))
+      paths.is_evidence_path(f"kaupamex-docs/{PAR}/censo/gen.py"))
 
 print("== 2. CONTROL que discrimina: el nombre SUELTO no basta ==")
 # Sin este caso, un predicado `'eventos' in parts` pasaria el bloque 1 igual y
 # apagaria los gates sobre un `eventos/` de producto.
 check("`src/eventos/` es producto, no evidencia", False,
       paths.is_evidence_path("src/eventos/loader.py"))
+# Y el nombre HEREDADO ya no es el vivo: con el default en `workbench`, un
+# `.claude/eventos` suelto NO es evidencia de este arbol. Sin este caso, el
+# bloque pasaria igual con un predicado que siguiera cableando `eventos`.
+check("`.claude/eventos` ya no es el par vivo", False,
+      paths.is_evidence_path(".claude/eventos/x/y.txt"))
 check("`src/workbench/` tampoco lo es", False,
       paths.is_evidence_path("src/workbench/paths.py"))
 
@@ -105,7 +115,7 @@ with tempfile.TemporaryDirectory() as empty:
 
 print("== 6. la union es lo que consume un gate ==")
 check("evidencia entra por la primera mitad", True,
-      paths.is_measurement_artifact(".claude/eventos/x/gen.py"))
+      paths.is_measurement_artifact(f"{PAR}/x/gen.py"))
 with tempfile.TemporaryDirectory() as home:
     os.environ[paths.WORKBENCH_DIR_VAR] = home
     try:

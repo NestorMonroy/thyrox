@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Gate — THYROX no emite evidencia dentro de su propio arbol.
+"""Gate — la convencion de docs no se filtra al arbol del proveedor.
+
+THYROX **si** tiene banco propio: `analisis-hogar-del-workbench-en-thyrox.rst`
+situa su pieza en `thyrox/.claude/workbench/`. Lo que este gate mide es el
+nombre HEREDADO —`.claude/eventos`, el de docs— apareciendo aqui, que es lo que
+los once bancos del episodio eran: trabajo de consumidores aparcado en el
+proveedor con la convencion del consumidor.
 
 `workbench/paths.py` ya lo declara: *«un banco vive en el arbol del CONSUMIDOR
 y lo producen sus sesiones»*, y por eso `workbench_dir()` REHUSA en vez de
@@ -66,14 +72,31 @@ def banks(root: pathlib.Path) -> list[str]:
     return sorted(p.name for p in home.iterdir() if p.is_dir())
 
 
-def evidence_home(root: pathlib.Path) -> pathlib.Path:
-    """El par ``<estado>/<evidencia>`` del arbol dado, resuelto CON ese arbol.
+#: El nombre HISTORICO del banco, que es el de docs. THYROX tiene banco propio
+#: —`analisis-hogar-del-workbench-en-thyrox.rst` situa su pieza en
+#: `thyrox/.claude/workbench/`— asi que el gate ya NO puede medir su hogar
+#: derivado: forbidiria lo que la decision autoriza.
+#:
+#: Lo que sigue siendo defecto, y es lo que los once bancos eran, es la
+#: convencion de docs filtrandose al proveedor: piezas de trabajo de un
+#: CONSUMIDOR aparcadas aqui bajo `eventos`, el nombre que api ya midio como
+#: colisionado y que este arbol no usa.
+LEGACY_EVIDENCE_DIR = "eventos"
 
-    ``root`` viaja como ``start`` a los dos resolutores: el ``.env`` que gobierna
-    los nombres de los segmentos es el del arbol que se mide, no el del cwd
-    desde el que se invoca el gate.
+
+def evidence_home(root: pathlib.Path) -> pathlib.Path:
+    """El hogar con el nombre HEREDADO, ``<estado>/eventos``, no el derivado.
+
+    ``root`` viaja como ``start`` a ``state_dir``: el ``.env`` que gobierna el
+    segmento es el del arbol que se mide, no el del cwd desde el que se invoca.
+
+    Media ``<estado>/<evidencia>`` hasta el 2026-09-07, y con el default en
+    `workbench` eso paso a ser el hogar propio de THYROX. Un gate que prohibe
+    el hogar que la decision del ejecutor concede no mide un defecto: mide la
+    decision. `evidence_dir()` sigue siendo el resolutor del hogar VIVO; aqui
+    se nombra el heredado a proposito.
     """
-    return root / state_dir(root) / evidence_dir(root)
+    return root / state_dir(root) / LEGACY_EVIDENCE_DIR
 
 
 def main(argv: list[str]) -> int:

@@ -67,7 +67,7 @@ import { consumerRoot, envValue } from '../paths/reach.ts'
 export const STATE_DIR_VAR = 'THYROX_STATE_DIR'
 export const STATE_DIR_DEFAULT = '.claude'
 export const EVIDENCE_DIR_VAR = 'THYROX_EVIDENCE_DIR'
-export const EVIDENCE_DIR_DEFAULT = 'eventos'
+export const EVIDENCE_DIR_DEFAULT = 'workbench'
 
 /** El segmento de estado declarado, o su default. Se resuelve AL LLAMAR. */
 export function stateDir(start?: string): string {

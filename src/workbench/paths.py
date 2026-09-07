@@ -81,8 +81,22 @@ STATE_DIR_DEFAULT = ".claude"
 #: Entrada 1 del directorio de evidencia — el valor.
 EVIDENCE_DIR_VAR = "THYROX_EVIDENCE_DIR"
 
-#: Su default, por el mismo criterio que ``STATE_DIR_DEFAULT``.
-EVIDENCE_DIR_DEFAULT = "eventos"
+#: Su default es ``workbench``, NO ``eventos``.
+#:
+#: `eventos` es el nombre historico de docs, y se queda ahi por declaracion:
+#: tiene 274 piezas y sus rutas citadas. Heredarlo como default lo propagaria a
+#: todo arbol nuevo, y con el la colision que api ya midio y resolvio — en su
+#: arbol «evento» nombra ademas los 31 del cliente y los `tengu_*` de
+#: telemetria, con tres directorios encarnandola (`hooks-claude-code-…` es *el
+#: evento que genera el documento sobre los eventos*).
+#:
+#: `workbench` nombra lo que la cosa es: el banco donde se construye el
+#: instrumento, se usa, y el producto sale hacia su destino mientras la
+#: herramienta se queda. Elegido tras medir colision contra el ejecutable,
+#: Django, DRF y `src/`. Ver `api: scripts/workbench/README.md` y
+#: `docs: …/analisis-hogar-del-workbench-en-thyrox.rst`, cuya tabla de
+#: reparto situa la pieza de THYROX en `thyrox/.claude/workbench/`.
+EVIDENCE_DIR_DEFAULT = "workbench"
 
 #: Entrada 1 — el valor: el hogar del banco, declarado directamente.
 #:
