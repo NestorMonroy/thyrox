@@ -30,6 +30,7 @@ import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { execFile as execFileCb } from 'node:child_process'
 import { promisify } from 'node:util'
+import type { NonNullableUsage } from '@claude-code-how-works/headless-sdk/sdkUtilityTypes.js'
 
 /**
  * `getOauthConfig` — de `@claude-code-how-works/provider/oauthConstants`.
@@ -1156,3 +1157,113 @@ export function getMainLoopModel(): string {
 export function setGetMainLoopModelFn(fn: () => string): void {
   _getMainLoopModel = fn
 }
+
+/**
+ * `PermissionMode` — de `@claude-code-how-works/permission/PermissionMode.js`
+ * (verbatim: `permission/src/PermissionMode.ts:8` re-exporta el alias desde
+ * `./types/permissions.js` → `../permissionTypes.js`). `@thyrox/permission`
+ * aún no porta ese archivo (su `permissions.ts` es porte PARCIAL DECLARADO
+ * enfocado en `getDenyRuleForTool`, y cita `PermissionMode.js` como sibling
+ * no portado). Se declara aquí el tipo estructural — únicamente los seis
+ * modos que `EXTERNAL_PERMISSION_MODES` fija en la fuente
+ * (`permissionTypes.ts:16-22`); el séptimo (`'auto'`) sólo entra bajo
+ * `feature('TRANSCRIPT_CLASSIFIER')`, que este árbol no resuelve — se omite
+ * por lo mismo que `feature()` de este archivo defaultea esa bandera a OFF.
+ */
+export type PermissionMode =
+  | 'acceptEdits'
+  | 'bypassPermissions'
+  | 'default'
+  | 'dontAsk'
+  | 'plan'
+  | 'ask'
+
+/**
+ * `EMPTY_USAGE` — de `@claude-code-how-works/provider/emptyUsage.js`
+ * (verbatim). NO es el mismo símbolo que el `EMPTY_USAGE` ya portado en
+ * `@thyrox/provider: src/internal/legacyRuntimeSupport.ts:528` — son DOS
+ * constantes homónimas de dos archivos-fuente distintos en ccnmt
+ * (`provider/src/emptyUsage.ts` vs `provider/src/claudeLegacyRuntime.ts`,
+ * que declara la suya inline) y DIVERGEN: `service_tier` es `'standard'`
+ * aquí y `null` allá; `inference_geo` es `''` aquí y ausente (opcional)
+ * allá; `iterations`/`speed` sólo están aquí. Reusar la de
+ * `legacyRuntimeSupport.ts` habría sido citar el símbolo equivocado.
+ */
+export const EMPTY_USAGE: Readonly<NonNullableUsage> = {
+  input_tokens: 0,
+  cache_creation_input_tokens: 0,
+  cache_read_input_tokens: 0,
+  output_tokens: 0,
+  server_tool_use: { web_search_requests: 0, web_fetch_requests: 0 },
+  service_tier: 'standard',
+  cache_creation: {
+    ephemeral_1h_input_tokens: 0,
+    ephemeral_5m_input_tokens: 0,
+  },
+  inference_geo: '',
+  iterations: [],
+  speed: 'standard',
+}
+
+/**
+ * `normalizeControlMessageKeys` — de
+ * `@claude-code-how-works/headless-sdk/controlMessageCompat.js` (verbatim,
+ * la fuente no tiene imports). Ya existe idéntica en
+ * `@thyrox/headless-sdk: src/controlMessageCompat.ts` (porte completo,
+ * verificado). Se reimplementa aquí VERBATIM porque el paquete no resuelve
+ * en runtime sin membresía de workspace (medido:
+ * `require.resolve('@thyrox/headless-sdk/controlMessageCompat')` →
+ * `Cannot find module`). Se retira cuando `@thyrox/bridge` sea miembro del
+ * workspace.
+ */
+export function normalizeControlMessageKeys(obj: unknown): unknown {
+  if (obj === null || typeof obj !== 'object') return obj
+  const record = obj as Record<string, unknown>
+  if ('requestId' in record && !('request_id' in record)) {
+    record.request_id = record.requestId
+    delete record.requestId
+  }
+  if (
+    'response' in record &&
+    record.response !== null &&
+    typeof record.response === 'object'
+  ) {
+    const response = record.response as Record<string, unknown>
+    if ('requestId' in response && !('request_id' in response)) {
+      response.request_id = response.requestId
+      delete response.requestId
+    }
+  }
+  return obj
+}
+
+/**
+ * `stripDisplayTagsAllowEmpty` — de
+ * `@claude-code-how-works/output/utils/displayTags.js` (verbatim, la
+ * fuente no tiene imports). Ya existe idéntica en
+ * `@thyrox/output: src/utils/displayTags.ts` (porte completo de las tres
+ * funciones del archivo, verificado). Se reimplementa aquí VERBATIM sólo
+ * la función que `bridgeMessaging.ts` consume (`extractTitleText`) —
+ * `stripDisplayTags`/`stripIdeContextTags` no tienen consumidor en bridge
+ * todavía — porque el paquete no resuelve en runtime sin membresía de
+ * workspace. Se retira cuando `@thyrox/bridge` sea miembro del workspace.
+ */
+const XML_TAG_BLOCK_PATTERN = /<([a-z][\w-]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>\n?/g
+
+export function stripDisplayTagsAllowEmpty(text: string): string {
+  return text.replace(XML_TAG_BLOCK_PATTERN, '').trim()
+}
+
+/**
+ * `BRIDGE_SPINNER_FRAMES` / `BRIDGE_READY_INDICATOR` / `BRIDGE_FAILED_INDICATOR`
+ * — de `@claude-code-how-works/output/constants/figures.js` (verbatim, la
+ * fuente no tiene imports). Ya existen idénticas en
+ * `@thyrox/output: src/constants/figures.ts:50-57` (porte completo de las
+ * 26 constantes del archivo, verificado). Se reimplementan aquí VERBATIM
+ * sólo las tres que `bridgeUI.ts` consume porque el paquete no resuelve en
+ * runtime sin membresía de workspace. Se retiran cuando `@thyrox/bridge`
+ * sea miembro del workspace.
+ */
+export const BRIDGE_SPINNER_FRAMES = ['·|·', '·/·', '·—·', '·\\·']
+export const BRIDGE_READY_INDICATOR = '·✔︎·'
+export const BRIDGE_FAILED_INDICATOR = '×'
