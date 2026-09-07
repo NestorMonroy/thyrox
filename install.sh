@@ -344,6 +344,63 @@ current_value() {
     done < "$env_file"
 }
 
+# --------------------------------------------------------------------------
+# El CONTRATO: qué claves declara thyrox, y cuántas trae ya el consumidor.
+#
+# Tarea #246. El aviso decía «sin declarar» a secas y el resumen «N de M sin
+# declarar». Las dos formas se leen como si faltaran TODAS las claves que
+# `.env.example` declara, cuando este guion escribe UNA: `THYROX_ROOT`. Un
+# consumidor que ya declaraba `THYROX_WORKBENCH_API` aparecía igual de vacío
+# que uno recién clonado, así que el aviso colapsaba dos estados distintos.
+#
+# Las claves NO se enumeran aquí: se leen de `.env.example`, que es donde el
+# contrato vive. Una lista embebida sería la segunda fuente de verdad que
+# `calibration-verified-numbers.md` prohíbe — divergiría del ejemplo y las dos
+# seguirían dando un número.
+# --------------------------------------------------------------------------
+
+CONTRACT_FILE="$ROOT/.env.example"
+
+# Los nombres de clave del contrato, uno por línea. Vacío si no hay ejemplo:
+# quien llama distingue ese caso, aquí no se inventa una lista.
+contract_keys() {
+    [ -f "$CONTRACT_FILE" ] || return 0
+    sed -n 's/^\(THYROX_[A-Z0-9_]*\)=.*/\1/p' "$CONTRACT_FILE" | sort -u
+}
+
+# Cuántas claves del contrato declara ya el archivo del consumidor, sobre el
+# total del contrato. Emite `?` en el numerador cuando el contrato no se pudo
+# leer: un «0 de 0» ahí no distinguiría «no declara nada» de «no pude medir»,
+# que es el sub-patrón D de `metrica-decide-la-conclusion.md`.
+contract_coverage() {
+    local env_file="$1" total declared=0 outside=0 key
+    total="$(contract_keys | grep -c . || true)"
+    if [ "$total" -eq 0 ]; then
+        printf 'contrato no legible (%s)' "$CONTRACT_FILE"
+        return 0
+    fi
+    if [ -f "$env_file" ]; then
+        while IFS= read -r key; do
+            grep -q "^${key}=" "$env_file" && declared=$((declared + 1))
+        done <<EOF
+$(contract_keys)
+EOF
+        # Las que el consumidor declara y el contrato NO nombra literalmente.
+        # No son ruido: ahí cae la FAMILIA POR CLON —`THYROX_WORKBENCH_<CLON>`—,
+        # que se compone en tiempo de ejecución y por eso nunca aparece como
+        # literal en el ejemplo. Contarlas como cero fue el primer resultado de
+        # este contador, y decía «0 de 27» de un árbol que sí declaraba una:
+        # medir el significante y concluir sobre el significado.
+        outside="$(
+            sed -n 's/^\(THYROX_[A-Z0-9_]*\)=.*/\1/p' "$env_file" | sort -u \
+                | comm -23 - <(contract_keys) | grep -c . || true
+        )"
+    fi
+    printf '%d de %d claves del contrato' "$declared" "$total"
+    [ "$outside" -gt 0 ] && printf ' (+%d fuera de él, p. ej. la familia por clon)' "$outside"
+    return 0
+}
+
 # Escribe la declaración preservando todo lo demás. Sustituye la clave si ya
 # estaba —para no dejar dos declaraciones de la misma cosa, que es una
 # ambigüedad que el lector resolvería en silencio— y la añade si no.
@@ -401,9 +458,9 @@ for target in "${TARGETS[@]}"; do
     case "$MODE" in
         check)
             if [ -z "$declared" ]; then
-                warn "$target — sin declarar"
+                warn "$target — sin $ROOT_KEY · ya declara $(contract_coverage "$env_file")"
             else
-                warn "$target — declara otra raíz: $declared"
+                warn "$target — $ROOT_KEY apunta a otra raíz: $declared"
             fi
             ;;
         dry-run)
@@ -444,8 +501,11 @@ if [ "$MODE" = "check" ]; then
         ok "las $(( ${#TARGETS[@]} )) raíces declaran $ROOT_KEY=$ROOT"
         exit 0
     fi
-    printf '%s  %d de %d sin declarar%s\n' "$C_YELLOW" "$PENDING" "${#TARGETS[@]}" "$C_RESET" >&2
-    printf '  corre ./install.sh sin --check para declararlas\n' >&2
+    printf '%s  %d de %d destinos sin %s%s\n' \
+        "$C_YELLOW" "$PENDING" "${#TARGETS[@]}" "$ROOT_KEY" "$C_RESET" >&2
+    printf '  corre ./install.sh sin --check para declararla\n' >&2
+    printf '  este guion escribe ESA clave y ninguna otra: las demás del\n' >&2
+    printf '  contrato son decisión del consumidor — ver %s\n' "$CONTRACT_FILE" >&2
     exit 1
 fi
 

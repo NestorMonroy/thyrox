@@ -164,6 +164,47 @@ THYROX_ROOT="$TREE" /bin/bash "$INSTALL" "$CONSUMER" >/dev/null 2>&1
 OUT="$(THYROX_ROOT="$TREE" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"; RC=$?
 check "--check ya instalado -> exit 0" "0" "$RC"
 
+printf '\n== install.sh — --check dice QUE clave mide (tarea #246) ==\n'
+
+# El aviso decia «sin declarar» a secas, y el resumen «5 de 5 sin declarar».
+# Las dos formas se leen como si faltaran las 27 claves que `.env.example`
+# declara, cuando install.sh escribe UNA: THYROX_ROOT. Un consumidor que ya
+# declaraba `THYROX_WORKBENCH_API` aparecia igual de vacio que uno sin nada.
+CONSUMER="$(fake_consumer check-nombra-clave)"
+OUT="$(THYROX_ROOT="$TREE" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"
+check_contains "el aviso nombra la clave que mide" "THYROX_ROOT" "$OUT"
+check_contains "el resumen tambien la nombra" "sin THYROX_ROOT" "$OUT"
+
+# Y distingue «no encuentra thyrox» de «no declaro nada»: el consumidor que ya
+# declara otra clave del contrato lo ve reflejado. Sin esta mitad, el aviso
+# sigue colapsando dos estados distintos en la misma linea.
+CONSUMER="$(fake_consumer check-con-otra-clave)"
+printf 'THYROX_WORKBENCH_DIR=/un/hogar\n' > "$CONSUMER/.env"
+printf 'THYROX_ROOT=\nTHYROX_WORKBENCH_DIR=\nTHYROX_EVIDENCE_DIR=\n' > "$TREE/.env.example"
+OUT="$(THYROX_ROOT="$TREE" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"
+check_contains "reporta las claves del contrato que el consumidor ya declara" \
+    "1 de 3" "$OUT"
+
+# La FAMILIA POR CLON no aparece como literal en el contrato: se compone en
+# tiempo de ejecucion (`THYROX_WORKBENCH_` + el clon). Un contador de igualdad
+# literal la cuenta como cero, y ese fue el primer resultado real: «0 de 27»
+# sobre un arbol que si declaraba una. Medir el significante y concluir sobre
+# el significado.
+CONSUMER="$(fake_consumer check-familia-por-clon)"
+printf 'THYROX_WORKBENCH_API=/un/banco\n' > "$CONSUMER/.env"
+OUT="$(THYROX_ROOT="$TREE" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"
+check_contains "la familia por clon se ve, no se cuenta como cero" \
+    "+1 fuera de él" "$OUT"
+
+# Control de anulacion: sin `.env.example` en el arbol, el contrato NO se puede
+# leer. Publicar «0 de 0» ahi seria el verde falso — no distinguiria «no
+# declara nada» de «no pude medir el contrato».
+TREE_SIN="$(fake_tree sin-contrato)"
+CONSUMER="$(fake_consumer check-sin-contrato)"
+OUT="$(THYROX_ROOT="$TREE_SIN" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"
+check_contains "sin .env.example dice que no pudo leer el contrato" \
+    "contrato no legible" "$OUT"
+
 printf '\n== install.sh — el parametro del consumidor no viaja al mecanismo ==\n'
 
 # El nombre de un repo consumidor NO se codifica en install.sh (DEC-04 y la
