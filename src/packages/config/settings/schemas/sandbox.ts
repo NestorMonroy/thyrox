@@ -1,0 +1,102 @@
+/**
+ * Puerto de `ccnmt: packages/config/settings/schemas/sandbox.ts` (100
+ * líneas fuente). Reimplementación fiel VERBATIM.
+ *
+ * Sub-esquema de settings de sandbox, propiedad de config.
+ */
+import { z } from 'zod/v4'
+import { lazySchema } from '../../internal/lazySchema.ts'
+
+const SandboxNetworkConfigSchema = lazySchema(() =>
+  z
+    .object({
+      allowedDomains: z.array(z.string()).optional(),
+      allowManagedDomainsOnly: z
+        .boolean()
+        .optional()
+        .describe(
+          'When true (and set in managed settings), only allowedDomains and WebFetch(domain:...) allow rules from managed settings are respected. ' +
+            'User, project, local, and flag settings domains are ignored. Denied domains are still respected from all sources.',
+        ),
+      allowUnixSockets: z
+        .array(z.string())
+        .optional()
+        .describe(
+          'macOS only: Unix socket paths to allow. Ignored on Linux (seccomp cannot filter by path).',
+        ),
+      allowAllUnixSockets: z
+        .boolean()
+        .optional()
+        .describe(
+          'If true, allow all Unix sockets (disables blocking on both platforms).',
+        ),
+      allowLocalBinding: z.boolean().optional(),
+      httpProxyPort: z.number().optional(),
+      socksProxyPort: z.number().optional(),
+    })
+    .optional(),
+)
+
+const SandboxFilesystemConfigSchema = lazySchema(() =>
+  z
+    .object({
+      allowWrite: z.array(z.string()).optional().describe('Additional paths to allow writing within the sandbox.'),
+      denyWrite: z.array(z.string()).optional().describe('Additional paths to deny writing within the sandbox.'),
+      denyRead: z.array(z.string()).optional().describe('Additional paths to deny reading within the sandbox.'),
+      allowRead: z.array(z.string()).optional().describe('Paths to re-allow reading within denyRead regions.'),
+      allowManagedReadPathsOnly: z.boolean().optional().describe('When true (set in managed settings), only allowRead paths from policySettings are used.'),
+    })
+    .optional(),
+)
+
+export const SandboxSettingsSchema = lazySchema(() =>
+  z
+    .object({
+      enabled: z.boolean().optional(),
+      failIfUnavailable: z
+        .boolean()
+        .optional()
+        .describe(
+          'Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start. ' +
+            'When false (default), a warning is shown and commands run unsandboxed.',
+        ),
+      autoAllowBashIfSandboxed: z.boolean().optional(),
+      allowUnsandboxedCommands: z
+        .boolean()
+        .optional()
+        .describe('Allow commands to run outside the sandbox via the dangerouslyDisableSandbox parameter. Default: true.'),
+      network: SandboxNetworkConfigSchema(),
+      filesystem: SandboxFilesystemConfigSchema(),
+      ignoreViolations: z.record(z.string(), z.array(z.string())).optional(),
+      enableWeakerNestedSandbox: z.boolean().optional(),
+      enableWeakerNetworkIsolation: z.boolean().optional().describe('macOS only: Allow access to com.apple.trustd.agent in the sandbox.'),
+      excludedCommands: z.array(z.string()).optional(),
+      ripgrep: z
+        .object({
+          command: z.string(),
+          args: z.array(z.string()).optional(),
+        })
+        .optional()
+        .describe('Custom ripgrep configuration for bundled ripgrep support'),
+      // Puerto de ant v2.1.133 `aTH` (2492.js) — overrides explícitos para
+      // los binarios helper del sandbox. Las capas de settings
+      // (userSettings, projectSettings, localSettings, flagSettings,
+      // policySettings) se recorren de arriba abajo por
+      // `getSandboxBinaryPath` y gana la primera no vacía. Admins de
+      // empresa pueden fijar un bwrap/socat vendorizado sin exigir que el
+      // usuario mute $PATH.
+      bwrapPath: z
+        .string()
+        .optional()
+        .describe(
+          'Explicit path to the bubblewrap binary. When set, overrides $PATH-based resolution. Layered across settings sources: first non-empty wins.',
+        ),
+      socatPath: z
+        .string()
+        .optional()
+        .describe(
+          'Explicit path to socat (used inside the sandbox for relays). When set, overrides $PATH-based resolution. Layered across settings sources: first non-empty wins.',
+        ),
+    })
+    .passthrough(),
+)

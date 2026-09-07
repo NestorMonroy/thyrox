@@ -225,6 +225,56 @@ export function requireProviderProxy(): {
   return require('@thyrox/provider/proxy.js')
 }
 
+/**
+ * `fileSuffixForOauthConfig` — existe, verificado:
+ * `@thyrox/provider/src/oauthConstants.ts` la declara completa. La necesita
+ * `env/paths.ts` (`getGlobalClaudeFile`), del mismo pase que añade este
+ * envoltorio.
+ */
+export function requireProviderOauthConstants(): {
+  fileSuffixForOauthConfig: () => string
+} {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('@thyrox/provider/oauthConstants.js')
+}
+
+// ---------------------------------------------------------------------------
+// @thyrox/shell — existe: findExecutable, which, whichSync
+// ---------------------------------------------------------------------------
+
+/** `findExecutable` — `@thyrox/shell/src/findExecutable.ts`, porte completo
+ * (un solo símbolo exportado, verificado). La necesita `env/paths.ts`. */
+export function requireShellFindExecutable(): {
+  findExecutable: (exe: string, args: string[]) => { cmd: string; args: string[] }
+} {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('@thyrox/shell/findExecutable.js')
+}
+
+/** `which` — `@thyrox/shell/src/which.ts`. La necesita `env/paths.ts`. */
+export function requireShellWhich(): {
+  which: (command: string) => Promise<string | null>
+} {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('@thyrox/shell/which.js')
+}
+
+// ---------------------------------------------------------------------------
+// @thyrox/local-observability (raíz) — existe: logEvent. Distinto de los
+// wrappers de arriba, que apuntan a SUBPATHS (logging.js, debug.js, …); éste
+// apunta al paquete completo (`.` en su `exports`), que `policyHelper.ts`
+// necesita para `logEvent`. La firma completa vive en
+// `local-observability/src/core.ts`; aquí se declara sólo la forma que
+// `policyHelper.ts` consume.
+// ---------------------------------------------------------------------------
+
+export function requireLocalObservabilityRoot(): {
+  logEvent: (name: string, metadata?: Record<string, unknown>) => void
+} {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('@thyrox/local-observability')
+}
+
 // ---------------------------------------------------------------------------
 // Sustitutos locales de dependencias externas de npm AUSENTES del árbol
 // (no son paquetes `@thyrox/*` del monorepo — son dependencias reales que

@@ -1,0 +1,137 @@
+/**
+ * Puerto de `ccnmt: packages/config/settings/schemas/hooks.ts` (136 líneas
+ * fuente). Reimplementación fiel VERBATIM.
+ *
+ * `HOOK_EVENTS` y `SHELL_TYPES` se inlinean aquí (igual que la fuente)
+ * porque config no puede depender del SDK de agente ni del proveedor de
+ * shell.
+ */
+import { z } from 'zod/v4'
+import { lazySchema } from '../../internal/lazySchema.ts'
+
+// Inlineado — lista canónica de eventos de hook.
+const HOOK_EVENTS = [
+  'PreToolUse',
+  'PostToolUse',
+  'PostToolUseFailure',
+  'PostToolBatch',
+  'Notification',
+  'UserPromptSubmit',
+  'UserPromptExpansion',
+  'SessionStart',
+  'SessionEnd',
+  'Stop',
+  'StopFailure',
+  'SubagentStart',
+  'SubagentStop',
+  'PreCompact',
+  'PostCompact',
+  'PermissionRequest',
+  'PermissionDenied',
+  'Setup',
+  'TeammateIdle',
+  'TaskCreated',
+  'TaskCompleted',
+  'Elicitation',
+  'ElicitationResult',
+  'ConfigChange',
+  'WorktreeCreate',
+  'WorktreeRemove',
+  'InstructionsLoaded',
+  'CwdChanged',
+  'FileChanged',
+] as const
+
+type HookEvent = (typeof HOOK_EVENTS)[number]
+
+// Inlineado — proveedor de shell.
+const SHELL_TYPES = ['bash', 'powershell'] as const
+
+const IfConditionSchema = lazySchema(() =>
+  z
+    .string()
+    .optional()
+    .describe(
+      'Permission rule syntax to filter when this hook runs (e.g., "Bash(git *)"). ' +
+        'Only runs if the tool call matches the pattern.',
+    ),
+)
+
+function buildHookSchemas() {
+  const BashCommandHookSchema = z.object({
+    type: z.literal('command').describe('Shell command hook type'),
+    command: z.string().describe('Shell command to execute'),
+    args: z.array(z.string()).optional().describe('Arguments passed directly without shell parsing'),
+    if: IfConditionSchema(),
+    shell: z.enum(SHELL_TYPES).optional().describe("Shell interpreter. 'bash' uses your $SHELL; 'powershell' uses pwsh. Defaults to bash."),
+    timeout: z.number().positive().optional().describe('Timeout in seconds'),
+    statusMessage: z.string().optional().describe('Custom spinner status message'),
+    once: z.boolean().optional().describe('If true, hook runs once and is removed'),
+    async: z.boolean().optional().describe('If true, hook runs in background'),
+    asyncRewake: z.boolean().optional().describe('If true, hook runs in background and wakes the model on exit code 2'),
+  })
+
+  const PromptHookSchema = z.object({
+    type: z.literal('prompt').describe('LLM prompt hook type'),
+    prompt: z.string().describe('Prompt to evaluate with LLM. Use $ARGUMENTS placeholder for hook input JSON.'),
+    if: IfConditionSchema(),
+    timeout: z.number().positive().optional().describe('Timeout in seconds'),
+    model: z.string().optional().describe('Model to use (e.g., "claude-sonnet-4-6"). Defaults to small fast model.'),
+    statusMessage: z.string().optional().describe('Custom spinner status message'),
+    once: z.boolean().optional().describe('If true, hook runs once and is removed'),
+    // ant v2.1.142 4793.js: PreToolUse / PostToolUse etc. fijan
+    // preventContinuation a true al bloquear por defecto. continueOnBlock=true
+    // invierte eso — el hook reporta bloqueo con una razón, pero se permite
+    // seguir al modelo (útil para verificadores de fallo blando). Stop /
+    // SubagentStop siempre continúan sin importar esto (semántica de loop).
+    continueOnBlock: z.boolean().optional().describe('If true, a blocking outcome surfaces the reason but does not prevent the model from continuing. Ignored for Stop/SubagentStop hooks, which always continue.'),
+  })
+
+  const HttpHookSchema = z.object({
+    type: z.literal('http').describe('HTTP hook type'),
+    url: z.string().url().describe('URL to POST the hook input JSON to'),
+    if: IfConditionSchema(),
+    timeout: z.number().positive().optional().describe('Timeout in seconds'),
+    headers: z.record(z.string(), z.string()).optional().describe('Additional headers (env var interpolation via $VAR_NAME)'),
+    allowedEnvVars: z.array(z.string()).optional().describe('Env vars allowed in header interpolation'),
+    statusMessage: z.string().optional().describe('Custom spinner status message'),
+    once: z.boolean().optional().describe('If true, hook runs once and is removed'),
+  })
+
+  const AgentHookSchema = z.object({
+    type: z.literal('agent').describe('Agentic verifier hook type'),
+    prompt: z.string().describe('Prompt describing what to verify. Use $ARGUMENTS placeholder.'),
+    if: IfConditionSchema(),
+    timeout: z.number().positive().optional().describe('Timeout in seconds (default 60)'),
+    model: z.string().optional().describe('Model to use (e.g., "claude-sonnet-4-6"). Defaults to Haiku.'),
+    statusMessage: z.string().optional().describe('Custom spinner status message'),
+    once: z.boolean().optional().describe('If true, hook runs once and is removed'),
+  })
+
+  return { BashCommandHookSchema, PromptHookSchema, HttpHookSchema, AgentHookSchema }
+}
+
+export const HookCommandSchema = lazySchema(() => {
+  const { BashCommandHookSchema, PromptHookSchema, AgentHookSchema, HttpHookSchema } = buildHookSchemas()
+  return z.discriminatedUnion('type', [BashCommandHookSchema, PromptHookSchema, AgentHookSchema, HttpHookSchema])
+})
+
+export const HookMatcherSchema = lazySchema(() =>
+  z.object({
+    matcher: z.string().optional().describe('String pattern to match (e.g. tool names like "Write")'),
+    hooks: z.array(HookCommandSchema()).describe('List of hooks to execute when the matcher matches'),
+  }),
+)
+
+export const HooksSchema = lazySchema(() =>
+  z.partialRecord(z.enum(HOOK_EVENTS), z.array(HookMatcherSchema())),
+)
+
+// Tipos inferidos.
+export type HookCommand = z.infer<ReturnType<typeof HookCommandSchema>>
+export type BashCommandHook = Extract<HookCommand, { type: 'command' }>
+export type PromptHook = Extract<HookCommand, { type: 'prompt' }>
+export type AgentHook = Extract<HookCommand, { type: 'agent' }>
+export type HttpHook = Extract<HookCommand, { type: 'http' }>
+export type HookMatcher = z.infer<ReturnType<typeof HookMatcherSchema>>
+export type HooksSettings = Partial<Record<HookEvent, HookMatcher[]>>

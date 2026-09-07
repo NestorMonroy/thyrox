@@ -11,6 +11,15 @@ import { SettingsSchema } from './types.ts'
 
 export type SettingsError = { file: string; path: string; message: string }
 
+/**
+ * Settings fusionados más sus errores de validación — la forma exacta que
+ * ya devuelve `settings.ts: getSettingsWithErrors`. Se nombra aquí porque
+ * `allErrors.ts` y `settingsCache.ts` (ambos completados en este mismo pase)
+ * la citan por este nombre, igual que la fuente
+ * (`ccnmt: packages/config/settings/validation.ts:79`).
+ */
+export type SettingsWithErrors = { settings: import('./types.ts').SettingsJson; errors: SettingsError[] }
+
 export function formatZodError(error: ZodError, file: string): SettingsError[] {
   return error.issues.map((i) => ({
     file,

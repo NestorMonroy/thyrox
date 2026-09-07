@@ -187,3 +187,22 @@ export const SettingsSchema = z
 export type Settings = z.infer<typeof SettingsSchema>
 export type Permissions = z.infer<typeof PermissionsSchema>
 export type HookEvent = (typeof HOOK_EVENTS)[number]
+
+/**
+ * Alias de `Settings` bajo el nombre que la fuente usa en el resto del
+ * paquete (`ccnmt: packages/config/settings/types.ts:1153` —
+ * `z.infer<ReturnType<typeof SettingsSchema>>`, porque allí `SettingsSchema`
+ * es un `lazySchema()`; aquí ya es el objeto resuelto, así que el alias basta
+ * sin el `ReturnType`). Completado al portar `settingsCache.ts`,
+ * `mdm/settings.ts` y `remote/syncCacheState.ts`, que citan `SettingsJson`
+ * por ese nombre — mismo criterio que `env/utils.ts` (completar un porte
+ * declarado cuando aparece su consumidor, en vez de fabricarlo en el sitio).
+ */
+export type SettingsJson = Settings
+
+/**
+ * Superficies bloqueables por `strictPluginOnlyCustomization`. Se exporta
+ * para que el runtime helper (`pluginOnlyPolicy.ts`) tenga una sola fuente
+ * de verdad — igual que en la fuente (`ccnmt: …/types.ts:257`).
+ */
+export const CUSTOMIZATION_SURFACES = ['skills', 'agents', 'hooks', 'mcp'] as const
