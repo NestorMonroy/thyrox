@@ -21,6 +21,7 @@ Uso:
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import importlib.util
 import json
 import sys
@@ -93,9 +94,18 @@ def main() -> int:
     ahora = verdicts(detector, tasks_dir)
     baseline_path = Path(args.baseline)
 
+    reparto = Counter(ahora.values())
+    resumen = ' · '.join(f'{k}: {n}' for k, n in sorted(reparto.items()))
+
     if args.write_baseline:
         baseline_path.write_text(json.dumps(ahora, indent=1, sort_keys=True) + '\n')
         print(f'baseline escrito: {len(ahora)} ficha(s) en {baseline_path}')
+        # El reparto se PUBLICA al escribir y al comparar. Sin él, congelar el
+        # baseline dejaría invisible cuántas fichas entran ya marcadas
+        # `re-encuadrar`: el gate mide el CAMBIO de veredicto, y una que nace
+        # marcada no vuelve a avisar de nada. Publicarlo no las audita —eso es
+        # trabajo de `verificar_premisa.py`— pero impide que desaparezcan.
+        print(f'  reparto congelado: {resumen}')
         return 0
 
     if not baseline_path.exists():
@@ -125,7 +135,7 @@ def main() -> int:
         print(f'{len(idas)} cerrada(s) o retirada(s): {", ".join("#" + n for n in sorted(idas, key=int))}')
 
     print(f'{len(cambios)} cambio(s)  (alcance medido: {len(ahora)} ficha(s) abierta(s) '
-          f'contra {len(antes)} del baseline)')
+          f'contra {len(antes)} del baseline; reparto de hoy: {resumen})')
     print('Métrica: veredicto del detector por ficha abierta, comparado con el baseline.')
     print('Ciega a: un cambio que ocurra y se revierta entre dos ejecuciones; a toda '
           'ficha cerrada —su señal es la huella de su propio trabajo—; y al cambio de '
