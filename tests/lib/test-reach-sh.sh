@@ -15,9 +15,9 @@ set -uo pipefail
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RAIZ="$(cd "$AQUI/../.." && pwd)"
 GUION="$RAIZ/src/lib/reach.sh"
-ok=0; ko=0
-ok()  { echo "  OK   $*"; ok=$((ok+1)); }
-bad() { echo "  FAIL $*"; ko=$((ko+1)); }
+source "$RAIZ/src/lib/assert.sh"
+ok()  { thyrox_ok "$*"; }
+bad() { thyrox_fail "$*" || true; }
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 
 echo "=== Caso 1: el guion existe y parsea ==="
@@ -87,5 +87,6 @@ if [[ "$got" == "$TMP/otraforma" ]]; then ok "el marcador se declara, no se cabl
 else bad "THYROX_LOCATOR ignorado: '$got'"; fi
 
 echo ""
-echo "$ok ok, $ko fallos (alcance medido: $((ok+ko)) aserciones sobre $GUION)"
-[[ $ko -eq 0 ]]
+echo "alcance medido: $((THYROX_OK+THYROX_FALLOS)) aserciones sobre $GUION"
+thyrox_summary
+[[ $THYROX_FALLOS -eq 0 ]]

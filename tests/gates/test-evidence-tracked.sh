@@ -38,14 +38,8 @@ source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
 SUT="$RAIZ/src/gates/check_evidence_tracked.py"
 
-PASS=0; FAIL=0
-check() {
-  if [[ "$2" == "$3" ]]; then
-    PASS=$((PASS + 1)); printf '  ok   %s\n' "$1"
-  else
-    FAIL=$((FAIL + 1)); printf '  FALLA %s\n       esperado: %s\n       obtenido: %s\n' "$1" "$3" "$2"
-  fi
-}
+source "$RAIZ/src/lib/assert.sh"
+check() { thyrox_check "$1" "$3" "$2" || true; }
 
 # Monta un árbol sintético con su propio git: el gate opera desde la raíz del
 # repo, así que el árbol real queda intacto.
@@ -142,5 +136,4 @@ check "la salida es un entero pelado" "$OUT" "1"
 rm -rf "$ROOT"
 
 echo
-printf '%s ok · %s falla(s)\n' "$PASS" "$FAIL"
-[[ "$FAIL" -eq 0 ]]
+thyrox_summary
