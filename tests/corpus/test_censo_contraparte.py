@@ -72,7 +72,7 @@ print("== 2. CONTROL POSITIVO REAL: la declaración SIN dos filas vivas ==")
 # línea separados por espacio, así que con un solo huérfano la igualdad de
 # línea completa y la búsqueda DENTRO de la línea dan el mismo verde: ningún
 # caso distinguiría la aserción correcta de la rota. Sub-patrón D.
-with tempfile.TemporaryDirectory(dir=str(reach.thyrox_root() / ".claude" / "eventos")) as tmp:
+with tempfile.TemporaryDirectory(dir=str(reach.scratch_root())) as tmp:
     recortada = Path(tmp) / "dos-huerfanos.txt"
     recortada.write_text("".join(
         l for l in DECL.read_text().splitlines(keepends=True)

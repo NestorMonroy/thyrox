@@ -49,7 +49,7 @@ def escribir(path: Path, *nombres: str) -> None:
             (path / nombre).write_text("x" * 10)
 
 
-with tempfile.TemporaryDirectory(dir=str(reach.thyrox_root() / ".claude" / "eventos")) as tmp:
+with tempfile.TemporaryDirectory(dir=str(reach.scratch_root())) as tmp:
     raiz = Path(tmp) / "corpus-sintetico"
 
     # Tres formas reales, medidas en el arbol vivo:

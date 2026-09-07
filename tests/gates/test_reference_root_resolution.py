@@ -104,11 +104,11 @@ print("== 6. CONTROL DE ANULACIÓN: sin el control positivo, los casos 2-3 caen 
 # cosa. El directorio se crea bajo el banco de evidencia de thyrox, no en /tmp.
 import tempfile  # noqa: E402
 
-with tempfile.TemporaryDirectory(dir=str(reach.thyrox_root() / ".claude" / "eventos")) as vacio:
-    _, sobre_vacio = run(vacio)
+with tempfile.TemporaryDirectory(dir=str(reach.scratch_root())) as empty:
+    _, sobre_vacio = run(empty)
     check("sobre un directorio vacío NO ve la composición contra una raíz",
           False, "compone contra UNA raiz" in sobre_vacio)
-    codigo_vacio, _ = run("--strict", vacio)
+    codigo_vacio, _ = run("--strict", empty)
     check("y --strict ahí sale 0 — el 1 del caso 3 venía del control",
           0, codigo_vacio)
 

@@ -372,6 +372,29 @@ def consumer_root(declared: str | Path | None = None,
     return here
 
 
+#: El subdirectorio de scratch de thyrox, relativo a su raíz. Es el mismo
+#: nombre que el consumidor usa para sus bancos de evidencia, y no es
+#: casualidad: la directiva del ejecutor prohíbe ``/tmp`` para todo trabajo,
+#: así que un temporal de suite también aterriza aquí.
+SCRATCH_DIR = Path(".claude") / "eventos"
+
+
+def scratch_root(start: Path | None = None) -> Path:
+    """La raíz de scratch de thyrox, **creada si no existe**.
+
+    Tres suites pedían este directorio con la ruta escrita a mano y ninguna lo
+    creaba. Funcionó mientras thyrox alojó sus propios bancos de evidencia; al
+    mudarlos al consumidor el directorio desapareció con ellos y las tres
+    rompieron con ``FileNotFoundError`` — un fallo que no distingue «la suite
+    mide mal» de «el directorio no está», que es lo que costó el diagnóstico.
+
+    Crearlo aquí, en un solo sitio, cierra además la segunda fuente de verdad:
+    la ruta estaba repetida en las tres llamadas.
+    """
+    path = thyrox_root(start) / SCRATCH_DIR
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
 def root(repo: str, start: Path | None = None) -> Path:
     """La ruta absoluta de una raíz declarada, por la cadena de precedencia.
 
