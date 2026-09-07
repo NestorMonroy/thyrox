@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Escribe el `.env` de este clon derivando cada valor del árbol real.
+#
+# Es la mitad que faltaba de la DEC-04. Los lectores estaban cableados —12
+# archivos leen `THYROX_ROOT` / `THYROX_ENV_FILE`— y **ningún** escritor
+# declaraba nada, así que la segunda entrada era una rama que nunca se ejecutó y
+# todo consumidor caía al ascenso, que es el último recurso.
+#
+# `.env` no se versiona, y eso es la DEC-04 aplicada a sí misma: su valor es del
+# CONSUMIDOR. Commitear `THYROX_ROOT=/home/user/thyrox` sería el proveedor
+# decidiendo dónde clona cada usuario. El contrato versionado es `.env.example`.
+#
+# Salidas: 0 escrito · 1 ya existía y no se pisa (usar --force) · 2 no pudo
+# derivar la raíz.
+set -euo pipefail
+
+_thyrox_root="${THYROX_ROOT:-}"
+if [[ -z "$_thyrox_root" ]]; then
+    _thyrox_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    while [[ "$_thyrox_root" != "/" && ! -f "$_thyrox_root/${THYROX_LOCATOR:-src/paths/reach.py}" ]]; do
+        _thyrox_root="$(dirname "$_thyrox_root")"
+    done
+fi
+if [[ ! -f "$_thyrox_root/${THYROX_LOCATOR:-src/paths/reach.py}" ]]; then
+    echo "write-env: no se pudo derivar la raíz de thyrox. NO se escribe un" >&2
+    echo "  .env a medias: un valor equivocado es peor que ninguno, porque el" >&2
+    echo "  ascenso deja de correr y nadie ve por qué." >&2
+    exit 2
+fi
+source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+
+FORCE=false; DEST=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --force)  FORCE=true; shift ;;
+        --out)    DEST="$2"; shift 2 ;;
+        -h|--help)
+            sed -n '2,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+            exit 0 ;;
+        -*) echo "write-env: opción desconocida: $1" >&2; exit 2 ;;
+        *)  echo "write-env: argumento inesperado: $1" >&2; exit 2 ;;
+    esac
+done
+
+ROOT="$(thyrox_root)" || exit 2
+TREE="$(thyrox_tree_root)" || TREE=""
+DEST="${DEST:-$ROOT/.env}"
+
+if [[ -f "$DEST" && "$FORCE" != true ]]; then
+    echo "write-env: $DEST ya existe y NO se pisa — puede llevar valores que" >&2
+    echo "  este clon eligió a mano. Pasar --force para reescribirlo." >&2
+    exit 1
+fi
+
+{
+    echo "# Generado por src/session/write-env.sh — $(date -u +%Y-%m-%dT%H:%M:%S)"
+    echo "# El contrato y el significado de cada clave: .env.example"
+    echo "THYROX_ROOT=$ROOT"
+    [[ -n "$TREE" ]] && echo "THYROX_REACH_ROOT=$TREE"
+    echo "THYROX_LOCATOR=${THYROX_LOCATOR:-src/paths/reach.py}"
+    echo "THYROX_LIB_REACH=${THYROX_LIB_REACH:-src/lib/reach.sh}"
+} > "$DEST"
+
+echo "write-env: escrito $DEST ($(grep -c '^[A-Z]' "$DEST") clave(s) declarada(s))"
