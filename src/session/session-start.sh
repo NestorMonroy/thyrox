@@ -124,3 +124,14 @@ fi
 echo ""
 echo "===================================================="
 echo ""
+
+# --- reconciliar los archivos sueltos de ~/.claude ---------------------------
+# El instalador copia CLASES (directorios) y los archivos de la raíz de
+# `~/.claude/` no caen en ninguna. Los entrega el harness, así que no se copian:
+# se parchean, de forma idempotente y rehusando ante una forma desconocida. Sin
+# esto, un arreglo hecho en sitio muere con el contenedor y nadie que clone
+# thyrox lo recibe — que es el defecto que TASK-DOCS-0422 registra.
+_reconcile="${PROJECT_ROOT}/src/session/reconcile_user_hooks.py"
+if [ -f "$_reconcile" ]; then
+    python3 "$_reconcile" 2>&1 | sed 's/^/  [hooks] /'
+fi
