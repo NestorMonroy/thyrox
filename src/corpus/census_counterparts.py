@@ -46,8 +46,8 @@ from paths.reach import (  # noqa: E402
 # LAS DOS ENTRADAS, con el nombre de cada una — no son la misma cosa mirada dos
 # veces, son dos VÍAS de declaración de un dato único:
 #
-#     CONTRAPARTE_DECLARATION_VAR       <- el VALOR: la ruta del archivo
-#     CONTRAPARTE_DECLARATION_FILE_VAR  <- la RUTA DEL ARCHIVO que la declara
+#     COUNTERPART_DECLARATION_VAR       <- el VALOR: la ruta del archivo
+#     COUNTERPART_DECLARATION_FILE_VAR  <- la RUTA DEL ARCHIVO que la declara
 #
 # `env_value` las consulta en ese orden: el proceso primero, porque quien
 # exporta para UNA invocación corrige a propósito lo que el archivo dice para
@@ -57,7 +57,7 @@ from paths.reach import (  # noqa: E402
 # aquéllos resuelven artefactos DE thyrox, sobre cuyo árbol sí decide. Un
 # default aquí decidiría por el consumidor dónde vive su declaración, que es
 # exactamente la decisión que la directiva retira al emisor.
-COUNTERPART_DECLARATION_VAR = "THYROX_CONTRAPARTE_DECLARATION"
+COUNTERPART_DECLARATION_VAR = "THYROX_COUNTERPART_DECLARATION"
 COUNTERPART_DECLARATION_FILE_VAR = ENV_FILE_VAR
 
 

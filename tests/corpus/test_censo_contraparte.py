@@ -117,7 +117,7 @@ print("== 6. las dos entradas del hogar de la declaración (DEC-04) ==")
 # Sin `--declaracion` la ruta sale de la CONSTANTE, no de un archivo hermano.
 # La versión anterior la componía con `__file__.with_name` y por eso murió al
 # mudarse: el mecanismo llevaba dentro un parámetro del consumidor.
-check("nombra la entrada del VALOR", "THYROX_CONTRAPARTE_DECLARATION",
+check("nombra la entrada del VALOR", "THYROX_COUNTERPART_DECLARATION",
       census_counterparts.COUNTERPART_DECLARATION_VAR)
 check("y la entrada de la RUTA del archivo que la declara", "THYROX_ENV_FILE",
       census_counterparts.COUNTERPART_DECLARATION_FILE_VAR)
