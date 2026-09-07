@@ -515,8 +515,26 @@ def _retention_level(transcript: Path, status: str) -> int:
     la regla: promover exige verificación independiente contra el repo, y un
     guion que lee el transcript del propio agente no es independiente de él —
     mediría al agente con su propio testimonio.
+
+    Y hay un tercer desenlace, que es **no escribir ninguno**. Un estado no
+    terminal —``running``— no dice que el agente entregara ni que muriera:
+    dice que todavía no se sabe. ``NULL`` es el valor de eso, y el store ya lo
+    distingue del 4 con el mismo criterio que ``usage_source`` separa «nadie
+    ha pasado todavía» de «nadie podrá ya».
+
+    Origen del defecto (:ref:`h-docs-1146`): esto era
+    ``3 if status == "completed" else 4``, así que un agente vivo —cuyo
+    ``status`` ``_verdict`` protege devolviendo ``("running", None)``, y cuyo
+    docstring llama a eso «lo honesto»— recibía un 4 en la columna de al lado.
+    Medido el 2026-09-07 sobre el store del consumidor: 2 filas ``running``
+    con nivel 4 y 2 del mismo pase, también ``running``, con ``NULL``. La
+    misma ejecución escribió dos respuestas para un solo estado.
     """
-    return 3 if status == "completed" else 4
+    if status == "completed":
+        return 3
+    if status == "failed":
+        return 4
+    return None
 
 
 #: Las cuatro columnas que forman el bloque de uso. Se nombran una sola vez
@@ -648,7 +666,13 @@ def _cierre(transcript: Path, agent_id: str, status: str) -> list:
     ):
         if tele.get(key) is not None:
             cmd += [flag, str(tele[key])]
-    cmd += ["--retention-level", str(_retention_level(transcript, status))]
+    # El nivel va sólo si hay uno que afirmar. Un `running` no lo tiene, y
+    # emitirlo como 4 sería declarar muerto a quien sigue escribiendo — el
+    # mismo criterio condicional que la línea de `--outcome-source` de abajo
+    # ya aplicaba a la procedencia (:ref:`h-docs-1146`).
+    nivel = _retention_level(transcript, status)
+    if nivel is not None:
+        cmd += ["--retention-level", str(nivel)]
     # Qué instrumento decidió ese nivel (#653). Va SIEMPRE que haya veredicto:
     # el nivel sin su procedencia no se puede auditar, y auditarlo es el único
     # modo de saber cuántos «murió sin entregar» eran en realidad «no se supo».
