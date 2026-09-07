@@ -119,15 +119,45 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "paths"))
 import reach  # noqa: E402
 
-#: Las cinco capas del multi-repo, mas el marcador de «sin señal». Es la misma
-#: enumeracion que ``agent_store.SUBMODULES``; se repite aqui porque este
-#: modulo no debe depender del store para acuñar (el mapa tiene que poder
-#: reconstruirse con el JSON y nada mas).
-LAYERS = ("api", "db", "docs", "server", "ui")
+#: Los REPOS del multi-repo donde un trabajo puede aterrizar.
+#:
+#: EL EJE ES EL REPO, NO LA CAPA DEL PRODUCTO — decidido el 2026-09-07, y es
+#: un cambio de significado, no una entrada mas. Los dos ejes coincidian
+#: mientras los cinco repos eran las cinco capas; con ``thyrox`` dejan de
+#: coincidir, porque es un repo y **no** es una capa del producto: es su
+#: PROVEEDOR de metodologia, y los cinco ``kaupamex-*`` son sus consumidores.
+#: Es lo mismo que el comentario de la clave ``submodulos:`` en ``CLAUDE.md``
+#: ya declara un nivel mas arriba.
+#:
+#: Lo que gana el eje del repo: se decide **sin juicio**. El repo del commit lo
+#: dice, mientras que «¿esto es capa docs?» exige leer el sujeto — medido al
+#: decidirlo, un clasificador lexico sobre 477 sujetos se quedo ciego en el
+#: 54 %, y de los que si clasifico, el trabajo de proveedor superaba 5:1 al de
+#: arbol documental DENTRO de la etiqueta ``DOCS``.
+LAYERS = ("api", "db", "docs", "server", "thyrox", "ui")
 
-#: La capa de una tarea cuya señal el store no pudo derivar. No es una sexta
-#: capa del multi-repo: es la declaracion de que no se sabe, que es distinto de
-#: adivinar una. Se congela en el id igual que las otras.
+#: El trabajo que CRUZA repos — no el que no se supo clasificar.
+#:
+#: Nacio como «sin señal», y con el eje en la capa del producto eso lo
+#: convirtio en desague: medido el 2026-09-07, **632 de 1565** citas acuñadas
+#: (el 40 %) llevaban ``GEN``, mas que cualquier repo. Un cubo de descarte que
+#: resulta ser el mayor del esquema no es una categoria, es la ausencia de una.
+#:
+#: REDEFINIDO el 2026-09-07 por decision del ejecutor: ``GEN`` nombra el
+#: trabajo que **CRUZA repos**, que en un multi-repo es una categoria real y
+#: frecuente — un porte que toca thyrox y su consumidor, un barrido de los
+#: cinco, una regla que se replica.
+#:
+#: *Ciega a:* la diferencia entre «cruza» y «no se pudo derivar». Distinguirlas
+#: exige el repo del commit, que se conoce DESPUES de acuñar, asi que hoy las
+#: dos aterrizan aqui. La ceguera se declara en vez de disimularse; separarlas
+#: pide una columna de procedencia —``layer_source``, hermana de
+#: ``usage_source`` y ``outcome_source``— que guarde de donde salio la capa y
+#: no solo cual es. Sin ella, un ``GEN`` no distingue las dos, que es el
+#: sub-patron D aplicado a la propia etiqueta.
+#:
+#: Las 632 ya acuñadas NO se re-etiquetan: reasignar una cita ya publicada es
+#: el deslizamiento de sujeto que ``merge_stores.citation_is_stable`` rehusa.
 UNKNOWN_LAYER = "gen"
 
 #: Separador de la llave natural. NUL, no espacio ni guion: un ``session_id``
