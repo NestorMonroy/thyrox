@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "El host de la sesion interactiva: el grafo de runtime handles, el ciclo de instalacion de bindings y los selectores de AppState. Adaptacion de @claude-code-how-works/app-host. Depende de @thyrox/command-runtime, @thyrox/config, @thyrox/shell y @thyrox/storage para los especificadores de @claude-code-how-works/* que ya resuelven contra un hermano portado (TASK-DOCS-0198).",
+  "description": "El host de la sesion interactiva: el grafo de runtime handles, el ciclo de instalacion de bindings y los selectores de AppState. Adaptacion de @claude-code-how-works/app-host. Depende de @thyrox/command-runtime, @thyrox/config, @thyrox/shell y @thyrox/storage para los especificadores de @claude-code-how-works/* que ya resuelven contra un hermano portado (TASK-DOCS-0198). 55 de 60 modulos portados (medido: .ts + .tsx en ccnmt, menos tests). Este pase cierra state/selectors.ts (reimplementado contra @thyrox/swarm, que ya exporta InProcessTeammateTaskState/isInProcessTeammateTask \u2014 v\u00eda un sustituto local porque swarm no est\u00e1 declarado como dependencia de este paquete, ver src/internal/pendingCrossPackageDeps.ts), context/fpsMetrics.tsx, context/mailbox.tsx, context/notifications.tsx (las tres, capa 0 o con imports type-only hacia @anthropic/ink que se borran al transpilar), context/stats.tsx (persistencia best-effort v\u00eda el mismo sustituto local) y launchRepl.tsx (capa 1 tramo B: el m\u00f3dulo carga \u2014 los tipos de @anthropic/ink y repl son type-only \u2014 pero sus dos dynamic import() a @claude-code-how-works/repl/* quedan literales, sin stub, porque repl no existe en este \u00e1rbol). Los 5 restantes siguen BLOQUEADOS: commands/initCommand.ts y runtime/runtimeHandles.ts (repl + tool-registry, ninguno existe en este \u00e1rbol), runtime/commandRegistryRuntime.ts (repl + swarm/bridge/cli/provider, ~90 comandos), state/AppStateCompat.ts (tool-registry + repl en el tipo AppState \u2014 mismo hallazgo que state/AppStateStore.ts y runtime/appStateCompatShim.ts ya documentan) y context/QueuedMessageContext.tsx (@anthropic/ink como import de VALOR, no type-only \u2014 vendorizado, no publicado, instalarlo es decisi\u00f3n del ejecutor).",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
@@ -33,6 +33,12 @@
     "./state/taskSelectors.js": "./src/state/taskSelectors.ts",
     "./state/permissionSelectors.js": "./src/state/permissionSelectors.ts",
     "./state/mcpSelectors.js": "./src/state/mcpSelectors.ts",
+    "./state/selectors.js": "./src/state/selectors.ts",
+    "./context/fpsMetrics.js": "./src/context/fpsMetrics.tsx",
+    "./context/mailbox.js": "./src/context/mailbox.tsx",
+    "./context/notifications.js": "./src/context/notifications.tsx",
+    "./context/stats.js": "./src/context/stats.tsx",
+    "./launchRepl.js": "./src/launchRepl.tsx",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
