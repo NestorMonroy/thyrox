@@ -22,7 +22,7 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  agentsDir, AGENTS_DIR_VAR, cloneName, cloneNames, envNames, envValue, root, roots,
+  agentsDir, AGENTS_DIR_VAR, cloneName, cloneNames, ENV_FILE_VAR, envNames, envValue, root, roots,
   CONSUMER_MARKER, CONSUMER_ROOT_VAR, consumerRoot,
   THYROX_ROOT_VAR, thyroxRoot, treeRoot,
 } from '../../src/paths/reach.ts'
@@ -146,6 +146,16 @@ describe('el tramo del árbol de clones — completa el porte parcial', () => {
   })
 
   test('treeRoot: gana la primera grafía declarada', () => {
+    // Sella el `.env`: es el ÚNICO test de `treeRoot` que invoca sin `start`,
+    // así que su ascenso alcanza el `.env` de la raíz del repo — que
+    // `src/session/write-env.sh` genera declarando `THYROX_REACH_ROOT`. Sin el
+    // sello, el borrado de la primera grafía no la retira: `envValue` cae al
+    // archivo y la devuelve otra vez, y el control mide el `.env` del
+    // contenedor en vez de la precedencia entre las dos grafías. Un archivo
+    // declarado y ausente hace que `envFilePath` devuelva null (el proceso
+    // queda como única entrada), que es exactamente la condición que este
+    // caso necesita declarar en vez de heredar.
+    process.env[ENV_FILE_VAR] = join(raizTemporal(), 'sin-env')
     process.env.THYROX_REACH_ROOT = '/arbol/uno'
     process.env.KAUPAMEX_ROOT = '/arbol/dos'
     expect(treeRoot()).toBe('/arbol/uno')
