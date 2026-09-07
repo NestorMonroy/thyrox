@@ -3,9 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta.",
+  "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta (permission.ts, T-008/025/026/027). Ademas, porte fiel COMPLETO de host.ts/errors.ts/contracts.ts/permissionRuleParser.ts, y porte PARCIAL DECLARADO de permissions.ts (10/17), filesystem.ts (13/29) y pathValidation.ts (6/11) desde claude-code-nestor-monroy-tools \u2014 ver el docstring de cada archivo para lo omitido y por que (TASK-DOCS-0201).",
   "exports": {
     ".": "./src/permission.ts",
+    "./host.js": "./src/host.ts",
+    "./errors.js": "./src/errors.ts",
+    "./contracts.js": "./src/contracts.ts",
+    "./permissionTypes.js": "./src/permissionTypes.ts",
+    "./permissionRuleParser.js": "./src/permissionRuleParser.ts",
+    "./permissions.js": "./src/permissions.ts",
+    "./filesystem.js": "./src/filesystem.ts",
+    "./pathValidation.js": "./src/pathValidation.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
