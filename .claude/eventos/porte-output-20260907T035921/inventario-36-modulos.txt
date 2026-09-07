@@ -1,0 +1,51 @@
+Inventario de los 36 modulos de producto de ccnmt: packages/output/src
+(34 .ts + 2 .tsx, excluye __tests__). Columna 2: PORTABLE (ningun import
+externo bloqueado) o DIFERIDO (con la causa).
+
+buffers/buffered-writer.ts       PORTABLE  (sin imports)
+buffers/circular-buffer.ts       PORTABLE  (sin imports)
+buffers/index.ts                 PORTABLE  (barrel de los dos anteriores)
+capture/ansi-to-png.ts           DIFERIDO  ink: stringWidth
+capture/ansi-to-svg.ts           PORTABLE  (solo ../xml.js interno)
+capture/asciicast.ts             DIFERIDO  app-host/bootstrap/{state,cleanupRegistry}.js sin exportar; storage/fsOperations.js sin exportar; local-observability/{debug,slowOperations}.js paquete inexistente
+capture/index.ts                 ADAPTADO  barrel: solo reexporta ansi-to-svg
+constants/figures.ts             PORTABLE  (sin imports)
+contracts.ts                     PORTABLE  (sin imports)
+errors.ts                        PORTABLE  (sin imports)
+formatters/brief-timestamp.ts    PORTABLE  (sin imports)
+formatters/format.ts             PORTABLE  (solo ../utils/intl.js interno)
+formatters/index.ts              ADAPTADO  barrel: no reexporta truncate.js
+formatters/truncate.ts           DIFERIDO  ink: stringWidth
+fpsTracker.ts                    PORTABLE  (sin imports)
+hyperlink.ts                     DIFERIDO  ink: supportsHyperlinks; chalk
+index.ts                         PORTABLE  (contracts + targets/* + errors, todos portables)
+markdown.ts                      DIFERIDO  ink: color/stringWidth/supportsHyperlinks/ThemeName; agent/messages.js sin exportar (stripPromptXMLTags); local-observability paquete inexistente
+modifiers.ts                     DIFERIDO  require('modifiers-napi') — paquete LOCAL de ccnmt (packages/modifiers-napi, addon nativo), homonimo de un paquete publico DISTINTO en npm — riesgo de cadena de suministro si se instala el publico a ciegas
+render-options.ts                DIFERIDO  ink: RenderOptions (tipo); local-observability/logging (logError)
+render/exportRenderer.tsx        DIFERIDO  ink; repl paquete inexistente; tool-registry paquete inexistente; agent/messageShapes sin exportar; app-host/state/AppState.js sin exportar — la propia fuente ya lo trata aparte (comentario en render/index.ts: "stays in src/ until the REPL Wave-6 migration")
+render/index.ts                  DIFERIDO  su unico export (static-render) esta diferido
+render/static-render.tsx         DIFERIDO  ink: wrappedRender, useApp
+setUtils.ts                      PORTABLE  (sin imports)
+targets/json.ts                 PORTABLE  (solo ../contracts.js tipo)
+targets/silent.ts                PORTABLE  (solo ../contracts.js tipo)
+targets/terminal.ts              PORTABLE  (solo ../contracts.js tipo)
+terminal.ts                      DIFERIDO  ink: stringWidth; repl/CtrlOToExpand.js paquete inexistente
+testing/index.ts                 PORTABLE  (solo ../contracts.js tipo)
+textHighlighting.ts              DIFERIDO  ink: Theme (tipo); @alcalzone/ansi-tokenize (tercero nuevo, no evaluado porque ink ya bloquea)
+utils/cliHighlight.ts            PORTABLE  (path builtin + cli-highlight/highlight.js dinamico, ambos npm publico)
+utils/displayTags.ts             PORTABLE  (sin imports)
+utils/intl.ts                    PORTABLE  (sin imports)
+utils/sliceAnsi.ts               DIFERIDO  ink: stringWidth
+utils/stringUtils.ts             PORTABLE  (sin imports)
+xml.ts                           PORTABLE  (sin imports)
+
+Total: 36. Portables sin cambio de forma: 21. Barrels adaptados (subconjunto
+portable del barrel original): 2 (capture/index.ts, formatters/index.ts).
+Diferidos: 13. 21+2+13 = 36.
+
+Verificado por grep de este mismo archivo (excluyendo la linea de
+cabecera, que tambien contiene la palabra PORTABLE):
+  grep -c 'PORTABLE' inventario-36-modulos.txt (menos 1 por la cabecera) = 21
+  grep -c 'ADAPTADO' inventario-36-modulos.txt = 2
+  grep -c 'DIFERIDO' inventario-36-modulos.txt = 13
+

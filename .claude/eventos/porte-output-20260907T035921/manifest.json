@@ -1,0 +1,27 @@
+{
+  "iniciativa": "actualizar-agentic-ai-thyrox",
+  "tarea": "TASK-DOCS-0229",
+  "descripcion": "Porte del paquete output de ccnmt (claude-code-nestor-monroy-tools) a @thyrox/output",
+  "fecha_utc": "2026-09-07T04:01:31",
+  "agente": "subagente de porte, model claude-sonnet-5",
+  "archivos": [
+    "inventario-36-modulos.txt",
+    "probe-anthropic-ink-404.txt",
+    "probe-terceros-resolubles.txt",
+    "verificacion-hermanos-sin-exportar.txt",
+    "anulacion-formatDuration.txt",
+    "anulacion-formatDuration-rojo.txt",
+    "anulacion-formatDuration-restaurado.txt",
+    "resultado-tests-finales.txt"
+  ],
+  "resumen": {
+    "modulos_fuente": 36,
+    "modulos_portados_o_adaptados": 23,
+    "modulos_diferidos": 13,
+    "tests_portados": 16,
+    "tests_diferidos": 9,
+    "bun_test_output": "324 pass / 0 fail / 452 expect()",
+    "bun_test_dependencies": "36 pass / 0 fail (2 propios de output)",
+    "anulacion": "formatDuration mutado a '__ANULADO__'; cayeron exactamente 18 aserciones (las de formatDuration en format.test.ts y formatHelpers.behavior.test.ts); restaurado y verificado byte-identico con diff"
+  }
+}

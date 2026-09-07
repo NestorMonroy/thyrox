@@ -1,0 +1,6 @@
+Sonda: resolucion publica de @anthropic/ink via npm registry.
+Comando: bun add @anthropic/ink (en directorio de sonda /tmp/bun-probe)
+bun add v1.3.11 (af24e281)
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+error: GET https://registry.npmjs.org/@anthropic%2fink - 404

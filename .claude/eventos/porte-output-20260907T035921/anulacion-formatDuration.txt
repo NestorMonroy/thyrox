@@ -1,0 +1,6 @@
+--- BEFORE (baseline verde) ---
+
+ 324 pass
+ 0 fail
+ 452 expect() calls
+Ran 324 tests across 16 files. [949.00ms]
