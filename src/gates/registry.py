@@ -79,6 +79,8 @@ CHECKS: list[Check] = [
           'DEC-ERR-01 — el catálogo de errores es la fuente, no el literal'),
     Check('premise-drift', 'Herramienta', 'premisa', 'check_premise_drift.py',
           'los veredictos de la cadena de premisas que CAMBIARON'),
+    Check('python-surface', 'Herramienta', 'gate', 'check_python_surface.py',
+          'H-DOCS-1089 — lo que un consumidor INVOCA contra la superficie declarada'),
     Check('hooks-timeout', 'Herramienta', 'hook', 'check_hooks_timeout.py',
           'todo hook acota su peor caso: el turno lo espera'),
     Check('hook-script-token', 'Herramienta', 'hook', 'check_hook_script_token.py',
