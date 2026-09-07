@@ -158,7 +158,16 @@ def run(payload: str = "{}", repo_root: Path | str | None = None,
 
     script = resolve_runner(runner, watched)
     if not script.is_file():
-        return 0, ""
+        # Aquí ya se sabe que el turno TOCÓ el directorio vigilado: `touched()`
+        # cortó antes en el caso contrario. Devolver "" convertía «hay trabajo y
+        # no tengo con qué probarlo» en algo indistinguible de «no hay trabajo»
+        # — el sub-patrón D de `metrica-decide-la-conclusion.md` dentro del
+        # propio hook. Se NOMBRA el corredor ausente; se sigue saliendo 0
+        # porque un hook Stop informa, no bloquea.
+        return 0, (f"Pruebas de {watched.name}: NO se corrieron — el corredor "
+                   f"declarado no existe ({script}).\n"
+                   f"    Hubo cambios en el directorio vigilado, así que esto "
+                   f"NO es «nada que probar».\n")
 
     entorno = {**os.environ, RECURSION_VAR: "1"}
     done = subprocess.run(["bash", str(script), "--quiet"],

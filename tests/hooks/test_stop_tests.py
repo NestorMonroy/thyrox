@@ -138,6 +138,12 @@ with tempfile.TemporaryDirectory() as d:
     code, out = run(repo, runner=repo / "scripts" / "no-existe.sh")
     check("sale 0", 0, code)
     check("y no afirma que las pruebas pasaron", False, "verde" in out.lower())
+    # Estas dos aserciones son la mitad que faltaba: la de arriba la cumplía
+    # también una salida VACÍA, y vacío es lo que devuelve el caso «no hubo
+    # cambios». Un hook que no distinga los dos publica un silencio que se lee
+    # como verde.
+    check("declara que NO se corrieron", True, "NO se corrieron" in out)
+    check("y NOMBRA el corredor ausente", True, "no-existe.sh" in out)
 
 print("== 7. CONTROL: sin parámetro de directorio, rehúsa — no mide otra cosa ==")
 # Un hook que cayera a un default se pondría a vigilar el árbol equivocado y
