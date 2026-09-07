@@ -15,7 +15,10 @@
     "./bash/shellPrefix.js": "./src/bash/shellPrefix.ts",
     "./bash/shellQuote.js": "./src/bash/shellQuote.ts"
   },
-  "scripts": { "test": "bun test" },
+  "scripts": {
+    "test": "bun test",
+    "shell": "bun run bin/shell.ts"
+  },
   "dependencies": {
     "@thyrox/config": "workspace:*"
   }
