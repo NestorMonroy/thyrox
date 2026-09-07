@@ -21,9 +21,9 @@ import { openStore } from '../../../store/db.ts'
 import { join, resolve } from 'node:path'
 import { docsRoot } from '../../../paths/docs.ts'
 import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '../../../paths/reach.ts'
-import type { Usage } from '@thyrox/harness/types'
+import type { Usage } from '@thyrox/agent/loop/types'
 import type { TranscriptShape } from './transcriptShape.ts'
-import { verifyAdoption, readProcStart, type Adoption } from '@thyrox/harness/session/reconcile'
+import { verifyAdoption, readProcStart, type Adoption } from '@thyrox/agent/loop/session/reconcile'
 
 /** El nombre del archivo del store. Es contrato: el driver de merge
  * `sqlite-union` está declarado sobre él en el `.gitattributes` del consumidor. */

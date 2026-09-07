@@ -10,14 +10,14 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync, writeFileSync, chmodSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { HARNESS_HOOK_EVENTS } from '../src/hooks.ts'
+import { HARNESS_HOOK_EVENTS } from '../loop/hooks.ts'
 import { agentTool } from '@thyrox/tools/agent'
-import { switchModel } from '../src/sessions/modelSwitch.ts'
-import { runLoop } from '../src/loop.ts'
+import { switchModel } from '../loop/sessions/modelSwitch.ts'
+import { runLoop } from '../loop/index.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
 import { taskTools } from '@thyrox/tools/tasks'
-import type { AssistantTurn } from '../src/types.ts'
+import type { AssistantTurn } from '../loop/types.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'hev-'))
 const uso = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }
@@ -155,7 +155,7 @@ describe('PreModelSwitch y PostModelSwitch (T-016)', () => {
     const d = dir()
     const pre = espia(d, 'presw')
     const post = espia(d, 'postsw')
-    const s = new (await import('../src/transcript.ts')).Transcript(join(d, 'ses.jsonl'), 'ses')
+    const s = new (await import('../loop/transcript.ts')).Transcript(join(d, 'ses.jsonl'), 'ses')
     s.appendUser('hola')
     s.appendAssistant({ id: 'm', model: 'claude-opus-5', content: [{ type: 'text', text: 'x'.repeat(2000) }] }, uso)
     const r = await switchModel({
@@ -180,7 +180,7 @@ describe('PreModelSwitch y PostModelSwitch (T-016)', () => {
     const bloqueo = join(d, 'no.sh')
     writeFileSync(bloqueo, '#!/bin/bash\ncat >/dev/null\necho "la cache esta caliente" >&2\nexit 2\n')
     chmodSync(bloqueo, 0o755)
-    const s = new (await import('../src/transcript.ts')).Transcript(join(d, 'ses.jsonl'), 'ses')
+    const s = new (await import('../loop/transcript.ts')).Transcript(join(d, 'ses.jsonl'), 'ses')
     s.appendAssistant({ id: 'm', model: 'claude-opus-5', content: [{ type: 'text', text: 'x' }] }, uso)
     const r = await switchModel({
       transcriptPath: join(d, 'ses.jsonl'), sessionId: 'ses', cwd: d, toModel: 'claude-sonnet-5',
@@ -197,7 +197,7 @@ describe('PreModelSwitch y PostModelSwitch (T-016)', () => {
   test('cambiar al mismo modelo no es un cambio: no dispara nada', async () => {
     const d = dir()
     const pre = espia(d, 'presw')
-    const s = new (await import('../src/transcript.ts')).Transcript(join(d, 'ses.jsonl'), 'ses')
+    const s = new (await import('../loop/transcript.ts')).Transcript(join(d, 'ses.jsonl'), 'ses')
     s.appendAssistant({ id: 'm', model: 'claude-opus-5', content: [{ type: 'text', text: 'x' }] }, uso)
     const r = await switchModel({
       transcriptPath: join(d, 'ses.jsonl'), sessionId: 'ses', cwd: d, toModel: 'claude-opus-5',

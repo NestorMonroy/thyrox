@@ -11,9 +11,9 @@
     "id": "T-015",
     "open": false,
     "claims": [
-      { "kind": "symbol-present", "symbol": "SessionStart", "in": "src/hooks.ts" },
-      { "kind": "symbol-present", "symbol": "SessionEnd", "in": "src/hooks.ts" },
-      { "kind": "symbol-present", "symbol": "PreCompact", "in": "src/hooks.ts" }
+      { "kind": "symbol-present", "symbol": "SessionStart", "in": "../agent/loop/hooks.ts" },
+      { "kind": "symbol-present", "symbol": "SessionEnd", "in": "../agent/loop/hooks.ts" },
+      { "kind": "symbol-present", "symbol": "PreCompact", "in": "../agent/loop/hooks.ts" }
     ]
   },
   {

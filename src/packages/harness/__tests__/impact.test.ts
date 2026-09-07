@@ -15,7 +15,7 @@ import { selectTests, type ImpactConfig, type Io } from '../src/testing/impact.t
 const arbol: Record<string, string> = {
   '__tests__/provider.test.ts': `import { AnthropicHttpProvider } from '@thyrox/provider/anthropicHttp'`,
   '__tests__/sse.test.ts': `import { parseSseEvents } from '@thyrox/provider/sse'`,
-  '__tests__/loop.test.ts': `import { runLoop } from '../src/loop.ts'\nimport { RecordedProvider } from '@thyrox/provider/recorded'`,
+  '__tests__/loop.test.ts': `import { runLoop } from '@thyrox/agent/loop'\nimport { RecordedProvider } from '@thyrox/provider/recorded'`,
   '__tests__/tools.test.ts': `import { registry } from '@thyrox/tools/registry'`,
   '__tests__/cli.test.ts': `import { renderEvent } from '../src/cli/render.ts'`,
 }

@@ -14,7 +14,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   analyzeCompactions, distinctiveNumbers, textOfLine, universeNumbers,
-} from '../src/context/compactionFidelity.ts'
+} from '../loop/context/compactionFidelity.ts'
 
 describe('distinctiveNumbers — qué cuenta como un hecho rastreable', () => {
   test('exige tres dígitos: un número corto reaparece por azar', () => {

@@ -11,10 +11,10 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { renderEvent, renderStatusLine, OUTPUT_STYLES, type OutputStyle } from '../src/cli/render.ts'
-import { forkSession, indexSessions } from '../src/sessions/index.ts'
-import { openSession } from '../src/session.ts'
+import { forkSession, indexSessions } from '@thyrox/agent/loop/sessions'
+import { openSession } from '@thyrox/agent/loop/session'
 import { resumeChoices } from '../src/cli/resume.ts'
-import type { HarnessEvent } from '../src/types.ts'
+import type { HarnessEvent } from '@thyrox/agent/loop/types'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'cli-'))
 const uso = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }

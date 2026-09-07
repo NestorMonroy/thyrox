@@ -17,7 +17,7 @@ import {
 } from '../src/store.ts'
 import { CONSUMER_ROOT_VAR } from '../../../paths/reach.ts'
 import { costReport, turnCost } from '../src/cost.ts'
-import type { Usage } from '@thyrox/harness/types'
+import type { Usage } from '@thyrox/agent/loop/types'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'obs-'))
 const uso = (o: Partial<Usage> = {}): Usage => ({

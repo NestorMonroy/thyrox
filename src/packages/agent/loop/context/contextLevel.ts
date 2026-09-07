@@ -19,7 +19,7 @@
  * consulta. Apagarla quita el escalón intermedio y hace que `pctLeft` reporte
  * más margen del que hay — dos pérdidas, ninguna ganancia de ventana.
  */
-import { MODELS } from '@thyrox/agent/models'
+import { MODELS } from '../../models.ts'
 import { fourLevels } from '@thyrox/provider/cost/compaction'
 import { AUTOCOMPACT_BUFFER_TOKENS, effectiveContextWindow } from './autocompact.ts'
 

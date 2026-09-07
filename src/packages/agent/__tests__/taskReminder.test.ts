@@ -22,12 +22,12 @@ import { join } from 'node:path'
 import {
   isValidAttachment, renderAttachment, TASK_REMINDER_TEXT,
   TURNS_SINCE_WRITE, TURNS_BETWEEN_REMINDERS,
-} from '../src/context/attachments.ts'
+} from '../loop/context/attachments.ts'
 import { resumenTablero, taskTools } from '@thyrox/tools/tasks'
-import { runLoop } from '../src/loop.ts'
+import { runLoop } from '../loop/index.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
-import type { AssistantTurn, ProviderRequest } from '../src/types.ts'
+import type { AssistantTurn, ProviderRequest } from '../loop/types.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'taskrem-'))
 const tablero = () => join(dir(), 'tablero.sqlite3')

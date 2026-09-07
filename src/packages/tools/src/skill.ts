@@ -21,7 +21,7 @@
  * `bundled.ts`— tiene prompt estático y lo ignora; uno que dependa del hilo
  * —resumir la sesión, elegir el paso siguiente— ahora lo recibe.
  */
-import type { ContentBlock, Tool, ToolContext, ToolResult } from '@thyrox/harness/types'
+import type { ContentBlock, Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
 import type { SkillRegistry } from '@thyrox/skills/registry'
 
 /** Aplana los bloques del prompt de un skill a un solo texto para el modelo. */

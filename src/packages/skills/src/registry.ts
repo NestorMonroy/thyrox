@@ -22,7 +22,7 @@ import { constants as fsConstants } from 'node:fs'
 import { mkdir, open } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, normalize, sep } from 'node:path'
-import type { ContentBlock, Message } from '@thyrox/harness/types'
+import type { ContentBlock, Message } from '@thyrox/agent/loop/types'
 
 /** Lo que la invocacion le entrega al prompt. */
 export type SkillContext = {

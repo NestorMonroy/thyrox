@@ -19,7 +19,7 @@
  *   y cache; `message_delta` trae la salida. Tomar solo uno deja la otra
  *   mitad en cero, y un cero se lee como "no costo nada".
  */
-import type { AssistantTurn, ContentBlock, StopReason, Usage } from '@thyrox/harness/types'
+import type { AssistantTurn, ContentBlock, StopReason, Usage } from '@thyrox/agent/loop/types'
 
 /** Un event del stream, tal como el servicio lo declara en su `data:`. */
 export type SseEvent = { type: string } & Record<string, unknown>

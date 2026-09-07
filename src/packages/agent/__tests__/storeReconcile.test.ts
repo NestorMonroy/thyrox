@@ -11,8 +11,8 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { recordHarnessSession, reconcileStaleRunningRows, ensureUpdatedAtTrigger } from '@thyrox/observability/store'
-import { readProcStart } from '../src/session/reconcile.ts'
-import { USAGE_CERO } from '../src/types.ts'
+import { readProcStart } from '../loop/session/reconcile.ts'
+import { USAGE_CERO } from '../loop/types.ts'
 
 const ESQUEMA = `CREATE TABLE agent_sessions (
   agent_id TEXT PRIMARY KEY, subagent_type TEXT NOT NULL, session_id TEXT NOT NULL,

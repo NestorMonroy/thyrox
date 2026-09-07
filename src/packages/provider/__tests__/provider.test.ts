@@ -9,7 +9,7 @@
 
 import { describe, expect, test } from 'bun:test'
 import { AnthropicHttpProvider } from '../src/anthropicHttp.ts'
-import type { ProviderRequest } from '@thyrox/harness/types'
+import type { ProviderRequest } from '@thyrox/agent/loop/types'
 
 // El adaptador no se puede ejercitar contra el servicio -este contenedor no
 // tiene credencial- pero SI contra su contrato: que envia, que lee y que hace

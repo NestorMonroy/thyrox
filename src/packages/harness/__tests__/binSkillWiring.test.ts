@@ -21,7 +21,7 @@ import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { main } from '../bin/harness.ts'
-import type { AssistantTurn } from '../src/types.ts'
+import type { AssistantTurn } from '@thyrox/agent/loop/types'
 
 const usage = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }
 

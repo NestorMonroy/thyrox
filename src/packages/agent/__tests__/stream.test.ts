@@ -10,10 +10,10 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { streamLoop } from '../src/loop.ts'
+import { streamLoop } from '../loop/index.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
-import type { AssistantTurn, HarnessEvent } from '../src/types.ts'
+import type { AssistantTurn, HarnessEvent } from '../loop/types.ts'
 
 // La referencia expone el bucle como generador de eventos
 // (`for await (const event of loop.run(...))`, ccb: AgentLoop.test.ts). Sin
@@ -80,7 +80,7 @@ describe('streamLoop — el bucle como eventos (T-037)', () => {
   })
 
   test('runLoop sigue existiendo y da el mismo resultado que el ultimo evento', async () => {
-    const { runLoop } = await import('../src/loop.ts')
+    const { runLoop } = await import('../loop/index.ts')
     const d = dir()
     const r = await runLoop({ ...base(d), prompt: 'x', provider: new RecordedProvider([texto('igual')]) })
     expect(r.lastText).toBe('igual')

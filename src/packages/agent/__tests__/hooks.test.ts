@@ -11,7 +11,7 @@ import { describe, expect, test } from 'bun:test'
 import { chmodSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { runHooks, type HookConfig } from '../src/hooks.ts'
+import { runHooks, type HookConfig } from '../loop/hooks.ts'
 
 // El contrato es el del cliente, a proposito (T-007): stdin JSON, stdout JSON,
 // exit 2 = bloqueo con el stderr como razon. Asi los hooks del repo

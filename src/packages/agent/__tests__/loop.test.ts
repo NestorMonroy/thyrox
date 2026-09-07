@@ -11,12 +11,12 @@ import { describe, expect, test } from 'bun:test'
 import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { runLoop, streamLoop } from '../src/loop.ts'
-import { CLEARED_MARKER } from '../src/context/microcompact.ts'
+import { runLoop, streamLoop } from '../loop/index.ts'
+import { CLEARED_MARKER } from '../loop/context/microcompact.ts'
 import { readJournal } from '@thyrox/observability/journal'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
-import type { AssistantTurn } from '../src/types.ts'
+import type { AssistantTurn } from '../loop/types.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'loop-'))
 const uso = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }

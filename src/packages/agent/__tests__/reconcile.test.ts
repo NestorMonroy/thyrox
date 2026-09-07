@@ -12,13 +12,13 @@ import { mkdtempSync, mkdirSync, writeFileSync, appendFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import type { TranscriptLine } from '../src/transcript.ts'
-import type { Message } from '../src/types.ts'
+import type { TranscriptLine } from '../loop/transcript.ts'
+import type { Message } from '../loop/types.ts'
 import {
   classifyLastTurn, filterUnresolvedToolUses, resumableMessages,
   sessionEpoch, reconcileWorkingTree, TERMINAL_TOOLS,
   verifyAdoption, readProcStart, isPidAlive,
-} from '../src/session/reconcile.ts'
+} from '../loop/session/reconcile.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'rec-'))
 function linea(o: Partial<TranscriptLine>): TranscriptLine {

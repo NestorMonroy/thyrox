@@ -28,8 +28,8 @@
 import { Database } from 'bun:sqlite'
 import { openStore } from '../../../store/db.ts'
 import { createHash } from 'node:crypto'
-import type { Message } from '@thyrox/harness/types'
-import { CLEARED_MARKER } from '@thyrox/harness/context/microcompact'
+import type { Message } from '@thyrox/agent/loop/types'
+import { CLEARED_MARKER } from '@thyrox/agent/loop/context/microcompact'
 
 export const CLEARED_TABLE = 'cleared_tool_results'
 

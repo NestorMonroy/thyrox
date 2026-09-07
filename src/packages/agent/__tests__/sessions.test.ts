@@ -10,9 +10,9 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { openSession } from '../src/session.ts'
-import { forkSession, indexSessions, latestSession, planResume } from '../src/sessions/index.ts'
-import { readTranscript } from '../src/transcript.ts'
+import { openSession } from '../loop/session.ts'
+import { forkSession, indexSessions, latestSession, planResume } from '../loop/sessions/index.ts'
+import { readTranscript } from '../loop/transcript.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'ses-'))
 const uso = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }

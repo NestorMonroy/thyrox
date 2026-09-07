@@ -8,10 +8,10 @@
  */
 
 import { describe, expect, test } from 'bun:test'
-import { MODELS } from '@thyrox/agent/models'
-import { autoCompactThreshold, effectiveContextWindow } from '../src/context/autocompact.ts'
+import { MODELS } from '../models.ts'
+import { autoCompactThreshold, effectiveContextWindow } from '../loop/context/autocompact.ts'
 import { turnCost } from '@thyrox/observability/cost'
-import type { Usage } from '../src/types.ts'
+import type { Usage } from '../loop/types.ts'
 
 /**
  * El harness se ejercita en el resto de la suite con UN modelo de fixture

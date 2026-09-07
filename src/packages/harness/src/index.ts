@@ -1,33 +1,33 @@
 export type {
   AssistantTurn, ContentBlock, LoopResult, LoopStop, Message, Provider, ProviderRequest,
   HarnessEvent, Role, StopReason, Tool, ToolContext, ToolResult, ToolSpec, Usage,
-} from './types.ts'
-export { USAGE_CERO } from './types.ts'
-export { Transcript, readTranscript } from './transcript.ts'
-export { openSession, projectSlug } from './session.ts'
-export { runHooks, HARNESS_HOOK_EVENTS, type HarnessHookEvent, type HookConfig } from './hooks.ts'
+} from '@thyrox/agent/loop/types'
+export { USAGE_CERO } from '@thyrox/agent/loop/types'
+export { Transcript, readTranscript } from '@thyrox/agent/loop/transcript'
+export { openSession, projectSlug } from '@thyrox/agent/loop/session'
+export { runHooks, HARNESS_HOOK_EVENTS, type HarnessHookEvent, type HookConfig } from '@thyrox/agent/loop/hooks'
 export { confinedTo, decide, evaluate, matchesRule, type Capability, type Decision, type Mode, type PermissionPolicy, type Verdict } from '@thyrox/permission'
 export { CORE_TOOLS, registry, toolSpecs, bashTool, readTool, writeTool, editTool, globTool, grepTool } from '@thyrox/tools/registry'
 export { RecordedProvider } from '@thyrox/provider/recorded'
 export { AnthropicHttpProvider } from '@thyrox/provider/anthropicHttp'
-export { runLoop, streamLoop, type LoopOptions } from './loop.ts'
+export { runLoop, streamLoop, type LoopOptions } from '@thyrox/agent/loop'
 export {
   assembleSystemPrompt, estimateTokens, matchesPath, parseRule,
   type AssembleOptions, type Assembled, type Section,
-} from './context/systemPrompt.ts'
+} from '@thyrox/agent/loop/context/systemPrompt'
 export {
   CLEARED_MARKER, COMPACTABLE_TOOLS, collectCompactableToolIds, microcompact,
   type MicrocompactOptions, type MicrocompactResult,
-} from './context/microcompact.ts'
+} from '@thyrox/agent/loop/context/microcompact'
 export {
   AUTOCOMPACT_BUFFER_TOKENS, MAX_OUTPUT_TOKENS_FOR_SUMMARY, autoCompactThreshold,
   compactMessages, effectiveContextWindow, estimateMessagesTokens, shouldAutoCompact,
   type CompactOptions, type CompactResult,
-} from './context/autocompact.ts'
+} from '@thyrox/agent/loop/context/autocompact'
 export {
   forkSession, indexSessions, latestSession, planResume,
   type ForkedSession, type ResumePlan, type SessionRow,
-} from './sessions/index.ts'
+} from '@thyrox/agent/loop/sessions'
 export { Journal, readJournal, type JournalEntry } from '@thyrox/observability/journal'
 export { costReport, turnCost, type CostReport, type TurnCost } from '@thyrox/observability/cost'
 export { STORE_PATH, recordHarnessSession, reconcileStaleRunningRows, ensureUpdatedAtTrigger, type HarnessSessionRow, type StaleRow } from '@thyrox/observability/store'
@@ -45,13 +45,13 @@ export {
   domainAllowed, webFetchTool, webSearchTool,
   type DomainPolicy, type SearchHit, type SearchProvider,
 } from '@thyrox/tools/web'
-export { switchModel, type SwitchOptions, type SwitchResult } from './sessions/modelSwitch.ts'
+export { switchModel, type SwitchOptions, type SwitchResult } from '@thyrox/agent/loop/sessions/modelSwitch'
 export {
   classifyLastTurn, filterUnresolvedToolUses, resumableMessages,
   sessionEpoch, reconcileWorkingTree, readTranscriptLines, TERMINAL_TOOLS,
   verifyAdoption, readProcStart, isPidAlive, type Adoption,
   type LastTurn, type EpochInfo, type RepoRef, type TreeReport,
-} from './session/reconcile.ts'
+} from '@thyrox/agent/loop/session/reconcile'
 export {
   REQUIRED_KEYS, WORKBENCH_FORMS, runIdDate, runIdFor, checkWorkbench, scaffoldWorkbench,
   type RequiredKey, type WorkbenchForm, type WorkbenchManifest, type WorkbenchProblem,

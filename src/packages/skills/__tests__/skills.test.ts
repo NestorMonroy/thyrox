@@ -11,7 +11,7 @@ import { mkdtemp, mkdir, writeFile, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { SkillRegistry, extractDirFor, type SkillDefinition } from '../src/registry.ts'
-import type { Message } from '@thyrox/harness/types'
+import type { Message } from '@thyrox/agent/loop/types'
 
 /**
  * El skill como codigo tiene dos diferencias con un `SKILL.md`, y ninguna es

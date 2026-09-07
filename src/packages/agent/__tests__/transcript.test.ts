@@ -11,7 +11,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Transcript, readTranscript } from '../src/transcript.ts'
+import { Transcript, readTranscript } from '../loop/transcript.ts'
 import { transcriptShapeOf } from '@thyrox/observability/transcriptShape'
 
 // El formato se copia A PROPOSITO del cliente: una linea JSON por evento con

@@ -38,7 +38,7 @@ import { openStore } from '../../../store/db.ts'
 import {
   selectCitationId, TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
 } from '../../../task/schema.ts'
-import type { Tool, ToolContext, ToolResult } from '@thyrox/harness/types'
+import type { Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
 
 export type TaskToolOptions = { dbPath: string; sessionId?: string }
 

@@ -20,7 +20,6 @@
     "@types/bun": "^1.4.0"
   },
   "dependencies": {
-    "@thyrox/agent": "workspace:*",
-    "@thyrox/harness": "workspace:*"
+    "@thyrox/agent": "workspace:*"
   }
 }

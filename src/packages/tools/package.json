@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@thyrox/agent": "workspace:*",
-    "@thyrox/harness": "workspace:*",
     "@thyrox/observability": "workspace:*",
     "@thyrox/plan": "workspace:*",
     "@thyrox/skills": "workspace:*"

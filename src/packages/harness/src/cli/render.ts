@@ -10,7 +10,7 @@
  * Tres estilos, y ninguno es «bonito por defecto»: `text` para leer, `json`
  * para tubería, `quiet` para cuando lo único que importa es la respuesta.
  */
-import type { HarnessEvent, Usage } from '../types.ts'
+import type { HarnessEvent, Usage } from '@thyrox/agent/loop/types'
 
 export const OUTPUT_STYLES = ['text', 'json', 'quiet'] as const
 export type OutputStyle = (typeof OUTPUT_STYLES)[number]

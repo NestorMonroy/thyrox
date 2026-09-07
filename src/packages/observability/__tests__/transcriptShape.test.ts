@@ -15,7 +15,7 @@ import {
   TRANSCRIPT_MESSAGE_TYPES, transcriptShape, transcriptShapeOf,
 } from '../src/transcriptShape.ts'
 import { recordHarnessSession } from '../src/store.ts'
-import { USAGE_CERO } from '@thyrox/harness/types'
+import { USAGE_CERO } from '@thyrox/agent/loop/types'
 
 const temporales: string[] = []
 afterEach(() => { for (const d of temporales.splice(0)) rmSync(d, { recursive: true, force: true }) })

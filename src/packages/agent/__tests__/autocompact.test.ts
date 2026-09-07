@@ -16,8 +16,8 @@ import {
   effectiveContextWindow,
   estimateMessagesTokens,
   shouldAutoCompact,
-} from '../src/context/autocompact.ts'
-import type { Message } from '../src/types.ts'
+} from '../loop/context/autocompact.ts'
+import type { Message } from '../loop/types.ts'
 
 /**
  * Fijación del porte contra el ejecutable 2.1.258 — `_references/claude-code-bin/2.1.258/`.

@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { PlanMode, planFilePath, planModeInstructions, planModeVerdict, planVariantFor, renderPlan } from '@thyrox/plan/mode'
 import { planTools } from '../src/plan.ts'
-import type { ToolContext } from '@thyrox/harness/types'
+import type { ToolContext } from '@thyrox/agent/loop/types'
 
 function raiz(): string {
   return mkdtempSync(join(tmpdir(), 'planmode-'))

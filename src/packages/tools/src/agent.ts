@@ -16,10 +16,10 @@
  *   (H-DOCS-1007).
  */
 import { join } from 'node:path'
-import { runHooks, type HookConfig } from '@thyrox/harness/hooks'
+import { runHooks, type HookConfig } from '@thyrox/agent/loop/hooks'
 import { Journal } from '@thyrox/observability/journal'
 import { recordHarnessSession } from '@thyrox/observability/store'
-import { USAGE_CERO, type Provider, type Tool, type ToolContext, type ToolResult } from '@thyrox/harness/types'
+import { USAGE_CERO, type Provider, type Tool, type ToolContext, type ToolResult } from '@thyrox/agent/loop/types'
 import { CORE_TOOLS } from './registry.ts'
 
 /** Lo que una definición de agente fija para su hijo. */
@@ -148,7 +148,7 @@ export function agentTool(opts: AgentToolOptions): Tool {
         // El bucle se importa aquí, no al principio del módulo: `loop.ts` ya
         // importa el registro de herramientas, y el registro incluirá a `Agent`
         // en cuanto se cablee. Es el único ciclo real del paquete.
-        const { runLoop } = await import('@thyrox/harness/loop')
+        const { runLoop } = await import('@thyrox/agent/loop')
         const r = await runLoop({
           provider: opts.provider,
           model,

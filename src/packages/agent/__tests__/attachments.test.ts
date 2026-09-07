@@ -9,12 +9,12 @@
 import { describe, expect, test } from 'bun:test'
 import {
   attachmentBreakdown, isValidAttachment, makeAttachment, renderAttachment,
-} from '../src/context/attachments.ts'
-import type { Message } from '../src/types.ts'
+} from '../loop/context/attachments.ts'
+import type { Message } from '../loop/types.ts'
 import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { runLoop } from '../src/loop.ts'
+import { runLoop } from '../loop/index.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
 

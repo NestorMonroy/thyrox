@@ -10,7 +10,7 @@
  * Una red abierta por omisión convierte cualquier prompt en un canal de salida,
  * y el fallo sería silencioso — la petición saldría y nadie lo vería.
  */
-import type { Tool, ToolContext, ToolResult } from '@thyrox/harness/types'
+import type { Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
 
 export type DomainPolicy = {
   /** Dominios permitidos. Vacío significa vacío: no sale nada. */

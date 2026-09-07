@@ -7,7 +7,7 @@
  * que es lo que permite comprobar qué se envió —el `tool_result`, el
  * historial reanudado, el prompt de sistema— sin gastar un solo token.
  */
-import type { AssistantTurn, Provider, ProviderRequest } from '@thyrox/harness/types'
+import type { AssistantTurn, Provider, ProviderRequest } from '@thyrox/agent/loop/types'
 
 export class RecordedProvider implements Provider {
   readonly name = 'recorded'

@@ -3,7 +3,7 @@
   "version": "0.4.0",
   "private": true,
   "type": "module",
-  "description": "Definiciones de agente de kaupamex: la fuente en TypeScript, y los dos emisores hacia las vías que el cliente acepta.",
+  "description": "El dominio agent: el contrato de definicion, el catalogo de modelos, el port de la referencia y —en loop/— el bucle vivo con lo que necesita para CORRER (tipos, transcript, sesion, hooks, contexto).",
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
@@ -27,17 +27,30 @@
     "./errors": "./errors.ts",
     "./abortController": "./abortController.ts",
     "./combinedAbortSignal": "./combinedAbortSignal.ts",
-    "./tee": "./tee.ts"
+    "./tee": "./tee.ts",
+    "./loop": "./loop/index.ts",
+    "./loop/types": "./loop/types.ts",
+    "./loop/hooks": "./loop/hooks.ts",
+    "./loop/transcript": "./loop/transcript.ts",
+    "./loop/session": "./loop/session.ts",
+    "./loop/session/reconcile": "./loop/session/reconcile.ts",
+    "./loop/sessions": "./loop/sessions/index.ts",
+    "./loop/sessions/modelSwitch": "./loop/sessions/modelSwitch.ts",
+    "./loop/context/*": "./loop/context/*.ts"
   },
   "scripts": {
     "emit": "bun run bin/emit.ts",
     "check": "bun run bin/emit.ts --check",
     "test": "bun test",
     "pre-model-switch": "bun run bin/preModelSwitch.ts",
-    "gate:cross-model-read": "bun run bin/crossModelReadGate.ts"
+    "gate:cross-model-read": "bun run bin/crossModelReadGate.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
   },
   "dependencies": {
     "@thyrox/command-runtime": "workspace:*",
+    "@thyrox/observability": "workspace:*",
+    "@thyrox/permission": "workspace:*",
     "@thyrox/provider": "workspace:*",
     "@thyrox/tools": "workspace:*",
     "zod": "^4.3.6"

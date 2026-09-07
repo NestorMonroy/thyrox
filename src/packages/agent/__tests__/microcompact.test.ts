@@ -12,8 +12,8 @@ import {
   CLEARED_MARKER,
   collectCompactableToolIds,
   microcompact,
-} from '../src/context/microcompact.ts'
-import type { Message } from '../src/types.ts'
+} from '../loop/context/microcompact.ts'
+import type { Message } from '../loop/types.ts'
 
 const asistente = (id: string, name: string): Message =>
   ({ role: 'assistant', content: [{ type: 'tool_use', id, name, input: {} }] })

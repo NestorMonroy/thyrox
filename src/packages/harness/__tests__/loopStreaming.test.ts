@@ -10,10 +10,10 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { runLoop, streamLoop } from '../src/loop.ts'
+import { runLoop, streamLoop } from '@thyrox/agent/loop'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
-import type { AssistantTurn, Provider, ProviderRequest } from '../src/types.ts'
+import type { AssistantTurn, Provider, ProviderRequest } from '@thyrox/agent/loop/types'
 
 // El streaming del proveedor (T-011) sólo vale si algo lo consume: una
 // capacidad que nadie invoca es deuda, no capacidad -- el defecto que

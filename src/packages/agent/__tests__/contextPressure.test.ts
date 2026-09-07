@@ -13,14 +13,14 @@ import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Database } from 'bun:sqlite'
-import { THRASHING_MESSAGE } from '../src/context/contextLevel.ts'
+import { THRASHING_MESSAGE } from '../loop/context/contextLevel.ts'
 import { CLEARED_TABLE } from '@thyrox/observability/clearedResults'
 import { transcriptShapeOf } from '@thyrox/observability/transcriptShape'
-import { runLoop, streamLoop } from '../src/loop.ts'
-import { Transcript } from '../src/transcript.ts'
+import { runLoop, streamLoop } from '../loop/index.ts'
+import { Transcript } from '../loop/transcript.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
-import type { AssistantTurn, HarnessEvent, Message } from '../src/types.ts'
+import type { AssistantTurn, HarnessEvent, Message } from '../loop/types.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'presion-'))
 const uso = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }

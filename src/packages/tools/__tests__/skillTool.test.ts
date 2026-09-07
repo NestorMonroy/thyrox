@@ -28,7 +28,7 @@ import { describe, expect, test } from 'bun:test'
 import { skillTool } from '../src/skill.ts'
 import { SkillRegistry } from '@thyrox/skills/registry'
 import type { SkillContext } from '@thyrox/skills/registry'
-import type { Message, ToolContext } from '@thyrox/harness/types'
+import type { Message, ToolContext } from '@thyrox/agent/loop/types'
 
 const ctx = (messages: Message[] = []): ToolContext =>
   ({ cwd: '/tmp', sessionId: 's', abort: new AbortController().signal, messages })

@@ -10,7 +10,7 @@
  * como parámetro sería otra herramienta: haría que el plan aprobado y el plan
  * escrito pudieran diferir.
  */
-import type { Tool, ToolContext, ToolResult } from '@thyrox/harness/types'
+import type { Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
 import type { PlanMode } from '@thyrox/plan/mode'
 import { planModeInstructions } from '@thyrox/plan/mode'
 

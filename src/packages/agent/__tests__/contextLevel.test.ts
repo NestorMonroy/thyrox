@@ -23,8 +23,8 @@ import {
   markCompacted,
   rapidRefill,
   resolveThreshold,
-} from '../src/context/contextLevel.ts'
-import { AUTOCOMPACT_BUFFER_TOKENS, effectiveContextWindow } from '../src/context/autocompact.ts'
+} from '../loop/context/contextLevel.ts'
+import { AUTOCOMPACT_BUFFER_TOKENS, effectiveContextWindow } from '../loop/context/autocompact.ts'
 
 const MODELO = 'claude-opus-5'
 const EFECTIVA = effectiveContextWindow(MODELO)!

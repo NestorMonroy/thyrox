@@ -11,8 +11,8 @@
  * el silencio del instrumento no es una factura de cero.
  */
 import { usageCostUsd, usageEquivalentTokens } from '@thyrox/agent/models'
-import type { Usage } from '@thyrox/harness/types'
-import { USAGE_CERO } from '@thyrox/harness/types'
+import type { Usage } from '@thyrox/agent/loop/types'
+import { USAGE_CERO } from '@thyrox/agent/loop/types'
 
 /**
  * Las **tres** unidades del consumo, que no se sustituyen entre sí:

@@ -7,7 +7,7 @@
  * a un modelo.
  */
 import { readFileSync } from 'node:fs'
-import { indexSessions } from '../sessions/index.ts'
+import { indexSessions } from '@thyrox/agent/loop/sessions'
 
 export type ResumeChoice = {
   id: string

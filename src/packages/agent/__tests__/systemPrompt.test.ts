@@ -11,7 +11,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { assembleSystemPrompt, estimateTokens } from '../src/context/systemPrompt.ts'
+import { assembleSystemPrompt, estimateTokens } from '../loop/context/systemPrompt.ts'
 
 /** Un árbol sintético con la misma forma que `.claude/` de este repo. */
 function tree(files: Record<string, string>): string {

@@ -9,7 +9,7 @@
 
 import { describe, expect, test } from 'bun:test'
 import { AnthropicHttpProvider, parseSseEvents } from '../src/anthropicHttp.ts'
-import type { ProviderRequest } from '@thyrox/harness/types'
+import type { ProviderRequest } from '@thyrox/agent/loop/types'
 
 // T-011, mitad de streaming. Lo que la credencial bloquea es UNA cosa: hablar
 // con el servicio real. Ni el formato del stream ni el `fetch` de verdad lo

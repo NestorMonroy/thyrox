@@ -43,15 +43,12 @@ Dos formatos se copian del cliente **a propósito**:
 
 | Ruta | Qué es |
 |---|---|
-| `src/types.ts` | contratos: mensaje, bloque, herramienta, uso, parada |
-| `src/transcript.ts` | JSONL append-only + lectura tolerante a línea rota |
-| `src/session.ts` | identidad, reanudación, ruta por proyecto |
-| `src/hooks.ts` | ejecutor con el contrato del cliente |
-| `src/loop.ts` | el bucle |
 | `bin/harness.ts` | el binario |
 
-Lo que el bucle LLAMA vive en paquetes hermanos, no aquí (tarea #224,
-tramo 2): `@thyrox/provider` (interfaz + los dos adaptadores),
+El bucle y lo que necesita para CORRER —`loop/index.ts`, `types.ts`,
+`transcript.ts`, `session.ts`, `hooks.ts`, `context/`— viven en
+`@thyrox/agent/loop` (tarea #224, tramo 4). Lo que el bucle LLAMA vive en
+paquetes hermanos, no aquí (tramo 2): `@thyrox/provider` (interfaz + los dos adaptadores),
 `@thyrox/permission` (la decisión previa a ejecutar, fail-closed),
 `@thyrox/tools` (registro + herramientas), `@thyrox/observability`,
 `@thyrox/plan` y `@thyrox/skills`.

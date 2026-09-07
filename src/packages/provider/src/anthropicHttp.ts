@@ -17,7 +17,7 @@
  * - **Se reintenta 429/5xx y NO 4xx.** Un 400 es un cuerpo mal formado:
  *   reintentarlo lo repite idéntico y gasta el doble.
  */
-import type { AssistantTurn, ContentBlock, Provider, ProviderRequest, StopReason, Usage } from '@thyrox/harness/types'
+import type { AssistantTurn, ContentBlock, Provider, ProviderRequest, StopReason, Usage } from '@thyrox/agent/loop/types'
 import { accumulate, parseSseEvents, type TextDelta } from './sse.ts'
 
 export { parseSseEvents } from './sse.ts'

@@ -5,8 +5,6 @@
     "runner": "bun test",
     "fullRunner": "bun test",
     "crossCutting": [
-      "src/types.ts",
-      "src/loop.ts",
       "package.json"
     ]
   }

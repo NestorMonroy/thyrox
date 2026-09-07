@@ -9,7 +9,7 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join } from 'node:path'
-import type { Tool, ToolContext, ToolResult, ToolSpec } from '@thyrox/harness/types'
+import type { Tool, ToolContext, ToolResult, ToolSpec } from '@thyrox/agent/loop/types'
 
 const ok = (content: string): ToolResult => ({ content, isError: false })
 const err = (content: string): ToolResult => ({ content, isError: true })

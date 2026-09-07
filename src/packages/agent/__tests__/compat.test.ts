@@ -12,13 +12,13 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { AGENTS } from '@thyrox/agent'
+import { AGENTS } from '../index.ts'
 import { agentDefinitionsFromRegistry, toHarnessDefinition } from '@thyrox/tools/agentDefinitions'
-import { openSession } from '../src/session.ts'
-import { runLoop } from '../src/loop.ts'
+import { openSession } from '../loop/session.ts'
+import { runLoop } from '../loop/index.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
-import type { AssistantTurn } from '../src/types.ts'
+import type { AssistantTurn } from '../loop/types.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'compat-'))
 const uso = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }
