@@ -322,6 +322,49 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
 
 
+#: La FORMA de un nombre de columna de fecha, no su enumeracion. Deriva en vez
+#: de listar porque una lista escrita a mano ya publico una conclusion falsa:
+#: midiendo con `created_at`/`updated_at`/`started_at`/`fecha` se declaro que
+#: `cleared_tool_results` estaba «sin columna de fecha» y era «no medible»,
+#: cuando tiene `cleared_at NOT NULL` y es la tabla mas viva del store. El
+#: defecto no estaba en la tabla: estaba en el instrumento.
+_SUFIJO_DE_FECHA = re.compile(r"(_at|_date|_ts|_time)$|^fecha(_|$)|^date$|^timestamp$")
+
+
+def date_columns(conn: sqlite3.Connection, table: str) -> list:
+    """Las columnas de fecha de `table`, derivadas de su esquema real.
+
+    Devuelve TODAS las que la tabla declare, en el orden en que las declara —
+    no la primera que aparezca. Una tabla puede fechar dos cosas distintas
+    (`created_at` y `updated_at`), y quedarse con una sola haria que la ultima
+    escritura de la tabla se leyera de la columna equivocada.
+
+    *Metrica:* nombres de columna que `PRAGMA table_info` reporta, filtrados
+    por la FORMA del nombre.
+    *Ciega a:* una columna de fecha con un nombre que no lleve ninguna de esas
+    marcas (`inicio`, `vencimiento`), y a una columna que lleve la marca sin
+    guardar una fecha. Es una cota inferior, no un censo cerrado.
+    """
+    filas = conn.execute(f'PRAGMA table_info("{table}")').fetchall()
+    return [f[1] for f in filas if _SUFIJO_DE_FECHA.search(f[1])]
+
+
+def last_write(conn: sqlite3.Connection, table: str):
+    """El maximo de TODAS sus columnas de fecha, o None si no tiene ninguna.
+
+    None significa «este instrumento no puede fechar esta tabla», que no es lo
+    mismo que «la tabla esta muerta». Colapsar las dos lecturas es el defecto
+    que esta funcion existe para no repetir.
+    """
+    columnas = date_columns(conn, table)
+    if not columnas:
+        return None
+    expr = ", ".join(f'MAX("{c}")' for c in columnas)
+    fila = conn.execute(f'SELECT {expr} FROM "{table}"').fetchone()
+    valores = [v for v in fila if v]
+    return max(valores) if valores else None
+
+
 def document_root(args: argparse.Namespace) -> Path:
     """La raiz del arbol documental: declarada, o derivada del consumidor.
 
@@ -2500,6 +2543,68 @@ _COLUMNAS_DE_USO = ("input_tokens", "cache_creation_tokens",
                     "cache_read_tokens", "output_tokens")
 
 
+def cmd_table_census(args: argparse.Namespace) -> None:
+    """Que tablas del store estan vivas, y cuales no se pueden fechar.
+
+    Existe porque la salud del store se venia midiendo a mano, con una consulta
+    distinta por sesion y una lista de nombres de columna escrita al vuelo. Esa
+    forma ya publico una conclusion falsa: `cleared_tool_results` declarada
+    «sin columna de fecha» cuando tiene `cleared_at NOT NULL` y era la tabla
+    con mas escrituras del dia. Un instrumento que se reescribe cada vez no
+    tiene control que lo delate.
+
+    La columna «fechada por» es parte de la salida, no un detalle: una tabla
+    sin columna de fecha sale como `-`, y eso se lee «este instrumento no la
+    puede fechar», nunca «esta muerta».
+    """
+    store_dir = resolve_store_dir(args)
+    hoy = now_iso()[:10]
+    with connect(store_dir) as conn:
+        filas_maestro = conn.execute(
+            "SELECT name, sql FROM sqlite_master WHERE type = 'table' "
+            "AND name NOT LIKE 'sqlite_%' ORDER BY name").fetchall()
+        tablas = [f[0] for f in filas_maestro]
+        # Una tabla virtual FTS5 arrastra cuatro tablas de sombra que SQLite
+        # crea y mantiene solo. No tienen fecha porque no son tablas de datos,
+        # y contarlas junto a las demas haria leer «5 no fechables» donde solo
+        # hay una. Distinguirlas es la mitad del censo que la medicion a mano
+        # no hacia.
+        virtuales = {f[0] for f in filas_maestro
+                     if (f[1] or "").upper().startswith("CREATE VIRTUAL TABLE")}
+        sombras = {n for n in tablas
+                   for v in virtuales
+                   if n.startswith(f"{v}_")
+                   and n.rsplit("_", 1)[-1] in
+                   ("data", "idx", "docsize", "config", "content")}
+        print(f"store: {store_dir / DB_FILENAME}")
+        print(f"{'tabla':<32} {'filas':>8} {'hoy':>6}  ultima escritura      fechada por")
+        vacias = sin_fecha = 0
+        for tabla in tablas:
+            filas = conn.execute(f'SELECT COUNT(*) FROM "{tabla}"').fetchone()[0]
+            columnas = date_columns(conn, tabla)
+            ultima = last_write(conn, tabla)
+            if columnas:
+                expr = " OR ".join(f'"{c}" LIKE ?' for c in columnas)
+                del_dia = conn.execute(
+                    f'SELECT COUNT(*) FROM "{tabla}" WHERE {expr}',
+                    [f"{hoy}%"] * len(columnas)).fetchone()[0]
+                marca = str(del_dia)
+            elif tabla in sombras:
+                marca = "-"
+            else:
+                marca = "?"
+                sin_fecha += 1
+            if filas == 0:
+                vacias += 1
+            fuente = ",".join(columnas) or (
+                "(sombra FTS5)" if tabla in sombras else "-")
+            print(f"{tabla:<32} {filas:>8} {marca:>6}  "
+                  f"{(ultima or '-'):<21} {fuente}")
+        print(f"\n{len(tablas)} tablas ({len(sombras)} de sombra FTS5) | "
+              f"{vacias} vacias | {sin_fecha} sin columna de fecha "
+              f"(no fechables por este instrumento)")
+
+
 def cmd_usage_census(args: argparse.Namespace) -> None:
     """Reparte las filas en sus cuatro estados de medición, con denominador.
 
@@ -2920,6 +3025,12 @@ def build_parser() -> argparse.ArgumentParser:
                             "tokens, y agregado con su denominador (h-docs-427)")
     add_target_args(p)
     p.set_defaults(func=cmd_usage_census)
+
+    p = sub.add_parser("censo-tablas",
+                       help="filas, escrituras de hoy y ultima escritura por "
+                            "tabla; la columna de fecha se DERIVA del esquema")
+    add_target_args(p)
+    p.set_defaults(func=cmd_table_census)
 
     p = sub.add_parser("listar-sesiones", help="pieza (a): listar sesiones registradas")
     add_target_args(p)
