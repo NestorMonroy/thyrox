@@ -4,21 +4,42 @@ Cada extracción del ejecutable de Claude Code vive bajo el número de versión 
 **el propio payload declara**. Una versión nueva no pisa a la anterior: se pone
 al lado.
 
-```
-_references/claude-code-bin/
-├── 2.1.241/            bunfs-root/ · src/ · MANIFEST.tsv · README.md
-├── 2.1.246/            bunfs-root/ · src/ · MANIFEST.tsv · README.md
-├── 2.1.246-nombrado/   los 70 archivos de 2.1.246 con los nombres recuperados
-├── 2.1.250/            SÓLO claude_strings.txt — no está extraída
-├── 2.1.251/            SÓLO claude_strings.txt — no está extraída
-└── 2.1.258/            SÓLO claude_strings.txt — no está extraída (2026-09-02)
+## Qué builds hay y qué trae cada una — se publica, no se transcribe
+
+Un diagrama fijo en este README ya envejeció dos veces: describía seis
+builds cuando el directorio tenía ocho, y a `2.1.258` la llamaba "SÓLO
+claude_strings.txt" cuando esa build ya traía `MANIFEST.tsv` y `bunfs-root/`
+(le faltaba únicamente `src/`, no todo). Es la forma que
+`calibration-verified-numbers.md` prohíbe en su corolario "una cifra que vive
+en código NO se transcribe a prosa": el árbol crece con cada extracción, así
+que cualquier tabla fijada aquí envejece antes de que alguien la vuelva a
+leer. **El arreglo no es corregir la tabla** — eso trata el síntoma y
+garantiza la reincidencia (H-DOCS-139) — sino nombrar el comando que la
+publica:
+
+```bash
+python3 src/corpus/list_corpus_builds.py
 ```
 
-**`2.1.250/` no es una extracción.** Trae el volcado de cadenas y nada más:
-sin `bunfs-root/`, sin `src/`, sin `MANIFEST.tsv`. Se vendorizó para cerrar
-la deriva que la tarea #932 midió —el ejecutable vivo iba cuatro versiones
-por delante del corpus— y su README de build lo declara en su primera línea,
-para que nadie la lea como medida.
+Enumera los directorios con forma de versión bajo esta carpeta y, para cada
+uno, cuáles de los cinco marcadores conocidos existen (`bunfs-root/`, `src/`,
+`MANIFEST.tsv`, `claude_strings.txt`, `README.md`) — un sufijo
+(`2.1.246-nombrado`) cuenta como vista derivada de su versión base, no como
+build aparte. La salida trae su denominador (`N builds bajo <ruta> — …`), no
+un conteo suelto.
+
+*Métrica:* existencia de los cinco marcadores conocidos en cada directorio con
+forma `X.Y.Z`. *Ciega a:* si el contenido del marcador es fiel a esa versión
+(la fidelidad la garantiza el guard de re-extracción, otro instrumento) y a un
+marcador que el guion no conozca. Test con control de anulación:
+`python3 tests/corpus/test_list_corpus_builds.py`.
+
+**Ninguna build "sólo tiene el volcado" por casualidad.** Cuando una carpeta
+trae únicamente `claude_strings.txt` (+ `README.md`), su propio `README.md`
+lo declara en la primera línea, para que nadie la lea como extraída (el caso
+histórico fue `2.1.250`/`2.1.251`, vendorizadas para cerrar la deriva que la
+tarea #932 midió — el ejecutable vivo iba cuatro versiones por delante del
+corpus).
 
 El sufijo `-nombrado` marca un corpus **derivado**: los mismos módulos con 5609
 identificadores manglados sustituidos por el nombre que el propio bundle filtraba

@@ -1,0 +1,15 @@
+Comando: python3 src/corpus/list_corpus_builds.py
+Fecha  : 2026-09-07T00:39:14
+
+raiz: /home/user/thyrox/_references/claude-code-bin
+2.1.241             38.4M  bunfs-root, src, MANIFEST.tsv, README.md
+2.1.246            103.3M  bunfs-root, src, MANIFEST.tsv, claude_strings.txt, README.md
+2.1.246-nombrado    19.5M  bunfs-root, src  [vista derivada de 2.1.246]
+2.1.250             53.3M  claude_strings.txt, README.md
+2.1.251             45.7M  claude_strings.txt, README.md
+2.1.258             81.0M  bunfs-root, MANIFEST.tsv, claude_strings.txt, README.md
+2.1.259             81.7M  bunfs-root, MANIFEST.tsv, claude_strings.txt, README.md
+2.1.261             81.4M  bunfs-root, MANIFEST.tsv, claude_strings.txt, README.md
+2.1.263             81.4M  bunfs-root, MANIFEST.tsv, claude_strings.txt, README.md
+
+9 builds bajo /home/user/thyrox/_references/claude-code-bin — 7 con claude_strings.txt, 7 con bunfs-root, 3 con src, 6 con MANIFEST.tsv, 1 vista(s) derivada(s) por sufijo
