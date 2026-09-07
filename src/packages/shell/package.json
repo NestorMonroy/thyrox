@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte parcial del paquete shell de claude-code-nestor-monroy-tools: extraccion/restauracion de heredocs de bash, carga de specs Fig, espera de stdin, formato de prefijo de shell citado y cribado de entorno de subproceso. Cinco de los muchos modulos de la fuente (TASK-DOCS-0200).",
+  "description": "Porte parcial del paquete shell de claude-code-nestor-monroy-tools: extraccion/restauracion de heredocs de bash, carga de specs Fig, espera de stdin, formato de prefijo de shell citado, cribado de entorno de subproceso, ejecucion de subprocesos sin lanzar excepcion (execFileNoThrow) y localizacion de ejecutables (which). Siete de los muchos modulos de la fuente (TASK-DOCS-0200, TASK-DOCS-0201).",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -14,6 +14,9 @@
     "./bash/registry.js": "./src/bash/registry.ts",
     "./bash/shellPrefix.js": "./src/bash/shellPrefix.ts",
     "./bash/shellQuote.js": "./src/bash/shellQuote.ts",
+    "./execFileNoThrow.js": "./src/execFileNoThrow.ts",
+    "./execFileNoThrowPortable.js": "./src/execFileNoThrowPortable.ts",
+    "./which.js": "./src/which.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
