@@ -11,8 +11,14 @@
  * (`requireBootstrapState`), mismo patrón de indirección que
  * `claudeLegacy.ts`'s `getLegacyRuntime()`. `./advisor.js` → sólo se porta
  * la función pura que se consume (`getAdvisorUsage`, en
- * `internal/pendingCrossPackageDeps.ts`). `./fastMode.js` → ídem
- * (`isFastModeEnabled`). `./modelCost.js` (`calculateUSDCost`) NO está
+ * `internal/pendingCrossPackageDeps.ts`). `./fastMode.js` — CORREGIDO en
+ * este pase: `fastMode.ts` ya se portó ENTERO en un pase posterior al que
+ * escribió esta nota, así que `isFastModeEnabled` se importa directo de
+ * `./fastMode.ts` (sin ciclo: `fastMode.ts` no importa `costTracker.ts`).
+ * El sustituto homónimo que quedaba en `pendingCrossPackageDeps.ts` se
+ * conserva SÓLO porque `model.ts` sí formaría un ciclo si importara de
+ * `fastMode.ts` (`fastMode.ts` importa `model.ts`) — ver el docstring de
+ * ese sustituto. `./modelCost.js` (`calculateUSDCost`) NO está
  * asignado a este pase → `require()` diferido relativo (nunca resolverá
  * hasta que se porte, igual que los demás "declarados colgantes" de este
  * árbol). `getModelMaxOutputTokens` (`@thyrox/agent/context.ts`) no está
@@ -23,7 +29,8 @@
 import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import chalk from 'chalk'
 import type { ModelUsage } from '@thyrox/headless-sdk/agentSdkTypes'
-import { getAdvisorUsage, isFastModeEnabled } from './internal/pendingCrossPackageDeps.ts'
+import { getAdvisorUsage } from './internal/pendingCrossPackageDeps.ts'
+import { isFastModeEnabled } from './fastMode.ts'
 import { getContextWindowForModel } from '@thyrox/agent/context'
 import { formatDuration, formatNumber } from '@thyrox/output/formatters'
 import type { FpsMetrics } from '@thyrox/output/fpsTracker.js'
