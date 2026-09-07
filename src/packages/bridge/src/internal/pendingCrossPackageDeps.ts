@@ -1141,14 +1141,16 @@ export function setGetOrganizationUUIDFn(
 }
 
 /**
- * `getDefaultBranch` — de `@claude-code-how-works/storage/git.js`. Ya
- * existe en `@thyrox/storage: src/git.ts:184` (delega en
- * `getCachedDefaultBranch()`, un subsistema de caché + shell-out a git).
- * Punto de inyección — ese subsistema es dominio de `@thyrox/storage`,
- * no de bridge. Default: `''` (createSession ya trata un valor falsy
- * como "sin default branch conocido": `branch || (await
- * getDefaultBranch()) || undefined`). Se retira cuando `@thyrox/bridge`
- * sea miembro del workspace.
+ * `getDefaultBranch` — de
+ * `ccnmt: storage/src/git.ts:184` (delega en `getCachedDefaultBranch()`,
+ * un subsistema de caché + shell-out a git). No portado en
+ * `@thyrox/storage` (medido: `storage/src/git.ts` sólo exporta
+ * `normalizeGitRemoteUrl`). Punto de inyección — ese subsistema es
+ * dominio de `@thyrox/storage`, no de bridge. Default: `''` (createSession
+ * ya trata un valor falsy como "sin default branch conocido": `branch ||
+ * (await getDefaultBranch()) || undefined`). Se retira cuando
+ * `@thyrox/storage` porte `git.ts` Y `@thyrox/bridge` sea miembro del
+ * workspace.
  */
 let _getDefaultBranch: () => Promise<string> = async () => ''
 

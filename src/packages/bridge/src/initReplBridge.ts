@@ -5,25 +5,19 @@
  * sesión, contexto git, OAuth, derivación de título) y delega en el
  * core sin bootstrap.
  *
- * BLOQUEO — `initBridgeCore` + `BridgeCoreParams`/`BridgeCoreHandle`
- * viven en `./replBridge.js` (2406 líneas fuente), fuera de alcance de
- * este pase (ver la nota del propio módulo `remoteBridgeCore.ts`, que
- * ya declaró el mismo bloqueo). Aquí se declaran `BridgeCoreParams` y
- * `BridgeCoreHandle` con la forma EXACTA de la fuente (tipos puros,
- * portables aunque la lógica no lo sea) y `initBridgeCore` como bloque
- * DECLARADO: firma completa, lanza al invocarse — mismo patrón que
- * `createV2ReplTransport` en `./replBridgeTransport.ts`. El camino v2
- * (env-less, `initEnvLessBridgeCore`) SÍ está 100% operativo porque
- * `remoteBridgeCore.ts` ya se portó completo.
+ * `initBridgeCore`/`BridgeCoreParams`/`BridgeCoreHandle` viven en
+ * `./replBridge.js` (2406 líneas fuente) y están portados ahí — el
+ * registro de entorno, el ciclo de vida de sesión, el poll loop, la
+ * reconexión y el teardown corren de verdad. Ese archivo declara un
+ * único bloqueo interno (la construcción de `HybridTransport` en la
+ * rama v1 de transporte), documentado en su propia cabecera — no aquí.
  *
- * `ReplBridgeHandle`/`BridgeState` se importan de `./contracts.js` (no
- * de `./replBridge.js`, que no existe aquí) — divergencia de tipado ya
- * declarada en `remoteBridgeCore.ts`: `contracts.ts` tipa los métodos
- * del handle con `unknown`/`unknown[]` en vez de los tipos precisos
- * (`Message[]`, `SDKMessage[]`, `SDKControlRequest`, `SDKControlResponse`)
- * que la fuente declara localmente; sin efecto en runtime porque el
- * objeto que produce cualquiera de las dos ramas (`initEnvLessBridgeCore`
- * o el `initBridgeCore` bloqueado) satisface ambas formas por estructura.
+ * `ReplBridgeHandle`/`BridgeState` se importan de `./replBridge.js`
+ * (los tipos precisos: `Message[]`, `SDKMessage[]`, `SDKControlRequest`,
+ * `SDKControlResponse`), igual que la fuente real
+ * (`ccnmt: initReplBridge.ts:71`) — no de `./contracts.js`, cuya versión
+ * más laxa (`unknown[]`) es el contrato público de host-bindings, un
+ * tipo distinto con el mismo nombre que coexiste en la fuente.
  *
  * `feature('KAIROS')`, `readEnv`, `getOriginalCwd`, `getSessionId`,
  * `getFeatureValue_CACHED_WITH_REFRESH`, `getOrganizationUUID`,
@@ -103,11 +97,11 @@ import {
 import { logBridgeSkip } from './debugUtils.js'
 import { checkEnvLessBridgeMinVersion } from './envLessBridgeConfig.js'
 import { getPollIntervalConfig } from './pollConfig.js'
-import type { PollIntervalConfig } from './pollConfigDefaults.js'
 import { initEnvLessBridgeCore } from './remoteBridgeCore.js'
 import { setCseShimGate } from './sessionIdCompat.js'
 import type { BridgeWorkerType } from './types.js'
-import type { BridgeState, ReplBridgeHandle } from './contracts.js'
+import type { BridgeState, ReplBridgeHandle } from './replBridge.js'
+import { initBridgeCore } from './replBridge.js'
 
 export type InitBridgeOptions = {
   onInboundMessage?: (msg: SDKMessage) => void | Promise<void>
@@ -145,174 +139,6 @@ export type InitBridgeOptions = {
    */
   outboundOnly?: boolean
   tags?: string[]
-}
-
-/**
- * Entrada explícita a `initBridgeCore` (bloqueado). Todo lo que
- * `initReplBridge` lee de estado de arranque (cwd, ID de sesión, git,
- * OAuth) se vuelve un campo aquí. Un llamador daemon (Agent SDK) que
- * nunca corre main.tsx lo llena por su cuenta.
- *
- * Porte fiel de la forma exacta de `ccnmt: packages/bridge/src/replBridge.ts:91-221`.
- */
-export type BridgeCoreParams = {
-  dir: string
-  machineName: string
-  branch: string
-  gitRepoUrl: string | null
-  title: string
-  baseUrl: string
-  sessionIngressUrl: string
-  /**
-   * String opaco enviado como metadata.worker_type. Usar
-   * BridgeWorkerType para los dos valores originados en el CLI;
-   * llamadores daemon pueden enviar cualquier string que el backend
-   * reconozca (es sólo una clave de filtro del lado web).
-   */
-  workerType: string
-  getAccessToken: () => string | undefined
-  /**
-   * POST /v1/sessions. Inyectado porque `createSession.ts` carga
-   * perezosamente `auth.ts`/`model.ts`/`oauth/client.ts` y
-   * `bun --outfile` inlinea los imports dinámicos — el lazy-load no
-   * ayuda, el árbol REPL entero termina en el bundle del Agent SDK.
-   *
-   * El wrapper REPL pasa `createBridgeSession` de `createSession.ts`.
-   * Un wrapper daemon pasaría `createBridgeSessionLean` de
-   * `sessionApi.ts` (sólo HTTP, orgUUID+model provistos por el
-   * llamador daemon).
-   *
-   * Recibe `gitRepoUrl`+`branch` para que el wrapper REPL pueda
-   * construir la fuente/resultado git de la tarjeta de sesión de
-   * claude.ai. El daemon los ignora.
-   */
-  createSession: (opts: {
-    environmentId: string
-    title: string
-    gitRepoUrl: string | null
-    branch: string
-    signal: AbortSignal
-  }) => Promise<string | null>
-  /**
-   * POST /v1/sessions/{id}/archive. Misma razón de inyección.
-   * Best-effort; el callback NO DEBE lanzar.
-   */
-  archiveSession: (sessionId: string) => Promise<void>
-  /**
-   * Invocado al reconectar tras env-lost para refrescar el título. El
-   * wrapper REPL lee el almacenamiento de sesión (recoge /rename); el
-   * daemon devuelve el título estático. Defaultea a () => title.
-   */
-  getCurrentTitle?: () => string
-  /**
-   * Convierte Message[] interno → SDKMessage[] para writeMessages() y
-   * los caminos de volcado/drenaje inicial. El wrapper REPL pasa el
-   * toSDKMessages real de utils/messages/mappers.ts. Llamadores daemon
-   * que sólo usan writeSdkMessages() y no pasan initialMessages pueden
-   * omitirlo — esos caminos son inalcanzables.
-   *
-   * Inyectado en vez de importado porque mappers.ts arrastra
-   * transitivamente src/commands.ts vía messages.ts → api.ts →
-   * prompts.ts, metiendo el registro de comandos + el árbol de React
-   * completo en el bundle del Agent SDK.
-   */
-  toSDKMessages?: (messages: Message[]) => SDKMessage[]
-  /**
-   * Manejador de refresco OAuth 401 pasado a createBridgeApiClient. El
-   * wrapper REPL pasa handleOAuth401Error; el daemon pasa el manejador
-   * de su propio AuthManager. Inyectado porque utils/auth.ts arrastra
-   * transitivamente el registro de comandos vía config.ts → file.ts →
-   * permissions/filesystem.ts → sessionStorage.ts → commands.ts.
-   */
-  onAuth401?: (staleAccessToken: string) => Promise<boolean>
-  /**
-   * Getter de config de intervalo de poll para el bucle de heartbeat
-   * de poll de trabajo. El wrapper REPL pasa getPollIntervalConfig
-   * (respaldado por GrowthBook, permite a ops ajustar en vivo las
-   * tasas de poll en toda la flota). El daemon pasa una config
-   * estática con heartbeat de 60s (5× margen bajo el TTL de 300s del
-   * lease de trabajo). Inyectado porque growthbook.ts arrastra
-   * transitivamente el registro de comandos vía la misma cadena de
-   * config.ts.
-   */
-  getPollIntervalConfig?: () => PollIntervalConfig
-  /**
-   * Máximo de mensajes iniciales a reproducir al conectar. El wrapper
-   * REPL lo lee de la bandera GrowthBook tengu_bridge_initial_history_cap.
-   * El daemon no pasa initialMessages así que esto nunca se lee.
-   * Default 200, igual que el default de la bandera.
-   */
-  initialHistoryCap?: number
-  // Misma maquinaria de volcado REPL que InitBridgeOptions — el daemon
-  // los omite.
-  initialMessages?: Message[]
-  previouslyFlushedUUIDs?: Set<string>
-  onInboundMessage?: (msg: SDKMessage) => void
-  onPermissionResponse?: (response: SDKControlResponse) => void
-  onInterrupt?: () => void
-  onSetModel?: (model: string | undefined) => void
-  onSetMaxThinkingTokens?: (maxTokens: number | null) => void
-  /**
-   * Devuelve un veredicto de política para que este módulo pueda emitir
-   * un control_response de error sin importar los checks de política
-   * él mismo (constraint de aislamiento de bootstrap).
-   */
-  onSetPermissionMode?: (
-    mode: PermissionMode,
-  ) => { ok: true } | { ok: false; error: string }
-  onStateChange?: (state: BridgeState, detail?: string) => void
-  /**
-   * Dispara en cada mensaje real de usuario que fluye por
-   * writeMessages() hasta que el callback devuelve true (terminado).
-   * Refleja el onUserMessage de remoteBridgeCore.ts para que el bridge
-   * REPL pueda derivar un título de sesión de los primeros prompts
-   * cuando no se fijó ninguno al iniciar.
-   */
-  onUserMessage?: (text: string, sessionId: string) => boolean
-  /** Ver InitBridgeOptions.perpetual. */
-  perpetual?: boolean
-  /**
-   * Siembra lastTransportSequenceNum — la marca de agua alta del
-   * stream de eventos SSE que se acarrea entre intercambios de
-   * transporte dentro de un mismo proceso. Llamadores daemon pasan el
-   * valor que persistieron al apagar, para que el PRIMER connect SSE
-   * de un proceso fresco envíe from_sequence_num y el servidor no
-   * reproduzca la historia completa. Llamadores REPL lo omiten (sesión
-   * fresca cada corrida → 0 es correcto).
-   */
-  initialSSESequenceNum?: number
-}
-
-/**
- * Superconjunto de ReplBridgeHandle. Añade getSSESequenceNum para
- * llamadores daemon que persisten el número de secuencia SSE entre
- * reinicios de proceso y lo pasan de vuelta como initialSSESequenceNum
- * en el siguiente arranque.
- */
-export type BridgeCoreHandle = ReplBridgeHandle & {
-  getSSESequenceNum(): number
-}
-
-/**
- * BLOQUEADO — ver el docstring del módulo. `initBridgeCore` vive en
- * `./replBridge.js` (2406 líneas fuente, no portado en este pase: el
- * ciclo registro de ambiente → creación de sesión → bucle de poll →
- * WS de ingreso → apagado, con recuperación de errores de poll por
- * backoff exponencial y toda la maquinaria de transporte v1/v2). Esta
- * función existe con la firma exacta de la fuente (contrato de tipos
- * completo vía BridgeCoreParams/BridgeCoreHandle arriba) y lanza al
- * invocarse, en vez de omitirse en silencio.
- */
-export async function initBridgeCore(
-  _params: BridgeCoreParams,
-): Promise<BridgeCoreHandle | null> {
-  throw new Error(
-    'initBridgeCore: bloqueado — replBridge.ts (2406 líneas fuente) ' +
-      'no está portado en este pase. El camino v1 (env-based: ' +
-      'register/poll/ack/heartbeat) de initReplBridge() depende de ' +
-      'esta función; el camino v2 (env-less, tengu_bridge_repl_v2) ' +
-      'SÍ funciona vía initEnvLessBridgeCore en remoteBridgeCore.ts.',
-  )
 }
 
 const TITLE_MAX_LEN = 50

@@ -7,13 +7,13 @@
  * Core del bridge de Remote Control "sin ambiente" (env-less).
  * "Sin ambiente" = sin la capa de Environments API. Distinto de "CCR v2"
  * (el protocolo de transporte /worker/*) — el camino con ambiente
- * (replBridge.ts, no portado en este pase) también puede usar transporte
- * CCR v2 vía CLAUDE_CODE_USE_CCR_V2. Este archivo trata de quitar la capa
- * de poll/dispatch, no del protocolo de transporte de abajo.
+ * (`./replBridge.js`, portado) también puede usar transporte CCR v2 vía
+ * CLAUDE_CODE_USE_CCR_V2. Este archivo trata de quitar la capa de
+ * poll/dispatch, no del protocolo de transporte de abajo.
  *
- * A diferencia de initBridgeCore (con ambiente, ~2400 líneas, no
- * portado), éste se conecta directo a la capa de session-ingress sin la
- * capa de work-dispatch de la Environments API:
+ * A diferencia de initBridgeCore (con ambiente, `./replBridge.js`),
+ * éste se conecta directo a la capa de session-ingress sin la capa de
+ * work-dispatch de la Environments API:
  *
  *   1. POST /v1/code/sessions              (OAuth, sin env_id)  → session.id
  *   2. POST /v1/code/sessions/{id}/bridge  (OAuth)              → {worker_jwt, expires_in, api_base_url, worker_epoch}
@@ -31,17 +31,12 @@
  * en runtime hasta que `@thyrox/cli` porte `CCRClient`/`SSETransport` es
  * la construcción real del transporte, no la lógica de este archivo.
  *
- * `ReplBridgeHandle`/`BridgeState` — la fuente los importa de
- * `./replBridge.js` (2406 líneas, NO portado en este pase). Se importan
- * en su lugar de `./contracts.js`, que ya declara las mismas dos formas
- * —`BridgeState` es idéntico; `ReplBridgeHandle` en `contracts.ts` tipa
- * sus métodos con `unknown`/`unknown[]` en vez de los tipos precisos
- * (`Message[]`, `SDKMessage[]`, `SDKControlRequest`, `SDKControlResponse`)
- * que `replBridge.ts` declara— divergencia de tipado declarada, sin
- * efecto en runtime (el objeto devuelto por `initEnvLessBridgeCore`
- * satisface ambas formas por estructura). Se retira cuando
- * `@thyrox/bridge` porte `replBridge.ts` y pueda importar sus tipos
- * exactos.
+ * `ReplBridgeHandle`/`BridgeState` se importan de `./replBridge.js`,
+ * igual que la fuente (`ccnmt: remoteBridgeCore.ts:65`) — los tipos
+ * precisos (`Message[]`, `SDKMessage[]`, `SDKControlRequest`,
+ * `SDKControlResponse`), no la versión más laxa (`unknown[]`) de
+ * `./contracts.js`, que es un contrato público distinto con el mismo
+ * nombre (el de host-bindings).
  *
  * `logForDebugging`, `logForDiagnosticsNoPII`, `isInProtectedNamespace`,
  * `errorMessage`, `sleep`, `logEvent`, `registerCleanup`,
@@ -85,7 +80,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   type PermissionMode,
 } from './internal/pendingCrossPackageDeps.js'
-import type { ReplBridgeHandle, BridgeState } from './contracts.js'
+import type { ReplBridgeHandle, BridgeState } from './replBridge.js'
 import type { Message } from '@thyrox/agent/messageShapes.js'
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type {
