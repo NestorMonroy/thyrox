@@ -52,8 +52,8 @@ if [[ -z "$_thyrox_root" ]]; then
     done
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
-RAIZ="$(thyrox_root)" || exit 2
-ORIGEN="$RAIZ/.claude"
+ROOT="$(thyrox_root)" || exit 2
+SOURCE="$ROOT/.claude"
 
 # --- la lista explicita ------------------------------------------------------
 # H-DOCS-469 (a): el copiador declara QUE copia, por lista, no por barrido de
@@ -67,7 +67,7 @@ ORIGEN="$RAIZ/.claude"
 # eso su fila dice «via settings».
 #   Ciega a: una ruta que el cliente COMPONGA en vez de literalizar. El 0 de
 #   `.claude/hooks` acota lo que se puede afirmar del volcado, no del cliente.
-CLASES=(
+CLASSES=(
     "rules:reglas siempre-cargadas:descubierta por el cliente"
     "agents:subagentes despachables:descubierta por el cliente"
     "commands:comandos de barra:descubierta por el cliente"
@@ -76,9 +76,9 @@ CLASES=(
     "scripts:gates y utilidades:los invoca un hook por ruta"
 )
 
-USE_LINK=false; DRY_RUN=false; FORCE=false; SOLO_LISTA=false
-DECLINE=false; SOLO_DEST=false
-OVERRIDE_PATH=""; PEDIDAS=""
+USE_LINK=false; DRY_RUN=false; FORCE=false; LIST_ONLY=false
+DECLINE=false; DEST_ONLY=false
+OVERRIDE_PATH=""; REQUESTED=""
 
 # El marcador de decision. Vive en el DESTINO y no en el repositorio porque
 # la decision es de quien clona, no del proyecto: dos clones en la misma
@@ -92,10 +92,10 @@ while [[ $# -gt 0 ]]; do
         --link)     USE_LINK=true; shift ;;
         --dry-run)  DRY_RUN=true; shift ;;
         --force)    FORCE=true; shift ;;
-        --list)     SOLO_LISTA=true; shift ;;
+        --list)     LIST_ONLY=true; shift ;;
         --decline)  DECLINE=true; shift ;;
-        --print-dest) SOLO_DEST=true; shift ;;
-        --class)    PEDIDAS="${2:-}"; shift 2 ;;
+        --print-dest) DEST_ONLY=true; shift ;;
+        --class)    REQUESTED="${2:-}"; shift 2 ;;
         --path)     OVERRIDE_PATH="${2:-}"; shift 2 ;;
         -h|--help)  usage; exit 0 ;;
         *) echo "opcion desconocida: $1" >&2; usage >&2; exit 2 ;;
@@ -112,12 +112,12 @@ DEST="$(resolve_dest)"
 
 # `--print-dest` existe para que el aviso de primer encuentro no reimplemente la
 # precedencia: hay UN resolutor, y quien lo necesite lo pregunta.
-$SOLO_DEST && { printf '%s\n' "$DEST"; exit 0; }
+$DEST_ONLY && { printf '%s\n' "$DEST"; exit 0; }
 
 # marcar <decision> — deja constancia de que la pregunta ya se respondio.
 marcar() {
     mkdir -p "$DEST" 2>/dev/null || return 0
-    printf '%s %s %s\n' "$1" "$(date -u +%Y-%m-%dT%H:%M:%S)" "$ORIGEN" \
+    printf '%s %s %s\n' "$1" "$(date -u +%Y-%m-%dT%H:%M:%S)" "$SOURCE" \
         > "$DEST/$MARCADOR" 2>/dev/null || true
 }
 
@@ -134,19 +134,19 @@ install_file() {
 
 seleccionadas() {
     local fila nombre
-    for fila in "${CLASES[@]}"; do
+    for fila in "${CLASSES[@]}"; do
         nombre="${fila%%:*}"
-        [[ -z "$PEDIDAS" ]] && { printf '%s\n' "$nombre"; continue; }
-        [[ ",$PEDIDAS," == *",$nombre,"* ]] && printf '%s\n' "$nombre"
+        [[ -z "$REQUESTED" ]] && { printf '%s\n' "$nombre"; continue; }
+        [[ ",$REQUESTED," == *",$nombre,"* ]] && printf '%s\n' "$nombre"
     done
 }
 
-if $SOLO_LISTA; then
-    echo "Origen:  $ORIGEN"
+if $LIST_ONLY; then
+    echo "Origen:  $SOURCE"
     echo "Destino: $DEST   (precedencia: --path > \$CLAUDE_CONFIG_DIR > ~/.claude)"
     echo ""
     echo "Clases declaradas:"
-    for fila in "${CLASES[@]}"; do
+    for fila in "${CLASSES[@]}"; do
         n="${fila%%:*}"; resto="${fila#*:}"
         printf '  %-9s %-28s %s\n' "$n" "${resto%%:*}" "${resto#*:}"
     done
@@ -161,16 +161,16 @@ fi
 # origen era `/home/user/.claude`, las seis clases faltaban, y el instalador
 # devolvia exito habiendo copiado nada.
 presentes=0
-for clase in $(seleccionadas); do [[ -d "$ORIGEN/$clase" ]] && presentes=$((presentes+1)); done
+for clase in $(seleccionadas); do [[ -d "$SOURCE/$clase" ]] && presentes=$((presentes+1)); done
 if [[ "$presentes" -eq 0 ]]; then
-    echo "instalar-config-usuario: NINGUNA clase pedida existe bajo $ORIGEN." >&2
+    echo "instalar-config-usuario: NINGUNA clase pedida existe bajo $SOURCE." >&2
     echo "  NO se emite un conteo: un 0 aqui seria un verde falso." >&2
     exit 2
 fi
 
 copiados=0; saltados=0; colisiones=0; vistos=0
 for clase in $(seleccionadas); do
-    src="$ORIGEN/$clase"
+    src="$SOURCE/$clase"
     [[ -d "$src" ]] || { echo "aviso: $clase no existe en el origen — se omite" >&2; continue; }
     while IFS= read -r rel; do
         vistos=$((vistos+1))

@@ -24,7 +24,7 @@ while [[ "$_thyrox_desde" != "/" && ! -f "$_thyrox_desde/src/paths/reach.py" ]];
     _thyrox_desde="$(dirname "$_thyrox_desde")"
 done
 source "$_thyrox_desde/src/lib/reach.sh"
-RAIZ="$(thyrox_tree_root)" || exit 2
+ROOT="$(thyrox_tree_root)" || exit 2
 ADVISOR=""; CONSUMIDOR="${CONSUMIDOR:-}"
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -35,14 +35,14 @@ while [[ $# -gt 0 ]]; do
         # convertia `--help` en un directorio y el error salia de `dirname`,
         # tres pasos mas abajo y hablando de otra cosa.
         -*) echo "opcion desconocida: $1" >&2; exit 2 ;;
-        *) RAIZ="$1"; shift ;;
+        *) ROOT="$1"; shift ;;
     esac
 done
 case "$ADVISOR" in
     ""|claude-*) ;;
     *) echo "ERROR: --advisor va por identificador completo (claude-…), no alias: $ADVISOR" >&2; exit 2 ;;
 esac
-DEST="$RAIZ/.claude/settings.local.json"
+DEST="$ROOT/.claude/settings.local.json"
 THYROX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # El hogar de los hooks es el `.claude/hooks/` del CONSUMIDOR, no el de thyrox,
