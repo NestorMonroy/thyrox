@@ -21,8 +21,8 @@
 #
 # Uso:
 #   source "<ruta a este archivo>"
-#   RAIZ="$(thyrox_root)"        # la raiz de thyrox
-#   ARBOL="$(thyrox_tree_root)"  # el padre de los clones
+#   ROOT="$(thyrox_root)"        # la raiz de thyrox
+#   TREE="$(thyrox_tree_root)"   # el padre de los clones
 #
 # Ambas REHUSAN con codigo 2 y un motivo en stderr en vez de imprimir una ruta
 # plausible: un consumidor que recibiera una ruta inexistente seguiria en verde
@@ -40,13 +40,13 @@
 #: aritmetica.
 THYROX_SH_MARKER="${THYROX_LOCATOR:-src/paths/reach.py}"
 
-# _thyrox_ascend <desde> — el ascenso minimo hasta el marcador. Imprime la raiz
+# _thyrox_ascend <from_dir> — el ascenso minimo hasta el marcador. Imprime la raiz
 # o nada. Es privado: quien lo necesite pasa por `thyrox_root`.
 _thyrox_ascend() {
-    local nivel; nivel="$(cd "${1:-.}" 2>/dev/null && pwd)" || return 1
-    while [[ -n "$nivel" && "$nivel" != "/" ]]; do
-        [[ -f "$nivel/$THYROX_SH_MARKER" ]] && { printf '%s' "$nivel"; return 0; }
-        nivel="$(dirname "$nivel")"
+    local level; level="$(cd "${1:-.}" 2>/dev/null && pwd)" || return 1
+    while [[ -n "$level" && "$level" != "/" ]]; do
+        [[ -f "$level/$THYROX_SH_MARKER" ]] && { printf '%s' "$level"; return 0; }
+        level="$(dirname "$level")"
     done
     [[ -f "/$THYROX_SH_MARKER" ]] && { printf '%s' "/"; return 0; }
     return 1
@@ -56,23 +56,23 @@ _thyrox_ascend() {
 # precedencia. Cae al ascenso solo si no hay python3: un entorno sin el sigue
 # necesitando la raiz, y el ascenso es correcto aunque sea menos completo.
 _thyrox_delegate() {
-    local modo="$1" desde raiz salida
-    desde="$(cd "$(dirname "${BASH_SOURCE[1]:-$0}")" 2>/dev/null && pwd)" || desde="$PWD"
-    raiz="$(_thyrox_ascend "$desde")" || raiz="$(_thyrox_ascend "$PWD")" || {
-        echo "reach.sh: no se hallo $THYROX_SH_MARKER ascendiendo desde $desde" \
+    local mode="$1" from_dir root output
+    from_dir="$(cd "$(dirname "${BASH_SOURCE[1]:-$0}")" 2>/dev/null && pwd)" || from_dir="$PWD"
+    root="$(_thyrox_ascend "$from_dir")" || root="$(_thyrox_ascend "$PWD")" || {
+        echo "reach.sh: no se hallo $THYROX_SH_MARKER ascendiendo desde $from_dir" \
              "ni desde $PWD. Declara THYROX_ROOT o invoca desde dentro del arbol." >&2
         return 2
     }
     if command -v python3 >/dev/null 2>&1; then
-        salida="$(python3 "$raiz/$THYROX_SH_MARKER" "$modo" 2>&1)" || {
-            printf '%s\n' "$salida" >&2; return 2
+        output="$(python3 "$root/$THYROX_SH_MARKER" "$mode" 2>&1)" || {
+            printf '%s\n' "$output" >&2; return 2
         }
-        printf '%s' "$salida"; return 0
+        printf '%s' "$output"; return 0
     fi
-    [[ "$modo" == "--thyrox-root" ]] || {
+    [[ "$mode" == "--thyrox-root" ]] || {
         echo "reach.sh: $modo exige python3, que no esta en PATH." >&2; return 2
     }
-    printf '%s' "$raiz"
+    printf '%s' "$root"
 }
 
 # thyrox_root — la raiz de thyrox mismo.
