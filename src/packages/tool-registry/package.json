@@ -1,0 +1,48 @@
+{
+  "name": "@thyrox/tool-registry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Porte de @claude-code-how-works/tool-registry (ccnmt), TASK #232: la pieza angular del ciclo — el contrato Tool completo (buildTool, ToolUseContext, Tool, ToolDef) y los cuatro clientes MCP que 13 de los 14 modulos ausentes en @thyrox/mcp-runtime necesitan como valor (ListMcpResourcesTool, MCPTool, McpAuthTool, ReadMcpResourceTool). 15 modulos completos + 3 parciales declarados sobre 295 modulos .ts/.tsx de ccnmt (medido con find, sin tests; index.ts e internal/pendingCrossPackageDeps.ts no cuentan contra ese universo por no tener contraparte directa en ccnmt) -- ver hallazgo de esta iniciativa para el desglose modulo a modulo. renderToolResultMessage/renderToolUseProgressMessage de los tres clientes MCP con UI quedan BLOQUEADOS por la ausencia total de @anthropic/ink + react + @thyrox/repl en este arbol (mismo bloqueador que @thyrox/output, @thyrox/swarm y @thyrox/app-host ya declaran): el modulo carga sin fallar, invocar la funcion dispara el error con el motivo explicito (ver internal y los UI.ts de cada herramienta). McpAuthTool.ts, ListMcpResourcesTool.ts y ReadMcpResourceTool.ts importan symbols de @thyrox/mcp-runtime/{auth,clientRuntime,mcpOutputStorage}.js que siguen ausentes por el lado de mcp-runtime -- es el ciclo inverso, no un bloqueo de este paquete.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    "./Tool.js": "./src/Tool.ts",
+    "./progressTypes": "./src/progressTypes.ts",
+    "./appStateTypes": "./src/appStateTypes.ts",
+    "./genericTypeUtils": "./src/genericTypeUtils.ts",
+    "./fileStateCache": "./src/fileStateCache.ts",
+    "./codeIndexing.js": "./src/codeIndexing.ts",
+    "./utils/array.js": "./src/utils/array.ts",
+    "./utils/lazySchema.js": "./src/utils/lazySchema.ts",
+    "./tools/MCPTool/classifyForCollapse.js": "./src/tools/MCPTool/classifyForCollapse.ts",
+    "./tools/MCPTool/MCPTool.js": "./src/tools/MCPTool/MCPTool.ts",
+    "./tools/MCPTool/UI.js": "./src/tools/MCPTool/UI.ts",
+    "./tools/MCPTool/prompt.js": "./src/tools/MCPTool/prompt.ts",
+    "./tools/ListMcpResourcesTool/ListMcpResourcesTool.js": "./src/tools/ListMcpResourcesTool/ListMcpResourcesTool.ts",
+    "./tools/ListMcpResourcesTool/UI.js": "./src/tools/ListMcpResourcesTool/UI.ts",
+    "./tools/ListMcpResourcesTool/prompt.js": "./src/tools/ListMcpResourcesTool/prompt.ts",
+    "./tools/ReadMcpResourceTool/ReadMcpResourceTool.js": "./src/tools/ReadMcpResourceTool/ReadMcpResourceTool.ts",
+    "./tools/ReadMcpResourceTool/UI.js": "./src/tools/ReadMcpResourceTool/UI.ts",
+    "./tools/ReadMcpResourceTool/prompt.js": "./src/tools/ReadMcpResourceTool/prompt.ts",
+    "./tools/McpAuthTool/McpAuthTool.js": "./src/tools/McpAuthTool/McpAuthTool.ts",
+    "./internal/pendingCrossPackageDeps.js": "./src/internal/pendingCrossPackageDeps.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/permission": "workspace:*",
+    "zod": "^4.3.6",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "lodash-es": "^4.18.1",
+    "lru-cache": "^11.0.0"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.124.0"
+  }
+}
