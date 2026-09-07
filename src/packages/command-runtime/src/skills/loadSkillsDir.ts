@@ -23,6 +23,7 @@ import { getManagedFilePath } from './managedPath.js'
  *   (0 dependencias en el `package.json` de este paquete), se sustituye
  *   por una memoización manual keyed por el propio valor de
  *   `CLAUDE_CONFIG_DIR`, igual que hace la fuente con su resolver.
+ *
  * - `roughTokenCountEstimation` — de `@claude-code-how-works/agent/tokenEstimation.js`.
  *   Ese símbolo SÍ existe portado en `@thyrox/agent/tokenEstimation.ts`,
  *   pero `command-runtime` no puede importarlo: la dependencia va en el
@@ -34,6 +35,22 @@ import { getManagedFilePath } from './managedPath.js'
  *   (`CommandBase & (PromptCommand | LocalCommand | LocalJSXCommand)`).
  *   Se sustituye por `SkillFrontmatter`, el subconjunto estructural que
  *   la función realmente lee (`name`, `description`, `whenToUse`).
+ *
+ * HALLAZGO CORREGIDO EN ESTE PASE (H-COMMAND-RUNTIME-01): la memoización
+ * manual de `getClaudeConfigHomeDir` comparaba `cachedHomeDirKey !== key`
+ * contra un `cachedHomeDirKey` inicializado en `undefined`. Con
+ * `CLAUDE_CONFIG_DIR` sin declarar (el caso por defecto), `key` TAMBIÉN es
+ * `undefined` en la primera llamada, así que la comparación daba `false` —
+ * la caché nunca se poblaba y la función devolvía `undefined`, que `join()`
+ * rechaza con `TypeError: The "paths[0]" property must be of type string,
+ * got undefined`. Invisible en la suite existente: `skillHelpers.test.ts`
+ * fija `CLAUDE_CONFIG_DIR` en su `beforeAll` ANTES de la primera llamada,
+ * así que `key` nunca es `undefined` ahí — el caso real (entorno sin la
+ * variable) no tenía cobertura. Se destapó al abrir la puerta de CLI de la
+ * tarea #223 e invocar `skills-path userSettings skills` sobre el entorno
+ * real del contenedor. Fix: un centinela (`SIN_CACHE`) que nunca coincide
+ * con una clave real, definida o no — en vez de comparar contra el mismo
+ * `undefined` que `key` puede traer.
  */
 
 export type SettingSource =
@@ -45,7 +62,10 @@ export type SettingSource =
 
 // Memoizado, keyed por el propio valor de CLAUDE_CONFIG_DIR — igual que el
 // resolver de `lodash-es/memoize` de la fuente, sin la dependencia.
-let cachedHomeDirKey: string | undefined
+// `SIN_CACHE` es el estado «todavía no se llamó»: NUNCA coincide con una
+// clave real, definida o no — ver H-COMMAND-RUNTIME-01 en la cabecera.
+const SIN_CACHE: unique symbol = Symbol('sin-cache-aun')
+let cachedHomeDirKey: string | undefined | typeof SIN_CACHE = SIN_CACHE
 let cachedHomeDir: string | undefined
 
 function getClaudeConfigHomeDir(): string {
