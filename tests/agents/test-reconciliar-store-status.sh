@@ -186,14 +186,21 @@ mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
 print(mod.store_db().exists())
 PY
 )"
-afirmar "y el ancla es .claude, no .claude/scripts" \
-        ".claude/agent-results/agent_store.sqlite3" "$(python3 - "$SCRIPT" <<'PY'
+# El ancla se mudo del consumidor al proveedor (#258): el store versionado
+# vive en `thyrox: agent-results/`, no bajo `.claude/` de un kaupamex-*. Lo
+# que h-docs-498 midio sigue siendo el defecto a cubrir —que la ruta no
+# derive un `scripts/` intermedio— y por eso el caso se reapunta en vez de
+# retirarse: sin el, `store_db()` puede volver a apuntar a un directorio
+# vacio y el guard de `_ids_in_store` leeria esa ausencia como store vacio.
+afirmar "el ancla es la raiz del proveedor, y sin scripts/ intermedio" \
+        "agent-results/agent_store.sqlite3|sin_scripts" "$(python3 - "$SCRIPT" <<'EOPY'
 import importlib.util, sys
 spec = importlib.util.spec_from_file_location("_rs", sys.argv[1])
 mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
-partes = mod.store_db().parts
-print("/".join(partes[partes.index(".claude"):]))
-PY
+ruta = mod.store_db()
+cola = "/".join(ruta.parts[-2:])
+print(f"{cola}|{'con_scripts' if 'scripts' in ruta.parts else 'sin_scripts'}")
+EOPY
 )"
 echo
 printf '%d ok, %d fallos\n' "$OK" "$FALLO"

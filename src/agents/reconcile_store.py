@@ -612,6 +612,69 @@ def _declarar_no_medido(on_disk: list) -> int:
         conn.close()
 
 
+def _backfill_retention_level(db: Path) -> int:
+    """Asigna nivel a la fila terminal que ningún barrido de disco tocará.
+
+    ``_retention_level`` sólo alcanza a la fila cuyo transcript el barrido
+    encuentra. La que nunca tuvo transcript no pasa por ahí, así que su
+    ``retention_level`` se queda en ``NULL`` — y ``NULL`` significa «todavía
+    no se sabe», que de esa fila es falso: no se va a saber más nunca.
+
+    Medido el 2026-09-07 sobre el store fusionado (1214 filas): **93** con
+    nivel ``NULL``, de las cuales 56 eran ``completed`` nacidas del hook y ya
+    marcadas ``usage_source='no_medido'``. Dos columnas de la misma fila
+    decían cosas distintas: una que el costo es irrecuperable, la otra que
+    todavía no se sabe.
+
+    **El criterio es la PROCEDENCIA de la medición, no el estado**, y por eso
+    no basta con reusar ``_retention_level``:
+
+    - ``no_medido`` → **4**, entregara o no. Nivel 4 de
+      ``niveles-de-retencion.md`` es «completitud percibida, sin
+      persistencia»: el hook vio terminar al agente y no quedó registro
+      recuperable. Su ``outcome_source`` pasa a ``sin_transcript`` —el
+      instrumento que decidió fue la ausencia del archivo que el cliente
+      declaró—, y sólo si estaba vacío: quien ya midió el desenlace manda.
+    - ``transcript`` → el nivel que su estado implica (3 si entregó, 4 si
+      murió). Su persistencia se declaró y se leyó; que el JSONL ya no esté
+      en disco no borra lo que se supo.
+    - ``NULL`` → **no se toca**. Es «nadie ha pasado todavía», y escribir un
+      nivel ahí colapsa la distinción que la columna existe para conservar.
+
+    Un estado no terminal tampoco se toca, por la misma razón que
+    ``_retention_level`` devuelve ``None``: un agente vivo no ha entregado ni
+    ha muerto.
+    """
+    if not db.exists():
+        return 0
+    conn = sqlite3.connect(db)
+    try:
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(agent_sessions)")}
+        if not {"retention_level", "usage_source", "outcome_source"} <= cols:
+            return 0
+        pendientes = conn.execute(
+            "SELECT agent_id, status, usage_source FROM agent_sessions "
+            "WHERE retention_level IS NULL AND usage_source IS NOT NULL "
+            "AND status IN ('completed','failed')").fetchall()
+        tocadas = 0
+        for agent_id, status, usage in pendientes:
+            if usage == "no_medido":
+                nivel, marca = 4, "sin_transcript"
+            elif usage == "transcript":
+                nivel, marca = (3 if status == "completed" else 4), None
+            else:
+                continue
+            conn.execute(
+                "UPDATE agent_sessions SET retention_level=?, "
+                "outcome_source=COALESCE(outcome_source, ?) WHERE agent_id=?",
+                (nivel, marca, agent_id))
+            tocadas += 1
+        conn.commit()
+        return tocadas
+    finally:
+        conn.close()
+
+
 def _cierre(transcript: Path, agent_id: str, status: str) -> list:
     """Argumentos del ``actualizar-sesion`` para este transcript."""
     meta = _extract_meta(str(transcript))
@@ -931,11 +994,14 @@ def main() -> int:
     # Después de reparar, no antes: una fila que este mismo pase acaba de
     # medir no debe marcarse como no medida.
     no_medidos = _declarar_no_medido(on_disk)
+    # Y después de declarar la medición, no antes: el backfill reparte por la
+    # PROCEDENCIA de esa medición, así que necesita que ya esté escrita.
+    nivelados = _backfill_retention_level(store_db())
 
     print(f"reconciliar-store: {ok} registrados, {reparados} completados, "
           f"{intactos} sin cambios, {fallo} fallidos, "
           f"{len(on_disk) - len(faltan)} ya presentes, "
-          f"{no_medidos} declarados no medidos "
+          f"{no_medidos} declarados no medidos, {nivelados} nivelados "
           f"(alcance medido: {len(on_disk)} transcripts en disco)")
     return 0
 
