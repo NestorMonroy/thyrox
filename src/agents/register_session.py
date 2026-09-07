@@ -132,6 +132,35 @@ def normalize_model_alias(raw: str | None) -> str | None:
     return valor if valor in MODEL_ALIASES else None
 
 
+def execution_facts(payload: dict, transcript_presente: bool) -> dict:
+    """Hechos de COMO corrio el agente, para la fila que se queda sin transcript.
+
+    Devuelve {} cuando el transcript esta: ahi el uso real sale de el, y estos
+    campos serian ruido. El camino que ya funciona no cambia.
+
+    Guarda `effort` y `permission_mode` —como se PIDIO que corriera, no lo que
+    dijo— y la LONGITUD del mensaje final, nunca su texto. La distincion no es
+    escrupulo: el guion ya decidio guardar «nombres y no valores» porque un
+    valor puede arrastrar contenido de la sesion (#662), y
+    `last_assistant_message` ES contenido de sesion. Su longitud es un hecho de
+    la ejecucion y no dice que decia.
+
+    *Metrica:* claves del payload de `SubagentStop` que describen la ejecucion.
+    *Ciega a:* el uso de tokens, que solo vive en el transcript — esta funcion
+    no lo sustituye ni pretende hacerlo.
+    """
+    if transcript_presente:
+        return {}
+    hechos: dict = {}
+    for clave in ("effort", "permission_mode"):
+        valor = payload.get(clave)
+        if valor:
+            hechos[clave] = valor
+    mensaje = payload.get("last_assistant_message")
+    hechos["longitud_mensaje_final"] = len(str(mensaje)) if mensaje else 0
+    return hechos
+
+
 def api_error(transcript_path) -> dict | None:
     """El error de API que mato al agente, si el transcript lo declara.
 
@@ -784,6 +813,18 @@ def main() -> None:
         # de la sesión (la lista blanca del anonimizador, tarea #662), y para
         # separar dos poblaciones basta con que sus formas difieran.
         marca = {"claves_de_payload": sorted(payload)}
+        # Sin transcript la fila queda vacia y el reconciliador NO la alcanza:
+        # lee de disco. Medido hoy: 68 de 107 filas nuevas sin modelo, sin tipo
+        # y sin telemetria, y la correlacion con el disco es perfecta —39 con
+        # transcript, 39 con modelo; 68 sin transcript, 0 con modelo—. Por
+        # procedencia, `reconciliacion` llena el 98 % y `hook` el 3 %.
+        #
+        # Estos hechos NO completan la fila —el uso real solo esta en el
+        # transcript— pero la sacan de vacia: es el paso de nivel 4 a nivel 3
+        # de `niveles-de-retencion.md`, aplicado a una fila en vez de a un
+        # agente.
+        marca.update(execution_facts(payload, os.path.exists(transcript_path)
+                                     if transcript_path else False))
         tareas = payload.get("background_tasks")
         if transcript_path:
             marca["agent_transcript_path"] = transcript_path
