@@ -44,6 +44,17 @@ CENSO = reach.thyrox_root() / "src" / "corpus" / "census_counterparts.py"
 DECL = reach.root("docs") / ".claude" / "baselines" / "addon-alias.txt"
 REFERENCIA = "/home/user/odoo-tools"
 
+# El DOMINIO es del consumidor (#249): el alias del árbol de referencia, el
+# repo censado, dónde cuelgan sus unidades y qué archivo las marca. El censo ya
+# no los conoce, así que la PRUEBA los declara — que es el papel que le toca:
+# aquí es ella quien hace de consumidor.
+DOMINIO = {
+    "THYROX_CENSUS_REFERENCE_ROOT": "odoo-tools",
+    "THYROX_CENSUS_ROOT": "api",
+    "THYROX_CENSUS_UNIT_BASES": "addons,src/addons",
+    "THYROX_CENSUS_UNIT_MARKER": "__manifest__.py",
+}
+
 if not DECL.is_file():
     print(f"REHÚSA — la declaración del consumidor no está en {DECL}. "
           f"Sin ella ningún caso puede discriminar, y un verde mediría sólo "
@@ -53,6 +64,7 @@ if not DECL.is_file():
 
 def run(*args: str, extra_roots: str | None = REFERENCIA) -> tuple[int, str]:
     entorno = dict(os.environ)
+    entorno.update(DOMINIO)
     if extra_roots is None:
         entorno.pop("THYROX_EXTRA_REACH_ROOTS", None)
     else:
@@ -94,7 +106,7 @@ with tempfile.TemporaryDirectory(dir=str(reach.scratch_root())) as tmp:
         for l in DECL.read_text().splitlines()))
     _, salida = run("--quiet", "--declaracion", str(rota))
     check("avisa de la raíz vacía", True,
-          "AVISO: raíz declarada sin addons: odoo19e" in salida)
+          "AVISO: raíz declarada sin unidades: odoo19e" in salida)
 
     print("== 4. sin ninguna fila raiz: el censo se REHÚSA a medir ==")
     # 2, no 1: «no emití veredicto» y no «no hay incumplidores». Un 0 aquí se
@@ -127,6 +139,7 @@ check("y la entrada de la RUTA del archivo que la declara", "THYROX_ENV_FILE",
 # mensaje equivocado. Se aísla la variable bajo prueba.
 entorno_limpio = {k: v for k, v in os.environ.items()
                   if k != census_counterparts.COUNTERPART_DECLARATION_VAR}
+entorno_limpio.update(DOMINIO)
 entorno_limpio["THYROX_EXTRA_REACH_ROOTS"] = REFERENCIA
 hecho = subprocess.run([sys.executable, str(CENSO), "--quiet"],
                        capture_output=True, text=True, env=entorno_limpio)
@@ -136,7 +149,7 @@ check("y el mensaje nombra la constante", True,
 
 print("== 7. la referencia entra por el tramo extensible, o se rehúsa ==")
 codigo, salida = run("--quiet", "--declaracion", str(DECL), extra_roots=None)
-check("sin odoo-tools en el alcance sale 2", 2, codigo)
+check("sin la referencia declarada en el alcance sale 2", 2, codigo)
 check("y nombra la variable del tramo extra", True,
       "THYROX_EXTRA_REACH_ROOTS" in salida)
 
@@ -146,5 +159,25 @@ print("== 8. CONTROL DE ANULACIÓN: con la declaración intacta el caso 2 cae ==
 codigo, _ = run("--quiet", "--strict", "--declaracion", str(DECL))
 check("con la declaración completa --strict vuelve a 0", 0, codigo)
 
+print("== 9. el DOMINIO DEL PRODUCTO es parámetro, no conocimiento de aquí ==")
+# Directiva del ejecutor 2026-09-07 (#249): lo que un consumidor construye no
+# le incumbe al proveedor. Este censo llevaba TRES literales de producto en su
+# mecanismo —el repo por defecto, el nombre del árbol de referencia, y qué
+# archivo marca la unidad censada—, así que servía a un consumidor y lo
+# nombraba.
+FUENTE = CENSO.read_text()
+check("el repo censado no cae a un consumidor concreto", 0,
+      FUENTE.count('root("api")'))
+check("el árbol de referencia no se nombra en el mecanismo", 0,
+      FUENTE.lower().count("odoo"))
+# El que discrimina: sin él, un censo con los otros dos parametrizados
+# seguiría sabiendo qué es un addon de ESE producto.
+check("qué marca la unidad censada se declara", 0, FUENTE.count("__manifest__"))
+check("y su constante existe", "THYROX_CENSUS_UNIT_MARKER",
+      census_counterparts.UNIT_MARKER_VAR)
+check("igual que la del árbol de referencia", "THYROX_CENSUS_REFERENCE_ROOT",
+      census_counterparts.REFERENCE_ROOT_VAR)
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
+
