@@ -12,7 +12,7 @@
 // un mecanismo de flag equivalente que la fuente no pidió (`no hay uno
 // equivalente todavía en @thyrox/*`, mismo texto de aquel porte).
 //
-// `require("@claude-code-how-works/agent/proactive/index.js")` y
+// `require("@thyrox/agent/proactive/index.js")` y
 // `require("@claude-code-how-works/tool-registry/tools/BriefTool/BriefTool.js")`
 // son paquetes hermanos ausentes enteros; se reciben como colaboradores
 // inyectables (`ProactiveDeps`/`BriefDeps`) con default no-op, igual que

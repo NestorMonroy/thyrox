@@ -42,7 +42,7 @@ function requireAppHostBootstrapState(): {
   subscribeAdditionalDirectories: (listener: () => void) => void
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/app-host/bootstrap/state.js')
+  return require('@thyrox/app-host/bootstrap/state.js')
 }
 
 const clients = new Set<Client>()

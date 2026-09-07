@@ -154,7 +154,7 @@ import {
   setWriteFileSyncFn,
   setWriteToStdoutFn,
   setGracefulShutdownFn,
-} from '@claude-code-how-works/config/plugin/_deps'
+} from '@thyrox/config/plugin/_deps'
 
 import {
   clearRegisteredPluginHooks,
@@ -166,27 +166,27 @@ import {
 } from '../bootstrap/state.js'
 import { registerCleanup } from '../bootstrap/cleanupRegistry.js'
 import { getCwd } from '../bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logForDiagnosticsNoPII } from '@claude-code-how-works/local-observability/logging'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import {
   toError as _toError, // se conserva por claridad, aunque _deps trae su propio toError
-} from '@claude-code-how-works/local-observability/errorHelpers.js'
+} from '@thyrox/local-observability/errorHelpers.js'
 import {
   execFileNoThrow,
   execFileNoThrowWithCwd,
-} from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { pathExists, writeFileSyncAndFlush } from '@claude-code-how-works/storage/file.js'
-import { getFsImplementation, safeResolvePath } from '@claude-code-how-works/storage/fsOperations.js'
-import { gitExe } from '@claude-code-how-works/storage/git.js'
-import { getHeadForDir } from '@claude-code-how-works/config/gitFilesystem.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { clone, jsonParse, jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { which } from '@claude-code-how-works/shell/which.js'
+} from '@thyrox/shell/execFileNoThrow.js'
+import { pathExists, writeFileSyncAndFlush } from '@thyrox/storage/file.js'
+import { getFsImplementation, safeResolvePath } from '@thyrox/storage/fsOperations.js'
+import { gitExe } from '@thyrox/storage/git.js'
+import { getHeadForDir } from '@thyrox/config/gitFilesystem.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { clone, jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { which } from '@thyrox/shell/which.js'
 import {
   getSettingsForSource,
   getSettings,
-} from '@claude-code-how-works/config/settings'
-import { isSettingSourceEnabled } from '@claude-code-how-works/config/constants'
+} from '@thyrox/config/settings'
+import { isSettingSourceEnabled } from '@thyrox/config/constants'
 import {
   buildPluginTelemetryFields,
   classifyPluginCommandError,
@@ -223,7 +223,7 @@ export function installPluginBindings(): void {
   // storage.read())" dentro de cada spawn de comando de hook.)
   setGetSecureStorageFn(() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('@claude-code-how-works/storage/secureStorage.js')
+    const mod = require('@thyrox/storage/secureStorage.js')
     return mod.getSecureStorage?.() ?? null
   })
 
@@ -240,27 +240,27 @@ export function installPluginBindings(): void {
   })
   setUnzipFileFn((zipPath, destDir) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { unzipFile } = require('@claude-code-how-works/config/dxt/zip.js')
+    const { unzipFile } = require('@thyrox/config/dxt/zip.js')
     return unzipFile(zipPath, destDir)
   })
   setParseZipModesFn((data: unknown) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseZipModes } = require('@claude-code-how-works/config/dxt/zip.js')
+    const { parseZipModes } = require('@thyrox/config/dxt/zip.js')
     return parseZipModes(data)
   })
   setIsFsInaccessibleFn((err: unknown): boolean => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { isFsInaccessible } = require('@claude-code-how-works/local-observability/errorHelpers.js')
+    const { isFsInaccessible } = require('@thyrox/local-observability/errorHelpers.js')
     return isFsInaccessible(err)
   })
   setFindCanonicalGitRootFn((p: string): string => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { findCanonicalGitRoot } = require('@claude-code-how-works/storage/git.js')
+    const { findCanonicalGitRoot } = require('@thyrox/storage/git.js')
     return findCanonicalGitRoot(p)
   })
   setGetSystemDirectoriesFn(() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getSystemDirectories } = require('@claude-code-how-works/agent/misc/systemDirectories.js')
+    const { getSystemDirectories } = require('@thyrox/agent/misc/systemDirectories.js')
     return getSystemDirectories()
   })
   setGetAdditionalDirectoriesForClaudeMdFn(() => {
@@ -275,17 +275,17 @@ export function installPluginBindings(): void {
   })
   setResetSentSkillNamesFn(() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { resetSentSkillNames } = require('@claude-code-how-works/agent/attachments.js')
+    const { resetSentSkillNames } = require('@thyrox/agent/attachments.js')
     resetSentSkillNames()
   })
   setUninstallPluginOpFn(async (...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { uninstallPluginOp } = require('@claude-code-how-works/config/plugin/pluginOperations.js')
+    const { uninstallPluginOp } = require('@thyrox/config/plugin/pluginOperations.js')
     return uninstallPluginOp(...args)
   })
   setUpdatePluginOpFn(async (...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { updatePluginOp } = require('@claude-code-how-works/config/plugin/pluginOperations.js')
+    const { updatePluginOp } = require('@thyrox/config/plugin/pluginOperations.js')
     return updatePluginOp(...args)
   })
   setClearAgentDefinitionsCacheFn(() => {
@@ -295,12 +295,12 @@ export function installPluginBindings(): void {
   })
   setClearAllOutputStylesCacheFn(() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { clearAllOutputStylesCache } = require('@claude-code-how-works/config/outputStyles.js')
+    const { clearAllOutputStylesCache } = require('@thyrox/config/outputStyles.js')
     clearAllOutputStylesCache()
   })
   setClearCommandsCacheFn(() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { clearCommandsCache } = require('@claude-code-how-works/command-runtime/api.js')
+    const { clearCommandsCache } = require('@thyrox/command-runtime/api.js')
     clearCommandsCache()
   })
   setClearPromptCacheFn(() => {
@@ -310,22 +310,22 @@ export function installPluginBindings(): void {
   })
   setParseEffortValueFn((v: unknown) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseEffortValue } = require('@claude-code-how-works/agent/effort.js')
+    const { parseEffortValue } = require('@thyrox/agent/effort.js')
     return parseEffortValue(v)
   })
   setParseYamlFn((input: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseYaml } = require('@claude-code-how-works/agent/yaml.js')
+    const { parseYaml } = require('@thyrox/agent/yaml.js')
     return parseYaml(input)
   })
   setParseUserSpecifiedModelFn((...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseUserSpecifiedModel } = require('@claude-code-how-works/provider/model.js')
+    const { parseUserSpecifiedModel } = require('@thyrox/provider/model.js')
     return parseUserSpecifiedModel(...args)
   })
   setParseAndValidateManifestFromBytesFn(async (...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseAndValidateManifestFromBytes } = require('@claude-code-how-works/config/dxt/helpers.js')
+    const { parseAndValidateManifestFromBytes } = require('@thyrox/config/dxt/helpers.js')
     return parseAndValidateManifestFromBytes(...args)
   })
   setGetAgentDefinitionsWithOverridesFn(async (...args: unknown[]) => {
@@ -337,12 +337,12 @@ export function installPluginBindings(): void {
   // --- Wave A2: 13 wires restantes
   setIsBuiltinPluginIdFn((id: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { isBuiltinPluginId } = require('@claude-code-how-works/config/plugin/builtin')
+    const { isBuiltinPluginId } = require('@thyrox/config/plugin/builtin')
     return isBuiltinPluginId(id)
   })
   setGetBuiltinPluginDefinitionFn((id: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getBuiltinPluginDefinition } = require('@claude-code-how-works/config/plugin/builtin')
+    const { getBuiltinPluginDefinition } = require('@thyrox/config/plugin/builtin')
     return getBuiltinPluginDefinition(id)
   })
   setExtractDescriptionFromMarkdownFn((text: string, def: string) => {
@@ -352,12 +352,12 @@ export function installPluginBindings(): void {
   })
   setExpandTildeFn((p: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { expandTilde } = require('@claude-code-how-works/permission/pathValidation.js')
+    const { expandTilde } = require('@thyrox/permission/pathValidation.js')
     return expandTilde(p)
   })
   setExpandEnvVarsInStringFn((s: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { expandEnvVarsInString } = require('@claude-code-how-works/mcp-runtime/envExpansion.js')
+    const { expandEnvVarsInString } = require('@thyrox/mcp-runtime/envExpansion.js')
     return expandEnvVarsInString(s)
   })
   setExecuteShellCommandsInPromptFn(async (prompt: string, ...rest: unknown[]) => {
@@ -367,7 +367,7 @@ export function installPluginBindings(): void {
   })
   setParseFrontmatterFn((...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseFrontmatter } = require('@claude-code-how-works/agent/frontmatterParser.js')
+    const { parseFrontmatter } = require('@thyrox/agent/frontmatterParser.js')
     return parseFrontmatter(...args)
   })
   setParseAgentToolsFromFrontmatterFn((...args: unknown[]) => {
@@ -382,32 +382,32 @@ export function installPluginBindings(): void {
   })
   setParseShellFrontmatterFn((...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseShellFrontmatter } = require('@claude-code-how-works/agent/frontmatterParser.js')
+    const { parseShellFrontmatter } = require('@thyrox/agent/frontmatterParser.js')
     return parseShellFrontmatter(...args)
   })
   setParseBooleanFrontmatterFn((v: unknown) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseBooleanFrontmatter } = require('@claude-code-how-works/agent/frontmatterParser.js')
+    const { parseBooleanFrontmatter } = require('@thyrox/agent/frontmatterParser.js')
     return parseBooleanFrontmatter(v)
   })
   setParsePositiveIntFromFrontmatterFn((...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parsePositiveIntFromFrontmatter } = require('@claude-code-how-works/agent/frontmatterParser.js')
+    const { parsePositiveIntFromFrontmatter } = require('@thyrox/agent/frontmatterParser.js')
     return parsePositiveIntFromFrontmatter(...args)
   })
   setParseArgumentNamesFn((...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseArgumentNames } = require('@claude-code-how-works/command-runtime/argumentSubstitution.js')
+    const { parseArgumentNames } = require('@thyrox/command-runtime/argumentSubstitution.js')
     return parseArgumentNames(...args)
   })
   setSubstituteArgumentsFn((...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { substituteArguments } = require('@claude-code-how-works/command-runtime/argumentSubstitution.js')
+    const { substituteArguments } = require('@thyrox/command-runtime/argumentSubstitution.js')
     return substituteArguments(...args)
   })
   setPluralFn((n: number, singular: string, plural?: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('@claude-code-how-works/output/utils/stringUtils.js')
+    const mod = require('@thyrox/output/utils/stringUtils.js')
     return mod.plural(n, singular, plural)
   })
   setHasShownHintThisSessionFn(() => {
@@ -432,17 +432,17 @@ export function installPluginBindings(): void {
   })
   setWithDiagnosticsTimingFn(async <T>(event: string, fn: () => Promise<T>): Promise<T> => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { withDiagnosticsTiming } = require('@claude-code-how-works/local-observability/logging')
+    const { withDiagnosticsTiming } = require('@thyrox/local-observability/logging')
     return withDiagnosticsTiming(event, fn) as Promise<T>
   })
   setWriteFileSyncFn((path: string, data: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { writeFileSync } = require('@claude-code-how-works/local-observability/slowOperations.js')
+    const { writeFileSync } = require('@thyrox/local-observability/slowOperations.js')
     writeFileSync(path, data)
   })
   setWriteToStdoutFn((data: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { writeToStdout } = require('@claude-code-how-works/shell/process.js')
+    const { writeToStdout } = require('@thyrox/shell/process.js')
     writeToStdout(data)
   })
   setGracefulShutdownFn(async (code?: number) => {
@@ -549,7 +549,7 @@ export function installPluginBindings(): void {
   setSecureStorageReadFn(async key => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const mod = require('@claude-code-how-works/storage/secureStorage.js')
+      const mod = require('@thyrox/storage/secureStorage.js')
       return mod.secureStorageRead ? await mod.secureStorageRead(key) : null
     } catch {
       return null
@@ -558,7 +558,7 @@ export function installPluginBindings(): void {
   setSecureStorageWriteFn(async (key, value) => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const mod = require('@claude-code-how-works/storage/secureStorage.js')
+      const mod = require('@thyrox/storage/secureStorage.js')
       if (mod.secureStorageWrite) await mod.secureStorageWrite(key, value)
     } catch {
       // ignorar
@@ -566,7 +566,7 @@ export function installPluginBindings(): void {
   })
   setParseMarkdownFrontmatterFn(text => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('@claude-code-how-works/agent/frontmatterParser.js')
+    const mod = require('@thyrox/agent/frontmatterParser.js')
     return mod.parseMarkdownFrontmatter
       ? mod.parseMarkdownFrontmatter(text)
       : { frontmatter: {}, body: '' }
@@ -586,13 +586,13 @@ export function installPluginBindings(): void {
   // --- plugins builtin (basado en setter porque los originales son const arrays)
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('@claude-code-how-works/config/plugin/builtin')
+    const mod = require('@thyrox/config/plugin/builtin')
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const {
       setGetBuiltinPluginsFn: _sgb,
       setIsBuiltinPluginIdFn: _sid,
       setGetBuiltinPluginDefinitionFn: _sgd,
-    } = require('@claude-code-how-works/config/plugin/_deps')
+    } = require('@thyrox/config/plugin/_deps')
     if (mod.getBuiltinPlugins) _sgb(() => mod.getBuiltinPlugins())
     if (mod.isBuiltinPluginId) _sid(mod.isBuiltinPluginId)
     if (mod.getBuiltinPluginDefinition) _sgd(mod.getBuiltinPluginDefinition)
@@ -606,7 +606,7 @@ export function installPluginBindings(): void {
     const argMod = require('src/utils/argumentSubstitution.js')
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { setApplyArgumentSubstitutionsFn: _sas } = require(
-      '@claude-code-how-works/config/plugin/_deps',
+      '@thyrox/config/plugin/_deps',
     )
     if (argMod.applyArgumentSubstitutions) _sas(argMod.applyArgumentSubstitutions)
   } catch {
@@ -617,7 +617,7 @@ export function installPluginBindings(): void {
     const hintMod = require('@claude-code-how-works/tool-registry/claudeCodeHints.js')
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { setGetHintsProviderFn: _gh } = require(
-      '@claude-code-how-works/config/plugin/_deps',
+      '@thyrox/config/plugin/_deps',
     )
     if (hintMod.getHintsProvider) _gh(hintMod.getHintsProvider)
   } catch {

@@ -7,7 +7,9 @@
   "exports": {
     "./registry": "./src/registry.ts",
     "./fromDir": "./src/fromDir.ts",
-    "./bundled": "./src/bundled.ts"
+    "./bundled": "./src/bundled.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test",

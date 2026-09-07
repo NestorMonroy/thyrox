@@ -42,7 +42,7 @@ function requireProviderOauthConstants(): {
   getOauthConfig: () => { BASE_API_URL: string }
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/provider/oauthConstants')
+  return require('@thyrox/provider/oauthConstants')
 }
 
 function requireProviderAuthAlias(): {
@@ -51,7 +51,7 @@ function requireProviderAuthAlias(): {
     | undefined
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/provider/authAlias.js')
+  return require('@thyrox/provider/authAlias.js')
 }
 
 function requireConfig(): {
@@ -63,7 +63,7 @@ function requireConfig(): {
   ) => void
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/config')
+  return require('@thyrox/config')
 }
 
 type ClaudeAIMcpServer = {

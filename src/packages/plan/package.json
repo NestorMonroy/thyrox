@@ -5,7 +5,9 @@
   "type": "module",
   "description": "El modo plan: donde vive el archivo del plan, sus variantes, el veredicto de permiso y las instrucciones que el bucle inyecta.",
   "exports": {
-    "./mode": "./src/mode.ts"
+    "./mode": "./src/mode.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test",
@@ -15,7 +17,5 @@
   "devDependencies": {
     "@types/bun": "^1.4.0"
   },
-  "dependencies": {
-
-  }
+  "dependencies": {}
 }

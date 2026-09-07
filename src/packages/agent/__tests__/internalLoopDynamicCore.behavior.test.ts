@@ -241,7 +241,7 @@ describe('internal/loopDynamicCore — pines de fuente', () => {
       // Pin: feature-flags trae growthbook + zod. Un import top-level
       // cargaría eager en cada import del paquete `agent`.
       expect(source).toMatch(
-        /isLoopDynamicEnabled[\s\S]+?require\(\s*\n?\s*'@claude-code-how-works\/config\/feature-flags',?\s*\n?\s*\)/,
+        /isLoopDynamicEnabled[\s\S]+?require\(\s*\n?\s*'@thyrox\/config\/feature-flags',?\s*\n?\s*\)/,
       )
     })
 

@@ -5,7 +5,9 @@
   "type": "module",
   "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta.",
   "exports": {
-    ".": "./src/permission.ts"
+    ".": "./src/permission.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test",
@@ -15,7 +17,5 @@
   "devDependencies": {
     "@types/bun": "^1.4.0"
   },
-  "dependencies": {
-
-  }
+  "dependencies": {}
 }

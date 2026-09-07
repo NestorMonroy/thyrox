@@ -30,7 +30,7 @@ import { resolve } from 'path'
  *
  * Este test NUNCA importa/ejecuta el módulo — sólo lee su texto fuente
  * (`readFileSync`) y lo compara contra los patrones pinneados. Por eso el
- * import de `@claude-code-how-works/config/env` que la fuente declara
+ * import de `@thyrox/config/env` que la fuente declara
  * (paquete hermano ausente en este árbol) no rompe nada al correr esta
  * suite: nunca se resuelve, porque nunca se ejecuta.
  */
@@ -68,11 +68,11 @@ describe('internal/macroFallback', () => {
     expect(source).toMatch(/VERSION_CHANGELOG: ''/)
   })
 
-  test('readEnv is imported from @claude-code-how-works/config/env', () => {
+  test('readEnv is imported from @thyrox/config/env', () => {
     // Pin: NOT process.env directly — the canonical readEnv allows test
     // overrides and is the only env read sanctioned by the doctor.
     expect(source).toMatch(
-      /import \{ readEnv \} from '@claude-code-how-works\/config\/env'/,
+      /import \{ readEnv \} from '@thyrox\/config\/env'/,
     )
   })
 

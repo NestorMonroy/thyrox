@@ -10,7 +10,9 @@
     "./path.js": "./src/path.ts",
     "./windowsPaths.js": "./src/windowsPaths.ts",
     "./xdg.js": "./src/xdg.ts",
-    "./glob.js": "./src/glob.ts"
+    "./glob.js": "./src/glob.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test",

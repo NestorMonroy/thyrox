@@ -45,8 +45,8 @@
 import {
   installProviderRuntimeBindings,
   type ProviderHostBindings,
-} from '@claude-code-how-works/provider/providerHostSetup'
-import * as claudeLegacyRuntime from '@claude-code-how-works/provider/claudeLegacyRuntime.js'
+} from '@thyrox/provider/providerHostSetup'
+import * as claudeLegacyRuntime from '@thyrox/provider/claudeLegacyRuntime.js'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
   getAnthropicApiKey,
@@ -55,33 +55,33 @@ import {
   isClaudeAISubscriber,
   refreshAndGetAwsCredentials,
   refreshGcpCredentialsIfNeeded,
-} from '@claude-code-how-works/provider/authAlias.js'
+} from '@thyrox/provider/authAlias.js'
 import {
   createAxiosInstance,
   getProxyFetchOptions,
   getProxyUrl,
   shouldBypassProxy,
-} from '@claude-code-how-works/provider/proxy.js'
-import { getOauthConfig } from '@claude-code-how-works/provider/oauthConstants'
-import { getUserContext, getSystemContext } from '@claude-code-how-works/provider/context.js'
-import { getUserAgent } from '@claude-code-how-works/provider/http.js'
-import { getSmallFastModel } from '@claude-code-how-works/provider/model.js'
+} from '@thyrox/provider/proxy.js'
+import { getOauthConfig } from '@thyrox/provider/oauthConstants'
+import { getUserContext, getSystemContext } from '@thyrox/provider/context.js'
+import { getUserAgent } from '@thyrox/provider/http.js'
+import { getSmallFastModel } from '@thyrox/provider/model.js'
 import {
   getAPIProvider,
   isFirstPartyAnthropicBaseUrl,
-} from '@claude-code-how-works/provider/providers.js'
-import { getModelOptions } from '@claude-code-how-works/provider/modelOptions.js'
+} from '@thyrox/provider/providers.js'
+import { getModelOptions } from '@thyrox/provider/modelOptions.js'
 import {
   getIsNonInteractiveSession,
   getSessionId,
 } from './bootstrap/state.js'
-import { isDebugToStdErr, logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { isDebugToStdErr, logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   getAWSRegion,
   getVertexRegionForModel,
   isEnvTruthy,
-} from '@claude-code-how-works/config/env/utils'
-import { addToTotalSessionCost } from '@claude-code-how-works/provider/costTracker.js'
+} from '@thyrox/config/env/utils'
+import { addToTotalSessionCost } from '@thyrox/provider/costTracker.js'
 
 const anthropicQueryBinding: NonNullable<
   ProviderHostBindings['anthropic']['query']
@@ -184,5 +184,5 @@ installProviderRuntimeBindings(bindings)
 export {
   installProviderRuntimeBindings,
   resetProviderRuntimeBindingsForTests,
-} from '@claude-code-how-works/provider/providerHostSetup'
-export type { ProviderHostBindings } from '@claude-code-how-works/provider'
+} from '@thyrox/provider/providerHostSetup'
+export type { ProviderHostBindings } from '@thyrox/provider'

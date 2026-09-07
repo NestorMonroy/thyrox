@@ -23,7 +23,7 @@
  * del módulo ENTERO (`Cannot find module`, verificado con
  * `bun -e "import(...)"`), no sólo la función que la usa — el mismo
  * patrón que ya evita `appStateHooks.ts` de este puerto con su
- * `require('@claude-code-how-works/app-host/state/AppState.js')`
+ * `require('@thyrox/app-host/state/AppState.js')`
  * diferido.
  *
  * Helpers ligeros compartidos entre `keychainPrefetch.ts` y
@@ -39,7 +39,7 @@ import type { SecureStorageData } from './secureStorageTypes'
 
 function getOauthConfig(): { OAUTH_FILE_SUFFIX: string } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require('@claude-code-how-works/provider/oauthConstants') as {
+  const mod = require('@thyrox/provider/oauthConstants') as {
     getOauthConfig: () => { OAUTH_FILE_SUFFIX: string }
   }
   return mod.getOauthConfig()

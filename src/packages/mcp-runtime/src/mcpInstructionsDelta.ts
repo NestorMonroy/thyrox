@@ -29,16 +29,10 @@ import type {
   ConnectedMCPServer,
   MCPServerConnection,
 } from './types.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
+import type { Message } from '@thyrox/agent/messageShapes'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { isEnvDefinedFalsy } from './internal/pendingCrossPackageDeps.js'
-
-function requireConfigFeatureFlags(): {
-  getFeatureValue_CACHED_MAY_BE_STALE: <T>(flag: string, fallback: T) => T
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/config/feature-flags')
-}
 
 export type McpInstructionsDelta = {
   /** Nombres de servidor — para reconstrucción de escaneo sin estado. */
@@ -75,10 +69,7 @@ export function isMcpInstructionsDeltaEnabled(): boolean {
   if (isEnvDefinedFalsy(process.env.CLAUDE_CODE_MCP_INSTR_DELTA)) return false
   return (
     process.env.USER_TYPE === 'ant' ||
-    requireConfigFeatureFlags().getFeatureValue_CACHED_MAY_BE_STALE(
-      'tengu_basalt_3kr',
-      false,
-    )
+    getFeatureValue_CACHED_MAY_BE_STALE('tengu_basalt_3kr', false)
   )
 }
 

@@ -77,7 +77,7 @@ import { SYNTHETIC_OUTPUT_TOOL_NAME } from '@claude-code-how-works/tool-registry
 import { TaskStopTool } from '@claude-code-how-works/tool-registry/tools/TaskStopTool/TaskStopTool.js'
 import { ListMcpResourcesTool } from '@claude-code-how-works/tool-registry/tools/ListMcpResourcesTool/ListMcpResourcesTool.js'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
-import { getDenyRuleForTool } from '@claude-code-how-works/permission/permissions'
+import { getDenyRuleForTool } from '@thyrox/permission/permissions'
 
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 const REPLTool =
@@ -85,7 +85,7 @@ const REPLTool =
     ? require('@claude-code-how-works/tool-registry/tools/REPLTool/REPLTool.js').REPLTool
     : null
 const coordinatorModeModule = feature('COORDINATOR_MODE')
-  ? (require('@claude-code-how-works/agent/coordinatorMode.js') as typeof import('@claude-code-how-works/agent/coordinatorMode.js'))
+  ? (require('@thyrox/agent/coordinatorMode.js') as typeof import('@thyrox/agent/coordinatorMode.js'))
   : null
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 

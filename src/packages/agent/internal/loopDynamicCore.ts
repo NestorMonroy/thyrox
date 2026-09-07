@@ -294,13 +294,22 @@ export function cancelAllPendingLoopSessionCrons(): number {
 }
 
 export function isLoopDynamicEnabled(): boolean {
-  // Importado de forma perezosa para evitar una dependencia top-level
-  // en feature-flags desde el barrel del paquete `agent` — feature-flags
-  // trae growthbook + schemas zod, pesado en relación a este módulo.
+  // Diferido, y por DOS razones — la de la fuente y una nuestra:
+  //
+  //   1. La fuente evita una dependencia top-level en feature-flags desde el
+  //      barrel de `agent`: el suyo arrastra GrowthBook y schemas zod.
+  //   2. Aquí `@thyrox/config` NO es dependencia declarada de `@thyrox/agent`
+  //      —ni lo es en ccnmt, medido en su `package.json`—, así que el módulo
+  //      no resuelve desde este paquete. El diferido lo mantiene como bloque
+  //      declarado en vez de romper la carga del módulo entero.
+  //
+  // El specifier lleva ya el alcance de este árbol: el módulo EXISTE
+  // (`src/packages/config/feature-flags.ts`); lo que falta es la arista del
+  // grafo de paquetes, que es una decisión de diseño, no un renombre.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { getFeatureValue_CACHED_MAY_BE_STALE } = require(
-    '@claude-code-how-works/config/feature-flags',
-  ) as typeof import('@claude-code-how-works/config/feature-flags')
+    '@thyrox/config/feature-flags',
+  ) as typeof import('@thyrox/config/feature-flags')
   return getFeatureValue_CACHED_MAY_BE_STALE(
     'tengu_kairos_loop_dynamic',
     false,

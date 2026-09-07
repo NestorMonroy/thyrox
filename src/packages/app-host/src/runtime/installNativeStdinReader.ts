@@ -41,7 +41,7 @@
  */
 import { setAppCallbacks } from '@anthropic/ink'
 import { isReaderSupported, startReader } from 'stdin-napi'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 let installed = false
 

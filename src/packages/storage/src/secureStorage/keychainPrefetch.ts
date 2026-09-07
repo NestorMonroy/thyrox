@@ -17,4 +17,4 @@
  * ejercitar (ver la nota del prompt de porte sobre esta clase de archivo).
  */
 // Canonical owner is @claude-code-how-works/cli/secureStorage/keychainPrefetch.
-export * from '@claude-code-how-works/cli/secureStorage/keychainPrefetch.js'
+export * from '@thyrox/cli/secureStorage/keychainPrefetch.js'

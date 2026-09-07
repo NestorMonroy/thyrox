@@ -8,7 +8,7 @@
  * importe `src/state/AppState` de forma estática al nivel de módulo.
  * Reenvía los argumentos verbatim.
  *
- * El `require('@claude-code-how-works/app-host/state/AppState.js')`
+ * El `require('@thyrox/app-host/state/AppState.js')`
  * referencia un archivo que NO existe todavía en `@thyrox/app-host` — su
  * mapa de `exports` declara `./state/AppStateStore.js` y otros selectores,
  * pero ninguno expone `useAppState`/`useSetAppState`/`useAppStateStore` bajo
@@ -21,7 +21,7 @@ export type AppState = unknown
 
 export function useAppState<T>(selector: (state: unknown) => T): T {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require('@claude-code-how-works/app-host/state/AppState.js') as {
+  const mod = require('@thyrox/app-host/state/AppState.js') as {
     useAppState: <U>(s: (state: unknown) => U) => U
   }
   return mod.useAppState<T>(selector)
@@ -29,7 +29,7 @@ export function useAppState<T>(selector: (state: unknown) => T): T {
 
 export function useSetAppState(): (updater: (prev: unknown) => unknown) => void {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require('@claude-code-how-works/app-host/state/AppState.js') as {
+  const mod = require('@thyrox/app-host/state/AppState.js') as {
     useSetAppState: () => (updater: (prev: unknown) => unknown) => void
   }
   return mod.useSetAppState()
@@ -41,7 +41,7 @@ export function useAppStateStore(): {
   subscribe: (listener: () => void) => () => void
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require('@claude-code-how-works/app-host/state/AppState.js') as {
+  const mod = require('@thyrox/app-host/state/AppState.js') as {
     useAppStateStore: () => {
       getState: () => unknown
       setState: (updater: (prev: unknown) => unknown) => void

@@ -36,7 +36,9 @@
     "./loop/session/reconcile": "./loop/session/reconcile.ts",
     "./loop/sessions": "./loop/sessions/index.ts",
     "./loop/sessions/modelSwitch": "./loop/sessions/modelSwitch.ts",
-    "./loop/context/*": "./loop/context/*.ts"
+    "./loop/context/*": "./loop/context/*.ts",
+    "./*": "./*.ts",
+    "./*.js": "./*.ts"
   },
   "scripts": {
     "emit": "bun run bin/emit.ts",

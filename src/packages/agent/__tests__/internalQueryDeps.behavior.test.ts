@@ -29,7 +29,7 @@ import { resolve } from 'path'
  *
  * Este test NUNCA importa/ejecuta el módulo — sólo lee su texto fuente
  * (`readFileSync`) y lo compara contra los patrones pinneados. Por eso el
- * import de `@claude-code-how-works/provider/claudeLegacy` que la fuente
+ * import de `@thyrox/provider/claudeLegacy` que la fuente
  * declara (paquete hermano ausente en este árbol) no rompe nada al correr
  * esta suite: nunca se resuelve, porque nunca se ejecuta.
  */
@@ -45,7 +45,7 @@ describe('internal/queryDeps', () => {
       // through host bindings would add a function-call layer to the
       // streaming hot path.
       expect(source).toMatch(
-        /import \{ queryModelWithStreaming \} from '@claude-code-how-works\/provider\/claudeLegacy'/,
+        /import \{ queryModelWithStreaming \} from '@thyrox\/provider\/claudeLegacy'/,
       )
       expect(source).toMatch(/callModel: queryModelWithStreaming/)
     })

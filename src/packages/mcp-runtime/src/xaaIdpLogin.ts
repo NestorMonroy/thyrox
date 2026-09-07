@@ -75,14 +75,14 @@ function requireStorageBrowser(): {
   openBrowser: (url: string) => Promise<void>
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/storage/browser.js')
+  return require('@thyrox/storage/browser.js')
 }
 
 function requireConfigPlatform(): {
   getPlatform: () => 'windows' | 'macos' | 'linux'
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/config/platform')
+  return require('@thyrox/config/platform')
 }
 
 function requireStorageSecureStorage(): {
@@ -94,14 +94,14 @@ function requireStorageSecureStorage(): {
   }
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/storage/secureStorage.js')
+  return require('@thyrox/storage/secureStorage.js')
 }
 
 function requireConfigSettings(): {
   getInitialSettings: () => Record<string, unknown>
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/config/settings')
+  return require('@thyrox/config/settings')
 }
 
 export function isXaaEnabled(): boolean {

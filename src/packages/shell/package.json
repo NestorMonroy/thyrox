@@ -13,7 +13,9 @@
     "./bash/heredoc.js": "./src/bash/heredoc.ts",
     "./bash/registry.js": "./src/bash/registry.ts",
     "./bash/shellPrefix.js": "./src/bash/shellPrefix.ts",
-    "./bash/shellQuote.js": "./src/bash/shellQuote.ts"
+    "./bash/shellQuote.js": "./src/bash/shellQuote.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test",

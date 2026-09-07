@@ -8,7 +8,7 @@
  * dos argumentos y siempre devuelve el mismo bloque de texto.
  *
  * Su ÚNICO import es de TIPO —
- * `import type { Command } from '@claude-code-how-works/command-runtime/runtime'`—
+ * `import type { Command } from '@thyrox/command-runtime/runtime'`—
  * y un `import type` se elimina por completo en tiempo de compilación
  * (verificado: un módulo con `import type { X } from 'paquete-inexistente'`
  * corre bajo `bun test` sin error de resolución). Por eso este archivo

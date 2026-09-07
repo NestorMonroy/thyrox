@@ -37,7 +37,7 @@
  * `createSignal`, que sí son primitivos triviales).
  */
 import { randomUUID } from 'crypto'
-import { queryModelWithStreaming } from '@claude-code-how-works/provider/claudeLegacy'
+import { queryModelWithStreaming } from '@thyrox/provider/claudeLegacy'
 import { getAgentHostBindings } from '../host.ts'
 import type {
   AgentMessage,

@@ -29,7 +29,9 @@
     "./utils/cliHighlight.js": "./src/utils/cliHighlight.ts",
     "./setUtils.js": "./src/setUtils.ts",
     "./fpsTracker.js": "./src/fpsTracker.ts",
-    "./xml.js": "./src/xml.ts"
+    "./xml.js": "./src/xml.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test"

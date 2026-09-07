@@ -57,13 +57,13 @@ import {
   type HeapSpaceInfo,
 } from 'v8'
 import { getSessionId } from './bootstrap/state.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getDesktopPath } from '@claude-code-how-works/storage/file.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { logEvent } from '@thyrox/local-observability'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { getDesktopPath } from '@thyrox/storage/file.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 export type HeapDumpResult = {
   success: boolean

@@ -55,7 +55,7 @@ import {
   type ScopedMcpServerConfig,
   McpJsonConfigSchema,
   type McpJsonConfig,
-} from '@claude-code-how-works/config/mcpConfigSchema.js'
+} from '@thyrox/config/mcpConfigSchema.js'
 
 export {
   ConfigScopeSchema,

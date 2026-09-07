@@ -13,7 +13,9 @@
     "./tasks": "./src/tasks.ts",
     "./web": "./src/web.ts",
     "./definitions": "./src/definitions/index.ts",
-    "./definitions/*": "./src/definitions/*.ts"
+    "./definitions/*": "./src/definitions/*.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test",

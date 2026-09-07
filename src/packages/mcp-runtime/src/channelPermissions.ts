@@ -44,13 +44,7 @@
  */
 
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
-
-function requireConfigFeatureFlags(): {
-  getFeatureValue_CACHED_MAY_BE_STALE: <T>(flag: string, fallback: T) => T
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/config/feature-flags')
-}
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 
 /**
  * Gate de GrowthBook en tiempo de ejecución — separado del gate de canales
@@ -61,7 +55,7 @@ function requireConfigFeatureFlags(): {
  * aplican hasta reiniciar.
  */
 export function isChannelPermissionRelayEnabled(): boolean {
-  return requireConfigFeatureFlags().getFeatureValue_CACHED_MAY_BE_STALE(
+  return getFeatureValue_CACHED_MAY_BE_STALE(
     'tengu_harbor_permissions',
     false,
   )

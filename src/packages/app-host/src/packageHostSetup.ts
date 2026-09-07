@@ -50,7 +50,7 @@
  * que aunque no toca ninguno de los cuatro, vive en el mismo módulo y no
  * puede importarse sin que el módulo entero cargue primero.
  */
-import { installAgentHostBindings } from '@claude-code-how-works/agent'
+import { installAgentHostBindings } from '@thyrox/agent'
 // los bindings de cli los conecta packages/app-host/src/runtime/installCliBindings.ts
 // (auto-run al importarse). Importar installCliHostBindings aquí cerraba un
 // SCC de 7 archivos entre app-host ↔ cli; la llamada explícita también era
@@ -58,9 +58,9 @@ import { installAgentHostBindings } from '@claude-code-how-works/agent'
 // `{ logDebug }`, perdiendo los bindings reales (createHeadlessStore,
 // runHeadless, getStructuredIO) que installCliBindings.ts instala cuando
 // éste corría segundo.
-import { installConfigHostBindings } from '@claude-code-how-works/config'
-import { installMemoryHostBindings } from '@claude-code-how-works/memory'
-import { installPermissionHostBindings } from '@claude-code-how-works/permission'
+import { installConfigHostBindings } from '@thyrox/config'
+import { installMemoryHostBindings } from '@thyrox/memory'
+import { installPermissionHostBindings } from '@thyrox/permission'
 import {
   installHostBindings,
   installInteractiveSessionHostBindings,

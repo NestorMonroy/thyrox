@@ -37,21 +37,21 @@ type QueryHaikuFn = (args: {
 
 function requireProviderClaude(): { queryHaiku: QueryHaikuFn } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/provider/claude.js')
+  return require('@thyrox/provider/claude.js')
 }
 
 function requireProviderSystemPromptType(): {
   asSystemPrompt: (lines: string[]) => unknown
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/provider/systemPromptType.js')
+  return require('@thyrox/provider/systemPromptType.js')
 }
 
 function requireAgentMessages(): {
   extractTextContent: (blocks: unknown[]) => string
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/agent/messages.js')
+  return require('@thyrox/agent/messages.js')
 }
 
 type DateTimeParseResult =

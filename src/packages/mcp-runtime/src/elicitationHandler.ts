@@ -79,7 +79,7 @@ function requireAgentHooks(): {
   }) => Promise<void>
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/agent/hooks.js')
+  return require('@thyrox/agent/hooks.js')
 }
 
 /** Configuración del estado de espera mostrado tras abrir la URL el usuario. */

@@ -9,7 +9,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./elf": "./src/elf.ts",
-    "./bunfs": "./src/bunfs.ts"
+    "./bunfs": "./src/bunfs.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test"

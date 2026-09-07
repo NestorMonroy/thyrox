@@ -19,34 +19,33 @@
 # El grueso es de #198 (app-host) y #205 (cli). Se paga al tocar el paquete.
 
 agent::@anthropic-ai/sdk
-agent::@claude-code-how-works/config
-agent::@claude-code-how-works/provider
+agent::@thyrox/config
+agent::@thyrox/provider
 app-host::@anthropic-ai/sdk
 app-host::@anthropic/ink
-app-host::@claude-code-how-works/agent
-app-host::@claude-code-how-works/cli
-app-host::@claude-code-how-works/command-runtime
-app-host::@claude-code-how-works/config
-app-host::@claude-code-how-works/headless-sdk
 app-host::@claude-code-how-works/ide
-app-host::@claude-code-how-works/local-observability
-app-host::@claude-code-how-works/mcp-runtime
-app-host::@claude-code-how-works/memory
-app-host::@claude-code-how-works/output
-app-host::@claude-code-how-works/permission
-app-host::@claude-code-how-works/provider
 app-host::@claude-code-how-works/repl
 app-host::@claude-code-how-works/server
-app-host::@claude-code-how-works/shell
-app-host::@claude-code-how-works/storage
-app-host::@claude-code-how-works/swarm
 app-host::@claude-code-how-works/tool-registry
 app-host::@opentelemetry/api
 app-host::@opentelemetry/api-logs
 app-host::@opentelemetry/sdk-logs
 app-host::@opentelemetry/sdk-metrics
 app-host::@opentelemetry/sdk-trace-base
+app-host::@thyrox/agent
+app-host::@thyrox/cli
+app-host::@thyrox/command-runtime
+app-host::@thyrox/config
+app-host::@thyrox/headless-sdk
+app-host::@thyrox/local-observability
+app-host::@thyrox/mcp-runtime
+app-host::@thyrox/memory
+app-host::@thyrox/output
+app-host::@thyrox/permission
+app-host::@thyrox/provider
+app-host::@thyrox/shell
 app-host::@thyrox/storage
+app-host::@thyrox/swarm
 app-host::chalk
 app-host::lodash-es
 app-host::signal-exit
@@ -54,4 +53,32 @@ app-host::src
 app-host::stdin-napi
 command-runtime::@anthropic-ai/sdk
 shell::@withfig/autocomplete
-storage::@claude-code-how-works/cli
+storage::@thyrox/cli
+
+# --- mcp-runtime, congelado 2026-09-07T06:59:35 -------------------------------------------
+# Las 5 raices las destapo el reapuntado de ambito de #232: los specifiers eran
+# `@claude-code-how-works/*` y no resolvian tampoco; el renombre solo los hizo
+# visibles bajo nuestro ambito. NO son una clase, y confundirlas lleva al
+# arreglo contrario:
+#
+#   ARISTA DE PAQUETE ausente — el modulo EXISTE, falta el enlace. Medido:
+#     storage/src/imageResizer.ts, browser.ts, secureStorage.ts y
+#     app-host/src/bootstrap/state.ts estan los cuatro en el arbol. No
+#     resuelven porque `@thyrox/{storage,app-host,shell}` no figuran en las
+#     dependencies de mcp-runtime. Se paga cableando `workspaces` en la raiz
+#     —que es como resuelve la fuente, cuyo package.json de mcp-runtime trae
+#     dependencies VACIAS— y reinstalando. Es la tarea #239.
+#
+#   MODULO ausente — porte pendiente. config/{platform,settings,
+#     mcpConfigSchema,utils/envExpansion}, provider/{authAlias,claude,
+#     oauthConstants,systemPromptType}, app-host/state/AppState,
+#     shell/execFileNoThrow. Se paga portandolos (#198, #200, #238).
+#
+# Por que no se cablearon los symlinks a mano: viven en node_modules, que es
+# gitignored. Resolverian aqui y NO en un clon fresco — la forma de defecto que
+# el docstring de este control llama «la mas cara de ver» (#202).
+mcp-runtime::@thyrox/app-host
+mcp-runtime::@thyrox/config
+mcp-runtime::@thyrox/provider
+mcp-runtime::@thyrox/shell
+mcp-runtime::@thyrox/storage

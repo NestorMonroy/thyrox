@@ -13,7 +13,9 @@
     "./createMovedToPluginCommand.js": "./src/createMovedToPluginCommand.ts",
     "./promptShellExecution.js": "./src/promptShellExecution.ts",
     "./commands/review/ultrareviewEnabled.js": "./src/commands/review/ultrareviewEnabled.ts",
-    "./skills/loadSkillsDir.js": "./src/skills/loadSkillsDir.ts"
+    "./skills/loadSkillsDir.js": "./src/skills/loadSkillsDir.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test"

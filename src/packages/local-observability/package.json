@@ -38,7 +38,9 @@
     "./aggregates/heatmap.js": "./src/aggregates/heatmap.ts",
     "./aggregates/queryProfiler.js": "./src/aggregates/queryProfiler.ts",
     "./aggregates/stats.js": "./src/aggregates/stats.ts",
-    "./localEventLogger.js": "./src/localEventLogger.ts"
+    "./localEventLogger.js": "./src/localEventLogger.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

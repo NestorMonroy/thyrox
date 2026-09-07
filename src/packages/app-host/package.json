@@ -27,7 +27,9 @@
     "./state/teamSelectors.js": "./src/state/teamSelectors.ts",
     "./state/taskSelectors.js": "./src/state/taskSelectors.ts",
     "./state/permissionSelectors.js": "./src/state/permissionSelectors.ts",
-    "./state/mcpSelectors.js": "./src/state/mcpSelectors.ts"
+    "./state/mcpSelectors.js": "./src/state/mcpSelectors.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test"

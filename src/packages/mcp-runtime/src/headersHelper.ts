@@ -46,14 +46,14 @@ function requireAppHostBootstrapState(): {
   getIsNonInteractiveSession: () => boolean
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/app-host/bootstrap/state.js')
+  return require('@thyrox/app-host/bootstrap/state.js')
 }
 
 function requireConfig(): {
   checkHasTrustDialogAccepted: () => boolean
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/config')
+  return require('@thyrox/config')
 }
 
 type ExecFileNoThrowResult = { code: number; stdout: string; stderr: string }
@@ -70,7 +70,7 @@ function requireShellExecFileNoThrow(): {
   ) => Promise<ExecFileNoThrowResult>
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/shell/execFileNoThrow.js')
+  return require('@thyrox/shell/execFileNoThrow.js')
 }
 
 /**

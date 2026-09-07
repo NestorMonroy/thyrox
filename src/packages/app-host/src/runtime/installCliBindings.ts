@@ -41,10 +41,10 @@
 import {
   installCliHostBindings,
   type HeadlessStoreParams,
-} from '@claude-code-how-works/cli'
-import { runHeadless } from '@claude-code-how-works/cli/print.js'
-import { getStructuredIO } from '@claude-code-how-works/cli/structuredIOHelper.js'
-import { createHeadlessSessionStore } from '@claude-code-how-works/agent/sessionStores.js'
+} from '@thyrox/cli'
+import { runHeadless } from '@thyrox/cli/print.js'
+import { getStructuredIO } from '@thyrox/cli/structuredIOHelper.js'
+import { createHeadlessSessionStore } from '@thyrox/agent/sessionStores.js'
 
 let cliBindingsInstalled = false
 

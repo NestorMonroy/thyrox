@@ -9,7 +9,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./exitCodes.js": "./src/exitCodes.ts",
-    "./argv.js": "./src/argv.ts"
+    "./argv.js": "./src/argv.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test"

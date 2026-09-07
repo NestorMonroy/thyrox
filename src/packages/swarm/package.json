@@ -23,7 +23,9 @@
     "./tasks/types.js": "./src/tasks/types.ts",
     "./worktree/postCommitAttribution.js": "./src/worktree/postCommitAttribution.ts",
     "./worktree/safeRemoval.js": "./src/worktree/safeRemoval.ts",
-    "./worktree/safeIgnore.js": "./src/worktree/safeIgnore.ts"
+    "./worktree/safeIgnore.js": "./src/worktree/safeIgnore.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test"

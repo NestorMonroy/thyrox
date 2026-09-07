@@ -9,7 +9,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./cli/render": "./src/cli/render.ts",
-    "./cli/resume": "./src/cli/resume.ts"
+    "./cli/resume": "./src/cli/resume.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test",

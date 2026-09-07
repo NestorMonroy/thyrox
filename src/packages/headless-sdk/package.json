@@ -18,7 +18,9 @@
     "./runtimeTypes.js": "./src/runtimeTypes.ts",
     "./coreTypes.js": "./src/coreTypes.ts",
     "./coreSchemas.js": "./src/coreSchemas.ts",
-    "./controlSchemas.js": "./src/controlSchemas.ts"
+    "./controlSchemas.js": "./src/controlSchemas.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test"

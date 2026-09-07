@@ -9,14 +9,19 @@
     "command-runtime",
     "config",
     "harness",
+    "headless-sdk",
     "local-observability",
+    "mcp-runtime",
+    "memory",
     "observability",
+    "output",
     "permission",
     "plan",
     "provider",
     "shell",
     "skills",
     "storage",
+    "swarm",
     "tools"
   ]
 }

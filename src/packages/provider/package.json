@@ -9,7 +9,9 @@
     "./anthropicHttp": "./src/anthropicHttp.ts",
     "./recorded": "./src/recorded.ts",
     "./sse": "./src/sse.ts",
-    "./cost/*": "./src/cost/*.ts"
+    "./cost/*": "./src/cost/*.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test",

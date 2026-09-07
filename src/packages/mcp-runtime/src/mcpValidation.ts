@@ -3,23 +3,32 @@
  * sus 6 exportaciones (2 constantes, 4 funciones), ninguna omitida.
  *
  * Repuntado (subpath declarado y símbolo verificado con resolución real):
- * `@thyrox/local-observability/logging` (`logError`).
+ * `@thyrox/local-observability/logging` (`logError`),
+ * `@thyrox/config/feature-flags` (`getFeatureValue_CACHED_MAY_BE_STALE`) y
+ * `@thyrox/agent/tokenEstimation.js` (`countMessagesTokensWithAPI`,
+ * `roughTokenCountEstimation`). Los tres son `import` ESTÁTICO.
  *
- * `@claude-code-how-works/config/feature-flags`
- * (`getFeatureValue_CACHED_MAY_BE_STALE`),
- * `@claude-code-how-works/agent/tokenEstimation.js`
- * (`countMessagesTokensWithAPI`, `roughTokenCountEstimation`) y
- * `@claude-code-how-works/storage/imageResizer.js` (`compressImageBlock`)
- * NO resuelven — ninguno de los tres subpaths existe en el `exports` del
- * paquete correspondiente (`@thyrox/config`, `@thyrox/agent`,
- * `@thyrox/storage`), verificado contra la lista completa de cada uno.
- * Los tres se usan sólo dentro de cuerpos de función (nunca a nivel de
- * módulo), así que se envuelven con `require()` diferido: un `import`
- * estático de un paquete cuya base (`@claude-code-how-works/*`) no existe
- * en este árbol hace fallar la carga del MÓDULO ENTERO (`Cannot find
- * module`, medido con `bun -e "import(...)"` antes de esta corrección),
- * no sólo la función que los usa. Mismo patrón que ya evita
- * `appStateHooks.ts` de este puerto.
+ * Los dos últimos llegaron por `require()` diferido mientras su subpath no
+ * resolvía —un `import` estático de un specifier inexistente hace fallar la
+ * carga del MÓDULO ENTERO, no sólo la función que lo usa—. Esa razón se
+ * cerró: el `exports` de cada paquete declara hoy su patrón `./*` / `./*.js`,
+ * y `feature-flags.ts` existe en `@thyrox/config` (el sitio que la fuente le
+ * da). Sin la razón, el diferido es un lazy import sin excepción declarada
+ * (`no-lazy-imports.md`), así que se retira.
+ *
+ * `@thyrox/storage/imageResizer.js` (`compressImageBlock`) SÍ sigue como
+ * `require()` diferido, y la razón NO es la que este docstring afirmaba. Decía
+ * que el módulo «no está portado»; es falso, y medirlo lo desmiente:
+ * `storage/src/imageResizer.ts` existe y exporta `compressImageBlock`. Lo que
+ * falta es la ARISTA DE PAQUETE — `@thyrox/storage` no figura en las
+ * `dependencies` de `@thyrox/mcp-runtime` (ni la fuente declara ninguna: su
+ * `packages/mcp-runtime/package.json` trae `dependencies` vacías, y resuelve
+ * por el `workspaces` de su raíz, que este árbol todavía no declara).
+ *
+ * La distinción decide el arreglo, y por eso se escribe: un módulo ausente se
+ * paga portándolo; una arista ausente se paga cableando `workspaces` y
+ * reinstalando (#239). Hasta entonces el diferido es lo que impide que un
+ * specifier irresoluble tumbe la carga del módulo entero.
  *
  * Trunca y estima el tamaño del resultado de una herramienta MCP contra el
  * tope de tokens de salida configurado.
@@ -30,24 +39,8 @@ import type {
   TextBlockParam,
 } from '@anthropic-ai/sdk/resources/index.mjs'
 import { logError } from '@thyrox/local-observability/logging'
-
-function requireConfigFeatureFlags(): {
-  getFeatureValue_CACHED_MAY_BE_STALE: <T>(flag: string, fallback: T) => T
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/config/feature-flags')
-}
-
-function requireAgentTokenEstimation(): {
-  countMessagesTokensWithAPI: (
-    messages: Array<{ role: 'user'; content: unknown }>,
-    tools: unknown[],
-  ) => Promise<number | undefined>
-  roughTokenCountEstimation: (text: string) => number
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/agent/tokenEstimation.js')
-}
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import * as AgentTokenEstimation from '@thyrox/agent/tokenEstimation.js'
 
 function requireStorageImageResizer(): {
   compressImageBlock: (
@@ -56,7 +49,7 @@ function requireStorageImageResizer(): {
   ) => Promise<ImageBlockParam>
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/storage/imageResizer.js')
+  return require('@thyrox/storage/imageResizer.js')
 }
 
 export const MCP_TOKEN_COUNT_THRESHOLD_FACTOR = 0.5
@@ -80,7 +73,7 @@ export function getMaxMcpOutputTokens(): number {
       return parsed
     }
   }
-  const overrides = requireConfigFeatureFlags().getFeatureValue_CACHED_MAY_BE_STALE<Record<
+  const overrides = getFeatureValue_CACHED_MAY_BE_STALE<Record<
     string,
     number
   > | null>('tengu_satin_quoll', {})
@@ -109,10 +102,10 @@ export function getContentSizeEstimate(content: MCPToolResult): number {
   if (!content) return 0
 
   if (typeof content === 'string') {
-    return requireAgentTokenEstimation().roughTokenCountEstimation(content)
+    return AgentTokenEstimation.roughTokenCountEstimation(content)
   }
 
-  const { roughTokenCountEstimation } = requireAgentTokenEstimation()
+  const { roughTokenCountEstimation } = AgentTokenEstimation
   return content.reduce((total, block) => {
     if (isTextBlock(block)) {
       return total + roughTokenCountEstimation(block.text)
@@ -221,7 +214,7 @@ export async function mcpContentNeedsTruncation(
         ? [{ role: 'user' as const, content }]
         : [{ role: 'user' as const, content }]
 
-    const tokenCount = await requireAgentTokenEstimation().countMessagesTokensWithAPI(messages, [])
+    const tokenCount = await AgentTokenEstimation.countMessagesTokensWithAPI(messages, [])
     return !!(tokenCount && tokenCount > getMaxMcpOutputTokens())
   } catch (error) {
     logError(error)

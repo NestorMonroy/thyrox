@@ -19,7 +19,7 @@
  * hace `context.ts`) es lo que exige el porte del test: pinnea el import
  * literal contra la fuente, no contra un sustituto local.
  */
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 if (typeof globalThis.MACRO === 'undefined') {
   ;(globalThis as typeof globalThis & { MACRO: typeof MACRO }).MACRO = {

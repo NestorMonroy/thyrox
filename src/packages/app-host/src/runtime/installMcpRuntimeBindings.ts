@@ -11,4 +11,4 @@
 // Sin test: la única línea del archivo agota la resolución de módulos
 // al importarlo. Ningún consumidor de este árbol lo importa hoy.
 
-import '@claude-code-how-works/mcp-runtime/runtimeHostSetup.js'
+import '@thyrox/mcp-runtime/runtimeHostSetup.js'

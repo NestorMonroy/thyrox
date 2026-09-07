@@ -3,7 +3,7 @@
  * (verbatim en aserciones; el mecanismo de captura cambia porque el puerto
  * no usa `@claude-code-how-works/local-observability` sino el sustituto
  * local — ver `../internal/pendingCrossPackageDeps.ts`. La fuente hace
- * `mock.module('@claude-code-how-works/local-observability', ...)`; aquí
+ * `mock.module('@thyrox/local-observability', ...)`; aquí
  * se inyecta directamente con `setLogEventFn`, que es el mismo patrón DI
  * que `setGetCwdFn` de `@thyrox/storage` — sin mockear un import de
  * paquete.

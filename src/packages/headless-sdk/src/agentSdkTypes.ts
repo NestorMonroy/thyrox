@@ -36,7 +36,7 @@ export * from './runtimeTypes.ts'
 // src/entrypoints/sdk/settingsTypes.generated.ts which was a 4-LOC stub.
 export type Settings = Record<string, unknown>
 // Re-export tool types (all marked @internal until SDK API stabilizes)
-// V7-flipped: was `export * from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'`. Inlined
+// V7-flipped: was `export * from '@thyrox/headless-sdk/agentSdkTypes.js'`. Inlined
 // because toolTypes.ts was a 9-LOC stub with one type alias.
 /** @internal */
 export type SdkToolDefinition = {

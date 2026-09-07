@@ -34,7 +34,7 @@ function requireConfigEnvExpansion(): {
   }
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@claude-code-how-works/config/utils/envExpansion.js')
+  return require('@thyrox/config/utils/envExpansion.js')
 }
 
 export function expandEnvVarsInString(value: string): {

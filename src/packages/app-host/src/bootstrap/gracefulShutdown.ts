@@ -46,7 +46,7 @@ import { createHash } from 'crypto'
 import { writeSync } from 'fs'
 import memoize from 'lodash-es/memoize.js'
 import { onExit } from 'signal-exit'
-import type { ExitReason } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
+import type { ExitReason } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import {
   getIsInteractive,
   getIsScrollDraining,
@@ -57,21 +57,21 @@ import {
 import { DISABLE_KITTY_KEYBOARD, DISABLE_MODIFY_OTHER_KEYS, DBP, DFE, DISABLE_MOUSE_TRACKING, EXIT_ALT_SCREEN, SHOW_CURSOR, CLEAR_ITERM2_PROGRESS, CLEAR_TAB_STATUS, CLEAR_TERMINAL_TITLE, instances, supportsTabStatus, wrapForMultiplexer } from '@anthropic/ink'
 import {
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { logInternalErrorEvent } from '@claude-code-how-works/local-observability/telemetry'
+} from '@thyrox/local-observability'
+import { logInternalErrorEvent } from '@thyrox/local-observability/telemetry'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   shutdownEventLoggers,
-} from '@claude-code-how-works/local-observability/compat'
+} from '@thyrox/local-observability/compat'
 type AppState = unknown
 import { runCleanupFunctions } from './cleanupRegistry.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logForDiagnosticsNoPII } from '@claude-code-how-works/local-observability/logging'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
-import { getInvokedBinaryName } from '@claude-code-how-works/config'
-import { getCurrentSessionTitle, sessionIdExists } from '@claude-code-how-works/storage/sessionStorage.js'
-import { sleep } from '@claude-code-how-works/config/sleep'
-import { closeSentry } from '@claude-code-how-works/local-observability/sentry.js'
+import { getInvokedBinaryName } from '@thyrox/config'
+import { getCurrentSessionTitle, sessionIdExists } from '@thyrox/storage/sessionStorage.js'
+import { sleep } from '@thyrox/config/sleep'
+import { closeSentry } from '@thyrox/local-observability/sentry.js'
 import { profileReport } from '../startup/startupProfiler.js'
 
 /**
@@ -554,7 +554,7 @@ export async function gracefulShutdown(
   // presupuesto de hook configurado por el usuario en 10s se trunca en
   // silencio por el failsafe de 5s (seguimiento de gh-32712).
   const { executeSessionEndHooks, getSessionEndHookTimeoutMs } = await import(
-    '@claude-code-how-works/agent/hooks.js'
+    '@thyrox/agent/hooks.js'
   )
   const sessionEndTimeoutMs = getSessionEndHookTimeoutMs()
 

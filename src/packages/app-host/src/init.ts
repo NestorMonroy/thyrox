@@ -74,28 +74,28 @@ import { getIsNonInteractiveSession } from './bootstrap/state.js'
 import type { AttributedCounter } from './bootstrap/state.js'
 import { getSessionCounter, setMeter } from './bootstrap/state.js'
 import { shutdownLspServerManager } from '@claude-code-how-works/ide/lsp/manager.js'
-import { populateOAuthAccountInfoIfNeeded } from '@claude-code-how-works/provider/oauth/client.js'
+import { populateOAuthAccountInfoIfNeeded } from '@thyrox/provider/oauth/client.js'
 import {
   initializePolicyLimitsLoadingPromise,
   isPolicyLimitsEligible,
-} from '@claude-code-how-works/provider/policyLimits/index.js'
+} from '@thyrox/provider/policyLimits/index.js'
 import {
   initializeRemoteManagedSettingsLoadingPromise,
   isEligibleForRemoteManagedSettings,
   waitForRemoteManagedSettingsToLoad,
-} from '@claude-code-how-works/config/remote'
+} from '@thyrox/config/remote'
 import { preconnectAnthropicApi } from './startup/apiPreconnect.js'
 import { applyExtraCACertsFromConfig } from './startup/caCertsConfig.js'
 import { registerCleanup } from './bootstrap/cleanupRegistry.js'
-import { enableConfigs, recordFirstStartTime } from '@claude-code-how-works/config'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { detectCurrentRepository } from '@claude-code-how-works/storage/detectRepository.js'
-import { logForDiagnosticsNoPII } from '@claude-code-how-works/local-observability/logging'
-import { initJetBrainsDetection } from '@claude-code-how-works/config/env/dynamic'
+import { enableConfigs, recordFirstStartTime } from '@thyrox/config'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { detectCurrentRepository } from '@thyrox/storage/detectRepository.js'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
+import { initJetBrainsDetection } from '@thyrox/config/env/dynamic'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
-import { getPlatform } from '@claude-code-how-works/config/platform'
-import { getCachedPowerShellPath, isPowerShellToolEnabled } from '@claude-code-how-works/shell'
-import { ConfigParseError, errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { getPlatform } from '@thyrox/config/platform'
+import { getCachedPowerShellPath, isPowerShellToolEnabled } from '@thyrox/shell'
+import { ConfigParseError, errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 // showInvalidConfigDialog se importa dinámicamente en la ruta de error para no cargar React durante init
 import {
   gracefulShutdownSync,
@@ -104,20 +104,20 @@ import {
 import {
   applyConfigEnvironmentVariables,
   applySafeConfigEnvironmentVariables,
-} from '@claude-code-how-works/config/managedEnv.js'
-import { configureGlobalMTLS } from '@claude-code-how-works/provider/mtls.js'
+} from '@thyrox/config/managedEnv.js'
+import { configureGlobalMTLS } from '@thyrox/provider/mtls.js'
 import {
   ensureScratchpadDir,
   isScratchpadEnabled,
-} from '@claude-code-how-works/permission/filesystem'
+} from '@thyrox/permission/filesystem'
 // initializeTelemetry se carga perezosamente vía import() en setMeterState() para diferir
 // ~400KB de módulos OpenTelemetry + protobuf hasta que la telemetría realmente se inicializa.
 // Los exporters gRPC (~700KB vía @grpc/grpc-js) se cargan perezosamente aún más adentro, en instrumentation.ts.
-import { configureGlobalAgents } from '@claude-code-how-works/provider/proxy.js'
-import { isBetaTracingEnabled } from '@claude-code-how-works/local-observability/betaSessionTracing.js'
-import { getTelemetryAttributes } from '@claude-code-how-works/local-observability/telemetry'
+import { configureGlobalAgents } from '@thyrox/provider/proxy.js'
+import { isBetaTracingEnabled } from '@thyrox/local-observability/betaSessionTracing.js'
+import { getTelemetryAttributes } from '@thyrox/local-observability/telemetry'
 import { setShellIfWindows, findGitBashPath } from '@thyrox/storage/windowsPaths.js'
-import { initSentry } from '@claude-code-how-works/local-observability/sentry.js'
+import { initSentry } from '@thyrox/local-observability/sentry.js'
 
 // initialize1PEventLogging se importa dinámicamente para diferir sdk-logs/resources de OpenTelemetry
 
@@ -158,7 +158,7 @@ export const init = memoize(async (): Promise<void> => {
     setupGracefulShutdown()
     profileCheckpoint('init_after_graceful_shutdown')
 
-    void import('@claude-code-how-works/config/feature-flags')
+    void import('@thyrox/config/feature-flags')
     profileCheckpoint('init_after_1p_event_logging')
 
     // Puebla la info de cuenta OAuth si no está ya cacheada en config. Es
@@ -198,13 +198,13 @@ export const init = memoize(async (): Promise<void> => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { migrateLegacyEnvToConnections } = require(
-        '@claude-code-how-works/provider/connections.js',
-      ) as typeof import('@claude-code-how-works/provider/connections.js')
+        '@thyrox/provider/connections.js',
+      ) as typeof import('@thyrox/provider/connections.js')
       // Lee de settings.env primero (persistente), cae a process.env.
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { getSettings } = require(
-        '@claude-code-how-works/config/settings',
-      ) as typeof import('@claude-code-how-works/config/settings')
+        '@thyrox/config/settings',
+      ) as typeof import('@thyrox/config/settings')
       const settings = getSettings() ?? {}
       const settingsEnv = (settings.env ?? {}) as Record<string, string>
       const merged: Record<string, string> = {
@@ -248,8 +248,8 @@ export const init = memoize(async (): Promise<void> => {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { getConnections, saveConnection, refreshCodexModelCatalog } =
         require(
-          '@claude-code-how-works/provider/connections.js',
-        ) as typeof import('@claude-code-how-works/provider/connections.js')
+          '@thyrox/provider/connections.js',
+        ) as typeof import('@thyrox/provider/connections.js')
       for (const c of getConnections()) {
         if (c.protocol !== 'codex') continue
         const refreshed = refreshCodexModelCatalog(c.models)
@@ -359,7 +359,7 @@ export const init = memoize(async (): Promise<void> => {
     // sesiones nunca crea teams.
     registerCleanup(async () => {
       const { cleanupSessionTeams } = await import(
-        '@claude-code-how-works/swarm'
+        '@thyrox/swarm'
       )
       await cleanupSessionTeams()
     })
@@ -435,7 +435,7 @@ async function doInitializeTelemetry(): Promise<void> {
 async function setMeterState(): Promise<void> {
   // Carga perezosa de instrumentation para diferir ~400KB de OpenTelemetry + protobuf
   const { initializeTelemetry } = await import(
-    '@claude-code-how-works/local-observability/telemetry'
+    '@thyrox/local-observability/telemetry'
   )
   // Inicializa telemetría OTLP de cliente (métricas, logs, traces)
   const meter = await initializeTelemetry()

@@ -50,7 +50,7 @@ function requireProviderAuthAlias(): {
 	handleOAuth401Error: (sentToken?: string) => Promise<boolean>;
 } {
 	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	return require("@claude-code-how-works/provider/authAlias.js");
+	return require("@thyrox/provider/authAlias.js");
 }
 
 export function mcpBaseUrlAnalytics(serverRef: ScopedMcpServerConfig): {
