@@ -42,8 +42,8 @@ print(f"input:            {u['input_tokens']:,}")
 print(f"cache_creation:   {u['cache_creation_tokens']:,}")
 print(f"cache_read:       {u['cache_read_tokens']:,}")
 print(f"output:           {u['output_tokens']:,}")
-print(f"titular_harness:  {titular:,}  (input+cache_creation+output — lo que reporta el harness)")
-print(f"equiv_cost:       {u['equiv_cost']:,}  (H-DOCS-135/136: in 1x, cc 1.25x, cr 0.1x, out 5x — cocientes del tier 3/15, H-DOCS-1008)")
+print(f"titular_harness:  {titular:,}  [NO se cita solo — excluye cache_read] (input+cache_creation+output)")
+print(f"equiv_cost:       {u['equiv_cost']:,}  [LA CIFRA QUE SE CITA] (H-DOCS-135/136: in 1x, cc 1.25x, cr 0.1x, out 5x — cocientes del tier 3/15, H-DOCS-1008)")
 print(f"factor:           {factor:.2f}x")
 # El USD sale del catálogo del paquete (una sola fuente de precios), con el
 # modelo que el transcript declara — no el alias con que se despachó.
@@ -58,8 +58,13 @@ else:
     consumo = {k: u[k] for k in ("input_tokens", "cache_creation_tokens", "cache_read_tokens", "output_tokens")}
     try:
         print(f"modelo:           {modelo}  (tier {mc.models_by_id(catalogo)[modelo].get('pricing_tier')})")
-        print(f"usd_5m:           {mc.usage_cost_usd(catalogo, modelo, consumo, '5m'):.4f}")
-        print(f"usd_1h:           {mc.usage_cost_usd(catalogo, modelo, consumo, '1h'):.4f}  (catálogo {catalogo.get('fuente', '?')})")
+        # El USD se CALCULA y se ETIQUETA, no se retira. Retirarlo destruiría
+        # el único puente con el catálogo; lo que estaba mal era presentarlo
+        # como «el costo». Es precio de LISTA, y no consta que el gasto de esta
+        # sesión se facture con él, así que no es la cifra que se cita en
+        # ninguna superficie — eso es `equiv_cost`.
+        print(f"usd_5m:           {mc.usage_cost_usd(catalogo, modelo, consumo, '5m'):.4f}  [precio de LISTA — no se cita como costo]")
+        print(f"usd_1h:           {mc.usage_cost_usd(catalogo, modelo, consumo, '1h'):.4f}  [precio de LISTA — no se cita como costo] (catálogo {catalogo.get('fuente', '?')})")
     except KeyError as exc:
         print(f"modelo:           {modelo} — sin tier en el catálogo ({exc}); sin USD")
 # El ALCANCE de la suma (:ref:`h-docs-427`, tarea #899). Sin el, un transcript
