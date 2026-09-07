@@ -322,6 +322,35 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
 
 
+def document_root(args: argparse.Namespace) -> Path:
+    """La raiz del arbol documental: declarada, o derivada del consumidor.
+
+    `--repo-docs` tenia default `"."`, y eso hacia que el mecanismo compusiera
+    la ruta desde SU posicion en vez de desde lo declarado: corrido en el
+    proveedor daba `thyrox/source`, que no existe, y las dos ordenes de
+    `documents` rehusaban con exit 2. Por eso esa tabla llevaba dias sin una
+    fila. Es la misma forma que `check_workbench.py` tenia al ligar su raiz en
+    la firma.
+
+    El consumidor ya viene nombrado en `--repo` o en `--claude-dir`; derivarlo
+    de ahi no inventa nada: deja de ignorar lo que ya se dijo.
+    """
+    if getattr(args, "repo_docs", None):
+        return Path(args.repo_docs).resolve()
+    if getattr(args, "claude_dir", None):
+        cd = Path(args.claude_dir).resolve()
+        for padre in (cd, *cd.parents):
+            if padre.name == ".claude":
+                return padre.parent
+        return cd
+    if getattr(args, "repo", None):
+        return reach_roots.root(args.repo)
+    raise ValueError(
+        "no se puede resolver la raiz documental: declara --repo-docs, o nombra "
+        "el consumidor con --repo/--claude-dir."
+    )
+
+
 def resolve_store_dir(args: argparse.Namespace) -> Path:
     """Resuelve .claude/agent-results/ del repo objetivo.
 
@@ -1796,7 +1825,7 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
     escrita: el hueco declarado y el hueco rellenado se leen igual en una
     columna, y solo el primero es honesto.
     """
-    repo = Path(args.repo_docs).resolve()
+    repo = document_root(args)
     raiz = repo / args.subtree
     if not raiz.is_dir():
         print(f"ERROR — no existe {raiz}", file=sys.stderr)
@@ -1911,7 +1940,7 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
     El PLAZO **no** se escribe aqui. Declararlo es autoridad archivistica y
     este guion no la tiene; queda bloqueado por #760.
     """
-    repo = Path(args.repo_docs).resolve()
+    repo = document_root(args)
     raiz = repo / args.subtree
     if not raiz.is_dir():
         print(f"ERROR — no existe {raiz}", file=sys.stderr)
@@ -2995,8 +3024,8 @@ def build_parser() -> argparse.ArgumentParser:
     # hermano cuyo store se abre— asi que la raiz del arbol documental necesita
     # su propia bandera. Mismo motivo por el que `fechar-apertura` usa
     # `--repo-tablero` y no `--repo`.
-    p.add_argument("--repo-docs", default=".",
-                   help="raiz del repo git que contiene los documentos (default: .)")
+    p.add_argument("--repo-docs", default=None,
+                   help="raiz del repo con los documentos (default: la del consumidor nombrado en --repo/--claude-dir)")
     p.add_argument("--subtree", default="source",
                    help="subarbol a recorrer dentro del repo (default: source)")
     p.add_argument("--dry-run", action="store_true")
@@ -3010,8 +3039,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_target_args(p)
     # Misma razon que en `fechar-documentos`: `--repo` ya esta tomado por
     # `add_target_args` con otro sentido.
-    p.add_argument("--repo-docs", default=".",
-                   help="raiz del repo git que contiene los documentos (default: .)")
+    p.add_argument("--repo-docs", default=None,
+                   help="raiz del repo con los documentos (default: la del consumidor nombrado en --repo/--claude-dir)")
     p.add_argument("--subtree", default="source",
                    help="subarbol a recorrer dentro del repo (default: source)")
     p.add_argument("--dry-run", action="store_true")
