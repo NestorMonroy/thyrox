@@ -149,9 +149,23 @@ def execution_facts(payload: dict, transcript_presente: bool) -> dict:
     *Ciega a:* el uso de tokens, que solo vive en el transcript — esta funcion
     no lo sustituye ni pretende hacerlo.
     """
-    if transcript_presente:
-        return {}
+    # `hook_event_name` se guarda SIEMPRE, haya transcript o no: la pregunta
+    # «de que evento vino esta fila» no depende de eso, y hoy no se puede
+    # responder para NINGUNA de las 1209 filas del store. `claves_de_payload`
+    # guarda que la clave ESTABA y tira su valor — que es el unico dato que
+    # separaria un SubagentStop de un subagente real de un evento que el
+    # cliente entrega con la misma forma para otra cosa.
+    #
+    # Es la pregunta viva de las 68 filas sin transcript: medido, su contenido
+    # NO esta en `subagents/*.jsonl` (0 archivos) NI en el transcript principal
+    # (0 lineas `isSidechain`, 0 apariciones estructurales del id). Sin
+    # `hook_event_name` el store no puede ni empezar a decir que son.
     hechos: dict = {}
+    evento = payload.get("hook_event_name")
+    if evento:
+        hechos["hook_event_name"] = evento
+    if transcript_presente:
+        return hechos
     for clave in ("effort", "permission_mode"):
         valor = payload.get(clave)
         if valor:

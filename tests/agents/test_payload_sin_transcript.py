@@ -78,5 +78,23 @@ m2 = reg.execution_facts({"agent_id": "x"}, transcript_presente=False)
 check("sin effort no hay clave effort", False, "effort" in m2)
 check("sin mensaje, longitud 0 declarada", 0, m2.get("longitud_mensaje_final"))
 
+print("== 5. se guarda hook_event_name: es EL discriminador que faltaba ==")
+# 68 filas de hoy nacen sin transcript y el store no puede decir de que evento
+# vinieron: `claves_de_payload` guarda que la clave `hook_event_name` ESTABA,
+# y tira su valor. Sin el valor no se distingue un SubagentStop de un
+# subagente real de un evento que el cliente entrega con la misma forma para
+# otra cosa — y esa distincion es justo la pregunta abierta.
+#
+# No es contenido de sesion: nombra el EVENTO, no lo que se dijo. Misma clase
+# que `effort` y `permission_mode`.
+m3 = reg.execution_facts({"hook_event_name": "SubagentStop"}, transcript_presente=False)
+check("hook_event_name", "SubagentStop", m3.get("hook_event_name"))
+# Y se guarda TAMBIEN con transcript presente: la pregunta «de que evento vino
+# esta fila» no depende de si hubo transcript, y hoy no se puede responder
+# para NINGUNA de las 1209 filas del store.
+m4 = reg.execution_facts({"hook_event_name": "SubagentStop"}, transcript_presente=True)
+check("tambien con transcript", "SubagentStop", m4.get("hook_event_name"))
+check("y nada mas con transcript", ["hook_event_name"], sorted(m4))
+
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)
