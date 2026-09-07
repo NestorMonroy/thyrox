@@ -1161,6 +1161,43 @@ export function setGetDefaultBranchFn(fn: () => Promise<string>): void {
 }
 
 /**
+ * `getBranch` / `getRemoteUrl` — de
+ * `@claude-code-how-works/storage/git.ts:180,188` (hermanos de
+ * `getDefaultBranch` en el mismo archivo — delegan en
+ * `getCachedBranch()`/`getCachedRemoteUrl()`, el mismo subsistema de
+ * caché + shell-out a git). `@thyrox/storage` aún no los porta (medido:
+ * 0 hits de `getBranch`/`getRemoteUrl` en `storage/src/git.ts`, que hoy
+ * sólo tiene `normalizeGitRemoteUrl`). Puntos de inyección — mismo
+ * razonamiento que `getDefaultBranch`: el shell-out a git es dominio de
+ * `@thyrox/storage`, no de bridge. Defaults: `getBranch` → `''`
+ * (`initReplBridge.ts` construye `BridgeConfig.branch` con esto — una
+ * rama vacía es un valor que la fuente también puede producir en un
+ * repo sin HEAD simbólica); `getRemoteUrl` → `null` (mismo valor que la
+ * fuente devuelve fuera de un repo git o sin remoto `origin`). Se
+ * retiran cuando `@thyrox/storage` porte `git.ts` Y `@thyrox/bridge` sea
+ * miembro del workspace.
+ */
+let _getBranch: () => Promise<string> = async () => ''
+
+export function getBranch(): Promise<string> {
+  return _getBranch()
+}
+
+export function setGetBranchFn(fn: () => Promise<string>): void {
+  _getBranch = fn
+}
+
+let _getRemoteUrl: () => Promise<string | null> = async () => null
+
+export function getRemoteUrl(): Promise<string | null> {
+  return _getRemoteUrl()
+}
+
+export function setGetRemoteUrlFn(fn: () => Promise<string | null>): void {
+  _getRemoteUrl = fn
+}
+
+/**
  * `getMainLoopModel` — de `@claude-code-how-works/provider/model.js`.
  * Ya existe con lógica real (tier de suscripción, overrides de ant,
  * inflado de conexión) en `@thyrox/provider: src/model.ts:123`. Punto
@@ -1597,35 +1634,34 @@ export function setInitSinksFn(fn: () => void): void {
 }
 
 /**
- * `setOriginalCwd` / `setCwdState` — de
- * `@claude-code-how-works/app-host/bootstrap/state.ts:404,420` (verbatim:
- * escriben en un STATE de módulo interno de app-host). Ya existen
- * idénticas en `@thyrox/app-host: src/bootstrap/state.ts`. Puntos de
- * inyección — default no-op: el STATE que escriben vive en
- * `@thyrox/app-host`, y nada en este porte de bridge lee ese STATE
- * (los sustitutos de git/worktree de `runBridgeHeadless` en
- * `bridgeMain.ts` son también no-ops locales) — el efecto real de
- * primar ese STATE ya está desconectado en este pase por esos otros
- * stubs. Se retiran cuando `@thyrox/bridge` sea miembro del workspace y
- * pueda importar `@thyrox/app-host` directo.
+ * `setOriginalCwd`/`getOriginalCwd` y `setCwdState`/`getCwdState` — de
+ * `@claude-code-how-works/app-host/bootstrap/state.ts:389,404,415,420`
+ * (verbatim: getters/setters de un STATE de módulo interno de app-host).
+ * Ya existen idénticas en `@thyrox/app-host: src/bootstrap/state.ts`.
+ * Reimplementación fiel — un STATE PROPIO de este archivo (no el real de
+ * `@thyrox/app-host`), pero el par get/set se comporta consistentemente
+ * dentro de este porte de bridge (a diferencia de un no-op puro, un
+ * `getOriginalCwd()` posterior a `setOriginalCwd(dir)` sí ve `dir`). Se
+ * retira cuando `@thyrox/bridge` sea miembro del workspace y pueda
+ * importar `@thyrox/app-host` directo.
  */
-let _setOriginalCwd: (cwd: string) => void = () => {}
-let _setCwdState: (cwd: string) => void = () => {}
+let _originalCwd = ''
+let _cwdState = ''
 
 export function setOriginalCwd(cwd: string): void {
-  _setOriginalCwd(cwd)
+  _originalCwd = cwd.normalize('NFC')
+}
+
+export function getOriginalCwd(): string {
+  return _originalCwd
 }
 
 export function setCwdState(cwd: string): void {
-  _setCwdState(cwd)
+  _cwdState = cwd.normalize('NFC')
 }
 
-export function setSetOriginalCwdFn(fn: (cwd: string) => void): void {
-  _setOriginalCwd = fn
-}
-
-export function setSetCwdStateFn(fn: (cwd: string) => void): void {
-  _setCwdState = fn
+export function getCwdState(): string {
+  return _cwdState
 }
 
 /**
@@ -1646,4 +1682,389 @@ const _bridgeCleanupFunctions = new Set<() => Promise<void>>()
 export function registerCleanup(cleanupFn: () => Promise<void>): () => void {
   _bridgeCleanupFunctions.add(cleanupFn)
   return () => _bridgeCleanupFunctions.delete(cleanupFn)
+}
+
+/**
+ * `readEnv` — de `@claude-code-how-works/config/env/utils.ts:198`
+ * (verbatim: `process.env[name]`). Ya existe idéntica en
+ * `@thyrox/config: src/env/utils.ts`. Reimplementación fiel VERBATIM.
+ * Se retira cuando `@thyrox/bridge` sea miembro del workspace.
+ */
+export function readEnv(name: string): string | undefined {
+  return process.env[name]
+}
+
+/**
+ * `getGlobalConfig` / `saveGlobalConfig` — de
+ * `@claude-code-how-works/config` (barrel, ~2700 líneas de settings
+ * persistidos en disco). `@thyrox/config` aún no porta ninguna (mismo
+ * 0 hits medido para `bridgeMain.ts`). Porte MÍNIMO ACOTADO: sólo los
+ * dos campos que `initReplBridge.ts` lee/escribe
+ * (`bridgeOauthDeadExpiresAt`/`bridgeOauthDeadFailCount`, el backoff
+ * cross-proceso de token OAuth muerto) — el resto de `GlobalConfig`
+ * (decenas de campos reales) NO se declara, porque inventarlo sería
+ * fabricar un esquema que no existe. Punto de inyección con estado
+ * en memoria (no en disco — la persistencia real es dominio de
+ * `@thyrox/config`); el default vacío hace que el backoff cross-proceso
+ * no persista entre invocaciones del proceso, que es el mismo límite
+ * que ya tiene cualquier estado puramente en memoria. Se retira cuando
+ * `@thyrox/config` porte `getGlobalConfig`/`saveGlobalConfig`.
+ */
+export type BridgeGlobalConfigSlice = {
+  bridgeOauthDeadExpiresAt?: number | null
+  bridgeOauthDeadFailCount?: number
+}
+
+let _bridgeGlobalConfigSlice: BridgeGlobalConfigSlice = {}
+
+export function getGlobalConfig(): BridgeGlobalConfigSlice {
+  return _bridgeGlobalConfigSlice
+}
+
+export function saveGlobalConfig(
+  updater: (current: BridgeGlobalConfigSlice) => BridgeGlobalConfigSlice,
+): void {
+  _bridgeGlobalConfigSlice = updater(_bridgeGlobalConfigSlice)
+}
+
+/**
+ * `checkAndRefreshOAuthTokenIfNeeded` / `handleOAuth401Error` — de
+ * `@claude-code-how-works/provider/authAlias.js`. Ya existen con lógica
+ * real (refresh de keychain, comparación de token obsoleto) en
+ * `@thyrox/provider: src/authAlias.ts:1168,1080`. Puntos de inyección
+ * — el refresh de keychain es dominio de `@thyrox/provider`, no de
+ * bridge. Defaults: `checkAndRefreshOAuthTokenIfNeeded` no-op (no hay
+ * nada que refrescar sin el keychain real); `handleOAuth401Error`
+ * devuelve `false` (conservador: sin wiring real, un 401 NO se declara
+ * recuperado — evita que el llamador asuma falsamente que un retry
+ * tiene sentido). Se retiran cuando `@thyrox/bridge` sea miembro del
+ * workspace.
+ */
+let _checkAndRefreshOAuthTokenIfNeeded: (
+  retryCount?: number,
+  force?: boolean,
+  expectedAccessToken?: string,
+) => Promise<boolean> = async () => false
+
+export function checkAndRefreshOAuthTokenIfNeeded(
+  retryCount = 0,
+  force = false,
+  expectedAccessToken?: string,
+): Promise<boolean> {
+  return _checkAndRefreshOAuthTokenIfNeeded(
+    retryCount,
+    force,
+    expectedAccessToken,
+  )
+}
+
+export function setCheckAndRefreshOAuthTokenIfNeededFn(
+  fn: (
+    retryCount?: number,
+    force?: boolean,
+    expectedAccessToken?: string,
+  ) => Promise<boolean>,
+): void {
+  _checkAndRefreshOAuthTokenIfNeeded = fn
+}
+
+let _handleOAuth401Error: (failedAccessToken: string) => Promise<boolean> =
+  async () => false
+
+export function handleOAuth401Error(
+  failedAccessToken: string,
+): Promise<boolean> {
+  return _handleOAuth401Error(failedAccessToken)
+}
+
+export function setHandleOAuth401ErrorFn(
+  fn: (failedAccessToken: string) => Promise<boolean>,
+): void {
+  _handleOAuth401Error = fn
+}
+
+/**
+ * `extractTextContent` / `getContentText` — de
+ * `@claude-code-how-works/agent/messages.ts:2971,2981` (verbatim, salvo
+ * el tipo de `content`: la fuente usa `DeepImmutable<ContentBlockParam[]>`
+ * del SDK de Anthropic; aquí se acepta `readonly { type: string; text?:
+ * string }[]`, la forma estructural mínima que ambas funciones
+ * consumen — mismo criterio que `ToolResultBlockParam` en
+ * `@thyrox/agent: messageShapes.ts`). Ya existen idénticas en
+ * `@thyrox/agent: src/messages.ts` (si ya las porta esa fecha; si no,
+ * son las primeras). Reimplementación fiel. Se retiran cuando
+ * `@thyrox/bridge` sea miembro del workspace.
+ */
+export function extractTextContent(
+  blocks: readonly { type: string; text?: string }[],
+  separator = '',
+): string {
+  return blocks
+    .filter((b): b is { type: 'text'; text: string } => b.type === 'text')
+    .map(b => b.text)
+    .join(separator)
+}
+
+export function getContentText(
+  content: string | readonly { type: string; text?: string }[],
+): string | null {
+  if (typeof content === 'string') {
+    return content
+  }
+  if (Array.isArray(content)) {
+    return extractTextContent(content, '\n').trim() || null
+  }
+  return null
+}
+
+/**
+ * `SYNTHETIC_MESSAGES` / `isSyntheticMessage` — de
+ * `@claude-code-how-works/agent/messagesConstants.ts:3` +
+ * `messages.ts:360` (verbatim). Ya existen idénticas en
+ * `@thyrox/agent`. Reimplementación fiel — `Message` aquí es el tipo
+ * MÍNIMO de `@thyrox/agent/messageShapes.ts`, así que se accede a
+ * `message.content` vía el índice `[key: string]: unknown` que ya
+ * declara, con narrowing local.
+ */
+const SYNTHETIC_MESSAGES = new Set([
+  '[Request interrupted by user]',
+  '[Request interrupted by user for tool use]',
+  "The user doesn't want to take this action right now. STOP what you are doing and wait for the user to tell you how to proceed.",
+  "The user doesn't want to proceed with this tool use. The tool use was rejected (eg. if it was a file edit, the new_string was NOT written to the file). STOP what you are doing and wait for the user to tell you how to proceed.",
+  'No response requested.',
+])
+
+export function isSyntheticMessage(message: {
+  type: string
+  message?: { content?: unknown }
+}): boolean {
+  const content = message.message?.content
+  return (
+    message.type !== 'progress' &&
+    message.type !== 'attachment' &&
+    message.type !== 'system' &&
+    Array.isArray(content) &&
+    (content[0] as { type?: string; text?: string } | undefined)?.type ===
+      'text' &&
+    SYNTHETIC_MESSAGES.has(
+      (content[0] as { text: string }).text,
+    )
+  )
+}
+
+/**
+ * `isCompactBoundaryMessage` / `findLastCompactBoundaryIndex` /
+ * `getMessagesAfterCompactBoundary` — de
+ * `@claude-code-how-works/agent/messages.ts:4699,4709,4734`. Ya
+ * existen idénticas en `@thyrox/agent`. Reimplementación fiel, con UNA
+ * omisión declarada: la rama `feature('HISTORY_SNIP')` de la fuente
+ * (`require('./compaction/snipProjection.js')`, proyección de vista
+ * recortada) se omite — `HISTORY_SNIP` no está en `STABLE_FEATURES`
+ * (medido: 0 hits en `scripts/default-features.ts`), así que esa rama
+ * nunca corre en un build externo; aquí `getMessagesAfterCompactBoundary`
+ * se comporta como si `feature('HISTORY_SNIP')` fuera siempre `false`
+ * (devuelve `sliced` sin proyectar), que es EXACTAMENTE lo que la
+ * fuente hace en ese caso.
+ */
+export function isCompactBoundaryMessage(message: {
+  type: string
+  subtype?: string
+}): boolean {
+  return message?.type === 'system' && message.subtype === 'compact_boundary'
+}
+
+export function findLastCompactBoundaryIndex<
+  T extends { type: string; subtype?: string },
+>(messages: T[]): number {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i]
+    if (message && isCompactBoundaryMessage(message)) {
+      return i
+    }
+  }
+  return -1
+}
+
+export function getMessagesAfterCompactBoundary<
+  T extends { type: string; subtype?: string },
+>(messages: T[]): T[] {
+  const boundaryIndex = findLastCompactBoundaryIndex(messages)
+  return boundaryIndex === -1 ? messages : messages.slice(boundaryIndex)
+}
+
+/**
+ * `extractConversationText` — de
+ * `@claude-code-how-works/agent/sessionTitle.ts:27` (verbatim). Ya
+ * existe idéntica en `@thyrox/agent` (si esa fecha ya la porta).
+ * Reimplementación fiel — mismo criterio de `Message` mínimo que arriba.
+ */
+const MAX_CONVERSATION_TEXT = 1000
+
+export function extractConversationText(
+  messages: {
+    type: string
+    isMeta?: boolean
+    origin?: { kind?: string }
+    message?: { content?: unknown }
+  }[],
+): string {
+  const parts: string[] = []
+  for (const msg of messages) {
+    if (msg.type !== 'user' && msg.type !== 'assistant') continue
+    if (msg.isMeta) continue
+    if (msg.origin && msg.origin.kind !== 'human') continue
+    const content = msg.message?.content
+    if (typeof content === 'string') {
+      parts.push(content)
+    } else if (Array.isArray(content)) {
+      for (const block of content as { type?: string; text?: string }[]) {
+        if (block.type === 'text' && typeof block.text === 'string') {
+          parts.push(block.text)
+        }
+      }
+    }
+  }
+  const text = parts.join('\n')
+  return text.length > MAX_CONVERSATION_TEXT
+    ? text.slice(-MAX_CONVERSATION_TEXT)
+    : text
+}
+
+/**
+ * `generateSessionTitle` — de
+ * `@claude-code-how-works/agent/sessionTitle.ts:73`. Dispara una query
+ * real a Haiku (`queryHaiku` de `@claude-code-how-works/provider/claude.js`)
+ * para generar un título en sentence-case — no es puro/trivial, es una
+ * llamada de red genuina. Punto de inyección: default `async () => null`,
+ * que es EXACTAMENTE el valor que la fuente devuelve en su propio camino
+ * de error (`catch` → `return null`) — el llamador (`initReplBridge.ts`)
+ * ya maneja `null` con gracia (se queda con el título placeholder
+ * derivado por `deriveTitle`). Se retira cuando `@thyrox/bridge` sea
+ * miembro del workspace y pueda invocar `@thyrox/provider`'s query real.
+ */
+let _generateSessionTitle: (
+  description: string,
+  signal: AbortSignal,
+) => Promise<string | null> = async () => null
+
+export function generateSessionTitle(
+  description: string,
+  signal: AbortSignal,
+): Promise<string | null> {
+  return _generateSessionTitle(description, signal)
+}
+
+export function setGenerateSessionTitleFn(
+  fn: (description: string, signal: AbortSignal) => Promise<string | null>,
+): void {
+  _generateSessionTitle = fn
+}
+
+/**
+ * `generateShortWordSlug` — de
+ * `@claude-code-how-works/tool-registry/words.ts:796` (mecanismo
+ * verbatim: `pickRandom(ADJECTIVES) + '-' + pickRandom(NOUNS)`, con
+ * `randomInt` de `node:crypto` para evitar sesgo de módulo). Las listas
+ * de palabras de la fuente NO se copian — son contenido enumerable
+ * propio de ese archivo (licencia UNLICENSED); aquí se declaran listas
+ * PROPIAS, más cortas, que producen el mismo tipo de slug
+ * "adjetivo-sustantivo". Se retira cuando `@thyrox/bridge` sea miembro
+ * del workspace y pueda importar `@thyrox/tools` directo (si ese
+ * paquete llega a portar `words.ts`).
+ */
+const SLUG_ADJECTIVES = [
+  'brave',
+  'calm',
+  'clever',
+  'cosmic',
+  'eager',
+  'gentle',
+  'graceful',
+  'honest',
+  'lively',
+  'mighty',
+  'nimble',
+  'quiet',
+  'radiant',
+  'steady',
+  'swift',
+  'vivid',
+]
+
+const SLUG_NOUNS = [
+  'badger',
+  'canyon',
+  'comet',
+  'falcon',
+  'glacier',
+  'harbor',
+  'lantern',
+  'meadow',
+  'otter',
+  'phoenix',
+  'river',
+  'summit',
+  'thicket',
+  'unicorn',
+  'willow',
+  'zephyr',
+]
+
+function pickRandomSlugWord<T>(array: readonly T[]): T {
+  return array[randomInt(array.length)]!
+}
+
+export function generateShortWordSlug(): string {
+  return `${pickRandomSlugWord(SLUG_ADJECTIVES)}-${pickRandomSlugWord(SLUG_NOUNS)}`
+}
+
+/**
+ * `getCurrentSessionTitle` — de
+ * `@claude-code-how-works/storage/sessionStorage.ts`. Es exactamente
+ * la razón declarada por la que `initReplBridge.ts` se separó de
+ * `replBridge.ts` en la fuente: importarla arrastra transitivamente
+ * `src/commands.ts` (todo el registro de slash-commands + el árbol de
+ * React). Punto de inyección — default `() => undefined` (equivale a
+ * "sin título fijado por /rename"), que es un valor válido que la
+ * fuente también puede devolver. Se retira cuando `@thyrox/storage`
+ * porte `sessionStorage.ts` Y `@thyrox/bridge` sea miembro del
+ * workspace.
+ */
+let _getCurrentSessionTitle: (sessionId: string) => string | undefined =
+  () => undefined
+
+export function getCurrentSessionTitle(sessionId: string): string | undefined {
+  return _getCurrentSessionTitle(sessionId)
+}
+
+export function setGetCurrentSessionTitleFn(
+  fn: (sessionId: string) => string | undefined,
+): void {
+  _getCurrentSessionTitle = fn
+}
+
+/**
+ * `toSDKMessages` — de
+ * `@claude-code-how-works/agent/messagesMappers.ts` (re-export de
+ * `agent/messages/mappers.ts`, un mapeador Message[]→SDKMessage[] con
+ * ramas por cada tipo de mensaje del bucle conversacional). Mismo
+ * motivo de inyección que ya declara `EnvLessBridgeParams.toSDKMessages`
+ * en `remoteBridgeCore.ts` — arrastra `src/commands.ts` entero. Punto
+ * de inyección: default estructural — SDKMessage ya es
+ * `{ type: string; [key: string]: unknown }` (forma laxa de
+ * `coreTypes.generated.ts`), así que un cast estructural directo es un
+ * default razonable mientras no haya wiring real. Se retira cuando
+ * `@thyrox/agent` porte `messages/mappers.ts` Y `@thyrox/bridge` sea
+ * miembro del workspace.
+ */
+let _toSDKMessages: (messages: unknown[]) => unknown[] = messages => messages
+
+export function toSDKMessages(messages: unknown[]): unknown[] {
+  return _toSDKMessages(messages)
+}
+
+export function setToSDKMessagesFn(
+  fn: (messages: unknown[]) => unknown[],
+): void {
+  _toSDKMessages = fn
 }
