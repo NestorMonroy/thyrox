@@ -10,6 +10,7 @@
     "config",
     "harness",
     "headless-sdk",
+    "ide",
     "local-observability",
     "mcp-runtime",
     "memory",
@@ -18,10 +19,14 @@
     "permission",
     "plan",
     "provider",
+    "server",
     "shell",
     "skills",
     "storage",
     "swarm",
-    "tools"
+    "teleport",
+    "tools",
+    "updater",
+    "voice"
   ]
 }
