@@ -85,6 +85,8 @@ CHECKS: list[Check] = [
           'aritmética de ruta que sale de thyrox y aterriza en un árbol ajeno'),
     Check('pushed-branch', 'Herramienta', 'gate', 'check_pushed_branch.py',
           'H-DOCS-1128 — la rama que se publica contra la que tiene trabajo'),
+    Check('pathspec-commit', 'Herramienta', 'gate', 'check_pathspec_commit.py',
+          'ERR-31 — una ruta que `add -N` declaró y el commit no publicó'),
     Check('hooks-timeout', 'Herramienta', 'hook', 'check_hooks_timeout.py',
           'todo hook acota su peor caso: el turno lo espera'),
     Check('hook-script-token', 'Herramienta', 'hook', 'check_hook_script_token.py',
