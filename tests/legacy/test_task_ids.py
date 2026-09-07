@@ -32,11 +32,15 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import subprocess
 import sys
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
 MODULE_PATH = HERE.parents[1] / "src" / "task" / "task_ids.py"
+#: El mismo archivo, invocado como PROGRAMA: el caso 11 mide la salida del
+#: subcomando, no la funcion, porque el defecto vivia en la impresion.
+SUT = MODULE_PATH
 
 _spec = importlib.util.spec_from_file_location("task_ids", MODULE_PATH)
 kx = importlib.util.module_from_spec(_spec)
@@ -374,6 +378,32 @@ try:
 except kx.MappingError:
     check(True, "10g: una tarjeta ausente REHUSA en vez de acuñar a medias")
 
+
+# 11 — `cita` publica el SUJETO, no solo el id (#182).
+#     Imprimia solo el identificador, y un llamador que pasa un ordinal del
+#     board recibia una respuesta bien formada sobre OTRA tarea sin señal
+#     alguna. Medido sobre cuatro ordinales de un pase: 2 de 4 coincidian.
+#     Acertar la mitad entrena a confiar en el comando.
+_, DB3 = _store_con([("7", "El sujeto que tiene que aparecer", S, "docs", "TASK-DOCS-0007")])
+_salida = subprocess.run(
+    [sys.executable, str(SUT), "--store", str(DB3), "cita", S, "7"],
+    capture_output=True, text=True)
+check(_salida.returncode == 0, "11a: `cita` resuelve un par que existe")
+check("TASK-DOCS-0007" in _salida.stdout, "11b: y publica el identificador")
+# 11c es el control que discrimina: sin el sujeto en la salida, 11a y 11b
+# pasarian identicos con la version que solo imprimia el id.
+check("El sujeto que tiene que aparecer" in _salida.stdout,
+      "11c: y el SUJETO, que es lo que permite comparar contra lo que se pedia")
+check(len(_salida.stdout.strip().splitlines()) == 1,
+      "11d: en UNA sola linea — un consumidor que hace $(...) sigue leyendo un renglon")
+
+# 11e — sin sujeto se DICE, no se calla: una linea con solo el id volveria
+#     indistinguible «la tarea no tiene titulo» de «el comando no lo publica».
+_, DB4 = _store_con([("8", "", S, "docs", "TASK-DOCS-0008")])
+_vacio = subprocess.run(
+    [sys.executable, str(SUT), "--store", str(DB4), "cita", S, "8"],
+    capture_output=True, text=True)
+check("sin sujeto" in _vacio.stdout, "11e: un sujeto vacio se declara, no se omite")
 
 print(f"{checks} aserciones")
 if failures:

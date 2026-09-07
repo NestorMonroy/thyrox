@@ -585,13 +585,38 @@ def _cmd_ingerir_board(args: argparse.Namespace) -> int:
     return 0
 
 
+#: Cuanto del sujeto entra en la linea de `cita`. Es presentacion, no dato:
+#: quien necesite el sujeto entero lee la fila del store.
+SUBJECT_WIDTH = 60
+
+
 def _cmd_lookup(args: argparse.Namespace) -> int:
+    """El id de cita **y su sujeto**, para que quien pregunta pueda comparar.
+
+    Imprimia solo el identificador. Un llamador que le pasa un ordinal del
+    board recibe una respuesta bien formada sobre OTRA tarea, y sin el sujeto
+    no tiene con que notarlo. Medido sobre los cuatro ordinales de un pase:
+    2 de 4 coincidian —ordinal y fila comparten numero— y 2 de 4 no. Acertar
+    la mitad de las veces es peor que fallar siempre: entrena a confiar.
+
+    El sujeto va en la MISMA linea que el id, separado por dos espacios, para
+    que un consumidor que hace `$(... cita ...)` siga leyendo un solo renglon
+    y pueda quedarse con el primer campo si solo quiere el id.
+    """
     mapping = mapping_from_store(args.store)
     identifier = lookup(mapping, args.sesion, args.tarea)
     if identifier is None:
         print(f"sin id de cita para ({args.sesion}, {args.tarea})", file=sys.stderr)
         return 1
-    print(identifier)
+    record = mapping.ids.get(identifier) or {}
+    subject = (record.get("subject") or "").strip()
+    if subject:
+        print(f"{identifier}  {subject[:SUBJECT_WIDTH]}")
+    else:
+        # Sin sujeto se DICE, no se calla: una linea con solo el id volveria
+        # indistinguible «esta tarea no tiene titulo» de «este comando no
+        # publica el sujeto», que es el defecto que esta salida cierra.
+        print(f"{identifier}  (sin sujeto en el store)")
     return 0
 
 
