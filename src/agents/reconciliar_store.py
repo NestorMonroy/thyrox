@@ -36,8 +36,9 @@ Uso::
 import argparse
 import json
 import os
-import subprocess
+import pathlib
 import sqlite3
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -131,15 +132,31 @@ def _destino() -> list:
 SILENCIO_MAXIMO_S = 900
 
 def _cargar_hook():
-    """Importa ``register_agent_session.py`` — su nombre lleva guiones.
+    """Importa el MECANISMO, que vive aquí, no el stub del consumidor.
 
-    Un nombre con guiones no es un identificador válido de Python, así que
-    ``import`` no lo resuelve; se carga por ruta. Es la forma de reusar la
-    fórmula de costo en vez de copiarla.
+    Apuntaba a ``<consumidor>/.claude/hooks/register_agent_session.py``, y eso
+    dejó de ser el mecanismo cuando éste se mudó a thyrox: allá quedó un stub
+    de ~50 líneas que inyecta el destino y delega. El stub no define
+    ``_extract_usage`` ni ninguno de los otros cinco símbolos, así que la carga
+    reventaba con ``AttributeError`` **al importar el módulo** — el
+    reconciliador entero era inejecutable, no una rama suya.
+
+    Es la contraparte exacta de por qué esto se muda: quien consume declara su
+    parámetro, y quien provee guarda el mecanismo. Cargar el stub del
+    consumidor para obtener el mecanismo invierte esa dirección.
+
+    Se sigue cargando por ruta y no con ``import``: el módulo vive en un
+    directorio que no está en ``sys.path`` cuando este guion se invoca por su
+    ruta absoluta, que es como lo invocan los hooks.
     """
     import importlib.util
-    ruta = HOOKS / "register_agent_session.py"
-    spec = importlib.util.spec_from_file_location("_register_agent_session", ruta)
+    ruta = pathlib.Path(__file__).resolve().parent / "register_session.py"
+    if not ruta.is_file():
+        raise SystemExit(
+            f"reconciliar_store: no está el mecanismo en {ruta}. NO se emite un "
+            "veredicto: reconciliar con la fórmula de costo ausente publicaría "
+            "filas con el costo equivocado.")
+    spec = importlib.util.spec_from_file_location("_register_session", ruta)
     modulo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modulo)
     return modulo
