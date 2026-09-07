@@ -1,1 +1,0 @@
-{ "name": "raiz", "private": true, "workspaces": ["paquetes/proveedor", "paquetes/consumidor"] }
