@@ -216,7 +216,10 @@ ascend_to_marker() {
 }
 
 load_root_from_env_file() {
-    local reader="$1/src/paths/reach.py"
+    # `$MARKER_REL`, no el literal: el bloque que declara la constante dice
+    # que escribirla dos veces daria dos definiciones de «esto es thyrox» que
+    # nadie sincroniza — y este era el segundo sitio donde estaba escrita.
+    local reader="$1/$MARKER_REL"
     [ -f "$reader" ] || return 0
     # `--env` NO sirve aqui: emite las variables por raiz, nunca THYROX_ROOT.
     # Se llama a `env_value`, que es la funcion que el propio lector usa para
