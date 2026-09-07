@@ -27,52 +27,52 @@
  */
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-const P = '/home/user/thyrox/src/packages'
+const PACKAGES = '/home/user/thyrox/src/packages'
 /**
  * Las CUATRO formas en que un subpath puede estar en el arbol. Un paquete
  * plano (`config`, `agent`) no tiene `src/`; uno con `src/` si. Y un modulo
  * puede ser un archivo o un directorio con `index.ts`. Mirar solo dos de las
  * cuatro fue el defecto original.
  */
-const SHAPES: Array<(sub: string) => string> = [
+const SHAPES: Array<(subpath: string) => string> = [
   (s) => `${s}.ts`,
   (s) => `${s}/index.ts`,
   (s) => `src/${s}.ts`,
   (s) => `src/${s}/index.ts`,
 ]
 
-const DESDE = /^\s*(?:import|export)[^'"]*?from\s+['"]([^'"]+)['"]/gm
-const LLAMADA = /\b(?:import|require)\(\s*['"]([^'"]+)['"]\s*\)/g
-function mods(d: string, o: string[] = []): string[] {
+const FROM_IMPORT = /^\s*(?:import|export)[^'"]*?from\s+['"]([^'"]+)['"]/gm
+const CALL_IMPORT = /\b(?:import|require)\(\s*['"]([^'"]+)['"]\s*\)/g
+function moduleFiles(d: string, o: string[] = []): string[] {
   for (const e of readdirSync(d)) {
     if (e === 'node_modules') continue
     const p = join(d, e)
-    if (statSync(p).isDirectory()) mods(p, o); else if (p.endsWith('.ts')) o.push(p)
+    if (statSync(p).isDirectory()) moduleFiles(p, o); else if (p.endsWith('.ts')) o.push(p)
   }
   return o
 }
-const falta = new Map<string, Set<string>>()
-for (const pkg of readdirSync(P)) {
-  const dir = join(P, pkg)
+const missing = new Map<string, Set<string>>()
+for (const pkg of readdirSync(PACKAGES)) {
+  const dir = join(PACKAGES, pkg)
   if (!existsSync(join(dir, 'package.json'))) continue
-  for (const f of mods(dir)) {
+  for (const f of moduleFiles(dir)) {
     const t = readFileSync(f, 'utf8')
-    for (const pat of [DESDE, LLAMADA]) {
-      for (const [, s] of t.matchAll(pat)) {
+    for (const pattern of [FROM_IMPORT, CALL_IMPORT]) {
+      for (const [, s] of t.matchAll(pattern)) {
         if (!s?.startsWith('@thyrox/')) continue
         try { Bun.resolveSync(s, dir); continue } catch {}
-        const [, destino, ...resto] = s.split('/')
+        const [, target, ...resto] = s.split('/')
         if (!resto.length) continue
-        const sub = resto.join('/').replace(/\.js$/, '')
-        if (!falta.has(destino)) falta.set(destino, new Set())
-        falta.get(destino)!.add(sub)
+        const subpath = resto.join('/').replace(/\.js$/, '')
+        if (!missing.has(target)) missing.set(target, new Set())
+        missing.get(target)!.add(subpath)
       }
     }
   }
 }
-for (const [pkg, subs] of [...falta].sort((a,b)=>b[1].size-a[1].size)) {
-  const lista = [...subs].sort()
-  const existe = lista.filter((s) => SHAPES.some((f) => existsSync(join(P, pkg, f(s)))))
-  console.log(`\n${pkg}  (${lista.length} subpaths; ${existe.length} ya en el arbol)`)
-  for (const s of lista) console.log(`   ${existe.includes(s) ? 'ARISTA' : 'PORTAR'}  ${s}`)
+for (const [pkg, subs] of [...missing].sort((a,b)=>b[1].size-a[1].size)) {
+  const subpaths = [...subs].sort()
+  const present = subpaths.filter((s) => SHAPES.some((f) => existsSync(join(PACKAGES, pkg, f(s)))))
+  console.log(`\n${pkg}  (${subpaths.length} subpaths; ${present.length} ya en el arbol)`)
+  for (const s of subpaths) console.log(`   ${present.includes(s) ? 'ARISTA' : 'PORTAR'}  ${s}`)
 }

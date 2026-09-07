@@ -16,64 +16,64 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 
-const C = '/home/user/claude-code-nestor-monroy-tools/packages'
+const SOURCE_PACKAGES = '/home/user/claude-code-nestor-monroy-tools/packages'
 const SCOPE = '@claude-code-how-works/'
 
 /** `import type X from` y `export type { … } from` — las dos formas que se borran. */
-const TIPO = /^\s*(?:import|export)\s+type\s[^'"]*from\s+['"]([^'"]+)['"]/gm
+const TYPE_ONLY_IMPORT = /^\s*(?:import|export)\s+type\s[^'"]*from\s+['"]([^'"]+)['"]/gm
 /** Cualquier import/export con `from` — el universo. */
-const TODO = /^\s*(?:import|export)\b[^'"]*?from\s+['"]([^'"]+)['"]/gm
+const ANY_IMPORT = /^\s*(?:import|export)\b[^'"]*?from\s+['"]([^'"]+)['"]/gm
 
-function mods(d: string, o: string[] = []): string[] {
+function moduleFiles(d: string, o: string[] = []): string[] {
   for (const e of readdirSync(d)) {
     if (e === 'node_modules' || e === '__tests__') continue
     const p = join(d, e)
-    if (statSync(p).isDirectory()) mods(p, o)
+    if (statSync(p).isDirectory()) moduleFiles(p, o)
     else if (p.endsWith('.ts') && !p.endsWith('.test.ts')) o.push(p)
   }
   return o
 }
 
-const raiz = (s: string) => s.slice(SCOPE.length).split('/')[0]!
+const packageRoot = (s: string) => s.slice(SCOPE.length).split('/')[0]!
 
-type Arista = { tipo: number; valor: number }
-const grafo = new Map<string, Map<string, Arista>>()
+type Edge = { typeOnly: number; value: number }
+const graph = new Map<string, Map<string, Edge>>()
 
-for (const pkg of readdirSync(C).filter((d) => !d.startsWith('@'))) {
-  const dir = join(C, pkg)
+for (const pkg of readdirSync(SOURCE_PACKAGES).filter((d) => !d.startsWith('@'))) {
+  const dir = join(SOURCE_PACKAGES, pkg)
   if (!existsSync(join(dir, 'package.json'))) continue
-  const salidas = new Map<string, Arista>()
-  for (const f of mods(dir)) {
+  const outgoing = new Map<string, Edge>()
+  for (const f of moduleFiles(dir)) {
     const t = readFileSync(f, 'utf8')
-    const deTipo = new Set<string>()
-    for (const [linea, spec] of [...t.matchAll(TIPO)].map((m) => [m[0], m[1]!] as const)) {
-      if (spec.startsWith(SCOPE)) deTipo.add(linea)
+    const typeOnlyLines = new Set<string>()
+    for (const [linea, spec] of [...t.matchAll(TYPE_ONLY_IMPORT)].map((m) => [m[0], m[1]!] as const)) {
+      if (spec.startsWith(SCOPE)) typeOnlyLines.add(linea)
     }
-    for (const m of t.matchAll(TODO)) {
+    for (const m of t.matchAll(ANY_IMPORT)) {
       const spec = m[1]!
       if (!spec.startsWith(SCOPE)) continue
-      const destino = raiz(spec)
-      if (destino === pkg) continue
-      if (!salidas.has(destino)) salidas.set(destino, { tipo: 0, valor: 0 })
-      const a = salidas.get(destino)!
-      if (deTipo.has(m[0])) a.tipo++; else a.valor++
+      const target = packageRoot(spec)
+      if (target === pkg) continue
+      if (!outgoing.has(target)) outgoing.set(target, { typeOnly: 0, value: 0 })
+      const a = outgoing.get(target)!
+      if (typeOnlyLines.has(m[0])) a.typeOnly++; else a.value++
     }
   }
-  if (salidas.size) grafo.set(pkg, salidas)
+  if (outgoing.size) graph.set(pkg, outgoing)
 }
 
-let tipoTot = 0, valorTot = 0
-const soloTipo: string[] = []
-for (const [origen, salidas] of [...grafo].sort()) {
-  for (const [destino, a] of [...salidas].sort()) {
-    tipoTot += a.tipo; valorTot += a.valor
-    if (a.valor === 0 && a.tipo > 0) soloTipo.push(`${origen} -> ${destino} (${a.tipo})`)
+let typeTotal = 0, valueTotal = 0
+const typeOnlyPairs: string[] = []
+for (const [origen, outgoing] of [...graph].sort()) {
+  for (const [target, a] of [...outgoing].sort()) {
+    typeTotal += a.typeOnly; valueTotal += a.value
+    if (a.value === 0 && a.typeOnly > 0) typeOnlyPairs.push(`${origen} -> ${target} (${a.typeOnly})`)
   }
 }
-console.log(`aristas de TIPO (se borran): ${tipoTot}`)
-console.log(`aristas de VALOR (dependencia real): ${valorTot}`)
-console.log(`\npares cuya arista es SOLO de tipo — no bloquean en runtime: ${soloTipo.length}`)
-for (const s of soloTipo) console.log('   ' + s)
+console.log(`aristas de TIPO (se borran): ${typeTotal}`)
+console.log(`aristas de VALOR (dependencia real): ${valueTotal}`)
+console.log(`\npares cuya arista es SOLO de tipo — no bloquean en runtime: ${typeOnlyPairs.length}`)
+for (const s of typeOnlyPairs) console.log('   ' + s)
 
 // --- Lo que DECIDE: ¿sobrevive el ciclo al borrar las aristas de tipo? ------
 // El conteo de arriba no responde la pregunta. Un 15 % de aristas de tipo
@@ -81,33 +81,33 @@ for (const s of soloTipo) console.log('   ' + s)
 // calculan las componentes fuertemente conexas del grafo de VALOR (Tarjan).
 // Si el grafo de valor es aciclico, hay orden de porte y las hojas son el
 // punto de entrada; si conserva una componente grande, no lo hay.
-const soloValor = new Map<string, string[]>()
-for (const [o, salidas] of grafo) {
-  soloValor.set(o, [...salidas].filter(([, a]) => a.valor > 0).map(([d]) => d))
+const valueGraph = new Map<string, string[]>()
+for (const [o, outgoing] of graph) {
+  valueGraph.set(o, [...outgoing].filter(([, a]) => a.value > 0).map(([d]) => d))
 }
-for (const n of [...soloValor.keys()]) for (const d of soloValor.get(n)!) if (!soloValor.has(d)) soloValor.set(d, [])
+for (const n of [...valueGraph.keys()]) for (const d of valueGraph.get(n)!) if (!valueGraph.has(d)) valueGraph.set(d, [])
 
-let idx = 0
-const num = new Map<string, number>(), low = new Map<string, number>()
-const pila: string[] = [], enPila = new Set<string>(), comps: string[][] = []
-function fuerte(v: string) {
-  num.set(v, idx); low.set(v, idx); idx++; pila.push(v); enPila.add(v)
-  for (const w of soloValor.get(v) ?? []) {
-    if (!num.has(w)) { fuerte(w); low.set(v, Math.min(low.get(v)!, low.get(w)!)) }
-    else if (enPila.has(w)) low.set(v, Math.min(low.get(v)!, num.get(w)!))
+let counter = 0
+const discoveryIndex = new Map<string, number>(), lowLink = new Map<string, number>()
+const stack: string[] = [], onStack = new Set<string>(), components: string[][] = []
+function tarjan(v: string) {
+  discoveryIndex.set(v, counter); lowLink.set(v, counter); counter++; stack.push(v); onStack.add(v)
+  for (const w of valueGraph.get(v) ?? []) {
+    if (!discoveryIndex.has(w)) { tarjan(w); lowLink.set(v, Math.min(lowLink.get(v)!, lowLink.get(w)!)) }
+    else if (onStack.has(w)) lowLink.set(v, Math.min(lowLink.get(v)!, discoveryIndex.get(w)!))
   }
-  if (low.get(v) === num.get(v)) {
+  if (lowLink.get(v) === discoveryIndex.get(v)) {
     const c: string[] = []
-    for (;;) { const w = pila.pop()!; enPila.delete(w); c.push(w); if (w === v) break }
-    comps.push(c)
+    for (;;) { const w = stack.pop()!; onStack.delete(w); c.push(w); if (w === v) break }
+    components.push(c)
   }
 }
-for (const v of soloValor.keys()) if (!num.has(v)) fuerte(v)
+for (const v of valueGraph.keys()) if (!discoveryIndex.has(v)) tarjan(v)
 
-const ciclos = comps.filter((c) => c.length > 1).sort((a, b) => b.length - a.length)
-const hojas = [...soloValor].filter(([, d]) => d.length === 0).map(([n]) => n).sort()
+const cycles = components.filter((c) => c.length > 1).sort((a, b) => b.length - a.length)
+const leaves = [...valueGraph].filter(([, d]) => d.length === 0).map(([n]) => n).sort()
 console.log(`\n--- grafo de VALOR (aristas de tipo borradas) ---`)
-console.log(`nodos: ${soloValor.size}`)
-console.log(`componentes ciclicas: ${ciclos.length}`)
-for (const c of ciclos) console.log(`   tamano ${c.length}: ${c.sort().join(', ')}`)
-console.log(`HOJAS (no importan a ningun hermano): ${hojas.length ? hojas.join(', ') : 'ninguna'}`)
+console.log(`nodos: ${valueGraph.size}`)
+console.log(`componentes ciclicas: ${cycles.length}`)
+for (const c of cycles) console.log(`   tamano ${c.length}: ${c.sort().join(', ')}`)
+console.log(`HOJAS (no importan a ningun hermano): ${leaves.length ? leaves.join(', ') : 'ninguna'}`)
