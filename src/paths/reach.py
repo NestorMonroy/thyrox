@@ -483,6 +483,27 @@ def main(argv: list[str]) -> int:
     if mode == "--env":
         # Para `eval` desde shell. Se citan las rutas: un padre con espacios
         # partiría la asignación en dos palabras sin que nada avise.
+        #
+        # Las DOS entradas de DEC-04 van primero, y no por orden estético: sin
+        # ellas el `eval` no cierra el ciclo. Una shell que sólo recibe las
+        # raíces de clon sigue sin saber dónde está thyrox, así que la
+        # siguiente vuelve a caer al ascenso —el último recurso— o, peor, a
+        # que alguien teclee la ruta, que es aritmética de ruta con otra cara.
+        #
+        # `THYROX_ROOT` es el VALOR; `THYROX_ENV_FILE` es la RUTA A SU
+        # DECLARACIÓN. Si no hay `.env` alcanzable la segunda se emite
+        # comentada: exportar una ruta inexistente sería peor que no
+        # exportarla, porque el consumidor la creería.
+        try:
+            print(f'export {THYROX_ROOT_VAR}="{thyrox_root()}"')
+        except ReachRootError as err:
+            print(f"reach: {err}", file=sys.stderr)
+            return 2
+        declared = env_file_path()
+        if declared is None:
+            print(f"# {ENV_FILE_VAR}: sin declaración alcanzable")
+        else:
+            print(f'export {ENV_FILE_VAR}="{declared}"')
         for repo, path in reach().items():
             print(f'export {env_names(repo)[0] if repo in REACH_ROOTS else repo.upper()}="{path}"')
         return 0

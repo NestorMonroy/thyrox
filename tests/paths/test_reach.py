@@ -67,6 +67,16 @@ def check(label: str, expected, actual) -> None:
         print(f"  FALLA {label}\n          esperado: {expected!r}\n          real:     {actual!r}")
 
 
+
+def _capture(argv: list[str]) -> str:
+    """Lo que `main` imprime en stdout, sin subproceso."""
+    import contextlib
+    import io
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        reach.main(argv)
+    return buf.getvalue()
+
 def check_raises(label: str, exc_type, fn) -> None:
     global PASS, FAIL
     try:
@@ -377,5 +387,19 @@ with tempfile.TemporaryDirectory() as tmp:
 
 clean_env()
 
+print("\n12. --env se bootstrapea a sí mismo: exporta las dos entradas de DEC-04")
+
+# `--env` exportaba las cinco raíces de clon y NO las dos entradas que DEC-04
+# declara: el VALOR (`THYROX_ROOT`) y la RUTA A SU DECLARACIÓN
+# (`THYROX_ENV_FILE`). Sin ellas el `eval` no cierra el ciclo: la shell
+# siguiente vuelve a no saber dónde está thyrox y cae al ascenso, que es el
+# último recurso y no el camino. Medido en esta sesión: quien lo necesitaba
+# acababa tecleando la ruta a mano, que es `parents[N]` con otra forma.
+_env = _capture(["reach.py", "--env"])
+check("exporta THYROX_ROOT", True, 'export THYROX_ROOT="' in _env)
+check("exporta THYROX_ENV_FILE", True, "THYROX_ENV_FILE" in _env)
+check("sigue exportando las cinco raíces", _env.count("export THYROX_REACH_"), 5)
+
 print(f"\nresultado: {PASS} de {PASS + FAIL} aserciones en verde")
 sys.exit(1 if FAIL else 0)
+
