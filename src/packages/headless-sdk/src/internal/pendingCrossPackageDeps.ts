@@ -6,10 +6,15 @@
  * y `@thyrox/local-observability: src/internal/pendingCrossPackageDeps.ts`:
  * un archivo consolidado, cada entrada documentada con su cita de origen, su
  * divergencia exacta y su condición de retiro. `@thyrox/headless-sdk` no es
- * miembro del bun workspace (`src/packages/package.json`), así que —por
- * DEC-04— ningún `@thyrox/*` resuelve desde este paquete aunque el hermano
- * ya exporte el subpath real; se probó en vivo antes de escribir este
- * archivo (`Cannot find module '@thyrox/agent/abortController'`).
+ * miembro del bun workspace (`src/packages/package.json`), así que ningún
+ * `@thyrox/*` resuelve desde este paquete aunque el hermano ya exporte el
+ * subpath real; se probó en vivo antes de escribir este archivo
+ * (`Cannot find module '@thyrox/agent/abortController'`). Nota: los dos
+ * archivos hermanos citados arriba atribuyen esta misma restricción a
+ * «DEC-04» — verificado contra el canon, esa DEC-04 es otra decisión (el
+ * reparto mecanismo/parámetro de `.claude/packages`, la migración
+ * archivada); la causa real es la ausencia de membresía en `workspaces`
+ * de `src/packages/package.json`. Ver :ref:`h-docs-1180` en kaupamex-docs.
  *
  * Tres formas, no una — cada bloque dice cuál:
  *
