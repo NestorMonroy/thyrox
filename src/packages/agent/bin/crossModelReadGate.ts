@@ -12,10 +12,10 @@
  * denominador: un conteo sin universo no es un resultado.
  */
 import { CATALOG } from '../models.ts'
-import { routesForOtherModel } from '../cost/cacheRoutes.ts'
-import { dispatchPlan } from '../cost/policy.ts'
+import { routesForOtherModel } from '@thyrox/provider/cost/cacheRoutes'
+import { dispatchPlan } from '@thyrox/provider/cost/policy'
 import { AGENTS } from '../index.ts'
-import { crossModelReads, dispatchReadCredits, routeReadCredits, type ReadCredit } from '../cost/crossModelRead.ts'
+import { crossModelReads, dispatchReadCredits, routeReadCredits, type ReadCredit } from '@thyrox/provider/cost/crossModelRead'
 
 const FLOOR = 126_029 // piso siempre-cargado de esta sesión (H-DOCS-99)
 const violations: ReadCredit[] = []

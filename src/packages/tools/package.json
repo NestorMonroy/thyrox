@@ -11,7 +11,9 @@
     "./plan": "./src/plan.ts",
     "./skill": "./src/skill.ts",
     "./tasks": "./src/tasks.ts",
-    "./web": "./src/web.ts"
+    "./web": "./src/web.ts",
+    "./definitions": "./src/definitions/index.ts",
+    "./definitions/*": "./src/definitions/*.ts"
   },
   "scripts": {
     "test": "bun test",

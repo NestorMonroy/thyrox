@@ -10,6 +10,8 @@
       "version": "0.4.0",
       "dependencies": {
         "@thyrox/command-runtime": "workspace:*",
+        "@thyrox/provider": "workspace:*",
+        "@thyrox/tools": "workspace:*",
         "zod": "^4.3.6",
       },
     },
@@ -84,6 +86,7 @@
       "name": "@thyrox/provider",
       "version": "0.1.0",
       "dependencies": {
+        "@thyrox/agent": "workspace:*",
         "@thyrox/harness": "workspace:*",
       },
       "devDependencies": {

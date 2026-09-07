@@ -20,7 +20,7 @@
  * más margen del que hay — dos pérdidas, ninguna ganancia de ventana.
  */
 import { MODELS } from '@thyrox/agent/models'
-import { fourLevels } from '@thyrox/agent/cost/compaction'
+import { fourLevels } from '@thyrox/provider/cost/compaction'
 import { AUTOCOMPACT_BUFFER_TOKENS, effectiveContextWindow } from './autocompact.ts'
 
 /** El `k=y-20000` de `fZe`: cuánto antes de la referencia empieza a avisar. */
@@ -300,7 +300,7 @@ function levelFrom(
   tokens: number, n: number, r: Ajustes, o: number, d?: number,
 ): LevelResult {
   // #31: el algoritmo de los cuatro niveles vive UNA sola vez, en
-  // `agent/cost/compaction.ts` (`fourLevels`). Antes había una segunda copia
+  // `provider/src/cost/compaction.ts` (`fourLevels`). Antes había una segunda copia
   // aquí que divergía sin gate. La forma rica que `fourLevels` devuelve
   // —`{level, pctLeft, threshold, effective, blocked, enabled}`— es la de
   // `LevelResult`, así que se devuelve tal cual.

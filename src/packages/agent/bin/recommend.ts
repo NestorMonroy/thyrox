@@ -19,7 +19,7 @@
  * excluidos y su razón — nunca una recomendación por defecto, que sería elegir
  * sin medir.
  */
-import { recommend, TASK_KINDS, type TaskKind } from '../cost/policy.ts'
+import { recommend, TASK_KINDS, type TaskKind } from '@thyrox/provider/cost/policy'
 
 /** El piso siempre-cargado de una sesión multi-repo, medido (H-DOCS-99). */
 const SUBAGENT_FLOOR_TOKENS = 126_029

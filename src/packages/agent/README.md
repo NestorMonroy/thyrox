@@ -26,8 +26,8 @@ emisor las mantiene en fase.
 
 ```
 src/types.ts                     el contrato, con los nombres de clave del cliente
-src/definitions/<agent>.ts       LA FUENTE de cada agente
-src/definitions/<agent>.prompt.md  su prosa; no declara nada
+@thyrox/tools/src/definitions/<agent>.ts   LA FUENTE de cada agente (tramo 3 de #224)
+@thyrox/tools/src/definitions/<agent>.prompt.md  su prosa; no declara nada
 src/emit/markdown.ts             deriva .claude/agents/<name>.md
 src/emit/agentsJson.ts           deriva el objeto de --agents y del SDK
 bin/emit.ts                      escribe, o compara con --check
@@ -120,14 +120,14 @@ python3 ../../../.claude/eventos/implementar-agent-ts-20260829T001415/extract_ag
 | `src/registry.ts` | de una lista de definiciones al registro por nombre, con el post-check del guion medio |
 | `src/emit/markdown.ts` | la vía `.claude/agents/*.md` (frontmatter + cuerpo) |
 | `src/emit/agentsJson.ts` | la vía `--agents '<json>'`; **valida antes de emitir** |
-| `src/definitions/*.ts` | una definición por archivo; el prompt largo vive en su `.md` hermano |
+| `@thyrox/tools/src/definitions/*.ts` | una definición por archivo; el prompt largo vive en su `.md` hermano |
 
 ## Librerías
 
 `zod` (^4.3.6, resuelto a 4.5.2) — la misma con que el cliente declara este
 objeto. Validar con otra cosa sería reimplementar su semántica.
 
-## Coste (`src/cost/`)
+## Coste (`@thyrox/provider/src/cost/`, reexportado aquí)
 
 - `cacheBreak.ts` — las causas de ruptura de caché que la referencia rastrea
   (`ccb: packages/provider/src/promptCacheBreakDetection.ts`) y

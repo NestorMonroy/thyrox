@@ -16,7 +16,7 @@
  * (Remote Control, IDE, SDK) responde `allow`: esa sesión no puede preguntar
  * y un `ask` allí bloquea el cambio — ver `CANNOT_ASK`.
  */
-import { routesForOtherModel } from '../cost/cacheRoutes.ts'
+import { routesForOtherModel } from '@thyrox/provider/cost/cacheRoutes'
 import { MODELS } from '../models.ts'
 
 type Payload = {

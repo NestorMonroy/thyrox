@@ -8,7 +8,8 @@
     ".": "./src/index.ts",
     "./anthropicHttp": "./src/anthropicHttp.ts",
     "./recorded": "./src/recorded.ts",
-    "./sse": "./src/sse.ts"
+    "./sse": "./src/sse.ts",
+    "./cost/*": "./src/cost/*.ts"
   },
   "scripts": {
     "test": "bun test",
@@ -19,6 +20,7 @@
     "@types/bun": "^1.4.0"
   },
   "dependencies": {
+    "@thyrox/agent": "workspace:*",
     "@thyrox/harness": "workspace:*"
   }
 }

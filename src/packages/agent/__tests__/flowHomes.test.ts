@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { tmpdir } from 'node:os'
 import {
   FLOW_HOMES,
@@ -12,7 +13,7 @@ import {
   resetDocsRootCache,
   type Flow,
 } from '../flowHomes.ts'
-import { rupCoordinator } from '../definitions/rupCoordinator.ts'
+import { rupCoordinator } from '@thyrox/tools/definitions/rupCoordinator'
 import { AGENTS } from '../index.ts'
 import { toMarkdown } from '../emit/markdown.ts'
 
@@ -73,7 +74,9 @@ describe('el coordinador de RUP consume el primitivo, no una tabla en prosa', ()
 
 describe('los prompts de coordinador ya no llevan el hogar en prosa muerta', () => {
   test('ningún *Coordinator.prompt.md cita source/implementacion (H-DOCS-1021)', () => {
-    const dir = join(import.meta.dir, '..', 'definitions')
+    // Las definiciones viven en `@thyrox/tools` desde el tramo 3 de #224; su
+    // directorio se resuelve por el nombre del paquete, no por aritmética de rutas.
+    const dir = dirname(fileURLToPath(import.meta.resolve('@thyrox/tools/definitions')))
     const offenders = readdirSync(dir)
       .filter((f) => f.endsWith('Coordinator.prompt.md'))
       .filter((f) => readFileSync(join(dir, f), 'utf8').includes('source/implementacion'))

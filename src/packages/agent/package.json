@@ -3,7 +3,7 @@
   "version": "0.4.0",
   "private": true,
   "type": "module",
-  "description": "Definiciones de agente de kaupamex: la fuente en TypeScript, y los dos emisores hacia las v\u00edas que el cliente acepta.",
+  "description": "Definiciones de agente de kaupamex: la fuente en TypeScript, y los dos emisores hacia las vías que el cliente acepta.",
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
@@ -13,12 +13,7 @@
     "./registry": "./registry.ts",
     "./emit/markdown": "./emit/markdown.ts",
     "./emit/agentsJson": "./emit/agentsJson.ts",
-    "./definitions/migrationPorter": "./definitions/migrationPorter.ts",
     "./models": "./models.ts",
-    "./cost/policy": "./cost/policy.ts",
-    "./cost/cacheBreak": "./cost/cacheBreak.ts",
-    "./cost/cacheRoutes": "./cost/cacheRoutes.ts",
-    "./cost/compaction": "./cost/compaction.ts",
     "./taggedId": "./taggedId.ts",
     "./idTypes": "./idTypes.ts",
     "./uuid": "./uuid.ts",
@@ -43,6 +38,8 @@
   },
   "dependencies": {
     "@thyrox/command-runtime": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/tools": "workspace:*",
     "zod": "^4.3.6"
   }
 }
