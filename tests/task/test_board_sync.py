@@ -56,6 +56,9 @@ import tempfile
 HERE = pathlib.Path(__file__).resolve().parent
 SRC = HERE.parents[1] / "src" / "task"
 MODULE_PATH = SRC / "board_sync.py"
+#: El literal del board vivia en `main()` de `task_ids.py`. El caso 1g mide su
+#: pago desde el PROGRAMA, que es la unica via por la que `main()` corre.
+TASK_IDS_PATH = SRC / "task_ids.py"
 
 sys.path.insert(0, str(SRC))
 _spec = importlib.util.spec_from_file_location("board_sync", MODULE_PATH)
@@ -174,9 +177,38 @@ finally:
         else:
             os.environ[k] = v
 
-check("/root/.claude/tasks" not in MODULE_PATH.read_text().replace(
-          "BOARD_ROOT_DEFAULT", ""),
-      "1f: el literal del board aparece UNA vez, en su constante")
+check(TASK_IDS_PATH.read_text().count("/root/.claude/tasks") == 1,
+      "1f: el literal del board aparece UNA sola vez en task_ids.py")
+_linea = [l for l in TASK_IDS_PATH.read_text().splitlines()
+          if "/root/.claude/tasks" in l]
+check(_linea and _linea[0].startswith("BOARD_ROOT_DEFAULT"),
+      "1f-bis: y esa unica vez es la CONSTANTE, no una ruta en linea")
+
+# 1g es el control que discrimina el pago del literal. Los casos 1c/1d miden
+# `board_dir()`, que es funcion nueva: pasarian igual con `main()` cableada.
+# Este invoca `task_ids.py` como PROGRAMA y **sin** `--board`, que es la unica
+# via por la que el default de `main()` decide. Bajo la version con la
+# f-string, el board resolveria a `/root/.claude/tasks/<sesion-falsa>`, que no
+# existe, y `ingest_board` levantaria `MappingError`.
+SESION_FALSA = "sesion-que-no-existe-en-el-cliente"
+_raiz_g = pathlib.Path(tempfile.mkdtemp())
+(_raiz_g / SESION_FALSA).mkdir()
+(_raiz_g / SESION_FALSA / "3.json").write_text(json.dumps(
+    {"id": 3, "subject": "El sujeto que el default de main() tiene que hallar",
+     "status": "pending", "description": ""}))
+_, DBG = store_con([("1", "Una fila cualquiera", SESION_FALSA, "docs",
+                     "TASK-DOCS-0001", "pending")])
+_entorno = dict(os.environ)
+_entorno[bs.BOARD_ROOT_VAR] = str(_raiz_g)
+_entorno.pop("THYROX_ENV_FILE", None)
+_sin_board = subprocess.run(
+    [sys.executable, str(TASK_IDS_PATH), "--store", str(DBG),
+     "ingerir-board", SESION_FALSA, "3", "--capa", "docs"],
+    capture_output=True, text=True, env=_entorno)
+check(_sin_board.returncode == 0,
+      "1g: `ingerir-board` SIN --board resuelve el board por la constante")
+check("TASK-DOCS-" in _sin_board.stdout,
+      "1h: y acuña la cita de la tarjeta que ahi encontro")
 
 # ---------------------------------------------------------------------------
 # 2 y 3 — #159: se acuña al CREAR, y el no-acuñado se declara
