@@ -34,6 +34,7 @@ import { join } from 'node:path'
 import {
   deferredCondition, deferredReason, keysByStatus, type KeyStatus,
 } from '../settings/inventory.ts'
+import { isEnvTruthy, readEnv } from '../env/utils.ts'
 import { loadSettings, type LoadSpec, type LoadResult } from '../settings/load.ts'
 import { parseSettingSourcesFlag, sourceDisplayName, type SettingSource } from '../settings/constants.ts'
 
@@ -246,6 +247,47 @@ function validateCommand(argv: string[]): CommandResult {
   return { exitCode: ok ? 0 : 1, lines }
 }
 
+/** Las formas que `isEnvTruthy` acepta, para publicarlas junto al veredicto. */
+const TRUTHY_FORMS = '1, true, yes, on (sin distinguir mayúsculas, con espacios al margen)'
+
+/**
+ * El veredicto de verdad del proyecto sobre una variable de entorno.
+ *
+ * Separa tres estados y no dos: verdadera, declarada-y-falsa, y **no
+ * declarada**. Las dos últimas comparten el booleano y tienen conductas
+ * opuestas para quien pregunta — «lo apagué» contra «nunca lo declaré»—, así
+ * que colapsarlas sería el mismo defecto que un cero impreso sin poder medir.
+ *
+ * `--quiet` lleva el veredicto al código de salida (0 verdadero, 1 falso) para
+ * uso desde shell. Ojo al componerlo bajo `pipefail`: el código se lee del
+ * proceso, no del final de una tubería.
+ */
+function truthyCommand(argv: string[]): CommandResult {
+  const name = positional(argv)
+  if (name === undefined) {
+    return {
+      exitCode: 2,
+      lines: [
+        'truthy: falta el nombre de la variable. NO se emite veredicto: un',
+        '«falso» aquí no distinguiría «la variable es falsa» de «no se preguntó».',
+      ],
+    }
+  }
+  const raw = readEnv(name)
+  const verdict = isEnvTruthy(raw)
+  if (argv.includes('--quiet')) return { exitCode: verdict ? 0 : 1, lines: [] }
+  const state = raw === undefined
+    ? 'no declarada'
+    : `declarada como ${JSON.stringify(raw)}`
+  return {
+    exitCode: 0,
+    lines: [
+      `${name}: ${verdict ? 'verdadero' : 'falso'} — ${state}`,
+      `  cuentan como verdadero: ${TRUTHY_FORMS}`,
+    ],
+  }
+}
+
 const AYUDA = `settings — la puerta a @thyrox/config
 
   bun run bin/settings.ts <subcomando> [opciones]
@@ -266,6 +308,11 @@ const AYUDA = `settings — la puerta a @thyrox/config
         el archivo contra SettingsSchema, con los avisos de claves diferidas
         presentes y de reglas de permiso no-cadena descartadas.
 
+  truthy <VARIABLE> [--quiet]
+        si el proyecto cuenta esa variable de entorno como verdadera, con la
+        tabla de formas aceptadas y si está declarada o ausente.
+        --quiet: sin salida, el veredicto en el código (0 verdadero, 1 falso).
+
   -h, --help    esta ayuda
 `
 
@@ -282,8 +329,9 @@ export function main(argv: string[]): number {
   if (sub === 'resolve') result = resolveCommand(rest, cwd)
   else if (sub === 'inventory') result = inventoryCommand(rest)
   else if (sub === 'validate') result = validateCommand(rest)
+  else if (sub === 'truthy') result = truthyCommand(rest)
   else {
-    console.error(`settings: subcomando desconocido: ${JSON.stringify(sub)}. Válidos: resolve, inventory, validate.\n`)
+    console.error(`settings: subcomando desconocido: ${JSON.stringify(sub)}. Válidos: resolve, inventory, validate, truthy.\n`)
     console.log(AYUDA)
     return 2
   }

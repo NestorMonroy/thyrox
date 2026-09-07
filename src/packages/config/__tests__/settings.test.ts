@@ -182,3 +182,64 @@ describe('validate — un archivo contra el esquema', () => {
     expect(r.out).toContain('no existe')
   })
 })
+
+// ── truthy ────────────────────────────────────────────────────────────────
+//
+// `env/utils.ts` quedaba sin alcanzar tras la primera puerta, y de sus tres
+// exports sólo uno merece puerta: `isEnvTruthy` decide qué cuenta como
+// verdadero en este proyecto —`1|true|yes|on`, sin distinguir mayúsculas y
+// con espacios al margen—. `readEnv` es `echo $VAR` y `getAllEnv` es `env`:
+// el shell ya los tiene, y darles puerta sería superficie sin necesidad.
+//
+// Sin este subcomando, un turno que se pregunta si `X=On ` cuenta como
+// encendido sólo puede reimplementar la tabla, que es la segunda fuente de
+// verdad que el proyecto prohíbe.
+describe('settings.ts truthy — la semántica de verdad del proyecto', () => {
+  // En ROJO esta aserción pasaba por la razón equivocada: sin el subcomando,
+  // `truthy` es un subcomando desconocido y eso ya da 2. Se le añade la
+  // negación que la hace discriminar.
+  test('sin variable: rehúsa (2), NO adivina un veredicto', () => {
+    const r = run(['truthy'])
+    expect(r.exitCode).toBe(2)
+    expect(r.out).not.toContain('subcomando desconocido')
+  })
+
+  test('las cuatro formas verdaderas, con ruido de forma', () => {
+    for (const raw of ['1', 'true', 'YES', ' On ']) {
+      process.env.THYROX_TEST_TRUTHY = raw
+      const r = run(['truthy', 'THYROX_TEST_TRUTHY'])
+      expect(r.exitCode).toBe(0)
+      expect(r.out).toContain('verdadero')
+    }
+    delete process.env.THYROX_TEST_TRUTHY
+  })
+
+  test('declarada y falsa: mide, y el veredicto es falso', () => {
+    process.env.THYROX_TEST_TRUTHY = '0'
+    const r = run(['truthy', 'THYROX_TEST_TRUTHY'])
+    expect(r.exitCode).toBe(0)
+    expect(r.out).toContain('falso')
+    delete process.env.THYROX_TEST_TRUTHY
+  })
+
+  // El caso que discrimina, y el control de anulación de este subcomando:
+  // «declarada con un valor falso» y «no declarada» dan el MISMO veredicto
+  // booleano. Si la salida no las separa, el CLI no distingue «lo apagué» de
+  // «nunca lo declaré», que son dos estados con conductas opuestas para quien
+  // pregunta. Retirado el ramal de no-declarada, esta aserción es la única
+  // que cae.
+  test('no declarada: falso, pero DICHO como no declarada', () => {
+    delete process.env.THYROX_TEST_AUSENTE
+    const r = run(['truthy', 'THYROX_TEST_AUSENTE'])
+    expect(r.exitCode).toBe(0)
+    expect(r.out).toContain('no declarada')
+  })
+
+  test('--quiet: sin salida, el veredicto va en el código (0 verdadero, 1 falso)', () => {
+    process.env.THYROX_TEST_TRUTHY = 'yes'
+    expect(run(['truthy', 'THYROX_TEST_TRUTHY', '--quiet'])).toEqual({ exitCode: 0, out: '' })
+    process.env.THYROX_TEST_TRUTHY = 'nope'
+    expect(run(['truthy', 'THYROX_TEST_TRUTHY', '--quiet'])).toEqual({ exitCode: 1, out: '' })
+    delete process.env.THYROX_TEST_TRUTHY
+  })
+})
