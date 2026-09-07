@@ -53,6 +53,8 @@ HERE = Path(__file__).resolve().parent  # thyrox/src/corpus
 sys.path.insert(0, str(HERE.parent / "paths"))
 import reach  # noqa: E402  (la ruta se compone arriba, a proposito)
 
+from agents import agents_paths
+
 DOCS_ROOT = reach.root("docs")
 assert (DOCS_ROOT / "source" / "gestion" / "pm").is_dir(), (
     f"raiz mal anclada: {DOCS_ROOT} — no tiene source/gestion/pm")
@@ -175,7 +177,12 @@ def main() -> int:
         if store_dir.name != "agent-results":
             store_dir = store_dir / "agent-results"
     else:
-        store_dir = DOCS_ROOT / ".claude" / "agent-results"
+        # El hogar unico del store es el del PROVEEDOR (decision del ejecutor
+        # 2026-09-07: «solo se llena uno, para que no existan silos»). Componer
+        # aqui `DOCS_ROOT / ".claude" / "agent-results"` era la segunda fuente de
+        # verdad que produjo el silo de :ref:`h-docs-1237`. Se delega en el
+        # localizador declarado, que es la unica composicion de esta ruta.
+        store_dir = agents_paths.agent_store_path().parent
     procesados = 0
     omitidos: list[str] = []
 

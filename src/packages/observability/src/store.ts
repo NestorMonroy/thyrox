@@ -19,7 +19,7 @@
 import { Database } from 'bun:sqlite'
 import { openStore } from '../../../store/db.ts'
 import { join, resolve } from 'node:path'
-import { docsRoot } from '../../../paths/docs.ts'
+import { thyroxRoot } from '../../../paths/reach.ts'
 import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '../../../paths/reach.ts'
 import type { Usage } from '@thyrox/agent/loop/types'
 import type { TranscriptShape } from './transcriptShape.ts'
@@ -29,8 +29,30 @@ import { verifyAdoption, readProcStart, type Adoption } from '@thyrox/agent/loop
  * `sqlite-union` está declarado sobre él en el `.gitattributes` del consumidor. */
 export const STORE_FILE = 'agent_store.sqlite3'
 
-/** El subdirectorio del consumidor donde vive la telemetría local. */
-export const STORE_DIR = join('.claude', 'agent-results')
+/**
+ * El subdirectorio del PROVEEDOR donde vive el store — uno solo, sin silos.
+ *
+ * Decisión del ejecutor 2026-09-07: *«queremos que sólo se llene uno, porque
+ * si no existen los silos de información que es algo que queremos evitar; el
+ * que se tiene que quedar es `thyrox/agent-results/agent_store.sqlite3` por
+ * ser producer»*.
+ *
+ * Antes era `.claude/agent-results` del **consumidor**, y el resultado medido
+ * fue exactamente el silo: DOS archivos versionados, los dos escribiéndose, y
+ * ninguno superconjunto del otro — 61 filas sólo en uno, 3 sólo en el otro
+ * (:ref:`h-docs-1237`). Se fusionaron con `src/agents/merge_stores.py` antes
+ * de reapuntar aquí; el orden importa, porque reapuntar primero habría dejado
+ * las 61 sin camino de vuelta.
+ *
+ * NO lleva `.claude/`: la ruta es la que el ejecutor nombró, y `.claude/` es
+ * la zona de configuración del cliente, no el hogar de un artefacto del
+ * proveedor.
+ */
+export const STORE_DIR = 'agent-results'
+
+/** El subdirectorio que el store ocupaba en el consumidor, para poder
+ * localizar un silo heredado y fusionarlo. NO es destino de escritura. */
+export const LEGACY_CONSUMER_STORE_DIR = join('.claude', 'agent-results')
 
 /** La grafía que declara la ruta del archivo, sin pasar por ninguna raíz. */
 export const STORE_PATH_VAR = 'THYROX_STORE'
@@ -52,8 +74,10 @@ export const STORE_PATH_VAR = 'THYROX_STORE'
  * 2. `THYROX_STORE`, la ruta del archivo, leída por `envValue` (proceso y
  *    después `.env`);
  * 3. `THYROX_CONSUMER`, la raíz del consumidor, compuesta con `STORE_DIR`;
- * 4. el clon de docs — la conducta de hoy, ahora como último recurso NOMBRADO
- *    en vez de como verdad incondicional.
+ * 4. el árbol del PROVEEDOR (`thyroxRoot()/agent-results`) — el hogar único
+ *    decidido el 2026-09-07. El peldaño 3 sigue existiendo para un consumidor
+ *    que declare su propio store a propósito, pero ya no es lo que ocurre por
+ *    omisión: por omisión todo aterriza en un solo archivo.
  *
  * El ASCENSO de `consumerRoot` no participa, y es deliberado. Medido en este
  * árbol el 2026-09-06: `/home/user/.claude`, `/home/user/thyrox/.claude` y
@@ -72,8 +96,8 @@ export function storePath(declared?: string): string {
   const file = envValue(STORE_PATH_VAR)
   if (file) return resolve(file)
   const consumer = envValue(CONSUMER_ROOT_VAR)
-  if (consumer) return join(consumerRoot(consumer), STORE_DIR, STORE_FILE)
-  return join(docsRoot(), STORE_DIR, STORE_FILE)
+  if (consumer) return join(consumerRoot(consumer), LEGACY_CONSUMER_STORE_DIR, STORE_FILE)
+  return join(thyroxRoot(), STORE_DIR, STORE_FILE)
 }
 
 /**

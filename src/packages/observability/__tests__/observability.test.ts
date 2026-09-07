@@ -15,7 +15,7 @@ import { Journal, readJournal } from '../src/journal.ts'
 import {
   STORE_FILE, STORE_PATH, STORE_PATH_VAR, recordHarnessSession, storePath,
 } from '../src/store.ts'
-import { CONSUMER_ROOT_VAR } from '../../../paths/reach.ts'
+import { CONSUMER_ROOT_VAR, thyroxRoot } from '../../../paths/reach.ts'
 import { costReport, turnCost } from '../src/cost.ts'
 import type { Usage } from '@thyrox/agent/loop/types'
 
@@ -257,5 +257,21 @@ describe('storePath — el consumidor es parámetro, no el clon de docs', () => 
     // Un ascenso desde aquí devolvería `consumidor`; la resolución del store
     // exige el valor declarado, así que no lo hace.
     expect(storePath()).not.toBe(join(consumidor, '.claude', 'agent-results', STORE_FILE))
+  })
+
+  test('sin nada declarado, el respaldo es el store del PROVEEDOR, uno solo', () => {
+    // Este caso existe porque el de arriba NO discrimina: su `not.toBe` pasaba
+    // igual con el respaldo viejo (el clon de docs) y con el nuevo. Un control
+    // que no puede distinguir las dos conductas no mide ninguna — sub-patron D
+    // de `metrica-decide-la-conclusion.md`.
+    //
+    // Lo que este afirma es la decision del ejecutor 2026-09-07: sin variables,
+    // TODO aterriza en `thyrox/agent-results`, que es lo que impide el silo que
+    // :ref:`h-docs-1237` midio (dos archivos versionados, ninguno superconjunto
+    // del otro).
+    delete process.env[STORE_PATH_VAR]
+    delete process.env[CONSUMER_ROOT_VAR]
+    expect(storePath()).toBe(join(thyroxRoot(), 'agent-results', STORE_FILE))
+    expect(storePath()).not.toContain('kaupamex-docs')
   })
 })
