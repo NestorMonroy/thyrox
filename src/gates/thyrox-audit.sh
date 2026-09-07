@@ -579,8 +579,10 @@ tick "idioma del nombre de archivo"
 #
 # Segundo eje del mismo gate: los archivos van en ingles, los comentarios en
 # espanol (directiva del ejecutor 2026-08-28, decision #647). El lexico se
-# reusa de api/scripts/check_identifier_language.py; sin el, el gate rehusa
-# con 2 y NO emite cifra.
+# reusa de check_identifier_language.py, hermano en este mismo directorio
+# desde su mudanza a THYROX (DEC-04, actualizar-agentic-ai-thyrox; antes era
+# api/scripts/check_identifier_language.py). Sin el, el gate rehusa con 2 y
+# NO emite cifra.
 if [[ -f src/gates/check_script_naming.py ]]; then
     IDI=$(python3 src/gates/check_script_naming.py --idioma --quiet 2>/dev/null)
     IDIDEN=$(python3 src/gates/check_script_naming.py --idioma 2>/dev/null | grep 'alcance medido' | sed 's/^ *//')
@@ -598,11 +600,12 @@ fi
 # --- idioma de los identificadores de .claude/** ----------------------------
 tick "idioma de identificadores"
 #
-# Tercer eje del mismo gate. El gate hermano de api mide src/, tests/ y
-# addons/ por AST; su ROOTS no alcanza .claude/**, que es donde vive el
-# tooling de esta sesion. Sin este eje, un identificador nuevo en espanol
-# entraba ahi sin que nada lo viera. Mismo guard: sin lexico rehusa con 2 y
-# NO emite cifra.
+# Tercer eje del mismo gate. El gate hermano (check_identifier_language.py,
+# hoy en THYROX) mide src/, tests/ y addons/ por AST, con esas raices como
+# PARAMETRO del consumidor (DEC-04) — su default no alcanza .claude/**, que
+# es donde vive el tooling de esta sesion. Sin este eje, un identificador
+# nuevo en espanol entraba ahi sin que nada lo viera. Mismo guard: sin
+# lexico rehusa con 2 y NO emite cifra.
 if [[ -f src/gates/check_script_naming.py ]]; then
     IDD=$(python3 src/gates/check_script_naming.py --identifiers --quiet 2>/dev/null)
     IDDDEN=$(python3 src/gates/check_script_naming.py --identifiers 2>/dev/null \

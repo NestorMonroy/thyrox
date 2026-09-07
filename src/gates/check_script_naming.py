@@ -50,13 +50,14 @@ Son dos ejes independientes sobre el mismo nombre y se miden por separado:
 ``my-english-name.py`` incumple el primero y no el segundo;
 ``check_rst_convenciones.py`` incumple el segundo y no el primero.
 
-El léxico NO se escribe aquí. Se reusa ``spanish_words_in`` de
-``api: scripts/check_identifier_language.py``, que es el criterio que el
-proyecto ya acepta para la misma pregunta sobre un identificador — y el nombre
-de un módulo Python **es** un identificador. Duplicar la lista sería fabricar
-una segunda fuente de verdad que nadie sincroniza. Si ese archivo no está,
-el gate **rehúsa con 2 y no emite cifra**: un 0 sin léxico sería un verde
-falso.
+El léxico NO se escribe aquí. Se reusa ``spanish_words_in`` del gate hermano
+—``check_identifier_language.py``, hoy en este mismo directorio tras su
+mudanza a THYROX (DEC-04, actualizar-agentic-ai-thyrox)—, que es el criterio
+que el proyecto ya acepta para la misma pregunta sobre un identificador — y el
+nombre de un módulo Python **es** un identificador. Duplicar la lista sería
+fabricar una segunda fuente de verdad que nadie sincroniza. Si ese archivo no
+está, el gate **rehúsa con 2 y no emite cifra**: un 0 sin léxico sería un
+verde falso.
 
 Métrica (eje 1): archivos ``*.py`` con guion medio en el nombre base, bajo las
 raíces declaradas en ``RAICES``.
@@ -92,10 +93,12 @@ EXCLUIR = ('node_modules', '.venv', 'venv', '__pycache__', 'build', 'dist',
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from workbench.paths import is_measurement_artifact  # noqa: E402
 
-# El léxico vive en el gate hermano de `api`, que es donde se mantiene. La
-# variable permite apuntarlo a otro sitio —o a ninguno, para probar el guard.
+# El léxico vive en el gate hermano, ya en este mismo directorio tras la
+# mudanza a THYROX (antes era `api: scripts/check_identifier_language.py`,
+# hoy ese archivo reexporta el veredicto de aquí). La variable permite
+# apuntarlo a otro sitio —o a ninguno, para probar el guard.
 LEXICO = os.environ.get('IDIOMA_GATE_LEXICO',
-                        '/home/user/kaupamex-api/scripts/check_identifier_language.py')
+                        str(pathlib.Path(__file__).with_name('check_identifier_language.py')))
 BASELINE = pathlib.Path(__file__).parent / 'script_naming_language_baseline.txt'
 IDENTIFIER_BASELINE = (pathlib.Path(__file__).parent
                       / 'identifier_language_baseline_claude.txt')
