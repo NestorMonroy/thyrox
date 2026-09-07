@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# THYROX — pre-commit. Hoy corre UN gate, y existe por un episodio concreto.
+#
+# `check_provider_evidence.py` nacio el 2026-09-07T00:59:23 y, en las diecisiete
+# horas siguientes, once bancos de evidencia aterrizaron en el arbol que el gate
+# prohibe. El gate no fallo: nombraba los once y salia 1 con `--strict`. Lo que
+# faltaba era que alguien lo corriera — THYROX no tenia `.githooks/` ni
+# `core.hooksPath`, y el unico hook vivo del arbol corre seis gates AL COMMITEAR
+# EN EL CONSUMIDOR, que es otro repositorio. Ver L-028.
+#
+# La leccion que deja, y por la que este archivo es corto a proposito: escribir
+# un gate no es integrarlo en el flujo. Un gate sin invocador es prosa con
+# `exit 1`.
+#
+# Escape hatch: `git commit --no-verify`. Si se usa, el motivo va al `progreso`.
+set -uo pipefail
+
+RAIZ="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+GATES="$RAIZ/src/gates"
+CODIGO=0
+
+# Rehusar en vez de omitir. Un `exit 0` con los gates inalcanzables seria un
+# verde falso: no distinguiria «no hay defectos» de «no pude medir».
+if [[ ! -d "$GATES" ]]; then
+    echo "pre-commit: no se encontro $GATES — los gates no se pudieron correr." >&2
+    echo "  No se emite veredicto: un 0 aqui seria un verde falso." >&2
+    exit 1
+fi
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "pre-commit: falta python3 — los gates no se pudieron correr." >&2
+    exit 1
+fi
+
+# El banco de evidencia vive en el arbol del CONSUMIDOR. Mide el arbol entero,
+# no lo staged: un banco commiteado en un pase anterior sigue estando mal, y el
+# defecto que este hook cierra son once bancos que ya estaban en el arbol.
+python3 "$GATES/check_provider_evidence.py" --strict
+SALIDA=$?
+
+# Tres desenlaces, no dos. El gate declara 1 = hay bancos, 2 = no pudo medir; y
+# cualquier otro codigo es que reviento. Colapsarlos imprime el remedio del
+# banco ante un ImportError, que es el sub-patron D dentro del propio hook:
+# el mensaje no distingue «el gate dijo que no» de «el gate no pudo hablar».
+# Medido al escribirlo: con un `reach.py` incompleto, la primera version de
+# este hook publicaba la receta de mover el banco sobre un traceback.
+case $SALIDA in
+    0) ;;
+    1)  CODIGO=1
+        echo >&2
+        echo "pre-commit: el commit se detiene. El banco no se mueve solo a proposito —" >&2
+        echo "  inventar un hogar por defecto decidiria por el consumidor donde van sus" >&2
+        echo "  piezas, que es la decision que el mecanismo le retira al emisor." >&2
+        echo "  Muevelo al arbol del consumidor, o declara THYROX_WORKBENCH_DIR." >&2
+        ;;
+    2)  CODIGO=1
+        echo >&2
+        echo "pre-commit: el gate NO PUDO MEDIR (exit 2). No es un hallazgo de banco:" >&2
+        echo "  no se sabe si los hay. Lee su mensaje de arriba antes de tocar nada." >&2
+        ;;
+    *)  CODIGO=1
+        echo >&2
+        echo "pre-commit: el gate termino con codigo $SALIDA — reviento, no dictamino." >&2
+        echo "  El commit se detiene porque un veredicto ausente no es un verde." >&2
+        ;;
+esac
+exit $CODIGO

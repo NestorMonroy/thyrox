@@ -114,4 +114,16 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    try:
+        raise SystemExit(main(sys.argv[1:]))
+    except SystemExit:
+        raise
+    except Exception as err:  # noqa: BLE001 — el veredicto importa mas que el tipo
+        # Un fallo inesperado sale por 2 («no pude medir»), NO por 1. Sin esto,
+        # la excepcion no capturada sale con 1 de Python y su llamador la lee
+        # como «hay bancos»: un HALLAZGO FALSO, no un error. Medido al cablear
+        # el hook — un `reach.py` incompleto publicaba la receta de mover un
+        # banco sobre un ImportError.
+        print(f"check-provider-evidence: no se pudo medir — {type(err).__name__}: {err}",
+              file=sys.stderr)
+        raise SystemExit(2) from err
