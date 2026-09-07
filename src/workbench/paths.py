@@ -137,7 +137,16 @@ def repo_of(path: str | Path) -> str | None:
     punto de partida: un gate se invoca desde cualquier subdirectorio, y el
     basename ahi nombra la carpeta, no el repositorio.
     """
-    from paths.reach import CLONE_PREFIX  # noqa: PLC0415 — evita el ciclo de import
+    from paths.reach import clone_prefix  # noqa: PLC0415 — evita el ciclo de import
+
+    # Sin prefijo derivable ni declarado no hay clon que nombrar: se devuelve
+    # None, que es «no se de que clon es esta ruta». Reventar aqui haria que un
+    # arbol sintetico —una prueba, un contenedor recien hecho— muriera al
+    # preguntar algo que tiene respuesta: ninguna.
+    try:
+        CLONE_PREFIX = clone_prefix()
+    except KeyError:
+        return None
 
     here = Path(path).resolve()
     for level in (here, *here.parents):

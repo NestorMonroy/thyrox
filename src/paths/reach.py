@@ -97,10 +97,62 @@ from pathlib import Path
 #: oposición al conjunto resuelto que ``reach()`` devuelve.
 REACH_ROOTS: tuple[str, ...] = ("api", "db", "docs", "server", "ui")
 
-#: El prefijo del nombre de clon. Vive aquí y no repetido en cada consumidor
-#: porque el rename ``e-comerce-*`` -> ``kaupamex-*`` (DEC-KX-06) ya demostró
-#: que cambia.
-CLONE_PREFIX = "kaupamex-"
+#: La variable con que el consumidor declara su prefijo de clon.
+CLONE_PREFIX_VAR = "THYROX_CLONE_PREFIX"
+
+
+def derive_clone_prefix(start: Path | None = None) -> str | None:
+    """El prefijo común de los hermanos del proveedor, o ``None``.
+
+    Estaba codificado —``"kaupamex-"``— y ese literal era la razón por la que
+    thyrox no servía a otro multi-repo sin editarlo: el mecanismo que resuelve
+    CUALQUIER clon nombraba a uno. Derivarlo es medir; codificarlo es suponer.
+
+    El criterio es la mayoría: entre los directorios hermanos, el prefijo
+    ``<algo>-`` que comparten **al menos dos**. Dos y no uno porque un solo
+    directorio con guion no es un patrón — sería inventar un multi-repo a
+    partir de un nombre suelto.
+
+    Devuelve ``None`` cuando no hay mayoría, y quien llama decide: aquí no se
+    fabrica un prefijo, porque uno equivocado compone rutas que no existen y
+    el fallo aparece lejos de su causa.
+    """
+    base = (Path(start) if start else thyrox_root()).parent
+    if not base.is_dir():
+        return None
+    cuenta: dict[str, int] = {}
+    for hermano in base.iterdir():
+        if not hermano.is_dir() or "-" not in hermano.name:
+            continue
+        prefijo = hermano.name.split("-", 1)[0] + "-"
+        cuenta[prefijo] = cuenta.get(prefijo, 0) + 1
+    if not cuenta:
+        return None
+    mejor, veces = max(cuenta.items(), key=lambda par: par[1])
+    return mejor if veces >= 2 else None
+
+
+def clone_prefix(start: Path | None = None,
+                 declared: str | None = None) -> str:
+    """El prefijo: lo declarado, luego el entorno, luego lo derivado.
+
+    Sin ninguno de los tres se rehúsa nombrando la variable. Un default aquí
+    volvería a atar el proveedor a un multi-repo concreto, que es exactamente
+    lo que esta función deshace.
+    """
+    if declared:
+        return declared
+    del_entorno = env_value(CLONE_PREFIX_VAR, start)
+    if del_entorno:
+        return del_entorno
+    derivado = derive_clone_prefix(start)
+    if derivado:
+        return derivado
+    raise KeyError(
+        f"no pude derivar el prefijo de clon del árbol, y {CLONE_PREFIX_VAR} no "
+        f"está declarada. Decláralo: sin él no se puede componer el nombre de "
+        f"ningún clon, y fabricar uno compondría rutas inexistentes."
+    )
 
 #: Las grafías del árbol, EN ORDEN. Gana la primera declarada.
 #:
@@ -217,7 +269,7 @@ def clone_name(repo: str) -> str:
         raise KeyError(
             f"raíz desconocida: {repo!r}. Las declaradas son {list(REACH_ROOTS)}."
         )
-    return f"{CLONE_PREFIX}{repo}"
+    return f"{clone_prefix()}{repo}"
 
 
 def clone_names() -> tuple[str, ...]:

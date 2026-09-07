@@ -105,7 +105,9 @@ _owner = _load_owner()
 ReachRootError = _owner.ReachRootError
 REACH_ROOTS = _owner.REACH_ROOTS
 REPOS = _owner.REACH_ROOTS          # alias histórico; cuatro consumidores lo importan
-CLONE_PREFIX = _owner.CLONE_PREFIX
+clone_prefix = _owner.clone_prefix
+derive_clone_prefix = _owner.derive_clone_prefix
+CLONE_PREFIX_VAR = _owner.CLONE_PREFIX_VAR
 TREE_ROOT_VARS = _owner.TREE_ROOT_VARS
 EXTRA_ROOTS_VARS = _owner.EXTRA_ROOTS_VARS
 

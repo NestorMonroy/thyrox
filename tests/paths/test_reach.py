@@ -400,6 +400,44 @@ check("exporta THYROX_ROOT", True, 'export THYROX_ROOT="' in _env)
 check("exporta THYROX_ENV_FILE", True, "THYROX_ENV_FILE" in _env)
 check("sigue exportando las cinco raíces", _env.count("export THYROX_REACH_"), 5)
 
+# --------------------------------------------------------------------------
+# El multi-repo NO se codifica en el proveedor (#249)
+#
+# `CLONE_PREFIX = "kaupamex-"` y `REACH_ROOTS = ("api",...)` eran la raiz del
+# problema: el mecanismo que resuelve CUALQUIER clon nombraba a este
+# multi-repo, asi que thyrox no servia a otro sin editarlo.
+#
+# Los dos se declaran ahora, y sin declaracion se DERIVAN del arbol: el prefijo
+# comun de los hermanos del proveedor. Derivarlo es medir; codificarlo es
+# suponer.
+#
+# CONTROL DE ANULACION: si el mecanismo volviera al literal, el caso 2 pasaria
+# igual (este arbol ES kaupamex-) pero el 1 y el 3 caerian — un arbol con otro
+# prefijo daria "kaupamex-" y una raiz que no existe.
+# --------------------------------------------------------------------------
+from pathlib import Path  # noqa: E402
+
+import re  # noqa: E402
+
+print("== el prefijo de clon se declara o se deriva, no se codifica ==")
+
+_TMP = tempfile.mkdtemp()
+for _n in ("acme-uno", "acme-dos", "acme-tres", "thyrox", "un-corpus"):
+    (Path(_TMP) / _n).mkdir(parents=True, exist_ok=True)
+
+check("en un arbol ajeno DERIVA su prefijo, no el nuestro",
+      "acme-", reach.derive_clone_prefix(Path(_TMP) / "thyrox"))
+
+check("la declaracion GANA sobre la derivacion", "otro-",
+      reach.clone_prefix(start=Path(_TMP) / "thyrox",
+                         declared="otro-"))
+
+# Se mide la ASIGNACION, no la mencion: el docstring cita el literal para
+# explicar por que ya no esta, y contarlo ahi mediria el significante.
+check("y ningun literal de multi-repo se ASIGNA en el mecanismo", 0,
+      len(re.findall(r'^[A-Z_]*PREFIX[A-Z_]*\s*=\s*"[a-z]+-"',
+                     Path(reach.__file__).read_text(), re.M)))
+
 print(f"\nresultado: {PASS} de {PASS + FAIL} aserciones en verde")
 sys.exit(1 if FAIL else 0)
 
