@@ -1,7 +1,7 @@
 /**
  * Control del COLAPSO del duplicado del ledger de coordinación.
  *
- * `harness/src/cowork/claims.ts` llevaba su propia copia de tres símbolos que
+ * `src/coordination/claims.ts` (antes `harness/src/cowork/claims.ts`) llevaba su propia copia de tres símbolos que
  * `src/coordination/ledger.ts` ya declara —la ruta relativa, el ascenso al top
  * level y la resolución de la ruta— y lo declaraba en su propia cabecera:
  *
@@ -38,13 +38,13 @@ import { join } from 'node:path'
 import { readFileSync } from 'node:fs'
 import {
   DEFAULT_LEDGER_REL, gitTopLevel as gitTopLevelHarness, ledgerPathFor as ledgerPathForHarness,
-} from '../../src/packages/harness/src/cowork/claims.ts'
+} from '../../src/coordination/claims.ts'
 import {
   CoordinationRootError, gitTopLevel, ledgerPathFor, LEDGER_REL,
 } from '../../src/coordination/ledger.ts'
 
 const RAIZ = new URL('../..', import.meta.url).pathname
-const CLAIMS = join(RAIZ, 'src/packages/harness/src/cowork/claims.ts')
+const CLAIMS = join(RAIZ, 'src/coordination/claims.ts')
 
 describe('el duplicado se colapsó a una reexportación', () => {
   test('claims.ts ya no declara los tres cuerpos', () => {

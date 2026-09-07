@@ -22,8 +22,8 @@ import {
   activeClaims, appendClaim, combineGates, DEFAULT_LEDGER_REL, driverAwareFileOverlapGate,
   fileOverlapGate, findOverlaps, gitTopLevel, ledgerPathFor, newClaimId, pathsOverlap,
   readLedger, whoHas, type ClaimRecord,
-} from '../src/cowork/claims.ts'
-import type { CollisionCheck, IntegrationRepo } from '../src/branchIntegration.ts'
+} from '../../../coordination/claims.ts'
+import type { CollisionCheck, IntegrationRepo } from '../../../coordination/branchIntegration.ts'
 
 // La raiz del repo donde corre el test. Se llamaba `DOCS_ROOT` y eso era
 // cierto mientras el harness vivia en kaupamex-docs; tras la mudanza a

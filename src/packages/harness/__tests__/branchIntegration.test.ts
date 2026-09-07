@@ -30,7 +30,7 @@ import {
   unionConflictResolver,
   EXPECTED_COMMITTER_EMAIL, EXPECTED_COMMITTER_NAME,
   type CollisionGate, type IntegrationRepo, type LabelResolver, type RenumberedLabel, type StaticGate,
-} from '../src/branchIntegration.ts'
+} from '../../../coordination/branchIntegration.ts'
 
 const DOCS_ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
 const L2 = 'origin/feature/kaupamex-l2'

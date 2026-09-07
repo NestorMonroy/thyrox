@@ -36,7 +36,7 @@ import { registerBundledSkills } from '../src/skills/bundled.ts'
 import {
   appendClaim, findOverlaps, ledgerPathFor, newClaimId, readLedger, whoHas,
   type ClaimRecord,
-} from '../src/cowork/claims.ts'
+} from '../../../coordination/claims.ts'
 import type { AssistantTurn, Provider, Usage } from '../src/types.ts'
 import { USAGE_CERO } from '../src/types.ts'
 import type { HookConfig } from '../src/hooks.ts'

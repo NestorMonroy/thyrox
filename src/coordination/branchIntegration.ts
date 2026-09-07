@@ -30,7 +30,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { combineGates, driverAwareFileOverlapGate } from './cowork/claims.ts'
+import { combineGates, driverAwareFileOverlapGate } from './claims.ts'
 
 /** Committer esperado (``git-author-identity.md``): jamás Claude, siempre jcg-admin. */
 export const EXPECTED_COMMITTER_NAME = 'jcg-admin'

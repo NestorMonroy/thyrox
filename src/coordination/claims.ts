@@ -28,8 +28,8 @@ import { appendFileSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { randomUUID } from 'node:crypto'
 
-import type { CollisionCheck, CollisionGate, IntegrationRepo } from '../branchIntegration.ts'
-import { LEDGER_REL } from '../../../../coordination/ledger.ts'
+import type { CollisionCheck, CollisionGate, IntegrationRepo } from './branchIntegration.ts'
+import { LEDGER_REL } from './ledger.ts'
 
 /**
  * La ubicación del ledger y su resolución vienen del dueño canónico,
@@ -41,7 +41,7 @@ import { LEDGER_REL } from '../../../../coordination/ledger.ts'
  * `store/db.ts`. `DEFAULT_LEDGER_REL` conserva su nombre heredado porque es
  * lo que la superficie pública del harness ya publica; el VALOR es uno solo.
  */
-export { CoordinationRootError, gitTopLevel, ledgerPathFor } from '../../../../coordination/ledger.ts'
+export { CoordinationRootError, gitTopLevel, ledgerPathFor } from './ledger.ts'
 export const DEFAULT_LEDGER_REL = LEDGER_REL
 
 

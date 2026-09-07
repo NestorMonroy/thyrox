@@ -72,17 +72,5 @@ export {
   SkillRegistry, extractDirFor,
   type SkillContext, type SkillDefinition, type SkillRegistryOptions,
 } from './skills/registry.ts'
-export {
-  integrate, verificationPlan, docsLabelCollisionGate, committerMismatch,
-  EXPECTED_COMMITTER_NAME, EXPECTED_COMMITTER_EMAIL,
-  type IntegrationRepo, type IntegrationResult, type IntegrateOptions,
-  type CollisionCheck, type CollisionGate,
-  type RepoKind, type VerificationRepo, type VerificationStep,
-} from './branchIntegration.ts'
-export {
-  DEFAULT_LEDGER_REL, newClaimId, claimLine, readLedger, appendClaim,
-  pathsOverlap, activeClaims, whoHas, findOverlaps, fileOverlapGate,
-  driverAwareFileOverlapGate, combineGates, ledgerPathFor, type ClaimRecord,
-} from './cowork/claims.ts'
 export { fromSkillDir, skillNameFromDir } from './skills/fromDir.ts'
 export { bundledSkillNames, bundledSkillDefs, registerBundledSkills } from './skills/bundled.ts'
