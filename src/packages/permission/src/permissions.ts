@@ -5,21 +5,20 @@
  * consumidor real confirmado en `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts:80`
  * (`import { getDenyRuleForTool } from '@thyrox/permission/permissions'`).
  *
- * PORTADAS (10 de 17) — el bloque completo de "reglas puras" de la fuente
+ * PORTADAS (11 de 17) — el bloque completo de "reglas puras" de la fuente
  * (líneas ~123-395), todas construidas sobre las mismas tres piezas
  * (`getPermissionRuleSources`, `toolMatchesRule`, `getToolNameForPermissionCheck`):
  *
  *   `getAllowRules` · `getDenyRules` · `getAskRules` · `toolAlwaysAllowedRule`
  *   · `getDenyRuleForTool` (el objetivo) · `getAskRuleForTool` ·
  *   `getDenyRuleForAgent` · `filterDeniedAgents` · `getRuleByContentsForTool`
- *   · `getRuleByContentsForToolName`
+ *   · `getRuleByContentsForToolName` · `permissionRuleSourceDisplayString`
+ *   (agregada en el pase del porte de `shadowedRuleDetection.ts` — ver
+ *   abajo; antes OMITIDA por falta de consumidor)
  *
- * OMITIDAS (7 de 17), declaradas por nombre, línea y bloqueo — ninguna
+ * OMITIDAS (6 de 17), declaradas por nombre, línea y bloqueo — ninguna
  * tiene consumidor confirmado en este pase:
  *
- *   - `permissionRuleSourceDisplayString` (permissions.ts:127-131) — sin
- *     llamador dentro del subconjunto portado; su único llamador en la
- *     fuente es `createPermissionRequestMessage`, también omitida.
  *   - `createPermissionRequestMessage` (permissions.ts:144-220) — depende de
  *     `feature('BASH_CLASSIFIER')`/`feature('TRANSCRIPT_CLASSIFIER')` de
  *     `bun:bundle` (no resuelve en este runtime, medido con `bun -e`) y de
@@ -57,6 +56,18 @@
  *   comportamiento en tiempo de ejecución.
  * - `Tool` es el mismo tipo inline de la fuente
  *   (`{ name: string; [key: string]: unknown }`).
+ * - `permissionRuleSourceDisplayString` llama en la fuente a
+ *   `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`
+ *   (paquete no linkeado aquí). Se INLINEA el mismo `switch` de ocho casos
+ *   verbatim (leído de `ccnmt: packages/config/settings/constants.ts:73-93`,
+ *   sólo lectura), en vez de un `require()` diferido con respaldo — a
+ *   diferencia de `SETTING_SOURCES` arriba, esta función SÍ tiene forma de
+ *   `@thyrox/config` real que citar y copiar, así que no hace falta el
+ *   patrón try/require.
+ *
+ * `ToolPermissionContext` se EXPORTA en este pase (no lo estaba) para que
+ * `shadowedRuleDetection.ts` — mismo paquete, mismo pase — pueda pasarle
+ * su propio contexto sin declarar un cuarto tipo duplicado.
  */
 import type {
   PermissionBehavior,
@@ -67,7 +78,7 @@ import {
   permissionRuleValueFromString,
 } from './permissionRuleParser.js'
 
-type ToolPermissionContext = {
+export type ToolPermissionContext = {
   alwaysAllowRules: Partial<Record<PermissionRuleSource, string[]>>
   alwaysDenyRules: Partial<Record<PermissionRuleSource, string[]>>
   alwaysAskRules: Partial<Record<PermissionRuleSource, string[]>>
@@ -127,6 +138,37 @@ export function getAskRules(context: ToolPermissionContext): PermissionRule[] {
       ruleValue: permissionRuleValueFromString(ruleString),
     })),
   )
+}
+
+/**
+ * Nombre de fuente en minúsculas para mensajes de advertencia/prompt —
+ * `permissions.ts:123-131` en la fuente, que delega en
+ * `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`.
+ * Ver la divergencia declarada en el docstring del módulo: el `switch` se
+ * inlinea aquí verbatim (leído de
+ * `ccnmt: packages/config/settings/constants.ts:73-93`).
+ */
+export function permissionRuleSourceDisplayString(
+  source: PermissionRuleSource,
+): string {
+  switch (source) {
+    case 'userSettings':
+      return 'user settings'
+    case 'projectSettings':
+      return 'shared project settings'
+    case 'localSettings':
+      return 'project local settings'
+    case 'flagSettings':
+      return 'command line arguments'
+    case 'policySettings':
+      return 'enterprise managed settings'
+    case 'cliArg':
+      return 'CLI argument'
+    case 'command':
+      return 'command configuration'
+    case 'session':
+      return 'current session'
+  }
 }
 
 function mcpInfoFromString(s: string): { serverName: string; toolName: string | undefined } | null {

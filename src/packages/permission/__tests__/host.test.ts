@@ -38,8 +38,25 @@ describe('errors.ts — las seis clases', () => {
 })
 
 describe('host.ts — antes de instalar', () => {
-  test('getPermissionHostBindings lanza HostBindingsError', () => {
-    expect(() => getPermissionHostBindings()).toThrow(/host bindings have not been installed/i)
+  test('getPermissionHostBindings lanza HostBindingsError', async () => {
+    // `host.ts` guarda el binding instalado en una variable de módulo
+    // (singleton) — y `bun test` corre todos los archivos en el MISMO
+    // proceso, sin aislar el registro de módulos entre ellos. Otro
+    // archivo de este mismo pase (`PermissionUpdate.test.ts`) SÍ
+    // necesita instalar un binding real para poder ejercitar
+    // `applyPermissionUpdate` (cada rama de su switch llama
+    // `logForDebugging`, que exige el binding instalado — es fiel a la
+    // fuente, no una divergencia). Para que este test siga midiendo el
+    // estado "sin instalar" sin importar el orden de ejecución de los
+    // demás archivos, importa una copia de `host.ts` con un parámetro de
+    // caché-bust — Bun le da una instancia de módulo nueva, con su
+    // propia variable `permissionHostBindings = null` intacta, aislada
+    // del singleton que el resto de la suite comparte vía el import
+    // estático de arriba.
+    const fresh = await import(`../src/host.ts?fresh=${Date.now()}-${Math.random()}`)
+    expect(() => fresh.getPermissionHostBindings()).toThrow(
+      /host bindings have not been installed/i,
+    )
   })
 })
 

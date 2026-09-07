@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta (permission.ts, T-008/025/026/027). Ademas, porte fiel COMPLETO de host.ts/errors.ts/contracts.ts/permissionRuleParser.ts, y porte PARCIAL DECLARADO de permissions.ts (10/17), filesystem.ts (13/29) y pathValidation.ts (6/11) desde claude-code-nestor-monroy-tools \u2014 ver el docstring de cada archivo para lo omitido y por que (TASK-DOCS-0201).",
+  "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta (permission.ts, T-008/025/026/027). Ademas, porte fiel COMPLETO de host.ts/errors.ts/contracts.ts/permissionRuleParser.ts/PermissionResult.ts/autoModeDenials.ts/autoModeState.ts/denialTracking.ts/bashClassifier.ts/dangerousPatterns.ts/shellRuleMatching.ts/shadowedRuleDetection.ts, y porte PARCIAL DECLARADO de permissions.ts (11/17), filesystem.ts (13/29), pathValidation.ts (6/11), PermissionRule.ts (4/6, sin zod), PermissionMode.ts (11/13, sin zod), PermissionUpdate.ts (6/8, sin persistencia a disco) y getNextPermissionMode.ts (1/2, sin auto-mode) desde claude-code-nestor-monroy-tools \u2014 ver el docstring de cada archivo para lo omitido y por que (TASK-DOCS-0201). El resto del paquete origen (subsistema clasificador ML, componentes Ink, permissionSetup.ts) queda fuera de este arbol: bloqueado por zod/@anthropic-ai/sdk/react sin linkear en node_modules de este paquete, o por ausencia total de sustrato Ink.",
   "exports": {
     ".": "./src/permission.ts",
     "./host.js": "./src/host.ts",
