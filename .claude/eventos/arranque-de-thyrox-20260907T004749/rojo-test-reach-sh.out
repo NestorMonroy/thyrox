@@ -1,0 +1,15 @@
+=== Caso 1: el guion existe y parsea ===
+  FAIL ausente o con error de sintaxis
+=== Caso 2: publica la raiz de thyrox, no el padre de los clones ===
+  FAIL raiz mal resuelta: 'bash: line 1: /home/user/thyrox/src/lib/reach.sh: No such file or directory' (se esperaba /home/user/thyrox)
+=== Caso 3: publica el padre de los clones por separado ===
+  FAIL arbol mal resuelto: 'bash: line 1: /home/user/thyrox/src/lib/reach.sh: No such file or directory'
+=== Caso 4 (EL QUE DISCRIMINA): acierta desde una profundidad no calibrada ===
+  FAIL la profundidad cambia el veredicto: '/home/user/thyrox/src/lib/__sonda__/a/b/c/consumidor.sh: line 1: /home/user/thyrox/src/lib/reach.sh: No such file or directory
+/home/user/thyrox/src/lib/__sonda__/a/b/c/consumidor.sh: line 2: thyrox_root: command not found'
+=== Caso 5: fuera del arbol REHUSA, no inventa una ruta ===
+  OK   rehusa (rc=1) y da la razon
+=== Caso 6: THYROX_ROOT declarada gana sobre el ascenso ===
+  FAIL ignora THYROX_ROOT: 'bash: line 1: /home/user/thyrox/src/lib/reach.sh: No such file or directory'
+
+1 ok, 5 fallos (alcance medido: 6 aserciones sobre /home/user/thyrox/src/lib/reach.sh)

@@ -13,7 +13,23 @@
 # gate que los marcara produciría el ruido que su docstring dice evitar.
 set -uo pipefail
 
-RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+# Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
+# y la RUTA a su declaracion. Los dos literales que el ultimo recurso
+# necesita van tras constantes que el entorno tambien fija: cablearlos le
+# quitaria al consumidor la decision de donde van las cosas.
+_thyrox_root="${THYROX_ROOT:-}"
+if [[ -z "$_thyrox_root" && -n "${THYROX_ENV_FILE:-}" && -f "${THYROX_ENV_FILE}" ]]; then
+    _thyrox_root="$(sed -n 's/^[[:space:]]*THYROX_ROOT[[:space:]]*=[[:space:]]*//p' \
+        "$THYROX_ENV_FILE" | tail -1 | tr -d '"'"'"'')"
+fi
+if [[ -z "$_thyrox_root" ]]; then
+    _thyrox_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    while [[ "$_thyrox_root" != "/" && ! -f "$_thyrox_root/${THYROX_LOCATOR:-src/paths/reach.py}" ]]; do
+        _thyrox_root="$(dirname "$_thyrox_root")"
+    done
+fi
+source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+RAIZ="$(thyrox_root)" || exit 2
 GATE="$RAIZ/.claude/scripts/gates/check_cifra_de_artefacto_vivo.py"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT

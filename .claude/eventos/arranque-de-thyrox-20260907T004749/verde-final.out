@@ -1,0 +1,9 @@
+=== instalador de config, tras el recableado ===
+instalar-config-usuario: 335 archivo(s) por copia (dry-run, sin escribir) · 0 sin cambio · 0 colision(es) (alcance medido: 335 archivo(s) en las clases pedidas)
+=== con THYROX_ROOT declarada (la primera entrada) ===
+instalar-config-usuario: 335 archivo(s) por copia (dry-run, sin escribir) · 0 sin cambio · 0 colision(es) (alcance medido: 335 archivo(s) en las clases pedidas)
+=== instalador de hooks: raíz derivada, no codificada ===
+0
+=== suites del mecanismo ===
+8 ok, 0 fallos (alcance medido: 8 aserciones sobre /home/user/thyrox/src/lib/reach.sh)
+resultado: 40 de 40 aserciones en verde

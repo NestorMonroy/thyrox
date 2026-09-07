@@ -36,7 +36,23 @@
 # archivo, que es lo que si acepta.
 set -uo pipefail
 
-RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+# Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
+# y la RUTA a su declaracion. Los dos literales que el ultimo recurso
+# necesita van tras constantes que el entorno tambien fija: cablearlos le
+# quitaria al consumidor la decision de donde van las cosas.
+_thyrox_root="${THYROX_ROOT:-}"
+if [[ -z "$_thyrox_root" && -n "${THYROX_ENV_FILE:-}" && -f "${THYROX_ENV_FILE}" ]]; then
+    _thyrox_root="$(sed -n 's/^[[:space:]]*THYROX_ROOT[[:space:]]*=[[:space:]]*//p' \
+        "$THYROX_ENV_FILE" | tail -1 | tr -d '"'"'"'')"
+fi
+if [[ -z "$_thyrox_root" ]]; then
+    _thyrox_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    while [[ "$_thyrox_root" != "/" && ! -f "$_thyrox_root/${THYROX_LOCATOR:-src/paths/reach.py}" ]]; do
+        _thyrox_root="$(dirname "$_thyrox_root")"
+    done
+fi
+source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+RAIZ="$(thyrox_root)" || exit 2
 ORIGEN="$RAIZ/.claude"
 
 # --- la lista explicita ------------------------------------------------------
@@ -138,6 +154,20 @@ if $SOLO_LISTA; then
 fi
 
 # --- el pase ----------------------------------------------------------------
+# Precondicion, y es la que faltaba: si NINGUNA clase pedida existe en el
+# origen, el pase no midio nada — y publicar «0 archivo(s)» con exit 0 se lee
+# como «ya estaba al dia». Es el sub-patron D: un veredicto que no distingue
+# «no habia que copiar» de «no pude mirar». Ocurrio: con la raiz mal anclada el
+# origen era `/home/user/.claude`, las seis clases faltaban, y el instalador
+# devolvia exito habiendo copiado nada.
+presentes=0
+for clase in $(seleccionadas); do [[ -d "$ORIGEN/$clase" ]] && presentes=$((presentes+1)); done
+if [[ "$presentes" -eq 0 ]]; then
+    echo "instalar-config-usuario: NINGUNA clase pedida existe bajo $ORIGEN." >&2
+    echo "  NO se emite un conteo: un 0 aqui seria un verde falso." >&2
+    exit 2
+fi
+
 copiados=0; saltados=0; colisiones=0; vistos=0
 for clase in $(seleccionadas); do
     src="$ORIGEN/$clase"

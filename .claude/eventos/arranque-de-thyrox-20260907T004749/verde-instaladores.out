@@ -1,0 +1,17 @@
+=== 1. instalador de config: ahora SÍ ve las seis clases ===
+aviso: hooks no existe en el origen — se omite
+aviso: scripts no existe en el origen — se omite
+instalar-config-usuario: 335 archivo(s) por copia (dry-run, sin escribir) · 0 sin cambio · 0 colision(es) (alcance medido: 335 archivo(s) en las clases pedidas)
+   exit=0
+
+=== 2. control de anulación: origen vacío -> REHUSA, no publica cero ===
+instalar-config-usuario: NINGUNA clase pedida existe bajo /.claude.
+  NO se emite un conteo: un 0 aqui seria un verde falso.
+   exit=2
+   exit real=2
+
+=== 3. instalador de hooks: la raíz ya no está codificada ===
+27:RAIZ="$(thyrox_tree_root)" || exit 2
+33:        *) RAIZ="$1"; shift ;;
+dirname: unrecognized option '--help/.claude/settings.local.json'
+Try 'dirname --help' for more information.

@@ -1,0 +1,6 @@
+  src/agents/costo-agente.sh                     L20   /../../hooks/register_agent_session.py -> NO RESUELVE (apunta a un archivo)
+  src/task/snapshot-tasks.sh                     L87   /../deprecated.sh -> NO RESUELVE (apunta a un archivo)
+  src/task/refrescar-tablero.sh                  L32   /../deprecated.sh -> NO RESUELVE (apunta a un archivo)
+  src/lib/deprecated.sh                          L21   /deprecated.sh   -> NO RESUELVE (apunta a un archivo)
+  tests/lib/test-reach-sh.sh                     L42   /../../../..     -> /home
+  tests/legacy/test-script-deprecated.sh         L44   /deprecated.sh   -> NO RESUELVE (apunta a un archivo)

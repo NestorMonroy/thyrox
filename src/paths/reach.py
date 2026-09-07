@@ -487,6 +487,22 @@ def main(argv: list[str]) -> int:
             return 2
         return 0
 
+    if mode == "--tree-root":
+        # El padre de los clones. Existe por la misma razón que
+        # `--thyrox-root`: un guion de shell no puede reimplementar la
+        # precedencia (variable del proceso, declaración del `.env`, ascenso
+        # buscando un clon conocido), y el que lo intentó la codificó como
+        # `/home/user` — una ruta que depende de quién clonó y dónde.
+        #
+        # Rehúsa igual que su hermano: sin árbol derivable no se imprime una
+        # ruta plausible.
+        try:
+            print(tree_root())
+        except ReachRootError as err:
+            print(f"reach: {err}", file=sys.stderr)
+            return 2
+        return 0
+
     if mode == "--names":
         for name in clone_names():
             print(name)
