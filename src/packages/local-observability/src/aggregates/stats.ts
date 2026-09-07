@@ -38,7 +38,7 @@
  * `isTranscriptMessage` real (`sessionStoragePredicates.ts:21-27`)
  * excluye explícitamente `'progress'`. Se porta el Set EXACTO de la
  * fuente (fiel al porte), citando la discrepancia — ver
- * `hallazgo-H-DOCS-1150-el-set-de-tipos-de-transcript-no-siguio-a-su-propio-comentario.rst`.
+ * `hallazgo-H-DOCS-1150-el-set-de-tipos-de-transcript-no-seguio-a-su-propio-comentario.rst`.
  */
 
 import { open } from 'fs/promises'
