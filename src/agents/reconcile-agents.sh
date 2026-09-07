@@ -333,7 +333,13 @@ if [[ "$MODE" == "confirmar" ]]; then
 fi
 
 # --- Modo: reporte / quiet -----------------------------------------------
-declare -A COUNT=( [terminado]=0 [vivo]=0 [reciente]=0 [atascado]=0 [desaparecido]=0 [indecidible]=0 )
+# Los seis cubos, MAS los dos que `delivery_verdict` introdujo al cablear #222:
+# `terminado` se parte en `entrego` y `cortado`. Faltaban, y con `set -u` el
+# guion moria en `COUNT[$v]: unbound variable` — el instrumento que las reglas
+# mandan correr para mirar el roster no corria. No mintio: se apago, que es el
+# desenlace menos malo de los dos, pero deja al roster sin lectura.
+declare -A COUNT=( [terminado]=0 [entrego]=0 [cortado]=0 [vivo]=0 [reciente]=0 \
+                   [atascado]=0 [desaparecido]=0 [indecidible]=0 )
 TOTAL=0
 DETAIL=""
 
@@ -341,6 +347,13 @@ while IFS= read -r entry; do
   [[ -n "$entry" ]] || continue
   TOTAL=$(( TOTAL + 1 ))
   v=$(classify "$entry")
+  # Un veredicto que ningun cubo declara NO se descarta ni tumba el guion: se
+  # cuenta como indecidible y se nombra. Descartarlo dejaria el TOTAL cuadrando
+  # sobre una suma incompleta — un verde que no distingue «no hay» de «no supe».
+  if [[ -z "${COUNT[$v]+x}" ]]; then
+    DETAIL+="  veredicto sin cubo: '$v' en $(basename "$entry" .output)"$'\n'
+    v=indecidible
+  fi
   COUNT[$v]=$(( ${COUNT[$v]} + 1 ))
   if [[ "$v" == "desaparecido" || "$v" == "atascado" ]]; then
     id=$(basename "$entry" .output)
@@ -360,6 +373,8 @@ echo "roster    : $ROSTER  [$ORIGEN_ROSTER]"
 echo "ventana   : ${WINDOW_SECONDS}s$( (( WATCH_SECONDS > 0 )) && echo "  · vigilancia: ${WATCH_SECONDS}s" )"
 echo
 printf '  %-14s %s\n' terminado    "${COUNT[terminado]}"
+printf '  %-14s %s\n' "  entrego"   "${COUNT[entrego]}"
+printf '  %-14s %s\n' "  cortado"   "${COUNT[cortado]}"
 printf '  %-14s %s\n' vivo         "${COUNT[vivo]}"
 printf '  %-14s %s\n' reciente     "${COUNT[reciente]}"
 printf '  %-14s %s\n' atascado     "${COUNT[atascado]}"
