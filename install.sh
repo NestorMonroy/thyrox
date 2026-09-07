@@ -242,6 +242,14 @@ load_root_from_env_file() {
     # nadie sincroniza — y este era el segundo sitio donde estaba escrita.
     local reader="$1/$MARKER_REL"
     [ -f "$reader" ] || return 0
+    # El ascenso arranca de `$1` —el arbol que se esta considerando— y NO del
+    # cwd. Con el cwd, un guion invocado desde dentro de OTRO arbol leia el
+    # `.env` de ese otro y pisaba la raiz que el ascenso acababa de hallar
+    # bien: el caso «desde un nivel mas hondo» daba la raiz real en vez de la
+    # del arbol que contiene al guion. Es la misma clase que la aritmetica de
+    # ruta —resolver desde donde uno esta, no desde el sujeto— aplicada al
+    # punto de partida de la busqueda.
+    #
     # `--env` NO sirve aqui: emite las variables por raiz, nunca THYROX_ROOT.
     # Se llama a `env_value`, que es la funcion que el propio lector usa para
     # resolver una clave — proceso primero, archivo despues, honrando
@@ -250,8 +258,8 @@ load_root_from_env_file() {
 spec = importlib.util.spec_from_file_location("reach", sys.argv[1])
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
-valor = mod.env_value(sys.argv[2], pathlib.Path.cwd())
-print(valor or "", end="")' "$reader" "$ROOT_KEY" 2>/dev/null
+valor = mod.env_value(sys.argv[2], pathlib.Path(sys.argv[3]))
+print(valor or "", end="")' "$reader" "$ROOT_KEY" "$1" 2>/dev/null
 }
 
 if [ -n "${THYROX_ROOT:-}" ]; then
