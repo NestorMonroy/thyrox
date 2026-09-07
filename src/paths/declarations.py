@@ -69,43 +69,55 @@ def clear() -> None:
     _FALLBACKS.clear()
 
 
-def resolve_all(start: Path | None = None) -> list[tuple[str, str, str]]:
-    """Fuerza la resolucion de los hogares conocidos y devuelve su estado.
+def resolve_all(start: Path | None = None) -> list[tuple[str, str, str, str]]:
+    """El estado de cada hogar, POR CLON. Devuelve `(clon, clave, origen, valor)`.
 
-    Devuelve `(clave, origen, valor)` con `origen` en {`declarado`,
-    `por defecto`}. Es lo que hace util al registro: sin llamar a los
-    resolutores, el registro solo tiene lo que el proceso haya tocado por
-    casualidad, y un vacio ahi no distingue «todo declarado» de «nadie
-    pregunto».
+    Reportaba un solo arbol —el del `start`— y esa era su limitacion de fondo:
+    respondia globalmente una pregunta que es POR REPOSITORIO. Un proceso
+    resuelve varios arboles, y la respuesta correcta para `api`
+    (`scripts/workbench`) no es la de `docs` (`.claude/eventos`).
+
+    `origen` es `declarado` o `por defecto`. Sin recorrer los clones, el
+    registro solo tendria lo que el proceso haya tocado por casualidad, y un
+    vacio ahi no distingue «todo declarado» de «nadie pregunto».
     """
     from paths import reach  # noqa: PLC0415 — evita el ciclo en tiempo de import
     from workbench import paths as workbench
 
     clear()
-    filas: list[tuple[str, str, str]] = []
+    rows: list[tuple[str, str, str, str]] = []
+    for repo in reach.REACH_ROOTS:
+        root = reach.root(repo, start)
+        key = workbench.workbench_home_name(repo)
+        # La familia primero, la global despues: es la precedencia que resuelve.
+        declared = reach.env_value(key, root) or reach.env_value(
+            workbench.WORKBENCH_DIR_VAR, root)
+        origin = "declarado" if declared else "por defecto"
+        rows.append((repo, key, origin, str(workbench.workbench_dir(root))))
+
+    # Los hogares que NO son por clon: el store y los dos segmentos del default.
     for key, resolver in (
-        (workbench.WORKBENCH_DIR_VAR, lambda: workbench.workbench_dir(start)),
         (reach.AGENT_STORE_VAR, lambda: reach.agent_store_path(start)),
         (workbench.STATE_DIR_VAR, lambda: workbench.state_dir(start)),
         (workbench.EVIDENCE_DIR_VAR, lambda: workbench.evidence_dir(start)),
     ):
         declared = reach.env_value(key, start)
-        value = resolver()
-        filas.append((key, "declarado" if declared else "por defecto", str(value)))
-    return filas
+        rows.append(("(global)", key, "declarado" if declared else "por defecto",
+                     str(resolver())))
+    return rows
 
 
 def main(argv: list[str] | None = None) -> int:
-    filas = resolve_all()
-    por_defecto = [f for f in filas if f[1] == "por defecto"]
-    print(f"declaraciones: {len(filas)} hogar(es) · {len(filas) - len(por_defecto)} "
-          f"declarado(s) · {len(por_defecto)} que maneja THYROX")
-    for key, origen, value in filas:
-        marca = "  " if origen == "declarado" else "->"
-        print(f"{marca} {key:<26} {origen:<12} {value}")
-    if por_defecto:
+    rows = resolve_all()
+    defaulted = [r for r in rows if r[2] == "por defecto"]
+    print(f"declaraciones: {len(rows)} hogar(es) · {len(rows) - len(defaulted)} "
+          f"declarado(s) · {len(defaulted)} que maneja THYROX")
+    for repo, key, origin, value in rows:
+        mark = "  " if origin == "declarado" else "->"
+        print(f"{mark} {repo:<9} {key:<26} {origin:<12} {value}")
+    if defaulted:
         print("\nLos marcados con `->` funcionan, y su valor lo eligio THYROX.")
-        print("Declararlos en el .env que nombra THYROX_ENV_FILE los pone bajo tu control.")
+        print("Declararlos en el .env de su arbol los pone bajo tu control.")
     return 0
 
 
