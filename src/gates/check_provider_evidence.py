@@ -17,17 +17,30 @@ Ciega a: un banco emitido fuera de ese segmento (un `evidencia/` inventado), y
 a si el contenido de un banco legitimo del consumidor es correcto — eso lo mide
 el gate de manifiesto, otro instrumento.
 
-Salidas: 0 sin bancos propios · 1 con bancos propios · 2 no pudo medir.
+Salidas: 0 sin bancos propios, o con bancos y sin `--strict` · 1 con bancos
+propios bajo `--strict` · 2 no pudo medir. El veredicto de rehuse es 2 y va
+**sin cifra**: un 0 ahi no distinguiria «no hay bancos» de «no pude mirar».
+
+Y publica la SALIDA de `workbench_dir()`, que es la mitad que faltaba. La
+funcion rehusaba con el texto correcto y su unico consumidor fuera de tests
+importaba las constantes y no la funcion, asi que a la pregunta «si aun no se
+selecciona el hogar, ¿que mensaje le dices al usuario?» la respuesta era
+NINGUNO. Aqui el rehuse no corta la medicion —la ausencia de hogar no impide
+contar lo que el proveedor emitio— pero si se dice, porque es la accion que le
+queda pendiente a quien corre el gate.
 """
 from __future__ import annotations
 
 import argparse
+import os
 import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from workbench.paths import EVIDENCE_DIR, STATE_DIR  # noqa: E402
+from workbench.paths import (  # noqa: E402
+    WorkbenchHomeError, evidence_dir, state_dir, workbench_dir,
+)
 
 #: El marcador por el que se reconoce la raiz propia. Constante con su entrada
 #: de entorno (DEC-04): cablearlo le quitaria al consumidor la decision de como
@@ -38,7 +51,6 @@ LOCATOR_DEFAULT = pathlib.Path("src") / "paths" / "reach.py"
 
 def own_root(start: pathlib.Path) -> pathlib.Path | None:
     """La raiz propia, por ascenso al marcador declarado."""
-    import os
     marker = pathlib.Path(os.environ.get(LOCATOR_VAR) or LOCATOR_DEFAULT)
     for level in (start, *start.parents):
         if (level / marker).is_file():
@@ -48,10 +60,20 @@ def own_root(start: pathlib.Path) -> pathlib.Path | None:
 
 def banks(root: pathlib.Path) -> list[str]:
     """Los bancos emitidos dentro del proveedor, por nombre."""
-    home = root / STATE_DIR / EVIDENCE_DIR
+    home = evidence_home(root)
     if not home.is_dir():
         return []
     return sorted(p.name for p in home.iterdir() if p.is_dir())
+
+
+def evidence_home(root: pathlib.Path) -> pathlib.Path:
+    """El par ``<estado>/<evidencia>`` del arbol dado, resuelto CON ese arbol.
+
+    ``root`` viaja como ``start`` a los dos resolutores: el ``.env`` que gobierna
+    los nombres de los segmentos es el del arbol que se mide, no el del cwd
+    desde el que se invoca el gate.
+    """
+    return root / state_dir(root) / evidence_dir(root)
 
 
 def main(argv: list[str]) -> int:
@@ -77,10 +99,17 @@ def main(argv: list[str]) -> int:
 
     found = banks(root)
     print(f"check-provider-evidence: {len(found)} banco(s) emitido(s) dentro "
-          f"del proveedor (alcance medido: {root}/{STATE_DIR}/{EVIDENCE_DIR})")
+          f"del proveedor (alcance medido: {evidence_home(root)})")
     for name in found:
-        print(f"  {name} — un banco vive en el arbol del CONSUMIDOR; declara "
-              "THYROX_WORKBENCH_DIR y emitelo alli")
+        print(f"  {name} — un banco vive en el arbol del CONSUMIDOR")
+
+    try:
+        print(f"  hogar del banco: {workbench_dir(root)}")
+    except WorkbenchHomeError as err:
+        # El rehuse se PUBLICA y no cambia el veredicto: el hogar sin declarar
+        # es trabajo pendiente del consumidor, no una medicion imposible.
+        print(f"  {err}")
+
     return 1 if (found and args.strict) else 0
 
 

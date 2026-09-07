@@ -60,11 +60,11 @@ check("`src/workbench/` tampoco lo es", False,
       paths.is_evidence_path("src/workbench/paths.py"))
 
 print("== 3. el hogar del banco REHUSA sin declaracion ==")
-_previo = os.environ.pop(paths.WORKBENCH_DIR_VAR, None)
-with tempfile.TemporaryDirectory() as vacio:
+_prior = os.environ.pop(paths.WORKBENCH_DIR_VAR, None)
+with tempfile.TemporaryDirectory() as empty:
     # `start` en un arbol sin `.env` para que la segunda via tampoco lo declare.
     try:
-        paths.workbench_dir(vacio)
+        paths.workbench_dir(empty)
         check("rehusa sin declaracion", "WorkbenchHomeError", "no lanzo")
     except paths.WorkbenchHomeError as err:
         check("rehusa sin declaracion", "WorkbenchHomeError", type(err).__name__)
@@ -76,12 +76,12 @@ with tempfile.TemporaryDirectory() as vacio:
 print("== 4. CONTROL DE ANULACION: declarada la entrada 1, SI resuelve ==")
 # Sin este caso el bloque 3 pasaria igual con un modulo que rehusara siempre:
 # el verde no distinguiria «lee la declaracion» de «no sabe leer nada».
-with tempfile.TemporaryDirectory() as hogar:
-    os.environ[paths.WORKBENCH_DIR_VAR] = hogar
+with tempfile.TemporaryDirectory() as home:
+    os.environ[paths.WORKBENCH_DIR_VAR] = home
     try:
-        check("devuelve el hogar declarado", Path(hogar), paths.workbench_dir())
-        pieza = Path(hogar) / "medir-algo-20260906T000000" / "manifest.json"
-        check("y una pieza suya SI es del banco", True, paths.is_workbench_path(pieza))
+        check("devuelve el hogar declarado", Path(home), paths.workbench_dir())
+        piece = Path(home) / "medir-algo-20260906T000000" / "manifest.json"
+        check("y una pieza suya SI es del banco", True, paths.is_workbench_path(piece))
         check("una ruta ajena NO lo es", False,
               paths.is_workbench_path("/etc/hostname"))
     finally:
@@ -89,25 +89,25 @@ with tempfile.TemporaryDirectory() as hogar:
 
 print("== 5. sin declaracion el predicado del banco no excluye NADA ==")
 # La direccion del error importa: el gate mide de mas, no de menos.
-with tempfile.TemporaryDirectory() as vacio:
+with tempfile.TemporaryDirectory() as empty:
     check("una ruta cualquiera no es banco", False,
-          paths.is_workbench_path("/tmp/lo-que-sea/manifest.json", vacio))
+          paths.is_workbench_path("/tmp/lo-que-sea/manifest.json", empty))
 
 print("== 6. la union es lo que consume un gate ==")
 check("evidencia entra por la primera mitad", True,
       paths.is_measurement_artifact(".claude/eventos/x/gen.py"))
-with tempfile.TemporaryDirectory() as hogar:
-    os.environ[paths.WORKBENCH_DIR_VAR] = hogar
+with tempfile.TemporaryDirectory() as home:
+    os.environ[paths.WORKBENCH_DIR_VAR] = home
     try:
         check("el banco declarado entra por la segunda", True,
-              paths.is_measurement_artifact(Path(hogar) / "x" / "gen.py"))
+              paths.is_measurement_artifact(Path(home) / "x" / "gen.py"))
     finally:
         os.environ.pop(paths.WORKBENCH_DIR_VAR, None)
 check("y el producto no entra por ninguna", False,
       paths.is_measurement_artifact("src/workbench/paths.py"))
 
-if _previo is not None:
-    os.environ[paths.WORKBENCH_DIR_VAR] = _previo
+if _prior is not None:
+    os.environ[paths.WORKBENCH_DIR_VAR] = _prior
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

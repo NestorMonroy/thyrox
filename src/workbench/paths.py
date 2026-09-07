@@ -19,9 +19,10 @@ Son dos cosas con roles distintos y **no se colapsan**:
   colgar de ahi, o de otro sitio; lo declara quien lo usa. Lo unico que thyrox
   fija es que sin declaracion no hay hogar inventado.»*
 - La **evidencia** aloja el episodio —el rojo de partida, su anulacion, el
-  verde—. Su nombre es fijo y su sitio tambien: ``.claude/eventos``, en THYROX
-  y en cada consumidor. No viaja porque no es un parametro: es donde la sesion
-  deja constancia de lo que midio.
+  verde—. Su sitio es el mismo en THYROX y en cada consumidor: el par
+  ``<estado>/<evidencia>``, por defecto ``.claude/eventos``. No viaja de arbol
+  en arbol porque no es un parametro de sesion; los NOMBRES de sus dos
+  segmentos si son declarables, y por eso tambien llevan sus dos entradas.
 
 Las DOS ENTRADAS del hogar del banco, con el nombre de cada una
 ---------------------------------------------------------------
@@ -35,10 +36,25 @@ separado y no son la misma cosa mirada dos veces::
     env_config_yaml = get_secret_str("CONFIG_FILE_PATH") <- la RUTA del archivo
                                                             que lo declara
 
-Aqui: ``WORKBENCH_DIR_VAR`` lleva el valor y ``WORKBENCH_ENV_FILE_VAR`` lleva la
-ruta del archivo que puede declararlo. ``env_value`` de ``paths.reach`` las
-consulta en ese orden — el proceso primero, porque quien exporta para UNA
-invocacion esta corrigiendo a proposito lo que el archivo dice para todas.
+Las tres constantes que cablean un hogar aqui llevan su entrada 1 —el valor—
+y comparten la entrada 2 —la ruta del archivo que puede declararlas—, porque el
+archivo es uno solo::
+
+    STATE_DIR_VAR       THYROX_STATE_DIR       -> state_dir()
+    EVIDENCE_DIR_VAR    THYROX_EVIDENCE_DIR    -> evidence_dir()
+    WORKBENCH_DIR_VAR   THYROX_WORKBENCH_DIR   -> workbench_dir()
+    WORKBENCH_ENV_FILE_VAR = THYROX_ENV_FILE   <- entrada 2, comun a las tres
+
+``env_value`` de ``paths.reach`` las consulta en ese orden — el proceso primero,
+porque quien exporta para UNA invocacion esta corrigiendo a proposito lo que el
+archivo dice para todas.
+
+Las tres se resuelven **en una funcion**, no en una constante de modulo: una
+constante se evalua al importar, y ese es el defecto exacto que el docstring de
+``paths/reach.py`` ya nombra. Lo que si difiere entre ellas es el desenlace sin
+declaracion: ``state_dir`` y ``evidence_dir`` caen a un default y
+``workbench_dir`` REHUSA. La asimetria es deliberada y esta justificada donde
+cada una se declara.
 
 NO son dos fuentes de verdad para el mismo dato: son dos VIAS de declaracion de
 un dato unico. Una decide para esta invocacion, la otra para el arbol.
@@ -52,19 +68,50 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
 
-#: El segmento que abre la zona de estado de un arbol.
-STATE_DIR = ".claude"
+#: Entrada 1 de la zona de estado — el valor.
+STATE_DIR_VAR = "THYROX_STATE_DIR"
 
-#: El nombre del directorio de evidencia. Fijo en los dos arboles.
-EVIDENCE_DIR = "eventos"
+#: Lo que vale si nadie lo declara. A diferencia del hogar del banco, aqui SI
+#: hay default y no se rehusa: un nombre de segmento no decide donde aterrizan
+#: las piezas —el arbol ya esta resuelto cuando se consulta—, solo como se
+#: llama el tramo dentro de el. Rehusar apagaria a sus tres consumidores por una
+#: declaracion que casi ningun arbol necesita cambiar.
+STATE_DIR_DEFAULT = ".claude"
+
+#: Entrada 1 del directorio de evidencia — el valor.
+EVIDENCE_DIR_VAR = "THYROX_EVIDENCE_DIR"
+
+#: Su default, por el mismo criterio que ``STATE_DIR_DEFAULT``.
+EVIDENCE_DIR_DEFAULT = "eventos"
 
 #: Entrada 1 — el valor: el hogar del banco, declarado directamente.
 WORKBENCH_DIR_VAR = "THYROX_WORKBENCH_DIR"
 
-#: Entrada 2 — la ruta del archivo que puede declararlo. Se re-exporta del
-#: localizador del ``.env`` en vez de re-declararse: escribir el nombre otra vez
-#: crearia la segunda fuente de verdad que este modulo existe para no tener.
+#: Entrada 2, y es **una sola para las tres**: la ruta del archivo que puede
+#: declararlas. Se re-exporta del localizador del ``.env`` en vez de
+#: re-declararse —escribir el nombre otra vez crearia la segunda fuente de
+#: verdad que este modulo existe para no tener— y no se declina por constante
+#: porque el archivo es el mismo: tres nombres para un archivo unico serian esa
+#: misma duplicacion, repartida.
 WORKBENCH_ENV_FILE_VAR = ENV_FILE_VAR
+
+
+def state_dir(start: str | Path | None = None) -> str:
+    """El segmento de estado declarado, o su default.
+
+    Se resuelve **al llamar**, no al importar. La distincion no es de estilo: el
+    docstring de ``paths.reach`` ya nombra el defecto de la otra forma —una
+    constante de modulo se evalua al importar, asi que un consumidor que declare
+    la variable **despues** del ``import`` no la ve, y ningun test puede
+    variarla; el mecanismo era, literalmente, no comprobable—.
+    """
+    return env_value(STATE_DIR_VAR, Path(start) if start else None) or STATE_DIR_DEFAULT
+
+
+def evidence_dir(start: str | Path | None = None) -> str:
+    """El segmento de evidencia declarado, o su default. Ver ``state_dir``."""
+    return (env_value(EVIDENCE_DIR_VAR, Path(start) if start else None)
+            or EVIDENCE_DIR_DEFAULT)
 
 
 class WorkbenchHomeError(Exception):
@@ -95,16 +142,20 @@ def workbench_dir(start: str | Path | None = None) -> Path:
     )
 
 
-def is_evidence_path(path: str | Path) -> bool:
+def is_evidence_path(path: str | Path, start: str | Path | None = None) -> bool:
     """¿La ruta cae bajo la evidencia de algun arbol?
 
     Se mide el PAR de segmentos adyacentes ``.claude/eventos``, nunca el nombre
     suelto. El nombre suelto casaria con cualquier ``eventos/`` de producto, y
     un gate que lo usara para excluir dejaria de medir codigo real **sin emitir
     ninguna señal** — el sub-patron D de ``metrica-decide-la-conclusion.md``.
+
+    ``start`` es el punto de partida para localizar el ``.env``, igual que en
+    ``workbench_dir``: los dos segmentos del par son declarables.
     """
     parts = Path(path).parts
-    return any(parts[i] == STATE_DIR and parts[i + 1] == EVIDENCE_DIR
+    state, evidence = state_dir(start), evidence_dir(start)
+    return any(parts[i] == state and parts[i + 1] == evidence
                for i in range(len(parts) - 1))
 
 
@@ -138,4 +189,4 @@ def is_measurement_artifact(path: str | Path,
     este arbol. Se llama por lo que las dos mitades tienen en comun —son
     artefactos de un episodio de medicion— y no «banco», que nombra sólo a una.
     """
-    return is_evidence_path(path) or is_workbench_path(path, start)
+    return is_evidence_path(path, start) or is_workbench_path(path, start)
