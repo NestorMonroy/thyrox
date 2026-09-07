@@ -47,9 +47,12 @@ coverage.xml
 .nyc_output/
 .pytest_cache/
 
-# Claude Code
-.claude/tasks/
-.claude/plans/
+# Claude Code — TODO es evidencia, así que NADA de esto se ignora.
+# El tablero (.claude/tasks/), los planes (.claude/plans/), los worktrees de
+# agente (.claude/worktrees/), el store sqlite y las cachés derivadas son el
+# rastro de lo que la sesión hizo. Ignorarlos deja el trabajo tan durable como
+# el contenedor, que es el nivel 4 de niveles-de-retencion.md: completitud
+# percibida sin persistencia. Directiva del ejecutor 2026-09-06.
 
 # Temporary files
 tmp/
@@ -78,15 +81,6 @@ temp/
 *.pptx
 *.lnk
 
-# Database
-*.sqlite
-*.sqlite3
-*.db
-
-# Cache
-.cache/
-.eslintcache
-
 # Build artifacts
 *.o
 *.a
@@ -95,9 +89,6 @@ temp/
 
 # Platform-specific
 .env.production.local
-
-# Git worktrees
-.claude/worktrees/
 
 # Generated files
 CHANGELOG-auto.md
