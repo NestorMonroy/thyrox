@@ -27,11 +27,19 @@ import shutil
 import subprocess
 import sys
 
+if __package__ in (None, ""):  # sólo en invocación directa
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
+from paths import reach  # noqa: E402
+
 EXIT_OK = 0
 EXIT_ATRASADO = 1
 EXIT_GUARD = 2
 
-RAIZ_DEFECTO = pathlib.Path(__file__).resolve().parents[2] / '_references' / 'claude-code-bin'
+#: El default sale del localizador declarado, no de una aritmética calibrada
+#: para la profundidad de ESTE archivo (tarea #228): `thyrox_root()` sobrevive
+#: a que el gate se mueva de directorio.
+RAIZ_DEFECTO = reach.thyrox_root() / '_references' / 'claude-code-bin'
 RE_VERSION = re.compile(r'// Version: (\d+\.\d+\.\d+)')
 RE_DIR_VERSION = re.compile(r'^(\d+\.\d+\.\d+)')
 

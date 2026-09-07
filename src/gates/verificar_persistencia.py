@@ -31,6 +31,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+if __package__ in (None, ""):  # sólo en invocación directa
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from paths import reach  # noqa: E402
+
 # Un `.rst` de análisis por debajo de esto es una cáscara, no un entregable. No
 # es una cifra del proyecto: es el umbral del instrumento, y se declara aquí
 # porque el que lo lea tiene que poder discutirlo.
@@ -174,8 +179,11 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if a.promover:
-        store = Path(a.store) if a.store else (
-            Path(__file__).resolve().parents[2] / "agent-results" / "agent_store.sqlite3")
+        # El default sale del localizador declarado, no de una aritmética
+        # calibrada para la profundidad de ESTE archivo (tarea #228):
+        # `agent_store_path()` resuelve la constante del consumidor si está
+        # declarada y, si no, el store de thyrox — con su directorio creado.
+        store = Path(a.store) if a.store else reach.agent_store_path()
         print(promote(store, a.agente))
     elif a.agente:
         print(f"Sin --promover: {a.agente} sigue en su nivel actual. "

@@ -34,10 +34,15 @@ import sys
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve()
-THYROX_ROOT = HERE.parents[2]
-sys.path.insert(0, str(THYROX_ROOT / "src"))
+sys.path.insert(0, str(HERE.parents[2] / "src"))
 
 from gates import gitattributes  # noqa: E402  (la ruta se compone arriba, a propósito)
+from paths import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta un
+#: `sys.path.insert` y falla con ruido (`ImportError`) si algo se mueve. Todo
+#: lo demás sale del localizador declarado — es la corrección de tarea #228.
+THYROX_ROOT = reach.thyrox_root()
 
 PASS = 0
 FAIL = 0

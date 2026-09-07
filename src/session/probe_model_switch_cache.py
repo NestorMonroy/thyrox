@@ -45,6 +45,11 @@ import subprocess
 import sys
 import uuid
 
+if __package__ in (None, ""):  # sólo en invocación directa
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
+from paths import reach  # noqa: E402
+
 UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", re.I)
 MODEL_ID_RE = re.compile(r"^claude-[a-z0-9-]+$")
 REUSE_THRESHOLD = 0.95  # el 5 % con que la referencia declara un corte
@@ -388,12 +393,12 @@ def main(argv: list[str]) -> int:
     p.add_argument("--advisor", default=None, help="modelo asesor: añade las llamadas con --advisor")
     p.add_argument("--control", action="store_true", help="cuarta llamada: reanudar con el MISMO modelo, para separar reanudar de cambiar")
     p.add_argument("--cwd", default="/home/user/probe-empty", help="directorio de trabajo del hijo: vacío, sin piso")
-    # `parents[2]` es la raiz de THYROX; la evidencia vive bajo su `.claude/`.
-    # Decia `parents[2] / "eventos"`, que apuntaba a `thyrox/eventos` —
-    # inexistente: le faltaba el segmento `.claude`.
-    p.add_argument("--evento-root",
-                   default=str(pathlib.Path(__file__).resolve().parents[2]
-                               / ".claude" / "eventos"))
+    # El default sale del localizador declarado, no de una aritmética
+    # calibrada para la profundidad de ESTE archivo (tarea #228): decía
+    # `parents[2] / "eventos"`, que apuntaba a `thyrox/eventos` —
+    # inexistente: le faltaba el segmento `.claude`. `scratch_root()` es
+    # exactamente `<thyrox_root>/.claude/eventos`, con el directorio creado.
+    p.add_argument("--evento-root", default=str(reach.scratch_root()))
     p.add_argument("--claude-bin", default="claude")
     p.add_argument("--timeout", type=int, default=180)
     p.add_argument("--matriz", action="store_true",

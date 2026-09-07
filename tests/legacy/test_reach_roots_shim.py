@@ -30,8 +30,15 @@ import pathlib
 import subprocess
 import sys
 
-HERE = pathlib.Path(__file__).resolve()
-MODULE = HERE.parents[1] / "reach_roots.py"
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228). El módulo bajo prueba vive en
+#: ``src/paths/``, no un nivel arriba de este archivo — el `parents[1]`
+#: describía el árbol de origen (``.claude/scripts/tests/``), no éste.
+MODULE = reach.thyrox_root() / "src" / "paths" / "reach_roots.py"
 
 PASS = 0
 FAIL = 0

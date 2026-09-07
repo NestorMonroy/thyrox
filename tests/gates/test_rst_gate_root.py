@@ -23,10 +23,15 @@ from __future__ import annotations
 import pathlib
 import sys
 
-RAIZ_THYROX = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(RAIZ_THYROX / 'src'))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'src'))
 
 from paths import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228) — irónico no hacerlo en la propia
+#: suite que audita esta misma clase de defecto.
+RAIZ_THYROX = reach.thyrox_root()
 
 
 def test_la_raiz_del_consumidor_no_es_el_arbol_que_lo_contiene():
@@ -45,6 +50,10 @@ def test_la_aritmetica_vieja_da_un_veredicto_DISTINTO():
     """
     gate = RAIZ_THYROX / 'src' / 'gates' / 'check_rst_sintaxis.py'
     assert gate.is_file(), gate
+    # ESTE `parents[3]` es DELIBERADO (tarea #228, exención declarada): es el
+    # incumplidor vivo que el bloque 1 necesita como gemelo — reproduce la
+    # aritmética VIEJA a propósito para probar que ya NO acierta. Convertirlo
+    # al localizador destruiría el control que este bloque existe para ser.
     vieja = gate.resolve().parents[3]
     assert vieja != reach.root('docs'), (
         f'la aritmetica vieja acierta ({vieja}) — este control no discrimina')

@@ -29,8 +29,14 @@ import sys
 import unittest
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(RAIZ / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228) — la misma corrección que esta
+#: suite exige de ``agents.model_catalog``.
+RAIZ = reach.thyrox_root()
 
 VARIABLES = ("THYROX_MODEL_CATALOG", "KAUPAMEX_MODEL_CATALOG", "THYROX_AGENT_STORE")
 

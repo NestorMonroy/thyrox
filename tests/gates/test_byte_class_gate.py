@@ -22,7 +22,13 @@ import subprocess
 import sys
 import tempfile
 
-THYROX = pathlib.Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228).
+THYROX = reach.thyrox_root()
 GATE = THYROX / "src" / "gates" / "check_byte_oriented_class.py"
 
 PASS = FAIL = 0

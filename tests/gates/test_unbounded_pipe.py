@@ -22,8 +22,13 @@ import subprocess
 import sys
 import tempfile
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228).
+ROOT = reach.thyrox_root()
 GATE = ROOT / "src" / "gates" / "check_unbounded_pipe.py"
 
 from gates import check_unbounded_pipe as gate  # noqa: E402

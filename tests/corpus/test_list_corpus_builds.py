@@ -35,7 +35,9 @@ def check(label: str, expected, obtained) -> None:
         FAILED += 1
 
 
-SCRIPT = Path(__file__).resolve().parents[2] / "src" / "corpus" / "list_corpus_builds.py"
+#: `reach.thyrox_root()` ya está importado arriba: no hace falta re-derivarla
+#: por aritmética (tarea #228).
+SCRIPT = reach.thyrox_root() / "src" / "corpus" / "list_corpus_builds.py"
 
 
 def escribir(path: Path, *nombres: str) -> None:

@@ -37,8 +37,13 @@ import subprocess
 import sys
 import tempfile
 
-HERE = pathlib.Path(__file__).resolve().parent
-MODULE_PATH = HERE.parents[1] / "src" / "task" / "task_ids.py"
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228).
+MODULE_PATH = reach.thyrox_root() / "src" / "task" / "task_ids.py"
 #: El mismo archivo, invocado como PROGRAMA: el caso 11 mide la salida del
 #: subcomando, no la funcion, porque el defecto vivia en la impresion.
 SUT = MODULE_PATH
@@ -448,7 +453,10 @@ def _default_store_con(entorno):
     return salida.stdout.strip()
 
 
-_THYROX = str(pathlib.Path(kx.__file__).resolve().parents[2])
+#: El localizador declarado, no `parents[2]` sobre `kx.__file__` (tarea #228):
+#: la aritmética coincidía con `thyrox_root()` desde `src/task/`, pero eso no
+#: la volvía correcta — la sección de abajo ya lo discrimina.
+_THYROX = str(reach.thyrox_root())
 _DEFAULT = _THYROX + "/agent-results/agent_store.sqlite3"
 
 check(_default_store_con({"THYROX_AGENT_STORE": "/x/y.sqlite3"}) == "/x/y.sqlite3",

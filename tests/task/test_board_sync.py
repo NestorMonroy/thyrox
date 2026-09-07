@@ -54,7 +54,13 @@ import sys
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
-SRC = HERE.parents[1] / "src" / "task"
+sys.path.insert(0, str(HERE.parents[1] / "src"))
+from paths import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228).
+SRC = reach.thyrox_root() / "src" / "task"
 MODULE_PATH = SRC / "board_sync.py"
 #: El literal del board vivia en `main()` de `task_ids.py`. El caso 1g mide su
 #: pago desde el PROGRAMA, que es la unica via por la que `main()` corre.

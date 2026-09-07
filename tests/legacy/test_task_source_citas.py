@@ -40,7 +40,13 @@ import sys
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
-MODULE_PATH = HERE.parents[1] / "src" / "task" / "task_source.py"
+sys.path.insert(0, str(HERE.parents[1] / "src" / "paths"))
+import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228).
+MODULE_PATH = reach.thyrox_root() / "src" / "task" / "task_source.py"
 # El store real es PARAMETRO del consumidor, no del mecanismo: vive en el clon
 # que despacha. La aritmetica anterior lo buscaba en `.claude/agent-results/`
 # relativo a este archivo, que era su sitio cuando la suite vivia en
@@ -51,9 +57,6 @@ MODULE_PATH = HERE.parents[1] / "src" / "task" / "task_source.py"
 # de thyrox. Un `os.environ.get` pelado veia solo el proceso —no el `.env` que
 # `THYROX_ENV_FILE` nombra— y declaraba «sin store real» con el store delante;
 # ese rojo no distinguia «no hay store» de «no supe buscarlo».
-sys.path.insert(0, str(HERE.parents[1] / "src" / "paths"))
-import reach  # noqa: E402
-
 _REAL = reach.agent_store_path()
 STORE_REAL = _REAL if _REAL.is_file() else None
 

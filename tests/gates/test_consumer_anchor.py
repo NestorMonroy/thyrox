@@ -14,7 +14,14 @@ import sys
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve()
-ROOT = HERE.parents[2]
+sys.path.insert(0, str(HERE.parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228) — irónico no hacerlo en la propia
+#: suite de un gate que audita justo esta aritmética.
+ROOT = reach.thyrox_root()
 GATE = ROOT / "src" / "gates" / "check_consumer_anchor.py"
 
 sys.path.insert(0, str(ROOT / "src" / "gates"))

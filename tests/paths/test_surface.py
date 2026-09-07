@@ -14,10 +14,14 @@ import subprocess
 import sys
 import tempfile
 
-RAIZ = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(RAIZ / 'src'))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'src'))
 from paths import surface  # noqa: E402
+from paths import reach  # noqa: E402
 
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228).
+RAIZ = reach.thyrox_root()
 GATE = RAIZ / 'src' / 'gates' / 'check_python_surface.py'
 
 ok = fallos = 0

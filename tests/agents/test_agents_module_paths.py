@@ -25,7 +25,14 @@ import sys
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228) — irónico no hacerlo en la propia
+#: suite que audita esta misma clase de defecto.
+ROOT = reach.thyrox_root()
 AGENTS = ROOT / "src" / "agents"
 
 #: Fallos de import que SÍ son este defecto. Un ``ImportError`` por una

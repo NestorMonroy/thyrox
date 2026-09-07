@@ -23,7 +23,16 @@ import sys
 import tempfile
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths.reach import thyrox_root  # noqa: E402
+
+#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
+#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
+#: del localizador declarado (tarea #228). Se importa la función suelta, no
+#: el módulo `reach`, porque más abajo el archivo usa `reach` como nombre de
+#: variable para la RUTA de ``reach.py`` — un `from paths import reach` la
+#: taparía.
+RAIZ = thyrox_root()
 GATE = RAIZ / 'src' / 'gates' / 'check_config_precedence.py'
 LITELLM = Path('/home/user/nestormonroy/litellm/litellm/proxy/proxy_server.py')
 

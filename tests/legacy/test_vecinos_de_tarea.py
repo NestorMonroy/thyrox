@@ -36,11 +36,16 @@ import sys
 import tempfile
 from contextlib import redirect_stdout
 
-# El SUT vive un nivel arriba (``.claude/scripts/``), hermano de este
-# directorio de tests — mismo patron que test-classify_agents.py. El
-# nombre del modulo lleva guiones, asi que no es importable con `import`
-# normal: se carga por ruta con importlib.
-HERE = pathlib.Path(__file__).resolve().parents[2] / "src"
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+# El SUT vive en ``src/task/``, dentro de thyrox. El nombre del modulo lleva
+# guiones, asi que no es importable con `import` normal: se carga por ruta
+# con importlib. El bootstrap de arriba es la UNICA aritmetica admitida
+# (alimenta el `sys.path.insert`); esta ruta sale del localizador declarado,
+# no de una aritmetica calibrada para la profundidad de ESTE archivo
+# (tarea #228).
+HERE = reach.thyrox_root() / "src"
 spec = importlib.util.spec_from_file_location("vecinos", HERE / "task" / "vecinos_de_tarea.py")
 vecinos = importlib.util.module_from_spec(spec)
 assert spec.loader is not None

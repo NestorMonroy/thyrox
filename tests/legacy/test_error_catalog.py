@@ -36,6 +36,16 @@ import subprocess
 import sys
 import tempfile
 
+# DECLARADO IMPOSIBLE en la tarea #228 (barrido de `parents[N]`). No es sólo
+# la aritmética: `GATE` compone un hogar (`.claude/scripts/gates/`) que ya no
+# existe bajo ningún árbol —el gate real vive en `src/gates/check_error_catalog.py`
+# de THYROX— y `CORPUS` cruza a `source/gestion/pm/...`, que pertenece al
+# repo CONSUMIDOR (`kaupamex-docs`), no a THYROX. Reemplazar sólo el
+# `parents[3]` por `reach.thyrox_root()` dejaría el resto igual de roto: es
+# un remapeo de dos segmentos a través de un repo distinto, no un cambio de
+# localizador. Pertenece al saneo de `tests/legacy/` ya identificado como
+# tarea #227 — esta suite queda en el baseline del gate por esa razón, no por
+# omisión.
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 GATE = ROOT / '.claude' / 'scripts' / 'gates' / 'check_error_catalog.py'
 CORPUS = ROOT / 'source/gestion/pm/docs/iniciativas/catalogar-y-registrar-errores/errores'
