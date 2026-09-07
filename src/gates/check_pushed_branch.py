@@ -67,9 +67,29 @@ def verdict(pushed_refs: list[str], current_branch: str | None, ahead: int) -> V
         return Verdict(UNKNOWN, "La rama actual es desconocida (HEAD suelto). "
                                 "No se emite veredicto: un gate que no midió no autoriza.")
     if not pushed_refs:
-        return Verdict(UNKNOWN, "Git no declaró ninguna ref en stdin. No se emite "
-                                "veredicto — un PASS aquí sería el mismo verde falso "
-                                "que el gate existe para cerrar.")
+        # Git NO declara refs cuando no hay nada que empujar — el caso mas
+        # comun es `push` de una rama ya al dia. Rehusar ahi bloquea un push
+        # que no publica nada, y lo unico que ensena es a escribir
+        # `--no-verify`, que apaga el gate para siempre.
+        #
+        # Pero el silencio de git NO es siempre inocente: si la rama de trabajo
+        # tiene commits sin publicar Y git no manda ninguna ref, es que se
+        # nombro OTRA rama que ya estaba al dia. Ese es exactamente el defecto
+        # —«Everything up-to-date» sobre la rama equivocada— en su forma mas
+        # silenciosa, porque ni siquiera hay una ref ajena que delate el error.
+        #
+        # Asi que el veredicto lo decide `ahead`, no la ausencia de refs.
+        if ahead > 0:
+            return Verdict(REFUSE, (
+                f"Git no declaró ninguna ref: no se publica nada. Y "
+                f"`{current_branch}` tiene {ahead} commit(s) sin publicar.\n\n"
+                f"Es «Everything up-to-date» sobre otra rama, que es cierto "
+                f"sobre ella y falso sobre tu trabajo.\n\n"
+                f"La rama se DERIVA, no se teclea:\n\n"
+                f"    git -C <repo> push -u origin \"$(git -C <repo> branch --show-current)\"\n"))
+        return Verdict(PASS, (
+            f"Git no declaró ninguna ref y `{current_branch}` no tiene commits "
+            f"sin publicar: no hay nada que empujar ni nada que perder."))
 
     mine = f"refs/heads/{current_branch}"
     if mine in pushed_refs or current_branch in pushed_refs:

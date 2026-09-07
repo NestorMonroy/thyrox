@@ -65,11 +65,25 @@ v = gate.verdict(pushed_refs=["refs/heads/otra", "refs/heads/feature/kaupamex-l4
                  current_branch="feature/kaupamex-l4", ahead=5)
 check("veredicto OK", gate.PASS, v.status)
 
-print("== 5. sin refs (git no paso ninguna): NO se emite veredicto ==")
-# Un gate que no midio nada no autoriza. Emitir PASS aqui seria el verde falso
-# que el episodio produjo, un nivel mas abajo.
+print("== 5. sin refs: el veredicto lo decide `ahead`, no la ausencia ==")
+# CORREGIDO al ejercitar el gate contra un push real: git NO declara refs
+# cuando no hay nada que empujar —una rama ya al dia es el caso comun— y
+# rehusar ahi bloquea un push que no publica nada. Lo unico que ensena es a
+# escribir `--no-verify`, que apaga el gate para siempre. Medido: el gate
+# bloqueo el push de kaupamex-docs con el arbol limpio y 0 commits ahead.
+#
+# Pero el silencio de git no es siempre inocente: sin refs Y con trabajo sin
+# publicar, se nombro OTRA rama que ya estaba al dia. Es el defecto en su
+# forma mas silenciosa — ni siquiera hay una ref ajena que lo delate.
 v = gate.verdict(pushed_refs=[], current_branch="feature/kaupamex-l4", ahead=2)
-check("veredicto UNKNOWN", gate.UNKNOWN, v.status)
+check("sin refs y CON trabajo sin publicar: REHUSA", gate.REFUSE, v.status)
+check("y nombra los commits en riesgo", True, "2 commit" in v.reason)
+
+# El control que discrimina: mismo caso sin trabajo pendiente. Si el gate
+# rehusara por la sola ausencia de refs, este pasaria identico al de arriba y
+# el veredicto no mediria `ahead` en absoluto.
+v = gate.verdict(pushed_refs=[], current_branch="feature/kaupamex-l4", ahead=0)
+check("sin refs y SIN trabajo pendiente: PASA", gate.PASS, v.status)
 
 print("== 6. la rama de trabajo es DESCONOCIDA (HEAD suelto): no se afirma ==")
 v = gate.verdict(pushed_refs=["refs/heads/otra"], current_branch=None, ahead=0)
