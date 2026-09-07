@@ -75,7 +75,19 @@ def last_assistant(text: str) -> dict | None:
 
 
 def classify(text: str) -> str:
-    """El desenlace de un transcript, en una de las tres constantes."""
+    """El desenlace de un transcript YA CERRADO, en una de las tres constantes.
+
+    PRECONDICIÓN — el transcript no puede estar vivo. Un agente que sigue
+    trabajando está, por construcción, a media llamada de herramienta: su
+    último `assistant` lleva un `tool_use` y esta función lo llama ``CUT``.
+    No es un falso positivo del clasificador sino su dominio: separa desenlaces,
+    y un agente vivo todavía no tiene ninguno.
+
+    Medido al cablearlo: de los dos casos que el roster ofrecía como ``cut``,
+    uno era un agente **en ejecución** en ese instante. Por eso el consumidor
+    llama aquí sólo cuando la vivacidad ya dio ``terminated`` — el guard vive
+    aguas arriba, y sin él este veredicto miente sobre los vivos.
+    """
     entry = last_assistant(text)
     if entry is None:
         return UNDECIDABLE

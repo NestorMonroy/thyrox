@@ -191,6 +191,29 @@ else:
 
 # --- Veredicto de UNA entrada --------------------------------------------
 # terminado | vivo | atascado | desaparecido | indecidible
+# Los tres desenlaces de un transcript ya cerrado. Delega en el primitivo:
+# escribir aqui un segundo clasificador daria dos definiciones de «entrego»
+# que nadie sincroniza — el defecto que este guion ya evita con el diagnostico.
+delivery_verdict() {
+  local entry="$1" v
+  v=$(THYROX_SRC="$LECTOR" python3 - "$entry" <<'ENTREGA'
+import os, pathlib, sys
+sys.path.insert(0, os.environ["THYROX_SRC"])
+from roster.delivery import classify
+try:
+    texto = pathlib.Path(sys.argv[1]).read_text(errors="ignore")
+except OSError:
+    print("undecidable"); raise SystemExit(0)
+print(classify(texto))
+ENTREGA
+) || v="undecidable"
+  case "$v" in
+    delivered) echo "entrego" ;;
+    cut)       echo "cortado" ;;
+    *)         echo "indecidible" ;;
+  esac
+}
+
 classify() {
   local entry="$1" shape age mtime verdict
   shape=$(terminal_shape "$entry")
@@ -217,7 +240,13 @@ DIAGNOSTICO
 )
 
   case "$verdict" in
-    terminated)       echo "terminado" ;;
+    # `terminated` colapsa TRES desenlaces con conductas opuestas para quien
+    # coordina: entrego su reporte, se corto a media llamada, o el transcript
+    # no permite decirlo. El discriminador NO es el tipo de la ultima linea
+    # —84 de 98 transcripts terminan en `attachment`, que el cliente apila
+    # despues del cierre— sino los bloques del ultimo mensaje `assistant`.
+    # Lo decide `thyrox: src/roster/delivery.py`; aqui solo se traduce.
+    terminated)       delivery_verdict "$entry" ;;
     stalled_evident)  echo "desaparecido" ;;   # hay evidencia POSITIVA del corte
     stalled_unknown)  echo "indecidible" ;;    # ausencia de marcador != muerte
     recent)
