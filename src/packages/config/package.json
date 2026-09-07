@@ -12,7 +12,9 @@
     "./constants": "./settings/constants.ts",
     "./validation": "./settings/validation.ts",
     "./load": "./settings/load.ts",
+    "./env": "./env/index.ts",
     "./env/utils": "./env/utils.ts",
+    "./remote": "./remote/index.ts",
     "./*": "./*.ts",
     "./*.js": "./*.ts"
   },
