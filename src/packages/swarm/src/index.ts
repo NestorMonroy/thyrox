@@ -19,6 +19,28 @@
 export * from './errors.js'
 
 export type {
+  SwarmHostDeps,
+  HostApiProvider,
+  HostToolRegistry,
+  HostPermissionGate,
+  HostCompaction,
+  HostContextProvider,
+  HostSessionManager,
+  HostEventSink,
+  HostHookCallbacks,
+  HostFileSystem,
+  HostTerminalBackend,
+  TerminalEnvironment,
+  PaneCreateOptions,
+  PaneHandle,
+  HostTaskSystem,
+  HostTask,
+  HostUIState,
+  HostWorktreeManager,
+  HostEnvironment,
+} from './types/deps.js'
+
+export type {
   BackendType,
   PaneBackendType,
   PaneId,

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte parcial del paquete swarm de claude-code-nestor-monroy-tools (TASK-DOCS-0233): coordinacion multi-agente — contexto de teammate in-process (AsyncLocalStorage), estado de tarea de teammate, tipos/protocolo de buzon, tipos de backend de pane, y el contrato de config.json por equipo (TeamFile). 14 de 52 modulos de la fuente portados completos + 1 parcial (core/teamHelpers.ts: solo los 2 simbolos puros + el contrato de tipos, de sus 21 exports); el resto queda bloqueado por depender de adapters/appRuntime.ts (fachada de host bindings de ccnmt, sin equivalente aqui), de @anthropic/ink (UI, vendorizada y no publicada en ccnmt), o de un primitivo de shell (execFileNoThrow/gitExe) aun no portado a ningun paquete de este arbol. Ver el analisis de la iniciativa para el detalle por modulo.",
+  "description": "Porte parcial del paquete swarm de claude-code-nestor-monroy-tools (TASK-DOCS-0233): coordinacion multi-agente — contexto de teammate in-process (AsyncLocalStorage), estado de tarea de teammate, tipos/protocolo de buzon, tipos de backend de pane, el contrato de dependencias de host (SwarmHostDeps, NO confundir con AgentDeps de @thyrox/agent — ver H-DOCS-1170), y el contrato de config.json por equipo (TeamFile). 15 de 52 modulos de la fuente portados completos + 1 parcial (core/teamHelpers.ts: solo los 2 simbolos puros + el contrato de tipos, de sus 21 exports); el resto queda bloqueado por depender de adapters/appRuntime.ts (fachada de host bindings de ccnmt, sin equivalente aqui), de @anthropic/ink (UI, vendorizada y no publicada en ccnmt), o de un primitivo de shell (execFileNoThrow/gitExe) aun no portado a ningun paquete de este arbol. Ver el analisis de la iniciativa para el detalle por modulo.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -11,6 +11,7 @@
     "./errors": "./src/errors.ts",
     "./backends/types.js": "./src/backends/types.ts",
     "./types/constants.js": "./src/types/constants.ts",
+    "./types/deps.js": "./src/types/deps.ts",
     "./core/constants.js": "./src/core/constants.ts",
     "./core/teammatePromptAddendum.js": "./src/core/teammatePromptAddendum.ts",
     "./core/teammateColors.js": "./src/core/teammateColors.ts",
