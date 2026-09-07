@@ -1,0 +1,57 @@
+# Deuda heredada de especificadores que NO resuelven, congelada 2026-09-07T03:23:57.
+# La destapo el control al cerrar su ceguera (#214, h-docs-1145). NO es un barrido:
+# uno listado no bloquea, uno nuevo si.
+#
+# NO son una sola clase, y confundirlas lleva al arreglo contrario:
+#
+#   21  @claude-code-how-works/*  el ambito de la FUENTE sobreviviendo dentro del
+#                                 porte. NOSOTROS SOMOS @thyrox. NO se instalan:
+#                                 se REAPUNTAN a @thyrox/* cuando el hermano exista.
+#                                 Directiva del ejecutor 2026-09-07.
+#    1  @thyrox/*                 nuestro propio ambito sin resolver — falta el
+#                                 enlace entre paquetes, no una dependencia.
+#   14  tercero real              @anthropic-ai/sdk, @opentelemetry/*, chalk,
+#                                 signal-exit, lodash-es, @anthropic/ink,
+#                                 stdin-napi, @withfig/autocomplete. Ahi si aplica
+#                                 instalar / reimplementar / retirar (#214).
+#    1  src/...                   especificador desnudo con forma de ruta.
+#
+# El grueso es de #198 (app-host) y #205 (cli). Se paga al tocar el paquete.
+
+agent::@anthropic-ai/sdk
+agent::@claude-code-how-works/config
+agent::@claude-code-how-works/provider
+app-host::@anthropic-ai/sdk
+app-host::@anthropic/ink
+app-host::@claude-code-how-works/agent
+app-host::@claude-code-how-works/cli
+app-host::@claude-code-how-works/command-runtime
+app-host::@claude-code-how-works/config
+app-host::@claude-code-how-works/headless-sdk
+app-host::@claude-code-how-works/ide
+app-host::@claude-code-how-works/local-observability
+app-host::@claude-code-how-works/mcp-runtime
+app-host::@claude-code-how-works/memory
+app-host::@claude-code-how-works/output
+app-host::@claude-code-how-works/permission
+app-host::@claude-code-how-works/provider
+app-host::@claude-code-how-works/repl
+app-host::@claude-code-how-works/server
+app-host::@claude-code-how-works/shell
+app-host::@claude-code-how-works/storage
+app-host::@claude-code-how-works/swarm
+app-host::@claude-code-how-works/tool-registry
+app-host::@opentelemetry/api
+app-host::@opentelemetry/api-logs
+app-host::@opentelemetry/sdk-logs
+app-host::@opentelemetry/sdk-metrics
+app-host::@opentelemetry/sdk-trace-base
+app-host::@thyrox/storage
+app-host::chalk
+app-host::lodash-es
+app-host::signal-exit
+app-host::src
+app-host::stdin-napi
+command-runtime::@anthropic-ai/sdk
+shell::@withfig/autocomplete
+storage::@claude-code-how-works/cli

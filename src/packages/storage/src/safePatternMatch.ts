@@ -1,35 +1,24 @@
 /**
  * Puerto de `ccnmt: packages/storage/src/safePatternMatch.ts` (22 líneas
  * fuente). CABLEADO PURO — el cuerpo de las dos funciones exportadas ES la
- * llamada a una dependencia npm ausente de este árbol:
+ * llamada a una dependencia npm:
  *
  *   - `safePicomatch` envuelve `picomatch.isMatch()` (paquete `picomatch`).
  *   - `safeIgnoreMatch` envuelve `ignore().add(patterns).ignores(path)`
  *     (paquete `ignore`).
  *
- * Verificado 2026-09-06: ninguno de los dos aparece en
- * `node_modules/`, `bun.lock` ni `package.json` de este árbol (`grep -c`
- * sobre los tres da 0). Por directiva de esta tarea NO se instalan
- * dependencias externas nuevas — instalarlas es una decisión del ejecutor
- * (añadiría dos paquetes al `package.json` de `@thyrox/storage`, archivo
- * fuera de mi propiedad en este pase).
- *
  * Símbolos de la fuente: 2 de 2. Ambos se portan VERBATIM (mismos imports,
  * mismo cuerpo) — no se reimplementa un matcher glob/gitignore reducido a
  * mano: `picomatch` e `ignore` tienen semántica de negación, ámbito de
  * segmento y casos límite (p. ej. `**`, `!patrón`, rutas absolutas vs.
- * relativas) que un sustituto simplificado reproduciría mal, y este árbol
- * no tiene todavía ningún consumidor real de estas dos funciones (el único
- * consumidor en la fuente, `claudemd.ts`, ya está portado aquí y NO las
- * usa — verificado: `grep -c "safePatternMatch\|picomatch\|'ignore'"` sobre
- * ese archivo da 0).
+ * relativas) que un sustituto simplificado reproduciría mal.
  *
- * Consecuencia práctica: este módulo NO se importa desde ningún otro
- * archivo del árbol ni desde ningún test — así que `bun test` nunca intenta
- * resolver `picomatch`/`ignore` y el árbol sigue construyendo limpio.
- * Cuando el ejecutor decida instalar las dos dependencias, este archivo ya
- * queda listo para correr sin cambios. SIN TEST — no hay lógica propia que
- * ejercitar mientras las dos dependencias sigan ausentes.
+ * Las dos dependencias están DECLARADAS e INSTALADAS desde 2026-09-07
+ * (`picomatch` 4.0.7, `ignore` 7.0.8, ambas MIT) — ver :ref:`h-docs-1145`.
+ * Antes de esa fecha este docstring declaraba su ausencia y el módulo no
+ * cargaba; el fallo era latente porque ningún consumidor lo importa todavía.
+ * El único consumidor en la fuente, `claudemd.ts`, ya está portado aquí y NO
+ * las usa — verificado: un grep de los tres nombres sobre ese archivo da 0.
  */
 import ignore from 'ignore'
 import picomatch from 'picomatch'
