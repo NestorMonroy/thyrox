@@ -1,0 +1,2 @@
+{ "name": "@probe/consumidor", "version": "1.0.0",
+  "dependencies": { "@probe/proveedor": "workspace:*" } }
