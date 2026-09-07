@@ -25,6 +25,23 @@ Uso:  python3 .claude/scripts/tests/test_derive_submodule.py
 """
 
 from __future__ import annotations
+# --------------------------------------------------------------------------
+# Las capas son del CONSUMIDOR (#249). Esta prueba las declara porque aqui
+# ELLA hace de consumidor: thyrox no sabe que capas tiene un multi-repo.
+# Se fija ANTES de importar el modulo — la tabla se carga al importarlo.
+# --------------------------------------------------------------------------
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+os.environ.setdefault(
+    "THYROX_LAYER_SIGNALS",
+    str(reach.root("docs") / ".claude" / "baselines" / "layer-signals.txt"))
+
+
 
 import importlib.util
 import pathlib
@@ -152,6 +169,31 @@ casos = [
 for esperado, texto, mapa in casos:
     _, origen = store.derive_submodule(texto, None, mapa)
     check(f"procedencia de «{texto}»", esperado, origen)
+
+# --------------------------------------------------------------------------
+# CONTROL DE ANULACION: sin la declaracion del consumidor, el derivador NO
+# adivina — devuelve el hueco. Se corre en un proceso aparte porque la tabla se
+# carga al importar el modulo, asi que no basta con borrar la variable aqui.
+#
+# Que haria fallar a este control: que el mecanismo cayera a una tabla por
+# defecto. Esa tabla acertaria en ESTE multi-repo y repartiria mal en cualquier
+# otro, sin que nada lo delatara — y todos los casos de arriba pasarian igual.
+# --------------------------------------------------------------------------
+import subprocess as _sub  # noqa: E402
+
+_sin = dict(os.environ)
+_sin.pop("THYROX_LAYER_SIGNALS", None)
+_sin["THYROX_ENV_FILE"] = "/no/existe/.env"   # que tampoco lo lea de un archivo
+_hecho = _sub.run(
+    [sys.executable, "-c",
+     "import sys; sys.path.insert(0, %r);"
+     "import agent_store as s;"
+     "print(s.derive_submodule('Tocar src/addons/sale', '', {}))"
+     % str(Path(__file__).resolve().parents[2] / "src" / "agents")],
+    capture_output=True, text=True, env=_sin)
+check("sin declaracion devuelve el hueco, no una capa adivinada",
+      "(None, None)", _hecho.stdout.strip())
+
 
 print(f"\nresultado: {PASS} de {PASS + FAIL} aserciones en verde")
 sys.exit(1 if FAIL else 0)

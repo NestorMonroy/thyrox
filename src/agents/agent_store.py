@@ -643,27 +643,48 @@ _CLAVE_ACTUALIZACION = re.compile(r"^\s*:fecha_actualizacion:\s*(\S+)", re.M)
 #: prefijo (`H-SERVER-16` con submodulo `api`, `H-API-556/557` con `docs`) —
 #: la misma incoherencia interna que la tarea #633 tria. Un derivador que
 #: leyera solo el prefijo publicaria esas cinco al reves y nada lo delataria.
-_CITA_HALLAZGO = re.compile(r"\bH-(API|DOCS|UI|DB|SERVER)-\d+", re.IGNORECASE)
+#: Las capas y sus señales son del CONSUMIDOR, no del proveedor (#249). thyrox
+#: no sabe qué capas tiene un multi-repo ni con qué palabras se reconoce cada
+#: una: sabe DERIVAR una capa de una cita, y declarar el hueco cuando no puede.
+#:
+#: Sin declaración no se deriva por señal —se devuelve el hueco— en vez de caer
+#: a una tabla inventada. Una tabla por defecto acertaría en un multi-repo y
+#: repartiría mal en cualquier otro, sin que nada lo delatara.
+LAYER_SIGNALS_VAR = "THYROX_LAYER_SIGNALS"
 
-#: Segunda via, mas debil: un token de ruta o de repo que solo una capa usa.
-#: Se aplica UNICAMENTE cuando ninguna otra capa aparece en el mismo texto —
-#: si hay dos, el texto es ambiguo y la fila se queda sin capa. Preferir el
-#: hueco declarado sobre el relleno plausible es lo que hace auditable el
-#: resultado: `submodule_source = 'ruta'` marca justo lo que hay que revisar.
-_SENALES_DE_RUTA = {
-    "api":    (r"\bsrc/", r"\baddons/", r"\borm/", r"\bodoo19c\b", r"\bodoo18[ce]\b",
-               r"kaupamex-api", r"\bapi[:@]", r"\bpytest\b", r"\bDRF\b", r"_inherit"),
-    "docs":   (r"\bsource/", r"\.rst\b", r"kaupamex-docs", r"\bdocs[:@]",
-               r"\.claude/", r"\bhallazgo"),
-    "ui":     (r"\bui/", r"kaupamex-ui", r"\bui[:@]", r"\bjest\b", r"\breact\b"),
-    "db":     (r"kaupamex-db", r"\bdb[:@]", r"postgres"),
-    "server": (r"kaupamex-server", r"\bserver[:@]", r"apache", r"gunicorn"),
-}
-_SENALES_DE_RUTA = {
-    capa: tuple(re.compile(p, re.IGNORECASE) for p in patrones)
-    for capa, patrones in _SENALES_DE_RUTA.items()
-}
 
+def _cargar_senales() -> tuple:
+    """(patrón de cita, señales por capa) desde la declaración del consumidor.
+
+    Formato del archivo, una línea por señal::
+
+        capa<TAB>expresión
+
+    Las capas se derivan de las claves declaradas, así que el patrón de cita
+    ―``H-<CAPA>-\d+``― se compone de ellas y no de una lista escrita aquí.
+    """
+    ruta = agents_paths.reach.env_value(LAYER_SIGNALS_VAR)
+    if not ruta or not Path(ruta).is_file():
+        return None, {}
+    senales: dict = {}
+    for cruda in Path(ruta).read_text(encoding="utf-8").splitlines():
+        linea = cruda.split("#")[0].strip()
+        if not linea:
+            continue
+        partes = linea.split(None, 1)
+        if len(partes) != 2:
+            continue
+        capa, patron = partes[0], partes[1].strip()
+        senales.setdefault(capa, []).append(re.compile(patron, re.IGNORECASE))
+    if not senales:
+        return None, {}
+    capas = "|".join(sorted(c.upper() for c in senales))
+    return re.compile(rf"\bH-({capas})-\d+", re.IGNORECASE), {
+        capa: tuple(ps) for capa, ps in senales.items()
+    }
+
+
+_CITA_HALLAZGO, _SENALES_DE_RUTA = _cargar_senales()
 
 def derive_submodule(subject: str, description: str,
                      findings: dict) -> tuple:
@@ -682,12 +703,18 @@ def derive_submodule(subject: str, description: str,
         Es la via debil, y por eso se marca distinto.
     ``(None, None)``
         Ni cita ni senal univoca. **El hueco se declara**; no se rellena.
+        Tambien es la respuesta cuando el consumidor no declaro sus capas
+        (``THYROX_LAYER_SIGNALS``): sin ellas thyrox no sabe que capas existen,
+        y una tabla inventada repartiria mal sin que nada lo delatara.
 
     ``findings`` mapea ``finding_id`` en mayusculas a su ``submodule`` — se
     pasa por parametro, y no se consulta aqui, para que la funcion sea pura y
     un test pueda ejercitarla con un mapa fabricado y con uno vacio.
     """
     texto = f"{subject or ''} {description or ''}"
+
+    if _CITA_HALLAZGO is None:
+        return None, None
 
     cita = _CITA_HALLAZGO.search(texto)
     if cita:
