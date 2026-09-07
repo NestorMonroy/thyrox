@@ -62,6 +62,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="una raíz de repo; repetible")
     parser.add_argument("--label", action="append", default=[],
                         help=f"<eje>=<texto>, uno por cada uno de {FIELDS}")
+    parser.add_argument("--telemetry", action="append", default=[],
+                        help="ruta relativa al repo cuya suciedad NO es "
+                             "trabajo sin publicar; repetible")
     parser.add_argument("--reason", required=True,
                         help="el motivo del bloqueo; puede llevar {output}")
     args = parser.parse_args(argv)
@@ -74,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"stop_pending_work: {err}", file=sys.stderr)
         return 2
 
-    gate = Gate(engine=pending_engine(args.root, labels),
+    gate = Gate(engine=pending_engine(args.root, labels, args.telemetry),
                 reason=args.reason, block_on_output=True)
 
     payload = ""

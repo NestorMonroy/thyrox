@@ -56,8 +56,18 @@ if __package__ in (None, ""):  # sólo en invocación directa
 
 from hooks.process import run_guarded  # noqa: E402
 
-#: Los cuatro ejes, en el orden en que se leen en la prosa del consumidor.
-FIELDS = ("dirty", "staged", "untracked", "ahead")
+#: Los cuatro ejes de TRABAJO, en el orden en que se leen en la prosa del
+#: consumidor. Son los que deciden si un repo entra en la lista.
+WORK_FIELDS = ("dirty", "staged", "untracked", "ahead")
+
+#: El eje de la suciedad que un hook escribe cada turno y que NO es trabajo
+#: sin publicar — el store versionado es el caso medido. Se cuenta y se
+#: NOMBRA, pero no dispara: una exclusión declarada por el consumidor no es
+#: un punto ciego; una silenciosa sí. Ver la cabecera del módulo.
+TELEMETRY_FIELD = "telemetry"
+
+#: Todos los ejes que la prosa del consumidor tiene que etiquetar.
+FIELDS = (*WORK_FIELDS, TELEMETRY_FIELD)
 
 #: Segundos por consulta a git. Un repo con el índice bloqueado por otro
 #: escritor cuelga; el gate no puede colgarse con él.
@@ -84,13 +94,28 @@ class Pending:
     staged: int = 0
     untracked: int = 0
     ahead: int = 0
+    telemetry: int = 0
 
     def __bool__(self) -> bool:
-        return any(getattr(self, field) for field in FIELDS)
+        """Sólo los ejes de TRABAJO deciden. La telemetría viaja, no dispara.
+
+        Si contara, un repo cuya única suciedad es el store que los hooks
+        escriben cada turno bloquearía todos los turnos — y el hábito que eso
+        enseña es commitear sin mirar, el contrario del que este gate existe
+        para crear.
+        """
+        return any(getattr(self, field) for field in WORK_FIELDS)
 
 
-def sweep(roots: Sequence[str]) -> list[Pending]:
-    """Los repos con trabajo sin publicar, en el orden de ``roots``."""
+def sweep(roots: Sequence[str],
+          telemetry: Sequence[str] = ()) -> list[Pending]:
+    """Los repos con trabajo sin publicar, en el orden de ``roots``.
+
+    ``telemetry`` son rutas relativas al repo cuya suciedad NO cuenta como
+    trabajo. Las declara el consumidor (DEC-04): este módulo no sabe cuál de
+    sus archivos escribe un hook en cada turno, y adivinarlo por el nombre
+    sería inventar la política del consumidor.
+    """
     if not roots:
         raise EmptyRootsError(
             "no se declaró ninguna raíz que barrer.\n"
@@ -102,7 +127,7 @@ def sweep(roots: Sequence[str]) -> list[Pending]:
         path = Path(root)
         if not (path / ".git").exists():
             continue                      # no es un repo: no es un fallo
-        item = _measure(path)
+        item = _measure(path, frozenset(telemetry))
         if item:
             found.append(item)
     return found
@@ -110,7 +135,16 @@ def sweep(roots: Sequence[str]) -> list[Pending]:
 
 def render(items: Sequence[Pending], labels: Mapping[str, str]) -> str:
     """Una línea por repo, con las etiquetas que el consumidor declara."""
-    missing = [field for field in FIELDS if field not in labels]
+    # Los cuatro ejes de TRABAJO se exigen siempre, aunque hoy valgan cero:
+    # es un fallo temprano sobre la DECLARACIÓN del consumidor, y su valor
+    # está en dispararse el primer día y no el día en que aparezca un
+    # `staged`. La telemetría se exige sólo si algún item la reporta —un
+    # consumidor que no la declara no tiene número que rotular, y pedirle el
+    # rótulo le rompería el gate por un eje que no usa.
+    exigidos = list(WORK_FIELDS)
+    if any(getattr(i, TELEMETRY_FIELD) for i in items):
+        exigidos.append(TELEMETRY_FIELD)
+    missing = [field for field in exigidos if field not in labels]
     if missing:
         raise MissingLabelError(
             f"faltan las etiquetas de {missing}.\n"
@@ -126,7 +160,8 @@ def render(items: Sequence[Pending], labels: Mapping[str, str]) -> str:
 
 
 def engine(roots: Sequence[str],
-           labels: Mapping[str, str]) -> Callable[[], tuple[int, str]]:
+           labels: Mapping[str, str],
+           telemetry: Sequence[str] = ()) -> Callable[[], tuple[int, str]]:
     """El motor en proceso que ``hooks.stop_gate.Gate`` consume.
 
     Devuelve ``(1, <lista>)`` cuando hay trabajo sin publicar y ``(0, "")``
@@ -134,30 +169,43 @@ def engine(roots: Sequence[str],
     decidir por cualquiera de sus dos modos sin cambiar de lectura.
     """
     def consult() -> tuple[int, str]:
-        items = sweep(roots)
+        items = sweep(roots, telemetry)
         return (1, render(items, labels)) if items else (0, "")
     return consult
 
 
-def _measure(repo: Path) -> Pending:
-    counts = {
-        "dirty": _count(repo, "diff", "--name-only"),
-        "staged": _count(repo, "diff", "--cached", "--name-only"),
-        # `--untracked-files=all` para ver los ARCHIVOS y no el directorio que
-        # los contiene; el `??` los distingue del resto del porcelain.
-        "untracked": _count(repo, "status", "--porcelain",
-                            "--untracked-files=all", prefix="?? "),
-        "ahead": _ahead(repo),
-    }
-    return Pending(name=repo.name, **counts)
+def _measure(repo: Path, telemetry: frozenset[str] = frozenset()) -> Pending:
+    dirty, tele_dirty = _split(repo, telemetry, "diff", "--name-only")
+    staged, tele_staged = _split(repo, telemetry, "diff", "--cached", "--name-only")
+    # `--untracked-files=all` para ver los ARCHIVOS y no el directorio que
+    # los contiene; el `??` los distingue del resto del porcelain.
+    untracked, tele_untracked = _split(repo, telemetry, "status", "--porcelain",
+                                       "--untracked-files=all", prefix="?? ")
+    return Pending(name=repo.name, dirty=dirty, staged=staged,
+                   untracked=untracked, ahead=_ahead(repo),
+                   telemetry=tele_dirty + tele_staged + tele_untracked)
 
 
-def _count(repo: Path, *args: str, prefix: str = "") -> int:
+def _split(repo: Path, telemetry: frozenset[str], *args: str,
+           prefix: str = "") -> tuple[int, int]:
+    """``(trabajo, telemetría)`` de una consulta a git.
+
+    Se cuentan las dos mitades en el mismo recorrido a propósito: si la
+    telemetría se restara del total, un repo sin ninguna daría el mismo
+    número que uno cuya telemetría no se supo leer.
+    """
     done = run_guarded(["git", "-C", str(repo), *args], TIMEOUT)
     if done.exit_code != 0:
-        return 0
-    return sum(1 for line in done.stdout.splitlines()
-               if line.strip() and line.startswith(prefix))
+        return 0, 0
+    trabajo = tele = 0
+    for line in done.stdout.splitlines():
+        if not line.strip() or not line.startswith(prefix):
+            continue
+        if line[len(prefix):].strip() in telemetry:
+            tele += 1
+        else:
+            trabajo += 1
+    return trabajo, tele
 
 
 def _ahead(repo: Path) -> int:
