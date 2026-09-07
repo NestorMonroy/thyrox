@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import pathlib
 import subprocess
 import sys
@@ -404,6 +405,68 @@ _vacio = subprocess.run(
     [sys.executable, str(SUT), "--store", str(DB4), "cita", S, "8"],
     capture_output=True, text=True)
 check("sin sujeto" in _vacio.stdout, "11e: un sujeto vacio se declara, no se omite")
+
+
+# ── El store es PARAMETRO del consumidor, no constante de thyrox ──────────
+#
+# `DEFAULT_STORE_PATH` se derivaba con `parents[2] / "agent-results"`, que
+# desde `thyrox/src/task/` resuelve `/home/user/thyrox/agent-results/…` — un
+# directorio que no existe. Efecto medido: `task_ids.py censo` rehusaba con
+# MappingError, y por eso las tareas se seguian citando por el ordinal del
+# board en vez de por su cita durable. La aritmetica de ruta prohibida, en su
+# forma mas cara: no rompe, deja el mecanismo inalcanzable.
+#
+# El mecanismo correcto ya existe y tiene dos consumidores
+# (`agents/model_catalog.py`, `task/task_source.py`): la variable
+# `THYROX_AGENT_STORE`, con `None` cuando no esta declarada — nunca una ruta
+# supuesta.
+print("El store del mapa se declara, no se deriva por aritmetica")
+
+# Las tres se miden por CONDUCTA, no por literal. Un `"parents[2]" not in
+# fuente` habria pasado a rojo por el comentario que explica la correccion —
+# mediria el significante y concluiria sobre el significado (sub-patron C de
+# `metrica-decide-la-conclusion.md`), justo el defecto que este bloque cierra.
+_VACIO = pathlib.Path(tempfile.mkdtemp()) / "sin-declaracion.env"
+_VACIO.write_text("# vacio a proposito: el ascenso no debe encontrar la clave\n")
+
+
+def _default_store_con(entorno):
+    """`DEFAULT_STORE_PATH` en un proceso con ese entorno. `''` = None."""
+    env = dict(os.environ)
+    env.pop("THYROX_AGENT_STORE", None)
+    env.pop("KAUPAMEX_AGENT_STORE", None)
+    env["THYROX_ENV_FILE"] = str(_VACIO)
+    env.update(entorno)
+    salida = subprocess.run(
+        [sys.executable, "-c",
+         "import importlib.util,sys;"
+         f"spec=importlib.util.spec_from_file_location('kx', {str(SUT)!r});"
+         "m=importlib.util.module_from_spec(spec);sys.modules['kx']=m;"
+         "spec.loader.exec_module(m);"
+         "print('' if m.DEFAULT_STORE_PATH is None else m.DEFAULT_STORE_PATH)"],
+        capture_output=True, text=True, env=env)
+    return salida.stdout.strip()
+
+
+check(_default_store_con({}) == "",
+      "store: sin declaracion el default es None, no una ruta supuesta")
+check(_default_store_con({"THYROX_AGENT_STORE": "/x/y.sqlite3"}) == "/x/y.sqlite3",
+      "store: declarado, el default es lo declarado")
+
+# El control que DISCRIMINA: sin declaracion y sin --store, el CLI rehusa con
+# exit 2 y NO publica conteo. Un `0 id(es) de cita` ahi seria un verde falso —
+# indistinguible de un store real y vacio.
+_env_sin = dict(os.environ)
+_env_sin.pop("THYROX_AGENT_STORE", None)
+_env_sin.pop("KAUPAMEX_AGENT_STORE", None)
+_env_sin["THYROX_ENV_FILE"] = str(_VACIO)
+_rehusa = subprocess.run([sys.executable, str(SUT), "censo"],
+                         capture_output=True, text=True, env=_env_sin)
+check(_rehusa.returncode == 2, "store: sin declaracion el CLI rehusa (exit 2)")
+check("total:" not in _rehusa.stdout,
+      "store: el rehuse NO publica conteo (un 0 seria verde falso)")
+check("THYROX_AGENT_STORE" in _rehusa.stderr,
+      "store: el rehuse nombra la variable que falta")
 
 print(f"{checks} aserciones")
 if failures:

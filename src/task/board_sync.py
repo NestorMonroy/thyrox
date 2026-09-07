@@ -235,7 +235,8 @@ def _cmd_sync_board(args: argparse.Namespace) -> int:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--store", default=str(task_ids.DEFAULT_STORE_PATH))
+    # El store se declara (THYROX_AGENT_STORE), no se deriva: ver task_ids.
+    parser.add_argument("--store", default=None)
     sub = parser.add_subparsers(dest="comando", required=True)
 
     p_mint = sub.add_parser(
@@ -265,6 +266,7 @@ def main(argv=None) -> int:
     p_sync.set_defaults(func=_cmd_sync_board)
 
     args = parser.parse_args(argv)
+    args.store = str(task_ids.resolve_store(args.store))
     try:
         return args.func(args)
     except (BoardSyncError, task_ids.MappingError) as err:

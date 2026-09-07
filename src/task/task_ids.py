@@ -143,9 +143,40 @@ ID_RE = re.compile(r"^TASK-[A-Z]+-\d{4}$")
 #: vez de interpretar un esquema que no conoce.
 FORMAT_VERSION = 1
 
-#: El store de tareas: donde vive el mapa, en ``tasks.citation_id``.
-DEFAULT_STORE_PATH = (pathlib.Path(__file__).resolve().parents[2]
-                      / "agent-results" / "agent_store.sqlite3")
+#: El store de tareas es PARAMETRO DEL CONSUMIDOR: el mapa vive en el clon que
+#: despacha, en ``tasks.citation_id``, no en thyrox. Se declara con
+#: ``THYROX_AGENT_STORE`` —y su compatible ``KAUPAMEX_AGENT_STORE``—, leidas
+#: por ``reach.env_value``: el proceso primero, despues el ``.env`` que
+#: ``THYROX_ENV_FILE`` nombra.
+#:
+#: NO se deriva por aritmetica de ``__file__``. La forma anterior
+#: —``parents[2]`` mas ``agent-results/``— describia el arbol de `docs`, donde
+#: este guion vivia; desde ``thyrox/src/task/`` resuelve
+#: ``thyrox/agent-results/…``, que no es de nadie. Y falla **en silencio**: el
+#: llamador lee «la ruta no existe» como «no hay tareas», que es el sub-patron
+#: D de `metrica-decide-la-conclusion.md` cometido por el propio localizador.
+#: Sin declaracion NO hay ruta que suponer — ``None`` es el veredicto, el mismo
+#: que ``task_source.DEFAULT_STORE`` y ``agents/model_catalog.py`` ya dan.
+_STORE_ENV = (reach.env_value("THYROX_AGENT_STORE")
+              or reach.env_value("KAUPAMEX_AGENT_STORE"))
+DEFAULT_STORE_PATH = pathlib.Path(_STORE_ENV) if _STORE_ENV else None
+
+#: El rehuse cuando nadie lo declaro. A stderr y SIN cifra: un ``0`` de tareas
+#: con el store ausente seria un verde falso.
+STORE_UNDECLARED = (
+    "REHUSA — el store de tareas no esta declarado. Es parametro del "
+    "consumidor: se declara con THYROX_AGENT_STORE en el .env que "
+    "THYROX_ENV_FILE nombra, o se pasa con --store. NO se emite conteo.")
+
+
+def resolve_store(declared=None):
+    """La ruta del store, o rehusar con exit 2. Nunca una ruta supuesta."""
+    if declared:
+        return pathlib.Path(declared)
+    if DEFAULT_STORE_PATH is not None:
+        return DEFAULT_STORE_PATH
+    print(STORE_UNDECLARED, file=sys.stderr)
+    raise SystemExit(2)
 
 #: La variable que declara el hogar del board del cliente. Es el VALOR; la RUTA
 #: a su declaracion la aporta ``reach.ENV_FILE_VAR`` (``THYROX_ENV_FILE``), que
@@ -729,7 +760,7 @@ def _cmd_duplicados(args: argparse.Namespace) -> int:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--store", default=str(DEFAULT_STORE_PATH))
+    parser.add_argument("--store", default=None)
     sub = parser.add_subparsers(dest="comando", required=True)
 
     p_lookup = sub.add_parser("cita", help="el TASK-<CAPA>-NNNN de una tarea")
@@ -765,6 +796,7 @@ def main(argv=None) -> int:
     p_acunar.set_defaults(func=_cmd_acunar)
 
     args = parser.parse_args(argv)
+    args.store = str(resolve_store(args.store))
     if getattr(args, "board", "sentinel") is None:
         args.board = str(board_dir(args.sesion))
     return args.func(args)
