@@ -30,6 +30,7 @@ ciegas para un NOT NULL.
 from __future__ import annotations
 
 import argparse
+import pathlib
 import importlib.util
 import re
 import sys
@@ -157,6 +158,11 @@ def _parsear_hallazgo(ruta: Path) -> dict | None:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dry-run", action="store_true", help="parsear y listar sin escribir en la DB")
+    # El destino era `DOCS_ROOT/.claude/agent-results`, cableado. Con eso el
+    # store de otro consumidor —o el del propio proveedor— no se podia llenar
+    # por esta via, aunque el corpus de hallazgos fuera el mismo.
+    ap.add_argument("--claude-dir", default=None,
+                    help="directorio del store destino (default: el de docs)")
     args = ap.parse_args()
 
     archivos = sorted(PM_ROOT.glob("*/iniciativas/*/hallazgos/hallazgo-*.rst"))
@@ -164,7 +170,12 @@ def main() -> int:
         print(f"backfill-findings-history: 0 archivos hallazgo-*.rst bajo {PM_ROOT}", file=sys.stderr)
         return 1
 
-    store_dir = DOCS_ROOT / ".claude" / "agent-results"
+    if args.claude_dir:
+        store_dir = pathlib.Path(args.claude_dir).expanduser().resolve()
+        if store_dir.name != "agent-results":
+            store_dir = store_dir / "agent-results"
+    else:
+        store_dir = DOCS_ROOT / ".claude" / "agent-results"
     procesados = 0
     omitidos: list[str] = []
 
