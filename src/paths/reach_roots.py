@@ -103,8 +103,9 @@ _owner = _load_owner()
 # copiarse con `*` para que el contrato sea legible: quien lea este archivo ve
 # exactamente qué se reexporta, sin ir al dueño a averiguarlo.
 ReachRootError = _owner.ReachRootError
-REACH_ROOTS = _owner.REACH_ROOTS
-REPOS = _owner.REACH_ROOTS          # alias histórico; cuatro consumidores lo importan
+reach_roots = _owner.reach_roots
+derive_reach_roots = _owner.derive_reach_roots
+REACH_ROOTS_VAR = _owner.REACH_ROOTS_VAR
 clone_prefix = _owner.clone_prefix
 derive_clone_prefix = _owner.derive_clone_prefix
 CLONE_PREFIX_VAR = _owner.CLONE_PREFIX_VAR
@@ -129,3 +130,10 @@ main = _owner.main
 
 if __name__ == "__main__":
     raise SystemExit(_owner._run(sys.argv))
+
+
+def __getattr__(name: str):
+    """Reenvía al dueño los nombres que ya no se ligan en el import."""
+    if name in ("REACH_ROOTS", "REPOS"):
+        return _owner.reach_roots()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

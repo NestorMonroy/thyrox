@@ -87,7 +87,13 @@ completed = subprocess.run(
     [sys.executable, str(MODULE), "--env"], capture_output=True, text=True,
 )
 check("--env sale limpio", 0, completed.returncode)
-check("y exporta las cinco raíces", 5, len(completed.stdout.strip().splitlines()))
+# El conteo se DERIVA, no se codifica: «cinco» era el mismo literal que el
+# mecanismo acaba de dejar de llevar dentro, y ademas ignoraba las dos lineas
+# de cabecera (THYROX_ROOT y THYROX_ENV_FILE) que el CLI emite siempre. La
+# asercion llevaba roja desde antes de este cambio — medido con git stash.
+esperadas = 2 + len(owner.reach_roots())
+check("y exporta la cabecera mas una linea por raiz", esperadas,
+      len(completed.stdout.strip().splitlines()))
 
 print(f"\nresultado: {PASS} de {PASS + FAIL} aserciones en verde")
 sys.exit(1 if FAIL else 0)

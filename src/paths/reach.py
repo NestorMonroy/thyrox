@@ -76,7 +76,8 @@ Desde shell, que no puede importar el módulo::
 
     eval "$(python3 src/paths/reach.py --env)"
 
-Métrica: las cinco raíces declaradas en ``REACH_ROOTS``, más el tramo extra.
+Métrica: las raíces que ``reach_roots()`` resuelve —declaradas o derivadas—,
+más el tramo extra.
 Ciega a: un clon que exista en disco y no esté declarado —el conjunto es una
 decisión, no un descubrimiento—; a que la ruta declarada sea un repositorio git
 de verdad (``require_all()`` comprueba que el directorio exista, no que sea un
@@ -89,13 +90,19 @@ import os
 import sys
 from pathlib import Path
 
-#: Las raíces DECLARADAS, en orden estable. El orden es parte del contrato: un
-#: consumidor que itere y escriba un artefacto no debe producir diffs por
-#: reordenamiento.
+#: La variable con que el consumidor declara SUS raíces de trabajo.
 #:
-#: Es el análogo de ``reachRoots`` en la referencia — lo declarado, por
-#: oposición al conjunto resuelto que ``reach()`` devuelve.
-REACH_ROOTS: tuple[str, ...] = ("api", "db", "docs", "server", "ui")
+#: Era una tupla literal —``("api", "db", "docs", "server", "ui")``— y ese
+#: literal es el gemelo del que ``derive_clone_prefix`` ya sacó de aquí: un
+#: proveedor que sabe componer el nombre de un clon pero lleva escritos los
+#: cinco nombres de un consumidor concreto sigue sirviendo a uno solo. El
+#: roster de un multi-repo es dato del consumidor, no conocimiento del
+#: mecanismo.
+#:
+#: El orden sigue siendo parte del contrato: un consumidor que itere y escriba
+#: un artefacto no debe producir diffs por reordenamiento. Lo declarado
+#: conserva el orden en que se escribió; lo derivado va ordenado.
+REACH_ROOTS_VAR = "THYROX_REACH_ROOTS"
 
 #: La variable con que el consumidor declara su prefijo de clon.
 CLONE_PREFIX_VAR = "THYROX_CLONE_PREFIX"
@@ -263,18 +270,80 @@ def env_value(name: str, start: Path | None = None) -> str | None:
     return read_env_file(path).get(name) or None
 
 
+def derive_reach_roots(start: Path | None = None) -> tuple[str, ...]:
+    """Las raíces derivadas del árbol: los hermanos que llevan el prefijo.
+
+    Se apoya en ``derive_clone_prefix``, que ya resuelve cuál es el prefijo por
+    mayoría. Aquí sólo se recorta: ``kaupamex-api`` -> ``api``.
+
+    Devuelve la tupla vacía cuando no hay prefijo derivable, y quien llama
+    decide. No se fabrica un roster: uno inventado compone rutas que no existen
+    y el fallo aparece lejos de su causa.
+    """
+    prefix = derive_clone_prefix(start)
+    if not prefix:
+        return ()
+    base = (Path(start) if start else thyrox_root()).parent
+    if not base.is_dir():
+        return ()
+    return tuple(sorted(
+        sibling.name[len(prefix):]
+        for sibling in base.iterdir()
+        if sibling.is_dir() and sibling.name.startswith(prefix)
+        and sibling.name != prefix
+    ))
+
+
+def reach_roots(start: Path | None = None,
+                declared: str | None = None) -> tuple[str, ...]:
+    """El roster: lo declarado, luego el entorno, luego lo derivado.
+
+    Misma precedencia y mismo desenlace que ``clone_prefix``, porque es el
+    mismo problema un nivel más arriba. Sin ninguno de los tres se rehúsa
+    nombrando la variable — un default volvería a atar el proveedor a un
+    multi-repo concreto, que es justo lo que esta función deshace.
+    """
+    if declared is None:
+        declared = env_value(REACH_ROOTS_VAR, start)
+    if declared:
+        return tuple(name.strip() for name in declared.split(",") if name.strip())
+    derived = derive_reach_roots(start)
+    if derived:
+        return derived
+    raise ReachRootError(
+        f"no pude derivar las raíces de trabajo del árbol, y {REACH_ROOTS_VAR} "
+        f"no está declarada. Decláralas separadas por coma: sin ellas no se "
+        f"puede saber qué directorios de trabajo existen, y fabricar un roster "
+        f"compondría rutas inexistentes."
+    )
+
+
+def __getattr__(name: str):
+    """``REACH_ROOTS`` se resuelve al leerlo, no al importar el módulo.
+
+    Seis consumidores lo importan como atributo, y ligarlo en el import lo
+    congelaría al árbol del momento de la carga —el mismo defecto de firma que
+    ``check_workbench.py`` tenía—. PEP 562 permite conservar el nombre sin
+    conservar el literal.
+    """
+    if name in ("REACH_ROOTS", "REPOS"):
+        return reach_roots()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 def clone_name(repo: str) -> str:
     """El nombre largo del clon: ``api`` -> ``kaupamex-api``."""
-    if repo not in REACH_ROOTS:
+    declaradas = reach_roots()
+    if repo not in declaradas:
         raise KeyError(
-            f"raíz desconocida: {repo!r}. Las declaradas son {list(REACH_ROOTS)}."
+            f"raíz desconocida: {repo!r}. Las declaradas son {list(declaradas)}."
         )
     return f"{clone_prefix()}{repo}"
 
 
 def clone_names() -> tuple[str, ...]:
     """Los nombres largos de las raíces declaradas, en su orden."""
-    return tuple(clone_name(r) for r in REACH_ROOTS)
+    return tuple(clone_name(r) for r in reach_roots())
 
 
 def env_names(repo: str) -> tuple[str, ...]:
@@ -512,7 +581,7 @@ def roots(start: Path | None = None) -> dict[str, Path]:
     coexistiendo (``roots:r, reach:{…}``) porque un consumidor que quiera saber
     qué vino de la declaración no puede deducirlo del conjunto resuelto.
     """
-    return {r: root(r, start) for r in REACH_ROOTS}
+    return {r: root(r, start) for r in reach_roots(start)}
 
 
 def extra_roots() -> dict[str, Path]:
@@ -600,7 +669,7 @@ def main(argv: list[str]) -> int:
         else:
             print(f'export {ENV_FILE_VAR}="{declared}"')
         for repo, path in reach().items():
-            print(f'export {env_names(repo)[0] if repo in REACH_ROOTS else repo.upper()}="{path}"')
+            print(f'export {env_names(repo)[0] if repo in reach_roots() else repo.upper()}="{path}"')
         return 0
 
     if mode == "--paths":
