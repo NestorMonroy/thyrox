@@ -1,18 +1,19 @@
 /**
  * Carga de especificaciones de autocompletado (Fig) por nombre de comando.
  *
- * PORTE PARCIAL. La fuente (`claude-code-nestor-monroy-tools:
- * packages/shell/src/bash/registry.ts`) declara `CommandSpec`/`Argument`/
- * `Option`, `loadFigSpec` y `getCommandSpec` (memoizado con LRU sobre una
- * lista interna `specs` + `loadFigSpec`). El test portado
- * (`loadFigSpec.test.ts`) sólo ejercita `loadFigSpec` — la validación de
- * entrada contra path traversal / flags. Se portan los tres tipos porque
- * son la firma de `loadFigSpec`; se OMITE `getCommandSpec` (y con él
- * `_memoizeWithLRU` de `./internal.js` y el índice `./specs/index.js`,
- * ninguno de los dos existe en este paquete) por no estar ejercitado.
+ * Porte COMPLETO (actualizado — antes PARCIAL, ver historial de este
+ * archivo). La fuente (`ccnmt: packages/shell/src/bash/registry.ts`)
+ * declara `CommandSpec`/`Argument`/`Option`, `loadFigSpec` y
+ * `getCommandSpec` (memoizado con LRU sobre la lista estática `specs` +
+ * `loadFigSpec` como respaldo). Los cinco símbolos están presentes; el
+ * respaldo de `getCommandSpec` usa `_memoizeWithLRU` de `./internal.js` y
+ * el índice estático de `./specs/index.js`, ambos ya portados.
  *
  * @module
  */
+
+import { _memoizeWithLRU as memoizeWithLRU } from './internal.js'
+import specs from './specs/index.js'
 
 export type CommandSpec = {
   name: string
@@ -63,3 +64,19 @@ export async function loadFigSpec(
     return null
   }
 }
+
+/**
+ * Resuelve la especificación de `command`: primero contra la lista
+ * estática de `./specs/index.js` (comandos que envuelven a otro, como
+ * `nohup`/`timeout`, y no tienen spec Fig propia publicada), y si no
+ * aparece ahí, contra `loadFigSpec`. El resultado se memoiza con LRU por
+ * nombre de comando.
+ */
+export const getCommandSpec = memoizeWithLRU(
+  async (command: string): Promise<CommandSpec | null> => {
+    const spec =
+      specs.find(s => s.name === command) || (await loadFigSpec(command)) || null
+    return spec
+  },
+  (command: string) => command,
+)
