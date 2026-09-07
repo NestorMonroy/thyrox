@@ -13,7 +13,7 @@
  */
 
 import { isClaudeAISubscriber, isMaxSubscriber, isTeamPremiumSubscriber } from './authAlias.ts'
-import { has1mContext } from '@thyrox/agent/context.ts'
+import { has1mContext } from '@thyrox/agent/context'
 import { readEnv } from '@thyrox/config/env/utils'
 import { getAPIProvider, getEnabledConnections } from './providers.ts'
 import { composeModelId, prettyModelLabel } from './connections.ts'
@@ -47,7 +47,7 @@ import {
   getSettingsAvailableModels,
   getGlobalConfigAdditionalModelOptions,
 } from './internal/modelSupport.ts'
-import { is1mContextDisabled } from '@thyrox/agent/context.ts'
+import { is1mContextDisabled } from '@thyrox/agent/context'
 
 export type ModelOption = {
   value: ModelSetting

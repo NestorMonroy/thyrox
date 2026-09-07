@@ -22,10 +22,10 @@
 
 import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import chalk from 'chalk'
-import type { ModelUsage } from '@thyrox/headless-sdk/agentSdkTypes.ts'
+import type { ModelUsage } from '@thyrox/headless-sdk/agentSdkTypes'
 import { getAdvisorUsage, isFastModeEnabled } from './internal/pendingCrossPackageDeps.ts'
-import { getContextWindowForModel } from '@thyrox/agent/context.ts'
-import { formatDuration, formatNumber } from '@thyrox/output/formatters.ts'
+import { getContextWindowForModel } from '@thyrox/agent/context'
+import { formatDuration, formatNumber } from '@thyrox/output/formatters'
 import type { FpsMetrics } from '@thyrox/output/fpsTracker.js'
 import { getCanonicalName } from './model.ts'
 

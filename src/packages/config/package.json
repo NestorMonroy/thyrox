@@ -12,6 +12,7 @@
     "./constants": "./settings/constants.ts",
     "./validation": "./settings/validation.ts",
     "./load": "./settings/load.ts",
+    "./settings": "./settings/settings.ts",
     "./env": "./env/index.ts",
     "./env/utils": "./env/utils.ts",
     "./remote": "./remote/index.ts",
@@ -23,6 +24,8 @@
     "settings": "bun run bin/settings.ts"
   },
   "dependencies": {
+    "@thyrox/local-observability": "workspace:*",
+    "lodash-es": "^4.18.1",
     "zod": "^4.3.6"
   }
 }

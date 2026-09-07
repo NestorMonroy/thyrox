@@ -25,11 +25,11 @@ import {
   isTeamPremiumSubscriber,
   getSubscriptionType,
 } from './authAlias.ts'
-import { has1mContext, is1mContextDisabled, modelSupports1M } from '@thyrox/agent/context.ts'
+import { has1mContext, is1mContextDisabled, modelSupports1M } from '@thyrox/agent/context'
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 import { getAPIProvider, isFirstPartyAnthropicBaseUrl, resolveConnectionForModel } from './providers.ts'
-import { LIGHTNING_BOLT } from '@thyrox/output/constants/figures.ts'
-import { capitalize } from '@thyrox/output/utils/stringUtils.ts'
+import { LIGHTNING_BOLT } from '@thyrox/output/constants/figures'
+import { capitalize } from '@thyrox/output/utils/stringUtils'
 import {
   getModelStrings,
   resolveOverriddenModel,

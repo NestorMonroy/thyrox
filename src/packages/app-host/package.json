@@ -7,10 +7,13 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
+    "@thyrox/agent": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
     "@thyrox/shell": "workspace:*",
-    "@thyrox/storage": "workspace:*"
+    "@thyrox/storage": "workspace:*",
+    "react": "^19.0.0"
   },
   "exports": {
     ".": "./src/index.ts",
@@ -22,6 +25,8 @@
     "./state/sessionSelectors.js": "./src/state/sessionSelectors.ts",
     "./state/hostSessionState.js": "./src/state/hostSessionState.ts",
     "./state/AppStateStore.js": "./src/state/AppStateStore.ts",
+    "./state/store.js": "./src/state/store.ts",
+    "./state/AppState.js": "./src/state/AppState.tsx",
     "./state/uiSelectors.js": "./src/state/uiSelectors.ts",
     "./state/pluginSelectors.js": "./src/state/pluginSelectors.ts",
     "./state/teamSelectors.js": "./src/state/teamSelectors.ts",

@@ -192,10 +192,18 @@ export function requireProviderMtls(): {
 }
 
 /**
- * `clearCACertsCache` — `@thyrox/provider/caCerts.ts` NO EXISTE en este
- * árbol (verificado con `ls`, no sólo con `Bun.resolveSync`). El `require`
- * fallará siempre hasta que alguien porte ese archivo; se documenta así en
- * vez de fabricar un no-op que ocultaría el hueco real.
+ * `clearCACertsCache` — el archivo YA EXISTE (`internal/caCerts.ts`, y
+ * desde este pase también el subpath público `@thyrox/provider/caCerts`
+ * vía el `exports` map de `provider/package.json`; verificado:
+ * `Bun.resolveSync('@thyrox/provider/caCerts.js', '.../provider/src/')`
+ * resuelve). El `require()` de abajo SIGUE fallando igual — no por el
+ * archivo, sino porque `@thyrox/config` no declara (ni debe declarar,
+ * sería un ciclo config↔provider) a `@thyrox/provider` como dependencia,
+ * así que la resolución de módulo de Bun no lo encuentra desde
+ * `config/internal/`. Verificado con el mismo comando apuntado a
+ * `.../config/internal/`: sigue fallando. Este `require()` sólo puede
+ * funcionar si lo INVOCA un paquete que sí tenga ambos (`@thyrox/config`
+ * y `@thyrox/provider`) como dependencias — p. ej. `app-host` o `harness`.
  */
 export function requireProviderCaCerts(): {
   clearCACertsCache: () => void

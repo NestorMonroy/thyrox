@@ -16,7 +16,7 @@
  * interpretan.
  */
 
-import type { AssistantMessage, Message } from '@thyrox/agent/messageShapes.ts'
+import type { AssistantMessage, Message } from '@thyrox/agent/messageShapes'
 import type { SystemPrompt } from './systemPromptType.ts'
 import type { ThinkingConfig } from './internal/providerTypes.ts'
 import type { Options } from './claudeLegacy.ts'

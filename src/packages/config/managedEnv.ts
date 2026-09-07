@@ -37,15 +37,19 @@
  * - `isProviderManagedEnvVar`, `SAFE_ENV_VARS` — SÍ portados: hoja sin
  *   dependencias propias, `./env/managed-constants.ts` (ver su propio
  *   docstring).
- * - `clearCACertsCache` — `@thyrox/provider/caCerts.ts` NO EXISTE (verificado
- *   con `ls`, no sólo con `Bun.resolveSync`).
+ * - `clearCACertsCache` — el archivo ya existe (`internal/caCerts.ts` +
+ *   subpath público `@thyrox/provider/caCerts` desde este pase), pero el
+ *   `require()` de abajo sigue fallando: `@thyrox/config` no depende de
+ *   `@thyrox/provider` (sería un ciclo), así que Bun no lo resuelve desde
+ *   aquí. Ver el docstring de `requireProviderCaCerts` en
+ *   `./internal/pendingCrossPackageDeps.ts` para el detalle medido.
  * - `clearProxyCache`/`configureGlobalAgents` — `@thyrox/provider/proxy.ts`
  *   NO EXISTE, mismo caso.
- * - `getSettings`/`getSettingsForSource` — `./settings/settings.ts` NO es
- *   uno de los 15 del alcance; es precisamente el caso a decidir del brief
- *   (`@thyrox/config/settings`): la fuente no tiene `settings/index.ts`, y
- *   el archivo real (`settings/settings.ts`, 35628 bytes) queda sin portar
- *   en este pase. Ver el reporte final para el veredicto medido completo.
+ * - `getSettings`/`getSettingsForSource` — CORREGIDO: `./settings/settings.ts`
+ *   YA EXISTE (porte parcial declarado en su propio docstring) y el
+ *   `require('./settings/settings.js')` de abajo resuelve — es intra-paquete
+ *   (`config` → `config`), sin el problema de dirección que sí bloquea
+ *   `caCerts`/`proxy` arriba.
  */
 
 import {
@@ -108,11 +112,8 @@ function requireGlobalConfig(): {
 }
 
 /**
- * `getSettings`/`getSettingsForSource` — `./settings/settings.ts` no existe
- * en este árbol. Es el caso `@thyrox/config/settings` del brief: la fuente
- * no declara `settings/index.ts`, así que no hay un módulo único que
- * portar; `settings/settings.ts` (35628 bytes) queda fuera del alcance de
- * los 15 y sin portar en este pase.
+ * `getSettings`/`getSettingsForSource` — `./settings/settings.ts` YA EXISTE
+ * (porte parcial). `require()` intra-paquete, resuelve.
  */
 function requireSettingsSettings(): {
   getSettings: () => { env?: Record<string, string>; outputStyle?: string } | null

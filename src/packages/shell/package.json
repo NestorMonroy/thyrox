@@ -16,6 +16,7 @@
     "./bash/shellQuote.js": "./src/bash/shellQuote.ts",
     "./execFileNoThrow.js": "./src/execFileNoThrow.ts",
     "./execFileNoThrowPortable.js": "./src/execFileNoThrowPortable.ts",
+    "./genericProcessUtils.js": "./src/genericProcessUtils.ts",
     "./which.js": "./src/which.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
@@ -25,6 +26,7 @@
     "shell": "bun run bin/shell.ts"
   },
   "dependencies": {
-    "@thyrox/config": "workspace:*"
+    "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*"
   }
 }
