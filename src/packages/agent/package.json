@@ -37,6 +37,11 @@
     "./loop/sessions": "./loop/sessions/index.ts",
     "./loop/sessions/modelSwitch": "./loop/sessions/modelSwitch.ts",
     "./loop/context/*": "./loop/context/*.ts",
+    "./coordinatorMode": "./coordinatorMode.ts",
+    "./frontmatterParser": "./frontmatterParser.ts",
+    "./proactive": "./proactive/index.ts",
+    "./sessionStores": "./sessionStores.ts",
+    "./yaml": "./yaml.ts",
     "./*": "./*.ts",
     "./*.js": "./*.ts"
   },
@@ -50,7 +55,10 @@
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
   },
   "dependencies": {
+    "@thyrox/app-host": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
     "@thyrox/observability": "workspace:*",
     "@thyrox/permission": "workspace:*",
     "@thyrox/provider": "workspace:*",
