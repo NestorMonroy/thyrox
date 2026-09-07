@@ -13,9 +13,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { runLoop, streamLoop } from '../src/loop.ts'
 import { CLEARED_MARKER } from '../src/context/microcompact.ts'
-import { readJournal } from '../src/observability/journal.ts'
-import { RecordedProvider } from '../src/provider/recorded.ts'
-import { CORE_TOOLS } from '../src/tools/registry.ts'
+import { readJournal } from '@thyrox/observability/journal'
+import { RecordedProvider } from '@thyrox/provider/recorded'
+import { CORE_TOOLS } from '@thyrox/tools/registry'
 import type { AssistantTurn } from '../src/types.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'loop-'))

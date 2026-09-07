@@ -9,7 +9,13 @@
     "command-runtime",
     "config",
     "harness",
+    "observability",
+    "permission",
+    "plan",
+    "provider",
     "shell",
-    "storage"
+    "skills",
+    "storage",
+    "tools"
   ]
 }

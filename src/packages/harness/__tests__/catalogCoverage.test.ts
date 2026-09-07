@@ -10,7 +10,7 @@
 import { describe, expect, test } from 'bun:test'
 import { MODELS } from '@thyrox/agent/models'
 import { autoCompactThreshold, effectiveContextWindow } from '../src/context/autocompact.ts'
-import { turnCost } from '../src/observability/cost.ts'
+import { turnCost } from '@thyrox/observability/cost'
 import type { Usage } from '../src/types.ts'
 
 /**

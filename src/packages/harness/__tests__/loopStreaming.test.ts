@@ -11,8 +11,8 @@ import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { runLoop, streamLoop } from '../src/loop.ts'
-import { RecordedProvider } from '../src/provider/recorded.ts'
-import { CORE_TOOLS } from '../src/tools/registry.ts'
+import { RecordedProvider } from '@thyrox/provider/recorded'
+import { CORE_TOOLS } from '@thyrox/tools/registry'
 import type { AssistantTurn, Provider, ProviderRequest } from '../src/types.ts'
 
 // El streaming del proveedor (T-011) sólo vale si algo lo consume: una

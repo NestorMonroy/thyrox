@@ -7,8 +7,8 @@
  */
 
 import { describe, expect, test } from 'bun:test'
-import { accumulate } from '../src/provider/sse.ts'
-import type { SseEvent } from '../src/provider/sse.ts'
+import { accumulate } from '@thyrox/provider/sse'
+import type { SseEvent } from '@thyrox/provider/sse'
 
 /** Un stream a partir de los events, sin red de por medio. */
 async function* stream(...eventos: SseEvent[]): AsyncGenerator<SseEvent> {
@@ -89,7 +89,7 @@ describe('bloques de pensamiento en el stream (T-064)', () => {
 describe('el pensamiento cruza el bucle y llega al renderizador (T-064)', () => {
   test('el bucle reemite el delta con su tipo, no lo aplana a texto', async () => {
     const { streamLoop } = await import('../src/loop.ts')
-    const { RecordedProvider } = await import('../src/provider/recorded.ts')
+    const { RecordedProvider } = await import('@thyrox/provider/recorded')
     const uso = { input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
     const proveedor = new RecordedProvider([
       { id: 'm1', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso,

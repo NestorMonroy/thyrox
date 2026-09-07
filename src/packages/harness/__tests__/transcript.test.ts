@@ -12,7 +12,7 @@ import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Transcript, readTranscript } from '../src/transcript.ts'
-import { transcriptShapeOf } from '../src/observability/transcriptShape.ts'
+import { transcriptShapeOf } from '@thyrox/observability/transcriptShape'
 
 // El formato se copia A PROPOSITO del cliente: una linea JSON por evento con
 // `type`, `timestamp`, `message` y `usage`. Asi `reconcile_store.py` y

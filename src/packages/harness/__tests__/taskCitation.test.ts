@@ -29,7 +29,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { renderAttachment } from '../src/context/attachments.ts'
 import { TABLERO_DDL } from '../../../task/schema.ts'
-import { resumenTablero, taskTools } from '../src/tools/tasks.ts'
+import { resumenTablero, taskTools } from '@thyrox/tools/tasks'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'taskcit-'))
 

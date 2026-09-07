@@ -23,10 +23,10 @@ import {
   isValidAttachment, renderAttachment, TASK_REMINDER_TEXT,
   TURNS_SINCE_WRITE, TURNS_BETWEEN_REMINDERS,
 } from '../src/context/attachments.ts'
-import { resumenTablero, taskTools } from '../src/tools/tasks.ts'
+import { resumenTablero, taskTools } from '@thyrox/tools/tasks'
 import { runLoop } from '../src/loop.ts'
-import { RecordedProvider } from '../src/provider/recorded.ts'
-import { CORE_TOOLS } from '../src/tools/registry.ts'
+import { RecordedProvider } from '@thyrox/provider/recorded'
+import { CORE_TOOLS } from '@thyrox/tools/registry'
 import type { AssistantTurn, ProviderRequest } from '../src/types.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'taskrem-'))

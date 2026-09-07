@@ -15,8 +15,8 @@ import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { runLoop } from '../src/loop.ts'
-import { RecordedProvider } from '../src/provider/recorded.ts'
-import { CORE_TOOLS } from '../src/tools/registry.ts'
+import { RecordedProvider } from '@thyrox/provider/recorded'
+import { CORE_TOOLS } from '@thyrox/tools/registry'
 
 describe('1. construir — el envoltorio de `hBn`', () => {
   test('envuelve el payload con su uuid y su timestamp ISO', () => {

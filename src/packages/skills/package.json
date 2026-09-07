@@ -1,0 +1,23 @@
+{
+  "name": "@thyrox/skills",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "El registro de skills, su lectura desde un directorio y las que viajan con el arbol. Lo que la herramienta Skill consulta.",
+  "exports": {
+    "./registry": "./src/registry.ts",
+    "./fromDir": "./src/fromDir.ts",
+    "./bundled": "./src/bundled.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0"
+  },
+  "dependencies": {
+    "@thyrox/harness": "workspace:*"
+  }
+}

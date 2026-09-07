@@ -11,8 +11,8 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { streamLoop } from '../src/loop.ts'
-import { RecordedProvider } from '../src/provider/recorded.ts'
-import { CORE_TOOLS } from '../src/tools/registry.ts'
+import { RecordedProvider } from '@thyrox/provider/recorded'
+import { CORE_TOOLS } from '@thyrox/tools/registry'
 import type { AssistantTurn, HarnessEvent } from '../src/types.ts'
 
 // La referencia expone el bucle como generador de eventos

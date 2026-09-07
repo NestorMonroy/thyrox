@@ -1,0 +1,21 @@
+{
+  "name": "@thyrox/plan",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "El modo plan: donde vive el archivo del plan, sus variantes, el veredicto de permiso y las instrucciones que el bucle inyecta.",
+  "exports": {
+    "./mode": "./src/mode.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0"
+  },
+  "dependencies": {
+
+  }
+}

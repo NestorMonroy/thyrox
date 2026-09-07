@@ -13,11 +13,11 @@ import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { AGENTS } from '@thyrox/agent'
-import { agentDefinitionsFromRegistry, toHarnessDefinition } from '../src/tools/agentDefinitions.ts'
+import { agentDefinitionsFromRegistry, toHarnessDefinition } from '@thyrox/tools/agentDefinitions'
 import { openSession } from '../src/session.ts'
 import { runLoop } from '../src/loop.ts'
-import { RecordedProvider } from '../src/provider/recorded.ts'
-import { CORE_TOOLS } from '../src/tools/registry.ts'
+import { RecordedProvider } from '@thyrox/provider/recorded'
+import { CORE_TOOLS } from '@thyrox/tools/registry'
 import type { AssistantTurn } from '../src/types.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'compat-'))
@@ -65,7 +65,7 @@ describe('las definiciones de @thyrox/agent corren como agentes (T-036)', () => 
     const defs = agentDefinitionsFromRegistry(AGENTS)
     const nombre = AGENTS[0].name
     const p = new RecordedProvider([texto('lo que el agente concluyo', defs[nombre].model ?? 'claude-opus-5')])
-    const { agentTool } = await import('../src/tools/agent.ts')
+    const { agentTool } = await import('@thyrox/tools/agent')
     const t = agentTool({ provider: p, transcriptDir: d, definitions: defs })
     const r = await t.run({ prompt: 'trabaja', subagent_type: nombre },
       { cwd: d, sessionId: 'padre', abort: new AbortController().signal, messages: [] })

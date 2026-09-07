@@ -3,8 +3,8 @@
     "id": "T-011",
     "open": false,
     "claims": [
-      { "kind": "symbol-present", "symbol": "parseSseEvents", "in": "src/provider/" },
-      { "kind": "symbol-present", "symbol": "accumulate", "in": "src/provider/" }
+      { "kind": "symbol-present", "symbol": "parseSseEvents", "in": "../provider/src/" },
+      { "kind": "symbol-present", "symbol": "accumulate", "in": "../provider/src/" }
     ]
   },
   {
@@ -20,7 +20,7 @@
     "id": "T-017",
     "open": true,
     "blockedWhile": [
-      { "kind": "symbol-absent", "symbol": "writeTool", "in": "src/tools/" }
+      { "kind": "symbol-absent", "symbol": "writeTool", "in": "../tools/src/" }
     ]
   },
   {

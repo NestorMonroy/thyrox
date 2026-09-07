@@ -13,10 +13,10 @@ import { selectTests, type ImpactConfig, type Io } from '../src/testing/impact.t
 // El selector no toca disco: recibe un `Io`. Eso es lo que lo hace usable
 // desde cualquier repo -- y lo que permite probarlo sin fabricar un arbol.
 const arbol: Record<string, string> = {
-  '__tests__/provider.test.ts': `import { AnthropicHttpProvider } from '../src/provider/anthropicHttp.ts'`,
-  '__tests__/sse.test.ts': `import { parseSseEvents } from '../src/provider/sse.ts'`,
-  '__tests__/loop.test.ts': `import { runLoop } from '../src/loop.ts'\nimport { RecordedProvider } from '../src/provider/recorded.ts'`,
-  '__tests__/tools.test.ts': `import { registry } from '../src/tools/registry.ts'`,
+  '__tests__/provider.test.ts': `import { AnthropicHttpProvider } from '@thyrox/provider/anthropicHttp'`,
+  '__tests__/sse.test.ts': `import { parseSseEvents } from '@thyrox/provider/sse'`,
+  '__tests__/loop.test.ts': `import { runLoop } from '../src/loop.ts'\nimport { RecordedProvider } from '@thyrox/provider/recorded'`,
+  '__tests__/tools.test.ts': `import { registry } from '@thyrox/tools/registry'`,
   '__tests__/cli.test.ts': `import { renderEvent } from '../src/cli/render.ts'`,
 }
 const io: Io = {

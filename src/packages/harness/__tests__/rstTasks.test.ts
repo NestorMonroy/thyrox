@@ -12,7 +12,7 @@ import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { parseRstTasks } from '../../../task/rst.ts'
-import { taskTools } from '../src/tools/tasks.ts'
+import { taskTools } from '@thyrox/tools/tasks'
 import { main } from '../bin/harness.ts'
 import { docsRoot } from '../../../paths/docs.ts'
 

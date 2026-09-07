@@ -83,7 +83,7 @@ describe('el invariante: piso ⊂ base, y el delta lo cubre un ALTER', () => {
 
 describe('el esquema ya no vive dentro de la herramienta del harness', () => {
   test('tools/tasks.ts no declara ningún CREATE TABLE', () => {
-    const t = readFileSync(join(RAIZ, 'src/packages/harness/src/tools/tasks.ts'), 'utf8')
+    const t = readFileSync(join(RAIZ, 'src/packages/tools/src/tasks.ts'), 'utf8')
     expect(t).not.toContain('CREATE TABLE')
   })
 

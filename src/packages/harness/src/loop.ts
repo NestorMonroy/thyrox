@@ -18,10 +18,10 @@
  */
 import { compactMessages, estimateMessagesTokens } from './context/autocompact.ts'
 import { renderAttachment, TURNS_SINCE_WRITE, TURNS_BETWEEN_REMINDERS } from './context/attachments.ts'
-import { resumenTablero } from './tools/tasks.ts'
+import { resumenTablero } from '@thyrox/tools/tasks'
 import { MICROCOMPACT_MIN_FREED_TOKENS, projectMicrocompact } from './context/microcompact.ts'
-import { makeClearedPersister, toolCallIndex } from './observability/clearedResults.ts'
-import { STORE_PATH } from './observability/store.ts'
+import { makeClearedPersister, toolCallIndex } from '@thyrox/observability/clearedResults'
+import { STORE_PATH } from '@thyrox/observability/store'
 import { probeStore } from '../../../store/db.ts'
 import {
   THRASHING_MESSAGE, advanceTurn, contextLevel, markCompacted, rapidRefill,
@@ -29,13 +29,13 @@ import {
   type CompactionState, type ContextLevel,
 } from './context/contextLevel.ts'
 import { collectCompactableToolIds, microcompact } from './context/microcompact.ts'
-import { Journal } from './observability/journal.ts'
-import { turnCost } from './observability/cost.ts'
+import { Journal } from '@thyrox/observability/journal'
+import { turnCost } from '@thyrox/observability/cost'
 import { runHooks, type HookConfig } from './hooks.ts'
-import { evaluate, type PermissionPolicy } from './permission.ts'
+import { evaluate, type PermissionPolicy } from '@thyrox/permission'
 import { openSession } from './session.ts'
 import type { Transcript } from './transcript.ts'
-import { registry, toolSpecs } from './tools/registry.ts'
+import { registry, toolSpecs } from '@thyrox/tools/registry'
 import type { ContentBlock, HarnessEvent, LoopResult, LoopStop, Message, Provider, Tool, Usage } from './types.ts'
 import { USAGE_CERO } from './types.ts'
 

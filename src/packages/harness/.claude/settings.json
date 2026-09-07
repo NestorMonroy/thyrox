@@ -7,7 +7,6 @@
     "crossCutting": [
       "src/types.ts",
       "src/loop.ts",
-      "src/tools/registry.ts",
       "package.json"
     ]
   }

@@ -10,7 +10,7 @@ import { Database } from 'bun:sqlite'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { recordHarnessSession, reconcileStaleRunningRows, ensureUpdatedAtTrigger } from '../src/observability/store.ts'
+import { recordHarnessSession, reconcileStaleRunningRows, ensureUpdatedAtTrigger } from '@thyrox/observability/store'
 import { readProcStart } from '../src/session/reconcile.ts'
 import { USAGE_CERO } from '../src/types.ts'
 

@@ -1,0 +1,32 @@
+{
+  "name": "@thyrox/tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "El registro de herramientas y las herramientas mismas: las seis del nucleo, el despacho de subagentes con sus definiciones, plan, skill, tareas y web.",
+  "exports": {
+    "./registry": "./src/registry.ts",
+    "./agent": "./src/agent.ts",
+    "./agentDefinitions": "./src/agentDefinitions.ts",
+    "./plan": "./src/plan.ts",
+    "./skill": "./src/skill.ts",
+    "./tasks": "./src/tasks.ts",
+    "./web": "./src/web.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0",
+    "@thyrox/provider": "workspace:*"
+  },
+  "dependencies": {
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/harness": "workspace:*",
+    "@thyrox/observability": "workspace:*",
+    "@thyrox/plan": "workspace:*",
+    "@thyrox/skills": "workspace:*"
+  }
+}

@@ -47,11 +47,14 @@ Dos formatos se copian del cliente **a propósito**:
 | `src/transcript.ts` | JSONL append-only + lectura tolerante a línea rota |
 | `src/session.ts` | identidad, reanudación, ruta por proyecto |
 | `src/hooks.ts` | ejecutor con el contrato del cliente |
-| `src/permission.ts` | la decisión previa a ejecutar (fail-closed) |
-| `src/tools/registry.ts` | registro + `Bash`, `Read`, `Write`, `Edit`, `Glob`, `Grep` |
-| `src/provider/` | interfaz + los dos adaptadores |
 | `src/loop.ts` | el bucle |
 | `bin/harness.ts` | el binario |
+
+Lo que el bucle LLAMA vive en paquetes hermanos, no aquí (tarea #224,
+tramo 2): `@thyrox/provider` (interfaz + los dos adaptadores),
+`@thyrox/permission` (la decisión previa a ejecutar, fail-closed),
+`@thyrox/tools` (registro + herramientas), `@thyrox/observability`,
+`@thyrox/plan` y `@thyrox/skills`.
 
 ## Lo que todavía NO hace
 

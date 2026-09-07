@@ -6,10 +6,10 @@ export { USAGE_CERO } from './types.ts'
 export { Transcript, readTranscript } from './transcript.ts'
 export { openSession, projectSlug } from './session.ts'
 export { runHooks, HARNESS_HOOK_EVENTS, type HarnessHookEvent, type HookConfig } from './hooks.ts'
-export { confinedTo, decide, evaluate, matchesRule, type Capability, type Decision, type Mode, type PermissionPolicy, type Verdict } from './permission.ts'
-export { CORE_TOOLS, registry, toolSpecs, bashTool, readTool, writeTool, editTool, globTool, grepTool } from './tools/registry.ts'
-export { RecordedProvider } from './provider/recorded.ts'
-export { AnthropicHttpProvider } from './provider/anthropicHttp.ts'
+export { confinedTo, decide, evaluate, matchesRule, type Capability, type Decision, type Mode, type PermissionPolicy, type Verdict } from '@thyrox/permission'
+export { CORE_TOOLS, registry, toolSpecs, bashTool, readTool, writeTool, editTool, globTool, grepTool } from '@thyrox/tools/registry'
+export { RecordedProvider } from '@thyrox/provider/recorded'
+export { AnthropicHttpProvider } from '@thyrox/provider/anthropicHttp'
 export { runLoop, streamLoop, type LoopOptions } from './loop.ts'
 export {
   assembleSystemPrompt, estimateTokens, matchesPath, parseRule,
@@ -28,23 +28,23 @@ export {
   forkSession, indexSessions, latestSession, planResume,
   type ForkedSession, type ResumePlan, type SessionRow,
 } from './sessions/index.ts'
-export { Journal, readJournal, type JournalEntry } from './observability/journal.ts'
-export { costReport, turnCost, type CostReport, type TurnCost } from './observability/cost.ts'
-export { STORE_PATH, recordHarnessSession, reconcileStaleRunningRows, ensureUpdatedAtTrigger, type HarnessSessionRow, type StaleRow } from './observability/store.ts'
+export { Journal, readJournal, type JournalEntry } from '@thyrox/observability/journal'
+export { costReport, turnCost, type CostReport, type TurnCost } from '@thyrox/observability/cost'
+export { STORE_PATH, recordHarnessSession, reconcileStaleRunningRows, ensureUpdatedAtTrigger, type HarnessSessionRow, type StaleRow } from '@thyrox/observability/store'
 export { openStore, probeStore, BUSY_TIMEOUT_MS, type StoreProbe } from '../../../store/db.ts'
 export {
   TRANSCRIPT_MESSAGE_TYPES, transcriptShape, transcriptShapeOf, type TranscriptShape,
-} from './observability/transcriptShape.ts'
-export { agentTool, DEFAULT_AGENT_DEFINITIONS, type AgentDefinition, type AgentToolOptions } from './tools/agent.ts'
-export { skillTool } from './tools/skill.ts'
-export { taskTools, type TaskToolOptions } from './tools/tasks.ts'
+} from '@thyrox/observability/transcriptShape'
+export { agentTool, DEFAULT_AGENT_DEFINITIONS, type AgentDefinition, type AgentToolOptions } from '@thyrox/tools/agent'
+export { skillTool } from '@thyrox/tools/skill'
+export { taskTools, type TaskToolOptions } from '@thyrox/tools/tasks'
 // El vocabulario de estados es del subsistema de tareas, no de su
 // superficie de herramienta: se reexporta desde donde se declara.
 export { TASK_STATUSES, type TaskStatus } from '../../../task/schema.ts'
 export {
   domainAllowed, webFetchTool, webSearchTool,
   type DomainPolicy, type SearchHit, type SearchProvider,
-} from './tools/web.ts'
+} from '@thyrox/tools/web'
 export { switchModel, type SwitchOptions, type SwitchResult } from './sessions/modelSwitch.ts'
 export {
   classifyLastTurn, filterUnresolvedToolUses, resumableMessages,
@@ -67,10 +67,10 @@ export {
   type OutputStyle, type StatusLine,
 } from './cli/render.ts'
 export { resumeChoices, type ResumeChoice } from './cli/resume.ts'
-export { agentDefinitionsFromRegistry, toHarnessDefinition } from './tools/agentDefinitions.ts'
+export { agentDefinitionsFromRegistry, toHarnessDefinition } from '@thyrox/tools/agentDefinitions'
 export {
   SkillRegistry, extractDirFor,
   type SkillContext, type SkillDefinition, type SkillRegistryOptions,
-} from './skills/registry.ts'
-export { fromSkillDir, skillNameFromDir } from './skills/fromDir.ts'
-export { bundledSkillNames, bundledSkillDefs, registerBundledSkills } from './skills/bundled.ts'
+} from '@thyrox/skills/registry'
+export { fromSkillDir, skillNameFromDir } from '@thyrox/skills/fromDir'
+export { bundledSkillNames, bundledSkillDefs, registerBundledSkills } from '@thyrox/skills/bundled'

@@ -12,24 +12,15 @@
     "./transcript": "./src/transcript.ts",
     "./session": "./src/session.ts",
     "./hooks": "./src/hooks.ts",
-    "./permission": "./src/permission.ts",
-    "./tools/registry": "./src/tools/registry.ts",
-    "./provider": "./src/provider/index.ts",
     "./loop": "./src/loop.ts",
     "./context/systemPrompt": "./src/context/systemPrompt.ts",
     "./context/microcompact": "./src/context/microcompact.ts",
     "./context/autocompact": "./src/context/autocompact.ts",
     "./sessions": "./src/sessions/index.ts",
-    "./observability/journal": "./src/observability/journal.ts",
-    "./observability/cost": "./src/observability/cost.ts",
-    "./observability/store": "./src/observability/store.ts",
-    "./tools/agent": "./src/tools/agent.ts",
-    "./tools/tasks": "./src/tools/tasks.ts",
-    "./tools/web": "./src/tools/web.ts",
     "./sessions/modelSwitch": "./src/sessions/modelSwitch.ts",
     "./cli/render": "./src/cli/render.ts",
     "./cli/resume": "./src/cli/resume.ts",
-    "./tools/agentDefinitions": "./src/tools/agentDefinitions.ts"
+    "./session/reconcile": "./src/session/reconcile.ts"
   },
   "scripts": {
     "test": "bun test",
@@ -42,6 +33,11 @@
   },
   "dependencies": {
     "@thyrox/agent": "workspace:*",
-    "@thyrox/config": "workspace:*"
+    "@thyrox/config": "workspace:*",
+    "@thyrox/observability": "workspace:*",
+    "@thyrox/permission": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/skills": "workspace:*",
+    "@thyrox/tools": "workspace:*"
   }
 }
