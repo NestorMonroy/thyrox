@@ -31,12 +31,6 @@ from gates.doctor import Check  # noqa: E402
 
 CHECKS: list[Check] = [
     # ── Prosa ───────────────────────────────────────────────────────────
-    Check('unbounded-pipe', 'Guiones', 'shell',
-          'check_unbounded_pipe.py',
-          'un escritor sin fin canalizado a un consumidor que cortocircuita'),
-    Check('provider-evidence', 'Gobierno', 'workbench',
-          'check_provider_evidence.py',
-          'workbench/paths.py — un banco vive en el árbol del CONSUMIDOR'),
     Check('rst-sintaxis', 'Prosa', 'rst', 'check_rst_sintaxis.py',
           'sintaxis RST contra el motor real de Sphinx'),
     Check('rst-convenciones', 'Prosa', 'rst', 'check_rst_convenciones.py',
@@ -67,6 +61,9 @@ CHECKS: list[Check] = [
           'H-DOCS-120 — la evidencia citada existe y está versionada'),
 
     # ── Herramienta ─────────────────────────────────────────────────────
+    Check('unbounded-pipe', 'Herramienta', 'shell',
+          'check_unbounded_pipe.py',
+          'un escritor sin fin canalizado a un consumidor que cortocircuita'),
     Check('script-naming', 'Herramienta', 'guion', 'check_script_naming.py',
           'convention-naming.md — `import mi-guion` no existe: snake_case en .py'),
     Check('script-deprecated', 'Herramienta', 'guion', 'check_script_deprecated.py',
@@ -105,6 +102,9 @@ CHECKS: list[Check] = [
           'la precedencia se deriva recorriendo ramas, no líneas'),
 
     # ── Alcance ─────────────────────────────────────────────────────────
+    Check('provider-evidence', 'Alcance', 'workbench',
+          'check_provider_evidence.py',
+          'workbench/paths.py — un banco vive en el árbol del CONSUMIDOR'),
     Check('reference-root-resolution', 'Alcance', 'referencia', 'check_reference_root_resolution.py',
           'la ruta de un addon de la referencia se pide, no se compone'),
     Check('corpus-al-dia', 'Alcance', 'referencia', 'check_corpus_al_dia.py',
