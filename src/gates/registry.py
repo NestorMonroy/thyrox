@@ -31,6 +31,12 @@ from gates.doctor import Check  # noqa: E402
 
 CHECKS: list[Check] = [
     # ── Prosa ───────────────────────────────────────────────────────────
+    Check('unbounded-pipe', 'Guiones', 'shell',
+          'check_unbounded_pipe.py',
+          'un escritor sin fin canalizado a un consumidor que cortocircuita'),
+    Check('provider-evidence', 'Gobierno', 'workbench',
+          'check_provider_evidence.py',
+          'workbench/paths.py — un banco vive en el árbol del CONSUMIDOR'),
     Check('rst-sintaxis', 'Prosa', 'rst', 'check_rst_sintaxis.py',
           'sintaxis RST contra el motor real de Sphinx'),
     Check('rst-convenciones', 'Prosa', 'rst', 'check_rst_convenciones.py',

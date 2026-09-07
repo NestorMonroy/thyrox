@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""Gate — THYROX no emite evidencia dentro de su propio arbol.
+
+`workbench/paths.py` ya lo declara: *«un banco vive en el arbol del CONSUMIDOR
+y lo producen sus sesiones»*, y por eso `workbench_dir()` REHUSA en vez de
+inventar un default — un hogar por defecto seria justo la decision que la
+directiva le retira al emisor.
+
+Lo que faltaba es el control. La prosa estaba escrita y no lo impidio: en la
+sesion del 2026-09-07 escribi el banco de un episodio en
+`thyrox/.claude/eventos/`, teniendo el modulo delante. Es el criterio que
+`gitlink-bump-gate.md` ya dejo fijado — la leccion escrita no previene la
+reincidencia, un gate ejecutable si.
+
+Que mide: directorios bajo `<raiz>/.claude/eventos/` en el arbol del PROVEEDOR.
+Ciega a: un banco emitido fuera de ese segmento (un `evidencia/` inventado), y
+a si el contenido de un banco legitimo del consumidor es correcto — eso lo mide
+el gate de manifiesto, otro instrumento.
+
+Salidas: 0 sin bancos propios · 1 con bancos propios · 2 no pudo medir.
+"""
+from __future__ import annotations
+
+import argparse
+import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+
+from workbench.paths import EVIDENCE_DIR, STATE_DIR  # noqa: E402
+
+#: El marcador por el que se reconoce la raiz propia. Constante con su entrada
+#: de entorno (DEC-04): cablearlo le quitaria al consumidor la decision de como
+#: esta estructurado su arbol.
+LOCATOR_VAR = "THYROX_LOCATOR"
+LOCATOR_DEFAULT = pathlib.Path("src") / "paths" / "reach.py"
+
+
+def own_root(start: pathlib.Path) -> pathlib.Path | None:
+    """La raiz propia, por ascenso al marcador declarado."""
+    import os
+    marker = pathlib.Path(os.environ.get(LOCATOR_VAR) or LOCATOR_DEFAULT)
+    for level in (start, *start.parents):
+        if (level / marker).is_file():
+            return level
+    return None
+
+
+def banks(root: pathlib.Path) -> list[str]:
+    """Los bancos emitidos dentro del proveedor, por nombre."""
+    home = root / STATE_DIR / EVIDENCE_DIR
+    if not home.is_dir():
+        return []
+    return sorted(p.name for p in home.iterdir() if p.is_dir())
+
+
+def main(argv: list[str]) -> int:
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--root", help="raiz a medir (por defecto, la propia)")
+    p.add_argument("--strict", action="store_true", help="exit 1 si hay bancos")
+    args = p.parse_args(argv)
+
+    if args.root:
+        root = pathlib.Path(args.root).resolve()
+        if not (root / LOCATOR_DEFAULT).is_file():
+            print(f"check-provider-evidence: {root} no lleva el marcador "
+                  f"{LOCATOR_DEFAULT} — NO se emite un conteo: un 0 aqui seria "
+                  "un verde falso.", file=sys.stderr)
+            return 2
+    else:
+        root = own_root(pathlib.Path(__file__).resolve().parent)
+        if root is None:
+            print("check-provider-evidence: no se hallo la raiz propia — "
+                  "NO se emite un conteo: un 0 aqui seria un verde falso.",
+                  file=sys.stderr)
+            return 2
+
+    found = banks(root)
+    print(f"check-provider-evidence: {len(found)} banco(s) emitido(s) dentro "
+          f"del proveedor (alcance medido: {root}/{STATE_DIR}/{EVIDENCE_DIR})")
+    for name in found:
+        print(f"  {name} — un banco vive en el arbol del CONSUMIDOR; declara "
+              "THYROX_WORKBENCH_DIR y emitelo alli")
+    return 1 if (found and args.strict) else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))
