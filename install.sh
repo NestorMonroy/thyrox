@@ -9,6 +9,20 @@
 # una ruta absoluta escrita a mano en el documento que la usa; tras instalar,
 # esa ruta la aporta el entorno.
 #
+# «Su archivo de entorno» es concreto: el `.env` de cada destino, o el que
+# `THYROX_ENV_FILE` nombre si está declarada — y entonces gana para TODOS los
+# destinos, porque una ruta explícita no se reinterpreta por destino. La línea
+# que escribe es `THYROX_ROOT=<ruta>`, una sola, idempotente: si ya está con el
+# mismo valor no toca el archivo, y si está con otro la sustituye en su sitio
+# en vez de apilar una segunda.
+#
+# Esa es la relación con `.env`, y es la DEC-04 aplicada al propio instalador:
+# escribe el VALOR (`THYROX_ROOT`) en el archivo que la RUTA (`THYROX_ENV_FILE`)
+# nombra. Lo que NO escribe son las otras 26 claves del contrato — las declara
+# `.env.example`, y su valor es del consumidor, no del proveedor. El gate
+# `src/gates/check_env_contract_keys.py` verifica que ninguna clave leída del
+# entorno se quede fuera de ese archivo.
+#
 # Procedencia del porte — tres referencias, leídas en sólo lectura
 # ----------------------------------------------------------------
 #   claude-code-nestor-monroy-tools/install.sh
@@ -50,9 +64,16 @@
 #   ./install.sh --help
 #
 # Variables
-#   THYROX_ROOT   la raíz de thyrox. Si no se declara, se deriva del
-#                 directorio de este guion — que vive en la raíz, y por eso
-#                 es la derivación válida y no una conveniencia.
+#   THYROX_ROOT       el VALOR: la raíz de thyrox. Si no se declara, se
+#                     deriva del directorio de este guion — que vive en la
+#                     raíz, y por eso es la derivación válida y no una
+#                     conveniencia. Es la línea que este guion escribe.
+#
+#   THYROX_ENV_FILE   la RUTA al archivo que declara el valor. Sin ella, cada
+#                     destino usa su propio `.env`; con ella, ese archivo gana
+#                     para todos. La lee `env_file_for()` al escribir y
+#                     `reach.py::env_value()` al leer, así que instalador y
+#                     lector responden a la misma variable en vez de a dos.
 
 set -uo pipefail
 
