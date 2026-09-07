@@ -70,9 +70,22 @@ for (const pkg of readdirSync(PACKAGES)) {
     }
   }
 }
+/**
+ * Si el especificador PELADO tampoco resuelve, no falta la entrada del
+ * subpath: falta la arista del paquete entera, y ninguna entrada de `exports`
+ * la arregla. Sin esta linea, un `ARISTA` se lee como «anade el subpath al
+ * mapa» — y `cli/package.json` ya declara `./print`, con el archivo en su
+ * sitio. Iba a corregir un mapa que estaba bien.
+ */
+function bareResolves(pkg: string): boolean {
+  try { Bun.resolveSync(`@thyrox/${pkg}`, PACKAGES); return true } catch { return false }
+}
+
 for (const [pkg, subs] of [...missing].sort((a,b)=>b[1].size-a[1].size)) {
   const subpaths = [...subs].sort()
   const present = subpaths.filter((s) => SHAPES.some((f) => existsSync(join(PACKAGES, pkg, f(s)))))
-  console.log(`\n${pkg}  (${subpaths.length} subpaths; ${present.length} ya en el arbol)`)
+  const bare = bareResolves(pkg)
+  const note = bare ? '' : '  <- el paquete PELADO tampoco resuelve: falta la arista entera (#239)'
+  console.log(`\n${pkg}  (${subpaths.length} subpaths; ${present.length} ya en el arbol)${note}`)
   for (const s of subpaths) console.log(`   ${present.includes(s) ? 'ARISTA' : 'PORTAR'}  ${s}`)
 }
