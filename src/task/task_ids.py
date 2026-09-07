@@ -111,6 +111,14 @@ import re
 import sqlite3
 import sys
 
+# La resolucion de entorno del proyecto: `env_value` lee primero el proceso y
+# despues el `.env` que `THYROX_ENV_FILE` declara. `sys.path` a nivel de modulo
+# —no lazy— porque varias suites cargan este archivo con
+# `spec_from_file_location`, via por la que su directorio no queda en la ruta
+# de busqueda. Es el mismo criterio que `closure_graph.py` ya documenta.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "paths"))
+import reach  # noqa: E402
+
 #: Las cinco capas del multi-repo, mas el marcador de «sin señal». Es la misma
 #: enumeracion que ``agent_store.SUBMODULES``; se repite aqui porque este
 #: modulo no debe depender del store para acuñar (el mapa tiene que poder
@@ -138,6 +146,29 @@ FORMAT_VERSION = 1
 #: El store de tareas: donde vive el mapa, en ``tasks.citation_id``.
 DEFAULT_STORE_PATH = (pathlib.Path(__file__).resolve().parents[2]
                       / "agent-results" / "agent_store.sqlite3")
+
+#: La variable que declara el hogar del board del cliente. Es el VALOR; la RUTA
+#: a su declaracion la aporta ``reach.ENV_FILE_VAR`` (``THYROX_ENV_FILE``), que
+#: es el mismo par con que ``THYROX_ROOT`` se resuelve. Va por constante y no
+#: en linea porque el hogar del board es un parametro del consumidor: un clon
+#: que corra el cliente en otro `HOME` tenia que editar el codigo.
+BOARD_ROOT_VAR = "THYROX_BOARD_ROOT"
+
+#: El respaldo, medido en este entorno: el cliente escribe una tarjeta por
+#: tarea bajo ``<raiz>/<session_id>/<ordinal>.json``. No es una adivinanza —
+#: es donde estan las 220 tarjetas de la sesion viva.
+BOARD_ROOT_DEFAULT = "/root/.claude/tasks"
+
+
+def board_root(start=None) -> pathlib.Path:
+    """El hogar del board, por declaracion o por el respaldo medido."""
+    declared = reach.env_value(BOARD_ROOT_VAR, start)
+    return pathlib.Path(declared or BOARD_ROOT_DEFAULT)
+
+
+def board_dir(session_id: str, start=None) -> pathlib.Path:
+    """El directorio de tarjetas de una sesion."""
+    return board_root(start) / session_id
 
 
 class MappingError(RuntimeError):
@@ -735,7 +766,7 @@ def main(argv=None) -> int:
 
     args = parser.parse_args(argv)
     if getattr(args, "board", "sentinel") is None:
-        args.board = f"/root/.claude/tasks/{args.sesion}"
+        args.board = str(board_dir(args.sesion))
     return args.func(args)
 
 
