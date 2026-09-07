@@ -93,5 +93,21 @@ def hooks_dir() -> Path:
 
 
 def agent_results_dir() -> Path:
-    """`.claude/agent-results/` del consumidor — el hogar del store."""
+    """`.claude/agent-results/` del consumidor — el hogar de su telemetria.
+
+    Es el hogar de `registro-de-agentes.md`, `delta-de-agentes.md` y los
+    `.base-*.json`: lo que los hooks del CLIENTE escriben, que es del consumidor
+    por definicion. **Ya no es el hogar del store** — ver `agent_store_path`.
+    """
     return consumer_root() / ".claude" / "agent-results"
+
+
+def agent_store_path() -> Path:
+    """El store, por el localizador declarado. Delega, no compone.
+
+    Componerlo aqui como `agent_results_dir() / "agent_store.sqlite3"` lo ataba
+    al consumidor, y desde el 2026-09-07 el store vive en thyrox salvo que
+    `THYROX_AGENT_STORE` diga otra cosa. Dos composiciones de la misma ruta son
+    dos fuentes de verdad que nadie sincroniza.
+    """
+    return reach.agent_store_path()

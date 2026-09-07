@@ -109,7 +109,7 @@ def store_db() -> Path:
     """
     destination = _claude_dir()
     if not destination:
-        return agents_paths.agent_results_dir() / "agent_store.sqlite3"
+        return agents_paths.agent_store_path()
     raiz = Path(destination).expanduser().resolve()
     if raiz.name != "agent-results":
         raiz = raiz / "agent-results"

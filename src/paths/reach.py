@@ -395,6 +395,49 @@ def scratch_root(start: Path | None = None) -> Path:
     path.mkdir(parents=True, exist_ok=True)
     return path
 
+#: La constante que declara el hogar del store de agentes y tareas. Es el VALOR;
+#: la RUTA al archivo que lo declara la lleva ``THYROX_ENV_FILE`` (DEC-04).
+AGENT_STORE_VAR = "THYROX_AGENT_STORE"
+AGENT_STORE_COMPAT_VAR = "KAUPAMEX_AGENT_STORE"
+
+#: Su default dentro de thyrox, cuando nadie lo declara.
+AGENT_STORE_DIR = Path("agent-results")
+AGENT_STORE_NAME = "agent_store.sqlite3"
+
+
+def agent_store_path(start: Path | None = None) -> Path:
+    """La ruta del store, **con su directorio creado**. Nunca una ruta supuesta.
+
+    Dos desenlaces, y el segundo no es un rehuse:
+
+    - La constante declarada gana. Es el caso del consumidor: el store vive en
+      el clon que despacha, y su ruta la fija su ``.env``.
+    - Sin declaración, el store es de thyrox: ``<thyrox>/agent-results/``,
+      creado bajo demanda e idempotente. Es la misma forma de
+      :func:`scratch_root`, y por la misma razón — un directorio que nadie crea
+      produce un fallo que no distingue «no hay datos» de «no pude medir».
+
+    Lo prohibido no era tener default: era **derivarlo por aritmética de**
+    ``__file__``. La forma anterior —``parents[2]`` más ``agent-results/``—
+    describía el árbol de `docs`, donde estos guiones vivían, y desde
+    ``thyrox/src/task/`` apuntaba a un directorio que nadie creaba nunca. Aquí
+    la raíz sale de :func:`thyrox_root`, que es la cadena declarada, y el
+    directorio se materializa.
+
+    El **esquema** no es cosa de este módulo: lo crea ``agent_store.connect``,
+    que ya usa ``CREATE TABLE IF NOT EXISTS``. Aquí vive la ubicación y nada
+    más — el localizador no conoce tablas.
+    """
+    declared = env_value(AGENT_STORE_VAR, start) or env_value(
+        AGENT_STORE_COMPAT_VAR, start)
+    if declared:
+        path = Path(declared).expanduser()
+    else:
+        path = thyrox_root(start) / AGENT_STORE_DIR / AGENT_STORE_NAME
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def root(repo: str, start: Path | None = None) -> Path:
     """La ruta absoluta de una raíz declarada, por la cadena de precedencia.
 

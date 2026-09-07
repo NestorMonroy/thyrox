@@ -31,22 +31,18 @@ import asignadas  # noqa: E402
 sys.path.insert(0, str(AQUI.parent / 'paths'))
 import reach  # noqa: E402
 
-#: Las dos rutas son del CONSUMIDOR, no de thyrox, y por eso se declaran en vez
-#: de derivarse. El ``RAIZ = AQUI.parents[2]`` anterior describia el arbol de
-#: `docs`, donde este guion vivia; desde ``thyrox/src/task/`` resolvia
-#: ``thyrox/source/gestion/…`` y ``thyrox/.claude/agent-results/…``, ninguna de
-#: las dos existente — y el guion leia esa ausencia como «sin asuntos» en vez de
-#: como «no pude medir». Ver ``task_ids.DEFAULT_STORE_PATH``.
-_STORE_ENV = (reach.env_value('THYROX_AGENT_STORE')
-              or reach.env_value('KAUPAMEX_AGENT_STORE'))
-STORE = pathlib.Path(_STORE_ENV) if _STORE_ENV else None
+#: Las dos rutas se declaran en vez de derivarse. El ``RAIZ = AQUI.parents[2]``
+#: anterior describia el arbol de `docs`, donde este guion vivia; desde
+#: ``thyrox/src/task/`` resolvia ``thyrox/source/gestion/…``, inexistente — y el
+#: guion leia esa ausencia como «sin asuntos» en vez de como «no pude medir».
+STORE = reach.agent_store_path()
 DESTINO = (reach.root('docs') / 'source' / 'gestion' / 'pm' / 'reportes'
            / 'tablero-de-tareas-asignadas.rst')
 
 
 def asuntos():
     """El asunto de cada tarea, del store. Ausente se declara, no se inventa."""
-    if STORE is None or not STORE.is_file():
+    if not STORE.is_file():
         return {}
     con = sqlite3.connect(f'file:{STORE}?mode=ro', uri=True)
     return {int(i): s for i, s, _ in
@@ -62,7 +58,7 @@ def citas():
     columna devuelve ``{}`` y el tablero sigue publicando el ordinal solo:
     mismo contrato de compatibilidad que ``selectCitationId`` del harness.
     """
-    if STORE is None or not STORE.is_file():
+    if not STORE.is_file():
         return {}
     con = sqlite3.connect(f'file:{STORE}?mode=ro', uri=True)
     if 'citation_id' not in {r[1] for r in con.execute('PRAGMA table_info(tasks)')}:

@@ -46,17 +46,16 @@ MODULE_PATH = HERE.parents[1] / "src" / "task" / "task_source.py"
 # relativo a este archivo, que era su sitio cuando la suite vivia en
 # `docs: .claude/scripts/tests/`; desde `thyrox/tests/legacy/` no resuelve a
 # nada. Se declara con la misma variable que `agents/model_catalog.py`.
-# Se lee con `reach.env_value`, no con `os.environ`: el contrato de las dos
-# entradas (DEC-04) es «el proceso primero, despues el `.env` que
-# `THYROX_ENV_FILE` nombra». Un `os.environ.get` pelado ve solo la primera, asi
-# que declaraba «sin store real» con la clave declarada en el archivo — y ese
-# rojo no distinguia «no hay store» de «no supe buscarlo».
+# La ruta la da el localizador, no una composicion propia: `agent_store_path`
+# resuelve la constante `THYROX_AGENT_STORE` si esta declarada y si no el store
+# de thyrox. Un `os.environ.get` pelado veia solo el proceso —no el `.env` que
+# `THYROX_ENV_FILE` nombra— y declaraba «sin store real» con el store delante;
+# ese rojo no distinguia «no hay store» de «no supe buscarlo».
 sys.path.insert(0, str(HERE.parents[1] / "src" / "paths"))
 import reach  # noqa: E402
 
-_ENV_STORE = (reach.env_value("THYROX_AGENT_STORE")
-              or reach.env_value("KAUPAMEX_AGENT_STORE"))
-STORE_REAL = pathlib.Path(_ENV_STORE) if _ENV_STORE else None
+_REAL = reach.agent_store_path()
+STORE_REAL = _REAL if _REAL.is_file() else None
 
 _spec = importlib.util.spec_from_file_location("task_source", MODULE_PATH)
 ts = importlib.util.module_from_spec(_spec)

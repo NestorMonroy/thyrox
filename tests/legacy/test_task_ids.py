@@ -448,25 +448,24 @@ def _default_store_con(entorno):
     return salida.stdout.strip()
 
 
-check(_default_store_con({}) == "",
-      "store: sin declaracion el default es None, no una ruta supuesta")
-check(_default_store_con({"THYROX_AGENT_STORE": "/x/y.sqlite3"}) == "/x/y.sqlite3",
-      "store: declarado, el default es lo declarado")
+_THYROX = str(pathlib.Path(kx.__file__).resolve().parents[2])
+_DEFAULT = _THYROX + "/agent-results/agent_store.sqlite3"
 
-# El control que DISCRIMINA: sin declaracion y sin --store, el CLI rehusa con
-# exit 2 y NO publica conteo. Un `0 id(es) de cita` ahi seria un verde falso —
-# indistinguible de un store real y vacio.
-_env_sin = dict(os.environ)
-_env_sin.pop("THYROX_AGENT_STORE", None)
-_env_sin.pop("KAUPAMEX_AGENT_STORE", None)
-_env_sin["THYROX_ENV_FILE"] = str(_VACIO)
-_rehusa = subprocess.run([sys.executable, str(SUT), "censo"],
-                         capture_output=True, text=True, env=_env_sin)
-check(_rehusa.returncode == 2, "store: sin declaracion el CLI rehusa (exit 2)")
-check("total:" not in _rehusa.stdout,
-      "store: el rehuse NO publica conteo (un 0 seria verde falso)")
-check("THYROX_AGENT_STORE" in _rehusa.stderr,
-      "store: el rehuse nombra la variable que falta")
+check(_default_store_con({"THYROX_AGENT_STORE": "/x/y.sqlite3"}) == "/x/y.sqlite3",
+      "store: la constante declarada gana")
+check(_default_store_con({}) == _DEFAULT,
+      "store: sin constante, el default es el de thyrox")
+
+# El control que DISCRIMINA. El default coincide, por casualidad, con lo que
+# `parents[2]` daba desde `src/task/`: la ruta sola NO separa el mecanismo
+# declarado de la aritmetica. Lo que si los separa son dos conductas que la
+# aritmetica no tiene — obedecer la constante (arriba) y **crear** el
+# directorio (aqui). Con la aritmetica de vuelta las dos caen.
+_dir = pathlib.Path(_THYROX) / "agent-results"
+if _dir.is_dir() and not any(_dir.iterdir()):
+    _dir.rmdir()          # solo si esta vacio: no se borra un store real
+check(_default_store_con({}) == _DEFAULT and _dir.is_dir(),
+      "store: sin constante, el directorio se crea (idempotente)")
 
 print(f"{checks} aserciones")
 if failures:

@@ -29,13 +29,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'paths'))
 import reach  # noqa: E402
 
-#: El store es parametro del CONSUMIDOR: se declara, no se deriva de
-#: ``__file__``. La aritmetica anterior —``parents[2]`` mas ``agent-results/``—
-#: resolvia ``thyrox/agent-results/…``, que no existe, y el llamador leia esa
-#: ausencia como «no hay tareas». Ver ``task_ids.DEFAULT_STORE_PATH``.
-_STORE_ENV = (reach.env_value('THYROX_AGENT_STORE')
-              or reach.env_value('KAUPAMEX_AGENT_STORE'))
-STORE = Path(_STORE_ENV) if _STORE_ENV else None
+#: El store lo resuelve el localizador: la constante declarada si la hay, y si
+#: no la de thyrox, creada e idempotente. NO se deriva de ``__file__`` — ver
+#: ``reach.agent_store_path``.
+STORE = reach.agent_store_path()
 
 # Lo que NO es implementación: se aparta antes de repartir por familia.
 DECISION = re.compile(

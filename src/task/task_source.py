@@ -33,7 +33,7 @@ import sys
 # `spec_from_file_location`, via por la que su directorio no queda en
 # `sys.path`. Es el criterio que `closure_graph.py` ya documenta.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from paths.reach import env_value  # noqa: E402
+from paths.reach import agent_store_path  # noqa: E402
 
 #: La convención de CLI para «leer de stdin», compartida por los consumidores.
 STDIN_SOURCE = '-'
@@ -145,14 +145,14 @@ def load_records(source):
 # columna y sujeto que no casa dan lo mismo — ninguna cita — y ninguna de las
 # tres es un error del llamador.
 
-#: El store es PARAMETRO del consumidor: vive en el clon que despacha, no aqui.
-#: La aritmetica anterior —``parents[3]`` mas ``.claude/agent-results/``—
-#: describia el arbol de `docs`, donde este guion vivia; desde
-#: ``thyrox/src/task/`` resuelve ``/home/user/.claude/…``, que no es de nadie.
-#: Sin variable declarada NO hay ruta que suponer: ``None`` es el veredicto,
-#: como ya hace ``agents/model_catalog.py`` con el mismo mecanismo.
-_STORE_ENV = env_value("THYROX_AGENT_STORE") or env_value("KAUPAMEX_AGENT_STORE")
-DEFAULT_STORE = pathlib.Path(_STORE_ENV) if _STORE_ENV else None
+#: El store lo resuelve el localizador: la constante ``THYROX_AGENT_STORE`` si
+#: esta declarada —el caso del consumidor, cuyo store vive en el clon que
+#: despacha— y si no la de thyrox, creada bajo demanda e idempotente. La
+#: aritmetica anterior —``parents[3]`` mas ``.claude/agent-results/``— describia
+#: el arbol de `docs`, donde este guion vivia; desde ``thyrox/src/task/``
+#: resolvia ``/home/user/.claude/…``, que no es de nadie. Ver
+#: ``reach.agent_store_path``.
+DEFAULT_STORE = agent_store_path()
 
 
 def _subject_key(subject):

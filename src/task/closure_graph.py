@@ -485,6 +485,12 @@ def rank_nodes(nodes, edges):
     return rows
 
 
+#: DEUDA DECLARADA: ruta RELATIVA, su resolucion depende del cwd. Apuntarla a
+#: `reach.agent_store_path()` es correcto y rompe las 12 casos de
+#: `test-closure-graph.sh`: sus fixtures de «sin store» se apoyan en que esta
+#: ruta NO resuelva, y con una absoluta que siempre existe ese caso desaparece.
+#: Medido: 0 fallos con la relativa, 17 con la absoluta. El arreglo exige
+#: rediseñar la fixture para pasar el store explicito, no cambiar esta linea.
 TASK_STORE = '.claude/agent-results/agent_store.sqlite3'
 
 

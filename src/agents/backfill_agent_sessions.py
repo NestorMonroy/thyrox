@@ -179,7 +179,7 @@ def main() -> int:
         print(f"backfill-agent-sessions: 0 transcripts bajo {raiz}", file=sys.stderr)
         return 1
 
-    store_dir = agents_paths.agent_results_dir()
+    store_dir = agents_paths.agent_store_path().parent
     ts_ahora = agent_store.now_iso()
     procesados = 0
     conn = None if args.dry_run else agent_store.connect(store_dir)

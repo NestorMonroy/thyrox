@@ -143,40 +143,25 @@ ID_RE = re.compile(r"^TASK-[A-Z]+-\d{4}$")
 #: vez de interpretar un esquema que no conoce.
 FORMAT_VERSION = 1
 
-#: El store de tareas es PARAMETRO DEL CONSUMIDOR: el mapa vive en el clon que
-#: despacha, en ``tasks.citation_id``, no en thyrox. Se declara con
-#: ``THYROX_AGENT_STORE`` —y su compatible ``KAUPAMEX_AGENT_STORE``—, leidas
-#: por ``reach.env_value``: el proceso primero, despues el ``.env`` que
-#: ``THYROX_ENV_FILE`` nombra.
+#: El store de tareas: donde vive el mapa, en ``tasks.citation_id``.
 #:
-#: NO se deriva por aritmetica de ``__file__``. La forma anterior
-#: —``parents[2]`` mas ``agent-results/``— describia el arbol de `docs`, donde
-#: este guion vivia; desde ``thyrox/src/task/`` resuelve
-#: ``thyrox/agent-results/…``, que no es de nadie. Y falla **en silencio**: el
-#: llamador lee «la ruta no existe» como «no hay tareas», que es el sub-patron
-#: D de `metrica-decide-la-conclusion.md` cometido por el propio localizador.
-#: Sin declaracion NO hay ruta que suponer — ``None`` es el veredicto, el mismo
-#: que ``task_source.DEFAULT_STORE`` y ``agents/model_catalog.py`` ya dan.
-_STORE_ENV = (reach.env_value("THYROX_AGENT_STORE")
-              or reach.env_value("KAUPAMEX_AGENT_STORE"))
-DEFAULT_STORE_PATH = pathlib.Path(_STORE_ENV) if _STORE_ENV else None
-
-#: El rehuse cuando nadie lo declaro. A stderr y SIN cifra: un ``0`` de tareas
-#: con el store ausente seria un verde falso.
-STORE_UNDECLARED = (
-    "REHUSA — el store de tareas no esta declarado. Es parametro del "
-    "consumidor: se declara con THYROX_AGENT_STORE en el .env que "
-    "THYROX_ENV_FILE nombra, o se pasa con --store. NO se emite conteo.")
+#: Lo resuelve ``reach.agent_store_path()``, que tiene dos desenlaces y ninguno
+#: es un rehuse: la constante ``THYROX_AGENT_STORE`` declarada gana —es el caso
+#: del consumidor, cuyo store vive en el clon que despacha— y sin ella el store
+#: es de thyrox (``<thyrox>/agent-results/``), **creado bajo demanda e
+#: idempotente**.
+#:
+#: Lo que estaba prohibido no era tener default: era **derivarlo por aritmetica
+#: de** ``__file__``. La forma anterior —``parents[2]`` mas ``agent-results/``—
+#: describia el arbol de `docs`, donde este guion vivia, y desde
+#: ``thyrox/src/task/`` apuntaba a un directorio que nadie creaba nunca. Fallaba
+#: **en silencio**: el llamador leia «la ruta no existe» como «no hay tareas».
+DEFAULT_STORE_PATH = reach.agent_store_path()
 
 
 def resolve_store(declared=None):
-    """La ruta del store, o rehusar con exit 2. Nunca una ruta supuesta."""
-    if declared:
-        return pathlib.Path(declared)
-    if DEFAULT_STORE_PATH is not None:
-        return DEFAULT_STORE_PATH
-    print(STORE_UNDECLARED, file=sys.stderr)
-    raise SystemExit(2)
+    """La ruta del store: la pasada, o la declarada, o la de thyrox creada."""
+    return pathlib.Path(declared) if declared else DEFAULT_STORE_PATH
 
 #: La variable que declara el hogar del board del cliente. Es el VALOR; la RUTA
 #: a su declaracion la aporta ``reach.ENV_FILE_VAR`` (``THYROX_ENV_FILE``), que
