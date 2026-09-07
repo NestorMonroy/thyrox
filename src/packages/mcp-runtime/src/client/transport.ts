@@ -11,7 +11,7 @@
  * `^1.29.0` y `^8.21.0`) pero **no resuelven todavía** en este árbol — no
  * hay `node_modules/@modelcontextprotocol` ni `node_modules/ws` en ningún
  * paquete de `@thyrox/*` (verificado, ninguno de los dos aparece bajo
- * `src/packages/*/package.json`). Es la misma clase de deuda que
+ * `src/packages/<pkg>/package.json`). Es la misma clase de deuda que
  * `command-runtime::@anthropic-ai/sdk` ya congela en
  * `tests/package/dependencies_baseline.txt` — tercero real, declarado,
  * pendiente de instalar.

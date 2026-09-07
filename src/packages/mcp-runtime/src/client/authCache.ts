@@ -14,15 +14,25 @@
  * `@thyrox/config` declara el subpath `./env/utils`, ese módulo es un
  * PORTE PARCIAL declarado (TASK-DOCS-0200) que sólo trae 3 de los 17
  * símbolos de la fuente — `isEnvTruthy`, `readEnv`, `getAllEnv` — y
- * `getClaudeConfigHomeDir` está explícitamente entre los 14 omitidos. El
- * especificador de la fuente se conserva verbatim como deuda declarada
- * (no basta con que el subpath exista; el símbolo tiene que existir en él
- * — la segunda mitad del filtro de dos pasos).
+ * `getClaudeConfigHomeDir` está explícitamente entre los 14 omitidos.
+ *
+ * CORREGIDO — el especificador original (`@claude-code-how-works/config/
+ * env/utils`) ya NO se deja como import estático: la base
+ * `@claude-code-how-works/*` no existe en absoluto en este árbol, así que
+ * un `import` estático de un subpath inexistente hace fallar la carga del
+ * MÓDULO ENTERO (`Cannot find module`), no sólo el símbolo — medido con
+ * `bun -e "import(...)"` sobre este mismo archivo antes de la corrección.
+ * Se usa en su lugar el sustituto local verbatim de
+ * `./internal/pendingCrossPackageDeps.ts` (mismo cuerpo que
+ * `@thyrox/local-observability` ya usa para el mismo símbolo), que sí es
+ * importable. Se retira cuando `@thyrox/config/env/utils` exporte
+ * `getClaudeConfigHomeDir` — ver H-DOCS-1160 para el episodio que originó
+ * la primera mitad de esta corrección.
  */
 import { mkdir, readFile, unlink, writeFile } from "fs/promises";
 import { dirname } from "path";
 import { jsonParse, jsonStringify } from "@thyrox/local-observability/slowOperations.js";
-import { getClaudeConfigHomeDir } from "@claude-code-how-works/config/env/utils";
+import { getClaudeConfigHomeDir } from "../internal/pendingCrossPackageDeps.js";
 
 const MCP_AUTH_CACHE_TTL_MS = 15 * 60 * 1000;
 
