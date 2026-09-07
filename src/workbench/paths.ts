@@ -50,7 +50,34 @@
  * llamador tiene que poder ver. Crearlo aquí escondería la divergencia que este
  * mecanismo existe para exponer.
  */
-import { envValue } from '../paths/reach.ts'
+import { join } from 'node:path'
+
+import { consumerRoot, envValue } from '../paths/reach.ts'
+
+/**
+ * Los dos segmentos del par, declarables por separado. La mitad Python los
+ * tenia y esta no: se portan aqui porque `workbenchDir` los compone para su
+ * default, y sin ellos el default seria una ruta cableada — el defecto que
+ * `agentStorePath` ya nombra.
+ *
+ * A diferencia de `WORKBENCH_DIR_VAR`, estos SI caen a un default sin rehusar:
+ * un nombre de segmento no decide donde aterrizan las piezas, solo como se
+ * llama el tramo dentro de un arbol ya resuelto.
+ */
+export const STATE_DIR_VAR = 'THYROX_STATE_DIR'
+export const STATE_DIR_DEFAULT = '.claude'
+export const EVIDENCE_DIR_VAR = 'THYROX_EVIDENCE_DIR'
+export const EVIDENCE_DIR_DEFAULT = 'eventos'
+
+/** El segmento de estado declarado, o su default. Se resuelve AL LLAMAR. */
+export function stateDir(start?: string): string {
+  return envValue(STATE_DIR_VAR, start) || STATE_DIR_DEFAULT
+}
+
+/** El segmento de evidencia declarado, o su default. Ver `stateDir`. */
+export function evidenceDir(start?: string): string {
+  return envValue(EVIDENCE_DIR_VAR, start) || EVIDENCE_DIR_DEFAULT
+}
 
 /** Entrada 1 — el valor: el hogar declarado directamente. */
 export const WORKBENCH_DIR_VAR = 'THYROX_WORKBENCH_DIR'
@@ -64,22 +91,30 @@ export const WORKBENCH_DIR_VAR = 'THYROX_WORKBENCH_DIR'
  */
 export { ENV_FILE_VAR as WORKBENCH_ENV_FILE_VAR } from '../paths/reach.ts'
 
-/** Se rehúsa cuando el consumidor no declaró su hogar. No es un fallo del emisor. */
+/**
+ * Ya no la lanza `workbenchDir`. Se conserva por sus capturadores: retirarla
+ * rompería todo `catch (e) { if (e instanceof WorkbenchHomeError) }` vivo por
+ * un cambio que no es de comportamiento sino de nombre.
+ */
 export class WorkbenchHomeError extends Error {}
 
 /**
- * El hogar declarado del banco, o rehusar.
+ * El hogar del banco: el declarado, o el que thyrox resuelve por ti.
+ *
+ * Dos desenlaces, y el segundo **no es un rehuse** — la misma forma que
+ * `agentStorePath`, por la misma razón: lo prohibido nunca fue tener default,
+ * fue **derivarlo por aritmética de la ruta del archivo**. Aquí sale de la
+ * cadena declarada: `consumerRoot()` más los dos segmentos declarables.
+ *
+ * Esta función REHUSABA hasta el 2026-09-07. El rehuse apagaba el mecanismo
+ * para todo consumidor que no hubiera tomado una decisión que casi ninguno
+ * necesita tomar, y empujaba a teclear la ruta a mano — que es como once
+ * bancos aterrizaron en el árbol del proveedor (L-028).
  *
  * @param start punto de partida para localizar el `.env`; por defecto el cwd.
  */
 export function workbenchDir(start?: string): string {
   const declared = envValue(WORKBENCH_DIR_VAR, start)
   if (declared) return declared
-  throw new WorkbenchHomeError(
-    `El hogar del banco no está declarado. Es una decisión del consumidor, no de `
-    + `thyrox: declara ${WORKBENCH_DIR_VAR} en el proceso, o en el archivo que `
-    + `nombra THYROX_ENV_FILE (por defecto el .env del árbol). `
-    + `NO se emite un hogar por defecto: inventarlo decidiría por ti dónde van `
-    + `tus piezas.`,
-  )
+  return join(consumerRoot(undefined, start), stateDir(start), evidenceDir(start))
 }

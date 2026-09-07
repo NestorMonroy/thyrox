@@ -27,6 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
+from paths import declarations  # noqa: E402
 from workbench import paths  # noqa: E402
 
 OK = 0
@@ -59,19 +60,28 @@ check("`src/eventos/` es producto, no evidencia", False,
 check("`src/workbench/` tampoco lo es", False,
       paths.is_evidence_path("src/workbench/paths.py"))
 
-print("== 3. el hogar del banco REHUSA sin declaracion ==")
+print("== 3. sin declaracion CAE A UN DEFAULT, y lo anota ==")
+# Este bloque medía el rehuse hasta el 2026-09-07. Cambió por directiva del
+# ejecutor: *«a menos que el usuario defina la constante en .env, si no esta se
+# tiene que ir a una ruta por default … y si no se declaran thyrox las maneja,
+# porque son necesarias»*. Lo prohibido nunca fue tener default — era derivarlo
+# por aritmetica de `__file__`; aqui sale de la cadena declarada.
 _prior = os.environ.pop(paths.WORKBENCH_DIR_VAR, None)
+declarations.clear()
 with tempfile.TemporaryDirectory() as empty:
     # `start` en un arbol sin `.env` para que la segunda via tampoco lo declare.
-    try:
-        paths.workbench_dir(empty)
-        check("rehusa sin declaracion", "WorkbenchHomeError", "no lanzo")
-    except paths.WorkbenchHomeError as err:
-        check("rehusa sin declaracion", "WorkbenchHomeError", type(err).__name__)
-        check("y el mensaje nombra la entrada 1 (el valor)", True,
-              paths.WORKBENCH_DIR_VAR in str(err))
-        check("y tambien la entrada 2 (la ruta del archivo)", True,
-              paths.WORKBENCH_ENV_FILE_VAR in str(err))
+    home = paths.workbench_dir(empty)
+    check("no rehusa: devuelve una ruta", True, isinstance(home, Path))
+    check("y el tramo final es <estado>/<evidencia>",
+          (paths.state_dir(empty), paths.evidence_dir(empty)),
+          (home.parent.name, home.name))
+    anotados = {f.key: f for f in declarations.fallbacks()}
+    check("queda anotado en el registro", True,
+          paths.WORKBENCH_DIR_VAR in anotados)
+    check("y su razon nombra la entrada 2 (la ruta del archivo)", True,
+          paths.WORKBENCH_ENV_FILE_VAR in anotados[paths.WORKBENCH_DIR_VAR].reason)
+    check("el valor anotado es el que devolvio", str(home),
+          anotados[paths.WORKBENCH_DIR_VAR].value)
 
 print("== 4. CONTROL DE ANULACION: declarada la entrada 1, SI resuelve ==")
 # Sin este caso el bloque 3 pasaria igual con un modulo que rehusara siempre:

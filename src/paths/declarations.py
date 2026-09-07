@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""El registro de lo que THYROX resuelve por su cuenta porque nadie lo declaro.
+
+Directiva del ejecutor 2026-09-07: *«a menos que el usuario defina la constante
+en .env, si no esta se tiene que ir a una ruta por default … se tiene que
+llevar un registro de que sucede con las que estan sin declarar y que si no se
+declaran thyrox las maneja, porque son necesarias»*.
+
+Eso corrige una decision anterior. `workbench_dir()` REHUSABA sin declaracion,
+con el argumento de que un default decidiria por el consumidor donde van sus
+piezas. El argumento estaba mal encuadrado, y el propio arbol ya tenia la forma
+correcta a la vista: `agent_store_path()` cae a
+`<thyrox>/agent-results/agent_store.sqlite3` y su docstring lo dice sin
+ambiguedad — *«Lo prohibido no era tener default: era DERIVARLO por aritmetica
+de `__file__`»*. Un default derivado de la CADENA DECLARADA es legitimo; uno
+derivado de donde vivia el archivo, no.
+
+Un rehuse tampoco era neutral: apagaba la funcion para todo consumidor que no
+hubiera tomado una decision que casi ninguno necesita tomar, y empujaba a
+teclear la ruta a mano — que es como aterrizaron once bancos en el arbol
+equivocado (L-028).
+
+Lo que este modulo añade es la mitad que faltaba: **que el default no sea
+silencioso**. Una ruta resuelta por defecto y una declarada se comportan igual,
+y sin registro nadie puede distinguirlas — el sub-patron D de
+`metrica-decide-la-conclusion.md` aplicado a la configuracion.
+
+    python3 src/paths/declarations.py      # que esta declarado y que lo maneja thyrox
+"""
+from __future__ import annotations
+
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+
+@dataclass(frozen=True)
+class Fallback:
+    """Una constante que nadie declaro y que THYROX resolvio por su cuenta."""
+
+    key: str
+    value: str
+    reason: str
+
+
+_FALLBACKS: dict[str, Fallback] = {}
+
+
+def record_fallback(key: str, value: str | Path, reason: str) -> None:
+    """Anota que `key` no estaba declarada y con que se resolvio.
+
+    Idempotente por clave: el ultimo valor gana, que es el que el proceso esta
+    usando. No se acumula historial — el registro dice el ESTADO, no la
+    secuencia, y una lista de resoluciones repetidas no responde a ninguna
+    pregunta que alguien haga.
+    """
+    _FALLBACKS[key] = Fallback(key=key, value=str(value), reason=reason)
+
+
+def fallbacks() -> tuple[Fallback, ...]:
+    """Lo anotado hasta ahora, en orden de clave."""
+    return tuple(_FALLBACKS[k] for k in sorted(_FALLBACKS))
+
+
+def clear() -> None:
+    """Vacia el registro. Existe para los controles, no para el uso normal."""
+    _FALLBACKS.clear()
+
+
+def resolve_all(start: Path | None = None) -> list[tuple[str, str, str]]:
+    """Fuerza la resolucion de los hogares conocidos y devuelve su estado.
+
+    Devuelve `(clave, origen, valor)` con `origen` en {`declarado`,
+    `por defecto`}. Es lo que hace util al registro: sin llamar a los
+    resolutores, el registro solo tiene lo que el proceso haya tocado por
+    casualidad, y un vacio ahi no distingue «todo declarado» de «nadie
+    pregunto».
+    """
+    from paths import reach  # noqa: PLC0415 — evita el ciclo en tiempo de import
+    from workbench import paths as workbench
+
+    clear()
+    filas: list[tuple[str, str, str]] = []
+    for key, resolver in (
+        (workbench.WORKBENCH_DIR_VAR, lambda: workbench.workbench_dir(start)),
+        (reach.AGENT_STORE_VAR, lambda: reach.agent_store_path(start)),
+        (workbench.STATE_DIR_VAR, lambda: workbench.state_dir(start)),
+        (workbench.EVIDENCE_DIR_VAR, lambda: workbench.evidence_dir(start)),
+    ):
+        declared = reach.env_value(key, start)
+        value = resolver()
+        filas.append((key, "declarado" if declared else "por defecto", str(value)))
+    return filas
+
+
+def main(argv: list[str] | None = None) -> int:
+    filas = resolve_all()
+    por_defecto = [f for f in filas if f[1] == "por defecto"]
+    print(f"declaraciones: {len(filas)} hogar(es) · {len(filas) - len(por_defecto)} "
+          f"declarado(s) · {len(por_defecto)} que maneja THYROX")
+    for key, origen, value in filas:
+        marca = "  " if origen == "declarado" else "->"
+        print(f"{marca} {key:<26} {origen:<12} {value}")
+    if por_defecto:
+        print("\nLos marcados con `->` funcionan, y su valor lo eligio THYROX.")
+        print("Declararlos en el .env que nombra THYROX_ENV_FILE los pone bajo tu control.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

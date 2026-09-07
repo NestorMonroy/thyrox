@@ -16,23 +16,28 @@
  * `.ruta-del-evento`—. Un consumidor que aloje su banco a otra profundidad
  * obtiene una ruta relativa incorrecta sin que nada falle.
  *
- * Por qué REHÚSA en vez de caer a un default, que es la asimetría con
- * `agentsDir`: aquel resuelve un hogar **de thyrox** —su propio árbol, sobre el
- * que sí decide— y por eso puede tener default. Éste resuelve un hogar **del
- * consumidor**: un default aquí es exactamente la decisión que la directiva
- * retira al emisor. Su docstring en `reach.ts` ya lo dice para `consumerRoot`:
- * *«quien resuelve un artefacto del consumidor no se apoya en el ascenso: exige
- * el valor declarado»*.
+ * REHUSABA, y dejó de hacerlo el 2026-09-07 por directiva del ejecutor:
+ * *«a menos que el usuario defina la constante en .env, si no está se tiene que
+ * ir a una ruta por default … y si no se declaran thyrox las maneja, porque son
+ * necesarias»*. El argumento del rehúse —que un default decide por el
+ * consumidor— estaba mal encuadrado: lo prohibido nunca fue tener default, fue
+ * **derivarlo por aritmética de la ruta del archivo**, que es lo que el defecto
+ * medido de `manifest.ts` hacía. Un default salido de la cadena declarada no
+ * tiene ese vicio, y `agentStorePath` ya lo hacía así.
  *
- * CONTROL DE ANULACIÓN: si al mecanismo se le añade un default, cae el bloque
- * 4 y sólo ése. Si no cayera, el verde no estaría midiendo la rehusa.
+ * Y el rehúse no era neutral: empujaba a teclear la ruta a mano, que es como
+ * once bancos aterrizaron en el árbol del proveedor (L-028).
+ *
+ * CONTROL DE ANULACIÓN: si el mecanismo dejara de leer el entorno y devolviera
+ * siempre el default, caen los bloques 2, 3, 3-bis y 5. Si no cayeran, el verde
+ * no estaría midiendo la precedencia.
  */
 import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { WORKBENCH_DIR_VAR, WorkbenchHomeError, workbenchDir } from '../../src/workbench/paths.ts'
+import { WORKBENCH_DIR_VAR, WorkbenchHomeError, evidenceDir, stateDir, workbenchDir } from '../../src/workbench/paths.ts'
 
 /** Corre `fn` con el entorno alterado y lo restaura pase lo que pase. */
 function withEnv(vars: Record<string, string | undefined>, fn: () => void): void {
@@ -79,17 +84,28 @@ describe('el hogar del banco se declara, no se cablea', () => {
     })
   })
 
-  test('4. sin ninguna de las dos REHÚSA — no inventa un hogar por el consumidor', () => {
+  test('4. sin ninguna de las dos cae al default de la cadena declarada', () => {
     const vacio = mkdtempSync(join(tmpdir(), 'wb-nada-'))
     withEnv({ THYROX_WORKBENCH_DIR: undefined, THYROX_ENV_FILE: join(vacio, '.env') }, () => {
-      expect(() => workbenchDir()).toThrow(WorkbenchHomeError)
+      // Cambió por directiva del ejecutor 2026-09-07: sin declaración cae a un
+      // default de la cadena declarada, no rehúsa. Ver L-028 y `declarations.py`.
+      const home = workbenchDir()
+      expect(home.endsWith(`${stateDir()}/${evidenceDir()}`)).toBe(true)
     })
   })
 
-  test('5. y al rehusar NOMBRA la constante: rehusar sin decir qué declarar no sirve', () => {
+  test('5. el default NO es silencioso: la constante sigue ganando sobre él', () => {
+    // Medía que el rehúse nombrara la constante. Ya no hay rehúse — pero la
+    // pregunta que ese caso protegía sigue viva: ¿el mecanismo sabe leer la
+    // declaración, o devuelve el default pase lo que pase? Sin este control,
+    // el caso 4 pasaría igual con una función que ignorase el entorno.
     const vacio = mkdtempSync(join(tmpdir(), 'wb-msg-'))
     withEnv({ THYROX_WORKBENCH_DIR: undefined, THYROX_ENV_FILE: join(vacio, '.env') }, () => {
-      expect(() => workbenchDir()).toThrow(WORKBENCH_DIR_VAR)
+      const porDefecto = workbenchDir()
+      withEnv({ THYROX_WORKBENCH_DIR: '/declarado/a/mano' }, () => {
+        expect(workbenchDir()).toBe('/declarado/a/mano')
+        expect(workbenchDir()).not.toBe(porDefecto)
+      })
     })
   })
 

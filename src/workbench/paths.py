@@ -115,31 +115,61 @@ def evidence_dir(start: str | Path | None = None) -> str:
 
 
 class WorkbenchHomeError(Exception):
-    """Se rehusa cuando el consumidor no declaro su hogar. No es fallo del emisor."""
+    """Ya no la lanza ``workbench_dir``. Se conserva por sus capturadores.
+
+    Retirarla del modulo romperia todo ``except WorkbenchHomeError`` vivo por un
+    cambio que no es de comportamiento sino de nombre. Un capturador que ya no
+    dispara es inofensivo; un ``NameError`` en el manejador de errores de un
+    gate, no.
+    """
 
 
 def workbench_dir(start: str | Path | None = None) -> Path:
-    """El hogar declarado del banco, o rehusar.
+    """El hogar del banco: el declarado, o el que THYROX resuelve por ti.
 
-    Por que NO hay default: ``agents_dir`` y ``skills_dir`` caen al hogar propio
-    de THYROX porque resuelven artefactos DE THYROX, sobre los que si decide. Un
-    banco vive en el arbol del CONSUMIDOR y lo producen sus sesiones; un default
-    aqui es exactamente la decision que la directiva retira al emisor.
+    Dos desenlaces, y el segundo **no es un rehuse** — misma forma que
+    :func:`paths.reach.agent_store_path`, por la misma razon:
 
-    NO se verifica que el directorio exista, por el mismo criterio que
-    ``agents_dir``: un hogar declarado y ausente es un hecho del consumidor que
-    su llamador tiene que poder ver.
+    - La constante declarada gana. Es el caso del consumidor que decidio donde
+      viven sus piezas.
+    - Sin declaracion, el banco cae a ``<consumidor>/<estado>/<evidencia>``,
+      con las tres partes salidas de la **cadena declarada**:
+      :func:`paths.reach.consumer_root`, :func:`state_dir` y
+      :func:`evidence_dir`. Se anota en ``paths.declarations`` para que el
+      default no sea silencioso.
+
+    **Esta funcion REHUSABA, y era un error.** El argumento era que un default
+    decide por el consumidor donde van sus piezas. Pero lo prohibido nunca fue
+    tener default: fue **derivarlo por aritmetica de** ``__file__``, que
+    describe donde vivia el archivo y no donde corre. Un default derivado de la
+    cadena declarada no tiene ese defecto — el propio arbol ya lo hacia asi en
+    ``agent_store_path``, cuyo docstring lo dice con esas palabras.
+
+    Y el rehuse tampoco era neutral: apagaba la funcion para todo consumidor
+    que no hubiera tomado una decision que casi ninguno necesita tomar, y
+    empujaba a teclear la ruta a mano. Once bancos aterrizaron en el arbol del
+    proveedor por esa via (L-028).
+
+    NO se verifica que el directorio exista ni se crea: quien escribe en el lo
+    crea, igual que ``agents_dir``. Un hogar ausente es un hecho que su llamador
+    tiene que poder ver.
     """
-    declared = env_value(WORKBENCH_DIR_VAR, Path(start) if start else None)
+    inicio = Path(start) if start else None
+    declared = env_value(WORKBENCH_DIR_VAR, inicio)
     if declared:
         return Path(declared)
-    raise WorkbenchHomeError(
-        "El hogar del banco no esta declarado. Es una decision del consumidor, "
-        f"no de THYROX: declara {WORKBENCH_DIR_VAR} en el proceso, o en el "
-        f"archivo que nombra {WORKBENCH_ENV_FILE_VAR} (por defecto el .env del "
-        "arbol). NO se emite un hogar por defecto: inventarlo decidiria por ti "
-        "donde van tus piezas."
+
+    from paths.reach import consumer_root  # noqa: PLC0415 — evita el ciclo de import
+    from paths.declarations import record_fallback  # noqa: PLC0415
+
+    home = consumer_root(start=inicio) / state_dir(start) / evidence_dir(start)
+    record_fallback(
+        WORKBENCH_DIR_VAR, home,
+        f"nadie lo declaro; sale de consumer_root() + {STATE_DIR_VAR} + "
+        f"{EVIDENCE_DIR_VAR}. Declaralo en el archivo que nombra "
+        f"{WORKBENCH_ENV_FILE_VAR} para ponerlo bajo tu control.",
     )
+    return home
 
 
 def is_evidence_path(path: str | Path, start: str | Path | None = None) -> bool:
