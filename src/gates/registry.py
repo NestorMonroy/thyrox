@@ -89,6 +89,8 @@ CHECKS: list[Check] = [
           'H-DOCS-1089 — lo que un consumidor INVOCA contra la superficie declarada'),
     Check('consumer-anchor', 'Herramienta', 'gate', 'check_consumer_anchor.py',
           'aritmética de ruta que sale de thyrox y aterriza en un árbol ajeno'),
+    Check('path-arithmetic', 'Herramienta', 'gate', 'check_path_arithmetic.py',
+          'tarea #228 — parents[N] que no alimenta un sys.path.insert'),
     Check('pushed-branch', 'Herramienta', 'gate', 'check_pushed_branch.py',
           'H-DOCS-1128 — la rama que se publica contra la que tiene trabajo'),
     Check('pathspec-commit', 'Herramienta', 'gate', 'check_pathspec_commit.py',

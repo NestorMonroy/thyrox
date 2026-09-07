@@ -1,0 +1,19 @@
+# Deuda congelada de check_path_arithmetic (tarea #228).
+# Una entrada listada no bloquea; una nueva sí. Se paga al tocar el archivo —
+# nunca en un barrido. Las dos entradas de hoy NO son deuda por omisión:
+# cada una declara su razón en el propio código, junto a la línea citada.
+#
+# tests/gates/test_rst_gate_root.py:57 — control NEGATIVO deliberado: es el
+# incumplidor vivo que el bloque 1 de esa suite necesita como gemelo.
+# Reproduce la aritmética VIEJA (parents[3]) a propósito para probar que ya
+# NO acierta contra reach.root('docs'). Convertirla al localizador destruiría
+# el control que ese bloque existe para ser. Ver el comentario en el archivo.
+#
+# tests/legacy/test_error_catalog.py:49 — no es sólo aritmética: el hogar
+# compuesto (.claude/scripts/gates/) no existe bajo ningún árbol y el CORPUS
+# cruza al repo consumidor (kaupamex-docs), no a THYROX. Es un remapeo de dos
+# segmentos a través de otro repo, no un cambio de localizador — pertenece al
+# saneo de tests/legacy/ ya identificado como tarea #227. Ver el comentario
+# en el archivo.
+tests/gates/test_rst_gate_root.py:57
+tests/legacy/test_error_catalog.py:49
