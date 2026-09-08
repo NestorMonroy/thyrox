@@ -45,11 +45,11 @@
  *    `plansDirectory` — usa siempre la ruta por defecto), para poder
  *    ejercitar en test TANTO la rama por defecto COMO la rama de
  *    `plansDirectory` personalizado + su validación anti-traversal.
- *  - `generateWordSlug` (`tool-registry/words.js`, listas de palabras
- *    curadas de cientos de entradas cada una) — se reimplementa con
- *    listas locales de un puñado de palabras cada una: el contrato que
- *    los tests ejercitan es la FORMA (`adjetivo-verbo-sustantivo`) y el
- *    reintento ante colisión, no el vocabulario concreto.
+ *  - `generateWordSlug` — SUSTITUTO RETIRADO. Se importa del módulo real,
+ *    `@thyrox/tool-registry/words.js`. El sustituto local usaba
+ *    `Math.random()`, y la diferencia no era cosmética: un identificador
+ *    de plan que se pueda adivinar permite nombrar el plan de otra
+ *    sesión. El módulo portado usa `randomBytes`.
  *
  * `getPlansDirectory` NO se memoiza (la fuente sí, con `lodash-es/
  * memoize.js` sin argumentos) — mismo criterio que YA declara
@@ -65,6 +65,7 @@ import { homedir } from 'os'
 import { join, resolve, sep } from 'path'
 import { logForDebugging, getCwd } from './internal/pendingCrossPackageDeps.js'
 import { logError } from './logging.js'
+import { generateWordSlug } from '@thyrox/tool-registry/words.js'
 import { getSessionId } from './sessionPaths.js'
 
 type AgentId = string
@@ -114,29 +115,6 @@ export function setInitialSettingsForTest(settings: InitialSettings): void {
 }
 function getInitialSettings(): InitialSettings {
   return _initialSettings
-}
-
-// Listas reducidas — ver docstring del archivo (la fuente real trae
-// cientos de palabras por lista; aquí bastan las suficientes para
-// ejercitar forma + reintento ante colisión).
-const ADJECTIVES = [
-  'brave', 'calm', 'eager', 'fuzzy', 'gentle', 'happy', 'jolly', 'lively',
-  'mighty', 'nimble', 'proud', 'quiet', 'rapid', 'sunny', 'witty', 'zesty',
-]
-const VERBS = [
-  'climbs', 'dances', 'floats', 'glides', 'hums', 'jumps', 'runs', 'sings',
-  'soars', 'spins', 'swims', 'walks', 'wanders', 'weaves', 'whirls', 'writes',
-]
-const NOUNS = [
-  'badger', 'canyon', 'delta', 'ember', 'falcon', 'glacier', 'harbor',
-  'island', 'jasmine', 'kernel', 'lagoon', 'meadow', 'nebula', 'otter',
-  'pebble', 'quartz',
-]
-function pickRandom<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)] as T
-}
-function generateWordSlug(): string {
-  return `${pickRandom(ADJECTIVES)}-${pickRandom(VERBS)}-${pickRandom(NOUNS)}`
 }
 
 // ---------------------------------------------------------------------------

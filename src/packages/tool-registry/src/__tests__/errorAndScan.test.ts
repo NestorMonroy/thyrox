@@ -107,7 +107,11 @@ describe('toolErrors — lo que el modelo lee cuando una herramienta falla', () 
     // perdería la causa. Se conservan 5000 de cada lado y se declara
     // cuántos caracteres se fueron.
     const { formatError } = await import('../toolErrors.ts')
-    const largo = 'A'.repeat(4000) + 'MEDIO' + 'B'.repeat(9000)
+    // Los dos extremos tienen que ser MAYORES que los 5000 que se
+    // conservan de cada lado; con 4000 A's, el corte de cabeza se llevaría
+    // el marcador dentro y la aserción mediría mi encuadre, no el de la
+    // fuente. Es la premisa equivocada, no el puerto.
+    const largo = 'A'.repeat(6000) + 'MEDIO' + 'B'.repeat(6000)
     const salida = formatError(new Error(largo))
     expect(salida.startsWith('A'.repeat(100))).toBe(true)
     expect(salida.endsWith('B'.repeat(100))).toBe(true)
