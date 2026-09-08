@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@thyrox/agent": "workspace:*",
+    "@thyrox/storage": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",
     "ignore": "^7.0.8",
     "zod": "^4.3.6"
