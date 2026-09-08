@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta (permission.ts, T-008/025/026/027). Ademas, porte fiel COMPLETO de host.ts/errors.ts/contracts.ts/permissionRuleParser.ts/PermissionResult.ts/autoModeDenials.ts/autoModeState.ts/denialTracking.ts/bashClassifier.ts/dangerousPatterns.ts/shellRuleMatching.ts/shadowedRuleDetection.ts, y porte PARCIAL DECLARADO de permissions.ts (11/17), filesystem.ts (13/29), pathValidation.ts (6/11), y getNextPermissionMode.ts (1/2, sin auto-mode). PermissionRule.ts, PermissionMode.ts y PermissionUpdate.ts figuraban aqui como parciales (4/6, 11/13, 6/8): medido hoy los tres estan COMPLETOS — 6/6, 14/14 y 10/10 simbolos exportados, sin ninguno ausente. Sus bloqueos declarados (zod, persistencia a disco) cayeron al cerrar la capa de esquemas y la de persistencia, y el aviso se retira en vez de dejarlo pudrirse desde claude-code-nestor-monroy-tools — ver el docstring de cada archivo para lo omitido y por que (TASK-DOCS-0201). De permissionSetup.ts se porta el bloque de PERMISOS PELIGROSOS (lineas 101-598 de la fuente, 12 de sus 35 exports): que regla auto-aprobaria una accion antes de que el clasificador la evalue, y como se despoja y se restaura. Sus otros 23 exports quedan fuera con su bloqueo nombrado (banderas de caracteristica, estado de auto mode, arranque desde la linea de comandos, telemetria) — sucesor TASK-THYROX-0004. El resto del paquete origen (subsistema clasificador ML, componentes Ink) queda fuera de este arbol: bloqueado por zod/@anthropic-ai/sdk/react sin linkear en node_modules de este paquete, o por ausencia total de sustrato Ink. El barrel de la fuente (index.ts) tambien esta portado, con sus 14 reexports, y se alcanza en \"./index.js\" — NO en la raiz \".\". La raiz sigue apuntando a permission.ts por una razon medida y no por inercia: el barrel importa permissionSetup, que importa @thyrox/config/settings, asi que ponerlo en la raiz haria que los tres consumidores del specifier raiz —que entre los tres quieren dos simbolos y un tipo— arrastren la cadena de settings al cargar. Ademas se portan appStateHooks.ts (shim perezoso al estado del anfitrion, completo) y testing/index.ts (los tres dobles en memoria, completo). classifierApprovalsHook.ts queda fuera con bloqueo MEDIDO: importa react directo, y react no resuelve desde este paquete.",
+  "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta (permission.ts, T-008/025/026/027). PORTE COMPLETO desde claude-code-nestor-monroy-tools (TASK-DOCS-0201) de: host.ts, errors.ts, contracts.ts, permissionRuleParser.ts, PermissionResult.ts, autoModeDenials.ts, autoModeState.ts, denialTracking.ts, bashClassifier.ts, dangerousPatterns.ts, shellRuleMatching.ts, shadowedRuleDetection.ts, PermissionRule.ts, PermissionMode.ts, PermissionUpdate.ts, index.ts (el barrel, 14 reexports), appStateHooks.ts, testing/index.ts, commands/add-dir/validation.ts y commands/rename/generateSessionName.ts. PORTE PARCIAL DECLARADO —cada archivo dice en su docstring que falta y por que— de: permissions.ts (11/17), filesystem.ts (15/29), pathValidation.ts (6/11), getNextPermissionMode.ts (1/2, sin auto-mode) y permissionSetup.ts (12/35: el bloque de permisos peligrosos, lineas 101-598 de la fuente; los otros 23 exports esperan banderas de caracteristica, estado de auto mode, arranque desde la linea de comandos y telemetria — sucesor TASK-THYROX-0004). TRES AVISOS RETIRADOS POR MEDICION: PermissionRule/PermissionMode/PermissionUpdate figuraban como parciales (4/6, 11/13, 6/8) y estan completos (6/6, 14/14, 10/10); allWorkingDirectories y pathInWorkingPath figuraban bloqueados por SandboxManager y no lo tocan. FUERA, con bloqueo medido: los ~25 componentes Ink y classifierApprovalsHook.ts (react no resuelve desde este paquete); yoloSystemPrompt.ts, permissionExplainer.ts y classifierStallTracking.ts (provider/user.js, agent/sideQuery.js y provider/antModels.js no existen aun); toolPermission/permissionLogging.ts (shell/sandbox.js, ver la tarea de portar shell); commands/index.ts (bloqueo de ENLACE, no de codigo: @thyrox/command-runtime no esta en node_modules de este paquete aunque su runtime.ts si exista). La raiz \".\" apunta a permission.ts y NO al barrel, que vive en \"./index.js\": el barrel arrastra permissionSetup y con el la cadena de @thyrox/config/settings, y los tres consumidores del specifier raiz quieren entre los tres dos simbolos y un tipo.",
   "exports": {
     ".": "./src/permission.ts",
     "./host.js": "./src/host.ts",
@@ -19,6 +19,8 @@
     "./appStateHooks.js": "./src/appStateHooks.ts",
     "./testing": "./src/testing/index.ts",
     "./testing/index.js": "./src/testing/index.ts",
+    "./commands/add-dir/validation.js": "./src/commands/add-dir/validation.ts",
+    "./commands/rename/generateSessionName.js": "./src/commands/rename/generateSessionName.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
@@ -31,6 +33,7 @@
     "@types/bun": "^1.4.0"
   },
   "dependencies": {
-    "@thyrox/config": "workspace:*"
+    "@thyrox/config": "workspace:*",
+    "chalk": "^4.1.2"
   }
 }

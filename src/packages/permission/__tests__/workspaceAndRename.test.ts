@@ -23,7 +23,6 @@
  */
 import { afterAll, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs'
-import { tmpdir } from 'os'
 import { join } from 'path'
 import { installPermissionHostBindings } from '../src/host.ts'
 import {
@@ -36,8 +35,13 @@ import {
   type AddDirectoryResult,
 } from '../src/commands/add-dir/validation.ts'
 
-const RAIZ = mkdtempSync(join(tmpdir(), 'permiso-workspace-'))
-afterAll(() => rmSync(RAIZ, { recursive: true, force: true }))
+const RAIZ = mkdtempSync('/dev/shm/permiso-workspace-')
+/** Un árbol APARTE: lo que está bajo RAIZ ya está cubierto por el cwd. */
+const FUERA = mkdtempSync('/dev/shm/permiso-fuera-')
+afterAll(() => {
+  rmSync(RAIZ, { recursive: true, force: true })
+  rmSync(FUERA, { recursive: true, force: true })
+})
 
 /** Un contexto con los directorios adicionales que el caso declare. */
 function contexto(adicionales: string[] = []) {
@@ -78,6 +82,24 @@ describe('pathInWorkingPath — 5 casos', () => {
     expect(pathInWorkingPath('/private/var/datos/x', '/var/datos')).toBe(true)
     expect(pathInWorkingPath('/private/tmp/x', '/tmp')).toBe(true)
   })
+
+  test('22. la comparación no distingue caja', () => {
+    // En un sistema de archivos que no la distingue —macOS, Windows— comparar
+    // con caja dejaría pasar `.cLauDe` donde la regla dice `.claude`.
+    expect(pathInWorkingPath('/Casa/Proyecto/src', '/casa/proyecto')).toBe(true)
+  })
+
+  test('23. sin el binding de travesía, el confinamiento se ABRE', () => {
+    // No es un defecto del puerto: la fuente pone `containsPathTraversal` en
+    // el anfitrión, con respaldo `false`. Este caso deja escrito que la fuerza
+    // de la guarda vive en quien instala los bindings, no aquí — un anfitrión
+    // que no lo declare hace que el padre cuente como «dentro» de la hija.
+    installPermissionHostBindings({
+      getOriginalCwd: () => RAIZ,
+      expandPath: (p: string) => p,
+    } as never)
+    expect(pathInWorkingPath('/casa', '/casa/proyecto')).toBe(true)
+  })
 })
 
 describe('allWorkingDirectories — 3 casos', () => {
@@ -114,9 +136,11 @@ describe('validateDirectoryForWorkspace — 8 casos', () => {
   })
 
   test('12. un directorio nuevo entra, y la barra final se normaliza', async () => {
-    const dir = join(RAIZ, 'nuevo')
+    // Tiene que estar FUERA del cwd: lo que cuelga de él ya está cubierto, y
+    // usar una subruta de RAIZ mediría el caso 13, no éste.
+    const dir = join(FUERA, 'nuevo')
     mkdirSync(dir, { recursive: true })
-    const r = await validateDirectoryForWorkspace(dir + '/', contexto(['/ningun/sitio']))
+    const r = await validateDirectoryForWorkspace(dir + '/', contexto())
     expect(r.resultType).toBe('success')
     // Sin el `resolve`, `/foo` y `/foo/` serían dos claves distintas.
     expect((r as { absolutePath: string }).absolutePath).toBe(dir)

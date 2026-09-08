@@ -7,15 +7,17 @@
  * — más sus dependencias transitivas y un puñado de funciones puras
  * hermanas sin costo adicional.
  *
- * PORTADAS (13 de 29):
+ * PORTADAS (15 de 29):
  *
  *   `DANGEROUS_FILES` · `DANGEROUS_DIRECTORIES` · `normalizeCaseForComparison`
  *   · `relativePath` · `toPosixPath` · `getSessionMemoryDir` ·
  *   `getSessionMemoryPath` · `isScratchpadEnabled` · `getClaudeTempDirName` ·
  *   `getClaudeTempDir` · `getProjectTempDir` · `getScratchpadDir` ·
- *   `ensureScratchpadDir` (los dos últimos, el objetivo del pase)
+ *   `ensureScratchpadDir` (los dos últimos, el objetivo del pase) ·
+ *   `allWorkingDirectories` · `pathInWorkingPath` (pase de 2026-09-08 — ver
+ *   abajo)
  *
- * OMITIDAS (16 de 29), declaradas por nombre, línea y bloqueo:
+ * OMITIDAS (14 de 29), declaradas por nombre, línea y bloqueo:
  *
  *   - `getClaudeSkillScope` (filesystem.ts:108-177) — sin consumidor
  *     confirmado en este pase; depende de convenciones de `.claude/skills/`
@@ -27,9 +29,9 @@
  *   - `getBundledSkillsRoot` (filesystem.ts:372-382) — sin consumidor
  *     confirmado; añade `randomBytes`/`MACRO.VERSION` sin necesidad
  *     inmediata.
- *   - `checkPathSafetyForAutoEdit`, `allWorkingDirectories`,
+ *   - `checkPathSafetyForAutoEdit`,
  *     `getResolvedWorkingDirPaths`, `pathInAllowedWorkingPath`,
- *     `pathInWorkingPath`, `normalizePatternsToPath`,
+ *     `normalizePatternsToPath`,
  *     `getFileReadIgnorePatterns`, `matchingRuleForInput`,
  *     `checkReadPermissionForTool`, `checkWritePermissionForTool`,
  *     `generateSuggestions`, `checkEditableInternalPath`,
@@ -70,6 +72,15 @@
  *   `getBundledSkillsRoot`) no toman argumentos, así que un cache de una
  *   sola entrada es fiel a la semántica de la fuente sin necesitar la
  *   API completa de `lodash-es/memoize`.
+ * - `allWorkingDirectories` y `pathInWorkingPath` figuraban arriba entre las
+ *   omitidas, con el bloqueo de `SandboxManager` que comparten sus vecinas de
+ *   `filesystem.ts:627-1785`. Medido al necesitarlas: NINGUNA de las dos lo
+ *   toca — la primera pide `getOriginalCwd` (ya cableado aquí) y las claves
+ *   del contexto; la segunda, `expandPath` y `containsPathTraversal`, que en
+ *   la fuente son shims del anfitrión igual que los cinco ya presentes. El
+ *   bloqueo era de sus vecinas y se les había atribuido por vecindad. Llegan
+ *   al necesitarlas `commands/add-dir/validation.ts`, y el aviso se corrige
+ *   en vez de dejarlo pudrirse.
  * - `checkStatsigFeatureGate_CACHED_MAY_BE_STALE` se repunta a
  *   `@thyrox/config/feature-flags.js` (mismo nombre, misma firma
  *   `(gate: string) => boolean`, ya portado — verificado leyendo su
@@ -290,4 +301,81 @@ export async function ensureScratchpadDir(signal?: AbortSignal): Promise<string>
   await fs.promises.mkdir(scratchpadDir, { recursive: true, mode: 0o700 })
 
   return scratchpadDir
+}
+
+
+// ---------------------------------------------------------------------------
+// Directorios de trabajo — `filesystem.ts:674-751` de la fuente.
+//
+// Llegan en un pase posterior al resto del módulo porque su consumidor
+// (`commands/add-dir/validation.ts`) no existía. El bloqueo era NUESTRO, no
+// de la fuente: este archivo declara un porte parcial de 13 de 29 símbolos, y
+// éstos dos estaban entre los 16 que faltaban.
+// ---------------------------------------------------------------------------
+
+/** Igual que en la fuente: los dos salen del anfitrión, con respaldo inerte. */
+function expandPathDeferred(p: string, cwd?: string): string {
+  return _b().expandPath?.(p, cwd ?? getOriginalCwdDeferred()) ?? p
+}
+
+function containsPathTraversalDeferred(p: string): boolean {
+  return _b().containsPathTraversal?.(p) ?? false
+}
+
+/**
+ * Todos los directorios de trabajo de una sesión.
+ *
+ * El cwd original SIEMPRE está, aunque el contexto no declare ninguno: sin él
+ * una sesión recién abierta no podría leer su propio proyecto. Es un conjunto
+ * porque un adicional puede coincidir con el cwd, y contarlo dos veces haría
+ * que el mensaje de «ya está cubierto» dependiera del orden.
+ */
+export function allWorkingDirectories(context: {
+  additionalWorkingDirectories: Map<string, unknown>
+  [key: string]: unknown
+}): Set<string> {
+  return new Set([
+    getOriginalCwdDeferred(),
+    ...context.additionalWorkingDirectories.keys(),
+  ])
+}
+
+/**
+ * Si una ruta cae DENTRO de un directorio de trabajo.
+ *
+ * La dirección importa y no es simétrica: la hija está dentro del padre, y el
+ * padre no está dentro de la hija. Sin esa asimetría, declarar un directorio
+ * de trabajo hondo autorizaría todo lo que está por encima de él.
+ *
+ * Dos normalizaciones antes de comparar, y las dos son de seguridad:
+ *
+ * 1. Los enlaces de macOS (`/private/var` → `/var`, `/private/tmp` → `/tmp`),
+ *    porque el sistema entrega unas veces una forma y otras la otra.
+ * 2. La caja, porque en un sistema de archivos que no la distingue —macOS,
+ *    Windows— comparar con caja permitiría esquivar la comprobación
+ *    escribiendo `.cLauDe` en vez de `.claude`.
+ */
+export function pathInWorkingPath(path: string, workingPath: string): boolean {
+  const absolutePath = expandPathDeferred(path)
+  const absoluteWorkingPath = expandPathDeferred(workingPath)
+
+  const normalizedPath = absolutePath
+    .replace(/^\/private\/var\//, '/var/')
+    .replace(/^\/private\/tmp(\/|$)/, '/tmp$1')
+  const normalizedWorkingPath = absoluteWorkingPath
+    .replace(/^\/private\/var\//, '/var/')
+    .replace(/^\/private\/tmp(\/|$)/, '/tmp$1')
+
+  const caseNormalizedPath = normalizeCaseForComparison(normalizedPath)
+  const caseNormalizedWorkingPath = normalizeCaseForComparison(
+    normalizedWorkingPath,
+  )
+
+  const relative = relativePath(caseNormalizedWorkingPath, caseNormalizedPath)
+
+  if (relative === '') return true
+  if (containsPathTraversalDeferred(relative)) return false
+
+  // Una relativa absoluta significa que no hay camino de uno a otro.
+  return !posix.isAbsolute(relative)
 }
