@@ -81,5 +81,20 @@ from gates import registry; print(len(registry.CHECKS))")"
 SAL="$(cd "$THYROX" && python3 src/gates/doctor.py --list 2>/dev/null | wc -l)"
 afirmar "el corredor alcanza los gates que el registro declara" "$DECLARADOS" "$SAL"
 
+# --- 5. la delegacion lee una clave que el corredor EMITE --------------------
+# Este caso nace de un defecto real de este pase: la delegacion leia `verdict`
+# y el corredor emite `summary`. Leer una clave inexistente da cero en las
+# cinco cifras, y cinco ceros pasan el `-eq 0` del bloque como un PASS — el
+# sub-patron D dentro del propio mecanismo que audita a los demas.
+#
+# Metrica: las claves de nivel superior que el corredor emite, contra la que
+# la delegacion nombra en su `.get(...)`.
+# Ciega a: que las cifras de esa clave sean CORRECTAS; sólo mide que la clave
+# exista. El caso 4 cubre el alcance, que es la otra mitad.
+CLAVE="$(grep -oE 'get\("[a-z]+", \{\}\)' "$AUDIT" | head -1 | grep -oE '"[a-z]+"' | tr -d '"')"
+EMITE="$(cd "$THYROX" && timeout 100 python3 src/gates/doctor.py --json --only rst-referencias 2>/dev/null \
+    | python3 -c "import json,sys; print('si' if '${CLAVE:-_}' in json.load(sys.stdin) else 'no')")"
+afirmar "la delegacion lee una clave que el corredor emite (${CLAVE:-ninguna})" si "$EMITE"
+
 printf '\ntest-audit-delegates: %d ok, %d falla\n' "$ok" "$fallo"
 [[ "$fallo" -eq 0 ]]
