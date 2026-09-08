@@ -67,23 +67,6 @@
         "zod": "^4.3.6",
       },
     },
-    "harness": {
-      "name": "@thyrox/harness",
-      "version": "0.1.0",
-      "dependencies": {
-        "@thyrox/agent": "workspace:*",
-        "@thyrox/cli": "workspace:*",
-        "@thyrox/config": "workspace:*",
-        "@thyrox/observability": "workspace:*",
-        "@thyrox/permission": "workspace:*",
-        "@thyrox/provider": "workspace:*",
-        "@thyrox/skills": "workspace:*",
-        "@thyrox/tools": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "^1.4.0",
-      },
-    },
     "headless-sdk": {
       "name": "@thyrox/headless-sdk",
       "version": "0.1.0",
@@ -391,8 +374,6 @@
     "@thyrox/command-runtime": ["@thyrox/command-runtime@workspace:command-runtime"],
 
     "@thyrox/config": ["@thyrox/config@workspace:config"],
-
-    "@thyrox/harness": ["@thyrox/harness@workspace:harness"],
 
     "@thyrox/headless-sdk": ["@thyrox/headless-sdk@workspace:headless-sdk"],
 

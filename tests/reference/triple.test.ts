@@ -20,7 +20,7 @@ import { join } from 'node:path'
 import {
   TRIPLES, EXTRACTORS, referenceTriple, resolveRoot, requireRoot,
   declaredAlias, checkPortDeclaration, canonicalAlias, sameCorpus,
-} from '../src/reference/triple.ts'
+} from '../../src/reference/triple.ts'
 
 describe('el catálogo de triples', () => {
   test('las tres instancias del árbol están declaradas', () => {

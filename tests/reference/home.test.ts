@@ -55,11 +55,19 @@ describe('el paquete harness deja de existir', () => {
     // de `src/` y `tests/`.
     // Ciega a: la prosa que lo mencione —este archivo lo nombra— y a una cita
     // desde fuera de este clon.
-    const { execFileSync } = require('node:child_process') as typeof import('node:child_process')
-    const salida = execFileSync('grep', [
-      '-rn', "--include=*.ts", "-E", "(from|import)[[:space:]]*\\(?[[:space:]]*['\"][^'\"]*@thyrox/harness",
+    //
+    // `grep` sale 1 cuando NO encuentra nada, que es justo el estado deseado,
+    // y `execFileSync` lo lanza. Tragarse la excepcion entera haria que un
+    // error REAL del comando —salida 2: ruta inexistente, patron invalido— se
+    // leyera como «limpio»: el control dejaria de poder fallar por la razon
+    // correcta. Por eso se discrimina por codigo de salida.
+    const { spawnSync } = require('node:child_process') as typeof import('node:child_process')
+    const r = spawnSync('grep', [
+      '-rn', '--include=*.ts', '-E',
+      "(from|import)[[:space:]]*\\(?[[:space:]]*['\"][^'\"]*@thyrox/harness",
       join(ROOT, 'src'), join(ROOT, 'tests'),
-    ], { encoding: 'utf-8' }).trim()
-    expect(salida).toBe('')
+    ], { encoding: 'utf-8' })
+    expect(r.status === 0 || r.status === 1).toBe(true)   // 2 = el grep fallo
+    expect((r.stdout ?? '').trim()).toBe('')
   })
 })
