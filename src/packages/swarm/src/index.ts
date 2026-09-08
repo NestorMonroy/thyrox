@@ -88,6 +88,25 @@ export {
   sanitizeName,
   sanitizeAgentName,
   inputSchema,
+  getTeamDir,
+  getTeamFilePath,
+  readTeamFile,
+  readTeamFileAsync,
+  writeTeamFileAsync,
+  updateTeamFileAsync,
+  removeTeammateFromTeamFile,
+  addHiddenPaneId,
+  removeHiddenPaneId,
+  removeMemberFromTeam,
+  removeMemberByAgentId,
+  setMemberMode,
+  syncTeammateMode,
+  setMultipleMemberModes,
+  setMemberActive,
+  registerTeamForSessionCleanup,
+  unregisterTeamForSessionCleanup,
+  cleanupSessionTeams,
+  cleanupTeamDirectories,
 } from './core/teamHelpers.js'
 export type {
   SpawnTeamOutput,
@@ -109,3 +128,6 @@ export { isInProcessTeammateTask, appendCappedMessage } from './tasks/types.js'
 export { unlinkWindowsReparsePoints } from './worktree/safeRemoval.js'
 export { safelyIgnored } from './worktree/safeIgnore.js'
 export { installPrepareCommitMsgHook } from './worktree/postCommitAttribution.js'
+
+export type { TeamSummary, TeammateStatus } from './teamDiscovery.js'
+export { getTeammateStatuses } from './teamDiscovery.js'

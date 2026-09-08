@@ -32,6 +32,7 @@
     "./worktree/sparseConfigCleanup.js": "./src/worktree/sparseConfigCleanup.ts",
     "./core/teamFileRegistration.js": "./src/core/teamFileRegistration.ts",
     "./core/reconnection.js": "./src/core/reconnection.ts",
+    "./teamDiscovery.js": "./src/teamDiscovery.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
