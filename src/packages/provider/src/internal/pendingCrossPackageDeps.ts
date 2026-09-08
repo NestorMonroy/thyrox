@@ -278,12 +278,11 @@ export function jsonParse(text: string): unknown {
 }
 
 // ── ccnmt: packages/config/env/utils.ts → getClaudeConfigHomeDir ─────────
-// No está entre los 3 exports que trae `@thyrox/config/env/utils`. Réplica
-// mínima: honra `CLAUDE_CONFIG_DIR` y cae a `~/.claude`, mismo contrato que
-// consumen `internal/caCerts.ts` (no) y `policyLimits/index.ts` (sí).
-export function getClaudeConfigHomeDir(): string {
-  const override = readEnv('CLAUDE_CONFIG_DIR')
-  if (override) return override
-  const home = process.env.HOME ?? process.env.USERPROFILE ?? '.'
-  return `${home}/.claude`
-}
+// SUSTITUTO RETIRADO. Su motivo declarado —«no está entre los 3 exports de
+// `@thyrox/config/env/utils`»— dejó de ser cierto. Y la réplica DIVERGÍA
+// del canónico en dos puntos, así que no era inocua: no normalizaba a NFC
+// (dos formas de la misma ruta con acento no comparaban iguales, y una de
+// ellas creaba un directorio que nadie veía) y trataba un override vacío
+// como ausente en vez de honrarlo. Se reexporta el canónico.
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+export { getClaudeConfigHomeDir }

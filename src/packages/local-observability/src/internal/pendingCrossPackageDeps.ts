@@ -40,23 +40,14 @@ import { performance as nodePerformance } from 'node:perf_hooks'
 // ---------------------------------------------------------------------------
 
 /**
- * Sustituto de `@claude-code-how-works/config/env/utils.js`'s
- * `getClaudeConfigHomeDir` — verbatim a `utils.ts:20-27` (memoizado,
- * clave = `CLAUDE_CONFIG_DIR`). `@thyrox/config` sólo exporta
- * `./env/utils` con `isEnvTruthy`/`readEnv`/`getAllEnv` — este símbolo no
- * está en ese archivo. Se retira cuando `@thyrox/config` lo exporte.
+ * SUSTITUTO RETIRADO. Su motivo declarado —«`@thyrox/config` sólo exporta
+ * `isEnvTruthy`/`readEnv`/`getAllEnv`»— dejó de ser cierto: el símbolo
+ * está en `config/env/utils.ts`, memoizado, con la clave del memo puesta
+ * a `CLAUDE_CONFIG_DIR`. Se reexporta el canónico en vez de mantener una
+ * segunda copia que puede divergir sin que nada lo delate.
  */
-let _claudeConfigHomeDirCache: { key: string | undefined; value: string } | null =
-  null
-export function getClaudeConfigHomeDir(): string {
-  const key = process.env.CLAUDE_CONFIG_DIR
-  if (_claudeConfigHomeDirCache && _claudeConfigHomeDirCache.key === key) {
-    return _claudeConfigHomeDirCache.value
-  }
-  const value = (key ?? join(homedir(), '.claude')).normalize('NFC')
-  _claudeConfigHomeDirCache = { key, value }
-  return value
-}
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+export { getClaudeConfigHomeDir }
 
 /**
  * Sustituto de `@claude-code-how-works/config/env/utils.js`'s

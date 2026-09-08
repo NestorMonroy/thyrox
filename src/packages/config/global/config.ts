@@ -153,11 +153,25 @@ function _lockSync(file: string, options?: unknown): () => void {
 }
 /* eslint-enable @typescript-eslint/no-require-imports */
 
+/**
+ * Lo que el usuario pega en el prompt. Los siete campos de la fuente —el
+ * porte de #260 llegó con cuatro, y los tres ausentes no fallaron al
+ * portarse sino al consumirse: `imageStore` decide la extensión del
+ * archivo por `mediaType`, así que sin él un jpeg aterriza llamándose
+ * `.png`.
+ */
 export type PastedContent = {
+  /** Identificador secuencial dentro de la sesión. */
   id: number
   type: 'text' | 'image'
   content: string
+  /** `image/png`, `image/jpeg`… — decide la extensión en disco. */
+  mediaType?: string
+  /** Nombre a mostrar en la ranura de adjuntos. */
+  filename?: string
   dimensions?: ImageDimensions
+  /** Ruta original, cuando la imagen se arrastró a la terminal. */
+  sourcePath?: string
 }
 
 export interface HistoryEntry {

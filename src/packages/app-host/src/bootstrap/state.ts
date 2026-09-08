@@ -15,9 +15,10 @@
  *   - Slice C (bypass mode):  2 funciones
  *   - Slice D (cwd/originalCwd/projectRoot — normalización NFC): 6 funciones
  *   - Slice E (contabilidad de coste y uso por modelo): 9 funciones
+ *   - Slice F (identidad de sesión): 7 funciones
  *   - Utilidad de test compartida: `resetStateForTests` = 1
  *   -------------------------------------------------------------
- *   TOTAL PORTADO: 53 de 229 símbolos exportados por la fuente.
+ *   TOTAL PORTADO: 60 de 229 símbolos exportados por la fuente.
  *
  * Slice E entró el 2026-09-08 (#262): `handleStopHooks` necesita
  * `getTotalOutputTokens` para el conteo de tokens del objetivo `/goal`, y sin
@@ -26,6 +27,15 @@
  * símbolo suelto: portar uno solo dejaría `STATE.modelUsage` sin escritor y
  * los cinco lectores devolviendo cero para siempre, que es el verde que no
  * discrimina.
+ *
+ * Slice F entró el 2026-09-08 (#234): `imageStore` de `@thyrox/tool-registry`
+ * guarda cada imagen bajo el directorio de SU sesión, y sin `getSessionId`
+ * el módulo no se puede portar. Se trae la slice ENTERA por el mismo motivo
+ * que la E: el `planSlugCache` se purga en `regenerateSessionId` y en
+ * `switchSession`, así que traer sólo el lector dejaría un mapa que crece y
+ * nadie vacía. `onSessionSwitch` DIVERGE —se reimplementa con un conjunto
+ * de oyentes en vez de con la primitiva de señal de la fuente, que este
+ * árbol no tiene— conservando su contrato: registrar y desuscribir.
  *
  * Slice D — `stateNFCNormalization.behavior.test.ts` asevera contra el
  * TEXTO literal de este archivo (regex sobre el cuerpo de cada función),
@@ -80,6 +90,8 @@ import type { LoggerProvider } from '@opentelemetry/sdk-logs'
 import type { MeterProvider } from '@opentelemetry/sdk-metrics'
 import type { BasicTracerProvider } from '@opentelemetry/sdk-trace-base'
 import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import { randomUUID } from 'node:crypto'
+import type { SessionId } from '@thyrox/agent/idTypes'
 import { realpathSync } from 'fs'
 import { cwd } from 'process'
 
@@ -132,6 +144,13 @@ type State = {
   // Slice E — contabilidad de coste y uso por modelo
   modelUsage: { [modelName: string]: ModelUsage }
   totalCostUSD: number
+  // Slice F — identidad de sesión
+  sessionId: SessionId
+  parentSessionId: SessionId | undefined
+  /** Directorio del proyecto donde vive el transcript, o `null` si es el actual. */
+  sessionProjectDir: string | null
+  /** Caché de slug de plan: sessionId → slug. */
+  planSlugCache: Map<string, string>
   // Slice C — bypass mode (bypassModeState)
   sessionBypassPermissionsMode: boolean
   // Slice D — cwd/originalCwd/projectRoot (normalización NFC)
@@ -188,6 +207,10 @@ function getInitialState(): State {
     pendingPostCompaction: false,
     modelUsage: {},
     totalCostUSD: 0,
+    sessionId: randomUUID() as SessionId,
+    parentSessionId: undefined,
+    sessionProjectDir: null,
+    planSlugCache: new Map(),
     sessionBypassPermissionsMode: false,
     originalCwd: resolvedCwd,
     projectRoot: resolvedCwd,
@@ -397,6 +420,95 @@ export function consumePostCompaction(): boolean {
   const was = STATE.pendingPostCompaction
   STATE.pendingPostCompaction = false
   return was
+}
+
+// ---------------------------------------------------------------------------
+// Slice F — identidad de sesión
+// ---------------------------------------------------------------------------
+
+export function getSessionId(): SessionId {
+  return STATE.sessionId
+}
+
+/**
+ * Estrena una sesión conservando el proceso. Tres cosas pasan juntas y
+ * ninguna es opcional:
+ *
+ *   - se olvida el slug de plan de la sesión saliente, para que el mapa no
+ *     acumule claves muertas a lo largo de la sesión;
+ *   - se estrena el identificador;
+ *   - el directorio de proyecto vuelve a `null`, porque la sesión
+ *     regenerada vive en el proyecto ACTUAL y su ruta se deriva de
+ *     `originalCwd`.
+ */
+export function regenerateSessionId(
+  options: { setCurrentAsParent?: boolean } = {},
+): SessionId {
+  if (options.setCurrentAsParent) {
+    STATE.parentSessionId = STATE.sessionId
+  }
+  STATE.planSlugCache.delete(STATE.sessionId)
+  STATE.sessionId = randomUUID() as SessionId
+  STATE.sessionProjectDir = null
+  return STATE.sessionId
+}
+
+export function getParentSessionId(): SessionId | undefined {
+  return STATE.parentSessionId
+}
+
+/**
+ * Cambia de sesión ATÓMICAMENTE. `sessionId` y `sessionProjectDir` cambian
+ * siempre juntos —no hay setter separado para ninguno— para que no puedan
+ * desincronizarse.
+ *
+ * @param projectDir directorio que contiene `<sessionId>.jsonl`. Omitir (o
+ *   `null`) para una sesión del proyecto actual: la ruta se deriva de
+ *   `originalCwd` al leer. Se pasa el directorio del transcript cuando la
+ *   sesión vive en otro proyecto —worktrees de git, reanudación cruzada—.
+ *   CADA llamada reinicia el directorio; nunca se arrastra el de la sesión
+ *   anterior.
+ */
+export function switchSession(
+  sessionId: SessionId,
+  projectDir: string | null = null,
+): void {
+  STATE.planSlugCache.delete(STATE.sessionId)
+  STATE.sessionId = sessionId
+  STATE.sessionProjectDir = projectDir
+  for (const listener of sessionSwitchListeners) listener(sessionId)
+}
+
+/**
+ * DIVERGENCIA DECLARADA: la fuente usa su propia primitiva de señal
+ * (`createSignal`), que este árbol no tiene portada. El contrato que los
+ * llamadores consumen es `onSessionSwitch(cb) → desuscribir`, y eso es lo
+ * que se reimplementa con un conjunto. Se conserva la razón de que exista:
+ * bootstrap no puede importar a sus oyentes —es hoja del grafo—, así que
+ * son ellos los que se registran.
+ */
+const sessionSwitchListeners = new Set<(id: SessionId) => void>()
+
+export function onSessionSwitch(
+  listener: (id: SessionId) => void,
+): () => void {
+  sessionSwitchListeners.add(listener)
+  return () => {
+    sessionSwitchListeners.delete(listener)
+  }
+}
+
+/**
+ * Directorio de proyecto donde vive el transcript de la sesión actual, o
+ * `null` si la sesión se creó en el proyecto actual — el caso común, y el
+ * que se deriva de `originalCwd`.
+ */
+export function getSessionProjectDir(): string | null {
+  return STATE.sessionProjectDir
+}
+
+export function getPlanSlugCache(): Map<string, string> {
+  return STATE.planSlugCache
 }
 
 // ---------------------------------------------------------------------------
