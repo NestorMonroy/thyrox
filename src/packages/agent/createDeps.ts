@@ -33,8 +33,11 @@
  *
  *   · `@thyrox/tool-registry` NO existe (`findToolByName`). Es el porte más
  *     grande que queda del reparto — 255 módulos, tarea #234.
- *   · `handleStopHooks` no lo exporta `./hooks/index.ts`: sigue sin portar en
- *     `internal/stopHooksCore.ts` por su propia lista de bloqueos, tarea #262.
+ *   · `handleStopHooks` YA ESTÁ portado (#262, 2026-09-08) en
+ *     `internal/stopHooksCore.ts`; lo que sigue faltando es que
+ *     `./hooks/index.ts` lo re-exporte — pero ese archivo NO EXISTE en este
+ *     árbol (medido), así que el cableado espera a que la barrica de hooks
+ *     se porte; el símbolo se importa mientras tanto por su ruta directa.
  *   · `recordTranscript` no existe en `./internal/runtimeBridges.ts`; en la
  *     fuente delega en un método del host (`getAgentHostBindings()
  *     .recordTranscript`) que aquí tampoco está declarado.

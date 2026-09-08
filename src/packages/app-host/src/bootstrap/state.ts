@@ -14,9 +14,18 @@
  *   - Slice B (captura de request/`requestCaptureState`): 14 funciones
  *   - Slice C (bypass mode):  2 funciones
  *   - Slice D (cwd/originalCwd/projectRoot — normalización NFC): 6 funciones
+ *   - Slice E (contabilidad de coste y uso por modelo): 9 funciones
  *   - Utilidad de test compartida: `resetStateForTests` = 1
  *   -------------------------------------------------------------
- *   TOTAL PORTADO: 44 de 229 símbolos exportados por la fuente.
+ *   TOTAL PORTADO: 53 de 229 símbolos exportados por la fuente.
+ *
+ * Slice E entró el 2026-09-08 (#262): `handleStopHooks` necesita
+ * `getTotalOutputTokens` para el conteo de tokens del objetivo `/goal`, y sin
+ * ella el generador no se puede portar. Se trae la slice ENTERA —los cinco
+ * acumuladores de token, el coste y los dos lectores de uso— en vez del
+ * símbolo suelto: portar uno solo dejaría `STATE.modelUsage` sin escritor y
+ * los cinco lectores devolviendo cero para siempre, que es el verde que no
+ * discrimina.
  *
  * Slice D — `stateNFCNormalization.behavior.test.ts` asevera contra el
  * TEXTO literal de este archivo (regex sobre el cuerpo de cada función),
@@ -81,6 +90,21 @@ export type AttributedCounter = {
   add(value: number, additionalAttributes?: Attributes): void
 }
 
+/**
+ * Uso por modelo. La fuente lo importa de
+ * `@claude-code-how-works/headless-sdk/agentSdkTypes.js`, paquete que este
+ * árbol no tiene; se declara aquí con los cinco campos que sus lectores
+ * suman — el mismo criterio de inlineado que la fuente aplica a los tipos
+ * que no quiere arrastrar.
+ */
+export type ModelUsage = {
+  inputTokens: number
+  outputTokens: number
+  cacheReadInputTokens: number
+  cacheCreationInputTokens: number
+  webSearchRequests: number
+}
+
 type State = {
   // Slice A — telemetría (meterState)
   meter: Meter | null
@@ -105,6 +129,9 @@ type State = {
   lastMainRequestId: string | undefined
   lastApiCompletionTimestamp: number | null
   pendingPostCompaction: boolean
+  // Slice E — contabilidad de coste y uso por modelo
+  modelUsage: { [modelName: string]: ModelUsage }
+  totalCostUSD: number
   // Slice C — bypass mode (bypassModeState)
   sessionBypassPermissionsMode: boolean
   // Slice D — cwd/originalCwd/projectRoot (normalización NFC)
@@ -159,6 +186,8 @@ function getInitialState(): State {
     lastMainRequestId: undefined,
     lastApiCompletionTimestamp: null,
     pendingPostCompaction: false,
+    modelUsage: {},
+    totalCostUSD: 0,
     sessionBypassPermissionsMode: false,
     originalCwd: resolvedCwd,
     projectRoot: resolvedCwd,
@@ -433,4 +462,58 @@ export function resetStateForTests(): void {
   Object.entries(getInitialState()).forEach(([key, value]) => {
     STATE[key as keyof State] = value as never
   })
+}
+
+// ---------------------------------------------------------------------------
+// Slice E — contabilidad de coste y uso por modelo
+// ---------------------------------------------------------------------------
+
+/**
+ * Acumula el coste de una petición y REEMPLAZA el uso del modelo que la
+ * sirvió. Reemplaza y no suma porque el llamador pasa el acumulado del
+ * modelo, no el delta de esa petición — sumarlo lo contaría dos veces.
+ */
+export function addToTotalCostState(
+  cost: number,
+  modelUsage: ModelUsage,
+  model: string,
+): void {
+  STATE.modelUsage[model] = modelUsage
+  STATE.totalCostUSD += cost
+}
+
+export function getTotalCostUSD(): number {
+  return STATE.totalCostUSD
+}
+
+function sumUsage(field: keyof ModelUsage): number {
+  return Object.values(STATE.modelUsage).reduce((t, u) => t + (u[field] ?? 0), 0)
+}
+
+export function getTotalInputTokens(): number {
+  return sumUsage('inputTokens')
+}
+
+export function getTotalOutputTokens(): number {
+  return sumUsage('outputTokens')
+}
+
+export function getTotalCacheReadInputTokens(): number {
+  return sumUsage('cacheReadInputTokens')
+}
+
+export function getTotalCacheCreationInputTokens(): number {
+  return sumUsage('cacheCreationInputTokens')
+}
+
+export function getTotalWebSearchRequests(): number {
+  return sumUsage('webSearchRequests')
+}
+
+export function getModelUsage(): { [modelName: string]: ModelUsage } {
+  return STATE.modelUsage
+}
+
+export function getUsageForModel(model: string): ModelUsage | undefined {
+  return STATE.modelUsage[model]
 }

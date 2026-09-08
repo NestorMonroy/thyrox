@@ -6,13 +6,13 @@
  * fronteras V7 (§8 — `agent` no puede importar de `app-compat`); estas
  * implementaciones locales son el patrón aprobado para utilidades puras.
  *
- * Recorte declarado: la fuente trae además `isBareMode` (depende de
- * `readEnv` de `@claude-code-how-works/config/env`, inexistente en este
- * árbol) y `pathExists` (usa sólo `fs/promises`, portable, pero ningún caso
- * de `__tests__/internalUtils.test.ts` la ejercita). Ninguna de las dos entra
- * aquí — el porte se limita a los once símbolos que el test importa, todos
- * autocontenidos.
+ * Recorte declarado, REVISADO 2026-09-08 (#262): la fuente traía además
+ * `isBareMode` y `pathExists`. `isBareMode` **ya entra**: su bloqueo era
+ * `readEnv` de `config/env`, que hoy existe en este árbol
+ * (`@thyrox/config/env/utils.ts:43`) — se declaraba ausente y la medición
+ * lo desmiente. `pathExists` sigue fuera: es portable pero sin consumidor.
  */
+import { readEnv } from '@thyrox/config/env/utils'
 
 // ── Utilidades de error ────────────────────────────────────────────────────
 
@@ -135,4 +135,19 @@ export type SystemPrompt = readonly string[] & {
 
 export function asSystemPrompt(value: readonly string[]): SystemPrompt {
   return value as SystemPrompt
+}
+
+/**
+ * `--bare` / SIMPLE: el modo que salta la contabilidad de fondo (sugerencia
+ * de prompt, extracción de memoria, auto-dream). Una llamada `-p` guionizada
+ * no quiere auto-memoria ni agentes bifurcados peleándose recursos mientras
+ * se apaga.
+ *
+ * Las dos vías son las de la fuente y NO son intercambiables: la variable
+ * gobierna el proceso entero, y el argumento gobierna esta invocación.
+ */
+export function isBareMode(): boolean {
+  return (
+    isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE')) || process.argv.includes('--bare')
+  )
 }

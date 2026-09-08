@@ -3,7 +3,7 @@
   "version": "0.4.0",
   "private": true,
   "type": "module",
-  "description": "El dominio agent: el contrato de definicion, el catalogo de modelos, el port de la referencia y —en loop/— el bucle vivo con lo que necesita para CORRER (tipos, transcript, sesion, hooks, contexto).",
+  "description": "El dominio agent: el contrato de definicion, el catalogo de modelos, el port de la referencia y \u2014en loop/\u2014 el bucle vivo con lo que necesita para CORRER (tipos, transcript, sesion, hooks, contexto).",
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
@@ -59,6 +59,7 @@
     "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/memory": "workspace:*",
     "@thyrox/observability": "workspace:*",
     "@thyrox/permission": "workspace:*",
     "@thyrox/provider": "workspace:*",

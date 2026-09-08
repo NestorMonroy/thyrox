@@ -22,3 +22,9 @@ export * from './consolidationPrompt.js'
 export * from './teamMemorySync.js'
 export * from './agentMemory.js'
 export * from './errors.js'
+
+// La fuente importa estos dos desde la RAÍZ del paquete
+// (`@claude-code-how-works/memory`) en `agent/internal/stopHooksCore.ts`.
+// Re-exportarlos aquí es portar su superficie pública, no una comodidad.
+export { executeExtractMemories } from './extractMemories.ts'
+export { isExtractModeActive } from './paths.ts'

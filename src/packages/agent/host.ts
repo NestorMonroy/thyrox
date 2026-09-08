@@ -84,6 +84,77 @@ export type AgentHostBindings = {
   getOriginalCwd?: () => string
   isSessionPersistenceDisabled?: () => boolean
 
+  // ── Pipeline de hooks Stop (`internal/stopHooksCore.ts`) ────────────────
+  // Las once que `handleStopHooks` conduce. Se declaran juntas porque su
+  // ausencia no rompía la compilación —cada llamada es opcional— sino que
+  // dejaba al generador conduciendo el vacío: compilaba, corría y no hacía
+  // nada. Ése es el defecto que #262 nombra, y el que su anulación atrapa.
+  executeStopHooks?: (
+    permissionMode: string,
+    signal: AbortSignal,
+    extra: unknown,
+    stopHookActive: boolean,
+    agentId: string | undefined,
+    toolUseContext: unknown,
+    messages: unknown[],
+    agentType: string | undefined,
+  ) => AsyncGenerator<StopHookExecutionResult, void>
+  executeTaskCompletedHooks?: (
+    taskId: string,
+    subject: string,
+    description: string | undefined,
+    teammateName: string,
+    teamName: string,
+    permissionMode: string,
+    signal: AbortSignal,
+    extra: unknown,
+    toolUseContext: unknown,
+  ) => AsyncGenerator<StopHookExecutionResult, void>
+  executeTeammateIdleHooks?: (
+    teammateName: string,
+    teamName: string,
+    permissionMode: string,
+    signal: AbortSignal,
+  ) => AsyncGenerator<StopHookExecutionResult, void>
+  createAttachmentMessage?: (attachment: unknown) => AgentMessage | undefined
+  createStopHookSummaryMessage?: (
+    hookCount: number,
+    hookInfos: unknown[],
+    hookErrors: string[],
+    preventedContinuation: boolean,
+    stopReason: string,
+    hasOutput: boolean,
+    kind: string,
+    toolUseID: string,
+  ) => AgentMessage | undefined
+  getStopHookMessage?: (blockingError: unknown) => string
+  getTaskCompletedHookMessage?: (blockingError: unknown) => string
+  getTeammateIdleHookMessage?: (blockingError: unknown) => string
+  classifyJobState?: (
+    jobDir: string | undefined,
+    assistantMessages: unknown[],
+  ) => Promise<void> | undefined
+  executePromptSuggestion?: (context: unknown) => Promise<void> | void
+  cleanupComputerUseAfterTurn?: (
+    toolUseContext: unknown,
+  ) => Promise<void> | void
+
+  // ── Snapshot de params seguro para caché (`/btw`, side_question) ────────
+  createCacheSafeParams?: (context: unknown) => unknown
+  saveCacheSafeParams?: (params: unknown) => void
+
+  // ── Tablero de tareas, leído por el pipeline de Stop ────────────────────
+  getTaskListId?: () => string | undefined
+  listTasks?: (taskListId: string | undefined) => Promise<HostTask[]>
+  isTeammate?: () => boolean
+  getAgentName?: () => string
+  getTeamName?: () => string
+  getShortcutDisplay?: (
+    action: string,
+    scope: string,
+    fallback: string,
+  ) => string
+
   // ── Puentes de runtime (runtimeBridges.ts) ──────────────────────────────
   createCompactBoundaryMessage?: (
     trigger: 'manual' | 'auto',
@@ -163,6 +234,30 @@ export type AgentHostBindings = {
 }
 
 let agentHostBindings: AgentHostBindings | null = null
+
+/**
+ * Una tarea del tablero, en la forma MÍNIMA que el pipeline de Stop lee:
+ * su estado para saber si hay trabajo de fondo en vuelo, y su dueño para
+ * saber de quién. El tablero real declara muchos más campos; declararlos
+ * todos aquí ataría este paquete a su esquema sin necesidad.
+ */
+export type HostTask = {
+  id: string
+  subject: string
+  description?: string
+  status: string
+  owner?: string
+}
+
+/** Lo que un ejecutor de hooks emite por cada hook que corre. */
+export type StopHookExecutionResult = {
+  message?: AgentMessage
+  blockingError?: { blockingError: string }
+  preventContinuation?: boolean
+  stopReason?: string
+  hook?: unknown
+  impossible?: boolean
+}
 
 export function installAgentHostBindings(bindings: AgentHostBindings): void {
   agentHostBindings = bindings

@@ -14,22 +14,33 @@
  * midio y esta al pie.
  *
  * COMO SE AISLA DEL ENTORNO: `providers.ts` lee la configuracion global por
- * `require` diferido, asi que la suite intercepta el modulo con `mock.module`
+ * `require` diferido; la suite INTERCEPTABA el modulo con `mock.module`
  * y le da un objeto de conexiones que cada caso escribe. Es la misma costura
  * que usa la fuente.
  *
- * CINCO CASOS ESTAN BLOQUEADOS, y se declaran como tales en vez de borrarse:
- * los 4, 5, 6, 12 y 13 exigen que el registro de conexiones tenga algo dentro,
- * y hoy NO puede tenerlo. Medido: `require('@thyrox/config').getGlobalConfig`
- * es `undefined` —nuestro paquete config no porta `global/config.ts` de la
- * fuente— asi que `getEnabledConnections()` devuelve `[]` siempre y todo cae a
- * la rama de variables de entorno. Van como `test.todo`: visibles en la salida,
- * nunca en verde. Sucesor registrado: tarea #260.
+ * LOS CINCO CASOS BLOQUEADOS —4, 5, 6, 12 y 13— ESTAN VIVOS desde el
+ * 2026-09-08. Su bloqueo era que `getGlobalConfig` no existia en
+ * `@thyrox/config`, asi que `getEnabledConnections()` devolvia `[]` siempre y
+ * todo caia a la rama de variables de entorno. #260 porto el registro global;
+ * estos cinco dejan de ser `test.todo`.
  *
- * Y hay un segundo hallazgo del mismo pase, medido con cuatro sondas:
- * `mock.module` SI intercepta un `require` posterior cuando se le da un
- * subpath (`@thyrox/config/settings` devolvio el valor marcador), y NO cuando
- * se le da la raiz del paquete —ni por specifier ni por ruta absoluta—. Por
+ * Y CON EL PORTE, EL DOBLE SOBRA — y ademas hacia dano. El `mock.module` sobre
+ * `@thyrox/config` que esta suite instalaba alcanzaba tambien a
+ * `global/config.ts`, porque la barrica lo reexporta: medido, la suite del
+ * registro global recibia `{connections: []}` —un objeto de UNA clave— en vez
+ * de su default. Seis casos verdes por separado y rojos juntos, o sea el orden
+ * de ejecucion decidiendo el veredicto.
+ *
+ * Se sustituye por el mecanismo que la propia fuente construyo para esto:
+ * bajo `NODE_ENV=test` su `saveGlobalConfig` escribe en un objeto de modulo y
+ * su `getGlobalConfig` lo devuelve. La suite conduce el registro REAL, sin
+ * doble, y de paso deja de medirse contra si misma.
+ *
+ * El hallazgo de instrumentacion del pase anterior se conserva porque sigue
+ * siendo cierto y es la razon de la fuga: `mock.module` SI intercepta un
+ * `require` posterior cuando se le da un subpath (`@thyrox/config/settings`
+ * devolvio el valor marcador), y NO cuando se le da la raiz del paquete —ni
+ * por specifier ni por ruta absoluta—. Por
  * eso la costura de configuracion global de esta suite no llega. Tarea #261.
  *
  * CONTROL DE ANULACION, medido sobre los diez que si corren: se retira la rama
@@ -52,13 +63,16 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import type { ConnectionRecord } from '../src/connections.js'
 
-const configReal = await import('@thyrox/config')
-const config = { connections: [] as ConnectionRecord[] }
+const { saveGlobalConfig } = await import('@thyrox/config/global/config.js')
 
-mock.module('@thyrox/config', () => ({
-  ...configReal,
-  getGlobalConfig: () => config,
-}))
+/**
+ * Fija el registro de conexiones. Bajo `NODE_ENV=test` el registro real
+ * escribe en su objeto de pruebas en vez de tocar el disco — es la via que la
+ * fuente dejo abierta justo para esto, y por eso aqui no hace falta doble.
+ */
+function setConnections(connections: ConnectionRecord[]): void {
+  saveGlobalConfig(c => ({ ...c, connections: connections as never }))
+}
 
 // `getAPIProvider()` consulta los ajustes iniciales, que en ejecucion exigen
 // bindings instalados. La suite no los instala: se sustituye por un objeto
@@ -84,7 +98,7 @@ const CLAVES = [
 const guardado = new Map<string, string | undefined>()
 
 beforeEach(() => {
-  config.connections = []
+  setConnections([])
   for (const k of CLAVES) {
     guardado.set(k, process.env[k])
     delete process.env[k]
@@ -115,67 +129,67 @@ describe('getProviderForModel — de protocolo de conexion a APIProvider', () =>
   })
 
   test('2. protocolo anthropic da firstParty, no el literal del protocolo', () => {
-    config.connections = [
+    setConnections([
       { ...conexionBase, protocol: 'anthropic', endpoint: 'https://api.anthropic.com' },
-    ]
+    ])
     expect(getProviderForModel('test:claude-opus-4-7')).toBe('firstParty')
   })
 
   test('3. protocolo anthropic contra un proxy sigue dando firstParty', () => {
     // La distincion proxy/first-party no vive aqui: la hace
     // `isFirstPartyAnthropicEndpoint`, que es otro eje.
-    config.connections = [
+    setConnections([
       {
         ...conexionBase,
         protocol: 'anthropic',
         endpoint: 'https://mi-litellm.example.com/anthropic',
       },
-    ]
+    ])
     expect(getProviderForModel('test:claude-opus-4-7')).toBe('firstParty')
   })
 
-  test.todo('4. protocolo openai da openai', () => {
-    config.connections = [
+  test('4. protocolo openai da openai', () => {
+    setConnections([
       {
         ...conexionBase,
         protocol: 'openai',
         endpoint: 'https://api.openai.com/v1',
         models: [{ id: 'gpt-5.5', label: 'GPT-5.5' }],
       },
-    ]
+    ])
     expect(getProviderForModel('test:gpt-5.5')).toBe('openai')
   })
 
-  test.todo('5. protocolo gemini da gemini', () => {
-    config.connections = [
+  test('5. protocolo gemini da gemini', () => {
+    setConnections([
       {
         ...conexionBase,
         protocol: 'gemini',
         endpoint: 'https://generativelanguage.googleapis.com',
         models: [{ id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' }],
       },
-    ]
+    ])
     expect(getProviderForModel('test:gemini-2.5-pro')).toBe('gemini')
   })
 
-  test.todo('6. protocolo codex da codex', () => {
-    config.connections = [
+  test('6. protocolo codex da codex', () => {
+    setConnections([
       {
         ...conexionBase,
         protocol: 'codex',
         endpoint: 'https://chatgpt.com/backend-api',
         models: [{ id: 'gpt-5.2-codex', label: 'GPT-5.2 Codex' }],
       },
-    ]
+    ])
     expect(getProviderForModel('test:gpt-5.2-codex')).toBe('codex')
   })
 
   test('7. ningun protocolo produce el literal "anthropic" — la fuga que el switch cierra', () => {
     const protocolos = ['anthropic', 'openai', 'gemini', 'codex'] as const
     for (const protocol of protocolos) {
-      config.connections = [
+      setConnections([
         { ...conexionBase, protocol, endpoint: 'https://example.com' },
-      ]
+      ])
       expect(getProviderForModel('test:claude-opus-4-7')).not.toBe('anthropic')
     }
   })
@@ -197,32 +211,32 @@ describe('isFirstPartyAnthropicEndpoint', () => {
   })
 
   test('11. el modelo resuelve a una conexion anthropic en api.anthropic.com: verdadero', () => {
-    config.connections = [
+    setConnections([
       { ...conexionBase, protocol: 'anthropic', endpoint: 'https://api.anthropic.com' },
-    ]
+    ])
     expect(isFirstPartyAnthropicEndpoint('test:claude-opus-4-7')).toBe(true)
   })
 
-  test.todo('12. el modelo resuelve a una conexion anthropic en un proxy: falso', () => {
-    config.connections = [
+  test('12. el modelo resuelve a una conexion anthropic en un proxy: falso', () => {
+    setConnections([
       {
         ...conexionBase,
         protocol: 'anthropic',
         endpoint: 'https://mi-litellm.example.com/anthropic',
       },
-    ]
+    ])
     expect(isFirstPartyAnthropicEndpoint('test:claude-opus-4-7')).toBe(false)
   })
 
-  test.todo('13. el modelo resuelve a una conexion openai: falso, no es un endpoint de Anthropic', () => {
-    config.connections = [
+  test('13. el modelo resuelve a una conexion openai: falso, no es un endpoint de Anthropic', () => {
+    setConnections([
       {
         ...conexionBase,
         protocol: 'openai',
         endpoint: 'https://api.openai.com/v1',
         models: [{ id: 'gpt-5.5', label: 'GPT-5.5' }],
       },
-    ]
+    ])
     expect(isFirstPartyAnthropicEndpoint('test:gpt-5.5')).toBe(false)
   })
 
