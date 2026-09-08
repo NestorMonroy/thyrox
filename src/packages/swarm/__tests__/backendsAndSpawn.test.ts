@@ -23,6 +23,11 @@ async function instalar(encima: Record<string, unknown> = {}): Promise<void> {
   const mapa: Record<string, unknown> = {}
   for (const n of m.SWARM_FUNCTION_BINDINGS) mapa[n] = () => undefined
   for (const n of m.SWARM_VALUE_BINDINGS) mapa[n] = ''
+  // Dos de los bindings de VALOR son en realidad funciones sin retorno —
+  // arrancan como no-ops para que importar el módulo no exija instalar nada—,
+  // así que el literal vacío del resto no les sirve.
+  mapa.logForDebugging = () => undefined
+  mapa.logError = () => undefined
   m.installSwarmAppRuntime({ ...mapa, ...encima })
 }
 
