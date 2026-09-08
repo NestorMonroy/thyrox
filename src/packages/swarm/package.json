@@ -36,6 +36,8 @@
     "./mailbox/index.js": "./src/mailbox/index.ts",
     "./core/teammateInit.js": "./src/core/teammateInit.ts",
     "./permissions/index.js": "./src/permissions/index.ts",
+    "./backends/PaneBackendExecutor.js": "./src/backends/PaneBackendExecutor.ts",
+    "./backends/it2Setup.js": "./src/backends/it2Setup.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },

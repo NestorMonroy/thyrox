@@ -131,3 +131,23 @@ export { installPrepareCommitMsgHook } from './worktree/postCommitAttribution.js
 
 export type { TeamSummary, TeammateStatus } from './teamDiscovery.js'
 export { getTeammateStatuses } from './teamDiscovery.js'
+
+export {
+  PaneBackendExecutor,
+  createPaneBackendExecutor,
+} from './backends/PaneBackendExecutor.js'
+
+export type {
+  It2InstallResult,
+  It2VerifyResult,
+  PythonPackageManager,
+} from './backends/it2Setup.js'
+export {
+  detectPythonPackageManager,
+  getPreferTmuxOverIterm2,
+  getPythonApiInstructions,
+  installIt2,
+  markIt2SetupComplete,
+  setPreferTmuxOverIterm2,
+  verifyIt2Setup,
+} from './backends/it2Setup.js'

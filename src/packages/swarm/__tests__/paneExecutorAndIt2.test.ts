@@ -18,10 +18,94 @@
  * eso lo decide el entorno, no el módulo.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 let raiz = ''
+
+/**
+ * El guion de la sonda del caso 20, que corre en un proceso con `TMUX` puesto.
+ *
+ * Se escribe en el árbol temporal y se ejecuta con `bun`: importar los módulos
+ * aquí dentro es lo único que hace que `detection.ts` capture la variable con
+ * el valor que este caso necesita.
+ */
+const GUION_SONDA = `
+import { join } from 'node:path'
+const raiz = process.argv[2]
+const RUTA = '${import.meta.dir}/../src'
+const m = await import(RUTA + '/adapters/appRuntime.ts')
+const mapa = {}
+for (const n of m.SWARM_FUNCTION_BINDINGS) mapa[n] = () => undefined
+for (const n of m.SWARM_VALUE_BINDINGS) mapa[n] = ''
+mapa.logForDebugging = () => undefined
+mapa.logError = () => undefined
+mapa.getTeamsDir = () => join(raiz, 'teams')
+mapa.getErrnoCode = e => e?.code
+mapa.jsonParse = s => JSON.parse(s)
+mapa.jsonStringify = (v, r, i) => JSON.stringify(v, r, i)
+mapa.sanitizePathComponent = s => s.replace(/[^a-zA-Z0-9_-]/g, '-')
+mapa.count = (xs, p) => xs.filter(p).length
+mapa.lock = () => Promise.resolve(async () => undefined)
+mapa.getTeamName = () => 'eq'
+mapa.getAgentName = () => undefined
+mapa.getTeammateColor = () => 'blue'
+mapa.generateRequestId = (t, d) => t + '-' + d + '-1'
+mapa.formatAgentId = (n, e) => n + '@' + e
+mapa.parseAgentId = id => {
+  const [agentName, teamName] = id.split('@')
+  return agentName && teamName ? { agentName, teamName } : null
+}
+mapa.quote = xs => xs.map(x => "'" + x + "'").join(' ')
+mapa.getSessionId = () => 'sesion-de-prueba'
+mapa.registerCleanup = () => undefined
+mapa.getInlinePlugins = () => []
+mapa.getGlobalConfig = () => ({})
+m.installSwarmAppRuntime(mapa)
+
+const llamadas = []
+const registra = (metodo, retorno) => async (...args) => {
+  llamadas.push({ metodo, args })
+  return retorno
+}
+const backend = {
+  type: 'tmux',
+  displayName: 'tmux',
+  supportsHideShow: true,
+  isAvailable: registra('isAvailable', true),
+  isRunningInside: registra('isRunningInside', true),
+  createTeammatePaneInSwarmView: registra('createTeammatePaneInSwarmView', {
+    paneId: '%7',
+    isFirstTeammate: true,
+  }),
+  sendCommandToPane: registra('sendCommandToPane'),
+  setPaneBorderColor: registra('setPaneBorderColor'),
+  setPaneTitle: registra('setPaneTitle'),
+  enablePaneBorderStatus: registra('enablePaneBorderStatus'),
+  rebalancePanes: registra('rebalancePanes'),
+  killPane: registra('killPane', true),
+  hidePane: registra('hidePane', true),
+  showPane: registra('showPane', true),
+}
+
+const { createPaneBackendExecutor } = await import(
+  RUTA + '/backends/PaneBackendExecutor.ts'
+)
+const e = createPaneBackendExecutor(backend)
+e.setContext({ getAppState: () => ({ toolPermissionContext: { mode: 'default' } }) })
+const r = await e.spawn({
+  name: 'ana',
+  teamName: 'eq',
+  prompt: 'haz esto',
+  cwd: '/w',
+  parentSessionId: '',
+})
+console.log(JSON.stringify({
+  resultado: r,
+  bordeEncendido: llamadas.some(l => l.metodo === 'enablePaneBorderStatus'),
+  sesionExterna: llamadas.find(l => l.metodo === 'sendCommandToPane')?.args[2],
+}))
+`
 let trazas: string[] = []
 let errores: unknown[] = []
 /** Cada invocación de un ejecutable externo, con su cwd si lo declaró. */
@@ -84,6 +168,10 @@ async function instalar(encima: Record<string, unknown> = {}): Promise<void> {
   }
   mapa.quote = (xs: string[]) => xs.map(x => `'${x}'`).join(' ')
   mapa.getSessionId = () => 'sesion-de-prueba'
+  // `buildInheritedCliFlags` ITERA sobre el retorno: el no-op genérico
+  // devuelve `undefined` y el `for...of` revienta. No es un defecto del
+  // módulo — es que el doble tiene que respetar la forma del binding.
+  mapa.getInlinePlugins = () => []
   mapa.registerCleanup = (f: () => Promise<void>) => {
     limpiezas.push(f)
   }
@@ -394,24 +482,34 @@ describe('PaneBackendExecutor — el adaptador de pane a ejecutor', () => {
   })
 
   test('20. dentro de tmux y siendo el primero, enciende el borde de estado', async () => {
-    process.env.TMUX = '/tmp/tmux-1000/default,1,0'
-    await instalar()
-    const { createPaneBackendExecutor } = await import(
-      '../src/backends/PaneBackendExecutor.ts'
-    )
-    const b = backendDoble()
-    const e = createPaneBackendExecutor(b as never)
-    e.setContext(contexto() as never)
-    await e.spawn(configSpawn() as never)
-    delete process.env.TMUX
-    expect(b.llamadas.some(l => l.metodo === 'enablePaneBorderStatus')).toBe(true)
-    expect(
-      b.llamadas.find(l => l.metodo === 'sendCommandToPane')?.args[2],
-    ).toBe(false)
+    // ESTE CASO CORRE EN OTRO PROCESO, y no por comodidad: `detection.ts`
+    // congela `process.env.TMUX` al CARGAR el módulo —a propósito, porque la
+    // capa de shell la sobrescribe al abrir su propio socket— así que dentro
+    // de esta suite la rama «dentro de tmux» es INALCANZABLE. Medirla exige
+    // un proceso que nazca con la variable puesta.
+    const guion = join(raiz, 'sonda.ts')
+    writeFileSync(guion, GUION_SONDA, 'utf-8')
+    const hijo = Bun.spawnSync(['bun', guion, raiz], {
+      env: { ...process.env, TMUX: '/tmp/tmux-1000/default,1,0' },
+    })
+    const salida = new TextDecoder().decode(hijo.stdout).trim()
+    expect(hijo.exitCode).toBe(0)
+    const visto = JSON.parse(salida.split('\n').at(-1) ?? '{}')
+    // El resultado del spawn se afirma ANTES que la conducta: sin esto, una
+    // excepción atrapada dentro del hijo dejaría `sesionExterna` en
+    // `undefined` y el caso pasaría midiendo el silencio.
+    expect(visto.resultado?.success).toBe(true)
+    expect(visto.bordeEncendido).toBe(true)
+    // Y dentro de tmux el envío NO usa la sesión externa: es la negación de
+    // la bandera que el caso 19 mide en el sentido contrario.
+    expect(visto.sesionExterna).toBe(false)
   })
 
   test('21. un modelo propio SUSTITUYE al heredado, no se suma', async () => {
-    await instalar()
+    // El heredado tiene que EXISTIR para que sustituirlo signifique algo: sin
+    // este override, `buildInheritedCliFlags` no emite ningún `--model` y el
+    // filtro no tiene nada que quitar — el caso pasaría sin ejercitarlo.
+    await instalar({ getMainLoopModelOverride: () => 'claude-opus-5' })
     const { createPaneBackendExecutor } = await import(
       '../src/backends/PaneBackendExecutor.ts'
     )
