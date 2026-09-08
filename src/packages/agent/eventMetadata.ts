@@ -24,15 +24,31 @@
  * (inexistente aqui) — NO se porta: ningun caso de
  * `__tests__/eventMetadata.test.ts` la ejercita.
  *
- * Divergencia de tipo, ya presente antes de esta ampliacion y conservada
- * sin tocar: la fuente marca los valores de retorno con el tipo
- * `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS` (`never`,
- * declarado en la propia fuente); aqui se usan cadenas planas — el mismo
- * criterio que ya eligio el porte anterior de `getFileExtensionForAnalytics`.
- * El invariante que ese tipo documenta (estos valores NO son codigo ni
- * rutas de archivo) sigue siendo cierto por construccion en cada funcion;
- * lo que cambia es que aqui no queda anotado en el sistema de tipos.
+ * Divergencia de tipo, acotada: los dos tipos de marca de la fuente
+ * (`AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS` y
+ * `AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED`, ambos `never`) SI se
+ * exportan aqui — son dos lineas autocontenidas, sin dependencia ninguna, y
+ * el porte anterior las habia omitido sin bloqueo que lo justificara. Lo que
+ * se conserva es la otra mitad de aquella decision: las funciones de ESTE
+ * modulo devuelven cadenas planas, no el tipo marcado. El invariante que la
+ * marca documenta —estos valores NO son codigo ni rutas— sigue siendo cierto
+ * por construccion en cada una; lo que cambia es que aqui no queda anotado.
+ *
+ * Un consumidor que si quiera la anotacion la tiene disponible:
+ * `permission/src/classifierTelemetry.ts` la usa para declarar, en el sitio
+ * de la conversion, que verifico cada campo antes de mandarlo a analitica.
  */
+/**
+ * Marca de tipo: el valor pasa por analitica y NO es codigo ni una ruta de
+ * archivo. Es `never` a proposito — obliga a una conversion explicita en el
+ * sitio de uso, que es la firma de quien verifico esa afirmacion. Un alias de
+ * `string` no obligaria a nada y la marca seria decorativa.
+ */
+export type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS = never
+
+/** Su hermana: el valor lleva informacion personal ya etiquetada como tal. */
+export type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED = never
+
 import { extname } from 'node:path'
 import { isEnvTruthy } from './internalUtils.ts'
 

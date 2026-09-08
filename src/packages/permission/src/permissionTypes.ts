@@ -116,6 +116,20 @@ export const PERMISSION_MODES = [
   ...(feature('TRANSCRIPT_CLASSIFIER') ? (['auto'] as const) : ([] as const)),
 ] as const
 
+/**
+ * Consumo de una llamada al clasificador. `permissionTypes.ts:337-342`.
+ *
+ * Los cuatro campos se suman entre etapas (`combineUsage`), así que ninguno es
+ * opcional: la ausencia se representa con un cero explícito al extraerlo de la
+ * respuesta, no con `undefined`.
+ */
+export type ClassifierUsage = {
+  inputTokens: number
+  outputTokens: number
+  cacheReadInputTokens: number
+  cacheCreationInputTokens: number
+}
+
 // ============================================================================
 // Actualizaciones de permiso — `permissionTypes.ts:79-127`
 // ============================================================================

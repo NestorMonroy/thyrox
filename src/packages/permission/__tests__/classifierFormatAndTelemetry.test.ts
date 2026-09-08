@@ -48,8 +48,12 @@ describe('parseXmlBlock — el veredicto, y sólo fuera del pensamiento', () => 
   test('4. un `<thinking>` SIN CERRAR se descarta hasta el final', async () => {
     const { parseXmlBlock } = await import('../src/classifierXmlFormat.ts')
     // Una respuesta truncada por límite de salida deja el pensamiento abierto.
-    // Si sólo se recortaran los pares cerrados, ese resto contaminaría.
-    expect(parseXmlBlock('<block>no</block><thinking><block>yes')).toBe(false)
+    // Si sólo se recortaran los pares cerrados, ese resto contaminaría — y el
+    // pensamiento tiene que ir DELANTE para que la aserción lo ejercite: con
+    // un veredicto válido antes, `matches[0]` ya sería el bueno y el caso
+    // pasaría sin tocar esa rama (medido: la primera redacción no discriminaba).
+    expect(parseXmlBlock('<thinking><block>yes')).toBe(null)
+    expect(parseXmlBlock('<thinking>dudo<block>yes</block> y sigo')).toBe(null)
   })
 
   test('5. la etiqueta de cierre es OPCIONAL', async () => {
@@ -229,9 +233,10 @@ describe('classifyClassifierErrorKind — el orden de la jerarquía decide', () 
       '../src/classifierTelemetry.ts'
     )
     const { APIError } = await import('@anthropic-ai/sdk')
-    expect(classifyClassifierErrorKind(new APIError(429, {}, 'x', {}))).toBe(
-      'http_429',
-    )
+    // El SDK exige un `Headers` real: construye el error leyendo
+    // `request-id` de la cabecera, y un objeto pelado no tiene `.get`.
+    const e = new APIError(429, {}, 'demasiadas', new Headers())
+    expect(classifyClassifierErrorKind(e)).toBe('http_429')
   })
 
   test('20. un código errno baja a minúsculas; lo demás es «other»', async () => {
