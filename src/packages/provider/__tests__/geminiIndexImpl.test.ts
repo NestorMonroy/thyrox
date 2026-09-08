@@ -29,6 +29,16 @@
  *    en `GEMINI_THOUGHT_SIGNATURE_FIELD` en vez de en `signature`. Es lo que
  *    hace que la firma sobreviva el viaje de ida y vuelta por la forma de
  *    Anthropic.
+ *
+ * DOS CONTROLES DE ANULACION, medidos, uno por cada diferencia que sin ellos
+ * quedaria sin discriminar:
+ *
+ * - Se retira la bifurcacion del `signature_delta` y la firma va siempre a
+ *   `signature`: cae **1 de 23**, el caso 20. Ninguno mas — la diferencia 4
+ *   tiene exactamente una asercion que la mide.
+ * - Se retira la traduccion de `thinkingConfig` a `generationConfig`: caen
+ *   **2 de 23**, los casos 8 y 9. El 7 sobrevive, y debe: mide la ausencia
+ *   de la clave, que la anulacion tambien produce.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { queryModelGemini } from '../src/gemini/indexImpl.js'
@@ -371,5 +381,26 @@ describe('queryModelGemini — el camino de error', () => {
   test('22. el error queda registrado con su prefijo', async () => {
     await correr([], {}, pensamientoApagado, fetchQueRevienta('sin red'))
     expect(registro.some(l => l === '[Gemini] Error: sin red')).toBe(true)
+  })
+})
+
+describe('gemini/index.ts — la fachada', () => {
+  test('23. reexporta los siete modulos, y NO el analizador de tramas', async () => {
+    const fachada = (await import('../src/gemini/index.js')) as Record<string, unknown>
+    for (const nombre of [
+      'streamGeminiGenerateContent',
+      'anthropicMessagesToGemini',
+      'anthropicToolsToGemini',
+      'anthropicToolChoiceToGemini',
+      'queryModelGemini',
+      'resolveGeminiModel',
+      'adaptGeminiStreamToAnthropic',
+      'GEMINI_THOUGHT_SIGNATURE_FIELD',
+    ]) {
+      expect(typeof fachada[nombre]).not.toBe('undefined')
+    }
+    // `sseParser` es detalle interno del cliente: la fuente tampoco lo
+    // reexporta, asi que su ausencia es contrato, no olvido.
+    expect(fachada.parseSSEFrames).toBeUndefined()
   })
 })
