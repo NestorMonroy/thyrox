@@ -132,9 +132,15 @@ describe('findStaleSubstitutes', () => {
     // `node_modules`, y cada símbolo aparecería dos veces con el paquete
     // equivocado como hogar.
     const { findStaleSubstitutes } = await import('../../src/gates/staleSubstitutes.ts')
+    //
+    // El symlink va bajo OTRO paquete a propósito. Puesto bajo el propio
+    // consumidor, la exclusión de «un paquete no es hogar de sí mismo» ya
+    // lo taparía y el caso pasaría con y sin la regla de `node_modules` —
+    // el verde que no discrimina. Medido: así colocado, retirar la
+    // exclusión de `node_modules` hace caer este caso y sólo este.
     const raiz = arbolDePaquetes({
       'consumidor/src/internal/pendingCrossPackageDeps.ts': 'export function z(): void {}\n',
-      'consumidor/node_modules/paquete/src/z.ts': 'export function z(): void {}\n',
+      'vecino/node_modules/paquete/src/z.ts': 'export function z(): void {}\n',
     })
     expect(findStaleSubstitutes(raiz)).toEqual([])
   })

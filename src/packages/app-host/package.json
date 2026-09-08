@@ -11,6 +11,7 @@
     "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/output": "workspace:*",
     "@thyrox/shell": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "react": "^19.0.0"

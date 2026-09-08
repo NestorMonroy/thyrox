@@ -6,9 +6,11 @@
 // `headlessProfiler`, que no están en el alcance de este porte). `formatMs`
 // y `formatTimelineLine` se portan verbatim. `getPerformance` idéntico salvo
 // que ya no citamos `@claude-code-how-works/output/formatters` para
-// `formatFileSize` — ese paquete no existe en este árbol — así que se
-// reimplementa localmente, verbatim contra
-// `ccnmt: packages/output/src/formatters/format.ts:10-24`.
+// `formatFileSize`, que se reimplementaba aquí porque «ese paquete no
+// existe en este árbol». Ese motivo caducó: `@thyrox/output` está portado
+// y exporta el símbolo, así que se importa en vez de mantener una segunda
+// copia. Se sigue REEXPORTANDO porque este módulo ya lo publicaba y hay
+// un test que lo ejercita por este nombre.
 
 import type { performance as PerformanceType } from 'node:perf_hooks'
 
@@ -29,26 +31,12 @@ export function formatMs(ms: number): string {
   return ms.toFixed(3)
 }
 
-/**
- * Formatea un tamaño en bytes a la unidad más legible (bytes/KB/MB/GB),
- * con un decimal salvo que sea entero. Porte verbatim de
- * `ccnmt: packages/output/src/formatters/format.ts:10-24`.
- */
-export function formatFileSize(sizeInBytes: number): string {
-  const kb = sizeInBytes / 1024
-  if (kb < 1) {
-    return `${sizeInBytes} bytes`
-  }
-  if (kb < 1024) {
-    return `${kb.toFixed(1).replace(/\.0$/, '')}KB`
-  }
-  const mb = kb / 1024
-  if (mb < 1024) {
-    return `${mb.toFixed(1).replace(/\.0$/, '')}MB`
-  }
-  const gb = mb / 1024
-  return `${gb.toFixed(1).replace(/\.0$/, '')}GB`
-}
+import { formatFileSize } from '@thyrox/output/formatters'
+// Se reexporta porque este módulo ya lo publicaba y hay test que lo
+// ejercita por este nombre; el import es lo que lo trae al ámbito, que
+// un `export ... from` NO hace — lo destapó el rojo de dos casos.
+export { formatFileSize }
+
 
 /**
  * Renderiza una línea de la línea de tiempo compartida por los profilers:

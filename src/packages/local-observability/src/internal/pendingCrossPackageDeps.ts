@@ -156,28 +156,20 @@ export function formatMs(ms: number): string {
 }
 
 /**
- * Sustituto de `@claude-code-how-works/output/formatters.js`'s
- * `formatFileSize` — verbatim a `formatters/format.ts:10-24`. `output`
- * (el paquete hermano) está en porte concurrente en esta misma sesión
- * (otro agente, fuera de mi alcance de escritura) y su exports todavía no
- * se puede tratar como estable — se sustituye aquí en vez de importar de
- * un paquete en vuelo.
+ * SUSTITUTO RETIRADO. Su motivo declarado —«`output` está en porte
+ * concurrente y su exports no se puede tratar como estable»— caducó: el
+ * porte de `output` cerró y `formatFileSize` vive en
+ * `@thyrox/output/formatters`, con los diez símbolos del archivo fuente.
+ *
+ * Se REEXPORTA, no se borra. La primera lectura de este pase midió «cero
+ * consumidores» y era falsa: el grep excluía el archivo entero para no
+ * contar la propia definición, y con ella se llevó al consumidor, que
+ * está doce líneas más abajo (`formatTimelineLine`). Medir «fuera del
+ * archivo» y concluir «en ninguna parte» es el sub-patrón de significante
+ * contra significado, cometido al medir su propio arreglo.
  */
-export function formatFileSize(sizeInBytes: number): string {
-  const kb = sizeInBytes / 1024
-  if (kb < 1) {
-    return `${sizeInBytes} bytes`
-  }
-  if (kb < 1024) {
-    return `${kb.toFixed(1).replace(/\.0$/, '')}KB`
-  }
-  const mb = kb / 1024
-  if (mb < 1024) {
-    return `${mb.toFixed(1).replace(/\.0$/, '')}MB`
-  }
-  const gb = mb / 1024
-  return `${gb.toFixed(1).replace(/\.0$/, '')}GB`
-}
+import { formatFileSize } from '@thyrox/output/formatters'
+export { formatFileSize }
 
 export function formatTimelineLine(
   totalMs: number,
