@@ -259,6 +259,9 @@ describe('clearMailbox — vacía, pero NO crea', () => {
   })
 
   test('21. un buzón inexistente NO se crea al vaciarlo', async () => {
+    // El directorio de buzones SÍ existe: sin sembrarlo, el fallo lo daría la
+    // carpeta ausente y el control mediría eso en vez del modo de apertura.
+    sembrar('ana', [])
     const m = await import('../src/mailbox/index.ts')
     await m.clearMailbox('fantasma')
     // Crear el archivo aquí haría aparecer un buzón para un compañero que no
