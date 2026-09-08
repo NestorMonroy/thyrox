@@ -229,6 +229,13 @@ export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEven
   // turnos desde el último recordatorio (DEC-TASK-01).
   let turnosSinEscrituraTarea = 0
   let turnosSinRecordatorio = 0
+  /**
+   * A.4.5 — «After compact, are work semantics restored?». Se enciende al
+   * compactar y hace que el tablero vuelva a la vista en el turno siguiente,
+   * sin esperar el gate de 10+10. La frontera se acaba de llevar el plan por
+   * delante: reponerlo entonces no es inyección periódica, es restauración.
+   */
+  let restaurarTrasCompactar = false
   let ultimoTexto = ''
   let stop: LoopStop = 'max_turns'
   let modeloServido: string | null = null
@@ -271,12 +278,46 @@ export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEven
 
     for (const evento of await compact(mensajes, opts, turns, shared, nivel.level, sesion.transcript)) yield annotate(evento)
     const auto = await comprimirAuto(mensajes, opts, turns, shared, nivel.level, sesion.transcript)
-    if (auto) {
+    if (auto?.type === 'compaction_failed') {
+      // La escalera de A.5.2 recorrida al revés: si el peldaño que necesita un
+      // modelo se rompe, queda el mecánico. La microcompactación no llama a
+      // nadie —sustituye resultados viejos en sitio— así que puede correr
+      // justo cuando el modelo del resumen es lo que ha fallado.
+      const rescate = await compact(mensajes, opts, turns, shared, nivel.level, sesion.transcript, true)
+      const liberado = rescate.some((e) => e.type === 'compaction' && e.kind === 'micro')
+      yield annotate({ ...auto, rescued: liberado })
+      for (const evento of rescate) yield annotate(evento)
+      if (!liberado) {
+        // Sin peldaños: parar es lo honesto. Seguir gastaría el turno para que
+        // el nivel `blocked` lo rechace, y el motivo real —el resumen no se
+        // pudo escribir— quedaría enterrado bajo un `context_blocked`.
+        ultimoTexto = `No se pudo compactar: ${auto.reason}`
+        stop = 'compaction_failed'
+        break
+      }
+      // El rescate ES una compactación: cuenta para el guard igual que la
+      // automática, o tres rescates seguidos pasarían por tres turnos normales.
+      const refill = rapidRefill(compactState)
+      compactState = markCompacted(String(turns), refill.consecutiveRapidRefills)
+      restaurarTrasCompactar = true
+      if (refill.action === 'trip') {
+        ultimoTexto = THRASHING_MESSAGE
+        stop = 'compaction_thrashing'
+        break
+      }
+    } else if (auto) {
       // Sólo aquí se consulta el guard: es la compactación la que puede
       // repetirse en círculo, no el turno.
       const refill = rapidRefill(compactState)
       compactState = markCompacted(String(turns), refill.consecutiveRapidRefills)
       yield annotate(auto)
+      // A.4.5: el pasado acaba de sustituirse por un resumen, así que el
+      // tablero quedó detrás de la frontera. Reponerlo es la restauración de
+      // la semántica de trabajo — y se hace por bandera, no reiniciando los
+      // contadores: el gate de 10+10 mide OTRA cosa (cuánto lleva el modelo
+      // sin tocar tareas), y falsear su cuenta para forzar una inyección
+      // dejaría el contador mintiendo sobre lo que dice medir.
+      restaurarTrasCompactar = true
       if (refill.action === 'trip') {
         ultimoTexto = THRASHING_MESSAGE
         stop = 'compaction_thrashing'
@@ -290,13 +331,15 @@ export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEven
     if (opts.taskReminder) {
       turnosSinEscrituraTarea += 1
       turnosSinRecordatorio += 1
-      if (turnosSinEscrituraTarea >= TURNS_SINCE_WRITE && turnosSinRecordatorio >= TURNS_BETWEEN_REMINDERS) {
+      const porGate = turnosSinEscrituraTarea >= TURNS_SINCE_WRITE && turnosSinRecordatorio >= TURNS_BETWEEN_REMINDERS
+      if (porGate || restaurarTrasCompactar) {
         const tasks = resumenTablero(opts.taskReminder.dbPath, opts.taskReminder.sessionId)
         const payload = { type: 'task_reminder', tasks }
         sesion.transcript.appendAttachment(payload)
         for (const m of renderAttachment(payload)) mensajes.push({ role: m.role, content: m.content })
         turnosSinRecordatorio = 0
       }
+      restaurarTrasCompactar = false
     }
     const request = {
       model: opts.model,
@@ -555,7 +598,7 @@ async function ejecutar(
  */
 async function compact(
   mensajes: Message[], opts: LoopOptions, turn: number, shared: Record<string, unknown>,
-  nivel?: ContextLevel, transcript?: Transcript,
+  nivel?: ContextLevel, transcript?: Transcript, rescue = false,
 ): Promise<HarnessEvent[]> {
   const umbral = opts.context?.microcompactAfter
   const compactables = collectCompactableToolIds(mensajes).length
@@ -565,9 +608,13 @@ async function compact(
   // resultados de una línea no justifican purgar y tres enormes sí.
   const porPresion = nivel === 'warn' || nivel === 'compact'
   const porConteo = umbral !== undefined && compactables > umbral
-  if (!porPresion && !porConteo) return []
+  // El rescate entra por su cuenta: llega DESPUÉS de que la compactación
+  // automática fallara, y su condición no es la presión ni el conteo sino
+  // que el peldaño de arriba se rompió (A.4.6).
+  if (!rescue && !porPresion && !porConteo) return []
   if (compactables === 0) return []
-  const trigger: 'context_hint' | 'count' = porConteo ? 'count' : 'context_hint'
+  const trigger: 'context_hint' | 'count' | 'compact_failed' =
+    rescue ? 'compact_failed' : porConteo ? 'count' : 'context_hint'
   // El PISO, antes de tocar nada: `if (d < Sdn) return null` del ejecutable.
   // Se proyecta lo que liberaría sin aplicarlo, porque preguntar «¿cuánto
   // libera?» no puede costar la reescritura que se está evaluando. Y la
@@ -584,7 +631,13 @@ async function compact(
   // cero: sin esa distinción, un resultado más corto que el marcador —cuya
   // limpieza libera un delta negativo— seguiría vetado, y quien declaró 0
   // pidió justo lo contrario.
-  if (piso > 0 && projectMicrocompact(mensajes, { keepLast }).freedTokens < piso) return []
+  // El rescate IGNORA el piso, y no por descuido: el piso existe porque romper
+  // la caché de prompt para liberar poco sale más caro que no purgar. Ese
+  // cálculo compara purgar contra seguir; en el rescate la comparación es
+  // purgar contra PERDER LA SESIÓN, y con ese otro término el mismo piso da
+  // la respuesta contraria. Un umbral heredado de otra comparación es el
+  // sub-patrón A: la misma cifra midiendo dos cosas distintas.
+  if (!rescue && piso > 0 && projectMicrocompact(mensajes, { keepLast }).freedTokens < piso) return []
   // `PreCompact` puede vetarla: compactar rompe la caché y borra detalle, así
   // que un hook tiene que poder decir «ahora no».
   const pre = await runHooks(opts.hooks ?? {}, 'PreCompact', { ...shared, trigger: 'micro', reason: trigger, candidates: compactables })
@@ -651,7 +704,17 @@ async function comprimirAuto(
   const pre = await runHooks(opts.hooks ?? {}, 'PreCompact', { ...shared, trigger: 'auto', tokens: antes })
   if (pre.blocked) return null
   const arranque = Date.now()
-  const summary = await resumir(mensajes)
+  // El resumen lo escribe un MODELO, así que su fallo es el modo esperado de
+  // esta rama, no una rareza. Sin este catch la excepción subía y mataba el
+  // bucle — y encima en el peor momento: el contexto ya está en `compact`,
+  // así que el turno siguiente habría dado `blocked` de todas formas. Dos
+  // salidas malas y ninguna declarada (A.4.6).
+  let summary: string
+  try {
+    summary = await resumir(mensajes)
+  } catch (e) {
+    return { type: 'compaction_failed', turn, reason: (e as Error).message, rescued: false }
+  }
   const r = compactMessages(mensajes, { summary, keepLast: opts.context?.keepMessages ?? 6 })
   if (r.compacted === 0) return null
   mensajes.splice(0, mensajes.length, ...r.messages)

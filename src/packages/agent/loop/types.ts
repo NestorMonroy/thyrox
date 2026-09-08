@@ -119,15 +119,21 @@ export type Tool = ToolSpec & {
 /**
  * Por qué paró el bucle.
  *
- * Los dos últimos son paradas de CONTEXTO, y existen porque el ejecutable
+ * Los tres últimos son paradas de CONTEXTO. Dos existen porque el ejecutable
  * 2.1.258 las tiene: `blocked` de `fZe` llega antes que el 400 del servidor
  * (`input length and \`max_tokens\` exceed context limit`), y el `trip` de
  * `rxe` corta cuando compactar dejó de servir. Sin ellas el bucle gasta un
  * turno para que el API lo rechace, o comprime en círculo.
+ *
+ * `compaction_failed` es nuestra, y cierra el hueco que el apéndice A.4.6
+ * nombra —«recovery strategy when compact itself fails»—: el resumen lo
+ * escribe un modelo, así que su fallo es el modo esperado, y hasta hoy la
+ * excepción subía y mataba el bucle. Es la parada del ÚLTIMO peldaño: sólo
+ * se alcanza cuando el rescate mecánico tampoco liberó nada.
  */
 export type LoopStop =
   | 'end_turn' | 'max_turns' | 'aborted' | 'refusal' | 'permission_denied'
-  | 'context_blocked' | 'compaction_thrashing'
+  | 'context_blocked' | 'compaction_thrashing' | 'compaction_failed'
 
 export type LoopResult = {
   stop: LoopStop
@@ -176,8 +182,24 @@ export type HarnessEvent =
   | { type: 'tool_end'; turn: number; tool: string; output: string; isError: boolean }
   | { type: 'compaction'; turn: number; kind: 'micro' | 'auto'; cleared: number;
       freedTokens: number;
-      /** Qué la disparó: la presión del contexto o el conteo declarado. */
-      trigger?: 'context_hint' | 'count' }
+      /**
+       * Qué la disparó: la presión del contexto, el conteo declarado, o el
+       * fallo de la compactación automática. `compact_failed` marca una purga
+       * de RESCATE, y hay que poder distinguirla: ignora el piso de tokens
+       * porque el coste comparado cambió —romper la caché de prompt sale más
+       * barato que perder la sesión—, así que leerla como una purga normal
+       * daría por buena una decisión que sólo vale bajo esa condición.
+       */
+      trigger?: 'context_hint' | 'count' | 'compact_failed' }
+  /**
+   * La compactación automática no pudo escribir su resumen (A.4.6).
+   *
+   * `reason` va verbatim del error: quien audita tiene que poder distinguir
+   * un modelo caído de un resumen vacío sin volver a reproducirlo.
+   * `rescued` dice si el peldaño mecánico llegó a liberar algo — con `false`
+   * el bucle para con `compaction_failed`.
+   */
+  | { type: 'compaction_failed'; turn: number; reason: string; rescued: boolean }
   /**
    * Un candidato que NO se limpió porque su registro falló, con su causa.
    *

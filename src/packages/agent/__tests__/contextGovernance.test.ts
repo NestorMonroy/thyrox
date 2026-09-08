@@ -45,8 +45,16 @@
  *     conducta de hoy sin la excepción: preserva todo y no recupera nada.
  *     Un `blocked` es una parada correcta, no una recuperación.
  *
- * CONTROLES DE ANULACIÓN, a medir tras implementar (se anotan aquí y se
- * corrigen con la medición, no al revés).
+ * CONTROLES DE ANULACIÓN, medidos tras implementar:
+ *
+ * - Se retira el `try/catch` del resumen (`comprimirAuto`): caen **3 de 5**,
+ *   los tres de A.4.6. Los casos 4 y 5 sobreviven y deben — no dependen de
+ *   él: miden la restauración, que ocurre cuando compactar SALE BIEN.
+ * - Se retira `restaurarTrasCompactar` del gate del recordatorio: cae **1 de
+ *   5**, sólo el caso 4. El 5 sobrevive, y ésa es la conducta correcta: mide
+ *   la AUSENCIA de inyección sin compactación, y quitar la restauración no
+ *   la hace aparecer. Un caso que cayera ahí estaría midiendo el gate de
+ *   10+10 en vez de la restauración.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
 import { mkdtempSync } from 'node:fs'
@@ -131,7 +139,7 @@ describe('A.4.6 — hay recuperación cuando la compactación misma falla', () =
       .toContain('el modelo del resumen no respondió')
   })
 
-  test('2. y degrada al mecanismo que NO necesita modelo: microcompactación', async () => {
+  test('2. y degrada al mecanismo que NO necesita modelo, saltándose el piso', async () => {
     const d = dir()
     process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
     const p = new RecordedProvider([pide(1), texto('fin')])
@@ -140,14 +148,27 @@ describe('A.4.6 — hay recuperación cuando la compactación misma falla', () =
       resume: sembrar(d, [relleno(20_000), ...par('t1', 6_000)]),
       context: {
         summarize: async () => { throw new Error('caído') },
-        keepMessages: 1, keepToolResults: 0, minFreedTokens: 0, persistCleared: false,
+        keepMessages: 1, keepToolResults: 0, persistCleared: false,
+        // Un piso inalcanzable: la microcompactación NORMAL de este turno
+        // queda vetada por él. Así lo único que puede purgar es el rescate,
+        // y el caso mide su conducta distintiva —ignorar el piso— en vez de
+        // una purga que habría ocurrido igual.
+        minFreedTokens: 1_000_000,
       },
       maxTurns: 4,
     }))
     const micro = eventos.filter((e) => e.type === 'compaction' && e.kind === 'micro')
-    // El disparador dice que vino del fallo, no de la presión ni del conteo:
-    // sin ese dato, una purga de rescate se lee como una purga normal.
-    expect(micro.some((e) => e.type === 'compaction' && e.trigger === 'compact_failed')).toBe(true)
+    // Hay purga, y TODAS vienen del fallo. La segunda mitad es la que
+    // discrimina: con el piso vetando la vía normal, una purga con trigger
+    // `context_hint` significaría que el piso no se aplicó, y entonces el
+    // caso no mediría el rescate sino una purga que habría ocurrido igual.
+    //
+    // El conteo es 2 y no 1 —medido, no previsto—: el turno 1 purga el par
+    // sembrado y el turno 2 purga el resultado del Bash que el propio turno 1
+    // produjo. Fijar el número congelaría un detalle del recorrido; lo que la
+    // conducta afirma es el ORIGEN de cada purga, no cuántas hubo.
+    expect(micro.length).toBeGreaterThanOrEqual(1)
+    expect(micro.every((e) => e.type === 'compaction' && e.trigger === 'compact_failed')).toBe(true)
   })
 
   test('3. si no queda nada que liberar, PARA declarando — no lanza', async () => {
