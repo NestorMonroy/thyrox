@@ -26,13 +26,24 @@
  * construyen el defecto a propósito y exigen que lo vea; el quinto publica
  * el estado real, que sólo significa algo porque los otros cuatro
  * demostraron que el instrumento discrimina.
+ *
+ * CONTROLES DE ANULACIÓN, medidos:
+ *
+ * - Se retira la comparación contra `MAX_MEMORY_CHARACTER_COUNT`: caen **2
+ *   de 6**, los dos de memoria. Los cuatro de skills sobreviven y deben —
+ *   son ejes independientes, y un instrumento que los mezclara no diría cuál
+ *   se rompió.
+ * - Se retira la comparación `name` contra directorio: cae **1 de 6**, sólo
+ *   el caso 4. El 3 sobrevive porque mide otra condición (sin `SKILL.md`) y
+ *   el 5 también, que es el que prueba que la forma cercada no es defecto.
  */
 import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { invalidSkills, maintenanceReport, staleMemory } from '../../src/conformance/maintenance.ts'
-import { MAX_MEMORY_CHARACTER_COUNT } from '@thyrox/storage/claudemd'
+import {
+  invalidSkills, maintenanceReport, staleMemory, MAX_MEMORY_CHARACTER_COUNT,
+} from '../../src/conformance/maintenance.ts'
 
 const RAIZ = join(import.meta.dir, '..', '..')
 
@@ -98,8 +109,21 @@ describe('A.7.6 — skills invalidos', () => {
   })
 })
 
+describe('A.7.6 — las DOS formas de frontmatter del arbol', () => {
+  test('5. la cerca ```yml vale igual que los guiones: no es un defecto', () => {
+    // Control de un falso positivo REAL, no fabricado. Con el instrumento
+    // mirando solo `---`, el arbol daba 3 skills «sin name» teniendolos:
+    // `cosmic`, `python-mcp` y `thyrox`, los tres de forma cercada. El
+    // arreglo habria sido reescribir tres skills sanos.
+    const d = arbol({}, {
+      'cercado': '```yml\nname: cercado\ndescription: "Use when cercado."\n```\n\nCuerpo.',
+    })
+    expect(invalidSkills(d)).toEqual([])
+  })
+})
+
 describe('A.7.6 — el estado del arbol real', () => {
-  test('5. hoy no hay ninguna de las dos, y el conteo dice sobre que se midio', () => {
+  test('6. hoy no hay ninguna de las dos, y el conteo dice sobre que se midio', () => {
     const r = maintenanceReport(RAIZ)
     // El cero solo significa algo porque los cuatro casos de arriba
     // demostraron que el instrumento ve el defecto cuando lo hay.
