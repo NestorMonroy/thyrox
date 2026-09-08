@@ -28,6 +28,7 @@ import type { ClientOptions } from '@anthropic-ai/sdk'
 import { getProviderHostBindings } from './providerHostSetup.ts'
 import type { ProviderHostBindings } from './providerHostSetup.ts'
 import type { ProviderRequestOptions } from './internal/providerTypes.ts'
+import { HostBindingsError } from './errors.ts'
 
 type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[]
 type JsonObject = { [key: string]: JsonValue }
@@ -108,9 +109,7 @@ type ClaudeLegacyRuntime = {
   MAX_NON_STREAMING_TOKENS?: number
 }
 
-class HostBindingsError extends Error {
-  readonly code = 'PROVIDER_HOST_BINDINGS_NOT_INSTALLED'
-}
+
 
 function getLegacyRuntime(): ClaudeLegacyRuntime {
   const legacy = (getProviderHostBindings() as ProviderHostBindings).legacy

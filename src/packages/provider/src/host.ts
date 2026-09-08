@@ -16,19 +16,21 @@ import type {
   ProviderOauthConfig,
   ProviderOAuthTokens,
 } from './contracts.js'
+import { HostBindingsError } from './errors.ts'
 import type { ContextPipeline, NetworkLayer } from './types.js'
 import type { ProviderQueryFn, ProviderQueryStreamFn } from './types.js'
-// HostBindingsError se declara inline para no importar errors.js a nivel
-// de módulo — esa carga transitiva llega a providerHostSetup.ts y puede
-// producir un TDZ en el estado de este módulo si install() se dispara
-// durante el init.
-class HostBindingsError extends Error {
-  readonly code = 'PROVIDER_HOST_BINDINGS_NOT_INSTALLED'
-  constructor(message: string) {
-    super(message)
-    this.name = 'ProviderHostBindingsError'
-  }
-}
+// `HostBindingsError` se declaraba INLINE aquí para no importar `errors.ts` a
+// nivel de módulo: esa carga transitiva llegaba a `providerHostSetup.ts` y
+// podía producir un TDZ en el estado de este módulo si `install()` se
+// disparaba durante el init.
+//
+// La razón dejó de aplicar al portar `errors.ts`: medido, declara **0
+// imports** — sólo clases, constantes y funciones puras—, así que traerlo no
+// arrastra nada. Y el inline no era sólo un duplicado: usaba el código
+// `PROVIDER_HOST_BINDINGS_NOT_INSTALLED` contra el `PROVIDER_HOST_BINDINGS_ERROR`
+// del módulo, así que la misma condición tenía dos códigos. Medido antes de
+// reapuntar: 0 consumidores emparejan el código, 0 hacen `instanceof`, 0 usan
+// el nombre — los tests que existen emparejan el MENSAJE, que no cambia.
 
 export type ProviderHostBindings = {
   contextPipeline: ContextPipeline
