@@ -14,27 +14,99 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 const FUERZA = 'THYROX_UNDERCOVER'
+const PERMITIDOS = 'THYROX_INTERNAL_MODEL_REPOS'
 
 function limpiar(): void {
   delete process.env[FUERZA]
+  delete process.env[PERMITIDOS]
+}
+
+/**
+ * Clasifica el repositorio de esta suite como INTERNO, declarando su propio
+ * remoto en la lista de permitidos.
+ *
+ * Sin esto la rama automática ya responde ENCENDIDO por sí sola, y un caso
+ * que sólo declarara la variable de fuerza pasaría por la razón equivocada:
+ * el sub-patrón D. Medido — con la clasificación sin fijar, retirar la
+ * lectura de la variable de fuerza dejaba la suite en verde.
+ *
+ * LANZA si no lo consigue, y es deliberado. Una versión anterior devolvía
+ * `false` y los casos hacían `if (!…) return`: con eso, romper el mecanismo de
+ * la lista de permitidos dejaba la suite en VERDE — los casos se saltaban en
+ * silencio en vez de fallar. Medido: anulando la comparación contra la lista,
+ * 11/0. Es el sub-patrón D metido en la propia precondición del control.
+ *
+ * Este repositorio tiene remoto, así que la precondición se puede AFIRMAR en
+ * vez de esquivar.
+ */
+async function clasificarComoInterno(): Promise<void> {
+  const { getRemoteUrlForDir } = await import('@thyrox/config/gitFilesystem.js')
+  const { isInternalModelRepo, getRepoClassCached, _resetRepoClassCacheForTests } =
+    await import('@thyrox/agent/commitAttribution.js')
+  const { getAttributionRepoRoot } = await import(
+    '@thyrox/agent/commitAttribution.js'
+  )
+  const remoto = await getRemoteUrlForDir(getAttributionRepoRoot())
+  if (!remoto) {
+    throw new Error(
+      'precondición: este repositorio no declara remoto, así que la ' +
+        'clasificación no se puede montar. El control no mide nada sin ella.',
+    )
+  }
+  process.env[PERMITIDOS] = remoto
+  _resetRepoClassCacheForTests()
+  await isInternalModelRepo()
+  if (getRepoClassCached() !== 'internal') {
+    throw new Error(
+      `precondición: con el remoto ${remoto} declarado en ${PERMITIDOS}, la ` +
+        `clasificación debería ser 'internal' y es ` +
+        `'${getRepoClassCached()}'. El mecanismo de la lista no funciona.`,
+    )
+  }
 }
 
 describe('isUndercover — la activación, y su default seguro', () => {
   beforeEach(limpiar)
   afterEach(limpiar)
 
-  test('1. la variable de fuerza lo enciende', async () => {
+  test('1. la variable de fuerza lo enciende SOBRE un repositorio interno', async () => {
     const { isUndercover } = await import('../undercover.ts')
+    await clasificarComoInterno()
+    // Clasificado interno, la rama automática lo APAGA: sólo la variable de
+    // fuerza puede encenderlo. Sin esta precondición el caso no distinguiría
+    // la variable del default.
+    expect(isUndercover()).toBe(false)
     process.env[FUERZA] = '1'
     expect(isUndercover()).toBe(true)
   })
 
   test('2. la variable acepta las cuatro formas verdaderas', async () => {
     const { isUndercover } = await import('../undercover.ts')
+    await clasificarComoInterno()
     for (const valor of ['1', 'true', 'YES', 'on']) {
       process.env[FUERZA] = valor
       expect(isUndercover()).toBe(true)
     }
+    delete process.env[FUERZA]
+    expect(isUndercover()).toBe(false)
+  })
+
+  test('2-bis. la lista de permitidos APAGA el modo, y es su único camino', async () => {
+    const { isUndercover } = await import('../undercover.ts')
+    const { _resetRepoClassCacheForTests } = await import(
+      '@thyrox/agent/commitAttribution.js'
+    )
+    await clasificarComoInterno()
+    expect(isUndercover()).toBe(false)
+    // Retirada la lista, la clasificación vuelve a `external` y el modo se
+    // enciende otra vez: es el mecanismo, no un estado pegado.
+    delete process.env[PERMITIDOS]
+    _resetRepoClassCacheForTests()
+    const { isInternalModelRepo } = await import(
+      '@thyrox/agent/commitAttribution.js'
+    )
+    await isInternalModelRepo()
+    expect(isUndercover()).toBe(true)
   })
 
   test('3. SIN clasificación confirmada, está ENCENDIDO', async () => {

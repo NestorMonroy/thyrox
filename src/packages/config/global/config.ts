@@ -304,6 +304,12 @@ export type GlobalConfig = {
   /** @deprecated Usar `settings.env`. */
   env: { [key: string]: string }
   hasSeenTasksHint?: boolean
+  /**
+   * Si ya se mostró el aviso de que el modo encubierto se activó SOLO. Es de
+   * una sola vez: quien lo declara por variable ya lo sabe, y repetirlo en
+   * cada sesión entrena a ignorarlo.
+   */
+  hasSeenUndercoverAutoNotice?: boolean
   hasUsedStash?: boolean
   hasUsedBackgroundTask?: boolean
   queuedCommandUpHintCount?: number
@@ -411,6 +417,7 @@ function createDefaultGlobalConfig(): GlobalConfig {
     autoCompactEnabled: true,
     showTurnDuration: true,
     hasSeenTasksHint: false,
+    hasSeenUndercoverAutoNotice: false,
     hasUsedStash: false,
     hasUsedBackgroundTask: false,
     queuedCommandUpHintCount: 0,
