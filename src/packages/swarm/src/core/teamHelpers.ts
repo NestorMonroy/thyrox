@@ -716,7 +716,7 @@ export async function cleanupSessionTeams(): Promise<void> {
  * borran, pero los paneles de los compañeros quedan abiertos con sus procesos
  * dentro. Se registra para que quien lo vea sepa que no es un fallo silencioso.
  *
- * Sucesor: TASK-DOCS-0416.
+ * Sucesor: TASK-THYROX-0001.
  */
 async function killOrphanedTeammatePanes(teamName: string): Promise<void> {
   const teamFile = readTeamFile(teamName)
@@ -733,7 +733,7 @@ async function killOrphanedTeammatePanes(teamName: string): Promise<void> {
 
   logForDebugging(
     `cleanupSessionTeams: ${paneMembers.length} pane(s) of team ${teamName} left open — ` +
-      'backends/registry.ts is not ported yet (TASK-DOCS-0416)',
+      'backends/registry.ts is not ported yet (TASK-THYROX-0001)',
   )
 }
 
