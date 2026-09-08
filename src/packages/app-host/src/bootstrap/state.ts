@@ -161,6 +161,8 @@ type State = {
   // no para operaciones de archivo.
   projectRoot: string
   cwd: string
+  // Slice G — sesión interactiva
+  isInteractive: boolean
 }
 
 // ALSO HERE — THINK THRICE BEFORE MODIFYING (heredado de la fuente).
@@ -184,6 +186,9 @@ function getInitialState(): State {
     }
   }
   return {
+    // La sesión arranca declarada NO interactiva: un arranque sin declarar
+    // es el del SDK, no el de una terminal.
+    isInteractive: false,
     meter: null,
     sessionCounter: null,
     locCounter: null,
@@ -628,4 +633,30 @@ export function getModelUsage(): { [modelName: string]: ModelUsage } {
 
 export function getUsageForModel(model: string): ModelUsage | undefined {
   return STATE.modelUsage[model]
+}
+
+// ---------------------------------------------------------------------------
+// Slice G — sesión interactiva (`state.ts:71,311,1095-1105` de la fuente)
+//
+// Entra entera —campo, dos lectores y escritor— y no sólo el lector que pedía
+// el llamador: un lector sin escritor deja el veredicto clavado en su valor
+// inicial para siempre, y los tests seguirían en verde midiendo esa constante.
+// ---------------------------------------------------------------------------
+
+/** Si la sesión corre contra una terminal. */
+export function getIsInteractive(): boolean {
+  return STATE.isInteractive
+}
+
+/**
+ * La negación del anterior, y existe con nombre propio porque es la forma en
+ * que la consultan sus llamadores: lo que quieren saber es si NO hay nadie
+ * mirando.
+ */
+export function getIsNonInteractiveSession(): boolean {
+  return !STATE.isInteractive
+}
+
+export function setIsInteractive(value: boolean): void {
+  STATE.isInteractive = value
 }

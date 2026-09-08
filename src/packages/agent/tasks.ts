@@ -17,10 +17,16 @@
  *     `swarm/teammateContext.js` + `app-host/bootstrap/state.js`); esta
  *     version resuelve solo por `CLAUDE_CODE_TASK_LIST_ID` o el id explicito
  *     que el llamador pase.
- *   - `isTodoV2Enabled()` — depende de `getIsNonInteractiveSession()`.
  *   - `resetTaskList()`, `claimTask()`/`claimTaskWithBusyCheck()` y sus
  *     tipos `ClaimTaskResult`/`ClaimTaskOptions` — ningun test los ejercita
  *     y dependen del mismo sustrato ausente.
+ *
+ * AVISO RETIRADO 2026-09-08: `isTodoV2Enabled()` figuraba aqui como NO
+ * portada, bloqueada en `getIsNonInteractiveSession()`. El bloqueo era REAL
+ * —medido, la funcion no existia en ningun paquete de este arbol— y cae al
+ * portar la slice de sesion interactiva de `app-host/bootstrap/state.ts`.
+ * La importacion cruza el ciclo `agent` <-> `app-host` que ya declaran los
+ * dos manifiestos y que la fuente tiene igual (`ccnmt: agent/tasks.ts:4`).
  *
  * REIMPLEMENTADO LOCALMENTE (la logica es trivial; no amerita traer una
  * dependencia externa para 3-10 lineas cada una):
@@ -52,6 +58,7 @@ import { mkdir, readdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { z } from 'zod'
+import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
 import { TaskCycleError } from './errors.ts'
 
 // ---------------------------------------------------------------------------
@@ -670,3 +677,27 @@ export async function cascadeUnblockOnCompletion(
 }
 
 export const DEFAULT_TASKS_MODE_TASK_LIST_ID = 'tasklist'
+
+/**
+ * Si el subsistema de tareas esta habilitado.
+ *
+ * Porte de `ccnmt: packages/agent/tasks.ts:134-140`. Dos mitades, y la
+ * segunda es la que importa: en sesion NO interactiva los utiles quedan
+ * apagados —ahi manda TodoWrite— pero la variable de entorno los fuerza,
+ * porque quien usa el SDK puede querer el subsistema de tareas y no tiene
+ * terminal donde declararse interactivo.
+ *
+ * La comprobacion de verdad es explicita y no un `if` pelado sobre la
+ * variable: con eso, la cadena '0' seria verdadera y habilitaria los utiles
+ * al reves de lo pedido.
+ */
+export function isTodoV2Enabled(): boolean {
+  const declarado = process.env.CLAUDE_CODE_ENABLE_TASKS
+  if (
+    declarado !== undefined &&
+    ['1', 'true', 'yes', 'on'].includes(declarado.toLowerCase().trim())
+  ) {
+    return true
+  }
+  return !getIsNonInteractiveSession()
+}
