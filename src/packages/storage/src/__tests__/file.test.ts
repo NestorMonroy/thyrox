@@ -255,10 +255,17 @@ describe('rutas: mostrar, comparar y sugerir', () => {
       getDisplayPath(join(dir, 'sub', 'a.txt')),
     )
     expect(relativo).toBe(join('sub', 'a.txt'))
-    const conTilde = runWithCwdOverride('/', () =>
+    // La tilde solo aparece cuando la rama relativa NO gana, y `/` es
+    // ancestro de TODA ruta: con ese cwd la forma relativa siempre gana.
+    // Por eso el caso de la tilde parte de un directorio hermano del hogar.
+    const sinTilde = runWithCwdOverride('/', () =>
       getDisplayPath(join(homedir(), 'x.txt')),
     )
-    expect(conTilde.startsWith('~')).toBe(true)
+    expect(sinTilde.startsWith('~')).toBe(false)
+    const conTilde = runWithCwdOverride('/etc', () =>
+      getDisplayPath(join(homedir(), 'x.txt')),
+    )
+    expect(conTilde).toBe(join('~', 'x.txt'))
   })
 
   test('22. `pathsEqual` normaliza antes de comparar', async () => {
