@@ -199,50 +199,36 @@ describe('persistPermissionUpdate — sólo los destinos con archivo detrás', (
     ])
   })
 
-  test('8. añadir reglas delega en el binding del anfitrión', async () => {
-    const { installPermissionHostBindings } = await import('../src/host.ts')
-    const llamadas: unknown[][] = []
-    installPermissionHostBindings({
-      addPermissionRulesToSettings: (...args: unknown[]) => {
-        llamadas.push(args)
-        return true
-      },
-    })
+  test('8. añadir reglas escribe la regla en el archivo', async () => {
     const { persistPermissionUpdate } = await import('../src/PermissionUpdate.ts')
+    persistPermissionUpdate({
+      type: 'addRules',
+      rules: [{ toolName: 'Bash', ruleContent: 'ls:*' }],
+      behavior: 'allow',
+      destination: 'localSettings',
+    })
+    expect((leerLocal().permissions as { allow: string[] }).allow).toEqual([
+      'Bash(ls:*)',
+    ])
+  })
+
+  test('9. añadir NO duplica una regla que ya está', async () => {
+    const { persistPermissionUpdate } = await import('../src/PermissionUpdate.ts')
+    // La rama delega en `addPermissionRulesToSettings`, que compara
+    // normalizado: `Bash(*)` guardado y `{toolName:'Bash'}` pedido son la
+    // MISMA regla. El primer tramo resolvía esto por host binding y lanzaba
+    // sin él; el símbolo real ya existe en el paquete y se importa directo,
+    // como hace la fuente.
+    await escribirLocal({ permissions: { allow: ['Bash(*)'] } })
     persistPermissionUpdate({
       type: 'addRules',
       rules: [{ toolName: 'Bash' }],
       behavior: 'allow',
-      destination: 'userSettings',
+      destination: 'localSettings',
     })
-    expect(llamadas.length).toBe(1)
-    expect(llamadas[0]![0]).toEqual({
-      ruleValues: [{ toolName: 'Bash' }],
-      ruleBehavior: 'allow',
-    })
-    expect(llamadas[0]![1]).toBe('userSettings')
-  })
-
-  test('9. sin ese binding instalado, añadir reglas LANZA', async () => {
-    const { installPermissionHostBindings } = await import('../src/host.ts')
-    installPermissionHostBindings({})
-    const { persistPermissionUpdate } = await import('../src/PermissionUpdate.ts')
-    // Divergencia deliberada: un no-op silencioso aquí le diría al usuario que
-    // su regla quedó guardada cuando no lo está. Es mejor romper ruidosamente
-    // que mentir en silencio.
-    //
-    // La aserción exige el MENSAJE, no un lanzamiento cualquiera: con la mitad
-    // roja el símbolo no existía, así que llamarlo lanzaba `TypeError` y el
-    // caso pasaba en verde midiendo la ausencia del porte. Medido — era el
-    // único de los veinte que pasaba antes de escribir nada.
-    expect(() =>
-      persistPermissionUpdate({
-        type: 'addRules',
-        rules: [{ toolName: 'Bash' }],
-        behavior: 'allow',
-        destination: 'localSettings',
-      }),
-    ).toThrow(/addPermissionRulesToSettings/)
+    expect((leerLocal().permissions as { allow: string[] }).allow).toEqual([
+      'Bash(*)',
+    ])
   })
 })
 

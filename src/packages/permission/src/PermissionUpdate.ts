@@ -19,12 +19,13 @@
  * variantes y no-opea en silencio en cuatro. Por eso se portan las seis ramas
  * enteras o ninguna, y se portan enteras.
  *
- * DIVERGENCIA DECLARADA (una, en `addRules`): la fuente llama
- * `addPermissionRulesToSettings` como import directo; aquí es un host binding
- * OPCIONAL por el tipo (`contracts.ts:18`). Un binding ausente haría que la
- * rama no-opeara en silencio, que es exactamente lo que el razonamiento de
- * arriba rechaza, así que aquí **lanza**: es preferible romper ruidosamente a
- * decirle a alguien que su regla quedó guardada cuando no lo está.
+ * DIVERGENCIA RETIRADA. El primer tramo resolvió `addRules` por el host
+ * binding opcional `addPermissionRulesToSettings` —lanzando si no estaba
+ * instalado, para no no-opear en silencio— porque el símbolo real no existía
+ * en el árbol. Ya existe: `./permissionsLoader.ts` lo porta. Se importa
+ * DIRECTO, como hace la fuente, y con eso la rama deja de depender de que un
+ * anfitrión instale nada. El binding sigue declarado en `contracts.ts` para
+ * quien quiera sustituir la implementación; este módulo ya no lo consulta.
  *
  * Divergencia medida (heredada de la propia fuente, no introducida aquí):
  * el comentario "V7 §11.4 — inline types + host binding wrappers" en
@@ -51,6 +52,7 @@ import {
   getSettingsForSource,
   updateSettingsForSource,
 } from '@thyrox/config/settings'
+import { addPermissionRulesToSettings } from './permissionsLoader.js'
 
 export type { AdditionalWorkingDirectory, WorkingDirectorySource }
 
@@ -295,16 +297,7 @@ export function persistPermissionUpdate(update: PermissionUpdate): void {
 
   switch (update.type) {
     case 'addRules': {
-      const addRules = getPermissionHostBindings().addPermissionRulesToSettings
-      if (!addRules) {
-        // Divergencia declarada, ver la cabecera: un no-op silencioso aquí
-        // mentiría sobre una regla que el usuario cree guardada.
-        throw new Error(
-          'No se puede persistir addRules: el host binding ' +
-            '`addPermissionRulesToSettings` no está instalado.',
-        )
-      }
-      addRules(
+      addPermissionRulesToSettings(
         { ruleValues: update.rules, ruleBehavior: update.behavior },
         update.destination,
       )
