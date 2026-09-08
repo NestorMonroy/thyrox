@@ -397,3 +397,23 @@ describe('cobertura propia — el rechazo cuando falta la implementacion del hos
     expect(await textoDe(adaptador, argumentos(fetch))).toContain('del-override')
   })
 })
+
+/**
+ * La fachada del paquete, medida por lo que sus consumidores importan.
+ *
+ * POR QUE ESTE CASO EXISTE: al escribir `src/index.ts` en este mismo pase se
+ * exporto `getProviderAdapter` y se OLVIDO `getProviderContextPipeline`, que
+ * `ccnmt: packages/agent/createDeps.ts:1` importa del paquete en la misma
+ * linea. Una fachada incompleta no rompe nada aqui —el simbolo existe en su
+ * modulo— y rompe al consumidor, que es donde nadie estaba mirando.
+ *
+ * CONTROL DE ANULACION, medido: se retira `getProviderContextPipeline` de
+ * `src/index.ts` y cae **1 de 1**, este caso.
+ */
+describe('la fachada del paquete', () => {
+  test('21. exporta las dos que createDeps de la fuente importa en una linea', async () => {
+    const fachada = (await import('../src/index.js')) as Record<string, unknown>
+    expect(typeof fachada.getProviderAdapter).toBe('function')
+    expect(typeof fachada.getProviderContextPipeline).toBe('function')
+  })
+})

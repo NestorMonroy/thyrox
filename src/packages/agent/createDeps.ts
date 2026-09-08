@@ -2,14 +2,11 @@
  * Frontera SDK ↔ runtime del agente — porte PARCIAL de
  * `ccnmt: packages/agent/createDeps.ts` (471 líneas en la fuente).
  *
- * Recorte declarado: la fuente completa importa
- * `@claude-code-how-works/provider`, `@claude-code-how-works/local-observability`
- * y `@claude-code-how-works/tool-registry`, y define `createAgentDeps(...)`
- * (la fábrica de `AgentDeps` — provider/tools/permission/output/hooks/
- * compaction/context/session) más media docena de clases `*DepImpl` que
- * envuelven esos paquetes. Ninguno de esos símbolos existe en este árbol, y
- * ninguno lo ejercita el test que este archivo porta
- * (`__tests__/fromAgentEvent.test.ts`).
+ * Recorte declarado: la fuente define `createProductionDeps(...)` —la fábrica
+ * de `AgentDeps`: provider, tools, permission, output, hooks, context,
+ * session— más siete clases `*DepImpl` que envuelven a los paquetes
+ * hermanos. Nada de eso lo ejercita el test que este archivo porta
+ * (`__tests__/fromAgentEvent.test.ts`), y su bloqueo real se lista abajo.
  *
  * Se portan sólo los TRES símbolos que ese test importa —
  * `fromAgentEvent`, `toCoreMessages`, `fromCoreMessages`— porque los tres son
@@ -17,10 +14,35 @@
  * su propio parámetro. Se portan completos y con fidelidad byte a byte de
  * comportamiento (`ccnmt: packages/agent/createDeps.ts:443-471`).
  *
- * NO se portan: `createAgentDeps` y las clases `ProviderDepImpl`,
- * `ToolDepImpl`, `PermissionDepImpl`, `OutputDepImpl`, `HookDepImpl`,
- * `ContextDepImpl`, `SessionDepImpl` — dependen de los tres paquetes
- * ausentes arriba.
+ * NO se porta `createProductionDeps` ni sus siete clases `*DepImpl`
+ * (`ProviderDepImpl`, `ToolDepImpl`, `PermissionDepImpl`, `OutputDepImpl`,
+ * `HookDepImpl`, `ContextDepImpl`, `SessionDepImpl`).
+ *
+ * RE-MEDIDO 2026-09-08, porque esta cabecera lo declaraba mal en dos puntos.
+ * Decía que la fábrica se llama `createAgentDeps` —se llama
+ * `createProductionDeps` (`ccnmt: packages/agent/createDeps.ts:413`)— y que
+ * la bloquean tres paquetes ausentes. Hoy DOS de esos tres resuelven:
+ *
+ *   · `@thyrox/provider` resuelve, y exporta `getProviderAdapter` y
+ *     `getProviderContextPipeline` — las dos que la fuente importa en su
+ *     primera línea. Se cerró en este mismo pase.
+ *   · `@thyrox/provider/providerHostSetup` resuelve.
+ *   · `@thyrox/local-observability/logging` resuelve, con `logError`.
+ *
+ * Lo que de verdad lo bloquea hoy, medido símbolo a símbolo:
+ *
+ *   · `@thyrox/tool-registry` NO existe (`findToolByName`). Es el porte más
+ *     grande que queda del reparto — 255 módulos, tarea #234.
+ *   · `handleStopHooks` no lo exporta `./hooks/index.ts`: sigue sin portar en
+ *     `internal/stopHooksCore.ts` por su propia lista de bloqueos, tarea #262.
+ *   · `recordTranscript` no existe en `./internal/runtimeBridges.ts`; en la
+ *     fuente delega en un método del host (`getAgentHostBindings()
+ *     .recordTranscript`) que aquí tampoco está declarado.
+ *
+ * Los tres símbolos que SÍ están abajo se portan completos y con fidelidad
+ * byte a byte de comportamiento, y son autocontenidos: no dependen de ningún
+ * import, sólo de su propio parámetro
+ * (`ccnmt: packages/agent/createDeps.ts:443-471`).
  */
 
 /**

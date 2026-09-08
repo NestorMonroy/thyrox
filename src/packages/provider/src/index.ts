@@ -16,6 +16,8 @@ export { RecordedProvider } from './recorded.ts'
 export { AnthropicHttpProvider } from './anthropicHttp.ts'
 
 export { getProviderAdapter } from './adapters.js'
+export { getProviderContextPipeline } from './contextPipeline.js'
+export { getProviderNetworkLayer } from './network.js'
 export {
   getProviderHostBindings,
   installProviderHostBindings,
