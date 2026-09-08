@@ -65,7 +65,11 @@ describe('presupuesto de continuacion en streamLoop (A.5)', () => {
   test('2. CON presupuesto sin agotar, el bucle empuja a seguir en vez de terminar', async () => {
     const d = dir()
     const eventos = await correr(streamLoop({
-      ...base(d), prompt: 'x', tokenBudget: 10_000,
+      // `maxTurns: 2` acota el ejemplo: con un presupuesto de 10 000 y turnos
+      // de 100, el empuje seguiria hasta el tope. Que haga falta la cota ES el
+      // resultado — un presupuesto sin freno no termina, que es el modo de
+      // fallo que §A.5 nombra junto al de no recuperar nunca.
+      ...base(d), prompt: 'x', tokenBudget: 10_000, maxTurns: 2,
       provider: new RecordedProvider([turno('voy a medias', 100), turno('ahora si', 100)]),
     }))
     // Dos turnos: el segundo sólo ocurre si el presupuesto lo pidió.
@@ -99,7 +103,7 @@ describe('presupuesto de continuacion en streamLoop (A.5)', () => {
       for (const b of bloques) if (b.type === 'text') vistos.push(b.text)
       return original(req)
     }
-    await correr(streamLoop({ ...base(d), prompt: 'x', tokenBudget: 10_000, provider }))
+    await correr(streamLoop({ ...base(d), prompt: 'x', tokenBudget: 10_000, maxTurns: 2, provider }))
     expect(vistos.some(t => t.includes('do not summarize'))).toBe(true)
   })
 })

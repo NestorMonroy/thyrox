@@ -164,6 +164,14 @@ export type HarnessEvent =
   | { type: 'text_delta'; turn: number; text: string }
   | { type: 'thinking_delta'; turn: number; text: string }
   | { type: 'text'; turn: number; text: string }
+  /**
+   * El presupuesto pidió seguir en vez de aceptar el fin del turno
+   * (`hbooks: book1/appendix-a §A.5` — «continuation prioritized over
+   * recap»). `message` es el texto que va al modelo, no una glosa: quien
+   * audita tiene que poder leer exactamente lo que se le dijo.
+   */
+  | { type: 'budget_continue'; turn: number; message: string; continuationCount: number;
+      pct: number; turnTokens: number; budget: number }
   | { type: 'tool_start'; turn: number; tool: string; input: Record<string, unknown> }
   | { type: 'tool_end'; turn: number; tool: string; output: string; isError: boolean }
   | { type: 'compaction'; turn: number; kind: 'micro' | 'auto'; cleared: number;

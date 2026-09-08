@@ -32,6 +32,7 @@ import { collectCompactableToolIds, microcompact } from './context/microcompact.
 import { Journal } from '@thyrox/observability/journal'
 import { turnCost } from '@thyrox/observability/cost'
 import { createSyntheticToolResults, shouldAbort } from '../internal/abort.ts'
+import { checkTokenBudget, createBudgetTracker } from '../internal/tokenBudget.ts'
 import { runHooks, type HookConfig } from './hooks.ts'
 import { evaluate, type PermissionPolicy } from '@thyrox/permission'
 import { openSession } from './session.ts'
@@ -50,6 +51,13 @@ export type LoopOptions = {
   transcriptDir: string
   resume?: string
   maxTurns?: number
+  /**
+   * Tokens de salida que se esperan de este trabajo. Con un presupuesto, un
+   * `end_turn` prematuro NO termina el bucle: se empuja al modelo a seguir
+   * (`hbooks: book1/appendix-a §A.5`). Sin él, `checkTokenBudget` para
+   * siempre y la conducta es la de antes — el cableado es aditivo.
+   */
+  tokenBudget?: number
   maxTokens?: number
   cacheTtl?: '5m' | '1h'
   hooks?: HookConfig
@@ -227,6 +235,12 @@ export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEven
   // El estado que el guard antithrashing necesita: sin llevarlo, tres
   // compactaciones seguidas son indistinguibles de tres turnos normales.
   let compactState: CompactionState | undefined
+  // El tracker del presupuesto vive fuera del `while`: sus contadores son lo
+  // que distingue «va a medio camino» de «ya no avanza», y reiniciarlo por
+  // turno borraría justo esa diferencia.
+  const budgetTracker = createBudgetTracker()
+  // Tokens de salida acumulados del trabajo — el insumo del presupuesto.
+  let outputTokens = 0
 
   while (turns < maxTurns) {
     if (opts.signal?.aborted) {
@@ -318,9 +332,29 @@ export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEven
       yield annotate({ type: 'text', turn: turns, text: texto })
     }
 
+    outputTokens += turn.usage.output_tokens
     const llamadas = turn.content.filter((b): b is Extract<ContentBlock, { type: 'tool_use' }> => b.type === 'tool_use')
     if (llamadas.length === 0) {
-      stop = turn.stop_reason === 'refusal' ? 'refusal' : 'end_turn'
+      if (turn.stop_reason === 'refusal') {
+        stop = 'refusal'
+        break
+      }
+      // El presupuesto decide si este `end_turn` es el final o una parada
+      // prematura. Su freno son sus propios contadores: para al 90 % del
+      // presupuesto y ante dos deltas cortos seguidos, que es el circuit
+      // breaker que §A.5 exige de toda recuperación automática.
+      const decision = checkTokenBudget(budgetTracker, undefined, opts.tokenBudget ?? null, outputTokens)
+      if (decision.action === 'continue') {
+        yield annotate({
+          type: 'budget_continue', turn: turns, message: decision.nudgeMessage,
+          continuationCount: decision.continuationCount, pct: decision.pct,
+          turnTokens: decision.turnTokens, budget: decision.budget,
+        })
+        mensajes.push({ role: 'user', content: [{ type: 'text', text: decision.nudgeMessage }] })
+        sesion.transcript.appendUser(decision.nudgeMessage)
+        continue
+      }
+      stop = 'end_turn'
       break
     }
     if (opts.signal?.aborted) {
