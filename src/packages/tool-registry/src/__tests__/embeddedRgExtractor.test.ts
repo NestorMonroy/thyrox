@@ -5,12 +5,27 @@
  * (83 líneas, 1 símbolo exportado). Ese árbol declara
  * `"license": "UNLICENSED"`, así que el cuerpo se reimplementa y no se copia.
  *
- * Métrica: las tres guardas de salida temprana —plataforma, modo empaquetado y
- * ruta embebida ausente— y la memoización del resultado.
- * Ciega a: la extracción REAL del binario, que exige correr empaquetado en
- * Linux con la ruta embebida presente. Ninguna de las dos condiciones se puede
- * fabricar sin sustituir `fs`, y `mock.module` en bun 1.3.11 no se puede
+ * ESTE CONTROL NO DISCRIMINA, Y SE DECLARA. Medido con la anulación: retirando
+ * LAS TRES guardas de salida —plataforma, modo empaquetado y ruta embebida— los
+ * cuatro casos siguen en verde (4/0). La causa es que sin ellas el flujo llega
+ * a `readFileSync(undefined)`, cuyo `try/catch` devuelve `null` igual: el
+ * veredicto no cambia porque el módulo tiene DOS caminos hacia el mismo `null`.
+ *
+ * O sea: este verde no distingue «las guardas funcionan» de «el control no
+ * pregunta» — el sub-patrón D de `metrica-decide-la-conclusion.md`. Se declara
+ * en vez de contarlo como control, porque un verde que no puede fallar da
+ * confianza falsa, que es peor que no tener test.
+ *
+ * Métrica: que el símbolo exista, no lance, y devuelva lo mismo dos veces.
+ * Ciega a: las tres guardas por separado (medido arriba), y a la extracción
+ * REAL, que exige correr empaquetado en Linux con la ruta embebida presente.
+ * Fabricar eso pide sustituir `fs`, y `mock.module` en bun 1.3.11 no se puede
  * deshacer ni se queda en su archivo (medido al portar `pdf.ts`).
+ *
+ * SUCESOR (`hallazgo-abierto-genera-sucesor.md`): lo que cerraría la ceguera es
+ * poder sustituir `fs` por archivo, que es la tarea #261 —`mock.module` y el
+ * especificador raíz de un paquete de espacio de trabajo—. Hasta entonces las
+ * guardas de este módulo quedan sin control que las mida.
  */
 import { describe, expect, test } from 'bun:test'
 
