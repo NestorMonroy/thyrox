@@ -131,6 +131,18 @@ describe('externalPermissionModeSchema — sólo los modos EXTERNOS', () => {
     const { EXTERNAL_PERMISSION_MODES } = await import(
       '../src/PermissionMode.ts'
     )
+    // ESTE TRAMO NO DISCRIMINA HOY, Y SE DECLARA. Medido: con
+    // `feature('TRANSCRIPT_CLASSIFIER')` apagado, `PERMISSION_MODES` es
+    // IDÉNTICO a `EXTERNAL_PERMISSION_MODES` (los mismos cinco), así que
+    // `soloInternos` queda VACÍO y el bucle no ejercita nada. La anulación lo
+    // confirma: construir el esquema sobre la lista interna deja los 16 casos
+    // en verde. Lo único que este caso mide de verdad hoy es la última
+    // aserción, la del modo inventado.
+    //
+    // No se fabrica un modo interno para tapar el hueco: el fenómeno depende
+    // de una bandera de compilación, y forzarla desde el test mediría el
+    // andamio en vez del mecanismo. SUCESOR: la tarea #274.
+    //
     // El esquema es de la superficie EXTERNA: un modo que sólo existe puertas
     // adentro no debe poder declararse desde fuera.
     const soloInternos = PERMISSION_MODES.filter(
@@ -189,18 +201,25 @@ describe('permissionUpdateSchema — las seis formas de actualizar', () => {
     }
   })
 
-  test('14. un `type` desconocido se rechaza, no cae a una rama', async () => {
+  test('14. un `type` desconocido falla POR el discriminador, no por seis ramas', async () => {
     const { permissionUpdateSchema } = await import(
       '../src/PermissionUpdateSchema.ts'
     )
-    // Es una unión DISCRIMINADA: sin el discriminador, una carga con campos
-    // de varias formas podría colarse por la primera que encaje.
-    expect(
-      permissionUpdateSchema().safeParse({
-        type: 'inventado',
-        destination: 'session',
-      }).success,
-    ).toBe(false)
+    const r = permissionUpdateSchema().safeParse({
+      type: 'inventado',
+      destination: 'session',
+    })
+    expect(r.success).toBe(false)
+
+    // `.success === false` NO discrimina, y se midió: con `z.union` corriente
+    // el veredicto es idéntico. Lo que separa una forma de la otra es el
+    // ERROR. La discriminada señala `type` y para; la unión corriente reporta
+    // las seis ramas —incluidos `rules` y `behavior`, campos que esta carga
+    // nunca declaró— y nombra ramas que no venían al caso.
+    const [issue] = r.error!.issues as Array<Record<string, unknown>>
+    expect(issue.discriminator).toBe('type')
+    expect(issue.path).toEqual(['type'])
+    expect((issue.errors as unknown[]).length).toBe(0)
   })
 
   test('15. un destino fuera de los cinco se rechaza', async () => {

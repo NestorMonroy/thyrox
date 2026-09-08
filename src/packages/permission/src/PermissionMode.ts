@@ -9,24 +9,22 @@
  * inyección de `bridge` sigue vivo hasta que ese paquete lo reapunte; no
  * es parte de este pase, que trabaja sólo dentro de `permission/`).
  *
- * PORTADOS (11 de 13):
+ * PORTE CERRADO — los 13 de 13. El tramo anterior traía 11 y declaraba los
+ * dos esquemas omitidos con este bloqueo: *«`zod` no está en las dependencias
+ * de este paquete ni linkeado en su `node_modules` — añadirlo exige
+ * `bun install` … otros dos agentes tienen el lockfile en vuelo»*. Ese aviso
+ * nombraba su propia caducidad y hoy no se sostiene: medido,
+ * `import { z } from 'zod/v4'` resuelve desde este paquete. **Se retira en vez
+ * de dejarlo pudrirse** — un bloqueo caducado que nadie borra se lee como
+ * vigente, y quien llegue lo vuelve a rodear en lugar de medirlo.
  *
  *   `EXTERNAL_PERMISSION_MODES` · `PERMISSION_MODES` ·
  *   `ExternalPermissionMode` · `PermissionMode` (los 4 re-exportados desde
- *   `./permissionTypes.js`, donde se agregaron en este mismo pase) ·
- *   `isExternalPermissionMode` · `toExternalPermissionMode` ·
- *   `permissionModeFromString` · `permissionModeTitle` · `isDefaultMode` ·
- *   `permissionModeShortTitle` · `permissionModeSymbol` · `getModeColor`
- *
- * OMITIDOS (2 de 13), declarados por nombre y bloqueo:
- *
- *   - `permissionModeSchema` (`PermissionMode.ts:19-20`) — `lazySchema(() =>
- *     z.enum(PERMISSION_MODES))`. Bloqueado: `zod` no está en las
- *     dependencias de este paquete ni linkeado en su `node_modules` —
- *     añadirlo exige `bun install`, que reescribe `bun.lock` (fuera de
- *     alcance: otros dos agentes tienen `src/packages/package.json`/
- *     `bun.lock` en vuelo).
- *   - `externalPermissionModeSchema` (`:21-23`) — mismo bloqueo.
+ *   `./permissionTypes.js`) · `isExternalPermissionMode` ·
+ *   `toExternalPermissionMode` · `permissionModeFromString` ·
+ *   `permissionModeTitle` · `isDefaultMode` · `permissionModeShortTitle` ·
+ *   `permissionModeSymbol` · `getModeColor` · `permissionModeSchema` ·
+ *   `externalPermissionModeSchema`
  *
  * Divergencia medida: la fuente importa `readEnv` de
  * `@claude-code-how-works/config/env` y nunca lo usa —
@@ -35,6 +33,8 @@
  * pérdida de comportamiento.
  */
 import { feature } from 'bun:bundle'
+import { z } from 'zod/v4'
+import { lazySchema } from '../internal/lazySchema.js'
 import {
   EXTERNAL_PERMISSION_MODES,
   type ExternalPermissionMode,
@@ -44,6 +44,22 @@ import {
 
 export { EXTERNAL_PERMISSION_MODES, PERMISSION_MODES }
 export type { ExternalPermissionMode, PermissionMode }
+
+/**
+ * El modo tal como se declara PUERTAS ADENTRO — incluye los que nunca salen
+ * al protocolo.
+ */
+export const permissionModeSchema = lazySchema(() => z.enum(PERMISSION_MODES))
+
+/**
+ * El modo tal como puede declararlo un tercero.
+ *
+ * Es la lista EXTERNA, no la interna, y la diferencia es la que importa: un
+ * modo que sólo existe dentro del proceso no debe poder pedirse desde fuera.
+ */
+export const externalPermissionModeSchema = lazySchema(() =>
+  z.enum(EXTERNAL_PERMISSION_MODES),
+)
 
 const PAUSE_ICON = '⏸' // ⏸
 
