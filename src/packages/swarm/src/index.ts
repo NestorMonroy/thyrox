@@ -151,3 +151,21 @@ export {
   setPreferTmuxOverIterm2,
   verifyIt2Setup,
 } from './backends/it2Setup.js'
+
+export {
+  detectAndGetBackend,
+  ensureBackendsRegistered,
+  getBackendByType,
+  getCachedBackend,
+  getCachedDetectionResult,
+  getInProcessBackend,
+  getResolvedTeammateMode,
+  getTeammateExecutor,
+  isInProcessEnabled,
+  markInProcessFallback,
+  registerITermBackend,
+  registerTmuxBackend,
+  resetBackendDetection,
+} from './backends/registry.js'
+export { TmuxBackend } from './backends/TmuxBackend.js'
+export { ITermBackend } from './backends/ITermBackend.js'

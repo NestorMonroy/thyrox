@@ -62,6 +62,27 @@ console.log(JSON.stringify({
 }))
 `
 
+/** El guion de la sonda del caso 2, en un proceso que no carga los respaldos. */
+const GUION_SIN_REGISTRO = `
+const RUTA = '${import.meta.dir}/../src'
+const m = await import(RUTA + '/adapters/appRuntime.ts')
+const mapa = {}
+for (const n of m.SWARM_FUNCTION_BINDINGS) mapa[n] = () => undefined
+for (const n of m.SWARM_VALUE_BINDINGS) mapa[n] = ''
+mapa.logForDebugging = () => undefined
+mapa.logError = () => undefined
+m.installSwarmAppRuntime(mapa)
+const reg = await import(RUTA + '/backends/registry.ts')
+let mensaje = ''
+try {
+  reg.getBackendByType('iterm2')
+  mensaje = 'NO REHUSO'
+} catch (e) {
+  mensaje = e.message
+}
+console.log(JSON.stringify({ mensaje }))
+`
+
 async function instalar(encima: Record<string, unknown> = {}): Promise<void> {
   const m = await import('../src/adapters/appRuntime.ts')
   const mapa: Record<string, unknown> = {}
@@ -134,11 +155,20 @@ describe('registry — el registro de clases de backend', () => {
   })
 
   test('2. sin registrar, getBackendByType rehúsa nombrando el modulo', async () => {
-    await instalar()
-    const r = await import('../src/backends/registry.ts')
+    // EN OTRO PROCESO: el registro de clases es un efecto de carga de módulo y
+    // `resetBackendDetection()` no lo deshace —ni debe: las clases no
+    // cambian—. Dentro de esta suite los dos respaldos ya están cargados, así
+    // que la rama «sin registrar» es inalcanzable.
+    const guion = join(raiz, 'sin-registro.ts')
+    writeFileSync(guion, GUION_SIN_REGISTRO, 'utf-8')
+    const hijo = Bun.spawnSync(['bun', guion])
+    expect(hijo.exitCode).toBe(0)
+    const visto = JSON.parse(
+      new TextDecoder().decode(hijo.stdout).trim().split('\n').at(-1) ?? '{}',
+    )
     // Devolver `null` aqui dejaria el fallo a la primera llamada de metodo,
     // lejos de la causa: el registro es lo que falta, y el mensaje lo dice.
-    expect(() => r.getBackendByType('iterm2')).toThrow(/ITermBackend/)
+    expect(visto.mensaje).toMatch(/ITermBackend/)
   })
 
   test('3. ensureBackendsRegistered carga los dos respaldos', async () => {
@@ -337,6 +367,33 @@ describe('getTeammateExecutor — la eleccion de ejecutor', () => {
     expect(b).toBe(a)
   })
 
+  test('36. con el modo en proceso habilitado, devuelve ESE ejecutor', async () => {
+    respuestas['tmux -V'] = { code: 0, stdout: 'tmux 3.4', stderr: '' }
+    await instalar()
+    const s = await import('../src/backends/teammateModeSnapshot.ts')
+    s.captureTeammateModeSnapshot()
+    const r = await import('../src/backends/registry.ts')
+    // El ejecutor en proceso REAL no esta portado (TASK-THYROX-0003), asi que
+    // se instala un doble: sin el, la rama verdadera de la conjuncion queda
+    // sin ejercitar y su anulacion no discriminaria.
+    const doble = { type: 'in-process' } as never
+    r._test_setInProcessBackend(doble)
+    expect(await r.getTeammateExecutor(true)).toBe(doble)
+  })
+
+  test('37. sin pedirlo, el modo en proceso NO se impone al llamador', async () => {
+    respuestas['tmux -V'] = { code: 0, stdout: 'tmux 3.4', stderr: '' }
+    await instalar()
+    const s = await import('../src/backends/teammateModeSnapshot.ts')
+    s.captureTeammateModeSnapshot()
+    const r = await import('../src/backends/registry.ts')
+    r._test_setInProcessBackend({ type: 'in-process' } as never)
+    expect(r.isInProcessEnabled()).toBe(true)
+    // Quien pide un panel a proposito —para mostrar el trabajo al usuario— lo
+    // recibe aunque el entorno prefiera el modo en proceso.
+    expect((await r.getTeammateExecutor(false)).type).toBe('tmux')
+  })
+
   test('19. pedir en proceso NO lo concede si el modo no lo habilita', async () => {
     process.env.TERM_PROGRAM = 'iTerm.app'
     respuestas['it2 session list'] = { code: 0, stdout: '', stderr: '' }
@@ -366,7 +423,13 @@ describe('TmuxBackend — las ordenes de panel', () => {
     await b.sendCommandToPane('%1', 'echo hola', true)
     // Sin `-L`, la orden va a la sesion del usuario y el panel externo se
     // queda mudo sin error visible.
-    expect(ejecutados.at(-1)?.args.slice(0, 2)).toEqual(['-L', 'claude-swarm'])
+    const { getSwarmSocketName } = await import('../src/core/constants.ts')
+    // El nombre del socket lleva el pid a proposito —dos lideres en la misma
+    // maquina no comparten sesion— asi que se DERIVA, no se transcribe.
+    expect(ejecutados.at(-1)?.args.slice(0, 2)).toEqual([
+      '-L',
+      getSwarmSocketName(),
+    ])
   })
 
   test('21. una orden rechazada por tmux se propaga', async () => {
@@ -494,11 +557,15 @@ describe('ITermBackend — el respaldo por it2', () => {
     })
     const b = await backend()
     await b.createTeammatePaneInSwarmView('ana', 'blue')
-    const segundo = await b.createTeammatePaneInSwarmView('bea', 'green')
-    expect(segundo.isFirstTeammate).toBe(false)
-    // Apilar desde el lider dejaria a los compañeros repartidos por la
-    // ventana en vez de en una columna.
+    await b.createTeammatePaneInSwarmView('bea', 'green')
+    const tercero = await b.createTeammatePaneInSwarmView('cal', 'cyan')
+    expect(tercero.isFirstTeammate).toBe(false)
+    // TRES cortes, no dos: con dos, «el ultimo» y «el primero» son el mismo
+    // compañero y la asercion no distingue una implementacion de la otra.
     expect(ejecutados[1]?.args).toEqual(['session', 'split', '-s', 'S1'])
+    // Apilar desde el primero dejaria a los compañeros repartidos por la
+    // ventana en vez de en una columna.
+    expect(ejecutados[2]?.args).toEqual(['session', 'split', '-s', 'S2'])
   })
 
   test('32. una sesion muerta se poda y se reintenta', async () => {

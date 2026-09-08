@@ -38,6 +38,9 @@
     "./permissions/index.js": "./src/permissions/index.ts",
     "./backends/PaneBackendExecutor.js": "./src/backends/PaneBackendExecutor.ts",
     "./backends/it2Setup.js": "./src/backends/it2Setup.ts",
+    "./backends/registry.js": "./src/backends/registry.ts",
+    "./backends/TmuxBackend.js": "./src/backends/TmuxBackend.ts",
+    "./backends/ITermBackend.js": "./src/backends/ITermBackend.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
