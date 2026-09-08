@@ -31,6 +31,7 @@ import {
 import { collectCompactableToolIds, microcompact } from './context/microcompact.ts'
 import { Journal } from '@thyrox/observability/journal'
 import { turnCost } from '@thyrox/observability/cost'
+import { createSyntheticToolResults, shouldAbort } from '../internal/abort.ts'
 import { runHooks, type HookConfig } from './hooks.ts'
 import { evaluate, type PermissionPolicy } from '@thyrox/permission'
 import { openSession } from './session.ts'
@@ -333,9 +334,28 @@ export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEven
       turnosSinEscrituraTarea = 0
     }
     const resultados: ContentBlock[] = []
+    // Los `tool_use` que aun no tienen su `tool_result`. Se van tachando
+    // conforme cada herramienta responde; lo que quede al interrumpir es lo
+    // que hay que cerrar con un resultado sintetico.
+    const pendientes = new Set(llamadas.map((l) => l.id))
     for (const llamada of llamadas) {
+      // La interrupcion se atiende AQUI, no solo entre turnos: seguir la
+      // tanda entera tras un abort es ignorarlo. Y romper sin cerrar dejaria
+      // el ultimo assistant con `tool_use` sin su `tool_result`, forma que la
+      // API rechaza al reanudar — la sesion no quedaria incompleta, quedaria
+      // irrecuperable. Ver `hbooks: book1/appendix-a §A.1, §A.3, §A.10.1`.
+      if (shouldAbort(opts.signal)) {
+        for (const r of createSyntheticToolResults(
+          [{ type: 'assistant', content: [...llamadas].filter((l) => pendientes.has(l.id)) } as never],
+        )) {
+          resultados.push(r as ContentBlock)
+        }
+        stop = 'aborted'
+        break
+      }
       yield annotate({ type: 'tool_start', turn: turns, tool: llamada.name, input: llamada.input })
       const r = await ejecutar(llamada, { herramientas, opts, shared, sesionId: sesion.id, mensajes })
+      pendientes.delete(llamada.id)
       resultados.push(r)
       const contenido = r.type === 'tool_result' ? r.content : ''
       const esError = r.type === 'tool_result' ? r.is_error === true : false
