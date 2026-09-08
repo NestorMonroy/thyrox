@@ -70,8 +70,11 @@ describe('el manifiesto contra el apendice A', () => {
     const c = coverage(CHECKLIST)
     expect(c.total).toBe(CHECKLIST.length)
     expect(c.met + c.unmet + c.unmeasured).toBe(c.total)
-    // Un conteo sin universo no es un resultado.
-    expect(typeof c.pct).toBe('number')
+    // El porcentaje lleva su universo EN EL NOMBRE. Se llamaba `pct` y
+    // publicaba 100 con 33 de 50 sin mirar: cierto sobre su denominador y
+    // engañoso citado solo. `measured` lo hace explicito al lado.
+    expect(c.measured).toBe(c.met + c.unmet)
+    expect(typeof c.pctOfMeasured).toBe('number')
   })
 
   test('6. un predicado NO medido declara que haria falta para medirlo', () => {
