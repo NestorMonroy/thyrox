@@ -65,7 +65,7 @@ import { execFileNoThrowWithCwd } from '@thyrox/shell/execFileNoThrow.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { gt, gte, lt, parseVersion } from './internal/semverCompat.js'
-import { saveGlobalConfig } from './internal/globalConfigCompat.js'
+import { saveGlobalConfig } from '@thyrox/config/global/config.js'
 import { tryGetShellConfig } from './internal/shellConfigCompat.js'
 import { getInitialSettings } from '@thyrox/config/settings'
 import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
@@ -823,8 +823,8 @@ To fix this issue:
     }
 
     // Setea installMethod a 'global' para trackear instalaciones
-    // globales de npm. Ver docstring del módulo — `saveGlobalConfig`
-    // es no-op si `@thyrox/config/global/config.js` no existe.
+    // globales de npm. Desde #260 escribe de verdad: el sustituto que
+    // lo dejaba en no-op declarado quedó retirado.
     saveGlobalConfig(current => ({
       ...current,
       installMethod: 'global',

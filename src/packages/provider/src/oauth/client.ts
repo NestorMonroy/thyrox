@@ -9,7 +9,9 @@
  * aquí mismo (es la única función de ese archivo que este módulo consume,
  * y es autocontenida). `./refreshTokenDeadSet.js` → `internal/refreshTokenDeadSet.ts`,
  * compartido con `authAlias.ts` (ambos de los 18 consumen el mismo Set).
- * `@thyrox/config` (`getGlobalConfig`/`saveGlobalConfig`) → `require()` diferido.
+ * `@thyrox/config` (`getGlobalConfig`/`saveGlobalConfig`) → import directo desde
+ * que #260 portó `global/config.ts`; el `require()` diferido que sustituía a ese
+ * módulo ausente queda retirado.
  */
 
 import axios from 'axios'
@@ -18,6 +20,7 @@ import { ALL_OAUTH_SCOPES, CLAUDE_AI_INFERENCE_SCOPE, CLAUDE_AI_OAUTH_SCOPES, ge
 import { checkAndRefreshOAuthTokenIfNeeded, getClaudeAIOAuthTokens, hasProfileScope, isClaudeAISubscriber, saveApiKey } from '../authAlias.ts'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { readEnv } from '@thyrox/config/env/utils'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config/global/config.js'
 import type {
   AccountInfo,
   BillingType,
@@ -30,16 +33,6 @@ import type {
 } from '../internal/oauthTypes.ts'
 import { markRefreshTokenDead } from '../internal/refreshTokenDeadSet.ts'
 
-function requireConfig(): {
-  getGlobalConfig: () => {
-    oauthAccount?: AccountInfo
-    [key: string]: unknown
-  }
-  saveGlobalConfig: (updater: (current: { oauthAccount?: AccountInfo; [key: string]: unknown }) => { oauthAccount?: AccountInfo; [key: string]: unknown }) => void
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@thyrox/config')
-}
 
 /**
  * Porte de `ccnmt: packages/provider/src/oauth/getOauthProfile.ts` — sólo
@@ -226,7 +219,7 @@ export async function refreshOAuthToken(
     logEvent('tengu_oauth_token_refresh_success', {})
     featureOk('oauth_token_refresh')
 
-    const config = requireConfig().getGlobalConfig()
+    const config = getGlobalConfig()
     const existing = getClaudeAIOAuthTokens()
     const haveProfileAlready =
       config.oauthAccount?.billingType !== undefined &&
@@ -252,7 +245,7 @@ export async function refreshOAuthToken(
         updates.seatTier = profileInfo.seatTier
       }
       if (Object.keys(updates).length > 0) {
-        requireConfig().saveGlobalConfig(current => ({
+        saveGlobalConfig(current => ({
           ...current,
           oauthAccount: current.oauthAccount ? { ...current.oauthAccount, ...updates } : current.oauthAccount,
         }))
@@ -299,7 +292,7 @@ export async function fetchAndStoreUserRoles(accessToken: string): Promise<void>
     throw new Error(`Failed to fetch user roles: ${response.statusText}`)
   }
   const data = response.data as UserRolesResponse
-  const config = requireConfig().getGlobalConfig()
+  const config = getGlobalConfig()
 
   if (!config.oauthAccount) {
     logEvent('tengu_oauth_fetch_roles_failed', { reason: 'no_account' })
@@ -307,7 +300,7 @@ export async function fetchAndStoreUserRoles(accessToken: string): Promise<void>
     throw new Error('OAuth account information not found in config')
   }
 
-  requireConfig().saveGlobalConfig(current => ({
+  saveGlobalConfig(current => ({
     ...current,
     oauthAccount: current.oauthAccount
       ? {
@@ -433,7 +426,7 @@ export async function getOrganizationUUID(): Promise<string | null> {
   const envOrgUUID = readEnv('CLAUDE_CODE_ORGANIZATION_UUID')
   if (envOrgUUID) return envOrgUUID
 
-  const globalConfig = requireConfig().getGlobalConfig()
+  const globalConfig = getGlobalConfig()
   const orgUUID = globalConfig.oauthAccount?.organizationUuid
   if (orgUUID) return orgUUID
 
@@ -454,7 +447,7 @@ export async function populateOAuthAccountInfoIfNeeded(): Promise<boolean> {
   const envOrganizationUuid = readEnv('CLAUDE_CODE_ORGANIZATION_UUID')
   const hasEnvVars = Boolean(envAccountUuid && envUserEmail && envOrganizationUuid)
   if (envAccountUuid && envUserEmail && envOrganizationUuid) {
-    if (!requireConfig().getGlobalConfig().oauthAccount) {
+    if (!getGlobalConfig().oauthAccount) {
       storeOAuthAccountInfo({
         accountUuid: envAccountUuid,
         emailAddress: envUserEmail,
@@ -465,7 +458,7 @@ export async function populateOAuthAccountInfoIfNeeded(): Promise<boolean> {
 
   await checkAndRefreshOAuthTokenIfNeeded()
 
-  const config = requireConfig().getGlobalConfig()
+  const config = getGlobalConfig()
   if (
     (config.oauthAccount &&
       config.oauthAccount.billingType !== undefined &&
@@ -547,7 +540,7 @@ export function storeOAuthAccountInfo({
   }
   if (displayName) accountInfo.displayName = displayName
 
-  requireConfig().saveGlobalConfig(current => {
+  saveGlobalConfig(current => {
     if (
       current.oauthAccount?.accountUuid === accountInfo.accountUuid &&
       current.oauthAccount?.emailAddress === accountInfo.emailAddress &&

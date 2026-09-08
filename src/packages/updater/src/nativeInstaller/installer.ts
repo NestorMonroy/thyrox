@@ -21,8 +21,9 @@
  * Divergencias declaradas — reusa los sustitutos ya creados por este
  * agente para `autoUpdater.ts`, más dos nuevos:
  *
- *   - `getGlobalConfig`/`saveGlobalConfig` (`config`, bare) → ver
- *     `./internal/globalConfigCompat.js` (ya usado por autoUpdater.ts).
+ *   - `getGlobalConfig`/`saveGlobalConfig` — YA NO es divergencia: #260
+ *     portó `@thyrox/config/global/config.ts` y este módulo lo importa
+ *     directo. El sustituto `./internal/globalConfigCompat.ts` se retiró.
  *   - `filterClaudeAliases`/`getShellConfigPaths`/`readFileLines`/
  *     `writeFileLines` (`shell/shellConfig.ts`) → ver
  *     `./internal/shellConfigCompat.js`.
@@ -67,7 +68,7 @@ import {
   shouldSkipVersion,
 } from '../autoUpdater.js'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
-import { getGlobalConfig, saveGlobalConfig } from '../internal/globalConfigCompat.js'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config/global/config.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getCurrentInstallationType, getShellType } from '../internal/replCompat.js'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
@@ -911,7 +912,7 @@ export async function checkInstall(
     return []
   }
 
-  const config = getGlobalConfig() as { installMethod?: string }
+  const config = getGlobalConfig()
 
   // Solo muestra advertencias si:
   // 1. El usuario realmente esta corriendo desde una instalacion nativa, O
@@ -1090,7 +1091,7 @@ async function installLatestImpl(
   // La instalacion tuvo exito (el return temprano de arriba cubre el
   // fallo). Marca como nativo y deshabilita el auto-updater legacy para
   // proteger symlinks.
-  const config = getGlobalConfig() as { installMethod?: string }
+  const config = getGlobalConfig()
   if (config.installMethod !== 'native') {
     saveGlobalConfig(current => ({
       ...current,
