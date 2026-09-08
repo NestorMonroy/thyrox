@@ -159,11 +159,20 @@ describe('el transporte por archivos', () => {
     expect(errores.length).toBe(0)
   })
 
-  test('5. el archivo de cerrojo NO se lee como petición', async () => {
+  test('5. sólo los .json cuentan como petición', async () => {
     sembrarPendiente(peticion())
     writeFileSync(join(permDir('pending'), '.lock'), '', 'utf-8')
+    // El temporal lleva un cuerpo VÁLIDO a propósito: si el veredicto lo diera
+    // el fallo de análisis —como con el cerrojo, que está vacío— el control no
+    // mediría el filtro de extensión sino la suerte del contenido. Una
+    // escritura atómica deja temporales así al vuelo.
+    writeFileSync(
+      join(permDir('pending'), 'perm-2.json.tmp'),
+      JSON.stringify(peticion({ id: 'perm-2' })),
+      'utf-8',
+    )
     const m = await import('../src/permissions/index.ts')
-    expect((await m.readPendingPermissions()).length).toBe(1)
+    expect((await m.readPendingPermissions()).map(x => x.id)).toEqual(['perm-1'])
   })
 
   test('6. una petición que no valida se descarta, no rompe la lista', async () => {
@@ -350,7 +359,10 @@ describe('el transporte por buzón', () => {
     const m = await import('../src/permissions/index.ts')
     expect(await m.sendSandboxPermissionRequestViaMailbox('example.com', 'sb-1', 'eq')).toBe(true)
     const t = JSON.parse(JSON.parse(readFileSync(buzon('jefa'), 'utf-8'))[0].text)
-    expect(t.host).toBe('example.com')
+    // La PETICIÓN anida el anfitrión bajo un patrón —el protocolo prevé
+    // patrones, no sólo nombres exactos—; la RESPUESTA lo lleva plano. Los dos
+    // se miden con la forma que su propia fábrica emite.
+    expect(t.hostPattern.host).toBe('example.com')
     expect(t.requestId).toBe('sb-1')
   })
 

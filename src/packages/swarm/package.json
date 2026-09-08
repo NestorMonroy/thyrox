@@ -35,6 +35,7 @@
     "./teamDiscovery.js": "./src/teamDiscovery.ts",
     "./mailbox/index.js": "./src/mailbox/index.ts",
     "./core/teammateInit.js": "./src/core/teammateInit.ts",
+    "./permissions/index.js": "./src/permissions/index.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
