@@ -169,3 +169,8 @@ export {
 } from './backends/registry.js'
 export { TmuxBackend } from './backends/TmuxBackend.js'
 export { ITermBackend } from './backends/ITermBackend.js'
+
+export {
+  tryClaimNextTask,
+  waitForNextPromptOrShutdown,
+} from './runtime/pollForPromptOrShutdown.js'

@@ -52,6 +52,10 @@ async function instalar(encima: Record<string, unknown> = {}): Promise<void> {
   mapa.getAgentName = () => undefined
   mapa.getTeammateColor = () => 'blue'
   mapa.generateRequestId = (t: string, d: string) => `${t}-${d}-1`
+  mapa.execFileNoThrow = async () => ({ code: 0, stdout: '', stderr: '' })
+  mapa.getGlobalConfig = () => ({})
+  mapa.getPlatform = () => 'linux'
+  mapa.getIsNonInteractiveSession = () => false
   mapa.listTasks = async () => tareas
   mapa.claimTask = async (lista: string, id: string, quien: string) => {
     reclamos.push({ lista, id, quien })
@@ -91,7 +95,14 @@ function msg(de: string, texto: string, extra: Record<string, unknown> = {}) {
 function apagado(requestId: string, de = 'team-lead') {
   return msg(
     de,
-    JSON.stringify({ type: 'shutdown_request', requestId, from: de }),
+    // El `timestamp` es OBLIGATORIO en el esquema: sin el, `isShutdownRequest`
+    // devuelve null y el mensaje pasa por uno normal.
+    JSON.stringify({
+      type: 'shutdown_request',
+      requestId,
+      from: de,
+      timestamp: '2026-01-01T00:00:00Z',
+    }),
   )
 }
 
@@ -109,7 +120,16 @@ function estado(inicial: Record<string, unknown> = {}) {
   }
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  // El cache de deteccion es de MODULO, y `bun test` corre los archivos de
+  // la suite en un solo proceso: sin este borrado, un caso de otro archivo
+  // que dejo `TERM_PROGRAM` puesto decide la rama que se toma aqui.
+  delete process.env.TERM_PROGRAM
+  delete process.env.ITERM_SESSION_ID
+  const d = await import('../src/backends/detection.ts')
+  d.resetDetectionCache()
+  const r = await import('../src/backends/registry.ts')
+  r.resetBackendDetection()
   raiz = mkdtempSync('/dev/shm/poll-')
   trazas = []
   dormidas = []
@@ -388,6 +408,11 @@ describe('teammateLayoutManager — la fachada sobre el respaldo detectado', () 
         return true
       }
     }
+    // La carga de los respaldos va ANTES de registrar el doble: `ensure`
+    // importa los modulos reales, y cada uno se registra a si mismo al
+    // cargarse — pisando lo que hubiera. Registrar primero seria registrar
+    // para nada.
+    await reg.ensureBackendsRegistered()
     reg.registerTmuxBackend(Falso as never)
     const l = await import('../src/core/teammateLayoutManager.ts')
     expect(await l.createTeammatePaneInSwarmView('ana', 'blue')).toEqual({

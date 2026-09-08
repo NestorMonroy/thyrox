@@ -41,6 +41,8 @@
     "./backends/registry.js": "./src/backends/registry.ts",
     "./backends/TmuxBackend.js": "./src/backends/TmuxBackend.ts",
     "./backends/ITermBackend.js": "./src/backends/ITermBackend.ts",
+    "./runtime/pollForPromptOrShutdown.js": "./src/runtime/pollForPromptOrShutdown.ts",
+    "./core/teammateLayoutManager.js": "./src/core/teammateLayoutManager.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
