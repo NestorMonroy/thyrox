@@ -71,7 +71,12 @@ describe('el paquete aloja las utilidades de repositorio que su binario usa', ()
   // —«su unico consumidor es bin/harness.ts»— resulto falso al medirlo: no
   // tiene ningun consumidor. Su hogar es la capa de gates (#81/#92), no la
   // CLI. Queda visible en la salida y nunca en verde, en vez de borrado.
-  test.todo('2. la triple de referencia tiene hogar (#265: la capa de gates)')
+  test.todo('2. la triple de referencia tiene hogar (#265: la capa de gates)', () => {
+    // El cuerpo declara el bloqueo, no lo simula: `test.todo` admite un
+    // cuerpo y los tipos de bun lo EXIGEN, asi que dejarlo sin el rompia
+    // `typecheck:tests` aunque el runtime lo aceptara.
+    throw new Error('#265: reference/triple.ts no tiene consumidor; su hogar es la capa de gates')
+  })
 
   test('3. el unico especificador a @thyrox/harness que queda es el de reference', () => {
     // `workbench/` NO se muda: h-docs-1142 lo declara duplicado superado con

@@ -70,7 +70,11 @@ afirmar "harness-typecheck resuelve su paquete dentro del árbol" propia "$VISTO
 # El gate tiene que poder MEDIR, no solo resolver la ruta: sobre el arbol real
 # los dos proyectos de TypeScript existen y compilan. Un gate que resuelve bien
 # y rehusa por falta de tsconfig publica exit 2 para siempre.
-SAL="$(bash src/gates/check-harness-typecheck.sh 2>&1)"; COD=$?
+#
+# Se invoca por ruta ABSOLUTA y desde `$THYROX`: los casos de arriba corren en
+# el arbol sintetico `$T`, y una ruta relativa desde alli da 127 —el gate no
+# existe— que se leeria como «el gate fallo» en vez de «lo invoque mal».
+SAL="$(cd "$THYROX" && bash "$THYROX/src/gates/check-harness-typecheck.sh" 2>&1)"; COD=$?
 case "$SAL" in
     *"OK (proyectos medidos: 2 de 2)"*) VISTO=mide ;;
     *"NO ENCONTRADO"*) VISTO=rehusa ;;

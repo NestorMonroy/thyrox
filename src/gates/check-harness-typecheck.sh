@@ -25,7 +25,17 @@ set -euo pipefail
 # `thyrox/src/gates/` daba `/home/user/.claude/packages/harness`, que no
 # existe. El corredor lo publicaba SIN MEDIR con esa ruta en el mensaje.
 RAIZ="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
-PAQUETE_REL="src/packages/harness"
+# El harness NO dejo de existir: cambio de casa. #226 vacio
+# `src/packages/harness` —su bucle vive en `@thyrox/agent`, su workbench en
+# `src/workbench/`, su triple en `src/reference/`— y el binario `harness.ts`
+# quedo en `@thyrox/cli`. El gate conserva su nombre porque sigue midiendo el
+# harness; lo que cambia es donde vive.
+#
+# Con la mudanza el gate mide MAS que antes: la superficie de `cli` alcanza a
+# `@thyrox/config`, que el paquete viejo no importaba. Eso destapo un hueco de
+# tipos real —`lodash-es` sin sus `@types`— que el typecheck anterior no podia
+# ver. No es una regresion de la mudanza: es cobertura que antes no existia.
+PAQUETE_REL="src/packages/cli"
 PAQUETE="${CHECK_HARNESS_TYPECHECK_PKG_DIR:-$RAIZ/$PAQUETE_REL}"
 ESTRICTO=0
 ARCHIVOS=()

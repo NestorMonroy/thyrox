@@ -128,7 +128,7 @@ CHECKS: list[Check] = [
           'el .md de un agente es DERIVADO — mismo criterio que makemigrations --check'),
     Check('agent-isolation', 'Paquete', 'agent', 'check_agent_isolation.py',
           'H-DOCS-311 — el aislamiento del working tree entre agentes'),
-    Check('harness-typecheck', 'Paquete', 'harness', 'check-harness-typecheck.sh',
+    Check('harness-typecheck', 'Paquete', 'cli', 'check-harness-typecheck.sh',
           'el paquete typechequea antes de publicarse'),
     Check('i001-prewrite', 'Paquete', 'thyrox', 'check-i001-prewrite.sh',
           'I-001 — DISCOVER antes de planificar'),
