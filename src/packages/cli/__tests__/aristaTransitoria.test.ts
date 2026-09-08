@@ -23,20 +23,26 @@
  * lo declara un duplicado superado con contrato INCOMPATIBLE —sus cinco
  * claves no se solapan en ninguna posicion— y ordena que su retiro sea «su
  * propio pase y con su propia suite … para que no se cuele como parte de un
- * git mv». Por eso el caso 3 exige que la unica arista que queda hacia
- * `@thyrox/harness` sea esa, y ninguna otra.
+ * git mv». Ese pase fue #266, y NO lo mudo: lo RETIRO, reapuntando el
+ * binario al sucesor que ya vivia en `thyrox: src/workbench/manifest.ts`.
+ * Por eso el caso 3 ya no necesita excepcion para el workbench, y la unica
+ * que admite es la de `reference/`.
  *
  * MITAD ROJA: los cuatro casos fallaron contra el arbol de partida. DOS se
  * degradaron a `test.todo` al medir que su premisa era falsa —el 2 afirmaba
- * un destino sin evidencia (#265), el 4 un estado que este tramo no puede
- * alcanzar (#266)—, y quedan los DOS que el tramo pone en verde. Que un
- * control se corrija a la baja al medirlo es el resultado, no un fallo del
- * metodo: lo contrario seria mover `reference/` para que el caso pasara.
+ * un destino sin evidencia, el 4 un estado que el tramo 7 no podia alcanzar
+ * mientras el workbench superado siguiera citado—. Que un control se corrija
+ * a la baja al medirlo es el resultado, no un fallo del metodo: lo contrario
+ * seria mover `reference/` para que el caso pasara.
  *
- * CONTROL DE ANULACION, a medir tras la mudanza: se devuelve el import de
- * `testing/impact` a `@thyrox/harness/testing/impact` y debe caer **1 de 2**,
- * el caso 3. El caso 1 sobrevive, y debe: mide donde vive el modulo, no de
- * donde lo cita un tercero.
+ * El caso 4 volvio a medir cuando #266 retiro el workbench superado y
+ * reapunto el binario a su sucesor. El caso 2 sigue `todo` bajo #265: su
+ * hogar es la capa de gates, y esa capa aun no tiene sitio.
+ *
+ * CONTROL DE ANULACION: se devuelve el import de `testing/impact` a
+ * `@thyrox/harness/testing/impact` y cae **1 de 3**, el caso 3. Los casos 1 y
+ * 4 sobreviven, y deben: miden donde vive el modulo y que declara el
+ * manifiesto, no de donde lo cita un tercero.
  */
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
@@ -67,7 +73,7 @@ describe('el paquete aloja las utilidades de repositorio que su binario usa', ()
   // CLI. Queda visible en la salida y nunca en verde, en vez de borrado.
   test.todo('2. la triple de referencia tiene hogar (#265: la capa de gates)')
 
-  test('3. el unico especificador a @thyrox/harness que queda es el del workbench', () => {
+  test('3. el unico especificador a @thyrox/harness que queda es el de reference', () => {
     // `workbench/` NO se muda: h-docs-1142 lo declara duplicado superado con
     // contrato incompatible, y su retiro es un pase aparte. Cualquier OTRO
     // especificador seria arista transitoria que este tramo debia cerrar.
@@ -83,20 +89,27 @@ describe('el paquete aloja las utilidades de repositorio que su binario usa', ()
     for (const f of fuentes(RAIZ)) {
       const texto = readFileSync(f, 'utf-8')
       for (const m of texto.matchAll(ESPECIFICADOR)) {
-        // `workbench/` y `reference/` se quedan, cada uno por su razon
-        // (h-docs-1142 el primero, #265 el segundo). Sus citas NO son la
-        // arista que este tramo cierra.
-        if (m[1].includes('workbench') || m[1].includes('reference')) continue
+        // `reference/` se queda (#265): su destino es la capa de gates, no
+        // la CLI, y su cita no es la arista que este tramo cierra. El
+        // `workbench` YA no necesita excepcion — #266 retiro el modulo
+        // superado y el binario cita a su sucesor por ruta relativa.
+        if (m[1].includes('reference')) continue
         citas.push(`${f.slice(RAIZ.length + 1)}: ${m[1]}`)
       }
     }
     expect(citas).toEqual([])
   })
 
-  // #266: el manifiesto NO puede quedar limpio en este tramo, y el caso lo
-  // afirmaba. La cita al workbench SOBREVIVE a proposito —h-docs-1142 manda
-  // que su retiro sea un pase propio con su propia suite, porque los dos
-  // contratos son incompatibles— y mientras sobreviva, la dependencia es
-  // legitima, no residuo. Queda visible y nunca en verde.
-  test.todo('4. el manifiesto ya no declara @thyrox/harness (#266: retirar el workbench superado)')
+  test('4. el manifiesto ya no declara la dependencia', () => {
+    // El especificador y la dependencia son dos superficies distintas: un
+    // paquete puede dejar de citar y seguir declarando. El caso 3 mide los
+    // `.ts`; este mide `package.json`, que es donde vive la arista para el
+    // resolvedor del workspace.
+    //
+    // Este caso nacio `test.todo`: mientras la cita al workbench superado
+    // sobrevivio, la dependencia era legitima y no residuo. #266 retiro ese
+    // modulo y reapunto el binario a su sucesor, asi que el caso pasa a medir.
+    const manifest = JSON.parse(readFileSync(join(RAIZ, 'package.json'), 'utf-8'))
+    expect(Object.keys(manifest.dependencies ?? {})).not.toContain('@thyrox/harness')
+  })
 })

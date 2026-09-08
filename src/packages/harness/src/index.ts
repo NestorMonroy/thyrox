@@ -53,10 +53,6 @@ export {
   type LastTurn, type EpochInfo, type RepoRef, type TreeReport,
 } from '@thyrox/agent/loop/session/reconcile'
 export {
-  REQUIRED_KEYS, WORKBENCH_FORMS, runIdDate, runIdFor, checkWorkbench, scaffoldWorkbench,
-  type RequiredKey, type WorkbenchForm, type WorkbenchManifest, type WorkbenchProblem,
-} from './workbench/manifest.ts'
-export {
   TRIPLES, EXTRACTORS, ALIAS_SINONIMOS, binaryTriple, referenceTriple,
   resolveRoot, requireRoot, canonicalAlias, sameCorpus,
   declaredAlias, checkPortDeclaration,

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Lo que queda del harness tras #224 y los tramos 6 y 7 de #226: el workbench superado (#266) y la triple de referencia (#265). El bucle vive en @thyrox/agent/loop; la CLI, su binario y el selector de pruebas por impacto, en @thyrox/cli.",
+  "description": "Lo que queda del harness tras #224, #226 y #266: solo la triple de referencia (#265). El bucle vive en @thyrox/agent/loop; la CLI, su binario y el selector de pruebas por impacto, en @thyrox/cli; el workbench, en thyrox: src/workbench/manifest.ts.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {

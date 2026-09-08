@@ -44,7 +44,6 @@
         "@thyrox/agent": "workspace:*",
         "@thyrox/app-host": "workspace:*",
         "@thyrox/config": "workspace:*",
-        "@thyrox/harness": "workspace:*",
         "@thyrox/headless-sdk": "workspace:*",
         "@thyrox/local-observability": "workspace:*",
         "@thyrox/mcp-runtime": "workspace:*",

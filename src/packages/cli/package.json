@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte parcial del paquete cli de claude-code-nestor-monroy-tools (TASK-DOCS-0205), mas el hogar de la CLI del harness (#226 tramos 6 y 7): el binario bin/harness.ts, el dibujo del flujo de eventos (render.ts), el selector de reanudacion (resume.ts) y el selector de pruebas por impacto (testing/). La dependencia de @thyrox/harness sobrevive por UNA cita, la del workbench superado, cuyo retiro es un pase propio (#266, h-docs-1142).",
+  "description": "Porte parcial del paquete cli de claude-code-nestor-monroy-tools (TASK-DOCS-0205), mas el hogar de la CLI del harness (#226 tramos 6 y 7): el binario bin/harness.ts, el dibujo del flujo de eventos (render.ts), el selector de reanudacion (resume.ts) y el selector de pruebas por impacto (testing/). Sin dependencia de @thyrox/harness desde #266.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -28,7 +28,6 @@
     "@thyrox/agent": "workspace:*",
     "@thyrox/app-host": "workspace:*",
     "@thyrox/config": "workspace:*",
-    "@thyrox/harness": "workspace:*",
     "@thyrox/headless-sdk": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/mcp-runtime": "workspace:*",
