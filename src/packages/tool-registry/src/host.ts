@@ -31,3 +31,17 @@ export function getToolRegistryHostBindings(): ToolRegistryHostBindings {
   }
   return toolRegistryHostBindings
 }
+
+/**
+ * DIVERGENCIA DECLARADA (`porte-completo-no-parcial.md`): la fuente no trae
+ * desinstalador. Aquí hace falta porque los bindings son un singleton de
+ * módulo, y sin poder retirarlos el PRIMER juego que instale una suite
+ * decide el resultado de todos los casos siguientes — el mismo motivo por
+ * el que `api.ts` ya trae `__resetToolRegistryForTests`.
+ *
+ * No es una puerta de producción: se nombra con el prefijo que la declara
+ * de prueba, y ningún módulo del paquete la llama fuera de un reset.
+ */
+export function __resetToolRegistryHostBindingsForTests(): void {
+  toolRegistryHostBindings = null
+}
