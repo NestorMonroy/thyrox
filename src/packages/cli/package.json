@@ -22,7 +22,8 @@
     "./entry/main": "./src/entry/main.ts",
     "./entry/detect-mode": "./src/entry/detect-mode.ts",
     "./entry/mode-dispatch": "./src/entry/mode-dispatch.ts",
-    "./commands/*": "./src/commands/*.ts"
+    "./commands/*": "./src/commands/*.ts",
+    "./bg/*": "./src/bg/*.ts"
   },
   "scripts": {
     "test": "bun test",

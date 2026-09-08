@@ -1,5 +1,5 @@
 /**
- * El anillo acotado del PTY — el registro que se reproduce al reenganchar.
+ * El búfer circular del PTY — el registro que se reproduce al reenganchar.
  *
  * Reimplementación del patrón de `ccnmt: packages/cli/src/bg/ptyRing.ts` y de
  * su suite `__tests__/ptyRing.test.ts`. NO es copia: ccnmt declara
@@ -21,7 +21,7 @@
 import { describe, expect, test } from 'bun:test'
 import { createRing } from '../src/bg/ptyRing.ts'
 
-/** Cuántos bytes guarda el anillo ahora mismo. */
+/** Cuántos bytes guarda el búfer ahora mismo. */
 const bytes = (r: { chunks: Buffer[] }) => r.chunks.reduce((n, c) => n + c.length, 0)
 /** Lo que un consumidor leería al reenganchar. */
 const joined = (r: { chunks: Buffer[] }) => r.chunks.map(c => c.toString()).join('')
@@ -41,7 +41,7 @@ describe('createRing', () => {
     r.push(Buffer.from('ccccc'))
     expect(bytes(r)).toBeLessThanOrEqual(10)
     // Que caiga el viejo Y sobreviva el nuevo: la mitad que discrimina es la
-    // segunda — un anillo que borrase todo pasaria la primera sola.
+    // segunda — un búfer que borrase todo pasaria la primera sola.
     expect(joined(r)).not.toContain('aaaaa')
     expect(joined(r)).toContain('ccccc')
   })
