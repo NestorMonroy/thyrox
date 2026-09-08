@@ -4,7 +4,7 @@
  * DE DONDE SALE EL DESTINO, y no se inventa. El analisis de la particion
  * (`kaupamex-docs: .../analisis-grafo-y-particion-del-paquete-harness.rst`)
  * dejaba `testing/` y `reference/` en **indeterminado** bajo UNA sola razon:
- * «su unico consumidor real es `bin/harness.ts`, cuyo hogar futuro declara
+ * «su unico consumidor real es `src/entry/main.ts`, cuyo hogar futuro declara
  * @thyrox/cli … Moverlas antes que su consumidor invierte la arista». El
  * tramo 6 mudo ese consumidor, asi que la condicion ya no se cumple.
  *
@@ -68,7 +68,7 @@ describe('el paquete aloja las utilidades de repositorio que su binario usa', ()
   })
 
   // #265: la triple de referencia NO se muda aqui. Su bloqueo declarado
-  // —«su unico consumidor es bin/harness.ts»— resulto falso al medirlo: no
+  // —«su unico consumidor es src/entry/main.ts»— resulto falso al medirlo: no
   // tiene ningun consumidor. Su hogar es la capa de gates (#81/#92), no la
   // CLI. Queda visible en la salida y nunca en verde, en vez de borrado.
   test.todo('2. la triple de referencia tiene hogar (#265: la capa de gates)', () => {

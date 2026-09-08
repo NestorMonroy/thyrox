@@ -38,7 +38,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const PKG = join(import.meta.dir, '..')
-const BIN = join(PKG, 'bin', 'thyrox.ts')
+const ENTRY = join(PKG, 'src', 'entry', 'main.ts')
 
 /** Los siete comandos autocontenidos que hoy viven inline en el binario. */
 const COMMANDS = [
@@ -52,16 +52,38 @@ const COMMANDS = [
 ] as const
 
 describe('la entrada de la CLI (#205)', () => {
-  test('1. el binario ya no se llama por un paquete retirado', () => {
-    expect(existsSync(join(PKG, 'bin', 'harness.ts'))).toBe(false)
-    expect(existsSync(BIN)).toBe(true)
+  test('1. el punto de entrada se llama como en las DOS referencias', () => {
+    // Directiva del ejecutor 2026-09-08: «asegurate que thyrox/src sea lo mas
+    // parecido posible a thyrox/_references/restored-src/src/». Medido contra
+    // las dos referencias, que aqui COINCIDEN:
+    //
+    //   restored-src: src/main.tsx                      (v2.1.88, monolitico)
+    //   ccnmt:        packages/cli/src/entry/main.tsx   (el mismo, particionado)
+    //   directorios `bin/` en cualquiera de las dos: 0
+    //
+    // La primera version de este control afirmaba `bin/thyrox.ts`. Era una
+    // eleccion mia, no de la referencia: ni el nombre ni el directorio salian
+    // de una medicion. Se corrige contra lo medido, que es la unica direccion
+    // en que una prediccion se corrige.
+    expect(existsSync(join(PKG, 'bin'))).toBe(false)
+    expect(existsSync(ENTRY)).toBe(true)
   })
 
-  test('2. el package.json apunta al binario por su nombre nuevo', () => {
+  test('2. el package.json no cita el binario retirado', () => {
     const pkg = JSON.parse(readFileSync(join(PKG, 'package.json'), 'utf8'))
-    expect(JSON.stringify(pkg)).not.toContain('bin/harness.ts')
-    expect(pkg.bin).toBeDefined()
-    expect(Object.values(pkg.bin as Record<string, string>)).toContain('./bin/thyrox.ts')
+    // Se miden los campos que INVOCAN —`main`, `bin`, `scripts`, `exports`—,
+    // no el manifiesto entero: `description` documenta la retirada y nombrarla
+    // ahi es correcto. Medir la cadena suelta prohibiria hablar del sujeto,
+    // que es el mismo defecto que el caso 3 corrige leyendo especificadores.
+    const ejecutables = JSON.stringify({
+      main: pkg.main, bin: pkg.bin, scripts: pkg.scripts, exports: pkg.exports,
+    })
+    expect(ejecutables).not.toContain('bin/harness.ts')
+    // `bin` sigue sin declararse, y NO es un hueco: ningun package.json de
+    // ccnmt lo declara (medido: 0 de sus paquetes). El `bin: null` de los tres
+    // niveles que #252 nombra es fidelidad a la referencia, no omision.
+    expect(pkg.bin).toBeUndefined()
+    expect(pkg.exports['./entry/main']).toBe('./src/entry/main.ts')
   })
 
   test('3. ningun modulo del paquete cita el binario retirado', () => {
@@ -78,11 +100,11 @@ describe('la entrada de la CLI (#205)', () => {
     expect(citas).toEqual([])
   })
 
-  test('4. el binario es delgado: cita el arranque y NINGUNA logica de dominio', () => {
-    const texto = readFileSync(BIN, 'utf8')
+  test('4. el punto de entrada es delgado: cita el arranque y NINGUNA logica de dominio', () => {
+    const texto = readFileSync(ENTRY, 'utf8')
     expect(texto).toContain('runCli')
     // Las costuras que serian dominio dentro del punto de entrada. Cada una
-    // vive hoy en el binario de 666 lineas; ninguna puede sobrevivir ahi.
+    // vivia en el binario de 666 lineas; ninguna puede sobrevivir aqui.
     const prohibidas = [
       '@thyrox/agent/loop',
       '@thyrox/provider/anthropicHttp',

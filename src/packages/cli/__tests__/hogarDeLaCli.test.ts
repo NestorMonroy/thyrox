@@ -3,7 +3,7 @@
  *
  * POR QUE ESTE ARCHIVO EXISTE. `@thyrox/harness` se esta vaciando (#226): su
  * `package.json` ya se describe como «lo que queda», y el de `@thyrox/cli`
- * declara desde su creacion ser «el hogar futuro de harness/bin/harness.ts
+ * declara desde su creacion ser «el hogar futuro de harness/bin/harness.ts (retirado)
  * (T-009) y su cli/render.ts — no movidos en este pase». Este es ese pase.
  *
  * MITAD ROJA: estas seis aserciones se escribieron ANTES de mover nada, y
@@ -36,7 +36,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const RAIZ_CLI = join(import.meta.dir, '..')
-const BIN = join(RAIZ_CLI, 'bin', 'harness.ts')
+const ENTRADA = join(RAIZ_CLI, 'src', 'entry', 'main.ts')
 const RAIZ_HARNESS = join(RAIZ_CLI, '..', 'harness')
 
 const uso = {
@@ -63,15 +63,19 @@ describe('el paquete aloja el dibujo de la CLI', () => {
   })
 })
 
-describe('el paquete aloja el binario', () => {
-  test('4. el binario vive en cli/bin/harness.ts', () => {
-    expect(existsSync(BIN)).toBe(true)
+describe('el paquete aloja el punto de entrada', () => {
+  test('4. el punto de entrada vive en cli/src/entry/main.ts', () => {
+    // Renombrado en #205: se llamaba `bin/harness.ts` por el paquete retirado
+    // en #226/#266. Las dos referencias lo llaman `main` y ninguna tiene
+    // `bin/` — ver el docstring de `cliEntry.test.ts`.
+    expect(existsSync(ENTRADA)).toBe(true)
   })
 
-  test('5. y YA NO vive en harness/bin/harness.ts', () => {
-    // El hogar viejo tiene que quedar vacio: dos binarios homonimos son dos
-    // puntos de entrada divergiendo, que es lo que la mudanza cierra.
+  test('5. y YA NO vive en ningun bin/, ni aqui ni en el paquete retirado', () => {
+    // Dos puntos de entrada homonimos son dos superficies divergiendo, que es
+    // lo que la mudanza cierra. Ahora ademas no hay `bin/` que los aloje.
     expect(existsSync(join(RAIZ_HARNESS, 'bin', 'harness.ts'))).toBe(false)
+    expect(existsSync(join(RAIZ_CLI, 'bin'))).toBe(false)
   })
 
   test('6. y corre de punta a punta desde su nueva ruta', () => {
@@ -84,7 +88,7 @@ describe('el paquete aloja el binario', () => {
       { id: 'm2', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso,
         content: [{ type: 'text', text: 'archivo escrito' }] },
     ]))
-    const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'escribe el archivo',
+    const p = Bun.spawnSync(['bun', 'run', ENTRADA, '--prompt', 'escribe el archivo',
       '--provider', 'recorded', '--grabacion', join(d, 'turnos.json'),
       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--json'])
     expect(p.exitCode).toBe(0)

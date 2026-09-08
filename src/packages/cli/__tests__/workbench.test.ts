@@ -28,7 +28,7 @@
  * y la prosa, en espanol.
  *
  * MITAD ROJA, medida: 18 pasan y **1 falla** —`--workbench-new`—, porque
- * `bin/harness.ts` sigue importando el modulo superado y emite el contrato
+ * `src/entry/main.ts` sigue importando el modulo superado y emite el contrato
  * viejo. Esa es exactamente la arista que este pase cierra.
  *
  * La prediccion decia que caerian los DOS casos de CLI y era falsa: se
@@ -45,7 +45,7 @@
  * un binario que emitiera los dos juegos pasaria.
  *
  * CONTROL DE ANULACION, a medir tras el reapuntado: se devuelve el import de
- * `bin/harness.ts` al modulo superado y debe caer **1 de 19**, el de
+ * `src/entry/main.ts` al modulo superado y debe caer **1 de 19**, el de
  * `--workbench-new`. Los 18 restantes sobreviven, y deben: miden el sucesor
  * directamente, no por donde lo cite el binario.
  */
@@ -58,7 +58,7 @@ import {
   runIdDate, runIdFor, checkWorkbench, scaffoldWorkbench,
 } from '../../../workbench/manifest.ts'
 
-const BIN = join(import.meta.dir, '..', 'bin', 'harness.ts')
+const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
 
 const root = () => mkdtempSync(join(tmpdir(), 'wb-'))
 

@@ -1,5 +1,5 @@
 /**
- * La verificación de premisas por la CLI (`bin/harness.ts`, bloque 14).
+ * La verificación de premisas por la CLI (`src/entry/main.ts`, bloque 14).
  *
  * Fuente: misma que `premises.ts` — `niveles-de-retencion.md` + T-004. Este
  * archivo prueba la vía de línea de comandos, con su código de salida como
@@ -10,7 +10,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { main } from '../bin/harness.ts'
+import { runCli } from '../src/entry/main.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'premises-cli-'))
 
@@ -23,7 +23,7 @@ async function run(argv: string[]) {
   process.stdout.write = (s: string) => { out.push(String(s)); return true }
   process.stderr.write = (s: string) => { err.push(String(s)); return true }
   try {
-    const code = await main(argv)
+    const code = await runCli(argv)
     return { code, out: out.join(''), err: err.join('') }
   } finally {
     process.stdout.write = so

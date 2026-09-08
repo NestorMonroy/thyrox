@@ -99,8 +99,8 @@ describe('la vía completa: git → selector', () => {
   })
 })
 
-describe('bin/harness.ts --select-tests', () => {
-  const BIN = join(import.meta.dir, '..', 'bin', 'harness.ts')
+describe('src/entry/main.ts --select-tests', () => {
+  const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
   const conSettings = (d: string) => {
     mkdirSync(join(d, '.claude'), { recursive: true })
     writeFileSync(join(d, '.claude', 'settings.json'), JSON.stringify({

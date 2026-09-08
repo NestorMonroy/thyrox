@@ -13,7 +13,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { parseRstTasks } from '../../../task/rst.ts'
 import { taskTools } from '@thyrox/tools/tasks'
-import { main } from '../bin/harness.ts'
+import { runCli } from '../src/entry/main.ts'
 import { docsRoot } from '../../../paths/docs.ts'
 
 /** El archivo de tareas de esta misma iniciativa: control positivo real. */
@@ -94,7 +94,7 @@ describe('--import-tasks: el puente como comando (T-062)', () => {
     process.stdout.write = (s: string) => { out.push(String(s)); return true }
     process.stderr.write = (s: string) => { err.push(String(s)); return true }
     try {
-      return { code: await main(argv), out: out.join(''), err: err.join('') }
+      return { code: await runCli(argv), out: out.join(''), err: err.join('') }
     } finally {
       process.stdout.write = so
       process.stderr.write = se

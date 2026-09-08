@@ -104,7 +104,7 @@ describe('el bucle consume el streaming del proveedor', () => {
 })
 
 describe('la CLI con --stream (T-038 + T-011)', () => {
-  const BIN = join(import.meta.dir, '..', 'bin', 'harness.ts')
+  const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
   const grabacion = (d: string, texto: string) => {
     const f = join(d, 'turnos.json')
     require('node:fs').writeFileSync(f, JSON.stringify([{ id: 'm1', model: 'claude-opus-5',
@@ -149,7 +149,7 @@ describe('la CLI con --stream (T-038 + T-011)', () => {
 // que habla el protocolo. Lo único que la credencial bloquea es el servicio
 // real; el protocolo no necesita permiso de nadie.
 describe('punta a punta: el binario contra un servidor local que habla SSE', () => {
-  const BIN = join(import.meta.dir, '..', 'bin', 'harness.ts')
+  const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
   const sse = (eventos: Array<Record<string, unknown>>) =>
     eventos.map((e) => `event: ${e.type}\ndata: ${JSON.stringify(e)}\n\n`).join('')
 

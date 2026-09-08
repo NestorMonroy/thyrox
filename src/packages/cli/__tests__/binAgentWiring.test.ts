@@ -2,11 +2,11 @@
  * Cableado de la herramienta `Agent` en el binario (T-058, board #58).
  *
  * Fuente: diseño nativo. `agentTool` estaba construido y probado a nivel de
- * herramienta (``subagent.test.ts``) pero **sin cablear** en ``bin/harness.ts``
+ * herramienta (``subagent.test.ts``) pero **sin cablear** en ``src/entry/main.ts``
  * —el comentario de ``agent.ts`` lo decía: «el registro incluirá a `Agent` en
  * cuanto se cablee»—, así que una capacidad terminada no tenía forma de
  * invocarse desde la CLI. Este e2e ejercita el spawn ENTERO a través de
- * ``main()``: el modelo grabado usa la herramienta `Agent`, el hijo corre su
+ * ``runCli()``: el modelo grabado usa la herramienta `Agent`, el hijo corre su
  * propio bucle, y —con ``--store``— el harness escribe su fila él mismo.
  *
  * El control que discrimina (sub-patrón D): la fila del store lleva
@@ -21,7 +21,7 @@ import { Database } from 'bun:sqlite'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { main } from '../bin/harness.ts'
+import { runCli } from '../src/entry/main.ts'
 import type { AssistantTurn } from '@thyrox/agent/loop/types'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'bin-agent-'))
@@ -73,14 +73,14 @@ function grabacionSpawn(): AssistantTurn[] {
   ]
 }
 
-describe('cableado de Agent en bin/harness.ts (T-058)', () => {
-  test('main() con --store: el modelo lanza Agent, el hijo corre y el harness escribe su fila', async () => {
+describe('cableado de Agent en src/entry/main.ts (T-058)', () => {
+  test('runCli() con --store: el modelo lanza Agent, el hijo corre y el harness escribe su fila', async () => {
     const d = dir()
     const store = storeConAgentSessions(d)
     const rec = join(d, 'grabacion.json')
     writeFileSync(rec, JSON.stringify(grabacionSpawn()))
 
-    const code = await main([
+    const code = await runCli([
       '--prompt', 'arranca',
       '--provider', 'recorded', '--grabacion', rec,
       '--transcript-dir', join(d, 'transcripts'),
@@ -102,13 +102,13 @@ describe('cableado de Agent en bin/harness.ts (T-058)', () => {
     expect(f.cache_read_tokens).toBe(100)
   })
 
-  test('main() SIN --store: el spawn corre igual, pero no se registra fila', async () => {
+  test('runCli() SIN --store: el spawn corre igual, pero no se registra fila', async () => {
     const d = dir()
     const store = storeConAgentSessions(d)   // existe, pero no se pasa
     const rec = join(d, 'grabacion.json')
     writeFileSync(rec, JSON.stringify(grabacionSpawn()))
 
-    const code = await main([
+    const code = await runCli([
       '--prompt', 'arranca',
       '--provider', 'recorded', '--grabacion', rec,
       '--transcript-dir', join(d, 'transcripts'),

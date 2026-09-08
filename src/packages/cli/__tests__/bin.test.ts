@@ -1,5 +1,5 @@
 /**
- * `bin/harness.ts` (T-009) — un ciclo completo de punta a punta.
+ * `src/entry/main.ts` (T-009) — un ciclo completo de punta a punta.
  *
  * Fuente: diseño nativo — el punto de entrada del harness. El test lo corre por
  * `spawn` con el proveedor grabado, midiendo el ciclo real y no una simulación
@@ -11,10 +11,10 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-const BIN = join(import.meta.dir, '..', 'bin', 'harness.ts')
+const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
 const uso = { input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
 
-describe('bin/harness.ts (T-009) — un ciclo completo de punta a punta', () => {
+describe('src/entry/main.ts (T-009) — un ciclo completo de punta a punta', () => {
   test('con turnos grabados ejecuta una herramienta real y devuelve el texto', () => {
     const d = mkdtempSync(join(tmpdir(), 'bin-'))
     const marca = join(d, 'lo-hizo.txt')
