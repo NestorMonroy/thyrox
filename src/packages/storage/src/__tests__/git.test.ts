@@ -17,9 +17,20 @@
  * - El resto son envoltorios de `git` que se miden contra repositorios
  *   REALES creados en un temporal, no contra un sustituto: un envoltorio
  *   probado contra su propio sustituto no mide nada.
+ *
+ * *Métrica:* la conducta observable de cada símbolo sobre repositorios reales
+ * creados en un temporal, más las tres formas de ataque contra las guardas.
+ * *Ciega a:* `getWorktreeCount`, `getHead`, `getBranch`, `getDefaultBranch` y
+ * `getRemoteUrl`, que son pasos directos a la capa CACHEADA de
+ * `config/gitFilesystem`. Medido al escribir esto: esa capa memoiza por
+ * proceso, así que un worktree creado a mitad del caso no cambia su conteo, y
+ * la URL de remoto que reporta puede ser la del árbol donde corre la suite y
+ * no la del repositorio recién creado. No es un defecto de `git.ts` —es su
+ * contrato con esa capa— pero sí acota lo que estos casos pueden afirmar.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { execFileSync } from 'child_process'
+import { createHash } from 'crypto'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
@@ -272,13 +283,21 @@ describe('los envoltorios de git, contra repositorios reales', () => {
     expect(await getIsClean()).toBe(true)
   })
 
-  test('20. `getWorktreeCount` cuenta el principal y sus worktrees', async () => {
-    const { getWorktreeCount } = await import('../git.ts')
-    const repo = makeRepo('conteo')
+  test('20. `getChangedFiles` quita el prefijo de estado de cada línea', async () => {
+    // La salida de `status --porcelain` trae dos columnas de estado antes de
+    // la ruta. Sin quitarlas, el consumidor recibe ` M archivo` y no encuentra
+    // el archivo — el defecto no se ve en el conteo, sólo en el nombre.
+    const { getChangedFiles } = await import('../git.ts')
+    const repo = makeRepo('prefijo')
+    writeFileSync(join(repo, 'a.txt'), 'cambiado\n')
+    writeFileSync(join(repo, 'z.txt'), 'nuevo\n')
     process.chdir(repo)
-    expect(await getWorktreeCount()).toBe(1)
-    git(repo, 'worktree', 'add', '-q', join(base, 'wt-conteo'), '-b', 'w')
-    expect(await getWorktreeCount()).toBe(2)
+    const cambiados = await getChangedFiles()
+    expect(cambiados).toContain('a.txt')
+    expect(cambiados).toContain('z.txt')
+    expect(cambiados.every(f => !f.startsWith(' ') && !f.includes('?'))).toBe(
+      true,
+    )
   })
 
   test('21. `isAtGitRoot` distingue la raíz de un subdirectorio', async () => {
@@ -333,9 +352,24 @@ describe('getRepoRemoteHash — la identidad del remoto, sin el remoto', () => {
     expect([...normalizadas][0]).toBe('github.com/owner/repo')
   })
 
-  test('26. sin remoto configurado, el hash es null', async () => {
-    const { getRepoRemoteHash } = await import('../git.ts')
-    process.chdir(makeRepo('sin-url'))
-    expect(await getRepoRemoteHash()).toBeNull()
+  test('26. el hash es sha256 de la URL normalizada, recortado a 16', async () => {
+    // Se compone contra la URL que el propio módulo reporta, no contra una
+    // inventada: así el caso mide la COMPOSICIÓN —normalizar, luego hashear,
+    // luego recortar— que es lo que git.ts aporta. Hashear la URL cruda, o
+    // recortar a otra longitud, lo rompe.
+    const { getRepoRemoteHash, getRemoteUrl, normalizeGitRemoteUrl } =
+      await import('../git.ts')
+    const url = await getRemoteUrl()
+    const hash = await getRepoRemoteHash()
+    if (url === null) {
+      expect(hash).toBeNull()
+      return
+    }
+    const esperado = createHash('sha256')
+      .update(normalizeGitRemoteUrl(url)!)
+      .digest('hex')
+      .substring(0, 16)
+    expect(hash).toBe(esperado)
+    expect(hash).toMatch(/^[0-9a-f]{16}$/)
   })
 })

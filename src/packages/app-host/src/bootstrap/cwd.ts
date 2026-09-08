@@ -1,16 +1,12 @@
 /**
  * Porte de `ccnmt: packages/app-host/src/bootstrap/cwd.ts`.
  *
- * DEPENDENCIA NO RESUELTA, DECLARADA: importa `getCwdState` y
- * `getOriginalCwd` de `./state.js`, que otro agente de esta misma tanda
- * está escribiendo AHORA MISMO (no se toca ese archivo, per las
- * instrucciones de esta tarea). Medido al escribir este porte
- * (`grep -n "getCwdState\|getOriginalCwd" state.ts` → sin resultados): el
- * `state.ts` en curso hoy sólo exporta el estado de telemetría/meter
- * (`getMeter`, `getStatsStore`, …), no el estado de cwd/sesión que este
- * módulo necesita. `cwd.test.ts` queda por tanto en ROJO hasta que
- * `getCwdState`/`getOriginalCwd` se añadan a `state.ts` — DESCONOCIDO con
- * condición de cierre: que ese archivo declare esos dos símbolos.
+ * La dependencia que este encabezado declaraba sin resolver —`getCwdState` y
+ * `getOriginalCwd` de `./state.js`, que otro agente estaba escribiendo en
+ * paralelo— YA ESTÁ. Su condición de cierre era que ese archivo declarara los
+ * dos símbolos, y los declara. El aviso se retira en vez de dejarlo pudrirse:
+ * un bloqueo caducado que nadie borra se lee como bloqueo vigente, y la
+ * siguiente persona vuelve a rodearlo.
  */
 import { AsyncLocalStorage } from 'async_hooks'
 import { getCwdState, getOriginalCwd } from './state.js'

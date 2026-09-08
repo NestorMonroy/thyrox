@@ -97,16 +97,21 @@ export function memoize<Args extends unknown[], Result>(
 /**
  * Sustituto mínimo de `@claude-code-how-works/config/memoize.js`'s
  * `memoizeWithLRU` — caché LRU por `Map` (recency por reinserción, desalojo
- * del más antiguo al superar `maxCacheSize`). Sin `.cache.clear/size/…`
- * porque ningún test de este porte los usa.
+ * del más antiguo al superar `maxCacheSize`).
+ *
+ * AMPLIADO: expone su `.cache`. La versión anterior lo omitía declarando que
+ * «ningún test de este porte lo usa», y esa razón caducó: `git.ts` publica
+ * `findCanonicalGitRoot.cache` como parte de su superficie —quien invalida la
+ * identidad de proyecto lo hace por ahí— así que el envoltorio tiene que
+ * poder entregarla.
  */
 export function memoizeWithLRU<Args extends unknown[], Result>(
   f: (...args: Args) => Result,
   cacheFn: (...args: Args) => string,
   maxCacheSize: number = 100,
-): (...args: Args) => Result {
+): ((...args: Args) => Result) & { cache: Map<string, Result> } {
   const cache = new Map<string, Result>()
-  return (...args: Args): Result => {
+  const memoizada = (...args: Args): Result => {
     const key = cacheFn(...args)
     if (cache.has(key)) {
       const value = cache.get(key)!
@@ -123,6 +128,8 @@ export function memoizeWithLRU<Args extends unknown[], Result>(
     cache.set(key, result)
     return result
   }
+  memoizada.cache = cache
+  return memoizada
 }
 
 /**

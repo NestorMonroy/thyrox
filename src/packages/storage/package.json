@@ -20,9 +20,12 @@
   },
   "dependencies": {
     "@thyrox/agent": "workspace:*",
+    "@thyrox/app-host": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/output": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/shell": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",
     "env-paths": "^4.0.0",
     "ignore": "^7.0.8",
