@@ -23,7 +23,14 @@
  * mecanismo de settings, no de este módulo.
  */
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from 'fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'fs'
 import { dirname, join } from 'path'
 
 // `/dev/shm` y no el directorio temporal del sistema: la directiva de este
@@ -41,9 +48,25 @@ function leerLocal(): Record<string, unknown> {
   return JSON.parse(readFileSync(rutaLocal(), 'utf8')) as Record<string, unknown>
 }
 
-function escribirLocal(contenido: unknown): void {
+/**
+ * Siembra el estado del archivo Y purga la caché de settings.
+ *
+ * Las dos mitades hacen falta. `getSettingsForSource` cachea por fuente, y esa
+ * caché sólo se invalida desde dentro de `updateSettingsForSource`: una
+ * escritura a mano la deja rancia, y el caso siguiente lee lo que sembró el
+ * anterior. Medido — el caso 4 pasaba aislado y fallaba dentro de la suite,
+ * que es la firma exacta de un estado que se filtra entre casos.
+ *
+ * La purga se hace con una actualización VACÍA por la API: `mergeWith` con
+ * `{}` no cambia ningún valor y aun así llama al reseteo de caché, que es
+ * privado y no se puede invocar de otro modo desde fuera del paquete.
+ */
+async function escribirLocal(contenido: unknown): Promise<void> {
   mkdirSync(dirname(rutaLocal()), { recursive: true })
   writeFileSync(rutaLocal(), JSON.stringify(contenido), 'utf8')
+  const { updateSettingsForSource } = await import('@thyrox/config/settings')
+  updateSettingsForSource('localSettings', {})
+  updateSettingsForSource('userSettings', {})
 }
 
 beforeEach(async () => {
@@ -52,7 +75,12 @@ beforeEach(async () => {
     getOriginalCwd: () => raiz,
     getConfigHomeDir: () => join(raiz, '.claude'),
   })
-  escribirLocal({})
+  // Los de `permission` también, y no es ceremonia: `persistPermissionUpdate`
+  // registra su traza con `logForDebugging`, que los pide, así que sin ellos
+  // LANZA aunque la rama no use ningún binding. Medido al escribir el tramo.
+  const { installPermissionHostBindings } = await import('../src/host.ts')
+  installPermissionHostBindings({})
+  await escribirLocal({})
 })
 
 describe('persistPermissionUpdate — sólo los destinos con archivo detrás', () => {
@@ -65,12 +93,21 @@ describe('persistPermissionUpdate — sólo los destinos con archivo detrás', (
     })
     // `session` y `cliArg` viven mientras dure el proceso: escribirlos a disco
     // los convertiría en permanentes sin que nadie lo pidiera.
+    //
+    // ESTE CONTROL NO DISCRIMINA, Y SE DECLARA. Medido con la anulación:
+    // retirando la guarda `supportsPersistence` los 20 casos siguen en verde,
+    // porque `updateSettingsForSource` YA filtra por su cuenta — `session` no
+    // resuelve a ninguna ruta de archivo, así que retorna sin escribir. Hay
+    // DOS defensas para el mismo fenómeno y este caso sólo puede ver la de
+    // fuera. Que la guarda sea redundante no la hace inútil: evita el viaje y
+    // hace explícita la intención en el sitio donde se decide.
+    // SUCESOR: la tarea #275.
     expect(leerLocal()).toEqual({})
   })
 
   test('2. añadir directorios los escribe, y NO duplica los que ya están', async () => {
     const { persistPermissionUpdate } = await import('../src/PermissionUpdate.ts')
-    escribirLocal({ permissions: { additionalDirectories: ['/ya'] } })
+    await escribirLocal({ permissions: { additionalDirectories: ['/ya'] } })
     persistPermissionUpdate({
       type: 'addDirectories',
       directories: ['/ya', '/nuevo'],
@@ -82,7 +119,15 @@ describe('persistPermissionUpdate — sólo los destinos con archivo detrás', (
 
   test('3. si TODOS los directorios ya estaban, no reescribe', async () => {
     const { persistPermissionUpdate } = await import('../src/PermissionUpdate.ts')
-    escribirLocal({ permissions: { additionalDirectories: ['/ya'] }, marca: 1 })
+    await escribirLocal({ permissions: { additionalDirectories: ['/ya'] } })
+    // Lo que se mide es la MARCA DE TIEMPO, no el contenido. Dos redacciones
+    // anteriores no discriminaban: una clave testigo sobrevive al merge, y el
+    // texto queda idéntico porque escribir lo mismo produce lo mismo. Una
+    // escritura que no cambia nada sigue siendo una escritura, y sólo `mtime`
+    // la ve. La espera de 5 ms separa las dos marcas: sin ella caerían en el
+    // mismo instante y el control volvería a ser ciego.
+    const antes = statSync(rutaLocal()).mtimeMs
+    await new Promise(r => setTimeout(r, 5))
     persistPermissionUpdate({
       type: 'addDirectories',
       directories: ['/ya'],
@@ -90,12 +135,12 @@ describe('persistPermissionUpdate — sólo los destinos con archivo detrás', (
     })
     // La guarda de «nada que añadir» evita una escritura de disco que no
     // cambia nada — y con ella, invalidar cachés río abajo por gusto.
-    expect(leerLocal().marca).toBe(1)
+    expect(statSync(rutaLocal()).mtimeMs).toBe(antes)
   })
 
   test('4. quitar directorios deja los que no se nombraron', async () => {
     const { persistPermissionUpdate } = await import('../src/PermissionUpdate.ts')
-    escribirLocal({ permissions: { additionalDirectories: ['/a', '/b', '/c'] } })
+    await escribirLocal({ permissions: { additionalDirectories: ['/a', '/b', '/c'] } })
     persistPermissionUpdate({
       type: 'removeDirectories',
       directories: ['/b'],
@@ -119,7 +164,7 @@ describe('persistPermissionUpdate — sólo los destinos con archivo detrás', (
 
   test('6. reemplazar reglas SUSTITUYE la lista entera de ese comportamiento', async () => {
     const { persistPermissionUpdate } = await import('../src/PermissionUpdate.ts')
-    escribirLocal({ permissions: { allow: ['Bash(rm:*)', 'Read(//x)'] } })
+    await escribirLocal({ permissions: { allow: ['Bash(rm:*)', 'Read(//x)'] } })
     persistPermissionUpdate({
       type: 'replaceRules',
       rules: [{ toolName: 'Bash', ruleContent: 'git status:*' }],
@@ -136,10 +181,16 @@ describe('persistPermissionUpdate — sólo los destinos con archivo detrás', (
     // La regla guardada y la que se pide quitar pueden estar escritas distinto
     // y significar lo mismo. Comparar cadenas dejaría la regla viva y el
     // usuario creería haberla quitado.
-    escribirLocal({ permissions: { deny: ['Bash(rm -rf:*)', 'Read(//otro)'] } })
+    //
+    // El par tiene que DIVERGIR en su forma para que el caso ejercite la
+    // normalización: `Bash(rm -rf:*)` contra `{toolName, ruleContent}` da la
+    // misma cadena por los dos caminos, así que comparar crudo pasaba igual
+    // (medido — la primera redacción no discriminaba). `Bash(*)` sí diverge:
+    // el comodín se colapsa y normaliza a `Bash` a secas.
+    await escribirLocal({ permissions: { deny: ['Bash(*)', 'Read(//otro)'] } })
     persistPermissionUpdate({
       type: 'removeRules',
-      rules: [{ toolName: 'Bash', ruleContent: 'rm -rf:*' }],
+      rules: [{ toolName: 'Bash' }],
       behavior: 'deny',
       destination: 'localSettings',
     })

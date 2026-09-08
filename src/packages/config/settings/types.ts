@@ -66,14 +66,56 @@ export const HooksSchema = z.object(
 
 export const DecisionSchema = z.enum(['allow', 'ask', 'deny'])
 
+/**
+ * Los cinco modos que el protocolo conoce, declarados AQUÍ y no importados.
+ *
+ * Es lo que hace `ccnmt: packages/config/settings/types.ts:8`, y por la misma
+ * razón: `@thyrox/permission` es quien los define de verdad, pero importarlos
+ * pondría a `config` a depender de `permission`, que ya depende de `config`.
+ * Duplicar cinco literales cuesta menos que un ciclo entre paquetes.
+ */
+const EXTERNAL_PERMISSION_MODES = [
+  'acceptEdits',
+  'bypassPermissions',
+  'default',
+  'dontAsk',
+  'plan',
+] as const
+
+/**
+ * El bloque `permissions` de un archivo de settings.
+ *
+ * CORREGIDO al portar `persistPermissionUpdate`, que es lo que lo destapó:
+ * este esquema divergía de la fuente en dos puntos, y los dos hacían que un
+ * valor legítimo no cupiera en el tipo.
+ *
+ * - Faltaba `ask`. Los tres comportamientos existen desde
+ *   `permissionBehaviorSchema`, y `persistPermissionUpdate` escribe en la
+ *   clave que nombra el comportamiento: sin `ask`, indexar por
+ *   `PermissionBehavior` no compila y una regla de ese tipo no tiene dónde
+ *   guardarse.
+ * - `defaultMode` declaraba `['default', 'acceptEdits', 'bypass']`, un
+ *   vocabulario que no existe en ningún sitio: el modo real es
+ *   `bypassPermissions`, y faltaban `dontAsk` y `plan`. Un `setMode` a
+ *   cualquiera de los tres producía un archivo que el propio esquema rechaza.
+ *
+ * `'manual'` se preprocesa a `'default'` porque es su alias histórico y sigue
+ * apareciendo en archivos escritos por versiones anteriores.
+ */
 export const PermissionsSchema = z.object({
-  defaultMode: z.enum(['default', 'acceptEdits', 'bypass']).optional(),
+  defaultMode: z
+    .preprocess(
+      value => (value === 'manual' ? 'default' : value),
+      z.enum(EXTERNAL_PERMISSION_MODES).optional(),
+    )
+    .optional(),
   read: DecisionSchema.optional(),
   write: DecisionSchema.optional(),
   execute: DecisionSchema.optional(),
   additionalDirectories: z.array(z.string()).optional(),
   allow: z.array(z.string()).optional(),
   deny: z.array(z.string()).optional(),
+  ask: z.array(z.string()).optional(),
 })
 
 /** Un número en un `.env` es un número en JSON; el proceso sólo entiende cadenas. */

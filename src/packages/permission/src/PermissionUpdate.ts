@@ -4,33 +4,27 @@
  * copia). Es la función que **decide el nuevo estado** tras una
  * actualización de permiso — el corazón mutador de este paquete.
  *
- * PORTADOS (6 de 8) — la mutación EN MEMORIA del contexto, que no toca
- * disco en ningún caso de su `switch` (los 6 tipos de `PermissionUpdate`
- * están completos, ninguno queda a medias):
+ * PORTE CERRADO — los 8 de 8. El tramo anterior traía 6 y declaraba
+ * `persistPermissionUpdate` / `persistPermissionUpdates` omitidas con este
+ * bloqueo: *«llaman `getSettingsForSource`/`updateSettingsForSource` de
+ * `@claude-code-how-works/config` … sin `@thyrox/config` linkeado en
+ * `node_modules` de este paquete (cross-package sin symlink — exige
+ * `bun install`, fuera de alcance)»*. Medido hoy:
+ * `permission/node_modules/@thyrox/config` existe y las dos funciones están en
+ * `config/settings/settings.ts`. El aviso SE RETIRA en vez de dejarlo
+ * pudrirse — un bloqueo caducado que nadie borra se lee como vigente.
  *
- *   `extractRules` · `hasRules` · `applyPermissionUpdate` ·
- *   `applyPermissionUpdates` · `supportsPersistence` ·
- *   `createReadRuleSuggestion`
+ * Su razonamiento SÍ se conserva, porque sigue siendo correcto: portar sólo
+ * `addRules` habría dado una función que compila, se llama igual para las seis
+ * variantes y no-opea en silencio en cuatro. Por eso se portan las seis ramas
+ * enteras o ninguna, y se portan enteras.
  *
- * OMITIDOS (2 de 8), declarados por nombre, línea y bloqueo — los DOS
- * juntos, no uno a medias, para no dejar una función que persiste 1 de 5
- * destinos en silencio y parece completa:
- *
- *   - `persistPermissionUpdate` (`PermissionUpdate.ts:196-268`) — su caso
- *     `addRules` SÍ sería portable (usa `addPermissionRulesToSettings`, un
- *     host binding YA declarado en `./contracts.ts`), pero los otros
- *     cuatro casos (`addDirectories`, `removeRules`, `removeDirectories`,
- *     `setMode`, `replaceRules`) llaman `getSettingsForSource`/
- *     `updateSettingsForSource` de `@claude-code-how-works/config` — I/O
- *     de disco de settings, sin binding equivalente en
- *     `PermissionHostBindings` y sin `@thyrox/config` linkeado en
- *     `node_modules` de este paquete (cross-package sin symlink — exige
- *     `bun install`, fuera de alcance). Portar sólo `addRules` produciría
- *     una función que compila, se llama igual para las 6 variantes de
- *     `PermissionUpdate`, y no-opea en silencio en 4 de ellas — exactamente
- *     el porte parcial silencioso que la consigna de esta tarea prohíbe.
- *     Se declara NO PORTADA entera en vez de aproximarla.
- *   - `persistPermissionUpdates` (`:270-274`) — depende de la anterior.
+ * DIVERGENCIA DECLARADA (una, en `addRules`): la fuente llama
+ * `addPermissionRulesToSettings` como import directo; aquí es un host binding
+ * OPCIONAL por el tipo (`contracts.ts:18`). Un binding ausente haría que la
+ * rama no-opeara en silencio, que es exactamente lo que el razonamiento de
+ * arriba rechaza, así que aquí **lanza**: es preferible romper ruidosamente a
+ * decirle a alguien que su regla quedó guardada cuando no lo está.
  *
  * Divergencia medida (heredada de la propia fuente, no introducida aquí):
  * el comentario "V7 §11.4 — inline types + host binding wrappers" en
@@ -50,8 +44,13 @@ import type {
 import { getPermissionHostBindings } from './host.js'
 import { toPosixPath } from './filesystem.js'
 import {
+  permissionRuleValueFromString,
   permissionRuleValueToString,
 } from './permissionRuleParser.js'
+import {
+  getSettingsForSource,
+  updateSettingsForSource,
+} from '@thyrox/config/settings'
 
 export type { AdditionalWorkingDirectory, WorkingDirectorySource }
 
@@ -277,5 +276,119 @@ export function createReadRuleSuggestion(
     ],
     behavior: 'allow',
     destination,
+  }
+}
+
+/**
+ * Escribe una actualización al archivo de settings de su destino.
+ *
+ * Es no-op para los destinos que no tienen archivo detrás (`session`,
+ * `cliArg`): viven mientras dure el proceso, y escribirlos los volvería
+ * permanentes sin que nadie lo pidiera.
+ */
+export function persistPermissionUpdate(update: PermissionUpdate): void {
+  if (!supportsPersistence(update.destination)) return
+
+  logForDebugging(
+    `Persisting permission update: ${update.type} to source '${update.destination}'`,
+  )
+
+  switch (update.type) {
+    case 'addRules': {
+      const addRules = getPermissionHostBindings().addPermissionRulesToSettings
+      if (!addRules) {
+        // Divergencia declarada, ver la cabecera: un no-op silencioso aquí
+        // mentiría sobre una regla que el usuario cree guardada.
+        throw new Error(
+          'No se puede persistir addRules: el host binding ' +
+            '`addPermissionRulesToSettings` no está instalado.',
+        )
+      }
+      addRules(
+        { ruleValues: update.rules, ruleBehavior: update.behavior },
+        update.destination,
+      )
+      break
+    }
+
+    case 'addDirectories': {
+      const existingSettings = getSettingsForSource(update.destination)
+      const existingDirs =
+        existingSettings?.permissions?.additionalDirectories || []
+      const dirsToAdd = update.directories.filter(
+        dir => !existingDirs.includes(dir),
+      )
+      // Sin nada que añadir NO se escribe: una escritura que no cambia nada
+      // igual invalida cachés río abajo y toca el disco por gusto.
+      if (dirsToAdd.length > 0) {
+        updateSettingsForSource(update.destination, {
+          permissions: {
+            additionalDirectories: [...existingDirs, ...dirsToAdd],
+          },
+        })
+      }
+      break
+    }
+
+    case 'removeRules': {
+      const existingSettings = getSettingsForSource(update.destination)
+      const existingPermissions = existingSettings?.permissions || {}
+      const existingRules = existingPermissions[update.behavior] || []
+      const rulesToRemove = new Set(
+        update.rules.map(permissionRuleValueToString),
+      )
+      // La comparación va NORMALIZADA en los dos lados: la regla guardada y la
+      // que se pide quitar pueden estar escritas distinto y significar lo
+      // mismo. Comparar cadenas crudas dejaría la regla viva mientras el
+      // usuario cree haberla quitado.
+      const filteredRules = existingRules.filter(rule => {
+        const normalized = permissionRuleValueToString(
+          permissionRuleValueFromString(rule),
+        )
+        return !rulesToRemove.has(normalized)
+      })
+
+      updateSettingsForSource(update.destination, {
+        permissions: { [update.behavior]: filteredRules },
+      })
+      break
+    }
+
+    case 'removeDirectories': {
+      const existingSettings = getSettingsForSource(update.destination)
+      const existingDirs =
+        existingSettings?.permissions?.additionalDirectories || []
+      const dirsToRemove = new Set(update.directories)
+      const filteredDirs = existingDirs.filter(dir => !dirsToRemove.has(dir))
+
+      updateSettingsForSource(update.destination, {
+        permissions: { additionalDirectories: filteredDirs },
+      })
+      break
+    }
+
+    case 'setMode': {
+      updateSettingsForSource(update.destination, {
+        permissions: { defaultMode: update.mode },
+      })
+      break
+    }
+
+    case 'replaceRules': {
+      // SUSTITUYE la lista entera de ese comportamiento, no la extiende: es la
+      // diferencia con `addRules`, y es lo que la palabra promete.
+      updateSettingsForSource(update.destination, {
+        permissions: {
+          [update.behavior]: update.rules.map(permissionRuleValueToString),
+        },
+      })
+      break
+    }
+  }
+}
+
+export function persistPermissionUpdates(updates: PermissionUpdate[]): void {
+  for (const update of updates) {
+    persistPermissionUpdate(update)
   }
 }
