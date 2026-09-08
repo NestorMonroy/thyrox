@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte parcial del paquete swarm de claude-code-nestor-monroy-tools (TASK-DOCS-0233): coordinacion multi-agente — contexto de teammate in-process (AsyncLocalStorage), estado de tarea de teammate, tipos/protocolo de buzon, tipos de backend de pane, el contrato de dependencias de host (SwarmHostDeps, NO confundir con AgentDeps de @thyrox/agent — ver H-DOCS-1170), y el contrato de config.json por equipo (TeamFile). 15 de 52 modulos de la fuente portados completos + 1 parcial (core/teamHelpers.ts: solo los 2 simbolos puros + el contrato de tipos, de sus 21 exports); el resto queda bloqueado por depender de adapters/appRuntime.ts (fachada de host bindings de ccnmt, sin equivalente aqui), de @anthropic/ink (UI, vendorizada y no publicada en ccnmt), o de un primitivo de shell (execFileNoThrow/gitExe) aun no portado a ningun paquete de este arbol. Ver el analisis de la iniciativa para el detalle por modulo.",
+  "description": "Porte parcial del paquete swarm de claude-code-nestor-monroy-tools (TASK-DOCS-0233): coordinacion multi-agente \u2014 contexto de teammate in-process (AsyncLocalStorage), estado de tarea de teammate, tipos/protocolo de buzon, tipos de backend de pane, el contrato de dependencias de host (SwarmHostDeps, NO confundir con AgentDeps de @thyrox/agent \u2014 ver H-DOCS-1170), y el contrato de config.json por equipo (TeamFile). 15 de 52 modulos de la fuente portados completos + 1 parcial (core/teamHelpers.ts: solo los 2 simbolos puros + el contrato de tipos, de sus 21 exports); el resto queda bloqueado por depender de adapters/appRuntime.ts (fachada de host bindings de ccnmt, sin equivalente aqui), de @anthropic/ink (UI, vendorizada y no publicada en ccnmt), o de un primitivo de shell (execFileNoThrow/gitExe) aun no portado a ningun paquete de este arbol. Ver el analisis de la iniciativa para el detalle por modulo.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -25,13 +25,16 @@
     "./worktree/safeRemoval.js": "./src/worktree/safeRemoval.ts",
     "./worktree/safeIgnore.js": "./src/worktree/safeIgnore.ts",
     "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    "./*.js": "./src/*.ts",
+    "./adapters/appRuntime.js": "./src/adapters/appRuntime.ts"
   },
   "scripts": {
     "test": "bun test"
   },
   "dependencies": {
-    "zod": "^4.3.6",
-    "ignore": "^7.0.8"
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*",
+    "ignore": "^7.0.8",
+    "zod": "^4.3.6"
   }
 }

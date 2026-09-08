@@ -34,7 +34,7 @@ describe('el binding no instalado LANZA nombrándose', () => {
     m._test_resetSwarmAppRuntime()
     // El nombre en el mensaje es lo que hace accionable el fallo: sin él, un
     // anfitrión al que le falta UN binding recibe el mismo error para los 105.
-    expect(() => (m.getCwd as () => unknown)()).toThrow(/getCwd/)
+    expect(() => (m.getCwd as unknown as () => unknown)()).toThrow(/getCwd/)
   })
 
   test('2. el mensaje dice QUÉ hacer, no sólo que falló', async () => {
@@ -42,7 +42,7 @@ describe('el binding no instalado LANZA nombrándose', () => {
     m._test_resetSwarmAppRuntime()
     let mensaje = ''
     try {
-      ;(m.getCwd as () => unknown)()
+      ;(m.getCwd as unknown as () => unknown)()
     } catch (e) {
       mensaje = (e as Error).message
     }
@@ -51,44 +51,80 @@ describe('el binding no instalado LANZA nombrándose', () => {
 })
 
 describe('installSwarmAppRuntime — reapunta por nombre', () => {
+  /**
+   * Un mapa COMPLETO, construido desde las listas que el propio módulo
+   * exporta. No se enumeran los 124 nombres aquí: eso copiaría el contrato dos
+   * veces y la copia se pudriría en silencio.
+   */
+  async function mapaCompleto(
+    encima: Record<string, unknown> = {},
+  ): Promise<Record<string, unknown>> {
+    const { SWARM_FUNCTION_BINDINGS, SWARM_VALUE_BINDINGS } = await import(
+      '../src/adapters/appRuntime.ts'
+    )
+    const mapa: Record<string, unknown> = {}
+    for (const n of SWARM_FUNCTION_BINDINGS) mapa[n] = () => undefined
+    for (const n of SWARM_VALUE_BINDINGS) mapa[n] = ''
+    return { ...mapa, ...encima }
+  }
+
   test('3. una función instalada se llama de verdad', async () => {
     const m = await import('../src/adapters/appRuntime.ts')
-    m.installSwarmAppRuntime({ getCwd: () => '/un/sitio' })
-    expect((m.getCwd as () => string)()).toBe('/un/sitio')
+    m.installSwarmAppRuntime(await mapaCompleto({ getCwd: () => '/un/sitio' }))
+    expect((m.getCwd as unknown as () => string)()).toBe('/un/sitio')
   })
 
   test('4. un VALOR instalado sustituye a su literal inicial', async () => {
     const m = await import('../src/adapters/appRuntime.ts')
-    // Antes de instalar, los valores tienen literal —no lanzan— porque son
-    // constantes con un default razonable. Instalar los reapunta.
-    m.installSwarmAppRuntime({ BASH_TOOL_NAME: 'Bash' })
+    // Antes de instalar, los valores tienen literal y NO lanzan: son
+    // constantes con un default razonable, y eso es lo que permite importar el
+    // módulo sin instalar nada.
+    expect(m.TEAMMATE_MESSAGE_TAG).toBe('teammate-message')
+    m.installSwarmAppRuntime(await mapaCompleto({ BASH_TOOL_NAME: 'Bash' }))
     expect(m.BASH_TOOL_NAME).toBe('Bash')
   })
 
-  test('5. un binding NO declarado en el mapa sigue lanzando', async () => {
+  test('5. instalar un mapa INCOMPLETO lanza, nombrando el que falta', async () => {
     const m = await import('../src/adapters/appRuntime.ts')
-    // Instalar un mapa parcial no puede dejar los demás en un no-op silencioso:
-    // el anfitrión que olvidó uno tiene que enterarse al usarlo.
-    m.installSwarmAppRuntime({ getCwd: () => '/x' })
-    expect(() => (m.getBranch as () => unknown)()).toThrow(/getBranch/)
+    const mapa = await mapaCompleto()
+    delete mapa.getBranch
+    // Es la conducta de la fuente y es la buena: el anfitrión se entera AL
+    // INSTALAR, con el nombre delante, en vez de al usar el binding meses
+    // después. Fallar temprano aquí cuesta un arranque; fallar tarde cuesta
+    // una sesión a medias.
+    expect(() => m.installSwarmAppRuntime(mapa)).toThrow(/getBranch/)
   })
 })
 
 describe('_test_resetSwarmAppRuntime — no filtrar estado entre archivos', () => {
+  async function mapaCompleto(
+    encima: Record<string, unknown> = {},
+  ): Promise<Record<string, unknown>> {
+    const { SWARM_FUNCTION_BINDINGS, SWARM_VALUE_BINDINGS } = await import(
+      '../src/adapters/appRuntime.ts'
+    )
+    const mapa: Record<string, unknown> = {}
+    for (const n of SWARM_FUNCTION_BINDINGS) mapa[n] = () => undefined
+    for (const n of SWARM_VALUE_BINDINGS) mapa[n] = ''
+    return { ...mapa, ...encima }
+  }
+
   test('6. tras el reseteo, lo que estaba instalado vuelve a lanzar', async () => {
     const m = await import('../src/adapters/appRuntime.ts')
-    m.installSwarmAppRuntime({ getCwd: () => '/x' })
-    expect((m.getCwd as () => string)()).toBe('/x')
+    m.installSwarmAppRuntime(await mapaCompleto({ getCwd: () => '/x' }))
+    expect((m.getCwd as unknown as () => string)()).toBe('/x')
     m._test_resetSwarmAppRuntime()
     // `bun:test` comparte el estado del módulo por proceso: sin este reseteo,
     // un archivo de test que instale bindings los deja puestos para el
     // siguiente, y el siguiente pasa por una razón que no es la suya.
-    expect(() => (m.getCwd as () => unknown)()).toThrow(/getCwd/)
+    expect(() => (m.getCwd as unknown as () => unknown)()).toThrow(/getCwd/)
   })
 
   test('7. el reseteo también devuelve los VALORES a su literal', async () => {
     const m = await import('../src/adapters/appRuntime.ts')
-    m.installSwarmAppRuntime({ TEAMMATE_MESSAGE_TAG: 'otra-cosa' })
+    m.installSwarmAppRuntime(
+      await mapaCompleto({ TEAMMATE_MESSAGE_TAG: 'otra-cosa' }),
+    )
     expect(m.TEAMMATE_MESSAGE_TAG).toBe('otra-cosa')
     m._test_resetSwarmAppRuntime()
     expect(m.TEAMMATE_MESSAGE_TAG).toBe('teammate-message')
@@ -99,10 +135,16 @@ describe('lazySchema y PermissionModeSchema', () => {
   test('8. la fábrica perezosa construye tarde y una sola vez', async () => {
     const { lazySchema } = await import('../src/adapters/appRuntime.ts')
     let veces = 0
-    const perezoso = lazySchema(() => ({ n: ++veces }))
+    // El valor tiene que ser FALSY para que el caso discrimine: con un objeto,
+    // `||=` memoiza igual que `??=` y el control no vería la diferencia
+    // (medido — la primera redacción devolvía `{n}` y pasaba con los dos).
+    const perezoso = lazySchema(() => {
+      veces++
+      return 0
+    })
     expect(veces).toBe(0)
-    const uno = perezoso()
-    expect(perezoso()).toBe(uno)
+    perezoso()
+    perezoso()
     expect(veces).toBe(1)
   })
 
