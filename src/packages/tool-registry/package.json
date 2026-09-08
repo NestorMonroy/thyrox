@@ -33,6 +33,12 @@
     "./tools/TaskListTool/TaskListTool.js": "./src/tools/TaskListTool/TaskListTool.ts",
     "./tools/TaskListTool/constants.js": "./src/tools/TaskListTool/constants.ts",
     "./tools/TaskListTool/prompt.js": "./src/tools/TaskListTool/prompt.ts",
+    "./todo/types.js": "./src/todo/types.ts",
+    "./tools/AgentTool/constants.js": "./src/tools/AgentTool/constants.ts",
+    "./tools/FileEditTool/constants.js": "./src/tools/FileEditTool/constants.ts",
+    "./tools/TodoWriteTool/TodoWriteTool.js": "./src/tools/TodoWriteTool/TodoWriteTool.ts",
+    "./tools/TodoWriteTool/constants.js": "./src/tools/TodoWriteTool/constants.ts",
+    "./tools/TodoWriteTool/prompt.js": "./src/tools/TodoWriteTool/prompt.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
