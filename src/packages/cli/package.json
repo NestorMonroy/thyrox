@@ -20,8 +20,8 @@
     "./testing/impact": "./src/testing/impact.ts",
     "./testing/io": "./src/testing/io.ts",
     "./entry/main": "./src/entry/main.ts",
-    "./entry/detectMode": "./src/entry/detectMode.ts",
-    "./entry/dispatch": "./src/entry/dispatch.ts",
+    "./entry/detect-mode": "./src/entry/detect-mode.ts",
+    "./entry/mode-dispatch": "./src/entry/mode-dispatch.ts",
     "./commands/*": "./src/commands/*.ts"
   },
   "scripts": {

@@ -16,8 +16,8 @@
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { projectSlug } from '@thyrox/agent/loop/session'
-import { detectMode } from './detectMode.ts'
-import { dispatch } from './dispatch.ts'
+import { detectMode } from './detect-mode.ts'
+import { dispatch } from './mode-dispatch.ts'
 import { flag } from './flags.ts'
 
 /**

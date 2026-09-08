@@ -2,7 +2,7 @@
  * El despacho: del modo al manejador que lo ejecuta.
  *
  * Adaptación de `ccnmt: packages/cli/src/entry/mode-dispatch.ts`, con la
- * divergencia declarada en `detectMode.ts`: allí el despacho es una función de
+ * divergencia declarada en `detect-mode.ts`: allí el despacho es una función de
  * 4419 líneas porque su preámbulo de fases (hooks → config → plugins → MCP →
  * modo) es load-bearing y su docstring pide no partirlo. Aquí ese preámbulo no
  * existe —los siete comandos son autocontenidos— así que el despacho es lo que
@@ -22,7 +22,7 @@ import { selectTestsCommand } from '../commands/selectTests.ts'
 import { sessionsCommand } from '../commands/sessions.ts'
 import { workbenchCommand } from '../commands/workbench.ts'
 import { runLoop } from './runLoop.ts'
-import type { Mode, ModeKind } from './detectMode.ts'
+import type { Mode, ModeKind } from './detect-mode.ts'
 import { EXIT_OK, EXIT_USAGE } from '../exitCodes.ts'
 
 /** Lo que un manejador necesita saber de la invocación. */

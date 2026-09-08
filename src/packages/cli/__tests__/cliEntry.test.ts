@@ -118,7 +118,13 @@ describe('la entrada de la CLI (#205)', () => {
   })
 
   test('5. detectMode es puro: devuelve el modo sin tocar nada', async () => {
-    const { detectMode } = await import('../src/entry/detectMode.ts')
+    // El modulo se llama `detect-mode.ts` — el nombre EXACTO que la referencia
+    // le da (ccnmt: packages/cli/src/entry/detect-mode.ts). Medido: su cli
+    // mezcla convenciones (57 % camelCase, 17 % kebab), asi que no hay una
+    // sola que copiar; el criterio es que el archivo CON contraparte tome su
+    // nombre literal —para que el porte se pueda auditar emparejando nombres—
+    // y el que no la tiene use camelCase, su forma dominante.
+    const { detectMode } = await import('../src/entry/detect-mode.ts')
     expect(detectMode(['--select-tests']).kind).toBe('selectTests')
     expect(detectMode(['--workbench-check', 'x']).kind).toBe('workbench')
     expect(detectMode(['--sessions']).kind).toBe('sessions')
@@ -134,8 +140,8 @@ describe('la entrada de la CLI (#205)', () => {
   })
 
   test('7. el despacho cubre todos los modos que detectMode puede emitir', async () => {
-    const { MODE_KINDS } = await import('../src/entry/detectMode.ts')
-    const { HANDLERS } = await import('../src/entry/dispatch.ts')
+    const { MODE_KINDS } = await import('../src/entry/detect-mode.ts')
+    const { HANDLERS } = await import('../src/entry/mode-dispatch.ts')
     expect(Object.keys(HANDLERS).sort()).toEqual([...MODE_KINDS].sort())
   })
 })

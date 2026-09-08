@@ -18,7 +18,7 @@
  * el módulo se puede importar desde un test sin ejecutar nada, y ejecutar
  * desde la terminal sin importar nada.
  */
-import { runCli } from './runCli.ts'
+import { runCli } from './run-cli.ts'
 import { EXIT_USAGE } from '../exitCodes.ts'
 
 export { runCli }
