@@ -266,7 +266,11 @@ export let AGENT_COLORS: string[] = [
   'pink',
   'cyan',
 ]
-export let CLAUDE_OPUS_4_7_CONFIG: { name: string } = { name: '' }
+// La configuracion de un modelo esta indexada POR PROVEEDOR: el mismo
+// modelo tiene identificador distinto en cada uno, y devolver el de
+// primera parte a un cliente de Bedrock produce una peticion que su
+// endpoint no entiende. Por eso es un mapa y no un nombre suelto.
+export let CLAUDE_OPUS_4_7_CONFIG: Record<string, string> = {}
 export let env: any = {}
 export let logForDebugging = (() => {}) as any
 export let logError = (() => {}) as any
@@ -548,7 +552,7 @@ export function _test_resetSwarmAppRuntime(): void {
   'pink',
   'cyan',
 ]
-  CLAUDE_OPUS_4_7_CONFIG = { name: '' }
+  CLAUDE_OPUS_4_7_CONFIG = {}
   env = {}
   logForDebugging = (() => {}) as any
   logError = (() => {}) as any
