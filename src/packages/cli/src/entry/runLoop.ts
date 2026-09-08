@@ -34,6 +34,7 @@ import type { AssistantTurn, Provider, Usage } from '@thyrox/agent/loop/types'
 import { USAGE_CERO } from '@thyrox/agent/loop/types'
 import { OUTPUT_STYLES, renderEvent, renderStatusLine, type OutputStyle } from '../render.ts'
 import { settingsFor } from './settings.ts'
+import { systemPromptFor } from './systemPrompt.ts'
 import { flag, hasFlag } from './flags.ts'
 
 function providerFor(argv: string[]): Provider {
@@ -142,7 +143,7 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
   const shared = {
     provider,
     model: modelo,
-    system: flag(argv, 'system') ?? 'Eres un agente que trabaja con herramientas. Responde en español.',
+    system: systemPromptFor(argv, cwd).text,
     tools,
     cwd,
     transcriptDir,

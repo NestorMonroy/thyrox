@@ -186,6 +186,13 @@ export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEven
     ...shared, characters: opts.system.length, model: opts.model,
   })
   yield annotate({ type: 'session_start', sessionId: sesion.id, transcriptPath: sesion.transcriptPath })
+  // El prompt de sistema queda registrado una vez por sesión. Sin él no hay
+  // con qué auditar bajo QUÉ instrucciones trabajó el agente, y A.7.5 pide el
+  // transcript «as replay evidence»: un replay sin las instrucciones no
+  // reproduce nada — reproduce otra cosa parecida. Va una sola vez porque no
+  // cambia dentro de la sesión; si algún día cambiara, cambiaría también la
+  // clave de caché del prefijo, y eso sería otro evento, no una repetición.
+  sesion.transcript.appendSystem('system_prompt', opts.system)
   // #26: sondear el store al arranque. Un store que no abre se descubría antes
   // en la primera purga (`sin-store`); aquí se dice temprano. `false` lo apaga,
   // y entonces no hay store que sondear.

@@ -33,6 +33,13 @@
  * evidence»: un replay sin las instrucciones no reproduce nada. Se registra
  * una vez por sesión como línea `system` de subtipo `system_prompt`, y eso
  * es a la vez el cierre de ese hueco y el observable de este caso.
+ *
+ * CONTROL DE ANULACIÓN, medido: se devuelve a la CLI su prompt crudo (la
+ * frase fija en vez de `systemPromptFor`) y caen **3 de 4** — los casos 1, 2
+ * y 4. El 3 sobrevive, y esa es la conducta correcta: mide la AUSENCIA de
+ * condicionales sin `--target-path`, y desconectar el ensamblador no las
+ * hace aparecer. Un caso que cayera ahí estaría midiendo «el prompt tiene
+ * capas» en vez de «la capa condicional se filtra».
  */
 import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'

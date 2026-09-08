@@ -78,7 +78,15 @@ describe('runLoop — el bucle (T-006)', () => {
     const d = dir()
     const r = await runLoop({ ...base(d), prompt: 'primera', provider: new RecordedProvider([texto('respuesta')]) })
     const lineas = readFileSync(r.transcriptPath, 'utf8').trim().split('\n').map((l) => JSON.parse(l))
-    expect(lineas[0].message.content[0].text).toBe('primera')
+    // El transcript ABRE con el prompt de sistema y el mensaje viene despues:
+    // las instrucciones preceden a lo que se pidio bajo ellas, que es lo que
+    // hace del registro una evidencia de replay (A.7.5). Se busca por TIPO y
+    // no por indice: fijar la posicion medía el orden de escritura, no que el
+    // mensaje quedara escrito, y por eso este caso se rompio al anadir la
+    // linea de sistema sin que nada del mecanismo cambiara.
+    expect(lineas[0]).toMatchObject({ type: 'system', subtype: 'system_prompt' })
+    const primerUsuario = lineas.find((l) => l.type === 'user')
+    expect(primerUsuario.message.content[0].text).toBe('primera')
     // la ultima linea es la frontera del bucle, no el mensaje: el harness
     // cierra el transcript declarando POR QUE paro
     expect(lineas.at(-1)).toMatchObject({ type: 'system', subtype: 'loop_stop', content: 'end_turn' })
