@@ -21,6 +21,7 @@ import { join } from 'node:path'
 
 let raiz = ''
 let errores: unknown[] = []
+let cerrojos = 0
 
 async function instalar(encima: Record<string, unknown> = {}): Promise<void> {
   const m = await import('../src/adapters/appRuntime.ts')
@@ -37,7 +38,10 @@ async function instalar(encima: Record<string, unknown> = {}): Promise<void> {
   mapa.jsonParse = (s: string) => JSON.parse(s)
   mapa.jsonStringify = (v: unknown, r: unknown, i: number) =>
     JSON.stringify(v, r as null, i)
-  mapa.lock = () => Promise.resolve(async () => undefined)
+  mapa.lock = () => {
+    cerrojos += 1
+    return Promise.resolve(async () => undefined)
+  }
   mapa.getSessionId = () => 'sesion-viva'
   mapa.getDynamicTeamContext = () => undefined
   m.installSwarmAppRuntime({ ...mapa, ...encima })
@@ -74,6 +78,7 @@ const INSTANTANEA = {
 beforeEach(async () => {
   raiz = mkdtempSync('/dev/shm/teamctx-')
   errores = []
+  cerrojos = 0
   await instalar()
 })
 
@@ -98,6 +103,10 @@ describe('ensureTeamFileFromSnapshot — el archivo perdido se reconstruye', () 
     // descripción, colores, modo por miembro— sin que nadie lo pida.
     expect(f.createdAt).toBe(7)
     expect(f.leadAgentId).toBe('otro@eq')
+    // Y no se toma el cerrojo: con el archivo sano no hay nada que escribir,
+    // así que el atajo de lectura no es adorno — evita serializar a todos los
+    // lanzamientos de compañero contra un archivo que nadie va a cambiar.
+    expect(cerrojos).toBe(0)
   })
 
   test('2. sin archivo, se reconstruye desde la instantánea en memoria', async () => {
