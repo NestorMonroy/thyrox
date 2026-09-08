@@ -21,6 +21,17 @@ let raiz = ''
 let hooks: Array<Record<string, unknown>> = []
 let permisos: unknown[] = []
 let trazas: string[] = []
+let estado: Record<string, unknown> = {}
+
+/**
+ * Un `setAppState` que SÍ invoca al transformador.
+ *
+ * Uno que lo ignore —`() => undefined`— haría pasar los casos de permiso sin
+ * que el módulo aplicara ninguno: mediría que no lanza, no que concede.
+ */
+function fijarEstado(f: (prev: Record<string, unknown>) => Record<string, unknown>): void {
+  estado = f(estado)
+}
 
 async function instalar(encima: Record<string, unknown> = {}): Promise<void> {
   const m = await import('../src/adapters/appRuntime.ts')
@@ -94,6 +105,7 @@ beforeEach(async () => {
   hooks = []
   permisos = []
   trazas = []
+  estado = {}
   await instalar()
 })
 
@@ -106,7 +118,7 @@ afterEach(async () => {
 describe('initializeTeammateHooks — el arranque de un compañero', () => {
   test('1. sin archivo de equipo, no registra nada', async () => {
     const m = await import('../src/core/teammateInit.ts')
-    m.initializeTeammateHooks(() => undefined, 's1', {
+    m.initializeTeammateHooks(fijarEstado, 's1', {
       teamName: 'eq',
       agentId: 'ana@eq',
       agentName: 'ana',
@@ -117,7 +129,7 @@ describe('initializeTeammateHooks — el arranque de un compañero', () => {
   test('2. el LÍDER no registra el aviso de ociosidad', async () => {
     sembrarEquipo({ leadAgentId: 'lead@eq', members: [miembro('lead')] })
     const m = await import('../src/core/teammateInit.ts')
-    m.initializeTeammateHooks(() => undefined, 's1', {
+    m.initializeTeammateHooks(fijarEstado, 's1', {
       teamName: 'eq',
       agentId: 'lead@eq',
       agentName: 'lead',
@@ -130,7 +142,7 @@ describe('initializeTeammateHooks — el arranque de un compañero', () => {
   test('3. un compañero registra un hook de parada con su plazo', async () => {
     sembrarEquipo({ leadAgentId: 'lead@eq', members: [miembro('lead'), miembro('ana')] })
     const m = await import('../src/core/teammateInit.ts')
-    m.initializeTeammateHooks(() => undefined, 's1', {
+    m.initializeTeammateHooks(fijarEstado, 's1', {
       teamName: 'eq',
       agentId: 'ana@eq',
       agentName: 'ana',
@@ -152,7 +164,7 @@ describe('los permisos que el equipo concede a todos', () => {
       teamAllowedPaths: [{ toolName: 'Read', path: '/srv/datos' }],
     })
     const m = await import('../src/core/teammateInit.ts')
-    m.initializeTeammateHooks(() => undefined, 's1', {
+    m.initializeTeammateHooks(fijarEstado, 's1', {
       teamName: 'eq',
       agentId: 'ana@eq',
       agentName: 'ana',
@@ -172,7 +184,7 @@ describe('los permisos que el equipo concede a todos', () => {
       teamAllowedPaths: [{ toolName: 'Read', path: 'docs' }],
     })
     const m = await import('../src/core/teammateInit.ts')
-    m.initializeTeammateHooks(() => undefined, 's1', {
+    m.initializeTeammateHooks(fijarEstado, 's1', {
       teamName: 'eq',
       agentId: 'ana@eq',
       agentName: 'ana',
@@ -183,7 +195,7 @@ describe('los permisos que el equipo concede a todos', () => {
   test('6. sin rutas concedidas, no se aplica ningún permiso', async () => {
     sembrarEquipo({ leadAgentId: 'lead@eq', members: [miembro('lead'), miembro('ana')] })
     const m = await import('../src/core/teammateInit.ts')
-    m.initializeTeammateHooks(() => undefined, 's1', {
+    m.initializeTeammateHooks(fijarEstado, 's1', {
       teamName: 'eq',
       agentId: 'ana@eq',
       agentName: 'ana',
@@ -198,7 +210,7 @@ describe('los permisos que el equipo concede a todos', () => {
       teamAllowedPaths: [{ toolName: 'Read', path: 'docs' }],
     })
     const m = await import('../src/core/teammateInit.ts')
-    m.initializeTeammateHooks(() => undefined, 's1', {
+    m.initializeTeammateHooks(fijarEstado, 's1', {
       teamName: 'eq',
       agentId: 'lead@eq',
       agentName: 'lead',
@@ -217,7 +229,7 @@ describe('el manejador de parada', () => {
       members: [miembro(nombreLider, { agentId: 'lead@eq' }), miembro('ana')],
     })
     const m = await import('../src/core/teammateInit.ts')
-    m.initializeTeammateHooks(() => undefined, 's1', {
+    m.initializeTeammateHooks(fijarEstado, 's1', {
       teamName: 'eq',
       agentId: 'ana@eq',
       agentName: 'ana',
@@ -243,7 +255,7 @@ describe('el manejador de parada', () => {
   test('9. si el líder no está en el roster, cae al nombre reservado', async () => {
     sembrarEquipo({ leadAgentId: 'fantasma@eq', members: [miembro('ana')] })
     const m = await import('../src/core/teammateInit.ts')
-    m.initializeTeammateHooks(() => undefined, 's1', {
+    m.initializeTeammateHooks(fijarEstado, 's1', {
       teamName: 'eq',
       agentId: 'ana@eq',
       agentName: 'ana',

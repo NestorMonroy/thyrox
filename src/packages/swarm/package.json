@@ -34,6 +34,7 @@
     "./core/reconnection.js": "./src/core/reconnection.ts",
     "./teamDiscovery.js": "./src/teamDiscovery.ts",
     "./mailbox/index.js": "./src/mailbox/index.ts",
+    "./core/teammateInit.js": "./src/core/teammateInit.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
