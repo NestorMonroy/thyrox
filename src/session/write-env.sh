@@ -59,6 +59,11 @@ fi
     [[ -n "$TREE" ]] && echo "THYROX_REACH_ROOT=$TREE"
     echo "THYROX_LOCATOR=${THYROX_LOCATOR:-src/paths/reach.py}"
     echo "THYROX_LIB_REACH=${THYROX_LIB_REACH:-src/lib/reach.sh}"
+    # Sin esta clave el derivador de capa se APAGA entero y toda tarea
+    # aterriza en la capa desconocida — no falla, devuelve el hueco, que se
+    # lee como «no habia señal». Se emite aqui o el proximo regenerado la
+    # borra del `.env` y el defecto vuelve en silencio.
+    echo "THYROX_LAYER_SIGNALS=${THYROX_LAYER_SIGNALS:-src/task/layer_signals.tsv}"
 } > "$DEST"
 
 echo "write-env: escrito $DEST ($(grep -c '^[A-Z]' "$DEST") clave(s) declarada(s))"

@@ -1,0 +1,48 @@
+# Las señales de capa de ESTE árbol — el parámetro que `THYROX_LAYER_SIGNALS`
+# declara y que `agent_store._cargar_senales()` lee.
+#
+# Formato: capa<TAB>expresión regular (case-insensitive), una por línea.
+#
+# POR QUÉ ES UN ARCHIVO Y NO UNA TABLA EN EL CÓDIGO. thyrox es el PROVEEDOR
+# de metodología y los `kaupamex-*` son sus consumidores: qué capas existen
+# es dato del consumidor, no del mecanismo. Una tabla escrita en el módulo
+# acertaría en este multi-repo y repartiría mal en cualquier otro sin que
+# nada lo delatara. Este archivo es la declaración de este árbol; otro
+# consumidor escribe la suya y apunta la clave a ella.
+#
+# EL EJE ES EL REPO, NO LA CAPA DEL PRODUCTO (decidido el 2026-09-07). Los
+# dos coincidían mientras los repos eran las cinco capas; con `thyrox` dejan
+# de coincidir, porque es un repo y no es una capa del producto.
+#
+# CADA SEÑAL TIENE QUE SER UNÍVOCA. `derive_submodule` sólo deriva cuando UNA
+# capa casa: dos señales que coincidan dejan el hueco, y ese hueco es el
+# «cruza repos» que `GEN` nombra. Por eso las expresiones apuntan a rutas y
+# no a palabras sueltas — «componente» sale en tareas de las seis; el que
+# discrimina es `src/components/`.
+
+thyrox	\bsrc/packages/
+thyrox	\bsrc/(task|roster|session|conformance|gates|paths|coordination|transcript|workbench|skills|board)/
+thyrox	\bthyrox\b
+thyrox	\b_references/
+thyrox	\bharness\b
+
+api	\bsrc/addons/
+api	\bkaupamex-api\b
+api	\b(serializer|viewset|drf|spectacular|pytest)\b
+api	\bmanage\.py\b
+
+db	\bprovisioners/(postgresql|mariadb)\b
+db	\bkaupamex-db\b
+db	\b(pg_hba|pg_ctlcluster|django_user|kaupamex_core)\b
+
+docs	\bsource/gestion/
+docs	\bkaupamex-docs\b
+docs	\b(sphinx|\.rst\b|toctree)
+
+server	\bprovisioners/(apache|ssl|firewall|security)\b
+server	\bkaupamex-server\b
+server	\b(vhost|fail2ban|mod_wsgi|gunicorn|acme\.sh)\b
+
+ui	\bsrc/(components|pages|hooks|redux)/
+ui	\bkaupamex-ui\b
+ui	\b(webpack|jest|\.jsx\b|playwright)\b

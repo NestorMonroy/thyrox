@@ -676,10 +676,17 @@ _TASK_LAYER_COLUMNS = {
     "submodule_source": "TEXT",
 }
 
-#: Las cinco capas del multi-repo. Es la misma enumeracion que
+#: Los SEIS repos del arbol. Es la misma enumeracion que
 #: ``findings_history.submodule`` y que el segmento ``<submodulo>`` de la ruta
 #: de un hallazgo, y por eso el cruce entre las dos tablas es directo.
-SUBMODULES = ("api", "db", "docs", "server", "ui")
+#:
+#: ``thyrox`` entro el 2026-09-08, y llega TARDE: el cambio de eje —capa del
+#: producto a repo— es del 2026-09-07 y toco ``task_ids.LAYERS`` sin tocar
+#: esta lista ni la de ``--repo``. Medido al corregirlo: **102 de 1565** tareas
+#: derivan a ``thyrox`` y ninguna lo declaraba, porque ademas el derivador
+#: estaba apagado (ver ``LAYER_SIGNALS_VAR``). Dos omisiones del mismo cambio,
+#: en dos archivos, y ninguna delataba a la otra.
+SUBMODULES = ("api", "db", "docs", "server", "thyrox", "ui")
 
 #: Columna del ID DE CITA de ``tasks`` — el ``KX-<CAPA>-NNNN`` estable y
 #: global que un ``.rst`` puede citar. Se anade por ALTER TABLE por la misma
