@@ -32,6 +32,7 @@ import { describe, expect, test } from 'bun:test'
 import {
   evaluateStopHookBlockOutcome,
   resolveStopHookBlockCap,
+  stopHookBlockCapMessage,
 } from '../internal/stopHooksCore.js'
 
 describe('resolveStopHookBlockCap', () => {
@@ -151,5 +152,47 @@ describe('evaluateStopHookBlockOutcome', () => {
       blockCapEnv: undefined,
     })
     expect(d.kind).toBe('max_turns')
+  })
+})
+
+/**
+ * `stopHookBlockCapMessage` — el mensaje de override que el cap emite al
+ * dispararse.
+ *
+ * PORQUE LLEGA AHORA Y NO ANTES: el docstring de `internal/stopHooksCore.ts`
+ * lo omitia junto a `handleStopHooks`, «su unico consumidor». Ese motivo era
+ * debil —el simbolo es autocontenido, sin una sola dependencia— y la re-
+ * medicion del 2026-09-08 lo confirma: no tiene nada que lo bloquee. Se porta.
+ *
+ * MITAD ROJA: estas cuatro aserciones se escribieron antes que el simbolo y
+ * fallaban por el import ausente.
+ *
+ * POR QUE SE PINCHA LA CADENA VERBATIM Y NO SOLO SU FORMA: el mensaje es
+ * CONTRATO con quien escribe un hook — le dice que mirar (`stop_hook_active`)
+ * y que variable subir (`CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`). Un refactor que
+ * lo reformule «mas claro» rompe a quien lo lea buscando esas dos cosas, y
+ * ninguna asercion de forma lo veria.
+ *
+ * CONTROL DE ANULACION, medido: se retira del mensaje la mencion de la
+ * variable de entorno y cae **1 de 4**, el caso 4. Ninguno mas.
+ */
+describe('stopHookBlockCapMessage', () => {
+  test('1. lleva el conteo de bloqueos consecutivos', () => {
+    expect(stopHookBlockCapMessage(8)).toContain('8 consecutive times')
+    expect(stopHookBlockCapMessage(1)).toContain('1 consecutive times')
+  })
+
+  test('2. declara que el turno termina por override', () => {
+    expect(stopHookBlockCapMessage(8)).toContain('overriding and ending turn')
+  })
+
+  test('3. nombra la clave que un hook debe mirar para no reincidir', () => {
+    const m = stopHookBlockCapMessage(8)
+    expect(m).toContain('stop_hook_active')
+    expect(m).toContain('Stop/SubagentStop')
+  })
+
+  test('4. nombra la variable con que se sube el limite', () => {
+    expect(stopHookBlockCapMessage(8)).toContain('CLAUDE_CODE_STOP_HOOK_BLOCK_CAP')
   })
 })
