@@ -43,6 +43,7 @@
     "./backends/ITermBackend.js": "./src/backends/ITermBackend.ts",
     "./runtime/pollForPromptOrShutdown.js": "./src/runtime/pollForPromptOrShutdown.ts",
     "./core/teammateLayoutManager.js": "./src/core/teammateLayoutManager.ts",
+    "./runtime/spawnInProcess.js": "./src/runtime/spawnInProcess.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },

@@ -174,3 +174,13 @@ export {
   tryClaimNextTask,
   waitForNextPromptOrShutdown,
 } from './runtime/pollForPromptOrShutdown.js'
+
+export type {
+  InProcessSpawnConfig,
+  InProcessSpawnOutput,
+  SpawnContext,
+} from './runtime/spawnInProcess.js'
+export {
+  killInProcessTeammate,
+  spawnInProcessTeammate,
+} from './runtime/spawnInProcess.js'

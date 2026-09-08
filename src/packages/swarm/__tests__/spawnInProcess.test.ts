@@ -120,6 +120,12 @@ beforeEach(() => {
 })
 
 afterEach(async () => {
+  // `killInProcessTeammate` deja DOS trabajos sueltos a proposito: quitar al
+  // miembro del archivo de equipo —fuera del actualizador de estado, para no
+  // hacer E/S dentro de una funcion de estado— y el desalojo diferido de la
+  // tarea terminal. Retirar los bindings antes de que terminen los deja
+  // llamando a un mecanismo desinstalado.
+  await new Promise(r => setTimeout(r, 25))
   const m = await import('../src/adapters/appRuntime.ts')
   m._test_resetSwarmAppRuntime()
   rmSync(raiz, { recursive: true, force: true })
