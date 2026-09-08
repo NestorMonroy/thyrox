@@ -15,19 +15,45 @@
  * un entorno con poppler no se podría ejercer sin desinstalarlo.
  */
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
-import { mkdtempSync, rmSync, writeFileSync } from 'fs'
+import { mkdtempSync, openSync, closeSync, ftruncateSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
 let dir: string
 
+/**
+ * MEDIDO en este archivo, con una sonda de tres casos: en bun 1.3.11 un
+ * `mock.module` NO se puede deshacer. Ni `mock.restore()` lo revierte, ni
+ * volver a registrar el espacio de nombres real capturado antes de sustituir.
+ * Es hermano de la #261 y por el mismo motivo se declara aquí: el fallo que
+ * produce ENGAÑA. Un caso que sustituía `fsOperations` para devolver 21 MB
+ * dejaba a un caso posterior —el del archivo vacío— recibiendo ese tamaño, y
+ * el veredicto salía «corrupted» tres ramas más abajo en vez de «empty».
+ *
+ * Por eso `fsOperations` se sustituye UNA vez, aquí, con un tamaño que cada
+ * caso declara. El default consulta el archivo real, así que un caso que no
+ * toque `sizeOverride` mide lo que hay en disco.
+ */
+/**
+ * MEDIDO aquí con una sonda de tres casos: en bun 1.3.11 un `mock.module` NO
+ * se puede deshacer —ni con `mock.restore()`, ni volviendo a registrar el
+ * espacio de nombres real capturado antes— y ADEMÁS no se queda en su
+ * archivo: `bun test` corre todos en un proceso, así que alcanza a los demás.
+ * Es hermano de la #261.
+ *
+ * Consecuencia para este archivo: `fsOperations` NO se sustituye. El caso del
+ * tope de tamaño usa un archivo DISPERSO de 21 MB, que ocupa cero en disco y
+ * declara ese tamaño al `stat` real. Sale más fuerte que el sustituto: si el
+ * orden de las guardas se invirtiera, ese archivo se leería entero y su
+ * ausencia de cabecera daría «corrupted» en vez de «too_large», que es justo
+ * lo que el caso distingue.
+ */
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'pdf-'))
 })
 
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true })
-  mock.restore()
 })
 
 /** Un PDF mínimo válido: lo único que `readPDF` mira es la cabecera. */
@@ -94,8 +120,6 @@ describe('readPDF — las tres guardas antes de que el PDF entre al historial', 
       '@thyrox/provider/apiLimits.js'
     )
     expect(PDF_TARGET_RAW_SIZE).toBe(20 * 1024 * 1024)
-    // Se comprueba la RAMA, no se escriben 20 MB: un archivo por encima del
-    // tope se rechaza antes de leerse entero.
     const p = join(dir, 'grande.pdf')
     writeFileSync(p, Buffer.alloc(1024, 0x41))
     const r = await readPDF(p)
@@ -109,13 +133,14 @@ describe('readPDF — las tres guardas antes de que el PDF entre al historial', 
   test('6. por encima del tope, la razón es el tamaño y NO la cabecera', async () => {
     // El orden importa: si la cabecera se comprobara primero, un archivo
     // enorme se leería entero en memoria para decir que no es un PDF.
-    mock.module('@thyrox/storage/fsOperations.js', () => ({
-      getFsImplementation: () => ({
-        stat: async () => ({ size: 21 * 1024 * 1024 }),
-      }),
-    }))
     const { readPDF } = await import('../pdf.ts')
-    const r = await readPDF(writePdf('enorme.pdf'))
+    // Disperso: 21 MB declarados, cero ocupados. Y sin cabecera `%PDF-`, que
+    // es lo que convierte al caso en discriminante.
+    const p = join(dir, 'enorme.pdf')
+    const fd = openSync(p, 'w')
+    ftruncateSync(fd, 21 * 1024 * 1024)
+    closeSync(fd)
+    const r = await readPDF(p)
     expect(r.success).toBe(false)
     if (r.success) throw new Error('inalcanzable')
     expect(r.error.reason).toBe('too_large')
@@ -127,6 +152,10 @@ describe('getPDFPageCount — el conteo, y su ausencia', () => {
   test('7. sin pdfinfo devuelve null en vez de lanzar', async () => {
     // Medido: poppler no está en este entorno. `execFileNoThrow` devuelve un
     // código distinto de 0 y la función tiene que degradar, no romper.
+    //
+    // Este caso es el único que usa el `execFileNoThrow` REAL, y por eso va
+    // antes que los que lo sustituyen: la sustitución no se puede deshacer
+    // (ver la nota de la cabecera), así que su orden no es cosmético.
     const { getPDFPageCount } = await import('../pdf.ts')
     expect(await getPDFPageCount(writePdf('x.pdf'))).toBeNull()
   })
