@@ -27,6 +27,12 @@
     "./tools/ReadMcpResourceTool/prompt.js": "./src/tools/ReadMcpResourceTool/prompt.ts",
     "./tools/McpAuthTool/McpAuthTool.js": "./src/tools/McpAuthTool/McpAuthTool.ts",
     "./internal/pendingCrossPackageDeps.js": "./src/internal/pendingCrossPackageDeps.ts",
+    "./tools/TaskGetTool/TaskGetTool.js": "./src/tools/TaskGetTool/TaskGetTool.ts",
+    "./tools/TaskGetTool/constants.js": "./src/tools/TaskGetTool/constants.ts",
+    "./tools/TaskGetTool/prompt.js": "./src/tools/TaskGetTool/prompt.ts",
+    "./tools/TaskListTool/TaskListTool.js": "./src/tools/TaskListTool/TaskListTool.ts",
+    "./tools/TaskListTool/constants.js": "./src/tools/TaskListTool/constants.ts",
+    "./tools/TaskListTool/prompt.js": "./src/tools/TaskListTool/prompt.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
@@ -34,13 +40,14 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@thyrox/agent": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/mcp-runtime": "workspace:*",
     "@thyrox/permission": "workspace:*",
-    "zod": "^4.3.6",
-    "@modelcontextprotocol/sdk": "^1.29.0",
     "lodash-es": "^4.18.1",
-    "lru-cache": "^11.0.0"
+    "lru-cache": "^11.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.124.0"
