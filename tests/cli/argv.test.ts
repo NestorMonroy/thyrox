@@ -17,7 +17,7 @@
  * (capa 0, sin divergencias) en `@thyrox/app-host: src/cliArgs.ts`, fechado
  * antes de esta tarea. Reimplementarlo aquí sería la TERCERA copia
  * divergente del mismo mecanismo — la primera y la segunda ya están
- * medidas en el análisis de esta tarea (`arg()` de `harness/bin/harness.ts`
+ * medidas en el análisis de esta tarea (`arg()` de `cli/bin/harness.ts`
  * y `opcion()` de `binary/bin/binary.ts`, ninguna soporta `--flag=valor`).
  *
  * Este archivo es, de paso, la primera cobertura ejecutable de

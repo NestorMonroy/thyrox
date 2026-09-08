@@ -65,8 +65,8 @@ export {
 export {
   OUTPUT_STYLES, renderEvent, renderStatusLine,
   type OutputStyle, type StatusLine,
-} from './cli/render.ts'
-export { resumeChoices, type ResumeChoice } from './cli/resume.ts'
+} from '@thyrox/cli/render'
+export { resumeChoices, type ResumeChoice } from '@thyrox/cli/resume'
 export { agentDefinitionsFromRegistry, toHarnessDefinition } from '@thyrox/tools/agentDefinitions'
 export {
   SkillRegistry, extractDirFor,

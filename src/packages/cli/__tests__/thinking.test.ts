@@ -108,7 +108,7 @@ describe('el pensamiento cruza el bucle y llega al renderizador (T-064)', () => 
   })
 
   test('el renderizador no lo mezcla con la respuesta', async () => {
-    const { renderEvent } = await import('../src/cli/render.ts')
+    const { renderEvent } = await import('../src/render.ts')
     const linea = renderEvent({ type: 'thinking_delta', turn: 1, text: 'pensando' } as never, 'text')
     expect(linea).toBeNull()
   })

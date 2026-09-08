@@ -19,7 +19,7 @@ import { tmpdir } from 'node:os'
 import { join, basename } from 'node:path'
 import {
   REQUIRED_KEYS, WORKBENCH_FORMS, runIdDate, checkWorkbench, scaffoldWorkbench,
-} from '../src/workbench/manifest.ts'
+} from '@thyrox/harness/workbench/manifest'
 
 const BIN = join(import.meta.dir, '..', 'bin', 'harness.ts')
 

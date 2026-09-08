@@ -10,10 +10,10 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { renderEvent, renderStatusLine, OUTPUT_STYLES, type OutputStyle } from '../src/cli/render.ts'
+import { renderEvent, renderStatusLine, OUTPUT_STYLES, type OutputStyle } from '../src/render.ts'
 import { forkSession, indexSessions } from '@thyrox/agent/loop/sessions'
 import { openSession } from '@thyrox/agent/loop/session'
-import { resumeChoices } from '../src/cli/resume.ts'
+import { resumeChoices } from '../src/resume.ts'
 import type { HarnessEvent } from '@thyrox/agent/loop/types'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'cli-'))

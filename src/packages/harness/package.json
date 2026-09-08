@@ -3,19 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Lo que queda del harness tras #224: el binario, la CLI, el selector de tests por impacto, el workbench y la triple de referencia. El bucle vive en @thyrox/agent/loop.",
+  "description": "Lo que queda del harness tras #224 y el tramo 6 de #226: el selector de tests por impacto, el workbench y la triple de referencia. El bucle vive en @thyrox/agent/loop; la CLI y su binario, en @thyrox/cli.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./cli/render": "./src/cli/render.ts",
-    "./cli/resume": "./src/cli/resume.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test",
-    "harness": "bun run bin/harness.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
   },
@@ -24,6 +21,7 @@
   },
   "dependencies": {
     "@thyrox/agent": "workspace:*",
+    "@thyrox/cli": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/observability": "workspace:*",
     "@thyrox/permission": "workspace:*",

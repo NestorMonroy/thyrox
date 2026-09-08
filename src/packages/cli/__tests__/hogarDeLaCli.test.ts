@@ -17,11 +17,18 @@
  * dueñas sus propias suites, que viajan con ellos. Un archivo que mide dos
  * cosas a la vez no dice cual se rompio.
  *
- * CONTROL DE ANULACION, medido tras la mudanza: se retira del `index.ts` de
- * `@thyrox/cli` la reexportacion de `./render.ts` y caen **2 de 6**, los
- * casos 1 y 2. Se retira el binario de su nueva ruta y caen **3 de 6**, los
- * casos 4, 5 y 6 — el 3 sobrevive, y debe: mide que el hogar VIEJO ya no lo
- * tenga, cosa que sigue siendo cierta.
+ * DOS CONTROLES DE ANULACION, medidos tras la mudanza:
+ *
+ * - Se retira del `index.ts` de `@thyrox/cli` la reexportacion de
+ *   `./render.ts`: caen **2 de 6**, los casos 1 y 2. El 3 sobrevive y debe —
+ *   la reanudacion se reexporta por su cuenta.
+ * - Se retira el binario de su nueva ruta: caen **2 de 6**, los casos 4 y 6.
+ *
+ * La prediccion de la segunda era **3 de 6** e incluia el caso 5; se corrige
+ * con la medicion. El 5 sobrevive, y esa es la conducta correcta: mide que el
+ * hogar VIEJO ya no lo tenga, y sacar el binario del hogar NUEVO no lo
+ * devuelve al viejo. Un caso que cayera ahi estaria midiendo la presencia del
+ * archivo en general, no la frontera entre los dos hogares.
  */
 import { describe, expect, test } from 'bun:test'
 import { existsSync, mkdtempSync, writeFileSync } from 'node:fs'
