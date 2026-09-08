@@ -53,13 +53,31 @@ esac
 afirmar "agent-artifacts resuelve su paquete dentro del árbol" propia "$VISTO"
 
 # --- harness-typecheck ------------------------------------------------------
+# El harness NO dejo de existir: cambio de casa. #226 vacio
+# `src/packages/harness` y su binario vive hoy en `src/packages/cli`, asi que
+# el gate conserva su nombre —sigue midiendo el harness— y cambia su sujeto.
+# Sin esto seguia apuntando a un paquete borrado; el guard lo delataba con
+# salida 2, no con un verde falso, pero medir cero no es medir.
 SAL="$(cd "$T" && bash src/gates/check-harness-typecheck.sh 2>&1)"
 case "$SAL" in
-    *"$T/src/packages/harness"*) VISTO=propia ;;
+    *"$T/src/packages/cli"*) VISTO=propia ;;
+    *"src/packages/harness"*) VISTO=paquete-borrado ;;
     *".claude/packages/harness"*) VISTO=premudanza ;;
     *) VISTO=otra ;;
 esac
 afirmar "harness-typecheck resuelve su paquete dentro del árbol" propia "$VISTO"
+
+# El gate tiene que poder MEDIR, no solo resolver la ruta: sobre el arbol real
+# los dos proyectos de TypeScript existen y compilan. Un gate que resuelve bien
+# y rehusa por falta de tsconfig publica exit 2 para siempre.
+SAL="$(bash src/gates/check-harness-typecheck.sh 2>&1)"; COD=$?
+case "$SAL" in
+    *"OK (proyectos medidos: 2 de 2)"*) VISTO=mide ;;
+    *"NO ENCONTRADO"*) VISTO=rehusa ;;
+    *) VISTO=otra ;;
+esac
+afirmar "harness-typecheck mide los dos proyectos del paquete" mide "$VISTO"
+afirmar "harness-typecheck sale 0 sobre el arbol limpio" 0 "$COD"
 
 # --- la variable conserva su precedencia ------------------------------------
 AJENO="$T/ajeno/agent"
