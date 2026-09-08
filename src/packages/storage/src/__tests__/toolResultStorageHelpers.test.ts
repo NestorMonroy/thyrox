@@ -19,13 +19,27 @@
  */
 import { describe, expect, test } from 'bun:test'
 
-// Adaptación: la fuente mockea @claude-code-how-works/config/feature-flags
-// (getFeatureValue_CACHED_MAY_BE_STALE) vía mock.module. Ese paquete no
-// existe aquí (DEC-04) — el puerto expone un setter DI local
-// (setFeatureFlagOverrideFn), mismo patrón que setGetCwdFn en
-// internal/pendingCrossPackageDeps.ts. El threshold check sigue leyendo
-// `tengu_satin_quoll` (PERSIST_THRESHOLD_OVERRIDE_FLAG).
-let nextFlagValue: unknown = {}
+// La fuente mockea `config/feature-flags` vía `mock.module`. Aquí el paquete
+// ya está portado y trae su propio inyector de pruebas, así que la bandera se
+// sirve por la puerta real en vez de por un inyector local.
+//
+// Esto SUSTITUYE al `setFeatureFlagOverrideFn` que el puerto parcial exponía:
+// era un símbolo inventado aquí, cuya razón declarada —«ese paquete no existe
+// en este árbol»— caducó al portarlo.
+import { setGrowthBookConfigOverride } from '@thyrox/config/feature-flags'
+
+/** El nombre que `getPersistenceThreshold` consulta. */
+const PERSIST_THRESHOLD_OVERRIDE_FLAG = 'tengu_satin_quoll'
+
+/**
+ * Sirve un valor de bandera. Admite `unknown` a propósito: la mitad de los
+ * casos comprueban justo que un valor MAL FORMADO —`null`, una cadena, un
+ * número— no reviente al indexar, y un tipo que sólo aceptara el mapa bien
+ * formado dejaría esos casos sin poder escribirse.
+ */
+function serveFlag(value: unknown): void {
+  setGrowthBookConfigOverride(PERSIST_THRESHOLD_OVERRIDE_FLAG, value as never)
+}
 
 const {
   generatePreview,
@@ -33,10 +47,9 @@ const {
   isPersistError,
   getPersistenceThreshold,
   buildLargeToolResultMessage,
-  setFeatureFlagOverrideFn,
 } = await import('../toolResultStorage.js')
 
-setFeatureFlagOverrideFn(() => nextFlagValue)
+serveFlag({})
 
 describe('generatePreview — content fits within limit', () => {
   test('content shorter than maxBytes returns full content, hasMore=false', () => {
@@ -228,20 +241,20 @@ describe('getPersistenceThreshold — opt-out / override / default', () => {
   test('Infinity declared limit is respected (hard opt-out)', () => {
     // Per docstring: Infinity = hard opt-out. Tool's maxResultSizeChars
     // = Infinity ⇒ never persist (Read tool reads back its own output).
-    nextFlagValue = { someTool: 1000 } // even with override, Infinity wins
+    serveFlag({ someTool: 1000 }) // even with override, Infinity wins
     expect(getPersistenceThreshold('someTool', Infinity)).toBe(Infinity)
   })
 
   test('NaN is treated as non-finite — passes through (hard opt-out)', () => {
     // !Number.isFinite(NaN) === true
-    nextFlagValue = {}
+    serveFlag({})
     expect(getPersistenceThreshold('foo', NaN)).toBeNaN()
   })
 
   test('flag value is null — falls through to default (no crash)', () => {
     // The guard `typeof override === 'number'` rejects null.
     // Defensive comment in source: GrowthBook can serve null.
-    nextFlagValue = null
+    serveFlag(null)
     const result = getPersistenceThreshold('foo', 100_000)
     // 100000 vs DEFAULT_MAX_RESULT_SIZE_CHARS (whichever is smaller).
     // Without crashing.
@@ -249,30 +262,30 @@ describe('getPersistenceThreshold — opt-out / override / default', () => {
   })
 
   test('flag value is wrong shape (string) — falls through to default', () => {
-    nextFlagValue = 'not-an-object'
+    serveFlag('not-an-object')
     expect(typeof getPersistenceThreshold('foo', 100_000)).toBe('number')
   })
 
   test('valid override is applied', () => {
-    nextFlagValue = { specialTool: 42 }
+    serveFlag({ specialTool: 42 })
     expect(getPersistenceThreshold('specialTool', 100_000)).toBe(42)
   })
 
   test('override = 0 is rejected (must be > 0)', () => {
     // Per source: `override > 0` check.
-    nextFlagValue = { specialTool: 0 }
+    serveFlag({ specialTool: 0 })
     const result = getPersistenceThreshold('specialTool', 50_000)
     expect(result).not.toBe(0)
   })
 
   test('override = -1 is rejected', () => {
-    nextFlagValue = { specialTool: -1 }
+    serveFlag({ specialTool: -1 })
     const result = getPersistenceThreshold('specialTool', 50_000)
     expect(result).not.toBe(-1)
   })
 
   test('override = Infinity is rejected (must be finite)', () => {
-    nextFlagValue = { specialTool: Infinity }
+    serveFlag({ specialTool: Infinity })
     const result = getPersistenceThreshold('specialTool', 50_000)
     expect(result).not.toBe(Infinity)
   })
@@ -280,13 +293,13 @@ describe('getPersistenceThreshold — opt-out / override / default', () => {
   test('declared > DEFAULT clamps to DEFAULT', () => {
     // Clamp: min(declared, DEFAULT). Without an override, the global
     // default wins for any tool that declares a higher cap.
-    nextFlagValue = {}
+    serveFlag({})
     const result = getPersistenceThreshold('foo', 99_999_999)
     expect(result).toBeLessThan(99_999_999)
   })
 
   test('declared < DEFAULT keeps the lower declared limit', () => {
-    nextFlagValue = {}
+    serveFlag({})
     expect(getPersistenceThreshold('foo', 1_000)).toBe(1_000)
   })
 })

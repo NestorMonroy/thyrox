@@ -23,8 +23,20 @@
  * los obligaría a divergir de la fuente sin ganar nada.
  */
 
-/** Un valor de bandera: lo que la fuente admite declarar. */
-export type FeatureValue = boolean | string | number
+/**
+ * Un valor de bandera.
+ *
+ * Incluye el objeto y el arreglo JSON, y no es un adorno: la fuente sirve
+ * banderas de valor compuesto —`tengu_satin_quoll` es un mapa de nombre de
+ * herramienta a umbral, y su consumidor lo indexa— así que un tipo que sólo
+ * admitiera escalares declararía imposible lo que el mecanismo ya hace.
+ */
+export type FeatureValue =
+  | boolean
+  | string
+  | number
+  | readonly FeatureValue[]
+  | { readonly [key: string]: FeatureValue }
 
 /** La variable que declara los overrides, como objeto JSON de una línea. */
 export const FEATURE_FLAGS_ENV = 'THYROX_FEATURE_FLAGS'
