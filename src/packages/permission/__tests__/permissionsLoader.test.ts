@@ -191,6 +191,12 @@ describe('addPermissionRulesToSettings — añadir sin duplicar', () => {
     // Un archivo de settings lo escriben varias versiones y varias
     // herramientas. Reescribirlo perdiendo lo desconocido borraría
     // configuración ajena sin avisar.
+    //
+    // ESTE CONTROL NO DISCRIMINA, Y SE DECLARA. Medido con la anulación:
+    // quitando el `...settingsData` que conserva las claves ajenas, los 14
+    // casos siguen en verde, porque `updateSettingsForSource` FUSIONA con lo
+    // que ya hay en disco. Son dos defensas del mismo fenómeno y el caso sólo
+    // alcanza la de fuera. Misma clase que la tarea #275, y ahí se registra.
     await sembrar('localSettings', { claveAjena: { a: 1 } })
     addPermissionRulesToSettings(
       { ruleValues: [{ toolName: 'Read' }], ruleBehavior: 'deny' },
@@ -277,6 +283,13 @@ describe('deletePermissionRuleFromSettings — borrar la que existe', () => {
     )
     // El tipo ya lo acota, pero el tipo se borra al compilar: `policySettings`
     // llega desde disco y desde el SDK, donde no hay tipos que valgan.
+    //
+    // ESTE CONTROL TAMPOCO DISCRIMINA HOY, Y SE DECLARA. Sin la guarda, el
+    // caso pasa igual: `getSettingsForSource('policySettings')` devuelve
+    // `null` en este árbol —su cadena de settings administrados no está
+    // portada— y la función sale por esa otra puerta. Para que discrimine
+    // haría falta una fuente NO editable que SÍ resuelva a settings, y de las
+    // cinco declaradas ninguna lo hace. Misma clase que la tarea #275.
     expect(
       deletePermissionRuleFromSettings({
         source: 'policySettings',
