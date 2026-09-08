@@ -377,11 +377,16 @@ describe('stripDangerousPermissionsForAutoMode — 5 casos', () => {
     // `policySettings` no se puede persistir: se halla peligrosa y NO se
     // retira, así que tampoco entra al escondite. Si entrara, restaurar
     // añadiría una regla que nunca se quitó.
+    //
+    // Y el escondite guarda la forma CANÓNICA, no la tecleada: `Agent(*)` y
+    // `Agent` son la misma regla —el parser descarta el `(*)` vacío— así que
+    // el viaje de ida y vuelta la normaliza. Sin esto, restaurar dejaría dos
+    // cadenas distintas para una sola regla.
     const out = stripDangerousPermissionsForAutoMode({
       permissionRules: {},
       alwaysAllowRules: { policySettings: ['Bash(*)'], session: ['Agent(*)'] },
     })
-    expect(out.strippedDangerousRules).toEqual({ session: ['Agent(*)'] })
+    expect(out.strippedDangerousRules).toEqual({ session: ['Agent'] })
   })
 
   test('42. deja constancia en el registro del anfitrión', () => {
@@ -428,7 +433,8 @@ describe('restoreDangerousPermissions — 4 casos', () => {
       strippedDangerousRules: { session: ['Agent(*)'] },
     })
     const twice = restoreDangerousPermissions(once)
-    expect((twice.alwaysAllowRules as Record<string, string[]>).session).toEqual(['Agent(*)'])
+    // `Agent(*)` vuelve en su forma canónica `Agent` — ver el caso 41.
+    expect((twice.alwaysAllowRules as Record<string, string[]>).session).toEqual(['Agent'])
   })
 
   test('47. despojar y restaurar es la identidad sobre las reglas', () => {

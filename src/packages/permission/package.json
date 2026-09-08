@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta (permission.ts, T-008/025/026/027). Ademas, porte fiel COMPLETO de host.ts/errors.ts/contracts.ts/permissionRuleParser.ts/PermissionResult.ts/autoModeDenials.ts/autoModeState.ts/denialTracking.ts/bashClassifier.ts/dangerousPatterns.ts/shellRuleMatching.ts/shadowedRuleDetection.ts, y porte PARCIAL DECLARADO de permissions.ts (11/17), filesystem.ts (13/29), pathValidation.ts (6/11), PermissionRule.ts (4/6, sin zod), PermissionMode.ts (11/13, sin zod), PermissionUpdate.ts (6/8, sin persistencia a disco) y getNextPermissionMode.ts (1/2, sin auto-mode) desde claude-code-nestor-monroy-tools \u2014 ver el docstring de cada archivo para lo omitido y por que (TASK-DOCS-0201). El resto del paquete origen (subsistema clasificador ML, componentes Ink, permissionSetup.ts) queda fuera de este arbol: bloqueado por zod/@anthropic-ai/sdk/react sin linkear en node_modules de este paquete, o por ausencia total de sustrato Ink.",
+  "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta (permission.ts, T-008/025/026/027). Ademas, porte fiel COMPLETO de host.ts/errors.ts/contracts.ts/permissionRuleParser.ts/PermissionResult.ts/autoModeDenials.ts/autoModeState.ts/denialTracking.ts/bashClassifier.ts/dangerousPatterns.ts/shellRuleMatching.ts/shadowedRuleDetection.ts, y porte PARCIAL DECLARADO de permissions.ts (11/17), filesystem.ts (13/29), pathValidation.ts (6/11), y getNextPermissionMode.ts (1/2, sin auto-mode). PermissionRule.ts, PermissionMode.ts y PermissionUpdate.ts figuraban aqui como parciales (4/6, 11/13, 6/8): medido hoy los tres estan COMPLETOS — 6/6, 14/14 y 10/10 simbolos exportados, sin ninguno ausente. Sus bloqueos declarados (zod, persistencia a disco) cayeron al cerrar la capa de esquemas y la de persistencia, y el aviso se retira en vez de dejarlo pudrirse desde claude-code-nestor-monroy-tools — ver el docstring de cada archivo para lo omitido y por que (TASK-DOCS-0201). De permissionSetup.ts se porta el bloque de PERMISOS PELIGROSOS (lineas 101-598 de la fuente, 12 de sus 35 exports): que regla auto-aprobaria una accion antes de que el clasificador la evalue, y como se despoja y se restaura. Sus otros 23 exports quedan fuera con su bloqueo nombrado (banderas de caracteristica, estado de auto mode, arranque desde la linea de comandos, telemetria) — sucesor TASK-THYROX-0004. El resto del paquete origen (subsistema clasificador ML, componentes Ink) queda fuera de este arbol: bloqueado por zod/@anthropic-ai/sdk/react sin linkear en node_modules de este paquete, o por ausencia total de sustrato Ink.",
   "exports": {
     ".": "./src/permission.ts",
     "./host.js": "./src/host.ts",
@@ -14,6 +14,7 @@
     "./permissions.js": "./src/permissions.ts",
     "./filesystem.js": "./src/filesystem.ts",
     "./pathValidation.js": "./src/pathValidation.ts",
+    "./permissionSetup.js": "./src/permissionSetup.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
@@ -25,5 +26,7 @@
   "devDependencies": {
     "@types/bun": "^1.4.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@thyrox/config": "workspace:*"
+  }
 }
