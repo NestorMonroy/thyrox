@@ -23,6 +23,25 @@
  * adaptador de Anthropic no la necesita: su implementacion la entrega el
  * host, asi que se instala un generador sintetico en los bindings — que es lo
  * que la suite de la fuente tambien hace.
+ *
+ * TRES CONTROLES DE ANULACION, medidos, uno por cada mecanismo propio del
+ * modulo:
+ *
+ * - Se retira el recorte del prefijo de conexion —`stripModelPrefix` devuelve
+ *   sus argumentos sin tocar—: cae **1 de 20**, el caso 8. Los casos 9 y 11
+ *   sobreviven y deben: miden que unos argumentos SIN prefijo no se
+ *   reconstruyan, y la anulacion tampoco los reconstruye.
+ * - Se retira la desambiguacion proveedor-contra-modelo —todo valor se lee
+ *   como id de modelo—: caen **9 de 20**. Es el mecanismo del que mas cuelga.
+ * - Se retira el rechazo por binding ausente: caen **2 de 20**, los 18 y 19.
+ *
+ * Y UNA CEGUERA MEDIDA, que se declara en vez de taparse: el caso 10 dice
+ * medir que el prefijo no llegue a la URL de Gemini, y NO discrimina el
+ * recorte de este modulo — sobrevive a la primera anulacion. La razon es que
+ * `resolveGeminiModel` desempaqueta el prefijo por su cuenta antes de armar
+ * la URL, asi que el caso mide una propiedad que se cumple por dos caminos
+ * independientes y no distingue cual la produjo. Se conserva porque la
+ * propiedad importa; lo que no se puede afirmar es que mida ESTE recorte.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { getProviderAdapter } from '../src/adapters.js'
