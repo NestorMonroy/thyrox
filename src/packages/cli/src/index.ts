@@ -15,3 +15,9 @@ export {
   type OutputStyle, type StatusLine,
 } from './render.ts'
 export { resumeChoices, type ResumeChoice } from './resume.ts'
+
+// El selector de pruebas por impacto (#226 tramo 7): llego aqui porque su
+// unico consumidor es `bin/harness.ts`, que se mudo en el tramo 6. No toca
+// disco — recibe un `Io`, y `fsIo` es la implementacion que si lo toca.
+export { selectTests, type ImpactConfig, type Io } from './testing/impact.ts'
+export { changedPaths, fsIo } from './testing/io.ts'

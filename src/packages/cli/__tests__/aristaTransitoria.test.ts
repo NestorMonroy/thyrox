@@ -3,11 +3,21 @@
  *
  * DE DONDE SALE EL DESTINO, y no se inventa. El analisis de la particion
  * (`kaupamex-docs: .../analisis-grafo-y-particion-del-paquete-harness.rst`)
- * dejaba `testing/` y `reference/` en **indeterminado**, y decia por que:
+ * dejaba `testing/` y `reference/` en **indeterminado** bajo UNA sola razon:
  * «su unico consumidor real es `bin/harness.ts`, cuyo hogar futuro declara
  * @thyrox/cli … Moverlas antes que su consumidor invierte la arista». El
- * tramo 6 mudo ese consumidor; la condicion que las bloqueaba ya no se
- * cumple, y el destino se sigue de su unico consumidor.
+ * tramo 6 mudo ese consumidor, asi que la condicion ya no se cumple.
+ *
+ * PERO esa razon vale para UNA de las dos, y el propio analisis lo dice tres
+ * tablas mas arriba: la fila de `reference/triple.ts` declara «Quien la
+ * consume: **solo su test**». Medido 2026-09-08 sobre todo el clon, sus
+ * cuatro simbolos exportados —`checkPortDeclaration`, `declaredAlias`,
+ * `canonicalAlias`, `sameCorpus`— tienen CERO consumidores fuera del propio
+ * paquete. Su destino no lo decide un consumidor que no tiene: lo decide
+ * donde viva la capa de gates (#81), y su consumidor natural es el gate del
+ * paso 7 (#92), pendiente. Por eso `reference/` NO se muda en este tramo y
+ * el caso 2 queda `test.todo` bajo #265, en vez de afirmar un destino que
+ * ninguna evidencia sostiene.
  *
  * QUE NO SE MUDA, y tampoco es invencion: `workbench/`. :ref:`h-docs-1142`
  * lo declara un duplicado superado con contrato INCOMPATIBLE —sus cinco
@@ -16,14 +26,17 @@
  * git mv». Por eso el caso 3 exige que la unica arista que queda hacia
  * `@thyrox/harness` sea esa, y ninguna otra.
  *
- * MITAD ROJA: los cuatro casos fallan contra el arbol de hoy — `testing/` y
- * `reference/` siguen en el paquete que se vacia, y el manifiesto sigue
- * declarando la dependencia.
+ * MITAD ROJA: los cuatro casos fallaron contra el arbol de partida. DOS se
+ * degradaron a `test.todo` al medir que su premisa era falsa —el 2 afirmaba
+ * un destino sin evidencia (#265), el 4 un estado que este tramo no puede
+ * alcanzar (#266)—, y quedan los DOS que el tramo pone en verde. Que un
+ * control se corrija a la baja al medirlo es el resultado, no un fallo del
+ * metodo: lo contrario seria mover `reference/` para que el caso pasara.
  *
  * CONTROL DE ANULACION, a medir tras la mudanza: se devuelve el import de
- * `testing/impact` a `@thyrox/harness/testing/impact` y debe caer **1 de 4**,
- * el caso 3. Los casos 1, 2 y 4 sobreviven, y deben: miden donde vive el
- * modulo y que declara el manifiesto, no de donde lo cita un tercero.
+ * `testing/impact` a `@thyrox/harness/testing/impact` y debe caer **1 de 2**,
+ * el caso 3. El caso 1 sobrevive, y debe: mide donde vive el modulo, no de
+ * donde lo cita un tercero.
  */
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
@@ -48,9 +61,11 @@ describe('el paquete aloja las utilidades de repositorio que su binario usa', ()
     expect(existsSync(join(RAIZ, 'src', 'testing', 'io.ts'))).toBe(true)
   })
 
-  test('2. la triple de referencia vive aqui', () => {
-    expect(existsSync(join(RAIZ, 'src', 'reference', 'triple.ts'))).toBe(true)
-  })
+  // #265: la triple de referencia NO se muda aqui. Su bloqueo declarado
+  // —«su unico consumidor es bin/harness.ts»— resulto falso al medirlo: no
+  // tiene ningun consumidor. Su hogar es la capa de gates (#81/#92), no la
+  // CLI. Queda visible en la salida y nunca en verde, en vez de borrado.
+  test.todo('2. la triple de referencia tiene hogar (#265: la capa de gates)')
 
   test('3. el unico especificador a @thyrox/harness que queda es el del workbench', () => {
     // `workbench/` NO se muda: h-docs-1142 lo declara duplicado superado con
@@ -68,19 +83,20 @@ describe('el paquete aloja las utilidades de repositorio que su binario usa', ()
     for (const f of fuentes(RAIZ)) {
       const texto = readFileSync(f, 'utf-8')
       for (const m of texto.matchAll(ESPECIFICADOR)) {
-        if (m[1].includes('workbench')) continue
+        // `workbench/` y `reference/` se quedan, cada uno por su razon
+        // (h-docs-1142 el primero, #265 el segundo). Sus citas NO son la
+        // arista que este tramo cierra.
+        if (m[1].includes('workbench') || m[1].includes('reference')) continue
         citas.push(`${f.slice(RAIZ.length + 1)}: ${m[1]}`)
       }
     }
     expect(citas).toEqual([])
   })
 
-  test('4. el manifiesto ya no declara la dependencia transitoria', () => {
-    // El especificador y la dependencia son dos superficies distintas: un
-    // paquete puede dejar de citar y seguir declarando. El caso 3 mide los
-    // `.ts`; este mide `package.json`, que es donde vive la arista para el
-    // resolvedor del workspace.
-    const manifiesto = JSON.parse(readFileSync(join(RAIZ, 'package.json'), 'utf-8'))
-    expect(Object.keys(manifiesto.dependencies ?? {})).not.toContain('@thyrox/harness')
-  })
+  // #266: el manifiesto NO puede quedar limpio en este tramo, y el caso lo
+  // afirmaba. La cita al workbench SOBREVIVE a proposito —h-docs-1142 manda
+  // que su retiro sea un pase propio con su propia suite, porque los dos
+  // contratos son incompatibles— y mientras sobreviva, la dependencia es
+  // legitima, no residuo. Queda visible y nunca en verde.
+  test.todo('4. el manifiesto ya no declara @thyrox/harness (#266: retirar el workbench superado)')
 })

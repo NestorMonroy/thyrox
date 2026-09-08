@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte parcial del paquete cli de claude-code-nestor-monroy-tools (TASK-DOCS-0205), mas el hogar de la CLI del harness (#226 tramo 6): el binario bin/harness.ts, el dibujo del flujo de eventos (render.ts) y el selector de reanudacion (resume.ts). La dependencia de @thyrox/harness es TRANSITORIA: el bin cita alli testing/ y workbench/, que se mudan o se retiran en el tramo 7.",
+  "description": "Porte parcial del paquete cli de claude-code-nestor-monroy-tools (TASK-DOCS-0205), mas el hogar de la CLI del harness (#226 tramos 6 y 7): el binario bin/harness.ts, el dibujo del flujo de eventos (render.ts), el selector de reanudacion (resume.ts) y el selector de pruebas por impacto (testing/). La dependencia de @thyrox/harness sobrevive por UNA cita, la del workbench superado, cuyo retiro es un pase propio (#266, h-docs-1142).",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
@@ -16,7 +16,9 @@
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts",
     "./render": "./src/render.ts",
-    "./resume": "./src/resume.ts"
+    "./resume": "./src/resume.ts",
+    "./testing/impact": "./src/testing/impact.ts",
+    "./testing/io": "./src/testing/io.ts"
   },
   "scripts": {
     "test": "bun test",

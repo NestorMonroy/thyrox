@@ -10,8 +10,8 @@ import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { changedPaths, fsIo } from '@thyrox/harness/testing/io'
-import { selectTests, type ImpactConfig } from '@thyrox/harness/testing/impact'
+import { changedPaths, fsIo } from '../src/testing/io.ts'
+import { selectTests, type ImpactConfig } from '../src/testing/impact.ts'
 
 /** Un repo git de verdad: los cambios se leen de git, no de una lista fabricada. */
 function repo(): string {

@@ -17,9 +17,12 @@ el verde no distinguiria «deriva» de «acerto por casualidad».
 """
 from __future__ import annotations
 
+import atexit
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
@@ -38,6 +41,25 @@ def check(label: str, expected, obtained) -> None:
     else:
         print(f"  FALLO {label}\n        esperado=[{expected}] obtenido=[{obtained}]")
         FAILED += 1
+
+
+#: Los fixtures de esta suite son TEMPORALES, no bancos de evidencia. Vivian
+#: sueltos bajo `reach.scratch_root()` y nadie los borraba, asi que el gate del
+#: proveedor los leia como bancos emitidos dentro del arbol del PROVEEDOR y
+#: detenia el commit. Es el mismo significante —un directorio bajo
+#: `.claude/eventos`— con dos significados distintos; lo que faltaba era
+#: separarlos, no mover el hogar.
+#:
+#: `dir=` los mantiene bajo el scratch declarado (nunca `/tmp`, #166) y el
+#: `atexit` los retira aunque un caso falle. Las otras cuatro suites que piden
+#: scratch ya usaban `TemporaryDirectory`; esta era la unica que no.
+_SCRATCH = tempfile.mkdtemp(prefix="reach-roots-", dir=str(reach.scratch_root()))
+atexit.register(shutil.rmtree, _SCRATCH, ignore_errors=True)
+
+
+def fixture(name: str) -> Path:
+    """Un directorio de fixture bajo el scratch efimero de esta suite."""
+    return Path(_SCRATCH) / name
 
 
 def with_env(vars: dict[str, str | None], fn):
@@ -70,7 +92,7 @@ with_env({"THYROX_REACH_ROOTS": " alpha , beta ", "THYROX_ENV_FILE": None},
                        ("alpha", "beta"), reach.reach_roots()))
 
 print("== 3. entrada B — la declaracion del .env cuando el proceso calla ==")
-scratch = reach.scratch_root() / "reach-roots-env"
+scratch = fixture("reach-roots-env")
 scratch.mkdir(parents=True, exist_ok=True)
 env_file = scratch / ".env"
 env_file.write_text("THYROX_REACH_ROOTS=uno,dos\n")
@@ -84,7 +106,7 @@ with_env({"THYROX_REACH_ROOTS": "gana", "THYROX_ENV_FILE": str(env_file)},
                        reach.reach_roots()))
 
 print("== 5. sin declaracion, DERIVA del arbol real ==")
-vacio = reach.scratch_root() / "sin-declaracion"
+vacio = fixture("sin-declaracion")
 vacio.mkdir(parents=True, exist_ok=True)
 (vacio / ".env").write_text("")
 with_env({"THYROX_REACH_ROOTS": None, "THYROX_ENV_FILE": str(vacio / ".env")},
@@ -94,7 +116,7 @@ with_env({"THYROX_REACH_ROOTS": None, "THYROX_ENV_FILE": str(vacio / ".env")},
 
 print("== 6. CONTROL DE ANULACION: deriva sobre un arbol que NO es este ==")
 # Si el mecanismo volviera al literal, este es el unico caso que lo delata.
-otro = reach.scratch_root() / "otro-multirepo"
+otro = fixture("otro-multirepo")
 for hermano in ("foo-alpha", "foo-beta", "foo-gamma", "thyrox"):
     (otro / hermano).mkdir(parents=True, exist_ok=True)
 (otro / "sin-guion").mkdir(parents=True, exist_ok=True)
@@ -109,7 +131,7 @@ with_env({"THYROX_REACH_ROOTS": None, "THYROX_ENV_FILE": str(vacio / ".env")},
                        reach.reach_roots(), reach.REACH_ROOTS))
 
 print("== 8. sin declaracion NI derivacion posible, REHUSA ==")
-solo = reach.scratch_root() / "sin-hermanos" / "thyrox"
+solo = fixture("sin-hermanos") / "thyrox"
 solo.mkdir(parents=True, exist_ok=True)
 def _rehusa():
     try:
