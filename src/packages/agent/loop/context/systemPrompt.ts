@@ -17,6 +17,7 @@
  *    que cambia arriba invalida todo lo de abajo.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import type { Duty } from './basePrompt.ts'
 import { join } from 'node:path'
 
 export type Section = { name: string; text: string; tokens: number; conditional: boolean }
@@ -24,8 +25,17 @@ export type Section = { name: string; text: string; tokens: number; conditional:
 export type AssembleOptions = {
   /** Raíz del proyecto: de ahí cuelgan `CLAUDE.md` y `.claude/`. */
   root: string
-  /** El prompt propio del harness. Nunca se descarta. */
-  base: string
+  /**
+   * El prompt propio del harness. Nunca se descarta.
+   *
+   * Una cadena entra como una sección `base`. Una LISTA de deberes entra
+   * como una sección por deber, nombrada `base:<deber>` — es la separación
+   * por DEBER que A.2.1 pide, y la que hace que retirar uno sea una
+   * operación medible. Las dos formas conviven a propósito: obligar a los
+   * llamadores a la lista rompería a todos para ganar una separación que se
+   * puede tener sin romper a nadie.
+   */
+  base: string | readonly Duty[]
   /** Ruta del archivo sobre el que se va a trabajar; decide qué reglas condicionales entran. */
   targetPath?: string
   /** Tope de tokens para el prompt entero. Sin él no se descarta nada. */
@@ -90,7 +100,9 @@ function seccion(name: string, text: string, conditional = false): Section {
 
 /** Reúne las secciones candidatas en su orden de caché, y aplica el presupuesto. */
 export function assembleSystemPrompt(opts: AssembleOptions): Assembled {
-  const candidatas: Section[] = [seccion('base', opts.base)]
+  const candidatas: Section[] = typeof opts.base === 'string'
+    ? [seccion('base', opts.base)]
+    : opts.base.map((d) => seccion(`base:${d.name}`, d.text))
 
   const raiz = leer(join(opts.root, 'CLAUDE.md'))
   if (raiz) candidatas.push(seccion('CLAUDE.md', raiz))
@@ -120,7 +132,11 @@ export function assembleSystemPrompt(opts: AssembleOptions): Assembled {
   const dropped: Section[] = []
   let tokens = 0
   for (const s of candidatas) {
-    const esBase = s.name === 'base'
+    // `base` y `base:<deber>` son el PISO: un presupuesto que pudiera dejar
+    // al agente sin identidad o sin restricciones de herramienta estaría
+    // decidiendo la conducta, y el tope existe para acotar el contexto, no
+    // para eso.
+    const esBase = s.name === 'base' || s.name.startsWith('base:')
     if (!esBase && opts.budgetTokens !== undefined && tokens + s.tokens > opts.budgetTokens) {
       dropped.push(s)
       continue

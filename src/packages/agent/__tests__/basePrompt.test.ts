@@ -25,9 +25,24 @@
  * emitido sería decoración, y el sitio de la decoración no es el piso que
  * cada turno vuelve a pagar.
  *
- * MITAD ROJA: los cuatro casos se escriben antes de que exista
+ * MITAD ROJA: los seis casos se escriben antes de que exista
  * `loop/context/basePrompt.ts` y antes de que `AssembleOptions.base` admita
  * una lista.
+ *
+ * CONTROLES DE ANULACIÓN, medidos — y el primero corrige lo que este mismo
+ * archivo daba por hecho:
+ *
+ * - Los cuatro deberes se COLAPSAN en una sola sección (se unen sus textos
+ *   con `join`): cae **1 de 6**, sólo el caso 2. Los otros cinco sobreviven,
+ *   y el que más importa que sobreviva es el 3 — el que aplica la prueba del
+ *   apéndice. Quitar un deber sigue quitando su texto aunque las secciones
+ *   estén colapsadas, así que **esa prueba NO demuestra que estén separadas**:
+ *   mide el contenido, no el seccionado. El único que mide el seccionado es
+ *   el 2. Es exactamente la distinción que el predicado hace —«organized
+ *   separately»— y que la prueba del apéndice, por sí sola, no alcanza.
+ * - El piso deja de cubrir `base:<deber>`: cae **1 de 6**, sólo el caso 5.
+ *   Con `budgetTokens: 0` los cuatro deberes se descartan y el agente sale a
+ *   trabajar sin identidad ni restricciones de herramienta.
  */
 import { describe, expect, test } from 'bun:test'
 import { mkdtempSync } from 'node:fs'

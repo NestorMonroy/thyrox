@@ -22,22 +22,25 @@
  * que declara su dominio no se carga «por si acaso».
  */
 import { assembleSystemPrompt, type Assembled } from '@thyrox/agent/loop/context/systemPrompt'
+import { BASE_DUTIES } from '@thyrox/agent/loop/context/basePrompt'
 import { flag } from './flags.ts'
 
 /**
- * El prompt por defecto cuando el proyecto no aporta ninguno.
+ * La base por defecto: los cuatro deberes de A.2.1, cada uno su sección.
  *
  * Es la BASE, no el prompt entero: lo que el árbol añada se apila encima.
+ * `--system` la sustituye por una cadena, y entonces el prompt vuelve a
+ * tener una sola sección de base — quien pasa la bandera está diciendo que
+ * quiere SU texto, no el nuestro con el suyo encima.
  */
-export const BASE_SYSTEM_PROMPT =
-  'Eres un agente que trabaja con herramientas. Responde en español.'
+export { BASE_DUTIES } from '@thyrox/agent/loop/context/basePrompt'
 
 /** Arma el prompt de la sesión desde `argv` y la raíz del proyecto. */
 export function systemPromptFor(argv: string[], cwd: string): Assembled {
   const budget = flag(argv, 'system-budget-tokens')
   return assembleSystemPrompt({
     root: cwd,
-    base: flag(argv, 'system') ?? BASE_SYSTEM_PROMPT,
+    base: flag(argv, 'system') ?? BASE_DUTIES,
     ...(flag(argv, 'target-path') ? { targetPath: flag(argv, 'target-path') as string } : {}),
     ...(budget ? { budgetTokens: Number(budget) } : {}),
   })
