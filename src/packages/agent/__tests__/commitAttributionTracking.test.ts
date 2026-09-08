@@ -125,9 +125,11 @@ describe('el álgebra de la contribución', () => {
       'inicioOTROTRAMOfinal',
       false,
     )
-    // El prefijo `inicio` y el sufijo `final` son comunes: se mide el mayor
-    // de los dos tramos que cambian.
-    expect(estado.fileStates.get('a.txt')?.claudeContribution).toBe(10)
+    // El prefijo comun es `inicio` (6) y el sufijo comun es `Ofinal` (6) — no
+    // `final`, porque la `O` que lo precede tambien coincide. Quedan 4
+    // caracteres viejos contra 8 nuevos, y se mide el MAYOR de los dos.
+    // Con `Math.abs(nuevo - viejo)` daria 4: mide otra cosa.
+    expect(estado.fileStates.get('a.txt')?.claudeContribution).toBe(8)
   })
 
   test('12. las contribuciones se ACUMULAN sobre el mismo archivo', async () => {
