@@ -63,6 +63,7 @@
     "@thyrox/observability": "workspace:*",
     "@thyrox/permission": "workspace:*",
     "@thyrox/provider": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*",
     "@thyrox/tools": "workspace:*",
     "zod": "^4.3.6"
   }
