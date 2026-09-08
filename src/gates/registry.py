@@ -105,6 +105,8 @@ CHECKS: list[Check] = [
           ':ref:`h-api-858` — core.hooksPath no se versiona; sin él, saltados'),
     Check('config-precedence', 'Herramienta', 'config', 'check_config_precedence.py',
           'la precedencia se deriva recorriendo ramas, no líneas'),
+    Check('env-contract-keys', 'Herramienta', 'config', 'check_env_contract_keys.py',
+          'DEC-04 — una clave THYROX_* que se lee sin figurar en .env.example'),
 
     # ── Alcance ─────────────────────────────────────────────────────────
     Check('provider-evidence', 'Alcance', 'workbench',
