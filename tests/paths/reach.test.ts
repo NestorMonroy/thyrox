@@ -24,7 +24,7 @@ import { join } from 'node:path'
 import {
   agentsDir, AGENTS_DIR_VAR, cloneName, cloneNames, ENV_FILE_VAR, envNames, envValue, root, roots,
   CONSUMER_MARKER, CONSUMER_ROOT_VAR, ConsumerUnknownError, consumerRoot,
-  THYROX_ROOT_VAR, thyroxRoot, treeRoot,
+  ForReadingDeclarations, THYROX_ROOT_VAR, thyroxRoot, treeRoot,
 } from '../../src/paths/reach.ts'
 
 const guardado = { ...process.env }
@@ -277,5 +277,49 @@ describe('consumerRoot — la raíz del árbol MEDIDO, que no es la del proveedo
     mkdirSync(join(raiz, CONSUMER_MARKER), { recursive: true })
     expect(consumerRoot(undefined, raiz)).toBe(raiz)
     expect(raiz).not.toBe(thyroxRoot())
+  })
+})
+
+/**
+ * El puerto CONDUCIDO de `envValue`: de dónde sale un valor declarado.
+ *
+ * Espeja `tests/paths/test_declaration_port.py`. Qué haría fallar a estos
+ * casos (sub-patrón D): retirar el parámetro `source` y volver a leer
+ * `process.env` incondicionalmente — entonces el fake no decide nada.
+ */
+describe('el puerto conducido de las declaraciones', () => {
+  const CLAVE = 'THYROX_PUERTO_DE_PRUEBA'
+
+  class FakeDeclarations implements ForReadingDeclarations {
+    readonly asked: string[] = []
+    constructor(private readonly values: Record<string, string>) {}
+    declared(name: string): string | null {
+      this.asked.push(name)
+      return this.values[name] ?? null
+    }
+  }
+
+  afterEach(() => { delete process.env[CLAVE] })
+
+  test('el adaptador inyectado decide el valor', () => {
+    const fake = new FakeDeclarations({ [CLAVE]: 'del-adaptador' })
+    expect(envValue(CLAVE, undefined, fake)).toBe('del-adaptador')
+    expect(fake.asked).toEqual([CLAVE])
+  })
+
+  test('no toca el proceso cuando hay adaptador', () => {
+    process.env[CLAVE] = 'del-proceso'
+    const fake = new FakeDeclarations({ [CLAVE]: 'del-adaptador' })
+    expect(envValue(CLAVE, undefined, fake)).toBe('del-adaptador')
+  })
+
+  test('ausente en el adaptador es null, no un respaldo al proceso', () => {
+    process.env[CLAVE] = 'del-proceso'
+    expect(envValue(CLAVE, undefined, new FakeDeclarations({}))).toBeNull()
+  })
+
+  test('CONTROL: sin adaptador la cadena de producción sigue intacta', () => {
+    process.env[CLAVE] = 'del-proceso'
+    expect(envValue(CLAVE)).toBe('del-proceso')
   })
 })

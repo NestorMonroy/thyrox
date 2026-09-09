@@ -140,18 +140,93 @@ export function envFilePath(start?: string): string | null {
 }
 
 /**
+ * Puerto CONDUCIDO: de dónde sale el valor de una variable declarada.
+ *
+ * Contraparte de `ForReadingDeclarations` de `reach.py`, y el mismo nombre a
+ * propósito: un puerto se nombra por **lo que el otro lado hace por ti**
+ * —`ForGettingTaxRates`, `ForCalculatingTaxes`—, no por quién lo implementa.
+ * Así sobrevive al adaptador: hoy el proceso y un `.env`, mañana un almacén de
+ * secretos, y la firma no se entera.
+ *
+ * TypeScript tipa estructuralmente, igual que el `Protocol` de la otra mitad:
+ * un adaptador no implementa esta interfaz declarándolo — le basta con tener
+ * `declared`.
+ */
+export interface ForReadingDeclarations {
+  declared(name: string): string | null
+}
+
+/** Adaptador conducido: el entorno del proceso. */
+export class ProcessEnvironment implements ForReadingDeclarations {
+  declared(name: string): string | null {
+    return process.env[name] || null
+  }
+}
+
+/** Adaptador conducido: el archivo `.env` que localice `start`. */
+export class EnvFileDeclarations implements ForReadingDeclarations {
+  constructor(private readonly start?: string) {}
+
+  declared(name: string): string | null {
+    const path = envFilePath(this.start)
+    if (path === null) return null
+    return readEnvFile(path)[name] || null
+  }
+}
+
+/**
+ * Adaptador conducido que compone otros en orden de precedencia.
+ *
+ * Es un adaptador y no un caso especial del puerto: cumple la misma firma, así
+ * que quien lo recibe no distingue una fuente de una cadena de fuentes.
+ */
+export class FirstOfDeclarations implements ForReadingDeclarations {
+  private readonly sources: ForReadingDeclarations[]
+
+  constructor(...sources: ForReadingDeclarations[]) {
+    this.sources = sources
+  }
+
+  declared(name: string): string | null {
+    for (const source of this.sources) {
+      const value = source.declared(name)
+      if (value) return value
+    }
+    return null
+  }
+}
+
+/**
+ * El CONFIGURADOR: qué adaptadores se usan y en qué orden.
+ *
+ * Único sitio del módulo que decide cuáles son los adaptadores reales — el
+ * papel que en la fuente cumple `Main`. Aquí no hay constructor donde
+ * inyectarlo, así que el cableado por defecto vive en este configurador y el
+ * llamador lo sustituye pasando `source`.
+ */
+export function productionDeclarations(start?: string): ForReadingDeclarations {
+  return new FirstOfDeclarations(new ProcessEnvironment(), new EnvFileDeclarations(start))
+}
+
+/**
  * El valor de una variable: primero el proceso, después el `.env`.
  *
  * El proceso gana porque es la declaración más inmediata: quien exporta una
  * variable para UNA invocación está corrigiendo, a propósito, lo que el
  * archivo dice para todas.
+ *
+ * `source` es el puerto conducido. Sin él se arma la cadena de producción, así
+ * que ningún llamador existente cambia. Con él, **ÉL es la fuente**: no se cae
+ * al proceso por detrás, porque si lo hiciera un test no podría medir la
+ * ausencia —el entorno real decidiría por él— y ésa es la costura que este
+ * puerto abre.
  */
-export function envValue(name: string, start?: string): string | null {
-  const fromProcess = process.env[name]
-  if (fromProcess) return fromProcess
-  const path = envFilePath(start)
-  if (path === null) return null
-  return readEnvFile(path)[name] || null
+export function envValue(
+  name: string,
+  start?: string,
+  source?: ForReadingDeclarations,
+): string | null {
+  return (source ?? productionDeclarations(start)).declared(name)
 }
 
 /**

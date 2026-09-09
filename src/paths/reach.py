@@ -89,6 +89,7 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+from typing import Protocol
 
 #: La variable con que el consumidor declara SUS raíces de trabajo.
 #:
@@ -254,20 +255,96 @@ def env_file_path(start: Path | None = None) -> Path | None:
     return None
 
 
-def env_value(name: str, start: Path | None = None) -> str | None:
+class ForReadingDeclarations(Protocol):
+    """Puerto CONDUCIDO: de dónde sale el valor de una variable declarada.
+
+    El nombre sigue la forma de la fuente —``ForGettingTaxRates``,
+    ``ForCalculatingTaxes``—: un puerto se nombra por **lo que el otro lado
+    hace por ti**, no por quién lo implementa. Así el nombre sobrevive al
+    adaptador: hoy el proceso y un ``.env``, mañana un almacén de secretos o
+    un servidor de configuración, y la firma no se entera.
+
+    Se declara con ``Protocol`` (PEP 544), que es tipado ESTRUCTURAL: un
+    adaptador no hereda de aquí ni se registra en ningún sitio — le basta con
+    tener ``declared``. Es la forma que la fuente muestra en Ruby, *«no hay
+    que declarar los puertos ni las interfaces, lo que hace difícil ver dónde
+    están»*, con la mitad que a Ruby le falta: aquí el puerto **sí** está
+    declarado, así que es greppeable y el type checker lo verifica.
+    """
+
+    def declared(self, name: str) -> str | None:
+        """El valor declarado para ``name``, o ``None`` si no lo hay."""
+        ...
+
+
+class ProcessEnvironment:
+    """Adaptador conducido: el entorno del proceso."""
+
+    def declared(self, name: str) -> str | None:
+        return os.environ.get(name) or None
+
+
+class EnvFileDeclarations:
+    """Adaptador conducido: el archivo ``.env`` que localice ``start``."""
+
+    def __init__(self, start: Path | None = None) -> None:
+        self.start = start
+
+    def declared(self, name: str) -> str | None:
+        path = env_file_path(self.start)
+        if path is None:
+            return None
+        return read_env_file(path).get(name) or None
+
+
+class FirstOfDeclarations:
+    """Adaptador conducido que compone otros en orden de precedencia.
+
+    Es un adaptador y no un caso especial del puerto: cumple la misma firma,
+    así que quien lo recibe no distingue una fuente de una cadena de fuentes.
+    """
+
+    def __init__(self, *sources: ForReadingDeclarations) -> None:
+        self.sources = sources
+
+    def declared(self, name: str) -> str | None:
+        for source in self.sources:
+            value = source.declared(name)
+            if value:
+                return value
+        return None
+
+
+def production_declarations(start: Path | None = None) -> ForReadingDeclarations:
+    """El CONFIGURADOR: qué adaptadores se usan y en qué orden.
+
+    Único sitio del módulo que decide cuáles son los adaptadores reales. Es el
+    papel que en la fuente cumple ``Main``: crea el repositorio y se lo pasa a
+    quien lo usa. Aquí no hay constructor donde inyectarlo —``env_value`` es
+    una función— así que el cableado por defecto vive en este configurador y
+    el llamador lo sustituye pasando ``source=``.
+    """
+    return FirstOfDeclarations(ProcessEnvironment(), EnvFileDeclarations(start))
+
+
+def env_value(
+    name: str,
+    start: Path | None = None,
+    source: ForReadingDeclarations | None = None,
+) -> str | None:
     """El valor de una variable: primero el proceso, después el ``.env``.
 
     El proceso gana porque es la declaración más inmediata: quien exporta una
     variable para UNA invocación está corrigiendo, a propósito, lo que el
     archivo dice para todas.
+
+    ``source`` es el puerto conducido. Sin él se arma la cadena de producción,
+    así que ningún llamador existente cambia. Con él, **ÉL es la fuente**: no
+    se cae al proceso por detrás, porque si lo hiciera un test no podría medir
+    la ausencia —el entorno real decidiría por él— y esa es exactamente la
+    costura que este puerto abre.
     """
-    from_process = os.environ.get(name)
-    if from_process:
-        return from_process
-    path = env_file_path(start)
-    if path is None:
-        return None
-    return read_env_file(path).get(name) or None
+    return (source or production_declarations(start)).declared(name)
 
 
 def derive_reach_roots(start: Path | None = None) -> tuple[str, ...]:
