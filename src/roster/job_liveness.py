@@ -115,7 +115,7 @@ class Diagnosis:
     ``from_marker`` es el ``daemonUp`` de este módulo: dice si el CONTENIDO
     (la señal fuerte) decidió el veredicto, o si sólo la antigüedad del
     archivo lo hizo (la señal débil, heurística). Quien lee el veredicto sabe
-    sin adivinar cuál de las dos instrumentó la respuesta — ``ORIGEN_ROSTER``
+    sin adivinar cuál de las dos instrumentó la respuesta — ``ROSTER_ORIGIN``
     en ``reconcile-agents.sh`` describe la RUTA del roster, nunca esto.
     """
 

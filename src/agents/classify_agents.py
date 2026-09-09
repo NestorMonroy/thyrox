@@ -426,7 +426,7 @@ def fallback_heuristic(text: str) -> dict:
 # ─────────────────────────── lectura del roster ───────────────────────────
 
 def resolve_roster() -> tuple[pathlib.Path, str]:
-    declared = os.environ.get("RECONCILIAR_ROSTER")
+    declared = os.environ.get("RECONCILE_ROSTER")
     if declared:
         return pathlib.Path(declared), "declarado"
     base = pathlib.Path("/tmp/claude-0")

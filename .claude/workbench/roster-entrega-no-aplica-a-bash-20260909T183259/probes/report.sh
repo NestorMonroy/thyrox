@@ -20,6 +20,6 @@ printf '%s\n' '{"type":"assistant","message":{"role":"assistant","content":[{"ty
 ln -s "$TRANSCRIPTS/agent-vivo.jsonl" "$ROSTER/vivo.output"
 touch -h -d "$VIEJO" "$ROSTER/cortado.output" "$ROSTER/mudo.output" "$ROSTER/vivo.output"
 touch    -d "$VIEJO" "$TRANSCRIPTS/agent-cortado.jsonl"
-export RECONCILIAR_ROSTER="$ROSTER"
+export RECONCILE_ROSTER="$ROSTER"
 bash /home/user/thyrox/src/agents/reconcile-agents.sh 2>&1
 rm -rf "$TMP"

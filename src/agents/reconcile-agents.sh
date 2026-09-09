@@ -88,12 +88,12 @@
 
 set -euo pipefail
 
-WINDOW_SECONDS="${RECONCILIAR_VENTANA:-900}"   # 15 min = ciclo largo del loop
+WINDOW_SECONDS="${RECONCILE_WINDOW:-900}"   # 15 min = ciclo largo del loop
 # Holgura de reloj, SEPARADA de la ventana a proposito: quien escribe el
 # timestamp puede no compartir reloj con quien lo lee. El binario la declara
 # como constante aparte (CLOCK_SKEW_ALLOWANCE_MS=60000, build 2.1.261) en vez
 # de incrustarla en el umbral, y por la misma razon.
-CLOCK_SKEW_SECONDS="${RECONCILIAR_HOLGURA_RELOJ:-60}"
+CLOCK_SKEW_SECONDS="${RECONCILE_CLOCK_SKEW:-60}"
 MODE="reporte"
 WATCH_SECONDS=0
 TARGET_ID=""
@@ -112,11 +112,35 @@ done
 # Prioridad: variable de entorno declarada > heurística de mtime. Mismo
 # criterio que snapshot-tasks.sh: adivinar cuando el entorno lo declara es
 # medir mal.
-ROSTER="${RECONCILIAR_ROSTER:-}"
-ORIGEN_ROSTER="declarado"
+# La BASE es parametro del consumidor, no del mecanismo: el guion no decide
+# donde el cliente pone sus rosters. Estaba cableada, y con ella cableada un
+# test no podia montar un arbol propio — media siempre el real.
+ROSTER_BASE="${RECONCILE_ROSTER_BASE:-/tmp/claude-0}"
+
+ROSTER="${RECONCILE_ROSTER:-}"
+ROSTER_ORIGIN="declarado"
+
+# El id de sesion DISCRIMINA; el mtime solo ordena. Medido 2026-09-09: bajo
+# `/tmp/claude-0` habia 57 directorios `tasks` y 56 eran fixtures de nuestras
+# propias suites. El real ganaba por ser el mas reciente — una coincidencia de
+# orden, no una razon: cualquier suite que cree su fixture despues del ultimo
+# agente secuestra el roster, y el reporte publica un TOTAL confiado sobre la
+# poblacion equivocada. El cliente pone el id en el entorno y en la ruta.
+if [[ -z "$ROSTER" && -n "${CLAUDE_CODE_SESSION_ID:-}" ]]; then
+  ROSTER=$(find "$ROSTER_BASE" -maxdepth 3 -type d -name tasks \
+                -path "*${CLAUDE_CODE_SESSION_ID}*" 2>/dev/null | head -1 || true)
+  [[ -n "$ROSTER" ]] && ROSTER_ORIGIN="sesion declarada"
+fi
+
+# Ultimo recurso. Se conserva porque sin id de sesion no hay con que decidir, y
+# rehusar dejaria sin lectura a quien invoca desde fuera del cliente. Pero
+# publica CUANTOS candidatos descarto: un lector que ve «heuristica, 57
+# candidatos» sabe que el veredicto es una conjetura, y uno que ve «1» sabe que
+# no habia nada que confundir. Sin esa cifra las dos se leen igual.
 if [[ -z "$ROSTER" ]]; then
-  ORIGEN_ROSTER="mtime (heurística)"
-  ROSTER=$(find /tmp/claude-0 -maxdepth 3 -type d -name tasks -printf '%T@ %p\n' 2>/dev/null \
+  CANDIDATES=$(find "$ROSTER_BASE" -maxdepth 3 -type d -name tasks 2>/dev/null | wc -l)
+  ROSTER_ORIGIN="mtime (heurística, ${CANDIDATES} candidato(s))"
+  ROSTER=$(find "$ROSTER_BASE" -maxdepth 3 -type d -name tasks -printf '%T@ %p\n' 2>/dev/null \
            | sort -rn | head -1 | cut -d' ' -f2- || true)
 fi
 
@@ -129,19 +153,19 @@ NOW=$(date +%s)
 
 # Localizador de THYROX, donde vive el veredicto: la variable si esta
 # declarada; si no, el hermano `thyrox/` ascendiendo desde aqui (H-DOCS-1081).
-LECTOR=""
+READER=""
 if [[ -n "${THYROX_ROOT:-}" ]]; then
-    LECTOR="$THYROX_ROOT/src"
+    READER="$THYROX_ROOT/src"
 else
     NIVEL="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     while [[ "$NIVEL" != "/" ]]; do
         if [[ -f "$NIVEL/thyrox/src/roster/job_liveness.py" ]]; then
-            LECTOR="$NIVEL/thyrox/src"; break
+            READER="$NIVEL/thyrox/src"; break
         fi
         NIVEL="$(dirname "$NIVEL")"
     done
 fi
-if [[ -z "$LECTOR" || ! -f "$LECTOR/roster/job_liveness.py" ]]; then
+if [[ -z "$READER" || ! -f "$READER/roster/job_liveness.py" ]]; then
     # REHUSA en vez de degradar: sin el primitivo no se puede clasificar, y
     # publicar un roster sin veredictos se leeria como «no hay nada que
     # reconciliar» — el cero silencioso que este guion existe para no dar.
@@ -208,7 +232,7 @@ delivery_verdict() {
     echo "terminado"
     return 0
   fi
-  v=$(THYROX_SRC="$LECTOR" python3 - "$entry" <<'ENTREGA'
+  v=$(THYROX_SRC="$READER" python3 - "$entry" <<'DELIVERY'
 import os, pathlib, sys
 sys.path.insert(0, os.environ["THYROX_SRC"])
 from roster.delivery import classify
@@ -217,7 +241,7 @@ try:
 except OSError:
     print("undecidable"); raise SystemExit(0)
 print(classify(texto))
-ENTREGA
+DELIVERY
 ) || v="undecidable"
   case "$v" in
     delivered) echo "entrego" ;;
@@ -239,16 +263,16 @@ classify() {
   # El veredicto lo decide `thyrox: src/roster/job_liveness.py`; aqui solo se
   # inyectan los parametros de este consumidor (la ventana y la holgura) y se
   # traduce al vocabulario que este guion ya publicaba.
-  verdict=$(THYROX_SRC="$LECTOR" python3 - "$shape" "$age" "$WINDOW_SECONDS" "$CLOCK_SKEW_SECONDS" <<'DIAGNOSTICO'
+  verdict=$(THYROX_SRC="$READER" python3 - "$shape" "$age" "$WINDOW_SECONDS" "$CLOCK_SKEW_SECONDS" <<'DIAGNOSIS'
 import os, sys
 sys.path.insert(0, os.environ["THYROX_SRC"])
 from roster.job_liveness import diagnose
 
-FORMA = {"terminado": "terminated", "anormal": "cut", "sin-marcador": "pending"}
-d = diagnose(FORMA[sys.argv[1]], float(sys.argv[2]),
+SHAPE = {"terminado": "terminated", "anormal": "cut", "sin-marcador": "pending"}
+d = diagnose(SHAPE[sys.argv[1]], float(sys.argv[2]),
              stale_after=float(sys.argv[3]), clock_skew=float(sys.argv[4]))
 print(d.verdict)
-DIAGNOSTICO
+DIAGNOSIS
 )
 
   case "$verdict" in
@@ -300,7 +324,7 @@ production_line() {
     echo "  produccion     : (no aplica: el instrumento lee tool_use de un transcript de subagente)"
     return 0
   fi
-  THYROX_SRC="$LECTOR" python3 - "$entry" "$WINDOW_SECONDS" <<'PRODUCCION'
+  THYROX_SRC="$READER" python3 - "$entry" "$WINDOW_SECONDS" <<'PRODUCTION'
 import os, sys, time
 sys.path.insert(0, os.environ["THYROX_SRC"])
 from pathlib import Path
@@ -317,7 +341,7 @@ print(f"  produccion     : {production.verdict(p)} — mutantes={p.mutating} "
 if p.undecidable:
     print(f"                   {p.undecidable} llamadas cuyo efecto este instrumento "
           "NO puede ver: no son «no produjo».")
-PRODUCCION
+PRODUCTION
 }
 
 # --- Modo: confirmar muerte antes de relanzar ----------------------------
@@ -421,7 +445,7 @@ if [[ "$MODE" == "quiet" ]]; then
 fi
 
 echo "== reconciliación del roster =="
-echo "roster    : $ROSTER  [$ORIGEN_ROSTER]"
+echo "roster    : $ROSTER  [$ROSTER_ORIGIN]"
 echo "ventana   : ${WINDOW_SECONDS}s$( (( WATCH_SECONDS > 0 )) && echo "  · vigilancia: ${WATCH_SECONDS}s" )"
 echo
 # `terminado` es la CABECERA de su cubo, no un cubo hermano: su cifra es la

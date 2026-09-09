@@ -119,7 +119,7 @@ ln -s "$TRANSCRIPTS/agent-vivo.jsonl" "$ROSTER/vivo.output"
 touch -h -d "$VIEJO" "$ROSTER/cortado.output" "$ROSTER/mudo.output" "$ROSTER/vivo.output"
 touch    -d "$VIEJO" "$TRANSCRIPTS/agent-cortado.jsonl"
 
-export RECONCILIAR_ROSTER="$ROSTER"
+export RECONCILE_ROSTER="$ROSTER"
 
 echo "== conteos del reporte =="
 OUT=$(bash "$SUT" 2>&1)
@@ -184,18 +184,56 @@ esac
 
 echo "== --vigilar separa vivo de atascado =="
 # Con el archivo quieto, la segunda muestra no avanza -> sigue atascado.
-V1=$(RECONCILIAR_ROSTER="$ROSTER" bash "$SUT" --vigilar 1 2>&1 | awk '$1=="vivo"{print $2}')
+V1=$(RECONCILE_ROSTER="$ROSTER" bash "$SUT" --vigilar 1 2>&1 | awk '$1=="vivo"{print $2}')
 check "sin avance de mtime -> vivo = 0" "0" "$V1"
 
 # Con el archivo escribiéndose durante la vigilancia -> vivo.
 ( sleep 1; printf 'sigo\n' >> "$ROSTER/fresco.output" ) &
 WRITER=$!
-V2=$(RECONCILIAR_ROSTER="$ROSTER" bash "$SUT" --vigilar 3 2>&1 | awk '$1=="vivo"{print $2}')
+V2=$(RECONCILE_ROSTER="$ROSTER" bash "$SUT" --vigilar 3 2>&1 | awk '$1=="vivo"{print $2}')
 wait $WRITER 2>/dev/null || true
 check "con avance de mtime -> vivo >= 1" "sí" "$( [[ "${V2:-0}" -ge 1 ]] && echo sí || echo "no (vivo=$V2)" )"
 
+echo "== el descubrimiento DISCRIMINA: la sesion, no el mtime mas nuevo =="
+# Medido 2026-09-09: bajo /tmp/claude-0 hay 57 directorios `tasks`, y 56 son
+# fixtures de nuestras propias suites (`storage-cli-project-*`, `myproj`). El
+# roster real ganaba por ser el de mtime mas nuevo, que es una coincidencia de
+# orden y no un discriminador: una suite que cree su fixture DESPUES del ultimo
+# agente secuestra el roster, y el reporte publica un TOTAL confiado sobre la
+# poblacion equivocada.
+#
+# El discriminador existia y no se usaba: `CLAUDE_CODE_SESSION_ID` esta en el
+# entorno y la ruta del roster real lo lleva.
+BASE=$(mktemp -d); trap 'rm -rf "$TMP" "$BASE"' EXIT
+SESION="1a2b3c4d-0000-0000-0000-abcdefabcdef"
+mkdir -p "$BASE/-home-user/$SESION/tasks" "$BASE/-tmp-fixture-ajeno/sess-1/tasks"
+printf 'salida\n[exited with code 0]\n' > "$BASE/-home-user/$SESION/tasks/mio.output"
+printf 'salida\n[exited with code 0]\n' > "$BASE/-tmp-fixture-ajeno/sess-1/tasks/ajeno.output"
+printf 'salida\n[exited with code 0]\n' > "$BASE/-tmp-fixture-ajeno/sess-1/tasks/ajeno2.output"
+# El senuelo es el MAS NUEVO: con la heuristica de mtime gana el.
+touch -d '2020-01-01 00:00:00' "$BASE/-home-user/$SESION/tasks"
+
+OUT=$(RECONCILE_ROSTER= RECONCILE_ROSTER_BASE="$BASE" \
+      CLAUDE_CODE_SESSION_ID="$SESION" bash "$SUT" 2>&1)
+check "elige el roster de SU sesion, no el senuelo mas nuevo" \
+      "1" "$(printf '%s\n' "$OUT" | awk '$1=="TOTAL"{print $2}')"
+check "y lo declara: el origen no dice heuristica" \
+      "si" "$(printf '%s\n' "$OUT" | grep -q 'sesion declarada' && echo si || echo no)"
+
+# Sin el id de sesion, la heuristica sigue siendo el ultimo recurso — y publica
+# cuantos candidatos descarto, para que el lector sepa que fue una conjetura.
+OUT2=$(RECONCILE_ROSTER= RECONCILE_ROSTER_BASE="$BASE" \
+       CLAUDE_CODE_SESSION_ID= bash "$SUT" 2>&1)
+check "sin id de sesion cae al senuelo (y es correcto: no hay con que decidir)" \
+      "2" "$(printf '%s\n' "$OUT2" | awk '$1=="TOTAL"{print $2}')"
+# `grep -E` con `.` NO casa la `í` de dos bytes bajo la locale C: la primera
+# version de esta asercion fallaba por el INSTRUMENTO, con la salida correcta
+# delante. Cadena fija, sin regex.
+check "pero publica que fue conjetura entre N" \
+      "si" "$(printf '%s\n' "$OUT2" | grep -qF '2 candidato(s)' && echo si || echo no)"
+
 echo "== roster ilegible falla ruidoso, no en silencio =="
-RECONCILIAR_ROSTER=/no/existe bash "$SUT" >/dev/null 2>&1
+RECONCILE_ROSTER=/no/existe bash "$SUT" >/dev/null 2>&1
 check "roster inexistente -> exit 3" "3" "$?"
 
 echo
