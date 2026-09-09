@@ -117,6 +117,14 @@ def check_commit_message(
     return overlong_lines(significant, limit=limit, measure=measure)
 
 
+#: La etiqueta del aviso. NO dice ERROR a proposito: el hook lo invoca con
+#: `|| true` y el commit pasa igual, asi que «ERROR» prometia un bloqueo que no
+#: existe — significante y significado en desacuerdo. Su consumidor
+#: (`check_branch_commit_messages.sh`) la grepea por literal, y
+#: `tests/verify/test_commit_message_label.py` ata los dos.
+WARNING_LABEL = "WARN commit-msg:"
+
+
 def main(argv: list[str]) -> int:
     """CLI: mide el archivo que git le pasa. Rehúsa si no lo puede leer.
 
@@ -139,7 +147,7 @@ def main(argv: list[str]) -> int:
     problems = check_commit_message(text)
     if not problems:
         return 0
-    print(f"ERROR commit-msg: {len(problems)} linea(s) exceden "
+    print(f"{WARNING_LABEL} {len(problems)} linea(s) exceden "
           f"{DEFAULT_LIMIT} columnas", file=sys.stderr)
     for number, width, line in problems:
         print(f"  linea {number}: {width} columnas — {line[:60]}…", file=sys.stderr)

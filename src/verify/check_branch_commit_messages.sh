@@ -95,9 +95,10 @@ for SHA in $COMMITS; do
     printf '%s\n' "$SUBJECT" > "$TMP"
     "$HOOK" "$TMP" > "$ERR_LOG" 2>&1
     if [[ "$?" -ne 0 ]]; then
-        # Extraer razon (primera linea "ERROR commit-msg:" del log).
-        REASON=$(grep -m1 -E "^ERROR commit-msg:" "$ERR_LOG" \
-                 | sed 's/^ERROR commit-msg: //')
+        # Extraer razon (primera linea del aviso en el log). La etiqueta la
+        # declara commit_message.WARNING_LABEL; test_commit_message_label.py las ata.
+        REASON=$(grep -m1 -E "^WARN commit-msg:" "$ERR_LOG" \
+                 | sed 's/^WARN commit-msg: //')
         [[ -z "$REASON" ]] && REASON="(hook fallo sin razon especificada)"
         # ¿Congelado? Se compara el SHA COMPLETO contra la primera columna: el
         # abreviado colisiona, y una colision aqui absolveria a un commit que
