@@ -50,6 +50,8 @@ export { CATALOG, MODELS, MODEL_IDS, PRICING_TIERS, isModelId, isModelAlias, res
 export type { ModelId, ModelRecord, PricingTier, EffortLevel, Usage } from './models.ts'
 export { CACHE_BREAK_CAUSES, promptCacheKey, sharesPromptCache } from '@thyrox/provider/cost/cacheBreak'
 export type { CacheBreakCause, CacheKeyFacet, CacheSharing, PromptCacheKey } from '@thyrox/provider/cost/cacheBreak'
+export { resolveCacheTtl } from './cacheTtl.ts'
+export type { ResolvedCacheTtl } from './cacheTtl.ts'
 export { TASK_KINDS, TASK_REQUIREMENTS, candidates, chooseCacheTtl, dispatchPlan, effortSwitchCost, recommend, switchCost, ttlBreakEvenExpiries } from '@thyrox/provider/cost/policy'
 export type { Candidate, DispatchGroup, DispatchPlan, Exclusion, Recommendation, SwitchCost, TaskKind, TaskRequirement, TtlChoice, TurnProfile } from '@thyrox/provider/cost/policy'
 export { DEFAULT_TTL_BY_SOURCE, ROUTE_KINDS, aliasesReaching, canAdvise, routesForOtherModel } from '@thyrox/provider/cost/cacheRoutes'

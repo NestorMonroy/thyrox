@@ -85,4 +85,13 @@ export type AgentDefinition = {
    * mientras la suscripción está en excedente (literal del ejecutable).
    */
   experimental?: { cacheTtl?: CacheTtl }
+  /**
+   * Hueco esperado entre turnos de este agente, en minutos. NO es clave de
+   * frontmatter: el emisor la CONSUME para derivar `experimental.cacheTtl`
+   * con `resolveCacheTtl`, y ni la vía markdown ni la JSON la escriben.
+   *
+   * Es el PARÁMETRO de DEC-04 para el eje del TTL — el mecanismo que lo
+   * traduce a un TTL vive en `provider/cost/policy.chooseCacheTtl`.
+   */
+  expectedGapMinutes?: number
 }

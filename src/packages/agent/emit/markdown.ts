@@ -1,5 +1,6 @@
 import type { AgentDefinition } from '../types.ts'
 import { renderFlowHomes } from '../flowHomes.ts'
+import { resolveCacheTtl } from '../cacheTtl.ts'
 
 /**
  * Deriva el `.claude/agents/<name>.md` que el cliente lee del filesystem.
@@ -62,8 +63,12 @@ export function toMarkdown(agent: AgentDefinition, updatedAt: string): string {
   // 2.1.258) y sólo la lee la vía markdown; el JSON la descarta. Se cita el
   // valor porque `1h`/`5m` son cadenas que un lector YAML podría tomar por
   // duración.
-  if (agent.experimental?.cacheTtl !== undefined) {
-    lines.push('experimental:', `  cacheTtl: ${quote(agent.experimental.cacheTtl)}`)
+  // El TTL puede venir declarado o DERIVARSE del hueco esperado entre turnos
+  // (`resolveCacheTtl`, DEC-04). `expectedGapMinutes` no se emite: es el
+  // parámetro que alimenta la derivación, no algo que el cliente lea.
+  const ttl = resolveCacheTtl(agent).ttl
+  if (ttl !== undefined) {
+    lines.push('experimental:', `  cacheTtl: ${quote(ttl)}`)
   }
 
   lines.push(`updated_at: ${updatedAt}`, '---')
