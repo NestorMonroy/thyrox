@@ -1,0 +1,32 @@
+Corregir el lexico: banco no nombra lo que produce
+
+La palabra no es viable y el productor de workbenches la usaba. En
+espanol «banco» nombra a la vez la institucion financiera, el asiento,
+el cardumen y el banco de pruebas; su traduccion literal al ingles
+—`bank`— designa el sentido equivocado. Es el defecto de significante
+contra significado aplicado al identificador: la forma se tradujo y el
+referente no.
+
+El dominio ya tenia sus dos terminos y los llevaba este mismo codigo:
+`workbench` para el subsistema y la forma (`WORKBENCH_FORMS`,
+`checkWorkbench`, `.claude/workbench/`), y `run` para UNA ejecucion
+fechada `<slug>-<ISO>` (`runIdFor`, `runsFor`, `latestRun`).
+
+Corregido lo que thyrox PRODUCE, que es el alcance de la directiva:
+`src/lib/bank.sh` -> `src/lib/workbench.sh` con su parametro `bank` ->
+`run_dir` y su guard, la definicion de la primitiva y el andamiaje de
+`manifest.ts`, el texto que emite su gate, y la prosa del run del
+vendorizado. Cae tambien `bancoConforme`, que era un identificador en
+espanol y no una preferencia de lexico.
+
+La prosa descriptiva que sigue diciendo «banco» describe el corpus de
+`api` y es deuda heredada: se barre con los identificadores en espanol,
+no en un pase aparte.
+
+Y `controls/no-iso-anchor.out.txt` NO se reescribe: es salida capturada
+de la anulacion y nombra los tests como se llamaban al correrla.
+Reescribir evidencia fechada para que case con el arbol de hoy la
+destruye.
+
+Verde tras el cambio: manifest.test.ts 37/37, cli/workbench.test.ts
+19/19, test-workbench-sh.sh 8/8, y cero consumidores del nombre viejo.

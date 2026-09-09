@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/ripgrep.test.ts:
+143 | describe('ripGrep — búsqueda de contenido, modo default', () => {
+144 |   test('5. cada línea de resultado tiene forma path:line:content', async () => {
+145 |     const { ripGrep } = await import('../ripgrep.ts')
+146 |     const target = join(root, 'search.txt')
+147 |     const out = await ripGrep(['-e', 'hello'], target, new AbortController().signal)
+148 |     expect(out.length).toBe(2)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/ripgrep.test.ts:148:24)
+(fail) ripGrep — búsqueda de contenido, modo default > 5. cada línea de resultado tiene forma path:line:content [4.80ms]
+
+ 19 pass
+ 1 fail
+ 36 expect() calls
+Ran 20 tests across 1 file. [154.00ms]

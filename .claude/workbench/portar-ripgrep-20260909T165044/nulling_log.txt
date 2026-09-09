@@ -1,0 +1,76 @@
+=== NULO 1: quitar la guarda contextActive (sentinel siempre activo) ===
+bun test v1.3.11 (af24e281)
+
+src/__tests__/ripgrep.test.ts:
+143 | describe('ripGrep — búsqueda de contenido, modo default', () => {
+144 |   test('5. cada línea de resultado tiene forma path:line:content', async () => {
+145 |     const { ripGrep } = await import('../ripgrep.ts')
+146 |     const target = join(root, 'search.txt')
+147 |     const out = await ripGrep(['-e', 'hello'], target, new AbortController().signal)
+148 |     expect(out.length).toBe(2)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/ripgrep.test.ts:148:24)
+(fail) ripGrep — búsqueda de contenido, modo default > 5. cada línea de resultado tiene forma path:line:content [5.25ms]
+
+ 19 pass
+ 1 fail
+ 36 expect() calls
+Ran 20 tests across 1 file. [150.00ms]
+=== NULO 2: romper el anclaje de --glob (spawn sin cwd, ruta absoluta como arg) ===
+bun test v1.3.11 (af24e281)
+
+src/__tests__/ripgrep.test.ts:
+133 |     const out = await ripGrep(
+134 |       ['--files', '--glob', '!nested/**'],
+135 |       filesDir,
+136 |       new AbortController().signal,
+137 |     )
+138 |     expect(out.some(p => p.endsWith('gamma.txt'))).toBe(false)
+                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/ripgrep.test.ts:138:52)
+(fail) ripGrep — modo --files > 4. respeta --glob de exclusión sobre el subdirectorio [8.76ms]
+
+ 19 pass
+ 1 fail
+ 37 expect() calls
+Ran 20 tests across 1 file. [145.00ms]
+=== NULO 3: quitar la memoización de countFilesRoundedRg (llamada directa, sin cache) ===
+bun test v1.3.11 (af24e281)
+
+ 20 pass
+ 0 fail
+ 38 expect() calls
+Ran 20 tests across 1 file. [158.00ms]
+=== NULO 3 (retry): quitar memoización de countFilesRoundedRg ===
+bun test v1.3.11 (af24e281)
+
+src/__tests__/ripgrep.test.ts:
+297 |     // 10. Si el resultado cacheado cambiara, este test lo vería.
+298 |     for (let i = 0; i < 8; i++) {
+299 |       writeFileSync(join(countDir, `extra-for-test-17-${i}.txt`), 'x\n')
+300 |     }
+301 |     const second = await countFilesRoundedRg(countDir, signal, key)
+302 |     expect(second).toBe(first)
+                         ^
+error: expect(received).toBe(expected)
+
+Expected: 10
+Received: 20
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/ripgrep.test.ts:302:20)
+(fail) countFilesRoundedRg — conteo memoizado redondeado a potencia de 10 > 17. memoiza por (dirPath, ignorePatterns): archivos nuevos tras la 1ª llamada no cambian el resultado cacheado [14.57ms]
+
+ 19 pass
+ 1 fail
+ 39 expect() calls
+Ran 20 tests across 1 file. [159.00ms]

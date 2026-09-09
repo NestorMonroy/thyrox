@@ -1,0 +1,40 @@
+Discriminar el roster por sesion, no por el mtime mas nuevo
+
+Medido: bajo `/tmp/claude-0` hay 57 directorios `tasks` y 56 son
+fixtures de nuestras propias suites (`storage-cli-project-*`,
+`myproj`). El roster real ganaba por ser el de mtime mas reciente —una
+coincidencia de orden, no una razon—: cualquier suite que cree su
+fixture DESPUES del ultimo agente secuestra el roster, y el reporte
+publica un TOTAL confiado sobre la poblacion equivocada. Con 266
+entradas o con 1, el guion se lee igual de seguro.
+
+El discriminador existia y no se usaba: `CLAUDE_CODE_SESSION_ID` esta
+en el entorno y la ruta del roster real lo lleva. Precedencia ahora:
+declarado -> id de sesion -> mtime.
+
+La heuristica se conserva —sin id no hay con que decidir, y rehusar
+dejaria sin lectura a quien invoca desde fuera del cliente— pero ahora
+publica CUANTOS candidatos descarto. «heuristica, 57 candidatos» y
+«heuristica, 1 candidato» son veredictos distintos y antes se leian
+igual.
+
+Segundo defecto que el caso rojo destapo: la base `/tmp/claude-0`
+estaba cableada, asi que un test no podia montar su propio arbol —
+media siempre el real, y los cuatro casos nuevos pasaban por encima del
+fixture. Es parametro del consumidor: `RECONCILE_ROSTER_BASE`.
+
+Y las claves de entorno iban en espanol, cosa que el ejecutor senalo
+sobre la que yo acababa de anadir: `RECONCILIAR_ROSTER` ->
+`RECONCILE_ROSTER`, `RECONCILIAR_VENTANA` -> `RECONCILE_WINDOW`,
+`RECONCILIAR_HOLGURA_RELOJ` -> `RECONCILE_CLOCK_SKEW`, mas los locales
+`ORIGEN_ROSTER` -> `ROSTER_ORIGIN`, `CANDIDATOS` -> `CANDIDATES`,
+`LECTOR` -> `READER` y los tres delimitadores de heredoc. Tres
+consumidores reapuntados; la cita colgante de `job_liveness.py`
+tambien.
+
+Un caso rojo fallo por el INSTRUMENTO y no por el mecanismo: `grep -E`
+con `.` no casa la `i` acentuada de dos bytes bajo la locale C. Se vio
+mirando los bytes de la salida, que era correcta.
+
+18 ok / 0 fallas -> 22 ok / 0 fallas. Las cinco suites de tests/roster/
+siguen verdes, y el roster real ya se resuelve por `sesion declarada`.
