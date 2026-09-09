@@ -68,31 +68,31 @@ THYROX_FALLOS=0
 thyrox_check() {
   local etiqueta="${1:-}" esperado="${2:-}" obtenido="${3:-}"
   if [[ "${esperado}" == "${obtenido}" ]]; then
-    printf '  %sok%s    %s\n' "${_THYROX_VERDE}" "${_THYROX_NEUTRO}" "${etiqueta}"
-    THYROX_OK=$((THYROX_OK + 1))
+    printf '  %sok%s    %s\n' "${_THYROX_VERDE:-}" "${_THYROX_NEUTRO:-}" "${etiqueta}"
+    THYROX_OK=$(( ${THYROX_OK:-0} + 1 ))
     return 0
   fi
   # Los dos valores van SIEMPRE. Un «FALLO» a secas obliga a reproducir el
   # caso a mano para saber que se obtuvo, que es el coste que este formato
   # ahorra en cada rojo.
   printf '  %sFALLO%s %s\n        esperado=[%s]\n        obtenido=[%s]\n' \
-    "${_THYROX_ROJO}" "${_THYROX_NEUTRO}" "${etiqueta}" "${esperado}" "${obtenido}"
-  THYROX_FALLOS=$((THYROX_FALLOS + 1))
+    "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" "${etiqueta}" "${esperado}" "${obtenido}"
+  THYROX_FALLOS=$(( ${THYROX_FALLOS:-0} + 1 ))
   return 1
 }
 export -f thyrox_check
 
 # @description Registra un acierto que no nace de una comparacion.
 thyrox_ok() {
-  printf '  %sok%s    %s\n' "${_THYROX_VERDE}" "${_THYROX_NEUTRO}" "${1:-}"
-  THYROX_OK=$((THYROX_OK + 1))
+  printf '  %sok%s    %s\n' "${_THYROX_VERDE:-}" "${_THYROX_NEUTRO:-}" "${1:-}"
+  THYROX_OK=$(( ${THYROX_OK:-0} + 1 ))
 }
 export -f thyrox_ok
 
 # @description Registra un fallo que no nace de una comparacion.
 thyrox_fail() {
-  printf '  %sFALLO%s %s\n' "${_THYROX_ROJO}" "${_THYROX_NEUTRO}" "${1:-}"
-  THYROX_FALLOS=$((THYROX_FALLOS + 1))
+  printf '  %sFALLO%s %s\n' "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" "${1:-}"
+  THYROX_FALLOS=$(( ${THYROX_FALLOS:-0} + 1 ))
   return 1
 }
 export -f thyrox_fail
@@ -103,9 +103,9 @@ export -f thyrox_fail
 # fallos sobre 40 casos» de «0 fallos porque el guion no llego a correr
 # ninguno». Es el mismo criterio con que los gates publican su alcance medido.
 thyrox_summary() {
-  local total=$((THYROX_OK + THYROX_FALLOS))
-  printf '\n%d casos: %d ok, %d fallos\n' "${total}" "${THYROX_OK}" "${THYROX_FALLOS}"
-  [[ "${THYROX_FALLOS}" -eq 0 ]]
+  local total=$(( ${THYROX_OK:-0} + ${THYROX_FALLOS:-0} ))
+  printf '\n%d casos: %d ok, %d fallos\n' "${total}" "${THYROX_OK:-0}" "${THYROX_FALLOS:-0}"
+  [[ "${THYROX_FALLOS:-0}" -eq 0 ]]
 }
 export -f thyrox_summary
 
@@ -124,32 +124,32 @@ thyrox_safe_sed() {
 
   if [[ -z "${expresion}" || -z "${archivo}" ]]; then
     printf '%sthyrox_safe_sed%s: se exigen expresion y archivo\n' \
-      "${_THYROX_ROJO}" "${_THYROX_NEUTRO}" >&2
+      "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" >&2
     return 1
   fi
   if [[ ! -f "${archivo}" ]]; then
     printf '%sthyrox_safe_sed%s: el archivo «%s» no existe\n' \
-      "${_THYROX_ROJO}" "${_THYROX_NEUTRO}" "${archivo}" >&2
+      "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" "${archivo}" >&2
     return 1
   fi
 
   temporal="$(mktemp "${archivo}.sed.XXXXXX")" || {
     printf '%sthyrox_safe_sed%s: no se pudo crear el temporal\n' \
-      "${_THYROX_ROJO}" "${_THYROX_NEUTRO}" >&2
+      "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" >&2
     return 1
   }
 
   if ! sed "${expresion}" "${archivo}" > "${temporal}" 2>/dev/null; then
     rm -f "${temporal}"
     printf '%sthyrox_safe_sed%s: sed fallo; «%s» queda intacto\n' \
-      "${_THYROX_ROJO}" "${_THYROX_NEUTRO}" "${archivo}" >&2
+      "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" "${archivo}" >&2
     return 1
   fi
 
   if ! cat "${temporal}" > "${archivo}"; then
     rm -f "${temporal}"
     printf '%sthyrox_safe_sed%s: no se pudo volcar sobre «%s»\n' \
-      "${_THYROX_ROJO}" "${_THYROX_NEUTRO}" "${archivo}" >&2
+      "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" "${archivo}" >&2
     return 1
   fi
 
