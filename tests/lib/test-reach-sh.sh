@@ -87,6 +87,6 @@ if [[ "$got" == "$TMP/otraforma" ]]; then ok "el marcador se declara, no se cabl
 else bad "THYROX_LOCATOR ignorado: '$got'"; fi
 
 echo ""
-echo "alcance medido: $((THYROX_OK+THYROX_FALLOS)) aserciones sobre $GUION"
+echo "alcance medido: $((THYROX_OK+THYROX_FAILURES)) aserciones sobre $GUION"
 thyrox_summary
-[[ $THYROX_FALLOS -eq 0 ]]
+[[ $THYROX_FAILURES -eq 0 ]]

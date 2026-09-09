@@ -53,22 +53,22 @@ fi
 # El color se apaga si la salida no es un terminal: un log con \033[..] es
 # ilegible, y la salida de estos guiones la lee un gate tanto como una persona.
 if [[ -t 1 ]]; then
-  _THYROX_VERDE=$'\033[0;32m'; _THYROX_ROJO=$'\033[0;31m'; _THYROX_NEUTRO=$'\033[0m'
+  _THYROX_GREEN=$'\033[0;32m'; _THYROX_RED=$'\033[0;31m'; _THYROX_NEUTRAL=$'\033[0m'
 else
-  _THYROX_VERDE=""; _THYROX_ROJO=""; _THYROX_NEUTRO=""
+  _THYROX_GREEN=""; _THYROX_RED=""; _THYROX_NEUTRAL=""
 fi
 
 THYROX_OK=0
-THYROX_FALLOS=0
+THYROX_FAILURES=0
 
 # @description Compara dos valores y publica el veredicto con AMBOS.
 # @arg $1 string etiqueta del caso
 # @arg $2 string valor esperado
 # @arg $3 string valor obtenido
 thyrox_check() {
-  local etiqueta="${1:-}" esperado="${2:-}" obtenido="${3:-}"
-  if [[ "${esperado}" == "${obtenido}" ]]; then
-    printf '  %sok%s    %s\n' "${_THYROX_VERDE:-}" "${_THYROX_NEUTRO:-}" "${etiqueta}"
+  local label="${1:-}" expected="${2:-}" actual="${3:-}"
+  if [[ "${expected}" == "${actual}" ]]; then
+    printf '  %sok%s    %s\n' "${_THYROX_GREEN:-}" "${_THYROX_NEUTRAL:-}" "${label}"
     THYROX_OK=$(( ${THYROX_OK:-0} + 1 ))
     return 0
   fi
@@ -76,23 +76,23 @@ thyrox_check() {
   # caso a mano para saber que se obtuvo, que es el coste que este formato
   # ahorra en cada rojo.
   printf '  %sFALLO%s %s\n        esperado=[%s]\n        obtenido=[%s]\n' \
-    "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" "${etiqueta}" "${esperado}" "${obtenido}"
-  THYROX_FALLOS=$(( ${THYROX_FALLOS:-0} + 1 ))
+    "${_THYROX_RED:-}" "${_THYROX_NEUTRAL:-}" "${label}" "${expected}" "${actual}"
+  THYROX_FAILURES=$(( ${THYROX_FAILURES:-0} + 1 ))
   return 1
 }
 export -f thyrox_check
 
 # @description Registra un acierto que no nace de una comparacion.
 thyrox_ok() {
-  printf '  %sok%s    %s\n' "${_THYROX_VERDE:-}" "${_THYROX_NEUTRO:-}" "${1:-}"
+  printf '  %sok%s    %s\n' "${_THYROX_GREEN:-}" "${_THYROX_NEUTRAL:-}" "${1:-}"
   THYROX_OK=$(( ${THYROX_OK:-0} + 1 ))
 }
 export -f thyrox_ok
 
 # @description Registra un fallo que no nace de una comparacion.
 thyrox_fail() {
-  printf '  %sFALLO%s %s\n' "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" "${1:-}"
-  THYROX_FALLOS=$(( ${THYROX_FALLOS:-0} + 1 ))
+  printf '  %sFALLO%s %s\n' "${_THYROX_RED:-}" "${_THYROX_NEUTRAL:-}" "${1:-}"
+  THYROX_FAILURES=$(( ${THYROX_FAILURES:-0} + 1 ))
   return 1
 }
 export -f thyrox_fail
@@ -103,9 +103,9 @@ export -f thyrox_fail
 # fallos sobre 40 casos» de «0 fallos porque el guion no llego a correr
 # ninguno». Es el mismo criterio con que los gates publican su alcance medido.
 thyrox_summary() {
-  local total=$(( ${THYROX_OK:-0} + ${THYROX_FALLOS:-0} ))
-  printf '\n%d casos: %d ok, %d fallos\n' "${total}" "${THYROX_OK:-0}" "${THYROX_FALLOS:-0}"
-  [[ "${THYROX_FALLOS:-0}" -eq 0 ]]
+  local total=$(( ${THYROX_OK:-0} + ${THYROX_FAILURES:-0} ))
+  printf '\n%d casos: %d ok, %d fallos\n' "${total}" "${THYROX_OK:-0}" "${THYROX_FAILURES:-0}"
+  [[ "${THYROX_FAILURES:-0}" -eq 0 ]]
 }
 export -f thyrox_summary
 
@@ -120,40 +120,40 @@ export -f thyrox_summary
 # @arg $1 string la expresion sed
 # @arg $2 string el archivo
 thyrox_safe_sed() {
-  local expresion="${1:-}" archivo="${2:-}" temporal
+  local expression="${1:-}" file="${2:-}" temp_file
 
-  if [[ -z "${expresion}" || -z "${archivo}" ]]; then
+  if [[ -z "${expression}" || -z "${file}" ]]; then
     printf '%sthyrox_safe_sed%s: se exigen expresion y archivo\n' \
-      "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" >&2
+      "${_THYROX_RED:-}" "${_THYROX_NEUTRAL:-}" >&2
     return 1
   fi
-  if [[ ! -f "${archivo}" ]]; then
+  if [[ ! -f "${file}" ]]; then
     printf '%sthyrox_safe_sed%s: el archivo «%s» no existe\n' \
-      "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" "${archivo}" >&2
+      "${_THYROX_RED:-}" "${_THYROX_NEUTRAL:-}" "${file}" >&2
     return 1
   fi
 
-  temporal="$(mktemp "${archivo}.sed.XXXXXX")" || {
+  temp_file="$(mktemp "${file}.sed.XXXXXX")" || {
     printf '%sthyrox_safe_sed%s: no se pudo crear el temporal\n' \
-      "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" >&2
+      "${_THYROX_RED:-}" "${_THYROX_NEUTRAL:-}" >&2
     return 1
   }
 
-  if ! sed "${expresion}" "${archivo}" > "${temporal}" 2>/dev/null; then
-    rm -f "${temporal}"
+  if ! sed "${expression}" "${file}" > "${temp_file}" 2>/dev/null; then
+    rm -f "${temp_file}"
     printf '%sthyrox_safe_sed%s: sed fallo; «%s» queda intacto\n' \
-      "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" "${archivo}" >&2
+      "${_THYROX_RED:-}" "${_THYROX_NEUTRAL:-}" "${file}" >&2
     return 1
   fi
 
-  if ! cat "${temporal}" > "${archivo}"; then
-    rm -f "${temporal}"
+  if ! cat "${temp_file}" > "${file}"; then
+    rm -f "${temp_file}"
     printf '%sthyrox_safe_sed%s: no se pudo volcar sobre «%s»\n' \
-      "${_THYROX_ROJO:-}" "${_THYROX_NEUTRO:-}" "${archivo}" >&2
+      "${_THYROX_RED:-}" "${_THYROX_NEUTRAL:-}" "${file}" >&2
     return 1
   fi
 
-  rm -f "${temporal}"
+  rm -f "${temp_file}"
   return 0
 }
 export -f thyrox_safe_sed
