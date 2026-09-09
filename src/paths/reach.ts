@@ -437,6 +437,33 @@ export function reach(start?: string): Record<string, string> {
 }
 
 /**
+ * El nombre corto del clon al que corresponde una raíz, o `null`.
+ *
+ * Se resuelve contra el mapa que `reach()` ya declara, no recomponiendo el
+ * prefijo del clon: ese prefijo es una decisión del consumidor y su derivación
+ * vive aquí, así que rehacerla en el llamador sería su segunda fuente de
+ * verdad.
+ *
+ * Vive junto a `reach()` y no en el módulo que primero lo necesitó porque lo
+ * necesitan VARIOS: cada familia de hogar por clon —reglas, skills— hace la
+ * misma pregunta. Copiarlo en cada una es cómo dos copias divergen.
+ *
+ * *Métrica:* igualdad de la ruta resuelta contra cada entrada de `reach()`.
+ * *Ciega a:* una raíz que NO sea uno de los clones declarados —devuelve
+ * `null`, y el llamador cae a la clave de familia, que es la conducta correcta:
+ * un árbol que el alcance no declara no tiene clave por clon que leer—; y a un
+ * SUBDIRECTORIO de un clon, que la mitad Python sí resuelve (`repo_of`
+ * asciende). Esa asimetría es real y está declarada, no supuesta.
+ */
+export function repoOfRoot(root: string, start?: string): string | null {
+  const target = resolve(root)
+  for (const [repo, path] of Object.entries(reach(start))) {
+    if (resolve(path) === target) return repo
+  }
+  return null
+}
+
+/**
  * La grafía que declara la raíz del árbol MEDIDO — el consumidor, no thyrox.
  *
  * Es hermana de `THYROX_ROOT_VAR` y no se mezcla con ella: aquélla nombra al

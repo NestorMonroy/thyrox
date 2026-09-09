@@ -24,7 +24,10 @@
  * manda algo que ya no existe. Mide FORMA, no vigencia.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
+import { consumerRulesDir } from '../rules/paths.ts'
+import { consumerSkillsDir } from '../skills/paths.ts'
+import { stateDir } from '../workbench/paths.ts'
 // Import RELATIVO y no por nombre de paquete: `src/conformance/` vive fuera
 // de `src/packages/`, así que el alcance `@thyrox/*` no resuelve desde aquí.
 // Es el mismo puente que `cli/src/argv.ts` documenta, y por la misma razón:
@@ -58,15 +61,30 @@ export type MaintenanceReport = {
   readonly skillsChecked: number
 }
 
-/** Las rutas de memoria del árbol, en el orden en que se cargan. */
+/**
+ * Las rutas de memoria del arbol, en el orden en que se cargan.
+ *
+ * El segmento de estado y el hogar de las reglas NO se escriben aqui: los
+ * declara el consumidor y los resuelven sus gobernadores —`stateDir()` y
+ * `consumerRulesDir()`—. Codificar `.claude` en este modulo lo ataba al arbol
+ * cuyo default coincide, y su verde no distinguia «lee el hogar declarado» de
+ * «acierta porque el default coincide».
+ *
+ * Las rutas salen RELATIVAS a `root` porque eso es lo que `StaleMemory.path`
+ * declara y lo que hace que `join(root, ruta)` siga resolviendo. Un hogar
+ * declarado FUERA del arbol da una relativa con `..`, que sigue siendo valida
+ * para ese `join` — es la conducta correcta: quien declara una absoluta fuera
+ * nombra un sitio concreto, y el instrumento lo cita tal como lo alcanza.
+ */
 function memoryPaths(root: string): string[] {
-  const fijas = ['CLAUDE.md', join('.claude', 'CLAUDE.md')]
-  const dirReglas = join(root, '.claude', 'rules')
-  const reglas = existsSync(dirReglas)
-    ? readdirSync(dirReglas).filter((f) => f.endsWith('.md')).sort()
-        .map((f) => join('.claude', 'rules', f))
+  const state = stateDir(root)
+  const fixed = ['CLAUDE.md', join(state, 'CLAUDE.md')]
+  const rulesHome = consumerRulesDir(root)
+  const rules = existsSync(rulesHome)
+    ? readdirSync(rulesHome).filter((f) => f.endsWith('.md')).sort()
+        .map((f) => relative(root, join(rulesHome, f)))
     : []
-  return [...fijas, ...reglas].filter((p) => existsSync(join(root, p)))
+  return [...fixed, ...rules].filter((p) => existsSync(join(root, p)))
 }
 
 /** Las memorias que se pasan de la cota recomendada. */
@@ -114,7 +132,7 @@ function frontmatterValue(texto: string, clave: string): string | null {
  * romper nada al leerlo.
  */
 export function invalidSkills(root: string): InvalidSkill[] {
-  const dir = join(root, '.claude', 'skills')
+  const dir = consumerSkillsDir(root)
   if (!existsSync(dir)) return []
   const out: InvalidSkill[] = []
   for (const name of readdirSync(dir).sort()) {
@@ -141,9 +159,9 @@ export function invalidSkills(root: string): InvalidSkill[] {
 
 /** Los dos ejes con su denominador al lado. */
 export function maintenanceReport(root: string): MaintenanceReport {
-  const dirSkills = join(root, '.claude', 'skills')
-  const skills = existsSync(dirSkills)
-    ? readdirSync(dirSkills).filter((n) => statSync(join(dirSkills, n)).isDirectory())
+  const skillsHome = consumerSkillsDir(root)
+  const skills = existsSync(skillsHome)
+    ? readdirSync(skillsHome).filter((n) => statSync(join(skillsHome, n)).isDirectory())
     : []
   return {
     staleMemory: staleMemory(root),

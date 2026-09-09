@@ -136,3 +136,65 @@ describe('A.7.6 — el estado del arbol real', () => {
     expect(r.skillsChecked).toBeGreaterThan(0)
   })
 })
+
+describe('A.7.6 — el hogar NO se cablea: lo declara el gobernador', () => {
+  /**
+   * QUE FALTABA. Los cinco casos de arriba pasan con `.claude` codificado en
+   * cinco sitios de `maintenance.ts`, porque su arbol sintetico usa ese mismo
+   * segmento. El instrumento nunca preguntaba por el consumidor: media un
+   * literal y concluia sobre «la memoria del arbol».
+   *
+   * Es el sub-patron D — un verde que no discrimina. Los casos 1-6 no podian
+   * fallar por esta causa, asi que su verde no distinguia «lee el hogar
+   * declarado» de «acierta porque el default coincide».
+   *
+   * MITAD ROJA, medida antes del arreglo: con `.claude` codificado los tres
+   * casos de este bloque fallan —0 memorias rancias, 0 skills invalidos, 0 de
+   * denominador— porque el arbol declara su estado en `.harness`.
+   *
+   * CONTROL DE ANULACION, medido despues del arreglo: se re-codifican los
+   * cuatro sitios a `.claude` y caen **3 de 9** — exactamente los tres de este
+   * bloque. Los seis de arriba sobreviven, y deben: miden el defecto de forma,
+   * no el del hogar. Si al quitarle la causa cayera alguno de ellos, el bloque
+   * nuevo no estaria midiendo lo que dice.
+   */
+
+  /** Un consumidor que declara su segmento de estado en su propio `.env`. */
+  function consumer(state: string, extra = ''): string {
+    const d = mkdtempSync(join(tmpdir(), 'mant-consumer-'))
+    writeFileSync(join(d, '.env'), `THYROX_STATE_DIR=${state}\n${extra}`)
+    mkdirSync(join(d, state, 'rules'), { recursive: true })
+    mkdirSync(join(d, state, 'skills', 'huerfano'), { recursive: true })
+    writeFileSync(join(d, state, 'CLAUDE.md'), 'x'.repeat(MAX_MEMORY_CHARACTER_COUNT + 1))
+    return d
+  }
+
+  test('7. la memoria se busca en el segmento que el consumidor declara', () => {
+    const d = consumer('.harness')
+    // Con `.claude` codificado esto da `[]`: el archivo existe y el
+    // instrumento mira otro directorio.
+    expect(staleMemory(d).map((m) => m.path)).toContain(join('.harness', 'CLAUDE.md'))
+  })
+
+  test('8. los skills tambien, y el denominador lo dice', () => {
+    const d = consumer('.harness')
+    expect(invalidSkills(d).map((s) => s.name)).toEqual(['huerfano'])
+    // El denominador es la mitad que convierte el conteo en resultado: un
+    // `0 invalidos` sobre 0 skills medidos no dice nada del arbol.
+    expect(maintenanceReport(d).skillsChecked).toBe(1)
+  })
+
+  test('9. THYROX_RULES_DIR reapunta el hogar de las reglas, y se cita relativo', () => {
+    // El hogar de las reglas tiene gobernador PROPIO —`consumerRulesDir`— que
+    // gana sobre el segmento de estado. Un consumidor puede tener su estado en
+    // `.harness` y sus reglas en otro sitio; son dos decisiones, no una.
+    const d = consumer('.harness', 'THYROX_RULES_DIR=politicas\n')
+    mkdirSync(join(d, 'politicas'), { recursive: true })
+    writeFileSync(join(d, 'politicas', 'larga.md'), 'y'.repeat(MAX_MEMORY_CHARACTER_COUNT + 1))
+    const stale = staleMemory(d).map((m) => m.path)
+    // La ruta se cita RELATIVA a la raiz — es el contrato de `StaleMemory.path`,
+    // y lo que hace que `join(root, ruta)` siga resolviendo.
+    expect(stale).toContain(join('politicas', 'larga.md'))
+    expect(stale.every((p) => !p.startsWith('/'))).toBe(true)
+  })
+})

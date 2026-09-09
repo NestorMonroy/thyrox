@@ -9,8 +9,7 @@
  * — para que el mecanismo sea usable sin configurar nada.
  */
 import { join } from 'node:path'
-import { resolve } from 'node:path'
-import { envValue, reach, resolveHome, thyroxRoot } from '../paths/reach.ts'
+import { envValue, repoOfRoot, resolveHome, thyroxRoot } from '../paths/reach.ts'
 import { stateDir } from '../workbench/paths.ts'
 
 /**
@@ -33,27 +32,6 @@ export const RULES_CLONE_PREFIX = 'THYROX_RULES_'
  */
 export function rulesHomeName(repo: string): string {
   return `${RULES_CLONE_PREFIX}${repo.toUpperCase().replace(/-/g, '_')}`
-}
-
-/**
- * El nombre corto del clon al que corresponde una raiz, o `null`.
- *
- * Se resuelve contra el mapa que `reach()` ya declara, no recomponiendo el
- * prefijo del clon: ese prefijo es una decision del consumidor y su derivacion
- * vive en `reach`, asi que rehacerla aqui seria su segunda fuente de verdad.
- *
- * Ciega a: una raiz que NO sea uno de los clones declarados — devuelve `null`,
- * y el llamador cae a la clave de familia. Es la conducta correcta: un arbol
- * que el alcance no declara no tiene clave por clon que leer. Y ciega a un
- * subdirectorio de un clon, que la mitad Python SI resuelve (`repo_of`
- * asciende). Esa asimetria es real y esta declarada, no supuesta.
- */
-function repoOfRoot(root: string): string | null {
-  const target = resolve(root)
-  for (const [repo, path] of Object.entries(reach())) {
-    if (resolve(path) === target) return repo
-  }
-  return null
 }
 
 /**
