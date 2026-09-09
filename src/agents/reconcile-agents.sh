@@ -196,6 +196,18 @@ else:
 # que nadie sincroniza — el defecto que este guion ya evita con el diagnostico.
 delivery_verdict() {
   local entry="$1" v
+  # La entrega es un eje de SUBAGENTE, y sólo se pregunta donde se puede
+  # responder. El `.output` de una tarea de `Bash` es un log plano: no tiene
+  # mensaje `assistant`, así que `delivery.classify` no puede decidir y
+  # devuelve `undecidable`. Publicar eso sobre un log que SÍ trae su marcador
+  # terminal (`[exited with code 0]`, `EXIT=0`) borra lo único que se sabía de
+  # él: que terminó. Es el mismo guard que `production_line` ya declara un
+  # eje más abajo — aquí faltaba, y por eso dos bash terminados caían en
+  # `indecidible` y el cubo `terminado` publicaba 0.
+  if [[ ! -L "$entry" ]]; then
+    echo "terminado"
+    return 0
+  fi
   v=$(THYROX_SRC="$LECTOR" python3 - "$entry" <<'ENTREGA'
 import os, pathlib, sys
 sys.path.insert(0, os.environ["THYROX_SRC"])
@@ -412,9 +424,16 @@ echo "== reconciliación del roster =="
 echo "roster    : $ROSTER  [$ORIGEN_ROSTER]"
 echo "ventana   : ${WINDOW_SECONDS}s$( (( WATCH_SECONDS > 0 )) && echo "  · vigilancia: ${WATCH_SECONDS}s" )"
 echo
-printf '  %-14s %s\n' terminado    "${COUNT[terminado]}"
+# `terminado` es la CABECERA de su cubo, no un cubo hermano: su cifra es la
+# suma de los tres desenlaces de abajo. Publicarla como cubo propio la dejaba
+# en 0 —ningun veredicto de subagente devuelve el literal `terminado`— y el
+# lector veia «terminado 0» con un «entrego 1» debajo: la cabecera negando a
+# su propio detalle.
+TERMINADOS=$(( COUNT[terminado] + COUNT[entrego] + COUNT[cortado] ))
+printf '  %-14s %s\n' terminado    "$TERMINADOS"
 printf '  %-14s %s\n' "  entrego"   "${COUNT[entrego]}"
 printf '  %-14s %s\n' "  cortado"   "${COUNT[cortado]}"
+printf '  %-14s %s\n' "  no aplica" "${COUNT[terminado]}"
 printf '  %-14s %s\n' vivo         "${COUNT[vivo]}"
 printf '  %-14s %s\n' reciente     "${COUNT[reciente]}"
 printf '  %-14s %s\n' atascado     "${COUNT[atascado]}"
