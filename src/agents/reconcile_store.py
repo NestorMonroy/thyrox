@@ -818,8 +818,26 @@ def _completar(transcript: Path, agent_id: str) -> str:
     conozca la convención.
     """
     cmd = _cierre(transcript, agent_id, _status(transcript))
-    pase = subprocess.run(cmd, capture_output=True, timeout=30, text=True)
+    try:
+        pase = subprocess.run(cmd, capture_output=True, timeout=30, text=True)
+    except subprocess.TimeoutExpired:
+        # El timeout es un DESENLACE de la reparación, no un accidente del
+        # bucle. Sin este `except` la excepción escapa y aborta el pase en la
+        # fila que la produjo: las restantes no se intentan y el resumen no
+        # las menciona — ni siquiera para decir que no se midieron.
+        print(f"  ! {agent_id}: el cierre excedió los 30 s y se abandonó",
+              file=sys.stderr)
+        return "fallo"
     if pase.returncode != 0:
+        # El sentinela se conserva —su consumidor cuenta «fallidos»— pero la
+        # CAUSA se publica. Descartarla dejaba un «N fallidos» que se repite
+        # cada arranque y no se puede diagnosticar sin re-ejecutar a mano el
+        # comando que este mismo pase acaba de ejecutar: el contador es
+        # correcto y no informa (sub-patrón D de
+        # `metrica-decide-la-conclusion.md`).
+        detalle = (pase.stderr or pase.stdout or "").strip().splitlines()
+        print(f"  ! {agent_id}: el cierre salió con {pase.returncode}"
+              f" — {detalle[-1] if detalle else 'sin salida'}", file=sys.stderr)
         return "fallo"
     return "sin-cambios" if "(sin cambios)" in pase.stdout else "actualizada"
 
