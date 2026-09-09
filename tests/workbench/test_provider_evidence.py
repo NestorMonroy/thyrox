@@ -100,8 +100,19 @@ print("=== Caso 6 (EL QUE DISCRIMINA LA SEGUNDA MEDICION): con la raiz REAL")
 #   - que el rehuse aparezca es lo que impide un verde VACIO: si el entorno
 #     declarase el consumidor o el hogar, no habria rehuse que capturar y un
 #     `rc == 0` a secas pasaria sin haber ejercitado nada.
+#
+# La aislacion tiene DOS mitades porque la DEC-04 tiene dos entradas: el VALOR
+# (la variable de proceso) y la RUTA del archivo que lo declara
+# (`THYROX_ENV_FILE`). Retirar solo la primera dejaba en pie el `.env` del
+# proveedor, que desde TASK-DOCS-0286 declara `THYROX_WORKBENCH_DIR` — y con el
+# hogar resuelto no habia rehuse, asi que el caso caia por «no midio nada».
+# Medido: el caso paso de FAIL a ok al apuntar la segunda entrada a un archivo
+# vacio, sin tocar el gate.
+with tempfile.NamedTemporaryFile("w", suffix=".env", delete=False) as _vacio:
+    _vacio.write("# sin declaraciones: aisla la SEGUNDA entrada de la DEC-04\n")
 env = {k: v for k, v in os.environ.items()
        if k not in ("THYROX_CONSUMER", "THYROX_WORKBENCH_DIR")}
+env["THYROX_ENV_FILE"] = _vacio.name
 r = subprocess.run([sys.executable, str(GATE)], capture_output=True, text=True,
                    env=env, cwd=str(ROOT))
 if r.returncode == 0 and "aterriza en el PROVEEDOR" in r.stdout:

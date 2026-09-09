@@ -118,6 +118,25 @@ def main() -> int:
         check("y NO deja un .env a medias", not salida.is_file())
         check("y dice por qué", "no se pudo derivar" in r.stderr.lower())
 
+        # --- caso 5: el hogar del banco se emite SOLO para el proveedor ----
+        # Su discriminador es el DESTINO, no el valor: en el `.env` de un
+        # consumidor esta clave seria el hogar de otro arbol, que es el defecto
+        # que la familia `THYROX_WORKBENCH_<CLON>` existe para evitar.
+        #
+        # Anulacion: el mismo guion con `--out` fuera de `$ROOT/.env` NO debe
+        # emitirla. Un control que solo mirara el `.env` del proveedor pasaria
+        # con y sin la guarda — no discriminaria.
+        propio = ROOT / ".env"
+        check("el proveedor la declara en su .env vivo",
+              any(l.startswith("THYROX_WORKBENCH_DIR=/")
+                  for l in propio.read_text().splitlines()),
+              "sin ella `workbench_dir()` rehusa: su .claude/ no lo distingue "
+              "de un consumidor")
+        ajeno = base / "consumidor.env"
+        run("--out", str(ajeno), "--force")
+        check("y NO la emite al .env de un consumidor",
+              "THYROX_WORKBENCH_DIR" not in ajeno.read_text())
+
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "
           f"(alcance medido: {SCRIPT.name})")
     return 1 if failed else 0

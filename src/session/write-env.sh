@@ -64,6 +64,19 @@ fi
     # lee como «no habia señal». Se emite aqui o el proximo regenerado la
     # borra del `.env` y el defecto vuelve en silencio.
     echo "THYROX_LAYER_SIGNALS=${THYROX_LAYER_SIGNALS:-src/task/layer_signals.tsv}"
+    # El hogar del banco de evidencia, ABSOLUTO y derivado del arbol — nunca
+    # un segmento relativo. Anclar una relativa al proveedor es la via por la
+    # que L-028 midio once bancos perdidos, y el proveedor es ademas el unico
+    # caso que `workbench_dir()` NO puede resolver por ascenso: su marcador no
+    # lo distingue de un consumidor, asi que rehusa. Con la clave declarada
+    # devuelve el valor tal cual (`paths.py:257`).
+    #
+    # Solo se emite cuando el destino es el `.env` DEL PROVEEDOR: en el `.env`
+    # de un consumidor este valor seria el hogar de otro arbol, que es el
+    # defecto que la familia `THYROX_WORKBENCH_<CLON>` existe para evitar.
+    if [[ "$DEST" == "$ROOT/.env" ]]; then
+        echo "THYROX_WORKBENCH_DIR=${THYROX_WORKBENCH_DIR:-$ROOT/.claude/workbench}"
+    fi
 } > "$DEST"
 
 echo "write-env: escrito $DEST ($(grep -c '^[A-Z]' "$DEST") clave(s) declarada(s))"
