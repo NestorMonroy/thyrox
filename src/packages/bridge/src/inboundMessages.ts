@@ -3,7 +3,7 @@
  * `SDKMessage` es sólo-tipo (se borra al compilar, no necesita resolver)
  * — se cita `@thyrox/headless-sdk`, mismo convenio que el resto del
  * árbol. `detectImageFormatFromBase64` sí es import de valor y viene de
- * `@thyrox/storage: src/imageResizer.ts:819`, idéntica a la fuente; se
+ * `@thyrox/storage: src/imageResizer.ts`, idéntica a la fuente; se
  * reimplementa como punto de inyección en
  * `internal/pendingCrossPackageDeps.ts` hasta que `@thyrox/bridge` sea
  * miembro del workspace.

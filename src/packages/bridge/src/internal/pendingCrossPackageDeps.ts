@@ -181,7 +181,8 @@ export function redactSecrets(
 /**
  * `detectImageFormatFromBase64` (+ el sniffing de magic bytes que usa) —
  * de `@claude-code-how-works/storage/imageResizer.js`. Ya existe
- * idéntica en `@thyrox/storage: src/imageResizer.ts:67,119`
+ * idéntica en `@thyrox/storage: src/imageResizer.ts`, en
+ * `detectImageFormatFromBuffer` y `detectImageFormatFromBase64`
  * (mismos magic bytes PNG/JPEG/GIF/WebP). Reimplementación fiel
  * VERBATIM porque el paquete no resuelve sin membresía de workspace.
  * Se retira cuando `@thyrox/bridge` sea miembro del workspace.
