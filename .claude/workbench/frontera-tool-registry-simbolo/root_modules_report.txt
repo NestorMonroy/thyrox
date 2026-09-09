@@ -1,48 +1,30 @@
-Frontera de los modulos de RAIZ de tool-registry (TASK-THYROX-0272)
-===================================================================
+modulos de RAIZ de la fuente sin contraparte: 8
+SIN CUERPO (stub de la fuente o sin .ts): 0
+LIBRES a nivel de simbolo: 0
+BLOQUEADOS: 8
+     72 L  toolPool.ts: ./toolConstants.js (cruza util), @thyrox/mcp-runtime/utils.js (el modulo no carga ni resuelve)
+    103 L  toolConstants.ts: ./tools/AskUserQuestionTool/prompt.js (cruza util), ./tools/EnterPlanModeTool/constants.js (cruza util), ./tools/EnterWorktreeTool/constants.js (cruza util), ./tools/ExitPlanModeTool/constants.js (cruza util) (+12)
+    224 L  notebook.ts: ./tools/BashTool/toolName.js (cruza util), ./tools/BashTool/utils.js (cruza util)
+    397 L  diagnosticTracking.ts: @thyrox/mcp-runtime/clientRuntime.js (el modulo no carga ni resuelve), @thyrox/mcp-runtime/types.js::MCPServerConnection, figures (npm ausente, usado como valor)
+    536 L  ripgrep.ts: ripgrep-napi (npm ausente, usado como valor)
+    581 L  markdownConfigLoader.ts: ./ripgrep.js (cruza util), @thyrox/agent/frontmatterParser.js::FrontmatterData, @thyrox/permission/permissionSetup::parseToolListFromCLI, @thyrox/config/constants::isSettingSourceEnabled (+2)
+   1135 L  collapseReadSearch.ts: ./tools/BashTool/commentLabel.js (cruza util), ./tools/BashTool/toolName.js (cruza util), ./tools/FileWriteTool/prompt.js (cruza util), ./tools/REPLTool/constants.js (cruza util) (+11)
+   1518 L  teleport.tsx: @thyrox/config/feature-flags::checkGate_CACHED_OR_BLOCKING, @thyrox/repl/components/TeleportError.js (el modulo no carga ni resuelve), @thyrox/agent/constants/oauth.js (el modulo no carga ni resuelve), @thyrox/headless-sdk/agentSdkTypes.js::SDKMessage (+16)
 
-Medido a nivel de simbolo y de paquete instalado, no de conteo de lineas.
-El instrumento `measure_frontier.py` NO los mira: recorre `tools/`, y estos
-viven en la raiz del paquete. Esta medicion es dirigida y complementaria.
-
-LA TAREA DECIA «los 7 modulos de raiz que quedan». Medidos hoy son OCHO.
-La descripcion de una tarea es una hipotesis fechada, no el arbol de hoy —
-nivel 3 de `niveles-de-retencion.md`, consumido como si fuera nivel 2.
-
-    L     modulo                    bloqueo medido
-  ----  ------------------------  ------------------------------------------
-    72  toolPool.ts               @thyrox/mcp-runtime/utils.js (no carga)
-                                  + ./toolConstants.js (bloqueado, ver abajo)
-   103  toolConstants.ts          16 de sus 20 importaciones de tools/ no
-                                  existen en el puerto. Las 4 que si:
-                                  AgentTool, TaskGetTool, TaskListTool y
-                                  TodoWriteTool — las de esta sesion.
-   224  notebook.ts               @anthropic-ai/sdk (no instalado)
-                                  + tools/BashTool/{toolName,utils}.ts
-   397  diagnosticTracking.ts     `figures` (no instalado)
-                                  + @thyrox/mcp-runtime/clientRuntime.js
-   536  ripgrep.ts                `ripgrep-napi` (no instalado)
-   581  markdownConfigLoader.ts   ./ripgrep.js (bloqueado)
-                                  + config/{managedPath,pluginOnlyPolicy,
-                                    utils/markdownDescription}
-  1135  collapseReadSearch.ts     8 locales de tools/ ausentes
-                                  + @thyrox/repl/fullscreen.js
-  1518  teleport.tsx              @anthropic/ink (UI vendorizada, no publicada)
-
-VEREDICTO: 8 de 8 bloqueados. Ninguno es libre.
-
-Cruzado con el reparto de `tools/` (10 sin cuerpo, 0 libres, 38 bloqueados),
-la frontera libre de tool-registry esta EXHAUSTA en sus dos superficies.
-
-TRES BLOQUEOS SON DE OTRA CLASE, y la distincion importa para decidir:
-`ripgrep-napi`, `figures` y `@anthropic-ai/sdk` no son modulos por portar
-— son paquetes npm que este arbol no declara. Desbloquearlos es una
-decision de DEPENDENCIA (¿los declaramos?), no trabajo de porte. Los otros
-cinco si son porte: hermanos ausentes o UI.
-
-Metrica: por cada modulo de raiz de la fuente sin contraparte, sus
-importaciones locales resueltas contra el puerto y sus externas cargadas de
-verdad con bun.
-Ciega a: un simbolo que exista con otra firma; a las importaciones por
-require dinamico; y a si un paquete npm ausente tiene sustituto viable —
-eso es juicio, no medicion.
+npm sondeado (ceguera 3 y 4):
+  presente            @anthropic-ai/sdk/resources/index.mjs  (1 utiles)
+  AUSENTE-SOLO-TIPO   @anthropic/ink  (1 utiles)
+  AUSENTE-COMO-VALOR  axios  (1 utiles)
+  AUSENTE-COMO-VALOR  chalk  (1 utiles)
+  presente            crypto  (2 utiles)
+  AUSENTE-COMO-VALOR  figures  (1 utiles)
+  presente            fs  (1 utiles)
+  presente            fs/promises  (1 utiles)
+  presente            lodash-es/memoize.js  (2 utiles)
+  presente            lodash-es/partition.js  (1 utiles)
+  presente            lodash-es/uniqBy.js  (1 utiles)
+  presente            os  (2 utiles)
+  presente            path  (1 utiles)
+  AUSENTE-COMO-VALOR  react  (1 utiles)
+  AUSENTE-COMO-VALOR  ripgrep-napi  (1 utiles)
+  presente            zod/v4  (1 utiles)

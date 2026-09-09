@@ -110,15 +110,24 @@ def tiene_cuerpo(archivos: list[Path]) -> bool:
     return any(MARCA_DE_STUB not in f.read_text() for f in archivos)
 
 
-def clase_local(desde: Path, util: Path, origen: str) -> str:
+def clase_local(desde: Path, propios: set[Path], origen: str) -> str:
     """Clasifica un import relativo: presente, mismo-util o cruza-util.
 
     Ceguera corregida (2): los archivos del PROPIO util no son un bloqueo —
-    son la unidad de trabajo. Solo un `../Otro/x` que el puerto no tenga lo
-    es.
+    son la unidad de trabajo. Solo un `../Otro/x` que el puerto no tenga lo es.
+
+    Ceguera 5, corregida al estrenar el modo `--root`: la pertenencia se decide
+    contra el CONJUNTO DE ARCHIVOS de la unidad, no contra un directorio. Con
+    el directorio, un modulo de raiz tomaba `FUENTE` como «lo propio» y se
+    tragaba como suyos los 16 imports de `./tools/**` que `toolConstants.ts`
+    hace — publicandolo LIBRE con 16 archivos ausentes. Es el mismo defecto
+    que las cuatro anteriores, en direccion contraria: sesgaba a «libre».
     """
     rel = (desde.parent / origen).resolve()
-    dentro_del_util = util.resolve() in rel.parents or rel.parent == util.resolve()
+    candidatos = {rel, rel.with_suffix('.ts'), rel.with_suffix('.tsx'),
+                  Path(str(rel).removesuffix('.js') + '.ts'),
+                  Path(str(rel).removesuffix('.js') + '.tsx')}
+    dentro_del_util = bool(candidatos & propios)
     if not (FUENTE in rel.parents):
         return 'fuera-del-arbol'
     base = PUERTO.parent / rel.relative_to(FUENTE.parent)
@@ -224,7 +233,27 @@ def sonda_paquete(pedidos: dict[str, list[str]], npm: list[str]) -> dict:
     return json.loads(linea[-1]) if linea else {'r': {}, 'npm': {}}
 
 
+def rootUnits() -> list[tuple[str, list[Path]]]:
+    """Los modulos de RAIZ de la fuente sin contraparte, como unidades de un archivo.
+
+    El recorrido de `main` arranca en `tools/`, asi que la raiz quedaba fuera y
+    se media a mano (TASK-THYROX-0272). Medirla con el MISMO instrumento es lo
+    que hace comparables los dos veredictos: una medicion a mano y una
+    automatica no se pueden sumar sin declarar que son dos poblaciones.
+    """
+    fuera = []
+    for f in sorted(FUENTE.iterdir()):
+        if not f.is_file() or f.suffix not in ('.ts', '.tsx'):
+            continue
+        base = f.stem
+        if any((PUERTO / f'{base}{s}').is_file() for s in ('.ts', '.tsx')):
+            continue
+        fuera.append((f.name, [f]))
+    return fuera
+
+
 def main() -> int:
+    soloRaiz = '--root' in sys.argv
     utiles = sorted(
         d for d in (FUENTE / 'tools').iterdir()
         if d.is_dir() and not (PUERTO / 'tools' / d.name).exists()
@@ -234,19 +263,22 @@ def main() -> int:
     pedidos: dict[str, set] = {}
     npm_valor: dict[str, set] = {}   # paquete -> utiles que lo usan como VALOR
     npm_tipo: dict[str, set] = {}    # paquete -> utiles que solo lo tipan
-    for d in utiles:
-        archivos = [f for f in d.rglob('*') if f.suffix in ('.ts', '.tsx')]
+    unidades = (rootUnits() if soloRaiz
+                else [(d.name, [f for f in d.rglob('*') if f.suffix in ('.ts', '.tsx')])
+                      for d in utiles])
+    for nombreUnidad, archivos in unidades:
         if not tiene_cuerpo(archivos):
-            sin_cuerpo.append((d.name, len(archivos)))
+            sin_cuerpo.append((nombreUnidad, len(archivos)))
             continue
         cruza, propios, hermanos, npm = set(), set(), {}, {}
+        deLaUnidad = {f.resolve() for f in archivos}
         for f in archivos:
             for m in IMPORT.finditer(f.read_text()):
                 origen = m.group('origen')
                 clausula = m.group('clausula')
                 es_tipo = bool(m.group('solo_tipo'))
                 if origen.startswith('.'):
-                    clase = clase_local(f, d, origen)
+                    clase = clase_local(f, deLaUnidad, origen)
                     if clase == 'cruza-util':
                         cruza.add(origen)
                     elif clase == 'mismo-util':
@@ -264,8 +296,8 @@ def main() -> int:
         for mod, nombres in hermanos.items():
             pedidos.setdefault(mod, set()).update(nombres)
         for p, solo_tipo in npm.items():
-            (npm_tipo if solo_tipo else npm_valor).setdefault(p, set()).add(d.name)
-        por_util[d.name] = {
+            (npm_tipo if solo_tipo else npm_valor).setdefault(p, set()).add(nombreUnidad)
+        por_util[nombreUnidad] = {
             'lineas': sum(len(f.read_text().splitlines()) for f in archivos),
             'archivos': len(archivos),
             'propios_por_portar': sorted(propios),
@@ -301,8 +333,8 @@ def main() -> int:
             faltan.append(f'{p} (npm ausente, usado como valor)')
         (libres if not faltan else bloqueados).append((nombre, info, faltan))
 
-    print(f'utiles de la fuente sin contraparte: '
-          f'{len(por_util) + len(sin_cuerpo)}')
+    print(f'{"modulos de RAIZ" if soloRaiz else "utiles"} de la fuente sin '
+          f'contraparte: {len(por_util) + len(sin_cuerpo)}')
     print(f'SIN CUERPO (stub de la fuente o sin .ts): {len(sin_cuerpo)}')
     for nombre, n in sorted(sin_cuerpo):
         print(f'  {nombre} ({n} .ts, todos stub)')
