@@ -45,6 +45,7 @@ fi
 # esta en su sitio es un verde falso.
 GATE_AGENTS="$GATES/check-agent-artifacts.sh"
 GATE_TYPECHECK="$GATES/check-harness-typecheck.sh"
+GATE_XMODEL="$GATES/check-cross-model-read.sh"
 for gate in "$GATE_AGENTS" "$GATE_TYPECHECK"; do
     [[ -f "$gate" ]] && continue
     echo "pre-commit: $gate NO ENCONTRADO — el gate no se pudo correr." >&2
@@ -118,5 +119,6 @@ done < <(git diff --cached --name-only --diff-filter=ACM 2>/dev/null || true)
 
 bash "$GATE_AGENTS"    --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_TYPECHECK" --strict "${STAGED[@]}" || CODE=1
+bash "$GATE_XMODEL"    --strict "${STAGED[@]}" || CODE=1
 
 exit $CODE
