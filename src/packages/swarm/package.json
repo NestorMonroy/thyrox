@@ -51,10 +51,16 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
     "@thyrox/agent": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",
+    "chalk": "^6.0.0",
     "ignore": "^7.0.8",
     "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/proper-lockfile": "^4.1.4",
+    "proper-lockfile": "^4.1.2"
   }
 }
