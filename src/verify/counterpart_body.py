@@ -42,9 +42,16 @@ mecanismo; los pares concretos los pasa quien llama.
 Fuente del porte: `kaupamex-api: scripts/counterpart_body.py` (322 lineas),
 que sigue siendo el consumidor vivo de este nivel.
 """
-import ast
 import dataclasses
+import importlib.util
 import pathlib
+
+_spec = importlib.util.spec_from_file_location(
+    "verify_reader", pathlib.Path(__file__).resolve().parent / "reader.py")
+reader_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(reader_module)
+AstReader = reader_module.AstReader
+PatternReader = reader_module.PatternReader
 
 #: Las dos categorias transversales, que ningun eje redefine. `ABSENT` es lo
 #: que el eje NO ve en ese cuerpo; `BOTH` es su propia categoria y no se
@@ -87,21 +94,17 @@ class Axis:
     directions: dict
 
 
-def called_names(node):
-    """Los nombres invocados en el cuerpo, por atributo o sueltos."""
-    for sub in ast.walk(node):
-        if not isinstance(sub, ast.Call):
-            continue
-        if isinstance(sub.func, ast.Attribute):
-            yield sub.func.attr
-        elif isinstance(sub.func, ast.Name):
-            yield sub.func.id
+def classify(body, vocabulary, axis, reader=None):
+    """La categoria del cuerpo segun el vocabulario de su lado.
 
-
-def classify(node, vocabulary, axis):
-    """La categoria del cuerpo segun el vocabulario de su lado."""
+    `reader` contesta «que nombres invoca este cuerpo». Es parametro porque la
+    respuesta depende del LENGUAJE, no del eje: el mismo eje se mide igual
+    sobre Python, sobre TypeScript o sobre un corpus vendorizado, y lo unico
+    que cambia es quien sabe leerlo.
+    """
+    reader = reader or AstReader()
     first = second = False
-    for name in called_names(node):
+    for name in reader.called_names(body):
         if name in vocabulary.first:
             first = True
         elif name in vocabulary.second:
@@ -182,111 +185,32 @@ def mirrored_counterpart(path, pairs, tree_root):
     return None
 
 
-@dataclasses.dataclass(frozen=True)
-class Declaration:
-    """Un simbolo declarado en un archivo, con su duena y su linea.
+def members_by_name(path, reader):
+    """Los simbolos invocables del archivo, por nombre.
 
-    `methods_of` devuelve el nodo por nombre y pierde dos cosas que un analisis
-    de flujo necesita: la **clase duena** —el contrato puede vivir en una base,
-    no en la clase que se lee— y la **funcion de modulo**, que en una raiz de
-    utilidades es la forma dominante. Esta estructura las conserva sin cambiar
-    el contrato de `methods_of`, que `compare` ya consume.
+    Colapsa por nombre a proposito: la unidad de esta comparacion es el
+    **metodo**, y comparar `M.foo` contra `N.foo` de la fuente es lo que el
+    nivel quiere. Quien necesite la clase duena consulta `reader.symbols`
+    directamente — `Symbol.owner` la lleva cuando el lector puede verla.
     """
-
-    name: str
-    owner: str            # nombre de la clase, o '' si es de modulo
-    lineno: int
-    node: object
-    bases: tuple = ()     # las bases declaradas: de la clase duena, o suyas
-    kind: str = 'function'   # function | class | assign
+    return {s.name: s.body for s in reader.symbols(path)
+            if s.kind == 'function'}
 
 
-def parse_file(path):
-    """El AST del archivo, o `None` si no se puede leer ni parsear."""
-    try:
-        return ast.parse(pathlib.Path(path).read_text(errors='ignore'))
-    except (SyntaxError, OSError, UnicodeDecodeError):
-        return None
-
-
-def base_names(klass):
-    """Los nombres de las bases declaradas, por atributo o sueltos."""
-    names = []
-    for base in klass.bases:
-        if isinstance(base, ast.Name):
-            names.append(base.id)
-        elif isinstance(base, ast.Attribute):
-            names.append(base.attr)
-    return tuple(names)
-
-
-def declarations_of(path, tree=None):
-    """Todo simbolo declarado en el archivo: clase, funcion y asignacion.
-
-    Tres diferencias con `methods_of`, y las tres las pide un analisis de
-    flujo. No **colapsa por nombre** — dos clases del mismo archivo pueden
-    declarar el mismo metodo, y esa coincidencia es lo que la unidad
-    *hermanos* mide. Recoge la **funcion de modulo**. Y recoge **clase y
-    asignacion**: un informe que solo viera funciones diria «no se declara» de
-    una clase que si existe, y ese cero seria falso — el sub-patron D de
-    `metrica-decide-la-conclusion.md`.
-
-    La asignacion se recoge solo al nivel del cuerpo —de modulo o de clase—, no
-    dentro de una funcion: una variable local no es una declaracion que otro
-    archivo pueda consumir.
-    """
-    tree = tree if tree is not None else parse_file(path)
-    if tree is None:
-        return []
-    found, nested = [], set()
-    for klass in ast.walk(tree):
-        if not isinstance(klass, ast.ClassDef):
-            continue
-        bases = base_names(klass)
-        found.append(Declaration(
-            klass.name, '', klass.lineno, klass, bases, 'class'))
-        for member in klass.body:
-            if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                found.append(Declaration(
-                    member.name, klass.name, member.lineno, member, bases))
-                nested.add(id(member))
-            elif isinstance(member, ast.Assign):
-                for target in member.targets:
-                    if isinstance(target, ast.Name):
-                        found.append(Declaration(
-                            target.id, klass.name, member.lineno, member,
-                            bases, 'assign'))
-        nested.add(id(klass))
-    for node in tree.body:
-        if (isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-                and id(node) not in nested):
-            found.append(Declaration(node.name, '', node.lineno, node))
-        elif isinstance(node, ast.Assign):
-            for target in node.targets:
-                if isinstance(target, ast.Name):
-                    found.append(Declaration(
-                        target.id, '', node.lineno, node, (), 'assign'))
-    return found
-
-
-def methods_of(path):
-    """Los metodos declarados en clases del archivo, por nombre."""
-    tree = parse_file(path)
-    if tree is None:
-        return {}
-    return {member.name: member
-            for klass in ast.walk(tree) if isinstance(klass, ast.ClassDef)
-            for member in klass.body
-            if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))}
-
-
-def compare(paths, axis, counterpart):
+def compare(paths, axis, counterpart, reader=None):
     """Los hallazgos del eje y el alcance sobre el que se midieron.
 
-    `counterpart` es un invocable `ruta -> ruta_en_la_fuente | None`. Es el
-    parametro que la version del consumidor tenia cableado; sin el, este modulo
-    no puede compararse contra nada y por tanto lo exige — no lo adivina.
+    Los tres parametros son del consumidor, y ninguno se adivina:
+
+    - `axis` — que propiedad se mide y como se nombra cada desacuerdo;
+    - `counterpart` — un invocable `ruta -> ruta_en_la_fuente | None`;
+    - `reader` — quien sabe leer el LENGUAJE de los dos lados.
+
+    El default de `reader` es Python porque es el lenguaje del propio
+    proveedor, no porque sea el unico: `PatternReader` alcanza cualquier arbol
+    de texto con su ceguera declarada.
     """
+    reader = reader or AstReader()
     paths = list(paths)
     findings, with_counterpart, pairs, indeterminate = [], 0, 0, 0
     for path in paths:
@@ -294,12 +218,14 @@ def compare(paths, axis, counterpart):
         if reference is None or not pathlib.Path(reference).is_file():
             continue
         with_counterpart += 1
-        ours, theirs = methods_of(path), methods_of(reference)
+        ours = members_by_name(path, reader)
+        theirs = members_by_name(reference, reader)
         for name, node in ours.items():
             if name not in theirs:
                 continue
-            mine = classify(node, axis.ours, axis)
-            yours = classify(theirs[name], axis.reference, axis)
+            mine = classify(node, axis.ours, axis, reader)
+            yours = classify(theirs[name], axis.reference,
+                             axis, reader)
             if ABSENT in (mine, yours):
                 continue
             pairs += 1
@@ -311,21 +237,27 @@ def compare(paths, axis, counterpart):
     return findings, Scope(len(paths), with_counterpart, pairs, indeterminate)
 
 
-def tree_files(roots, skip=('__pycache__', 'migrations')):
-    """Los `.py` de las raices dadas, saltando los segmentos de `skip`.
+def tree_files(roots, extensions=('.py',),
+               skip=('__pycache__', 'migrations')):
+    """Los archivos de las raices dadas que el lector puede leer.
 
-    `skip` es parametro con default: `__pycache__` es del lenguaje —lo mismo en
-    cualquier arbol— y `migrations` es una convencion de framework que el
-    consumidor puede no tener. Codificarla sin salida ataria el proveedor a un
-    stack; darle default la deja util sin configurar.
+    `extensions` sale del lector que se vaya a usar (`reader.extensions`), no
+    de una suposicion del motor: cablear `.py` aqui dejaria el nivel util para
+    un solo arbol de los que el proveedor gobierna.
+
+    `skip` es parametro con default por lo mismo: `__pycache__` es del
+    lenguaje y `migrations` una convencion de framework que el consumidor
+    puede no tener.
     """
-    skip = frozenset(skip)
+    skip, extensions = frozenset(skip), tuple(extensions)
     for root in roots:
         base = pathlib.Path(root)
         if base.is_file():
             yield base
             continue
-        for path in sorted(base.rglob('*.py')):
+        for path in sorted(base.rglob('*')):
+            if not path.is_file() or path.suffix not in extensions:
+                continue
             if skip & set(path.parts):
                 continue
             yield path

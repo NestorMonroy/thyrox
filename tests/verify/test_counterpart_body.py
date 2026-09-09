@@ -40,6 +40,7 @@ spec = importlib.util.spec_from_file_location(
     "counterpart_body", HERE / "src" / "verify" / "counterpart_body.py")
 engine = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(engine)
+reader = engine.reader_module
 
 OK = FALLOS = 0
 
@@ -84,8 +85,11 @@ AXIS = engine.Axis(
 )
 
 
+AST = reader.AstReader()
+
+
 def body(source):
-    """El nodo de la unica funcion declarada en el fragmento."""
+    """El nodo de la unica funcion del fragmento — la forma que AstReader da."""
     import ast
     return ast.parse(source).body[0]
 
@@ -93,15 +97,15 @@ def body(source):
 print("\n1. classify — la categoria sale del vocabulario de SU lado")
 check("nuestro update_or_create es 'por el enganche'", VIA_HOOK,
       engine.classify(body("def f():\n    M.update_or_create(x=1)\n"),
-                      AXIS.ours, AXIS))
+                      AXIS.ours, AXIS, AST))
 check("de la fuente, upsert_en es 'por debajo'", BELOW,
       engine.classify(body("def f():\n    self.upsert_en(x)\n"),
-                      AXIS.reference, AXIS))
+                      AXIS.reference, AXIS, AST))
 check("un cuerpo sin senal es ABSENT", engine.ABSENT,
-      engine.classify(body("def f():\n    return 1\n"), AXIS.ours, AXIS))
+      engine.classify(body("def f():\n    return 1\n"), AXIS.ours, AXIS, AST))
 check("los dos vocabularios a la vez son BOTH", engine.BOTH,
       engine.classify(body("def f():\n    M.save()\n    M.bulk_create([])\n"),
-                      AXIS.ours, AXIS))
+                      AXIS.ours, AXIS, AST))
 
 print("\n2. direction — tres desenlaces, no dos")
 check("categorias iguales: sin desacuerdo", None,
@@ -175,6 +179,45 @@ with tempfile.TemporaryDirectory() as tmp:
     check("y por tanto no hay hallazgos", 0, len(sin_contraparte[0]))
     check("pero el recorrido SI se declara", 1,
           sin_contraparte[1].files_scanned)
+
+# --- 6. el LECTOR es parametro: el mismo eje sobre otro lenguaje -----------
+#
+# La correccion del ejecutor en este turno: sacar el vocabulario del dominio y
+# dejar cableado el LENGUAJE deja el nivel util para un solo arbol de los que
+# el proveedor gobierna. `ui` es JavaScript y `_references/claude-code-bin/`
+# es TypeScript; los dos son arboles que THYROX tiene que poder leer.
+with tempfile.TemporaryDirectory() as tmp:
+    raiz = Path(tmp)
+    (raiz / "src").mkdir(); (raiz / "ref").mkdir()
+    nuestro = raiz / "src" / "store.ts"
+    fuente = raiz / "ref" / "store.ts"
+    nuestro.write_text(
+        "export function persist(rows) {\n"
+        "  return Model.update_or_create(rows)\n"
+        "}\n")
+    fuente.write_text(
+        "export function persist(rows) {\n"
+        "  return db.upsert_en(rows)\n"
+        "}\n")
+    localizar_ts = lambda p: raiz / "ref" / Path(p).name
+    TS = reader.PatternReader()
+
+    print("\n6. CONTROL — el lector es PARAMETRO, no esta cableado a Python")
+    f_ts, s_ts = engine.compare([nuestro], AXIS, localizar_ts, TS)
+    check("6.1 con el lector de patrones, el par de TypeScript se compara",
+          1, s_ts.pairs_compared)
+    check("6.2 y sale el mismo desacuerdo que en Python", CROSSES_GUARD,
+          f_ts[0].direction if f_ts else None)
+    # Con el lector de Python el MISMO arbol no da nada: no es que no haya
+    # divergencia, es que el lector no ve el archivo. Sin este caso, un motor
+    # cableado a Python publicaria 0 y el verde no lo distinguiria.
+    f_py, s_py = engine.compare([nuestro], AXIS, localizar_ts, AST)
+    check("6.3 el lector de Python NO ve simbolos ahi (por eso es parametro)",
+          (0, 0), (len(f_py), s_py.pairs_compared))
+    check("6.4 y las extensiones salen del lector, no del motor",
+          ('.ts', '.tsx', '.js', '.jsx'), TS.extensions)
+    check("6.5 tree_files recorre lo que el lector declara", [nuestro],
+          list(engine.tree_files([raiz / "src"], TS.extensions)))
 
 print(f"\n{OK} ok, {FALLOS} fallos")
 sys.exit(1 if FALLOS else 0)
