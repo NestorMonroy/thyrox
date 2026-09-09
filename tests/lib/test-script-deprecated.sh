@@ -29,7 +29,7 @@ fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
 GUARD="$RAIZ/src/lib/deprecated.sh"
-GATE="$RAIZ/src/gates/check_script_deprecated.py"
+GATE="$RAIZ/src/verify/check_script_deprecated.py"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 

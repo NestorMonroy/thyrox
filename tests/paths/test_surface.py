@@ -22,7 +22,7 @@ from paths import reach  # noqa: E402
 #: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
 #: del localizador declarado (tarea #228).
 RAIZ = reach.thyrox_root()
-GATE = RAIZ / 'src' / 'gates' / 'check_python_surface.py'
+GATE = RAIZ / 'src' / 'verify' / 'check_python_surface.py'
 
 ok = fallos = 0
 
@@ -64,7 +64,7 @@ check('y la forma ./ se normaliza',
 
 print('== 2. el gate NO marca una cita que sí está en la superficie ==')
 with tempfile.TemporaryDirectory() as d:
-    c = consumidor(pathlib.Path(d), 'GATE="$THYROX_ROOT/src/gates/thyrox-audit.sh"\n')
+    c = consumidor(pathlib.Path(d), 'GATE="$THYROX_ROOT/src/verify/thyrox-audit.sh"\n')
     code, out = correr([c])
     check('sale 0', 0, code)
     check('y publica 0 fuera de superficie', True, '0 cita(s) fuera' in out)
@@ -99,7 +99,7 @@ with tempfile.TemporaryDirectory() as d:
 print('== 6. el banco de evidencia no es un consumidor ==')
 with tempfile.TemporaryDirectory() as d:
     base = pathlib.Path(d)
-    c = consumidor(base, 'GATE="$THYROX_ROOT/src/gates/thyrox-audit.sh"\n')
+    c = consumidor(base, 'GATE="$THYROX_ROOT/src/verify/thyrox-audit.sh"\n')
     evento = base / '.claude' / 'eventos' / 'algo-20260907T000000'
     evento.mkdir(parents=True)
     (evento / 'sonda.sh').write_text('X="$THYROX_ROOT/src/session/marker_wait.py"\n')

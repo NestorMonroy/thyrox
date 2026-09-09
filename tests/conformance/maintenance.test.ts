@@ -7,7 +7,7 @@
  *    invalid skills?»
  *
  * QUÉ FALTABA. El predicado nombra TRES sujetos y sólo uno tenía política.
- * Medido sobre los 71 gates de `src/gates/`: dos miran caducidad —
+ * Medido sobre los 71 gates de `src/verify/`: dos miran caducidad —
  * `check_premise_drift` (premisas que dejaron de ser ciertas, con baseline)
  * y `check_corpus_al_dia` (frescura del corpus vendorizado). Ninguno mira
  * MEMORIA rancia —`getLargeMemoryFiles` nombra las que se pasan de

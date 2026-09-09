@@ -3,7 +3,7 @@
  *
  * `tests/package/exports.test.ts` aplica esta disciplina al manifiesto RAIZ de
  * thyrox. Este archivo la aplica a los 28 paquetes de `src/packages/`, que
- * hasta hoy no la tenian: el gate `src/gates/package_boundary.py` declara en su
+ * hasta hoy no la tenian: el gate `src/verify/package_boundary.py` declara en su
  * propio docstring que NO mide si el `exports` es correcto —«mide que nadie lo
  * rodee, no que la superficie este bien elegida»—, asi que entre los dos habia
  * un hueco por el que cabe un manifiesto que no resuelve su propio nombre.

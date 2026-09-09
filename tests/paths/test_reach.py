@@ -257,7 +257,7 @@ with tempfile.TemporaryDirectory() as tmp:
     real = base / "otro-nombre"                   # NO se llama thyrox y sí lo es
     (real / "src" / "paths").mkdir(parents=True)
     (real / "src" / "paths" / "reach.py").write_text("", encoding="utf-8")
-    hondo = real / "src" / "gates" / "sub"
+    hondo = real / "src" / "verify" / "sub"
     hondo.mkdir(parents=True)
 
     clean_env()

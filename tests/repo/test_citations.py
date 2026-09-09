@@ -51,7 +51,7 @@ def main() -> int:
         ("_archived/.claude/scripts/viejo.sh", True),
         ("source/normativa/estandares/catalogo-de-scripts.rst", False),
         (".claude/rules/git.md", False),
-        ("src/gates/registry.py", False),
+        ("src/verify/registry.py", False),
         (".githooks/pre-commit", False),
     ]:
         check(f"{'evidencia' if expected else 'viva     '}  {relative[:58]}",
@@ -62,9 +62,9 @@ def main() -> int:
 
         # --- un clon sintetico con las dos clases de cita -------------------
         clone = base / "clon"
-        (clone / "src/gates").mkdir(parents=True)
+        (clone / "src/verify").mkdir(parents=True)
         (clone / "source/gestion/pm/docs/iniciativas/x/hallazgos").mkdir(parents=True)
-        (clone / "src/gates/consumer.py").write_text("import viejo_nombre\n")
+        (clone / "src/verify/consumer.py").write_text("import viejo_nombre\n")
         (clone / "source/gestion/pm/docs/iniciativas/x/hallazgos/hallazgo-H-1.rst"
          ).write_text("el defecto vivia en viejo_nombre\n")
         git(clone, "init", "-q")

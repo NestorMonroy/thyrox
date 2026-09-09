@@ -52,7 +52,7 @@ SNAPSHOT=src/task/snapshot-tasks.sh
 # thyrox — sólo snapshot-tasks.sh (hoy DEPRECATED) y agent_store.py
 # render-tablero viajaron. La comparación de tres vías del caso 4 original
 # queda en dos: no hay implementación del hook contra la que comparar aquí.
-GATE_RST=src/gates/check_rst_sintaxis.py
+GATE_RST=src/verify/check_rst_sintaxis.py
 OK=0; FALLO=0
 
 afirmar() {

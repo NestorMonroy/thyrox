@@ -17,7 +17,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve()
 while ROOT != ROOT.parent and not (ROOT / "src/paths/reach.py").is_file():
     ROOT = ROOT.parent
-GATE = ROOT / "src/gates/check_provider_evidence.py"
+GATE = ROOT / "src/verify/check_provider_evidence.py"
 
 ok = ko = 0
 

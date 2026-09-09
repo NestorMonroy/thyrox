@@ -5,7 +5,7 @@ Qué haría fallar a este control (sub-patrón D): que el mecanismo devuelva la
 raíz del PROVEEDOR en vez de la del consumidor. Ése es el defecto que lo
 origina — siete gates componían su corpus con `parents[N]` del propio archivo,
 que valía cuando vivían en `kaupamex-docs/.claude/scripts/gates/` y desde
-`thyrox/src/gates/` da `/home/user`. El corredor los publicaba SIN MEDIR
+`thyrox/src/verify/` da `/home/user`. El corredor los publicaba SIN MEDIR
 nombrando `/home/user/source`, un directorio que nunca existió.
 
 El consumidor es sintético: el control no depende de qué clones haya en disco.

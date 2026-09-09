@@ -169,8 +169,8 @@ describe('verificationPlan — lista, nunca ejecución', () => {
 // renumerado sin tocar el árbol— deja la etiqueta duplicada, y el control lo
 // detecta y aborta en vez de sellar un árbol roto.
 
-// El gate se mudo a thyrox/src/gates/; vivia en docs/.claude/scripts/gates/.
-const GATES_DIR = join(thyroxRoot(), 'src', 'gates')
+// El gate se mudo a thyrox/src/verify/; vivia en docs/.claude/scripts/gates/.
+const GATES_DIR = join(thyroxRoot(), 'src', 'verify')
 
 function rst(label: string, heading: string): string {
   const under = '='.repeat(Math.max(heading.length, 12))

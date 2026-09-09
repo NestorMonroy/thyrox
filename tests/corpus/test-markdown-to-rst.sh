@@ -30,7 +30,7 @@ fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 REPO="$(thyrox_root)" || exit 2
 CONV="$REPO/src/corpus/markdown_to_rst.py"
-SINTAXIS="$REPO/src/gates/check_rst_sintaxis.py"
+SINTAXIS="$REPO/src/verify/check_rst_sintaxis.py"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
