@@ -59,5 +59,12 @@ export { toAgentsJson } from './emit/agentsJson.ts'
 // Reexportados para que `core/AgentCore.ts` y `core/AgentLoop.ts` — y sus
 // tests — importen desde el mismo punto que la fuente (`ccnmt: packages/
 // agent/index.ts`), en vez de reabrir cada archivo de tipos por separado.
-export type { AgentDeps } from './agentDeps.ts'
+export type {
+  AgentDeps,
+  ClaimableTask,
+  IncomingMailMessage,
+  MailboxDep,
+  OutgoingMailMessage,
+  TaskClaimingDep,
+} from './agentDeps.ts'
 export type { CoreTool, ToolResult } from './coreTools.ts'

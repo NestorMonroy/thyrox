@@ -25,6 +25,7 @@
     "./worktree/safeRemoval.js": "./src/worktree/safeRemoval.ts",
     "./worktree/safeIgnore.js": "./src/worktree/safeIgnore.ts",
     "./adapters/appRuntime.js": "./src/adapters/appRuntime.ts",
+    "./adapters/buildSwarmAgentDeps.js": "./src/adapters/buildSwarmAgentDeps.ts",
     "./core/teammateModel.js": "./src/core/teammateModel.ts",
     "./backends/teammateModeSnapshot.js": "./src/backends/teammateModeSnapshot.ts",
     "./backends/detection.js": "./src/backends/detection.ts",
