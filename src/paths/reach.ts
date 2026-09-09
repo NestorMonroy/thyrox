@@ -36,8 +36,9 @@
  * `src/agents/definitions/` dejó dos rutas atrás y el control byte a byte
  * apuntó semanas a un directorio que no existe.
  */
+import { homedir } from 'node:os'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /** Dónde buscar el archivo de entorno, si no se declara uno explícito. */
@@ -183,6 +184,34 @@ export function agentsDir(start?: string): string {
   const declared = envValue(AGENTS_DIR_VAR, start)
   if (declared) return declared
   return join(thyroxRoot(start), AGENTS_DIR_DEFAULT)
+}
+
+/**
+ * Una ruta declarada, resuelta contra la raíz que la ancla — tres vías.
+ *
+ * Es la contraparte de `resolve_home` en `reach.py`, y la regla que el
+ * ejecutable 2.1.263 declara verbatim para sus rutas de configuración:
+ * absoluta tal cual, `~` expandida, o relativa a la raíz NOMBRADA.
+ *
+ * **Por qué la tercera vía es la que importa.** Sin ella una clave de familia
+ * sólo puede llevar una ruta absoluta, y una absoluta no puede decir dos
+ * verdades: declararla le da a los cinco clones el hogar de uno. Como
+ * SEGMENTO relativo la misma clave dice lo correcto para todos —«en cada clon,
+ * este subdirectorio»— y deja de haber colisión que resolver.
+ *
+ * La raíz es un parámetro obligatorio: una ruta relativa nunca es relativa a
+ * nada. Sin él la resolución caería al `cwd`, que es una raíz que nadie
+ * declaró.
+ *
+ * Ciega a: si la ruta resultante EXISTE — no se comprueba, igual que en
+ * `agentsDir`.
+ */
+export function resolveHome(declared: string, root: string): string {
+  const expanded = declared.startsWith('~/') || declared === '~'
+    ? join(homedir(), declared.slice(1))
+    : declared
+  if (isAbsolute(expanded)) return expanded
+  return join(root, expanded)
 }
 
 /** Los nombres de los `.md` de agente presentes en un hogar dado. */

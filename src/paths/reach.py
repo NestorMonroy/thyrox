@@ -363,6 +363,59 @@ def env_names(repo: str) -> tuple[str, ...]:
                  for var in ("THYROX_REACH_ROOT", "KAUPAMEX"))
 
 
+def resolve_home(declared: str | Path, root: str | Path) -> Path:
+    """Una ruta declarada, resuelta contra la raíz que la ancla — tres vías.
+
+    Es la regla que el ejecutable 2.1.263 declara verbatim para sus rutas de
+    configuración, y se adapta con su cita::
+
+        Path to a credential file or directory. Same resolution as
+        sandbox.filesystem.* paths: absolute, ~ expanded, or relative to the
+        settings file root (project root for project settings, ~/.claude for
+        user settings).
+
+    Las tres, en ese orden:
+
+    ==========  ================================  ==========================
+    Declarado   Se resuelve a                     Ejemplo
+    ==========  ================================  ==========================
+    absoluto    tal cual                          ``/srv/reglas``
+    ``~/…``     con el home expandido             ``~/reglas``
+    relativo    ``<root>/<declarado>``            ``reglas`` -> ``<clon>/reglas``
+    ==========  ================================  ==========================
+
+    **Por qué la tercera vía es la que importa.** Sin ella, una clave de
+    familia sólo puede llevar una ruta absoluta, y una ruta absoluta no puede
+    decir dos verdades: declararla le da a los cinco clones **el hogar de
+    uno**. Medido antes de tener esto: ``THYROX_RULES_DIR=<db>/.claude/rules``
+    imprimía la ruta de ``db`` en las cinco filas de ``declarations.py``, y
+    ninguna avisaba.
+
+    Como **segmento** relativo la misma clave dice lo correcto para todos —
+    «en cada clon, este subdirectorio»— y deja de haber colisión que resolver.
+    Es la forma que VVV usa para sus sitios: el nombre del sitio se compone
+    sobre una base declarada una vez (``Vagrantfile:186``,
+    ``defaults['vm_dir'] = "/srv/www/#{site}"``), y el sitio puede sustituir el
+    compuesto con su propia clave (``:194``, ``defaults.merge(args)``).
+
+    Y el criterio general que las dos fuentes comparten: **una ruta relativa
+    nunca es relativa a nada** — el ejecutable la ancla siempre a una raíz
+    NOMBRADA (27 ocurrencias de «relative to the plugin root», 6 de
+    «marketplace root», 2 de «settings file root»). Aquí esa raíz es el
+    parámetro ``root``, y por eso es obligatorio: sin él la resolución caería
+    al ``cwd``, que es una raíz que nadie declaró.
+
+    Métrica: la vía que toma una declaración, sobre su forma sintáctica.
+    Ciega a: si la ruta resultante EXISTE — no se comprueba a propósito, igual
+    que en ``consumer_rules_dir``: un hogar declarado y ausente es un hecho del
+    consumidor que su llamador tiene que poder ver.
+    """
+    path = Path(declared).expanduser()
+    if path.is_absolute():
+        return path
+    return Path(root) / path
+
+
 def tree_root(start: Path | None = None) -> Path:
     """El padre de los clones, por variable declarada o por ascenso.
 
@@ -752,6 +805,70 @@ def main(argv: list[str]) -> int:
             return 2
         return 0
 
+    if mode == "--value":
+        # La consulta de UNA clave, para shell. Es el analogo de
+        # `get_config_value <key> <default>` de VVV, que es el mecanismo por el
+        # que sus provisioners NUNCA leen el YAML: preguntan por clave a una
+        # funcion exportada, y el analisis vive en un solo sitio
+        # (`vvv: provision/provision-helpers.sh:22-27`).
+        #
+        # Aqui la razon es la misma con otro sustrato: la precedencia de las
+        # DOS entradas —la variable del proceso, y despues la declaracion del
+        # `.env` que `THYROX_ENV_FILE` nombra— vive en `env_value` y no se
+        # reimplementa en cada guion. Un `.sh` que hiciera su propio `grep` del
+        # `.env` seria la segunda fuente de verdad de esa precedencia, y su
+        # deriva es silenciosa: seguiria imprimiendo un valor.
+        #
+        # Los tres desenlaces son distintos A PROPOSITO. Sin default, la clave
+        # ausente sale por 1 y NO imprime: un consumidor no puede distinguir
+        # «declarada vacia» de «no declarada» si las dos dan cadena vacia con
+        # exit 0, que es el sub-patron D aplicado a la configuracion.
+        if len(argv) < 3:
+            print("reach: --value exige una clave", file=sys.stderr)
+            return 2
+        key = argv[2]
+        found = env_value(key)
+        if found is not None:
+            print(found)
+            return 0
+        if len(argv) > 3:
+            print(argv[3])
+            return 0
+        print(f"reach: {key} sin declarar y sin default", file=sys.stderr)
+        return 1
+
+    if mode == "--home":
+        # Igual que `--value`, pero RESOLVIENDO la ruta declarada contra la
+        # raiz que la ancla, con las tres vias de `resolve_home`: absoluta tal
+        # cual, `~` expandida, y relativa a la raiz NOMBRADA.
+        #
+        # Existe para que un guion de shell no tenga que reimplementar esa
+        # regla. Si lo hiciera, la tercera via —la unica que permite que una
+        # clave de familia diga lo correcto para varios arboles— viviria en dos
+        # sitios, y su deriva seria silenciosa: el guion seguiria componiendo
+        # una ruta plausible.
+        #
+        # La raiz es la de thyrox, no el `cwd`: una ruta relativa nunca es
+        # relativa a nada. Un consumidor que necesite anclar a OTRA raiz pasa
+        # por `resolve_home` desde Python, donde la raiz es un parametro.
+        if len(argv) < 3:
+            print("reach: --home exige una clave", file=sys.stderr)
+            return 2
+        key = argv[2]
+        declared = env_value(key)
+        if declared is None:
+            if len(argv) <= 3:
+                print(f"reach: {key} sin declarar y sin default", file=sys.stderr)
+                return 1
+            declared = argv[3]
+        try:
+            root = thyrox_root()
+        except ReachRootError as err:
+            print(f"reach: {err}", file=sys.stderr)
+            return 2
+        print(resolve_home(declared, root))
+        return 0
+
     if mode == "--names":
         for name in clone_names():
             print(name)
@@ -792,7 +909,8 @@ def main(argv: list[str]) -> int:
     print(
         f"reach: modo desconocido: {mode}\n"
         "  --list (default) · --env · --paths · --declared · --names · --check\n"
-        "  --thyrox-root",
+        "  --thyrox-root · --tree-root · --value <CLAVE> [DEFAULT]\n"
+        "  --home <CLAVE> [DEFAULT]  (el valor, resuelto contra la raíz)",
         file=sys.stderr,
     )
     return 2

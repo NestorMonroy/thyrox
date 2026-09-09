@@ -16,6 +16,8 @@ mitad no lo ve este control.
 """
 from __future__ import annotations
 
+import os
+import pathlib
 import re
 import sys
 import unittest
@@ -77,6 +79,120 @@ class RulesPathsParity(unittest.TestCase):
             )
             self.assertNotIn("'.claude'", cuerpo, f"{mitad} compone el tramo a mano")
             self.assertNotIn('".claude"', cuerpo, f"{mitad} compone el tramo a mano")
+
+    def test_la_clave_por_clon_es_la_misma(self):
+        self.assertEqual(rules.RULES_CLONE_PREFIX, literal_ts("RULES_CLONE_PREFIX"))
+
+    def test_las_dos_mitades_componen_igual_el_nombre_por_clon(self):
+        """La gramática del nombre, no sólo su prefijo.
+
+        Dos familias con dos gramaticas obligarian a quien declara a recordar
+        cual es cual; y una sola familia con dos gramaticas —una por lenguaje—
+        hace que la mitad TS lea una clave que la mitad Python nunca escribe.
+        """
+        fuente = TS.read_text(encoding="utf-8")
+        self.assertIn("toUpperCase().replace(/-/g, '_')", fuente,
+                      "la mitad TS dejó de componer como `rules_home_name`")
+        self.assertEqual(rules.rules_home_name("mi-clon"), "THYROX_RULES_MI_CLON")
+
+    def test_declarar_un_clon_no_mueve_a_los_demas(self):
+        """El control que faltaba, y el defecto que ya ocurrió.
+
+        Qué lo haría fallar: que el hogar se resuelva por una clave GLOBAL. Con
+        `THYROX_RULES_DIR` como única entrada, declarar el hogar de un clon le
+        daba a los otros cuatro **ese mismo hogar** — medido, las cinco filas de
+        `declarations.py` imprimían la misma ruta y ninguna avisaba.
+
+        No se comprueba «el declarado cambia»: eso pasaría igual con la clave
+        global. Se comprueba que los OTROS no se muevan, que es lo que la
+        familia por clon afirma.
+        """
+        roots = reach.roots()
+        objetivo = "db" if "db" in roots else sorted(roots)[0]
+        antes = {r: rules.consumer_rules_dir(p) for r, p in roots.items()}
+
+        clave = rules.rules_home_name(objetivo)
+        previo = os.environ.get(clave)
+        os.environ[clave] = "/tmp/hogar-de-un-solo-clon"
+        try:
+            despues = {r: rules.consumer_rules_dir(p) for r, p in roots.items()}
+        finally:
+            if previo is None:
+                del os.environ[clave]
+            else:
+                os.environ[clave] = previo
+
+        movidos = {r for r in antes if antes[r] != despues[r]}
+        self.assertEqual(movidos, {objetivo},
+                         f"declarar {clave} movió {movidos}, no sólo {objetivo}")
+
+    def test_la_clave_de_familia_como_segmento_relativo_no_colisiona(self):
+        """La clave de FAMILIA con un segmento relativo dice lo correcto para todos.
+
+        Qué lo haría fallar: que el valor declarado se devuelva crudo, sin
+        pasar por `resolve_home`. Entonces `THYROX_RULES_DIR` sólo puede llevar
+        una ruta absoluta, y una absoluta le da a los cinco clones **el hogar
+        de uno** — que es el defecto medido: las cinco filas de
+        `declarations.py` imprimían la ruta de `db`.
+
+        Como segmento, la MISMA cadena compone un hogar distinto por clon,
+        cada uno dentro de su propia raíz.
+        """
+        roots = reach.roots()
+        previo = os.environ.get(rules.RULES_DIR_VAR)
+        os.environ[rules.RULES_DIR_VAR] = "reglas-declaradas"
+        try:
+            hogares = {r: rules.consumer_rules_dir(p) for r, p in roots.items()}
+        finally:
+            if previo is None:
+                del os.environ[rules.RULES_DIR_VAR]
+            else:
+                os.environ[rules.RULES_DIR_VAR] = previo
+
+        self.assertEqual(len(set(hogares.values())), len(roots),
+                         f"la clave de familia colapsó los hogares: {hogares}")
+        for repo, home in hogares.items():
+            self.assertEqual(home, pathlib.Path(roots[repo]) / "reglas-declaradas")
+
+    def test_la_clave_de_familia_absoluta_SI_colisiona(self):
+        """Y es correcto que lo haga — el control que impide sobre-afirmar.
+
+        Sin este caso, el anterior se leería como «la clave de familia nunca
+        colisiona», que es falso. Quien escribe una ruta absoluta está nombrando
+        un sitio concreto, no un patrón; la resolución respeta esa intención en
+        vez de reinterpretarla.
+        """
+        roots = reach.roots()
+        previo = os.environ.get(rules.RULES_DIR_VAR)
+        os.environ[rules.RULES_DIR_VAR] = "/srv/reglas-de-uno"
+        try:
+            hogares = {r: rules.consumer_rules_dir(p) for r, p in roots.items()}
+        finally:
+            if previo is None:
+                del os.environ[rules.RULES_DIR_VAR]
+            else:
+                os.environ[rules.RULES_DIR_VAR] = previo
+
+        self.assertEqual(set(hogares.values()), {pathlib.Path("/srv/reglas-de-uno")})
+
+    def test_la_familia_sigue_siendo_el_ultimo_recurso(self):
+        """Sin clave por clon, la de familia manda — y eso NO es el defecto.
+
+        Declarar una ruta para todos es una decisión legítima del consumidor.
+        Lo que la familia por clon cierra es que sea la ÚNICA forma de decirlo.
+        """
+        previo = os.environ.get(rules.RULES_DIR_VAR)
+        os.environ[rules.RULES_DIR_VAR] = "/tmp/para-todos"
+        try:
+            for repo, root in reach.roots().items():
+                with self.subTest(repo=repo):
+                    self.assertEqual(str(rules.consumer_rules_dir(root)),
+                                     "/tmp/para-todos")
+        finally:
+            if previo is None:
+                del os.environ[rules.RULES_DIR_VAR]
+            else:
+                os.environ[rules.RULES_DIR_VAR] = previo
 
     def test_el_hogar_del_consumidor_cae_dentro_del_consumidor(self):
         """El defecto de #286: resolver el hogar del consumidor DENTRO del proveedor."""

@@ -102,8 +102,17 @@ def resolve_all(start: Path | None = None) -> list[tuple[str, str, str, str]]:
         # como punto de partida, así que su `.env` la puede declarar sin tocar
         # la de los demás. Sin esta fila el default sería SILENCIOSO, que es el
         # defecto entero que este módulo existe para cerrar.
-        declared_rules = reach.env_value(rules.RULES_DIR_VAR, root)
-        rows.append((repo, rules.RULES_DIR_VAR,
+        # La clave que se PUBLICA es la del clon, no la de familia: publicar
+        # `THYROX_RULES_DIR` en las cinco filas invitaba a declararla, y
+        # declararla le da a los cinco el hogar de uno solo. Medido: con la
+        # clave única, `THYROX_RULES_DIR=<db>` imprimía la ruta de db en las
+        # cinco filas y ninguna avisaba. La familia sigue leyéndose como último
+        # recurso dentro de `consumer_rules_dir`; lo que no hace es figurar
+        # aquí como si fuera la entrada de este clon.
+        rules_key = rules.rules_home_name(repo)
+        declared_rules = (reach.env_value(rules_key, root)
+                          or reach.env_value(rules.RULES_DIR_VAR, root))
+        rows.append((repo, rules_key,
                      "declarado" if declared_rules else "por defecto",
                      str(rules.consumer_rules_dir(root))))
 
