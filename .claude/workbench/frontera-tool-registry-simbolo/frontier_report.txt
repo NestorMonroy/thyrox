@@ -1,0 +1,26 @@
+utiles de la fuente sin contraparte: 48
+SIN CUERPO (stub de la fuente o sin .ts): 10
+  DiscoverSkillsTool (1 .ts, todos stub)
+  MonitorTool (1 .ts, todos stub)
+  OverflowTestTool (1 .ts, todos stub)
+  ReviewArtifactTool (1 .ts, todos stub)
+  SnipTool (1 .ts, todos stub)
+  SuggestBackgroundPRTool (0 .ts, todos stub)
+  TerminalCaptureTool (1 .ts, todos stub)
+  TungstenTool (2 .ts, todos stub)
+  VerifyPlanExecutionTool (1 .ts, todos stub)
+  WebBrowserTool (1 .ts, todos stub)
+LIBRES a nivel de simbolo: 0
+BLOQUEADOS: 38
+     80 L  REPLTool: ../AgentTool/AgentTool.js, ../BashTool/BashTool.js, ../FileEditTool/FileEditTool.js, ../FileReadTool/FileReadTool.js (+4)
+    181 L  TeamDeleteTool: ./TeamDeleteTool.js, ./UI.js, ./constants.js, ./prompt.js (+1)
+    184 L  SyntheticOutputTool: ./SyntheticOutputTool.js, @thyrox/permission/PermissionResult::PermissionResult
+    189 L  TaskStopTool: ./TaskStopTool.js, ./UI.js, ./prompt.js, @thyrox/repl/components/MessageResponse.js (el modulo no carga) (+3)
+    195 L  ScheduleWakeupTool: ./prompt.js, @thyrox/agent/scheduler::isLoopDynamicEnabled, @thyrox/agent/scheduler::scheduleLoopWakeup, @anthropic/ink (paquete no hermano)
+    196 L  RemoteTriggerTool: ./RemoteTriggerTool.js, ./UI.js, ./prompt.js, @thyrox/repl/components/MessageResponse.js (el modulo no carga) (+1)
+    200 L  SendUserFileTool: ../BriefTool/BriefTool.js, ../BriefTool/attachments.js, ./SendUserFileTool.js, ./UI.js (+3)
+    226 L  TaskCreateTool: ./constants.js, ./prompt.js, @thyrox/agent/hooks.js::executeTaskCreatedHooks
+    263 L  PushNotificationTool: ./prompt.js, @thyrox/app-host/bootstrap/state.js::NOTIF_ACTIVE_THRESHOLD_MS, @thyrox/app-host/bootstrap/state.js::getIsRemoteMode, @thyrox/app-host/bootstrap/state.js::getLastInteractionTime (+4)
+    270 L  EnterWorktreeTool: ./EnterWorktreeTool.js, ./UI.js, ./constants.js, ./prompt.js (+9)
+    270 L  GlobTool: ../GrepTool/GrepTool.js, ./UI.js, ./prompt.js, @thyrox/repl/components/MessageResponse.js (el modulo no carga) (+7)
+    338 L  EnterPlanModeTool: ../AskUserQuestionTool/prompt.js, ./EnterPlanModeTool.js, ./UI.js, ./constants.js (+6)
