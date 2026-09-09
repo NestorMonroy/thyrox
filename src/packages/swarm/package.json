@@ -44,6 +44,7 @@
     "./runtime/pollForPromptOrShutdown.js": "./src/runtime/pollForPromptOrShutdown.ts",
     "./core/teammateLayoutManager.js": "./src/core/teammateLayoutManager.ts",
     "./runtime/spawnInProcess.js": "./src/runtime/spawnInProcess.ts",
+    "./runtime/inProcessRunner.js": "./src/runtime/inProcessRunner.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
