@@ -1,11 +1,11 @@
 {
   "question": "¿Esta el corpus de builds al dia con el ejecutable que corre, y bajo que version se archiva un volcado nuevo? La pregunta tiene trampa: `claude --version` responde la version del binario que hay AHORA en el PATH, que el contenedor puede haber actualizado a mitad de sesion — asi se archivo un volcado como 2.1.246 en una sesion que respondia 2.1.247 (H-DOCS-455). El mecanismo se porta desde kaupamex-docs por directiva del ejecutor: es del PROVEEDOR.",
-  "instrument": "`bun src/packages/binary/bin/binary.ts freshness|info|extract` — el paquete @thyrox/binary, que ya existia. Deriva la version del payload de la seccion .bun (no del literal mas frecuente, no de `claude --version`), compara el corpus con el ejecutable vivo, y escribe bunfs-root/ + MANIFEST.tsv. El guion que porte a mano desde kaupamex-docs se RETIRO por duplicado: ver README.md de este banco.",
+  "instrument": "`bun src/packages/binary/bin/binary.ts freshness|info|extract` — el paquete @thyrox/binary, que ya existia. Deriva la version del payload de la seccion .bun (no del literal mas frecuente, no de `claude --version`), compara el corpus con el ejecutable vivo, y escribe bunfs-root/ + MANIFEST.tsv. El guion que porte a mano desde kaupamex-docs se RETIRO por duplicado: ver README.md de este run.",
   "metric": "la version que el payload declara contra la ultima build del corpus; y las tres cifras de la tabla de modulos (entradas, bytes de tabla, bytes de contenido) contra la fila de MEASURED en bunfs.test.ts.",
   "blind_to": [
     "un payload cuya version declarada difiera de la del ejecutable que lo contiene — no observado, y no habria con que detectarlo desde dentro",
     "la clasificacion vendor contra aplicacion dentro del payload, que el propio paquete declara sin senal (tarea #18)",
     "si el ejecutable del PATH es el que el cliente esta usando de verdad: se abre `readlink -f $(command -v claude)`, no el proceso vivo"
   ],
-  "destination": "_references/claude-code-bin/2.1.266/ (bunfs-root/ + MANIFEST.tsv + claude_strings.txt + README derivado), la fila de MEASURED en src/packages/binary/__tests__/bunfs.test.ts, y el registro del episodio en el README de este banco."
+  "destination": "_references/claude-code-bin/2.1.266/ (bunfs-root/ + MANIFEST.tsv + claude_strings.txt + README derivado), la fila de MEASURED en src/packages/binary/__tests__/bunfs.test.ts, y el registro del episodio en el README de este run."
 }

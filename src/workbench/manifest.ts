@@ -1,5 +1,5 @@
 /**
- * El banco de trabajo como primitiva.
+ * El workbench como primitiva, y cada una de sus ejecuciones fechadas un run.
  *
  * Porte de `kaupamex-docs: .claude/packages/harness/src/workbench/manifest.ts`
  * a THYROX, con el contrato corregido por :ref:`h-docs-1073`.
@@ -41,6 +41,25 @@
  * Este modulo es MECANISMO: no lleva la cuenta de que bancos existen. Ese
  * registro es el directorio (`calibration-verified-numbers.md`, corolario de
  * la cifra que vive en codigo).
+ *
+ * El lexico, y por que este archivo habla dos
+ * -------------------------------------------
+ * La prosa nacio diciendo «banco», calco de «banco de trabajo». El termino no
+ * es viable: en espanol `banco` nombra a la vez la institucion financiera, el
+ * asiento, el cardumen y el banco de pruebas, y su traduccion literal al
+ * ingles —`bank`— designa el sentido equivocado. El dominio ya tiene sus dos
+ * palabras y las lleva el codigo de este mismo archivo:
+ *
+ * - **workbench** — el subsistema y la forma. `WORKBENCH_FORMS`,
+ *   `checkWorkbench`, `scaffoldWorkbench`, `.claude/workbench/`.
+ * - **run** — UNA ejecucion fechada, `<slug>-<ISO>`. `runIdFor`, `runsFor`,
+ *   `latestRun`, `runIdDate`.
+ *
+ * Corregido aqui lo que este modulo PRODUCE —la definicion de la primitiva, el
+ * andamiaje, el resolutor y el texto que emite el gate— porque un productor
+ * que habla mal ensucia todo lo que emite. La prosa descriptiva que queda con
+ * «banco» describe el corpus de `api` y es deuda heredada: se barre con los
+ * identificadores en espanol, no en un pase aparte.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
@@ -90,7 +109,7 @@ const BASIC_ISO = /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/
 
 /** El mismo ISO, anclado por los dos extremos: el resto del nombre tras el
  *  prefijo tiene que ser EXACTAMENTE el sufijo, o `a-b-<ISO>` se listaria
- *  bajo el slug `a` — un banco ajeno devuelto como propio. */
+ *  bajo el slug `a` — un run ajeno devuelto como propio. */
 const EXACT_BASIC_ISO = /^\d{8}T\d{6}$/
 
 /**
@@ -227,7 +246,7 @@ export function checkWorkbench(dir: string): WorkbenchProblem[] {
   const declared = declaredValue(manifest, 'instrument')
   const missing = missingInstrumentFiles(dir, declared)
   for (const name of missing) {
-    problems.push({ key: 'instrument', problem: `el instrumento '${name}' no existe en el banco` })
+    problems.push({ key: 'instrument', problem: `el instrumento '${name}' no existe en el run` })
   }
 
   const declaredForm = manifest.form
@@ -262,10 +281,10 @@ export function runIdFor(slug: string, now: Date): string {
 }
 
 /**
- * Los bancos de un slug bajo un hogar dado, del más reciente al más antiguo.
+ * Los runs de un slug bajo un hogar dado, del más reciente al más antiguo.
  *
  * Existe porque el subsistema sabía **acuñar** un identificador y no
- * **encontrarlo**. Sin resolutor, quien crea un banco tiene que llevarse el
+ * **encontrarlo**. Sin resolutor, quien crea un run tiene que llevarse el
  * ISO a alguna parte, y esa parte acaba siendo un archivo efímero fuera del
  * árbol — medido en esta sesión: un puntero en `/dev/shm`, que ninguna otra
  * sesión puede leer y que el contenedor borra. El defecto no era el puntero,
@@ -274,9 +293,9 @@ export function runIdFor(slug: string, now: Date): string {
  * El orden es por NOMBRE, no por `mtime`: el ISO va en el identificador, así
  * que el orden lexicográfico ES el cronológico, y no depende de que nadie haya
  * tocado el directorio después. Un `mtime` cambia al escribir un output y
- * reordenaría bancos por actividad en vez de por creación.
+ * reordenaría runs por actividad en vez de por creación.
  *
- * Ciega a: un banco cuyo directorio no siga la forma `<slug>-<ISO básico>` —
+ * Ciega a: un run cuyo directorio no siga la forma `<slug>-<ISO básico>` —
  * no se lista, aunque exista. Es deliberado: el resolutor no adivina qué
  * quiso decir un nombre a mano.
  */
@@ -291,7 +310,7 @@ export function runsFor(baseDir: string, slug: string): string[] {
 }
 
 /**
- * El banco más reciente de un slug, o `null`.
+ * El run más reciente de un slug, o `null`.
  *
  * Devuelve `null` en vez de inventar la ruta que tendría: un consumidor que
  * recibiera una ruta inexistente seguiría en verde apuntando al vacío, que es
@@ -302,14 +321,14 @@ export function latestRun(baseDir: string, slug: string): string | null {
 }
 
 /**
- * Crea el banco y devuelve su ruta.
+ * Crea el run y devuelve su ruta.
  *
  * **Omite las cinco claves a propósito.** Son las que el andamiaje no puede
  * saber, y omitir es distinto de rellenar: un placeholder pasa el check de
  * presencia y se lee como dato —H-DOCS-1036, un `TIMESTAMP_PLACEHOLDER` que
  * llegó al disco—, mientras que una clave ausente la nombra el gate.
  *
- * Un banco recién andamiado **NO es conforme**, y ese es el estado correcto:
+ * Un run recién andamiado **NO es conforme**, y ese es el estado correcto:
  * no está hecho hasta que tiene instrumento y declara qué mide y qué no ve.
  */
 export function scaffoldWorkbench(baseDir: string, slug: string, now: Date = new Date()): string {

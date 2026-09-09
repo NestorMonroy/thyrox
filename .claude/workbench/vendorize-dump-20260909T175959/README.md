@@ -60,7 +60,7 @@ Cuatro, y los cuatro los detectó el ejecutor, no una re-medición propia:
 
 1. **No revisé qué había antes de construir.** `@thyrox/binary` (8 módulos, 4
    suites) y `src/corpus/list_corpus_builds.py` estaban en el árbol.
-2. **Llevé el identificador del banco en `/dev/shm`.** Un fresh clone no puede
+2. **Llevé el identificador del run en `/dev/shm`.** Un fresh clone no puede
    leerlo y el contenedor lo borra — el mismo defecto de directorio efímero que
    la directiva acababa de nombrar. Cerrado con `runsFor`/`latestRun`, que le
    dan al subsistema la mitad que le faltaba: sabía **acuñar** un identificador
@@ -76,3 +76,24 @@ Cuatro, y los cuatro los detectó el ejecutor, no una re-medición propia:
 cifras de la tabla de módulos (`binary info`) contra la fila de `MEASURED`.
 *Ciega a:* si el payload declara una versión distinta de la del ejecutable que
 lo contiene — no observado, y no habría con qué detectarlo desde dentro.
+
+## El léxico, corregido después (directiva del ejecutor)
+
+La palabra «banco» no es viable y este run la usaba. En español nombra a la vez
+la institución financiera, el asiento, el cardumen y el banco de pruebas; su
+traducción literal al inglés —`bank`— designa el sentido equivocado. El dominio
+ya tiene sus dos términos, y los llevaba el propio código:
+
+| Término | Qué nombra | Dónde ya estaba |
+|---|---|---|
+| `workbench` | el subsistema y la forma | `WORKBENCH_FORMS`, `checkWorkbench`, `.claude/workbench/` |
+| `run` | UNA ejecución fechada `<slug>-<ISO>` | `runIdFor`, `runsFor`, `latestRun`, `runIdDate` |
+
+Corregido: `src/lib/bank.sh` → `src/lib/workbench.sh` con su parámetro
+`bank` → `run_dir`, la definición y el andamiaje de `src/workbench/manifest.ts`,
+el texto que emite su gate, y la prosa de este run.
+
+**`controls/no-iso-anchor.out.txt` NO se reescribe.** Es salida capturada de la
+anulación: nombra los tests como se llamaban al correrla. Reescribir evidencia
+fechada para que case con el árbol de hoy la destruye — el control valdría lo
+mismo si lo hubiera escrito a mano.

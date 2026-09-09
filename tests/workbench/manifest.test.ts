@@ -240,7 +240,7 @@ describe('el andamiaje omite lo que no puede saber', () => {
  *
  * Traducir no es rebautizar: `corpus` ya estaba en inglés y no se toca.
  */
-function bancoConforme(dir: string, extra: Record<string, unknown> = {}): void {
+function writeConformingManifest(dir: string, extra: Record<string, unknown> = {}): void {
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, 'medir.py'), '# instrumento\n')
   writeFileSync(join(dir, 'manifest.json'), JSON.stringify({
@@ -256,44 +256,44 @@ describe('las formas del banco, con valores en inglés', () => {
 
   test('sin `form` no se exige ninguna pieza: la clave es opcional', () => {
     const dir = join(mkdtempSync(join(tmpdir(), 'wf-')), 'x-20260906T000000')
-    bancoConforme(dir)
+    writeConformingManifest(dir)
     expect(checkWorkbench(dir)).toEqual([])
   })
 
   test('measurement sin tests/ ni outputs/ reporta las dos', () => {
     const dir = join(mkdtempSync(join(tmpdir(), 'wf-')), 'x-20260906T000000')
-    bancoConforme(dir, { form: 'measurement' })
+    writeConformingManifest(dir, { form: 'measurement' })
     expect(checkWorkbench(dir).length).toBe(2)
   })
 
   test('transformation sin radius/ lo reporta, y con radius/ queda limpio', () => {
     const sin = join(mkdtempSync(join(tmpdir(), 'wf-')), 'x-20260906T000000')
-    bancoConforme(sin, { form: 'transformation' })
+    writeConformingManifest(sin, { form: 'transformation' })
     expect(checkWorkbench(sin).length).toBe(1)
 
     const con = join(mkdtempSync(join(tmpdir(), 'wf-')), 'x-20260906T000000')
-    bancoConforme(con, { form: 'transformation' })
+    writeConformingManifest(con, { form: 'transformation' })
     mkdirSync(join(con, 'radius'))
     expect(checkWorkbench(con)).toEqual([])
   })
 
   test('una forma que no existe se reporta, y nombra la clave', () => {
     const dir = join(mkdtempSync(join(tmpdir(), 'wf-')), 'x-20260906T000000')
-    bancoConforme(dir, { form: 'medicion' })   // la del puerto viejo: ya no vale
+    writeConformingManifest(dir, { form: 'medicion' })   // la del puerto viejo: ya no vale
     const ps = checkWorkbench(dir)
     expect(ps.length).toBe(1)
     expect(ps[0]!.key).toBe('form')
   })
 })
 
-describe('runsFor / latestRun — encontrar un banco, no sólo acuñarlo', () => {
+describe('runsFor / latestRun — encontrar un run, no sólo acuñarlo', () => {
   // El defecto que cierran: el subsistema sabía crear `<slug>-<ISO>` y no
-  // resolverlo, así que quien creaba un banco se llevaba el ISO a un archivo
+  // resolverlo, así que quien creaba un run se llevaba el ISO a un archivo
   // efímero fuera del árbol. Medido: un puntero en `/dev/shm`, ilegible para
   // cualquier otra sesión.
   const base = mkdtempSync(join(tmpdir(), 'runs-'))
 
-  test('devuelve los bancos del slug, del más reciente al más antiguo', () => {
+  test('devuelve los runs del slug, del más reciente al más antiguo', () => {
     for (const name of ['probe-20260101T000000', 'probe-20260909T175959', 'probe-20260505T120000']) {
       mkdirSync(join(base, name), { recursive: true })
     }
@@ -306,9 +306,9 @@ describe('runsFor / latestRun — encontrar un banco, no sólo acuñarlo', () =>
     expect(basename(latestRun(base, 'probe')!)).toBe('probe-20260909T175959')
   })
 
-  test('un banco de OTRO slug con el mismo prefijo no se cuela', () => {
+  test('un run de OTRO slug con el mismo prefijo no se cuela', () => {
     // `probe-extra-<ISO>` empieza por `probe-` y termina en ISO: sin anclar el
-    // sufijo por los dos extremos se listaría como banco de `probe`.
+    // sufijo por los dos extremos se listaría como run de `probe`.
     mkdirSync(join(base, 'probe-extra-20261231T235959'), { recursive: true })
     expect(runsFor(base, 'probe').map((p) => basename(p))).not.toContain('probe-extra-20261231T235959')
     expect(runsFor(base, 'probe-extra').map((p) => basename(p))).toContain('probe-extra-20261231T235959')
@@ -319,7 +319,7 @@ describe('runsFor / latestRun — encontrar un banco, no sólo acuñarlo', () =>
     expect(runsFor(base, 'probe').map((p) => basename(p))).not.toContain('probe-a-mano')
   })
 
-  test('sin banco devuelve null, no una ruta inventada', () => {
+  test('sin run devuelve null, no una ruta inventada', () => {
     expect(latestRun(base, 'nunca-creado')).toBeNull()
     expect(runsFor(join(base, 'no-existe'), 'probe')).toEqual([])
   })
