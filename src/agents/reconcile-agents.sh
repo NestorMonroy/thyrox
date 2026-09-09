@@ -271,6 +271,43 @@ DIAGNOSTICO
   esac
 }
 
+# --- Segundo eje: que PRODUJO, no si dio senales --------------------------
+# El `mtime` de un transcript avanza con cada linea que el agente escribe —un
+# grep, una busqueda de herramienta, un parrafo de razonamiento—. Leerlo como
+# «sigue trabajando» mide el significante y concluye sobre el significado. El
+# veredicto lo decide `thyrox: src/roster/production.py` sobre los eventos que
+# `thyrox: src/transcript/tool_events.py` extrae del transcript.
+#
+# Solo aplica a una entrada de SUBAGENTE (symlink a su JSONL). El `.output` de
+# una tarea de `Bash` es un log plano sin `tool_use`: publicar «sin evidencia»
+# sobre el seria un veredicto que no discrimina —el instrumento no puede ver
+# ahi— asi que se dice que no aplica.
+production_line() {
+  local entry="$1"
+  if [[ ! -L "$entry" ]]; then
+    echo "  produccion     : (no aplica: el instrumento lee tool_use de un transcript de subagente)"
+    return 0
+  fi
+  THYROX_SRC="$LECTOR" python3 - "$entry" "$WINDOW_SECONDS" <<'PRODUCCION'
+import os, sys, time
+sys.path.insert(0, os.environ["THYROX_SRC"])
+from pathlib import Path
+from roster import production
+from transcript import tool_events
+
+entry = Path(sys.argv[1])
+scan = tool_events.scan(entry.resolve(), now=time.time())
+p = production.summarize(scan.events, window=float(sys.argv[2]))
+ultima = ("ninguna en la ventana" if p.last_mutation_age is None
+          else f"hace {p.last_mutation_age / 60:.0f} min")
+print(f"  produccion     : {production.verdict(p)} — mutantes={p.mutating} "
+      f"solo-lectura={p.read_only} indecidibles={p.undecidable} (ultima: {ultima})")
+if p.undecidable:
+    print(f"                   {p.undecidable} llamadas cuyo efecto este instrumento "
+          "NO puede ver: no son «no produjo».")
+PRODUCCION
+}
+
 # --- Modo: confirmar muerte antes de relanzar ----------------------------
 if [[ "$MODE" == "confirmar" ]]; then
   ENTRY="$ROSTER/${TARGET_ID}.output"
@@ -319,7 +356,9 @@ if [[ "$MODE" == "confirmar" ]]; then
       echo "BAIL — $TARGET_ID está '$VERDICT', no 'desaparecido'."
       case "$VERDICT" in
         terminado)   echo "       Ya cerró. Relanzarlo repetiría trabajo hecho." ;;
-        vivo)        echo "       Su mtime avanzó durante la vigilancia. Sigue trabajando." ;;
+        vivo)        echo "       Su mtime avanzó durante la vigilancia: el archivo crece." ;
+                     echo "       Que ese avance sea TRABAJO lo dice el eje de producción," ;
+                     echo "       no el mtime — abajo, medido sobre sus tool_use." ;;
         reciente)    echo "       Escribió dentro de la ventana. Sin una segunda muestra" ;
                      echo "       no se sabe si avanza, y relanzarlo pondría DOS copias" ;
                      echo "       sobre el mismo working tree." ;;
@@ -328,6 +367,7 @@ if [[ "$MODE" == "confirmar" ]]; then
         indecidible) echo "       Sin marcador terminal y sin forma medible del corte." ;
                      echo "       Es el 52 % medido: la muerte NO se puede confirmar aquí." ;;
       esac
+      production_line "$ENTRY"
       exit 2 ;;
   esac
 fi
