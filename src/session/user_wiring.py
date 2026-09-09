@@ -36,7 +36,7 @@ from typing import Protocol
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from paths.reach import thyrox_root  # noqa: E402
+from paths.reach import reach, thyrox_root  # noqa: E402
 
 #: El archivo que el lanzador remoto carga. El cwd de la sesion es
 #: `/home/user`, no un clon, asi que este es el unico settings de proyecto que
@@ -72,27 +72,42 @@ def declared_wiring(root: Path | None = None) -> dict:
             entrada["timeout"] = timeout
         return entrada
 
-    # Los tres primeros son envoltorios que hoy viven en el consumidor; su
-    # MECANISMO ya vive aqui (`src/agents/register_session.py`,
-    # `src/agents/measure_delta.py`). Se declaran donde estan, no donde
-    # gustaria que estuvieran: una declaracion que apunte a un archivo que no
-    # existe es exactamente el defecto que este modulo cierra.
-    hooks = f"{consumer}/.claude/hooks"
+    # EL CABLEADO APUNTA AL PRODUCTOR. Antes nombraba los tres envoltorios de
+    # `kaupamex-docs/.claude/hooks/`, que era verdad cuando el mecanismo vivia
+    # ahi. Ya no: los tres estan en `thyrox: src/agents/` —`register_session.py`
+    # 1002 lineas, `measure_delta.py` 227, `save_result.mjs` 259— y los tres
+    # tienen puerta de entrada propia. Medido antes de reapuntar.
+    #
+    # Lo que el envoltorio aportaba era el PARAMETRO del consumidor (DEC-04), y
+    # ese parametro no necesita un archivo: lo compone esta funcion, que vive en
+    # el productor y ya resuelve el arbol. Un envoltorio que solo antepone
+    # argumentos es un salto de mas, y ademas un sitio donde el cableado puede
+    # quedarse atras sin que nadie lo vea — que es exactamente lo que paso.
+    #
+    # Cuanto aporta cada uno, medido:
+    #   register_session  0 — el mecanismo ya lee AGENT_STORE_CLAUDE_DIR (:713)
+    #   measure_delta     --repo <n>=<ruta> (de `reach`) y --results-dir
+    #   save_result       --log-dir
+    agentes = f"{base}/src/agents"
+    resultados = f"{consumer}/.claude/agent-results"
+    repos = " ".join(f"--repo {nombre}={ruta}"
+                     for nombre, ruta in sorted(reach().items()))
+    delta = f"python3 {agentes}/measure_delta.py"
+    registro = f"python3 {agentes}/register_session.py"
     return {
         "hooks": {
             "SubagentStart": [{"hooks": [
-                cmd(f"python3 {hooks}/medir_delta_subagente.py --start"),
-                cmd(f"python3 {hooks}/register_agent_session.py --start"),
+                cmd(f"{delta} --start {repos} --results-dir {resultados}"),
+                cmd(f"{registro} --start"),
             ]}],
             "PreModelSwitch": [{"hooks": [
-                # Repuntado a thyrox: la copia viva apunta al consumidor, donde
-                # el archivo NO existe, y el hook esta muerto por eso.
-                cmd(f"bun run {base}/src/packages/agent/bin/preModelSwitch.ts", timeout=10),
+                cmd(f"bun run {base}/src/packages/agent/bin/preModelSwitch.ts",
+                    timeout=10),
             ]}],
             "SubagentStop": [{"hooks": [
-                cmd(f"node {hooks}/save-agent-result.mjs"),
-                cmd(f"python3 {hooks}/medir_delta_subagente.py --stop"),
-                cmd(f"python3 {hooks}/register_agent_session.py --stop"),
+                cmd(f"node {agentes}/save_result.mjs --log-dir {resultados}"),
+                cmd(f"{delta} --stop {repos} --results-dir {resultados}"),
+                cmd(f"{registro} --stop"),
             ]}],
         },
         "advisorModel": "claude-fable-5-1",

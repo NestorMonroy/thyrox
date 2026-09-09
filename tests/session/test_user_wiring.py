@@ -209,5 +209,32 @@ _stalled.send_signal(18)  # SIGCONT, para poder terminarlo
 _stalled.kill()
 _stalled.wait(timeout=10)
 
+print("== 12. TODO ejecutable declarado vive en el PRODUCTOR ==")
+# El defecto que cierra: el cableado nombraba tres envoltorios de
+# `kaupamex-docs/.claude/hooks/`. Era verdad cuando el mecanismo vivia ahi; con
+# la mudanza a `thyrox/src/agents/` quedo atras y nadie lo vio, porque los
+# archivos SEGUIAN existiendo — `broken_targets` da 0 con el cableado viejo.
+#
+# Por eso este caso no mide EXISTENCIA sino PROCEDENCIA: el consumidor puede
+# aparecer como PARAMETRO (`--log-dir <docs>/…`), nunca como el ejecutable.
+# Anulacion: repuntar un solo comando al envoltorio hace caer este caso y solo
+# este.
+import re as _re  # noqa: E402
+
+_ejecutables = []
+for _ev, _gs in w.declared_wiring()["hooks"].items():
+    for _g in _gs:
+        for _h in _g["hooks"]:
+            # El ejecutable es el primer argumento que es una ruta: lo que
+            # viene despues de python3/node/bun run.
+            _m = _re.search(r"(?:python3|node|bun run)\s+(\S+)", _h["command"])
+            if _m:
+                _ejecutables.append((_ev, _m.group(1)))
+check("los seis comandos nombran su ejecutable", 6, len(_ejecutables))
+_ajenos = [f"{ev}:{r}" for ev, r in _ejecutables if "/thyrox/" not in r]
+check("ninguno ejecuta desde el consumidor", [], _ajenos)
+check("y todos existen", [],
+      [r for _, r in _ejecutables if not Path(r).is_file()])
+
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)
