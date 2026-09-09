@@ -13,8 +13,7 @@ clon, que es lo único que la resolución añade, y que una ABSOLUTA siga
 colisionando, que es lo que impide sobre-afirmar «nunca colisiona».
 
 Ciega a: la mitad TypeScript, cuyo cuerpo no se compara aquí — la ata
-`tests/workbench/paths.test.ts`. Ciega al caso sin raíz de consumidor
-resoluble, donde la función devuelve el valor crudo a propósito. Y ciega a
+`tests/workbench/paths.test.ts`. Y ciega a
 los clones que declaran su clave POR CLON: sobre ellos la de familia no es
 observable, y `_sin_clave_por_clon` los excluye del universo en vez de
 contarlos como fallos.
@@ -67,6 +66,20 @@ def _sin_clave_por_clon() -> dict[str, Path]:
             if not reach.env_value(workbench.workbench_home_name(repo), root)}
 
 
+class _Absent:
+    """Retira una clave durante el bloque y restaura lo que hubiera."""
+
+    def __init__(self, key: str) -> None:
+        self.key = key
+
+    def __enter__(self) -> None:
+        self.previous = os.environ.pop(self.key, None)
+
+    def __exit__(self, *_exc: object) -> None:
+        if self.previous is not None:
+            os.environ[self.key] = self.previous
+
+
 class WorkbenchHomeResolution(unittest.TestCase):
     def test_la_poblacion_medible_alcanza_para_la_afirmacion(self):
         """Sin al menos dos clones, «un hogar POR CLON» no se puede observar."""
@@ -102,6 +115,38 @@ class WorkbenchHomeResolution(unittest.TestCase):
         with _Declared(workbench.workbench_home_name(objetivo), "banco-del-clon"):
             home = workbench.workbench_dir(roots[objetivo])
         self.assertEqual(home, roots[objetivo] / "banco-del-clon")
+
+    def test_sin_raiz_de_consumidor_resoluble_devuelve_la_cruda(self):
+        """El caso que esta suite declaraba ciego hasta el 2026-09-09.
+
+        Partiendo de dentro del PROVEEDOR, ``consumer_root`` rehúsa: thyrox
+        también lleva ``.claude/``, así que el ascenso no lo distingue de un
+        consumidor. Ahí una relativa no se puede componer, y se devuelve
+        CRUDA — el llamador ve la ruta que declaró, en vez de una compuesta
+        contra un árbol que este módulo eligió por su cuenta.
+
+        Qué lo haría fallar: retirar el ``except ConsumerUnknownError`` de
+        ``workbench_dir``. Entonces esto propaga la excepción en vez de
+        resolver, que es lo que la mitad TypeScript hacía.
+        """
+        dentro_del_proveedor = reach.thyrox_root() / "src" / "paths"
+        with _Absent(reach.CONSUMER_ROOT_VAR), \
+             _Declared(workbench.WORKBENCH_DIR_VAR, "hogar-relativo"):
+            self.assertEqual(workbench.workbench_dir(dentro_del_proveedor),
+                             Path("hogar-relativo"))
+
+    def test_con_raiz_resoluble_la_misma_relativa_SI_se_compone(self):
+        """CONTROL DE ANULACIÓN del caso anterior.
+
+        Sin él, aquel pasaría igual con un mecanismo que devolviera SIEMPRE el
+        valor crudo — el defecto home-by-cwd que #284/#286 cerraron.
+        """
+        roots = _sin_clave_por_clon()
+        objetivo = sorted(roots)[0]
+        with _Absent(reach.CONSUMER_ROOT_VAR), \
+             _Declared(workbench.WORKBENCH_DIR_VAR, "hogar-relativo"):
+            home = workbench.workbench_dir(roots[objetivo])
+        self.assertEqual(home, roots[objetivo] / "hogar-relativo")
 
     def test_las_dos_familias_resuelven_igual(self):
         """`rules` ya lo hacía y `workbench` no — la asimetría que se cerró.

@@ -23,7 +23,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   agentsDir, AGENTS_DIR_VAR, cloneName, cloneNames, ENV_FILE_VAR, envNames, envValue, root, roots,
-  CONSUMER_MARKER, CONSUMER_ROOT_VAR, consumerRoot,
+  CONSUMER_MARKER, CONSUMER_ROOT_VAR, ConsumerUnknownError, consumerRoot,
   THYROX_ROOT_VAR, thyroxRoot, treeRoot,
 } from '../../src/paths/reach.ts'
 
@@ -243,5 +243,39 @@ describe('consumerRoot — la raíz del árbol MEDIDO, que no es la del proveedo
     const rotulado = join(raiz, 'kaupamex-docs')
     mkdirSync(rotulado, { recursive: true })
     expect(consumerRoot(undefined, rotulado)).toBe(raiz)
+  })
+
+  // Paridad con `tests/paths/test_consumer_root_refuses_provider.py`. Esta
+  // mitad NO tenía el guard: devolvía la raíz del PROVEEDOR en silencio, y el
+  // llamador componía con ella un hogar dentro de thyrox — la vía por la que
+  // aterrizaron los once bancos de L-028.
+  test('rehúsa cuando el ascenso aterriza en el PROVEEDOR', () => {
+    delete process.env[CONSUMER_ROOT_VAR]
+    const proveedor = thyroxRoot()
+    expect(() => consumerRoot(undefined, join(proveedor, 'src', 'paths')))
+      .toThrow(ConsumerUnknownError)
+  })
+
+  test('y el mensaje nombra la variable que lo desbloquea', () => {
+    delete process.env[CONSUMER_ROOT_VAR]
+    const proveedor = thyroxRoot()
+    try {
+      consumerRoot(undefined, join(proveedor, 'src', 'paths'))
+      throw new Error('no rehusó')
+    } catch (e) {
+      expect((e as Error).message).toContain(CONSUMER_ROOT_VAR)
+      expect((e as Error).message).toContain(proveedor)
+    }
+  })
+
+  // CONTROL DE ANULACIÓN del guard. Sin este caso, los dos anteriores pasarían
+  // igual con un `consumerRoot` que rehusara SIEMPRE: el verde no distinguiría
+  // «reconoce al proveedor» de «no sabe resolver nada».
+  test('un consumidor real con el mismo marcador SÍ resuelve', () => {
+    const raiz = raizTemporal()
+    delete process.env[CONSUMER_ROOT_VAR]
+    mkdirSync(join(raiz, CONSUMER_MARKER), { recursive: true })
+    expect(consumerRoot(undefined, raiz)).toBe(raiz)
+    expect(raiz).not.toBe(thyroxRoot())
   })
 })

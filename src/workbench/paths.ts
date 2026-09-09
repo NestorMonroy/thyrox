@@ -52,7 +52,7 @@
  */
 import { join } from 'node:path'
 
-import { consumerRoot, envValue, resolveHome } from '../paths/reach.ts'
+import { ConsumerUnknownError, consumerRoot, envValue, resolveHome } from '../paths/reach.ts'
 
 /**
  * Los dos segmentos del par, declarables por separado. La mitad Python los
@@ -114,13 +114,31 @@ export class WorkbenchHomeError extends Error {}
  * @param start punto de partida para localizar el `.env`; por defecto el cwd.
  */
 export function workbenchDir(start?: string): string {
-  const home = consumerRoot(undefined, start)
   // El valor declarado pasa por `resolveHome`, igual que en la familia
   // `rules`. Se devolvia CRUDO, y eso dejaba a la clave sin su unica forma
   // util: como segmento relativo tiene que decir «en cada clon, este
   // subdirectorio», y devuelta cruda resolvia contra el CWD — el defecto
   // home-by-cwd de #284/#286 dentro de la familia que el registro publica.
   const declared = envValue(WORKBENCH_DIR_VAR, start)
-  if (declared) return resolveHome(declared, home)
-  return join(home, stateDir(start), evidenceDir(start))
+  if (declared) {
+    // Ancla: la raiz del consumidor. Si no se puede saber cual es —el ascenso
+    // aterriza en el PROVEEDOR— una relativa no se puede componer, y se
+    // devuelve CRUDA: el llamador ve la ruta que declaro en vez de una
+    // compuesta contra un arbol que este modulo eligio por su cuenta.
+    //
+    // El `consumerRoot` se invoca DENTRO de esta rama, no antes. Sacarlo
+    // arriba hace que una ruta ABSOLUTA declarada —que no necesita ancla
+    // ninguna— dependa de que el ascenso tenga exito, y rehuse donde la mitad
+    // Python resuelve. Es la asimetria que este orden cierra.
+    try {
+      return resolveHome(declared, consumerRoot(undefined, start))
+    } catch (e) {
+      if (e instanceof ConsumerUnknownError) return declared
+      throw e
+    }
+  }
+  // Sin declaracion no hay nada que devolver crudo: el default SALE de la
+  // cadena declarada, asi que si su primer eslabon rehusa, rehusa el default.
+  // Propagar es correcto — la mitad Python hace lo mismo.
+  return join(consumerRoot(undefined, start), stateDir(start), evidenceDir(start))
 }

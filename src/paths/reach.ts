@@ -65,6 +65,17 @@ export const AGENTS_DIR_DEFAULT = join('src', 'agents', 'definitions')
 export class ReachRootError extends Error {}
 
 /**
+ * No se pudo determinar el clon consumidor, y no se inventa uno.
+ *
+ * Contraparte de `ConsumerUnknownError` de `reach.py`. Esta mitad NO la tenia:
+ * `consumerRoot` devolvia la raiz del PROVEEDOR en silencio cuando el ascenso
+ * aterrizaba en el, y el llamador componia con ella un hogar que
+ * `declarations.py` no lista — que es exactamente la via por la que once
+ * bancos aterrizaron en el arbol de thyrox (L-028).
+ */
+export class ConsumerUnknownError extends Error {}
+
+/**
  * Analiza un `.env` y devuelve sus pares, sin librería de terceros.
  *
  * Cubre lo mismo que la mitad Python: comentarios, líneas en blanco, el
@@ -388,8 +399,10 @@ export const CONSUMER_MARKER = '.claude'
  * *Ciega a:* CUÁL de los consumidores es el correcto cuando hay varios en la
  * cadena. Medido en este árbol el 2026-09-06: `/home/user/.claude`,
  * `/home/user/thyrox/.claude` y `/home/user/kaupamex-docs/.claude` existen los
- * tres, así que un ascenso desde thyrox devuelve al PROVEEDOR y uno desde
- * `/home/user` devuelve un directorio que no es clon de nadie. Por eso quien
+ * tres. El caso del PROVEEDOR dejó de ser ceguera el 2026-09-09: ahora rehúsa
+ * con `ConsumerUnknownError` en vez de devolver su raíz. Sigue ciega al otro —
+ * un ascenso desde `/home/user` devuelve un directorio que no es clon de
+ * nadie, porque ese sí lleva el marcador y no es el proveedor. Por eso quien
  * resuelve un artefacto del consumidor no se apoya en el ascenso: exige el
  * valor declarado y, sin él, cae a una raíz nombrada. El ascenso sirve al caso
  * para el que se portó — un proceso que YA corre dentro del consumidor.
@@ -399,8 +412,28 @@ export function consumerRoot(declared?: string, start?: string): string {
   const value = envValue(CONSUMER_ROOT_VAR, start)
   if (value) return resolve(value)
   const here = resolve(start ?? defaultStart())
+  // `thyroxRoot()` SIN `start`: se resuelve desde el propio modulo, igual que
+  // la mitad Python lo hace desde `__file__`. Pasarle el punto de partida del
+  // ascenso lo haria fallar en cualquier arbol que no sea thyrox — que es
+  // justo el caso que este guard tiene que poder medir.
+  const provider = resolve(thyroxRoot())
   for (const level of levelsUpward(here)) {
-    if (existsSync(join(level, CONSUMER_MARKER))) return level
+    if (existsSync(join(level, CONSUMER_MARKER))) {
+      // El proveedor tambien lleva `.claude/`, asi que el marcador no lo
+      // distingue de un consumidor. Devolverlo seria peor que rehusar: el
+      // llamador compone un hogar dentro de thyrox y nada falla.
+      if (level === provider) {
+        throw new ConsumerUnknownError(
+          `El ascenso desde ${here} aterriza en el PROVEEDOR (${provider}), ` +
+          `no en un consumidor. El proveedor tambien lleva ${CONSUMER_MARKER}/, ` +
+          `asi que el marcador no lo distingue. Declara ${CONSUMER_ROOT_VAR} ` +
+          `con la raiz del clon, pasa \`declared\`, o invoca desde dentro de ` +
+          `el. NO se devuelve la raiz de thyrox: el llamador compondria un ` +
+          `hogar dentro del proveedor que declarations.py no lista.`,
+        )
+      }
+      return level
+    }
   }
   return here
 }

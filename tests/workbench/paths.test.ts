@@ -37,6 +37,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { thyroxRoot } from '../../src/paths/reach.ts'
 import { WORKBENCH_DIR_VAR, WorkbenchHomeError, evidenceDir, stateDir, workbenchDir } from '../../src/workbench/paths.ts'
 
 /** Corre `fn` con el entorno alterado y lo restaura pase lo que pase. */
@@ -89,8 +90,12 @@ describe('el hogar del banco se declara, no se cablea', () => {
     withEnv({ THYROX_WORKBENCH_DIR: undefined, THYROX_ENV_FILE: join(vacio, '.env') }, () => {
       // Cambió por directiva del ejecutor 2026-09-07: sin declaración cae a un
       // default de la cadena declarada, no rehúsa. Ver L-028 y `declarations.py`.
-      const home = workbenchDir()
-      expect(home.endsWith(`${stateDir()}/${evidenceDir()}`)).toBe(true)
+      // `start` en un arbol sin `.claude` para que el ascenso de
+      // `consumerRoot` no aterrice en el PROVEEDOR. Sin el, este caso medía el
+      // default compuesto DENTRO de thyrox — que es el defecto L-028, no su
+      // ausencia. La mitad Python ya pasaba su temporal por `start`.
+      const home = workbenchDir(vacio)
+      expect(home.endsWith(`${stateDir(vacio)}/${evidenceDir(vacio)}`)).toBe(true)
     })
   })
 
@@ -101,11 +106,47 @@ describe('el hogar del banco se declara, no se cablea', () => {
     // el caso 4 pasaría igual con una función que ignorase el entorno.
     const vacio = mkdtempSync(join(tmpdir(), 'wb-msg-'))
     withEnv({ THYROX_WORKBENCH_DIR: undefined, THYROX_ENV_FILE: join(vacio, '.env') }, () => {
-      const porDefecto = workbenchDir()
+      const porDefecto = workbenchDir(vacio)
       withEnv({ THYROX_WORKBENCH_DIR: '/declarado/a/mano' }, () => {
-        expect(workbenchDir()).toBe('/declarado/a/mano')
-        expect(workbenchDir()).not.toBe(porDefecto)
+        expect(workbenchDir(vacio)).toBe('/declarado/a/mano')
+        expect(workbenchDir(vacio)).not.toBe(porDefecto)
       })
+    })
+  })
+
+  // El caso que esta suite declaraba ciego hasta el 2026-09-09. Los casos 2, 3
+  // y 6 declaran rutas ABSOLUTAS, que `resolveHome` devuelve sin mirar el
+  // ancla: pasaban igual con el ancla resuelta, rota o inexistente. Sólo una
+  // RELATIVA obliga a componer, y sólo entonces importa qué hace el mecanismo
+  // cuando la raíz del consumidor no se puede saber.
+  //
+  // La respuesta es «devolverla CRUDA», no rehusar: el llamador ve la ruta que
+  // declaró en vez de una compuesta contra un árbol que este módulo eligió por
+  // su cuenta. Paridad con la mitad Python, que captura `ConsumerUnknownError`.
+  test('6-bis. declarada RELATIVA y sin raíz de consumidor resoluble → cruda', () => {
+    // Partir de dentro del PROVEEDOR: el ascenso aterriza en thyrox y
+    // `consumerRoot` rehúsa, que es la única forma de llegar aquí.
+    const dentroDelProveedor = join(thyroxRoot(), 'src', 'paths')
+    withEnv({
+      THYROX_WORKBENCH_DIR: 'hogar-relativo',
+      THYROX_CONSUMER: undefined,
+      THYROX_ENV_FILE: undefined,
+    }, () => {
+      expect(workbenchDir(dentroDelProveedor)).toBe('hogar-relativo')
+    })
+  })
+
+  // CONTROL DE ANULACIÓN de 6-bis. Sin él, aquel caso pasaría igual con un
+  // mecanismo que devolviera SIEMPRE el valor crudo — el defecto home-by-cwd
+  // que #284/#286 cerraron. Con raíz resoluble, la misma relativa SE COMPONE.
+  test('6-ter. la misma relativa SÍ se compone cuando hay raíz resoluble', () => {
+    const consumidor = mkdtempSync(join(tmpdir(), 'wb-consumidor-'))
+    withEnv({
+      THYROX_WORKBENCH_DIR: 'hogar-relativo',
+      THYROX_CONSUMER: consumidor,
+      THYROX_ENV_FILE: undefined,
+    }, () => {
+      expect(workbenchDir()).toBe(join(consumidor, 'hogar-relativo'))
     })
   })
 
