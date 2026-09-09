@@ -22,9 +22,17 @@ import sys
 import tempfile
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
+# La aritmetica de ruta se usa SOLO para alimentar `sys.path` y poder
+# preguntarle a `reach`, que es la excepcion que `check_path_arithmetic`
+# admite. La raiz de la que cuelga el sujeto sale de `reach.thyrox_root()`,
+# no de contar directorios: contarlos es lo que la mudanza a thyrox invalido.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+
+from paths import reach  # noqa: E402
+
 spec = importlib.util.spec_from_file_location(
-    "symbol_presence", HERE / "src" / "verify" / "symbol_presence.py")
+    "symbol_presence",
+    reach.thyrox_root() / "src" / "verify" / "symbol_presence.py")
 engine = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(engine)
 reader = engine.reader_module
