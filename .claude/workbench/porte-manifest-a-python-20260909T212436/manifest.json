@@ -1,0 +1,8 @@
+{
+  "question": "¿Puede una sesión crear un run del banco y volver a encontrarlo sin llevarse el ISO a un archivo efímero?",
+  "instrument": "`python3 tests/workbench/test_manifest.py` y `bash tests/lib/test-workbench-sh.sh` — las dos mitades del ciclo, cada una con su control de anulacion corrido y su caida medida.",
+  "metric": "26 aserciones Python + 16 shell sobre acuñar, resolver y andamiar; más la anulación de cada mitad.",
+  "blind_to": "Un run cuyo directorio no siga la forma `<slug>-<ISO básico>` — no se lista aunque exista. Y el gate de conformidad (`checkWorkbench`), que NO se porta y sigue viviendo una sola vez en TypeScript.",
+  "destination": "src/workbench/manifest.py · src/lib/workbench.sh · src/workbench/paths.py",
+  "form": "measurement"
+}

@@ -182,12 +182,16 @@ def evidence_dir(start: str | Path | None = None) -> str:
 
 
 class WorkbenchHomeError(Exception):
-    """Ya no la lanza ``workbench_dir``. Se conserva por sus capturadores.
+    """El hogar del banco no se puede resolver, y el mensaje dice como.
 
-    Retirarla del modulo romperia todo ``except WorkbenchHomeError`` vivo por un
-    cambio que no es de comportamiento sino de nombre. Un capturador que ya no
-    dispara es inofensivo; un ``NameError`` en el manejador de errores de un
-    gate, no.
+    La lanza ``workbench_dir`` cuando el ascenso no alcanza a decidir cual es el
+    consumidor: el clon recien bajado, sin `.env`. Ese caso NO es un fallback —
+    no hay ancla contra la que componer una ruta relativa, asi que inventarla
+    daria un hogar bajo un arbol que este modulo eligio por su cuenta.
+
+    Envuelve a ``ConsumerUnknownError`` en vez de dejarla escapar: el mensaje de
+    aquella describe el ascenso, no el remedio, y quien recibe el error necesita
+    saber que se corre `write-env.sh`.
     """
 
 
@@ -257,7 +261,21 @@ def workbench_dir(start: str | Path | None = None) -> Path:
         except ConsumerUnknownError:
             return Path(declared)
 
-    home = consumer_root(start=inicio) / state_dir(start) / evidence_dir(start)
+    # El ascenso puede no decidir cual es el consumidor — es el caso del clon
+    # recien bajado, sin `.env`: el PROVEEDOR no se distingue de un consumidor
+    # por su `.claude/`. Se envuelve en `WorkbenchHomeError` con el remedio
+    # NOMBRADO, en vez de dejar escapar una excepcion de otra capa cuyo mensaje
+    # no dice que hacer.
+    try:
+        raiz = consumer_root(start=inicio)
+    except ConsumerUnknownError as err:
+        raise WorkbenchHomeError(
+            f"no se puede resolver el hogar del banco: {err}. "
+            f"Generalo con `bash src/session/write-env.sh`, que deriva cada "
+            f"valor del arbol real y declara {WORKBENCH_DIR_VAR} en el `.env`."
+        ) from err
+
+    home = raiz / state_dir(start) / evidence_dir(start)
     record_fallback(
         WORKBENCH_DIR_VAR, home,
         f"nadie lo declaro; sale de consumer_root() + {STATE_DIR_VAR} + "

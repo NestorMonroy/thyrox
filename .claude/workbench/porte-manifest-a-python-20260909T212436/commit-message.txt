@@ -1,0 +1,30 @@
+Give a run a resolver in Python and shell
+
+The workbench could MINT a dated run id but only from TypeScript, and
+session work — hooks, gates, scripts — is Python and bash. Without a
+resolver, whoever created a run had to carry the ISO somewhere, and
+that somewhere became a pointer in /dev/shm: unreadable by any other
+session and erased with the container. The defect was never the
+pointer; it was that the mechanism offered no alternative.
+
+Ports the eight lifecycle symbols to src/workbench/manifest.py with an
+argparse entry point (run-id, runs, latest, scaffold), and adds
+thyrox_run_id/runs_for/latest_run/scaffold_run to src/lib/workbench.sh,
+which delegate to the Python half rather than reimplementing the ISO
+pattern — one source of truth for what a run is, the same reason
+reach.sh delegates to reach.py.
+
+checkWorkbench is deliberately NOT ported: the gate is wired once, in
+src/packages/cli/src/commands/workbench.ts. A second verifier would be
+a second source of truth about what makes a run conformant.
+
+Also wraps the ConsumerUnknownError escaping workbench_dir() in the
+existing WorkbenchHomeError, naming the remedy (write-env.sh) in the
+message. A fresh clone with no .env hit an exception whose text
+described the ascent, not what to run.
+
+Both anulacion controls were run and one corrected the declaration:
+ordering by mtime instead of by name drops exactly 4 of 26 Python
+assertions; breaking the Python delegation drops 3 of the 8 shell
+cases, not the 8 claimed before measuring — the 5 survivors measure
+refusal, and a broken module also refuses.

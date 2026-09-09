@@ -85,3 +85,83 @@ thyrox_work_file() {
   printf '%s/%s' "$run_dir" "$name"
 }
 export -f thyrox_work_file
+
+# -----------------------------------------------------------------------------
+# El RESOLUTOR — el run se encuentra, no se lleva a mano
+# -----------------------------------------------------------------------------
+# `thyrox_work_file` recibe el run y lo exige existente; hasta aquí, quien lo
+# creaba tenía que llevarse el ISO a alguna parte, y esa parte fue un puntero en
+# `/dev/shm`. El defecto no era el puntero: era que el mecanismo no ofrecía
+# alternativa. Estas tres cierran el ciclo — acuñar, resolver, andamiar.
+#
+# Delegan a la mitad Python (`src/workbench/manifest.py`) por la misma razón que
+# `reach.sh`: el criterio de qué es un run vive en UN sitio. Reimplementar aquí
+# el patrón del ISO daría dos fuentes de verdad que nadie sincroniza.
+#
+# `_thyrox_ascend` viene de `reach.sh`, que se sourcea si no está cargado. NO se
+# copia `_thyrox_delegate`: su propia cabecera prohíbe la segunda copia, y su
+# modo `--value` no es el de este módulo.
+
+# @description Delega en la mitad Python del manifiesto. Propaga su código.
+# @arg $@ string el subcomando y sus argumentos
+_thyrox_workbench_delegate() {
+  local root output code
+
+  if ! declare -F _thyrox_ascend >/dev/null 2>&1; then
+    local here="${BASH_SOURCE[0]%/*}"
+    # shellcheck source=/dev/null
+    [[ -f "$here/reach.sh" ]] && source "$here/reach.sh"
+  fi
+  if ! declare -F _thyrox_ascend >/dev/null 2>&1; then
+    echo "workbench.sh: no se pudo cargar reach.sh, que resuelve la raiz" >&2
+    return 2
+  fi
+
+  root="$(_thyrox_ascend "$PWD")" || {
+    echo "workbench.sh: no se hallo la raiz de THYROX ascendiendo desde $PWD" >&2
+    return 2
+  }
+
+  output="$(cd "$root" && python3 -m src.workbench.manifest "$@" 2>&1)"
+  code=$?
+  [[ -n "$output" ]] && printf '%s\n' "$output"
+  return $code
+}
+
+# @description El identificador de un run, sin crearlo.
+# @arg $1 string el slug
+thyrox_run_id() {
+  [[ -z "${1:-}" ]] && { echo "thyrox_run_id: se exige el slug" >&2; return 2; }
+  _thyrox_workbench_delegate run-id "$1"
+}
+
+# @description Los runs de un slug, del mas reciente al mas antiguo.
+#
+# Devuelve 1 si no hay ninguno — un cero de salida con lista vacia no
+# distinguiria «no hay runs» de «los hay y el filtro no los vio».
+# @arg $1 string el slug
+thyrox_runs_for() {
+  [[ -z "${1:-}" ]] && { echo "thyrox_runs_for: se exige el slug" >&2; return 2; }
+  _thyrox_workbench_delegate runs "$1"
+}
+
+# @description El run mas reciente de un slug. Devuelve 1 si no hay ninguno.
+# @arg $1 string el slug
+thyrox_latest_run() {
+  [[ -z "${1:-}" ]] && { echo "thyrox_latest_run: se exige el slug" >&2; return 2; }
+  _thyrox_workbench_delegate latest "$1"
+}
+
+# @description Crea el run y devuelve su ruta. El hogar lo resuelve el
+# gobernador de rutas (`THYROX_WORKBENCH_DIR`); este guion no lo compone.
+# @arg $1 string el slug
+thyrox_scaffold_run() {
+  [[ -z "${1:-}" ]] && { echo "thyrox_scaffold_run: se exige el slug" >&2; return 2; }
+  _thyrox_workbench_delegate scaffold "$1"
+}
+
+# `export -f` por función — el cuarto mecanismo de VVV que este árbol adapta
+# (`vvv: provision/provision-helpers.sh:311,322,948`): un provisioner invocado
+# en un subshell no hereda funciones si no se exportan.
+export -f thyrox_run_id thyrox_runs_for thyrox_latest_run thyrox_scaffold_run \
+    _thyrox_workbench_delegate 2>/dev/null || true
