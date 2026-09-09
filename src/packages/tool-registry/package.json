@@ -68,7 +68,8 @@
     "./claudeCodeHints.js": "./src/claudeCodeHints.ts",
     "./generatedFiles.js": "./src/generatedFiles.ts",
     "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    "./*.js": "./src/*.ts",
+    "./task/TaskOutput.js": "./src/task/TaskOutput.ts"
   },
   "scripts": {
     "test": "bun test"
@@ -78,7 +79,10 @@
     "@thyrox/agent": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/output": "workspace:*",
     "@thyrox/permission": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/storage": "workspace:*",
     "lodash-es": "^4.18.1",
     "lru-cache": "^11.0.0",
     "zod": "^4.3.6"
