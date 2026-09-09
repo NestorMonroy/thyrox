@@ -87,7 +87,7 @@ SYNC_HOOKS = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "python3 /home/user/kaupamex-docs/.claude/scripts/session/sync_local_settings.py --repo /home/user/kaupamex-docs/.claude/settings.json --viva /home/user/.claude/settings.local.json --base /home/user/kaupamex-docs/.claude/agent-results/settings_local.base.json --aplicar --direccion viva"
+                    "command": "python3 %%PROVEEDOR%%/src/session/sync_local_settings.py --repo /home/user/kaupamex-docs/.claude/settings.json --viva /home/user/.claude/settings.local.json --base /home/user/kaupamex-docs/.claude/agent-results/settings_local.base.json --aplicar --direccion viva"
                 }
             ],
             "matcher": "local_settings"
@@ -98,7 +98,7 @@ SYNC_HOOKS = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "python3 /home/user/kaupamex-docs/.claude/scripts/session/sync_local_settings.py --registrar-vigilancia --repo /home/user/kaupamex-docs/.claude/settings.json"
+                    "command": "python3 %%PROVEEDOR%%/src/session/sync_local_settings.py --registrar-vigilancia --repo /home/user/kaupamex-docs/.claude/settings.json"
                 }
             ]
         }
@@ -108,7 +108,7 @@ SYNC_HOOKS = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "python3 /home/user/kaupamex-docs/.claude/scripts/session/sync_local_settings.py --repo /home/user/kaupamex-docs/.claude/settings.json --viva /home/user/.claude/settings.local.json --base /home/user/kaupamex-docs/.claude/agent-results/settings_local.base.json --aplicar --direccion repositorio"
+                    "command": "python3 %%PROVEEDOR%%/src/session/sync_local_settings.py --repo /home/user/kaupamex-docs/.claude/settings.json --viva /home/user/.claude/settings.local.json --base /home/user/kaupamex-docs/.claude/agent-results/settings_local.base.json --aplicar --direccion repositorio"
                 }
             ],
             "matcher": "settings.json"
@@ -119,7 +119,7 @@ SYNC_HOOKS = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "python3 /home/user/kaupamex-docs/.claude/scripts/session/sync_local_settings.py --repo /home/user/kaupamex-docs/.claude/settings.json --viva /home/user/.claude/settings.local.json --base /home/user/kaupamex-docs/.claude/agent-results/settings_local.base.json --aplicar --direccion repositorio"
+                    "command": "python3 %%PROVEEDOR%%/src/session/sync_local_settings.py --repo /home/user/kaupamex-docs/.claude/settings.json --viva /home/user/.claude/settings.local.json --base /home/user/kaupamex-docs/.claude/agent-results/settings_local.base.json --aplicar --direccion repositorio"
                 }
             ]
         }
@@ -129,7 +129,7 @@ SYNC_HOOKS = {
             "hooks": [
                 {
                     "type": "command",
-                    "command": "python3 /home/user/kaupamex-docs/.claude/scripts/session/sync_local_settings.py --repo /home/user/kaupamex-docs/.claude/settings.json --viva /home/user/.claude/settings.local.json --base /home/user/kaupamex-docs/.claude/agent-results/settings_local.base.json --aplicar --direccion viva"
+                    "command": "python3 %%PROVEEDOR%%/src/session/sync_local_settings.py --repo /home/user/kaupamex-docs/.claude/settings.json --viva /home/user/.claude/settings.local.json --base /home/user/kaupamex-docs/.claude/agent-results/settings_local.base.json --aplicar --direccion viva"
                 }
             ]
         }

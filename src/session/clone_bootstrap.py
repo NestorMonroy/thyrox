@@ -108,7 +108,14 @@ def repo_settings_path():
     return reach.consumer_root() / ".claude" / "settings.json"
 
 def sync_module_path():
-    """El sincronizador emitido en el consumidor.
+    """El sincronizador, que vive en el PROVEEDOR — no en el consumidor.
+
+    Es MECANISMO (DEC-04), asi que su hogar es la raiz del proveedor y no la
+    del clon que se configura. La version anterior componia
+    `<consumidor>/.claude/scripts/session/sync_local_settings.py`, una ruta
+    PREVIA a la mudanza a `thyrox/src/session/`: medida sobre los seis clones,
+    el modulo no existe en ninguna de esas rutas, asi que `load_sync_module()`
+    moria y el paso de hooks de sesion no llegaba a emitir nada.
 
     Es funcion y no constante de modulo por una razon medida (ERR-065): el
     `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
@@ -116,7 +123,7 @@ def sync_module_path():
     modulo. Diferir la constante y seguir leyendola desnuda deja un
     `NameError` en tiempo de ejecucion que ningun import delata.
     """
-    return reach.consumer_root() / ".claude" / "scripts" / "session" / "sync_local_settings.py"
+    return reach.thyrox_root() / "src" / "session" / "sync_local_settings.py"
 
 def __getattr__(name: str):
     if name == "CONSUMER_ROOT":
@@ -127,6 +134,11 @@ def __getattr__(name: str):
 
 PLACEHOLDER_DOCS = "%%CONSUMER_ROOT%%"
 PLACEHOLDER_ROOT = "%%RAIZ%%"
+# El tercero, y el que faltaba (DEC-04): la ruta de un MECANISMO no es del
+# consumidor ni del arbol, es del PROVEEDOR. Sin el, el comando emitido citaba
+# `<consumidor>/.claude/scripts/...`, que es donde el sincronizador vivia ANTES
+# de mudarse a thyrox — un hook cuyo script no existe no se queja y no corre.
+PLACEHOLDER_PROVIDER = "%%PROVEEDOR%%"
 RELATIVE_PREFIX = ".claude/"
 
 
@@ -143,18 +155,19 @@ def load_sync_module():
     return module
 
 
-def render(value, docs_root, root):
-    """Sustituye los dos marcadores en cualquier estructura JSON.
+def render(value, docs_root, root, provider):
+    """Sustituye los tres marcadores en cualquier estructura JSON.
 
     El de `docs_root` va primero: en el arbol por defecto es un prefijo mas
     largo que el de la raiz, y sustituir al reves lo partiria."""
     if isinstance(value, str):
         return value.replace(PLACEHOLDER_DOCS, str(docs_root)) \
-                    .replace(PLACEHOLDER_ROOT, str(root))
+                    .replace(PLACEHOLDER_ROOT, str(root)) \
+                    .replace(PLACEHOLDER_PROVIDER, str(provider))
     if isinstance(value, list):
-        return [render(item, docs_root, root) for item in value]
+        return [render(item, docs_root, root, provider) for item in value]
     if isinstance(value, dict):
-        return {k: render(v, docs_root, root) for k, v in value.items()}
+        return {k: render(v, docs_root, root, provider) for k, v in value.items()}
     return value
 
 
@@ -329,12 +342,17 @@ def main(argv=None):
             "aprobaciones y la sesion pediria confirmacion en cada paso.")
 
     sync = load_sync_module()
+    # `sync.REPO_ROOT` NO es configuracion: es el literal contra el que se
+    # escribieron los datos congelados de `SYNC_HOOKS`, y por eso se pasa tal
+    # cual — diferirlo a `reach.consumer_root()` haria que la sustitucion
+    # fallara en silencio en cuanto los dos dejaran de coincidir.
+    provider = reach.thyrox_root()
     sync_hooks = render(to_placeholders(sync.SYNC_HOOKS, sync.REPO_ROOT,
                                         sync.REPO_ROOT.parent),
-                        docs_root, root)
+                        docs_root, root, provider)
     hooks = build_hooks(repo_settings, sync_hooks, docs_root)
 
-    allow_payload = render(payload.get("allow", []), docs_root, root)
+    allow_payload = render(payload.get("allow", []), docs_root, root, provider)
     live = load_json(live_path) or {}
     allow_live = live.get("permissions", {}).get("allow", [])
     allow_final = sorted(set(allow_live) | set(allow_payload))
