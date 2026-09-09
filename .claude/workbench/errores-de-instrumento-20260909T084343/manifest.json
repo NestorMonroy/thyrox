@@ -1,0 +1,7 @@
+{
+  "question": "Que errores de instrumento cometio el orquestador en la sesion del repunte src/gates -> src/verify",
+  "instrument": "revision del transcript de la sesion contra la salida real de cada comando citado",
+  "metric": "episodios en los que una afirmacion de estado no derivo de la Observation que la sustentaba",
+  "blind_to": "los errores que ningun comando posterior contradijo; solo se registran los que otra medicion o el ejecutor delataron",
+  "destination": ".claude/eventos/ de thyrox — registro de sesion, no leccion de docs"
+}
