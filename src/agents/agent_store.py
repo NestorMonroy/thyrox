@@ -114,6 +114,12 @@ import reach_roots  # noqa: E402  — statement a nivel de modulo tras fijar sys
 
 VALID_REPOS = reach_roots.REACH_ROOTS
 
+#: El arbol documental es de `docs` por construccion — ahi viven las
+#: iniciativas y las tareas. El STORE, en cambio, vive en el proveedor. Son dos
+#: ejes distintos, y colapsarlos en el default de `--repo` hacia inalcanzable el
+#: peldano «nada declarado -> el HOGAR» de `resolve_store_dir`.
+DOCS_CONSUMER = "docs"
+
 DB_FILENAME = "agent_store.sqlite3"
 
 #: Tablas nucleo — SIEMPRE se crean, sin try/except. Si esto falla (disco
@@ -388,10 +394,7 @@ def document_root(args: argparse.Namespace) -> Path:
         return cd
     if getattr(args, "repo", None):
         return reach_roots.root(args.repo)
-    raise ValueError(
-        "no se puede resolver la raiz documental: declara --repo-docs, o nombra "
-        "el consumidor con --repo/--claude-dir."
-    )
+    return reach_roots.root(DOCS_CONSUMER)
 
 
 def resolve_store_dir(args: argparse.Namespace) -> Path:
@@ -2932,9 +2935,10 @@ def cmd_auto_recall(args: argparse.Namespace) -> None:
 def add_target_args(p: argparse.ArgumentParser) -> None:
     p.add_argument(
         "--repo",
-        default="docs",
+        default=None,
         choices=VALID_REPOS,
-        help="repo hermano objetivo (default: docs — de donde salen las tareas)",
+        help="consumidor objetivo. SIN declarar, el store es el HOGAR de thyrox; "
+        "declararlo apunta al store heredado de ese clon",
     )
     p.add_argument(
         "--claude-dir",
