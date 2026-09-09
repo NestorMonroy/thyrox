@@ -32,6 +32,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Protocol
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -98,6 +99,196 @@ def declared_wiring(root: Path | None = None) -> dict:
     }
 
 
+#: Las claves del settings del lanzador que thyrox GOBIERNA. Al instalar, todo
+#: lo que no este aqui se conserva verbatim.
+#:
+#: La lista es corta A PROPOSITO, y su razon ya la dejo escrita
+#: `sync_local_settings.py`: el archivo tiene bloques con duenos distintos.
+#: `permissions` lo escribe el CLIENTE durante la sesion; `env` y `effortLevel`
+#: los pone quien opera. Sobreescribir el archivo entero destruye el trabajo del
+#: otro lado, y lo hace en silencio. Por eso instalar es una FUSION sobre las
+#: claves propias, nunca un reemplazo.
+OWNED_KEYS = ("hooks", "advisorModel")
+
+
+class WiringRefused(Exception):
+    """Lo declarado no esta sano, o el respaldo no se pudo comprobar."""
+
+
+class ForBackingUp(Protocol):
+    """Puerto CONDUCIDO: como se pone a salvo el archivo antes de reescribirlo.
+
+    Se declara como puerto —no como llamada directa— porque el respaldo real es
+    un trabajo en SEGUNDO PLANO, y un trabajo en segundo plano no se puede
+    ejercitar dentro de un caso de prueba sin convertir la prueba en una espera.
+    Con el puerto, la decision de instalar se prueba con un doble y el adaptador
+    real se mide por separado.
+    """
+
+    def backup(self, source: Path, destination: Path) -> None:
+        """Deja en `destination` una copia de `source`, o lanza."""
+        ...
+
+
+#: Las clases del ledger que NO avanzan solas. Salen de `class()` de
+#: `wait-jobs.sh`, que es donde ya vive la taxonomia; no se re-derivan aqui.
+STUCK_CLASSES = ("DETENIDO", "ZOMBIE", "RECICLADO", "BAIL")
+
+
+class BackgroundBackup:
+    """El adaptador real: `nohup` mas el ledger de trabajos — el patron R-2.0.
+
+    Segundo plano NO es sinonimo de «cosa de agentes»: el ledger es maquinaria
+    de TRABAJOS, y un respaldo es un trabajo como cualquier otro.
+
+    Por que este respaldo NO se espera sobre el ledger compartido
+    =============================================================
+    La primera version llamaba a `wait` sin mas, y razonaba que esperar a TODO
+    el ledger era deseable. Es un defecto, y es el mismo que el roster ya midio
+    en los agentes: un trabajo puede quedar DETENIDO (estado `T`) o ZOMBIE
+    (`Z`), y los dos responden a `kill -0` como si vivieran. `cmd_wait` los
+    cuenta como vivos, agota su timeout, sale 3 y **deja en el ledger a todos
+    los trabajos, incluido el que si termino**. El respaldo quedaria rehen de un
+    trabajo ajeno que nadie va a revivir.
+
+    Por eso el respaldo corre en su PROPIO ledger —`KX_TRABAJOS_DIR` junto a los
+    respaldos, durable, no en `/tmp`—, de modo que la barrera mida exactamente
+    este trabajo. El ledger compartido no se toca: se MIRA con `status` y sus
+    clases atascadas se reportan, que es la adaptacion del roster — surfacing
+    sin quedar bloqueado.
+
+    Y el veredicto final no lo da ni el exit del `cp` ni el del ledger, sino el
+    archivo que tenia que quedar: un exit 0 dice que el comando termino, no que
+    el respaldo exista.
+    """
+
+    def __init__(self, root: Path | None = None, timeout: int = 120) -> None:
+        self.root = Path(root) if root else Path(thyrox_root())
+        self.timeout = timeout
+        self.stuck_elsewhere: list[str] = []
+
+    def _ledger(self) -> Path:
+        return self.root / "src" / "session" / "wait-jobs.sh"
+
+    def foreign_stuck(self, env: dict) -> list[str]:
+        """Las lineas del ledger COMPARTIDO que no van a avanzar solas.
+
+        Se reportan, no se esperan. Un DETENIDO necesita `continue` o `kill`, y
+        un ZOMBIE ya termino: ninguno de los dos es una espera.
+        """
+        import subprocess  # noqa: PLC0415 - adaptador
+
+        salida = subprocess.run([str(self._ledger()), "status"],
+                                capture_output=True, text=True, env=env).stdout
+        return [line.strip() for line in salida.splitlines()
+                if any(c in line for c in STUCK_CLASSES)]
+
+    def backup(self, source: Path, destination: Path) -> None:
+        import os as _os  # noqa: PLC0415 - adaptador
+        import subprocess  # noqa: PLC0415 - adaptador
+
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        log = destination.with_suffix(destination.suffix + ".log")
+        label = f"backup-{destination.name}"
+
+        # Lo que hay en el ledger compartido se MIRA antes, y se dice.
+        self.stuck_elsewhere = self.foreign_stuck(dict(_os.environ))
+
+        # El ledger propio de este respaldo: durable, junto a lo que respalda.
+        mine = destination.parent / "ledger"
+        env = {**_os.environ, "KX_TRABAJOS_DIR": str(mine)}
+
+        launch = (
+            f'nohup bash -c "cp -p {source} {destination}; echo EXIT=\\$?" '
+            f"> {log} 2>&1 & P=$!; disown $P; echo $P"
+        )
+        pid = subprocess.run(["bash", "-c", launch], capture_output=True,
+                             text=True).stdout.strip()
+        subprocess.run([str(self._ledger()), "register", label, str(log), pid],
+                       capture_output=True, text=True, env=env)
+        collected = subprocess.run(
+            [str(self._ledger()), "wait", "--timeout", str(self.timeout)],
+            capture_output=True, text=True, env=env)
+
+        if not destination.exists() or destination.stat().st_size == 0:
+            # El diagnostico nombra la CLASE, no solo «no llego»: un timeout no
+            # distingue «sigue copiando» de «murio callado» ni de «lo pararon».
+            clases = subprocess.run([str(self._ledger()), "status"],
+                                    capture_output=True, text=True,
+                                    env=env).stdout
+            raise WiringRefused(
+                f"el respaldo no aterrizo en {destination} "
+                f"(ledger: exit {collected.returncode})\n{clases}")
+
+
+def merged_wiring(live: dict, declared: dict,
+                  owned: tuple[str, ...] = OWNED_KEYS) -> dict:
+    """Lo vivo con las claves propias sustituidas, y nada mas tocado."""
+    merged = dict(live)
+    for key in owned:
+        if key in declared:
+            merged[key] = declared[key]
+    return merged
+
+
+def backup_path(live: Path, stamp: str, backups: Path | None = None) -> Path:
+    """Donde va el respaldo: durable, dentro del estado de thyrox.
+
+    NO en `/tmp` ni en el scratchpad: los dos son efimeros, y un respaldo que no
+    sobrevive al contenedor no es un respaldo. Mismo criterio con que el ledger
+    dejo `/tmp` tras el reinicio del worker.
+    """
+    base = (Path(backups) if backups
+            else Path(thyrox_root()) / ".claude" / "settings-backups")
+    return base / f"{live.name}.{stamp}"
+
+
+def install(live: Path, declared: dict, backup: ForBackingUp, stamp: str,
+            owned: tuple[str, ...] = OWNED_KEYS,
+            backups: Path | None = None) -> dict:
+    """Deja el settings del lanzador en lo que thyrox gobierna. Devuelve el acta.
+
+    El orden ES el contrato, y cada paso existe porque su ausencia ya costo algo:
+
+    1. **Validar lo declarado** antes de tocar nada. Instalar un cableado con una
+       ruta ausente reproduce el defecto que este modulo vino a cerrar — un hook
+       muerto que falla en silencio y el turno sigue.
+    2. **Respaldar** si el archivo existe, y comprobar que el respaldo aterrizo.
+    3. **Fusionar** sobre las claves propias, nunca reemplazar.
+    4. **Escribir**.
+
+    Sin el paso 2 no hay vuelta atras; sin el 3 se pierde `permissions`, que lo
+    escribe el cliente y no thyrox.
+
+    CUANDO correrlo importa tanto como que corra: reescribir este archivo cambia
+    los hooks y el `advisorModel`, y los dos son parte de la CLAVE de la cache
+    de prompt. Hacerlo con la cache caliente la invalida entera —medido en
+    H-DOCS-1012: 778 297 tokens reescritos—. Se instala al arrancar la sesion o
+    justo antes de una compactacion, nunca a mitad de turno.
+    """
+    broken = broken_targets(declared)
+    if broken:
+        raise WiringRefused(
+            "lo declarado apunta a rutas ausentes; no se instala: "
+            + ", ".join(r["path"] for r in broken))
+
+    record = {"live": str(live), "backup": None, "existed": live.exists()}
+    current: dict = {}
+    if live.exists():
+        destination = backup_path(live, stamp, backups)
+        backup.backup(live, destination)
+        record["backup"] = str(destination)
+        current = json.loads(live.read_text())
+
+    merged = merged_wiring(current, declared, owned)
+    record["preserved"] = sorted(k for k in current if k not in owned)
+    record["written"] = sorted(k for k in merged if k in owned)
+
+    live.parent.mkdir(parents=True, exist_ok=True)
+    live.write_text(json.dumps(merged, indent=2) + "\n")
+    return record
+
+
 def _target_of(command: str) -> str | None:
     """La ruta que el comando invoca, o None si no nombra ninguna."""
     for pieza in command.split():
@@ -120,7 +311,37 @@ def broken_targets(settings: dict) -> list[dict]:
 
 
 def main() -> int:
+    import argparse  # noqa: PLC0415 - superficie de linea de comandos
+
+    parser = argparse.ArgumentParser(
+        description="Mide el cableado vivo, o instala el que thyrox declara.")
+    parser.add_argument("--write", action="store_true",
+                        help="instala: respalda en segundo plano y fusiona")
+    parser.add_argument("--backups", default=None,
+                        help="donde dejar el respaldo (por defecto, el estado)")
+    args = parser.parse_args()
+
     ruta = live_settings()
+
+    if args.write:
+        import datetime  # noqa: PLC0415 - sello del respaldo
+
+        stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
+            "%Y%m%dT%H%M%S")
+        try:
+            acta = install(ruta, declared_wiring(), BackgroundBackup(), stamp,
+                           backups=args.backups)
+        except WiringRefused as e:
+            print(f"REHUSA — {e}", file=sys.stderr)
+            return 2
+        print(f"instalado en {acta['live']}")
+        print(f"  respaldo   {acta['backup'] or '(no existia; nada que respaldar)'}")
+        print(f"  escritas   {', '.join(acta['written']) or '(ninguna)'}")
+        print(f"  conservadas {', '.join(acta['preserved']) or '(ninguna)'}")
+        print("  AVISO: esto cambia la clave de la cache de prompt. Si la sesion "
+              "ya tiene contexto caliente, se reescribe entero.")
+        return 0
+
     if not ruta.exists():
         # REHUSA en vez de publicar un cero. Un «0 rotos» sobre un archivo que
         # no se encontro no se distingue de un «0 rotos» sobre uno sano, y esa
