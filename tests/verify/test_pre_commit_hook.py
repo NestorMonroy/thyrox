@@ -23,6 +23,10 @@ HERE = pathlib.Path(__file__).resolve().parent
 THYROX = HERE.parent.parent
 HOOK = THYROX / '.githooks' / 'pre-commit'
 GATE = THYROX / 'src' / 'verify' / 'check_provider_evidence.py'
+# Los dos gates de paquete que TASK-DOCS-0530 cablea al hook. Viajan al repo
+# sintetico porque el hook REHUSA por su ausencia — es su contrato, no un
+# descuido. Sin copiarlos, esta suite entera se pondria roja por el arreglo.
+PACKAGE_GATES = ('check-agent-artifacts.sh', 'check-harness-typecheck.sh')
 
 
 def git(repo: pathlib.Path, *args: str) -> subprocess.CompletedProcess:
@@ -44,6 +48,9 @@ class PreCommitHook(unittest.TestCase):
         shutil.copytree(THYROX / 'src' / 'workbench', self.repo / 'src' / 'workbench')
         (self.repo / 'src' / 'verify').mkdir()
         shutil.copy(GATE, self.repo / 'src' / 'verify' / GATE.name)
+        for gate in PACKAGE_GATES:
+            shutil.copy(THYROX / 'src' / 'verify' / gate,
+                        self.repo / 'src' / 'verify' / gate)
         (self.repo / '.githooks').mkdir()
         shutil.copy(HOOK, self.repo / '.githooks' / 'pre-commit')
         os.chmod(self.repo / '.githooks' / 'pre-commit', 0o755)
@@ -59,19 +66,31 @@ class PreCommitHook(unittest.TestCase):
         result = git(self.repo, 'commit', '-q', '-m', 'cambio normal')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_un_banco_en_el_proveedor_rechaza_el_commit(self):
-        """El negativo: con un banco propio, el commit no entra."""
+    def test_un_banco_en_el_proveedor_se_reporta(self):
+        """El negativo: con un banco propio, el gate lo NOMBRA en la salida.
+
+        Este caso exigia `returncode == 1` y estaba ROJO desde que el hook dejo
+        de invocar el gate con `--strict` (2026-09-09, directiva del ejecutor:
+        "ignora la regla, no queremos perder el trabajo"). El contrato del hook
+        cambio y su control no: medido con el hook anterior a TASK-DOCS-0530, el
+        rojo ya estaba. Reponer `--strict` para que el test pase seria hacer que
+        el instrumento gobierne la decision, que es al reves.
+
+        Que lo haria fallar: que el gate no vea el banco. Eso es lo que este
+        caso puede medir hoy.
+
+        Ciega a: si el BLOQUEO funciona — el hook reporta y no detiene. Esa
+        mitad la miden los tres casos de tests/workbench/test_provider_evidence.py
+        que ejercitan `--strict`, y volveria aqui el dia que se reponga.
+        """
         banco = self.repo / '.claude' / 'eventos' / 'un-banco-20260907T000000'
         banco.mkdir(parents=True)
         (banco / 'evidencia.md').write_text('lo que sea\n')
         (self.repo / 'archivo.txt').write_text('algo\n')
         git(self.repo, 'add', 'archivo.txt')
-        antes = git(self.repo, 'rev-parse', 'HEAD').stdout.strip()
-        result = git(self.repo, 'commit', '-q', '-m', 'deberia rechazarse')
-        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-        self.assertIn('el commit se detiene', result.stderr)
-        self.assertEqual(git(self.repo, 'rev-parse', 'HEAD').stdout.strip(), antes,
-                         'HEAD avanzo: el hook no detuvo el commit')
+        result = git(self.repo, 'commit', '-q', '-m', 'el banco se reporta')
+        self.assertIn('un-banco-20260907T000000', result.stdout + result.stderr)
+        self.assertIn('banco(s) emitido(s)', result.stdout + result.stderr)
 
     def test_sin_gates_rehusa_en_vez_de_omitir(self):
         """Un exit 0 con los gates inalcanzables seria un verde falso."""
@@ -112,6 +131,22 @@ class PreCommitHook(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn('NO PUDO MEDIR', result.stderr)
         self.assertNotIn('Muevelo al arbol del consumidor', result.stderr)
+
+    def test_sin_un_gate_de_paquete_rehusa(self):
+        """El contrato de rehusar-en-vez-de-omitir alcanza a los dos nuevos.
+
+        Que lo haria fallar: que el hook trate un gate de paquete ausente como
+        «no aplica» y salga 0. Ese verde no distingue «la superficie no cambio»
+        de «el gate no esta», que es exactamente el mensaje que estos dos
+        imprimian en el consumidor y por el que se mudaron aqui.
+        """
+        (self.repo / 'src' / 'verify' / PACKAGE_GATES[0]).unlink()
+        (self.repo / 'archivo.txt').write_text('algo\n')
+        git(self.repo, 'add', 'archivo.txt')
+        result = git(self.repo, 'commit', '-q', '-m', 'sin gate de paquete')
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn('verde falso', result.stderr)
+        self.assertIn(PACKAGE_GATES[0], result.stderr)
 
     def test_el_clon_real_lo_tiene_activado(self):
         """`core.hooksPath` no se versiona: se comprueba que este clon lo fijo."""

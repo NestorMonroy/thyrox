@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# THYROX — pre-commit. Hoy corre UN gate, y existe por un episodio concreto.
+# THYROX — pre-commit. Corre TRES gates: el del banco de evidencia, que le dio
+# origen, y los dos de paquete que TASK-DOCS-0530 trajo del consumidor.
+#
+# Nacio por un episodio concreto.
 #
 # `check_provider_evidence.py` nacio el 2026-09-07T00:59:23 y, en las diecisiete
 # horas siguientes, once bancos de evidencia aterrizaron en el arbol que el gate
@@ -8,16 +11,17 @@
 # `core.hooksPath`, y el unico hook vivo del arbol corre seis gates AL COMMITEAR
 # EN EL CONSUMIDOR, que es otro repositorio. Ver L-028.
 #
-# La leccion que deja, y por la que este archivo es corto a proposito: escribir
-# un gate no es integrarlo en el flujo. Un gate sin invocador es prosa con
-# `exit 1`.
+# La leccion que deja: escribir un gate no es integrarlo en el flujo. Un gate sin
+# invocador es prosa con `exit 1`. Y su corolario, que es lo que trajo a los dos
+# de paquete: un gate cableado a un invocador que NO ve su superficie tampoco la
+# mide — sólo lo dice mas bonito.
 #
 # Escape hatch: `git commit --no-verify`. Si se usa, el motivo va al `progreso`.
 set -uo pipefail
 
-RAIZ="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-GATES="$RAIZ/src/verify"
-CODIGO=0
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+GATES="$ROOT/src/verify"
+CODE=0
 
 # Rehusar en vez de omitir. Un `exit 0` con los gates inalcanzables seria un
 # verde falso: no distinguiria «no hay defectos» de «no pude medir».
@@ -30,6 +34,23 @@ if ! command -v python3 >/dev/null 2>&1; then
     echo "pre-commit: falta python3 — los gates no se pudieron correr." >&2
     exit 1
 fi
+
+# Los dos gates de PAQUETE. Llegaron aqui el 2026-09-09 (TASK-DOCS-0530) desde el
+# pre-commit de kaupamex-docs, donde median una superficie que TASK-DOCS-0449
+# mudo a THYROX: alla imprimian «la superficie del paquete no cambia en este
+# commit» en CADA commit —un mensaje que no distingue «no cambio» de «no puede
+# cambiar aqui»— y aqui, donde la superficie SI esta, no los corria nadie.
+#
+# Se rehusan por ausencia igual que el gate de arriba: un gate declarado que no
+# esta en su sitio es un verde falso.
+GATE_AGENTS="$GATES/check-agent-artifacts.sh"
+GATE_TYPECHECK="$GATES/check-harness-typecheck.sh"
+for gate in "$GATE_AGENTS" "$GATE_TYPECHECK"; do
+    [[ -f "$gate" ]] && continue
+    echo "pre-commit: $gate NO ENCONTRADO — el gate no se pudo correr." >&2
+    echo "  No se emite veredicto: un 0 aqui seria un verde falso." >&2
+    exit 1
+done
 
 # El banco de evidencia vive en el arbol del CONSUMIDOR. Mide el arbol entero,
 # no lo staged: un banco commiteado en un pase anterior sigue estando mal, y el
@@ -55,7 +76,7 @@ fi
 # cambiar una palabra. La condicion para hacerlo es la de DEC-AM-01: que el
 # conteo de bancos este en 0 y no haya agentes vivos que lo repongan.
 python3 "$GATES/check_provider_evidence.py"
-SALIDA=$?
+GATE_STATUS=$?
 
 # Tres desenlaces, no dos. El gate declara 1 = hay bancos, 2 = no pudo medir; y
 # cualquier otro codigo es que reviento. Colapsarlos imprime el remedio del
@@ -63,24 +84,39 @@ SALIDA=$?
 # el mensaje no distingue «el gate dijo que no» de «el gate no pudo hablar».
 # Medido al escribirlo: con un `reach.py` incompleto, la primera version de
 # este hook publicaba la receta de mover el banco sobre un traceback.
-case $SALIDA in
+case $GATE_STATUS in
     0) ;;
-    1)  CODIGO=1
+    1)  CODE=1
         echo >&2
         echo "pre-commit: el commit se detiene. El banco no se mueve solo a proposito —" >&2
         echo "  inventar un hogar por defecto decidiria por el consumidor donde van sus" >&2
         echo "  piezas, que es la decision que el mecanismo le retira al emisor." >&2
         echo "  Muevelo al arbol del consumidor, o declara THYROX_WORKBENCH_DIR." >&2
         ;;
-    2)  CODIGO=1
+    2)  CODE=1
         echo >&2
         echo "pre-commit: el gate NO PUDO MEDIR (exit 2). No es un hallazgo de banco:" >&2
         echo "  no se sabe si los hay. Lee su mensaje de arriba antes de tocar nada." >&2
         ;;
-    *)  CODIGO=1
+    *)  CODE=1
         echo >&2
-        echo "pre-commit: el gate termino con codigo $SALIDA — reviento, no dictamino." >&2
+        echo "pre-commit: el gate termino con codigo $GATE_STATUS — reviento, no dictamino." >&2
         echo "  El commit se detiene porque un veredicto ausente no es un verde." >&2
         ;;
 esac
-exit $CODIGO
+
+# Cada gate SE ACOTA SOLO por la lista que recibe: comparan la ruta de cada
+# archivo staged contra su propio `PAQUETE_REL` y salen 0 sin medir si su
+# superficie no cambia. Por eso el hook no reparte la lista por superficie —
+# eso duplicaria aqui el criterio que ya vive en el gate, y las dos copias
+# divergirian. Con la lista vacia el gate mide TODO, que es mas estricto y no
+# menos: un `--allow-empty` paga el emisor y el compilador.
+STAGED=()
+while IFS= read -r line; do
+    [[ -n "$line" ]] && STAGED+=("$ROOT/$line")
+done < <(git diff --cached --name-only --diff-filter=ACM 2>/dev/null || true)
+
+bash "$GATE_AGENTS"    --strict "${STAGED[@]}" || CODE=1
+bash "$GATE_TYPECHECK" --strict "${STAGED[@]}" || CODE=1
+
+exit $CODE
