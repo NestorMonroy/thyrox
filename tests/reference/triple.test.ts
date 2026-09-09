@@ -14,7 +14,7 @@
  * viviendo en prosa, que es justo lo que no puede quedarse ahí.
  */
 import { describe, expect, test } from 'bun:test'
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -127,16 +127,76 @@ describe('dos alias, un árbol (h-docs-1041)', () => {
 })
 
 describe('la raíz declarada es la DURABLE, no el clon suelto', () => {
-  // Un clon bajo /home/user muere con el contenedor, y con él toda cita que lo
-  // use. La raíz por defecto de un corpus versionado es su ruta en el repo; el
-  // clon suelto se apunta por entorno cuando se quiere trabajar en caliente.
-  test('ccb y binario declaran raíz relativa al repo', () => {
+  /**
+   * CORREGIDO (#294) — la intencion se conserva, el instrumento no.
+   *
+   * Este bloque exigia que `ccb`, `ccnmt` y `binario` declararan raiz
+   * RELATIVA, con este razonamiento: «un clon bajo /home/user muere con el
+   * contenedor; la raiz por defecto de un corpus versionado es su ruta en el
+   * repo». La intencion era la DURABILIDAD y es correcta. Lo que estaba mal
+   * era el proxy: una ruta relativa no hace durable nada — hace que resuelva
+   * contra el cwd, que es otra cosa y ademas variable.
+   *
+   * Medido: las tres relativas no resolvian a ningun directorio desde este
+   * arbol. `.claude/eventos/recibir-…` nombraba un banco de `kaupamex-docs`
+   * —que SI existe y SI esta versionado, 3895 archivos— y vino con el modulo
+   * al portarlo; `tools/claude-code-bin` nombraba una raiz que el corpus ya
+   * no ocupa. El control pasaba en verde sobre las dos.
+   *
+   * La durabilidad se afirma ahora por lo que de verdad la produce: la raiz se
+   * DERIVA de un ancla declarada —`thyroxRoot()` para lo vendorizado,
+   * `treeRoot()` para un hermano— y el bloque #294 comprueba que existe.
+   */
+  test('ccb y binario derivan su raiz de un ancla, no de un literal', () => {
+    // `_references/` es el hogar del material vendorizado; el corpus de ccb
+    // sigue fuera hasta que #207 decida su postura de licencia.
+    expect(TRIPLES.binario!.root).toContain('_references')
     for (const alias of ['ccb', 'ccnmt', 'binario']) {
-      expect(TRIPLES[alias]!.root.startsWith('/')).toBe(false)
+      expect(TRIPLES[alias]!.root.startsWith('/')).toBe(true)
     }
   })
-  test('el clon suelto sigue siendo apuntable por entorno', () => {
+  test('la copia versionada sigue siendo apuntable por entorno', () => {
     expect(resolveRoot('ccb', { CCB_ROOT: '/home/user/claude-code-nestor-monroy-tools' }))
       .toBe('/home/user/claude-code-nestor-monroy-tools')
+  })
+})
+
+describe('la raiz declarada tiene que existir y ser absoluta (#294)', () => {
+  /**
+   * QUE FALTABA. Los tests de arriba miden la FORMA del catalogo —que cada
+   * triple traiga sus tres componentes, que el entorno gane, que un alias
+   * desconocido se rehuse— y ninguno pregunta si la raiz **resuelve a algo**.
+   * Es el sub-patron C: se mide el significante (hay una cadena no vacia) y se
+   * concluye sobre el significado (hay un arbol que leer).
+   *
+   * MITAD ROJA, medida antes del arreglo: 3 de las 9 raices no existen.
+   *
+   *   AUSENTE  binario   tools/claude-code-bin
+   *   AUSENTE  ccb       .claude/eventos/recibir-nestor-monroy-tools-.../extraido/...
+   *   AUSENTE  hccw      /home/user/scratchpad/hccw/how-claude-code-works-main
+   *
+   * Y dos de las tres son ademas RELATIVAS, que es la misma clase que la
+   * aritmetica `parents[N]` que este arbol ya prohibio (#228): describen el
+   * directorio desde el que alguien las escribio, no un sitio del arbol. Con
+   * otro cwd resuelven a otra cosa sin fallar.
+   *
+   * `requireRoot` rehusa ante una raiz ausente —esa mitad ya estaba— pero
+   * rehusar no es lo mismo que apuntar bien: un corpus vendorizado que EXISTE
+   * y al que el catalogo no llega es capacidad muerta, no una precondicion que
+   * el consumidor deba declarar.
+   */
+  test('ninguna raiz del catalogo es relativa', () => {
+    const relativas = Object.entries(TRIPLES)
+      .filter(([, t]) => !t.root.startsWith('/'))
+      .map(([alias]) => alias)
+    expect(relativas).toEqual([])
+  })
+
+  test('toda raiz declarada resuelve a un directorio que existe', () => {
+    // El denominador va junto al conteo: un `0 ausentes` sin decir sobre
+    // cuantas raices se midio no distingue un catalogo sano de uno vacio.
+    const ausentes = Object.keys(TRIPLES).filter((a) => !existsSync(resolveRoot(a)))
+    expect({ ausentes, medidas: Object.keys(TRIPLES).length })
+      .toEqual({ ausentes: [], medidas: 9 })
   })
 })

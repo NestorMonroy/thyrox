@@ -21,6 +21,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { envValue, thyroxRoot, treeRoot } from '../paths/reach.ts'
 
 /** Cómo se leen los símbolos de una referencia. Uno por familia de fuente. */
 export const EXTRACTORS = ['python-ast', 'strings-regex', 'source-read', 'prose-read'] as const
@@ -37,24 +38,40 @@ export type ReferenceTriple = {
   envVar: string
 }
 
-const TOOLS = process.env.ODOO_TOOLS ?? '/home/user/odoo-tools'
+/**
+ * La raiz del repositorio de referencia de Odoo.
+ *
+ * Se DERIVA del arbol —es un hermano de los clones, como `-progress`— en vez
+ * de escribir `/home/user`: ese literal describe donde clono quien lo escribio,
+ * no donde corre. Y se lee con `envValue`, no con `process.env` pelado, para
+ * que el `.env` del consumidor pueda declararlo igual que cualquier otro hogar
+ * (DEC-04: el valor y la ruta al archivo que lo declara).
+ */
+const TOOLS = envValue('ODOO_TOOLS') ?? join(treeRoot(), 'odoo-tools')
 
-// La raíz de `ccb` es la copia VERSIONADA, no el clon suelto de `/home/user/`.
-// Los dos son byte a byte el mismo árbol (comprobado con `cmp` sobre
-// `bgDaemon.ts`), pero sólo uno sobrevive al contenedor: el clon suelto muere
-// con él, y una referencia que muere deja sin resolver toda cita que la use —
-// la misma lección que `build-logs.md` fija para un `.log`. El clon sigue
-// sirviendo para trabajar en caliente: `CCB_ROOT=/home/user/... ` lo apunta.
+/** El hogar del material de referencia vendorizado dentro de thyrox. */
+const REFERENCES = join(thyroxRoot(), '_references')
+
+// La raiz de `ccb`: el clon HERMANO del arbol, derivado de `treeRoot()`.
 //
-// OJO: `.claude/references/ccb/` NO es esta raíz. Es un extracto CURADO de una
-// entrega ANTERIOR (2026-08-13): un solo archivo, 860 líneas contra 857, con
-// otro namespace de paquete (`@claude-code/` contra `@claude-code-how-works/`)
-// y una cabecera de procedencia añadida por nosotros. Sirve para leer con su
-// PROVENANCE.md al lado; no para medir el corpus.
-const CCB_VERSIONADO = join(
-  '.claude', 'eventos', 'recibir-nestor-monroy-tools-20260827T191257',
-  'extraido', 'claude-code-nestor-monroy-tools',
-)
+// Decia `.claude/eventos/recibir-…/extraido/…` — RELATIVA, y a un banco que
+// vive en `kaupamex-docs`, no aqui. Al portar el modulo a thyrox la ruta vino
+// con el: describe el arbol donde el modulo vivia, que es la misma clase de
+// defecto que la aritmetica `parents[N]` ya prohibida (#228). Medido: no
+// resolvia a nada desde este arbol.
+//
+// Aquella copia SI esta versionada —3895 archivos rastreados en docs— y sigue
+// siendo un destino valido: `CCB_ROOT=<ruta>` la apunta. Lo que no puede es ser
+// el DEFAULT del proveedor, porque ataria thyrox al banco fechado de uno de sus
+// consumidores. Los dos arboles son byte a byte el mismo (comprobado con `cmp`
+// sobre `bgDaemon.ts`).
+//
+// El hogar DURABLE seria `_references/`, junto a los otros corpus
+// vendorizados. Hoy `_references/ccb` guarda solo un extracto CURADO —tres
+// archivos con su PROVENANCE.md, de una entrega anterior— y no el corpus:
+// vendorizar 3895 archivos de un arbol que declara `UNLICENSED` es decision
+// del ejecutor, no del agente. Sucesor: #207 (postura de licencia).
+const CCB_ROOT = join(treeRoot(), 'claude-code-nestor-monroy-tools')
 // El árbol de Odoo está TRIPLICADO en odoo-tools — artefacto de empaquetado, no
 // diseño, y por tanto candidato a aplanarse. El día que se aplane se corrige
 // aquí y en ningún otro sitio; es la misma razón por la que reference_roots.py
@@ -76,7 +93,7 @@ export const TRIPLES: Record<string, ReferenceTriple> = {
   // corpus versionado de esa build. `binaryTriple(version)` construye el suyo.
   binario: {
     alias: 'binario',
-    root: join('tools', 'claude-code-bin'),
+    root: join(REFERENCES, 'claude-code-bin'),
     extractor: 'strings-regex',
     envVar: 'CLAUDE_CODE_BIN_CORPUS',
   },
@@ -86,7 +103,7 @@ export const TRIPLES: Record<string, ReferenceTriple> = {
   // ejecutable minifica y no prueba conducta de la nuestra.
   ccb: {
     alias: 'ccb',
-    root: CCB_VERSIONADO,
+    root: CCB_ROOT,
     extractor: 'source-read',
     envVar: 'CCB_ROOT',
   },
@@ -97,7 +114,7 @@ export const TRIPLES: Record<string, ReferenceTriple> = {
   // corpus leían como corroboración triple siendo doble (h-docs-1041).
   ccnmt: {
     alias: 'ccnmt',
-    root: CCB_VERSIONADO,
+    root: CCB_ROOT,
     extractor: 'source-read',
     envVar: 'CCB_ROOT',
   },
@@ -106,14 +123,14 @@ export const TRIPLES: Record<string, ReferenceTriple> = {
   // hecho. Confundirlo con `ccb` es fácil y está medido — son dos árboles.
   hccw: {
     alias: 'hccw',
-    root: '/home/user/scratchpad/hccw/how-claude-code-works-main',
+    root: join(REFERENCES, 'how-claude-code-works'),
     extractor: 'prose-read',
     envVar: 'HCCW_ROOT',
   },
   // ui: la referencia es el fuente de los componentes, leído tal cual.
   'ui-core': {
     alias: 'ui-core',
-    root: '/home/user/-progress',
+    root: join(treeRoot(), '-progress'),
     extractor: 'source-read',
     envVar: 'PROGRESS_ROOT',
   },
@@ -141,10 +158,15 @@ export function sameCorpus(a: string, b: string): boolean {
  * corpus se archiva por build (`_references/claude-code-bin/<version>/`), así que una
  * cita sin versión no ancla nada: dos builds dan cifras distintas.
  */
-export function binaryTriple(version: string, repoRoot = '.'): ReferenceTriple {
+export function binaryTriple(version: string, root = REFERENCES): ReferenceTriple {
+  // El default era `join('.', 'tools', 'claude-code-bin', version)` — relativo
+  // al cwd, y a una raiz que el corpus ya no ocupa. Su propio docstring
+  // nombraba `_references/`, asi que el codigo contradecia a la prosa de
+  // encima: el defecto que un default sin control no puede delatar, porque
+  // `join` compone la ruta igual y nadie falla hasta que alguien lee.
   return {
     alias: version,
-    root: join(repoRoot, 'tools', 'claude-code-bin', version),
+    root: join(root, 'claude-code-bin', version),
     extractor: 'strings-regex',
     envVar: 'CLAUDE_CODE_BIN_CORPUS',
   }
