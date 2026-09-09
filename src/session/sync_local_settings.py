@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """Sincroniza el `settings.local.json` del cwd con su copia versionada.
 
-Generado por `.claude/eventos/settings-local-20260821T110649/gen.py`. No editar a mano: corregir el
-generador y volver a emitir, o el proximo cambio de configuracion borra la
-correccion.
+Nacio generado por `docs: .claude/eventos/settings-local-20260821T110649/gen.py`,
+y ese generador quedo SUPERSEDIDO por la mudanza a thyrox: emite otro archivo,
+con otro nombre y en otra ruta —`.claude/scripts/session/sincronizar_settings_local.py`
+del consumidor—, asi que re-emitirlo no reescribe este modulo ni lo puede pisar.
+Medido: 333 lineas contra las de aqui, y `diff` las declara distintas.
+
+Por eso este archivo SI se edita a mano, y el evento queda como la evidencia
+fechada de su origen. Quien quiera volver a generarlo tiene que apuntar antes
+el generador a esta ruta; mientras no lo haga, el generador describe un archivo
+que ya no es este.
 
 Por que no es una copia
 =======================
@@ -53,6 +60,7 @@ Uso::
 import argparse
 import json
 import pathlib
+import os
 import sys
 
 # Dueno de cada bloque. Derivado de `datos_bloques.py` del evento generador.
@@ -81,6 +89,74 @@ UNKNOWN_POLICY = "reportar y no tocar"
 # --------------------------------------------------------------------------
 REPO_ROOT = pathlib.Path('/home/user/kaupamex-docs')
 RELATIVE_PREFIX = '.claude/'
+
+#: El comando de un disparador cita un MECANISMO, que vive en el proveedor y no
+#: en el consumidor (DEC-04). El dato congelado lleva el marcador; quien lo
+#: consuma lo resuelve contra la raiz viva. Sin esto la proyeccion cita el
+#: literal y `--aplicar --direccion viva` lo escribiria tal cual en la copia
+#: viva: un hook cuyo script es `%%PROVEEDOR%%/...` no se queja y no corre.
+PLACEHOLDER_PROVIDER = '%%PROVEEDOR%%'
+
+
+#: El marcador por el que se reconoce la raiz del proveedor al ascender. Es la
+#: misma forma que `reach.THYROX_MARKER` y que el arranque de
+#: `src/verify/install-hooks.sh`, que ya la lleva en shell por la misma razon:
+#: quien todavia no puede importar el mecanismo no puede pedirselo.
+THYROX_ROOT_VAR = 'THYROX_ROOT'
+THYROX_MARKER = pathlib.Path('src') / 'paths' / 'reach.py'
+
+
+def _provider_root():
+    """La raiz del proveedor: la variable declarada, o el ascenso por marcador.
+
+    NO importa `reach`, y la razon la midio un control: hacerlo ata el modulo a
+    su sitio en el arbol, y este guion se COPIA —la suite lo copia a un
+    temporal para anular su proteccion y comprobar que el dano reaparece—. Con
+    el import al top, la copia moria antes de ejercitar nada y el control dejaba
+    de discriminar: 25 de 25 en verde pasaron a 23, y las 2 que cayeron eran las
+    del propio control.
+
+    Por eso resuelve tarde y falla con motivo: una copia que nunca toca el
+    bloque `hooks` sigue viva, y una que lo toque sin poder resolver la raiz se
+    entera de por que — en vez de escribir el marcador crudo en la copia viva,
+    que es un hook cuyo script no existe y que no se queja.
+    """
+    declared = os.environ.get(THYROX_ROOT_VAR)
+    if declared:
+        return pathlib.Path(declared)
+    here = pathlib.Path(__file__).resolve()
+    root = next((p for p in here.parents if (p / THYROX_MARKER).is_file()), None)
+    if root is None:
+        raise RuntimeError(
+            f"thyrox: no se encontro {THYROX_MARKER} sobre {here}, y "
+            f"{THYROX_ROOT_VAR} no esta declarada. Sin la raiz del proveedor no "
+            "se puede resolver el comando de un disparador.")
+    return root
+
+
+def rendered_sync_hooks():
+    """`SYNC_HOOKS` con su marcador de proveedor ya resuelto.
+
+    Es funcion y no constante de modulo por la razon medida en ERR-065: el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO, no el nombre
+    desnudo dentro del propio modulo, y una constante calculada al importar
+    fijaria la raiz del proveedor al momento del import en vez de al del uso.
+    """
+    provider = str(_provider_root())
+    return {
+        event: [
+            {
+                **{k: v for k, v in matcher.items() if k != 'hooks'},
+                'hooks': [
+                    {**hook,
+                     'command': hook['command'].replace(PLACEHOLDER_PROVIDER, provider)}
+                    for hook in matcher.get('hooks', [])
+                ],
+            }
+            for matcher in matchers
+        ]
+        for event, matchers in SYNC_HOOKS.items()
+    }
 SYNC_HOOKS = {
     "ConfigChange": [
         {
@@ -179,7 +255,7 @@ def project_repo_hooks(repo_hooks):
             ]
             rebuilt.append(entry)
         hooks[event] = rebuilt
-    for event, entries in SYNC_HOOKS.items():
+    for event, entries in rendered_sync_hooks().items():
         hooks.setdefault(event, [])
         hooks[event].extend(entries)
     return hooks

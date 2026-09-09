@@ -85,7 +85,14 @@ def consumer_root_dir():
     """
     return reach.consumer_root()
 
-def payload_path():
+def payload_path(consumer=None):
+    """La bitacora de aprobaciones del consumidor que se esta configurando.
+
+    Recibe el consumidor en vez de resolverlo siempre por ascenso: `--docs-root`
+    nombra QUE clon se configura, y sin el parametro esta funcion leia el del
+    directorio actual. Los dos coinciden cuando uno esta parado en el clon —por
+    eso el defecto no se veia— y divergen en cuanto no.
+    """
     """La bitacora de aprobaciones del consumidor.
 
     Es funcion y no constante de modulo por una razon medida (ERR-065): el
@@ -94,9 +101,9 @@ def payload_path():
     modulo. Diferir la constante y seguir leyendola desnuda deja un
     `NameError` en tiempo de ejecucion que ningun import delata.
     """
-    return reach.consumer_root() / ".claude-user" / "bitacora-de-aprobaciones.json"
+    return (consumer or reach.consumer_root()) / ".claude-user" / "bitacora-de-aprobaciones.json"
 
-def repo_settings_path():
+def repo_settings_path(consumer=None):
     """El settings.json versionado del consumidor.
 
     Es funcion y no constante de modulo por una razon medida (ERR-065): el
@@ -105,7 +112,7 @@ def repo_settings_path():
     modulo. Diferir la constante y seguir leyendola desnuda deja un
     `NameError` en tiempo de ejecucion que ningun import delata.
     """
-    return reach.consumer_root() / ".claude" / "settings.json"
+    return (consumer or reach.consumer_root()) / ".claude" / "settings.json"
 
 def sync_module_path():
     """El sincronizador, que vive en el PROVEEDOR — no en el consumidor.
@@ -331,13 +338,13 @@ def main(argv=None):
     if args.capturar:
         return capture(live_path, docs_root, root)
 
-    repo_settings = load_json(repo_settings_path())
+    repo_settings = load_json(repo_settings_path(docs_root))
     if repo_settings is None:
-        raise SystemExit(f"ERROR — no existe {repo_settings_path()}")
-    payload = load_json(payload_path())
+        raise SystemExit(f"ERROR — no existe {repo_settings_path(docs_root)}")
+    payload = load_json(payload_path(docs_root))
     if payload is None:
         raise SystemExit(
-            f"ERROR — no existe {payload_path()}. Se genera con --capturar; sin el, "
+            f"ERROR — no existe {payload_path(docs_root)}. Se genera con --capturar; sin el, "
             "este guion NO emite un archivo a medias: quedaria sin las "
             "aprobaciones y la sesion pediria confirmacion en cada paso.")
 

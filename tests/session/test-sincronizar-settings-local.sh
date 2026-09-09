@@ -201,6 +201,33 @@ check "bloque sin dueño -> exit 1" "1" "$RC"
 case "$OUT" in *"sin dueno declarado"*) check "dice por qué no lo toca" "sí" "sí" ;;
                                       *) check "dice por qué no lo toca" "sí" "no ($OUT)" ;; esac
 
+echo "== 10. el disparador cita al PROVEEDOR, y su marcador queda resuelto =="
+# El comando de un disparador nombra un MECANISMO, que vive en el proveedor
+# (DEC-04). El dato congelado lo lleva como marcador; la proyeccion que se
+# compara y se propaga tiene que entregarlo YA RESUELTO: escribir el literal
+# en la copia viva deja un hook cuyo script no existe, y un hook asi no se
+# queja y no corre.
+proyeccion() { python3 -c "
+import importlib.util, pathlib, sys
+s = importlib.util.spec_from_file_location('s', sys.argv[1])
+m = importlib.util.module_from_spec(s); s.loader.exec_module(m)
+c = [h['command'] for v in m.project_repo_hooks({}).values()
+     for e in v for h in e['hooks']]
+print($2)" "$1" 2>&1; }
+
+check "ningun comando conserva el marcador" "0" \
+  "$(proyeccion "$SUT" "sum('%%PROVEEDOR%%' in x for x in c)")"
+check "todos citan un script que existe" "0" \
+  "$(proyeccion "$SUT" "sum(not pathlib.Path(x.split()[1]).is_file() for x in c)")"
+
+# El control del control: sin la resolucion, reaparece exactamente el marcador.
+# Un verde que no puede volverse rojo no informa — y este caso nacio porque la
+# suite daba 25 de 25 con el defecto puesto.
+sed 's/rendered_sync_hooks()\.items()/SYNC_HOOKS.items()/' "$SUT" \
+  > "$TMP/sut_sin_resolver.py"
+check "sin resolver, los 5 comandos lo conservan" "5" \
+  "$(proyeccion "$TMP/sut_sin_resolver.py" "sum('%%PROVEEDOR%%' in x for x in c)")"
+
 echo
 echo "resultado: $PASS aserciones en verde, $FAIL en rojo"
 (( FAIL == 0 )) || exit 1
