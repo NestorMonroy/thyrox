@@ -27,14 +27,16 @@
 import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 
 import {
   REQUIRED_KEYS,
   WORKBENCH_FORMS,
   checkWorkbench,
+  latestRun,
   runIdDate,
   runIdFor,
+  runsFor,
   scaffoldWorkbench,
 } from '../../src/workbench/manifest'
 
@@ -281,5 +283,44 @@ describe('las formas del banco, con valores en inglés', () => {
     const ps = checkWorkbench(dir)
     expect(ps.length).toBe(1)
     expect(ps[0]!.key).toBe('form')
+  })
+})
+
+describe('runsFor / latestRun — encontrar un banco, no sólo acuñarlo', () => {
+  // El defecto que cierran: el subsistema sabía crear `<slug>-<ISO>` y no
+  // resolverlo, así que quien creaba un banco se llevaba el ISO a un archivo
+  // efímero fuera del árbol. Medido: un puntero en `/dev/shm`, ilegible para
+  // cualquier otra sesión.
+  const base = mkdtempSync(join(tmpdir(), 'runs-'))
+
+  test('devuelve los bancos del slug, del más reciente al más antiguo', () => {
+    for (const name of ['probe-20260101T000000', 'probe-20260909T175959', 'probe-20260505T120000']) {
+      mkdirSync(join(base, name), { recursive: true })
+    }
+    const found = runsFor(base, 'probe').map((p) => basename(p))
+    expect(found).toEqual([
+      'probe-20260909T175959',
+      'probe-20260505T120000',
+      'probe-20260101T000000',
+    ])
+    expect(basename(latestRun(base, 'probe')!)).toBe('probe-20260909T175959')
+  })
+
+  test('un banco de OTRO slug con el mismo prefijo no se cuela', () => {
+    // `probe-extra-<ISO>` empieza por `probe-` y termina en ISO: sin anclar el
+    // sufijo por los dos extremos se listaría como banco de `probe`.
+    mkdirSync(join(base, 'probe-extra-20261231T235959'), { recursive: true })
+    expect(runsFor(base, 'probe').map((p) => basename(p))).not.toContain('probe-extra-20261231T235959')
+    expect(runsFor(base, 'probe-extra').map((p) => basename(p))).toContain('probe-extra-20261231T235959')
+  })
+
+  test('un nombre sin sufijo ISO no se lista', () => {
+    mkdirSync(join(base, 'probe-a-mano'), { recursive: true })
+    expect(runsFor(base, 'probe').map((p) => basename(p))).not.toContain('probe-a-mano')
+  })
+
+  test('sin banco devuelve null, no una ruta inventada', () => {
+    expect(latestRun(base, 'nunca-creado')).toBeNull()
+    expect(runsFor(join(base, 'no-existe'), 'probe')).toEqual([])
   })
 })

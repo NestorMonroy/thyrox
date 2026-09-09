@@ -42,7 +42,7 @@
  * registro es el directorio (`calibration-verified-numbers.md`, corolario de
  * la cifra que vive en codigo).
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 
 /** Las cinco claves obligatorias. El orden es el del reporte. */
@@ -87,6 +87,11 @@ export type WorkbenchManifest = Record<string, unknown>
 export type WorkbenchProblem = { key?: string; problem: string }
 
 const BASIC_ISO = /(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/
+
+/** El mismo ISO, anclado por los dos extremos: el resto del nombre tras el
+ *  prefijo tiene que ser EXACTAMENTE el sufijo, o `a-b-<ISO>` se listaria
+ *  bajo el slug `a` — un banco ajeno devuelto como propio. */
+const EXACT_BASIC_ISO = /^\d{8}T\d{6}$/
 
 /**
  * La fecha extendida que el identificador declara, o `null` si no lleva sufijo
@@ -254,6 +259,46 @@ export function runIdFor(slug: string, now: Date): string {
   const date = `${now.getUTCFullYear()}${twoDigits(now.getUTCMonth() + 1)}${twoDigits(now.getUTCDate())}`
   const time = `${twoDigits(now.getUTCHours())}${twoDigits(now.getUTCMinutes())}${twoDigits(now.getUTCSeconds())}`
   return `${slug}-${date}T${time}`
+}
+
+/**
+ * Los bancos de un slug bajo un hogar dado, del más reciente al más antiguo.
+ *
+ * Existe porque el subsistema sabía **acuñar** un identificador y no
+ * **encontrarlo**. Sin resolutor, quien crea un banco tiene que llevarse el
+ * ISO a alguna parte, y esa parte acaba siendo un archivo efímero fuera del
+ * árbol — medido en esta sesión: un puntero en `/dev/shm`, que ninguna otra
+ * sesión puede leer y que el contenedor borra. El defecto no era el puntero,
+ * era que el mecanismo no ofrecía alternativa.
+ *
+ * El orden es por NOMBRE, no por `mtime`: el ISO va en el identificador, así
+ * que el orden lexicográfico ES el cronológico, y no depende de que nadie haya
+ * tocado el directorio después. Un `mtime` cambia al escribir un output y
+ * reordenaría bancos por actividad en vez de por creación.
+ *
+ * Ciega a: un banco cuyo directorio no siga la forma `<slug>-<ISO básico>` —
+ * no se lista, aunque exista. Es deliberado: el resolutor no adivina qué
+ * quiso decir un nombre a mano.
+ */
+export function runsFor(baseDir: string, slug: string): string[] {
+  if (!existsSync(baseDir)) return []
+  const prefix = `${slug}-`
+  return readdirSync(baseDir)
+    .filter((name) => name.startsWith(prefix) && EXACT_BASIC_ISO.test(name.slice(prefix.length)))
+    .sort()
+    .reverse()
+    .map((name) => join(baseDir, name))
+}
+
+/**
+ * El banco más reciente de un slug, o `null`.
+ *
+ * Devuelve `null` en vez de inventar la ruta que tendría: un consumidor que
+ * recibiera una ruta inexistente seguiría en verde apuntando al vacío, que es
+ * la conducta que `thyroxRoot` rehúsa por la misma razón.
+ */
+export function latestRun(baseDir: string, slug: string): string | null {
+  return runsFor(baseDir, slug)[0] ?? null
 }
 
 /**

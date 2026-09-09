@@ -1,0 +1,11 @@
+# Control de ANULACION: se retira resolve_home de consumer_rules_dir
+# (vuelve a Path(valor) crudo). Debe caer EXACTAMENTE el caso del
+# segmento relativo — no el de la ruta absoluta, ni el aislamiento por
+# clon, que no dependen de la resolucion.
+# Corrido: 2026-09-09T18:08:23
+---
+FAIL: test_la_clave_de_familia_como_segmento_relativo_no_colisiona (__main__.RulesPathsParity.test_la_clave_de_familia_como_segmento_relativo_no_colisiona)
+  File "/home/user/thyrox/tests/rules/test_paths_parity.py", line 152, in test_la_clave_de_familia_como_segmento_relativo_no_colisiona
+Ran 10 tests in 0.043s
+FAILED (failures=1)
+restaurado identico: si

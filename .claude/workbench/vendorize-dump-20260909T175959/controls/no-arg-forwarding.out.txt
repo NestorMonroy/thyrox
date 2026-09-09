@@ -1,0 +1,17 @@
+# Control de ANULACION: se retira el reenvio de argumentos de
+# _thyrox_delegate (el 'shift' y el '"$@"'). Debe caer EXACTAMENTE lo
+# que depende de el —thyrox_config_home y, con el, el guion— y NO debe
+# caer thyrox_root, que no pasa argumentos extra. Un control que
+# tumbara las dos cosas no separaria 'el reenvio importa' de 'reach.sh
+# esta roto'.
+# Corrido: 2026-09-09T18:03:51
+---
+-- thyrox_root (NO depende del reenvio) --
+/home/user/thyrox  exit=0
+-- thyrox_config_home (SI depende) --
+reach: --home exige una clave
+  exit=2
+-- el guion entero --
+reach: --home exige una clave
+  exit=2
+restaurado identico: si

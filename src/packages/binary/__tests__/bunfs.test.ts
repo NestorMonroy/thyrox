@@ -35,6 +35,11 @@ const MEASURED: Record<string, { entries: number; tableBytes: number; extractedB
   // Medida el 2026-09-06 con `binary info` sobre la build viva, no copiada de
   // la anterior: 16 entradas mas y 832 B mas de tabla (paso 52, invariante).
   '2.1.263': { entries: 1818, tableBytes: 94_536, extractedBytes: 38_733_511 },
+  // Medida el 2026-09-09T18:12:38 con `binary info` sobre la build viva. Nueve entradas
+  // mas y 468 B mas de tabla (paso 52, invariante), pero el contenido BAJA en
+  // 1 000 237 B: la tabla crece y el payload encoge, que no es contradictorio
+  // —son dos ejes— y es la primera vez que se observa en este corpus.
+  '2.1.266': { entries: 1827, tableBytes: 95_004, extractedBytes: 37_733_274 },
 }
 
 const bytes = existsSync(BINARY) ? readFileSync(BINARY) : null
