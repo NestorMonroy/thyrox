@@ -52,7 +52,7 @@
  */
 import { join } from 'node:path'
 
-import { consumerRoot, envValue } from '../paths/reach.ts'
+import { consumerRoot, envValue, resolveHome } from '../paths/reach.ts'
 
 /**
  * Los dos segmentos del par, declarables por separado. La mitad Python los
@@ -114,7 +114,13 @@ export class WorkbenchHomeError extends Error {}
  * @param start punto de partida para localizar el `.env`; por defecto el cwd.
  */
 export function workbenchDir(start?: string): string {
+  const home = consumerRoot(undefined, start)
+  // El valor declarado pasa por `resolveHome`, igual que en la familia
+  // `rules`. Se devolvia CRUDO, y eso dejaba a la clave sin su unica forma
+  // util: como segmento relativo tiene que decir «en cada clon, este
+  // subdirectorio», y devuelta cruda resolvia contra el CWD — el defecto
+  // home-by-cwd de #284/#286 dentro de la familia que el registro publica.
   const declared = envValue(WORKBENCH_DIR_VAR, start)
-  if (declared) return declared
-  return join(consumerRoot(undefined, start), stateDir(start), evidenceDir(start))
+  if (declared) return resolveHome(declared, home)
+  return join(home, stateDir(start), evidenceDir(start))
 }

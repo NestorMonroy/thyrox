@@ -10,9 +10,15 @@
  * - **No pone `paths:` en una regla universal.** El campo apaga la regla
  *   fuera de sus globos; una universal con filtro sería una regla que dice
  *   gobernar todo y gobierna una carpeta.
+ *
+ * Lo que sí hace siempre: **estampar el sello de procedencia**
+ * (`provenance.ts`). Sin él, tres consumidores con la misma regla emitida
+ * caen en `divergente (0 linea(s))` —dos copias idénticas no se subsumen— y
+ * el emisor empeoraría la cifra que existe para justificarlo.
  */
 import type { RuleDefinition } from '../types.ts'
 import { envValue } from '../../paths/reach.ts'
+import { emittedMarker } from '../provenance.ts'
 
 /** El marcador de un parámetro en el cuerpo. */
 const PLACEHOLDER = /\{\{([A-Za-z][A-Za-z0-9_]*)\}\}/g
@@ -71,9 +77,14 @@ export function toMarkdown(definition: RuleDefinition, start?: string): string {
     )
   }
   const body = render(definition.body, resolveParameters(definition, start))
-  if (definition.scope === 'universal') return body.endsWith('\n') ? body : `${body}\n`
+  const sello = `${emittedMarker(definition.name)}\n\n`
+  const cuerpo = body.endsWith('\n') ? body : `${body}\n`
+  if (definition.scope === 'universal') return sello + cuerpo
 
+  // El sello va DESPUES del frontmatter, no antes: el cliente lee `paths:` de
+  // la cabecera y un comentario delante la dejaria de ver. Sigue dentro de la
+  // ventana de 12 lineas que `check_rule_divergence.HEADER_LINES` inspecciona.
   const globs = definition.paths!.map((glob) => `  - "${glob}"`).join('\n')
   const front = `---\npaths:\n${globs}\n---\n\n`
-  return front + (body.endsWith('\n') ? body : `${body}\n`)
+  return front + sello + cuerpo
 }

@@ -226,18 +226,36 @@ def workbench_dir(start: str | Path | None = None) -> Path:
     # La familia POR CLON gana sobre la global: la declaracion mas especifica
     # manda, y es lo unico que impide que una variable exportada para un arbol
     # se aplique a otro. Ver `workbench_home_name`.
+    from paths.reach import (  # noqa: PLC0415 — evita el ciclo de import
+        ConsumerUnknownError, consumer_root, resolve_home, root as repo_root,
+    )
+    from paths.declarations import record_fallback  # noqa: PLC0415
+
+    # El valor declarado pasa por `resolve_home`, igual que en la familia
+    # `rules`. Se devolvia CRUDO, y eso dejaba a la clave de FAMILIA sin su
+    # unica forma util: como segmento relativo —`workbench`— tiene que decir
+    # «en cada clon, este subdirectorio», y devuelta cruda resolvia contra el
+    # CWD, que es el defecto home-by-cwd de #284/#286 dentro de la familia que
+    # `declarations.py` publica. Medido antes de cerrarlo: con
+    # `THYROX_WORKBENCH_DIR=hogar-relativo` esta familia daba 3 hogares
+    # distintos para 5 clones y `db` recibia la cadena a secas, contra los 5
+    # de `rules`.
     repo = repo_of(inicio or Path.cwd())
     if repo:
         per_clone = env_value(workbench_home_name(repo), inicio)
         if per_clone:
-            return Path(per_clone)
+            return resolve_home(per_clone, repo_root(repo))
 
     declared = env_value(WORKBENCH_DIR_VAR, inicio)
     if declared:
-        return Path(declared)
-
-    from paths.reach import ConsumerUnknownError, consumer_root  # noqa: PLC0415 — evita el ciclo de import
-    from paths.declarations import record_fallback  # noqa: PLC0415
+        # Ancla: la raiz del consumidor. Si no se puede saber cual es, una
+        # relativa no se puede componer — se devuelve cruda y el llamador ve
+        # la ruta que declaro, en vez de una compuesta contra un arbol que
+        # este modulo eligio por su cuenta.
+        try:
+            return resolve_home(declared, consumer_root(start=inicio))
+        except ConsumerUnknownError:
+            return Path(declared)
 
     home = consumer_root(start=inicio) / state_dir(start) / evidence_dir(start)
     record_fallback(

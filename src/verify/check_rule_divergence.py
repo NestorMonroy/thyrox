@@ -65,6 +65,12 @@ CHEATSHEET_MARKERS = ("regla completa:", "canonico en", "canónico en",
                       "cheat-sheet (canonico", "cheat-sheet (canónico")
 HEADER_LINES = 12
 
+#: El sello que el emisor estampa. Se lee de `rules.provenance` en vez de
+#: repetirlo aqui: dos literales de la misma cadena en dos modulos son dos
+#: fuentes de verdad, y su deriva seria SILENCIOSA — el clasificador dejaria
+#: de reconocer lo que el emisor escribe y lo contaria como deriva.
+from rules.provenance import EMITTED_MARKER  # noqa: E402  — `sys.path` ya fijado arriba
+
 
 def rule_files(root: Path) -> dict[str, Path]:
     """Las reglas de un arbol, por nombre de archivo."""
@@ -82,14 +88,29 @@ def content_lines(path: Path) -> frozenset[str]:
     return frozenset(line.rstrip() for line in raw.splitlines() if line.strip())
 
 
-def declares_canon(path: Path) -> bool:
+def _header_contains(path: Path, markers: tuple[str, ...]) -> bool:
+    """Si la cabecera de la copia contiene alguno de los marcadores.
+
+    Se mira SOLO la cabecera: una cita a `H-DOCS-97` en el cuerpo de una regla
+    completa no la convierte en cheat-sheet, y un `.md` que hable del sello no
+    se vuelve emitido por mencionarlo.
+    """
     try:
         with path.open(encoding="utf-8", errors="replace") as handle:
             head = "".join(next(handle, "") for _ in range(HEADER_LINES))
     except OSError:
         return False
     lowered = head.lower()
-    return any(marker in lowered for marker in CHEATSHEET_MARKERS)
+    return any(marker in lowered for marker in markers)
+
+
+def declares_canon(path: Path) -> bool:
+    return _header_contains(path, CHEATSHEET_MARKERS)
+
+
+def declares_emitted(path: Path) -> bool:
+    """Si la copia lleva el sello del emisor, en la misma ventana de cabecera."""
+    return _header_contains(path, (EMITTED_MARKER,))
 
 
 def classify(name: str, copies: dict[str, Path]) -> list[tuple[str, str, str]]:
@@ -97,6 +118,15 @@ def classify(name: str, copies: dict[str, Path]) -> list[tuple[str, str, str]]:
     lines = {repo: content_lines(path) for repo, path in copies.items()}
     verdicts: list[tuple[str, str, str]] = []
     for repo, path in copies.items():
+        # El sello se mira ANTES que nada. Sin este cubo, N consumidores con la
+        # misma regla emitida caen en `divergente (0 linea(s))`: dos copias
+        # identicas no se subsumen —el filtro `holders` exige que la otra
+        # aporte alguna linea propia— y el emisor empeoraria la cifra que
+        # existe para justificarlo. Una emitida no es deriva: es la MISMA
+        # definicion resuelta con los parametros de cada consumidor.
+        if declares_emitted(path):
+            verdicts.append((repo, "emitida", "lleva el sello del proveedor"))
+            continue
         if declares_canon(path):
             verdicts.append((repo, "cheat-sheet", "declara su canon"))
             continue
@@ -145,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write-baseline", action="store_true",
                         help="congelar las divergentes de hoy")
     parser.add_argument("--bucket", default=None,
-                        choices=("cheat-sheet", "subsumida", "divergente"),
+                        choices=("cheat-sheet", "subsumida", "divergente", "emitida"),
                         help="listar solo ese cubo")
     args = parser.parse_args(argv)
 
@@ -166,7 +196,8 @@ def main(argv: list[str] | None = None) -> int:
 
     shared, measured = survey(present)
     baseline = read_baseline()
-    buckets: dict[str, list[str]] = {"cheat-sheet": [], "subsumida": [], "divergente": []}
+    buckets: dict[str, list[str]] = {"emitida": [], "cheat-sheet": [],
+                                     "subsumida": [], "divergente": []}
     for name in sorted(shared):
         for repo, bucket, reason in classify(name, shared[name]):
             buckets[bucket].append(f"{repo}::{name}   ({reason})")
@@ -187,7 +218,7 @@ def main(argv: list[str] | None = None) -> int:
         print(len(fresh))
         return 1 if (args.strict and fresh) else 0
 
-    for bucket in ("subsumida", "divergente", "cheat-sheet"):
+    for bucket in ("subsumida", "divergente", "emitida", "cheat-sheet"):
         if args.bucket and bucket != args.bucket:
             continue
         print(f"== {bucket} ({len(buckets[bucket])}) ==")
@@ -196,6 +227,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"check-rule-divergence: {len(buckets['subsumida'])} subsumida(s) · "
           f"{len(fresh)} divergente(s) nueva(s) de {len(buckets['divergente'])} · "
+          f"{len(buckets['emitida'])} emitida(s) · "
           f"{len(buckets['cheat-sheet'])} cheat-sheet "
           f"(alcance medido: {measured} regla(s) en {len(present)} arbol(es); "
           f"{len(shared)} nombre(s) compartido(s))")

@@ -8,10 +8,12 @@
  * `thyrox/.claude/rules`.
  */
 import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { RuleDefinition } from '../../src/rules/types.ts'
 import { render, resolveParameters, toMarkdown, UnresolvedParameterError } from '../../src/rules/emit/markdown.ts'
 import { consumerRulesDir, RULES_SEGMENT } from '../../src/rules/paths.ts'
+import { emittedMarker } from '../../src/rules/provenance.ts'
 import { stateDir } from '../../src/workbench/paths.ts'
 import { RULES } from '../../src/rules/index.ts'
 
@@ -64,6 +66,58 @@ describe('el frontmatter por scope', () => {
   test('una de dominio con paths los emite en su frontmatter', () => {
     const emitido = toMarkdown({ ...universal, scope: 'domain', paths: ['src/**/*.py'] })
     expect(emitido.startsWith('---\npaths:\n  - "src/**/*.py"\n---\n')).toBe(true)
+  })
+})
+
+describe('el sello de procedencia', () => {
+  /**
+   * Que haria fallar a estos casos (sub-patron D): que `toMarkdown` dejara de
+   * estampar. El emisor seguiria produciendo un `.md` valido y el clasificador
+   * contaria cada copia emitida como `divergente (0 linea(s))` — dos copias
+   * identicas no se subsumen. El emisor empeoraria la cifra que lo justifica.
+   *
+   * La VENTANA la fija `check_rule_divergence.HEADER_LINES`, y se lee de su
+   * fuente en vez de repetir el numero: dos literales de la misma constante
+   * derivan en silencio.
+   */
+  const headerLines = (): number => {
+    const fuente = readFileSync(
+      join(import.meta.dir, '..', '..', 'src', 'verify', 'check_rule_divergence.py'),
+      'utf8',
+    )
+    const hallado = fuente.match(/^HEADER_LINES = (\d+)$/m)
+    if (!hallado) throw new Error('check_rule_divergence.py no declara HEADER_LINES')
+    return Number(hallado[1])
+  }
+
+  test('una universal lo lleva en la primera linea', () => {
+    const emitido = toMarkdown(universal)
+    expect(emitido.split('\n')[0]).toBe(emittedMarker(universal.name))
+  })
+
+  test('una de dominio lo lleva DESPUES del frontmatter', () => {
+    const dominio = { ...universal, scope: 'domain' as const, paths: ['src/**/*.py'] }
+    const emitido = toMarkdown(dominio)
+    // El frontmatter va primero o el cliente no lee `paths:`.
+    expect(emitido.startsWith('---\npaths:\n  - "src/**/*.py"\n---\n')).toBe(true)
+    expect(emitido).toContain(emittedMarker(dominio.name))
+  })
+
+  test('en los dos scopes cae DENTRO de la ventana del clasificador', () => {
+    const ventana = headerLines()
+    for (const definicion of [
+      universal,
+      { ...universal, scope: 'domain' as const, paths: ['src/**/*.py'] },
+    ]) {
+      const cabecera = toMarkdown(definicion).split('\n').slice(0, ventana)
+      expect(cabecera.some((l) => l.includes(emittedMarker(definicion.name)))).toBe(true)
+    }
+  })
+
+  test('el sello nombra la definicion, no un nombre fijo', () => {
+    // Sin esto el sello seria un literal constante y no diria de DONDE sale.
+    expect(emittedMarker('otra-regla')).not.toBe(emittedMarker(universal.name))
+    expect(emittedMarker('otra-regla')).toContain('otra-regla.ts')
   })
 })
 
