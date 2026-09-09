@@ -82,6 +82,7 @@ def resolve_all(start: Path | None = None) -> list[tuple[str, str, str, str]]:
     vacio ahi no distingue «todo declarado» de «nadie pregunto».
     """
     from paths import reach  # noqa: PLC0415 — evita el ciclo en tiempo de import
+    from rules import paths as rules  # noqa: PLC0415 — idem
     from workbench import paths as workbench
 
     clear()
@@ -94,6 +95,17 @@ def resolve_all(start: Path | None = None) -> list[tuple[str, str, str, str]]:
             workbench.WORKBENCH_DIR_VAR, root)
         origin = "declarado" if declared else "por defecto"
         rows.append((repo, key, origin, str(workbench.workbench_dir(root))))
+
+        # El hogar de las reglas EMITIDAS es del consumidor, no del proveedor:
+        # thyrox las produce y cada clon las aloja. Por eso la fila es por clon
+        # aunque la clave sea una — la variable se lee con la raíz de ESE árbol
+        # como punto de partida, así que su `.env` la puede declarar sin tocar
+        # la de los demás. Sin esta fila el default sería SILENCIOSO, que es el
+        # defecto entero que este módulo existe para cerrar.
+        declared_rules = reach.env_value(rules.RULES_DIR_VAR, root)
+        rows.append((repo, rules.RULES_DIR_VAR,
+                     "declarado" if declared_rules else "por defecto",
+                     str(rules.consumer_rules_dir(root))))
 
     # Los hogares que NO son por clon: el store y los dos segmentos del default.
     for key, resolver in (

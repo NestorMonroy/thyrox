@@ -10,9 +10,22 @@
  */
 import { join } from 'node:path'
 import { envValue, thyroxRoot } from '../paths/reach.ts'
+import { stateDir } from '../workbench/paths.ts'
 
 export const RULES_DIR_VAR = 'THYROX_RULES_DIR'
-export const RULES_DIR_DEFAULT = join('.claude', 'rules')
+
+/**
+ * El segmento propio de esta familia. El tramo de ESTADO no se escribe aqui:
+ * lo declara `stateDir()` (`THYROX_STATE_DIR`, default `.claude`), y componerlo
+ * a mano seria la segunda fuente de verdad de la particion que DEC-01 fija —
+ * producto en `src/`, estado en `.claude/`.
+ */
+export const RULES_SEGMENT = 'rules'
+
+/** El hogar por defecto de un arbol dado, derivado del segmento declarado. */
+export function defaultRulesDir(root: string, start?: string): string {
+  return join(root, stateDir(start ?? root), RULES_SEGMENT)
+}
 
 /**
  * NO se verifica que el directorio exista: un hogar declarado y ausente es un
@@ -21,7 +34,7 @@ export const RULES_DIR_DEFAULT = join('.claude', 'rules')
 export function rulesDir(start?: string): string {
   const declared = envValue(RULES_DIR_VAR, start)
   if (declared) return declared
-  return join(thyroxRoot(start), RULES_DIR_DEFAULT)
+  return defaultRulesDir(thyroxRoot(start), start)
 }
 
 /**
@@ -40,5 +53,5 @@ export function rulesDir(start?: string): string {
 export function consumerRulesDir(root: string): string {
   const declared = envValue(RULES_DIR_VAR, root)
   if (declared) return declared
-  return join(root, RULES_DIR_DEFAULT)
+  return defaultRulesDir(root)
 }

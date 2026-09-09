@@ -11,7 +11,8 @@ import { describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
 import type { RuleDefinition } from '../../src/rules/types.ts'
 import { render, resolveParameters, toMarkdown, UnresolvedParameterError } from '../../src/rules/emit/markdown.ts'
-import { consumerRulesDir, RULES_DIR_DEFAULT } from '../../src/rules/paths.ts'
+import { consumerRulesDir, RULES_SEGMENT } from '../../src/rules/paths.ts'
+import { stateDir } from '../../src/workbench/paths.ts'
 import { RULES } from '../../src/rules/index.ts'
 
 const universal: RuleDefinition = {
@@ -24,7 +25,7 @@ const universal: RuleDefinition = {
 describe('el hogar del consumidor', () => {
   test('cae en el arbol del consumidor, no en el del proveedor', () => {
     const root = '/tmp/consumidor-de-prueba'
-    expect(consumerRulesDir(root)).toBe(join(root, RULES_DIR_DEFAULT))
+    expect(consumerRulesDir(root)).toBe(join(root, stateDir(root), RULES_SEGMENT))
     expect(consumerRulesDir(root)).not.toContain('thyrox')
   })
 })
@@ -93,7 +94,7 @@ describe('el productor y el cargador coinciden', () => {
    * verdad para el mismo predicado. Este caso las ata: lo que el emisor
    * escribe tiene que ser lo que el cargador lee.
    *
-   * Que lo haria fallar: cambiar `RULES_DIR_DEFAULT` sin tocar el cargador.
+   * Que lo haria fallar: cambiar `RULES_SEGMENT` sin tocar el cargador.
    */
   test('toda ruta que el emisor compone la reconoce isMemoryFilePath', async () => {
     const { isMemoryFilePath } = await import('../../src/packages/storage/src/claudemd.ts')

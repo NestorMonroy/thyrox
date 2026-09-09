@@ -398,6 +398,27 @@ THYROX_ROOT_VAR = "THYROX_ROOT"
 #: árbol, pero con la evidencia dentro en vez del rótulo fuera.
 THYROX_MARKER = Path("src") / "paths" / "reach.py"
 
+#: El bootstrap canónico, en texto — la ÚNICA forma admitida de alcanzar
+#: ``src/`` desde un archivo que todavía no puede importar este módulo.
+#:
+#: Existe como constante porque el problema es de HUEVO Y GALLINA: el
+#: mecanismo que resuelve la raíz vive dentro de la raíz, así que el primer
+#: paso no se puede delegar. Lo que sí se puede es fijar su FORMA en un solo
+#: sitio y que un gate la compare — que es lo que ``check_python_bootstrap``
+#: hace. Sin eso, cada archivo inventa su propio offset y el proveedor deja de
+#: gobernar la única cosa que todos sus archivos hacen igual.
+#:
+#: La forma es **ascenso con detección**, no offset. ``parents[N]`` acierta a
+#: UNA profundidad y falla en **silencio** al mover el archivo un nivel: no
+#: revienta, resuelve otra ruta que existe. Medido en H-DOCS-1103 y en la
+#: tarea #228. El ascenso no depende de cuántos niveles haya.
+BOOTSTRAP = """_AQUI = Path(__file__).resolve()
+_RAIZ = next((p for p in _AQUI.parents
+              if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _RAIZ is None:
+    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_AQUI}")
+sys.path.insert(0, str(_RAIZ / "src"))"""
+
 
 def thyrox_root(start: Path | None = None) -> Path:
     """La raíz de THYROX mismo, por variable declarada o por ascenso.

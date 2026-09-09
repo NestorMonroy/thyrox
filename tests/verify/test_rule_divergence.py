@@ -13,10 +13,18 @@ import sys
 import unittest
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-THYROX = HERE.parent.parent
-sys.path.insert(0, str(THYROX / "src"))
-sys.path.insert(0, str(THYROX / "src" / "verify"))
+# Bootstrap canónico (`paths.reach.BOOTSTRAP`): ascenso con detección hasta
+# el marcador, NO `parents[N]`. Un offset acierta a UNA profundidad y falla en
+# silencio al mover el archivo; el ascenso sobrevive el cambio de anidamiento.
+# Es el único punto donde `paths.reach` todavía no se puede importar — de ahí
+# en adelante la raíz sale de `reach.thyrox_root()`, no de más aritmética.
+_AQUI = Path(__file__).resolve()
+_RAIZ = next((p for p in _AQUI.parents
+              if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _RAIZ is None:
+    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_AQUI}")
+sys.path.insert(0, str(_RAIZ / "src"))
+sys.path.insert(0, str(_RAIZ / "src" / "verify"))
 import check_rule_divergence as gate  # noqa: E402
 
 

@@ -12,5 +12,5 @@ import { gitAuthorIdentity } from './definitions/gitAuthorIdentity.ts'
 export const RULES: RuleDefinition[] = [gitAuthorIdentity]
 
 export type { RuleDefinition } from './types.ts'
-export { rulesDir, RULES_DIR_VAR, RULES_DIR_DEFAULT } from './paths.ts'
+export { rulesDir, consumerRulesDir, defaultRulesDir, RULES_DIR_VAR, RULES_SEGMENT } from './paths.ts'
 export { toMarkdown, render, resolveParameters, UnresolvedParameterError } from './emit/markdown.ts'
