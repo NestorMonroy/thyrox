@@ -16,12 +16,25 @@
  * `ToolExecContext` y `CoreMessage` por `unknown` dentro de `SwarmHostDeps`.
  * `AgentDeps` si usa los tipos reales, asi que en los puntos donde una
  * sub-superficie del host DEVUELVE uno de esos cuatro, el valor llega como
- * `unknown` y no satisface el contrato del agente. Los puntos afectados se
- * anotan uno a uno abajo con un cast estrecho al tipo que la FUENTE declara
- * en ese mismo sitio; ninguno ensancha el contrato ni cambia el valor en
- * ejecucion. Cerrar la divergencia de raiz —darle a `types/deps.ts` los
- * cuatro tipos reales— toca los 30+ consumidores de `SwarmHostDeps` y es
- * trabajo de su propia tarea, no de este puente.
+ * `unknown` y no satisface el contrato del agente. Los puntos afectados son
+ * CINCO, y se anotan uno a uno abajo con un cast estrecho al tipo que la
+ * FUENTE declara en ese mismo sitio; ninguno ensancha el contrato ni cambia
+ * el valor en ejecucion.
+ *
+ * Los cinco SOSTIENEN, medido y no supuesto: retirado cada uno por separado
+ * contra `tsc -p tsconfig.json`, cada uno produce exactamente 1 error bajo
+ * `src/` y el fichero se restaura byte a byte con `cmp`. La medicion importa
+ * porque los cinco se escribieron ANTES de correr `tsc`: sin ella no se podia
+ * distinguir un cast que carga peso de codigo muerto vestido de arreglo — el
+ * verde que no discrimina de `evidencia-antes-de-afirmar.md`.
+ *
+ * Metrica: errores `^src/` de `tsc -p tsconfig.json` al retirar un cast.
+ * Ciega a: si el tipo del cast es el CORRECTO — solo dice que sin el no
+ * compila. Que sea el que la fuente declara se verifica leyendola, no aqui.
+ *
+ * Cerrar la divergencia de raiz —darle a `types/deps.ts` los cuatro tipos
+ * reales— toca los 30+ consumidores de `SwarmHostDeps` y es trabajo de su
+ * propia tarea, no de este puente.
  */
 import type {
   AgentDeps,
