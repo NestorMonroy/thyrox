@@ -13,33 +13,35 @@ pasar a `/home/user/thyrox/.claude/workbench/`»*— y su razon es la de siempre
 consumidor es el DOCUMENTO, que esta en
 `kaupamex-docs: source/base-cognitiva/hexagonal-architecture/index.rst`.
 
-## Que se versiona, y que NO — la decision, declarada
+## Que se versiona: TODO — corregido por el ejecutor
 
 | Pieza | Veredicto |
 |---|---|
-| `extract.py` | **se versiona** — es mecanismo reusable |
-| `hexagonal-architecture-explained.en.txt` | **NO se versiona** |
+| `extract.py` | se versiona — es mecanismo reusable |
+| `hexagonal-architecture-explained.en.txt` | **se versiona** |
 
-El `.txt` es el texto integro de una obra comercial (16 paginas, 17 925
-caracteres). No hay precedente en este arbol: medido, es el primer `*.en.txt`
-que existe, asi que la decision no se hereda de ningun sitio y se escribe aqui.
+**Mi primera version de este README dijo lo contrario, y estaba mal.** Razone
+que el `.txt` integro de una obra comercial no debia entrar, pesando la
+licencia como el factor que decide y la reproducibilidad del extractor como
+sustituto de la durabilidad. Puse un `.gitignore` local para dejarlo fuera.
 
-**No es una regla unica aplicada a ciegas.** Los factores pesan distinto segun
-el caso, y aqui pesan asi:
+Directiva del ejecutor, el mismo dia: *«SI y no nos metemos con eso, como ves
+pedimos evidencias y la evidencia siempre se guarda»*.
 
-- **Licencia** — obra comercial. Es el factor que decide, y va en la misma
-  direccion que la postura ya tomada con PMBOK, NetSuite y BPM.
-- **Reproducibilidad** — `extract.py` regenera el `.txt` del PDF en segundos, y
-  es determinista. Versionar la salida de un mecanismo determinista cuyo insumo
-  es del ejecutor no compra durabilidad, compra una copia.
-- **Durabilidad de la evidencia** — lo que sostiene el analisis son las citas
-  cortas del documento, que si estan versionadas con su pagina.
-- **Tamano** — 17.9 KB, despreciable. NO es el factor: si lo fuera, la decision
-  seria la contraria.
+El `.gitignore` se retiro y el `.txt` entra.
 
-El caso OAIS diverge y esta bien que diverja: aquel `.txt` **si** se versiona
-porque su fuente es un estandar publico del CCSDS, no una obra comercial. Mismo
-tipo de artefacto, licencia distinta, veredicto distinto.
+**Por que mi razonamiento fallaba**, que es lo que conviene no repetir: trate
+la reproducibilidad como si sustituyera a la evidencia. No lo hace. Un
+extractor determinista regenera el texto **mientras el PDF siga estando y el
+enlace de `cryptography` siga roto de la misma manera**; las dos condiciones
+son del entorno, no del repositorio. Lo que se versiona es la evidencia contra
+la que se escribio el analisis, y esa tiene que sobrevivir al entorno — el
+mismo criterio con que `build-logs.md` dice que un `.log` es tan durable como
+el contenedor.
+
+Y el eje de la licencia estaba mal pesado en su propia direccion: OAIS versiona
+su `.txt` y yo lo lei como una excepcion por ser estandar publico. Medido
+despues: **no era la excepcion, era la regla del arbol**.
 
 ## El mecanismo que `extract.py` aporta
 
