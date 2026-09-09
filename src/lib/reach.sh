@@ -43,8 +43,8 @@
 # Un archivo que se hace `source` desde varios sitios se re-evalua una vez por
 # sitio; sin el guard, cada `source` vuelve a exportar y a redefinir. Es barato
 # y su ausencia no revienta: por eso nadie la nota hasta que el orden importa.
-[[ -n "${THYROX_REACH_SH_CARGADO:-}" ]] && return 0
-THYROX_REACH_SH_CARGADO=1
+[[ -n "${THYROX_REACH_SH_LOADED:-}" ]] && return 0
+THYROX_REACH_SH_LOADED=1
 
 THYROX_SH_MARKER="${THYROX_LOCATOR:-src/paths/reach.py}"
 

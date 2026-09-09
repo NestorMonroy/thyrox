@@ -11,7 +11,7 @@ Qué mide
 --------
 
 Las citas **ejecutables** de los consumidores: una ruta bajo ``$THYROX_ROOT``
-(o ``$THYROX_RAIZ``) asignada a una variable, o declarada como ``OWNER_MODULE``
+asignada a una variable, o declarada como ``OWNER_MODULE``
 de un stub. Una ruta que sólo se **nombra** en prosa no cuenta: un ``.rst`` que
 enumera los gates los cita sin invocarlos, y contarlos publicaría como
 superficie casi todo ``src/`` (medido: 200+ rutas contra 17 declaradas).
@@ -34,7 +34,12 @@ EXIT_OK, EXIT_VIOLATIONS, EXIT_GUARD = 0, 1, 2
 
 #: Asignación a variable: `ALGO="$THYROX_ROOT/src/…"`.
 ASSIGNMENT = re.compile(
-    r'^\s*[A-Za-z_][A-Za-z_0-9]*="\$\{?(?:THYROX_ROOT|THYROX_RAIZ)\}?/(src/[^"]+)"',
+    # `THYROX_RAIZ` era una segunda alternativa admitida aqui, en espanol.
+    # Retirada: medido, CERO guiones del arbol la asignan o la leen — era una
+    # alternativa que nunca casaba, y `identificadores-en-ingles.md` cubre las
+    # claves de entorno. Traducirla habria sido dar nombre nuevo a capacidad
+    # muerta; se retira, que es el otro desenlace que la regla admite.
+    r'^\s*[A-Za-z_][A-Za-z_0-9]*="\$\{?THYROX_ROOT\}?/(src/[^"]+)"',
     re.MULTILINE)
 #: Stub que delega: `OWNER_MODULE="src/…"`.
 OWNER_MODULE = re.compile(r'''OWNER_MODULE=["'](src/[^"']+)["']''')
