@@ -32,6 +32,35 @@
  * (`H-DOCS-1170`), pero NO se edita `agent/inProcessTeammateHelpers.ts`
  * en este pase (paquete ajeno, otro agente puede estar trabajándolo en
  * paralelo).
+ *
+ * CORRECCIÓN (estado heredado incorrecto, TASK-THYROX-0006): la línea 21
+ * de este mismo docstring decía que `tasks/InProcessTeammateTask.tsx` es
+ * BLOQUEADO. Es falso — medido con `grep -c '</\|React'` sobre la fuente:
+ * 0 hits. El archivo es un objeto `Task` + funciones puras sobre AppState,
+ * sin JSX ni import de React; se porta en este mismo pase. `TaskStateBase`
+ * pasa a exportarse aquí porque ese archivo lo necesita como tipo público
+ * (antes sólo lo usaban funciones internas de este módulo).
+ *
+ * CORRECCIÓN 2 (subconjunto insuficiente, TASK-THYROX-0006): el subconjunto de
+ * arriba —`id`+`status`+`type`— dejaba fuera cinco campos que algún consumidor
+ * DEL PAQUETE sí lee o escribe: `totalPausedMs`/`toolUseId` en el cálculo del
+ * tiempo de espera de permiso y en el bookend SDK
+ * (`runtime/inProcessRunner.ts:923,1169,1220`), `notified`/`endTime` al cerrar
+ * la tarea en los dos caminos de salida (`:1175-1176,1226,1229`), y
+ * `description`, que lee `runtime/spawnInProcess.ts:251`
+ * (`teammateTask.description`, dentro de `killInProcessTeammate`) — un
+ * consumidor DISTINTO de `inProcessRunner.ts`, ya portado. Ninguno es
+ * extensión de teammate: medido contra
+ * `ccnmt: packages/tool-registry/src/Task.ts:48-60`, los cinco viven en el
+ * propio `TaskStateBase` de 11 campos que el adaptador de la fuente
+ * re-exporta (`ccnmt: packages/swarm/src/adapters/appRuntime.ts:73`), con la
+ * misma opcionalidad que aquí se porta: `toolUseId?`, `endTime?` y
+ * `totalPausedMs?` opcionales, `notified` y `description` obligatorios. Los
+ * dos campos restantes de esos 11 (`outputFile`, `outputOffset`) siguen sin
+ * consumidor en este árbol — grep confirmado, cero hits sobre `src/`— y por
+ * eso quedan fuera: el criterio no es «lo que `inProcessRunner.ts` lee» sino
+ * «lo que ALGÚN consumidor del paquete lee», que es donde la primera versión
+ * de esta corrección se quedó corta al mirar un solo archivo.
  */
 
 /**
@@ -39,10 +68,15 @@
  * `TaskStateBase` (adaptador de la fuente) que este archivo y sus
  * consumidores realmente leen. Ver la divergencia declarada arriba.
  */
-interface TaskStateBase {
+export interface TaskStateBase {
   id: string
   status: string
   type: string
+  description: string
+  toolUseId?: string
+  endTime?: number
+  totalPausedMs?: number
+  notified: boolean
 }
 
 /**
