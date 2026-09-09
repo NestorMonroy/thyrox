@@ -55,6 +55,17 @@ _FORMAT_MARGIN = 200
 
 Detector = tuple[str, Callable[[dict], str | None]]
 
+#: Los detectores que THYROX aporta, y el directorio donde viven. Es el default
+#: del ``__main__``: sin él, invocar el módulo como hook imprimía ``{}`` y salía
+#: 0 —el verde silencioso que este mismo archivo denuncia— porque no recibía ni
+#: directorio ni lista.
+DETECTOR_DIR = Path(__file__).resolve().parent
+DETECTOR_NAMES: tuple[str, ...] = (
+    "detect_finding_layer",
+    "detect_prose_vocabulary",
+    "detect_rst_validation",
+)
+
 
 class EmptyRegistryError(RuntimeError):
     """Ningún detector se cargó: no hay con qué medir.
@@ -65,18 +76,18 @@ class EmptyRegistryError(RuntimeError):
 
 
 def load_detector(directory: Path, name: str) -> Callable[[dict], str | None]:
-    """Importa un detector por ruta y devuelve su ``detectar``.
+    """Importa un detector por ruta y devuelve su ``detect``.
 
-    El nombre de la función se conserva **en español** a propósito: es el
-    contrato que los detectores de kaupamex ya exponen, y renombrarlo aquí
-    rompería a los tres sin ganar nada.
+    El nombre estaba **en español** mientras el contrato lo fijaban los tres
+    detectores del consumidor. Portados aquí, esa razón ya no existe y el
+    identificador vuelve a inglés como el resto del árbol.
     """
     spec = importlib.util.spec_from_file_location(name, Path(directory) / f"{name}.py")
     if spec is None or spec.loader is None:
         raise ImportError(f"no se pudo componer el spec de {name}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.detectar
+    return module.detect
 
 
 def build_registry(directory: Path,
@@ -171,11 +182,10 @@ def main(stdin_text: str | None = None,
         return 0
 
     if detectors is None:
-        if directory is None or not names:
-            print("{}")
-            print("pretooluse_dispatch: sin directorio ni lista de detectores; "
-                  "no se midió nada.", file=sys.stderr)
-            return 0
+        # El default es el set propio de THYROX. Un llamador que quiera otro lo
+        # pasa; lo que ya no ocurre es quedarse sin ninguno y no enterarse.
+        directory = DETECTOR_DIR if directory is None else directory
+        names = DETECTOR_NAMES if not names else names
         detectors, missing = build_registry(directory, names)
         if missing:
             print(f"pretooluse_dispatch: no cargaron {len(missing)} de "
