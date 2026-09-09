@@ -16,7 +16,7 @@
 set -uo pipefail
 
 RAIZ="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-GATES="$RAIZ/src/gates"
+GATES="$RAIZ/src/verify"
 CODIGO=0
 
 # Rehusar en vez de omitir. Un `exit 0` con los gates inalcanzables seria un

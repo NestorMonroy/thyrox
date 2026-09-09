@@ -474,7 +474,7 @@ def consumer_root(declared: str | Path | None = None,
 
     Cierra la familia que el corredor destapó por gate: siete gates componían
     su corpus con ``Path(__file__).resolve().parents[N]``, calibrado para
-    ``kaupamex-docs/.claude/scripts/gates/``. Desde ``thyrox/src/gates/`` eso
+    ``kaupamex-docs/.claude/scripts/gates/``. Desde ``thyrox/src/verify/`` eso
     da ``/home/user``, y el mensaje decía ``no existe la raíz
     /home/user/source`` — que se lee como violación de la regla y es una ruta
     rota: el gate no midió nada.

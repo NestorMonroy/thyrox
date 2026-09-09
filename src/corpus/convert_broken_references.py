@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 from collections import defaultdict
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'gates'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'verify'))
 from detect_broken_references import ReferenceValidator
 
 

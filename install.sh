@@ -20,7 +20,7 @@
 # escribe el VALOR (`THYROX_ROOT`) en el archivo que la RUTA (`THYROX_ENV_FILE`)
 # nombra. Lo que NO escribe son las otras 26 claves del contrato — las declara
 # `.env.example`, y su valor es del consumidor, no del proveedor. El gate
-# `src/gates/check_env_contract_keys.py` verifica que ninguna clave leída del
+# `src/verify/check_env_contract_keys.py` verifica que ninguna clave leída del
 # entorno se quede fuera de ese archivo.
 #
 # Procedencia del porte — tres referencias, leídas en sólo lectura

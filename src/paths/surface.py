@@ -54,9 +54,9 @@ PUBLIC_PATHS: tuple[str, ...] = (
     'src/hooks/stop_pending_work.py',
     'src/hooks/stop_tests.py',
     # Gates que el consumidor corre sobre SU árbol.
-    'src/gates/lint_agents.py',
-    'src/gates/pre-push.sh',
-    'src/gates/thyrox-audit.sh',
+    'src/verify/lint_agents.py',
+    'src/verify/pre-push.sh',
+    'src/verify/thyrox-audit.sh',
     # Telemetría y tablero.
     'src/agents/agent_store.py',
     'src/task/snapshot-tasks.sh',

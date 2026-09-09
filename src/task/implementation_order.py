@@ -394,7 +394,7 @@ def _delegate(script_rel, arguments, missing_note, timeout):
 
     ``script_rel`` es relativo a ``.claude/scripts/``, no al directorio de este
     archivo: desde la organización por clase (2026-08-27) la etapa 4 vive en
-    ``task/`` y la 5 en ``gates/``, así que «guion hermano» dejó de ser cierto.
+    ``task/`` y la 5 en ``verify/``, así que «guion hermano» dejó de ser cierto.
     """
     scripts_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     script = os.path.join(scripts_dir, script_rel)
@@ -422,7 +422,7 @@ def premise_check(task_ids, tasks_dir):
     despachar son unas pocas fichas.
     """
     return _delegate(
-        os.path.join('gates', 'verificar_premisa.py'),
+        os.path.join('verify', 'verificar_premisa.py'),
         list(task_ids) + ['--tasks-dir', tasks_dir],
         'verificar_premisa.py no encontrado — etapa 5 omitida',
         timeout=300)

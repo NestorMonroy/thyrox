@@ -12,7 +12,7 @@ set -euo pipefail
 
 # La raíz se ancla en la ubicación del propio gate, que vive en
 # `<raíz>/src/skills/gates/` — mismo invariante que check-agent-artifacts.sh
-# usa contra `src/gates/`.
+# usa contra `src/verify/`.
 RAIZ="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
 MECANISMO_REL="src/skills"
 ESTRICTO=0

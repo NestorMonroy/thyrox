@@ -5,7 +5,7 @@
  * maintenance policy for stale memory, obsolete rules, and invalid skills?».
  *
  * De los tres sujetos, uno ya la tenía: las **reglas obsoletas** las mide
- * `src/gates/check_premise_drift.py`, que compara la premisa declarada de una
+ * `src/verify/check_premise_drift.py`, que compara la premisa declarada de una
  * tarea contra el árbol y publica las que dejaron de ser ciertas. Este módulo
  * cubre los otros dos, que no tenían ninguno.
  *

@@ -328,7 +328,7 @@ export function reach(start?: string): Record<string, string> {
  * PROVEEDOR (dónde vive el mecanismo), ésta al árbol sobre el que el mecanismo
  * opera. Confundirlas es el defecto que el corredor de gates destapó: siete
  * gates componían su corpus con aritmética de ruta calibrada para
- * `kaupamex-docs/.claude/scripts/gates/`, y desde `thyrox/src/gates/` medían
+ * `kaupamex-docs/.claude/scripts/gates/`, y desde `thyrox/src/verify/` medían
  * `/home/user/source`, que no existe.
  */
 export const CONSUMER_ROOT_VAR = 'THYROX_CONSUMER'
