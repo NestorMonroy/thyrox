@@ -1,14 +1,14 @@
 /**
  * Adaptación de @claude-code-how-works/app-host: src/packageHostSetup.ts.
- * Capa 1 tramo B — porte FIEL de la lógica; importaciones DECLARADAS
- * COLGANTES, sin traducir y sin stub.
+ * Capa 1 tramo B — porte FIEL de la lógica.
  *
  * `index.ts` (hermano en este mismo paquete, ya portado) ya adelantaba
  * esta ausencia: *"La fuente reexporta también 5 símbolos de
  * ./packageHostSetup.js […] Ese archivo cita @claude-code-how-works/agent,
  * /config, /memory y /permission (4 citas medidas), así que NO es capa 0
  * y queda fuera de este pase."* Este archivo ES ese pase — capa 1, no
- * capa 0 — y las cuatro citas siguen sin resolver:
+ * capa 0. Dos de las cuatro citas se cerraron en TASK-THYROX-0005 (`memory`,
+ * `permission`); las otras dos siguen COLGANTES, sin traducir y sin stub:
  *
  *   - `@claude-code-how-works/agent` (`installAgentHostBindings`) —
  *     `@thyrox/agent` SÍ existe y el símbolo SÍ está portado
@@ -22,14 +22,26 @@
  *     subárbol `settings/*` (`SETTING_SOURCES`, `SettingsSchema`, …);
  *     `installConfigHostBindings` no existe en ningún archivo del
  *     paquete.
- *   - `@claude-code-how-works/memory` (`installMemoryHostBindings`) —
- *     el paquete `memory` no existe en absoluto.
- *   - `@claude-code-how-works/permission` (`installPermissionHostBindings`)
- *     — el paquete `permission` no existe en absoluto.
  *
- * Los cuatro imports se conservan literales — mismo criterio que
- * `runtime/installPluginBindings.ts` (hermano en este paquete) y
- * `agent/internal/macroFallback.ts`.
+ * Las otras dos ya resuelven — TASK-THYROX-0005 declaró `@thyrox/memory` y
+ * `@thyrox/permission` en las `dependencies` de este paquete (antes
+ * importadas sin estarlo) y corrigió el especificador de `permission`:
+ *
+ *   - `@claude-code-how-works/memory` (`installMemoryHostBindings`) —
+ *     `@thyrox/memory` existe y su raíz `"."` reexporta el símbolo
+ *     (`memory/src/index.ts:9` → `memory/src/host.ts:9`); el especificador
+ *     del import queda tal cual — la raíz del paquete, sin subruta.
+ *   - `@claude-code-how-works/permission` (`installPermissionHostBindings`)
+ *     — `@thyrox/permission` existe, pero su raíz `"."` apunta a
+ *     `permission.ts`, NO al barrel (ver el docstring del propio
+ *     `package.json` de `permission`); el símbolo sólo se alcanza por
+ *     `./host.js` (`permission/src/host.ts:15`). El especificador del
+ *     import se corrigió para apuntar a esa subruta, `/host.js`, en vez
+ *     de a la raíz del paquete.
+ *
+ * Los dos imports restantes (agent, config) se conservan literales — mismo
+ * criterio que `runtime/installPluginBindings.ts` (hermano en este paquete)
+ * y `agent/internal/macroFallback.ts`.
  *
  * Lo que SÍ es de este paquete y SÍ está portado —`installHostBindings`,
  * `installInteractiveSessionHostBindings` de `./host.js`, y los tipos de
@@ -45,10 +57,15 @@
  * side-effect al importarse) se conserva tal cual — es documentación de
  * un bug ya corregido en la fuente, no una decisión de este porte.
  *
- * Sin test: los cuatro imports de valor agotan la resolución de módulos
- * antes de correr cualquier código — incluida `resetPackageHostBindingsForTests`,
- * que aunque no toca ninguno de los cuatro, vive en el mismo módulo y no
- * puede importarse sin que el módulo entero cargue primero.
+ * Sin test de este archivo en particular: los dos imports de valor
+ * colgantes (agent, config) agotan la resolución de módulos antes de
+ * correr cualquier código de este módulo — incluida
+ * `resetPackageHostBindingsForTests`, que aunque no toca ninguno de los
+ * dos, vive en el mismo módulo y no puede importarse sin que el módulo
+ * entero cargue primero. La resolución de `memory`/`permission` sí tiene
+ * test propio — `__tests__/declaredDependencies.test.ts` (control de
+ * manifiesto) y `__tests__/packageHostSetupResolution.test.ts` (probe de
+ * conducta), ambos hermanos en `src/__tests__/`.
  */
 import { installAgentHostBindings } from '@thyrox/agent'
 // los bindings de cli los conecta packages/app-host/src/runtime/installCliBindings.ts
@@ -60,7 +77,7 @@ import { installAgentHostBindings } from '@thyrox/agent'
 // éste corría segundo.
 import { installConfigHostBindings } from '@thyrox/config'
 import { installMemoryHostBindings } from '@thyrox/memory'
-import { installPermissionHostBindings } from '@thyrox/permission'
+import { installPermissionHostBindings } from '@thyrox/permission/host.js'
 import {
   installHostBindings,
   installInteractiveSessionHostBindings,
