@@ -1,88 +1,147 @@
 #!/usr/bin/env python3
-"""Sin bandera, el store es el HOGAR — nunca una cascara en un consumidor.
+"""Sin repo ni directorio, el store se resuelve al HOGAR — no se rehusa.
 
-Mitad ROJA. `resolve_store_dir` declara tres peldanos y su tercero
-—«nada -> el HOGAR de thyrox»— es INALCANZABLE: `add_target_args` declara
-`--repo` con `default="docs"`, asi que `args.repo` nunca es None y toda
-llamada sin bandera resuelve al store muerto del consumidor.
+MITAD ROJA. `resolve_store_dir` rehusaba cuando no le daban ni `--repo` ni
+`--claude-dir`, y la razon estaba bien puesta: *«inventar un destino es peor
+que rehusar»*. Pero desde el 2026-09-07 ya no hay nada que inventar — hay UN
+hogar declarado, `thyrox/agent-results/`, y derivarlo del localizador no es
+inventarlo.
 
-Sintoma medido: `reconcile_store.py` reportaba «7 fallidos» sin razon, y los
-ocho transcripts reparables fallaban con
-`ERROR: agent_id <id> no existe en /home/user/kaupamex-docs/.claude/agent-results/agent_store.sqlite3`.
+POR QUE IMPORTA, y es lo que este control atrapa: mientras rehusaba, todo
+llamador tenia que declarar un destino, y el hook vivo del consumidor declaraba
+`--repo docs`. Ese literal es el peldano MAS especifico de la cadena, asi que
+gana sobre `storePath()` y sobre `agent_store_path()`: reapuntar los dos NO
+alcanzaba al escritor mayoritario. El silo de :ref:`h-docs-1237` sobrevivia al
+arreglo que se hizo para cerrarlo.
 
-CONTROL DE ANULACION, medido con mutacion de UN eje por vez:
-
-- revertir SOLO el default de `--repo` a `"docs"` -> caen las TRES aserciones
-  del caso 3, y ninguna otra (3 ok, 3 fallos);
-- revertir SOLO el respaldo de `document_root` -> cae el caso 4, y solo el 4
-  (5 ok, 1 fallo).
-
-El caso 2 es inmune por construccion —fija `repo = None` a mano, asi que no
-mide el parser— y el 1 mide la bandera explicita, que ningun default afecta.
-
-Una primera version de este control muto con `sed` sobre `^        default=None,$`
-y toco TRES banderas a la vez, entre ellas `--claude-dir`. Bajo esa mutacion la
-asercion del prefijo `kaupamex-` sobrevivio —`Path("docs").resolve()` cae dentro
-del proveedor y no lleva el prefijo— y de ahi salio la afirmacion, falsa, de que
-«por si sola no discrimina». Una mutacion que toca varios ejes no dice cual de
-ellos sostiene cada asercion: es el sub-patron D dentro del propio control.
+LO QUE ESTOS CINCO CASOS NO PODIAN VER (anadido 2026-09-09, TASK-DOCS-0284).
+Todos construyen su `Namespace` a mano con `repo=None`, asi que ninguno pasa
+por el parser — y el defecto vivia justo ahi: `add_target_args` declaraba
+`--repo` con `default="docs"`, de modo que `args.repo` NUNCA era None y el
+peldano del HOGAR era inalcanzable para todo llamador real. Los cinco casos
+estaban en verde con el defecto vivo: un verde que no distingue «el mecanismo
+resuelve al hogar» de «el test no pregunta por el parser». `TestParserDefault`
+cierra esa ceguera midiendo el objeto que el parser produce.
 """
-from __future__ import annotations
 
+import argparse
 import importlib.util
 import sys
+import unittest
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(HERE / "src"))
+RAIZ = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(RAIZ / "src"))
+
+_spec = importlib.util.spec_from_file_location(
+    "agent_store_para_el_control", RAIZ / "src" / "agents" / "agent_store.py")
+agent_store = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(agent_store)
+
+from agents import agents_paths  # noqa: E402
 from paths import reach  # noqa: E402
 
-spec = importlib.util.spec_from_file_location("agent_store", HERE / "src" / "agents" / "agent_store.py")
-store = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(store)
 
-OK = FAILED = 0
-
-
-def check(label, expected, obtained):
-    global OK, FAILED
-    if expected == obtained:
-        print(f"  ok    {label}"); OK += 1
-    else:
-        print(f"  FALLO {label}\n        esperado=[{expected}] obtenido=[{obtained}]"); FAILED += 1
+def _args(**kw) -> argparse.Namespace:
+    base = {"claude_dir": None, "repo": None}
+    base.update(kw)
+    return argparse.Namespace(**base)
 
 
-print("== 1. la bandera explicita sigue mandando ==")
-class _Explicito:
-    repo = "docs"; claude_dir = None
-check("--repo docs resuelve al store del consumidor",
-      reach.root("docs") / ".claude" / "agent-results",
-      store.resolve_store_dir(_Explicito()))
+class TestDestinoPorDefecto(unittest.TestCase):
+    def test_1_sin_nada_declarado_devuelve_el_hogar_del_proveedor(self):
+        """Falla si sigue rehusando. Es el cambio entero: el llamador deja de
+        tener que declarar un destino, y por tanto deja de poder declarar el
+        equivocado."""
+        self.assertEqual(
+            agent_store.resolve_store_dir(_args()).resolve(),
+            agents_paths.agent_store_path().parent.resolve(),
+        )
 
-print("== 2. sin bandera, el HOGAR ==")
-class _Sin:
-    repo = None; claude_dir = None
-check("nada declarado -> agent_store_path().parent",
-      reach.agent_store_path().parent,
-      store.resolve_store_dir(_Sin()))
+    def test_2_no_apunta_al_silo(self):
+        """Falla si el defecto vuelve por otra via. El nombre del clon esta
+        escrito a proposito: es el destino que el hook declaraba."""
+        self.assertNotIn("kaupamex-docs", str(agent_store.resolve_store_dir(_args())))
 
-print("== 3. el DEFAULT del parser no compone un consumidor ==")
-argumentos = store.build_parser().parse_args(["init"])
-check("--repo nace sin valor", None, getattr(argumentos, "repo", "AUSENTE"))
-resuelto = store.resolve_store_dir(argumentos)
-check("y el destino sin bandera no cae en un consumidor", False,
-      any(parte.startswith("kaupamex-") for parte in resuelto.parts))
-check("el destino sin bandera es el hogar",
-      reach.agent_store_path().parent, resuelto)
+    def test_3_claude_dir_sigue_ganando(self):
+        """Falla si el peldano nuevo pisa al mas especifico. Una ruta explicita
+        es lo que usa una prueba para no contaminar el store real."""
+        d = RAIZ / "agent-results"
+        self.assertEqual(
+            agent_store.resolve_store_dir(_args(claude_dir=str(d))).resolve(),
+            d.resolve(),
+        )
 
-print("== 4. el arbol documental no se rompe con --repo ausente ==")
-class _Doc:
-    repo = None; claude_dir = None; repo_docs = None; subtree = "source"
-try:
-    obtenido = store.document_root(_Doc())
-except Exception as fallo:                      # noqa: BLE001 — el rehuse ES el defecto
-    obtenido = f"{type(fallo).__name__}: {fallo}"
-check("document_root sigue dando el arbol de docs", reach.root("docs"), obtenido)
+    def test_4_un_repo_declarado_a_proposito_sigue_resolviendo(self):
+        """Falla si el peldano nuevo retira la capacidad de apuntar a un clon.
 
-print(f"\n{OK} ok, {FAILED} fallos")
-raise SystemExit(1 if FAILED else 0)
+        NO se retira: un consumidor puede alojar telemetria propia a proposito,
+        y `backfill` la necesita para leer un store heredado. Lo que cambia es
+        que ya no es OBLIGATORIO declararlo, no que este prohibido.
+        """
+        d = agent_store.resolve_store_dir(_args(repo="docs"))
+        self.assertTrue(str(d).endswith(".claude/agent-results"), d)
+        self.assertIn("docs", str(d))
+
+    def test_5_un_repo_invalido_sigue_rehusando(self):
+        """Falla si el peldano nuevo se traga un error del llamador.
+
+        Es el par que hace discriminar al caso 1: «no declarar» pasa a tener
+        destino, pero «declarar mal» tiene que seguir siendo un error — si no,
+        un typo aterrizaria en el hogar en silencio y el llamador creeria haber
+        escrito donde pidio.
+        """
+        with self.assertRaises(ValueError):
+            agent_store.resolve_store_dir(_args(repo="no-existe"))
+
+
+class TestParserDefault(unittest.TestCase):
+    """El objeto que el PARSER produce, no uno construido a mano.
+
+    CONTROL DE ANULACION, con mutacion de un eje por vez:
+
+    - revertir solo el default de `--repo` a `"docs"` -> caen los tres casos de
+      esta clase, y ninguno de `TestDestinoPorDefecto`;
+    - revertir solo el respaldo de `document_root` -> cae `test_4`, y solo el 4.
+
+    Una primera mutacion sustituyo con `sed` todos los `default=None` a esa
+    indentacion y toco TRES banderas, entre ellas `--claude-dir`. Bajo esa
+    mutacion `test_2` sobrevivio —`Path("docs").resolve()` cae dentro del
+    proveedor y no lleva el prefijo del clon— y de ahi salio la conclusion,
+    falsa, de que esa asercion no discriminaba. Una mutacion que toca varios
+    ejes no dice cual sostiene cada asercion.
+    """
+
+    def _sin_banderas(self) -> argparse.Namespace:
+        return agent_store.build_parser().parse_args(["init"])
+
+    def test_1_el_default_de_repo_no_nombra_un_consumidor(self):
+        self.assertIsNone(getattr(self._sin_banderas(), "repo", "AUSENTE"))
+
+    def test_2_el_destino_sin_banderas_es_el_hogar(self):
+        self.assertEqual(
+            agent_store.resolve_store_dir(self._sin_banderas()).resolve(),
+            agents_paths.agent_store_path().parent.resolve(),
+        )
+
+    def test_3_el_destino_sin_banderas_no_cae_en_ningun_clon(self):
+        destino = agent_store.resolve_store_dir(self._sin_banderas())
+        self.assertFalse(
+            [p for p in destino.parts if p.startswith("kaupamex-")], destino)
+
+    def test_4_el_arbol_documental_no_se_rompe_con_repo_ausente(self):
+        """El par que impide arreglar un eje rompiendo el otro.
+
+        `document_root` usaba el mismo `--repo` como respaldo, asi que mover su
+        default a None lo dejaba sin raiz. El arbol de gestion es de `docs` por
+        construccion y el store vive en el proveedor: son dos ejes, y cada uno
+        declara su propio default.
+        """
+        argumentos = argparse.Namespace(
+            repo=None, claude_dir=None, repo_docs=None, subtree="source")
+        self.assertEqual(agent_store.document_root(argumentos),
+                         reach.root(agent_store.DOCS_CONSUMER))
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
