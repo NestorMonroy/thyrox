@@ -30,7 +30,9 @@
         "@thyrox/command-runtime": "workspace:*",
         "@thyrox/config": "workspace:*",
         "@thyrox/local-observability": "workspace:*",
+        "@thyrox/memory": "workspace:*",
         "@thyrox/output": "workspace:*",
+        "@thyrox/permission": "workspace:*",
         "@thyrox/shell": "workspace:*",
         "@thyrox/storage": "workspace:*",
         "react": "^19.0.0",
@@ -205,6 +207,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@thyrox/config": "workspace:*",
+        "@thyrox/local-observability": "workspace:*",
         "chalk": "^4.1.2",
       },
       "devDependencies": {
@@ -295,11 +298,17 @@
       "name": "@thyrox/swarm",
       "version": "0.1.0",
       "dependencies": {
+        "@anthropic-ai/sdk": "^0.124.0",
         "@thyrox/agent": "workspace:*",
         "@thyrox/storage": "workspace:*",
         "@thyrox/tool-registry": "workspace:*",
+        "chalk": "^6.0.0",
         "ignore": "^7.0.8",
         "zod": "^4.3.6",
+      },
+      "devDependencies": {
+        "@types/proper-lockfile": "^4.1.4",
+        "proper-lockfile": "^4.1.2",
       },
     },
     "teleport": {

@@ -108,12 +108,12 @@ describe('la instrumentacion existente lee nuestros transcripts (T-034)', () => 
 })
 
 describe('los gates del proyecto corren bajo el harness (T-035)', () => {
-  // El gate vive en thyrox/src/gates/; estaba en .claude/scripts/gates/.
+  // El gate vive en thyrox/src/verify/; estaba en .claude/scripts/gates/.
   const REPO = thyroxRoot()
 
   test('un gate real se ejecuta por la herramienta Bash y devuelve su salida', async () => {
     const d = dir()
-    const gate = join(REPO, 'src', 'gates', 'check_hallazgo_submodulo.py')
+    const gate = join(REPO, 'src', 'verify', 'check_hallazgo_submodulo.py')
     const p = new RecordedProvider([
       { id: 'm1', model: 'claude-opus-5', stop_reason: 'tool_use', usage: uso,
         content: [{ type: 'tool_use', id: 'tu1', name: 'Bash', input: { command: `python3 ${JSON.stringify(gate)}` } }] },
