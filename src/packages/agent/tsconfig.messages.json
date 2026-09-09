@@ -1,0 +1,25 @@
+{
+  "//": "Control ACOTADO a la capa de mensajes del bucle. tsconfig.json solo incluye loop/**, que no importa coreMessages.ts ni agentMessages.ts: su baseline de 0 errores es real y CIEGO a esta capa. Este archivo fija el alcance que si la ve — los dos modulos y sus ocho consumidores medidos — para que un estrechamiento de tipo que rompa un consumidor sea visible. El typecheck del arbol completo NO sirve como control: arrastra 2499 errores preexistentes.",
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": ["bun"]
+  },
+  "files": [
+    "coreMessages.ts",
+    "agentMessages.ts",
+    "coreTools.ts",
+    "agentDeps.ts",
+    "agentEvents.ts",
+    "agentState.ts",
+    "internal/abort.ts",
+    "core/AgentCore.ts",
+    "core/AgentLoop.ts"
+  ]
+}
