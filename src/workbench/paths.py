@@ -236,7 +236,7 @@ def workbench_dir(start: str | Path | None = None) -> Path:
     if declared:
         return Path(declared)
 
-    from paths.reach import consumer_root  # noqa: PLC0415 — evita el ciclo de import
+    from paths.reach import ConsumerUnknownError, consumer_root  # noqa: PLC0415 — evita el ciclo de import
     from paths.declarations import record_fallback  # noqa: PLC0415
 
     home = consumer_root(start=inicio) / state_dir(start) / evidence_dir(start)
@@ -273,10 +273,19 @@ def is_workbench_path(path: str | Path, start: str | Path | None = None) -> bool
     error importa: sin hogar declarado no hay banco, asi que **nada** se excluye
     y el gate mide de mas, no de menos. Rehusar aqui apagaria el gate entero por
     una decision que el consumidor todavia no tomo.
+
+    ``ConsumerUnknownError`` es la SEGUNDA via al mismo caso, no una excepcion
+    que se traga (TASK-DOCS-0286). Desde que ``reach.consumer_root`` rehusa ante
+    el proveedor, un gate corrido dentro de thyrox no puede resolver el hogar
+    del banco de ningun consumidor — y entonces, igual que sin declaracion, no
+    hay hogar bajo el cual la ruta pueda caer: el ``False`` es la respuesta,
+    no una suposicion. Lo que NO se traga es el caso con consumidor resuelto:
+    ahi el ``False`` sigue saliendo del ``relative_to``, que mide de verdad.
     """
+    from paths.reach import ConsumerUnknownError  # noqa: PLC0415 — evita el ciclo
     try:
         home = workbench_dir(start).resolve()
-    except WorkbenchHomeError:
+    except (WorkbenchHomeError, ConsumerUnknownError):
         return False
     candidate = Path(path)
     if not candidate.is_absolute():

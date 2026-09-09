@@ -449,6 +449,15 @@ def thyrox_root(start: Path | None = None) -> Path:
     )
 
 
+class ConsumerUnknownError(Exception):
+    """No se pudo determinar el clon consumidor, y no se inventa uno.
+
+    Vivia en `agents.agents_paths`, y ahi protegia solo a quien pasaba por ese
+    envoltorio. Los demas llamadores de `consumer_root` recibian la raiz del
+    PROVEEDOR y componian con ella un hogar que `declarations.py` no lista.
+    """
+
+
 CONSUMER_ROOT_VAR = "THYROX_CONSUMER"
 
 #: El marcador por el que se reconoce un consumidor al ascender. Es el
@@ -487,8 +496,19 @@ def consumer_root(declared: str | Path | None = None,
         return Path(value).resolve()
 
     here = (Path(start) if start else Path.cwd()).resolve()
+    provider = thyrox_root().resolve()
     for level in (here, *here.parents):
         if (level / CONSUMER_MARKER).is_dir():
+            if level == provider:
+                raise ConsumerUnknownError(
+                    f"El ascenso desde {here} aterriza en el PROVEEDOR "
+                    f"({provider}), no en un consumidor. El proveedor tambien "
+                    f"lleva {CONSUMER_MARKER}/, asi que el marcador no lo "
+                    f"distingue. Declara {CONSUMER_ROOT_VAR} con la raiz del "
+                    f"clon, pasa `declared=`, o invoca desde dentro de el. NO "
+                    f"se devuelve la raiz de thyrox: el llamador compondria un "
+                    f"hogar dentro del proveedor que declarations.py no lista."
+                )
             return level
     return here
 

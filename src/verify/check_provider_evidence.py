@@ -47,6 +47,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from workbench.paths import (  # noqa: E402
     WorkbenchHomeError, evidence_dir, state_dir, workbench_dir,
 )
+from paths.reach import ConsumerUnknownError  # noqa: E402
 
 #: El marcador por el que se reconoce la raiz propia. Constante con su entrada
 #: de entorno (DEC-04): cablearlo le quitaria al consumidor la decision de como
@@ -128,9 +129,18 @@ def main(argv: list[str]) -> int:
 
     try:
         print(f"  hogar del banco: {workbench_dir(root)}")
-    except WorkbenchHomeError as err:
+    except (WorkbenchHomeError, ConsumerUnknownError) as err:
         # El rehuse se PUBLICA y no cambia el veredicto: el hogar sin declarar
         # es trabajo pendiente del consumidor, no una medicion imposible.
+        #
+        # `ConsumerUnknownError` es la SEGUNDA ruta al mismo caso, y llega desde
+        # que TASK-DOCS-0286 bajo el guard del proveedor a `reach.consumer_root`:
+        # corriendo con `cwd` en thyrox, el ascenso aterriza en el PROVEEDOR y
+        # el mecanismo rehusa en vez de componer un hogar dentro de el. Sin esta
+        # rama la excepcion escapaba al manejador amplio del modulo, que la
+        # convierte en exit 2 — y el gate entero pasaba de «0 bancos» a «no pude
+        # medir» por una SEGUNDA medicion que no decide el veredicto. Ese exit 2
+        # bloqueo el `pre-commit` de este mismo arbol.
         print(f"  {err}")
 
     return 1 if (found and args.strict) else 0

@@ -13,6 +13,7 @@ Que haria fallar este control, declarado antes de escribirlo:
 5. Que no rehusara cuando falta una raiz: un 0 ahi seria un verde falso, y
    este gate mide entre DOS arboles — si uno no esta, no hay medicion.
 """
+import os
 import subprocess
 import sys
 import tempfile
@@ -112,7 +113,34 @@ check('ve copias reales en kaupamex-api', True,
 r = correr()
 check('sin argumentos NO rehusa por falta de argumentos', False,
       'the following arguments are required' in (r.stdout + r.stderr))
-check('sin argumentos SI emite su denominador', True, 'alcance medido' in r.stdout)
+
+# CORREGIDO 2026-09-09 (TASK-DOCS-0286). Aqui decia:
+#
+#     check('sin argumentos SI emite su denominador', True, 'alcance medido' in r.stdout)
+#
+# y ese verde MEDIA EL ARBOL EQUIVOCADO. `reach.consumer_root()` devolvia la
+# raiz del PROVEEDOR cuando el ascenso aterrizaba en el —thyrox tambien lleva
+# `.claude/`, asi que el marcador no lo distingue—, de modo que el gate corrido
+# a secas desde thyrox comparaba thyrox contra thyrox. Medido antes de corregir:
+#
+#     fuente (thyrox_root) : /home/user/thyrox
+#     consumidor derivado  : /home/user/thyrox
+#     -> compara el proveedor contra SI MISMO: True
+#
+# El denominador salia, y era el de una comparacion de un arbol consigo mismo:
+# un verde que no distingue «midio al consumidor» de «se midio a si mismo».
+# Es el sub-patron D de `metrica-decide-la-conclusion.md`.
+check('sin consumidor derivable rehusa con exit 2', 2, r.returncode)
+check('y NO emite conteo al no poder derivarlo', False, 'alcance medido' in r.stdout)
+
+# EL PAR DISCRIMINANTE. Sin este caso, un gate que rehusara SIEMPRE pasaria los
+# dos de arriba: el verde no distinguiria «rehusa sin consumidor» de «rehusa
+# ante todo», y la conveniencia de invocarlo a secas —la del `runCheck` de
+# `ccnmt: scripts/doctor-architecture.ts`— quedaria rota sin que nada lo dijera.
+entorno = dict(os.environ, THYROX_CONSUMER='/home/user/kaupamex-api')
+r = subprocess.run([sys.executable, str(GATE)], capture_output=True, text=True,
+                   env=entorno, cwd=str(RAIZ))
+check('con THYROX_CONSUMER declarado SI mide a secas', True, 'alcance medido' in r.stdout)
 
 print(f'\nresultado: {verdes} de {total} aserciones en verde')
 raise SystemExit(0 if verdes == total else 1)

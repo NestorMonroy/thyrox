@@ -35,9 +35,26 @@ import reach  # noqa: E402
 #: describía `kaupamex-docs/.claude/scripts/corpus/`; desde `thyrox/src/corpus/`
 #: da `/home/user`, que EXISTE — así que el censo no reventaba: medía un árbol
 #: sin `source/` y publicaba su cero.
-ROOT = reach.consumer_root()
-CATALOGUE = ROOT / 'source/normativa/estandares/catalogo-de-scripts.rst'
-BASELINE = ROOT / '.claude/scripts/corpus/scripts_huerfanos_baseline.txt'
+def __getattr__(name: str):
+    """`ROOT`, `CATALOGUE` y `BASELINE` se resuelven al LEERLOS, no al importar el modulo.
+
+    Ligarlos en el import ata el modulo a la raiz del momento de la carga, y
+    desde TASK-DOCS-0286 `reach.consumer_root` REHUSA cuando el ascenso
+    aterriza en el proveedor: con la ligadura a nivel de modulo ese rehuse
+    mataba el `import`, no la llamada. Un modulo que no se puede importar deja
+    sin salida incluso a quien iba a declarar el consumidor.
+
+    Es el mismo defecto de firma que `check_workbench.py` tenia, y la misma
+    solucion que `reach.py` ya aplica a `REACH_ROOTS` (PEP 562).
+    """
+    if name == 'ROOT':
+        return reach.consumer_root()
+    if name == 'CATALOGUE':
+        return reach.consumer_root() / 'source/normativa/estandares/catalogo-de-scripts.rst'
+    if name == 'BASELINE':
+        return reach.consumer_root() / '.claude/scripts/corpus/scripts_huerfanos_baseline.txt'
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 SOURCE_ROOTS = ('.claude/scripts', 'scripts')
 SUFFIXES = ('.py', '.sh')
 # Carpetas que NO son fondo de guiones aunque vivan bajo una raíz: las suites

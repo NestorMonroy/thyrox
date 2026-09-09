@@ -53,8 +53,11 @@ if str(PATHS_DIR) not in sys.path:
 
 import reach  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
 
-class ConsumerUnknownError(Exception):
-    """No se pudo determinar el clon consumidor, y no se inventa uno."""
+#: Reexportada, no redeclarada: la excepcion vive en el mecanismo desde
+#: TASK-DOCS-0286. `drain_spool` la captura por este nombre, y dos clases con
+#: el mismo nombre en dos modulos no se capturan la una a la otra — el
+#: `except` de un llamador dejaria de ver el rehuse del otro.
+ConsumerUnknownError = reach.ConsumerUnknownError
 
 
 def consumer_root() -> Path:
@@ -74,19 +77,14 @@ def consumer_root() -> Path:
     que no responder: el llamador compondría `<thyrox>/.claude/hooks` y leería
     su vacío como «el consumidor no tiene hooks». Es la forma de un cero que no
     distingue «no hay» de «no pude saber».
+
+    Ese rehúse **ya no vive aquí**: bajó a `reach.consumer_root` en
+    TASK-DOCS-0286, porque una defensa en el envoltorio no protege a los otros
+    llamadores del mecanismo. Esta función queda como la puerta que fija el
+    punto de partida —el cwd, que para un hook del cliente ES el consumidor— y
+    delega el resto.
     """
-    declared = reach.env_value(reach.CONSUMER_ROOT_VAR)
-    if declared:
-        return Path(declared)
-    ascended = reach.consumer_root(start=Path.cwd())
-    if ascended.resolve() == reach.thyrox_root().resolve():
-        raise ConsumerUnknownError(
-            f"El ascenso desde {Path.cwd()} aterriza en el proveedor, no en un "
-            f"consumidor. Declara {reach.CONSUMER_ROOT_VAR} con la raíz del clon, "
-            f"o invoca desde dentro de él. NO se devuelve la raíz de thyrox: el "
-            f"llamador leería su árbol como si fuera el del consumidor."
-        )
-    return ascended
+    return reach.consumer_root(start=Path.cwd())
 
 
 #: La misma grafía que `reach.ts` declara (`AGENTS_DIR_VAR`). La mitad Python

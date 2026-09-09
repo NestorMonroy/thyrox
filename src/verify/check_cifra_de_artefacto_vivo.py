@@ -39,7 +39,22 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths")
 import reach  # noqa: E402
 
 #: El árbol medido por defecto es el del consumidor; `--raiz` lo sobreescribe.
-RAIZ_DEFECTO = reach.consumer_root()
+def __getattr__(name: str):
+    """`RAIZ_DEFECTO` se resuelve se resuelven al LEERLOS, no al importar el modulo.
+
+    Ligarlos en el import ata el modulo a la raiz del momento de la carga, y
+    desde TASK-DOCS-0286 `reach.consumer_root` REHUSA cuando el ascenso
+    aterriza en el proveedor: con la ligadura a nivel de modulo ese rehuse
+    mataba el `import`, no la llamada. Un modulo que no se puede importar deja
+    sin salida incluso a quien iba a declarar el consumidor.
+
+    Es el mismo defecto de firma que `check_workbench.py` tenia, y la misma
+    solucion que `reach.py` ya aplica a `REACH_ROOTS` (PEP 562).
+    """
+    if name == 'RAIZ_DEFECTO':
+        return reach.consumer_root()
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 BASELINE = pathlib.Path(__file__).with_name('cifra_de_artefacto_vivo_baseline.txt')
 
 # (nombre, patrón, razón) — la razón se imprime junto al hallazgo.

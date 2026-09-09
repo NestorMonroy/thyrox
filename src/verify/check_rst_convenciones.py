@@ -70,7 +70,22 @@ import reach  # noqa: E402
 #: el control de anulación: el gate NO rehusaba — publicaba
 #: `OK — autoría canónica y tablas en list-table (alcance medido: 0 archivos)`.
 #: Un verde sobre cero archivos, con su denominador declarado y nadie leyéndolo.
-RAIZ = reach.consumer_root() / 'source'
+def __getattr__(name: str):
+    """`RAIZ` se resuelve se resuelven al LEERLOS, no al importar el modulo.
+
+    Ligarlos en el import ata el modulo a la raiz del momento de la carga, y
+    desde TASK-DOCS-0286 `reach.consumer_root` REHUSA cuando el ascenso
+    aterriza en el proveedor: con la ligadura a nivel de modulo ese rehuse
+    mataba el `import`, no la llamada. Un modulo que no se puede importar deja
+    sin salida incluso a quien iba a declarar el consumidor.
+
+    Es el mismo defecto de firma que `check_workbench.py` tenia, y la misma
+    solucion que `reach.py` ya aplica a `REACH_ROOTS` (PEP 562).
+    """
+    if name == 'RAIZ':
+        return reach.consumer_root() / 'source'
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 #: Valor que el agente NUNCA debe escribir como autor. El canon positivo es
 #: ``Equipo Kaupamex``; el resto de valores humanos o de tercero son legítimos

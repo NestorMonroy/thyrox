@@ -58,10 +58,25 @@ import reach  # noqa: E402
 #: El clon que arranca es el CONSUMIDOR. Se llamaba `CONSUMER_ROOT` porque el
 #: guion vivía en `kaupamex-docs`: el parámetro se había filtrado al nombre del
 #: mecanismo. Desde `thyrox/src/session/` la aritmética daba `/home/user`.
-CONSUMER_ROOT = reach.consumer_root()
-PAYLOAD = CONSUMER_ROOT / ".claude-user" / "bitacora-de-aprobaciones.json"
-REPO_SETTINGS = CONSUMER_ROOT / ".claude" / "settings.json"
-SYNC_MODULE = CONSUMER_ROOT / ".claude" / "scripts" / "session" / "sync_local_settings.py"
+#: Las cuatro se resuelven al LEERLAS, no al importar (PEP 562). Ligarlas en el
+#: import ata el modulo a la raiz del momento de la carga, y desde
+#: TASK-DOCS-0286 `reach.consumer_root` REHUSA cuando el ascenso aterriza en el
+#: proveedor: con la ligadura a nivel de modulo ese rehuse mataba el `import`,
+#: no la llamada. Un modulo que no se puede importar deja sin salida incluso a
+#: quien iba a declarar el consumidor.
+_DERIVED = {
+    "PAYLOAD": (".claude-user", "bitacora-de-aprobaciones.json"),
+    "REPO_SETTINGS": (".claude", "settings.json"),
+    "SYNC_MODULE": (".claude", "scripts", "session", "sync_local_settings.py"),
+}
+
+
+def __getattr__(name: str):
+    if name == "CONSUMER_ROOT":
+        return reach.consumer_root()
+    if name in _DERIVED:
+        return reach.consumer_root().joinpath(*_DERIVED[name])
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 PLACEHOLDER_DOCS = "%%CONSUMER_ROOT%%"
 PLACEHOLDER_ROOT = "%%RAIZ%%"

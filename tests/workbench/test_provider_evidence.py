@@ -10,6 +10,7 @@ control ejecutable lo hace.
 El caso que DISCRIMINA es el 3: un gate que solo mirara la existencia del
 directorio aprobaria un arbol donde el proveedor emite y el consumidor no.
 """
+import os
 import pathlib
 import subprocess
 import sys
@@ -85,6 +86,30 @@ with tempfile.TemporaryDirectory() as tmp:
         passed("rehusa con 2 y sin cifra")
     else:
         failed(f"publica un cero o no rehusa: rc={r.returncode}")
+
+print("=== Caso 6 (EL QUE DISCRIMINA LA SEGUNDA MEDICION): con la raiz REAL")
+# Control positivo del propio repo, no fabricado: corriendo sobre el arbol de
+# thyrox, `workbench_dir` asciende y aterriza en el PROVEEDOR, asi que
+# `reach.consumer_root` rehusa desde TASK-DOCS-0286. Ese rehuse NO decide el
+# veredicto — es una segunda medicion, informativa — pero antes escapaba al
+# manejador amplio del modulo y convertia el gate entero en exit 2. Con eso el
+# `pre-commit` de este arbol quedo bloqueado.
+#
+# Las DOS aserciones son necesarias y ninguna sobra:
+#   - `rc == 0` es la que discrimina. Anulando la rama el gate sale 2.
+#   - que el rehuse aparezca es lo que impide un verde VACIO: si el entorno
+#     declarase el consumidor o el hogar, no habria rehuse que capturar y un
+#     `rc == 0` a secas pasaria sin haber ejercitado nada.
+env = {k: v for k, v in os.environ.items()
+       if k not in ("THYROX_CONSUMER", "THYROX_WORKBENCH_DIR")}
+r = subprocess.run([sys.executable, str(GATE)], capture_output=True, text=True,
+                   env=env, cwd=str(ROOT))
+if r.returncode == 0 and "aterriza en el PROVEEDOR" in r.stdout:
+    passed("publica el rehuse del consumidor y NO degrada el veredicto")
+elif r.returncode != 0:
+    failed(f"el rehuse degrada el veredicto: rc={r.returncode}")
+else:
+    failed("no hubo rehuse que capturar — el caso no midio nada")
 
 print()
 print(f"{ok} ok, {ko} fallos (alcance medido: {ok + ko} aserciones sobre {GATE})")
