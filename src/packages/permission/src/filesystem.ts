@@ -7,17 +7,19 @@
  * — más sus dependencias transitivas y un puñado de funciones puras
  * hermanas sin costo adicional.
  *
- * PORTADAS (15 de 29):
+ * PORTADAS (17 de 29):
  *
  *   `DANGEROUS_FILES` · `DANGEROUS_DIRECTORIES` · `normalizeCaseForComparison`
  *   · `relativePath` · `toPosixPath` · `getSessionMemoryDir` ·
  *   `getSessionMemoryPath` · `isScratchpadEnabled` · `getClaudeTempDirName` ·
  *   `getClaudeTempDir` · `getProjectTempDir` · `getScratchpadDir` ·
  *   `ensureScratchpadDir` (los dos últimos, el objetivo del pase) ·
- *   `allWorkingDirectories` · `pathInWorkingPath` (pase de 2026-09-08 — ver
- *   abajo)
+ *   `allWorkingDirectories` · `pathInWorkingPath` (pase de 2026-09-08) ·
+ *   `getResolvedWorkingDirPaths` · `pathInAllowedWorkingPath`
+ *   (TASK-DOCS-0526, pase de 2026-09-09 — ver la divergencia del séptimo
+ *   binding, abajo)
  *
- * OMITIDAS (14 de 29), declaradas por nombre, línea y bloqueo:
+ * OMITIDAS (12 de 29), declaradas por nombre, línea y bloqueo:
  *
  *   - `getClaudeSkillScope` (filesystem.ts:108-177) — sin consumidor
  *     confirmado en este pase; depende de convenciones de `.claude/skills/`
@@ -30,14 +32,13 @@
  *     confirmado; añade `randomBytes`/`MACRO.VERSION` sin necesidad
  *     inmediata.
  *   - `checkPathSafetyForAutoEdit`,
- *     `getResolvedWorkingDirPaths`, `pathInAllowedWorkingPath`,
  *     `normalizePatternsToPath`,
  *     `getFileReadIgnorePatterns`, `matchingRuleForInput`,
  *     `checkReadPermissionForTool`, `checkWritePermissionForTool`,
  *     `generateSuggestions`, `checkEditableInternalPath`,
- *     `checkReadableInternalPath` (filesystem.ts:627-1785, el resto del
- *     archivo) — son las guardas de confinamiento/permiso de lectura y
- *     escritura. Cada una depende de `SandboxManager`
+ *     `checkReadableInternalPath` (filesystem.ts:627-673 y 807-1785, el
+ *     resto del archivo) — son las guardas de confinamiento/permiso de
+ *     lectura y escritura. Cada una depende de `SandboxManager`
  *     (`@claude-code-how-works/shell/sandbox.js`, subsistema grande, no
  *     portado) o de `containsVulnerableUncPath`
  *     (`@claude-code-how-works/shell/legacy/readOnlyCommandValidation.js`,
@@ -45,15 +46,23 @@
  *     guarda embarcada tenga un test negativo contra una ruta que EXISTE en
  *     disco fuera del árbol permitido — sin esas dos piezas no hay guarda
  *     real que probar así, sólo una fachada. Se omiten enteras en vez de
- *     enviarlas a medio verificar.
+ *     enviarlas a medio verificar. `pathInAllowedWorkingPath` y
+ *     `getResolvedWorkingDirPaths` (filesystem.ts:674-716) figuraban aquí
+ *     por vecindad — el mismo defecto de atribución que ya se corrigió una
+ *     vez para `allWorkingDirectories`/`pathInWorkingPath` (ver la
+ *     divergencia de abajo). Medido al intentar portarlas (TASK-DOCS-0526):
+ *     su cierre transitivo es sólo un binding nuevo (`getPathsForPermissionCheck`,
+ *     `filesystem.ts:34`) y un memoize de aridad uno — ninguna de las dos
+ *     toca `SandboxManager` ni `containsVulnerableUncPath`. Ya están
+ *     portadas arriba.
  *
  * Divergencias medidas en lo portado:
  *
  * - El shim `_b()` de la fuente expone 19 métodos vía host bindings; este
- *   puerto sólo reproduce los CINCO que el subconjunto portado realmente
- *   llama — `getOriginalCwd`, `getSessionId`, `getFsImplementation`,
- *   `getPlatform`, `sanitizePath` — con el mismo patrón
- *   `_b().foo?.() ?? respaldo` y el mismo cast a `any` que la fuente usa
+ *   puerto reproduce los SEIS que el subconjunto portado llamaba antes de
+ *   este pase — `getOriginalCwd`, `getSessionId`, `getFsImplementation`,
+ *   `getPlatform`, `expandPath`, `containsPathTraversal` — con el mismo
+ *   patrón `_b().foo?.() ?? respaldo` y el mismo cast a `any` que la fuente usa
  *   deliberadamente (ver docstring de `contracts.ts`, hermano de este
  *   archivo). `./host.js`/`./errors.js` son imports estáticos: son
  *   ficheros del MISMO paquete, y la resolución relativa dentro de un
@@ -77,7 +86,7 @@
  *   `filesystem.ts:627-1785`. Medido al necesitarlas: NINGUNA de las dos lo
  *   toca — la primera pide `getOriginalCwd` (ya cableado aquí) y las claves
  *   del contexto; la segunda, `expandPath` y `containsPathTraversal`, que en
- *   la fuente son shims del anfitrión igual que los cinco ya presentes. El
+ *   la fuente son shims del anfitrión igual que los cuatro ya presentes. El
  *   bloqueo era de sus vecinas y se les había atribuido por vecindad. Llegan
  *   al necesitarlas `commands/add-dir/validation.ts`, y el aviso se corrige
  *   en vez de dejarlo pudrirse.
@@ -88,6 +97,24 @@
  *   resuelve hasta que exista `"workspaces"`), con respaldo `false`
  *   (fail-closed: el scratchpad queda deshabilitado si el binding no
  *   resuelve).
+ * - `getPathsForPermissionCheck` (`filesystem.ts:34`) es el SÉPTIMO binding
+ *   `_b()` que este puerto reproduce — sin binding instalado, `[]` (misma
+ *   forma `_b().foo?.(...) ?? []` que sus seis hermanos). Su memoize
+ *   (`getResolvedWorkingDirPaths = memoize(getPathsForPermissionCheck)` en
+ *   la fuente) NO reusa `memoizeOnce` (aridad cero): la fuente lo llama con
+ *   un argumento (`wp: string`) por cada directorio de trabajo, así que
+ *   memoizar sin distinguir el argumento colapsaría todos los directorios
+ *   al primero consultado. `memoizeByStringArg` — un `Map` por cadena — es
+ *   la forma mínima fiel; sus llamadores en el árbol de la fuente siempre
+ *   pasan un directorio ya resuelto (`string`), nunca un objeto.
+ * - `pathInAllowedWorkingPath` NO recibe el tipo `ToolPermissionContext`
+ *   con nombre que el resto del paquete declara por archivo (p. ej.
+ *   `PermissionUpdate.ts:61`, `permissionSetup.ts:80` — mismo shape,
+ *   `{ permissionRules: unknown; [key: string]: unknown }`, repetido en
+ *   cada uno de sus archivos, igual que en la fuente). Aquí se deriva con
+ *   `Parameters<typeof allWorkingDirectories>[0]` en vez de declararlo de
+ *   nuevo — misma forma estructural, una sola fuente de verdad dentro de
+ *   este archivo, sin tocar la firma ya probada de `allWorkingDirectories`.
  */
 import * as nodeFs from 'node:fs'
 import * as nodeOs from 'node:os'
@@ -323,6 +350,51 @@ function containsPathTraversalDeferred(p: string): boolean {
 }
 
 /**
+ * Séptimo binding `_b()` reproducido (de 19) — `filesystem.ts:34` de la
+ * fuente. Sin binding instalado, `[]` — que es lo que hace vacuamente
+ * `.every()` sobre `pathsToCheck` cuando nadie lo instala (ver el caso de
+ * control en `pathInAllowedWorkingPath.test.ts`).
+ */
+function getPathsForPermissionCheckDeferred(path: string): string[] {
+  try {
+    return _b().getPathsForPermissionCheck?.(path) ?? []
+  } catch {
+    return []
+  }
+}
+
+/** Firma que expone `.cache` — mismo contrato que `lodash-es/memoize.js`
+ * (su `MapCache` ya implementa `get`/`has`/`set`/`delete`/`clear`, que es
+ * exactamente la superficie de un `Map` nativo). */
+type MemoizedByStringArg<T> = ((arg: string) => T) & { cache: Map<string, T> }
+
+/**
+ * Memoize de aridad UNO, keyed por el propio argumento — distinto de
+ * `memoizeOnce` (aridad cero, usado por `getClaudeTempDir`). `lodash-es`
+ * no resuelve en este árbol (ver divergencia arriba); un `Map` por clave de
+ * cadena es fiel a lo que la fuente pide de `memoize(getPathsForPermissionCheck)`
+ * — sus llamadores siempre pasan un `string` (un directorio de trabajo ya
+ * resuelto), nunca un objeto que necesitaría una clave estructural.
+ *
+ * Expone `.cache` (un `Map` nativo) en la función devuelta, igual que
+ * `lodash-es/memoize.js` — es lo que hace fiel el comentario de la fuente en
+ * `getResolvedWorkingDirPaths`: "Exported for test/preload.ts cache
+ * clearing (shard-isolation)". Sin `.cache.clear()` expuesto, esa promesa de
+ * la fuente sería un porte parcial silencioso del propio memoize.
+ */
+function memoizeByStringArg<T>(fn: (arg: string) => T): MemoizedByStringArg<T> {
+  const cache = new Map<string, T>()
+  const memoized = (arg: string): T => {
+    if (!cache.has(arg)) {
+      cache.set(arg, fn(arg))
+    }
+    return cache.get(arg) as T
+  }
+  memoized.cache = cache
+  return memoized
+}
+
+/**
  * Todos los directorios de trabajo de una sesión.
  *
  * El cwd original SIEMPRE está, aunque el contexto no declare ninguno: sin él
@@ -338,6 +410,55 @@ export function allWorkingDirectories(context: {
     getOriginalCwdDeferred(),
     ...context.additionalWorkingDirectories.keys(),
   ])
+}
+
+type ToolPermissionContext = Parameters<typeof allWorkingDirectories>[0]
+
+/**
+ * Directorios de trabajo resueltos y memoizados — misma cadena que la
+ * fuente documenta: son estables por sesión, así que memoizar evita repetir
+ * `existsSync`/`lstatSync`/`realpathSync` en cada verificación de permiso.
+ * Exportado (como en la fuente) para que un test/preload pueda limpiar la
+ * caché entre shards.
+ */
+export const getResolvedWorkingDirPaths = memoizeByStringArg(
+  getPathsForPermissionCheckDeferred,
+)
+
+/**
+ * ¿Está `path` dentro de ALGÚN directorio de trabajo permitido?
+ *
+ * `precomputedPathsToCheck` existe para evitar recomputar
+ * `existsSync`/`lstatSync`/`realpathSync` cuando el llamador ya calculó las
+ * rutas a verificar antes (la fuente lo hilvana
+ * `checkWritePermissionForTool` → `checkPathSafetyForAutoEdit` →
+ * `pathInAllowedWorkingPath`, tres sitios que en este árbol NO se portan —
+ * ver el docstring del módulo). Sin él, se recomputa aquí mismo.
+ *
+ * Vacuo por diseño: si `pathsToCheck` queda vacío (sin el binding
+ * `getPathsForPermissionCheck` instalado, o con un `path` cuyo binding
+ * decide que no hay nada que verificar), `.every()` sobre un arreglo vacío
+ * es `true` — la fuente hace exactamente lo mismo. No es un fail-open del
+ * puerto: es el comportamiento documentado de la fuente cuando el anfitrión
+ * no declara el binding.
+ */
+export function pathInAllowedWorkingPath(
+  path: string,
+  toolPermissionContext: ToolPermissionContext,
+  precomputedPathsToCheck?: readonly string[],
+): boolean {
+  const pathsToCheck =
+    precomputedPathsToCheck ?? getPathsForPermissionCheckDeferred(path)
+
+  const workingPaths = Array.from(
+    allWorkingDirectories(toolPermissionContext),
+  ).flatMap(wp => getResolvedWorkingDirPaths(wp))
+
+  return pathsToCheck.every(pathToCheck =>
+    workingPaths.some(workingPath =>
+      pathInWorkingPath(pathToCheck, workingPath),
+    ),
+  )
 }
 
 /**
