@@ -151,7 +151,7 @@ class BackgroundBackup:
     los trabajos, incluido el que si termino**. El respaldo quedaria rehen de un
     trabajo ajeno que nadie va a revivir.
 
-    Por eso el respaldo corre en su PROPIO ledger —`KX_TRABAJOS_DIR` junto a los
+    Por eso el respaldo corre en su PROPIO ledger —`THYROX_JOBS_DIR` junto a los
     respaldos, durable, no en `/tmp`—, de modo que la barrera mida exactamente
     este trabajo. El ledger compartido no se toca: se MIRA con `status` y sus
     clases atascadas se reportan, que es la adaptacion del roster — surfacing
@@ -178,9 +178,9 @@ class BackgroundBackup:
         """
         import subprocess  # noqa: PLC0415 - adaptador
 
-        salida = subprocess.run([str(self._ledger()), "status"],
+        output = subprocess.run([str(self._ledger()), "status"],
                                 capture_output=True, text=True, env=env).stdout
-        return [line.strip() for line in salida.splitlines()
+        return [line.strip() for line in output.splitlines()
                 if any(c in line for c in STUCK_CLASSES)]
 
     def backup(self, source: Path, destination: Path) -> None:
@@ -196,7 +196,7 @@ class BackgroundBackup:
 
         # El ledger propio de este respaldo: durable, junto a lo que respalda.
         mine = destination.parent / "ledger"
-        env = {**_os.environ, "KX_TRABAJOS_DIR": str(mine)}
+        env = {**_os.environ, "THYROX_JOBS_DIR": str(mine)}
 
         launch = (
             f'nohup bash -c "cp -p {source} {destination}; echo EXIT=\\$?" '
@@ -213,12 +213,12 @@ class BackgroundBackup:
         if not destination.exists() or destination.stat().st_size == 0:
             # El diagnostico nombra la CLASE, no solo «no llego»: un timeout no
             # distingue «sigue copiando» de «murio callado» ni de «lo pararon».
-            clases = subprocess.run([str(self._ledger()), "status"],
+            classes = subprocess.run([str(self._ledger()), "status"],
                                     capture_output=True, text=True,
                                     env=env).stdout
             raise WiringRefused(
                 f"el respaldo no aterrizo en {destination} "
-                f"(ledger: exit {collected.returncode})\n{clases}")
+                f"(ledger: exit {collected.returncode})\n{classes}")
 
 
 def merged_wiring(live: dict, declared: dict,
@@ -329,15 +329,15 @@ def main() -> int:
         stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
             "%Y%m%dT%H%M%S")
         try:
-            acta = install(ruta, declared_wiring(), BackgroundBackup(), stamp,
+            record = install(ruta, declared_wiring(), BackgroundBackup(), stamp,
                            backups=args.backups)
         except WiringRefused as e:
             print(f"REHUSA — {e}", file=sys.stderr)
             return 2
-        print(f"instalado en {acta['live']}")
-        print(f"  respaldo   {acta['backup'] or '(no existia; nada que respaldar)'}")
-        print(f"  escritas   {', '.join(acta['written']) or '(ninguna)'}")
-        print(f"  conservadas {', '.join(acta['preserved']) or '(ninguna)'}")
+        print(f"instalado en {record['live']}")
+        print(f"  respaldo   {record['backup'] or '(no existia; nada que respaldar)'}")
+        print(f"  escritas   {', '.join(record['written']) or '(ninguna)'}")
+        print(f"  conservadas {', '.join(record['preserved']) or '(ninguna)'}")
         print("  AVISO: esto cambia la clave de la cache de prompt. Si la sesion "
               "ya tiene contexto caliente, se reescribe entero.")
         return 0

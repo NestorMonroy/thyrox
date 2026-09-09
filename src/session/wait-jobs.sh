@@ -80,8 +80,18 @@ _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
 # NO va bajo el banco: una pieza de banco es una PREGUNTA medida, y esto es
 # estado de sesion. Mezclarlos haria que el gate del manifiesto midiera
 # directorios que nunca van a tener uno.
-LEDGER="${KX_TRABAJOS_DIR:-$_ROOT/.claude/jobs-ledger/$_SESSION}"
-_ARCHIVE_DIR="${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/jobs}"
+# El nombre de la clave va en INGLES desde 2026-09-09: una clave de entorno es
+# un atributo, y `identificadores-en-ingles.md` los gobierna. El prefijo tambien
+# cambia — `KX_` nombraba al consumidor cuando el productor es THYROX.
+#
+# Las dos viejas quedan como RESPALDO, no por nostalgia: medido antes de tocar,
+# `KX_TRABAJOS_DIR` sale 43 veces y `KX_TRABAJOS_ARCHIVO_DIR` 6, repartidas en
+# tres suites de shell que no se estan corriendo en este pase. Renombrar los 49
+# de golpe y no correrlas seria publicar un verde que no medi. La cadena de
+# respaldo hace que el barrido pueda ser gradual sin dejar nada roto en medio;
+# el barrido es la tarea #91.
+LEDGER="${THYROX_JOBS_DIR:-${KX_TRABAJOS_DIR:-$_ROOT/.claude/jobs-ledger/$_SESSION}}"
+_ARCHIVE_DIR="${THYROX_JOBS_ARCHIVE_DIR:-${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/jobs}}"
 DEFAULT_PATTERN='^EXIT=[0-9]+'
 INTERVAL="${WAIT_JOBS_INTERVAL:-2}"
 
