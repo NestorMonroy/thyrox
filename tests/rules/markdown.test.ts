@@ -84,3 +84,23 @@ describe('el registro', () => {
     }
   })
 })
+
+describe('el productor y el cargador coinciden', () => {
+  /**
+   * `storage/claudemd.ts` es la mitad CONSUMIDORA que ya existia en el arbol:
+   * decide que archivo cuenta como regla al cargarse. El productor es nuevo y
+   * podria emitir a un hogar que el cargador no reconoce — dos fuentes de
+   * verdad para el mismo predicado. Este caso las ata: lo que el emisor
+   * escribe tiene que ser lo que el cargador lee.
+   *
+   * Que lo haria fallar: cambiar `RULES_DIR_DEFAULT` sin tocar el cargador.
+   */
+  test('toda ruta que el emisor compone la reconoce isMemoryFilePath', async () => {
+    const { isMemoryFilePath } = await import('../../src/packages/storage/src/claudemd.ts')
+    const root = '/tmp/consumidor-de-prueba'
+    for (const rule of RULES) {
+      const target = join(consumerRulesDir(root), `${rule.name}.md`)
+      expect(isMemoryFilePath(target)).toBe(true)
+    }
+  })
+})
