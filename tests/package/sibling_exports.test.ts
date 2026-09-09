@@ -60,7 +60,14 @@ type Paquete = {
   nombre: string
   dir: string
   exports: Record<string, unknown>
+  /** El modulo raiz del paquete, si lo tiene. `null` = paquete solo-subpath. */
+  moduloRaiz: string | null
+  main: string | null
+  types: string | null
 }
+
+/** Los tres nombres con que un paquete de esta raiz declara su modulo raiz. */
+const CANDIDATOS_RAIZ = ['src/index.ts', 'index.ts', 'src/index.tsx']
 
 /** Los paquetes de la raiz que declaran `exports`, leidos del disco. */
 function paquetes(): Paquete[] {
@@ -69,7 +76,14 @@ function paquetes(): Paquete[] {
     .filter(d => statSync(d).isDirectory() && existsSync(join(d, 'package.json')))
     .map(d => ({ dir: d, manifiesto: JSON.parse(readFileSync(join(d, 'package.json'), 'utf8')) }))
     .filter(p => p.manifiesto.exports && p.manifiesto.name)
-    .map(p => ({ nombre: p.manifiesto.name, dir: p.dir, exports: p.manifiesto.exports }))
+    .map(p => ({
+      nombre: p.manifiesto.name,
+      dir: p.dir,
+      exports: p.manifiesto.exports,
+      moduloRaiz: CANDIDATOS_RAIZ.find(c => existsSync(join(p.dir, c))) ?? null,
+      main: p.manifiesto.main ?? null,
+      types: p.manifiesto.types ?? null,
+    }))
 }
 
 /** El destino de una entrada, resuelto a texto — condicional o plano. */
@@ -84,17 +98,48 @@ function destino(valor: unknown): string | null {
 
 const TODOS = paquetes()
 
+/** El manifiesto de la raiz de paquetes, que declara `workspaces`. */
+function raizDePaquetes(): { workspaces: string[] } {
+  return JSON.parse(readFileSync(join(PAQUETES, 'package.json'), 'utf8'))
+}
+
 describe('exports de los paquetes hermanos', () => {
   test('el alcance no esta vacio — si lo estuviera, los tres bloques pasarian sin medir', () => {
     expect(TODOS.length).toBeGreaterThan(20)
   })
 
-  describe('bloque 1 — el subpath raiz esta declarado y su destino existe', () => {
+  test('bloque 0 — todo directorio con package.json es un workspace declarado', () => {
+    // Es la causa de la que cuelgan las demas: un paquete fuera de
+    // `workspaces` no entra en la resolucion de `bun install`, asi que sus
+    // `dependencies` quedan declaradas y sin instalar. Medido: `lru-cache`
+    // esta en las deps de `tool-registry`, `tool-registry` no estaba en la
+    // lista, y cargar el paquete moria con `Cannot find package 'lru-cache'`.
+    // El manifiesto infra-declara lo que el arbol tiene — la misma forma que
+    // el subpath "." ausente del bloque 1, un nivel mas arriba.
+    const declarados = new Set(raizDePaquetes().workspaces)
+    const enDisco = readdirSync(PAQUETES)
+      .filter(d => d !== 'node_modules')
+      .filter(d => statSync(join(PAQUETES, d)).isDirectory())
+      .filter(d => existsSync(join(PAQUETES, d, 'package.json')))
+    expect(enDisco.filter(d => !declarados.has(d))).toEqual([])
+  })
+
+  describe('bloque 1 — hay modulo raiz si y solo si hay subpath "."', () => {
     for (const p of TODOS) {
       test(p.nombre, () => {
-        expect(Object.keys(p.exports)).toContain('.')
+        if (p.moduloRaiz === null) {
+          // Un paquete solo-subpath no fabrica un index para llenar la casilla:
+          // seria inventar un simbolo por simetria, que es lo que
+          // `exports.test.ts` ya rehusa para el manifiesto raiz de thyrox.
+          expect({ pkg: p.nombre, declara: '.' in p.exports }).toEqual({
+            pkg: p.nombre, declara: false,
+          })
+          return
+        }
+        expect({ pkg: p.nombre, declara: '.' in p.exports }).toEqual({
+          pkg: p.nombre, declara: true,
+        })
         const t = destino(p.exports['.'])
-        expect(t).not.toBeNull()
         expect(existsSync(join(p.dir, t as string))).toBe(true)
       })
     }
@@ -109,13 +154,19 @@ describe('exports de los paquetes hermanos', () => {
           if (t === null || t.includes('*')) continue
           if (!existsSync(join(p.dir, t))) muertos.push(`${sub} -> ${t}`)
         }
+        // `main` y `types` son destinos igual que una entrada del mapa, y el
+        // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
+        // `./src/index.ts` inexistente y ningun bloque lo veia.
+        for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
+          if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+        }
         expect(muertos).toEqual([])
       })
     }
   })
 
   describe('bloque 3 — el paquete resuelve POR SU NOMBRE desde su propio directorio', () => {
-    for (const p of TODOS) {
+    for (const p of TODOS.filter(p => p.moduloRaiz !== null)) {
       test(p.nombre, () => {
         const r = spawnSync(
           'bun',
