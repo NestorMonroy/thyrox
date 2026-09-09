@@ -35,6 +35,39 @@ import reach  # noqa: E402
 #: describía `kaupamex-docs/.claude/scripts/corpus/`; desde `thyrox/src/corpus/`
 #: da `/home/user`, que EXISTE — así que el censo no reventaba: medía un árbol
 #: sin `source/` y publicaba su cero.
+def root_dir():
+    """La raiz del clon consumidor, resuelta al llamar.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.consumer_root()
+
+def catalogue_path():
+    """El catalogo publicado de guiones, resuelto al llamar.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.consumer_root() / 'source/normativa/estandares/catalogo-de-scripts.rst'
+
+def baseline_path():
+    """El baseline de guiones huerfanos, resuelto al llamar.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.consumer_root() / '.claude/scripts/corpus/scripts_huerfanos_baseline.txt'
+
 def __getattr__(name: str):
     """`ROOT`, `CATALOGUE` y `BASELINE` se resuelven al LEERLOS, no al importar el modulo.
 
@@ -48,11 +81,11 @@ def __getattr__(name: str):
     solucion que `reach.py` ya aplica a `REACH_ROOTS` (PEP 562).
     """
     if name == 'ROOT':
-        return reach.consumer_root()
+        return root_dir()
     if name == 'CATALOGUE':
-        return reach.consumer_root() / 'source/normativa/estandares/catalogo-de-scripts.rst'
+        return catalogue_path()
     if name == 'BASELINE':
-        return reach.consumer_root() / '.claude/scripts/corpus/scripts_huerfanos_baseline.txt'
+        return baseline_path()
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 SOURCE_ROOTS = ('.claude/scripts', 'scripts')
@@ -98,7 +131,7 @@ def family_of(path):
 def citing_files(basename, own_path):
     """Archivos versionados que mencionan el basename, excluyendo la autocita."""
     done = subprocess.run(['git', 'grep', '-l', '-F', basename],
-                          cwd=ROOT, capture_output=True, text=True)
+                          cwd=root_dir(), capture_output=True, text=True)
     return [line for line in done.stdout.splitlines() if line and line != own_path]
 
 
@@ -108,10 +141,10 @@ def survey():
         # Recursivo: desde d566c180 el fondo se agrupa por clase en subcarpetas
         # (gates/ session/ agents/ task/ corpus/ graph/). Un glob a profundidad 1
         # publicaba 21 guiones donde el árbol tiene más de cien (H-DOCS-1020).
-        for path in sorted((ROOT / root).rglob('*')):
+        for path in sorted((root_dir() / root).rglob('*')):
             if not path.is_file() or path.suffix not in SUFFIXES:
                 continue
-            relative = path.relative_to(ROOT).as_posix()
+            relative = path.relative_to(root_dir()).as_posix()
             if EXCLUDED_DIRS & set(relative.split('/')[:-1]):
                 continue
             citers = citing_files(path.name, relative)
@@ -248,9 +281,9 @@ def render(rows):
 
 
 def read_baseline():
-    if not BASELINE.exists():
+    if not baseline_path().exists():
         return set()
-    return {l.strip() for l in BASELINE.read_text().splitlines()
+    return {l.strip() for l in baseline_path().read_text().splitlines()
             if l.strip() and not l.startswith('#')}
 
 
@@ -270,7 +303,7 @@ def main():
     if args.huerfanos or args.write_baseline:
         orphans = sorted(r['path'] for r in rows if r['class'] == 'huerfano')
         if args.write_baseline:
-            BASELINE.write_text(
+            baseline_path().write_text(
                 '# Guiones sin ningún citante, congelados al cerrar #912.\n'
                 '# Uno listado no bloquea; uno NUEVO sí. Se paga al tocarlo.\n'
                 + '\n'.join(orphans) + '\n')
@@ -287,7 +320,7 @@ def main():
 
     rendered = render(rows)
     if args.verificar:
-        current = CATALOGUE.read_text() if CATALOGUE.exists() else ''
+        current = catalogue_path().read_text() if catalogue_path().exists() else ''
         if current == rendered:
             print(f'censar-scripts: el catálogo reproduce '
                   f'(alcance medido: {len(rows)} guiones)')
@@ -295,9 +328,9 @@ def main():
         print('censar-scripts: el catálogo NO reproduce — regenéralo sin --verificar',
               file=sys.stderr)
         return 1
-    CATALOGUE.parent.mkdir(parents=True, exist_ok=True)
-    CATALOGUE.write_text(rendered)
-    print(f'censar-scripts: catálogo escrito en {CATALOGUE.relative_to(ROOT)} '
+    catalogue_path().parent.mkdir(parents=True, exist_ok=True)
+    catalogue_path().write_text(rendered)
+    print(f'censar-scripts: catálogo escrito en {catalogue_path().relative_to(root_dir())} '
           f'(alcance medido: {len(rows)} guiones)')
     return 0
 

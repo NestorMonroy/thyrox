@@ -70,6 +70,17 @@ import reach  # noqa: E402
 #: el control de anulación: el gate NO rehusaba — publicaba
 #: `OK — autoría canónica y tablas en list-table (alcance medido: 0 archivos)`.
 #: Un verde sobre cero archivos, con su denominador declarado y nadie leyéndolo.
+def source_root():
+    """El arbol documental del consumidor, resuelto al llamar.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.consumer_root() / 'source'
+
 def __getattr__(name: str):
     """`RAIZ` se resuelve se resuelven al LEERLOS, no al importar el modulo.
 
@@ -83,7 +94,7 @@ def __getattr__(name: str):
     solucion que `reach.py` ya aplica a `REACH_ROOTS` (PEP 562).
     """
     if name == 'RAIZ':
-        return reach.consumer_root() / 'source'
+        return source_root()
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
@@ -145,7 +156,7 @@ def sin_bloques_literales(texto):
 
 def archivos_modificados():
     """Los ``.rst`` bajo ``source/`` que difieren de HEAD (staged o no)."""
-    repo = RAIZ.parent
+    repo = source_root().parent
     try:
         out = subprocess.run(
             ['git', '-C', str(repo), 'status', '--porcelain', '--', 'source'],
@@ -212,7 +223,7 @@ def main():
             return 0
         etiqueta_alcance = 'archivos modificados vs HEAD'
     else:
-        objetivo = sorted(RAIZ.rglob('*.rst'))
+        objetivo = sorted(source_root().rglob('*.rst'))
         etiqueta_alcance = 'archivos .rst bajo source/'
 
     fallos_autor = []
@@ -225,7 +236,7 @@ def main():
         except (OSError, UnicodeDecodeError):
             continue
         try:
-            rel = ruta.relative_to(RAIZ.parent)
+            rel = ruta.relative_to(source_root().parent)
         except ValueError:
             rel = ruta
 

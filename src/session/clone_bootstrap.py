@@ -64,18 +64,65 @@ import reach  # noqa: E402
 #: proveedor: con la ligadura a nivel de modulo ese rehuse mataba el `import`,
 #: no la llamada. Un modulo que no se puede importar deja sin salida incluso a
 #: quien iba a declarar el consumidor.
+#: El nombre de modulo que PEP 562 resuelve, y la funcion que lo resuelve. La
+#: tabla dejo de guardar segmentos de ruta al pasar a funciones (ERR-065): dos
+#: formas de componer la misma ruta son dos fuentes de verdad.
 _DERIVED = {
-    "PAYLOAD": (".claude-user", "bitacora-de-aprobaciones.json"),
-    "REPO_SETTINGS": (".claude", "settings.json"),
-    "SYNC_MODULE": (".claude", "scripts", "session", "sync_local_settings.py"),
+    "PAYLOAD": lambda: payload_path(),
+    "REPO_SETTINGS": lambda: repo_settings_path(),
+    "SYNC_MODULE": lambda: sync_module_path(),
 }
 
 
+def consumer_root_dir():
+    """La raiz del clon consumidor, resuelta al llamar.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.consumer_root()
+
+def payload_path():
+    """La bitacora de aprobaciones del consumidor.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.consumer_root() / ".claude-user" / "bitacora-de-aprobaciones.json"
+
+def repo_settings_path():
+    """El settings.json versionado del consumidor.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.consumer_root() / ".claude" / "settings.json"
+
+def sync_module_path():
+    """El sincronizador emitido en el consumidor.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.consumer_root() / ".claude" / "scripts" / "session" / "sync_local_settings.py"
+
 def __getattr__(name: str):
     if name == "CONSUMER_ROOT":
-        return reach.consumer_root()
+        return consumer_root_dir()
     if name in _DERIVED:
-        return reach.consumer_root().joinpath(*_DERIVED[name])
+        return _DERIVED[name]()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 PLACEHOLDER_DOCS = "%%CONSUMER_ROOT%%"
@@ -88,9 +135,9 @@ def load_sync_module():
 
     No se copian aqui: si el generador los cambia, este guion los toma del
     modulo emitido. Una segunda copia divergiria en silencio."""
-    spec = importlib.util.spec_from_file_location("sync", SYNC_MODULE)
+    spec = importlib.util.spec_from_file_location("sync", sync_module_path())
     if spec is None or spec.loader is None:
-        raise SystemExit(f"ERROR — no se pudo importar {SYNC_MODULE}")
+        raise SystemExit(f"ERROR — no se pudo importar {sync_module_path()}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -215,10 +262,10 @@ def capture(live_path, docs_root, root):
         ],
         "allow": to_placeholders(allow, docs_root, root),
     }
-    previous = load_json(PAYLOAD)
-    save_json(PAYLOAD, payload)
+    previous = load_json(payload_path())
+    save_json(payload_path(), payload)
     before = len((previous or {}).get("allow", []))
-    print(f"OK: {len(allow)} aprobacion(es) en {PAYLOAD}")
+    print(f"OK: {len(allow)} aprobacion(es) en {payload_path()}")
     print(f"    antes: {before} · ahora: {len(allow)} · delta: {len(allow) - before:+d}")
     return 0
 
@@ -253,7 +300,7 @@ def main(argv=None):
                         help="mostrar lo que haria y salir sin escribir")
     parser.add_argument("--capturar", action="store_true",
                         help="copia viva -> bitacora versionada")
-    parser.add_argument("--docs-root", type=pathlib.Path, default=CONSUMER_ROOT,
+    parser.add_argument("--docs-root", type=pathlib.Path, default=consumer_root_dir(),
                         help="raiz del clon de docs (para pruebas)")
     args = parser.parse_args(argv)
 
@@ -264,13 +311,13 @@ def main(argv=None):
     if args.capturar:
         return capture(live_path, docs_root, root)
 
-    repo_settings = load_json(REPO_SETTINGS)
+    repo_settings = load_json(repo_settings_path())
     if repo_settings is None:
-        raise SystemExit(f"ERROR — no existe {REPO_SETTINGS}")
-    payload = load_json(PAYLOAD)
+        raise SystemExit(f"ERROR — no existe {repo_settings_path()}")
+    payload = load_json(payload_path())
     if payload is None:
         raise SystemExit(
-            f"ERROR — no existe {PAYLOAD}. Se genera con --capturar; sin el, "
+            f"ERROR — no existe {payload_path()}. Se genera con --capturar; sin el, "
             "este guion NO emite un archivo a medias: quedaria sin las "
             "aprobaciones y la sesion pediria confirmacion en cada paso.")
 

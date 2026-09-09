@@ -39,6 +39,17 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths")
 import reach  # noqa: E402
 
 #: El árbol medido por defecto es el del consumidor; `--raiz` lo sobreescribe.
+def default_root():
+    """La raiz por defecto del barrido, resuelta al llamar.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.consumer_root()
+
 def __getattr__(name: str):
     """`RAIZ_DEFECTO` se resuelve se resuelven al LEERLOS, no al importar el modulo.
 
@@ -52,7 +63,7 @@ def __getattr__(name: str):
     solucion que `reach.py` ya aplica a `REACH_ROOTS` (PEP 562).
     """
     if name == 'RAIZ_DEFECTO':
-        return reach.consumer_root()
+        return default_root()
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 BASELINE = pathlib.Path(__file__).with_name('cifra_de_artefacto_vivo_baseline.txt')
@@ -200,7 +211,7 @@ def scan(raiz: pathlib.Path) -> tuple[list[tuple[str, int, str, str]], int]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument('raiz', nargs='?', default=str(RAIZ_DEFECTO))
+    ap.add_argument('raiz', nargs='?', default=str(default_root()))
     ap.add_argument('--strict', action='store_true', help='exit 1 si hay nuevos')
     ap.add_argument('--quiet', action='store_true', help='sólo el conteo')
     ap.add_argument('--no-baseline', action='store_true',
