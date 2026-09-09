@@ -667,8 +667,37 @@ def _cmd_ingerir_board(args: argparse.Namespace) -> int:
 SUBJECT_WIDTH = 60
 
 
+def _normalized(text: str) -> str:
+    """El sujeto comparable: sin espacios de sobra. Misma norma que ``subject_key``."""
+    return " ".join((text or "").split())
+
+
+def board_subject_of(board, task_id):
+    """El sujeto que la tarjeta ``<ordinal>.json`` declara, con su ESTADO.
+
+    Devuelve ``(state, subject)`` con ``state`` en ``unreachable`` / ``absent``
+    / ``present``. Los tres se distinguen a proposito: colapsar «no pude mirar»
+    con «mire y no hay tarjeta» haria que la guarda de abajo callara igual en
+    los dos casos, y un silencio que significa dos cosas no es evidencia de
+    ninguna — el sub-patron D aplicado a la propia guarda.
+    """
+    if not board:
+        return "unreachable", ""
+    directory = pathlib.Path(board)
+    if not directory.is_dir():
+        return "unreachable", ""
+    card = directory / f"{task_id}.json"
+    if not card.is_file():
+        return "absent", ""
+    try:
+        return "present", json.loads(card.read_text()).get("subject", "")
+    except (OSError, ValueError):
+        # Una tarjeta ilegible no es una tarjeta ausente: se declara.
+        return "unreachable", ""
+
+
 def _cmd_lookup(args: argparse.Namespace) -> int:
-    """El id de cita **y su sujeto**, para que quien pregunta pueda comparar.
+    """El id de cita **y su sujeto**, y REHUSA cuando el numero es ambiguo.
 
     Imprimia solo el identificador. Un llamador que le pasa un ordinal del
     board recibe una respuesta bien formada sobre OTRA tarea, y sin el sujeto
@@ -676,17 +705,56 @@ def _cmd_lookup(args: argparse.Namespace) -> int:
     2 de 4 coincidian —ordinal y fila comparten numero— y 2 de 4 no. Acertar
     la mitad de las veces es peor que fallar siempre: entrena a confiar.
 
+    Publicar el sujeto era **deteccion**, y exige que el lector compare. El
+    defecto reincidio con esa mitigacion ya puesta (:ref:`h-docs-1240`), porque
+    la causa no es que falte informacion: es que hay **dos espacios de
+    numeracion con la misma forma** ``NNN`` —el ordinal del board y el
+    ``task_id`` del store— y este comando esta llaveado en el segundo. Por eso
+    ahora no responde cuando los dos existen y nombran sujetos distintos: una
+    respuesta correcta-en-su-espacio es indistinguible de la correcta.
+
     El sujeto va en la MISMA linea que el id, separado por dos espacios, para
     que un consumidor que hace `$(... cita ...)` siga leyendo un solo renglon
     y pueda quedarse con el primer campo si solo quiere el id.
     """
+    state, board_subject = board_subject_of(getattr(args, "board", None), args.tarea)
+    if state == "unreachable":
+        # Se avisa y se responde. Bloquear por no poder mirar dejaria el
+        # comando inservible en cualquier clon sin board; callar volveria
+        # indistinguible «no hay ambiguedad» de «no la busque».
+        print(f"aviso: board no alcanzable ({getattr(args, 'board', None)}); "
+              f"no puedo descartar que «{args.tarea}» sea un ordinal del board "
+              f"y no un task_id del store.", file=sys.stderr)
+
     mapping = mapping_from_store(args.store)
     identifier = lookup(mapping, args.sesion, args.tarea)
     if identifier is None:
         print(f"sin id de cita para ({args.sesion}, {args.tarea})", file=sys.stderr)
+        if state == "present":
+            # El camino de :ref:`h-docs-1236`: la tarjeta existe, la fila no, y
+            # la respuesta escueta no dice que hacer — asi que la mano fabrica
+            # la cita prefijando el ordinal. Se nombra el sujeto y el comando
+            # que la acuña.
+            print(f"  el board SI tiene esa tarjeta: «{board_subject[:SUBJECT_WIDTH]}»\n"
+                  f"  la cita NO se compone prefijando el ordinal — se acuña:\n"
+                  f"    task_ids.py ingerir-board {args.sesion} {args.tarea} "
+                  f"--capa <capa>", file=sys.stderr)
         return 1
+
     record = mapping.ids.get(identifier) or {}
     subject = (record.get("subject") or "").strip()
+
+    if state == "present" and _normalized(board_subject) != _normalized(subject):
+        print(f"«{args.tarea}» es ambiguo: nombra una fila del store Y una "
+              f"tarjeta del board, y los dos sujetos difieren. NO se publica "
+              f"ninguna cita.\n"
+              f"  store  task_id {args.tarea}: {identifier}  "
+              f"{subject[:SUBJECT_WIDTH]}\n"
+              f"  board  ordinal {args.tarea}: {board_subject[:SUBJECT_WIDTH]}\n"
+              f"  si lo que se tiene es el ORDINAL, su cita se resuelve por el "
+              f"sujeto, no por el numero.", file=sys.stderr)
+        return 2
+
     if subject:
         print(f"{identifier}  {subject[:SUBJECT_WIDTH]}")
     else:
@@ -781,6 +849,8 @@ def main(argv=None) -> int:
     p_lookup = sub.add_parser("cita", help="el TASK-<CAPA>-NNNN de una tarea")
     p_lookup.add_argument("sesion")
     p_lookup.add_argument("tarea")
+    p_lookup.add_argument("--board", default=None,
+                          help="directorio de tarjetas (default: el de la sesion)")
     p_lookup.set_defaults(func=_cmd_lookup)
 
     p_censo = sub.add_parser("censo", help="conteo por capa, con su total")

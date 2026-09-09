@@ -412,6 +412,77 @@ _vacio = subprocess.run(
 check("sin sujeto" in _vacio.stdout, "11e: un sujeto vacio se declara, no se omite")
 
 
+# 12 — `cita` REHUSA cuando el numero es ambiguo (H-DOCS-1240).
+#
+#     El bloque 11 publica el sujeto para que quien pregunta pueda comparar.
+#     Eso es DETECCION, y exige que el lector compare — no lo previene. El
+#     defecto reincidio con la mitigacion ya puesta, porque hay DOS espacios
+#     de numeracion con la misma forma `NNN`: el ordinal del board y el
+#     `task_id` del store. Medido sobre el par real que lo destapo:
+#
+#         task_id 1146   -> TASK-THYROX-0006  Portar appRuntime y los 32 ...
+#         ordinal   276  -> TASK-API-0150     Gate: filas del list-table ...
+#         board 276.json -> subject: "Portar appRuntime y los 32 ..."
+#
+#     Las dos consultas responden; una responde sobre otra tarea. El control
+#     positivo de abajo reproduce esa forma exacta.
+_, DB5 = _store_con([("276", "Gate: filas del list-table vs entradas del toctree",
+                      S, "api", "TASK-API-0150")])
+BOARD5 = _board_con({"276": {"id": "276", "status": "in_progress",
+                             "subject": "Portar appRuntime y los 32 de swarm "
+                                        "que no usan interfaz"}})
+_amb = subprocess.run(
+    [sys.executable, str(SUT), "--store", str(DB5), "cita",
+     "--board", str(BOARD5), S, "276"],
+    capture_output=True, text=True)
+check(_amb.returncode != 0,
+      "12a: con el numero ambiguo `cita` REHUSA en vez de responder")
+check("Gate: filas del list-table" in _amb.stderr,
+      "12b: y nombra el sujeto que el STORE tiene en ese task_id")
+check("Portar appRuntime" in _amb.stderr,
+      "12c: y el sujeto que el BOARD tiene en ese ordinal — los dos, para comparar")
+check("TASK-API-0150" not in _amb.stdout,
+      "12d: la cita equivocada NO sale por stdout, que es lo que un $() captura")
+
+# 12e — el control que DISCRIMINA: si la tarjeta del board nombra el MISMO
+#     sujeto no hay ambiguedad, y rehusar ahi haria inutil el comando. Con la
+#     guarda anulada 12a-12d pasan igual; con esta, no.
+BOARD6 = _board_con({"276": {"id": "276", "status": "pending",
+                             "subject": "Gate: filas del list-table vs "
+                                        "entradas del toctree"}})
+_ok = subprocess.run(
+    [sys.executable, str(SUT), "--store", str(DB5), "cita",
+     "--board", str(BOARD6), S, "276"],
+    capture_output=True, text=True)
+check(_ok.returncode == 0 and "TASK-API-0150" in _ok.stdout,
+      "12e: cuando los dos sujetos coinciden responde — la guarda discrimina")
+
+# 12f — board inalcanzable: se AVISA y se responde. Callar volveria
+#     indistinguible «no hay ambiguedad» de «no pude mirar», que es el
+#     sub-patron D aplicado a la propia guarda.
+_sin = subprocess.run(
+    [sys.executable, str(SUT), "--store", str(DB5), "cita",
+     "--board", str(BOARD5 / "no-existe"), S, "276"],
+    capture_output=True, text=True)
+check(_sin.returncode == 0 and "TASK-API-0150" in _sin.stdout,
+      "12f: sin board el comando responde igual — la guarda no bloquea por no ver")
+check("no alcanzable" in _sin.stderr,
+      "12g: y lo DICE, para que quien lee sepa que la ambiguedad no se descarto")
+
+# 12h — el otro camino de la reincidencia (H-DOCS-1236): no hay fila, hay
+#     tarjeta. La respuesta «sin id de cita» es correcta y no dice que hacer,
+#     asi que la mano fabrica la cita prefijando el ordinal. Nombrar el sujeto
+#     de la tarjeta y el comando que la acuña cierra ese hueco.
+_, DB7 = _store_con([])
+_falta = subprocess.run(
+    [sys.executable, str(SUT), "--store", str(DB7), "cita",
+     "--board", str(BOARD5), S, "276"],
+    capture_output=True, text=True)
+check(_falta.returncode != 0, "12h: sin fila en el store `cita` sigue rehusando")
+check("Portar appRuntime" in _falta.stderr and "ingerir-board" in _falta.stderr,
+      "12i: y nombra el sujeto de la tarjeta y el comando que lo acuña")
+
+
 # ── El store es PARAMETRO del consumidor, no constante de thyrox ──────────
 #
 # `DEFAULT_STORE_PATH` se derivaba con `parents[2] / "agent-results"`, que
