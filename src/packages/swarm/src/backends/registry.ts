@@ -361,39 +361,19 @@ export function getResolvedTeammateMode(): 'in-process' | 'tmux' {
 }
 
 /**
- * El ejecutor en proceso.
+ * El ejecutor en proceso, cargado de forma diferida y cacheado.
  *
- * PARCIAL DECLARADA. La fuente carga aquí `./InProcessBackend.js` de forma
- * diferida —la segunda circularidad de la cabecera—, y ese módulo NO está
- * portado: su cadena cuelga de `runtime/inProcessRunner.ts` (1289 líneas,
- * `@anthropic-ai/sdk`) y de `runtime/spawnInProcess.ts`.
- *
- * Hasta que lleguen, esto REHÚSA nombrando lo que falta en vez de devolver
- * `null` o dejar un import que no resuelve: un `null` movería el fallo a la
- * primera llamada de método, lejos de su causa. Sucesor: `TASK-THYROX-0003`.
+ * El `await import()` es la segunda circularidad que la cabecera declara: la
+ * cadena `InProcessBackend` -> `spawnInProcess` -> `teamHelpers` -> este
+ * registro es un componente fuertemente conexo, y diferir la carga hasta la
+ * primera llamada es lo que lo abre.
  */
 export async function getInProcessBackend(): Promise<TeammateExecutor> {
   if (!cachedInProcessBackend) {
-    throw new Error(
-      'InProcessBackend is not ported yet (TASK-THYROX-0003). ' +
-        'Use a pane backend, or set the in-process executor with ' +
-        '_test_setInProcessBackend().',
-    )
+    const { createInProcessBackend } = await import('./InProcessBackend.js')
+    cachedInProcessBackend = createInProcessBackend()
   }
   return cachedInProcessBackend
-}
-
-/**
- * Instala el ejecutor en proceso a mano.
- *
- * Existe por la parcial de arriba: es lo único que permite ejercitar la rama
- * en proceso de `getTeammateExecutor()` mientras el módulo real no esté. Se
- * retira con `TASK-THYROX-0003`.
- */
-export function _test_setInProcessBackend(
-  executor: TeammateExecutor | null,
-): void {
-  cachedInProcessBackend = executor
 }
 
 /**

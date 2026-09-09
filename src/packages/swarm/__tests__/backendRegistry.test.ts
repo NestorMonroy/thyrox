@@ -373,12 +373,14 @@ describe('getTeammateExecutor — la eleccion de ejecutor', () => {
     const s = await import('../src/backends/teammateModeSnapshot.ts')
     s.captureTeammateModeSnapshot()
     const r = await import('../src/backends/registry.ts')
-    // El ejecutor en proceso REAL no esta portado (TASK-THYROX-0003), asi que
-    // se instala un doble: sin el, la rama verdadera de la conjuncion queda
-    // sin ejercitar y su anulacion no discriminaria.
-    const doble = { type: 'in-process' } as never
-    r._test_setInProcessBackend(doble)
-    expect(await r.getTeammateExecutor(true)).toBe(doble)
+    // El ejecutor REAL, por la importacion diferida de `getInProcessBackend`.
+    // El doble que habia aqui existia por la parcial de `registry.ts`, ya
+    // cerrada: con el doble, la rama verdadera de la conjuncion se ejercitaba
+    // contra un objeto fabricado y no contra el modulo que carga.
+    const a = await r.getTeammateExecutor(true)
+    expect(a.type).toBe('in-process')
+    // Y se cachea: la segunda llamada no vuelve a importar.
+    expect(await r.getTeammateExecutor(true)).toBe(a)
   })
 
   test('37. sin pedirlo, el modo en proceso NO se impone al llamador', async () => {
@@ -387,7 +389,6 @@ describe('getTeammateExecutor — la eleccion de ejecutor', () => {
     const s = await import('../src/backends/teammateModeSnapshot.ts')
     s.captureTeammateModeSnapshot()
     const r = await import('../src/backends/registry.ts')
-    r._test_setInProcessBackend({ type: 'in-process' } as never)
     expect(r.isInProcessEnabled()).toBe(true)
     // Quien pide un panel a proposito —para mostrar el trabajo al usuario— lo
     // recibe aunque el entorno prefiera el modo en proceso.
