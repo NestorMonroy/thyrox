@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
     "chalk": "^4.1.2"
   }
 }
