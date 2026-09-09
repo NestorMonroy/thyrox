@@ -1,0 +1,13 @@
+{
+  "question": "El guard que impide reescribir la caché al cambiar de modelo, ¿está vivo en esta sesión?",
+  "instrument": "Lectura de `/home/user/.claude/settings.local.json` —el settings del cwd de sesión, que es el único que el harness carga— y prueba de existencia de cada ruta que sus seis hooks nombran, más invocación del hook por sus dos rutas (la cableada y la viva).",
+  "metric": "Existencia del archivo que el comando del hook nombra, y salida de invocarlo con un payload de PreModelSwitch.",
+  "blind_to": [
+    "Si el harness llegó a invocar el hook alguna vez: se mide la ruta, no una traza de ejecución. Un hook que revienta con Module not found no deja rastro que este instrumento vea.",
+    "El settings.json de kaupamex-docs, que SÍ apunta a la ruta viva pero sólo carga cuando ese repo es el cwd — y el cwd de esta sesión es /home/user.",
+    "Cuánto costó de verdad la ausencia del guard: no hay contador de cambios de modelo sin guardar en esta sesión."
+  ],
+  "destination": "NO se aplica el arreglo: editar settings.local.json a mitad de sesión rompe la clave de caché del hilo (H-DOCS-1012, 778 297 tokens reescritos en un turno). El hallazgo se registra y el momento de aplicarlo lo decide el ejecutor.",
+  "form": "measurement",
+  "created_at": "2026-09-09T19:02:20"
+}
