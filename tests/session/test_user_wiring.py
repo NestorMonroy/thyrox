@@ -283,5 +283,55 @@ _direct = {"hooks": {"SubagentStop": [{"hooks": [{"type": "command",
 check("stub y llamada directa se reportan como deriva (ciega al destino)",
       ["SubagentStop"], sorted(w.wiring_drift(_stub, _direct)))
 
+
+# --- 14. main PUBLICA la deriva, y NO la mete en su codigo de salida --------
+#
+# MITAD ROJA, medida antes de escribir el caso: `wiring_drift` existia y
+# `main` no lo llamaba ni una vez.
+#
+#     grep -c wiring_drift src/session/user_wiring.py            -> 1
+#     sed -n '/^def main/,$p' ... | grep -c wiring_drift         -> 0
+#
+# El instrumento estaba construido y su medicion no llegaba a ninguna
+# superficie: capacidad muerta. Y el surfacing que se le suponia NO existe —
+# `session-start.sh` tiene cero invocadores ejecutables y el settings vivo no
+# declara `SessionStart`. La deriva se publica en el comando de medicion que
+# YA existe; no se inventa un host.
+#
+# CONTROL DE ANULACION: si la deriva entrara al codigo de salida, 14.3 caeria
+# sola — es la unica asercion que compara los dos codigos entre si. Publicar y
+# decidir son cosas distintas: el codigo lo sigue gobernando `broken_targets`
+# de lo declarado, que es alcanzabilidad, no coincidencia literal.
+import json as _json
+import subprocess as _sp
+import tempfile as _tf
+
+_MODULO = str(Path(w.__file__))
+
+def _correr(vivo: dict):
+    with _tf.TemporaryDirectory() as d:
+        ruta = Path(d) / "settings.local.json"
+        ruta.write_text(_json.dumps(vivo))
+        env = dict(_os.environ, THYROX_LIVE_SETTINGS=str(ruta))
+        p = _sp.run([sys.executable, _MODULO], capture_output=True, text=True, env=env)
+        return p.returncode, p.stdout + p.stderr
+
+_declarado = w.declared_wiring()
+_codigo_sin, _salida_sin = _correr(_declarado)
+
+_con_deriva = _json.loads(_json.dumps(_declarado))
+_con_deriva.setdefault("hooks", {}).setdefault("Stop", [])
+_con_deriva["hooks"]["Stop"] = [{"hooks": [{"type": "command",
+                                            "command": "/bin/true --intruso"}]}]
+_codigo_con, _salida_con = _correr(_con_deriva)
+
+print("\n14. main publica la deriva sin tocar su codigo de salida")
+check("14.1 sin deriva lo dice, no calla", True, "sin deriva" in _salida_sin)
+check("14.2 con deriva nombra el evento", True, "Stop" in _salida_con
+      and "/bin/true --intruso" in _salida_con)
+check("14.3 el codigo de salida NO cambia por la deriva",
+      _codigo_sin, _codigo_con)
+check("14.4 y sigue publicando el conteo de rotos", True,
+      "roto(s) en la copia viva" in _salida_con)
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)

@@ -417,6 +417,27 @@ def main() -> int:
         print(f"  roto en lo declarado   {r['event']:16} {r['path']}", file=sys.stderr)
     print(f"{len(rotos_vivos)} roto(s) en la copia viva sobre {n_viva} comandos "
           f"({ruta}) · {len(rotos_declarados)} en lo que thyrox declara")
+
+    # La deriva se publica AQUI y no en un host de surfacing, porque ese host
+    # no existe: `session-start.sh` tiene cero invocadores ejecutables y el
+    # settings vivo no declara `SessionStart`. Inventarle uno seria afirmar una
+    # superficie sin medirla; publicarla en el comando que ya se corre no.
+    #
+    # Y NO entra al codigo de salida a proposito. El codigo lo gobierna
+    # `broken_targets` de lo declarado, que mide ALCANZABILIDAD; la deriva mide
+    # COINCIDENCIA LITERAL, y su propio docstring declara que un rojo suyo
+    # autoriza a decir «no son la misma cadena» y nunca «la instalacion esta
+    # atrasada» — un stub que delega en el mismo mecanismo deriva sin estar mal.
+    deriva = wiring_drift(viva, declared_wiring())
+    if not deriva:
+        print("  sin deriva: los dos cableados coinciden literalmente por evento")
+    for evento, lados in deriva.items():
+        print(f"  deriva en {evento}")
+        for c in lados["only_live"]:
+            print(f"    solo vivo      {c}")
+        for c in lados["only_declared"]:
+            print(f"    solo declarado {c}")
+
     return 1 if rotos_declarados else 0
 
 
