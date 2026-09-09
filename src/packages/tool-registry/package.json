@@ -39,6 +39,8 @@
     "./tools/TodoWriteTool/TodoWriteTool.js": "./src/tools/TodoWriteTool/TodoWriteTool.ts",
     "./tools/TodoWriteTool/constants.js": "./src/tools/TodoWriteTool/constants.ts",
     "./tools/TodoWriteTool/prompt.js": "./src/tools/TodoWriteTool/prompt.ts",
+    "./tools/SleepTool/prompt.js": "./src/tools/SleepTool/prompt.ts",
+    "./tools/testing/TestingPermissionTool.js": "./src/tools/testing/TestingPermissionTool.tsx",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },

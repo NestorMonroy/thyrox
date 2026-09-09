@@ -25,7 +25,7 @@
  * Ciega a: si el bucle los despacha, y a la espera real de Sleep — la fuente
  * sólo tiene su prompt, no el útil que duerme.
  */
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { TICK_TAG } from '@thyrox/command-runtime/xml.js'
 import {
   DESCRIPTION,
@@ -33,17 +33,6 @@ import {
   SLEEP_TOOL_PROMPT,
 } from '../SleepTool/prompt.ts'
 import { TestingPermissionTool } from '../testing/TestingPermissionTool.tsx'
-
-let entornoPrevio: string | undefined
-
-beforeEach(() => {
-  entornoPrevio = process.env.NODE_ENV
-})
-
-afterEach(() => {
-  if (entornoPrevio === undefined) delete process.env.NODE_ENV
-  else process.env.NODE_ENV = entornoPrevio
-})
 
 /** El contexto que `call` recibe; el útil no lo mira. */
 const CTX = {} as never
@@ -54,12 +43,23 @@ describe('SleepTool/prompt — 5 casos', () => {
     expect(DESCRIPTION).toBe('Wait for a specified duration')
   })
 
-  test('2. la etiqueta del aviso periódico NO se escribe a mano', () => {
+  test('2. la etiqueta del aviso periódico NO se escribe a mano', async () => {
     // Es la decisión del archivo: interpola `TICK_TAG` en vez de teclear
     // «tick». Si el runtime renombra la etiqueta, el prompt sigue nombrando
     // la real; con el literal quedaría instruyendo sobre una que no llega.
+    //
+    // SE MIDE EL ARCHIVO, NO EL TEXTO EMITIDO. La primera versión de este
+    // caso comparaba `SLEEP_TOOL_PROMPT` contra `` `<${TICK_TAG}>` `` — y
+    // como `TICK_TAG` vale hoy «tick», el literal tecleado producía el mismo
+    // texto y el caso pasaba igual. Medido con la anulación: 12 pass con el
+    // literal en el archivo. Un verde que no distingue «interpola» de
+    // «coincide por casualidad» es el sub-patrón D, y lo era.
+    const texto = await Bun.file(
+      new URL('../SleepTool/prompt.ts', import.meta.url),
+    ).text()
+    expect(texto).toContain('${TICK_TAG}')
+    expect(texto).not.toContain('<tick>')
     expect(SLEEP_TOOL_PROMPT).toContain(`<${TICK_TAG}>`)
-    expect(TICK_TAG).toBe('tick')
   })
 
   test('3. dice que se puede llamar a la vez que otros útiles', () => {
@@ -90,12 +90,27 @@ describe('TestingPermissionTool — 7 casos', () => {
   test('7. SÓLO se habilita bajo NODE_ENV=test', () => {
     // Es la guarda que impide que un útil cuyo único acto es abrir un
     // diálogo de permiso aparezca en una sesión real.
-    process.env.NODE_ENV = 'test'
-    expect(TestingPermissionTool.isEnabled()).toBe(true)
-    process.env.NODE_ENV = 'production'
-    expect(TestingPermissionTool.isEnabled()).toBe(false)
-    delete process.env.NODE_ENV
-    expect(TestingPermissionTool.isEnabled()).toBe(false)
+    //
+    // LA MUTACIÓN VIVE DENTRO DEL CASO, CON `finally`. Estaba en un
+    // `beforeEach`/`afterEach`, y eso dejaba `NODE_ENV` fuera de su valor
+    // durante TODO el archivo: `bun test` corre archivos en el mismo
+    // proceso, así que la ventana la ve cualquiera. Medido: ningún otro
+    // módulo de este paquete lee `NODE_ENV` (1 lectura, la del útil), así
+    // que la ventana no explica ningún fallo conocido — se acota porque un
+    // caso no debe dejar una global mutada, no porque se haya reproducido
+    // un daño.
+    const previo = process.env.NODE_ENV
+    try {
+      process.env.NODE_ENV = 'test'
+      expect(TestingPermissionTool.isEnabled()).toBe(true)
+      process.env.NODE_ENV = 'production'
+      expect(TestingPermissionTool.isEnabled()).toBe(false)
+      delete process.env.NODE_ENV
+      expect(TestingPermissionTool.isEnabled()).toBe(false)
+    } finally {
+      if (previo === undefined) delete process.env.NODE_ENV
+      else process.env.NODE_ENV = previo
+    }
   })
 
   test('8. es de sólo lectura y seguro ante concurrencia', () => {
