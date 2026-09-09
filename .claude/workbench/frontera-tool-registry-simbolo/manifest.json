@@ -1,13 +1,13 @@
 {
-  "question": "¿Que utiles de tool-registry se pueden portar HOY, sin bloqueo? El instrumento anterior lo respondia por resolucion de especificadores, y esa respuesta era falsa en las dos direcciones: publicaba libre un util cuyo modulo resuelve pero cuyo simbolo no existe, y publicaba libre un stub de la propia fuente, que resuelve todo porque no importa nada.",
-  "instrument": "measure_frontier.py — por cada directorio de util de la fuente sin contraparte en el puerto: (1) si tiene cuerpo real, discriminado por el literal 'Auto-generated stub' con que ccnmt marca lo no implementado; (2) sus importaciones locales resueltas contra el arbol del PUERTO; (3) sus importaciones de paquete hermano, cargadas de verdad con bun y preguntando por CADA nombre importado, no por el modulo.",
+  "question": "¿Que utiles de tool-registry se pueden portar HOY, sin bloqueo? El instrumento anterior lo respondia por resolucion de especificadores, y esa respuesta era falsa en las dos direcciones: publicaba libre un util cuyo modulo resuelve pero cuyo simbolo no existe, y publicaba libre un stub de la propia fuente, que resuelve todo porque no importa nada. Ampliada: la misma pregunta para los modulos de RAIZ del paquete, que el guion no recorre (TASK-THYROX-0272).",
+  "instrument": "measure_frontier.py — por cada directorio de util de la fuente sin contraparte en el puerto: (1) si tiene cuerpo real, discriminado por el literal 'Auto-generated stub' con que ccnmt marca lo no implementado; (2) sus importaciones locales resueltas contra el arbol del PUERTO; (3) sus importaciones de paquete hermano, cargadas de verdad con bun y preguntando por CADA nombre importado, no por el modulo. Para la raiz, medicion dirigida persistida en root_modules_report.txt: mismo criterio, hecha a mano porque el recorrido del guion arranca en tools/.",
   "metric": "utiles sin contraparte, repartidos en SIN CUERPO / LIBRES / BLOQUEADOS, con el bloqueo de cada uno nombrado simbolo a simbolo.",
   "blind_to": [
     "un simbolo que exista con el nombre correcto y otra firma u otra conducta — se pregunta por el nombre, no por el contrato",
     "las importaciones que un util haga por require dinamico o import() en tiempo de ejecucion",
     "un placeholder sin el literal 'Auto-generated stub': el discriminador es esa cadena, no un juicio sobre el contenido",
     "bun:bundle, tratado aparte por tener sustituto declarado en internal/pendingCrossPackageDeps.ts",
-    "los modulos de RAIZ del paquete (Tool.ts, ToolRegistry.ts, api.ts...), que no viven bajo tools/ y son la tarea TASK-THYROX-0272"
+    "si un paquete npm ausente (ripgrep-napi, figures, @anthropic-ai/sdk) tiene sustituto viable — eso es juicio, no medicion, y decide el ejecutor"
   ],
-  "destination": "frontier_report.txt en este mismo banco, y el estado de TASK-THYROX-0234 en el tablero. Cuando el reparto vuelva a cambiar —al portar un hermano que desbloquee simbolos— se re-corre; la cifra NO se transcribe a prosa, porque es propiedad de un arbol que crece."
+  "destination": "frontier_report.txt y root_modules_report.txt en este mismo banco, y el estado de TASK-THYROX-0234 en el tablero. Cuando el reparto vuelva a cambiar —al portar un hermano que desbloquee simbolos— se re-corre; la cifra NO se transcribe a prosa, porque es propiedad de un arbol que crece."
 }

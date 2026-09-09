@@ -1,0 +1,48 @@
+Frontera de los modulos de RAIZ de tool-registry (TASK-THYROX-0272)
+===================================================================
+
+Medido a nivel de simbolo y de paquete instalado, no de conteo de lineas.
+El instrumento `measure_frontier.py` NO los mira: recorre `tools/`, y estos
+viven en la raiz del paquete. Esta medicion es dirigida y complementaria.
+
+LA TAREA DECIA «los 7 modulos de raiz que quedan». Medidos hoy son OCHO.
+La descripcion de una tarea es una hipotesis fechada, no el arbol de hoy —
+nivel 3 de `niveles-de-retencion.md`, consumido como si fuera nivel 2.
+
+    L     modulo                    bloqueo medido
+  ----  ------------------------  ------------------------------------------
+    72  toolPool.ts               @thyrox/mcp-runtime/utils.js (no carga)
+                                  + ./toolConstants.js (bloqueado, ver abajo)
+   103  toolConstants.ts          16 de sus 20 importaciones de tools/ no
+                                  existen en el puerto. Las 4 que si:
+                                  AgentTool, TaskGetTool, TaskListTool y
+                                  TodoWriteTool — las de esta sesion.
+   224  notebook.ts               @anthropic-ai/sdk (no instalado)
+                                  + tools/BashTool/{toolName,utils}.ts
+   397  diagnosticTracking.ts     `figures` (no instalado)
+                                  + @thyrox/mcp-runtime/clientRuntime.js
+   536  ripgrep.ts                `ripgrep-napi` (no instalado)
+   581  markdownConfigLoader.ts   ./ripgrep.js (bloqueado)
+                                  + config/{managedPath,pluginOnlyPolicy,
+                                    utils/markdownDescription}
+  1135  collapseReadSearch.ts     8 locales de tools/ ausentes
+                                  + @thyrox/repl/fullscreen.js
+  1518  teleport.tsx              @anthropic/ink (UI vendorizada, no publicada)
+
+VEREDICTO: 8 de 8 bloqueados. Ninguno es libre.
+
+Cruzado con el reparto de `tools/` (10 sin cuerpo, 0 libres, 38 bloqueados),
+la frontera libre de tool-registry esta EXHAUSTA en sus dos superficies.
+
+TRES BLOQUEOS SON DE OTRA CLASE, y la distincion importa para decidir:
+`ripgrep-napi`, `figures` y `@anthropic-ai/sdk` no son modulos por portar
+— son paquetes npm que este arbol no declara. Desbloquearlos es una
+decision de DEPENDENCIA (¿los declaramos?), no trabajo de porte. Los otros
+cinco si son porte: hermanos ausentes o UI.
+
+Metrica: por cada modulo de raiz de la fuente sin contraparte, sus
+importaciones locales resueltas contra el puerto y sus externas cargadas de
+verdad con bun.
+Ciega a: un simbolo que exista con otra firma; a las importaciones por
+require dinamico; y a si un paquete npm ausente tiene sustituto viable —
+eso es juicio, no medicion.
