@@ -300,11 +300,18 @@ def main(argv=None):
                         help="mostrar lo que haria y salir sin escribir")
     parser.add_argument("--capturar", action="store_true",
                         help="copia viva -> bitacora versionada")
-    parser.add_argument("--docs-root", type=pathlib.Path, default=consumer_root_dir(),
-                        help="raiz del clon de docs (para pruebas)")
+    parser.add_argument("--docs-root", type=pathlib.Path, default=None,
+                        help="raiz del clon consumidor "
+                             "(por defecto: la que resuelve el localizador)")
     args = parser.parse_args(argv)
 
-    docs_root = args.docs_root.resolve()
+    # El default NO se evalua en `add_argument` (ERR-075). `consumer_root_dir()`
+    # puede levantar `ConsumerUnknownError` —desde el PROVEEDOR siempre lo hace—
+    # y un default ansioso lo levanta ANTES de analizar los argumentos: `--help`
+    # muere, y con el la unica superficie inerte del modulo. Resuelto aqui, el
+    # llamador que pasa `--docs-root` nunca lo invoca, y el que no lo pasa
+    # recibe el error donde se puede atrapar.
+    docs_root = (args.docs_root or consumer_root_dir()).resolve()
     root = (args.raiz or docs_root.parent).resolve()
     live_path = root / ".claude" / "settings.local.json"
 
