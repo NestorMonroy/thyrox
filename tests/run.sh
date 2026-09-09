@@ -155,18 +155,25 @@ if [ "$only" != "--ts-only" ] && [ "$only" != "--python-only" ]; then
   echo "== shell (bash) =="
   count=0
   rojos_sh=0
+  sin_medir=0
+  # Exit 2 NO es rojo: es «rehuso, no emito veredicto» — el contrato que
+  # `check_script_naming.py` y `tests/verify/test-pre-commit-docs.sh` usan
+  # cuando falta su sujeto (el lexico, el clon hermano de kaupamex-docs).
+  # Colapsarlo con el 1 hace que el corredor publique «la suite fallo» donde
+  # lo cierto es «no habia con que medir», que es el sub-paton D aplicado a
+  # este mismo archivo. Se cuentan aparte y NO suman a `failures`.
   while IFS= read -r suite; do
     count=$((count + 1))
-    if bash "$suite" >/dev/null 2>&1; then
-      :
-    else
-      rojos_sh=$((rojos_sh + 1))
-      echo "-- ROJO $suite"
-    fi
+    bash "$suite" >/dev/null 2>&1
+    case $? in
+      0) ;;
+      2) sin_medir=$((sin_medir + 1)); echo "-- SIN MEDIR (exit 2) $suite" ;;
+      *) rojos_sh=$((rojos_sh + 1));   echo "-- ROJO $suite" ;;
+    esac
   done < <(descubrir_shell)
   [ "$rojos_sh" -gt 0 ] && failures=$((failures + 1))
-  resumen+=("shell: $count suite(s), $rojos_sh en rojo")
-  echo "  ($count suite(s) de shell, $rojos_sh en rojo)"
+  resumen+=("shell: $count suite(s), $rojos_sh en rojo, $sin_medir sin medir")
+  echo "  ($count suite(s) de shell, $rojos_sh en rojo, $sin_medir sin medir)"
 fi
 
 echo

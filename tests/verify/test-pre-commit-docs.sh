@@ -14,7 +14,7 @@
 # 17 de
 # `tests/legacy` cuyo sujeto «nunca se porto a thyrox». Esa clasificacion era
 # falsa para esta: su sujeto es el hook VIVO del consumidor, asi que el reparto
-# dejo sin control los cinco gates que ese hook corre. Ver TASK-DOCS-0530.
+# dejo sin control los seis gates que ese hook corre. Ver TASK-DOCS-0530.
 #
 # Mide la cadena ENTERA: stub del consumidor -> localizador -> mecanismo en
 # `thyrox/src/verify/pre-commit.sh` -> gates. Por eso su sujeto sigue siendo el
