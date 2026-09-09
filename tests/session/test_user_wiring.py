@@ -236,5 +236,52 @@ check("ninguno ejecuta desde el consumidor", [], _ajenos)
 check("y todos existen", [],
       [r for _, r in _ejecutables if not Path(r).is_file()])
 
+print("== 13. la deriva entre lo DECLARADO y lo INSTALADO ==")
+# MITAD ROJA de este caso, medida 2026-09-07 sobre el archivo vivo ANTES de
+# escribir `wiring_drift` (comparando literales de comando por evento):
+#
+#     PreModelSwitch  vivo=1 declarado=1  literales en comun=1
+#     SubagentStart   vivo=2 declarado=2  literales en comun=0
+#     SubagentStop    vivo=3 declarado=3  literales en comun=0
+#
+# Y en el mismo pase se midio la EQUIVALENCIA de esos literales distintos:
+# el stub instalado pasa `reach.root("docs")/.claude/agent-results` donde el
+# declarado escribe `--results-dir /home/user/kaupamex-docs/.claude/agent-results`,
+# y `CLONE_ROOT/.claude/agent-results` donde escribe el mismo `--log-dir`. Los
+# dos resuelven al MISMO destino; `register_session` no pasa destino en ninguna
+# de las dos formas. Cero literales en comun, comportamiento identico.
+#
+# Metrica: cadenas de `command` por evento, comparadas como conjuntos.
+# Ciega a: un stub que DELEGA en el mismo mecanismo — el literal difiere y el
+# destino no. Por eso un rojo de este instrumento NO autoriza a concluir «la
+# instalacion esta atrasada»: autoriza a concluir «las dos formas no son la
+# misma cadena», que es otra afirmacion. El caso 13.4 fija esa ceguera.
+_same = {"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "echo a"}]}]}}
+check("dos cableados identicos no derivan", {}, w.wiring_drift(_same, _same))
+
+_other = {"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "echo b"}]}]}}
+_drift = w.wiring_drift(_same, _other)
+check("un comando cambiado se reporta en su evento", ["Stop"], sorted(_drift))
+check("cita el lado vivo", ["echo a"], _drift["Stop"]["only_live"])
+check("cita el lado declarado", ["echo b"], _drift["Stop"]["only_declared"])
+
+_missing = {"hooks": {}}
+check("un evento declarado y no instalado se reporta",
+      ["echo a"], w.wiring_drift(_missing, _same)["Stop"]["only_declared"])
+check("y no inventa un lado vivo",
+      [], w.wiring_drift(_missing, _same)["Stop"]["only_live"])
+
+# 13.4 — LA CEGUERA, declarada como conducta y no como nota al pie. Las dos
+# formas nombran el MISMO mecanismo con el MISMO destino; el instrumento las
+# separa igual, porque compara cadenas. Si algun dia dejara de reportarlo,
+# habria adquirido una capacidad que aqui no se le atribuye.
+_stub = {"hooks": {"SubagentStop": [{"hooks": [{"type": "command",
+    "command": "node /home/user/kaupamex-docs/.claude/hooks/save-agent-result.mjs"}]}]}}
+_direct = {"hooks": {"SubagentStop": [{"hooks": [{"type": "command",
+    "command": "node /home/user/thyrox/src/agents/save_result.mjs"
+               " --log-dir /home/user/kaupamex-docs/.claude/agent-results"}]}]}}
+check("stub y llamada directa se reportan como deriva (ciega al destino)",
+      ["SubagentStop"], sorted(w.wiring_drift(_stub, _direct)))
+
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)

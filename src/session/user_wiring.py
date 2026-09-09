@@ -325,6 +325,47 @@ def broken_targets(settings: dict) -> list[dict]:
     return rotos
 
 
+def _commands_by_event(settings: dict) -> dict:
+    """Las cadenas de ``command`` de un settings, agrupadas por evento."""
+    por_evento: dict = {}
+    for evento, grupos in (settings.get("hooks") or {}).items():
+        por_evento[evento] = [entrada.get("command", "")
+                              for grupo in grupos
+                              for entrada in grupo.get("hooks", [])]
+    return por_evento
+
+
+def wiring_drift(live: dict, declared: dict) -> dict:
+    """Los eventos cuyo cableado instalado no coincide LITERALMENTE con el declarado.
+
+    Devuelve ``{evento: {"only_live": [...], "only_declared": [...]}}`` y sólo
+    incluye los eventos que difieren; sin deriva, ``{}``.
+
+    *Métrica:* cadenas de ``command`` por evento, comparadas como conjuntos.
+    *Ciega a:* un stub que DELEGA en el mismo mecanismo. Medido 2026-09-07 sobre
+    el archivo vivo: ``SubagentStart`` y ``SubagentStop`` dan **cero** literales
+    en común con lo declarado, y las dos formas resuelven al MISMO destino — el
+    stub compone ``reach.root("docs")/.claude/agent-results`` donde el declarado
+    escribe ``--results-dir`` con esa misma ruta, y ninguna de las dos pasa
+    destino al store. Por eso un rojo de este instrumento autoriza a concluir
+    «las dos formas no son la misma cadena», NUNCA «la instalación está
+    atrasada»: son afirmaciones distintas y sólo la primera se mide aquí.
+
+    Tampoco mide alcanzabilidad —para eso está ``broken_targets``— ni
+    procedencia; el caso 12 de la suite cubre que el ejecutable declarado viva
+    en el productor.
+    """
+    vivo = _commands_by_event(live)
+    decl = _commands_by_event(declared)
+    deriva: dict = {}
+    for evento in sorted(set(vivo) | set(decl)):
+        v, d = set(vivo.get(evento, [])), set(decl.get(evento, []))
+        if v != d:
+            deriva[evento] = {"only_live": sorted(v - d),
+                              "only_declared": sorted(d - v)}
+    return deriva
+
+
 def main() -> int:
     import argparse  # noqa: PLC0415 - superficie de linea de comandos
 
