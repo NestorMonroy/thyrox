@@ -43,6 +43,30 @@ el abandono con `forget`.
 escribió su marcador sigue pendiente hasta que alguien lea su resultado: medir
 la terminación del proceso en vez de la recogida mide el fenómeno equivocado.
 
+## El gate — porque una regla sin script es prosa
+
+`src/hooks/detect_foreground_long_command.py`, cuarto detector de
+`pretooluse_dispatch`. Dispara sobre `Bash` y avisa cuando el comando invoca una
+familia larga —suite, build, gate de corpus, migración— **en posición de
+comando** y no viaja ya por un ensamblador ni por un `nohup` propio.
+
+```bash
+uv run pytest tests/hooks/test_detect_foreground_long_command.py -q
+```
+
+**Avisa, no bloquea.** El juicio de si este comando concreto es largo lo tiene
+quien lo escribe: un patrón léxico no separa `pytest x::test_a` —segundos— de la
+suite entera. Bloquear con un instrumento que no discrimina sería el sub-patrón
+D con el gate como sujeto.
+
+**Sus dos guardas se probaron por anulación, y la primera vez el control no
+discriminó.** Al retirar el descuento de «ya va en segundo plano» la suite
+siguió en verde: era código muerto, porque el anclaje a posición de comando ya
+silenciaba los tres casos que el test usaba. La forma que sí lo exige es el `&`
+final —no es separador de segmento— y está ahora en la suite. Retirado el
+anclaje cae el caso de `grep -rn pytest`; retirado el descuento cae el del `&`;
+ni una aserción más en ninguno de los dos.
+
 ## Por qué esta regla vive aquí
 
 Medido 2026-09-10T05:15:22: de las cinco reglas de THYROX, **ninguna** nombraba

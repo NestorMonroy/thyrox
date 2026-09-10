@@ -62,6 +62,7 @@ Detector = tuple[str, Callable[[dict], str | None]]
 DETECTOR_DIR = Path(__file__).resolve().parent
 DETECTOR_NAMES: tuple[str, ...] = (
     "detect_finding_layer",
+    "detect_foreground_long_command",
     "detect_prose_vocabulary",
     "detect_rst_validation",
 )
