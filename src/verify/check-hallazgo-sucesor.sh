@@ -3,22 +3,25 @@
 #
 # Un hallazgo que declara alcance abierto ("Lo que este hallazgo no cierra",
 # "queda abierto", "queda pendiente"…) debe nombrar su sucesor en el MISMO
-# archivo: una tarea (#NNN), una sub-iniciativa explícita, o un DESCONOCIDO
-# declarado con su condición de cierre.
+# archivo: la cita durable del store (`TASK-<CAPA>-NNNN`), una sub-iniciativa
+# explícita, o un DESCONOCIDO declarado con su condición de cierre.
 #
 # Sin sucesor, la sección abierta es deuda con buena redacción: se lee como
 # rigor y funciona como olvido.
 #
-#   bash .claude/scripts/gates/check-hallazgo-sucesor.sh           # reporte
-#   bash .claude/scripts/gates/check-hallazgo-sucesor.sh --quiet   # sólo el conteo
-#   bash .claude/scripts/gates/check-hallazgo-sucesor.sh --strict  # exit 1 si hay incumplidores
+# Uso:
+#   bash check-hallazgo-sucesor.sh                 # reporte
+#   bash check-hallazgo-sucesor.sh --quiet         # sólo el conteo
+#   bash check-hallazgo-sucesor.sh --strict        # exit 1 si hay incumplidores
+#   bash check-hallazgo-sucesor.sh --write-baseline  # congela la deuda de ordinal
 set -uo pipefail
 
-QUIET=false; STRICT=false
+QUIET=false; STRICT=false; ESCRIBIR=false
 for a in "$@"; do
     case "$a" in
-        --quiet)  QUIET=true ;;
-        --strict) STRICT=true ;;
+        --quiet)         QUIET=true ;;
+        --strict)        STRICT=true ;;
+        --write-baseline) ESCRIBIR=true ;;
     esac
 done
 
@@ -88,14 +91,33 @@ ABIERTO='Lo que est[eo].{0,40}cierra|queda[n]?.{0,12}abiert|queda[n]?.{0,12}pend
 # sujeto. Cinco hallazgos del corpus citaban SÓLO la forma durable y el gate
 # los contaba como incumplidores: era ciego justo a la cita mejor.
 #
-# Lo que **no** se hace todavía es RECHAZAR el `#NNN` a secas, que es la otra
-# mitad de #124. Medido antes de decidirlo: de los 1002 archivos con alcance
-# abierto, **985** no citan ninguna forma `TASK-`. Un gate que los marcara no
-# publicaría deuda: publicaría el corpus entero, y un baseline de 985 sobre
-# 1002 no es un baseline. La exigencia queda bloqueada por #113 (llevar los
-# ordinales vivos a su cita durable); hasta entonces las dos formas valen y la
-# durable es la preferida. Ver H-DOCS-1068.
-SUCESOR='#[0-9]+|T-[0-9]{3}|TASK-[A-Z]+-[0-9]{4}|sub-iniciativa|DESCONOCIDO'
+# NOVENO cambio, 2026-09-10 (cierra #113/#124): el `#NNN` a secas DEJA de
+# aceptarse como sucesor nuevo. Medido en ese momento con `git log --all` sobre
+# el board del cliente: 332 de 337 ordinales de la sesión anterior colisionan
+# con los de ésta —se reinician y renumeran por sesión— y ninguno de los 81
+# hallazgos vivos conservó el `task_id` que el store llegó a registrar. Un
+# `#NNN` en un archivo YA nombra otro sujeto: es un puntero caduco, no una cita.
+#
+# El bloqueo de arriba ("un baseline de 985 sobre 1002 no es un baseline") era
+# sobre BARRER el corpus en un solo pase. No aplica a CONGELARLO: la deuda
+# heredada de citar sólo el ordinal se practica en
+# `.claude/baselines/hallazgo_sucesor_baseline.txt` del repo consumidor —un
+# archivo listado no bloquea, uno nuevo sí (mismo criterio prospectivo que
+# `identificadores-en-ingles.md` y el resto de baselines del árbol). El
+# universo se separa en dos patrones porque tienen destino distinto: el
+# durable nunca necesita baseline; el ordinal sólo pasa si su archivo ya
+# estaba congelado.
+SUCESOR_DURABLE='TASK-[A-Z]+-[0-9]{4}|sub-iniciativa|DESCONOCIDO'
+SUCESOR_ORDINAL='#[0-9]+|T-[0-9]{3}'
+BASELINE=".claude/baselines/hallazgo_sucesor_baseline.txt"
+
+# ¿Está esta ruta en el baseline (deuda de ordinal ya congelada)? Ausencia del
+# archivo de baseline = conjunto vacío, no error — mismo criterio que
+# `check_hallazgo_submodulo.py::leer_baseline()`.
+en_baseline() {
+    [[ -f "$BASELINE" ]] || return 1
+    grep -qxF "$1" "$BASELINE"
+}
 # La sección canónica se escribe SIEMPRE, también cuando no queda nada abierto:
 # "**Lo que este hallazgo no cierra:** nada del alcance declarado". Esa línea es
 # un CIERRE, no una apertura — y el gate la contaba como apertura, así que exigía
@@ -173,9 +195,39 @@ universo() {
     return 0
 }
 
+# --write-baseline congela, de una vez, TODO archivo del universo que hoy sólo
+# cita la forma caduca (ordinal, sin durable) — igual que
+# `check_hallazgo_submodulo.py`: escribe el conjunto entero, no sólo lo nuevo.
+if $ESCRIBIR; then
+    CANDIDATOS=()
+    while IFS= read -r f; do
+        grep -qE "$SUCESOR_DURABLE" "$f" && continue
+        grep -qE "$SUCESOR_ORDINAL" "$f" && CANDIDATOS+=("$f")
+    done < <( universo | sort -u )
+    {
+        echo "# Deuda heredada de check-hallazgo-sucesor.sh — congelada, no barrida."
+        echo "# Cada ruta cita sólo el ordinal (#NNN / T-NNN) como sucesor — caduco"
+        echo "# frente al board de otra sesión, que reinicia y reasigna sus números."
+        echo "# Una ruta listada no bloquea; una nueva SÍ. Al subir la cita a la forma"
+        echo "# durable (TASK-<CAPA>-NNNN), quitar su línea: si no, el baseline miente"
+        echo "# sobre deuda que ya no existe."
+        printf '%s\n' "${CANDIDATOS[@]}" | sort -u
+    } > "$BASELINE"
+    echo "check-hallazgo-sucesor: baseline escrito — ${#CANDIDATOS[@]} ruta(s) en $BASELINE"
+    exit 0
+fi
+
 INCUMPLE=()
+CONGELADOS=0
 while IFS= read -r f; do
-    grep -qE "$SUCESOR" "$f" || INCUMPLE+=("$f")
+    if grep -qE "$SUCESOR_DURABLE" "$f"; then
+        continue
+    fi
+    if grep -qE "$SUCESOR_ORDINAL" "$f" && en_baseline "$f"; then
+        CONGELADOS=$((CONGELADOS+1))
+        continue
+    fi
+    INCUMPLE+=("$f")
 done < <( universo | sort -u )
 
 N=${#INCUMPLE[@]}
@@ -187,22 +239,28 @@ if $QUIET; then
 else
     if [[ "$N" -eq 0 ]]; then
         echo "check-hallazgo-sucesor: OK — todo hallazgo con alcance abierto nombra su sucesor."
-        echo "  (alcance medido: $VISTOS de $TOTAL archivos de hallazgo declaran apertura)"
+        echo "  (alcance medido: $VISTOS de $TOTAL archivos de hallazgo declaran apertura;" \
+             "$CONGELADOS con ordinal congelado en baseline)"
     else
         echo "check-hallazgo-sucesor: $N hallazgo(s) declaran alcance abierto SIN sucesor:"
         printf '  %s\n' "${INCUMPLE[@]}"
         # El denominador se publica también aquí, y no sólo en la rama verde:
         # un conteo sin universo no es un resultado, y es JUSTO cuando hay
         # incumplidores cuando alguien necesita saber sobre cuántos se midió.
-        echo "  (alcance medido: $VISTOS de $TOTAL archivos de hallazgo declaran apertura)"
+        echo "  (alcance medido: $VISTOS de $TOTAL archivos de hallazgo declaran apertura;" \
+             "$CONGELADOS con ordinal congelado en baseline)"
         echo ""
         echo "Cada uno necesita una de las tres salidas de hallazgo-abierto-genera-sucesor.md:"
-        echo "  1. una tarea registrada, con su ID citado en el propio hallazgo;"
+        echo "  1. la cita durable del store, TASK-<CAPA>-NNNN — el ordinal #NNN a secas"
+        echo "     YA NO cuenta como sucesor nuevo (se reinicia y reasigna por sesión);"
         echo "  2. una sub-iniciativa explícita (Clausula 4 del principio rector);"
         echo "  3. un DESCONOCIDO declarado con su condición de cierre."
         echo ""
         echo "NO rellenar la sección para desbloquear el gate: si el hueco es real,"
         echo "el arreglo es registrar el sucesor, no borrar la declaración."
+        echo "Si el sucesor real ES el ordinal heredado de antes de 2026-09-10, congelarlo"
+        echo "con --write-baseline no basta por sí solo — confirmar que la línea aterrizó"
+        echo "en $BASELINE antes de reportar el gate en verde."
     fi
 fi
 

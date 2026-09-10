@@ -29,6 +29,16 @@ Con un ``awk`` que revienta —el octavo defecto: mawk 1.3.4 ante un cuantificad
 de intervalo seguido de grupo— el gate NO puede salir 0. Tiene que rehusar con
 exit 2 y sin cifra: un patron que no compila deja el conteo en 0 y ese 0 se lee
 como salud. El doble reproduce la conducta real (mensaje a stderr, exit 100).
+
+Los casos 10-11 son el noveno cambio (2026-09-10): el ordinal ``#NNN`` DEJA de
+aceptarse como sucesor nuevo. ``ORDINAL_REAL`` es H-API-1030, un hallazgo real
+del arbol que cita SOLO ``#308``/``#309`` — nunca fue fabricado para probar el
+patron, asi que no hereda su encuadre. El caso 10 monta su contenido SIN
+cobertura de baseline y el gate tiene que marcarlo (era exactamente lo que
+aceptaba antes de este cambio); el caso 11 monta el MISMO contenido CON su ruta
+en un baseline sintetico y el gate tiene que dejarlo pasar — la deuda heredada
+se congela, no se barre. Sin el 11, el 10 no discrimina: podria estar marcando
+por otra razon.
 """
 from __future__ import annotations
 
@@ -65,13 +75,18 @@ CIERRE_REAL = (DOCS / "source/gestion/pm/docs/iniciativas"
 CITA_DURABLE = (DOCS / "source/gestion/pm/docs/iniciativas"
                 / "construir-harness-propio/hallazgos"
                 / "hallazgo-H-DOCS-1061-pushe-al-mismo-repo-y-el-amend-del-agente-reescribio-mi-commit.rst")
+# Cita SOLO el ordinal (#308/#309) — cero TASK-/sub-iniciativa/DESCONOCIDO.
+# Es el control REAL de los casos 10-11: nadie lo fabrico para el gate.
+ORDINAL_REAL = (DOCS / "source/gestion/pm/api/iniciativas"
+                / "adaptar-familias-odoo-monolito-modular/hallazgos"
+                / "hallazgo-H-API-1030-la-premisa-se-media-desde-el-repo-de-al-lado.rst")
 
 if not GATE.is_file():
     print(f"REHUSA — el gate no esta en {GATE}. No se emite conteo: un 0 aqui "
           f"no distinguiria «sin incumplidores» de «no medi nada».")
     raise SystemExit(2)
 
-for fuente in (CIERRE_REAL, CITA_DURABLE):
+for fuente in (CIERRE_REAL, CITA_DURABLE, ORDINAL_REAL):
     if not fuente.is_file():
         print(f"REHUSA — el control positivo real no esta en {fuente}.\n"
               f"Es evidencia del consumidor, resuelta por `paths.reach`. Sin ella "
@@ -83,13 +98,25 @@ CABECERA = (".. meta::\n   :estado: {estado}\n\n"
             "H-DOCS-1 — caso\n===============\n\n- **Estado:** {visible}\n\n")
 
 
-def montar(cuerpo: str) -> Path:
-    """Un arbol sintetico con UN hallazgo. El gate opera desde la raiz git."""
+def montar(cuerpo: str, *, baseline: bool = False) -> Path:
+    """Un arbol sintetico con UN hallazgo. El gate opera desde la raiz git.
+
+    ``baseline=True`` escribe la ruta del propio hallazgo montado en
+    ``.claude/baselines/hallazgo_sucesor_baseline.txt`` del arbol sintetico —
+    simula la deuda YA congelada, sin depender del baseline real del
+    consumidor (que crece y cuyo contenido no es parte de este control).
+    """
     d = Path(tempfile.mkdtemp(prefix="sucesor-"))
+    ruta_relativa = "source/gestion/pm/docs/iniciativas/x/hallazgos/hallazgo-H-DOCS-1-caso.rst"
     destino = d / "source/gestion/pm/docs/iniciativas/x/hallazgos"
     destino.mkdir(parents=True)
     (destino / "hallazgo-H-DOCS-1-caso.rst").write_text(cuerpo, encoding="utf-8")
     subprocess.run(["git", "-C", str(d), "init", "-q"], check=True)
+    if baseline:
+        base_dir = d / ".claude/baselines"
+        base_dir.mkdir(parents=True)
+        (base_dir / "hallazgo_sucesor_baseline.txt").write_text(
+            f"# baseline sintetico de prueba\n{ruta_relativa}\n", encoding="utf-8")
     return d
 
 
@@ -118,11 +145,11 @@ d = montar(CABECERA.format(estado="resuelto", visible="RESUELTO")
 check("apertura real sin sucesor SI se marca", "1", conteo(d))
 shutil.rmtree(d)
 
-print("== 3. la misma apertura, con sucesor citado ==")
+print("== 3. la misma apertura, con SOLO el ordinal (noveno cambio: ya no basta) ==")
 d = montar(CABECERA.format(estado="resuelto", visible="RESUELTO")
            + "Lo que este hallazgo no cierra\n-------------------------------\n\n"
              "El barrido del resto del arbol queda pendiente. Sucesor: tarea **#910**.")
-check("apertura con #NNN no se marca", "0", conteo(d))
+check("apertura con SOLO #NNN, sin baseline, SI se marca", "1", conteo(d))
 shutil.rmtree(d)
 
 print("== 4. la forma inline que el sexto arreglo introdujo ==")
@@ -172,6 +199,22 @@ check("y NO emite cifra alguna", "", salida)
 check("y con el awk sano el MISMO arbol da 0 — el control DISCRIMINA", "0", conteo(d))
 shutil.rmtree(d)
 shutil.rmtree(stub)
+
+print("== 10. CONTROL POSITIVO REAL, SIN baseline: el ordinal solo YA falla ==")
+# H-API-1030 cita SOLO #308/#309 — ni TASK-, ni sub-iniciativa, ni DESCONOCIDO.
+# Confirmado antes de montarlo: si esto diera >0, el caso no probaria nada.
+contenido_ordinal = ORDINAL_REAL.read_text(encoding="utf-8")
+check("el control positivo NO cita ninguna forma durable", 0,
+      len(re.findall(r"TASK-[A-Z]+-[0-9]{4}|sub-iniciativa|DESCONOCIDO", contenido_ordinal)))
+d = montar(contenido_ordinal)
+check("hallazgo real con SOLO ordinal, sin baseline, SI se marca", "1", conteo(d))
+shutil.rmtree(d)
+
+print("== 11. MISMO contenido, CON su ruta en un baseline sintetico: pasa ==")
+# La deuda heredada se congela — no exige reescribir el hallazgo real.
+d = montar(contenido_ordinal, baseline=True)
+check("el mismo hallazgo, con su ruta baseline, NO se marca", "0", conteo(d))
+shutil.rmtree(d)
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
