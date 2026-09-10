@@ -67,7 +67,11 @@ import sys
 # fallo del guion cuando sólo es el lector que cerró.
 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+# `reach_roots` vive en `src/paths`, no aquí: la mudanza a thyrox lo movió y
+# este `insert` se quedó apuntando al propio directorio del hook. Sus cuatro
+# hermanos ya resuelven por `parents[1]` — `closure_graph.py` con esta misma
+# forma, porque importa el módulo por su nombre desnudo.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "paths"))
 import reach_roots  # noqa: E402
 
 LAUNCHERS = ("python3", "python", "node", "bash", "sh", "bun run", "bun")
