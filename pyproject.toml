@@ -1,0 +1,58 @@
+# THYROX declara aqui su mitad PYTHON, y solo esa.
+#
+# Este arbol no es de una lengua: `package.json` declara la mitad TypeScript
+# con bun, los `.sh` de `src/session` y `src/verify` no llevan manifiesto
+# —shell no tiene uno— y este archivo declara la mitad Python. Los tres
+# conviven a proposito; la posicion del ejecutor es que se dejan todos.
+#
+# Por que existe
+# --------------
+# THYROX es el PROVEEDOR y los cinco `kaupamex-*` son sus consumidores. Hasta
+# hoy su mitad Python no declaraba nada, y la consecuencia estaba medida: el
+# lexico abierto que el gate de idioma consume —`spacy-lookups-data`— vivia en
+# el interprete del SISTEMA y en ningun manifiesto, asi que el veredicto del
+# gate dependia de QUIEN lo invocaba. Medido sobre el mismo arbol, el mismo
+# baseline y los mismos 2587 archivos:
+#
+#   python3      (3.11.15, con lexico)  -> exit 1, «FAIL — 2994 fuera del baseline»
+#   uv run python (3.12.3, sin lexico)  -> exit 0, «OK: identificadores en ingles»
+#
+# El evento de medicion, con su instrumento y sus salidas:
+# `api: scripts/workbench/identifier-gate-interpreter-verdict-20260910T192542`.
+#
+# El hallazgo que lo predijo es de #183 (toolchains): su asercion
+# `test_thyrox_confines_typescript_and_not_python` esta escrita para CAER el
+# dia que esta mitad declare su toolchain. Ese dia es hoy.
+
+[project]
+name = "thyrox"
+
+# El arbol no se versiona: `package.json` no declara `version`. Se pone 0.0.0
+# en vez de inventar una — un numero fabricado aqui se leeria como release.
+version = "0.0.0"
+description = "Mitad Python del proveedor de metodologia THYROX: gates, sesion, tareas y banco de trabajo."
+requires-python = ">=3.11,<3.15"
+
+# Derivadas del arbol, no elegidas: son los unicos imports de terceros que
+# `src/**/*.py` declara, medidos por AST sobre los modulos que no son de la
+# biblioteca estandar ni locales.
+#
+#   docutils            (4 sitios)  parseo de RST
+#   sphinx              (3 sitios)  parseo de RST
+#   spacy-lookups-data  (3 sitios)  el corpus abierto es/en, 1 000 001 formas
+#
+# El rango de `requires-python` es el mas ancho que la mitad Python ejerce hoy
+# —corre medida en 3.11.15 y en 3.12.3— y contiene los dos rangos de los
+# consumidores: api `>=3.12,<3.15` y docs `>=3.11,<3.14`. Un proveedor que
+# declarase mas estrecho excluiria a un consumidor sin razon medida.
+dependencies = [
+    "docutils",
+    "sphinx",
+    "spacy-lookups-data",
+]
+
+[tool.uv]
+# No es una rueda: sus modulos se invocan por ruta (`python3 src/verify/...`) y
+# por `PYTHONPATH=src`, igual que en `kaupamex-api`. Sin esto uv intentaria
+# construir un paquete que nadie instala.
+package = false
