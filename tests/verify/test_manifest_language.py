@@ -79,72 +79,88 @@ if subject is None:
     print(f'  OMITIDO — el sujeto no es alcanzable: {repo}:{bank}/manifest.json')
 else:
     data = json.loads(subject.read_text())
-    rutas = {ruta for _, ruta in gate.manifest_keys(data)}
-    check('la clave anidada entra al universo', f'{outer}.{inner}' in rutas, True)
-    hits = [ruta for clave, ruta in gate.manifest_keys(data)
-            if gate.spanish_words_in(clave)]
+    paths = {dotted for _, dotted in gate.manifest_keys(data)}
+    check('la clave anidada entra al universo', f'{outer}.{inner}' in paths, True)
+    hits = [dotted for key, dotted in gate.manifest_keys(data)
+            if gate.spanish_words_in(key)]
     check('y se marca como espanol', f'{outer}.{inner}' in hits, True)
 
 print('=== Caso 3: el filtro descarta lo que no puede ser un nombre ===')
 # `anulacion-a.txt` sale del corpus real: es un nombre de ARCHIVO usado como
 # clave. Medirlo haria que el veredicto hablara de otra poblacion.
-DATOS = {'anulacion-a.txt': 1, 'nombre_del_archivo': 2, 'question': 3,
-         'mailboxHelpers (formatTeammateMessages)': 4}
-vistas = {clave for clave, _ in gate.manifest_keys(DATOS)}
-check('NO ve el nombre de archivo', 'anulacion-a.txt' in vistas, False)
+# El sujeto va como TEXTO JSON y no como literal de dict: el gate de
+# identificadores YA ve una clave de dict (:ref:`h-docs-1253`), asi que un
+# control cuyo sujeto es una clave espanola se marcaria a si mismo. Mismo
+# idioma que `DICT_SOURCE` en `test_identifier_language.py`.
+SAMPLE_JSON = ('{"anulacion-a.txt": 1, "nombre_del_archivo": 2, '
+               '"question": 3, "mailboxHelpers (formatTeammateMessages)": 4}')
+seen = {key for key, _ in gate.manifest_keys(json.loads(SAMPLE_JSON))}
+check('NO ve el nombre de archivo', 'anulacion-a.txt' in seen, False)
 check('NO ve la frase con parentesis',
-      'mailboxHelpers (formatTeammateMessages)' in vistas, False)
-check('SI ve la clave espanola', 'nombre_del_archivo' in vistas, True)
+      'mailboxHelpers (formatTeammateMessages)' in seen, False)
+check('SI ve la clave espanola', 'nombre_del_archivo' in seen, True)
 check('SI ve la clave inglesa (no filtra por idioma aqui)',
-      'question' in vistas, True)
+      'question' in seen, True)
 
 print('=== Caso 4: las cinco claves obligatorias son inglesas ===')
 from workbench.manifest import REQUIRED_KEYS  # noqa: E402
-sucias = [k for k in REQUIRED_KEYS if gate.spanish_words_in(k)]
-check('ninguna de las obligatorias cae', sucias, [])
+dirty = [k for k in REQUIRED_KEYS if gate.spanish_words_in(k)]
+check('ninguna de las obligatorias cae', dirty, [])
 
 print('=== Caso 5: el gate mide manifiestos de verdad (control positivo) ===')
 # Un descuento demasiado ancho tambien daria cero incumplidores. Sin este caso,
 # «0» no distingue «no hay deuda» de «no mire nada» — sub-patron D.
 try:
-    consumidor = clone_root('docs')
+    consumer = clone_root('docs')
 except Exception:
-    consumidor = None
-if consumidor is None:
+    consumer = None
+if consumer is None:
     print('  OMITIDO — el consumidor docs no es alcanzable')
 else:
     # CRUDO, sin el baseline del consumidor: si el control leyera el baseline
     # pasaria a rojo en cuanto el consumidor congela su deuda — mediria su
     # parametro, no el mecanismo. Ocurrio al congelar las 100 claves de docs.
-    crudos, total = gate.scan(consumidor, frozen=set())
+    raw, total = gate.scan(consumer, frozen=set())
     check('el universo no esta vacio', total > 0, True)
-    check('y encuentra las claves espanolas del banco', len(crudos) > 0, True)
+    check('y encuentra las claves espanolas del banco', len(raw) > 0, True)
     # Y con el baseline puesto, la deuda congelada NO bloquea: los dos lados
     # del mismo mecanismo, medidos por separado.
-    congelados, _ = gate.scan(consumidor)
-    check('lo congelado no vuelve a reportarse', len(congelados) < len(crudos), True)
+    frozen_hits, _ = gate.scan(consumer)
+    check('lo congelado no vuelve a reportarse', len(frozen_hits) < len(raw), True)
+
+#: El manifiesto sintetico de los casos 6 y 8: las cinco claves obligatorias en
+#: ingles y UNA espanola, que es el sujeto. Va como TEXTO por la misma razon que
+#: `SAMPLE_JSON` — un literal de dict aqui haria que el control se marcara a si
+#: mismo ante el gate de identificadores.
+SYNTHETIC_MANIFEST = ('{"question": "x", "instrument": "y", "metric": "z", '
+                      '"blind_to": "w", "destination": "v", "tarea": "espanol"}')
+SYNTHETIC_ENTRY = 'sonda-20260101T000000/manifest.json::tarea'
+
+
+def plant_bank(tmp):
+    """Siembra el banco sintetico y devuelve (raiz, archivo de baseline, env)."""
+    tree = Path(tmp)
+    bank = tree / '.claude' / 'workbench' / 'sonda-20260101T000000'
+    bank.mkdir(parents=True)
+    (bank / 'manifest.json').write_text(SYNTHETIC_MANIFEST)
+    frozen_file = tree / 'baseline.txt'
+    env = dict(os.environ, MANIFEST_LANGUAGE_BASELINE=str(frozen_file),
+               THYROX_WORKBENCH_DIR=str(bank.parent))
+    return tree, frozen_file, env
+
 
 print('=== Caso 6: una entrada del baseline no bloquea; una nueva si ===')
 with tempfile.TemporaryDirectory() as tmp:
-    arbol = Path(tmp)
-    banco = arbol / '.claude' / 'workbench' / 'sonda-20260101T000000'
-    banco.mkdir(parents=True)
-    (banco / 'manifest.json').write_text(json.dumps(
-        {'question': 'x', 'instrument': 'y', 'metric': 'z',
-         'blind_to': 'w', 'destination': 'v', 'tarea': 'espanol'}))
-    linea = 'sonda-20260101T000000/manifest.json::tarea'
-    baseline = arbol / 'baseline.txt'
+    tree, frozen_file, env = plant_bank(tmp)
 
-    baseline.write_text('')
-    env = dict(os.environ, MANIFEST_LANGUAGE_BASELINE=str(baseline),
-               THYROX_WORKBENCH_DIR=str(arbol / '.claude' / 'workbench'))
-    done = subprocess.run([sys.executable, str(GATE), '--strict', str(arbol)],
+    frozen_file.write_text('')
+    done = subprocess.run([sys.executable, str(GATE), '--strict', str(tree)],
                           capture_output=True, text=True, env=env)
     check('sin baseline la clave nueva bloquea', done.returncode, 1)
     check('y la nombra', 'tarea' in done.stdout + done.stderr, True)
 
-    baseline.write_text(linea + '\n')
-    done = subprocess.run([sys.executable, str(GATE), '--strict', str(arbol)],
+    frozen_file.write_text(SYNTHETIC_ENTRY + '\n')
+    done = subprocess.run([sys.executable, str(GATE), '--strict', str(tree)],
                           capture_output=True, text=True, env=env)
     check('congelada, no bloquea', done.returncode, 0)
 
@@ -155,9 +171,9 @@ Path(BLIND, 'spacy_lookups_data', '__init__.py').write_text('')
 done = subprocess.run([sys.executable, str(GATE), str(ROOT)],
                       capture_output=True, text=True,
                       env=dict(os.environ, PYTHONPATH=BLIND))
-salida = done.stdout + done.stderr
+output = done.stdout + done.stderr
 check('rehusa con 2', done.returncode, 2)
-check('NO publica un conteo de manifiestos', 'manifiesto(s) medido' in salida, False)
+check('NO publica un conteo de manifiestos', 'manifiesto(s) medido' in output, False)
 
 print('=== Caso 8 (EL DISCRIMINANTE DEL CONGELADO): re-congelar no destruye ===')
 # Congelar dos veces sobre el mismo arbol tiene que dar el mismo conteo. Si el
@@ -166,15 +182,7 @@ print('=== Caso 8 (EL DISCRIMINANTE DEL CONGELADO): re-congelar no destruye ==='
 # desaparece del baseline y reaparece como NUEVA en el siguiente `--strict`.
 # El caso 6 no lo ejercita: congela una sola vez.
 with tempfile.TemporaryDirectory() as tmp:
-    tree = Path(tmp)
-    bank = tree / '.claude' / 'workbench' / 'sonda-20260101T000000'
-    bank.mkdir(parents=True)
-    (bank / 'manifest.json').write_text(json.dumps(
-        {'question': 'x', 'instrument': 'y', 'metric': 'z',
-         'blind_to': 'w', 'destination': 'v', 'tarea': 'espanol'}))
-    frozen_file = tree / 'baseline.txt'
-    env = dict(os.environ, MANIFEST_LANGUAGE_BASELINE=str(frozen_file),
-               THYROX_WORKBENCH_DIR=str(tree / '.claude' / 'workbench'))
+    tree, frozen_file, env = plant_bank(tmp)
 
     def freeze():
         subprocess.run([sys.executable, str(GATE), '--write-baseline', str(tree)],
@@ -183,7 +191,7 @@ with tempfile.TemporaryDirectory() as tmp:
                 if n.strip() and not n.startswith('#')]
 
     first = freeze()
-    check('la primera congela la deuda', first, ['sonda-20260101T000000/manifest.json::tarea'])
+    check('la primera congela la deuda', first, [SYNTHETIC_ENTRY])
     check('la segunda NO la destruye', freeze(), first)
 
     done = subprocess.run([sys.executable, str(GATE), '--strict', str(tree)],

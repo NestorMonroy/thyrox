@@ -60,9 +60,9 @@ def manifest_homes(root: pathlib.Path) -> list[pathlib.Path]:
     es el defecto que :ref:`h-docs-1251` cerro en el gate hermano.
     """
     homes: list[pathlib.Path] = []
-    for resolver in (workbench_dir, jobs_dir):
+    for finder in (workbench_dir, jobs_dir):
         try:
-            home = resolver(root)
+            home = finder(root)
         except Exception:
             continue
         if home.is_dir() and home not in homes:
@@ -83,10 +83,10 @@ def manifest_keys(data, path: tuple[str, ...] = ()):
     """
     if isinstance(data, dict):
         for key, value in data.items():
-            ruta = path + (key,)
+            full_path = path + (key,)
             if isinstance(key, str) and key.isidentifier():
-                yield key, ".".join(ruta)
-            yield from manifest_keys(value, ruta)
+                yield key, ".".join(full_path)
+            yield from manifest_keys(value, full_path)
     elif isinstance(data, list):
         for index, value in enumerate(data):
             yield from manifest_keys(value, path + (f"[{index}]",))
