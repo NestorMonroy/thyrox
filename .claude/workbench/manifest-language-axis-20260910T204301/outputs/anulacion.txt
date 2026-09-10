@@ -1,0 +1,13 @@
+# Anulacion: cada arreglo se retira y caen EXACTAMENTE sus aserciones.
+# Medido 2026-09-10T20:47:59
+
+sin recursion (solo el primer nivel) -> 2 fallos
+    FALLO la clave anidada entra al universo
+    FALLO y se marca como espanol
+
+sin el filtro isidentifier -> 2 fallos
+    FALLO NO ve el nombre de archivo
+    FALLO NO ve la frase con parentesis
+
+sin honrar el rehuse del lexico -> 1 fallo
+    FALLO rehusa con 2
