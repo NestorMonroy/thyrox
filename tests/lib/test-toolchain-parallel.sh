@@ -105,10 +105,26 @@ rm -rf "$CASA"
 # ningun clon. thyrox es el proveedor, asi que su estado vive bajo el hogar
 # que `THYROX_STATE_DIR` ya declara — no se inventa raiz nueva.
 hogar="$(THYROX_TOOLCHAIN_PARALLEL_BIN=sh thyrox_toolchain_parallel_home 2>/dev/null || echo '')"
-if [[ "$hogar" == "$ROOT/"* ]]; then
-  ok "el hogar de la cita esta dentro del proveedor"
+if [[ "$hogar" == "$ROOT/.parallel" ]]; then
+  ok "el hogar de la cita es hermano de .venv, no de las reglas"
 else
-  bad "el hogar deberia colgar de $ROOT, dio '$hogar'"
+  bad "el hogar deberia ser $ROOT/.parallel, dio '$hogar'"
+fi
+
+# Caso 8-bis — EL CRITERIO, no la eleccion. `.claude/` de thyrox es gobierno y
+# evidencia VERSIONADA: medido, 9 de sus 10 subdirectorios llevan archivos en
+# git y ninguno esta ignorado. El estado que escribe una herramienta de
+# terceros tiene su clase en la RAIZ y gitignored — .venv, node_modules,
+# .pytest_cache. Un subdirectorio ignorado dentro de `.claude/` es la anomalia
+# que este caso rechaza, venga de donde venga.
+intrusos=""
+for d in "$ROOT"/.claude/*/; do
+  git -C "$ROOT" check-ignore -q "$d" && intrusos="$intrusos ${d#$ROOT/}"
+done
+if [[ -z "$intrusos" ]]; then
+  ok "ningun subdirectorio ignorado dentro de .claude/"
+else
+  bad "estado de herramienta dentro del arbol versionado:$intrusos"
 fi
 if [[ -n "$hogar" && "$hogar" != *"/tmp/"* && "$hogar" != "$HOME/.parallel" ]]; then
   ok "el hogar no es /tmp ni el del contenedor"

@@ -142,28 +142,35 @@ THYROX_TOOLCHAIN_PARALLEL_BIN="${THYROX_TOOLCHAIN_PARALLEL_BIN:-parallel}"
 # binario y no leyendo el codigo de salida del instalador.
 THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD="${THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD:-sudo apt-get install -y parallel}"
 
-# @description El hogar de estado de GNU parallel. Se compone del hogar de
-# estado que el proveedor YA declara (`THYROX_STATE_DIR`, por defecto
-# `.claude`), no de una raiz nueva: una segunda raiz seria la segunda fuente de
-# verdad que `calibration-verified-numbers.md` prohibe para una cifra y vale
-# igual para una ruta.
+# @description El hogar de estado de GNU parallel: hermano de `.venv`, en la
+# RAIZ del proveedor.
 #
-# El default de parallel es `$HOME/.parallel`, que es estado del CONTENEDOR:
-# se pierde al reciclarlo y no lo ve ningun clon. thyrox es el proveedor y su
-# estado vive en su arbol. `PARALLEL_HOME` declarado gana, por la misma razon
-# que `THYROX_ROOT` gana sobre el localizador: quien lo exporta para UNA
-# invocacion esta corrigiendo a proposito lo que el arbol dice para todas.
+# El default de parallel es `$HOME/.parallel`, que es estado del CONTENEDOR —
+# se pierde al reciclarlo y no lo ve ningun clon. Pero `.claude/` tampoco es
+# su sitio, y esto se midio en vez de suponerse: de sus diez subdirectorios,
+# NUEVE llevan archivos versionados (332 skills, 415 de workbench, 27
+# comandos, 6 reglas) y ninguno esta ignorado. `.claude/` es gobierno y
+# evidencia, no estado efimero, y lo que ahi vive lo escribe LA SESION.
+#
+# El estado que escribe una HERRAMIENTA DE TERCEROS ya tiene su clase en este
+# arbol, y esta en la raiz y gitignored: `.venv` lo escribe uv, `node_modules`
+# lo escribe npm, `.pytest_cache` lo escribe pytest. El marcador de cita lo
+# escribe parallel una vez, jamas la sesion: es de esa clase. Su nombre es
+# ademas el que el propio parallel usa, solo que enraizado en el proveedor en
+# vez de en el contenedor.
+#
+# `PARALLEL_HOME` declarado gana, por la misma razon que `THYROX_ROOT` gana
+# sobre el localizador: quien lo exporta para UNA invocacion esta corrigiendo
+# a proposito lo que el arbol dice para todas.
 # @noargs
 # @stdout La ruta absoluta del hogar de estado de parallel.
 function thyrox_toolchain_parallel_home() {
   if [[ -n "${PARALLEL_HOME:-}" ]]; then
     printf '%s' "$PARALLEL_HOME"; return 0
   fi
-  local root state
+  local root
   root="$(thyrox_toolchain_provider_root)" || return 2
-  state="${THYROX_STATE_DIR:-.claude}"
-  [[ "$state" == /* ]] && { printf '%s/parallel' "$state"; return 0; }
-  printf '%s/%s/parallel' "$root" "$state"
+  printf '%s/.parallel' "$root"
 }
 export -f thyrox_toolchain_parallel_home
 
