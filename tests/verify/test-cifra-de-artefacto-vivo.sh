@@ -85,12 +85,34 @@ afirmar "el reporte declara el alcance medido" "1" \
 
 # ---------------------------------------------------------------- caso 7
 # --strict en los dos sentidos.
-printf -- '- 14 aserciones en la suite\n' > "$A/source/tres.rst"
+# El incumplidor NO esta fabricado: es la linea 110 de
+# `hallazgo-H-DOCS-137-el-registro-de-tareas-dependia-de-dos-posicionales.rst`,
+# verbatim. Un incumplidor escrito por quien escribio el patron hereda su
+# encuadre y confirma el instrumento — `hallazgo-abierto-genera-sucesor.md`.
+printf -- '``docs: .claude/scripts/tests/test-snapshot-tasks.sh`` — 8 casos, 12 aserciones,\n' \
+    > "$A/source/tres.rst"
 python3 "$GATE" --strict --quiet --no-baseline "$A" >/dev/null 2>&1
 afirmar "--strict sale 1 con un incumplidor" "1" "$?"
 rm "$A/source/tres.rst"
 python3 "$GATE" --strict --quiet --no-baseline "$A" >/dev/null 2>&1
 afirmar "--strict sale 0 sin incumplidores" "0" "$?"
+
+# ---------------------------------------------------------------- caso 7-bis
+# EL QUE DISCRIMINA. La misma palabra `aserciones` en la forma que la regla
+# declara VALIDA —evidencia fechada de un episodio— tiene que pasar sin marcar.
+#
+# Es el control de anulacion del positivo estrecho: si se ensancha el patron de
+# vuelta a `\b\d+ aserciones?\b`, esta asercion cae y NINGUNA otra. Sin ella el
+# verde de la suite no distingue «el gate separa los dos usos» de «el gate marca
+# todo lo que diga aserciones», que es el sub-patron D.
+#
+# Tampoco esta fabricado: es la linea 15 de
+# `error-ERR-064-sobreescribi-un-archivo-de-test-existente-sin-leerlo.rst`.
+printf -- '- **Episodios en la sesión:** 1, y borró **5 aserciones** ajenas\n' \
+    > "$A/source/cuatro.rst"
+python3 "$GATE" --strict --quiet --no-baseline "$A" >/dev/null 2>&1
+afirmar "NO marca la evidencia fechada de un episodio (discriminador)" "0" "$?"
+rm "$A/source/cuatro.rst"
 
 # ---------------------------------------------------------------- caso 8
 # El corpus REAL, que es el del CONSUMIDOR: el gate barre `.claude/rules`,

@@ -27,6 +27,21 @@ detecta el ordinal **citado junto a su script**, que sí desambigua.
 
 La otra mitad del grifo no es este gate: es que el productor no numere. Un
 ``thyrox-audit.sh`` sin ordinales en sus comentarios no da nada que citar.
+
+La cifra cuyo ARTEFACTO vive en la linea anterior tampoco se detecta, y es la
+contrapartida declarada del positivo estrecho de ``aserciones``. Medido sobre
+las 28 lineas que el patron ancho publicaba: de las 15 que eran propiedad de un
+artefacto vivo, el estrecho ve **13**; las 2 que se le escapan
+—``mas **14 aserciones** del instrumento`` y ``Las 18 aserciones de contenido``—
+nombran su artefacto un renglon mas arriba, y un instrumento por linea no puede
+verlo. A cambio, de las 13 que eran evidencia fechada NO marca **ninguna**.
+
+*Metrica:* lineas donde un artefacto —literal en linea que termina en ``.sh``,
+``.py`` o contiene ``test``, o la palabra ``suite``— precede a la cifra con a lo
+sumo 40 caracteres de conector entre medias.
+*Ciega a:* el artefacto nombrado en otra linea (2 de 15 medidos), y a la cifra
+que es propiedad de un artefacto SIN nombrarlo en ningun sitio, que ningun
+instrumento sintactico puede separar de la evidencia fechada.
 """
 from __future__ import annotations
 
@@ -91,7 +106,24 @@ def baseline_path(raiz: pathlib.Path) -> pathlib.Path:
 PATRONES: list[tuple[str, re.Pattern[str], str]] = [
     (
         'aserciones',
-        re.compile(r'\b\d+ aserciones?\b'),
+        # POSITIVO ESTRECHO: el artefacto nombrado ANTES de la cifra, en la misma
+        # linea, con solo un conector entre medias. Es lo que distingue la
+        # PROPIEDAD de un artefacto vivo —«`test-x.sh` — 13 aserciones»— de la
+        # EVIDENCIA FECHADA de un episodio —«sin el guard caen exactamente 2
+        # aserciones»—, y `calibration-verified-numbers.md` declara la segunda
+        # VALIDA en su tabla de dos usos.
+        #
+        # El patron anterior era `\b\d+ aserciones?\b` a secas: media el
+        # SIGNIFICANTE y concluia sobre el SIGNIFICADO, que es el sub-patron C
+        # de `metrica-decide-la-conclusion.md` cometido por el gate que existe
+        # para hacer cumplir esa misma regla. Medido sobre las 28 lineas que
+        # publicaba: 13 eran evidencia fechada, o sea el 46 % de falsos
+        # positivos, y reescribirlas habria destruido evidencia valida.
+        re.compile(
+            r'(?:``[^`\n]*(?:\.sh|\.py|test[^`\n]*)``|\bsuite\b)'
+            r'\s*[—,:]?\s*[^`\n]{0,40}?\*{0,2}\d+\s+aserciones?\b',
+            re.I,
+        ),
         'la suite gana aserciones y la prosa no se entera; nombra el comando, '
         'que publica su conteo al correr',
     ),
