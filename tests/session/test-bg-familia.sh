@@ -48,10 +48,44 @@ BG_DIR="$plano" $BG start dos -- bash -c 'exit 3' >/dev/null; sleep 1
 _es "forma plana intacta" "$(BG_DIR="$plano" $BG status dos)" "done:3"
 _es "y su log es el plano de siempre" "$(basename "$(BG_DIR="$plano" $BG log dos)")" "dos.log"
 
-echo "== 5. CONTROL de anulacion del descuento: sin BG_DIR NO cae al plano =="
+echo "== 4-bis. CONTROL de anulacion del descuento: sin BG_DIR NO cae al plano =="
 _es "el hogar de la familia manda" \
    "$([[ -d "$THYROX_JOBS_DIR" ]] && echo si || echo no)" "si"
 
+
+echo "== 5. la democion: start no obliga a saber de antemano si es largo =="
+# La referencia (2.1.266) declara `ggo=120000` como default de
+# BASH_DEFAULT_TIMEOUT_MS y `hgo=600000` como maximo: el comando corre en
+# primer plano hasta la gracia y, si no termina, SIGUE y el control vuelve.
+# `bg.sh wait` tenia dos desenlaces (asentado / 124 a los 1800 s) y le faltaba
+# el tercero. Sin el, el llamador tiene que decidir ANTES si el comando es
+# largo — y esa decision es justo lo que no puede tomar.
+unset BG_DIR
+
+# 5a. corto: cabe en la gracia, se comporta como correr el comando directo
+salida="$($BG start corto --grace 10 -- bash -c 'exit 7')"; rc=$?
+_es "un trabajo corto devuelve SU codigo de salida" "$rc" "7"
+_es "un trabajo corto NO se anuncia como demotido" \
+    "$(grep -c 'SEGUNDO PLANO' <<<"$salida")" "0"
+
+# 5b. largo: excede la gracia, el control vuelve y el trabajo sigue vivo
+# `2>&1`: el aviso de democion va a stderr, igual que el de timeout de `wait` —
+# es un diagnostico sobre la llamada, no la salida del trabajo. Capturar ambos
+# NO debilita la asercion: antes del arreglo no habia mensaje en NINGUNO de los
+# dos flujos, asi que el caso discrimina igual.
+salida="$($BG start largo --grace 1 -- bash -c 'sleep 25; exit 0' 2>&1)"; rc=$?
+_es "un trabajo largo devuelve 125 (demotido), no el codigo del trabajo" "$rc" "125"
+_es "y lo dice, en vez de callarlo" \
+    "$([[ "$salida" == *"SEGUNDO PLANO"* ]] && echo si || echo no)" "si"
+_es "publica su RUN para poder recogerlo despues" \
+    "$([[ "$salida" == *"RUN="* ]] && echo si || echo no)" "si"
+_es "y el trabajo SIGUE VIVO: la democion no lo mata" \
+    "$($BG status largo)" "running"
+
+# 5c. el control de ANULACION del caso 5b: sin gracia declarada, el default.
+# La referencia lo fija en 120 s, no en los 1800 que `wait` traia.
+_es "el default de gracia es el de la referencia, no 1800" \
+    "$(sed -n 's/.*_GRACE_DEFAULT=\([0-9]*\).*/\1/p' "$BG" | head -1)" "120"
 echo
 echo "aserciones: $((ok+fallo))  ok: $ok  fallo: $fallo"
 [[ $fallo -eq 0 ]]

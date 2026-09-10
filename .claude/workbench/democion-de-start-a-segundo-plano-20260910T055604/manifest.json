@@ -1,0 +1,7 @@
+{
+  "question": "¿Puede `bg.sh start` devolver el control cuando el trabajo excede una gracia, en vez de obligar al llamador a decidir de antemano si el comando es largo?",
+  "instrument": "bash tests/session/test-bg-familia.sh — seccion 5, cinco aserciones nuevas",
+  "metric": "aserciones que fallan sobre el total de la suite, antes y despues del arreglo",
+  "blind_to": "no mide si 120 s es la gracia ADECUADA para este arbol; sólo que es la que la referencia declara (ggo=120000 en 2.1.266). Y es ciega a un trabajo cuyo propio codigo de salida sea 125, indistinguible de la democion por codigo (el mensaje impreso sí los separa).",
+  "destination": "src/session/bg.sh + tests/session/test-bg-familia.sh"
+}

@@ -108,9 +108,31 @@ _paths() {
 # PID: un PID muerto no distingue "termino bien" de "lo mataron".
 _MARK='__BG_EXIT__='
 
+# La gracia: cuanto espera `start` en primer plano antes de devolver el control
+# dejando el trabajo vivo. Los dos valores salen de la referencia, no de una
+# preferencia: `_references/claude-code-bin/2.1.266/claude_strings.txt` declara
+# `var ggo=120000,hgo=600000` como el default y el maximo de
+# BASH_DEFAULT_TIMEOUT_MS / BASH_MAX_TIMEOUT_MS.
+_GRACE_DEFAULT=120
+_GRACE_MAX=600
+# El codigo con que `start` anuncia la democion. 124 ya significa «timeout» en
+# coreutils y 125 no lo usa `timeout`. CIEGO A: un trabajo cuyo propio codigo de
+# salida sea 125 es indistinguible POR CODIGO de una democion — el mensaje
+# impreso si los separa, y `status` da el veredicto sin ambiguedad.
+_RC_DEMOTED=125
+
 cmd_start() {
     local name="$1"; shift
-    [[ "${1:-}" == "--" ]] && shift
+    local grace="$_GRACE_DEFAULT"
+    while [[ "${1:-}" == --* ]]; do
+        case "$1" in
+            --grace) grace="${2:-}"; shift 2 ;;
+            --)      shift; break ;;
+            *)       echo "bg.sh start: bandera desconocida '$1'" >&2; exit 2 ;;
+        esac
+    done
+    [[ "$grace" =~ ^[0-9]+$ ]] || { echo "bg.sh start: --grace pide segundos" >&2; exit 2; }
+    (( grace > _GRACE_MAX )) && grace="$_GRACE_MAX"
     [[ $# -gt 0 ]] || { echo "bg.sh start: falta el comando tras --" >&2; exit 2; }
     if [[ -n "$BG_DIR" ]]; then
         _paths "$name"
@@ -130,10 +152,33 @@ cmd_start() {
     printf '%s\n' "$pid" > "$PIDF"
     printf 'PID=%s\nLOG=%s\n' "$pid" "$LOG"
     [[ -n "${RUN:-}" ]] && printf 'RUN=%s\n' "$RUN"
+
+    # El tercer desenlace. Sin el, quien llama tiene que decidir ANTES si el
+    # comando es largo — y esa es justo la decision que no puede tomar: un
+    # `pytest` de un archivo tarda segundos y el de un arbol, minutos.
+    #
+    # `grace=0` desactiva la espera: lanza y vuelve, que es la forma vieja.
+    if (( grace > 0 )) && kill -0 "$pid" 2>/dev/null; then
+        timeout "$grace" tail -f --pid="$pid" /dev/null || true
+    fi
+    if grep -q "^${_MARK}" "$LOG" 2>/dev/null; then
+        local rc; rc="$(grep "^${_MARK}" "$LOG" | tail -1 | cut -d= -f2)"
+        # `|| true`: cuando el log contiene SOLO el marcador, `grep -v` no
+        # empareja nada y sale 1 — bajo `set -e` eso abortaba la funcion ANTES
+        # del `return "$rc"`, y un trabajo que salio 7 se reportaba como 1. El
+        # codigo de salida de un filtro de presentacion no es un veredicto.
+        { grep -v "^${_MARK}" "$LOG" || true; } | tail -40
+        return "$rc"
+    fi
+    (( grace > 0 )) || return 0
+    printf '\n[bg.sh] %s SIGUE EN SEGUNDO PLANO tras %s s — el control vuelve.\n' \
+        "$name" "$grace" >&2
+    printf '[bg.sh] recogelo con: bg.sh wait %s\n' "$name" >&2
+    return "$_RC_DEMOTED"
 }
 
 cmd_wait() {
-    local name="$1"; local secs="${2:-1800}"
+    local name="$1"; local secs="${2:-$_GRACE_DEFAULT}"
     _paths "$name"
     [[ -f "$PIDF" ]] || { echo "bg.sh wait: no hay tarea '$name'" >&2; exit 2; }
     local pid; pid="$(cat "$PIDF")"
@@ -147,7 +192,11 @@ cmd_wait() {
     if grep -q "^${_MARK}" "$LOG" 2>/dev/null; then
         local rc; rc="$(grep "^${_MARK}" "$LOG" | tail -1 | cut -d= -f2)"
         # El marcador es ruido para quien lee la salida: se omite al mostrarla.
-        grep -v "^${_MARK}" "$LOG" | tail -40
+        # `|| true`: cuando el log contiene SOLO el marcador, `grep -v` no
+        # empareja nada y sale 1 — bajo `set -e` eso abortaba la funcion ANTES
+        # del `return "$rc"`, y un trabajo que salio 7 se reportaba como 1. El
+        # codigo de salida de un filtro de presentacion no es un veredicto.
+        { grep -v "^${_MARK}" "$LOG" || true; } | tail -40
         printf '\n[bg.sh] %s termino con exit=%s\n' "$name" "$rc"
         return "$rc"
     fi
