@@ -45,7 +45,32 @@ from workbench.manifest import (  # noqa: F401  (se reexportan a propósito)
 )
 
 #: El hogar declarado directamente, cuando el consumidor lo decide.
+#:
+#: Es GLOBAL: una sola grafia para todos los arboles. Vale cuando la invocacion
+#: toca un solo repositorio; no vale para una sesion que cruza varios, y por eso
+#: existe la familia de abajo.
 JOBS_DIR_VAR = "THYROX_JOBS_DIR"
+
+#: El prefijo de la familia POR CLON: ``api`` -> ``THYROX_JOBS_API``.
+#:
+#: La grafia es la de sus dos hermanas —``THYROX_WORKBENCH_<CLON>`` y
+#: ``THYROX_RULES_<CLON>``— y la eleccion NO es de simetria. Se midio contra la
+#: alternativa ``<CLON>_JOBS_DIR`` y pierde por tres:
+#:
+#: - el arbol ya tiene TRES composiciones ``THYROX_<COSA>_<CLON>`` (workbench,
+#:   rules, reach); la otra seria una cuarta gramatica;
+#: - el prefijo ``API_`` ya esta tomado en el multi-repo con OTRO significado:
+#:   ``API_URL`` y ``API_PROXY_TARGET`` de ``kaupamex-ui`` nombran el backend
+#:   con el que habla la UI, no el clon ``api``;
+#: - ``verify/check_env_contract_keys.py`` declara ``PREFIX = "THYROX_"``, asi
+#:   que una clave fuera del prefijo es **invisible al gate**: ni se cuenta ni
+#:   se exige declarar en ``.env.example``. Su conteo saldria sano midiendo un
+#:   universo del que esta clave quedo fuera.
+#:
+#: Comparte con ``JOBS_DIR_VAR`` los mismos caracteres iniciales, igual que la
+#: familia del banco con ``THYROX_WORKBENCH_DIR``: un clon llamado ``dir``
+#: colisionaria. No existe, y el precedente ya lo acepta.
+JOBS_CLONE_PREFIX = "THYROX_JOBS_"
 
 #: El segmento por defecto bajo el directorio de estado: hermano de
 #: `workbench`, no el mismo. La salida de un proceso es volumen; la evidencia
@@ -60,18 +85,70 @@ SCAFFOLD_SUBDIRS: tuple[str, ...] = ("outputs", "probes")
 LOG_FILE_NAME = "salida.log"
 
 
+def jobs_home_name(repo: str) -> str:
+    """La constante por raiz: ``api`` -> ``THYROX_JOBS_API``.
+
+    Misma regla de composicion que ``workbench.paths.workbench_home_name`` y
+    ``reach.env_names``, y por la misma razon: **un solo proceso resuelve varios
+    arboles**, y una variable global no puede decir dos verdades a la vez.
+    """
+    return f"{JOBS_CLONE_PREFIX}{repo.upper().replace('-', '_')}"
+
+
 def jobs_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
-    """El hogar de la familia: el declarado, o el hermano del banco.
+    """El hogar de la familia: el declarado por clon, el global, o el hermano.
 
     No compone la raíz por aritmética de `__file__` —eso describe dónde vivía
     el archivo, no dónde corre—: la saca de `workbench.paths`, que ya resuelve
     el consumidor y su directorio de estado.
-    """
-    import os
 
-    declared = os.environ.get(JOBS_DIR_VAR)
+    **Leia `os.environ` directamente, y eso era la mitad del defecto.** La
+    entrada 2 de la DEC-04 —el `.env`, que es lo unico que `write-env.sh` puede
+    escribir— quedaba invisible para esta familia: un consumidor podia declarar
+    su hogar en el archivo y esta funcion no lo veia. `env_value` consulta el
+    proceso primero y el archivo despues, que es el orden del contrato.
+
+    **Y no tenia familia por clon.** El coste esta medido: la corrida
+    `migrate-desde-cero-20260910T073715`, que es evidencia de `api`, nacio en
+    `thyrox/.claude/jobs/` —el arbol del PROVEEDOR— sin que nada avisara. Es el
+    mismo fallo silencioso que L-028 registro para el banco («once bancos
+    aterrizaron en el arbol del proveedor por esa via») y que la familia
+    `THYROX_WORKBENCH_<CLON>` cerro para el banco y no para los trabajos.
+    """
+    from paths.reach import (  # noqa: PLC0415 — evita el ciclo de import
+        ConsumerUnknownError, consumer_root, env_value, resolve_home,
+        root as repo_root,
+    )
+
+    # UN ancla para toda la resolucion. Habia dos: el clon se derivaba del
+    # `cwd` y el `.env` se buscaba desde la ubicacion del modulo. Con `bg.sh`
+    # —que llama sin `start`— eso derivaba `api` desde el `cwd` y leia el `.env`
+    # del PROVEEDOR, donde la clave del consumidor no esta ni debe estar: la
+    # declaracion era invisible justo por la via por la que se usa.
+    ancla = pathlib.Path(start) if start else pathlib.Path.cwd()
+
+    # La familia POR CLON gana sobre la global: la declaracion mas especifica
+    # manda, y es lo unico que impide que una variable exportada para un arbol
+    # se aplique a otro. Ver `jobs_home_name`.
+    repo = wb_paths.repo_of(ancla)
+    if repo:
+        per_clone = env_value(jobs_home_name(repo), ancla)
+        if per_clone:
+            return resolve_home(per_clone, repo_root(repo))
+
+    declared = env_value(JOBS_DIR_VAR, ancla)
     if declared:
-        return pathlib.Path(declared)
+        # Pasa por `resolve_home` por la misma razon que en el banco: como
+        # SEGMENTO relativo —`jobs`— la clave dice «en cada clon, este
+        # subdirectorio», y devuelta cruda resolvia contra el CWD, que es el
+        # defecto home-by-cwd de #284/#286. Sin ancla se devuelve cruda: una
+        # relativa no se puede componer contra un arbol que este modulo elija
+        # por su cuenta.
+        try:
+            return resolve_home(declared, consumer_root(start=ancla))
+        except ConsumerUnknownError:
+            return pathlib.Path(declared)
+
     return pathlib.Path(wb_paths.state_dir(start)) / JOBS_DIR_DEFAULT
 
 

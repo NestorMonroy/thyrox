@@ -54,6 +54,29 @@ if [[ -f "$DEST" && "$FORCE" != true ]]; then
     exit 1
 fi
 
+# Las claves que ESTE guion emite. Se declaran una vez para que la
+# conservacion de abajo sepa que es suyo y que es del ejecutor.
+OWNED=(THYROX_ROOT THYROX_REACH_ROOT THYROX_LOCATOR THYROX_LIB_REACH
+       THYROX_LAYER_SIGNALS THYROX_WORKBENCH_DIR THYROX_JOBS_DIR)
+
+# Lo que el guion NO puede derivar se conserva. Una clave de POLITICA —el hogar
+# por clon de una familia, `THYROX_JOBS_API`, cuyo valor decide el ejecutor— no
+# sale del arbol: sale de una decision. Borrarla en cada `--force` convertia la
+# segunda entrada de la DEC-04 en una nota que caduca, y el fallo era silencioso:
+# el `.env` seguia siendo valido, sólo que sin la declaracion.
+#
+# Se lee ANTES del `>`, que trunca. Las claves propias NO se conservan: se
+# regeneran, que es para lo que existe `--force`.
+PRESERVED=""
+if [[ -f "$DEST" ]]; then
+    PRESERVED="$(awk -v owned="${OWNED[*]}" '
+        BEGIN { split(owned, o, " "); for (i in o) mine[o[i]] = 1 }
+        /^THYROX_[A-Z0-9_]*=/ {
+            k = substr($0, 1, index($0, "=") - 1)
+            if (!(k in mine)) print
+        }' "$DEST")"
+fi
+
 {
     echo "# Generado por src/session/write-env.sh — $(date -u +%Y-%m-%dT%H:%M:%S)"
     echo "# El contrato y el significado de cada clave: .env.example"
@@ -78,6 +101,17 @@ fi
     # defecto que la familia `THYROX_WORKBENCH_<CLON>` existe para evitar.
     if [[ "$DEST" == "$ROOT/.env" ]]; then
         echo "THYROX_WORKBENCH_DIR=${THYROX_WORKBENCH_DIR:-$ROOT/.claude/workbench}"
+        # El hogar de los TRABAJOS, hermano del banco y con la misma guarda.
+        # Sin el, `jobs_dir()` cae al default y devuelve un SEGMENTO relativo
+        # —`.claude/jobs`— que resuelve contra el CWD. El de cada consumidor
+        # vive en SU `.env` como `THYROX_JOBS_<CLON>`; aqui va solo el propio.
+        echo "THYROX_JOBS_DIR=${THYROX_JOBS_DIR:-$ROOT/.claude/jobs}"
+    fi
+    if [[ -n "$PRESERVED" ]]; then
+        echo
+        echo "# Declaradas por el ejecutor — este guion no las deriva, sólo las"
+        echo "# conserva. Su significado, en .env.example."
+        printf '%s\n' "$PRESERVED"
     fi
 } > "$DEST"
 

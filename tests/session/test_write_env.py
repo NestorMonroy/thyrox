@@ -137,6 +137,54 @@ def main() -> int:
         check("y NO la emite al .env de un consumidor",
               "THYROX_WORKBENCH_DIR" not in ajeno.read_text())
 
+        # El hogar de los TRABAJOS del proveedor, por la misma razon y con la
+        # misma guarda. Sin el, `jobs_dir()` cae al default y devuelve un
+        # SEGMENTO relativo —`.claude/jobs`—, que resuelve contra el CWD: el
+        # defecto home-by-cwd de #284/#286, en la familia hermana.
+        check("el proveedor declara tambien el hogar de sus trabajos",
+              any(l.startswith("THYROX_JOBS_DIR=/")
+                  for l in propio.read_text().splitlines()),
+              "sin ella jobs_dir() devuelve una ruta relativa")
+        check("y tampoco esa al .env de un consumidor",
+              "THYROX_JOBS_DIR" not in ajeno.read_text())
+
+        # --- caso 6: --force CONSERVA lo que el guion no emite --------------
+        # El generador deriva del arbol lo que se puede derivar. Lo que NO se
+        # puede —una clave de POLITICA como `THYROX_JOBS_API`, cuyo valor
+        # decide el ejecutor— vive en el mismo archivo y lo borraba en cada
+        # `--force`. Una declaracion que el mecanismo no puede regenerar y
+        # ademas destruye no es una declaracion: es una nota que caduca.
+        #
+        # Lo que hace al caso DISCRIMINAR es su segunda mitad. Conservar el
+        # archivo entero pasaria la primera —la clave ajena sobrevive— y
+        # dejaria ademas el `THYROX_ROOT` rancio, que es justo lo que `--force`
+        # existe para reescribir. Las claves del generador GANAN; las ajenas se
+        # conservan.
+        mixto = base / "mixto.env"
+        mixto.write_text(
+            "THYROX_ROOT=/raiz/rancia\n"
+            "THYROX_JOBS_API=/home/user/kaupamex-api/scripts/evidence\n"
+            "THYROX_JOBS_DOCS=/home/user/kaupamex-docs/.claude/jobs\n"
+            "# un comentario del ejecutor\n"
+        )
+        r = run("--out", str(mixto), "--force")
+        check("--force sale 0 sobre un .env con claves ajenas", r.returncode == 0,
+              r.stderr)
+        tras = keys(mixto)
+        check("conserva la clave de politica por clon (api)",
+              tras.get("THYROX_JOBS_API")
+              == "/home/user/kaupamex-api/scripts/evidence",
+              f"dio {tras.get('THYROX_JOBS_API')!r}")
+        check("conserva la de docs tambien",
+              tras.get("THYROX_JOBS_DOCS")
+              == "/home/user/kaupamex-docs/.claude/jobs")
+        check("y REGENERA la suya: el valor rancio no sobrevive",
+              tras.get("THYROX_ROOT") == str(ROOT),
+              f"dio {tras.get('THYROX_ROOT')!r}, esperaba {str(ROOT)!r}")
+        check("sin duplicar la clave regenerada",
+              sum(1 for l in mixto.read_text().splitlines()
+                  if l.startswith("THYROX_ROOT=")) == 1)
+
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "
           f"(alcance medido: {SCRIPT.name})")
     return 1 if failed else 0
