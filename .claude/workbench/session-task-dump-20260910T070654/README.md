@@ -103,11 +103,35 @@ sujeto.
 
 ## Los controles
 
-`tests/test_dump_session_board.py` — 6 aserciones, verde. El que **discrimina**
-es el caso 3: separar el eje de campo del de prosa. Su **anulación** está
-persistida en `outputs/anulacion-*.txt`: colapsando los dos ejes en uno cae
-**exactamente** esa aserción y ninguna más. Un control que sólo comprobara «se
-volcaron 296 tarjetas» pasaría igual con el mecanismo y sin él.
+`tests/test_dump_session_board.py` — su conteo lo publica el propio corredor al
+ejecutarlo, no esta prosa:
+
+```
+python3 tests/test_dump_session_board.py
+```
+
+Dos de sus casos son controles con **anulación persistida**, y cada uno midió
+una cosa distinta:
+
+| Control | Qué se retira | Qué cae |
+|---|---|---|
+| caso 3 — los dos ejes de dependencia | colapsar campo y prosa en uno | `outputs/anulacion-<ISO>.txt`: exactamente el caso 3 |
+| caso 4 — el guard del tablero vacío | el `if not cards: return 2` de `main()` | `outputs/anulacion-guard-<ISO>.txt`: exactamente el caso 4 |
+
+El segundo control **no existía**: el caso 4 afirmaba sólo
+`load_board(vacío) == []`, que es la *premisa* del guard y no el guard —
+pasaba igual con la rama `return 2` retirada. Sub-patrón D dentro del propio
+instrumento, y por eso se rehizo.
+
+Al rehacerlo, la anulación destapó algo que la versión anterior no podía ver:
+sin el guard, `main()` no sólo deja de rehusar — **sigue y publica un cero**,
+sobreescribiendo `outputs/summary.json` con ceros en todas sus claves. Ése es
+literalmente el verde falso que el guard existe para impedir. De ahí que
+`main()` acepte ahora un `out_dir`: el control se repite sin que el
+experimento contamine la evidencia que mide.
+
+Un control que sólo comprobara «se volcaron 296 tarjetas» pasaría igual con el
+mecanismo y sin él.
 
 ## Los resultados
 

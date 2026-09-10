@@ -1,0 +1,7 @@
+{
+  "instrument": "bash tests/run.sh",
+  "question": "Si el guard del proveedor movio el estado de las tres lenguas",
+  "metric": "archivos y suites que el corredor alcanza, por lengua, con su veredicto agregado",
+  "blind_to": "que falla dentro de cada rojo — el agregado no atribuye; y lo que el corredor no alcanza (tests/ y _archived/ quedan fuera de su radio)",
+  "destination": "README.md de este run"
+}

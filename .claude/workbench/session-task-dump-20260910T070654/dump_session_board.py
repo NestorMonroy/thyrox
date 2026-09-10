@@ -70,7 +70,14 @@ def declares_dependency(card: dict) -> tuple[bool, bool]:
     return in_field, in_prose
 
 
-def main() -> int:
+def main(out_dir: pathlib.Path | None = None) -> int:
+    # `out_dir` existe para el CONTROL, no para el uso: bajo anulacion del guard
+    # `main()` sigue adelante con 0 tarjetas y sobreescribe `outputs/summary.json`
+    # con ceros — medido. O sea que la ausencia del guard no solo deja de rehusar:
+    # PUBLICA un cero, que es justo el verde falso que el guard existe para
+    # impedir. Con el destino inyectable, el control se puede repetir sin que el
+    # experimento contamine la evidencia que mide.
+    out_dir = out_dir or (HERE / "outputs")
     root = board_root()
     cards = load_board(root)
     if not cards:
@@ -78,7 +85,7 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
-    out = HERE / "outputs" / "board"
+    out = out_dir / "board"
     out.mkdir(parents=True, exist_ok=True)
     for card in cards:
         (out / f"{card['id']}.json").write_text(
@@ -127,7 +134,7 @@ def main() -> int:
         "store": str(db),
         "store_task_rows": len(subjects),
     }
-    (HERE / "outputs" / "summary.json").write_text(
+    (out_dir / "summary.json").write_text(
         json.dumps(resumen, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8")
 

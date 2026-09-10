@@ -68,8 +68,37 @@ class DumpSessionBoard(unittest.TestCase):
             card(2, description="cierra #1234"))[1])
 
     def test_4_GUARD_un_tablero_vacio_rehusa_sin_emitir_cifra(self):
+        """El guard REAL: `main()` sale 2 y no imprime ninguna cifra.
+
+        La version anterior de este caso solo afirmaba
+        `load_board(vacio) == []`, que es la premisa del guard y no el guard:
+        pasaba igual con la rama `return 2` retirada. Sub-patron D dentro del
+        propio instrumento. Ejercitar `main()` es seguro con el tablero vacio
+        El destino se inyecta: bajo la anulacion del guard `main()` sigue
+        adelante y ESCRIBE — medido, sobreescribio `outputs/summary.json` con
+        ceros. O sea que la ausencia del guard no solo deja de rehusar, PUBLICA
+        un cero. Con `out_dir` apuntando a un temporal, el control se repite sin
+        que el experimento contamine la evidencia que mide.
+        """
+        import io, os
+        from contextlib import redirect_stderr, redirect_stdout
         with tempfile.TemporaryDirectory() as tmp:
-            self.assertEqual(dump.load_board(pathlib.Path(tmp)), [])
+            previo = os.environ.get("THYROX_BOARD_DIR")
+            os.environ["THYROX_BOARD_DIR"] = tmp
+            err, salida = io.StringIO(), io.StringIO()
+            try:
+                with redirect_stderr(err), redirect_stdout(salida):
+                    rc = dump.main(out_dir=pathlib.Path(tmp) / "salidas")
+            finally:
+                if previo is None:
+                    del os.environ["THYROX_BOARD_DIR"]
+                else:
+                    os.environ["THYROX_BOARD_DIR"] = previo
+        self.assertEqual(rc, 2, "un tablero vacio tiene que REHUSAR, no salir 0")
+        self.assertIn("NO se emite conteo", err.getvalue())
+        # Y la mitad que discrimina: rehusar es NO publicar cifra alguna.
+        self.assertEqual(salida.getvalue(), "",
+                         "un 0 impreso aqui seria un verde falso")
 
     def test_5_el_hogar_declarado_gana_sobre_el_descubrimiento(self):
         import os
