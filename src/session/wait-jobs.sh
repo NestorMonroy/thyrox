@@ -136,10 +136,31 @@ verdict() {
     echo ESPERANDO
 }
 
+# `--after-ok PRED --run 'CMD'` declara la ARISTA al registrar, en vez de
+# obligar a bloquear el primer plano para ordenar dos trabajos. Es la forma que
+# `qsub -W depend=afterok:$JOBID` tiene y que a esta barrera le faltaba: su
+# único modelo era «lanza N, espera a TODOS», y esperar es bloquear.
+#
+# El dependiente NO se lanza aquí: nace `after_ok=` + `run=` y sin pid. Lo
+# lanza `dispatch` cuando el predecesor asienta OK — y lo CANCELA, diciéndolo,
+# cuando asienta BAIL. Callar la cancelación haría indistinguible «el
+# predecesor falló» de «nunca se registró»: el sub-patrón D.
 cmd_register() {
-    local label="${1:?uso: registrar <label> <log> [pid]}"
-    local log="${2:?uso: registrar <label> <log> [pid]}"
-    local pid="${3:-}"
+    local label="${1:?uso: registrar <label> <log> [pid] [--after-ok PRED --run CMD]}"
+    local log="${2:?uso: registrar <label> <log> [pid] [--after-ok PRED --run CMD]}"
+    shift 2
+    local pid="" after_ok="" run=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --after-ok) after_ok="${2:?--after-ok exige la etiqueta del predecesor}"; shift 2 ;;
+            --run)      run="${2:?--run exige el comando a lanzar}"; shift 2 ;;
+            *)          [[ -z "$pid" ]] && pid="$1"; shift ;;
+        esac
+    done
+    if [[ -n "$after_ok" && -z "$run" ]]; then
+        echo "register: --after-ok exige --run: sin el comando, dispatch no tiene qué lanzar" >&2
+        return 2
+    fi
     local target="$LEDGER/${label//\//_}.job"
     # tmp+mv: `wait`/`pending` reglobean `*.job` en caliente; una
     # escritura directa (`>`) trunca el archivo antes de llenarlo y un lector
@@ -151,11 +172,12 @@ cmd_register() {
     # soltado; sin el `starttime` no hay con qué distinguir su pid de un pid
     # reciclado. Los dos se leen del propio proceso, no se piden al llamador:
     # un dato que hay que acordarse de pasar es un dato que falta.
-    local cmd="${4:-}"
+    local cmd=""
     [[ -z "$cmd" && -n "$pid" && -r "/proc/$pid/cmdline" ]] \
         && cmd="$(tr '\0' ' ' < "/proc/$pid/cmdline")"
     local ps0=""; [[ -n "$pid" ]] && ps0="$(read_proc_start "$pid")"
     printf 'log=%s\npid=%s\nproc_start=%s\ncmd=%s\n' "$log" "$pid" "$ps0" "$cmd" > "$tmp"
+    [[ -n "$after_ok" ]] && printf 'after_ok=%s\nrun=%s\n' "$after_ok" "$run" >> "$tmp"
     mv -f "$tmp" "$target"
     echo "registrado: $label -> $log (pid=${pid:-sin-pid})"
 }
@@ -209,6 +231,15 @@ cmd_pending() {
         mk=$(sed -n 's/^marker=//p' "$f")
         ps0=$(sed -n 's/^proc_start=//p' "$f")
         label=$(basename "$f" .job)
+        # Un CANCELADO no es trabajo pendiente: su predecesor falló y nunca va
+        # a arrancar, así que contarlo dejaría el turno bloqueado para siempre
+        # por algo que ya tiene desenlace. Sigue visible en `status`.
+        [[ -n "$(sed -n 's/^cancelled=//p' "$f")" ]] && continue
+        # Un BLOQUEADO sí lo es: su predecesor puede aún terminar bien, y
+        # cerrar el turno lo dejaría sin lanzar jamás.
+        if [[ -n "$(sed -n 's/^after_ok=//p' "$f")" ]]; then
+            echo "$label  [BLOQUEADO]  $log"; any_pending=1; continue
+        fi
         v=$(verdict "$log" "$pid" "$pattern" "$ps0" "$mk")
         [[ "$v" == OK ]] && v=SIN-RECOGER
         echo "$label  [$v]  $log"
@@ -359,6 +390,83 @@ class() {
 # trabajo y no dice cuántos hay de cada clase; con veinte trabajos eso no es un
 # estado, es un volcado. Exit 1 si queda algo sin recoger — mismo contrato que
 # `pending`, para que el Stop hook no tenga que parsear.
+# `dispatch` — mueve la cadena SIN bloquear el primer plano.
+#
+# Recorre los trabajos con `after_ok=` y, según el veredicto del predecesor:
+#
+#   OK        lanza el `run=` con su marcador `EXIT=` y le anota el pid
+#   BAIL      lo CANCELA y lo dice, nombrando al predecesor que falló
+#   ESPERANDO lo deja como está — todavía no se sabe
+#
+# Es idempotente: un dependiente ya lanzado pierde su `after_ok=`, así que un
+# segundo `dispatch` no lo relanza. Y lo llaman `wait`, `status` y `pending`,
+# de modo que la cadena avanza con cualquier interacción, sin daemon y sin que
+# nadie tenga que quedarse esperando.
+#
+# CANCELADO no es un estado silencioso a propósito: el trabajo se queda en el
+# ledger con `cancelled=` para que `status` lo muestre, y `pending` NO lo
+# cuenta como pendiente — un dependiente que nunca podrá arrancar no debe
+# bloquear el cierre del turno para siempre.
+cmd_dispatch() {
+    local pattern="$DEFAULT_PATTERN"
+    [[ "${1:-}" == "--pattern" ]] && { pattern="${2:?--pattern exige una expresión}"; shift 2; }
+    local lanzados=0 cancelados=0 esperando=0 total=0
+    shopt -s nullglob
+    for f in "$LEDGER"/*.job; do
+        local after_ok run label
+        after_ok=$(sed -n 's/^after_ok=//p' "$f")
+        [[ -z "$after_ok" ]] && continue
+        total=$((total + 1))
+        label=$(basename "$f" .job)
+        local pf="$LEDGER/${after_ok//\//_}.job"
+        if [[ ! -f "$pf" ]]; then
+            # El predecesor no está: o ya se recogió (y entonces terminó bien,
+            # porque `wait` sólo retira lo asentado) o nunca existió. No se
+            # puede distinguir desde aquí, así que se dice en vez de suponerlo.
+            echo "  SIN-PREDECESOR $label — '$after_ok' no está en el ledger; no se lanza"
+            esperando=$((esperando + 1))
+            continue
+        fi
+        local plog ppid pps pmk v
+        plog=$(sed -n 's/^log=//p' "$pf");  ppid=$(sed -n 's/^pid=//p' "$pf")
+        pps=$(sed -n 's/^proc_start=//p' "$pf"); pmk=$(sed -n 's/^marker=//p' "$pf")
+        v=$(verdict "$plog" "$ppid" "$pattern" "$pps" "$pmk")
+        case "$v" in
+            OK)
+                run=$(sed -n 's/^run=//p' "$f")
+                local dlog; dlog=$(sed -n 's/^log=//p' "$f")
+                nohup bash -c "$run; echo EXIT=\$?" > "$dlog" 2>&1 &
+                local dpid=$!; disown "$dpid" 2>/dev/null || true
+                local tmp="$f.tmp.$$"
+                grep -v '^after_ok=\|^run=\|^pid=' "$f" > "$tmp"
+                printf 'pid=%s\nproc_start=%s\ncmd=%s\n' \
+                    "$dpid" "$(read_proc_start "$dpid")" "$run" >> "$tmp"
+                mv -f "$tmp" "$f"
+                echo "  LANZADO   $label (tras '$after_ok' OK) pid=$dpid"
+                lanzados=$((lanzados + 1))
+                ;;
+            BAIL)
+                local tmp="$f.tmp.$$"
+                grep -v '^after_ok=\|^run=' "$f" > "$tmp"
+                printf 'cancelled=%s\n' "$after_ok" >> "$tmp"
+                mv -f "$tmp" "$f"
+                echo "  CANCELADO $label — su predecesor '$after_ok' terminó en BAIL; no se lanza"
+                cancelados=$((cancelados + 1))
+                ;;
+            *)
+                esperando=$((esperando + 1))
+                ;;
+        esac
+    done
+    shopt -u nullglob
+    if [[ $total -eq 0 ]]; then
+        echo "dispatch: 0 aristas declaradas (alcance medido: $LEDGER)"
+        return 0
+    fi
+    echo "dispatch: $total arista(s) — lanzadas=$lanzados canceladas=$cancelados esperando=$esperando"
+    return 0
+}
+
 cmd_status() {
     local pattern="$DEFAULT_PATTERN"
     [[ "${1:-}" == "--pattern" ]] && { pattern="${2:?--pattern exige una expresión}"; shift 2; }
@@ -370,7 +478,17 @@ cmd_status() {
         mk=$(sed -n 's/^marker=//p' "$f")
         ps0=$(sed -n 's/^proc_start=//p' "$f")
         label=$(basename "$f" .job)
-        c=$(class "$log" "$pid" "$pattern" "$ps0" "$mk")
+        # Los dos estados de la dependencia declarada se leen del propio .job y
+        # NO pasan por class(): class mide un proceso, y un dependiente que aún
+        # no arrancó no tiene proceso que medir. Colapsarlos en SIN-PID diría
+        # «no se puede señalar» de algo que ni siquiera existe todavía.
+        if [[ -n "$(sed -n 's/^after_ok=//p' "$f")" ]]; then
+            c="BLOQUEADO"
+        elif [[ -n "$(sed -n 's/^cancelled=//p' "$f")" ]]; then
+            c="CANCELADO"
+        else
+            c=$(class "$log" "$pid" "$pattern" "$ps0" "$mk")
+        fi
         count[$c]=$(( ${count[$c]:-0} + 1 ))
         total=$((total + 1))
         printf '  %-12s %-10s pid %-8s %s\n' "$label" "$c" "${pid:-—}" "$log"
@@ -381,13 +499,15 @@ cmd_status() {
         return 0
     fi
     local summary=""
-    for c in SIN-RECOGER VIVO DETENIDO ZOMBIE RECICLADO BAIL SIN-PID; do
+    for c in SIN-RECOGER VIVO DETENIDO ZOMBIE RECICLADO BAIL SIN-PID BLOQUEADO CANCELADO; do
         [[ -n "${count[$c]:-}" ]] && summary+="$c=${count[$c]} "
     done
     echo "estado: $total trabajo(s) — $summary"
     [[ -n "${count[DETENIDO]:-}" ]] && echo "  → los DETENIDO no avanzan solos: 'continuar <label>' o 'matar'"
     [[ -n "${count[ZOMBIE]:-}"  ]] && echo "  → los ZOMBIE ya terminaron sin cosechar: 'kill' los suelta"
     [[ -n "${count[RECICLADO]:-}" ]] && echo "  → los RECICLADO: su pid es de otro proceso; el trabajo murió — 'forget'"
+    [[ -n "${count[BLOQUEADO]:-}" ]] && echo "  → los BLOQUEADO esperan su predecesor: 'dispatch' mueve la cadena"
+    [[ -n "${count[CANCELADO]:-}" ]] && echo "  → los CANCELADO no arrancarán: su predecesor falló — 'forget' los suelta"
     return 1
 }
 
@@ -589,6 +709,7 @@ case "${1:-}" in
     forget|olvidar)      shift; cmd_forget "$@" ;;
     adopt|adoptar)       shift; cmd_adopt "$@" ;;
     adopt-external)      shift; cmd_adopt_external "$@" ;;
+    dispatch|despachar)  shift; cmd_dispatch "$@" ;;
     archive|archivar)    shift; cmd_archive "$@" ;;
     *) sed -n '/^# Uso/,/^# ===/p' "$0" | sed 's/^# \?//'; exit 64 ;;
 esac

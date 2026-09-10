@@ -1,0 +1,7 @@
+{
+  "instrument": "bash tests/session/test-wait-jobs-dependencia.sh — cuatro casos sobre wait-jobs.sh con ledger en tmpdir",
+  "question": "Puede la barrera ordenar dos trabajos sin bloquear el primer plano, declarando la arista al lanzar?",
+  "metric": "Aserciones que pasan, y por que: se separa la que pasa por el mecanismo de la que pasa vacuamente.",
+  "blind_to": "El caso de N>2 en cadena y el de dos dependientes del mismo predecesor, que no se ejercitan; y la carrera entre dispatch concurrentes, que el ledger resuelve por index.lock y aqui no se mide.",
+  "destination": "thyrox: src/session/wait-jobs.sh (register --after-ok --run, dispatch) + tests/session/test-wait-jobs-dependencia.sh"
+}

@@ -43,6 +43,81 @@ el abandono con `forget`.
 escribió su marcador sigue pendiente hasta que alguien lea su resultado: medir
 la terminación del proceso en vez de la recogida mide el fenómeno equivocado.
 
+### Recoger NO es bloquear — y bloquear anula el segundo plano
+
+> Directiva del ejecutor 2026-09-10: *«¿con la barrera en primer plano? pero
+> queremos seguir trabajando en el primer plano, para eso están las tareas en
+> 2do plano»*. Correcta, y corrige una lectura de esta misma sección.
+
+La barrera es **obligatoria al cerrar**, no **inmediata al lanzar**. Su episodio
+de origen fue un resultado que nadie leyó, no un turno que no se detuvo: lo que
+falla es cerrar con algo sin reclamar, no seguir trabajando mientras corre.
+
+Entre lanzar y recoger se trabaja. Hay tres formas de recoger y sólo una
+bloquea:
+
+| Forma | Cuándo | Bloquea |
+|---|---|---|
+| la **notificación** del cliente cuando el trabajo termina | sola, sin pedirla | no |
+| `wait-jobs.sh status` / `pending` al ir a cerrar | cuando el turno va a terminar | no |
+| `wait-jobs.sh wait` en Bash primer plano | cuando el **resultado** es lo siguiente que se necesita | sí |
+
+La tercera es legítima **sólo en ese caso**: el trabajo siguiente depende del
+resultado y no hay nada más que adelantar. Usarla justo después de lanzar
+convierte el segundo plano en un primer plano lento.
+
+**Y ordenar no exige bloquear.** Si B depende de A, la arista se declara **al
+lanzar** y el primer plano queda libre — la forma de `qsub -W depend=afterok`:
+
+```bash
+bash src/session/wait-jobs.sh register b "$LOG_B" --after-ok a --run "<comando>"
+bash src/session/wait-jobs.sh dispatch     # mueve la cadena; no bloquea
+```
+
+`register --after-ok <pred> --run <cmd>` **no lanza nada**: escribe la arista en
+el `.job` y el trabajo queda `BLOQUEADO`. `dispatch` lee el veredicto del
+predecesor y **lanza** si fue OK, **cancela nombrándolo** si fue BAIL, o lo deja
+esperando si aún vive. Un `CANCELADO` ya no retiene el turno; un `BLOQUEADO` sí,
+porque su trabajo aún está por hacer.
+
+**El control que discrimina** es el predecesor que falla: un dependiente que
+simplemente *no arranca* es indistinguible de uno que nunca se registró, así que
+`dispatch` tiene que **decirlo y nombrar al predecesor**. Medido con `dispatch`
+anulado a no-op: caen exactamente las cinco aserciones que dependen de que la
+cadena se mueva, y sobreviven las cuatro que miden el registro — ni una más
+(`.claude/workbench/dependencia-al-lanzar-20260910T232832/`).
+
+```bash
+bash tests/session/test-wait-jobs-dependencia.sh
+```
+
+Antes de esto (medido 2026-09-10) `afterok|depend|blockedBy` daba **0 hits** en
+`wait-jobs.sh`, `job_ledger.py` y `task_pool.py`: el único modelo era «lanza N,
+espera a todos», que **obligaba** a bloquear para ordenar. Cierra
+**TASK-THYROX-0011**.
+
+### Un trabajo que el cliente PROMUEVE no puede llevar marcador
+
+Un comando lanzado en primer plano que agota el tiempo del cliente **se
+promueve** a segundo plano. La promoción ocurre *después* de fijar la línea de
+comando, así que el patrón `…; echo EXIT=$?` no se pudo aplicar: ese trabajo
+**nunca** llevará el marcador, y `marker_wait` no puede separar «murió sin
+escribirlo» de «sigue corriendo».
+
+Además nace **fuera del ledger**: el Stop gate no lo ve, así que es huérfano por
+construcción. La salida es adoptarlo por su identificador, no re-lanzarlo:
+
+```bash
+bash src/session/wait-jobs.sh adopt-external --id <task-id> --log <ruta>
+```
+
+`adopt-external` engancha el marcador que el propio cliente escribe
+(`[exited with code `) en vez del nuestro. Medido en el episodio que originó
+esta sección: proceso vivo, `.output` con `mtime` congelado desde el arranque
+—o sea que un instrumento de `mtime` lo habría llamado «atascado» mientras
+trabajaba, que es `H-DOCS-1004` un nivel más arriba— y **0** trabajos en el
+ledger hasta adoptarlo.
+
 ## El gate — porque una regla sin script es prosa
 
 `src/hooks/detect_foreground_long_command.py`, cuarto detector de

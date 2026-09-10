@@ -1,0 +1,37 @@
+CONTROL DE ANULACION — 2026-09-10T23:35:58
+Sujeto: src/session/wait-jobs.sh, cmd_dispatch() forzado a no-op.
+Instrumento: bash tests/session/test-wait-jobs-dependencia.sh
+
+Con el mecanismo:   9 ok, 0 fallo(s)
+Anulado dispatch:   4 ok, 5 fallo(s)
+
+Caen EXACTAMENTE las cinco que dependen de que la cadena se mueva:
+  tras dispatch, el dependiente SI arranco
+  dispatch DICE que lo cancelo (no calla)
+  nombra al predecesor que fallo
+  solo un CANCELADO -> pending sale 0
+  pero status SIGUE mostrandolo
+
+Sobreviven las cuatro que miden el REGISTRO de la arista, no su despacho:
+  el dependiente NO arranco al registrarlo
+  status lo muestra BLOQUEADO
+  el dependiente NO arranco            <- vacua bajo anulacion, mide bajo el real
+  un BLOQUEADO SI mantiene el turno bloqueado
+
+Ni una mas, ni una menos: el control discrimina.
+Restaurado y verificado identico al intacto con diff -q.
+
+--- DEFECTO DE INSTRUMENTO CORREGIDO EN EL MISMO PASE ---
+Dos aserciones publicaban FALLO con el mecanismo YA funcionando. La causa no
+era el patron sino `set -o pipefail` del propio test:
+
+    bash $GUION status 2>&1 | grep -q "segundo .*BLOQUEADO"
+
+`status` sale 1 cuando queda trabajo pendiente, y pipefail hace que la tuberia
+herede ese 1 aunque el grep SI encuentre. Medido sobre el mismo texto:
+
+    con pipefail: 1
+    sin pipefail: 0
+
+El veredicto se toma ahora sobre una VARIABLE ($EST) con here-string. Es la
+forma que la tarea #148 declara: "grep -q bajo pipefail invierte el veredicto".
