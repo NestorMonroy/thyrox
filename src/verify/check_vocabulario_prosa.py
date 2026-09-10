@@ -480,11 +480,21 @@ def load_forbidden(ruta):
     """Las formas vetadas, leídas del registro — no escritas en el guion."""
     if not ruta.is_file():
         refuse_without_forbidden(ruta)
-    return [
-        line.strip().lower()
-        for line in ruta.read_text(encoding='utf-8').splitlines()
-        if line.strip() and not line.startswith('#')
-    ]
+    entries = []
+    for line in ruta.read_text(encoding='utf-8').splitlines():
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        # `forma → sustituto` (o `->`). El sustituto es OPCIONAL: las formas
+        # heredadas no lo llevan y siguen valiendo. Sin este parseo la linea se
+        # lee LITERAL —«librería → biblioteca» como una sola cadena— y no casa
+        # nunca: el veto entraria en el registro y el gate seguiria publicando
+        # cero, que es el sub-patron D con el propio registro como sujeto.
+        parts = re.split(r'\s*(?:→|->)\s*', line, maxsplit=1)
+        form = parts[0].strip().lower()
+        substitute = parts[1].strip() if len(parts) > 1 and parts[1].strip() else None
+        entries.append((form, substitute))
+    return entries
 
 
 def compile_forbidden(forms):
@@ -508,9 +518,9 @@ def compile_forbidden(forms):
     los espacios interiores siguen siendo literales.
     """
     compiled = []
-    for form in forms:
+    for form, substitute in forms:
         pattern = rf'\b{re.escape(form)}\b'
-        compiled.append((form, re.compile(pattern, re.IGNORECASE)))
+        compiled.append((form, substitute, re.compile(pattern, re.IGNORECASE)))
     return compiled
 
 
@@ -627,7 +637,7 @@ def scan(files, lexicon, forbidden, root):
             if NOMINAL_SUFFIX.match(word) and not attested(word, lexicon):
                 hits[word] += 1
                 first_seen.setdefault(word, key_path)
-        for form, pattern in forbidden:
+        for form, _substitute, pattern in forbidden:
             found = sum(
                 1 for m in pattern.finditer(text)
                 if not any(a <= m.start() and m.end() <= b for a, b in tramos)
@@ -662,6 +672,7 @@ def main(argv=None):
     raiz = consumer_root(args.files)
     files = corpus_files(args.files, raiz)
     forbidden = compile_forbidden(load_forbidden(resolve_forbidden(files)))
+    substitutes = {form: sub for form, sub, _ in forbidden if sub}
     found = scan(files, lexicon, forbidden, raiz)
 
     baseline_path = resolve_baseline(files)
@@ -718,7 +729,12 @@ def main(argv=None):
         # sobrando. Y esta linea es lo que lee quien acaba de ver su commit
         # bloqueado — el reporte del gate ES su interfaz.
         origen = '' if '::' in word else f' {path}'
-        print(f'  {count:4}  {word}{origen}')
+        # Un veto que NO dice con que sustituir obliga a quien lo recibe a
+        # adivinar, y adivinar es como entro el calco. El sustituto lo declara
+        # el registro (`forma → sustituto`), no este guion.
+        suggestion = substitutes.get(word.rsplit('::', 1)[-1]) if '::' in word else None
+        hint = f'  → {suggestion}' if suggestion else ''
+        print(f'  {count:4}  {word}{origen}{hint}')
     inventado = sum(1 for k in fresh if '::' not in k)
     # El denominador es el ALCANCE —cuántos archivos se leyeron—, no cuántas
     # claves salieron. Decía `{len(found)} de {len(files)} archivos`, y
