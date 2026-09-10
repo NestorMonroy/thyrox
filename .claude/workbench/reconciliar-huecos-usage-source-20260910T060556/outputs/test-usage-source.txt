@@ -1,0 +1,20 @@
+== Caso 1: el migrado añade la columna sobre un esquema que ya existía
+  ok    la columna usage_source existe tras el migrado
+== Caso 2: el relleno declara 'transcript' SÓLO donde hay tokens
+  ok    las 2 filas con tokens quedan en 'transcript'
+  ok    la fila con cache_read=0 NO se confunde con una sin medir
+  ok    las 3 sin tokens siguen sin clasificar tras el migrado
+== Caso 3: la reconciliación declara 'no_medido' lo irrecuperable
+  ok    'perdida' (terminal, sin tokens, sin transcript) queda no_medido
+== Caso 4: lo que TODAVÍA se puede medir NO se declara perdido
+  ok    'medible' (terminal, sin tokens, CON transcript) sigue en NULL
+== Caso 5: un agente vivo no se cierra
+  ok    'viva' (running) sigue en NULL
+== Caso 6: control anulable — sin discriminador, el censo deja de separar
+  ok    con discriminador, el censo declara el n del agregado
+  ok    con discriminador, el censo nombra la fila irrecuperable
+  ok    anulado, el relleno reconstruye 'transcript' desde los tokens
+  ok    anulado, 'no_medido' NO vuelve: no es deducible de la tabla
+  ok    anulado, la fila perdida cae al cubo 'sin clasificar'
+
+usage_source: 12 ok, 0 fallos

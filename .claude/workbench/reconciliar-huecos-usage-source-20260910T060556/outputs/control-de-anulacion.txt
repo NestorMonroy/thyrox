@@ -1,0 +1,28 @@
+Control de anulación (sobre copia del store, NUNCA sobre el vivo):
+copiado a probes/copia-para-anulacion.sqlite3 tras el run real.
+
+Estado tras el run real (copia): {None: 3, 'no_medido': 886, 'transcript': 468}
+
+Se anula la condición 3 de _declarar_no_medido (¿existe transcript en disco?)
+reescribiendo la consulta sin el filtro de disco: se cuentan TODAS las filas
+terminales con las 4 columnas de uso en NULL, sin comprobar el filesystem.
+
+Resultado sin la condición de disco: 887 candidatas — prácticamente todas las
+que hoy son 'no_medido' MÁS las que siguen legítimamente vivas o con
+transcript aún medible, indiscriminadas.
+
+Esto confirma que la condición 3 es la que hace el trabajo real de
+discriminar «irrecuperable» de «terminal sin tokens»: sin ella, el criterio
+colapsaría CUALQUIER fila terminal sin tokens a no_medido, sin importar si su
+transcript sigue en disco. La predicción hecha ANTES de correr el reconciliador
+(19 candidatas exactas, verificadas una por una contra el disco) coincidió
+con el resultado real del run (19 declaradas no_medido, ni una más ni una
+menos) -- ver despues-reconcile-run.txt.
+
+La cobertura formal y reproducible de esta misma discriminación ya vive en
+el repo y se corrió sin fallos en este mismo turno:
+- tests/agents/test-agent-store-usage-source.sh, caso 6 (control de
+  anulación: sin el discriminador, el censo deja de separar los cubos).
+- tests/agents/test_retention_backfill.py, caso D (usage_source NULL no se
+  toca; docstring documenta su propio control de anulación: sustituir el
+  reparto por 'completed->3, si no 4' hace caer 4 de 10 aserciones).
