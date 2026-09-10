@@ -6,7 +6,12 @@ package-lock.json
 yarn.lock
 
 # Environment variables
-.env
+# `.env` NO se ignora — directiva del ejecutor 2026-09-10. Sus seis claves son
+# rutas del arbol, no secretos (medido: 0 credenciales en sus 8 lineas), y el
+# archivo es la entrada B de la DEC-04: sin el versionar, el contrato existe y
+# su valor vigente no. El costo se declara en `.env.example`, no se oculta.
+# Las variantes `*.local` SIGUEN ignoradas: son la sobreescritura del
+# consumidor, que es justo lo que la DEC-04 dice que no viaja.
 .env.local
 .env.*.local
 
@@ -25,8 +30,12 @@ Thumbs.db
 Desktop.ini
 
 # Logs
+# `*.log` NO se ignora — directiva del ejecutor 2026-09-10. Un log de una
+# corrida es evidencia fechada: el nivel 4 de `niveles-de-retencion.md` es
+# completitud percibida SIN persistencia, y un log ignorado es tan durable como
+# el contenedor. `logs/` y los `*-debug.log` de los gestores de paquetes siguen
+# ignorados: son ruido de dependencia, no rastro de lo que la sesion hizo.
 logs/
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

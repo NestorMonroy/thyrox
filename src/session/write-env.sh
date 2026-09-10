@@ -6,9 +6,11 @@
 # declaraba nada, así que la segunda entrada era una rama que nunca se ejecutó y
 # todo consumidor caía al ascenso, que es el último recurso.
 #
-# `.env` no se versiona, y eso es la DEC-04 aplicada a sí misma: su valor es del
-# CONSUMIDOR. Commitear `THYROX_ROOT=/home/user/thyrox` sería el proveedor
-# decidiendo dónde clona cada usuario. El contrato versionado es `.env.example`.
+# `.env` SÍ se versiona desde 2026-09-10 (directiva del ejecutor). Antes decía
+# aquí que no, por la DEC-04 aplicada a sí misma: su valor es del CONSUMIDOR.
+# Ese razonamiento no se retira, se paga — un clon en otra ruta hereda el
+# `THYROX_ROOT` de este árbol, y quien clone corre `--force` para reescribirlo.
+# El contrato sigue siendo `.env.example`; ahora además se lee el valor vigente.
 #
 # Salidas: 0 escrito · 1 ya existía y no se pisa (usar --force) · 2 no pudo
 # derivar la raíz.

@@ -1,0 +1,4 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  El ascenso desde /home/user/thyrox aterriza en el PROVEEDOR (/home/user/thyrox), no en un consumidor. El proveedor tambien lleva .claude/, asi que el marcador no lo distingue. Declara THYROX_CONSUMER con la raiz del clon, pasa `declared=`, o invoca desde dentro de el. NO se devuelve la raiz de thyrox: el llamador compondria un hogar dentro del proveedor que declarations.py no lista.
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 2 archivo(s) pedido(s))
+check-harness-typecheck: sin cambios en el paquete (alcance medido: 2 archivo(s) pedido(s))

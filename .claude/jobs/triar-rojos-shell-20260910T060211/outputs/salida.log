@@ -1,0 +1,19 @@
+tests/lib/test-script-deprecated.sh                  rc=1      FALLA gate: una raiz ausente rehusa con 2 — esperado [2] obtenido [0]
+tests/session/test-evidencia-varada.sh               rc=1    (sin linea de error; rc=1)  ultima: aciertos: 10 · fallos: 1
+tests/session/test-instalar-config-usuario.sh        rc=1      FAIL rc=0 · contenido intacto
+tests/verify/test-agent-artifacts.sh                 rc=1    FALLA ruta absoluta del paquete: el gate MIDE — esperado 'medido', obtenido 'eximido'
+tests/verify/test-cifra-de-artefacto-vivo.sh         rc=1    Traceback (most recent call last):
+tests/verify/test-coordinator-sin-worktree.sh        rc=1      FALLA exit 0 sobre .claude/agents
+tests/verify/test-destino-del-reporte.sh             rc=1      FAIL fuera de .claude/eventos/: /home/user/thyrox/eventos/validar-referencias-20260910T060216/reference-validation-report.txt
+tests/verify/test-eventos-hook.sh                    rc=1      FALLA ConfigChange NO se reporta como sin consumir — esperado [0] obtenido [1]
+tests/verify/test-generator-determinism.sh           rc=1      FALLA exit 0
+tests/verify/test-gitattributes.sh                   rc=1    (sin linea de error; rc=1)  ultima: test-gitattributes: 20 de 21 aserciones en verde
+tests/verify/test-hooks-timeout.sh                   rc=1      FAIL exit 1 con todos declarados: Traceback (most recent call last):
+tests/verify/test-mutante-en-staging.sh              rc=1    (sin linea de error; rc=1)  ultima: tests/verify/test-mutante-en-staging.sh: line 81: AQUI: unbound variable
+tests/verify/test-script-naming.sh                   rc=1      FALLA propone el nombre en snake — esperado [1] obtenido [0]
+tests/verify/test-suite-discrimina.sh                rc=1    (sin linea de error; rc=1)  ultima: 18 ok, 2 fallos
+tests/verify/test-veredicto-de-gate.sh               rc=1    (sin linea de error; rc=1)  ultima: tests/verify/test-veredicto-de-gate.sh: line 47: SINMEDIR: unbound variable
+tests/verify/test-verificar-premisa.sh               rc=1    (sin linea de error; rc=1)  ultima: test-verificar-premisa.sh: 12 ok · 9 fallo(s)
+tests/verify/test-vocabulario-prosa.sh               rc=1      FALLA el detector ve el control positivo real (democión) — esperado [1] obtenido []
+tests/verify/test_audit_delegates.sh                 rc=1    Traceback (most recent call last):
+__BG_EXIT__=0
