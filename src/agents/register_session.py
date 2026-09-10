@@ -751,10 +751,22 @@ def main() -> None:
     #   SubagentStart   agent_type: n        — sin alternativa
     #   SubagentStop    agent_type: a ?? ""  — cadena VACÍA si el cliente no lo tiene
     #
-    # Y `SubagentStart` no dispara en este entorno (:ref:`h-docs-167`), así que
-    # toda alta viene del segundo — el que puede emitir el vacío. La columna
-    # guarda la PROCEDENCIA, no el dato, igual que `usage_source` para los
-    # tokens (:ref:`h-docs-427`).
+    # Este bloque decía que `SubagentStart` no dispara aquí (:ref:`h-docs-167`)
+    # y que por tanto toda alta venía del segundo camino. **La premisa estaba
+    # ligada al entorno, y el entorno cambió.** Era cierta cuando se midió: los
+    # hooks declarados en el `settings.json` de un repo no cargan bajo el
+    # harness remoto (:ref:`h-docs-1010`). Al llevar el cableado al nivel de
+    # usuario, `SubagentStart` empezó a disparar — medido: 51 invocaciones
+    # suyas en el registro de errores, con `--type-source payload`.
+    #
+    # La consecuencia no es cosmética: si las dos altas existen, la segunda
+    # puede DEGRADAR lo que la primera supo, y por eso `type_source` arrastra
+    # su valor igual que la referencia arrastra las claves de `VAt`. Ver el
+    # arrastre en `agent_store.py` y su banco en `kaupamex-docs:
+    # .claude/eventos/procedencia-del-tipo-de-agente-*`.
+    #
+    # La columna guarda la PROCEDENCIA, no el dato, igual que `usage_source`
+    # para los tokens (:ref:`h-docs-427`).
     if agent_type:
         type_source = "payload"
     elif "agent_type" in payload:

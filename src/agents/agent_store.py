@@ -1269,7 +1269,36 @@ def cmd_update_session(args: argparse.Namespace) -> None:
             ("output_tokens", "COALESCE(?, output_tokens)", args.output_tokens),
             ("equiv_cost", "COALESCE(?, equiv_cost)", args.equiv_cost),
             ("usage_source", "COALESCE(?, usage_source)", args.usage_source),
-            ("type_source", "COALESCE(?, type_source)", args.type_source),
+            # `type_source` NO es un dato suelto: es la procedencia del dato de
+            # su columna hermana, y las dos se escriben en el mismo UPDATE. Con
+            # un `COALESCE(?, type_source)` pelado se desincronizaban — la fila
+            # conservaba el tipo que el alta le dio (protegido abajo por el
+            # NULLIF) mientras su procedencia pasaba a decir `vacio_en_origen`,
+            # que afirma lo contrario de la verdad. Medido: las dos unicas filas
+            # `source='hook'` con dos escrituras leen `sidecar` donde el alta
+            # habia escrito `payload`.
+            #
+            # La forma la fija la referencia: `zkr` relee el sidecar y ARRASTRA
+            # cada clave de `VAt` que el patch deja `undefined`, para que un
+            # escritor posterior no borre lo que uno anterior ya sabia. Aqui el
+            # arrastre se condiciona al MISMO predicado que protege al tipo:
+            # si el tipo existente gana, su procedencia se queda con el.
+            #
+            # SQLite evalua las expresiones del SET contra la fila PREVIA al
+            # UPDATE, asi que `subagent_type` aqui es el valor viejo sin que
+            # importe el orden de las columnas.
+            #
+            # El segundo predicado —`type_source IS NOT NULL`— no es adorno: sin
+            # el, el alta con `--crear-si-falta` se rompe. Ese camino INSERTA el
+            # tipo y despues UPDATEa, asi que al llegar aqui el tipo ya es real
+            # y la guarda rehusaria escribir la procedencia de ese mismo tipo.
+            # Lo que se protege es una procedencia YA ESCRITA, no cualquier tipo
+            # presente; el caso 1 de la suite es su control.
+            ("type_source",
+             "CASE WHEN NULLIF(subagent_type, 'desconocido') IS NOT NULL "
+             "      AND type_source IS NOT NULL "
+             "THEN type_source ELSE COALESCE(?, type_source) END",
+             args.type_source),
             ("spawn_depth", "COALESCE(?, spawn_depth)", args.spawn_depth),
             ("source", "COALESCE(?, source)", args.source),
             ("tool_use_id", "COALESCE(?, tool_use_id)", args.tool_use_id),

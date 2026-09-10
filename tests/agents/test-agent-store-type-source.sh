@@ -8,9 +8,14 @@
 #
 # La causa está medida en la fuente, no supuesta: el ejecutable construye el
 # payload de `SubagentStop` con `agent_type: a ?? ""`, mientras el de
-# `SubagentStart` pasa `agent_type: n` sin alternativa. Y `SubagentStart` no
-# dispara en este entorno (:ref:`h-docs-167`), así que toda alta viene del
-# primero — el que puede emitir la cadena vacía.
+# `SubagentStart` pasa `agent_type: n` sin alternativa — y ademas ese tipo es
+# el matcher del hook, asi que va real por construccion.
+#
+# Esta cabecera decia que `SubagentStart` no dispara aqui (:ref:`h-docs-167`).
+# La premisa estaba ligada al entorno y el entorno cambio al llevar el
+# cableado al nivel de usuario: hoy disparan LOS DOS, y por eso hacen falta
+# los casos 6-8 — con dos escritores, el segundo puede degradar lo que el
+# primero supo.
 #
 # CONTROL QUE PUEDE FALLAR (sub-patrón D de `metrica-decide-la-conclusion.md`):
 # el caso 5 anula el discriminador —escribe `type_source` en NULL para todas—
@@ -94,6 +99,93 @@ afirmar "anulado: vacio_en_origen deja de verse" "0" "$(consulta "select count(*
 afirmar "anulado: ausente deja de verse"         "0" "$(consulta "select count(*) from agent_sessions where type_source='ausente'")"
 afirmar "anulado: las 2 quedan indistinguibles"  "2" "$(consulta "select count(*) from agent_sessions where subagent_type='desconocido'")"
 
+
+# ---------------------------------------------------------------------------
+# El ARRASTRE de la procedencia. La referencia lo hace con `zkr`/`VAt`: un
+# escritor posterior NO borra lo que uno anterior ya sabia. Aqui las dos
+# columnas son hermanas —`subagent_type` y su `type_source`— y solo la primera
+# estaba protegida, asi que se desincronizaban: la fila conservaba el tipo que
+# el Start le dio y su procedencia pasaba a decir `vacio_en_origen`, que
+# significa lo contrario de la verdad.
+#
+# Banco: `kaupamex-docs: .claude/eventos/procedencia-del-tipo-de-agente-*`.
+# ---------------------------------------------------------------------------
+# `--claude-dir` es el PADRE: el store aterriza en <padre>/agent-results/.
+DOS="$TMP/dos"; DB2="$DOS/agent-results/agent_store.sqlite3"; mkdir -p "$DOS"
+consulta2() { python3 -c "
+import sqlite3, sys
+c = sqlite3.connect('$DB2')
+f = c.execute(sys.argv[1]).fetchone()
+print('' if f is None or f[0] is None else f[0])
+" "$1"; }
+
+registrar() {  # registrar <agent_id> <tipo> <procedencia>
+    python3 "$STORE" registrar-sesion --claude-dir "$DOS" \
+        --agent-id "$1" --subagent-type "$2" --type-source "$3" \
+        --session-id s1 --status running >/dev/null 2>&1
+}
+actualizar() {  # actualizar <agent_id> <tipo> <procedencia>
+    python3 "$STORE" actualizar-sesion --claude-dir "$DOS" \
+        --agent-id "$1" --subagent-type "$2" --type-source "$3" \
+        --status completed --crear-si-falta >/dev/null 2>&1
+}
+pareja() {  # siembra los dos casos sobre el store secundario
+    registrar a6666666666666666 general-purpose payload
+    actualizar a6666666666666666 desconocido vacio_en_origen
+    registrar a7777777777777777 desconocido vacio_en_origen
+    actualizar a7777777777777777 general-purpose sidecar
+}
+
+echo "== Caso 6: el Stop sin tipo NO degrada la procedencia que puso el Start"
+pareja
+afirmar "el tipo se preserva (ya estaba protegido)" "general-purpose" \
+    "$(consulta2 "select subagent_type from agent_sessions where agent_id='a6666666666666666'")"
+afirmar "la procedencia se preserva EN PAREJA"      "payload" \
+    "$(consulta2 "select type_source from agent_sessions where agent_id='a6666666666666666'")"
+
+echo "== Caso 7 (la otra mitad): sobre una fila SIN tipo, la procedencia si se rellena"
+afirmar "el tipo se rellena"        "general-purpose" \
+    "$(consulta2 "select subagent_type from agent_sessions where agent_id='a7777777777777777'")"
+afirmar "la procedencia se rellena" "sidecar" \
+    "$(consulta2 "select type_source from agent_sessions where agent_id='a7777777777777777'")"
+
+echo "== Caso 8 (CONTROL ANULADO): con la expresion vieja, el 6 CAE y el 7 SOBREVIVE"
+# Se retira la causa —el arrastre— y tienen que caer EXACTAMENTE las aserciones
+# que dependen de ella. Si al anularla el veredicto no cambiara, el caso 6 no
+# estaria midiendo el arrastre. El bytecode se borra: restaurar el fuente NO
+# restaura el `__pycache__`, y un rojo por bytecode viejo no distingue «el
+# porte esta roto» de «el instrumento lee una copia».
+if ! grep -q 'CASE WHEN NULLIF(subagent_type' "$STORE"; then
+    printf '  FALLO %s\n' "control anulado: no existe la expresion de arrastre que anular"
+    (( FALLO++ ))
+else
+    cp "$STORE" "$TMP/agent_store.py.intacto"
+    python3 -c "
+import pathlib, re, sys
+p = pathlib.Path(sys.argv[1]); s = p.read_text()
+# La expresion viva ocupa TRES lineas y son DOS literales adyacentes; el patron
+# tiene que verla asi, no como un literal suelto.
+s2 = re.sub(r'\(\"type_source\",\s*\"CASE WHEN.*?END\",\s*args\.type_source\),',
+            '(\"type_source\", \"COALESCE(?, type_source)\", args.type_source),',
+            s, flags=re.S)
+assert s2 != s, 'la anulacion no sustituyo nada'
+p.write_text(s2)
+" "$STORE"
+    find "$(dirname "$STORE")" -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null
+    rm -f "$DB2"
+    pareja
+    afirmar "anulado: el 6 CAE (la procedencia se pisa)" "vacio_en_origen" \
+        "$(consulta2 "select type_source from agent_sessions where agent_id='a6666666666666666'")"
+    afirmar "anulado: el 7 SOBREVIVE (no dependia del arrastre)" "sidecar" \
+        "$(consulta2 "select type_source from agent_sessions where agent_id='a7777777777777777'")"
+    cp "$TMP/agent_store.py.intacto" "$STORE"
+    find "$(dirname "$STORE")" -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null
+    if cmp -s "$TMP/agent_store.py.intacto" "$STORE"; then
+        afirmar "el fuente queda restaurado" "identico" "identico"
+    else
+        afirmar "el fuente queda restaurado" "identico" "DIVERGE"
+    fi
+fi
 echo
 echo "$OK ok · $FALLO falla(s)  (alcance medido: $((OK+FALLO)) aserciones)"
 [[ "$FALLO" -eq 0 ]]
