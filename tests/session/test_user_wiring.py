@@ -407,5 +407,74 @@ check("15-bis.2 y la idempotencia de 15.9 SOBREVIVE", True, _r19["unchanged"])
 check("15-bis.3 restaurado, la constante vuelve a su valor",
       ("advisorModel",), w.CACHE_KEY_FIELDS)
 
+print("== 16. el destino del store en el CUERPO del hook, no en su cableado ==")
+# `broken_targets` es estructuralmente ciego a esto, y su verde lo demuestra: la
+# ruta que el settings nombra EXISTE en los dos cuerpos, asi que los dio por
+# sanos mientras componian un destino paralelo al hogar del store. Es el
+# sub-patron D — un control que pasa sin poder distinguir «el cuerpo delega» de
+# «el cuerpo compone».
+#
+# CONTROL POSITIVO REAL, no fabricado: las lineas salen del arbol del consumidor
+# en `kaupamex-docs@e897831f`, copiadas verbatim —
+# `stop-gate-tablero-desactualizado.sh:194,201` y
+# `volcar-tarea-al-store.sh:60,97`. Un incumplidor escrito por quien escribe el
+# patron hereda su encuadre y confirma el instrumento.
+_cuerpos = _tmp / "hook_bodies"
+_cuerpos.mkdir(exist_ok=True)
+(_cuerpos / "compone-en-la-bandera.sh").write_text(
+    '        ejecutar_con_registro tablero-snapshot-tareas \\\n'
+    '            python3 "$STORE_CLI" snapshot-tareas \\\n'
+    '            --claude-dir "$RAIZ/.claude/agent-results" \\\n'
+    '            --tasks-dir "$TEAM_DIR"\n')
+(_cuerpos / "compone-en-el-default.sh").write_text(
+    'STORE_DIR="${KX_STORE_DIR:-$RAIZ/.claude/agent-results}"\n'
+    'python3 "$STORE_CLI" snapshot-tareas \\\n'
+    '    --claude-dir "$STORE_DIR" \\\n'
+    '    --tasks-dir "$TEAM_DIR"\n')
+
+_antes = w.misdirected_store_destinations(_cuerpos)
+check("16.1 el control positivo real da DOS incumplidores", 2, len(_antes))
+check("16.2 y los separa por forma",
+      ["default", "flag"], sorted({d["form"] for d in _antes}))
+
+# La forma opt-in NO es incumplidora: sin la variable el arreglo queda vacio y
+# la invocacion no lleva bandera, asi que el destino lo resuelve el proveedor.
+_optin = _tmp / "hook_bodies_optin"
+_optin.mkdir(exist_ok=True)
+(_optin / "opt-in.sh").write_text(
+    'DESTINO=()\n'
+    '[[ -n "${KX_STORE_DIR:-}" ]] && DESTINO=(--claude-dir "$KX_STORE_DIR")\n'
+    'python3 "$STORE_CLI" snapshot-tareas "${DESTINO[@]}" --tasks-dir "$D"\n')
+check("16.3 el override sin default NO se reporta",
+      [], w.misdirected_store_destinations(_optin))
+
+# Y un cuerpo que NOMBRA `agent-results` sin declararlo destino tampoco: el
+# gate mide la bandera, no la mencion.
+_mencion = _tmp / "hook_bodies_mencion"
+_mencion.mkdir(exist_ok=True)
+(_mencion / "solo-lo-menciona.sh").write_text(
+    '# el store vive en agent-results, y este hook no lo declara\n'
+    'LOG="$RAIZ/.claude/agent-results/registro.md"\n')
+check("16.4 mencionar el directorio no es declararlo destino",
+      [], w.misdirected_store_destinations(_mencion))
+
+print("== 16-bis. CONTROL DE ANULACION: se retira la bandera del destino ==")
+# Si `STORE_DEST_FLAGS` dejara de nombrar `--claude-dir`, las DOS formas dejan
+# de verse. Debe caer 16.1 y 16.2, y NO 16.3 ni 16.4 — esas dos miden que un
+# cuerpo sano no se reporte, y un instrumento ciego tambien las pasa. Ese
+# contraste es lo que hace que el verde de la seccion discrimine.
+_flags_original = w.STORE_DEST_FLAGS
+w.STORE_DEST_FLAGS = ()
+try:
+    _anulado = w.misdirected_store_destinations(_cuerpos)
+    _anulado_sano = w.misdirected_store_destinations(_optin)
+finally:
+    w.STORE_DEST_FLAGS = _flags_original
+
+check("16-bis.1 anulado, los dos incumplidores dejan de verse", 0, len(_anulado))
+check("16-bis.2 y el cuerpo sano SOBREVIVE en verde", [], _anulado_sano)
+check("16-bis.3 restaurado, la constante vuelve a su valor",
+      ("--claude-dir", "--results-dir"), w.STORE_DEST_FLAGS)
+
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)

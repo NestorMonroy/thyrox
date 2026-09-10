@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Protocol
@@ -389,6 +390,75 @@ def broken_targets(settings: dict) -> list[dict]:
                     rotos.append({"event": evento, "path": ruta,
                                   "command": entrada["command"]})
     return rotos
+
+
+#: Las banderas con que un llamador DECLARA el destino del store. Son constante
+#: y no literal por el control de anulacion: retirarlas tiene que hacer caer
+#: exactamente las aserciones que dependen de ver la bandera.
+STORE_DEST_FLAGS = ("--claude-dir", "--results-dir")
+
+#: El nombre del directorio del store. Su presencia sola no es defecto — un
+#: cuerpo puede nombrarlo sin declararlo destino.
+STORE_DIR_NAME = "agent-results"
+
+_ASSIGN_WITH_DEFAULT = re.compile(
+    r'^\s*([A-Za-z_][A-Za-z_0-9]*)=.*\$\{[A-Za-z_][A-Za-z_0-9]*:-(?P<default>[^}]*)\}')
+
+
+def misdirected_store_destinations(hook_dir: Path) -> list[dict]:
+    """Cuerpos de hook que COMPONEN el destino del store en vez de delegarlo.
+
+    El destino lo resuelve el proveedor: ``resolve_store_dir`` toma la ruta
+    declarada, luego el clon de ``--repo``, y sin ninguno de los dos cae al
+    HOGAR. Un cuerpo que compone la ruta del consumidor gana sobre los dos
+    peldanos y abre una copia paralela del store en ese clon.
+
+    Se reportan DOS formas, y la separacion importa porque el arreglo difiere:
+
+    ``flag``
+        la bandera lleva el directorio en su propio valor. El arreglo es
+        retirar la bandera.
+    ``default``
+        la bandera lee una variable cuyo ``${VAR:-...}`` compone el directorio.
+        El arreglo es dejar la variable SIN default, con lo que el override
+        pasa a ser opt-in: sin ella no hay bandera que pasar.
+
+    *Metrica:* lineas no comentadas de cada ``.sh`` del directorio, cruzando la
+    presencia de una bandera de `STORE_DEST_FLAGS` con la de `STORE_DIR_NAME`
+    —en el valor de la bandera, o en el default de la variable que consume—.
+    *Ciega a:* un destino compuesto en otro lenguaje (un hook en Python que
+    arme la ruta), a un default declarado en un archivo distinto del que usa la
+    bandera, y a una bandera cuyo valor se construya en tiempo de ejecucion sin
+    que el literal aparezca en el cuerpo.
+    """
+    hallazgos: list[dict] = []
+    for cuerpo in sorted(Path(hook_dir).glob("*.sh")):
+        lineas = cuerpo.read_text(encoding="utf-8", errors="ignore").splitlines()
+        # Primera pasada: variables cuyo DEFAULT compone el directorio.
+        compuestas = {}
+        for numero, linea in enumerate(lineas, 1):
+            if linea.lstrip().startswith("#"):
+                continue
+            coincide = _ASSIGN_WITH_DEFAULT.match(linea)
+            if coincide and STORE_DIR_NAME in coincide.group("default"):
+                compuestas[coincide.group(1)] = numero
+        # Segunda pasada: donde se DECLARA el destino.
+        for numero, linea in enumerate(lineas, 1):
+            if linea.lstrip().startswith("#"):
+                continue
+            if not any(bandera in linea for bandera in STORE_DEST_FLAGS):
+                continue
+            if STORE_DIR_NAME in linea:
+                hallazgos.append({"file": cuerpo.name, "line": numero,
+                                  "form": "flag", "text": linea.strip()})
+                continue
+            usada = next((v for v in compuestas if f"${v}" in linea
+                          or "${" + v + "}" in linea), None)
+            if usada:
+                hallazgos.append({"file": cuerpo.name, "line": numero,
+                                  "form": "default", "text": linea.strip(),
+                                  "declared_at": compuestas[usada]})
+    return hallazgos
 
 
 def _commands_by_event(settings: dict) -> dict:
