@@ -44,12 +44,35 @@ if [[ -z "$_thyrox_root" ]]; then
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
-STORE_CLI="$RAIZ/.claude/scripts/agents/agent_store.py"
+STORE_CLI="$RAIZ/src/agents/agent_store.py"
 CLAUDE_HOME="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 TASKS_ROOT="${CLAUDE_TASKS_ROOT:-$CLAUDE_HOME/tasks}"
 
-CLAUDE_DIR="$RAIZ/.claude/agent-results"
-SALIDA="$RAIZ/source/gestion/pm/reportes/tablero-de-tareas.rst"
+# CLAUDE_DIR NO se fuerza por defecto: `agent_store.py resolve_store_dir()`
+# ya resuelve, sin --claude-dir, al HOGAR (thyrox/agent-results/). Un default
+# aqui era el mismo defecto que ese resolutor documenta -- un --claude-dir
+# explicito pero equivocado "crea una copia paralela del store" (ver su
+# docstring). Solo se declara si el LLAMADOR lo pide.
+CLAUDE_DIR=""
+# SALIDA vive en `docs`, no en la raiz de thyrox: son dos raices DISTINTAS
+# (RAIZ de arriba es thyrox_root). reach.root("docs") resuelve la del
+# consumidor, derivada del hermano kaupamex-docs -- nada de aritmetica fija.
+DOCS_ROOT="$(python3 -c "
+import sys; sys.path.insert(0, '$RAIZ/src/paths')
+import reach
+print(reach.root('docs'))
+")" || {
+    echo "refresh-board.sh: no pude resolver la raiz de docs via reach.py" >&2
+    exit 2
+}
+SALIDA="$DOCS_ROOT/source/gestion/pm/reportes/tablero-de-tareas.rst"
+# `agent_store.py::cmd_render_tablero` calcula la ruta de la `:fuente:` RELATIVA
+# a `agents_paths.consumer_root()`, que asciende desde el cwd buscando `.claude/`.
+# Invocado desde thyrox (este guion vive ahi) el ascenso aterriza en el PROPIO
+# proveedor y `consumer_root()` rehusa (ConsumerUnknownError) -- el mismo
+# mensaje nombra el remedio: declarar THYROX_CONSUMER. Es la raiz de docs que
+# ya se resolvio arriba, no una nueva.
+export THYROX_CONSUMER="$DOCS_ROOT"
 TEAM_NAME="${CLAUDE_CODE_TASK_LIST_ID:-${CLAUDE_CODE_TEAM_NAME:-}}"
 STRICT=0
 

@@ -84,15 +84,40 @@ set -euo pipefail
 # declarada. El guard avisa siempre y rehúsa salvo que el llamador declare
 # `ACCEPT_DEPRECATED=snapshot-tasks.sh` — hoy sólo lo hace el hook del
 # tablero, en la rama que corre cuando el renderizador canónico no pudo.
-source "$(dirname "${BASH_SOURCE[0]}")/../deprecated.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/deprecated.sh"
 deprecated_guard snapshot-tasks.sh
 
 CLAUDE_HOME="${CLAUDE_HOME:-$HOME/.claude}"
 TASKS_ROOT="$CLAUDE_HOME/tasks"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-REGISTRO_CANONICO="$REPO_ROOT/source/gestion/pm/reportes/tablero-de-tareas.rst"
+# Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
+# y la RUTA a su declaracion. Los dos literales que el ultimo recurso
+# necesita van tras constantes que el entorno tambien fija: cablearlos le
+# quitaria al consumidor la decision de donde van las cosas.
+_thyrox_root="${THYROX_ROOT:-}"
+if [[ -z "$_thyrox_root" && -n "${THYROX_ENV_FILE:-}" && -f "${THYROX_ENV_FILE}" ]]; then
+    _thyrox_root="$(sed -n 's/^[[:space:]]*THYROX_ROOT[[:space:]]*=[[:space:]]*//p' \
+        "$THYROX_ENV_FILE" | tail -1 | tr -d '"'"'"'')"
+fi
+if [[ -z "$_thyrox_root" ]]; then
+    _thyrox_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    while [[ "$_thyrox_root" != "/" && ! -f "$_thyrox_root/${THYROX_LOCATOR:-src/paths/reach.py}" ]]; do
+        _thyrox_root="$(dirname "$_thyrox_root")"
+    done
+fi
+# REGISTRO_CANONICO vive en `docs`, no en thyrox: la raiz que hace falta aqui
+# NO es thyrox_root, es la del consumidor "docs" (reach.root("docs")), que
+# desde este arbol se deriva del hermano `kaupamex-docs` o de lo declarado.
+# Un `../../..` fijo era la aritmetica que la mudanza a thyrox invalido — ver
+# la cabecera de este archivo y `src/lib/reach.sh`.
+REGISTRO_CANONICO="$(python3 -c "
+import sys; sys.path.insert(0, '$_thyrox_root/src/paths')
+import reach
+print(reach.root('docs') / 'source/gestion/pm/reportes/tablero-de-tareas.rst')
+")" || {
+    echo "snapshot-tasks.sh: no pude resolver la raiz de docs via reach.py" >&2
+    exit 2
+}
 
 usage() {
   cat <<'EOF'

@@ -29,7 +29,7 @@
 # es justo lo más reciente. Antes que publicar eso, el guion se niega.
 set -uo pipefail
 
-source "$(dirname "${BASH_SOURCE[0]}")/../deprecated.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/deprecated.sh"
 deprecated_guard refrescar-tablero.sh
 
 # Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
@@ -49,12 +49,29 @@ if [[ -z "$_thyrox_root" ]]; then
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
-STORE_CLI="$RAIZ/.claude/scripts/agents/agent_store.py"
+STORE_CLI="$RAIZ/src/agents/agent_store.py"
 CLAUDE_HOME="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 TASKS_ROOT="${CLAUDE_TASKS_ROOT:-$CLAUDE_HOME/tasks}"
 
-CLAUDE_DIR="$RAIZ/.claude/agent-results"
-SALIDA="$RAIZ/source/gestion/pm/reportes/tablero-de-tareas.rst"
+# CLAUDE_DIR NO se fuerza por defecto: `agent_store.py resolve_store_dir()`
+# ya resuelve, sin --claude-dir, al HOGAR (thyrox/agent-results/). Solo se
+# declara si el LLAMADOR lo pide (mismo criterio que refresh-board.sh).
+CLAUDE_DIR=""
+# SALIDA vive en `docs`, no en la raiz de thyrox (RAIZ = thyrox_root arriba).
+# reach.root("docs") resuelve la raiz del consumidor -- nada de aritmetica fija.
+DOCS_ROOT="$(python3 -c "
+import sys; sys.path.insert(0, '$RAIZ/src/paths')
+import reach
+print(reach.root('docs'))
+")" || {
+    echo "refrescar-tablero.sh: no pude resolver la raiz de docs via reach.py" >&2
+    exit 2
+}
+SALIDA="$DOCS_ROOT/source/gestion/pm/reportes/tablero-de-tareas.rst"
+# Ver la misma nota en refresh-board.sh: `cmd_render_tablero` calcula la
+# `:fuente:` relativa a `consumer_root()`, que asciende desde el cwd — y
+# desde thyrox aterriza en el propio proveedor. Se declara explicitamente.
+export THYROX_CONSUMER="$DOCS_ROOT"
 TEAM_NAME="${CLAUDE_CODE_TASK_LIST_ID:-${CLAUDE_CODE_TEAM_NAME:-}}"
 
 usage() {
