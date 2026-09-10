@@ -80,6 +80,382 @@ Herramientas transversales que no pertenecen al ciclo de 12 fases. Se invocan cu
 
 ---
 
+## Herramientas de Ejecución Asincrónica
+
+Guía para ejecutar procesos de larga duración con visibilidad de progreso.
+
+### Monitor Tool: Streaming Observation
+
+Use Monitor cuando necesitas **visibilidad en tiempo real** en un proceso de larga duración.
+A diferencia de `bash run_in_background` (fire-and-forget), Monitor emite eventos mientras el proceso produce salida.
+
+#### Árbol de Decisión: Cuándo Usar Monitor
+
+¿El comando produce salida significativa?
+├─ NO → Usa Bash `run_in_background`  
+│       Por qué: No hay nada que observar. Fire-and-forget es correcto.
+│
+└─ SÍ → ¿Necesitas **visibilidad en tiempo real** del progreso?
+         ├─ NO → Usa Bash `run_in_background`
+         │       Por qué: Solo te importa el resultado final. No necesitas observar.
+         │
+         └─ SÍ → ¿El comando tiene un **punto de salida natural**?
+                  │       (i.e., se completará y terminará por sí solo)
+                  │
+                  ├─ NO → Usa `persistent: true`
+                  │       Por qué: El comando corre indefinidamente (e.g., `while true`, `tail -f`)
+                  │       Monitor streamea eventos hasta timeout o que el usuario lo detenga.
+                  │
+                  └─ SÍ → Usa Monitor estándar con timeout
+                          Por qué: El comando termina cuando se completa.
+                          Monitor emite evento de finalización naturalmente.
+
+#### Patrón A: Polling con Salida Condicional ✅
+
+**Caso de uso:** Esperar a que se complete una compilación, aparezca un archivo, inicie un servidor, etc.
+
+```bash
+# ✅ CORRECTO: Salida natural cuando se cumple la condición
+Monitor(
+  description="esperar completación de compilación",
+  command="until [ -f build/output.html ]; do sleep 2; done && echo 'Compilación completada'",
+  timeout_ms=60000
+)
+```
+
+Por qué funciona:
+- Salida natural: El bucle `until` termina → comando termina → Monitor emite finalización
+- Timeout: 60s es conservador (2.5x del tiempo esperado de compilación)
+- Evento claro: Un evento de finalización cuando se cumple la condición
+- Caso de uso: Bueno para Phase 9 PILOT/VALIDATE (esperar artefacto antes de continuar)
+
+#### Patrón B: Log Tail con Filtrado ✅
+
+**Caso de uso:** Monitorear logs de CI/CD, progreso de despliegue, detección de errores.
+
+```bash
+# ✅ CORRECTO: Bandera --line-buffered previene bloqueo de eventos
+Monitor(
+  description="monitoreo de pipeline CI",
+  command="tail -f pipeline.log | grep --line-buffered 'ERROR|FAIL|SUCCESS'",
+  timeout_ms=600000,
+  persistent=false
+)
+```
+
+Detalles clave:
+- Bandera `--line-buffered`: OBLIGATORIA para grep en Monitor (previene buffering de salida)
+- Estados terminales: Patrón cubre SUCCESS, FAIL, ERROR (todos los resultados posibles)
+- Timeout: 600s = 10 minutos (razonable para trabajo CI)
+- persistent: false → timeout matará el proceso después de 600s
+
+**Lo que NO debes hacer:**
+```bash
+# ❌ INCORRECTO: Sin --line-buffered (eventos atrasados 60+ segundos)
+Monitor(
+  command="tail -f pipeline.log | grep 'SUCCESS'"
+)
+# Problema: grep hace buffering → Monitor no recibe nada por 60 segundos
+
+# ❌ INCORRECTO: Sin cobertura de estado de error (falla silenciosa)
+Monitor(
+  command="tail -f pipeline.log | grep --line-buffered 'SUCCESS'"
+)
+# Problema: Si el pipeline falla, sin evento ERROR → Monitor queda en silencio
+```
+
+#### Patrón C: Monitoreo de Sistema de Archivos ✅
+
+**Caso de uso:** Detectar cuando aparecen archivos (resultados de tests, artefactos de compilación, cambios de configuración).
+
+```bash
+# ✅ CORRECTO: Salida natural cuando se recopilan N archivos
+Monitor(
+  description="esperando resultados de tests",
+  command="inotifywait -m --format '%f' /results | head -5",
+  timeout_ms=300000
+)
+```
+
+Por qué funciona:
+- Salida natural: `head -5` se detiene después de 5 archivos → comando termina → Monitor se completa
+- Eventos claros: 1 evento por archivo (5 eventos totales, luego salida)
+- Timeout: 300s = 5 minutos (razonable para ejecución de tests)
+
+#### Patrón D: Log Tail Sin Límite ❌
+
+**Anti-patrón:** No uses Monitor para streaming de logs sin límites sin `persistent: true`.
+
+```bash
+# ❌ INCORRECTO: Comando sin límites → timeout kill después de 300s
+Monitor(
+  description="observando logs de aplicación",
+  command="tail -f app.log",
+  timeout_ms=300000
+)
+```
+
+Qué sucede:
+1. Monitor inicia, `tail -f` corre
+2. Los logs streamean, Monitor emite eventos
+3. Después de 300s (5 minutos), se activa timeout
+4. `tail -f` es SIGKILL-ed (matado abruptamente, sin limpieza)
+5. El usuario ve notificación de timeout pero **NO PUEDE DISTINGUIR** si sigue ejecutándose o fue matado
+6. Estado ambiguo: ¿Sigue trabajando la aplicación? ¿Sigue escribiéndose el log?
+
+**Solución:** Haz que los logs emitan un evento de finalización
+```bash
+# ✅ MEJOR: Tail logs hasta evento específico
+Monitor(
+  description="logs hasta shutdown de aplicación",
+  command="tail -f app.log | grep --line-buffered 'Shutting down|Server stopped'",
+  timeout_ms=600000
+)
+```
+
+#### Patrón E: Sin Cobertura de Estado Terminal ❌
+
+**Anti-patrón:** No filtres solo por un resultado positivo (éxito) sin cubrir fallos.
+
+```bash
+# ❌ INCORRECTO: Silencioso si la compilación falla
+Monitor(
+  description="esperando éxito de compilación",
+  command="tail -f build.log | grep --line-buffered 'BUILD SUCCESS'",
+  timeout_ms=300000
+)
+```
+
+Qué sucede:
+- Si compilación tiene éxito: Evento emitido ✅
+- Si compilación falla: Sin evento ERROR → Monitor queda en silencio ❌
+- El usuario espera 300s → timeout → ambiguo: "¿Falló?" o "¿Sigue ejecutándose?"
+
+**La solución (cubre TODOS los estados terminales):**
+```bash
+# ✅ CORRECTO: Cubre éxito Y fallo
+Monitor(
+  description="monitoreo de compilación",
+  command="tail -f build.log | grep -E --line-buffered 'BUILD SUCCESS|BUILD FAILURE|BUILD ERROR'",
+  timeout_ms=300000
+)
+```
+
+**Regla:** La salida de Monitor debe reflejar todos los **estados terminales** (éxito, fallo, error, timeout).
+Si filtras salida, asegúrate de que el filtro cubre **TODAS** las formas en que la operación puede terminar.
+
+#### Gotchas Críticos
+
+##### Gotcha 1: Buffering de Pipe Bloquea Eventos
+
+**Problema:**
+```bash
+tail -f log | grep "ERROR"
+# → grep hace buffering de salida
+# → Monitor no recibe nada por 60+ segundos (o hasta que el buffer se llene)
+# → Los eventos se retrasan/pierden
+```
+
+**Solución:** Siempre usa la bandera `--line-buffered`:
+```bash
+tail -f log | grep --line-buffered "ERROR"  # ✅ Los eventos fluyen inmediatamente
+```
+
+**Por qué:** `--line-buffered` fuerza la salida después de cada línea, no cuando el buffer se llena.
+
+---
+
+##### Gotcha 2: Comandos Sin Límite = Estado Ambiguo
+
+**Problema:** Comandos sin salida natural (e.g., `tail -f`, `while true`) → timeout mata → usuario no puede decir si tuvo éxito o fue matado.
+
+**Solución:** Diseña para ejecución acotada o usa `persistent: true`.
+
+---
+
+##### Gotcha 3: Timeout es Destructivo (SIGKILL)
+
+**Problema:** En el límite de timeout, el proceso se mata abruptamente con SIGKILL. Sin limpieza, sin shutdown gradual.
+
+```bash
+Monitor(command="slow_operation.sh", timeout_ms=30000)
+# Si la operación se cuelga a los 25s, se mata a los 30s — sin limpieza
+```
+
+**Solución:** Usa timeout conservador (1.5x de la duración esperada).
+
+##### Gotcha 4: Event Batching es Transparente
+
+**Problema:** Salida dentro de 200ms → agrupada en 1 evento (no 1 por línea).
+
+**Impacto:** Salidas rápidas (e.g., `find` resultados) → 1 evento grande. Salidas lentas → eventos separados.
+
+**Solución:** No asumas correspondencia 1-a-1 línea/evento. Filtra/agrega en la fuente si necesitas tasa de eventos predecible.
+
+##### Gotcha 5: Monitor Loop — Observar UI desde Filesystem
+
+**Problema:** Monitorear cambios en archivo mientras el usuario modifica la aplicación en memoria → el evento nunca llega.
+
+```bash
+# ❌ INCORRECTO: User cancela tareas en UI, tú esperas cambio en .md
+Monitor(
+  description="esperar hasta que se cancelen todas las tareas",
+  command="watch -n 2 'grep -c \"[ ]\" tasks-pending.md'",
+  timeout_ms=60000
+)
+# El usuario cancela en la UI → cambios en memoria, NO en disk
+# Archivo no cambia → Monitor emite el mismo valor cada 2s indefinidamente
+# Sistema suprime notificaciones → Monitor timeout después de 30s
+# Claude (yo) queda en "loop" esperando pasivamente, respondiendo "[...]"
+```
+
+**Raíz del problema:** UI state (botones, checkboxes) ≠ Filesystem persistence  
+- User action → cambio en memoria  
+- Pero el archivo .md no se actualiza hasta que se guarde/persista  
+- Monitor ve filesystem → no ve cambios de UI
+
+**Señales de que estás en un loop:**
+- ✅ Recibiendo los mismos datos repetidamente
+- ✅ Esperando >5 segundos sin cambios
+- ✅ Sistema empieza a suprimir notificaciones
+- ✅ Tú respondiendo `[...]` pasivamente
+
+**Soluciones:**
+
+**Opción A: Snapshot (1 antes → 1 después)**
+```bash
+# ✅ MEJOR: No uses Monitor. Verifica estado antes y después.
+BEFORE=$(grep -c "[ ]" tasks.md)
+# [user does work]
+AFTER=$(grep -c "[ ]" tasks.md)
+echo "Cambio: $(($BEFORE - $AFTER)) tareas completadas"
+```
+
+**Opción B: Event-Based (inotifywait)**
+```bash
+# ✅ MEJOR: Solo emite cuando el archivo realmente cambia
+Monitor(
+  description="esperar cambios en tasks.md",
+  command="inotifywait -m -e modify tasks.md | while read; do echo 'Cambio detectado'; done",
+  timeout_ms=60000
+)
+```
+
+**Opción C: Timeout + Exit Condition**
+```bash
+# ✅ MEJOR: Límite de tiempo, salida cuando se cumple condición
+Monitor(
+  description="esperar completación (máximo 60s)",
+  command="for i in {1..30}; do grep -c '[ ]' tasks.md; sleep 2; [ $(grep -c '[ ]' tasks.md) -eq 0 ] && break; done",
+  timeout_ms=60000
+)
+```
+
+**La lección:** Si la fuente de verdad es la UI (memoria), monitorear el filesystem es observar el lugar equivocado. Adapta la estrategia al donde realmente ocurren los cambios.
+
+#### Solución de Problemas: Cuando las Cosas No Salen Bien
+
+##### "¿Por qué mi Monitor no emite nada?"
+
+```
+1. ¿El comando funciona de forma independiente?
+   → Ejecuta en terminal: `bash -c "tu comando"`
+   
+   ├─ NO (falla) → Corrige sintaxis del comando, intenta de nuevo
+   │
+   └─ SÍ (funciona) → Continúa
+
+2. ¿Hay problema de buffering?
+   → Verifica si estás usando pipe. Si sí, agrega bandera `--line-buffered`
+   
+   ├─ No puedo agregar bandera → Posiblemente el comando sea la herramienta incorrecta para Monitor
+   │
+   └─ Agregué bandera → Continúa
+
+3. ¿El comando realmente produce salida?
+   → Verifica: `tu_comando | head -1` (debe emitir 1 línea)
+   
+   ├─ Sin salida → El comando es silencioso. Monitor funciona (no hay nada que observar).
+   │
+   └─ Salida aparece → Continúa
+
+4. ¿El timeout es razonable?
+   → Default 300s (5 min). Para operaciones largas, aumenta timeout_ms.
+   
+   ├─ Timeout muy corto → Aumenta timeout, intenta de nuevo
+   │
+   └─ Timeout OK → El comando genuinamente está tomando un tiempo (está bien esperar)
+```
+
+##### "¿Por qué demasiados eventos?"
+
+**Solución:** Pre-filtra en la fuente antes de Monitor
+
+```bash
+# ❌ Muy ruidoso (1000+ eventos)
+tail -f log
+
+# ✅ Filtrado (solo líneas importantes)
+tail -f log | grep --line-buffered '^ERROR|^WARN|^INFO'
+
+# ✅ Agregado (cuenta por intervalo de tiempo)
+tail -f log | awk 'BEGIN{time=systime()} {if (systime()-time > 60) print "Batch at " systime() ": count=" count; count=0; time=systime()} /ERROR/ {count++}'
+```
+
+#### Integración con Herramientas THYROX
+
+**Monitor + Toma de Decisiones (Phase 10 EXECUTE):**
+
+```
+[Monitor: tail pipeline.log] → detecta evento "FAILED"
+                           ↓
+                    Usuario toma decisión
+                    ├─ ¿Rollback?
+                    ├─ ¿Reintentar?
+                    └─ ¿Continuar de todas formas?
+                           ↓
+                    [Agent responde a decisión]
+```
+
+**Monitor + Bash en Foreground (Feedback en Tiempo Real):**
+
+```
+[Monitor: tail app.log]     ← Background, streaming eventos
+         ↓
+[Bash: npm run build]       ← Foreground, ejecutando tarea
+         ↓
+El usuario ve ambos: progreso + salida de compilación simultáneamente
+```
+
+**Monitor + Agent en Paralelo:**
+
+```
+Agent 1: ejecutando deep-dive
+Agent 2: validando código
+Monitor: streaming metrics.log
+         ↓
+Las 3 salidas aparecen en conversación simultáneamente
+```
+
+### Bash Tool: `run_in_background`
+
+Usa `run_in_background` para comandos que deben ejecutarse asincronamente pero no necesitas observarlos.
+
+```bash
+# Fire-and-forget: inicia la tarea, continúa inmediatamente
+Bash(
+  command="npm run build",
+  description="building assets",
+  run_in_background=true
+)
+# Bash retorna inmediatamente. El comando sigue ejecutándose en segundo plano.
+```
+
+**Caso de uso:** Tests de larga duración, indexación, operaciones de limpieza, etc.
+Cuando tienes otras tareas que no dependen del resultado.
+
+---
+
 ## Methodology skills
 
 Cuando un WP requiere un marco metodológico específico, activar el skill de metodología
@@ -99,8 +475,10 @@ correspondiente **dentro** del workflow stage apropiado. Cada skill declara su
 | `sp:` | Strategic Planning | sp-context, sp-analysis, sp-gaps, sp-formulate, sp-plan, sp-execute, sp-monitor, sp-adjust | 1, 2, 3, 5, 6, 10, 11, 12 |
 | `cp:` | Consulting Process (McKinsey/BCG) | cp-initiation, cp-diagnosis, cp-structure, cp-recommend, cp-plan, cp-implement, cp-evaluate | 1, 2, 3, 5, 6, 10, 11 |
 | `bpa:` | Business Process Analysis | bpa-identify, bpa-map, bpa-analyze, bpa-design, bpa-implement, bpa-monitor | 1, 2, 3, 5, 10, 11 |
+| `scrum:` | Scrum (ágil iterativo) | scrum-backlog-refinement, scrum-sprint-planning, scrum-daily-standup, scrum-sprint-review, scrum-retrospective, scrum-definition-of-done | 3, 6, 7, 8, 9, 10, 11, 12 |
+| `kanban:` | Kanban (flujo / pull) | kanban-board-setup, kanban-wip-limits, kanban-flow-metrics, kanban-queue-management | 6, 8, 11 |
 
-> **Sistema extensible:** Los 11 namespaces implementados cubren las principales metodologías
+> **Sistema extensible:** Los 13 namespaces implementados cubren las principales metodologías
 > de mejora continua, gestión de proyectos, análisis de negocio, estrategia y consultoría.
 > El sistema soporta incorporar cualquier marco metodológico adicional siguiendo el patrón
 > `{metodología}-{paso}` con declaración de `THYROX Stage:` en su SKILL.md y anatomía completa
@@ -111,7 +489,9 @@ correspondiente **dentro** del workflow stage apropiado. Cada skill declara su
 > estructura del sistema; SDLC iterativo está cubierto por `rup:`.
 
 **Cómo activar:** invocar directamente el skill del paso, ej. `/dmaic-define`.
-El skill actualiza `now.md::flow` y `now.md::methodology_step`.
+El skill anota el paso en el `progreso-<slug>.rst` de la iniciativa. El `flow`
+no lo escribe el skill: se **declara** en la clave `:flow:` del bloque
+`.. meta::` del `alcance-<slug>.rst` (DEC-R-01).
 
 **Selección por necesidad:**
 - Mejora continua con ciclos rápidos → `pdca-*`
@@ -125,88 +505,100 @@ El skill actualiza `now.md::flow` y `now.md::methodology_step`.
 - Planificación estratégica (PESTEL/SWOT/BSC/OKR) → `sp-*`
 - Resolución de problemas complejos estilo consultoría → `cp-*`
 - Análisis y rediseño de procesos (BPMN/ESIA) → `bpa-*`
+- Desarrollo ágil iterativo en Sprints (backlog, ceremonias) → `scrum-*`
+- Flujo continuo / mantenimiento sin iteraciones (pull, WIP) → `kanban-*`
+
+> **Ágil vs predictivo:** `pm-*` (PMBOK) y `rup-*` encuadran el proyecto
+> (charter, alcance, riesgos). `scrum-*` y `kanban-*` gobiernan la
+> **ejecución** dentro de ese encuadre: elige `scrum-*` cuando hay
+> alcance evolutivo y cadencia de Sprints; `kanban-*` cuando el trabajo
+> llega de forma continua y heterogénea (bugs, soporte). Guía completa de
+> selección: ``docs/source/gestion/pm/guias/metodologias-agiles.rst``.
 
 ---
 
 ## Dónde viven los artefactos
 
-| Fase | Artefacto | Ubicación | Template |
-|------|-----------|-----------|----------|
-| 1 DISCOVER | Síntesis | `work/.../discover/{nombre-wp}-analysis.md` | [introduction.md.template](../workflow-discover/assets/introduction.md.template) |
-| 1 DISCOVER | Work package | `context/work/YYYY-MM-DD-HH-MM-SS-nombre/` | — |
-| — | Registro de riesgos (transversal) | `work/../{nombre-wp}-risk-register.md` | [risk-register.md.template](../workflow-discover/assets/risk-register.md.template) |
-| — | Gates de fases (mediano/grande) | `work/../{nombre-wp}-exit-conditions.md` | [exit-conditions.md.template](../workflow-discover/assets/exit-conditions.md.template) |
-| — | Principios globales del proyecto | `constitution.md` (raíz) | [constitution.md.template](../workflow-discover/assets/constitution.md.template) |
-| — | Decisiones arquitectónicas | `{adr_path}/adr-{tema}.md` (ver CLAUDE.md) | [adr.md.template](../workflow-discover/assets/adr.md.template) |
-| 2 MEASURE | Baseline + métricas | `work/.../measure/*.md` | — |
-| 3 ANALYZE | Sub-análisis por dominio | `work/.../analyze/{subdomain}/*.md` | — |
-| 4 CONSTRAINTS | Restricciones | `work/.../constraints/*.md` | [constraints.md.template](../workflow-discover/assets/constraints.md.template) |
-| 5 STRATEGY | Estrategia de solución | `work/.../strategy/{nombre-wp}-solution-strategy.md` | [solution-strategy.md.template](../workflow-strategy/assets/solution-strategy.md.template) |
-| 6 PLAN | Scope del trabajo | `work/.../plan/{nombre-wp}-plan.md` | [plan.md.template](../workflow-scope/assets/plan.md.template) |
-| 7 DESIGN/SPECIFY | Especificación de requisitos | `work/.../design/{nombre-wp}-requirements-spec.md` | [requirements-specification.md.template](../workflow-structure/assets/requirements-specification.md.template) |
-| 7 DESIGN/SPECIFY | Diseño técnico (complejo) | `work/.../design/{nombre-wp}-design.md` | [design.md.template](../workflow-structure/assets/design.md.template) |
-| 8 PLAN EXECUTION | Plan de tareas | `work/.../plan-execution/{nombre-wp}-task-plan.md` | [tasks.md.template](../workflow-decompose/assets/tasks.md.template) |
-| 9 PILOT/VALIDATE | Resultados del PoC | `work/.../pilot/*.md` | — |
-| 10 EXECUTE | Log de ejecución | `work/.../execute/{nombre-wp}-execution-log.md` | [execution-log.md.template](../workflow-implement/assets/execution-log.md.template) |
-| 10 EXECUTE | Código | Repositorio (git) | — |
-| 11 TRACK/EVALUATE | Lecciones aprendidas | `work/.../track/{nombre-wp}-lessons-learned.md` | [lessons-learned.md.template](../workflow-track/assets/lessons-learned.md.template) |
-| 11 TRACK/EVALUATE | WP Changelog | `work/.../track/{nombre-wp}-changelog.md` | [wp-changelog.md.template](../workflow-track/assets/wp-changelog.md.template) |
-| 11 TRACK/EVALUATE | TDs resueltos (si aplica) | `work/.../track/{nombre-wp}-technical-debt-resolved.md` | [technical-debt-resolved.md.template](../workflow-track/assets/technical-debt-resolved.md.template) |
-| 12 STANDARDIZE | Patrones reutilizables | `work/.../standardize/{nombre-wp}-patterns.md` | [patterns.md.template](../workflow-standardize/assets/patterns.md.template) |
-| 12 STANDARDIZE | Reporte final (grande) | `work/.../standardize/{nombre-wp}-final-report.md` | [final-report.md.template](../workflow-track/assets/final-report.md.template) |
-| Con flow activo | Artefacto del methodology skill | `work/{wp}/{cajón-de-fase}/{methodology}-{step}.md` | Template del skill de metodología |
-| — | Errores | `context/errors/{descripcion}.md` | [error-report.md.template](assets/error-report.md.template) |
+> **Corregido 2026-08-07 (H-DOCS-107).** La tabla de 24 filas que había aquí
+> mapeaba artefacto → `work/.../{cajón-de-fase}/*.md`, un árbol que no existe en
+> kaupamex. **No se tradujo fila por fila**: el set de artefactos de una
+> iniciativa lo fija **DEC-AM-01** (`artefactos-minimos-iniciativa.md`) y no son
+> doce cajones por stage, sino un juego plano de `.rst`. Traducir 24 filas
+> habría fabricado un segundo mapa que compite con el canon.
+
+**Artefactos de una iniciativa** — canon: DEC-AM-01. Viven planos en
+`docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/`:
+
+| Artefacto | Cuándo es obligatorio | Plantilla real |
+|-----------|----------------------|----------------|
+| `index.rst` | siempre | [tpl-iniciativa-index.rst](../../../source/normativa/estandares/plantillas/tpl-iniciativa-index.rst) |
+| `alcance-<slug>.rst` | al dejar DISCOVER (`:estado:` ≥ `en-definicion`); lleva **Premisa verificada** + `:flow:` | [tpl-iniciativa-alcance.rst](../../../source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst) |
+| `progreso-<slug>.rst` | en `en-ejecucion` | [tpl-iniciativa-progreso.rst](../../../source/normativa/estandares/plantillas/tpl-iniciativa-progreso.rst) |
+| `analisis-<slug>.rst` | condicional: si hay investigación con hallazgos calibrados | — |
+| `decisiones-<slug>.rst` | condicional: si hay ≥1 decisión con alternativas (DEC-NN) | — |
+| `tareas-<slug>.rst` | condicional: si hay ≥1 tarea atómica T-NNN | [tpl-iniciativa-tareas.rst](../../../source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst) |
+| `hallazgos/hallazgo-<ID>-<corto>.rst` + su `index.rst` | por hallazgo, desde 2026-08-03 | — |
+
+**Artefactos que NO viven en la iniciativa:**
+
+| Artefacto | Dónde | Nota |
+|-----------|-------|------|
+| ADRs de producto | `source/{backend,frontend}/adr/*.rst` | [tpl-adr.rst](../../../source/normativa/estandares/plantillas/tpl-adr.rst) |
+| Decisiones de documentación | `source/gestion/decisiones/` | DEC-DOC |
+| Riesgos y deuda técnica | `source/risks-technical-debt/registro-riesgos-y-deuda-tecnica.rst` | registro **único** del proyecto, no uno por WP |
+| Principios globales | `source/normativa/principios/` | sustituye al `constitution.md` del template |
+| Build-logs | `docs/build-logs/<slug>/*.log` | fuera de `source/` y git-ignored (`build-logs.md`) |
+
+Los `*.md.template` de `workflow-*/assets/` son del THYROX genérico y producen
+`.md`; las plantillas vigentes de kaupamex son los `tpl-*.rst` de arriba.
 
 ## Estructura de un work package
 
-Estructura plana por fase (flat-by-phase): cada cajón = una fase THYROX.
-Los cajones se crean a medida que el WP avanza — no se crean vacíos por adelantado.
+> **Corregido 2026-08-07 (H-DOCS-107).** El árbol de doce cajones por fase que
+> había aquí es del THYROX genérico y **no se usa** en kaupamex. La estructura
+> real es **plana**: un juego de `.rst` por iniciativa, con el `.. meta::` de
+> cada artefacto llevando su estado. Los doce stages siguen existiendo como
+> **ciclo de trabajo**; lo que no existe es un directorio por stage.
 
 ```
-context/work/YYYY-MM-DD-HH-MM-SS-nombre/
-│
-│  ARTEFACTOS TRANSVERSALES (raíz — sin cajón)
-├── {nombre}-risk-register.md         ← Riesgos vivos Phase 1→12 — REQUERIDO
-├── {nombre}-exit-conditions.md       ← Gates de fases (mediano/grande)
-│
-│  CAJONES DE FASE (aparecen cuando la fase produce contenido)
-├── discover/                         ← Phase 1: contexto, stakeholders, síntomas
-│   └── {nombre}-analysis.md          ← Síntesis — REQUERIDO
-├── measure/                          ← Phase 2: baseline + métricas
-├── analyze/                          ← Phase 3: root cause
-│   └── {subdomain}/                  ← Subdomains libres dentro del cajón
-├── constraints/                      ← Phase 4: restricciones
-├── strategy/                         ← Phase 5: decisión arquitectónica
-│   └── {nombre}-solution-strategy.md
-├── plan/                             ← Phase 6: scope + roadmap
-│   └── {nombre}-plan.md
-├── design/                           ← Phase 7: especificación técnica
-│   ├── {nombre}-requirements-spec.md
-│   └── {nombre}-design.md
-├── plan-execution/                   ← Phase 8: tareas atómicas
-│   └── {nombre}-task-plan.md
-├── pilot/                            ← Phase 9: PoC + validación
-├── execute/                          ← Phase 10: ejecución
-│   └── {nombre}-execution-log.md
-├── track/                            ← Phase 11: evaluación + lecciones
-│   ├── {nombre}-lessons-learned.md
-│   └── {nombre}-changelog.md
-└── standardize/                      ← Phase 12: documentar + propagar
-    └── {nombre}-final-report.md
+docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/
+│                                    ↑ kebab-case estable, SIN timestamp (I-004)
+├── index.rst                        ← toctree + :estado: canónico — SIEMPRE
+├── alcance-<slug>.rst               ← QUÉ + POR QUÉ + criterio + fuera-de-scope
+│                                      + "Premisa verificada" + :flow: — al dejar DISCOVER
+├── progreso-<slug>.rst              ← bitácora; lleva el stage y el paso de metodología
+├── analisis-<slug>.rst              ← condicional: hallazgos calibrados PROVEN/INFERRED
+├── decisiones-<slug>.rst            ← condicional: DEC-NN con alternativas evaluadas
+├── tareas-<slug>.rst                ← condicional: T-NNN atómicas con entregable
+└── hallazgos/                       ← un archivo por hallazgo (desde 2026-08-03)
+    ├── index.rst                    ← toctree + tabla ID · severidad · estado
+    └── hallazgo-<ID>-<corto>.rst
 ```
+
+El estado de la iniciativa se lee del `:estado:` de su `index`/`alcance`
+(DEC-SM-01) y del `progreso`, no de un archivo de sesión.
 
 ## Naming
 
 ```
-Archivos:        kebab-case.md
-Work packages:   YYYY-MM-DD-HH-MM-SS-nombre/   ← timestamp real: `date +%Y-%m-%d-%H-%M-%S`
-Cajones de fase: discover/ measure/ analyze/ constraints/ strategy/ plan/
-                 design/ plan-execution/ pilot/ execute/ track/ standardize/
-Commits:         type(scope): description
-ADRs:            adr-{tema}.md  (sin números)
+Artefactos:      <tipo>-<slug>.rst   ← alcance- analisis- decisiones- tareas- progreso-
+Iniciativas:     <slug>/             ← kebab-case ESTABLE, sin timestamp (I-004);
+                                       la fecha la lleva el git log
+Hallazgos:       hallazgo-<ID>-<slug-corto>.rst   ← el ID es tracking, no ordinal
+Commits:         Tim Pope — subject imperativo ≤50 ch, sin punto
+                 (NO Conventional Commits: type(scope) fue reemplazado en
+                 ÉPICA 4, I-005; ver .claude/rules/commit-conventions.md)
+ADRs:            adr-NNN-{tema}.rst  en source/{backend,frontend}/adr/
 Tareas:          [T-NNN] Descripción (R-N)
-Errores:         {descripcion}.md  (sin números)
 ```
+
+> **Adaptación kaupamex:** los paths, timestamps y modelo ``now.md`` de esta
+> sección son del **THYROX genérico**. kaupamex los **sustituye** (no importa
+> ``.thyrox/``): los WP viven en
+> ``docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/`` con **slug
+> kebab-case estable sin timestamp** (I-004) y el estado en el SMD +
+> ``progreso-<slug>.rst`` (no ``now.md``). Ver ``.claude/CLAUDE.md``. La única
+> regla NO genérica es el commit: **Tim Pope, no Conventional**.
 
 **Artefactos principales del WP — patrón `{nombre-wp}-{tipo}.md`:**
 
@@ -283,21 +675,21 @@ THYROX opera en dos niveles simultáneos:
 
 **Nivel 1 — Workflow stages (ciclo THYROX):**
 Los 12 stages definen el marco macro del WP. Implementados por los `workflow-*` skills.
-Estado rastreado en `now.md::stage`.
+Estado rastreado en el `progreso-<slug>.rst` de la iniciativa.
 
 **Nivel 2 — Methodology skills (opcional, anidado):**
 Dentro de un workflow stage, se puede activar un methodology skill para aplicar
 un marco metodológico específico. Implementados por `{metodología}-{paso}` skills.
-Estado rastreado en `now.md::flow` + `now.md::methodology_step`.
+El `flow` se declara en `:flow:` del `alcance-<slug>.rst`; el paso activo se
+anota en el `progreso-<slug>.rst`.
 
 El workflow stage no se interrumpe — el methodology skill opera como sub-proceso
 dentro del stage activo.
 
-**Ejemplo concreto:** WP con `flow: dmaic` en Stage 3 DIAGNOSE:
-- `now.md::stage` → `Stage 3 — DIAGNOSE`
-- `now.md::flow` → `dmaic`
-- `now.md::methodology_step` → `dmaic:define`
-- Artefacto producido → `analyze/dmaic-define.md` (del skill dmaic-define)
+**Ejemplo concreto:** iniciativa con `:flow: dmaic` en Stage 3 DIAGNOSE:
+- `alcance-<slug>.rst` → `:flow: dmaic` en su bloque `.. meta::`
+- `progreso-<slug>.rst` → bitácora: `Stage 3 — DIAGNOSE`, paso `dmaic:define`
+- Artefacto producido → `analisis-<slug>.rst` (del skill dmaic-define)
 
 **Sistema patterns:**
 Trabajo de mantenimiento del sistema (ej: completar anatomía de skills, auditorías de references)
@@ -333,21 +725,40 @@ Estos gates son **correctos e intencionales**. No se eliminan.
 
 Configurados en `.claude/settings.json`. Independientes de los gates del SKILL — aplican por llamada de herramienta, no por fase.
 
+> **Corregido 2026-08-07 (H-DOCS-107).** Esta tabla venía del template THYROX y
+> nombraba **seis rutas que no existen** en kaupamex (`.thyrox/`,
+> `context/work/`, `now.md`, `focus.md`, `ROADMAP.md`, `CHANGELOG.md`), mientras
+> las cuatro reales no aparecían. La columna **Cableado** se añade porque la
+> sección decía "Configurados en `settings.json`" sin que fuera cierto de todas
+> las filas: el bloque real tiene 25 `allow` (uno solo por ruta), 2 `ask` y 7
+> `deny` (todas de Bash).
+
 **Comportamiento por categoría de archivo/operación:**
 
-| Categoría | Ejemplos | Comportamiento |
-|-----------|---------|---------------|
-| Artefactos WP | `context/work/**/*.md` | Auto (acceptEdits) |
-| Estado de sesión | `now.md`, `focus.md` | Auto (acceptEdits) |
-| Historial del proyecto | `CHANGELOG.md`, `ROADMAP.md` | Auto (acceptEdits) |
-| Referencias de plataforma | `.claude/references/**` | Auto (allow) |
-| ADRs | `.thyrox/context/decisions/**` | Prompt (ask) |
-| Scripts del sistema | `bash .claude/scripts/*` | Auto (allow) |
-| Scripts de validacion | `bash .claude/skills/*/scripts/*` | Auto (allow) |
-| Scripts operacionales (edicion) | Write/Edit en `scripts/*.sh`, `skills/*/scripts/*.sh` | Prompt (ask) |
-| Git rutinario | `git add/commit/push/status/log` | Auto (allow) |
-| Configuracion del sistema | `SKILL.md`, `CLAUDE.md`, `settings.json` | Prompt (ask) |
-| Operaciones destructivas | `git push --force`, `git reset --hard`, `rm -rf` | Bloqueado (deny) |
+| Categoría | Ruta real | Comportamiento | Cableado |
+|-----------|-----------|----------------|----------|
+| Artefactos de iniciativa | `source/gestion/pm/**/*.rst` | Auto (acceptEdits) | por `defaultMode` |
+| ADRs de producto | `source/{backend,frontend}/adr/*.rst` | Prompt (ask) | **NO** — ver abajo |
+| Decisiones de documentación | `source/gestion/decisiones/*.rst` | Prompt (ask) | **NO** — ver abajo |
+| Referencias de plataforma | `.claude/references/**` | Auto (allow) | sí |
+| Scripts del sistema | `bash .claude/scripts/*` | Auto (allow) | sí |
+| Scripts de validacion | `bash .claude/skills/*/scripts/*` | Auto (allow) | sí |
+| Scripts operacionales (edicion) | `.claude/scripts/*.sh` | Prompt (ask) | sí |
+| Git rutinario | `git add/commit/push/status/log` | Auto (allow) | sí |
+| Configuracion del sistema | `.claude/settings.json` | Prompt (ask) | sí (`SKILL.md`/`CLAUDE.md` **no**) |
+| Operaciones destructivas | `git push --force`, `git reset --hard`, `rm -rf` | Bloqueado (deny) | sí |
+
+**Dos filas declaradas y no cableadas.** Editar un ADR o una DEC-DOC **no**
+pide confirmación hoy: no hay ninguna regla de permiso sobre `source/**/adr/`
+ni sobre `source/gestion/decisiones/`. Se reconcilia en una de dos direcciones
+—cablear el `ask` o retirar la fila— y es decisión del ejecutor porque cambia
+el flujo de todas las sesiones. Ver H-DOCS-107 y la tarea #225.
+
+**Estado de sesión e historial: filas retiradas.** `now.md`/`focus.md` no
+existen — el estado de iniciativa vive en `progreso-<slug>.rst`, ya cubierto
+por la primera fila (lo fija el CLAUDE.md: *"los state files de sesion no se
+persisten en el filesystem"*). `ROADMAP.md` es token muerto del gate 2b del
+audit de coherencia, y `CHANGELOG.md` no existe en `docs`.
 
 **Relacion entre planos:**
 El gate Phase 6→7 (Plano A) es la aprobacion para todo Phase 7. Las operaciones de cierre
@@ -360,7 +771,7 @@ Ver [permission-model](../../references/permission-model.md) para la referencia 
 
 ## References por dominio
 
-### Methodology skills (activar cuando hay un `flow:` en now.md)
+### Methodology skills (activar cuando el `alcance-<slug>.rst` declara `:flow:`)
 
 Ver tabla completa en [Methodology skills](#methodology-skills) arriba.
 Selección por namespace: `pdca-*` · `dmaic-*` · `rup-*` · `rm-*` · `pm-*` · `ba-*`
@@ -373,6 +784,8 @@ Entradas rápidas por namespace:
 - `rm:` → [rm-elicitation](../rm-elicitation/SKILL.md)
 - `pm:` → [pm-initiating](../pm-initiating/SKILL.md)
 - `ba:` → [ba-planning](../ba-planning/SKILL.md)
+- `scrum:` → [scrum-backlog-refinement](../scrum-backlog-refinement/SKILL.md)
+- `kanban:` → [kanban-board-setup](../kanban-board-setup/SKILL.md)
 
 ### Phase 1: DISCOVER (leer cuando se explora el problema)
 [introduction](../workflow-discover/references/introduction.md) · [requirements-analysis](../workflow-discover/references/requirements-analysis.md) · [use-cases](../workflow-discover/references/use-cases.md) · [quality-goals](../workflow-discover/references/quality-goals.md) · [stakeholders](../workflow-discover/references/stakeholders.md) · [basic-usage](../workflow-discover/references/basic-usage.md) · [constraints](../workflow-discover/references/constraints.md) · [context](../workflow-discover/references/context.md)

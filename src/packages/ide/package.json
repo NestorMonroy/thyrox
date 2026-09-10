@@ -1,0 +1,45 @@
+{
+  "name": "@thyrox/ide",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Porte de @claude-code-how-works/ide (ccnmt): adaptadores de integracion IDE (VS Code/JetBrains) + cliente LSP. 19 de 19 modulos fuente portados (contando indice y stubs); ver internal/pendingCrossPackageDeps.ts para las dependencias cruzadas resueltas por require() diferido (paquete no registrado todavia en src/packages/package.json:workspaces) y las reimplementaciones fieles recortadas de simbolos que no existen aun en ningun paquete hermano (tool-registry entero; agent/jetbrains.ts; agent/diff.ts:getPatchFromContents/getPatchForDisplay; shell/genericProcessUtils.ts; config/plugin/{lspPluginIntegration,pluginLoader,types}.ts; config/env/paths.ts; config/semver.ts). callIdeRpc (mcp-runtime/clientRuntime.ts) queda como punto de inyeccion: ese modulo esta bloqueado dentro del propio mcp-runtime (13/48 simbolos, por ausencia de tool-registry).",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./contracts": "./src/contracts.ts",
+    "./errors": "./src/errors.ts",
+    "./testing": "./testing/index.ts",
+    "./ide.js": "./src/ide.ts",
+    "./lsp/*.js": "./src/lsp/*.ts",
+    "./hooks/*.js": "./src/hooks/*.ts",
+    "./hooks/useIDEIntegration.js": "./src/hooks/useIDEIntegration.tsx",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/app-host": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/storage": "workspace:*",
+    "axios": "^1.20.0",
+    "diff": "^7.0.0",
+    "execa": "^9.0.0",
+    "lru-cache": "^11.0.0",
+    "react": "^19.0.0",
+    "vscode-jsonrpc": "^8.2.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@types/react": "^19.0.0",
+    "vscode-languageserver-protocol": "^3.17.5"
+  }
+}

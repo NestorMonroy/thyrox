@@ -56,7 +56,7 @@ status: Borrador
 | Reproducibilidad (variación entre evaluadores) | [%] | |
 | **%GR&R total** | **[%]** | [< 10% Aceptable / 10-30% Condicional / ≥ 30% Rechazado] |
 
-*Ver tabla de decisión y criterios de Gauge R&R: [msa-gage-rr.md](./references/msa-gage-rr.md)*
+*Ver tabla de decisión y criterios de Gauge R&R: [msa-gage-rr.md](../references/msa-gage-rr.md)*
 
 ### Para datos de atributo — Kappa de Cohen
 
@@ -101,7 +101,7 @@ status: Borrador
 | Sigma Level | [valor] | ver tabla DPMO→Sigma |
 | Período de medición del baseline | [fechas] | |
 
-*Ver tabla DPMO→Sigma Level y convención 1.5σ: [process-capability.md](./references/process-capability.md)*
+*Ver tabla DPMO→Sigma Level y convención 1.5σ: [process-capability.md](../references/process-capability.md)*
 
 ### Para datos continuos
 
@@ -113,7 +113,7 @@ status: Borrador
 | Cpk (capacidad real, considera centrado) | [valor] | |
 | % fuera de especificación | [%] | |
 
-*Ver fórmulas completas Cp/Cpk/Pp/Ppk: [process-capability.md](./references/process-capability.md)*
+*Ver fórmulas completas Cp/Cpk/Pp/Ppk: [process-capability.md](../references/process-capability.md)*
 
 ---
 

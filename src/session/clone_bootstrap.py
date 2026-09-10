@@ -1,0 +1,393 @@
+#!/usr/bin/env python3
+"""Deja a un clon recien descargado con los hooks de sesion cargados.
+
+El problema
+===========
+El archivo que gobierna la sesion —``<raiz>/.claude/settings.local.json``— no
+vive en ningun repositorio, y el mecanismo que lo sincroniza se dispara desde
+**ese mismo archivo**. Su disparador esta del otro lado del hueco que cierra:
+un clon que no lo tiene no puede obtenerlo sincronizando.
+
+Este guion es el puente. Compone el archivo desde tres fuentes que SI estan
+versionadas y lo escribe, con confirmacion previa.
+
+De donde sale cada pieza
+========================
+
+``hooks``
+    Del ``.claude/settings.json`` del repositorio, cuyas rutas son relativas, y
+    de los disparadores de sincronizacion que declara el propio modulo
+    ``sync_local_settings``. Las dos con la raiz de ESTE clon, no la del
+    contenedor donde se genero — un comando de hook cuya ruta no existe no se
+    queja y no corre, que es el fallo silencioso ya medido.
+
+``permissions.allow``
+    De ``.claude-user/bitacora-de-aprobaciones.json``. Es la **bitacora de
+    aprobaciones**, no la politica curada del repositorio: dos objetos con el
+    mismo nombre cuya fusion ya costo una regresion. Ninguno absorbe al otro.
+
+Union, nunca reemplazo
+======================
+Si la copia viva ya existe, sus aprobaciones se conservan: el resultado es la
+union con las versionadas. Borrar un permiso que alguien concedio no es
+sincronizar, es perder trabajo.
+
+La confirmacion
+===============
+La escritura no es silenciosa. Se imprime el destino, el desglose de lo que va
+a quedar y el delta contra lo que hay, y se pide confirmacion — salvo con
+``--si``, que es como lo invoca un instalador desatendido.
+
+Uso::
+
+    clone_bootstrap.py                  # muestra y pregunta
+    clone_bootstrap.py --si             # desatendido
+    clone_bootstrap.py --solo-mostrar   # no escribe nunca
+    clone_bootstrap.py --capturar       # copia viva -> bitacora versionada
+"""
+
+import argparse
+import importlib.util
+import json
+import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
+import reach  # noqa: E402
+
+#: El clon que arranca es el CONSUMIDOR. Se llamaba `CONSUMER_ROOT` porque el
+#: guion vivía en `kaupamex-docs`: el parámetro se había filtrado al nombre del
+#: mecanismo. Desde `thyrox/src/session/` la aritmética daba `/home/user`.
+#: Las cuatro se resuelven al LEERLAS, no al importar (PEP 562). Ligarlas en el
+#: import ata el modulo a la raiz del momento de la carga, y desde
+#: TASK-DOCS-0286 `reach.consumer_root` REHUSA cuando el ascenso aterriza en el
+#: proveedor: con la ligadura a nivel de modulo ese rehuse mataba el `import`,
+#: no la llamada. Un modulo que no se puede importar deja sin salida incluso a
+#: quien iba a declarar el consumidor.
+#: El nombre de modulo que PEP 562 resuelve, y la funcion que lo resuelve. La
+#: tabla dejo de guardar segmentos de ruta al pasar a funciones (ERR-065): dos
+#: formas de componer la misma ruta son dos fuentes de verdad.
+_DERIVED = {
+    "PAYLOAD": lambda: payload_path(),
+    "REPO_SETTINGS": lambda: repo_settings_path(),
+    "SYNC_MODULE": lambda: sync_module_path(),
+}
+
+
+def consumer_root_dir():
+    """La raiz del clon consumidor, resuelta al llamar.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.consumer_root()
+
+def payload_path(consumer=None):
+    """La bitacora de aprobaciones del consumidor que se esta configurando.
+
+    Recibe el consumidor en vez de resolverlo siempre por ascenso: `--docs-root`
+    nombra QUE clon se configura, y sin el parametro esta funcion leia el del
+    directorio actual. Los dos coinciden cuando uno esta parado en el clon —por
+    eso el defecto no se veia— y divergen en cuanto no.
+    """
+    """La bitacora de aprobaciones del consumidor.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return (consumer or reach.consumer_root()) / ".claude-user" / "bitacora-de-aprobaciones.json"
+
+def repo_settings_path(consumer=None):
+    """El settings.json versionado del consumidor.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return (consumer or reach.consumer_root()) / ".claude" / "settings.json"
+
+def sync_module_path():
+    """El sincronizador, que vive en el PROVEEDOR — no en el consumidor.
+
+    Es MECANISMO (DEC-04), asi que su hogar es la raiz del proveedor y no la
+    del clon que se configura. La version anterior componia
+    `<consumidor>/.claude/scripts/session/sync_local_settings.py`, una ruta
+    PREVIA a la mudanza a `thyrox/src/session/`: medida sobre los seis clones,
+    el modulo no existe en ninguna de esas rutas, asi que `load_sync_module()`
+    moria y el paso de hooks de sesion no llegaba a emitir nada.
+
+    Es funcion y no constante de modulo por una razon medida (ERR-065): el
+    `__getattr__` de PEP 562 resuelve el acceso por ATRIBUTO del modulo
+    (`modulo.NOMBRE`), no el nombre DESNUDO dentro de una funcion del propio
+    modulo. Diferir la constante y seguir leyendola desnuda deja un
+    `NameError` en tiempo de ejecucion que ningun import delata.
+    """
+    return reach.thyrox_root() / "src" / "session" / "sync_local_settings.py"
+
+def __getattr__(name: str):
+    if name == "CONSUMER_ROOT":
+        return consumer_root_dir()
+    if name in _DERIVED:
+        return _DERIVED[name]()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+PLACEHOLDER_DOCS = "%%CONSUMER_ROOT%%"
+PLACEHOLDER_ROOT = "%%RAIZ%%"
+# El tercero, y el que faltaba (DEC-04): la ruta de un MECANISMO no es del
+# consumidor ni del arbol, es del PROVEEDOR. Sin el, el comando emitido citaba
+# `<consumidor>/.claude/scripts/...`, que es donde el sincronizador vivia ANTES
+# de mudarse a thyrox — un hook cuyo script no existe no se queja y no corre.
+PLACEHOLDER_PROVIDER = "%%PROVEEDOR%%"
+RELATIVE_PREFIX = ".claude/"
+
+
+def load_sync_module():
+    """Importa el sincronizador para reusar SU declaracion de disparadores.
+
+    No se copian aqui: si el generador los cambia, este guion los toma del
+    modulo emitido. Una segunda copia divergiria en silencio."""
+    spec = importlib.util.spec_from_file_location("sync", sync_module_path())
+    if spec is None or spec.loader is None:
+        raise SystemExit(f"ERROR — no se pudo importar {sync_module_path()}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def render(value, docs_root, root, provider):
+    """Sustituye los tres marcadores en cualquier estructura JSON.
+
+    El de `docs_root` va primero: en el arbol por defecto es un prefijo mas
+    largo que el de la raiz, y sustituir al reves lo partiria."""
+    if isinstance(value, str):
+        return value.replace(PLACEHOLDER_DOCS, str(docs_root)) \
+                    .replace(PLACEHOLDER_ROOT, str(root)) \
+                    .replace(PLACEHOLDER_PROVIDER, str(provider))
+    if isinstance(value, list):
+        return [render(item, docs_root, root, provider) for item in value]
+    if isinstance(value, dict):
+        return {k: render(v, docs_root, root, provider) for k, v in value.items()}
+    return value
+
+
+def to_placeholders(value, docs_root, root):
+    """La direccion inversa: rutas absolutas -> marcadores.
+
+    `docs_root` primero por la misma razon, aqui invertida: si se sustituyera
+    la raiz antes, la ruta del clon quedaria mitad marcador y mitad literal."""
+    if isinstance(value, str):
+        return value.replace(str(docs_root), PLACEHOLDER_DOCS) \
+                    .replace(str(root), PLACEHOLDER_ROOT)
+    if isinstance(value, list):
+        return [to_placeholders(item, docs_root, root) for item in value]
+    if isinstance(value, dict):
+        return {k: to_placeholders(v, docs_root, root) for k, v in value.items()}
+    return value
+
+
+def absolutise(command, docs_root):
+    """Vuelve absoluta la ruta del script de un comando de hook."""
+    return " ".join(
+        str(docs_root / token) if token.startswith(RELATIVE_PREFIX) else token
+        for token in command.split()
+    )
+
+
+def build_hooks(repo_settings, sync_hooks, docs_root):
+    """El bloque `hooks` como debe verse en la copia viva de ESTE clon."""
+    hooks = {}
+    for event, matchers in (repo_settings.get("hooks") or {}).items():
+        rebuilt = []
+        for matcher in matchers:
+            entry = {k: v for k, v in matcher.items() if k != "hooks"}
+            entry["hooks"] = [
+                {**hook, "command": absolutise(hook["command"], docs_root)}
+                for hook in matcher.get("hooks", [])
+            ]
+            rebuilt.append(entry)
+        hooks[event] = rebuilt
+    for event, entries in sync_hooks.items():
+        hooks.setdefault(event, [])
+        hooks[event].extend(entries)
+    return hooks
+
+
+def count_commands(hooks):
+    """Cuantos comandos declara el bloque, contados sobre la estructura.
+
+    Contar lineas con `"command"` mide otra cosa — una entrada puede ocupar
+    varias lineas o compartir una."""
+    return sum(len(m.get("hooks", [])) for arr in hooks.values() for m in arr)
+
+
+def unresolved(hooks, docs_root):
+    """Los comandos cuyo SCRIPT no existe en el disco.
+
+    Es el control que hace util a este guion: un hook cuyo script no existe
+    no se queja y no corre, asi que sin este conteo la instalacion se ve
+    igual cuando funciona y cuando no.
+
+    Se mide el PRIMER token bajo la raiz, que es el script; los siguientes
+    son argumentos y su ausencia no impide que el hook corra. La version
+    anterior media los tokens de un comando por igual, y por eso avisaba de
+    `--base .../settings_local.base.json` en TODO clon nuevo: ese archivo
+    esta git-ignored por diseno y su consumidor lo siembra en la primera
+    sincronizacion. Un aviso que suena siempre deja de ser un aviso."""
+    missing = []
+    for arr in hooks.values():
+        for matcher in arr:
+            for hook in matcher.get("hooks", []):
+                bajo_raiz = [t for t in hook["command"].split()
+                             if t.startswith(str(docs_root))]
+                if bajo_raiz and not pathlib.Path(bajo_raiz[0]).exists():
+                    missing.append(bajo_raiz[0])
+    return missing
+
+
+def load_json(path):
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as error:
+        raise SystemExit(f"ERROR — JSON invalido en {path}: {error}")
+
+
+def save_json(path, payload):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                    encoding="utf-8")
+
+
+def capture(live_path, docs_root, root):
+    """Copia viva -> bitacora versionada, con marcadores en vez de rutas."""
+    live = load_json(live_path)
+    if live is None:
+        raise SystemExit(f"ERROR — no hay copia viva en {live_path}")
+    allow = sorted(live.get("permissions", {}).get("allow", []))
+    payload = {
+        "_comentario": [
+            "Bitacora de aprobaciones versionada (DEC-12). NO es la politica",
+            "curada del repositorio: esa vive en .claude/settings.json con su",
+            "defaultMode, ask y deny, y este archivo no la toca.",
+            "Se regenera con: python3 .claude/scripts/session/clone_bootstrap.py --capturar",
+        ],
+        "allow": to_placeholders(allow, docs_root, root),
+    }
+    previous = load_json(payload_path())
+    save_json(payload_path(), payload)
+    before = len((previous or {}).get("allow", []))
+    print(f"OK: {len(allow)} aprobacion(es) en {payload_path()}")
+    print(f"    antes: {before} · ahora: {len(allow)} · delta: {len(allow) - before:+d}")
+    return 0
+
+
+def describe(destination, hooks, allow_final, allow_live, allow_payload, missing):
+    """El aviso que se muestra ANTES de escribir."""
+    print("Arranque de clon — esto es lo que se va a escribir:\n")
+    print(f"  destino: {destination}")
+    print(f"  hooks:   {len(hooks)} evento(s) · {count_commands(hooks)} comando(s)")
+    for event in sorted(hooks):
+        print(f"             {event:16s} {count_commands({event: hooks[event]})}")
+    print(f"  permissions.allow: {len(allow_final)} regla(s)")
+    print(f"             versionadas: {len(allow_payload)}"
+          f" · ya presentes: {len(allow_live)}"
+          f" · nuevas: {len(allow_final) - len(allow_live)}")
+    if missing:
+        print(f"\n  AVISO — {len(missing)} comando(s) cuyo script no existe:")
+        for token in sorted(set(missing))[:10]:
+            print(f"             {token}")
+        print("           Un hook cuyo script no existe no se queja y no corre.")
+    print()
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--raiz", type=pathlib.Path, default=None,
+                        help="raiz de proyecto de la sesion "
+                             "(por defecto: el directorio que contiene el clon)")
+    parser.add_argument("--si", action="store_true",
+                        help="no preguntar; escribir directamente")
+    parser.add_argument("--solo-mostrar", action="store_true",
+                        help="mostrar lo que haria y salir sin escribir")
+    parser.add_argument("--capturar", action="store_true",
+                        help="copia viva -> bitacora versionada")
+    parser.add_argument("--docs-root", type=pathlib.Path, default=None,
+                        help="raiz del clon consumidor "
+                             "(por defecto: la que resuelve el localizador)")
+    args = parser.parse_args(argv)
+
+    # El default NO se evalua en `add_argument` (ERR-075). `consumer_root_dir()`
+    # puede levantar `ConsumerUnknownError` —desde el PROVEEDOR siempre lo hace—
+    # y un default ansioso lo levanta ANTES de analizar los argumentos: `--help`
+    # muere, y con el la unica superficie inerte del modulo. Resuelto aqui, el
+    # llamador que pasa `--docs-root` nunca lo invoca, y el que no lo pasa
+    # recibe el error donde se puede atrapar.
+    docs_root = (args.docs_root or consumer_root_dir()).resolve()
+    root = (args.raiz or docs_root.parent).resolve()
+    live_path = root / ".claude" / "settings.local.json"
+
+    if args.capturar:
+        return capture(live_path, docs_root, root)
+
+    repo_settings = load_json(repo_settings_path(docs_root))
+    if repo_settings is None:
+        raise SystemExit(f"ERROR — no existe {repo_settings_path(docs_root)}")
+    payload = load_json(payload_path(docs_root))
+    if payload is None:
+        raise SystemExit(
+            f"ERROR — no existe {payload_path(docs_root)}. Se genera con --capturar; sin el, "
+            "este guion NO emite un archivo a medias: quedaria sin las "
+            "aprobaciones y la sesion pediria confirmacion en cada paso.")
+
+    sync = load_sync_module()
+    # `sync.REPO_ROOT` NO es configuracion: es el literal contra el que se
+    # escribieron los datos congelados de `SYNC_HOOKS`, y por eso se pasa tal
+    # cual — diferirlo a `reach.consumer_root()` haria que la sustitucion
+    # fallara en silencio en cuanto los dos dejaran de coincidir.
+    provider = reach.thyrox_root()
+    sync_hooks = render(to_placeholders(sync.SYNC_HOOKS, sync.REPO_ROOT,
+                                        sync.REPO_ROOT.parent),
+                        docs_root, root, provider)
+    hooks = build_hooks(repo_settings, sync_hooks, docs_root)
+
+    allow_payload = render(payload.get("allow", []), docs_root, root, provider)
+    live = load_json(live_path) or {}
+    allow_live = live.get("permissions", {}).get("allow", [])
+    allow_final = sorted(set(allow_live) | set(allow_payload))
+
+    missing = unresolved(hooks, docs_root)
+    describe(live_path, hooks, allow_final, allow_live, allow_payload, missing)
+
+    if args.solo_mostrar:
+        print("  --solo-mostrar: no se escribio nada.")
+        return 0
+    if not args.si:
+        if not sys.stdin.isatty():
+            print("  Sin terminal y sin --si: no se escribio nada.")
+            return 1
+        if input("  ¿Escribir? [s/N] ").strip().lower() not in ("s", "si", "sí"):
+            print("  Cancelado; no se escribio nada.")
+            return 1
+
+    resultado = dict(live)
+    resultado["hooks"] = hooks
+    permissions = dict(resultado.get("permissions", {}))
+    permissions["allow"] = allow_final
+    resultado["permissions"] = permissions
+    save_json(live_path, resultado)
+    print(f"OK: {live_path} — {count_commands(hooks)} comando(s), "
+          f"{len(allow_final)} regla(s)")
+    return 2 if missing else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

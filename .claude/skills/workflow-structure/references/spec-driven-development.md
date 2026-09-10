@@ -182,7 +182,7 @@ Usar cuando:
 
 ## Templates Disponibles
 
-### 1. requirements-specification.md.template
+### 1. source/normativa/estandares/plantillas/tpl-fr.rst
 
 **Propósito**: Definir QUÉ se necesita (PHASE 1: ANALYZE)
 
@@ -198,11 +198,11 @@ Usar cuando:
 
 **Cuándo usar**: Al iniciar análisis de requisitos
 
-**Ubicación**: [requirements-specification.md.template](../assets/requirements-specification.md.template)
+**Ubicación**: [source/normativa/estandares/plantillas/tpl-fr.rst](source/normativa/estandares/plantillas/tpl-fr.rst)
 
 ---
 
-### 1b. requirements-specification.md.template
+### 1b. source/normativa/estandares/plantillas/tpl-fr.rst
 
 **Propósito**: Definir CÓMO se implementan los requisitos (PHASE 4: STRUCTURE)
 
@@ -216,7 +216,7 @@ Usar cuando:
 
 **Cuándo usar**: Al estructurar implementación técnica
 
-**Ubicación**: [requirements-specification.md.template](../assets/requirements-specification.md.template)
+**Ubicación**: [source/normativa/estandares/plantillas/tpl-fr.rst](source/normativa/estandares/plantillas/tpl-fr.rst)
 
 ---
 
@@ -242,7 +242,7 @@ Usar cuando:
 
 ---
 
-### 3. tasks.md.template
+### 3. source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst
 
 **Propósito**: Definir pasos EXACTOS de implementación (FASE 3)
 
@@ -263,7 +263,7 @@ Usar cuando:
 
 **Cuándo usar**: Después de aprobación de design
 
-**Ubicación**: [tasks.md.template](../assets/tasks.md.template)
+**Ubicación**: [source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst](source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst)
 
 ---
 
@@ -274,7 +274,7 @@ Usar cuando:
 **Objetivo**: Documento claro de qué se necesita
 
 **Pasos**:
-1. Usar [requirements-specification.md.template](../assets/requirements-specification.md.template)
+1. Usar [source/normativa/estandares/plantillas/tpl-fr.rst](source/normativa/estandares/plantillas/tpl-fr.rst)
 2. Completar:
    - Contexto y problema
    - Objetivos claros
@@ -313,7 +313,7 @@ Usar cuando:
 
 **Pasos**:
 1. Basarse en design aprobado
-2. Usar [tasks.md.template](../assets/tasks.md.template)
+2. Usar [source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst](source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst)
 3. Completar:
    - Desglosar en tareas atómicas (15-30 tasks típicamente)
    - Cada task con descripción, archivos, comandos exactos
@@ -640,10 +640,10 @@ A: No. Es inversión:
 
 - THYROX SKILL.md - PHASE 4: STRUCTURE
 - Templates en `/assets/`:
-  - [requirements-specification.md.template](../assets/requirements-specification.md.template)
-  - [requirements-specification.md.template](../assets/requirements-specification.md.template)
+  - [source/normativa/estandares/plantillas/tpl-fr.rst](source/normativa/estandares/plantillas/tpl-fr.rst)
+  - [source/normativa/estandares/plantillas/tpl-fr.rst](source/normativa/estandares/plantillas/tpl-fr.rst)
   - [design.md.template](../assets/design.md.template)
-  - [tasks.md.template](../assets/tasks.md.template)
+  - [source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst](source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst)
 - commit-helper.md - Para commits documentados por tarea
 - incremental-correction.md - Para corregir 100+ issues
 

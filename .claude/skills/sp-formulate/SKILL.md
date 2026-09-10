@@ -4,14 +4,9 @@ description: "Use when formulating strategy. sp:formulate — create Balanced Sc
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "strategy formulation"
-    - "Strategy Map"
-    - "Balanced Scorecard"
-    - "strategic options"
-    - "OKR design"
+  triggers: ["strategy formulation", "Strategy Map", "Balanced Scorecard", "strategic options", "OKR design"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /sp-formulate — Strategic Planning: Strategy Formulation

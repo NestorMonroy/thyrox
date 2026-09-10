@@ -34,7 +34,7 @@ status: Borrador
 | **Medio ambiente** | [lista de hipótesis] |
 | **Medición** | [lista de hipótesis] |
 
-*Ver guía de Ishikawa profundo y técnicas de VSM: [root-cause-tools.md](./references/root-cause-tools.md)*
+*Ver guía de Ishikawa profundo y técnicas de VSM: [root-cause-tools.md](../references/root-cause-tools.md)*
 
 ---
 
@@ -68,7 +68,7 @@ status: Borrador
 ### Causa vital 2: [nombre]
 [Repetir estructura de 5 Whys]
 
-*Ver guía de 5-Why con verificación de cadena causal: [root-cause-tools.md](./references/root-cause-tools.md)*
+*Ver guía de 5-Why con verificación de cadena causal: [root-cause-tools.md](../references/root-cause-tools.md)*
 
 ---
 
@@ -79,7 +79,7 @@ status: Borrador
 | [causa 1] | No hay diferencia entre grupos X e Y | Existe diferencia significativa | [ANOVA/t-test/chi²] | p-value = [x] | ✅ / ❌ |
 | [causa 2] | β = 0 (sin relación entre X y CTQ) | β ≠ 0 (relación significativa) | Regresión | p-value = [x], R² = [y] | ✅ / ❌ |
 
-*Ver templates H0/H1 por tipo de test y árbol de selección: [hypothesis-testing.md](./references/hypothesis-testing.md)*
+*Ver templates H0/H1 por tipo de test y árbol de selección: [hypothesis-testing.md](../references/hypothesis-testing.md)*
 
 ---
 

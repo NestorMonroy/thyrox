@@ -7,11 +7,11 @@
 - **Evento desencadenante:** {trigger}
 - **Estado:** {Medición estándar | [ESTIMACIÓN TEMPRANA]}
 
-| Paso | Sub-proceso (descripción del FUR) | FU | OOI | Tipo | CFP | FUR fuente |
-|------|-----------------------------------|----|-----|------|-----|------------|
-| 1 | {…} | {usuario funcional} | {object of interest} | E | 1 | {paso UC} |
-| 2 | {…} | … | … | R | 1 | … |
-| … | … | … | … | X/W | 1 | … |
+| Paso | Sub-proceso (descripción del FUR) | FU | Grupo de datos | OOI | Tipo | CFP | FUR fuente |
+|------|-----------------------------------|----|----------------|-----|------|-----|------------|
+| 1 | {…} | {usuario funcional} | {data group} | {object of interest} | E | 1 | {paso UC} |
+| 2 | {…} | … | … | … | R | 1 | … |
+| … | … | … | … | … | X/W | 1 | … |
 
 **Total CFP del proceso:** {N}  (≥2 — Regla 10c)
 

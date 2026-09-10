@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.263
+import{ns,ck}from"/$bunfs/root/chunk-k6vqz9fa.js";import{a}from"/$bunfs/root/chunk-bxegdt3f.js";import{Vt}from"/$bunfs/root/chunk-1p8thh7t.js";import{l}from"/$bunfs/root/chunk-06whp1c5.js";import{n}from"/$bunfs/root/chunk-mh9y4c2z.js";import{k1e,Gg,Su,L1e}from"/$bunfs/root/chunk-32f2qmtc.js";import{pIn,hIn,mie,Yw,yIn}from"/$bunfs/root/chunk-v7vff0yy.js";import{Le,po}from"/$bunfs/root/chunk-1wrntbps.js";import{Jsr}from"/$bunfs/root/chunk-9ep9p4b1.js";function s(e){try{return new URL(e).host}catch{return}}function xqt(e=a.ANTHROPIC_BASE_URL||Jsr()){if(!e)return!0;let i=s(Vt().BASE_API_URL);return i!==void 0&&s(e)===i}function HB(){pIn()}function KE(){let e=mie();if(e!==void 0)return e;let{eligible:i,ineligibleReason:t}=f(),g=a.CLAUDE_CODE_EVAL_CONFINED===!0,r=!i&&g;yIn(r);let o=i||r;return hIn(o,o?void 0:t)}function u(){return USn()||Su()&&L1e()===null}function USn(){if(!Su())return!1;let e=L1e();return e==="enterprise"||e==="team"}function f(){if(Yw())return{eligible:!0};if(Le()==="gateway"){let t=ck(ns());return{eligible:t,ineligibleReason:t?void 0:"unpinned_gateway"}}if(Le()!=="firstParty")return{eligible:!1,ineligibleReason:"third_party_provider"};if(!po())return{eligible:!1,ineligibleReason:"custom_base_url"};let e=a.CLAUDE_CODE_ENTRYPOINT;if(e==="local-agent"||e==="remote_cowork"||e?.startsWith("claude-coworker"))return{eligible:!1,ineligibleReason:"sandboxed_entrypoint"};let i=!1;try{i=k1e()}catch(t){n(`Remote settings: could not read the profile store (${l(t)}); not treating this session as profile-authenticated`,{level:"warn"})}if(i)return xqt()?{eligible:!0}:{eligible:!1,ineligibleReason:"profile_base_url_mismatch"};if(u())return{eligible:!0};try{let{key:t}=Gg({skipRetrievingKeyFromApiKeyHelper:!0});if(t)return{eligible:!0}}catch{}return{eligible:!1,ineligibleReason:Su()?"unsupported_subscription":"no_auth"}}
+export{xqt,HB,KE,USn};

@@ -1,0 +1,43 @@
+{
+  "name": "@thyrox/output",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Porte parcial del paquete output de claude-code-nestor-monroy-tools (TASK-DOCS-0229): formateo puro (tamanos, duraciones, timestamps relativos), buffers de escritura, targets de OutputEvent y utilidades sin dependencia visual. 23 de 36 modulos de la fuente (34 .ts + 2 .tsx); los 13 restantes dependen de @anthropic/ink (fork de Ink vendorizado en ccnmt como packages/@ant/ink, NO publicado en npm) o de hermanos que no existen o no exportan aun el simbolo que la fuente necesita (repl, tool-registry, local-observability; agent/messages.js, app-host/bootstrap/*, storage/fsOperations.js sin exportar). Ver el analisis de la iniciativa para el detalle por modulo.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./contracts": "./src/contracts.ts",
+    "./errors": "./src/errors.ts",
+    "./testing": "./src/testing/index.ts",
+    "./buffers": "./src/buffers/index.ts",
+    "./buffers/buffered-writer.js": "./src/buffers/buffered-writer.ts",
+    "./buffers/circular-buffer.js": "./src/buffers/circular-buffer.ts",
+    "./formatters": "./src/formatters/index.ts",
+    "./formatters/format.js": "./src/formatters/format.ts",
+    "./formatters/brief-timestamp.js": "./src/formatters/brief-timestamp.ts",
+    "./capture": "./src/capture/index.ts",
+    "./capture/ansi-to-svg.js": "./src/capture/ansi-to-svg.ts",
+    "./constants/figures.js": "./src/constants/figures.ts",
+    "./targets/json.js": "./src/targets/json.ts",
+    "./targets/silent.js": "./src/targets/silent.ts",
+    "./targets/terminal.js": "./src/targets/terminal.ts",
+    "./utils/intl.js": "./src/utils/intl.ts",
+    "./utils/stringUtils.js": "./src/utils/stringUtils.ts",
+    "./utils/displayTags.js": "./src/utils/displayTags.ts",
+    "./utils/cliHighlight.js": "./src/utils/cliHighlight.ts",
+    "./setUtils.js": "./src/setUtils.ts",
+    "./fpsTracker.js": "./src/fpsTracker.ts",
+    "./xml.js": "./src/xml.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "cli-highlight": "^2.1.11",
+    "highlight.js": "^11.11.1"
+  }
+}

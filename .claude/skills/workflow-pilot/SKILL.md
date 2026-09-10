@@ -8,7 +8,7 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 9'"
+    command: "bash .claude/scripts/session/set-session-phase.sh 'Phase 9'"
 updated_at: 2026-04-16 00:00:00
 ---
 

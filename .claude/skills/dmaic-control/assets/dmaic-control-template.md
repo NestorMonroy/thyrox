@@ -35,7 +35,7 @@ status: Borrador
 **Base de datos para límites:** Datos del piloto de Improve (proceso mejorado — no del baseline)
 **Período de cálculo:** [inicio → fin, n observaciones]
 
-*Ver tabla de selección de tipo de gráfica y 8 Reglas Western Electric: [control-chart-guide.md](./references/control-chart-guide.md)*
+*Ver tabla de selección de tipo de gráfica y 8 Reglas Western Electric: [control-chart-guide.md](../references/control-chart-guide.md)*
 
 ---
 
@@ -50,7 +50,7 @@ status: Borrador
 | Regla 5: tendencia de 6 puntos | [Supervisor] | Revisar variables de proceso y materiales | Si continúa tras corrección | [Dueño del proceso] |
 | Otro patrón | [Ingeniero] | Analizar datos históricos | [criterio] | [escalamiento] |
 
-*Ver descripción completa de las 8 reglas: [control-chart-guide.md](./references/control-chart-guide.md)*
+*Ver descripción completa de las 8 reglas: [control-chart-guide.md](../references/control-chart-guide.md)*
 
 ---
 

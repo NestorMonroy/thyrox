@@ -4,14 +4,9 @@ description: "Use when analyzing an As-Is business process. bpa:analyze — clas
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "VA NVA BVA"
-    - "value added analysis"
-    - "process metrics"
-    - "process bottleneck"
-    - "root cause process"
+  triggers: ["VA NVA BVA", "value added analysis", "process metrics", "process bottleneck", "root cause process"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /bpa-analyze — BPA: Analyze
@@ -233,3 +228,32 @@ Cuando Activity Value Analysis y Gap Analysis están validados con Process Owner
 
 ### References
 - [value-classification.md](./references/value-classification.md) — Definición VA/BVA/NVA, criterios de clasificación, tipos de desperdicio NVA y ejemplos por industria
+
+---
+
+## Anclaje al proyecto Kaupamex
+
+Cuando este skill se ejecuta en el multi-repo Kaupamex, los placeholders
+genericos de arriba se sustituyen por los artefactos canonicos del
+proyecto. La metodologia BPA no cambia; solo se ancla a la notacion,
+plantilla y catalogo de actores propios.
+
+- **Plantilla de proceso:** `source/normativa/estandares/plantillas/tpl-proceso-bpmn.rst`
+  (`:ref:` ``tpl-proceso-bpmn``) — reemplaza los templates markdown genericos.
+- **Actores / swimlanes:** del catalogo canonico
+  `source/requisitos/actores-del-sistema.rst` (`:ref:` ``actores-sistema``):
+  Visitante, Comprador, Administrador, Tiempo (scheduler UC-SYS), Gateway de
+  Pago (MP / PayPal), Transportista. No inventar actores por proceso.
+- **Notacion y trazado BPMN:** `:ref:` ``bc-mn-u2-bpmn`` (elementos) y
+  `:ref:` ``bc-mn-bpmn-layout`` (izq→der, excepcion abajo, divergencia a la
+  derecha).
+- **Metodologia de gestion por procesos (niveles 0/1/n, PHVA):**
+  `:ref:` ``bc-bpm-metodologia-gestion-por-procesos``.
+- **Convencion de formato:** los diagramas de proceso son **PlantUML
+  (activity-beta) embebidos en RST**, no Mermaid ni tablas markdown sueltas.
+  Los artefactos viven como `.rst` bajo `source/` (solo acepta `.rst`).
+  Compuertas con ``if/then/else`` (o ``hexagon``); la palabra ``diamond`` es
+  invalida.
+**Foco de esta fase (Analyze):** la clasificacion VA/BVA/NVA se registra en
+la seccion "Analisis de valor" de ``tpl-proceso-bpmn``, que alimenta las
+acciones ESIA del To-Be (Eliminar / Simplificar / Integrar / Automatizar).

@@ -8,7 +8,7 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 11'"
+    command: "bash .claude/scripts/session/set-session-phase.sh 'Phase 11'"
 updated_at: 2026-04-20 13:53:09
 ---
 
@@ -21,7 +21,7 @@ Documenta lecciones aprendidas, genera changelog, y cierra el work package activ
 ## Contexto de sesión
 
 1. Identificar WP activo: `ls -t .thyrox/context/work/ | head -1`
-2. Revisar progreso: `bash .claude/scripts/project-status.sh`
+2. Revisar progreso: `bash .claude/scripts/task/project-status.sh`
 3. Verificar que todas las tareas están `[x]` en `*-task-plan.md`
 4. Leer `context/now.md` — verificar `phase`
 5. Gate soft: `bash .claude/skills/workflow-track/scripts/validate-phase-readiness.sh 11`
@@ -42,7 +42,7 @@ Documentar lecciones previene repetir los mismos errores.
    - Patrones reutilizables identificados
    - Errores encontrados y cómo se resolvieron
 
-2. REQUERIDO: Generar `work/../{nombre-wp}-changelog.md` desde commits usando `assets/wp-changelog.md.template` — [D2]
+2. REQUERIDO: Generar `work/../{nombre-wp}-changelog.md` desde commits usando `assets/wp-source/normativa/estandares/plantillas/tpl-iniciativa-progreso.rst` — [D2]
    - Formato Keep a Changelog adaptado a WPs
    - Agrupar por tipo: Added, Changed, Fixed, Removed
    - NOTA: `CHANGELOG.md` (raíz) se actualiza SOLO en releases (cuando hay bump de versión)
@@ -73,17 +73,17 @@ Este paso implementa el `context_pruning_rule` del gate Stage 11→12 en exit-co
 
 **Validaciones de cierre:**
 ```bash
-bash .claude/scripts/validate-session-close.sh
-bash .claude/scripts/project-status.sh
+bash .claude/scripts/gates/validate-session-close.sh
+bash .claude/scripts/task/project-status.sh
 ```
 
 **REQUERIDO al cerrar WP — actualizar archivos de estado:**
 
 | Archivo | Contenido mínimo requerido |
 |---------|---------------------------|
-| `context/now.md` | Ejecutar: `bash .claude/scripts/close-wp.sh` (setea phase y current_work a null) |
+| `context/now.md` | Ejecutar: `bash .claude/scripts/task/close-wp.sh` (setea phase y current_work a null) |
 | `context/focus.md` | `## Completado`: FASE N + WP + qué se logró. `## Sin WP activo`: versión actual + próximo en ROADMAP |
-| `context/project-state.md` | Ejecutar `bash .claude/scripts/update-state.sh` |
+| `context/project-state.md` | Ejecutar `bash .claude/scripts/task/update-state.sh` |
 
 Ver [state-management](../../references/state-management.md) para tabla de triggers completa.
 
@@ -96,7 +96,7 @@ Esperar confirmación explícita antes de transicionar a Phase 12 STANDARDIZE.
 Razón: Phase 12 propaga cambios al sistema — el usuario debe confirmar el cierre del WP.
 Al aprobar:
 1. Actualizar `context/now.md::phase` a `Phase 12`
-2. Ejecutar `bash .claude/scripts/close-wp.sh` — setea estado de cierre
+2. Ejecutar `bash .claude/scripts/task/close-wp.sh` — setea estado de cierre
 
 ---
 

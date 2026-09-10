@@ -1,0 +1,11 @@
+  ok    compone la ruta dentro del run
+  ok    no crea el archivo, solo su ruta
+  ok    REHUSA si el run no existe, en vez de crearlo
+  ok    y no lo deja creado
+  ok    rehusa un nombre con separador — escaparia del run
+  ok    rehusa sin nombre
+  ok    rehusa sin run
+  ok    se exporta a procesos hijos
+
+8 casos: 8 ok, 0 fallos
+EXIT=0

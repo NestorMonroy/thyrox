@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.261
+import{n}from"/$bunfs/root/chunk-y5pwxex8.js";import{m}from"/$bunfs/root/chunk-84mvm17e.js";import{MUe}from"/$bunfs/root/chunk-tcap6yb8.js";import{I}from"/$bunfs/root/chunk-hyqdn9c0.js";import{Un,Og,Lbt}from"/$bunfs/root/chunk-g8wr27v4.js";import{s,se,c,pe}from"/$bunfs/root/chunk-hc3tpgm9.js";var f=m(()=>c({server_instructions:s().optional(),server_instructions_by_server:pe(s(),s()).optional(),tools:pe(s(),s()).optional(),search_hints:pe(s(),s()).optional(),param_descriptions:pe(s(),pe(s(),s())).optional(),prompts:pe(s(),s()).optional(),skills:pe(s(),s()).optional()})),l=m(()=>pe(s(),se()));function k9(e){if(!e.pluginSource)return;let{name:r,marketplace:i}=Un(e.pluginSource);if(!Og(i)&&!Lbt(r,i))return;let u=I("tengu_official_plugin_prompt_overrides",{}),t=l().safeParse(u);if(!t.success){n("tengu_official_plugin_prompt_overrides: GB payload is not an object; ignoring",{level:"error"});return}let a=t.data[r];if(a===void 0)return;let p=f().safeParse(a);if(!p.success){n(`tengu_official_plugin_prompt_overrides: entry for '${r}' failed schema (${p.error.issues[0]?.message}); using baked-in text`,{level:"error"});return}let o=p.data;if(Object.keys(o).length===0)return;return{...o,server_instructions_by_server:d(o.server_instructions_by_server),tools:d(o.tools),search_hints:d(o.search_hints),param_descriptions:d(o.param_descriptions),prompts:d(o.prompts),skills:d(o.skills)}}function d(e){if(e===void 0)return;let r=Object.create(null);return Object.assign(r,e)}function Zct(e,r){if(!e)return;let i=e.server_instructions_by_server;if(i){let u=MUe(r),t=u&&i[u.serverName];if(t!==void 0)return t}return e.server_instructions}function eut(e,r){if(!r||!e.properties)return e;let i={...e.properties},u=!1;for(let[t,a]of Object.entries(r)){let p=i[t];if(p!==null&&typeof p==="object")i[t]={...p,description:a},u=!0}if(!u)return e;return{...e,properties:i}}
+export{k9,Zct,eut};

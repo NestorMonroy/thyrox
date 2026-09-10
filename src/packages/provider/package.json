@@ -1,0 +1,41 @@
+{
+  "name": "@thyrox/provider",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "La interfaz del modelo y sus dos adaptadores: HTTP a Anthropic (SSE) y el grabado que reproduce respuestas. Lo que el bucle LLAMA para obtener un turno.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./anthropicHttp": "./src/anthropicHttp.ts",
+    "./recorded": "./src/recorded.ts",
+    "./sse": "./src/sse.ts",
+    "./caCerts": "./src/internal/caCerts.ts",
+    "./cost/*": "./src/cost/*.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
+    "openai": "6.33.0",
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/headless-sdk": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/output": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/storage": "workspace:*",
+    "axios": "^1.20.0",
+    "chalk": "^6.0.0",
+    "https-proxy-agent": "^5.0.1",
+    "lodash-es": "^4.18.1",
+    "zod": "^4.3.6"
+  }
+}

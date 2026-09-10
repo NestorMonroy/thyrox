@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{Lqc as b,Lvc as h,Mpc as l,Rpc as m,Vhc as p,Whc as A,luc as f,puc as T,qac as s,rac as g,sac as _}from"/$bunfs/root/_668.js";import{B_c as c,D_c as P}from"/$bunfs/root/_780.js";import{Ged as d,Oed as y}from"/$bunfs/root/_816.js";import{jhd as u,ohd as S}from"/$bunfs/root/_820.js";b();h();S();y();P();A();_();var x=14;function L(){return l()?.claudeCodeTrialDurationDays??null}var i={status:"ineligible",daysRemaining:null};function R(){let e=s();if(e)return n(!0,e.endsAt);let t=l();if(!t||m()!=="pro")return i;let r=t.ccOnboardingFlags?.e10===!0;return n(r,t.claudeCodeTrialEndsAt??null)}async function O(e,t){return c("api_pro_trial_start",async()=>{if(s()){let o=new Date(Date.now()+x*24*60*60*1000).toISOString();return g({endsAt:o}),n(!0,o)}let a=await p.post("/api/oauth/organizations/:orgUUID/claude_code/pro_trial",{},{auth:"teleport-org",credentials:t});if(!a.ok)throw Error(a.reason==="no-auth"?a.detail:`Pro trial start unavailable: ${a.reason}`);return u("Pro trial started",{level:"debug"}),D(a.data.ends_at,e),n(!0,a.data.ends_at)})}function F(){if(R().status!=="expired")return!1;return T().cachedExtraUsageDisabledReason!==null}function N(e){switch(e.status){case"active":{let t=e.daysRemaining??0;return`Trial: ${t} ${t===1?"day":"days"} left`}case"expired":return"Usage credits";case"ineligible":case"not_started":return null}}function n(e,t){if(!e)return i;if(!t)return{status:"not_started",daysRemaining:null};let r=new Date(t);if(Number.isNaN(r.getTime()))return d(Error(`Invalid claude_code_trial_ends_at: ${t}`)),i;let a=r.getTime()-Date.now();if(a<=0)return{status:"expired",daysRemaining:0};return{status:"active",daysRemaining:Math.ceil(a/86400000)}}function D(e,t){f((r)=>{if(!r.oauthAccount||r.oauthAccount.claudeCodeTrialEndsAt===e)return r;return{...r,oauthAccount:{...r.oauthAccount,claudeCodeTrialEndsAt:e}}},t)}
+export{x as cl,L as dl,R as el,O as fl,F as gl,N as hl};

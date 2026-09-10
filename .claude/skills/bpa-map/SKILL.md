@@ -4,14 +4,9 @@ description: "Use when documenting an As-Is business process. bpa:map — docume
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "BPMN"
-    - "process mapping"
-    - "swim lane diagram"
-    - "as-is process"
-    - "process documentation"
+  triggers: ["BPMN", "process mapping", "swim lane diagram", "as-is process", "process documentation"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /bpa-map — BPA: Map
@@ -224,3 +219,33 @@ Cuando el As-Is Process Map está validado con Process Owner y ejecutores → `b
 
 ### References
 - [bpmn-guide.md](./references/bpmn-guide.md) — Notación BPMN: Events, Tasks, Gateways, Pools/Lanes, Sequence Flows con ejemplos y errores comunes
+
+---
+
+## Anclaje al proyecto Kaupamex
+
+Cuando este skill se ejecuta en el multi-repo Kaupamex, los placeholders
+genericos de arriba se sustituyen por los artefactos canonicos del
+proyecto. La metodologia BPA no cambia; solo se ancla a la notacion,
+plantilla y catalogo de actores propios.
+
+- **Plantilla de proceso:** `source/normativa/estandares/plantillas/tpl-proceso-bpmn.rst`
+  (`:ref:` ``tpl-proceso-bpmn``) — reemplaza los templates markdown genericos.
+- **Actores / swimlanes:** del catalogo canonico
+  `source/requisitos/actores-del-sistema.rst` (`:ref:` ``actores-sistema``):
+  Visitante, Comprador, Administrador, Tiempo (scheduler UC-SYS), Gateway de
+  Pago (MP / PayPal), Transportista. No inventar actores por proceso.
+- **Notacion y trazado BPMN:** `:ref:` ``bc-mn-u2-bpmn`` (elementos) y
+  `:ref:` ``bc-mn-bpmn-layout`` (izq→der, excepcion abajo, divergencia a la
+  derecha).
+- **Metodologia de gestion por procesos (niveles 0/1/n, PHVA):**
+  `:ref:` ``bc-bpm-metodologia-gestion-por-procesos``.
+- **Convencion de formato:** los diagramas de proceso son **PlantUML
+  (activity-beta) embebidos en RST**, no Mermaid ni tablas markdown sueltas.
+  Los artefactos viven como `.rst` bajo `source/` (solo acepta `.rst`).
+  Compuertas con ``if/then/else`` (o ``hexagon``); la palabra ``diamond`` es
+  invalida.
+**Foco de esta fase (Map):** el As-Is se dibuja con el diagrama As-Is de
+``tpl-proceso-bpmn`` (swimlanes = actores del catalogo). La tabla de pasos
+(Actor | Tarea | Entrada | Salida | Tiempo) va en la seccion "Pasos del
+proceso" de esa plantilla, en RST, no en un `.md` suelto.

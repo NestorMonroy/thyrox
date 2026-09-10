@@ -1,0 +1,7 @@
+{
+  "question": "Por que ningun agente emitido declara experimental.cacheTtl, si el mecanismo esta construido y cableado",
+  "instrument": "grep sobre el paquete y los .claude/agents de los cinco clones; agregado por subagent_type sobre agent_sessions con usage_source='transcript'; lectura de chooseCacheTtl en provider/src/cost/policy.ts",
+  "metric": "definiciones con expectedGapMinutes; agentes emitidos con experimental.cacheTtl; duration_s/turns por subagent_type",
+  "blind_to": "el hueco real es (inicio del turno N+1 - fin del turno N) y duration_s/turns incluye la llamada al API, asi que SOBREESTIMA; sobreestimar empuja hacia 1h y no hacia 5m, de modo que el veredicto es conservador. Ciego tambien al agente que espera de verdad entre turnos (una suite larga), que no esta en la poblacion medida",
+  "destination": "thyrox/.claude/workbench — evidencia de sesion del proveedor"
+}

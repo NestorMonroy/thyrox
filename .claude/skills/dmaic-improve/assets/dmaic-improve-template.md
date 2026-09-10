@@ -44,7 +44,7 @@ status: Borrador
 | Jidoka | Defectos desapercibidos | [ ] Sí / [ ] No | [descripción o N/A] |
 | Heijunka | Demanda variable / cuellos de botella | [ ] Sí / [ ] No | [descripción o N/A] |
 
-*Ver catálogo completo con aplicación paso a paso: [lean-tools-guide.md](./references/lean-tools-guide.md)*
+*Ver catálogo completo con aplicación paso a paso: [lean-tools-guide.md](../references/lean-tools-guide.md)*
 
 ---
 
@@ -64,7 +64,7 @@ status: Borrador
 |-----------------|------------------------|-----------------|-----------------|------------------|-----------------|-------------|------------------|
 | [paso] | [qué podría fallar] | [impacto en cliente/proceso] | [S] | [O] | [D] | [S×O×D] | [acción si RPN >100] |
 
-*Escala: > 200 = Crítico (acción obligatoria) · 100-200 = Importante · < 100 = Monitorear. Ver tablas completas: [fmea-guide.md](./references/fmea-guide.md)*
+*Escala: > 200 = Crítico (acción obligatoria) · 100-200 = Importante · < 100 = Monitorear. Ver tablas completas: [fmea-guide.md](../references/fmea-guide.md)*
 
 **Modos de falla críticos (RPN > 200):** [lista o "Ninguno"]
 **Acciones preventivas implementadas antes del piloto:** [lista o "No aplica — RPN < 200 en todos los modos"]

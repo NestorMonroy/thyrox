@@ -1,0 +1,25 @@
+# El unico PreModelSwitch que el harness carga, y su ruta
+
+## settings.local.json del cwd de sesion (/home/user) — el que SI carga
+  SubagentStart    python3 /home/user/kaupamex-docs/.claude/hooks/medir_delta_subagente.py --start
+  SubagentStart    python3 /home/user/kaupamex-docs/.claude/hooks/register_agent_session.py --start
+  PreModelSwitch   bun run /home/user/kaupamex-docs/.claude/packages/agent/bin/preModelSwitch.ts
+  SubagentStop     node /home/user/kaupamex-docs/.claude/hooks/save-agent-result.mjs
+  SubagentStop     python3 /home/user/kaupamex-docs/.claude/hooks/medir_delta_subagente.py --stop
+  SubagentStop     python3 /home/user/kaupamex-docs/.claude/hooks/register_agent_session.py --stop
+  advisorModel: claude-fable-5-1
+
+## existencia de cada destino
+  kaupamex-docs/.claude/packages/agent/bin/preModelSwitch.ts       AUSENTE
+  kaupamex-docs/.claude/hooks/medir_delta_subagente.py             existe
+  kaupamex-docs/.claude/hooks/register_agent_session.py            existe
+  kaupamex-docs/.claude/hooks/save-agent-result.mjs                existe
+
+## el hook muerto, invocado
+error: Module not found "/home/user/kaupamex-docs/.claude/packages/agent/bin/preModelSwitch.ts"
+
+## el mismo en su ruta viva (thyrox)
+{"hookSpecificOutput":{"hookEventName":"PreModelSwitch","permissionDecision":"ask","permissionDecisionReason":"Cambiar de claude-fable-5-1 a claude-opus-5 reescribe 508,503 tokens de contexto como escritura de caché a 1h (y otros 508,503 si se vuelve fuera del TTL), en vez de leerlos cacheados en claude-fable-5-1. En el tier de claude-opus-5 un token escrito pesa 20× uno leído, así que la reescritura equivale a 10,170,060 tokens de lectura. La caché no es portable entre modelos —la clave lleva el modelo—, así que lo único que abarata el cambio es reducir el contexto: compactar antes deja al modelo nuevo reescribiendo el resumen en vez de la historia entera. Sin perder la caché: subagent en claude-opus-5 (claude-opus-5 en su propia clave de caché (126029 tokens releídos por turno))."}}
+
+## prueba de que ese settings esta vivo
+  agent_sessions: 1301 filas — las escribe register_agent_session.py, hook del mismo archivo

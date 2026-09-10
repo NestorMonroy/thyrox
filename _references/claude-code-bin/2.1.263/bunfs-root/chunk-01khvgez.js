@@ -1,0 +1,14 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.263
+import{xe}from"/$bunfs/root/chunk-8a7jwk3w.js";import{at}from"/$bunfs/root/chunk-r0g511s6.js";import{dZ}from"/$bunfs/root/chunk-7asyztp3.js";import h from"ws";class i extends Error{name="TestEgressBlockedError";code="TestEgressBlocked"}var f=globalThis.fetch,g=h;function PMn(e,t){if(e instanceof Request)return{method:(t?.method??e.method).toUpperCase(),url:e.url};return{method:(t?.method??"GET").toUpperCase(),url:String(e)}}function E(){return xe(process.env.CLAUDE_CODE_TEST_ALLOW_REAL_NETWORK)}function u(e,t){return`[CLAUDE_CODE_TEST_ALLOW_REAL_NETWORK] live request from a test runtime: ${e} ${t}
+`}function c(e){let t;try{t=dZ(new URL(e).hostname)}catch{t=!1}if(t)return"loopback";return E()?"opted-in":"refused"}function o(e,t){return`Blocked under test: ${e} ${t} \u2014 test runtimes must not reach the network. `+"Run the file via `bun run test:file -- <path>` with this request mocked, or set CLAUDE_CODE_TEST_ALLOW_REAL_NETWORK=1 for an intentional live probe."}function p(e){let t=at.getUri(e),r=(e.method??"get").toUpperCase();switch(c(t)){case"loopback":return m(e,r);case"opted-in":return process.stderr.write(u(r,t)),e;case"refused":throw new i(o(r,t))}}function m(e,t){let r=e.beforeRedirect;return e.beforeRedirect=(n,a)=>{let s=typeof n.href==="string"?n.href:"";switch(c(s)){case"loopback":break;case"opted-in":process.stderr.write(u(t,s));break;case"refused":throw process.stderr.write(`${o(t,s)}
+`),new i(o(t,s))}r?.(n,a)},e}function w(){if(!l())at.interceptors.request.use(p)}function l(){return at.interceptors.request.handlers?.some((e)=>e?.fulfilled===p)??!1}function d(){return!1}function k4(){return}function DMn(e,t,r){if(e!==f||!d())return;switch(c(r)){case"loopback":return;case"opted-in":process.stderr.write(u(t,r));return;case"refused":throw new i(o(t,r))}}function $Mn(e,t,r){if(e!==f||!d())return;if(r.redirected&&c(r.url)==="refused")throw new i(o(t,r.url))}var T;function HIt(e,t){if(!d()||t!==void 0&&t!==g)return;switch(c(e)){case"loopback":return;case"opted-in":process.stderr.write(u("WS",e));return;case"refused":{let r=new i(o("WS",e));throw T?.(r),r}}}async function Sye(e,t){let r=globalThis.fetch,{method:n,url:a}=PMn(e,t);DMn(r,n,a);let s=await r(e,t);return $Mn(r,n,s),s}
+export{PMn,k4,DMn,$Mn,HIt,Sye};

@@ -1,0 +1,22 @@
+{
+  "//": "Control ACOTADO al adapter de dependencias y a sus tres fuentes. El paquete no tenia tsconfig: `bun test` no hace typecheck, asi que un desajuste de forma entre SwarmHostDeps (portado en TASK-DOCS-0233/0276) y AgentDeps (portado en TASK-DOCS-0263) era invisible. El typecheck del arbol completo NO sirve como control: arrastra 2499 errores preexistentes, y un consumidor roto no se distingue de ellos.",
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": [
+      "bun"
+    ]
+  },
+  "files": [
+    "src/adapters/buildSwarmAgentDeps.ts",
+    "src/types/deps.ts",
+    "src/mailbox/index.ts",
+    "src/core/teamHelpers.ts"
+  ]
+}

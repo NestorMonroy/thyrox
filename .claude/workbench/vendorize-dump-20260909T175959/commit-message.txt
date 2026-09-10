@@ -1,0 +1,27 @@
+Extraer 2.1.266 con el paquete que ya existia
+
+`binary freshness` ya respondia la pregunta —«el corpus llega a 2.1.263 y
+el ejecutable declara 2.1.266; extraer 2.1.266»— y yo porte a mano un
+guion de vendorizado desde kaupamex-docs sin mirar antes que habia aqui.
+
+@thyrox/binary gana en los tres ejes: deriva la version del payload de la
+seccion .bun en vez del literal mas frecuente, escribe bunfs-root/ con
+MANIFEST.tsv en vez de un volcado sin frontera de modulo, y su freshness
+emite la orden exacta. El guion se retira; el banco registra el episodio.
+
+La build: 1827 de 1827 entradas, 37 733 274 B de contenido, tabla de
+95 004 B con paso 52. Contra 2.1.263 son +9 entradas y +468 B de tabla,
+pero el contenido BAJA 1 000 237 B — primera vez que este corpus ve la
+tabla crecer con el payload encogiendo. Son dos ejes, no una
+contradiccion, y con una sola muestra no se le atribuye causa.
+
+Su fila entro en MEASURED medida con `binary info` sobre la build viva.
+El control fallo primero nombrando la build, que es lo que ese registro
+exige por escrito; su salida queda en controls/.
+
+Y el subsistema de banco gana la mitad que le faltaba: sabia acunar
+`<slug>-<ISO>` y no encontrarlo, asi que quien creaba un banco se
+llevaba el ISO a un archivo efimero fuera del arbol. runsFor/latestRun
+lo resuelven por nombre —el ISO va en el identificador, asi que el orden
+lexicografico es el cronologico— y thyrox_work_file da la ruta de un
+archivo de trabajo DENTRO del banco. Este mensaje es el primero que lo usa.

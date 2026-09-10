@@ -6,10 +6,34 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["RUP inception", "vision document", "LCO milestone", "business case RUP", "project kickoff RUP"]
-updated_at: 2026-04-17 01:00:00
+updated_at: 2026-05-21 03:19:20
 ---
 
 # /rup-inception — RUP: Inception
+
+> **Adaptacion kaupamex v2 (2026-05-21).** Las salidas de esta fase
+> NO se escriben en un archivo `rup-inception.md` separado dentro de
+> `.thyrox/context/work/<WP>/`. En kaupamex van mapeadas a los
+> artefactos `.rst` estandar de la iniciativa, ubicada en
+> `docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/`:
+>
+> - **Vision Document** -> ``alcance-<slug>.rst`` (QUE / POR QUE /
+>   CRITERIO / actores / scope IN-OUT).
+> - **Business Case** -> ``alcance-<slug>.rst`` (subseccion) o
+>   ``analisis-<slug>.rst`` si requiere clasificacion cuantitativa.
+> - **Use Case Model 10%** -> EXTERNO: nombrar los UCs criticos en
+>   ``docs/source/requisitos/casos-uso/`` y cross-link desde
+>   ``analisis-<slug>.rst``. NO duplicar UC RST dentro de la
+>   iniciativa.
+> - **Risk List inicial** -> ``analisis-<slug>.rst`` seccion
+>   "Riesgos R-NN" con tabla probabilidad/impacto/respuesta.
+> - **Plan inicial (rough)** -> ``tareas-<slug>.rst`` con T-NNN de
+>   alto nivel (granularidad mejora en Elaboration).
+> - **Milestone LCO alcanzado** -> ``progreso-<slug>.rst`` seccion
+>   "Milestone LCO" con la fecha y los 5 criterios verificados.
+>
+> Ver `.claude/agents/rup-coordinator.md` para el mapping completo
+> RUP -> 6 artefactos.
 
 > *"The goal of Inception is not to define the system completely — it is to establish enough understanding to justify the investment in Elaboration."*
 
@@ -159,7 +183,21 @@ En Inception, el plan es rough (±50% de accuracy es aceptable):
 
 ## Artefacto esperado
 
-`{wp}/rup-inception.md` — usar template: [rup-inception-template.md](./assets/rup-inception-template.md)
+Los entregables canonicos RUP de Inception se materializan en los
+artefactos `.rst` de la iniciativa (ver banner de adaptacion
+kaupamex v2 al inicio del archivo):
+
+- ``alcance-<slug>.rst``  — Vision Document + Business Case + scope.
+- ``analisis-<slug>.rst`` — Risk List R-NN + Use Case Model 10%
+  como cross-link.
+- ``tareas-<slug>.rst``   — Plan inicial T-NNN (rough granularity).
+- ``progreso-<slug>.rst`` — Bitacora + seccion "Milestone LCO" al
+  alcanzarse.
+
+Template de referencia historico (estilo `.md`):
+[rup-inception-template.md](./assets/rup-inception-template.md).
+Conserva la estructura conceptual; al portar a `.rst` se reparte
+entre los artefactos arriba.
 
 ---
 
@@ -174,23 +212,42 @@ En Inception, el plan es rough (±50% de accuracy es aceptable):
 
 ---
 
-## Estado en now.md
+## Carpetas externas relacionadas en docs/source/
 
-**Al INICIAR este step:**
-```yaml
-methodology_step: rup:inception
-flow: rup
-rup_phase: inception
-rup_iteration: 1
-```
+Inception consume y produce contenido en estas carpetas (aparte de
+los 4 artefactos de la iniciativa):
 
-**Al COMPLETAR** (LCO alcanzado):
-```yaml
-methodology_step: rup:inception  # completado → listo para rup:elaboration
-flow: rup
-rup_phase: inception
-rup_iteration: [N]
-```
+- ``docs/source/requisitos/business-requirements/`` — BREQ-NN ya
+  existentes (15 BREQs). Validar si el Business Case toca un BREQ
+  existente o requiere uno nuevo.
+- ``docs/source/requisitos/casos-uso/<modulo>/`` — Use Case Model
+  10%; nombrar UC criticos aqui (sin flujo detallado).
+- ``docs/source/implementacion/project-charter.rst`` — Project
+  Charter del proyecto; cross-link desde el ``alcance-<slug>.rst``
+  si la iniciativa entra en su scope.
+- ``docs/source/risks-technical-debt/registro-riesgos-y-deuda-tecnica.rst``
+  — Risk List **project-wide**; los riesgos de la iniciativa local
+  van en ``analisis-<slug>.rst`` con cross-link aqui.
+- ``docs/source/normativa/restricciones/`` — Constraints existentes
+  (cnst-*.rst) que limitan el scope.
+
+## Estado activo
+
+En kaupamex **no hay `now.md`**. El estado y la coordinacion
+intra-sesion **persisten en ``docs/source/``**, en los `.rst` de la
+iniciativa. La fase activa se lee del campo ``:estado:`` del
+metadata de ``progreso-<slug>.rst`` y de la ultima seccion de su
+bitacora.
+
+**Al INICIAR Inception:** la bitacora del progreso abre con una
+entrada "Inception iter 1" (o numero subsiguiente); ``:estado:`` se
+mantiene como ``En analisis`` mientras la fase no cierra.
+
+**Al COMPLETAR** (LCO alcanzado): agregar seccion
+"Milestone LCO alcanzado <YYYY-MM-DDTHH:MM:SS>" en
+``progreso-<slug>.rst`` listando los 5 criterios verificados con
+cita (commit hash o archivo). El ``:estado:`` puede transicionar a
+``En ejecucion`` si se entra a Elaboration en la misma iniciativa.
 
 ## Siguiente paso
 
@@ -216,12 +273,19 @@ rup_iteration: [N]
 - [lco-criteria.md](./references/lco-criteria.md) — Criterios de evaluación LCO: 5 criterios con sub-criterios, checklist de concurrencia, decisiones típicas, límites de tiempo
 
 ### Scripts
-- [check-lco-criteria.sh](./scripts/check-lco-criteria.sh) — Verifica readiness del milestone LCO inspeccionando el work package
+- [check-lco-criteria.sh](./scripts/check-lco-criteria.sh) — Verifica readiness del milestone LCO inspeccionando la iniciativa.
 
 ```bash
-# Verificar LCO readiness del WP activo
+# Verificar LCO readiness sobre la carpeta de iniciativa
 bash .claude/skills/rup-inception/scripts/check-lco-criteria.sh \
-  .thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/
+  docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/
 ```
 
-**Criterios verificados:** Vision Document con indicador de aprobación · Business Case con datos financieros · Risk List con ≥3 riesgos · Use Case Model con ≥1 UC · Plan con milestones LCA/IOC/PD. Sale con código 0 si todos pasan, 1 si hay criterios faltantes.
+> **Nota kaupamex v2:** el script en `scripts/` aun apunta al
+> layout `.thyrox/<WP>/` historico. Pendiente de port a la
+> estructura `.rst` actual; el agente puede ejecutar el check
+> manualmente leyendo los 5 criterios contra los 4 RST relevantes
+> (`alcance`, `analisis`, `tareas`, `progreso`) hasta que el
+> script se actualice.
+
+**Criterios verificados:** Vision Document con indicador de aprobación (alcance + sign-off en progreso) · Business Case con datos financieros (alcance o analisis) · Risk List con ≥3 riesgos (analisis) · Use Case Model con ≥1 UC cross-linkeado (analisis -> docs/source/requisitos/casos-uso/) · Plan con milestones LCA/IOC/PD declarados (tareas o progreso). Sale con código 0 si todos pasan, 1 si hay criterios faltantes.

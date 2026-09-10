@@ -1,0 +1,39 @@
+{
+  "name": "@thyrox/storage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Persistencia en disco: rutas, archivos temporales, XDG y conversion Windows/POSIX. Adaptacion de @claude-code-how-works/storage (ccnmt) — porte parcial, ver docstrings por modulo.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./cache-paths": "./src/cache-paths.ts",
+    "./tempfile.js": "./src/tempfile.ts",
+    "./path.js": "./src/path.ts",
+    "./windowsPaths.js": "./src/windowsPaths.ts",
+    "./xdg.js": "./src/xdg.ts",
+    "./glob.js": "./src/glob.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "cli": "bun run bin/storage.ts"
+  },
+  "dependencies": {
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/app-host": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/output": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*",
+    "env-paths": "^4.0.0",
+    "ignore": "^7.0.8",
+    "jsonc-parser": "^3.3.1",
+    "picomatch": "^4.0.7",
+    "proper-lockfile": "^4.1.2"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts"
+}

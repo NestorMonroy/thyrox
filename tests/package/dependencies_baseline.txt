@@ -1,0 +1,133 @@
+# Deuda heredada de especificadores que NO resuelven, congelada 2026-09-07T03:23:57.
+# La destapo el control al cerrar su ceguera (#214, h-docs-1145). NO es un barrido:
+# uno listado no bloquea, uno nuevo si.
+#
+# NO son una sola clase, y confundirlas lleva al arreglo contrario:
+#
+#   21  @claude-code-how-works/*  el ambito de la FUENTE sobreviviendo dentro del
+#                                 porte. NOSOTROS SOMOS @thyrox. NO se instalan:
+#                                 se REAPUNTAN a @thyrox/* cuando el hermano exista.
+#                                 Directiva del ejecutor 2026-09-07.
+#    1  @thyrox/*                 nuestro propio ambito sin resolver — falta el
+#                                 enlace entre paquetes, no una dependencia.
+#   14  tercero real              @anthropic-ai/sdk, @opentelemetry/*, chalk,
+#                                 signal-exit, lodash-es, @anthropic/ink,
+#                                 stdin-napi, @withfig/autocomplete. Ahi si aplica
+#                                 instalar / reimplementar / retirar (#214).
+#    1  src/...                   especificador desnudo con forma de ruta.
+#
+# El grueso es de #198 (app-host) y #205 (cli). Se paga al tocar el paquete.
+
+agent::@anthropic-ai/sdk
+agent::@thyrox/config
+agent::@thyrox/provider
+app-host::@anthropic-ai/sdk
+app-host::@anthropic/ink
+app-host::@claude-code-how-works/ide
+app-host::@claude-code-how-works/repl
+app-host::@claude-code-how-works/server
+app-host::@claude-code-how-works/tool-registry
+app-host::@opentelemetry/api
+app-host::@opentelemetry/api-logs
+app-host::@opentelemetry/sdk-logs
+app-host::@opentelemetry/sdk-metrics
+app-host::@opentelemetry/sdk-trace-base
+app-host::@thyrox/agent
+app-host::@thyrox/cli
+app-host::@thyrox/command-runtime
+app-host::@thyrox/config
+app-host::@thyrox/headless-sdk
+app-host::@thyrox/local-observability
+app-host::@thyrox/mcp-runtime
+app-host::@thyrox/memory
+app-host::@thyrox/output
+app-host::@thyrox/permission
+app-host::@thyrox/provider
+app-host::@thyrox/shell
+app-host::@thyrox/storage
+app-host::@thyrox/swarm
+app-host::chalk
+app-host::lodash-es
+app-host::signal-exit
+app-host::src
+app-host::stdin-napi
+command-runtime::@anthropic-ai/sdk
+shell::@withfig/autocomplete
+storage::@thyrox/cli
+
+# --- mcp-runtime, congelado 2026-09-07T06:59:35 -------------------------------------------
+# Las 5 raices las destapo el reapuntado de ambito de #232: los specifiers eran
+# `@claude-code-how-works/*` y no resolvian tampoco; el renombre solo los hizo
+# visibles bajo nuestro ambito. NO son una clase, y confundirlas lleva al
+# arreglo contrario:
+#
+#   ARISTA DE PAQUETE ausente — el modulo EXISTE, falta el enlace. Medido:
+#     storage/src/imageResizer.ts, browser.ts, secureStorage.ts y
+#     app-host/src/bootstrap/state.ts estan los cuatro en el arbol. No
+#     resuelven porque `@thyrox/{storage,app-host,shell}` no figuran en las
+#     dependencies de mcp-runtime. Se paga cableando `workspaces` en la raiz
+#     —que es como resuelve la fuente, cuyo package.json de mcp-runtime trae
+#     dependencies VACIAS— y reinstalando. Es la tarea #239.
+#
+#   MODULO ausente — porte pendiente. config/{platform,settings,
+#     mcpConfigSchema,utils/envExpansion}, provider/{authAlias,claude,
+#     oauthConstants,systemPromptType}, app-host/state/AppState,
+#     shell/execFileNoThrow. Se paga portandolos (#198, #200, #238).
+#
+# Por que no se cablearon los symlinks a mano: viven en node_modules, que es
+# gitignored. Resolverian aqui y NO en un clon fresco — la forma de defecto que
+# el docstring de este control llama «la mas cara de ver» (#202).
+mcp-runtime::@thyrox/app-host
+mcp-runtime::@thyrox/config
+mcp-runtime::@thyrox/provider
+mcp-runtime::@thyrox/shell
+mcp-runtime::@thyrox/storage
+
+# --- los 47 modulos portados, congelado 2026-09-07T08:14:09 ------------------------------
+# Los destapo el porte de provider(18)/config(15)/agent+cli(8)/shell+permission+
+# command-runtime(6). No son deuda nueva: son las aristas y los terceros que
+# esos modulos IMPORTAN y que el arbol todavia no tiene. Tres clases, tres
+# arreglos distintos:
+#
+#   ARISTA DE PAQUETE (18) — el hermano ESTA portado; falta que figure en las
+#     dependencies del consumidor. Lo cierra `workspaces` en la raiz + install,
+#     que es la tarea #239. NO se cablean symlinks a mano: viven en
+#     node_modules (gitignored) y resolverian aqui y no en un clon fresco.
+#
+#   HERMANO AUSENTE (1) — `config::@thyrox/tool-registry`. No es solo la
+#     arista: el paquete no esta portado (313 modulos, medido). Tarea #234.
+#
+#   TERCERO REAL (5) — @anthropic-ai/mcpb, axios, fflate,
+#     @aws-sdk/credential-provider-node, @smithy/node-http-handler. Ninguno
+#     instalado (Bun.resolveSync los rechaza). Ahi si aplica instalar /
+#     reimplementar / retirar, decision por paquete.
+#
+#   AMBITO DE LA FUENTE (2) — `agent::@claude-code-how-works/{repl,
+#     tool-registry}`. Se REAPUNTAN a @thyrox/* cuando el hermano exista
+#     (#235, #234), no se instalan.
+agent::@claude-code-how-works/repl
+agent::@claude-code-how-works/tool-registry
+agent::@thyrox/app-host
+cli::@thyrox/app-host
+config::@anthropic-ai/mcpb
+config::@thyrox/agent
+config::@thyrox/app-host
+config::@thyrox/local-observability
+config::@thyrox/provider
+config::@thyrox/shell
+config::@thyrox/storage
+config::@thyrox/tool-registry
+config::axios
+config::fflate
+permission::@thyrox/config
+permission::@thyrox/storage
+provider::@aws-sdk/credential-provider-node
+provider::@smithy/node-http-handler
+provider::@thyrox/agent
+provider::@thyrox/app-host
+provider::@thyrox/config
+provider::@thyrox/headless-sdk
+provider::@thyrox/local-observability
+provider::@thyrox/output
+shell::@thyrox/app-host
+shell::@thyrox/local-observability

@@ -1,0 +1,471 @@
+#!/bin/bash
+# =============================================================================
+# reconcile-agents.sh — clasificar el trabajo en segundo plano por su
+# estado real, y CONFIRMAR la muerte antes de relanzar
+# =============================================================================
+#
+# Por qué existe
+# --------------
+# `bash-background-tasks.md`, sección "Reconciliación tras resume", reconcilia
+# **a mano** con tres comandos (`ps`, `TaskStop`, `git status` por repo) y no
+# distingue dos situaciones que exigen conductas opuestas:
+#
+#   • **atascado** — el trabajo sigue existiendo y no avanza. Relanzarlo
+#     duplica el trabajo: dos copias escribiendo el mismo working tree.
+#   • **desaparecido** — murió sin decirlo. Relanzarlo es lo correcto.
+#
+# ERR-12 rozó exactamente ese riesgo: un summary declaraba dos tandas "RUNNING"
+# y las dos habían terminado dejando trabajo sin commitear. Se reconcilió a
+# mano; si en vez de eso se hubiera relanzado, habrían corrido dos copias.
+#
+# La distinción vanished/stalled viene de `hccw: 21-background-fleet.md:§21.4`
+# (versión 2.1.202). Se adapta la IDEA, no la implementación: nuestro binario
+# (2.1.42) no tiene esas cadenas y no hace falta que las tenga — igual que la
+# referencia Odoo gobierna sin ejecutarse. Ver :ref:`h-docs-138`.
+#
+# **Corregido 2026-08-13 (:ref:`h-docs-140`).** Esta cabecera atribuía el guard
+# de abajo a `_respawn_unconfirmed_bail`. Es falso, y lo corrige una fuente de
+# mayor calidad: `ccb: bgDaemon.ts:462-469` muestra que ese evento dispara
+# cuando el trabajo **muere antes de confirmar que arrancó**, para que quien
+# espera reciba el error real en vez de un timeout — eso vive ahora en
+# `session/marker_wait.py`, no aquí. La anti-duplicación que sí hace este guion
+# es `tengu_bg_respawn_stale` (`:638-642`), y el contador de intentos de más
+# abajo es `respawn-stalled` (`:599-604`). Tres nombres, tres mecanismos.
+#
+# El roster ya existía y no lo usábamos
+# --------------------------------------
+# Medido 2026-08-13 sobre esta sesión, `/tmp/claude-0/-home-user/<sesión>/tasks`:
+#
+#   84 symlinks  → subagentes; apuntan a `subagents/agent-<id>.jsonl`
+#  172 archivos  → tareas de `Bash(run_in_background)`; son su propio stdout
+#    0 enlaces rotos
+#
+# Es un roster con marca de tiempo por entrada. La reconciliación manual nunca
+# lo consultó: iba a `ps`, que no ve a los subagentes porque no son procesos.
+#
+# Qué marcador terminal tiene cada clase (medido, y NO es simétrico)
+# -------------------------------------------------------------------
+# Subagentes — la última línea del JSONL:
+#
+#     83 de 84   assistant con bloque `text`   → cerró con su reporte final
+#      1 de 84   `user` (un tool_result)       → murió a media frase
+#
+# Ese 1 es el control positivo: existe en el repo, no se fabricó. Es la firma
+# del subagente cortado por `maxTurns`, que `agent-results-to-docs.md` ya
+# describía sin poder detectarlo ("no devuelve mensaje final").
+#
+# Tareas bash — tres poblaciones, y la mayor no es decidible:
+#
+#      7 de 172  `[exited with code N]`  (marcador del harness)
+#     75 de 172  `^EXIT=N`               (marcador nuestro, patrón R-2.0)
+#     90 de 172  sin marcador            → **INDECIDIBLE desde el archivo**
+#
+# Ese 52 % indecidible es la justificación medida del guard: en más de la mitad
+# de los casos la muerte NO se puede confirmar, así que relanzar sobre esa base
+# es apostar. El guard convierte "no puedo saberlo" en "no relanzo", nunca en
+# "supongo que murió".
+#
+# Corolario que valida R-2.0: los 75 decidibles lo son porque alguien escribió
+# `echo EXIT=$?`. Es la única razón por la que no son 90+75.
+#
+# Qué NO hace
+# -----------
+#   • No mapea id → PID: el `.output` no guarda el pid y el subagente no es un
+#     proceso. La vivacidad se mide por avance de mtime, no por `ps`.
+#   • No mata ni relanza nada. Clasifica y, con `--confirmar-muerte`, autoriza
+#     o deniega. La acción es del llamador.
+#   • No mira el working tree. Eso ya lo cubre el paso 3 de la regla.
+#
+# Uso
+# ---
+#   bash .claude/scripts/agents/reconcile-agents.sh                  # reporte
+#   bash .claude/scripts/agents/reconcile-agents.sh --quiet          # sólo conteos
+#   bash .claude/scripts/agents/reconcile-agents.sh --vigilar 20     # 2 muestras
+#   bash .claude/scripts/agents/reconcile-agents.sh --confirmar-muerte <id>
+#       exit 0 = muerte CONFIRMADA  → relanzar es seguro
+#       exit 2 = BAIL               → no se pudo confirmar, NO relanzar
+# =============================================================================
+
+set -euo pipefail
+
+WINDOW_SECONDS="${RECONCILE_WINDOW:-900}"   # 15 min = ciclo largo del loop
+# Holgura de reloj, SEPARADA de la ventana a proposito: quien escribe el
+# timestamp puede no compartir reloj con quien lo lee. El binario la declara
+# como constante aparte (CLOCK_SKEW_ALLOWANCE_MS=60000, build 2.1.261) en vez
+# de incrustarla en el umbral, y por la misma razon.
+CLOCK_SKEW_SECONDS="${RECONCILE_CLOCK_SKEW:-60}"
+MODE="reporte"
+WATCH_SECONDS=0
+TARGET_ID=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --quiet)            MODE="quiet"; shift ;;
+    --vigilar)          WATCH_SECONDS="${2:?--vigilar exige segundos}"; shift 2 ;;
+    --confirmar-muerte) MODE="confirmar"; TARGET_ID="${2:?--confirmar-muerte exige un id}"; shift 2 ;;
+    --ventana)          WINDOW_SECONDS="${2:?--ventana exige segundos}"; shift 2 ;;
+    *) echo "argumento no reconocido: $1" >&2; exit 64 ;;
+  esac
+done
+
+# --- Resolver el roster --------------------------------------------------
+# Prioridad: variable de entorno declarada > heurística de mtime. Mismo
+# criterio que snapshot-tasks.sh: adivinar cuando el entorno lo declara es
+# medir mal.
+# La BASE es parametro del consumidor, no del mecanismo: el guion no decide
+# donde el cliente pone sus rosters. Estaba cableada, y con ella cableada un
+# test no podia montar un arbol propio — media siempre el real.
+ROSTER_BASE="${RECONCILE_ROSTER_BASE:-/tmp/claude-0}"
+
+ROSTER="${RECONCILE_ROSTER:-}"
+ROSTER_ORIGIN="declarado"
+
+# El id de sesion DISCRIMINA; el mtime solo ordena. Medido 2026-09-09: bajo
+# `/tmp/claude-0` habia 57 directorios `tasks` y 56 eran fixtures de nuestras
+# propias suites. El real ganaba por ser el mas reciente — una coincidencia de
+# orden, no una razon: cualquier suite que cree su fixture despues del ultimo
+# agente secuestra el roster, y el reporte publica un TOTAL confiado sobre la
+# poblacion equivocada. El cliente pone el id en el entorno y en la ruta.
+if [[ -z "$ROSTER" && -n "${CLAUDE_CODE_SESSION_ID:-}" ]]; then
+  ROSTER=$(find "$ROSTER_BASE" -maxdepth 3 -type d -name tasks \
+                -path "*${CLAUDE_CODE_SESSION_ID}*" 2>/dev/null | head -1 || true)
+  [[ -n "$ROSTER" ]] && ROSTER_ORIGIN="sesion declarada"
+fi
+
+# Ultimo recurso. Se conserva porque sin id de sesion no hay con que decidir, y
+# rehusar dejaria sin lectura a quien invoca desde fuera del cliente. Pero
+# publica CUANTOS candidatos descarto: un lector que ve «heuristica, 57
+# candidatos» sabe que el veredicto es una conjetura, y uno que ve «1» sabe que
+# no habia nada que confundir. Sin esa cifra las dos se leen igual.
+if [[ -z "$ROSTER" ]]; then
+  CANDIDATES=$(find "$ROSTER_BASE" -maxdepth 3 -type d -name tasks 2>/dev/null | wc -l)
+  ROSTER_ORIGIN="mtime (heurística, ${CANDIDATES} candidato(s))"
+  ROSTER=$(find "$ROSTER_BASE" -maxdepth 3 -type d -name tasks -printf '%T@ %p\n' 2>/dev/null \
+           | sort -rn | head -1 | cut -d' ' -f2- || true)
+fi
+
+if [[ -z "$ROSTER" || ! -d "$ROSTER" ]]; then
+  echo "reconcile-agents: no hay roster legible (probé: ${ROSTER:-<vacío>})" >&2
+  exit 3
+fi
+
+NOW=$(date +%s)
+
+# Localizador de THYROX, donde vive el veredicto: la variable si esta
+# declarada; si no, el hermano `thyrox/` ascendiendo desde aqui (H-DOCS-1081).
+READER=""
+if [[ -n "${THYROX_ROOT:-}" ]]; then
+    READER="$THYROX_ROOT/src"
+else
+    NIVEL="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    while [[ "$NIVEL" != "/" ]]; do
+        if [[ -f "$NIVEL/thyrox/src/roster/job_liveness.py" ]]; then
+            READER="$NIVEL/thyrox/src"; break
+        fi
+        NIVEL="$(dirname "$NIVEL")"
+    done
+fi
+if [[ -z "$READER" || ! -f "$READER/roster/job_liveness.py" ]]; then
+    # REHUSA en vez de degradar: sin el primitivo no se puede clasificar, y
+    # publicar un roster sin veredictos se leeria como «no hay nada que
+    # reconciliar» — el cero silencioso que este guion existe para no dar.
+    echo "reconcile-agents: no se encontro thyrox/src/roster/job_liveness.py" >&2
+    exit 2
+fi
+
+# --- Forma terminal de UNA entrada ---------------------------------------
+# Emite una de: terminado | anormal | sin-marcador
+terminal_shape() {
+  local entry="$1"
+  if [[ -L "$entry" ]]; then
+    local target; target=$(readlink -f "$entry" 2>/dev/null || true)
+    [[ -f "$target" ]] || { echo "anormal"; return; }   # destino perdido
+    tail -1 "$target" 2>/dev/null | python3 -c '
+import sys, json
+try:
+    o = json.load(sys.stdin)
+except Exception:
+    print("sin-marcador"); raise SystemExit
+msg = o.get("message") or {}
+content = msg.get("content")
+if o.get("type") == "assistant" and isinstance(content, list) \
+   and any(b.get("type") == "text" for b in content):
+    print("terminado")          # cerró con su reporte final
+else:
+    print("anormal")            # murió a media frase: tool_result o tool_use suelto
+' 2>/dev/null || echo "sin-marcador"
+  else
+    # Tarea bash: dos marcadores posibles, ninguno garantizado.
+    #
+    # Se compara con el motor de expresiones de bash, NO con `grep` en tubería.
+    # `grep -q` cierra la tubería al primer match, el productor muere con
+    # SIGPIPE (141) y bajo `pipefail` el pipeline entero sale distinto de 0
+    # aunque el patrón HAYA coincidido — el `if` leería falso. Es la forma de
+    # H-DOCS-120, medida dos veces más al escribir snapshot-tasks.sh y su test.
+    local tail_text; tail_text=$(tail -5 "$entry" 2>/dev/null || true)
+    if [[ "$tail_text" =~ \[exited\ with\ code\ [0-9]+\] ]]; then
+      echo "terminado"
+    elif [[ "$tail_text" =~ (^|$'\n')EXIT=[0-9]+ ]]; then
+      echo "terminado"
+    else
+      echo "sin-marcador"       # 90 de 172 medidos: NO decidible desde el archivo
+    fi
+  fi
+}
+
+# --- Veredicto de UNA entrada --------------------------------------------
+# terminado | vivo | atascado | desaparecido | indecidible
+# Los tres desenlaces de un transcript ya cerrado. Delega en el primitivo:
+# escribir aqui un segundo clasificador daria dos definiciones de «entrego»
+# que nadie sincroniza — el defecto que este guion ya evita con el diagnostico.
+delivery_verdict() {
+  local entry="$1" v
+  # La entrega es un eje de SUBAGENTE, y sólo se pregunta donde se puede
+  # responder. El `.output` de una tarea de `Bash` es un log plano: no tiene
+  # mensaje `assistant`, así que `delivery.classify` no puede decidir y
+  # devuelve `undecidable`. Publicar eso sobre un log que SÍ trae su marcador
+  # terminal (`[exited with code 0]`, `EXIT=0`) borra lo único que se sabía de
+  # él: que terminó. Es el mismo guard que `production_line` ya declara un
+  # eje más abajo — aquí faltaba, y por eso dos bash terminados caían en
+  # `indecidible` y el cubo `terminado` publicaba 0.
+  if [[ ! -L "$entry" ]]; then
+    echo "terminado"
+    return 0
+  fi
+  v=$(THYROX_SRC="$READER" python3 - "$entry" <<'DELIVERY'
+import os, pathlib, sys
+sys.path.insert(0, os.environ["THYROX_SRC"])
+from roster.delivery import classify
+try:
+    texto = pathlib.Path(sys.argv[1]).read_text(errors="ignore")
+except OSError:
+    print("undecidable"); raise SystemExit(0)
+print(classify(texto))
+DELIVERY
+) || v="undecidable"
+  case "$v" in
+    delivered) echo "entrego" ;;
+    cut)       echo "cortado" ;;
+    *)         echo "indecidible" ;;
+  esac
+}
+
+classify() {
+  local entry="$1" shape age mtime verdict
+  shape=$(terminal_shape "$entry")
+  # -L: la entrada de un subagente es un SYMLINK a su transcript, y `stat` sin
+  # -L mide el enlace — que no cambia desde que el harness lo creo. Medido
+  # 2026-09-02 (H-DOCS-1004): seis agentes vivos reportados «atascado 11-14
+  # min» con el enlace a las 05:06 y el transcript creciendo a las 05:22.
+  mtime=$(stat -L -c %Y "$entry" 2>/dev/null || echo 0)
+  age=$(( NOW - mtime ))
+
+  # El veredicto lo decide `thyrox: src/roster/job_liveness.py`; aqui solo se
+  # inyectan los parametros de este consumidor (la ventana y la holgura) y se
+  # traduce al vocabulario que este guion ya publicaba.
+  verdict=$(THYROX_SRC="$READER" python3 - "$shape" "$age" "$WINDOW_SECONDS" "$CLOCK_SKEW_SECONDS" <<'DIAGNOSIS'
+import os, sys
+sys.path.insert(0, os.environ["THYROX_SRC"])
+from roster.job_liveness import diagnose
+
+SHAPE = {"terminado": "terminated", "anormal": "cut", "sin-marcador": "pending"}
+d = diagnose(SHAPE[sys.argv[1]], float(sys.argv[2]),
+             stale_after=float(sys.argv[3]), clock_skew=float(sys.argv[4]))
+print(d.verdict)
+DIAGNOSIS
+)
+
+  case "$verdict" in
+    # `terminated` colapsa TRES desenlaces con conductas opuestas para quien
+    # coordina: entrego su reporte, se corto a media llamada, o el transcript
+    # no permite decirlo. El discriminador NO es el tipo de la ultima linea
+    # —84 de 98 transcripts terminan en `attachment`, que el cliente apila
+    # despues del cierre— sino los bloques del ultimo mensaje `assistant`.
+    # Lo decide `thyrox: src/roster/delivery.py`; aqui solo se traduce.
+    terminated)       delivery_verdict "$entry" ;;
+    stalled_evident)  echo "desaparecido" ;;   # hay evidencia POSITIVA del corte
+    stalled_unknown)  echo "indecidible" ;;    # ausencia de marcador != muerte
+    recent)
+      # Escribio dentro de la ventana. Una segunda muestra SI separa "sigue
+      # trabajando" de "se quedo pegado", y es la unica senal que el primitivo
+      # no tiene: mide un instante, no dos.
+      if (( WATCH_SECONDS > 0 )); then
+        local before="$mtime" after
+        sleep "$WATCH_SECONDS"
+        after=$(stat -L -c %Y "$entry" 2>/dev/null || echo 0)
+        if (( after > before )); then echo "vivo"; else echo "atascado"; fi
+      else
+        # ANTES decia "atascado", y eso NO era conservador: era el veredicto
+        # contrario, y es el que reporto seis agentes vivos como atascados
+        # (H-DOCS-1004). Sin segunda muestra no se puede afirmar ninguno de
+        # los dos, asi que se publica el tercero: escribio hace poco, y quien
+        # lo lea sabe que lo decidio la senal debil.
+        echo "reciente"
+      fi
+      ;;
+    *)                echo "indecidible" ;;
+  esac
+}
+
+# --- Segundo eje: que PRODUJO, no si dio senales --------------------------
+# El `mtime` de un transcript avanza con cada linea que el agente escribe —un
+# grep, una busqueda de herramienta, un parrafo de razonamiento—. Leerlo como
+# «sigue trabajando» mide el significante y concluye sobre el significado. El
+# veredicto lo decide `thyrox: src/roster/production.py` sobre los eventos que
+# `thyrox: src/transcript/tool_events.py` extrae del transcript.
+#
+# Solo aplica a una entrada de SUBAGENTE (symlink a su JSONL). El `.output` de
+# una tarea de `Bash` es un log plano sin `tool_use`: publicar «sin evidencia»
+# sobre el seria un veredicto que no discrimina —el instrumento no puede ver
+# ahi— asi que se dice que no aplica.
+production_line() {
+  local entry="$1"
+  if [[ ! -L "$entry" ]]; then
+    echo "  produccion     : (no aplica: el instrumento lee tool_use de un transcript de subagente)"
+    return 0
+  fi
+  THYROX_SRC="$READER" python3 - "$entry" "$WINDOW_SECONDS" <<'PRODUCTION'
+import os, sys, time
+sys.path.insert(0, os.environ["THYROX_SRC"])
+from pathlib import Path
+from roster import production
+from transcript import tool_events
+
+entry = Path(sys.argv[1])
+scan = tool_events.scan(entry.resolve(), now=time.time())
+p = production.summarize(scan.events, window=float(sys.argv[2]))
+ultima = ("ninguna en la ventana" if p.last_mutation_age is None
+          else f"hace {p.last_mutation_age / 60:.0f} min")
+print(f"  produccion     : {production.verdict(p)} — mutantes={p.mutating} "
+      f"solo-lectura={p.read_only} indecidibles={p.undecidable} (ultima: {ultima})")
+if p.undecidable:
+    print(f"                   {p.undecidable} llamadas cuyo efecto este instrumento "
+          "NO puede ver: no son «no produjo».")
+PRODUCTION
+}
+
+# --- Modo: confirmar muerte antes de relanzar ----------------------------
+if [[ "$MODE" == "confirmar" ]]; then
+  ENTRY="$ROSTER/${TARGET_ID}.output"
+  if [[ ! -e "$ENTRY" ]]; then
+    echo "BAIL — no hay entrada de roster para '$TARGET_ID' en $ROSTER"
+    echo "       Una entrada ausente no es prueba de muerte: puede ser el id"
+    echo "       equivocado, u otro roster. No relanzar."
+    exit 2
+  fi
+  # Contador de relanzamientos — adaptado de `ccb: bgDaemon.ts:599-604`
+  # (`respawn-stalled`), que rehúsa el segundo con `EGAVEUP`:
+  #
+  #     const attempts = oldRecord.attachStallRespawns ?? 0
+  #     if (attempts >= 1) { … return err('EGAVEUP', `… not respawning again`) }
+  #
+  # Sin esto, una muerte confirmada autoriza relanzar tantas veces como se
+  # pregunte: un trabajo que muere siempre por su propia causa entra en bucle
+  # de relanzamiento, y cada vuelta parece legítima porque la muerte ES real.
+  # El guard de muerte responde "¿está muerto?"; éste responde "¿ya lo
+  # intentamos?", que es una pregunta distinta.
+  LEDGER="$ROSTER/.reconciliar-respawns"
+  attempts=0
+  if [[ -f "$LEDGER" ]]; then
+    attempts=$(awk -v k="$TARGET_ID" '$1==k {print $2; exit}' "$LEDGER" 2>/dev/null || echo 0)
+    attempts="${attempts:-0}"
+  fi
+
+  VERDICT=$(classify "$ENTRY")
+  if [[ "$VERDICT" == "desaparecido" && "$attempts" -ge 1 ]]; then
+    echo "BAIL — $TARGET_ID ya se relanzó $attempts vez/veces y volvió a morir."
+    echo "       La muerte es real, pero relanzar otra vez repite la causa en"
+    echo "       vez de arreglarla. Diagnosticar antes de insistir."
+    echo "       (para forzar: borrar su línea de $LEDGER)"
+    exit 2
+  fi
+
+  case "$VERDICT" in
+    desaparecido)
+      printf '%s %s\n' "$TARGET_ID" "$(( attempts + 1 ))" >> "$LEDGER"
+      echo "MUERTE CONFIRMADA — $TARGET_ID"
+      echo "  forma terminal : anormal (cortado a media frase)"
+      echo "  sin escribir   : $(( (NOW - $(stat -L -c %Y "$ENTRY")) / 60 )) min (ventana ${WINDOW_SECONDS}s)"
+      echo "  relanzar es seguro: no hay copia viva que duplicar."
+      exit 0 ;;
+    *)
+      echo "BAIL — $TARGET_ID está '$VERDICT', no 'desaparecido'."
+      case "$VERDICT" in
+        terminado)   echo "       Ya cerró. Relanzarlo repetiría trabajo hecho." ;;
+        vivo)        echo "       Su mtime avanzó durante la vigilancia: el archivo crece." ;
+                     echo "       Que ese avance sea TRABAJO lo dice el eje de producción," ;
+                     echo "       no el mtime — abajo, medido sobre sus tool_use." ;;
+        reciente)    echo "       Escribió dentro de la ventana. Sin una segunda muestra" ;
+                     echo "       no se sabe si avanza, y relanzarlo pondría DOS copias" ;
+                     echo "       sobre el mismo working tree." ;;
+        atascado)    echo "       Escribió dentro de la ventana y no cerró. Relanzarlo" ;
+                     echo "       pondría DOS copias sobre el mismo working tree." ;;
+        indecidible) echo "       Sin marcador terminal y sin forma medible del corte." ;
+                     echo "       Es el 52 % medido: la muerte NO se puede confirmar aquí." ;;
+      esac
+      production_line "$ENTRY"
+      exit 2 ;;
+  esac
+fi
+
+# --- Modo: reporte / quiet -----------------------------------------------
+# Los seis cubos, MAS los dos que `delivery_verdict` introdujo al cablear #222:
+# `terminado` se parte en `entrego` y `cortado`. Faltaban, y con `set -u` el
+# guion moria en `COUNT[$v]: unbound variable` — el instrumento que las reglas
+# mandan correr para mirar el roster no corria. No mintio: se apago, que es el
+# desenlace menos malo de los dos, pero deja al roster sin lectura.
+declare -A COUNT=( [terminado]=0 [entrego]=0 [cortado]=0 [vivo]=0 [reciente]=0 \
+                   [atascado]=0 [desaparecido]=0 [indecidible]=0 )
+TOTAL=0
+DETAIL=""
+
+while IFS= read -r entry; do
+  [[ -n "$entry" ]] || continue
+  TOTAL=$(( TOTAL + 1 ))
+  v=$(classify "$entry")
+  # Un veredicto que ningun cubo declara NO se descarta ni tumba el guion: se
+  # cuenta como indecidible y se nombra. Descartarlo dejaria el TOTAL cuadrando
+  # sobre una suma incompleta — un verde que no distingue «no hay» de «no supe».
+  if [[ -z "${COUNT[$v]+x}" ]]; then
+    DETAIL+="  veredicto sin cubo: '$v' en $(basename "$entry" .output)"$'\n'
+    v=indecidible
+  fi
+  COUNT[$v]=$(( ${COUNT[$v]} + 1 ))
+  if [[ "$v" == "desaparecido" || "$v" == "atascado" ]]; then
+    id=$(basename "$entry" .output)
+    kind=$([[ -L "$entry" ]] && echo subagente || echo bash)
+    mins=$(( (NOW - $(stat -L -c %Y "$entry" 2>/dev/null || echo "$NOW")) / 60 ))
+    DETAIL+="  $v  $id  ($kind, sin escribir ${mins} min)"$'\n'
+  fi
+done < <(find "$ROSTER" -maxdepth 1 -name '*.output' 2>/dev/null | sort)
+
+if [[ "$MODE" == "quiet" ]]; then
+  echo "reconcile-agents: desaparecidos=${COUNT[desaparecido]} atascados=${COUNT[atascado]} indecidibles=${COUNT[indecidible]} (alcance medido: $TOTAL entradas de roster)"
+  exit 0
+fi
+
+echo "== reconciliación del roster =="
+echo "roster    : $ROSTER  [$ROSTER_ORIGIN]"
+echo "ventana   : ${WINDOW_SECONDS}s$( (( WATCH_SECONDS > 0 )) && echo "  · vigilancia: ${WATCH_SECONDS}s" )"
+echo
+# `terminado` es la CABECERA de su cubo, no un cubo hermano: su cifra es la
+# suma de los tres desenlaces de abajo. Publicarla como cubo propio la dejaba
+# en 0 —ningun veredicto de subagente devuelve el literal `terminado`— y el
+# lector veia «terminado 0» con un «entrego 1» debajo: la cabecera negando a
+# su propio detalle.
+TERMINADOS=$(( COUNT[terminado] + COUNT[entrego] + COUNT[cortado] ))
+printf '  %-14s %s\n' terminado    "$TERMINADOS"
+printf '  %-14s %s\n' "  entrego"   "${COUNT[entrego]}"
+printf '  %-14s %s\n' "  cortado"   "${COUNT[cortado]}"
+printf '  %-14s %s\n' "  no aplica" "${COUNT[terminado]}"
+printf '  %-14s %s\n' vivo         "${COUNT[vivo]}"
+printf '  %-14s %s\n' reciente     "${COUNT[reciente]}"
+printf '  %-14s %s\n' atascado     "${COUNT[atascado]}"
+printf '  %-14s %s\n' desaparecido "${COUNT[desaparecido]}"
+printf '  %-14s %s\n' indecidible  "${COUNT[indecidible]}"
+echo "  ------------------------"
+printf '  %-14s %s\n' TOTAL "$TOTAL"
+[[ -n "$DETAIL" ]] && { echo; echo "$DETAIL"; }
+echo "Sólo 'desaparecido' autoriza relanzar, y sólo vía --confirmar-muerte <id>."
+echo "'indecidible' NO es 'muerto': es que este instrumento no puede verlo."
+exit 0

@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.258
+import{pi,Ak}from"/$bunfs/root/chunk-b1z7jvb2.js";import{a}from"/$bunfs/root/chunk-sr28hb79.js";import{Kt}from"/$bunfs/root/chunk-twjxwmnx.js";import{l}from"/$bunfs/root/chunk-xtc2dmbe.js";import{t}from"/$bunfs/root/chunk-5nyank6v.js";import{aBe,Qg,yu,xke}from"/$bunfs/root/chunk-8qt7d28b.js";import{oCn,aCn,qie,oE,lCn}from"/$bunfs/root/chunk-64kpb0yv.js";import{Me,ii}from"/$bunfs/root/chunk-cnazfz7b.js";import{alr}from"/$bunfs/root/chunk-bdjm18ys.js";function s(e){try{return new URL(e).host}catch{return}}function _Kt(e=a.ANTHROPIC_BASE_URL||alr()){if(!e)return!0;let i=s(Kt().BASE_API_URL);return i!==void 0&&s(e)===i}function QB(){oCn()}function tk(){let e=qie();if(e!==void 0)return e;let{eligible:i,ineligibleReason:n}=u(),g=a.CLAUDE_CODE_EVAL_CONFINED===!0,r=!i&&g;lCn(r);let o=i||r;return aCn(o,o?void 0:n)}function u(){if(oE())return{eligible:!0};if(Me()==="gateway"){let n=Ak(pi());return{eligible:n,ineligibleReason:n?void 0:"unpinned_gateway"}}if(Me()!=="firstParty")return{eligible:!1,ineligibleReason:"third_party_provider"};if(!ii())return{eligible:!1,ineligibleReason:"custom_base_url"};let e=a.CLAUDE_CODE_ENTRYPOINT;if(e==="local-agent"||e==="remote_cowork"||e?.startsWith("claude-coworker"))return{eligible:!1,ineligibleReason:"sandboxed_entrypoint"};let i=!1;try{i=aBe()}catch(n){t(`Remote settings: could not read the profile store (${l(n)}); not treating this session as profile-authenticated`,{level:"warn"})}if(i)return _Kt()?{eligible:!0}:{eligible:!1,ineligibleReason:"profile_base_url_mismatch"};if(yu()&&xke()===null)return{eligible:!0};if(yu()&&(xke()==="enterprise"||xke()==="team"))return{eligible:!0};try{let{key:n}=Qg({skipRetrievingKeyFromApiKeyHelper:!0});if(n)return{eligible:!0}}catch{}return{eligible:!1,ineligibleReason:yu()?"unsupported_subscription":"no_auth"}}
+export{_Kt,QB,tk};

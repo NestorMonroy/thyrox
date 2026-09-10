@@ -1,0 +1,14 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.258
+import{s}from"/$bunfs/root/chunk-62em4bpm.js";import{u}from"/$bunfs/root/chunk-mrh5xd2h.js";import{E,oo}from"/$bunfs/root/chunk-xtc2dmbe.js";import{t}from"/$bunfs/root/chunk-5nyank6v.js";import{qe}from"/$bunfs/root/chunk-650bcxer.js";import{r3}from"/$bunfs/root/chunk-7npsafxm.js";import{spawn as w}from"child_process";var f=500;function hA(n,r="SIGKILL"){if(!Number.isInteger(n)||n<=1)return Promise.resolve(new Set);return k(n,r).catch(()=>new Set)}async function k(n,r){let o=await b(n);try{process.kill(-n,r)}catch(e){try{process.kill(n,r)}catch{}if(E(e)!=="ESRCH")d("group_kill",e)}for(let e of o)try{process.kill(e,r)}catch{}return o}async function zZn(n){let r=[...n].filter((e)=>Number.isInteger(e)&&e>1),o=new Map;if(r.length===0)return o;for(let e of r){let i=r3(e);if(i!==void 0)o.set(e,i)}return o}async function VZn(n,r){if(n.size===0)return;let o;o=new Map;for(let e of n.keys()){let i=r3(e);if(i!==void 0)o.set(e,i)}for(let[e,i]of n){if(o.get(e)!==i)continue;try{process.kill(e,r)}catch{}}}async function g(n){let r=new Map,{stdout:o}=await qe("ps",["-o","pid=","-o","lstart=","-p",n.join(",")],{timeout:f,cwd:"/",env:{USER_TYPE:"external",NODE_ENV:"production",LC_ALL:"C",TZ:"UTC"},stripFinalNewline:!1});for(let e of o.split(`
+`)){let i=e.match(/^\s*(\d+)\s+(\S.*\S)\s*$/);if(i)r.set(Number(i[1]),i[2])}return r}async function b(n){let r;try{r=await Promise.race([S(),new Promise((l)=>{let c=setTimeout((a)=>a(""),f,l);if(typeof c==="object")c.unref()})])}catch(l){return d("enum_spawn",l),new Set}let o=new Map;for(let l of r.split(`
+`)){let c=l.match(/^\s*(\d+)\s+(\d+)\s*$/);if(!c)continue;let a=Number(c[1]),m=Number(c[2]),p=o.get(m);if(p)p.push(a);else o.set(m,[a])}let e=new Set,i=[n];while(i.length>0){let l=i.shift();for(let c of o.get(l)??[])if(c>1&&c!==n&&c!==process.pid&&!e.has(c))e.add(c),i.push(c)}return e}function S(){return new Promise((n,r)=>{let o;try{o=w("ps",["-A","-o","pid=","-o","ppid="],{cwd:"/",stdio:["ignore","pipe","ignore"],windowsHide:!0})}catch(i){r(i);return}let e="";o.stdout?.on("data",(i)=>e+=i),o.once("error",r),o.once("close",()=>n(e))})}function d(n,r){try{let o=E(r),e=oo(r);t(`killProcessTree ${n} failed: ${o??r}`),s("tengu_bash_tool_kill_error",{stage:u(n),...e&&{error_code:e}})}catch{}}
+export{hA,zZn,VZn};

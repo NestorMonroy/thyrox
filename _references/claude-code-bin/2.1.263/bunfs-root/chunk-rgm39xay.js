@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.263
+import{Z3,j,U}from"/$bunfs/root/chunk-k6vqz9fa.js";import{$e}from"/$bunfs/root/chunk-8a7jwk3w.js";var a=1;function u(){return Z3()}var p=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;function ive(e){return typeof e==="string"&&p.test(e)}function cD(){return{msgV:a,msg_id:u()}}class n{getCurrentMode=null;modeAtUnwire=void 0;onPeerHeld=null;onPeerHoldReleased=null;onPeerHoldDropped=null;sendPeerReceipt=null;recordCorrespondent=null;publishAvailability=null;unsubscribeAvailabilityRefresh=null;shutdownSettleHandle=null;shuttingDown=!1;held=[];announced=new WeakMap;reset(){this.held.length=0,this.getCurrentMode=null,this.modeAtUnwire=void 0,this.onPeerHeld=null,this.onPeerHoldReleased=null,this.onPeerHoldDropped=null,this.shutdownSettleHandle?.(),this.shutdownSettleHandle=null,this.shuttingDown=!1,this.sendPeerReceipt=null,this.recordCorrespondent=null,this.publishAvailability=null,this.unsubscribeAvailabilityRefresh?.(),this.unsubscribeAvailabilityRefresh=null}}class s{outstandingSends=[];awaitingTerminal=[];reset(){this.outstandingSends.length=0,this.awaitingTerminal.length=0}}class o{pacer=null;reset(){this.pacer=null}}class r{ownUdsHopToken=void 0;ownBridgePeerAddressResolver=void 0;messageDropped=$e();reset(){this.ownUdsHopToken=void 0,this.ownBridgePeerAddressResolver=void 0,this.messageDropped.clear()}}class t{pending=new Map;pendingSandbox=new Map;pendingPlanApproval=null;clear(){this.pending.clear(),this.pendingSandbox.clear(),this.pendingPlanApproval=null}}class i{reportedDroppedEntries=new Set;pendingPrunes=new Map}class d{updated=$e();leaderTeamName=void 0;reset(){if(this.leaderTeamName===void 0)return;this.leaderTeamName=void 0;try{this.updated.emit()}catch{}}}class l{inbound=new n;receipts=new s;outbound=new o;ingress=new r;swarmPermissions=new t;mailbox=new i;taskList=new d}var m=new j(()=>new l);function ds(){return m.of(U().host)}
+export{ive,cD,ds};

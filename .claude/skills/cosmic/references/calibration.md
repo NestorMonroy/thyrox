@@ -12,44 +12,61 @@
 ## Procedimiento
 
 1. Mide N procesos representativos de la capa (método estándar, movimiento a movimiento).
-   - **N mínimo:** al menos 5–8 procesos por capa, o ~20% de la capa si tiene <25 procesos.
-     Deben cubrir el rango (no solo los simples): incluye el proceso más grande y el más chico.
-   - Por debajo de ese N, la media es **SPECULATIVE** (muestra no representativa) — no fijes umbral.
 2. Calcula media/distribución → fija bandas y umbral con evidencia.
 3. Documenta el alcance: el umbral **vale solo para esa capa**.
 
-## Tamaño ≠ esfuerzo — requisito para convertir a horas
+## Esfuerzo: incluir retrabajo y trabajo no-funcional (MM v5.0 Parte 2 §3)
 
-`Productividad (horas/CFP)` **solo** se calcula con **histórico de horas reales** del propio
-equipo/capa. **Si no tienes ese histórico, NO conviertas CFP a esfuerzo** — el CFP es una
-medida de tamaño funcional, no de horas. Una conversión sin datos de esfuerzo propios es
-SPECULATIVE (I-012) y no debe fundamentar estimaciones de cronograma.
+> **Regla (no negociable) — el esfuerzo de calibración NO se calcula solo con las
+> corridas "limpias".** Excluir los fallos/retrabajo o el trabajo de 0 CFP infla
+> la productividad y subestima toda estimación posterior.
 
-> THYROX, p.ej., tiene su tamaño medido (675 CFP) pero **cero datos de esfuerzo** → no puede
-> (todavía) dar horas/CFP. Reconocerlo es parte de la calibración honesta.
+El Measurement Manual v5.0 (Parte 2, §3, líneas 749-771) es explícito:
 
-## Ejemplo trabajado — calibración propia de THYROX (ÉPICA 44/45)
+- Un cambio de software proviene de (a) **nuevo FUR**, (b) **cambio de FUR**, o
+  (c) **corrección de defecto**. *"Las reglas para el tamaño… son las mismas pero
+  el medidor se [pone en] alerta para **distinguir las diversas circunstancias
+  cuando se hacen mediciones de rendimiento y estimaciones**"* (L749-751).
+- *"El tamaño funcional… **no cambia** si el software debe ser cambiado para
+  corregir un defecto"* (L768-771) → **la corrección de defecto = 0 CFP pero
+  esfuerzo real.**
 
-Bandas por capa medidas (media CFP/proceso), útiles como **referencia interna** (no extrapolar
-a otro sistema):
+**Corolario para productividad (size/effort, MM Parte 2 L326):**
 
-| Capa | Procesos | Media CFP | Rango | Lectura |
-|------|----------|-----------|-------|---------|
-| A interfaz | 20 | 5.4 | 3–10 | outliers: DISCOVER 10, STANDARDIZE 8 |
-| B motor | 13 | 3.5 | 2–5 | hooks finos (banda Small) |
-| C metodología | 61 | 6.16 | 6–7 | muy homogénea (pasos de coordinator) |
-| D agentes | 29 | 5.0 | 4–7 | write 5–7, read-only 4 |
+1. Calcula **DOS** tasas, no una:
+   - **Tasa new-FUR "limpia"** = ΣCFP nuevos / Σ esfuerzo de procesos sin
+     defecto ni retrabajo. Es el **mejor caso** (optimista).
+   - **Tasa all-in** = ΣCFP entregados / Σ **TODO** el esfuerzo de la capa,
+     incluyendo: (a) corrección de defectos/retrabajo (0 CFP), (b) trabajo
+     no-funcional (atributos nuevos, campos calculados, anotaciones de schema,
+     hardening — 0 CFP, ver `estimation.md` NFR), (c) reconciliación por fallo
+     de agente/herramienta.
+2. **Para ESTIMAR el backlog usa la tasa all-in**, no la limpia. La limpia solo
+   sirve para entender el techo teórico.
+3. Reporta el **% de esfuerzo a 0 CFP** (trabajo no-funcional + defectos). Si es
+   alto (en kaupamex: ~41% del wall-clock api del loop), una estimación basada
+   solo en CFP nuevos subestima ~⅓.
+4. **Agrega, no cherry-pick** (MM Parte 2 §4.2, ágil L801-808; guía completa:
+   [manual/guideline-agile-cosmic-trudel-buglione.md](manual/guideline-agile-cosmic-trudel-buglione.md),
+   Trudel & Buglione IWSM/MetriKon 2010): la correlación CFP↔esfuerzo es buena
+   **agregando** los tamaños de las US/procesos de la iteración (y los USP de
+   Fibonacci **no son una medida**), no eligiendo las corridas limpias.
 
-**Validación del Average-FP:** en capa C se estimó ≈6 CFP/paso (Average-FP anclado en 2
-coordinators) y el conteo OBSERVABLE dio 6.16 → **error ~1.3%**. La técnica funciona cuando la
-capa es homogénea y el promedio está anclado en muestras medidas (estimación INFERRED, no
-SPECULATIVE — ver [estimation.md](estimation.md)).
+**Fuente de datos del esfuerzo:** debe ser trazable (en kaupamex: `duration_ms`
+de los subagentes + overhead de reconciliación del orquestador). Marca lo que NO
+puedas medir (p. ej. la reconciliación orquestada no está en `duration_ms` → la
+tasa all-in es un **piso**, no el valor exacto).
 
-## Precedente e-comerce (NO copiar valores — calibrar los tuyos)
+**Anti-patrón (ERR-15):** excluir el agente que falló ("unreliable") de la
+calibración. Eso contradice L749-751 (distinguir, no descartar) y produce una
+tasa optimista. El defecto es esfuerzo real con 0 CFP → entra en la tasa all-in.
+
+## Precedente kaupamex (NO copiar valores — calibrar los tuyos)
 
 - Umbral atomicidad capa **api = 8 CFP** (calibrado con UC-INV-02 = 7 CFP, UC-AUTH-02 = 8 CFP).
 - Decisión explícita de **no extrapolar** ese umbral a ui/db/server (DEC-COSMIC-002/006).
 - Benchmarks **calibrados** preferidos sobre los genéricos de industria (DEC-COSMIC-003).
 
 ---
-**Última actualización:** 2026-06-03T05:13:33Z
+**Última actualización:** 2026-06-03T09:23:02Z (añadida la regla de esfuerzo
+all-in: incluir retrabajo/defectos + trabajo no-funcional; MM v5.0 Parte 2 §3).

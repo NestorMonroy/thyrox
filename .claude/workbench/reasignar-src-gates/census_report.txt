@@ -1,0 +1,274 @@
+archivos en src/gates/: 74
+citas al DIRECTORIO src/gates/ (alcanzan a todos): 91
+    install.sh:23:# `src/gates/check_env_contract_keys.py` verifica que ninguna clave leída del
+    src/conformance/checklist.ts:87:  { id: "A.7.6", section: "A.7", question: "Is there maintenance policy for stale memory, obsolete rules, and invalid 
+    src/conformance/maintenance.ts:8: * `src/gates/check_premise_drift.py`, que compara la premisa declarada de una
+    src/packages/agent/__tests__/compat.test.ts:111:  // El gate vive en thyrox/src/gates/; estaba en .claude/scripts/gates/.
+    src/paths/reach.py:477:    ``kaupamex-docs/.claude/scripts/gates/``. Desde ``thyrox/src/gates/`` eso
+    src/paths/reach.ts:331: * `kaupamex-docs/.claude/scripts/gates/`, y desde `thyrox/src/gates/` medían
+    src/paths/surface.py:57:    'src/gates/lint_agents.py',
+    src/paths/surface.py:58:    'src/gates/pre-push.sh',
+    src/paths/surface.py:59:    'src/gates/thyrox-audit.sh',
+    src/skills/gates/check-skill-artifacts.sh:15:# usa contra `src/gates/`.
+    tests/agents/test-agent-store-render-tablero.sh:55:GATE_RST=src/gates/check_rst_sintaxis.py
+    tests/conformance/maintenance.test.ts:10: * Medido sobre los 71 gates de `src/gates/`: dos miran caducidad —
+    tests/coordination/branchIntegration.test.ts:172:// El gate se mudo a thyrox/src/gates/; vivia en docs/.claude/scripts/gates/.
+    tests/corpus/test-markdown-to-rst.sh:33:SINTAXIS="$REPO/src/gates/check_rst_sintaxis.py"
+    tests/gates/staleSubstitutes.test.ts:2: * Censo de sustitutos rancios (`src/gates/staleSubstitutes.ts`).
+    tests/gates/staleSubstitutes.test.ts:36:    const { findStaleSubstitutes } = await import('../../src/gates/staleSubstitutes.ts')
+    tests/gates/staleSubstitutes.test.ts:52:    const { findStaleSubstitutes } = await import('../../src/gates/staleSubstitutes.ts')
+    tests/gates/staleSubstitutes.test.ts:65:    const { findStaleSubstitutes } = await import('../../src/gates/staleSubstitutes.ts')
+    tests/gates/staleSubstitutes.test.ts:77:    const { findStaleSubstitutes } = await import('../../src/gates/staleSubstitutes.ts')
+    tests/gates/staleSubstitutes.test.ts:89:    const { findStaleSubstitutes } = await import('../../src/gates/staleSubstitutes.ts')
+    tests/gates/staleSubstitutes.test.ts:99:    const { findStaleSubstitutes } = await import('../../src/gates/staleSubstitutes.ts')
+    tests/gates/staleSubstitutes.test.ts:134:    const { findStaleSubstitutes } = await import('../../src/gates/staleSubstitutes.ts')
+    tests/gates/test-agent-artifacts.sh:26:GATE="$RAIZ/src/gates/check-agent-artifacts.sh"
+    tests/gates/test-audit-timing.sh:37:GUION="$RAIZ/src/gates/thyrox-audit.sh"
+    tests/gates/test-cifra-de-artefacto-vivo.sh:33:GATE="$RAIZ/src/gates/check_cifra_de_artefacto_vivo.py"
+    tests/gates/test-coordinator-sin-worktree.sh:39:SUT="$RAIZ/src/gates/check_agent_isolation.py"
+    tests/gates/test-corpus-al-dia.sh:29:GATE="$RAIZ/src/gates/check_corpus_al_dia.py"
+    tests/gates/test-destino-del-reporte.sh:31:GUION="$RAIZ/src/gates/detect_broken_references.py"
+    tests/gates/test-eventos-hook.sh:33:GATE="$RAIZ/src/gates/check_eventos_hook.py"
+    tests/gates/test-evidence-tracked.sh:39:SUT="$RAIZ/src/gates/check_evidence_tracked.py"
+    tests/gates/test-generator-determinism.sh:39:SUT="$REPO/src/gates/check_generator_determinism.py"
+    tests/gates/test-gitattributes.sh:40:GATE="$DOCS_ROOT/src/gates/check_gitattributes.py"
+    tests/gates/test-githooks-activos.sh:27:GUION="$RAIZ/src/gates/check_githooks_activos.py"
+    tests/gates/test-hook-script-token.sh:44:GATE="$DOCS_ROOT/src/gates/check_hook_script_token.py"
+    tests/gates/test-hooks-timeout.sh:32:GATE="$RAIZ/src/gates/check_hooks_timeout.py"
+    tests/gates/test-ids-entre-ramas.sh:33:GATE="$RAIZ/src/gates/check_ids_entre_ramas.py"
+    tests/gates/test-mutante-en-staging.sh:33:GUION="$RAIZ/src/gates/check_mutante_en_staging.py"
+    tests/gates/test-premise-drift.sh:38:SUT="$RAIZ/src/gates/check_premise_drift.py"
+    tests/gates/test-script-naming.sh:28:GATE="$RAIZ/src/gates/check_script_naming.py"
+    tests/gates/test-suite-discrimina.sh:44:GATE=src/gates/check_suite_discrimina.py
+    tests/gates/test-unreachable-rules.sh:34:GATE="$RAIZ/src/gates/check_unreachable_rules.py"
+    tests/gates/test-veredicto-de-gate.sh:32:AUDIT=src/gates/thyrox-audit.sh
+    tests/gates/test-verificar-premisa.sh:42:GUION=src/gates/verificar_premisa.py
+    tests/gates/test-verify-task-store.sh:57:TARGET="$RAIZ/src/gates/verify-task-store-in-cli-js.sh"
+    tests/gates/test-vocabulario-baseline-resolucion.sh:143:# `kaupamex-docs/.claude/scripts/gates/`; desde `thyrox/src/gates/` vale
+    tests/gates/test-vocabulario-prosa.sh:30:GATE="$RAIZ/src/gates/check_vocabulario_prosa.py"
+    tests/gates/test_audit_delegates.sh:30:AUDIT="$THYROX/src/gates/thyrox-audit.sh"
+    tests/gates/test_audit_delegates.sh:46:# Metrica: guiones `src/gates/check*` que el audit nombra Y que el registro
+    tests/gates/test_audit_delegates.sh:56:texto = pathlib.Path('src/gates/thyrox-audit.sh').read_text()
+    tests/gates/test_audit_delegates.sh:57:invocados = set(re.findall(r'src/gates/(check[-_][a-z0-9_-]+\.(?:sh|py))', texto))
+    tests/gates/test_audit_delegates.sh:81:SAL="$(cd "$THYROX" && python3 src/gates/doctor.py --list 2>/dev/null | wc -l)"
+    tests/gates/test_audit_delegates.sh:95:EMITE="$(cd "$THYROX" && timeout 100 python3 src/gates/doctor.py --json --only rst-referencias 2>/dev/null \
+    tests/gates/test_byte_class_gate.py:5:``src/gates/check_byte_oriented_class.py`` no exista, la primera asercion
+    tests/gates/test_consumer_anchor.py:6:el defecto original explotaba: `parents[3]` desde `src/gates/` sale del árbol y
+    tests/gates/test_consumer_root_gates.py:7:`kaupamex-docs/.claude/scripts/gates/`. Desde `thyrox/src/gates/` eso da
+    tests/gates/test_docs_root_resolution.py:7:``thyrox/src/gates/`` da ``/home/user``, y el ``assert`` revienta con
+    tests/gates/test_error_catalog.py:41:# existe bajo ningún árbol —el gate real vive en `src/gates/check_error_catalog.py`
+    tests/gates/test_gitattributes.py:5:``src/gates/gitattributes.py`` no exista, y ese fallo es el resultado que se
+    tests/gates/test_hook_script_token.py:5:``src/gates/hook_script_token.py`` no exista.
+    tests/gates/test_owner_resolution.py:7:Desde `thyrox/src/gates/` da **`/home/thyrox`**, que no existe: el gate busca
+    tests/gates/test_package_boundary.py:5:mientras ``src/gates/package_boundary.py`` no exista, y ese fallo se persiste.
+    tests/gates/test_package_root_resolution.sh:9:# desde `thyrox/src/gates/` da `/home/user/.claude/packages/<x>`, que no
+    tests/gates/test_package_root_resolution.sh:31:    [ -f "$THYROX/src/gates/$g" ] || {
+    tests/gates/test_package_root_resolution.sh:32:        echo "ERROR — no existe $THYROX/src/gates/$g. NO se emite un conteo." >&2
+    tests/gates/test_package_root_resolution.sh:37:# Árbol sintético con la MISMA forma que thyrox: el gate vive en src/gates/ y
+    tests/gates/test_package_root_resolution.sh:43:cp "$THYROX/src/gates/check-agent-artifacts.sh" "$T/src/gates/"
+    tests/gates/test_package_root_resolution.sh:44:cp "$THYROX/src/gates/check-harness-typecheck.sh" "$T/src/gates/"
+    tests/gates/test_package_root_resolution.sh:47:SAL="$(cd "$T" && bash src/gates/check-agent-artifacts.sh 2>&1)"
+    tests/gates/test_package_root_resolution.sh:61:SAL="$(cd "$T" && bash src/gates/check-harness-typecheck.sh 2>&1)"
+    tests/gates/test_package_root_resolution.sh:77:SAL="$(cd "$THYROX" && bash "$THYROX/src/gates/check-harness-typecheck.sh" 2>&1)"; COD=$?
+    tests/gates/test_package_root_resolution.sh:88:SAL="$(cd "$T" && CHECK_AGENT_ARTIFACTS_PKG_DIR="$AJENO" bash src/gates/check-agent-artifacts.sh 2>&1)"
+    tests/gates/test_path_arithmetic.py:5:``src/gates/check_path_arithmetic.py`` no exista, la primera aserción falla y
+    tests/gates/test_pre_push.sh:2:# Control de `src/gates/pre-push.sh` — la composición de los dos gates que un
+    tests/gates/test_pre_push.sh:7:# gates de `kaupamex-docs/.claude/scripts/gates/` a `thyrox/src/gates/`, el
+    tests/gates/test_pre_push.sh:17:PRE_PUSH="$THYROX/src/gates/pre-push.sh"
+    tests/gates/test_pre_push.sh:52:    printf '#!/usr/bin/env bash\nexit 0\n' > "$VERDE/src/gates/$g"; chmod +x "$VERDE/src/gates/$g"
+    tests/gates/test_pre_push.sh:59:printf '#!/usr/bin/env bash\nexit 1\n' > "$ROJO/src/gates/check-ids-duplicados.sh"
+    tests/gates/test_pre_push.sh:60:printf '#!/usr/bin/env bash\nexit 0\n' > "$ROJO/src/gates/check-artefactos-minimos.sh"
+    tests/gates/test_pre_push.sh:61:chmod +x "$ROJO/src/gates/"*.sh
+    tests/gates/test_pre_push.sh:69:printf '#!/usr/bin/env bash\nexit 2\n' > "$DOS/src/gates/check-ids-duplicados.sh"
+    tests/gates/test_pre_push.sh:70:printf '#!/usr/bin/env bash\nexit 0\n' > "$DOS/src/gates/check-artefactos-minimos.sh"
+    tests/gates/test_pre_push.sh:71:chmod +x "$DOS/src/gates/"*.sh
+    tests/gates/test_rst_gate_root.py:6:`thyrox/src/gates/`, `parents[3]` dejo de nombrar el repo del consumidor y paso
+    tests/lib/test-script-deprecated.sh:32:GATE="$RAIZ/src/gates/check_script_deprecated.py"
+    tests/package/sibling_exports.test.ts:6: * hasta hoy no la tenian: el gate `src/gates/package_boundary.py` declara en su
+    tests/paths/test_consumer_root.py:8:`thyrox/src/gates/` da `/home/user`. El corredor los publicaba SIN MEDIR
+    tests/paths/test_surface.py:67:    c = consumidor(pathlib.Path(d), 'GATE="$THYROX_ROOT/src/gates/thyrox-audit.sh"\n')
+    tests/paths/test_surface.py:102:    c = consumidor(base, 'GATE="$THYROX_ROOT/src/gates/thyrox-audit.sh"\n')
+    tests/repo/test_citations.py:54:        ("src/gates/registry.py", False),
+    tests/repo/test_citations.py:67:        (clone / "src/gates/consumer.py").write_text("import viejo_nombre\n")
+    tests/workbench/test_provider_evidence.py:20:GATE = ROOT / "src/gates/check_provider_evidence.py"
+
+CON INVOCADOR EJECUTABLE: 51
+  __init__.py
+      kaupamex-api: pytest.ini
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check-agent-artifacts.sh
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+      thyrox: tests/gates/test_package_root_resolution.sh
+  check-artefactos-minimos.sh
+      thyrox: tests/gates/test_pre_push.sh
+  check-hallazgo-sucesor.sh
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check-harness-typecheck.sh
+      thyrox: tests/gates/test_package_root_resolution.sh
+  check-i001-prewrite.sh
+      thyrox: _archived/.claude/settings.json
+  check-ids-duplicados.sh
+      kaupamex-docs: .githooks/post-merge
+  check_agent_isolation.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_branch_commit_messages.sh
+      kaupamex-api: scripts/check_branch_commit_messages.sh
+      kaupamex-ui: scripts/check_branch_commit_messages.sh
+  check_cifra_de_artefacto_vivo.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_corpus_al_dia.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_env_contract_keys.py
+      kaupamex-docs: .claude/eventos/tareas-pendientes-y-dependencias-20260907T210900/tablero/242.json
+  check_eventos_hook.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_evidence_tracked.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_generator_determinism.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_gitattributes.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_githooks_activos.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_hallazgo_submodulo.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_hook_script_token.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_hooks_timeout.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_ids_entre_ramas.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_mutante_en_staging.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+      kaupamex-docs: .githooks/pre-commit
+  check_premise_drift.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_provider_evidence.py
+      kaupamex-docs: .claude/eventos/tareas-pendientes-y-dependencias-20260907T210900/tablero/243.json
+      thyrox: .githooks/pre-commit
+  check_reference_root_resolution.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_rst_convenciones.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_rst_sintaxis.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_script_deprecated.py
+      kaupamex-docs: .claude/eventos/tareas-pendientes-y-dependencias-20260907T210900/tablero/96.json
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_script_naming.py
+      kaupamex-docs: .claude/eventos/tareas-pendientes-y-dependencias-20260907T210900/tablero/128.json
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_suite_discrimina.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_unreachable_rules.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  check_vocabulario_prosa.py
+      kaupamex-docs: .claude-user/bitacora-de-aprobaciones.json
+      kaupamex-docs: .claude/eventos/censo-suites-shell-20260906T065959/check_vocabulario_prosa.py.orig
+      kaupamex-docs: .claude/eventos/censo-suites-shell-20260906T065959/check_vocabulario_prosa.py.v2
+      kaupamex-docs: .claude/eventos/censo-suites-shell-20260906T065959/check_vocabulario_prosa.py.v3
+      kaupamex-docs: .claude/eventos/normalizar-clave-baseline-vocabulario-20260827T024601/medicion.log
+      kaupamex-docs: .claude/eventos/settings-local-20260821T110649/generado/settings.local.json
+  detect_broken_references.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  doctor.py
+      kaupamex-docs: .claude/eventos/tareas-pendientes-y-dependencias-20260907T210900/tablero/212.json
+      kaupamex-docs: .claude/eventos/tareas-pendientes-y-dependencias-20260907T210900/tablero/213.json
+      thyrox: tests/gates/test_audit_delegates.sh
+  gitattributes.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+      thyrox: tests/gates/test_gitattributes.py
+  hook_script_token.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+      thyrox: tests/gates/test_hook_script_token.py
+  install-hooks.sh
+      kaupamex-api: .githooks/pre-push
+      kaupamex-api: Makefile
+      kaupamex-api: scripts/check_branch_commit_messages.sh
+      kaupamex-db: .githooks/pre-commit
+      kaupamex-db: .githooks/pre-push
+      kaupamex-docs: .claude/eventos/audit-store-gate-20260902T084633/thyrox-audit-fast.log
+  lint_agents.py
+      kaupamex-api: .claude/settings.json
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+      thyrox: tests/gates/test-hook-script-token.sh
+  package_boundary.py
+      thyrox: tests/gates/test_package_boundary.py
+  pre-push.sh
+      kaupamex-api: .githooks/pre-push
+      kaupamex-db: .githooks/pre-push
+      kaupamex-docs: .claude/eventos/pre-push-rehusa-20260906T065611/pre-push.sh.orig
+      kaupamex-docs: .claude/eventos/pre-push-rehusa-20260906T065611/pre-push.sh.v2
+      kaupamex-server: .githooks/pre-push
+      kaupamex-ui: .githooks/pre-push
+  registry.py
+      kaupamex-api: scripts/check_options_registry.py
+      kaupamex-docs: .claude/eventos/catalogo-modelos-cache-20260902T045046/extract_model_registry.py
+      thyrox: src/agents/model_catalog.py
+      thyrox: src/packages/agent/bin/extract_model_registry.py
+      thyrox: tests/gates/test_audit_delegates.sh
+  script_deprecated.py
+      kaupamex-docs: .claude/eventos/tareas-pendientes-y-dependencias-20260907T210900/tablero/96.json
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+      thyrox: tests/gates/test_script_deprecated.py
+  test_commit_msg_hook.sh
+      kaupamex-api: scripts/test_commit_msg_hook.sh
+      kaupamex-server: tests/test_commit_msg_hook.sh
+      kaupamex-ui: scripts/test_commit_msg_hook.sh
+  thyrox-audit.sh
+      kaupamex-api: .claude/scripts/thyrox-audit.sh
+      kaupamex-docs: .claude-user/bitacora-de-aprobaciones.json
+      kaupamex-docs: .claude/eventos/hooks-claude-code-20260819T201332/datos_b.py
+      kaupamex-docs: .claude/eventos/settings-local-20260821T110649/generado/settings.local.json
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+      kaupamex-ui: .claude/scripts/thyrox-audit.sh
+  validate-phase-completion.sh
+      kaupamex-api: .claude/scripts/validate-phase-completion.sh
+      kaupamex-ui: .claude/scripts/validate-phase-completion.sh
+  validate-session-close.sh
+      kaupamex-api: .claude/scripts/validate-session-close.sh
+      kaupamex-ui: .claude/scripts/validate-session-close.sh
+      thyrox: _archived/.claude/scripts/validate-session-close.sh
+      thyrox: _archived/.claude/settings.json
+  validate_broken_references.py
+      kaupamex-api: .claude/scripts/thyrox-audit.sh
+      kaupamex-api: .claude/scripts/validate_broken_references.py
+      kaupamex-ui: .claude/scripts/thyrox-audit.sh
+      kaupamex-ui: .claude/scripts/validate_broken_references.py
+  verificar_persistencia.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  verificar_premisa.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  verificar_rutas_de_hook.py
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+  verify-task-store-in-cli-js.sh
+      kaupamex-docs: .claude-user/bitacora-de-aprobaciones.json
+      kaupamex-docs: .claude/eventos/settings-local-20260821T110649/generado/settings.local.json
+      kaupamex-docs: .claude/eventos/triaje-suites-shell-legacy-20260906T231315/triaje.tsv
+
+SOLO MENCIONADO (prosa, sin invocador): 22
+  check-fr-admin-coverage.sh  (40 citas)
+  check-workflow-refutacion.sh  (66 citas)
+  check_binary_literal_citations.py  (33 citas)
+  check_byte_oriented_class.py  (5 citas)
+  check_config_precedence.py  (8 citas)
+  check_consumer_anchor.py  (5 citas)
+  check_consumer_copies.py  (5 citas)
+  check_error_catalog.py  (29 citas)
+  check_hallazgos_index.py  (25 citas)
+  check_identifier_language.py  (139 citas)
+  check_path_arithmetic.py  (4 citas)
+  check_pathspec_commit.py  (2 citas)
+  check_pushed_branch.py  (26 citas)
+  check_python_surface.py  (5 citas)
+  check_rst_referencias.py  (55 citas)
+  check_unbounded_pipe.py  (6 citas)
+  check_veredicto_de_gate.py  (16 citas)
+  detect-missing-md-links.sh  (59 citas)
+  path_arithmetic_baseline.txt  (2 citas)
+  premise_drift_baseline.json  (5 citas)
+  renumerar_colision.py  (22 citas)
+  validate-missing-md-links.sh  (48 citas)
+
+SIN NINGUNA CITA: 1
+  branch_commit_messages_baseline.tsv

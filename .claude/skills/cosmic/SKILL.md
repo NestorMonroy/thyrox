@@ -1,7 +1,7 @@
 ```yml
 name: cosmic
 description: "Dimensionamiento funcional COSMIC v5.0 (ISO/IEC 19761) en CFP. Usar cuando se quiera medir el tamaño funcional de software desde sus FUR/casos de uso: mapear procesos funcionales y sus movimientos de datos (Entrada/Salida/Lectura/Escritura), estimar tamaño temprano cuando falta detalle, o calibrar benchmarks de esfuerzo. Encaja en la fase MEASURE/BASELINE."
-allowed-tools: Read Glob Grep Bash Write Edit
+allowed-tools: Read Glob Grep Bash
 ```
 
 # COSMIC — Dimensionamiento funcional (ISO/IEC 19761, v5.0)
@@ -36,7 +36,11 @@ De los **FUR** (fuente exclusiva — Regla 3; en THYROX: casos de uso / requirem
 2. Identificar **data groups** — uno por **object of interest**.
 3. Identificar los **movimientos de datos** de cada proceso (E/X/R/W).
    Guía operativa + casos límite (navegación/cómputo = 0 CFP): [references/data-movements.md](references/data-movements.md).
-4. Excluir NFR (no cuentan CFP).
+4. Excluir NFR (no cuentan CFP). Para decidir **si un requisito es funcional o
+   NFR** en este proyecto, aplicar la guía con ejemplos del stack
+   (`select_for_update`, `transaction.atomic`, JWT, rate limiting, CSP/CORS,
+   audit logging): `source/gestion/pm/docs/iniciativas/adoptar-cosmic-dimensionamiento/metodologia-cosmic-ecommerce.rst`
+   §4.4 (anchor `metodologia-cosmic-ecommerce`).
 > Patrón para derivar movimientos desde casos de uso (paso a paso del flujo): ver el paper
 > [manual/llm-automation-cosmic-from-usecases.md](references/manual/llm-automation-cosmic-from-usecases.md).
 
@@ -47,23 +51,6 @@ De los **FUR** (fuente exclusiva — Regla 3; en THYROX: casos de uso / requirem
 - Registrar en la tabla **COSMIC Format** (`assets/cosmic-format-table.md.template`):
   columnas `Paso · Sub-proceso (FUR) · FU · OOI · Tipo(E/X/R/W) · CFP · FUR-fuente` + total.
 - Tamaño total = Σ procesos por capa.
-- **Verifica con el script** (no sumes a mano — el conteo manual se equivoca):
-  `python3 scripts/tally-cfp.py <archivo(s).md>` suma los CFP y valida los invariantes
-  (cada proceso ≥2 CFP, ≥1 Entrada). Con `--expect N` falla si la suma no cuadra.
-
-## Dimensionamiento de un CAMBIO (mantenimiento)
-
-COSMIC mide también el tamaño de una **modificación** a software ya medido. El tamaño del
-cambio = **movimientos de datos añadidos + modificados + borrados** (no es el tamaño del
-proceso completo). Reglas:
-- Un movimiento **añadido** o **borrado** = 1 CFP. Un movimiento **modificado** = 1 CFP.
-- Un movimiento sin tocar **no** cuenta.
-- Mínimo de cambio: 1 CFP (no aplica el mínimo de 2 CFP del proceso nuevo).
-- Para re-medir el baseline tras un cambio: nuevo total = total previo + añadidos − borrados
-  (los modificados no alteran el total, solo el esfuerzo).
-
-> Ej. THYROX: al mergear UC-ENG-14 (SubagentStop) se **añade** 1 proceso a capa B → el cambio
-> se dimensiona contando sus movimientos, y el baseline de capa B sube en ese CFP.
 
 ## Cuando falta detalle → estimación temprana
 
@@ -81,6 +68,24 @@ extrapoles umbrales entre capas. Genéricos vs calibrados: [references/calibrati
 La anotación COSMIC se añade como **sección al final** del UC/FUR, **sin modificar** sus
 partes existentes. Garantiza trazabilidad y re-medición sin reescribir.
 
+## Backlog del proyecto (kaupamex) — este skill apunta, no gobierna
+
+Cuando la tarea sea **armar o mantener el backlog** de solicitudes del
+proyecto, el procedimiento canónico y el registro vivo **no viven aquí** —
+viven en los docs:
+
+- **Procedimiento:** `source/normativa/procedimientos/proc-gestion-backlog.rst`
+  (intake → triage → ruta a iniciativa → priorizar → ejecutar → cerrar; modelo
+  de dos niveles backlog/iniciativa; regla de fuente única).
+- **Registro vivo único:** `source/gestion/pm/backlog/` (directorio; un archivo
+  `sol-NNN-<slug>.rst` por solicitud, carpetas de estado `pending/`/`done/`/
+  `discarded/` — DEC-DOC-010). Entrada: `backlog/index.rst`.
+
+Este skill solo aporta la **columna de tamaño** del backlog: **CFP** donde hay
+FUR medible (medido dentro del UC, DEC-DOC-009); talla **S/M/L** donde no
+(Cláusula 7 del principio rector / DEC-COSMIC-005). No duplicar el flujo de
+backlog dentro del skill.
+
 ## Reglas que nunca se violan (del MM v5.0)
 
 - 1 movimiento de datos mueve **un único** grupo de datos = 1 CFP.
@@ -94,12 +99,6 @@ partes existentes. Garantiza trazabilidad y re-medición sin reescribir.
 
 - `measurement-strategy.md` (Fase A) · tabla COSMIC Format por proceso (Fase C) · total CFP
   por capa + resumen. Viven en el WP (`measure/` o anotados en el UC).
-
-## Scripts
-
-- `scripts/tally-cfp.py` — suma los CFP de una medición markdown y valida invariantes
-  (≥2 CFP/proceso, ≥1 Entrada). Determinístico: evita errores de suma manual. `--expect N`
-  para gate de reconciliación.
 
 ## Referencias
 

@@ -1,0 +1,13 @@
+{
+  "question": "¿A que hogar va cada guion de `src/gates/`, y quien lo invoca hoy? La directiva del ejecutor (2026-09-09) reserva el nombre `gates` para el porte del feature-gating de `computer-use-mcp/src/legacy/gates.ts`, que es el UNICO `gates` de toda la referencia y no es un control de verificacion sino un lector de banderas. Nuestro `src/gates/` no tiene contraparte: es significante contra significado.",
+  "instrument": "census_invokers.py — por cada archivo de `src/gates/`, quien lo nombra: se busca su BASENAME (no su ruta, que cambia con la mudanza) en los cinco clones mas thyrox, y cada cita se clasifica en ejecutable (la invoca: bash/python/sh delante, o `command:` de un hook) contra mencion (prosa, .rst, .md). El resultado se persiste en census_report.txt.",
+  "metric": "guiones de src/gates/ repartidos en «con invocador ejecutable» / «solo mencionado» / «sin ninguna cita», con el invocador nombrado archivo a archivo.",
+  "blind_to": [
+    "una invocacion compuesta en tiempo de ejecucion (`bash \"$DIR/$nombre\"`), que no lleva el basename literal en la linea",
+    "un guion invocado por glob (`for g in src/gates/*.py`), que no nombra a ninguno en particular — se reporta aparte como invocador-por-glob",
+    "el veredicto de DESTINO: el censo acota quien se rompe al mover, no decide a que hogar va cada uno; eso es juicio de dominio",
+    "los clones que no esten en el alcance de la sesion",
+    "un invocador que viva fuera de los seis arboles medidos (cron del sistema, CI remoto)"
+  ],
+  "destination": "census_report.txt en este banco, y el estado de TASK-THYROX-0081 en el tablero. El reparto se ejecuta DESPUES del censo y en serie, no dentro de el."
+}

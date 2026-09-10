@@ -4,14 +4,9 @@ description: "Use when building the analytical workplan after issue tree is appr
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "key findings"
-    - "consulting analysis"
-    - "so what test"
-    - "insights synthesis"
-    - "hypothesis validation"
+  triggers: ["key findings", "consulting analysis", "so what test", "insights synthesis", "hypothesis validation"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /cp-structure — Consulting Process: Structure

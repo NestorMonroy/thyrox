@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "loop/**/*.ts",
+    "__tests__/attachments.test.ts",
+    "__tests__/autocompact.test.ts",
+    "__tests__/catalogCoverage.test.ts",
+    "__tests__/compactionFidelity.test.ts",
+    "__tests__/compat.test.ts",
+    "__tests__/contextLevel.test.ts",
+    "__tests__/contextPressure.test.ts",
+    "__tests__/hooks.test.ts",
+    "__tests__/hooksEvents.test.ts",
+    "__tests__/loop.test.ts",
+    "__tests__/microcompact.test.ts",
+    "__tests__/reconcile.test.ts",
+    "__tests__/reconcileWiring.test.ts",
+    "__tests__/sessions.test.ts",
+    "__tests__/storeReconcile.test.ts",
+    "__tests__/stream.test.ts",
+    "__tests__/systemPrompt.test.ts",
+    "__tests__/taskCitation.test.ts",
+    "__tests__/taskReminder.test.ts",
+    "__tests__/transcript.test.ts"
+  ]
+}

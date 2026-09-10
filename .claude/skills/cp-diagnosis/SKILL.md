@@ -4,14 +4,9 @@ description: "Use when structuring a consulting problem after initiation. cp:dia
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "issue tree"
-    - "MECE"
-    - "hypothesis driven"
-    - "data collection consulting"
-    - "consulting diagnosis"
+  triggers: ["issue tree", "MECE", "hypothesis driven", "data collection consulting", "consulting diagnosis"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /cp-diagnosis — Consulting Process: Diagnosis

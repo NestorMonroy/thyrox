@@ -1,0 +1,11 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.258
+import"/$bunfs/root/chunk-b1z7jvb2.js";import"/$bunfs/root/chunk-ycrs8y50.js";import"/$bunfs/root/chunk-y7x1gsy0.js";import"/$bunfs/root/chunk-td0fv71w.js";import"/$bunfs/root/chunk-xtc2dmbe.js";import"/$bunfs/root/chunk-mrh5xd2h.js";import{t}from"/$bunfs/root/chunk-5nyank6v.js";import"/$bunfs/root/chunk-0sa7g6pk.js";import"/$bunfs/root/chunk-pz607n7v.js";import"/$bunfs/root/chunk-ctshp37x.js";import"/$bunfs/root/chunk-9d3jb7ss.js";import"/$bunfs/root/chunk-pewb9akp.js";import"/$bunfs/root/chunk-t5j5p2ne.js";import"/$bunfs/root/chunk-fkh93x1w.js";import"/$bunfs/root/chunk-ffgkv432.js";import"/$bunfs/root/chunk-br7qz22q.js";import"/$bunfs/root/chunk-cw80kq1q.js";import"/$bunfs/root/chunk-sr28hb79.js";import"/$bunfs/root/chunk-twjxwmnx.js";import"/$bunfs/root/chunk-hfch6q45.js";import"/$bunfs/root/chunk-tdsxb2n6.js";import"/$bunfs/root/chunk-zmhk2tm0.js";import"/$bunfs/root/chunk-ercqfpse.js";import{p9}from"/$bunfs/root/chunk-e8gked8z.js";import"/$bunfs/root/chunk-e8s22d3s.js";import"/$bunfs/root/chunk-e979sk69.js";import"/$bunfs/root/chunk-dwwp0b8c.js";var m={name:"MCP Task",type:"mcp_task",async kill(i,r,p,d,s){let e=r.get(i),n=e?.type==="mcp_task"?e.sidecarSessionId:void 0,o=e?.type==="mcp_task"?e.sidecarProjectDir:void 0,c=e?.type==="mcp_task"?e.sidecarWrite:void 0;if(e?.type==="mcp_task")e.abortController?.abort(),e.driveAbortController?.abort(),e.sep2663Cancel?.();r.update(i,(a)=>{if(a.notified||a.status!=="running")return a;return{...a,status:"killed",endTime:Date.now(),parked:void 0,notified:!0}}),(async()=>{await c,await p9(i,s,n,o)})().catch((a)=>t(`McpTask.kill deleteMcpTaskMetadata: ${String(a)}`))}};export{m as MCP_TASK};

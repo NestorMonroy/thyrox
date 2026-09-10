@@ -1,0 +1,13 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{H5b as b,L5b as y}from"/$bunfs/root/_642.js";import{q9c as m,s9c as x}from"/$bunfs/root/_772.js";import{Tbd as R}from"/$bunfs/root/_811.js";import{ncd as r}from"/$bunfs/root/_812.js";import{jhd as p,ohd as B}from"/$bunfs/root/_820.js";import{Nvd as g,dwd as P}from"/$bunfs/root/_832.js";import{xxd as I}from"/$bunfs/root/_837.js";class T{inITerm2=null;it2Command="it2";recordInITerm2(e){this.inITerm2=e}recordIt2Command(e){this.it2Command=e}}function f(){return{cachedDetectionResult:null,backendsRegistered:!1,inProcessFallbackActive:!1,TmuxBackendClass:null,ITermBackendClass:null,tmuxBackend:null,itermBackend:null,terminalProbes:new T}}var l="it2",c;var k=I(()=>{c=f()});function C(){return!!u}async function O(){return C()}function S(){return A||null}function U(){if(!u)return null;return g(u,",")||null}async function L(){return(await m(b,["-V"])).code===0}function X(e=c){let{terminalProbes:o}=e;if(o.inITerm2!==null)return o.inITerm2;let s=r.TERM_PROGRAM,i=!!r.ITERM_SESSION_ID,a=r.terminal==="iTerm.app",n=s==="iTerm.app"||i||a;return o.recordInITerm2(n),n}function F(e=c){return e.terminalProbes.it2Command}async function G(e=c){let o=r.SHELL||"/bin/zsh",s=await m(o,["-lc",`command -v ${l}`],{useCwd:!1,timeout:2000}),i=s.code===0?s.stdout.split(`
+`).map((d)=>d.trim()).filter(Boolean).at(-1)??"":"",a=async(d)=>m(d,["session","list"]),n=i||l,t=await a(n);if(i&&t.code!==0&&(t.code===127||/ENOENT/i.test(t.error??"")))n=l,t=await a(n);if(t.code!==0)return p(`[isIt2CliAvailable] '${n} session list' failed (code=${t.code}): ${t.stderr||t.error||"no stderr"}. `+(i?"it2 was found on PATH \u2014 check that the iTerm2 Python API is enabled "+"(Preferences > General > Magic > Enable Python API).":"it2 was not found on PATH (including login-shell PATH).")),!1;return e.terminalProbes.recordIt2Command(n),!0}var u,A;var M=I(()=>{B();R();x();P();y();k();u=r.TMUX,A=r.TMUX_PANE});
+export{c as s5b,k as t5b,C as u5b,O as v5b,S as w5b,U as x5b,L as y5b,X as z5b,F as A5b,G as B5b,M as C5b};

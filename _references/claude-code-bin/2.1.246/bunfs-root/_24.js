@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{Cea as N,Gma as H,Kma as R,Uma as M,dna as k,gea as b,jea as y,kea as E,pna as O,xna as T}from"/$bunfs/root/_441.js";import{Mfb as i,Nfb as D,nfb as j,sfb as h}from"/$bunfs/root/_497.js";import{Gob as S,Hob as m,Lob as G}from"/$bunfs/root/_527.js";import{jFc as g,nFc as c,sGc as B}from"/$bunfs/root/_701.js";import{QGc as l,VGc as C}from"/$bunfs/root/_704.js";import{Tbd as P}from"/$bunfs/root/_811.js";import{_bd as d}from"/$bunfs/root/_812.js";import{Mkd as p,atd as x,mld as f}from"/$bunfs/root/_826.js";T();N();D();C();x();P();R();G();B();var _=y.filter((e)=>e!=="userSettings");function X(e){if(S())return!1;if(m())return!0;return(e??A()).length>0}function A(e=K()){let r=[...e];if(u("project"))r.push(".mcp.json");if(u("local"))r.push(`${d()} (local-scope MCP servers for this project)`);return r}function a(e,r){if(h())return!1;let s=r?.extraKnownMarketplaces??{};return Object.entries(e?.extraKnownMarketplaces??{}).some(([t,w])=>{if(Object.hasOwn(s,t))return!1;let o=w.source;if(o.source==="url")return!!o.headersHelper&&/^https:\/\//i.test(o.url)&&i(o)&&!I(t,o.url);if(o.source==="settings")return i(o)&&!v(t)&&o.plugins.some((n)=>!!n.headersHelper&&typeof n.source==="object"&&n.source.source==="archive"&&!j(`${n.name}@${t}`));return!1})}function I(e,r){let s=l();if(_.some((t)=>s.includes(t)&&Object.hasOwn(c(t)?.extraKnownMarketplaces??{},e)))return!0;return b({source:"url",url:r},e)!==void 0}function v(e){return Object.hasOwn(E(),e)}function u(e){if(f()||O())return!1;let{servers:r}=k(e,{expandVars:!1});return Object.entries(r).some(([s,t])=>("headersHelper"in t)&&!!t.headersHelper&&!(e==="project"&&H(s)==="rejected")&&M(s,t))}function K(){if(p())return[];let e=l(),r=e.includes("localSettings")?c("localSettings"):null,s=[];if(e.includes("projectSettings")&&!g()&&a(c("projectSettings"),r))s.push(".claude/settings.json");if(a(r))s.push(".claude/settings.local.json");return s}
+export{X as Yb,A as Zb,K as _b};

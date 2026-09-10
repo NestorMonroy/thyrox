@@ -6,10 +6,42 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["RUP construction", "IOC milestone", "iterative development RUP", "use case implementation", "build increment"]
-updated_at: 2026-04-17 00:00:00
+updated_at: 2026-05-21 03:19:20
 ---
 
 # /rup-construction — RUP: Construction
+
+> **Adaptacion kaupamex v2 (2026-05-21).** En kaupamex el estado y
+> la coordinacion intra-sesion **persisten en ``docs/source/``**, en
+> los `.rst` de la iniciativa. Las salidas de Construction NO viven
+> en `{wp}/rup-construction.md` sino mapeadas asi sobre los
+> artefactos de
+> ``docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/``:
+>
+> - **Iteration Plan** -> ``tareas-<slug>.rst`` con T-NNN agrupadas
+>   por iteracion en bloques claros (``Iteracion 1``, ``Iteracion 2``,
+>   ...). Cada T tiene entregable verificable.
+> - **Definition of Done por UC** -> ``decisiones-<slug>.rst`` como
+>   DEC-NN con criterios formales (flujo principal + alternativos +
+>   excepciones + tests + code review + doc).
+> - **Iteration Report (retrospectiva, metricas)** ->
+>   ``progreso-<slug>.rst`` bitacora — una entrada al cierre de cada
+>   iteracion con ``Iteracion N — retrospectiva``.
+> - **Backlog de deuda tecnica** -> ``progreso-<slug>.rst`` seccion
+>   "Deuda tecnica" actualizada por iteracion + items P-NN en
+>   ``docs/source/gestion/pm/docs/iniciativas/revisar-pendientes-docs/registro-trabajo-no-acabado.rst``
+>   si la deuda excede el scope de la iniciativa.
+> - **Defect log (Severity 1..3)** -> ``progreso-<slug>.rst`` seccion
+>   "Defectos abiertos" + cross-link a GitHub issues si se usan.
+> - **Codigo implementado** -> commits en ``api/`` y/o ``ui/`` con
+>   convencion Tim Pope; cada commit cita la T-NNN y la iteracion.
+> - **Tests** -> ``api/tests/`` y/o ``ui/src/**/*.test.{js,jsx}`` con
+>   nombres conformes a AC-NN del UC.
+> - **Milestone IOC alcanzado** -> ``progreso-<slug>.rst`` seccion
+>   "Milestone IOC alcanzado <YYYY-MM-DDTHH:MM:SS>" con cobertura
+>   Must Have, Severity 1 = 0, performance en staging.
+>
+> Ver `.claude/agents/rup-coordinator.md` para el mapping completo.
 
 > *"Construction is not a single build — it's a series of mini-projects, each delivering a working increment. The architecture from Elaboration is the skeleton; Construction adds the flesh, iteratively."*
 
@@ -37,10 +69,19 @@ flowchart LR
 
 ## Pre-condición
 
-Requiere: `{wp}/rup-elaboration.md` con:
-- LCA alcanzado (Architecture Prototype estable, ≥ 80% UC especificados)
-- Plan de Construction con iteraciones definidas
-- Risk List actualizada con riesgos técnicos top-5 mitigados
+Requiere que la iniciativa activa en
+``docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/`` tenga
+cierre de Elaboration documentado:
+
+- ``progreso-<slug>.rst`` con seccion "Milestone LCA alcanzado".
+- ``analisis-<slug>.rst`` con Risk List actualizada (top-5 riesgos
+  tecnicos mitigados o con plan residual).
+- Use Case Model ≥80% en ``docs/source/requisitos/casos-uso/`` (UC
+  criticos especificados; Alt + EX completos).
+- Architecture Prototype ejecutable en ``api/`` o ``ui/`` (commit
+  hash citado en progreso).
+- ``tareas-<slug>.rst`` con plan de Construction (iteraciones
+  declaradas, UC por iteracion, criterios por iteracion).
 
 ---
 
@@ -175,7 +216,23 @@ Al final de cada iteración de Construction:
 
 ## Artefacto esperado
 
-`{wp}/rup-construction.md` — usar template: [construction-report-template.md](./assets/construction-report-template.md)
+Los entregables canonicos RUP de Construction se materializan en
+artefactos de la iniciativa + commits reales del codigo (ver banner
+de adaptacion kaupamex v2 al inicio):
+
+- ``tareas-<slug>.rst`` — Iteration Plans 1..N con T-NNN por
+  iteracion y entregable verificable.
+- ``decisiones-<slug>.rst`` — Definition of Done por UC en DEC-NN.
+- ``progreso-<slug>.rst`` — Bitacora con retrospectiva por
+  iteracion + Deuda tecnica + Defectos + "Milestone IOC alcanzado".
+- ``api/`` y/o ``ui/`` commits (Tim Pope) que citan T-NNN.
+- ``api/tests/`` y/o ``ui/src/**/*.test.{js,jsx}`` con cobertura
+  conforme a AC-NN del UC.
+
+Template historico (estilo `.md`):
+[construction-report-template.md](./assets/construction-report-template.md).
+Conserva la estructura conceptual; al portar a `.rst` se reparte
+entre los artefactos arriba.
 
 ---
 
@@ -190,23 +247,82 @@ Al final de cada iteración de Construction:
 
 ---
 
-## Estado en now.md
+## Carpetas externas relacionadas en docs/source/
 
-**Al INICIAR este step:**
-```yaml
-methodology_step: rup:construction
-flow: rup
-rup_phase: construction
-rup_iteration: 1
-```
+Construction consume y produce contenido en estas carpetas (aparte
+de los artefactos de la iniciativa y los commits de codigo):
 
-**Al COMPLETAR** (IOC alcanzado):
-```yaml
-methodology_step: rup:construction  # completado → listo para rup:transition
-flow: rup
-rup_phase: construction
-rup_iteration: [N]
-```
+- ``docs/source/implementacion/`` — material canonico de planning
+  de Construction:
+
+  - ``project-charter.rst`` — driver de prioridades.
+  - ``hoja-ruta-sprints.rst`` — roadmap macro de Sprints
+    (1..N).
+  - ``matriz-prioridad-ucs.rst`` — UC priority matrix (Must
+    Have / Should / Could) para ordenar las iteraciones.
+  - ``grafo-dependencias-modulos.rst`` — constraint para
+    ordenar la implementacion.
+  - ``plantilla-sprint.rst`` — template para abrir un sprint
+    nuevo.
+  - ``sprint-N-*.rst`` — sprints ya cerrados (precedent: 8
+    sprints existen).
+  - ``auditoria-sprint-N-M.rst`` — retrospectivas
+    cross-sprint.
+
+  Cada iteracion de Construction de la iniciativa puede
+  materializarse como un sprint nuevo aqui si el alcance lo
+  amerita, o quedar dentro de ``tareas-<slug>.rst`` agrupada
+  por bloque "Iteracion N" si es mas chica.
+
+- ``docs/source/quality/`` — politica de tests:
+
+  - ``tdd.rst`` — TDD canonico del proyecto.
+  - ``tests-implementados.rst`` — inventario de tests cubiertos.
+
+- ``docs/source/normativa/procedimientos/`` — procedimientos
+  operativos:
+
+  - ``proc-tdd.rst`` — disciplina TDD aplicable a Construction.
+  - ``proc-git-workflow.rst`` — git flow para commits Tim Pope.
+
+- ``docs/source/risks-technical-debt/registro-riesgos-y-deuda-tecnica.rst``
+  — Deuda tecnica project-wide; la deuda especifica de la
+  iniciativa va a su ``progreso-<slug>.rst``; si excede el scope se
+  promueve a un P-NN aqui.
+
+- ``docs/source/gestion/pm/<submodulo>/audits/`` — Si una iteracion
+  produce un audit cross-cutting (e.g. cobertura, deuda
+  arquitectonica), va a esta carpeta.
+
+- ``docs/source/gestion/pm/<submodulo>/matrices/`` — Trazabilidad
+  UC-RF / UC-modulo actualizada al cierre de iteracion.
+
+## Estado activo
+
+En kaupamex **no hay `now.md`**. El estado y la coordinacion
+intra-sesion **persisten en ``docs/source/``**, en los `.rst` de la
+iniciativa. La fase activa se lee del campo ``:estado:`` del
+metadata de ``progreso-<slug>.rst`` y de la ultima seccion de su
+bitacora.
+
+**Al INICIAR Construction:** abrir entrada de bitacora
+"Construction iter 1" (o numero subsiguiente) en
+``progreso-<slug>.rst``. Mantener ``:estado:`` en ``En ejecucion``.
+Las T-NNN de la iteracion se sacan del bloque "Iteracion N" del
+``tareas-<slug>.rst``.
+
+**Al CIERRE de cada iteracion:** agregar una subseccion
+``Iteracion N — retrospectiva`` en ``progreso-<slug>.rst`` con:
+metricas (UCs cerrados, T-NNN cerradas, defectos detectados/cerrados,
+deuda tecnica acumulada), lecciones aprendidas, decision de continuar
+o cerrar Construction.
+
+**Al COMPLETAR** (IOC alcanzado): agregar seccion
+"Milestone IOC alcanzado <YYYY-MM-DDTHH:MM:SS>" en
+``progreso-<slug>.rst`` con cita de evidencia: cobertura de UCs
+Must Have (lista UC con tests verdes), Severity 1 = 0 (defects
+abiertos verificados), performance en staging (numeros vs NFR),
+build/deploy estable.
 
 ## Siguiente paso
 

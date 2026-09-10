@@ -1,0 +1,34 @@
+Medido: 2026-09-10T06:06:16 (date -u)
+Comando: SELECT usage_source, COUNT(*) FROM agent_sessions GROUP BY usage_source
+{None: 21, 'no_medido': 867, 'transcript': 468}
+total 1356
+
+Detalle de las 21 filas usage_source IS NULL (agent_id, status, source, 4 columnas de token):
+('a01e52b80c34e06e4', 'completed', 'hook', None, None, None, None)
+('a07cad778f18b18d3', 'completed', 'hook', None, None, None, None)
+('a1269ba03ffe8f056', 'completed', 'hook', None, None, None, None)
+('a24fa455a70f15a26', 'completed', 'hook', None, None, None, None)
+('a63c01caf4f69c93b', 'completed', 'hook', None, None, None, None)
+('a87e164bb88d9928e', 'completed', 'hook', None, None, None, None)
+('a8e8c6d1eeb3000e5', 'completed', 'hook', None, None, None, None)
+('a97c0a83c2e399f89', 'completed', 'hook', None, None, None, None)
+('a9a6e0da728392717', 'completed', 'hook', None, None, None, None)
+('aaca7b4538fb57614', 'completed', 'hook', None, None, None, None)
+('aaee17084753b2da1', 'completed', 'hook', None, None, None, None)
+('ac9fe9bb5c1defada', 'completed', 'hook', None, None, None, None)
+('acd26418eeab61d5d', 'completed', 'hook', None, None, None, None)
+('ad53c04f40812d740', 'completed', 'hook', None, None, None, None)
+('ad81ce21371466b01', 'completed', 'hook', None, None, None, None)
+('adc843f09d445700f', 'completed', 'hook', None, None, None, None)
+('aeb036f4193f1d804', 'completed', 'hook', None, None, None, None)
+('afafacb7eb8bae4bc', 'completed', 'hook', None, None, None, None)
+('afb09a6b9f60391d5', 'completed', 'hook', None, None, None, None)
+('a0bddf5aa3ee6b89d', 'running', None, None, None, None, None)
+('aab42ba08f7848d25', 'running', None, None, None, None, None)
+n = 21
+
+Cruce contra disco (rglob de /root/.claude/projects/**/subagents/agent-*.jsonl):
+transcripts en disco (rglob): 137
+NULL completed en store: 19
+SIN transcript en disco (candidatos a no_medido): 19
+CON transcript en disco (todavia medibles): 0 []

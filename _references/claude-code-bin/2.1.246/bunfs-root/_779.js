@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.246
+import{ncd as p,qcd as T}from"/$bunfs/root/_812.js";import{Jjd as c,Kjd as S,atd as C,zkd as a}from"/$bunfs/root/_826.js";import{fud as d,mud as x}from"/$bunfs/root/_828.js";import{wxd as v,xxd as y}from"/$bunfs/root/_837.js";var A={};v(A,{ResolvedExecutableCache:()=>s,findExecutableWindows:()=>m,isCommandAvailableSafely:()=>O,resolveExecutableSafely:()=>w,resolvedExecutableCaches:()=>g});import{execFileSync as R}from"child_process";import{lstatSync as _}from"fs";import{join as k}from"path";function W(){return!1}class s{resolved=new Map;lookup(e){return this.resolved.get(e)}remember(e,t){this.resolved.set(e,t)}forget(e){this.resolved.delete(e)}}function f(e){try{return _(e,{throwIfNoEntry:!1})===void 0}catch{return!1}}function I(e){let t=e.toLowerCase().replace(/.*[\\/]/,"").replace(/[. ]+$/,""),n=t.lastIndexOf(".");return n>0&&H.has(t.slice(n))}function m(e,t=!1){let n=g.of(a().host),o=n.lookup(e);if(o!==void 0)if(o!==null){if(!f(o))return o;n.forget(e)}else{if(!t)return o;n.forget(e)}let E=p.SYSTEMROOT||"C:\\Windows",h=k(E,"System32","where.exe");try{let l=R(h,[e],{stdio:"pipe",encoding:"utf8",timeout:j,windowsHide:!0,env:process.env}).trim().split(/\r?\n/).filter(Boolean),b=process.cwd(),u=!1;for(let r of l){if(f(r))continue;if(d(r,b)){u=!0;continue}if(!I(r))continue;return n.remember(e,r),r}if(l.length>0&&!u)n.remember(e,null);return null}catch(i){if(M(i))n.remember(e,null);return null}}function M(e){if(e===null||typeof e!=="object")return!1;let t="status"in e?e.status:void 0,n="signal"in e?e.signal:void 0,o="code"in e?e.code:void 0;return t===1&&!n&&!o}function w(e,t=!1){if(!W())return e;if(e.includes("/")||e.includes("\\"))return e;return m(e,t)}function O(e){return w(e)!==null}var g,j=5000,H;var B=y(()=>{C();S();x();T();g=new c(()=>new s);H=new Set([".com",".exe",".bat",".cmd"])});
+export{m as o_c,w as p_c,A as q_c,B as r_c};

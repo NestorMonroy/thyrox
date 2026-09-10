@@ -1,0 +1,13 @@
+# Deuda heredada del gate check_branch_commit_messages.sh — CONGELADA, no barrida.
+#
+# El historial NO se reescribe (I-002 + commit-conventions.md), asi que un commit
+# ya publicado que viola Tim Pope no tiene desenlace de enmienda. Se congela por
+# SHA —que es inmutable— y el gate publica cuantos congelo junto al conteo: un
+# descuento silencioso convertiria el gate en un instrumento que no puede fallar.
+#
+# La entrada lleva FECHA porque sin ella el baseline no separa deuda heredada de
+# defecto de hoy: el SHA dice cual, la fecha dice cuando se admitio.
+#
+# Formato: <sha completo>\t<fecha de admision ISO-8601 UTC>\t<motivo>
+# Una entrada listada NO bloquea; una violacion nueva SI.
+c7ef12cd86a4cf046e27640eed6e360e2c8ca735	2026-09-06T23:58:11	subject de 85 caracteres; commit ya publicado en feature/kaupamex-l4

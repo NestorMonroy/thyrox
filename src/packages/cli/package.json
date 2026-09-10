@@ -1,0 +1,47 @@
+{
+  "name": "@thyrox/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Porte del paquete cli de claude-code-nestor-monroy-tools (TASK-DOCS-0205). Aloja el punto de entrada (src/entry/main.ts), el despacho por modo (entry/), los siete comandos autocontenidos (commands/), el dibujo del flujo de eventos (render.ts), el selector de reanudacion (resume.ts) y el selector de pruebas por impacto (testing/). Sin dependencia de @thyrox/harness desde #266; sin bin/harness.ts desde #205.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./exitCodes.js": "./src/exitCodes.ts",
+    "./argv.js": "./src/argv.ts",
+    "./print": "./src/print.ts",
+    "./secureStorage/keychainPrefetch": "./src/secureStorage/keychainPrefetch.ts",
+    "./structuredIOHelper": "./src/structuredIOHelper.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts",
+    "./render": "./src/render.ts",
+    "./resume": "./src/resume.ts",
+    "./testing/impact": "./src/testing/impact.ts",
+    "./testing/io": "./src/testing/io.ts",
+    "./entry/main": "./src/entry/main.ts",
+    "./entry/detect-mode": "./src/entry/detect-mode.ts",
+    "./entry/mode-dispatch": "./src/entry/mode-dispatch.ts",
+    "./commands/*": "./src/commands/*.ts",
+    "./bg/*": "./src/bg/*.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
+    "start": "bun run src/entry/main.ts"
+  },
+  "dependencies": {
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/app-host": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/headless-sdk": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/observability": "workspace:*",
+    "@thyrox/permission": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/skills": "workspace:*",
+    "@thyrox/tools": "workspace:*"
+  }
+}

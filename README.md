@@ -1,231 +1,96 @@
-```yml
-Tipo: Documentación Principal
-Categoría: Introducción al Proyecto
-Versión: 2.8.0
-Propósito: Presentación y descripción del proyecto THYROX
-Objetivo: Proporcionar visión general, características, estructura, y quick start
-Fecha actualización: 2026-04-17
-```
-
 # THYROX
 
-**Tracking Hierarchy Yield Roadmap Organization eXecution**
+El sistema de gestión de proyecto y agentes. Este árbol es el **producto**; el
+THYROX anterior está en `_archived/` (DEC-02) y sólo se reintegra una pieza si
+hace falta verla.
 
-## Propósito
+## La partición
 
-Sistema de Agentic AI para gestión y planificación de proyectos, con metodología de 12 stages propia (DISCOVER → STANDARDIZE) y soporte nativo para 11 metodologías formales.
+Viene de la DEC-01, y su precedente medido es `claw-code`:
 
-> Implementado actualmente sobre Claude Code (Anthropic). La naturaleza agentic del sistema es independiente de la plataforma.
+| Dónde | Qué |
+|---|---|
+| `src/` | el producto: mecanismos |
+| `tests/` | su suite, en espejo |
+| `.claude/` | el estado: lo que la sesión escribe y lee |
+| `_archived/` | el THYROX anterior, congelado |
 
-> Objetivo: Que nuevos usuarios comprendan qué es THYROX, cómo funciona, y cómo comenzar a usarlo.
+`src/` se organiza **por dominio**, no por lenguaje. Cada módulo declara en su
+cabecera de dónde se portó y qué cambió respecto de su fuente.
 
----
+## El lenguaje se elige por dominio, no de forma uniforme
 
-## Descripción General
+No hay una medida única de «buena solución»: depende del contexto. Cada dominio
+declara su lenguaje y la razón de su elección.
 
-Un sistema de Agentic AI para gestión y planificación de proyectos, con 28 agentes especializados, memoria persistente, gates HITL y coordinators para metodologías formales (DMAIC, PDCA, PMBOK, BABOK, RUP, RM, Lean, BPA, PPS, SP, CP). Implementado actualmente sobre Claude Code (Anthropic).
+| Dominio | Lenguaje | Por qué |
+|---|---|---|
+| `src/paths/` | Python | sus consumidores son los gates, que se invocan con `python3` pelado. Y no puede depender de una librería de terceros: `python-dotenv` no está instalado en ningún intérprete alcanzable, así que una dependencia ahí convertiría a cada consumidor en un rehúse por precondición ausente. |
+| `src/workbench/` | TypeScript | porta un mecanismo que ya existía en TS; reescribirlo en otro lenguaje crearía la segunda fuente de verdad que `calibration-verified-numbers.md` prohíbe. |
+| `src/coordination/` | TypeScript | su único consumidor es `claims.ts`, que ya es TS. Un módulo en otro lenguaje no podría importarse desde ahí, así que la ubicación seguiría declarada dos veces — que es el defecto que este módulo cierra. |
 
-## Qué es THYROX
-
-THYROX es un sistema de Agentic AI que:
-
-- **Orquesta** 28 agentes especializados con ejecución autónoma y coordinación multi-agent
-- **Automatiza** workflows con decisión autónoma en bucles agentic (/loop)
-- **Persiste** estado entre sesiones via Work Packages + thyrox-memory MCP (FAISS semántico)
-- **Controla** calidad con gates HITL en cada transición Stage N→N+1
-- **Integra** 11 metodologías formales via coordinators especializados (DMAIC, PDCA, PMBOK, BABOK, RUP, RM, Lean, BPA, PPS, SP, CP)
-- **Reacciona** a eventos con hooks (SessionStart, PostCompact, Stop)
-
-## Características
-
-- **Metodología de 12 stages THYROX** (DISCOVER → STANDARDIZE) integrada en un SKILL reutilizable
-- **11 coordinators** para metodologías formales — cada uno gestiona su flujo y artefactos
-- ROADMAP.md como plan maestro
-- Changelog automático desde commits
-- Conventional Commits integrado
-- CLAUDE.md como memoria persistente del proyecto
-- 47 referencias de metodología + 28 agentes nativos listos para usar
-
-## Estructura
-
-```
-thyrox/
-├── README.md                 # Este archivo
-├── ROADMAP.md               # Plan maestro del proyecto
-├── CHANGELOG.md             # Historial de cambios
-├── DECISIONS.md             # Índice de ADRs
-├── ARCHITECTURE.md          # Arquitectura y decisiones técnicas
-│
-├── .claude/                 # Configuración y extensiones de Claude Code
-│   ├── CLAUDE.md            # Contexto persistente (Level 2)
-│   ├── agents/              # Agentes nativos Claude Code (28 agentes)
-│   ├── references/          # 47 referencias de metodología y plataforma
-│   ├── scripts/             # Scripts de infraestructura (hooks, utilidades)
-│   └── skills/
-│       └── thyrox/          # Skill principal del sistema
-│           ├── SKILL.md     # Motor — 12 stages THYROX (Level 1)
-│           ├── references/  # Guías de metodología
-│           └── assets/      # Templates de artefactos
-│
-├── .thyrox/                 # Estado de trabajo + tooling
-│   ├── context/             # Estado de sesión y artefactos
-│   │   ├── project-state.md # Metadata del proyecto
-│   │   ├── focus.md         # Dirección actual
-│   │   ├── now.md           # Estado de sesión (YAML)
-│   │   ├── decisions/       # ADRs
-│   │   ├── errors/          # Error tracking
-│   │   └── work/            # Work packages (YYYY-MM-DD-HH-MM-SS-nombre/)
-│   └── registry/            # Fuente de verdad del sistema
-│       ├── agents/          # Definiciones YML de agentes
-│       ├── methodologies/   # 11 YAMLs de metodologías
-│       ├── bootstrap.py     # Genera .claude/agents/ desde agents/*.yml
-│       └── _generator.sh    # Genera skills + guidelines desde templates
-```
-
-## Inicio Rápido
-
-1. **Clonar el template:**
-   ```bash
-   git clone https://github.com/NestorMonroy/thyrox mi-proyecto
-   cd mi-proyecto
-   ```
-
-2. **Inicializar el proyecto:**
-   ```bash
-   # Opción B — manual:
-   # Editar ROADMAP.md, CLAUDE.md y .thyrox/context/now.md con el nombre de tu proyecto
-   ```
-
-   > **Nota de migración:** `setup-template.sh` fue reemplazado por el flujo manual (Opción B).
-   > El registry en `.thyrox/registry/` genera los componentes dinámicamente vía `bootstrap.py`.
-
-3. **Commit inicial:**
-   ```bash
-   git add -A && git commit -m "feat: initialize from thyrox template"
-   ```
-
-4. **Abrir Claude Code y empezar:**
-   ```bash
-   claude
-   # Di: "Quiero empezar a planificar mi proyecto"
-   # El skill thyrox te guiará desde Stage 1: DISCOVER
-   ```
-
-## Metodología
-
-El motor de THYROX es el **[SKILL](.claude/skills/thyrox/SKILL.md)**, que define 12 stages propios:
-
-```
-Stage 1  — DISCOVER          → Entender el problema, WP, análisis inicial
-Stage 2  — BASELINE          → Medir estado actual, métricas base
-Stage 3  — DIAGNOSE          → Análisis causal, identificar problemas raíz
-Stage 4  — CONSTRAINTS       → Restricciones técnicas y de negocio
-Stage 5  — STRATEGY          → Plan arquitectónico, decisiones técnicas
-Stage 6  — SCOPE             → Scope, brainstorm, actualizar ROADMAP.md
-Stage 7  — DESIGN/SPECIFY    → PRDs o Spec-Driven docs
-Stage 8  — PLAN EXECUTION    → Descomponer en tasks atómicas (T-NNN)
-Stage 9  — PILOT/VALIDATE    → Validar enfoque con piloto
-Stage 10 — IMPLEMENT         → Implementar + commits convencionales
-Stage 11 — TRACK/EVALUATE    → Monitorear, changelog, cierre
-Stage 12 — STANDARDIZE       → Documentar lecciones, codificar mejoras
-```
-
-**Siempre empezar por DISCOVER.** Para proyectos pequeños: stages 1, 5, 10, 11.
-
-### Jerarquía de archivos
-
-| Level | Archivo | Función |
-|-------|---------|---------|
-| Level 1 | [SKILL](.claude/skills/thyrox/SKILL.md) | Motor — define metodología y stages |
-| Level 2 | [CLAUDE](.claude/CLAUDE.md) | Puente — contexto persistente entre sesiones |
-| Level 3 | README.md | Presentación — entrada para humanos |
-
-### Workflow diario
-
-1. **Inicio:** `claude` → revisar ROADMAP.md, identificar stage actual
-2. **Trabajo:** Seguir el stage correspondiente del SKILL
-3. **Cierre:** Commits convencionales, actualizar ROADMAP.md
-
-## Coordinators
-
-THYROX incluye 11 coordinators especializados para metodologías formales. Cada coordinator gestiona su propio flujo, artefactos y transitions.
-
-| Coordinator | Metodología | Tipo de flujo | Cuándo usar |
-|-------------|-------------|---------------|-------------|
-| `dmaic-coordinator` | DMAIC (Six Sigma) | Secuencial | Reducción de defectos, variación de procesos |
-| `pdca-coordinator` | PDCA (Deming) | Cíclico | Mejora continua iterativa |
-| `pmbok-coordinator` | PMBOK (PMI) | Secuencial | Gestión formal de proyectos |
-| `babok-coordinator` | BABOK v3 | No-secuencial | Análisis de negocio (6 knowledge areas sin orden fijo) |
-| `rup-coordinator` | RUP | Iterativo | Software con milestones formales (LCO/LCA/IOC/PD) |
-| `rm-coordinator` | Requirements Management | State-machine | Gestión ciclo de vida de requisitos con retornos |
-| `lean-coordinator` | Lean Six Sigma | Secuencial | Eliminación de desperdicios, flujo de valor |
-| `bpa-coordinator` | Business Process Analysis | Secuencial | Análisis y rediseño de procesos BPMN |
-| `pps-coordinator` | Toyota PPS | State-machine | Resolución estructurada de problemas (5 Whys, A3) |
-| `sp-coordinator` | Strategic Planning | Cíclico | Planificación estratégica, BSC, OKRs |
-| `cp-coordinator` | Consulting Process | Secuencial | Issue Tree, MECE, Pyramid Principle |
-
-**Invocación:** `@dmaic-coordinator` (o el nombre del coordinator deseado)
+Los ejes que la elección pondera, y ninguno domina siempre: rendimiento,
+claridad, mantenibilidad, seguridad, escalabilidad, tiempo de desarrollo y
+coste. Un mecanismo puede ser rápido y difícil de mantener; otro más lento y
+mucho más simple de verificar.
 
 ## Convenciones
 
-### Commits
-Usa formato convencional:
-```
-feat(api): agregar endpoint GET /users
-fix(build): resolver conflicto de dependencias
-docs(readme): actualizar instrucciones
-```
+- **Los identificadores van en inglés** — nombres de archivo, clases,
+  funciones, atributos y claves de manifiesto. Una clave de manifiesto es un
+  atributo.
+- **Los comentarios van en español**, sin coloquialismos, con los términos
+  técnicos en inglés (`harness`, `scaffold`, `script`).
+- **TDD**: la mitad roja se persiste al producirse. Un `N de N` en verde no
+  discrimina «el mecanismo funciona» de «el test no pregunta», así que cada
+  arreglo trae su **control de anulación**: se retira, y tienen que caer
+  exactamente las aserciones que dependen de él.
 
-### ROADMAP.md
-```markdown
-- [ ] Tarea pendiente
-- [-] Tarea en progreso
-- [x] Tarea completada (YYYY-MM-DD)
-```
+## Portar cuando el hermano no existe
 
-### Work packages
-```
-.thyrox/context/work/YYYY-MM-DD-HH-MM-SS-nombre/
-```
+El grafo de los paquetes que faltan **no tiene hoja**: 19 paquetes ausentes,
+41 pares mutuamente dependientes. Esperar a que el hermano exista es esperar
+indefinidamente, así que la **inyección del colaborador ausente** no es una
+preferencia — es el único método que corta la arista del ciclo, y queda
+adoptada por medición.
 
-## Comandos Útiles
+Lo que la inyección **no** resuelve es a qué archivos aplica. Tres clases, y la
+frontera es si el archivo tiene lógica propia que un test pueda ejercitar:
+
+| Clase | Cómo se reconoce | Qué se hace |
+|---|---|---|
+| **lógica propia** | aritmética, precedencia, filtro, orden — hay algo que puede salir mal | se inyecta el colaborador ausente, se porta la lógica y **se testea** |
+| **cableado puro** | el cuerpo del archivo **es** el wiring de dos hermanos; sin ellos no queda nada que ejercitar | porte verbatim con la ausencia **declarada archivo por archivo**, y **sin test** |
+| **condición de compilación ausente** | depende de un macro que este entorno no tiene (`bun:bundle` → `Cannot find package 'bundle'`) | el gate se **omite**, no se sustituye |
+
+**Por qué el cableado puro no lleva test, y no es pereza.** Inyectarle sus dos
+hermanos daría una función que recibe todo y no hace nada: un control que no
+puede fallar, que es exactamente lo que las Convenciones de arriba prohíben. Un
+test ahí no mide el porte — mide que la inyección compila.
+
+**Por qué el macro ausente se omite en vez de sustituirse.** Sustituirlo por un
+valor fijo decide, en silencio y para siempre, la rama que el macro elegía en
+tiempo de compilación. Precedentes medidos: `runtimeActivation.ts` y
+`storage/sessionStoragePredicates.ts` quedaron permanentemente apagados por esa
+vía antes de que la clase tuviera nombre.
+
+La clase se declara **en el docstring del puerto**, junto a su procedencia: quien
+lo lea tiene que poder saber por qué no hay test sin ir a buscar el criterio.
+
+## Correr las suites
 
 ```bash
-# Iniciar Claude Code
-claude
-
-# Estado del proyecto
-/status
-
-# Generar changelog
-/changelog:generate
-
-# Ver commits recientes
-git log --oneline -10
-
-# Crear nueva rama feature
-git checkout -b feature/nombre
+bash tests/run.sh          # las dos mitades, con su conteo por separado
+bun test tests/            # sólo TypeScript
+python3 tests/paths/test_reach.py
 ```
 
-## Configuración Inicial
+## El alcance por variable
 
-Si prefieres configurar manualmente:
+Los gates de THYROX miden árboles que no son el suyo. Qué árbol se declara por
+variable, con una cadena de precedencia de lo más específico a lo más derivado:
 
-1. Reemplazar "THYROX" por el nombre de tu proyecto en archivos core
-2. Editar [ROADMAP](./ROADMAP.md) con tus épicas de trabajo
-3. Actualizar [CLAUDE](.claude/CLAUDE.md) con contexto del proyecto
-4. Configurar [project-state](.thyrox/context/project-state.md)
-5. Ejecutar `python3 .thyrox/registry/bootstrap.py` para generar agentes
-
-## Licencia
-
-MIT
-
-## Autor
-
-Generado con THYROX Template + Claude Code
-
----
-
-**Última actualización:** 2026-04-17
-**Versión:** v2.8.0
+```bash
+python3 src/paths/reach.py --list
+eval "$(python3 src/paths/reach.py --env)"
+```

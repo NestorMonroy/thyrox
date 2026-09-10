@@ -38,7 +38,7 @@ status: Borrador
 |-----------|------------|----------------|
 | [Constraint / Automatización / Monitor / Documentación] | [cómo funciona] | [qué regresión previene] |
 
-*Ver catálogo de técnicas poka-yoke y proceso Yokoten: [standardization-patterns.md](./references/standardization-patterns.md)*
+*Ver catálogo de técnicas poka-yoke y proceso Yokoten: [standardization-patterns.md](../references/standardization-patterns.md)*
 
 ### Yokoten — despliegue horizontal
 
@@ -105,4 +105,4 @@ Si [nueva acción concreta], entonces [resultado esperado revisado], porque [mec
 | **Datos** | [¿Los datos de Do fueron suficientes para concluir en Check?] |
 | **Comunicación** | [¿Los stakeholders estuvieron informados y alineados?] |
 
-*Ver template A3 Report para comunicación formal del ciclo completo: [standardization-patterns.md](./references/standardization-patterns.md)*
+*Ver template A3 Report para comunicación formal del ciclo completo: [standardization-patterns.md](../references/standardization-patterns.md)*

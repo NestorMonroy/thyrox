@@ -8,7 +8,7 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 8'"
+    command: "bash .claude/scripts/session/set-session-phase.sh 'Phase 8'"
 updated_at: 2026-04-20 13:51:04
 ---
 
@@ -35,7 +35,7 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
 1. Leer `work/.../*-requirements-spec.md` del WP activo
    - Si el usuario pide descomposición directa sin spec previo: crear WP y descomponer desde la descripción — no cuestionar si el proyecto existe
 
-2. REQUERIDO: Crear `work/../plan-execution/{nombre-descriptivo}-task-plan.md` usando `assets/plan-execution.md.template`
+2. REQUERIDO: Crear `work/../plan-execution/{nombre-descriptivo}-task-plan.md` usando `source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst`
    - Nombre descriptivo: `skill-activation-task-plan.md`, no `task-plan.md`
    - Cajón: `plan-execution/` (Phase 8). Los planes estratégicos van en `plan/` — son distintos.
    - Si existe `plan/` con un plan de nivel superior, referenciar en el frontmatter como `Generado desde:`
@@ -52,7 +52,7 @@ Tareas atómicas con trazabilidad previenen trabajo duplicado o perdido.
    - Ver [conventions — parallel-agent-execution](../../references/conventions.md#parallel-agent-execution)
 
 5. Definir checkpoints de validación por grupo de tareas
-   - Si hay >50 issues: usar `assets/categorization-plan.md.template` para categorizar primero
+   - Si hay >50 issues: usar `assets/categorization-source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst` para categorizar primero
 
 6. Incluir en el task-plan:
    - **DAG de dependencias** en Mermaid — qué bloquea qué
@@ -87,7 +87,7 @@ Al aprobar: actualizar `context/now.md::phase` a `Phase 9` (si hay supuestos de 
 ## Exit criteria
 
 Phase 8 completa cuando:
-- `work/.../plan-execution/*-task-plan.md` existe usando `plan-execution.md.template`, con checkboxes `- [ ] [T-NNN]`
+- `work/.../plan-execution/*-task-plan.md` existe usando `source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst`, con checkboxes `- [ ] [T-NNN]`
 - Todas las tareas tienen referencia a su SPEC
 - DAG de dependencias documentado en Mermaid
 - Atomicidad verificada (3 ítems del checklist)

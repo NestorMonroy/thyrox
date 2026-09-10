@@ -48,7 +48,7 @@ Score = Σ(PASS × 1.0 + PARTIAL × 0.5) / Σ(total items - SKIP) × 100
 
 ```markdown
 - T-001: close-wp.sh creado
-  Evidencia: .claude/scripts/close-wp.sh — 45 líneas, chmod +x ✓, bash -n ✓
+  Evidencia: .claude/scripts/task/close-wp.sh — 45 líneas, chmod +x ✓, bash -n ✓
   Veredicto: ✅ PASS
 ```
 

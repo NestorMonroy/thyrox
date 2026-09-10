@@ -127,7 +127,7 @@ Deliverable: Architecture Docs Section 1, 2, 3 COMPLETO
 Para cada subsección, hay un template:
 
 - [requirements-analysis.md.template](../assets/requirements-analysis.md.template) - Estructura para Requirements
-- [use-cases.md.template](../assets/use-cases.md.template) - Estructura para Use Cases
+- [source/normativa/estandares/plantillas/tpl-uc.rst](source/normativa/estandares/plantillas/tpl-uc.rst) - Estructura para Use Cases
 - [quality-goals.md.template](../assets/quality-goals.md.template) - Estructura para Quality Goals
 - [stakeholders.md.template](../assets/stakeholders.md.template) - Estructura para Stakeholders
 - [basic-usage.md.template](../assets/basic-usage.md.template) - Estructura para Basic Usage

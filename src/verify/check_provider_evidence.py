@@ -1,0 +1,162 @@
+#!/usr/bin/env python3
+"""Gate — la convencion de docs no se filtra al arbol del proveedor.
+
+THYROX **si** tiene banco propio: `analisis-hogar-del-workbench-en-thyrox.rst`
+situa su pieza en `thyrox/.claude/workbench/`. Lo que este gate mide es el
+nombre HEREDADO —`.claude/eventos`, el de docs— apareciendo aqui, que es lo que
+los once bancos del episodio eran: trabajo de consumidores aparcado en el
+proveedor con la convencion del consumidor.
+
+`workbench/paths.py` ya lo declara: *«un banco vive en el arbol del CONSUMIDOR
+y lo producen sus sesiones»*, y por eso `workbench_dir()` REHUSA en vez de
+inventar un default — un hogar por defecto seria justo la decision que la
+directiva le retira al emisor.
+
+Lo que faltaba es el control. La prosa estaba escrita y no lo impidio: en la
+sesion del 2026-09-07 escribi el banco de un episodio en
+`thyrox/.claude/eventos/`, teniendo el modulo delante. Es el criterio que
+`gitlink-bump-gate.md` ya dejo fijado — la leccion escrita no previene la
+reincidencia, un gate ejecutable si.
+
+Que mide: directorios bajo `<raiz>/.claude/eventos/` en el arbol del PROVEEDOR.
+Ciega a: un banco emitido fuera de ese segmento (un `evidencia/` inventado), y
+a si el contenido de un banco legitimo del consumidor es correcto — eso lo mide
+el gate de manifiesto, otro instrumento.
+
+Salidas: 0 sin bancos propios, o con bancos y sin `--strict` · 1 con bancos
+propios bajo `--strict` · 2 no pudo medir. El veredicto de rehuse es 2 y va
+**sin cifra**: un 0 ahi no distinguiria «no hay bancos» de «no pude mirar».
+
+Y publica la SALIDA de `workbench_dir()`, que es la mitad que faltaba. La
+funcion rehusaba con el texto correcto y su unico consumidor fuera de tests
+importaba las constantes y no la funcion, asi que a la pregunta «si aun no se
+selecciona el hogar, ¿que mensaje le dices al usuario?» la respuesta era
+NINGUNO. Aqui el rehuse no corta la medicion —la ausencia de hogar no impide
+contar lo que el proveedor emitio— pero si se dice, porque es la accion que le
+queda pendiente a quien corre el gate.
+"""
+from __future__ import annotations
+
+import argparse
+import os
+import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+
+from workbench.paths import (  # noqa: E402
+    WorkbenchHomeError, evidence_dir, state_dir, workbench_dir,
+)
+from paths.reach import ConsumerUnknownError  # noqa: E402
+
+#: El marcador por el que se reconoce la raiz propia. Constante con su entrada
+#: de entorno (DEC-04): cablearlo le quitaria al consumidor la decision de como
+#: esta estructurado su arbol.
+LOCATOR_VAR = "THYROX_LOCATOR"
+LOCATOR_DEFAULT = pathlib.Path("src") / "paths" / "reach.py"
+
+
+def own_root(start: pathlib.Path) -> pathlib.Path | None:
+    """La raiz propia, por ascenso al marcador declarado."""
+    marker = pathlib.Path(os.environ.get(LOCATOR_VAR) or LOCATOR_DEFAULT)
+    for level in (start, *start.parents):
+        if (level / marker).is_file():
+            return level
+    return None
+
+
+def banks(root: pathlib.Path) -> list[str]:
+    """Los bancos emitidos dentro del proveedor, por nombre."""
+    home = evidence_home(root)
+    if not home.is_dir():
+        return []
+    return sorted(p.name for p in home.iterdir() if p.is_dir())
+
+
+#: El nombre HISTORICO del banco, que es el de docs. THYROX tiene banco propio
+#: —`analisis-hogar-del-workbench-en-thyrox.rst` situa su pieza en
+#: `thyrox/.claude/workbench/`— asi que el gate ya NO puede medir su hogar
+#: derivado: forbidiria lo que la decision autoriza.
+#:
+#: Lo que sigue siendo defecto, y es lo que los once bancos eran, es la
+#: convencion de docs filtrandose al proveedor: piezas de trabajo de un
+#: CONSUMIDOR aparcadas aqui bajo `eventos`, el nombre que api ya midio como
+#: colisionado y que este arbol no usa.
+LEGACY_EVIDENCE_DIR = "eventos"
+
+
+def evidence_home(root: pathlib.Path) -> pathlib.Path:
+    """El hogar con el nombre HEREDADO, ``<estado>/eventos``, no el derivado.
+
+    ``root`` viaja como ``start`` a ``state_dir``: el ``.env`` que gobierna el
+    segmento es el del arbol que se mide, no el del cwd desde el que se invoca.
+
+    Media ``<estado>/<evidencia>`` hasta el 2026-09-07, y con el default en
+    `workbench` eso paso a ser el hogar propio de THYROX. Un gate que prohibe
+    el hogar que la decision del ejecutor concede no mide un defecto: mide la
+    decision. `evidence_dir()` sigue siendo el resolutor del hogar VIVO; aqui
+    se nombra el heredado a proposito.
+    """
+    return root / state_dir(root) / LEGACY_EVIDENCE_DIR
+
+
+def main(argv: list[str]) -> int:
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--root", help="raiz a medir (por defecto, la propia)")
+    p.add_argument("--strict", action="store_true", help="exit 1 si hay bancos")
+    args = p.parse_args(argv)
+
+    if args.root:
+        root = pathlib.Path(args.root).resolve()
+        if not (root / LOCATOR_DEFAULT).is_file():
+            print(f"check-provider-evidence: {root} no lleva el marcador "
+                  f"{LOCATOR_DEFAULT} — NO se emite un conteo: un 0 aqui seria "
+                  "un verde falso.", file=sys.stderr)
+            return 2
+    else:
+        root = own_root(pathlib.Path(__file__).resolve().parent)
+        if root is None:
+            print("check-provider-evidence: no se hallo la raiz propia — "
+                  "NO se emite un conteo: un 0 aqui seria un verde falso.",
+                  file=sys.stderr)
+            return 2
+
+    found = banks(root)
+    print(f"check-provider-evidence: {len(found)} banco(s) emitido(s) dentro "
+          f"del proveedor (alcance medido: {evidence_home(root)})")
+    for name in found:
+        print(f"  {name} — un banco vive en el arbol del CONSUMIDOR")
+
+    try:
+        print(f"  hogar del banco: {workbench_dir(root)}")
+    except (WorkbenchHomeError, ConsumerUnknownError) as err:
+        # El rehuse se PUBLICA y no cambia el veredicto: el hogar sin declarar
+        # es trabajo pendiente del consumidor, no una medicion imposible.
+        #
+        # `ConsumerUnknownError` es la SEGUNDA ruta al mismo caso, y llega desde
+        # que TASK-DOCS-0286 bajo el guard del proveedor a `reach.consumer_root`:
+        # corriendo con `cwd` en thyrox, el ascenso aterriza en el PROVEEDOR y
+        # el mecanismo rehusa en vez de componer un hogar dentro de el. Sin esta
+        # rama la excepcion escapaba al manejador amplio del modulo, que la
+        # convierte en exit 2 — y el gate entero pasaba de «0 bancos» a «no pude
+        # medir» por una SEGUNDA medicion que no decide el veredicto. Ese exit 2
+        # bloqueo el `pre-commit` de este mismo arbol.
+        print(f"  {err}")
+
+    return 1 if (found and args.strict) else 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main(sys.argv[1:]))
+    except SystemExit:
+        raise
+    except Exception as err:  # noqa: BLE001 — el veredicto importa mas que el tipo
+        # Un fallo inesperado sale por 2 («no pude medir»), NO por 1. Sin esto,
+        # la excepcion no capturada sale con 1 de Python y su llamador la lee
+        # como «hay bancos»: un HALLAZGO FALSO, no un error. Medido al cablear
+        # el hook — un `reach.py` incompleto publicaba la receta de mover un
+        # banco sobre un ImportError.
+        print(f"check-provider-evidence: no se pudo medir — {type(err).__name__}: {err}",
+              file=sys.stderr)
+        raise SystemExit(2) from err

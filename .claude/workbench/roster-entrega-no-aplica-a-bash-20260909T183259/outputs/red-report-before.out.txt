@@ -1,0 +1,19 @@
+== reconciliación del roster ==
+roster    : /tmp/tmp.OUbPY11jGn/tasks  [declarado]
+ventana   : 900s
+
+  terminado      0
+    entrego      1
+    cortado      0
+  vivo           0
+  reciente       3
+  atascado       0
+  desaparecido   1
+  indecidible    3
+  ------------------------
+  TOTAL          8
+
+  desaparecido  cortado  (subagente, sin escribir 362553 min)
+
+Sólo 'desaparecido' autoriza relanzar, y sólo vía --confirmar-muerte <id>.
+'indecidible' NO es 'muerto': es que este instrumento no puede verlo.

@@ -1,0 +1,14 @@
+# Control: una build YA archivada con OTRO volcado debe REHUSAR, no pisar.
+# El corpus falso vive en controls/fake-corpus/ y se declara con
+# THYROX_CORPUS_DIR — que de paso prueba que el hogar se PREGUNTA.
+# Corrido: 2026-09-09T18:03:29
+---
+ERROR — 2.1.266 ya esta archivada con OTRO volcado.
+  archivado: 213e22c8b727158b34cf6480e0930e72568d4cc21c0eda9053d587fe2b034011
+  vivo     : 7081c836ff7565c27070235162c4204b7f77849d74fd2c38ef6e4b931b53414f
+Dos volcados distintos bajo una misma version es un hecho que alguien
+tiene que mirar; pisarlo lo borraria. El intermedio se descarto.
+exit=2
+residuo tras rehusar: 0 archivo(s)
+el archivado NO se toco: si
+README fabricado sobre el ajeno: no

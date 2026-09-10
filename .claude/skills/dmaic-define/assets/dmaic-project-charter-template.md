@@ -19,7 +19,7 @@ status: Borrador
 
 > Sin VOC real documentado, los CTQs son hipótesis del equipo — registrar explícitamente si aplica.
 
-*Ver catálogo de 6 técnicas VOC y conversión VOC→CTQ: [voc-techniques.md](./references/voc-techniques.md)*
+*Ver catálogo de 6 técnicas VOC y conversión VOC→CTQ: [voc-techniques.md](../references/voc-techniques.md)*
 
 ---
 
@@ -62,7 +62,7 @@ status: Borrador
 | | | 4. [Paso 4] | | |
 | | | 5. [Paso 5] | | |
 
-*Ver guía paso a paso para construir SIPOC y errores comunes: [sipoc-guide.md](./references/sipoc-guide.md)*
+*Ver guía paso a paso para construir SIPOC y errores comunes: [sipoc-guide.md](../references/sipoc-guide.md)*
 
 ---
 

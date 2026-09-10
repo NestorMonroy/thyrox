@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.259
+import{B2e,Mae}from"/$bunfs/root/chunk-x1rrg5j2.js";import{re}from"/$bunfs/root/chunk-1mrhsd7s.js";import{t}from"/$bunfs/root/chunk-fzpv8ev5.js";import{a}from"/$bunfs/root/chunk-m92n5xra.js";import{lW,dUe,W3t,AK,fUe}from"/$bunfs/root/chunk-pwdby7t2.js";import{X}from"/$bunfs/root/chunk-n8g979s0.js";var TQt=[250,500,500,750,1000];function g(){return a.CLAUDE_SESSION_INGRESS_TOKEN_FILE??AK}function C(r){return a.CLAUDE_CODE_REMOTE&&!a.CLAUDE_CODE_SESSION_ACCESS_TOKEN&&!a.CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR&&r.some((e)=>e==="--sdk-url"||e.startsWith("--sdk-url="))&&!lW()}var I=250,w=50;function d(){return fUe(dUe,"OAuth token").token!==null||fUe(W3t,"API key").token!==null}async function CFn(r,{delaysMs:e=TQt,siblingGraceMs:o=I,siblingStepMs:f=w}={}){if(!C(r))return;let i=performance.now(),S=e.reduce((s,k)=>s+k,0),E=g(),{token:l,miss:_}=fUe(E,"session ingress token"),n=0;while(!l&&n<e.length){let s=e[n];t(`[spare-claim] session ingress token file not readable yet (${_}), re-checking in ${s}ms (${n+1}/${e.length})`,{level:"warn"}),await re(s),n++,{token:l,miss:_}=fUe(E,"session ingress token")}if(!l){X("error","cli_worker_lifecycle_claim_token_wait",{attempts:n,recovered:!1,last_miss:_??"other",waited_ms:Math.round(performance.now()-i)});return}let u=n>0?Math.max(S-(performance.now()-i),o):o,p=performance.now(),c=0,m=d();while(!m&&performance.now()-p<u)await re(f),c++,m=d();if(n>0||c>0)X("info","cli_worker_lifecycle_claim_token_wait",{attempts:n,recovered:!0,sibling_attempts:c,sibling_present:m,waited_ms:Math.round(performance.now()-i)})}function IFn(){let r=!!a.CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR;if(B2e()!==null)return{recovered:!1,diag:{fd_env_set:r}};let{token:e,miss:o}=fUe(g(),"session ingress token");if(!e)return{recovered:!1,diag:{fd_env_set:r,last_miss:o??"other"}};return Mae(e),t("Session ingress token re-read from well-known file"),{recovered:!0,diag:{fd_env_set:r}}}
+export{TQt,CFn,IFn};

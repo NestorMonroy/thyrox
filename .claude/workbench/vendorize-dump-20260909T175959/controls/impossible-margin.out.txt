@@ -1,0 +1,8 @@
+# Control: con MIN_MARGIN=99 el guion debe REHUSAR, y sin dejar residuo.
+# Corrido: 2026-09-09T18:03:27
+---
+ERROR — la version NO esta decidida: 2.1.266 aparece 1908 veces y el segundo candidato 132.
+Margen exigido: 99x. Hace falta otro discriminador antes de archivar.
+El volcado intermedio se descarto: era una copia sin archivar.
+exit=2
+residuo tras rehusar: 0 archivo(s)

@@ -215,3 +215,36 @@ Cuando el Process Inventory está validado con stakeholders y el proceso selecci
 
 ### References
 - [process-prioritization.md](./references/process-prioritization.md) — Cómo calcular Priority Score, normalizar datos, y técnicas de validación con stakeholders
+
+---
+
+## Anclaje al proyecto Kaupamex
+
+Cuando este skill se ejecuta en el multi-repo Kaupamex, los placeholders
+genericos de arriba se sustituyen por los artefactos canonicos del
+proyecto. La metodologia BPA no cambia; solo se ancla a la notacion,
+plantilla y catalogo de actores propios.
+
+- **Plantilla de proceso:** `source/normativa/estandares/plantillas/tpl-proceso-bpmn.rst`
+  (`:ref:` ``tpl-proceso-bpmn``) — reemplaza los templates markdown genericos.
+- **Actores / swimlanes:** del catalogo canonico
+  `source/requisitos/actores-del-sistema.rst` (`:ref:` ``actores-sistema``):
+  Visitante, Comprador, Administrador, Tiempo (scheduler UC-SYS), Gateway de
+  Pago (MP / PayPal), Transportista. No inventar actores por proceso.
+- **Notacion y trazado BPMN:** `:ref:` ``bc-mn-u2-bpmn`` (elementos) y
+  `:ref:` ``bc-mn-bpmn-layout`` (izq→der, excepcion abajo, divergencia a la
+  derecha).
+- **Metodologia de gestion por procesos (niveles 0/1/n, PHVA):**
+  `:ref:` ``bc-bpm-metodologia-gestion-por-procesos``.
+- **Convencion de formato:** los diagramas de proceso son **PlantUML
+  (activity-beta) embebidos en RST**, no Mermaid ni tablas markdown sueltas.
+  Los artefactos viven como `.rst` bajo `source/` (solo acepta `.rst`).
+  Compuertas con ``if/then/else`` (o ``hexagon``); la palabra ``diamond`` es
+  invalida.
+
+**Foco de esta fase (Identify):** clasificar el proceso por su nivel (0
+mapa / 1 proceso / n subproceso) y su clase (estrategico / misional / de
+apoyo) segun `:ref:` ``bc-bpm-metodologia-gestion-por-procesos``, y anclarlo
+al proceso concreto que la iniciativa motiva (sea un checkout, un alta de
+producto, una devolucion, etc.). El metodo no presupone un dominio: se
+aplica a cualquier proceso del inventario.

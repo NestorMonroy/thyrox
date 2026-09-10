@@ -1,0 +1,27 @@
+{
+  "name": "@thyrox/observability",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Lo que el bucle registra sobre si mismo: journal, costo por turno, la fila de sesion en el store, la forma del transcript y los resultados limpiados.",
+  "exports": {
+    "./journal": "./src/journal.ts",
+    "./cost": "./src/cost.ts",
+    "./store": "./src/store.ts",
+    "./transcriptShape": "./src/transcriptShape.ts",
+    "./clearedResults": "./src/clearedResults.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0"
+  },
+  "dependencies": {
+    "@thyrox/agent": "workspace:*"
+  }
+}

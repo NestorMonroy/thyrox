@@ -8,7 +8,7 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 6'"
+    command: "bash .claude/scripts/session/set-session-phase.sh 'Phase 6'"
 updated_at: 2026-04-20 13:08:54
 ---
 
@@ -40,7 +40,7 @@ Definir scope antes de estructurar previene scope creep.
    - Si no existe → volver a Phase 1 antes de continuar
    - Para trabajo grande que agrupa múltiples features: usar `assets/epic.md.template`
 
-3. REQUERIDO: Crear `work/.../plan/{nombre-wp}-plan.md` usando `assets/plan.md.template`:
+3. REQUERIDO: Crear `work/.../plan/{nombre-wp}-plan.md` usando `source/normativa/estandares/plantillas/tpl-iniciativa-alcance.rst`:
    - Scope statement (problema + usuarios + criterios de éxito)
    - In-scope: lista explícita de lo que entra
    - Out-of-scope: lista explícita con razón de cada exclusión

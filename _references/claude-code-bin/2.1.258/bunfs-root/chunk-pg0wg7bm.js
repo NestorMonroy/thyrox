@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.258
+import{y}from"/$bunfs/root/chunk-m3sgv6yt.js";import{n}from"/$bunfs/root/chunk-tj5q8vxd.js";import{ppe,dSt,u_}from"/$bunfs/root/chunk-v9k8xajp.js";import{Ct}from"/$bunfs/root/chunk-prpkfyxb.js";import{F}from"/$bunfs/root/chunk-rhbkhtf4.js";import{e}from"/$bunfs/root/chunk-pbthxwmf.js";import{U,v,k,d,j}from"/$bunfs/root/chunk-db688wrz.js";import{p}from"/$bunfs/root/chunk-6zavqkd2.js";j();var x=2000,L=2000;function OW(r){let i=Ct(),[P,s]=d(null),t=k(null),l=k(null),o=k(null),a=k(0),f=k(!0),C=U(()=>{a.current+=1,o.current?.(),o.current=null,l.current=null,t.current?.(),t.current=null,s(null)},[]);v(()=>{if(C(),r!==null)dSt()},[r,C]),v(()=>(f.current=!0,()=>{f.current=!1,o.current?.(),o.current=null,l.current=null,t.current?.(),t.current=null}),[]);let R=U((m)=>{if(l.current===m)return;l.current=m,o.current?.(),o.current=i.setTimeout(()=>{o.current=null,l.current=null},x);let b=ppe(),g=a.current;u_(m).then((h)=>{if(!f.current||g!==a.current)return;if(h)process.stdout.write(h);if(t.current?.(),t.current=null,s(b),b==="native")t.current=i.setTimeout(()=>{t.current=null,s(null)},L)})},[i]);return{copiedVia:P,copy:R,reset:C}}function X$(W){let O=y(2),{via:E}=W;if(E==="native"){let u;if(O[0]===p)u=e(n,{color:"success",children:"(Copied!)"}),O[0]=u;else u=O[0];return u}if(E===null){let u;if(O[1]===p)u=e(n,{dimColor:!0,children:e(F,{chord:"c",action:"copy",parens:!0})}),O[1]=u;else u=O[1];return u}return null}function J$(B){let _=y(2),{via:S}=B;if(S==="tmux-buffer"){let c;if(_[0]===p)c=e(n,{dimColor:!0,children:"(Copied to tmux buffer \xB7 select the URL manually if paste fails)"}),_[0]=c;else c=_[0];return c}if(S==="osc52"){let c;if(_[1]===p)c=e(n,{dimColor:!0,children:"(Sent via OSC 52 \xB7 select the URL manually if paste fails)"}),_[1]=c;else c=_[1];return c}return null}
+export{OW,X$,J$};

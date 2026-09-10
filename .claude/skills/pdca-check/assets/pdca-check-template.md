@@ -30,7 +30,7 @@ status: Borrador
 
 **Conclusión de suficiencia:** [Los datos son suficientes para concluir / Se recomienda extender el piloto porque ...]
 
-*Ver guía de tamaños de muestra y tipos de proceso: [measurement-tools.md](./references/measurement-tools.md)*
+*Ver guía de tamaños de muestra y tipos de proceso: [measurement-tools.md](../references/measurement-tools.md)*
 
 ---
 
@@ -45,7 +45,7 @@ status: Borrador
 
 **Conclusión:** [La diferencia supera la variabilidad natural del proceso / La diferencia está dentro del ruido normal]
 
-*Ver guías de Run Chart y selección de test estadístico: [measurement-tools.md](./references/measurement-tools.md)*
+*Ver guías de Run Chart y selección de test estadístico: [measurement-tools.md](../references/measurement-tools.md)*
 
 ---
 

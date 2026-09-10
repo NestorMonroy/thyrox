@@ -8,7 +8,7 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 7'"
+    command: "bash .claude/scripts/session/set-session-phase.sh 'Phase 7'"
 updated_at: 2026-04-20 13:30:36
 ---
 
@@ -37,7 +37,7 @@ Especificar antes de descomponer previene ambigüedad en las tareas.
 - < 10 tareas estimadas → **Simple**
 - 10+ tareas estimadas → **Complejo** (requiere también design.md)
 
-**Simple:** Crear `work/.../design/{nombre-wp}-requirements-spec.md` usando `assets/requirements-specification.md.template`
+**Simple:** Crear `work/.../design/{nombre-wp}-requirements-spec.md` usando `source/normativa/estandares/plantillas/tpl-fr.rst`
   - Con overview, user stories, acceptance criteria (Given/When/Then)
   - Nombre descriptivo: `skill-activation-requirements-spec.md`, no `requirements-spec.md`
 

@@ -17,29 +17,18 @@
 ## Benchmarks genéricos (ilustrativos — calibrar)
 
 `cosmices` (manual): Small ≈ 3.9 CFP, Medium ≈ 6.9 CFP (referenciales). **Calibra con tus datos**
-(ver [calibration.md](calibration.md)).
-
-## Clasificación de evidencia de una estimación (INFERRED vs SPECULATIVE)
-
-Una estimación **no es automáticamente SPECULATIVE**. Depende de si tiene observables de origen
-(ver `thyrox/references/evidence-classification.md`):
-
-| La estimación… | Clasificación | ¿Avanza gate? |
-|----------------|---------------|----------------|
-| Average-FP / banda **anclado en procesos ya medidos** del mismo tipo (muestra observable + razonamiento documentado) | **INFERRED** | Sí — si se documentan los observables de origen |
-| Número **sin muestra de origen** (analogía a ojo, "suele ser ~X", fixed-size sin datos) | **SPECULATIVE** | No — bloquea gate (I-012) |
-
-Marca siempre `[ESTIMACIÓN TEMPRANA]` y declara el origen. Una estimación INFERRED debe citar
-**qué procesos medidos** la anclan. Si no puedes citarlos, es SPECULATIVE.
-
-> **Precedente (ÉPICA 44):** la estimación Average-FP de capa C de THYROX se clasificó INFERRED
-> porque se ancló en 2 coordinators leídos y el patrón homogéneo; resultó a ~1.3% del conteo
-> OBSERVABLE posterior. Eso es INFERRED bien hecho, no SPECULATIVE.
+(ver [calibration.md](calibration.md)). Toda estimación es **SPECULATIVE** hasta medición real (I-012).
 
 ## NFR
 
 Los requisitos no funcionales **no aportan CFP**, pero afectan esfuerzo. Tratamiento:
 [manual/tutorial-early-sizing-m3-nfr.md](manual/tutorial-early-sizing-m3-nfr.md).
 
+Para **clasificar** un requisito como funcional vs NFR en este proyecto (con
+ejemplos del stack: `select_for_update`, `transaction.atomic`, JWT, rate
+limiting, CSP/CORS, audit logging), aplicar la guía aplicada:
+`source/gestion/pm/docs/iniciativas/adoptar-cosmic-dimensionamiento/metodologia-cosmic-ecommerce.rst`
+§4.4 (anchor `metodologia-cosmic-ecommerce`).
+
 ---
-**Última actualización:** 2026-06-03T05:13:33Z
+**Última actualización:** 2026-06-03T03:44:23Z

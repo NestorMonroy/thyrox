@@ -1,0 +1,13 @@
+{
+  "question": "assert.sh hace `export -f` de cinco funciones. ¿Sobreviven de verdad a un bash hijo, sabiendo que toda suite de este árbol arranca con `set -uo pipefail`?",
+  "instrument": "`bash -c 'source src/lib/assert.sh; bash tests/lib/test-workbench-sh.sh'` — un padre que sourcea la biblioteca y lanza una suite hija, que es como se invoca desde una sesión al usar `thyrox_safe_sed`. Mas las dos anulaciones por separado.",
+  "metric": "Exit code de la suite hija y la primera linea de su salida.",
+  "blind_to": [
+    "Un hijo SIN `set -u`: ahi la variable sin declarar expande a vacio y todo funciona. Es el caso que el control 4 de test-assert-sh.sh ya cubria, y por eso el defecto no se veia.",
+    "Si exportar los contadores tendria sentido: no se midio, porque un incremento en el hijo no vuelve al padre por construccion. La decision es que el hijo cuente lo suyo.",
+    "Las otras 86 suites de shell del arbol: solo se midieron las cuatro de tests/lib/."
+  ],
+  "destination": "src/lib/assert.sh — default `:-` en las tres variables de color (9 referencias) y en los dos contadores (5). Anulaciones en outputs/.",
+  "form": "measurement",
+  "created_at": "2026-09-09T18:41:21"
+}

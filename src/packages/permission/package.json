@@ -1,0 +1,40 @@
+{
+  "name": "@thyrox/permission",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta (permission.ts, T-008/025/026/027). PORTE COMPLETO desde claude-code-nestor-monroy-tools (TASK-DOCS-0201) de: host.ts, errors.ts, contracts.ts, permissionRuleParser.ts, PermissionResult.ts, autoModeDenials.ts, autoModeState.ts, denialTracking.ts, bashClassifier.ts, dangerousPatterns.ts, shellRuleMatching.ts, shadowedRuleDetection.ts, PermissionRule.ts, PermissionMode.ts, PermissionUpdate.ts, index.ts (el barrel, 14 reexports), appStateHooks.ts, testing/index.ts, commands/add-dir/validation.ts y commands/rename/generateSessionName.ts. PORTE PARCIAL DECLARADO —cada archivo dice en su docstring que falta y por que— de: permissions.ts (11/17), filesystem.ts (15/29), pathValidation.ts (6/11), getNextPermissionMode.ts (1/2, sin auto-mode) y permissionSetup.ts (12/35: el bloque de permisos peligrosos, lineas 101-598 de la fuente; los otros 23 exports esperan banderas de caracteristica, estado de auto mode, arranque desde la linea de comandos y telemetria — sucesor TASK-THYROX-0004). TRES AVISOS RETIRADOS POR MEDICION: PermissionRule/PermissionMode/PermissionUpdate figuraban como parciales (4/6, 11/13, 6/8) y estan completos (6/6, 14/14, 10/10); allWorkingDirectories y pathInWorkingPath figuraban bloqueados por SandboxManager y no lo tocan. FUERA, con bloqueo medido: los ~25 componentes Ink y classifierApprovalsHook.ts (react no resuelve desde este paquete); yoloSystemPrompt.ts, permissionExplainer.ts y classifierStallTracking.ts (provider/user.js, agent/sideQuery.js y provider/antModels.js no existen aun); toolPermission/permissionLogging.ts (shell/sandbox.js, ver la tarea de portar shell); commands/index.ts (bloqueo de ENLACE, no de codigo: @thyrox/command-runtime no esta en node_modules de este paquete aunque su runtime.ts si exista). La raiz \".\" apunta a permission.ts y NO al barrel, que vive en \"./index.js\": el barrel arrastra permissionSetup y con el la cadena de @thyrox/config/settings, y los tres consumidores del specifier raiz quieren entre los tres dos simbolos y un tipo.",
+  "exports": {
+    ".": "./src/permission.ts",
+    "./host.js": "./src/host.ts",
+    "./errors.js": "./src/errors.ts",
+    "./contracts.js": "./src/contracts.ts",
+    "./permissionTypes.js": "./src/permissionTypes.ts",
+    "./permissionRuleParser.js": "./src/permissionRuleParser.ts",
+    "./permissions.js": "./src/permissions.ts",
+    "./filesystem.js": "./src/filesystem.ts",
+    "./pathValidation.js": "./src/pathValidation.ts",
+    "./permissionSetup.js": "./src/permissionSetup.ts",
+    "./index.js": "./src/index.ts",
+    "./appStateHooks.js": "./src/appStateHooks.ts",
+    "./testing": "./src/testing/index.ts",
+    "./testing/index.js": "./src/testing/index.ts",
+    "./commands/add-dir/validation.js": "./src/commands/add-dir/validation.ts",
+    "./commands/rename/generateSessionName.js": "./src/commands/rename/generateSessionName.ts",
+    "./*": "./src/*.ts",
+    "./*.js": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0"
+  },
+  "dependencies": {
+    "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "chalk": "^4.1.2"
+  }
+}

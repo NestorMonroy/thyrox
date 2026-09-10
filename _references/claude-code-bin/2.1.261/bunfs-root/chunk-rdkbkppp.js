@@ -1,0 +1,11 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.261
+import"/$bunfs/root/chunk-dcawh0q4.js";import"/$bunfs/root/chunk-91n3hqvz.js";import"/$bunfs/root/chunk-fvzv4ke0.js";import"/$bunfs/root/chunk-49q43dms.js";import{mQ}from"/$bunfs/root/chunk-p3zwp1vp.js";import"/$bunfs/root/chunk-annedm50.js";import"/$bunfs/root/chunk-x7f60hk6.js";import{l}from"/$bunfs/root/chunk-xzmtst7a.js";import"/$bunfs/root/chunk-2y9gqtpa.js";import{wt,n}from"/$bunfs/root/chunk-y5pwxex8.js";import"/$bunfs/root/chunk-e0egp0nd.js";import"/$bunfs/root/chunk-py8dsda5.js";import"/$bunfs/root/chunk-e1njvp95.js";import"/$bunfs/root/chunk-84mvm17e.js";import"/$bunfs/root/chunk-8w57hkxq.js";import{a}from"/$bunfs/root/chunk-a207t0vs.js";import"/$bunfs/root/chunk-020pptsa.js";import"/$bunfs/root/chunk-838r2s0v.js";import"/$bunfs/root/chunk-vvf2tdhs.js";import"/$bunfs/root/chunk-jab6fkvt.js";import"/$bunfs/root/chunk-k79k92jg.js";import"/$bunfs/root/chunk-6pmy77t2.js";import"/$bunfs/root/chunk-q41p4zsw.js";import"/$bunfs/root/chunk-1a7p190e.js";import{mK,hQ}from"/$bunfs/root/chunk-9rq9mz06.js";import{lot}from"/$bunfs/root/chunk-vewtb5x9.js";import{Gi}from"/$bunfs/root/chunk-hyqdn9c0.js";import"/$bunfs/root/chunk-gfmykb9c.js";import"/$bunfs/root/chunk-4c991prk.js";import"/$bunfs/root/chunk-z3xbqh22.js";import"/$bunfs/root/chunk-4qz1hwvq.js";async function d({sessionId:o,sdkUrl:i}){try{let t=a.CLAUDE_SESSION_INGRESS_TOKEN_FILE??mK;if(!(await Gi(t,hQ))?.trim()){n("[vitals] no session token file on this worker; guest vitals disabled");return}let r=await lot({sessionId:o,apiBaseUrl:mQ(new URL(i)).origin,tokenFilePath:t,binaryResolution:"search",log:n});if(r)wt(()=>r.stop())}catch(t){n(`[vitals] not started: ${l(t)}`)}}export{d as startHostedWorkerVitalsEmitter};

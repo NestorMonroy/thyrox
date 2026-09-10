@@ -4,14 +4,9 @@ description: "Use when implementing a redesigned business process. bpa:implement
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "process implementation"
-    - "process change"
-    - "SOP process"
-    - "process training"
-    - "process rollout"
+  triggers: ["process implementation", "process change", "SOP process", "process training", "process rollout"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /bpa-implement — BPA: Implement
@@ -213,3 +208,33 @@ Cuando el piloto es aprobado, el SOP está publicado y el Go-Live completado →
 
 ### References
 - [change-management-guide.md](./references/change-management-guide.md) — Cómo comunicar cambios de proceso, plan de training, gestión de resistencia y plan de rollback
+
+---
+
+## Anclaje al proyecto Kaupamex
+
+Cuando este skill se ejecuta en el multi-repo Kaupamex, los placeholders
+genericos de arriba se sustituyen por los artefactos canonicos del
+proyecto. La metodologia BPA no cambia; solo se ancla a la notacion,
+plantilla y catalogo de actores propios.
+
+- **Plantilla de proceso:** `source/normativa/estandares/plantillas/tpl-proceso-bpmn.rst`
+  (`:ref:` ``tpl-proceso-bpmn``) — reemplaza los templates markdown genericos.
+- **Actores / swimlanes:** del catalogo canonico
+  `source/requisitos/actores-del-sistema.rst` (`:ref:` ``actores-sistema``):
+  Visitante, Comprador, Administrador, Tiempo (scheduler UC-SYS), Gateway de
+  Pago (MP / PayPal), Transportista. No inventar actores por proceso.
+- **Notacion y trazado BPMN:** `:ref:` ``bc-mn-u2-bpmn`` (elementos) y
+  `:ref:` ``bc-mn-bpmn-layout`` (izq→der, excepcion abajo, divergencia a la
+  derecha).
+- **Metodologia de gestion por procesos (niveles 0/1/n, PHVA):**
+  `:ref:` ``bc-bpm-metodologia-gestion-por-procesos``.
+- **Convencion de formato:** los diagramas de proceso son **PlantUML
+  (activity-beta) embebidos en RST**, no Mermaid ni tablas markdown sueltas.
+  Los artefactos viven como `.rst` bajo `source/` (solo acepta `.rst`).
+  Compuertas con ``if/then/else`` (o ``hexagon``); la palabra ``diamond`` es
+  invalida.
+**Foco de esta fase (Implement):** la implementacion del To-Be respeta la
+secuencia diseño-primero del proyecto (server → db → api → ui, regla
+``docs-design-first-rup``). La trazabilidad ``api@hash`` / ``ui@hash`` /
+``db@hash`` se registra en la seccion "Trazabilidad" de ``tpl-proceso-bpmn``.

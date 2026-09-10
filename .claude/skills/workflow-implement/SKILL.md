@@ -8,7 +8,7 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 10'"
+    command: "bash .claude/scripts/session/set-session-phase.sh 'Phase 10'"
 updated_at: 2026-04-20 13:08:54
 ---
 
@@ -26,7 +26,7 @@ Toma la siguiente tarea pendiente del work package activo y la ejecuta.
 4. Leer `context/now.md` — verificar `phase`
 5. Listar tech skills activos: `ls .claude/skills/ | grep -v thyrox`
 6. REQUERIDO al inicio de sesión: crear o actualizar `{nombre-wp}-execution-log.md` usando `assets/execution-log.md.template`
-7. Para tareas ad-hoc fuera del task-plan formal: usar `assets/ad-hoc-tasks.md.template` (tracking ligero sin T-NNN)
+7. Para tareas ad-hoc fuera del task-plan formal: usar `assets/ad-hoc-source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst` (tracking ligero sin T-NNN)
 
 ---
 

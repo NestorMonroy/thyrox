@@ -4,14 +4,9 @@ description: "Use when monitoring strategy execution. sp:monitor — review KPIs
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "strategy review"
-    - "BSC review"
-    - "KPI monitoring strategy"
-    - "OKR check-in"
-    - "quarterly strategy review"
+  triggers: ["strategy review", "BSC review", "KPI monitoring strategy", "OKR check-in", "quarterly strategy review"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /sp-monitor — Strategic Planning: Strategy Monitoring

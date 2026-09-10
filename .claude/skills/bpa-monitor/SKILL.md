@@ -4,14 +4,9 @@ description: "Use when tracking a redesigned business process performance. bpa:m
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "process monitoring"
-    - "process KPI"
-    - "process performance dashboard"
-    - "before after process"
-    - "process continuous improvement"
+  triggers: ["process monitoring", "process KPI", "process performance dashboard", "before after process", "process continuous improvement"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /bpa-monitor — BPA: Monitor
@@ -224,3 +219,33 @@ bpa:monitor es continuo. Los puntos de decisión son:
 
 ### References
 - [process-metrics-guide.md](./references/process-metrics-guide.md) — Cómo definir KPIs de proceso, calcular baseline, establecer umbrales de alerta y configurar ciclos de revisión
+
+---
+
+## Anclaje al proyecto Kaupamex
+
+Cuando este skill se ejecuta en el multi-repo Kaupamex, los placeholders
+genericos de arriba se sustituyen por los artefactos canonicos del
+proyecto. La metodologia BPA no cambia; solo se ancla a la notacion,
+plantilla y catalogo de actores propios.
+
+- **Plantilla de proceso:** `source/normativa/estandares/plantillas/tpl-proceso-bpmn.rst`
+  (`:ref:` ``tpl-proceso-bpmn``) — reemplaza los templates markdown genericos.
+- **Actores / swimlanes:** del catalogo canonico
+  `source/requisitos/actores-del-sistema.rst` (`:ref:` ``actores-sistema``):
+  Visitante, Comprador, Administrador, Tiempo (scheduler UC-SYS), Gateway de
+  Pago (MP / PayPal), Transportista. No inventar actores por proceso.
+- **Notacion y trazado BPMN:** `:ref:` ``bc-mn-u2-bpmn`` (elementos) y
+  `:ref:` ``bc-mn-bpmn-layout`` (izq→der, excepcion abajo, divergencia a la
+  derecha).
+- **Metodologia de gestion por procesos (niveles 0/1/n, PHVA):**
+  `:ref:` ``bc-bpm-metodologia-gestion-por-procesos``.
+- **Convencion de formato:** los diagramas de proceso son **PlantUML
+  (activity-beta) embebidos en RST**, no Mermaid ni tablas markdown sueltas.
+  Los artefactos viven como `.rst` bajo `source/` (solo acepta `.rst`).
+  Compuertas con ``if/then/else`` (o ``hexagon``); la palabra ``diamond`` es
+  invalida.
+**Foco de esta fase (Monitor):** los indicadores se registran en la seccion
+"Ficha e indicadores" de ``tpl-proceso-bpmn`` y el gobierno de mejora sigue
+el ciclo PHVA (Fase III/IV de `:ref:` ``bc-bpm-metodologia-gestion-por-procesos``),
+seccion "Gobierno PHVA" de la misma plantilla.

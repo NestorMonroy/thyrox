@@ -4,14 +4,9 @@ description: "Use when solving a structured problem with Toyota TBP. pps:evaluat
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "effect confirmation"
-    - "A3 evaluate"
-    - "results verification"
-    - "standardize TBP"
-    - "yokoten TBP"
+  triggers: ["effect confirmation", "A3 evaluate", "results verification", "standardize TBP", "yokoten TBP"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /pps-evaluate — PS8: Monitor Results + Standardize

@@ -6,10 +6,37 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["RUP elaboration", "architecture prototype", "LCA milestone", "SAD software architecture", "use case specification"]
-updated_at: 2026-04-17 00:00:00
+updated_at: 2026-05-21 03:19:20
 ---
 
 # /rup-elaboration — RUP: Elaboration
+
+> **Adaptacion kaupamex v2 (2026-05-21).** Las salidas de esta fase
+> NO viven en `{wp}/rup-elaboration.md`. Se mapean asi sobre los
+> artefactos de la iniciativa en
+> `docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/`:
+>
+> - **Software Architecture Document (SAD)** -> EXTERNO en
+>   ``docs/source/arquitectura-tecnica/`` (modelo 4+1 ya
+>   estructurado por proyecto). Cross-link desde
+>   ``analisis-<slug>.rst``.
+> - **Architectural Decision Records (ADRs)** -> EXTERNO en
+>   ``docs/source/backend/adr/`` o
+>   ``docs/source/frontend/adr/`` segun capa. ``decisiones-<slug>.rst``
+>   referencia las ADRs creadas.
+> - **Architecture Prototype** -> commit hash en ``api/`` o ``ui/``,
+>   citado desde ``progreso-<slug>.rst``.
+> - **Use Case Model 80%** -> EXTERNO en
+>   ``docs/source/requisitos/casos-uso/``. ``analisis-<slug>.rst``
+>   lista los UC ya cubiertos vs pendientes.
+> - **Risk List actualizada** -> ``analisis-<slug>.rst`` seccion
+>   "Riesgos R-NN" — cada riesgo con estado mitigado / residual.
+> - **Plan de Construction** -> ``tareas-<slug>.rst`` con T-NNN
+>   agrupadas por iteracion de Construction.
+> - **Milestone LCA alcanzado** -> ``progreso-<slug>.rst`` seccion
+>   "Milestone LCA" con los 5 criterios + cita de evidencia.
+>
+> Ver `.claude/agents/rup-coordinator.md` para el mapping completo.
 
 > *"Elaboration is about proving the architecture works — not designing the perfect architecture. An executable prototype that handles the risky scenarios is worth more than a beautiful diagram that hasn't been tested."*
 
@@ -36,10 +63,16 @@ flowchart LR
 
 ## Pre-condición
 
-Requiere: `{wp}/rup-inception.md` con:
-- LCO alcanzado (Vision aprobada, business case validado, riesgos críticos identificados)
-- Use Case Model al 10% (UC críticos nombrados)
-- Risk List con top riesgos y planes de respuesta
+Requiere que la iniciativa activa en
+`docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/` tenga
+documentado el cierre de Inception:
+
+- ``progreso-<slug>.rst`` con seccion "Milestone LCO alcanzado".
+- ``alcance-<slug>.rst`` con Vision Document aprobado.
+- ``analisis-<slug>.rst`` con Risk List inicial (≥3 riesgos).
+- Use Case Model al 10% — UC criticos nombrados en
+  ``docs/source/requisitos/casos-uso/`` y cross-linkeados desde
+  ``analisis-<slug>.rst``.
 
 ---
 
@@ -186,7 +219,25 @@ Al final de Elaboration, el plan de Construction debe tener:
 
 ## Artefacto esperado
 
-`{wp}/rup-elaboration.md` — usar template: [elaboration-report-template.md](./assets/elaboration-report-template.md)
+Los entregables canonicos RUP de Elaboration se materializan en
+artefactos de la iniciativa + archivos externos del proyecto (ver
+banner de adaptacion kaupamex v2 al inicio):
+
+- ``analisis-<slug>.rst`` — Risk List R-NN actualizada (estado
+  mitigado/residual); UC Model 80% como cross-link a
+  ``docs/source/requisitos/casos-uso/``.
+- ``decisiones-<slug>.rst`` — DEC-NN locales + cross-link a ADRs
+  arquitectonicas en ``docs/source/{backend,frontend}/adr/``.
+- ``docs/source/arquitectura-tecnica/`` — SAD (modelo 4+1).
+- ``api/`` o ``ui/`` commits — Architecture Prototype ejecutable.
+- ``tareas-<slug>.rst`` — Plan de Construction (iteraciones
+  declaradas, UCs por iteracion).
+- ``progreso-<slug>.rst`` — Bitacora + "Milestone LCA alcanzado".
+
+Template historico (estilo `.md`):
+[elaboration-report-template.md](./assets/elaboration-report-template.md).
+Conserva la estructura conceptual; al portar a `.rst` se reparte
+entre los artefactos arriba.
 
 ---
 
@@ -210,23 +261,59 @@ Al final de Elaboration, el plan de Construction debe tener:
 
 ---
 
-## Estado en now.md
+## Carpetas externas relacionadas en docs/source/
 
-**Al INICIAR este step:**
-```yaml
-methodology_step: rup:elaboration
-flow: rup
-rup_phase: elaboration
-rup_iteration: 1
-```
+Elaboration consume y produce contenido en estas carpetas (aparte
+de los artefactos de la iniciativa):
 
-**Al COMPLETAR** (LCA alcanzado):
-```yaml
-methodology_step: rup:elaboration  # completado → listo para rup:construction
-flow: rup
-rup_phase: elaboration
-rup_iteration: [N]
-```
+- ``docs/source/arquitectura-tecnica/`` — SAD del proyecto con
+  vistas Kruchten 4+1 + extras:
+
+  - ``use-case-view/`` — panorama UC.
+  - ``design-view/`` — vista logica / diseno.
+  - ``process-view/`` — secuencias (checkout-sequence,
+    payment-webhook-sequence).
+  - ``implementation-view/`` — build-and-release, package-overview.
+  - ``deploy-view/`` — standard-topology.
+  - Extras del proyecto: ``context-view/``, ``system-view/``,
+    ``operational-view/``, ``domain-model/``, ``perspectivas/``.
+  - Strategy docs: ``cache-strategy.rst``, ``scheduled-tasks.rst``,
+    ``stack.rst``, ``vistas-kruchten.rst``.
+
+- ``docs/source/backend/adr/`` y ``docs/source/frontend/adr/`` —
+  ADRs arquitectonicas por capa. Plantilla en
+  ``docs/source/gestion/plantilla-adr.rst``.
+- ``docs/source/gestion/decisiones/`` — DEC-DOC (decisiones de
+  documentacion); referenciar si una decision RUP afecta la
+  estructura doc.
+- ``docs/source/requisitos/casos-uso/`` — Use Case Model 80%:
+  completar Flujo Principal + Alt + EX + RNF en los UC criticos.
+- ``docs/source/requisitos/requisitos-no-funcionales/`` — RNFs
+  ya catalogados (RNF-AUDIT-001, RNF-PERF, RNF-SEC-003, etc.).
+- ``docs/source/requisitos/metodologia/`` — Guias de UC, plantilla
+  UC, especificacion.
+
+## Estado activo
+
+En kaupamex **no hay `now.md`**. El estado y la coordinacion
+intra-sesion **persisten en ``docs/source/``**, en los `.rst` de la
+iniciativa. La fase activa se lee del campo ``:estado:`` del
+metadata de ``progreso-<slug>.rst`` y de la ultima seccion de su
+bitacora.
+
+**Al INICIAR Elaboration:** abrir entrada de bitacora
+"Elaboration iter 1" (o numero subsiguiente) en
+``progreso-<slug>.rst``. Mantener ``:estado:`` en ``En analisis`` o
+``En ejecucion`` segun corresponda.
+
+**Al COMPLETAR** (LCA alcanzado): agregar seccion
+"Milestone LCA alcanzado <YYYY-MM-DDTHH:MM:SS>" en
+``progreso-<slug>.rst`` listando los 5 criterios verificados con
+cita de evidencia (commit hash del Architecture Prototype, paths de
+ADRs creadas, lista de UCs al 80% en
+``docs/source/requisitos/casos-uso/``). El ``:estado:`` transiciona
+a ``En ejecucion`` si se entra a Construction en la misma
+iniciativa.
 
 ## Siguiente paso
 

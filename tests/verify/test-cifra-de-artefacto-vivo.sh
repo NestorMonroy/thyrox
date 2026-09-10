@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# Pruebas de check_cifra_de_artefacto_vivo.py.
+#
+# Los controles positivos NO están fabricados: se recuperan verbatim del repo.
+#   · «12 aserciones» — hallazgo-H-DOCS-137, línea 110
+#   · «gate 12 de ``thyrox-audit.sh``» — hallazgo-H-DOCS-162, línea 15
+# Es lo que `hallazgo-abierto-genera-sucesor.md` exige tras haber publicado
+# ceros falsos: un incumplidor real del árbol, no uno escrito por quien
+# escribió el patrón.
+#
+# Y hay dos controles NEGATIVOS que prueban la ceguera DECLARADA, no la
+# capacidad: el ordinal suelto y el ID de tarea deben pasar sin marcar. Un
+# gate que los marcara produciría el ruido que su docstring dice evitar.
+set -uo pipefail
+
+# Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
+# y la RUTA a su declaracion. Los dos literales que el ultimo recurso
+# necesita van tras constantes que el entorno tambien fija: cablearlos le
+# quitaria al consumidor la decision de donde van las cosas.
+_thyrox_root="${THYROX_ROOT:-}"
+if [[ -z "$_thyrox_root" && -n "${THYROX_ENV_FILE:-}" && -f "${THYROX_ENV_FILE}" ]]; then
+    _thyrox_root="$(sed -n 's/^[[:space:]]*THYROX_ROOT[[:space:]]*=[[:space:]]*//p' \
+        "$THYROX_ENV_FILE" | tail -1 | tr -d '"'"'"'')"
+fi
+if [[ -z "$_thyrox_root" ]]; then
+    _thyrox_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    while [[ "$_thyrox_root" != "/" && ! -f "$_thyrox_root/${THYROX_LOCATOR:-src/paths/reach.py}" ]]; do
+        _thyrox_root="$(dirname "$_thyrox_root")"
+    done
+fi
+source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+RAIZ="$(thyrox_root)" || exit 2
+GATE="$RAIZ/src/verify/check_cifra_de_artefacto_vivo.py"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+
+OK=0
+FALLO=0
+afirmar() { # afirmar <descripción> <esperado> <obtenido>
+    if [[ "$2" == "$3" ]]; then OK=$((OK + 1)); printf '  ok   %s\n' "$1"
+    else FALLO=$((FALLO + 1)); printf '  FALLA %s — esperado [%s] obtenido [%s]\n' "$1" "$2" "$3"; fi
+}
+
+A="$TMP/arbol"
+mkdir -p "$A/.claude/rules" "$A/.claude/scripts" "$A/source"
+
+# ---------------------------------------------------------------- caso 1
+# Control positivo real — la cifra de suite transcrita a prosa.
+printf '``docs: tests/legacy/test-snapshot-tasks.sh`` — 8 casos, 12 aserciones,\n' \
+    > "$A/source/uno.rst"
+afirmar "ve la cifra de suite (control real H-DOCS-137)" "1" \
+    "$(python3 "$GATE" --quiet --no-baseline "$A")"
+
+# ---------------------------------------------------------------- caso 2
+# El reporte imprime la RAZÓN, no sólo la línea: un gate sin razón es ruido
+# en cuanto alguien lo hereda.
+afirmar "el reporte imprime la razón" "1" \
+    "$(python3 "$GATE" --no-baseline "$A" | grep -c 'la suite gana aserciones')"
+
+# ---------------------------------------------------------------- caso 3
+# Control positivo real — el ordinal citado junto a su script.
+printf 'el gate 12 de ``thyrox-audit.sh`` corre en el merge\n' > "$A/source/dos.rst"
+afirmar "ve el ordinal junto a su script (control real H-DOCS-162)" "2" \
+    "$(python3 "$GATE" --quiet --no-baseline "$A")"
+
+# ---------------------------------------------------------------- caso 4
+# CEGUERA DECLARADA — el ordinal suelto no se marca. Probar la ceguera es lo
+# que distingue «no lo veo» de «no lo puedo ver», que es el sub-patrón D.
+rm "$A/source/uno.rst" "$A/source/dos.rst"
+printf 'lo cubre el gate #10 de este repo\n' > "$A/source/suelto.rst"
+afirmar "NO marca el ordinal suelto (ceguera declarada)" "0" \
+    "$(python3 "$GATE" --quiet --no-baseline "$A")"
+
+# ---------------------------------------------------------------- caso 5
+# El falso positivo que MOTIVA esa ceguera: #529 es una tarea, no una posición.
+printf 'La prosa y el gate #529 quedan como fuentes complementarias\n' \
+    > "$A/source/tarea.rst"
+afirmar "NO confunde un ID de tarea con un ordinal" "0" \
+    "$(python3 "$GATE" --quiet --no-baseline "$A")"
+
+# ---------------------------------------------------------------- caso 6
+# Un conteo sin denominador no es un resultado.
+afirmar "el reporte declara el alcance medido" "1" \
+    "$(python3 "$GATE" --no-baseline "$A" | grep -c 'alcance medido')"
+
+# ---------------------------------------------------------------- caso 7
+# --strict en los dos sentidos.
+# El incumplidor NO esta fabricado: es la linea 110 de
+# `hallazgo-H-DOCS-137-el-registro-de-tareas-dependia-de-dos-posicionales.rst`,
+# verbatim. Un incumplidor escrito por quien escribio el patron hereda su
+# encuadre y confirma el instrumento — `hallazgo-abierto-genera-sucesor.md`.
+printf -- '``docs: .claude/scripts/tests/test-snapshot-tasks.sh`` — 8 casos, 12 aserciones,\n' \
+    > "$A/source/tres.rst"
+python3 "$GATE" --strict --quiet --no-baseline "$A" >/dev/null 2>&1
+afirmar "--strict sale 1 con un incumplidor" "1" "$?"
+rm "$A/source/tres.rst"
+python3 "$GATE" --strict --quiet --no-baseline "$A" >/dev/null 2>&1
+afirmar "--strict sale 0 sin incumplidores" "0" "$?"
+
+# ---------------------------------------------------------------- caso 7-bis
+# EL QUE DISCRIMINA. La misma palabra `aserciones` en la forma que la regla
+# declara VALIDA —evidencia fechada de un episodio— tiene que pasar sin marcar.
+#
+# Es el control de anulacion del positivo estrecho: si se ensancha el patron de
+# vuelta a `\b\d+ aserciones?\b`, esta asercion cae y NINGUNA otra. Sin ella el
+# verde de la suite no distingue «el gate separa los dos usos» de «el gate marca
+# todo lo que diga aserciones», que es el sub-patron D.
+#
+# Tampoco esta fabricado: es la linea 15 de
+# `error-ERR-064-sobreescribi-un-archivo-de-test-existente-sin-leerlo.rst`.
+printf -- '- **Episodios en la sesión:** 1, y borró **5 aserciones** ajenas\n' \
+    > "$A/source/cuatro.rst"
+python3 "$GATE" --strict --quiet --no-baseline "$A" >/dev/null 2>&1
+afirmar "NO marca la evidencia fechada de un episodio (discriminador)" "0" "$?"
+rm "$A/source/cuatro.rst"
+
+# ---------------------------------------------------------------- caso 8
+# El corpus REAL, que es el del CONSUMIDOR: el gate barre `.claude/rules`,
+# `.claude/scripts` y `source`, y el proveedor no lleva las dos ultimas. Medirlo
+# contra `thyrox` daba 0 en las dos mitades y la pareja no discriminaba nada —
+# el sujeto se quedo atras cuando el gate se mudo. Se declara igual que en
+# `test_consumer_copies.py`, con la variable que el propio rehuse nombra.
+CONSUMIDOR="${THYROX_CONSUMER:-/home/user/kaupamex-docs}"
+if [[ -d "$CONSUMIDOR/source" ]]; then
+    CRUDO="$(python3 "$GATE" --quiet --no-baseline "$CONSUMIDOR")"
+    FILTRADO="$(python3 "$GATE" --quiet "$CONSUMIDOR")"
+
+    # La pareja mide el MECANISMO del baseline, no el conteo del dia. Un `== 0`
+    # no discrimina: paso semanas porque el baseline se componia con `__file__`
+    # y el archivo no existia ahi — conjunto vacio leido como «sin deuda».
+    afirmar "el baseline se lee y FILTRA (crudo > filtrado)" "sí" \
+        "$([[ "$FILTRADO" -lt "$CRUDO" ]] && echo sí || echo no)"
+    afirmar "y el corpus real tiene deuda que ver (control positivo)" "sí" \
+        "$([[ "$CRUDO" -gt 0 ]] && echo sí || echo no)"
+else
+    echo "  SIN MEDIR — no hay consumidor con source/ en $CONSUMIDOR;" >&2
+    echo "              declara THYROX_CONSUMER. NO se cuenta como ok." >&2
+    FALLO=$((FALLO + 1))
+fi
+
+printf '\n%d ok · %d falla(s)\n' "$OK" "$FALLO"
+[[ "$FALLO" -eq 0 ]]

@@ -4,14 +4,9 @@ description: "Use when measuring impact and closing a consulting engagement. cp:
 allowed-tools: Read Glob Grep Bash Write Edit
 effort: medium
 disable-model-invocation: true
-updated_at: 2026-04-17 14:30:24
 metadata:
-  triggers:
-    - "impact assessment"
-    - "knowledge transfer"
-    - "consulting ROI"
-    - "engagement closure"
-    - "lessons learned consulting"
+  triggers: ["impact assessment", "knowledge transfer", "consulting ROI", "engagement closure", "lessons learned consulting"]
+updated_at: 2026-09-06 19:10:05
 ---
 
 # /cp-evaluate — Consulting Process: Evaluate

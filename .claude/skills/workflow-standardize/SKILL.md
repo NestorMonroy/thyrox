@@ -8,7 +8,7 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 12'"
+    command: "bash .claude/scripts/session/set-session-phase.sh 'Phase 12'"
 updated_at: 2026-04-20 13:43:15
 ---
 
@@ -24,7 +24,7 @@ Inicia o retoma Phase 12 STANDARDIZE del work package activo.
 2. Leer lecciones aprendidas: `cat .thyrox/context/work/[WP]/track/*-lessons-learned.md`
 3. Verificar changelog: `cat .thyrox/context/work/[WP]/track/*-changelog.md`
 4. Leer `context/now.md` — verificar `phase`
-5. Revisar: `bash .claude/scripts/project-status.sh`
+5. Revisar: `bash .claude/scripts/task/project-status.sh`
 
 ---
 
@@ -90,13 +90,13 @@ Contenido:
 
 | Archivo | Acción |
 |---------|--------|
-| `context/now.md` | Ejecutar: `bash .claude/scripts/close-wp.sh` |
+| `context/now.md` | Ejecutar: `bash .claude/scripts/task/close-wp.sh` |
 | `context/focus.md` | Actualizar: completado + sin WP activo |
-| `context/project-state.md` | Ejecutar: `bash .claude/scripts/update-state.sh` |
+| `context/project-state.md` | Ejecutar: `bash .claude/scripts/task/update-state.sh` |
 
 ```bash
-bash .claude/scripts/validate-session-close.sh
-bash .claude/scripts/project-status.sh
+bash .claude/scripts/gates/validate-session-close.sh
+bash .claude/scripts/task/project-status.sh
 ```
 
 ---

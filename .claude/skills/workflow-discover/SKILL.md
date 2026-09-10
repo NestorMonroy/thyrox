@@ -8,7 +8,7 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 1'"
+    command: "bash .claude/scripts/session/set-session-phase.sh 'Phase 1'"
 updated_at: 2026-04-16 00:00:00
 ---
 
@@ -20,25 +20,14 @@ Inicia o retoma Phase 1 DISCOVER del work package activo.
 
 ## Escalabilidad
 
-Determinar qué fases son obligatorias antes de empezar el análisis. Clasificar por **dos ejes**
-(no solo por horas — eso causó ERR-002 y su reincidencia ERR-006):
+Determinar qué fases son obligatorias antes de empezar el análisis:
 
-| Tamaño | Duración (subjetiva) | **Señal funcional (objetiva)** | Fases activas | Qué omitir |
-|--------|----------------------|-------------------------------|---------------|------------|
-| Micro | <30 min | 1 proceso funcional · 1 archivo · 1 capa | 1, 10, 11 | Phases 2-9 |
-| Pequeño | 30 min – 2h | 2–3 procesos · pocos archivos · 1 capa | 1, 3, 10, 11 | Phases 2, 4-9 |
-| Mediano | 2h – 8h | ~4–10 procesos **o** toca 2+ capas/componentes | 1, 3, 5, 6, 8, 10, 11 | Phases 2, 4, 7, 9, 12 |
-| Grande | >8h | >10 procesos **o** múltiples capas/features | 1–12 completo | Ninguna — usar epic.md para agrupar features |
-
-**Señal funcional** = ¿cuántos **procesos funcionales** (UCs / componentes / capas) crea o
-modifica el WP? Es objetiva y disponible ya en DISCOVER — no depende de "cuánto creo que tardaré".
-
-⚠ **Regla de desempate (anti ERR-002/006):** si la Duración y la señal funcional **discrepan**,
-usar la clasificación **MAYOR**. Nunca saltar fases por subestimar horas cuando el conteo
-funcional dice que el WP es grande. Evaluar el **contexto completo**, no la tarea aislada.
-
-> Bandas heurísticas, **no calibradas** (THYROX no tiene histórico de esfuerzo → es señal de
-> tamaño *relativo*, no estimación de horas; ver `cosmic/references/calibration.md`).
+| Tamaño | Duración | Fases activas | Qué omitir |
+|--------|----------|---------------|------------|
+| Micro | <30 min | 1, 10, 11 | Phases 2-9 |
+| Pequeño | 30 min – 2h | 1, 3, 10, 11 | Phases 2, 4-9 |
+| Mediano | 2h – 8h | 1, 3, 5, 6, 8, 10, 11 | Phases 2, 4, 7, 9, 12 |
+| Grande | >8h | 1–12 completo | Ninguna — usar epic.md para agrupar features |
 
 Ver [escalabilidad](references/scalability.md) para detalles y casos de borde.
 
@@ -91,14 +80,11 @@ Antes de crear el directorio del WP o cualquier archivo:
 
 Excepción: si el WP ya existe (retomar work package), saltar este gate.
 
-2. Crear work package — **usar el script** (no manual, evita PAT-001):
-   ```bash
-   bash .claude/scripts/open-wp.sh <nombre-kebab> ["Phase 1 — DISCOVER"]
-   ```
-   - Genera el timestamp real (I-004), crea `context/work/{ts}-nombre/discover/`, fija
-     `now.md` (`current_work` + `stage`) y el marcador `WP-STATUS` de `focus.md` — todo de una.
-   - Es el inverso de `close-wp.sh`; mantiene el estado consistente al **abrir** (no solo al cerrar).
-   - Metadata de artefactos: `date '+%Y-%m-%d %H:%M:%S'` para `created_at`. NUNCA inventar timestamp.
+2. Crear work package — obtener timestamp real del sistema:
+   - Directorio: `date +%Y-%m-%d-%H-%M-%S` → `context/work/{timestamp}-nombre/`
+   - Metadata: `date '+%Y-%m-%d %H:%M:%S'` → ISO 8601 para `created_at`
+   - NUNCA inventar ni estimar el timestamp
+   - REQUERIDO: actualizar `context/now.md` con `current_work` y `phase: Phase 1`
    - Clasificar reversibilidad: `documentation` | `reversible` | `irreversible`
 
 3. REQUERIDO: Crear `work/.../discover/{nombre-wp}-analysis.md` usando `assets/introduction.md.template`

@@ -1,0 +1,4 @@
+symbols_ported=6/6
+nulling=3 mecanismos anulados, cada uno rompio exactamente 1 test dependiente, restauracion verificada por sha256
+commit=faeb3a32
+workbench=/home/user/thyrox/.claude/workbench/portar-ripgrep-20260909T165044

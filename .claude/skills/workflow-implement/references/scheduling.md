@@ -214,7 +214,8 @@ bash bin/thyrox-loop.sh
 ```
 
 El script lee el output de cada iteración y para cuando detecta un gate o completitud.
-Fuente confirmada: `claude-howto/10-cli/README.md:34`, `09-advanced-features/README.md:782`
+Fuente confirmada: claude-howto repo — seccion 10-cli (linea 34) y
+09-advanced-features (linea 782)
 
 ### Eliminación de prompts de herramientas (dentro del loop)
 
@@ -224,7 +225,59 @@ Con `defaultMode: acceptEdits` + allow list, Phase 10 corre sin interrupciones d
 
 Fuente: `setup-auto-mode-permissions.py:27-66`, `settings-reference.md:318-354`
 
-**Nota sobre `ScheduleWakeup`:** No documentado en ninguna referencia (`claude-howto` ni `claude-code-ultimate-guide`). Probable feature interna no publicada. No usar como dependencia.
+### `ScheduleWakeup` — qué es, y qué NO es (corregido 2026-08-07)
+
+> La redacción anterior decía: *"No documentado en ninguna referencia. Probable
+> feature interna no publicada. No usar como dependencia."* Era cierta cuando se
+> escribió y **ya no lo es**: `ScheduleWakeup` es una herramienta nativa con
+> contrato completo. Se repunta en vez de retirarse (Cláusula 2 del principio
+> rector). Ver H-DOCS-110.
+
+**Qué es:** el auto-marcapasos del **modo dinámico de `/loop`** — cuando el
+usuario invoca `/loop` *sin* intervalo y pide que el agente se marque su propio
+ritmo. Fuera de ese modo no tiene rol.
+
+| Parámetro | Qué hace |
+|---|---|
+| `delaySeconds` | segundos hasta despertar; el runtime lo acota a **[60, 3600]** |
+| `prompt` | el mismo input de `/loop`, verbatim, o el centinela `<<autonomous-loop-dynamic>>` |
+| `reason` | una frase de por qué ese retraso; va a telemetría y se le muestra al ejecutor |
+| `stop: true` | termina el loop; no dispara más despertares |
+
+**Qué NO es: un mecanismo para mantener la sesión viva.** Su propio contrato lo
+prohíbe explícitamente:
+
+> *"This session's requests use a 1-hour Anthropic prompt-cache TTL, so
+> effectively every allowed delay (the runtime clamps to [60, 3600]) wakes up
+> with your conversation context still cached. There is no cache cliff inside
+> that range to pace around, and **scheduling extra wakeups just to keep the
+> cache warm is pure waste — never do that.**"*
+
+La consecuencia práctica: **una pausa de minutos no cuesta una recarga de
+contexto.** El TTL de caché es de una hora, y cualquier retraso que la
+herramienta admite cae dentro. Programar despertares para "no perder la sesión"
+gasta sin comprar nada.
+
+**Cómo elegir `delaySeconds`,** según el contrato — por *qué se está esperando*,
+no por ventanas de caché:
+
+- sondeando estado externo que el harness no notifica (CI, deploy, cola remota):
+  el retraso sale de la velocidad real de ese estado — un CI de 8 minutos merece
+  **una** comprobación a ~480 s, no ocho a 60 s;
+- latido de respaldo, cuando otra señal (un `Monitor`, una notificación de tarea)
+  es el disparador primario: **1200 s o más**;
+- tic ocioso sin señal concreta que vigilar: **1200–1800 s**.
+
+**Y el anti-patrón que nombra:** no programar un despertar corto para sondear
+trabajo en segundo plano que uno mismo lanzó — el harness re-invoca solo cuando
+ese trabajo termina, así que el sondeo es puro desperdicio. Para eso va un
+respaldo largo (1200 s+) por si el trabajo se cuelga.
+
+**Si de verdad hace falta reanudar una sesión** —porque murió, no porque haya
+una pausa— los mecanismos son otros, y viven en el servidor MCP de Claude Code
+Remote: `send_later` (entrega un mensaje en **esta** sesión a futuro) y
+`create_trigger` (Routines, con cron o disparo único). Ésos sí reaniman; el
+`ScheduleWakeup` no está para eso.
 
 ---
 

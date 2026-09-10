@@ -1,0 +1,1020 @@
+#!/usr/bin/env python3
+"""Las raíces del ALCANCE — declaradas una vez, resueltas al consultarlas.
+
+Porte de ``kaupamex-docs: .claude/scripts/reach_roots.py`` a THYROX. La razón
+del mecanismo no cambia y se conserva de la fuente: *cada gate con su copia de
+la ruta es exactamente la segunda fuente de verdad que
+``calibration-verified-numbers.md`` prohíbe, y su modo de fallo es silencioso:
+un gate que apunta a una raíz vacía publica «0 incumplidores» y parece sano*.
+Ese cero ya se pagó una vez (``H-API-335``).
+
+El nombre sale de medir la referencia por el **flujo**, no por su literal: el
+binario 2.1.261 llama a esto ``reach`` / ``reachRoots`` / ``extraReachRoots``.
+Y su elección de palabra es la lección: no nombra la relación entre las
+ubicaciones —hermanas, de un monorepo— sino la del proceso con ellas: hasta
+dónde alcanza.
+
+Qué cambia respecto de la fuente, y por qué
+-------------------------------------------
+
+Un porte que copiara la forma tal cual heredaría tres defectos ya medidos. Cada
+divergencia responde a uno, ninguna es preferencia:
+
+1. **``REPOS_ROOT`` deja de ser una constante de módulo y pasa a ser**
+   ``tree_root(start=...)``. Dos razones que se acumulan. La primera es que una
+   constante se evalúa **al importar**: un consumidor que declare la variable
+   después del ``import`` no la ve, y ningún test puede variarla — el mecanismo
+   era, literalmente, no comprobable. La segunda es que su algoritmo era un
+   **offset fijo** (``parents[2].parent``) que sólo acierta a UNA profundidad;
+   moverlo a ``thyrox/src/paths/`` cambia la profundidad y el acierto se pierde
+   sin que nada lo note.
+
+   El sustituto es **ascenso con detección**, que es el algoritmo que
+   ``docsRoot()`` ya usa en nuestro harness: subir nivel a nivel probando si
+   este directorio contiene alguno de los clones declarados. No depende de
+   cuántos niveles haya entre el guion y la raíz, así que sobrevive un refactor
+   de anidamiento.
+
+2. **``root(repo)`` LEE su constante por raíz.** En la fuente, ``_env_name``
+   sólo se usa para **exportar** con ``--env`` y nunca para **leer**: declarar
+   ``KAUPAMEX_API`` no cambiaba nada, y el control lo confirmó (:ref:`h-docs-1070`).
+   Aquí la constante por raíz es el primer eslabón de la cadena.
+
+3. **La grafía del árbol es UNA tupla ordenada declarada** (``TREE_ROOT_VARS``)
+   en vez de cuatro grafías que cada guion inventaba por su cuenta
+   (:ref:`h-docs-1071`). Aceptar más de un nombre **en orden escrito** no es
+   aquel defecto: es su reparación, porque el orden es auditable y vive en un
+   solo sitio. Cuál va primera es la decisión pendiente del ejecutor sobre el
+   nombre —``KAUPAMEX_ROOT`` (nombrar el destino, convención de este árbol) vs.
+   una forma prefijada por THYROX (nombrar al lector, convención de la
+   referencia)—; hoy la tupla preserva el statu quo y cambiarla es reordenar
+   una línea, no rediseñar.
+
+La precedencia
+--------------
+
+De lo más específico a lo más derivado. El criterio no es preferencia: una ruta
+que alguien escribió a propósito no puede quedar anulada por una derivación,
+porque eso descarta el único dato deliberado del conjunto::
+
+    KAUPAMEX_<RAIZ> en el proceso     ->  la ruta, tal cual
+    KAUPAMEX_<RAIZ> en el .env        ->  la ruta, tal cual
+    <TREE_ROOT_VARS> en el proceso    ->  <arbol>/kaupamex-<raiz>
+    <TREE_ROOT_VARS> en el .env       ->  <arbol>/kaupamex-<raiz>
+    ascenso con deteccion             ->  <arbol>/kaupamex-<raiz>
+
+El archivo ``.env``
+-------------------
+
+Se analiza aquí, sin librería de terceros, y eso **está medido, no elegido**:
+``python-dotenv`` no está instalado ni en el ``python3`` del sistema ni en el
+venv de ``api``, y los gates se invocan con ``python3`` pelado. Una dependencia
+de terceros en el módulo que **todos** importan convertiría a cada consumidor
+en un rehúse por precondición ausente.
+
+Desde shell, que no puede importar el módulo::
+
+    eval "$(python3 src/paths/reach.py --env)"
+
+Métrica: las raíces que ``reach_roots()`` resuelve —declaradas o derivadas—,
+más el tramo extra.
+Ciega a: un clon que exista en disco y no esté declarado —el conjunto es una
+decisión, no un descubrimiento—; a que la ruta declarada sea un repositorio git
+de verdad (``require_all()`` comprueba que el directorio exista, no que sea un
+clon válido); y a la interpolación dentro del ``.env`` (``${OTRA}``), que el
+analizador NO expande.
+"""
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+from typing import Protocol
+
+#: La variable con que el consumidor declara SUS raíces de trabajo.
+#:
+#: Era una tupla literal —``("api", "db", "docs", "server", "ui")``— y ese
+#: literal es el gemelo del que ``derive_clone_prefix`` ya sacó de aquí: un
+#: proveedor que sabe componer el nombre de un clon pero lleva escritos los
+#: cinco nombres de un consumidor concreto sigue sirviendo a uno solo. El
+#: roster de un multi-repo es dato del consumidor, no conocimiento del
+#: mecanismo.
+#:
+#: El orden sigue siendo parte del contrato: un consumidor que itere y escriba
+#: un artefacto no debe producir diffs por reordenamiento. Lo declarado
+#: conserva el orden en que se escribió; lo derivado va ordenado.
+REACH_ROOTS_VAR = "THYROX_REACH_ROOTS"
+
+#: La variable con que el consumidor declara su prefijo de clon.
+CLONE_PREFIX_VAR = "THYROX_CLONE_PREFIX"
+
+
+def derive_clone_prefix(start: Path | None = None) -> str | None:
+    """El prefijo común de los hermanos del proveedor, o ``None``.
+
+    Estaba codificado —``"kaupamex-"``— y ese literal era la razón por la que
+    thyrox no servía a otro multi-repo sin editarlo: el mecanismo que resuelve
+    CUALQUIER clon nombraba a uno. Derivarlo es medir; codificarlo es suponer.
+
+    El criterio es la mayoría: entre los directorios hermanos, el prefijo
+    ``<algo>-`` que comparten **al menos dos**. Dos y no uno porque un solo
+    directorio con guion no es un patrón — sería inventar un multi-repo a
+    partir de un nombre suelto.
+
+    Devuelve ``None`` cuando no hay mayoría, y quien llama decide: aquí no se
+    fabrica un prefijo, porque uno equivocado compone rutas que no existen y
+    el fallo aparece lejos de su causa.
+    """
+    base = (Path(start) if start else thyrox_root()).parent
+    if not base.is_dir():
+        return None
+    cuenta: dict[str, int] = {}
+    for hermano in base.iterdir():
+        if not hermano.is_dir() or "-" not in hermano.name:
+            continue
+        prefijo = hermano.name.split("-", 1)[0] + "-"
+        cuenta[prefijo] = cuenta.get(prefijo, 0) + 1
+    if not cuenta:
+        return None
+    mejor, veces = max(cuenta.items(), key=lambda par: par[1])
+    return mejor if veces >= 2 else None
+
+
+def clone_prefix(start: Path | None = None,
+                 declared: str | None = None) -> str:
+    """El prefijo: lo declarado, luego el entorno, luego lo derivado.
+
+    Sin ninguno de los tres se rehúsa nombrando la variable. Un default aquí
+    volvería a atar el proveedor a un multi-repo concreto, que es exactamente
+    lo que esta función deshace.
+    """
+    if declared:
+        return declared
+    del_entorno = env_value(CLONE_PREFIX_VAR, start)
+    if del_entorno:
+        return del_entorno
+    derivado = derive_clone_prefix(start)
+    if derivado:
+        return derivado
+    raise KeyError(
+        f"no pude derivar el prefijo de clon del árbol, y {CLONE_PREFIX_VAR} no "
+        f"está declarada. Decláralo: sin él no se puede componer el nombre de "
+        f"ningún clon, y fabricar uno compondría rutas inexistentes."
+    )
+
+#: Las grafías del árbol, EN ORDEN. Gana la primera declarada.
+#:
+#: El orden lo decide la referencia, no el gusto. Medido en el volcado del
+#: ejecutable 2.1.261: el cliente nombra sus variables **por su propio
+#: producto**, nunca por lo que apuntan — ``CLAUDE_PLUGIN_ROOT`` (49),
+#: ``CLAUDE_STAGE_FILE_ROOT`` (11), ``CLAUDE_CODE_TEST_FIXTURES_ROOT`` (4).
+#: Las que nombran el destino sin ese prefijo son de **otras** herramientas
+#: (``ANDROID_SDK_ROOT``, ``DOTNET_ROOT``, ``GOENV_ROOT``).
+#:
+#: La forma es ``<PRODUCTO>_<QUE ES>_ROOT``, y ``reach`` es la palabra del
+#: propio binario para este mecanismo. De ahí ``THYROX_REACH_ROOT``.
+#:
+#: ``KAUPAMEX_ROOT`` queda de segunda y no por cortesía: **15 sitios vivos la
+#: declaran**. Retirarla rompería a los consumidores de docs el día que
+#: migren. Es la diferencia con los alias en español que se retiraron del
+#: workbench, que tenían **cero**.
+TREE_ROOT_VARS: tuple[str, ...] = ("THYROX_REACH_ROOT", "KAUPAMEX_ROOT")
+
+#: Las grafías del tramo extensible, EN ORDEN — el análogo de
+#: ``extraReachRoots``. Separadas por ``:`` como ``PATH``, que es la convención
+#: que un consumidor de shell espera. Mismo criterio de orden que
+#: ``TREE_ROOT_VARS``.
+EXTRA_ROOTS_VARS: tuple[str, ...] = ("THYROX_EXTRA_REACH_ROOTS", "KAUPAMEX_EXTRA_ROOTS")
+
+#: Dónde buscar el archivo de entorno, si no se declara uno explícito.
+ENV_FILE_VAR = "THYROX_ENV_FILE"
+ENV_FILE_NAME = ".env"
+
+
+class ReachRootError(RuntimeError):
+    """Una raíz del alcance no cumple su contrato.
+
+    Es un tipo propio y no un ``FileNotFoundError`` para que un consumidor
+    pueda distinguir «el alcance no es válido» de «no encontré este archivo»,
+    que son fallos con conductas distintas: el primero invalida la medición
+    entera, el segundo puede ser un dato ausente legítimo.
+    """
+
+
+def read_env_file(path: Path) -> dict[str, str]:
+    """Analiza un ``.env`` y devuelve sus pares, sin librería de terceros.
+
+    Cubre lo que un ``.env`` de este árbol usa: comentarios, líneas en blanco,
+    el prefijo ``export`` y comillas simples o dobles alrededor del valor. Una
+    línea sin ``=`` se descarta en silencio — es el modo de fallo correcto para
+    un archivo que un humano edita a mano, porque rehusar el archivo entero por
+    una línea suelta dejaría al consumidor sin ninguna de las buenas.
+
+    No expande ``${OTRA}``: la interpolación es una segunda gramática, y
+    añadirla sin un consumidor que la pida sería inventar superficie.
+    """
+    values: dict[str, str] = {}
+    if not path.is_file():
+        return values
+    for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export "):].lstrip()
+        if "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        if not key:
+            continue
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        values[key] = value
+    return values
+
+
+def env_file_path(start: Path | None = None) -> Path | None:
+    """El ``.env`` que gobierna, o ``None``.
+
+    Primero el declarado por ``THYROX_ENV_FILE``; si no, el primero que aparezca
+    ascendiendo desde ``start``. El ascenso es el mismo criterio que el de
+    ``tree_root()`` y por la misma razón: no depende de la profundidad a la que
+    viva el consumidor.
+    """
+    declared = os.environ.get(ENV_FILE_VAR)
+    if declared:
+        candidate = Path(declared)
+        return candidate if candidate.is_file() else None
+    here = (start or Path(__file__).resolve().parent).resolve()
+    for level in (here, *here.parents):
+        candidate = level / ENV_FILE_NAME
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+class ForReadingDeclarations(Protocol):
+    """Puerto CONDUCIDO: de dónde sale el valor de una variable declarada.
+
+    El nombre sigue la forma de la fuente —``ForGettingTaxRates``,
+    ``ForCalculatingTaxes``—: un puerto se nombra por **lo que el otro lado
+    hace por ti**, no por quién lo implementa. Así el nombre sobrevive al
+    adaptador: hoy el proceso y un ``.env``, mañana un almacén de secretos o
+    un servidor de configuración, y la firma no se entera.
+
+    Se declara con ``Protocol`` (PEP 544), que es tipado ESTRUCTURAL: un
+    adaptador no hereda de aquí ni se registra en ningún sitio — le basta con
+    tener ``declared``. Es la forma que la fuente muestra en Ruby, *«no hay
+    que declarar los puertos ni las interfaces, lo que hace difícil ver dónde
+    están»*, con la mitad que a Ruby le falta: aquí el puerto **sí** está
+    declarado, así que es greppeable y el type checker lo verifica.
+    """
+
+    def declared(self, name: str) -> str | None:
+        """El valor declarado para ``name``, o ``None`` si no lo hay."""
+        ...
+
+
+class ProcessEnvironment:
+    """Adaptador conducido: el entorno del proceso."""
+
+    def declared(self, name: str) -> str | None:
+        return os.environ.get(name) or None
+
+
+class EnvFileDeclarations:
+    """Adaptador conducido: el archivo ``.env`` que localice ``start``."""
+
+    def __init__(self, start: Path | None = None) -> None:
+        self.start = start
+
+    def declared(self, name: str) -> str | None:
+        path = env_file_path(self.start)
+        if path is None:
+            return None
+        return read_env_file(path).get(name) or None
+
+
+class FirstOfDeclarations:
+    """Adaptador conducido que compone otros en orden de precedencia.
+
+    Es un adaptador y no un caso especial del puerto: cumple la misma firma,
+    así que quien lo recibe no distingue una fuente de una cadena de fuentes.
+    """
+
+    def __init__(self, *sources: ForReadingDeclarations) -> None:
+        self.sources = sources
+
+    def declared(self, name: str) -> str | None:
+        for source in self.sources:
+            value = source.declared(name)
+            if value:
+                return value
+        return None
+
+
+def production_declarations(start: Path | None = None) -> ForReadingDeclarations:
+    """El CONFIGURADOR: qué adaptadores se usan y en qué orden.
+
+    Único sitio del módulo que decide cuáles son los adaptadores reales. Es el
+    papel que en la fuente cumple ``Main``: crea el repositorio y se lo pasa a
+    quien lo usa. Aquí no hay constructor donde inyectarlo —``env_value`` es
+    una función— así que el cableado por defecto vive en este configurador y
+    el llamador lo sustituye pasando ``source=``.
+    """
+    return FirstOfDeclarations(ProcessEnvironment(), EnvFileDeclarations(start))
+
+
+def env_value(
+    name: str,
+    start: Path | None = None,
+    source: ForReadingDeclarations | None = None,
+) -> str | None:
+    """El valor de una variable: primero el proceso, después el ``.env``.
+
+    El proceso gana porque es la declaración más inmediata: quien exporta una
+    variable para UNA invocación está corrigiendo, a propósito, lo que el
+    archivo dice para todas.
+
+    ``source`` es el puerto conducido. Sin él se arma la cadena de producción,
+    así que ningún llamador existente cambia. Con él, **ÉL es la fuente**: no
+    se cae al proceso por detrás, porque si lo hiciera un test no podría medir
+    la ausencia —el entorno real decidiría por él— y esa es exactamente la
+    costura que este puerto abre.
+    """
+    return (source or production_declarations(start)).declared(name)
+
+
+def derive_reach_roots(start: Path | None = None) -> tuple[str, ...]:
+    """Las raíces derivadas del árbol: los hermanos que llevan el prefijo.
+
+    Se apoya en ``derive_clone_prefix``, que ya resuelve cuál es el prefijo por
+    mayoría. Aquí sólo se recorta: ``kaupamex-api`` -> ``api``.
+
+    Devuelve la tupla vacía cuando no hay prefijo derivable, y quien llama
+    decide. No se fabrica un roster: uno inventado compone rutas que no existen
+    y el fallo aparece lejos de su causa.
+    """
+    prefix = derive_clone_prefix(start)
+    if not prefix:
+        return ()
+    base = (Path(start) if start else thyrox_root()).parent
+    if not base.is_dir():
+        return ()
+    return tuple(sorted(
+        sibling.name[len(prefix):]
+        for sibling in base.iterdir()
+        if sibling.is_dir() and sibling.name.startswith(prefix)
+        and sibling.name != prefix
+    ))
+
+
+def reach_roots(start: Path | None = None,
+                declared: str | None = None) -> tuple[str, ...]:
+    """El roster: lo declarado, luego el entorno, luego lo derivado.
+
+    Misma precedencia y mismo desenlace que ``clone_prefix``, porque es el
+    mismo problema un nivel más arriba. Sin ninguno de los tres se rehúsa
+    nombrando la variable — un default volvería a atar el proveedor a un
+    multi-repo concreto, que es justo lo que esta función deshace.
+    """
+    if declared is None:
+        declared = env_value(REACH_ROOTS_VAR, start)
+    if declared:
+        return tuple(name.strip() for name in declared.split(",") if name.strip())
+    derived = derive_reach_roots(start)
+    if derived:
+        return derived
+    raise ReachRootError(
+        f"no pude derivar las raíces de trabajo del árbol, y {REACH_ROOTS_VAR} "
+        f"no está declarada. Decláralas separadas por coma: sin ellas no se "
+        f"puede saber qué directorios de trabajo existen, y fabricar un roster "
+        f"compondría rutas inexistentes."
+    )
+
+
+def __getattr__(name: str):
+    """``REACH_ROOTS`` se resuelve al leerlo, no al importar el módulo.
+
+    Seis consumidores lo importan como atributo, y ligarlo en el import lo
+    congelaría al árbol del momento de la carga —el mismo defecto de firma que
+    ``check_workbench.py`` tenía—. PEP 562 permite conservar el nombre sin
+    conservar el literal.
+    """
+    if name in ("REACH_ROOTS", "REPOS"):
+        return reach_roots()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def clone_name(repo: str) -> str:
+    """El nombre largo del clon: ``api`` -> ``kaupamex-api``."""
+    declaradas = reach_roots()
+    if repo not in declaradas:
+        raise KeyError(
+            f"raíz desconocida: {repo!r}. Las declaradas son {list(declaradas)}."
+        )
+    return f"{clone_prefix()}{repo}"
+
+
+def clone_names() -> tuple[str, ...]:
+    """Los nombres largos de las raíces declaradas, en su orden."""
+    return tuple(clone_name(r) for r in reach_roots())
+
+
+def env_names(repo: str) -> tuple[str, ...]:
+    """Las constantes por raíz, EN ORDEN: ``api`` -> ``THYROX_REACH_API``.
+
+    Públicas, a diferencia de la fuente, donde ``_env_name`` era privada porque
+    su único consumidor era ``--env``. Aquí las LEE ``root()``, así que forman
+    parte del contrato: quien quiera declarar una raíz necesita saber cómo se
+    llama su variable sin reconstruir la regla.
+
+    Mismo orden y misma razón que ``TREE_ROOT_VARS``: primero la del lector,
+    después la heredada, que tiene consumidores vivos.
+    """
+    suffix = repo.upper().replace("-", "_")
+    return tuple(f"{var.removesuffix('_ROOT')}_{suffix}" if var.endswith("_ROOT")
+                 else f"{var}_{suffix}"
+                 for var in ("THYROX_REACH_ROOT", "KAUPAMEX"))
+
+
+def resolve_home(declared: str | Path, root: str | Path) -> Path:
+    """Una ruta declarada, resuelta contra la raíz que la ancla — tres vías.
+
+    Es la regla que el ejecutable 2.1.263 declara verbatim para sus rutas de
+    configuración, y se adapta con su cita::
+
+        Path to a credential file or directory. Same resolution as
+        sandbox.filesystem.* paths: absolute, ~ expanded, or relative to the
+        settings file root (project root for project settings, ~/.claude for
+        user settings).
+
+    Las tres, en ese orden:
+
+    ==========  ================================  ==========================
+    Declarado   Se resuelve a                     Ejemplo
+    ==========  ================================  ==========================
+    absoluto    tal cual                          ``/srv/reglas``
+    ``~/…``     con el home expandido             ``~/reglas``
+    relativo    ``<root>/<declarado>``            ``reglas`` -> ``<clon>/reglas``
+    ==========  ================================  ==========================
+
+    **Por qué la tercera vía es la que importa.** Sin ella, una clave de
+    familia sólo puede llevar una ruta absoluta, y una ruta absoluta no puede
+    decir dos verdades: declararla le da a los cinco clones **el hogar de
+    uno**. Medido antes de tener esto: ``THYROX_RULES_DIR=<db>/.claude/rules``
+    imprimía la ruta de ``db`` en las cinco filas de ``declarations.py``, y
+    ninguna avisaba.
+
+    Como **segmento** relativo la misma clave dice lo correcto para todos —
+    «en cada clon, este subdirectorio»— y deja de haber colisión que resolver.
+    Es la forma que VVV usa para sus sitios: el nombre del sitio se compone
+    sobre una base declarada una vez (``Vagrantfile:186``,
+    ``defaults['vm_dir'] = "/srv/www/#{site}"``), y el sitio puede sustituir el
+    compuesto con su propia clave (``:194``, ``defaults.merge(args)``).
+
+    Y el criterio general que las dos fuentes comparten: **una ruta relativa
+    nunca es relativa a nada** — el ejecutable la ancla siempre a una raíz
+    NOMBRADA (27 ocurrencias de «relative to the plugin root», 6 de
+    «marketplace root», 2 de «settings file root»). Aquí esa raíz es el
+    parámetro ``root``, y por eso es obligatorio: sin él la resolución caería
+    al ``cwd``, que es una raíz que nadie declaró.
+
+    Métrica: la vía que toma una declaración, sobre su forma sintáctica.
+    Ciega a: si la ruta resultante EXISTE — no se comprueba a propósito, igual
+    que en ``consumer_rules_dir``: un hogar declarado y ausente es un hecho del
+    consumidor que su llamador tiene que poder ver.
+    """
+    path = Path(declared).expanduser()
+    if path.is_absolute():
+        return path
+    return Path(root) / path
+
+
+def tree_root(start: Path | None = None) -> Path:
+    """El padre de los clones, por variable declarada o por ascenso.
+
+    ``start`` es un parámetro y no ``__file__`` a propósito: es la diferencia
+    entre un mecanismo comprobable a cualquier profundidad y uno que sólo
+    acierta desde donde su autor lo escribió.
+    """
+    for var in TREE_ROOT_VARS:
+        declared = env_value(var, start)
+        if declared:
+            return Path(declared)
+    here = (start or Path(__file__).resolve().parent).resolve()
+    for level in (here, *here.parents):
+        if any((level / name).is_dir() for name in clone_names()):
+            return level
+    raise ReachRootError(
+        f"no se pudo derivar el padre de los clones ascendiendo desde {here}. "
+        f"Ninguno de {list(clone_names())} apareció en ningún nivel. Declara "
+        f"{TREE_ROOT_VARS[0]} o invoca desde dentro del árbol."
+    )
+
+
+#: La variable que declara la raíz de THYROX mismo — la que ``install.sh``
+#: escribe en el ``.env`` de cada consumidor. Es hermana de ``TREE_ROOT_VARS``
+#: y NO se mezcla con ellas: aquéllas nombran el padre de los clones
+#: ``kaupamex-*``; ésta nombra el proveedor.
+THYROX_ROOT_VAR = "THYROX_ROOT"
+
+#: El marcador por el que se reconoce la raíz de thyrox al ascender. Es un
+#: ARCHIVO y no el nombre del directorio a propósito: un clon renombrado o
+#: copiado sigue siendo thyrox, y un directorio que se llame ``thyrox`` sin su
+#: mecanismo dentro no lo es. Lo mismo que ``clone_names()`` hace para el
+#: árbol, pero con la evidencia dentro en vez del rótulo fuera.
+THYROX_MARKER = Path("src") / "paths" / "reach.py"
+
+#: El bootstrap canónico, en texto — la ÚNICA forma admitida de alcanzar
+#: ``src/`` desde un archivo que todavía no puede importar este módulo.
+#:
+#: Existe como constante porque el problema es de HUEVO Y GALLINA: el
+#: mecanismo que resuelve la raíz vive dentro de la raíz, así que el primer
+#: paso no se puede delegar. Lo que sí se puede es fijar su FORMA en un solo
+#: sitio y que un gate la compare — que es lo que ``check_python_bootstrap``
+#: hace. Sin eso, cada archivo inventa su propio offset y el proveedor deja de
+#: gobernar la única cosa que todos sus archivos hacen igual.
+#:
+#: La forma es **ascenso con detección**, no offset. ``parents[N]`` acierta a
+#: UNA profundidad y falla en **silencio** al mover el archivo un nivel: no
+#: revienta, resuelve otra ruta que existe. Medido en H-DOCS-1103 y en la
+#: tarea #228. El ascenso no depende de cuántos niveles haya.
+BOOTSTRAP = """_AQUI = Path(__file__).resolve()
+_RAIZ = next((p for p in _AQUI.parents
+              if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _RAIZ is None:
+    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_AQUI}")
+sys.path.insert(0, str(_RAIZ / "src"))"""
+
+
+def thyrox_root(start: Path | None = None) -> Path:
+    """La raíz de THYROX mismo, por variable declarada o por ascenso.
+
+    Cierra el hueco que la aritmética de ruta dejaba abierto: hasta hoy,
+    localizar thyrox desde uno de sus propios archivos se hacía con
+    ``Path(__file__).resolve().parents[N]`` —34 veces en ``tests/`` y 51 en
+    ``src/``—, y esa forma falla **en silencio** al mover el archivo un nivel.
+    Medido en H-DOCS-1103: un guion resolvía ``parents[3]/'tools'`` y apuntaba
+    a ``/home/user/tools/``, un directorio que nunca existió.
+
+    La precedencia es la que ``install.sh`` ya escribe, y en el mismo orden:
+    la variable del proceso, la declaración del ``.env``, y sólo entonces el
+    ascenso. ``start`` es un parámetro y no ``__file__`` por la misma razón que
+    en ``tree_root``: un mecanismo comprobable a cualquier profundidad, no uno
+    que sólo acierta desde donde su autor lo escribió.
+    """
+    declared = env_value(THYROX_ROOT_VAR, start)
+    if declared:
+        return Path(declared)
+    here = (start or Path(__file__).resolve().parent).resolve()
+    for level in (here, *here.parents):
+        if (level / THYROX_MARKER).is_file():
+            return level
+
+    # Tercer paso: preguntarle al mecanismo multi-repo. Desde un consumidor el
+    # ascenso NUNCA llega —thyrox es su HERMANO, no su ancestro; medido desde
+    # /home/user/kaupamex-api, rehúsa— pero ``tree_root`` ya sabe dónde está el
+    # padre de los clones, y ahí thyrox es un hijo más. Exigir la variable
+    # declarada era pedir un parámetro que el mecanismo podía derivar.
+    #
+    # El hermano se valida por el MARCADOR, no por su nombre: un directorio
+    # llamado ``thyrox`` sin el mecanismo dentro no lo es, y uno renombrado
+    # sigue siéndolo. Es el mismo criterio que el paso anterior.
+    try:
+        tree = tree_root(start)
+    except ReachRootError:
+        tree = None
+    if tree is not None:
+        for sibling in sorted(tree.iterdir()) if tree.is_dir() else ():
+            if sibling.is_dir() and (sibling / THYROX_MARKER).is_file():
+                return sibling
+
+    raise ReachRootError(
+        f"no se pudo derivar la raíz de thyrox desde {here}: ni la variable "
+        f"{THYROX_ROOT_VAR}, ni el ascenso por {THYROX_MARKER}, ni un hermano "
+        f"de los clones con ese marcador. Declara {THYROX_ROOT_VAR} o clona "
+        f"thyrox junto a los repos del árbol."
+    )
+
+
+class ConsumerUnknownError(Exception):
+    """No se pudo determinar el clon consumidor, y no se inventa uno.
+
+    Vivia en `agents.agents_paths`, y ahi protegia solo a quien pasaba por ese
+    envoltorio. Los demas llamadores de `consumer_root` recibian la raiz del
+    PROVEEDOR y componian con ella un hogar que `declarations.py` no lista.
+    """
+
+
+CONSUMER_ROOT_VAR = "THYROX_CONSUMER"
+
+#: El marcador por el que se reconoce un consumidor al ascender. Es el
+#: directorio de configuración, no el nombre del clon: un árbol que lo tenga es
+#: un consumidor aunque se llame de otra forma, y uno llamado ``kaupamex-x``
+#: sin él no lo es. Mismo criterio que ``THYROX_MARKER``, con la evidencia
+#: dentro en vez del rótulo fuera.
+CONSUMER_MARKER = ".claude"
+
+
+def consumer_root(declared: str | Path | None = None,
+                  start: Path | None = None) -> Path:
+    """La raíz del árbol MEDIDO, que no es la del proveedor.
+
+    Dos entradas de entorno, la forma que el proyecto ya adoptó: un valor
+    directo (``THYROX_CONSUMER``) y la ruta al archivo que lo declara
+    (``THYROX_ENV_FILE``, que ``env_value`` ya lee). Sin ninguna de las dos se
+    **asciende** desde el punto de partida hasta el marcador, y sólo si el
+    ascenso no encuentra nada se devuelve ese punto tal cual.
+
+    El ascenso no es adorno: un gate lo invoca el pre-commit desde cualquier
+    subdirectorio del consumidor, y el cwd literal apuntaría a media rama.
+
+    Cierra la familia que el corredor destapó por gate: siete gates componían
+    su corpus con ``Path(__file__).resolve().parents[N]``, calibrado para
+    ``kaupamex-docs/.claude/scripts/gates/``. Desde ``thyrox/src/verify/`` eso
+    da ``/home/user``, y el mensaje decía ``no existe la raíz
+    /home/user/source`` — que se lee como violación de la regla y es una ruta
+    rota: el gate no midió nada.
+    """
+    if declared:
+        return Path(declared).resolve()
+
+    value = env_value(CONSUMER_ROOT_VAR, start)
+    if value:
+        return Path(value).resolve()
+
+    here = (Path(start) if start else Path.cwd()).resolve()
+    provider = thyrox_root().resolve()
+    for level in (here, *here.parents):
+        if (level / CONSUMER_MARKER).is_dir():
+            if level == provider:
+                raise ConsumerUnknownError(
+                    f"El ascenso desde {here} aterriza en el PROVEEDOR "
+                    f"({provider}), no en un consumidor. El proveedor tambien "
+                    f"lleva {CONSUMER_MARKER}/, asi que el marcador no lo "
+                    f"distingue. Declara {CONSUMER_ROOT_VAR} con la raiz del "
+                    f"clon, pasa `declared=`, o invoca desde dentro de el. NO "
+                    f"se devuelve la raiz de thyrox: el llamador compondria un "
+                    f"hogar dentro del proveedor que declarations.py no lista."
+                )
+            return level
+    return here
+
+
+#: El subdirectorio de scratch de thyrox, relativo a su raíz. Es el mismo
+#: nombre que el consumidor usa para sus bancos de evidencia, y no es
+#: casualidad: la directiva del ejecutor prohíbe ``/tmp`` para todo trabajo,
+#: así que un temporal de suite también aterriza aquí.
+SCRATCH_DIR = Path(".claude") / "eventos"
+
+
+def scratch_root(start: Path | None = None) -> Path:
+    """La raíz de scratch de thyrox, **creada si no existe**.
+
+    Tres suites pedían este directorio con la ruta escrita a mano y ninguna lo
+    creaba. Funcionó mientras thyrox alojó sus propios bancos de evidencia; al
+    mudarlos al consumidor el directorio desapareció con ellos y las tres
+    rompieron con ``FileNotFoundError`` — un fallo que no distingue «la suite
+    mide mal» de «el directorio no está», que es lo que costó el diagnóstico.
+
+    Crearlo aquí, en un solo sitio, cierra además la segunda fuente de verdad:
+    la ruta estaba repetida en las tres llamadas.
+    """
+    path = thyrox_root(start) / SCRATCH_DIR
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+#: La constante que declara el hogar del store de agentes y tareas. Es el VALOR;
+#: la RUTA al archivo que lo declara la lleva ``THYROX_ENV_FILE`` (DEC-04).
+AGENT_STORE_VAR = "THYROX_AGENT_STORE"
+AGENT_STORE_COMPAT_VAR = "KAUPAMEX_AGENT_STORE"
+
+#: Su default dentro de thyrox, cuando nadie lo declara.
+AGENT_STORE_DIR = Path("agent-results")
+AGENT_STORE_NAME = "agent_store.sqlite3"
+
+
+def agent_store_path(start: Path | None = None) -> Path:
+    """La ruta del store, **con su directorio creado**. Nunca una ruta supuesta.
+
+    Dos desenlaces, y el segundo no es un rehuse:
+
+    - La constante declarada gana. Es el caso del consumidor: el store vive en
+      el clon que despacha, y su ruta la fija su ``.env``.
+    - Sin declaración, el store es de thyrox: ``<thyrox>/agent-results/``,
+      creado bajo demanda e idempotente. Es la misma forma de
+      :func:`scratch_root`, y por la misma razón — un directorio que nadie crea
+      produce un fallo que no distingue «no hay datos» de «no pude medir».
+
+    Lo prohibido no era tener default: era **derivarlo por aritmética de**
+    ``__file__``. La forma anterior —``parents[2]`` más ``agent-results/``—
+    describía el árbol de `docs`, donde estos guiones vivían, y desde
+    ``thyrox/src/task/`` apuntaba a un directorio que nadie creaba nunca. Aquí
+    la raíz sale de :func:`thyrox_root`, que es la cadena declarada, y el
+    directorio se materializa.
+
+    El **esquema** no es cosa de este módulo: lo crea ``agent_store.connect``,
+    que ya usa ``CREATE TABLE IF NOT EXISTS``. Aquí vive la ubicación y nada
+    más — el localizador no conoce tablas.
+    """
+    declared = env_value(AGENT_STORE_VAR, start) or env_value(
+        AGENT_STORE_COMPAT_VAR, start)
+    if declared:
+        path = Path(declared).expanduser()
+    else:
+        path = thyrox_root(start) / AGENT_STORE_DIR / AGENT_STORE_NAME
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def root(repo: str, start: Path | None = None) -> Path:
+    """La ruta absoluta de una raíz declarada, por la cadena de precedencia.
+
+    NO comprueba que exista: un consumidor que sólo necesita construir una ruta
+    no debe pagar una llamada al sistema de archivos por cada raíz. Quien mida
+    sobre todas usa ``require_all()``.
+    """
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+    for var in env_names(repo):
+        declared = env_value(var, start)
+        if declared:
+            return Path(declared)
+    return tree_root(start) / name
+
+
+def roots(start: Path | None = None) -> dict[str, Path]:
+    """Sólo las DECLARADAS, sin el tramo extra.
+
+    Es la vista hermana de ``reach()``. La referencia mantiene las dos
+    coexistiendo (``roots:r, reach:{…}``) porque un consumidor que quiera saber
+    qué vino de la declaración no puede deducirlo del conjunto resuelto.
+    """
+    return {r: root(r, start) for r in reach_roots(start)}
+
+
+def extra_roots() -> dict[str, Path]:
+    """El tramo extensible, leído del entorno — el análogo de ``extraReachRoots``.
+
+    Cada ruta debe ser **absoluta**: es la verificación que la referencia hace
+    con ``.some(f => !f.startsWith("/"))``. Sin ella, el tramo extra sería la
+    vía por la que una ruta relativa entra al conjunto, y el consumidor la
+    resolvería contra su propio directorio de trabajo — que es distinto en cada
+    llamador.
+    """
+    raw = next((os.environ[v] for v in EXTRA_ROOTS_VARS if os.environ.get(v)), "")
+    result: dict[str, Path] = {}
+    for piece in (p for p in raw.split(":") if p):
+        if not piece.startswith("/"):
+            raise ReachRootError(
+                f"la raíz extra {piece!r} no es absoluta. {EXTRA_ROOTS_VARS[0]} las "
+                "exige absolutas: una relativa se resolvería contra el "
+                "directorio de trabajo de cada consumidor, que es distinto."
+            )
+        result[Path(piece).name] = Path(piece)
+    return result
+
+
+def reach(start: Path | None = None) -> dict[str, Path]:
+    """El conjunto RESUELTO: las declaradas más el tramo extra.
+
+    Es lo que un consumidor recorre. La distinción con ``roots()`` no es
+    cosmética: sin ella nadie puede saber qué raíz vino de la declaración y
+    cuál de una anulación del entorno.
+    """
+    return {**roots(start), **extra_roots()}
+
+
+def paths(start: Path | None = None) -> tuple[Path, ...]:
+    """Las rutas del conjunto resuelto, en orden."""
+    return tuple(reach(start).values())
+
+
+def require_all(start: Path | None = None) -> dict[str, Path]:
+    """El conjunto resuelto, o un error que nombra lo que falta.
+
+    Es la mitad que impide el cero silencioso. Un gate multi-raíz que reciba un
+    conjunto incompleto mide menos de lo que cree y publica un conteo que
+    parece sano — el sub-patrón D de ``metrica-decide-la-conclusion.md``
+    aplicado a la precondición en vez de al resultado.
+    """
+    mapping = reach(start)
+    missing = [r for r, p in mapping.items() if not p.is_dir()]
+    if missing:
+        raise ReachRootError(
+            f"{len(missing)} de {len(mapping)} raíces del alcance no existen: "
+            f"{', '.join(missing)}. "
+            "NO se devuelve un conjunto corto: un consumidor que midiera sobre "
+            "él publicaría un conteo que parece sano (H-API-335)."
+        )
+    return mapping
+
+
+def main(argv: list[str]) -> int:
+    mode = argv[1] if len(argv) > 1 else "--list"
+
+    if mode == "--env":
+        # Para `eval` desde shell. Se citan las rutas: un padre con espacios
+        # partiría la asignación en dos palabras sin que nada avise.
+        #
+        # Las DOS entradas de DEC-04 van primero, y no por orden estético: sin
+        # ellas el `eval` no cierra el ciclo. Una shell que sólo recibe las
+        # raíces de clon sigue sin saber dónde está thyrox, así que la
+        # siguiente vuelve a caer al ascenso —el último recurso— o, peor, a
+        # que alguien teclee la ruta, que es aritmética de ruta con otra cara.
+        #
+        # `THYROX_ROOT` es el VALOR; `THYROX_ENV_FILE` es la RUTA A SU
+        # DECLARACIÓN. Si no hay `.env` alcanzable la segunda se emite
+        # comentada: exportar una ruta inexistente sería peor que no
+        # exportarla, porque el consumidor la creería.
+        try:
+            print(f'export {THYROX_ROOT_VAR}="{thyrox_root()}"')
+        except ReachRootError as err:
+            print(f"reach: {err}", file=sys.stderr)
+            return 2
+        declared = env_file_path()
+        if declared is None:
+            print(f"# {ENV_FILE_VAR}: sin declaración alcanzable")
+        else:
+            print(f'export {ENV_FILE_VAR}="{declared}"')
+        for repo, path in reach().items():
+            print(f'export {env_names(repo)[0] if repo in reach_roots() else repo.upper()}="{path}"')
+        return 0
+
+    if mode == "--paths":
+        for path in paths():
+            print(path)
+        return 0
+
+    if mode == "--thyrox-root":
+        # El bootstrap que shell no puede hacer entero. Un hook localiza este
+        # archivo con un ascenso mínimo —no le queda otra: sin hallarlo no
+        # puede preguntar— y a partir de ahí delega, porque la PRECEDENCIA
+        # completa (variable del proceso, declaración del `.env`, hermano
+        # validado por marcador) vive aquí y no se reimplementa en trece
+        # guiones. Es el defecto de H-DOCS-1071 evitado antes de ocurrir.
+        #
+        # Rehúsa en vez de imprimir una ruta plausible: un consumidor que
+        # recibiera una ruta inexistente seguiría en verde apuntando al vacío,
+        # que es exactamente lo que la mudanza a thyrox dejó atrás.
+        try:
+            print(thyrox_root())
+        except ReachRootError as err:
+            print(f"reach: {err}", file=sys.stderr)
+            return 2
+        return 0
+
+    if mode == "--tree-root":
+        # El padre de los clones. Existe por la misma razón que
+        # `--thyrox-root`: un guion de shell no puede reimplementar la
+        # precedencia (variable del proceso, declaración del `.env`, ascenso
+        # buscando un clon conocido), y el que lo intentó la codificó como
+        # `/home/user` — una ruta que depende de quién clonó y dónde.
+        #
+        # Rehúsa igual que su hermano: sin árbol derivable no se imprime una
+        # ruta plausible.
+        try:
+            print(tree_root())
+        except ReachRootError as err:
+            print(f"reach: {err}", file=sys.stderr)
+            return 2
+        return 0
+
+    if mode == "--value":
+        # La consulta de UNA clave, para shell. Es el analogo de
+        # `get_config_value <key> <default>` de VVV, que es el mecanismo por el
+        # que sus provisioners NUNCA leen el YAML: preguntan por clave a una
+        # funcion exportada, y el analisis vive en un solo sitio
+        # (`vvv: provision/provision-helpers.sh:22-27`).
+        #
+        # Aqui la razon es la misma con otro sustrato: la precedencia de las
+        # DOS entradas —la variable del proceso, y despues la declaracion del
+        # `.env` que `THYROX_ENV_FILE` nombra— vive en `env_value` y no se
+        # reimplementa en cada guion. Un `.sh` que hiciera su propio `grep` del
+        # `.env` seria la segunda fuente de verdad de esa precedencia, y su
+        # deriva es silenciosa: seguiria imprimiendo un valor.
+        #
+        # Los tres desenlaces son distintos A PROPOSITO. Sin default, la clave
+        # ausente sale por 1 y NO imprime: un consumidor no puede distinguir
+        # «declarada vacia» de «no declarada» si las dos dan cadena vacia con
+        # exit 0, que es el sub-patron D aplicado a la configuracion.
+        if len(argv) < 3:
+            print("reach: --value exige una clave", file=sys.stderr)
+            return 2
+        key = argv[2]
+        found = env_value(key)
+        if found is not None:
+            print(found)
+            return 0
+        if len(argv) > 3:
+            print(argv[3])
+            return 0
+        print(f"reach: {key} sin declarar y sin default", file=sys.stderr)
+        return 1
+
+    if mode == "--home":
+        # Igual que `--value`, pero RESOLVIENDO la ruta declarada contra la
+        # raiz que la ancla, con las tres vias de `resolve_home`: absoluta tal
+        # cual, `~` expandida, y relativa a la raiz NOMBRADA.
+        #
+        # Existe para que un guion de shell no tenga que reimplementar esa
+        # regla. Si lo hiciera, la tercera via —la unica que permite que una
+        # clave de familia diga lo correcto para varios arboles— viviria en dos
+        # sitios, y su deriva seria silenciosa: el guion seguiria componiendo
+        # una ruta plausible.
+        #
+        # La raiz es la de thyrox, no el `cwd`: una ruta relativa nunca es
+        # relativa a nada. Un consumidor que necesite anclar a OTRA raiz pasa
+        # por `resolve_home` desde Python, donde la raiz es un parametro.
+        if len(argv) < 3:
+            print("reach: --home exige una clave", file=sys.stderr)
+            return 2
+        key = argv[2]
+        declared = env_value(key)
+        if declared is None:
+            if len(argv) <= 3:
+                print(f"reach: {key} sin declarar y sin default", file=sys.stderr)
+                return 1
+            declared = argv[3]
+        try:
+            root = thyrox_root()
+        except ReachRootError as err:
+            print(f"reach: {err}", file=sys.stderr)
+            return 2
+        print(resolve_home(declared, root))
+        return 0
+
+    if mode == "--names":
+        for name in clone_names():
+            print(name)
+        return 0
+
+    if mode == "--declared":
+        # Sólo las declaradas — la vista hermana, para quien necesite saber qué
+        # vino de la declaración y qué del entorno.
+        for path in roots().values():
+            print(path)
+        return 0
+
+    if mode == "--check":
+        try:
+            mapping = require_all()
+        except ReachRootError as err:
+            print(f"reach: {err}", file=sys.stderr)
+            return 2
+        print(f"las {len(mapping)} raíces del alcance existen bajo {tree_root()}")
+        return 0
+
+    if mode == "--list":
+        source = "derivado"
+        for var in TREE_ROOT_VARS:
+            if env_value(var):
+                source = var
+                break
+        env_path = env_file_path()
+        print(f"padre: {tree_root()}  ({source})")
+        print(f"archivo de entorno: {env_path or 'ninguno'}")
+        declared = set(roots())
+        for repo, path in reach().items():
+            mark = "" if path.is_dir() else "   AUSENTE"
+            origin = "" if repo in declared else "   (extra)"
+            print(f"  {repo:8} {path}{origin}{mark}")
+        return 0
+
+    print(
+        f"reach: modo desconocido: {mode}\n"
+        "  --list (default) · --env · --paths · --declared · --names · --check\n"
+        "  --thyrox-root · --tree-root · --value <CLAVE> [DEFAULT]\n"
+        "  --home <CLAVE> [DEFAULT]  (el valor, resuelto contra la raíz)",
+        file=sys.stderr,
+    )
+    return 2
+
+
+def _run(argv: list[str]) -> int:
+    """``main`` con la tubería cerrada tratada como lo que es: conducta normal.
+
+    Un consumidor que escribe ``reach.py --list | head -3`` cierra el pipe antes
+    de que el guion termine. Sin tratarlo, Python vuelca un ``BrokenPipeError``
+    por ``stderr`` **y además** el intérprete intenta vaciar ``stdout`` al salir
+    y vuelca un segundo aviso. Los dos se leen como fallo del mecanismo cuando
+    no lo son.
+
+    El código 141 es el convenio de shell para «terminado por SIGPIPE»
+    (128 + 13), que es lo que un consumidor espera de una tubería cortada.
+    """
+    try:
+        code = main(argv)
+        sys.stdout.flush()
+        return code
+    except BrokenPipeError:
+        # Se redirige el descriptor a /dev/null para que el vaciado final del
+        # intérprete no vuelva a fallar sobre el pipe ya cerrado.
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        return 141
+
+
+if __name__ == "__main__":
+    raise SystemExit(_run(sys.argv))

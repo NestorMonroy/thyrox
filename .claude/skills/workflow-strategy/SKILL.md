@@ -8,7 +8,7 @@ hooks:
   - event: UserPromptSubmit
     once: true
     type: command
-    command: "bash .claude/scripts/set-session-phase.sh 'Phase 5'"
+    command: "bash .claude/scripts/session/set-session-phase.sh 'Phase 5'"
 updated_at: 2026-04-20 13:51:04
 ---
 
@@ -50,7 +50,7 @@ Investigar alternativas antes de decidir previene decisiones sin evidencia.
 
 5. **Decisions** — documentar decisiones fundamentales con justificación
    - Para decisiones arquitectónicas importantes: crear ADR en `context/decisions/`
-   - Usar `../workflow-discover/assets/adr.md.template`
+   - Usar `source/normativa/estandares/plantillas/tpl-adr.rst`
 
 6. **Post-design re-check** — re-verificar después de diseñar
    (las decisiones pueden cambiar al profundizar — revisar consistency con Phase 1)

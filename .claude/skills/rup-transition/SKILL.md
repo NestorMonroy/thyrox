@@ -6,10 +6,40 @@ effort: medium
 disable-model-invocation: true
 metadata:
   triggers: ["RUP transition", "PD milestone", "product release RUP", "UAT user acceptance", "beta deployment"]
-updated_at: 2026-04-17 00:00:00
+updated_at: 2026-05-21 03:19:20
 ---
 
 # /rup-transition — RUP: Transition
+
+> **Adaptacion kaupamex v2 (2026-05-21).** En kaupamex el estado y
+> la coordinacion intra-sesion **persisten en ``docs/source/``**, en
+> los `.rst` de la iniciativa. Las salidas de Transition NO viven en
+> `{wp}/rup-transition.md` sino mapeadas asi sobre los artefactos
+> de ``docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/``:
+>
+> - **Plan de deployment** -> ``tareas-<slug>.rst`` con T-NNN de
+>   deployment + iniciativas hermanas en submodulo ``server`` si el
+>   despliegue requiere infra (apache config, dns, certs).
+> - **UAT plan + results** -> ``progreso-<slug>.rst`` seccion
+>   "UAT iter N" con criterios + resultados; defects encontrados
+>   en seccion "Defectos UAT".
+> - **Defect log post-beta** -> ``progreso-<slug>.rst`` seccion
+>   "Defectos abiertos / cerrados" con severidad y cita commit del
+>   fix.
+> - **Training material** -> ``docs/source/`` segun audiencia
+>   (operadores: ``operaciones/``; usuarios finales: pendiente
+>   estructura).
+> - **Product Acceptance Sign-off** -> ``progreso-<slug>.rst``
+>   seccion "Sign-off PD" con fecha, firmante, condiciones.
+> - **Lecciones aprendidas (RUP completo)** ->
+>   ``docs/source/gestion/pm/<submodulo>/lecciones-aprendidas/``
+>   archivo nuevo + cross-link desde ``progreso-<slug>.rst``.
+> - **Milestone PD alcanzado** -> ``progreso-<slug>.rst`` seccion
+>   "Milestone PD alcanzado <YYYY-MM-DDTHH:MM:SS>" con cita de
+>   evidencia (URL produccion + log de cutover + Sign-off cite).
+> - **Cierre formal** -> ``progreso-<slug>.rst::.meta::estado: COMPLETADA``.
+>
+> Ver `.claude/agents/rup-coordinator.md` para el mapping completo.
 
 > *"Transition is not just deployment — it's the transfer of ownership from the project team to the users and operations team. The product release is a milestone, not the end."*
 
@@ -23,10 +53,16 @@ Ejecuta la fase **Transition** de RUP. Despliega el sistema a usuarios reales, c
 
 ## Pre-condición
 
-Requiere: `{wp}/rup-construction.md` con:
-- IOC alcanzado (funcionalidad beta lista, Severity 1 = 0)
-- Deuda técnica documentada y acotada
-- Performance cumpliendo NFR en staging
+Requiere que la iniciativa activa en
+``docs/source/gestion/pm/<submodulo>/iniciativas/<slug>/`` tenga
+cierre de Construction documentado:
+
+- ``progreso-<slug>.rst`` con seccion "Milestone IOC alcanzado".
+- ``progreso-<slug>.rst`` con seccion "Deuda tecnica" cuantificada
+  y acotada.
+- Performance cumpliendo NFR en staging (citas P95 / latencia /
+  throughput en progreso).
+- Severity 1 = 0 en la seccion "Defectos abiertos" del progreso.
 
 ---
 
@@ -156,7 +192,23 @@ Al alcanzar el PD, documentar lecciones por fase y por disciplina:
 
 ## Artefacto esperado
 
-`{wp}/rup-transition.md` — usar template: [transition-report-template.md](./assets/transition-report-template.md)
+Los entregables canonicos RUP de Transition se materializan en
+artefactos de la iniciativa + acciones reales de deployment (ver
+banner de adaptacion kaupamex v2 al inicio):
+
+- ``tareas-<slug>.rst`` — T-NNN de deployment + handoff a
+  iniciativa server submodulo si el despliegue toca infra.
+- ``progreso-<slug>.rst`` — UAT iters + Defect log + Sign-off PD +
+  "Milestone PD alcanzado" + cierre formal.
+- ``docs/source/gestion/pm/<submodulo>/lecciones-aprendidas/`` —
+  archivo nuevo con las lecciones del proyecto RUP completo.
+- Commits de deployment en submodulos correspondientes (server +
+  api + ui).
+
+Template historico (estilo `.md`):
+[transition-report-template.md](./assets/transition-report-template.md).
+Conserva la estructura conceptual; al portar a `.rst` se reparte
+entre los artefactos arriba.
 
 ---
 
@@ -171,23 +223,64 @@ Al alcanzar el PD, documentar lecciones por fase y por disciplina:
 
 ---
 
-## Estado en now.md
+## Carpetas externas relacionadas en docs/source/
 
-**Al INICIAR este step:**
-```yaml
-methodology_step: rup:transition
-flow: rup
-rup_phase: transition
-rup_iteration: 1
-```
+Transition consume y produce contenido en estas carpetas (aparte
+de los artefactos de la iniciativa y de los commits de deployment):
 
-**Al COMPLETAR** (PD alcanzado):
-```yaml
-methodology_step: rup:transition  # completado → RUP cerrado
-flow: rup
-rup_phase: transition
-rup_iteration: [N]
-```
+- ``docs/source/devops/`` — material operativo de despliegue:
+
+  - ``despliegue-produccion.rst`` — runbook de cutover; la
+    iniciativa hace cross-link y agrega seccion al cierre si el
+    deployment introduce un paso nuevo.
+  - ``setup.rst`` + ``setup-windows-gitbash.rst`` — guias de
+    entorno actualizadas si la Transition cambia el setup.
+
+- ``docs/source/onboarding/guia-primer-dia.rst`` — referencia para
+  training de usuarios o nuevos colaboradores; actualizar si el
+  release cambia el flujo de onboarding.
+
+- ``docs/source/gestion/pm/<submodulo>/lecciones-aprendidas/`` —
+  archivo nuevo por iniciativa cerrada con lecciones del ciclo RUP
+  completo. Cross-link desde ``progreso-<slug>.rst`` al cierre.
+
+- ``docs/source/implementacion/auditoria-sprint-*.rst`` — precedent
+  del formato de retrospectiva multi-sprint; util si la Transition
+  cierra varias iteraciones Construction.
+
+- ``docs/source/databases/estrategia-bases-de-datos.rst`` — si la
+  Transition requiere ajustes de estrategia DB en produccion,
+  actualizar este archivo.
+
+- ``docs/source/normativa/procedimientos/`` — si el cutover define
+  un procedimiento nuevo (rollback, monitoring, alerting), agregar
+  ``proc-<nombre>.rst`` aqui.
+
+- ``docs/source/risks-technical-debt/registro-riesgos-y-deuda-tecnica.rst``
+  — cualquier deuda residual sobreviviente a Transition se promueve
+  a P-NN o C-NN aqui antes del cierre formal.
+
+- Submodulo ``server/`` — la operacion real de deployment ocurre en
+  iniciativas hermanas bajo ``docs/source/gestion/pm/server/iniciativas/``.
+
+## Estado activo
+
+En kaupamex **no hay `now.md`**. El estado y la coordinacion
+intra-sesion **persisten en ``docs/source/``**, en los `.rst` de la
+iniciativa. La fase activa se lee del campo ``:estado:`` del
+metadata de ``progreso-<slug>.rst`` y de la ultima seccion de su
+bitacora.
+
+**Al INICIAR Transition:** abrir entrada de bitacora
+"Transition iter 1" (o numero subsiguiente) en
+``progreso-<slug>.rst``. Mantener ``:estado:`` en ``En ejecucion``.
+
+**Al COMPLETAR** (PD alcanzado): agregar seccion
+"Milestone PD alcanzado <YYYY-MM-DDTHH:MM:SS>" en
+``progreso-<slug>.rst`` con cita de evidencia: URL de produccion,
+log de cutover, Sign-off PD con fecha y firmante. Marcar
+``progreso-<slug>.rst::.meta::estado: COMPLETADA`` y registrar la
+ultima entrada de bitacora de cierre.
 
 ## Siguiente paso
 

@@ -1,0 +1,13 @@
+{
+  "question": "El roster clasifica un .output de Bash terminado como 'indecidible' y publica 'terminado 0' con un 'entrego 1' debajo. ¿Es expectativa rancia del control o defecto del guion?",
+  "instrument": "`bash tests/agents/test-reconciliar-agentes.sh` sobre su fixture de 8 entradas (2 subagentes con transcript, 1 subagente vivo con enlace viejo, 5 tareas de Bash), mas `probes/report.sh` de este run, que monta el mismo fixture y publica la tabla cruda del reporte.",
+  "metric": "Aserciones verdes de la suite (16 ok / 2 fallas antes; 18 ok / 0 despues) y los ocho cubos del reporte con su TOTAL, que tiene que seguir cuadrando en 8.",
+  "blind_to": [
+    "Si el veredicto por entrada es el correcto para un roster REAL: el fixture es sintetico salvo la forma del subagente cortado, copiada de una medicion de 2026-08-13.",
+    "El eje de produccion (tool_use mutante), que ya declaraba su propio 'no aplica' y no se toca aqui.",
+    "Si 'no aplica' es el rotulo que un lector espera bajo la cabecera: se eligio por simetria con production_line, no se midio contra ningun lector."
+  ],
+  "destination": "src/agents/reconcile-agents.sh — el guard [[ ! -L ]] en delivery_verdict y la cabecera 'terminado' como suma de sus tres desenlaces. Controles de anulacion en outputs/ y el episodio en README.md de este run.",
+  "form": "measurement",
+  "created_at": "2026-09-09T18:36:23"
+}
