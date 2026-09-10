@@ -25,9 +25,12 @@ EXIT=1
 
 *Métrica:* archivos y suites que el corredor alcanza, por lengua, con su
 veredicto agregado.
-*Ciega a:* qué falla dentro de cada rojo — el agregado no atribuye. Y ciega a
-lo que el corredor NO alcanza: `tests/` y `_archived/` quedan fuera de su radio
-(tarea #216), así que «91 suites» no es «todas las suites de Python».
+*Ciega a:* qué falla dentro de cada rojo — el agregado no atribuye. Y ciega al
+**alcance del propio corredor en esa fecha**: nueve horas después, el run
+`suite-tras-guard-proveedor-20260909T193540` de este mismo día declara
+`Python: 102 suite(s)`. El radio se ensanchó en 11 suites entre las dos
+mediciones, así que «91» no es «todas las suites de Python» — es todas las que
+el corredor alcanzaba a las 10:21.
 
 ## Por qué este run existe a posteriori
 

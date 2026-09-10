@@ -2,6 +2,6 @@
   "instrument": "bash tests/run.sh",
   "question": "Cual era el estado de partida de las tres lenguas antes de tocar nada",
   "metric": "archivos y suites que el corredor alcanza, por lengua, con su veredicto agregado",
-  "blind_to": "que falla dentro de cada rojo — el agregado no atribuye; y lo que el corredor no alcanza (tests/ y _archived/ quedan fuera de su radio)",
+  "blind_to": "que falla dentro de cada rojo — el agregado no atribuye; y el ALCANCE del corredor en esa fecha: el mismo dia su cuenta de Python paso de 91 a 102 suite(s) en nueve horas, asi que la cifra es relativa a su radio de ese momento, no a «todas las suites»",
   "destination": "README.md de este run"
 }
