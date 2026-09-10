@@ -49,9 +49,22 @@ Medido antes de dar por buena esta pieza, no despues:
   segundo plano —acumular, derramar a disco, exponer el archivo—. Eso ESCRIBE el
   `.output`; no lo espera.
 - **La referencia resuelve el seguimiento con su familia `Task`**, no con un
-  ledger: `TaskOutput` (42 ocurrencias en 2.1.266) lee la salida de una tarea por
-  su identificador y `TaskStop` (31) la detiene, mas una notificacion cuando
-  termina. Es lectura BAJO DEMANDA.
+  ledger: `TaskOutput` lee la salida de una tarea por su identificador,
+  `TaskStop` la detiene, y `getTaskOutputDelta` la lee de forma incremental. Es
+  lectura BAJO DEMANDA.
+- **Y SI tiene adopcion, con otra forma que la de aqui.** `adoptShellOutputRoot`
+  —con su gemela de solo lectura `adoptShellOutputReadRoot`— hace que una sesion
+  tome la raiz de salida de otra; `mergeShellOutputReadRoots` permite leer varias
+  a la vez, y el traspaso ocurre como *prefill* al arrancar. Su unidad es la
+  RAIZ, no el trabajo: adopta a todos de una vez y deriva cada ruta de la
+  convencion `join(raiz, sesion, "tasks")` (`getTaskOutputDir`). El resultado de
+  la herramienta ademas ya trae `backgroundTaskId`, `persistedOutputPath` y
+  `timedOutAfterMs`, asi que alli nadie parsea prosa.
+
+De ahi sale `derived_output()`: con la convencion declarada, el **identificador
+solo** alcanza, que es lo unico que un anuncio garantiza. `parse_notice` queda
+como el camino del consumidor que solo ve el texto renderizado — usa la ruta
+nombrada cuando la hay, y deriva cuando no.
 - **Lo que ninguna de las dos hace es impedir el olvido.** `TaskOutput` exige
   acordarse del identificador y decidir llamarlo; la notificacion llega una vez.
   Si el turno termina antes, el resultado se pierde sin dejar rastro. Persistir
@@ -94,6 +107,44 @@ MARKER_VAR = "THYROX_BACKGROUND_MARKER"
 #: se declara y se sobreescribe.
 DEFAULT_MARKER = r"\[exited with code "
 
+#: La raiz de salida que se adopta. Es el `adoptShellOutputRoot` de la
+#: referencia (2.1.266): cuando esta declarada, la sesion toma la raiz de otra y
+#: deriva de ella la ruta de cada tarea, en vez de leerla de ningun texto.
+OUTPUT_ROOT_VAR = "THYROX_BACKGROUND_OUTPUT_ROOT"
+
+#: El identificador de la sesion cuyo subdirectorio se adopta.
+OUTPUT_SESSION_VAR = "THYROX_BACKGROUND_SESSION"
+
+#: El segmento fijo de la convencion, entre la sesion y el archivo. La
+#: referencia lo compone igual en sus tres sitios: `join(raiz, sesion, "tasks")`
+#: — `getTaskOutputDir`, y sus dos hermanas para una sesion nombrada.
+OUTPUT_LEAF = "tasks"
+
+#: La extension del archivo de salida. Es dialecto del anfitrion, no mecanismo.
+OUTPUT_SUFFIX = ".output"
+
+
+def derived_output(job_id: str, root: str | None = None,
+                   session: str | None = None) -> Path | None:
+    """La ruta de salida de un trabajo, DERIVADA de la convencion de directorio.
+
+    `<raiz>/<sesion>/tasks/<id>.output`. Es la forma de la referencia y es
+    preferible a leerla de un texto por una razon concreta: con la convencion el
+    **identificador basta**, y el identificador es lo unico que un anuncio
+    garantiza. Parsear la ruta ata el mecanismo al significante —a como esta
+    redactado el aviso— cuando el significado ya esta en la estructura.
+
+    Devuelve `None` si falta la raiz o la sesion: sin ellas no hay convencion que
+    aplicar, y componer una ruta a medias produciria un archivo inexistente que
+    se leeria como «trabajo sin marcador» — un diagnostico falso con forma sana.
+    """
+    base = root or os.environ.get(OUTPUT_ROOT_VAR)
+    who = session or os.environ.get(OUTPUT_SESSION_VAR)
+    if not base or not who:
+        return None
+    return Path(base) / who / OUTPUT_LEAF / f"{job_id}{OUTPUT_SUFFIX}"
+
+
 #: Como se lee un anuncio de segundo plano. Dos grupos con nombre y nada mas:
 #: el identificador y la ruta de salida. Todo lo demas del anuncio es prosa que
 #: cambia entre versiones, y anclarse a ella seria atarse al significante.
@@ -110,10 +161,17 @@ def parse_notice(text: str) -> tuple[str, Path] | None:
     diagnostico falso con forma de diagnostico sano.
     """
     id_match = NOTICE_ID.search(text)
-    log_match = NOTICE_LOG.search(text)
-    if not id_match or not log_match:
+    if not id_match:
         return None
-    return id_match.group("id"), Path(log_match.group("log"))
+    job_id = id_match.group("id")
+    log_match = NOTICE_LOG.search(text)
+    if log_match:
+        # La ruta nombrada gana: es el hecho, no una derivacion.
+        return job_id, Path(log_match.group("log"))
+    # Sin ruta en el texto, la convencion la deriva — que es como lo hace la
+    # referencia, y por eso el identificador solo ya alcanza.
+    derived = derived_output(job_id)
+    return (job_id, derived) if derived else None
 
 
 def adopt(ledger: JobLedger, job_id: str, log: Path,

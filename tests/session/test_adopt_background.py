@@ -15,7 +15,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from session.adopt_background import (  # noqa: E402
-    DEFAULT_MARKER, MARKER_VAR, adopt, parse_notice,
+    DEFAULT_MARKER, MARKER_VAR, OUTPUT_ROOT_VAR, OUTPUT_SESSION_VAR,
+    adopt, derived_output, parse_notice,
 )
 from session.job_ledger import JobLedger  # noqa: E402
 
@@ -48,7 +49,8 @@ check("1.1 saca el identificador", "bmdqwv5l7", leido[0])
 check("1.2 y la ruta de salida",
       "/tmp/claude-0/-home-user/168b0fdf/tasks/bmdqwv5l7.output", str(leido[1]))
 check("1.3 sin ID no adivina", None, parse_notice("se fue a segundo plano"))
-check("1.4 sin salida tampoco", None, parse_notice("(ID: abc123) y nada mas"))
+check("1.4 sin salida NI convencion, no adivina", None,
+      parse_notice("(ID: abc123) y nada mas"))
 # La prosa cambia entre versiones; los dos hechos no.
 check("1.5 otra prosa, mismos hechos", ("z9",),
       (parse_notice("backgrounded (ID: z9) -> /var/t/z9.output")[0],))
@@ -125,6 +127,43 @@ with tempfile.TemporaryDirectory() as d:
          str(Path(d) / "v.output")],
         capture_output=True, text=True, env=entorno)
     check("4.6 la variable declarada gobierna", True, "FIN-PROPIO" in proc.stdout)
+
+
+print("== 5. la ruta se DERIVA de la convencion: es como lo hace la referencia ==")
+# `adoptShellOutputRoot` de 2.1.266 adopta la RAIZ y compone
+# `join(raiz, sesion, "tasks")`. Con la convencion el identificador basta, y el
+# identificador es lo unico que un anuncio garantiza. Control: la ruta real de
+# esta sesion cumple la convencion.
+import os as _os2
+check("5.1 compone <raiz>/<sesion>/tasks/<id>.output",
+      "/r/s7/tasks/j1.output", str(derived_output("j1", "/r", "s7")))
+check("5.2 sin raiz declarada, None", None, derived_output("j1", None, "s7"))
+check("5.3 sin sesion declarada, None", None, derived_output("j1", "/r", None))
+
+_previo = {k: _os2.environ.get(k) for k in (OUTPUT_ROOT_VAR, OUTPUT_SESSION_VAR)}
+try:
+    _os2.environ[OUTPUT_ROOT_VAR] = "/raiz-adoptada"
+    _os2.environ[OUTPUT_SESSION_VAR] = "ses-9"
+    check("5.4 con la convencion declarada, el ID SOLO alcanza",
+          "/raiz-adoptada/ses-9/tasks/abc123.output",
+          str(parse_notice("(ID: abc123) y nada mas")[1]))
+    # La ruta NOMBRADA sigue ganando: es el hecho, no una derivacion.
+    check("5.5 y la ruta nombrada gana sobre la derivada",
+          "/tmp/claude-0/-home-user/168b0fdf/tasks/bmdqwv5l7.output",
+          str(parse_notice(NOTICE)[1]))
+finally:
+    for k, v in _previo.items():
+        if v is None:
+            _os2.environ.pop(k, None)
+        else:
+            _os2.environ[k] = v
+
+# CONTROL DE ANULACION: retirada la convencion, 5.4 cae y SOLO 5.4.
+check("5-bis.1 anulada la convencion, 5.4 cae", None,
+      parse_notice("(ID: abc123) y nada mas"))
+check("5-bis.2 y 5.5 SOBREVIVE, porque su ruta va nombrada",
+      "/tmp/claude-0/-home-user/168b0fdf/tasks/bmdqwv5l7.output",
+      str(parse_notice(NOTICE)[1]))
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
