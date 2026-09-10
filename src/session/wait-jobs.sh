@@ -39,6 +39,9 @@
 #   wait-jobs.sh continue <etiqueta|--todos>   SIGCONT a los DETENIDOs
 #   wait-jobs.sh kill <etiqueta|--todos>       TERM, luego KILL, y suelta
 #   wait-jobs.sh adopt --match RE              reanota los huérfanos que ya corren
+#   wait-jobs.sh adopt-external               adopta por ID un trabajo AJENO
+#       adopt-external --from-notice          lee el anuncio por la entrada estándar
+#       adopt-external --id X --log P [--marker RE]
 #   wait-jobs.sh forget <etiqueta>
 #
 # El subcomando va en INGLES desde 2026-09-04 (`identificadores-en-ingles.md`,
@@ -114,8 +117,14 @@ still_ours() {
 }
 
 # Veredicto de un trabajo: OK | BAIL | ESPERANDO
+# El quinto argumento es el marcador ANOTADO en el trabajo. Gana sobre el del
+# llamador porque quien registró sabe con qué literal cierra su corredor, y la
+# barrera no tiene por qué saberlo: un mismo ledger hospeda dialectos distintos
+# desde que existe `adopt-external`. Vacío = el del llamador, que es el caso de
+# todo lo que lanzamos nosotros.
 verdict() {
     local log="$1" pid="$2" pattern="$3" recorded="${4:-}"
+    [[ -n "${5:-}" ]] && pattern="$5"
     if has_marker "$log" "$pattern"; then echo OK; return; fi
     if [[ -n "$pid" ]] && ! still_ours "$pid" "$recorded"; then
         # Carrera real: el proceso puede escribir el marcador y morir entre
@@ -197,9 +206,10 @@ cmd_pending() {
     for f in "$LEDGER"/*.job; do
         local log pid ps0 label v
         log=$(sed -n 's/^log=//p' "$f"); pid=$(sed -n 's/^pid=//p' "$f")
+        mk=$(sed -n 's/^marker=//p' "$f")
         ps0=$(sed -n 's/^proc_start=//p' "$f")
         label=$(basename "$f" .job)
-        v=$(verdict "$log" "$pid" "$pattern" "$ps0")
+        v=$(verdict "$log" "$pid" "$pattern" "$ps0" "$mk")
         [[ "$v" == OK ]] && v=SIN-RECOGER
         echo "$label  [$v]  $log"
         any_pending=1
@@ -240,8 +250,10 @@ cmd_wait() {
             [[ -f "$f" ]] || { settled_as[$label]=OLVIDADO; (( settled++ )); continue; }
             local log pid ps0 v
             log=$(sed -n 's/^log=//p' "$f"); pid=$(sed -n 's/^pid=//p' "$f")
+            mk=$(sed -n 's/^marker=//p' "$f")
+        mk=$(sed -n 's/^marker=//p' "$f")
             ps0=$(sed -n 's/^proc_start=//p' "$f")
-            v=$(verdict "$log" "$pid" "$pattern" "$ps0")
+            v=$(verdict "$log" "$pid" "$pattern" "$ps0" "$mk")
             if [[ "$v" != ESPERANDO ]]; then
                 settled_as[$label]="$v"
                 (( settled++ ))
@@ -325,6 +337,7 @@ read_proc_start() {
 # mezclar dos idiomas en la misma columna la vuelve ilegible.
 class() {
     local log="$1" pid="$2" pattern="$3" recorded="${4:-}" st
+    [[ -n "${5:-}" ]] && pattern="$5"
     if has_marker "$log" "$pattern"; then echo SIN-RECOGER; return; fi
     if [[ -z "$pid" ]]; then echo SIN-PID; return; fi
     st="$(process_state "$pid")"
@@ -354,9 +367,10 @@ cmd_status() {
     for f in "$LEDGER"/*.job; do
         local log pid ps0 label c
         log=$(sed -n 's/^log=//p' "$f"); pid=$(sed -n 's/^pid=//p' "$f")
+        mk=$(sed -n 's/^marker=//p' "$f")
         ps0=$(sed -n 's/^proc_start=//p' "$f")
         label=$(basename "$f" .job)
-        c=$(class "$log" "$pid" "$pattern" "$ps0")
+        c=$(class "$log" "$pid" "$pattern" "$ps0" "$mk")
         count[$c]=$(( ${count[$c]:-0} + 1 ))
         total=$((total + 1))
         printf '  %-12s %-10s pid %-8s %s\n' "$label" "$c" "${pid:-—}" "$log"
@@ -553,6 +567,18 @@ cmd_archive() {
     echo "archivado: $jobs trabajo(s) -> $target"
 }
 
+# `adopt` reanota huérfanos QUE NOSOTROS lanzamos, por su línea de comando.
+# Éste adopta uno AJENO: el que otro corredor mandó a segundo plano al vencer
+# su plazo, del que sólo se conocen dos hechos —un identificador y una ruta de
+# salida—. Sin adoptarlo, su resultado se anuncia una vez y se pierde: el Stop
+# gate mide el ledger, y el trabajo ajeno nunca estuvo en él.
+#
+# Delega en el módulo: el mecanismo vive en un sitio, no en dos.
+cmd_adopt_external() {
+    python3 "$(dirname "${BASH_SOURCE[0]}")/adopt_background.py" \
+        --ledger "$LEDGER" "$@"
+}
+
 case "${1:-}" in
     register|registrar)  shift; cmd_register "$@" ;;
     wait|esperar)        shift; cmd_wait "$@" ;;
@@ -562,6 +588,7 @@ case "${1:-}" in
     kill|matar)          shift; cmd_kill "$@" ;;
     forget|olvidar)      shift; cmd_forget "$@" ;;
     adopt|adoptar)       shift; cmd_adopt "$@" ;;
+    adopt-external)      shift; cmd_adopt_external "$@" ;;
     archive|archivar)    shift; cmd_archive "$@" ;;
     *) sed -n '/^# Uso/,/^# ===/p' "$0" | sed 's/^# \?//'; exit 64 ;;
 esac

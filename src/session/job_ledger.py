@@ -117,6 +117,13 @@ class Job:
     pid: int | None = None
     proc_start: str | None = None
     command: str = ""
+    #: El marcador terminal de ESTE trabajo, cuando no es el del llamador.
+    #: Vacio = usa el que la barrera declare. Existe porque un ledger puede
+    #: hospedar trabajos de dialectos distintos a la vez: los que lanzamos
+    #: nosotros cierran con `EXIT=`, y uno ADOPTADO de otro corredor cierra
+    #: con el literal que ese corredor escriba. Un unico patron para todos
+    #: leeria al adoptado como «vivo» para siempre.
+    marker: str = ""
 
 
 def _serialize(job: Job) -> str:
@@ -126,6 +133,7 @@ def _serialize(job: Job) -> str:
         f"pid={job.pid if job.pid is not None else ''}\n"
         f"proc_start={job.proc_start or ''}\n"
         f"command={job.command}\n"
+        f"marker={job.marker}\n"
     )
 
 
@@ -142,6 +150,7 @@ def _deserialize(text: str) -> Job:
         pid=int(pid_raw) if pid_raw else None,
         proc_start=values.get("proc_start") or None,
         command=values.get("command", ""),
+        marker=values.get("marker", ""),
     )
 
 
@@ -190,7 +199,8 @@ class JobLedger:
         return self._directory / f"{label.replace('/', '_')}.job"
 
     def register(self, label: str, log: Path, *, pid: int | None = None,
-                  proc_start: str | None = None, command: str = "") -> Job:
+                  proc_start: str | None = None, command: str = "",
+                  marker: str = "") -> Job:
         """Anota un trabajo. Sobrescribe si la etiqueta ya existía —igual
         que la fuente, que no distingue alta de actualización.
         """
@@ -209,7 +219,7 @@ class JobLedger:
         # `/tmp` sea enlace, y el ledger dejaría de devolver la ruta que el
         # llamador nombró.
         job = Job(label=label, log=Path(os.path.abspath(log)), pid=pid,
-                   proc_start=proc_start, command=command)
+                   proc_start=proc_start, command=command, marker=marker)
         self._write(job)
         return job
 
@@ -271,10 +281,13 @@ class JobLedger:
         """
         if not self._path_for(job.label).exists():
             return "forgotten"
-        if _has_marker(job.log, marker_pattern):
+        # El del trabajo gana sobre el del llamador: quien registro el trabajo
+        # sabe con que literal cierra, y la barrera no tiene por que saberlo.
+        pattern = job.marker or marker_pattern
+        if _has_marker(job.log, pattern):
             return "collected"
         if not alive(job):
-            if _recheck_after_death(job, marker_pattern):
+            if _recheck_after_death(job, pattern):
                 return "collected"
             return "bailed"
         return "waiting"
