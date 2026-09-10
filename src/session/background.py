@@ -82,6 +82,17 @@ from session.task_pool import run as pool_run  # noqa: E402
 #: Entrada 1 — el valor: el hogar de los logs, declarado directamente.
 LOG_DIR_VAR = "THYROX_BACKGROUND_LOG_DIR"
 
+#: La misma entrada 1, POR CLON. La global no basta porque **un solo proceso
+#: resuelve varios arboles**, y una variable global no puede decir dos verdades
+#: a la vez: exportar el hogar de docs para una tanda le daba a api el hogar de
+#: docs, sin una linea que lo avisara. Es la forma que `THYROX_WORKBENCH_<CLON>`
+#: cerro para el banco (L-028) y `THYROX_JOBS_<CLON>` para los runs (#295).
+#:
+#: Comparte los caracteres iniciales con `LOG_DIR_VAR`, igual que sus dos
+#: hermanas con `THYROX_WORKBENCH_DIR` y `THYROX_JOBS_DIR`: un clon llamado
+#: `dir` colisionaria. No existe, y el precedente ya lo acepta.
+LOG_DIR_CLONE_PREFIX = "THYROX_BACKGROUND_LOG_"
+
 #: Entrada 2 — la ruta del archivo que puede declararlo. Se re-exporta del
 #: localizador del ``.env`` en vez de re-declararse: escribir el nombre otra vez
 #: seria la segunda fuente de verdad que este modulo existe para no tener.
@@ -100,19 +111,56 @@ class LogHomeError(Exception):
     """Se rehusa cuando el consumidor no declaro donde van sus logs."""
 
 
+def log_home_name(repo: str) -> str:
+    """La constante por raiz: ``api`` -> ``THYROX_BACKGROUND_LOG_API``.
+
+    Misma regla de composicion que ``job_runs.jobs_home_name``,
+    ``workbench.paths.workbench_home_name`` y ``reach.env_names``. Se comparte
+    la regla, no el nombre: tres familias con tres reglas distintas obligarian
+    a recordar cual toca en cada sitio.
+    """
+    return f"{LOG_DIR_CLONE_PREFIX}{repo.upper().replace('-', '_')}"
+
+
 def log_dir(start: str | Path | None = None) -> Path:
-    """El hogar declarado de los logs, o rehusar.
+    """El hogar declarado de los logs: el del clon, el global, o rehusar.
 
     NO se emite un default. Un hogar de logs es del arbol del consumidor:
     inventarlo esparce evidencia donde nadie la pidio, y —a diferencia de un
-    error— no se nota hasta que alguien la busca.
+    error— no se nota hasta que alguien la busca. La familia por clon **anade
+    una via, no un default**: sin ninguna de las dos grafias se sigue rehusando.
+
+    UN ancla para toda la resolucion, que es la mitad que a `jobs_dir` le
+    faltaba: el clon se deriva del mismo punto desde el que se busca el `.env`.
+    Con dos anclas, quien llama sin `start` deriva el clon del `cwd` y lee el
+    `.env` del PROVEEDOR, donde la clave del consumidor no esta ni debe estar.
     """
-    declared = env_value(LOG_DIR_VAR, Path(start) if start else None)
+    from paths.reach import (  # noqa: PLC0415 — evita el ciclo de import
+        resolve_home, root as repo_root,
+    )
+    from workbench import paths as wb_paths  # noqa: PLC0415
+
+    anchor = Path(start) if start else Path.cwd()
+
+    # La familia POR CLON gana sobre la global: la declaracion mas especifica
+    # manda, y es lo unico que impide que una variable exportada para un arbol
+    # se aplique a otro.
+    repo = wb_paths.repo_of(anchor)
+    if repo:
+        per_clone = env_value(log_home_name(repo), anchor)
+        if per_clone:
+            # `resolve_home` porque como SEGMENTO relativo la clave dice «en
+            # cada clon, este subdirectorio»; devuelta cruda resolveria contra
+            # el CWD, que es el defecto home-by-cwd de #284/#286.
+            return resolve_home(per_clone, repo_root(repo))
+
+    declared = env_value(LOG_DIR_VAR, anchor)
     if declared:
         return Path(declared)
+    grafias = f"{log_home_name(repo)} o {LOG_DIR_VAR}" if repo else LOG_DIR_VAR
     raise LogHomeError(
         "El hogar de los logs de segundo plano no esta declarado. Es una "
-        f"decision del consumidor, no de THYROX: declara {LOG_DIR_VAR} en el "
+        f"decision del consumidor, no de THYROX: declara {grafias} en el "
         f"proceso, o en el archivo que nombra {LOG_DIR_ENV_FILE_VAR} (por "
         "defecto el .env del arbol). Tambien se puede pasar `log_dir=` "
         "explicito. NO se emite un hogar por defecto.")
@@ -232,7 +280,33 @@ def run(commands: Sequence[str], *, timeout: float,
         jobs=resultado.jobs, width=ancho, log_dir=destino)
 
 
+def _resolve_log_home(given: str = "") -> int:
+    """La puerta de SHELL a `log_dir`. Imprime la ruta, o rehusa con 2.
+
+    Existe para que un guion no vuelva a componer el hogar por su cuenta: eso
+    es lo que hacia `run-task-pool.sh` con `${BG_DIR:-${TMPDIR:-/tmp}/...}`, y
+    su default esparcia los logs por `/tmp` —efimero, y fuera del arbol que el
+    consumidor eligio— sin que nada avisara.
+
+    Un valor ABSOLUTO vuelve igual: nombra un sitio concreto. Uno RELATIVO se
+    compone bajo el hogar del clon, que es la semantica de `resolve_home` en
+    todo el arbol.
+    """
+    if given and Path(given).is_absolute():
+        print(given)
+        return 0
+    try:
+        home = log_dir()
+    except LogHomeError as err:
+        print(err, file=sys.stderr)
+        return 2
+    print(home / given if given else home)
+    return 0
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--log-home":
+        raise SystemExit(_resolve_log_home(sys.argv[2] if len(sys.argv) > 2 else ""))
     print(f"background: anchura por defecto {width_cap()} "
           f"(alcance medido: nproc={os.cpu_count()}; marcador {MARKER_PATTERN!r}; "
           f"intervalo {DEFAULT_INTERVAL}s)")

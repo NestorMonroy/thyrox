@@ -30,7 +30,7 @@
 #
 # Uso
 # ---
-#   bg.sh start <nombre> -- <comando...>   lanza; imprime PID y ruta del log
+#   bg.sh start <nombre> [--dir D] -- <comando...>   lanza; imprime PID y log
 #   bg.sh wait  <nombre> [segundos]        bloquea (default 1800 s)
 #   bg.sh status <nombre>                  running | done:<exit> | unknown
 #   bg.sh log   <nombre>                   imprime la ruta del log
@@ -61,8 +61,22 @@
 # =============================================================================
 set -euo pipefail
 
-# Declarado gana; sin declarar, la familia. El literal vacío es el
-# discriminador: `BG_DIR` puesto significa «forma plana, yo elijo el hogar».
+# La forma PLANA se pide explicitamente con `--dir`; `BG_DIR` es su grafia
+# HEREDADA. El literal vacio sigue siendo el discriminador: con hogar plano se
+# escribe `<hogar>/<nombre>.log`, sin el nace un run de la familia `jobs`.
+#
+# Por que `--dir` y no solo la variable: `BG_DIR` no es el hogar de nada — es
+# un argumento POR INVOCACION (`.../build-logs/<slug>`), y un slug cambia en
+# cada llamada. El HOGAR bajo el que ese slug cuelga si es del consumidor, y
+# ese si tiene constante: `THYROX_BACKGROUND_LOG_<CLON>`, con
+# `THYROX_BACKGROUND_LOG_DIR` como su grafia global. Un valor relativo se
+# compone bajo el, un absoluto nombra un sitio concreto — la misma semantica de
+# `resolve_home` que ya rige en `jobs` y en el banco.
+#
+# Medido antes de tocarlo: `BG_DIR` no lleva el prefijo `THYROX_`, asi que
+# `verify/check_env_contract_keys.py` —que declara `PREFIX = "THYROX_"`— no la
+# ve: ni la cuenta ni exige declararla. Era la unica ruta de hogar del arbol
+# invisible a su propio gate de contrato.
 BG_DIR="${BG_DIR:-}"
 
 _SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -84,12 +98,45 @@ elif op == 'latest':
     print(run if run else '')
 elif op == 'settle':
     job_runs.settle(sys.argv[2], int(sys.argv[3]))
+elif op == 'log-home':
+    # El hogar PLANO, resuelto por la familia THYROX_BACKGROUND_LOG_<CLON>.
+    # Un valor relativo se compone bajo el hogar del clon; uno absoluto nombra
+    # un sitio concreto. Rehusar imprime vacio en stdout: quien llama decide si
+    # eso es un error suyo. Sin comillas invertidas: este programa viaja dentro
+    # de una cadena de shell entre comillas dobles, donde una comilla invertida
+    # es sustitucion de comando y parte el guion.
+    from pathlib import Path
+    from session import background
+    dado = sys.argv[2] if len(sys.argv) > 2 else ''
+    if dado and Path(dado).is_absolute():
+        print(dado)
+    else:
+        try:
+            hogar = background.log_dir()
+        except background.LogHomeError as err:
+            print(err, file=sys.stderr)
+        else:
+            print(hogar / dado if dado else hogar)
 " "$@"
+}
+
+# Resuelve el hogar plano UNA vez, contra la familia. Idempotente: un valor ya
+# absoluto vuelve igual, asi que llamarla desde `_paths` y desde `cmd_start` no
+# lo compone dos veces.
+_resolve_flat_home() {
+    [[ -n "$BG_DIR" ]] || return 0
+    local resuelto; resuelto="$(_family log-home "$BG_DIR")"
+    [[ -n "$resuelto" ]] || {
+        echo "bg.sh: hogar plano relativo '$BG_DIR' sin hogar declarado." >&2
+        exit 2
+    }
+    BG_DIR="$resuelto"
 }
 
 _paths() {
     local name="$1"
     [[ -n "$name" ]] || { echo "bg.sh: falta <nombre>" >&2; exit 2; }
+    _resolve_flat_home
     if [[ -n "$BG_DIR" ]]; then
         LOG="${BG_DIR}/${name}.log"
         PIDF="${BG_DIR}/${name}.pid"
@@ -127,6 +174,7 @@ cmd_start() {
     while [[ "${1:-}" == --* ]]; do
         case "$1" in
             --grace) grace="${2:-}"; shift 2 ;;
+            --dir)   BG_DIR="${2:-}"; shift 2 ;;
             --)      shift; break ;;
             *)       echo "bg.sh start: bandera desconocida '$1'" >&2; exit 2 ;;
         esac

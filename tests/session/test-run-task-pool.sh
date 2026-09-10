@@ -57,6 +57,27 @@ echo "test-run-task-pool:"
 # 1. sin argumentos → exit 4, no un cuelgue silencioso
 BG_DIR="$T/a" bash "$POOL" >/dev/null 2>&1; af "sin archivo sale 4" 4 $?
 
+# 1-bis. sin hogar declarado → 4, y NO un default a /tmp.
+# EL QUE DISCRIMINA de este par: el guion componia
+# `${TMPDIR:-/tmp}/kaupamex-pool`, asi que una tanda sin declaracion escribia
+# sus logs fuera del arbol del consumidor y se perdia con el contenedor. Un
+# caso que solo mirara el codigo de salida pasaria igual con el default —los
+# dos salen != 0 por otras razones—, asi que se comprueba TAMBIEN que el
+# directorio no nacio.
+#
+# Que lo haria fallar: devolver el default a `DIR`. Entonces el guion llega a
+# `mkdir -p` y el segundo `af` cae.
+echo 'true' > "$T/uno-decl.txt"
+# `TMPDIR` apunta a un directorio VACIO y propio: asi el segundo `af` mide lo
+# que esta invocacion crea, no un residuo de una corrida anterior con el
+# default viejo — que es lo que la primera version de este control midio.
+_tmp_limpio="$T/tmpdir-limpio"; mkdir -p "$_tmp_limpio"
+env -u BG_DIR -u THYROX_BACKGROUND_LOG_DIR TMPDIR="$_tmp_limpio" \
+    THYROX_ENV_FILE=/dev/null bash "$POOL" "$T/uno-decl.txt" >/dev/null 2>&1
+af "sin hogar declarado sale 4" 4 $?
+af "y NO nacio un hogar bajo TMPDIR" no \
+   "$([ -n "$(ls -A "$_tmp_limpio")" ] && echo si || echo no)"
+
 # 2. archivo con 0 comandos → 4, y NO un 0 que se leería como «todo bien»
 : > "$T/vacio.txt"
 BG_DIR="$T/b" bash "$POOL" "$T/vacio.txt" >/dev/null 2>&1; af "0 comandos sale 4" 4 $?

@@ -52,6 +52,29 @@ echo "== 4-bis. CONTROL de anulacion del descuento: sin BG_DIR NO cae al plano =
 _es "el hogar de la familia manda" \
    "$([[ -d "$THYROX_JOBS_DIR" ]] && echo si || echo no)" "si"
 
+echo "== 4-ter. --dir RELATIVO se compone bajo el hogar declarado del clon =="
+# EL QUE DISCRIMINA de esta tanda. `BG_DIR` no es el hogar de nada: es un
+# argumento POR INVOCACION —`build-logs/<slug>`— y el slug cambia cada vez. El
+# HOGAR bajo el que ese slug cuelga si es del consumidor, y ahora tiene
+# constante. Sin la resolucion, un `--dir` relativo aterrizaba contra el CWD:
+# el defecto home-by-cwd de #284/#286 con los logs como sujeto.
+#
+# Que lo haria fallar: retirar `_resolve_flat_home` de `_paths`. Entonces el
+# log nace en `<cwd>/un-slug/tres.log` y este caso cae; el 4 sobrevive, porque
+# una ruta absoluta vuelve igual de la resolucion.
+unset BG_DIR
+export THYROX_BACKGROUND_LOG_DIR="$TMP/hogar-plano"
+$BG start tres --dir un-slug -- bash -c 'exit 4' >/dev/null; sleep 1
+# `--dir` es bandera de `start`; para leer, la grafia heredada `BG_DIR` sigue
+# siendo la via, y pasa por la MISMA resolucion — que es lo que este par mide.
+_es "el log cuelga del hogar declarado" \
+   "$(BG_DIR=un-slug $BG log tres)" "$TMP/hogar-plano/un-slug/tres.log"
+_es "y el archivo esta AHI, no bajo el cwd" \
+   "$([[ -f "$TMP/hogar-plano/un-slug/tres.log" ]] && echo si || echo no)" "si"
+_es "y su veredicto se lee desde ahi" "$(BG_DIR=un-slug $BG status tres)" "done:4"
+unset THYROX_BACKGROUND_LOG_DIR
+unset BG_DIR
+
 
 echo "== 5. la democion: start no obliga a saber de antemano si es largo =="
 # La referencia (2.1.266) declara `ggo=120000` como default de

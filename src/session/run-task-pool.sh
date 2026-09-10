@@ -61,7 +61,16 @@ WAIT_JOBS="$AQUI/wait-jobs.sh"
 
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=1800
-DIR="${BG_DIR:-${TMPDIR:-/tmp}/kaupamex-pool}"
+# El hogar de los logs. `BG_DIR` es la grafia HEREDADA; la vigente es la familia
+# `THYROX_BACKGROUND_LOG_<CLON>` (global: `THYROX_BACKGROUND_LOG_DIR`), y la
+# resuelve `background.py --log-home` para que este guion no vuelva a componer
+# una ruta por su cuenta.
+#
+# El default anterior era `${TMPDIR:-/tmp}/kaupamex-pool`, y era el defecto que
+# `background.log_dir` existe para no cometer: `/tmp` es efimero y esta fuera
+# del arbol que el consumidor eligio, asi que los logs de una tanda se perdian
+# con el contenedor sin que nada avisara. Ahora se REHUSA (exit 4).
+DIR="${BG_DIR:-}"
 PREFIX="job"
 ENTRADA=""
 
@@ -82,6 +91,10 @@ done
 # El ancho se valida: un 0 o un negativo colgaría el bucle de asignación sin
 # decir por qué, que es peor que fallar.
 case "$WIDTH" in ''|*[!0-9]*|0) echo "run-task-pool: --width debe ser un entero >= 1 (dado: '$WIDTH')" >&2; exit 4 ;; esac
+
+# Un valor absoluto vuelve igual; uno relativo se compone bajo el hogar del
+# clon; sin ninguno, el resolutor rehusa y su motivo llega por stderr.
+DIR="$(python3 "$AQUI/background.py" --log-home "$DIR")" || exit 4
 
 mkdir -p "$DIR"
 
