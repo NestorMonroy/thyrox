@@ -93,13 +93,28 @@ python3 "$GATE" --strict --quiet --no-baseline "$A" >/dev/null 2>&1
 afirmar "--strict sale 0 sin incumplidores" "0" "$?"
 
 # ---------------------------------------------------------------- caso 8
-# El árbol real: con su baseline no bloquea; sin él, la deuda es visible. Las
-# dos mitades importan — un cero con baseline no prueba que no haya deuda.
-afirmar "el repo real no tiene cifras-propiedad NUEVAS" "0" \
-    "$(python3 "$GATE" --quiet "$RAIZ")"
-CRUDO="$(python3 "$GATE" --quiet --no-baseline "$RAIZ")"
-afirmar "y su deuda heredada NO es cero (el baseline la congela)" "sí" \
-    "$([[ "$CRUDO" -gt 0 ]] && echo sí || echo no)"
+# El corpus REAL, que es el del CONSUMIDOR: el gate barre `.claude/rules`,
+# `.claude/scripts` y `source`, y el proveedor no lleva las dos ultimas. Medirlo
+# contra `thyrox` daba 0 en las dos mitades y la pareja no discriminaba nada —
+# el sujeto se quedo atras cuando el gate se mudo. Se declara igual que en
+# `test_consumer_copies.py`, con la variable que el propio rehuse nombra.
+CONSUMIDOR="${THYROX_CONSUMER:-/home/user/kaupamex-docs}"
+if [[ -d "$CONSUMIDOR/source" ]]; then
+    CRUDO="$(python3 "$GATE" --quiet --no-baseline "$CONSUMIDOR")"
+    FILTRADO="$(python3 "$GATE" --quiet "$CONSUMIDOR")"
+
+    # La pareja mide el MECANISMO del baseline, no el conteo del dia. Un `== 0`
+    # no discrimina: paso semanas porque el baseline se componia con `__file__`
+    # y el archivo no existia ahi — conjunto vacio leido como «sin deuda».
+    afirmar "el baseline se lee y FILTRA (crudo > filtrado)" "sí" \
+        "$([[ "$FILTRADO" -lt "$CRUDO" ]] && echo sí || echo no)"
+    afirmar "y el corpus real tiene deuda que ver (control positivo)" "sí" \
+        "$([[ "$CRUDO" -gt 0 ]] && echo sí || echo no)"
+else
+    echo "  SIN MEDIR — no hay consumidor con source/ en $CONSUMIDOR;" >&2
+    echo "              declara THYROX_CONSUMER. NO se cuenta como ok." >&2
+    FALLO=$((FALLO + 1))
+fi
 
 printf '\n%d ok · %d falla(s)\n' "$OK" "$FALLO"
 [[ "$FALLO" -eq 0 ]]

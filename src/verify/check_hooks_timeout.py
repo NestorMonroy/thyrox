@@ -26,7 +26,27 @@ from paths import reach  # noqa: E402
 
 # El `settings.json` que se mide es el del CONSUMIDOR. Era `parents[3]`,
 # que desde `thyrox/src/verify/` daba `/home/user/.claude/settings.json`.
-RAIZ = reach.consumer_root()
+# NO se liga en el import: `consumer_root` rehusa cuando el ascenso aterriza en
+# el proveedor, y ligarla aqui mataba el `import` en vez de la llamada — dejando
+# sin salida incluso a quien iba a declarar el consumidor.
+
+def consumer_root_or_refuse():
+    """La raiz del consumidor, o rehuse con exit 2 SIN emitir cifra.
+
+    `reach.consumer_root()` rehusa cuando el ascenso aterriza en el proveedor,
+    y hace bien. Lo que estaba mal era dejar escapar esa excepcion como
+    `Traceback`: el llamador recibia un codigo cualquiera —1— que `gate_midio`
+    lee como FAIL, cuando el hecho es «no pude medir». Exit 2 es el codigo que
+    el audit ya interpreta como SIN MEDIR, y un 0 aqui seria un verde falso.
+    """
+    try:
+        return reach.consumer_root()
+    except reach.ConsumerUnknownError as exc:
+        print(f"ERROR - {exc}", file=sys.stderr)
+        print("        NO se emite un conteo: un 0 aqui seria un verde falso.",
+              file=sys.stderr)
+        raise SystemExit(2)
+
 
 
 def collect_hooks(settings: dict):
@@ -53,10 +73,12 @@ def declares_timeout(value) -> bool:
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--settings", default=str(RAIZ / ".claude" / "settings.json"))
+    p.add_argument("--settings", default=None)
     p.add_argument("--strict", action="store_true",
                    help="exit 1 si algun hook no declara timeout")
     args = p.parse_args()
+    if args.settings is None:
+        args.settings = str(consumer_root_or_refuse() / ".claude" / "settings.json")
 
     ruta = Path(args.settings)
     # El guard va ANTES de cualquier conteo: un archivo ausente o ilegible

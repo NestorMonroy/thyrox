@@ -92,10 +92,21 @@ s="$(python3 "$GATE" --settings "$TMP/vacio.json" --strict 2>&1)"; e=$?
 [[ $e -eq 0 ]] && ok "exit 0 con bloque hooks vacio" || bad "exit $e"
 grep -q "0 de 0" <<<"$s" && ok "declara universo 0" || bad "no lo declara: $s"
 
-echo "=== Caso 7: corre sobre el arbol real sin reventar ==="
-python3 "$GATE" >/dev/null 2>&1; e=$?
-[[ $e -eq 0 || $e -eq 1 ]] && ok "exit $e sobre el settings real" \
-                           || bad "exit $e — el gate no soporta el arbol real"
+echo "=== Caso 7: corre sobre el arbol real, que es el del CONSUMIDOR ==="
+# El sujeto del gate es `<consumidor>/.claude/settings.json`, no el del
+# proveedor: `reach.consumer_root()` rehusa cuando el ascenso aterriza en
+# thyrox, y el cwd de esta suite ES thyrox. La invocacion pelada daba exit 2
+# —«no pude medir»— y el caso lo leia como que el gate no soporta el arbol.
+# Se declara igual que en `test_consumer_copies.py`, con la variable que el
+# propio rehuse nombra.
+CONSUMIDOR="${THYROX_CONSUMER:-/home/user/kaupamex-docs}"
+if [[ -f "$CONSUMIDOR/.claude/settings.json" ]]; then
+    THYROX_CONSUMER="$CONSUMIDOR" python3 "$GATE" >/dev/null 2>&1; e=$?
+    [[ $e -eq 0 || $e -eq 1 ]] && ok "exit $e sobre el settings real" \
+                               || bad "exit $e — el gate no soporta el arbol real"
+else
+    bad "SIN MEDIR — no hay consumidor con .claude/settings.json en $CONSUMIDOR; declara THYROX_CONSUMER"
+fi
 
 [[ $fail -eq 0 ]] && echo "TODO OK" || echo "HAY FALLOS"
 exit $fail

@@ -48,7 +48,15 @@ def default_root():
     modulo. Diferir la constante y seguir leyendola desnuda deja un
     `NameError` en tiempo de ejecucion que ningun import delata.
     """
-    return reach.consumer_root()
+    try:
+        return reach.consumer_root()
+    except reach.ConsumerUnknownError as exc:
+        # Rehuse declarado, no Traceback: exit 2 es lo que el audit lee como
+        # SIN MEDIR. Un 0 aqui seria un verde falso.
+        print(f"ERROR - {exc}", file=sys.stderr)
+        print("        NO se emite un conteo: un 0 aqui seria un verde falso.",
+              file=sys.stderr)
+        raise SystemExit(2)
 
 def __getattr__(name: str):
     """`RAIZ_DEFECTO` se resuelve se resuelven al LEERLOS, no al importar el modulo.
@@ -66,7 +74,18 @@ def __getattr__(name: str):
         return default_root()
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-BASELINE = pathlib.Path(__file__).with_name('cifra_de_artefacto_vivo_baseline.txt')
+#: El baseline es PARAMETRO DEL CORPUS, no del mecanismo: vive en el arbol que
+#: se mide, no junto a este archivo. Componerlo con `__file__` lo dejaba en el
+#: proveedor tras la mudanza, mientras el archivo real seguia en
+#: `kaupamex-docs/.claude/baselines/` — asi que el gate leia un conjunto vacio
+#: y publicaba `0` sobre un corpus con 65 hallazgos. Es la forma del gate
+#: hermano `check-hallazgo-sucesor.sh`, que ya lo resuelve relativo a la raiz.
+BASELINE_REL = pathlib.Path('.claude') / 'baselines' / 'cifra_de_artefacto_vivo_baseline.txt'
+
+
+def baseline_path(raiz: pathlib.Path) -> pathlib.Path:
+    """El baseline del corpus `raiz`."""
+    return raiz / BASELINE_REL
 
 # (nombre, patrón, razón) — la razón se imprime junto al hallazgo.
 PATRONES: list[tuple[str, re.Pattern[str], str]] = [
@@ -97,12 +116,13 @@ SUBRAICES = ('.claude/rules', '.claude/scripts', 'source')
 EXCLUIR = ('node_modules', '.venv', 'venv', '__pycache__', 'build', 'dist')
 
 
-def cargar_baseline() -> set[str]:
-    if not BASELINE.is_file():
+def cargar_baseline(raiz: pathlib.Path) -> set[str]:
+    ruta = baseline_path(raiz)
+    if not ruta.is_file():
         return set()
     return {
         línea.strip()
-        for línea in BASELINE.read_text(encoding='utf-8').splitlines()
+        for línea in ruta.read_text(encoding='utf-8').splitlines()
         if línea.strip() and not línea.startswith('#')
     }
 
@@ -211,7 +231,11 @@ def scan(raiz: pathlib.Path) -> tuple[list[tuple[str, int, str, str]], int]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument('raiz', nargs='?', default=str(default_root()))
+    # `default=None`, resuelto TRAS `parse_args`: argparse evalua el default al
+    # CONSTRUIR el parser, asi que un `default=str(default_root())` invoca la
+    # resolucion aunque el llamador pase la raiz. Ese orden hacia que el gate
+    # rehusara sobre un arbol declarado explicitamente.
+    ap.add_argument('raiz', nargs='?', default=None)
     ap.add_argument('--strict', action='store_true', help='exit 1 si hay nuevos')
     ap.add_argument('--quiet', action='store_true', help='sólo el conteo')
     ap.add_argument('--no-baseline', action='store_true',
@@ -219,12 +243,14 @@ def main() -> int:
     ap.add_argument('--write-baseline', action='store_true')
     args = ap.parse_args()
 
-    raiz = pathlib.Path(args.raiz).resolve()
+    raiz = pathlib.Path(args.raiz or default_root()).resolve()
     hallazgos, total = scan(raiz)
 
     if args.write_baseline:
         claves = sorted({h[0] for h in hallazgos})
-        BASELINE.write_text(
+        destino = baseline_path(raiz)
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
             '# Deuda heredada de cifras-propiedad, congelada — NO es una lista\n'
             '# de formas autorizadas. La clave es <ruta>::<forma> a propósito:\n'
             '# la misma cifra puede ser la CITA del anti-patrón en la regla que\n'
@@ -233,7 +259,7 @@ def main() -> int:
         print(f'baseline escrito: {len(claves)} clave(s)')
         return 0
 
-    base = set() if args.no_baseline else cargar_baseline()
+    base = set() if args.no_baseline else cargar_baseline(raiz)
     nuevos = [h for h in hallazgos if h[0] not in base]
 
     if args.quiet:
