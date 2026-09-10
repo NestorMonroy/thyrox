@@ -1,0 +1,67 @@
+GNU parallel, medido CON el binario instalado — 2026-09-10T22:48:38
+Version: GNU parallel 20231122 (noble/universe; arrastra sysstat)
+
+Las dos negativas anteriores se emitieron SIN el binario: toda afirmacion
+sobre parallel salia de su documentacion. El ejecutor lo corrigio dos veces.
+Esto lo mide.
+
+EL FAN-OUT REAL (1366 .rst de hallazgos, nproc=4, misma entrada)
+Se compara el RELOJ y la SALIDA. Sin la salida, un reloj rapido no se
+distingue de uno que mide menos trabajo.
+
+    modo                              reloj    lineas  correcto
+    serie                            5.096 s     943     si
+    xargs -P4 -n1                    1.731 s     943     si
+    parallel -j4 (un arg)            4.376 s     943     si
+    xargs -P4 (lote)                 1.819 s     943     si
+    parallel -j4 -X                  1.280 s     943     si
+    parallel -j4 -X -k               1.252 s     943     si   <- el mejor
+    parallel -X con sonda de un arg  0.138 s       7     NO
+
+Gana `parallel -X -k`: 4.07x contra la serie y 1.45x contra el mejor xargs.
+Y `-k` sale GRATIS (1.252 contra 1.280): la salida queda ORDENADA sin pagar
+un `| sort`.
+
+LOS DOS DEFECTOS DE LA MEDICION ANTERIOR
+1. Compare el modo MAS DEBIL de parallel. Un argumento por invocacion da
+   4.376 s, mas lento que xargs. Herede el encuadre del primer banco —un
+   proceso por elemento— y no lo cuestione: sub-patron B, el recorte
+   heredado que nadie vuelve a mirar.
+2. Dije que el orden lo arregla un `| sort` «gratis». Con `-k` parallel no
+   tiene ese problema. Su diferenciador no era debil: yo lo habia apagado.
+
+Y una tercera, atrapada a tiempo: `-X` con una sonda que lee solo el primer
+argumento dio 0.138 s y SIETE lineas de 943 — un reloj 37x mejor midiendo el
+0.7% del trabajo. Sub-patron D. Lo delato comparar la salida, no el reloj.
+
+CAPACIDADES PROBADAS POR CONDUCTA (no por documentacion)
+    -X                  empaqueta N argumentos por invocacion. De aqui sale
+                        casi toda la ganancia: el coste no era el paralelismo,
+                        era un proceso por elemento.
+    -k                  mantiene el orden de ENTRADA. Coste medido: nulo.
+    --colsep ':'        parte la linea en columnas -> {1} {2}. Reemplaza cut
+                        y awk -F en la plomeria.
+    --dry-run           imprime lo que correria. run-task-pool.sh no lo tiene.
+    --halt now,fail=1   aborta al primer fallo. exit 1 medido.
+    --pipepart -a F --block  parte UN archivo grande en bloques.
+
+DONDE PIERDE, MEDIDO
+`--pipepart --block 8M` sobre 57 MB con un grep barato: 0.237 s contra
+0.005 s en serie. El arranque es del orden de dos decimas y domina cuando el
+trabajo por bloque cuesta menos que eso. No es un contraejemplo: es la
+frontera, y se mide por caso.
+
+DEFECTO DE LA ADQUISICION, MEDIDO Y CERRADO
+parallel BLOQUEA en su primera invocacion esperando que se teclee el
+reconocimiento de la cita. Ocurrio: un `$(parallel --version)` dentro de un
+heredoc colgo hasta el timeout y dejo el banco vacio. Un guion no interactivo
+no puede conducir ese prompt, asi que la adquisicion ESCRIBE el marcador
+—que es lo que `--citation` hace al aceptarse— en `${PARALLEL_HOME:-$HOME/.parallel}/will-cite`.
+Es el caso 7 de la suite, y su control usa un hogar aislado para poder fallar.
+
+Metrica: reloj de pared Y conteo de lineas de salida sobre el mismo cuerpo por
+  archivo, 1366 archivos, nproc=4, seis modos con identica entrada; mas seis
+  capacidades ejercitadas una a una contra su salida real.
+Ciega a: cargas dominadas por E/S; al reparto de --block sobre trabajo por
+  bloque caro, que no se midio; y a la poblacion de un solo gate — otro con
+  trabajo por elemento mas caro podria no perder en el modo de un argumento.

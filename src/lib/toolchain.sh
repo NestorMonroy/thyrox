@@ -130,3 +130,71 @@ function thyrox_toolchain_declare() {
   printf 'consumer=%s\n' "$(thyrox_toolchain_consumer_argv "$name")" || return $?
 }
 export -f thyrox_toolchain_declare
+# @description El nombre del binario de fan-out por elemento. Declarado, no
+# escrito en la funcion, por la misma razon que la ruta del interprete: un
+# control necesita poder apuntar la busqueda a un nombre ausente sin vaciar el
+# PATH, que romperia todo lo demas de la funcion.
+THYROX_TOOLCHAIN_PARALLEL_BIN="${THYROX_TOOLCHAIN_PARALLEL_BIN:-parallel}"
+
+# @description El comando que lo instala. Declarado por la misma razon: un
+# control necesita inyectar un instalador que MIENTA —que salga cero sin
+# instalar nada— para comprobar que el exito se prueba re-comprobando el
+# binario y no leyendo el codigo de salida del instalador.
+THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD="${THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD:-sudo apt-get install -y parallel}"
+
+# @description Asegura GNU parallel, idempotente y con la instalacion como
+# opt-in. Adopta el check-then-act de `vvv: provision/provision-helpers.sh:776`
+# (`vvv_is_apt_pkg_installed`): se pregunta por el estado antes de actuar, y
+# volver a llamar con el binario presente es un no-op.
+#
+# Tres cosas que no son cosmeticas:
+#
+#   1. Instalar es opt-in. Un efecto que el llamador no pidio es una sorpresa
+#      en un `pre-commit` y una llamada de red que cuelga en CI. Ademas
+#      `apt-get -s install parallel` resuelve DOS paquetes: arrastra `sysstat`.
+#   2. El rechazo NO emite conteo. Un cero ahi no distinguiria «no hay» de «no
+#      pude medir» — el sub-patron D de `metrica-decide-la-conclusion.md`, y
+#      la misma forma que `require_lexicon` ya ejerce.
+#   3. El exito se prueba RE-COMPROBANDO el binario. El codigo de salida de
+#      `apt` es el significante; que el binario se pueda invocar es el
+#      significado. Concluir del primero sobre el segundo es el sub-patron C.
+# @noargs
+# @exitcode 0 El binario esta disponible.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_parallel() {
+  local bin="$THYROX_TOOLCHAIN_PARALLEL_BIN"
+
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    if [[ "${THYROX_INSTALL_PARALLEL:-}" != "1" ]]; then
+      echo "thyrox_toolchain: falta '$bin' y la instalacion es opt-in." >&2
+      echo "                  Reintenta con THYROX_INSTALL_PARALLEL=1." >&2
+      echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+      echo "                  «no hay» de «no pude medir»." >&2
+      return 2
+    fi
+    # El codigo de salida del instalador NO decide: puede instalar en otro
+    # interprete, o el proxy puede devolver algo que no es el paquete.
+    $THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD >&2 2>&1 || true
+    if ! command -v "$bin" >/dev/null 2>&1; then
+      echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
+      echo "                  Se re-comprueba el binario, no se lee su exit." >&2
+      return 2
+    fi
+  fi
+
+  # GNU parallel BLOQUEA en su primera invocacion esperando que alguien teclee
+  # el reconocimiento de la cita en un prompt. Medido: un `$(parallel
+  # --version)` dentro de un heredoc colgo hasta el timeout. Un guion no
+  # interactivo no puede conducir ese prompt, asi que se ESCRIBE el marcador
+  # —que es lo que el propio `--citation` hace al aceptarse— en vez de
+  # intentar responderle. El hogar es `PARALLEL_HOME` si esta declarado,
+  # porque un control necesita un hogar aislado para poder fallar.
+  if [[ "${bin##*/}" == "parallel" ]]; then
+    local citation_home="${PARALLEL_HOME:-$HOME/.parallel}"
+    if [[ ! -f "$citation_home/will-cite" ]]; then
+      mkdir -p "$citation_home" && : > "$citation_home/will-cite"
+    fi
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_parallel
