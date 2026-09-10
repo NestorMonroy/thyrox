@@ -45,51 +45,54 @@ esac
 DEST="$ROOT/.claude/settings.local.json"
 THYROX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# El hogar de los hooks es el `.claude/hooks/` del CONSUMIDOR, no el de thyrox,
-# y no es un descuido: el harness dispara la ruta que el settings nombra, y esa
-# ruta tiene que ser la del stub que INYECTA el parametro del consumidor antes
-# de delegar en el duenno canonico. Es la forma que `hook_error_log.py` ya tiene
-# y documenta. Emitir aqui la ruta de thyrox haria que el escritor resolviera su
-# directorio de salida contra el arbol equivocado (H-DOCS-1080).
+# El cableado NO se compone aqui: lo emite `declared_wiring()` del proveedor.
+# Este guion aporta lo que es PARAMETRO del consumidor (DEC-04) —contra que
+# clon se resuelven las rutas y que modelo asesora— y nada mas.
 #
-# El consumidor es un parametro: `--consumidor <ruta>` gana, si no la raiz que
-# `reach` declare para el clon de docs.
+# Antes componia sus propios seis comandos, apuntando a los stubs de
+# `<consumidor>/.claude/hooks/`. Esa topologia fue correcta mientras el
+# mecanismo vivio ahi; el 2026-09-07 los tres se mudaron a `thyrox:
+# src/agents/` y `declared_wiring()` reapunto al productor, pero este guion
+# no. Quedaron DOS cableados contradictorios y ningun control los separaba:
+# los seis archivos existen, asi que la alcanzabilidad da 0 para los dos.
+#
+# El consumidor es un parametro: `--consumidor <ruta>` gana, si no la raiz
+# que `reach` declare para el clon de docs.
 if [ -z "${CONSUMIDOR:-}" ]; then
     CONSUMIDOR="$(python3 -c 'import sys; sys.path.insert(0, "'"$THYROX_DIR"'/paths"); import reach; print(reach.root("docs"))')"
 fi
-HOOKS_DIR="$CONSUMIDOR/.claude/hooks"
 
 mkdir -p "$(dirname "$DEST")"
 [ -f "$DEST" ] || printf '{}\n' > "$DEST"
 
-DEST="$DEST" HOOKS_DIR="$HOOKS_DIR" THYROX_DIR="$THYROX_DIR" ADVISOR="$ADVISOR" python3 - <<'PY'
-import json, os
+DEST="$DEST" CONSUMIDOR="$CONSUMIDOR" THYROX_DIR="$THYROX_DIR" ADVISOR="$ADVISOR" python3 - <<'PY'
+import json, os, sys
+
+sys.path.insert(0, os.path.join(os.environ["THYROX_DIR"], "session"))
+from user_wiring import declared_wiring  # noqa: E402
 
 dest = os.environ["DEST"]
-h = os.environ["HOOKS_DIR"]
 advisor = os.environ.get("ADVISOR", "")
 with open(dest, encoding="utf-8") as fh:
     datos = json.load(fh)
 
-datos["hooks"] = {
-    "SubagentStart": [{"hooks": [
-        {"type": "command", "command": f"python3 {h}/medir_delta_subagente.py --start"},
-        {"type": "command", "command": f"python3 {h}/register_agent_session.py --start"},
-    ]}],
-    # El diálogo de cambio de modelo con la cifra del catálogo y la vía que
-    # conserva la caché (bin/preModelSwitch.ts del paquete @thyrox/agent).
-    "PreModelSwitch": [{"hooks": [
-        {"type": "command", "command": f"bun run {os.environ['THYROX_DIR']}/packages/agent/bin/preModelSwitch.ts", "timeout": 10},
-    ]}],
-    "SubagentStop": [{"hooks": [
-        {"type": "command", "command": f"node {h}/save-agent-result.mjs"},
-        {"type": "command", "command": f"python3 {h}/medir_delta_subagente.py --stop"},
-        {"type": "command", "command": f"python3 {h}/register_agent_session.py --stop"},
-    ]}],
-}
+# La FUENTE del cableado es el productor. Aqui solo se le pasan los dos
+# parametros del consumidor y se fusiona sobre lo que ya haya: `permissions` lo
+# escribe el cliente y `env`/`effortLevel` quien opera — sobreescribir el
+# archivo entero destruye su trabajo en silencio.
+cableado = declared_wiring(
+    root=os.path.dirname(os.environ["THYROX_DIR"]),
+    consumer=os.environ["CONSUMIDOR"],
+    advisor=advisor or None,
+)
+datos["hooks"] = cableado["hooks"]
 
+# `advisorModel` compone la CLAVE de la cache de prompt (`createCacheSafeParams`,
+# 2.1.266). Escribirlo sin que nadie lo pidiera reescribe el contexto entero al
+# precio de escritura del destino (H-DOCS-1012), asi que solo se toca con
+# `--advisor` explicito.
 if advisor:
-    datos["advisorModel"] = advisor
+    datos["advisorModel"] = cableado["advisorModel"]
 
 with open(dest, "w", encoding="utf-8") as fh:
     json.dump(datos, fh, indent=2, ensure_ascii=False)

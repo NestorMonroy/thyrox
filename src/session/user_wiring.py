@@ -71,10 +71,31 @@ def live_settings(root: Path | None = None) -> Path:
     return base.parent / ".claude" / "settings.local.json"
 
 
-def declared_wiring(root: Path | None = None) -> dict:
-    """El cableado que thyrox declara, con sus rutas resueltas a este arbol."""
+#: El modelo que `advisorModel` declara por defecto. Es identificador completo,
+#: nunca alias: el alias resuelve distinto segun el proveedor y por tanto no fija
+#: ni el tier ni la ventana (`model-selection-subagents.md`).
+DEFAULT_ADVISOR = "claude-fable-5-1"
+
+
+def declared_wiring(root: Path | None = None,
+                    consumer: str | Path | None = None,
+                    advisor: str | None = None) -> dict:
+    """El cableado que thyrox declara, con sus rutas resueltas a este arbol.
+
+    `consumer` y `advisor` son PARAMETROS DEL CONSUMIDOR (DEC-04): el proveedor
+    aporta el mecanismo —que comandos, en que orden, con que banderas— y el
+    consumidor declara contra que arbol se resuelven. Antes eran literales de
+    esta funcion, asi que el instalador no podia emitirla sin perder sus dos
+    opciones (`--consumidor`, `--advisor`) y componia los seis comandos por su
+    cuenta. Eso es lo que dejo DOS cableados contradictorios en el arbol.
+    """
     base = Path(root) if root else Path(thyrox_root())
-    consumer = base.parent / "kaupamex-docs"
+    # El literal `kaupamex-docs` sortea al localizador, que existe justamente
+    # para derivar el prefijo del clon (`reach.derive_clone_prefix`). Es dominio
+    # del producto dentro del proveedor y su barrido es la tarea #249; aqui
+    # queda como DEFAULT porque `install()` corre sin argumentos, y lo gana
+    # cualquier `consumer=` que el consumidor declare.
+    consumer = Path(consumer) if consumer else base.parent / "kaupamex-docs"
 
     def cmd(command: str, timeout: int | None = None) -> dict:
         entrada = {"type": "command", "command": command}
@@ -120,7 +141,7 @@ def declared_wiring(root: Path | None = None) -> dict:
                 cmd(f"{registro} --stop"),
             ]}],
         },
-        "advisorModel": "claude-fable-5-1",
+        "advisorModel": advisor or DEFAULT_ADVISOR,
     }
 
 
