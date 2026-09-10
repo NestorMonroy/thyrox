@@ -35,23 +35,73 @@
 #   bg.sh status <nombre>                  running | done:<exit> | unknown
 #   bg.sh log   <nombre>                   imprime la ruta del log
 #
-# Dónde deja los logs
-# --------------------
-# `${BG_DIR:-${TMPDIR:-/tmp}/kaupamex-bg}`. **Si la salida se va a citar en un
-# artefacto**, `build-logs.md` exige que el log exista como archivo bajo
-# `docs/build-logs/<slug>/` — pasarlo explícito:
+# Dónde deja los logs — la familia `jobs`, un run por trabajo
+# -----------------------------------------------------------
+# Por defecto cada trabajo nace en su propio **run** de la familia `jobs`
+# (`src/session/job_runs.py`), hermana de `workbench`:
+#
+#   <hogar>/<slug>-<AAAAMMDDThhmmss>/
+#     manifest.json      instrument declarado; las otras cuatro claves OMITIDAS
+#     outputs/salida.log el log
+#     README.md          qué se lanzó · qué se preguntaba · qué se recogió
+#
+# El defecto que esto cierra está medido: la forma anterior escribía
+# `<BG_DIR>/<nombre>.log` **plano**, y cinco trabajos de una sesión dejaron
+# cinco `.log` sueltos en un directorio —sin manifiesto, sin fecha en el nombre,
+# sin nada que dijera qué preguntaba cada uno— mientras dos ejecuciones del
+# mismo nombre se pisaban. Es el mismo defecto que `workbench` ya resolvió para
+# la evidencia, así que la familia lo REUSA (`run_id_for`, `REQUIRED_KEYS`) en
+# vez de calcarlo.
+#
+# `BG_DIR` sigue ganando cuando se declara, y entonces vuelve a la forma plana:
+# es lo que `build-logs.md` exige para una salida que se va a citar bajo
+# `docs/build-logs/<slug>/`.
 #
 #   BG_DIR=/home/user/kaupamex-docs/build-logs/<slug> bg.sh start suite -- …
 # =============================================================================
 set -euo pipefail
 
-BG_DIR="${BG_DIR:-${TMPDIR:-/tmp}/kaupamex-bg}"
+# Declarado gana; sin declarar, la familia. El literal vacío es el
+# discriminador: `BG_DIR` puesto significa «forma plana, yo elijo el hogar».
+BG_DIR="${BG_DIR:-}"
+
+_SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# El puente a la familia. Un solo sitio invoca Python: si el módulo no está, se
+# rehúsa con su motivo en vez de caer a un hogar inventado — un default derivado
+# por aritmética describe dónde vivía el archivo, no dónde corre.
+_family() {
+    PYTHONPATH="$_SRC_DIR" python3 -c "
+import sys
+from session import job_runs
+op = sys.argv[1]
+if op == 'home':
+    print(job_runs.jobs_dir())
+elif op == 'scaffold':
+    print(job_runs.scaffold_run(job_runs.jobs_dir(), sys.argv[2], command=sys.argv[3]))
+elif op == 'latest':
+    run = job_runs.latest_run(job_runs.jobs_dir(), sys.argv[2])
+    print(run if run else '')
+elif op == 'settle':
+    job_runs.settle(sys.argv[2], int(sys.argv[3]))
+" "$@"
+}
 
 _paths() {
     local name="$1"
     [[ -n "$name" ]] || { echo "bg.sh: falta <nombre>" >&2; exit 2; }
-    LOG="${BG_DIR}/${name}.log"
-    PIDF="${BG_DIR}/${name}.pid"
+    if [[ -n "$BG_DIR" ]]; then
+        LOG="${BG_DIR}/${name}.log"
+        PIDF="${BG_DIR}/${name}.pid"
+        RUN=""
+        return
+    fi
+    # La familia: el run MÁS RECIENTE de este slug. Dos ejecuciones del mismo
+    # nombre ya no se pisan — conviven, y `wait` habla de la última.
+    RUN="$(_family latest "$name")"
+    [[ -n "$RUN" ]] || { LOG=""; PIDF=""; return; }
+    LOG="${RUN}/outputs/salida.log"
+    PIDF="${RUN}/outputs/pid"
 }
 
 # El marcador de salida. `wait` y `status` lo buscan en vez de adivinar por el
@@ -62,8 +112,14 @@ cmd_start() {
     local name="$1"; shift
     [[ "${1:-}" == "--" ]] && shift
     [[ $# -gt 0 ]] || { echo "bg.sh start: falta el comando tras --" >&2; exit 2; }
-    _paths "$name"
-    mkdir -p "$BG_DIR"
+    if [[ -n "$BG_DIR" ]]; then
+        _paths "$name"
+        mkdir -p "$BG_DIR"
+    else
+        RUN="$(_family scaffold "$name" "$*")"
+        LOG="${RUN}/outputs/salida.log"
+        PIDF="${RUN}/outputs/pid"
+    fi
 
     # `disown` evita que la shell trackee el job; el marcador se escribe SIEMPRE
     # (incluso si el comando falla) porque va tras el `;`, no tras un `&&`.
@@ -73,6 +129,7 @@ cmd_start() {
     disown "$pid" 2>/dev/null || true
     printf '%s\n' "$pid" > "$PIDF"
     printf 'PID=%s\nLOG=%s\n' "$pid" "$LOG"
+    [[ -n "${RUN:-}" ]] && printf 'RUN=%s\n' "$RUN"
 }
 
 cmd_wait() {
@@ -103,7 +160,12 @@ cmd_wait() {
 cmd_status() {
     local name="$1"; _paths "$name"
     if grep -q "^${_MARK}" "$LOG" 2>/dev/null; then
-        printf 'done:%s\n' "$(grep "^${_MARK}" "$LOG" | tail -1 | cut -d= -f2)"
+        local code; code="$(grep "^${_MARK}" "$LOG" | tail -1 | cut -d= -f2)"
+        # El manifiesto asienta el codigo: un lector no deberia tener que abrir
+        # el log para saber si el trabajo termino bien. El marcador sigue siendo
+        # la fuente —es lo que la barrera consume—; esto es su proyeccion.
+        [[ -n "${RUN:-}" ]] && _family settle "$RUN" "$code" >/dev/null 2>&1 || true
+        printf 'done:%s\n' "$code"
     elif [[ -f "$PIDF" ]] && kill -0 "$(cat "$PIDF")" 2>/dev/null; then
         echo running
     else
