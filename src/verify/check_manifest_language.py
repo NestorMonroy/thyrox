@@ -163,12 +163,17 @@ def main(argv=None) -> int:
 
     root = pathlib.Path(args.root).resolve()
     homes = manifest_homes(root)
-    offenders, measured = scan(root)
+    # Congelar mide el universo CRUDO; verificar mide lo que queda FUERA del
+    # baseline. Compartir un solo escaneo entre los dos modos destruye la
+    # deuda al re-congelar: la segunda pasada no ve ofensores —ya estan
+    # congelados— y sobreescribe el archivo con cero lineas, asi que la deuda
+    # reaparece como NUEVA en el siguiente `--strict`. Medido antes de
+    # arreglarlo: 100 -> 0 -> 100 incumplidores con exit 1.
+    offenders, measured = scan(root, frozen=set() if args.write_baseline else None)
 
     if args.write_baseline:
         path = _consumer_baseline(BASELINE_VAR, BASELINE_FILE, root)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text('')
         lines = sorted(f'{rel}::{dotted}' for rel, dotted in offenders)
         path.write_text(
             '# Deuda heredada de claves de manifiesto en español.\n'

@@ -159,6 +159,37 @@ salida = done.stdout + done.stderr
 check('rehusa con 2', done.returncode, 2)
 check('NO publica un conteo de manifiestos', 'manifiesto(s) medido' in salida, False)
 
+print('=== Caso 8 (EL DISCRIMINANTE DEL CONGELADO): re-congelar no destruye ===')
+# Congelar dos veces sobre el mismo arbol tiene que dar el mismo conteo. Si el
+# modo de congelado comparte el escaneo con el de verificacion, la segunda
+# pasada no ve ofensores —ya estan congelados— y escribe CERO lineas: la deuda
+# desaparece del baseline y reaparece como NUEVA en el siguiente `--strict`.
+# El caso 6 no lo ejercita: congela una sola vez.
+with tempfile.TemporaryDirectory() as tmp:
+    tree = Path(tmp)
+    bank = tree / '.claude' / 'workbench' / 'sonda-20260101T000000'
+    bank.mkdir(parents=True)
+    (bank / 'manifest.json').write_text(json.dumps(
+        {'question': 'x', 'instrument': 'y', 'metric': 'z',
+         'blind_to': 'w', 'destination': 'v', 'tarea': 'espanol'}))
+    frozen_file = tree / 'baseline.txt'
+    env = dict(os.environ, MANIFEST_LANGUAGE_BASELINE=str(frozen_file),
+               THYROX_WORKBENCH_DIR=str(tree / '.claude' / 'workbench'))
+
+    def freeze():
+        subprocess.run([sys.executable, str(GATE), '--write-baseline', str(tree)],
+                       capture_output=True, text=True, env=env)
+        return [n for n in frozen_file.read_text().splitlines()
+                if n.strip() and not n.startswith('#')]
+
+    first = freeze()
+    check('la primera congela la deuda', first, ['sonda-20260101T000000/manifest.json::tarea'])
+    check('la segunda NO la destruye', freeze(), first)
+
+    done = subprocess.run([sys.executable, str(GATE), '--strict', str(tree)],
+                          capture_output=True, text=True, env=env)
+    check('y tras re-congelar sigue sin bloquear', done.returncode, 0)
+
 print()
 print(f'{ok} ok, {failures} fallos (alcance medido: {ok + failures} aserciones '
       f'sobre {GATE})')
