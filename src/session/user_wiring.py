@@ -20,11 +20,20 @@ Nada lo delataba porque el cliente no avisa: un hook cuyo comando no existe
 falla en silencio y el turno sigue. `broken_targets` es el control que faltaba
 — la misma forma que #252 pide para el `bin`.
 
-*Metrica:* primer argumento con pinta de ruta de cada `command`, comprobado
-con `os.path.exists`.
+*Metrica:* primer argumento con pinta de ruta de cada `command` —absoluto,
+con prefijo de base (`~/`, `$CLAUDE_PROJECT_DIR/`, `$CLAUDE_PLUGIN_ROOT/`) o
+relativo al cwd, como lo resuelve `2.1.266: XGe()`—, comprobado con
+`os.path.exists`.
 *Ciega a:* un comando que resuelva su objetivo por `PATH` o lo construya en
-tiempo de ejecucion; y a que el archivo exista pero no sea ejecutable ni
-correcto. Mide presencia, no salud.
+tiempo de ejecucion; a un objetivo dentro de una cadena entrecomillada
+(`bash -c "..."`), que el partido por espacios no separa; a un prefijo cuya
+raiz el entorno no declara, que se rehusa en vez de adivinarse; y a que el
+archivo exista pero no sea ejecutable ni correcto. Mide presencia, no salud.
+
+El cwd de resolucion es el del proceso salvo que se declare con
+`THYROX_HOOK_CWD`. Es lo mas cercano al `launchDir` que la referencia usa
+(`hookCwd:r.launchDir`) disponible desde aqui; si el cliente lanzara el hook
+desde otro directorio, este control mediria contra el equivocado.
 """
 from __future__ import annotations
 
@@ -371,21 +380,74 @@ def install(live: Path, declared: dict, backup: ForBackingUp, stamp: str,
     return record
 
 
-def _target_of(command: str) -> str | None:
-    """La ruta que el comando invoca, o None si no nombra ninguna."""
+#: La variable con que un llamador DECLARA el directorio contra el que el
+#: cliente resuelve un objetivo relativo. Sin ella se usa el cwd del proceso,
+#: que es lo mas cercano al `launchDir` de la referencia disponible aqui.
+HOOK_CWD_VAR = "THYROX_HOOK_CWD"
+
+#: Los tres prefijos de base que la referencia reconoce ANTES de resolver
+#: contra el cwd, portados de `2.1.266: i6()` con sus dos formas cada uno
+#: (`$VAR/` y `${VAR}/`). Ver `vxr`/`b0t`/`k0t` en el volcado de esa build.
+_BASE_PREFIXES = (
+    ("home", re.compile(r"^~/")),
+    ("project", re.compile(r"^(?:\$CLAUDE_PROJECT_DIR|\$\{CLAUDE_PROJECT_DIR\})/")),
+    ("plugin", re.compile(r"^(?:\$CLAUDE_PLUGIN_ROOT|\$\{CLAUDE_PLUGIN_ROOT\})/")),
+)
+
+#: La extension que delata un script cuando el token NO lleva `/`. Es la lista
+#: literal de `2.1.266: Lte`; se porta entera porque recortarla haria al
+#: control ciego justo a los interpretes que la referencia si nombra.
+_SCRIPT_SUFFIX = re.compile(r"\.(?:py|sh|bash|zsh|js|mjs|cjs|ts|rb|pl)$", re.I)
+
+
+def hook_cwd() -> str:
+    """El directorio contra el que se resuelve un objetivo relativo."""
+    return os.environ.get(HOOK_CWD_VAR) or os.getcwd()
+
+
+def _bases() -> dict:
+    """Las raices de los tres prefijos; `None` cuando el entorno no la declara."""
+    return {
+        "home": os.path.expanduser("~"),
+        "project": os.environ.get("CLAUDE_PROJECT_DIR"),
+        "plugin": os.environ.get("CLAUDE_PLUGIN_ROOT"),
+    }
+
+
+def _target_of(command: str, cwd: str | None = None,
+               bases: dict | None = None) -> str | None:
+    """La ruta que el comando invoca, resuelta como la resuelve el cliente.
+
+    Porta `2.1.266: XGe()`: un token con prefijo se resuelve contra su raiz
+    declarada; uno sin prefijo, contra el `hookCwd` — que la referencia toma
+    del `launchDir` de la sesion, no de una constante. Un prefijo cuya raiz el
+    entorno no declara devuelve `None` (el `opaque` de la referencia), porque
+    resolverlo contra el cwd inventaria una ruta que el cliente nunca usaria.
+    """
+    base_cwd = cwd if cwd is not None else hook_cwd()
+    raices = bases if bases is not None else _bases()
     for pieza in command.split():
         if pieza.startswith("/"):
             return pieza
+        for nombre, patron in _BASE_PREFIXES:
+            if patron.match(pieza):
+                raiz = raices.get(nombre)
+                if not raiz:
+                    return None
+                return os.path.normpath(os.path.join(raiz, patron.sub("", pieza)))
+        if "/" in pieza or _SCRIPT_SUFFIX.search(pieza):
+            return os.path.normpath(os.path.join(base_cwd, pieza))
     return None
 
 
-def broken_targets(settings: dict) -> list[dict]:
+def broken_targets(settings: dict, cwd: str | None = None,
+                   bases: dict | None = None) -> list[dict]:
     """Los comandos cuya ruta declarada no existe, con su evento."""
     rotos = []
     for evento, grupos in (settings.get("hooks") or {}).items():
         for grupo in grupos:
             for entrada in grupo.get("hooks", []):
-                ruta = _target_of(entrada.get("command", ""))
+                ruta = _target_of(entrada.get("command", ""), cwd, bases)
                 if ruta and not os.path.exists(ruta):
                     rotos.append({"event": evento, "path": ruta,
                                   "command": entrada["command"]})

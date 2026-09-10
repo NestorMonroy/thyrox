@@ -476,5 +476,88 @@ check("16-bis.2 y el cuerpo sano SOBREVIVE en verde", [], _anulado_sano)
 check("16-bis.3 restaurado, la constante vuelve a su valor",
       ("--claude-dir", "--results-dir"), w.STORE_DEST_FLAGS)
 
+print("== 17. el objetivo RELATIVO, que el control no veia ==")
+# CONTROL POSITIVO REAL, no fabricado: el comando sale verbatim del
+# `settings.json` del consumidor (`kaupamex-docs: .claude/settings.json`,
+# evento `PreModelSwitch`). Desde el cwd de esta sesion —`/home/user`, no un
+# clon— resuelve a `/home/thyrox/...`, que NO existe; el archivo real vive en
+# `/home/user/thyrox/...`. `_target_of` solo reconocia rutas absolutas, asi
+# que ese comando ni entraba al universo: su silencio se leia como sano.
+#
+# El mecanismo se porta de `2.1.266: XGe()`, que resuelve el objetivo sin
+# prefijo con `s6.resolve(r.hookCwd, ...)` y toma ese `hookCwd` del
+# `launchDir` de la sesion (`hookCwd:r.launchDir`) — no de una constante.
+_REL = "bun run ../thyrox/src/packages/agent/bin/preModelSwitch.ts"
+_BASES = {"home": "/root", "project": None, "plugin": None}
+check("17.1 el relativo se resuelve contra el cwd declarado",
+      "/home/thyrox/src/packages/agent/bin/preModelSwitch.ts",
+      w._target_of(_REL, cwd="/home/user", bases=_BASES))
+check("17.2 y entra al universo como roto", 1,
+      len(w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+          {"type": "command", "command": _REL}]}]}},
+          cwd="/home/user", bases=_BASES)))
+check("17.3 el mismo comando desde el cwd correcto NO se reporta", [],
+      w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+          {"type": "command", "command": _REL}]}]}},
+          cwd=str(HERE.parent / "kaupamex-docs"), bases=_BASES))
+check("17.4 el prefijo `~/` usa la casa, no el cwd", "/root/x.py",
+      w._target_of("python3 ~/x.py", cwd="/home/user", bases=_BASES))
+check("17.5 un prefijo cuya raiz el entorno no declara REHUSA", None,
+      w._target_of("bash $CLAUDE_PROJECT_DIR/x.sh", cwd="/home/user", bases=_BASES))
+check("17.6 el interprete no se confunde con el objetivo", None,
+      w._target_of("python3 --stop", cwd="/home/user", bases=_BASES))
+
+print("== 17-bis. CONTROL DE ANULACION: se retira la rama relativa ==")
+# Si el token sin prefijo dejara de resolverse contra el cwd, el comando real
+# del consumidor vuelve a ser invisible. Debe caer 17.1, 17.2 y 17.4 —y NO
+# 17.3, 17.5 ni 17.6, que miden lo que un instrumento ciego tambien pasa.
+# Ese contraste es lo que hace que el verde de la seccion discrimine.
+_sufijo_original = w._SCRIPT_SUFFIX
+_prefijos_original = w._BASE_PREFIXES
+import re as _re
+w._SCRIPT_SUFFIX = _re.compile(r"(?!)")   # no casa con nada
+w._BASE_PREFIXES = ()
+try:
+    _anul_rel = w._target_of(_REL, cwd="/home/user", bases=_BASES)
+    _anul_rotos = w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+        {"type": "command", "command": _REL}]}]}}, cwd="/home/user", bases=_BASES)
+    _anul_casa = w._target_of("python3 ~/x.py", cwd="/home/user", bases=_BASES)
+    _anul_sano = w._target_of("python3 --stop", cwd="/home/user", bases=_BASES)
+finally:
+    w._SCRIPT_SUFFIX = _sufijo_original
+    w._BASE_PREFIXES = _prefijos_original
+
+# `../thyrox/...` lleva `/`, asi que anular el sufijo NO basta: la rama del
+# `/` es la que lo ve. Se anula tambien esa, y entonces 17.1 y 17.2 caen.
+check("17-bis.1 anulado el sufijo, el relativo SIGUE viendose (lleva `/`)",
+      "/home/thyrox/src/packages/agent/bin/preModelSwitch.ts", _anul_rel)
+check("17-bis.2 anulados los prefijos, `~/` deja de resolver a la casa",
+      "/home/user/~/x.py", _anul_casa)
+check("17-bis.3 y el interprete sano SOBREVIVE en None", None, _anul_sano)
+check("17-bis.4 restaurado, el sufijo vuelve a casar un `.ts`", True,
+      bool(w._SCRIPT_SUFFIX.search("x.ts")))
+
+# La rama que de verdad ve al control positivo es la del `/`. Anularla es lo
+# que reproduce el defecto original — y hace caer 17.1 y 17.2 exactamente.
+_original_target = w._target_of
+def _solo_absoluto(command, cwd=None, bases=None):
+    for pieza in command.split():
+        if pieza.startswith("/"):
+            return pieza
+    return None
+w._target_of = _solo_absoluto
+try:
+    _ciego_rel = w._target_of(_REL, cwd="/home/user", bases=_BASES)
+    _ciego_rotos = w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+        {"type": "command", "command": _REL}]}]}}, cwd="/home/user", bases=_BASES)
+finally:
+    w._target_of = _original_target
+
+check("17-bis.5 con la version vieja, 17.1 CAE", None, _ciego_rel)
+check("17-bis.6 y 17.2 CAE: el comando roto sale del universo", 0, len(_ciego_rotos))
+check("17-bis.7 restaurada, vuelve a verlo",
+      "/home/thyrox/src/packages/agent/bin/preModelSwitch.ts",
+      w._target_of(_REL, cwd="/home/user", bases=_BASES))
+
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)
