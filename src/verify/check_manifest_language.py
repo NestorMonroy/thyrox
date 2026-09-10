@@ -51,10 +51,17 @@ BASELINE_FILE = "manifest_language_baseline.txt"
 def manifest_homes(root: pathlib.Path) -> list[pathlib.Path]:
     """Los hogares de manifiesto de una raiz medida: el banco y el ledger.
 
-    Son **dos**, no uno, y el segundo se descubrio midiendo: de los 78
-    manifiestos del arbol, 6 viven bajo el hogar de trabajos
-    (``THYROX_JOBS_*``) y no bajo el del banco. Un universo compuesto solo con
-    ``workbench_dir`` los dejaria fuera **sin emitir señal**.
+    Son **dos**, no uno, y el segundo se descubrio midiendo: hay manifiestos
+    que viven bajo el hogar de trabajos (``THYROX_JOBS_*``) y no bajo el del
+    banco. Un universo compuesto solo con ``workbench_dir`` los dejaria fuera
+    **sin emitir señal**.
+
+    Cuantos son en cada raiz lo publica el propio gate al correr, junto a su
+    denominador — ``runner.py --only manifest-language --consumer <raiz>``. No
+    se transcribe aqui: es propiedad de un arbol vivo, y ademas el reparto es
+    POR RAIZ, asi que una cifra unica sumaria dos poblaciones distintas (el
+    sub-patron A de ``metrica-decide-la-conclusion.md`` — ver :ref:`h-docs-1254`,
+    que corrige justamente esa suma).
 
     Los dos se resuelven contra la raiz que se recibe — nunca contra el cwd, que
     es el defecto que :ref:`h-docs-1251` cerro en el gate hermano.
