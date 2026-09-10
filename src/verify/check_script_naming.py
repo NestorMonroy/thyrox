@@ -201,7 +201,8 @@ def scan_idioma(raiz):
             continue
         for patron in ('*.py', '*.sh'):
             for f in sorted(base.rglob(patron)):
-                if any(p in EXCLUIR for p in f.parts) or is_measurement_artifact(f):
+                if (any(p in EXCLUIR for p in f.parts)
+                        or is_measurement_artifact(f, raiz)):
                     continue
                 total += 1
                 relativa = str(f.relative_to(raiz))
@@ -222,7 +223,8 @@ def scan(raiz: pathlib.Path) -> tuple[list[pathlib.Path], int]:
         if not base.is_dir():
             continue
         for f in base.rglob('*.py'):
-            if any(p in EXCLUIR for p in f.parts) or is_measurement_artifact(f):
+            if (any(p in EXCLUIR for p in f.parts)
+                        or is_measurement_artifact(f, raiz)):
                 continue
             total += 1
             if '-' in f.name:
@@ -276,7 +278,8 @@ def scan_identifiers(root):
         if not base.is_dir():
             continue
         for f in sorted(base.rglob('*.py')):
-            if any(p in EXCLUIR for p in f.parts) or is_measurement_artifact(f):
+            if (any(p in EXCLUIR for p in f.parts)
+                        or is_measurement_artifact(f, root)):
                 continue
             try:
                 tree = ast.parse(f.read_text(encoding='utf-8'))
