@@ -1,0 +1,7 @@
+{
+  "instrument": "python3 tests/session/test_job_runs.py",
+  "question": "Un lote de N trabajos entre C servidores tarda Sigma(t_i)/C o max(t_i)? Sin la distribucion de duraciones el ancho del lote se elige a ojo.",
+  "metric": "Duracion por trabajo asentada en el manifiesto de su run (started_at, finished_at, duration_seconds), y la distribucion sobre esa poblacion.",
+  "blind_to": "El trabajo que nunca se registro como run — la poblacion son los runs asentados, no los trabajos lanzados. Y ciega a la varianza entre ejecuciones del mismo trabajo: una sola medicion por run.",
+  "destination": "thyrox: src/session/job_runs.py"
+}

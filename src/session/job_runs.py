@@ -32,7 +32,8 @@ from __future__ import annotations
 
 import json
 import pathlib
-from datetime import datetime
+from collections.abc import Sequence
+from datetime import datetime, timezone
 
 from workbench import paths as wb_paths
 from workbench.manifest import (  # noqa: F401  (se reexportan a propósito)
@@ -172,6 +173,10 @@ def scaffold_run(
     manifiesto: dict[str, object] = {}
     if command is not None:
         manifiesto["instrument"] = command
+    # El reloj arranca aqui y no en `settle`: sin `started_at` la duracion solo
+    # se puede inferir de la mtime del log, que mide la ULTIMA escritura y no el
+    # arranque — un trabajo que calla al final se leeria como mas corto.
+    manifiesto["started_at"] = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")
     (run_dir / MANIFEST_FILE_NAME).write_text(
         json.dumps(manifiesto, indent=2) + "\n", encoding="utf-8")
 
@@ -203,7 +208,8 @@ def missing_keys(run_dir: str | pathlib.Path) -> list[str]:
     return [k for k in REQUIRED_KEYS if k not in presentes]
 
 
-def settle(run_dir: str | pathlib.Path, exit_code: int) -> pathlib.Path:
+def settle(run_dir: str | pathlib.Path, exit_code: int,
+           now: datetime | None = None) -> pathlib.Path:
     """Asienta el código de salida donde el manifiesto se lee.
 
     El `__BG_EXIT__` del log sigue estando —es lo que la barrera consume— pero
@@ -213,5 +219,50 @@ def settle(run_dir: str | pathlib.Path, exit_code: int) -> pathlib.Path:
     ruta = pathlib.Path(run_dir) / MANIFEST_FILE_NAME
     manifiesto = read_manifest(run_dir)
     manifiesto["exit_code"] = exit_code
+    fin = now or datetime.now(timezone.utc)
+    manifiesto["finished_at"] = fin.isoformat(timespec="seconds")
+    inicio = manifiesto.get("started_at")
+    if isinstance(inicio, str):
+        # Un run andamiado antes de que `started_at` existiera no tiene con qué
+        # restar: se omite la clave en vez de escribir un 0, que no distinguiría
+        # «tardó nada» de «no se midió».
+        manifiesto["duration_seconds"] = max(
+            0.0, (fin - datetime.fromisoformat(inicio)).total_seconds())
     ruta.write_text(json.dumps(manifiesto, indent=2) + "\n", encoding="utf-8")
     return ruta
+
+
+def duration_distribution(durations: Sequence[float]) -> dict:
+    """La distribución de duraciones, con sus operandos — no sólo el total.
+
+    Un lote de N trabajos repartido entre C servidores NO tarda ``total/C``: no
+    se puede bajar de la pieza más larga. Por eso el cociente solo no basta y el
+    resultado publica ``max`` junto a ``total`` — dos poblaciones con la MISMA
+    suma y dispersión opuesta reparten de forma distinta, y una media las
+    volvería indistinguibles.
+
+    Es el `seq_length.py` del tutorial aplicado al reloj: la distribución se
+    mide antes de decidir cómo se procesa, no después.
+
+    ``floor_wall_clock(C)`` es el **suelo** del reloj de pared, no una
+    predicción: ``max(total/C, max(t))``. Nada por debajo es alcanzable; por
+    encima queda todo lo que este instrumento no ve.
+    """
+    if not durations:
+        raise ValueError(
+            "distribución sin medición: población vacía. Un 0 aquí no "
+            "distinguiría «ningún trabajo tardó nada» de «no hay medición».")
+    ordenadas = sorted(float(d) for d in durations)
+    n = len(ordenadas)
+    mitad = n // 2
+    mediana = (ordenadas[mitad] if n % 2
+               else (ordenadas[mitad - 1] + ordenadas[mitad]) / 2)
+    total, mayor = sum(ordenadas), ordenadas[-1]
+    return {
+        "n": n,
+        "total": total,
+        "min": ordenadas[0],
+        "median": mediana,
+        "max": mayor,
+        "floor_wall_clock": lambda width: max(total / width, mayor),
+    }
