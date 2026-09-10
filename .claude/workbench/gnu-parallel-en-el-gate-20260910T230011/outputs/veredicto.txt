@@ -1,0 +1,79 @@
+MEDICION DEL DESPACHO — 2026-09-10T23:03:38
+corpus: 1366 hallazgo-*.rst  ·  nproc=4  ·  GNU parallel 20231122
+
+modo                         reloj      contra la serie   sha(sort -u)   sha(sin sort)
+serie honesta (1 invocacion) 2.753 s    —                 068fbc84       068fbc84
+xargs -P4 -n 50              1.019 s    2.70x             068fbc84       distinto
+xargs -P4 -n 250             1.169 s    2.35x             068fbc84       distinto
+parallel -X                  1.324 s    2.08x             068fbc84       distinto
+parallel -X -k               1.284 s    2.14x             068fbc84       068fbc84  <-- identica
+parallel -j0 -X              4.884 s    0.56x  PEOR       068fbc84       —
+
+TRES HECHOS QUE CONTRADICEN EL BANCO ANTERIOR (20260910T223148)
+1. La "serie" de aquel banco daba 5.096 s y estaba INFLADA: su sonda forkeaba un
+   shell por archivo. La serie honesta —el mismo cuerpo en UNA invocacion— es
+   2.753 s. La ganancia real de paralelizar es 2.1-2.7x, no 4.07x.
+2. xargs -P4 GANA a parallel -X -k por ~10 % (1.169 contra 1.284; tres repeticiones,
+   varianza < 0.04 s en ambos). El banco anterior afirmaba lo contrario.
+3. -j 0 es 3.9x PEOR que el default aqui. La razon esta medida abajo.
+
+QUE COMPRA -k, MEDIDO: la salida byte a byte IDENTICA a la serie.
+  Sin -k, ni xargs ni parallel la dan. El gate consume el universo pasado por
+  "sort -u", asi que el CONJUNTO es el mismo en los cinco modos — pero un control de
+  anulacion que pueda afirmar IDENTIDAD, y no solo "mismo conjunto", es mas fuerte;
+  y en un gate que ha fallado ocho veces por su instrumento, ese es el eje que
+  decide. Cuesta 0 s: 1.284 con -k contra 1.324 sin el.
+
+POR QUE -j 0 PIERDE, y por que no es intuitivo
+  parallel no paga el spawn (16 trabajos triviales con -j 0: 0.131 s). Lo que paga es
+  LATENCIA DE RECOGIDA: su bucle duerme entre comprobaciones de fin de trabajo.
+    8 x sleep 0.5, -j 4 (default) : 13.199 s
+    8 x sleep 0.5, -j 2           : 22.132 s
+    8 x sleep 0.5, -j 0           :  8.620 s
+    8 x sleep 0.5, xargs -P4      :  1.008 s   <-- el control
+  Con -j 0 y -X, parallel hace MUCHOS lotes pequenos en vez de pocos grandes: mas
+  trabajos, mas recogidas, mas latencia. -j 0 sirve donde el trabajo es de E/S y el
+  cuello no es la CPU; aqui el trabajo es CPU pura y el default (uno por nucleo) es
+  el correcto. El tutorial dice "as many jobs as possible"; medido, aqui eso es peor.
+
+POR QUE parallel Y NO xargs, pese al 10 %
+  xargs -P NECESITA un -n a mano, y el -n correcto depende del corpus y de nproc:
+    sin -n   1.926 s (una sola invocacion: no reparte nada)
+    -n 50    1.019 s
+    -n 100   1.070 s
+    -n 250   1.199 s
+    -n 500   1.239 s
+  Ese 50 seria un literal en el gate que describe una propiedad del corpus de HOY
+  (1366 archivos) — la forma que calibration-verified-numbers.md prohibe: correcta
+  al escribirse y falsa cuando el corpus crece, sin que nadie toque el archivo.
+  parallel -X deriva el tamano del lote del limite de linea de comandos (7 lotes
+  hoy) sin que nadie lo escriba, y -k devuelve la identidad byte a byte. Se pagan
+  0.115 s por no tener un numero magico y por poder afirmar identidad.
+
+LO QUE NINGUNO DE LOS CINCO ARREGLA, Y ES MAS GRANDE
+  universo() se invoca DOS VECES en el gate (el bucle principal y el conteo VISTOS).
+  El gate entero mide 9.714 s; calcularlo una sola vez lo baja a ~5 s sin tocar el
+  despacho, y es un cambio sin riesgo. La paralelizacion va encima de eso.
+
+================================================================
+CORREGIDO 2026-09-10T23:11:30 — la identidad de este documento era sonda-contra-sonda
+================================================================
+
+Las cifras de TIEMPO de arriba se sostienen: la serie del gate mide
+2.740 s contra 2.753 s de la serie honesta, asi que el reloj es el mismo
+fenomeno.
+
+Lo que NO se sostiene es la identidad. Este documento comparo los cinco
+modos entre si —todos sobre probes/lote.sh— y leyo esa coincidencia como
+"reproducen el gate". No lo probaba: lote.sh implementa UN productor de
+los DOS que universo() tiene, asi que emitia 1071 lineas contra las 1513
+del gate.
+
+La identidad medida contra el gate real, con su descomposicion en dos
+productores y los hashes pre-sort, esta en el documento hermano:
+
+    outputs/identidad-contra-el-gate.txt
+
+Veredicto que sobrevive: parallel -X -k es el unico modo cuyo compuesto
+es byte a byte identico al gate. xargs -P4 y parallel -X sin -k emiten
+las mismas lineas en otro orden.

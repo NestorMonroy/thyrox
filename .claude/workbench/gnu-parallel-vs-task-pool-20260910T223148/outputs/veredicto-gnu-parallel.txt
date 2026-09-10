@@ -102,3 +102,25 @@ Ciega a: cargas dominadas por E/S, donde la anchura util supera nproc y el
   reparto rinde mas de lo medido; a un consumidor fuera de los 7 corpus; y a
   la conducta real de parallel (--citation, --joblog), que no se ejecuto
   porque no esta instalado.
+
+================================================================
+CORREGIDO 2026-09-10T23:11:50 — el 4.07x medía una serie inflada
+================================================================
+
+La cifra 4.07x de este documento comparaba contra una "serie" que
+bifurcaba el cuerpo del lote UNA VEZ POR ARCHIVO (1366 forks). El gate
+no hace eso: invoca su cuerpo una sola vez con todo el corpus.
+
+Serie honesta re-medida: 2.753 s, no 6.407 s. El factor real de
+parallel -X -k sobre el corpus del gate esta entre 2.1x y 2.7x, no 4x.
+
+El defecto es el mismo que produjo el 37x falso de la sesion anterior,
+y se atrapo igual: comparando la SALIDA, no el reloj.
+
+Los mensajes de commit ya publicados que citan 4.07x NO se reescriben
+—son historia publicada—; esta nota es su correccion fechada. Medido:
+la cifra no llego a ningun .rst versionado (grep sobre source/ da solo
+identificadores FR-AUTH-04.07 y coordenadas SVG).
+
+La medicion vigente vive en el banco sucesor:
+  gnu-parallel-en-el-gate-20260910T230011/outputs/identidad-contra-el-gate.txt

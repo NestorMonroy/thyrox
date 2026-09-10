@@ -1,0 +1,7 @@
+{
+  "instrument": "bash: cinco modos de despacho sobre el mismo cuerpo (awk+grep por archivo) del universo() de check-hallazgo-sucesor.sh",
+  "question": "Al aplicar GNU parallel al bucle por archivo del gate, cuanto gana de verdad contra la serie y contra xargs -P, y que compra -k?",
+  "metric": "Reloj de pared (bash time, real) sobre los 1366 hallazgo-*.rst de kaupamex-docs, nproc=4, y sha256 de la salida con y sin sort -u.",
+  "blind_to": "El coste de CPU de otros procesos del contenedor durante la medicion; y el reparto de duraciones dentro del corpus — un lote puede quedar con los archivos largos y desbalancear.",
+  "destination": "thyrox: src/verify/check-hallazgo-sucesor.sh"
+}
