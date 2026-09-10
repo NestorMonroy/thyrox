@@ -125,6 +125,36 @@ def declared_wiring(root: Path | None = None) -> dict:
 #: claves propias, nunca un reemplazo.
 OWNED_KEYS = ("hooks", "advisorModel")
 
+#: De las claves propias, cuales componen ademas la CLAVE de la cache de prompt.
+#: NO se decide de memoria: la referencia lo declara en `createCacheSafeParams`
+#: (2.1.266, `bunfs-root/chunk-yw4jc948.js`), que enumera siete campos —
+#: `systemPrompt`, `userContext`, `systemContext`, `toolUseContext`,
+#: `forkContextMessages`, `advisorModel`, `stickyBetas`—. `hooks` NO esta entre
+#: ellos, y tampoco es campo de `toolUseContext`: los hooks se leen del registro
+#: de la sesion. Y `isMainThreadCacheWarm` compara el advisor **resuelto**, no si
+#: la clave se escribio — por eso el delta se mide por VALOR y no por presencia.
+#: Banco: `docs: .claude/eventos/measure-cache-key-surface-20260910T021100/`.
+CACHE_KEY_FIELDS = ("advisorModel",)
+
+
+def cache_key_delta(current: dict, declared: dict,
+                    fields: tuple[str, ...] | None = None) -> list[str]:
+    """Los campos de la clave de cache que la instalacion cambiaria de valor.
+
+    Vacio significa que la escritura es cache-safe: `isMainThreadCacheWarm` no
+    tiene por que enfriarse. Es la distincion que la premisa de H-DOCS-1012
+    colapsaba — aquella decia «escribir el archivo invalida la clave», y lo que
+    la invalida es que un campo de la clave cambie de VALOR. Instalar el mismo
+    `advisorModel` que ya esta vivo no cambia nada.
+    """
+    # El default se resuelve AQUI y no en la firma: un `fields=CACHE_KEY_FIELDS`
+    # congela la tupla al importar, no al usar, y entonces la constante deja de
+    # ser fuente unica — es la misma forma que ERR-065.
+    campos = CACHE_KEY_FIELDS if fields is None else fields
+    return [key for key in campos
+            if key in declared and current.get(key) != declared[key]]
+
+
 
 class WiringRefused(Exception):
     """Lo declarado no esta sano, o el respaldo no se pudo comprobar."""
@@ -260,7 +290,8 @@ def backup_path(live: Path, stamp: str, backups: Path | None = None) -> Path:
 
 def install(live: Path, declared: dict, backup: ForBackingUp, stamp: str,
             owned: tuple[str, ...] = OWNED_KEYS,
-            backups: Path | None = None) -> dict:
+            backups: Path | None = None,
+            allow_cache_key_change: bool = False) -> dict:
     """Deja el settings del lanzador en lo que thyrox gobierna. Devuelve el acta.
 
     El orden ES el contrato, y cada paso existe porque su ausencia ya costo algo:
@@ -268,18 +299,28 @@ def install(live: Path, declared: dict, backup: ForBackingUp, stamp: str,
     1. **Validar lo declarado** antes de tocar nada. Instalar un cableado con una
        ruta ausente reproduce el defecto que este modulo vino a cerrar — un hook
        muerto que falla en silencio y el turno sigue.
-    2. **Respaldar** si el archivo existe, y comprobar que el respaldo aterrizo.
-    3. **Fusionar** sobre las claves propias, nunca reemplazar.
-    4. **Escribir**.
+    2. **Leer lo vivo** y medir el delta de la clave de cache. Si un campo de la
+       clave cambiaria de valor, REHUSA salvo permiso explicito.
+    3. **Rehusar la escritura vacia.** Si la fusion es identica a lo que ya hay,
+       no se escribe: sin escritura no hay evento de cambio de settings, y sin
+       evento no hay suscriptor que reaccione.
+    4. **Respaldar** si el archivo existe, y comprobar que el respaldo aterrizo.
+    5. **Fusionar** sobre las claves propias, nunca reemplazar, y **escribir**.
 
-    Sin el paso 2 no hay vuelta atras; sin el 3 se pierde `permissions`, que lo
+    Sin el paso 4 no hay vuelta atras; sin el 5 se pierde `permissions`, que lo
     escribe el cliente y no thyrox.
 
-    CUANDO correrlo importa tanto como que corra: reescribir este archivo cambia
-    los hooks y el `advisorModel`, y los dos son parte de la CLAVE de la cache
-    de prompt. Hacerlo con la cache caliente la invalida entera —medido en
-    H-DOCS-1012: 778 297 tokens reescritos—. Se instala al arrancar la sesion o
-    justo antes de una compactacion, nunca a mitad de turno.
+    CUANDO correrlo — corregido 2026-09-10 contra la referencia 2.1.266. La
+    version anterior de este parrafo decia que *«los hooks y el `advisorModel`
+    son los dos parte de la CLAVE de la cache»*, y era falso en su mitad:
+    `createCacheSafeParams` enumera siete campos y `hooks` no es ninguno, ni es
+    campo de `toolUseContext`. Lo que enfria la cache es que un campo de la clave
+    cambie de **valor** — `isMainThreadCacheWarm` compara el advisor **resuelto**.
+
+    De ahi que la decision no sea horaria sino de contenido: una instalacion cuyo
+    `cache_key_delta` es vacio se corre a mitad de sesion sin coste. El episodio
+    de H-DOCS-1012 —778 297 tokens reescritos— fue un cambio de valor real: el
+    advisor paso de ausente a `claude-fable-5-1`.
     """
     broken = broken_targets(declared)
     if broken:
@@ -289,18 +330,43 @@ def install(live: Path, declared: dict, backup: ForBackingUp, stamp: str,
 
     record = {"live": str(live), "backup": None, "existed": live.exists()}
     current: dict = {}
+    raw = ""
     if live.exists():
-        destination = backup_path(live, stamp, backups)
-        backup.backup(live, destination)
-        record["backup"] = str(destination)
-        current = json.loads(live.read_text())
+        raw = live.read_text()
+        current = json.loads(raw)
+
+    delta = cache_key_delta(current, declared)
+    record["cache_key_delta"] = delta
+    if delta and not allow_cache_key_change:
+        raise WiringRefused(
+            "cambiaria de valor un campo de la clave de la cache de prompt: "
+            + ", ".join(f"{k} {current.get(k)!r} -> {declared[k]!r}"
+                        for k in delta)
+            + ". Con la cache caliente eso reescribe el contexto entero "
+              "(H-DOCS-1012). Instalalo al arrancar la sesion, o justo tras "
+              "una compactacion, con allow_cache_key_change.")
 
     merged = merged_wiring(current, declared, owned)
     record["preserved"] = sorted(k for k in current if k not in owned)
     record["written"] = sorted(k for k in merged if k in owned)
 
+    payload = json.dumps(merged, indent=2) + "\n"
+    # La escritura identica NO es inocua por barata: es inocua porque no ocurre.
+    # El cliente recarga los settings al detectar el cambio, y ahi es donde
+    # despiertan sus trece suscriptores. Sin escritura, ninguno se entera.
+    if raw == payload:
+        record["written"] = []
+        record["unchanged"] = True
+        return record
+    record["unchanged"] = False
+
+    if live.exists():
+        destination = backup_path(live, stamp, backups)
+        backup.backup(live, destination)
+        record["backup"] = str(destination)
+
     live.parent.mkdir(parents=True, exist_ok=True)
-    live.write_text(json.dumps(merged, indent=2) + "\n")
+    live.write_text(payload)
     return record
 
 
@@ -375,6 +441,10 @@ def main() -> int:
                         help="instala: respalda en segundo plano y fusiona")
     parser.add_argument("--backups", default=None,
                         help="donde dejar el respaldo (por defecto, el estado)")
+    parser.add_argument("--allow-cache-key-change", action="store_true",
+                        help="instala aunque cambie de valor un campo de la "
+                             "clave de la cache de prompt (reescribe el "
+                             "contexto entero: usalo entre turnos)")
     args = parser.parse_args()
 
     ruta = live_settings()
@@ -385,17 +455,30 @@ def main() -> int:
         stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
             "%Y%m%dT%H%M%S")
         try:
-            record = install(ruta, declared_wiring(), BackgroundBackup(), stamp,
-                           backups=args.backups)
+            record = install(
+                ruta, declared_wiring(), BackgroundBackup(), stamp,
+                backups=args.backups,
+                allow_cache_key_change=args.allow_cache_key_change)
         except WiringRefused as e:
             print(f"REHUSA — {e}", file=sys.stderr)
             return 2
+        if record["unchanged"]:
+            # Se distingue de «instalado» a proposito: son estados distintos del
+            # mundo, y colapsarlos deja sin saber si hubo evento de settings.
+            print(f"sin cambio en {record['live']}")
+            print("  lo declarado ya estaba vivo; no se escribio, no se "
+                  "respaldo, y no hubo evento de recarga de settings")
+            return 0
         print(f"instalado en {record['live']}")
         print(f"  respaldo   {record['backup'] or '(no existia; nada que respaldar)'}")
         print(f"  escritas   {', '.join(record['written']) or '(ninguna)'}")
         print(f"  conservadas {', '.join(record['preserved']) or '(ninguna)'}")
-        print("  AVISO: esto cambia la clave de la cache de prompt. Si la sesion "
-              "ya tiene contexto caliente, se reescribe entero.")
+        if record["cache_key_delta"]:
+            print("  AVISO: cambio de valor en "
+                  f"{', '.join(record['cache_key_delta'])} — es campo de la "
+                  "clave de la cache. Con contexto caliente se reescribe entero.")
+        else:
+            print("  cache-safe: ningun campo de la clave cambio de valor")
         return 0
 
     if not ruta.exists():

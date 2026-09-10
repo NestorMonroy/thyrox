@@ -109,7 +109,8 @@ _foreign = {"permissions": {"allow": ["Bash(ls)"]},
 _live.write_text(_json.dumps(_foreign))
 
 _double = _FakeBackup()
-_record = w.install(_live, w.declared_wiring(), _double, "SELLO", backups=_tmp)
+_record = w.install(_live, w.declared_wiring(), _double, "SELLO", backups=_tmp,
+                    allow_cache_key_change=True)
 _final = _json.loads(_live.read_text())
 check("conserva permissions verbatim", _foreign["permissions"], _final["permissions"])
 check("sustituye advisorModel", "claude-fable-5-1", _final["advisorModel"])
@@ -131,7 +132,8 @@ _live2 = _tmp / "otro.json"
 _before = _json.dumps({"permissions": {"allow": []}})
 _live2.write_text(_before)
 try:
-    w.install(_live2, w.declared_wiring(), _FakeBackup(fails=True), "SELLO", backups=_tmp)
+    w.install(_live2, w.declared_wiring(), _FakeBackup(fails=True), "SELLO",
+              backups=_tmp, allow_cache_key_change=True)
     check("lanza WiringRefused", True, False)
 except w.WiringRefused:
     check("lanza WiringRefused", True, True)
@@ -333,5 +335,77 @@ check("14.3 el codigo de salida NO cambia por la deriva",
       _codigo_sin, _codigo_con)
 check("14.4 y sigue publicando el conteo de rotos", True,
       "roto(s) en la copia viva" in _salida_con)
+
+print("\n== 15. la clave de la cache se mide por VALOR, no por escritura ==")
+# Corrige la premisa de H-DOCS-1012, que decia «escribir settings.local.json
+# invalida la clave». Medido en la referencia 2.1.266
+# (`createCacheSafeParams`, `isMainThreadCacheWarm`): la clave son siete campos,
+# `hooks` no es ninguno, y el advisor se compara RESUELTO. Banco:
+# `docs: .claude/eventos/measure-cache-key-surface-20260910T021100/`.
+_igual = {"advisorModel": "claude-fable-5-1"}
+_otro = {"advisorModel": "modelo-viejo"}
+_declarado15 = w.declared_wiring()
+
+check("15.1 mismo advisor -> delta vacio", [],
+      w.cache_key_delta(_igual, _declarado15))
+check("15.2 otro advisor -> delta lo nombra", ["advisorModel"],
+      w.cache_key_delta(_otro, _declarado15))
+# La asercion que PORTA la correccion: los hooks cambian y la clave no se mueve.
+check("15.3 hooks distintos, advisor igual -> delta vacio", [],
+      w.cache_key_delta({**_igual, "hooks": {"Stop": []}}, _declarado15))
+
+_l15 = _tmp / "quince.json"
+_l15.write_text(_json.dumps(_otro))
+try:
+    w.install(_l15, _declarado15, _FakeBackup(), "SELLO", backups=_tmp)
+    check("15.4 rehusa ante cambio de valor", True, False)
+except w.WiringRefused as e:
+    check("15.4 rehusa ante cambio de valor, y NOMBRA el campo", True,
+          "advisorModel" in str(e))
+check("15.5 y deja el archivo intacto", _otro, _json.loads(_l15.read_text()))
+
+# Solo cambian los hooks: procede sin permiso, porque no toca la clave.
+_l16 = _tmp / "dieciseis.json"
+_l16.write_text(_json.dumps({**_igual, "hooks": {"Stop": []},
+                             "permissions": {"allow": ["Bash(ls)"]}}))
+_b16 = _FakeBackup()
+_r16 = w.install(_l16, _declarado15, _b16, "SELLO", backups=_tmp)
+check("15.6 hooks-solo procede sin permiso", False, _r16["unchanged"])
+check("15.7 y declara el delta vacio en el acta", [], _r16["cache_key_delta"])
+check("15.8 conservando lo ajeno", {"allow": ["Bash(ls)"]},
+      _json.loads(_l16.read_text())["permissions"])
+
+# Idempotencia: instalar sobre lo ya instalado no escribe ni respalda. Sin
+# escritura no hay evento de settings, y sin evento no despierta ningun
+# suscriptor del cliente — que es de donde venia el coste.
+_b17 = _FakeBackup()
+_r17 = w.install(_l16, _declarado15, _b17, "SELLO", backups=_tmp)
+check("15.9 la segunda instalacion no escribe", True, _r17["unchanged"])
+check("15.10 ni pide respaldo", 0, len(_b17.asked))
+
+print("== 15-bis. CONTROL DE ANULACION: se retira el campo de la clave ==")
+# Si `CACHE_KEY_FIELDS` deja de nombrar `advisorModel`, la negativa desaparece.
+# Debe caer 15.4 y SOLO 15.4: si tambien cayera 15.9, el verde de la seccion
+# estaria midiendo la idempotencia y no la politica de cache.
+_original = w.CACHE_KEY_FIELDS
+w.CACHE_KEY_FIELDS = ()
+try:
+    _l18 = _tmp / "anulado.json"
+    _l18.write_text(_json.dumps(_otro))
+    _anulado_rehusa = True
+    try:
+        w.install(_l18, _declarado15, _FakeBackup(), "SELLO", backups=_tmp)
+        _anulado_rehusa = False
+    except w.WiringRefused:
+        pass
+    _r19 = w.install(_l16, _declarado15, _FakeBackup(), "SELLO", backups=_tmp)
+finally:
+    w.CACHE_KEY_FIELDS = _original
+
+check("15-bis.1 anulado, la negativa de 15.4 desaparece", False, _anulado_rehusa)
+check("15-bis.2 y la idempotencia de 15.9 SOBREVIVE", True, _r19["unchanged"])
+check("15-bis.3 restaurado, la constante vuelve a su valor",
+      ("advisorModel",), w.CACHE_KEY_FIELDS)
+
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)
