@@ -652,6 +652,70 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
     return acunadas
 
 
+def correct_layer(store_path, citation_id: str, layer: str,
+                  reason: str) -> tuple[str, str]:
+    """Corrige la CAPA de una tarea sin tocar su ``citation_id``.
+
+    Para que existe, y por que la columna y no el id
+    -------------------------------------------------
+    El eje declarado es **el repo, no la capa del producto** (ver ``LAYERS``),
+    y ``gen`` nombra el trabajo que CRUZA repos. Una tarea puede acuñarse con
+    la capa equivocada por una razon concreta y frecuente: su sujeto MENCIONA
+    un repo en el que el trabajo nunca aterrizo. Medido: ``TASK-API-0395``
+    nacio en ``api`` porque su descripcion habla de ``kaupamex-api``, y sus dos
+    commits cayeron en ``thyrox`` y en ``docs`` — ninguno en api.
+
+    Lo que se corrige es la COLUMNA. El id es **identidad, no clasificacion**
+    (Propiedad 3): renumerarlo romperia toda cita ya escrita, que es justo el
+    fallo que el esquema durable existe para no tener. La suite lo exige con
+    una asercion propia — sin ella, una version que renumerara pasaria las
+    otras dos.
+
+    ``submodule_source`` guarda la RAZON, no solo el valor nuevo: una columna
+    que cambia sin decir por que es indistinguible de una que se corrompio.
+
+    Devuelve ``(capa_anterior, capa_nueva)``.
+    """
+    layer_actual = (layer or "").lower()
+    if layer_actual not in LAYERS and layer_actual != UNKNOWN_LAYER:
+        raise MappingError(
+            f"capa '{layer}' fuera del canon. Las admitidas son "
+            f"{', '.join(LAYERS)} y '{UNKNOWN_LAYER}' (el trabajo que cruza "
+            f"repos). NO se escribe nada: una capa inventada corrompe el censo "
+            f"en silencio.")
+    if not (reason or "").strip():
+        raise MappingError(
+            "falta la razon de la correccion. Una columna que cambia sin decir "
+            "por que es indistinguible de una que se corrompio.")
+    conn = sqlite3.connect(store_path)
+    try:
+        fila = conn.execute(
+            "SELECT submodule FROM tasks WHERE citation_id = ?",
+            (citation_id,)).fetchone()
+        if fila is None:
+            raise MappingError(
+                f"no hay ninguna tarea con la cita {citation_id} en "
+                f"{store_path}. NO se escribe nada.")
+        previa = fila[0]
+        stamp = _now()
+        conn.execute(
+            "UPDATE tasks SET submodule = ?, submodule_source = ?, "
+            "  updated_at = ? WHERE citation_id = ?",
+            (layer_actual, f"corregida {stamp}: {reason.strip()}",
+             stamp, citation_id))
+        conn.commit()
+    finally:
+        conn.close()
+    return previa, layer_actual
+
+
+def _cmd_corregir_capa(args: argparse.Namespace) -> int:
+    previa, nueva = correct_layer(args.store, args.cita, args.capa, args.razon)
+    print(f"corregir-capa: {args.cita} {previa} -> {nueva} "
+          f"(la cita NO se mueve: es identidad, no clasificacion)")
+    return 0
+
+
 def _cmd_ingerir_board(args: argparse.Namespace) -> int:
     acunadas = ingest_board(args.store, args.board, args.sesion, args.ordinal,
                             layer=args.capa)
@@ -875,6 +939,18 @@ def main(argv=None) -> int:
     p_board.add_argument("--board", default=None,
                          help="directorio de tarjetas (default: el de la sesion)")
     p_board.set_defaults(func=_cmd_ingerir_board)
+
+    p_capa = sub.add_parser(
+        "corregir-capa",
+        help="corrige la CAPA de una tarea sin mover su cita")
+    p_capa.add_argument("cita", help="el TASK-<CAPA>-NNNN de la tarea")
+    p_capa.add_argument("--capa", required=True,
+                        help=f"la capa correcta: {', '.join(LAYERS)} o "
+                             f"'{UNKNOWN_LAYER}' (cruza repos)")
+    p_capa.add_argument("--razon", required=True,
+                        help="por que la anterior era incorrecta; queda en "
+                             "submodule_source")
+    p_capa.set_defaults(func=_cmd_corregir_capa)
 
     p_acunar = sub.add_parser("acunar", help="acuña el id que falte, desde el store")
     p_acunar.add_argument("--dry-run", action="store_true")

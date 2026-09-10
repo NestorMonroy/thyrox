@@ -546,6 +546,51 @@ if _dir.is_dir() and not any(_dir.iterdir()):
 check(_default_store_con({}) == _DEFAULT and _dir.is_dir(),
       "store: sin constante, el directorio se crea (idempotente)")
 
+# ---------------------------------------------------------------------------
+# 9. Corregir la CAPA sin tocar el id — la Propiedad 3 aplicada a un error de
+#    atribucion, no a una derivacion tardia.
+#
+# El eje declarado es EL REPO, no la capa del producto (`task_ids.py:124-138`),
+# y `GEN` nombra el trabajo que CRUZA repos. Cuando una tarea se acuña con la
+# capa equivocada —porque el sujeto MENCIONA un repo en el que el trabajo nunca
+# aterrizo— lo que se corrige es la COLUMNA, nunca el id: renumerar rompe toda
+# cita ya escrita, y el bloque 3 ya exige esa invariante para la derivacion.
+#
+# EL QUE DISCRIMINA es la tercera asercion: que el `citation_id` NO se mueva.
+# Sin ella, una implementacion que renumerara pasaria los otros dos.
+_, DB9 = _store_con([("7", "Sujeto mal atribuido", S, "api", "TASK-API-0395")])
+
+_antes = sqlite3.connect(DB9).execute(
+    "SELECT submodule, submodule_source, citation_id FROM tasks "
+    " WHERE citation_id = 'TASK-API-0395'").fetchone()
+kx.correct_layer(DB9, "TASK-API-0395", "gen", "los commits cruzan repos")
+# La relectura va por `task_id`, NO por la cita: leer por la cita haria que una
+# version que renumerara devolviera `None` y el control muriera con TypeError en
+# la PRIMERA asercion, en vez de fallar limpiamente en la tercera — que es la
+# que mide el renumerado. Un control que revienta no dice cual mecanismo falto.
+_dsp = sqlite3.connect(DB9).execute(
+    "SELECT submodule, submodule_source, citation_id FROM tasks "
+    " WHERE task_id = '7'").fetchone()
+
+check(_antes[0] == "api" and _dsp[0] == "gen", "capa: la columna se corrige")
+check("los commits cruzan repos" in (_dsp[1] or ""),
+      "capa: la procedencia guarda la RAZON, no solo el valor nuevo")
+check(_dsp[2] == "TASK-API-0395",
+      "capa: el citation_id NO se mueve — es identidad, no clasificacion")
+
+# Rehusa en vez de escribir a ciegas: una cita ausente y una capa inventada
+# son dos formas de corromper el registro en silencio.
+try:
+    kx.correct_layer(DB9, "TASK-API-9999", "gen", "x")
+    check(False, "capa: cita ausente REHUSA")
+except kx.MappingError:
+    check(True, "capa: cita ausente REHUSA")
+try:
+    kx.correct_layer(DB9, "TASK-API-0395", "inventada", "x")
+    check(False, "capa: capa fuera del canon REHUSA")
+except kx.MappingError:
+    check(True, "capa: capa fuera del canon REHUSA")
+
 print(f"{checks} aserciones")
 if failures:
     for f in failures:

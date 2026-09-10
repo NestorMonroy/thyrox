@@ -1,0 +1,7 @@
+El store del mapa se declara, no se deriva por aritmetica
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/task/test_task_ids.py", line 566, in <module>
+    kx.correct_layer(DB9, "TASK-API-0395", "gen", "los commits cruzan repos")
+    ^^^^^^^^^^^^^^^^
+AttributeError: module 'task_ids' has no attribute 'correct_layer'
+EXIT=1
