@@ -94,6 +94,22 @@ print('=== Caso 6: un archivo en ingles pasa ===')
 rc, _ = run_on('def passed():\n    clean = 1\n    return clean\n')
 check('acepta el archivo', rc, 0)
 
+print('=== Caso 7: el vocabulario tecnico no lo marca el corpus ===')
+# Las cinco las midio una sonda de conducta: el corpus las atrapa y NINGUNA
+# esta en el lexico cerrado ni en las particulas. No son palabras del texto:
+# `ir` es el prefijo de namespace de la referencia, `vals` su convencion de
+# dict, `iban` un estandar bancario, `q` y `es` nombres de una y dos letras.
+for nombre in ('IrActionsBase', 'party_vals', 'iban_check', 'q', 'es_MX'):
+    check(f'{nombre} no se marca', gate.spanish_words_in(nombre), [])
+
+print('=== Caso 8: EL DISCRIMINANTE — la exencion no apaga el criterio ===')
+# Si la exencion se implementara como «apagar el corpus», este caso pasaria a
+# devolver [] y el criterio entero quedaria muerto sin que nada lo dijera.
+check('clasificar_los_metodos sigue cayendo',
+      'clasificar' in gate.spanish_words_in('clasificar_los_metodos'), True)
+check('una particula real sigue cayendo',
+      'en' in gate.spanish_words_in('lista_en'), True)
+
 print()
 print(f'{passed} ok, {failed} fallos (alcance medido: {passed + failed} aserciones '
       f'sobre {GATE})')

@@ -379,6 +379,42 @@ ES_LANG = 'es'
 EN_LANG = 'en'
 
 
+#: Vocabulario TECNICO que el corpus abierto atestigua como español y que aquí
+#: se queda. No son palabras del texto: son nombres de cosas.
+#:
+#: `redaccion-tecnica-es.md` ya los excluía **en prosa** del léxico cerrado —el
+#: prefijo de namespace de la referencia, los estándares, los acrónimos— y esa
+#: prosa no gobernaba al cuarto criterio, que es abierto y los recogía otra vez.
+#: Aquí la exclusión pasa de prosa a mecanismo.
+TECHNICAL_VOCABULARY = frozenset({
+    'vals',      # la convención de dict de la referencia (`party_vals`)
+    'iban',      # estándar bancario ISO 13616
+    'incoterm',  # estándar de comercio ICC
+})
+
+#: Piso de longitud del criterio de corpus. Una palabra de una o dos letras no
+#: la decide la frecuencia: `q`, `l`, `o` son nombres de variable y `ir`, `es`
+#: son a la vez prefijo de namespace y código de idioma. Las partículas
+#: españolas reales de esa longitud —`de`, `en`, `el`— NO se pierden: las
+#: recoge `SPANISH_PARTICLES` en su propia pasada, que sí consulta las
+#: exenciones. El piso quita una duplicación que medía peor, no una defensa.
+CORPUS_MINIMUM_LENGTH = 3
+
+
+def _corpus_says_spanish(word, technical):
+    """El cuarto criterio, ya acotado por su vocabulario y su piso.
+
+    Se extrae a una función en vez de encadenarlo en la comprensión porque la
+    condición tiene tres partes y una condición de tres partes dentro de un
+    filtro es donde se cuela la que falta — que es exactamente lo que pasó.
+    """
+    if len(word) < CORPUS_MINIMUM_LENGTH:
+        return False
+    if word in TECHNICAL_VOCABULARY or word in technical:
+        return False
+    return spanish_by_corpus(word)
+
+
 def spanish_words_in(name, code_families=frozenset()):
     """Palabras españolas del identificador, o lista vacía.
 
@@ -388,19 +424,25 @@ def spanish_words_in(name, code_families=frozenset()):
     archivo que dé contexto— siga llamando con un solo argumento.
     """
     words = split_words(name)
-    hits = [w for w in words
-            if w in SPANISH_WORDS
-            or (len(w) > 5 and SPANISH_MORPHOLOGY.search(w))
-            or spanish_by_corpus(w)]
+
+    # Las exenciones se calculan ANTES de la primera pasada, no despues.
+    # Calcularlas dentro del bloque de particulas —que es como estaban— dejaba
+    # al criterio de corpus sin ninguna: la palabra salia del lexico cerrado
+    # por la puerta de delante y volvia a entrar por la de atras (H-DOCS-1139).
+    technical = set()
     if len(words) >= 2:
-        # Las tres exenciones se miden contra el baseline entero antes de
-        # entrar: ninguna pierde un solo caso de español real.
         technical = _particles_before_digits(name)
         if _technical_suffix(name):
             technical.add(name.rpartition('_')[2].lower())
         head, separator, tail = name.rpartition('_')
         if separator and head.lower() in code_families:
             technical.add(tail.lower())
+
+    hits = [w for w in words
+            if w in SPANISH_WORDS
+            or (len(w) > 5 and SPANISH_MORPHOLOGY.search(w))
+            or _corpus_says_spanish(w, technical)]
+    if len(words) >= 2:
         hits += [w for w in words
                  if w in SPANISH_PARTICLES and w not in technical]
     return sorted(set(hits))

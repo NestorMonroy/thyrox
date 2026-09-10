@@ -92,6 +92,7 @@ EXCLUIR = ('node_modules', '.venv', 'venv', '__pycache__', 'build', 'dist',
 # tambien producto. Ver `workbench/paths.py`.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from workbench.paths import is_measurement_artifact  # noqa: E402
+from paths.reach import env_value  # noqa: E402
 
 # El léxico vive en el gate hermano, ya en este mismo directorio tras la
 # mudanza a THYROX (antes era `api: scripts/check_identifier_language.py`,
@@ -99,9 +100,62 @@ from workbench.paths import is_measurement_artifact  # noqa: E402
 # apuntarlo a otro sitio —o a ninguno, para probar el guard.
 LEXICO = os.environ.get('IDIOMA_GATE_LEXICO',
                         str(pathlib.Path(__file__).with_name('check_identifier_language.py')))
-BASELINE = pathlib.Path(__file__).parent / 'script_naming_language_baseline.txt'
-IDENTIFIER_BASELINE = (pathlib.Path(__file__).parent
-                      / 'identifier_language_baseline_claude.txt')
+#: Los dos baselines son PARAMETRO DEL CONSUMIDOR, no del proveedor — el mismo
+#: criterio que su hermano `check_identifier_language.py` ya declara y que este
+#: gate contradecia: colgaban de `__file__.parent`, o sea DENTRO de THYROX.
+#:
+#: El defecto no era de estilo. THYROX gobierna varios arboles y la deuda
+#: congelada es de cada uno: con el hogar en el proveedor, medir docs escribia
+#: la deuda de docs dentro de thyrox, y el siguiente arbol medido la leia como
+#: propia. Medido al cerrarlo: un `--write-baseline` corrido desde docs creo
+#: los dos archivos en `thyrox/src/verify/`, donde ningun consumidor los busca.
+#:
+#: Dos entradas, como en el hermano: la variable del proceso gana, y sin ella
+#: el hogar se deriva de la raiz del CONSUMIDOR — nunca de `__file__`.
+NAMING_BASELINE_VAR = 'SCRIPT_NAMING_LANGUAGE_BASELINE'
+IDENTIFIER_BASELINE_VAR = 'SCRIPT_NAMING_IDENTIFIER_BASELINE'
+
+#: El subdirectorio del consumidor donde viven, cuando nadie los declara.
+CONSUMER_BASELINE_DIR = pathlib.Path('.claude') / 'baselines'
+
+
+def _consumer_baseline(var, filename, measured_root=None):
+    """La ruta declarada, o la del consumidor. Nunca la del proveedor.
+
+    Se resuelve AL LLAMAR y no en una constante de modulo: una constante se
+    evalua al importar, y entonces un consumidor que declare la variable
+    despues del `import` no la ve — el defecto que `workbench/paths.py` ya
+    nombra para las suyas.
+    """
+    declared = env_value(var, measured_root)
+    if declared:
+        return pathlib.Path(declared)
+    from paths.reach import ConsumerUnknownError, consumer_root  # noqa: PLC0415
+    try:
+        return consumer_root(start=measured_root) / CONSUMER_BASELINE_DIR / filename
+    except ConsumerUnknownError:
+        # El PROVEEDOR tambien es un arbol medido —su propia deuda es la tarea
+        # #91— y no es «un consumidor»: `consumer_root` rehusa ante el. Su
+        # baseline cuelga de la RAIZ MEDIDA, que el llamador pasa.
+        #
+        # Anclarlo al cwd seria el defecto home-by-cwd que #284/#286 cerraron:
+        # medido al cometerlo, un arbol sintetico de prueba leia el baseline de
+        # 1978 lineas del arbol desde el que se lanzo la suite, y sus tres casos
+        # daban verde por estar «ya congelados» en un baseline ajeno.
+        anchor = pathlib.Path(measured_root) if measured_root else pathlib.Path.cwd()
+        return anchor / CONSUMER_BASELINE_DIR / filename
+
+
+def naming_baseline(measured_root=None):
+    """El baseline de NOMBRES de archivo del arbol medido."""
+    return _consumer_baseline(NAMING_BASELINE_VAR,
+                              'script_naming_language_baseline.txt', measured_root)
+
+
+def identifier_baseline(measured_root=None):
+    """El baseline de IDENTIFICADORES del arbol medido."""
+    return _consumer_baseline(IDENTIFIER_BASELINE_VAR,
+                              'identifier_language_baseline_claude.txt', measured_root)
 
 
 def cargar_lexico():
@@ -124,10 +178,10 @@ def cargar_lexico():
     return modulo.spanish_words_in
 
 
-def cargar_baseline():
-    if not BASELINE.is_file():
+def cargar_baseline(measured_root=None):
+    if not naming_baseline(measured_root).is_file():
         return set()
-    return {ln.strip() for ln in BASELINE.read_text(encoding='utf-8').splitlines()
+    return {ln.strip() for ln in naming_baseline(measured_root).read_text(encoding='utf-8').splitlines()
             if ln.strip() and not ln.startswith('#')}
 
 
@@ -139,7 +193,7 @@ def scan_idioma(raiz):
     ortogonal a cuál se use.
     """
     espanol = cargar_lexico()
-    baseline = cargar_baseline()
+    baseline = cargar_baseline(raiz)
     infractores, total = [], 0
     for sub in RAICES:
         base = raiz / sub
@@ -199,11 +253,11 @@ def load_identifier_lexicon():
     return modulo
 
 
-def load_identifier_baseline():
-    if not IDENTIFIER_BASELINE.is_file():
+def load_identifier_baseline(measured_root=None):
+    if not identifier_baseline(measured_root).is_file():
         return set()
     return {ln.strip()
-            for ln in IDENTIFIER_BASELINE.read_text(encoding='utf-8').splitlines()
+            for ln in identifier_baseline(measured_root).read_text(encoding='utf-8').splitlines()
             if ln.strip() and not ln.startswith('#')}
 
 
@@ -215,7 +269,7 @@ def scan_identifiers(root):
     denominador con archivos sobre los que el instrumento no dijo nada.
     """
     lexico = load_identifier_lexicon()
-    baseline = load_identifier_baseline()
+    baseline = load_identifier_baseline(root)
     infractores, total = [], 0
     for sub in RAICES:
         base = root / sub
@@ -250,9 +304,9 @@ def main_identifiers(root, args):
     """La rama del eje 3. Su universo y su ceguera son otros que los del nombre."""
     if args.write_baseline:
         # Se escribe SIN baseline previo: congela lo que hay hoy.
-        IDENTIFIER_BASELINE.write_text('')
+        identifier_baseline(root).write_text('')
         infractores, total = scan_identifiers(root)
-        IDENTIFIER_BASELINE.write_text(
+        identifier_baseline(root).write_text(
             '# Deuda heredada de identificadores en español bajo .claude/**.\n'
             '# El gate hermano de api mide src/, tests/ y addons/; este mide lo\n'
             '# que aquél no alcanza. Una entrada listada NO bloquea; una nueva\n'
@@ -275,7 +329,7 @@ def main_identifiers(root, args):
             print(f'  {relativa}:{lineno}  {name}  ->  español: {", ".join(hits)}')
         print(f'{len(infractores)} identificador(es) en español '
               f'(alcance medido: {total} archivo(s) .py bajo '
-              f'{"/".join(RAICES)}; {len(load_identifier_baseline())} '
+              f'{"/".join(RAICES)}; {len(load_identifier_baseline(root))} '
               f'congelado(s) en baseline)')
         print('  Cota inferior: ciega a la palabra que existe en los dos '
               'idiomas (total, final, normal).')
@@ -324,9 +378,9 @@ def main_idioma(raiz, args):
     """La rama del eje 2. Separada porque su veredicto y su ceguera son otros."""
     if args.write_baseline:
         # El baseline se escribe SIN baseline previo: congela lo que hay hoy.
-        BASELINE.write_text('')
+        naming_baseline(raiz).write_text('')
         infractores, total = scan_idioma(raiz)
-        BASELINE.write_text(
+        naming_baseline(raiz).write_text(
             '# Deuda heredada del eje de idioma en nombres de archivo.\n'
             '# Una ruta listada NO bloquea; una nueva SÍ. Se paga al tocar el\n'
             '# archivo: al renombrarlo, quitar su línea — si no, el baseline\n'
@@ -345,7 +399,7 @@ def main_idioma(raiz, args):
             print(f'  {relativa}  ->  español: {", ".join(hits)}')
         print(f'{len(infractores)} nombre(s) de archivo en español '
               f'(alcance medido: {total} archivo(s) .py y .sh bajo '
-              f'{"/".join(RAICES)}; {len(cargar_baseline())} congelado(s) '
+              f'{"/".join(RAICES)}; {len(cargar_baseline(raiz))} congelado(s) '
               f'en baseline)')
         print('  Cota inferior: ciega a la palabra que existe en los dos '
               'idiomas (total, final, normal).')

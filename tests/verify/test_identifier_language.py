@@ -57,14 +57,13 @@ check('sin hermanos sigue contando como preposicion',
 
 familias = gate.code_suffix_families(FAMILIA_VAT)
 check('el prefijo entra a la familia', 'check_vat' in familias, True)
-# H-DOCS-1139: la exencion de familia ya NO absuelve — el criterio 4
-# (`spanish_by_corpus`) marca 'de' en la PRIMERA pasada de `spanish_words_in`,
-# antes de que `tecnicas` (la exencion) exista siquiera. Medido tambien contra
-# el archivo SIN portar (`api: scripts/check_identifier_language.py`): mismo
-# resultado, asi que no es un efecto del porte. Documentado, sin fix inmediato
-# (fuera del alcance de esta mudanza) — sucesor #147.
-check('con su familia YA NO evita el hit (H-DOCS-1139)',
-      gate.spanish_words_in('check_vat_de', familias), ['de'])
+# H-DOCS-1139 CERRADO: la exencion vuelve a absolver. El defecto era de ORDEN
+# —`spanish_words_in` calculaba `technical` DENTRO del bloque de particulas, o
+# sea despues de que el criterio 4 ya hubiera marcado 'de'—, y el arreglo fue
+# subir ese calculo antes de la primera pasada. Esta asercion documentaba el
+# defecto y ahora documenta su cierre: al anular el arreglo vuelve a ['de'].
+check('con su familia evita el hit (H-DOCS-1139 cerrado)',
+      gate.spanish_words_in('check_vat_de', familias), [])
 
 check('dos hermanos no bastan (el umbral es tres)',
       gate.code_suffix_families(['check_vat_de', 'check_vat_mx']), set())
@@ -124,7 +123,10 @@ with tempfile.TemporaryDirectory() as tmp:
     for name, _ in declarados:
         if gate.spanish_words_in(name) and not gate.spanish_words_in(name, familias_sinteticas):
             absueltos.append(name)
-    check('no absuelve nada hoy (H-DOCS-1139)', absueltos, [])
+    # Con H-DOCS-1139 cerrado la familia SI absuelve, y el sujeto absuelto es
+    # el que la declara. Un [] aqui volveria a significar que la exencion no
+    # llega a tiempo — es la misma asercion, con el veredicto que corresponde.
+    check('absuelve al que declara la familia', absueltos, ['check_vat_de'])
 
 print()
 print(f'{ok} ok, {fallos} fallos (alcance medido: {ok + fallos} aserciones sobre {GATE})')
