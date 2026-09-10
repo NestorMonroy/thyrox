@@ -357,6 +357,38 @@ def corpus_available():
     return _corpus(ES_LANG) is not None and _corpus(EN_LANG) is not None
 
 
+#: Lo que se imprime al rehusar. Nombra el remedio porque el defecto real no
+#: era «falta un paquete»: era que el veredicto dependia del INTERPRETE con que
+#: se invocara el gate. Medido sobre el mismo arbol y el mismo baseline —
+#: `python3` del sistema (con lexico) daba FAIL con 2994 fuera del baseline, y
+#: el `uv` de api (sin lexico) daba OK con 1265 en deuda heredada.
+CORPUS_MISSING = (
+    'ERROR — el lexico de `spacy-lookups-data` no esta disponible para este\n'
+    'interprete, asi que el cuarto criterio (corpus abierto) no puede medir.\n'
+    '\n'
+    'NO se emite conteo: un 0 aqui no distingue «no hay espanol» de «no lo\n'
+    'puedo ver», que es el sub-patron D de metrica-decide-la-conclusion.\n'
+    '\n'
+    'Remedio: el lexico lo declara el PROVEEDOR (thyrox/pyproject.toml).\n'
+    '  cd <thyrox> && uv sync\n'
+    'y se invoca el gate con el interprete del proveedor, que resuelve\n'
+    '`thyrox_toolchain_provider_python` de src/lib/toolchain.sh.'
+)
+
+
+def refuse_without_corpus():
+    """Imprime el rehuse y devuelve 2, o ``None`` si el corpus esta.
+
+    Es funcion y no un `if` en `main` porque la rehusa la comparten los dos
+    caminos —medir y congelar— y el segundo es el que mas dano hace: un
+    baseline escrito a ciegas congela como limpio lo que el gate no supo ver.
+    """
+    if corpus_available():
+        return None
+    print(CORPUS_MISSING, file=sys.stderr)
+    return 2
+
+
 def spanish_by_corpus(word):
     """¿El corpus espanol la atestigua con margen sobre el ingles?
 
@@ -448,11 +480,45 @@ def spanish_words_in(name, code_families=frozenset()):
     return sorted(set(hits))
 
 
+#: Variable con la que el CONSUMIDOR declara sus claves de contrato: nombres
+#: que su propia normativa fija y que por tanto no son deuda de idioma. El caso
+#: que la origina es `codigo_error`, la clave canónica de error de `api` —270
+#: ocurrencias medidas—, que su regla `canon-idioma` MANDA escribir así.
+#:
+#: El proveedor entrega el mecanismo y el consumidor el parámetro, igual que el
+#: baseline y las raíces (DEC-04). Codificar `codigo_error` aquí sería meter el
+#: dominio del producto dentro del proveedor.
+CANON_KEYS_VAR = 'IDENTIFIER_LANGUAGE_CANON_KEYS'
+
+
+def canon_keys(start: pathlib.Path | None = None, source=None) -> frozenset[str]:
+    """Las claves de contrato que el consumidor declara, o el conjunto vacío.
+
+    Sin declaración devuelve vacío — no un default inventado. Un default aquí
+    absolvería nombres que nadie pidió absolver, y el gate publicaría verde
+    sobre una población que no midió.
+    """
+    declared = env_value(CANON_KEYS_VAR, start, source)
+    if not declared:
+        return frozenset()
+    return frozenset(part.strip() for part in declared.split(',') if part.strip())
+
+
 def declared_identifiers(tree):
     """Los identificadores que el archivo **declara**, con su línea.
 
     Los docstrings y comentarios quedan fuera por construcción: el AST no los
     entrega como nombre de nada.
+
+    Una **clave de diccionario** sí entra: `identificadores-en-ingles.md`
+    enumera «claves de manifiesto —una clave es un atributo—», y hasta hoy el
+    recorrido veía `def`/`class`/`arg`/`Name` y ninguno de los cuatro es un
+    literal de dict. La regla nombraba una forma que el instrumento no podía
+    ver.
+
+    Sólo entra la clave que **puede ser un nombre** (``str.isidentifier``). Una
+    cabecera HTTP (``application/json``), una ruta o un ordinal son datos, no
+    símbolos; medirlos haría que el veredicto hablara de otra población.
     """
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
@@ -461,6 +527,11 @@ def declared_identifiers(tree):
             yield node.arg, node.lineno
         elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
             yield node.id, node.lineno
+        elif isinstance(node, ast.Dict):
+            for key in node.keys:
+                if (isinstance(key, ast.Constant) and isinstance(key.value, str)
+                        and key.value.isidentifier()):
+                    yield key.value, key.lineno
 
 
 def load_baseline(start: pathlib.Path | None = None) -> set[str]:
@@ -471,8 +542,14 @@ def load_baseline(start: pathlib.Path | None = None) -> set[str]:
             if line.strip() and not line.startswith('#')}
 
 
-def scan(paths):
-    """Devuelve ``(violaciones, archivos_medidos)``."""
+def scan(paths, canon=frozenset()):
+    """Devuelve ``(violaciones, archivos_medidos)``.
+
+    ``canon`` son los nombres que el consumidor declaró como contrato propio
+    (ver :func:`canon_keys`). Se exime el NOMBRE, no el sitio: si la normativa
+    del consumidor fija `codigo_error`, lo fija igual como clave de dict que
+    como variable que la construye.
+    """
     findings, measured = [], 0
     for path in paths:
         if 'migrations' in path.parts:
@@ -486,7 +563,7 @@ def scan(paths):
         declared = list(declared_identifiers(tree))
         families = code_suffix_families(n for n, _ in declared)
         for name, lineno in declared:
-            if name in seen:
+            if name in seen or name in canon:
                 continue
             hits = spanish_words_in(name, families)
             if hits:
@@ -519,7 +596,11 @@ def main():
         print(f'ERROR — {exc}', file=sys.stderr)
         return 2
 
-    findings, measured = scan(collect(args.paths, start))
+    refused = refuse_without_corpus()
+    if refused is not None:
+        return refused
+
+    findings, measured = scan(collect(args.paths, start), canon_keys(start))
 
     if args.write_baseline:
         lines = sorted({f'{path}::{name}' for path, name, _, _ in findings})
