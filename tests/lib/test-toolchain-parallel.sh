@@ -99,4 +99,21 @@ else
 fi
 rm -rf "$CASA"
 
+# Caso 8 — el hogar de la cita es del PROVEEDOR, no de /tmp ni de $HOME.
+# `PARALLEL_HOME` sin declarar cae por defecto a `$HOME/.parallel`, que es
+# estado del contenedor y no del arbol: se pierde al reciclarlo y no lo ve
+# ningun clon. thyrox es el proveedor, asi que su estado vive bajo el hogar
+# que `THYROX_STATE_DIR` ya declara — no se inventa raiz nueva.
+hogar="$(THYROX_TOOLCHAIN_PARALLEL_BIN=sh thyrox_toolchain_parallel_home 2>/dev/null || echo '')"
+if [[ "$hogar" == "$ROOT/"* ]]; then
+  ok "el hogar de la cita esta dentro del proveedor"
+else
+  bad "el hogar deberia colgar de $ROOT, dio '$hogar'"
+fi
+if [[ -n "$hogar" && "$hogar" != *"/tmp/"* && "$hogar" != "$HOME/.parallel" ]]; then
+  ok "el hogar no es /tmp ni el del contenedor"
+else
+  bad "el hogar es efimero: '$hogar'"
+fi
+
 thyrox_summary

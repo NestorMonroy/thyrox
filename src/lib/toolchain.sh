@@ -142,6 +142,31 @@ THYROX_TOOLCHAIN_PARALLEL_BIN="${THYROX_TOOLCHAIN_PARALLEL_BIN:-parallel}"
 # binario y no leyendo el codigo de salida del instalador.
 THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD="${THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD:-sudo apt-get install -y parallel}"
 
+# @description El hogar de estado de GNU parallel. Se compone del hogar de
+# estado que el proveedor YA declara (`THYROX_STATE_DIR`, por defecto
+# `.claude`), no de una raiz nueva: una segunda raiz seria la segunda fuente de
+# verdad que `calibration-verified-numbers.md` prohibe para una cifra y vale
+# igual para una ruta.
+#
+# El default de parallel es `$HOME/.parallel`, que es estado del CONTENEDOR:
+# se pierde al reciclarlo y no lo ve ningun clon. thyrox es el proveedor y su
+# estado vive en su arbol. `PARALLEL_HOME` declarado gana, por la misma razon
+# que `THYROX_ROOT` gana sobre el localizador: quien lo exporta para UNA
+# invocacion esta corrigiendo a proposito lo que el arbol dice para todas.
+# @noargs
+# @stdout La ruta absoluta del hogar de estado de parallel.
+function thyrox_toolchain_parallel_home() {
+  if [[ -n "${PARALLEL_HOME:-}" ]]; then
+    printf '%s' "$PARALLEL_HOME"; return 0
+  fi
+  local root state
+  root="$(thyrox_toolchain_provider_root)" || return 2
+  state="${THYROX_STATE_DIR:-.claude}"
+  [[ "$state" == /* ]] && { printf '%s/parallel' "$state"; return 0; }
+  printf '%s/%s/parallel' "$root" "$state"
+}
+export -f thyrox_toolchain_parallel_home
+
 # @description Asegura GNU parallel, idempotente y con la instalacion como
 # opt-in. Adopta el check-then-act de `vvv: provision/provision-helpers.sh:776`
 # (`vvv_is_apt_pkg_installed`): se pregunta por el estado antes de actuar, y
@@ -162,7 +187,7 @@ THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD="${THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD:-
 # @exitcode 0 El binario esta disponible.
 # @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
 function thyrox_toolchain_require_parallel() {
-  local bin="$THYROX_TOOLCHAIN_PARALLEL_BIN"
+  local bin="${THYROX_TOOLCHAIN_PARALLEL_BIN:-parallel}"
 
   if ! command -v "$bin" >/dev/null 2>&1; then
     if [[ "${THYROX_INSTALL_PARALLEL:-}" != "1" ]]; then
@@ -190,7 +215,7 @@ function thyrox_toolchain_require_parallel() {
   # intentar responderle. El hogar es `PARALLEL_HOME` si esta declarado,
   # porque un control necesita un hogar aislado para poder fallar.
   if [[ "${bin##*/}" == "parallel" ]]; then
-    local citation_home="${PARALLEL_HOME:-$HOME/.parallel}"
+    local citation_home; citation_home="$(thyrox_toolchain_parallel_home)"
     if [[ ! -f "$citation_home/will-cite" ]]; then
       mkdir -p "$citation_home" && : > "$citation_home/will-cite"
     fi

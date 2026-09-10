@@ -124,3 +124,6 @@ venv/
 # esto no es el store.
 *.sqlite3-wal
 *.sqlite3-shm
+
+# Estado de GNU parallel: marcador de cita, no producto.
+.claude/parallel/
