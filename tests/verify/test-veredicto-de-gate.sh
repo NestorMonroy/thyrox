@@ -32,7 +32,7 @@ cd "$(thyrox_root)" || exit 1
 AUDIT=src/verify/thyrox-audit.sh
 [[ -f $AUDIT ]] || { echo "ERROR - no encuentro $AUDIT" >&2; exit 2; }
 
-PASS=0; WARN=0
+PASS=0; WARN=0; SINMEDIR=0
 ok()   { echo "     PASS  · $1"; PASS=$((PASS+1)); }
 warn() { echo "     WARN  · $1"; WARN=$((WARN+1)); }
 
@@ -55,27 +55,27 @@ mide_7()  { echo "7"; }
 muda()    { return 1; }
 
 # 1 — CONTROL POSITIVO: el gate rehusa y el veredicto NO puede ser PASS.
-WARN=0; PASS=0
+WARN=0; PASS=0; SINMEDIR=0
 medir_gate rehusa
 gate_midio "prueba" || true
 check "un gate que rehusa no publica PASS" "PASS=0 WARN=1" "PASS=$PASS WARN=$WARN"
 check "el codigo del gate llega intacto"   "2"             "$GATE_RC"
 
 # 2 — el gate mide y no encuentra nada: PASS legitimo.
-WARN=0; PASS=0
+WARN=0; PASS=0; SINMEDIR=0
 medir_gate mide_0
 if gate_midio "prueba"; then [[ "$GATE_N" -eq 0 ]] && ok "sin defectos"; fi
 check "un 0 medido si publica PASS" "PASS=1 WARN=0" "PASS=$PASS WARN=$WARN"
 
 # 3 — el gate mide y encuentra: WARN, no PASS.
-WARN=0; PASS=0
+WARN=0; PASS=0; SINMEDIR=0
 medir_gate mide_7
 if gate_midio "prueba"; then [[ "$GATE_N" -eq 0 ]] || warn "7 defectos"; fi
 check "un conteo distinto de 0 publica WARN" "PASS=0 WARN=1" "PASS=$PASS WARN=$WARN"
 check "el conteo llega intacto"              "7"             "$GATE_N"
 
 # 4 — el gate muere sin decir nada (codigo 1, sin salida): tampoco es PASS.
-WARN=0; PASS=0
+WARN=0; PASS=0; SINMEDIR=0
 medir_gate muda
 gate_midio "prueba" || true
 check "un gate mudo no publica PASS" "PASS=0 WARN=1" "PASS=$PASS WARN=$WARN"

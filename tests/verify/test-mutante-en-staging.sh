@@ -78,7 +78,7 @@ python3 "$GUION" "$TMP/declara.py" >/dev/null 2>&1
 afirmar "la declaracion a nivel de modulo NO cuenta" 0 $?
 
 echo "== 5. el mutador REAL del repo pasa su propio guard =="
-python3 "$GUION" "$AQUI/../verify/check_suite_discrimina.py" >/dev/null 2>&1
+python3 "$GUION" "$RAIZ/src/verify/check_suite_discrimina.py" >/dev/null 2>&1
 afirmar "check_suite_discrimina.py no se bloquea a si mismo" 0 $?
 
 echo "== 6. sin argumentos, el alcance sale del staging =="
