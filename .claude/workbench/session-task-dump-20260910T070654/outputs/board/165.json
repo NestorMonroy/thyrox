@@ -1,0 +1,11 @@
+{
+  "id": "165",
+  "subject": "Construir el canal consumidor: cómo usa un kaupamex- un skill alojado en thyrox",
+  "description": "Directiva del ejecutor 2026-09-05: «THYROX va a ser quien tenga todos los agentes, skills, y los kaupamex- van a ser sus consumidores; no tendría que estar en kaupamex- como skill sino sólo como consumidor del skill de THYROX».\n\nEl movimiento de TASK-DOCS-0409 retiró de kaupamex-docs los 569 archivos de skills/agents/commands/references. Eso ejecuta la mitad del modelo —thyrox aloja— y NO construye la otra: hoy la invocación por `Skill` resuelve contra el `.claude/` de la sesión, así que mover el archivo no crea el canal de consumo, lo quita. Un `Skill(skill=\"sphinx\")` desde kaupamex-docs ya no encuentra nada.\n\nMedir primero, decidir después:\n1. Cómo resuelve el ejecutable un skill/agente/comando: qué raíces mira, en qué orden, y si un directorio adicional aporta skills o sólo CLAUDE.md/rules (H-DOCS-1010 midió que los HOOKS no viajan por esa vía; skills está sin medir).\n2. Si existe un mecanismo de proveedor: plugin/marketplace, symlink, `additionalDirectories`, o el `.claude-plugin/plugin.json` que ADR-019 ya nombraba.\n3. El veredicto por clase: 86 skills de metodología vs `sphinx`/`cosmic`, que sirven a un repo concreto. Consumir no es lo mismo para los dos.\n\nBloquea con TASK-DOCS-0406: las dos preguntan dónde vive el cableado que hace que thyrox gobierne; una para hooks, ésta para skills.",
+  "activeForm": "Construyendo thyrox/install.sh, el canal consumidor",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": [
+    "161"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "id": "167",
+  "subject": "Decidir el destino del package-lock.json de @kaupamex/agent, que thyrox ignora",
+  "description": "La cuarta transformacion movio .claude/packages a thyrox/src/packages. `src/packages/agent/package-lock.json` estaba RASTREADO en kaupamex-docs (docs@4205af26c) y esta IGNORADO en thyrox (.gitignore:5 veta package-lock.json y yarn.lock — thyrox es bun-first). El movimiento lo saco de control de versiones en silencio: el archivo existe en disco y ya no lo cubre ningun commit.\n\nLo que se pierde: fija `zod` en 4.5.2 con su hash de integridad. Sin el, un `npm install` fresco puede resolver otro 4.x dentro de `^4.3.6` — la reproducibilidad que un lock existe para dar.\n\nNingun instrumento del radio lo vio: el radio mide presencia de archivo, no estado de versionado. Lo destapo el conteo del indice (7794 A contra 7795 mapeados).\n\nDos desenlaces, y es decision del ejecutor:\n(a) el paquete adopta bun como el resto de thyrox — se retira el package-lock.json y su lock pasa a bun.lock, que .gitignore no veta;\n(b) .gitignore de thyrox talla una excepcion para src/packages/**/package-lock.json.\n\nNo se hizo `git add -f`: eso anularia una politica declarada del repo destino sin decidirla.",
+  "activeForm": "Decidiendo el destino del package-lock.json",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

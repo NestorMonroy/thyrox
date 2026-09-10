@@ -1,0 +1,9 @@
+{
+  "id": "264",
+  "subject": "Residuo en .claude/eventos: era la mitad Python, no la de TS",
+  "description": "CERRADO en thyrox@a1a91f32.\n\nEl diagnostico original decia «la suite de TS deja residuo» y era falso. Medido: las cuatro suites de TS que piden scratch ya usaban temporales que se limpian solos; la unica que dejaba residuo era `tests/paths/test_reach_roots_declared.py`, en Python, que creaba cuatro directorios con `mkdir` bajo `reach.scratch_root()` y no los borraba.\n\nCausa de fondo: un fixture temporal y un banco de evidencia compartian significante —un directorio bajo `.claude/eventos`— con dos significados distintos. El gate del proveedor lee ese directorio como «bancos emitidos dentro del arbol del proveedor» y detiene el commit, correctamente segun su contrato.\n\nArreglo: un unico `tempfile.mkdtemp(dir=reach.scratch_root())` con `atexit.register(shutil.rmtree)`, que es lo que sus cuatro suites hermanas ya hacian. Sigue bajo el scratch declarado, nunca en /tmp (#166).\n\nAnulacion medida: retirando el `atexit`, el residuo reaparece (`reach-roots-0wktal73`); con el, `.claude/eventos/` queda vacio tras correr la suite. El control discrimina.\n\nMetrica: entradas en `.claude/eventos/` tras correr la suite.\nCiega a: un residuo que otra suite deje fuera de ese directorio, y a uno que se cree y borre dentro de la misma ejecucion.",
+  "activeForm": "Resolviendo el residuo de la suite en .claude/eventos",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

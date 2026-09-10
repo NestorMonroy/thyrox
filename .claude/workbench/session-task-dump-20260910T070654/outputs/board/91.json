@@ -1,0 +1,9 @@
+{
+  "id": "91",
+  "subject": "Barrer los identificadores en español del harness, con banco y radio",
+  "description": "ID: TASK-API-0042\n\nSucesor de DEC-02 (decisiones-construir-harness-propio). Medido 2026-09-04 con un léxico cerrado hecho a mano: 48 identificadores declarados en `.claude/packages/harness/{src,bin}` traen ≥1 palabra española (texto 8, clave 6, salida 6, ruta 5, linea 4, objetivo 3, raiz 3, ultimo 3, bloques 3, estado 3...). Es COTA INFERIOR: el léxico tiene ~90 palabras y la medición es ciega a todo lo que no esté en él, a los parámetros y propiedades (sólo mira function|const|let|var|type|interface|class) y a si el español está en el identificador o en un comentario adyacente.\n\nParte del defecto es de esta misma sesión: `noVacia`, `dosDigitos`, `bancoConforme` se escribieron el 2026-09-04 con la regla cargada. La regla es prospectiva y se paga al tocar, pero el volumen ya justifica un pase declarado.\n\nFORMA: TRANSFORMACIÓN MASIVA — banco de trabajo con `forma: transformacion` y su `radio/` calculado antes de tocar nada. El radio aquí no es cosmético: un `export` renombrado rompe a sus importadores, y ERR-028 midió que un renombre por token corrompe además la prosa española que comparte la palabra (`estado:` de una salida se convirtió en `settled_as:`). El radio distingue: identificador exportado (rompe fuera) / interno (no sale del archivo) / cadena publicada (NO se toca: es vocabulario, no identificador).\n\nAndamiaje: `bun run bin/harness.ts --workbench-new barrer-identificadores-harness` desde `.claude/packages/harness`.\nDepende de #90 (el gate que lo mide) y de #87 (el léxico cerrado que el gate necesita).",
+  "activeForm": "Barriendo los identificadores en español del harness",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

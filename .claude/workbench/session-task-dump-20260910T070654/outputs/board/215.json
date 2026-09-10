@@ -1,0 +1,9 @@
+{
+  "id": "215",
+  "subject": "Triar las 86 suites de shell que el corredor destapó al alcanzarlas",
+  "description": "Medido 2026-09-06 al cerrar #210: `tests/run.sh` nunca había invocado la mitad de shell. Al alcanzarla, **86 de 91** suites salen en rojo (`.claude/eventos/censo-suite-sin-correr-20260906T184659/run-sh-tres-lenguas.log`).\n\nNo es una regresión de hoy: son suites que llevaban sin correr desde la mudanza a thyrox, así que su rojo es deuda destapada, no rota. Dos causas vistas en la muestra, y el triaje debe medir si hay más:\n\n- **Raíz perdida en la mudanza.** `test-hallazgo-sucesor.sh` cita `/home/user/source/gestion/pm/...` — le falta el segmento `kaupamex-docs`. Es la forma que #173 cerró para los guiones y no para sus tests: `sed: can't read`. Estas se arreglan con el mecanismo de alcance (`src/paths/reach.py`), no a mano.\n- **Comando ausente.** `test-agent-artifacts.sh` da `exit 127` en un guard. Puede ser una herramienta que este contenedor no tiene, y entonces el test debe rehusar declarándolo en vez de fallar.\n\nEl triaje separa: (a) ruta que se repunta, (b) precondición de entorno que el test debe declarar, (c) suite cuyo sujeto ya no existe y se retira con su razón. El corredor las alcanza y publica su denominador desde hoy — lo que falta es el veredicto de cada una.\n\nCondición de cierre: `bash tests/run.sh` con la mitad de shell en verde, o cada roja restante con su clase declarada y su sucesor.",
+  "activeForm": "Triando las suites de shell en rojo",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "221",
+  "subject": "Gate: rechazar la comparación de costo sostenida en USD de lista",
+  "description": "Sucesor de H-DOCS-1137 (reincidencia de H-DOCS-1121). Detector: una línea de .rst que traiga a la vez (a) un literal de precio — USD, $/Mtok, tier_N_M — y (b) una palabra comparativa — factor, \"más caro\", \"más barato\", \"el doble\", × — SIN equiv_cost ni \"tokens equivalentes\" en su párrafo.\n\nCeguera a declarar: no ve la comparación repartida entre dos frases, y su baseline tiene que admitir los hallazgos que hablan DEL USD a propósito (H-DOCS-1121, H-DOCS-1137) — si los marcara, el gate castigaría la documentación del defecto en vez del defecto, que es la trampa que check_consumer_anchor ya evita midiendo por AST.\n\nControl positivo obligatorio: la frase real que originó H-DOCS-1137, no una fabricada. Control de anulación: retirar la exigencia de la palabra comparativa y comprobar que caen exactamente las aserciones que dependen de ella.\n\nPor qué gate y no otra lección: H-DOCS-1121 se escribió el día anterior, en el mismo directorio, y no previno la reincidencia — gitlink-bump-gate.md ya lo dejó fijado.",
+  "activeForm": "Construyendo el gate de comparación en USD",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

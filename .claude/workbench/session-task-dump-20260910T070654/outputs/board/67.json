@@ -1,0 +1,8 @@
+{
+  "id": "67",
+  "subject": "T-104 Componer el overlap gate consciente del driver en integrate()",
+  "description": "Deliverable que T-101 nombró y no cerró. driverAwareFileOverlapGate en cowork/claims.ts: clasifica cada ruta solapada por lo que git HARÁ (cuenta sólo lo que git dejaría caer — binario sin driver instalado; manda a detail lo que git fusiona — texto o binario con driver), con discriminante doble (check-attr merge + config merge.<driver>.driver) y detección de binario-por-contenido via git diff --numstat. defaultCollisionGate = combineGates(docsLabelCollisionGate, driverAwareFileOverlapGate) como default de integrate(). Sin la conciencia del driver, el store binario bloquearía todo merge l0↔l2/l0↔l3 para siempre.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "34",
+  "subject": "Emitir la frontera `compact_boundary` con su `compactMetadata` al compactar",
+  "description": "El harness compacta (`compactMessages`) sin escribir marcador de frontera, así que su transcript no deja rastro de que compactó ni de cuánto tiró. El cliente sí lo escribe: `{trigger, preTokens, postTokens, cumulativeDroppedTokens, durationMs, preCompactDiscoveredTools}` — y la referencia muestra las tres rutas que lo componen (`compact.ts:359`, `snipCompactCore.ts:80`, `sessionMemoryCompact.ts:455`). Invariante medido 14/14 en el corpus: el delta de `cumulativeDroppedTokens` es exactamente `preTokens - postTokens`, así que el acumulado se deriva y NO se guarda en crudo (arranca en 357 982 102: sin su delta no significa nada).",
+  "activeForm": "Emitiendo la frontera de compactación",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

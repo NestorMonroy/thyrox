@@ -1,0 +1,10 @@
+{
+  "id": "238",
+  "subject": "Portar los once hermanos que ninguna ola cubre, empezando por los tres pequeños",
+  "description": "CERRADA 2026-09-07. La tanda de cuatro agentes de esta sesión cubrió los hermanos que ninguna ola anterior tocaba, y cada uno cerró con su suite verde y su cobertura declarada:\n\n| paquete | commit | presente / fuente | suite |\n|---|---|---|---|\n| mcp-runtime + app-host | `d0bc44ed` | 36/49 · 55/60 | 456 pass, 0 fail |\n| bridge + daemon | `4419379a` `8b93bae3` `616d629f` `a07ebe17` | — | — |\n| shell | `4e599865` | 54/90 | 203 pass, 0 fail |\n| permission | `15333066` | 15/133 | 154 pass, 0 fail |\n| config | `9f97e8d7` | 89/167 | 68 pass, 0 fail |\n\nLos cinco dejaron su cobertura declarada por archivo, sus bloqueos con causa medida, y **ninguno tocó** `src/packages/package.json` ni `bun.lock`, que estaban compartidos en vuelo — sus dependencias se recogieron en #239.\n\nLo que sigue no es «más hermanos»: es lo que cada bloqueo nombró. `tool-registry` (295, la piedra angular — 13 de los 14 ausentes de mcp-runtime cuelgan de él), `repl` (674, ausente entero), el núcleo de análisis de bash de shell (#200), y los tres bloques de permission (#250).",
+  "status": "completed",
+  "blocks": [
+    "198"
+  ],
+  "blockedBy": []
+}

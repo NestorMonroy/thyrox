@@ -1,0 +1,8 @@
+{
+  "id": "132",
+  "subject": "P5 — portar a thyrox los tres gates que miden un repo desde fuera",
+  "description": "Los tres gates cross-repo de docs (`check_gitattributes.py`, `check_hook_script_token.py`, `check_script_deprecated.py`) miden los cinco clones desde `.claude/scripts/gates/`. Con el mecanismo de alcance ya en thyrox (#128/#129/#131), P5 del orden de mudanza queda desbloqueado: los tres se portan a `thyrox/src/gates/` en TDD, con identificadores en inglés, y docs conserva un stub de reexportación por el precedente de `reach_roots.py`. Control que discrimina, no sólo `exit 0`: el alcance publicado tiene que ser idéntico y las suites de docs seguir en verde.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

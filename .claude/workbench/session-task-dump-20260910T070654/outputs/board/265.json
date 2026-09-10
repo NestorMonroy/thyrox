@@ -1,0 +1,12 @@
+{
+  "id": "265",
+  "subject": "Dar hogar a reference/triple.ts: su bloqueo declarado era falso",
+  "description": "CERRADO en thyrox@21fa4706 (mitad roja) y thyrox@fef8dd6f (implementacion).\n\nEl bloqueo declarado era falso, y esa era la mitad util de la tarea. El analisis de la particion agrupaba `testing/` y `reference/` bajo una razon —«su unico consumidor real es bin/harness.ts»— que el propio documento contradice tres tablas mas arriba, donde la fila de `reference/triple.ts` declara «solo su test». Medido sobre todo el clon: `checkPortDeclaration`, `declaredAlias`, `canonicalAlias` y `sameCorpus` tienen CERO consumidores fuera del paquete.\n\nSu hogar no lo decide un consumidor —no lo hay— sino el PRECEDENTE, que estaba ejecutado y no se habia leido como tal: `src/workbench/manifest.ts` es un primitivo de la misma clase (procedimiento de construccion, ni producto ni estado) y vive en `src/<dominio>/` con su suite en `tests/<dominio>/`. `triple.ts` toma esa forma: `src/reference/triple.ts` + `tests/reference/triple.test.ts`.\n\nCon eso el paquete quedo vacio y se retiro entero: el workspace baja de 26 a 25.\n\nAnulacion: se recrea el `package.json` del paquete y cae 1 de 4 casos, el que mide que el directorio no esta. Los otros tres sobreviven, y deben: miden donde vive cada modulo y que declara el workspace, no si un directorio quedo en disco.",
+  "activeForm": "Dando hogar a reference/triple.ts",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "81",
+    "92"
+  ]
+}

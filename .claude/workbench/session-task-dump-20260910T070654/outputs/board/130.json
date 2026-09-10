@@ -1,0 +1,9 @@
+{
+  "id": "130",
+  "subject": "Decidir si los 54 manifiestos en español del corpus de eventos se renombran",
+  "description": "CERRADA POR DECISIÓN DEL EJECUTOR (2026-09-06): no se renombra nada de docs. «Nosotros no vamos a corregir lo que tiene docs/.claude/eventos/ claves en español y en inglés; nosotros vamos a hacer las claves en inglés. El cómo lo tengan no es parte de si se puede ejecutar o no.» Medido en docs: 76 manifiesto.json (claves español) + 7 manifest.json (inglés). Se conservan como están. Lo nuestro: src/workbench/manifest.ts con las 5 claves en inglés (question, instrument, metric, blind_to, destination) y las formas corpus/measurement/transformation (thyrox@7ed8de62).",
+  "activeForm": "Decidiendo el renombre del corpus en español",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

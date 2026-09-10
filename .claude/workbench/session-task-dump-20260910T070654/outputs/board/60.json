@@ -1,0 +1,9 @@
+{
+  "id": "60",
+  "subject": "Analizar en el binario 2.1.258 los primitivos de cowork y documentar",
+  "description": "Delta de 2.1.258: desenredar remote_cowork (entorno-producto) de teammate* (enjambre); tabla de mapeo cada primitivo → ¿sirve al cowork humano SIN agentes? Cita h-docs-152/h-docs-478 (buzón ya medido); no re-mide cap20b-estado-medido. Entregable: analisis-cowork-primitivos-en-el-binario.rst. HECHO este pase.",
+  "activeForm": "Analizando primitivos de cowork en el binario",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

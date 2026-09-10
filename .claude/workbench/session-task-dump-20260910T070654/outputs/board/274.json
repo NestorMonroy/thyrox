@@ -1,0 +1,9 @@
+{
+  "id": "274",
+  "subject": "Ejercitar el modo interno del esquema externo: hoy la población es vacía",
+  "description": "El caso 10 de permissionSchemas.test.ts (externalPermissionModeSchema rechaza un modo interno) NO discrimina hoy, y está declarado así en el propio test.\n\nMedido: con feature('TRANSCRIPT_CLASSIFIER') apagado, PERMISSION_MODES es idéntico a EXTERNAL_PERMISSION_MODES —los mismos cinco: acceptEdits, bypassPermissions, default, dontAsk, plan— así que `soloInternos` queda VACÍO y el bucle no ejercita nada. Confirmado por dos anulaciones: (a) construir externalPermissionModeSchema sobre PERMISSION_MODES y (b) usar permissionModeSchema en la rama setMode de permissionUpdateSchema dejan los 16 casos en verde.\n\nLo único que el caso mide de verdad hoy es su última aserción, la del modo inventado.\n\nNo se fabricó un modo interno para tapar el hueco: el fenómeno depende de una bandera de compilación de bun:bundle, y forzarla desde el test mediría el andamio en vez del mecanismo.\n\nCondición de cierre: un camino para ejercitar el esquema con la bandera encendida (o con 'bubble', que nunca entra a PERMISSION_MODES por ninguna vía), de modo que retirar la distinción externo/interno haga caer exactamente ese caso.\n\nVer src/packages/permission/__tests__/permissionSchemas.test.ts (caso 10) y src/packages/permission/src/PermissionMode.ts.",
+  "activeForm": "Ejercitando el modo interno del esquema externo",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

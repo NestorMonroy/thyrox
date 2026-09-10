@@ -1,0 +1,11 @@
+{
+  "id": "90",
+  "subject": "Portar los tres gates de estilo con sujeto medido al harness (TS)",
+  "description": "ID: TASK-API-0041\n\nDEC-02 de decisiones-construir-harness-propio. Se portan los TRES que tienen sujeto medido en el árbol del harness, los tres AVISANDO (no bloqueando) mientras exista la deuda heredada:\n\n- identifierLanguage — 48+ identificadores con ≥1 palabra española (cota inferior, léxico cerrado hecho a mano: texto 8, clave 6, salida 6, ruta 5, linea 4...). DEPENDE de #87: el léxico cerrado es la pieza que falta, y sin ella el gate hereda la ceguera de h-docs-1038 (su morfología ve 9 de 885).\n- silentOks — 26 `catch` que tragan sin decir nada.\n- noLazyImports — 1 `import()` dinámico: nace en verde, y lo que hace es CERRAR EL GRIFO.\n\nLos tres nacen con la forma de DEC-01: `(sujeto) => Problem[]`, como checkWorkbench. Cada uno con su control anulado (sub-patrón D) y su denominador junto al conteo.\n\nNO incluye el barrido de los 48: en TypeScript un `export` renombrado rompe a sus importadores, así que es transformación con radio propio y va a banco de trabajo (`forma: transformacion`).\n\nLos cuatro que NO se portan quedan declarados como 0-hits con conteo en DEC-02: check_escape_sequences (mide el literal de Python), check_identifier_reference_name (compara contra Odoo), rename_identifier(s) (no son gates, son transformadores).",
+  "activeForm": "Portando los tres gates de estilo al harness",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "87"
+  ]
+}

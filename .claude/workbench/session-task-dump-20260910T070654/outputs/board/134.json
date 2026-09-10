@@ -1,0 +1,9 @@
+{
+  "id": "134",
+  "subject": "Decidir el veredicto de .claude/config/, que no declara superficie",
+  "description": "CERRADA por la cuarta transformación masiva (docs@f786b75ef, thyrox@d954d932).\n\nVeredicto: `.claude/config/` es **producto**. Carga y valida los settings del cliente — es mecanismo que thyrox entrega, no estado que la sesión escriba ni parámetro que el consumidor aporte. Su hogar es `thyrox: src/config/`.\n\nEl criterio que lo decidió es el de las tres clases: producto (lo que thyrox entrega) · apoyo (el material contra el que se construye) · parámetro (lo que el consumidor aporta, DEC-04). La pregunta original —«no declara superficie»— resultó no ser el discriminador: la superficie declarada es una propiedad del paquete, no de su clase.",
+  "activeForm": "Decidiendo el veredicto de .claude/config/",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,8 @@
+{
+  "id": "226",
+  "subject": "Vaciar del todo src/packages/harness: los dos tramos que faltaban",
+  "description": "CERRADO. `src/packages/harness` ya no existe.\n\nTramo 6 (thyrox@297fc2e0): la CLI y su binario a `@thyrox/cli`, con las 11 suites que los ejercitan.\nTramo 7 (thyrox@a1a91f32): el selector de pruebas por impacto, al paquete de su unico consumidor.\n#266 (thyrox@116fd91a): retirado el workbench superado; el binario reapuntado a su sucesor.\n#265 (thyrox@fef8dd6f): la triple de referencia a `src/reference/`, las dos suites huerfanas a `tests/coordination/`, y el paquete retirado del arbol y del workspace (26 -> 25).\n\nLo que el pase corrigio del registro, y no estaba previsto: el analisis de la particion agrupaba `testing/` y `reference/` bajo una razon que solo valia para la primera. Medirlo antes de mover evito darle a `reference/` un destino sin evidencia.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

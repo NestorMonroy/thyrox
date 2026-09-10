@@ -1,0 +1,9 @@
+{
+  "id": "129",
+  "subject": "Migrar los 12 consumidores de reach_roots.py al módulo de thyrox",
+  "description": "El mecanismo de alcance por variable se reimplementó en thyrox@a3eeb46 (src/paths/reach.py) con las tres divergencias contra defectos medidos (H-DOCS-1070, H-DOCS-1071, el offset fijo del eje 1). El módulo de docs (.claude/scripts/reach_roots.py) conserva los tres defectos a propósito: parchearlo ahora dejaría dos implementaciones divergentes del mismo mecanismo mientras la DEC-01 se materializa.\n\nBloqueada por materializar la DEC-01. Migrar antes dejaría a docs importando de un árbol que aún se va a archivar (DEC-02, P0).\n\nAlcance: los 12 consumidores medidos con `grep -rl reach_roots .claude`. Al migrar, el defecto de H-DOCS-1070 y H-DOCS-1071 se cierra también en docs.",
+  "activeForm": "Migrando los consumidores de reach_roots.py",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

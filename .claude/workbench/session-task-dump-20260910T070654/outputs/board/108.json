@@ -1,0 +1,8 @@
+{
+  "id": "108",
+  "subject": "Decidir quién corre bridge_hooks.py en un contenedor nuevo",
+  "description": "ID: TASK-DOCS-0007\n\nEl puente de hooks (`bridge_hooks.py --apply`) escribe la fuente viva de settings del harness. Hoy nadie lo corre en un contenedor nuevo, así que una sesión arranca con 20 hooks inertes hasta que alguien lo recuerde. Dos opciones, ninguna obviamente mejor y las dos con coste: (1) guion de arranque del entorno remoto — los hooks viven desde el turno 1 y la escritura ocurre antes de que haya caché que perder, pero depende de configuración fuera de este repo; (2) primer comando manual de la sesión — queda en el repo y no depende de nada externo, pero si se olvida nada lo delata salvo el gate de deriva del audit, que reporta DESPUÉS de arrancar. Es decisión del ejecutor, no derivable. Ver analisis-hooks-inertes-bajo-el-harness-remoto y h-docs-1054.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

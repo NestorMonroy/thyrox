@@ -1,0 +1,14 @@
+{
+  "id": "80",
+  "subject": "Portar la primitiva de workbench al harness: manifest de 5 claves + gate + scaffolding",
+  "description": "Register workbench primitive port",
+  "activeForm": "Portando la primitiva de workbench al harness",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "iniciativa": "construir-harness-propio",
+    "analisis": "analisis-scripts-de-api-candidatos-al-harness",
+    "origen": "docs:.claude/eventos + api:scripts/workbench + check_workbench.py + manifest_schema.json"
+  }
+}

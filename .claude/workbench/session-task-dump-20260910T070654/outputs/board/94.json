@@ -1,0 +1,12 @@
+{
+  "id": "94",
+  "subject": "Dar sucesor a refrescar-tablero.sh: hoy el tablero no se puede refrescar",
+  "description": "CERRADA 2026-09-05 en `docs@e5ecd7afa`. El sucesor es `.claude/scripts/task/refresh-board.sh`, y la cabecera del deprecado ya lo nombra (decía «ninguno hoy»).\n\nLos tres estados del diseño están implementados y medidos:\n\n  1. volcar no reasigna    -> volcar y renderizar            exit 0\n  2. volcar reasignaría    -> NO volcar; renderizar DECLARANDO la diferencia\n  3. sin directorio vivo   -> rehusar                        exit 2\n\nEl estado 2 no inventa mecanismo: `citation_reassignments` se extrajo de dentro del guard a función de módulo y la llaman los dos —`snapshot-tareas` para rehusar, `render-tablero` para emitir un `.. warning::` con el conteo y tres ejemplos—. Que midan con el MISMO instrumento es lo que impide que el tablero diga «al día» sobre un volcado que el guard acaba de rechazar.\n\n`--strict` deja el estado 2 en exit 5 para un llamador que quiera tratar la degradación como fallo. La conducta del hook Stop NO se decide aquí: sigue siendo #95.\n\nSuite `.claude/scripts/tests/test-refresh-board.sh`: **10 ok, 0 fallas**. Mide el artefacto, no sólo el código de salida — el estado 1 es el control positivo del 2 (exige que el .rst NO lleve el aviso), y la aserción de «no se escribió nada» se hace contra el STORE, porque el sujeto vivo sí aparece en el .rst dentro del propio aviso, como ejemplo.\n\nEl tablero real quedó refrescado en estado declarado: 103 tareas vivas no incorporadas, con su causa y sus ejemplos en el propio .rst. Antes estaba congelado y mudo.\n\nLo que NO cierra: que el estado 2 sea la excepción en vez de la norma. Eso es **#104** (anclar el citation_id al sujeto), que sigue abierta — esta tarea contiene el daño, no cierra la causa. El bloqueo que esta tarea declaraba contra #76 era una cita al alcance equivocado; ver :ref:`h-docs-1049`.",
+  "activeForm": "Analizando y documentando el sucesor de refrescar-tablero.sh",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "76",
+    "104"
+  ]
+}

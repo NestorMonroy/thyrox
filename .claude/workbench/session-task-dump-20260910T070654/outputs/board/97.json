@@ -1,0 +1,9 @@
+{
+  "id": "97",
+  "subject": "Crear monorepo_roots.py y migrar los 4 sitios que codifican la ruta",
+  "description": "Directiva del ejecutor 2026-09-05: «créalo en Python ahora, y migra los 4 que codifican la ruta, con TDD».\n\nFuente única de las raíces del monorepo, gemelo de api/scripts/reference_roots.py. Padre DERIVADO (no codificado), anulable por entorno, y REHÚSA antes que devolver una lista corta en silencio (H-API-335: un gate apuntando a raíz vacía publica «0 incumplidores» y parece sano).\n\nLos 4 a migrar (medidos en el censo, evento censo-raices-del-monorepo-20260905T011428):\n  docs/.claude/hooks/medir_delta_subagente.py:40    dict REPOS, 6 rutas\n  docs/.claude/hooks/stop-gate-hallazgo-pendiente.sh  cadena, 5 rutas, anulable\n  docs/.claude/hooks/stop-gate-trabajo-sin-publicar.sh:61  cadena, 5 rutas, anulable\n  docs/.claude/scripts/task/closure_graph.py:164    dict SIBLING_REPOS, 5 rutas\n\nLos dos .sh lo consumen como reference_roots.py --env (eval).\n\nTDD: test primero, rojo citado, luego implementación. El test necesita un control que pueda fallar (sub-patrón D): que rehúse ante raíz inexistente, no que devuelva lista corta.\n\nVer analisis-fuente-unica-de-las-raices-del-monorepo.rst.",
+  "activeForm": "Creando monorepo_roots.py con TDD",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,8 @@
+{
+  "id": "178",
+  "subject": "Reapuntar el pre-push a thyrox y hacer que rehúse en vez de saltar su gate",
+  "description": "Cerrado en thyrox@86e000d6 (mecanismo + suite) y docs@8f10cddd8 (stub + banco).\n\nMedido antes de tocar nada: los dos gates AUSENTES en `kaupamex-docs/.claude/scripts/gates/` — se mudaron a `thyrox/src/gates/`. El de IDs se saltaba en silencio (`if [ -f ... ]` falso, cero lineas de salida) y el de artefactos imprimia «skip gate» y hacia `exit 0`. Un push con los dos ausentes se veia igual que uno correcto.\n\nLa composicion vive ahora en `thyrox/src/gates/pre-push.sh`, junto a los gates que compone; el consumidor es un stub que resuelve THYROX_ROOT o asciende al hermano y delega. Si no lo encuentra REHUSA.\n\nEl codigo de salida es **2**, no 1, y esa distincion la impuso el control de anulacion, no el diseno: con 1, el primer caso pasaba SIN la rehusa — el exit 1 llegaba por accidente (`command not found` = 127, que el `if !` del gate 2 convertia en bloqueo). Con 2 caen exactamente los dos casos que dependen de la rehusa.\n\nSuite: `bash tests/gates/test_pre_push.sh` — 6 ok, 0 fallos, cuatro estados del arbol de gates (ausente / verde / rojo / universo vacio exit 2, que NO bloquea por H-API-336).\n\nExtremo a extremo contra el arbol real: 0 incumplidoras sobre 118 iniciativas activas auditadas, 275 totales.\n\nMetrica: codigo de salida y salida de texto del hook bajo esos cuatro estados.\nCiega a: si los gates miden bien lo que dicen medir — eso es su propia suite.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

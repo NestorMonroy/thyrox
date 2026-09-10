@@ -1,0 +1,9 @@
+{
+  "id": "206",
+  "subject": "Migrar los 12 .ts que resuelven su raíz por aritmética de ruta a reach.ts",
+  "description": "Cerrado por medicion, no por barrido: los sitios que subian varios niveles ya se repuntaron a reach.ts en esta sesion (emit.ts, store.ts, bundled.ts, compat/claims/branchIntegration/rstTasks/subagent.test.ts).\n\nMedido hoy sobre src/ excluyendo node_modules: CERO sitios suben mas de un nivel. Los 7 que quedan con `import.meta.dir, '..'` son `__tests__/..` -> raiz de su propio paquete (harness bin x4, agent preModelSwitch, agent flowHomes definitions) — navegacion entre hermanos, que sobrevive a mover el paquete entero y no es el defecto. Los 3 restantes (harness/src/paths/docs.ts:114, agent/flowHomes.ts:148, agent/__tests__/portFidelity.test.ts:25) NO son aritmetica: son ascenso a un marcador, la misma forma que reach.ts prescribe.\n\nMetrica: ocurrencias de `'..'` en la misma expresion `join(import.meta.dir, ...)`, contadas por archivo:linea.\nCiega a: un modulo que resuelva su raiz por otra via (process.cwd() pelado, una constante absoluta, o una variable de entorno propia sin pasar por reach.ts).\n\nLo que SI queda abierto y es otra tarea: docs.ts y flowHomes.ts implementan cada uno su propio ascenso al marcador de la raiz de DOCS (`source/gestion/pm`), duplicando el mecanismo. Eso es #163 (reconciliar pares original/puerto), no esta.\n\nEl «12» del titulo era un grep sintactico: contaba la forma, no el fenomeno.",
+  "activeForm": "Migrando los .ts con aritmética de ruta",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

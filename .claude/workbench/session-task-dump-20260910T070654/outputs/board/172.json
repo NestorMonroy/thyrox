@@ -1,0 +1,9 @@
+{
+  "id": "172",
+  "subject": "Elegir A o B: particionar el paquete que hoy se llama harness",
+  "description": "CERRADA 2026-09-08 — B, confirmada por el ejecutor: «habíamos ya definido el B». docs@975e88f56.\n\nLA FORMA DE B: la frontera entre el bucle y lo que el bucle CONSUME — separar por archivo/superficie-pública, no por paquete-de-dominio. Es la que ccb y claw-code ejercen por separado y la que ninguna de las dos contradice; A —partir por las tres capas del glosario— no la ejerce ninguna.\n\nQUÉ SE CORRIGIÓ DEL REGISTRO. `analisis-reparto-de-paquetes-en-ccnmt` se escribió para servir a A y su encabezado la daba por decidida, pero su propia medición la refutó (sección 4: «la premisa implicita de la particion A tambien es falsa») y su cierre dejó escrito lo que sostiene a B. Pasa a v2.0.0 con una nota que declara las dos cosas.\n\nEl cuerpo NO se reescribió: sus seis menciones a la partición A son el argumento que la refutó, y borrarlas dejaría a B sin su evidencia — mismo criterio con que se conservan las citas históricas a odoo19x/.\n\nY el cruce a DEC-01 era falso: ese DEC decide «producto en src/, estado en .claude/» y no habla de particionar el paquete. Retirado; la forma la fijó la medición y la granularidad la fijan los cinco tramos de #224.\n\nPENDIENTE HEREDADO, no de esta tarea: el mismo DEC-01 manda el store a thyrox/.claude/agent-results/ y la directiva de esta sesión lo puso en thyrox/agent-results/. Medido: ese directorio no existe y store.ts:51 declara STORE_DIR sin .claude/. Es una cláusula superada que el DEC no registra todavía.",
+  "activeForm": "Decidiendo la partición del paquete harness",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

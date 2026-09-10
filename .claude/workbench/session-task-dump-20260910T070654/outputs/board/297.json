@@ -1,0 +1,9 @@
+{
+  "id": "297",
+  "subject": "Instalar el cableado de usuario sin pagar la invalidacion de cache",
+  "description": "`user_wiring.py --write` esta diferido porque `install()` afirma que hooks y advisorModel son parte de la CLAVE de cache (H-DOCS-1012, 778 297 tokens). Esa causa esta declarada INFERRED, no medida. Medir en _references/claude-code-bin/2.1.266 (chunk-jcwfarqq.js: createCacheSafeParams, isMainThreadCacheWarm, getLastCacheSafeParamsForSameModel) que entra de verdad en la clave, y dar a user_wiring una via de instalacion que no dependa de un arranque de sesion.",
+  "activeForm": "Instalando el cableado de usuario sin pagar la invalidacion de cache",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

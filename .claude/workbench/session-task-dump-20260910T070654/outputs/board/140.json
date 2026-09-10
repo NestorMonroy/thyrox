@@ -1,0 +1,11 @@
+{
+  "id": "140",
+  "subject": "P3c — clasificar y repartir .claude/packages entre thyrox y kaupamex-docs",
+  "description": "CERRADA por la cuarta transformación masiva (docs@f786b75ef, thyrox@d954d932).\n\nVeredicto: los tres paquetes —`@kaupamex/{agent,binary,harness}`— son **producto entero**, sin reparto. Son el mecanismo mismo que thyrox entrega. Hogar: `thyrox: src/packages/`.\n\nReapuntados sus consumidores vivos: la prosa de `model-selection-subagents.md`, el comentario de `save-agent-result.mjs`, los dos procedimientos de `source/normativa/`, y el cableado ejecutable del hook `PreModelSwitch` en `.claude/settings.json` (`bun run ../thyrox/src/packages/agent/bin/preModelSwitch.ts`).\n\nTres cosas que el movimiento destapó y que quedan con dueño:\n\n- `check_corpus_al_dia.py` resolvía `parents[3]/'tools'/'claude-code-bin'` — ya apuntaba a `/home/user/tools/`, un directorio que nunca existió. Corregido a `parents[2]/'_references'/'claude-code-bin'`.\n- Los dos gates que el pre-commit de docs dedica al paquete miden ahora un sujeto que se fue, y su rama vacía publica verde. Registrado como H-DOCS-1096; su sucesor es TASK-DOCS-0406.\n- `package-lock.json` del paquete `agent` estaba rastreado en docs y está ignorado en thyrox: salió de control de versiones en silencio. Tarea #167.",
+  "activeForm": "Clasificando y repartiendo .claude/packages",
+  "status": "completed",
+  "blocks": [
+    "138"
+  ],
+  "blockedBy": []
+}

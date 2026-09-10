@@ -1,0 +1,9 @@
+{
+  "id": "7",
+  "subject": "Emitir un predicado declarado desde una señal S1/S2/S3 del detector",
+  "description": "Hoy el paso 2 de la cadena detector→evaluador es manual: verificar_premisa.py señala una ficha y alguien escribe a mano el predicado en premises.json. El puente no es mecánico porque la señal léxica no lleva la forma del predicado — `symbol-absent` exige el símbolo Y su alcance, y S1 sólo tiene el símbolo. Condición de cierre: dada una señal S1/S2/S3, el guion emite una entrada de premises.json cuyo veredicto al evaluarla coincide con lo que la señal sospechaba, medido sobre al menos un caso real del tablero; o se declara DESCONOCIDO por qué el alcance no se puede derivar. Ver analisis-dos-verificadores-de-premisa.rst.",
+  "activeForm": "Puenteando la señal del detector al predicado declarado",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

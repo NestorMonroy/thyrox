@@ -1,0 +1,9 @@
+{
+  "id": "28",
+  "subject": "Reintentar el insert del store ante contención: dos escritores, un archivo",
+  "description": "Causa `insert-fallo` de `cleared_unpersisted`. `agent_store.sqlite3` lo escriben dos procesos distintos: `.claude/scripts/agents/*.py` y el harness (`recordHarnessSession`, `makeClearedPersister`). SQLite serializa con un lock de archivo y devuelve `SQLITE_BUSY` al segundo. Hoy ese fallo se emite y el bloque no se limpia — correcto, pero prematuro: un reintento con espera lo resolvería sin perder la purga. Es la misma forma que `bash-background-tasks.md` ya documenta para `index.lock` de git (hasta 5 intentos con `sleep 1`). Condición de cierre: una sonda con dos escritores concurrentes que hoy produzca `insert-fallo` y con el reintento no.",
+  "activeForm": "Implementando reintento ante contención",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

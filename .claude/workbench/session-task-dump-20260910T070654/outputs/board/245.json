@@ -1,0 +1,9 @@
+{
+  "id": "245",
+  "subject": "Declarar quién corre cada gate: 1 de N está cableado y el resto es prosa con exit 1",
+  "description": "La regla que L-028 deja: **un gate sin invocador no es un control**. Escribirlo no es integrarlo en el flujo — `check_provider_evidence.py` lo demuestra con once incumplimientos posteriores a su propia creación.\n\nAlcance: censar los gates de `thyrox/src/gates/` y decir, por cada uno, quién lo corre y cuándo. Tres desenlaces admitidos, y ninguno es «ninguno»:\n\n1. un hook del árbol que mide (`pre-commit`/`pre-push`),\n2. una entrada del corredor de suite,\n3. una tarea de cableado con su condición de cierre escrita.\n\nEl censo es el instrumento; el veredicto por gate es juicio. Medido de partida: el `pre-commit` de `kaupamex-docs` corre SEIS, y `doctor.py` alcanza el registro sin que nada invoque a `doctor.py`.\n\nLo que este censo NO debe barrer: el instrumento de un solo uso —el guion que responde una pregunta y se archiva con su evidencia—. Ése no pretende ser un control y cablearlo añade coste sin defender de nada. El discriminador es si tiene un veredicto que sostener en el tiempo.\n\nVer L-028 (`docs: source/gestion/pm/thyrox/lecciones-aprendidas/gate-existente-y-nunca-corrido-2026-09-07.rst`).",
+  "activeForm": "Censando quién corre cada gate",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

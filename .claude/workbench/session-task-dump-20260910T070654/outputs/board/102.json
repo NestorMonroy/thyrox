@@ -1,0 +1,9 @@
+{
+  "id": "102",
+  "subject": "Barrer «monorepo» en prosa: nombra lo contrario de lo que hay",
+  "description": "GRIFO CERRADO 2026-09-05 (docs@fa6e4b803); el BARRIDO queda prospectivo, se paga al tocar — mismo criterio que #147 y #313.\n\nUn monorepo es UN repositorio con varios proyectos dentro; aquí hay CINCO repositorios git independientes, sin superproyecto. Medido contra tools/claude-code-bin/2.1.261/claude_strings.txt: `monorepo` 37 hits, todos «un repo con workspaces»; `multi-repo` 2, como `multi-repo workspace`. Reemplazo: **multi-repo**, con guion (38 usos ya contra 18 sin él).\n\nLo que la referencia NO prueba: su `multi-repo workspace` describe un repo anidado en el directorio de lanzamiento, no cinco hermanos bajo un padre. Aporta el morfema que nombra la pluralidad, no nuestra topología.\n\nEstado: `monorepo` está en vocabulario_prohibido.txt con la deuda congelada por archivo (65 archivos en baseline). Control positivo con línea real: exit 1 con infractor, exit 0 limpio.\n\nNO es un sed: de 189 ocurrencias, 61 nombran nuestro árbol (el defecto), 20 son narrativa del superproyecto histórico, y 33 son legítimas — 18 citan el anti-patrón (incluido el docstring de reach_roots.py), 13 son el concepto genérico en plural, 2 un tercero que sí es monorepo. Censo por sentido re-corrible en .claude/eventos/censo-monorepo-en-prosa-20260905T021441/sondas/censo_monorepo.py: su salida sólo cambia si cambia el árbol, así que mide el AVANCE del barrido.",
+  "activeForm": "Barriendo «monorepo» al tocar cada archivo",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "214",
+  "subject": "Resolver los tres imports de storage que no resuelven en ningún sitio",
+  "description": "Medido 2026-09-06 con `Bun.resolveSync` al cerrar #202: `picomatch`, `ignore` y `proper-lockfile` los importan `src/packages/storage/src/safePatternMatch.ts:34-35` y `lockfile.ts:12`, y NO están ni declarados en el manifiesto ni instalados en node_modules — el resolvedor devuelve error para los tres. Sus módulos no cargan en ningún entorno, ni aquí ni en un clon fresco.\n\nEs un defecto distinto y mayor que #202 (que era «instalado sin declarar»): éste es «importado y ausente». `tests/package/dependencies.test.ts` lo declara explícitamente como su ceguera y NO lo mide, porque instalarlos es una acción sobre el entorno que un control no toma.\n\nTres desenlaces posibles, y elegir es del ejecutor: (a) instalarlos y declararlos, si el porte los necesita; (b) reimplementar el mínimo necesario como se hizo con la LRU de `json.ts`; (c) retirar los módulos que los usan si el porte no los requiere todavía. La postura de licencia de `proper-lockfile` y `picomatch` (MIT ambos, sin verificar) entra en la decisión.\n\nCondición de cierre: `Bun.resolveSync` resuelve los tres, o ningún `.ts` de storage los importa, y el control de dependencias los cubre en vez de declararlos ciegos.",
+  "activeForm": "Resolviendo los imports ausentes de storage",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

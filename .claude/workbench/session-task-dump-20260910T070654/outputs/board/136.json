@@ -1,0 +1,9 @@
+{
+  "id": "136",
+  "subject": "Separar «cita ejecutable que invoca» de «cita que sólo nombra», y medir el alcance relativo de los otros cinco subárboles",
+  "description": "Las dos cegueras declaradas de `analisis-orden-interno-de-p3.rst`:\n\n1. Las 93 citas ejecutables se cuentan juntas, pero sólo las que **invocan** el archivo rompen al moverlo; una que sólo lo nombra en una cadena de dato, no. Condición de cierre: clasificar cada una por si la cadena aparece en posición de comando o de dato.\n\n2. El control del alcance por ruta **relativa** se corrió sólo sobre `config` — y ahí destapó que el literal `.claude/config/` publica un 0 falso (`harness/bin/harness.ts:44` alcanza por `'../../../config/settings/load.ts'`). Los otros cinco subárboles no se midieron con ese control, así que sus cifras de cita ejecutable son cotas inferiores.\n\nSub-patrón C de metrica-decide-la-conclusion: el instrumento mide la forma de la cita y se concluye sobre quién alcanza el subárbol.",
+  "activeForm": "Separando la cita que invoca de la que sólo nombra",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

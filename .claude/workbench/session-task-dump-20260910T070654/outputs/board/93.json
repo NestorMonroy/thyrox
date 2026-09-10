@@ -1,0 +1,9 @@
+{
+  "id": "93",
+  "subject": "Revisar las afirmaciones que apoyan su peso en ccb Y ccnmt como si fueran dos",
+  "description": "ID: TASK-GEN-0039\n\nMitad 2 de h-docs-1041. `ccb` y `ccnmt` son el MISMO árbol (PROVEN: `/home/user/claude-code-nestor-monroy-tools/package.json` declara `name: ccb`, y los archivos citados bajo los dos alias viven en el mismo `packages/daemon/src/`). Reparto: 25 citas `ccb:` y 11 `ccnmt:` sobre un solo corpus.\n\nLa mitad 1 está resuelta: `harness: src/reference/triple.ts` declara `ccnmt` como alias histórico de `ccb`, con la misma raíz, así que quien resuelva un alias ya no puede creer que son dos raíces.\n\nLo que queda es JUICIO POR AFIRMACIÓN, no sustitución de cadena: revisar las frases que presentan los dos alias como dos fuentes y que por eso se leen como corroboración triple cuando son dos. El caso medido y literal:\n\n  \"La adopción al arrancar el supervisor (`ccb: bgDaemon.ts:199-215` y\n   `ccnmt: daemon/src/bgAdopt.ts`) tiene dos fuentes de verdad y las unifica\"\n\n— dos archivos hermanos del mismo directorio presentados como dos corpus. El CONTENIDO es correcto (los archivos existen y dicen lo citado); lo que está mal es su peso probatorio.\n\nNO se reescriben las 11 citas: son evidencia fechada y su contenido resuelve. Se corrige la PROSA que las lee como dos fuentes independientes, allí donde el argumento se apoya en la pluralidad.\n\nY hay una segunda mitad de la mitad: los dos análisis dan procedencias distintas ESCRITAS para el mismo directorio (`ccb` = Jcg-admin/claude-code-how-works reconstruido del sourcemap v2.1.88; `ccnmt` = \"el gemelo en fuente de la ruta de reanudación\"). La identidad que gana es la medida en el clon, no la del nombre del directorio.\n\nAlcance: `grep -rl 'ccnmt:' source/` para el universo; el juicio es por frase.",
+  "activeForm": "Revisando las afirmaciones que cuentan ccb y ccnmt como dos",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

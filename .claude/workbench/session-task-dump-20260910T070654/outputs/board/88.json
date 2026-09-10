@@ -1,0 +1,11 @@
+{
+  "id": "88",
+  "subject": "Teach the successor gate the TASK- citation form (board-to-store already done)",
+  "description": "ID: TASK-API-0039\n\nCERRADA 2026-09-05 en docs@757d23be2. Ver H-DOCS-1068.\n\nEl gate de sucesores ACEPTA `TASK-<CAPA>-NNNN`. Cinco hallazgos del corpus\ncitaban sólo la forma durable del store y el gate los contaba como\nincumplidores: era ciego justo a la cita mejor. Control positivo real del repo\n(H-DOCS-1061, que no contiene ningún #NNN), no un texto fabricado.\n\nLa regla `hallazgo-abierto-genera-sucesor.md` declara ahora la forma durable\ncomo PREFERIDA, con el motivo medido: el ordinal del board se reusa y en el\nstore ya nombra otros sujetos (H-DOCS-1067).\n\nLo que NO cierra esta tarea: RECHAZAR el `#NNN` a secas. Vive en\nTASK-DOCS-0392 y está bloqueado por TASK-API-0056 — medido: de los 1002\narchivos con alcance abierto, 985 no citan ninguna forma TASK-.",
+  "activeForm": "Llevando el tablero vivo al store y enseñando KX- al gate",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "64"
+  ]
+}

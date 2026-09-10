@@ -1,0 +1,9 @@
+{
+  "id": "219",
+  "subject": "Portar el trabajo en segundo plano acotado al lado TypeScript",
+  "description": "Medido al cerrar el paralelo en Python (thyrox@da5bebb0): el lado TS no tiene NINGUNO de los tres primitivos de anchura acotada para trabajo no-agente. `src/packages/harness/src` tiene 0 equivalentes de `parallel()`, del pool de trabajos y del ledger, asi que el harness no puede repartir trabajo en segundo plano con la semantica del ejecutable (width_cap con piso 2, cola y no fan-out, todos los items completan).\n\nQué se porta, con la misma forma que ya tiene la mitad Python:\n- el `width_cap` del ejecutable, con su piso — el piso es lo que una parafrasis pierde\n- el pool acotado con su marcador `EXIT=` escrito por una shell EXTERIOR al comando\n- la deteccion de vivacidad que distingue el estado `Z`: `kill -0` reporta un zombie como vivo para siempre\n- el hogar del log como parametro del consumidor con las dos entradas de DEC-04; sin declaracion, REHUSA\n\nCondicion de cierre: los cuatro controles de anulacion del lado Python tienen su equivalente en TS y caen exactamente las aserciones que dependen de cada causa.\n\nOrigen: docs: source/gestion/pm/docs/iniciativas/actualizar-agentic-ai-thyrox/analisis-paralelo-en-segundo-plano.rst, seccion «Lo que este analisis NO cierra».",
+  "activeForm": "Portando el trabajo en segundo plano al lado TypeScript",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,8 @@
+{
+  "id": "71",
+  "subject": "Auto-renumerar colisiones de etiqueta en integrate() (opción 2): merge",
+  "description": "Auto-renumerar colisiones de etiqueta en integrate() (opción 2): merge git-limpio procede, se renumera el lado source al ID libre post-merge; sólo bloquea el solape de archivos no auto-resoluble. Reusa check_ids_entre_ramas; control test que pruebe que una colisión ya no aborta.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

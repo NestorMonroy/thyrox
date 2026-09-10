@@ -1,0 +1,9 @@
+{
+  "id": "133",
+  "subject": "P1 — hacer que el exports declarado de los tres paquetes pese",
+  "description": "H-DOCS-1075: agent/harness/binary declaran 11/23/3 claves de `exports` y **0** imports entran por ahí; los 7 cruces van por ruta relativa al `src/` ajeno, y el nombre `@kaupamex/agent` **no resuelve** (sin `workspaces`, sin `dependencies`, sin `node_modules/@kaupamex`).\n\nTres partes:\n1. Cableado de workspace en `.claude/packages/` para que el nombre resuelva.\n2. Reescribir los 7 imports cruzados para que entren por la superficie declarada.\n3. Gate en thyrox (TDD, con control de anulación) que rechace un import relativo que cruza frontera de paquete.\n\nEs el mecanismo que `analisis-reparto-de-paquetes-en-ccnmt.rst` declara adoptable y que funciona SIN partir `harness` en tres package.json — el criterio de ccb (optional-integration-slots) no aplica porque ningún concern de harness es feature-gated (medido).",
+  "activeForm": "Haciendo pesar el exports de los paquetes",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

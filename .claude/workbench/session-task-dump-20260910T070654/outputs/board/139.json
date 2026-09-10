@@ -1,0 +1,9 @@
+{
+  "id": "139",
+  "subject": "Clasificar producto contra tooling en hooks y scripts antes de P3d/P3e",
+  "description": "P3a y P3b dieron cero archivos movidos: el ledger es estado por repositorio y los seis workflows son órdenes de trabajo de kaupamex-api. No hay razón para suponer que hooks (21 archivos) y scripts (243) sean 100 % producto de THYROX. El paso cero del procedimiento — clasificar producto contra estado/tooling — se corre por familia ANTES de portar nada, y su desenlace legítimo incluye «no se muda». Condición de cierre: cada archivo de hooks y de scripts con veredicto declarado (producto de THYROX / tooling de kaupamex / estado), con la medición que lo sostiene. Ver analisis-orden-interno-de-p3 v2.0.0.",
+  "activeForm": "Clasificando producto contra tooling en hooks y scripts",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

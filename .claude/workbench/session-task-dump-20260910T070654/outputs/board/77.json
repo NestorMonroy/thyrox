@@ -1,0 +1,16 @@
+{
+  "id": "77",
+  "subject": "Reparar los 9 archivos de test del harness que rompen bun typecheck:tests",
+  "description": "Los 17 errores (medidos 2026-09-05; la descripción de #73 decía \"~14\" — creció) viven en el CUERPO de los archivos de test, no en su ubicación, así que viajan con el archivo en un `git mv`. Por eso el orden correcto es #77 ANTES de #73, no al revés: co-locar primero haría que el `include: [\"src/**/*.ts\"]` de tsconfig.json recogiera los tests y pusiera en rojo el `typecheck` que hoy pasa (exit 0 sobre src+bin). El edge blockedBy #73 quedó invertido y no se puede retirar con TaskUpdate (sólo admite addBlockedBy); es tracking, no bloqueo — se trabaja en el orden medido. Reparto por archivo: web 4, observability 3, rstTasks 2, premisesCli 2, impact 2, stream 1, skillsFromDir 1, paths 1, contextLevel 1. Por código: TS2345 x6, TS2578 x4, TS2339 x3, TS2769 x2, TS18047 x2. Control: `bun run typecheck:tests` exit 0. Los TS2578 y los TS2339 se deciden caso por caso (un @ts-expect-error sin uso puede señalar una aserción vacía; un .type ausente en la unión puede ser un discriminante que falta en el tipo de src, y eso es hallazgo, no cast).",
+  "activeForm": "Reparando los tests que rompen typecheck:tests",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "73"
+  ],
+  "metadata": {
+    "iniciativa": "construir-harness-propio",
+    "analisis": "analisis-scripts-de-api-candidatos-al-harness",
+    "gate": "bun run typecheck:tests"
+  }
+}

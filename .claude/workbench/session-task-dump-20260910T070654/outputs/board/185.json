@@ -1,0 +1,9 @@
+{
+  "id": "185",
+  "subject": "Renombrar el alcance @kaupamex/* a @thyrox/* en thyrox",
+  "description": "Directiva del ejecutor 2026-09-05: «Ahora ya no seria un paquete (@kaupamex) si no un paquete (@thyrox/config)». Medido: 31 archivos en thyrox (agent 35 citas, harness 7, binary 7, config 4, packages 2, desnudo 1) y 61 en kaupamex-docs. Los 61 de docs son evidencia fechada y NO se reescriben — mismo criterio que las citas historicas a odoo19x. Transformacion masiva: exige banco de evento con radio, manifiesto y verificacion archivo por archivo (forma declarada en la tarea #89). Cuidado con los tres lock files y con tests/gates/test_package_boundary.py, que construye el nombre con una f-string.",
+  "activeForm": "Renombrando el alcance a @thyrox/*",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

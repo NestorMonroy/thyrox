@@ -1,0 +1,8 @@
+{
+  "id": "236",
+  "subject": "reconcile_store no alcanza al agente recien terminado: fila con outcome NULL",
+  "description": "CERRADA 2026-09-07 — la hipótesis era falsa, medido en H-DOCS-1239 (docs@c1cef3c43).\n\nEl reconciliador NO clasifica «en vuelo» al agente recién terminado: su criterio, leído en reconcile_store.py:204, es que el transcript esté A MEDIAS, no que el agente acabe de terminar. Publica «en vuelo, sin tocar: 0» sobre 122 transcripts y alcanza 122 de 122.\n\nLa fila que la motivó, ac8a8d7a6ef315031, está en retention_level 3, outcome_source='transcript', 107 turnos, modelo claude-fable-5-1 — que es exactamente su condición de cierre.\n\nLo que el reconciliador no alcanza no es al agente recién terminado: es al que nunca dejó archivo. Ese eje lo lleva #255.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

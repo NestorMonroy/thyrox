@@ -1,0 +1,8 @@
+{
+  "id": "271",
+  "subject": "Separar el prompt base por DEBER, no sólo por origen",
+  "description": "A.2.1 pide «Are identity, behavior rules, tool constraints, and output discipline organized separately?». La separación que hay es por ORIGEN —`assembleSystemPrompt` devuelve secciones con nombre: base, CLAUDE.md, .claude/CLAUDE.md, una por regla— y el predicado pregunta por DEBER. Medido: la sección `base` es una sola cadena que carga identidad y disciplina de salida juntas («Eres un agente que trabaja con herramientas. Responde en español.»), y las restricciones de herramienta no están en el prompt en absoluto (viven en el runtime, que es A.2.4 cumplido y este no).\n\nCierre: partir la base en secciones nombradas por deber —identidad, reglas de conducta, restricciones de herramienta, disciplina de salida— que `assembleSystemPrompt` emita por separado, de forma que quitar una se vea en `sections` y en el prompt emitido. El propio apéndice da la prueba: «if removing one section causes structural behavior change, that section is likely true control-plane logic. If behavior barely changes, it may be decoration» — o sea, el control de anulación aplicado al prompt, sección por sección, y el que no mueva nada se retira en vez de conservarse.\n\nEl observable ya existe: el bucle registra el prompt emitido en el transcript (subtipo `system_prompt`, thyrox@8a4fd812).",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

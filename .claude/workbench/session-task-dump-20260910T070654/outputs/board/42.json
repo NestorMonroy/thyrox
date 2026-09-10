@@ -1,0 +1,9 @@
+{
+  "id": "42",
+  "subject": "Bajar el coste de censar_scripts.py --verificar (68 s por 121 git grep)",
+  "description": "ID: TASK-API-0024\n\nH-DOCS-1020: cada guion cuesta un `git grep -l -F <basename>` sobre el árbol entero; thyrox-audit.sh lo corre dos veces por sesión (--huerfanos y --verificar). Alternativa a medir: un solo `git grep` con todos los basenames (-e por guion, o -f lista) y repartir citantes en memoria. Condición de cierre: mismo catálogo byte a byte (--verificar exit 0) y tiempo de pared publicado por thyrox-audit.sh --timing.",
+  "activeForm": "Bajando el coste del censo de guiones",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

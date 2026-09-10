@@ -1,0 +1,9 @@
+{
+  "id": "181",
+  "subject": "Medir si el cliente admite que un subagente retenga el turno",
+  "description": "openswarm distingue dos mecanismos por TIPO: `SendMessage` (delegacion con retorno, grafo estrella desde el orquestador, 7 aristas) y `Handoff` (transferencia de turno, grafo completo dirigido, 56 aristas). Nuestro harness solo tiene el primero: `Agent` lanza y el orquestador espera el resumen; no existe la cesion de turno. Nombrar la distincion ya aclara la conversacion, pero implementarla exige del binario algo no medido: un subagente que retenga el turno. Es una sonda de CONDUCTA, no una lectura de literales — el cero de un literal no discrimina (sub-patron C de metrica-decide-la-conclusion.md). Precondicion de la segunda adaptacion de analisis-flujo-de-agente-openswarm.rst.",
+  "activeForm": "Midiendo la retencion de turno por un subagente",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

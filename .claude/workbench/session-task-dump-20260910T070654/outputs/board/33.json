@@ -1,0 +1,9 @@
+{
+  "id": "33",
+  "subject": "Declarar `attachment` y `progress` como tipos de línea del transcript",
+  "description": "`TranscriptLine` del harness declara `'user'|'assistant'|'system'` — tres de los cinco tipos de mensaje que la referencia enumera (`ccnmt: aggregates/stats.ts:971`). `attachment` es el MÁS grande del corpus medido: 2811 de 8847 líneas (32 % del archivo, 39 % de los mensajes), y es por donde entra al contexto una salida de comando o un archivo leído. Sin el tipo, el harness no puede producirlo ni contarlo, y todo instrumento que lo necesite lo lee a mano (lo hizo `compactionFidelity.ts`).",
+  "activeForm": "Declarando attachment y progress en TranscriptLine",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

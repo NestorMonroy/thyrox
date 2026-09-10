@@ -1,0 +1,9 @@
+{
+  "question": "¿Qué tareas tiene esta sesión, y cuántas de ellas sobreviven fuera del contenedor?",
+  "instrument": "dump_session_board.py — copia cada NNN.json del tablero del cliente a outputs/board/ y lo cruza por subject contra la tabla tasks del store del proveedor",
+  "metric": "tarjetas del tablero de esta sesión (<TASKS_ROOT>/<session>/NNN.json), agrupadas por status; y de las abiertas, cuántas tienen fila y citation_id en agent_store.sqlite3",
+  "blind_to": "una tarea cuyo sujeto se renombró tras acuñar su cita — el cruce por texto la lee como ausente; la dependencia que sólo vive en la cabeza de quien escribió la tarea; y el grafo de bloqueo derivado de prosa, que es cota inferior porque sólo ve el ordinal #NNN escrito",
+  "destination": ".claude/workbench/session-task-dump-20260910T070654/outputs/ — el volcado versionado; el corte va en este README.md",
+  "form": "measurement",
+  "created_at": "2026-09-10T07:08:00"
+}

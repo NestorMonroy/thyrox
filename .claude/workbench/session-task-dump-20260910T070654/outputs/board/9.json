@@ -1,0 +1,11 @@
+{
+  "id": "9",
+  "subject": "Implementar el sustrato de skill como código en el harness",
+  "description": "Un contrato Skill espejado de BundledSkillDefinition del corpus de referencia: getPrompt como FUNCIÓN (puede leer estado de sesión, que un SKILL.md no puede) y `files` embebidos que se extraen en la invocación con el prefijo \"Base directory for this skill: <dir>\", de modo que el directorio sigue existiendo para el modelo y deja de existir en el repositorio. TDD, con el emisor del paquete agent como precedente de forma. Bloqueada por #8: sin el triaje no se sabe qué archivos son `files` y cuáles entregables. Ver analisis-skill-como-codigo-vs-markdown.rst.",
+  "activeForm": "Implementando el sustrato de skill como código",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "8"
+  ]
+}

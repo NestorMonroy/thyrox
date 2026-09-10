@@ -1,0 +1,9 @@
+{
+  "id": "243",
+  "subject": "Mover los 11 bancos de evidencia del árbol del proveedor al del consumidor",
+  "description": "Medido 2026-09-07T18:30 con `python3 src/gates/check_provider_evidence.py --strict` (exit 1): hay 11 bancos en `thyrox/.claude/eventos/`, y `thyrox: .env.example:33-34` declara que THYROX «no aloja bancos propios».\n\nLos 11: aristas-de-paquete-sin-resolver-20260907T182532, claves-de-entorno-declaradas-20260907T181607, discriminador-aristas-de-tipo, membresia-workspace-20260907T054204, porte-output-20260907T035921, reescritura-scope-ccnmt-20260907T063607, reparto-tests-legacy-20260907T060636, specifiers-sin-resolver-20260907T064232, subpaquetes-sin-resolver-20260907T064336, suite-serie-dos-rojos-20260907T050608, suite-tras-arista-de-paquete.\n\nSon evidencia fechada: se mueven CON su nombre y su contenido, sin reescribir. Antes de mover, medir las citas por ruta (`grep -rn '\\.claude/eventos/<slug>'` en los cinco clones) y reapuntarlas en el mismo pase — una cita a un banco mudado es una ruta muerta.\n\nDos de ellos no llevan sufijo ISO (`discriminador-aristas-de-tipo`, `suite-tras-arista-de-paquete`): decidir si se les acuña al mover o se conservan tal cual, sabiendo que la forma del slug la fija el README del corpus de eventos.\n\nCierre: `check_provider_evidence.py --strict` en 0, y ninguna cita rota.\n\nVer L-028 (`docs: source/gestion/pm/thyrox/lecciones-aprendidas/gate-existente-y-nunca-corrido-2026-09-07.rst`).",
+  "activeForm": "Moviendo los bancos al árbol del consumidor",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

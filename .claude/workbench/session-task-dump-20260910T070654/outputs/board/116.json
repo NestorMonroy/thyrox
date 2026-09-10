@@ -1,0 +1,9 @@
+{
+  "id": "116",
+  "subject": "Decidir si el harness necesita plan mode, y si su archivo cita",
+  "description": "El binario 2.1.261 tiene una tercera superficie que llama «plan»: plan mode, que escribe un ARCHIVO en `.claude/plans/` y lo renderiza con `Tys(e)` en tres variantes (`Pys` subagente, `Rys` sparse, `Ays` normal), con cuatro fases declaradas y `planFilePath`/`planFileCache`/`planFileWatches`/`planFileBackend` como su mecanismo.\n\nNuestro harness NO tiene plan mode: no hay renderer que portar, asi que la decision «el ID segmentado debe verse en el Plan» quedo implementada solo en las superficies de tablero.\n\nLo que este item NO decide y hay que decidir: si el harness debe tener plan mode. Si se adopta, su archivo es prosa que el agente escribe, asi que la cita ahi es convencion de redaccion y no mecanismo — y entonces hace falta declarar donde vive esa convencion y con que se verifica, porque un gate de prosa no puede leer un archivo que aun no existe.",
+  "activeForm": "Decidiendo plan mode en el harness",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

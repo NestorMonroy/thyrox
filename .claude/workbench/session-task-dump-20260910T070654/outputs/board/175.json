@@ -1,0 +1,8 @@
+{
+  "id": "175",
+  "subject": "Medir el eje de confianza de ccnmt (AUTO_MODE_TRUSTED_SOURCES) con instrumento propio",
+  "description": "Hoy se nombra en la síntesis del flujo de carga y no tiene medición. Condición de cierre: recorrer las fuentes que ese literal enumera y cruzarlas con las cinco de getSettingsRootPathForSource. Sucesor declarado por analisis-flujo-de-carga-en-ccnmt.rst; evento fuente .claude/eventos/flujo-de-carga-ccb-20260905T204025/",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

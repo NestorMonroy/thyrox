@@ -1,0 +1,9 @@
+{
+  "id": "276",
+  "subject": "Portar appRuntime y los 32 de swarm que no usan interfaz",
+  "description": "CERRADA con residuo declarado. Medido tras c30769a0: la fuente\n(ccnmt packages/swarm/src) tiene 65 modulos y el puerto 63; los 4 sin\ncontraparte NO son de esta tarea, y cada uno tiene su bloqueo nombrado:\n\n- adapters/appUi.ts y core/It2SetupPrompt.tsx -> el bloqueo de interfaz\n  declarado (TASK-THYROX-0006). Son la mitad que esta tarea excluye por\n  titulo.\n- install/installSwarmHost.ts -> importa installSwarmAppUi de appUi.js mas\n  Spinner y CustomSelect de repl/components; cuelga del mismo bloqueo.\n- adapters/buildSwarmAgentDeps.ts -> bloqueado por #292 (portar\n  agent/types de ccnmt).\n\nappRuntime.ts esta portado y es el adaptador que los 63 consumen. El\nensanchamiento AppState = unknown que declara colisiona con el\nRecord&lt;string, any&gt; de tool-registry: 27 errores de tipo en cuatro\narchivos (14 en inProcessRunner.ts, 10 en spawnInProcess.test.ts, 2 en\nInProcessBackend.ts, 1 en InProcessTeammateTask.ts). NO se taparon con\ncasts; quedan declarados en la cabecera de InProcessBackend.ts.",
+  "activeForm": "Portando appRuntime y el resto de swarm",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

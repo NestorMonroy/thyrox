@@ -1,0 +1,9 @@
+{
+  "id": "220",
+  "subject": "Decidir si un gate de thyrox mide el banco de evidencia del consumidor",
+  "description": "SUPERSEDIDA y cerrada por #244 (thyrox@58f13a00).\n\nLa pregunta era «¿debe un gate de thyrox medir el banco de evidencia del consumidor?». El episodio la respondió por la vía cara: el gate ya existía (`check_provider_evidence.py`, `thyrox@93e51d5d`, 2026-09-07T00:59:23) y medía el árbol del PROVEEDOR, que es el sujeto correcto. Lo que faltaba no era decidir su alcance sino **que alguien lo corriera**: THYROX no tenía `.githooks/` ni `core.hooksPath`.\n\nCerrado con `.githooks/pre-commit` + `scripts/install-hooks.sh` + control de 5 casos. Ver L-028 y #245 (el censo de quién corre cada gate).",
+  "activeForm": "Decidiendo el alcance del gate sobre el banco de evidencia",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

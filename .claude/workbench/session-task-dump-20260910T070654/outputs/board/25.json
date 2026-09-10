@@ -1,0 +1,13 @@
+{
+  "id": "25",
+  "subject": "Cablear los niveles al bucle: microcompact por presión, no por conteo",
+  "description": "Hoy `compact()` del bucle dispara la microcompactación por **conteo de resultados compactables** (`microcompactAfter`), y el ejecutable la dispara por **presión de contexto**: `tengu_time_based_microcompact` con `trigger: S(\"context_hint\")` y la traza `[KEEP-RECENT MC] context_hint trigger, cleared N tool results`.\n\nLa diferencia importa: veinte resultados pequeños no justifican purgar, y tres enormes sí. El conteo es ciego al tamaño, que es lo único que mueve la aguja del `cache_read`.\n\nAlcance:\n- el bucle consulta `contextLevel()` y actúa por nivel: `warn` → microcompact, `compact` → autocompact, `blocked` → parada dura antes de llamar al API\n- `microcompactAfter` se conserva como override explícito, no como el disparador por defecto\n- los eventos que la interfaz necesita para decirlo, con los tokens liberados\n\nDepende de #22, #23 y #24.",
+  "activeForm": "Cableando los niveles al bucle del harness",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "22",
+    "23",
+    "24"
+  ]
+}

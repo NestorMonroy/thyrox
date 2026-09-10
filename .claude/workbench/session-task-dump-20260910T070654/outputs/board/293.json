@@ -1,0 +1,9 @@
+{
+  "id": "293",
+  "subject": "conformance/maintenance.ts cablea hogares que el gobernador ya declara",
+  "description": "Medido: `src/conformance/maintenance.ts` compone `.claude` (:63), `.claude/rules` (:64,:67) y `.claude/skills` (:117,:144) a mano — 5 sitios. `python3 src/paths/declarations.py` ya publica `THYROX_STATE_DIR` y `THYROX_RULES_{API,DB,DOCS,SERVER,UI}` para los cinco clones, así que declarar la constante no gobierna a este consumidor: no la lee. Reapuntar a `src/paths`, con control de anulación — retirar la constante tiene que hacer caer exactamente sus casos.",
+  "activeForm": "Cableando conformance/maintenance.ts a los gobernadores de hogar",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

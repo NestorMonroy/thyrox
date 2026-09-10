@@ -1,0 +1,11 @@
+{
+  "id": "62",
+  "subject": "Documentar cómo coordinamos hoy y nombrar el fork local-vs-multi-máquina",
+  "description": "Tercero de los tres. Nuestro estado: rama-por-persona (l2/l3 vivas) + integrate() (T-098, branchIntegration.ts) como coordinación POST-merge; tasks.ts es tablero POR-SESIÓN sin claim loop. El hueco es PRE-merge: nadie sabe quién toca qué hasta el conflicto. Nombrar el fork: estado local a una máquina (SQLite git-ignored, como tasks.ts) vs estado que viaja entre personas/máquinas (l2 Y l3 vivas). Entregable: analisis-cowork-en-nuestro-harness.rst.",
+  "activeForm": "Documentando la coordinación actual y el fork de estado",
+  "status": "completed",
+  "blocks": [
+    "63"
+  ],
+  "blockedBy": []
+}

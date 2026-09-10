@@ -1,0 +1,9 @@
+{
+  "id": "242",
+  "subject": "Renombrar THYROX_CONTRAPARTE_DECLARATION: una clave de entorno en español",
+  "description": "`src/corpus/census_counterparts.py:60` declara `COUNTERPART_DECLARATION_VAR = \"THYROX_CONTRAPARTE_DECLARATION\"`. El identificador de la constante ya está en inglés; el VALOR —la clave de entorno— lleva `CONTRAPARTE`, contra `identificadores-en-ingles.md`.\n\nNo se renombró al declararlo en `.env.example` (624e16c1) porque una clave de entorno es contrato con el consumidor: cambiarla en el archivo de ejemplo sin cambiarla en el código daría dos grafías y ninguna autoridad.\n\nEl renombre correcto es a `THYROX_COUNTERPART_DECLARATION`, en un solo pase que toque el código, `.env.example` y los fixtures que la usan (`tests/corpus/test_censo_contraparte.py`). Decidir si se admite la grafía vieja como heredada —el patrón que `TREE_ROOT_VARS`/`RESULTS_DIR_VARS` ya usan para las `KAUPAMEX_*`— o si se corta en seco por no tener consumidores externos.\n\nVerificación: `python3 src/gates/check_env_contract_keys.py --root . --strict` en verde tras el cambio, y `python3 tests/gates/test_env_contract_keys.py`.",
+  "activeForm": "Renombrando la clave de entorno en español",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

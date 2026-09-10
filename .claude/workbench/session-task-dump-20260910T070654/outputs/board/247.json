@@ -1,0 +1,9 @@
+{
+  "id": "247",
+  "subject": "Cablear check_workbench.py a la constante: hoy liga la raíz en la firma",
+  "description": "CERRADA 2026-09-07, `api@57295049` (pusheado). `check_workbench.py` resuelve su raíz con `thyrox: src/workbench/paths.py::workbench_dir`, que consulta `THYROX_WORKBENCH_API` → `THYROX_WORKBENCH_DIR` → el default de la cadena declarada. Esa constante ya estaba en el `.env` de api apuntando a `scripts/workbench`; hasta hoy **no tenía ningún consumidor**.\n\nSin thyrox alcanzable rehúsa con exit 2, con el mismo mecanismo que `check_identifier_language.py` ya usaba en ese directorio.\n\nY `main` distingue dos ceros que antes colapsaba: un banco **presente y vacío** es un cero legítimo (un clon recién hecho no tiene piezas); uno que **no existe** es «nadie midió nada» y sale 2.\n\n`HERE` se pasa como punto de partida, no como aritmética de ruta: identifica el CLON al que el archivo pertenece ascendiendo hasta reconocerlo por su prefijo, así que sobrevive a que el archivo baje de nivel.\n\nSuite: **20 passed** con las dos aserciones nuevas de `TestBenchRoot`.\n\n**Precondición que hubo que reponer:** el contenedor no tenía `src/.env`, así que la suite ENTERA de api moría en colección (`UndefinedValueError: SECRET_KEY`), no sólo este test. Repuesto desde `src/.env.example` (gitignored, parámetro local) y ambas bases provisionadas con `db: provisioners/postgresql/db_setup.sh [--qa]`. Nota aparte: el ejemplo declara `kaupamex_db`/`kaupamex_app`, y lo vigente es `kaupamex_core`/`django_user` — el ejemplo está atrasado.",
+  "activeForm": "Cableando check_workbench a la constante",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

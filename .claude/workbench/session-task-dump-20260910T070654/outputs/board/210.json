@@ -1,0 +1,9 @@
+{
+  "id": "210",
+  "subject": "tests/run.sh publica «las dos mitades en verde» y hay una tercera sin correr",
+  "description": "Medido 2026-09-06 sobre thyrox/tests/run.sh: el corredor tiene dos carriles —`bun test tests/` y `find tests -name 'test_*.py'`— y **ninguno alcanza un `.sh`**. Su mensaje final dice literalmente «OK: las dos mitades en verde».\n\nAlcance de la tercera mitad, sin correr: **91 suites de shell**.\n  - `tests/legacy/` — 89, con su propio `run-all.sh` que nadie invoca desde `run.sh`.\n  - `tests/install/test_install.sh` — 1, escrita y nunca ejecutada por el corredor.\n  - `tests/gates/test_pre_push.sh` — 1, la de hoy.\n\nEs el sub-patron D en el propio corredor: su verde no distingue «todo paso» de «un tercio no se ejecuto». Y la cabecera de `run.sh` lo dice al reves — «un corredor que sumara las dos en una cifra sola no dejaria ver cual quedo sin correr»: el defecto que denuncia es el que comete, un nivel arriba.\n\nMetrica: `find tests -name '*.sh' -not -name run.sh | wc -l` contra los dos patrones que `run.sh` enumera.\nCiega a: si esas 91 estan verdes o rojas — no se han corrido; y a cuanto tardan, que es lo que decide si el carril entra en `run.sh` o queda como lane aparte.\n\nLo que NO se hizo aqui, a proposito: cablearlas a ciegas. 89 suites de shell pueden costar minutos y varias tocan git real; antes de anadir el carril hay que medir su reloj y triar `legacy/` (que el nombre ya declara como heredado).\n\nForma del cierre: (1) medir el reloj de `tests/legacy/run-all.sh`; (2) decidir si `legacy` entra en el carril o se declara fuera con su razon; (3) que `run.sh` publique **tres** denominadores, o nombre explicitamente el carril que no corre.",
+  "activeForm": "Midiendo el carril de shell que run.sh no ejecuta",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

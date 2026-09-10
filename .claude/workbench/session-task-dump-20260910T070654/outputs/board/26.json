@@ -1,0 +1,9 @@
+{
+  "id": "26",
+  "subject": "Fallar temprano si el store no abre, en vez de descubrirlo en la primera purga",
+  "description": "Causa `sin-store` de `cleared_unpersisted`. `STORE_PATH` se deriva de `import.meta.dir`; una sesión con otro layout —o sin el repo docs montado— no lo encuentra, y el harness se entera cuando ya lleva turnos acumulando contexto que no puede purgar. Mejora: comprobar la ruta al arrancar la sesión (junto al `recordHarnessSession` que ya escribe su fila) y decirlo entonces, con la ruta que intentó. Condición de cierre: un caso que arranque el bucle con `persistCleared` inválido y compruebe que el aviso sale en el turno 0, no en el primero que microcompacta.",
+  "activeForm": "Implementando apertura temprana del store",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

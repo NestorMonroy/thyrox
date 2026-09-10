@@ -1,0 +1,12 @@
+{
+  "id": "263",
+  "subject": "Portar createProductionDeps y sus siete DepImpl: dos de sus tres bloqueos ya cayeron",
+  "description": "Re-medido 2026-09-08 en thyrox/src/packages/agent/createDeps.ts. La cabecera declaraba mal dos cosas: la fábrica se llama `createProductionDeps` (ccnmt: packages/agent/createDeps.ts:413), no `createAgentDeps`; y decía que la bloquean tres paquetes ausentes cuando DOS ya resuelven — `@thyrox/provider` (con getProviderAdapter y getProviderContextPipeline, las dos que la fuente importa en su primera línea; el paquete se cerró en el mismo pase) y `@thyrox/local-observability/logging` (con logError). También resuelve `@thyrox/provider/providerHostSetup`.\n\nLo que de verdad lo bloquea hoy, medido símbolo a símbolo:\n(1) `@thyrox/tool-registry` no existe — `findToolByName`. Es el porte de 255 módulos de la tarea #234.\n(2) `handleStopHooks` no lo exporta `./hooks/index.ts`: sigue sin portar por su propia lista de bloqueos, tarea #262.\n(3) `recordTranscript` no existe en `./internal/runtimeBridges.ts`; en la fuente delega en `getAgentHostBindings().recordTranscript`, método que tampoco está declarado en nuestro host.ts.\n\nCierre: cerrar #234 y #262, portar recordTranscript con su método de host, y sólo entonces las siete clases y la fábrica, con mitad roja y anulación por clase. Depende de #234 y #262.",
+  "activeForm": "Portando createProductionDeps",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "234",
+    "262"
+  ]
+}

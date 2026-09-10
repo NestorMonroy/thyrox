@@ -1,0 +1,8 @@
+{
+  "id": "125",
+  "subject": "Decidir qué es «el sujeto» a efectos de clave del store de tareas",
+  "description": "Del análisis del racimo: re-clavar la cita al sujeto (TASK-API-0056) exige antes decidir qué cuenta como el mismo sujeto. La cadena literal agrupa mal —dos tareas idénticas con una coma de diferencia son dos sujetos— y una normalización agresiva funde tareas distintas. Medido: 93 de 1334 sujetos tienen más de una cita con agrupamiento por cadena exacta, así que el corte cambia esa cifra en las dos direcciones. Decisión del ejecutor; sin ella el paso 2 del orden de implementación no se puede ejecutar.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

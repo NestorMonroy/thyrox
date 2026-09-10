@@ -1,0 +1,8 @@
+{
+  "id": "154",
+  "subject": "Decidir si thyrox es la fuente única del ledger de trabajos (proc_start + formato .job)",
+  "description": "Decidir la convención de identidad del ledger de trabajos. MEDIDO (H-DOCS-1091, 2026-09-05): la incompatibilidad es unidireccional. thyrox→guion FUNCIONA (el sed extrae log/pid/proc_start y _serialize las escribe con el mismo nombre); guion→thyrox ROMPE (label cae a '' y _path_for('') colapsa todo trabajo al archivo `.job`, perdiendo la clave de settled). La causa no es una clave faltante: el guion pone la identidad en el NOMBRE del archivo (basename), thyrox en el CONTENIDO (label=). Dos opciones: (a) el guion escribe label= en su printf de wait-jobs.sh:132 — una línea; (b) thyrox adopta identidad-por-nombre — cambia el modelo del puerto. La (a) no bloquea nada y desbloquea delegar verdict(); cmd= sigue con 0 lectores. Decisión del ejecutor.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

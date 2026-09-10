@@ -1,0 +1,9 @@
+{
+  "id": "278",
+  "subject": "Ejercitar el «current ??» de ensureTeamFileFromSnapshot: hoy es inalcanzable desde el test",
+  "description": "`ensureTeamFileFromSnapshot` tiene DOS defensas para el mismo hecho: el atajo `if (existing) return existing` y, dentro de la actualización con cerrojo, `current ?? rebuild(...)`. La segunda protege la carrera —que el archivo aparezca entre la lectura y la toma del cerrojo— y por eso es inalcanzable con el atajo delante.\n\nMedido 2026-09-08 con anulación: retirar el atajo hace caer el caso 1 (discrimina); retirar el `current ??` NO hace caer nada (no discrimina). Publicar ese control como si midiera algo sería un verde que no separa «la defensa está» de «el test no pregunta» — el sub-patrón D.\n\nCierre: un caso que tome el cerrojo con el archivo ausente y lo haga aparecer ANTES de que el transformador corra —doblando `lock` para sembrarlo—, y que exija que el contenido sembrado sobreviva. Es la misma clase que #275 en el paquete permission.",
+  "activeForm": "Ejercitando la segunda defensa de ensureTeamFileFromSnapshot",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "96",
+  "subject": "Decidir el alcance del gate de deprecación: mide un clon de cinco",
+  "description": "CERRADA 2026-09-05 con la opción (b), elegida por el ejecutor; (a) queda subsumida y (c) se difiere a #90. check_script_deprecated.py acepta `raiz [raiz…]` y sin argumentos recorre reach_roots.require_all() — su primer consumidor de producción. Medido: 518 scripts en 5 raíces contra los 237 de uno (api 147 · db 17 · docs 241 · server 82 · ui 31). El desglose por raíz va siempre, aunque el total sea cero. Tres controles en test-script-deprecated.sh (27 ok): el conteo de raíces se compara contra lo que reach_roots declara, el desglose se exige en cero, y una raíz ausente rehúsa con 2 sin emitir cifra. docs@9356d22ac. Queda abierto el hogar del guard deprecated.sh, que sigue sólo en docs — decisión de #90.",
+  "activeForm": "Analizando las tres vías de alcance del gate contra el binario",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,11 @@
+{
+  "id": "44",
+  "subject": "Analizar en la referencia (ccb, hccw, ccnmt) el flujo de reanudación y reconciliación de estado",
+  "description": "Directiva del ejecutor 2026-09-02: «analizas el flujo en la referencia y documentas». Fuentes: .claude/references (ccb fuente TypeScript, hccw capítulos, ccnmt observabilidad). Qué modela cada una para resume: sessionStorage, roster de tareas/background, bgDaemon respawn (H-DOCS-140), fleet §21.4 vanished/stalled. Entregable: analisis-reanudacion-y-reconciliacion-en-la-referencia.rst con citas file:line y alias por corpus.",
+  "activeForm": "Analizando la reanudación en la referencia",
+  "status": "completed",
+  "blocks": [
+    "46"
+  ],
+  "blockedBy": []
+}

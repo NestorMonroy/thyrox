@@ -1,0 +1,9 @@
+{
+  "id": "294",
+  "subject": "reference/triple.ts cablea una raíz en scratchpad, que es efímero",
+  "description": "Medido: `src/reference/triple.ts:109` cablea `/home/user/scratchpad/hccw/how-claude-code-works-main` — scratchpad es efímero y está prohibido para estado durable; muere con el contenedor y la cita queda apuntando al vacío. Las otras dos raíces (`ODOO_TOOLS` :40, `CCB_ROOT` :47) sí tienen override de entorno, pero sin la segunda entrada del contrato DEC-04 (la ruta al archivo que declara el valor). Declarar las tres con sus dos entradas y reapuntarlas a `src/paths`.",
+  "activeForm": "Reapuntando las raíces rancias de reference/triple.ts",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

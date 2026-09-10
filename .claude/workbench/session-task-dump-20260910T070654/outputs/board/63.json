@@ -1,0 +1,12 @@
+{
+  "id": "63",
+  "subject": "Escribir tareas + DEC del fork de estado e implementar el claim ledger",
+  "description": "Con base a los tres análisis: DEC del fork de estado (git-carried ledger / dedicated ref / remoto — ejes de rúbrica: simplicidad vs alcance multi-máquina vs comportamiento de merge vs coste; recomendar default), + T-NNN. Implementar el default: claim ledger (ruta/área·owner·rama·timestamp·tarea) + verbos CLI en bin/harness.ts (--claim, --release, --who-has, --overlap) siguiendo el patrón --select-tests/--check-premises + gate de overlap que integrate() consulte. Test-first, control contra un POSITIVO REAL del repo (dos ramas que tocaron la misma ruta — historia l2/l3), no fabricado (sub-patrón D). Entregable: tareas-cowork.rst (o bloque en tareas-construir-harness-propio).",
+  "activeForm": "Escribiendo tareas y DEC del claim ledger e implementando",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "61",
+    "62"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "id": "121",
+  "subject": "Exigir que la mitad ROJA de un control TDD se persista al producirse",
+  "description": "H-DOCS-1066: la mitad «antes» de un control TDD (25 ok · 4 falla(s)) no sobrevivió a la compactación, y es la mitad que discrimina — sin ella un 29 ok no separa «el cambio hace pasar los controles» de «pasaban de todos modos» (sub-patrón D). Es el dato con menor vida útil del proyecto: existe minutos por construcción. Falta decidir si la obligación de escribirla a un archivo del evento ANTES de implementar vive en el prompt del agente, en el scaffolding del banco de workbench, o en un gate.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

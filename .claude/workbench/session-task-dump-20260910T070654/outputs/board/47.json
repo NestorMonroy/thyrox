@@ -1,0 +1,11 @@
+{
+  "id": "47",
+  "subject": "Implementar en el harness la reconciliación de estado tras un reinicio (src/session/reconcile.ts)",
+  "description": "Directiva del ejecutor 2026-09-02: «…y las implementas». Implementación nativa (bun/TypeScript) en .claude/packages/harness, guiada por el bloque de tareas de #46: al reanudar, leer transcript + ledger + working tree de los repos y emitir un informe de reconciliación (trabajos en vuelo, marcadores sin recoger, cambios sin commitear, última evidencia) antes del primer turno. TDD: suite antes que el código; control anulado con evidencia en .claude/eventos/. Depende de #46.",
+  "activeForm": "Implementando src/session/reconcile.ts con TDD",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "46"
+  ]
+}

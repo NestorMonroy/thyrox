@@ -1,0 +1,11 @@
+{
+  "id": "45",
+  "subject": "Documentar cómo reconcilia hoy nuestro harness el estado tras un reinicio",
+  "description": "Directiva del ejecutor 2026-09-02: «analizas cómo lo tenemos nosotros implementado y documentas». Inventario medido: readTranscript/Transcript (resiembra de cumulativeDroppedTokens), store.ts (fila de sesión), scripts/session/esperar-trabajos.sh (ledger) + stop-gate-espera-pendiente.sh, agents/reconciliar-agentes.sh y reconciliar_store.py, bash-background-tasks.md «Reconciliación tras resume». Qué cubre cada pieza, qué no, y el hueco que el episodio de hoy (reinicio del worker a mitad de turno) dejó: lo reconcilié a mano con git status + evento + fecha. Entregable: analisis-reconciliacion-tras-reinicio-en-nuestro-harness.rst.",
+  "activeForm": "Documentando la reconciliación en nuestro harness",
+  "status": "completed",
+  "blocks": [
+    "46"
+  ],
+  "blockedBy": []
+}

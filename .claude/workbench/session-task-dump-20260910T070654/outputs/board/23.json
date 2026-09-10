@@ -1,0 +1,11 @@
+{
+  "id": "23",
+  "subject": "Resolver si la compactación está activa — Qp() y sus dos variables de entorno",
+  "description": "`function Qp(){if(LZt())return!1; return ko(\"autoCompactEnabled\",!0).value}` y `function LZt(){return Boolean($e(process.env.DISABLE_COMPACT)||a.DISABLE_AUTO_COMPACT)}` (2.1.258, `chunk-vw215j9f.js`).\n\nHoy el harness compacta siempre que pasa el umbral: no hay forma de apagarlo ni de saber si está apagado. Faltan tres cosas:\n\n- la resolución de `autoCompactEnabled` con **default true**\n- las dos variables que lo fuerzan a false: `DISABLE_COMPACT` y `DISABLE_AUTO_COMPACT`\n- el override por porcentaje `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, que en `nxe` **sólo puede bajar** el umbral: `Math.min(Math.floor(e*(o/100)), e-13000)`\n\nCondición de cierre: la resolución portada con su suite, incluida la aserción de que un override de 100 NO desactiva el colchón de 13 000 — que es la trampa del `Math.min`.",
+  "activeForm": "Portando la resolución de compactación activa",
+  "status": "completed",
+  "blocks": [
+    "25"
+  ],
+  "blockedBy": []
+}

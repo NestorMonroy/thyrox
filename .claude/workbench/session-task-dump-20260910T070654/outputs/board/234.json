@@ -1,0 +1,12 @@
+{
+  "id": "234",
+  "subject": "Portar tool-registry (313 mod) — el bloqueo declarado medía el manifiesto, no el árbol",
+  "description": "La ficha decía «le faltan 11 de 19 deps». Medido import a import: eso contaba el `dependencies` del PACKAGE, no el árbol de módulos — otro sujeto.\n\nTramos cerrados:\n  1 — núcleo (contracts, errors, host, ToolRegistry, api, BuiltInToolsProvider), 376 líneas\n  2 — constants, notebookTypes, peerAddress, toolLimits, toolSchemaCache, generatedFiles, toolRuntimeInstaller, runtime (595 líneas); dos defectos de la fuente corregidos\n  3 — toolErrors, readEditContext, words (491 líneas); retira el sustituto de storage/plans.ts\n\nBloqueos REALES medidos (no estancados):\n  ripgrep.ts + markdownConfigLoader.ts — `ripgrep-napi` no está instalado en ningún paquete del árbol\n  diagnosticTracking.ts — `mcp-runtime/src/clientRuntime.ts` ausente\n  toolPool.ts + toolConstants.ts + collapseReadSearch.ts — dependen de ~20 subdirectorios de tools/\n  embeddedRgExtractor.ts — depende de un global que el empaquetador de la fuente inyecta; sin ese paso es inerte\n  undercover.ts — cerrado tras una bandera de compilación que aquí nunca es cierta; NO se porta\n\nTramo 4 en curso: Task, imageStore, pdf, gitDiff — deps todas presentes.",
+  "activeForm": "Portando tool-registry",
+  "status": "in_progress",
+  "blocks": [
+    "198",
+    "263"
+  ],
+  "blockedBy": []
+}

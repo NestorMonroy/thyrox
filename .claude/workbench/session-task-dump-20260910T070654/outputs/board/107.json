@@ -1,0 +1,9 @@
+{
+  "id": "107",
+  "subject": "Censar qué hooks del repo están inertes bajo el harness remoto",
+  "description": "H-DOCS-1052: `inject_rst_validation_gate.py` detecta correctamente el uso de `docutils` pelado para validar RST y remite a `check_rst_sintaxis.py` — ejercitado por tubería con el comando real, emite el aviso. NO disparó en la sesión del 2026-09-05, y el defecto que predice se cometió.\n\nCausa medida (precondición de H-DOCS-1010): el harness remoto arranca con directorio primario `/home/user` y carga los repos como directorios adicionales. Por esa vía cargan `CLAUDE.md` y `.claude/rules/`, no los hooks. `CLAUDE_PROJECT_DIR` sin asignar; no existe `settings.json` ni en `/home/user/.claude` ni en `/root/.claude`.\n\nDos entregables:\n\n1. **Censo.** Cuántos de los hooks de `.claude/hooks/` están en la misma situación — se midió UNO, no el directorio. Publicar el conteo con su denominador y la vía de carga que cada uno necesitaría.\n\n2. **La decisión que lo cierra.** Dónde vive un `settings.json` que el harness remoto sí cargue. Es del ejecutor; `agent-results-to-docs.md` ya lo deja planteado y sin resolver desde 2026-09-02. Sin eso, el sustituto es la disciplina de invocar el gate a mano — que es exactamente lo que falló.\n\nLo que hace esto ALTA y no MEDIA: la guarda existe en el repo, se lee como cobertura, y su ausencia efectiva no deja rastro. Sub-patrón D aplicado a la infraestructura de gates — un control que no puede fallar porque nunca se ejecuta.",
+  "activeForm": "Censando qué hooks están inertes bajo el harness remoto",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

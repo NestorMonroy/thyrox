@@ -1,0 +1,8 @@
+{
+  "id": "123",
+  "subject": "Cerrar el push a la rama equivocada, que reporta «Everything up-to-date»",
+  "description": "Medir en qué clones está activo el gate 3 del pre-push (core.hooksPath)",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

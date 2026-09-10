@@ -1,0 +1,8 @@
+{
+  "id": "295",
+  "subject": "Once hogares leídos por el código y no declarados en .env.example",
+  "description": "Medido 2026-09-09: el código lee **71** nombres `THYROX_*` distintos en `src/`; `.env.example` declara **33** (28 activas + 5 comentadas). De las **40** huérfanas, **11 nombran un HOGAR** y por tanto caen bajo DEC-04: THYROX_JOBS_DIR, THYROX_JOBS_ARCHIVE_DIR, THYROX_COMMANDS_DIR, THYROX_CENSUS_ROOT, THYROX_CENSUS_REFERENCE_ROOT, THYROX_CENSUS_UNIT_BASES, THYROX_INTERNAL_MODEL_REPOS, THYROX_LIVE_SETTINGS, THYROX_DIR, THYROX_RULES_DIR, THYROX_RAIZ.\n\nLas otras 29 NO se declaran: son colores y contadores de la suite (THYROX_GREEN, THYROX_OK, THYROX_RED, THYROX_FAILURES, THYROX_NEUTRAL), guards de carga (THYROX_WORKBENCH_SH_LOADED, THYROX_REACH_SH_CARGADO), fixtures de test (THYROX_ENVUTILS_TEST_VAR, THYROX_TEST_AUSENTE, THYROX_TEST_TRUTHY) y prefijos truncados por el grep (THYROX_REACH_, THYROX_RULES_).\n\nAdemás: **THYROX_RAIZ está en español** (src/verify/check_python_surface.py:14,:37) y viola identificadores-en-ingles.md, que cubre explícitamente las claves. Y THYROX_REACH_SH_CARGADO igual.\n\nMétrica: `grep -rhoE 'THYROX_[A-Z_]{2,}' src/` contra las claves de .env.example, clasificadas por sufijo (_DIR/_ROOT/_PATH/_FILE/_STORE/_BASES/_REPOS).\nCiega a: una clave compuesta dinámicamente por prefijo (THYROX_WORKBENCH_&lt;CLON&gt;), que el grep ve truncada; y a un hogar cuyo nombre no lleve ninguno de esos sufijos.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

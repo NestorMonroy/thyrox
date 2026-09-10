@@ -1,0 +1,8 @@
+{
+  "id": "146",
+  "subject": "Dar a reach_roots.py un localizador que sobreviva a la copia (o declarar la variable)",
+  "description": "El localizador de `reach_roots.py` asciende desde su `__file__` buscando un `thyrox/` hermano, con `THYROX_ROOT` como escape hatch. Una copia fuera del árbol no tiene ese hermano — medido: el ascenso desde /tmp/x/hooks no encuentra nada, y THYROX_ROOT no está asignada en este entorno.\n\nHoy es LATENTE: 0 suites hacen `cp` de reach_roots (medido con grep sobre .claude/scripts/tests/*.sh). Se vuelve vivo en cuanto una suite copie un consumidor a un fixture, y reproducirá H-DOCS-1081 sin saber por qué.\n\nCondición de cierre: o las suites que copien declaran THYROX_ROOT — la vía que se usó en docs@dd1cb9021 para hook_error_log, y que el propio docstring de reach_roots ya documenta como escape hatch — o el localizador gana una vía que sobreviva a la copia. Decidir cuál, y si vale la pena adelantarse a un caso que hoy no existe.\n\nRefs: H-DOCS-1081, #129, docs@dd1cb9021",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

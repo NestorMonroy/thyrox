@@ -1,0 +1,8 @@
+{
+  "id": "70",
+  "subject": "Enhebrar el hilo de sesión al ToolContext para que skill getPrompt lo lea",
+  "description": "skillTool pasa `messages: []` a SkillRegistry.invoke porque ToolContext (loop.ts:420, ejecutar() en :387) no lleva el hilo de la sesión. Un skill sólo-apoyo (los cinco de bundled.ts) tiene prompt estático y no lo usa, pero la referencia permite que getPrompt lea SkillContext.messages. Enhebrar el hilo desde el bucle hasta el ToolContext para que un skill dinámico pueda leerlo. Citado en src/tools/skill.ts.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "281",
+  "subject": "packageHostSetup importa dos paquetes que app-host no declara ni enlaza",
+  "description": "Medido al portar el barrel de permission: src/packages/app-host/src/packageHostSetup.ts importa @thyrox/memory (linea 62) y @thyrox/permission (linea 63), y NINGUNO de los dos esta en dependencies de app-host ni enlazado en su node_modules (enlazados: agent, command-runtime, config, local-observability, output, shell, storage). Una sonda que importa @thyrox/permission desde app-host revienta con «Cannot find module», asi que installPermissionHostBindings —que ese archivo llama en la linea 126— no puede correr. El typecheck del paquete NO lo atrapa. Es defecto heredado, anterior a este pase. Al arreglarlo: declarar ambos en el manifiesto, correr la instalacion, y dejar un control que falle si un import @thyrox/* de app-host no esta declarado — sin ese control el defecto vuelve en silencio, que es como llego. Ojo tambien con el simbolo: installPermissionHostBindings NO sale de la raiz de permission (que apunta a permission.ts) sino de ./host.js o del barrel ./index.js.",
+  "activeForm": "Declarando las dos dependencias ausentes de app-host",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

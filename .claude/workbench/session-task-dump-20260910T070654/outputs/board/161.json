@@ -1,0 +1,12 @@
+{
+  "id": "161",
+  "subject": "Decidir dónde vive el cableado de hooks para que thyrox gobierne el multi-repo",
+  "description": "CERRADA 2026-09-06, SUPERSEDIDA EN PARTE 2026-09-10 (H-DOCS-1249).\n\nLo que #161 fijó y SIGUE vigente: el cableado vive en el settings de usuario, que es el único que el harness remoto lee como fuente de settings (H-DOCS-1010); el consumidor es parámetro (`--consumidor`, si no `reach.root('docs')`); y el control es `tests/session/test_installed_hooks_resolve.py`, que corre el instalador de verdad contra una raíz temporal.\n\nLo que quedó SUPERSEDIDO: la topología. #161 la fijó en el STUB del consumidor (`<consumidor>/.claude/hooks/`) porque el mecanismo vivía ahí. Al día siguiente los tres se mudaron a `thyrox: src/agents/` y `declared_wiring()` reapuntó al PRODUCTOR (H-DOCS-1243); el instalador no, y quedaron dos escritores con topologías contradictorias.\n\nEl check discriminante midió que los tres parámetros que los stubs inyectan —`--repo`/`--results-dir`, `--log-dir`, y nada en register_session— son byte a byte los que `declared_wiring()` compone: el instalador era estado rancio, no una vía distinta. Resuelto en `thyrox@c7420260` — el instalador EMITE `declared_wiring()`, que gana `consumer=` y `advisor=`.\n\nY el control de esta tarea no podía verlo: sus dos aserciones miden presencia del objetivo, y los seis archivos de cada topología existen. Daba verde con la contraria viva — sub-patrón D. Ahora lleva la comparación estructural contra `declared_wiring()` con su anulación, que mide que cae una y sólo una.\n\nAbierto: el tercer escritor (`sync_local_settings.py --aplicar`), inerte pero no retirado — decisión del ejecutor.",
+  "activeForm": "Esperando decisión del cableado de hooks",
+  "status": "completed",
+  "blocks": [
+    "165",
+    "166"
+  ],
+  "blockedBy": []
+}
