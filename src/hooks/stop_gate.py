@@ -107,6 +107,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -131,6 +132,30 @@ OUTPUT_SLOT = "{output}"
 #: El motor: o un argv que se lanza, o algo invocable que devuelve
 #: ``(código, salida)`` sin salir del proceso. Ver «Dos formas de motor».
 Engine = list[str] | Callable[[], tuple[int, str]]
+
+
+def resolve_engine(token: str) -> Path | None:
+    """El ejecutable del motor, resuelto como lo resolveria un shell.
+
+    Un token CON separador es una ruta y tiene que existir; uno SIN separador es
+    un nombre que se busca en el `PATH`. Antes se exigia `Path(token).is_file()`
+    para los dos, y eso medIa el significante —la forma del token— para concluir
+    sobre el significado —si hay motor que consultar—: un `--engine bash <guion>`
+    quedaba sin veredicto porque `bash` no es un archivo del directorio actual.
+
+    Un gate que rehusa dar veredicto no bloquea, asi que el defecto era mudo: el
+    trabajo sin recoger que el gate existe para atrapar pasaba sin que nadie lo
+    viera. Lo destapo `tests/session/test-wait-jobs.sh`, cuyos dos casos rojos
+    eran justo el control positivo del episodio H-DOCS-155.
+
+    Devuelve `None` cuando no se resuelve — quien llama decide si eso es aviso o
+    error, porque no es lo mismo en todos los sitios.
+    """
+    if "/" in token:
+        ruta = Path(token)
+        return ruta if ruta.is_file() else None
+    hallado = shutil.which(token)
+    return Path(hallado) if hallado else None
 
 
 class ModeError(ValueError):
@@ -253,11 +278,12 @@ class Gate:
             # devuelve lo mismo, así que el modo por código lo lee igual.
             return Completed(code, output, "")
 
-        binary = Path(self.engine[0])
-        if not binary.is_file():
+        binary = resolve_engine(self.engine[0])
+        if binary is None:
             # Sin motor no hay nada que consultar. Callar es correcto; fingir
             # un veredicto sobre un motor ausente, no.
-            self._warn(f"el motor no está en '{binary}' — sin veredicto")
+            self._warn(f"el motor '{self.engine[0]}' no se resuelve "
+                       "— sin veredicto")
             return None
 
         done = run_guarded(self.engine, self.timeout)

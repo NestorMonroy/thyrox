@@ -326,5 +326,49 @@ check("no sale 0", True, proc.returncode != 0)
 check("y NO publica un {} que se lea como limpio", "", proc.stdout.strip())
 check("nombra el conflicto en stderr", True, "excluyente" in proc.stderr)
 
+
+print("== 12. el motor se resuelve como en un shell, no como una ruta ==")
+# Esta seccion existe porque la suite NO discriminaba el defecto: con
+# `Path(token).is_file()` para todo token, `--engine bash <guion>` quedaba sin
+# veredicto y las 48 aserciones seguian verdes. Lo destapo
+# `tests/session/test-wait-jobs.sh`, cuyos dos rojos eran su control positivo.
+check("12.1 un nombre pelado se busca en el PATH", True,
+      sg.resolve_engine("bash") is not None)
+check("12.2 un nombre inexistente no se resuelve", None,
+      sg.resolve_engine("no-existe-este-motor"))
+check("12.3 una ruta existente se resuelve", True,
+      sg.resolve_engine("/bin/sh") is not None)
+check("12.4 una ruta ausente no se resuelve", None,
+      sg.resolve_engine("/no/existe/motor.sh"))
+
+with tempfile.TemporaryDirectory() as c:
+    _m12 = str(engine(c, "doce.sh", "hay trabajo", 1))
+    _p12 = subprocess.run(
+        [sys.executable, MODULO, "--engine", "bash", _m12,
+         "--block-exit", "1", "--reason", "x"],
+        input="{}", capture_output=True, text=True)
+    check("12.5 con interprete SI hay veredicto, y bloquea", True,
+          '"decision"' in _p12.stdout)
+    check("12.6 y no avisa de motor irresoluble", False,
+          "no se resuelve" in _p12.stderr)
+
+    # CONTROL DE ANULACION: se restituye la medida vieja —el token como ruta—.
+    # Debe caer 12.5 y SOLO 12.5; 12.4 sobrevive porque una ruta ausente sigue
+    # sin resolverse por las dos medidas. Sin esta mitad, el verde de 12.5 no
+    # distingue «resuelve por PATH» de «el guion existe».
+    _original = sg.resolve_engine
+    sg.resolve_engine = lambda token: (Path(token) if Path(token).is_file()
+                                       else None)
+    try:
+        _anulado = sg.Gate(engine=["bash", _m12], reason="x", block_exits=(1,))
+        _sin_veredicto = _anulado._consult() is None
+        _ruta_ausente_sigue = sg.resolve_engine("/no/existe/motor.sh") is None
+    finally:
+        sg.resolve_engine = _original
+    check("12-bis.1 anulado, 12.5 cae: no hay veredicto", True, _sin_veredicto)
+    check("12-bis.2 y 12.4 SOBREVIVE a la anulacion", True, _ruta_ausente_sigue)
+    check("12-bis.3 restaurado, vuelve a resolver por PATH", True,
+          sg.resolve_engine("bash") is not None)
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
