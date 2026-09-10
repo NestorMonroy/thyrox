@@ -1,0 +1,104 @@
+fecha_utc: 2026-09-10T22:31:48
+pregunta: ¿usar GNU parallel para los jobs/cache/scripts de thyrox, y como se descargaria idempotente?
+
+== 1. PRESENCIA (este contenedor) ==
+$ command -v parallel  -> (sin salida: NO instalado)
+$ xargs --version | head -1
+xargs (GNU findutils) 4.9.0
+$ nproc
+4
+$ apt-cache policy parallel | head -3
+parallel:
+  Installed: (none)
+  Candidate: 20231122+ds-1
+$ apt-get -s install parallel | tail -4   # EFECTO LATERAL: arrastra sysstat
+  0 upgraded, 2 newly installed, 0 to remove and 1 not upgraded.
+  Inst sysstat (12.6.1-2 Ubuntu:24.04/noble [amd64])
+  Inst parallel (20231122+ds-1 Ubuntu:24.04/noble [all])
+
+== 2. LA REFERENCIA NO LO USA ==
+invocaciones de `parallel --|-j|:::` por corpus de _references/:
+  ccb                                      0
+  claude-code-bin                          1
+  claude-code                              0
+  harness-books                            0
+  harness-engineering                      0
+  how-claude-code-works                    0
+  restored-src                             0
+  (el unico hit, en claude-code-bin, es el volcado de cadenas: 0 contexto de invocacion)
+$ grep -rl 'xargs -P|xargs --max-procs' _references/ | wc -l  -> 0
+
+VVV — la referencia de convenciones de guion (#305) — resuelve ESTE MISMO problema
+sin GNU parallel, con `&` + `wait`:
+  vvv/provision/provision-helpers.sh:646-675  vvv_parallel_hook()
+    ... vvv_run_parallel_hook_function "${f}" &
+    wait
+
+== 3. EL MODELO DE EJECUCION ES INCOMPATIBLE, NO LE FALTAN RASGOS ==
+GNU parallel es un orquestador de PRIMER PLANO: bifurca, posee a sus hijos
+y bloquea hasta que todos terminan. Cada pieza de run-task-pool.sh existe
+porque el proyecto rechazo ese modelo:
+  - long-running-commands.md R-1: >5 min en primer plano dispara el SSE
+    liveness timeout. Un pool en primer plano es justo la carga que lo pega.
+  - src/session/run-task-pool.sh:127  nohup + disown: el trabajo SOBREVIVE
+    al fin del turno. parallel muere con su padre y se lleva a sus hijos.
+  - :127  el marcador EXIT= va en un shell EXTERIOR ('bash -c "$1"; echo EXIT=$?')
+    porque un 'exit' del comando mata al interior. Es lo que hace DECIDIBLE la muerte.
+  - :134  cada trabajo se registra en el ledger de wait-jobs.sh -> el Stop gate
+    bloquea el turno si alguien omite la barrera.
+Con parallel habria que elegir entre (a) primer plano -> viola R-1, o
+(b) 'nohup parallel ... &' -> UN envoltorio desprendido cuyos N hijos NO se
+registran; --joblog seria un SEGUNDO registro junto al ledger, la segunda
+fuente de verdad que calibration-verified-numbers.md prohibe.
+
+Su rasgo diferencial real (--sshlogin, varias maquinas) no tiene consumidor:
+un contenedor, nproc=4, saturacion medida en 3.88x sobre 4 trabajadores
+(api: scripts/workbench/background-task-capacity-20260902T171637/).
+
+== 4. Y CONTRA LA CACHE JUEGA EN CONTRA ==
+El lexico de spaCy cuesta 1.2 s cargar contra 0.0001 s por 900 consultas
+(cifra fechada, redaccion-tecnica-es.md). Un proceso por item lo RECARGA
+cada vez. Donde un mapa acotado pagaria —check_vocabulario_prosa.py— la
+herramienta correcta es en-proceso (ProcessPoolExecutor con el lexico ya
+cargado ANTES del pool, para que fork lo herede copy-on-write), no un
+subproceso por archivo.
+
+== 5. VEREDICTO ==
+NO se adopta. No hay nicho en que gane sobre lo que ya esta en el contenedor:
+  - trabajo largo / desprendido -> bg.sh + run-task-pool.sh + wait-jobs.sh (ya construido)
+  - mapa corto (<30 s) en primer plano dentro de un guion -> xargs -P $(nproc),
+    findutils 4.9.0 YA instalado, cero dependencia nueva
+  - mapa que comparte cache caliente -> pool en-proceso, no subproceso
+
+Esto NO es el camino barato de 'declarar divergencia en vez de portar':
+esa regla gobierna el PORTE desde una referencia, y NINGUNA referencia usa
+esta herramienta (0 de 7 corpus, 0 en VVV). No hay nada que portar.
+
+== 6. SI EN EL FUTURO UN CASO LO JUSTIFICA: adquisicion idempotente ==
+Se adapta el patron que VVV ya ejerce (check-then-act), no se inventa:
+  vvv_is_apt_pkg_installed() -> dpkg-query -W -f='${Status}' "$pkg" | grep -q 'install ok installed'
+Tres piezas, en este orden:
+  a) guard de tiempo de ejecucion: sin el binario, REHUSAR con exit 2 y SIN
+     emitir conteo — la misma forma que require_lexicon(), porque un 0 no
+     distingue 'no hay' de 'no pude medir' (sub-patron D).
+  b) instalar es OPT-IN (--instalar / variable), nunca el default: en un
+     pre-commit una llamada de red es una sorpresa. Igual que la rama
+     alterna de require_lexicon (TASK-DB-0003).
+  c) el exito NO se lee del exit code de apt: se RE-COMPRUEBA con
+     'command -v parallel'. El exit code es el significante; que el binario
+     exista es el significado (sub-patron C).
+  d) reconocer la cita una vez: test -f ~/.parallel/will-cite || parallel --citation
+     (GNU parallel emite el aviso de cita por stderr en cada corrida hasta
+     reconocerlo — conducta documentada, NO medida aqui: no esta instalado).
+  e) declarar el efecto lateral: arrastra sysstat.
+NOTA: thyrox NO tiene hoy ningun provisioner de shell (find src -name '*install*'
+      devuelve solo TypeScript de packages/). Adoptarlo crearia el primero.
+      No se construye sobre un condicional.
+
+Metrica: presencia del binario en este contenedor; archivos con invocacion de
+  `parallel` en los 7 corpus de _references/ y en vvv/provision/; y la forma
+  de ejecucion declarada en run-task-pool.sh:127-134.
+Ciega a: cargas dominadas por E/S, donde la anchura util supera nproc y el
+  reparto rinde mas de lo medido; a un consumidor fuera de los 7 corpus; y a
+  la conducta real de parallel (--citation, --joblog), que no se ejecuto
+  porque no esta instalado.
