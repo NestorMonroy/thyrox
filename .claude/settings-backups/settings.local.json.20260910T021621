@@ -1,0 +1,48 @@
+{
+  "hooks": {
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/user/kaupamex-docs/.claude/hooks/medir_delta_subagente.py --start"
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/user/kaupamex-docs/.claude/hooks/register_agent_session.py --start"
+          }
+        ]
+      }
+    ],
+    "PreModelSwitch": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run /home/user/thyrox/src/packages/agent/bin/preModelSwitch.ts",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /home/user/kaupamex-docs/.claude/hooks/save-agent-result.mjs"
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/user/kaupamex-docs/.claude/hooks/medir_delta_subagente.py --stop"
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/user/kaupamex-docs/.claude/hooks/register_agent_session.py --stop"
+          }
+        ]
+      }
+    ]
+  },
+  "advisorModel": "claude-fable-5-1"
+}
