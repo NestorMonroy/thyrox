@@ -62,7 +62,7 @@ WAIT_JOBS="$HERE/wait-jobs.sh"
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=1800
 # El hogar de los logs. `BG_DIR` es la grafia HEREDADA; la vigente es la familia
-# `THYROX_BACKGROUND_LOG_<CLON>` (global: `THYROX_BACKGROUND_LOG_DIR`), y la
+# `THYROX_BACKGROUND_LOG_<CLONE>` (global: `THYROX_BACKGROUND_LOG_DIR`), y la
 # resuelve `background.py --log-home` para que este guion no vuelva a componer
 # una ruta por su cuenta.
 #

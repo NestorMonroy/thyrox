@@ -8,7 +8,7 @@ sin que nada avisara. Medido antes de cerrarlo: la corrida
 `migrate-desde-cero-20260910T073715`, que es evidencia de api, nació en
 `thyrox/.claude/jobs/`. Es el mismo defecto que L-028 registró para el banco —
 «once bancos aterrizaron en el árbol del proveedor por esa vía»— y que la
-familia `THYROX_WORKBENCH_<CLON>` cerró para el banco y no para los trabajos.
+familia `THYROX_WORKBENCH_<CLONE>` cerró para el banco y no para los trabajos.
 
 No se comprueba «el declarado se respeta»: eso pasaba igual con la versión
 anterior. Se comprueban las tres cosas que sólo la familia añade:

@@ -85,8 +85,8 @@ LOG_DIR_VAR = "THYROX_BACKGROUND_LOG_DIR"
 #: La misma entrada 1, POR CLON. La global no basta porque **un solo proceso
 #: resuelve varios arboles**, y una variable global no puede decir dos verdades
 #: a la vez: exportar el hogar de docs para una tanda le daba a api el hogar de
-#: docs, sin una linea que lo avisara. Es la forma que `THYROX_WORKBENCH_<CLON>`
-#: cerro para el banco (L-028) y `THYROX_JOBS_<CLON>` para los runs (#295).
+#: docs, sin una linea que lo avisara. Es la forma que `THYROX_WORKBENCH_<CLONE>`
+#: cerro para el banco (L-028) y `THYROX_JOBS_<CLONE>` para los runs (#295).
 #:
 #: Comparte los caracteres iniciales con `LOG_DIR_VAR`, igual que sus dos
 #: hermanas con `THYROX_WORKBENCH_DIR` y `THYROX_JOBS_DIR`: un clon llamado

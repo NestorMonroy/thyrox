@@ -121,7 +121,7 @@ def main() -> int:
         # --- caso 5: el hogar del banco se emite SOLO para el proveedor ----
         # Su discriminador es el DESTINO, no el valor: en el `.env` de un
         # consumidor esta clave seria el hogar de otro arbol, que es el defecto
-        # que la familia `THYROX_WORKBENCH_<CLON>` existe para evitar.
+        # que la familia `THYROX_WORKBENCH_<CLONE>` existe para evitar.
         #
         # Anulacion: el mismo guion con `--out` fuera de `$ROOT/.env` NO debe
         # emitirla. Un control que solo mirara el `.env` del proveedor pasaria

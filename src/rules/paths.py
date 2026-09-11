@@ -81,7 +81,7 @@ def consumer_rules_dir(root: str | Path) -> Path:
     que `reach` declara: una ruta que alguien escribio para ESTE clon no puede
     quedar anulada por una que se escribio para todos::
 
-        THYROX_RULES_<CLON>  ->  resuelta contra la raiz de ESE clon
+        THYROX_RULES_<CLONE>  ->  resuelta contra la raiz de ESE clon
         THYROX_RULES_DIR     ->  resuelta contra la raiz de cada clon
         derivado             ->  <raiz>/<tramo de estado>/rules
 

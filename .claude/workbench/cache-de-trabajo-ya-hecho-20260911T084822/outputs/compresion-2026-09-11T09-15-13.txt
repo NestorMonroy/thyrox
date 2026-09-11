@@ -1,0 +1,32 @@
+# Medicion: conviene comprimir el indice del cache?
+# fecha: 2026-09-11T09:15:13
+# guion: scratchpad/medir_compresion.py (copiado abajo como probes/)
+# python: Python 3.11.15
+#
+# Metrica: bytes y reloj sobre un indice REAL de 181 documentos (src/**/*.py),
+#          y el tamano de .git tras 20 commits + gc --aggressive --prune=now.
+# Ciega a: el reloj de lectura se midio con la cache de pagina CALIENTE — la
+#          primera corrida en un contenedor nuevo paga la lectura en frio y el
+#          ahorro real es mayor; y a un indice de otra forma (un hash completo
+#          en vez de 16 caracteres sube el texto plano y con el, el factor de git).
+
+indice real sobre /home/user/thyrox/src — 181 documentos, 20995 B en texto plano
+
+1. EL COMPRESOR — sobre el indice real
+metodo           bytes   ratio   comprimir  descomprimir
+ninguno          20995    1.00           —             —
+gzip              5650    0.27        0.5ms          0.1ms
+gzip -9           5650    0.27        0.5ms          0.1ms
+bz2               4886    0.23        1.7ms          0.4ms
+xz/lzma           5272    0.25        6.7ms          0.3ms
+
+2. EL AHORRO — lo que el escalon 1 evita
+leer los 181 archivos que el escalon 1 no abre: 1.8 ms
+
+3. GIT — 20 commits, 5 de los documentos cambian en cada uno
+indice           en el arbol   .git entero
+plano                  20995         55568
+gzip                    5651        138694
+
+git con el indice comprimido ocupa 2.50x lo que con el plano
+__BG_EXIT__=0

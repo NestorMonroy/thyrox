@@ -68,7 +68,7 @@ set -euo pipefail
 # Por que `--dir` y no solo la variable: `BG_DIR` no es el hogar de nada — es
 # un argumento POR INVOCACION (`.../build-logs/<slug>`), y un slug cambia en
 # cada llamada. El HOGAR bajo el que ese slug cuelga si es del consumidor, y
-# ese si tiene constante: `THYROX_BACKGROUND_LOG_<CLON>`, con
+# ese si tiene constante: `THYROX_BACKGROUND_LOG_<CLONE>`, con
 # `THYROX_BACKGROUND_LOG_DIR` como su grafia global. Un valor relativo se
 # compone bajo el, un absoluto nombra un sitio concreto — la misma semantica de
 # `resolve_home` que ya rige en `jobs` y en el banco.
@@ -99,7 +99,7 @@ elif op == 'latest':
 elif op == 'settle':
     job_runs.settle(sys.argv[2], int(sys.argv[3]))
 elif op == 'log-home':
-    # El hogar PLANO, resuelto por la familia THYROX_BACKGROUND_LOG_<CLON>.
+    # El hogar PLANO, resuelto por la familia THYROX_BACKGROUND_LOG_<CLONE>.
     # Un valor relativo se compone bajo el hogar del clon; uno absoluto nombra
     # un sitio concreto. Rehusar imprime vacio en stdout: quien llama decide si
     # eso es un error suyo. Sin comillas invertidas: este programa viaja dentro

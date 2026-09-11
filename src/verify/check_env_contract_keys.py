@@ -17,7 +17,7 @@ directa (`os.environ`, `os.getenv`, `process.env.X`, y en shell `${X}` sin
 asignacion incondicional en el mismo archivo) y la indirecta (el nombre vive en
 una constante que se pasa a `env_value(name)`, invisible al AST).
 *Ciega a:* la clave compuesta en tiempo de ejecucion — la familia
-`THYROX_REACH_<CLON>` de `reach.py::env_names(repo)` no existe como literal.
+`THYROX_REACH_<CLONE>` de `reach.py::env_names(repo)` no existe como literal.
 Y la via indirecta es COTA SUPERIOR: un literal en un docstring cuenta.
 """
 from __future__ import annotations
@@ -48,7 +48,7 @@ SKIP_DIRS = ("/node_modules/", "/.git/", "/_archived/", "/_references/",
 #: nadie exporta esa variable. Sin esta exclusion el gate exigia declarar
 #: `THYROX_WORKBENCH_` en `.env.example`, que seria documentar una obligacion
 #: que no existe. La familia se documenta como familia, con su regla de
-#: composicion, igual que `THYROX_REACH_<CLON>`.
+#: composicion, igual que `THYROX_REACH_<CLONE>`.
 NAME_CONSTANT = re.compile(r"""["'](THYROX_[A-Z0-9_]*[A-Z0-9])["']""")
 TS_MEMBER = re.compile(r"process\.env\.([A-Za-z_][A-Za-z0-9_]*)")
 TS_INDEX = re.compile(r"""process\.env\[\s*['"]([A-Za-z_][A-Za-z0-9_]*)['"]\s*\]""")

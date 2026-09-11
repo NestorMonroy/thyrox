@@ -98,13 +98,13 @@ fi
     #
     # Solo se emite cuando el destino es el `.env` DEL PROVEEDOR: en el `.env`
     # de un consumidor este valor seria el hogar de otro arbol, que es el
-    # defecto que la familia `THYROX_WORKBENCH_<CLON>` existe para evitar.
+    # defecto que la familia `THYROX_WORKBENCH_<CLONE>` existe para evitar.
     if [[ "$DEST" == "$ROOT/.env" ]]; then
         echo "THYROX_WORKBENCH_DIR=${THYROX_WORKBENCH_DIR:-$ROOT/.claude/workbench}"
         # El hogar de los TRABAJOS, hermano del banco y con la misma guarda.
         # Sin el, `jobs_dir()` cae al default y devuelve un SEGMENTO relativo
         # —`.claude/jobs`— que resuelve contra el CWD. El de cada consumidor
-        # vive en SU `.env` como `THYROX_JOBS_<CLON>`; aqui va solo el propio.
+        # vive en SU `.env` como `THYROX_JOBS_<CLONE>`; aqui va solo el propio.
         echo "THYROX_JOBS_DIR=${THYROX_JOBS_DIR:-$ROOT/.claude/jobs}"
     fi
     if [[ -n "$PRESERVED" ]]; then

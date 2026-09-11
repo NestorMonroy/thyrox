@@ -54,11 +54,11 @@ JOBS_DIR_VAR = "THYROX_JOBS_DIR"
 
 #: El prefijo de la familia POR CLON: ``api`` -> ``THYROX_JOBS_API``.
 #:
-#: La grafia es la de sus dos hermanas —``THYROX_WORKBENCH_<CLON>`` y
-#: ``THYROX_RULES_<CLON>``— y la eleccion NO es de simetria. Se midio contra la
-#: alternativa ``<CLON>_JOBS_DIR`` y pierde por tres:
+#: La grafia es la de sus dos hermanas —``THYROX_WORKBENCH_<CLONE>`` y
+#: ``THYROX_RULES_<CLONE>``— y la eleccion NO es de simetria. Se midio contra la
+#: alternativa ``<CLONE>_JOBS_DIR`` y pierde por tres:
 #:
-#: - el arbol ya tiene TRES composiciones ``THYROX_<COSA>_<CLON>`` (workbench,
+#: - el arbol ya tiene TRES composiciones ``THYROX_<FAMILY>_<CLONE>`` (workbench,
 #:   rules, reach); la otra seria una cuarta gramatica;
 #: - el prefijo ``API_`` ya esta tomado en el multi-repo con OTRO significado:
 #:   ``API_URL`` y ``API_PROXY_TARGET`` de ``kaupamex-ui`` nombran el backend
@@ -114,7 +114,7 @@ def jobs_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     `thyrox/.claude/jobs/` —el arbol del PROVEEDOR— sin que nada avisara. Es el
     mismo fallo silencioso que L-028 registro para el banco («once bancos
     aterrizaron en el arbol del proveedor por esa via») y que la familia
-    `THYROX_WORKBENCH_<CLON>` cerro para el banco y no para los trabajos.
+    `THYROX_WORKBENCH_<CLONE>` cerro para el banco y no para los trabajos.
     """
     from paths.reach import (  # noqa: PLC0415 — evita el ciclo de import
         ConsumerUnknownError, consumer_root, env_value, resolve_home,

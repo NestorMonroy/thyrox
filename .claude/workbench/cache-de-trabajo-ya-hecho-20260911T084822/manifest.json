@@ -1,0 +1,10 @@
+{
+  "question": "¿Un cache de dos escalones portado de Tn/gt ahorra trabajo entre procesos para un gate cuyo trabajo por archivo es función pura del contenido?",
+  "instrument": "tests/cache/test_work_cache.py — mitad roja y sus dos controles de anulación, contra src/cache/work_cache.py",
+  "metric": "aserciones ok/falla del control; ledger de 7 campos de sync_index (added, updated, removed, unchanged, rehashed_unchanged, transient_skips, scan_completed)",
+  "blind_to": "el motor BM25 de la fuente (we, terms con delta-encoding, pathToId), que NO se porta por divergencia de mecanismo declarada: nuestro documento extraído es el veredicto de un gate, no un documento invertido. Y ciego al ahorro real sobre el corpus vivo: el control usa archivos sintéticos, no los 2593 .py del gate de idioma.",
+  "destination": "src/cache/work_cache.py y src/cache/paths.py en THYROX; el índice, al hogar que declare THYROX_CACHE_DIR / THYROX_CACHE_<CLON>",
+  "form": "measurement",
+  "task": "TASK-THYROX #329",
+  "reference": "2.1.266 bunfs-root/chunk-q6ryma1y.js — Tn (escalón 1), gt (escalón 2 + ledger), Cn (unverified al cargar), kn/Et (serializar y su guard de scan_completed)"
+}
