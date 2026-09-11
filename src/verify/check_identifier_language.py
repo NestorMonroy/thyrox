@@ -422,6 +422,7 @@ TECHNICAL_VOCABULARY = frozenset({
     'vals',      # la convención de dict de la referencia (`party_vals`)
     'iban',      # estándar bancario ISO 13616
     'incoterm',  # estándar de comercio ICC
+    'categ',     # la abreviatura de *category* de la referencia (`categ_id`)
 })
 
 #: Piso de longitud del criterio de corpus. Una palabra de una o dos letras no

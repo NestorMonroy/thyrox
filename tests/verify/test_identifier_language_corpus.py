@@ -103,6 +103,21 @@ print('=== Caso 7: el vocabulario tecnico no lo marca el corpus ===')
 for nombre in ('IrActionsBase', 'party_vals', 'iban_check', 'q', 'es_MX'):
     check(f'{nombre} no se marca', gate.spanish_words_in(nombre), [])
 
+# `categ` es la sexta, y su positivo es REAL: la referencia declara
+# `root_categ` y `_compute_root_categ` verbatim en test_orm/models/test_orm.py
+# (:27 y :50), y `categ_id` sale 685 veces en su arbol. Es su abreviatura de
+# *category* — ingles, no español.
+#
+# Por que la atrapaba el corpus, medido: es=-17.17 (la cola del lexico español;
+# `categoria` esta en -11.82, cinco ordenes mas arriba) contra AUSENTE en
+# ingles, asi que el margen de 12.83 lo produce la ausencia, no la evidencia.
+# Es literalmente la ceguera que `spanish_by_corpus` declara en su docstring:
+# «la forma flexionada que ningun corpus tiene, donde la ausencia en ingles la
+# empuja por encima del umbral».
+check('root_categ no se marca', gate.spanish_words_in('root_categ'), [])
+check('_compute_root_categ no se marca',
+      gate.spanish_words_in('_compute_root_categ'), [])
+
 print('=== Caso 8: EL DISCRIMINANTE — la exencion no apaga el criterio ===')
 # Si la exencion se implementara como «apagar el corpus», este caso pasaria a
 # devolver [] y el criterio entero quedaria muerto sin que nada lo dijera.
@@ -110,6 +125,11 @@ check('clasificar_los_metodos sigue cayendo',
       'clasificar' in gate.spanish_words_in('clasificar_los_metodos'), True)
 check('una particula real sigue cayendo',
       'en' in gate.spanish_words_in('lista_en'), True)
+# Y exonerar la ABREVIATURA no exonera la PALABRA: si la exencion se
+# implementara como un prefijo (`categ*`) en vez de la forma exacta, este caso
+# pasaria a devolver [] y el gate dejaria entrar `categoria` de verdad.
+check('categoria (la palabra) sigue cayendo',
+      'categoria' in gate.spanish_words_in('categoria_de_producto'), True)
 
 print('=== Caso 9: sin lexico el gate REHUSA — no publica un cero ===')
 # Se ciega el corpus SIN desinstalarlo: un paquete sombra con el mismo nombre y
