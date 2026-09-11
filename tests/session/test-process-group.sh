@@ -55,6 +55,7 @@ af() { # af <descripcion> <esperado> <obtenido>
 }
 
 group_of() { ps -o pgid= -p "$1" 2>/dev/null | tr -d ' '; }
+session_of() { ps -o sid= -p "$1" 2>/dev/null | tr -d ' '; }
 
 # Cuántos de los pid dados siguen vivos. El universo se declara: son los pid
 # que el propio trabajo anotó más su líder, no «los del grupo» — con el árbol
@@ -151,6 +152,33 @@ af "kill barre el GRUPO: 0 supervivientes" 0 "$(alive_among "$POOL_PID" $KIDS)"
 # -----------------------------------------------------------------------------
 af "el ledger suelta la etiqueta matada" "no" \
     "$([ -f "$THYROX_JOBS_DIR/grp-001.job" ] && echo si || echo no)"
+
+# -----------------------------------------------------------------------------
+# 6. EL LIDER DE GRUPO QUE NO LIDERA SESION — la clase que los casos 1-5 no
+#    podian alcanzar, porque `bg.sh` y el pool lanzan con `setsid` y ahi
+#    sid == pgid: los dos selectores coinciden y ninguno delata al otro.
+#
+#    El fixture la produce con control de trabajos activo (`set -m`), que es
+#    como nace un trabajo de fondo de un shell interactivo o adoptado de fuera.
+#    Medido: pid 7363, pgid 7363, sid 7360.
+#
+#    Qué haria FALLAR este caso (sub-patron D): que `job_alive` seleccione por
+#    SESION. Con `ps -o state= -g $pid` el conjunto sale VACIO, `cmd_kill` toma
+#    la rama «ya no corria — soltado» y libera el ledger SIN senalar. El caso
+#    6b mide exactamente eso: el proceso tiene que estar muerto DESPUES.
+# -----------------------------------------------------------------------------
+SETM_PID="$(bash -c 'set -m; sleep 300 >/dev/null 2>&1 & echo $!')"
+sleep 0.3
+: > "$T/setm.log"
+af "control: el fixture LIDERA su grupo (pgid==pid)" "$SETM_PID" "$(group_of "$SETM_PID")"
+af "control: y NO lidera su sesion (sid!=pid)" "distintos" \
+    "$([ "$(session_of "$SETM_PID")" = "$SETM_PID" ] && echo iguales || echo distintos)"
+bash "$WAIT_JOBS" register setm-001 "$T/setm.log" "$SETM_PID" >/dev/null 2>&1
+bash "$WAIT_JOBS" kill setm-001 3 >/dev/null 2>&1
+sleep 1
+af "kill alcanza al lider de grupo sin sesion propia" 0 "$(alive_among "$SETM_PID")"
+kill -KILL "$SETM_PID" 2>/dev/null || true
+bash "$WAIT_JOBS" forget setm-001 >/dev/null 2>&1 || true
 
 echo "test-process-group: $((OK+FALLA)) aserciones — $OK ok, $FALLA falla(s)"
 [ "$FALLA" -eq 0 ]

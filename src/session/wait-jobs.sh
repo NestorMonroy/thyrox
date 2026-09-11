@@ -383,11 +383,28 @@ job_alive() {
     # Se recorre en `while read` y no por tuberia a `grep -q` para no depender
     # del estado de `pipefail`, que invierte el veredicto de un `grep` cuando
     # el productor falla.
-    local estado
-    while IFS= read -r estado; do
+    # El selector es por PGID, y `ps -g` NO lo es: procps lo documenta como
+    # equivalente a `-s`, o sea SESION. Medido con control de trabajos activo
+    # (`bash -c 'set -m; sleep 300 & echo $!'`), donde pgid != sid:
+    #
+    #     pid=7186  pgid=7186  sid=7183
+    #     ps -o state= -g $P                       -> []      <- ciego
+    #     ps -eo pgid=,state= | awk '$1==P'        -> [S]     <- por PGID
+    #
+    # La ceguera no era academica: con `-g`, un lider de grupo que NO lidera
+    # sesion se leia como muerto, y `cmd_kill` tomaba la rama «ya no corria —
+    # soltado», liberando el ledger SIN enviar ninguna senal. Es el fallo en la
+    # direccion peligrosa: declarar que no queda nada habiendo huerfanos, que es
+    # justo lo que esta funcion existe para impedir.
+    #
+    # No se vio antes porque todas las sondas usaban trabajos de `bg.sh` y del
+    # pool, que van con `setsid`: ahi sid == pgid y los dos selectores coinciden.
+    local pgid estado
+    while read -r pgid estado; do
+        [[ "$pgid" == "$pid" ]] || continue
         case "$estado" in ''|Z*) continue ;; esac
         return 0
-    done < <(ps -o state= -g "$pid" 2>/dev/null | tr -d ' ')
+    done < <(ps -eo pgid=,state= 2>/dev/null)
     return 1
 }
 
