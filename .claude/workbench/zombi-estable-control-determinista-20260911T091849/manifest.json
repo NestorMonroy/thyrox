@@ -1,0 +1,10 @@
+{
+  "question": "¿Se puede probar de forma DETERMINISTA que `job_alive` descarta un grupo cuyos únicos miembros son zombis, sin depender de la ventana de cosecha?",
+  "instrument": "tests/session/test-process-group.sh caso 7 —fixture de zombi estable (hijo líder de su propio grupo que muere; padre vivo que no llama waitpid)— contra src/session/wait-jobs.sh::job_alive y cmd_kill",
+  "metric": "aserciones ok/falla de la suite, con y sin la rama `Z*` del case de job_alive, repetido tres veces bajo mutación",
+  "blind_to": "un cosechador distinto del PID 1 de este contenedor —el fixture no depende de él, pero los casos 4 y 5 sí—; una plataforma sin /proc donde `ps -eo pgid=,state=` no publique al zombi; y el caso simétrico de un grupo MIXTO (un vivo y un zombi), que la rama atraviesa por el vivo y este control no interroga",
+  "destination": "tests/session/test-process-group.sh (caso 7) y el comentario de job_alive en src/session/wait-jobs.sh, que ahora nombra a su control",
+  "form": "control",
+  "task": "TASK-THYROX-0015 (board #330), abierta al cerrar TASK-THYROX-0014 (board #327)",
+  "reference": "ninguna: el mecanismo es del sistema operativo (setpgid(2), wait(2)), no un porte"
+}

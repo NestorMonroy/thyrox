@@ -380,13 +380,6 @@ job_alive() {
     # grupo conserva 1 miembro en estado Z con ppid 1, y `kill -0 -- -PID`
     # devuelve «si» en las tres repeticiones.
     #
-    # Su control es el caso 7 de `tests/session/test-process-group.sh`, y es
-    # DETERMINISTA: el fixture deja un zombi cuyo padre no cosecha por
-    # construccion, asi que no depende de la ventana de cosecha. Retirar `Z*`
-    # de este `case` hace caer EXACTAMENTE dos aserciones —el veredicto «ya no
-    # corria» y la liberacion del ledger— y ninguna de las otras diez, medido
-    # tres veces (TASK-THYROX-0015).
-    #
     # Se recorre en `while read` y no por tuberia a `grep -q` para no depender
     # del estado de `pipefail`, que invierte el veredicto de un `grep` cuando
     # el productor falla.

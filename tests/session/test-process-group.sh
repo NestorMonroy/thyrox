@@ -1,11 +1,16 @@
 #!/bin/bash
 # =============================================================================
-# test-process-group.sh — el control de TASK-THYROX #327: matar por GRUPO
+# test-process-group.sh — a quién alcanza la señal: GRUPO, no líder
 # =============================================================================
-# Mitad ROJA. Hoy falla, y esa es su razón de existir: el árbol lanza sin
-# `setsid` y `wait-jobs.sh cmd_kill` señala sólo al líder, así que un trabajo
-# que forkea hijos —`uv run pytest -n 4` abre cuatro workers— deja huérfanos
-# reparentados a init al vencer el plazo.
+# Nació como mitad ROJA de TASK-THYROX-0014: el árbol lanzaba sin `setsid` y
+# `cmd_kill` señalaba sólo al líder, así que un trabajo que forkea hijos
+# —`uv run pytest -n 4` abre cuatro workers— dejaba huérfanos reparentados a
+# init al vencer el plazo. Esa mitad ya está en verde; la suite se queda como
+# el control de regresión de a quién alcanza la señal.
+#
+# El caso 7 cierra TASK-THYROX-0015, que aquella dejó abierto: la rama `Z*` de
+# `job_alive` no tenía control porque la ventana de cosecha real dura segundos
+# y una aserción sobre ella sería intermitente.
 #
 # La premisa del enunciado de la tarea decía «bg.sh mata por $pid (:209,
 # :236)». Medido: `bg.sh` **no mata nunca** — ese `timeout` acota al `tail`,
@@ -16,7 +21,9 @@
 # Qué lo hace un control y no un adorno (sub-patrón D de
 # `metrica-decide-la-conclusion.md`): el caso 3 mide los MISMOS pid ANTES del
 # kill y exige 3 vivos. Sin él, un 0 tras el kill no distinguiría «el grupo
-# murió» de «nunca hubo hijos que matar».
+# murió» de «nunca hubo hijos que matar». El caso 7 lleva su propio par de
+# controles por la misma razón y en la dirección contraria: el grupo del zombi
+# no está vacío, y el instrumento ingenuo habría dicho «vivo».
 #
 # Publica su conteo de aserciones al correr — `calibration-verified-numbers.md`
 # prohíbe transcribirlo a prosa.
@@ -147,8 +154,8 @@ af "kill barre el GRUPO: 0 supervivientes" 0 "$(alive_among "$POOL_PID" $KIDS)"
 
 # -----------------------------------------------------------------------------
 # 5. El contrato que ya existe y que el cambio NO debe romper: un trabajo
-#    matado sale del ledger. Verde hoy; si se pone rojo, la corrección de #327
-#    rompió la escotilla del Stop gate.
+#    matado sale del ledger. Verde hoy; si se pone rojo, la corrección de
+#    TASK-THYROX-0014 rompió la escotilla del Stop gate.
 # -----------------------------------------------------------------------------
 af "el ledger suelta la etiqueta matada" "no" \
     "$([ -f "$THYROX_JOBS_DIR/grp-001.job" ] && echo si || echo no)"
@@ -179,6 +186,96 @@ sleep 1
 af "kill alcanza al lider de grupo sin sesion propia" 0 "$(alive_among "$SETM_PID")"
 kill -KILL "$SETM_PID" 2>/dev/null || true
 bash "$WAIT_JOBS" forget setm-001 >/dev/null 2>&1 || true
+
+# -----------------------------------------------------------------------------
+# 7. EL ZOMBI ESTABLE — el control que la rama `Z*` de `job_alive` no tenia.
+#
+#    Un zombi responde que SI a `kill -0 -- -$pgid`: el grupo «existe» aunque su
+#    unico miembro sea una fila que espera cosecha. Con el instrumento ingenuo,
+#    `cmd_kill` diria «NO murio» y NO soltaria el ledger — el turno bloqueado por
+#    un cadaver, que es el fallo en la direccion contraria a la del caso 4 y
+#    igual de real.
+#
+#    Por que hasta hoy no habia asercion: la ventana de cosecha real dura
+#    segundos (medido, `process_api` cosecha los tres a los 3 s), asi que una
+#    asercion sobre ella seria intermitente. El fixture la hace DETERMINISTA: el
+#    hijo se hace lider de su propio grupo y muere; el padre vive y NO llama
+#    `waitpid`, asi que nadie lo cosecha y el `Z` dura lo que el padre dure.
+#
+#    Que haria FALLAR este caso (sub-patron D): quitar `Z*` del `case` de
+#    `job_alive`. Medido en el banco: caen EXACTAMENTE las dos aserciones de
+#    abajo que dependen de ella —el veredicto «ya no corria» y la liberacion del
+#    ledger— y ninguna de las otras. Los dos controles previos no dependen de la
+#    rama: miden que el grupo no esta vacio y que el instrumento ingenuo habria
+#    dicho «vivo».
+# -----------------------------------------------------------------------------
+cat > "$T/zombi.py" <<'EOZOMBI'
+"""Deja un ZOMBI estable y lo nombra por la salida estandar.
+
+Tres propiedades a la vez, y las tres hacen falta:
+
+  1. ser el UNICO miembro de su grupo — si no, `job_alive` ve al vivo y el caso
+     no llega a interrogar la rama `Z*`;
+  2. estar en `Z` de forma SOSTENIDA, no durante la ventana de cosecha;
+  3. conservar su PGID en la tabla de procesos, que es por donde `job_alive`
+     selecciona.
+"""
+import os
+import signal
+import sys
+import time
+
+leido, escrito = os.pipe()
+pid = os.fork()
+if pid == 0:
+    os.close(leido)
+    os.setpgid(0, 0)              # lider de su propio grupo: pgid == su pid
+    os.write(escrito, b"listo")
+    os.close(escrito)
+    os._exit(0)                   # muere de inmediato -> Z, ppid = el padre
+
+os.close(escrito)
+os.read(leido, 5)                 # el hijo ya hizo setpgid y ya murio
+os.close(leido)
+print(pid, flush=True)
+
+# El padre NO cosecha. El zombi dura lo que el padre dure.
+signal.signal(signal.SIGTERM, lambda *_: os._exit(0))
+time.sleep(float(sys.argv[1]) if len(sys.argv) > 1 else 120.0)
+EOZOMBI
+
+python3 "$T/zombi.py" 60 > "$T/zombi.pid" 2>/dev/null &
+ZPADRE=$!
+echo "$ZPADRE" >> "$T/leaders"
+ZOMBI=""
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+    ZOMBI="$(tr -d ' \n' < "$T/zombi.pid" 2>/dev/null)"
+    [ -n "$ZOMBI" ] && break
+    sleep 0.3
+done
+
+# Control a — el grupo NO esta vacio y su unico miembro es un zombi. Sin esto,
+# un «soltado» no distinguiria «job_alive discrimina» de «no habia nada».
+af "control: el grupo del zombi tiene 1 miembro, en estado Z" "1 Z" \
+    "$(ps -eo pgid=,state= | awk -v g="$ZOMBI" '$1==g {n++; s=$2} END{print (n+0), (s==""?"-":s)}')"
+
+# Control b — el instrumento ingenuo habria dicho «vivo». Es la razon de ser de
+# la rama: `kill -0` sobre el grupo no separa un proceso de un cadaver.
+af "control: kill -0 sobre el grupo dice SI (el ingenuo se equivoca)" "si" \
+    "$(kill -0 -- -"$ZOMBI" 2>/dev/null && echo si || echo no)"
+
+: > "$T/zombi.log"
+bash "$WAIT_JOBS" register zombi-001 "$T/zombi.log" "$ZOMBI" >/dev/null 2>&1
+KILL_SALIDA="$(bash "$WAIT_JOBS" kill zombi-001 3 2>&1)"
+
+af "cmd_kill lee el cadaver como muerto, no lo señala" "ya no corria" \
+    "$(printf '%s' "$KILL_SALIDA" | grep -q 'ya no corr' && echo "ya no corria" \
+       || printf '%s' "$KILL_SALIDA" | head -1)"
+af "el ledger se suelta: el turno no queda bloqueado por un cadaver" "no" \
+    "$([ -f "$THYROX_JOBS_DIR/zombi-001.job" ] && echo si || echo no)"
+
+kill -TERM "$ZPADRE" 2>/dev/null || true
+bash "$WAIT_JOBS" forget zombi-001 >/dev/null 2>&1 || true
 
 echo "test-process-group: $((OK+FALLA)) aserciones — $OK ok, $FALLA falla(s)"
 [ "$FALLA" -eq 0 ]

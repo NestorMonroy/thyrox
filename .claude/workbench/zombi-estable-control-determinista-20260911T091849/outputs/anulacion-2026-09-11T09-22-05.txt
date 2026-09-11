@@ -1,0 +1,47 @@
+# Control de anulacion — rama Z* de job_alive (TASK-THYROX #330)
+# fecha: 2026-09-11T09:22:05
+# sujeto: src/session/wait-jobs.sh::job_alive, modo group
+# mutacion: case "$estado" in ''|Z*) -> case "$estado" in '')
+#
+# Metrica: aserciones ok/falla de tests/session/test-process-group.sh,
+#          con y sin la rama, repetida tres veces bajo mutacion.
+# Ciega a: un cosechador distinto del PID 1 de este contenedor —el fixture
+#          no depende de el, pero los casos 4 y 5 si—, y a una plataforma
+#          sin /proc donde 'ps -eo pgid=,state=' no publique el zombi.
+
+== BASE ==
+test-process-group: 12 aserciones — 12 ok, 0 falla(s)
+
+== ANULADO: se retira `Z*` del case de job_alive ==
+  mutado: la rama Z* ya no descarta
+  test-process-group:
+    ok   bg.sh: el trabajo es lider de su grupo (pgid==pid)
+    ok   run-task-pool: el trabajo es lider de su grupo (pgid==pid)
+    ok   control: lider + 2 hijos vivos ANTES del kill
+    ok   kill barre el GRUPO: 0 supervivientes
+    ok   el ledger suelta la etiqueta matada
+    ok   control: el fixture LIDERA su grupo (pgid==pid)
+    ok   control: y NO lidera su sesion (sid!=pid)
+    ok   kill alcanza al lider de grupo sin sesion propia
+    ok   control: el grupo del zombi tiene 1 miembro, en estado Z
+    ok   control: kill -0 sobre el grupo dice SI (el ingenuo se equivoca)
+    FALLA cmd_kill lee el cadaver como muerto, no lo señala — esperado «ya no corria», obtenido «NO murió: zombi-001 (grupo 13635) sigue vivo tras TERM y KILL — NO se suelta del ledger»
+    FALLA el ledger se suelta: el turno no queda bloqueado por un cadaver — esperado «no», obtenido «si»
+  test-process-group: 12 aserciones — 10 ok, 2 falla(s)
+
+== RESTAURADO ==
+  identico al pristino: si
+test-process-group: 12 aserciones — 12 ok, 0 falla(s)
+__BG_EXIT__=0
+
+== REPETICIONES BAJO MUTACION (la pregunta de #330: intermitencia) ==
+rep1  test-process-group: 12 aserciones — 10 ok, 2 falla(s)  CAEN:; cmd_kill lee el cadaver como muerto, no lo señala; el ledger se suelta: el turno no queda bloqueado por un cadaver
+rep2  test-process-group: 12 aserciones — 10 ok, 2 falla(s)  CAEN:; cmd_kill lee el cadaver como muerto, no lo señala; el ledger se suelta: el turno no queda bloqueado por un cadaver
+rep3  test-process-group: 12 aserciones — 10 ok, 2 falla(s)  CAEN:; cmd_kill lee el cadaver como muerto, no lo señala; el ledger se suelta: el turno no queda bloqueado por un cadaver
+restaurado: identico
+__BG_EXIT__=0
+
+== BASE REPETIDA (el caso nuevo tampoco es intermitente en verde) ==
+rep1  test-process-group: 12 aserciones — 12 ok, 0 falla(s)
+rep2  test-process-group: 12 aserciones — 12 ok, 0 falla(s)
+rep3  test-process-group: 12 aserciones — 12 ok, 0 falla(s)
