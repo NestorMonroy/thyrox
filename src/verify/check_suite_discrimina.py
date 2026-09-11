@@ -352,30 +352,30 @@ def mutate(path: pathlib.Path, fn_name: str, statement: str) -> bool:
 #: Veredicto del baseline por suite, medido una vez por ejecucion. Sin cache, el
 #: baseline se re-mediria por cada candidata y el coste se multiplicaria por el
 #: numero de funciones que esa suite cubre.
-_ORACLE_CACHE: dict = {}
+_BASELINE_CACHE: dict = {}
 
 
-def is_oracle(suite) -> bool:
-    """¿Esta suite puede distinguir mutante de limpio?
+def has_green_baseline(suite) -> bool:
+    """¿El baseline de esta suite es verde, o ya sale roja sin mutacion?
 
     Una suite que sale 1 SOBRE EL ARBOL LIMPIO devuelve rojo pase lo que pase:
-    su rojo bajo mutacion no informa de la mutacion. Tratarla como oraculo es el
+    su rojo bajo mutacion no informa de la mutacion. Tratarla como control es el
     sub-patron D —un control que no puede fallar por la causa que dice medir— y
     es el defecto que este control cierra: `test-script-naming.sh` sale 1 en
     limpio, asi que las tres funciones de `classify_agents.py` se publicaban
     como `ok` sin que nadie las hubiera ejercido.
     """
     clave = str(suite)
-    if clave not in _ORACLE_CACHE:
+    if clave not in _BASELINE_CACHE:
         try:
             done = subprocess.run(["bash", str(suite)], capture_output=True,
                                   text=True, timeout=180)
-            # Un timeout en el baseline no decide: se descarta como oraculo,
+            # Un timeout en el baseline no decide: la suite se descarta,
             # igual que en `any_suite_red` un timeout no cuenta como rojo.
-            _ORACLE_CACHE[clave] = done.returncode == 0
+            _BASELINE_CACHE[clave] = done.returncode == 0
         except subprocess.TimeoutExpired:
-            _ORACLE_CACHE[clave] = False
-    return _ORACLE_CACHE[clave]
+            _BASELINE_CACHE[clave] = False
+    return _BASELINE_CACHE[clave]
 
 
 def any_suite_red(suites) -> bool:
@@ -391,7 +391,7 @@ def any_suite_red(suites) -> bool:
 
 
 def judge(path, fn_name, value, suites, backup_dir) -> str:
-    """``sin-oraculo`` · ``sin-cobertura`` · ``sin-discriminar`` · ``ok``.
+    """``red-baseline`` · ``sin-cobertura`` · ``sin-discriminar`` · ``ok``.
 
     Cada restauración cierra su entrada del ledger **después** de escribir el
     archivo limpio, por la misma asimetría que ``ledger_open`` explica al revés:
@@ -399,9 +399,9 @@ def judge(path, fn_name, value, suites, backup_dir) -> str:
     limpio, que ``--verificar`` nombra *residual*; cerrarla antes dejaría un
     mutante sin rastro.
     """
-    suites = [s for s in suites if is_oracle(s)]
+    suites = [s for s in suites if has_green_baseline(s)]
     if not suites:
-        return "sin-oraculo"
+        return "red-baseline"
     backup = backup_dir / f"{path.name}.{fn_name}.bak"
     shutil.copy2(path, backup)
     try:
@@ -439,7 +439,7 @@ def main() -> int:
     if args.solo:
         found = [c for c in found if c[0].name == args.solo]
 
-    sin_discriminar, sin_cobertura, sin_suite, sin_oraculo = [], [], [], []
+    sin_discriminar, sin_cobertura, sin_suite, red_baseline = [], [], [], []
     medidos = 0
     backup_dir = pathlib.Path(tempfile.mkdtemp(prefix="mutante-"))
     try:
@@ -451,8 +451,8 @@ def main() -> int:
                 sin_suite.append(fila)
                 continue
             veredicto = judge(path, fn_name, value, suites, backup_dir)
-            if veredicto == "sin-oraculo":
-                sin_oraculo.append(fila)
+            if veredicto == "red-baseline":
+                red_baseline.append(fila)
                 continue
             medidos += 1
             if veredicto == "sin-discriminar":
@@ -464,7 +464,7 @@ def main() -> int:
 
     print(f"check-suite-discrimina: {len(sin_discriminar)} sin discriminar, "
           f"{len(sin_cobertura) + len(sin_suite)} sin cobertura, "
-          f"{len(sin_oraculo)} sin oraculo")
+          f"{len(red_baseline)} con baseline rojo")
     for nombre, fn_name, lineno, value, sites, suites in sin_discriminar:
         print(f"  SIN DISCRIMINAR  {nombre}:{lineno} {fn_name}() -> {value} "
               f"({sites} retornos); corre bajo {', '.join(suites)} y sigue en verde")
@@ -473,9 +473,9 @@ def main() -> int:
               f"{', '.join(suites)} la nombra pero no la ejecuta")
     for nombre, fn_name, lineno, value, sites, suites in sin_suite:
         print(f"  SIN SUITE        {nombre}:{lineno} {fn_name}()")
-    for nombre, fn_name, lineno, value, sites, suites in sin_oraculo:
-        print(f"  SIN ORACULO      {nombre}:{lineno} {fn_name}(); "
-              f"{', '.join(suites)} ya sale rojo sin mutacion")
+    for nombre, fn_name, lineno, value, sites, suites in red_baseline:
+        print(f"  BASELINE ROJO    {nombre}:{lineno} {fn_name}(); "
+              f"{', '.join(suites)} ya sale roja SIN mutacion")
     print(f"  (alcance medido: {files} archivos .py, {functions} funciones, "
           f"{len(found)} con literal ambiguo, {medidos} mutada(s) dos veces)")
 

@@ -10,7 +10,7 @@
 #     retornos de ('running', None). El detector DEBE verla como candidata.
 #   - `classify_agents.py` — tres funciones cuya unica suite,
 #     `test-script-naming.sh`, YA SALE ROJA en limpio. El juez DEBE reportarlas
-#     SIN ORACULO: una suite que no puede fallar por la causa medida no sostiene
+#     BASELINE ROJO: una suite que no puede fallar por la causa medida no sostiene
 #     ningun veredicto.
 #
 # Y se prueba EN LOS DOS SENTIDOS: que reporte donde hay defecto (caso 6) y que
@@ -123,13 +123,13 @@ echo "== 5. el juez NO reporta lo que ya se cerro (register_agent_session) =="
 # aserciones. Si esto vuelve a reportar, la cobertura se perdio.
 salida=$(timeout 300 python3 "$GATE" --solo register_agent_session.py 2>&1 | head -1)
 afirmar "register_agent_session: 0 sin discriminar" \
-        "check-suite-discrimina: 0 sin discriminar, 0 sin cobertura, 0 sin oraculo" "$salida"
+        "check-suite-discrimina: 0 sin discriminar, 0 sin cobertura, 0 con baseline rojo" "$salida"
 
 echo "== 6. CONTROL NEGATIVO — el juez SI reporta un positivo real del repo =="
 # `test-script-naming.sh` es la unica suite que nombra a `classify_agents.py`, y
 # SALE 1 SOBRE EL ARBOL LIMPIO. Una suite ya roja no puede distinguir mutante de
 # limpio: su rojo bajo mutacion no informa de la mutacion. El juez debe declarar
-# SIN ORACULO y no publicar un veredicto que no puede sostener.
+# BASELINE ROJO y no publicar un veredicto que no puede sostener.
 #
 # El veredicto de esta linea CAMBIO al cerrar el baseline (caso 14): antes decia
 # SIN COBERTURA, y era falso por el mismo motivo — sin baseline, `any_suite_red`
@@ -137,12 +137,12 @@ echo "== 6. CONTROL NEGATIVO — el juez SI reporta un positivo real del repo ==
 # arreglo: «0 sin discriminar, 0 sin cobertura» con las tres funciones sin
 # ejercer. La deuda de `test-script-naming.sh` es la tarea #306.
 salida6=$(timeout 300 python3 "$GATE" --solo classify_agents.py 2>&1)
-afirmar "classify_agents se reporta SIN ORACULO (el juez puede fallar)" "3" \
-        "$(printf '%s' "$salida6" | grep -c 'SIN ORACULO      classify_agents.py')"
+afirmar "classify_agents se reporta BASELINE ROJO (el juez puede fallar)" "3" \
+        "$(printf '%s' "$salida6" | grep -c 'BASELINE ROJO    classify_agents.py')"
 # Y el conteo del titular concuerda con las filas: un titular que dijera 0 con
 # tres filas debajo seria el mismo defecto que este guion caza, en su reporte.
 afirmar "el titular concuerda con las filas que imprime" "1" \
-        "$(printf '%s' "$salida6" | grep -c '^check-suite-discrimina: 0 sin discriminar, 0 sin cobertura, 3 sin oraculo$')"
+        "$(printf '%s' "$salida6" | grep -c '^check-suite-discrimina: 0 sin discriminar, 0 sin cobertura, 3 con baseline rojo$')"
 
 echo "== 7. el barrido no deja mutantes: el arbol queda como estaba =="
 # Un mutante superviviente es peor que un falso positivo: se commitea.
@@ -233,7 +233,7 @@ afirmar "queda exactamente la entrada del archivo presente" "1" \
 afirmar "y la que sobrevive es la del archivo limpio" "api_error" \
         "$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))[0]['funcion'])" "$TMP/mixto.json")"
 
-echo "== 14. CONTROL — una suite YA ROJA en arbol limpio no es oraculo =="
+echo "== 14. CONTROL — una suite YA ROJA en arbol limpio no es control =="
 # El defecto que este caso cierra: `any_suite_red` no tomaba baseline, asi que
 # una suite que sale 1 SIN mutacion devolvia True siempre. El juez leia ese rojo
 # pre-existente como "la mutacion se detecto" y publicaba `ok` — el sub-patron D
@@ -243,8 +243,8 @@ echo "== 14. CONTROL — una suite YA ROJA en arbol limpio no es oraculo =="
 # limpio de hoy, y es la unica suite que nombra a `classify_agents.py`. Aqui se
 # reproduce esa forma en un arbol sintetico para que el control pueda fallar sin
 # depender de que esa deuda siga abierta.
-ORACULO="$TMP/oraculo"; mkdir -p "$ORACULO/src" "$ORACULO/tests"
-cat > "$ORACULO/src/sujeto.py" <<'EOF'
+BASELINE_ROJO="$TMP/baseline-rojo"; mkdir -p "$BASELINE_ROJO/src" "$BASELINE_ROJO/tests"
+cat > "$BASELINE_ROJO/src/sujeto.py" <<'EOF'
 def veredicto(x):
     """Tres retornos del mismo literal: candidata por construccion."""
     if x == 1:
@@ -254,19 +254,19 @@ def veredicto(x):
     return None
 EOF
 # La suite NOMBRA al sujeto y sale 1 pase lo que pase: no informa de nada.
-cat > "$ORACULO/tests/test-siempre-roja.sh" <<'EOF'
+cat > "$BASELINE_ROJO/tests/test-siempre-roja.sh" <<'EOF'
 #!/usr/bin/env bash
 # nombra a sujeto.py y no lo ejerce
 exit 1
 EOF
-salida14=$(SUITE_DISCRIMINA_ROOTS="$ORACULO/src" \
-           SUITE_DISCRIMINA_TESTS="$ORACULO/tests" \
+salida14=$(SUITE_DISCRIMINA_ROOTS="$BASELINE_ROJO/src" \
+           SUITE_DISCRIMINA_TESTS="$BASELINE_ROJO/tests" \
            SUITE_DISCRIMINA_LEDGER="$TMP/vacio14.json" \
            timeout 120 python3 "$GATE" 2>&1)
-afirmar "una suite ya roja se reporta SIN ORACULO, no ok" "1" \
-        "$(printf '%s' "$salida14" | grep -c 'SIN ORACULO')"
+afirmar "una suite ya roja se reporta BASELINE ROJO, no ok" "1" \
+        "$(printf '%s' "$salida14" | grep -c 'BASELINE ROJO')"
 afirmar "y el titular la cuenta aparte" "1" \
-        "$(printf '%s' "$salida14" | grep -c 'sin oraculo')"
+        "$(printf '%s' "$salida14" | grep -c 'con baseline rojo')"
 
 echo "== 13. el arbol real esta limpio y publica su denominador =="
 salida12=$(python3 "$GATE" --verificar 2>&1); codigo12=$?

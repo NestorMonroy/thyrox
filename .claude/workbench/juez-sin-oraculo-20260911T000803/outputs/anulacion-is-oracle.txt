@@ -1,15 +1,15 @@
-== CONTROL DE ANULACION — se retira el filtro is_oracle de judge() ==
+== CONTROL DE ANULACION — se retira el filtro has_green_baseline de judge() ==
 arbol sintetico: un sujeto con tres retornos del mismo literal; una suite que lo NOMBRA y sale 1 siempre
 
 -- con el filtro (esperado) --
-check-suite-discrimina: 0 sin discriminar, 0 sin cobertura, 1 sin oraculo
-  SIN ORACULO      sujeto.py:1 veredicto(); test-siempre-roja.sh ya sale rojo sin mutacion
+check-suite-discrimina: 0 sin discriminar, 0 sin cobertura, 1 con baseline rojo
+  BASELINE ROJO    sujeto.py:1 veredicto(); test-siempre-roja.sh ya sale rojo sin mutacion
   (alcance medido: 1 archivos .py, 1 funciones, 1 con literal ambiguo, 0 mutada(s) dos veces)
 
 -- ANULADO: suites = list(suites) --
-check-suite-discrimina: 0 sin discriminar, 0 sin cobertura, 0 sin oraculo
+check-suite-discrimina: 0 sin discriminar, 0 sin cobertura, 0 con baseline rojo
   (alcance medido: 1 archivos .py, 1 funciones, 1 con literal ambiguo, 1 mutada(s) dos veces)
 
 Caen exactamente las dos aserciones del caso 14 y ninguna mas: el veredicto
-pasa de SIN ORACULO a ok y el contador de mutadas sube de 0 a 1 — el falso
+pasa de BASELINE ROJO a ok y el contador de mutadas sube de 0 a 1 — el falso
 verde que el baseline cierra.
