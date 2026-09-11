@@ -197,5 +197,36 @@ af "el drenaje corta antes de los seis" si \
 af "y los vivos llegaron a su marcador" "$_LANZADOS" \
    "$(grep -l '^EXIT=' "$T"/drena/*.log 2>/dev/null | wc -l)"
 
+# =============================================================================
+# TASK-THYROX #328 — la anchura publicada es la EFECTIVA: min(WIDTH, N)
+# =============================================================================
+# `WIDTH` se resuelve en :151 y `N` se cuenta en :166 — despues, y nunca se
+# comparan. Con 2 trabajos en una maquina de 4 nucleos la linea de :169 publica
+# «2 trabajo(s), anchura 4», que es una cifra sobre una anchura que ningun
+# trabajo puede ejercer.
+#
+# El coste se declara para no inflarlo: en bash no hay pool preasignado —el
+# bucle de :179 simplemente no bloquea— asi que el coste es DE REPORTE, no de
+# spawn. Graphify si paga spawn porque preasigna procesos, y por eso capa:
+# `max_workers = min(cpu_cap, len(uncached_work))` (graphify/extract.py:6184).
+#
+# Lo que haria fallar a este control: publicar `$WIDTH` sin capar. Es lo que
+# hace hoy.
+printf 'true\ntrue\n' > "$T/dos.txt"
+SALIDA_CAP="$(BG_DIR="$T/cap" bash "$POOL" --width 4 --timeout 30 --prefix cap "$T/dos.txt" 2>/dev/null)"
+af "publica la anchura EFECTIVA con 2 trabajos y --width 4" si \
+   "$(contiene "$SALIDA_CAP" '2 trabajo\(s\), anchura 2')"
+
+# CONTROL DE DISCRIMINACION — con mas trabajos que anchura, la cota NO se
+# aplica y la cifra pedida sigue siendo la publicada. Sin este caso, capar a
+# ciegas (publicar siempre `N`) pasaria igual que capar bien.
+printf 'true\ntrue\ntrue\ntrue\ntrue\ntrue\n' > "$T/seis-cap.txt"
+SALIDA_SIN_CAP="$(BG_DIR="$T/sincap" bash "$POOL" --width 2 --timeout 30 --prefix sc "$T/seis-cap.txt" 2>/dev/null)"
+af "con 6 trabajos y --width 2 publica 2, no 6" si \
+   "$(contiene "$SALIDA_SIN_CAP" '6 trabajo\(s\), anchura 2')"
+
+# Y la cota es de REPORTE: no recorta lo que se lanza. Los dos trabajos salen.
+af "capar no deja trabajos sin lanzar" 2 "$(ls "$T"/cap/*.log 2>/dev/null | wc -l)"
+
 echo "test-run-task-pool: $((OK+FALLA)) aserciones — $OK ok, $FALLA falla(s)"
 [ "$FALLA" -eq 0 ]
