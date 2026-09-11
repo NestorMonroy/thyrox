@@ -1,0 +1,7 @@
+{
+  "question": "Por que check_suite_discrimina publicaba `ok` para las tres funciones de classify_agents.py sin haberlas ejercido nunca",
+  "instrument": "exit code de test-script-naming.sh sobre el arbol LIMPIO; --solo classify_agents.py antes y despues del baseline; control de anulacion retirando el filtro is_oracle de judge()",
+  "metric": "returncode de cada suite sin mutacion; conteo por cubo (sin discriminar / sin cobertura / sin oraculo) y funciones mutadas dos veces",
+  "blind_to": "una suite verde en limpio que sea roja por una causa AJENA a la mutacion (flaky, orden, reloj) sigue leyendose como deteccion: el baseline separa 'ya roja' de 'roja por la mutacion', no 'roja por ESTA mutacion' de 'roja por otra cosa'. Y ciego al timeout, que descarta la suite como oraculo sin distinguir 'lenta' de 'colgada'",
+  "destination": "thyrox/.claude/workbench — evidencia de sesion del proveedor"
+}

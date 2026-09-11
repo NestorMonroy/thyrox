@@ -1,0 +1,14 @@
+== baseline de la suite sobre el arbol LIMPIO ==
+$ bash tests/verify/test-script-naming.sh >/dev/null 2>&1; echo $?
+1
+
+== --solo classify_agents.py ANTES del baseline (2m33s) ==
+check-suite-discrimina: 0 sin discriminar, 0 sin cobertura
+  (alcance medido: 190 archivos .py, 1221 funciones, 3 con literal ambiguo, 3 mutada(s) dos veces)
+
+== --solo classify_agents.py DESPUES del baseline (26s) ==
+check-suite-discrimina: 0 sin discriminar, 0 sin cobertura, 3 sin oraculo
+  SIN ORACULO      classify_agents.py:310 pre_classify(); test-script-naming.sh ya sale rojo sin mutacion
+  SIN ORACULO      classify_agents.py:439 closing_text(); test-script-naming.sh ya sale rojo sin mutacion
+  SIN ORACULO      classify_agents.py:468 main(); test-script-naming.sh ya sale rojo sin mutacion
+  (alcance medido: 190 archivos .py, 1221 funciones, 3 con literal ambiguo, 0 mutada(s) dos veces)

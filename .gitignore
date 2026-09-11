@@ -132,3 +132,8 @@ venv/
 # contenido: versionarlo produce el churn por turno de #151. El banco SÍ se
 # versiona; su puntero, no.
 .claude/workbench/.ultimo-banco
+
+# Estado de sesión del gate de mutación: qué mutación está EN VUELO ahora.
+# No es registro del proyecto — su contenido sólo vale dentro de la ejecución
+# que lo escribió, y versionarlo ensucia el árbol en cada corrida.
+agent-results/mutantes-en-vuelo.json
