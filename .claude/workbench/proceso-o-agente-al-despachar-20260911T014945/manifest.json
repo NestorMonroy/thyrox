@@ -1,0 +1,7 @@
+{
+  "instrument": "python3 tests/hooks/test_detect_agent_dispatch.py — siete casos sobre detect_agent_dispatch, mas la anulacion de needs_judgment",
+  "question": "Puede un gate preguntar «proceso o agente» al despachar, sin avisar en el despacho que si necesita juicio?",
+  "metric": "Casos que pasan antes de escribir el detector (mitad roja) y tras retirar la mitad de juicio (anulacion), para separar la asercion que mide el mecanismo de la que pasaria igual sin el.",
+  "blind_to": "El trabajo determinista descrito sin nombrar su familia; el verbo de juicio decorativo que el trabajo no exige; y la ANCHURA, que es el otro eje por el que un agente se justifica y ningun literal declara.",
+  "destination": "thyrox: src/hooks/detect_agent_dispatch.py + su registro en pretooluse_dispatch.DETECTOR_NAMES; matcher Agent en kaupamex-docs/.claude/settings.json"
+}

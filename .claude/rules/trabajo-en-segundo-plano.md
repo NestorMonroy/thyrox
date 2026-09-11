@@ -142,6 +142,40 @@ final —no es separador de segmento— y está ahora en la suite. Retirado el
 anclaje cae el caso de `grep -rn pytest`; retirado el descuento cae el del `&`;
 ni una aserción más en ninguno de los dos.
 
+## El segundo gate: ¿proceso o agente? — al DESPACHAR
+
+El detector de arriba mide un **comando** y pregunta «¿primer plano o segundo
+plano?». No ve el otro lado de la misma decisión: el despacho de un subagente
+para trabajo que es un proceso. Medido antes de cerrarlo: **cero** detectores
+veían el tool `Agent`, y el matcher de `PreToolUse` del consumidor sólo cubría
+`Write|Edit|MultiEdit` y `Bash`.
+
+`src/hooks/detect_agent_dispatch.py`, quinto detector de
+`pretooluse_dispatch`, dispara sobre `Agent` cuando el prompt (o su
+descripción) invoca una **familia determinista** —suite, gate, build, censo o
+barrido, búsqueda mecánica, migración— **y** no nombra ningún verbo de juicio.
+
+```bash
+python3 tests/hooks/test_detect_agent_dispatch.py
+```
+
+**La mitad de juicio es la que carga el peso, y su control lo mide.** Sin ella
+el aviso saldría en todo despacho que mencione un comando, incluido el análisis
+que sí necesita un agente. Retirada —`needs_judgment` a `False`— caen
+**exactamente** las dos aserciones que dependen de ella y ninguna más
+(`.claude/workbench/proceso-o-agente-al-despachar-20260911T014945/`).
+
+**Avisa, no bloquea**, por la misma razón que su hermano: un patrón léxico no
+separa «corre la suite y dime el conteo» de «corre la suite y decide qué rojos
+son regresión». La mitad de juicio acota el falso positivo; no lo cierra.
+
+**Su cableado es parámetro del consumidor** (DEC-04): el matcher `Agent` vive
+en el `settings.json` de cada clon, no en el proveedor. Y hereda la precondición
+de `H-DOCS-1010`: bajo el harness remoto, con cwd en `/home/user`, un
+`settings.json` de directorio adicional aporta `CLAUDE.md` y `.claude/rules/`,
+**no hooks**. Mientras eso siga así el detector existe y no dispara — la regla
+sigue siendo la que gobierna, y este párrafo es su declaración de inercia.
+
 ## Por qué esta regla vive aquí
 
 Medido 2026-09-10T05:15:22: de las cinco reglas de THYROX, **ninguna** nombraba
