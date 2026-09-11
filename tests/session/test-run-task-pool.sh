@@ -32,7 +32,7 @@ source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
 # El ledger se AÍSLA: sin esto la suite registra en el de la sesión viva y un
 # caso que deja un trabajo colgado bloquearía el turno de quien la corre.
-export KX_TRABAJOS_DIR="$(mktemp -d)/ledger"
+export THYROX_JOBS_DIR="$(mktemp -d)/ledger"
 POOL="$RAIZ/src/session/run-task-pool.sh"
 WAIT_JOBS="$RAIZ/src/session/wait-jobs.sh"
 OK=0; FALLA=0
@@ -134,14 +134,24 @@ af "solo se lanza el comando real" 1 "$(ls "$T"/g/*.log 2>/dev/null | wc -l)"
 
 NUCLEOS="$(nproc 2>/dev/null || echo 4)"
 
-# 8. porcentaje — la mitad de los nucleos, piso 1
+# El fixture tiene que traer AL MENOS tantos trabajos como la anchura que se
+# espera medir. Desde el cap de #328 la cifra publicada es la EFECTIVA
+# —min(WIDTH, N)—, asi que con un solo comando estos tres casos leerian 1 y
+# estarian midiendo el cap en vez de la resolucion. No es que el cap estorbe al
+# control: es que el fixture era demasiado pequeño para observar lo que el caso
+# dice medir. Con N >= la anchura esperada, la cifra publicada sigue
+# discriminando la resolucion — y ademas falla si el cap muerde de mas.
 printf 'true\n' > "$T/pct.txt"
-SAL="$(BG_DIR="$T/pct" bash "$POOL" --width 50% --timeout 30 --prefix pct "$T/pct.txt" 2>&1)"
+printf 'true\ntrue\n' > "$T/pct2.txt"
+for _ in $(seq 8); do printf 'true\n'; done > "$T/pct8.txt"
+
+# 8. porcentaje — la mitad de los nucleos, piso 1
+SAL="$(BG_DIR="$T/pct" bash "$POOL" --width 50% --timeout 30 --prefix pct "$T/pct2.txt" 2>&1)"
 af "50%% resuelve a la mitad de nproc" "$(( NUCLEOS / 2 > 0 ? NUCLEOS / 2 : 1 ))" \
    "$(printf '%s' "$SAL" | sed -n 's/.*anchura \([0-9]*\).*/\1/p' | head -1)"
 
 # 9. porcentaje por encima de 100 — la referencia lo admite (`--jobs 200%`)
-SAL="$(BG_DIR="$T/pct2" bash "$POOL" --width 200% --timeout 30 --prefix pct2 "$T/pct.txt" 2>&1)"
+SAL="$(BG_DIR="$T/pct2" bash "$POOL" --width 200% --timeout 30 --prefix pct2 "$T/pct8.txt" 2>&1)"
 af "200%% resuelve al doble de nproc" "$(( NUCLEOS * 2 ))" \
    "$(printf '%s' "$SAL" | sed -n 's/.*anchura \([0-9]*\).*/\1/p' | head -1)"
 
@@ -153,7 +163,7 @@ af "0%% sale 4 como --width 0" 4 $?
 
 # 11. archivo — la anchura se lee de su contenido
 echo 2 > "$T/anchura.conf"
-SAL="$(BG_DIR="$T/arch" bash "$POOL" --width "$T/anchura.conf" --timeout 30 --prefix arch "$T/pct.txt" 2>&1)"
+SAL="$(BG_DIR="$T/arch" bash "$POOL" --width "$T/anchura.conf" --timeout 30 --prefix arch "$T/pct2.txt" 2>&1)"
 af "el archivo aporta la anchura" 2 \
    "$(printf '%s' "$SAL" | sed -n 's/.*anchura \([0-9]*\).*/\1/p' | head -1)"
 

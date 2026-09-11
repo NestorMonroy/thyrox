@@ -336,6 +336,61 @@ process_state() {
     ps -o state= -p "$1" 2>/dev/null | tr -d ' \n'
 }
 
+# ¿El pid es LIDER de su propio grupo? Es la precondicion de senalar al grupo
+# con `kill -- -$pid`: si no lo es, ese `-$pid` nombra el grupo de QUIEN LO
+# LANZO y la senal caeria sobre procesos ajenos. Un trabajo lanzado por `bg.sh`
+# o por el pool lo es —van con `setsid`—; uno adoptado de fuera, o anotado
+# antes de que el lanzamiento lo llevara, puede no serlo.
+#
+# Es la misma bifurcacion que `kill_child_tree` hace al caer a `child.kill()`
+# cuando el grupo falla (smolvm guest-agent/src/exec.rs:87-101).
+is_group_leader() {
+    [[ -n "${1:-}" ]] || return 1
+    local pgid
+    pgid="$(ps -o pgid= -p "$1" 2>/dev/null | tr -d ' \n')"
+    [[ -n "$pgid" && "$pgid" == "$1" ]]
+}
+
+# ¿Queda ALGO vivo del trabajo? `modo=group` pregunta por el grupo entero
+# —`kill -0 -- -$pid` es cierto mientras quede un miembro—; `modo=leader` mira
+# solo la fila del lider, que es lo unico medible cuando el pid no lidera.
+#
+# La distincion ES el defecto que esta funcion cierra: `process_state` dice
+# «muerto» en cuanto el lider sale, con los hijos aun colgando, y el ledger se
+# soltaba ahi — declarando que no quedaba nada habiendo huerfanos.
+#
+# El instrumento discrimina, medido con censo de miembros al lado: 3 miembros
+# -> «si»; tras TERM 2 miembros -> «si»; tras KILL 0 miembros -> «no».
+job_alive() {
+    local pid="${1:?}" modo="${2:?}"
+    if [[ "$modo" != group ]]; then
+        [[ -n "$(process_state "$pid")" ]]
+        return
+    fi
+    # NO se pregunta con `kill -0 -- -$pid`, y la razon esta medida: un ZOMBI
+    # responde que si. Un zombi es una fila que espera a que su padre la
+    # coseche — no es un proceso que corre. El PID 1 de este contenedor es
+    # `process_api` y no cosecha con prontitud, asi que tras el KILL queda un
+    # `Z` con ppid 1 dentro del grupo. Con `kill -0` pelado, `cmd_kill` diria
+    # «NO murio» y se negaria a soltar el ledger: el turno quedaria bloqueado
+    # por un cadaver, que es el error en la direccion contraria al que #327
+    # cierra pero igual de real.
+    #
+    # Medido (sonda-discriminacion-del-instrumento.txt): tras TERM+KILL el
+    # grupo conserva 1 miembro en estado Z con ppid 1, y `kill -0 -- -PID`
+    # devuelve «si» en las tres repeticiones.
+    #
+    # Se recorre en `while read` y no por tuberia a `grep -q` para no depender
+    # del estado de `pipefail`, que invierte el veredicto de un `grep` cuando
+    # el productor falla.
+    local estado
+    while IFS= read -r estado; do
+        case "$estado" in ''|Z*) continue ;; esac
+        return 0
+    done < <(ps -o state= -g "$pid" 2>/dev/null | tr -d ' ')
+    return 1
+}
+
 # La hora de arranque del proceso, campo 22 de `/proc/<pid>/stat` (`starttime`,
 # en ticks desde el arranque del sistema). Es el discriminador que `kill -0` no
 # puede dar: un pid vuelve a existir siendo OTRO proceso, y su `starttime` no
@@ -533,7 +588,12 @@ cmd_continue() {
         pid=$(sed -n 's/^pid=//p' "$f"); label=$(basename "$f" .job)
         st="$(process_state "$pid")"
         case "$st" in
-            *T*) kill -CONT "$pid" 2>/dev/null && { echo "continuado: $label (pid $pid)"; n=$((n+1)); } ;;
+            # El estado T se lee del LIDER, que es el disparador; la senal va
+            # al grupo cuando lo lidera, porque un hijo detenido con el lider
+            # reactivado sigue sin avanzar.
+            *T*) { if is_group_leader "$pid"; then kill -CONT -- "-$pid" 2>/dev/null
+                   else kill -CONT "$pid" 2>/dev/null; fi; } \
+                     && { echo "continuado: $label (pid $pid)"; n=$((n+1)); } ;;
             '')  echo "sin proceso: $label (pid ${pid:-—} no existe)" >&2 ;;
             *)   echo "no detenido: $label (estado '$st') — no se señala" >&2 ;;
         esac
@@ -555,19 +615,30 @@ cmd_kill() {
             echo "sin pid: $label no se puede señalar; usa 'forget'" >&2
             continue
         fi
-        if [[ -z "$(process_state "$pid")" ]]; then
-            rm -f "$f"; echo "ya no corría: $label (pid $pid) — soltado"; n=$((n+1)); continue
-        fi
-        kill -TERM "$pid" 2>/dev/null
-        local i=0
-        while [[ $i -lt $grace && -n "$(process_state "$pid")" ]]; do sleep 1; i=$((i+1)); done
-        if [[ -n "$(process_state "$pid")" ]]; then
-            kill -KILL "$pid" 2>/dev/null; sleep 1
-        fi
-        if [[ -n "$(process_state "$pid")" ]]; then
-            echo "NO murió: $label (pid $pid) sigue vivo tras TERM y KILL — NO se suelta del ledger" >&2
+        # A QUIEN apunta la senal: al GRUPO si el pid lo lidera, al pid a
+        # secas si no. La escalera TERM -> gracia -> KILL no cambia — y sigue
+        # haciendo falta: medido, TERM al grupo deja 2 de 3 miembros vivos y es
+        # el KILL el que los barre.
+        local modo alcance
+        local -a objetivo
+        if is_group_leader "$pid"; then
+            modo=group; objetivo=(-- "-$pid"); alcance="grupo $pid"
         else
-            rm -f "$f"; echo "matado: $label (pid $pid) — soltado del ledger"; n=$((n+1))
+            modo=leader; objetivo=("$pid"); alcance="pid $pid, que no lidera grupo"
+        fi
+        if ! job_alive "$pid" "$modo"; then
+            rm -f "$f"; echo "ya no corría: $label ($alcance) — soltado"; n=$((n+1)); continue
+        fi
+        kill -TERM "${objetivo[@]}" 2>/dev/null
+        local i=0
+        while [[ $i -lt $grace ]] && job_alive "$pid" "$modo"; do sleep 1; i=$((i+1)); done
+        if job_alive "$pid" "$modo"; then
+            kill -KILL "${objetivo[@]}" 2>/dev/null; sleep 1
+        fi
+        if job_alive "$pid" "$modo"; then
+            echo "NO murió: $label ($alcance) sigue vivo tras TERM y KILL — NO se suelta del ledger" >&2
+        else
+            rm -f "$f"; echo "matado: $label ($alcance) — soltado del ledger"; n=$((n+1))
         fi
     done < <(_selection "$sel")
     [[ $n -gt 0 ]]

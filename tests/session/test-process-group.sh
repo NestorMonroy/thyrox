@@ -42,7 +42,7 @@ RAIZ="$(thyrox_root)" || exit 2
 
 # El ledger se AÍSLA: sin esto la suite registra en el de la sesión viva y un
 # caso que deja un trabajo colgado bloquearía el turno de quien la corre.
-export KX_TRABAJOS_DIR="$(mktemp -d)/ledger"
+export THYROX_JOBS_DIR="$(mktemp -d)/ledger"
 BG="$RAIZ/src/session/bg.sh"
 POOL="$RAIZ/src/session/run-task-pool.sh"
 WAIT_JOBS="$RAIZ/src/session/wait-jobs.sh"
@@ -60,9 +60,28 @@ group_of() { ps -o pgid= -p "$1" 2>/dev/null | tr -d ' '; }
 # que el propio trabajo anotó más su líder, no «los del grupo» — con el árbol
 # de hoy el grupo del trabajo ES el de esta suite, y contarlo mediría a la
 # suite, no al sujeto.
+# Universo declarado: los pid que el trabajo anotó + su líder. Cuenta por
+# ESTADO, no con `kill -0`, y la razón está medida: un ZOMBI responde que sí a
+# `kill -0` y NO es un superviviente — no corre, no retiene nada, y desaparece
+# en cuanto su padre lo cosecha.
+#
+# Medido en este árbol tras `wait-jobs.sh kill`: los tres pid daban `kill -0=sí`
+# con `ps` diciendo `Z 1 bash` / `Z 1 sleep` / `Z 1 sleep`, y a los 3 s el PID 1
+# —`process_api`— los había cosechado y ya no existían. Con `kill -0`, este caso
+# publicaba «3 supervivientes» sobre un grupo que estaba muerto.
+#
+# NO debilita el control: con el kill SÓLO al líder los hijos siguen corriendo
+# en estado S —no zombis, porque nadie los mató— así que el conteo por estado
+# sigue dando 2 y la aserción sigue en rojo. Lo que el cambio quita es un falso
+# rojo por la ventana de cosecha, no el rojo real.
 alive_among() {
-    local n=0 p
-    for p in "$@"; do [ -n "$p" ] && kill -0 "$p" 2>/dev/null && n=$((n+1)); done
+    local n=0 p st
+    for p in "$@"; do
+        [ -n "$p" ] || continue
+        st="$(ps -o state= -p "$p" 2>/dev/null | tr -d ' ')"
+        case "$st" in ''|Z*) continue ;; esac
+        n=$((n+1))
+    done
     echo "$n"
 }
 
@@ -105,7 +124,7 @@ kill -KILL "$BG_PID" 2>/dev/null || true
 # -----------------------------------------------------------------------------
 printf '%s\n' "bash $T/forker.sh $T/kids-pool" \
     | bash "$POOL" - --width 1 --timeout 2 --dir "$T/pool" --prefix grp >/dev/null 2>&1
-POOL_PID="$(sed -n 's/^pid=//p' "$KX_TRABAJOS_DIR"/grp-001.job 2>/dev/null)"
+POOL_PID="$(sed -n 's/^pid=//p' "$THYROX_JOBS_DIR"/grp-001.job 2>/dev/null)"
 echo "$POOL_PID" >> "$T/leaders"
 af "run-task-pool: el trabajo es lider de su grupo (pgid==pid)" "$POOL_PID" "$(group_of "$POOL_PID")"
 
@@ -131,7 +150,7 @@ af "kill barre el GRUPO: 0 supervivientes" 0 "$(alive_among "$POOL_PID" $KIDS)"
 #    rompió la escotilla del Stop gate.
 # -----------------------------------------------------------------------------
 af "el ledger suelta la etiqueta matada" "no" \
-    "$([ -f "$KX_TRABAJOS_DIR/grp-001.job" ] && echo si || echo no)"
+    "$([ -f "$THYROX_JOBS_DIR/grp-001.job" ] && echo si || echo no)"
 
 echo "test-process-group: $((OK+FALLA)) aserciones — $OK ok, $FALLA falla(s)"
 [ "$FALLA" -eq 0 ]

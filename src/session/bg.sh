@@ -193,7 +193,22 @@ cmd_start() {
 
     # `disown` evita que la shell trackee el job; el marcador se escribe SIEMPRE
     # (incluso si el comando falla) porque va tras el `;`, no tras un `&&`.
-    nohup bash -c "$(printf '%q ' "$@"); printf '%s%s\n' '$_MARK' \"\$?\"" \
+    #
+    # `setsid` hace al trabajo LIDER de su propia sesion y grupo, que es la
+    # precondicion de matarlo POR GRUPO (`kill -- -$pid`): sin ella, un trabajo
+    # que forkea hijos deja huerfanos al vencer el timeout. Medido: un trabajo
+    # con dos hijos deja 2 supervivientes si la senal va solo al lider, y 0 si
+    # va al grupo. Es lo que `configure_process_group` hace en `pre_exec`
+    # (smolvm guest-agent/src/exec.rs:71-82) y lo que `detached: true` da del
+    # lado TypeScript (`shell/src/genericProcessUtils.ts`), que lo tenia hecho
+    # mientras el lado bash no.
+    #
+    # `$!` SIGUE SIENDO el pid del trabajo, y no es casualidad: con el control
+    # de trabajos apagado —lo normal en un guion no interactivo— el proceso de
+    # fondo NO es lider de grupo, asi que `setsid` no bifurca y hace `exec`
+    # directamente. El contrato de pid del que cuelga el ledger se preserva; el
+    # control positivo lo mide exigiendo `pgid == pid`.
+    nohup setsid bash -c "$(printf '%q ' "$@"); printf '%s%s\n' '$_MARK' \"\$?\"" \
         > "$LOG" 2>&1 &
     local pid=$!
     disown "$pid" 2>/dev/null || true

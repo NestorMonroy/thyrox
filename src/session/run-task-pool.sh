@@ -104,6 +104,34 @@ done
 # escrito en el archivo A MITAD de un despacho, drena — se deja de admitir
 # trabajos nuevos y los vivos terminan. Es la unica manera de frenar un
 # despacho ya lanzado sin matarlo.
+# LA ANCHURA EFECTIVA ES min(WIDTH, N), y se capa donde N ya se conoce. La
+# derivacion es la de la referencia: `max_workers = min(cpu_cap,
+# len(uncached_work))` (graphify/extract.py:6184-6185). Aqui el coste es DE
+# REPORTE, no de spawn —el bucle de despacho no preasigna procesos, solo no
+# bloquea— pero una cifra publicada que no es la efectiva miente sobre lo que
+# la maquina va a hacer.
+#
+# DIVERGENCIA DECLARADA — el SEGUNDO caso de la referencia no se porta.
+# `max_workers == 1` le hace devolver `return False` y entregar el trabajo a un
+# extractor secuencial EN PROCESO (:6193-6201). Aqui no hay camino en serie en
+# primer plano, y no por comodidad. Sus tres razones, medidas contra el caso
+# nuestro:
+#
+#   razon que la fuente declara        | aqui
+#   -----------------------------------|-----------------------------------------
+#   spawn + un ida y vuelta de IPC por  | NO transfiere: lanzamos un `nohup setsid
+#   archivo, que una sola ranura no     | bash` por comando a CUALQUIER anchura,
+#   amortiza                            | asi que anchura 1 no anade ni un spawn
+#   el worker huerfano que deja         | NO transfiere: es el defecto que el kill
+#   `os._exit`                          | por grupo cierra en este mismo pase
+#   el hook de Windows                  | no aplica
+#
+# Y la razon propia, que es la que decide: el cap hace que N=1 implique
+# WIDTH=1, asi que un camino en serie dispararia en TODA invocacion de un solo
+# trabajo y le quitaria `--timeout`, el ledger y el gate de `Stop` justo al caso
+# para el que `bg.sh` existe. La fuente entrega el trabajo A SU LLAMADOR; el
+# nuestro es el turno de shell, y portar un retorno-al-llamador sin llamador
+# analogo seria inventar el llamador.
 CORES="$(nproc 2>/dev/null || echo 4)"
 
 # resolve_width <spec> -> imprime el entero, o nada + motivo en stderr.
@@ -166,7 +194,12 @@ done
 N=${#COMMANDS[@]}
 [ "$N" -gt 0 ] || { echo "run-task-pool: 0 comandos que lanzar — nada que medir" >&2; exit 4; }
 
-echo "run-task-pool: $N trabajo(s), anchura $WIDTH, logs en $DIR"
+# El cap. Ver la nota de la cabecera: la cifra publicada es la EFECTIVA.
+[ "$WIDTH" -le "$N" ] || WIDTH="$N"
+SERIE=""
+[ "$WIDTH" -eq 1 ] && SERIE=" (en serie)"
+
+echo "run-task-pool: $N trabajo(s), anchura ${WIDTH}${SERIE}, logs en $DIR"
 
 ALIVE=()
 DRAINING=0
@@ -204,6 +237,10 @@ refresh_width() {
         return 0 ;;
     esac
     nueva="$(resolve_width "$raw")" || return 0
+    # El mismo cap: la forma de archivo puede subir la anchura EN VUELO por
+    # encima del numero de trabajos, y lo que se publique al releerla tiene que
+    # seguir siendo la anchura efectiva.
+    [ "$nueva" -le "$N" ] || nueva="$N"
     [ "$nueva" = "$WIDTH" ] && return 0
     WIDTH="$nueva"
     echo "run-task-pool: anchura ahora $WIDTH (releida de $WIDTH_FILE)" >&2
@@ -227,7 +264,11 @@ for cmd in "${COMMANDS[@]}"; do
     # ese mismo shell y el `echo` no llega a correr — medido, el log quedaba
     # vacío y la barrera lo daba por muerto callado. Con el shell interior, el
     # `exit` mata al de dentro y el de fuera sí escribe el marcador.
-    nohup bash -c 'bash -c "$1"; echo EXIT=$?' _ "$cmd" > "$LOG" 2>&1 &
+    # `setsid` — lider de su propio grupo, para que el kill del ledger barra a
+    # los hijos y no deje huerfanos. La nota larga esta en `bg.sh`: con el
+    # control de trabajos apagado no bifurca, asi que `$!` sigue siendo el pid
+    # que se registra.
+    nohup setsid bash -c 'bash -c "$1"; echo EXIT=$?' _ "$cmd" > "$LOG" 2>&1 &
     PID=$!
     disown "$PID" 2>/dev/null || true
     ALIVE+=("$PID")

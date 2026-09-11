@@ -33,7 +33,7 @@ afirmar() {
 }
 
 echo "== 1. declarar la arista NO lanza el dependiente =="
-KX_TRABAJOS_DIR=$(mktemp -d); export KX_TRABAJOS_DIR
+THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
 TESTIGO=$(mktemp -u)   # si el dependiente arranca, existe
 LA=$(mktemp); nohup bash -c "sleep 2; echo EXIT=0" >"$LA" 2>&1 & PA=$!; disown $PA
 bash "$GUION" register primero "$LA" "$PA" >/dev/null
@@ -57,7 +57,7 @@ afirmar "tras dispatch, el dependiente SÍ arrancó" "presente" \
     "$( [[ -e "$TESTIGO" ]] && echo presente || echo ausente )"
 
 echo "== 3. CONTROL — un predecesor que FALLA no arranca al dependiente, y lo DICE =="
-KX_TRABAJOS_DIR=$(mktemp -d); export KX_TRABAJOS_DIR
+THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
 T2=$(mktemp -u)
 LC=$(mktemp); nohup bash -c "echo arrancando; sleep 1; kill -9 \$\$" >"$LC" 2>&1 & PC=$!; disown $PC
 bash "$GUION" register malo "$LC" "$PC" >/dev/null
@@ -76,7 +76,7 @@ echo "== 4. un CANCELADO no deja el turno bloqueado para siempre =="
 # Se aisla: en el caso 3 el ledger conserva ademas a `malo`, que es un BAIL sin
 # recoger y SI debe seguir pendiente. Medir los dos juntos no distinguiria
 # "cancelado no bloquea" de "nada bloquea".
-KX_TRABAJOS_DIR=$(mktemp -d); export KX_TRABAJOS_DIR
+THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
 LE=$(mktemp); printf 'EXIT=0\n' > "$LE"
 bash "$GUION" register pred "$LE" >/dev/null
 LF=$(mktemp)
@@ -86,7 +86,7 @@ afirmar "un BLOQUEADO SI mantiene el turno bloqueado" 1 $?
 # Se fuerza la cancelacion reescribiendo la arista a un predecesor que fallo.
 LG=$(mktemp); printf 'muerto sin marcador\n' > "$LG"
 bash "$GUION" register roto "$LG" 999999 >/dev/null
-sed -i 's/^after_ok=pred$/after_ok=roto/' "$KX_TRABAJOS_DIR/colgado.job"
+sed -i 's/^after_ok=pred$/after_ok=roto/' "$THYROX_JOBS_DIR/colgado.job"
 bash "$GUION" dispatch >/dev/null 2>&1
 bash "$GUION" forget roto >/dev/null 2>&1
 bash "$GUION" forget pred  >/dev/null 2>&1
