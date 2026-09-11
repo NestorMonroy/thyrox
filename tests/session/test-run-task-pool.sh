@@ -119,5 +119,83 @@ printf '# comentario\n\ntrue\n' > "$T/mix.txt"
 BG_DIR="$T/g" bash "$POOL" --width 1 --timeout 30 --prefix mix "$T/mix.txt" >/dev/null 2>&1
 af "solo se lanza el comando real" 1 "$(ls "$T"/g/*.log 2>/dev/null | wc -l)"
 
+# =============================================================================
+# TASK-THYROX-0013 — las dos formas de `--jobs` que la referencia admite
+# =============================================================================
+# GNU Parallel acepta cuatro formas de anchura; `--width` portaba una. Los
+# casos de abajo cubren las dos que se portan (porcentaje y archivo releido) y
+# la que se DECLARA divergente (`0`), con su razon medida en la cabecera del
+# guion: de 4 a 16 trabajadores se gana 0.4x.
+#
+# El que DISCRIMINA es el 12: un porcentaje resuelto una sola vez al arrancar
+# pasaria los casos 8 a 11 sin releer nada. Solo el 12 distingue «lee el
+# archivo» de «relee el archivo en cada vuelta», que es la forma cuyo valor
+# entero esta en cambiar la anchura sin matar el despacho.
+
+NUCLEOS="$(nproc 2>/dev/null || echo 4)"
+
+# 8. porcentaje — la mitad de los nucleos, piso 1
+printf 'true\n' > "$T/pct.txt"
+SAL="$(BG_DIR="$T/pct" bash "$POOL" --width 50% --timeout 30 --prefix pct "$T/pct.txt" 2>&1)"
+af "50%% resuelve a la mitad de nproc" "$(( NUCLEOS / 2 > 0 ? NUCLEOS / 2 : 1 ))" \
+   "$(printf '%s' "$SAL" | sed -n 's/.*anchura \([0-9]*\).*/\1/p' | head -1)"
+
+# 9. porcentaje por encima de 100 — la referencia lo admite (`--jobs 200%`)
+SAL="$(BG_DIR="$T/pct2" bash "$POOL" --width 200% --timeout 30 --prefix pct2 "$T/pct.txt" 2>&1)"
+af "200%% resuelve al doble de nproc" "$(( NUCLEOS * 2 ))" \
+   "$(printf '%s' "$SAL" | sed -n 's/.*anchura \([0-9]*\).*/\1/p' | head -1)"
+
+# 10. `0%` cae en la DIVERGENCIA declarada, igual que `--width 0`: la
+#     saturacion esta medida en nproc, asi que «tantos como sea posible» no se
+#     porta. Que lo haria fallar: resolver `0%` a 0 y colgar el bucle.
+BG_DIR="$T/pct0" bash "$POOL" --width 0% --timeout 30 "$T/pct.txt" >/dev/null 2>&1
+af "0%% sale 4 como --width 0" 4 $?
+
+# 11. archivo — la anchura se lee de su contenido
+echo 2 > "$T/anchura.conf"
+SAL="$(BG_DIR="$T/arch" bash "$POOL" --width "$T/anchura.conf" --timeout 30 --prefix arch "$T/pct.txt" 2>&1)"
+af "el archivo aporta la anchura" 2 \
+   "$(printf '%s' "$SAL" | sed -n 's/.*anchura \([0-9]*\).*/\1/p' | head -1)"
+
+# 12. EL QUE DISCRIMINA — el archivo se RELEE al liberarse un hueco.
+#     Cuatro durmientes con anchura 1: el primero corre mientras el archivo
+#     pasa de 1 a 3, asi que los tres restantes entran juntos. Si la anchura
+#     se resolviera una sola vez, entrarian de uno en uno y el reloj de pared
+#     seria ~4 veces el de un durmiente.
+echo 1 > "$T/vivo.conf"
+printf 'sleep 2\nsleep 2\nsleep 2\nsleep 2\n' > "$T/cuatro.txt"
+( sleep 1; echo 3 > "$T/vivo.conf" ) &
+_SUBIDOR=$!
+_INICIO="$(date +%s)"
+BG_DIR="$T/relee" bash "$POOL" --width "$T/vivo.conf" --timeout 30 --prefix rel "$T/cuatro.txt" >/dev/null 2>&1
+_LAPSO=$(( $(date +%s) - _INICIO ))
+wait "$_SUBIDOR" 2>/dev/null
+# El reloj SOLO no discrimina: si el guion rehusa la ruta, no lanza nada y el
+# lapso es 0 — verde por no haber medido. Se exige TAMBIEN que los cuatro
+# trabajos existan, que es lo que separa «rapido» de «no corrio».
+af "los cuatro trabajos se lanzaron" 4 "$(ls "$T"/relee/*.log 2>/dev/null | wc -l)"
+af "releer el archivo admite los cuatro en menos de 3 vueltas" si \
+   "$([ "$_LAPSO" -lt 6 ] && echo si || echo no)"
+
+# 13. EL DRENAJE — `0` en el archivo A MITAD del despacho: se deja de admitir
+#     trabajos nuevos y los vivos terminan. Es lo que la forma de archivo
+#     compra y que hoy no se podia hacer: frenar sin matar.
+#
+#     Que lo haria fallar: ignorar el 0 (se lanzarian los seis) o tratarlo como
+#     el `--width 0` de lanzamiento (saldria 4 y no terminaria ninguno). Los
+#     dos `af` de abajo separan esos dos modos: uno cuenta lo lanzado, el otro
+#     comprueba que lo lanzado LLEGO A SU MARCADOR.
+echo 2 > "$T/drena.conf"
+printf 'sleep 2\nsleep 2\nsleep 2\nsleep 2\nsleep 2\nsleep 2\n' > "$T/seis.txt"
+( sleep 1; echo 0 > "$T/drena.conf" ) &
+_DRENADOR=$!
+BG_DIR="$T/drena" bash "$POOL" --width "$T/drena.conf" --timeout 30 --prefix dre "$T/seis.txt" >/dev/null 2>&1
+wait "$_DRENADOR" 2>/dev/null
+_LANZADOS="$(ls "$T"/drena/*.log 2>/dev/null | wc -l)"
+af "el drenaje corta antes de los seis" si \
+   "$([ "$_LANZADOS" -ge 1 ] && [ "$_LANZADOS" -lt 6 ] && echo si || echo no)"
+af "y los vivos llegaron a su marcador" "$_LANZADOS" \
+   "$(grep -l '^EXIT=' "$T"/drena/*.log 2>/dev/null | wc -l)"
+
 echo "test-run-task-pool: $((OK+FALLA)) aserciones — $OK ok, $FALLA falla(s)"
 [ "$FALLA" -eq 0 ]
