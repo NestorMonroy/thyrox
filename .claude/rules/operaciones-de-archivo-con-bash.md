@@ -49,9 +49,14 @@ entre dos listados, ni **lotes**  — y sin esas, la tentación de resolverlo co
 Python o con una herramienta dedicada vuelve por la puerta de atrás.
 
 **Medido en este entorno, no supuesto:** `awk`, `sort`, `uniq`, `comm`, `cut`,
-`paste`, `xargs`, `shuf`, `tar` están instalados; **`parallel` (GNU) NO lo
-está** — `which parallel` falla. El mecanismo de lotes de este árbol es
-`src/session/run-task-pool.sh` (`trabajo-en-segundo-plano.md`), no `parallel`.
+`paste`, `xargs`, `shuf`, `tar` están instalados; `parallel` (GNU) **no**, por
+defecto — `which parallel` falla. Ya existe su instalador idempotente,
+opt-in y con re-verificación del binario (no del exit code del `apt`):
+`src/lib/toolchain.sh::thyrox_toolchain_require_parallel` (`THYROX_INSTALL_PARALLEL=1`).
+Hoy **0 gates** lo invocan fuera de su propia suite
+(`tests/lib/test-toolchain-parallel.sh`) — el mecanismo de lotes de este
+árbol sigue siendo `src/session/run-task-pool.sh`
+(`trabajo-en-segundo-plano.md`), no `parallel`; instalarlo no lo reemplaza.
 
 | Necesidad | Idioma |
 |---|---|
