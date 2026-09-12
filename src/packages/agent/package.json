@@ -3,7 +3,7 @@
   "version": "0.4.0",
   "private": true,
   "type": "module",
-  "description": "El dominio agent: el contrato de definicion, el catalogo de modelos, el port de la referencia y \u2014en loop/\u2014 el bucle vivo con lo que necesita para CORRER (tipos, transcript, sesion, hooks, contexto).",
+  "description": "El dominio agent: el contrato de definicion, el catalogo de modelos, el port de la referencia y —en loop/— el bucle vivo con lo que necesita para CORRER (tipos, transcript, sesion, hooks, contexto).",
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
@@ -55,6 +55,7 @@
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
     "@thyrox/app-host": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",
@@ -63,6 +64,8 @@
     "@thyrox/observability": "workspace:*",
     "@thyrox/permission": "workspace:*",
     "@thyrox/provider": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/storage": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",
     "@thyrox/tools": "workspace:*",
     "zod": "^4.3.6"
