@@ -105,7 +105,26 @@ SYNCED_FIELDS = ("subject", "status", "description")
 #: como tupla y no se infieren del recorrido: un cubo que solo existe cuando
 #: algo cae en el haria que un reporte sin esa clase se leyera como «esa clase
 #: no ocurre», que es el sub-patron D de `metrica-decide-la-conclusion`.
-RECONCILE_BUCKETS = ("same", "status_drift", "absent", "ambiguous")
+RECONCILE_BUCKETS = ("same", "status_drift", "field_drift", "absent",
+                     "ambiguous")
+
+#: Las columnas que convergen en bloque. `subject` NO esta: es la llave del
+#: pareo, y reescribirla borraria aquello con lo que se acaba de aparear.
+#: Gobierna las TRES superficies —el SELECT, la comparacion y el SET del
+#: UPDATE—; enumerarlas a mano en cada una fabricaria una segunda fuente de
+#: verdad que nadie sincroniza, que es lo que `calibration-verified-numbers`
+#: prohibe para una cifra y vale igual para una lista de columnas.
+RECONCILED_FIELDS = ("status", "description")
+
+#: El primer campo lleva cubo propio (`status_drift`); los demas caen en
+#: `field_drift`. La particion es historica —el reconciliador nacio midiendo
+#: solo el estado— y se conserva porque `RECONCILE_BUCKETS` ya se publica.
+PRIMARY_RECONCILED_FIELD = RECONCILED_FIELDS[0]
+
+#: Las columnas que el SELECT del pareo trae, en orden. Las dos de los
+#: extremos son identidad —con que fila se aparea y por que cita se escribe—;
+#: las de en medio son las que convergen.
+_MATCH_COLUMNS = ("task_id", "subject", *RECONCILED_FIELDS, "citation_id")
 
 
 class BoardSyncError(RuntimeError):
@@ -236,9 +255,22 @@ def reconcile_status(store_path, session_id, *, board_dir=None,
     tarjeta 184. Parear por ordinal escribiria el estado de un trabajo sobre
     otro, que es el daño de :ref:`h-docs-1042`.
 
-    **Solo se escribe ``status``.** El sujeto es la llave: si cambio, la
-    tarjeta no aparea y cae en ``absent``; escribirlo desde aqui seria
-    reescribir la llave con la que se acaba de aparear.
+    **Convergen ``status`` y ``description``; el sujeto NO.** El sujeto es la
+    llave: si cambio, la tarjeta no aparea y cae en ``absent``; escribirlo desde
+    aqui seria reescribir la llave con la que se acaba de aparear. La
+    descripcion no es llave, asi que puede converger sin ese daño.
+
+    La descripcion entra el 2026-09-12 por una medicion sobre la sesion viva:
+    pareando por sujeto, 320 parejas daban **0** con estado divergente y **37**
+    con descripcion divergente. `sync_card` ya llevaba las tres columnas desde
+    ``thyrox@a75b3300``, pero es POR TARJETA y solo cuando quien llama declara
+    la cita; esto es lo unico que recorre el board entero, asi que una fila con
+    la descripcion atrasada no convergia por ninguna via.
+
+    Los cubos siguen particionando el universo, y cada nombre dice la verdad:
+    ``status_drift`` es «el estado difiere» (la descripcion puede diferir
+    tambien, y la entrada lo declara), ``field_drift`` es «el estado coincide y
+    otra columna no», y ``same`` es «no hay nada que escribir en ninguna».
 
     Por defecto NO escribe. ``apply_changes`` es explicito porque cerrar una
     fila es irreversible sin historial, y un reporte que ademas escribe no
@@ -274,40 +306,64 @@ def reconcile_status(store_path, session_id, *, board_dir=None,
     conn = sqlite3.connect(store_path)
     try:
         by_subject = collections.defaultdict(list)
-        for task_id, subject, status, citation in conn.execute(
-                "SELECT task_id, subject, status, citation_id FROM tasks "
-                " WHERE session_id = ?", (session_id,)):
-            by_subject[subject].append((task_id, status, citation))
+        for row in conn.execute(
+                f"SELECT {', '.join(_MATCH_COLUMNS)} "
+                f"  FROM tasks WHERE session_id = ?", (session_id,)):
+            fila = dict(zip(_MATCH_COLUMNS, row))
+            by_subject[fila["subject"]].append(fila)
 
         buckets = {name: [] for name in RECONCILE_BUCKETS}
         for ordinal, card in sorted(cards.items(), key=lambda kv: int(kv[0])):
             subject = card.get("subject")
-            board_status = card.get("status")
+            board = {name: card.get(name) for name in RECONCILED_FIELDS}
             matches = by_subject.get(subject, [])
             if len(matches) > 1:
                 buckets["ambiguous"].append(
                     {"ordinal": ordinal, "subject": subject,
-                     "citations": [m[2] for m in matches]})
+                     "citations": [m["citation_id"] for m in matches]})
             elif not matches:
                 buckets["absent"].append(
                     {"ordinal": ordinal, "subject": subject,
-                     "board_status": board_status})
+                     "board_status": board.get("status")})
             else:
-                task_id, store_status, citation = matches[0]
-                target = "status_drift" if store_status != board_status else "same"
-                buckets[target].append(
-                    {"ordinal": ordinal, "subject": subject,
-                     "citation": citation, "task_id": task_id,
-                     "board_status": board_status, "store_status": store_status})
+                fila = matches[0]
+                # `None` y `""` son el mismo «sin texto» a efectos de
+                # convergencia: una columna nula y una tarjeta sin la clave no
+                # son una divergencia que escribir.
+                drifted = [name for name in RECONCILED_FIELDS
+                           if (fila[name] or "") != (board[name] or "")]
+                if PRIMARY_RECONCILED_FIELD in drifted:
+                    target = "status_drift"
+                elif drifted:
+                    target = "field_drift"
+                else:
+                    target = "same"
+                entrada = {"ordinal": ordinal, "subject": subject,
+                           "citation": fila["citation_id"],
+                           "task_id": fila["task_id"], "drifted": drifted}
+                for name in RECONCILED_FIELDS:
+                    entrada[f"board_{name}"] = board[name]
+                    entrada[f"store_{name}"] = fila[name]
+                buckets[target].append(entrada)
 
         written = 0
-        if apply_changes and buckets["status_drift"]:
+        pendientes = buckets["status_drift"] + buckets["field_drift"]
+        if apply_changes and pendientes:
             stamp = task_ids._now()
-            for entry in buckets["status_drift"]:
+            for entry in pendientes:
+                # Se escribe SOLO lo que difiere. Un UPDATE de las dos columnas
+                # tocaria `description` en una fila cuya divergencia era de
+                # estado, y con eso el conteo de escrituras dejaria de decir
+                # que se corrigio.
+                sets, valores = [], []
+                for name in RECONCILED_FIELDS:
+                    if name in entry["drifted"]:
+                        sets.append(f"{name} = ?")
+                        valores.append(entry[f"board_{name}"])
                 conn.execute(
-                    "UPDATE tasks SET status = ?, updated_at = ? "
+                    f"UPDATE tasks SET {', '.join(sets)}, updated_at = ? "
                     " WHERE session_id = ? AND citation_id = ?",
-                    (entry["board_status"], stamp, session_id, entry["citation"]))
+                    (*valores, stamp, session_id, entry["citation"]))
                 written += 1
             conn.commit()
     finally:

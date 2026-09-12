@@ -1,0 +1,8 @@
+{
+  "question": "Which board columns converge in bulk? reconcile_status walks the whole board and wrote only status — does a row whose description fell behind ever catch up?",
+  "instrument": "tests/task/test_board_sync.py block 9 (9a-9j), over a synthetic board and store where one card drifts in description only, one in status and description, and one is up to date; plus the live measurement pairing 363 cards against the session rows by subject.",
+  "metric": "The status and description columns of a store row, read back after reconcile_status(apply_changes=True), compared with its board card; and the bucket each card falls into.",
+  "blind_to": "The subject column, which is the pairing key and is never written: a renamed card falls into absent and this instrument says nothing about it. Blind as well to the 42 cards with no row and the 1 ambiguous pairing, which stay in their buckets untouched.",
+  "destination": "src/task/board_sync.py reconcile_status, RECONCILE_BUCKETS and RECONCILED_FIELDS; successor TASK-THYROX-0022. TASK-THYROX-0020 is a different writer (ingerir-board is INSERT-only) and stays open.",
+  "form": "measurement"
+}

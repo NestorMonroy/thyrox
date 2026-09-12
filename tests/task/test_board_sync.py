@@ -490,6 +490,86 @@ except bs.BoardSyncError as err:
     check("NO se reconcilia nada" in str(err),
           "8n: un store ausente REHUSA y dice que no escribio nada")
 
+# ---------------------------------------------------------------------------
+# 9. La descripcion tambien converge — la mitad que faltaba de #184.
+#
+# `sync_card` lleva las tres columnas desde thyrox@a75b3300, pero es POR
+# TARJETA y solo cuando quien llama declara la cita. `reconcile_status` es el
+# unico que recorre el board entero, y escribia `status` y nada mas: una fila
+# cuya descripcion quedo atras no converge nunca.
+#
+# Medido sobre la sesion viva antes de escribir esto, pareando por sujeto:
+# 320 parejas -> 0 con estado divergente y 37 con descripcion divergente. El
+# eje del estado ya esta cerrado; el de la descripcion no lo tocaba nadie.
+#
+# `subject` sigue sin escribirse: es la LLAVE del pareo. `description` no lo
+# es, asi que puede converger sin reescribir aquello con lo que se apareo.
+# ---------------------------------------------------------------------------
+SUJETO_9A = "Un trabajo cuya descripcion quedo atras"
+SUJETO_9B = "Un trabajo cuyo estado Y descripcion quedaron atras"
+SUJETO_9C = "Un trabajo al dia en las dos columnas"
+
+_D9, DB9 = store_con([
+    ("910", SUJETO_9A, S, "docs", "TASK-DOCS-0410", "completed"),
+    ("911", SUJETO_9B, S, "docs", "TASK-DOCS-0411", "pending"),
+    ("912", SUJETO_9C, S, "docs", "TASK-DOCS-0412", "completed"),
+])
+_c9 = sqlite3.connect(DB9)
+_c9.execute("UPDATE tasks SET description = ? WHERE citation_id = ?",
+            ("la premisa vieja, ya corregida en el board", "TASK-DOCS-0410"))
+_c9.execute("UPDATE tasks SET description = ? WHERE citation_id = ?",
+            ("otra premisa vieja", "TASK-DOCS-0411"))
+_c9.execute("UPDATE tasks SET description = ? WHERE citation_id = ?",
+            ("al dia", "TASK-DOCS-0412"))
+_c9.commit(); _c9.close()
+
+BOARD9 = board_con({
+    "910": {"subject": SUJETO_9A, "status": "completed",
+            "description": "CORREGIDA: la premisa mezclaba dos poblaciones"},
+    "911": {"subject": SUJETO_9B, "status": "completed",
+            "description": "CORREGIDA tambien, y ademas cerrada"},
+    "912": {"subject": SUJETO_9C, "status": "completed",
+            "description": "al dia"},
+})
+
+_r9 = bs.reconcile_status(DB9, S, board_dir=BOARD9)
+check(len(_r9["buckets"].get("field_drift", [])) == 1,
+      "9a: la tarjeta con estado igual y descripcion distinta cae en `field_drift`")
+check(len(_r9["buckets"]["status_drift"]) == 1,
+      "9b: la que ademas cambio de estado sigue cayendo en `status_drift`")
+check(len(_r9["buckets"]["same"]) == 1,
+      "9c: `same` significa que NO hay nada que escribir, en ninguna columna")
+check(sum(len(_r9["buckets"].get(b, [])) for b in bs.RECONCILE_BUCKETS) == 3,
+      "9d: los cinco cubos siguen particionando el universo")
+
+_h9 = bs.reconcile_status(DB9, S, board_dir=BOARD9, apply_changes=True)
+check(_h9["written"] == 2, "9e: escribe las dos divergentes, no la que esta al dia")
+
+def _desc(cita):
+    c = sqlite3.connect(DB9)
+    try:
+        return c.execute("SELECT description FROM tasks WHERE citation_id = ?",
+                         (cita,)).fetchone()[0]
+    finally:
+        c.close()
+
+check(_desc("TASK-DOCS-0410").startswith("CORREGIDA:"),
+      "9f: la descripcion del board aterrizo en la fila")
+check(_desc("TASK-DOCS-0411").startswith("CORREGIDA tambien"),
+      "9g: y tambien en la que cambio de estado — las dos columnas, no una")
+_e9 = sqlite3.connect(DB9).execute(
+    "SELECT status FROM tasks WHERE citation_id = 'TASK-DOCS-0411'").fetchone()[0]
+check(_e9 == "completed", "9h: sin perder el estado, que es el eje que ya funcionaba")
+
+# El sujeto es la llave y NO se reescribe, tampoco por esta via.
+_s9 = sqlite3.connect(DB9).execute(
+    "SELECT subject FROM tasks WHERE citation_id = 'TASK-DOCS-0410'").fetchone()[0]
+check(_s9 == SUJETO_9A, "9i: el sujeto sigue intacto — es la llave del pareo")
+
+_o9 = bs.reconcile_status(DB9, S, board_dir=BOARD9, apply_changes=True)
+check(_o9["written"] == 0 and len(_o9["buckets"].get("field_drift", [])) == 0,
+      "9j: idempotente — la segunda corrida no encuentra descripcion que cerrar")
+
 print(f"{checks} aserciones")
 if failures:
     for f in failures:
