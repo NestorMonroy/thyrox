@@ -379,6 +379,70 @@ def reconcile_status(store_path, session_id, *, board_dir=None,
             "written": written, "applied": bool(apply_changes)}
 
 
+def _sessions_in_store(store_path) -> set[str]:
+    """Las `session_id` que el store conoce. Es el filtro del recorrido."""
+    conn = sqlite3.connect(store_path)
+    try:
+        return {row[0] for row in conn.execute(
+            "SELECT DISTINCT session_id FROM tasks WHERE session_id IS NOT NULL")}
+    finally:
+        conn.close()
+
+
+def reconcile_all_sessions(store_path, *, board_root=None,
+                           apply_changes=False) -> dict:
+    """Reconcilia TODOS los boards de la raiz — el punto de entrada del cableado.
+
+    `reconcile_status` reconcilia **una** sesion cuando alguien la nombra.
+    Medido el 2026-09-12: tenia cero invocadores fuera de su propio modulo, asi
+    que la propagacion existia como capacidad y no ocurria nunca — el defecto
+    que `flow-selection-agile.md` llama capacidad muerta.
+
+    La enumeracion vive aqui y no en el llamador porque quien invoca —un
+    githook— no sabe que sesiones hay: pedirle la lista seria pedirle el dato
+    que este modulo es el unico que puede derivar.
+
+    **Una sesion sin filas en el store se OMITE y se declara.** La raiz aloja
+    los boards de todas las sesiones de la maquina y la mayoria no son de este
+    store; tratar su ausencia como error abortaria el recorrido entero, y
+    callarla no distinguiria «no habia deriva» de «no la mire» (sub-patron D de
+    `metrica-decide-la-conclusion`).
+
+    *Metrica:* un `reconcile_status` por directorio de la raiz cuya `session_id`
+    tenga filas en `tasks`; `written` es la suma de los suyos.
+    *Ciega a:* lo mismo que su hermano por sesion — el renombre cae en `absent`
+    y no se corrige aqui; y a una sesion cuyo board no exista en esta maquina,
+    que no tiene directorio y por tanto no entra al recorrido.
+    """
+    root = pathlib.Path(board_root) if board_root else task_ids.board_root()
+    if not root.is_dir():
+        raise BoardSyncError(
+            f"no existe la raiz de boards {root}. NO se reconcilia nada: un 0 "
+            f"aqui no distinguiria «ninguna sesion diverge» de «no mire "
+            f"ninguna».")
+    store_path = pathlib.Path(store_path)
+    if not store_path.exists():
+        raise BoardSyncError(
+            f"no existe el store {store_path}. NO se reconcilia nada: sin las "
+            f"filas destino un 0 se leeria como «no habia divergencia».")
+
+    known = _sessions_in_store(store_path)
+    sessions: dict[str, dict] = {}
+    skipped: dict[str, str] = {}
+    for entry in sorted(root.iterdir(), key=lambda p: p.name):
+        if not entry.is_dir():
+            continue
+        if entry.name not in known:
+            skipped[entry.name] = "sin filas en el store"
+            continue
+        sessions[entry.name] = reconcile_status(
+            store_path, entry.name, board_dir=entry,
+            apply_changes=apply_changes)
+    return {"root": str(root), "sessions": sessions, "skipped": skipped,
+            "written": sum(r["written"] for r in sessions.values()),
+            "applied": bool(apply_changes)}
+
+
 def _cmd_reconcile_status(args: argparse.Namespace) -> int:
     result = reconcile_status(args.store, args.sesion, board_dir=args.board,
                               apply_changes=args.aplicar)
@@ -406,6 +470,31 @@ def _cmd_reconcile_status(args: argparse.Namespace) -> int:
     else:
         print(f"  NO se escribio nada (faltó --aplicar); "
               f"{len(pendientes)} fila(s) quedarian al dia")
+    return 0
+
+
+def _cmd_reconcile_all(args: argparse.Namespace) -> int:
+    result = reconcile_all_sessions(args.store, board_root=args.raiz,
+                                    apply_changes=args.aplicar)
+    sesiones = result["sessions"]
+    print(f"reconciliar-todo: raiz {result['root']}")
+    print(f"  sesiones del store    {len(sesiones):5d}")
+    # Las omitidas se publican con su conteo: son el denominador de lo que la
+    # raiz aloja y este store no gobierna, y sin el un «3 sesiones» no dice
+    # sobre cuantas se midio.
+    print(f"  omitidas (sin filas)  {len(result['skipped']):5d}")
+    pendientes = 0
+    for sesion, uno in sorted(sesiones.items()):
+        cuantas = sum(len(uno["buckets"][name]) for name in DRIFT_BUCKETS)
+        pendientes += cuantas
+        if cuantas:
+            print(f"    {sesion}  {cuantas} fila(s) con deriva "
+                  f"de {uno['total_cards']} tarjeta(s)")
+    if result["applied"]:
+        print(f"  escritas: {result['written']} fila(s)")
+    else:
+        print(f"  NO se escribio nada (faltó --aplicar); "
+              f"{pendientes} fila(s) quedarian al dia")
     return 0
 
 
@@ -480,6 +569,16 @@ def main(argv=None) -> int:
     p_rec.add_argument("--aplicar", action="store_true",
                        help="escribe; sin el, solo reporta")
     p_rec.set_defaults(func=_cmd_reconcile_status)
+
+    p_all = sub.add_parser(
+        "reconciliar-todo",
+        help="reconcilia TODOS los boards de la raiz — el cableado de #184")
+    p_all.add_argument("--raiz", default=None,
+                       help=f"raiz de boards (default: {task_ids.BOARD_ROOT_VAR} "
+                            f"o su respaldo declarado)")
+    p_all.add_argument("--aplicar", action="store_true",
+                       help="escribe; sin el, solo reporta")
+    p_all.set_defaults(func=_cmd_reconcile_all)
 
     args = parser.parse_args(argv)
     args.store = str(task_ids.resolve_store(args.store))

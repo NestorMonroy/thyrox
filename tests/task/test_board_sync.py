@@ -626,6 +626,110 @@ check("escritas: 2 fila(s)" in _buf10b.getvalue(),
 check(tuple(bs.DRIFT_BUCKETS) == ("status_drift", "field_drift"),
       "10f: la particion escribible se declara una vez y la consumen nucleo y reporte")
 
+
+# ---------------------------------------------------------------------------
+# 11. #184 — la mitad de CABLEADO: el mecanismo existe y nadie lo invoca.
+#
+# Los diez bloques de arriba miden `reconcile_status`, que reconcilia UNA
+# sesion cuando alguien la nombra. Medido el 2026-09-12: `reconciliar-estados`
+# tiene **cero invocadores** fuera de su propio modulo y de los manifiestos de
+# workbench — asi que la propagacion existe como capacidad y no ocurre nunca.
+# Es el defecto que `flow-selection-agile.md` llama capacidad muerta, y el que
+# `gitlink-bump-gate.md` resume: un mecanismo sin invocador es prosa con exit 0.
+#
+# El punto de entrada del cableado recorre TODOS los boards de la raiz. No es
+# azucar sobre `reconcile_status`: quien lo invoca (un githook) no sabe que
+# sesiones hay, asi que la enumeracion tiene que vivir aqui y no en el llamador.
+#
+# El control positivo es REAL, no fabricado: `fixtures/board_store_drift/`
+# guarda la tarjeta #369 y la fila TASK-DOCS-0542 de la sesion viva, capturadas
+# ANTES de cualquier `--aplicar`. Difieren en `description` porque el
+# `TaskUpdate` nativo del harness escribe la tarjeta y no toca el store.
+FIXTURE = HERE / "fixtures" / "board_store_drift"
+
+
+def store_desde_fila(fila, *, extra=()):
+    """Un store cuyas columnas son las de la fila REAL, no las que yo suponga.
+
+    `store_con` declara trece columnas elegidas a mano; la tabla viva tiene
+    dieciocho. Construir el fixture desde las claves de la fila es lo que hace
+    que el control mida la tabla que existe y no la que recuerdo.
+    """
+    d = pathlib.Path(tempfile.mkdtemp())
+    db = d / "s.sqlite3"
+    columnas = list(fila)
+    c = sqlite3.connect(db)
+    c.execute(f"CREATE TABLE tasks ({', '.join(n + ' TEXT' for n in columnas)})")
+    marcas = ", ".join("?" for _ in columnas)
+    c.execute(f"INSERT INTO tasks ({', '.join(columnas)}) VALUES ({marcas})",
+              tuple(fila[n] for n in columnas))
+    for otra in extra:
+        c.execute(f"INSERT INTO tasks ({', '.join(columnas)}) VALUES ({marcas})",
+                  tuple(otra.get(n) for n in columnas))
+    c.commit(); c.close()
+    return d, db
+
+
+_fila369 = json.loads((FIXTURE / "store_row_369.json").read_text(encoding="utf-8"))
+_card369 = json.loads((FIXTURE / "card_369.json").read_text(encoding="utf-8"))
+
+check(_fila369["subject"] == _card369["subject"],
+      "11a: el fixture aparea — mismo sujeto, que es la llave del reconciliador")
+check(_fila369["description"] != _card369["description"],
+      "11b: y diverge en `description`, que es la columna que el control mide")
+
+# Dos sesiones, cada una con su board y su deriva. Una sola bastaria para
+# probar que escribe; hacen falta DOS para probar que RECORRE — con una, un
+# punto de entrada que reconciliara solo la primera pasaria igual.
+S_B = "22222222-2222-2222-2222-222222222222"
+_fila_b = dict(_fila369, session_id=S_B, citation_id="TASK-DOCS-9999",
+               task_id="9999")
+_dir11, DB11 = store_desde_fila(_fila369, extra=[_fila_b])
+
+RAIZ11 = pathlib.Path(tempfile.mkdtemp())
+for _sesion in (S, S_B):
+    _bd = RAIZ11 / _sesion
+    _bd.mkdir()
+    (_bd / "369.json").write_text(json.dumps(_card369))
+# Un board de una sesion que el store no conoce. No es un error: la raiz aloja
+# los boards de TODAS las sesiones de la maquina, y la mayoria no son nuestras.
+_huerfano = RAIZ11 / "33333333-3333-3333-3333-333333333333"
+_huerfano.mkdir()
+(_huerfano / "1.json").write_text(json.dumps(
+    {"id": "1", "subject": "de otra sesion", "status": "pending",
+     "description": "x"}))
+
+_seco = bs.reconcile_all_sessions(DB11, board_root=RAIZ11)
+check(_seco["written"] == 0,
+      "11c: sin --aplicar no escribe nada, igual que su hermano por sesion")
+check(len(_seco["sessions"]) == 2,
+      "11d: recorre las sesiones que el store conoce — las DOS, no la primera")
+check(_seco["skipped"] and "33333333-3333-3333-3333-333333333333" in _seco["skipped"],
+      "11e: la sesion sin filas se DECLARA omitida; un silencio no distingue "
+      "«no habia deriva» de «no la mire» (sub-patron D)")
+check(fila_por_cita(DB11, S, "TASK-DOCS-0542")[0] is not None
+      and descripcion(DB11, S, "TASK-DOCS-0542") == _fila369["description"],
+      "11f: y en seco la fila conserva su descripcion vieja")
+
+_aplicado = bs.reconcile_all_sessions(DB11, board_root=RAIZ11, apply_changes=True)
+check(_aplicado["written"] == 2,
+      "11g: al aplicar escribe UNA por sesion — el agregado es la suma, no la "
+      "primera que encuentra")
+check(descripcion(DB11, S, "TASK-DOCS-0542") == _card369["description"],
+      "11h: la fila de la sesion viva converge a la descripcion corregida del board")
+check(descripcion(DB11, S_B, "TASK-DOCS-9999") == _card369["description"],
+      "11i: y la de la segunda sesion tambien — el recorrido no se corta en la primera")
+check(fila_por_cita(DB11, S, "TASK-DOCS-0542")[2] == "TASK-DOCS-0542",
+      "11j: la identidad no se toca: converge estado, no cita")
+
+# El guard de la raiz. Una raiz inexistente NO es «cero sesiones»: es «no pude
+# mirar», y publicarlo como 0 seria el verde falso que el hook heredaria.
+try:
+    bs.reconcile_all_sessions(DB11, board_root=RAIZ11 / "no-existe")
+    check(False, "11k: una raiz inexistente REHUSA en vez de publicar cero")
+except bs.BoardSyncError as _e11:
+    check("no existe" in str(_e11).lower(),
+          "11k: una raiz inexistente REHUSA en vez de publicar cero")
 print(f"{checks} aserciones")
 if failures:
     for f in failures:
