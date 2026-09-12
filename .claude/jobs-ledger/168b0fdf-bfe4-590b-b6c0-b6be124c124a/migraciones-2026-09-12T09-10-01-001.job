@@ -1,0 +1,4 @@
+log=/home/user/kaupamex-api/scripts/evidence/migraciones-2026-09-12T09-10-01-001.log
+pid=20748
+proc_start=716893
+cmd=bash -c bash -c "$1"; echo EXIT=$? _ cd /home/user/kaupamex-api && PYTHONPATH=src DJANGO_SETTINGS_MODULE=config.settings.testing uv run python kaupamex-bin makemigrations --check --dry-run 

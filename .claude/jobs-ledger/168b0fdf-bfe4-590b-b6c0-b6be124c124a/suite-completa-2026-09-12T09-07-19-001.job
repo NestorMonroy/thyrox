@@ -1,0 +1,4 @@
+log=/home/user/kaupamex-api/scripts/evidence/suite-completa-2026-09-12T09-07-19-001.log
+pid=19472
+proc_start=700614
+cmd=bash -c bash -c "$1"; echo EXIT=$? _ cd /home/user/kaupamex-api && uv run pytest -q --reuse-db --tb=no -p no:randomly 
