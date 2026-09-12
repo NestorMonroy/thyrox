@@ -14,12 +14,15 @@ por dónde se descubrió**"*. Un hallazgo de capa ``docs`` producido mientras se
 trabajaba una iniciativa de ``api`` va a una iniciativa de ``docs``; la de ``api``
 lo cruza con ``:ref:``.
 
-Uso:
-    python3 .claude/scripts/gates/check_hallazgo_submodulo.py              # reporte
-    python3 .claude/scripts/gates/check_hallazgo_submodulo.py --quiet      # sólo el conteo
-    python3 .claude/scripts/gates/check_hallazgo_submodulo.py --strict     # exit 1 si hay nuevos
-    python3 .claude/scripts/gates/check_hallazgo_submodulo.py <archivos>   # sólo ésos
-    python3 .claude/scripts/gates/check_hallazgo_submodulo.py --write-baseline
+Uso — con el cwd puesto en el CONSUMIDOR, que es de donde salen el corpus y el
+baseline. La ruta que aquí se cita es la del proveedor, no la pre-mudanza:
+
+    T=/home/user/thyrox
+    python3 "$T/src/verify/check_hallazgo_submodulo.py"              # reporte
+    python3 "$T/src/verify/check_hallazgo_submodulo.py" --quiet      # sólo el conteo
+    python3 "$T/src/verify/check_hallazgo_submodulo.py" --strict     # exit 1 si hay nuevos
+    python3 "$T/src/verify/check_hallazgo_submodulo.py" <archivos>   # sólo ésos
+    python3 "$T/src/verify/check_hallazgo_submodulo.py" --write-baseline
 
 La deuda heredada se congela en ``hallazgo_submodulo_baseline.txt``: una ruta
 listada no bloquea, una nueva sí. Mismo criterio prospectivo que
