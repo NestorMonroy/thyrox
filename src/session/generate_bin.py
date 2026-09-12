@@ -43,10 +43,29 @@ El universo de builtins es el de ``compgen -b`` en esta sesión (bash 5.x); se
 declara aquí en vez de invocar bash desde el generador, que acoplaría una
 herramienta de composición de árbol a un bash corriendo. ``discover_entrypoints``
 ya rehúsa en silencio una colisión de stem contra stem (línea de abajo); esta
-es la misma postura aplicada a la otra población — el intérprete, no el árbol
-— y por eso AVISA en vez de renombrar: renombrar ``bg`` rompería la simetría
-con ``bg.sh``, y el guion sigue siendo válido invocado como ``bin/bg`` o por
-ruta completa. Sólo falla la forma **suelta** bajo ``PATH``.
+es la misma postura aplicada a la otra población — el intérprete, no el árbol.
+
+**Corregido 2026-09-12T09:25:38 (directiva del ejecutor: «¿pueden ser con el
+prefijo thyrox_bg?»).** La versión anterior sólo AVISABA de la colisión y
+dejaba ``bin/bg`` sin invocación suelta bajo ``PATH`` — la razón dada era «no
+renombrar rompe la simetría con ``bg.sh``». Esa razón no se sostiene: el
+``.sh`` fuente no cambia de nombre, sólo el ENVOLTORIO corto lo hace, y un
+envoltorio no tiene que llamarse igual que su fuente para conservar la
+trazabilidad (``bin/thyrox-bg`` sigue apuntando a ``src/session/bg.sh``, igual
+que ``bin/bg`` lo hacía).
+
+**El separador se midió, no se copió de la pregunta.** ``thyrox_bg`` (guion
+bajo) habría sido la forma de FUNCIÓN bash interna —142 hits en el árbol,
+todas sourceadas dentro de un script (``thyrox_safe_sed``,
+``thyrox_toolchain_declare``), ninguna invocada suelta—. La forma de
+ENTRYPOINT ya tiene precedente exacto en este mismo ``bin/``:
+``src/verify/thyrox-audit.sh`` usa guion, no guion bajo. ``resolve_bin_name()``
+prefija con ``thyrox-`` **cualquier** stem que ``compgen -b`` liste como
+builtin — no sólo ``bg`` a mano — así que una colisión futura (un ``.sh``
+nuevo llamado ``test`` o ``read``) se resuelve igual sin tocar este archivo.
+Medido tras el cambio: el conjunto resuelto NO comparte ningún elemento con
+``BASH_BUILTINS`` — la invocación suelta bajo ``PATH`` vuelve a funcionar
+para el único caso que hoy existe (``thyrox-bg``).
 
 Idempotente y con --check
 --------------------------
@@ -187,7 +206,24 @@ def discover_entrypoints(root: pathlib.Path) -> dict[str, pathlib.Path]:
     return found
 
 
-def wrapper_body(target: pathlib.Path, root: pathlib.Path) -> str:
+def resolve_bin_name(stem: str) -> str:
+    """El nombre corto REAL en ``bin/`` — prefijado si choca con un builtin.
+
+    General, no una tabla de excepciones para ``bg``: cualquier stem que
+    ``BASH_BUILTINS`` liste se prefija igual, así que un choque nuevo no
+    exige tocar este archivo.
+
+    El separador es GUION, no guion bajo — medido contra el árbol, no
+    elegido: ``thyrox_*`` (142 hits) es la forma de función bash INTERNA
+    (``thyrox_safe_sed``, ``thyrox_toolchain_declare``, sourceada dentro de
+    un script, nunca invocada suelta); ``thyrox-*`` (35 hits) es la forma de
+    ENTRYPOINT — ``src/verify/thyrox-audit.sh`` es el precedente exacto:
+    mismo árbol, mismo `bin/`, misma categoría que este prefijo.
+    """
+    return f"thyrox-{stem}" if stem in BASH_BUILTINS else stem
+
+
+def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None = None) -> str:
     """El cuerpo del guion envoltorio para UN objetivo.
 
     Resuelve su propia raíz contra sí mismo (``bin/..``), igual que
@@ -195,7 +231,12 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path) -> str:
     otro sitio, sólo los objetivos individuales lo estaban y eso es lo que
     rompía. Después hace ``exec`` sobre la ruta ABSOLUTA real del objetivo:
     eso es lo que deja a ``BASH_SOURCE`` correcto adentro.
+
+    ``bin_name`` es el nombre ya resuelto (ver ``resolve_bin_name``); sólo se
+    usa en el mensaje de error del guardián de intérprete, por defecto
+    ``target.stem`` cuando no se pasa.
     """
+    display_name = bin_name if bin_name is not None else target.stem
     relative_target = target.relative_to(root)
     if target.suffix == ".py":
         return (
@@ -205,7 +246,7 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path) -> str:
             'INTERPRETER="$THYROX_ROOT/.venv/bin/python"\n'
             'if [ ! -x "$INTERPRETER" ]; then\n'
             '  echo "bin/'
-            f'{target.stem}: falta el entorno del proveedor en $INTERPRETER." >&2\n'
+            f'{display_name}: falta el entorno del proveedor en $INTERPRETER." >&2\n'
             '  echo "              Generalo con: cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
             '  exit 2\n'
             'fi\n'
@@ -281,9 +322,21 @@ def install_user_bin(plan: dict[str, str],
 
 
 def planned_files(root: pathlib.Path) -> dict[str, str]:
-    """El plan completo: nombre corto -> contenido del envoltorio."""
+    """El plan completo: nombre corto RESUELTO -> contenido del envoltorio.
+
+    La clave es ``resolve_bin_name(stem)``, no el stem crudo — un stem que
+    choca con un builtin de bash sale prefijado con ``thyrox_``.
+    """
     entrypoints = discover_entrypoints(root)
-    return {stem: wrapper_body(target, root) for stem, target in entrypoints.items()}
+    plan: dict[str, str] = {}
+    for stem, target in entrypoints.items():
+        bin_name = resolve_bin_name(stem)
+        if bin_name in plan:
+            raise ValueError(
+                f"colisión de nombre corto tras resolver builtins: "
+                f"{bin_name!r} — no debería ocurrir con el árbol actual")
+        plan[bin_name] = wrapper_body(target, root, bin_name)
+    return plan
 
 
 def apply_plan(root: pathlib.Path, plan: dict[str, str]) -> tuple[list[str], list[str]]:
@@ -332,12 +385,15 @@ def main(argv: list[str] | None = None) -> int:
 
     root = repository_root()
     plan = planned_files(root)
+    # Red de seguridad, no aviso esperado: resolve_bin_name() ya prefija todo
+    # stem que choque con un builtin, así que esto debería salir SIEMPRE
+    # vacío. Si no lo está, algo en la resolución se rompió.
     shadowed = sorted(set(plan) & BASH_BUILTINS)
     if shadowed:
-        print(f"bin/: {len(shadowed)} nombre(s) chocan con builtins de bash "
-              f"({', '.join(shadowed)}) — válidos como bin/<nombre> o por "
-              "ruta completa; sueltos bajo PATH, bash resuelve el builtin "
-              "primero.", file=sys.stderr)
+        print(f"bin/: BUG — {len(shadowed)} nombre(s) resueltos siguen "
+              f"chocando con builtins de bash ({', '.join(shadowed)}) pese "
+              "a resolve_bin_name(); revisar generate_bin.py.",
+              file=sys.stderr)
 
     if args.check:
         live = current_state(root)

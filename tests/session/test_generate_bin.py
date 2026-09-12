@@ -298,17 +298,46 @@ def test_install_user_bin_never_touches_foreign_files(base: pathlib.Path) -> Non
     check("sigue en disco, intacto", (dest / "black").read_text() == foreign_content)
 
 
+def test_resolve_bin_name_prefixes_builtin_collisions(base: pathlib.Path) -> None:
+    """``resolve_bin_name`` — con anulación: sin ``bg`` en ``BASH_BUILTINS``,
+    deja de prefijarse. Confirma que el prefijo lo causa la pertenencia al
+    conjunto, no otra rama del código.
+    """
+    check("bg (builtin) resuelve a thyrox-bg",
+          gb.resolve_bin_name("bg") == "thyrox-bg")
+    check("un stem que no es builtin no se toca",
+          gb.resolve_bin_name("agent_store") == "agent_store")
+
+    original = gb.BASH_BUILTINS
+    try:
+        gb.BASH_BUILTINS = frozenset(original - {"bg"})
+        check("anulado: sin bg en BASH_BUILTINS, deja de prefijarse",
+              gb.resolve_bin_name("bg") == "bg")
+    finally:
+        gb.BASH_BUILTINS = original
+    check("restaurado: bg vuelve a resolver a thyrox-bg",
+          gb.resolve_bin_name("bg") == "thyrox-bg")
+
+
 def test_builtin_collision_on_real_tree() -> None:
-    """Hallazgo medido en ESTE árbol: ``bg`` choca con el builtin de bash.
+    """Hallazgo medido en ESTE árbol: el stem CRUDO ``bg`` choca con el
+    builtin de bash; el nombre RESUELTO ya no.
 
     No se re-deriva ``compgen -b`` en el test — eso acoplaría el control al
-    bash que lo corre. Se compara la constante declarada contra el plan real
-    de thyrox, que es lo que un usuario con ``bin/`` en ``PATH`` sufre hoy.
+    bash que lo corre. Se compara la constante declarada contra el árbol real
+    de thyrox, en sus dos formas: antes y después de ``resolve_bin_name``.
     """
+    raw = gb.discover_entrypoints(ROOT)
+    raw_shadowed = sorted(set(raw) & gb.BASH_BUILTINS)
+    check("el stem crudo del árbol real choca con exactamente 1 builtin: bg",
+          raw_shadowed == ["bg"], raw_shadowed)
+
     plan = gb.planned_files(ROOT)
-    shadowed = sorted(set(plan) & gb.BASH_BUILTINS)
-    check("el árbol real de thyrox choca con exactamente 1 builtin: bg",
-          shadowed == ["bg"], shadowed)
+    resolved_shadowed = sorted(set(plan) & gb.BASH_BUILTINS)
+    check("el plan RESUELTO ya no choca con ningún builtin",
+          resolved_shadowed == [], resolved_shadowed)
+    check("bg crudo no aparece como clave del plan resuelto", "bg" not in plan)
+    check("aparece como thyrox-bg en su lugar", "thyrox-bg" in plan)
 
 
 def test_cli_check_exit_code() -> None:
@@ -319,8 +348,8 @@ def test_cli_check_exit_code() -> None:
     )
     check("bin/ real está al día tras la última generación (exit 0)",
           r.returncode == 0, f"stdout={r.stdout!r} stderr={r.stderr!r}")
-    check("y avisa del choque con bg en stderr, sin bloquear",
-          "bg" in r.stderr)
+    check("y NO avisa de ningún choque con builtins — ya resuelto en el plan",
+          r.stderr.strip() == "", r.stderr)
 
 
 def main() -> int:
@@ -336,6 +365,7 @@ def main() -> int:
         test_check_detects_drift(base)
         test_install_user_bin_writes_and_is_idempotent(base)
         test_install_user_bin_never_touches_foreign_files(base)
+        test_resolve_bin_name_prefixes_builtin_collisions(base)
     test_builtin_collision_on_real_tree()
     test_cli_check_exit_code()
 
