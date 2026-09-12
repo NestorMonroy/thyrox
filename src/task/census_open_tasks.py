@@ -160,15 +160,47 @@ def normalize_hit_path(repo_name: str, raw: str) -> str:
     return f"{repo_name}/{raw[2:] if raw.startswith('./') else raw}"
 
 
-def is_render(path: str) -> bool:
-    """¿El archivo enumera el tablero entero?"""
+def is_render(path: str, extra_parts: tuple[str, ...] = ()) -> bool:
+    """¿El archivo enumera el tablero entero?
+
+    ``extra_parts`` es el **parámetro del corpus**. La lista fija describe el
+    árbol de `docs` —``/outputs/``, ``/salidas/``, ``/reportes/``—; el destino
+    de otro consumidor no está en ella, y sin este parámetro el censo cuenta su
+    PROPIA salida como «prosa que cita la tarea». Medido al estrenarlo en
+    `api`: **249 de 249** ``owned_but_open`` citadas por
+    ``scripts/evidence/census_open_api_tasks.json``, con ``orphan`` desplomado
+    de **224 a 0** entre dos ejecuciones por lo demás idénticas.
+    """
     name = path.rsplit("/", 1)[-1].lower()
     return (any(part in name for part in RENDER_NAME_PARTS)
             or name.startswith(RENDER_NAME_PREFIXES)
-            or any(part in path for part in RENDER_PATH_PARTS))
+            or any(part in path for part in RENDER_PATH_PARTS)
+            or any(part in path for part in extra_parts))
 
 
-def prose_citations(roots: tuple[Path, ...] | None = None) -> dict[str, set[str]]:
+def own_output_parts(out_dir: str | None,
+                     roots: tuple[Path, ...] | None = None) -> tuple[str, ...]:
+    """El tramo de ruta del destino declarado, para que el censo no se lea a sí mismo.
+
+    Se deriva del ``--out-dir`` resuelto contra la raíz que lo contiene, no de
+    un literal: el destino es parámetro del consumidor y cada clon tiene el
+    suyo. Sin destino declarado devuelve la tupla vacía — no se inventa un
+    descuento que nadie pidió.
+    """
+    if not out_dir:
+        return ()
+    resolved = Path(out_dir).resolve()
+    for base in (roots if roots is not None else census_roots()):
+        try:
+            relative = resolved.relative_to(base.resolve())
+        except ValueError:
+            continue
+        return (f"/{relative.as_posix()}/",)
+    return ()
+
+
+def prose_citations(roots: tuple[Path, ...] | None = None,
+                    extra_render_parts: tuple[str, ...] = ()) -> dict[str, set[str]]:
     """Cita -> archivos que la nombran, SIN contar los renders del tablero."""
     found: dict[str, set[str]] = defaultdict(set)
     for repo in (roots if roots is not None else census_roots()):
@@ -183,7 +215,7 @@ def prose_citations(roots: tuple[Path, ...] | None = None) -> dict[str, set[str]
                 continue
             raw, citation = line.rsplit(":", 1)
             path = normalize_hit_path(repo.name, raw)
-            if is_render(path):
+            if is_render(path, extra_render_parts):
                 continue
             found[citation].add(path)
     return dict(found)
@@ -244,9 +276,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     roots = census_roots()
+    # El destino se descuenta ANTES de medir: sin esto el censo cuenta su
+    # propia salida de la ejecución anterior y `orphan` se desploma a 0.
+    extra_render = own_output_parts(args.out_dir, roots)
     tasks = open_tasks(args.layer, Path(args.store) if args.store else None)
     commits = commit_citations(roots)
-    prose = prose_citations(roots)
+    prose = prose_citations(roots, extra_render)
     buckets = build_buckets(tasks, commits, prose, roots)
 
     total = len(tasks)

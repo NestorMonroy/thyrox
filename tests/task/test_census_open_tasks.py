@@ -160,6 +160,34 @@ check(cot.is_render("kaupamex-docs/source/preimagen/tasks-s.tsv"),
 check(not cot.is_render("kaupamex-api/src/addons/base/models/ir_cron.py"),
       "3d: un archivo de codigo NO es render — el descuento tiene que poder no aplicar")
 
+#: El descuento es PARAMETRO del corpus, no una lista fija. La lista de la
+#: fuente describe el arbol de `docs` (`/outputs/`, `/salidas/`); el destino de
+#: `api` es `scripts/evidence/`, que no esta en ella — y el censo contó su
+#: PROPIA salida como «prosa que cita la tarea». Medido: 249 de 249
+#: `owned_but_open` citadas por `scripts/evidence/census_open_api_tasks.json`,
+#: con `orphan` desplomado de 224 a 0 entre dos ejecuciones identicas.
+check(not cot.is_render("kaupamex-api/scripts/evidence/census_open_api_tasks.json"),
+      "3e: el destino de api NO esta en la lista fija — por eso hace falta el parametro")
+check(cot.is_render("kaupamex-api/scripts/evidence/census_open_api_tasks.json",
+                    extra_parts=("/scripts/evidence/",)),
+      "3f: declarado como parte extra, SI se descuenta")
+check(not cot.is_render("kaupamex-api/src/orm/fields.py",
+                        extra_parts=("/scripts/evidence/",)),
+      "3g: y la parte extra no descuenta de mas — sigue discriminando")
+
+#: La COMPOSICION que `main()` hace: el destino declarado se resuelve contra su
+#: raiz y sale como parte extra. Es el control que puede fallar — si la
+#: derivacion devuelve la tupla vacia, el censo se lee a si mismo.
+_evidencia = cot.reach.root("api") / "scripts" / "evidence"
+_propias = cot.own_output_parts(str(_evidencia))
+check(_propias == ("/scripts/evidence/",),
+      f"3h: el destino se deriva contra su raiz, no se escribe a mano ({_propias})")
+check(cot.is_render("kaupamex-api/scripts/evidence/census_open_api_tasks.json",
+                    extra_parts=_propias),
+      "3i: y compuesto con is_render descuenta la salida PROPIA del censo")
+check(cot.own_output_parts(None) == (),
+      "3j: sin destino declarado no se inventa descuento")
+
 
 # ------------------------------------ 4. el alcance incluye al proveedor
 
