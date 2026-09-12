@@ -74,10 +74,11 @@ traceback. Pendiente de confirmar si el proceso actual del harness ya los
 tomo (el watcher solo recarga settings que existian al arranque de la
 sesion, per H-DOCS-1010 citado en las reglas del consumidor).
 
-**Suite baseline:** lanzada en segundo plano
-(`src/session/bg.sh start baseline-l2`) -- job `.claude/jobs/baseline-l2-20260912T081610/`.
-Seguia `running` al cerrar este banco; no se bloqueo la sesion para
-esperarla, por `trabajo-en-segundo-plano.md`.
+**Suite baseline:** termino con `exit=1` tras ~20 min --
+TypeScript 4829 pass / 827 fail (530 archivos), Python 120 suites / 22
+rojo, shell 81 suites / 25 rojo. Es el punto de PARTIDA del arbol, no
+una regresion de este banco -- no se toco ningun archivo de `src/` en
+esta rama. Job: `.claude/jobs/baseline-l2-20260912T081610/`.
 
 *Metrica:* existencia y contenido de `.env`/`.env.example` antes de escribir,
 y un uso real del hogar de jobs (`bg.sh`) que aterrizo donde `THYROX_JOBS_DIR`
@@ -85,5 +86,5 @@ declara.
 *Ciega a:* si el `.venv` de `kaupamex-api` resuelve TODAS sus dependencias en
 tiempo de ejecucion real (solo se verifico que `uv sync` salio 0); si los
 hooks instalados surtiran efecto en esta misma sesion o solo en la siguiente;
-y el veredicto final de `baseline-l2` (verde/rojo), que no llego a tiempo de
-este banco.
+y el triaje de los 874 rojos totales (827+22+25), que queda fuera de este
+banco puntual.
