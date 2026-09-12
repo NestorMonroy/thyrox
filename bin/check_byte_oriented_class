@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Generado por src/session/generate_bin.py — no editar a mano.
+THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+INTERPRETER="$THYROX_ROOT/.venv/bin/python"
+if [ ! -x "$INTERPRETER" ]; then
+  echo "bin/check_byte_oriented_class: falta el entorno del proveedor en $INTERPRETER." >&2
+  echo "              Generalo con: cd \"$THYROX_ROOT\" && uv sync" >&2
+  exit 2
+fi
+exec "$INTERPRETER" "$THYROX_ROOT/src/verify/check_byte_oriented_class.py" "$@"

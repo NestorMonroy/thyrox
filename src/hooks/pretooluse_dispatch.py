@@ -66,6 +66,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_foreground_long_command",
     "detect_prose_vocabulary",
     "detect_rst_validation",
+    "detect_dedicated_tool_usage",
 )
 
 

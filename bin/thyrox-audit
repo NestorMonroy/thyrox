@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Generado por src/session/generate_bin.py — no editar a mano.
+THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec "$THYROX_ROOT/src/verify/thyrox-audit.sh" "$@"
