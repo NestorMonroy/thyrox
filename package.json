@@ -1,6 +1,9 @@
 {
   "name": "thyrox",
   "private": true,
+  "workspaces": [
+    "src/packages/*"
+  ],
   "type": "module",
   "license": "UNLICENSED",
   "description": "THYROX — el Agentic AI y su project management: el mecanismo, sin el parametro del repo que lo consume (DEC-04).",

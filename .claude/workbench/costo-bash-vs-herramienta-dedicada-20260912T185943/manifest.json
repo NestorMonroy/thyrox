@@ -1,0 +1,27 @@
+{
+  "question": "¿Read/Edit/Write cuestan más tokens que su equivalente en Bash, o la regla operaciones-de-archivo-con-bash.md solo se sostiene por capacidad ('Bash genuinamente no alcanza')?",
+  "instrument": [
+    "probes/medir_costo_herramientas.py — parsea el transcript REAL de esta sesion (JSONL), empareja cada tool_use Read/Edit por su id con su tool_result, y compara byte a byte contra el equivalente Bash del MISMO archivo/rango leido del disco (cat, sed -n) o del comando alternativo real (sed -i).",
+    "Dos lecturas Read reales sin edicion posterior sobre el mismo archivo (lectura completa de test_write_env.py, lectura parcial offset=95 limit=45 de job_runs.py).",
+    "Una llamada Edit real: la que resolvio el conflicto de merge en generate_bin.py (identificada por contener el marcador '<<<<<<<' en su old_string, no por adivinanza)."
+  ],
+  "metric": "Bytes exactos: len(tool_result) del Read real contra len(cat/sed -n) del mismo rango; len(old_string)+len(new_string) del Edit real contra len() del comando sed -i que logra el mismo resultado sin reproducir el cuerpo sin cambios. La conversion a tokens usa una heuristica declarada de 4 caracteres/token — NO un tokenizer de Anthropic real (no hay uno offline en este contenedor).",
+  "blind_to": [
+    "El costo real en tokens del API — la heuristica de 4 char/token es una aproximacion publica de la industria, no la tokenizacion exacta de Anthropic; el numero en bytes SI es exacto, el de tokens es INFERRED.",
+    "Write: no hubo en esta sesion un caso Write con alternativa Bash directamente comparable y verificada byte a byte; queda sin medir.",
+    "El caso general de Edit: aqui se midio UN caso real (el conflicto de merge), donde el old_string necesito contexto para ser unico. Otro Edit con un patron mas corto tendria menos sobrecosto — no se generaliza el 4.5x a todo uso de Edit, solo se prueba que EXISTE un caso real con esa magnitud.",
+    "Las otras 20 llamadas Edit de esta sesion sobre generate_bin.py no se compararon 1:1 — cada una tiene su propia alternativa Bash y sumarlas en un total unico seria mezclar metricas distintas bajo un mismo rotulo (sub-patron A de metrica-decide-la-conclusion.md)."
+  ],
+  "destination": [
+    "thyrox: .claude/rules/operaciones-de-archivo-con-bash.md — añade el costo medido como segunda razón, junto a la capacidad.",
+    "kaupamex-docs: hallazgo bajo source/gestion/pm/thyrox/iniciativas/agregar-entrypoints-cortos-thyrox/hallazgos/"
+  ],
+  "reproducible": "python3 .claude/workbench/costo-bash-vs-herramienta-dedicada-20260912T185943/probes/medir_costo_herramientas.py",
+  "control": "Las dos mediciones de Read (lectura completa de 201 lineas y lectura parcial de 45 lineas, archivos DISTINTOS, momentos DISTINTOS del transcript) dan el MISMO overhead relativo: +7.6% en ambas. No es una casualidad de una sola muestra — es la firma del formato fijo 'cat -n' (numero de linea + tab por cada linea), reproducible con cualquier archivo.",
+  "findings": [
+    "Read agrega +7.6% de bytes sobre el contenido crudo, medido en dos casos independientes con el mismo resultado exacto — el prefijo 'numero de linea + tab' por cada linea que el propio Read declara usar ('cat -n format').",
+    "Edit puede costar varias veces mas que su Bash equivalente cuando old_string necesita contexto para ser unico: el caso real medido (resolver un conflicto de merge quitando 3 marcadores) costo 548 bytes de payload en Edit contra 121 bytes del sed -i que logra lo mismo — 4.5x, porque Edit tuvo que reproducir en old_string Y new_string un parrafo entero que NO cambiaba, solo para anclar el punto de edicion."
+  ],
+  "measured_at": "2026-09-12T19:05:00",
+  "thyrox_head": "d56011f1 (merge feature/thyrox-l1 -> feature/thyrox-l2 aun sin commitear cuando se corrio esta medicion)"
+}

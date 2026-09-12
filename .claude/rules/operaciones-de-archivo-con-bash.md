@@ -4,6 +4,43 @@ Leer, buscar y editar se hace con `cat`, `sed -n`, `grep`, `find`, heredocs y
 guiones cortos. `Read`, `Edit` y `Write` quedan para lo que Bash genuinamente no
 puede hacer.
 
+## No es sólo capacidad — es costo, y está medido
+
+> Directiva del ejecutor 2026-09-12: *«realmente es solo cuando bash no puede
+> hacer cosas, analiza bien porque usar Read/Edit/Write tiene mas costo en
+> tokens que Bash, se tiene prioridad usar Bash que usar Read/Edit/Write»*.
+
+La redacción de arriba da **una sola** razón para el fallback a herramienta
+dedicada: capacidad. Hay una segunda, independiente, y ya está medida —no
+asumida— contra el transcript real de una sesión
+(`.claude/workbench/costo-bash-vs-herramienta-dedicada-20260912T185943/`):
+
+- **`Read` agrega +7.6 % de bytes sobre el contenido crudo**, en dos
+  lecturas reales de tamaños y archivos distintos, con el mismo porcentaje
+  exacto en las dos — no es ruido de una muestra, es la firma del formato
+  fijo que el propio tool declara (`cat -n`: número de línea + tab por
+  cada línea, que `cat`/`sed -n` no pagan).
+- **`Edit` puede costar varias veces más que su equivalente Bash** cuando
+  `old_string` necesita contexto para ser único. Caso real medido:
+  resolver un conflicto de merge quitando tres marcadores costó 548 bytes
+  de payload en `Edit` (`old_string`+`new_string`, reproduciendo un
+  párrafo que no cambiaba, sólo para anclar el punto) contra 121 bytes del
+  `sed -i` equivalente — **4.5×**.
+
+**Consecuencia para la prioridad, no sólo para la excepción:** el criterio
+no es «Bash, salvo que genuinamente no alcance» — es «Bash primero, porque
+además de alcanzar casi siempre, sale más barato cuando alcanza». La
+capacidad sigue siendo la única excepción **objetiva** (binario, imagen,
+notebook); el costo es la razón por la que, incluso fuera de esa excepción,
+Bash **se prioriza** y no es sólo «una opción tan válida como la otra».
+
+*Métrica:* bytes exactos del `tool_result`/`tool_use` real contra el
+equivalente Bash del mismo archivo o rango, leído del disco.
+*Ciega a:* la conversión a tokens (4 char/token) es una heurística pública,
+no el tokenizer real de Anthropic — no hay uno offline en este contenedor;
+el caso de `Write` queda sin medir; el 4.5× de `Edit` es de un caso real,
+no una constante universal (un `old_string` ya único costaría menos).
+
 ## Por qué esta regla vive aquí y no en la inyección de la sesión
 
 Medido (ERR-063): la directiva existía **sólo** en la inyección de auto mode al
