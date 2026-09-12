@@ -113,3 +113,60 @@ otro escritor: el defecto de la #363 es que `task_ids.py ingerir-board` es
 o de sujeto en una tarjeta **ya ingerida** nunca llega al store. Ése es un
 universo distinto del de `reconcile_status` —el board entero contra las 1204
 filas de la sesión, de las cuales 845 no tienen tarjeta— y sigue abierto.
+
+## Aplicado sobre el store vivo — 2026-09-12T10:58:17
+
+El mecanismo estaba verde y **los datos que existe para corregir seguían sin
+tocar**: `sync_card` se había ejercitado por tarjeta (#364, #365), pero
+`reconciliar-estados --aplicar` no había corrido nunca contra el store.
+
+```
+universo: 364 tarjeta(s) del board
+  same             283
+  status_drift       1
+  field_drift       37
+  absent            42
+  ambiguous          1
+escritas: 38 fila(s)
+```
+
+La re-medición **con un recorrido propio** —no el del reconciliador, pareando
+por `subject` igual que la premisa de arriba— da el «después»:
+
+| | `drift status` | `drift description` |
+|---|---|---|
+| antes (320 pareadas) | 0 | **37** |
+| después (321 pareadas) | 0 | **0** |
+
+Archivos: `outputs/seco-sobre-el-store-vivo.out`,
+`outputs/aplicado-sobre-el-store-vivo.out`,
+`outputs/remedicion-pareada-por-sujeto.out`.
+
+Las **42 sin fila** y la **1 ambigua** no se movieron: es lo que la sección
+«Lo que NO cierra» ya declaraba.
+
+## El reporte contaba un cubo de dos — descubierto AL aplicar
+
+El modo seco anunciaba **«1 fila(s) quedarían al día»** ante una escritura de
+**38**. El núcleo ya derivaba su lote de los dos cubos; el CLI seguía contando
+y listando sólo `status_drift`, que era el residuo de cuando el reconciliador
+medía una sola columna.
+
+Es la **misma** segunda fuente de verdad que `RECONCILED_FIELDS` cerró un nivel
+más abajo, una capa más arriba: la partición escribible se declara ahora una
+vez —`DRIFT_BUCKETS`— y la consumen el lote del `UPDATE` y el reporte. La línea
+de detalle además publica **qué columnas** difieren y orienta la flecha en la
+dirección de la escritura (store → board), no en el orden en que se leyeron.
+
+| Corrida | Salida | Archivo |
+|---|---|---|
+| **anulación** — el reporte lee sólo `status_drift` | caen **10b, 10c, 10d**, ni una más | `outputs/anulacion-el-reporte-cuenta-un-solo-cubo.out` |
+
+**10e sobrevive a propósito, y ése es el discriminador**: mide la escritura, que
+sale del núcleo y no del reporte. Un control que también hubiera caído estaría
+midiendo las dos capas a la vez y no diría cuál falló.
+
+*Métrica:* el conteo que el modo seco publica contra el `written` que el mismo
+lote produce al aplicar, sobre un fixture con una divergencia de cada clase.
+*Ciega a:* un cubo escribible futuro que se añada a `RECONCILE_BUCKETS` y no a
+`DRIFT_BUCKETS` — la partición es una declaración, no una derivación.

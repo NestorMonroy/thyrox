@@ -1,0 +1,46 @@
+reconciliar-estados: sesion 168b0fdf-bfe4-590b-b6c0-b6be124c124a
+  universo: 364 tarjeta(s) del board
+  same             283
+  status_drift       1
+  field_drift       37
+  absent            42
+  ambiguous          1
+    #88    TASK-API-0039      description             completed -> completed    Teach the successor gate the TASK- citat
+    #111   TASK-API-0054      description             completed -> completed    Suite del .githooks/pre-commit: sus 5 ga
+    #122   TASK-DOCS-0390     description             completed -> completed    Reparar el REcompile() panic de check-ha
+    #123   TASK-DOCS-0391     description             completed -> completed    Cerrar el push a la rama equivocada, que
+    #124   TASK-DOCS-0392     description               pending -> pending      Rechazar el ordinal de board como cita d
+    #128   TASK-DOCS-0396     description             completed -> completed    Reimplementar el alcance por variable en
+    #151   TASK-DOCS-0457     description             completed -> completed    El store versionado ensucia el árbol en 
+    #159   TASK-DOCS-0404     description           in_progress -> in_progress  Acuñar la cita durable al crear la tarea
+    #161   TASK-DOCS-0406     description             completed -> completed    Decidir dónde vive el cableado de hooks 
+    #172   TASK-DOCS-0415     description             completed -> completed    Elegir A o B: particionar el paquete que
+    #173   TASK-DOCS-0421     description             completed -> completed    Barrer los guiones que perdieron su arit
+    #188   TASK-DOCS-0425     description             completed -> completed    Dar productor en src/ a los 84 skills qu
+    #200   TASK-DOCS-0476     description           in_progress -> in_progress  Portar TODO shell de ccnmt a thyrox/src/
+    #205   TASK-DOCS-0481     description           in_progress -> in_progress  Completar el porte de cli: llegaron 3 de
+    #215   TASK-DOCS-0491     description           in_progress -> in_progress  Triar las 86 suites de shell que el corr
+    #224   TASK-DOCS-0500     description           in_progress -> in_progress  Completar la partición con la línea de c
+    #226   TASK-DOCS-0502     description             completed -> completed    Vaciar del todo src/packages/harness: lo
+    #236   TASK-DOCS-0512     description             completed -> completed    reconcile_store no alcanza al agente rec
+    #237   TASK-DOCS-0513     description             completed -> completed    Triar las filas de nivel 4 sin procedenc
+    #240   TASK-DOCS-0516     description             completed -> completed    Re-medir el bloqueo de swarm: appRuntime
+    #250   TASK-DOCS-0526     description           in_progress -> in_progress  Completar permission: 110 de 133 siguen 
+    #252   TASK-DOCS-0528     description               pending -> pending      Declarar el bin de thyrox: hoy los tres 
+    #253   TASK-DOCS-0431     description             completed -> completed    Portar el registro de hooks de VVV a run
+    #258   TASK-DOCS-0435     description             completed -> completed    Decidir el hogar del store y fusionar an
+    #276   TASK-THYROX-0006   description             completed -> completed    Portar appRuntime y los 32 de swarm que 
+    #279   TASK-THYROX-0003   description             completed -> completed    Portar InProcessBackend: getInProcessBac
+    #280   TASK-THYROX-0004   description             completed -> completed    Portar los 23 exports restantes de permi
+    #282   TASK-THYROX-0007   description               pending -> pending      Declarar el subpath raíz y los subpaths 
+    #310   TASK-THYROX-0011   description             completed -> completed    Declarar la dependencia AL LANZAR, para 
+    #314   TASK-THYROX-0012   description             completed -> completed    Ningún gate pregunta «¿proceso o agente?
+    #321   TASK-API-0399      description               pending -> pending      Portar BaseModel.fetch — mapped por ruta
+    #341   TASK-API-0412      description             completed -> completed    Despachar el inverse declarado al escrib
+    #345   TASK-API-0415      description             completed -> completed    Despachar el compute declarado al leer u
+    #346   TASK-API-0416      description             completed -> completed    Portar la fase que recoge las definicion
+    #353   TASK-API-0423      description             completed -> completed    La costura aborta en company_country_cod
+    #358   TASK-GEN-0633      description               pending -> pending      Triar los 64 rojos de tests/unit/orm que
+    #359   TASK-GEN-0634      description               pending -> pending      Portar como campo los ocho @property de 
+    #363   TASK-THYROX-0020   status                    pending -> in_progress  Propagar status y subject del board al s
+  escritas: 38 fila(s)

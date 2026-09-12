@@ -44,7 +44,10 @@ Que cada bloque mide, y por que existe:
 
 from __future__ import annotations
 
+import argparse
+import contextlib
 import importlib.util
+import io
 import json
 import os
 import pathlib
@@ -569,6 +572,59 @@ check(_s9 == SUJETO_9A, "9i: el sujeto sigue intacto — es la llave del pareo")
 _o9 = bs.reconcile_status(DB9, S, board_dir=BOARD9, apply_changes=True)
 check(_o9["written"] == 0 and len(_o9["buckets"].get("field_drift", [])) == 0,
       "9j: idempotente — la segunda corrida no encuentra descripcion que cerrar")
+
+# ---------------------------------------------------------------------------
+# 10. El REPORTE cuenta lo que la escritura tocaria — los dos cubos, no uno.
+# El nucleo ya escribia `status_drift` + `field_drift`; el CLI seguia contando
+# y listando solo el primero, asi que el modo seco anunciaba «1 fila» ante una
+# escritura de 38. Es la misma segunda fuente de verdad que `RECONCILED_FIELDS`
+# cerro un nivel mas abajo: la particion se declara una vez (`DRIFT_BUCKETS`)
+# y la consumen el lote del UPDATE y el reporte.
+# ---------------------------------------------------------------------------
+SUJETO_10A = "Un trabajo cuyo estado quedo atras"
+SUJETO_10B = "Un trabajo cuya sola descripcion quedo atras"
+
+_D10, DB10 = store_con([
+    ("1010", SUJETO_10A, S, "docs", "TASK-DOCS-1010", "pending"),
+    ("1011", SUJETO_10B, S, "docs", "TASK-DOCS-1011", "completed"),
+])
+_c10 = sqlite3.connect(DB10)
+_c10.execute("UPDATE tasks SET description = ? WHERE citation_id = ?",
+             ("al dia", "TASK-DOCS-1010"))
+_c10.execute("UPDATE tasks SET description = ? WHERE citation_id = ?",
+             ("la premisa vieja", "TASK-DOCS-1011"))
+_c10.commit(); _c10.close()
+
+BOARD10 = board_con({
+    "1010": {"subject": SUJETO_10A, "status": "completed",
+             "description": "al dia"},
+    "1011": {"subject": SUJETO_10B, "status": "completed",
+             "description": "CORREGIDA: la premisa medía otra poblacion"},
+})
+
+_ns10 = argparse.Namespace(store=DB10, sesion=S, board=BOARD10, aplicar=False)
+_buf10 = io.StringIO()
+with contextlib.redirect_stdout(_buf10):
+    _rc10 = bs._cmd_reconcile_status(_ns10)
+_txt10 = _buf10.getvalue()
+
+check(_rc10 == 0, "10a: el modo seco sale 0 — reporta, no juzga")
+check("2 fila(s) quedarian al dia" in _txt10,
+      "10b: el conteo del modo seco es la poblacion escribible, no solo `status_drift`")
+check("TASK-DOCS-1011" in _txt10,
+      "10c: la fila que solo difiere en descripcion se LISTA, no se calla")
+check("description" in _txt10,
+      "10d: cada linea declara que columnas difieren, no solo que hay deriva")
+
+_ns10.aplicar = True
+_buf10b = io.StringIO()
+with contextlib.redirect_stdout(_buf10b):
+    bs._cmd_reconcile_status(_ns10)
+check("escritas: 2 fila(s)" in _buf10b.getvalue(),
+      "10e: y la escritura toca exactamente las que el modo seco anuncio")
+
+check(tuple(bs.DRIFT_BUCKETS) == ("status_drift", "field_drift"),
+      "10f: la particion escribible se declara una vez y la consumen nucleo y reporte")
 
 print(f"{checks} aserciones")
 if failures:

@@ -121,6 +121,13 @@ RECONCILED_FIELDS = ("status", "description")
 #: solo el estado— y se conserva porque `RECONCILE_BUCKETS` ya se publica.
 PRIMARY_RECONCILED_FIELD = RECONCILED_FIELDS[0]
 
+#: Los cubos cuyas filas el reconciliador ESCRIBE. Los dos, no solo el
+#: primero: una tarjeta cuya descripcion difiere se corrige igual que una
+#: cuyo estado difiere. Gobierna el lote del UPDATE y el conteo que el
+#: reporte publica; contarlos por separado en cada sitio fue lo que hizo que
+#: el modo seco anunciara «1 fila» cuando la escritura tocaba 38.
+DRIFT_BUCKETS = ("status_drift", "field_drift")
+
 #: Las columnas que el SELECT del pareo trae, en orden. Las dos de los
 #: extremos son identidad —con que fila se aparea y por que cita se escribe—;
 #: las de en medio son las que convergen.
@@ -347,7 +354,7 @@ def reconcile_status(store_path, session_id, *, board_dir=None,
                 buckets[target].append(entrada)
 
         written = 0
-        pendientes = buckets["status_drift"] + buckets["field_drift"]
+        pendientes = [e for name in DRIFT_BUCKETS for e in buckets[name]]
         if apply_changes and pendientes:
             stamp = task_ids._now()
             for entry in pendientes:
@@ -386,15 +393,19 @@ def _cmd_reconcile_status(args: argparse.Namespace) -> int:
         # El descuadre se publica, no se calla: si los cubos no cubren el
         # universo, el conteo de arriba no se puede leer.
         print(f"  ATENCION: los cubos suman {covered} y el universo es {total}")
-    for entry in buckets["status_drift"]:
+    pendientes = [e for name in DRIFT_BUCKETS for e in buckets[name]]
+    for entry in sorted(pendientes, key=lambda e: int(e["ordinal"])):
+        # La flecha va del store al board: es la direccion de la escritura,
+        # no el orden en que se leyeron las dos columnas.
+        campos = ",".join(entry["drifted"])
         print(f"    #{entry['ordinal']:<5} {entry['citation']:<18} "
-              f"{entry['board_status']:>12} -> {entry['store_status']:<12} "
-              f"{entry['subject'][:44]}")
+              f"{campos:<20} {entry['store_status']:>12} -> "
+              f"{entry['board_status']:<12} {entry['subject'][:40]}")
     if result["applied"]:
         print(f"  escritas: {result['written']} fila(s)")
     else:
         print(f"  NO se escribio nada (faltó --aplicar); "
-              f"{len(buckets['status_drift'])} fila(s) quedarian al dia")
+              f"{len(pendientes)} fila(s) quedarian al dia")
     return 0
 
 
