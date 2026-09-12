@@ -1,0 +1,8 @@
+{
+  "question": "Does a task row born from the board snapshot declare its layer, or is it inserted with submodule NULL — and does a layer already classified by hand survive the next snapshot?",
+  "instrument": "tests/agents/test-agent-store-tareas.sh blocks 15 and 16, over a synthetic board directory and a fresh store; plus the anulacion control that adds submodule to the ON CONFLICT set-list.",
+  "metric": "The submodule and submodule_source columns of a row snapshotted by agent_store.py, read back from the store after the first insert (block 15) and after a second snapshot over a row whose layer was corrected by hand (block 16).",
+  "blind_to": "The 404 inherited rows already at NULL: they stay NULL by the prospective rule, so this measurement says nothing about them — it only closes the tap. Blind as well to whether UNKNOWN_LAYER is the right fallback value: it is imported from task_ids, and this instrument verifies that it is written, not that it classifies correctly.",
+  "destination": "src/agents/agent_store.py shared INSERT; successor TASK-THYROX-0021.",
+  "form": "measurement"
+}
