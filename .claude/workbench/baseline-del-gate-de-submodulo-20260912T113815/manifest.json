@@ -1,0 +1,16 @@
+{
+  "question": "¿El gate de submódulo de hallazgo encuentra el baseline de deuda heredada de su consumidor, tras la mudanza del mecanismo a thyrox (h-docs-1094)?",
+  "instrument": "tests/verify/test-hallazgo-submodulo-baseline.sh — cuatro casos sobre un consumidor sintético con un hallazgo cuyos tres signos discrepan: (1) el baseline en <consumidor>/.claude/baselines/ se encuentra desde el cwd; (2) $HALLAZGO_SUBMODULO_BASELINE gana; (3) sin baseline en ningún sitio el gate REHÚSA con exit 2 y sin conteo; (4) --write-baseline aterriza en el consumidor, no en el proveedor.",
+  "metric": "casos verdes de 4, y sobre el corpus real: incumplidores publicados contra rutas reconocidas como heredadas.",
+  "blind_to": [
+    "si las 62 rutas congeladas SIGUEN siendo deuda legítima — el baseline dice que se congelaron, no que estén bien",
+    "un consumidor sin .claude/ en ningún ancestro: consumer_root cae al cwd y el ascenso no encuentra nada",
+    "los demás gates que pudieran compartir el defecto: se midieron dos (sucesor y vocabulario) y ambos ya resolvían contra el consumidor",
+    "la diferencia entre «el hallazgo está en la iniciativa equivocada» y «está en la capa equivocada»: el gate mide los tres signos, no el tema"
+  ],
+  "destination": "outputs/ — rojo antes, verde después, y el corpus real; insumo del hallazgo H-DOCS-1263",
+  "form": "measurement",
+  "tasks": ["TASK-DOCS-0541"],
+  "date": "2026-09-12T11:40:25",
+  "control": "Anulación: devolver resolve_baseline a pathlib.Path(__file__).parent hace caer EXACTAMENTE los casos 1 y 2 —los que dependen de la resolución— y deja en verde el 3 y el 4, que dependen del rehúso y del destino compuesto. Cada mitad mide su propia causa. Sobre el corpus: 63 publicados con 0 heredados antes, 1 publicado con 62 heredados después."
+}

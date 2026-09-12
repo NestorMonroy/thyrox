@@ -26,12 +26,44 @@ listada no bloquea, una nueva sí. Mismo criterio prospectivo que
 ``identifier_language_baseline.txt`` y el grifo cerrado de la tarea #313.
 """
 
+import os
 import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import check_vocabulario_prosa as _parametro  # noqa: E402
+
 RAIZ_PM = pathlib.Path('source/gestion/pm')
-BASELINE = pathlib.Path(__file__).parent / 'hallazgo_submodulo_baseline.txt'
+
+#: El baseline es PARAMETRO DEL CONSUMIDOR, no del mecanismo: congela la deuda
+#: de ESTE corpus. Se resuelve con el mismo resolutor que su hermano de
+#: vocabulario —no con una copia— para no fabricar una segunda fuente de verdad
+#: (`calibration-verified-numbers.md`). Ver h-docs-1107, que es este mismo
+#: defecto medido primero en aquel gate.
+BASELINE_NAME = 'hallazgo_submodulo_baseline.txt'
+BASELINE_VAR = 'HALLAZGO_SUBMODULO_BASELINE'
+
+
+def resolve_baseline(measured=()):
+    """La ruta del baseline de este consumidor: $VAR, junto al gate, o ascenso."""
+    return _parametro.resolve_parameter(BASELINE_NAME, BASELINE_VAR, measured)
+
+
+def baseline_destination(measured=()):
+    """Donde ATERRIZA --write-baseline: el consumidor, nunca el proveedor.
+
+    NO se reusa `resolve_baseline` aqui: su ultimo candidato es `HERE / name`,
+    el directorio del propio gate. Escribir ahi crea en el PROVEEDOR un baseline
+    que despues satisface la busqueda de cualquier consumidor —medido al cerrar
+    esto: el archivo creado por una corrida se lo comia el caso siguiente— y con
+    eso la deuda de un corpus congelaria la de todos. El destino se compone, no
+    se descubre.
+    """
+    declarado = os.environ.get(BASELINE_VAR, '').strip()
+    if declarado:
+        return pathlib.Path(declarado)
+    return _parametro.consumer_root(measured) / '.claude' / 'baselines' / BASELINE_NAME
 PATRON_RUTA = re.compile(
     r'source/gestion/pm/(?P<carpeta>[^/]+)/iniciativas/[^/]+/hallazgos/'
     r'hallazgo-H-(?P<prefijo>[A-Z]+)-'
@@ -54,10 +86,21 @@ def signos(ruta):
             m.group('carpeta').lower())
 
 
-def leer_baseline():
-    if not BASELINE.exists():
-        return set()
-    return {l.strip() for l in BASELINE.read_text(encoding='utf-8').splitlines()
+def leer_baseline(measured=()):
+    """Las rutas congeladas, o REHUSA.
+
+    Devolver un conjunto vacio cuando el archivo no aparece publica la deuda
+    heredada entera como nueva, y el conteo resultante no distingue «no hay
+    deuda» de «no encontre el baseline» — el sub-patron D de
+    `metrica-decide-la-conclusion.md`. Medido al cerrarlo: 62 rutas congeladas
+    invisibles, y el gate publicando «63 sin baseline · 0 en baseline heredado».
+    """
+    ruta = resolve_baseline(measured)
+    if not ruta.is_file():
+        _parametro.refuse_without_parameter(
+            BASELINE_NAME, BASELINE_VAR, ruta,
+            'sin baseline, la deuda heredada se publicaria\n  entera como nueva. Ver h-docs-1107.')
+    return {l.strip() for l in ruta.read_text(encoding='utf-8').splitlines()
             if l.strip() and not l.startswith('#')}
 
 
@@ -70,7 +113,7 @@ def main():
     universo = ([pathlib.Path(a) for a in args] if args
                 else sorted(RAIZ_PM.glob('*/iniciativas/*/hallazgos/hallazgo-*.rst')))
 
-    base = set() if escribir else leer_baseline()
+    base = set() if escribir else leer_baseline(universo)
     medidos, desajuste = 0, []
     for f in universo:
         s = signos(f)
@@ -86,13 +129,15 @@ def main():
     nuevos = [d for d in desajuste if not d[4]]
 
     if escribir:
-        BASELINE.write_text(
+        destino = baseline_destination(universo)
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(
             '# Deuda heredada de check_hallazgo_submodulo.py — congelada, no barrida.\n'
             '# Una ruta listada no bloquea; una nueva sí. Al mover un hallazgo a su\n'
             '# iniciativa correcta, quitar su línea: si no, el baseline miente.\n'
             + '\n'.join(sorted(d[0] for d in desajuste)) + '\n',
             encoding='utf-8')
-        print(f'baseline escrito: {len(desajuste)} ruta(s)')
+        print(f'baseline escrito en {destino}: {len(desajuste)} ruta(s)')
         return 0
 
     if quiet:
