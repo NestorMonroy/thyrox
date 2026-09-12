@@ -287,6 +287,63 @@ check(_destino[3] == "991", "5b: el task_id del store tampoco — es identidad")
 check(_destino[4] != "2026-01-01T00:00:00",
       "5c: updated_at si avanza — la fila se tocó y tiene que decirlo")
 
+# ---------------------------------------------------------------------------
+# 5bis — #184: la DESCRIPCION tambien viaja
+# ---------------------------------------------------------------------------
+# El control positivo es el episodio medido de esta sesion: el board #364 se
+# corrigio con `TaskUpdate` —su premisa original mezclaba dos poblaciones— y
+# `sync_card` llevo al store el sujeto nuevo dejando la descripcion FALSA
+# intacta. Medido tras sincronizar: subject «Escribir submodule en el camino de
+# insercion compartido del store», description todavia «636 filas tienen
+# citation_id con una capa distinta…». La fila quedaba diciendo dos cosas que
+# se contradicen, y la falsa es la que lleva el detalle. Ver :ref:`h-docs-1260`.
+_, DB3B = store_con([
+    ("991", SUJETO_BOARD_184, S, "docs", "TASK-DOCS-0364", "pending"),
+])
+sqlite3.connect(DB3B).execute(
+    "UPDATE tasks SET description = ? WHERE citation_id = ?",
+    ("premisa vieja: 636 filas", "TASK-DOCS-0364")).connection.commit()
+BOARD2B = board_con({"364": {"id": 364, "subject": SUJETO_BOARD_184,
+                             "status": "pending",
+                             "description": "premisa corregida: 404 filas"}})
+
+
+def descripcion(db, session, cita):
+    c = sqlite3.connect(db)
+    try:
+        r = c.execute("SELECT description FROM tasks"
+                      "  WHERE session_id=? AND citation_id=?",
+                      (session, cita)).fetchone()
+    finally:
+        c.close()
+    return r[0]
+
+
+_res_desc = bs.sync_card(DB3B, S, "364", "TASK-DOCS-0364", board_dir=BOARD2B)
+check(descripcion(DB3B, S, "TASK-DOCS-0364") == "premisa corregida: 404 filas",
+      "5d: la descripcion corregida en la tarjeta aterriza en la fila")
+check("description" in _res_desc["changed"],
+      "5e: y el diff la nombra — un OK a secas no dejaria auditar la premisa")
+check(_res_desc["before"].get("description") == "premisa vieja: 636 filas",
+      "5f: el antes publica la premisa que se esta corrigiendo")
+
+# Control: sin cambio real, la descripcion NO entra en `changed`. Sin el, un
+# `changed` que siempre la nombre pasaria el caso 5e sin propagar nada.
+_res_igual = bs.sync_card(DB3B, S, "364", "TASK-DOCS-0364", board_dir=BOARD2B)
+check("description" not in _res_igual["changed"],
+      "5g: control — re-sincronizar la misma tarjeta no la declara cambiada")
+
+# La tarjeta vacia SI vacia la fila: el board es la fuente, y un caso especial
+# para un solo campo seria la asimetria que luego se lee como defecto. Medido
+# sobre el board vivo: 363 de 363 tarjetas traen texto, asi que la poblacion de
+# este caso es 0 — se declara, no se supone.
+BOARD2C = board_con({"364": {"id": 364, "subject": SUJETO_BOARD_184,
+                             "status": "pending", "description": ""}})
+bs.sync_card(DB3B, S, "364", "TASK-DOCS-0364", board_dir=BOARD2C)
+check(descripcion(DB3B, S, "TASK-DOCS-0364") == "",
+      "5h: una tarjeta con descripcion vacia vacia la fila — misma semantica "
+      "que subject y status, declarada")
+
 # 6 — el guard. Cada caso es «no se puede medir a que fila pertenece».
 def rehusa(label, *args, **kwargs):
     try:

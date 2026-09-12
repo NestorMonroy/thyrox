@@ -87,7 +87,19 @@ CREATION_EVENTS = ("TaskCreate",)
 #: Los campos de la tarjeta que una sincronizacion escribe. NO incluye
 #: ``citation_id`` ni ``task_id``: eso es identidad, y reescribirla es el daño
 #: que este modulo existe para evitar.
-SYNCED_FIELDS = ("subject", "status")
+#:
+#: ``description`` entra el 2026-09-12 por un episodio medido: el board #364 se
+#: corrigio con ``TaskUpdate`` porque su premisa mezclaba dos poblaciones, y
+#: sincronizar llevo el sujeto nuevo dejando **la descripcion falsa intacta**.
+#: La fila quedo diciendo dos cosas que se contradicen, y la falsa es la que
+#: lleva el detalle que alguien leeria para trabajar. Ver :ref:`h-docs-1260`.
+#:
+#: Los tres comparten semantica a proposito: la tarjeta es la fuente, asi que
+#: una descripcion vacia **vacia** la fila igual que un sujeto vacio lo haria.
+#: Un caso especial para un solo campo seria la asimetria que luego se lee como
+#: defecto. Medido sobre el board vivo al decidirlo: 363 de 363 tarjetas traen
+#: texto, o sea que la poblacion del caso vacio es 0 — se declara, no se supone.
+SYNCED_FIELDS = ("subject", "status", "description")
 
 #: Los cubos en que cae cada tarjeta al reconciliar en bloque. Se declaran
 #: como tupla y no se infieren del recorrido: un cubo que solo existe cuando
@@ -172,7 +184,7 @@ def sync_card(store_path, session_id, ordinal, citation, *, board_dir=None) -> d
     conn = sqlite3.connect(store_path)
     try:
         rows = conn.execute(
-            "SELECT task_id, subject, status FROM tasks "
+            "SELECT task_id, subject, status, description FROM tasks "
             " WHERE session_id = ? AND citation_id = ?",
             (session_id, str(citation))).fetchall()
         if not rows:
@@ -185,8 +197,9 @@ def sync_card(store_path, session_id, ordinal, citation, *, board_dir=None) -> d
                 f"la cita {citation} nombra {len(rows)} filas en la sesion "
                 f"{session_id}. NO se sincroniza nada: con la llave duplicada "
                 f"no se puede saber cual es el sujeto vivo.")
-        task_id, subject_before, status_before = rows[0]
-        before = {"subject": subject_before, "status": status_before}
+        task_id, subject_before, status_before, description_before = rows[0]
+        before = {"subject": subject_before, "status": status_before,
+                  "description": description_before}
         after = dict(before)
         for field in SYNCED_FIELDS:
             if field in data:
@@ -197,9 +210,10 @@ def sync_card(store_path, session_id, ordinal, citation, *, board_dir=None) -> d
         # formato driftearia sin que nada lo delate.
         stamp = task_ids._now()
         conn.execute(
-            "UPDATE tasks SET subject = ?, status = ?, updated_at = ? "
+            "UPDATE tasks SET subject = ?, status = ?, description = ?, "
+            "       updated_at = ? "
             " WHERE session_id = ? AND citation_id = ?",
-            (after["subject"], after["status"], stamp,
+            (after["subject"], after["status"], after["description"], stamp,
              session_id, str(citation)))
         conn.commit()
     finally:
