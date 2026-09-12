@@ -1,0 +1,8 @@
+filas sin submodule: 404
+
+veredicto por evidencia de commit:
+  indecidible    402
+  docs           2
+
+clasificables: 2 de 404
+indecidibles : 402 — quedan en NULL, que declara 'nadie decidió' y no 'cruza repos'

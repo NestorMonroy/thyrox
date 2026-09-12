@@ -112,6 +112,15 @@ sys.path.insert(0, str(agents_paths.PATHS_DIR))
 
 import reach_roots  # noqa: E402  — statement a nivel de modulo tras fijar sys.path
 
+# La capa por defecto de una fila de `tasks` se IMPORTA de su dueno canonico y
+# no se copia: `task_ids` declara el vocabulario de capas y su valor de
+# respaldo, asi que un literal "gen" aqui seria la segunda fuente de verdad que
+# `calibration-verified-numbers.md` prohibe — y la que nadie sincroniza el dia
+# que el vocabulario cambie.
+sys.path.insert(0, str(agents_paths.THYROX_ROOT / "src" / "task"))
+
+from task_ids import UNKNOWN_LAYER  # noqa: E402  — tras fijar sys.path
+
 VALID_REPOS = reach_roots.REACH_ROOTS
 
 #: El arbol documental es de `docs` por construccion — ahi viven las
@@ -1644,8 +1653,8 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                 "INSERT INTO tasks (task_id, subject, description, status, "
                 "active_form, owner, blocks_json, blocked_by_json, session_id, "
                 "source, metadata_json, created_at, updated_at, "
-                "opened_at, opened_at_source) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
+                "opened_at, opened_at_source, submodule, submodule_source) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
                 # El conflicto es sobre la clave COMPUESTA: dos sesiones con la
                 # misma tarea "447" son dos filas, no una que se pisa (H-DOCS-175).
                 "ON CONFLICT(session_id, task_id) DO UPDATE SET "
@@ -1704,6 +1713,23 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                     # `--source` y no la novedad de la fila.
                     ahora if sella_apertura else None,
                     "hook" if sella_apertura else None,
+                    # La capa, y `gen` NO es lo mismo que NULL (TASK-THYROX-0021).
+                    # Este INSERT escribia quince columnas y `submodule` no era
+                    # una de ellas, asi que toda fila que no viniera de
+                    # `ingerir-board` nacia con la columna en NULL. Medido sobre
+                    # el store vivo: 404 de 1636 filas, todas con cita TASK-GEN-,
+                    # y 402 de esas 404 indecidibles por evidencia de commit — la
+                    # clasificacion retroactiva no las alcanza.
+                    #
+                    # `gen` DECLARA «cruza repos»; NULL no declara nada. Los dos
+                    # se leen igual en un `WHERE submodule IS NULL` y significan
+                    # cosas opuestas, que es el mismo defecto que `usage_source`
+                    # cierra un nivel mas abajo: la procedencia del dato no es el
+                    # dato. Por eso la fuente dice que es el RESPALDO y no una
+                    # clasificacion: quien luego clasifique sabe que no pisa un
+                    # juicio, sino su ausencia.
+                    UNKNOWN_LAYER,
+                    "respaldo al volcar el board: nadie declaro la capa",
                 ),
             )
             if task_id not in existentes:

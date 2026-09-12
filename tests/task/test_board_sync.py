@@ -44,7 +44,10 @@ Que cada bloque mide, y por que existe:
 
 from __future__ import annotations
 
+import argparse
+import contextlib
 import importlib.util
+import io
 import json
 import os
 import pathlib
@@ -287,6 +290,63 @@ check(_destino[3] == "991", "5b: el task_id del store tampoco — es identidad")
 check(_destino[4] != "2026-01-01T00:00:00",
       "5c: updated_at si avanza — la fila se tocó y tiene que decirlo")
 
+# ---------------------------------------------------------------------------
+# 5bis — #184: la DESCRIPCION tambien viaja
+# ---------------------------------------------------------------------------
+# El control positivo es el episodio medido de esta sesion: el board #364 se
+# corrigio con `TaskUpdate` —su premisa original mezclaba dos poblaciones— y
+# `sync_card` llevo al store el sujeto nuevo dejando la descripcion FALSA
+# intacta. Medido tras sincronizar: subject «Escribir submodule en el camino de
+# insercion compartido del store», description todavia «636 filas tienen
+# citation_id con una capa distinta…». La fila quedaba diciendo dos cosas que
+# se contradicen, y la falsa es la que lleva el detalle. Ver :ref:`h-docs-1260`.
+_, DB3B = store_con([
+    ("991", SUJETO_BOARD_184, S, "docs", "TASK-DOCS-0364", "pending"),
+])
+sqlite3.connect(DB3B).execute(
+    "UPDATE tasks SET description = ? WHERE citation_id = ?",
+    ("premisa vieja: 636 filas", "TASK-DOCS-0364")).connection.commit()
+BOARD2B = board_con({"364": {"id": 364, "subject": SUJETO_BOARD_184,
+                             "status": "pending",
+                             "description": "premisa corregida: 404 filas"}})
+
+
+def descripcion(db, session, cita):
+    c = sqlite3.connect(db)
+    try:
+        r = c.execute("SELECT description FROM tasks"
+                      "  WHERE session_id=? AND citation_id=?",
+                      (session, cita)).fetchone()
+    finally:
+        c.close()
+    return r[0]
+
+
+_res_desc = bs.sync_card(DB3B, S, "364", "TASK-DOCS-0364", board_dir=BOARD2B)
+check(descripcion(DB3B, S, "TASK-DOCS-0364") == "premisa corregida: 404 filas",
+      "5d: la descripcion corregida en la tarjeta aterriza en la fila")
+check("description" in _res_desc["changed"],
+      "5e: y el diff la nombra — un OK a secas no dejaria auditar la premisa")
+check(_res_desc["before"].get("description") == "premisa vieja: 636 filas",
+      "5f: el antes publica la premisa que se esta corrigiendo")
+
+# Control: sin cambio real, la descripcion NO entra en `changed`. Sin el, un
+# `changed` que siempre la nombre pasaria el caso 5e sin propagar nada.
+_res_igual = bs.sync_card(DB3B, S, "364", "TASK-DOCS-0364", board_dir=BOARD2B)
+check("description" not in _res_igual["changed"],
+      "5g: control — re-sincronizar la misma tarjeta no la declara cambiada")
+
+# La tarjeta vacia SI vacia la fila: el board es la fuente, y un caso especial
+# para un solo campo seria la asimetria que luego se lee como defecto. Medido
+# sobre el board vivo: 363 de 363 tarjetas traen texto, asi que la poblacion de
+# este caso es 0 — se declara, no se supone.
+BOARD2C = board_con({"364": {"id": 364, "subject": SUJETO_BOARD_184,
+                             "status": "pending", "description": ""}})
+bs.sync_card(DB3B, S, "364", "TASK-DOCS-0364", board_dir=BOARD2C)
+check(descripcion(DB3B, S, "TASK-DOCS-0364") == "",
+      "5h: una tarjeta con descripcion vacia vacia la fila — misma semantica "
+      "que subject y status, declarada")
+
 # 6 — el guard. Cada caso es «no se puede medir a que fila pertenece».
 def rehusa(label, *args, **kwargs):
     try:
@@ -348,6 +408,223 @@ _crear = subprocess.run(
 check(_crear.returncode == 0, "7g: `acunar-tarjeta` con TaskUpdate no es un error")
 check("TaskUpdate" in _crear.stdout,
       "7h: y dice por que no acuñó, en vez de imprimir un 0 mudo")
+
+# ---------------------------------------------------------------------------
+# 8. `reconciliar-estados` — la mitad EN BLOQUE de #184.
+#
+# `sync_card` cierra una tarjeta cuando quien llama declara su cita. El board
+# entero no puede declarar 358 citas, asi que la llave tiene que salir de los
+# datos: el SUJETO, que es lo unico estable entre tarjeta y fila. El ordinal
+# NO sirve — se reusa, y por eso los fixtures 159/184 de esta suite tienen
+# sujeto distinto en board y store.
+#
+# Medido sobre la sesion viva antes de escribir esto: 358 tarjetas -> 250
+# iguales, 65 con estado divergente, 42 sin pareja, 1 ambigua. Los 65 son
+# 51 completed->pending, 8 in_progress->pending y 6 completed->in_progress.
+# ---------------------------------------------------------------------------
+_D8, DB8 = store_con([
+    # Pareja por sujeto: el board la cerro y el store sigue pendiente.
+    ("900", SUJETO_BOARD_159, S, "docs", "TASK-DOCS-0404", "pending"),
+    # Pareja por sujeto, ya al dia: no debe contarse como divergencia.
+    ("901", SUJETO_BOARD_184, S, "docs", "TASK-DOCS-0405", "completed"),
+    # Sujeto que el board NO tiene: no aparea, y no se toca.
+    ("902", SUJETO_STORE_159, S, "docs", "TASK-DOCS-0406", "pending"),
+])
+BOARD8 = board_con({
+    "159": {"subject": SUJETO_BOARD_159, "status": "completed"},
+    "184": {"subject": SUJETO_BOARD_184, "status": "completed"},
+    "999": {"subject": "Un sujeto que el store no conoce", "status": "pending"},
+})
+
+_seco = bs.reconcile_status(DB8, S, board_dir=BOARD8)
+check(_seco["total_cards"] == 3, "8a: el universo es el numero de tarjetas")
+check(len(_seco["buckets"]["status_drift"]) == 1,
+      "8b: solo la tarjeta cerrada en board y pendiente en store diverge")
+check(len(_seco["buckets"]["same"]) == 1,
+      "8c: la que ya coincide cae en `same`, no en divergencia")
+check(len(_seco["buckets"]["absent"]) == 1,
+      "8d: la tarjeta sin pareja por sujeto cae en `absent`")
+check(sum(len(_seco["buckets"][b]) for b in bs.RECONCILE_BUCKETS) == 3,
+      "8e: los cubos cubren el universo — sin fila que se pierda del conteo")
+check(_seco["written"] == 0 and _seco["applied"] is False,
+      "8f: sin --aplicar NO escribe: cerrar una fila es irreversible")
+
+_antes = sqlite3.connect(DB8).execute(
+    "SELECT status FROM tasks WHERE citation_id = 'TASK-DOCS-0404'").fetchone()[0]
+check(_antes == "pending", "8g: y el disco lo confirma — la fila sigue pendiente")
+
+_humedo = bs.reconcile_status(DB8, S, board_dir=BOARD8, apply_changes=True)
+check(_humedo["written"] == 1, "8h: con --aplicar escribe exactamente la divergente")
+_despues = sqlite3.connect(DB8).execute(
+    "SELECT status FROM tasks WHERE citation_id = 'TASK-DOCS-0404'").fetchone()[0]
+check(_despues == "completed", "8i: la fila quedo con el estado del board")
+_intacta = sqlite3.connect(DB8).execute(
+    "SELECT status FROM tasks WHERE citation_id = 'TASK-DOCS-0406'").fetchone()[0]
+check(_intacta == "pending",
+      "8j: la fila SIN pareja no se toco — `absent` no es «ciérrala igual»")
+
+# El sujeto es la LLAVE y no se reescribe: si cambiara, la fila dejaria de
+# aparear con la tarjeta que acaba de cerrarla.
+_sujeto = sqlite3.connect(DB8).execute(
+    "SELECT subject FROM tasks WHERE citation_id = 'TASK-DOCS-0404'").fetchone()[0]
+check(_sujeto == SUJETO_BOARD_159, "8k: el sujeto NO se reescribe — es la llave")
+
+# Idempotente: una segunda corrida no encuentra nada que escribir.
+_otra = bs.reconcile_status(DB8, S, board_dir=BOARD8, apply_changes=True)
+check(_otra["written"] == 0 and len(_otra["buckets"]["status_drift"]) == 0,
+      "8l: idempotente — la segunda corrida no tiene divergencia que cerrar")
+
+# CONTROL DE ANULACION. Si la llave fuera el ORDINAL en vez del sujeto, la
+# tarjeta #159 (cerrada) apearia con la fila #900 solo por casualidad y la
+# #999 no apearia con nada. Se comprueba que ninguna fila del store lleva un
+# task_id igual a un ordinal del board: parear por ordinal daria CERO parejas
+# sobre este fixture, o sea el veredicto contrario al medido.
+_ordinales_board = {"159", "184", "999"}
+_ids_store = {r[0] for r in sqlite3.connect(DB8).execute(
+    "SELECT task_id FROM tasks WHERE session_id = ?", (S,))}
+check(not (_ordinales_board & _ids_store),
+      "8m: control — parear por ordinal daria 0 parejas donde por sujeto hay 2")
+
+_vacio = pathlib.Path(tempfile.mkdtemp()) / "no-existe"
+try:
+    bs.reconcile_status(_vacio, S, board_dir=BOARD8)
+    check(False, "8n: un store ausente debe REHUSAR")
+except bs.BoardSyncError as err:
+    check("NO se reconcilia nada" in str(err),
+          "8n: un store ausente REHUSA y dice que no escribio nada")
+
+# ---------------------------------------------------------------------------
+# 9. La descripcion tambien converge — la mitad que faltaba de #184.
+#
+# `sync_card` lleva las tres columnas desde thyrox@a75b3300, pero es POR
+# TARJETA y solo cuando quien llama declara la cita. `reconcile_status` es el
+# unico que recorre el board entero, y escribia `status` y nada mas: una fila
+# cuya descripcion quedo atras no converge nunca.
+#
+# Medido sobre la sesion viva antes de escribir esto, pareando por sujeto:
+# 320 parejas -> 0 con estado divergente y 37 con descripcion divergente. El
+# eje del estado ya esta cerrado; el de la descripcion no lo tocaba nadie.
+#
+# `subject` sigue sin escribirse: es la LLAVE del pareo. `description` no lo
+# es, asi que puede converger sin reescribir aquello con lo que se apareo.
+# ---------------------------------------------------------------------------
+SUJETO_9A = "Un trabajo cuya descripcion quedo atras"
+SUJETO_9B = "Un trabajo cuyo estado Y descripcion quedaron atras"
+SUJETO_9C = "Un trabajo al dia en las dos columnas"
+
+_D9, DB9 = store_con([
+    ("910", SUJETO_9A, S, "docs", "TASK-DOCS-0410", "completed"),
+    ("911", SUJETO_9B, S, "docs", "TASK-DOCS-0411", "pending"),
+    ("912", SUJETO_9C, S, "docs", "TASK-DOCS-0412", "completed"),
+])
+_c9 = sqlite3.connect(DB9)
+_c9.execute("UPDATE tasks SET description = ? WHERE citation_id = ?",
+            ("la premisa vieja, ya corregida en el board", "TASK-DOCS-0410"))
+_c9.execute("UPDATE tasks SET description = ? WHERE citation_id = ?",
+            ("otra premisa vieja", "TASK-DOCS-0411"))
+_c9.execute("UPDATE tasks SET description = ? WHERE citation_id = ?",
+            ("al dia", "TASK-DOCS-0412"))
+_c9.commit(); _c9.close()
+
+BOARD9 = board_con({
+    "910": {"subject": SUJETO_9A, "status": "completed",
+            "description": "CORREGIDA: la premisa mezclaba dos poblaciones"},
+    "911": {"subject": SUJETO_9B, "status": "completed",
+            "description": "CORREGIDA tambien, y ademas cerrada"},
+    "912": {"subject": SUJETO_9C, "status": "completed",
+            "description": "al dia"},
+})
+
+_r9 = bs.reconcile_status(DB9, S, board_dir=BOARD9)
+check(len(_r9["buckets"].get("field_drift", [])) == 1,
+      "9a: la tarjeta con estado igual y descripcion distinta cae en `field_drift`")
+check(len(_r9["buckets"]["status_drift"]) == 1,
+      "9b: la que ademas cambio de estado sigue cayendo en `status_drift`")
+check(len(_r9["buckets"]["same"]) == 1,
+      "9c: `same` significa que NO hay nada que escribir, en ninguna columna")
+check(sum(len(_r9["buckets"].get(b, [])) for b in bs.RECONCILE_BUCKETS) == 3,
+      "9d: los cinco cubos siguen particionando el universo")
+
+_h9 = bs.reconcile_status(DB9, S, board_dir=BOARD9, apply_changes=True)
+check(_h9["written"] == 2, "9e: escribe las dos divergentes, no la que esta al dia")
+
+def _desc(cita):
+    c = sqlite3.connect(DB9)
+    try:
+        return c.execute("SELECT description FROM tasks WHERE citation_id = ?",
+                         (cita,)).fetchone()[0]
+    finally:
+        c.close()
+
+check(_desc("TASK-DOCS-0410").startswith("CORREGIDA:"),
+      "9f: la descripcion del board aterrizo en la fila")
+check(_desc("TASK-DOCS-0411").startswith("CORREGIDA tambien"),
+      "9g: y tambien en la que cambio de estado — las dos columnas, no una")
+_e9 = sqlite3.connect(DB9).execute(
+    "SELECT status FROM tasks WHERE citation_id = 'TASK-DOCS-0411'").fetchone()[0]
+check(_e9 == "completed", "9h: sin perder el estado, que es el eje que ya funcionaba")
+
+# El sujeto es la llave y NO se reescribe, tampoco por esta via.
+_s9 = sqlite3.connect(DB9).execute(
+    "SELECT subject FROM tasks WHERE citation_id = 'TASK-DOCS-0410'").fetchone()[0]
+check(_s9 == SUJETO_9A, "9i: el sujeto sigue intacto — es la llave del pareo")
+
+_o9 = bs.reconcile_status(DB9, S, board_dir=BOARD9, apply_changes=True)
+check(_o9["written"] == 0 and len(_o9["buckets"].get("field_drift", [])) == 0,
+      "9j: idempotente — la segunda corrida no encuentra descripcion que cerrar")
+
+# ---------------------------------------------------------------------------
+# 10. El REPORTE cuenta lo que la escritura tocaria — los dos cubos, no uno.
+# El nucleo ya escribia `status_drift` + `field_drift`; el CLI seguia contando
+# y listando solo el primero, asi que el modo seco anunciaba «1 fila» ante una
+# escritura de 38. Es la misma segunda fuente de verdad que `RECONCILED_FIELDS`
+# cerro un nivel mas abajo: la particion se declara una vez (`DRIFT_BUCKETS`)
+# y la consumen el lote del UPDATE y el reporte.
+# ---------------------------------------------------------------------------
+SUJETO_10A = "Un trabajo cuyo estado quedo atras"
+SUJETO_10B = "Un trabajo cuya sola descripcion quedo atras"
+
+_D10, DB10 = store_con([
+    ("1010", SUJETO_10A, S, "docs", "TASK-DOCS-1010", "pending"),
+    ("1011", SUJETO_10B, S, "docs", "TASK-DOCS-1011", "completed"),
+])
+_c10 = sqlite3.connect(DB10)
+_c10.execute("UPDATE tasks SET description = ? WHERE citation_id = ?",
+             ("al dia", "TASK-DOCS-1010"))
+_c10.execute("UPDATE tasks SET description = ? WHERE citation_id = ?",
+             ("la premisa vieja", "TASK-DOCS-1011"))
+_c10.commit(); _c10.close()
+
+BOARD10 = board_con({
+    "1010": {"subject": SUJETO_10A, "status": "completed",
+             "description": "al dia"},
+    "1011": {"subject": SUJETO_10B, "status": "completed",
+             "description": "CORREGIDA: la premisa medía otra poblacion"},
+})
+
+_ns10 = argparse.Namespace(store=DB10, sesion=S, board=BOARD10, aplicar=False)
+_buf10 = io.StringIO()
+with contextlib.redirect_stdout(_buf10):
+    _rc10 = bs._cmd_reconcile_status(_ns10)
+_txt10 = _buf10.getvalue()
+
+check(_rc10 == 0, "10a: el modo seco sale 0 — reporta, no juzga")
+check("2 fila(s) quedarian al dia" in _txt10,
+      "10b: el conteo del modo seco es la poblacion escribible, no solo `status_drift`")
+check("TASK-DOCS-1011" in _txt10,
+      "10c: la fila que solo difiere en descripcion se LISTA, no se calla")
+check("description" in _txt10,
+      "10d: cada linea declara que columnas difieren, no solo que hay deriva")
+
+_ns10.aplicar = True
+_buf10b = io.StringIO()
+with contextlib.redirect_stdout(_buf10b):
+    bs._cmd_reconcile_status(_ns10)
+check("escritas: 2 fila(s)" in _buf10b.getvalue(),
+      "10e: y la escritura toca exactamente las que el modo seco anuncio")
+
+check(tuple(bs.DRIFT_BUCKETS) == ("status_drift", "field_drift"),
+      "10f: la particion escribible se declara una vez y la consumen nucleo y reporte")
 
 print(f"{checks} aserciones")
 if failures:

@@ -7,4 +7,5 @@ if [ ! -x "$INTERPRETER" ]; then
   echo "              Generalo con: cd \"$THYROX_ROOT\" && uv sync" >&2
   exit 2
 fi
+export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 exec "$INTERPRETER" "$THYROX_ROOT/src/verify/renumerar_colision.py" "$@"

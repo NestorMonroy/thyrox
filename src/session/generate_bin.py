@@ -235,6 +235,29 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None 
     ``bin_name`` es el nombre ya resuelto (ver ``resolve_bin_name``); sólo se
     usa en el mensaje de error del guardián de intérprete, por defecto
     ``target.stem`` cuando no se pasa.
+
+    Y **declara la raíz de importación** antes del ``exec``. ``src/`` es un
+    paquete de espacio de nombres (PEP 420): sus 25 subdirectorios importan
+    sin ``__init__.py``, pero sólo si ``src`` está en la ruta de búsqueda.
+    Medido con el intérprete que este envoltorio ejecuta (3.11.15), desde un
+    directorio de trabajo ajeno: de los 165 módulos que no son ``__init__``,
+    **0** importan sin ``PYTHONPATH`` y **162** con él. ``pyproject.toml:56``
+    ya documentaba ``PYTHONPATH=src`` y nada lo fijaba; el hueco se venía
+    tapando con ``sys.path.insert`` archivo por archivo, que es lo que hace
+    que el árbol funcione hoy y lo que oculta que la raíz no está declarada.
+
+    El vehículo es el envoltorio y no un ``.pth`` del entorno porque
+    ``.venv`` no se versiona: un ``.pth`` muere en silencio con cada clon
+    nuevo o cada ``uv sync``. ``bin/`` sí se versiona y se genera, así que la
+    declaración alcanza a los entry points por construcción.
+
+    Los tres módulos que siguen fallando CON la raíz no son de ruta y no se
+    tapan aquí: ``backfill_agent_sessions`` rehúsa por su guard de
+    DEPRECATED, ``check_manifest_language`` carga a propósito un módulo de
+    otro repo (``api: scripts/check_identifier_language.py``) y debe seguir
+    sin resolver en solitario, y ``drain_spool`` importa el nombre plano
+    ``hook_error_log`` de antes del renombre a ``src/hooks/error_log.py``
+    (defecto real, sucesor propio).
     """
     display_name = bin_name if bin_name is not None else target.stem
     relative_target = target.relative_to(root)
@@ -250,12 +273,14 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None 
             '  echo "              Generalo con: cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
             '  exit 2\n'
             'fi\n'
+            'export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"\n'
             f'exec "$INTERPRETER" "$THYROX_ROOT/{relative_target}" "$@"\n'
         )
     return (
         "#!/usr/bin/env bash\n"
         f"{GENERATED_MARKER}\n"
         'THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"\n'
+        'export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"\n'
         f'exec "$THYROX_ROOT/{relative_target}" "$@"\n'
     )
 
