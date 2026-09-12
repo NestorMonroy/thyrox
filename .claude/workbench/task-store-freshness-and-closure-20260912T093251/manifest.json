@@ -1,0 +1,37 @@
+{
+  "question": "¿Se registran las TASK en agent_store.sqlite3 con su cita correcta, cuáles están ya cerradas, y por qué no hay un guion que las cierre al terminar de implementarlas? Y como pregunta previa: ¿se están llenando todas las tablas del store, o alguna dejó de recibir escrituras?",
+  "instrument": [
+    "measure_board_store_divergence.py — compara cada tarjeta `<ordinal>.json` del board contra las filas de `tasks` de la misma `session_id`, pareando por sujeto exacto y repartiendo en cuatro cubos (`same`, `status_drift`, `absent`, `ambiguous`).",
+    "Censo de frescura por tabla: min/max de la columna de sello real de cada tabla del store (`started_at`, `created_at`, `scanned_at`, `cleared_at`), y filas por día de las dos que reciben escritura viva.",
+    "Censo de escritores: grep de `INSERT INTO` / `UPDATE` por nombre de tabla sobre `src/`, que dice qué módulo PUEDE escribir en cada una.",
+    "`board_sync.py reconciliar-estados` — el mismo reparto, ya como comando del módulo que gobierna board↔store; su acuerdo con el instrumento independiente es el control cruzado."
+  ],
+  "metric": "Tres mediciones. (1) Frescura: min/max del sello de cada tabla y filas por día. (2) Divergencia: 358 tarjetas del board contra 1199 filas de la sesión en `tasks`, por igualdad exacta de `subject`. (3) Escritores: módulos de `src/` con una sentencia de escritura sobre cada tabla. Resultado: 250 `same`, 65 `status_drift`, 42 `absent`, 1 `ambiguous` — los 65 reparten en 51 completed→pending, 8 in_progress→pending y 6 completed→in_progress. Tres tablas sin escritura desde el 2026-09-07 (`documents`, `findings_history`) y desde el 2026-09-10 (`cleared_tool_results`); dos frescas (`agent_sessions`, `tasks`).",
+  "blind_to": [
+    "Un RENOMBRE. El pareo es por texto exacto del sujeto, así que una tarjeta renombrada se lee como sujeto nuevo y su fila anterior queda sin pareja. Los dos caen en `absent` y ninguno se corrige: son los 42.",
+    "El sujeto que exista en el store bajo OTRO ordinal — el caso normal tras una renumeración. El instrumento no lo busca porque el ordinal no es la llave.",
+    "Por qué dejaron de escribirse las tres tablas rancias. El censo de escritores dice QUIÉN puede escribir, no QUIÉN corrió: un módulo con sentencia de escritura y cero invocaciones se ve igual que uno que escribe cada día.",
+    "Las sesiones que no son la viva. Toda la medición se acota a `session_id = 168b0fdf-…`; el store tiene 1631 filas de tarea en total."
+  ],
+  "destination": "thyrox: `src/task/board_sync.py` — el comando `reconciliar-estados`, que es la mitad en bloque de la tarea #184; su suite en `tests/task/test_board_sync.py` (bloque 8, con control de anulación).",
+  "source": "directiva del ejecutor 2026-09-12 sobre el estado de las TASK",
+  "reproducible": "python3 src/task/board_sync.py --store agent-results/agent_store.sqlite3 reconciliar-estados <sesion> --board /root/.claude/tasks/<sesion> [--aplicar]",
+  "control": "Control de anulación sobre el pareo: sustituir la llave `subject` por el ordinal hace caer exactamente 5 de las 14 aserciones del bloque 8 (8b, 8c, 8d, 8h, 8i) — las que dependen del pareo — y sobreviven las nueve que miden el universo, el no-escribir por defecto, que el sujeto no se reescribe, la idempotencia y el rehúse. Un pareo por ordinal da CERO parejas sobre el fixture, o sea el veredicto contrario al medido. Control cruzado: dos instrumentos independientes (el del banco y el comando del módulo) publican el mismo reparto 250/65/42/1.",
+  "tasks": [
+    "#184",
+    "#159",
+    "#113",
+    "#103"
+  ],
+  "outputs": [
+    "`.claude/build-logs/board-store-divergence-*.log` — el reparto antes de escribir.",
+    "`.claude/build-logs/reconcile-board-status-*.log` — la corrida con `--aplicar`: 65 filas escritas."
+  ],
+  "findings": [
+    "El board cierra y el store NO se entera. `ingest_board` es ADITIVO por construcción —inserta filas nuevas y no toca ninguna existente— así que ningún cierre llega. Medido: 65 de 358 tarjetas divergían, y las dos que cerré en el board una hora antes seguían `pending` en el store.",
+    "El guion que faltaba NO era `board_sync.py`: ese módulo ya existía y cierra UNA tarjeta cuando quien llama declara su cita. Lo que faltaba era la mitad EN BLOQUE, que no puede pedir 358 citas y tiene que sacar la llave de los datos.",
+    "La vía automática está rota por dos motivos distintos, y conviene no confundirlos: `snapshot-tareas` REHÚSA con exit 4 sobre la sesión viva (su guarda es correcta y protege la cita de deslizarse a otro sujeto; desbloquearlo es la tarea #113), y bajo el harness remoto los hooks de un directorio adicional no cargan (H-DOCS-1010), así que ni se intenta.",
+    "Tres tablas del store llevan días sin escritura: `documents` y `findings_history` desde el 2026-09-07, `cleared_tool_results` desde el 2026-09-10. Sus únicos escritores son guiones de relleno explícito, no un hook: se llenan cuando alguien los corre.",
+    "Las dos tablas que SÍ están frescas —`agent_sessions` y `tasks`— lo están porque las escribe el trabajo de la sesión (reconcile_store, task_ids), que se invoca a mano. La frescura de hoy no prueba que haya automatismo."
+  ]
+}

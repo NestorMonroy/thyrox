@@ -349,6 +349,90 @@ check(_crear.returncode == 0, "7g: `acunar-tarjeta` con TaskUpdate no es un erro
 check("TaskUpdate" in _crear.stdout,
       "7h: y dice por que no acuñó, en vez de imprimir un 0 mudo")
 
+# ---------------------------------------------------------------------------
+# 8. `reconciliar-estados` — la mitad EN BLOQUE de #184.
+#
+# `sync_card` cierra una tarjeta cuando quien llama declara su cita. El board
+# entero no puede declarar 358 citas, asi que la llave tiene que salir de los
+# datos: el SUJETO, que es lo unico estable entre tarjeta y fila. El ordinal
+# NO sirve — se reusa, y por eso los fixtures 159/184 de esta suite tienen
+# sujeto distinto en board y store.
+#
+# Medido sobre la sesion viva antes de escribir esto: 358 tarjetas -> 250
+# iguales, 65 con estado divergente, 42 sin pareja, 1 ambigua. Los 65 son
+# 51 completed->pending, 8 in_progress->pending y 6 completed->in_progress.
+# ---------------------------------------------------------------------------
+_D8, DB8 = store_con([
+    # Pareja por sujeto: el board la cerro y el store sigue pendiente.
+    ("900", SUJETO_BOARD_159, S, "docs", "TASK-DOCS-0404", "pending"),
+    # Pareja por sujeto, ya al dia: no debe contarse como divergencia.
+    ("901", SUJETO_BOARD_184, S, "docs", "TASK-DOCS-0405", "completed"),
+    # Sujeto que el board NO tiene: no aparea, y no se toca.
+    ("902", SUJETO_STORE_159, S, "docs", "TASK-DOCS-0406", "pending"),
+])
+BOARD8 = board_con({
+    "159": {"subject": SUJETO_BOARD_159, "status": "completed"},
+    "184": {"subject": SUJETO_BOARD_184, "status": "completed"},
+    "999": {"subject": "Un sujeto que el store no conoce", "status": "pending"},
+})
+
+_seco = bs.reconcile_status(DB8, S, board_dir=BOARD8)
+check(_seco["total_cards"] == 3, "8a: el universo es el numero de tarjetas")
+check(len(_seco["buckets"]["status_drift"]) == 1,
+      "8b: solo la tarjeta cerrada en board y pendiente en store diverge")
+check(len(_seco["buckets"]["same"]) == 1,
+      "8c: la que ya coincide cae en `same`, no en divergencia")
+check(len(_seco["buckets"]["absent"]) == 1,
+      "8d: la tarjeta sin pareja por sujeto cae en `absent`")
+check(sum(len(_seco["buckets"][b]) for b in bs.RECONCILE_BUCKETS) == 3,
+      "8e: los cubos cubren el universo — sin fila que se pierda del conteo")
+check(_seco["written"] == 0 and _seco["applied"] is False,
+      "8f: sin --aplicar NO escribe: cerrar una fila es irreversible")
+
+_antes = sqlite3.connect(DB8).execute(
+    "SELECT status FROM tasks WHERE citation_id = 'TASK-DOCS-0404'").fetchone()[0]
+check(_antes == "pending", "8g: y el disco lo confirma — la fila sigue pendiente")
+
+_humedo = bs.reconcile_status(DB8, S, board_dir=BOARD8, apply_changes=True)
+check(_humedo["written"] == 1, "8h: con --aplicar escribe exactamente la divergente")
+_despues = sqlite3.connect(DB8).execute(
+    "SELECT status FROM tasks WHERE citation_id = 'TASK-DOCS-0404'").fetchone()[0]
+check(_despues == "completed", "8i: la fila quedo con el estado del board")
+_intacta = sqlite3.connect(DB8).execute(
+    "SELECT status FROM tasks WHERE citation_id = 'TASK-DOCS-0406'").fetchone()[0]
+check(_intacta == "pending",
+      "8j: la fila SIN pareja no se toco — `absent` no es «ciérrala igual»")
+
+# El sujeto es la LLAVE y no se reescribe: si cambiara, la fila dejaria de
+# aparear con la tarjeta que acaba de cerrarla.
+_sujeto = sqlite3.connect(DB8).execute(
+    "SELECT subject FROM tasks WHERE citation_id = 'TASK-DOCS-0404'").fetchone()[0]
+check(_sujeto == SUJETO_BOARD_159, "8k: el sujeto NO se reescribe — es la llave")
+
+# Idempotente: una segunda corrida no encuentra nada que escribir.
+_otra = bs.reconcile_status(DB8, S, board_dir=BOARD8, apply_changes=True)
+check(_otra["written"] == 0 and len(_otra["buckets"]["status_drift"]) == 0,
+      "8l: idempotente — la segunda corrida no tiene divergencia que cerrar")
+
+# CONTROL DE ANULACION. Si la llave fuera el ORDINAL en vez del sujeto, la
+# tarjeta #159 (cerrada) apearia con la fila #900 solo por casualidad y la
+# #999 no apearia con nada. Se comprueba que ninguna fila del store lleva un
+# task_id igual a un ordinal del board: parear por ordinal daria CERO parejas
+# sobre este fixture, o sea el veredicto contrario al medido.
+_ordinales_board = {"159", "184", "999"}
+_ids_store = {r[0] for r in sqlite3.connect(DB8).execute(
+    "SELECT task_id FROM tasks WHERE session_id = ?", (S,))}
+check(not (_ordinales_board & _ids_store),
+      "8m: control — parear por ordinal daria 0 parejas donde por sujeto hay 2")
+
+_vacio = pathlib.Path(tempfile.mkdtemp()) / "no-existe"
+try:
+    bs.reconcile_status(_vacio, S, board_dir=BOARD8)
+    check(False, "8n: un store ausente debe REHUSAR")
+except bs.BoardSyncError as err:
+    check("NO se reconcilia nada" in str(err),
+          "8n: un store ausente REHUSA y dice que no escribio nada")
+
 print(f"{checks} aserciones")
 if failures:
     for f in failures:

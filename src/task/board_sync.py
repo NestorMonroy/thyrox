@@ -89,6 +89,12 @@ CREATION_EVENTS = ("TaskCreate",)
 #: que este modulo existe para evitar.
 SYNCED_FIELDS = ("subject", "status")
 
+#: Los cubos en que cae cada tarjeta al reconciliar en bloque. Se declaran
+#: como tupla y no se infieren del recorrido: un cubo que solo existe cuando
+#: algo cae en el haria que un reporte sin esa clase se leyera como «esa clase
+#: no ocurre», que es el sub-patron D de `metrica-decide-la-conclusion`.
+RECONCILE_BUCKETS = ("same", "status_drift", "absent", "ambiguous")
+
 
 class BoardSyncError(RuntimeError):
     """No se puede saber a que fila pertenece la tarjeta.
@@ -203,6 +209,125 @@ def sync_card(store_path, session_id, ordinal, citation, *, board_dir=None) -> d
             "changed": changed, "updated_at": stamp}
 
 
+def reconcile_status(store_path, session_id, *, board_dir=None,
+                     apply_changes=False) -> dict:
+    """Lleva al store el estado de TODAS las tarjetas, pareando por sujeto.
+
+    Es la mitad en bloque de #184. ``sync_card`` cierra una tarjeta cuando
+    quien llama declara su cita; esto recorre el board entero y no puede
+    pedirle la cita a nadie, asi que la llave tiene que salir de los datos.
+
+    **La llave es el sujeto, no el ordinal.** El ordinal del board se reusa:
+    en la sesion viva el ordinal 184 del store nombra otro sujeto que la
+    tarjeta 184. Parear por ordinal escribiria el estado de un trabajo sobre
+    otro, que es el daño de :ref:`h-docs-1042`.
+
+    **Solo se escribe ``status``.** El sujeto es la llave: si cambio, la
+    tarjeta no aparea y cae en ``absent``; escribirlo desde aqui seria
+    reescribir la llave con la que se acaba de aparear.
+
+    Por defecto NO escribe. ``apply_changes`` es explicito porque cerrar una
+    fila es irreversible sin historial, y un reporte que ademas escribe no
+    deja elegir cuando.
+
+    *Metrica:* cada ``<ordinal>.json`` del board contra las filas de ``tasks``
+    de la misma ``session_id``, por igualdad exacta de ``subject``.
+    *Ciega a:* un renombre — cambia el texto, asi que la tarjeta renombrada se
+    lee como sujeto nuevo y su fila anterior queda sin pareja. Los dos casos
+    caen en ``absent`` y ninguno se corrige aqui.
+    """
+    store_path = pathlib.Path(store_path)
+    if not store_path.exists():
+        raise BoardSyncError(
+            f"no existe el store {store_path}. NO se reconcilia nada: sin las "
+            f"filas destino un 0 se leeria como «no habia divergencia».")
+    cards_dir = _resolve_board(session_id, board_dir)
+    if not cards_dir.is_dir():
+        raise BoardSyncError(
+            f"no existe el board {cards_dir}. NO se reconcilia nada: sin las "
+            f"tarjetas no hay estado nuevo que propagar.")
+
+    cards = {}
+    for card_path in sorted(cards_dir.glob("*.json")):
+        try:
+            cards[card_path.stem] = json.loads(card_path.read_text())
+        except json.JSONDecodeError as err:
+            raise BoardSyncError(
+                f"la tarjeta {card_path} no es JSON valido ({err}). NO se "
+                f"reconcilia nada: saltarla dejaria el lote sin forma de saber "
+                f"cual falto.") from err
+
+    conn = sqlite3.connect(store_path)
+    try:
+        by_subject = collections.defaultdict(list)
+        for task_id, subject, status, citation in conn.execute(
+                "SELECT task_id, subject, status, citation_id FROM tasks "
+                " WHERE session_id = ?", (session_id,)):
+            by_subject[subject].append((task_id, status, citation))
+
+        buckets = {name: [] for name in RECONCILE_BUCKETS}
+        for ordinal, card in sorted(cards.items(), key=lambda kv: int(kv[0])):
+            subject = card.get("subject")
+            board_status = card.get("status")
+            matches = by_subject.get(subject, [])
+            if len(matches) > 1:
+                buckets["ambiguous"].append(
+                    {"ordinal": ordinal, "subject": subject,
+                     "citations": [m[2] for m in matches]})
+            elif not matches:
+                buckets["absent"].append(
+                    {"ordinal": ordinal, "subject": subject,
+                     "board_status": board_status})
+            else:
+                task_id, store_status, citation = matches[0]
+                target = "status_drift" if store_status != board_status else "same"
+                buckets[target].append(
+                    {"ordinal": ordinal, "subject": subject,
+                     "citation": citation, "task_id": task_id,
+                     "board_status": board_status, "store_status": store_status})
+
+        written = 0
+        if apply_changes and buckets["status_drift"]:
+            stamp = task_ids._now()
+            for entry in buckets["status_drift"]:
+                conn.execute(
+                    "UPDATE tasks SET status = ?, updated_at = ? "
+                    " WHERE session_id = ? AND citation_id = ?",
+                    (entry["board_status"], stamp, session_id, entry["citation"]))
+                written += 1
+            conn.commit()
+    finally:
+        conn.close()
+    return {"buckets": buckets, "total_cards": len(cards),
+            "written": written, "applied": bool(apply_changes)}
+
+
+def _cmd_reconcile_status(args: argparse.Namespace) -> int:
+    result = reconcile_status(args.store, args.sesion, board_dir=args.board,
+                              apply_changes=args.aplicar)
+    buckets = result["buckets"]
+    total = result["total_cards"]
+    print(f"reconciliar-estados: sesion {args.sesion}")
+    print(f"  universo: {total} tarjeta(s) del board")
+    for name in RECONCILE_BUCKETS:
+        print(f"  {name:14s} {len(buckets[name]):5d}")
+    covered = sum(len(buckets[name]) for name in RECONCILE_BUCKETS)
+    if covered != total:
+        # El descuadre se publica, no se calla: si los cubos no cubren el
+        # universo, el conteo de arriba no se puede leer.
+        print(f"  ATENCION: los cubos suman {covered} y el universo es {total}")
+    for entry in buckets["status_drift"]:
+        print(f"    #{entry['ordinal']:<5} {entry['citation']:<18} "
+              f"{entry['board_status']:>12} -> {entry['store_status']:<12} "
+              f"{entry['subject'][:44]}")
+    if result["applied"]:
+        print(f"  escritas: {result['written']} fila(s)")
+    else:
+        print(f"  NO se escribio nada (faltó --aplicar); "
+              f"{len(buckets['status_drift'])} fila(s) quedarian al dia")
+    return 0
+
+
 def _cmd_mint_card(args: argparse.Namespace) -> int:
     result = mint_created_card(args.store, args.sesion, args.ordinal,
                                board_dir=args.board, layer=args.capa,
@@ -264,6 +389,16 @@ def main(argv=None) -> int:
     p_sync.add_argument("--board", default=None,
                         help="directorio de tarjetas (default: el de la sesion)")
     p_sync.set_defaults(func=_cmd_sync_board)
+
+    p_rec = sub.add_parser(
+        "reconciliar-estados",
+        help="lleva al store el estado de TODAS las tarjetas, por sujeto (#184)")
+    p_rec.add_argument("sesion")
+    p_rec.add_argument("--board", default=None,
+                       help="directorio de tarjetas (default: el de la sesion)")
+    p_rec.add_argument("--aplicar", action="store_true",
+                       help="escribe; sin el, solo reporta")
+    p_rec.set_defaults(func=_cmd_reconcile_status)
 
     args = parser.parse_args(argv)
     args.store = str(task_ids.resolve_store(args.store))
