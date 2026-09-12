@@ -121,4 +121,37 @@ bash "$GATE_AGENTS"    --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_TYPECHECK" --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_XMODEL"    --strict "${STAGED[@]}" || CODE=1
 
+# El cableado de #184: si el store va en ESTE commit, llega reconciliado.
+#
+# `reconcile_all_sessions` existia y nadie lo corria — un mecanismo sin
+# invocador es prosa con exit 0. Se dispara SOLO cuando el store esta
+# preparado: reconciliar en todo commit escribiria telemetria en un pase que
+# no la pidio, y el `git add` posterior meteria al commit un archivo que su
+# autor no puso.
+#
+# El `case` no es estilo: `git ... | grep -q` bajo `pipefail` devuelve el 141
+# del SIGPIPE de git aunque grep haya encontrado la linea, y con eso el
+# veredicto sale invertido.
+STORE_REL="agent-results/agent_store.sqlite3"
+STAGED_LIST="$(printf '%s\n' "${STAGED[@]}")"
+case "$STAGED_LIST" in
+*"$STORE_REL"*)
+    # NO bloquea el commit. El store es telemetria: perder el turno por una
+    # reconciliacion fallida cuesta mas que una fila atrasada, que es el mismo
+    # criterio con que el gate del banco dejo de ser `--strict`. Pero el fallo
+    # se NOMBRA: un silencio no distingue «no habia deriva» de «no pude medir».
+    if python3 "$ROOT/src/task/board_sync.py" --store "$ROOT/$STORE_REL" \
+            reconciliar-todo --aplicar; then
+        # Re-preparar es la mitad que hace que el commit lo lleve: sin esto el
+        # disco converge y el blob commiteado se queda con la fila vieja.
+        git add -- "$ROOT/$STORE_REL"
+    else
+        echo >&2
+        echo "pre-commit: la reconciliacion board->store fallo (exit $?)." >&2
+        echo "  El commit SIGUE: el store es telemetria y el trabajo no se" >&2
+        echo "  pierde por ella. La fila queda atrasada hasta el proximo pase." >&2
+    fi
+    ;;
+esac
+
 exit $CODE
