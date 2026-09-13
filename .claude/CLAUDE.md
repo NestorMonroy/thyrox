@@ -72,6 +72,18 @@ dos mitades de juicio —el ancla de palabra y el ancla de ruta del banco— se
 probaron por anulación: retirar cada una hace caer exactamente lo que
 depende de ella (`tests/hooks/test_detect_ephemeral_citation.py`).
 
+**El paso 5 también, desde que un hallazgo se publicó sin buscar si ya
+existía.** `src/hooks/detect_topic_duplication.py` (octavo detector) avisa,
+al escribir un `hallazgo-H-<PREFIJO>-*.rst` nuevo, si comparte identificadores
+(`THYROX_WORKBENCH_DIR`, no palabras sueltas — medido: los títulos del caso
+real que lo origina no comparten ni una palabra) con archivos de OTRA
+iniciativa de `pm/`. Es el gate que la lección **L-032**
+(`kaupamex-docs: source/gestion/pm/thyrox/lecciones-aprendidas/
+claim-tratado-como-observation-en-una-sesion-de-documentacion-2026-09-13.rst`)
+nombró como su condición de cierre. Sus dos mitades de juicio —el ancla de
+identificador con guion bajo y el tope de frecuencia— se probaron por
+anulación (`tests/hooks/test_detect_topic_duplication.py`).
+
 ## Lo que este árbol NO decide por su cuenta
 
 Nada que contradiga una decisión ya registrada en
