@@ -19,6 +19,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import type { Duty } from './basePrompt.ts'
 import { join } from 'node:path'
+import { dedupSections } from '@thyrox/context-compression'
 
 export type Section = { name: string; text: string; tokens: number; conditional: boolean }
 
@@ -42,7 +43,22 @@ export type AssembleOptions = {
   budgetTokens?: number
 }
 
-export type Assembled = { text: string; sections: Section[]; dropped: Section[]; tokens: number }
+export type Assembled = {
+  text: string
+  sections: Section[]
+  dropped: Section[]
+  /**
+   * Secciones que se retiraron por traer EXACTAMENTE el mismo texto (recorte
+   * de espacios aparte) que una anterior. Es el patrón "cheat-sheet
+   * (canónico en docs)" de los repos consumidores: varias reglas comparten
+   * un preámbulo idéntico, y `dedupSections` lo detecta por texto completo
+   * -- no por un prefijo, que produciría falsos positivos entre secciones
+   * largas que sólo COMPARTEN el preámbulo (ver `dedupSections` en
+   * `@thyrox/context-compression`).
+   */
+  duplicates: Section[]
+  tokens: number
+}
 
 /**
  * Estimación de tokens por caracteres.
@@ -61,18 +77,18 @@ export function estimateTokens(text: string): number {
 export function parseRule(raw: string): { body: string; paths: string[] | null } {
   const fenced = /^```ya?ml\r?\n([\s\S]*?)\r?\n```\r?\n?/.exec(raw)
   const dashed = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw)
-  const m = fenced ?? dashed
-  if (!m) return { body: raw, paths: null }
-  const body = raw.slice(m[0].length)
-  const linea = /^\s*paths:\s*(.+)$/m.exec(m[1])
-  if (!linea) return { body, paths: null }
-  return { body, paths: splitPaths(linea[1]) }
+  const match = fenced ?? dashed
+  if (!match) return { body: raw, paths: null }
+  const body = raw.slice(match[0].length)
+  const line = /^\s*paths:\s*(.+)$/m.exec(match[1])
+  if (!line) return { body, paths: null }
+  return { body, paths: splitPaths(line[1]) }
 }
 
 /** `paths: a, b` · `paths: ["a", "b"]` · `paths: a` — las tres formas dan la misma lista. */
-function splitPaths(valor: string): string[] {
-  const limpio = valor.trim().replace(/^\[|\]$/g, '')
-  return limpio
+function splitPaths(value: string): string[] {
+  const trimmed = value.trim().replace(/^\[|\]$/g, '')
+  return trimmed
     .split(',')
     .map((p) => p.trim().replace(/^["']|["']$/g, ''))
     .filter(Boolean)
@@ -80,43 +96,43 @@ function splitPaths(valor: string): string[] {
 
 /** `**` cruza separadores, `*` no — el mismo criterio que la puerta de permisos. */
 export function matchesPath(pattern: string, path: string): boolean {
-  const escapar = (s: string) => s.replace(/[.+^${}()|[\]\\]/g, '\\$&')
-  const cuerpo = pattern
+  const escape = (s: string) => s.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+  const body = pattern
     .split('**')
-    .map((tramo) => escapar(tramo).replace(/\*/g, '[^/]*'))
+    .map((segment) => escape(segment).replace(/\*/g, '[^/]*'))
     .join('.*')
-  return new RegExp(`^${cuerpo}$`).test(path)
+  return new RegExp(`^${body}$`).test(path)
 }
 
-function leer(ruta: string): string | null {
-  if (!existsSync(ruta)) return null
-  const texto = readFileSync(ruta, 'utf8').trim()
-  return texto.length ? texto : null
+function readTrimmed(path: string): string | null {
+  if (!existsSync(path)) return null
+  const text = readFileSync(path, 'utf8').trim()
+  return text.length ? text : null
 }
 
-function seccion(name: string, text: string, conditional = false): Section {
+function section(name: string, text: string, conditional = false): Section {
   return { name, text, tokens: estimateTokens(text), conditional }
 }
 
 /** Reúne las secciones candidatas en su orden de caché, y aplica el presupuesto. */
 export function assembleSystemPrompt(opts: AssembleOptions): Assembled {
-  const candidatas: Section[] = typeof opts.base === 'string'
-    ? [seccion('base', opts.base)]
-    : opts.base.map((d) => seccion(`base:${d.name}`, d.text))
+  const rawCandidates: Section[] = typeof opts.base === 'string'
+    ? [section('base', opts.base)]
+    : opts.base.map((d) => section(`base:${d.name}`, d.text))
 
-  const raiz = leer(join(opts.root, 'CLAUDE.md'))
-  if (raiz) candidatas.push(seccion('CLAUDE.md', raiz))
+  const root = readTrimmed(join(opts.root, 'CLAUDE.md'))
+  if (root) rawCandidates.push(section('CLAUDE.md', root))
 
-  const nivel2 = leer(join(opts.root, '.claude', 'CLAUDE.md'))
-  if (nivel2) candidatas.push(seccion('.claude/CLAUDE.md', nivel2))
+  const level2 = readTrimmed(join(opts.root, '.claude', 'CLAUDE.md'))
+  if (level2) rawCandidates.push(section('.claude/CLAUDE.md', level2))
 
-  const dirReglas = join(opts.root, '.claude', 'rules')
-  if (existsSync(dirReglas)) {
-    const archivos = readdirSync(dirReglas).filter((f) => f.endsWith('.md')).sort()
-    for (const archivo of archivos) {
-      const bruto = leer(join(dirReglas, archivo))
-      if (!bruto) continue
-      const { body, paths } = parseRule(bruto)
+  const rulesDir = join(opts.root, '.claude', 'rules')
+  if (existsSync(rulesDir)) {
+    const files = readdirSync(rulesDir).filter((f) => f.endsWith('.md')).sort()
+    for (const file of files) {
+      const raw = readTrimmed(join(rulesDir, file))
+      if (!raw) continue
+      const { body, paths } = parseRule(raw)
       // Sin `paths:` la regla es del piso; con `paths:` sólo entra si la ruta
       // objetivo casa alguno de sus patrones. Sin ruta objetivo, no entra.
       if (paths) {
@@ -124,20 +140,24 @@ export function assembleSystemPrompt(opts: AssembleOptions): Assembled {
         if (!paths.some((p) => matchesPath(p, opts.targetPath as string))) continue
       }
       if (!body.trim()) continue
-      candidatas.push(seccion(`.claude/rules/${archivo}`, body.trim(), paths !== null))
+      rawCandidates.push(section(`.claude/rules/${file}`, body.trim(), paths !== null))
     }
   }
+
+  // El dedupe corre ANTES del presupuesto: una sección duplicada no debe
+  // competir por espacio con las que sí aportan texto nuevo.
+  const { sections: candidates, duplicates } = dedupSections(rawCandidates)
 
   const sections: Section[] = []
   const dropped: Section[] = []
   let tokens = 0
-  for (const s of candidatas) {
+  for (const s of candidates) {
     // `base` y `base:<deber>` son el PISO: un presupuesto que pudiera dejar
     // al agente sin identidad o sin restricciones de herramienta estaría
     // decidiendo la conducta, y el tope existe para acotar el contexto, no
     // para eso.
-    const esBase = s.name === 'base' || s.name.startsWith('base:')
-    if (!esBase && opts.budgetTokens !== undefined && tokens + s.tokens > opts.budgetTokens) {
+    const isBase = s.name === 'base' || s.name.startsWith('base:')
+    if (!isBase && opts.budgetTokens !== undefined && tokens + s.tokens > opts.budgetTokens) {
       dropped.push(s)
       continue
     }
@@ -145,5 +165,5 @@ export function assembleSystemPrompt(opts: AssembleOptions): Assembled {
     tokens += s.tokens
   }
 
-  return { text: sections.map((s) => s.text).join('\n\n'), sections, dropped, tokens }
+  return { text: sections.map((s) => s.text).join('\n\n'), sections, dropped, duplicates, tokens }
 }
