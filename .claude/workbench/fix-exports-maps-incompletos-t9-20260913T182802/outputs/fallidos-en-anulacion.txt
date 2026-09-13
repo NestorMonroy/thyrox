@@ -1,0 +1,12 @@
+@thyrox/app-host
+@thyrox/command-runtime
+@thyrox/context-compression
+@thyrox/ide
+@thyrox/provider
+@thyrox/shell
+@thyrox/storage
+@thyrox/swarm
+@thyrox/teleport
+@thyrox/tool-registry
+@thyrox/updater
+@thyrox/voice

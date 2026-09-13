@@ -1,0 +1,3 @@
+=== kaupamex-db ===
+check-consumer-copies: 0 copia(s) · 0 fork(s) (alcance medido: 0 archivo(s) de kaupamex-db/.claude)
+rc=0

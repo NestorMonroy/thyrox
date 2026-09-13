@@ -48,6 +48,7 @@
     "./legacy/powershellProvider.js": "./src/legacy/powershellProvider.ts",
     "./testing": "./src/testing/index.ts",
     "./testing.js": "./src/testing/index.ts",
+    "./bash/specs": "./src/bash/specs/index.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },

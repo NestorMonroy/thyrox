@@ -99,6 +99,13 @@ class RunnerTest(unittest.TestCase):
         results = runner.run(checks, gates_dir=self.gates, consumer=self.consumer)
         self.assertEqual(results[0].stdout.strip(), str(self.consumer))
 
+    def test_registered_arguments_reach_the_gate(self):
+        script = self.gates / 'arguments.py'
+        script.write_text('import sys\nraise SystemExit(0 if sys.argv[1:] == ["--strict"] else 1)\n')
+        check = runner.Check('args', 'x', 'x', script.name, 'x', ('--strict',))
+        result = runner.run([check], gates_dir=self.gates, consumer=self.consumer)[0]
+        self.assertEqual(result.status, 'pass')
+
 
 class SelectionTest(unittest.TestCase):
     """`--only` y `--list`, la superficie de seleccion de la referencia."""

@@ -17,6 +17,7 @@
         "@thyrox/app-host": "workspace:*",
         "@thyrox/command-runtime": "workspace:*",
         "@thyrox/config": "workspace:*",
+        "@thyrox/context-compression": "workspace:*",
         "@thyrox/local-observability": "workspace:*",
         "@thyrox/memory": "workspace:*",
         "@thyrox/observability": "workspace:*",
@@ -117,6 +118,13 @@
       "devDependencies": {
         "@types/lodash-es": "^4.17.12",
         "@types/proper-lockfile": "^4.1.4",
+      },
+    },
+    "src/packages/context-compression": {
+      "name": "@thyrox/context-compression",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@types/bun": "^1.4.0",
       },
     },
     "src/packages/daemon": {
@@ -502,6 +510,8 @@
     "@thyrox/command-runtime": ["@thyrox/command-runtime@workspace:src/packages/command-runtime"],
 
     "@thyrox/config": ["@thyrox/config@workspace:src/packages/config"],
+
+    "@thyrox/context-compression": ["@thyrox/context-compression@workspace:src/packages/context-compression"],
 
     "@thyrox/daemon": ["@thyrox/daemon@workspace:src/packages/daemon"],
 

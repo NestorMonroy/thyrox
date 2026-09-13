@@ -34,7 +34,7 @@ import { join } from 'node:path'
 
 const RAIZ = new URL('../..', import.meta.url).pathname
 const SUJETO = join(RAIZ, 'src', 'task')
-const HARNESS = join(RAIZ, 'src', 'packages', 'harness')
+const CLI = join(RAIZ, 'src', 'packages', 'cli')
 
 describe('la disolución del paquete es un movimiento, no una copia', () => {
   test('el paquete ya no existe', () => {
@@ -79,13 +79,21 @@ describe('la disolución del paquete es un movimiento, no una copia', () => {
   })
 
   test('el consumidor real importa por ruta, no por especificador de paquete', () => {
-    const bin = readFileSync(join(HARNESS, 'bin', 'harness.ts'), 'utf8')
-    expect(bin).not.toContain('@thyrox/tasks')
-    expect(bin).toContain('../../../task/premises.ts')
+    // El consumidor NO es `packages/harness/bin/harness.ts` -- ese paquete se
+    // disolvio (nombre prohibido, ver kaupamex-docs:
+    // analisis-nombre-del-paquete-harness + progreso-actualizar-agentic-ai-thyrox
+    // 2026-09-08T00:32:20) y su `bin/harness.ts` se retiro en la tarea #205,
+    // repartiendo sus siete comandos en `cli/src/commands/` (la forma de
+    // `ccnmt: packages/cli/src/commands/`). El de premisas es
+    // `checkPremises.ts` -- `cli/package.json` lo declara verbatim: "sin
+    // bin/harness.ts desde #205".
+    const comando = readFileSync(join(CLI, 'src', 'commands', 'checkPremises.ts'), 'utf8')
+    expect(comando).not.toContain('@thyrox/tasks')
+    expect(comando).toContain('../../../../task/premises.ts')
   })
 
-  test('el harness ya no lo declara como dependencia', () => {
-    const m = JSON.parse(readFileSync(join(HARNESS, 'package.json'), 'utf8'))
+  test('el cli ya no lo declara como dependencia', () => {
+    const m = JSON.parse(readFileSync(join(CLI, 'package.json'), 'utf8'))
     expect(Object.keys(m.dependencies ?? {})).not.toContain('@thyrox/tasks')
   })
 })

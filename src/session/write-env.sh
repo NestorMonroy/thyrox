@@ -44,7 +44,16 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-ROOT="$(thyrox_root)" || exit 2
+# NO se usa `thyrox_root()` aqui: por precedencia (proceso, .env, ascenso —
+# `.env.example`, `reach.py::thyrox_root`) leeria el `.env` que este guion
+# esta a punto de regenerar, y en un clon desplazado ese `.env` declara la
+# raiz VIEJA. `_thyrox_root` ya se derivo arriba por ascenso PURO — sin
+# consultar `.env` — solo para ubicar `reach.sh`; reusarlo aqui es lo que
+# hace que `--force` reescriba SIEMPRE el `.env` del clon donde corre, y no
+# el de la raiz que un `.env` heredado declare. Bug real medido: P1 de
+# `chatgpt-codex-connector` sobre el PR #7, reproducido en
+# `tests/session/test-write-env-repara-clon-desplazado.sh`.
+ROOT="$_thyrox_root"
 TREE="$(thyrox_tree_root)" || TREE=""
 DEST="${DEST:-$ROOT/.env}"
 

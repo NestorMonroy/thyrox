@@ -185,6 +185,26 @@ echo "== 9. la salida de estado no arrastra el token del renombre (ERR-028) =="
 THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
 afirmar "el resumen dice 'estado:'" "estado:" "$(bash "$GUION" status | awk '{print $1}')"
 
+echo "== 10. status DISCRIMINA: un VIVO sano no es 'Exit code 1' (H-THYROX-04) =="
+# Episodio real: un chequeo de progreso sobre un trabajo que corre bien salio
+# "Exit code 1" en la UI del cliente -- indistinguible de un fallo real del
+# propio chequeo. `status` NO es `pending`: es la via informativa, y hasta
+# ahora devolvia 1 con CUALQUIER cosa en el ledger, VIVO incluido.
+THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
+LV10=$(mktemp); nohup bash -c "sleep 300" >"$LV10" 2>&1 & PV10=$!; disown $PV10
+bash "$GUION" registrar sano "$LV10" "$PV10" >/dev/null
+bash "$GUION" status >/dev/null; afirmar "un VIVO sano -> status exit 0" 0 $?
+kill $PV10 2>/dev/null; wait $PV10 2>/dev/null
+
+# Control REAL, no fabricado: un trabajo que muere sin dejar marcador cae en
+# BAIL -- ese si tiene que seguir siendo distinto de 0, porque de verdad pide
+# accion ('forget'/investigar).
+THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
+LB10=$(mktemp); nohup bash -c "kill -9 \$\$" >"$LB10" 2>&1 & PB10=$!; disown $PB10
+sleep 1
+bash "$GUION" registrar roto "$LB10" "$PB10" >/dev/null
+bash "$GUION" status >/dev/null; afirmar "un BAIL real -> status sigue en exit 1" 1 $?
+
 echo
 printf '%d ok, %d fallos\n' "$OK" "$FALLO"
 exit $(( FALLO > 0 ))

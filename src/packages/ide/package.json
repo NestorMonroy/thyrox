@@ -12,6 +12,7 @@
     "./errors": "./src/errors.ts",
     "./testing": "./testing/index.ts",
     "./ide.js": "./src/ide.ts",
+    "./hooks/useIDEIntegration": "./src/hooks/useIDEIntegration.tsx",
     "./lsp/*.js": "./src/lsp/*.ts",
     "./hooks/*.js": "./src/hooks/*.ts",
     "./hooks/useIDEIntegration.js": "./src/hooks/useIDEIntegration.tsx",

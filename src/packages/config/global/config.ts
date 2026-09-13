@@ -755,7 +755,7 @@ function startGlobalConfigFreshnessWatcher(file: string): void {
       if (curr.mtimeMs <= globalConfigCache.mtime) return
       void _fs()
         .readFileAsync(file, 'utf-8')
-        .then(content => {
+        .then((content: string) => {
           if (curr.mtimeMs <= globalConfigCache.mtime) return
           const parsed = safeParseJSON(stripBOM(content))
           if (parsed === null || typeof parsed !== 'object') return

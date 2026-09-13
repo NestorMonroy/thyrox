@@ -119,4 +119,27 @@ describe('ensamblado del prompt de sistema (T-022)', () => {
     expect(r.tokens).toBe(r.sections.reduce((a, s) => a + s.tokens, 0))
     for (const s of r.sections) expect(s.tokens).toBeGreaterThan(0)
   })
+
+  test('dos reglas con el MISMO texto exacto: sólo la primera entra, la segunda cae en duplicates', () => {
+    // El patron real: "cheat-sheet (canonico en docs)" repetido palabra por
+    // palabra en varios repos consumidores. `readdirSync(...).sort()` ordena
+    // por nombre de archivo, asi que `a.md` gana sobre `b.md`.
+    const root = tree({
+      '.claude/rules/a.md': 'cheat-sheet canonico en docs',
+      '.claude/rules/b.md': 'cheat-sheet canonico en docs',
+    })
+    const r = assembleSystemPrompt({ root, base: 'B' })
+    expect(r.sections.map((s) => s.name)).toEqual(['base', '.claude/rules/a.md'])
+    expect(r.duplicates.map((s) => s.name)).toEqual(['.claude/rules/b.md'])
+  })
+
+  test('dos reglas que sólo COMPARTEN un preambulo no son duplicadas (no falso positivo)', () => {
+    const root = tree({
+      '.claude/rules/a.md': 'preambulo comun\n\ncuerpo especifico A',
+      '.claude/rules/b.md': 'preambulo comun\n\ncuerpo especifico B',
+    })
+    const r = assembleSystemPrompt({ root, base: 'B' })
+    expect(r.sections.map((s) => s.name)).toEqual(['base', '.claude/rules/a.md', '.claude/rules/b.md'])
+    expect(r.duplicates).toEqual([])
+  })
 })

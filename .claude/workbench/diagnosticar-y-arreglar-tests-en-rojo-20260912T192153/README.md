@@ -180,30 +180,62 @@ Se diagnosticaron los 9 restantes uno por uno en vez de agruparlos:
 **Los 4 que quedan NO son bugs de código — dos son deuda ya rastreada, dos
 son límites del entorno de este contenedor:**
 
-- **`tests/task/extraction.test.ts` (2 fallos) — parte de una
-  reestructuración en curso, ya registrada.** `HARNESS = src/packages/harness`
-  no existe. El histórico del board (`.claude/workbench/session-task-dump-
-  20260910T070654/outputs/board/172.json` y `205.json`) muestra que la
-  partición del paquete `harness` es una decisión YA TOMADA por el ejecutor
-  (opción B, cerrada 2026-09-08) cuyo porte sigue `in_progress`, bloqueado
-  por otras tareas (198/199/200). Inventar el paquete ahora, sin ese
-  contexto completo, arriesga contradecir la forma ya decidida. Se deja
-  como estaba — no es deuda silenciosa, ya tiene dueño y tarea.
-- **`tests/reference/triple.test.ts` (dentro de los 3 "ausentes") —
-  dependiente del entorno, no del código.** `ccb`/`ccnmt` resuelven por
-  defecto a `treeRoot()/claude-code-nestor-monroy-tools` y `ui-core` a
-  `treeRoot()/-progress` — los DOS son clones hermanos de thyrox que **no
-  están en el alcance de repos de esta sesión** (verificado: `ls -d
-  /home/user/*/` no los lista). El propio código lo documenta como
-  decisión pendiente del ejecutor (vendorizar el corpus completo choca con
-  su licencia `UNLICENSED`, sucesor #207).
-- **`src/packages/binary/__tests__/bunfs.test.ts` — build sin medir, por
-  diseño del propio test.** El binario vivo en este contenedor es
-  `2.1.270`; el test rehúsa explícitamente ante una build no presente en
-  su tabla `MEASURED` en vez de saltarse en silencio (comentario propio:
-  *"Una build desconocida FALLA, no se salta"*). Requiere extraer las
-  cifras de fidelidad de esa build específica y añadir su fila — trabajo
-  de medición dedicado, no un fix de una línea.
+- **`tests/task/extraction.test.ts` (2 fallos) — CORREGIDO, y la primera
+  clasificación de arriba estaba mal (el ejecutor lo señaló:
+  *"tenemos trabajo ya realizado del porque no queremos el
+  src/packages/harness/bin/harness.ts"*).** Un primer intento recreó
+  `src/packages/harness/{package.json,bin/harness.ts}` desde cero,
+  cumpliendo el test literal sin leer la razón de su premisa. Eso reintrodujo
+  un paquete **explícitamente disuelto y con nombre prohibido**
+  (`kaupamex-docs: progreso-actualizar-agentic-ai-thyrox.rst@2026-09-05T20:25:04`
+  — *"el nombre está prohibido"*; y `@2026-09-08T00:32:20` — la partición B ya
+  se ejecutó en los tramos 2-5, `thyrox@de95ac6d/13f8d91e/7df17457`). El
+  board `172.json`/`205.json` que la nota anterior citaba describía el
+  estado a media mudanza, no el estado final: `bin/harness.ts` **ya se
+  retiró** en la tarea #205, repartiendo sus siete comandos en
+  `cli/src/commands/` — el de premisas es
+  `src/packages/cli/src/commands/checkPremises.ts`, que YA existe, YA
+  importa `../../../../task/premises.ts` por ruta relativa, y cuyo
+  `cli/package.json` declara verbatim *"sin bin/harness.ts desde #205"*.
+  Se revirtió la recreación (`rm -rf src/packages/harness`) y se corrigió
+  el test para apuntar al consumidor real (`CLI` en vez de `HARNESS`) — el
+  defecto era del test, que había quedado con una referencia stale a un
+  sujeto ya movido; la conducta que controla (disolución de `@thyrox/tasks`,
+  consumo por ruta relativa) no cambió.
+- **`tests/reference/triple.test.ts` — 1 de 3 corregido con un clon real;
+  los otros 2 son un bloqueo externo confirmado, no pereza.** `ui-core`
+  resolvía a `treeRoot()/-progress`, que **sí es un repo público** de
+  NestorMonroy (`add_repo` lo confirmó: *"it is a public repository and
+  this session's git proxy serves anonymous git reads"*) — se clonó con
+  `GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1
+  https://github.com/NestorMonroy/-progress /home/user/-progress` (vía
+  `bg.sh`, corpus `@progress/kno-*`) y la raíz ya existe donde `treeRoot()`
+  la espera. `ccb`/`ccnmt` resuelven a
+  `treeRoot()/claude-code-nestor-monroy-tools`, y ese nombre **no existe
+  bajo la cuenta de NestorMonroy** — `add_repo` lo rehusó dos veces (acceso
+  `read` y `push`) con *"not found... or this session's GitHub credential
+  doesn't have access to it"*, y `list_repos` sobre `nestormonroy` devuelve
+  las 7 que tiene (`thyrox, memanto, OmniRoute, graphify, ponytail,
+  prompt-master, VVV`, `has_more: false`) — ninguna es el corpus. Encaja
+  con `_references/ccb/PROVENANCE.md`: el árbol es una reconstrucción local
+  por sourcemap del paquete npm de Claude Code, nunca publicada como
+  repositorio — no hay nada que clonar. Se descartó el atajo de apuntar el
+  alias al extracto ya vendorizado (`_references/ccb/`, 3 archivos): haría
+  que `existsSync` pasara sobre un directorio que NO es el corpus de ~2925
+  archivos que el módulo espera — exactamente el "0 incumplidores parece
+  sano" que este módulo existe para impedir. Se deja como el bloqueo real
+  que es, con su sucesor ya registrado (#207, vendorizar choca con la
+  licencia `UNLICENSED`).
+- **`src/packages/binary/__tests__/bunfs.test.ts` — CORREGIDO, midiendo la
+  build viva en vez de declararla fuera de alcance.** El binario de este
+  contenedor es `2.1.270`; `bin/binary.ts info /opt/claude-code/bin/claude`
+  (el propio CLI del paquete, ya construido) dio la fila real —1864
+  entradas, tabla de 96 928 B, 38 892 807 B de contenido, medida
+  2026-09-13T01:13:41— y se añadió a `MEASURED` con el mismo formato de
+  comentario que las tres filas anteriores (delta contra `2.1.266`: +37
+  entradas, +1924 B de tabla —37×52, paso invariante—, +1 159 533 B de
+  contenido). No hizo falta tooling nuevo: el instrumento de medición ya
+  existía y sólo había que invocarlo contra la build de hoy.
 
 ## Resultado final del pase (TypeScript)
 
@@ -212,10 +244,55 @@ son límites del entorno de este contenedor:**
 | Estado de partida (post primer tramo, `suite-full-2`) | — | 71 | 5 |
 | Tras `permission::@thyrox/storage` (`suite-full-3`) | 8300 | 9 | 0 |
 | Tras los 5 fixes del tercer tramo (verificado 2× consecutivas) | 8305 | 4 | 0 |
+| Tras el cuarto tramo (`extraction.test.ts` corregido, `ui-core` clonado, `bunfs.test.ts` medido) | 8305 | 1 | 0 |
+| Tras recibir el corpus `ccb`/`ccnmt` del ejecutor y extraerlo (verificado 2× vía `bg.sh`) | **8445** | **0** | 0 |
 
-Los 4 restantes están clasificados con su causa exacta arriba — dos
-tienen dueño y tarea ya registrados, dos son límites verificados del
-contenedor. Ninguno se "arregló" ocultando la causa.
+Los cuatro tests señalados por el ejecutor están genuinamente en verde —
+ninguno se cerró reclasificando ni relajando una aserción. `#207` (la
+decisión de si vendorizar el corpus completo de `ccb` en este repo, dada
+su licencia `UNLICENSED`) sigue abierta como decisión del ejecutor; lo que
+cambió es que el árbol para MEDIR contra él ya está disponible en este
+contenedor.
+
+## Cuarto tramo — corregir en vez de aceptar, tras la señal del ejecutor
+
+El ejecutor rechazó la clasificación "fuera de alcance" de los 3 restantes
+(*"los mismos 4 ya diagnosticados y por qué no los corriges?"*), y sobre
+`extraction.test.ts` interrumpió a media implementación con evidencia
+concreta: *"tenemos trabajo ya realizado del porque no queremos el
+src/packages/harness/bin/harness.ts"*. Las dos correcciones:
+
+1. **`extraction.test.ts` — el primer intento reintrodujo un paquete
+   disuelto.** Se había creado `src/packages/harness/{package.json,
+   bin/harness.ts}` desde cero para satisfacer el test literal, sin leer
+   por qué el test citaba esa ruta. `kaupamex-docs` (mismo alcance de
+   sesión) tiene el trabajo completo: el paquete `harness` se disolvió
+   —nombre **prohibido**, `progreso-actualizar-agentic-ai-thyrox.rst
+   @2026-09-05T20:25:04— y la partición ya se ejecutó en tramos 2-5
+   (`@2026-09-08T00:32:20`, `thyrox@de95ac6d/13f8d91e/7df17457`).
+   `bin/harness.ts` se retiró en la tarea #205, repartiendo sus siete
+   comandos en `cli/src/commands/`; el consumidor real de premisas ya
+   existía —`src/packages/cli/src/commands/checkPremises.ts`, que YA
+   importa `../../../../task/premises.ts` por ruta relativa— y
+   `cli/package.json` lo declara verbatim (*"sin bin/harness.ts desde
+   #205"*). Se revirtió la recreación y se corrigió el test para apuntar
+   al consumidor real.
+2. **`ui-core` y `bunfs.test.ts`** — ver arriba, ambos genuinamente
+   corregidos (no reclasificados).
+3. **`ccb`/`ccnmt` — el bloqueo declarado "externo" se resolvió sobre la
+   marcha: el ejecutor SÍ tenía el corpus y lo subió en 5 partes**
+   (`claude-code-nestor-monroy-tools.7z.00{1..5}`, 111 629 113 B
+   comprimidos, verificado con `7z t` antes de tocar nada: *"Everything is
+   Ok — Folders: 664, Files: 3897, Size: 229732127"*). Se instaló
+   `p7zip-full` (no estaba), se extrajo directo a
+   `/home/user/claude-code-nestor-monroy-tools` — la ruta exacta que
+   `treeRoot()` deriva ascendiendo desde este árbol — y se verificó el
+   manifiesto (`package.json` declara `name: "ccb"`, `license:
+   "UNLICENSED"`, coincide con lo que `_references/ccb/PROVENANCE.md`
+   describe). La lección: "bloqueo externo" era cierto sobre lo que esta
+   sesión podía obtener por sí sola (GitHub no lo tiene), no sobre lo que
+   existía en absoluto — y no había forma de saberlo sin que el ejecutor
+   lo dijera.
 
 ## Pendiente (fuera de este pase)
 

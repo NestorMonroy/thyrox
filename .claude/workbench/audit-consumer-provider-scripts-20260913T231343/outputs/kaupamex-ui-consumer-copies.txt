@@ -1,0 +1,38 @@
+=== kaupamex-ui ===
+  COPIA  .claude/scripts/bound_detector.py
+  COPIA  .claude/scripts/check-i001-prewrite.sh
+  COPIA  .claude/scripts/detect-missing-md-links.sh
+  COPIA  .claude/scripts/stop-hook-git-check.sh
+  COPIA  .claude/scripts/sync-wp-state.sh
+  COPIA  .claude/scripts/validate_broken_references.py
+  COPIA  .claude/skills/dmaic-control/scripts/check_control_limits.py
+  COPIA  .claude/skills/dmaic-measure/scripts/calculate_capability.py
+  COPIA  .claude/skills/rm-management/scripts/count-requirements.sh
+  COPIA  .claude/skills/rup-inception/scripts/check-lco-criteria.sh
+  COPIA  .claude/skills/thyrox/scripts/migrate_metadata_keys.py
+  COPIA  .claude/skills/thyrox/scripts/run-functional-evals.sh
+  COPIA  .claude/skills/thyrox/scripts/run-multi-evals.sh
+  COPIA  .claude/skills/thyrox/scripts/tests/run-all-tests.sh
+  COPIA  .claude/skills/thyrox/scripts/verify-skill-mapping.sh
+  COPIA  .claude/skills/workflow-track/scripts/tests/test-phase-readiness.sh
+  COPIA  .claude/skills/workflow-track/scripts/validate-phase-readiness.sh
+  fork   .claude/scripts/close-wp.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/context-audit.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/convert-missing-md-links.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/convert_broken_references.py   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/detect_broken_references.py   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/extract_agent_output.py   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/fix_agent_frontmatter.py   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/lint_agents.py   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/project-status.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/session-resume.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/session-start.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/set-session-phase.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/thyrox-audit.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/update-state.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/validate-missing-md-links.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/validate-phase-completion.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/scripts/validate-session-close.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/skills/thyrox/scripts/tests/test-skill-mapping.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+check-consumer-copies: 17 copia(s) · 18 fork(s) (alcance medido: 39 archivo(s) de kaupamex-ui/.claude)
+rc=0

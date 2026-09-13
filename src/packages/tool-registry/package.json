@@ -67,6 +67,7 @@
     "./embeddedRgExtractor.js": "./src/embeddedRgExtractor.ts",
     "./claudeCodeHints.js": "./src/claudeCodeHints.ts",
     "./generatedFiles.js": "./src/generatedFiles.ts",
+    "./tools/testing/TestingPermissionTool": "./src/tools/testing/TestingPermissionTool.tsx",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts",
     "./task/TaskOutput.js": "./src/task/TaskOutput.ts"

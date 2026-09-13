@@ -13,6 +13,7 @@
     ]
   },
   "include": [
-    "loop/**/*.ts"
+    "loop/**/*.ts",
+    "compaction/**/*.ts"
   ]
 }
