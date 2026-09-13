@@ -105,9 +105,25 @@ Es la corrección que hace falta antes de todo lo demás. `@thyrox/config` es la
 capa de *settings* del harness — el esquema de `settings.json`, precedencia de
 fuentes, operaciones de plugin, sync remoto (`cat
 src/packages/config/package.json`) — **no** el descubrimiento de rutas entre
-`thyrox` y sus consumidores. Ese mecanismo es **`src/paths/reach.py`** (con su
-gemelo `src/paths/reach.ts`, casi sin consumidores todavía) más
-**`src/workbench/paths.py`**, ya citados en «El alcance por variable» arriba.
+`thyrox` y sus consumidores. Ese mecanismo es **`src/paths/reach.py`** más
+**`src/workbench/paths.py`**, ya citados en «El alcance por variable» arriba —
+con sus gemelos TypeScript, `src/paths/reach.ts` y `src/workbench/paths.ts`
+(gemelos declarados así, no un módulo suelto por lenguaje: `src/workbench/
+paths.py:1-4`). **`reach.ts` tiene consumidores reales, medidos, no "casi
+ninguno":**
+
+```bash
+grep -rln "^import .*reach\.ts['\"]" --include=*.ts --include=*.tsx . \
+    | grep -v "^src/paths/reach.ts$" | sort -u | wc -l
+```
+
+Da **20** archivos distintos: **12 de producción** —entre ellos `src/
+commands/paths.ts`, `src/rules/paths.ts`, `src/skills/paths.ts`, `src/task/
+schema.ts`, `src/reference/triple.ts`, `src/rules/emit/markdown.ts`, y el
+propio `src/workbench/paths.ts`— y **8 suites de test** que lo importan
+directo. La cifra anterior de este párrafo (una afirmación sin `grep` detrás)
+era simplemente falsa; corregida tras el hallazgo :ref:`h-docs-1266` de
+`kaupamex-docs`.
 
 ### Las tres piezas, en el orden en que se usan
 
