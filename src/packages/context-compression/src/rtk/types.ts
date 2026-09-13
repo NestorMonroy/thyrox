@@ -45,14 +45,14 @@ export interface RtkFilter {
 }
 
 export interface LineFilterResult {
-  texto: string
-  lineasQuitadas: number
-  reglasAplicadas: string[]
+  text: string
+  linesRemoved: number
+  rulesApplied: string[]
 }
 
 export interface CommandDetectionResult {
   /** El id del tipo detectado (p. ej. `'git-status'`), o `null` si ninguno matcheo. */
-  tipo: string | null
-  comando: string | null
-  confianza: number
+  type: string | null
+  command: string | null
+  confidence: number
 }

@@ -12,47 +12,47 @@
  */
 import type { RtkFilter, CommandDetectionResult } from './types.ts'
 
-const PREFIJO_COMANDO = /^[$>]?\s*[\w./-]+(?:\s+[\w./-]+){0,3}/
+const COMMAND_PREFIX = /^[$>]?\s*[\w./-]+(?:\s+[\w./-]+){0,3}/
 
 /** El comando de la primera linea no vacia, si la salida lo trae como eco. */
-export function detectCommandFromText(texto: string): string | null {
-  const primeras = texto.split(/\r?\n/).slice(0, 4)
-  for (const linea of primeras) {
-    const recortada = linea.trim().replace(/^\$\s+/, '')
-    if (!recortada) continue
-    const m = PREFIJO_COMANDO.exec(recortada)
+export function detectCommandFromText(text: string): string | null {
+  const firstLines = text.split(/\r?\n/).slice(0, 4)
+  for (const line of firstLines) {
+    const trimmed = line.trim().replace(/^\$\s+/, '')
+    if (!trimmed) continue
+    const m = COMMAND_PREFIX.exec(trimmed)
     if (m) return m[0]
   }
   return null
 }
 
 export function selectFilter(
-  texto: string,
-  filtros: RtkFilter[],
-  comando?: string | null,
-): { filtro: RtkFilter; deteccion: CommandDetectionResult } | null {
-  const comandoDetectado = (comando?.trim() || detectCommandFromText(texto) || '') || null
-  let mejor: { filtro: RtkFilter; confianza: number } | null = null
+  text: string,
+  filters: RtkFilter[],
+  command?: string | null,
+): { filter: RtkFilter; detection: CommandDetectionResult } | null {
+  const detectedCommand = (command?.trim() || detectCommandFromText(text) || '') || null
+  let best: { filter: RtkFilter; confidence: number } | null = null
 
-  for (const filtro of filtros) {
-    const comandoMatchea =
-      comandoDetectado !== null && filtro.match.commands.some((p) => p.test(comandoDetectado))
-    const patronesQueMatchean = filtro.match.patterns.filter((p) => p.test(texto)).length
-    if (!comandoMatchea && patronesQueMatchean === 0) continue
+  for (const filter of filters) {
+    const commandMatches =
+      detectedCommand !== null && filter.match.commands.some((p) => p.test(detectedCommand))
+    const matchingPatternCount = filter.match.patterns.filter((p) => p.test(text)).length
+    if (!commandMatches && matchingPatternCount === 0) continue
 
-    const confianza = Math.min(1, (comandoMatchea ? 0.55 : 0) + patronesQueMatchean * 0.25)
+    const confidence = Math.min(1, (commandMatches ? 0.55 : 0) + matchingPatternCount * 0.25)
     if (
-      !mejor ||
-      confianza > mejor.confianza ||
-      (confianza === mejor.confianza && filtro.priority > mejor.filtro.priority)
+      !best ||
+      confidence > best.confidence ||
+      (confidence === best.confidence && filter.priority > best.filter.priority)
     ) {
-      mejor = { filtro, confianza }
+      best = { filter, confidence }
     }
   }
 
-  if (!mejor) return null
+  if (!best) return null
   return {
-    filtro: mejor.filtro,
-    deteccion: { tipo: mejor.filtro.id, comando: comandoDetectado, confianza: mejor.confianza },
+    filter: best.filter,
+    detection: { type: best.filter.id, command: detectedCommand, confidence: best.confidence },
   }
 }

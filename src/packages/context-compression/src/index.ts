@@ -18,40 +18,40 @@
  */
 import { applyRtk } from './rtk/index.ts'
 
-const TOPE_SIN_FILTRO = 2000
-const RETROCESO = 80
+const NO_FILTER_CAP = 2000
+const LOOKBACK = 80
 
-function esPalabra(c: string | undefined): boolean {
+function isWordChar(c: string | undefined): boolean {
   return c !== undefined && /\S/.test(c)
 }
 
-function retrocederALimiteDePalabra(texto: string, corte: number): number {
-  if (!esPalabra(texto[corte - 1]) || !esPalabra(texto[corte])) return corte
-  const inicioVentana = Math.max(0, corte - RETROCESO)
-  for (let i = corte; i > inicioVentana; i--) if (!esPalabra(texto[i - 1])) return i - 1
-  const finVentana = Math.min(texto.length, corte + RETROCESO)
-  for (let i = corte; i < finVentana; i++) if (!esPalabra(texto[i])) return i
-  return corte
+function backOffToWordBoundary(text: string, cutIndex: number): number {
+  if (!isWordChar(text[cutIndex - 1]) || !isWordChar(text[cutIndex])) return cutIndex
+  const windowStart = Math.max(0, cutIndex - LOOKBACK)
+  for (let i = cutIndex; i > windowStart; i--) if (!isWordChar(text[i - 1])) return i - 1
+  const windowEnd = Math.min(text.length, cutIndex + LOOKBACK)
+  for (let i = cutIndex; i < windowEnd; i++) if (!isWordChar(text[i])) return i
+  return cutIndex
 }
 
 export type CompressToolResultOutcome = {
-  texto: string
-  motor: 'rtk' | 'tope-generico' | 'sin-cambio'
-  filtroId: string | null
+  text: string
+  engine: 'rtk' | 'generic-cap' | 'unchanged'
+  filterId: string | null
 }
 
 /** Comprime el `content` de UN tool_result. Ver el docstring del modulo. */
-export function compressToolResult(texto: string, comando?: string | null): CompressToolResultOutcome {
-  if (!texto) return { texto, motor: 'sin-cambio', filtroId: null }
+export function compressToolResult(text: string, command?: string | null): CompressToolResultOutcome {
+  if (!text) return { text, engine: 'unchanged', filterId: null }
 
-  const rtk = applyRtk(texto, comando)
-  if (rtk.filtroId && rtk.reglasAplicadas.length > 0) {
-    return { texto: rtk.texto, motor: 'rtk', filtroId: rtk.filtroId }
+  const rtk = applyRtk(text, command)
+  if (rtk.filterId && rtk.rulesApplied.length > 0) {
+    return { text: rtk.text, engine: 'rtk', filterId: rtk.filterId }
   }
 
-  if (texto.length <= TOPE_SIN_FILTRO) return { texto, motor: 'sin-cambio', filtroId: null }
-  const corte = retrocederALimiteDePalabra(texto, TOPE_SIN_FILTRO)
-  return { texto: texto.slice(0, corte) + '\n...[truncado]', motor: 'tope-generico', filtroId: null }
+  if (text.length <= NO_FILTER_CAP) return { text, engine: 'unchanged', filterId: null }
+  const cutIndex = backOffToWordBoundary(text, NO_FILTER_CAP)
+  return { text: text.slice(0, cutIndex) + '\n...[truncado]', engine: 'generic-cap', filterId: null }
 }
 
 export {
@@ -60,7 +60,8 @@ export {
   removeRedundantContent,
   applyLiteCompression,
   normalizeWhitespace,
+  dedupSections,
 } from './lite.ts'
-export type { LiteResult } from './lite.ts'
+export type { LiteResult, NamedSection, DedupSectionsResult } from './lite.ts'
 export { applyRtk, RTK_FILTERS } from './rtk/index.ts'
 export type { RtkApplyResult } from './rtk/index.ts'

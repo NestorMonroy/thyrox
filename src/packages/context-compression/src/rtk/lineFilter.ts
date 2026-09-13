@@ -10,73 +10,73 @@ import { smartTruncate } from './smartTruncate.ts'
 
 const ANSI_PATTERN = new RegExp('\\x1b\\[[0-?]*[ -/]*[@-~]', 'g')
 
-export function stripAnsi(texto: string): string {
-  return texto.replace(ANSI_PATTERN, '')
+export function stripAnsi(text: string): string {
+  return text.replace(ANSI_PATTERN, '')
 }
 
-export function applyLineFilter(texto: string, filtro: RtkFilter): LineFilterResult {
-  const reglasAplicadas: string[] = []
-  let lineas = stripAnsi(texto).split(/\r?\n/)
+export function applyLineFilter(text: string, filter: RtkFilter): LineFilterResult {
+  const rulesApplied: string[] = []
+  let lines = stripAnsi(text).split(/\r?\n/)
   // Un texto que termina en salto de linea produce un ultimo elemento vacio
   // al partir -- artefacto del split, no una linea real del contenido. Se
   // quita UNA sola vez (no es lo mismo que "sin lineas en blanco": esas
   // siguen filtrables por `dropPatterns`/`collapsePatterns` como cualquier
   // otra).
-  if (lineas.length > 1 && lineas.at(-1) === '') lineas = lineas.slice(0, -1)
-  const lineasOriginales = lineas.length
+  if (lines.length > 1 && lines.at(-1) === '') lines = lines.slice(0, -1)
+  const originalLineCount = lines.length
 
-  if (filtro.dropPatterns.length > 0) {
-    const antes = lineas.length
-    lineas = lineas.filter((l) => !filtro.dropPatterns.some((p) => p.test(l)))
-    if (lineas.length !== antes) reglasAplicadas.push(`${filtro.id}:drop`)
+  if (filter.dropPatterns.length > 0) {
+    const before = lines.length
+    lines = lines.filter((l) => !filter.dropPatterns.some((p) => p.test(l)))
+    if (lines.length !== before) rulesApplied.push(`${filter.id}:drop`)
   }
 
-  if (filtro.includePatterns.length > 0) {
-    const conservadas = lineas.filter((l) => filtro.includePatterns.some((p) => p.test(l)))
-    if (conservadas.length > 0) {
-      lineas = conservadas
-      reglasAplicadas.push(`${filtro.id}:include`)
+  if (filter.includePatterns.length > 0) {
+    const kept = lines.filter((l) => filter.includePatterns.some((p) => p.test(l)))
+    if (kept.length > 0) {
+      lines = kept
+      rulesApplied.push(`${filter.id}:include`)
     }
   }
 
-  if (filtro.collapsePatterns.length > 0) {
-    const vistas = new Set<string>()
-    lineas = lineas.filter((l) => {
-      if (!filtro.collapsePatterns.some((p) => p.test(l))) return true
-      const clave = l.trim()
-      if (vistas.has(clave)) return false
-      vistas.add(clave)
+  if (filter.collapsePatterns.length > 0) {
+    const seen = new Set<string>()
+    lines = lines.filter((l) => {
+      if (!filter.collapsePatterns.some((p) => p.test(l))) return true
+      const key = l.trim()
+      if (seen.has(key)) return false
+      seen.add(key)
       return true
     })
-    reglasAplicadas.push(`${filtro.id}:collapse`)
+    rulesApplied.push(`${filter.id}:collapse`)
   }
 
-  if (filtro.deduplicate) {
-    const sinRepetirConsecutiva: string[] = []
-    for (const l of lineas) {
-      if (sinRepetirConsecutiva.at(-1) !== l) sinRepetirConsecutiva.push(l)
+  if (filter.deduplicate) {
+    const withoutConsecutiveRepeats: string[] = []
+    for (const l of lines) {
+      if (withoutConsecutiveRepeats.at(-1) !== l) withoutConsecutiveRepeats.push(l)
     }
-    if (sinRepetirConsecutiva.length !== lineas.length) reglasAplicadas.push(`${filtro.id}:deduplicate`)
-    lineas = sinRepetirConsecutiva
+    if (withoutConsecutiveRepeats.length !== lines.length) rulesApplied.push(`${filter.id}:deduplicate`)
+    lines = withoutConsecutiveRepeats
   }
 
-  const unido = lineas.join('\n')
-  if (lineas.length <= filtro.maxLines) {
-    const salida = unido.trim().length === 0 && filtro.onEmpty ? filtro.onEmpty : unido
-    return { texto: salida, lineasQuitadas: Math.max(0, lineasOriginales - lineas.length), reglasAplicadas }
+  const joined = lines.join('\n')
+  if (lines.length <= filter.maxLines) {
+    const output = joined.trim().length === 0 && filter.onEmpty ? filter.onEmpty : joined
+    return { text: output, linesRemoved: Math.max(0, originalLineCount - lines.length), rulesApplied }
   }
 
-  const resultado = smartTruncate(unido, {
-    maxLines: filtro.maxLines,
-    headLines: filtro.headLines,
-    tailLines: filtro.tailLines,
-    priorityPatterns: filtro.errorPatterns,
+  const result = smartTruncate(joined, {
+    maxLines: filter.maxLines,
+    headLines: filter.headLines,
+    tailLines: filter.tailLines,
+    priorityPatterns: filter.errorPatterns,
   })
-  if (resultado.truncado) reglasAplicadas.push(`${filtro.id}:truncate`)
-  const salida = resultado.texto.trim().length === 0 && filtro.onEmpty ? filtro.onEmpty : resultado.texto
+  if (result.truncated) rulesApplied.push(`${filter.id}:truncate`)
+  const output = result.text.trim().length === 0 && filter.onEmpty ? filter.onEmpty : result.text
   return {
-    texto: salida,
-    lineasQuitadas: Math.max(0, lineasOriginales - salida.split(/\r?\n/).length),
-    reglasAplicadas,
+    text: output,
+    linesRemoved: Math.max(0, originalLineCount - output.split(/\r?\n/).length),
+    rulesApplied,
   }
 }

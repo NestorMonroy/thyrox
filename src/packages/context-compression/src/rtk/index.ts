@@ -29,7 +29,7 @@ export const RTK_FILTERS: RtkFilter[] = [
   genericOutput,
 ]
 
-export type RtkApplyResult = LineFilterResult & { filtroId: string | null; confianza: number }
+export type RtkApplyResult = LineFilterResult & { filterId: string | null; confidence: number }
 
 /**
  * Selecciona el filtro que mejor matchea y lo aplica. Si ninguno matchea
@@ -37,13 +37,13 @@ export type RtkApplyResult = LineFilterResult & { filtroId: string | null; confi
  * que reconoce, nunca "a ciegas" sobre texto arbitrario (esa es tarea de
  * Lite, ver `../lite.ts`).
  */
-export function applyRtk(texto: string, comando?: string | null): RtkApplyResult {
-  const seleccion = selectFilter(texto, RTK_FILTERS, comando)
-  if (!seleccion) {
-    return { texto, lineasQuitadas: 0, reglasAplicadas: [], filtroId: null, confianza: 0 }
+export function applyRtk(text: string, command?: string | null): RtkApplyResult {
+  const selection = selectFilter(text, RTK_FILTERS, command)
+  if (!selection) {
+    return { text, linesRemoved: 0, rulesApplied: [], filterId: null, confidence: 0 }
   }
-  const resultado = applyLineFilter(texto, seleccion.filtro)
-  return { ...resultado, filtroId: seleccion.filtro.id, confianza: seleccion.deteccion.confianza }
+  const result = applyLineFilter(text, selection.filter)
+  return { ...result, filterId: selection.filter.id, confidence: selection.detection.confidence }
 }
 
 export { applyLineFilter, stripAnsi } from './lineFilter.ts'

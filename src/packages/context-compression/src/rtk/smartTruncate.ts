@@ -6,25 +6,25 @@
  * descarta el resto con un marcador de cuantas se omitieron.
  */
 export function smartTruncate(
-  texto: string,
+  text: string,
   opts: { maxLines: number; headLines: number; tailLines: number; priorityPatterns: RegExp[] },
-): { texto: string; truncado: boolean } {
-  const lineas = texto.split(/\r?\n/)
-  if (lineas.length <= opts.maxLines) return { texto, truncado: false }
+): { text: string; truncated: boolean } {
+  const lines = text.split(/\r?\n/)
+  if (lines.length <= opts.maxLines) return { text, truncated: false }
 
-  const head = lineas.slice(0, opts.headLines)
-  const tail = opts.tailLines > 0 ? lineas.slice(-opts.tailLines) : []
-  const medioInicio = opts.headLines
-  const medioFin = opts.tailLines > 0 ? lineas.length - opts.tailLines : lineas.length
-  const medio = lineas.slice(medioInicio, Math.max(medioInicio, medioFin))
+  const head = lines.slice(0, opts.headLines)
+  const tail = opts.tailLines > 0 ? lines.slice(-opts.tailLines) : []
+  const middleStart = opts.headLines
+  const middleEnd = opts.tailLines > 0 ? lines.length - opts.tailLines : lines.length
+  const middle = lines.slice(middleStart, Math.max(middleStart, middleEnd))
 
-  const prioritarias = medio.filter((l) => opts.priorityPatterns.some((p) => p.test(l)))
-  const omitidas = medio.length - prioritarias.length
+  const priorityLines = middle.filter((l) => opts.priorityPatterns.some((p) => p.test(l)))
+  const omitted = middle.length - priorityLines.length
 
-  const partes = [...head]
-  if (prioritarias.length > 0) partes.push(...prioritarias)
-  if (omitidas > 0) partes.push(`... (${omitidas} linea(s) omitida(s))`)
-  partes.push(...tail)
+  const parts = [...head]
+  if (priorityLines.length > 0) parts.push(...priorityLines)
+  if (omitted > 0) parts.push(`... (${omitted} linea(s) omitida(s))`)
+  parts.push(...tail)
 
-  return { texto: partes.join('\n'), truncado: true }
+  return { text: parts.join('\n'), truncated: true }
 }
