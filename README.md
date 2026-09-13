@@ -85,6 +85,102 @@ bun test tests/            # sólo TypeScript
 python3 tests/paths/test_reach.py
 ```
 
+## Onboarding — un clon nuevo, como PROVIDER de los kaupamex-\*
+
+Pregunta recurrente: alguien clona `thyrox` y los cinco `kaupamex-*`. ¿Cómo
+sabe que todo lo necesario está instalado, cuáles son las herramientas
+correctas, y cómo se configuran las constantes de sesión (`THYROX_WORKBENCH_*`,
+`THYROX_JOBS_*`, …) si cada persona clona en una ruta distinta?
+
+**La respuesta no es código nuevo — el mecanismo ya existe, completo.** Antes
+de escribir nada se sube la escalera de 7 peldaños (¿hace falta? → ¿ya existe
+en el repo? → ¿lo resuelve la stdlib? → ¿una feature nativa? → ¿una
+dependencia ya instalada? → ¿una línea? → sólo entonces código) y se detiene
+en el segundo peldaño: el mecanismo, los tres guiones y el contrato ya están
+en el árbol.
+
+### `src/packages/config/**` NO es este mecanismo
+
+Es la corrección que hace falta antes de todo lo demás. `@thyrox/config` es la
+capa de *settings* del harness — el esquema de `settings.json`, precedencia de
+fuentes, operaciones de plugin, sync remoto (`cat
+src/packages/config/package.json`) — **no** el descubrimiento de rutas entre
+`thyrox` y sus consumidores. Ese mecanismo es **`src/paths/reach.py`** (con su
+gemelo `src/paths/reach.ts`, casi sin consumidores todavía) más
+**`src/workbench/paths.py`**, ya citados en «El alcance por variable» arriba.
+
+### Las tres piezas, en el orden en que se usan
+
+| # | Pieza | Qué hace | Cuándo |
+|---|---|---|---|
+| 1 | `bash src/session/write-env.sh` | **genera** el `.env` de este árbol por ascenso real (`THYROX_ROOT`, `THYROX_REACH_ROOT`, …) | una vez por clon, o tras mover el árbol |
+| 2 | `python3 src/paths/declarations.py` | **inspecciona**: qué hogar está declarado (viene de env) y cuál cae al default derivado, por clon | para saber qué falta configurar |
+| 3 | `python3 src/verify/check_env_contract_keys.py --strict` | **valida**: toda clave `THYROX_*` que el código lee está en `.env.example` | al tocar cualquier guion que lea una clave nueva |
+
+Nada de esto se templa a mano. `write-env.sh` deriva `THYROX_ROOT` subiendo
+directorios hasta encontrar `THYROX_LOCATOR` (`src/paths/reach.py`) — la ruta
+absoluta de **esta** máquina nunca se escribe en el repo, se calcula en cada
+clon.
+
+### Las constantes del ejemplo, con su nombre correcto
+
+Las seis constantes de la pregunta —`THYROX_WORKBENCH_DOCS`,
+`THYROX_JOBS_DOCS`, `THYROX_WORKBENCH_API`, `THYROX_JOBS_API`,
+`THYROX_WORKBENCH`, `THYROX_JOBS`— **ya existen en este árbol, con dos
+correcciones de nombre**: las dos últimas llevan el sufijo `_DIR`
+(`THYROX_WORKBENCH_DIR` / `THYROX_JOBS_DIR`) porque son las del PROVIDER, no
+de un consumidor — es la única pareja que `write-env.sh` escribe, y **sólo**
+cuando el destino es el propio `.env` de thyrox:
+
+```bash
+$ bash src/session/write-env.sh --out /tmp/prueba-api.env   # simula un consumidor
+write-env: escrito /tmp/prueba-api.env (5 clave(s) declarada(s))
+$ cat /tmp/prueba-api.env
+THYROX_ROOT=/home/user/thyrox
+THYROX_REACH_ROOT=/home/user
+THYROX_LOCATOR=src/paths/reach.py
+THYROX_LIB_REACH=src/lib/reach.sh
+THYROX_LAYER_SIGNALS=src/task/layer_signals.tsv
+```
+
+Nótese que `THYROX_WORKBENCH_DIR`/`THYROX_JOBS_DIR` **no aparecen** — es
+correcto: esas dos sólo tienen sentido en el `.env` del proveedor. Las
+per-clon (`THYROX_WORKBENCH_API`, `THYROX_WORKBENCH_DOCS`, …) se declaran a
+mano, una vez, en el `.env` de **thyrox** — no en el del consumidor — porque
+es thyrox quien necesita saber dónde escribe el banco de cada consumidor que
+sirve.
+
+### Rutas relativas o absolutas — las dos son válidas, y el efecto difiere
+
+Una clave `THYROX_WORKBENCH_DIR` (o cualquier hogar) declarada:
+
+- **relativa** → compone POR CLON: cada consumidor obtiene
+  `<su_raiz>/<segmento>`. Es la forma correcta cuando el mismo patrón vale
+  para los cinco.
+- **absoluta** → se devuelve TAL CUAL para todo clon que caiga a ella sin
+  declaración propia — un único sitio compartido. Deliberado, no un bug:
+  `tests/workbench/test_home_resolution.py::test_una_absoluta_SI_colisiona_y_es_correcto`
+  lo fija con su docstring: *"Quien escribe una absoluta nombra un sitio, no
+  un patrón."*
+
+Así que no hace falta ninguna plantilla `/<change>/<change>/`: cada persona
+declara su propia ruta absoluta en su propio `.env` (no versionado, ver
+`THYROX_ENV_FILE` más abajo), y `write-env.sh` deriva el resto por ascenso
+real sobre SU máquina.
+
+### Checklist de un clon nuevo
+
+```bash
+cd thyrox && bash src/session/write-env.sh          # 1. genera .env base
+set -a; source .env; set +a
+python3 src/paths/declarations.py                    # 2. ¿qué falta declarar?
+# declarar a mano en .env, si hace falta, las per-clon: THYROX_WORKBENCH_<CLON>,
+# THYROX_JOBS_<CLON> (ver .env.example, sección «Hogares que el consumidor
+# declara y thyrox NO inventa» para el resto de la familia)
+python3 src/verify/check_env_contract_keys.py --strict   # 3. contrato cerrado
+bash tests/run.sh                                     # 4. el árbol funciona
+```
+
 ## El alcance por variable
 
 Los gates de THYROX miden árboles que no son el suyo. Qué árbol se declara por
