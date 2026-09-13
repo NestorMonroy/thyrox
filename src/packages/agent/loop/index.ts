@@ -35,6 +35,7 @@ import { createSyntheticToolResults, shouldAbort } from '../internal/abort.ts'
 import { checkTokenBudget, createBudgetTracker } from '../internal/tokenBudget.ts'
 import { runHooks, type HookConfig } from './hooks.ts'
 import { evaluate, type PermissionPolicy } from '@thyrox/permission'
+import { compressToolResult } from '@thyrox/context-compression'
 import { openSession } from './session.ts'
 import type { Transcript } from './transcript.ts'
 import { registry, toolSpecs } from '@thyrox/tools/registry'
@@ -95,6 +96,16 @@ export type ContextOptions = {
   microcompactAfter?: number
   /** Cuántos resultados recientes conserva la microcompactación. */
   keepToolResults?: number
+  /**
+   * Comprimir el `content` de CADA tool_result nuevo, antes de que entre al
+   * historial -- `@thyrox/context-compression`. Distinto de
+   * `keepToolResults`: éste actúa una vez, al crearse el resultado (RTK
+   * recorta salida de git/tests/tsc reconocida; sin filtro que matchee, cae
+   * a un tope de longitud). `keepToolResults` sigue actuando después, sobre
+   * resultados YA en el historial. Por defecto `false` -- no cambia el
+   * comportamiento de ninguna sesión existente sin que alguien lo pida.
+   */
+  compressToolResults?: boolean
   /**
    * Dónde se registra lo que la microcompactación vacía, antes de vaciarlo.
    *
@@ -593,7 +604,19 @@ async function ejecutar(
     ...shared, tool_name: llamada.name, tool_input: llamada.input, tool_response: salida.content,
   })
   const extra = post.additionalContext.length ? `\n\n${post.additionalContext.join('\n')}` : ''
-  return resultado(`${salida.content}${extra}`, salida.isError)
+  // Compresion de contexto (opt-in, default false -- ver `ContextOptions.compressToolResults`):
+  // @thyrox/context-compression actua UNA VEZ aqui, con el `content` ya final
+  // (incluido lo que PostToolUse haya agregado), antes de que entre al
+  // historial. El comando real (para Bash) ayuda a RTK a elegir filtro sin
+  // adivinarlo de la primera linea de la salida.
+  const contenidoFinal = `${salida.content}${extra}`
+  if (opts.context?.compressToolResults) {
+    const comando = llamada.name === 'Bash' && typeof llamada.input?.command === 'string'
+      ? llamada.input.command
+      : null
+    return resultado(compressToolResult(contenidoFinal, comando).texto, salida.isError)
+  }
+  return resultado(contenidoFinal, salida.isError)
 }
 
 /**

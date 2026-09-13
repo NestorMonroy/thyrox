@@ -36,6 +36,8 @@
     "./packages/config/env": "./src/packages/config/env/index.ts",
     "./packages/config/remote": "./src/packages/config/remote/index.ts",
     "./packages/config/testing": "./src/packages/config/testing/index.ts",
+    "./packages/context-compression/src": "./src/packages/context-compression/src/index.ts",
+    "./packages/context-compression/src/rtk": "./src/packages/context-compression/src/rtk/index.ts",
     "./packages/daemon/src": "./src/packages/daemon/src/index.ts",
     "./packages/daemon/testing": "./src/packages/daemon/testing/index.ts",
     "./packages/headless-sdk/src": "./src/packages/headless-sdk/src/index.ts",

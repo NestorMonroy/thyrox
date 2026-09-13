@@ -9,6 +9,7 @@
     "cli",
     "command-runtime",
     "config",
+    "context-compression",
     "daemon",
     "headless-sdk",
     "ide",
