@@ -36,6 +36,7 @@ import { OUTPUT_STYLES, renderEvent, renderStatusLine, type OutputStyle } from '
 import { settingsFor } from './settings.ts'
 import { systemPromptFor } from './systemPrompt.ts'
 import { flag, hasFlag } from './flags.ts'
+import { getConnection, getConnectionContextOptions } from '@thyrox/provider/connections'
 
 function providerFor(argv: string[]): Provider {
   const cual = flag(argv, 'provider') ?? 'recorded'
@@ -110,6 +111,11 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
   const style = outputStyleOf(argv)
   const conf = settingsFor(argv, cwd)
   const provider = providerFor(argv)
+  // `--connection <id>` es opcional: sin él, ningún ajuste por conexión
+  // aplica y el comportamiento es idéntico al de antes de este cambio.
+  const connectionId = flag(argv, 'connection')
+  const connection = connectionId ? getConnection(connectionId) : undefined
+  const connectionContext = connection ? getConnectionContextOptions(connection) : {}
   const modelo = flag(argv, 'model') ?? 'claude-opus-5'
   // La herramienta `Agent` se cablea AQUÍ, no en `CORE_TOOLS`: necesita datos de
   // ejecución (provider, transcriptDir, storePath) que el registro estático no
@@ -154,9 +160,17 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
     stream: hasFlag(argv, 'stream'),
     taskReminder: { dbPath: taskStore, sessionId: taskSession },
     // Opt-in real: `@thyrox/context-compression` no cambia el comportamiento
-    // por defecto (ContextOptions.compressToolResults default false); esta
-    // bandera es la primera forma de encenderlo desde un consumidor real.
-    context: { compressToolResults: hasFlag(argv, 'compress-tool-results') },
+    // por defecto (ContextOptions.compressToolResults default false). Dos
+    // formas de encenderlo, cualquiera basta -- la bandera explícita o que
+    // la conexión activa (`--connection <id>`) lo lleve en su
+    // `providerSpecificData` (ver `getConnectionContextOptions`,
+    // `@thyrox/provider/connections`). Sin `--connection`, se comporta
+    // exactamente como antes de este cambio.
+    context: {
+      compressToolResults:
+        hasFlag(argv, 'compress-tool-results') ||
+        connectionContext.compressToolResults === true,
+    },
   }
 
   /** Un turno completo: dibuja su flujo y devuelve su resultado. */
