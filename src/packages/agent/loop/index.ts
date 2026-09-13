@@ -609,14 +609,14 @@ async function ejecutar(
   // (incluido lo que PostToolUse haya agregado), antes de que entre al
   // historial. El comando real (para Bash) ayuda a RTK a elegir filtro sin
   // adivinarlo de la primera linea de la salida.
-  const contenidoFinal = `${salida.content}${extra}`
+  const finalContent = `${salida.content}${extra}`
   if (opts.context?.compressToolResults) {
-    const comando = llamada.name === 'Bash' && typeof llamada.input?.command === 'string'
+    const command = llamada.name === 'Bash' && typeof llamada.input?.command === 'string'
       ? llamada.input.command
       : null
-    return resultado(compressToolResult(contenidoFinal, comando).texto, salida.isError)
+    return resultado(compressToolResult(finalContent, command).text, salida.isError)
   }
-  return resultado(contenidoFinal, salida.isError)
+  return resultado(finalContent, salida.isError)
 }
 
 /**
