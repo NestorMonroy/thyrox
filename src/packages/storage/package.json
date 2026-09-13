@@ -12,6 +12,7 @@
     "./windowsPaths.js": "./src/windowsPaths.ts",
     "./xdg.js": "./src/xdg.ts",
     "./glob.js": "./src/glob.ts",
+    "./testing": "./src/testing/index.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },

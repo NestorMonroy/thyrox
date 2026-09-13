@@ -47,6 +47,9 @@
     "./core/teammateLayoutManager.js": "./src/core/teammateLayoutManager.ts",
     "./runtime/spawnInProcess.js": "./src/runtime/spawnInProcess.ts",
     "./runtime/inProcessRunner.js": "./src/runtime/inProcessRunner.ts",
+    "./mailbox": "./src/mailbox/index.ts",
+    "./permissions": "./src/permissions/index.ts",
+    "./worktree": "./src/worktree/index.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },

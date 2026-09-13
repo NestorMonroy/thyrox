@@ -22,6 +22,7 @@
     "./nativeInstaller/pidLock.js": "./src/nativeInstaller/pidLock.ts",
     "./nativeInstaller/platform.js": "./src/nativeInstaller/platform.ts",
     "./nativeInstaller/streamBinaryDownload.js": "./src/nativeInstaller/streamBinaryDownload.ts",
+    "./nativeInstaller": "./src/nativeInstaller/index.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
