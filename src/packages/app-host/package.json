@@ -21,6 +21,12 @@
   "exports": {
     ".": "./src/index.ts",
     "./contracts": "./src/contracts.ts",
+    "./context/fpsMetrics": "./src/context/fpsMetrics.tsx",
+    "./context/mailbox": "./src/context/mailbox.tsx",
+    "./context/notifications": "./src/context/notifications.tsx",
+    "./context/stats": "./src/context/stats.tsx",
+    "./launchRepl": "./src/launchRepl.tsx",
+    "./state/AppState": "./src/state/AppState.tsx",
     "./runtime/*.js": "./src/runtime/*.ts",
     "./main/*.js": "./src/main/*.ts",
     "./cliArgs.js": "./src/cliArgs.ts",

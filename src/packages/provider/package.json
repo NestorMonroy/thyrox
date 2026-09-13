@@ -11,6 +11,9 @@
     "./anthropicMockServer": "./src/anthropicMockServer.ts",
     "./sse": "./src/sse.ts",
     "./caCerts": "./src/internal/caCerts.ts",
+    "./gemini": "./src/gemini/index.ts",
+    "./openai": "./src/openai/index.ts",
+    "./policyLimits": "./src/policyLimits/index.ts",
     "./cost/*": "./src/cost/*.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"

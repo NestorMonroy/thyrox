@@ -8,7 +8,19 @@
     ".": "./src/index.ts",
     "./lite.js": "./src/lite.ts",
     "./rtk": "./src/rtk/index.ts",
-    "./rtk.js": "./src/rtk/index.ts"
+    "./rtk.js": "./src/rtk/index.ts",
+    "./lite": "./src/lite.ts",
+    "./rtk/commandDetector": "./src/rtk/commandDetector.ts",
+    "./rtk/filters/buildTypescript": "./src/rtk/filters/buildTypescript.ts",
+    "./rtk/filters/genericOutput": "./src/rtk/filters/genericOutput.ts",
+    "./rtk/filters/gitDiff": "./src/rtk/filters/gitDiff.ts",
+    "./rtk/filters/gitLog": "./src/rtk/filters/gitLog.ts",
+    "./rtk/filters/gitStatus": "./src/rtk/filters/gitStatus.ts",
+    "./rtk/filters/testBun": "./src/rtk/filters/testBun.ts",
+    "./rtk/filters/testPytest": "./src/rtk/filters/testPytest.ts",
+    "./rtk/lineFilter": "./src/rtk/lineFilter.ts",
+    "./rtk/smartTruncate": "./src/rtk/smartTruncate.ts",
+    "./rtk/types": "./src/rtk/types.ts"
   },
   "scripts": {
     "test": "bun test",

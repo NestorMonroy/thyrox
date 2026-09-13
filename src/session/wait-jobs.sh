@@ -587,7 +587,21 @@ cmd_status() {
     [[ -n "${count[RECICLADO]:-}" ]] && echo "  → los RECICLADO: su pid es de otro proceso; el trabajo murió — 'forget'"
     [[ -n "${count[BLOQUEADO]:-}" ]] && echo "  → los BLOQUEADO esperan su predecesor: 'dispatch' mueve la cadena"
     [[ -n "${count[CANCELADO]:-}" ]] && echo "  → los CANCELADO no arrancarán: su predecesor falló — 'forget' los suelta"
-    return 1
+    # El exit code de `status` NO es «hay algo en el ledger» -- eso ya lo
+    # cubre `pending`, y es lo que el Stop gate consume (DEC-04, este mismo
+    # guion, `cmd_pending`). `status` es la vía INFORMATIVA
+    # (trabajo-en-segundo-plano.md: "no bloquea"), y hasta hoy devolvía 1
+    # con CUALQUIER cosa registrada -- un VIVO sano incluido. Un turno que
+    # sólo consulta el progreso de un trabajo que corre bien veía
+    # "Exit code 1" y lo leía como un fallo del propio chequeo, no del
+    # trabajo (H-THYROX-04). Sólo los estados que de verdad piden una
+    # acción -- los mismos que ya llevan su "→" arriba, menos BLOQUEADO y
+    # CANCELADO, que son de espera/cierre normales -- hacen que `status`
+    # salga distinto de 0.
+    for c in DETENIDO ZOMBIE RECICLADO BAIL SIN-PID; do
+        [[ -n "${count[$c]:-}" ]] && return 1
+    done
+    return 0
 }
 
 # Los .job que una selección nombra: una etiqueta, o `--todos`.
