@@ -6,7 +6,7 @@
   ],
   "type": "module",
   "license": "UNLICENSED",
-  "description": "THYROX — el Agentic AI y su project management: el mecanismo, sin el parametro del repo que lo consume (DEC-04).",
+  "description": "THYROX \u2014 el Agentic AI y su project management: el mecanismo, sin el parametro del repo que lo consume (DEC-04).",
   "exports": {
     "./commands": "./src/commands/index.ts",
     "./coordination/ledger": "./src/coordination/ledger.ts",
@@ -16,6 +16,7 @@
     "./packages/agent/loop": "./src/packages/agent/loop/index.ts",
     "./packages/agent/loop/sessions": "./src/packages/agent/loop/sessions/index.ts",
     "./packages/agent/proactive": "./src/packages/agent/proactive/index.ts",
+    "./packages/agent/compaction": "./src/packages/agent/compaction/index.ts",
     "./packages/app-host/src": "./src/packages/app-host/src/index.ts",
     "./packages/binary/src": "./src/packages/binary/src/index.ts",
     "./packages/bridge/src": "./src/packages/bridge/src/index.ts",
