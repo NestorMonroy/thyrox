@@ -10,6 +10,7 @@ from session.documentation_preflight import (
     assert_checkout,
     destination,
     find_candidates,
+    validate_finding_id,
 )
 
 
@@ -67,3 +68,32 @@ def test_does_not_call_a_single_generic_token_an_antecedent(tmp_path: Path) -> N
 def test_empty_topic_refuses_instead_of_publishing_zero(tmp_path: Path) -> None:
     with pytest.raises(PreflightError, match="términos buscables"):
         find_candidates(tmp_path, "a y de")
+
+
+def test_finding_requires_a_well_formed_available_id(tmp_path: Path, monkeypatch) -> None:
+    provider = tmp_path / "thyrox"
+    gate = provider / "src" / "verify" / "check_ids_entre_ramas.py"
+    gate.parent.mkdir(parents=True)
+    gate.write_text("# fixture\n")
+    calls = []
+
+    def run(command, **kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, "DISPONIBLE\n", "")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    validate_finding_id(tmp_path, provider, "docs", "H-DOCS-1266")
+    assert calls[0][-3:] == ["--disponible", "docs", "1266"]
+    with pytest.raises(PreflightError, match="forma H-DOCS-NNN"):
+        validate_finding_id(tmp_path, provider, "docs", "H-API-1266")
+
+
+def test_finding_refuses_an_id_reported_as_used(tmp_path: Path, monkeypatch) -> None:
+    provider = tmp_path / "thyrox"
+    gate = provider / "src" / "verify" / "check_ids_entre_ramas.py"
+    gate.parent.mkdir(parents=True)
+    gate.write_text("# fixture\n")
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k:
+                        subprocess.CompletedProcess(a[0], 1, "OCUPADO\n", ""))
+    with pytest.raises(PreflightError, match="OCUPADO"):
+        validate_finding_id(tmp_path, provider, "docs", "H-DOCS-1023")

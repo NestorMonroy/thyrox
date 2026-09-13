@@ -90,6 +90,24 @@ def destination(kind: str, submodule: str, initiative: str | None) -> str:
     return template
 
 
+def validate_finding_id(
+    docs_root: Path, provider_root: Path, submodule: str, finding_id: str,
+) -> None:
+    """Reutiliza el juez de IDs; no implementa un segundo acuñador."""
+    expected = re.fullmatch(rf"H-{re.escape(submodule.upper())}-([0-9]+)", finding_id)
+    if expected is None:
+        raise PreflightError(
+            f"finding-id debe tener forma H-{submodule.upper()}-NNN")
+    gate = provider_root / "src" / "verify" / "check_ids_entre_ramas.py"
+    result = subprocess.run(
+        [sys.executable, str(gate), "--disponible", submodule, expected.group(1)],
+        cwd=docs_root, capture_output=True, text=True, check=False,
+    )
+    message = (result.stdout or result.stderr).strip()
+    if result.returncode:
+        raise PreflightError(message or "el juez de IDs no pudo medir")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Decide qué registrar, busca antecedentes y publica el hogar correcto.")
@@ -99,6 +117,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--kind", choices=sorted(KINDS), required=True)
     parser.add_argument("--submodule", required=True)
     parser.add_argument("--initiative")
+    parser.add_argument("--finding-id")
     parser.add_argument("--limit", type=int, default=10)
     args = parser.parse_args(argv)
 
@@ -106,6 +125,11 @@ def main(argv: list[str] | None = None) -> int:
         docs_head = assert_checkout(args.docs_root, "docs")
         provider_head = assert_checkout(args.provider_root, "provider")
         target = destination(args.kind, args.submodule, args.initiative)
+        if args.kind == "finding":
+            if not args.finding_id:
+                raise PreflightError("kind=finding requiere --finding-id")
+            validate_finding_id(
+                args.docs_root, args.provider_root, args.submodule, args.finding_id)
         candidates = find_candidates(args.docs_root, args.topic)
     except PreflightError as error:
         print(f"documentation-preflight: REHUSA — {error}", file=sys.stderr)
@@ -113,6 +137,8 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"objeto={args.kind}")
     print(f"destino={target}")
+    if args.finding_id:
+        print(f"finding_id={args.finding_id}")
     print(f"docs_head={docs_head}")
     print(f"provider_head={provider_head}")
     print(f"antecedentes={len(candidates)}")
