@@ -217,3 +217,92 @@ describe('la configuracion viene de @thyrox/config (T-044)', () => {
     expect(salida).toContain('localSettings')
   })
 })
+
+describe('--connection activa @thyrox/config de verdad y decide compressToolResults (T-9)', () => {
+  // Misma salida de `git status` que `contextCompressionWiring.test.ts` ya usa
+  // para probar el filtro RTK -- aqui se ejercita a traves del BINARIO real
+  // (proceso spawneado), no de una llamada directa a `runLoop`. El heredoc con
+  // delimitador entre comillas hace que bash la emita verbatim.
+  const GIT_STATUS_OUTPUT =
+    'On branch main\n' +
+    'Changes not staged for commit:\n' +
+    '  (use "git add <file>..." to update what will be committed)\n' +
+    '  (use "git restore <file>..." to discard changes in working directory)\n' +
+    '\tmodified:   a.ts\n' +
+    '\n' +
+    'no changes added to commit\n'
+  const BASH_COMMAND = `cat <<'GITSTATUSEOF'\n${GIT_STATUS_OUTPUT}GITSTATUSEOF`
+
+  const turnosGitStatus = (d: string) => {
+    const p = join(d, 'turnos.json')
+    writeFileSync(p, JSON.stringify([
+      { id: 'm1', model: 'claude-opus-5', stop_reason: 'tool_use', usage: uso,
+        content: [{ type: 'tool_use', id: 'tu1', name: 'Bash', input: { command: BASH_COMMAND } }] },
+      { id: 'm2', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso,
+        content: [{ type: 'text', text: 'listo' }] },
+    ]))
+    return p
+  }
+
+  // La conexion se persiste como `@thyrox/config` la escribe de verdad --
+  // misma forma medida en `outputs/home/.claude/.claude.json` del banco
+  // `correr-connectionToolCompression-de-verdad-20260913T064445` -- para que
+  // el binario la lea por su via real (`getConnection` -> `getGlobalConfig`),
+  // no por un objeto que el test le pase a mano.
+  const conConHome = (compressToolResults: boolean | undefined) => {
+    const home = mkdtempSync(join(tmpdir(), 'con-home-'))
+    require('node:fs').mkdirSync(join(home, '.claude'), { recursive: true })
+    writeFileSync(join(home, '.claude', '.claude.json'), JSON.stringify({
+      connections: [{
+        id: 'con-1', name: 'con-1', protocol: 'anthropic', endpoint: 'http://127.0.0.1:0',
+        auth: { type: 'api_key', key: 'sk-test' }, enabled: true, models: [], createdAt: 1,
+        ...(compressToolResults === undefined ? {} : { providerSpecificData: { compressToolResults } }),
+      }],
+    }))
+    return home
+  }
+
+  function correr(d: string, home: string, connectionId?: string) {
+    const args = ['bun', 'run', BIN, '--prompt', 'corre git status', '--grabacion', turnosGitStatus(d),
+      '--cwd', d, '--transcript-dir', join(d, 'tr'), '--output-style', 'json']
+    if (connectionId) args.push('--connection', connectionId)
+    // `NODE_ENV` se hereda de ESTE proceso (`bun test` lo fija a `test`), y
+    // `getGlobalConfig`/`saveGlobalConfig` (`config.ts:794,835,626`) desvian a
+    // un objeto fijo en memoria y saltan el guard de activacion bajo ese
+    // valor -- documentado ahi como la via de la fuente para probarse SIN
+    // tocar disco. Este test mide lo contrario: que `--connection` lea la
+    // conexion real, persistida, del `.claude.json` en `home`. Quitar
+    // `NODE_ENV` reproduce el entorno de un usuario real (que nunca corre con
+    // `NODE_ENV=test`), sin lo cual las tres pruebas de este bloque pasarian
+    // igual leyendo el stub -- un verde que no discrimina.
+    const env = { ...process.env, HOME: home }
+    delete env.NODE_ENV
+    const p = Bun.spawnSync(args, { env })
+    expect(p.exitCode).toBe(0)
+    const eventos = p.stdout.toString().trim().split('\n').map((l) => JSON.parse(l))
+    const toolEnd = eventos.find((e) => e.type === 'tool_end')
+    return toolEnd.output as string
+  }
+
+  test('sin --connection: el ruido de git status llega intacto (default apagado)', () => {
+    const d = mkdtempSync(join(tmpdir(), 'bin-con-'))
+    const home = conConHome(true)
+    const salida = correr(d, home)
+    expect(salida).toContain('(use "git add')
+  })
+
+  test('--connection SIN compressToolResults en su providerSpecificData: sigue intacto', () => {
+    const d = mkdtempSync(join(tmpdir(), 'bin-con-'))
+    const home = conConHome(undefined)
+    const salida = correr(d, home, 'con-1')
+    expect(salida).toContain('(use "git add')
+  })
+
+  test('--connection CON compressToolResults:true en su providerSpecificData (persistida via @thyrox/config): RTK recorta el ruido', () => {
+    const d = mkdtempSync(join(tmpdir(), 'bin-con-'))
+    const home = conConHome(true)
+    const salida = correr(d, home, 'con-1')
+    expect(salida).not.toContain('(use "git add')
+    expect(salida).toContain('modified:   a.ts')
+  })
+})
