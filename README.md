@@ -94,3 +94,34 @@ variable, con una cadena de precedencia de lo más específico a lo más derivad
 python3 src/paths/reach.py --list
 eval "$(python3 src/paths/reach.py --env)"
 ```
+
+## Citar una tarea propia y registrar un hallazgo
+
+El `#NNN` que el cliente asigna a una tarjeta del board es efímero — reinicia
+por sesión, y dentro de una misma sesión se renumera cuando la lista se
+reconstruye (medido: 332 de 337 ids colisionan entre dos sesiones,
+`src/task/task_ids.py`). Citarlo en un commit, un banco o un hallazgo fabrica
+una referencia rota desde el primer momento. La forma que resuelve siempre a
+la misma tarea es `TASK-THYROX-NNNN`, y se acuña — no se compone a mano:
+
+```bash
+python3 -m src.task.task_ids ingerir-board <session_id> <ordinal> --capa thyrox
+python3 -m src.task.task_ids cita <session_id> <ordinal>   # verificar
+python3 -m src.task.task_ids censo                          # conteo por capa
+```
+
+Un hallazgo —algo que el trabajo destapó y que alguien podría volver a asumir
+sin medir— se registra aparte, indexado y buscable entre sesiones:
+
+```bash
+python3 -m src.agents.agent_store agregar-hallazgo \
+  --finding-id H-DOCS-NNNN --submodule docs \
+  --initiative actualizar-agentic-ai-thyrox \
+  --summary "..." --content "..." \
+  --source-ref "el archivo que es la fuente de verdad"
+python3 -m src.agents.agent_store buscar-hallazgos --query "..."
+```
+
+El banco (`.claude/workbench/`) y el job (`.claude/jobs/`) documentan *cómo*
+se ejecutó el trabajo; un hallazgo documenta *qué se aprendió*. No todo
+trabajo produce uno.
