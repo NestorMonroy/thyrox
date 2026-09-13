@@ -177,10 +177,12 @@ describe('metadata estática de comandos', () => {
     expect(ultrareview.name).toBe('ultrareview')
     expect(ultrareview.type).toBe('local-jsx')
   })
-  test('getGoalConditionMaxLength lanza sin @thyrox/agent resoluble (diferido)', () => {
-    // command-runtime no tiene node_modules/@thyrox todavia — el require
-    // diferido falla al LLAMARSE, que es exactamente lo que este test
-    // confirma (no una carga rota del módulo).
-    expect(() => getGoalConditionMaxLength()).toThrow()
+  test('getGoalConditionMaxLength resuelve @thyrox/agent (ya declarado)', () => {
+    // command-runtime SI declara @thyrox/agent en package.json desde
+    // thyrox@97ac49b0 (cierre de tests/package/dependencies.test.ts) — el
+    // require diferido de pendingCrossPackageDeps.ts ya resuelve contra el
+    // simbolo real en vez de fallar al llamarse. Valor real de la fuente:
+    // agent/goalStopHook.ts:115, GOAL_CONDITION_MAX_LENGTH = 4000.
+    expect(getGoalConditionMaxLength()).toBe(4000)
   })
 })

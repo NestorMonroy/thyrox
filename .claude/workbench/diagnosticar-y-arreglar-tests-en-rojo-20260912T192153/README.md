@@ -111,11 +111,114 @@ pase corrigió, ni una más. Confirma que el verde nuevo depende de las
 declaraciones de dependencia añadidas y no de un artefacto del propio
 baseline.
 
+## Segundo tramo — el resto de la suite TypeScript
+
+`suite-full-2` (post-fix de `dependencies.test.ts`, pre-esta-sección) midió
+71 fail / 5 errores en TypeScript — mucho más que los 14 originales. Se
+investigó cada uno en vez de asumir que eran ajenos:
+
+- **`permission::@thyrox/storage`** — el mismo defecto del primer tramo,
+  encontrado al re-correr la suite completa: faltaba declarar la
+  dependencia, y estaba enmascarado en el baseline VIEJO (de 2026-09-07,
+  previo a este pase). Al arreglarlo, la suite de `permission` sola pasó de
+  210 pass/39 fail/5 errors a 381 pass/0 fail — ese solo enlace faltante
+  producía 39 fallos y 5 errores en cascada.
+- Dos pistas falsas descartadas por re-medición aislada, no por descarte a
+  ojo: fallos de PDF atribuidos por defecto a `storage` resultaron ser de
+  `tool-registry` (0 fail en ambos paquetes corridos solos — contaminación
+  cruzada de correr la suite entera junta) y una alarma de "Invalid hook
+  call" de React en `tool-registry/hooks/appState.test.ts` resultó ser ruido
+  de consola de un caso de prueba intencional (4 pass, 0 fail en aislado).
+
+`suite-full-3` (post-fix) confirmó la mejora: 8300 pass / 9 fail (bajado de
+71 fail/5 errores).
+
+## Tercer tramo — de 9 a 4, con causa raíz de cada uno
+
+Se diagnosticaron los 9 restantes uno por uno en vez de agruparlos:
+
+1. **`command-runtime::getGoalConditionMaxLength` ya no lanza — FIX del
+   test.** El primer tramo declaró `@thyrox/agent` como dependencia de
+   `command-runtime`; ese require diferido en
+   `internal/pendingCrossPackageDeps.ts` está DISEÑADO para empezar a
+   resolver quien tal declaración exista (lo dice su propio docstring). El
+   test seguía afirmando lo contrario. Corregido para afirmar el valor real
+   (`4000`, verificado contra `agent/goalStopHook.ts:115`).
+2. **Committer del merge sintético — bug real en `branchIntegration.ts`,
+   no del test.** `GIT_COMMITTER_NAME`/`GIT_COMMITTER_EMAIL` heredadas del
+   proceso (el harness las fija para preservar la identidad humana de la
+   sesión) ganan sobre `git config user.name/email` del repo — precedencia
+   de git, no del código. El `git()` interno del módulo heredaba el
+   entorno completo sin despojarlas, así que CUALQUIER uso real de
+   `integrate()` habría fusionado con el committer de la sesión en vez del
+   configurado en el repo destino. Corregido: `gitEnv()` filtra las cuatro
+   variables antes de invocar git.
+3. **T-035 (gate real bajo el harness) — premisa de test incompleta, no
+   bug.** El gate elegido como ejemplo (`check_hallazgo_submodulo.py`)
+   declara su baseline como PARÁMETRO DEL CONSUMIDOR (DEC-04); thyrox es
+   el proveedor y no tiene `source/gestion/pm/` propio, así que rehusaba
+   por diseño. El test necesitaba declarar un baseline vacío para su
+   propio universo (0 hallazgos bajo thyrox) — lo hace ahora con
+   `HALLAZGO_SUBMODULO_BASELINE` apuntando a un archivo temporal.
+4. **El mismo fix #3 destapó un bug real en el tool `Bash`.** Fijar
+   `process.env.X` en el mismo proceso y esperar que `Bun.spawn` (sin
+   `env` explícito) lo vea NO funciona — Bun usa la foto del entorno al
+   arrancar, no `process.env` en vivo (medido con un script aislado:
+   `FOO=` vacío sin `env:`, `FOO=hello123` con `env: process.env`).
+   Cualquier mutación de entorno hecha durante una sesión (una bandera,
+   un flag) nunca habría llegado a un comando `Bash` real. Corregido en
+   `@thyrox/tools: registry.ts::shell()`.
+5. **`exports.test.ts` bloques 2 y 3 — 44 módulos `index.ts` nuevos sin su
+   entrada en el mapa `exports` de la raíz, y un puntero colgante.** Los 44
+   son consecuencia mecánica de crecimiento del árbol (paquetes/submódulos
+   nuevos cuyo `index.ts` nunca se declaró) — se recalcularon en vivo con
+   la MISMA lógica del test (no de memoria) y se añadieron. El puntero
+   colgante (`./packages/harness/src`) se retiró: apunta a un directorio
+   verificado como inexistente, sin prejuzgar la reestructuración mayor en
+   curso (ver abajo) — sólo quita una entrada rota.
+
+**Los 4 que quedan NO son bugs de código — dos son deuda ya rastreada, dos
+son límites del entorno de este contenedor:**
+
+- **`tests/task/extraction.test.ts` (2 fallos) — parte de una
+  reestructuración en curso, ya registrada.** `HARNESS = src/packages/harness`
+  no existe. El histórico del board (`.claude/workbench/session-task-dump-
+  20260910T070654/outputs/board/172.json` y `205.json`) muestra que la
+  partición del paquete `harness` es una decisión YA TOMADA por el ejecutor
+  (opción B, cerrada 2026-09-08) cuyo porte sigue `in_progress`, bloqueado
+  por otras tareas (198/199/200). Inventar el paquete ahora, sin ese
+  contexto completo, arriesga contradecir la forma ya decidida. Se deja
+  como estaba — no es deuda silenciosa, ya tiene dueño y tarea.
+- **`tests/reference/triple.test.ts` (dentro de los 3 "ausentes") —
+  dependiente del entorno, no del código.** `ccb`/`ccnmt` resuelven por
+  defecto a `treeRoot()/claude-code-nestor-monroy-tools` y `ui-core` a
+  `treeRoot()/-progress` — los DOS son clones hermanos de thyrox que **no
+  están en el alcance de repos de esta sesión** (verificado: `ls -d
+  /home/user/*/` no los lista). El propio código lo documenta como
+  decisión pendiente del ejecutor (vendorizar el corpus completo choca con
+  su licencia `UNLICENSED`, sucesor #207).
+- **`src/packages/binary/__tests__/bunfs.test.ts` — build sin medir, por
+  diseño del propio test.** El binario vivo en este contenedor es
+  `2.1.270`; el test rehúsa explícitamente ante una build no presente en
+  su tabla `MEASURED` en vez de saltarse en silencio (comentario propio:
+  *"Una build desconocida FALLA, no se salta"*). Requiere extraer las
+  cifras de fidelidad de esa build específica y añadir su fila — trabajo
+  de medición dedicado, no un fix de una línea.
+
+## Resultado final del pase (TypeScript)
+
+| Momento | pass | fail | error |
+|---|--:|--:|--:|
+| Estado de partida (post primer tramo, `suite-full-2`) | — | 71 | 5 |
+| Tras `permission::@thyrox/storage` (`suite-full-3`) | 8300 | 9 | 0 |
+| Tras los 5 fixes del tercer tramo (verificado 2× consecutivas) | 8305 | 4 | 0 |
+
+Los 4 restantes están clasificados con su causa exacta arriba — dos
+tienen dueño y tarea ya registrados, dos son límites verificados del
+contenedor. Ninguno se "arregló" ocultando la causa.
+
 ## Pendiente (fuera de este pase)
 
-- El resto de la suite TypeScript (fuera de `dependencies.test.ts`) —
-  pendiente de medir tras este cambio, vía el job en segundo plano
-  `suite-full-2`.
 - La suite Python (~19-22 casos rojos antes de este pase) — sin tocar.
 - La suite shell (~22-24 casos rojos antes de este pase) — sin tocar.
 - Barrido de los docstrings desactualizados que motivaron el falso negativo
