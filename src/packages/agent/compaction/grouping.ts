@@ -1,18 +1,22 @@
 /**
  * Porte de `ccnmt: packages/agent/compaction/grouping.ts`.
  *
- * Agrupa una secuencia de mensajes en "rondas de API": cada ronda arranca
- * en el mensaje de assistant cuyo `message.id` difiere del ultimo id de
- * assistant visto. Los mensajes intermedios (user/tool_result/system) se
- * acumulan en la ronda actual hasta la siguiente frontera.
+ * Agrupa mensajes por "ronda de API": cada ronda es un `assistant` con su
+ * `message.id`, más todo lo que le siga hasta el próximo `assistant` con id
+ * distinto. Es el insumo de `snipCompactCore` (cortar por ronda completa,
+ * nunca a mitad de una) y de `truncateHeadForPTLRetry` (idem, al recortar la
+ * cabeza tras un prompt-too-long).
+ *
+ * DIVERGENCIA DE TIPO, sin cambio de comportamiento: la firma es genérica
+ * (`<T extends GroupableMessage>`) en vez de fija a `GroupableMessage[]`, así
+ * que el llamador recupera su tipo concreto de mensaje sin un cast.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type GroupableMessage = { type: string; message?: { id?: string }; [key: string]: any }
+type GroupableMessage = { type: string; message?: { id?: string }; [key: string]: unknown }
 
-export function groupMessagesByApiRound(messages: GroupableMessage[]): GroupableMessage[][] {
-  const groups: GroupableMessage[][] = []
-  let current: GroupableMessage[] = []
+export function groupMessagesByApiRound<T extends GroupableMessage>(messages: T[]): T[][] {
+  const groups: T[][] = []
+  let current: T[] = []
   let lastAssistantId: string | undefined
 
   for (const msg of messages) {
