@@ -1,0 +1,397 @@
+=== tests/agents/test-agent-store-compara-antes-de-escribir.sh :: exit 1 ===
+/tmp/tmp.glBHyCo4X0/espejo/.claude/scripts/agents/agent_store_sin_guard.py:775: SyntaxWarning: invalid escape sequence '\d'
+  ―``H-<CAPA>-\d+``― se compone de ellas y no de una lista escrita aquí.
+Traceback (most recent call last):
+  File "/tmp/tmp.glBHyCo4X0/espejo/.claude/scripts/agents/agent_store_sin_guard.py", line 95, in <module>
+    import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
+    ^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'agents_paths'
+Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+sqlite3.OperationalError: unable to open database file
+  FALLO SIN guard, el pase idéntico SÍ mueve updated_at (el defecto)
+        esperado=[sí] obtenido=[no]
+  ok    SIN guard, la fila ausente sigue saliendo 1 (no depende del guard)
+== 6. el resumen del reconciliador separa completar de retocar ==
+/workspace/kaupamex/thyrox/src/agents/agent_store.py:775: SyntaxWarning: invalid escape sequence '\d'
+  ―``H-<CAPA>-\d+``― se compone de ellas y no de una lista escrita aquí.
+  ok    el primer pase sí completa
+  ok    el segundo pase reporta sin cambios, no completados
+
+12 ok, 1 fallos
+
+=== tests/agents/test-agent-store-reassignment-guard.sh :: exit 1 ===
+  ok    y NO escribió: la cita sigue nombrando lo suyo
+  ok    y nombra la cita afectada
+  ok    con --permitir-reasignacion sí vuelca (exit 0)
+  ok    y entonces la cita cambia de sujeto
+  ok    un volcado sin reasignación pasa (exit 0)
+  ok    y el alta nueva aterrizó
+  ok    editar el sujeto de una fila sin cita pasa (exit 0)
+  ok    caso 5 · preparación: la cita 1 nombra su sujeto
+  ok    una renumeración pura NO dispara el guard (exit 0)
+  ok    y la cita viajó CON su sujeto
+  ok    al ordinal nuevo (2), no al 1 que reciclaron
+  ok    y la segunda cita también, al ordinal 3
+  ok    ninguna cita quedó duplicada
+  ok    5d: el mutante SÍ anuló la línea (si no, el control no mide nada)
+  FALLO 5d: y el mutante ARRANCA (si muriera en el import, su silencio mentiría)
+        esperado=[0] obtenido=[1]
+  FALLO 5d: sin re-anclaje la cita se queda en el ordinal y cambia de sujeto
+        esperado=[tarea nueva que se colo primero] obtenido=[primer sujeto]
+
+16 ok · 2 falla(s)
+
+=== tests/agents/test-agent-store-render-tablero.sh :: exit 1 ===
+        check-rst-sintaxis: ERROR — Sphinx no es importable y no hay .venv utilizable en /workspace/kaupamex/kaupamex-docs/.venv. Corre `make sync`. NO se emite un conteo: un 0 aquí sería un verde falso.
+  FALLO y lo midio de verdad: el denominador declara el archivo
+        esperado=[1] obtenido=[0]
+== 5-bis. CONTROL — el mismo exit 0 con CERO archivos revisados ==
+  ok    la ruta sin nada que revisar tambien sale 0
+  ok    pero su denominador declara CERO archivos medidos
+== 6. sin --tasks-dir sigue rindiendo (uso manual, sin sesión activa) ==
+  FALLO render sin sesión activa sale 0
+        esperado=[0] obtenido=[1]
+grep: /tmp/tmp.mKSbQRv0aO/tablero-sin-viva.rst: No such file or directory
+  FALLO y sigue describiendo las dos sesiones
+        no encontrado: [Trabajo de una sesion anterior]
+== 7. store vacío: no revienta, deja constancia ==
+  FALLO un store sin tareas sale 0
+        esperado=[0] obtenido=[1]
+== 8. RE-DEFINIR una tarea mueve la firma (H-DOCS-183, control del episodio) ==
+  ok    cambiar el subject mueve la firma
+  ok    sin tocar nada la firma es estable
+
+6 ok, 12 fallos
+
+=== tests/agents/test-carrete-store.sh :: exit 1 ===
+== caso 8: una linea corrupta no tumba el drenado ==
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+  FALLO: la linea corrupta impidio el reenvio: Traceback (most recent call last):
+  File "/workspace/kaupamex/thyrox/src/agents/drain_spool.py", line 62, in <module>
+    from hook_error_log import _append, spool_path  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'hook_error_log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/workspace/kaupamex/thyrox/src/agents/drain_spool.py", line 69, in <module>
+    raise agents_paths.ConsumerUnknownError(
+reach.ConsumerUnknownError: No se resolvio el clon consumidor, asi que sus hooks no entraron en sys.path y `hook_error_log` no se encuentra. Declara THYROX_CONSUMER, o invoca desde dentro del clon.
+== caso 9: CONTROL ANULADO — el hook de CIERRE DE TURNO tambien drena ==
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+  FALLO: el hook de cierre no drena el carrete (cableado ausente)
+  FALLO: el evento sigue en el carrete tras el cierre de turno
+
+FALLO: 13 de 9 casos
+
+=== tests/agents/test-merge-sqlite-union.sh :: exit 1 ===
+AVISO: no existe /workspace/kaupamex/thyrox/.claude/agent-results/agent_store.sqlite3 — el caso 5 no midio nada
+test-merge-sqlite-union: 12 de 13 aserciones en verde
+
+=== tests/agents/test-model-catalog.sh :: exit 1 ===
+OK   fable-5-1: 1 Mtok de caché leída cuesta 0.25
+OK   opus-5: 1 Mtok de caché leída cuesta 0.50
+OK   escritura a 5m y 1h difieren (12.5 vs 20)
+OK   alias fable → claude-fable-5-1 (con el alias entre paréntesis)
+OK   sin catálogo rehúsa con exit 2
+OK   sin catálogo no emite cifra
+OK   sin catálogo el mensaje nombra el catálogo y el verde falso
+OK   modelo desconocido rehúsa con exit 2
+OK   peso fijo 0.1x sobrevalora 4x la caché leída de fable-5-1
+FALLA por-modelo publica alcance medido con universo — esperado 'si', obtenido 'no'
+OK   sesion deduplica por message.id (2 turnos)
+OK   sesion valora la escritura al TTL real (1h) y la lectura a 0.25
+OK   sesion estima el coste de reescribir el contexto en el destino
+OK   sesion sin transcript: exit 2 y stdout vacío
+cp: cannot create regular file '/tmp/tmp.8NHZMH3ciQ/src/agents/': No such file or directory
+cp: cannot create regular file '/tmp/tmp.8NHZMH3ciQ/src/corpus/': No such file or directory
+FALLA agent_store sin model_catalog al lado: censo corre (exit 0) y declara SIN MEDIR — esperado '0/si', obtenido '2/no'
+test-model-catalog: 13 ok, 2 fallos (alcance medido: 15 aserciones)
+
+=== tests/corpus/test-markdown-to-rst.sh :: exit 1 ===
+  FALLA: caso 1 produce RST válido
+  FALLA: caso 2 produce RST válido
+  FALLA: caso 3 produce RST válido
+  FALLA: caso 4 produce RST válido
+  FALLA: el literal con espacio inicial no rompe el parseo
+  FALLA: un fragmento real del corpus heng convierte y valida
+  FALLA: una celda con tubería escapada no desalinea la list-table
+  OMITIDO: /workspace/kaupamex/thyrox/source/gestion/pm/docs/iniciativas/automatizar-gestion-y-control-de-documentos/recommended-practice-ccsd-650.0-m-3/modelo-funcional.rst ausente — el control positivo no se pudo correr
+  FALLA: caso 9 produce RST válido
+  FALLA: caso 9-bis produce RST válido
+  FALLA: caso 9-ter produce RST válido
+  FALLA: caso 10 produce RST válido
+test-markdown-to-rst: 19 aserciones OK, 11 fallidas
+
+=== tests/lib/test-script-deprecated.sh :: exit 1 ===
+  ok   gate: no marca el bien formado
+  ok   gate: ve la cabecera sin guard
+  ok   gate: nombra el archivo
+  ok   gate: ve el guard sin cabecera
+  ok   gate: ve la cabecera sin SUCESOR
+  ok   gate: un script sin marcadores no es infractor
+  ok   --strict sale 0 sin infractores
+  ok   --strict sale 1 con un infractor
+  ok   el reporte declara el alcance medido
+  ok   el repo real no tiene infractores
+  ok   guard .py: rehusa por omision
+  ok   guard .py: corre con la declaracion
+  ok   gate: la declaracion .py completa no es infractora
+  ok   gate: ve la cabecera .py sin HALLAZGO
+  FALLA gate: sin argumentos mide TODAS las raices del alcance — esperado [6] obtenido []
+  FALLA gate: publica el desglose por raiz aunque el total sea cero — esperado [1] obtenido [0]
+  ok   gate: una raiz ausente rehusa con 2
+  ok   gate: al rehusar NO emite cifra de infractores
+
+25 ok · 2 falla(s)
+
+=== tests/session/test-evidencia-varada.sh :: exit 1 ===
+== stranded-evidence ==
+  ok   1. volatil sin artefactos sale 0
+  ok   2. un .py varado sale 1
+  ok   2b. y lo nombra
+  ok   3. .txt y .log no son artefactos varados
+  ok   4. olvidar suelta el archivo
+  ok   5. asentar calla lo ya triado
+  ok   6. tras asentar, uno nuevo sale 1
+  ok   6b. y es el nuevo, no el viejo
+  ok   7. sin volatil que medir sale 2
+  ok   8. el reporte declara su alcance
+  FALLO 9. existe el censo de #858 como control positivo
+       esperado: si
+       obtenido: no
+
+aciertos: 10 · fallos: 1
+
+=== tests/session/test-instalar-config-usuario.sh :: exit 1 ===
+  OK   parsea
+=== Caso 2 (H-DOCS-469a): --list declara la lista y NO escribe ===
+  OK   lista por clase, destino intacto
+=== Caso 3: --dry-run no escribe ===
+  OK   destino intacto tras --dry-run
+=== Caso 4: precedencia --path > CLAUDE_CONFIG_DIR > ~/.claude ===
+  OK   --path gana a CLAUDE_CONFIG_DIR
+  OK   CLAUDE_CONFIG_DIR gana al default
+=== Caso 5: por omision COPIA, no enlaza ===
+  OK   archivo real, no enlace
+=== Caso 6: --link enlaza ===
+  OK   enlace simbolico
+=== Caso 7 (EL QUE DISCRIMINA, H-DOCS-469b): colision con contenido distinto ===
+  FAIL rc=0 · contenido intacto
+=== Caso 8: colision con contenido IDENTICO no rehusa (idempotente) ===
+  OK   segunda pasada limpia (rc=0)
+=== Caso 9: el resumen declara su denominador ===
+  OK   publica el conteo copiado
+
+9 ok, 1 fallos (alcance medido: 10 aserciones sobre /workspace/kaupamex/thyrox/src/session/instalar-config-usuario.sh)
+
+=== tests/verify/test-agent-artifacts.sh :: exit 1 ===
+FALLA ruta absoluta del paquete: el gate MIDE — esperado 'medido', obtenido 'eximido'
+FALLA ruta absoluta del .md derivado: el gate MIDE — esperado 'medido', obtenido 'eximido'
+FALLA ruta relativa del paquete: el gate MIDE — esperado 'medido', obtenido 'eximido'
+OK   archivo fuera de la superficie: el gate SE EXIME
+FALLA guard sin node_modules/zod: exit 2 — esperado '2', obtenido '0'
+FALLA guard sin node_modules/zod: nombra la biblioteca y el comando — esperado 'si', obtenido 'no'
+
+aserciones: 1 de 6 · fallos: 5
+
+=== tests/verify/test-coordinator-sin-worktree.sh :: exit 1 ===
+        obtenido: 1
+  FALLA --quiet imprime 0 incoherentes
+        esperado: 0
+        obtenido: 
+  FALLA 0 agentes declaran aislamiento
+        esperado: 1
+        obtenido: 0
+  ok    0 descripciones prometen worktree
+== el gate publica su denominador ==
+  FALLA el reporte declara el alcance medido
+        esperado: 1
+        obtenido: 0
+== control positivo: OMITIDO — ed727b96^ no alcanzable en este clon ==
+   (un clon shallow no tiene el padre; el caso queda SIN MEDIR, no en verde)
+== el contrato declara el criterio (#751) ==
+  ok    nombra cuándo se declara el aislamiento
+  ok    cita la condición del tool Agent
+  ok    declara el pase de consolidación
+
+Resultado: 4 ok, 5 fallas
+
+=== tests/verify/test-destino-del-reporte.sh :: exit 1 ===
+=== Caso 1: el guion parsea y expone destino_del_reporte ===
+  OK   importa y la funcion existe
+=== Caso 2: el destino cae bajo .claude/eventos/ del arbol del guion ===
+  FAIL fuera de .claude/eventos/: /workspace/kaupamex/thyrox/eventos/validar-referencias-20260913T080922/reference-validation-report.txt
+=== Caso 3 (EL QUE DISCRIMINA): el destino NO lo decide el CWD ===
+  OK   mismo hogar desde otro CWD: /workspace/kaupamex/thyrox/eventos
+=== Caso 4: el destino no es un nombre relativo pelado ===
+  OK   ruta absoluta
+=== Caso 5: REFERENCE_REPORT_PATH sustituye el default ===
+  OK   el override manda
+=== Caso 6: la raiz del repo NO conserva el reporte varado ===
+  OK   raiz limpia
+
+5 ok, 1 fallos (alcance medido: 6 aserciones sobre /workspace/kaupamex/thyrox/src/verify/detect_broken_references.py)
+
+=== tests/verify/test-eventos-hook.sh :: exit 1 ===
+  FALLA el arbol vivo no declara ningun evento desconocido — esperado [0] obtenido [2]
+  FALLA un evento con typo sale con codigo 1 — esperado [1] obtenido [2]
+  FALLA la caja distinta sale con codigo 1 — esperado [1] obtenido [2]
+  FALLA un evento valido no bloquea — esperado [0] obtenido [2]
+  ok   sin universo derivable sale con codigo 2
+ERROR — no se pudo leer : Command '['strings', '-n', '4', '']' returned non-zero exit status 1.
+  FALLA el reporte declara ambos universos — esperado [1] obtenido [0]
+ERROR — no se pudo leer : Command '['strings', '-n', '4', '']' returned non-zero exit status 1.
+  FALLA el reporte nombra los eventos sin consumir — esperado [1] obtenido [0]
+ERROR — no se pudo leer : Command '['strings', '-n', '4', '']' returned non-zero exit status 1.
+  FALLA la raiz del arbol de trabajo entra en el alcance — esperado [1] obtenido [0]
+ERROR — no se pudo leer : Command '['strings', '-n', '4', '']' returned non-zero exit status 1.
+  ok   ConfigChange NO se reporta como sin consumir
+
+2 ok · 7 falla(s)
+
+=== tests/verify/test-generator-determinism.sh :: exit 1 ===
+       esperado: si
+       obtenido: no
+  ok   exit 1 ante el incumplidor
+  FALLA nombra el archivo
+       esperado: 1
+       obtenido: 0
+  FALLA nombra la forma que lo delata
+       esperado: 1
+       obtenido: 0
+== caso 5: el que NO escribe en source/ queda fuera del universo
+   (una sonda que imprime a stdout no rompe la reproducción del artefacto)
+  FALLA la sonda no lo hace fallar
+       esperado: 0
+       obtenido: 1
+== caso 6: el árbol vendorizado de un tercero queda fuera
+  FALLA extraido/ no cuenta como código nuestro
+       esperado: 0
+       obtenido: 1
+
+4 ok · 9 falla(s)
+
+=== tests/verify/test-gitattributes.sh :: exit 1 ===
+FALLO: 5c. git resuelve el atributo declarado (no 'unspecified')
+  esperado: si
+  obtenido: no
+FALLO: 6a. con un repo fuera, el alcance baja a 4
+  esperado: si
+  obtenido: no
+test-gitattributes: 19 de 21 aserciones en verde
+
+=== tests/verify/test-pre-commit-docs.sh :: exit 1 ===
+  ok   sin archivos de prosa: exit 0
+  ok   sin archivos de prosa: no gasta tiempo en gates
+  ok   forma vetada nueva: bloquea
+  FALLA forma vetada nueva: la nombra — esperado [1] obtenido [0]
+  ok   sintaxis RST rota: bloquea
+  FALLA prosa limpia: pasa — esperado [0] obtenido [1]
+  FALLA el archivo mas citado del repo NO bloquea — esperado [0] obtenido [1]
+  ok   un .md tambien se mide
+  ok   el bloqueo nombra el escape hatch
+
+6 ok · 3 falla(s)
+
+=== tests/verify/test-script-naming.sh :: exit 1 ===
+  ok   el eje de kebab no lo afecta el idioma
+  ok   el eje de idioma no lo afecta el kebab
+  ok   sin lexico sale con codigo 2
+  ok   el guard nombra el lexico que le falta
+  ok   el reporte de idioma declara el alcance
+  FALLA el arbol real no tiene nombres nuevos en espanol — esperado [0] obtenido [2]
+  ok   el lexico ve el infinitivo: esperar-marcador -> esperar, marcador
+  ok   el lexico ve el infinitivo y el sustantivo: refrescar-tablero
+  ok   el lexico ve los sustantivos llanos: check-hallazgo-sucesor
+  ok   traducidos, los tres pasan el eje de idioma
+  ok   el eje de identificadores ve el simbolo en espanol
+  ok   y el eje del NOMBRE de ese mismo archivo pasa
+  ok   traducido, el eje de identificadores pasa
+  ok   sin lexico el eje de identificadores sale con 2
+  ok   y nombra el lexico que le falta
+  ok   el reporte de identificadores declara el alcance
+<unknown>:775: SyntaxWarning: invalid escape sequence '\d'
+  FALLA el arbol real no tiene identificadores nuevos en espanol — esperado [0] obtenido [22]
+
+25 ok · 4 falla(s)
+
+=== tests/verify/test-verificar-premisa.sh :: exit 1 ===
+== 8. --strict: exit 1 con senal, exit 0 sin ella ==
+  FALLO con senal sale 1
+        esperado=[1] obtenido=[0]
+  ok    sin senal sale 0
+== 9. universo vacio: no revienta ==
+  ok    directorio sin tareas sale 0
+== 10. el indice de simbolos NO sale de cero ==
+  FALLO el indice tiene simbolos (no 0)
+        esperado=[si] obtenido=[no]
+== 11. --emit-premises: la senal se vuelve premisa declarada ==
+  ok    el archivo emitido es JSON valido
+  FALLO #1 emite una presuposicion symbol-absent
+        esperado=[1] obtenido=[0]
+  FALLO   … y su alcance es un glob, no el archivo donde se hallo
+        esperado=[1] obtenido=[0]
+  ok    #4 emite una presuposicion path-exists
+  ok    #5 (S3) no emite predicado: el evaluador no lee el tablero
+  ok    una ficha sin senal no aparece
+
+test-verificar-premisa.sh: 12 ok · 9 fallo(s)
+
+=== tests/verify/test-vocabulario-baseline-resolucion.sh :: exit 1 ===
+  FALLA baseline por variable: el gate bloqueo un termino que el baseline congela
+  FALLA ascenso al consumidor: no encontro .claude/baselines del consumidor
+  FALLA rehuso sin baseline: exit=2 — un 0 aqui seria un verde falso
+  FALLA write-baseline: el rehuso de lectura bloqueo la escritura inicial
+  ok    no fabrica el baseline en el hogar del proveedor
+  FALLA respaldo al cwd: rehuso teniendo el baseline del consumidor en el cwd
+  FALLA lista de vetadas: exit=2 — con 0 formas cargadas todo texto pasa
+  FALLA rehuso sin lista: exit=2 — un conteo aqui mediria un solo eje
+  FALLA clave relativa: la clave no emparejo con la entrada del baseline
+1/9 aserciones verdes
+
+=== tests/verify/test-vocabulario-prosa.sh :: exit 1 ===
+  FALLA el reporte declara el alcance medido — esperado [1] obtenido [0]
+  FALLA y el denominador cuenta archivos, no hallazgos — esperado [1] obtenido [0]
+  FALLA ve corrida y tanda en prosa nueva — esperado [2] obtenido []
+  FALLA NO veta guion ni lote — su sentido legítimo domina — esperado [0] obtenido []
+tests/verify/test-vocabulario-prosa.sh: line 149: cd: /workspace/kaupamex/thyrox/source: No such file or directory
+  FALLA ruta absoluta: lo congelado sigue congelado — esperado [0] obtenido []
+  FALLA ruta relativa a la raiz: mismo veredicto — esperado [0] obtenido []
+  FALLA ruta con ./ delante: mismo veredicto — esperado [0] obtenido []
+  FALLA ruta con .. desde otro directorio: mismo veredicto — esperado [0] obtenido []
+  FALLA un archivo nuevo SI reporta, por ruta absoluta — esperado [1] obtenido []
+  FALLA un archivo nuevo SI reporta, por ruta relativa — esperado [1] obtenido []
+  FALLA guard del lexico: los 3 desenlaces, ninguno termina en cero — esperado [0] obtenido []
+  ok   load_forbidden separa forma y sustituto
+  FALLA el gate ve el falso amigo real (librería) — esperado [1] obtenido []
+  FALLA el reporte publica el sustituto — esperado [1] obtenido [0]
+  FALLA el gate ve el segundo falso amigo real (removido) — esperado [1] obtenido []
+  FALLA la palabra correcta NO se marca — esperado [0] obtenido []
+  FALLA una forma sin flecha sigue casando — esperado [1] obtenido []
+
+4 ok · 22 falla(s)
+
+=== tests/verify/test_audit_delegates.sh :: exit 1 ===
+  ok   el corredor alcanza los gates que el registro declara
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/root/.pyenv/versions/3.12.13/lib/python3.12/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.13/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.13/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.pyenv/versions/3.12.13/lib/python3.12/json/decoder.py", line 356, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+  FALLO la delegacion lee una clave que el corredor emite (summary)
+       esperado: si
+       obtenido: 
+
+test-audit-delegates: 4 ok, 1 falla
