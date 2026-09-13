@@ -1,0 +1,21 @@
+{
+  "question": "Se pueden usar desde el checkout actual los wrappers thyrox-bg y wait-jobs con las constantes de hogar documentadas",
+  "instrument": "ejecucion real desde la raiz del superproyecto: thyrox-bg start/status y wait-jobs register/wait/status, con hogares aislados bajo outputs",
+  "metric": "codigos de salida y artefactos terminales: done:0, trabajo OK, ledger vacio y run estructurado con manifiesto, README y log",
+  "blind_to": "timeouts prolongados, cancelacion por grupo, adopcion externa, archivo del ledger, trabajos fallidos y resolucion de cada constante per-clon",
+  "destination": "thyrox/.claude/workbench/audit-session-tools-20260913T213511 — evidencia de sesion del proveedor",
+  "form": "measurement",
+  "source": [
+    "src/session/bg.sh",
+    "src/session/wait-jobs.sh",
+    "src/session/job_runs.py",
+    "README.md"
+  ],
+  "outputs": [
+    "outputs/bg-start.txt",
+    "outputs/bg-status.txt",
+    "outputs/wait-register.txt",
+    "outputs/wait-result.txt",
+    "outputs/wait-status.txt"
+  ]
+}
