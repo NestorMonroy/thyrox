@@ -25,14 +25,14 @@ unitarios porque esos nunca pasan por la capa de persistencia:
 
 | archivo | que hace |
 |---|---|
-| `probes/live-run-compress.ts` | corrida manual, primero contra `runLoop()` directo (para aislar `@thyrox/config`), luego contra el binario real (`src/entry/main.ts`) via `Bun.spawnSync`, con y sin `--connection` |
+| `probes/live-run-compress.ts` | ejecución manual, primero contra `runLoop()` directo (para aislar `@thyrox/config`), luego contra el binario real (`src/entry/main.ts`) via `Bun.spawnSync`, con y sin `--connection` |
 | `outputs/home/.claude/.claude.json` | la config REAL que `saveConnection` escribio en disco -- dos conexiones, `demo-compress` (con `providerSpecificData.compressToolResults:true`) y `demo-sin-compresion` (sin ella) |
-| `outputs/corrida-real.log` | stdout de la corrida contra `runLoop()` directo: sin conexion 580 caracteres, conexion apagada 580, conexion encendida 181 |
+| `outputs/ejecucion-real.log` | stdout de la ejecución contra `runLoop()` directo: sin conexion 580 caracteres, conexion apagada 580, conexion encendida 181 |
 | `outputs/grabacion.json` | turnos grabados (tool_use Bash "git status" + end_turn "listo") para ejercitar el binario real |
-| `outputs/corrida-binario-real.log` | la primera corrida real contra `main.ts`, con `--prompt` disparando un `git status` REAL de este repo (no grabado) -- confirma que el binario arreglado ejecuta la herramienta de verdad, no sólo turnos grabados |
-| `outputs/corrida-binario-real-sin-conexion-guardada.log` | captura el bug de JSDoc que cerraba el bloque `/** */` antes de tiempo (`-*/` dentro del docstring) -- `error: Expected ";" but found "import"` en `main.ts:42`, el error real que llevó al `grep -n '\*/'` que lo diagnosticó |
-| `outputs/corrida-binario-real-con-conexion.log`, `outputs/corrida-binario-real-sin-connection-flag.log` | ambas `EXIT=0`, corridas del binario ya arreglado |
-| `outputs/corrida-ANULACION-sin-fix.log` | control de anulacion sobre el fix de produccion: `main.ts` revertido con `git stash`, misma invocacion, `EXIT=2` y `ConfigHostBindingsError` verbatim |
+| `outputs/ejecucion-binario-real.log` | la primera ejecución real contra `main.ts`, con `--prompt` disparando un `git status` REAL de este repo (no grabado) -- confirma que el binario arreglado ejecuta la herramienta de verdad, no sólo turnos grabados |
+| `outputs/ejecucion-binario-real-sin-conexion-guardada.log` | captura el bug de JSDoc que cerraba el bloque `/** */` antes de tiempo (`-*/` dentro del docstring) -- `error: Expected ";" but found "import"` en `main.ts:42`, el error real que llevó al `grep -n '\*/'` que lo diagnosticó |
+| `outputs/ejecucion-binario-real-con-conexion.log`, `outputs/ejecucion-binario-real-sin-connection-flag.log` | ambas `EXIT=0`, ejecuciones del binario ya arreglado |
+| `outputs/ejecucion-ANULACION-sin-fix.log` | control de anulacion sobre el fix de produccion: `main.ts` revertido con `git stash`, misma invocacion, `EXIT=2` y `ConfigHostBindingsError` verbatim |
 (un `outputs/home2/` de un intento anterior con la conexion en un HOME equivocado se borro -- no llegaba a contener la conexion, sólo cache de `bun`/`.harness` sin señal) |
 
 ## Los resultados
@@ -52,7 +52,7 @@ enableConfigs()                 // @thyrox/config -- flag independiente,
 sobre `main.ts` (dejandolo sin las dos lineas), misma invocacion real contra
 la conexion ya persistida en disco -> reaparece exactamente
 `ConfigHostBindingsError: Config host bindings have not been installed`
-(`outputs/corrida-ANULACION-sin-fix.log`). `git stash pop` + `diff` contra un
+(`outputs/ejecucion-ANULACION-sin-fix.log`). `git stash pop` + `diff` contra un
 backup previo confirmaron restauracion byte a byte.
 
 **La regresion automatizada** vive ahora en `bin.test.ts`, bloque
@@ -83,7 +83,7 @@ no pasa `--connection`, la segunda pasa una conexion sin
 real dan la misma respuesta para esas dos). Restaurado con `sed`, `diff` contra
 un backup confirma cero cambios netos.
 
-*Metrica:* contenido de `tool_end.output` en las tres corridas (sin conexion,
+*Metrica:* contenido de `tool_end.output` en las tres ejecuciones (sin conexion,
 conexion apagada, conexion encendida), leido del stream real de eventos JSON
 del binario spawneado -- no de una llamada directa a `runLoop()`.
 *Ciega a:* si `--connection` dirige el ENDPOINT/`auth` del transporte -- no lo
