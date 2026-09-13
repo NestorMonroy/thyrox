@@ -122,8 +122,10 @@ commands/paths.ts`, `src/rules/paths.ts`, `src/skills/paths.ts`, `src/task/
 schema.ts`, `src/reference/triple.ts`, `src/rules/emit/markdown.ts`, y el
 propio `src/workbench/paths.ts`— y **8 suites de test** que lo importan
 directo. La cifra anterior de este párrafo (una afirmación sin `grep` detrás)
-era simplemente falsa; corregida tras el hallazgo :ref:`h-docs-1266` de
-`kaupamex-docs`.
+era simplemente falsa; corregida tras el hallazgo `h-thyrox-03` de
+`kaupamex-docs: source/gestion/pm/thyrox/iniciativas/
+verificar-hogares-de-sesion-thyrox/` (publicado primero, por error, como
+`h-docs-1266` bajo la raíz equivocada — ver ADR-THYROX-001).
 
 ### Las tres piezas, en el orden en que se usan
 
@@ -203,6 +205,33 @@ python3 src/paths/declarations.py                    # 2. ¿qué falta declarar?
 python3 src/verify/check_env_contract_keys.py --strict   # 3. contrato cerrado
 bash tests/run.sh                                     # 4. el árbol funciona
 ```
+
+### Y para usar TODOS los guiones de `src/session/`, `src/verify/`, `src/agents/`
+
+Las tres carpetas no se invocan por ruta completa una por una — hay un
+generador que le da nombre corto a **cada** entrypoint (`__main__` en
+`.py`, ejecutable en `.sh`) de las tres, y un segundo paso que los hace
+invocables desde cualquier directorio:
+
+```bash
+python3 src/session/generate_bin.py --dry-run   # el plan, sin escribir
+python3 src/session/generate_bin.py             # genera bin/
+python3 src/session/generate_bin.py --install-user-bin   # + copia a ~/.local/bin
+python3 src/session/generate_bin.py --check      # ¿bin/ sigue al día?
+```
+
+Verificado en este árbol al escribir esta sección: **117 entrypoints**,
+`bin/` al día. Cubre exactamente lo que se cita en `long-running-commands.md`
+de los consumidores por su ruta completa — `write-env`, `wait-jobs`,
+`run-task-pool`, `thyrox-bg` (`bg` a secas colisiona con el builtin de
+bash, de ahí el prefijo) — y el resto de los 117, con el mismo mecanismo.
+Detalle completo: `kaupamex-docs: source/gestion/pm/thyrox/iniciativas/
+agregar-entrypoints-cortos-thyrox/` (`TASK-THYROX-0017`).
+
+**Lo que este mecanismo NO cierra todavía:** los ejemplos de
+`long-running-commands.md`/`bash-background-tasks.md` en los cinco
+consumidores siguen enseñando la ruta completa (`bash src/session/bg.sh`),
+no el nombre corto — sucesor abierto, `TASK-THYROX-0018`.
 
 ## El alcance por variable
 
