@@ -10,6 +10,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { startAnthropicMockServer } from '@thyrox/provider/anthropicMockServer'
 
 const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
 const uso = { input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
@@ -304,5 +305,61 @@ describe('--connection activa @thyrox/config de verdad y decide compressToolResu
     const salida = correr(d, home, 'con-1')
     expect(salida).not.toContain('(use "git add')
     expect(salida).toContain('modified:   a.ts')
+  })
+})
+
+describe('--connection dirige el ENDPOINT y la AUTH del transporte http real (T-10)', () => {
+  test('con --provider http, endpoint y auth de la conexion, el binario le pega al servidor local -- no a la API real', async () => {
+    const servidor = await startAnthropicMockServer({
+      host: '127.0.0.1', port: 0,
+      respond: () => ({ content: [{ type: 'text', text: 'hola desde el servidor local' }] }),
+    })
+    try {
+      const home = mkdtempSync(join(tmpdir(), 'con-endpoint-'))
+      require('node:fs').mkdirSync(join(home, '.claude'), { recursive: true })
+      writeFileSync(join(home, '.claude', '.claude.json'), JSON.stringify({
+        connections: [{
+          id: 'con-local', name: 'con-local', protocol: 'anthropic', endpoint: servidor.url,
+          auth: { type: 'api_key', key: 'sk-local-mock' }, enabled: true, models: [], createdAt: 1,
+        }],
+      }))
+      const d = mkdtempSync(join(tmpdir(), 'bin-endpoint-'))
+      const env: Record<string, string | undefined> = { ...process.env, HOME: home }
+      delete env.ANTHROPIC_API_KEY
+      delete env.ANTHROPIC_BASE_URL
+      delete env.NODE_ENV   // ver correr() de arriba: bun test lo fija, y desviaria a getGlobalConfig() de sus datos reales
+      // `Bun.spawnSync` bloquea el event loop del proceso PADRE hasta que el
+      // hijo termina -- y el servidor mock, que corre en ESE mismo hilo, no
+      // podria atender la peticion del hijo mientras el padre esta bloqueado
+      // esperandolo: un auto-interbloqueo. Medido: con `spawnSync` el test
+      // colgaba 5 s y el servidor no veia NINGUNA peticion; con `Bun.spawn`
+      // (asincrono) + `await p.exited`, el event loop sigue libre para que el
+      // servidor responda mientras el padre espera.
+      const p = Bun.spawn(['bun', 'run', BIN, '--prompt', 'hola', '--provider', 'http',
+        '--connection', 'con-local', '--cwd', d, '--transcript-dir', join(d, 'tr'), '--output-style', 'json'],
+        { env, stdout: 'pipe', stderr: 'pipe' })
+      const exitCode = await p.exited
+      const salidaEstandar = await new Response(p.stdout).text()
+
+      expect(exitCode).toBe(0)
+      const eventos = salidaEstandar.trim().split('\n').map((l) => JSON.parse(l))
+      const texto = eventos.find((e) => e.type === 'text')
+      expect(texto?.text).toBe('hola desde el servidor local')
+
+      // La prueba afirmativa: el servidor LOCAL, no el real, recibio la peticion.
+      expect(servidor.requests.length).toBe(1)
+      expect(servidor.requests[0]!.path).toBe('/v1/messages')
+      expect(servidor.requests[0]!.headers['x-api-key']).toBe('sk-local-mock')
+      expect((servidor.requests[0]!.body as { model: string }).model).toBe('claude-opus-5')
+    } finally {
+      await servidor.close()
+    }
+  })
+
+  test('sin --connection, --provider http sin credencial sigue fallando igual que antes (T-10 no cambia el default)', () => {
+    const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--provider', 'http'],
+      { env: { ...process.env, ANTHROPIC_API_KEY: '' } })
+    expect(p.exitCode).not.toBe(0)
+    expect(p.stderr.toString()).toContain('ANTHROPIC_API_KEY')
   })
 })
