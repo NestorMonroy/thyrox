@@ -1,0 +1,20 @@
+{
+  "consumer": "/workspace/kaupamex/kaupamex-docs",
+  "summary": {
+    "passed": 0,
+    "failed": 1,
+    "missing": 0,
+    "unmeasured": 0,
+    "total": 1,
+    "ok": false
+  },
+  "results": [
+    {
+      "id": "consumer-copies",
+      "status": "fail",
+      "exit": 1,
+      "ms": 3218,
+      "doc": "thyrox se consume, no se copia: una copia diverge en silencio"
+    }
+  ]
+}

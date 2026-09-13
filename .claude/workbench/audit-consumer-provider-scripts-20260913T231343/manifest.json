@@ -1,0 +1,15 @@
+{
+  "question": "Que scripts del provider Thyrox siguen copiados o bifurcados en los cinco consumers L7 y si el corredor hace visible el incumplimiento",
+  "instrument": "check_consumer_copies.py sobre cada checkout materializado y runner.py --only consumer-copies antes y despues del argumento --strict declarado en registry.py",
+  "metric": "copias identicas, forks, archivos medidos y estado pass/fail del gate por consumidor",
+  "blind_to": "Markdown y JSON copiados, scripts renombrados con cambios, invocaciones fuera de .claude, ausencia de configuracion y legitimidad semantica de cada fork",
+  "destination": "thyrox/.claude/workbench/audit-consumer-provider-scripts-20260913T231343 y hallazgo correspondiente en kaupamex-docs",
+  "form": "measurement",
+  "consumers": ["kaupamex-api", "kaupamex-ui", "kaupamex-db", "kaupamex-server", "kaupamex-docs"],
+  "outputs": [
+    "outputs/summary.json",
+    "outputs/*-consumer-copies.txt",
+    "outputs/*-runner.json",
+    "outputs/*-runner-after.json"
+  ]
+}

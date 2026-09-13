@@ -63,6 +63,7 @@ class Check:
     subsystem: str
     script: str
     doc: str
+    arguments: tuple[str, ...] = ()
 
 
 @dataclasses.dataclass
@@ -125,7 +126,7 @@ def run_one(check, gates_dir, consumer):
     started = time.monotonic()
     try:
         done = subprocess.run(
-            [*runner, str(script)],
+            [*runner, str(script), *check.arguments],
             cwd=str(consumer), capture_output=True, text=True, timeout=600,
         )
     except subprocess.TimeoutExpired:
