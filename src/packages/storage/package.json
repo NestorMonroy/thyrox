@@ -20,6 +20,7 @@
     "cli": "bun run bin/storage.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
     "@thyrox/agent": "workspace:*",
     "@thyrox/app-host": "workspace:*",
     "@thyrox/config": "workspace:*",

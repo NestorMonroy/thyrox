@@ -145,9 +145,24 @@ export interface IntegrateOptions {
   collisionGate?: CollisionGate
 }
 
+/**
+ * `GIT_AUTHOR_*`/`GIT_COMMITTER_*` heredadas del proceso ganan sobre
+ * `git config user.name/email` del repo (precedencia de git, no de este
+ * código). El harness remoto las fija para preservar la identidad humana
+ * de los commits de la sesión (`git-author-identity.md`), y ese valor
+ * se filtraba al committer de un merge hecho aquí sobre un repo SINTÉTICO
+ * cuya identidad de commit la fija el propio `integrate()` vía
+ * `git config`. Se despoja al invocar git para que la config local del
+ * repo objetivo — la que `integrate()` controla — sea la que decide.
+ */
+function gitEnv(): NodeJS.ProcessEnv {
+  const { GIT_AUTHOR_NAME, GIT_AUTHOR_EMAIL, GIT_COMMITTER_NAME, GIT_COMMITTER_EMAIL, ...rest } = process.env
+  return rest
+}
+
 function git(path: string, ...args: string[]): { code: number; out: string; err: string } {
   try {
-    const out = execFileSync('git', ['-C', path, ...args], { encoding: 'utf8' })
+    const out = execFileSync('git', ['-C', path, ...args], { encoding: 'utf8', env: gitEnv() })
     return { code: 0, out, err: '' }
   } catch (e) {
     const anyE = e as { status?: number; stdout?: string; stderr?: string }

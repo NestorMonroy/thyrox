@@ -9,7 +9,7 @@
 
 import { thyroxRoot } from '../../../paths/reach.ts'
 import { describe, expect, test } from 'bun:test'
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { AGENTS } from '../index.ts'
@@ -114,21 +114,36 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
   test('un gate real se ejecuta por la herramienta Bash y devuelve su salida', async () => {
     const d = dir()
     const gate = join(REPO, 'src', 'verify', 'check_hallazgo_submodulo.py')
-    const p = new RecordedProvider([
-      { id: 'm1', model: 'claude-opus-5', stop_reason: 'tool_use', usage: uso,
-        content: [{ type: 'tool_use', id: 'tu1', name: 'Bash', input: { command: `python3 ${JSON.stringify(gate)}` } }] },
-      texto('el gate corrio'),
-    ])
-    const r = await runLoop({
-      provider: p, model: 'claude-opus-5', system: 's', prompt: 'corre el gate',
-      tools: CORE_TOOLS, cwd: REPO, transcriptDir: d,
-    })
-    expect(r.stop).toBe('end_turn')
-    const resultado = p.requests[1].messages.flatMap((m) => m.content)
-      .find((b) => b.type === 'tool_result') as { content: string; is_error?: boolean }
-    // El gate publica su denominador: es la señal de que midió algo, no de que
-    // el instrumento estuviera mudo.
-    expect(resultado.content).toContain('alcance medido')
+    // El baseline es parametro del CONSUMIDOR (DEC-04): thyrox es el
+    // proveedor de este gate y no tiene source/gestion/pm/ propio, asi que
+    // sin un baseline declarado el gate rehusa (h-docs-1107) en vez de
+    // publicar un cero falso. Se declara uno vacio para este pase: el
+    // universo real bajo REPO es 0 hallazgos, y el gate lo dice en su
+    // propia linea "alcance medido".
+    const baseline = join(d, 'hallazgo_submodulo_baseline.txt')
+    writeFileSync(baseline, '')
+    const previo = process.env.HALLAZGO_SUBMODULO_BASELINE
+    process.env.HALLAZGO_SUBMODULO_BASELINE = baseline
+    try {
+      const p = new RecordedProvider([
+        { id: 'm1', model: 'claude-opus-5', stop_reason: 'tool_use', usage: uso,
+          content: [{ type: 'tool_use', id: 'tu1', name: 'Bash', input: { command: `python3 ${JSON.stringify(gate)}` } }] },
+        texto('el gate corrio'),
+      ])
+      const r = await runLoop({
+        provider: p, model: 'claude-opus-5', system: 's', prompt: 'corre el gate',
+        tools: CORE_TOOLS, cwd: REPO, transcriptDir: d,
+      })
+      expect(r.stop).toBe('end_turn')
+      const resultado = p.requests[1].messages.flatMap((m) => m.content)
+        .find((b) => b.type === 'tool_result') as { content: string; is_error?: boolean }
+      // El gate publica su denominador: es la señal de que midió algo, no de
+      // que el instrumento estuviera mudo.
+      expect(resultado.content).toContain('alcance medido')
+    } finally {
+      if (previo === undefined) delete process.env.HALLAZGO_SUBMODULO_BASELINE
+      else process.env.HALLAZGO_SUBMODULO_BASELINE = previo
+    }
   })
 
   test('un gate que sale distinto de 0 llega al modelo COMO error, no como exito', async () => {
