@@ -33,6 +33,9 @@ export const HELP = `thyrox — el bucle de agente, nativo
   --config-origin         imprime de qué fuente salió cada clave y sale
   --output-style <n>      text (por defecto) | json | quiet
   --stream                pide el turno como SSE y escribe el texto conforme llega
+  --compress-tool-results recorta la salida de un tool_result (git/tests/tsc
+                          reconocidos, RTK) antes de que entre al historial;
+                          por defecto NO se aplica
   --select-tests          imprime QUÉ pruebas correr para los cambios del árbol,
                           con su denominador y su ceguera — sin ejecutarlas
   --import-tasks          importa las casillas sin marcar de un --rst al tablero

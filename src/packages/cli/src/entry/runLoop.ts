@@ -153,6 +153,10 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
     journalPath: flag(argv, 'journal'),
     stream: hasFlag(argv, 'stream'),
     taskReminder: { dbPath: taskStore, sessionId: taskSession },
+    // Opt-in real: `@thyrox/context-compression` no cambia el comportamiento
+    // por defecto (ContextOptions.compressToolResults default false); esta
+    // bandera es la primera forma de encenderlo desde un consumidor real.
+    context: { compressToolResults: hasFlag(argv, 'compress-tool-results') },
   }
 
   /** Un turno completo: dibuja su flujo y devuelve su resultado. */
