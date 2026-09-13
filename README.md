@@ -158,10 +158,17 @@ Una clave `THYROX_WORKBENCH_DIR` (o cualquier hogar) declarada:
   `<su_raiz>/<segmento>`. Es la forma correcta cuando el mismo patrón vale
   para los cinco.
 - **absoluta** → se devuelve TAL CUAL para todo clon que caiga a ella sin
-  declaración propia — un único sitio compartido. Deliberado, no un bug:
-  `tests/workbench/test_home_resolution.py::test_una_absoluta_SI_colisiona_y_es_correcto`
-  lo fija con su docstring: *"Quien escribe una absoluta nombra un sitio, no
-  un patrón."*
+  declaración propia — un único sitio compartido. Deliberado, no un bug: lo
+  funda `resolve_home()` (`src/paths/reach.py`) en dos fuentes — la regla que
+  el ejecutable de Anthropic declara verbatim para sus rutas de config
+  (absoluta tal cual / `~` expandido / relativa a una raíz nombrada) y un
+  defecto histórico medido (`THYROX_RULES_DIR=<db>/.claude/rules` imprimía
+  la ruta de `db` en las cinco filas de `declarations.py` sin avisar). El
+  test que lo ejercita (`test_home_resolution.py::
+  test_una_absoluta_SI_colisiona_y_es_correcto`) prueba que el código lo
+  hace; el docstring de `resolve_home()` es la evidencia de que es lo
+  correcto — citar sólo el test habría sido tratar un `claim` como una
+  `Observation` (sub-patrón D de `metrica-decide-la-conclusion.md`).
 
 Así que no hace falta ninguna plantilla `/<change>/<change>/`: cada persona
 declara su propia ruta absoluta en su propio `.env` (no versionado, ver
