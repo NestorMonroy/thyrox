@@ -1,0 +1,4 @@
+modo= sync
+servidor arriba en http://127.0.0.1:37015
+lanzando con Bun.spawnSync (bloquea el event loop del padre)...
+exit_del_timeout=124

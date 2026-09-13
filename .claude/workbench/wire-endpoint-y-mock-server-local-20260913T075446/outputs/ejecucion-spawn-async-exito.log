@@ -1,0 +1,13 @@
+modo= async
+servidor arriba en http://127.0.0.1:35001
+lanzando con Bun.spawn (asincrono, el event loop sigue libre)...
+duracion_ms= 181
+exitCode= 0
+stdout= {"type":"session_start","sessionId":"8eef05a6-1e35-4e58-b65e-147f0fdead4b","transcriptPath":"/tmp/bin-endpoint-5vLvtK/tr/8eef05a6-1e35-4e58-b65e-147f0fdead4b.jsonl"}
+{"type":"turn_start","turn":1}
+{"type":"context_level","turn":1,"level":"ok","tokens":1,"pctLeft":100}
+{"type":"text","turn":1,"text":"hola desde el servidor local"}
+{"type":"done","turn":1,"result":{"stop":"end_turn","turns":1,"lastText":"hola desde el servidor local","usage":{"input_tokens":1,"output_tokens":1,"cache_creation_input_tokens":0,"cache_read_input_tokens":0},"sessionId":"8eef05a6-1e35-4e58-b65e-147f0fdead4b","transcriptPath":"/tmp/bin-endpoint-5vLvtK/tr/8eef05a6-1e35-4e58-b65e-147f0fdead4b.jsonl","usd":0.00003}}
+
+stderr= 
+peticiones recibidas por el servidor: 1
