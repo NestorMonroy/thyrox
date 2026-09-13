@@ -1,0 +1,19 @@
+=== SIN --connection (comportamiento identico al de antes de este cambio) ===
+[conexion=(ninguna)] providerSpecificData=undefined -> getConnectionContextOptions={}
+  longitud del tool_result real: 580 caracteres
+  primeras 200 chars: "On branch feature/thyrox-l2\nYour branch is up to date with 'origin/feature/thyrox-l2'.\n\nChanges not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore "
+
+=== --connection demo-sin-compresion (persistida, sin el flag) ===
+[conexion=demo-sin-compresion] providerSpecificData=undefined -> getConnectionContextOptions={"compressToolResults":false}
+  longitud del tool_result real: 580 caracteres
+  primeras 200 chars: "On branch feature/thyrox-l2\nYour branch is up to date with 'origin/feature/thyrox-l2'.\n\nChanges not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore "
+
+=== --connection demo-compress (persistida, con compressToolResults: true) ===
+[conexion=demo-compress] providerSpecificData={"compressToolResults":true} -> getConnectionContextOptions={"compressToolResults":true}
+  longitud del tool_result real: 181 caracteres
+  primeras 200 chars: "On branch feature/thyrox-l2\nYour branch is up to date with 'origin/feature/thyrox-l2'.\nChanges not staged for commit:\n\tmodified:   agent-results/agent_store.sqlite3\nUntracked files:"
+
+=== veredicto ===
+sin conexion === conexion apagada: true
+conexion encendida es mas corta: true
+conexion encendida conserva la linea real: true
