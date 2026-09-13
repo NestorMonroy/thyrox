@@ -137,3 +137,10 @@ venv/
 # No es registro del proyecto — su contenido sólo vale dentro de la ejecución
 # que lo escribió, y versionarlo ensucia el árbol en cada corrida.
 agent-results/mutantes-en-vuelo.json
+
+# El ledger de trabajos en segundo plano es POR SESIÓN
+# (.env.example: THYROX_JOBS_DIR/THYROX_JOBS_ARCHIVE_DIR) — dos sesiones que
+# compartieran uno se robarían los marcadores entre sí. Su contenido sólo
+# vale mientras la sesión que lo escribió sigue viva; versionarlo ensucia el
+# árbol cada vez que un trabajo queda VIVO al cerrar el turno.
+.claude/jobs-ledger/
