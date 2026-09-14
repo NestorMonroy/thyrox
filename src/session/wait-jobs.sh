@@ -32,7 +32,9 @@
 #
 # Uso
 # ---
-#   wait-jobs.sh register <etiqueta> <log> [pid]
+#   wait-jobs.sh register <etiqueta> <log> [pid] [--marker RE]
+#       --marker: para un trabajo lanzado con `bg.sh` (marcador `__BG_EXIT__=`,
+#       no el `EXIT=` que este guion espera por defecto): --marker '^__BG_EXIT__=[0-9]+'
 #   wait-jobs.sh wait [--timeout SEGUNDOS] [--pattern RE]
 #   wait-jobs.sh pending
 #   wait-jobs.sh status [--pattern RE]         resumen por clase, antes de decidir
@@ -146,14 +148,15 @@ verdict() {
 # cuando asienta BAIL. Callar la cancelación haría indistinguible «el
 # predecesor falló» de «nunca se registró»: el sub-patrón D.
 cmd_register() {
-    local label="${1:?uso: registrar <label> <log> [pid] [--after-ok PRED --run CMD]}"
-    local log="${2:?uso: registrar <label> <log> [pid] [--after-ok PRED --run CMD]}"
+    local label="${1:?uso: registrar <label> <log> [pid] [--after-ok PRED --run CMD] [--marker RE]}"
+    local log="${2:?uso: registrar <label> <log> [pid] [--after-ok PRED --run CMD] [--marker RE]}"
     shift 2
-    local pid="" after_ok="" run=""
+    local pid="" after_ok="" run="" marker=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --after-ok) after_ok="${2:?--after-ok exige la etiqueta del predecesor}"; shift 2 ;;
             --run)      run="${2:?--run exige el comando a lanzar}"; shift 2 ;;
+            --marker)   marker="${2:?--marker exige una expresión}"; shift 2 ;;
             *)          [[ -z "$pid" ]] && pid="$1"; shift ;;
         esac
     done
@@ -178,6 +181,12 @@ cmd_register() {
     local ps0=""; [[ -n "$pid" ]] && ps0="$(read_proc_start "$pid")"
     printf 'log=%s\npid=%s\nproc_start=%s\ncmd=%s\n' "$log" "$pid" "$ps0" "$cmd" > "$tmp"
     [[ -n "$after_ok" ]] && printf 'after_ok=%s\nrun=%s\n' "$after_ok" "$run" >> "$tmp"
+    # `marker=` es lo que `verdict()` ya sabía leer (línea ~122) sin que
+    # `register` pudiera escribirlo — sólo `adopt-external --marker` lo hacía.
+    # Sin él, un trabajo lanzado con `bg.sh` (marcador `__BG_EXIT__=`) nunca
+    # puede resolver a OK contra `$DEFAULT_PATTERN` (`^EXIT=[0-9]+`): el
+    # registro y el marcador real hablan dialectos distintos (H-THYROX-07).
+    [[ -n "$marker" ]] && printf 'marker=%s\n' "$marker" >> "$tmp"
     mv -f "$tmp" "$target"
     echo "registrado: $label -> $log (pid=${pid:-sin-pid})"
 }
