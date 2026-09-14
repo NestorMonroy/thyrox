@@ -1,0 +1,9 @@
+{
+  "id": "273",
+  "subject": "PermissionRule y PermissionResult son portes SÓLO DE TIPOS: bloquean la capa de esquemas",
+  "description": "Medido 2026-09-08 al abrir #250. De los 27 archivos no-componente que faltan en `permission`, dos de los más pequeños —`PermissionUpdateSchema.ts` (61) y `PermissionPromptToolResultSchema.ts` (130)— parecen unidades limpias y no lo son: necesitan tres esquemas zod que nuestros portes NO traen.\n\n`src/PermissionRule.ts` en el puerto exporta UNA cosa —un bloque `export type { … }`— cuando la fuente exporta también `permissionRuleValueSchema` y `permissionBehaviorSchema`. `src/PermissionResult.ts` exporta un bloque de tipos y `getRuleBehaviorDescription`, sin los esquemas que la fuente declara. `src/PermissionMode.ts` exporta diez símbolos y ninguno es `externalPermissionModeSchema`.\n\nO sea: tres portes parciales de tipos que ningún gate delata, porque el archivo EXISTE y `test -e` lo da por OK. Es la ceguera que #272 declara para tool-registry, aquí realizada.\n\nOrden de cierre: (1) completar los esquemas de PermissionRule, PermissionMode y PermissionResult; (2) portar `internal/lazySchema.ts` (8 líneas, sin dependencias); (3) los dos esquemas; (4) `PermissionPromptToolResultSchema` además necesita `applyPermissionUpdates` y `persistPermissionUpdates` de PermissionUpdate — el primero está, el segundo NO.\n\nMétrica: `grep '^export'` sobre cada archivo del puerto contra el de la fuente.\nCiega a: un símbolo exportado con el mismo nombre y otro comportamiento — eso sólo lo ve leerlos.",
+  "activeForm": "Registrando el hueco de la capa de esquemas de permission",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

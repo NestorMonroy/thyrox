@@ -1,0 +1,118 @@
+../config/global/config.ts(758,15): error TS7006: Parameter 'content' implicitly has an 'any' type.
+../local-observability/src/log.ts(115,5): error TS2322: Type 'Dirent<string>[]' is not assignable to type 'Dirent<NonSharedBuffer>[]'.
+  Type 'Dirent<string>' is not assignable to type 'Dirent<NonSharedBuffer>'.
+    Type 'string' is not assignable to type 'NonSharedBuffer'.
+__tests__/adapters.test.ts(240,22): error TS2352: Conversion of type '() => Promise<Response>' to type 'typeof fetch' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'preconnect' is missing in type '() => Promise<Response>' but required in type 'typeof fetch'.
+__tests__/contractsHostSmoke.test.ts(59,5): error TS2741: Property 'isEnvTruthy' is missing in type '{ refreshAndGetAwsCredentials: (() => Promise<null>) & { cache: { clear(): void; }; }; refreshGcpCredentialsIfNeeded: (() => Promise<undefined>) & { cache: { clear(): void; }; }; ... 8 more ...; getVertexRegionForModel: () => string; }' but required in type '{ refreshAndGetAwsCredentials: ProviderCachedAsyncFn<ProviderAwsCredentials | null | undefined>; refreshGcpCredentialsIfNeeded: ProviderCachedAsyncFn<...>; ... 11 more ...; queryStream?: ProviderQueryStreamFn | undefined; }'.
+__tests__/runtimeHelpers.test.ts(210,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+__tests__/runtimeHelpers.test.ts(220,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+__tests__/runtimeHelpers.test.ts(229,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+__tests__/runtimeHelpers.test.ts(247,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+__tests__/runtimeHelpers.test.ts(255,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+__tests__/runtimeHelpers.test.ts(263,15): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+__tests__/runtimeHelpers.test.ts(271,17): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+__tests__/runtimeHelpers.test.ts(278,17): error TS2352: Conversion of type 'BetaToolUnion' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'BetaMCPToolset' is not comparable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'BetaMCPToolset'.
+__tests__/runtimeHelpers.test.ts(280,9): error TS2698: Spread types may only be created from object types.
+src/adapters.ts(66,5): error TS2322: Type '(args: ProviderQueryArgs) => Promise<ProviderStreamEvent>' is not assignable to type 'ProviderQueryFn'.
+  Type 'Promise<ProviderStreamEvent>' is not assignable to type 'Promise<ProviderAssistantMessage>'.
+    Type 'ProviderStreamEvent' is not assignable to type 'ProviderAssistantMessage'.
+      Property 'uuid' is missing in type 'ProviderStreamEvent' but required in type 'ProviderMessage'.
+src/authAlias.ts(46,21): error TS7016: Could not find a declaration file for module 'lodash-es/memoize.js'. '/home/user/thyrox/node_modules/.bun/lodash-es@4.18.1/node_modules/lodash-es/memoize.js' implicitly has an 'any' type.
+  If the 'lodash-es' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/lodash-es'
+src/authAlias.ts(971,67): error TS2339: Property 'subscriptionType' does not exist on type '{}'.
+src/authAlias.ts(972,61): error TS2339: Property 'rateLimitTier' does not exist on type '{}'.
+src/claudeLegacy.ts(64,43): error TS2339: Property 'output' does not exist on type 'MessageCreateParamsBase'.
+src/claudeLegacy.ts(139,41): error TS2339: Property 'output' does not exist on type 'MessageCreateParamsBase'.
+src/claudeLegacy.ts(185,72): error TS2355: A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
+src/context.ts(27,21): error TS7016: Could not find a declaration file for module 'lodash-es/memoize.js'. '/home/user/thyrox/node_modules/.bun/lodash-es@4.18.1/node_modules/lodash-es/memoize.js' implicitly has an 'any' type.
+  If the 'lodash-es' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/lodash-es'
+src/fastMode.ts(65,3): error TS1484: 'AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/fastMode.ts(328,24): error TS2693: 'AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS' only refers to a type, but is being used as a value here.
+src/fastMode.ts(403,28): error TS2693: 'AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS' only refers to a type, but is being used as a value here.
+src/gemini/convertMessages.ts(59,32): error TS18048: 'msg.message' is possibly 'undefined'.
+src/gemini/convertMessages.ts(97,19): error TS18048: 'msg.message' is possibly 'undefined'.
+src/gemini/convertMessages.ts(110,44): error TS2345: Argument of type 'ContentBlockParam | ContentBlock' is not assignable to parameter of type 'string | Record<string, unknown>'.
+  Type 'TextBlockParam' is not assignable to type 'string | Record<string, unknown>'.
+    Type 'TextBlockParam' is not assignable to type 'Record<string, unknown>'.
+      Index signature for type 'string' is missing in type 'TextBlockParam'.
+src/gemini/convertMessages.ts(156,19): error TS18048: 'msg.message' is possibly 'undefined'.
+src/gemini/indexImpl.ts(84,11): error TS2322: Type 'readonly ProviderAgentDefinition[] | undefined' is not assignable to type 'readonly ProviderAgentDefinition[]'.
+  Type 'undefined' is not assignable to type 'readonly ProviderAgentDefinition[]'.
+src/gemini/modelMapping.ts(45,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/gemini/streamAdapter.ts(49,13): error TS2352: Conversion of type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' is not comparable to type 'BetaRawMessageStartEvent'.
+    Types of property 'message' are incompatible.
+      Type '{ id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, stop_details
+src/internal/caCerts.ts(9,21): error TS7016: Could not find a declaration file for module 'lodash-es/memoize.js'. '/home/user/thyrox/node_modules/.bun/lodash-es@4.18.1/node_modules/lodash-es/memoize.js' implicitly has an 'any' type.
+  If the 'lodash-es' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/lodash-es'
+src/mtls.ts(11,21): error TS7016: Could not find a declaration file for module 'lodash-es/memoize.js'. '/home/user/thyrox/node_modules/.bun/lodash-es@4.18.1/node_modules/lodash-es/memoize.js' implicitly has an 'any' type.
+  If the 'lodash-es' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/lodash-es'
+src/mtls.ts(13,30): error TS2307: Cannot find module 'undici' or its corresponding type declarations.
+src/oauth/client.ts(226,28): error TS2339: Property 'accountCreatedAt' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(227,28): error TS2339: Property 'subscriptionCreatedAt' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(228,28): error TS2339: Property 'ccOnboardingFlags' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(465,27): error TS2339: Property 'accountCreatedAt' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(466,27): error TS2339: Property 'subscriptionCreatedAt' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(467,27): error TS2339: Property 'ccOnboardingFlags' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(548,29): error TS2339: Property 'displayName' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(549,29): error TS2339: Property 'hasExtraUsageEnabled' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(551,29): error TS2339: Property 'accountCreatedAt' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(552,29): error TS2339: Property 'subscriptionCreatedAt' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(553,29): error TS2339: Property 'claudeCodeTrialEndsAt' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(554,29): error TS2339: Property 'claudeCodeTrialDurationDays' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(555,29): error TS2339: Property 'seatTier' does not exist on type 'AccountInfo'.
+src/oauth/client.ts(556,44): error TS2339: Property 'ccOnboardingFlags' does not exist on type 'AccountInfo'.
+src/openai/client.ts(83,5): error TS2698: Spread types may only be created from object types.
+src/openai/convertMessages.ts(124,19): error TS18048: 'msg.message' is possibly 'undefined'.
+src/openai/convertMessages.ts(200,19): error TS18048: 'msg.message' is possibly 'undefined'.
+src/openai/indexImpl.ts(106,11): error TS2322: Type 'readonly ProviderAgentDefinition[] | undefined' is not assignable to type 'readonly ProviderAgentDefinition[]'.
+  Type 'undefined' is not assignable to type 'readonly ProviderAgentDefinition[]'.
+src/openai/modelMapping.ts(64,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/openai/streamAdapter.ts(81,13): error TS2352: Conversion of type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' is not comparable to type 'BetaRawMessageStartEvent'.
+    Types of property 'message' are incompatible.
+      Type '{ id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, stop_details
+src/proxy.ts(11,21): error TS7016: Could not find a declaration file for module 'lodash-es/memoize.js'. '/home/user/thyrox/node_modules/.bun/lodash-es@4.18.1/node_modules/lodash-es/memoize.js' implicitly has an 'any' type.
+  If the 'lodash-es' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/lodash-es'
+src/proxy.ts(12,30): error TS2307: Cannot find module 'undici' or its corresponding type declarations.
+src/proxy.ts(87,10): error TS2315: Type 'HttpsProxyAgentOptions' is not generic.
+src/proxy.ts(88,4): error TS2315: Type 'HttpsProxyAgent' is not generic.
+src/proxy.ts(92,23): error TS2315: Type 'HttpsProxyAgentOptions' is not generic.
+src/proxy.ts(102,28): error TS7006: Parameter 'hostname' implicitly has an 'any' type.
+src/proxy.ts(102,38): error TS7006: Parameter 'options' implicitly has an 'any' type.
+src/proxy.ts(102,47): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+src/proxy.ts(107,40): error TS2554: Expected 1 arguments, but got 2.
+src/proxy.ts(111,44): error TS2315: Type 'HttpsProxyAgentOptions' is not generic.
+src/proxy.ts(272,12): error TS2307: Cannot find module '@smithy/node-http-handler' or its corresponding type declarations.
+src/proxy.ts(273,12): error TS2307: Cannot find module '@aws-sdk/credential-provider-node' or its corresponding type declarations.
+src/runtimeHelpers.ts(95,31): error TS2339: Property 'content' does not exist on type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: ProviderMessageContent | undefined; usage?: BetaUsage | Record<string, unknown> | undefined; } | undefined'.
+src/runtimeHelpers.ts(107,36): error TS2339: Property 'content' does not exist on type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: ProviderMessageContent | undefined; usage?: BetaUsage | Record<string, unknown> | undefined; } | undefined'.
+src/runtimeHelpers.ts(195,10): error TS2352: Conversion of type 'Record<string, unknown>' to type 'BetaToolUnion' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Record<string, unknown>' is missing the following properties from type 'BetaWebFetchTool20260318': name, type
+../shell/src/execFileNoThrow.ts(131,20): error TS2339: Property 'signal' does not exist on type 'ErrnoException'.
+../shell/src/execFileNoThrow.ts(131,54): error TS2339: Property 'signal' does not exist on type 'ErrnoException'.
+../storage/src/lockfile.ts(12,63): error TS7016: Could not find a declaration file for module 'proper-lockfile'. '/home/user/thyrox/node_modules/.bun/proper-lockfile@4.1.2/node_modules/proper-lockfile/index.js' implicitly has an 'any' type.
+  If the 'proper-lockfile' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/proper-lockfile'
+../storage/src/lockfile.ts(14,31): error TS7016: Could not find a declaration file for module 'proper-lockfile'. '/home/user/thyrox/node_modules/.bun/proper-lockfile@4.1.2/node_modules/proper-lockfile/index.js' implicitly has an 'any' type.
+  If the 'proper-lockfile' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/proper-lockfile'
+EXIT=2
+__BG_EXIT__=0

@@ -1,0 +1,51 @@
+== ANTES — la fila del store tras la primera sincronizacion (sin description)
+TASK-THYROX-0020
+  subject: Propagar status y subject del board al store al ingerir
+  desc   : Medido 2026-09-12: `ingerir-board` de task_ids.py sólo hace INSERT de los subjects que no ha visto; nunca UPDATE. El store congela el `status` del mom
+TASK-THYROX-0021
+  subject: Escribir submodule en el camino de inserción compartido del store
+  desc   : Medido 2026-09-12 sobre agent_store.sqlite3: 636 filas tienen `citation_id` con una capa distinta de su columna `submodule` — 404 con submodule NULL +
+
+== sincronizar-board con description ya en SYNCED_FIELDS
+sincronizar-board: TASK-THYROX-0020 (store #1208, board #363)
+   subject:
+     antes:   Propagar status y subject del board al store al ingerir
+     despues: Propagar status y subject del board al store al ingerir
+   status:
+     antes:   pending
+     despues: pending
+ * description:
+     antes:   Medido 2026-09-12: `ingerir-board` de task_ids.py sólo hace INSERT de los subjects que no ha visto; nunca UPDATE. El store congela el `status` del momento del alta, así que 57 de las 412 tareas DOCS abiertas tienen un commit que nombra su cita y siguen `pending`/`in_progress`. Implementar la mitad de actualización (status y subject) con su control de anulación, sin tocar `citation_id` (que está anclado al sujeto por TASK-THYROX-0007). Duplica el alcance de #184, que queda absorbida si esto aterriza.
+     despues: CORREGIDA 2026-09-12: la premisa original decía «no hay ni un UPDATE tasks SET status en el subsistema» y es FALSA — hay tres (board_sync.py:200, :294 y packages/tools/src/tasks.ts:400).
+
+El defecto real, medido: `task_ids.py ingerir-board` es INSERT-only (:639, con su conjunto `vistos`), así que un cambio de status o de subject en una tarjeta ya ingerida nunca llega al store. Y el propagador que SÍ existe —board_sync.py reconcile_status— no lo cubre: su universo son las 363 tarjetas del board, mientras el store tiene 1204 filas con ese session_id, de las cuales 845 no tienen tarjeta y 547 de ésas están abiertas. Su `status_drift 0` mide el 30 % de la población que dice gobernar (sub-patrón D).
+
+Alcance: que ingerir-board propague status y subject al sujeto ya ingerido, emparejando por citation_id (no por ordinal, que colisiona — ERR-024). Evidencia: kaupamex-docs/.claude/eventos/close-open-docs-tasks-20260912T100232/
+sincronizar-board: TASK-THYROX-0021 (store #1209, board #364)
+   subject:
+     antes:   Escribir submodule en el camino de inserción compartido del store
+     despues: Escribir submodule en el camino de inserción compartido del store
+   status:
+     antes:   pending
+     despues: pending
+ * description:
+     antes:   Medido 2026-09-12 sobre agent_store.sqlite3: 636 filas tienen `citation_id` con una capa distinta de su columna `submodule` — 404 con submodule NULL + cita GEN, 146 docs+GEN, 47 api+GEN, 35 thyrox+GEN, y 4 sueltas. La consecuencia es que `citation_id LIKE 'TASK-DOCS-%'` da 314 donde `submodule='docs'` da 412: el universo depende del criterio, que es el sub-patrón A. Correr `task_ids.py corregir-capa` con control antes/después, y NO reacuñar las filas cuyo `submodule_source` sea `hallazgo_prefijo` sin verificar el prefijo primero.
+     despues: CORREGIDA 2026-09-12: la premisa original —«636 filas cuya capa de cita no coincide con su submodule»— mezclaba dos poblaciones (sub-patrón A). Medido sobre 1636 filas: 1000 coherentes, 404 con submodule NULL (defecto), 230 donde la columna difiere del prefijo, que es EL DISEÑO FUNCIONANDO — correct_layer declara que el id es identidad y la columna es clasificación, así que una fila acuñada GEN y luego clasificada docs es lo esperado.
+
+El defecto real son las 404, y su causa es mecánica y está en un solo sitio: agent_store.py:1644 inserta quince columnas y `submodule` no está entre ellas. Sólo `ingerir-board` la escribe (task_ids.py:625). Los source de las 404 lo confirman: transcripcion-tablero 306, hook-stop 53, refresh-board 17, tablero-vivo 16, hook-post-tool 11, reasignacion-dirigida 1.
+
+Alcance: que el camino de inserción compartido escriba `submodule` con su `submodule_source` declarando que es el respaldo. Las 404 heredadas NO se barren — `gen` declara «cruza repos» y NULL declara «nadie decidió», y colapsarlos repetiría el defecto que usage_source cierra. Se pagan al tocar cada fila.
+
+Intento de clasificación retroactiva, con resultado negativo medido: por evidencia de commit, 402 de 404 son indecidibles (no aparecen en ningún mensaje de commit de las seis raíces), y 188 de ésas están completed — el espejo de las 57 del censo de docs.
+
+Evidencia: thyrox/.claude/workbench/classify-unlabeled-task-layer-20260912T101557/
+
+== DESPUES
+TASK-THYROX-0020
+  subject: Propagar status y subject del board al store al ingerir
+  desc   : CORREGIDA 2026-09-12: la premisa original decía «no hay ni un UPDATE tasks SET status en el subsistema» y es FALSA — hay tres (board_sync.py:200, :294
+TASK-THYROX-0021
+  subject: Escribir submodule en el camino de inserción compartido del store
+  desc   : CORREGIDA 2026-09-12: la premisa original —«636 filas cuya capa de cita no coincide con su submodule»— mezclaba dos poblaciones (sub-patrón A). Medido
+
+636 en alguna descripcion del store: 1

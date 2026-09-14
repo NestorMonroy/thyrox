@@ -195,6 +195,24 @@ universo() {
     return 0
 }
 
+# universo() recorre los 1366 archivos del glob con un `awk` por archivo, y es
+# el grueso del reloj del gate: medido, 2.9 s de los 9.6 s totales POR CADA
+# invocación. El camino normal lo pedía DOS veces —el bucle de incumplidores y
+# el conteo de `VISTOS`— así que pagaba 5.8 s por el mismo conjunto.
+#
+# Se computa una sola vez. Las tres ramas leen de aquí.
+#
+# `emit_universe` existe para que un universo VACÍO alimente cero líneas y no
+# una línea vacía: `printf '%s\n' "${arr[@]}"` sobre un arreglo sin elementos
+# emite un salto, y el bucle lo leería como un archivo llamado "". Es la misma
+# forma del sub-patrón D — un caso que pasa midiendo otra cosa.
+#
+# Los identificadores nuevos van en inglés; los heredados de este archivo
+# (`universo`, `ESCRIBIR`, `INCUMPLE`…) son deuda congelada cuyo eje no tiene
+# gate todavía — ningún gate de idioma recorre identificadores de shell.
+mapfile -t UNIVERSE < <( universo | sort -u )
+emit_universe() { ((${#UNIVERSE[@]})) && printf '%s\n' "${UNIVERSE[@]}"; return 0; }
+
 # --write-baseline congela, de una vez, TODO archivo del universo que hoy sólo
 # cita la forma caduca (ordinal, sin durable) — igual que
 # `check_hallazgo_submodulo.py`: escribe el conjunto entero, no sólo lo nuevo.
@@ -203,7 +221,7 @@ if $ESCRIBIR; then
     while IFS= read -r f; do
         grep -qE "$SUCESOR_DURABLE" "$f" && continue
         grep -qE "$SUCESOR_ORDINAL" "$f" && CANDIDATOS+=("$f")
-    done < <( universo | sort -u )
+    done < <( emit_universe )
     {
         echo "# Deuda heredada de check-hallazgo-sucesor.sh — congelada, no barrida."
         echo "# Cada ruta cita sólo el ordinal (#NNN / T-NNN) como sucesor — caduco"
@@ -228,10 +246,10 @@ while IFS= read -r f; do
         continue
     fi
     INCUMPLE+=("$f")
-done < <( universo | sort -u )
+done < <( emit_universe )
 
 N=${#INCUMPLE[@]}
-VISTOS=$( universo | sort -u | wc -l )
+VISTOS=${#UNIVERSE[@]}
 TOTAL=$(ls source/gestion/pm/*/iniciativas/*/hallazgos/hallazgo-*.rst 2>/dev/null | wc -l)
 
 if $QUIET; then

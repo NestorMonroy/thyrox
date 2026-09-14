@@ -1,0 +1,9 @@
+{
+  "id": "174",
+  "subject": "Analizar el reparto de una agencia multi-agente en openswarm",
+  "description": "La directiva del 2026-09-05 nombra cuatro árboles de referencia; openswarm es el único sin análisis de flujo (medido: `grep -ril \"openswarm\" source/` da 0 archivos). Medido en el mismo pase por qué no aporta a #172: openswarm NO implementa la capa de bucle — consume `agency-swarm==1.10.5` y su reparto es POR AGENTE (orchestrator/, docs_agent/, data_analyst_agent/, image_generation_agent/, slides_agent/, video_generation_agent/, shared_tools/), no por capa de ejecución. 144 .py, 0 .ts, MIT (VRSEN). Eso lo descalifica para arbitrar el nombre y la partición del paquete, y lo califica para la pregunta que sí posee: cómo se reparte una agencia multi-agente. Entregable: analisis-flujo-de-agente-openswarm.rst en la iniciativa actualizar-agentic-ai-thyrox. Ver :ref:`analisis-nombre-y-particion-contra-las-referencias`.",
+  "activeForm": "Analizando el reparto de openswarm",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

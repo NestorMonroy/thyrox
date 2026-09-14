@@ -1,0 +1,9 @@
+{
+  "id": "144",
+  "subject": "Migrar los 10 guiones que codifican la raíz del árbol al mecanismo de alcance",
+  "description": "Diez guiones no-test de `.claude/hooks` y `.claude/scripts` componen la raíz del árbol EN CÓDIGO (`ARBOL = '/home/user'`, `TREE = '/home/user'`, `RAIZ=\"${KX_DOCS_DIR:-/home/user/kaupamex-docs}\"`, defaults de argparse, `REPO_ROOT = pathlib.Path('/home/user/kaupamex-docs')`) y ninguno importa el mecanismo de alcance, que existe, está portado a THYROX (#128) y tiene 24 consumidores.\n\nEran once: `scripts/session/bg.sh` salió del conteo — su único hit está en un comentario (`:44`), y su default de código es `${TMPDIR:-/tmp}/kaupamex-bg`, idéntico en forma a `run-task-pool.sh:64`, que ya estaba clasificado A. Los dos quedan A.\n\nLos diez: hooks/stop-gate-espera-pendiente.sh · hooks/stop-gate-evidencia-varada.sh · hooks/stop-gate-tablero-desactualizado.sh · hooks/volcar-tarea-al-store.sh · scripts/corpus/censo_contraparte.py · scripts/gates/check_eventos_hook.py · scripts/gates/check_script_naming.py · scripts/gates/check_unreachable_rules.py · scripts/migration_report.py · scripts/session/sincronizar_settings_local.py.\n\nSEGUNDA MITAD, no opcional: el gate que impide el número once. Sin un check que rechace una raíz absoluta compuesta a mano en `.claude/`, la práctica vuelve. Condición de cierre: el gate mide por FORMA de la ruta (no por nombre de variable — ése fue el defecto de #131) y descuenta el literal que vive en comentario, con control positivo real del repo.\n\nOrigen: H-DOCS-1079. Bloquea en parte a P3d/P3e: los diez son A-param y no pueden viajar hasta que su raíz se inyecte.",
+  "activeForm": "Migrando los guiones con raíz codificada al mecanismo de alcance",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

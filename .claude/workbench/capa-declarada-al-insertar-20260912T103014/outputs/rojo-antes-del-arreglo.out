@@ -1,0 +1,54 @@
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+== 2. la tabla tasks existe tras conectar (migrado aditivo, como las columnas de uso) ==
+  ok    la tabla tasks se crea sola
+== 3. snapshot de un directorio de TASK: 3 archivos -> 3 filas ==
+  ok    el snapshot reporta 3 tareas
+  ok    subject se conserva con acentos
+  ok    status se conserva
+  ok    session_id queda en la fila
+== 4. campos opcionales: activeForm presente en unas y ausente en otras ==
+  ok    activeForm se guarda cuando viene
+  ok    activeForm ausente queda NULO, no rompe
+  ok    blocks se guarda como JSON
+== 5. idempotencia: re-correr no duplica, y un cambio de status SÍ se refleja ==
+  ok    segunda ejecución no duplica filas
+  ok    un cambio de status se refleja en la fila
+== 6. una clave nueva del cliente NO se pierde: va a metadata_json ==
+  ok    owner tiene columna propia (el cliente ya lo emite)
+  ok    la clave sin columna va a metadata_json
+== 7. dos sesiones con el MISMO id de tarea NO se pisan (H-DOCS-175) ==
+  ok    la tarea 447 de SES1 sobrevive al alta de la 447 de SES2
+  ok    las dos filas 447 coexisten, una por sesión
+== 8. directorio inexistente: reporta 0, no revienta ==
+  ok    un directorio ausente sale 0 (nada que snapshotear)
+== 9. compara antes de escribir: sobre un árbol sin cambios, 0 escrituras ==
+  ok    el archivo no cambia ni un byte
+  ok    el resumen separa los tres desenlaces
+== 10. y una tarea REALMENTE cambiada sí se cuenta como actualizada ==
+  ok    una sola fila cambiada se reporta como 1 actualizada
+  ok    y el status nuevo aterriza
+== 11. DOS llamadores con source distinto NO se pisan (H-DOCS-279) ==
+  ok    cambiar sólo la procedencia no escribe
+  ok    y se reporta como sin cambio
+== 12. pero el contenido SÍ gana, aunque venga por otra vía ==
+  ok    un cambio real por la otra vía sí se cuenta
+  ok    y el status nuevo aterriza
+== 13. blocks/blockedBy nulos: DESCONOCIDO se guarda como null, no como [] ==
+  ok    blocks nulo NO se guarda como lista vacia
+  ok    blockedBy nulo tampoco
+  ok    y el vacio conocido sigue siendo []
+== 14. la celda del tablero distingue el desconocido del vacio ==
+  ok    null->sin dato, []->vacio, lista->ids, None->vacio
+== 15. la fila nace con capa declarada, no con NULL (TASK-THYROX-0021) ==
+  FALLO la fila nueva trae submodule, no NULL
+        esperado=[gen] obtenido=[<NULO>]
+  FALLO y su procedencia dice que es el respaldo, no una clasificacion
+        esperado=[respaldo al volcar el board: nadie declaro la capa] obtenido=[<NULO>]
+== 16. una capa ya clasificada SOBREVIVE al siguiente volcado ==
+  ok    la capa clasificada no se pisa
+  ok    ni su procedencia
+  ok    y el contenido SI se actualiza — el volcado sigue haciendo su trabajo
+
+31 ok, 2 fallos
+EXIT=1

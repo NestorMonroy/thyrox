@@ -1,0 +1,8 @@
+{
+  "id": "192",
+  "subject": "Inventariar qué de thyrox/src debe documentarse en kaupamex-docs, y cablear su cobertura",
+  "description": "Medido: source/thyrox/ tiene 3 archivos .rst para 165 guiones .py/.sh en thyrox/src. No todos necesitan doc —muchos son internos— pero hoy no existe el inventario que diga cuáles sí, ni un gate que mida la cobertura. Sin él, «los scripts de thyrox se documentan en kaupamex-docs» es prosa: no hay nada que lo verifique. Depende de TASK-DOCS-0427 (declarar la superficie): lo que es superficie se documenta, lo interno no.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

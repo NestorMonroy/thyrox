@@ -1,0 +1,8 @@
+{
+  "id": "213",
+  "subject": "Resolver el commit c7ef12c de kaupamex-docs, con subject de 85 caracteres",
+  "description": "Al reapuntar check_branch_commit_messages.sh al consumidor (H-DOCS-1126), el gate pasó de no-poder-medir a MEDIR, y encontró una violación real: 1 de 871 commits de feature/kaupamex-l4 excede el límite Tim Pope.\n\n  FAIL c7ef12c  Register H-DOCS-1031: TaskUpdate port is partial and tasks go to a file, not the plan\n       motivo: subject de 85 caracteres excede el limite de 72\n\nReescribir historia está prohibido (I-002), así que el desenlace no es enmendar. Opciones: (a) entrada de baseline fechada para deuda heredada; (b) excepción declarada en el gate; (c) el gate reporta pero no bloquea sobre commits anteriores a una fecha de corte.\n\nVerificación: THYROX_CONSUMER=/home/user/kaupamex-docs python3 src/gates/doctor.py --only branch-commit-messages --verbose",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

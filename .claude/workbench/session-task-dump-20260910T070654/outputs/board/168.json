@@ -1,0 +1,9 @@
+{
+  "id": "168",
+  "subject": "Gate: verificar contenido tras commit por pathspec con archivos nuevos",
+  "description": "ERR-31: `git add -N` marca la intención de añadir — basta para que `git commit -- <ruta>` no falle, y NO pone contenido en el índice. Dos commits de la sesión 2026-09-05 publicaron archivos vacíos de contenido por esta vía; la segunda vez el propio mensaje del commit citaba un hallazgo ausente del árbol.\n\nEl defecto es del sub-patrón D de metrica-decide-la-conclusion.md: el commit tiene éxito, el pathspec matchea, y nada distingue «el archivo se publicó» de «sólo se declaró la intención».\n\nCierre: un check tras `git commit -- <rutas>` que corra `git show HEAD:<ruta>` sobre cada ruta nueva y falle si alguna responde «exists on disk, but not in HEAD». Candidato a hook `PostToolUse` sobre Bash con `git commit`, o a paso obligatorio del procedimiento de commit por pathspec en bash-background-tasks.md.\n\nPrecondición medida: el aislamiento por pathspec (bash-background-tasks.md) manda `git add -N` explícitamente, así que la trampa está dentro del procedimiento recomendado — no es un descuido aislado.",
+  "activeForm": "Registrando el gate de contenido tras commit por pathspec",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,6 @@
+60 aserciones
+  FALLA — 5d: la descripcion corregida en la tarjeta aterriza en la fila
+  FALLA — 5e: y el diff la nombra — un OK a secas no dejaria auditar la premisa
+  FALLA — 5f: el antes publica la premisa que se esta corrigiendo
+  FALLA — 5h: una tarjeta con descripcion vacia vacia la fila — misma semantica que subject y status, declarada
+EXIT=1

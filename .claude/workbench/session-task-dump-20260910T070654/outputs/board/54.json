@@ -1,0 +1,8 @@
+{
+  "id": "54",
+  "subject": "Gate DMAIC-control: rechazar hogar source/ inexistente en coordinator/SKILL",
+  "description": "T-006 de mapear-hogar-documental-por-flow. Gate que rechace, en un *-coordinator.md o un SKILL.md, un hogar source/… que no exista en el árbol — la clase de defecto de H-DOCS-1021 (source/implementacion/ citado y ausente). Es el control (C de DMAIC) de la iniciativa.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

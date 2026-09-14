@@ -1,0 +1,9 @@
+{
+  "id": "171",
+  "subject": "Integrar los 67 archivos de thyrox/_archived a source/thyrox/**",
+  "description": "Ejecutar el reparto que `analisis-que-de-_archived-integra-a-source-thyrox.rst` mide y clasifica. 67 de 1308 archivos (5.1 %) integran; el resto se queda por razón declarada (evidencia fechada, duplicado archivado, mecanismo, o triaje pendiente).\n\nLo que integra:\n- `context/decisions/` 28 → `source/thyrox/adr/` — es lo que H-DOCS-1098 y H-DOCS-1099 reportan ausente\n- `context/errors/` 21 → `pm/thyrox/audits/`\n- `context/lessons/` 5 → `pm/thyrox/lecciones-aprendidas/`\n- `context/patterns/` 4 → `pm/thyrox/checklists/`\n- raíz `ARCHITECTURE.md` + `DECISIONS.md` + `ROADMAP.md` (719 líneas) → `source/thyrox/`\n- `docs/architecture/` + `docs/requisitos/` 6 → `source/thyrox/`\n\nCuatro decisiones que el análisis NO toma y que esta tarea tiene que resolver antes de mover:\n\n1. **Numeración de los 28 ADR.** Sólo 8 declaran `id:`, y esos 8 colisionan con `backend/adr/` (H-DOCS-1098). Acuñar ordinal a los 20 restantes CONSERVANDO el de los 8 es lo único que preserva las dos citas vivas de la gobernanza (`ADR-016`, `ADR-019` en `.claude/CLAUDE.md` de tres repos). Cualquier otra numeración las rompe.\n2. **Triaje de los 31 de `context/research/`** — exige leerlos, no contarlos.\n3. **El delta de skills**: 78 nombres coinciden, 5 sólo en archivado, 10 sólo en vivo. Exige comparar contenidos.\n4. **Si `ADR-phase-completion-validation-protocol` existe bajo otro nombre** entre los 28 (H-DOCS-1099). Se buscó el literal, no el tema.\n\nForma: transformación masiva con su `radio/` medido ANTES de tocar nada (`.claude/eventos/`). Los `.md` pasan a `.rst` — `source/` sólo acepta `.rst`.",
+  "activeForm": "Integrando el corpus archivado de thyrox a source/thyrox",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

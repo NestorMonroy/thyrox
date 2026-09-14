@@ -136,10 +136,31 @@ verdict() {
     echo ESPERANDO
 }
 
+# `--after-ok PRED --run 'CMD'` declara la ARISTA al registrar, en vez de
+# obligar a bloquear el primer plano para ordenar dos trabajos. Es la forma que
+# `qsub -W depend=afterok:$JOBID` tiene y que a esta barrera le faltaba: su
+# único modelo era «lanza N, espera a TODOS», y esperar es bloquear.
+#
+# El dependiente NO se lanza aquí: nace `after_ok=` + `run=` y sin pid. Lo
+# lanza `dispatch` cuando el predecesor asienta OK — y lo CANCELA, diciéndolo,
+# cuando asienta BAIL. Callar la cancelación haría indistinguible «el
+# predecesor falló» de «nunca se registró»: el sub-patrón D.
 cmd_register() {
-    local label="${1:?uso: registrar <label> <log> [pid]}"
-    local log="${2:?uso: registrar <label> <log> [pid]}"
-    local pid="${3:-}"
+    local label="${1:?uso: registrar <label> <log> [pid] [--after-ok PRED --run CMD]}"
+    local log="${2:?uso: registrar <label> <log> [pid] [--after-ok PRED --run CMD]}"
+    shift 2
+    local pid="" after_ok="" run=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --after-ok) after_ok="${2:?--after-ok exige la etiqueta del predecesor}"; shift 2 ;;
+            --run)      run="${2:?--run exige el comando a lanzar}"; shift 2 ;;
+            *)          [[ -z "$pid" ]] && pid="$1"; shift ;;
+        esac
+    done
+    if [[ -n "$after_ok" && -z "$run" ]]; then
+        echo "register: --after-ok exige --run: sin el comando, dispatch no tiene qué lanzar" >&2
+        return 2
+    fi
     local target="$LEDGER/${label//\//_}.job"
     # tmp+mv: `wait`/`pending` reglobean `*.job` en caliente; una
     # escritura directa (`>`) trunca el archivo antes de llenarlo y un lector
@@ -151,11 +172,12 @@ cmd_register() {
     # soltado; sin el `starttime` no hay con qué distinguir su pid de un pid
     # reciclado. Los dos se leen del propio proceso, no se piden al llamador:
     # un dato que hay que acordarse de pasar es un dato que falta.
-    local cmd="${4:-}"
+    local cmd=""
     [[ -z "$cmd" && -n "$pid" && -r "/proc/$pid/cmdline" ]] \
         && cmd="$(tr '\0' ' ' < "/proc/$pid/cmdline")"
     local ps0=""; [[ -n "$pid" ]] && ps0="$(read_proc_start "$pid")"
     printf 'log=%s\npid=%s\nproc_start=%s\ncmd=%s\n' "$log" "$pid" "$ps0" "$cmd" > "$tmp"
+    [[ -n "$after_ok" ]] && printf 'after_ok=%s\nrun=%s\n' "$after_ok" "$run" >> "$tmp"
     mv -f "$tmp" "$target"
     echo "registrado: $label -> $log (pid=${pid:-sin-pid})"
 }
@@ -209,6 +231,15 @@ cmd_pending() {
         mk=$(sed -n 's/^marker=//p' "$f")
         ps0=$(sed -n 's/^proc_start=//p' "$f")
         label=$(basename "$f" .job)
+        # Un CANCELADO no es trabajo pendiente: su predecesor falló y nunca va
+        # a arrancar, así que contarlo dejaría el turno bloqueado para siempre
+        # por algo que ya tiene desenlace. Sigue visible en `status`.
+        [[ -n "$(sed -n 's/^cancelled=//p' "$f")" ]] && continue
+        # Un BLOQUEADO sí lo es: su predecesor puede aún terminar bien, y
+        # cerrar el turno lo dejaría sin lanzar jamás.
+        if [[ -n "$(sed -n 's/^after_ok=//p' "$f")" ]]; then
+            echo "$label  [BLOQUEADO]  $log"; any_pending=1; continue
+        fi
         v=$(verdict "$log" "$pid" "$pattern" "$ps0" "$mk")
         [[ "$v" == OK ]] && v=SIN-RECOGER
         echo "$label  [$v]  $log"
@@ -305,6 +336,85 @@ process_state() {
     ps -o state= -p "$1" 2>/dev/null | tr -d ' \n'
 }
 
+# ¿El pid es LIDER de su propio grupo? Es la precondicion de senalar al grupo
+# con `kill -- -$pid`: si no lo es, ese `-$pid` nombra el grupo de QUIEN LO
+# LANZO y la senal caeria sobre procesos ajenos. Un trabajo lanzado por `bg.sh`
+# o por el pool lo es —van con `setsid`—; uno adoptado de fuera, o anotado
+# antes de que el lanzamiento lo llevara, puede no serlo.
+#
+# Es la misma bifurcacion que `kill_child_tree` hace al caer a `child.kill()`
+# cuando el grupo falla (smolvm guest-agent/src/exec.rs:87-101).
+is_group_leader() {
+    [[ -n "${1:-}" ]] || return 1
+    local pgid
+    pgid="$(ps -o pgid= -p "$1" 2>/dev/null | tr -d ' \n')"
+    [[ -n "$pgid" && "$pgid" == "$1" ]]
+}
+
+# ¿Queda ALGO vivo del trabajo? `modo=group` pregunta por el grupo entero
+# —`kill -0 -- -$pid` es cierto mientras quede un miembro—; `modo=leader` mira
+# solo la fila del lider, que es lo unico medible cuando el pid no lidera.
+#
+# La distincion ES el defecto que esta funcion cierra: `process_state` dice
+# «muerto» en cuanto el lider sale, con los hijos aun colgando, y el ledger se
+# soltaba ahi — declarando que no quedaba nada habiendo huerfanos.
+#
+# El instrumento discrimina, medido con censo de miembros al lado: 3 miembros
+# -> «si»; tras TERM 2 miembros -> «si»; tras KILL 0 miembros -> «no».
+job_alive() {
+    local pid="${1:?}" modo="${2:?}"
+    if [[ "$modo" != group ]]; then
+        [[ -n "$(process_state "$pid")" ]]
+        return
+    fi
+    # NO se pregunta con `kill -0 -- -$pid`, y la razon esta medida: un ZOMBI
+    # responde que si. Un zombi es una fila que espera a que su padre la
+    # coseche — no es un proceso que corre. El PID 1 de este contenedor es
+    # `process_api` y no cosecha con prontitud, asi que tras el KILL queda un
+    # `Z` con ppid 1 dentro del grupo. Con `kill -0` pelado, `cmd_kill` diria
+    # «NO murio» y se negaria a soltar el ledger: el turno quedaria bloqueado
+    # por un cadaver, que es el error en la direccion contraria al que #327
+    # cierra pero igual de real.
+    #
+    # Medido (sonda-discriminacion-del-instrumento.txt): tras TERM+KILL el
+    # grupo conserva 1 miembro en estado Z con ppid 1, y `kill -0 -- -PID`
+    # devuelve «si» en las tres repeticiones.
+    #
+    # Su control es el caso 7 de `tests/session/test-process-group.sh`, y es
+    # DETERMINISTA: el fixture deja un zombi cuyo padre no cosecha por
+    # construccion, asi que no depende de la ventana de cosecha. Retirar `Z*`
+    # de este `case` hace caer EXACTAMENTE dos aserciones —el veredicto «ya no
+    # corria» y la liberacion del ledger— y ninguna de las otras diez, medido
+    # tres veces (TASK-THYROX-0015).
+    #
+    # Se recorre en `while read` y no por tuberia a `grep -q` para no depender
+    # del estado de `pipefail`, que invierte el veredicto de un `grep` cuando
+    # el productor falla.
+    # El selector es por PGID, y `ps -g` NO lo es: procps lo documenta como
+    # equivalente a `-s`, o sea SESION. Medido con control de trabajos activo
+    # (`bash -c 'set -m; sleep 300 & echo $!'`), donde pgid != sid:
+    #
+    #     pid=7186  pgid=7186  sid=7183
+    #     ps -o state= -g $P                       -> []      <- ciego
+    #     ps -eo pgid=,state= | awk '$1==P'        -> [S]     <- por PGID
+    #
+    # La ceguera no era academica: con `-g`, un lider de grupo que NO lidera
+    # sesion se leia como muerto, y `cmd_kill` tomaba la rama «ya no corria —
+    # soltado», liberando el ledger SIN enviar ninguna senal. Es el fallo en la
+    # direccion peligrosa: declarar que no queda nada habiendo huerfanos, que es
+    # justo lo que esta funcion existe para impedir.
+    #
+    # No se vio antes porque todas las sondas usaban trabajos de `bg.sh` y del
+    # pool, que van con `setsid`: ahi sid == pgid y los dos selectores coinciden.
+    local pgid estado
+    while read -r pgid estado; do
+        [[ "$pgid" == "$pid" ]] || continue
+        case "$estado" in ''|Z*) continue ;; esac
+        return 0
+    done < <(ps -eo pgid=,state= 2>/dev/null)
+    return 1
+}
+
 # La hora de arranque del proceso, campo 22 de `/proc/<pid>/stat` (`starttime`,
 # en ticks desde el arranque del sistema). Es el discriminador que `kill -0` no
 # puede dar: un pid vuelve a existir siendo OTRO proceso, y su `starttime` no
@@ -359,6 +469,83 @@ class() {
 # trabajo y no dice cuántos hay de cada clase; con veinte trabajos eso no es un
 # estado, es un volcado. Exit 1 si queda algo sin recoger — mismo contrato que
 # `pending`, para que el Stop hook no tenga que parsear.
+# `dispatch` — mueve la cadena SIN bloquear el primer plano.
+#
+# Recorre los trabajos con `after_ok=` y, según el veredicto del predecesor:
+#
+#   OK        lanza el `run=` con su marcador `EXIT=` y le anota el pid
+#   BAIL      lo CANCELA y lo dice, nombrando al predecesor que falló
+#   ESPERANDO lo deja como está — todavía no se sabe
+#
+# Es idempotente: un dependiente ya lanzado pierde su `after_ok=`, así que un
+# segundo `dispatch` no lo relanza. Y lo llaman `wait`, `status` y `pending`,
+# de modo que la cadena avanza con cualquier interacción, sin daemon y sin que
+# nadie tenga que quedarse esperando.
+#
+# CANCELADO no es un estado silencioso a propósito: el trabajo se queda en el
+# ledger con `cancelled=` para que `status` lo muestre, y `pending` NO lo
+# cuenta como pendiente — un dependiente que nunca podrá arrancar no debe
+# bloquear el cierre del turno para siempre.
+cmd_dispatch() {
+    local pattern="$DEFAULT_PATTERN"
+    [[ "${1:-}" == "--pattern" ]] && { pattern="${2:?--pattern exige una expresión}"; shift 2; }
+    local lanzados=0 cancelados=0 esperando=0 total=0
+    shopt -s nullglob
+    for f in "$LEDGER"/*.job; do
+        local after_ok run label
+        after_ok=$(sed -n 's/^after_ok=//p' "$f")
+        [[ -z "$after_ok" ]] && continue
+        total=$((total + 1))
+        label=$(basename "$f" .job)
+        local pf="$LEDGER/${after_ok//\//_}.job"
+        if [[ ! -f "$pf" ]]; then
+            # El predecesor no está: o ya se recogió (y entonces terminó bien,
+            # porque `wait` sólo retira lo asentado) o nunca existió. No se
+            # puede distinguir desde aquí, así que se dice en vez de suponerlo.
+            echo "  SIN-PREDECESOR $label — '$after_ok' no está en el ledger; no se lanza"
+            esperando=$((esperando + 1))
+            continue
+        fi
+        local plog ppid pps pmk v
+        plog=$(sed -n 's/^log=//p' "$pf");  ppid=$(sed -n 's/^pid=//p' "$pf")
+        pps=$(sed -n 's/^proc_start=//p' "$pf"); pmk=$(sed -n 's/^marker=//p' "$pf")
+        v=$(verdict "$plog" "$ppid" "$pattern" "$pps" "$pmk")
+        case "$v" in
+            OK)
+                run=$(sed -n 's/^run=//p' "$f")
+                local dlog; dlog=$(sed -n 's/^log=//p' "$f")
+                nohup bash -c "$run; echo EXIT=\$?" > "$dlog" 2>&1 &
+                local dpid=$!; disown "$dpid" 2>/dev/null || true
+                local tmp="$f.tmp.$$"
+                grep -v '^after_ok=\|^run=\|^pid=' "$f" > "$tmp"
+                printf 'pid=%s\nproc_start=%s\ncmd=%s\n' \
+                    "$dpid" "$(read_proc_start "$dpid")" "$run" >> "$tmp"
+                mv -f "$tmp" "$f"
+                echo "  LANZADO   $label (tras '$after_ok' OK) pid=$dpid"
+                lanzados=$((lanzados + 1))
+                ;;
+            BAIL)
+                local tmp="$f.tmp.$$"
+                grep -v '^after_ok=\|^run=' "$f" > "$tmp"
+                printf 'cancelled=%s\n' "$after_ok" >> "$tmp"
+                mv -f "$tmp" "$f"
+                echo "  CANCELADO $label — su predecesor '$after_ok' terminó en BAIL; no se lanza"
+                cancelados=$((cancelados + 1))
+                ;;
+            *)
+                esperando=$((esperando + 1))
+                ;;
+        esac
+    done
+    shopt -u nullglob
+    if [[ $total -eq 0 ]]; then
+        echo "dispatch: 0 aristas declaradas (alcance medido: $LEDGER)"
+        return 0
+    fi
+    echo "dispatch: $total arista(s) — lanzadas=$lanzados canceladas=$cancelados esperando=$esperando"
+    return 0
+}
+
 cmd_status() {
     local pattern="$DEFAULT_PATTERN"
     [[ "${1:-}" == "--pattern" ]] && { pattern="${2:?--pattern exige una expresión}"; shift 2; }
@@ -370,7 +557,17 @@ cmd_status() {
         mk=$(sed -n 's/^marker=//p' "$f")
         ps0=$(sed -n 's/^proc_start=//p' "$f")
         label=$(basename "$f" .job)
-        c=$(class "$log" "$pid" "$pattern" "$ps0" "$mk")
+        # Los dos estados de la dependencia declarada se leen del propio .job y
+        # NO pasan por class(): class mide un proceso, y un dependiente que aún
+        # no arrancó no tiene proceso que medir. Colapsarlos en SIN-PID diría
+        # «no se puede señalar» de algo que ni siquiera existe todavía.
+        if [[ -n "$(sed -n 's/^after_ok=//p' "$f")" ]]; then
+            c="BLOQUEADO"
+        elif [[ -n "$(sed -n 's/^cancelled=//p' "$f")" ]]; then
+            c="CANCELADO"
+        else
+            c=$(class "$log" "$pid" "$pattern" "$ps0" "$mk")
+        fi
         count[$c]=$(( ${count[$c]:-0} + 1 ))
         total=$((total + 1))
         printf '  %-12s %-10s pid %-8s %s\n' "$label" "$c" "${pid:-—}" "$log"
@@ -381,14 +578,30 @@ cmd_status() {
         return 0
     fi
     local summary=""
-    for c in SIN-RECOGER VIVO DETENIDO ZOMBIE RECICLADO BAIL SIN-PID; do
+    for c in SIN-RECOGER VIVO DETENIDO ZOMBIE RECICLADO BAIL SIN-PID BLOQUEADO CANCELADO; do
         [[ -n "${count[$c]:-}" ]] && summary+="$c=${count[$c]} "
     done
     echo "estado: $total trabajo(s) — $summary"
     [[ -n "${count[DETENIDO]:-}" ]] && echo "  → los DETENIDO no avanzan solos: 'continuar <label>' o 'matar'"
     [[ -n "${count[ZOMBIE]:-}"  ]] && echo "  → los ZOMBIE ya terminaron sin cosechar: 'kill' los suelta"
     [[ -n "${count[RECICLADO]:-}" ]] && echo "  → los RECICLADO: su pid es de otro proceso; el trabajo murió — 'forget'"
-    return 1
+    [[ -n "${count[BLOQUEADO]:-}" ]] && echo "  → los BLOQUEADO esperan su predecesor: 'dispatch' mueve la cadena"
+    [[ -n "${count[CANCELADO]:-}" ]] && echo "  → los CANCELADO no arrancarán: su predecesor falló — 'forget' los suelta"
+    # El exit code de `status` NO es «hay algo en el ledger» -- eso ya lo
+    # cubre `pending`, y es lo que el Stop gate consume (DEC-04, este mismo
+    # guion, `cmd_pending`). `status` es la vía INFORMATIVA
+    # (trabajo-en-segundo-plano.md: "no bloquea"), y hasta hoy devolvía 1
+    # con CUALQUIER cosa registrada -- un VIVO sano incluido. Un turno que
+    # sólo consulta el progreso de un trabajo que corre bien veía
+    # "Exit code 1" y lo leía como un fallo del propio chequeo, no del
+    # trabajo (H-THYROX-04). Sólo los estados que de verdad piden una
+    # acción -- los mismos que ya llevan su "→" arriba, menos BLOQUEADO y
+    # CANCELADO, que son de espera/cierre normales -- hacen que `status`
+    # salga distinto de 0.
+    for c in DETENIDO ZOMBIE RECICLADO BAIL SIN-PID; do
+        [[ -n "${count[$c]:-}" ]] && return 1
+    done
+    return 0
 }
 
 # Los .job que una selección nombra: una etiqueta, o `--todos`.
@@ -413,7 +626,12 @@ cmd_continue() {
         pid=$(sed -n 's/^pid=//p' "$f"); label=$(basename "$f" .job)
         st="$(process_state "$pid")"
         case "$st" in
-            *T*) kill -CONT "$pid" 2>/dev/null && { echo "continuado: $label (pid $pid)"; n=$((n+1)); } ;;
+            # El estado T se lee del LIDER, que es el disparador; la senal va
+            # al grupo cuando lo lidera, porque un hijo detenido con el lider
+            # reactivado sigue sin avanzar.
+            *T*) { if is_group_leader "$pid"; then kill -CONT -- "-$pid" 2>/dev/null
+                   else kill -CONT "$pid" 2>/dev/null; fi; } \
+                     && { echo "continuado: $label (pid $pid)"; n=$((n+1)); } ;;
             '')  echo "sin proceso: $label (pid ${pid:-—} no existe)" >&2 ;;
             *)   echo "no detenido: $label (estado '$st') — no se señala" >&2 ;;
         esac
@@ -435,19 +653,30 @@ cmd_kill() {
             echo "sin pid: $label no se puede señalar; usa 'forget'" >&2
             continue
         fi
-        if [[ -z "$(process_state "$pid")" ]]; then
-            rm -f "$f"; echo "ya no corría: $label (pid $pid) — soltado"; n=$((n+1)); continue
-        fi
-        kill -TERM "$pid" 2>/dev/null
-        local i=0
-        while [[ $i -lt $grace && -n "$(process_state "$pid")" ]]; do sleep 1; i=$((i+1)); done
-        if [[ -n "$(process_state "$pid")" ]]; then
-            kill -KILL "$pid" 2>/dev/null; sleep 1
-        fi
-        if [[ -n "$(process_state "$pid")" ]]; then
-            echo "NO murió: $label (pid $pid) sigue vivo tras TERM y KILL — NO se suelta del ledger" >&2
+        # A QUIEN apunta la senal: al GRUPO si el pid lo lidera, al pid a
+        # secas si no. La escalera TERM -> gracia -> KILL no cambia — y sigue
+        # haciendo falta: medido, TERM al grupo deja 2 de 3 miembros vivos y es
+        # el KILL el que los barre.
+        local modo alcance
+        local -a objetivo
+        if is_group_leader "$pid"; then
+            modo=group; objetivo=(-- "-$pid"); alcance="grupo $pid"
         else
-            rm -f "$f"; echo "matado: $label (pid $pid) — soltado del ledger"; n=$((n+1))
+            modo=leader; objetivo=("$pid"); alcance="pid $pid, que no lidera grupo"
+        fi
+        if ! job_alive "$pid" "$modo"; then
+            rm -f "$f"; echo "ya no corría: $label ($alcance) — soltado"; n=$((n+1)); continue
+        fi
+        kill -TERM "${objetivo[@]}" 2>/dev/null
+        local i=0
+        while [[ $i -lt $grace ]] && job_alive "$pid" "$modo"; do sleep 1; i=$((i+1)); done
+        if job_alive "$pid" "$modo"; then
+            kill -KILL "${objetivo[@]}" 2>/dev/null; sleep 1
+        fi
+        if job_alive "$pid" "$modo"; then
+            echo "NO murió: $label ($alcance) sigue vivo tras TERM y KILL — NO se suelta del ledger" >&2
+        else
+            rm -f "$f"; echo "matado: $label ($alcance) — soltado del ledger"; n=$((n+1))
         fi
     done < <(_selection "$sel")
     [[ $n -gt 0 ]]
@@ -589,6 +818,7 @@ case "${1:-}" in
     forget|olvidar)      shift; cmd_forget "$@" ;;
     adopt|adoptar)       shift; cmd_adopt "$@" ;;
     adopt-external)      shift; cmd_adopt_external "$@" ;;
+    dispatch|despachar)  shift; cmd_dispatch "$@" ;;
     archive|archivar)    shift; cmd_archive "$@" ;;
     *) sed -n '/^# Uso/,/^# ===/p' "$0" | sed 's/^# \?//'; exit 64 ;;
 esac

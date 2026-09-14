@@ -1,0 +1,8 @@
+{
+  "id": "239",
+  "subject": "Triar los 196 sustitutos rancios que el censo destapó",
+  "description": "MEDIDO 2026-09-08 con `src/gates/staleSubstitutes.ts` (7 casos, anulación de cuatro guardas): **196 candidatos** sobre ~407 símbolos sustituidos en 15 paquetes.\n\n  90 bridge · 39 local-observability · 15 ide · 11 daemon · 11 memory\n  11 provider · 8 storage · 4 server · 3 headless-sdk · 2 mcp-runtime\n  1 app-host · 1 config · 1 tool-registry\n\nCANDIDATOS, no veredicto. El emparejamiento es por NOMBRE, así que es ciego a: el sustituto renombrado respecto de su canónico; el que reimplementa algo que sigue ausente de verdad; y a si las dos implementaciones coinciden, que es juicio de contenido.\n\n    bun -e \"import {findStaleSubstitutes} from './src/gates/staleSubstitutes.ts'; console.log(findStaleSubstitutes('src/packages'))\"\n\nCUATRO YA RETIRADOS, y ninguno era inocuo:\n  getClaudeConfigHomeDir en local-observability y en provider — la copia de provider DIVERGÍA (sin normalizar a NFC, y tratando un override vacío como ausente)\n  formatFileSize en local-observability y en app-host — motivo caducado al cerrar el porte de `output`\n\nDOS TRAMPAS MEDIDAS al retirarlos, para quien siga:\n  1. `export { x } from 'y'` NO trae el símbolo al ámbito del módulo. Si el archivo además lo USA localmente, hace falta `import` + `export`. Mordió dos veces.\n  2. Medir consumidores excluyendo el archivo del sustituto excluye también al consumidor que vive en ese mismo archivo. La primera lectura dio «cero consumidores» y era falsa.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -10,6 +10,8 @@
     "./contracts": "./src/contracts.ts",
     "./errors": "./src/errors.ts",
     "./testing": "./testing/index.ts",
+    "./remote-setup": "./src/remote-setup/index.ts",
+    "./remote-setup/remote-setup": "./src/remote-setup/remote-setup.tsx",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts",
     "./remote-setup/*.js": "./src/remote-setup/*.ts"

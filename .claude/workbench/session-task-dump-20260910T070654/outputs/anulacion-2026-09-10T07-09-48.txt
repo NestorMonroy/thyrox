@@ -1,0 +1,20 @@
+CONTROL DE ANULACION — declares_dependency() colapsado a un solo eje
+=====================================================================
+Mutacion aplicada:
+    return in_field, in_prose
+  ->
+    return (in_field or in_prose), (in_field or in_prose)   # ANULADO
+
+Con el mecanismo ANULADO:
+  test_3_EL_QUE_DISCRIMINA_campo_y_prosa_son_ejes_distintos ... FAIL
+  Ran 6 tests -- FAILED (failures=1)
+
+Restaurado (y borrado el __pycache__, que si no el interprete lee la
+version mutada y el rojo no distingue «el porte esta roto» de «el
+instrumento lee una copia vieja»):
+  Ran 6 tests -- OK
+
+Cae EXACTAMENTE una asercion, y es la que depende de la causa. El 3-bis
+sobrevive con razon: mide solo el eje de prosa, que la mutacion preserva
+para sus dos entradas. Un control que hubiera caido de mas estaria
+midiendo otra cosa.

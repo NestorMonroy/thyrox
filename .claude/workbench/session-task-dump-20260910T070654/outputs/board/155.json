@@ -1,0 +1,8 @@
+{
+  "id": "155",
+  "subject": "Declarar la superficie de la mitad Python de thyrox, con #146 y #142",
+  "description": "H-DOCS-1089: exports de thyrox/package.json declara 2 de 2 módulos TS y 0 de 8 paquetes Python, y su control exports.test.ts es ciego a esa mitad por construcción (exports es un mecanismo de Node; un consumidor de Python no lo consulta). Consecuencia viva: cada consumidor localiza thyrox POR RUTA — medido, 10 guiones/hooks bajo .claude/ de kaupamex-docs nombran THYROX_ROOT o thyrox/src, y reconciliar-agentes.sh:133-148 camina el árbol buscando el literal thyrox/src/roster/job_liveness.py, o sea el nombre de un archivo concreto y no de una superficie. Decidir el mecanismo (pyproject.toml con su paquete, __init__ que reexporte, o variable con control) JUNTO con #146 (localizador de reach_roots.py que sobreviva a la copia) y #142 (KAUPAMEX_DOCS_ROOT: el parámetro filtrado al identificador del mecanismo): las tres son el mismo hueco, y resolverlas por separado produce tres localizadores distintos.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

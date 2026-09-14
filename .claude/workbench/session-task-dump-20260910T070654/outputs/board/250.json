@@ -1,0 +1,9 @@
+{
+  "id": "250",
+  "subject": "Completar permission: 110 de 133 siguen fuera, y 88 son un bloque decidible",
+  "description": "FRONTERA RE-MEDIDA 2026-09-08, con el instrumento corregido (el anterior sólo globbeaba .ts, así que un hermano .tsx era invisible y publicaba como libre lo que no lo estaba). Sobre .ts + .tsx, sin __tests__: fuente 105 | puerto 41 | ausentes 65.\n\nEste pase cerró el bloque decidible en cuatro tramos, cada uno con su mitad roja persistida y sus anulaciones con predicción declarada: permissionSetup.ts 12/35 (permisos peligrosos, 47 casos, 5 anulaciones), index.ts + appStateHooks.ts + testing/index.ts (17 casos, 4 anulaciones), y commands/add-dir/validation.ts + commands/rename/generateSessionName.ts + los dos símbolos de filesystem.ts que les faltaban (23 casos, 7 anulaciones). El paquete pasa de 250 a 337 pass, 0 fail, 23 archivos; permission/src typechequea con 0 errores.\n\nLO QUE QUEDA, por clase de bloqueo MEDIDO — ya no hay nada libre:\n1. ~25 componentes Ink + classifierApprovalsHook.ts — `react` no resuelve desde este paquete (\"Cannot find package 'react'\"). Decidir si permission declara react o si esos componentes viven en otro paquete.\n2. yoloSystemPrompt.ts (441L) — @thyrox/provider/user.js no existe.\n3. permissionExplainer.ts (245L) y classifierStallTracking.ts (170L) — @thyrox/agent/sideQuery.js no existe; la segunda además pide provider/antModels.js.\n4. toolPermission/permissionLogging.ts (239L) — @thyrox/shell/sandbox.js no existe (es el cuello de #200).\n5. commands/index.ts (11L) — bloqueo de ENLACE, no de código: @thyrox/command-runtime no está en node_modules de este paquete aunque su runtime.ts sí exista. Misma clase que TASK-THYROX-0005.\n6. Los 23 exports restantes de permissionSetup.ts — TASK-THYROX-0004.",
+  "activeForm": "Portando el bloque de permisos peligrosos de permissionSetup.ts",
+  "status": "in_progress",
+  "blocks": [],
+  "blockedBy": []
+}

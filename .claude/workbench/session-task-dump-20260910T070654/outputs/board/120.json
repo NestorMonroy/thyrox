@@ -1,0 +1,8 @@
+{
+  "id": "120",
+  "subject": "Fechar las entradas de baseline para separar deuda heredada de defecto de hoy",
+  "description": "H-DOCS-1065: un agente congeló como deuda heredada siete identificadores escritos ese mismo día, dos de un commit del orquestador de esa hora. Los baselines son pares `archivo::identificador` sin fecha, así que no pueden distinguir «heredado» de «lo que el gate acaba de ganar la capacidad de ver». Añadir la fecha de congelación por entrada haría mecánico el criterio, a costa de un formato más pesado en los tres baselines (api identifier, docs idioma, docs identifiers). Decisión del ejecutor.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

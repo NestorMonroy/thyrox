@@ -1,0 +1,8 @@
+{
+  "id": "369",
+  "subject": "Decidir el desenlace de las 16 rutas que el gate ciego no congeló",
+  "description": "TASK-DOCS-0542. El gate de sucesor marca 17 incumplidores y el baseline (docs@1f3d62fec, 2026-09-10 05:27:51) no los cubre. La causa que H-DOCS-1264 publicó primero era FALSA y está corregida en docs@576393e3d: el arreglo del mawk es docs@757d23be (2026-09-05 07:47:09), CINCO DÍAS ANTES del congelado, así que el gate ya veía el corpus entero al congelar. thyrox@6d3be15e es un cambio de rendimiento — su cuerpo declara \"No behaviour changes ... byte-for-byte identical\".\n\nLo medido que sí se sostiene: 16 de los 17 NO citan ninguna forma de sucesor (ni TASK-, ni #NNN, ni T-NNN); sólo 1 cita un ordinal a secas. El commit del congelado declara en su asunto que congeló \"the ordinal-only successor debt\", así que los 16 nunca fueron su objeto.\n\nPregunta abierta, DESCONOCIDA: por qué el gate no los marcaba el 2026-09-10 si ya veía todo. Condición de cierre: ejecutar el gate contra el árbol en 1f3d62fec y comparar su lista con la de hoy.\n\nDecisión del ejecutor, no derivable: re-congelar cambiaría lo que el baseline SIGNIFICA (hoy es deuda de ordinal, no ausencia total de cita).",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

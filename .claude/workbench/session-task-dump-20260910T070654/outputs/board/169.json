@@ -1,0 +1,9 @@
+{
+  "id": "169",
+  "subject": "Renombrar la clave `submodulos:`, que enumera raíces de trabajo y no submódulos",
+  "description": "La clave `submodulos:` de `.claude/CLAUDE.md` (docs, api, ui) nombra mal lo que enumera, y desde ADR-THYROX-001 lo nombra peor: ninguna de las seis entradas es un submódulo de git — no hay superproyecto desde 2026-08-07 (`gitlink-bump-gate.md`), así que no hay gitlink que las haga submódulos de nada. Y `thyrox` además no es una capa del producto: es su PROVEEDOR de metodología.\n\nLo que la clave enumera de verdad son las RAÍCES DE TRABAJO que el árbol de docs documenta.\n\nRadio medido al declarar la deuda: los tres `.claude/CLAUDE.md` que declaran la clave, más `export type Submodule` y `FINDING_PREFIX` en `thyrox: src/packages/harness/src/paths/docs.ts` (que conservan el nombre `Submodule` por la misma razón). Sin medir: citas en prosa de `.rst` y skills.\n\nLa deuda está declarada en el comentario de la propia clave y en ADR-THYROX-001; esta tarea la paga.",
+  "activeForm": "Renombrando la clave submodulos",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

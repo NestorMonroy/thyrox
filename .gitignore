@@ -6,7 +6,12 @@ package-lock.json
 yarn.lock
 
 # Environment variables
-.env
+# `.env` NO se ignora — directiva del ejecutor 2026-09-10. Sus seis claves son
+# rutas del arbol, no secretos (medido: 0 credenciales en sus 8 lineas), y el
+# archivo es la entrada B de la DEC-04: sin el versionar, el contrato existe y
+# su valor vigente no. El costo se declara en `.env.example`, no se oculta.
+# Las variantes `*.local` SIGUEN ignoradas: son la sobreescritura del
+# consumidor, que es justo lo que la DEC-04 dice que no viaja.
 .env.local
 .env.*.local
 
@@ -25,8 +30,12 @@ Thumbs.db
 Desktop.ini
 
 # Logs
+# `*.log` NO se ignora — directiva del ejecutor 2026-09-10. Un log de una
+# corrida es evidencia fechada: el nivel 4 de `niveles-de-retencion.md` es
+# completitud percibida SIN persistencia, y un log ignorado es tan durable como
+# el contenedor. `logs/` y los `*-debug.log` de los gestores de paquetes siguen
+# ignorados: son ruido de dependencia, no rastro de lo que la sesion hizo.
 logs/
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -115,3 +124,23 @@ venv/
 # esto no es el store.
 *.sqlite3-wal
 *.sqlite3-shm
+
+# Estado de GNU parallel: lo escribe la herramienta, como .venv y node_modules.
+.parallel/
+
+# Puntero de sesión al último banco creado — cambia con cada banco y no es
+# contenido: versionarlo produce el churn por turno de #151. El banco SÍ se
+# versiona; su puntero, no.
+.claude/workbench/.ultimo-banco
+
+# Estado de sesión del gate de mutación: qué mutación está EN VUELO ahora.
+# No es registro del proyecto — su contenido sólo vale dentro de la ejecución
+# que lo escribió, y versionarlo ensucia el árbol en cada corrida.
+agent-results/mutantes-en-vuelo.json
+
+# El ledger de trabajos en segundo plano es POR SESIÓN
+# (.env.example: THYROX_JOBS_DIR/THYROX_JOBS_ARCHIVE_DIR) — dos sesiones que
+# compartieran uno se robarían los marcadores entre sí. Su contenido sólo
+# vale mientras la sesión que lo escribió sigue viva; versionarlo ensucia el
+# árbol cada vez que un trabajo queda VIVO al cerrar el turno.
+.claude/jobs-ledger/

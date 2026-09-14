@@ -1,0 +1,2437 @@
+{
+ "universe": 404,
+ "buckets": {
+  "indecidible": [
+   {
+    "citation_id": "TASK-GEN-0002",
+    "status": "completed",
+    "repos": [],
+    "subject": "Sustituir los placeholders {tool1}/{tool2} de skill-generator.md"
+   },
+   {
+    "citation_id": "TASK-GEN-0003",
+    "status": "completed",
+    "repos": [],
+    "subject": "Implementar el sustrato de skill como código en el harness"
+   },
+   {
+    "citation_id": "TASK-GEN-0004",
+    "status": "completed",
+    "repos": [],
+    "subject": "Nombrar el artefacto del set mínimo para los 17 skills sin coordinador que los mapee"
+   },
+   {
+    "citation_id": "TASK-GEN-0008",
+    "status": "completed",
+    "repos": [],
+    "subject": "Implementar las constantes de ruta documental en el harness (src/paths/docs.ts)"
+   },
+   {
+    "citation_id": "TASK-GEN-0013",
+    "status": "completed",
+    "repos": [],
+    "subject": "Escribir el documento de tareas de la reconciliación tras reinicio a partir de los tres análisis"
+   },
+   {
+    "citation_id": "TASK-GEN-0014",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cablear verifyAdoption al store: cerrar la fila running de un proceso muerto"
+   },
+   {
+    "citation_id": "TASK-GEN-0016",
+    "status": "completed",
+    "repos": [],
+    "subject": "Gate de lecturas cruzadas entre modelos (crossModelRead) — T-097"
+   },
+   {
+    "citation_id": "TASK-GEN-0021",
+    "status": "completed",
+    "repos": [],
+    "subject": "Documentar cómo coordinamos hoy y nombrar el fork local-vs-multi-máquina"
+   },
+   {
+    "citation_id": "TASK-GEN-0022",
+    "status": "completed",
+    "repos": [],
+    "subject": "Escribir tareas + DEC del fork de estado e implementar el claim ledger"
+   },
+   {
+    "citation_id": "TASK-GEN-0023",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir si el tablero de texto es la FUENTE o sigue siendo un render del sqlite"
+   },
+   {
+    "citation_id": "TASK-GEN-0026",
+    "status": "completed",
+    "repos": [],
+    "subject": "T-104 Componer el overlap gate consciente del driver en integrate()"
+   },
+   {
+    "citation_id": "TASK-GEN-0027",
+    "status": "completed",
+    "repos": [],
+    "subject": "T-105 Sostener los controles positivos de git-real con timeout 60000"
+   },
+   {
+    "citation_id": "TASK-GEN-0029",
+    "status": "completed",
+    "repos": [],
+    "subject": "Enhebrar el hilo de sesión al ToolContext para que skill getPrompt lo lea"
+   },
+   {
+    "citation_id": "TASK-GEN-0030",
+    "status": "completed",
+    "repos": [],
+    "subject": "Auto-renumerar colisiones de etiqueta en integrate() (opción 2): merge"
+   },
+   {
+    "citation_id": "TASK-GEN-0031",
+    "status": "completed",
+    "repos": [],
+    "subject": "ConflictResolver para conflicto de código por análisis (no juicio humano):"
+   },
+   {
+    "citation_id": "TASK-GEN-0040",
+    "status": "completed",
+    "repos": [],
+    "subject": "Decidir la conducta del hook Stop ahora que su cadena rehúsa con exit 4"
+   },
+   {
+    "citation_id": "TASK-GEN-0041",
+    "status": "completed",
+    "repos": [],
+    "subject": "Decidir el nombre de monorepo_roots.py midiendo cómo lo nombra la referencia"
+   },
+   {
+    "citation_id": "TASK-GEN-0043",
+    "status": "completed",
+    "repos": [],
+    "subject": "Buscar el mecanismo en la referencia por su flujo, no por su literal"
+   },
+   {
+    "citation_id": "TASK-GEN-0046",
+    "status": "pending",
+    "repos": [],
+    "subject": "RE-ENCUADRADA — los cuatro jobs ya están sembrados; verificar y cerrar"
+   },
+   {
+    "citation_id": "TASK-GEN-0048",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir el XML y los datos de la familia CFDI (677 archivos, sólo 209 son .py)"
+   },
+   {
+    "citation_id": "TASK-GEN-0049",
+    "status": "pending",
+    "repos": [],
+    "subject": "Construir las 10 dependencias externas ausentes de la familia CFDI"
+   },
+   {
+    "citation_id": "TASK-GEN-0050",
+    "status": "completed",
+    "repos": [],
+    "subject": "Triar los 34 addons cáscara (&lt;15% de la masa de su contraparte)"
+   },
+   {
+    "citation_id": "TASK-GEN-0051",
+    "status": "completed",
+    "repos": [],
+    "subject": "Leer el prompt de cada fase antes de fijar su semántica"
+   },
+   {
+    "citation_id": "TASK-GEN-0052",
+    "status": "pending",
+    "repos": [],
+    "subject": "Sondear PostToolUse matcher Agent + additionalContext como cierre de ronda"
+   },
+   {
+    "citation_id": "TASK-GEN-0053",
+    "status": "completed",
+    "repos": [],
+    "subject": "RESUELTA por medición — 0 rutas ../e-commerce/ vivas en server"
+   },
+   {
+    "citation_id": "TASK-GEN-0054",
+    "status": "pending",
+    "repos": [],
+    "subject": "Mover la memoria episódica de las reglas de vía A a lecciones-aprendidas"
+   },
+   {
+    "citation_id": "TASK-GEN-0055",
+    "status": "pending",
+    "repos": [],
+    "subject": "DECISIÓN: acotar R a 2 rondas o levantar la guía de 15 agentes"
+   },
+   {
+    "citation_id": "TASK-GEN-0057",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar la recuperación de carrito abandonado (bloqueada por #103)"
+   },
+   {
+    "citation_id": "TASK-GEN-0058",
+    "status": "pending",
+    "repos": [],
+    "subject": "Ola 1 · portar odoo/modules/db.py (6 símbolos) — núcleo de módulos"
+   },
+   {
+    "citation_id": "TASK-GEN-0060",
+    "status": "pending",
+    "repos": [],
+    "subject": "Construir el almacenamiento jsonb de translate=True"
+   },
+   {
+    "citation_id": "TASK-GEN-0061",
+    "status": "completed",
+    "repos": [],
+    "subject": "RESUELTA — 0 recuperar / 41 descartar; nada faltaba, sólo se movió"
+   },
+   {
+    "citation_id": "TASK-GEN-0062",
+    "status": "pending",
+    "repos": [],
+    "subject": "Construir el motor de traducción: import/export de .po"
+   },
+   {
+    "citation_id": "TASK-GEN-0063",
+    "status": "pending",
+    "repos": [],
+    "subject": "Trocear las nueve capas en lotes ejecutables"
+   },
+   {
+    "citation_id": "TASK-GEN-0064",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir superficie consumida de los 62 arrastrados por depends"
+   },
+   {
+    "citation_id": "TASK-GEN-0065",
+    "status": "completed",
+    "repos": [],
+    "subject": "RESUELTA — gate de IDs en post-merge (reporte) + pre-push (bloqueo)"
+   },
+   {
+    "citation_id": "TASK-GEN-0066",
+    "status": "pending",
+    "repos": [],
+    "subject": "Afinar PostgreSQL: 0 parámetros de memoria/checkpoint declarados en db"
+   },
+   {
+    "citation_id": "TASK-GEN-0067",
+    "status": "pending",
+    "repos": [],
+    "subject": "Construir _name_search()"
+   },
+   {
+    "citation_id": "TASK-GEN-0068",
+    "status": "pending",
+    "repos": [],
+    "subject": "Mecanismo &lt;delete&gt; de datos de módulo"
+   },
+   {
+    "citation_id": "TASK-GEN-0069",
+    "status": "pending",
+    "repos": [],
+    "subject": "Bandera de nivel de log en tiempo de ejecución"
+   },
+   {
+    "citation_id": "TASK-GEN-0070",
+    "status": "pending",
+    "repos": [],
+    "subject": "Precarga de contexto en el shell"
+   },
+   {
+    "citation_id": "TASK-GEN-0071",
+    "status": "pending",
+    "repos": [],
+    "subject": "Gate: campo marcado SECRETO en docstring vs restricción real por capacidad"
+   },
+   {
+    "citation_id": "TASK-GEN-0073",
+    "status": "completed",
+    "repos": [],
+    "subject": "Construir base.automation: reglas declarativas por tiempo y por evento"
+   },
+   {
+    "citation_id": "TASK-GEN-0075",
+    "status": "pending",
+    "repos": [],
+    "subject": "Claves de API para integracion externa (cap17, UC-PLT-09)"
+   },
+   {
+    "citation_id": "TASK-GEN-0076",
+    "status": "pending",
+    "repos": [],
+    "subject": "Colector periodico del profiler + visor Speedscope (cap18)"
+   },
+   {
+    "citation_id": "TASK-GEN-0077",
+    "status": "pending",
+    "repos": [],
+    "subject": "DECISION de alcance: la familia point_of_sale (42 pos_* + raiz, LGPL-3)"
+   },
+   {
+    "citation_id": "TASK-GEN-0078",
+    "status": "pending",
+    "repos": [],
+    "subject": "Regla de negocio: advertir venta por debajo del costo (cap19)"
+   },
+   {
+    "citation_id": "TASK-GEN-0079",
+    "status": "pending",
+    "repos": [],
+    "subject": "ReportSpec no puede declarar un destino que no sea el navegador (cap21)"
+   },
+   {
+    "citation_id": "TASK-GEN-0080",
+    "status": "pending",
+    "repos": [],
+    "subject": "Servidor de correo entrante (POP/IMAP/Local) — 0% portado (cap20)"
+   },
+   {
+    "citation_id": "TASK-GEN-0081",
+    "status": "pending",
+    "repos": [],
+    "subject": "mail.alias.mixin: alias por registro — 0 hits (cap20)"
+   },
+   {
+    "citation_id": "TASK-GEN-0082",
+    "status": "pending",
+    "repos": [],
+    "subject": "Sembrar los tipos de actividad por defecto: dos consumidores citan xmlids inexistentes (cap20)"
+   },
+   {
+    "citation_id": "TASK-GEN-0083",
+    "status": "pending",
+    "repos": [],
+    "subject": "CONDICIONAL: user_count no distingue interno de portal — sólo importa si se cobra por asiento"
+   },
+   {
+    "citation_id": "TASK-GEN-0084",
+    "status": "completed",
+    "repos": [],
+    "subject": "website B2 · resolución de sitio actual y páginas (15 métodos)"
+   },
+   {
+    "citation_id": "TASK-GEN-0085",
+    "status": "completed",
+    "repos": [],
+    "subject": "website B4 · configurador y RPC externo (15 métodos)"
+   },
+   {
+    "citation_id": "TASK-GEN-0086",
+    "status": "completed",
+    "repos": [],
+    "subject": "website B6 · los 32 restantes: CDN, plausible, canónica, snippets"
+   },
+   {
+    "citation_id": "TASK-GEN-0087",
+    "status": "pending",
+    "repos": [],
+    "subject": "DECISIÓN: cachear _get_current_website_id, o declarar que no se cachea"
+   },
+   {
+    "citation_id": "TASK-GEN-0089",
+    "status": "pending",
+    "repos": [],
+    "subject": "Middleware que sirva las 308/404 de website.rewrite sobre la URLconf"
+   },
+   {
+    "citation_id": "TASK-GEN-0090",
+    "status": "pending",
+    "repos": [],
+    "subject": "Extender ir.attachment con website_id (extensión del addon website)"
+   },
+   {
+    "citation_id": "TASK-GEN-0091",
+    "status": "pending",
+    "repos": [],
+    "subject": "Cablear website.page a la búsqueda fuzzy del sitio (columnas delegadas)"
+   },
+   {
+    "citation_id": "TASK-GEN-0093",
+    "status": "completed",
+    "repos": [],
+    "subject": "Veredicto: check_graph_contract opcional vs comprobación en el acceso"
+   },
+   {
+    "citation_id": "TASK-GEN-0094",
+    "status": "pending",
+    "repos": [],
+    "subject": "hr_recruitment: índice trigram de ir.attachment vía migración"
+   },
+   {
+    "citation_id": "TASK-GEN-0095",
+    "status": "completed",
+    "repos": [],
+    "subject": "Disolver observability: reintegrar sus 17 archivos en sus hogares medidos"
+   },
+   {
+    "citation_id": "TASK-GEN-0096",
+    "status": "completed",
+    "repos": [],
+    "subject": "DECIDIDA (DEC-AF-11) — RequestLog se parte: error a ir.logging, acceso al proxy"
+   },
+   {
+    "citation_id": "TASK-GEN-0097",
+    "status": "completed",
+    "repos": [],
+    "subject": "Adaptar app_auto_backup (odoo18, LGPL-3) — la contraparte real de auto_backup"
+   },
+   {
+    "citation_id": "TASK-GEN-0098",
+    "status": "pending",
+    "repos": [],
+    "subject": "DIFERIDA — el canon vivo de docs describe mecanismos retirados (150 de 1407)"
+   },
+   {
+    "citation_id": "TASK-GEN-0099",
+    "status": "pending",
+    "repos": [],
+    "subject": "Gate: test negativo que afirma 404/403 sobre un objeto que nunca crea"
+   },
+   {
+    "citation_id": "TASK-GEN-0101",
+    "status": "pending",
+    "repos": [],
+    "subject": "DESCONOCIDO: sonda de dato para las dos filas INDECIDIBLE del cap17"
+   },
+   {
+    "citation_id": "TASK-GEN-0102",
+    "status": "pending",
+    "repos": [],
+    "subject": "DESCONOCIDO: sonda de dato para las tres filas INDECIDIBLE del cap17b"
+   },
+   {
+    "citation_id": "TASK-GEN-0103",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir con qué etiqueta se envuelve el mensaje del canal MCP"
+   },
+   {
+    "citation_id": "TASK-GEN-0104",
+    "status": "pending",
+    "repos": [],
+    "subject": "DESCONOCIDO: sonda de dato para las cuatro filas INDECIDIBLE del cap18"
+   },
+   {
+    "citation_id": "TASK-GEN-0105",
+    "status": "pending",
+    "repos": [],
+    "subject": "DESCONOCIDO: sonda de dato para las cuatro filas INDECIDIBLE del cap19"
+   },
+   {
+    "citation_id": "TASK-GEN-0106",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir si el aviso por tokens sustituyó al umbral de 40 000 caracteres (cap19)"
+   },
+   {
+    "citation_id": "TASK-GEN-0107",
+    "status": "completed",
+    "repos": [],
+    "subject": "Decidir si existe un _check_credentials unificado"
+   },
+   {
+    "citation_id": "TASK-GEN-0108",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir el hogar de los assets de addon"
+   },
+   {
+    "citation_id": "TASK-GEN-0109",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar las dos vistas XML de auth_timeout como datos"
+   },
+   {
+    "citation_id": "TASK-GEN-0110",
+    "status": "pending",
+    "repos": [],
+    "subject": "DESCONOCIDO: qué señal permite verificar el hogar de un documento por su tipo"
+   },
+   {
+    "citation_id": "TASK-GEN-0112",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir la deuda: documentos escritos fuera del hogar que su tipo manda"
+   },
+   {
+    "citation_id": "TASK-GEN-0113",
+    "status": "completed",
+    "repos": [],
+    "subject": "Analizar el AGA XI/2021 de la SCJN (décima fuente)"
+   },
+   {
+    "citation_id": "TASK-GEN-0114",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir qué raíz devuelve ${CLAUDE_PROJECT_DIR} en sesión multi-repo"
+   },
+   {
+    "citation_id": "TASK-GEN-0149",
+    "status": "pending",
+    "repos": [],
+    "subject": "Aplicar los mecanismos de las CUATRO instituciones a la derivación de #777"
+   },
+   {
+    "citation_id": "TASK-GEN-0212",
+    "status": "pending",
+    "repos": [],
+    "subject": "async_suitable: 10 agentes lo declaran y el ejecutable da 0 aciertos"
+   },
+   {
+    "citation_id": "TASK-GEN-0240",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Portar addons/sale entero — 18 archivos, 257 símbolos (bloqueo raíz de sale_timesheet)"
+   },
+   {
+    "citation_id": "TASK-GEN-0241",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar addons/sale_timesheet — 11 archivos, 123 símbolos (bloqueado por sale)"
+   },
+   {
+    "citation_id": "TASK-GEN-0259",
+    "status": "completed",
+    "repos": [],
+    "subject": "Declarar el instrumento y la población antes de publicar una comparación"
+   },
+   {
+    "citation_id": "TASK-GEN-0261",
+    "status": "completed",
+    "repos": [],
+    "subject": "Avisar cuando el corpus extraído se quede atrás del ejecutable instalado"
+   },
+   {
+    "citation_id": "TASK-GEN-0262",
+    "status": "completed",
+    "repos": [],
+    "subject": "Aplicar el mapa de nombres al corpus con un reescritor por AST"
+   },
+   {
+    "citation_id": "TASK-GEN-0263",
+    "status": "completed",
+    "repos": [],
+    "subject": "Renombrar por binding y no por nombre, para recuperar los 760 sombreados"
+   },
+   {
+    "citation_id": "TASK-GEN-0264",
+    "status": "pending",
+    "repos": [],
+    "subject": "Hacer que el fixture derive las dependencias del SUT en vez de enumerarlas"
+   },
+   {
+    "citation_id": "TASK-GEN-0265",
+    "status": "pending",
+    "repos": [],
+    "subject": "Renumerar las seis colisiones de etiqueta vivas entre ramas"
+   },
+   {
+    "citation_id": "TASK-GEN-0266",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar discriminador a las dos acepciones de la familia relacional"
+   },
+   {
+    "citation_id": "TASK-GEN-0267",
+    "status": "pending",
+    "repos": [],
+    "subject": "Poblar el registro de divergencias con las 417 declaradas en prosa"
+   },
+   {
+    "citation_id": "TASK-GEN-0268",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar hogar al tercer desenlace: DESCONOCIDO con condicion de cierre"
+   },
+   {
+    "citation_id": "TASK-GEN-0270",
+    "status": "pending",
+    "repos": [],
+    "subject": "Analizar como manejar las ejecuciones largas, contra las referencias y el binario"
+   },
+   {
+    "citation_id": "TASK-GEN-0271",
+    "status": "pending",
+    "repos": [],
+    "subject": "Atajar el error de sintaxis RST al escribirlo, no al validar el corpus"
+   },
+   {
+    "citation_id": "TASK-GEN-0273",
+    "status": "pending",
+    "repos": [],
+    "subject": "Verificar que los githooks esten activos en los cinco clones, cada sesion"
+   },
+   {
+    "citation_id": "TASK-GEN-0274",
+    "status": "pending",
+    "repos": [],
+    "subject": "Re-medir los cuatro gates que no corrieron sobre lo ya commiteado"
+   },
+   {
+    "citation_id": "TASK-GEN-0275",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar _assert_can_auth, el limitador de tasa de res.users.apikeys"
+   },
+   {
+    "citation_id": "TASK-GEN-0276",
+    "status": "completed",
+    "repos": [],
+    "subject": "Dar a check_porte_completo la segunda raiz de la referencia"
+   },
+   {
+    "citation_id": "TASK-GEN-0277",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los identificadores declarados por literal contra los limites de Django"
+   },
+   {
+    "citation_id": "TASK-GEN-0278",
+    "status": "completed",
+    "repos": [],
+    "subject": "Llevar _assert_can_auth a _login y _check_uid_passwd cuando se porten"
+   },
+   {
+    "citation_id": "TASK-GEN-0280",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar a check_porte_completo la llave _name como respaldo"
+   },
+   {
+    "citation_id": "TASK-GEN-0281",
+    "status": "completed",
+    "repos": [],
+    "subject": "Triar los 76 METODOS AUSENTES de base"
+   },
+   {
+    "citation_id": "TASK-GEN-0282",
+    "status": "completed",
+    "repos": [],
+    "subject": "Hacer que el endpoint de contrasena delegue en _change_password"
+   },
+   {
+    "citation_id": "TASK-GEN-0283",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar el bloque de partner: categoria y los dos mixins de formato"
+   },
+   {
+    "citation_id": "TASK-GEN-0284",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar ir.sequence.date_range y los 7 metodos de IrSequence"
+   },
+   {
+    "citation_id": "TASK-GEN-0285",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar ir_cron completo: 6 clases y 25 metodos ausentes"
+   },
+   {
+    "citation_id": "TASK-GEN-0286",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar res.users.apikeys.description, el asistente de creacion de clave"
+   },
+   {
+    "citation_id": "TASK-GEN-0287",
+    "status": "completed",
+    "repos": [],
+    "subject": "Triar los 56 simbolos silenciosos de ResUsers"
+   },
+   {
+    "citation_id": "TASK-GEN-0288",
+    "status": "completed",
+    "repos": [],
+    "subject": "Declarar la divergencia de stack de los 30 ayudantes sin _name"
+   },
+   {
+    "citation_id": "TASK-GEN-0289",
+    "status": "completed",
+    "repos": [],
+    "subject": "Medir un modelo de base contra sus extensiones de Enterprise"
+   },
+   {
+    "citation_id": "TASK-GEN-0290",
+    "status": "completed",
+    "repos": [],
+    "subject": "Medir Enterprise 18 en el eje de extension de base"
+   },
+   {
+    "citation_id": "TASK-GEN-0291",
+    "status": "pending",
+    "repos": [],
+    "subject": "Agrupar el trabajo por el vecindario medido, no por lectura"
+   },
+   {
+    "citation_id": "TASK-GEN-0292",
+    "status": "completed",
+    "repos": [],
+    "subject": "Anadir las columnas de auditoria a ir_sequence y su rango"
+   },
+   {
+    "citation_id": "TASK-GEN-0293",
+    "status": "completed",
+    "repos": [],
+    "subject": "Barrer los otros 228 derivados que el gate acaba de aprender a ver"
+   },
+   {
+    "citation_id": "TASK-GEN-0294",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar a _run_job y _commit_progress su propia conexion"
+   },
+   {
+    "citation_id": "TASK-GEN-0295",
+    "status": "completed",
+    "repos": [],
+    "subject": "Sumar el intervalo del cron en la zona del usuario, no en UTC"
+   },
+   {
+    "citation_id": "TASK-GEN-0296",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar parent e ir_cron_ids en IrActionsServer, y sus dos acciones de apertura"
+   },
+   {
+    "citation_id": "TASK-GEN-0297",
+    "status": "completed",
+    "repos": [],
+    "subject": "Retirar los dos alias nuestros de ir_cron: _ready_q y _reschedule"
+   },
+   {
+    "citation_id": "TASK-GEN-0298",
+    "status": "completed",
+    "repos": [],
+    "subject": "Dar a ir.module.module sus estados transitorios"
+   },
+   {
+    "citation_id": "TASK-GEN-0300",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los 81 metodos ausentes de ResPartner"
+   },
+   {
+    "citation_id": "TASK-GEN-0301",
+    "status": "completed",
+    "repos": [],
+    "subject": "Devolver el guion bajo a _is_internal, _is_portal e _is_public"
+   },
+   {
+    "citation_id": "TASK-GEN-0302",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar las 6 clases ausentes de res_users.py"
+   },
+   {
+    "citation_id": "TASK-GEN-0303",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los 72 metodos ausentes de ResUsers"
+   },
+   {
+    "citation_id": "TASK-GEN-0304",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar a check_porte_completo un gate de conjunto por raiz espejada"
+   },
+   {
+    "citation_id": "TASK-GEN-0305",
+    "status": "pending",
+    "repos": [],
+    "subject": "Llevar la declaracion de divergencia de stack al docstring de los 6 archivos que existen"
+   },
+   {
+    "citation_id": "TASK-GEN-0306",
+    "status": "completed",
+    "repos": [],
+    "subject": "Dar al commit-msg una lista de verbos imperativos en -ing y -ed"
+   },
+   {
+    "citation_id": "TASK-GEN-0307",
+    "status": "completed",
+    "repos": [],
+    "subject": "Dar un gate al renombre que solo toca identificadores"
+   },
+   {
+    "citation_id": "TASK-GEN-0309",
+    "status": "completed",
+    "repos": [],
+    "subject": "Proteger a los usuarios de sistema tambien en el borrado en lote"
+   },
+   {
+    "citation_id": "TASK-GEN-0310",
+    "status": "completed",
+    "repos": [],
+    "subject": "Memorizar _get_group_ids solo cuando exista su invalidador"
+   },
+   {
+    "citation_id": "TASK-GEN-0311",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los 18 simbolos de res_users que quedan como trabajo, no divergencia"
+   },
+   {
+    "citation_id": "TASK-GEN-0312",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar migraciones a cada app propia AL CERRAR su porte, no antes"
+   },
+   {
+    "citation_id": "TASK-GEN-0313",
+    "status": "pending",
+    "repos": [],
+    "subject": "Gate que mida la creacion de la base desde cero, sin depender de CI"
+   },
+   {
+    "citation_id": "TASK-GEN-0314",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cerrar el porte de hr_recruitment_skills: 10 de 12 metodos ausentes"
+   },
+   {
+    "citation_id": "TASK-GEN-0316",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los demas modelos con guarda de datos maestros"
+   },
+   {
+    "citation_id": "TASK-GEN-0317",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar veredicto a las cinco raices de 18 que ningun alias cubre"
+   },
+   {
+    "citation_id": "TASK-GEN-0318",
+    "status": "completed",
+    "repos": [],
+    "subject": "Resolver la contradiccion de SELF_READABLE_FIELDS entre base y hr"
+   },
+   {
+    "citation_id": "TASK-GEN-0319",
+    "status": "completed",
+    "repos": [],
+    "subject": "Triar los 39 modelos de base que Enterprise extiende"
+   },
+   {
+    "citation_id": "TASK-GEN-0320",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar UsersMultiCompany: la pertenencia al grupo multi-empresa se deriva del conteo"
+   },
+   {
+    "citation_id": "TASK-GEN-0321",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar ResDevice._revoke y con el la accion de revocar todos los dispositivos"
+   },
+   {
+    "citation_id": "TASK-GEN-0322",
+    "status": "completed",
+    "repos": [],
+    "subject": "Llevar los dos indices parciales de res_device_log a Meta.indexes"
+   },
+   {
+    "citation_id": "TASK-GEN-0323",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cerrar el porte de res_device.py: los cuatro simbolos que quedan"
+   },
+   {
+    "citation_id": "TASK-GEN-0324",
+    "status": "completed",
+    "repos": [],
+    "subject": "Medir que otros archivos se declaran portacion fiel sin serlo"
+   },
+   {
+    "citation_id": "TASK-GEN-0325",
+    "status": "completed",
+    "repos": [],
+    "subject": "Medir si alguna escritura del M2M de grupos esquiva las senales del ORM"
+   },
+   {
+    "citation_id": "TASK-GEN-0326",
+    "status": "pending",
+    "repos": [],
+    "subject": "Exponer el panel de dispositivos, que es quien consume los dos simbolos de lectura"
+   },
+   {
+    "citation_id": "TASK-GEN-0327",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cerrar el grifo: un gate que mida la fidelidad declarada contra la entregada"
+   },
+   {
+    "citation_id": "TASK-GEN-0328",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Terminar los cinco addons que concentran el 61 % de la fidelidad falsa"
+   },
+   {
+    "citation_id": "TASK-GEN-0329",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar los seis lados de escritura que el barrido de citas destapo"
+   },
+   {
+    "citation_id": "TASK-GEN-0330",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los 61 enganches de base que Enterprise usa y aqui no existen"
+   },
+   {
+    "citation_id": "TASK-GEN-0331",
+    "status": "completed",
+    "repos": [],
+    "subject": "Barrer los chain_method sin combine cuyo eslabon devuelva un contenedor"
+   },
+   {
+    "citation_id": "TASK-GEN-0332",
+    "status": "completed",
+    "repos": [],
+    "subject": "Dar a check_porte_completo el mapa de renombre de ADDON"
+   },
+   {
+    "citation_id": "TASK-GEN-0334",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir contra que raiz se miden los tres addons sin contraparte en 19c"
+   },
+   {
+    "citation_id": "TASK-GEN-0335",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar lo pendiente de la familia authz_*, addon por addon"
+   },
+   {
+    "citation_id": "TASK-GEN-0337",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar el canal RPC por clave de API y su guarda de 2FA"
+   },
+   {
+    "citation_id": "TASK-GEN-0338",
+    "status": "pending",
+    "repos": [],
+    "subject": "Reintegrar authz a base: Role pasa a ser ResGroups"
+   },
+   {
+    "citation_id": "TASK-GEN-0339",
+    "status": "pending",
+    "repos": [],
+    "subject": "Re-decidir DEC-AF-06: sus dos razones para descartar WebSocket caducaron"
+   },
+   {
+    "citation_id": "TASK-GEN-0340",
+    "status": "pending",
+    "repos": [],
+    "subject": "Avisar cuando extend_model descarte una property que ya existe"
+   },
+   {
+    "citation_id": "TASK-GEN-0341",
+    "status": "pending",
+    "repos": [],
+    "subject": "Declarar SELF_READABLE_FIELDS en authz_passkey, que ya no esta bloqueado"
+   },
+   {
+    "citation_id": "TASK-GEN-0342",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir que otras columnas portadas no tienen ningun escritor"
+   },
+   {
+    "citation_id": "TASK-GEN-0343",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir con que Content-Type se sirve un adjunto, no solo con cual se guarda"
+   },
+   {
+    "citation_id": "TASK-GEN-0344",
+    "status": "completed",
+    "repos": [],
+    "subject": "Actualizar la doc de authz: describe AccessRule, retirado hace 24 dias"
+   },
+   {
+    "citation_id": "TASK-GEN-0345",
+    "status": "completed",
+    "repos": [],
+    "subject": "Adoptar _check_access y sembrar la ACL, como la referencia"
+   },
+   {
+    "citation_id": "TASK-GEN-0346",
+    "status": "pending",
+    "repos": [],
+    "subject": "Avisar cuando un artefacto cite una ruta efimera"
+   },
+   {
+    "citation_id": "TASK-GEN-0347",
+    "status": "completed",
+    "repos": [],
+    "subject": "Sembrar la ACL y las record rules fuera de los tests"
+   },
+   {
+    "citation_id": "TASK-GEN-0348",
+    "status": "completed",
+    "repos": [],
+    "subject": "Adoptar AccessManager en los modelos que lo necesiten"
+   },
+   {
+    "citation_id": "TASK-GEN-0349",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar _make_access_error de ir.rule, el mensaje rico del rechazo por fila"
+   },
+   {
+    "citation_id": "TASK-GEN-0350",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer las colisiones entre simbolos portados y hooks de Django"
+   },
+   {
+    "citation_id": "TASK-GEN-0351",
+    "status": "completed",
+    "repos": [],
+    "subject": "Declarar _name en los modelos de sale, que hoy no tiene ninguno"
+   },
+   {
+    "citation_id": "TASK-GEN-0352",
+    "status": "pending",
+    "repos": [],
+    "subject": "Renombrar el cuerpo de uc-adm-09 al vocabulario de ir.rule"
+   },
+   {
+    "citation_id": "TASK-GEN-0354",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer las esperas fijas en tests con subproceso"
+   },
+   {
+    "citation_id": "TASK-GEN-0355",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir el desenlace de los dos ganchos de importacion de partner"
+   },
+   {
+    "citation_id": "TASK-GEN-0356",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar share de ResUsers y get_installed de ResLang"
+   },
+   {
+    "citation_id": "TASK-GEN-0357",
+    "status": "pending",
+    "repos": [],
+    "subject": "Desbloquear los dos campos de duplicado por VAT y registro mercantil"
+   },
+   {
+    "citation_id": "TASK-GEN-0358",
+    "status": "pending",
+    "repos": [],
+    "subject": "Limpiar el contexto en _compute_complete_name cuando la clave tenga consumidor"
+   },
+   {
+    "citation_id": "TASK-GEN-0359",
+    "status": "completed",
+    "repos": [],
+    "subject": "Acotar tz a una Selection de zonas validas, como la fuente"
+   },
+   {
+    "citation_id": "TASK-GEN-0360",
+    "status": "pending",
+    "repos": [],
+    "subject": "Recalcular partner_share desde el lado del usuario, no solo del partner"
+   },
+   {
+    "citation_id": "TASK-GEN-0361",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir si los otros setters de delegacion de ResCompany tambien pierden la escritura"
+   },
+   {
+    "citation_id": "TASK-GEN-0362",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar company_id de ResPartner y desbloquear sus dos simbolos"
+   },
+   {
+    "citation_id": "TASK-GEN-0363",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar barcode de partner, que exige el mecanismo company_dependent"
+   },
+   {
+    "citation_id": "TASK-GEN-0365",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar default_get, que hace observable la guarda del correo en name_create"
+   },
+   {
+    "citation_id": "TASK-GEN-0366",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar copy del ORM, que es quien llama a copy_data"
+   },
+   {
+    "citation_id": "TASK-GEN-0367",
+    "status": "completed",
+    "repos": [],
+    "subject": "Decidir el desenlace de _load_records_create, el enganche del cargador XML"
+   },
+   {
+    "citation_id": "TASK-GEN-0368",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar la mitad de warning de _check_children, con el motor"
+   },
+   {
+    "citation_id": "TASK-GEN-0369",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los cuatro modos no-eval de ir.actions.server"
+   },
+   {
+    "citation_id": "TASK-GEN-0370",
+    "status": "completed",
+    "repos": [],
+    "subject": "Mover ResPartnerBank a res_bank.py, donde la referencia lo declara"
+   },
+   {
+    "citation_id": "TASK-GEN-0371",
+    "status": "completed",
+    "repos": [],
+    "subject": "Mover ResCurrencyRate a res_currency.py, donde la referencia lo declara"
+   },
+   {
+    "citation_id": "TASK-GEN-0372",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer las declaraciones que describen la referencia en vez de nuestra diferencia"
+   },
+   {
+    "citation_id": "TASK-GEN-0374",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar veredicto a los 129 que ninguna regla del censo absuelve"
+   },
+   {
+    "citation_id": "TASK-GEN-0375",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar veredicto a los 45 huecos de porte de las raices de framework"
+   },
+   {
+    "citation_id": "TASK-GEN-0376",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Barrer los 1160 identificadores en espanol con un evento"
+   },
+   {
+    "citation_id": "TASK-GEN-0377",
+    "status": "completed",
+    "repos": [],
+    "subject": "Hacer que ir_config_parameter adopte ormcache"
+   },
+   {
+    "citation_id": "TASK-GEN-0378",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cerrar el porte de properties_base_definition y su mixin"
+   },
+   {
+    "citation_id": "TASK-GEN-0379",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar BaseModel._field_to_sql, la puerta del motor de consultas"
+   },
+   {
+    "citation_id": "TASK-GEN-0380",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar discard_records y discard_values de ir.default"
+   },
+   {
+    "citation_id": "TASK-GEN-0381",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cablear company_dependent en los nueve despachadores restantes"
+   },
+   {
+    "citation_id": "TASK-GEN-0382",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar el tramo restante de fields_properties: lectura, validacion y definition="
+   },
+   {
+    "citation_id": "TASK-GEN-0383",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los temporales por transaccion de file_open"
+   },
+   {
+    "citation_id": "TASK-GEN-0384",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar BaseModel.load y el cuerpo de convert_csv_import"
+   },
+   {
+    "citation_id": "TASK-GEN-0386",
+    "status": "completed",
+    "repos": [],
+    "subject": "Construir el display_name universal con su _compute_display_name"
+   },
+   {
+    "citation_id": "TASK-GEN-0387",
+    "status": "pending",
+    "repos": [],
+    "subject": "Cablear los 54 campos company_dependent de la referencia en su addon"
+   },
+   {
+    "citation_id": "TASK-GEN-0388",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los ocho sitios que releen su propia fila a mano"
+   },
+   {
+    "citation_id": "TASK-GEN-0389",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer que campos deben declarar copy=False contra la referencia"
+   },
+   {
+    "citation_id": "TASK-GEN-0390",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los controles que leen codigo fuente en vez de comportamiento"
+   },
+   {
+    "citation_id": "TASK-GEN-0391",
+    "status": "pending",
+    "repos": [],
+    "subject": "Convertir model_name en FK a ir.model en las tres tablas que lo tienen como Char"
+   },
+   {
+    "citation_id": "TASK-GEN-0392",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar safe_eval.py entero: opcodes, builtins y wrap_module"
+   },
+   {
+    "citation_id": "TASK-GEN-0393",
+    "status": "completed",
+    "repos": [],
+    "subject": "Decidir la convencion del sufijo _id en las FK portadas"
+   },
+   {
+    "citation_id": "TASK-GEN-0394",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar lazy, ReadonlyDict y los dos to_string, y cerrar json_default"
+   },
+   {
+    "citation_id": "TASK-GEN-0395",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Barrer las 479 forma A a forma C con el mapa derivado de las cuatro poblaciones"
+   },
+   {
+    "citation_id": "TASK-GEN-0396",
+    "status": "completed",
+    "repos": [],
+    "subject": "Dar veredicto a las 210 filas que el mapa no renombra"
+   },
+   {
+    "citation_id": "TASK-GEN-0397",
+    "status": "completed",
+    "repos": [],
+    "subject": "Extender raw_axis_sites mas alla de la comparacion"
+   },
+   {
+    "citation_id": "TASK-GEN-0398",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar a check_porte_completo una vista de los campos"
+   },
+   {
+    "citation_id": "TASK-GEN-0399",
+    "status": "completed",
+    "repos": [],
+    "subject": "Renombrar por ligadura y por modelo en el barrido de FK"
+   },
+   {
+    "citation_id": "TASK-GEN-0400",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los guiones que suman col_offset a un indice de str"
+   },
+   {
+    "citation_id": "TASK-GEN-0401",
+    "status": "pending",
+    "repos": [],
+    "subject": "Cubrir la ruta de lookup y los controllers en el reescritor de forma C"
+   },
+   {
+    "citation_id": "TASK-GEN-0402",
+    "status": "completed",
+    "repos": [],
+    "subject": "Decidir si stock_account sigue la forma de 18 o la de 19"
+   },
+   {
+    "citation_id": "TASK-GEN-0403",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar los 16 archivos de stock_account que 19c tiene y aqui faltan"
+   },
+   {
+    "citation_id": "TASK-GEN-0404",
+    "status": "pending",
+    "repos": [],
+    "subject": "Mover a su sitio las 8 clases que 19c declara en otro archivo"
+   },
+   {
+    "citation_id": "TASK-GEN-0405",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar desenlace a los 24 campos que 19c no declara en una clase que si tiene"
+   },
+   {
+    "citation_id": "TASK-GEN-0406",
+    "status": "pending",
+    "repos": [],
+    "subject": "Declarar como propias las 154 filas sin contraparte en 19c"
+   },
+   {
+    "citation_id": "TASK-GEN-0407",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cerrar el porte de crm: 119 metodos y 70 campos de crm_lead"
+   },
+   {
+    "citation_id": "TASK-GEN-0408",
+    "status": "completed",
+    "repos": [],
+    "subject": "Devolver el guion bajo a search_is_valid de account_bank_statement"
+   },
+   {
+    "citation_id": "TASK-GEN-0409",
+    "status": "pending",
+    "repos": [],
+    "subject": "Sembrar los grupos de sales_team y crm, con su migracion por addon"
+   },
+   {
+    "citation_id": "TASK-GEN-0410",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar _compute_kpis_actions de digest, y con el los tres que lo esperan"
+   },
+   {
+    "citation_id": "TASK-GEN-0411",
+    "status": "completed",
+    "repos": [],
+    "subject": "Desbloquear el KPI de hr_recruitment: su causa ya no existe"
+   },
+   {
+    "citation_id": "TASK-GEN-0413",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar mail.alias.mixin, y con el los cuatro simbolos de crm.team que lo esperan"
+   },
+   {
+    "citation_id": "TASK-GEN-0414",
+    "status": "pending",
+    "repos": [],
+    "subject": "Sembrar el cron crm.ir_cron_crm_lead_assign y decidir su punto de guardado"
+   },
+   {
+    "citation_id": "TASK-GEN-0415",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar a crm.team el hilo de mail y los dos simbolos del panel"
+   },
+   {
+    "citation_id": "TASK-GEN-0416",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los 129 despromovidos que el gate acaba de aprender a ver"
+   },
+   {
+    "citation_id": "TASK-GEN-0417",
+    "status": "pending",
+    "repos": [],
+    "subject": "Derivar el subconjunto de TODOS los archivos tocados, no solo del codigo"
+   },
+   {
+    "citation_id": "TASK-GEN-0418",
+    "status": "pending",
+    "repos": [],
+    "subject": "Cerrar los cuatro archivos que el barrido anterior toco sin cerrar"
+   },
+   {
+    "citation_id": "TASK-GEN-0421",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar a _check_company un modelo donde se pueda medir de punta a punta"
+   },
+   {
+    "citation_id": "TASK-GEN-0422",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cerrar el porte de ir_actions_report: 32 metodos y 11 atributos"
+   },
+   {
+    "citation_id": "TASK-GEN-0423",
+    "status": "pending",
+    "repos": [],
+    "subject": "Validar la verificacion de contrasenas de Unix que Python retira en 3.13"
+   },
+   {
+    "citation_id": "TASK-GEN-0424",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Cerrar el porte de ir_model.py: la familia del registro reflejado"
+   },
+   {
+    "citation_id": "TASK-GEN-0425",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir nombres de campo dentro de literales contra los campos declarados"
+   },
+   {
+    "citation_id": "TASK-GEN-0426",
+    "status": "pending",
+    "repos": [],
+    "subject": "El gate de sucesor entra en panic en cada archivo y publica su cifra igual"
+   },
+   {
+    "citation_id": "TASK-GEN-0427",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer «tubería» del corpus de docs y cerrar el grifo en el vocabulario"
+   },
+   {
+    "citation_id": "TASK-GEN-0428",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir si test_python_expr atrapa NameError, que hoy se le escapa"
+   },
+   {
+    "citation_id": "TASK-GEN-0429",
+    "status": "pending",
+    "repos": [],
+    "subject": "Nunca deshacer una edicion con git checkout sobre un archivo con trabajo sin commitear"
+   },
+   {
+    "citation_id": "TASK-GEN-0430",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar get_view y get_views, que entregan el arch XML al cliente"
+   },
+   {
+    "citation_id": "TASK-GEN-0431",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir el renderizador XML si algun endpoint lo necesita sobre HTTP"
+   },
+   {
+    "citation_id": "TASK-GEN-0432",
+    "status": "pending",
+    "repos": [],
+    "subject": "Cerrar las tres fallas heredadas que dejan roja la suite de gates de docs"
+   },
+   {
+    "citation_id": "TASK-GEN-0433",
+    "status": "completed",
+    "repos": [],
+    "subject": "Retirar el compilador portado del camino del descriptor (pieza 1 de 8)"
+   },
+   {
+    "citation_id": "TASK-GEN-0434",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir como se generara el CFDI: plantilla XML o construccion en Python"
+   },
+   {
+    "citation_id": "TASK-GEN-0435",
+    "status": "pending",
+    "repos": [],
+    "subject": "Clasificar los 75 sitios de _render_template entre los dos flujos"
+   },
+   {
+    "citation_id": "TASK-GEN-0436",
+    "status": "pending",
+    "repos": [],
+    "subject": "Construir el eje translate del ORM, hermano de company_dependent"
+   },
+   {
+    "citation_id": "TASK-GEN-0437",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar catalogo y negociacion de idioma a USE_I18N, que hoy esta encendido sin ambos"
+   },
+   {
+    "citation_id": "TASK-GEN-0438",
+    "status": "pending",
+    "repos": [],
+    "subject": "Servir el catalogo de traducciones a la UI, y decidir su extractor de JS"
+   },
+   {
+    "citation_id": "TASK-GEN-0439",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir el aplanado de la respuesta atravesando el WSGIHandler completo"
+   },
+   {
+    "citation_id": "TASK-GEN-0440",
+    "status": "pending",
+    "repos": [],
+    "subject": "Gate que exija access_control=DENY_ALL en toda invocacion de ET.XSLT"
+   },
+   {
+    "citation_id": "TASK-GEN-0441",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir el desenlace de las t-strings en el allowlist de safe_eval"
+   },
+   {
+    "citation_id": "TASK-GEN-0442",
+    "status": "completed",
+    "repos": [],
+    "subject": "Resolver los tres referentes discordantes de report_type (pieza 7 de 8)"
+   },
+   {
+    "citation_id": "TASK-GEN-0443",
+    "status": "completed",
+    "repos": [],
+    "subject": "Declarar el _name de los 21 conversores y ratificar el corte de capas (pieza 4 de 8)"
+   },
+   {
+    "citation_id": "TASK-GEN-0444",
+    "status": "completed",
+    "repos": [],
+    "subject": "Aplicar el reparto medido de las 20 directivas t-* (pieza 2 de 8)"
+   },
+   {
+    "citation_id": "TASK-GEN-0445",
+    "status": "completed",
+    "repos": [],
+    "subject": "Renombrar el valor del tipo de vista a 'template' (pieza 5 de 8)"
+   },
+   {
+    "citation_id": "TASK-GEN-0446",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cablear resolve_key al call del descriptor desde ir_actions_report"
+   },
+   {
+    "citation_id": "TASK-GEN-0447",
+    "status": "completed",
+    "repos": [],
+    "subject": "Decidir el destino del .pyc huérfano 0070_report_type_recupera_los_tres_de_la_fuente"
+   },
+   {
+    "citation_id": "TASK-GEN-0448",
+    "status": "completed",
+    "repos": [],
+    "subject": "Escribir los serializadores del descriptor a text y a html"
+   },
+   {
+    "citation_id": "TASK-GEN-0449",
+    "status": "completed",
+    "repos": [],
+    "subject": "Decidir quién formatea el valor en el camino del papel, donde no hay ui"
+   },
+   {
+    "citation_id": "TASK-GEN-0450",
+    "status": "completed",
+    "repos": [],
+    "subject": "Acotar el ciclo entre descriptores que se llaman mutuamente"
+   },
+   {
+    "citation_id": "TASK-GEN-0451",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los .pyc huérfanos de los __pycache__ de los demás addons"
+   },
+   {
+    "citation_id": "TASK-GEN-0452",
+    "status": "pending",
+    "repos": [],
+    "subject": "Re-medir la razón de las otras tres delegaciones de conversor"
+   },
+   {
+    "citation_id": "TASK-GEN-0453",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar veredicto a los tres transitorios que declaran managed=False"
+   },
+   {
+    "citation_id": "TASK-GEN-0454",
+    "status": "completed",
+    "repos": [],
+    "subject": "Hacer que el helper de libharu consuma los ajustes de papel del descriptor"
+   },
+   {
+    "citation_id": "TASK-GEN-0455",
+    "status": "completed",
+    "repos": [],
+    "subject": "Dibujar el raster de _run_wkhtmltoimage desde el descriptor, con Pillow"
+   },
+   {
+    "citation_id": "TASK-GEN-0456",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Portar tools/set_expression.py, el algebra de expresiones de grupos"
+   },
+   {
+    "citation_id": "TASK-GEN-0457",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Portar _process_ondelete, la politica de borrado de un valor de seleccion"
+   },
+   {
+    "citation_id": "TASK-GEN-0458",
+    "status": "pending",
+    "repos": [],
+    "subject": "Reconciliar implied_group: los addons declaran xmlid y el resolvedor busca por name"
+   },
+   {
+    "citation_id": "TASK-GEN-0459",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar compute_fiscalyear_dates de ResCompany, que bloquea tres consumidores"
+   },
+   {
+    "citation_id": "TASK-GEN-0460",
+    "status": "completed",
+    "repos": [],
+    "subject": "Construir search= en el campo no persistido, el hermano de store=False"
+   },
+   {
+    "citation_id": "TASK-GEN-0462",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los 181 Selection que no declaran required contra la fuente"
+   },
+   {
+    "citation_id": "TASK-GEN-0463",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Portar Field, el contrato de campo del que cuelga todo el ORM"
+   },
+   {
+    "citation_id": "TASK-GEN-0465",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir cada tipo de campo por CONDUCTA, no por nombre"
+   },
+   {
+    "citation_id": "TASK-GEN-0466",
+    "status": "completed",
+    "repos": [],
+    "subject": "Construir One2many, que hoy es None en el arbol"
+   },
+   {
+    "citation_id": "TASK-GEN-0467",
+    "status": "completed",
+    "repos": [],
+    "subject": "Reconciliar los dos contratos de _fields: el estrecho y el de la fuente"
+   },
+   {
+    "citation_id": "TASK-GEN-0468",
+    "status": "completed",
+    "repos": [],
+    "subject": "Medir DeferredAttribute en las cinco rutas de lectura antes de portar __get__"
+   },
+   {
+    "citation_id": "TASK-GEN-0469",
+    "status": "completed",
+    "repos": [],
+    "subject": "Ordenar el porte por lo que desbloquea, no por orden de lectura"
+   },
+   {
+    "citation_id": "TASK-GEN-0470",
+    "status": "pending",
+    "repos": [],
+    "subject": "Extender orden_de_porte a las otras raices espejadas"
+   },
+   {
+    "citation_id": "TASK-GEN-0471",
+    "status": "pending",
+    "repos": [],
+    "subject": "Retirar la deuda congelada: 15 baselines, 4086 entradas"
+   },
+   {
+    "citation_id": "TASK-GEN-0472",
+    "status": "completed",
+    "repos": [],
+    "subject": "Crear el hogar del trabajo instrumentado de api en scripts/workbench"
+   },
+   {
+    "citation_id": "TASK-GEN-0473",
+    "status": "pending",
+    "repos": [],
+    "subject": "Validar la identidad de una pieza por alcance, no confiar en el slug"
+   },
+   {
+    "citation_id": "TASK-GEN-0474",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar journal.jsonl con posicion a cada pieza de trabajo"
+   },
+   {
+    "citation_id": "TASK-GEN-0475",
+    "status": "pending",
+    "repos": [],
+    "subject": "Cachear por la entrada declarada, para saber si hay que re-correr sin correr"
+   },
+   {
+    "citation_id": "TASK-GEN-0476",
+    "status": "pending",
+    "repos": [],
+    "subject": "Recorrer _table_object_definitions hacia Meta al construir la clase"
+   },
+   {
+    "citation_id": "TASK-GEN-0477",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Portar los 33 optimizadores de dominio que el registro ya admite"
+   },
+   {
+    "citation_id": "TASK-GEN-0478",
+    "status": "pending",
+    "repos": [],
+    "subject": "Gate contra una quinta copia de la tupla estrecha de colecciones"
+   },
+   {
+    "citation_id": "TASK-GEN-0479",
+    "status": "pending",
+    "repos": [],
+    "subject": "Censar por consumidor los 64 atributos de clase de campo que quedan"
+   },
+   {
+    "citation_id": "TASK-GEN-0480",
+    "status": "completed",
+    "repos": [],
+    "subject": "Gate contra prosa de codigo que el porte deja falsa"
+   },
+   {
+    "citation_id": "TASK-GEN-0482",
+    "status": "pending",
+    "repos": [],
+    "subject": "Renombrar TRUE_DOMAIN y FALSE_DOMAIN: son Q, no Domain"
+   },
+   {
+    "citation_id": "TASK-GEN-0483",
+    "status": "pending",
+    "repos": [],
+    "subject": "Sonda de conducta para el contrato de un simbolo con N implementaciones"
+   },
+   {
+    "citation_id": "TASK-GEN-0484",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los operadores que el compilador de hoja no conoce"
+   },
+   {
+    "citation_id": "TASK-GEN-0485",
+    "status": "pending",
+    "repos": [],
+    "subject": "Hacer que el caso de campo no relacional discrimine su guarda"
+   },
+   {
+    "citation_id": "TASK-GEN-0486",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los ocho addons que recorren la jerarquia a mano"
+   },
+   {
+    "citation_id": "TASK-GEN-0487",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar a child_of y parent_of un predicado en memoria propio"
+   },
+   {
+    "citation_id": "TASK-GEN-0488",
+    "status": "pending",
+    "repos": [],
+    "subject": "Trasladar las 48 declaraciones de bypass_search_access de la referencia"
+   },
+   {
+    "citation_id": "TASK-GEN-0490",
+    "status": "pending",
+    "repos": [],
+    "subject": "Romper los 43 ciclos: trabajo que se espera a si mismo"
+   },
+   {
+    "citation_id": "TASK-GEN-0491",
+    "status": "pending",
+    "repos": [],
+    "subject": "Subir la cobertura de la arista de vuelta, hoy en 26.7 %"
+   },
+   {
+    "citation_id": "TASK-GEN-0492",
+    "status": "pending",
+    "repos": [],
+    "subject": "Cerrar la rama polimorfica de One2many._additional_domain"
+   },
+   {
+    "citation_id": "TASK-GEN-0493",
+    "status": "pending",
+    "repos": [],
+    "subject": "Devolver Domain en get_comodel_domain, tras separar fachada de definidor"
+   },
+   {
+    "citation_id": "TASK-GEN-0494",
+    "status": "pending",
+    "repos": [],
+    "subject": "Validar el inverso de One2many al arrancar, no al leerlo"
+   },
+   {
+    "citation_id": "TASK-GEN-0495",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar el lado SQL de One2many: la condicion relacional y su subconsulta"
+   },
+   {
+    "citation_id": "TASK-GEN-0496",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir si setup_inverses tiene receptor en este arbol"
+   },
+   {
+    "citation_id": "TASK-GEN-0497",
+    "status": "completed",
+    "repos": [],
+    "subject": "Corregir los 5 atributos de clase que mienten Y se leen"
+   },
+   {
+    "citation_id": "TASK-GEN-0498",
+    "status": "completed",
+    "repos": [],
+    "subject": "Gate que mida cada atributo de clase contra la referencia"
+   },
+   {
+    "citation_id": "TASK-GEN-0499",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los dos consumidores de not_null_fields que faltan"
+   },
+   {
+    "citation_id": "TASK-GEN-0500",
+    "status": "completed",
+    "repos": [],
+    "subject": "Distinguir el atributo declarado como llamada del declarado como property"
+   },
+   {
+    "citation_id": "TASK-GEN-0501",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar el mecanismo related=, que 552 campos medidos de la referencia piden"
+   },
+   {
+    "citation_id": "TASK-GEN-0502",
+    "status": "completed",
+    "repos": [],
+    "subject": "Barrer la prosa que declina un porte con una razon no medida"
+   },
+   {
+    "citation_id": "TASK-GEN-0503",
+    "status": "pending",
+    "repos": [],
+    "subject": "Derivar required de null en el campo persistido"
+   },
+   {
+    "citation_id": "TASK-GEN-0504",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cablear related= al arranque: el constructor y el disparador"
+   },
+   {
+    "citation_id": "TASK-GEN-0505",
+    "status": "completed",
+    "repos": [],
+    "subject": "Aceptar related= en los 11 tipos que el despachador no cubre"
+   },
+   {
+    "citation_id": "TASK-GEN-0506",
+    "status": "completed",
+    "repos": [],
+    "subject": "Ejercer la escritura del inverso en un related relacional"
+   },
+   {
+    "citation_id": "TASK-GEN-0507",
+    "status": "pending",
+    "repos": [],
+    "subject": "Transaccionar la escritura del inverso con la del origen"
+   },
+   {
+    "citation_id": "TASK-GEN-0508",
+    "status": "pending",
+    "repos": [],
+    "subject": "Construir la señalizacion de cache entre procesos, que hoy es media"
+   },
+   {
+    "citation_id": "TASK-GEN-0509",
+    "status": "pending",
+    "repos": [],
+    "subject": "Convertir a FK real las columnas planas que citaban a ir_filters.action_id"
+   },
+   {
+    "citation_id": "TASK-GEN-0510",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Portar tools/zeep y el cache de WSDL de ResCompany"
+   },
+   {
+    "citation_id": "TASK-GEN-0511",
+    "status": "pending",
+    "repos": [],
+    "subject": "Ejercer tools/zeep de punta a punta contra un WSDL real"
+   },
+   {
+    "citation_id": "TASK-GEN-0512",
+    "status": "pending",
+    "repos": [],
+    "subject": "Enderezar la direccion del import entre fields_properties, domains y models"
+   },
+   {
+    "citation_id": "TASK-GEN-0513",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar http_routing, el hogar de _slug con nombre legible"
+   },
+   {
+    "citation_id": "TASK-GEN-0514",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar la cadena de hash de inalterabilidad de account.move"
+   },
+   {
+    "citation_id": "TASK-GEN-0515",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar el bloque QR de pago de account.move y su interruptor de empresa"
+   },
+   {
+    "citation_id": "TASK-GEN-0516",
+    "status": "pending",
+    "repos": [],
+    "subject": "Unificar el veredicto de get_import_templates: hoy el arbol responde dos cosas"
+   },
+   {
+    "citation_id": "TASK-GEN-0517",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar base_import, hoy un esqueleto con solo date_patterns"
+   },
+   {
+    "citation_id": "TASK-GEN-0518",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar la cabecera de purchase.order: empresa, moneda y currency_rate"
+   },
+   {
+    "citation_id": "TASK-GEN-0519",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los dos simbolos de purchase_stock que _select_seller desbloquea"
+   },
+   {
+    "citation_id": "TASK-GEN-0520",
+    "status": "completed",
+    "repos": [],
+    "subject": "Corregir report_catalog.py:152: «sólo pdf» dejó de ser cierto con los tres formatos"
+   },
+   {
+    "citation_id": "TASK-GEN-0521",
+    "status": "pending",
+    "repos": [],
+    "subject": "Extender equivalencias_declaradas() de check_porte_completo a computes multi-campo y constrains→clean()"
+   },
+   {
+    "citation_id": "TASK-GEN-0522",
+    "status": "pending",
+    "repos": [],
+    "subject": "Alimentar requested_ids de activate_companies desde CompanyContextMiddleware"
+   },
+   {
+    "citation_id": "TASK-GEN-0523",
+    "status": "completed",
+    "repos": [],
+    "subject": "Actualizar el warning de stock_rule._orderpoint_model, que cita #330 sobre un modelo que ya existe"
+   },
+   {
+    "citation_id": "TASK-GEN-0524",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir si authz_timeout/models/ir_http.py colisiona con session_info de web"
+   },
+   {
+    "citation_id": "TASK-GEN-0525",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Construir modified(): el motor de recálculo de campos calculados sobre registro virtual"
+   },
+   {
+    "citation_id": "TASK-GEN-0526",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar las cuatro de página de error de http_routing, bloqueadas por ir.ui.view._render_template"
+   },
+   {
+    "citation_id": "TASK-GEN-0527",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar get_frontend_session_info y get_translation_frontend_modules de http_routing"
+   },
+   {
+    "citation_id": "TASK-GEN-0528",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir el cableado de FrontendLangMiddleware en MIDDLEWARE (despacho de _match/_pre_dispatch)"
+   },
+   {
+    "citation_id": "TASK-GEN-0529",
+    "status": "completed",
+    "repos": [],
+    "subject": "Colgar _quantity_for de ProductProduct: stock_orderpoint lo llama y stock/models/product.py nunca lo instala"
+   },
+   {
+    "citation_id": "TASK-GEN-0530",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar la ACL de sale: 39 filas de ir.model.access.csv sin destino aquí"
+   },
+   {
+    "citation_id": "TASK-GEN-0531",
+    "status": "completed",
+    "repos": [],
+    "subject": "account/models/digest.py: su _compute_kpis_actions se salta en silencio por el guard hasattr"
+   },
+   {
+    "citation_id": "TASK-GEN-0532",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los 10 `if not hasattr(Modelo, name): setattr` a extend_model"
+   },
+   {
+    "citation_id": "TASK-GEN-0533",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cerrar el porte de los diez addons base_* (agente en curso)"
+   },
+   {
+    "citation_id": "TASK-GEN-0534",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar date_planned en purchase.order.line y cerrar D-3b de get_tender_best_lines"
+   },
+   {
+    "citation_id": "TASK-GEN-0535",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar fiscal_position_id, payment_term_id y origin de purchase.order"
+   },
+   {
+    "citation_id": "TASK-GEN-0536",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir si purchase.order.partner_id pasa de AUTH_USER_MODEL a res.partner"
+   },
+   {
+    "citation_id": "TASK-GEN-0537",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar tools/image.py entero: ImageProcess y los 20 símbolos restantes"
+   },
+   {
+    "citation_id": "TASK-GEN-0540",
+    "status": "completed",
+    "repos": [],
+    "subject": "Barrer qué campos de la referencia piden la forma sin columna en los nueve tipos restantes"
+   },
+   {
+    "citation_id": "TASK-GEN-0541",
+    "status": "completed",
+    "repos": [],
+    "subject": "Avisar cuando la causa de un bloqueo declarado ya no exista"
+   },
+   {
+    "citation_id": "TASK-GEN-0542",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer las formas no literales de instalacion que el gate no resuelve"
+   },
+   {
+    "citation_id": "TASK-GEN-0543",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer las 30 marcas de bloqueo caducadas congeladas en baseline"
+   },
+   {
+    "citation_id": "TASK-GEN-0544",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar contra stdnum lo que su ausencia bloqueaba: peppol, ubl_bis3 y el"
+   },
+   {
+    "citation_id": "TASK-GEN-0545",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar los cuatro hooks de VAT que account.res.partner declara"
+   },
+   {
+    "citation_id": "TASK-GEN-0546",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar tools.hash_sign, y con el _check_vies_iap y su webhook"
+   },
+   {
+    "citation_id": "TASK-GEN-0547",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar mail.thread._message_log_batch"
+   },
+   {
+    "citation_id": "TASK-GEN-0548",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar create y write de base_vat sobre ResPartner, no como un solo save"
+   },
+   {
+    "citation_id": "TASK-GEN-0549",
+    "status": "pending",
+    "repos": [],
+    "subject": "Reconciliar validate_rfc con check_vat_mx: dos validadores de RFC conviven"
+   },
+   {
+    "citation_id": "TASK-GEN-0550",
+    "status": "pending",
+    "repos": [],
+    "subject": "Cerrar los tres bloqueos medidos que quedan en base_import_module"
+   },
+   {
+    "citation_id": "TASK-GEN-0551",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los addons con data-migration y sin seed() registrado en _SEEDERS"
+   },
+   {
+    "citation_id": "TASK-GEN-0552",
+    "status": "pending",
+    "repos": [],
+    "subject": "Medir que modulos de la referencia son stdlib pura y admiten el diferencial"
+   },
+   {
+    "citation_id": "TASK-GEN-0553",
+    "status": "completed",
+    "repos": [],
+    "subject": "Ensanchar _fields al campo sin columna y desbloquear city_id"
+   },
+   {
+    "citation_id": "TASK-GEN-0554",
+    "status": "pending",
+    "repos": [],
+    "subject": "Barrer los campos de la fuente declarados aqui como property pelada"
+   },
+   {
+    "citation_id": "TASK-GEN-0555",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cerrar los dos rojos heredados de qweb y website ir.ui.view"
+   },
+   {
+    "citation_id": "TASK-GEN-0557",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cablear compute= en los 44 metodos que declaran @api.depends sin campo que los nombre"
+   },
+   {
+    "citation_id": "TASK-GEN-0558",
+    "status": "pending",
+    "repos": [],
+    "subject": "Dar al computo un QuerySet en vez de una fila, y recuperar el lote de prelectura"
+   },
+   {
+    "citation_id": "TASK-GEN-0559",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar apply_except_missing: desmarcar el computo de la fila que ya no existe"
+   },
+   {
+    "citation_id": "TASK-GEN-0560",
+    "status": "pending",
+    "repos": [],
+    "subject": "Distinguir la pieza de banco cerrada de la que se esta redactando"
+   },
+   {
+    "citation_id": "TASK-GEN-0561",
+    "status": "pending",
+    "repos": [],
+    "subject": "Decidir el desenlace de verificar_premisa.py, que mide api desde docs"
+   },
+   {
+    "citation_id": "TASK-GEN-0562",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar internal_group a store=False + search, cuando el buscador sirva la travesia por FK"
+   },
+   {
+    "citation_id": "TASK-GEN-0563",
+    "status": "completed",
+    "repos": [],
+    "subject": "Ejecutar el inverse declarado al escribir el campo calculado"
+   },
+   {
+    "citation_id": "TASK-GEN-0564",
+    "status": "completed",
+    "repos": [],
+    "subject": "Correr el precompute antes del insert, no solo validar su cadena"
+   },
+   {
+    "citation_id": "TASK-GEN-0565",
+    "status": "completed",
+    "repos": [],
+    "subject": "Dar campo al compute que escribe una relacion M2M"
+   },
+   {
+    "citation_id": "TASK-GEN-0566",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar commercial_partner_id de ResPartner como columna, con su compute recursivo"
+   },
+   {
+    "citation_id": "TASK-GEN-0567",
+    "status": "pending",
+    "repos": [],
+    "subject": "Gate que mida las lecturas cruzadas entre modelos contra la superficie real"
+   },
+   {
+    "citation_id": "TASK-GEN-0568",
+    "status": "pending",
+    "repos": [],
+    "subject": "Declarar el contrato OpenAPI de los 29 endpoints que no lo declaran"
+   },
+   {
+    "citation_id": "TASK-GEN-0569",
+    "status": "pending",
+    "repos": [],
+    "subject": "Gate que mida el contrato OpenAPI declarado, no que lo recuerde"
+   },
+   {
+    "citation_id": "TASK-GEN-0570",
+    "status": "pending",
+    "repos": [],
+    "subject": "Reubicar los símbolos del ORM que aterrizaron en un addon consumidor"
+   },
+   {
+    "citation_id": "TASK-GEN-0571",
+    "status": "completed",
+    "repos": [],
+    "subject": "Dar al eje de inventario un mapa de renombre stack↔referencia"
+   },
+   {
+    "citation_id": "TASK-GEN-0572",
+    "status": "completed",
+    "repos": [],
+    "subject": "Completar la capa de azúcar: 37 símbolos que la referencia re-exporta y aquí no"
+   },
+   {
+    "citation_id": "TASK-GEN-0573",
+    "status": "completed",
+    "repos": [],
+    "subject": "Resolver la colision de nombre de Index entre el objeto de tabla y el de Django"
+   },
+   {
+    "citation_id": "TASK-GEN-0574",
+    "status": "completed",
+    "repos": [],
+    "subject": "Ligar Index en la fachada models una vez que #321 reparta por la forma de la llamada"
+   },
+   {
+    "citation_id": "TASK-GEN-0576",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los 13 metodos ausentes de Environment y los 2 de Transaction"
+   },
+   {
+    "citation_id": "TASK-GEN-0577",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar frozendict y freehash a tools/misc.py"
+   },
+   {
+    "citation_id": "TASK-GEN-0578",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar Field._filter_not_equal y _update_inverse, que Cache delega"
+   },
+   {
+    "citation_id": "TASK-GEN-0579",
+    "status": "pending",
+    "repos": [],
+    "subject": "Construir BaseModel.new: el registro virtual con origin, que la rama dict de"
+   },
+   {
+    "citation_id": "TASK-GEN-0580",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los 11 simbolos de nivel 1 de orm que quedan sin contraparte"
+   },
+   {
+    "citation_id": "TASK-GEN-0581",
+    "status": "pending",
+    "repos": [],
+    "subject": "Hacer que los dos registrantes sin tabla hereden de AbstractModel"
+   },
+   {
+    "citation_id": "TASK-GEN-0582",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los tres simbolos sueltos de nivel 2 de orm"
+   },
+   {
+    "citation_id": "TASK-GEN-0583",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los cuatro del ciclo de vida que portan contra lo que existe"
+   },
+   {
+    "citation_id": "TASK-GEN-0584",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar la construccion de la clase de modelo y sus cuatro prerrequisitos"
+   },
+   {
+    "citation_id": "TASK-GEN-0585",
+    "status": "in_progress",
+    "repos": [],
+    "subject": "Verificar la delegacion del transitorio de account, ausente del registro"
+   },
+   {
+    "citation_id": "TASK-GEN-0586",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar los tres colectores de metodo marcado y cablearlos a su consumidor"
+   },
+   {
+    "citation_id": "TASK-GEN-0587",
+    "status": "pending",
+    "repos": [],
+    "subject": "Portar la mitad de change_default de onchange_methods"
+   },
+   {
+    "citation_id": "TASK-GEN-0593",
+    "status": "completed",
+    "repos": [],
+    "subject": "Implementar las constantes de ruta documental en el harness (src/paths/docs.ts)"
+   },
+   {
+    "citation_id": "TASK-GEN-0595",
+    "status": "completed",
+    "repos": [],
+    "subject": "Portar la decisión de compactación del binario y costear no comprimir"
+   },
+   {
+    "citation_id": "TASK-GEN-0600",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cablear los niveles al bucle: microcompact por presión, no por conteo"
+   },
+   {
+    "citation_id": "TASK-GEN-0602",
+    "status": "completed",
+    "repos": [],
+    "subject": "Medir si `llamada-desconocida` ocurre de verdad, y construir el índice sobre el transcript"
+   },
+   {
+    "citation_id": "TASK-GEN-0607",
+    "status": "completed",
+    "repos": [],
+    "subject": "Registrar la forma del transcript en la fila de sesión del store"
+   },
+   {
+    "citation_id": "TASK-GEN-0609",
+    "status": "completed",
+    "repos": [],
+    "subject": "Convertir un attachment del transcript de vuelta a payload al reanudar"
+   },
+   {
+    "citation_id": "TASK-GEN-0610",
+    "status": "completed",
+    "repos": [],
+    "subject": "Separar el separador de millar del separador de lista en compactionFidelity"
+   },
+   {
+    "citation_id": "TASK-GEN-0611",
+    "status": "completed",
+    "repos": [],
+    "subject": "Analizar en el binario 2.1.258 el flujo de reanudación y reconciliación de estado tras un reinicio"
+   },
+   {
+    "citation_id": "TASK-GEN-0613",
+    "status": "completed",
+    "repos": [],
+    "subject": "Cablear verifyAdoption al store: cerrar la fila running de un proceso muerto"
+   },
+   {
+    "citation_id": "TASK-GEN-0615",
+    "status": "pending",
+    "repos": [],
+    "subject": "Migrar los skills clase-a al sustrato, declarando su destino via src/paths/docs.ts"
+   },
+   {
+    "citation_id": "TASK-GEN-0616",
+    "status": "pending",
+    "repos": [],
+    "subject": "Adoptar plantillas de temp-holding que llenan huecos de kaupamex"
+   },
+   {
+    "citation_id": "TASK-GEN-0617",
+    "status": "completed",
+    "repos": [],
+    "subject": "Entregar el catálogo flow→hogar al sustrato del harness (docs.ts)"
+   },
+   {
+    "citation_id": "TASK-GEN-0619",
+    "status": "completed",
+    "repos": [],
+    "subject": "T-104 Componer el overlap gate consciente del driver en integrate()"
+   },
+   {
+    "citation_id": "TASK-GEN-0620",
+    "status": "completed",
+    "repos": [],
+    "subject": "T-105 Sostener los controles positivos de git-real con timeout 60000"
+   },
+   {
+    "citation_id": "TASK-GEN-0621",
+    "status": "completed",
+    "repos": [],
+    "subject": "Auto-renumerar colisiones de etiqueta en integrate() (opción 2): merge"
+   }
+  ],
+  "docs": [
+   {
+    "citation_id": "TASK-GEN-0412",
+    "status": "pending",
+    "repos": [
+     "docs"
+    ],
+    "subject": "Portar el addon calendar, y con el los dos archivos de crm que lo esperan"
+   },
+   {
+    "citation_id": "TASK-GEN-0626",
+    "status": "pending",
+    "repos": [
+     "docs"
+    ],
+    "subject": "Portar graph_ordering/components/centrality como la capa de consulta del tablero"
+   }
+  ]
+ }
+}

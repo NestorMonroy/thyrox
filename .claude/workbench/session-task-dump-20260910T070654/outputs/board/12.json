@@ -1,0 +1,8 @@
+{
+  "id": "12",
+  "subject": "Dar hogar a los cuatro artefactos de raíz del WP que ninguna regla declara",
+  "description": "El triaje de #8 resolvió cinco de los nueve artefactos que el template THYROX deja en la raíz del work package citando la regla que ya los ubica: changelog (changelog-policy.md), lecciones (registro-reportes-agentes.md), risk-register (rup-coordinator tabla A), technical-debt-resolved (capa 8 del principio rector) y audit-report (coherence-audit-gate.md).\n\nLos otros cuatro no los declara ninguna regla del proyecto — 4 tokens en 4 skills:\n\n- `{nombre-wp}-exit-conditions.md`  (workflow-discover)\n- `*-plan.md`                        (workflow-scope)\n- `*-solution-strategy.md`           (workflow-strategy)\n- `*-requirements-spec.md`           (workflow-decompose, workflow-structure)\n\nCondición de cierre: cada uno con su hogar nombrado y la regla o el artefacto del set mínimo que lo recibe, o declarado que no se materializa en kaupamex. No inventar un archivo nuevo por completitud — DEC-AM-01 lo prohíbe explícitamente.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

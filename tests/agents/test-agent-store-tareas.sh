@@ -269,6 +269,53 @@ print(m._celda_bloqueada('null'), '|', repr(m._celda_bloqueada('[]')), '|',
 afirmar "null->sin dato, []->vacio, lista->ids, None->vacio" \
         "sin dato | '' | 3, 7 | ''" "$celda"
 
+echo "== 15. la fila nace con capa declarada, no con NULL (TASK-THYROX-0021) =="
+# El camino de insercion compartido escribia quince columnas y `submodule` no
+# era una de ellas: solo `ingerir-board` la escribia. Medido el 2026-09-12
+# sobre el store vivo: 404 de 1636 filas con `submodule` NULL, todas con cita
+# TASK-GEN-, y 402 de esas 404 indecidibles por evidencia de commit — o sea que
+# la clasificacion retroactiva no las alcanza y el universo de una consulta por
+# capa depende del criterio (`submodule='docs'` da 412 abiertas de docs,
+# `citation_id LIKE 'TASK-DOCS-%'` da 314).
+#
+# La fila nace en `gen` —que declara «cruza repos»— y NO en NULL, que no
+# declara nada. Los dos se leen igual en un `WHERE submodule IS NULL` y
+# significan cosas opuestas: uno es una clasificacion, el otro su ausencia.
+TASKS15="$TMP/tasks15"; mkdir -p "$TASKS15"
+cat > "$TASKS15/70.json" <<'EOF'
+{"id":"70","subject":"Nace sin capa declarada","description":"cuerpo",
+ "status":"pending","blocks":[],"blockedBy":[]}
+EOF
+python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR"     --tasks-dir "$TASKS15" --session-id SES15 >/dev/null 2>&1
+afirmar "la fila nueva trae submodule, no NULL" "gen"         "$(leer_tarea "$DB" 70 submodule)"
+afirmar "y su procedencia dice que es el respaldo, no una clasificacion"         "respaldo al volcar el board: nadie declaro la capa"         "$(leer_tarea "$DB" 70 submodule_source)"
+
+echo "== 16. una capa ya clasificada SOBREVIVE al siguiente volcado =="
+# Es la mitad que hace del respaldo un respaldo. `correct_layer` declara que el
+# id es identidad y la columna es clasificacion; si el volcado reescribiera
+# `submodule` en el camino de conflicto, cada snapshot borraria el trabajo de
+# clasificar. Sin este control, escribir la columna en el INSERT pasaria el
+# caso 15 y destruiria dato en produccion.
+python3 - <<PYEOF
+import sqlite3
+c = sqlite3.connect("$DB")
+c.execute("UPDATE tasks SET submodule='docs', submodule_source='corregida a mano'"
+          " WHERE task_id='70' AND session_id='SES15'")
+c.commit()
+PYEOF
+cat > "$TASKS15/70.json" <<'EOF'
+{"id":"70","subject":"Nace sin capa declarada (renombrada)","description":"cuerpo",
+ "status":"pending","blocks":[],"blockedBy":[]}
+EOF
+python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+    --tasks-dir "$TASKS15" --session-id SES15 >/dev/null 2>&1
+afirmar "la capa clasificada no se pisa" "docs" \
+        "$(leer_tarea "$DB" 70 submodule)"
+afirmar "ni su procedencia" "corregida a mano" \
+        "$(leer_tarea "$DB" 70 submodule_source)"
+afirmar "y el contenido SI se actualiza — el volcado sigue haciendo su trabajo" \
+        "Nace sin capa declarada (renombrada)" "$(leer_tarea "$DB" 70 subject)"
+
 echo
 printf '%d ok, %d fallos\n' "$OK" "$FALLO"
 exit $(( FALLO > 0 ))

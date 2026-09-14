@@ -1,0 +1,18 @@
+{
+  "id": "198",
+  "subject": "Portar app-host: mi eje de «limpio» medía react, no portabilidad",
+  "description": "CERRADA 2026-09-07, `thyrox@d0bc44e`. Alcance medido con `comm -23`: **11 de 60 ausentes**; portados **6**: `state/selectors.ts`, `context/fpsMetrics.tsx`, `context/mailbox.tsx`, `context/notifications.tsx`, `context/stats.tsx`, `launchRepl.tsx`.\n\nDos huecos de cobertura DECLARADOS y sustituidos en `src/internal/pendingCrossPackageDeps.ts`:\n- `isInProcessTeammateTask` — el símbolo real vive en `@thyrox/swarm` y ya se exporta, pero `swarm` no es dependencia declarada de `app-host` (`require.resolve` confirma que no hay symlink), así que se reimplementa (4 líneas, sin deps propias).\n- `saveCurrentProjectConfig` — el barrel de `@thyrox/config` aún no lo exporta (`config/global/config.js` ausente, verificado con `Bun.resolveSync`); punto de inyección no-op por defecto, con el precedente de `@thyrox/updater: src/internal/globalConfigCompat.ts`.\n\n**5 bloqueados, no escritos**: `commands/initCommand.ts`, `runtime/runtimeHandles.ts` (repl + tool-registry), `runtime/commandRegistryRuntime.ts` (repl + swarm/bridge/cli/provider, ~90 comandos), `state/AppStateCompat.ts` (tool-registry + repl en el tipo `AppState`), `context/QueuedMessageContext.tsx` — este último por `Box` de `@anthropic/ink` como importación de **valor**, no de tipo: es un fork vendorizado, no publicado; instalarlo es decisión del ejecutor.\n\nMedido y aprovechado: una importación **sólo de tipo** de `@anthropic/ink` se borra en `bun test` sin tocar la resolución de módulos, así que no bloquea.\n\nVerificado: **456 pass, 0 fail** en las dos suites.",
+  "activeForm": "Portando app-host a thyrox por capas de dependencia",
+  "status": "completed",
+  "blocks": [
+    "205"
+  ],
+  "blockedBy": [
+    "238",
+    "231",
+    "232",
+    "233",
+    "234",
+    "235"
+  ]
+}

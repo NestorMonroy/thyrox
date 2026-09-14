@@ -1,0 +1,8 @@
+{
+  "id": "227",
+  "subject": "Repartir tests/legacy: 56 de 92 no son legacy, sólo están sin reapuntar",
+  "description": "56 de 92 suites de tests/legacy no son legacy, sólo están sin reapuntar. #228 le dejó dos residuales declarados con su razón, no diferidos por descuido:\n\n- `tests/legacy/test_error_catalog.py:49` — compone un hogar (`.claude/scripts/gates/`) que no existe bajo ningún árbol y su corpus cruza a `source/**` del repo CONSUMIDOR. Es un remapeo de dos segmentos a través de otro repo, no un cambio de localizador; por eso quedó exento del gate de aritmética.\n- `tests/legacy/test_reach_roots_shim.py` — pasó de crash total al importar a 17/18 verdes; la que falta es un desfase de contenido en `--env`, defecto distinto del reapunte.\n\nY el mismo pase midió que 6 suites Python están en rojo antes y después del barrido, las seis pre-existentes en tests/legacy y ajenas a `.parents[N]`: ése es el universo real de este saneo.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -31,7 +31,12 @@ function ruta(p: string, ctx: ToolContext): string {
 }
 
 async function shell(command: string, ctx: ToolContext, timeoutMs = 120_000): Promise<ToolResult> {
-  const proc = Bun.spawn(['bash', '-lc', command], { cwd: ctx.cwd, stdout: 'pipe', stderr: 'pipe' })
+  // `env` explicito: sin el, Bun.spawn usa la foto del entorno al arrancar el
+  // proceso, no `process.env` en vivo -- una mutacion hecha durante la sesion
+  // (una bandera, un baseline de test) nunca llegaria al hijo. Medido: con la
+  // llamada por defecto, `process.env.X = 'y'` seguido de este spawn imprime
+  // vacio; con `env: process.env` imprime 'y'.
+  const proc = Bun.spawn(['bash', '-lc', command], { cwd: ctx.cwd, stdout: 'pipe', stderr: 'pipe', env: process.env })
   let vencido = false
   const t = setTimeout(() => {
     vencido = true

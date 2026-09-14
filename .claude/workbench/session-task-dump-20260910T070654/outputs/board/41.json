@@ -1,0 +1,9 @@
+{
+  "id": "41",
+  "subject": "Barrer las citas en prosa a guiones mudados por d566c180",
+  "description": "ID: TASK-API-0023\n\nH-DOCS-1019 midió un solo guion (markdown_to_rst.py: 12 citas en 9 archivos). La mudanza del fondo por clase (gates/ session/ agents/ task/ corpus/ graph/) dejó atrás rutas en prosa de los demás guiones. Barrido: lista de la mudanza (git show --stat -M d566c180) contra literales `.claude/scripts/<x>.py|.sh` en source/**; corregir sólo documentos vivos, conservar hallazgos como evidencia fechada, regenerar lo generado.",
+  "activeForm": "Barriendo citas en prosa a guiones mudados",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

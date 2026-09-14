@@ -1,0 +1,9 @@
+{
+  "id": "115",
+  "subject": "Llevar la cita segmentada a los guiones de tarea en Python",
+  "description": "El harness ya rinde `TASK-<CAPA>-NNNN` en sus tres superficies (task_reminder, TaskList, TaskGet). Los guiones Python de `.claude/scripts/task/` no: medido 2026-09-05, de once sólo `task_ids.py` y `agent_store.py` conocen `citation_id`; dan 0 los seis que publican identidad de tarea a un lector — `asignadas.py`, `render_tablero_asignadas.py`, `vecinos_de_tarea.py`, `implementation_order.py`, `closure_graph.py` y `agrupar_tareas_por_familia.py`.\n\nEs la otra mitad del defecto de ERR-024: su salida publica el ordinal, que reinicia por sesion, asi que una cita tomada de ahi no resuelve.\n\nEntregable: los seis leen la columna cuando existe y la publican junto al ordinal, con el mismo criterio de compatibilidad que `selectCitationId` en el harness (una base sin la columna sigue respondiendo, sin el campo). Con test que discrimine: anular la lectura tiene que hacer caer exactamente los casos que la afirman.",
+  "activeForm": "Llevando la cita a los guiones Python",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

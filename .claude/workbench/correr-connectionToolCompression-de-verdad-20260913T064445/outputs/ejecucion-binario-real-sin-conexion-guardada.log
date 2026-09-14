@@ -1,0 +1,11 @@
+42 |  * Va DENTRO de `import.meta.main`, no a nivel de módulo: activar config
+                      ^
+error: Expected ";" but found "import"
+    at /home/user/thyrox/src/packages/cli/src/entry/main.ts:42:18
+
+42 |  * Va DENTRO de `import.meta.main`, no a nivel de módulo: activar config
+                            ^
+error: Unexpected .
+    at /home/user/thyrox/src/packages/cli/src/entry/main.ts:42:24
+
+Bun v1.3.11 (Linux x64)

@@ -1,0 +1,7 @@
+{
+  "question": "El hogar de la familia `jobs` solo se podia declarar GLOBAL. ¿Basta, cuando un solo proceso resuelve varios arboles?",
+  "instrument": "TDD sobre `session/job_runs.py::jobs_dir` con las cinco raices reales del arbol (`reach.root`); anulacion por retirada de la rama por clon, del ancla unica y de la conservacion de claves en `write-env.sh`. Ficheros: `tests/session/test_jobs_home.py` y `tests/session/test_write_env.py`.",
+  "metric": "aserciones que caen al retirar cada causa. A: la rama por clon -> 4 de 7 (las de hogar); B: `env_value` -> `os.environ` en la rama por clon -> 1 (la del `.env`); C: la conservacion en write-env -> 2; D: el ancla doble -> 1; E: la emision de THYROX_JOBS_DIR del proveedor -> 1. Ninguna de mas en ninguna.",
+  "blind_to": "si el hogar declarado EXISTE — `jobs_dir` compone una ruta y no toca el sistema de archivos. Y ciega a la durabilidad de la declaracion en el consumidor: su `.env` esta gitignored en api (.gitignore:4) y en docs (:36), asi que la clave por clon muere con el contenedor. `install.sh` solo escribe THYROX_ROOT.",
+  "destination": "thyrox/src/session/job_runs.py + write-env.sh. La corrida `migrate-desde-cero-20260910T073715`, que era evidencia de api varada en el arbol del proveedor, quedo movida a kaupamex-api/scripts/evidence/."
+}

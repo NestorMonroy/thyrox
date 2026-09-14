@@ -1,0 +1,48 @@
+# ANULACION — 2026-09-10T07:56:58
+
+## A. se retira la rama POR CLON (queda solo la global)
+   FAIL: test_lee_la_declaracion_del_env (__main__.DeclaracionEnElArchivo.test_lee_la_declaracion_del_env)
+   FAIL: test_cada_clon_resuelve_su_propio_hogar (__main__.HogarPorClon.test_cada_clon_resuelve_su_propio_hogar)
+   FAIL: test_la_clave_por_clon_gana_sobre_la_global (__main__.HogarPorClon.test_la_clave_por_clon_gana_sobre_la_global)
+   FAIL: test_un_segmento_relativo_compone_bajo_el_clon (__main__.HogarPorClon.test_un_segmento_relativo_compone_bajo_el_clon)
+   Ran 6 tests in 0.012s
+   FAILED (failures=4)
+   FAIL: test_lee_la_declaracion_del_env (__main__.DeclaracionEnElArchivo.test_lee_la_declaracion_del_env)
+   FAIL: test_cada_clon_resuelve_su_propio_hogar (__main__.HogarPorClon.test_cada_clon_resuelve_su_propio_hogar)
+   FAIL: test_la_clave_por_clon_gana_sobre_la_global (__main__.HogarPorClon.test_la_clave_por_clon_gana_sobre_la_global)
+   FAIL: test_un_segmento_relativo_compone_bajo_el_clon (__main__.HogarPorClon.test_un_segmento_relativo_compone_bajo_el_clon)
+
+## B. la rama por clon vuelve a leer os.environ en vez del contrato
+   FAIL: test_lee_la_declaracion_del_env (__main__.DeclaracionEnElArchivo.test_lee_la_declaracion_del_env)
+   Ran 6 tests in 0.017s
+   FAILED (failures=1)
+   FAIL: test_lee_la_declaracion_del_env (__main__.DeclaracionEnElArchivo.test_lee_la_declaracion_del_env)
+
+## restaurado — diff vacio esperado
+ 1 file changed, 77 insertions(+), 5 deletions(-)
+
+## verde tras restaurar, y las suites hermanas
+   Ran 6 tests in 0.048s
+   OK
+   
+   aserciones: 17  ok: 17  fallo: 0
+
+## C. se retira la conservacion de claves ajenas en write-env.sh
+     FAIL conserva la clave de politica por clon (api) — dio None
+     FAIL conserva la de docs tambien
+   20 aprobada(s) · 2 fallida(s) (alcance medido: write-env.sh)
+
+## restaurado
+   22 aprobada(s) · 0 fallida(s) (alcance medido: write-env.sh)
+
+## D. el ancla vuelve a ser doble (clon del cwd, .env del modulo)
+   FAIL: test_sin_start_gobierna_el_env_del_cwd (__main__.AnclaDelArchivo.test_sin_start_gobierna_el_env_del_cwd)
+   Ran 7 tests in 0.040s
+   FAILED (failures=1)
+
+## E. se retira la emision de THYROX_JOBS_DIR del proveedor
+     FAIL el proveedor declara tambien el hogar de sus trabajos — sin ella jobs_dir() devuelve una ruta relativa
+   23 aprobada(s) · 1 fallida(s) (alcance medido: write-env.sh)
+
+## restaurado — verde en las dos suites
+   OK

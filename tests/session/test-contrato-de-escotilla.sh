@@ -50,7 +50,7 @@ afirmar() {  # afirmar <descripción> <esperado> <obtenido>
     fi
 }
 
-KX_TRABAJOS_DIR=$(mktemp -d); export KX_TRABAJOS_DIR
+THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
 
 echo "== 1. la escotilla sobre un trabajo REAL =="
 bash "$GUION" registrar presente /dev/null 0 >/dev/null 2>&1
@@ -77,9 +77,9 @@ echo "== 3. el ledger queda como debe =="
 bash "$GUION" registrar otra /dev/null 0 >/dev/null 2>&1
 bash "$GUION" olvidar otra >/dev/null 2>&1
 afirmar "el trabajo soltado desaparece del ledger" \
-    0 "$(find "$KX_TRABAJOS_DIR" -name '*.job' 2>/dev/null | wc -l)"
+    0 "$(find "$THYROX_JOBS_DIR" -name '*.job' 2>/dev/null | wc -l)"
 
-rm -rf "$KX_TRABAJOS_DIR"
+rm -rf "$THYROX_JOBS_DIR"
 echo
 printf '%d ok · %d falla(s)  (alcance medido: 1 escotilla de guion; --no-verify no lo es)\n' "$OK" "$FALLO"
 exit $(( FALLO > 0 ))

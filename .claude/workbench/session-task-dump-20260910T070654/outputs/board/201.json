@@ -1,0 +1,9 @@
+{
+  "id": "201",
+  "subject": "Triar el scratch suelto en .claude/eventos, que no cumple la forma de workbench",
+  "description": "Triado y retirado en docs@20b7399d5. El scratch de verificar-porte-cli era 1171 archivos / 12 MB, de los cuales 1169 idénticos a thyrox: src/packages/ ya commiteado y 0 sin contraparte; los 2 que difieren tienen MÁS en thyrox (snapshot previo). Los 2 .orig eran backups que I-002 prohíbe por nombre. Queda el README con la medición y el comando que la reproduce.",
+  "activeForm": "Triando el scratch suelto de .claude/eventos",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

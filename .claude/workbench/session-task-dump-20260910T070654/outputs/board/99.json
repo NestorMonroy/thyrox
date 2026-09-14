@@ -1,0 +1,9 @@
+{
+  "id": "99",
+  "subject": "Describir en abstracto el mecanismo de fuente única de ubicaciones, y su flujo",
+  "description": "Directiva del ejecutor 2026-09-05: el binario NO tiene sustantivo para el conjunto como entidad (multiRoot 0, perDirectory 0), así que el nombre no se puede derivar buscando un literal. Hay que describir primero QUÉ se quiere, sin nombrarlo con un término prestado, y de ahí sacar el FLUJO.\n\nPor qué el flujo: un literal se busca con grep; un mecanismo sólo se reconoce si antes se describieron sus pasos. Sin flujo, «buscar en abstracto» degenera en buscar sinónimos — que es volver al literal y repetir el sub-patrón C de metrica-decide-la-conclusion.md.\n\nEntregable: analisis-mecanismo-de-fuente-unica-de-ubicaciones.rst con (a) las propiedades del mecanismo sin nombrarlo, (b) su flujo en pasos, (c) qué NO es, (d) el flujo como patrón de reconocimiento para el segundo análisis.\n\nPrecede a la #100 (búsqueda abstracta en la referencia) y desbloquea la #98 (el nombre).",
+  "activeForm": "Describiendo el mecanismo en abstracto",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

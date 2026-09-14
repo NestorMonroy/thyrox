@@ -1,0 +1,11 @@
+{
+  "question": "¿Cuántas de las filas sin submodule se pueden clasificar por los repos en cuyos commits aparece su cita, y cuántas quedan indecidibles?",
+  "instrument": "probes/classify_unlabeled_task_layer.py — índice de citas por repo desde git log --all de las seis raíces, cruzado con las filas de tasks cuyo submodule es NULL",
+  "metric": "repos distintos cuyo mensaje de commit nombra el citation_id de la fila: 0 -> indecidible, 1 -> esa capa, 2+ -> gen",
+  "blind_to": "un commit que cierre la tarea sin nombrar su cita (cae en indecidible); el trabajo que aterrizó en un repo fuera de las seis raíces; y la diferencia entre «el commit la cerró» y «el commit la menciona»",
+  "destination": "outputs/classify_unlabeled_task_layer.out — insumo de TASK-THYROX-0021",
+  "form": "measurement",
+  "tasks": ["TASK-THYROX-0021"],
+  "date": "2026-09-12T10:15:57",
+  "control": "La premisa original de TASK-THYROX-0021 —«636 filas cuya capa de cita no coincide con su submodule»— mezclaba dos poblaciones: 404 sin clasificar (defecto) y 232 en las que la columna difiere del prefijo, que es el diseño funcionando (correct_layer declara que el id es identidad y la columna es clasificación). Sub-patrón A."
+}

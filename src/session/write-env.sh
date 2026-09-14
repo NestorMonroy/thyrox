@@ -6,9 +6,11 @@
 # declaraba nada, así que la segunda entrada era una rama que nunca se ejecutó y
 # todo consumidor caía al ascenso, que es el último recurso.
 #
-# `.env` no se versiona, y eso es la DEC-04 aplicada a sí misma: su valor es del
-# CONSUMIDOR. Commitear `THYROX_ROOT=/home/user/thyrox` sería el proveedor
-# decidiendo dónde clona cada usuario. El contrato versionado es `.env.example`.
+# `.env` SÍ se versiona desde 2026-09-10 (directiva del ejecutor). Antes decía
+# aquí que no, por la DEC-04 aplicada a sí misma: su valor es del CONSUMIDOR.
+# Ese razonamiento no se retira, se paga — un clon en otra ruta hereda el
+# `THYROX_ROOT` de este árbol, y quien clone corre `--force` para reescribirlo.
+# El contrato sigue siendo `.env.example`; ahora además se lee el valor vigente.
 #
 # Salidas: 0 escrito · 1 ya existía y no se pisa (usar --force) · 2 no pudo
 # derivar la raíz.
@@ -42,7 +44,16 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-ROOT="$(thyrox_root)" || exit 2
+# NO se usa `thyrox_root()` aqui: por precedencia (proceso, .env, ascenso —
+# `.env.example`, `reach.py::thyrox_root`) leeria el `.env` que este guion
+# esta a punto de regenerar, y en un clon desplazado ese `.env` declara la
+# raiz VIEJA. `_thyrox_root` ya se derivo arriba por ascenso PURO — sin
+# consultar `.env` — solo para ubicar `reach.sh`; reusarlo aqui es lo que
+# hace que `--force` reescriba SIEMPRE el `.env` del clon donde corre, y no
+# el de la raiz que un `.env` heredado declare. Bug real medido: P1 de
+# `chatgpt-codex-connector` sobre el PR #7, reproducido en
+# `tests/session/test-write-env-repara-clon-desplazado.sh`.
+ROOT="$_thyrox_root"
 TREE="$(thyrox_tree_root)" || TREE=""
 DEST="${DEST:-$ROOT/.env}"
 
@@ -50,6 +61,29 @@ if [[ -f "$DEST" && "$FORCE" != true ]]; then
     echo "write-env: $DEST ya existe y NO se pisa — puede llevar valores que" >&2
     echo "  este clon eligió a mano. Pasar --force para reescribirlo." >&2
     exit 1
+fi
+
+# Las claves que ESTE guion emite. Se declaran una vez para que la
+# conservacion de abajo sepa que es suyo y que es del ejecutor.
+OWNED=(THYROX_ROOT THYROX_REACH_ROOT THYROX_LOCATOR THYROX_LIB_REACH
+       THYROX_LAYER_SIGNALS THYROX_WORKBENCH_DIR THYROX_JOBS_DIR)
+
+# Lo que el guion NO puede derivar se conserva. Una clave de POLITICA —el hogar
+# por clon de una familia, `THYROX_JOBS_API`, cuyo valor decide el ejecutor— no
+# sale del arbol: sale de una decision. Borrarla en cada `--force` convertia la
+# segunda entrada de la DEC-04 en una nota que caduca, y el fallo era silencioso:
+# el `.env` seguia siendo valido, sólo que sin la declaracion.
+#
+# Se lee ANTES del `>`, que trunca. Las claves propias NO se conservan: se
+# regeneran, que es para lo que existe `--force`.
+PRESERVED=""
+if [[ -f "$DEST" ]]; then
+    PRESERVED="$(awk -v owned="${OWNED[*]}" '
+        BEGIN { split(owned, o, " "); for (i in o) mine[o[i]] = 1 }
+        /^THYROX_[A-Z0-9_]*=/ {
+            k = substr($0, 1, index($0, "=") - 1)
+            if (!(k in mine)) print
+        }' "$DEST")"
 fi
 
 {
@@ -73,9 +107,20 @@ fi
     #
     # Solo se emite cuando el destino es el `.env` DEL PROVEEDOR: en el `.env`
     # de un consumidor este valor seria el hogar de otro arbol, que es el
-    # defecto que la familia `THYROX_WORKBENCH_<CLON>` existe para evitar.
+    # defecto que la familia `THYROX_WORKBENCH_<CLONE>` existe para evitar.
     if [[ "$DEST" == "$ROOT/.env" ]]; then
         echo "THYROX_WORKBENCH_DIR=${THYROX_WORKBENCH_DIR:-$ROOT/.claude/workbench}"
+        # El hogar de los TRABAJOS, hermano del banco y con la misma guarda.
+        # Sin el, `jobs_dir()` cae al default y devuelve un SEGMENTO relativo
+        # —`.claude/jobs`— que resuelve contra el CWD. El de cada consumidor
+        # vive en SU `.env` como `THYROX_JOBS_<CLONE>`; aqui va solo el propio.
+        echo "THYROX_JOBS_DIR=${THYROX_JOBS_DIR:-$ROOT/.claude/jobs}"
+    fi
+    if [[ -n "$PRESERVED" ]]; then
+        echo
+        echo "# Declaradas por el ejecutor — este guion no las deriva, sólo las"
+        echo "# conserva. Su significado, en .env.example."
+        printf '%s\n' "$PRESERVED"
     fi
 } > "$DEST"
 

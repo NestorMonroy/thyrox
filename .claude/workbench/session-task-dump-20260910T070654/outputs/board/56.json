@@ -1,0 +1,8 @@
+{
+  "id": "56",
+  "subject": "Procedimiento abstracto de integración entre ramas en el harness (any→any):",
+  "description": "Procedimiento abstracto de integración entre ramas en el harness (any→any): analisis RST + gate --entre + módulo TS integrate()/verificationPlan()",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "10",
+  "subject": "Cablear la cadena de premisas a un disparador periódico",
+  "description": "La cadena detector→emisor→evaluador funciona pero nadie la corre: su único valor es la re-medición en el tiempo (el acuerdo del mismo día es estructural, por inclusión de instrumentos), y sin un disparador ese valor no se realiza. Condición de cierre: la cadena corre sin que nadie la recuerde —gate de sesión, pre-push, o lo que el ejecutor decida— y un cambio de veredicto entre dos ejecuciones queda registrado. Ver la sección «La cadena, construida» de analisis-dos-verificadores-de-premisa.rst.",
+  "activeForm": "Cableando la cadena de premisas al audit",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

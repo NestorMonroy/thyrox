@@ -1,17 +1,14 @@
 /**
  * Porte de `ccnmt: packages/agent/compaction/timeBasedMCConfig.ts`.
  *
- * La fuente importa `TimeBasedMCConfig` de un `../types/compaction.js`
- * compartido que este arbol no tiene todavia; se declara aqui mismo, con
- * los tres campos identicos, porque ningun otro modulo de este paquete lo
- * consume por ahora.
+ * `TimeBasedMCConfig` vive en `./types.ts` (el porte de `ccnmt:
+ * packages/agent/types/compaction.ts`) desde que ese archivo se agregó al
+ * paquete -- la divergencia que este docstring declaraba (tipo local, sin
+ * `types/` compartido) ya no aplica y se corrige aquí en vez de arrastrarla.
  */
+import type { TimeBasedMCConfig } from './types.ts'
 
-export interface TimeBasedMCConfig {
-  enabled: boolean
-  gapThresholdMinutes: number
-  keepRecent: number
-}
+export type { TimeBasedMCConfig }
 
 export interface TimeBasedMCConfigDeps {
   getFeatureValue<T>(key: string, defaultValue: T): T

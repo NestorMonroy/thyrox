@@ -1,0 +1,20 @@
+{
+  "task_id": "1214",
+  "subject": "Decidir el desenlace de las 16 rutas que el gate ciego no congeló",
+  "description": "El baseline del gate de sucesor se congeló el 2026-09-10 05:27:51 (docs@1f3d62fec, 789 rutas) con el gate tal como estaba a las 05:27:30 (thyrox@e8069768), que aún tenía el panic de mawk de H-DOCS-1068 y medía 377 de 1002 archivos. El universo se ensanchó 17h46m después (thyrox@6d3be15e, 23:13:48).\n\nMedido: de los 17 incumplidores que el gate publica hoy, 16 YA EXISTÍAN al congelar y no entraron al baseline; sólo 1 es posterior. Reparto por cita: 1 con ordinal caduco (H-API-1101), 16 sin ninguna cita. Nueve de capa api, ocho de docs.\n\nEl desenlace es alcance, no derivación, y son dos: (a) re-congelar las 16 como deuda heredada por fecha — el gate vuelve a 1 incumplidor y su cero recupera poder de discriminación; (b) darles sucesor una a una — 16 decisiones de tema. Dejarlo como está no es válido: el rojo del gate mezcla dos poblaciones y no informa de ninguna.\n\nEvidencia: H-DOCS-1264.",
+  "status": "pending",
+  "active_form": null,
+  "owner": null,
+  "blocks_json": null,
+  "blocked_by_json": null,
+  "session_id": "168b0fdf-bfe4-590b-b6c0-b6be124c124a",
+  "source": "task_ids ingerir-board",
+  "metadata_json": null,
+  "created_at": "2026-09-12T11:50:37",
+  "updated_at": "2026-09-12T11:50:37",
+  "submodule": "docs",
+  "submodule_source": "acuñado al ingerir el board",
+  "opened_at": "2026-09-12T11:50:37",
+  "opened_at_source": "acuñado al ingerir el board",
+  "citation_id": "TASK-DOCS-0542"
+}

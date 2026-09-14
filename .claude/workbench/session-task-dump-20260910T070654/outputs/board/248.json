@@ -1,0 +1,9 @@
+{
+  "id": "248",
+  "subject": "install.sh desde un directorio hondo resuelve la raíz real, no la del árbol",
+  "description": "CERRADA 2026-09-07, `thyrox@4ca698dc`. Suite: **33 aserciones, 33 ok** (era 32 ok, 1 fallida).\n\nCausa: `load_root_from_env_file` recibía el árbol hallado por el ascenso y luego arrancaba la búsqueda del `.env` desde `pathlib.Path.cwd()`. Con el cwd, un guion invocado desde dentro de OTRO árbol leía el `.env` de ese otro y **pisaba la raíz que el ascenso acababa de hallar bien**.\n\nEs la misma clase que la aritmética de ruta —resolver desde donde uno está y no desde el sujeto— aplicada al punto de partida de la búsqueda.",
+  "activeForm": "Resolviendo la precedencia de raíz en install.sh",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

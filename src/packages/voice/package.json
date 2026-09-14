@@ -19,6 +19,8 @@
     "./hooks/useVoiceEnabled.js": "./src/hooks/useVoiceEnabled.ts",
     "./hooks/useVoiceIntegration.js": "./src/hooks/useVoiceIntegration.tsx",
     "./voiceContext.js": "./src/voiceContext.tsx",
+    "./hooks/useVoiceIntegration": "./src/hooks/useVoiceIntegration.tsx",
+    "./voiceContext": "./src/voiceContext.tsx",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
@@ -32,6 +34,7 @@
     "@thyrox/output": "workspace:*",
     "@thyrox/provider": "workspace:*",
     "@thyrox/storage": "workspace:*",
+    "react": "^19.0.0",
     "ws": "^8.21.0",
     "zod": "^4.3.6"
   }

@@ -1,0 +1,9 @@
+{
+  "id": "163",
+  "subject": "Reconciliar los 15 pares original/puerto que ahora conviven en thyrox/src",
+  "description": "La mudanza llevó a thyrox originales que YA tenían un puerto previo citándolos como fuente, y ahora conviven los dos. Listados en .claude/eventos/mudar-scripts-a-thyrox-20260905T190725/radio/duplicados.tsv. Los pares: reach_roots.py↔paths/reach.py, agent_store.py↔store/agent_sessions.py, model_catalog.py↔transcript/model.py, medir_usage_subagentes.py↔transcript/usage.py, reconciliar-agentes.sh↔roster/job_liveness.py, wait-jobs.sh↔session/job_ledger.py y roster/process_liveness.py, run-task-pool.sh↔session/task_pool.py, check_gitattributes.py↔gates/gitattributes.py, check_hook_script_token.py↔gates/hook_script_token.py, check_script_deprecated.py↔gates/script_deprecated.py, check_suite_discrimina.py↔gates/check_mutante_en_staging.py, reconciliar_store.py↔agents/backfill_agent_sessions.py, asignadas.py↔task/render_tablero_asignadas.py. Por par: medir cobertura del puerto contra el original con el quinto instrumento de niveles-de-retencion.md (piezas declaradas vs presentes) antes de retirar el original — un puerto parcial retirado en silencio es porte-completo-no-parcial.md al revés.",
+  "activeForm": "Reconciliando pares original/puerto",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

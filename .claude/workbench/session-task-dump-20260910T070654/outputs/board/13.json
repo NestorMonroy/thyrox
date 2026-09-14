@@ -1,0 +1,8 @@
+{
+  "id": "13",
+  "subject": "Corregir metadata-standards.md:244 — cita #310 como pendiente estando cerrada",
+  "description": "Sucesor de H-DOCS-1014. `.claude/rules/metadata-standards.md:244` —regla siempre cargada— dice que dónde aterriza un artefacto de stage «es la tarea #310; hasta entonces esta tabla describe la metodología de origen». La tarea está `completed` desde 2026-08-21T10:03:52 y su desenlace lo recoge `mapa-skills-a-hogar-documental.rst:68`: `.thyrox/` no se importó y el equivalente del work package es `pm/<submodulo>/iniciativas/<slug>/`.\n\nCondición de cierre: la sección \"Reglas de colocación en stage directories\" recoge el desenlace en vez de remitir a la tarea, y ninguna otra regla siempre-cargada cita #310 como abierta. Verificar con `grep -rn \"tarea #310\" .claude/rules/`.\n\nCuidado: la tabla de stage directories describe la metodología THYROX de origen y eso es correcto conservarlo — lo que sobra es la frase que declara la pregunta abierta.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

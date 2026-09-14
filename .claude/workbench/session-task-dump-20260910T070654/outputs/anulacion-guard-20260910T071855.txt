@@ -1,0 +1,28 @@
+== ANULACION 2026-09-10T07:18:55 ==
+Se retira de main() el guard `if not cards: return 2`.
+Esperado: cae EXACTAMENTE test_4, y ninguna otra.
+
+test_1_lee_el_tablero_ordenado_por_ordinal_numerico (__main__.DumpSessionBoard.test_1_lee_el_tablero_ordenado_por_ordinal_numerico)
+10 va DESPUÉS de 9, no antes: el ordinal es número, no cadena. ... ok
+test_2_una_tarjeta_ilegible_no_tumba_el_volcado (__main__.DumpSessionBoard.test_2_una_tarjeta_ilegible_no_tumba_el_volcado) ...   ILEGIBLE 2.json: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+ok
+test_3_EL_QUE_DISCRIMINA_campo_y_prosa_son_ejes_distintos (__main__.DumpSessionBoard.test_3_EL_QUE_DISCRIMINA_campo_y_prosa_son_ejes_distintos) ... ok
+test_3_bis_el_ordinal_de_prosa_no_come_cualquier_almohadilla (__main__.DumpSessionBoard.test_3_bis_el_ordinal_de_prosa_no_come_cualquier_almohadilla)
+`#` sin dígitos no es una cita, y 5 dígitos tampoco. ... ok
+test_4_GUARD_un_tablero_vacio_rehusa_sin_emitir_cifra (__main__.DumpSessionBoard.test_4_GUARD_un_tablero_vacio_rehusa_sin_emitir_cifra)
+El guard REAL: `main()` sale 2 y no imprime ninguna cifra. ... FAIL
+test_5_el_hogar_declarado_gana_sobre_el_descubrimiento (__main__.DumpSessionBoard.test_5_el_hogar_declarado_gana_sobre_el_descubrimiento) ... ok
+
+======================================================================
+FAIL: test_4_GUARD_un_tablero_vacio_rehusa_sin_emitir_cifra (__main__.DumpSessionBoard.test_4_GUARD_un_tablero_vacio_rehusa_sin_emitir_cifra)
+El guard REAL: `main()` sale 2 y no imprime ninguna cifra.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.claude/workbench/session-task-dump-20260910T070654/tests/test_dump_session_board.py", line 97, in test_4_GUARD_un_tablero_vacio_rehusa_sin_emitir_cifra
+    self.assertEqual(rc, 2, "un tablero vacio tiene que REHUSAR, no salir 0")
+AssertionError: 0 != 2 : un tablero vacio tiene que REHUSAR, no salir 0
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.011s
+
+FAILED (failures=1)

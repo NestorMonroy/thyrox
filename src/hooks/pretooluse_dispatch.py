@@ -61,10 +61,14 @@ Detector = tuple[str, Callable[[dict], str | None]]
 #: directorio ni lista.
 DETECTOR_DIR = Path(__file__).resolve().parent
 DETECTOR_NAMES: tuple[str, ...] = (
+    "detect_agent_dispatch",
     "detect_finding_layer",
     "detect_foreground_long_command",
     "detect_prose_vocabulary",
     "detect_rst_validation",
+    "detect_dedicated_tool_usage",
+    "detect_ephemeral_citation",
+    "detect_topic_duplication",
 )
 
 

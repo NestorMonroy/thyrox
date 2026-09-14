@@ -178,4 +178,99 @@ describe('exports de los paquetes hermanos', () => {
       })
     }
   })
+
+  describe('bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9)', () => {
+    // Porte de `tests/package/exports.test.ts` (bloque 2), generalizado por
+    // paquete en vez de fijo a la raiz. Los bloques 0-3 de arriba miden las
+    // entradas QUE YA EXISTEN en el mapa; ninguno recorre el disco, asi que un
+    // archivo real sin NINGUNA entrada -- ni exacta ni por comodin -- es
+    // invisible a los cuatro. Este bloque es el que ve esa forma: recorre
+    // `src/` de cada paquete y pregunta, por archivo, si el mapa lo resuelve.
+    //
+    // Medido antes de escribir este bloque (T-9, no repetido aqui porque es
+    // propiedad de un arbol que cambia -- `calibration-verified-numbers.md`):
+    // 9 paquetes con archivos sin cobertura. El propio test, corrido, publica
+    // la cifra vigente.
+    //
+    // TRES CORRECCIONES sobre el porte, las tres declaradas:
+    //
+    // 1. `sourceModules` del original excluye `.tsx` (`entry.endsWith('.ts')`
+    //    solo) -- ciego a `teleport/src/remote-setup/remote-setup.tsx`, que
+    //    SI es una superficie real del paquete. Aqui se incluyen los dos.
+    // 2. `subpathFor`/`sourceModules` operan sobre la raiz del PAQUETE, no la
+    //    de thyrox -- el original es fijo a `ROOT`.
+    // 3. `src/index.ts` cuenta cubierto TAMBIEN si `.` resuelve a el, ademas
+    //    de por su propia ruta calculada (`./index`, via `subpathFor`). NO
+    //    es un colapso incondicional a `.`: `permission/src/index.ts` es un
+    //    modulo SECUNDARIO real -- su `.` apunta a `permission.ts`, no a
+    //    `index.ts` -- y sigue cubierto por su propia ruta (`./*` generico).
+    //    Colapsar siempre a `.` (primer intento de esta correccion) rompia
+    //    ese caso: `resolveSubpath(exports, '.')` daba `permission.ts`, que
+    //    NUNCA coincide con `index.ts`. El original nunca ejercito ninguna
+    //    de las dos formas porque el propio paquete `thyrox` (raiz) no
+    //    declara `.` en su mapa (se importa solo por subpaths con nombre).
+    function sourceModulesOf(pkgDir: string): string[] {
+      const srcDir = join(pkgDir, 'src')
+      if (!existsSync(srcDir)) return []
+      const out: string[] = []
+      const recorrer = (dir: string) => {
+        for (const entry of readdirSync(dir)) {
+          const full = join(dir, entry)
+          if (statSync(full).isDirectory()) {
+            if (entry === '__pycache__' || entry === 'node_modules') continue
+            recorrer(full)
+          } else if ((entry.endsWith('.ts') || entry.endsWith('.tsx')) && !entry.endsWith('.d.ts')) {
+            out.push(full.slice(pkgDir.length + 1))
+          }
+        }
+      }
+      recorrer(srcDir)
+      return out.sort()
+    }
+
+    /** Misma precedencia de `/index` que el original (ver su docstring). */
+    function subpathFor(pkgDir: string, moduleRelPath: string): string {
+      const sinExt = moduleRelPath.replace(/^src\//, '').replace(/\.tsx?$/, '')
+      const base = sinExt.endsWith('/index') ? sinExt.slice(0, -'/index'.length) : null
+      const conHermano = base !== null && (
+        existsSync(join(pkgDir, 'src', `${base}.ts`)) || existsSync(join(pkgDir, 'src', `${base}.tsx`))
+      )
+      return './' + (conHermano ? sinExt : sinExt.replace(/\/index$/, ''))
+    }
+
+    /** Identica al bloque 2 de `exports.test.ts` -- exacto, luego el prefijo `*` mas largo. */
+    function resolveSubpath(exportsMap: Record<string, unknown>, subpath: string): string | null {
+      const exacto = destino(exportsMap[subpath])
+      if (exacto !== undefined && exacto !== null) return exacto
+      let mejorPrefijo = ''
+      let mejorDestino: string | null = null
+      for (const [clave, valor] of Object.entries(exportsMap)) {
+        const estrella = clave.indexOf('*')
+        if (estrella === -1) continue
+        const prefijo = clave.slice(0, estrella)
+        const sufijo = clave.slice(estrella + 1)
+        if (!subpath.startsWith(prefijo) || !subpath.endsWith(sufijo)) continue
+        if (subpath.length < prefijo.length + sufijo.length) continue
+        if (prefijo.length < mejorPrefijo.length) continue
+        mejorPrefijo = prefijo
+        const comodin = subpath.slice(prefijo.length, subpath.length - sufijo.length)
+        const plantilla = destino(valor)
+        mejorDestino = plantilla ? plantilla.replace('*', comodin) : null
+      }
+      return mejorDestino
+    }
+
+    for (const p of TODOS) {
+      test(p.nombre, () => {
+        const sinCubrir = sourceModulesOf(p.dir).filter(m => {
+          const destinoEsperado = './' + m
+          if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
+          // correccion 3: ruta alterna solo para el indice de raiz, via '.'
+          if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
+          return true
+        })
+        expect(sinCubrir).toEqual([])
+      })
+    }
+  })
 })

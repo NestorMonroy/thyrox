@@ -1,0 +1,9 @@
+{
+  "id": "160",
+  "subject": "Portar el subsistema TASK de .claude/scripts a thyrox",
+  "description": "Directiva del ejecutor 2026-09-05: \"tenemos que hacer todo lo de TASK que tenemos implementado en kaupamex-docs/.claude/scripts/** a thyrox/\". Superficie medida ese día en .claude/scripts/task/: task_ids.py (cita/censo/duplicados/ingerir-board/acunar), task_source.py, agrupar_tareas_por_familia.py, vecinos_de_tarea.py, snapshot-tasks.sh, refrescar-tablero.sh, refresh-board.sh, render_tablero_asignadas.py; más sus suites en .claude/scripts/tests/ (test_task_ids.py, test_task_source_citas.py, test_vecinos_de_tarea.py, test-snapshot-tasks.sh, test-refrescar-tablero.sh, test-refresh-board.sh, test-agent-store-tareas.sh, test-agent-store-buscar-tareas.sh, test-agent-store-reassignment-guard.sh, test-volcar-tarea-al-store.sh) y el gate verify-task-store-in-cli-js.sh. Mismo criterio que #150/#152/#153/#156: viaja el MECANISMO, el sustrato se inyecta (DEC-04) — la ruta del store, la sesión, el directorio del board son parámetro del consumidor. Precondición: clasificar producto contra estado antes de mover (como en #137/#139); el sqlite del store es ESTADO de kaupamex-docs y no viaja.",
+  "activeForm": "Portando el subsistema TASK a thyrox",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

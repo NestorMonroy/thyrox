@@ -222,5 +222,72 @@ PY
 GUARD_FALLOS=$(printf '%s' "$GUARD_OUT" | sed -n 's/^DESENLACES_FALLIDOS=//p')
 afirmar "guard del lexico: los 3 desenlaces, ninguno termina en cero" "0" "$GUARD_FALLOS"
 
+# --------------------------------------------------- caso del SUSTITUTO
+# El eje de FALSO AMIGO: una palabra que el corpus SI atestigua —asi que el
+# detector de inventados la deja pasar— y que es la traduccion equivocada de
+# un termino tecnico. `libreria` por *library*, `removido` por *removed*.
+#
+# El registro admite `forma -> sustituto`: sin parsear la flecha, la linea se
+# lee LITERAL y no casa nunca. El control de anulacion lo mide.
+#
+# Los dos controles positivos son REALES y del repo, no fabricados
+# (`hallazgo-abierto-genera-sucesor.md`): la propia regla que veta el
+# vocabulario escribe «librería» en su prosa, y un hallazgo de api escribe
+# «campos removidos».
+REGISTRY="$TMP/vetadas-con-sustituto.txt"
+cat > "$REGISTRY" <<'TXT'
+librería → biblioteca
+libreria → biblioteca
+removido → retirado
+removidos → retirados
+TXT
+
+PARSED=$(VOCAB_GATE_FORBIDDEN="$REGISTRY" python3 - "$GATE" <<'PARSE_EOF'
+import importlib.util, os, pathlib, sys
+ruta = pathlib.Path(sys.argv[1])
+spec = importlib.util.spec_from_file_location('gate', ruta)
+gate = importlib.util.module_from_spec(spec)
+sys.modules['gate'] = gate
+spec.loader.exec_module(gate)
+formas = gate.load_forbidden(pathlib.Path(os.environ['VOCAB_GATE_FORBIDDEN']))
+print(';'.join(f'{f}|{s}' for f, s in formas))
+PARSE_EOF
+)
+afirmar "load_forbidden separa forma y sustituto" \
+    "librería|biblioteca;libreria|biblioteca;removido|retirado;removidos|retirados" "$PARSED"
+
+cat > "$TMP/falso-amigo.rst" <<'TXT'
+sólo se puede ejecutar si tiene la librería [x] instalada
+TXT
+afirmar "el gate ve el falso amigo real (librería)" "1" \
+    "$(VOCAB_GATE_FORBIDDEN="$REGISTRY" python3 "$GATE" --quiet --no-baseline \
+        "$TMP/falso-amigo.rst" 2>/dev/null)"
+
+afirmar "el reporte publica el sustituto" "1" \
+    "$(VOCAB_GATE_FORBIDDEN="$REGISTRY" python3 "$GATE" --no-baseline \
+        "$TMP/falso-amigo.rst" 2>/dev/null | grep -c 'biblioteca')"
+
+cat > "$TMP/falso-amigo-2.rst" <<'TXT'
+Las referencias a campos removidos quedan como AttributeError en runtime.
+TXT
+afirmar "el gate ve el segundo falso amigo real (removido)" "1" \
+    "$(VOCAB_GATE_FORBIDDEN="$REGISTRY" python3 "$GATE" --quiet --no-baseline \
+        "$TMP/falso-amigo-2.rst" 2>/dev/null)"
+
+cat > "$TMP/falso-amigo-correcto.rst" <<'TXT'
+sólo se puede ejecutar si tiene la biblioteca [x] instalada, ya retirada
+TXT
+afirmar "la palabra correcta NO se marca" "0" \
+    "$(VOCAB_GATE_FORBIDDEN="$REGISTRY" python3 "$GATE" --quiet --no-baseline \
+        "$TMP/falso-amigo-correcto.rst" 2>/dev/null)"
+
+printf 'regla de oro\n' > "$TMP/vetadas-sin-flecha.txt"
+cat > "$TMP/sin-flecha.rst" <<'TXT'
+La regla de oro del proyecto es medir antes de concluir.
+TXT
+afirmar "una forma sin flecha sigue casando" "1" \
+    "$(VOCAB_GATE_FORBIDDEN="$TMP/vetadas-sin-flecha.txt" python3 "$GATE" \
+        --quiet --no-baseline "$TMP/sin-flecha.rst" 2>/dev/null)"
+
 printf '\n%d ok · %d falla(s)\n' "$OK" "$FALLO"
 [[ "$FALLO" -eq 0 ]]

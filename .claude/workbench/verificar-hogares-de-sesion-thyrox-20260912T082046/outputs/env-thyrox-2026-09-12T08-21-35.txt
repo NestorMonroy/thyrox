@@ -1,0 +1,17 @@
+=== thyrox/.env (linea completa) ===
+# Generado por src/session/write-env.sh — 2026-09-10T08:01:58
+# El contrato y el significado de cada clave: .env.example
+THYROX_ROOT=/home/user/thyrox
+THYROX_REACH_ROOT=/home/user
+THYROX_LOCATOR=src/paths/reach.py
+THYROX_LIB_REACH=src/lib/reach.sh
+THYROX_LAYER_SIGNALS=src/task/layer_signals.tsv
+THYROX_WORKBENCH_DIR=/home/user/thyrox/.claude/workbench
+THYROX_JOBS_DIR=/home/user/thyrox/.claude/jobs
+
+# Declaradas por el ejecutor — este guion no las deriva, sólo las
+# conserva. Su significado, en .env.example.
+THYROX_WORKBENCH_DOCS=/home/user/kaupamex-docs/.claude/eventos
+THYROX_JOBS_DOCS=/home/user/kaupamex-docs/.claude/jobs
+THYROX_JOBS_API=/home/user/kaupamex-api/scripts/evidence
+THYROX_WORKBENCH_API=/home/user/kaupamex-api/scripts/workbench

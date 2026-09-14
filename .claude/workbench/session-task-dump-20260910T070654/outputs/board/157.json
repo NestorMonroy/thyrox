@@ -1,0 +1,9 @@
+{
+  "id": "157",
+  "subject": "Dar a niveles-de-retencion.md su quinto instrumento: el que ve la ausencia",
+  "description": "Declarado por H-DOCS-1092. La lista de «qué cuenta como verificación independiente (3 -> 2)» de .claude/rules/niveles-de-retencion.md enumera cuatro instrumentos —el diff de lo que quedó en disco, un grep/AST sobre el árbol, los gates en serie, y el git log del repo@hash que el hallazgo cita—. Los cuatro miden EL ARTEFACTO QUE EXISTE, así que ninguno puede fallar porque una pieza prometida FALTE.\n\nMedido en #150: se promovió a nivel 2 con seis instrumentos (anulación de la guarda forgotten, superficie por AST, suite en serie, identidad del commit, ausencia de remolques, independencia respecto de roster) y ninguno vio que el asunto de la tarea nombraba tres piezas —el pool, la barrera y el marcador— y habían aterrizado dos. El pool (run-task-pool.sh, 139 líneas) no estaba: grep de width|nproc|pool sobre thyrox/src/**.py sólo devuelve «spool» de hooks/error_log.py.\n\nEl quinto instrumento es de otra clase: comparar lo entregado contra el ALCANCE QUE LA PROPIA TAREA DECLARA. Puede fallar, cuesta un grep, y es el único que ve una ausencia.\n\nEs edición de una regla siempre-cargada, no derivación — y la regla ya advierte que su criterio de independencia es necesario y no suficiente (el caso `test -f`), así que la sección donde entra ya existe.",
+  "activeForm": "Añadiendo el quinto instrumento a niveles-de-retencion.md",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

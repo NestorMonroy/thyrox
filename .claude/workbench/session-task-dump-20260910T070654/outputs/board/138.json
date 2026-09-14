@@ -1,0 +1,11 @@
+{
+  "id": "138",
+  "subject": "P3c: reapuntar claims.ts al modulo de coordinacion de thyrox",
+  "description": "H-DOCS-1077 dejo la constante de ubicacion declarada en dos sitios: thyrox/src/coordination/ledger.ts (dueño) y claims.ts:34 (literal heredado). El reapuntado es cross-repo mientras packages siga en kaupamex-docs — la clase sale-de-la-raiz que midio h-docs-1075. Se cierra con P3c, el tramo que muda packages.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "140",
+    "141"
+  ]
+}

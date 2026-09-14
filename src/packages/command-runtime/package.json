@@ -15,10 +15,31 @@
     "./promptShellExecution.js": "./src/promptShellExecution.ts",
     "./commands/review/ultrareviewEnabled.js": "./src/commands/review/ultrareviewEnabled.ts",
     "./skills/loadSkillsDir.js": "./src/skills/loadSkillsDir.ts",
+    "./commands/clear": "./src/commands/clear/index.ts",
+    "./commands/compact": "./src/commands/compact/index.ts",
+    "./commands/cost": "./src/commands/cost/index.ts",
+    "./commands/goal": "./src/commands/goal/index.ts",
+    "./commands/recap": "./src/commands/recap/index.ts",
+    "./commands/rename": "./src/commands/rename/index.ts",
+    "./commands/status": "./src/commands/status/index.ts",
+    "./commands/voice": "./src/commands/voice/index.ts",
+    "./commands/workflows": "./src/commands/workflows/index.ts",
+    "./testing": "./src/testing/index.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/app-host": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/permission": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/storage": "workspace:*"
   }
 }

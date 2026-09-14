@@ -1,0 +1,8 @@
+{
+  "question": "Does sync_card carry the board card's corrected description into the store row, or only its subject and status?",
+  "instrument": "tests/task/test_board_sync.py block 5bis (5d-5h), plus a live sync_card run against the session store for TASK-THYROX-0020 and TASK-THYROX-0021.",
+  "metric": "The description column of the store row, read back after sync_card, compared with the board card's description; and the presence of 'description' in the result's changed list.",
+  "blind_to": "Any board card whose description is empty: measured 363 of 363 live cards carry text, so that population is 0 today and the declared blanking semantics is untested against real data. Also blind to reconcile_status, which pairs by subject and writes status only — it never touched description before this change and still does not.",
+  "destination": "src/task/board_sync.py SYNCED_FIELDS; the finding H-DOCS-1260 in kaupamex-docs; successor TASK-THYROX-0020.",
+  "form": "measurement"
+}

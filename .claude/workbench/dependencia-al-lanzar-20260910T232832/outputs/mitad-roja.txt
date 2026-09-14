@@ -1,0 +1,37 @@
+== 1. declarar la arista NO lanza el dependiente ==
+  ok    el dependiente NO arrancó al registrarlo
+  FALLO status lo muestra BLOQUEADO
+        esperado=[0] obtenido=[1]
+== 2. cuando el predecesor termina bien, dispatch lo lanza ==
+  FALLO tras dispatch, el dependiente SÍ arrancó
+        esperado=[presente] obtenido=[ausente]
+== 3. CONTROL — un predecesor que FALLA no arranca al dependiente, y lo DICE ==
+  ok    el dependiente NO arrancó
+  FALLO dispatch DICE que lo canceló (no calla)
+        esperado=[0] obtenido=[1]
+  FALLO nombra al predecesor que falló
+        esperado=[0] obtenido=[1]
+== 4. un cancelado no deja el turno bloqueado para siempre ==
+  FALLO pending sale 0 con todo resuelto o cancelado
+        esperado=[0] obtenido=[1]
+
+resumen: 2 ok, 5 fallo(s)
+
+LECTURA DE ESTA MITAD ROJA
+===========================
+
+5 fallos de 7 aserciones. Pero las DOS que pasan lo hacen VACUAMENTE:
+
+  "el dependiente NO arranco al registrarlo"   pasa porque --after-ok no existe
+  "el dependiente NO arranco" (caso 3)          idem
+
+Un instrumento que solo tuviera esas dos publicaria 2/2 en verde sobre un
+mecanismo inexistente — el sub-patron D. Las que discriminan son:
+
+  caso 2   "tras dispatch, el dependiente SI arranco"     <- prueba el mecanismo
+  caso 3   "dispatch DICE que lo cancelo (no calla)"      <- prueba que informa
+  caso 3   "nombra al predecesor que fallo"               <- prueba que atribuye
+
+Por eso el caso 3 tiene TRES aserciones y no una: "no arranco" es necesario y
+no suficiente. Sin las otras dos, un dispatch que ignore el ledger entero
+pasaria el control.

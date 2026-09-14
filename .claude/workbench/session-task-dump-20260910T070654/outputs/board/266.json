@@ -1,0 +1,11 @@
+{
+  "id": "266",
+  "subject": "Retirar el workbench superado del paquete harness y reapuntar a su sucesor",
+  "description": "CERRADO en thyrox@e8b2021a (mitad roja) y thyrox@116fd91a (implementacion).\n\nEl binario importaba el workbench del paquete que se vacia, no el sucesor que ya vivia en `thyrox: src/workbench/manifest.ts`. Como h-docs-1142 midio, los contratos son incompatibles, asi que no fue un reapuntado de import: el subcomando cambia de comportamiento —`manifest.json` en vez de `manifiesto.json`, `outputs/` en vez de `salidas/`, y un manifiesto vacio en vez de sembrar `evento`/`fecha`, porque el sucesor deriva la fecha del sufijo ISO del identificador.\n\nLa suite se reescribio entera contra el contrato del sucesor (19 casos). Su mitad roja midio 18 pasan / 1 falla.\n\nCorreccion de prediccion: dije que caerian los DOS casos de CLI y solo cae UNO. `--workbench-check` sobre un directorio sin manifiesto es no-conforme bajo los dos contratos, asi que no discrimina; queda en la suite porque mide que `--strict` bloquee, pero no se cuenta como si separara los contratos. El unico que los separa es `--workbench-new`, y lo hace por AUSENCIA ademas de por presencia.\n\nAnulacion: restaurar el modulo superado y devolverle el import al binario hace caer 1 de 19, y solo ese.\n\nCon esto la arista `@thyrox/cli` -> `@thyrox/harness` queda cerrada: cero especificadores, cero dependencia en el manifiesto, y el caso 4 del control de la arista deja de ser `test.todo`.",
+  "activeForm": "Retirando el workbench superado",
+  "status": "completed",
+  "blocks": [
+    "81"
+  ],
+  "blockedBy": []
+}

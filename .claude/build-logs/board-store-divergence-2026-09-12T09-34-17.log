@@ -1,0 +1,81 @@
+  filas de la sesion en el store: 1199
+divergencia board <-> store  (sesion 168b0fdf-bfe4-590b-b6c0-b6be124c124a)
+  universo: 358 tarjeta(s) del board
+  same             250
+  status_drift      65
+  absent            42
+  ambiguous          1
+  suma             358   (cubre el universo)
+
+  las 65 con estado divergente (board -> store), que es lo que un cierre propagaria:
+    #78    TASK-API-0036         completed -> pending      Portar graph_ordering/components/centrality co
+    #82    TASK-DB-0002          completed -> pending      Añadir a task_ids un check de doble citation_i
+    #87    TASK-DB-0003          completed -> pending      Add a closed lexicon to the filename language 
+    #88    TASK-API-0039         completed -> pending      Teach the successor gate the TASK- citation fo
+    #95    TASK-GEN-0040         completed -> pending      Decidir la conducta del hook Stop ahora que su
+    #110   TASK-API-0053         completed -> pending      Resolver la contradicción: lint_agents.py proh
+    #111   TASK-API-0054         completed -> pending      Suite del .githooks/pre-commit: sus 5 gates no
+    #115   TASK-API-0058         completed -> pending      Llevar la cita segmentada a los guiones de tar
+    #116   TASK-API-0059         completed -> pending      Decidir si el harness necesita plan mode, y si
+    #118   TASK-DOCS-0386        completed -> pending      Declarar los tres tipos de costo y qué se cita
+    #119   TASK-DOCS-0387        completed -> pending      Dar a reconciliar-agentes.sh un camino a «vivo
+    #122   TASK-DOCS-0390        completed -> pending      Reparar el REcompile() panic de check-hallazgo
+    #123   TASK-DOCS-0391        completed -> pending      Cerrar el push a la rama equivocada, que repor
+    #126   TASK-DOCS-0394        completed -> pending      Decidir que de las tres capas de .claude se mu
+    #128   TASK-DOCS-0396        completed -> pending      Reimplementar el alcance por variable en thyro
+    #151   TASK-DOCS-0457        completed -> pending      El store versionado ensucia el árbol en cada t
+    #158   TASK-DOCS-0403        completed -> in_progress  Portar la extracción de modelo: #153 la nombró
+    #159   TASK-DOCS-0404      in_progress -> pending      Acuñar la cita durable al crear la tarea, no a
+    #161   TASK-DOCS-0406        completed -> pending      Decidir dónde vive el cableado de hooks para q
+    #164   TASK-DOCS-0409        completed -> pending      Repartir las siete entradas de .claude/ que no
+    #165   TASK-DOCS-0410      in_progress -> pending      Construir el canal consumidor: cómo usa un kau
+    #172   TASK-DOCS-0415        completed -> in_progress  Elegir A o B: particionar el paquete que hoy s
+    #173   TASK-DOCS-0421        completed -> pending      Barrer los guiones que perdieron su aritmética
+    #174   TASK-DOCS-0412        completed -> pending      Analizar el reparto de una agencia multi-agent
+    #177   TASK-DOCS-0423        completed -> pending      Decidir cómo thyrox aloja un skill, sabiendo q
+    #182   TASK-DOCS-0416        completed -> pending      Hacer que `task_ids.py cita` publique el sujet
+    #188   TASK-DOCS-0425        completed -> pending      Dar productor en src/ a los 84 skills que sigu
+    #193   TASK-DOCS-0430        completed -> pending      Analizar el flujo de tareas en ccnmt y decidir
+    #205   TASK-DOCS-0481      in_progress -> pending      Completar el porte de cli: llegaron 3 de ~20 m
+    #224   TASK-DOCS-0500      in_progress -> pending      Completar la partición con la línea de ccnmt, 
+    #226   TASK-DOCS-0502        completed -> pending      Vaciar del todo src/packages/harness: los dos 
+    #236   TASK-DOCS-0512        completed -> pending      reconcile_store no alcanza al agente recien te
+    #237   TASK-DOCS-0513        completed -> pending      Triar las filas de nivel 4 sin procedencia, qu
+    #240   TASK-DOCS-0516        completed -> pending      Re-medir el bloqueo de swarm: appRuntime cruza
+    #250   TASK-DOCS-0526      in_progress -> pending      Completar permission: 110 de 133 siguen fuera,
+    #253   TASK-DOCS-0431        completed -> in_progress  Portar el registro de hooks de VVV a runHooks,
+    #258   TASK-DOCS-0435        completed -> in_progress  Decidir el hogar del store y fusionar antes de
+    #276   TASK-THYROX-0006      completed -> pending      Portar appRuntime y los 32 de swarm que no usa
+    #277   TASK-THYROX-0001      completed -> pending      Portar backends/registry.ts y sus cuatro respa
+    #279   TASK-THYROX-0003      completed -> pending      Portar InProcessBackend: getInProcessBackend e
+    #280   TASK-THYROX-0004      completed -> pending      Portar los 23 exports restantes de permissionS
+    #283   TASK-DOCS-0530        completed -> pending      Terminar de mudar el pre-commit: 133 líneas de
+    #284   TASK-DOCS-0531        completed -> pending      El default del store se compone por cwd y crea
+    #299   TASK-API-0391         completed -> pending      Censo de presencia con firma de src/orm y src/
+    #300   TASK-API-0392         completed -> pending      Inventory the reference ORM in odoo-tools
+    #302   TASK-API-0394         completed -> pending      El gate de identificadores no ve una clave de 
+    #303   TASK-API-0395         completed -> pending      Ningun gate ve un termino tecnico traducido a 
+    #306   TASK-DOCS-0533        completed -> pending      Barrer los dos baselines de idioma del lado do
+    #307   TASK-THYROX-0010      completed -> pending      Declarar las cuatro claves THYROX_ que el gate
+    #310   TASK-THYROX-0011      completed -> pending      Declarar la dependencia AL LANZAR, para no blo
+    #314   TASK-THYROX-0012      completed -> pending      Ningún gate pregunta «¿proceso o agente?» al d
+    #315   TASK-THYROX-0013      completed -> pending      Portar las dos formas de --jobs que run-task-p
+    #318   TASK-API-0397       in_progress -> pending      Construir BaseModel propio desde el contrato m
+    #319   TASK-API-0398       in_progress -> pending      Verificar contrato por contrato los 21 del cub
+    #320   TASK-DOCS-0536        completed -> pending      El censo de atributos de clase recorre ast.Ass
+    #322   TASK-API-0400         completed -> pending      Portar _sorted_order_to_function — sorted() po
+    #330   TASK-THYROX-0015      completed -> in_progress  Control determinista del zombi: hoy la ventana
+    #334   TASK-API-0405         completed -> pending      La rama is_transient() de ondelete no se simul
+    #341   TASK-API-0412         completed -> pending      Despachar el inverse declarado al escribir el 
+    #345   TASK-API-0415         completed -> pending      Despachar el compute declarado al leer un NonS
+    #346   TASK-API-0416         completed -> pending      Portar la fase que recoge las definiciones de 
+    #347   TASK-API-0417       in_progress -> pending      Retirar el enrutado de las fachadas: la costur
+    #351   TASK-API-0421         completed -> in_progress  Portar BaseModel.create por contenido: lista d
+    #353   TASK-API-0423         completed -> pending      La costura aborta en company_country_code y de
+    #357   TASK-API-0426         completed -> pending      Todo relacional sin columna necesita DO_NOTHIN
+
+  por par (board, store):
+       completed en board, pending      en store : 51
+     in_progress en board, pending      en store : 8
+       completed en board, in_progress  en store : 6
+EXIT=0

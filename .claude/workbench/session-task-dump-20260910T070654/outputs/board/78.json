@@ -1,0 +1,14 @@
+{
+  "id": "78",
+  "subject": "Portar graph_ordering/components/centrality como la capa de consulta del tablero",
+  "description": "ID: TASK-API-0036\n\nPortar graph_ordering/components/centrality como la capa de consulta del tablero. FUENTE DE ALGORITMOS (directiva del ejecutor 2026-09-05): cytoscape.js es referencia analizable para implementar algoritmos de grafo — dijkstra, kruskal, aStar, floydWarshall, pageRank y demás. Se analiza como cualquier referencia: se lee la implementación, no se cita de memoria. CRITERIO DE ELECCIÓN, y es la mitad que importa: no se evalúan todos los problemas, lenguajes, algoritmos ni soluciones con la misma vara. Un algoritmo puede ser rápido y difícil de mantener; otro más lento y mucho más sencillo y seguro. Python sirve para análisis de datos donde C++ sirve para alto rendimiento. Una solución correcta para un proyecto pequeño puede ser insuficiente con millones de usuarios. Los factores a ponderar, declarados: rendimiento, claridad del código, facilidad de mantenimiento, seguridad, escalabilidad, tiempo de desarrollo y coste. No existe una única medida de «buena solución»: depende del contexto y del objetivo. Consecuencia para esta tarea: la elección de algoritmo por consulta del tablero se JUSTIFICA contra esos factores en el artefacto, no se toma por ser la más conocida ni la más rápida en papel.",
+  "activeForm": "Portando la capa de grafo del tablero",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "iniciativa": "construir-harness-propio",
+    "analisis": "analisis-scripts-de-api-candidatos-al-harness",
+    "fuente": "kaupamex-api/scripts/graph_{ordering,components,centrality}.py"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "question": "El hogar de los logs de segundo plano se declara por clon, o una sola variable global decide por los seis arboles a la vez?",
+  "instrument": "python3 tests/session/test_background_log_home.py y bash tests/session/test-bg-familia.sh, con su control de anulacion: retirar la rama por clon de background.log_dir, y _resolve_flat_home de bg.sh::_paths.",
+  "metric": "Aserciones que caen al retirar cada mecanismo, contra las que sobreviven.",
+  "blind_to": "Si el directorio existe: log_dir compone una ruta y no toca el sistema de archivos. Y a los clones que no declaren la clave — el rehuse los cubre, pero no distingue «no la quiere» de «se olvido».",
+  "destination": "thyrox: src/session/background.py, src/session/bg.sh, src/session/run-task-pool.sh, .env.example"
+}

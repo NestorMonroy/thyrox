@@ -1,0 +1,8 @@
+{
+  "id": "193",
+  "subject": "Analizar el flujo de tareas en ccnmt y decidir el sitio del subsistema en thyrox",
+  "description": "Directiva del ejecutor 2026-09-06: «tasks no era el directorio correcto». Escribir un analisis abstracto de como maneja el flujo de tareas claude-code-nestor-monroy-tools, y de ahi derivar el sitio correcto del subsistema de tareas en thyrox (hoy en src/packages/tasks tras el tramo 1 de la Opcion B, thyrox@bda15e15). Despues implementarlo.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

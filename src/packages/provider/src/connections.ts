@@ -18,7 +18,21 @@
  * pase → `require()` diferido, igual que `./oauth/codex-auth.js` y
  * `@thyrox/config/settings`/`@thyrox/config/env/utils` (éstos ya eran
  * `require()` diferido en la propia fuente).
+ *
+ * DIVERGENCIA DECLARADA, agregada después del porte inicial:
+ * `ConnectionRecord` gana `providerSpecificData?: unknown` (ccnmt no lo
+ * declara -- medido, su forma real son los 8 campos de arriba) y
+ * `getConnectionContextOptions` es una función PROPIA de thyrox, la 16a,
+ * que no viene de la fuente. Ambas existen para la misma razón: dar a una
+ * conexión un lugar donde llevar ajustes propios -- hoy sólo
+ * `compressToolResults` (ver `./connectionToolCompression.ts`), el mismo
+ * patrón `providerSpecificData` que `claudeExtraUsage.ts` trajo de
+ * OmniRoute, aplicado aquí a un `ConnectionRecord` que no es el de
+ * OmniRoute.
  */
+
+import type { ContextOptions } from '@thyrox/agent/loop'
+import { isCompressToolResultsEnabledForConnection } from './connectionToolCompression.ts'
 
 export type ConnectionModelRecord = {
   id: string
@@ -41,6 +55,13 @@ export type ConnectionRecord = {
   enabled: boolean
   models: ConnectionModelRecord[]
   createdAt: number
+  /**
+   * Ajustes propios de esta conexión, forma abierta -- igual que
+   * `providerSpecificData` en OmniRoute, del que se toma el nombre. Hoy sólo
+   * lo lee `getConnectionContextOptions` (`compressToolResults`); un consumo
+   * futuro que necesite otra clave la agrega ahí, no aquí.
+   */
+  providerSpecificData?: unknown
 }
 
 export type AuthProtocol = ConnectionRecord['protocol']
@@ -329,6 +350,28 @@ export function toggleConnection(id: string): void {
 
 export function getEnabledConnections(): ConnectionRecord[] {
   return getConnections().filter(c => c.enabled)
+}
+
+// ── Ajustes de conexión (thyrox, no OmniRoute) ────────────────────────────
+
+/**
+ * El subconjunto de `ContextOptions` (`@thyrox/agent/loop`) que esta
+ * conexión decide por su cuenta -- hoy sólo `compressToolResults`, vía
+ * `./connectionToolCompression.ts`. `Pick<>` sobre el tipo real y no una
+ * forma ad-hoc: este archivo ya importa de `@thyrox/agent` en varios otros
+ * puntos del paquete (`claude.ts`, `model.ts`, `costTracker.ts`, …) y
+ * `agent` importa de `@thyrox/provider` a su vez (`cost/cacheRoutes`,
+ * `cost/policy`, `claudeLegacy`) -- la dependencia `provider <-> agent` ya
+ * existe en ambos sentidos por subpaths distintos, así que traer el tipo
+ * real no abre nada nuevo, y evita que esta forma diverja de la real
+ * cuando `ContextOptions` gane otra clave que una conexión deba decidir.
+ */
+export function getConnectionContextOptions(
+  connection: ConnectionRecord,
+): Pick<ContextOptions, 'compressToolResults'> {
+  return {
+    compressToolResults: isCompressToolResultsEnabledForConnection(connection.providerSpecificData),
+  }
 }
 
 /**

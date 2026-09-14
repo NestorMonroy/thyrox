@@ -1,0 +1,9 @@
+{
+  "id": "21",
+  "subject": "Medir si un hecho verificado sobrevive a una compactación real",
+  "description": "Declarado DESCONOCIDO en `analisis-que-pasa-si-no-se-comprime-la-sesion.rst`.\n\nEl prompt de resumen (`XWo` en 2.1.258) garantiza nueve secciones y **un solo verbatim**: las directivas permanentes y prohibiciones. No garantiza que un hecho medido a mitad de sesión —una cifra, un `file:line`, un hash— vuelva sin deformarse. `react-verification-gate.md` §6 ya lo asume («el valor verificado en un turno temprano puede no sobrevivir a la compactación») y nadie lo ha medido.\n\nCondición de cierre: una sonda que fije un hecho verificable y singular en el contexto, fuerce la compactación, y clasifique su retorno en verbatim / parafraseado / ausente. Sin eso, «la compactación degrada la calidad» es plausible y no medido — y su contrario tampoco.",
+  "activeForm": "Midiendo la supervivencia de un hecho a la compactación",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

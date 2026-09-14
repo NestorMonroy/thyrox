@@ -1,0 +1,6 @@
+# Anulacion: el REPORTE lee solo status_drift (el nucleo sigue derivando de DRIFT_BUCKETS)
+# Esperado: caen exactamente las aserciones que dependen de que el reporte cuente la poblacion escribible
+76 aserciones
+  FALLA — 10b: el conteo del modo seco es la poblacion escribible, no solo `status_drift`
+  FALLA — 10c: la fila que solo difiere en descripcion se LISTA, no se calla
+  FALLA — 10d: cada linea declara que columnas difieren, no solo que hay deriva

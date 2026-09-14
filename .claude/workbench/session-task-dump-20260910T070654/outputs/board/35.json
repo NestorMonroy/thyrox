@@ -1,0 +1,9 @@
+{
+  "id": "35",
+  "subject": "Registrar la forma del transcript en la fila de sesión del store",
+  "description": "`agent_sessions` tiene 842 filas de subagente y ninguna columna para la forma de un transcript; `recordHarnessSession` ya escribe la fila de sesión, así que falta su forma, no la entidad. Va en `metadata_json` y NO en columnas nuevas: el conjunto de tipos no está cerrado —la referencia nombra `progress`, `file-history-snapshot` y `attribution-snapshot`, ninguno presente en el corpus medido— y una columna por tipo congelaría un universo que la propia medición declara abierto. Se consulta con `json_extract`. Los dos conteos van separados: mensaje de transcript (7279) y registro lateral del cliente (1568); juntarlos publicaría 8847 «mensajes» donde hay 7279, un 21 % de inflación.",
+  "activeForm": "Registrando la forma del transcript en el store",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -394,7 +394,7 @@ contract_coverage() {
 $(contract_keys)
 EOF
         # Las que el consumidor declara y el contrato NO nombra literalmente.
-        # No son ruido: ahí cae la FAMILIA POR CLON —`THYROX_WORKBENCH_<CLON>`—,
+        # No son ruido: ahí cae la FAMILIA POR CLON —`THYROX_WORKBENCH_<CLONE>`—,
         # que se compone en tiempo de ejecución y por eso nunca aparece como
         # literal en el ejemplo. Contarlas como cero fue el primer resultado de
         # este contador, y decía «0 de 27» de un árbol que sí declaraba una:

@@ -1,0 +1,9 @@
+{
+  "id": "100",
+  "subject": "Buscar el mecanismo en la referencia por su flujo, no por su literal",
+  "description": "Segundo análisis de la serie. Con el flujo de la #99 como patrón de reconocimiento, buscar en el binario 2.1.261 y en el corpus (ccb, how-claude-code-works) QUÉ mecanismo ejecuta ese flujo — resolver un conjunto declarado de ubicaciones, verificar su precondición, entregarlo en varias vistas — y CÓMO lo llama.\n\nLa búsqueda es por conducta, no por cadena: se localizan los sitios donde el binario (a) resuelve una ubicación derivándola, (b) admite una anulación por entorno, (c) verifica antes de entregar, (d) rehúsa o degrada. El nombre sale de ahí, o se declara que la plataforma no lo nombra y el calificador es nuestro — que también es un resultado.\n\nBloqueada por #99. Desbloquea #98.",
+  "activeForm": "Buscando el mecanismo por su flujo",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

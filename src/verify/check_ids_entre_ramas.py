@@ -84,6 +84,9 @@ def main(argv=None):
     parser.add_argument('--siguiente', metavar='CAPA',
                         help='imprime el primer ID libre de esa capa entre TODAS '
                              'las ramas remotas (api|docs|ui|db|server) y termina')
+    parser.add_argument('--disponible', nargs=2, metavar=('CAPA', 'NUMERO'),
+                        help='sale 0 sólo si H-CAPA-NUMERO no existe ni en el '
+                             'worktree ni en ninguna rama remota')
     parser.add_argument('--entre', nargs=2, metavar=('REF-A', 'REF-B'),
                         help='mide colisiones entre EXACTAMENTE dos referencias '
                              '(origen y destino de una integracion), sin tocar el '
@@ -130,6 +133,33 @@ def main(argv=None):
             return EXIT_COLISION
         return EXIT_OK
 
+    if args.disponible:
+        capa, numero = args.disponible
+        if capa not in ('api', 'docs', 'ui', 'db', 'server') or not numero.isdigit():
+            print('ERROR — --disponible requiere CAPA conocida y NUMERO entero.',
+                  file=sys.stderr)
+            return EXIT_GUARD
+        etiqueta = f'.. _h-{capa}-{int(numero)}:'
+        owners = []
+        refs = [r for r in git('for-each-ref', '--format=%(refname:short)',
+                               'refs/remotes/origin').split() if not r.endswith('/HEAD')]
+        for ref in refs:
+            for path in declaraciones(ref).get(etiqueta, set()):
+                owners.append((ref, path))
+        worktree = git('grep', '-l', '-F', etiqueta, '--', 'source/')
+        owners.extend(('WORKTREE', path) for path in worktree.splitlines())
+        if owners:
+            print(f'OCUPADO {etiqueta}')
+            for owner, path in sorted(set(owners)):
+                print(f'  {owner}  {path}')
+            return EXIT_COLISION
+        if not refs:
+            print('ERROR — 0 ramas remotas que medir. NO se declara disponible.',
+                  file=sys.stderr)
+            return EXIT_GUARD
+        print(f'DISPONIBLE {etiqueta} (worktree + {len(refs)} ramas remotas)')
+        return EXIT_OK
+
     if args.siguiente:
         usados = set()
         patron = re.compile(rf'_h-{re.escape(args.siguiente)}-(\d+):')
@@ -138,6 +168,8 @@ def main(argv=None):
             usados.update(int(m.group(1))
                           for m in patron.finditer(git('grep', '-ohE', PATRON_GREP, ref,
                                                        '--', 'source/')))
+        usados.update(int(m.group(1)) for m in patron.finditer(
+            git('grep', '-ohE', PATRON_GREP, '--', 'source/')))
         if not usados:
             print(f'ERROR — 0 etiquetas h-{args.siguiente}-NNN en las ramas remotas. '
                   'NO se propone un ID: sin universo medido, el "1" seria una '

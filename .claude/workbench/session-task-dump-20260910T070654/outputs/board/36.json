@@ -1,0 +1,8 @@
+{
+  "id": "36",
+  "subject": "Portar el flujo del attachment en sus cuatro etapas",
+  "description": "Construir/validar/renderizar/contar, con los cinco miembros que el harness produce. Cierra la fusión del additionalContext en el prompt. Hecho en 57a59295.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

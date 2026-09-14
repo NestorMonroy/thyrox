@@ -12,8 +12,10 @@ El repo de prueba es sintético y tiene la FORMA de THYROX (el marcador
 medida del patrón: el hook resuelve sus gates desde la raíz de git, así que
 medirlo sobre un árbol con esa forma es medir lo que corre de verdad.
 """
+import json
 import os
 import pathlib
+import sqlite3
 import shutil
 import subprocess
 import tempfile
@@ -27,6 +29,13 @@ GATE = THYROX / 'src' / 'verify' / 'check_provider_evidence.py'
 # sintetico porque el hook REHUSA por su ausencia — es su contrato, no un
 # descuido. Sin copiarlos, esta suite entera se pondria roja por el arreglo.
 PACKAGE_GATES = ('check-agent-artifacts.sh', 'check-harness-typecheck.sh')
+# El tercero NO esta en el bucle de rehuse del hook —se invoca sin comprobar
+# que exista— asi que su ausencia no produce el mensaje de «verde falso»
+# sino un `bash: no such file` que pone CODE=1. Viaja al repo sintetico por
+# eso: sin el, el commit semilla de ESTA suite fallaba y sus seis casos
+# morian en setUp. Medido: 6 de 6 rojos por deriva del fixture, no por el
+# contrato que dicen medir.
+UNCHECKED_GATES = ('check-cross-model-read.sh',)
 
 
 def git(repo: pathlib.Path, *args: str) -> subprocess.CompletedProcess:
@@ -48,7 +57,7 @@ class PreCommitHook(unittest.TestCase):
         shutil.copytree(THYROX / 'src' / 'workbench', self.repo / 'src' / 'workbench')
         (self.repo / 'src' / 'verify').mkdir()
         shutil.copy(GATE, self.repo / 'src' / 'verify' / GATE.name)
-        for gate in PACKAGE_GATES:
+        for gate in PACKAGE_GATES + UNCHECKED_GATES:
             shutil.copy(THYROX / 'src' / 'verify' / gate,
                         self.repo / 'src' / 'verify' / gate)
         (self.repo / '.githooks').mkdir()
@@ -154,6 +163,125 @@ class PreCommitHook(unittest.TestCase):
         self.assertEqual(configured, '.githooks',
                          'core.hooksPath sin fijar: corre `bash scripts/install-hooks.sh`')
         self.assertTrue(os.access(HOOK, os.X_OK), f'{HOOK} sin permiso de ejecucion')
+
+
+class PreCommitReconcilesBoard(unittest.TestCase):
+    """El cableado de #184: el store que va al commit llega reconciliado.
+
+    Qué haría fallar a este control: que el hook commitee el store SIN pasar
+    por el reconciliador — que es el estado en que estuvo el arbol desde que
+    `reconcile_status` existe. El mecanismo discriminaba y nadie lo corria.
+
+    El caso es de CONDUCTA, no de literal: mide la fila DENTRO del blob
+    commiteado, no que el hook mencione el comando. Un hook que reconciliara
+    el archivo del disco y no lo re-preparara dejaria la fila vieja en el
+    commit, y un `grep` del mensaje no lo veria.
+    """
+
+    STORE_REL = 'agent-results/agent_store.sqlite3'
+    SESSION = '44444444-4444-4444-4444-444444444444'
+    SUBJECT = 'el sujeto es la llave del pareo'
+
+    def setUp(self):
+        self.repo = pathlib.Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.repo, ignore_errors=True)
+        (self.repo / 'src').mkdir()
+        for paquete in ('paths', 'workbench', 'task'):
+            shutil.copytree(THYROX / 'src' / paquete, self.repo / 'src' / paquete,
+                            ignore=shutil.ignore_patterns('__pycache__'))
+        (self.repo / 'src' / 'verify').mkdir()
+        shutil.copy(GATE, self.repo / 'src' / 'verify' / GATE.name)
+        for gate in PACKAGE_GATES + UNCHECKED_GATES:
+            shutil.copy(THYROX / 'src' / 'verify' / gate,
+                        self.repo / 'src' / 'verify' / gate)
+        (self.repo / '.githooks').mkdir()
+        shutil.copy(HOOK, self.repo / '.githooks' / 'pre-commit')
+        os.chmod(self.repo / '.githooks' / 'pre-commit', 0o755)
+
+        # El board: una tarjeta con el sujeto y la descripcion CORREGIDA.
+        self.board_root = pathlib.Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.board_root, ignore_errors=True)
+        tarjeta = self.board_root / self.SESSION
+        tarjeta.mkdir()
+        (tarjeta / '7.json').write_text(json.dumps(
+            {'id': '7', 'subject': self.SUBJECT, 'status': 'completed',
+             'description': 'la corregida'}))
+
+        # El store: la misma fila con el estado y la descripcion viejos.
+        store = self.repo / 'agent-results'
+        store.mkdir()
+        conn = sqlite3.connect(store / 'agent_store.sqlite3')
+        conn.execute('CREATE TABLE tasks (task_id TEXT, subject TEXT,'
+                     ' description TEXT, status TEXT, session_id TEXT,'
+                     ' updated_at TEXT, citation_id TEXT)')
+        conn.execute('INSERT INTO tasks VALUES (?,?,?,?,?,?,?)',
+                     ('7', self.SUBJECT, 'la vieja', 'pending', self.SESSION,
+                      '2026-01-01T00:00:00', 'TASK-DOCS-7777'))
+        conn.commit(); conn.close()
+
+        git(self.repo, 'init', '-q')
+        git(self.repo, 'config', 'core.hooksPath', '.githooks')
+        git(self.repo, 'add', '-A')
+        self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+
+    def _fila_del_commit(self, ref='HEAD'):
+        """La fila tal como quedo DENTRO del commit, no en el disco."""
+        blob = subprocess.run(
+            ['git', '-C', str(self.repo), 'show', f'{ref}:{self.STORE_REL}'],
+            capture_output=True)
+        copia = pathlib.Path(tempfile.mkdtemp()) / 'store.sqlite3'
+        copia.write_bytes(blob.stdout)
+        conn = sqlite3.connect(copia)
+        try:
+            return conn.execute(
+                'SELECT status, description FROM tasks WHERE citation_id=?',
+                ('TASK-DOCS-7777',)).fetchone()
+        finally:
+            conn.close()
+
+    def _commit_con_el_store(self, mensaje):
+        # Se toca el store para que entre al commit por su propio cambio, que
+        # es como llega de verdad: el turno escribe telemetria y lo commitea.
+        conn = sqlite3.connect(self.repo / self.STORE_REL)
+        conn.execute("INSERT INTO tasks (task_id, subject, session_id)"
+                     " VALUES ('99','otra cosa',?)", (self.SESSION,))
+        conn.commit(); conn.close()
+        git(self.repo, 'add', self.STORE_REL)
+        env = {**os.environ, 'THYROX_BOARD_ROOT': str(self.board_root)}
+        return subprocess.run(
+            ['git', '-C', str(self.repo), 'commit', '-q', '-m', mensaje],
+            capture_output=True, text=True,
+            env={**env, 'GIT_AUTHOR_NAME': 't', 'GIT_AUTHOR_EMAIL': 't@t',
+                 'GIT_COMMITTER_NAME': 't', 'GIT_COMMITTER_EMAIL': 't@t'})
+
+    def test_el_store_llega_reconciliado_al_commit(self):
+        self.assertEqual(self._fila_del_commit(), ('pending', 'la vieja'),
+                         'precondicion: el seed lleva la fila vieja')
+        salida = self._commit_con_el_store('telemetria del turno')
+        self.assertEqual(salida.returncode, 0, salida.stdout + salida.stderr)
+        self.assertEqual(
+            self._fila_del_commit(), ('completed', 'la corregida'),
+            'el commit lleva la fila ya convergida — el hook reconcilio Y '
+            're-preparo; sin el re-add, el disco converge y el commit no')
+
+    def test_sin_el_store_en_el_commit_no_se_reconcilia(self):
+        """El hook no toca el store cuando el commit no lo lleva.
+
+        Reconciliar en TODO commit escribiria telemetria en un pase que no la
+        pidio, y el `git add` posterior meteria al commit un archivo que su
+        autor no puso. La condicion es el disparador, no una optimizacion.
+        """
+        (self.repo / 'archivo.txt').write_text('algo\n')
+        git(self.repo, 'add', 'archivo.txt')
+        env = {**os.environ, 'THYROX_BOARD_ROOT': str(self.board_root),
+               'GIT_AUTHOR_NAME': 't', 'GIT_AUTHOR_EMAIL': 't@t',
+               'GIT_COMMITTER_NAME': 't', 'GIT_COMMITTER_EMAIL': 't@t'}
+        salida = subprocess.run(
+            ['git', '-C', str(self.repo), 'commit', '-q', '-m', 'sin store'],
+            capture_output=True, text=True, env=env)
+        self.assertEqual(salida.returncode, 0, salida.stdout + salida.stderr)
+        self.assertEqual(self._fila_del_commit(), ('pending', 'la vieja'),
+                         'la fila sigue vieja: no se reconcilio nada')
 
 
 if __name__ == '__main__':

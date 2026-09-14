@@ -1,0 +1,15 @@
+{
+  "id": "205",
+  "subject": "Completar el porte de cli: llegaron 3 de ~20 módulos y harness.ts sigue fuera",
+  "description": "SIGUE ABIERTA. Verificado 2026-09-06 con instrumento propio, NO con el reporte del agente: thyrox@fc35a4c0 creó `src/packages/cli` con TRES módulos (argv.ts, exitCodes.ts, index.ts), sus tres subpaths en `exports` y 13 tests en verde (tests/cli/). Eso es un porte parcial y así se documentó (kaupamex-docs@7127a8cb1).\n\nLo que NO llegó, medido: `packages/cli/src` de ccnmt tiene ~20 módulos de primer nivel (host.ts, headless.ts, entry/, commands/, handlers/, print.ts, pluginLoader.ts, bg/, remoteIO.ts…). Y la premisa del título sigue sin cumplirse: `src/packages/harness/bin/harness.ts` y `src/packages/harness/src/cli/render.ts` NO se movieron — siguen en harness. El porte de esos dos depende de #172 (particionar el paquete que hoy se llama harness).",
+  "activeForm": "Retirando bin/harness.ts y repartiendo la entrada en entry/ + commands/",
+  "status": "in_progress",
+  "blocks": [
+    "252"
+  ],
+  "blockedBy": [
+    "198",
+    "199",
+    "200"
+  ]
+}

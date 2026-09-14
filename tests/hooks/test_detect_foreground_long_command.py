@@ -71,3 +71,26 @@ def test_the_dispatcher_registers_it():
     registry, missing = dispatch.build_registry(_MODULE.parent, dispatch.DETECTOR_NAMES)
     assert not missing, missing
     assert any(name == "detect_foreground_long_command" for name, _ in registry)
+
+
+# Sin este bloque `python3 <suite>` sólo IMPORTA el módulo: las funciones
+# `test_*` no se invocan y el corredor cuenta la suite en verde. El verde no
+# distinguía «las aserciones pasan» de «las aserciones no se ejecutan» —
+# sub-patrón D con la propia suite como sujeto. Medido: 20 funciones inertes en
+# dos archivos de los 117 `test_*.py` (los otros 81 sin bloque asertan a nivel
+# de módulo, y ésas sí corren al importar).
+if __name__ == "__main__":
+    import traceback
+    _fallos = 0
+    for _nombre, _caso in sorted(list(globals().items())):
+        if not _nombre.startswith("test_") or not callable(_caso):
+            continue
+        try:
+            _caso()
+            print(f"  ok    {_nombre}")
+        except Exception:
+            _fallos += 1
+            print(f"  FALLO {_nombre}")
+            traceback.print_exc()
+    print(f"resumen: {_fallos} fallo(s)")
+    raise SystemExit(1 if _fallos else 0)

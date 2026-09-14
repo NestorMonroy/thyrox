@@ -32,7 +32,7 @@ source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
 # El ledger se AÍSLA: sin esto la suite registra en el de la sesión viva y un
 # caso que deja un trabajo colgado bloquearía el turno de quien la corre.
-export KX_TRABAJOS_DIR="$(mktemp -d)/ledger"
+export THYROX_JOBS_DIR="$(mktemp -d)/ledger"
 POOL="$RAIZ/src/session/run-task-pool.sh"
 WAIT_JOBS="$RAIZ/src/session/wait-jobs.sh"
 OK=0; FALLA=0
@@ -56,6 +56,27 @@ echo "test-run-task-pool:"
 
 # 1. sin argumentos → exit 4, no un cuelgue silencioso
 BG_DIR="$T/a" bash "$POOL" >/dev/null 2>&1; af "sin archivo sale 4" 4 $?
+
+# 1-bis. sin hogar declarado → 4, y NO un default a /tmp.
+# EL QUE DISCRIMINA de este par: el guion componia
+# `${TMPDIR:-/tmp}/kaupamex-pool`, asi que una tanda sin declaracion escribia
+# sus logs fuera del arbol del consumidor y se perdia con el contenedor. Un
+# caso que solo mirara el codigo de salida pasaria igual con el default —los
+# dos salen != 0 por otras razones—, asi que se comprueba TAMBIEN que el
+# directorio no nacio.
+#
+# Que lo haria fallar: devolver el default a `DIR`. Entonces el guion llega a
+# `mkdir -p` y el segundo `af` cae.
+echo 'true' > "$T/uno-decl.txt"
+# `TMPDIR` apunta a un directorio VACIO y propio: asi el segundo `af` mide lo
+# que esta invocacion crea, no un residuo de una corrida anterior con el
+# default viejo — que es lo que la primera version de este control midio.
+_tmp_limpio="$T/tmpdir-limpio"; mkdir -p "$_tmp_limpio"
+env -u BG_DIR -u THYROX_BACKGROUND_LOG_DIR TMPDIR="$_tmp_limpio" \
+    THYROX_ENV_FILE=/dev/null bash "$POOL" "$T/uno-decl.txt" >/dev/null 2>&1
+af "sin hogar declarado sale 4" 4 $?
+af "y NO nacio un hogar bajo TMPDIR" no \
+   "$([ -n "$(ls -A "$_tmp_limpio")" ] && echo si || echo no)"
 
 # 2. archivo con 0 comandos → 4, y NO un 0 que se leería como «todo bien»
 : > "$T/vacio.txt"
@@ -97,6 +118,125 @@ af "el marcador conserva el codigo real del trabajo" "EXIT=7" "$(grep -h '^EXIT=
 printf '# comentario\n\ntrue\n' > "$T/mix.txt"
 BG_DIR="$T/g" bash "$POOL" --width 1 --timeout 30 --prefix mix "$T/mix.txt" >/dev/null 2>&1
 af "solo se lanza el comando real" 1 "$(ls "$T"/g/*.log 2>/dev/null | wc -l)"
+
+# =============================================================================
+# TASK-THYROX-0013 — las dos formas de `--jobs` que la referencia admite
+# =============================================================================
+# GNU Parallel acepta cuatro formas de anchura; `--width` portaba una. Los
+# casos de abajo cubren las dos que se portan (porcentaje y archivo releido) y
+# la que se DECLARA divergente (`0`), con su razon medida en la cabecera del
+# guion: de 4 a 16 trabajadores se gana 0.4x.
+#
+# El que DISCRIMINA es el 12: un porcentaje resuelto una sola vez al arrancar
+# pasaria los casos 8 a 11 sin releer nada. Solo el 12 distingue «lee el
+# archivo» de «relee el archivo en cada vuelta», que es la forma cuyo valor
+# entero esta en cambiar la anchura sin matar el despacho.
+
+NUCLEOS="$(nproc 2>/dev/null || echo 4)"
+
+# El fixture tiene que traer AL MENOS tantos trabajos como la anchura que se
+# espera medir. Desde el cap de #328 la cifra publicada es la EFECTIVA
+# —min(WIDTH, N)—, asi que con un solo comando estos tres casos leerian 1 y
+# estarian midiendo el cap en vez de la resolucion. No es que el cap estorbe al
+# control: es que el fixture era demasiado pequeño para observar lo que el caso
+# dice medir. Con N >= la anchura esperada, la cifra publicada sigue
+# discriminando la resolucion — y ademas falla si el cap muerde de mas.
+printf 'true\n' > "$T/pct.txt"
+printf 'true\ntrue\n' > "$T/pct2.txt"
+for _ in $(seq 8); do printf 'true\n'; done > "$T/pct8.txt"
+
+# 8. porcentaje — la mitad de los nucleos, piso 1
+SAL="$(BG_DIR="$T/pct" bash "$POOL" --width 50% --timeout 30 --prefix pct "$T/pct2.txt" 2>&1)"
+af "50%% resuelve a la mitad de nproc" "$(( NUCLEOS / 2 > 0 ? NUCLEOS / 2 : 1 ))" \
+   "$(printf '%s' "$SAL" | sed -n 's/.*anchura \([0-9]*\).*/\1/p' | head -1)"
+
+# 9. porcentaje por encima de 100 — la referencia lo admite (`--jobs 200%`)
+SAL="$(BG_DIR="$T/pct2" bash "$POOL" --width 200% --timeout 30 --prefix pct2 "$T/pct8.txt" 2>&1)"
+af "200%% resuelve al doble de nproc" "$(( NUCLEOS * 2 ))" \
+   "$(printf '%s' "$SAL" | sed -n 's/.*anchura \([0-9]*\).*/\1/p' | head -1)"
+
+# 10. `0%` cae en la DIVERGENCIA declarada, igual que `--width 0`: la
+#     saturacion esta medida en nproc, asi que «tantos como sea posible» no se
+#     porta. Que lo haria fallar: resolver `0%` a 0 y colgar el bucle.
+BG_DIR="$T/pct0" bash "$POOL" --width 0% --timeout 30 "$T/pct.txt" >/dev/null 2>&1
+af "0%% sale 4 como --width 0" 4 $?
+
+# 11. archivo — la anchura se lee de su contenido
+echo 2 > "$T/anchura.conf"
+SAL="$(BG_DIR="$T/arch" bash "$POOL" --width "$T/anchura.conf" --timeout 30 --prefix arch "$T/pct2.txt" 2>&1)"
+af "el archivo aporta la anchura" 2 \
+   "$(printf '%s' "$SAL" | sed -n 's/.*anchura \([0-9]*\).*/\1/p' | head -1)"
+
+# 12. EL QUE DISCRIMINA — el archivo se RELEE al liberarse un hueco.
+#     Cuatro durmientes con anchura 1: el primero corre mientras el archivo
+#     pasa de 1 a 3, asi que los tres restantes entran juntos. Si la anchura
+#     se resolviera una sola vez, entrarian de uno en uno y el reloj de pared
+#     seria ~4 veces el de un durmiente.
+echo 1 > "$T/vivo.conf"
+printf 'sleep 2\nsleep 2\nsleep 2\nsleep 2\n' > "$T/cuatro.txt"
+( sleep 1; echo 3 > "$T/vivo.conf" ) &
+_SUBIDOR=$!
+_INICIO="$(date +%s)"
+BG_DIR="$T/relee" bash "$POOL" --width "$T/vivo.conf" --timeout 30 --prefix rel "$T/cuatro.txt" >/dev/null 2>&1
+_LAPSO=$(( $(date +%s) - _INICIO ))
+wait "$_SUBIDOR" 2>/dev/null
+# El reloj SOLO no discrimina: si el guion rehusa la ruta, no lanza nada y el
+# lapso es 0 — verde por no haber medido. Se exige TAMBIEN que los cuatro
+# trabajos existan, que es lo que separa «rapido» de «no corrio».
+af "los cuatro trabajos se lanzaron" 4 "$(ls "$T"/relee/*.log 2>/dev/null | wc -l)"
+af "releer el archivo admite los cuatro en menos de 3 vueltas" si \
+   "$([ "$_LAPSO" -lt 6 ] && echo si || echo no)"
+
+# 13. EL DRENAJE — `0` en el archivo A MITAD del despacho: se deja de admitir
+#     trabajos nuevos y los vivos terminan. Es lo que la forma de archivo
+#     compra y que hoy no se podia hacer: frenar sin matar.
+#
+#     Que lo haria fallar: ignorar el 0 (se lanzarian los seis) o tratarlo como
+#     el `--width 0` de lanzamiento (saldria 4 y no terminaria ninguno). Los
+#     dos `af` de abajo separan esos dos modos: uno cuenta lo lanzado, el otro
+#     comprueba que lo lanzado LLEGO A SU MARCADOR.
+echo 2 > "$T/drena.conf"
+printf 'sleep 2\nsleep 2\nsleep 2\nsleep 2\nsleep 2\nsleep 2\n' > "$T/seis.txt"
+( sleep 1; echo 0 > "$T/drena.conf" ) &
+_DRENADOR=$!
+BG_DIR="$T/drena" bash "$POOL" --width "$T/drena.conf" --timeout 30 --prefix dre "$T/seis.txt" >/dev/null 2>&1
+wait "$_DRENADOR" 2>/dev/null
+_LANZADOS="$(ls "$T"/drena/*.log 2>/dev/null | wc -l)"
+af "el drenaje corta antes de los seis" si \
+   "$([ "$_LANZADOS" -ge 1 ] && [ "$_LANZADOS" -lt 6 ] && echo si || echo no)"
+af "y los vivos llegaron a su marcador" "$_LANZADOS" \
+   "$(grep -l '^EXIT=' "$T"/drena/*.log 2>/dev/null | wc -l)"
+
+# =============================================================================
+# TASK-THYROX #328 — la anchura publicada es la EFECTIVA: min(WIDTH, N)
+# =============================================================================
+# `WIDTH` se resuelve en :151 y `N` se cuenta en :166 — despues, y nunca se
+# comparan. Con 2 trabajos en una maquina de 4 nucleos la linea de :169 publica
+# «2 trabajo(s), anchura 4», que es una cifra sobre una anchura que ningun
+# trabajo puede ejercer.
+#
+# El coste se declara para no inflarlo: en bash no hay pool preasignado —el
+# bucle de :179 simplemente no bloquea— asi que el coste es DE REPORTE, no de
+# spawn. Graphify si paga spawn porque preasigna procesos, y por eso capa:
+# `max_workers = min(cpu_cap, len(uncached_work))` (graphify/extract.py:6184).
+#
+# Lo que haria fallar a este control: publicar `$WIDTH` sin capar. Es lo que
+# hace hoy.
+printf 'true\ntrue\n' > "$T/dos.txt"
+SALIDA_CAP="$(BG_DIR="$T/cap" bash "$POOL" --width 4 --timeout 30 --prefix cap "$T/dos.txt" 2>/dev/null)"
+af "publica la anchura EFECTIVA con 2 trabajos y --width 4" si \
+   "$(contiene "$SALIDA_CAP" '2 trabajo\(s\), anchura 2')"
+
+# CONTROL DE DISCRIMINACION — con mas trabajos que anchura, la cota NO se
+# aplica y la cifra pedida sigue siendo la publicada. Sin este caso, capar a
+# ciegas (publicar siempre `N`) pasaria igual que capar bien.
+printf 'true\ntrue\ntrue\ntrue\ntrue\ntrue\n' > "$T/seis-cap.txt"
+SALIDA_SIN_CAP="$(BG_DIR="$T/sincap" bash "$POOL" --width 2 --timeout 30 --prefix sc "$T/seis-cap.txt" 2>/dev/null)"
+af "con 6 trabajos y --width 2 publica 2, no 6" si \
+   "$(contiene "$SALIDA_SIN_CAP" '6 trabajo\(s\), anchura 2')"
+
+# Y la cota es de REPORTE: no recorta lo que se lanza. Los dos trabajos salen.
+af "capar no deja trabajos sin lanzar" 2 "$(ls "$T"/cap/*.log 2>/dev/null | wc -l)"
 
 echo "test-run-task-pool: $((OK+FALLA)) aserciones — $OK ok, $FALLA falla(s)"
 [ "$FALLA" -eq 0 ]

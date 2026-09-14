@@ -40,6 +40,11 @@ const MEASURED: Record<string, { entries: number; tableBytes: number; extractedB
   // 1 000 237 B: la tabla crece y el payload encoge, que no es contradictorio
   // —son dos ejes— y es la primera vez que se observa en este corpus.
   '2.1.266': { entries: 1827, tableBytes: 95_004, extractedBytes: 37_733_274 },
+  // Medida el 2026-09-13T01:13:41 con `binary info` sobre la build viva. 37
+  // entradas mas (37 * 52 = 1924 B, paso invariante) y el contenido SUBE en
+  // 1 159 533 B -- tras la baja de 2.1.266, confirma que las dos direcciones
+  // ocurren y no hay correlacion fija entre entradas y bytes de contenido.
+  '2.1.270': { entries: 1864, tableBytes: 96_928, extractedBytes: 38_892_807 },
 }
 
 const bytes = existsSync(BINARY) ? readFileSync(BINARY) : null

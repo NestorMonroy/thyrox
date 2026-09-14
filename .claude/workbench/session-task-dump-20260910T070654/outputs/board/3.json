@@ -1,0 +1,16 @@
+{
+  "id": "3",
+  "subject": "Puentear los `- [ ]` de los RST al tablero de tareas",
+  "description": "El harness lee sus tareas pendientes con `grep '- \\[ \\]'` sobre `tareas-<slug>.rst`. Un `- [ ]` no sabe a qué iniciativa pertenece, qué lo bloquea ni quién lo posee, así que «continuar en automático» depende de que yo recuerde cuál RST mirar — y falló tres veces.\n\nEl primitivo `TaskCreate`/`TaskUpdate` sí lo lleva: `metadata` (iniciativa, submódulo) y `blockedBy` (dependencia real). THYROX ya tiene el otro extremo — `.claude/scripts/task/task_source.py` (lector único, sustrato inyectado) y el store sqlite con 995 fichas — pero **ninguno de los dos lee RST**: los `- [ ]` son un universo aparte, invisible al tablero.\n\nEntregable: `TaskList` del harness lee los `- [ ]` de los RST de iniciativa, los asocia por `metadata.iniciativa`/`metadata.submodulo` derivados de la ruta, y los cruza con las fichas del store por id (`T-NNN` ↔ `#NNN` no son el mismo espacio de nombres: eso hay que resolverlo, no suponerlo).",
+  "activeForm": "Puenteando los RST al tablero",
+  "status": "completed",
+  "blocks": [
+    "5"
+  ],
+  "blockedBy": [],
+  "metadata": {
+    "iniciativa": "construir-harness-propio",
+    "submodulo": "docs",
+    "origen": "directiva ejecutor 2026-09-02"
+  }
+}

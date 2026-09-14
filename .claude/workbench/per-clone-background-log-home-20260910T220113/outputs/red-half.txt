@@ -1,0 +1,87 @@
+test_composes_the_per_clone_name (__main__.FamilyName.test_composes_the_per_clone_name) ... ERROR
+test_the_clone_hyphen_becomes_underscore (__main__.FamilyName.test_the_clone_hyphen_becomes_underscore) ... ERROR
+test_reads_the_declaration_from_the_env_file (__main__.FileDeclaration.test_reads_the_declaration_from_the_env_file) ... ERROR
+test_a_relative_segment_composes_under_the_clone (__main__.PerCloneHome.test_a_relative_segment_composes_under_the_clone)
+Sin `resolve_home`, un segmento resolvia contra el CWD. ... ERROR
+test_each_clone_resolves_its_own_home (__main__.PerCloneHome.test_each_clone_resolves_its_own_home)
+La razon de ser de la familia, comparando los DOS entre si. ... ERROR
+test_the_per_clone_key_wins_over_the_global (__main__.PerCloneHome.test_the_per_clone_key_wins_over_the_global)
+EL QUE DISCRIMINA: sin la rama gana la global y api cae fuera. ... FAIL
+test_refuses_when_neither_spelling_is_declared (__main__.StillRefuses.test_refuses_when_neither_spelling_is_declared) ... ERROR
+
+======================================================================
+ERROR: test_composes_the_per_clone_name (__main__.FamilyName.test_composes_the_per_clone_name)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_background_log_home.py", line 66, in test_composes_the_per_clone_name
+    self.assertEqual(background.log_home_name("api"),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'session.background' has no attribute 'log_home_name'
+
+======================================================================
+ERROR: test_the_clone_hyphen_becomes_underscore (__main__.FamilyName.test_the_clone_hyphen_becomes_underscore)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_background_log_home.py", line 72, in test_the_clone_hyphen_becomes_underscore
+    self.assertEqual(background.log_home_name("mi-clon"),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'session.background' has no attribute 'log_home_name'
+
+======================================================================
+ERROR: test_reads_the_declaration_from_the_env_file (__main__.FileDeclaration.test_reads_the_declaration_from_the_env_file)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_background_log_home.py", line 117, in test_reads_the_declaration_from_the_env_file
+    self.assertEqual(background.log_dir(start=api),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/background.py", line 113, in log_dir
+    raise LogHomeError(
+session.background.LogHomeError: El hogar de los logs de segundo plano no esta declarado. Es una decision del consumidor, no de THYROX: declara THYROX_BACKGROUND_LOG_DIR en el proceso, o en el archivo que nombra THYROX_ENV_FILE (por defecto el .env del arbol). Tambien se puede pasar `log_dir=` explicito. NO se emite un hogar por defecto.
+
+======================================================================
+ERROR: test_a_relative_segment_composes_under_the_clone (__main__.PerCloneHome.test_a_relative_segment_composes_under_the_clone)
+Sin `resolve_home`, un segmento resolvia contra el CWD.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_background_log_home.py", line 89, in test_a_relative_segment_composes_under_the_clone
+    self.assertEqual(background.log_dir(start=api), api / "build-logs")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/background.py", line 113, in log_dir
+    raise LogHomeError(
+session.background.LogHomeError: El hogar de los logs de segundo plano no esta declarado. Es una decision del consumidor, no de THYROX: declara THYROX_BACKGROUND_LOG_DIR en el proceso, o en el archivo que nombra THYROX_ENV_FILE (por defecto el .env del arbol). Tambien se puede pasar `log_dir=` explicito. NO se emite un hogar por defecto.
+
+======================================================================
+ERROR: test_each_clone_resolves_its_own_home (__main__.PerCloneHome.test_each_clone_resolves_its_own_home)
+La razon de ser de la familia, comparando los DOS entre si.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_background_log_home.py", line 100, in test_each_clone_resolves_its_own_home
+    home_api = background.log_dir(start=api)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/background.py", line 113, in log_dir
+    raise LogHomeError(
+session.background.LogHomeError: El hogar de los logs de segundo plano no esta declarado. Es una decision del consumidor, no de THYROX: declara THYROX_BACKGROUND_LOG_DIR en el proceso, o en el archivo que nombra THYROX_ENV_FILE (por defecto el .env del arbol). Tambien se puede pasar `log_dir=` explicito. NO se emite un hogar por defecto.
+
+======================================================================
+ERROR: test_refuses_when_neither_spelling_is_declared (__main__.StillRefuses.test_refuses_when_neither_spelling_is_declared)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_background_log_home.py", line 131, in test_refuses_when_neither_spelling_is_declared
+    background.log_home_name("api")):
+    ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'session.background' has no attribute 'log_home_name'
+
+======================================================================
+FAIL: test_the_per_clone_key_wins_over_the_global (__main__.PerCloneHome.test_the_per_clone_key_wins_over_the_global)
+EL QUE DISCRIMINA: sin la rama gana la global y api cae fuera.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_background_log_home.py", line 83, in test_the_per_clone_key_wins_over_the_global
+    self.assertEqual(background.log_dir(start=api), api / "build-logs")
+AssertionError: PosixPath('/hogar/global') != PosixPath('/home/user/kaupamex-api/build-logs')
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.010s
+
+FAILED (failures=1, errors=6)
+EXIT=1

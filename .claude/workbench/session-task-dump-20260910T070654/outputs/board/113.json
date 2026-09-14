@@ -1,0 +1,10 @@
+{
+  "id": "113",
+  "subject": "Desbloquear el volcado del tablero: 878 ordinales llevan cita de un sujeto muerto",
+  "description": "Sucesor de H-DOCS-1060. DESCONOCIDO declarado: la elección es de alcance.\n\nMedido 2026-09-05: el store tiene 990 filas de esta sesión con ordinales 1-995;\nel tablero vivo tiene 112 fichas numeradas 1-112. De los ordinales > 111, 878\ntienen citation_id acuñado y su sujeto ya NO existe en el tablero vivo. Por eso\ncrear la tarea #112 dejó `refresh-board.sh` rehusando: toda tarea nueva aterriza\nsobre un ordinal cuya cita pertenece a otro sujeto, y el registro publicable\n(pm/reportes/tablero-de-tareas.rst) queda congelado en su último volcado íntegro.\n\nEl guard actúa BIEN — sin él TASK-API-0055 pasaría a nombrar otra cosa. Y el\nanclaje por sujeto de #104 no puede resolverlo: los 878 sujetos están muertos,\nasí que la cita no tiene destino al que viajar.\n\nTres salidas, con su costo:\n\n(1) Retirar la cita de los ordinales huérfanos — un ordinal cuyo sujeto murió\n    deja de nombrar; su cita se marca retirada y no se reusa. Conserva la\n    inmutabilidad de lo ya publicado y desbloquea el volcado.\n(2) Separar el espacio de ordinales por época — clave (session_id, epoca,\n    task_id), con época nueva por renumeración detectada. No pierde nada;\n    añade una dimensión que hoy nadie declara.\n(3) Acuñar contra el sujeto desde el inicio, con el ordinal sólo como índice —\n    es la forma que #104 empezó y que este caso lleva a su conclusión.\n\nCondición de cierre: el ejecutor elige una, o se registra por qué ninguna.\nHasta entonces NO se usa --permitir-reasignacion: movería 878 citas publicadas.",
+  "status": "pending",
+  "blocks": [
+    "124"
+  ],
+  "blockedBy": []
+}

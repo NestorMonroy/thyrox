@@ -1,0 +1,8 @@
+{
+  "id": "55",
+  "subject": "Gate de lecturas cruzadas entre modelos (crossModelRead) — T-097",
+  "description": "Guarda de regresión sobre cost/dispatch: ninguna vía ni despacho acredita un cache_read a través de un cambio de modelo (la clave de caché incluye el modelo → sharesPromptCache='ninguno'). Implementado en .claude/packages/agent: cost/crossModelRead.ts (ReadCredit, crossModelReads, routeReadCredits, dispatchReadCredits), cost/cacheRoutes.ts (Route.readCredits), bin/crossModelReadGate.ts, script gate:cross-model-read, suite crossModelRead.test.ts. Control sub-patrón D: neutralizar writer→req.from da 342 cruzadas; restaurado 0. Documentado como T-097 (Bloque 22) en tareas-construir-harness-propio.rst. Commit docs@db775f84, pusheado a origin/feature/kaupamex-l2.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

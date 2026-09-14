@@ -1,0 +1,9 @@
+{
+  "id": "180",
+  "subject": "Medir el bucle de agency-swarm 1.10.5, hoy inalcanzable",
+  "description": "openswarm consume `agency-swarm[fastapi,jupyter,litellm]==1.10.5` y NO implementa la capa de bucle: `Agency(...)` y `.tui()` son de la libreria. Medido 2026-09-05: `importlib.util.find_spec('agency_swarm')` -> None, asi que el bucle no se puede leer, y concluir sobre el leyendo a su consumidor seria el sub-patron C. DESCONOCIDO declarado en analisis-flujo-de-agente-openswarm.rst y en h-docs-1109. Condicion de cierre: que agency_swarm sea alcanzable en el arbol de referencia. El control `test_the_library_that_owns_the_loop_is_unreachable` (evento reparto-de-agencia-openswarm-20260905T220452) CAE el dia que lo sea y obliga a reabrir esto en vez de dejarlo congelado por inercia.",
+  "activeForm": "Midiendo el bucle de agency-swarm",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

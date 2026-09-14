@@ -1,0 +1,9 @@
+{
+  "id": "106",
+  "subject": "Probar el filtro por extensión de un evento de transformación contra las tres formas",
+  "description": "ID: TASK-API-0051\n\nH-DOCS-1050: el barrido de PracticaYoruba filtraba con `archivo.suffix not in EXTENSIONES` y declaraba `.gitignore` y `.env` en la lista. Medido: `Path('.gitignore').suffix == ''` — las dos entradas eran INERTES, declaradas y nunca comparables. Dio la sensación de cubrir los dotfiles sin cubrir ninguno (sub-patrón D: el filtro no podía fallar). Además dejó fuera `.puml` y `.lock` por no declararse.\n\nLlevar al README.md de `.claude/eventos/`, en la forma «transformación en bloque», la exigencia de probar el filtro de alcance contra un caso de CADA forma antes de correr: con extensión (`x.rst`), sin extensión (`Makefile`) y dotfile (`.gitignore`). El verde de un barrido no distingue «no hay ocurrencias» de «no miré ese archivo».\n\nEl guion del evento NO se corrige: `.claude/eventos/` es evidencia congelada y reescribirlo haría que dejara de describir el barrido que realmente corrió.",
+  "activeForm": "Cableando la prueba del filtro de alcance en la forma de transformación en bloque",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

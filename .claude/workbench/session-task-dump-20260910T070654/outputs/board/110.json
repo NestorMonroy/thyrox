@@ -1,0 +1,8 @@
+{
+  "id": "110",
+  "subject": "Resolver la contradicción: lint_agents.py prohíbe el model: que la gobernanza exige",
+  "description": "ID: TASK-API-0053\n\napi: .claude/scripts/lint_agents.py declara PROHIBITED_FIELDS = {model, category, skill_template, system_prompt}, y model-selection-subagents.md (siempre cargada) EXIGE model con identificador del catálogo en toda definición de agente. Medido: 11 de 86 definiciones en los tres clones lo declaran, y las dos de api son los únicos dos errores que el linter reporta. El gate contradice al gobierno vigente. La contradicción estuvo invisible porque el hook resolvía contra el cwd y salía 2, y su `|| true` lo leía como verde. Decidir: retirar model de la lista prohibida, exigirlo, o retirar el linter. Ver h-docs-1057.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

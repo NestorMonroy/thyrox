@@ -1,0 +1,9 @@
+{
+  "id": "261",
+  "subject": "mock.module no intercepta el specifier raíz de un paquete workspace, sí sus subpaths",
+  "description": "Medido 2026-09-08 con cuatro sondas en thyrox/src/packages/provider/__tests__: `mock.module('@thyrox/config/settings', ...)` SÍ intercepta un `require` posterior (la sonda leyó el valor marcador `MARCADOR`); `mock.module('@thyrox/config', ...)` NO lo intercepta, ni por specifier bare ni por la ruta absoluta `/home/user/thyrox/src/packages/config/index.ts`. La diferencia parece estar en el subpath \".\" del campo `exports` frente a los subpaths nombrados, pero eso es HIPÓTESIS, no medición: lo medido es la conducta, no su causa. Importa porque varias suites portadas de ccnmt usan esa costura para inyectar configuración. Cierre: medir la causa y, o bien encontrar la forma que sí intercepta la raíz, o declarar la restricción donde las suites la puedan leer.",
+  "activeForm": "Midiendo la interceptación de mock.module en la raíz del paquete",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

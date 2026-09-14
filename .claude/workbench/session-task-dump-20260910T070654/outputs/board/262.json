@@ -1,0 +1,11 @@
+{
+  "id": "262",
+  "subject": "Portar handleStopHooks: su lista de bloqueos estaba obsoleta en 4 de 5 puntos",
+  "description": "Re-medido 2026-09-08 en thyrox/src/packages/agent/internal/stopHooksCore.ts. El docstring declaraba cinco bloqueos —los paquetes memory, local-observability, app-host y config/env, más ../hooks/sessionHooks.js— y CUATRO ya no existen: los tres últimos resuelven, y sessionHooks.ts vive en el árbol con sus 13 exportaciones. El de memory tampoco es de porte: `@thyrox/memory` existe con `executeExtractMemories` (src/extractMemories.ts:561) e `isExtractModeActive` (src/paths.ts:46); lo que falta es declararlo como dependencia de `@thyrox/agent` en su package.json.\n\nLo que de verdad lo bloquea hoy, medido símbolo a símbolo:\n(1) NUEVE de once métodos que el generador llama sobre `getAgentHostBindings()` no están declarados en `host.ts` — executeStopHooks, createAttachmentMessage, classifyJobState, listTasks, getTaskListId, createCacheSafeParams, saveCacheSafeParams, executePromptSuggestion, cleanupComputerUseAfterTurn. Sólo getSessionId y logDebug están. Como todas se invocan con `?.`, un puerto hoy COMPILARÍA y no haría nada: sus tests pasarían midiendo el vacío.\n(2) `getTotalOutputTokens` no lo exporta `@thyrox/app-host/bootstrap/state` (el módulo resuelve; el símbolo devuelve undefined). Es el insumo del conteo de tokens del objetivo.\n(3) `isBareMode` falta en `../internalUtils.ts`, que sí tiene errorMessage e isEnvDefinedFalsy.\n\nCierre: declarar la superficie del host (las nueve), exportar getTotalOutputTokens, portar isBareMode, declarar @thyrox/memory como dependencia, y sólo entonces portar el generador con su mitad roja y su anulación. Portarlo antes produce un puerto verde y hueco. `stopHookBlockCapMessage` ya se pagó en este pase: era autocontenido y su omisión no tenía fundamento.",
+  "activeForm": "Portando handleStopHooks",
+  "status": "completed",
+  "blocks": [
+    "263"
+  ],
+  "blockedBy": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "145",
+  "subject": "Identificar parámetros y cierre antes de cada tramo de P3d/P3e",
+  "description": "Ampliado 2026-09-05T14:01:50 tras H-DOCS-1080. La condición original era sólo \"cablear el cierre de dependencia al flujo y reclasificar stop-tests-scripts.sh\". Medido al portar el primer archivo: el cierre es una de dos preguntas, no la única.\n\nEl paso 0 (#139) clasificó por UNA forma de parámetro — la raíz absoluta de kaupamex. Al tocar los cinco A de hooks aparecieron otras cuatro, y ninguna es visible desde el texto que el paso 0 midió:\n\n- directorio de salida derivado de Path(__file__) — hook_error_log.py, que el hallazgo declaró \"libre\" y no lo es\n- lista literal de detectores hermanos — despachar_pretooluse.py\n- directorio vigilado como literal — stop-tests-scripts.sh (.claude/scripts, líneas 36, 37 y 43)\n- guion hermano invocado por ruta relativa — los dos reconciliar-store-al-*\n\nCondición de cierre, en dos mitades:\n\n1. Antes de cada tramo, identificar del archivo (a) su cierre de dependencia y (b) sus parámetros. NO se construye un cuarto instrumento que enumere formas de parámetro sobre los 235: en el pase del 2026-09-05 se construyeron tres y cada uno tuvo su ceguera. Se descubren al portar, archivo por archivo, y se declaran en el commit del tramo.\n\n2. Reclasificar stop-tests-scripts.sh a A-param — mueve los conteos publicados en veredictos.tsv, que este ampliado sí autoriza a tocar.\n\nY una precisión de vocabulario que no se debe volver a perder: A-param significa \"viaja con el parámetro inyectado\", NO \"bloqueado\". El único cubo que se queda en kaupamex es B.",
+  "activeForm": "Cableando el cierre de dependencia al flujo de P3d/P3e",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

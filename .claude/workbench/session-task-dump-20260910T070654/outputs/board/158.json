@@ -1,0 +1,9 @@
+{
+  "id": "158",
+  "subject": "Portar la extracción de modelo: #153 la nombró y no aterrizó",
+  "description": "Segunda instancia de la clase que H-DOCS-1092 registra, hallada al aplicar su quinto instrumento a los portes hermanos.\n\n#153 se tituló «Portar el segundo primitivo de transcript: extraccion de uso» y su descripción nombra CUATRO campos: usage, cache_read, input_tokens y message.model — «la extraccion de uso Y MODELO». Aterrizó thyrox/src/transcript/usage.py con los tres primeros; message.model da 0 hits ahí, y en TODO thyrox/src la única mención de «model» es un ejemplo de slash-command en una tabla del docstring de messages.py.\n\nNo es cosmético. model-selection-subagents.md fija por qué el campo importa: «el store guarda el identificador que el TRANSCRIPT declara (message.model), no el alias con que se despachó ni la familia que trae el sidecar» (H-DOCS-219) — porque el alias resuelve distinto según el proveedor y por tanto no determina ni el tier de precio ni la ventana. El censo por modelo de esa regla y el equiv_cost de calibration-verified-numbers.md dependen de leer ese campo, no de suponerlo.\n\nAlcance: añadir la extracción de modelo al primitivo de transcript, con TDD y su anulación, siguiendo la forma de usage.py (mecanismo aquí, parámetro inyectado). Medir antes qué leen los productores reales (agent_store.py, register_agent_session.py, model_catalog.py, medir_usage_subagentes.py, reconciliar_store.py) en vez de suponer que leen lo mismo — es lo que la descripción de #153 ya pedía.",
+  "activeForm": "Portando la extracción de modelo al primitivo de transcript",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

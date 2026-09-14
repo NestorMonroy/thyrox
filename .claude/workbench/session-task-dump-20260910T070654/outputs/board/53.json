@@ -1,0 +1,8 @@
+{
+  "id": "53",
+  "subject": "Entregar el catálogo flow→hogar al sustrato del harness (docs.ts)",
+  "description": "T-005 de mapear-hogar-documental-por-flow. Que src/paths/docs.ts (o una constante hermana) exprese el hogar por función y que la migración de skills #39/#50 lo consuma en vez de escribir rutas literales o caer a PM por defecto. Insumo: analisis-hogar-documental-por-flow.rst.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,8 @@
+{
+  "id": "142",
+  "subject": "Renombrar KAUPAMEX_DOCS_ROOT: el parametro se filtro al identificador del mecanismo",
+  "description": "docs.ts:90-106 resuelve la raiz documental por variable de entorno — ese es el punto de inyeccion correcto y el modelo para los otros tres casos de DEC-04. Pero la llave se llama KAUPAMEX_DOCS_ROOT: un mecanismo de THYROX no puede nombrar a su consumidor en la llave por la que lo consulta. Medir todos sus consumidores (guiones, tests, hooks, settings) antes de renombrar, y decidir si se admite un periodo con las dos llaves. Ver DEC-04.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

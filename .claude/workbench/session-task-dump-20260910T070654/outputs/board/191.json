@@ -1,0 +1,8 @@
+{
+  "id": "191",
+  "subject": "Triar los 18 forks por clon: variante legítima o copia que se quedó atrás",
+  "description": "check_consumer_copies separa copia (idéntica byte a byte) de fork (mismo nombre, contenido distinto). kaupamex-api y kaupamex-ui tienen 18 forks cada uno. Una copia es duplicación pura y el consumo la resuelve; un fork ya divergió y decidir si el consumidor necesita su variante o si se quedó atrás es juicio, no medición. Ninguno declara por qué difiere. Ver H-DOCS-1119.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

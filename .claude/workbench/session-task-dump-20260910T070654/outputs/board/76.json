@@ -1,0 +1,11 @@
+{
+  "id": "76",
+  "subject": "Analizar y rediseñar el subsistema de TASK del harness: hoy persiste las tareas",
+  "description": "CERRADA en sus dos mitades. El análisis ya estaba (4 documentos en construir-harness-propio); la implementación se midió hoy en el árbol y también está — la descripción anterior decía «IMPLEMENTACIÓN PENDIENTE» y era una hipótesis fechada, no el estado.\n\nDEC-TASK-01, en `.claude/packages/harness`:\n- `src/context/attachments.ts` — tipo `task_reminder` con su validador, su renderer (`<system-reminder>` con el texto verbatim del ejecutable y una línea `#id. [status] subject` por tarea, sólo si hay tareas) y las constantes TURNS_SINCE_WRITE=10 / TURNS_BETWEEN_REMINDERS=10.\n- `src/loop.ts:275-284` — los dos contadores, el disparo a 10/10, la relectura del store con `resumenTablero`, el append al transcript y la inyección como mensaje isMeta.\n- `src/loop.ts:332-333` — TaskCreate/TaskUpdate reinician el contador de escritura.\n- `src/tools/tasks.ts` — `resumenTablero` excluye la lista efímera de TodoWrite y ordena por ordinal.\n\nDEC-TASK-02: cerrada como #75.\n\nControl que puede fallar: la suite cubre el bucle, no sólo el renderer — «a los 10 turnos sin escritura de tarea, el 10º request trae el recordatorio» y «una escritura reinicia el contador: el recordatorio cae un turno más tarde». 12 pass / 0 fail en el archivo; 700 pass, 2 skip, 0 fail y 1 error en la suite completa del harness, siendo ese error preexistente y de `branchIntegration.test.ts:40` (execFileSync sobre una ref inexistente), ajeno a este subsistema.\n\nLo que NO cierra: DEC-TASK-03 (etapas 5-6, hooks y multi-agente), registrado como #103 — DESCONOCIDO con condición de cierre, porque es decisión del ejecutor sobre tablero compartido.",
+  "status": "completed",
+  "blocks": [
+    "94",
+    "103"
+  ],
+  "blockedBy": []
+}

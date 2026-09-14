@@ -1,0 +1,9 @@
+{
+  "id": "65",
+  "subject": "Resolver la colision viva h-docs-1025 entre l2 y l3 (decision del ejecutor: quien renumera)",
+  "description": "H-DOCS-1027: l2 (construir-harness-propio) y l3 (implementar-base-datos-agentes) acunaron independientemente la etiqueta .. _h-docs-1025:. Al fusionar, Sphinx falla por duplicate label. El esquema de coordinacion surfacea el conflicto; NO decide quien cede. No renumerar unilateralmente: el archivo de l3 es suyo, renumerar el de l2 presume que l2 cede. Decision del ejecutor: quien renumera su h-docs-1025 a un ordinal libre en las tres ramas. Prevencion de fondo = id de hallazgo globalmente unico o de asignacion central, misma direccion que el DEC del fork (bloque 24). Detectado por el control de T-098 (branchIntegration.test NEGATIVO l2 vs l3 = 0 -> 1).",
+  "activeForm": "Surfaceando la colision h-docs-1025 l2/l3 para decision del ejecutor",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

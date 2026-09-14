@@ -1,0 +1,14 @@
+{
+  "id": "4",
+  "subject": "Reconciliar verificar_premisa.py con premises.ts",
+  "description": "Dos mecanismos para el mismo problema, construidos con nueve meses de distancia y sin saber uno del otro. Medido hoy:\n\n- `.claude/scripts/gates/verificar_premisa.py` — **infiere** la premisa de la prosa de la ficha con tres señales sintácticas (S1 símbolo presente, S2 ruta fantasma, S3 bloqueador cerrado). Veredicto `RE-ENCUADRAR`, nunca `CERRAR`, y sale 0 salvo `--strict`.\n- `.claude/packages/harness/src/tasks/premises.ts` — **evalúa premisas declaradas** con siete predicados y cinco veredictos, y declara explícitamente que NO infiere de prosa.\n\nNo son duplicados: uno cubre las fichas heredadas que nadie va a anotar a mano, el otro las que se declaran desde hoy. Pero tener dos sin decir cuál gobierna es la deuda que `metrica-decide-la-conclusion.md` sub-patrón B describe — un recorte heredado que nadie vuelve a cuestionar.\n\nEntregable: decidir si uno absorbe al otro o si conviven con frontera declarada, y escribirlo donde se lea antes de construir el tercero.",
+  "activeForm": "Reconciliando los dos verificadores de premisa",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "iniciativa": "construir-harness-propio",
+    "submodulo": "docs",
+    "hallazgo": "dos mecanismos para el mismo problema"
+  }
+}

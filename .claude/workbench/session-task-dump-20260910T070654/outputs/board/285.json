@@ -1,0 +1,9 @@
+{
+  "id": "285",
+  "subject": "El .output del roster es un symlink: hay que seguirlo, no leer su mtime",
+  "description": "Cerrada por medición, no por trabajo nuevo: el eje ya estaba implementado en las dos capas. `reconcile-agents.sh` usa `stat -L` en 4 sitios (con la cita a H-DOCS-1004 en su comentario) y `roster/job_liveness.sweep` usa `Path.stat()`, que sigue el enlace. Medido 2026-09-09: 0 lectores del mtime del ENLACE en src/agents y src/roster — el único hit de `lstat(` es la prosa del docstring que explica la distinción.",
+  "activeForm": "Repuntando el clasificador del roster a una señal de vida real",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

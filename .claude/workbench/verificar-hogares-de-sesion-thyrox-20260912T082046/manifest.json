@@ -1,0 +1,10 @@
+{
+  "question": "¿thyrox ya tiene todo lo necesario para operar como proveedor en esta sesion: un venv propio distinto del de kaupamex-api, los hooks de sesion instalados, y los hogares THYROX_WORKBENCH/THYROX_JOBS que el ejecutor pidio crear?",
+  "instrument": "uv sync en thyrox y en kaupamex-api con verificacion de sys.path distinto; lectura de .env/.env.example de thyrox; lectura de src/workbench/paths.py; instalacion real de src/session/instalar-hooks-sesion-multirepo.sh contra /home/user/.claude/settings.local.json; bash src/session/bg.sh start baseline-l2 -- bash tests/run.sh como prueba de uso real del hogar de jobs",
+  "metric": "presencia y contenido de .venv por repo; presencia y valor de THYROX_WORKBENCH_DIR/THYROX_JOBS_DIR en .env; ruta real donde bg.sh escribio el log del job de prueba",
+  "blind_to": "si el.venv de kaupamex-api resuelve TODAS sus dependencias (solo se verifico que uv sync termino 0 y que el interprete es 3.12); si los hooks instalados en /home/user/.claude/settings.local.json ya fueron tomados por el proceso actual del harness (el watcher solo recarga settings que existian al arranque de la sesion) o si haran falta en la proxima; y si la suite baseline-l2 termino en verde -- seguia running al cerrar este banco",
+  "destination": "kaupamex-docs: source/gestion/pm/thyrox/iniciativas/verificar-hogares-de-sesion-thyrox/ (progreso + alcance), que cita este banco",
+  "form": "hallazgo",
+  "task": "sin task previa -- directiva directa del ejecutor en esta sesion",
+  "reference": "src/workbench/paths.py::workbench_dir (docstring completo), thyrox/.env, thyrox/.env.example lineas 51-292"
+}

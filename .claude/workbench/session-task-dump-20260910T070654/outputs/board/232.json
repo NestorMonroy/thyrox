@@ -1,0 +1,10 @@
+{
+  "id": "232",
+  "subject": "Confirmar si `runtime` de la lista es mcp-runtime, y portarlo (48 mod)",
+  "description": "CERRADA 2026-09-07, `thyrox@d0bc44e`. Sí: `runtime` de la lista es `mcp-runtime`. Alcance medido con `comm -23`: **14 de 49 ausentes**.\n\nPortado **1 de 14** — `testing/index.ts` (`InMemoryMcpRuntime`, `createInMemoryMcpRuntimeBindings`), el único de los catorce que no cita `tool-registry` ni directa ni transitivamente.\n\nLos **13 restantes están bloqueados por el mismo hermano**: `utils.ts`, `clientRuntime.ts`, `channelAllowlist.ts`, `channelNotification.ts`, `vscodeSdkMcp.ts`, `xaa.ts`, `useManageMCPConnections.ts`, `MCPConnectionManager.tsx`, `auth.ts`, `config.ts`, `mcpOutputStorage.ts`, `runtimeHostSetup.ts`, `index.ts` — todos importan `tool-registry`, que no existe en thyrox. Cobertura declarada en el `package.json` del paquete: «36 of 49».\n\nEso convierte a **#234 (tool-registry) en la piedra angular**, no en el penúltimo por tamaño: 13 de 14 de este paquete cuelgan de él.\n\nVerificado: `bun test src/packages/mcp-runtime src/packages/app-host` → **456 pass, 0 fail**, 685 expect(), 35 archivos.",
+  "status": "completed",
+  "blocks": [
+    "198"
+  ],
+  "blockedBy": []
+}

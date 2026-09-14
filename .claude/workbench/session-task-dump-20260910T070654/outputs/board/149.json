@@ -1,0 +1,8 @@
+{
+  "id": "149",
+  "subject": "El lector de transcript no separa el mensaje tecleado del inyectado",
+  "description": "Medido sobre el JSONL vivo (185 MB, 7210 mensajes de usuario): la heurística de stop-gate-hallazgo-pendiente.sh —contenido de texto puro— clasifica 335 como genuinos, y sólo 136 llevan origin.kind == \"human\". Los otros 199 son inyectados: 105 resúmenes de compactación (isCompactSummary), 65 meta (isMeta), 13 notificaciones de tarea y 14 ecos de slash-command. Un resumen de compactación cita directivas verbatim, así que puede disparar el gate sin que nadie haya pedido nada. Se cierra al portar el hook a thyrox: el lector discrimina por origin.kind, y si NINGUNA línea declara origin rehúsa en vez de emitir un verde que no discrimina (sub-patrón D).",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

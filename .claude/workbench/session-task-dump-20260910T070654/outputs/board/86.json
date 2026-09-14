@@ -1,0 +1,9 @@
+{
+  "id": "86",
+  "subject": "Adoptar trabajos huérfanos en el ledger: hoy un olvidar previo los deja sin registro",
+  "description": "Sucesor de h-docs-1037. `estado` sólo ve lo que está en el ledger. Un trabajo soltado por un `olvidar` anterior (o por un ledger perdido) sigue corriendo y no aparece en ninguna herramienta: no hay forma de reclamarlo salvo buscarlo a mano en `ps` por su línea de comando.\n\nUn `reconciliar`/`adoptar` exige un dato que el .job hoy NO guarda: el COMANDO lanzado (guarda `log=` y `pid=`). Con el comando registrado se puede barrer `ps` y re-registrar lo que coincida.\n\nEs el mismo patrón que reconciliar-agentes.sh resuelve para subagentes (roster + confirmar-muerte antes de relanzar), y tiene su misma trampa medida: el instrumento puede leer un \"atascado\" que en realidad está trabajando (H-DOCS-1004). Cualquier adopción debe confirmar antes de actuar, nunca relanzar a ciegas.\n\nPiezas: (1) añadir `cmd=` al .job en `registrar`; (2) subcomando `adoptar` que barra `ps` y re-registre; (3) caso de suite con un huérfano real (proceso vivo cuyo .job se borró).",
+  "activeForm": "Adoptando trabajos huérfanos en el ledger",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

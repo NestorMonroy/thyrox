@@ -1,0 +1,9 @@
+{
+  "id": "111",
+  "subject": "Suite del .githooks/pre-commit: sus 5 gates no tienen control de alcanzabilidad",
+  "description": "Cerrado. La suite existe (`thyrox/tests/legacy/test-pre-commit-docs.sh`) y hoy da **9 ok, 0 falla** — venia de **1 ok, 8 falla**, con exit 127 en casi todos.\n\nEl titulo decia «sus 5 gates no tienen control de alcanzabilidad», y ese control **ya estaba en el hook**: `.githooks/pre-commit` resuelve THYROX_ROOT o asciende al hermano y REHUSA con exit 1 si no lo encuentra («No se emite un veredicto: un 0 aqui seria un verde falso»). Lo que faltaba era que la suite pudiera correr: su `RAIZ` se derivaba por aritmetica de tres niveles y, desde `thyrox/tests/legacy/`, valia `/home/user` — el hook que medía no existia ahi. Repuntada al mecanismo de alcance (`KAUPAMEX_DOCS_ROOT` o ascenso al hermano), porque su sujeto vive en OTRO repo.\n\nCon la suite corriendo aparecieron dos defectos reales que nadie veia, los dos en `check_vocabulario_prosa.py` y los dos de la misma mudanza:\n\n1. **El cwd era alternativa, no respaldo** — un `or` que solo dispara con `measured` vacio. Con el archivo medido fuera del arbol, el gate rehusaba teniendo el baseline a un `cd`.\n2. **La lista de formas vetadas resolvia a `[]` en silencio** — `vetadas: 0`, la mitad del gate comparando contra nada. Ver :ref:`h-docs-1125`.\n\nY una tercera al medir el resultado: la clave del baseline salia relativa a `/home/user`.\n\nCorregidos en thyrox@27dd7755. Los cinco gates del pre-commit corren verdes de extremo a extremo sobre un commit real, con `vetadas: 36`.\n\nMetrica: aserciones verdes de la suite, y codigo de salida del hook sobre archivos sinteticos por clase (prosa limpia, forma vetada, sintaxis rota, `.md`, sin archivos).\nCiega a: si cada uno de los cinco gates mide bien su propio eje — eso es su suite, no esta.",
+  "activeForm": "Escribiendo la suite del pre-commit",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "277",
+  "subject": "Portar backends/registry.ts y sus cuatro respaldos: 1832 líneas sin import externo",
+  "description": "`killOrphanedTeammatePanes` de `swarm/core/teamHelpers.ts` quedó como porte parcial DECLARADO: los directorios se borran pero los paneles de los compañeros quedan abiertos con sus procesos dentro. Su bloqueo es `backends/registry.ts` (470 L), que arrastra `TmuxBackend` (764 L), `ITermBackend` (370 L), `InProcessBackend` (339 L) y `PaneBackendExecutor` (359 L).\n\nMedido 2026-09-08 sobre ccnmt: los cinco tienen CERO imports externos al paquete — el bloqueo es de volumen, no de dependencia ausente. `backends/detection.js`, el otro import dinámico de esa función, ya está portado.\n\nCierre: `registry.ts` portado con sus cuatro respaldos, el import dinámico restaurado en `killOrphanedTeammatePanes`, y un control que mida que un panel se mata en la salida abrupta.",
+  "activeForm": "Portando backends/registry y sus cuatro respaldos",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,19 @@
+CENTINELA presente: /home/user/thyrox/.claude/workbench/portar-ripgrep-20260909T165044/DONE
+total 68
+drwxr-xr-x 2 root root 4096 Sep  9 17:23 .
+drwxr-xr-x 7 root root 4096 Sep  9 16:51 ..
+-rw-r--r-- 1 root root  226 Sep  9 17:23 DONE
+-rw-r--r-- 1 root root  705 Sep  9 17:23 commit_attempt_1.log
+-rw-r--r-- 1 root root 1965 Sep  9 17:22 commit_message.txt
+-rw-r--r-- 1 root root  104 Sep  9 17:19 final_test_run.txt
+-rw-r--r-- 1 root root 1759 Sep  9 17:02 findings_rg_probes.md
+-rw-r--r-- 1 root root 1428 Sep  9 17:12 first_test_run.txt
+-rw-r--r-- 1 root root  104 Sep  9 17:18 fourth_test_run_after_test17_fix.txt
+-rw-r--r-- 1 root root 2833 Sep  9 17:19 nulling_log.txt
+-rw-r--r-- 1 root root 4521 Sep  9 16:57 probes_rg_output.txt
+-rw-r--r-- 1 root root 3030 Sep  9 17:19 resumen_cierre.md
+-rw-r--r-- 1 root root  863 Sep  9 17:16 second_test_run.txt
+-rw-r--r-- 1 root root  288 Sep  9 17:17 sha_baseline.txt
+-rw-r--r-- 1 root root   81 Sep  9 17:19 sha_baseline2.txt
+-rw-r--r-- 1 root root  104 Sep  9 17:16 third_test_run.txt
+EXIT=0

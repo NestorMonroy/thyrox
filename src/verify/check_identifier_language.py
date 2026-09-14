@@ -357,6 +357,38 @@ def corpus_available():
     return _corpus(ES_LANG) is not None and _corpus(EN_LANG) is not None
 
 
+#: Lo que se imprime al rehusar. Nombra el remedio porque el defecto real no
+#: era «falta un paquete»: era que el veredicto dependia del INTERPRETE con que
+#: se invocara el gate. Medido sobre el mismo arbol y el mismo baseline —
+#: `python3` del sistema (con lexico) daba FAIL con 2994 fuera del baseline, y
+#: el `uv` de api (sin lexico) daba OK con 1265 en deuda heredada.
+CORPUS_MISSING = (
+    'ERROR — el lexico de `spacy-lookups-data` no esta disponible para este\n'
+    'interprete, asi que el cuarto criterio (corpus abierto) no puede medir.\n'
+    '\n'
+    'NO se emite conteo: un 0 aqui no distingue «no hay espanol» de «no lo\n'
+    'puedo ver», que es el sub-patron D de metrica-decide-la-conclusion.\n'
+    '\n'
+    'Remedio: el lexico lo declara el PROVEEDOR (thyrox/pyproject.toml).\n'
+    '  cd <thyrox> && uv sync\n'
+    'y se invoca el gate con el interprete del proveedor, que resuelve\n'
+    '`thyrox_toolchain_provider_python` de src/lib/toolchain.sh.'
+)
+
+
+def refuse_without_corpus():
+    """Imprime el rehuse y devuelve 2, o ``None`` si el corpus esta.
+
+    Es funcion y no un `if` en `main` porque la rehusa la comparten los dos
+    caminos —medir y congelar— y el segundo es el que mas dano hace: un
+    baseline escrito a ciegas congela como limpio lo que el gate no supo ver.
+    """
+    if corpus_available():
+        return None
+    print(CORPUS_MISSING, file=sys.stderr)
+    return 2
+
+
 def spanish_by_corpus(word):
     """¿El corpus espanol la atestigua con margen sobre el ingles?
 
@@ -379,6 +411,43 @@ ES_LANG = 'es'
 EN_LANG = 'en'
 
 
+#: Vocabulario TECNICO que el corpus abierto atestigua como español y que aquí
+#: se queda. No son palabras del texto: son nombres de cosas.
+#:
+#: `redaccion-tecnica-es.md` ya los excluía **en prosa** del léxico cerrado —el
+#: prefijo de namespace de la referencia, los estándares, los acrónimos— y esa
+#: prosa no gobernaba al cuarto criterio, que es abierto y los recogía otra vez.
+#: Aquí la exclusión pasa de prosa a mecanismo.
+TECHNICAL_VOCABULARY = frozenset({
+    'vals',      # la convención de dict de la referencia (`party_vals`)
+    'iban',      # estándar bancario ISO 13616
+    'incoterm',  # estándar de comercio ICC
+    'categ',     # la abreviatura de *category* de la referencia (`categ_id`)
+})
+
+#: Piso de longitud del criterio de corpus. Una palabra de una o dos letras no
+#: la decide la frecuencia: `q`, `l`, `o` son nombres de variable y `ir`, `es`
+#: son a la vez prefijo de namespace y código de idioma. Las partículas
+#: españolas reales de esa longitud —`de`, `en`, `el`— NO se pierden: las
+#: recoge `SPANISH_PARTICLES` en su propia pasada, que sí consulta las
+#: exenciones. El piso quita una duplicación que medía peor, no una defensa.
+CORPUS_MINIMUM_LENGTH = 3
+
+
+def _corpus_says_spanish(word, technical):
+    """El cuarto criterio, ya acotado por su vocabulario y su piso.
+
+    Se extrae a una función en vez de encadenarlo en la comprensión porque la
+    condición tiene tres partes y una condición de tres partes dentro de un
+    filtro es donde se cuela la que falta — que es exactamente lo que pasó.
+    """
+    if len(word) < CORPUS_MINIMUM_LENGTH:
+        return False
+    if word in TECHNICAL_VOCABULARY or word in technical:
+        return False
+    return spanish_by_corpus(word)
+
+
 def spanish_words_in(name, code_families=frozenset()):
     """Palabras españolas del identificador, o lista vacía.
 
@@ -388,22 +457,52 @@ def spanish_words_in(name, code_families=frozenset()):
     archivo que dé contexto— siga llamando con un solo argumento.
     """
     words = split_words(name)
-    hits = [w for w in words
-            if w in SPANISH_WORDS
-            or (len(w) > 5 and SPANISH_MORPHOLOGY.search(w))
-            or spanish_by_corpus(w)]
+
+    # Las exenciones se calculan ANTES de la primera pasada, no despues.
+    # Calcularlas dentro del bloque de particulas —que es como estaban— dejaba
+    # al criterio de corpus sin ninguna: la palabra salia del lexico cerrado
+    # por la puerta de delante y volvia a entrar por la de atras (H-DOCS-1139).
+    technical = set()
     if len(words) >= 2:
-        # Las tres exenciones se miden contra el baseline entero antes de
-        # entrar: ninguna pierde un solo caso de español real.
         technical = _particles_before_digits(name)
         if _technical_suffix(name):
             technical.add(name.rpartition('_')[2].lower())
         head, separator, tail = name.rpartition('_')
         if separator and head.lower() in code_families:
             technical.add(tail.lower())
+
+    hits = [w for w in words
+            if w in SPANISH_WORDS
+            or (len(w) > 5 and SPANISH_MORPHOLOGY.search(w))
+            or _corpus_says_spanish(w, technical)]
+    if len(words) >= 2:
         hits += [w for w in words
                  if w in SPANISH_PARTICLES and w not in technical]
     return sorted(set(hits))
+
+
+#: Variable con la que el CONSUMIDOR declara sus claves de contrato: nombres
+#: que su propia normativa fija y que por tanto no son deuda de idioma. El caso
+#: que la origina es `codigo_error`, la clave canónica de error de `api` —270
+#: ocurrencias medidas—, que su regla `canon-idioma` MANDA escribir así.
+#:
+#: El proveedor entrega el mecanismo y el consumidor el parámetro, igual que el
+#: baseline y las raíces (DEC-04). Codificar `codigo_error` aquí sería meter el
+#: dominio del producto dentro del proveedor.
+CANON_KEYS_VAR = 'IDENTIFIER_LANGUAGE_CANON_KEYS'
+
+
+def canon_keys(start: pathlib.Path | None = None, source=None) -> frozenset[str]:
+    """Las claves de contrato que el consumidor declara, o el conjunto vacío.
+
+    Sin declaración devuelve vacío — no un default inventado. Un default aquí
+    absolvería nombres que nadie pidió absolver, y el gate publicaría verde
+    sobre una población que no midió.
+    """
+    declared = env_value(CANON_KEYS_VAR, start, source)
+    if not declared:
+        return frozenset()
+    return frozenset(part.strip() for part in declared.split(',') if part.strip())
 
 
 def declared_identifiers(tree):
@@ -411,6 +510,16 @@ def declared_identifiers(tree):
 
     Los docstrings y comentarios quedan fuera por construcción: el AST no los
     entrega como nombre de nada.
+
+    Una **clave de diccionario** sí entra: `identificadores-en-ingles.md`
+    enumera «claves de manifiesto —una clave es un atributo—», y hasta hoy el
+    recorrido veía `def`/`class`/`arg`/`Name` y ninguno de los cuatro es un
+    literal de dict. La regla nombraba una forma que el instrumento no podía
+    ver.
+
+    Sólo entra la clave que **puede ser un nombre** (``str.isidentifier``). Una
+    cabecera HTTP (``application/json``), una ruta o un ordinal son datos, no
+    símbolos; medirlos haría que el veredicto hablara de otra población.
     """
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
@@ -419,6 +528,11 @@ def declared_identifiers(tree):
             yield node.arg, node.lineno
         elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
             yield node.id, node.lineno
+        elif isinstance(node, ast.Dict):
+            for key in node.keys:
+                if (isinstance(key, ast.Constant) and isinstance(key.value, str)
+                        and key.value.isidentifier()):
+                    yield key.value, key.lineno
 
 
 def load_baseline(start: pathlib.Path | None = None) -> set[str]:
@@ -429,8 +543,14 @@ def load_baseline(start: pathlib.Path | None = None) -> set[str]:
             if line.strip() and not line.startswith('#')}
 
 
-def scan(paths):
-    """Devuelve ``(violaciones, archivos_medidos)``."""
+def scan(paths, canon=frozenset()):
+    """Devuelve ``(violaciones, archivos_medidos)``.
+
+    ``canon`` son los nombres que el consumidor declaró como contrato propio
+    (ver :func:`canon_keys`). Se exime el NOMBRE, no el sitio: si la normativa
+    del consumidor fija `codigo_error`, lo fija igual como clave de dict que
+    como variable que la construye.
+    """
     findings, measured = [], 0
     for path in paths:
         if 'migrations' in path.parts:
@@ -444,7 +564,7 @@ def scan(paths):
         declared = list(declared_identifiers(tree))
         families = code_suffix_families(n for n, _ in declared)
         for name, lineno in declared:
-            if name in seen:
+            if name in seen or name in canon:
                 continue
             hits = spanish_words_in(name, families)
             if hits:
@@ -477,7 +597,11 @@ def main():
         print(f'ERROR — {exc}', file=sys.stderr)
         return 2
 
-    findings, measured = scan(collect(args.paths, start))
+    refused = refuse_without_corpus()
+    if refused is not None:
+        return refused
+
+    findings, measured = scan(collect(args.paths, start), canon_keys(start))
 
     if args.write_baseline:
         lines = sorted({f'{path}::{name}' for path, name, _, _ in findings})

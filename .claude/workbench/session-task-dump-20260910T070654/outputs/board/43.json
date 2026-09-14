@@ -1,0 +1,11 @@
+{
+  "id": "43",
+  "subject": "Analizar en el binario 2.1.258 el flujo de reanudación y reconciliación de estado tras un reinicio",
+  "description": "Directiva del ejecutor 2026-09-02: «analizas el flujo en los binarios y documentas». Objeto: qué hace el cliente al reanudar una sesión (--resume/--continue, restart del worker): qué relee del transcript, qué estado reconstruye (tareas bash en vuelo, subagentes, ledger, compact_boundary, attachments), qué descarta, y en qué orden. Fuente: tools/claude-code-bin/2.1.258/claude_strings.txt y el corpus src/. Entregable: analisis-reanudacion-y-reconciliacion-en-el-binario.rst en construir-harness-propio, con citas verbatim y Métrica/Ciega a.",
+  "activeForm": "Analizando el flujo de reanudación en el binario",
+  "status": "completed",
+  "blocks": [
+    "46"
+  ],
+  "blockedBy": []
+}

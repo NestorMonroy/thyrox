@@ -83,3 +83,88 @@ def test_latest_run_finds_the_most_recent_of_a_slug():
         # dos runs del mismo slug conviven; el cajón plano los pisaba
         assert len(list(pathlib.Path(base).iterdir())) >= 1
         assert job_runs.latest_run(base, "suite") is not None
+
+
+# --- El eje del RELOJ: dimensionar un lote exige la DISTRIBUCION ---------------
+#
+# TASK-THYROX-0012. `run-task-pool.sh` reparte N trabajos entre C servidores y
+# el reloj de pared es Sigma(t_i)/C, no max(t_i). Medido: `SECONDS|duration|
+# elapsed|date +%s` da 0 hits en `run-task-pool.sh` y en `task_pool.py`, asi que
+# hoy el ancho del lote se elige a ojo. Es el `seq_length.py` del tutorial: la
+# distribucion de longitudes se MIDE antes de decidir como se procesa.
+#
+# EL CONTROL QUE DISCRIMINA: una distribucion con la MISMA suma y dispersion
+# opuesta (uniforme contra un valor dominante) tiene que dar veredictos
+# distintos. Si el instrumento solo publica el total, las dos se ven iguales y
+# no informa nada sobre el reparto — seria la media escondiendo la cola.
+
+def test_scaffold_records_when_the_job_started():
+    with tempfile.TemporaryDirectory() as base:
+        run = job_runs.scaffold_run(base, "suite", command="x")
+        m = json.loads((run / wb.MANIFEST_FILE_NAME).read_text())
+        assert "started_at" in m
+
+
+def test_settle_records_the_duration_not_only_the_exit_code():
+    with tempfile.TemporaryDirectory() as base:
+        run = job_runs.scaffold_run(base, "suite", command="x")
+        job_runs.settle(run, 0)
+        m = json.loads((run / wb.MANIFEST_FILE_NAME).read_text())
+        assert "finished_at" in m
+        assert isinstance(m.get("duration_seconds"), (int, float))
+        assert m["duration_seconds"] >= 0
+
+
+def test_the_distribution_publishes_its_operands_not_only_the_total():
+    d = job_runs.duration_distribution([4.0, 4.0, 4.0, 4.0])
+    assert d["n"] == 4
+    assert d["total"] == 16.0
+    assert d["max"] == 4.0
+    assert d["median"] == 4.0
+
+
+def test_opposite_dispersion_with_the_SAME_total_gives_a_different_verdict():
+    # CONTROL POSITIVO: mismo total (16 s) y misma n; solo cambia la forma.
+    uniforme = job_runs.duration_distribution([4.0, 4.0, 4.0, 4.0])
+    dominante = job_runs.duration_distribution([13.0, 1.0, 1.0, 1.0])
+    assert uniforme["total"] == dominante["total"]
+    # El reloj de pared con C servidores NO es total/C cuando hay un dominante:
+    # no se puede bajar de la pieza mas larga.
+    assert uniforme["floor_wall_clock"](2) == 8.0      # total/C manda
+    assert dominante["floor_wall_clock"](2) == 13.0    # max manda
+    assert uniforme["floor_wall_clock"](2) != dominante["floor_wall_clock"](2)
+
+
+def test_an_empty_population_refuses_instead_of_publishing_a_zero():
+    # Un 0 aqui no distinguiria "ningun trabajo tardo nada" de "no hay medicion".
+    try:
+        job_runs.duration_distribution([])
+    except ValueError as e:
+        # El mensaje es prosa en español y lleva sus tildes; el test compara lo que
+        # el mensaje DICE, no una forma sin acentuar que nadie escribe.
+        assert "sin medición" in str(e).lower()
+    else:
+        raise AssertionError("una poblacion vacia debe REHUSAR, no dar 0")
+
+
+# Sin este bloque `python3 <suite>` sólo IMPORTA el módulo: las funciones
+# `test_*` no se invocan y el corredor cuenta la suite en verde. El verde no
+# distinguía «las aserciones pasan» de «las aserciones no se ejecutan» —
+# sub-patrón D con la propia suite como sujeto. Medido: 20 funciones inertes en
+# dos archivos de los 117 `test_*.py` (los otros 81 sin bloque asertan a nivel
+# de módulo, y ésas sí corren al importar).
+if __name__ == "__main__":
+    import traceback
+    _fallos = 0
+    for _nombre, _caso in sorted(list(globals().items())):
+        if not _nombre.startswith("test_") or not callable(_caso):
+            continue
+        try:
+            _caso()
+            print(f"  ok    {_nombre}")
+        except Exception:
+            _fallos += 1
+            print(f"  FALLO {_nombre}")
+            traceback.print_exc()
+    print(f"resumen: {_fallos} fallo(s)")
+    raise SystemExit(1 if _fallos else 0)

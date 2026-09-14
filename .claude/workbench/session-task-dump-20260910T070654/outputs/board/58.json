@@ -1,0 +1,9 @@
+{
+  "id": "58",
+  "subject": "Wire agentTool (with storePath) into bin/harness.ts + --store override + e2e test",
+  "description": "Branch B (native agent_sessions capture) is built (docs@b521fc2f6) but LATENT: bin/harness.ts:365 assembles `tools: CORE_TOOLS` and never constructs agentTool, so no production dispatch writes via this path. To make B live: (1) add a `--store <path>` flag to the CLI so agentTool.storePath can be overridden (STORE_PATH points at the REAL agent_store.sqlite3, so a hardcoded storePath would pollute the store in tests); (2) build agentTool({provider, transcriptDir, definitions: DEFAULT_AGENT_DEFINITIONS, defaultModel, hooks, storePath: <flag or STORE_PATH>}) and add it to shared.tools; (3) end-to-end test in __tests__/bin.test.ts that dispatches a subagent through the CLI with the recorded provider and --store pointing at a TEMP store, asserting a row lands with source='harness' and its real subagent_type. Control (sub-patrón D): running without --store leaves the real store intact (git diff empty on agent_store.sqlite3). Refs: H-DOCS-1024 sucesor, docs@b521fc2f6. Board #58. Tareas T-099 in construir-harness-propio.",
+  "activeForm": "Wiring agentTool into the harness CLI",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

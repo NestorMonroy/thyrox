@@ -1,0 +1,8 @@
+{
+  "id": "216",
+  "subject": "Triar las anclas de tests/ y _archived/, que el gate no alcanza",
+  "description": "Los 8 de src/ quedaron cerrados en thyrox@85cd3e42 con gate propio (src/gates/check_consumer_anchor.py, 0 anclas sobre 131 archivos) y su suite de 11 aserciones. El «~11» de la descripción original era conteo a mano sobre el literal; el instrumento mide por efecto y encuentra 8 en src/. Lo que queda es el alcance que el gate declara como ciego: tests/ (aritmética propia) y _archived/. Ver H-DOCS-1132.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

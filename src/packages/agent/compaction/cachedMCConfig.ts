@@ -1,20 +1,14 @@
 /**
  * Porte de `ccnmt: packages/agent/compaction/cachedMCConfig.ts`.
  *
- * DIVERGENCIA DE ALCANCE, declarada: la fuente importa `CachedMCConfig`
- * desde `types/compaction.ts`, un archivo de tipos compartido que no
- * existe en este paquete (aqui `src/packages/agent/` es plano — no hay
- * `types/`). El tipo se declara localmente; si en el futuro otro modulo
- * de `compaction/` lo necesita, se extrae entonces a un archivo comun.
+ * `CachedMCConfig` vive en `./types.ts` (el porte de `ccnmt:
+ * packages/agent/types/compaction.ts`) desde que ese archivo se agregó al
+ * paquete -- la divergencia que este docstring declaraba (tipo local, sin
+ * `types/` compartido) ya no aplica y se corrige aquí en vez de arrastrarla.
  */
+import type { CachedMCConfig } from './types.ts'
 
-export interface CachedMCConfig {
-  enabled: boolean
-  triggerThreshold: number
-  keepRecent: number
-  supportedModels: string[]
-  systemPromptSuggestSummaries: boolean
-}
+export type { CachedMCConfig }
 
 export interface CachedMCConfigDeps {
   getFeatureValue<T>(key: string, defaultValue: T): T

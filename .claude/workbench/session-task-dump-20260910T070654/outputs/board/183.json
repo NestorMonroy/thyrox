@@ -1,0 +1,8 @@
+{
+  "id": "183",
+  "subject": "Analizar los toolchains: qué exige de thyrox tener npm, bun, shell y Python a la vez",
+  "description": "Directiva del ejecutor 2026-09-05: la pregunta «npm o bun» era demasiado\nestrecha. thyrox hoy tiene npm, bun, shell y Python a la vez, y el ejecutor\nconsidera que **se deben dejar todos**. La pregunta real es qué exige eso, y qué\ndicen las cinco referencias sobre convivir varios lenguajes en un árbol.\n\nÁrboles a medir (sólo lectura): openswarm, claw-code,\ncompute-virtual-ethernet-linux, litellm, claude-code-nestor-monroy-tools.\n\nEntregable: evento en `.claude/eventos/` con control TDD que mida la composición\npor lenguaje y los manifiestos de toolchain declarados por árbol, más\n`analisis-poliglota-en-las-referencias.rst` en la iniciativa\nactualizar-agentic-ai-thyrox.\n\nLo que el análisis debe responder, no describir: si el políglota se sostiene por\nfrontera (un lenguaje por subárbol, con contrato entre ellos) o por conveniencia\n(el lenguaje que tocó ese día), y cuál de las dos formas ejerce thyrox hoy.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

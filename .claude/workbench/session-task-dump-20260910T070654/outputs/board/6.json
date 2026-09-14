@@ -1,0 +1,14 @@
+{
+  "id": "6",
+  "subject": "Sustituir los placeholders {tool1}/{tool2} de skill-generator.md",
+  "description": "Medido al censar lo que las 32 definiciones de agente declaran en `tools:`: `.claude/agents/skill-generator.md` declara literalmente `{tool1}` y `{tool2}` — placeholders de plantilla que nadie sustituyó.\n\nNo es cosmético: un agente cuyo `tools:` nombra herramientas inexistentes no puede recibirlas, y el defecto es invisible porque nadie lee ese frontmatter salvo el cargador. Lo destapó un `awk` sobre los 32 archivos, no una revisión.\n\nEntregable: leer qué herramientas necesita de verdad ese agente y declararlas, o retirar las dos líneas si el agente no las usa.",
+  "activeForm": "Corrigiendo el frontmatter de skill-generator",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [],
+  "metadata": {
+    "submodulo": "docs",
+    "hallazgo": "placeholders sin sustituir",
+    "medicion": "1 de 32 definiciones de agente"
+  }
+}

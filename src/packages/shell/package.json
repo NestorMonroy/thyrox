@@ -48,6 +48,7 @@
     "./legacy/powershellProvider.js": "./src/legacy/powershellProvider.ts",
     "./testing": "./src/testing/index.ts",
     "./testing.js": "./src/testing/index.ts",
+    "./bash/specs": "./src/bash/specs/index.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
@@ -56,8 +57,10 @@
     "shell": "bun run bin/shell.ts"
   },
   "dependencies": {
+    "@thyrox/app-host": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
-    "@thyrox/storage": "workspace:*"
+    "@thyrox/storage": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*"
   }
 }

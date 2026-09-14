@@ -1,0 +1,8 @@
+{
+  "id": "223",
+  "subject": "Abrir las puertas de invocación que faltan en TypeScript",
+  "description": "Censo: 6 puertas alcanzan 93 de 346 módulos de producto; 253 sin puerta, 142 de ellos con suite propia. Criterio y veredicto por subsistema en source/gestion/pm/docs/iniciativas/actualizar-agentic-ai-thyrox/analisis-puertas-de-invocacion-faltantes.rst. Se abren cuatro: config/settings, shell/bash, command-runtime y una de lectura para storage. NO se abren agent ni harness (particion #172 en vuelo) ni app-host (porte a medias, #198).",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

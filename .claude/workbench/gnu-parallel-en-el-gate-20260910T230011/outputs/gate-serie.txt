@@ -1,0 +1,30 @@
+check-hallazgo-sucesor: 16 hallazgo(s) declaran alcance abierto SIN sucesor:
+  source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazgos/hallazgo-H-API-963-la-mitad-vacia-del-registro.rst
+  source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-736-bug-tipografico-en-la-fuente-ir-actions-report.rst
+  source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-741-api-depends-muerto-en-fuente-hr-work-entry.rst
+  source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-742-rutas-divergentes-related-vs-search-country-id.rst
+  source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-807-el-renombre-por-texto-plano-reescribe-la-cita.rst
+  source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-808-la-vista-de-baja-abria-el-metodo-a-mano.rst
+  source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-923-los-dos-doctests-de-safe-eval-describen-otro-python.rst
+  source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1001-paperformat-sin-atributos-de-clase.rst
+  source/gestion/pm/docs/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS-1087-el-transcript-son-dos-primitivos.rst
+  source/gestion/pm/docs/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS-1152-dos-writers-bufferizados-para-un-proposito-casi-igual.rst
+  source/gestion/pm/docs/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS-1237-hay-dos-stores-versionados-y-divergen.rst
+  source/gestion/pm/docs/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1043-el-guard-publicaba-un-termino-que-no-leia.rst
+  source/gestion/pm/docs/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1059-el-gate-declarado-cableado-no-se-alcanzaba.rst
+  source/gestion/pm/docs/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1003-el-extractor-del-catalogo-invertia-los-booleanos-minificados.rst
+  source/gestion/pm/docs/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1010-los-hooks-del-store-no-disparan-con-el-repo-como-directorio-adicional.rst
+  source/gestion/pm/docs/iniciativas/procedimiento-ejecutar-workflows/hallazgos/hallazgo-H-DOCS-1001-el-gate-rst-existia-y-yo-lo-reinventaba-mal.rst
+  (alcance medido: 1119 de 1328 archivos de hallazgo declaran apertura; 783 con ordinal congelado en baseline)
+
+Cada uno necesita una de las tres salidas de hallazgo-abierto-genera-sucesor.md:
+  1. la cita durable del store, TASK-<CAPA>-NNNN — el ordinal #NNN a secas
+     YA NO cuenta como sucesor nuevo (se reinicia y reasigna por sesión);
+  2. una sub-iniciativa explícita (Clausula 4 del principio rector);
+  3. un DESCONOCIDO declarado con su condición de cierre.
+
+NO rellenar la sección para desbloquear el gate: si el hueco es real,
+el arreglo es registrar el sucesor, no borrar la declaración.
+Si el sucesor real ES el ordinal heredado de antes de 2026-09-10, congelarlo
+con --write-baseline no basta por sí solo — confirmar que la línea aterrizó
+en .claude/baselines/hallazgo_sucesor_baseline.txt antes de reportar el gate en verde.

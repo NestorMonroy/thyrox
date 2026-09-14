@@ -1,0 +1,11 @@
+{
+  "id": "22",
+  "subject": "Portar los cuatro niveles de contexto al harness: hoy no tiene parada dura",
+  "description": "El harness resuelve la compactación con un booleano (`shouldAutoCompact`), y el ejecutable 2.1.258 la resuelve con **cuatro niveles** (`fZe` en `chunk-vw215j9f.js`): `ok | warn | compact | blocked`.\n\nLa ausencia que importa es `blocked`. Sin ella el harness no tiene tope propio y manda al API una petición que devuelve 400 (`input length and \\`max_tokens\\` exceed context limit: N + M > W` — el ejecutable trae el emparejador de ese error y una salida de sesión `cleared_context_limit`). El nivel existe para llegar antes que el servidor.\n\nFalta también `warn` (efectiva − 20 000) y `pctLeft`, cuyo cálculo depende de si la compactación está activa: `F = Math.max(0, Math.round((y-e)/y*100))` con `y = enabled ? umbral : efectiva`.\n\nCondición de cierre: `contextLevel()` en el harness con los cuatro niveles y `pctLeft`, cada aserción citando su símbolo minificado, y el control del sub-patrón D **por guarda** (dos guardas distintas de `enabled`, dos anulaciones separadas).",
+  "activeForm": "Portando los cuatro niveles de contexto al harness",
+  "status": "completed",
+  "blocks": [
+    "25"
+  ],
+  "blockedBy": []
+}

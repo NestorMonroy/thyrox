@@ -1,0 +1,8 @@
+{
+  "id": "212",
+  "subject": "Decidir si se escribe el baseline de premise-drift, que congela los veredictos de hoy",
+  "description": "Único gate del registro que sigue SIN MEDIR tras H-DOCS-1126. Su rechazo es LEGÍTIMO: falta src/gates/premise_drift_baseline.json y refusa con exit 2 en vez de publicar un 0.\n\nEscribirlo con --write-baseline congela los veredictos de la cadena de premisas de HOY como referencia del drift futuro: si alguno está equivocado, queda bendecido. Desenlaces: (a) escribirlo y aceptar el estado actual; (b) auditar la cadena primero; (c) dejarlo SIN MEDIR a propósito y declararlo en el registro.\n\nVerificación: THYROX_CONSUMER=/home/user/kaupamex-docs python3 src/gates/doctor.py --only premise-drift",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

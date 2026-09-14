@@ -17,7 +17,7 @@ directa (`os.environ`, `os.getenv`, `process.env.X`, y en shell `${X}` sin
 asignacion incondicional en el mismo archivo) y la indirecta (el nombre vive en
 una constante que se pasa a `env_value(name)`, invisible al AST).
 *Ciega a:* la clave compuesta en tiempo de ejecucion — la familia
-`THYROX_REACH_<CLON>` de `reach.py::env_names(repo)` no existe como literal.
+`THYROX_REACH_<CLONE>` de `reach.py::env_names(repo)` no existe como literal.
 Y la via indirecta es COTA SUPERIOR: un literal en un docstring cuenta.
 """
 from __future__ import annotations
@@ -31,7 +31,16 @@ import sys
 
 PREFIX = "THYROX_"
 TEST_MARKERS = ("__tests__", "/tests/", "test_", ".test.", "-test.")
-SKIP_DIRS = ("/node_modules/", "/.git/", "/_archived/", "/_references/")
+#: `workbench` y `eventos` son BANCOS DE EVIDENCIA: cada uno es una medicion
+#: fechada, no producto. Una sonda de banco que lea una clave propia no crea
+#: obligacion para ningun consumidor —el banco ya corrio, y su `.env` de
+#: entonces no gobierna a nadie hoy—, asi que exigir declararla haria crecer el
+#: contrato con cada medicion. Mismo criterio con que `check_script_naming
+#: --identifiers` excluye `eventos/` y `tools/` «por ser evidencia y corpus
+#: vendorizado». Medido al añadirlo: la unica clave que caia por esta via era
+#: `THYROX_BOARD_DIR`, leida solo por la sonda de un volcado de tablero.
+SKIP_DIRS = ("/node_modules/", "/.git/", "/_archived/", "/_references/",
+             "/.claude/workbench/", "/.claude/eventos/")
 
 #: Segunda via: el nombre vive en una CONSTANTE y se pasa a `env_value(name)`.
 #: Un nombre que TERMINA en `_` no es una clave: es el PREFIJO de una familia
@@ -39,7 +48,7 @@ SKIP_DIRS = ("/node_modules/", "/.git/", "/_archived/", "/_references/")
 #: nadie exporta esa variable. Sin esta exclusion el gate exigia declarar
 #: `THYROX_WORKBENCH_` en `.env.example`, que seria documentar una obligacion
 #: que no existe. La familia se documenta como familia, con su regla de
-#: composicion, igual que `THYROX_REACH_<CLON>`.
+#: composicion, igual que `THYROX_REACH_<CLONE>`.
 NAME_CONSTANT = re.compile(r"""["'](THYROX_[A-Z0-9_]*[A-Z0-9])["']""")
 TS_MEMBER = re.compile(r"process\.env\.([A-Za-z_][A-Za-z0-9_]*)")
 TS_INDEX = re.compile(r"""process\.env\[\s*['"]([A-Za-z_][A-Za-z0-9_]*)['"]\s*\]""")

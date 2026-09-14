@@ -57,14 +57,13 @@ check('sin hermanos sigue contando como preposicion',
 
 familias = gate.code_suffix_families(FAMILIA_VAT)
 check('el prefijo entra a la familia', 'check_vat' in familias, True)
-# H-DOCS-1139: la exencion de familia ya NO absuelve — el criterio 4
-# (`spanish_by_corpus`) marca 'de' en la PRIMERA pasada de `spanish_words_in`,
-# antes de que `tecnicas` (la exencion) exista siquiera. Medido tambien contra
-# el archivo SIN portar (`api: scripts/check_identifier_language.py`): mismo
-# resultado, asi que no es un efecto del porte. Documentado, sin fix inmediato
-# (fuera del alcance de esta mudanza) — sucesor #147.
-check('con su familia YA NO evita el hit (H-DOCS-1139)',
-      gate.spanish_words_in('check_vat_de', familias), ['de'])
+# H-DOCS-1139 CERRADO: la exencion vuelve a absolver. El defecto era de ORDEN
+# —`spanish_words_in` calculaba `technical` DENTRO del bloque de particulas, o
+# sea despues de que el criterio 4 ya hubiera marcado 'de'—, y el arreglo fue
+# subir ese calculo antes de la primera pasada. Esta asercion documentaba el
+# defecto y ahora documenta su cierre: al anular el arreglo vuelve a ['de'].
+check('con su familia evita el hit (H-DOCS-1139 cerrado)',
+      gate.spanish_words_in('check_vat_de', familias), [])
 
 check('dos hermanos no bastan (el umbral es tres)',
       gate.code_suffix_families(['check_vat_de', 'check_vat_mx']), set())
@@ -124,7 +123,57 @@ with tempfile.TemporaryDirectory() as tmp:
     for name, _ in declarados:
         if gate.spanish_words_in(name) and not gate.spanish_words_in(name, familias_sinteticas):
             absueltos.append(name)
-    check('no absuelve nada hoy (H-DOCS-1139)', absueltos, [])
+    # Con H-DOCS-1139 cerrado la familia SI absuelve, y el sujeto absuelto es
+    # el que la declara. Un [] aqui volveria a significar que la exencion no
+    # llega a tiempo — es la misma asercion, con el veredicto que corresponde.
+    check('absuelve al que declara la familia', absueltos, ['check_vat_de'])
+
+print()
+print('=== Una clave de dict es un identificador: la regla lo dice, el AST no ===')
+# `identificadores-en-ingles.md` de THYROX enumera «claves de manifiesto —una
+# clave es un atributo—», y `declared_identifiers` recorria def/class/arg/Name:
+# un literal de dict no es ninguno de los cuatro, asi que el gate era ciego a
+# la forma que la regla nombra explicitamente.
+DICT_SOURCE = """
+CONFIG = {
+    'nombre_completo': 1,
+    'first_name': 2,
+    'application/json': 3,
+    'codigo_error': 'X',
+    '2': 4,
+}
+"""
+declared_in_dict = {n for n, _ in gate.declared_identifiers(ast.parse(DICT_SOURCE))}
+
+check('ve la clave espanola', 'nombre_completo' in declared_in_dict, True)
+check('ve la clave inglesa (no filtra por idioma, eso es del otro criterio)',
+      'first_name' in declared_in_dict, True)
+# Una clave que no puede ser un nombre NO es un identificador. Sin este filtro
+# el gate mediria cabeceras HTTP, rutas y codigos de idioma como si fueran
+# simbolos declarados — y su veredicto hablaria de otra poblacion.
+check('NO ve un literal que no es identificador (mime)',
+      'application/json' in declared_in_dict, False)
+check('NO ve un literal numerico', '2' in declared_in_dict, False)
+
+print('=== La clave de canon del CONSUMIDOR se exime, y la declara el consumidor ===')
+# `codigo_error` es la clave canonica de error de api —la manda su propia
+# regla— y sale 269 veces. No es deuda: es contrato. La exencion NO se
+# codifica aqui: el proveedor entrega el mecanismo y el consumidor el
+# parametro, igual que el baseline y las raices (DEC-04).
+class DeclaresCanon:
+    """Puerto conducido de declaraciones, para medir sin tocar el entorno."""
+    def __init__(self, values): self._values = values
+    def declared(self, name): return self._values.get(name)
+
+check('sin declararla, la clave de canon cae como espanol',
+      gate.spanish_words_in('codigo_error'), ['codigo'])
+
+check('declarada, el gate la exime',
+      gate.canon_keys(source=DeclaresCanon(
+          {gate.CANON_KEYS_VAR: 'codigo_error, detail'})),
+      frozenset({'codigo_error', 'detail'}))
+check('sin declaracion el conjunto es vacio, no un default inventado',
+      gate.canon_keys(source=DeclaresCanon({})), frozenset())
 
 print()
 print(f'{ok} ok, {fallos} fallos (alcance medido: {ok + fallos} aserciones sobre {GATE})')

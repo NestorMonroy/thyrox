@@ -24,9 +24,16 @@
     "settings": "bun run bin/settings.ts"
   },
   "dependencies": {
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/app-host": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/storage": "workspace:*",
+    "axios": "^1.20.0",
     "lodash-es": "^4.18.1",
     "proper-lockfile": "^4.1.2",
+    "semver": "^7.6.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

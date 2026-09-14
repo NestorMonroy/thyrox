@@ -83,6 +83,13 @@ echo "=== Caso 3b: guard — capa sin ninguna etiqueta NO propone ==="
 python3 "$GATE" --siguiente server >/dev/null 2>&1
 [[ $? -eq 2 ]] && ok "exit 2, no propone un 1 inventado" || bad "deberia salir 2"
 
+echo "=== Caso 3c: --disponible distingue libre de ocupado ==="
+python3 "$GATE" --disponible docs 102 >/dev/null 2>&1
+[[ $? -eq 0 ]] && ok "docs-102 esta libre en worktree y remotos" || bad "docs-102 deberia estar libre"
+ocupado="$(python3 "$GATE" --disponible docs 101 2>&1)"; rc=$?
+[[ $rc -eq 1 ]] && ok "docs-101 ocupado sale 1" || bad "docs-101 deberia salir 1, dio $rc"
+grep -q 'feature/a' <<<"$ocupado" && ok "el ocupado nombra al dueño" || bad "el ocupado no nombra al dueño"
+
 echo "=== Caso 4 (positivo real): la colision medida en kaupamex-docs ==="
 cd "$RAIZ"
 n="$(python3 "$GATE" --quiet 2>/dev/null)"

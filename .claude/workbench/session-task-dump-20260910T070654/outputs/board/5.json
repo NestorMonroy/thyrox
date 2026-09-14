@@ -1,0 +1,17 @@
+{
+  "id": "5",
+  "subject": "Implementar TodoWrite, la única de las 47 con necesidad demostrada",
+  "description": "T-021 dice «las 47 restantes se traen por necesidad demostrada, no por paridad». Nadie había medido la necesidad. Medido hoy sobre las 32 definiciones de `.claude/agents/*.md`, contando lo que cada una declara en `tools:`:\n\n    31 Read · 31 Glob · 30 Grep · 28 Write · 27 Bash · 20 Edit · 2 Agent\n     1 TodoWrite\n     1 {tool1} · 1 {tool2}          ← placeholders sin sustituir en skill-generator.md\n     3 mcp__thyrox-*                ← MCP está fuera de alcance por el bloque 10\n\nLas siete primeras ya existen en el harness. La necesidad demostrada es **una**: `TodoWrite`, que declara `task-planner.md`. Todo lo demás de las 47 sigue sin consumidor en este árbol.\n\nNota: el harness ya tiene `TaskCreate`/`TaskList`/`TaskUpdate` sobre el store (`src/tools/tasks.ts`). Antes de implementar `TodoWrite` hay que decidir si es otra herramienta o si `task-planner.md` debería declarar las que ya existen — que es la pregunta que la medición abre y no cierra.",
+  "activeForm": "Implementando TodoWrite",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": [
+    "3"
+  ],
+  "metadata": {
+    "iniciativa": "construir-harness-propio",
+    "submodulo": "docs",
+    "tarea_rst": "T-021",
+    "medicion": "1 de 47 con consumidor real"
+  }
+}

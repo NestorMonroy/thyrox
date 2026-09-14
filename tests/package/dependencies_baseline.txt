@@ -18,6 +18,37 @@
 #
 # El grueso es de #198 (app-host) y #205 (cli). Se paga al tocar el paquete.
 
+# Tramo 2026-09-12T19:45:26 (TASK-THYROX-0019, workbench
+# diagnosticar-y-arreglar-tests-en-rojo). Cada linea es un subpath que NO
+# resuelve en NINGUN paquete del workspace hoy, verificado con
+# Bun.resolveSync desde un paquete que SI declara la raiz — no una omision de
+# enlace: el archivo/paquete destino aun no existe o esta vendorizado/no
+# publicado. Las raices con enlace faltante YA se corrigieron declarando la
+# dependencia en el package.json correspondiente (ver el commit hermano).
+updater::@thyrox/repl
+updater::@thyrox/shell
+config::@thyrox/bridge
+config::yaml
+teleport::@thyrox/provider
+voice::audio-capture-napi
+command-runtime::@thyrox/agent
+command-runtime::@thyrox/provider
+command-runtime::@thyrox/voice
+ide::@thyrox/permission
+ide::@thyrox/repl
+ide::@thyrox/tool-registry
+tool-registry::@anthropic/ink
+tool-registry::@thyrox/agent
+tool-registry::@thyrox/mcp-runtime
+tool-registry::@thyrox/provider
+tool-registry::@thyrox/repl
+tool-registry::image-processor-napi
+tool-registry::sharp
+bridge::@claude-code-how-works/agent
+bridge::@claude-code-how-works/headless-sdk
+bridge::@thyrox/agent
+bridge::@thyrox/cli
+
 agent::@anthropic-ai/sdk
 agent::@thyrox/config
 agent::@thyrox/provider
@@ -120,7 +151,6 @@ config::@thyrox/tool-registry
 config::axios
 config::fflate
 permission::@thyrox/config
-permission::@thyrox/storage
 provider::@aws-sdk/credential-provider-node
 provider::@smithy/node-http-handler
 provider::@thyrox/agent

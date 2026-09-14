@@ -1,0 +1,11 @@
+{
+  "id": "14",
+  "subject": "Migrar los skills al sustrato de código, empezando por los que sólo tienen apoyo",
+  "description": "El sustrato existe (T-067..T-070: `SkillRegistry`, `getPrompt` como función, `files` embebidos con extracción segura) y **ningún skill está registrado en él todavía** — el analisis-skill-como-codigo-vs-markdown.rst medía \"0 registrados como código\" y esa cifra no cambia con esta tarea, cambia con la migración.\n\nEl triaje de #8 dice qué migra y cómo: las 198 entradas de clase b son `files` embebidos, uno por archivo, sin juicio de tema. Los cinco skills SIN destino de entregable —cosmic, rup-inception, sp-adjust, sp-monitor, sphinx— son el punto de partida: sólo tienen apoyo y lecturas, así que su migración no espera a #11 ni a #12.\n\nBloqueada parcialmente: un skill con destinos de clase `a` no se migra hasta que su hogar tenga artefacto nombrado (#11 para los 17 sin coordinador, #12 para los cuatro de raíz del WP, #750 para pm/rm).\n\nCondición de cierre: cada skill migrado registrado con `SkillRegistry.register`, su `references/`/`assets/` retirado del árbol de archivos sueltos, y la suite verde. El conteo de migrados lo publica el registro, no esta descripción.",
+  "activeForm": "Migrando los skills sólo-apoyo al sustrato de código",
+  "status": "completed",
+  "blocks": [
+    "39"
+  ],
+  "blockedBy": []
+}

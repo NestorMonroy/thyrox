@@ -1,0 +1,8 @@
+{
+  "id": "287",
+  "subject": "Decidir si la directiva de bash-sobre-Write vive en .claude/rules para que sea heredable",
+  "description": "Medido 2026-09-09 (ERR-063): la directiva «las operaciones de archivo van con bash (heredocs), no con Write/Edit» vive SOLO en la inyeccion de auto mode al system prompt del orquestador. grep -rn heredoc sobre las 113 reglas de los tres repos da 0, y sobre todos los CLAUDE.md da 0. Un subagente hereda CLAUDE.md y .claude/rules/ y no tiene superficie de coordinacion (bash-background-tasks.md), asi que la directiva no le llega por ninguna via salvo su prompt. Los tres agentes de esta sesion usaron bash al 95.9, 95.3 y 79.2 por ciento por su cuenta, con 51 escrituras via Write/Edit. Desenlace a decidir por el ejecutor: escribir la regla en .claude/rules (la hace heredable pero engorda el piso siempre-cargado que h-docs-104 midio en 126029 tokens y que cada subagente vuelve a pagar), o mantenerla como copia obligatoria al prompt de cada agente. Contexto: ERR-063.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

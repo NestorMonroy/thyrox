@@ -1,0 +1,9 @@
+{
+  "id": "170",
+  "subject": "Barrer otros consumidores que enumeren literalmente las cinco raíces",
+  "description": "H-DOCS-1097: al crear la sexta raíz (`thyrox`), cuatro consumidores la reconocieron sin tocar una línea porque DESCUBREN las raíces (glob, regex sobre el nombre de archivo, toctree `:glob:`), y un quinto NO: `thyrox: src/packages/harness/src/paths/docs.ts` las enumeraba en tres listas cerradas.\n\nEse quinto se corrigió en el mismo pase. Lo que NO se midió: si hay otros consumidores que enumeren `'api' | 'db' | 'docs' | 'server' | 'ui'` (o la lista de cinco en cualquier grafía) fuera de ese archivo, en los seis repos.\n\nCierre: un barrido por la lista de cinco en `.ts`, `.py`, `.sh` y `.json` de los seis repos, clasificando cada hit en «enumera» (hay que extenderlo) contra «cita el conjunto en prosa» (no hay que tocarlo). Publicar el denominador.\n\nMétrica candidata: co-ocurrencia de al menos cuatro de los cinco literales en la misma expresión o arreglo.\nCiega a: un consumidor que derive la lista de una constante intermedia — ése hereda la corrección y no aparece en el grep.",
+  "activeForm": "Barriendo consumidores que enumeran las cinco raíces",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

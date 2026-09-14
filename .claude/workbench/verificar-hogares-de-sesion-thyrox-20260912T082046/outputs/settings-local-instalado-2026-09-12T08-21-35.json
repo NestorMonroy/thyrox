@@ -1,0 +1,47 @@
+{
+  "hooks": {
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/user/thyrox/src/agents/measure_delta.py --start --repo api=/home/user/kaupamex-api --repo db=/home/user/kaupamex-db --repo docs=/home/user/kaupamex-docs --repo references-cfdi=/home/user/kaupamex-references-cfdi --repo references-docs-sat=/home/user/kaupamex-references-docs-sat --repo server=/home/user/kaupamex-server --repo ui=/home/user/kaupamex-ui --results-dir /home/user/kaupamex-docs/.claude/agent-results"
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/user/thyrox/src/agents/register_session.py --start"
+          }
+        ]
+      }
+    ],
+    "PreModelSwitch": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run /home/user/thyrox/src/packages/agent/bin/preModelSwitch.ts",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /home/user/thyrox/src/agents/save_result.mjs --log-dir /home/user/kaupamex-docs/.claude/agent-results"
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/user/thyrox/src/agents/measure_delta.py --stop --repo api=/home/user/kaupamex-api --repo db=/home/user/kaupamex-db --repo docs=/home/user/kaupamex-docs --repo references-cfdi=/home/user/kaupamex-references-cfdi --repo references-docs-sat=/home/user/kaupamex-references-docs-sat --repo server=/home/user/kaupamex-server --repo ui=/home/user/kaupamex-ui --results-dir /home/user/kaupamex-docs/.claude/agent-results"
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/user/thyrox/src/agents/register_session.py --stop"
+          }
+        ]
+      }
+    ]
+  }
+}

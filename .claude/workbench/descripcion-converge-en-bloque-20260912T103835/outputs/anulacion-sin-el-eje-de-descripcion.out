@@ -1,0 +1,6 @@
+70 aserciones
+  FALLA — 9a: la tarjeta con estado igual y descripcion distinta cae en `field_drift`
+  FALLA — 9c: `same` significa que NO hay nada que escribir, en ninguna columna
+  FALLA — 9e: escribe las dos divergentes, no la que esta al dia
+  FALLA — 9f: la descripcion del board aterrizo en la fila
+  FALLA — 9g: y tambien en la que cambio de estado — las dos columnas, no una

@@ -1,0 +1,9 @@
+{
+  "id": "40",
+  "subject": "Medir si un @import funciona dentro de un SKILL.md",
+  "description": "DESCONOCIDO declarado en analisis-divergencia-de-skills-entre-repos.rst, sección «Lo que aporta base-cognitiva».\n\n`base-cognitiva/harness-engineering/cap19-claudemd.rst:233-242` documenta las cinco formas de `@import` de la jerarquía de memoria, y en :842 recomienda literalmente referenciar en vez de duplicar. El capítulo describe el mecanismo para `CLAUDE.md` y `.claude/rules/`; **no dice nada de un `SKILL.md`**.\n\nSi funcionara, sería la vía barata contra la copia de skills entre repos (87 skills en más de un repo, 24 divergentes) sin esperar a la migración al sustrato de código (#14).\n\nSonda de conducta: poner una línea `@/ruta/absoluta` en un SKILL.md de prueba, invocarlo, y comprobar si el contenido referenciado llega al modelo. Control que discrimina: la misma sonda con la ruta apuntando a un archivo inexistente — si el resultado es idéntico, la sonda no mide nada.\n\nMedido en el mismo pase: `@import` se usa **cero** veces en los cinco repos (CLAUDE.md, .claude/CLAUDE.md, .claude/rules/*.md). Capacidad disponible y no usada.",
+  "activeForm": "Midiendo si un @import funciona dentro de un SKILL.md",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

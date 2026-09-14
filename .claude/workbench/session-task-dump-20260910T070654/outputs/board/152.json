@@ -1,0 +1,8 @@
+{
+  "id": "152",
+  "subject": "Portar el primitivo de roster a thyrox/src/roster/",
+  "description": "Portar las cinco formas medidas del binario 2.1.261 (analisis-roster-de-trabajos-en-el-binario.rst): veredicto de cuatro valores nombrados por su causa, procedencia viajando con la respuesta, holgura de reloj declarada, vacio con bandera ante fuente corrupta, y cuarentena con codigo de error. La via del daemon queda fuera de alcance porque nuestros subagentes no son procesos. Cierra #119.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

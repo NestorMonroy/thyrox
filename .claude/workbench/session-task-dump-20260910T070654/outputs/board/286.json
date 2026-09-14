@@ -1,0 +1,8 @@
+{
+  "id": "286",
+  "subject": "consumer_root() compone un hogar en el PROVEEDOR por cwd, invisible a declarations.py",
+  "description": "Medido 2026-09-09 con cwd=/home/user/thyrox: consumer_root() devuelve /home/user/thyrox y workbench_dir() compone /home/user/thyrox/.claude/workbench. declarations.py lista 8 hogares y NINGUNO es del proveedor — la cáscara no aparece en la superficie de validación. Es la misma forma que #284 (el default del store se compone por cwd y crea una cáscara en cualquier consumidor), aplicada al proveedor: THYROX_AGENT_STORE cae por defecto a /home/user/thyrox/agent-results/agent_store.sqlite3, visible en esa misma tabla. Directiva del ejecutor: el cwd ya debe identificar las CONSTANTES y validar hacia dónde apuntan; si no lo hace, SE TIENE que corregir. Desenlace a decidir: que consumer_root() rehúse cuando cwd es el proveedor, o que declarations.py liste también el hogar compuesto en el proveedor para que deje de ser invisible. Contexto: ERR-062.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

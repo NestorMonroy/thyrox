@@ -1,0 +1,33 @@
+{
+  "name": "@thyrox/context-compression",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Compresion del texto que un tool_result mete a la conversacion, ANTES de que entre al historial -- distinto y complementario a la microcompactacion de @thyrox/agent/loop, que purga tool_results VIEJOS ya en el historial. PORTE NATIVO del diseno de OmniRoute (DietrichGebert/omniroute, MIT, docs/compression/COMPRESSION_GUIDE.md + open-sse/services/compression/), reimplementado contra la forma real de ContentBlock (Anthropic Messages API), no la suya (chat OpenAI-normalizado con role:'tool'). Alcance de este pase: Lite (whitespace, truncado de tool_result, deduplicado de mensajes consecutivos identicos) y deduplicado de secciones del prompt de sistema por texto completo -- adaptacion nativa de dedupSystemPrompt de OmniRoute (lite.ts:56-73, MIT), que opera sobre un arreglo de mensajes role:'system' con clave de prefijo de 200 caracteres; aqui NO hay ese arreglo (la Messages API trae un solo `system` de nivel superior), asi que el consumidor real es `Section[]` de `assembleSystemPrompt` (@thyrox/agent) y la clave es el TEXTO COMPLETO recortado, no un prefijo -- las secciones de este arbol son documentos largos que a menudo comparten preambulo (el patron \"cheat-sheet (canonico en docs)\" visto en los repos consumidores), y una clave de prefijo produciria falsos positivos) y RTK (deteccion de comando/salida + filtrado por lineas con include/drop/collapse + truncado inteligente con cabeza/cola y patrones de prioridad), con un set inicial de filtros (git status/diff/log, pytest, salida de test generica, tsc, shell generico). DEFERIDO, declarado y no silencioso: Caveman (recorte de muletillas en prosa -- riesgo semantico en texto tecnico, fuera del alcance pedido), Aggressive/Ultra (envejecimiento de historial, poda heuristica -- ya cubierto por microcompact con otro criterio), y los motores restantes de OmniRoute (llmlingua, ionizer, adaptiveCompression, quantumLock, riskGate, relevance, headroom, session-dedup, soporte TOML de filtros externos, subsistema de aprendizaje de filtros).",
+  "exports": {
+    ".": "./src/index.ts",
+    "./lite.js": "./src/lite.ts",
+    "./rtk": "./src/rtk/index.ts",
+    "./rtk.js": "./src/rtk/index.ts",
+    "./lite": "./src/lite.ts",
+    "./rtk/commandDetector": "./src/rtk/commandDetector.ts",
+    "./rtk/filters/buildTypescript": "./src/rtk/filters/buildTypescript.ts",
+    "./rtk/filters/genericOutput": "./src/rtk/filters/genericOutput.ts",
+    "./rtk/filters/gitDiff": "./src/rtk/filters/gitDiff.ts",
+    "./rtk/filters/gitLog": "./src/rtk/filters/gitLog.ts",
+    "./rtk/filters/gitStatus": "./src/rtk/filters/gitStatus.ts",
+    "./rtk/filters/testBun": "./src/rtk/filters/testBun.ts",
+    "./rtk/filters/testPytest": "./src/rtk/filters/testPytest.ts",
+    "./rtk/lineFilter": "./src/rtk/lineFilter.ts",
+    "./rtk/smartTruncate": "./src/rtk/smartTruncate.ts",
+    "./rtk/types": "./src/rtk/types.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0"
+  }
+}

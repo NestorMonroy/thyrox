@@ -1,0 +1,16 @@
+{
+  "question": "Does any gate measure the language of a workbench manifest key, as identificadores-en-ingles.md requires?",
+  "instrument": "src/verify/check_manifest_language.py plus tests/verify/test_manifest_language.py, over workbench_dir + jobs_dir of each measured root",
+  "metric": "distinct keys that are valid identifiers and carry a Spanish word, per manifest, recursing into nested objects and arrays",
+  "blind_to": "a key that is a valid identifier but names DATA rather than an attribute (a filename without extension, a label); a manifest outside the two declared homes; and any cognate the closed lexicon and the corpus both share",
+  "destination": "thyrox src/verify/check_manifest_language.py, wired where check_script_naming.py already runs",
+  "form": "measurement",
+  "task": "TASK-API-0395",
+  "premise": {
+    "manifests_measured": 72,
+    "keys_total": 792,
+    "spanish_keys_distinct": 57,
+    "manifests_affected": 25,
+    "non_identifier_keys_filtered": 12
+  }
+}

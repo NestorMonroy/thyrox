@@ -1,0 +1,11 @@
+{
+  "id": "61",
+  "subject": "Analizar en la referencia los primitivos de coordinación humana y documentar",
+  "description": "Segundo de los tres análisis. Leer cap20b-equipos.rst (+ cap20/cap20c) y la referencia (ccb/hccw/ccnmt, Odoo si aplica) sobre coordinación entre personas: estado compartido sobre el filesystem, bloqueo de registro. Misma tabla de mapeo. Entregable: analisis-cowork-primitivos-en-la-referencia.rst.",
+  "activeForm": "Analizando primitivos de cowork en la referencia",
+  "status": "completed",
+  "blocks": [
+    "63"
+  ],
+  "blockedBy": []
+}

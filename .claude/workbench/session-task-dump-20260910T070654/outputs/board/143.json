@@ -1,0 +1,9 @@
+{
+  "id": "143",
+  "subject": "Declarar el exports de thyrox y su control de mapa inerte",
+  "description": "Mitad thyrox del import entre repos: el mapa exports derivado de src/ con la regla del precedente (33 de 33 subpaths no-raiz de .claude/packages la cumplen), mas el test que lo mide en las dos direcciones y el bloque que importa por nombre de paquete — la unica via que falla cuando el mapa no esta (clase de H-DOCS-1075). Entregado en thyrox@cc537a1; mitades roja y verde en docs .claude/eventos/exports-de-thyrox-20260905T131620/. Precondicion de #138. NO cubre la dependencia file: en el consumidor, que toca la ruta reservada.",
+  "activeForm": "Declarando el exports de thyrox",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

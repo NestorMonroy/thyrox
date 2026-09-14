@@ -1,0 +1,9 @@
+{
+  "id": "135",
+  "subject": "Devolver a su definición las 63 líneas huérfanas del .md emitido, y que el gate publique su diff",
+  "description": "Cerrado en thyrox@d3f049f1. Las 63 lineas de «Mapping THYROX -> artefactos» entraron con ea1054f9 (importacion masiva 2026-09-05) y el prompt fuente nunca las llevo; vuelven a thyroxCoordinator.prompt.md y el emisor reproduce el artefacto byte a byte (diff -q identico, 31 de 31 sin diferencia, emit --check exit 0). El gate ademas publica en QUE difiere (diffSummary: saldo de lineas, primera divergencia, hasta 3 pares definicion/disco). Y parseArgs rehusa un argumento desconocido con exit 2 sin emitir cifra: la rama por defecto escribia sobre 31 artefactos, y una bandera inventada (--stdout) borro esas mismas 63 lineas en esta sesion.",
+  "activeForm": "Devolviendo las 63 líneas huérfanas a su definición",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

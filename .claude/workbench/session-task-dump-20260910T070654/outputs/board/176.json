@@ -1,0 +1,8 @@
+{
+  "id": "176",
+  "subject": "Medir el orden de precedencia EFECTIVO de las cuatro referencias, no el declarado",
+  "description": "Los cuatro eventos de flujo de carga leyeron la declaración; ninguno trazó una ejecución. Condición de cierre: una traza por árbol, o declarar por qué no se puede medir. Sucesor declarado por los cinco análisis de flujo de carga de la iniciativa actualizar-agentic-ai-thyrox.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,6 @@
+test-hallazgo-submodulo-baseline
+  ok    el baseline del consumidor congela la ruta (exit 0)
+  ok    la variable declarada resuelve el baseline (exit 0)
+  FALLA rehuso sin baseline: exit=0, salida='0' — un conteo aqui no separa heredado de nuevo
+  FALLA --write-baseline: no aterrizo en /tmp/tmp.Sldfu0iUDl/consumer/.claude/baselines/hallazgo_submodulo_baseline.txt (exit=0): baseline escrito: 1 ruta(s)
+  4 caso(s), 2 falla(s)

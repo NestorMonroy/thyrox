@@ -1,0 +1,67 @@
+IDENTIDAD CONTRA EL GATE REAL — no contra la sonda
+===================================================
+
+Medido: 2026-09-10T23:11:18
+Sujeto: universo() de thyrox: src/verify/check-hallazgo-sucesor.sh:178-196
+Corpus: 1366 archivos del glob source/gestion/pm/*/iniciativas/*/hallazgos/*.rst
+
+LA DESCOMPOSICION — universo() tiene DOS productores, no uno
+------------------------------------------------------------
+
+  productor 1   grep -rlE "$ABIERTO_ESTADO" <glob>          442 lineas   0.013 s
+  productor 2   bucle por archivo con awk de ventana       1071 lineas   ~2.9  s
+                                                           ----
+  crudo (lo que universo() emite)                          1513 lineas
+  sort -u                                                  1119 lineas
+  solapamiento                                              394 archivos
+
+  442 + 1071 = 1513 exacto. La union deduplicada da 1119 y COINCIDE
+  con sort -u del gate — verificado con diff, sin diferencias.
+
+POR QUE LA MEDICION ANTERIOR NO ERA IDENTIDAD
+----------------------------------------------
+
+  probes/lote.sh implementa el productor 2 y SOLO el 2. Emitia 1071
+  lineas, que es correcto COMO CUERPO DEL LOTE y falso como universo.
+  La comparacion previa era sonda-contra-sonda: probaba que los cinco
+  modos coinciden ENTRE SI, no que alguno coincida con el gate.
+
+  El tiempo si era comparable —serie del gate 2.740 s contra 2.753 s
+  de la serie honesta— porque el productor 1 cuesta 0.013 s y no mueve
+  el reloj. Las conclusiones de TIEMPO sobrevivieron; las de IDENTIDAD
+  no, y se rehicieron.
+
+LA IDENTIDAD, AHORA SI — compuesto p1+p2 contra el gate, PRE-sort
+-----------------------------------------------------------------
+
+  gate real (crudo)             1513   sha 07ccdbb9ffbdf5a7
+
+  modo                   p2      sha(p2)            compuesto          veredicto
+  serie (1 invocacion)  1071   068fbc849a7caca4   07ccdbb9ffbdf5a7   IDENTICO
+  xargs -P4 -n 50       1071   2fcdd99c23d83249   dc2774a2eac42bef   difiere (orden)
+  parallel -X           1071   b2397af3962fb819   40d7954fd19ff179   difiere (orden)
+  parallel -X -k        1071   068fbc849a7caca4   07ccdbb9ffbdf5a7   IDENTICO
+
+  La comparacion es PRE-sort a proposito. Con sort -u los cuatro dan
+  el mismo hash y la columna deja de discriminar: seria un control que
+  no puede fallar, el sub-patron D de metrica-decide-la-conclusion.
+
+TIEMPOS DE ESTA CORRIDA (productor 2, nproc=4)
+-----------------------------------------------
+
+  serie honesta        2.956 s   —
+  xargs -P4 -n 50      1.044 s   2.83x
+  parallel -X          1.389 s   2.13x
+  parallel -X -k       1.369 s   2.16x
+
+  -k no cuesta: 1.369 contra 1.389 sin el. Compra lo unico que xargs
+  no puede dar — salida identica byte a byte a la version en serie.
+
+QUE MIDE Y QUE NO
+------------------
+
+  Metrica: reloj de pared de tres repeticiones sobre el mismo corpus,
+  y sha256 del flujo de salida sin ordenar.
+  Ciega a: la contencion de CPU de otros procesos del contenedor; a la
+  asimetria de duracion dentro de un lote; y al productor 1, que no se
+  paraleliza porque cuesta 13 ms.

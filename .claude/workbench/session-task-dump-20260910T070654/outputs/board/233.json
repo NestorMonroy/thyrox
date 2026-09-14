@@ -1,0 +1,10 @@
+{
+  "id": "233",
+  "subject": "Portar swarm (49 mod) — 8 de 13 deps portadas",
+  "description": "Quinto del orden derivado (tabla en #229). Le faltan headless-sdk, local-observability, output, repl, tool-registry.",
+  "status": "completed",
+  "blocks": [
+    "198"
+  ],
+  "blockedBy": []
+}
