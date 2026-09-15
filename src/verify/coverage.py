@@ -1,31 +1,25 @@
-"""Censo de nodos + verificación de cobertura — genérico a cualquier fuente.
+"""Verificación de cobertura contra un manifiesto — genérica a cualquier fuente.
 
-TASK-THYROX-0039. Generaliza ``build_lecture_manifest.py`` +
+TASK-THYROX-0039. Generaliza la mitad de "verificar cobertura" de
 ``check_note_coverage.py`` (``NestorMonroy/ai-course-notes@717e2df6``,
-``tools/scripts/``), hoy repetido a mano en tres reglas de consumidor:
+``tools/scripts/``) — hoy repetido a mano en tres reglas de consumidor:
 ``porte-completo-no-parcial.md`` (censo de atributos de una clase),
 ``principio-rector-rup-arquitectura.md`` Cláusula 4 (barrido de 8 capas),
 ``hallazgo-abierto-genera-sucesor.md`` (seguimiento de sucesores). Este
-módulo no sabe nada de LaTeX, RST ni Python: recibe una lista de ``Node`` que
-el llamador construye desde SU fuente, y responde una sola pregunta —¿qué
-nodo requerido no aparece en el artefacto?— citando el ID, no un porcentaje.
+módulo no sabe nada de LaTeX, RST ni Python: recibe una lista de
+``manifest.Node`` que el llamador construye desde SU fuente, y responde
+una sola pregunta —¿qué nodo requerido no aparece en el artefacto?—
+citando el ID, no un porcentaje.
+
+Separado de ``manifest.py`` por responsabilidad única (SRP): ver el
+docstring de ``manifest.py`` para la razón completa.
 """
 from __future__ import annotations
 
 import pathlib
 from collections.abc import Sequence
-from dataclasses import dataclass
 
-
-@dataclass
-class Node:
-    """Un nodo de cobertura — sólo datos, sin lógica propia."""
-
-    node_id: str
-    kind: str
-    title: str
-    source: str
-    required: bool = True
+from verify.manifest import Node
 
 
 def probe_candidates(node: Node) -> list[str]:
@@ -83,13 +77,3 @@ def coverage_report(nodes: Sequence[Node], artifact_text: str) -> dict:
         "missing": faltantes,
         "missing_ids": [n.node_id for n in faltantes],
     }
-
-
-def render_manifest(nodes: Sequence[Node]) -> str:
-    """La tabla markdown del manifiesto, con el ``|`` de cada título escapado."""
-    filas = ["| ID | Type | Required | Source | Title |", "|---|---|---|---|---|"]
-    for nodo in nodes:
-        titulo = nodo.title.replace("|", "\\|")
-        requerido = "yes" if nodo.required else "optional"
-        filas.append(f"| {nodo.node_id} | {nodo.kind} | {requerido} | `{nodo.source}` | {titulo} |")
-    return "\n".join(filas)

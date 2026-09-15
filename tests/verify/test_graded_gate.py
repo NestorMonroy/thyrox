@@ -17,7 +17,7 @@ Lo que la suite mide:
    no un conteo total; dos artefactos con el mismo número de ejes en
    verde pueden calificar distinto si no son los mismos ejes.
 3. ``grade`` sobre resultados vacíos -> ``ValueError`` (mismo idioma que
-   ``coverage_manifest.coverage_report`` y ``job_runs.duration_
+   ``coverage.coverage_report`` y ``job_runs.duration_
    distribution``: no hay con qué graduar).
 4. ``format_report`` — texto plano, sin ningún carácter fuera de ASCII
    imprimible salvo el contenido citado; nunca un glifo de estrella u
