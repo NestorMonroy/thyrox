@@ -352,6 +352,75 @@ def test_cli_check_exit_code() -> None:
           r.stderr.strip() == "", r.stderr)
 
 
+def test_install_user_bin_warns_when_dir_is_not_on_path(base: pathlib.Path) -> None:
+    """Instalar en un directorio fuera de ``PATH`` y NO decirlo es un verde mudo.
+
+    La referencia lo hace: ``ccnmt: install.sh:119-133`` compara con
+    ``case ":$PATH:" in`` y, si no está, imprime la línea ``export`` exacta
+    para el shell del usuario. Aquí se copiaban 119 envoltorios y se
+    publicaba «119 escrito(s)» — cierto, y sin embargo ninguno invocable
+    suelto. Medido antes de escribir esto: 0 menciones de PATH en la salida.
+    """
+    destino = base / "xbin-fuera-de-path"
+    entorno = dict(os.environ, PATH="/usr/bin:/bin")
+    hecho = subprocess.run(
+        [sys.executable, str(ROOT / "src/session/generate_bin.py"),
+         "--install-user-bin", str(destino)],
+        capture_output=True, text=True, env=entorno, cwd=str(ROOT))
+    salida = hecho.stdout + hecho.stderr
+    check("avisa cuando el destino no esta en PATH", str(destino) in salida
+          and "PATH" in salida, salida[-200:])
+    check("y da la linea export para arreglarlo", "export PATH=" in salida,
+          salida[-200:])
+
+
+def test_install_user_bin_stays_quiet_when_dir_is_on_path(base: pathlib.Path) -> None:
+    """El control que hace discriminar al anterior.
+
+    Sin este caso, un aviso incondicional pasaría el test de arriba y saldría
+    SIEMPRE — y un aviso que sale siempre se aprende a ignorar, que es el
+    mismo criterio con que los diez detectores avisan y no bloquean.
+    """
+    destino = base / "xbin-dentro-de-path"
+    destino.mkdir(parents=True, exist_ok=True)
+    entorno = dict(os.environ, PATH=f"{destino}:/usr/bin:/bin")
+    hecho = subprocess.run(
+        [sys.executable, str(ROOT / "src/session/generate_bin.py"),
+         "--install-user-bin", str(destino)],
+        capture_output=True, text=True, env=entorno, cwd=str(ROOT))
+    salida = hecho.stdout + hecho.stderr
+    check("calla cuando el destino SI esta en PATH",
+          "export PATH=" not in salida, salida[-200:])
+
+
+def test_library_modules_are_silent_when_run_as_scripts() -> None:
+    """La afirmación del docstring de ``generate_bin.py``, como control.
+
+    Su universo dice que un ``.py`` sin guarda ``__main__`` es biblioteca, y
+    lo sostenía con una frase —«``reader.py --help`` corre a exit 0 sin
+    imprimir nada»—. Una frase no es una ``Observation``: este caso la mide
+    sobre los 17 módulos de las tres carpetas, no sobre uno recordado.
+
+    Y deja el hecho a la vista, que es lo incómodo: los 17 salen **0 en
+    silencio**. No fallan al entrar por la puerta equivocada — no dicen nada.
+    """
+    libreria = [f for d in gb.SOURCE_DIRS
+                for f in sorted((ROOT / d).glob("*.py"))
+                if f.name != "__init__.py"
+                and not gb.MAIN_GUARD.search(f.read_text(errors="ignore"))]
+    check("hay modulos de biblioteca que medir", len(libreria) > 0,
+          f"encontrados {len(libreria)}")
+    entorno = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
+    ruidosos = []
+    for f in libreria:
+        hecho = subprocess.run([sys.executable, str(f)], capture_output=True,
+                               text=True, env=entorno, timeout=30)
+        if hecho.returncode != 0 or (hecho.stdout + hecho.stderr).strip():
+            ruidosos.append(f.name)
+    check(f"los {len(libreria)} modulos de biblioteca salen 0 en silencio",
+          not ruidosos, f"hablan o fallan: {ruidosos}")
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         base = pathlib.Path(tmp)
@@ -366,8 +435,11 @@ def main() -> int:
         test_install_user_bin_writes_and_is_idempotent(base)
         test_install_user_bin_never_touches_foreign_files(base)
         test_resolve_bin_name_prefixes_builtin_collisions(base)
+        test_install_user_bin_warns_when_dir_is_not_on_path(base)
+        test_install_user_bin_stays_quiet_when_dir_is_on_path(base)
     test_builtin_collision_on_real_tree()
     test_cli_check_exit_code()
+    test_library_modules_are_silent_when_run_as_scripts()
 
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "
           f"(alcance medido: generate_bin.py)")

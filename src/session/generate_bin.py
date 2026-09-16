@@ -17,12 +17,20 @@ desde otro archivo de esas tres carpetas.
 
 ``.py`` con guarda ``if __name__ == '__main__':`` (comillas simples O dobles
 — el primer intento de esta medición sólo veía dobles y perdía 36 de 82
-entrypoints reales, entre ellos ``check_rst_sintaxis.py``). Los que NO la
-llevan (13: ``__init__.py`` × 3, ``job_ledger.py``, ``job_runs.py``,
-``task_pool.py``, ``class_header.py``, ``counterpart_body.py``, ``reader.py``,
-``registry.py``, ``symbol_home.py``, ``symbol_presence.py``,
-``agents_paths.py``) son biblioteca — confirmado: ``reader.py --help`` corre a
-exit 0 sin imprimir nada, ninguna superficie de CLI que nombrar.
+entrypoints reales, entre ellos ``check_rst_sintaxis.py``).
+
+Los que NO la llevan son **biblioteca**. Esa clasificación ya no descansa en
+una frase: la mide ``tests/session/test_generate_bin.py`` sobre TODOS ellos en
+cada corrida, y su control de anulación es hacer hablar a uno y comprobar que
+cae exactamente ése. La versión anterior de este párrafo transcribía la lista
+—13 nombres, que hoy son otros— y la sostenía con un caso recordado; una
+frase no es una ``Observation``, y una lista en prosa envejece con el árbol.
+
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+biblioteca salen **0 en silencio** al invocarse por ruta. No fallan al entrar
+por la puerta equivocada — no dicen nada. Su desenlace está registrado; la
+decisión adyacente es el bin único de la referencia (``ccb`` declara
+``bin: null`` y compila UN entrypoint), que es otra tarea.
 
 Colisión de nombre corto ENTRE los stems: ninguna — medido comparando los 117
 stems entre las tres carpetas antes de decidir que un ``bin/`` plano (sin
@@ -127,6 +135,7 @@ Uso::
 from __future__ import annotations
 
 import argparse
+import os
 import pathlib
 import re
 import sys
@@ -303,6 +312,29 @@ def user_bin_wrapper_body(stem: str) -> str:
     )
 
 
+def path_warning(dest: pathlib.Path, path_value: str | None = None) -> str | None:
+    """El aviso si ``dest`` no esta en ``PATH``, o None si si lo esta.
+
+    Porte de ``ccnmt: install.sh:119-133`` (``check_path``), que compara con
+    ``case ":$PATH:" in`` e imprime la linea exacta para el shell del usuario.
+    Se porta el MECANISMO, no su texto: alli el aviso acompaña a un symlink
+    unico; aqui, a N envoltorios copiados.
+
+    Sin el, instalar en un directorio fuera de ``PATH`` publicaba «119
+    escrito(s)» —cierto— y ninguno invocable suelto: un verde que no
+    distingue «instalado y alcanzable» de «instalado y mudo».
+    """
+    entorno = os.environ.get("PATH", "") if path_value is None else path_value
+    if str(dest) in entorno.split(os.pathsep):
+        return None
+    shell = pathlib.PurePosixPath(os.environ.get("SHELL", "bash")).name
+    linea = (f"    fish_add_path {dest}" if shell == "fish"
+             else f'    export PATH="{dest}:$PATH"')
+    return (f"AVISO: {dest} no esta en tu PATH — los envoltorios quedan\n"
+            f"  instalados pero no invocables sueltos. Anade a tu rc:\n\n"
+            f"{linea}")
+
+
 def install_user_bin(plan: dict[str, str],
                      dest: pathlib.Path) -> tuple[list[str], list[str], list[str]]:
     """Copia envoltorios de segundo salto a ``dest`` (``~/.local/bin`` por defecto).
@@ -454,6 +486,9 @@ def main(argv: list[str] | None = None) -> int:
         ub_written, ub_removed, ub_foreign = install_user_bin(plan, dest)
         print(f"{dest}: {len(ub_written)} escrito(s)/actualizado(s), "
               f"{len(ub_removed)} retirado(s), {len(ub_foreign)} ajeno(s) preservado(s)")
+        aviso = path_warning(dest)
+        if aviso:
+            print(aviso, file=sys.stderr)
 
     return 0
 
