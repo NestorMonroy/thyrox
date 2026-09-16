@@ -37,6 +37,11 @@ mitad la cubre el gate de trabajo sin publicar, no este modulo. Ciega tambien
 al submodulo cuyo directorio no esta poblado: sin arbol no hay ``HEAD`` que
 comparar, y eso se declara como ausencia, no como coincidencia.
 
+Con ``source`` declarado se miran **los dos** candidatos —el clon hermano y el
+arbol del submodulo bajo el padre— porque un commit hecho en el segundo que el
+primero no tiene es deriva igual, y mirar solo la referencia la leeria como
+coincidencia.
+
 La referencia se declara, y por que importa
 --------------------------------------------
 
@@ -55,8 +60,9 @@ import argparse
 import dataclasses
 import enum
 import pathlib
-import subprocess
 import sys
+
+import clone
 
 GITLINK_MODE = "160000"
 
@@ -78,6 +84,7 @@ class Verdict:
     submodule_head: str | None = None
     recorded_head: str | None = None
     reference: str = ""
+    worktree_head: str | None = None
     reason: str = ""
 
     @property
@@ -86,24 +93,13 @@ class Verdict:
                 Status.NO_SUPERPROJECT: 2}[self.status]
 
 
-def _run(root: pathlib.Path, *args: str) -> str | None:
-    """La salida del comando, o ``None`` si git no pudo responder."""
-    try:
-        done = subprocess.run(["git", *args], cwd=root, capture_output=True,
-                              text=True, check=True)
-    except (subprocess.CalledProcessError, FileNotFoundError,
-            NotADirectoryError, PermissionError):
-        return None
-    return done.stdout
-
-
 def _recorded_head(parent: pathlib.Path, submodule: str) -> str | None:
     """El hash que el padre tiene registrado para ese submodulo.
 
     Una entrada de submodulo es un objeto de modo ``160000``. Cualquier otro
     modo es un archivo o un directorio corriente: no hay gitlink que mirar.
     """
-    listing = _run(parent, "ls-tree", "HEAD", submodule)
+    listing = clone.run(parent, "ls-tree", "HEAD", submodule)
     if not listing:
         return None
     fields = listing.split()
@@ -119,7 +115,7 @@ def inspect(parent: pathlib.Path, submodule: str,
     ``source`` nombra ese clon. Sin el, la referencia es el arbol del submodulo
     bajo el padre; con el, el clon hermano donde de verdad se comitea.
     """
-    if _run(parent, "rev-parse", "--git-dir") is None:
+    if clone.run(parent, "rev-parse", "--git-dir") is None:
         return Verdict(Status.NO_SUPERPROJECT, submodule,
                        reason=f"«{parent}» no es un clon de git: "
                               "el superproyecto esta ausente de la sesion")
@@ -131,7 +127,7 @@ def inspect(parent: pathlib.Path, submodule: str,
                               f"«{submodule}»: no hay bump que verificar")
 
     reference = source if source is not None else parent / submodule
-    head = _run(reference, "rev-parse", "HEAD")
+    head = clone.run(reference, "rev-parse", "HEAD")
     if head is None:
         return Verdict(Status.NO_SUPERPROJECT, submodule,
                        recorded_head=recorded,
@@ -139,9 +135,24 @@ def inspect(parent: pathlib.Path, submodule: str,
                               "HEAD de referencia que comparar")
 
     head = head.strip()
-    status = Status.MATCHES if head == recorded else Status.DRIFTED
+
+    # Con `source` declarado, el arbol del padre sigue siendo un segundo
+    # candidato a divergir: un commit hecho ahi que el hermano no tiene es
+    # deriva real, y mirar solo la referencia la leeria como coincidencia.
+    worktree = None
+    if reference != parent / submodule:
+        raw = clone.run(parent / submodule, "rev-parse", "HEAD")
+        worktree = raw.strip() if raw else None
+
+    diverged = head != recorded or (worktree is not None and worktree != recorded)
+    status = Status.DRIFTED if diverged else Status.MATCHES
+    reason = ""
+    if diverged and head == recorded:
+        reason = (f"la referencia coincide, pero el arbol del padre lleva "
+                  f"{worktree}")
     return Verdict(status, submodule, submodule_head=head,
-                   recorded_head=recorded, reference=str(reference))
+                   recorded_head=recorded, reference=str(reference),
+                   worktree_head=worktree, reason=reason)
 
 
 def report(verdict: Verdict) -> str:
@@ -157,7 +168,11 @@ def report(verdict: Verdict) -> str:
             f"  la referencia        {verdict.reference}\n"
             f"  el submodulo tiene   {verdict.submodule_head}\n"
             f"  el padre registra    {verdict.recorded_head}\n"
-            "  bumpear antes de declarar publicado (L-004).")
+            + (f"  su arbol lleva       {verdict.worktree_head}\n"
+               if verdict.worktree_head and verdict.worktree_head != verdict.submodule_head
+               else "")
+            + (f"  {verdict.reason}\n" if verdict.reason else "")
+            + "  bumpear antes de declarar publicado (L-004).")
 
 
 def main(argv: list[str] | None = None) -> int:

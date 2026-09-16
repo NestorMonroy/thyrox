@@ -122,6 +122,23 @@ def main() -> int:
               sibling.submodule_head == sibling_tip,
               f"{sibling.submodule_head} != {sibling_tip}")
 
+        # El caso simetrico, y el unico que aisla la mitad nueva: la
+        # REFERENCIA coincide con el gitlink y el arbol del padre NO. Mirar
+        # solo la referencia lo leeria como coincidencia.
+        git(child, "reset", "-q", "--hard", "HEAD~1")   # hermano de vuelta al gitlink
+        (work / "a.txt").write_text("cuatro\n")
+        git(work, "add", "a.txt")
+        git(work, "commit", "-q", "-m", "cuatro")
+
+        crossed = gitlink_bump.inspect(parent, "child", source=child)
+        check("la referencia coincide y aun asi hay DIVERGENCIA",
+              crossed.status is gitlink_bump.Status.DRIFTED, str(crossed))
+        check("porque el arbol del padre es el que diverge",
+              crossed.submodule_head == crossed.recorded_head
+              and crossed.worktree_head != crossed.recorded_head,
+              str(crossed))
+        git(work, "reset", "-q", "--hard", "HEAD~1")
+
         no_clone = gitlink_bump.inspect(parent, "child",
                                         source=pathlib.Path(tmp) / "nada")
         check("una referencia que no es clon es AUSENTE, no verde",

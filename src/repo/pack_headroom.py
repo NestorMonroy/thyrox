@@ -48,6 +48,8 @@ import shutil
 import subprocess
 import sys
 
+import clone
+
 REFUSAL = 2
 
 #: El pico calculado es una cota; el sistema de archivos tiene otros
@@ -89,33 +91,23 @@ class Headroom:
     free_bytes: int
 
     @property
-    def full_peak_bytes(self) -> int:
+    def full_peak(self) -> int:
         """El ``-a`` reescribe todo antes de borrar: conviven los dos."""
         return self.pack_bytes + self.loose_bytes
 
     @property
-    def incremental_peak_bytes(self) -> int:
+    def loose_peak(self) -> int:
         """Sin ``-a`` solo se escribe un paquete con lo suelto."""
         return self.loose_bytes
 
 
 def decide(headroom: Headroom, margin: float = SAFETY_MARGIN) -> Advice:
     """Que operacion cabe en el disco libre, con el margen declarado."""
-    if headroom.free_bytes >= headroom.full_peak_bytes * margin:
+    if headroom.free_bytes >= headroom.full_peak * margin:
         return Advice.FULL_REPACK
-    if headroom.free_bytes >= headroom.incremental_peak_bytes * margin:
+    if headroom.free_bytes >= headroom.loose_peak * margin:
         return Advice.INCREMENTAL_ONLY
     return Advice.INSUFFICIENT
-
-
-def _is_clone(root: pathlib.Path) -> bool:
-    try:
-        subprocess.run(["git", "rev-parse", "--git-dir"], cwd=root,
-                       capture_output=True, text=True, check=True)
-    except (subprocess.CalledProcessError, FileNotFoundError,
-            NotADirectoryError, PermissionError):
-        return False
-    return True
 
 
 def measure(root: pathlib.Path) -> Headroom:
@@ -152,8 +144,8 @@ def report(headroom: Headroom, advice: Advice,
         f"   ({_mib(headroom.pack_bytes)})",
         f"disco libre       {_mib(headroom.free_bytes)}"
         f"   (margen aplicado ×{margin})",
-        f"pico completo     {_mib(headroom.full_peak_bytes)}"
-        f"   · pico incremental {_mib(headroom.incremental_peak_bytes)}",
+        f"pico completo     {_mib(headroom.full_peak)}"
+        f"   · pico incremental {_mib(headroom.loose_peak)}",
         f"VEREDICTO         {advice.value}",
         f"  lanzar: {advice.command}",
     ])
@@ -167,7 +159,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = pathlib.Path(args.root).resolve()
-    if not _is_clone(root):
+    if not clone.is_clone(root):
         # Rehusa sin cifra: un cero aqui se leeria como «no hay nada que
         # empaquetar», que es otra afirmacion.
         print(f"ERROR — «{root}» no es un clon de git; no se emite medicion.",

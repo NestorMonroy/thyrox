@@ -40,6 +40,8 @@ import pathlib
 import subprocess
 import sys
 
+import clone
+
 REFUSAL = 2
 
 
@@ -66,23 +68,9 @@ class Footprint:
         return self.clear_bytes / self.versions if self.versions else 0.0
 
 
-def _run(root: pathlib.Path, *args: str) -> str:
-    done = subprocess.run(["git", *args], cwd=root, capture_output=True,
-                          text=True, check=True)
-    return done.stdout
-
-
-def _is_clone(root: pathlib.Path) -> bool:
-    try:
-        _run(root, "rev-parse", "--git-dir")
-    except (subprocess.CalledProcessError, FileNotFoundError, NotADirectoryError):
-        return False
-    return True
-
-
 def _blob_oids(root: pathlib.Path, pathspec: str) -> set[str]:
     """Los oid distintos que el pathspec ha tenido en toda la historia."""
-    listing = _run(root, "rev-list", "--all", "--objects")
+    listing = clone.run(root, "rev-list", "--all", "--objects")
     wanted = set()
     for line in listing.splitlines():
         oid, _, path = line.partition(" ")
@@ -118,8 +106,7 @@ def _describe(root: pathlib.Path, oids: set[str]) -> list[tuple[int, int, bool]]
 
 def _loose_oids(root: pathlib.Path) -> set[str]:
     """Los oid que viven como archivo suelto bajo ``.git/objects/xx/yyyy``."""
-    git_dir = pathlib.Path(_run(root, "rev-parse", "--absolute-git-dir").strip())
-    objects = git_dir / "objects"
+    objects = clone.git_dir(root) / "objects"
     found = set()
     for shard in objects.glob("??"):
         if not shard.is_dir():
@@ -131,7 +118,7 @@ def _loose_oids(root: pathlib.Path) -> set[str]:
 
 def _total_blob_disk(root: pathlib.Path) -> int:
     """El denominador: todos los blobs del repo, contados con la misma vara."""
-    listing = _run(root, "rev-list", "--all", "--objects")
+    listing = clone.run(root, "rev-list", "--all", "--objects")
     oids = {line.partition(" ")[0] for line in listing.splitlines() if line}
     if not oids:
         return 0
@@ -191,7 +178,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = pathlib.Path(args.root).resolve()
-    if not _is_clone(root):
+    if not clone.is_clone(root):
         # Rehusa sin cifra: un cero aqui no distinguiria «no hay versiones» de
         # «no mire», que es el sub-patron D.
         print(f"ERROR — «{root}» no es un clon de git; no se emite conteo.",
