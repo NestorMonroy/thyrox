@@ -13,9 +13,11 @@ cero tokens: son los turnos de quien lo descubre, lo diagnostica y lo mata.
 Las tres cotas, y ninguna es opcional
 -------------------------------------
 
-1. **Poda por defecto.** ``.git``, ``node_modules``, ``_references`` y los
-   caches son el volumen, no el sujeto. En el arbol del proveedor lo tracked
-   son 16 524 archivos; lo que hizo girar al glob estaba fuera de esa cuenta.
+1. **Poda por defecto.** ``.git``, ``node_modules`` y los caches de build son
+   el volumen, no el sujeto. En el arbol del proveedor lo tracked son 16 524
+   archivos; lo que hizo girar al glob estaba fuera de esa cuenta. Lo que NO se
+   poda —``.cache`` y ``_references``— se declara abajo, junto a la lista: son
+   sujeto de analisis, y saltarlos por defecto cegaria al instrumento.
 2. **Tope de entradas visitadas.** Una raiz equivocada deja de ser cara a los
    pocos segundos en vez de al cabo de una hora.
 3. **Plazo de pared.** Es la unica cota que sobrevive a un bucle de enlaces
@@ -58,7 +60,6 @@ EXIT_TRUNCATED = 3
 DEFAULT_PRUNE: tuple[str, ...] = (
     ".git",
     "node_modules",
-    "_references",
     "__pycache__",
     ".venv",
     "venv",
@@ -78,6 +79,12 @@ DEFAULT_PRUNE: tuple[str, ...] = (
 #: sobre lo que se le pregunta, que es la ceguera de
 #: ``metrica-decide-la-conclusion.md``. Quien necesite saltarlo lo pide con
 #: ``--prune .cache``.
+#:
+#: Tampoco se poda ``_references``, y por la misma razon: son los corpus
+#: vendorizados contra los que se construye —el volcado de cadenas del
+#: ejecutable, la referencia de Odoo— o sea SUJETO de analisis, no volumen que
+#: estorbe. Un instrumento que los salta por defecto queda ciego justo a lo que
+#: se le pregunta. Quien necesite saltarlos lo pide con ``--prune _references``.
 
 #: Entradas de directorio antes de rendirse. Elegido para que una raiz
 #: equivocada cueste segundos: el arbol del proveedor tiene 16 524 archivos

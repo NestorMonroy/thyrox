@@ -228,11 +228,16 @@ y ninguna familia larga coincide. Es otro eje, no un hueco de aquél.
 python3 src/session/bounded_scan.py /home/user/thyrox --name '*.sqlite3'
 ```
 
-Poda `.git`, `node_modules`, `_references` y los cachés de build; tiene tope de
-entradas y plazo de pared; y **declara su corte** por `exit 3` más un aviso por
-stderr, en vez de imprimir una salida parcial que se lea como completa. No poda
-`.cache`: el `.claude/.cache` del cliente es telemetría que se analiza, o sea
-sujeto y no volumen — quien necesite saltarlo lo pide con `--prune .cache`.
+Poda `.git`, `node_modules` y los cachés de build; tiene tope de entradas y
+plazo de pared; y **declara su corte** por `exit 3` más un aviso por stderr, en
+vez de imprimir una salida parcial que se lea como completa.
+
+**No poda `.cache` ni `_references`**, y las dos exclusiones son deliberadas:
+el `.claude/.cache` del cliente es telemetría que se analiza, y `_references`
+son los corpus vendorizados contra los que se construye. Los dos son **sujeto**
+de análisis, no volumen que estorbe — un instrumento que los salta por defecto
+queda ciego justo a lo que se le pregunta. Quien necesite saltarlos lo pide con
+`--prune`.
 
 El piso siempre disponible, para cuando el recorrido tiene que ser ése:
 anteponer **`timeout 60`**. Es coreutils, está siempre, y funciona aunque

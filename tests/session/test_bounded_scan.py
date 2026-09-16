@@ -58,8 +58,10 @@ def _tree():
 def test_finds_the_file_outside_the_pruned_directories():
     root = _tree()
     resultado = scan.walk(root, name="*.sqlite3")
-    nombres = [pathlib.Path(p).name for p in resultado.paths]
-    assert nombres == ["uno.sqlite3"]
+    nombres = sorted(pathlib.Path(p).name for p in resultado.paths)
+    # `_references` NO se poda: son los corpus contra los que se construye, o
+    # sea sujeto de analisis. Lo que se poda es volumen: .git y node_modules.
+    assert nombres == ["tambien.sqlite3", "uno.sqlite3"]
     assert resultado.complete is True
     assert resultado.reason is None
 
@@ -74,7 +76,7 @@ def test_the_default_prune_list_carries_its_own_weight():
     root = _tree()
     con_poda = scan.walk(root, name="*.sqlite3")
     sin_poda = scan.walk(root, name="*.sqlite3", prune=())
-    assert len(con_poda.paths) == 1
+    assert len(con_poda.paths) == 2
     assert len(sin_poda.paths) == 4
 
 
