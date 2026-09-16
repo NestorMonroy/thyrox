@@ -37,6 +37,8 @@ CHECKS: list[Check] = [
           'auto-audit-before-writing.md — autoría canónica y list-table'),
     Check('rst-referencias', 'Prosa', 'rst', 'check_rst_referencias.py',
           ':ref:`h-docs-92` — un :ref: sin etiqueta resuelve al vacío'),
+    Check('doc-citations', 'Prosa', 'rst', 'check_doc_citations.py',
+          'TASK-DOCS-0546 — un :doc: que no resuelve contra el árbol de hoy'),
     Check('vocabulario-prosa', 'Prosa', 'lexico', 'check_vocabulario_prosa.py',
           'redaccion-tecnica-es.md — forma vetada y sustantivo inventado'),
     Check('hallazgos-index', 'Prosa', 'hallazgo', 'check_hallazgos_index.py',
