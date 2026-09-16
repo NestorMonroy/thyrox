@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 """¿Hubo un cambio de regimen en la serie, y donde?
 
-Construccion propia, no porte: el punto de cambio esta **ausente en los dos
-corpus** que el ejecutor aporto —el de estadistica en shell y el de
-correlacion serial—. Se declara aqui para que nadie lo lea como adaptado de
-una fuente que no lo trae.
+Construccion propia, no porte. **Medido**, no afirmado: sobre los dos corpus
+que el ejecutor aporto —32 `.md` de analisis de texto y probabilidad aplicada
+en shell, y 9 `.Rmd` de correlacion serial— los patrones ``cusum``,
+``change point``, ``structural break``, ``breakpoint`` y ``chow`` dan
+**0 de 32 y 0 de 9**. El instrumento no estaba ciego: su control positivo
+—``regresion``/``correlacion``— da 2 de 32 y 8 de 9 sobre los mismos
+archivos.
+
+La primera version de este parrafo decia lo mismo **sin haberlo medido**: lo
+heredaba de prosa propia. El ejecutor lo señalo — un docstring es una
+afirmacion, no una ``Observation``, y citarlo como evidencia es el defecto
+que el resto de este arbol existe para evitar.
 
 El defecto que este modulo existe para evitar
 -----------------------------------------------
