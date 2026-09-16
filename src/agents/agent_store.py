@@ -2813,6 +2813,22 @@ def cmd_list_sessions(args: argparse.Namespace) -> None:
     print(f"Total: {len(rows)} ({store_dir / DB_FILENAME})")
 
 
+def existing_finding_summary(conn: sqlite3.Connection,
+                             finding_id: str) -> str | None:
+    """El ``summary`` ya registrado para ese id, o None si esta libre.
+
+    Separada de ``cmd_add_finding`` porque es la pregunta que el rehuse
+    necesita responder, y quien consuma el store como biblioteca tambien.
+    """
+    try:
+        row = conn.execute(
+            "SELECT summary FROM findings_history WHERE finding_id = ?",
+            (finding_id,)).fetchone()
+    except sqlite3.OperationalError:
+        return None                      # store recien creado, sin tabla aun
+    return row[0] if row else None
+
+
 def cmd_add_finding(args: argparse.Namespace) -> None:
     """Indexa un hallazgo/tarea/decision/reporte YA escrito como RST.
 
@@ -2826,6 +2842,20 @@ def cmd_add_finding(args: argparse.Namespace) -> None:
     ts = now_iso()
     created_at = args.date or ts
     with connect(store_dir) as conn:
+        existing = existing_finding_summary(conn, args.finding_id)
+        if existing is not None and not getattr(args, "force", False):
+            # El UPSERT de abajo actualiza en silencio. Un id repetido casi
+            # siempre es una COLISION del acunador —que escanea los .rst del
+            # consumidor y no ve estas filas—, no una correccion deliberada:
+            # medido dos veces en la misma sesion (H-THYROX-26), y el hallazgo
+            # pisado solo se recupero del transcript. Rehusar es la mitad que
+            # discrimina: detiene el pisado aunque el acunador siga colisionando.
+            print(f"agent_store: {args.finding_id} YA EXISTE — «{existing}».\n"
+                  f"  No se sobreescribe. Para corregir ese hallazgo, repite con "
+                  f"--force;\n  para registrar uno NUEVO, acuna otro id.",
+                  file=sys.stderr)
+            raise SystemExit(2)
+
         conn.execute(
             """
             INSERT INTO findings_history
@@ -3175,6 +3205,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     add_target_args(p)
     p.add_argument("--finding-id", required=True, help="ej. H-API-625, T-106, DEC-03")
+    p.add_argument("--force", action="store_true",
+                   help="actualiza un finding-id que ya existe; sin ella se rehusa")
     p.add_argument("--submodule", required=True)
     p.add_argument("--initiative", required=True)
     p.add_argument(
