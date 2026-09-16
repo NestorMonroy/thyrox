@@ -259,11 +259,17 @@ python3 -m src.task.task_ids censo                          # conteo por capa
 ```
 
 Un hallazgo —algo que el trabajo destapó y que alguien podría volver a asumir
-sin medir— se registra aparte, indexado y buscable entre sesiones:
+sin medir— se registra aparte, indexado y buscable entre sesiones. El
+`H-<PREFIJO>-NNNN` no se compone a mano tampoco: `H-API-1112` documenta el
+episodio en que un `ls`/`grep` a mano se acotó a una sola iniciativa cuando
+el espacio de nombres es global a la capa.
 
 ```bash
+python3 -m src.hallazgo.hallazgo_ids acunar DOCS           # el siguiente libre
+python3 -m src.hallazgo.hallazgo_ids verificar H-DOCS-1268  # ¿ya existe?
+
 python3 -m src.agents.agent_store agregar-hallazgo \
-  --finding-id H-DOCS-NNNN --submodule docs \
+  --finding-id H-DOCS-1268 --submodule docs \
   --initiative actualizar-agentic-ai-thyrox \
   --summary "..." --content "..." \
   --source-ref "el archivo que es la fuente de verdad"

@@ -34,6 +34,14 @@
 #   bg.sh wait  <nombre> [segundos]        bloquea (default 1800 s)
 #   bg.sh status <nombre>                  running | done:<exit> | unknown
 #   bg.sh log   <nombre>                   imprime la ruta del log
+#   bg.sh marker-pattern                   el regex que su marcador de salida
+#                                           cumple — lo que `wait-jobs.sh
+#                                           register --marker` necesita
+#   bg.sh register <nombre>                registra un trabajo YA lanzado en
+#                                           la barrera de `wait-jobs.sh`, con
+#                                           ese `--marker` compuesto solo —
+#                                           TASK-THYROX-0028: el consumidor
+#                                           nunca escribe el literal a mano
 #
 # Dónde deja los logs — la familia `jobs`, un run por trabajo
 # -----------------------------------------------------------
@@ -118,6 +126,22 @@ elif op == 'log-home':
         else:
             print(hogar / dado if dado else hogar)
 " "$@"
+}
+
+# Cola con memoria: como `tail -N`, pero conserva lineas criticas (marcador ya
+# retirado, FATAL, Traceback, resumen de pytest) que una ventana ciega
+# descartaria — el defecto medido en `H-DOCS-155` («el `7 failed` existia y
+# nadie lo vio»). Ver `src/session/log_tail.py`: es una adaptacion NATIVA del
+# principio de SmartCrusher (headroom), no un port — el sustrato aqui es texto
+# plano, no JSON con estadistica de campo.
+_smart_tail() {
+    local window="$1"
+    PYTHONPATH="$_SRC_DIR" python3 -c "
+import sys
+from session.log_tail import smart_tail
+out = smart_tail(sys.stdin.read(), int(sys.argv[1]))
+out and print(out)
+" "$window"
 }
 
 # Resuelve el hogar plano UNA vez, contra la familia. Idempotente: un valor ya
@@ -230,7 +254,7 @@ cmd_start() {
         # empareja nada y sale 1 — bajo `set -e` eso abortaba la funcion ANTES
         # del `return "$rc"`, y un trabajo que salio 7 se reportaba como 1. El
         # codigo de salida de un filtro de presentacion no es un veredicto.
-        { grep -v "^${_MARK}" "$LOG" || true; } | tail -40
+        { grep -v "^${_MARK}" "$LOG" || true; } | _smart_tail 40
         return "$rc"
     fi
     (( grace > 0 )) || return 0
@@ -259,13 +283,13 @@ cmd_wait() {
         # empareja nada y sale 1 — bajo `set -e` eso abortaba la funcion ANTES
         # del `return "$rc"`, y un trabajo que salio 7 se reportaba como 1. El
         # codigo de salida de un filtro de presentacion no es un veredicto.
-        { grep -v "^${_MARK}" "$LOG" || true; } | tail -40
+        { grep -v "^${_MARK}" "$LOG" || true; } | _smart_tail 40
         printf '\n[bg.sh] %s termino con exit=%s\n' "$name" "$rc"
         return "$rc"
     fi
 
     printf '[bg.sh] %s SIGUE CORRIENDO tras %s s (timeout, no fallo)\n' "$name" "$secs" >&2
-    tail -20 "$LOG" 2>/dev/null || true
+    { cat "$LOG" 2>/dev/null || true; } | _smart_tail 20
     return 124
 }
 
@@ -286,13 +310,44 @@ cmd_status() {
     fi
 }
 
+# El patron REGEX que una linea de marcador de `bg.sh` cumple. Un solo sitio
+# lo deriva de `_MARK`: escribirlo aparte, a mano, en la prosa de una regla es
+# la forma exacta que `calibration-verified-numbers.md` prohibe para una CIFRA
+# — aqui se extiende a una CADENA que vive en codigo. TASK-THYROX-0028.
+cmd_marker_pattern() {
+    printf '^%s[0-9]+\n' "$_MARK"
+}
+
+# Registra en la barrera de `wait-jobs.sh` un trabajo YA lanzado por
+# `bg.sh start`, componiendo su `--marker` en vez de que el consumidor lo
+# transcriba. `WAIT_JOBS` es el escape para un clon cuyo guion hermano viva en
+# otro sitio; sin el se asume la ubicacion canonica junto a este archivo, y si
+# tampoco esta ahi se rehusa en vez de inventar una ruta.
+cmd_register() {
+    local name="${1:?uso: bg.sh register <nombre>}"
+    _paths "$name"
+    [[ -f "$PIDF" ]] || {
+        echo "bg.sh register: no hay tarea '$name' — llama primero a 'start'" >&2
+        exit 2
+    }
+    local pid; pid="$(cat "$PIDF")"
+    local wait_jobs="${WAIT_JOBS:-${_SRC_DIR}/session/wait-jobs.sh}"
+    [[ -r "$wait_jobs" ]] || {
+        echo "bg.sh register: no encuentro wait-jobs.sh en '$wait_jobs' (fija WAIT_JOBS)" >&2
+        exit 2
+    }
+    bash "$wait_jobs" register "$name" "$LOG" "$pid" --marker "$(cmd_marker_pattern)"
+}
+
 cmd_log() { _paths "$1"; printf '%s\n' "$LOG"; }
 
 case "${1:-}" in
-    start)  shift; cmd_start "$@" ;;
-    wait)   shift; cmd_wait "$@" ;;
-    status) shift; cmd_status "$@" ;;
-    log)    shift; cmd_log "$@" ;;
+    start)          shift; cmd_start "$@" ;;
+    wait)           shift; cmd_wait "$@" ;;
+    status)         shift; cmd_status "$@" ;;
+    log)            shift; cmd_log "$@" ;;
+    marker-pattern) shift; cmd_marker_pattern "$@" ;;
+    register)       shift; cmd_register "$@" ;;
     *)      sed -n '/^# Uso/,/^# Donde/p;/^# Dónde/,/^# ====/p' "$0" | sed 's/^# \{0,1\}//'
             exit 2 ;;
 esac

@@ -118,6 +118,34 @@ esta sección: proceso vivo, `.output` con `mtime` congelado desde el arranque
 trabajaba, que es `H-DOCS-1004` un nivel más arriba— y **0** trabajos en el
 ledger hasta adoptarlo.
 
+### `bg.sh` y `wait-jobs.sh` componen SIN que el marcador se transcriba a mano
+
+`bg.sh` no escribe `EXIT=` — escribe su propio marcador (`_MARK` en el
+guion), distinto del que `wait-jobs.sh` busca por defecto. Registrar un
+trabajo de `bg.sh` en la barrera con `wait-jobs.sh register` a secas
+reproduce H-THYROX-07: el marcador real existe en el log y la barrera declara
+BAIL porque busca otro. La corrección no es documentar el patrón del marcador
+en esta prosa — eso es justo la forma que `calibration-verified-numbers.md`
+prohíbe para una cifra, y aquí sería una CADENA que vive en código
+transcrita a mano, con el mismo riesgo de quedar desactualizada. La
+corrección es que `bg.sh` mismo componga el `--marker`, con dos subcomandos
+que no existían hasta TASK-THYROX-0028:
+
+```bash
+bash src/session/bg.sh start suite --grace 0 -- <comando-largo>
+bash src/session/bg.sh register suite      # compone el --marker correcto solo
+bash src/session/wait-jobs.sh wait --timeout 1800
+```
+
+`bg.sh register <nombre>` resuelve el log y el pid del trabajo ya lanzado
+(los mismos que `status`/`wait`/`log` usan) y llama a
+`wait-jobs.sh register` con `--marker "$(bg.sh marker-pattern)"` — el patrón
+sale de la misma constante que el propio `bg.sh` usa para escribirlo, nunca
+de una copia. Quien compone a mano sigue pudiendo hacerlo
+(`bg.sh marker-pattern` imprime el regex suelto), pero `register` es la forma
+que no puede desincronizarse porque deriva del mismo origen que escribe el
+marcador.
+
 ## El gate — porque una regla sin script es prosa
 
 `src/hooks/detect_foreground_long_command.py`, cuarto detector de

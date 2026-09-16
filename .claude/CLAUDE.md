@@ -49,6 +49,12 @@ si describe cómo funciona una pieza, va en la cabecera de la pieza.
    documenta *qué se aprendió* y es lo único que queda indexado y buscable
    entre sesiones (`agent_store.py buscar-hallazgos`). No todo trabajo
    produce uno — sólo el que corrige algo que alguien podría volver a asumir.
+   **Cuando el hallazgo es del consumidor** (un ``H-<PREFIJO>-NNNN`` que va a
+   vivir como ``.rst`` en `kaupamex-docs`, no una fila de este store) el
+   número se acuña con `src/hallazgo/hallazgo_ids.py acunar <PREFIJO>` —
+   nunca a mano con un `ls`/`grep` acotado a una sola iniciativa. Ese acotado
+   fue exactamente el error que originó este mecanismo: `H-API-1112`
+   documenta el episodio.
 6. Commitear por pathspec y publicar. El árbol no se deja sucio entre turnos.
 
 Los pasos 4 y 5 no estaban aquí hasta que su ausencia costó un episodio real:

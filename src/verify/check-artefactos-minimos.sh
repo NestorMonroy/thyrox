@@ -11,7 +11,7 @@
 #      bloqueada}). En borrador/en-analisis puede no existir aún.
 #   - Si existe alcance en iniciativa ACTIVA: debe contener
 #     "Premisa verificada" + ":flow:".
-#   - :estado: en-ejecucion  → progreso-<slug>.rst OBLIGATORIO.
+#   - :estado: en-ejecucion  → progreso-<slug>.rst O progreso/index.rst OBLIGATORIO.
 #
 # EXENTAS de los checks de contenido (retrofit prospectivo, DEC-R-01/DEC-SM-01):
 #   estados TERMINALES {completada, cerrada, descartada, absorbida} — sólo se
@@ -69,7 +69,7 @@ for d in source/gestion/pm/*/iniciativas/*/; do
   fi
 
   [[ "$estado" == "en-ejecucion" ]] && \
-    { ls "$d"progreso-*.rst >/dev/null 2>&1 || problems="$problems; en-ejecucion sin progreso-*.rst"; }
+    { { ls "$d"progreso-*.rst >/dev/null 2>&1 || [[ -f "${d}progreso/index.rst" ]]; } || problems="$problems; en-ejecucion sin progreso-*.rst ni progreso/index.rst"; }
 
   if [[ -n "$problems" ]]; then
     VIOL=$((VIOL+1))

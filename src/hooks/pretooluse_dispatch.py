@@ -69,6 +69,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_dedicated_tool_usage",
     "detect_ephemeral_citation",
     "detect_topic_duplication",
+    "detect_narrative_continuity",
 )
 
 
