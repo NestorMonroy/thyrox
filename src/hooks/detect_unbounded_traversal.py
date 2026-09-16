@@ -56,10 +56,8 @@ lexico sobre el texto completo del comando.
 *Ciega a:* un guion invocado por ruta, cuyo cuerpo no viaja en el comando; a
 la familia de proceso (``awk``, ``sort``, ``xargs``…) cuando su entrada llega
 por una tuberia cuyo productor este detector no marco —se mide la fuente, no el
-consumidor, y esa eleccion se declara arriba—; a
-una raiz pesada que llegue por una variable que este detector no conoce; y a
-``rg``, que respeta ``.gitignore`` y por eso no cae en la clase — pero tampoco
-se descuenta explicitamente.
+consumidor, y esa eleccion se declara arriba—; y a
+una raiz pesada que llegue por una variable que este detector no conoce.
 """
 from __future__ import annotations
 
@@ -72,6 +70,10 @@ UNBOUNDED_SHAPES: tuple[tuple[str, str], ...] = (
     ("un glob recursivo", r"recursive\s*=\s*True|\.rglob\s*\(|glob\s*\(\s*['\"][^'\"]*\*\*"),
     ("un os.walk", r"\bos\.walk\s*\("),
     ("un grep recursivo", r"\bgrep\b[^|;&]*\s-[a-zA-Z]*[rR][a-zA-Z]*\b"),
+    # ``rg`` recorre el arbol por DEFECTO —esa es su razon de ser—, asi que es
+    # una forma de recorrido como las demas. Lo que lo distingue es que trae su
+    # propia cota, y eso lo resuelve el descuento de abajo, no esta lista.
+    ("una busqueda con ripgrep", r"\brg\b"),
     ("un find sin profundidad", r"\bfind\s+[~/$]"),
     ("un listado recursivo", r"\bls\s+-[a-zA-Z]*R\b|\bdu\s+-[a-zA-Z]*s?h?\s+[~/$]"),
     ("una expansion recursiva del shell", r"\*\*/"),
@@ -120,6 +122,19 @@ BOUNDED = re.compile(
     r"\btimeout\s+\d|\bbounded_scan\b|dirs\[:\]"
 )
 
+#: ``rg`` acota POR DEFECTO: respeta ``.gitignore`` y salta los ocultos, asi que
+#: no necesita ``--include`` para no recorrer ``node_modules``. Medido en este
+#: arbol: **14 067** archivos visitados contra **50 190** con
+#: ``--no-ignore --hidden`` — una cota real de 3.6x, automatica.
+#:
+#: Por eso es descuento y no ceguera declarada, que es como figuraba antes de
+#: medirlo. Pero el descuento **se retira** cuando el comando desactiva esa
+#: cota: ``rg --no-ignore`` recorre lo mismo que un ``grep -r`` pelado, y
+#: tratarlo como acotado seria confiar en el nombre del programa en vez de en
+#: lo que el comando hace.
+RIPGREP = re.compile(r"\brg\b")
+RIPGREP_UNBOUNDED = re.compile(r"--no-ignore\b|--hidden\b|(?<!\w)-[a-zA-Z]*u[a-zA-Z]*(?=\s|$)")
+
 #: El mecanismo que el aviso nombra. Va como constante para que el texto y el
 #: archivo no puedan divergir en silencio.
 MECHANISM = "src/session/bounded_scan.py"
@@ -145,6 +160,10 @@ def detect(payload: dict) -> str | None:
 
     # Un recorrido ya acotado cumple la regla: callar.
     if BOUNDED.search(command):
+        return None
+
+    # ``rg`` trae su propia cota, salvo que el comando la desactive.
+    if RIPGREP.search(command) and not RIPGREP_UNBOUNDED.search(command):
         return None
 
     shapes = matched_shapes(command)

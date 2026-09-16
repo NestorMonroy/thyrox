@@ -132,6 +132,18 @@ def test_warns_on_an_unbounded_xargs_fed_by_find():
     assert _detect("find /home/user/thyrox -name '*.log' | xargs -P4 gzip") is not None
 
 
+def test_the_ripgrep_discount_carries_its_own_weight():
+    """`rg` acota por defecto — medido: 14 067 archivos contra 50 190.
+
+    Es descuento, no ceguera: la cota existe y es automatica. Pero se RETIRA
+    cuando el comando la desactiva, porque `rg --no-ignore` recorre lo mismo
+    que un `grep -r` pelado.
+    """
+    assert _detect("rg -l patron /home/user/thyrox") is None
+    assert _detect("rg --no-ignore -l patron /home/user/thyrox") is not None
+    assert _detect("rg --hidden -l patron /home/user/thyrox") is not None
+
+
 def test_stays_silent_on_ordinary_commands():
     assert _detect("git status --short") is None
     assert _detect("cat src/session/bounded_scan.py") is None

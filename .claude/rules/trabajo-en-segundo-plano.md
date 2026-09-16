@@ -253,6 +253,22 @@ ningún hook cargue.
 ya acotado: `--include`, `--exclude-dir`, `-maxdepth`, `-prune`, el índice de
 git, la poda in situ de `os.walk`, y `timeout N`.
 
+**`rg` cuenta como acotado, y eso está medido, no supuesto.** Respeta
+`.gitignore` y salta los ocultos por defecto: en este árbol visita **14 067**
+archivos contra **50 190** con `--no-ignore --hidden` — una cota real de 3.6×
+que no hay que pedir. Por eso es descuento y no ceguera. Pero **el descuento se
+retira** cuando el comando desactiva la cota: `rg --no-ignore` recorre lo mismo
+que un `grep -r` pelado, y tratarlo como acotado sería confiar en el nombre del
+programa en vez de en lo que el comando hace.
+
+La familia de **proceso** que este árbol prescribe —`awk`, `sort`, `uniq`,
+`comm`, `cut`, `paste`, `xargs`, `wc`— **no lleva patrón propio, y es
+deliberado**: ninguno recorre un árbol. Lo que los vuelve caros es de dónde les
+llega la entrada, y esa entrada es siempre una de las formas de arriba. Marcar
+el literal `awk` no separaría `awk '{s+=$1}' censo.tsv` —instantáneo— de `awk`
+alimentado por `find /` —que no termina—, y eso sería medir el consumidor para
+concluir sobre el productor.
+
 ```bash
 python3 tests/hooks/test_detect_unbounded_traversal.py
 python3 tests/session/test_bounded_scan.py
