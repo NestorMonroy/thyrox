@@ -1,0 +1,14 @@
+check-harness-typecheck: tsconfig.json FALLA
+../agent/loop/context/systemPrompt.ts(22,31): error TS2307: Cannot find module '@thyrox/context-compression' or its corresponding type declarations.
+../agent/loop/index.ts(38,36): error TS2307: Cannot find module '@thyrox/context-compression' or its corresponding type declarations.
+check-harness-typecheck: tsconfig.tests.json FALLA
+../agent/loop/context/systemPrompt.ts(22,31): error TS2307: Cannot find module '@thyrox/context-compression' or its corresponding type declarations.
+../agent/loop/index.ts(38,36): error TS2307: Cannot find module '@thyrox/context-compression' or its corresponding type declarations.
+
+check-harness-typecheck: el harness no compila.
+
+  El arreglo es el tipo, no el bypass. Un `as any` que tape el error deja el
+  gate en verde midiendo otra cosa.
+
+      cd src/packages/cli && bun run typecheck && bun run typecheck:tests
+__BG_EXIT__=0
