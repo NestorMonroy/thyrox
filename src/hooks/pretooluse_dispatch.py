@@ -70,6 +70,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_ephemeral_citation",
     "detect_topic_duplication",
     "detect_narrative_continuity",
+    "detect_unbounded_traversal",
 )
 
 
@@ -92,6 +93,16 @@ def load_detector(directory: Path, name: str) -> Callable[[dict], str | None]:
     if spec is None or spec.loader is None:
         raise ImportError(f"no se pudo componer el spec de {name}")
     module = importlib.util.module_from_spec(spec)
+    # El registro en ``sys.modules`` ANTES de ejecutar es parte de la receta de
+    # importlib, no un adorno. Sin el, un detector que use ``@dataclass`` con
+    # ``from __future__ import annotations`` revienta: el decorador resuelve
+    # sus anotaciones mirando ``sys.modules[cls.__module__].__dict__`` y recibe
+    # None. Y como ``build_registry`` traga la excepcion, el detector aterriza
+    # en ``missing`` SIN que nadie lo lea — el verde silencioso que el
+    # docstring de este mismo archivo denuncia, cometido por su propio cargador.
+    # Medido: ``detect_narrative_continuity`` llevaba inerte desde que lo
+    # declaro la lista (:ref:`h-thyrox-23`).
+    sys.modules[name] = module
     spec.loader.exec_module(module)
     return module.detect
 

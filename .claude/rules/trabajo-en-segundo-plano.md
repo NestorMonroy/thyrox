@@ -204,6 +204,70 @@ de `H-DOCS-1010`: bajo el harness remoto, con cwd en `/home/user`, un
 **no hooks**. Mientras eso siga así el detector existe y no dispara — la regla
 sigue siendo la que gobierna, y este párrafo es su declaración de inercia.
 
+## El tercer gate: el recorrido tiene COTA — y es otro eje
+
+Los dos gates de arriba miden el **despacho**: uno pregunta «¿primer plano o
+segundo plano?» y el otro «¿proceso o agente?». Ninguno ve un tercer defecto de
+la misma familia, que no es *largo* sino **sin final**: un recorrido recursivo
+sin cota —`glob.glob('/home/user/thyrox/**/*.sqlite3', recursive=True)`— sobre
+una raíz pesada.
+
+Esa forma **no falla: gira**. Agota el tiempo de primer plano, el cliente la
+**promueve** a segundo plano —con lo que además nace fuera del ledger, por la
+sección de arriba— y ahí queda, sin resultado, sin error y sin final. Lo caro
+no es el proceso, que cuesta cero tokens: son los turnos de quien lo descubre,
+lo diagnostica y lo mata.
+
+`detect_foreground_long_command` calla con razón: pelado a su programa, ese
+comando es `-` —la forma vive dentro de un heredoc, no en posición de comando—
+y ninguna familia larga coincide. Es otro eje, no un hueco de aquél.
+
+### El mecanismo: `src/session/bounded_scan.py`
+
+```bash
+python3 src/session/bounded_scan.py /home/user/thyrox --name '*.sqlite3'
+```
+
+Poda `.git`, `node_modules`, `_references` y los cachés de build; tiene tope de
+entradas y plazo de pared; y **declara su corte** por `exit 3` más un aviso por
+stderr, en vez de imprimir una salida parcial que se lea como completa. No poda
+`.cache`: el `.claude/.cache` del cliente es telemetría que se analiza, o sea
+sujeto y no volumen — quien necesite saltarlo lo pide con `--prune .cache`.
+
+El piso siempre disponible, para cuando el recorrido tiene que ser ése:
+anteponer **`timeout 60`**. Es coreutils, está siempre, y funciona aunque
+ningún hook cargue.
+
+### El gate
+
+`src/hooks/detect_unbounded_traversal.py`, décimo detector de
+`pretooluse_dispatch`. Exige **dos** condiciones: forma sin cota
+(`recursive=True`, `rglob`, `os.walk`, `grep -r`, `find` sin profundidad,
+`ls -R`) **y** raíz pesada. Con la primera sola avisaría sobre `src/**/*.py`
+—milisegundos—, y un aviso que sale siempre se aprende a ignorar. Descuenta lo
+ya acotado: `--include`, `--exclude-dir`, `-maxdepth`, `-prune`, el índice de
+git, la poda in situ de `os.walk`, y `timeout N`.
+
+```bash
+python3 tests/hooks/test_detect_unbounded_traversal.py
+python3 tests/session/test_bounded_scan.py
+```
+
+**Sus tres guardas se probaron por anulación**, y cada una carga su peso:
+retirado el eje de raíz caen 2 casos, retirado el descuento caen 2, retirado
+sólo el descuento de `timeout` cae exactamente 1 — ni una más en ninguno de los
+tres. El control positivo **no es fabricado**: es el comando real del episodio,
+citado verbatim.
+
+**Avisa, no bloquea**, como sus hermanos: un patrón léxico no distingue un
+`os.walk` con poda escrita tres líneas más abajo de uno sin ella.
+
+**Y hereda la misma inercia declarada que su hermano quinto.** Medido en esta
+sesión: `/home/user/.claude/settings.local.json` declara `SubagentStart`,
+`PreModelSwitch` y `SubagentStop` — **ningún `PreToolUse`**. Así que hoy este
+detector existe y **no dispara aquí**. La capa que sí protege sin hooks es el
+mecanismo y el `timeout`, y por eso el aviso nombra los dos.
+
 ## Por qué esta regla vive aquí
 
 Medido 2026-09-10T05:15:22: de las cinco reglas de THYROX, **ninguna** nombraba
