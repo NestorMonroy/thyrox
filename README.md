@@ -220,18 +220,27 @@ python3 src/session/generate_bin.py --install-user-bin   # + copia a ~/.local/bi
 python3 src/session/generate_bin.py --check      # ¿bin/ sigue al día?
 ```
 
-Verificado en este árbol al escribir esta sección: **117 entrypoints**,
-`bin/` al día. Cubre exactamente lo que se cita en `long-running-commands.md`
-de los consumidores por su ruta completa — `write-env`, `wait-jobs`,
-`run-task-pool`, `thyrox-bg` (`bg` a secas colisiona con el builtin de
-bash, de ahí el prefijo) — y el resto de los 117, con el mismo mecanismo.
-Detalle completo: `kaupamex-docs: source/gestion/pm/thyrox/iniciativas/
-agregar-entrypoints-cortos-thyrox/` (`TASK-THYROX-0017`).
+**`bin/` está versionado** — los envoltorios vienen en el clon, no se
+generan. Un clon recién bajado invoca `bash bin/<nombre>` sin ningún paso
+previo; `generate_bin.py` es para **regenerarlo** cuando `src/session`,
+`src/verify` o `src/agents` ganan un entrypoint, y `--check` publica si está
+al día. **El conteo no se transcribe aquí**: es propiedad de un árbol que
+crece, y ya se quedó atrás dos veces. Lo publica el comando.
 
-**Lo que este mecanismo NO cierra todavía:** los ejemplos de
-`long-running-commands.md`/`bash-background-tasks.md` en los cinco
-consumidores siguen enseñando la ruta completa (`bash src/session/bg.sh`),
-no el nombre corto — sucesor abierto, `TASK-THYROX-0018`.
+Cubre lo que los consumidores citaban por su ruta completa — `write-env`,
+`wait-jobs`, `run-task-pool`, `marker_wait`, `thyrox-bg` (`bg` a secas
+colisiona con el builtin de bash, de ahí el prefijo) — y el resto, con el
+mismo mecanismo. Detalle: `kaupamex-docs: source/gestion/pm/thyrox/
+iniciativas/agregar-entrypoints-cortos-thyrox/` (`TASK-THYROX-0017`).
+
+**`TASK-THYROX-0018` cerrado.** Los ejemplos ejecutables de
+`long-running-commands.md`/`bash-background-tasks.md` enseñaban la ruta
+completa (`bash src/session/bg.sh`) en reglas que cargan en **cada** sesión,
+mientras el nombre corto vivía sólo aquí — la forma de ERR-063: lo correcto
+donde se lee una vez, lo superado donde siempre gobierna. Reescritas las 14
+citas **ejecutables** de los cuatro repos que las tenían; las que **nombran
+dónde vive** el mecanismo (columna de tabla, encabezado de sección) se
+conservan, porque ahí la ruta al fuente es la definición y no una invocación.
 
 ## El alcance por variable
 

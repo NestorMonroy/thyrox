@@ -5,14 +5,32 @@ primer plano ni se delega a un subagente**: se lanza como proceso y se recoge
 con la barrera. El mecanismo ya está construido en este árbol y tiene tres
 piezas, una por forma del problema:
 
-| Forma | Pieza | Qué hace |
-|---|---|---|
-| un trabajo | `src/session/bg.sh` | `start` lo lanza detached con log e id · `wait` bloquea · `status` da `running`/`done:<exit>` |
-| N trabajos con anchura acotada | `src/session/run-task-pool.sh` | una línea = un comando; registra cada uno en el ledger |
-| la barrera de N | `src/session/wait-jobs.sh` | bloquea hasta que **todos** se asienten, con veredicto por trabajo |
+| Forma | Pieza (dónde vive) | Se invoca | Qué hace |
+|---|---|---|---|
+| un trabajo | `src/session/bg.sh` | `bin/thyrox-bg` | `start` lo lanza detached con log e id · `wait` bloquea · `status` da `running`/`done:<exit>` |
+| N trabajos con anchura acotada | `src/session/run-task-pool.sh` | `bin/run-task-pool` | una línea = un comando; registra cada uno en el ledger |
+| la barrera de N | `src/session/wait-jobs.sh` | `bin/wait-jobs` | bloquea hasta que **todos** se asienten, con veredicto por trabajo |
 
 Debajo están los primitivos: `background.spawn_detached`, `job_ledger`,
 `marker_wait` y `task_pool`.
+
+**Se invoca por el nombre corto, no por la ruta al fuente.** `bin/` está
+**versionado** —no se genera al clonar—, así que `bash "$T/bin/<nombre>"`
+funciona en un clon recién bajado sin ningún paso previo. La ruta a
+`src/session/**` es la **definición**; el envoltorio resuelve `THYROX_ROOT`
+desde su propia ubicación y exporta `PYTHONPATH`, que es justo lo que una
+invocación por ruta no hace: `python3 src/session/job_runs.py` muere con
+`ModuleNotFoundError` porque `job_runs` es **biblioteca** —la consume `bg.sh`—
+y ni siquiera tiene superficie de CLI.
+
+Dos precondiciones, declaradas porque su ausencia es ruidosa y no silenciosa:
+un envoltorio de un `.py` exige el entorno del proveedor y **rehúsa con exit 2
+nombrando `uv sync`** si falta; y `bg` a secas colisiona con el builtin de
+bash, de ahí `thyrox-bg`. `bin/` **no** está en `PATH` por defecto: se invoca
+con ruta relativa a la raíz de thyrox, o se copia a `~/.local/bin` con
+`python3 src/session/generate_bin.py --install-user-bin` —conveniencia para un
+shell interactivo, nunca precondición—. Que `bin/` esté al día lo publica
+`python3 src/session/generate_bin.py --check`.
 
 ## Por qué un subagente NO es «segundo plano»
 
@@ -70,8 +88,8 @@ convierte el segundo plano en un primer plano lento.
 lanzar** y el primer plano queda libre — la forma de `qsub -W depend=afterok`:
 
 ```bash
-bash src/session/wait-jobs.sh register b "$LOG_B" --after-ok a --run "<comando>"
-bash src/session/wait-jobs.sh dispatch     # mueve la cadena; no bloquea
+bash bin/wait-jobs register b "$LOG_B" --after-ok a --run "<comando>"
+bash bin/wait-jobs dispatch     # mueve la cadena; no bloquea
 ```
 
 `register --after-ok <pred> --run <cmd>` **no lanza nada**: escribe la arista en
@@ -108,7 +126,7 @@ Además nace **fuera del ledger**: el Stop gate no lo ve, así que es huérfano 
 construcción. La salida es adoptarlo por su identificador, no re-lanzarlo:
 
 ```bash
-bash src/session/wait-jobs.sh adopt-external --id <task-id> --log <ruta>
+bash bin/wait-jobs adopt-external --id <task-id> --log <ruta>
 ```
 
 `adopt-external` engancha el marcador que el propio cliente escribe
@@ -132,9 +150,9 @@ corrección es que `bg.sh` mismo componga el `--marker`, con dos subcomandos
 que no existían hasta TASK-THYROX-0028:
 
 ```bash
-bash src/session/bg.sh start suite --grace 0 -- <comando-largo>
-bash src/session/bg.sh register suite      # compone el --marker correcto solo
-bash src/session/wait-jobs.sh wait --timeout 1800
+bash bin/thyrox-bg start suite --grace 0 -- <comando-largo>
+bash bin/thyrox-bg register suite      # compone el --marker correcto solo
+bash bin/wait-jobs wait --timeout 1800
 ```
 
 `bg.sh register <nombre>` resuelve el log y el pid del trabajo ya lanzado
@@ -225,7 +243,7 @@ y ninguna familia larga coincide. Es otro eje, no un hueco de aquél.
 ### El mecanismo: `src/session/bounded_scan.py`
 
 ```bash
-python3 src/session/bounded_scan.py /home/user/thyrox --name '*.sqlite3'
+bash bin/bounded_scan /home/user/thyrox --name '*.sqlite3'
 ```
 
 Poda `.git`, `node_modules` y los cachés de build; tiene tope de entradas y
