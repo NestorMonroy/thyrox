@@ -147,6 +147,24 @@ def test_minter_sees_ids_that_live_only_in_the_store(home: pathlib.Path,
           siguiente == f"H-{PREFIX}-08", siguiente)
 
 
+def test_the_verifier_also_sees_the_store(home: pathlib.Path,
+                                          docs: pathlib.Path) -> None:
+    """`is_free` une las dos fuentes, igual que `next_id`.
+
+    Sin esta mitad el verificador publicaría «libre» sobre un id que el
+    escritor va a rehusar: dos mecanismos con veredictos opuestos sobre el
+    mismo id. El caso mide el id que vive SÓLO como fila —el .rst del
+    consumidor no lo tiene— para que la fuente que discrimina sea el store.
+    """
+    libre_sin_store = hallazgo_ids.is_free(docs, f"H-{PREFIX}-7")
+    check("sin el store, el verificador lo ve libre (la mitad ciega)",
+          libre_sin_store is True, str(libre_sin_store))
+    libre_con_store = hallazgo_ids.is_free(docs, f"H-{PREFIX}-7",
+                                           store_path=store_path(home))
+    check("con el store, el verificador lo ve OCUPADO",
+          libre_con_store is False, str(libre_con_store))
+
+
 def test_minter_still_reads_the_consumer_tree(home: pathlib.Path,
                                               docs: pathlib.Path) -> None:
     """El control que impide que la mitad nueva tape a la vieja.
@@ -198,6 +216,7 @@ def main() -> int:
         test_writer_refuses_an_existing_finding_id(base / "a")
         test_writer_updates_when_the_caller_declares_it(base / "b")
         test_minter_sees_ids_that_live_only_in_the_store(base / "c", docs)
+        test_the_verifier_also_sees_the_store(base / "c", docs)
         test_minter_still_reads_the_consumer_tree(base / "c", docs)
     test_the_modules_under_test_do_not_write_to_the_tree()
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "

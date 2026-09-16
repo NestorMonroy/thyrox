@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""hallazgo_ids.py — el next_number ``H-<PREFIJO>-N`` libre, medido contra el
+"""hallazgo_ids.py — el siguiente ``H-<PREFIJO>-N`` libre, medido contra el
 árbol real de docs — no acuñado de memoria ni acotado a una iniciativa.
 
 Por qué existe
@@ -8,7 +8,7 @@ Por qué existe
 **reinicia por sesión** — ahí el problema es que dos sesiones distintas
 colisionan en el mismo número por construcción. Un ``H-<PREFIJO>-N`` de
 hallazgo es distinto: nadie lo asigna por sesión, lo elige quien escribe el
-path_item, y el único riesgo es no mirar bien todo el árbol antes de elegir.
+archivo, y el único riesgo es no mirar bien todo el árbol antes de elegir.
 
 Ese riesgo se midió dos veces en la misma sesión que originó este módulo: la
 primera vez el ``ls`` que buscaba "el número más alto" se acotó a una sola
@@ -20,18 +20,18 @@ que un guion versionado no vuelve a tener que rehacer, ni a poder acotar mal.
 
 Qué NO resuelve
 -----------------
-Dos sesiones que acuñen el MISMO prefix en el MISMO instante pueden proponer
+Dos sesiones que acuñen el MISMO prefijo en el MISMO instante pueden proponer
 el mismo número — este módulo no tiene bloqueo ni reserva, sólo mide el
 árbol en el momento en que se le pregunta. La defensa contra eso es la misma
 que ya rige para cualquier commit en este ecosistema: el hallazgo se escribe
 y se publica de inmediato, así que la ventana de colisión es la de escribir
-un path_item, no la de una sesión entera.
+un archivo, no la de una sesión entera.
 
 Dónde vive el árbol que se escanea
 ------------------------------------
-TODO hallazgo, sin importar su prefix — ``H-API-*``, ``H-UI-*``,
+TODO hallazgo, sin importar su prefijo — ``H-API-*``, ``H-UI-*``,
 ``H-THYROX-*``— vive bajo ``source/gestion/pm/`` de **kaupamex-docs**, nunca
-en el repo que el prefix nombra. El prefijo filtra QUÉ se cuenta; la raíz a
+en el repo que el prefijo nombra. El prefijo filtra QUÉ se cuenta; la raíz a
 escanear es siempre la misma, y se resuelve con ``reach.root('docs')``
 (DEC-04: el cableado del consumidor no se codifica a mano).
 """
@@ -48,12 +48,12 @@ sys.path.insert(0, str(HERE.parent / "paths"))
 import reach  # noqa: E402  (la ruta se compone arriba, a propósito)
 
 #: Toda cita de un hallazgo, en cualquier forma en que el árbol la escriba:
-#: el nombre de path_item (``hallazgo-H-API-259-...rst``), la etiqueta ancla
+#: el nombre del archivo (``hallazgo-H-API-259-...rst``), la etiqueta ancla
 #: (``.. _h-api-259:``, en minúscula — por eso el patrón no ancla mayúscula
-#: en el prefix), o una mención suelta en prosa o en el monolito
+#: en el prefijo), o una mención suelta en prosa o en el monolito
 #: ``audits/hallazgos-<slug>.rst`` que ``hallazgos-documentacion-
 #: obligatoria.md`` congela en vez de migrar y que cita varios números
-#: dentro del MISMO path_item, ninguno en su nombre.
+#: dentro del MISMO archivo, ninguno en su nombre.
 _ID_RE = re.compile(r'\bH-(?P<prefix>[A-Za-z]+)-(?P<number>\d+)\b')
 
 
@@ -74,20 +74,20 @@ def docs_root(consumer: str = 'docs') -> Path:
 
 
 def used_numbers(source_root: Path, prefix: str) -> list[int]:
-    """Todo número ya usado bajo ``prefijo``, en cualquier path_item de text
+    """Todo número ya usado bajo ``prefijo``, en cualquier archivo de texto
     del árbol — no sólo ``.rst``: un barrido en ``.py`` o una evidencia en
     ``.txt`` pueden citar el mismo literal.
 
-    Un path_item que no decodifica como UTF-8 se salta — no aborta el
+    Un archivo que no decodifica como UTF-8 se salta — no aborta el
     escaneo entero por un solo binario perdido bajo ``source/``.
     """
     prefix = prefix.upper()
     numbers = []
-    for path_item in source_root.rglob('*'):
-        if not path_item.is_file():
+    for file_path in source_root.rglob('*'):
+        if not file_path.is_file():
             continue
         try:
-            text = path_item.read_text(encoding='utf-8')
+            text = file_path.read_text(encoding='utf-8')
         except (UnicodeDecodeError, OSError):
             continue
         for match in _ID_RE.finditer(text):
@@ -102,7 +102,7 @@ def store_numbers(store_path: Path, prefix: str) -> list[int]:
     El acuñador escanea los ``.rst`` del consumidor, y ésa era su única
     fuente. Un hallazgo registrado con ``agent_store.py agregar-hallazgo``
     —la vía que el paso 5 del flujo de sesión declara— no deja ningún
-    ``.rst``, así que era invisible para el next_number número.
+    ``.rst``, así que era invisible para el siguiente número.
 
     Medido por conducta, dos veces en una hora: ``acunar THYROX`` devolvió el
     mismo id las dos veces, y el segundo registro **pisó** al primero sin
@@ -134,7 +134,7 @@ def store_numbers(store_path: Path, prefix: str) -> list[int]:
 def next_id(source_root: Path, prefix: str,
             store_path: Path | None = None) -> str:
     """``H-<PREFIJO>-N``, con ``N`` uno más que el máximo ya usado — o 1 si
-    el prefix no tiene ninguna cita todavía.
+    el prefijo no tiene ninguna cita todavía.
 
     Por DEBAJO de 10 lleva un cero de relleno a dos dígitos —
     ``H-API-01``..``H-API-09`` es la forma real del árbol, medida antes de
