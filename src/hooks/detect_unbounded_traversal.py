@@ -54,6 +54,9 @@ accion y no un reproche.
 *Metrica:* formas de recorrido sin cota y raices pesadas, ambas por patron
 lexico sobre el texto completo del comando.
 *Ciega a:* un guion invocado por ruta, cuyo cuerpo no viaja en el comando; a
+la familia de proceso (``awk``, ``sort``, ``xargs``…) cuando su entrada llega
+por una tuberia cuyo productor este detector no marco —se mide la fuente, no el
+consumidor, y esa eleccion se declara arriba—; a
 una raiz pesada que llegue por una variable que este detector no conoce; y a
 ``rg``, que respeta ``.gitignore`` y por eso no cae en la clase — pero tampoco
 se descuenta explicitamente.
@@ -71,6 +74,24 @@ UNBOUNDED_SHAPES: tuple[tuple[str, str], ...] = (
     ("un grep recursivo", r"\bgrep\b[^|;&]*\s-[a-zA-Z]*[rR][a-zA-Z]*\b"),
     ("un find sin profundidad", r"\bfind\s+[~/$]"),
     ("un listado recursivo", r"\bls\s+-[a-zA-Z]*R\b|\bdu\s+-[a-zA-Z]*s?h?\s+[~/$]"),
+    ("una expansion recursiva del shell", r"\*\*/"),
+    ("un empaquetado de la raiz", r"\btar\s+-?[a-zA-Z]*c[a-zA-Z]*\s"),
+)
+
+#: La familia de PROCESO que ``operaciones-de-archivo-con-bash.md`` prescribe
+#: —``awk``, ``sort``, ``uniq``, ``comm``, ``cut``, ``paste``, ``xargs``,
+#: ``wc``— **no lleva patron propio, y es deliberado**: ninguno de esos
+#: programas recorre un arbol. Lo que los vuelve caros es **de donde les llega
+#: la entrada**, y esa entrada es siempre una de las formas de arriba: una
+#: expansion ``**/`` del shell, un ``find`` sin profundidad, un ``grep -r``.
+#:
+#: Anadirlos como familia seria medir el consumidor y concluir sobre el
+#: productor — el sub-patron C de ``metrica-decide-la-conclusion.md``: un
+#: ``awk '{s+=$1}' archivo.tsv`` es instantaneo y un ``awk`` alimentado por
+#: ``find / `` no termina, y el literal ``awk`` no distingue los dos casos.
+#: Por eso el detector marca la FUENTE de la entrada y los deja pasar.
+CONSUMERS_WITHOUT_OWN_PATTERN: tuple[str, ...] = (
+    "awk", "sort", "uniq", "comm", "cut", "paste", "xargs", "wc", "shuf", "cat",
 )
 
 #: Raices cuyo subarbol lleva el volumen que no se ve en `git ls-files`:

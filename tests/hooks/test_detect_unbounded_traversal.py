@@ -106,6 +106,32 @@ def test_warns_when_the_root_comes_from_the_provider_variable():
     assert _detect('grep -rn foo "$THYROX_ROOT"') is not None
 
 
+def test_warns_on_the_shell_recursive_expansion_that_feeds_awk():
+    """`awk` no recorre nada: lo caro es el `**/` que le da de comer.
+
+    Es el caso que el detector NO veia mientras solo miraba `grep`: la familia
+    de proceso que el arbol prescribe —awk, sort, cut, uniq, comm, xargs, wc—
+    se vuelve cara por su ENTRADA, y la entrada es una expansion recursiva.
+    """
+    assert _detect("awk '{s+=$1} END{print s}' /home/user/thyrox/**/*.log") is not None
+    assert _detect("wc -l /home/user/thyrox/**/*.py | sort -k1nr | head") is not None
+    assert _detect("cut -f2 /home/user/odoo-tools/**/*.tsv | sort | uniq -c") is not None
+
+
+def test_the_process_family_alone_is_not_the_subject():
+    """Los mismos programas sobre un archivo concreto: calla.
+
+    Marcar `awk` como familia habria avisado aqui, que es el falso positivo que
+    vuelve ruido al aviso. El detector mide la fuente de la entrada.
+    """
+    assert _detect("awk '{s+=$1} END{print s}' /home/user/thyrox/censo.tsv") is None
+    assert _detect("cut -f2 datos.tsv | sort | uniq -c | sort -k1nr") is None
+
+
+def test_warns_on_an_unbounded_xargs_fed_by_find():
+    assert _detect("find /home/user/thyrox -name '*.log' | xargs -P4 gzip") is not None
+
+
 def test_stays_silent_on_ordinary_commands():
     assert _detect("git status --short") is None
     assert _detect("cat src/session/bounded_scan.py") is None
