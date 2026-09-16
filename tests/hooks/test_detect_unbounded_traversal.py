@@ -64,16 +64,74 @@ def test_warns_on_the_real_runaway_command():
 
 
 def test_the_heavy_root_axis_carries_its_own_weight():
-    """Misma FORMA, raiz estrecha: el aviso no sale.
+    """Misma FORMA LINEAL, raiz estrecha: el aviso no sale.
 
-    Es la anulacion del eje de raiz. Si este caso avisara, el detector seria
-    un veto a `recursive=True` y no un juicio sobre el coste.
+    Es la anulacion del eje de raiz, y sigue viva para la familia cuyo coste
+    ES lineal en el tamano del subarbol. Si este caso avisara, el detector
+    seria un veto a `rglob` y no un juicio sobre el coste.
+
+    El caso que ocupaba este sitio -`glob(..., recursive=True)` sobre `src/`-
+    se mudo abajo: h-thyrox-29 lo midio y NO TERMINA en 45 s, asi que su
+    silencio era un falso negativo, no una anulacion.
     """
-    assert _detect("python3 -c \"import glob; glob.glob('src/**/*.py', recursive=True)\"") is None
+    assert _detect("python3 -c \"import pathlib; pathlib.Path('src').rglob('*.py')\"") is None
+    assert _detect("grep -rn foo src/session/") is None
 
 
 def test_warns_when_the_same_shape_points_at_a_heavy_root():
-    assert _detect("python3 -c \"import glob; glob.glob('/home/user/thyrox/**/*.py', recursive=True)\"") is not None
+    assert _detect("python3 -c \"import pathlib; pathlib.Path('/home/user/thyrox').rglob('*.py')\"") is not None
+
+
+def test_warns_on_a_symlink_follower_over_a_LIGHT_root():
+    """La familia que sigue enlaces avisa SIN condicion de raiz.
+
+    Control positivo REAL, no fabricado: `src/packages/agent` tiene 369
+    entradas -la raiz mas ligera medida- y `glob(..., recursive=True)` no
+    termina en 30 s sobre ella, mientras `rglob` la recorre en 0.01 s. El
+    peso de la raiz no discrimina este fenomeno (h-thyrox-29).
+    """
+    aviso = _detect(
+        "python3 -c \"import glob; glob.glob('src/packages/agent/**/*.json', recursive=True)\""
+    )
+    assert aviso is not None
+    assert "enlaces" in aviso
+
+
+def test_the_symlink_family_separates_r_from_R():
+    """`-r` no sigue enlaces y `-R` si — medido, no supuesto.
+
+    Sobre un arbol con un enlace a directorio: `grep -r` da 0 hits y
+    `grep -R` da 1; `find` 0 y `find -L` 1; `rg` 0 y `rg -L` 1.
+    """
+    assert _detect("grep -rn foo src/session/") is None
+    assert _detect("grep -Rn foo src/session/") is not None
+    assert _detect("find src/session -name '*.sh'") is None
+    assert _detect("find -L src/session -name '*.sh'") is not None
+
+
+def test_the_symlink_axis_carries_its_own_weight():
+    """Anulacion de la familia nueva: sin ella, sus casos vuelven al silencio.
+
+    Con `SYMLINK_FOLLOWING_SHAPES` vacia, los tres de abajo dejan de avisar
+    porque sus raices son ligeras — que es exactamente el falso negativo que
+    h-thyrox-29 midio. Los de la familia lineal NO dependen de ella.
+    """
+    casos_de_giro = (
+        "python3 -c \"import glob; glob.glob('src/packages/agent/**/*.json', recursive=True)\"",
+        "grep -Rn foo src/session/",
+        "find -L src/session -name '*.sh'",
+    )
+    assert all(_detect(c) is not None for c in casos_de_giro)
+
+    guardadas = gate.SYMLINK_FOLLOWING_SHAPES
+    try:
+        gate.SYMLINK_FOLLOWING_SHAPES = ()
+        caidas = [c for c in casos_de_giro if _detect(c) is None]
+        # Caen EXACTAMENTE los tres, ni uno mas: la familia lineal sigue viva.
+        assert len(caidas) == 3, caidas
+        assert _detect("python3 -c \"import pathlib; pathlib.Path('/home/user/thyrox').rglob('*.py')\"") is not None
+    finally:
+        gate.SYMLINK_FOLLOWING_SHAPES = guardadas
 
 
 def test_the_bound_discount_carries_its_own_weight():

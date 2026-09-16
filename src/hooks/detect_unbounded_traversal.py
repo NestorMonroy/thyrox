@@ -25,17 +25,34 @@ la forma vive dentro de un heredoc, no en posicion de comando. El hermano calla
 con razon — no es su eje. Aqui el sujeto es la **forma del recorrido**, asi que
 se escanea el texto entero.
 
-Las dos condiciones, y ambas hacen falta
------------------------------------------
+Dos familias, y sus condiciones NO son las mismas
+--------------------------------------------------
 
-1. **Forma sin cota** — ``recursive=True``, ``rglob``, ``os.walk``, ``grep -r``,
-   ``find`` sin profundidad, ``ls -R``.
-2. **Raiz pesada** — una ruta cuyo subarbol incluye ``node_modules``,
-   ``_references`` o ``.git`` de un repo grande.
+El detector medía una sola clase bajo el rotulo «sin cota», y eran dos
+fenomenos con costes distintos — el sub-patron A de
+``metrica-decide-la-conclusion.md``, con este gate como sujeto. h-thyrox-29 los
+separo midiendo (banco ``particion-de-recorrido-por-raiz-20260916T220401``):
 
-Con la primera sola, el aviso saldria sobre ``src/**/*.py`` —milisegundos— y un
-aviso que sale siempre se aprende a ignorar. Con la segunda sola, saldria sobre
-``cat`` de un archivo de esa raiz. La conjuncion es lo que lo hace informativo.
+**1. Coste LINEAL en el tamano del subarbol** — ``rglob``, ``os.walk`` sin
+seguir enlaces, ``grep -r``, ``find`` sin profundidad, ``ls -R``. Exige **dos**
+condiciones: la forma **y** una raiz pesada. Con la forma sola el aviso saldria
+sobre ``src/**/*.py`` —milisegundos— y un aviso que sale siempre se aprende a
+ignorar; con la raiz sola saldria sobre un ``cat``. La conjuncion es lo que lo
+hace informativo, y sigue vigente para esta familia: ``grep -r`` sobre
+``odoo-tools`` —861 555 entradas— es un timeout real.
+
+**2. Coste COMBINATORIO por el grafo de enlaces** — todo lo que **sigue**
+symlinks: ``glob(..., recursive=True)``, ``walk(..., followlinks=True)``,
+``find -L``, ``grep -R``, ``rg -L``, ``du -L``, ``tar -h``. Avisa **sin
+condicion de raiz**, porque el peso de la raiz no discrimina este fenomeno:
+medido, ``src/packages/agent`` tiene **369 entradas** y ``glob(...,
+recursive=True)`` **no termina en 30 s** sobre ella, mientras ``odoo-tools``
+con **861 555** termina en 15.51 s. Lo que explota es el abanico —844 enlaces
+bajo ``src/``, 137 de workspace en 21 paquetes, abanico hasta 18—, acotado por
+ELOOP a los 41 saltos: no es bucle infinito sino explosion combinatoria.
+
+Aplicar la condicion de raiz a la familia 2 era un **falso negativo medido**:
+el comando que gira sobre una raiz ligera pasaba en silencio.
 
 Y los **descuentos** callan lo que ya esta acotado: ``--include``,
 ``--exclude-dir``, ``-maxdepth``, ``-prune``, el indice de git, la poda in situ
@@ -51,13 +68,24 @@ sub-patron D con el gate como sujeto. Lo que si hace es nombrar el mecanismo
 —``bounded_scan.py``— y el piso —``timeout``—, para que el aviso deje una
 accion y no un reproche.
 
-*Metrica:* formas de recorrido sin cota y raices pesadas, ambas por patron
-lexico sobre el texto completo del comando.
-*Ciega a:* un guion invocado por ruta, cuyo cuerpo no viaja en el comando; a
-la familia de proceso (``awk``, ``sort``, ``xargs``…) cuando su entrada llega
-por una tuberia cuyo productor este detector no marco —se mide la fuente, no el
-consumidor, y esa eleccion se declara arriba—; y a
-una raiz pesada que llegue por una variable que este detector no conoce.
+*Metrica:* formas de recorrido de las dos familias y raices pesadas, todas por
+patron lexico sobre el texto completo del comando. Cual sigue enlaces y cual no
+esta medido por conducta, no supuesto: sobre un arbol con un enlace a
+directorio, ``grep -r`` da 0 hits y ``grep -R`` 1; ``find`` 0 y ``find -L`` 1;
+``rg`` 0 y ``rg -L`` 1.
+*Ciega a:* un guion invocado por ruta, cuyo cuerpo no viaja en el comando
+—**TASK-THYROX-0062**, declarada DESCONOCIDO con su condicion de cierre: el
+censo cross-language no halla ningun positivo real hoy, asi que su control
+positivo habria que fabricarlo—; a la familia de proceso (``awk``, ``sort``,
+``xargs``…) cuando su entrada llega por una tuberia cuyo productor este
+detector no marco —se mide la fuente, no el consumidor, y esa eleccion se
+declara arriba—; y a una raiz pesada que llegue por una variable que este
+detector no conoce.
+
+Y ``HEAVY_ROOTS`` sigue listando ``/home/user/thyrox``, cuyo recorrido lineal
+cuesta 0.36 s — el orden de un ``cat``. Su recalibracion por coste es
+**TASK-THYROX-0061**; no se hace aqui porque retirar una raiz exige su propio
+control de anulacion, y este pase midio otra cosa.
 """
 from __future__ import annotations
 
@@ -67,9 +95,11 @@ import re
 #: (etiqueta, patron); la etiqueta se cita en el aviso para que el lector sepa
 #: que lo disparo en vez de recibir un recordatorio generico.
 UNBOUNDED_SHAPES: tuple[tuple[str, str], ...] = (
-    ("un glob recursivo", r"recursive\s*=\s*True|\.rglob\s*\(|glob\s*\(\s*['\"][^'\"]*\*\*"),
+    ("un glob recursivo", r"\.rglob\s*\(|glob\s*\(\s*['\"][^'\"]*\*\*"),
     ("un os.walk", r"\bos\.walk\s*\("),
-    ("un grep recursivo", r"\bgrep\b[^|;&]*\s-[a-zA-Z]*[rR][a-zA-Z]*\b"),
+    # ``-r`` NO sigue symlinks y ``-R`` SI (medido: mismo arbol con un enlace a
+    # directorio, 0 hits contra 1). Por eso ``-R`` vive en la familia de giro.
+    ("un grep recursivo", r"\bgrep\b[^|;&]*\s-[a-z]*r[a-z]*\b"),
     # ``rg`` recorre el arbol por DEFECTO —esa es su razon de ser—, asi que es
     # una forma de recorrido como las demas. Lo que lo distingue es que trae su
     # propia cota, y eso lo resuelve el descuento de abajo, no esta lista.
@@ -78,6 +108,36 @@ UNBOUNDED_SHAPES: tuple[tuple[str, str], ...] = (
     ("un listado recursivo", r"\bls\s+-[a-zA-Z]*R\b|\bdu\s+-[a-zA-Z]*s?h?\s+[~/$]"),
     ("una expansion recursiva del shell", r"\*\*/"),
     ("un empaquetado de la raiz", r"\btar\s+-?[a-zA-Z]*c[a-zA-Z]*\s"),
+)
+
+#: Formas que **SIGUEN** enlaces simbolicos. Son otra clase, no un subconjunto
+#: de la de arriba, y por eso avisan **sin condicion de raiz**: lo que las
+#: vuelve caras no es el volumen del subarbol sino el grafo de enlaces.
+#:
+#: Medido (h-thyrox-29, banco ``particion-de-recorrido-por-raiz-20260916T220401``):
+#: ``src/packages/agent`` tiene **369 entradas** y ``Path.rglob`` la recorre en
+#: 0.01 s, pero ``glob.glob(..., recursive=True)`` **no termina en 30 s** sobre
+#: ella; ``odoo-tools``, con **861 555 entradas**, termina en 15.51 s. Una raiz
+#: de 369 entradas gira y una de 861k no: el peso de la raiz no discrimina este
+#: fenomeno. La causa es el abanico de enlaces —844 bajo ``src/``, 137 de
+#: workspace en 21 paquetes, abanico hasta 18— que el kernel corta a los 41
+#: saltos (ELOOP): no es bucle infinito sino explosion combinatoria acotada.
+#:
+#: Cual sigue enlaces y cual no esta MEDIDO, no supuesto: sobre un arbol con un
+#: enlace a directorio, ``grep -r`` da 0 hits y ``grep -R`` 1; ``find`` 0 y
+#: ``find -L`` 1; ``rg`` 0 y ``rg -L`` 1.
+#:
+#: ``recursive=True`` y ``followlinks=True`` van anclados a su llamada
+#: (``glob(``/``walk(``) a proposito: sin el ancla, un ``grep -rn
+#: recursive=True .claude/rules/`` —buscar el literal— disparaba el aviso.
+SYMLINK_FOLLOWING_SHAPES: tuple[tuple[str, str], ...] = (
+    ("un glob que sigue enlaces", r"\b(?:i)?glob\s*\(.{0,200}?recursive\s*=\s*True"),
+    ("un os.walk que sigue enlaces", r"\bwalk\s*\(.{0,200}?followlinks\s*=\s*True"),
+    ("un find que sigue enlaces", r"\bfind\s+-L\b"),
+    ("un grep que sigue enlaces", r"\bgrep\b[^|;&]*\s-[a-zA-Z]*R[a-zA-Z]*\b"),
+    ("un ripgrep que sigue enlaces", r"\brg\b[^|;&]*\s(?:-L\b|--follow\b)"),
+    ("un du que sigue enlaces", r"\bdu\b[^|;&]*\s-[a-zA-Z]*L[a-zA-Z]*\b"),
+    ("un tar que sigue enlaces", r"\btar\b[^|;&]*\s(?:-[a-zA-Z]*h[a-zA-Z]*\b|--dereference\b)"),
 )
 
 #: La familia de PROCESO que ``operaciones-de-archivo-con-bash.md`` prescribe
@@ -146,6 +206,12 @@ def matched_shapes(command: str) -> list[str]:
             if re.search(pattern, command)]
 
 
+def matched_symlink_shapes(command: str) -> list[str]:
+    """Las formas que siguen enlaces simbolicos que este comando contiene."""
+    return [label for label, pattern in SYMLINK_FOLLOWING_SHAPES
+            if re.search(pattern, command)]
+
+
 def touches_heavy_root(command: str) -> bool:
     """Si el comando nombra una raiz cuyo subarbol es volumen no versionado."""
     return any(re.search(pattern, command) for pattern in HEAVY_ROOTS)
@@ -161,6 +227,24 @@ def detect(payload: dict) -> str | None:
     # Un recorrido ya acotado cumple la regla: callar.
     if BOUNDED.search(command):
         return None
+
+    # La familia que SIGUE enlaces avisa SIN condicion de raiz: lo que la
+    # vuelve cara es el grafo de enlaces, no el volumen. Va antes del descuento
+    # de ``rg`` porque ``rg -L`` sigue enlaces aunque respete .gitignore.
+    symlink_shapes = matched_symlink_shapes(command)
+    if symlink_shapes:
+        return (
+            "GATE DE RECORRIDO ACOTADO — este comando hace "
+            + ", ".join(symlink_shapes)
+            + ". Esa forma NO depende del tamano de la raiz: medido, una de "
+            "369 entradas no termina en 30 s y una de 861 555 termina en "
+            "15.51 s (h-thyrox-29). Lo que explota es el abanico de enlaces, "
+            "acotado por ELOOP a los 41 saltos — combinatorio, no infinito. "
+            f"Usa `python3 {MECHANISM} <raiz> --name '<patron>'`, que no sigue "
+            "enlaces, o retira la bandera que los sigue (-L, -R, --follow, "
+            "recursive=True, followlinks=True). Y el piso, que esta siempre: "
+            "antepon `timeout 60`."
+        )
 
     # ``rg`` trae su propia cota, salvo que el comando la desactive.
     if RIPGREP.search(command) and not RIPGREP_UNBOUNDED.search(command):

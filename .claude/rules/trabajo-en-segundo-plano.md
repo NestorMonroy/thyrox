@@ -264,12 +264,40 @@ ningún hook cargue.
 ### El gate
 
 `src/hooks/detect_unbounded_traversal.py`, décimo detector de
-`pretooluse_dispatch`. Exige **dos** condiciones: forma sin cota
-(`recursive=True`, `rglob`, `os.walk`, `grep -r`, `find` sin profundidad,
-`ls -R`) **y** raíz pesada. Con la primera sola avisaría sobre `src/**/*.py`
-—milisegundos—, y un aviso que sale siempre se aprende a ignorar. Descuenta lo
-ya acotado: `--include`, `--exclude-dir`, `-maxdepth`, `-prune`, el índice de
-git, la poda in situ de `os.walk`, y `timeout N`.
+`pretooluse_dispatch`. **Mide dos familias, y sus condiciones NO son las
+mismas** — h-thyrox-29 las separó midiendo, después de que el detector las
+tratara como una sola bajo el rótulo «sin cota» (el sub-patrón A de
+`metrica-decide-la-conclusion.md`, con este gate como sujeto).
+
+| Familia | Formas | Condición para avisar |
+|---|---|---|
+| **1 — coste LINEAL** en el tamaño del subárbol | `rglob`, `os.walk`, `grep -r`, `find` sin profundidad, `ls -R` | la forma **y** una raíz pesada |
+| **2 — coste COMBINATORIO** por el grafo de enlaces | `glob(…, recursive=True)`, `walk(…, followlinks=True)`, `find -L`, `grep -R`, `rg -L`, `du -L`, `tar -h` | **la forma sola** |
+
+**La familia 1 exige las dos condiciones, y sigue siendo lo correcto para
+ella:** con la forma sola el aviso saldría sobre `src/**/*.py` —milisegundos—
+y un aviso que sale siempre se aprende a ignorar; con la raíz sola saldría
+sobre un `cat`. Un `grep -r` sobre `odoo-tools` —861 555 entradas— es un
+timeout real, y ahí el peso de la raíz **sí** discrimina.
+
+**La familia 2 avisa sin condición de raíz, porque el peso de la raíz no
+discrimina ese fenómeno.** Medido: `src/packages/agent` tiene **369 entradas**
+—la raíz más ligera del árbol— y `glob(…, recursive=True)` **no termina en
+30 s** sobre ella, mientras `odoo-tools` con **861 555** termina en **15.51 s**.
+Lo que explota es el abanico de enlaces —844 symlinks bajo `src/`, 137 de
+workspace en 21 paquetes, abanico hasta 18—, acotado por `ELOOP` a los 41
+saltos: explosión combinatoria, no bucle infinito. Aplicarle la condición de
+raíz era un **falso negativo medido**: el comando que gira sobre una raíz
+ligera pasaba en silencio.
+
+**Cuál sigue enlaces y cuál no está medido por conducta, no supuesto.** Sobre
+un árbol con un enlace a directorio: `grep -r` da 0 hits y `grep -R` da 1;
+`find` 0 y `find -L` 1; `rg` 0 y `rg -L` 1. De ahí que `-r` viva en la familia
+lineal y `-R` en la de giro, que a simple vista parecen la misma bandera.
+
+Los **descuentos** callan lo ya acotado, y sólo aplican a la familia 1:
+`--include`, `--exclude-dir`, `-maxdepth`, `-prune`, el índice de git, la poda
+in situ de `os.walk`, y `timeout N`.
 
 **`rg` cuenta como acotado, y eso está medido, no supuesto.** Respeta
 `.gitignore` y salta los ocultos por defecto: en este árbol visita **14 067**
@@ -277,7 +305,8 @@ archivos contra **50 190** con `--no-ignore --hidden` — una cota real de 3.6×
 que no hay que pedir. Por eso es descuento y no ceguera. Pero **el descuento se
 retira** cuando el comando desactiva la cota: `rg --no-ignore` recorre lo mismo
 que un `grep -r` pelado, y tratarlo como acotado sería confiar en el nombre del
-programa en vez de en lo que el comando hace.
+programa en vez de en lo que el comando hace. Y `rg -L` **no** lo recibe: sigue
+enlaces, así que entra por la familia 2 antes de llegar al descuento.
 
 La familia de **proceso** que este árbol prescribe —`awk`, `sort`, `uniq`,
 `comm`, `cut`, `paste`, `xargs`, `wc`— **no lleva patrón propio, y es
@@ -292,11 +321,14 @@ python3 tests/hooks/test_detect_unbounded_traversal.py
 python3 tests/session/test_bounded_scan.py
 ```
 
-**Sus tres guardas se probaron por anulación**, y cada una carga su peso:
-retirado el eje de raíz caen 2 casos, retirado el descuento caen 2, retirado
-sólo el descuento de `timeout` cae exactamente 1 — ni una más en ninguno de los
-tres. El control positivo **no es fabricado**: es el comando real del episodio,
-citado verbatim.
+**Sus cuatro guardas se probaron por anulación** —el eje de raíz, la familia de
+enlaces, el descuento y el descuento de `timeout`—, y cada una carga su peso:
+al retirarla caen **exactamente** los casos que dependen de ella, ni uno más.
+Qué casos son lo publica la suite al correr, no esta prosa: es propiedad de un
+artefacto que crece (`calibration-verified-numbers.md`). Los controles
+positivos **no son fabricados**: el de la familia 1 es el comando real del
+episodio citado verbatim, y el de la familia 2 es el `glob` sobre
+`src/packages/agent` que h-thyrox-29 midió sin terminar.
 
 **Avisa, no bloquea**, como sus hermanos: un patrón léxico no distingue un
 `os.walk` con poda escrita tres líneas más abajo de uno sin ella.
