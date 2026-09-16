@@ -105,3 +105,37 @@ midio antes de lanzarlos, porque no habia con que.
 *Metrica:* las cuatro suites y la salida de los cuatro modulos contra
 `kaupamex-docs` y `thyrox`, en este pase.
 *Ciega a:* lo declarado en `manifest.json`.
+
+## Addendum — lo que cambió DESPUÉS de escribir la tabla de arriba
+
+La tabla es evidencia de la primera pasada y se queda como está. Dos
+correcciones del ejecutor llegaron después y cambiaron el árbol, no el
+resultado:
+
+1. **`byte_entropy.py` → `src/lib/compressibility.py`.** El nombre decía el
+   mecanismo (entropía de bytes) y no lo que el módulo concluye (cuánto se
+   deja comprimir un payload). Es el principio 9 de Clean Code —la
+   arquitectura revela intención, no cómo está hecha— y además ataba el
+   módulo a un solo episodio: medía un `path`, así que nada más podía
+   usarlo. Hoy mide un `payload: bytes`, con `measure_file()` y stdin como
+   las dos puertas.
+2. **`src/repo/clone.py` — la capa que faltaba.** Los cuatro módulos tenían
+   cada uno su propio `_run`/`_is_clone`, que es el monolito por copia que
+   la lección de Unix del ejecutor señala: cada herramienta hace una cosa y
+   las herramientas se construyen unas sobre otras. `clone.py` es esa capa;
+   los otros tres de `repo/` dependen de ella.
+
+Conteo final, medido en el mismo pase que este addendum:
+
+| suite | aserciones |
+|---|---|
+| `tests/repo/test_clone.py` | 10 |
+| `tests/repo/test_object_footprint.py` | 10 |
+| `tests/repo/test_gitlink_bump.py` | 16 |
+| `tests/repo/test_pack_headroom.py` | 18 |
+| `tests/lib/test_compressibility.py` | 15 |
+| **total** | **69** |
+
+El `manifest.json` sí se corrigió en el sitio: sus claves `instrument`,
+`metric` y `destination` son **punteros**, no evidencia — un puntero a un
+archivo que ya no existe no documenta nada, sólo rompe.
