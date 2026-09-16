@@ -27,6 +27,35 @@ que ya rige para cualquier commit en este ecosistema: el hallazgo se escribe
 y se publica de inmediato, así que la ventana de colisión es la de escribir
 un archivo, no la de una sesión entera.
 
+Cuál de las dos fuentes GOBIERNA — medido antes de declararlo
+--------------------------------------------------------------
+Un id nace en dos sitios: aquí, contra el árbol de ``.rst`` del consumidor, y
+en ``agent_store.py agregar-hallazgo``, como fila de ``findings_history``. Hasta
+2026-09-16 la unión de las dos en lectura se leía como «dos fuentes iguales»,
+y **no lo son**.
+
+Medido sobre los seis prefijos del corpus: los números que viven **sólo** como
+fila del store eran **cero en cinco** de ellos, y **tres** en el sexto
+(``THYROX``). O sea que el ``.rst`` ya era la fuente de facto y el store ya era
+su índice; nadie lo había declarado. Declarado ahora:
+
+- **El ``.rst`` es el artefacto de gobierno.** Lleva el cuerpo del hallazgo, su
+  etiqueta ``:ref:`` y su fila en el índice de la iniciativa. Es lo que se cita.
+- **La fila del store es su entrada de búsqueda** entre sesiones
+  (``agent_store.py buscar-hallazgos``). No sustituye al archivo.
+- **La unión que este módulo hace al leer es el PUENTE de la ventana** entre
+  registrar la fila y escribir el ``.rst``. Esa ventana es legítima mientras
+  dura; congelada, es deuda — y quien la mide es
+  ``src/verify/check_finding_id_unique.py``, que reporta toda fila sin su
+  archivo.
+
+Por eso el default de :func:`next_id` y :func:`is_free` **consulta el store**:
+un id libre en los ``.rst`` puede estar ocupado por una fila escrita hace un
+minuto, y publicar «libre» sobre esa mitad es exactamente lo que produjo la
+colisión de ``H-THYROX-24`` (dos hallazgos distintos bajo un número, el segundo
+pisando al primero en silencio). El opt-out existe —:data:`NO_STORE`— y es
+**explícito**: sirve para medir el árbol en aislamiento, no para el uso normal.
+
 Dónde vive el árbol que se escanea
 ------------------------------------
 TODO hallazgo, sin importar su prefijo — ``H-API-*``, ``H-UI-*``,
@@ -55,6 +84,36 @@ import reach  # noqa: E402  (la ruta se compone arriba, a propósito)
 #: obligatoria.md`` congela en vez de migrar y que cita varios números
 #: dentro del MISMO archivo, ninguno en su nombre.
 _ID_RE = re.compile(r'\bH-(?P<prefix>[A-Za-z]+)-(?P<number>\d+)\b')
+
+
+class _StoreSentinel:
+    """Centinela de resolución del store. No es una ruta: es una decisión."""
+
+    def __init__(self, name: str) -> None:
+        self._name = name
+
+    def __repr__(self) -> str:  # pragma: no cover - sólo para diagnóstico
+        return self._name
+
+
+#: DEFAULT — resolver el store del proveedor con ``reach.agent_store_path()``.
+#: Un caller que no declara nada obtiene la unión de las dos fuentes, que es la
+#: conducta segura: el árbol solo no ve la fila recién registrada.
+RESOLVE_STORE = _StoreSentinel('RESOLVE_STORE')
+
+#: OPT-OUT explícito — medir **sólo** el árbol del consumidor. Lo usa la suite,
+#: que ejercita el escaneo en aislamiento sobre un árbol de prueba. ``None`` se
+#: admite como su sinónimo por los callers previos a esta distinción.
+NO_STORE = _StoreSentinel('NO_STORE')
+
+
+def _resolved_store(store_path):
+    """La ruta del store, o ``None`` si el caller declaró el opt-out."""
+    if store_path is RESOLVE_STORE:
+        return reach.agent_store_path()
+    if store_path is NO_STORE or store_path is None:
+        return None
+    return store_path
 
 
 def docs_root(consumer: str = 'docs') -> Path:
@@ -132,7 +191,7 @@ def store_numbers(store_path: Path, prefix: str) -> list[int]:
 
 
 def next_id(source_root: Path, prefix: str,
-            store_path: Path | None = None) -> str:
+            store_path: Path | _StoreSentinel | None = RESOLVE_STORE) -> str:
     """``H-<PREFIJO>-N``, con ``N`` uno más que el máximo ya usado — o 1 si
     el prefijo no tiene ninguna cita todavía.
 
@@ -144,14 +203,15 @@ def next_id(source_root: Path, prefix: str,
     ``H-API-010`` — así que el formato es ``:02d}``, no un ancho fijo.
     """
     numbers = used_numbers(source_root, prefix)
-    if store_path is not None:
-        numbers += store_numbers(store_path, prefix)
+    resolved = _resolved_store(store_path)
+    if resolved is not None:
+        numbers += store_numbers(resolved, prefix)
     next_number = (max(numbers) + 1) if numbers else 1
     return f'H-{prefix.upper()}-{next_number:02d}'
 
 
 def is_free(source_root: Path, full_id: str,
-            store_path: Path | None = None) -> bool:
+            store_path: Path | _StoreSentinel | None = RESOLVE_STORE) -> bool:
     """¿``full_id`` NO aparece ya citado en el árbol NI en el store?
 
     Las dos fuentes, por la misma razón que :func:`next_id`: un id libre
@@ -167,20 +227,21 @@ def is_free(source_root: Path, full_id: str,
     number = int(match.group('number'))
     prefix = match.group('prefix')
     used = used_numbers(source_root, prefix)
-    if store_path is not None:
-        used += store_numbers(store_path, prefix)
+    resolved = _resolved_store(store_path)
+    if resolved is not None:
+        used += store_numbers(resolved, prefix)
     return number not in used
 
 
 def _cmd_acunar(args: argparse.Namespace) -> int:
     root = docs_root(args.consumer)
-    print(next_id(root, args.prefix, store_path=reach.agent_store_path()))
+    print(next_id(root, args.prefix))   # default: árbol + store
     return 0
 
 
 def _cmd_verificar(args: argparse.Namespace) -> int:
     root = docs_root(args.consumer)
-    if is_free(root, args.id, store_path=reach.agent_store_path()):
+    if is_free(root, args.id):          # default: árbol + store
         print(f'{args.id} — libre')
         return 0
     print(f'{args.id} — YA EXISTE, colisión', file=sys.stderr)
