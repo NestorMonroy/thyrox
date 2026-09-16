@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Control de ``src/stats/series.py``.
+"""Control de ``src/measurement/series.py``.
 
 La capa que faltaba: cinco de las siete series censadas en
 :ref:`h-thyrox-19` son **procesos de llegada** —solo sellos de tiempo— y
@@ -24,7 +24,7 @@ import sys
 
 HERE = pathlib.Path(__file__).resolve()
 ROOT = HERE.parent.parent.parent
-sys.path.insert(0, str(ROOT / "src/stats"))
+sys.path.insert(0, str(ROOT / "src/measurement"))
 import series  # noqa: E402
 
 passed = failed = 0
