@@ -1,0 +1,4 @@
+{
+  "instrument": "python3 /home/user/thyrox/src/agents/reconcile_store.py --dry-run",
+  "started_at": "2026-09-16T07:27:50+00:00"
+}
