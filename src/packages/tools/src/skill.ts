@@ -11,7 +11,7 @@
  * Es una FÁBRICA, no un `Tool` estático, por la misma razón que `agentTool`
  * (`./agent.ts`): necesita el `registry` en tiempo de ejecución, y
  * `CORE_TOOLS` no puede llevarlo sin cablear el registry al núcleo. El CLI la
- * compone (`bin/harness.ts`), igual que a `agentTool`.
+ * compone (`@thyrox/cli: src/entry/main.ts`), igual que a `agentTool`.
  *
  * El `getPrompt` de un skill puede leer el hilo de la sesión
  * (`SkillContext.messages`) — es la mitad que un `SKILL.md` estático no tiene.

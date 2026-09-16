@@ -9,7 +9,8 @@ export { eagerParseCliFlag, extractArgsAfterDoubleDash } from './argv.ts'
 
 // El hogar de la CLI del harness (#226 tramo 6): el dibujo del flujo de
 // eventos y el selector de reanudacion. El binario que los usa vive en
-// `bin/harness.ts` de este mismo paquete.
+// `src/entry/main.ts` de este mismo paquete — se llamaba `bin/harness.ts`
+// hasta #205.
 export {
   OUTPUT_STYLES, renderEvent, renderStatusLine,
   type OutputStyle, type StatusLine,
@@ -17,7 +18,8 @@ export {
 export { resumeChoices, type ResumeChoice } from './resume.ts'
 
 // El selector de pruebas por impacto (#226 tramo 7): llego aqui porque su
-// unico consumidor es `bin/harness.ts`, que se mudo en el tramo 6. No toca
+// unico consumidor es el punto de entrada, que se mudo en el tramo 6 y hoy
+// es `src/entry/main.ts`. No toca
 // disco — recibe un `Io`, y `fsIo` es la implementacion que si lo toca.
 export { selectTests, type ImpactConfig, type Io } from './testing/impact.ts'
 export { changedPaths, fsIo } from './testing/io.ts'

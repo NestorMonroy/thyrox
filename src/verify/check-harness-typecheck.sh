@@ -27,8 +27,9 @@ set -euo pipefail
 RAIZ="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 # El harness NO dejo de existir: cambio de casa. #226 vacio
 # `src/packages/harness` —su bucle vive en `@thyrox/agent`, su workbench en
-# `src/workbench/`, su triple en `src/reference/`— y el binario `harness.ts`
-# quedo en `@thyrox/cli`. El gate conserva su nombre porque sigue midiendo el
+# `src/workbench/`, su triple en `src/reference/`— y el punto de entrada
+# quedo en `@thyrox/cli`, donde #205 lo renombro de `bin/harness.ts` a
+# `src/entry/main.ts`. El gate conserva su nombre porque sigue midiendo el
 # harness; lo que cambia es donde vive.
 #
 # Con la mudanza el gate mide MAS que antes: la superficie de `cli` alcanza a

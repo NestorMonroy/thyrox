@@ -70,7 +70,8 @@ export const STORE_PATH_VAR = 'THYROX_STORE'
  *
  * Precedencia, de más específica a menos:
  *
- * 1. el valor pasado a mano — lo que hace `--store` de `bin/harness.ts`;
+ * 1. el valor pasado a mano — lo que hace `--store` en
+ *    `@thyrox/cli: src/entry/runLoop.ts:150`;
  * 2. `THYROX_STORE`, la ruta del archivo, leída por `envValue` (proceso y
  *    después `.env`);
  * 3. `THYROX_CONSUMER`, la raíz del consumidor, compuesta con `STORE_DIR`;
@@ -101,8 +102,10 @@ export function storePath(declared?: string): string {
 }
 
 /**
- * La ruta resuelta al cargar el módulo — la que consumen `loop.ts`,
- * `bin/harness.ts` y los tests que abren el store real.
+ * La ruta resuelta al cargar el módulo — la que consumen
+ * `@thyrox/agent: loop/index.ts`, `@thyrox/cli: src/entry/runLoop.ts` y los
+ * tests que abren el store real. Decía `bin/harness.ts`, que #205 renombró a
+ * `src/entry/main.ts` y que ya no lo consume.
  *
  * Se conserva como constante porque sus cuatro consumidores la leen así; quien
  * necesite resolver con un entorno distinto llama a `storePath()`.
