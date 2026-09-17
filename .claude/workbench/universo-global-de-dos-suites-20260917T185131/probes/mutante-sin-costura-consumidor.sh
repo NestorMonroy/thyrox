@@ -45,7 +45,7 @@ AUDIT="$THYROX/src/verify/thyrox-audit.sh"
 # rojo: un fallo por consumidor ausente no distingue «la delegacion lee una
 # clave que no existe» de «no habia arbol que medir».
 CONSUMER="${THYROX_CONSUMER:-/home/user/kaupamex-docs}"
-export THYROX_CONSUMER="$CONSUMER"
+# ANULADO: sin declarar el consumidor
 
 ok=0; fallo=0
 afirmar() {
