@@ -1,0 +1,32 @@
+censo-jsonl: 465 archivo(s) versionado(s) (alcance medido: git ls-files menos _references/, _archived/ y node_modules)
+
+  bucket A — contrato de tercero — NO se convierte: 57
+    package.json (31 archivos)
+    tsconfig.json (11 archivos)
+    tsconfig.tests.json (9 archivos)
+    evals.json (2 archivos)
+    plugin.json
+    multi-interaction-evals.json
+    trigger-evals.json
+    tsconfig.messages.json
+
+  bucket B — ya es JSONL: 3
+    agent-a163953c6da4980e2.jsonl
+    agent-a29f8c2656ce8c9c3.jsonl
+    agent-ab5a332fb0711f638.jsonl
+
+  bucket D — evidencia capturada — NO se convierte: 314
+    .claude/workbench/session-task-dump-20260910T070654/outputs/  (297 archivo(s))
+    .claude/workbench/audit-consumer-provider-scripts-20260913T231343/outputs/  (11 archivo(s))
+    .claude/workbench/correr-connectionToolCompression-de-verdad-20260913T064445/outputs/  (2 archivo(s))
+    .claude/workbench/audit-session-tools-20260913T213511/outputs/  (1 archivo(s))
+    .claude/workbench/classify-unlabeled-task-layer-20260912T101557/outputs/  (1 archivo(s))
+    .claude/workbench/verificar-hogares-de-sesion-thyrox-20260912T082046/outputs/  (1 archivo(s))
+    tests/task/fixtures/board_store_drift/card_369.json  (1 archivo(s))
+
+  bucket C — propiedad de thyrox — se convierte: 91
+    manifest.json                                (87 archivos)   lectores=16
+    models.json                                                  lectores=8
+    premise_drift_baseline.json                                  lectores=1
+    agent_dispatch_orm.json                                      lectores=0
+    store_row_369.json                                           lectores=1
