@@ -1,0 +1,17 @@
+=== la causa, medida por conducta ===
+FUENTES = ['get', 'get_secret', 'get_secret_str', 'getenv']
+  os.getenv        -> branch_order ['declared', 'otra']
+  os.environ.get   -> branch_order ['declared', 'otra']
+  env_value        -> branch_order []
+
+reach.py: assignment_order -> ['declared']
+reach.py: branch_order     -> []
+
+=== ligaduras de `declared` en reach.py: 1 visible, 6 invisibles ===
+246:    declared = os.environ.get(ENV_FILE_VAR)
+384:        declared = env_value(REACH_ROOTS_VAR, start)
+504:        declared = env_value(var, start)
+569:    declared = env_value(THYROX_ROOT_VAR, start)
+723:    declared = env_value(AGENT_STORE_VAR, start) or env_value(
+742:        declared = env_value(var, start)
+935:        declared = env_value(key)

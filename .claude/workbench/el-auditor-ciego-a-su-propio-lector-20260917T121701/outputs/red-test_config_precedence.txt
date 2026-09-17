@@ -1,0 +1,23 @@
+  ok   la asignacion pone WORKER_CONFIG antes que CONFIG_FILE_PATH
+  ok   la RAMA pone env_config_yaml antes que worker_config
+  ok   el auditor declara que los dos ordenes DISCREPAN
+  ok   dos `if` independientes no forman cadena
+  ok   la cadena se recorre por orelse
+  ok   y su asignacion va al reves
+  ok   por tanto discrepa
+  ok   no discrepa cuando coinciden
+  ok   la cadena por retorno temprano se reconoce
+  ok   y no discrepa cuando lee en el mismo orden
+  ok   una guarda que aplica al reves de como lee, discrepa
+  ok   un `if` con retorno SUELTO no es cadena
+  ok   un parametro homonimo no entra en la cadena
+  FALLA el auditor NO cubre la precedencia por bucle de thyrox_root
+         esperado: ['from_process']
+         real:     []
+  ok   publica su denominador
+  ok   el arbol de thyrox sale 0 con --strict
+  ok   rehusa con exit 2 si la raiz no existe
+  ok   y NO emite conteo al rehusar
+
+resultado: 17 de 18 aserciones en verde
+EXIT=1
