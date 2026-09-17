@@ -34,11 +34,25 @@ export type TaskStatus = (typeof TASK_STATUSES)[number]
 /** `deleted` no es un estado que se guarde: es la orden de borrar la fila. */
 export const UPDATE_STATUSES = [...TASK_STATUSES, 'deleted'] as const
 
+/**
+ * El predicado del `CHECK` de `status`, derivado de `TASK_STATUSES`.
+ *
+ * Se compone en vez de escribirse porque la lista y la restricción tienen que
+ * decir lo mismo por construcción: escribir el predicado a mano sería la
+ * segunda fuente de verdad que caduca en cuanto alguien añada un estado.
+ *
+ * `UPDATE_STATUSES` NO entra: `deleted` es la orden de borrar la fila, no un
+ * estado que se guarde. Un `CHECK` que lo aceptara volvería persistible la
+ * orden.
+ */
+export const TASK_STATUS_CHECK =
+  `CHECK (status IN (${TASK_STATUSES.map((s) => `'${s}'`).join(', ')}))`
+
 export const TABLERO_DDL = `CREATE TABLE IF NOT EXISTS tasks (
   task_id         TEXT NOT NULL,
   subject         TEXT NOT NULL,
   description     TEXT,
-  status          TEXT NOT NULL,
+  status          TEXT NOT NULL ${TASK_STATUS_CHECK},
   active_form     TEXT,
   owner           TEXT,
   blocks_json     TEXT,
@@ -138,6 +152,55 @@ export function alterColumns(): string[] {
   return salida
 }
 
+/**
+ * Los estados que el `CHECK` de `status` admite en un DDL dado.
+ *
+ * Devuelve `[]` cuando la columna no lleva `CHECK` — y ese caso vacío es el
+ * defecto que el eje `statusCheck` de la deriva existe para ver, no un
+ * resultado neutro.
+ */
+export function statusCheckStatuses(ddl: string): string[] {
+  const m = /status\s+TEXT\s+NOT NULL\s+CHECK\s*\(\s*status\s+IN\s*\(([^)]*)\)/i.exec(ddl)
+  if (!m?.[1]) return []
+  return [...m[1].matchAll(/'([^']*)'/g)]
+    .map((g) => g[1])
+    .filter((s): s is string => s !== undefined)
+}
+
+/**
+ * El vocabulario que el lado Python declara, leído de su tupla `TASK_STATUSES`.
+ *
+ * NO se lee de su DDL, y la razón es medible: aquel lado **interpola** su
+ * predicado (`status TEXT NOT NULL {_TASK_STATUS_CHECK}`), así que el fuente
+ * lleva el marcador y no el valor. Un extractor que leyera el DDL como texto
+ * devolvería `[]` y publicaría «las dos lenguas no coinciden» sobre una base
+ * que sí lleva el `CHECK` — el sub-patrón D con esta guarda como sujeto.
+ *
+ * La tupla ES la fuente única de aquel lado, igual que `TASK_STATUSES` lo es
+ * de éste. Comparar tupla contra tupla compara las dos fuentes; comparar DDL
+ * contra DDL compararía dos derivados, uno de ellos sin resolver.
+ */
+export function pythonTaskStatuses(): string[] {
+  const m = /^TASK_STATUSES = \(([^)]*)\)/m.exec(pythonSource())
+  if (!m?.[1]) return []
+  return [...m[1].matchAll(/"([^"]*)"/g)]
+    .map((g) => g[1])
+    .filter((s): s is string => s !== undefined)
+}
+
+/**
+ * `true` si la columna `status` del DDL de la base lleva su `CHECK` — sea
+ * literal o interpolado desde `_TASK_STATUS_CHECK`.
+ *
+ * Es el eje que `pythonTaskStatuses` no cubre: una tupla correcta con un DDL
+ * que nunca la consume dejaría la tabla sin restricción, y las dos tuplas
+ * seguirían coincidiendo.
+ */
+export function pythonDdlCarriesCheck(): boolean {
+  const cuerpo = tableBody(pythonSource(), 'tasks')
+  return /status\s+TEXT\s+NOT NULL\s+(\{_TASK_STATUS_CHECK\}|CHECK\s*\()/i.test(cuerpo)
+}
+
 export type SchemaDrift = {
   /** Las columnas de la base del Python. */
   base: string[]
@@ -151,6 +214,13 @@ export type SchemaDrift = {
   notNull: string[]
   /** Las `NOT NULL` que el piso no crea — el defecto duro: rompe la inserción. */
   missingNotNull: string[]
+  /** Los estados que el `CHECK` del piso admite. */
+  floorStatuses: string[]
+  /** Los estados que el `CHECK` de la base admite. */
+  baseStatuses: string[]
+  /** `true` si las dos lenguas admiten exactamente los mismos estados Y las
+   *  dos DDL consumen su vocabulario. */
+  statusCheckAgrees: boolean
 }
 
 /**
@@ -158,8 +228,14 @@ export type SchemaDrift = {
  *
  * Métrica: nombres de columna del `CREATE TABLE tasks` de cada lengua, más los
  * tres grupos de ALTER del lado Python.
- * Ciega a: el TIPO y las restricciones de cada columna más allá de `NOT NULL`,
- * y a cualquier declaración del esquema fuera de estos dos archivos.
+ * Ciega a: el TIPO de cada columna, y toda restricción que no sea `NOT NULL`
+ * ni el `CHECK` de `status` — un `CHECK` sobre otra columna, un `UNIQUE` o un
+ * `DEFAULT` divergente pasan sin verse. Y a cualquier declaración del esquema
+ * fuera de estos dos archivos.
+ *
+ * El eje `statusCheck` se añadió al cerrar TASK-THYROX-0113: hasta entonces
+ * esta misma línea declaraba ciega a TODA restricción salvo `NOT NULL`, y esa
+ * ceguera es la que dejaba que una lengua ganara el `CHECK` y la otra no.
  */
 export function schemaDrift(): SchemaDrift {
   const base = pythonBaseColumns()
@@ -170,6 +246,8 @@ export function schemaDrift(): SchemaDrift {
     .map((m) => m[1])
     .filter((c): c is string => c !== undefined)
   const onlyInBase = base.filter((c) => !floor.includes(c))
+  const floorStatuses = statusCheckStatuses(TABLERO_DDL)
+  const baseStatuses = pythonTaskStatuses()
   return {
     base,
     floor,
@@ -177,5 +255,11 @@ export function schemaDrift(): SchemaDrift {
     uncovered: onlyInBase.filter((c) => !alter.includes(c)),
     notNull,
     missingNotNull: notNull.filter((c) => !floor.includes(c)),
+    floorStatuses,
+    baseStatuses,
+    statusCheckAgrees:
+      floorStatuses.length > 0 &&
+      pythonDdlCarriesCheck() &&
+      floorStatuses.join('\u0000') === baseStatuses.join('\u0000'),
   }
 }

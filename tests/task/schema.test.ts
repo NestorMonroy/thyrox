@@ -32,7 +32,9 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   alterColumns, floorColumns, pythonBaseColumns, schemaDrift,
-  selectCitationId, TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
+  pythonDdlCarriesCheck, pythonTaskStatuses,
+  selectCitationId, statusCheckStatuses,
+  TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_STATUS_CHECK, TASK_STATUSES, UPDATE_STATUSES,
 } from '../../src/task/schema.ts'
 
 const RAIZ = new URL('../..', import.meta.url).pathname
@@ -78,6 +80,54 @@ describe('el invariante: piso ⊂ base, y el delta lo cubre un ALTER', () => {
 
   test('el delta medido hoy son exactamente las dos columnas de capa', () => {
     expect(schemaDrift().onlyInBase.sort()).toEqual(['submodule', 'submodule_source'])
+  })
+})
+
+describe('el vocabulario de estado lo hace cumplir la TABLA, no cada escritor', () => {
+  test('el piso declara su CHECK, y lo DERIVA de TASK_STATUSES', () => {
+    expect(statusCheckStatuses(TABLERO_DDL)).toEqual([...TASK_STATUSES])
+    // Derivado, no transcrito: el predicado se compone de la misma tupla, así
+    // que añadir un estado no puede dejar el CHECK atrás.
+    expect(TABLERO_DDL).toContain(TASK_STATUS_CHECK)
+  })
+
+  test('`deleted` NO entra al CHECK: es una orden, no un estado', () => {
+    expect(statusCheckStatuses(TABLERO_DDL)).not.toContain('deleted')
+    expect(UPDATE_STATUSES).toContain('deleted')
+  })
+
+  test('las dos lenguas admiten exactamente los mismos estados', () => {
+    const d = schemaDrift()
+    expect(d.statusCheckAgrees).toBe(true)
+    // No puede pasar en vacío: dos listas vacías «coinciden».
+    expect(d.floorStatuses.length).toBeGreaterThan(0)
+    expect(d.baseStatuses).toEqual([...TASK_STATUSES])
+  })
+
+  test('y el DDL de la base CONSUME su vocabulario', () => {
+    // El eje que la comparación de tuplas no cubre: una tupla correcta con un
+    // DDL que nunca la consume deja la tabla sin restricción, y las dos tuplas
+    // seguirían coincidiendo.
+    expect(pythonDdlCarriesCheck()).toBe(true)
+    expect(pythonTaskStatuses().length).toBeGreaterThan(0)
+  })
+
+  test('el piso RECHAZA un estado de fuera del vocabulario', () => {
+    // La conducta, no sólo el texto del DDL: un CHECK mal formado puede estar
+    // presente y no discriminar.
+    const db = new Database(':memory:')
+    db.run(TABLERO_DDL)
+    const insertar = (estado: string) =>
+      db.run(
+        'INSERT INTO tasks (task_id, subject, status, session_id, created_at, updated_at) ' +
+          'VALUES (?,?,?,?,?,?)',
+        [`t-${estado || 'vacio'}`, 'sujeto', estado, 's', '2026-01-01', '2026-01-01'],
+      )
+    for (const estado of TASK_STATUSES) expect(() => insertar(estado)).not.toThrow()
+    for (const estado of ['borrador', 'DONE', '', 'in-progress', 'deleted']) {
+      expect(() => insertar(estado)).toThrow()
+    }
+    db.close()
   })
 })
 

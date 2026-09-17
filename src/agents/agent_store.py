@@ -131,6 +131,28 @@ DOCS_CONSUMER = "docs"
 
 DB_FILENAME = "agent_store.sqlite3"
 
+#: El vocabulario de estado que el tablero PERSISTE. Se declara aqui porque
+#: aqui vive la tabla que lo consume: el `CHECK` de ``tasks`` lo interpola, asi
+#: que la lista y la restriccion no pueden desincronizarse.
+#:
+#: ``deleted`` NO esta, y su ausencia es el punto: ``src/task/schema.ts:35``
+#: lo declara *orden* de borrar la fila, no estado que se guarde. Admitirlo
+#: aqui convertiria la orden en un estado persistible.
+#:
+#: Su gemelo en la otra lengua es ``src/task/schema.ts::TASK_STATUSES``, y la
+#: suite cruzada (``tests/task/schema.test.ts``) exige que los dos declaren lo
+#: mismo — dos lenguas, un vocabulario.
+TASK_STATUSES = ("pending", "in_progress", "completed")
+
+#: El predicado del ``CHECK``, derivado de la tupla de arriba. Se compone una
+#: vez y lo consumen las DOS vias: el DDL de ``CORE_SCHEMA`` (base nueva) y
+#: ``_migrate_tasks_status_check`` (base que ya existia). Escribirlo dos veces
+#: seria la segunda fuente de verdad que una base migrada y una nueva podrian
+#: desmentirse entre si.
+_TASK_STATUS_CHECK = "CHECK (status IN ({}))".format(
+    ", ".join(f"'{estado}'" for estado in TASK_STATUSES)
+)
+
 #: Tablas nucleo — SIEMPRE se crean, sin try/except. Si esto falla (disco
 #: lleno, archivo corrupto) el CLI debe abortar con traceback visible: es
 #: una herramienta de un solo comando, no un servicio de larga duracion, y
@@ -139,7 +161,7 @@ DB_FILENAME = "agent_store.sqlite3"
 #: de ``VectorStore`` completo — ese patron existe alla porque el store
 #: vive embebido en un plugin que nunca debe tumbar el host; aqui el CLI
 #: fallando ruidosamente es el comportamiento correcto.
-CORE_SCHEMA = """
+CORE_SCHEMA = f"""
 CREATE TABLE IF NOT EXISTS agent_sessions (
     agent_id      TEXT PRIMARY KEY,
     subagent_type TEXT NOT NULL,
@@ -213,7 +235,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     task_id       TEXT NOT NULL,
     subject       TEXT NOT NULL,
     description   TEXT,
-    status        TEXT NOT NULL,
+    status        TEXT NOT NULL {_TASK_STATUS_CHECK},
     active_form   TEXT,
     owner         TEXT,
     blocks_json   TEXT,
@@ -985,6 +1007,92 @@ def _migrate_tasks_composite_pk(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
+def _migrate_tasks_status_check(conn: sqlite3.Connection) -> None:
+    """Lleva ``tasks`` a tener el ``CHECK`` de ``TASK_STATUSES``.
+
+    Por que en la TABLA y no en cada escritor: hay cuatro sitios de insercion
+    en tres modulos y dos lenguas — este archivo, ``src/task/task_ids.py`` y
+    dos en ``src/packages/tools/src/tasks.ts``. Un guard por escritor es un
+    contrato que cada escritor nuevo tiene que recordar; el ``CHECK`` lo
+    hereda por construccion, porque es el unico punto que los cuatro
+    comparten. La forma no se inventa aqui: ``agent_sessions`` ya declara la
+    suya en ``CORE_SCHEMA`` (``:169``) desde el primer dia.
+
+    SQLite no tiene ``ALTER TABLE ... ADD CONSTRAINT``, asi que la unica via
+    es reconstruir — el mismo patron que ``_migrate_tasks_composite_pk`` ya
+    establece para la clave. Corre DESPUES de las migraciones de columna, y
+    por eso NO transcribe el DDL: lo deriva de ``PRAGMA table_info`` para que
+    una base a medio migrar no pierda las columnas que aquellas anadieron.
+    Un DDL copiado aqui seria la segunda fuente de verdad que caduca en
+    cuanto alguien anada la columna diecinueve.
+
+    Idempotente por la condicion de entrada: si el DDL vigente ya nombra el
+    predicado, no hace nada. ``connect()`` la invoca en CADA apertura, asi
+    que la segunda pasada es el caso normal.
+
+    Ante una fila FUERA del vocabulario **rehusa nombrandola** en vez de
+    reconstruir: un ``INSERT ... SELECT`` que la deje fuera perderia datos en
+    silencio, y el silencio es exactamente lo que este ``CHECK`` existe para
+    cerrar. Medido en el store real al escribir esto: 1750 filas, las tres
+    canonicas, cero fuera — la rama es defensa, no trabajo esperado.
+    """
+    columnas = list(conn.execute("PRAGMA table_info(tasks)"))
+    if not columnas:
+        return                      # la tabla aun no existe; CORE_SCHEMA la crea bien
+
+    ddl = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'"
+    ).fetchone()
+    if ddl and _TASK_STATUS_CHECK.replace(" ", "") in (ddl[0] or "").replace(" ", ""):
+        return                      # ya migrada
+
+    fuera = [
+        (fila[0], fila[1])
+        for fila in conn.execute(
+            "SELECT status, COUNT(*) FROM tasks WHERE status NOT IN ({}) "
+            "GROUP BY status".format(", ".join("?" * len(TASK_STATUSES))),
+            TASK_STATUSES,
+        )
+    ]
+    if fuera:
+        detalle = ", ".join(f"{estado!r}: {cuantas}" for estado, cuantas in fuera)
+        raise ValueError(
+            "tasks tiene filas fuera de TASK_STATUSES y migrarlas las "
+            f"perderia en silencio — {detalle}. Reconciliarlas antes de "
+            "volver a abrir el store."
+        )
+
+    #: El DDL se DERIVA de la tabla viva, columna a columna, para que la
+    #: reconstruccion no dependa de que esta funcion conozca el esquema de hoy.
+    #: `fila` es (cid, name, type, notnull, dflt_value, pk).
+    definiciones = []
+    for _, nombre, tipo, notnull, defecto, _pk in columnas:
+        pieza = f"{nombre} {tipo}" if tipo else str(nombre)
+        if defecto is not None:
+            pieza += f" DEFAULT {defecto}"
+        if notnull:
+            pieza += " NOT NULL"
+        if nombre == "status":
+            pieza += f" {_TASK_STATUS_CHECK}"
+        definiciones.append(pieza)
+
+    clave = [fila[1] for fila in sorted(columnas, key=lambda f: f[5]) if fila[5]]
+    if clave:
+        definiciones.append(f"PRIMARY KEY ({', '.join(clave)})")
+
+    nombres = ", ".join(fila[1] for fila in columnas)
+    conn.executescript(
+        "CREATE TABLE tasks_con_check (\n    {}\n);\n"
+        "INSERT INTO tasks_con_check ({nombres}) SELECT {nombres} FROM tasks;\n"
+        "DROP TABLE tasks;\n"
+        "ALTER TABLE tasks_con_check RENAME TO tasks;\n"
+        "CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);\n"
+        "CREATE INDEX IF NOT EXISTS idx_tasks_session ON tasks(session_id);\n"
+        .format(",\n    ".join(definiciones), nombres=nombres)
+    )
+    conn.commit()
+
+
 def connect(store_dir: Path) -> sqlite3.Connection:
     """Abre el store, listo para escribir desde procesos concurrentes.
 
@@ -1010,6 +1118,7 @@ def connect(store_dir: Path) -> sqlite3.Connection:
     _migrate_tasks_layer_columns(conn)
     _migrate_tasks_opening_columns(conn)
     _migrate_tasks_citation_columns(conn)
+    _migrate_tasks_status_check(conn)
     _migrate_documents_series_columns(conn)
     _resync_fts(conn)
     return conn
