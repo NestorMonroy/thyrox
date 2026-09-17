@@ -1,0 +1,66 @@
+Control del defecto latente en la suite hermana — H-THYROX-36
+Fecha: 2026-09-17T05:04:10
+Sujeto: tests/workbench/test_home_resolution.py::test_las_dos_familias_resuelven_igual
+
+Poblacion por familia, medida antes de tocar nada:
+  api      workbench_por_clon=True  rules_por_clon=False
+  db       workbench_por_clon=False rules_por_clon=False
+  docs     workbench_por_clon=True  rules_por_clon=False
+  server   workbench_por_clon=False rules_por_clon=False
+  ui       workbench_por_clon=False rules_por_clon=False
+
+El caso cruza familias con una poblacion de UNA sola familia
+(_sin_clave_por_clon filtra solo workbench). Pasa hoy porque los cinco
+clones miden rules_por_clon=False — no porque el filtro sea correcto.
+
+=== 1. Sin declarar nada: verde (no discrimina) ===
+----------------------------------------------------------------------
+Ran 7 tests in 0.045s
+
+OK
+
+=== 2. Con THYROX_RULES_DB declarada: cae, y SOLO el subtest de db ===
+...F...
+======================================================================
+FAIL: test_las_dos_familias_resuelven_igual (__main__.WorkbenchHomeResolution.test_las_dos_familias_resuelven_igual) (repo='db')
+`rules` ya lo hacía y `workbench` no — la asimetría que se cerró.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 166, in test_las_dos_familias_resuelven_igual
+    self.assertEqual(
+AssertionError: PosixPath('/home/user/kaupamex-db/hogar-de-db-por-clon') != PosixPath('/home/user/kaupamex-db/mismo-segmento') : las dos familias componen distinto el mismo segmento
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.040s
+
+FAILED (failures=1)
+
+=== 3. Tras el filtro por LAS DOS familias ===
+--- 3a. verde sin declarar nada ---
+Ran 7 tests in 0.042s
+
+OK
+--- 3b. control POSITIVO: THYROX_RULES_DB declarada -> db sale del universo ---
+Ran 7 tests in 0.039s
+
+OK
+--- 3c. control de la guarda >=2: dos de tres fuera -> rehusa en vez de afirmar ---
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 176, in test_las_dos_familias_resuelven_igual
+    self.assertGreaterEqual(
+AssertionError: 1 not greater than or equal to 2 : sin dos clones sin clave por clon en NINGUNA de las dos familias, «las dos resuelven igual» no se puede afirmar
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.040s
+
+FAILED (failures=1)
+
+=== 4. Subconjunto derivado, todo verde ===
+tests/cache/test_home_resolution.py                        OK
+tests/paths/test_consumer_root_refuses_provider.py         OK
+tests/rules/test_paths_parity.py                           OK
+tests/session/test_background_log_home.py                  OK
+tests/session/test_jobs_home.py                            OK
+tests/session/test_write_env.py                            24 aprobada(s) · 0 fallida(s) (alcance medido: write-env.sh)
+tests/workbench/test_home_resolution.py                    OK
+tests/workbench/test_paths.py                              18 ok, 0 fallos
+tests/workbench/test_provider_evidence.py                  6 ok, 0 fallos (alcance medido: 6 aserciones sobre /home/user/thyrox/src/verify/check_provider_evidence.py)

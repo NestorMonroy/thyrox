@@ -64,3 +64,29 @@ y no la composicion. Es el mismo primer veredicto rojo que
 - `subconjunto-derivado.txt` — `tests/cache/` mas los tres vecinos de `paths/`
 (La copia de trabajo `paths.py.intacto` se usó para restaurar tras cada
 anulación y no se versiona: su contenido es el del módulo commiteado.)
+
+## El mismo defecto latente en la suite HERMANA (2026-09-17T05:03:30)
+
+`H-THYROX-36` generalizo el rojo de arriba: `_sin_clave_por_clon` es POR
+FAMILIA, y un caso que cruza familias heredandolo mide la PRECEDENCIA de la
+otra en vez de su composicion. El hallazgo publicado afirmaba que la suite de
+`cache` era la unica que cruzaba familias. Es falso, y se midio:
+`tests/workbench/test_home_resolution.py::test_las_dos_familias_resuelven_igual`
+llevaba el mismo defecto, latente.
+
+Latente porque la poblacion coincidia por casualidad: los cinco clones miden
+`rules_por_clon=False`, asi que el filtro de una sola familia bastaba. El verde
+no distinguia «las dos componen igual» de «la otra familia no tiene con que
+diferir» — el sub-patron D con esta suite como sujeto.
+
+Medido ANTES de tocar el archivo, declarando `THYROX_RULES_DB`: cae
+**exactamente** el subtest de `db` y sobreviven los otros cuatro. El mensaje
+del fallo acusa al mecanismo de componer distinto cuando lo que difiere es que
+la otra familia responde a otra clave.
+
+Arreglo: el caso filtra por LAS DOS familias, con guarda `>= 2`. Sus dos
+controles discriminan — con la clave declarada `db` sale del universo y sigue
+verde; con dos de los tres fuera, la guarda rehusa en vez de afirmar sobre un
+solo clon.
+
+- `control-defecto-latente-suite-hermana.txt` — las dos mitades y el subconjunto
