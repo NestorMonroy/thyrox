@@ -1,0 +1,45 @@
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+  ok    register_agent_session.py parsea
+== 2. migración: base con esquema VIEJO (sin columnas de uso) gana las columnas al reconectar ==
+  ok    esquema viejo tiene 8 columnas
+  ok    tras reconectar están TODAS las columnas declaradas por el migrado
+== 3. dedup por message.id: 2 líneas con el MISMO id cuentan como 1 turno ==
+  ok    dedup por message.id: 1 turno, no 2, equiv_cost=160
+== 4. hook completo (funciones + CLI): extrae uso + meta.json y actualiza agent_sessions ==
+OK: sesion AGD -> completed (actualizada)
+  ok    status queda completed
+  ok    un alias del sidecar NO entra en model
+  ok    el alias del sidecar entra en model_alias
+  ok    description se pobló desde meta.json
+  ok    equiv_cost quedó en la fila
+  ok    turns quedó en la fila (1, no 2)
+== 5. sin transcript_path, actualizar-sesion no rompe (columnas quedan NULL) ==
+  ok    sin datos de uso, status igual cierra
+  ok    sin datos de uso, equiv_cost queda NULO
+== 6. procedencia: source, tool_use_id y metadata_json (H-DOCS-178) ==
+  ok    source registra la vía de captura (hook)
+  ok    tool_use_id sale del toolUseId del sidecar
+  ok    una clave desconocida del sidecar NO se pierde: va a metadata_json
+  ok    el perfil de ejecución comparte ranura sin pisar al sidecar
+  ok    el sidecar rellena subagent_type cuando el alta dijo 'desconocido'
+  ok    NULLIF protege un subagent_type ya correcto
+== 7. CONTROL — el modelo lo manda el transcript, no el sidecar (H-DOCS-219/220) ==
+  ok    model sale del transcript, verbatim
+  ok    el alias del sidecar no pisa al identificador
+== 8. CONTROL — la causa de muerte declarada por el transcript (#600) ==
+  ok    api_error_status sale del apiErrorStatus declarado
+  ok    rate_limit_type sale del quotaLimits rechazado
+  ok    el <synthetic> del error no entra en model
+== 9. CONTROL POSITIVO REAL — transcript versionado, no fabricado (#657) ==
+  ok    el 429 real llega a api_error_status
+  ok    rate_limit_type queda NULO: el real no trae quotaLimits
+  ok    client_version sale del nivel superior de la línea
+  ok    equiv_cost del transcript real
+  ok    turnos del transcript real
+== 10. denominador: la suma declara sobre cuántos mensajes se computó (#899) ==
+  ok    el alcance separa las dos causas del hueco
+  ok    transcript real: 10 de 16, todo el hueco es dedup
+
+31 ok, 0 fallos
+EXIT=0
