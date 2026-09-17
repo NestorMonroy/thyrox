@@ -55,18 +55,30 @@ BASE="$WORK/sondas"
 # El eje COMPARTIDO apunta a un directorio PROPIO, no al `/tmp` del default.
 # El sujeto declara en su cabecera que es «ciega a lo que otro proceso cree en
 # el compartido durante la ventana de medicion, que se le atribuye a la suite»:
-# con el default, cualquier proceso AJENO a la prueba puede fabricar el
-# positivo de los casos que afirman `exit 0`, y entonces el veredicto mide el
-# trafico del directorio compartido en vez del sujeto.
+# con el default, cualquier proceso AJENO a la prueba fabrica el positivo de
+# los casos que afirman `exit 0`, y el veredicto pasa a medir el trafico del
+# directorio compartido en vez del sujeto.
 #
-# Es higiene del instrumento, NO una causa medida de ningun rojo concreto. Se
-# intento atribuirle el rojo de esta suite bajo `--width 4` y el control de
-# anulacion lo REFUTO: retirado el aislamiento, con un vecino escribiendo en
-# `/tmp` cada 400 ms, las 17 aserciones siguieron en verde
-# (`.claude/workbench/universo-global-de-dos-suites-20260917T185131/`). La
-# razon esta medida: `tests/run.sh:45` exporta `TMPDIR` a un directorio por
-# ejecucion, asi que bajo el corredor ninguna suite vecina escribe en `/tmp`
-# y el eje compartido no se puede mover desde fuera.
+# MEDIDO EN LOS DOS SENTIDOS, bajo `run-task-pool --width 4` con otras tres
+# suites de vecinas (evidencia en
+# `.claude/workbench/universo-global-de-dos-suites-20260917T185131/outputs/`):
+#
+#   sin aislamiento   ok=13 fallo=1 — cae el caso 1, `exit 0 sin fuga` -> 1,
+#                     con `confined=0`: la FUGA viene del eje compartido, no
+#                     de la suite. (`width4-pre-fix-job-001.log`)
+#   con aislamiento   ok=17 fallo=0. (`width4-post-fix-job-001.log`)
+#
+# Y por que en serie no se ve: `tests/run.sh:45` exporta `TMPDIR` a un
+# directorio por ejecucion, asi que bajo ESE corredor ninguna suite vecina
+# escribe en `/tmp` de primer nivel. `run-task-pool.sh` NO lo redirige — lo
+# menciona en un comentario y nada mas. La diferencia entre los dos corredores
+# es lo que hacia parecer intermitente un defecto que es determinista.
+#
+# Un primer control de anulacion, con un vecino propio escribiendo cada 400 ms,
+# NO discrimino (`mutante.log`): la ventana de medicion de una suite limpia
+# dura milisegundos, asi que ese vecino casi nunca cae dentro. El instrumento
+# era demasiado lento, no la hipotesis falsa — la conserva el banco porque la
+# refutacion aparente tambien es un resultado.
 #
 # Aislarlo NO esconde la ceguera: el caso 8 la mide de frente, con un vecino
 # deterministico.
