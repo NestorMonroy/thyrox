@@ -112,11 +112,11 @@ afirmar "la raiz del arbol de trabajo entra en el alcance" "1" \
 # Si ese conjunto es vacio, el control no existe hoy y se dice — un verde que no
 # distingue «el gate alcanza el archivo» de «no habia nada que alcanzar» es el
 # sub-patron D, y es como esta asercion se volvio vacua sin avisar.
-SOLO_EXTERNO="$(python3 "$RAIZ/tests/verify/eventos_solo_externos.py" 2>/dev/null)"
-if [[ -n "$SOLO_EXTERNO" ]]; then
-    PATRON="$(echo "$SOLO_EXTERNO" | tr ' ' '|')"
+ONLY_EXTERNAL="$(python3 "$RAIZ/tests/verify/events_only_external.py" 2>/dev/null)"
+if [[ -n "$ONLY_EXTERNAL" ]]; then
+    PATTERN="$(echo "$ONLY_EXTERNAL" | tr ' ' '|')"
     afirmar "lo que SOLO declara el archivo externo no sale sin consumir" "0" \
-        "$(python3 "$GATE" | grep -cE "sin consumir.*($PATRON)")"
+        "$(python3 "$GATE" | grep -cE "sin consumir.*($PATTERN)")"
 else
     afirmar "SIN MEDIR — ningun evento es exclusivo del archivo externo" "si" "si"
 fi
