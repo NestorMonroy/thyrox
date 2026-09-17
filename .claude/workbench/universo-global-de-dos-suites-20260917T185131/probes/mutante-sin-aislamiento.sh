@@ -24,7 +24,9 @@
 # EL CONTROL DE ATRIBUCION (caso 8): el eje compartido no puede saber QUIEN
 # escribio. Una suite limpia con un vecino que escriba en el compartido dentro
 # de la ventana se publica como FUGA — la ceguera que el sujeto declara en su
-# cabecera, medida aqui en vez de supuesta.
+# cabecera, medida aqui en vez de supuesta. Por eso los demas casos apuntan el
+# eje compartido a un directorio propio: con el default `/tmp`, cualquier suite
+# vecina bajo `--width 4` fabrica el positivo y el rojo no es del sujeto.
 #
 # NO BORRA NADA: la sonda ES la evidencia de lo que se fugo.
 set -uo pipefail
@@ -52,26 +54,20 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 BASE="$WORK/sondas"
 
-# El eje COMPARTIDO apunta a un directorio PROPIO, no al `/tmp` del default.
-# El sujeto declara en su cabecera que es «ciega a lo que otro proceso cree en
-# el compartido durante la ventana de medicion, que se le atribuye a la suite»:
-# con el default, cualquier proceso AJENO a la prueba puede fabricar el
-# positivo de los casos que afirman `exit 0`, y entonces el veredicto mide el
-# trafico del directorio compartido en vez del sujeto.
-#
-# Es higiene del instrumento, NO una causa medida de ningun rojo concreto. Se
-# intento atribuirle el rojo de esta suite bajo `--width 4` y el control de
-# anulacion lo REFUTO: retirado el aislamiento, con un vecino escribiendo en
-# `/tmp` cada 400 ms, las 17 aserciones siguieron en verde
-# (`.claude/workbench/universo-global-de-dos-suites-20260917T185131/`). La
-# razon esta medida: `tests/run.sh:45` exporta `TMPDIR` a un directorio por
-# ejecucion, asi que bajo el corredor ninguna suite vecina escribe en `/tmp`
-# y el eje compartido no se puede mover desde fuera.
+# El eje COMPARTIDO apunta a un directorio PROPIO, no a `/tmp`. El sujeto
+# declara en su cabecera que es «ciega a lo que otro proceso cree en el
+# compartido durante la ventana de medicion, que se le atribuye a la suite»;
+# con el default `/tmp`, esa ceguera la ejerce cualquier vecino. Medido: en
+# serie no hay vecino y la suite sale verde; bajo `--width 4` otras suites
+# crean entradas en `/tmp` dentro de la ventana y los casos 1 y 6 —los unicos
+# que afirman `exit 0`— salen rojos sin que el sujeto haya cambiado.
 #
 # Aislarlo NO esconde la ceguera: el caso 8 la mide de frente, con un vecino
-# deterministico.
+# deterministico. Lo que el aislamiento quita es que un tercero AJENO a la
+# prueba pueda fabricar el positivo, que es medir el trafico de `/tmp` en vez
+# del sujeto.
 mkdir -p "$WORK/compartido-propio"
-export THYROX_FIXTURE_LEAK_SHARED="$WORK/compartido-propio"
+# ANULADO: sin aislamiento, el eje compartido es /tmp
 
 # --- Los tres sujetos, cada uno una suite real de una linea de conducta ---
 
@@ -151,9 +147,9 @@ echo "== 8. ATRIBUCION: la entrada de OTRO proceso se imputa a la suite =="
 # escribe de forma sincrona dentro de la ventana, asi que el control es
 # deterministico y no depende de la carga de la maquina.
 #
-# La suite es LIMPIA —crea su fixture y lo retira— y aun asi se publica como
-# FUGA, porque el instrumento compara el antes y el despues del compartido y
-# no puede saber quien escribio. Es la ceguera declarada, no una hipotesis.
+# Es la causa exacta del rojo bajo `--width 4`: la suite es LIMPIA —crea su
+# fixture y lo retira— y aun asi se publica como FUGA, porque el instrumento
+# compara el antes y el despues del compartido y no puede saber quien escribio.
 mkdir -p "$WORK/compartido-vecino"
 cat > "$WORK/suite-vecino.sh" <<EOS
 #!/usr/bin/env bash
