@@ -59,6 +59,7 @@ import tempfile
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "src"))
 from paths import reach  # noqa: E402
+from lib.jsonl import read_records  # noqa: E402
 
 #: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
 #: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
@@ -670,8 +671,22 @@ def store_desde_fila(fila, *, extra=()):
     return d, db
 
 
-_fila369 = json.loads((FIXTURE / "store_row_369.json").read_text(encoding="utf-8"))
+# La fila del store es NUESTRA y viaja en JSONL (TASK-THYROX-0066); la tarjeta
+# del board NO se convierte — su forma la fija el cliente que la escribe, y el
+# fixture vale como evidencia porque conserva esa forma.
+#
+# Con UN registro `json.load` tambien parsearia, asi que este bloque no prueba
+# que el lector lea LINEAS — eso se mide en `tests/lib/test_jsonl.py`, con un
+# fixture de dos. Lo que si discrimina aqui es la direccion contraria: si el
+# archivo volviera a ser un documento indentado, `parse_records` falla en su
+# primera linea, y un lector de documento no habria notado la diferencia.
+_filas369 = read_records(FIXTURE / "store_row_369.jsonl")
+check(len(_filas369) == 1,
+      "11-0a: el fixture del store es JSONL y trae una fila")
+_fila369 = _filas369[0]
 _card369 = json.loads((FIXTURE / "card_369.json").read_text(encoding="utf-8"))
+check((FIXTURE / "store_row_369.jsonl").read_text(encoding="utf-8").count("\n") == 1,
+      "11-0b: una linea por registro — un documento indentado no pasaria")
 
 check(_fila369["subject"] == _card369["subject"],
       "11a: el fixture aparea — mismo sujeto, que es la llave del reconciliador")
