@@ -101,6 +101,23 @@ def overlong_lines(
     ]
 
 
+def significant_lines(text: str) -> str:
+    """El mensaje sin lo que ``git commit`` descarta: las líneas de comentario.
+
+    Se blanquean en vez de borrarse para que el número de línea del informe
+    siga siendo el del archivo que el autor tiene delante.
+
+    Vive aquí y no en cada consumidor porque el sujeto es el mismo artefacto —un
+    mensaje de commit— y dos copias de la regla podrían divergir. Su segundo
+    consumidor es ``citation_resolution.py``: ``git commit -v`` mete el diff
+    entero en líneas ``#``, así que una cita rota citada ahí no está en el
+    commit resultante y medirla reportaría un defecto que no existe.
+    """
+    return "\n".join(
+        "" if line.startswith("#") else line for line in text.splitlines()
+    )
+
+
 def check_commit_message(
     text: str, limit: int = DEFAULT_LIMIT, measure: str = "columns"
 ) -> list[tuple[int, int, str]]:
@@ -111,10 +128,7 @@ def check_commit_message(
     en el commit resultante — el instrumento mediría el archivo y se concluiría
     sobre el mensaje.
     """
-    significant = "\n".join(
-        "" if line.startswith("#") else line for line in text.splitlines()
-    )
-    return overlong_lines(significant, limit=limit, measure=measure)
+    return overlong_lines(significant_lines(text), limit=limit, measure=measure)
 
 
 #: La etiqueta del aviso. NO dice ERROR a proposito: el hook lo invoca con
