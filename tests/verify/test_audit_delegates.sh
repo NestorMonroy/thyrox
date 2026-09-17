@@ -41,6 +41,10 @@ AUDIT="$THYROX/src/verify/thyrox-audit.sh"
 # JSON y el caso 5 cae por una premisa rancia, no por el sujeto: la misma
 # costura que TASK-THYROX-0421 cerro para otras cuatro suites.
 #
+# El marcador es `source/`, no la mera existencia del directorio: el gate
+# `rst-referencias` mide `.rst`, asi que un consumidor que exista y no lo tenga
+# mata al runner igual y el FALLO volveria a no discriminar.
+#
 # Y si no hay consumidor al que apuntar, el caso lo DICE en vez de publicar un
 # rojo: un fallo por consumidor ausente no distingue «la delegacion lee una
 # clave que no existe» de «no habia arbol que medir».
@@ -108,8 +112,8 @@ afirmar "el corredor alcanza los gates que el registro declara" "$DECLARADOS" "$
 # Ciega a: que las cifras de esa clave sean CORRECTAS; sólo mide que la clave
 # exista. El caso 4 cubre el alcance, que es la otra mitad.
 CLAVE="$(grep -oE 'get\("[a-z]+", \{\}\)' "$AUDIT" | head -1 | grep -oE '"[a-z]+"' | tr -d '"')"
-if [ ! -d "$CONSUMER" ]; then
-    printf '  SIN MEDIR  no hay consumidor en %s; declara THYROX_CONSUMER\n' "$CONSUMER"
+if [ ! -d "$CONSUMER/source" ]; then
+    printf '  SIN MEDIR  no hay consumidor con source/ en %s; declara THYROX_CONSUMER\n' "$CONSUMER"
 else
     EMITE="$(cd "$THYROX" && timeout 150 python3 src/verify/runner.py --json --only rst-referencias 2>/dev/null \
         | python3 -c "import json,sys; print('si' if '${CLAVE:-_}' in json.load(sys.stdin) else 'no')" 2>/dev/null)"
