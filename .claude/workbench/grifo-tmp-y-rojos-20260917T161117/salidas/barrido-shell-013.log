@@ -1,0 +1,2 @@
+VERDE tests/agents/test-agent-store-type-source.sh
+EXIT=0

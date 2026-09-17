@@ -1,0 +1,2 @@
+VERDE tests/session/test-record-environment.sh
+EXIT=0

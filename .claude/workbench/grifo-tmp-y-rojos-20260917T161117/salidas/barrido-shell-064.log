@@ -1,0 +1,2 @@
+VERDE tests/verify/test-cli-typecheck.sh
+EXIT=0

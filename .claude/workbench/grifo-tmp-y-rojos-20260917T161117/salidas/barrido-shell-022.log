@@ -1,0 +1,2 @@
+VERDE tests/agents/test-reconciliar-store-journal.sh
+EXIT=0

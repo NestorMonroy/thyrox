@@ -1,0 +1,2 @@
+VERDE tests/session/test-run-task-pool-alcance.sh
+EXIT=0

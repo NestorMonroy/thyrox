@@ -1,0 +1,2 @@
+VERDE tests/lib/test-toolchain-parallel.sh
+EXIT=0

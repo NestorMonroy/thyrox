@@ -1,0 +1,2 @@
+VERDE tests/verify/test-veredicto-de-gate.sh
+EXIT=0

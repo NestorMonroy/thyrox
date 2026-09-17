@@ -1,0 +1,2 @@
+ROJO tests/verify/test-agent-artifacts.sh
+EXIT=0

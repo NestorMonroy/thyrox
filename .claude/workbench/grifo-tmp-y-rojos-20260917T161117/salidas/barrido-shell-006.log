@@ -1,0 +1,2 @@
+VERDE tests/agents/test-agent-store-fecha-documento.sh
+EXIT=0

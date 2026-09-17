@@ -1,0 +1,2 @@
+VERDE tests/task/test-closure-graph.sh
+EXIT=0

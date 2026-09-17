@@ -1,0 +1,2 @@
+VERDE tests/lib/test-assert-sh.sh
+EXIT=0

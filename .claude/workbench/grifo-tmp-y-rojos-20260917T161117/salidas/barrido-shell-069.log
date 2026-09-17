@@ -1,0 +1,2 @@
+VERDE tests/verify/test-evidence-tracked.sh
+EXIT=0

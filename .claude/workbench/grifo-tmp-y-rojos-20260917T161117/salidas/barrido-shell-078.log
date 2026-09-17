@@ -1,0 +1,2 @@
+VERDE tests/verify/test-pre-commit-docs.sh
+EXIT=0

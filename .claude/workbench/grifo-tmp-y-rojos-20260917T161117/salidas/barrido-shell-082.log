@@ -1,0 +1,2 @@
+VERDE tests/verify/test-unreachable-rules.sh
+EXIT=0

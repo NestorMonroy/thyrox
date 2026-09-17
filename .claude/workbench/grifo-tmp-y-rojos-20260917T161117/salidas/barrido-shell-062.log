@@ -1,0 +1,2 @@
+VERDE tests/verify/test-audit-timing.sh
+EXIT=0

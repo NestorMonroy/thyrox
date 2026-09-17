@@ -1,0 +1,2 @@
+VERDE tests/agents/test-agent-store-transcript-path.sh
+EXIT=0

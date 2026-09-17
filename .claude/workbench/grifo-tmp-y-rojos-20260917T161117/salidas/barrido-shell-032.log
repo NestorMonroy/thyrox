@@ -1,0 +1,2 @@
+VERDE tests/lib/test-fixture-sh.sh
+EXIT=0

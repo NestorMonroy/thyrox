@@ -1,0 +1,2 @@
+ROJO tests/verify/test-eventos-hook.sh
+EXIT=0

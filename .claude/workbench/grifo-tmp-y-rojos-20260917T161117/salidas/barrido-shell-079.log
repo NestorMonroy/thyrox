@@ -1,0 +1,2 @@
+VERDE tests/verify/test-premise-drift.sh
+EXIT=0

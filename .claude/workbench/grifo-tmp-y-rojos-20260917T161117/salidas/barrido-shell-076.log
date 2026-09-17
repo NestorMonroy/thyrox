@@ -1,0 +1,2 @@
+VERDE tests/verify/test-ids-entre-ramas.sh
+EXIT=0

@@ -1,0 +1,2 @@
+VERDE tests/agents/test-model-catalog.sh
+EXIT=0

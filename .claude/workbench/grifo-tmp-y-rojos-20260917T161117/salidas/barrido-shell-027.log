@@ -1,0 +1,2 @@
+VERDE tests/corpus/test-markdown-to-rst.sh
+EXIT=0

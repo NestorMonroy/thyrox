@@ -1,0 +1,2 @@
+VERDE tests/verify/test-assert-no-writes.sh
+EXIT=0

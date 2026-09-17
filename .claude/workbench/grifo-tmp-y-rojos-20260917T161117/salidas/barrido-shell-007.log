@@ -1,0 +1,2 @@
+VERDE tests/agents/test-agent-store-fts-degradation.sh
+EXIT=0

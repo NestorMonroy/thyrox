@@ -1,0 +1,2 @@
+VERDE tests/agents/test-agent-store-compara-antes-de-escribir.sh
+EXIT=0

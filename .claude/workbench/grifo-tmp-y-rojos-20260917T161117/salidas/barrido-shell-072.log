@@ -1,0 +1,2 @@
+VERDE tests/verify/test-githooks-activos.sh
+EXIT=0

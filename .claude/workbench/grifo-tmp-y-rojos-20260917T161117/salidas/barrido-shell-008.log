@@ -1,0 +1,2 @@
+ROJO tests/agents/test-agent-store-reassignment-guard.sh
+EXIT=0
