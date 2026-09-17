@@ -1,0 +1,13 @@
+test_accepts_the_materialized_checkout_and_returns_head (__main__.TestAssertCheckout.test_accepts_the_materialized_checkout_and_returns_head) ... ok
+test_refuses_a_directory_inside_another_checkout (__main__.TestAssertCheckout.test_refuses_a_directory_inside_another_checkout) ... ok
+test_routes_each_object_by_what_it_is (__main__.TestDestination.test_routes_each_object_by_what_it_is) ... ok
+test_does_not_call_a_single_generic_token_an_antecedent (__main__.TestFindCandidates.test_does_not_call_a_single_generic_token_an_antecedent) ... ok
+test_empty_topic_refuses_instead_of_publishing_zero (__main__.TestFindCandidates.test_empty_topic_refuses_instead_of_publishing_zero) ... ok
+test_searches_both_governance_areas_by_meaningful_tokens (__main__.TestFindCandidates.test_searches_both_governance_areas_by_meaningful_tokens) ... ok
+test_finding_refuses_an_id_reported_as_used (__main__.TestValidateFindingId.test_finding_refuses_an_id_reported_as_used) ... ok
+test_finding_requires_a_well_formed_available_id (__main__.TestValidateFindingId.test_finding_requires_a_well_formed_available_id) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.182s
+
+OK

@@ -1,0 +1,31 @@
+test_every_command_names_a_file_that_exists (__main__.InstalledHooksResolve.test_every_command_names_a_file_that_exists) ... ok
+test_it_emits_exactly_what_the_producer_declares (__main__.InstalledHooksResolve.test_it_emits_exactly_what_the_producer_declares)
+La FUENTE del cableado es una sola: `declared_wiring()`. ... ok
+test_it_emits_the_three_events (__main__.InstalledHooksResolve.test_it_emits_the_three_events)
+Sin esto, un instalador que no escribiera nada daría verde. ... ok
+test_the_two_older_assertions_cannot_see_the_topology (__main__.InstalledHooksResolve.test_the_two_older_assertions_cannot_see_the_topology)
+CONTROL ANULADO: con la topologia contraria, cae UNA y solo una. ... FAIL
+
+======================================================================
+FAIL: test_the_two_older_assertions_cannot_see_the_topology (__main__.InstalledHooksResolve.test_the_two_older_assertions_cannot_see_the_topology)
+CONTROL ANULADO: con la topologia contraria, cae UNA y solo una.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_installed_hooks_resolve.py", line 194, in test_the_two_older_assertions_cannot_see_the_topology
+    self.assertEqual(missing_files(contrario), [])
+AssertionError: Lists differ: ['SubagentStart: no existe — /home/user/ka[140 chars].py'] != []
+
+First list contains 2 additional elements.
+First extra element 0:
+'SubagentStart: no existe — /home/user/kaupamex-docs/.claude/hooks/medir_delta_subagente.py'
+
++ []
+- ['SubagentStart: no existe — '
+-  '/home/user/kaupamex-docs/.claude/hooks/medir_delta_subagente.py',
+-  'SubagentStop: no existe — '
+-  '/home/user/kaupamex-docs/.claude/hooks/medir_delta_subagente.py']
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.416s
+
+FAILED (failures=1)
