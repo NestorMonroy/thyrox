@@ -79,18 +79,7 @@ def missing_files(settings: dict) -> list[str]:
 
 #: La topologia CONTRARIA, verbatim como el instalador la componia hasta
 #: `thyrox@5862183f`: los seis comandos apuntando a los stubs del consumidor.
-#: No es un incumplidor fabricado — es el texto que estuvo vivo en el arbol, y
-#: ese TEXTO es lo que el control no toca.
-#:
-#: Lo que si se materializa es el DESTINO: `h` apunta a un directorio que el
-#: propio control crea y puebla, no al `.claude/hooks/` del consumidor. La
-#: version anterior HEREDABA del arbol su premisa —«los seis archivos
-#: existen»— y se pudrio con el: `medir_delta_subagente.py` se renombro a
-#: `measure_subagent_delta.py` por `identificadores-en-ingles.md`, y el
-#: control empezo a fallar por un nombre, no por una topologia. La existencia
-#: del archivo SIEMPRE fue incidental a lo que aqui se mide —que
-#: `missing_files` es ciego a la topologia—; establecerla aisla ese eje en vez
-#: de fabricar el caso.
+#: No es un incumplidor fabricado — es el texto que estuvo vivo en el arbol.
 TOPOLOGIA_CONTRARIA = """datos["hooks"] = {
     "SubagentStart": [{"hooks": [
         {"type": "command", "command": f"python3 {h}/medir_delta_subagente.py --start"},
@@ -105,27 +94,6 @@ TOPOLOGIA_CONTRARIA = """datos["hooks"] = {
         {"type": "command", "command": f"python3 {h}/register_agent_session.py --stop"},
     ]}],
 }"""
-
-
-#: Los tres nombres que `TOPOLOGIA_CONTRARIA` compone bajo `h`. El cuarto
-#: comando de esa topologia (`preModelSwitch.ts`) va por `THYROX_DIR`, no por
-#: `h`, y existe en el arbol del proveedor: no necesita stub.
-CONTRARY_TARGETS = ("medir_delta_subagente.py", "register_agent_session.py",
-                    "save-agent-result.mjs")
-
-
-def stub_home(home: Path) -> Path:
-    """El hogar de los stubs de la topologia contraria, creado y poblado.
-
-    `named_file` solo comprueba `.is_file()`, asi que un archivo vacio basta:
-    lo que el control mide es que `missing_files` no distinga una topologia de
-    la otra, no que estos tres guiones hagan nada.
-    """
-    destino = home / "stubs-topologia-contraria"
-    destino.mkdir(parents=True, exist_ok=True)
-    for name in CONTRARY_TARGETS:
-        (destino / name).touch()
-    return destino
 
 
 def installer_with_contrary_topology(home: Path) -> Path:
@@ -149,7 +117,7 @@ def installer_with_contrary_topology(home: Path) -> Path:
         '    consumer=os.environ["CONSUMIDOR"],\n'
         "    advisor=advisor or None,\n"
         ")\n"
-        f'h = {str(stub_home(home))!r}\n'
+        'h = os.path.join(os.environ["CONSUMIDOR"], ".claude", "hooks")\n'
         + TOPOLOGIA_CONTRARIA)
     destino = home / "instalador-topologia-contraria.sh"
     destino.write_text(texto, encoding="utf-8")
@@ -220,11 +188,8 @@ class InstalledHooksResolve(unittest.TestCase):
         self.assertNotEqual(
             contrario.get("hooks"),
             declared_wiring(root=ROOT, consumer=CONSUMER)["hooks"])
-        # (b) y (c) NO caen: los seis destinos de la otra topologia existen
-        #     —los tres de `h` los crea `stub_home`, y `preModelSwitch.ts` esta
-        #     en el arbol— asi que los dos controles viejos dan verde sobre el
-        #     cableado contrario. Esa premisa la ESTABLECE el control; heredarla
-        #     del arbol es lo que la pudrio (ver el comentario de la topologia).
+        # (b) y (c) NO caen: los seis archivos de la otra topologia existen, asi
+        #     que los dos controles viejos dan verde sobre el cableado contrario.
         self.assertEqual(set(contrario.get("hooks", {})), EXPECTED_EVENTS)
         self.assertEqual(missing_files(contrario), [])
 
