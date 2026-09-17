@@ -56,8 +56,13 @@ python3 "$MC" costo claude-no-existe --cache-read 1 >/dev/null 2>&1; check "mode
 USD="$(python3 "$MC" costo claude-fable-5-1 --cache-read 1000000 --ttl 5m | sed -n 's/^usd: *//p')"
 INP="$(python3 "$MC" costo claude-fable-5-1 --input 100000 --ttl 5m | sed -n 's/^usd: *//p')"
 check "peso fijo 0.1x sobrevalora 4x la caché leída de fable-5-1" "$(python3 -c "print(round($INP/$USD))")" "4"
-# 8. por-modelo publica su denominador
-S="$(python3 "$MC" por-modelo --ttl 1h 2>&1 | tail -1)"
+# 8. por-modelo publica su denominador — con el store DADO. Desde que el store
+#    es parametro del consumidor y ya no se compone por cwd, invocarlo sin
+#    `--store` rehusa a proposito: esa es la primera asercion, y sin ella la
+#    segunda no distinguiria "publica el denominador" de "el default lo compuso".
+python3 "$MC" por-modelo --ttl 1h >/dev/null 2>&1
+check "por-modelo sin --store rehusa en vez de componer un default" "$?" "2"
+S="$(python3 "$MC" por-modelo --ttl 1h --store "$RAIZ/agent-results/agent_store.sqlite3" 2>&1 | tail -1)"
 case "$S" in *"alcance medido:"*"de "*"en agent_sessions"*) D=si ;; *) D=no ;; esac
 check "por-modelo publica alcance medido con universo" "$D" "si"
 
@@ -91,10 +96,38 @@ rm -rf "$FX"
 #    test-agent-store-compara-antes-de-escribir.sh: agent_store.py deriva la
 #    raíz y a su vecino document_types por Path(__file__), y una copia
 #    suelta moriría antes por otra causa (IndexError / document_types).
-FX="$(mktemp -d)"; mkdir -p "$FX/.claude/scripts/agents" "$FX/.claude/scripts/corpus"
+#    El espejo se DERIVA, no se transcribe: la lista a mano ya caduco dos
+#    veces (agents_paths aparecio despues de escribirla, y el marcador de raiz
+#    nunca estuvo), y cada vez el fixture murio por una causa DISTINTA de la
+#    medida — un rojo que no discrimina "el censo no declara SIN MEDIR" de "el
+#    espejo esta incompleto". Se derivan los vecinos del AST y el marcador del
+#    modulo que lo declara. `model_catalog` se excluye a proposito: su ausencia
+#    ES el sujeto del caso.
+FX="$(mktemp -d)"
+ESPEJO="$(cd "$RAIZ" && python3 -c "
+import ast, pathlib, sys
+sys.path.insert(0, 'src/agents'); import agents_paths
+mods = set()
+for n in ast.walk(ast.parse(pathlib.Path('src/agents/agent_store.py').read_text())):
+    if isinstance(n, ast.Import):
+        mods |= {a.name.split('.')[0] for a in n.names}
+    elif isinstance(n, ast.ImportFrom) and n.level == 0 and n.module:
+        mods.add(n.module.split('.')[0])
+for m in sorted(mods - {'model_catalog'}):
+    h = list(pathlib.Path('src').rglob(m + '.py'))
+    if h: print(h[0])
+print(agents_paths._MARKER)
+")"
+mkdir -p "$FX/src/agents"
 cp "$RAIZ/src/agents/agent_store.py" "$FX/src/agents/"
-cp "$RAIZ/src/corpus/document_types.py" "$FX/src/corpus/"
-S="$(cd "$RAIZ" && python3 "$FX/src/agents/agent_store.py" censo-medicion --claude-dir "$RAIZ/.claude" 2>&1)"; RC=$?
+for v in $ESPEJO; do mkdir -p "$FX/$(dirname "$v")"; cp "$RAIZ/$v" "$FX/$v"; done
+# Guarda del propio control: si un dia el espejo copiara model_catalog.py, el
+# caso pasaria por la razon equivocada y nadie lo notaria (sub-patron D).
+check "el espejo NO lleva model_catalog.py, que es el sujeto del caso" \
+    "$([[ -e "$FX/src/agents/model_catalog.py" ]] && echo si || echo no)" "no"
+# THYROX_ROOT es parametro declarado, no conveniencia: reach_roots es un stub
+# que rehusa sin dueno canonico, y ese rehuse es de OTRO mecanismo (H-API-335).
+S="$(cd "$RAIZ" && THYROX_ROOT="$RAIZ" python3 "$FX/src/agents/agent_store.py" censo-medicion --claude-dir "$RAIZ/.claude" 2>&1)"; RC=$?
 case "$S" in *"USD por modelo: SIN MEDIR"*) D=si ;; *) D=no ;; esac
 check "agent_store sin model_catalog al lado: censo corre (exit 0) y declara SIN MEDIR" "$RC/$D" "0/si"
 rm -rf "$FX"
