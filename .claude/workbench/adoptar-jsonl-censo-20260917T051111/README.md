@@ -26,7 +26,7 @@ aqui seria transcribir a prosa una cifra que vive en codigo — el defecto que
 `calibration-verified-numbers.md` prohibe en su corolario. El desglose esta en
 `censo-por-bucket.txt`, que reproduce `python3 censo.py` desde la raiz.
 
-### Correccion 2026-09-17 — el cubo C tenia DOS mal clasificados
+### Correccion 2026-09-17 — el cubo C es la rama POR DEFECTO
 
 El criterio del cubo D no es «vive en `outputs/`» ni «lo lee un tercero»: es
 **quien escribe la FORMA**. Esa pregunta no se contesta por el nombre del
@@ -46,8 +46,23 @@ el mecanismo y esta tabla es su lectura.
 
 Lo que el episodio deja medido, y es lo reusable: **el censo clasifico por
 basename y por directorio, y el criterio real solo se aplica leyendo cada
-archivo**. Los dos errores fueron en direcciones opuestas — uno de mas y uno
-de menos — asi que ningun sesgo sistematico los habria predicho.
+archivo**.
+
+> **Corregido en el mismo dia.** Aqui decia *«el cubo C tenia DOS mal
+> clasificados … en direcciones opuestas — uno de mas y uno de menos»*, y es
+> falso: fue **UNO**. `card_369.json` estaba en `FOREIGN_SHAPE_FIXTURES` desde
+> la PRIMERA version de `censo.py` (`:70-72`), asi que la primera ejecucion ya
+> lo puso en D — su fila aparece en el cubo D de aquel reparto de 314. La
+> pareja `card_369` / `store_row_369` es la **ilustracion** de que el criterio
+> no se lee del directorio, no un segundo error.
+>
+> Y el sesgo SI es sistematico, en una sola direccion: **el cubo C es la rama
+> por defecto de `bucket_of()`**. Sus cuatro reglas afirman pertenencia y el
+> ultimo renglon es `return "C"`, asi que todo lo que ninguna atrapa cae ahi en
+> silencio. Es el unico cubo cuya membresia nunca se afirma: se hereda.
+>
+> Lo detecto una revision externa del hallazgo que copio esta frase
+> (`kaupamex-docs: H-THYROX-37`), no una relectura de este banco.
 
 ## El cuarto bucket no estaba en el encuadre de partida, y es el mayor
 
