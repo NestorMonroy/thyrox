@@ -162,6 +162,10 @@ CREATE TABLE IF NOT EXISTS findings_history (
     summary       TEXT NOT NULL,
     content       TEXT NOT NULL,
     source_ref    TEXT,
+    -- Enriquecimiento OPCIONAL. Su escritor y su superficie existen
+    -- —`agregar-hallazgo --metadata-json`, verificado por conducta— y
+    -- esta vacia en todas las filas porque nadie la ha pasado, no
+    -- porque falte quien la escriba. No es un hueco (TASK-THYROX-0102).
     metadata_json TEXT,
     session_id    TEXT,
     created_at    TEXT NOT NULL,
@@ -275,7 +279,8 @@ CREATE TABLE IF NOT EXISTS documents (
     section           TEXT,   -- primer segmento bajo `source/`
     series            TEXT,   -- `<section>/<tipo>` — la unidad compuesta
     -- El PLAZO no se deriva ni se inventa: declararlo es autoridad archivistica
-    -- y no la tiene este guion. Queda NULO hasta que #760 lo resuelva; un
+    -- y no la tiene este guion. Queda NULO hasta que TASK-DOCS-0245 lo
+    -- resuelva; un
     -- numero puesto aqui por completitud se leeria igual que uno decidido.
     retention_years   INTEGER,
     scanned_at        TEXT NOT NULL
@@ -2054,7 +2059,7 @@ def _document_type(rel: str) -> str:
 def cmd_classify_documents(args: argparse.Namespace) -> None:
     """Asigna a cada documento su SERIE — la unidad de conservacion.
 
-    Pieza 3 del eje temporal (#872). Un catalogo de disposicion documental no
+    Pieza 3 del eje temporal (TASK-GEN-0136). Un catalogo de disposicion documental no
     clasifica archivos sueltos: clasifica series. La unidad es **compuesta**
     —``<seccion>/<tipo>``— porque ninguno de los cuatro ejes simples medidos
     particiona el fondo (evento `unidad-de-conservacion-*`): la iniciativa deja
@@ -2066,7 +2071,7 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
     ya usa — seccion (la funcion) -> serie (el tipo documental dentro de ella).
 
     El PLAZO **no** se escribe aqui. Declararlo es autoridad archivistica y
-    este guion no la tiene; queda bloqueado por #760.
+    este guion no la tiene; queda bloqueado por TASK-DOCS-0245.
     """
     repo = document_root(args)
     raiz = repo / args.subtree
@@ -3273,8 +3278,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser(
         "clasificar-documentos",
-        help="asignar a cada documento su SERIE (seccion/tipo) — la unidad de "
-        "conservacion del catalogo (#872). El plazo NO se escribe: #760",
+        help="asignar a cada documento su SERIE (seccion/tipo) — la unidad "
+        "de conservacion del catalogo (TASK-GEN-0136). El plazo NO se "
+        "escribe: lo bloquea TASK-DOCS-0245",
     )
     add_target_args(p)
     # Misma razon que en `fechar-documentos`: `--repo` ya esta tomado por
