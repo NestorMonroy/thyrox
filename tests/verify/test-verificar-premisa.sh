@@ -208,6 +208,32 @@ import json
 print(sum(1 for t in json.load(open('$PREM')) if not t.get('presupposes')))
 ")"
 
+# --- El PROVEEDOR entra en el universo de resolucion -----------------------
+# `PATH_ROOTS` se componia de `reach.roots()`, que son los CONSUMIDORES. El
+# arbol donde vive este gate quedaba fuera, asi que toda cita de codigo propio
+# resolvia a None y S2 la publicaba como premisa envejecida. Medido sobre el
+# tablero real al declararlo: 143 de 239 citas no resueltas SI existen en el
+# proveedor — 59.8 % de veredictos falsos sobre codigo vivo.
+#
+# El sujeto es un archivo REAL del proveedor, no uno fabricado: el localizador
+# que el propio arbol declara. Fabricar uno mediria el fixture, no el universo.
+afirmar "el proveedor entra en PATH_ROOTS" "si" \
+    "$(python3 -c "
+import sys
+sys.path.insert(0, 'src/verify'); sys.path.insert(0, '.')
+import verificar_premisa as s
+print('si' if s.resolve_path('src/paths/reach.py') else 'no')
+")"
+# Y la mitad que lo hace ABSTRACTO: la COMPOSICION no nombra a nadie. El
+# proveedor servira arboles que no son los de hoy, asi que las raices se piden.
+#
+# El sujeto es el bloque de `PATH_ROOTS`, no el archivo: medir el archivo
+# entero contaba tambien un comentario que CITA la forma rota historica —
+# evidencia legitima— y un `EMIT_SYMBOL_SCOPE` que si cablea el producto pero
+# es otro defecto, de la clase de TASK-THYROX-0093.
+afirmar "la composicion de PATH_ROOTS no nombra ninguna raiz" 0 \
+    "$(sed -n '/^PATH_ROOTS = tuple(/,/^)/p' src/verify/verificar_premisa.py \
+        | grep -cE "kaupamex|/home/user")"
 
 rm -rf "$U" "$VACIO"
 printf '\n%s: %d ok · %d fallo(s)\n' "$(basename "$0")" "$OK" "$FALLO"

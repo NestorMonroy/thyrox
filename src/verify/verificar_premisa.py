@@ -117,9 +117,20 @@ CODE_ROOTS = (
 #: Añadir una raíz sólo puede convertir un falso positivo en silencio: una ruta
 #: que de verdad no existe sigue sin resolver bajo ninguna, así que el cambio no
 #: puede esconder una señal legítima.
+#: Donde se busca una ruta citada: los CONSUMIDORES mas el PROVEEDOR.
+#:
+#: `reach.roots()` devuelve los consumidores, y el arbol donde vive este gate
+#: NO esta entre ellos — es el proveedor, y `reach` lo expone aparte. Sin esa
+#: segunda mitad toda cita de codigo propio resolvia a None y S2 la publicaba
+#: como premisa envejecida. Medido sobre el tablero al declararlo: 143 de 239
+#: citas no resueltas SI existen en el proveedor (59.8 % de veredictos falsos
+#: sobre codigo vivo).
+#:
+#: Ninguna raiz se nombra: el proveedor servira arboles que no son los de hoy,
+#: y por eso las dos mitades se PIDEN en vez de enumerarse.
 PATH_ROOTS = tuple(
     os.path.join(str(raiz), *extra)
-    for raiz in reach.roots().values()
+    for raiz in (*reach.roots().values(), reach.thyrox_root())
     for extra in ((), ('.claude',))
 )
 
