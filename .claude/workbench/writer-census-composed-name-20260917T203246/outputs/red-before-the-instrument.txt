@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_writer_census.py", line 34, in <module>
+    from verify import writer_census as census  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: cannot import name 'writer_census' from 'verify' (/home/user/thyrox/src/verify/__init__.py)
+EXIT=1
