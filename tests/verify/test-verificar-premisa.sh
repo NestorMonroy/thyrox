@@ -79,7 +79,23 @@ escribir 4 pending 'Portar algo de src/inexistente/fantasma.py' 'ruta que no exi
 # Control positivo REAL del falso positivo medido: la ruta existe, pero bajo
 # `.claude/`. Antes de anadir esa raiz, el guion la declaraba fantasma — y lo
 # hizo sobre su PROPIA ficha, que es como se descubrio.
-escribir 11 pending 'Portar scripts/gates/verificar_premisa.py' 'ruta real bajo .claude/'
+#
+# La ficha citaba `scripts/gates/verificar_premisa.py`, que era ese mismo
+# guion antes de mudarse a `thyrox/src/verify/`. Con la mudanza esa ruta dejo
+# de existir bajo ninguna raiz, asi que el gate la declaraba fantasma con
+# razon: rojo de PREMISA RANCIA, no del sujeto.
+#
+# El repunte tiene DOS condiciones, y la segunda no es obvia: la ruta tiene
+# que (a) existir SOLO bajo `.claude/` —si existiera tambien en la raiz del
+# clon, el caso pasaria sin ejercitar la raiz que mide— y (b) empezar por un
+# segmento que `FILE_PATH` reconozca. Un primer repunte a
+# `hooks/measure_subagent_delta.py` cumplia (a) y no (b): `hooks` no esta en
+# la lista cerrada del patron, asi que no se extraia ninguna ruta y el caso
+# pasaba en verde sin medir nada — sub-patron D con este caso como sujeto.
+# Medido: `scripts/check-i001-prewrite.sh` existe bajo `.claude/` en api y ui
+# y en NINGUNA raiz de clon; anulando las raices `.claude/` de `PATH_ROOTS`,
+# S2 dispara.
+escribir 11 pending 'Portar scripts/check-i001-prewrite.sh' 'ruta real bajo .claude/'
 escribir 5 pending 'Portar otra cosa' 'esta tarea esta bloqueada por #9 desde hace tiempo'
 escribir 6 pending 'Sin senal de ninguna clase' 'prosa sin simbolo ni ruta'
 escribir 9 completed 'Portar has_groups ya cerrada' 'su senal es esperada'
