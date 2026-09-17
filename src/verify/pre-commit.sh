@@ -16,7 +16,7 @@
 # minutos.
 #
 # Lo que este mecanismo NO trae del hook anterior, y es deliberado: los dos
-# gates de PAQUETE —`check-agent-artifacts.sh` y `check-harness-typecheck.sh`—.
+# gates de PAQUETE —`check-agent-artifacts.sh` y `check-cli-typecheck.sh`—.
 # Sus superficies (`.claude/packages/{agent,harness}` y `.claude/agents`) se
 # mudaron a THYROX en TASK-DOCS-0449, asi que en el consumidor no existen: sus
 # bloques imprimian «la superficie del paquete no cambia en este commit» en

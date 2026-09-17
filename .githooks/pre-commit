@@ -44,7 +44,7 @@ fi
 # Se rehusan por ausencia igual que el gate de arriba: un gate declarado que no
 # esta en su sitio es un verde falso.
 GATE_AGENTS="$GATES/check-agent-artifacts.sh"
-GATE_TYPECHECK="$GATES/check-harness-typecheck.sh"
+GATE_TYPECHECK="$GATES/check-cli-typecheck.sh"
 GATE_XMODEL="$GATES/check-cross-model-read.sh"
 for gate in "$GATE_AGENTS" "$GATE_TYPECHECK"; do
     [[ -f "$gate" ]] && continue

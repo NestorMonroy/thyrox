@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Control de la resolución de paquete en los dos gates que miden un paquete de
-# thyrox: `check-agent-artifacts.sh` y `check-harness-typecheck.sh`.
+# thyrox: `check-agent-artifacts.sh` y `check-cli-typecheck.sh`.
 #
 # Qué haría fallar a este control (sub-patrón D): que el gate componga su raíz
 # con la aritmética calibrada para su ubicación ANTERIOR. Los dos hacían
@@ -27,7 +27,7 @@ afirmar() {
     fi
 }
 
-for g in check-agent-artifacts.sh check-harness-typecheck.sh; do
+for g in check-agent-artifacts.sh check-cli-typecheck.sh; do
     [ -f "$THYROX/src/verify/$g" ] || {
         echo "ERROR — no existe $THYROX/src/verify/$g. NO se emite un conteo." >&2
         exit 2
@@ -41,7 +41,7 @@ T="$(mktemp -d)"
 trap 'rm -rf "$T"' EXIT
 mkdir -p "$T/src/verify"
 cp "$THYROX/src/verify/check-agent-artifacts.sh" "$T/src/verify/"
-cp "$THYROX/src/verify/check-harness-typecheck.sh" "$T/src/verify/"
+cp "$THYROX/src/verify/check-cli-typecheck.sh" "$T/src/verify/"
 
 # --- agent-artifacts --------------------------------------------------------
 SAL="$(cd "$T" && bash src/verify/check-agent-artifacts.sh 2>&1)"
@@ -52,20 +52,22 @@ case "$SAL" in
 esac
 afirmar "agent-artifacts resuelve su paquete dentro del árbol" propia "$VISTO"
 
-# --- harness-typecheck ------------------------------------------------------
-# El harness NO dejo de existir: cambio de casa. #226 vacio
-# `src/packages/harness` y su binario vive hoy en `src/packages/cli`, asi que
-# el gate conserva su nombre —sigue midiendo el harness— y cambia su sujeto.
+# --- cli-typecheck ----------------------------------------------------------
+# El paquete que este gate media dejo de existir: TASK-THYROX-0226 vacio
+# `src/packages/harness` y el punto de entrada vive hoy en `src/packages/cli`.
 # Sin esto seguia apuntando a un paquete borrado; el guard lo delataba con
 # salida 2, no con un verde falso, pero medir cero no es medir.
-SAL="$(cd "$T" && bash src/verify/check-harness-typecheck.sh 2>&1)"
+#
+# El gate se renombro a `check-cli-typecheck.sh` el 2026-09-17 (directiva del
+# ejecutor: "ya no usamos la palabra harness"). El nombre se deriva del sujeto.
+SAL="$(cd "$T" && bash src/verify/check-cli-typecheck.sh 2>&1)"
 case "$SAL" in
     *"$T/src/packages/cli"*) VISTO=propia ;;
     *"src/packages/harness"*) VISTO=paquete-borrado ;;
     *".claude/packages/harness"*) VISTO=premudanza ;;
     *) VISTO=otra ;;
 esac
-afirmar "harness-typecheck resuelve su paquete dentro del árbol" propia "$VISTO"
+afirmar "cli-typecheck resuelve su paquete dentro del árbol" propia "$VISTO"
 
 # El gate tiene que poder MEDIR, no solo resolver la ruta: sobre el arbol real
 # los dos proyectos de TypeScript existen y compilan. Un gate que resuelve bien
@@ -74,14 +76,14 @@ afirmar "harness-typecheck resuelve su paquete dentro del árbol" propia "$VISTO
 # Se invoca por ruta ABSOLUTA y desde `$THYROX`: los casos de arriba corren en
 # el arbol sintetico `$T`, y una ruta relativa desde alli da 127 —el gate no
 # existe— que se leeria como «el gate fallo» en vez de «lo invoque mal».
-SAL="$(cd "$THYROX" && bash "$THYROX/src/verify/check-harness-typecheck.sh" 2>&1)"; COD=$?
+SAL="$(cd "$THYROX" && bash "$THYROX/src/verify/check-cli-typecheck.sh" 2>&1)"; COD=$?
 case "$SAL" in
     *"OK (proyectos medidos: 2 de 2)"*) VISTO=mide ;;
     *"NO ENCONTRADO"*) VISTO=rehusa ;;
     *) VISTO=otra ;;
 esac
-afirmar "harness-typecheck mide los dos proyectos del paquete" mide "$VISTO"
-afirmar "harness-typecheck sale 0 sobre el arbol limpio" 0 "$COD"
+afirmar "cli-typecheck mide los dos proyectos del paquete" mide "$VISTO"
+afirmar "cli-typecheck sale 0 sobre el arbol limpio" 0 "$COD"
 
 # --- la variable conserva su precedencia ------------------------------------
 AJENO="$T/ajeno/agent"

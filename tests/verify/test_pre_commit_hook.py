@@ -28,7 +28,7 @@ GATE = THYROX / 'src' / 'verify' / 'check_provider_evidence.py'
 # Los dos gates de paquete que TASK-DOCS-0530 cablea al hook. Viajan al repo
 # sintetico porque el hook REHUSA por su ausencia — es su contrato, no un
 # descuido. Sin copiarlos, esta suite entera se pondria roja por el arreglo.
-PACKAGE_GATES = ('check-agent-artifacts.sh', 'check-harness-typecheck.sh')
+PACKAGE_GATES = ('check-agent-artifacts.sh', 'check-cli-typecheck.sh')
 # El tercero NO esta en el bucle de rehuse del hook —se invoca sin comprobar
 # que exista— asi que su ausencia no produce el mensaje de «verde falso»
 # sino un `bash: no such file` que pone CODE=1. Viaja al repo sintetico por

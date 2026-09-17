@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+# Control de los TRES estados de `check-cli-typecheck.sh`.
+#
+# El defecto que mide (TASK-THYROX-0056): el gate colapsaba en un solo rojo
+# —«el paquete no compila. El arreglo es el tipo, no el bypass»— dos causas con
+# arreglo opuesto. Medido el dia que se abrio: los 4 errores de los dos
+# proyectos eran `TS2307` sobre `@thyrox/context-compression`, un paquete que
+# EXISTE en `src/packages/` y que no estaba en `node_modules/@thyrox/`. Cero
+# errores de tipo genuinos, y el gate mandaba arreglar un tipo.
+#
+# Que haria fallar a este control (sub-patron D): que el gate llamara «workspace
+# sin enlazar» a todo `TS2307`. Por eso el cuarto caso —un especificador cuyo
+# hermano NO existe en el arbol de paquetes— tiene que seguir siendo codigo
+# roto. Sin ese caso, un gate que respondiera «sin enlazar» a cualquier modulo
+# ausente pasaria este control igual, y no discriminaria nada.
+set -uo pipefail
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+THYROX="$(cd "$HERE/../.." && pwd)"
+GATE="$THYROX/src/verify/check-cli-typecheck.sh"
+
+ok=0; fail=0
+assert() {
+    local name="$1" expected="$2" actual="$3"
+    if [ "$expected" = "$actual" ]; then
+        ok=$((ok + 1)); printf '  ok   %s\n' "$name"
+    else
+        fail=$((fail + 1))
+        printf '  FALLO %s\n       esperado: %s\n       obtenido: %s\n' \
+            "$name" "$expected" "$actual"
+    fi
+}
+
+# Precondicion declarada: sin el gate no se emite un conteo. Un 0 aqui seria un
+# verde falso — el control no habria medido nada.
+[ -f "$GATE" ] || {
+    echo "ERROR — no existe $GATE. NO se emite un conteo." >&2
+    exit 2
+}
+command -v bunx >/dev/null 2>&1 || {
+    echo "ERROR — falta \`bunx\`: el control no puede ejercitar el gate." >&2
+    echo "  NO se emite un conteo: un 0 aqui seria un verde falso." >&2
+    exit 2
+}
+
+T="$(mktemp -d)"
+trap 'rm -rf "$T"' EXIT
+
+# Un arbol de paquetes sintetico con la forma de `src/packages/`: el sujeto es
+# `subject/` y sus hermanos viven al lado. `linked/` esta enlazado en
+# `node_modules/@thyrox/`; `unlinked/` existe y NO lo esta.
+PKGS="$T/packages"
+mkdir -p "$PKGS/subject/node_modules/@thyrox" "$PKGS/linked" "$PKGS/unlinked"
+
+for p in linked unlinked; do
+    printf 'export const mark = 1;\n' > "$PKGS/$p/index.ts"
+    printf '{"name":"@thyrox/%s","version":"0.0.0","main":"index.ts"}\n' "$p" \
+        > "$PKGS/$p/package.json"
+done
+ln -s ../../../linked "$PKGS/subject/node_modules/@thyrox/linked"
+
+tsconfig_for() {
+    cat <<'JSON'
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "skipLibCheck": true
+  },
+  "include": ["*.ts"]
+}
+JSON
+}
+tsconfig_for > "$PKGS/subject/tsconfig.json"
+tsconfig_for > "$PKGS/subject/tsconfig.tests.json"
+printf '{"name":"@thyrox/subject","version":"0.0.0"}\n' > "$PKGS/subject/package.json"
+
+run_gate() {
+    OUT="$(CHECK_CLI_TYPECHECK_PKG_DIR="$PKGS/subject" \
+           CHECK_CLI_TYPECHECK_PACKAGES_DIR="$PKGS" \
+           bash "$GATE" --strict 2>&1)"
+    CODE=$?
+}
+
+# --- 1. limpio: los dos proyectos compilan -----------------------------------
+printf 'import { mark } from "@thyrox/linked";\nexport const v: number = mark;\n' \
+    > "$PKGS/subject/index.ts"
+run_gate
+assert "limpio sale 0" 0 "$CODE"
+case "$OUT" in *"OK"*) V=ok ;; *) V="$OUT" ;; esac
+assert "limpio publica OK" ok "$V"
+
+# --- 2. codigo roto: error de tipo genuino -----------------------------------
+printf 'export const v: number = "no es un numero";\n' > "$PKGS/subject/index.ts"
+run_gate
+assert "codigo roto sale 1 con --strict" 1 "$CODE"
+case "$OUT" in
+    *"sin enlazar"*) V=confundio-con-workspace ;;
+    *"no compila"*)  V=codigo-roto ;;
+    *)               V="$OUT" ;;
+esac
+assert "codigo roto se publica como codigo roto" codigo-roto "$V"
+
+# --- 3. workspace sin enlazar: el hermano EXISTE y no esta enlazado ----------
+# Es el estado que el gate no tenia. Reproduce por construccion el caso vivo de
+# `@thyrox/context-compression` medido al abrir la tarea.
+printf 'import { mark } from "@thyrox/unlinked";\nexport const v: number = mark;\n' \
+    > "$PKGS/subject/index.ts"
+run_gate
+assert "workspace sin enlazar rehusa con exit 2" 2 "$CODE"
+case "$OUT" in
+    *"sin enlazar"*) V=sin-enlazar ;;
+    *"no compila"*)  V=confundio-con-codigo-roto ;;
+    *)               V="$OUT" ;;
+esac
+assert "workspace sin enlazar se publica como tal" sin-enlazar "$V"
+case "$OUT" in *"@thyrox/unlinked"*) V=nombra ;; *) V=no-nombra ;; esac
+assert "workspace sin enlazar nombra el paquete" nombra "$V"
+case "$OUT" in *"veredicto"*) V=declara ;; *) V=no-declara ;; esac
+assert "workspace sin enlazar declara que no hay veredicto" declara "$V"
+
+# --- 4. el control que hace que 3 discrimine ---------------------------------
+# Un `TS2307` cuyo hermano NO existe en el arbol de paquetes es una dependencia
+# ausente de verdad, no un enlace que falta. Si el gate lo llamara «sin
+# enlazar», el estado 3 no separaria nada.
+printf 'import { mark } from "@thyrox/fantasma";\nexport const v: number = mark;\n' \
+    > "$PKGS/subject/index.ts"
+run_gate
+case "$OUT" in
+    *"sin enlazar"*) V=confundio-con-workspace ;;
+    *"no compila"*)  V=codigo-roto ;;
+    *)               V="$OUT" ;;
+esac
+assert "modulo sin hermano en el arbol sigue siendo codigo roto" codigo-roto "$V"
+assert "modulo sin hermano sale 1 con --strict" 1 "$CODE"
+
+printf '\n%d ok, %d fallo(s)\n' "$ok" "$fail"
+[ "$fail" -eq 0 ]

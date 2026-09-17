@@ -142,7 +142,7 @@ CHECKS: list[Check] = [
           'H-DOCS-311 — el aislamiento del working tree entre agentes'),
     Check('cross-model-read', 'Paquete', 'agent', 'check-cross-model-read.sh',
           'la clave de caché lleva el modelo: nadie relee lo que otro escribió'),
-    Check('harness-typecheck', 'Paquete', 'cli', 'check-harness-typecheck.sh',
+    Check('cli-typecheck', 'Paquete', 'cli', 'check-cli-typecheck.sh',
           'el paquete typechequea antes de publicarse'),
     Check('i001-prewrite', 'Paquete', 'thyrox', 'check-i001-prewrite.sh',
           'I-001 — DISCOVER antes de planificar'),
