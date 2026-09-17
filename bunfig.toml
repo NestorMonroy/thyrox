@@ -1,0 +1,7 @@
+# El preload del grifo de /tmp.
+#
+# `bun test <archivo>` suelto no pasa por `tests/run.sh`, asi que no heredaria
+# el `TMPDIR` de la ejecucion. Este preload le da uno propio y lo retira al salir.
+# El mecanismo y su guarda de propiedad: `tests/preload/tmpdir.ts`.
+[test]
+preload = ["./tests/preload/tmpdir.ts"]

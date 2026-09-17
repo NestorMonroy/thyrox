@@ -24,6 +24,32 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
+# --- El grifo de /tmp: un TMPDIR por ejecucion, retirado al salir -------------
+#
+# Medido antes de escribir esto: 105 715 directorios de fixture en /tmp, dejados
+# por nuestras propias suites — 115 archivos `.ts` crean con `mkdtemp` y 56 no
+# retiran nunca. La correccion NO edita esos 56: redirige `TMPDIR`, que
+# `os.tmpdir()` de bun, `mkdtempSync` de `node:fs` y `mktemp -d` de coreutils
+# honran los tres (medido por conducta, no leido de una descripcion). El bypass
+# esta medido en CERO: ningun `.ts`, `.py` ni `.sh` del arbol crea bajo un
+# literal `/tmp/`.
+#
+# `THYROX_TEST_TMPDIR` declara que el directorio es de esta ejecucion. El preload
+# de `bunfig.toml` lo hereda y NO lo retira — sin esa guarda, cada `bun test`
+# borraria el directorio de los demas mientras corren.
+#
+# El trap retira SOLO lo que este guion creo, y re-comprueba el prefijo antes de
+# borrar: la variable la puede fijar cualquiera, el nombre del directorio no.
+THYROX_TEST_TMPDIR="$(mktemp -d "${TMPDIR:-/tmp}/thyrox-tests-XXXXXX")"
+export THYROX_TEST_TMPDIR
+export TMPDIR="$THYROX_TEST_TMPDIR"
+retirar_tmpdir() {
+  case "$THYROX_TEST_TMPDIR" in
+    */thyrox-tests-*) rm -rf "$THYROX_TEST_TMPDIR" ;;
+  esac
+}
+trap retirar_tmpdir EXIT
+
 # `node_modules` trae tests de terceros —198 de zod, medidos— que no son
 # nuestros: incluirlos inflaria el denominador con material que no mantenemos.
 descubrir_ts()     { find src tests -name '*.test.ts' -not -path '*/node_modules/*' | sort; }
@@ -142,8 +168,11 @@ if [ "$only" != "--ts-only" ] && [ "$only" != "--shell-only" ]; then
   rojos_py=0
   while IFS= read -r suite; do
     count=$((count + 1))
-    echo "-- $suite"
-    python3 "$suite" || rojos_py=$((rojos_py + 1))
+    # La mitad shell marca `-- ROJO <suite>` y esta sólo publicaba el conteo:
+    # once rojos sin nombre no se pueden triar. Misma forma que «un conteo sin
+    # denominador no es un resultado», un nivel más abajo.
+    echo "-- $suite"          # ANTES de correr: un cuelgue se atribuye
+    python3 "$suite" || { echo "-- ROJO $suite"; rojos_py=$((rojos_py + 1)); }
   done < <(descubrir_python)
   [ "$rojos_py" -gt 0 ] && failures=$((failures + 1))
   resumen+=("Python: $count suite(s), $rojos_py en rojo")
