@@ -117,8 +117,21 @@ fi
 # terceros tiene su clase en la RAIZ y gitignored — .venv, node_modules,
 # .pytest_cache. Un subdirectorio ignorado dentro de `.claude/` es la anomalia
 # que este caso rechaza, venga de donde venga.
+#
+# LA EXENCION, y por que no es aflojar el criterio: el caso mide UBICACION y
+# hay una clase que la ubicacion no puede juzgar — el estado POR SESION que
+# este arbol produce. `.claude/jobs-ledger/` lo declara `.gitignore` y lo
+# compone `wait-jobs.sh`, porque dos sesiones que compartieran un ledger se
+# robarian los marcadores. Sin la exencion, USAR el mecanismo que
+# `trabajo-en-segundo-plano.md` MANDA usar deja roja esta suite (H-THYROX-40).
+#
+# El hogar exento se PREGUNTA al mecanismo, nunca se transcribe aqui: una
+# copia en este archivo seria la segunda fuente de verdad que el propio
+# `bg.sh marker-pattern` existe para evitar.
+exento="$(bash "$ROOT/bin/wait-jobs" ledger-home 2>/dev/null || echo '')"
 intrusos=""
 for d in "$ROOT"/.claude/*/; do
+  [[ -n "$exento" && "${d%/}" == "${exento%/}" ]] && continue
   git -C "$ROOT" check-ignore -q "$d" && intrusos="$intrusos ${d#$ROOT/}"
 done
 if [[ -z "$intrusos" ]]; then

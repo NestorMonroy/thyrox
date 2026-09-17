@@ -1,0 +1,92 @@
+=== bun observability ===
+bun test v1.3.11 (af24e281)
+
+ 38 pass
+ 0 fail
+ 81 expect() calls
+Ran 38 tests across 2 files. [60.00ms]
+=== bun cli ===
+
+ 173 pass
+ 1 todo
+ 4 fail
+ 385 expect() calls
+Ran 178 tests across 19 files. [6.46s]
+=== bun tools ===
+bun test v1.3.11 (af24e281)
+
+ 77 pass
+ 0 fail
+ 225 expect() calls
+Ran 77 tests across 6 files. [510.00ms]
+=== tests/lib/test-toolchain-parallel.sh ===
+  ok    ningun subdirectorio ignorado dentro de .claude/
+  ok    el hogar no es /tmp ni el del contenedor
+
+10 casos: 10 ok, 0 fallos
+=== tests/session/test-wait-jobs.sh ===
+  ok    un VIVO sano -> status exit 0
+  ok    un BAIL real -> status sigue en exit 1
+
+33 ok, 0 fallos
+=== tests/agents/test_agents_module_paths.py ===
+Ran 3 tests in 1.001s
+
+FAILED (failures=2)
+=== tests/agents/test_clasificar_agentes.py ===
+  decididos por patrón: 3 de 342 (0.9%)  [mtime (heurística)]
+
+resultado: 27 ok, 0 fallas
+=== tests/agents/test_derive_submodule.py ===
+  ok    sin declaracion devuelve el hueco, no una capa adivinada
+
+resultado: 20 de 20 aserciones en verde
+=== tests/agents/test_document_root_default.py ===
+  ok    y no nombra el arbol del proveedor
+
+5 ok, 0 fallos
+=== tests/agents/test_measure_delta.py ===
+  ok    y crea el directorio si falta
+
+10 ok, 0 fallos
+=== tests/agents/test_merge_stores.py ===
+Ran 9 tests in 0.035s
+
+OK
+=== tests/agents/test_model_catalog_paths.py ===
+Ran 9 tests in 0.013s
+
+OK
+=== tests/agents/test_payload_sin_transcript.py ===
+  ok    y nada mas con transcript
+
+10 ok, 0 fallos
+=== tests/agents/test_recommend_cli.py ===
+  ok   --json es JSON válido con su modelo y sus excluidos
+
+28 aprobada(s) · 0 fallida(s) (alcance medido: recommend.ts)
+=== tests/agents/test_register_session.py ===
+  ok    sin la clave, está ausente
+
+13 ok, 0 fallos
+=== tests/agents/test_retention_backfill.py ===
+  ok    segunda pasada toca 0
+
+RESULTADO: 10 ok, 0 fallo(s)
+=== tests/agents/test_retention_level.py ===
+  ok    el status viaja igual en los dos casos
+
+RESULTADO: 7 ok, 0 fallo(s)
+=== tests/agents/test_store_dir_default.py ===
+Ran 9 tests in 0.013s
+
+OK
+=== tests/agents/test_store_home.py ===
+Ran 8 tests in 1.301s
+
+OK
+=== tests/agents/test_table_census.py ===
+  ok    sin columna de fecha devuelve None
+
+6 ok, 0 fallos
+__BG_EXIT__=0

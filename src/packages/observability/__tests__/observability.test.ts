@@ -13,6 +13,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Journal, readJournal } from '../src/journal.ts'
 import {
+  LEGACY_CONSUMER_STORE_DIR, STORE_DIR,
   STORE_FILE, STORE_PATH, STORE_PATH_VAR, recordHarnessSession, storePath,
 } from '../src/store.ts'
 import { CONSUMER_ROOT_VAR, thyroxRoot } from '../../../paths/reach.ts'
@@ -240,7 +241,26 @@ describe('storePath — el consumidor es parámetro, no el clon de docs', () => 
     delete process.env[STORE_PATH_VAR]
     const consumidor = raizTemporal()
     process.env[CONSUMER_ROOT_VAR] = consumidor
-    expect(storePath()).toBe(join(consumidor, '.claude', 'agent-results', STORE_FILE))
+    expect(storePath()).toBe(join(consumidor, STORE_DIR, STORE_FILE))
+  })
+
+  // H-THYROX-41. `LEGACY_CONSUMER_STORE_DIR` declara en su PROPIO docstring
+  // «NO es destino de escritura», y `storePath()` ES el camino de escritura.
+  // El docstring de `storePath()` declara, además, que este peldaño compone
+  // con `STORE_DIR`. Tres declaraciones y dos no coincidían con el código.
+  //
+  // El control que discrimina NO es «la ruta es la esperada» —eso lo cumple
+  // cualquier constante— sino que el destino de escritura y el localizador
+  // del silo heredado sean DISTINTOS. Si volvieran a coincidir, la aserción
+  // de arriba pasaría igual y el defecto reaparecería sin que nada lo dijera.
+  test('el destino de escritura NO es el localizador del silo heredado', () => {
+    delete process.env[STORE_PATH_VAR]
+    const consumidor = raizTemporal()
+    process.env[CONSUMER_ROOT_VAR] = consumidor
+    expect(storePath()).not.toBe(
+      join(consumidor, LEGACY_CONSUMER_STORE_DIR, STORE_FILE),
+    )
+    expect(STORE_DIR).not.toBe(LEGACY_CONSUMER_STORE_DIR)
   })
 
   test('sin ninguna de las dos, cae al clon de docs — la conducta de hoy', () => {

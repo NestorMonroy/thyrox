@@ -1,0 +1,50 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/importTasksStoreHome.test.ts:
+32 |     expect(resolveTaskStore('/a/mano.sqlite3', '/cualquier/cwd')).toBe('/a/mano.sqlite3')
+33 |   })
+34 | 
+35 |   test('sin `--db`, delega en storePath()', () => {
+36 |     delete process.env[CONSUMER_ROOT_VAR]
+37 |     expect(resolveTaskStore(undefined, '/cualquier/cwd')).toBe(storePath())
+                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: "/home/user/thyrox/agent-results/agent_store.sqlite3"
+Received: "/cualquier/cwd/.claude/agent-results/agent_store.sqlite3"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/importTasksStoreHome.test.ts:37:59)
+(fail) resolveTaskStore — el localizador, no el cwd > sin `--db`, delega en storePath() [0.27ms]
+39 | 
+40 |   test('DOS cwd distintos dan el MISMO destino', () => {
+41 |     delete process.env[CONSUMER_ROOT_VAR]
+42 |     const uno = mkdtempSync(join(tmpdir(), 'cwd-uno-'))
+43 |     const dos = mkdtempSync(join(tmpdir(), 'cwd-dos-'))
+44 |     expect(resolveTaskStore(undefined, uno)).toBe(resolveTaskStore(undefined, dos))
+                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "/tmp/cwd-dos-EsSKkX/.claude/agent-results/agent_store.sqlite3"
+Received: "/tmp/cwd-uno-PtZgFX/.claude/agent-results/agent_store.sqlite3"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/importTasksStoreHome.test.ts:44:46)
+(fail) resolveTaskStore — el localizador, no el cwd > DOS cwd distintos dan el MISMO destino [0.23ms]
+46 | 
+47 |   test('el consumidor declarado manda, y NO al hogar heredado', () => {
+48 |     const consumidor = mkdtempSync(join(tmpdir(), 'consumidor-'))
+49 |     process.env[CONSUMER_ROOT_VAR] = consumidor
+50 |     const destino = resolveTaskStore(undefined, '/cualquier/cwd')
+51 |     expect(destino).toBe(join(consumidor, STORE_DIR, STORE_FILE))
+                         ^
+error: expect(received).toBe(expected)
+
+Expected: "/tmp/consumidor-RVddTJ/agent-results/agent_store.sqlite3"
+Received: "/cualquier/cwd/.claude/agent-results/agent_store.sqlite3"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/importTasksStoreHome.test.ts:51:21)
+(fail) resolveTaskStore — el localizador, no el cwd > el consumidor declarado manda, y NO al hogar heredado [0.12ms]
+
+ 1 pass
+ 3 fail
+ 4 expect() calls
+Ran 4 tests across 1 file. [37.00ms]

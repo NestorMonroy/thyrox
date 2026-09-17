@@ -817,6 +817,26 @@ cmd_adopt_external() {
         --ledger "$LEDGER" "$@"
 }
 
+cmd_ledger_home() {
+    # Publica el hogar POR SESION del ledger, para que un tercero no tenga que
+    # componerlo a mano. Es la forma que `bg.sh marker-pattern` ya tiene, y por
+    # la misma razon: quien lo copie a su propio archivo crea una segunda
+    # fuente de verdad que nadie sincroniza, y el dia que `LEDGER` cambie su
+    # composicion la copia sigue publicando la vieja sin emitir un byte.
+    #
+    # Lo que publica NO es «donde esta el ledger de esta sesion» sino «que
+    # directorio es, por construccion, estado por sesion»: el consumidor lo usa
+    # para decidir si un directorio ignorado lo esta con razon declarada. Por
+    # eso imprime el PADRE cuando el hogar lleva el identificador de sesion —
+    # un caso que comparase contra el hogar exacto solo eximiria a la sesion
+    # que corre el test, y fallaria sobre el ledger de cualquier otra.
+    local home="$LEDGER"
+    if [[ "$(basename "$home")" == "$_SESSION" ]]; then
+        home="$(dirname "$home")"
+    fi
+    printf '%s\n' "$home"
+}
+
 case "${1:-}" in
     register|registrar)  shift; cmd_register "$@" ;;
     wait|esperar)        shift; cmd_wait "$@" ;;
@@ -829,5 +849,6 @@ case "${1:-}" in
     adopt-external)      shift; cmd_adopt_external "$@" ;;
     dispatch|despachar)  shift; cmd_dispatch "$@" ;;
     archive|archivar)    shift; cmd_archive "$@" ;;
+    ledger-home)         shift; cmd_ledger_home "$@" ;;
     *) sed -n '/^# Uso/,/^# ===/p' "$0" | sed 's/^# \?//'; exit 64 ;;
 esac

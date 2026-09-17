@@ -1,0 +1,12 @@
+  ok    la adquisicion existe
+  ok    rehusa con exit 2 cuando falta y no hay opt-in
+  ok    el rechazo nombra la variable de opt-in
+  ok    el rechazo no emite ningun conteo
+  ok    un binario presente pasa sin opt-in
+  ok    un instalador que miente NO se acepta: se re-comprueba el binario
+  ok    la adquisicion deja la cita reconocida
+  ok    el hogar de la cita es hermano de .venv, no de las reglas
+  FALLO estado de herramienta dentro del arbol versionado: .claude/jobs-ledger/
+  ok    el hogar no es /tmp ni el del contenedor
+
+10 casos: 9 ok, 1 fallos

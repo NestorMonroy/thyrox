@@ -22,7 +22,11 @@ import { docsRoot } from '../../../paths/docs.ts'
 // corresponde, no se calcula subiendo niveles.
 const REAL = join(
   docsRoot(),
-  'source/gestion/pm/docs/iniciativas/construir-harness-propio/tareas-construir-harness-propio.rst',
+  // La iniciativa se mudó de `pm/docs` a `pm/thyrox`: su entregable es el
+  // PROVEEDOR, no la documentación del consumidor. La cita no siguió a la
+  // mudanza, así que los cuatro casos que la leen morían con ENOENT — y el
+  // ENOENT los hacía fallar ANTES de ejercitar nada de lo que miden.
+  'source/gestion/pm/thyrox/iniciativas/construir-harness-propio/tareas-construir-harness-propio.rst',
 )
 
 describe('puente RST → tablero (T-062)', () => {

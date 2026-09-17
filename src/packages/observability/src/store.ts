@@ -97,7 +97,11 @@ export function storePath(declared?: string): string {
   const file = envValue(STORE_PATH_VAR)
   if (file) return resolve(file)
   const consumer = envValue(CONSUMER_ROOT_VAR)
-  if (consumer) return join(consumerRoot(consumer), LEGACY_CONSUMER_STORE_DIR, STORE_FILE)
+  // H-THYROX-41. Compone con `STORE_DIR`, no con `LEGACY_CONSUMER_STORE_DIR`:
+  // esa constante declara en su propio docstring «NO es destino de escritura»,
+  // y esta funcion ES el camino de escritura. El docstring de arriba ya decia
+  // `STORE_DIR`; era el codigo el que discrepaba de sus dos declaraciones.
+  if (consumer) return join(consumerRoot(consumer), STORE_DIR, STORE_FILE)
   return join(thyroxRoot(), STORE_DIR, STORE_FILE)
 }
 
