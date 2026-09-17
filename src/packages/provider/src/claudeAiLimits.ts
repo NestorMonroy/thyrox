@@ -53,7 +53,7 @@
  *
  * Los tres son el desenlace 2 de `porte-completo-no-parcial.md` (bloqueado por
  * algo medido y nombrado), no una omisión silenciosa. Sucesor:
- * **TASK-THYROX-0069**.
+ * **TASK-THYROX-0070**.
  *
  * Por qué importa que esto exista
  * ===============================
@@ -446,7 +446,7 @@ export const statusListeners: Set<StatusChangeListener> = new Set()
  * (`logEvent('tengu_claudeai_limits_status_changed', …)`) con las horas hasta
  * la reposición. Aquí no se emite, porque el cableado de observabilidad de
  * este paquete es otro mecanismo con su propia tarea; el resto —el estado y
- * la notificación— se porta entero. Sucesor: TASK-THYROX-0069.
+ * la notificación— se porta entero. Sucesor: TASK-THYROX-0070.
  */
 export function emitStatusChange(limits: ClaudeAILimits): void {
   currentLimits = limits
