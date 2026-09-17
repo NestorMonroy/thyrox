@@ -37,8 +37,39 @@ source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
 REPO="$RAIZ"
 SUT="$RAIZ/src/verify/check_agent_isolation.py"
-DIR_AGENTES=".claude/agents"
 CONTRATO="$REPO/_references/coordinator-integration.md"
+
+# El SUJETO mide el CONSUMIDOR —el gate lo dice en su propio comentario: «los
+# agentes que se miden son los suyos»— y esta suite corre desde el PROVEEDOR.
+# Sin declararlo, `reach.consumer_root` REHUSA y el gate muere con un
+# traceback: sus cuatro casos publicaban rojos que no eran del sujeto. Es la
+# costura que TASK-THYROX-0055 ya cerro para otras suites.
+#
+# El conjunto de directorios se DERIVA de las raices del alcance, no se
+# transcribe: citaba `.claude/agents` relativo, y este arbol no lo tiene —sus
+# definiciones viven en `src/agents/definitions` y de ahi se EMITEN al clon—.
+# Un `grep` sobre un directorio ausente devuelve 0, que es un verde que no
+# distingue «ningun agente promete worktree» de «no habia agentes que mirar».
+#
+# Y no se elige UN consumidor: medido, tres de las cinco raices tienen
+# `.claude/agents` y dos no. Quedarse con una publicaria su cero como el del
+# arbol, que es el defecto que el denominador del gate existe para impedir.
+DIRS_AGENTES=()
+while IFS= read -r _raiz; do
+  [[ -d "$_raiz/.claude/agents" ]] && DIRS_AGENTES+=("$_raiz/.claude/agents")
+done < <(python3 "$RAIZ/src/paths/reach_roots.py" --paths)
+if [[ "${#DIRS_AGENTES[@]}" -eq 0 ]]; then
+  echo "== SIN MEDIR: ninguna raiz del alcance tiene .claude/agents"
+  echo "Resultado: 0 ok, 0 fallas — SIN MEDIR"
+  exit 0
+fi
+# `--dir` es repetible; el gate publica cuantos directorios midio.
+DIR_ARGS=()
+for _d in "${DIRS_AGENTES[@]}"; do DIR_ARGS+=(--dir "$_d"); done
+
+# La ruta HISTORICA es otra cosa: un camino dentro de un arbol de git, no del
+# filesystem de hoy. Vive aparte para que renombrar el hogar vivo no la mueva.
+DIR_AGENTES_HISTORICO=".claude/agents"
 
 # El commit que retiró `isolation: worktree` de los doce coordinadores. Su
 # PADRE es el árbol donde el defecto de :ref:`h-docs-311` está vivo.
@@ -76,13 +107,13 @@ check() {
 }
 
 echo "== HEAD: el árbol no declara aislamiento en ningún agente =="
-python3 "$SUT" --strict >/dev/null 2>&1
-check "exit 0 sobre $DIR_AGENTES" "0" "$?"
-check "--quiet imprime 0 incoherentes" "0" "$(python3 "$SUT" --quiet 2>/dev/null | tail -1)"
+python3 "$SUT" "${DIR_ARGS[@]}" --strict >/dev/null 2>&1
+check "exit 0 sobre ${#DIRS_AGENTES[@]} directorio(s)" "0" "$?"
+check "--quiet imprime 0 incoherentes" "0" "$(python3 "$SUT" "${DIR_ARGS[@]}" --quiet 2>/dev/null | tail -1)"
 check "0 agentes declaran aislamiento" "1" \
-      "$(python3 "$SUT" 2>/dev/null | grep -c "$MARCA_SIN_AISLAMIENTO")"
+      "$(python3 "$SUT" "${DIR_ARGS[@]}" 2>/dev/null | grep -c "$MARCA_SIN_AISLAMIENTO")"
 check "0 descripciones prometen worktree" "0" \
-      "$(grep -lE "$PATRON_ANUNCIO" "$DIR_AGENTES"/*.md 2>/dev/null | wc -l)"
+      "$(grep -lE "$PATRON_ANUNCIO" "${DIRS_AGENTES[@]/%//*.md}" 2>/dev/null | wc -l)"
 
 echo "== el gate publica su denominador =="
 check "el reporte declara el alcance medido" "1" \
@@ -99,7 +130,7 @@ trap 'rm -rf "$ANTES"' EXIT
 # en una cifra-propiedad que envejece al añadir un agente
 # (`calibration-verified-numbers.md`).
 mapfile -t AGENTES_DEL_ARBOL < <(git ls-tree --name-only "$ARBOL_CON_DEFECTO" \
-                                   "$DIR_AGENTES/" 2>/dev/null)
+                                   "$DIR_AGENTES_HISTORICO/" 2>/dev/null)
 N_ESPERADOS=${#AGENTES_DEL_ARBOL[@]}
 N_ANTES=0
 for f in "${AGENTES_DEL_ARBOL[@]}"; do
