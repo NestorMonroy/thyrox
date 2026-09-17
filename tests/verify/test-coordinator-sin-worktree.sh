@@ -84,13 +84,22 @@ AGENTE_MUDO_B="thyrox-coordinator.md"
 AGENTE_COHERENTE="rup-coordinator.md"
 
 CLAVE_ISOLATION="^isolation: worktree$"
-PATRON_ANUNCIO='[Ww]orktree aislad'
+# `log -S` busca una CADENA, no un regex: reusar el de sed haria que `^` y `$`
+# se buscaran como caracteres y el conteo saliera siempre cero.
+CLAVE_ISOLATION_LITERAL="isolation: worktree"
+# El gate acepta TRES formas de anuncio. Aqui vivia `[Ww]orktree aislad`, que
+# es UNA: contar con ella dejaria fuera a quien anuncie con otra, y el conteo
+# corto se leeria como «pocos anuncian». Se le pregunta al gate.
+PATRON_ANUNCIO_DEL_GATE="$(python3 -c "
+import sys; sys.path.insert(0, '$RAIZ/src/verify')
+import check_agent_isolation as g
+print(g.ANUNCIA.pattern)
+")"
 FALTA_ANUNCIO="declara y NO anuncia"
 FALTA_DECLARACION="anuncia y NO declara"
 
 # Marcas que el gate y el contrato deben publicar.
 MARCA_DENOMINADOR="alcance medido"
-MARCA_SIN_AISLAMIENTO="0 declaran aislamiento"
 MARCA_CRITERIO="cuándo se declara"
 MARCA_AUTORIDAD="mutate files in parallel"
 MARCA_CONSOLIDACION="consolidaci"
@@ -106,45 +115,84 @@ check() {
   fi
 }
 
-echo "== HEAD: el árbol no declara aislamiento en ningún agente =="
+echo "== HEAD: los dos signos del aislamiento coinciden en todo agente =="
+# El rotulo era «el arbol no declara aislamiento en ningun agente», y con el
+# dos aserciones exigian CERO declarantes y CERO anunciantes. Eso es un
+# snapshot del arbol de docs tras `ed727b96`, no el contrato del gate: medido
+# sobre el universo real, 30 agentes declaran Y anuncian el aislamiento de
+# forma coherente. Enshrinar un cero que varia por clon convierte el caso en
+# una fotografia, no en un control.
+#
+# Lo que el gate garantiza —y lo unico que se afirma aqui— es la COHERENCIA:
+# quien declara, anuncia. Puede fallar, y fallo: antes de este pase habia 36
+# declarantes contra 30 anunciantes, y el gate nombraba los 6.
 python3 "$SUT" "${DIR_ARGS[@]}" --strict >/dev/null 2>&1
 check "exit 0 sobre ${#DIRS_AGENTES[@]} directorio(s)" "0" "$?"
 check "--quiet imprime 0 incoherentes" "0" "$(python3 "$SUT" "${DIR_ARGS[@]}" --quiet 2>/dev/null | tail -1)"
-check "0 agentes declaran aislamiento" "1" \
-      "$(python3 "$SUT" "${DIR_ARGS[@]}" 2>/dev/null | grep -c "$MARCA_SIN_AISLAMIENTO")"
-check "0 descripciones prometen worktree" "0" \
-      "$(grep -lE "$PATRON_ANUNCIO" "${DIRS_AGENTES[@]/%//*.md}" 2>/dev/null | wc -l)"
+
+# Los dos conteos se toman de instrumentos distintos: el del gate y un grep
+# con SU MISMO patron, extraido del gate en vez de transcrito. Que coincidan
+# es la invariante; que los tome el mismo codigo seria medirse a si mismo.
+N_DECLARAN="$(python3 "$SUT" "${DIR_ARGS[@]}" 2>/dev/null \
+                | sed -n 's/.*OK — 0 incoherentes, \([0-9]*\) declaran.*/\1/p')"
+# `find` y no un glob entre comillas: dentro de comillas el patron no expande
+# y `grep` recibe un nombre literal inexistente — un cero que no distingue
+# «ninguno anuncia» de «no mire ningun archivo».
+mapfile -t ARCHIVOS_AGENTE < <(find "${DIRS_AGENTES[@]}" -maxdepth 1 -name '*.md')
+N_ANUNCIAN="$(grep -licE "$PATRON_ANUNCIO_DEL_GATE" "${ARCHIVOS_AGENTE[@]}" 2>/dev/null | wc -l)"
+check "declarantes y anunciantes coinciden" "$N_DECLARAN" "$N_ANUNCIAN"
 
 echo "== el gate publica su denominador =="
 check "el reporte declara el alcance medido" "1" \
-      "$(python3 "$SUT" 2>/dev/null | grep -c "$MARCA_DENOMINADOR")"
+      "$(python3 "$SUT" "${DIR_ARGS[@]}" 2>/dev/null | grep -c "$MARCA_DENOMINADOR")"
 
 # ---------------------------------------------------------------------------
-# Control positivo REAL — el árbol previo a ed727b96, reconstruido desde git.
+# Control positivo REAL — un arbol del repo donde el defecto esta VIVO.
 # NO se toca el working tree: `git show` escribe a un directorio temporal.
+#
+# El commit se DERIVA, no se transcribe. Citaba `ed727b96`, que no existe en
+# ninguno de los cinco clones ni en este arbol —medido: `cat-file -t` falla en
+# los cinco—, asi que el control quedaba permanentemente OMITIDO y la suite
+# contaba ese SIN MEDIR como fallo. Honesto, y permanente: nunca podia cerrar.
+#
+# Ahora se busca en el consumidor el commit que cambio la cuenta de la clave, y
+# se prueba POR CONDUCTA cual de los dos arboles —el commit o su padre— tiene
+# el defecto. Asumir que siempre es el padre seria suponer que ese commit lo
+# retira, y `-S` tambien encuentra al que lo introdujo.
 # ---------------------------------------------------------------------------
 ANTES="$(mktemp -d)"
 trap 'rm -rf "$ANTES"' EXIT
 
-# El denominador se DERIVA del árbol medido; escribirlo a mano lo convertiría
-# en una cifra-propiedad que envejece al añadir un agente
-# (`calibration-verified-numbers.md`).
-mapfile -t AGENTES_DEL_ARBOL < <(git ls-tree --name-only "$ARBOL_CON_DEFECTO" \
-                                   "$DIR_AGENTES_HISTORICO/" 2>/dev/null)
-N_ESPERADOS=${#AGENTES_DEL_ARBOL[@]}
-N_ANTES=0
-for f in "${AGENTES_DEL_ARBOL[@]}"; do
-  git show "$ARBOL_CON_DEFECTO:$f" > "$ANTES/$(basename "$f")" 2>/dev/null \
-    && N_ANTES=$(( N_ANTES + 1 ))
+REPO_HISTORICO=""
+ARBOL_CON_DEFECTO=""
+for _dir in "${DIRS_AGENTES[@]}"; do
+  _repo="${_dir%/.claude/agents}"
+  while IFS= read -r _commit; do
+    [[ -z "$_commit" ]] && continue
+    for _arbol in "$_commit^" "$_commit"; do
+      rm -rf "${ANTES:?}"/*
+      while IFS= read -r _f; do
+        git -C "$_repo" show "$_arbol:$_f" > "$ANTES/$(basename "$_f")" 2>/dev/null
+      done < <(git -C "$_repo" ls-tree --name-only "$_arbol" \
+                 "$DIR_AGENTES_HISTORICO/" 2>/dev/null)
+      if [[ "$(python3 "$SUT" --dir "$ANTES" --quiet 2>/dev/null | tail -1)" == "2" ]]; then
+        REPO_HISTORICO="$_repo"; ARBOL_CON_DEFECTO="$_arbol"; break 3
+      fi
+    done
+  done < <(git -C "$_repo" log -S"$CLAVE_ISOLATION_LITERAL" --format=%H \
+             -n 10 -- "$DIR_AGENTES_HISTORICO/" 2>/dev/null)
 done
 
-if [[ "$N_ESPERADOS" -eq 0 ]]; then
-  echo "== control positivo: OMITIDO — $ARBOL_CON_DEFECTO no alcanzable en este clon =="
-  echo "   (un clon shallow no tiene el padre; el caso queda SIN MEDIR, no en verde)"
+if [[ -z "$ARBOL_CON_DEFECTO" ]]; then
+  echo "== control positivo: SIN MEDIR — ningun arbol reciente tiene los 2 mudos =="
+  echo "   (se buscaron 10 commits por clon con \`log -S\`; el caso NO se da por verde)"
   FAIL=$(( FAIL + 1 ))
 else
-  echo "== control positivo real: los agentes ANTES de $FIX =="
-  check "se reconstruyó el árbol completo" "$N_ESPERADOS" "$N_ANTES"
+  echo "== control positivo real: $ARBOL_CON_DEFECTO en $(basename "$REPO_HISTORICO") =="
+  mapfile -t AGENTES_DEL_ARBOL < <(git -C "$REPO_HISTORICO" ls-tree --name-only \
+                                     "$ARBOL_CON_DEFECTO" "$DIR_AGENTES_HISTORICO/")
+  check "el arbol reconstruido no esta vacio" "1" \
+        "$([[ "${#AGENTES_DEL_ARBOL[@]}" -gt 0 ]] && echo 1 || echo 0)"
 
   python3 "$SUT" --dir "$ANTES" --strict >/dev/null 2>&1
   check "exit 1 con el defecto de h-docs-311 vivo" "1" "$?"
@@ -156,12 +204,12 @@ else
              | grep -c "$agente: $FALTA_ANUNCIO")"
   done
 
-  # La otra dirección de la incoherencia, derivada del MISMO material real:
-  # el coordinador coherente declaraba Y anunciaba. Al retirarle sólo la
-  # declaración queda como promesa vacía — el defecto simétrico.
-  if grep -q "$CLAVE_ISOLATION" "$ANTES/$AGENTE_COHERENTE"; then
+  # La otra direccion de la incoherencia, derivada del MISMO material real:
+  # un coordinador coherente declaraba Y anunciaba. Al retirarle solo la
+  # declaracion queda como promesa vacia — el defecto simetrico.
+  if grep -q "$CLAVE_ISOLATION" "$ANTES/$AGENTE_COHERENTE" 2>/dev/null; then
     sed -i "/$CLAVE_ISOLATION/d" "$ANTES/$AGENTE_COHERENTE"
-    check "detecta la promesa vacía ($FALTA_DECLARACION)" "1" \
+    check "detecta la promesa vacia ($FALTA_DECLARACION)" "1" \
           "$(python3 "$SUT" --dir "$ANTES" 2>/dev/null \
              | grep -c "$AGENTE_COHERENTE: $FALTA_DECLARACION")"
     check "sube a 3 incoherentes" "3" \
