@@ -1,4 +1,4 @@
-censo-jsonl: 465 archivo(s) versionado(s) (alcance medido: git ls-files menos _references/, _archived/ y node_modules)
+censo-jsonl: 466 archivo(s) versionado(s) (alcance medido: git ls-files menos _references/, _archived/ y node_modules)
 
   bucket A — contrato de tercero — NO se convierte: 57
     package.json (31 archivos)
@@ -24,9 +24,33 @@ censo-jsonl: 465 archivo(s) versionado(s) (alcance medido: git ls-files menos _r
     .claude/workbench/verificar-hogares-de-sesion-thyrox-20260912T082046/outputs/  (1 archivo(s))
     tests/task/fixtures/board_store_drift/card_369.json  (1 archivo(s))
 
-  bucket C — propiedad de thyrox — se convierte: 91
-    manifest.json                                (87 archivos)   lectores=16
-    models.json                                                  lectores=8
-    premise_drift_baseline.json                                  lectores=1
-    agent_dispatch_orm.json                                      lectores=0
-    store_row_369.json                                           lectores=1
+  bucket C — propiedad de thyrox — se convierte: 92
+    manifest.json                                (88 archivos)   nombran<=14
+        src/packages/cli/__tests__/workbench.test.ts
+        src/packages/config/dxt/helpers.ts
+        src/packages/tools/src/definitions/workbenchInstrumenter.ts
+        src/packages/updater/src/nativeInstaller/download.ts
+        src/session/bg.sh
+        src/verify/check_manifest_language.py
+        src/workbench/manifest.py
+        src/workbench/manifest.ts
+        src/workbench/paths.py
+        tests/session/test-bg-familia.sh
+        tests/verify/test_manifest_language.py
+        tests/workbench/manifest.test.ts
+        tests/workbench/test_manifest.py
+        tests/workbench/test_paths.py
+    models.json                                                  nombran<=8
+        src/agents/measure_subagent_usage.py
+        src/agents/model_catalog.py
+        src/packages/agent/__tests__/catalogCoverage.test.ts
+        src/packages/agent/__tests__/models.test.ts
+        src/packages/agent/bin/extract_model_registry.py
+        src/packages/agent/models.ts
+        tests/agents/test-model-catalog.sh
+        tests/agents/test_model_catalog_paths.py
+    premise_drift_baseline.json                                  nombran<=1
+        src/verify/check_premise_drift.py
+    agent_dispatch_orm.json                                      nombran<=0
+    store_row_369.json                                           nombran<=1
+        tests/task/test_board_sync.py

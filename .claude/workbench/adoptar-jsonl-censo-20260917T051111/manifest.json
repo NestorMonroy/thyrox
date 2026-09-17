@@ -2,7 +2,7 @@
   "question": "Cuales de los .json versionados de thyrox son nuestros y se pueden convertir a JSONL, y cual es la forma de cada uno",
   "instrument": "censo.py sobre git ls-files, clasificando por QUIEN LEE el archivo; mas python3 -c json.load para medir el tipo de la raiz de cada candidato",
   "metric": "465 archivos versionados repartidos en cuatro buckets, con el tipo de la raiz de cada archivo del bucket C",
-  "blind_to": "si un lector de bucket A acepta JSONL (no se probo); si un archivo de bucket D se puede regenerar en vez de conservarse; y la forma de los 297 volcados del board, medida solo por su ruta",
+  "blind_to": "si un lector de bucket A acepta JSONL (no se probo, se infirio del formato que su documentacion declara); si un archivo de bucket D se puede regenerar en vez de conservarse; la forma de los 297 volcados del board, clasificados por su ruta y no por su contenido; y el USO de JSON en tiempo de ejecucion — un json.dump o un JSON.stringify que emite a una ruta gitignored es «usar JSON» sin archivo versionado, y `git ls-files` no lo puede ver",
   "destination": "thyrox/.claude/workbench/adoptar-jsonl-censo-20260917T051111 — evidencia de sesion del proveedor",
   "form": "measurement",
   "source": [

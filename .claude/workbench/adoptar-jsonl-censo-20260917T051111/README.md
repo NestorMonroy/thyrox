@@ -15,7 +15,7 @@ su formato es un contrato ajeno y convertirlo lo rompe sin ganar nada.
 |---|---|---|
 | **A** | contrato de tercero — NO se convierte | 57 |
 | **B** | ya es JSONL | 3 |
-| **C** | propiedad de thyrox — candidato | 91 |
+| **C** | propiedad de thyrox — candidato | 92 |
 | **D** | evidencia capturada — NO se convierte | 314 |
 
 El desglose vive en `censo-por-bucket.txt`; lo reproduce `python3 censo.py`
@@ -57,17 +57,23 @@ Y «`manifest.json` ×87» es a su vez **dos poblaciones** con formas distintas:
 manifiestos de job (2 claves) y 41 de banco (5-9 claves). Contarlos juntos es el
 sub-patron A de `metrica-decide-la-conclusion.md` dentro del propio censo.
 
-Igual «16 lectores de `manifest.json`»: medido uno a uno, tres artefactos
-distintos comparten ese nombre —el manifiesto de banco (nuestro), el manifiesto
-DXT (contrato de Anthropic, `src/packages/config/dxt/helpers.ts`) y un
-manifiesto de release que se descarga por HTTP y ni siquiera esta en el arbol
-(`src/packages/updater/src/nativeInstaller/download.ts:333`)—. El radio real de
-una conversion del manifiesto de banco es menor que 16.
+Igual el conteo de lectores de `manifest.json`: tres artefactos distintos
+comparten ese nombre —el manifiesto de banco (nuestro), el manifiesto DXT
+(contrato de Anthropic, `src/packages/config/dxt/helpers.ts`) y un manifiesto de
+release que se descarga por HTTP y ni siquiera esta en el arbol
+(`src/packages/updater/src/nativeInstaller/download.ts:333`)—. Por eso el censo
+publica ahora **la lista** y la rotula `nombran<=N`: el conteo es una cota
+superior del radio de la conversion, no su medida, y solo se lee bien mirando
+quien lo compone. El primer grep contaba ademas dos `.d.ts` de `node_modules`
+que ni siquiera son codigo nuestro.
 
 *Metrica:* `git ls-files` menos `_references/`, `_archived/` y `node_modules`,
 clasificado por lector; mas `json.load` sobre un ejemplar de cada nombre del
 bucket C.
 *Ciega a:* si algun lector de bucket A acepta JSONL (no se probo, se infirio del
 formato que su documentacion declara); a si un archivo de bucket D se puede
-regenerar en vez de conservarse; y a la forma interna de los 297 volcados del
-board, clasificados por su ruta y no por su contenido.
+regenerar en vez de conservarse; a la forma interna de los 297 volcados del
+board, clasificados por su ruta y no por su contenido; y al **uso** de JSON en
+tiempo de ejecucion — un `json.dump` o un `JSON.stringify` que emite a una ruta
+gitignored es «usar JSON» sin dejar archivo versionado, y `git ls-files` no lo
+puede ver.

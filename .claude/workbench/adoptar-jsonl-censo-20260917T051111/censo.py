@@ -105,17 +105,24 @@ def bucket_of(path: str) -> str:
     return "C"
 
 
-def readers_of(root: pathlib.Path, basename: str) -> int:
-    """Cuantos archivos de codigo nombran ese basename.
+def readers_of(root: pathlib.Path, basename: str) -> list[str]:
+    """Los archivos de codigo que NOMBRAN ese basename.
 
-    Es el orden de conversion: menos lectores, antes. No es el numero de
-    llamadas — un archivo puede nombrarlo varias veces.
+    Es una COTA SUPERIOR del radio de una conversion, no su medida: un
+    basename puede nombrar varios artefactos distintos. Medido sobre
+    `manifest.json`, los 16 hits son TRES artefactos — el manifiesto de banco
+    (nuestro), el manifiesto DXT (contrato de Anthropic) y un manifiesto de
+    release que se descarga por HTTP y no esta en el arbol. Por eso se
+    devuelve la lista y no el conteo: el conteo solo se lee bien mirando quien
+    lo compone, que es el sub-patron A de `metrica-decide-la-conclusion.md`
+    aplicado a este mismo censo.
     """
     out = subprocess.run(
         ["grep", "-rl", basename, "--include=*.py", "--include=*.ts",
-         "--include=*.sh", "src", "tests", "bin"],
+         "--include=*.sh", "--exclude-dir=node_modules",
+         "src", "tests", "bin"],
         cwd=root, capture_output=True, text=True)
-    return len([l for l in out.stdout.splitlines() if l])
+    return sorted(line for line in out.stdout.splitlines() if line)
 
 
 def main() -> int:
@@ -145,7 +152,10 @@ def main() -> int:
         for name, n in counts.most_common():
             marca = f" ({n} archivos)" if n > 1 else ""
             if bucket == "C":
-                print(f"    {name:<44}{marca:<16} lectores={readers_of(root, name)}")
+                lectores = readers_of(root, name)
+                print(f"    {name:<44}{marca:<16} nombran<={len(lectores)}")
+                for lector in lectores:
+                    print(f"        {lector}")
             else:
                 print(f"    {name}{marca}")
 
