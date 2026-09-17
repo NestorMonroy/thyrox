@@ -206,6 +206,50 @@ sleep 1
 bash "$GUION" registrar roto "$LB10" "$PB10" >/dev/null
 bash "$GUION" status >/dev/null; afirmar "un BAIL real -> status sigue en exit 1" 1 $?
 
+# =============================================================================
+# TASK-THYROX-0084 — la etiqueta jerarquica NO puede costar la direccionabilidad
+# =============================================================================
+# El pool pasa a etiquetar `<despacho>/<nombre>` para que dos despachos que
+# comparten `--prefix` no se pisen la fila. Efecto colateral medido: `_selection`
+# resuelve la etiqueta EXACTA, asi que `matar job-001` dejo de seleccionar nada
+# y el trabajo se quedaba vivo Y anotado. El nombre corto es lo que el llamador
+# escribio; el despacho lo genera el pool por dentro.
+#
+# Que lo haria fallar, y por que la ambiguedad NO se resuelve eligiendo: dos
+# despachos del mismo prefijo tienen los DOS un `job-001`. Resolver por sufijo
+# tomando el primero reintroduce la colision por la puerta del kill — que es
+# exactamente el defecto que esta tarea cierra. Por eso el caso B exige que
+# RECHACE y que los dos sobrevivan.
+
+contiene_texto() {  # contiene_texto <texto> <patron-ere> -> si|no
+    printf '%s' "$1" | grep -qE "$2" && echo si || echo no
+}
+
+# A. nombre corto, sin ambiguedad -> resuelve
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+LOG_A=$(fixture_file); nohup bash -c "sleep 300" >"$LOG_A" 2>&1 & PID_A=$!; disown $PID_A
+bash "$GUION" registrar "batch-a/job-001" "$LOG_A" "$PID_A" >/dev/null
+bash "$GUION" matar "job-001" 1 >/dev/null 2>&1
+afirmar "nombre corto sin ambiguedad: suelta el ledger" "" "$(bash "$GUION" pendientes 2>/dev/null)"
+
+# B. mismo nombre corto en DOS despachos -> rehusa, y ninguno se toca
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+LOG_B1=$(fixture_file); nohup bash -c "sleep 300" >"$LOG_B1" 2>&1 & PID_B1=$!; disown $PID_B1
+LOG_B2=$(fixture_file); nohup bash -c "sleep 300" >"$LOG_B2" 2>&1 & PID_B2=$!; disown $PID_B2
+bash "$GUION" registrar "batch-a/job-001" "$LOG_B1" "$PID_B1" >/dev/null
+bash "$GUION" registrar "batch-b/job-001" "$LOG_B2" "$PID_B2" >/dev/null
+STDERR_B=$(bash "$GUION" matar "job-001" 1 2>&1 >/dev/null)
+afirmar "ambiguo: nombra el primer candidato"  "si" "$(contiene_texto "$STDERR_B" 'batch-a_job-001')"
+afirmar "ambiguo: nombra el segundo candidato" "si" "$(contiene_texto "$STDERR_B" 'batch-b_job-001')"
+afirmar "ambiguo: los dos siguen anotados" 2 "$(bash "$GUION" pendientes 2>/dev/null | grep -c 'job-001')"
+
+# C. la etiqueta COMPLETA sigue desambiguando -> mata uno y deja el otro
+bash "$GUION" matar "batch-a/job-001" 1 >/dev/null 2>&1
+afirmar "etiqueta completa: queda solo el otro" 1 "$(bash "$GUION" pendientes 2>/dev/null | grep -c 'job-001')"
+afirmar "etiqueta completa: el que queda es el que no se nombro" "si" \
+    "$(contiene_texto "$(bash "$GUION" pendientes 2>/dev/null)" 'batch-b')"
+kill $PID_B2 2>/dev/null; wait $PID_B2 2>/dev/null
+
 echo
 printf '%d ok, %d fallos\n' "$OK" "$FALLO"
 exit $(( FALLO > 0 ))

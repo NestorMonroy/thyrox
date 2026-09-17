@@ -135,7 +135,7 @@ kill -KILL "$BG_PID" 2>/dev/null || true
 # -----------------------------------------------------------------------------
 printf '%s\n' "bash $T/forker.sh $T/kids-pool" \
     | bash "$POOL" - --width 1 --timeout 2 --dir "$T/pool" --prefix grp >/dev/null 2>&1
-POOL_PID="$(sed -n 's/^pid=//p' "$THYROX_JOBS_DIR"/grp-001.job 2>/dev/null)"
+POOL_PID="$(sed -n 's/^pid=//p' "$THYROX_JOBS_DIR"/*grp-001.job 2>/dev/null)"
 echo "$POOL_PID" >> "$T/leaders"
 af "run-task-pool: el trabajo es lider de su grupo (pgid==pid)" "$POOL_PID" "$(group_of "$POOL_PID")"
 

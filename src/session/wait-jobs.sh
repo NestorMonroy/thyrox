@@ -272,6 +272,14 @@ cmd_wait() {
     # que esperar» de «el filtro no vio lo que si estaba». El guion del grupo
     # se conserva en su glob para no ensanchar la colision de TASK-THYROX-0084:
     # `pool` sigue sin ver a `pool2-001`.
+    #
+    # TERCERA forma: `<etiqueta>_*`. El ledger SANEA la barra al componer el
+    # nombre de archivo (`job_ledger._path_for`: `label.replace('/', '_')`),
+    # asi que una etiqueta jerarquica `<despacho>/<trabajo>` aterriza como
+    # `<despacho>_<trabajo>.job`. Sin esta forma el filtro es ciego a sus
+    # propios hijos y publica «sin trabajos registrados» saliendo 0 — el mismo
+    # verde falso que el parrafo de arriba describe, por otra via. El glob
+    # tiene que conocer el saneo que su propio escritor aplica.
     local timeout=1800 pattern="$DEFAULT_PATTERN" only=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -285,7 +293,7 @@ cmd_wait() {
     shopt -s nullglob
     local jobs
     if [[ -n "$only" ]]; then
-        jobs=("$LEDGER/$only".job "$LEDGER/$only"-*.job)
+        jobs=("$LEDGER/$only".job "$LEDGER/$only"-*.job "$LEDGER/$only"_*.job)
     else
         jobs=("$LEDGER"/*.job)
     fi
@@ -636,9 +644,31 @@ _selection() {
     local sel="${1:?uso: <label>|--todos}"
     if [[ "$sel" == "--todos" ]]; then
         shopt -s nullglob; printf '%s\n' "$LEDGER"/*.job; shopt -u nullglob
-    else
-        local f="$LEDGER/${sel//\//_}.job"
-        [[ -f "$f" ]] && echo "$f"
+        return
+    fi
+    # La etiqueta EXACTA manda. `job_ledger._path_for` sanea '/' a '_', asi que
+    # una etiqueta jerarquica se busca con el mismo saneo con que se escribio.
+    local f="$LEDGER/${sel//\//_}.job"
+    if [[ -f "$f" ]]; then echo "$f"; return; fi
+
+    # El NOMBRE CORTO, que es lo unico que el llamador escribio: el pool etiqueta
+    # `<despacho>/<nombre>` y genera el despacho por dentro (TASK-THYROX-0084).
+    # Sin esta rama, `matar job-001` dejo de seleccionar nada y el trabajo se
+    # quedaba vivo Y anotado — una capacidad perdida, no un cambio de forma.
+    #
+    # REHUSA ante ambiguedad en vez de elegir, y esa mitad es la que importa:
+    # dos despachos del mismo prefijo tienen los DOS un `job-001`, que es
+    # exactamente la colision que la etiqueta jerarquica existe para cerrar.
+    # Tomar el primero la reintroduciria por la puerta del kill.
+    shopt -s nullglob
+    local -a candidates=("$LEDGER"/*_"${sel//\//_}".job)
+    shopt -u nullglob
+    if [[ ${#candidates[@]} -eq 1 ]]; then
+        echo "${candidates[0]}"
+    elif [[ ${#candidates[@]} -gt 1 ]]; then
+        echo "«$sel» es ambiguo: ${#candidates[@]} trabajos lo llevan como nombre" >&2
+        printf '  %s\n' "${candidates[@]##*/}" >&2
+        echo "  pasa la etiqueta completa (<despacho>/<nombre>) para desambiguar" >&2
     fi
 }
 
