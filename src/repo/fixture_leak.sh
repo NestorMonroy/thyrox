@@ -38,7 +38,9 @@
 # *Ciega a:* lo que la suite escriba fuera de esas dos raices (su propio arbol,
 #   el hogar del usuario); a lo que otro proceso cree en el compartido durante
 #   la ventana de medicion, que se le atribuye a la suite; y a la fuga que la
-#   suite produce solo en un camino que esta ejecucion no recorre.
+#   suite produce solo en un camino que esta ejecucion no recorre; y a la fuga
+#   hacia OTRO montaje —/dev/shm, /var/tmp— porque el eje `shared` vigila un
+#   solo directorio, el que `THYROX_FIXTURE_LEAK_SHARED` nombre.
 
 set -uo pipefail
 
