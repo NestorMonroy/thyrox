@@ -21,6 +21,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
 from workbench.paths import repo_of, state_dir  # noqa: E402
+from paths.reach import creates_home  # noqa: E402 — reach no importa nada del proyecto al tope
 
 #: Entrada 1 — el valor, global: una sola grafia para todos los arboles.
 CACHE_DIR_VAR = "THYROX_CACHE_DIR"
@@ -49,6 +50,7 @@ def cache_home_name(repo: str) -> str:
     return f"{CACHE_CLONE_PREFIX}{repo.upper().replace('-', '_')}"
 
 
+@creates_home
 def cache_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     """El hogar del indice: el declarado por clon, el global, o el compuesto.
 

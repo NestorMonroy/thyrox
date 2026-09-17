@@ -50,6 +50,7 @@ from workbench.manifest import (  # noqa: F401  (se reexportan a propósito)
     run_id_for,
     runs_for,
 )
+from paths.reach import creates_home  # noqa: E402 — reach no importa nada del proyecto al tope
 
 #: El hogar declarado directamente, cuando el consumidor lo decide.
 #:
@@ -102,6 +103,7 @@ def jobs_home_name(repo: str) -> str:
     return f"{JOBS_CLONE_PREFIX}{repo.upper().replace('-', '_')}"
 
 
+@creates_home
 def jobs_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     """El hogar de la familia: el declarado por clon, el global, o el hermano.
 

@@ -1,0 +1,28 @@
+== 1. el hogar declarado y AUSENTE existe tras resolverlo ==
+  FALLO log_dir crea su hogar declarado
+        esperado=[True] obtenido=[False]
+  FALLO log_dir crea la cadena de padres
+        esperado=[True] obtenido=[False]
+  FALLO cache_dir crea su hogar declarado
+        esperado=[True] obtenido=[False]
+  FALLO cache_dir crea la cadena de padres
+        esperado=[True] obtenido=[False]
+  FALLO jobs_dir crea su hogar declarado
+        esperado=[True] obtenido=[False]
+  FALLO jobs_dir crea la cadena de padres
+        esperado=[True] obtenido=[False]
+  FALLO workbench_dir crea su hogar declarado
+        esperado=[True] obtenido=[False]
+  FALLO workbench_dir crea la cadena de padres
+        esperado=[True] obtenido=[False]
+
+== 2. es IDEMPOTENTE: resolver dos veces no falla ==
+  ok    log_dir resuelto dos veces
+  ok    cache_dir resuelto dos veces
+  ok    jobs_dir resuelto dos veces
+  ok    workbench_dir resuelto dos veces
+
+== 3. GUARDA: un hogar SIN declarar sigue rehusando, no se inventa ==
+  ok    log_dir sin declaracion sigue rehusando
+
+resultado: 5 de 13 aserciones en verde
