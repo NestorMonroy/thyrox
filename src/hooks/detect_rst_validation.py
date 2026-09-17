@@ -25,10 +25,17 @@ el defecto era **mudo** porque el aviso sólo CITA el comando sin ejecutarlo.
 
 import pathlib
 import re
+import sys
 
-#: El gate real. ``parents[1]`` es ``src/`` — un salto dentro de la
-#: distribución, que es lo único que la aritmética de ruta admite.
-GATE_PATH = pathlib.Path(__file__).resolve().parents[1] / 'verify' / 'check_rst_sintaxis.py'
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
+import reach  # noqa: E402
+
+#: El gate real, resuelto por el localizador y no por aritmética de ruta.
+#: ``parents[1]`` acertaba hoy y fallaba **en silencio** al mover el archivo:
+#: este aviso sólo CITA el comando, nunca lo ejecuta, así que una ruta mal
+#: compuesta se publica y nadie la ejercita — el mismo defecto mudo que el
+#: docstring de arriba narra para el literal ``src/gates/``.
+GATE_PATH = reach.thyrox_root() / 'src' / 'verify' / 'check_rst_sintaxis.py'
 GATE = f'python3 {GATE_PATH}'
 
 #: Señales de que el comando valida RST por su cuenta.

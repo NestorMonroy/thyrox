@@ -9,11 +9,10 @@
 # NO acierta contra reach.root('docs'). Convertirla al localizador destruiría
 # el control que ese bloque existe para ser. Ver el comentario en el archivo.
 #
-# tests/legacy/test_error_catalog.py:49 — no es sólo aritmética: el hogar
-# compuesto (.claude/scripts/gates/) no existe bajo ningún árbol y el CORPUS
-# cruza al repo consumidor (kaupamex-docs), no a THYROX. Es un remapeo de dos
-# segmentos a través de otro repo, no un cambio de localizador — pertenece al
-# saneo de tests/legacy/ ya identificado como tarea #227. Ver el comentario
-# en el archivo.
+# tests/legacy/test_error_catalog.py:49 — RETIRADA 2026-09-17: el archivo ya
+# no existe. Lo retiró el reparto de tests/legacy (TASK-THYROX-0038), y su
+# entrada quedó aquí describiendo deuda de un sujeto muerto. El gate ya la
+# contaba como no-coincidente («2 declaradas, 1 congelada»), así que retirarla
+# no cambia ningún veredicto: cambia que el baseline deje de mentir sobre lo
+# que congela.
 tests/verify/test_rst_gate_root.py:57
-tests/legacy/test_error_catalog.py:49

@@ -1,0 +1,3 @@
+  src/hooks/detect_rst_validation.py:31 — no alimenta un sys.path.insert; usar reach.thyrox_root() / reach.consumer_root() / reach.agent_store_path() / reach.scratch_root() / reach.root(<repo>)
+  src/session/generate_bin.py:189 — no alimenta un sys.path.insert; usar reach.thyrox_root() / reach.consumer_root() / reach.agent_store_path() / reach.scratch_root() / reach.root(<repo>)
+check-path-arithmetic: 35 incumplidor(es) nuevo(s), 1 congelado(s) (alcance medido: 408 archivo(s) en src, tests, .claude)

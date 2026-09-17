@@ -140,6 +140,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
+import reach  # noqa: E402
+
 #: Las carpetas que este generador cubre. Ampliarla es una decisión nueva, no
 #: un descuido — cada carpeta añadida necesita su propia medición de colisiones
 #: de nombre corto. Por eso es una lista EXPLÍCITA y no ``src/*`` derivado: un
@@ -185,8 +188,15 @@ BASH_BUILTINS: frozenset[str] = frozenset({
 
 
 def repository_root() -> pathlib.Path:
-    """La raíz de thyrox: dos niveles arriba de este archivo (``src/session/``)."""
-    return pathlib.Path(__file__).resolve().parents[2]
+    """La raíz de thyrox, por el localizador y no por aritmética de ruta.
+
+    ``parents[2]`` acertaba mientras este archivo viviera en ``src/session/`` y
+    fallaba **en silencio** al moverlo: el generador compondría su plan contra
+    otro árbol y publicaría un ``bin/`` vacío sin reventar. ``thyrox_root()``
+    resuelve por variable declarada o por ascenso hasta el marcador, así que
+    sobrevive a la mudanza del archivo.
+    """
+    return reach.thyrox_root()
 
 
 def is_shell_entrypoint(path: pathlib.Path) -> bool:
