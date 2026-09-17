@@ -745,6 +745,81 @@ try:
 except bs.BoardSyncError as _e11:
     check("no existe" in str(_e11).lower(),
           "11k: una raiz inexistente REHUSA en vez de publicar cero")
+
+# ---------------------------------------------------------------------------
+# 12. #363 — el reporte declara las filas FUERA de su universo
+#
+# El defecto, medido sobre la sesion viva antes de escribir esto: el reporte
+# publica sus cubos sobre las 459 tarjetas del board y calla las 888 filas del
+# store que ninguna tarjeta nombra (614 de ellas ABIERTAS). Cubre el 32 % de la
+# poblacion que su lector cree que gobierna, asi que un `status_drift 1` se lee
+# como «al store le falta una fila» cuando 888 no se miraron.
+#
+# Es el sub-patron D con el propio reporte como sujeto, y la tarjeta #363 lo
+# cita por su nombre. La reparacion NO es propagar —a una fila sin tarjeta no
+# hay nada que propagarle, no existe la fuente— sino DECLARAR que no se miro.
+DIR12, DB12 = store_con([
+    ("1", "sujeto con tarjeta", S, "docs", "TASK-DOCS-0801", "pending"),
+    ("2", "huerfana abierta", S, "docs", "TASK-DOCS-0802", "pending"),
+    ("3", "huerfana cerrada", S, "docs", "TASK-DOCS-0803", "completed"),
+    ("4", "de otra sesion", S_B, "docs", "TASK-DOCS-0804", "pending"),
+])
+BOARD12 = board_con({
+    "1": {"subject": "sujeto con tarjeta", "status": "pending", "description": ""},
+})
+res12 = bs.reconcile_status(DB12, S, board_dir=BOARD12)
+
+check(res12.get("store_rows") == 3,
+      "12a: declara las filas del store de la sesion (3), no solo las pareadas")
+_unpaired = {e["citation"] for e in res12.get("unpaired_rows", [])}
+check(_unpaired == {"TASK-DOCS-0802", "TASK-DOCS-0803"},
+      "12b: la fila que ninguna tarjeta nombra cae en unpaired_rows")
+check(res12.get("open_unpaired") == 1,
+      "12c: y separa la ABIERTA de la cerrada — 614 de 888 es el dato que decide")
+check("TASK-DOCS-0801" not in _unpaired,
+      "12d: la fila que SI tiene tarjeta no cae en unpaired_rows")
+check("TASK-DOCS-0804" not in _unpaired,
+      "12e: la fila de otra sesion no entra: el universo es la sesion")
+
+# El cubo se declara SIEMPRE, tambien vacio. Uno que solo existe cuando algo
+# cae en el haria que un reporte sin esa clase se leyera como «esa clase no
+# ocurre» — el mismo criterio con que `RECONCILE_BUCKETS` se declara entero.
+_DIR12b, DB12b = store_con([
+    ("1", "sujeto con tarjeta", S, "docs", "TASK-DOCS-0805", "pending"),
+])
+res12b = bs.reconcile_status(DB12b, S, board_dir=BOARD12)
+check(res12b.get("unpaired_rows") == [] and res12b.get("open_unpaired") == 0,
+      "12f: con todo pareado el cubo esta PRESENTE y vacio, no ausente")
+check(res12b.get("store_rows") == 1,
+      "12g: y el denominador sigue publicandose")
+
+# El CLI lo imprime: el resultado en memoria no lo lee nadie, y quien lee el
+# reporte del hook es quien saca la conclusion falsa.
+_salida12 = io.StringIO()
+with contextlib.redirect_stdout(_salida12):
+    bs._cmd_reconcile_status(argparse.Namespace(
+        store=DB12, sesion=S, board=BOARD12, aplicar=False))
+_texto12 = _salida12.getvalue()
+_linea12 = [l for l in _texto12.splitlines() if "sin tarjeta" in l]
+check(len(_linea12) == 1 and "2" in _linea12[0] and "3" in _linea12[0],
+      "12h: el CLI publica las 2 filas sin tarjeta sobre las 3 del store")
+check("abierta" in _linea12[0] and "1" in _linea12[0],
+      "12i: y cuantas de ellas estan abiertas, que es el dato accionable")
+
+# El agregado de todas las sesiones lo suma: el hook invoca ese, no el de una.
+RAIZ12 = pathlib.Path(tempfile.mkdtemp())
+(RAIZ12 / S).mkdir()
+(RAIZ12 / S / "1.json").write_text(json.dumps(
+    {"subject": "sujeto con tarjeta", "status": "pending", "description": ""}))
+res12c = bs.reconcile_all_sessions(DB12, board_root=RAIZ12)
+# El agregado usa nombre PROPIO y no reusa el de la sesion: alli `unpaired_rows`
+# es la lista con su detalle y aqui seria un entero. Un mismo rotulo sobre dos
+# metricas es el sub-patron A, y este bloque existe justamente por un reporte
+# que se leia mal.
+check(res12c.get("unpaired_total") == 2,
+      "12j: reconcile_all_sessions agrega las huerfanas de sus sesiones")
+check(res12c.get("open_unpaired_total") == 1,
+      "12k: y agrega cuantas estan abiertas")
 print(f"{checks} aserciones")
 if failures:
     for f in failures:
