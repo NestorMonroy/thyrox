@@ -75,6 +75,30 @@ echo "== 3. sin --only, la barrera SIGUE viendo todo el ledger =="
 bash "$BARRERA" wait --timeout 3 >/dev/null 2>&1
 afirmar "wait sin filtro se topa con el sentinel y sale 3 (timeout)" 3 $?
 
+echo "== 4. --only ve una etiqueta LLANA, no solo un grupo con guion =="
+# `bg.sh register <nombre>` produce etiquetas SIN sufijo (`pyreds`, no
+# `pyreds-001`), que es la forma que el flujo documentado start/register/wait
+# genera. El glob `$only-*.job` no las ve: la barrera publicaba «sin trabajos
+# registrados» y salia 0 sobre un trabajo que SI estaba en el ledger.
+# Control positivo real, no fabricado: es el flujo que esta suite ya prescribe.
+THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
+LOG_LLANO=$(mktemp)
+nohup bash -c 'echo EXIT=0' >"$LOG_LLANO" 2>&1 & PID_LLANO=$!; disown $PID_LLANO
+bash "$BARRERA" register pyreds "$LOG_LLANO" "$PID_LLANO" >/dev/null
+SALIDA=$(bash "$BARRERA" wait --timeout 10 --only pyreds 2>&1)
+RC_LLANO=$?
+afirmar "wait --only <etiqueta llana> la asienta y sale 0" 0 "$RC_LLANO"
+grep -q "sin trabajos registrados" <<<"$SALIDA"
+afirmar "y NO publica «sin trabajos registrados» sobre un trabajo real" 1 $?
+
+echo "== 5. el grupo con guion sigue funcionando — el default no se rompe =="
+THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
+LOG_GRUPO=$(mktemp)
+nohup bash -c 'echo EXIT=0' >"$LOG_GRUPO" 2>&1 & PID_GRUPO=$!; disown $PID_GRUPO
+bash "$BARRERA" register lote-001 "$LOG_GRUPO" "$PID_GRUPO" >/dev/null
+bash "$BARRERA" wait --timeout 10 --only lote >/dev/null 2>&1
+afirmar "wait --only <prefijo> sigue viendo su grupo <prefijo>-NNN" 0 $?
+
 kill_sentinel
 echo
 printf 'resumen: %d ok, %d fallo(s)\n' "$OK" "$FALLO"

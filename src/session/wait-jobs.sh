@@ -259,17 +259,25 @@ cmd_pending() {
 }
 
 cmd_wait() {
-    # `--only <prefijo>` acota la espera a los trabajos cuya etiqueta empieza
-    # con ese prefijo. Sin el, la barrera globea TODO el ledger — que es
+    # `--only <etiqueta>` acota la espera a DOS formas: la etiqueta exacta y su
+    # grupo `<etiqueta>-*`. Sin el, la barrera globea TODO el ledger — que es
     # correcto para quien espera a todos, y un interbloqueo para un pool que
-    # esta registrado en ese mismo ledger: se esperaria a si mismo. Ver
-    # TASK-THYROX-0083.
+    # esta registrado en ese mismo ledger: se esperaria a si mismo
+    # (TASK-THYROX-0083).
+    #
+    # Las dos formas, no una: el pool nombra a sus hijos `<prefijo>-NNN`, pero
+    # `bg.sh register <nombre>` produce etiquetas LLANAS. Con solo el glob del
+    # grupo, `wait --only pyreds` no veia `pyreds.job` y publicaba «sin
+    # trabajos registrados» saliendo 0 — un verde que no separa «no habia nada
+    # que esperar» de «el filtro no vio lo que si estaba». El guion del grupo
+    # se conserva en su glob para no ensanchar la colision de TASK-THYROX-0084:
+    # `pool` sigue sin ver a `pool2-001`.
     local timeout=1800 pattern="$DEFAULT_PATTERN" only=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --timeout) timeout="${2:?--timeout exige segundos}"; shift 2 ;;
             --pattern)  pattern="${2:?--pattern exige una expresión}"; shift 2 ;;
-            --only)     only="${2:?--only exige un prefijo}"; shift 2 ;;
+            --only)     only="${2:?--only exige una etiqueta}"; shift 2 ;;
             *) echo "argumento no reconocido: $1" >&2; exit 64 ;;
         esac
     done
@@ -277,7 +285,7 @@ cmd_wait() {
     shopt -s nullglob
     local jobs
     if [[ -n "$only" ]]; then
-        jobs=("$LEDGER/$only"-*.job)
+        jobs=("$LEDGER/$only".job "$LEDGER/$only"-*.job)
     else
         jobs=("$LEDGER"/*.job)
     fi
