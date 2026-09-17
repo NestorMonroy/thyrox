@@ -3,7 +3,7 @@
 #
 # La lista NO se versiona: son ~105 mil rutas de un /tmp concreto, 1.8 MB que
 # caducan en cuanto alguien borra o el contenedor se recicla. Lo durable es el
-# criterio, que es este guion mas `prefijos.txt`.
+# criterio, que es este guion mas `prefixes.txt`.
 #
 # Criterio, en dos guardas:
 #   1) el nombre es <prefijo>-XXXXXX con XXXXXX de mktemp, y el prefijo tiene
@@ -18,6 +18,6 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 while read -r prefix; do
   find /tmp -maxdepth 1 -type d -regextype posix-extended \
        -regex "/tmp/${prefix}-[A-Za-z0-9]{6}" -print
-done < "$here/prefijos.txt" \
+done < "$here/prefixes.txt" \
   | grep -vE '/[a-z0-9_.]+-[a-z]{6}$' \
   | sort -u
