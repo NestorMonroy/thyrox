@@ -165,7 +165,7 @@ def _report_message(path: str, store_path, verbose: bool) -> int:
     print("  rellenar el ordinal a cuatro digitos fabrica una cita que PARECE "
           "durable y no resuelve.", file=sys.stderr)
     print("  La cita del sujeto se busca con: "
-          "python3 -m task.task_ids censo --capa thyrox", file=sys.stderr)
+          "bin/task_ids cita <session_id> <ordinal-del-board>", file=sys.stderr)
     return 1
 
 

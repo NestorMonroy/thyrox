@@ -44,45 +44,30 @@ fi
 
 python3 "$GATE" "$1" || true   # avisa; el veredicto no detiene el commit
 
-# Segundo eje: la cita durable RESUELVE, no sólo tiene la FORMA
+# Segundo eje: la cita durable RESUELVE, no solo tiene la FORMA
 # -------------------------------------------------------------
-# `src/hooks/detect_ephemeral_citation.py` (septimo detector de PreToolUse) ya
-# mide que un `board #N` venga acompanado de un `TASK-<CAPA>-NNNN`. Mide la
-# FORMA. No puede medir el REFERENTE: un PreToolUse es puro por construccion
-# —no abre el store— y bajo este harness ni siquiera dispara (H-DOCS-1010).
+# El septimo detector de PreToolUse mide la FORMA —que un `board #N` venga con
+# un `TASK-<CAPA>-NNNN`— y no puede medir el REFERENTE: es puro por construccion
+# y bajo este harness ni dispara (H-DOCS-1010). Medir la forma y concluir sobre
+# el referente es el sub-patron C, y ya costo un commit publicado: `4acece94`
+# cita `TASK-THYROX-0445`, forma impecable y ningun sujeto.
 #
-# Medir la forma y concluir sobre el referente es el sub-patron C de
-# `metrica-decide-la-conclusion.md`, y ya costo un commit publicado: `4acece94`
-# cita `TASK-THYROX-0445`, que tiene forma durable impecable y no nombra a
-# nadie —es el ordinal del board relleno a cuatro digitos—. La cita real era
-# `TASK-THYROX-0095`. Medido: 13 de 114 citas del historial, todas esa forma.
+# LA POLITICA NO VIVE AQUI: vive en el envoltorio, que sale 0 o 2 y nunca 1.
+# Este hook y los cinco de los consumidores lo invocan por igual, asi que la
+# graduacion —retirar el aviso cuando `citation_resolution --history 50`
+# sostenga 0 sin resolver— es UNA linea en UN archivo. Replicarla aqui la
+# volveria dos, que es lo que «derivar, no transcribir» prohibe.
 #
-# AVISA, NO BLOQUEA, con su graduacion DECLARADA: hay deuda heredada en la
-# historia publicada, que no se enmienda, asi que bloquear hoy peleria por algo
-# que el commit de hoy no causo. La CIFRA no se transcribe aqui —es propiedad de
-# un artefacto vivo y caduca sin que nadie toque este archivo, que es lo que
-# `calibration-verified-numbers.md` prohibe—: la publica el comando.
-#
-#     PYTHONPATH=src python3 src/verify/citation_resolution.py --history 50
-#
-# Medido al cablearlo (2026-09-17T20:04:33): 8 sin resolver de 35 citas
-# distintas. Eso es evidencia fechada de un episodio, no el estado de manana.
-# GRADUACION: cuando ese comando sostenga 0 sin resolver, el `|| true` se retira
-# y el `case` de abajo deja de tratar el 1 como aviso.
-#
-# La REFUSAL no se traga: exit 2 es «no pude medir», que no es lo mismo que
-# «medi y hay deuda» (exit 1). Tragarse el 2 daria un verde que el llamador lee
-# como permiso — el mismo defecto que el guard del gate de arriba evita.
-GATE_CITA="$ROOT/src/verify/citation_resolution.py"
-if [[ ! -f "$GATE_CITA" ]]; then
-    echo "commit-msg REHUSADO — no se encontro $GATE_CITA" >&2
-    echo "  No se emite veredicto: un 0 aqui seria un verde falso." >&2
+# Se invoca por `bin/`, no por la ruta al fuente: el envoltorio generado resuelve
+# el interprete del proveedor y exporta PYTHONPATH, que una invocacion por ruta
+# no hace.
+ENVOLTORIO="$ROOT/bin/commit-msg-citation"
+if [[ ! -x "$ENVOLTORIO" ]]; then
+    echo "commit-msg REHUSADO — no se encontro $ENVOLTORIO" >&2
+    echo "  Generalo con: python3 src/session/generate_bin.py" >&2
     exit 2
 fi
-PYTHONPATH="$ROOT/src" python3 "$GATE_CITA" "$1"
-case $? in
-    0|1) : ;;   # 0 = todas resuelven · 1 = deuda heredada, avisa y no detiene
-    *)   echo "commit-msg REHUSADO — el gate de cita no pudo medir." >&2
-         exit 2 ;;
-esac
+CODIGO=0
+bash "$ENVOLTORIO" "$1" || CODIGO=$?
+[[ "$CODIGO" -eq 0 ]] || exit 2
 exit 0

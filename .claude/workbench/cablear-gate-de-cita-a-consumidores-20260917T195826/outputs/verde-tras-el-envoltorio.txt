@@ -1,0 +1,19 @@
+== 1. la cita que resuelve: exit 0 ==
+  ok    exit 0
+== 2. la cita ROTA avisa y NO bloquea: exit 0 con WARN ==
+  ok    exit 0 — un 1 abortaria el hook del consumidor bajo set -e
+  ok    pero AVISA
+  ok    y la nombra
+== 3. sin citas: exit 0 y EN SILENCIO (el camino comun) ==
+  ok    exit 0
+  ok    sin una sola linea de salida
+== 4. el gate ausente REHUSA sin emitir veredicto ==
+  ok    exit 2
+  ok    NO emite conteo
+  ok    nombra lo que falta
+== 5. el mensaje ilegible tambien REHUSA ==
+  ok    exit 2 ante un mensaje que no se puede leer
+== 6. NO escribe: el envoltorio mide, no muta ==
+  ok    el mensaje queda intacto
+
+resultado: 11 de 11 aserciones en verde
