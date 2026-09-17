@@ -1,0 +1,17 @@
+EXIT=1 tests/agents/test-agent-store-compara-antes-de-escribir.sh
+EXIT=1 tests/agents/test-agent-store-reassignment-guard.sh
+EXIT=1 tests/agents/test-agent-store-render-tablero.sh
+EXIT=1 tests/agents/test-carrete-store.sh
+EXIT=1 tests/lib/test-script-deprecated.sh
+EXIT=1 tests/session/test-evidencia-varada.sh
+EXIT=1 tests/session/test-instalar-config-usuario.sh
+EXIT=1 tests/verify/test-agent-artifacts.sh
+EXIT=1 tests/verify/test-coordinator-sin-worktree.sh
+EXIT=1 tests/verify/test-destino-del-reporte.sh
+EXIT=1 tests/verify/test-eventos-hook.sh
+EXIT=1 tests/verify/test-generator-determinism.sh
+EXIT=1 tests/verify/test-gitattributes.sh
+EXIT=1 tests/verify/test-script-naming.sh
+EXIT=1 tests/verify/test-verificar-premisa.sh
+EXIT=1 tests/verify/test-vocabulario-prosa.sh
+EXIT=1 tests/verify/test_audit_delegates.sh

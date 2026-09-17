@@ -111,12 +111,23 @@ python3 "$STORE" actualizar-sesion --claude-dir "$CLAUDE" \
 afirmar "agent_id inexistente sale 1" 1 $?
 
 echo "== 5. CONTROL ANULADO — sin el guard cae el caso 2, y SÓLO él =="
-# La copia vive en un ESPEJO de la estructura real (`src/agents/`)
-# y no suelta en $TMP: `agent_store.py` deriva la raiz del repo con
-# `SCRIPT_PATH.parents[3]`, asi que una copia a otra profundidad muere con
-# IndexError antes de ejecutar nada — el control pasaria en falso.
-ESPEJO="$TMP/espejo/.claude/scripts/agents"
+# La copia vive en un ESPEJO junto a `agents_paths.py`, que es su unica
+# dependencia de arranque: `agent_store.py` deriva TODAS sus rutas de ese
+# vecino (`CORPUS_DIR`, `PATHS_DIR`, `THYROX_ROOT`), asi que una copia sin el
+# muere en el import y el control pasaria en falso — el sub-patron D con este
+# mismo caso como sujeto.
+#
+# El vecino va por SYMLINK, no por copia: `agents_paths` asciende al marcador
+# desde `Path(__file__).resolve()`, y `resolve()` sigue el enlace hasta el
+# archivo real, asi que el espejo hereda la raiz de thyrox sin replicar
+# `src/paths/`, `src/corpus/` ni `src/lib/`.
+#
+# Decia `.claude/scripts/agents` y componia un `src/corpus/` que nunca creaba:
+# la premisa era la del arbol PRE-mudanza, y el control llevaba roto desde
+# entonces sin que su rojo dijera que era del instrumento.
+ESPEJO="$TMP/espejo/src/agents"
 mkdir -p "$ESPEJO"
+ln -s "$PWD/src/agents/agents_paths.py" "$ESPEJO/agents_paths.py"
 COPIA="$ESPEJO/agent_store_sin_guard.py"
 python3 - "$STORE" "$COPIA" <<'PY'
 import pathlib, sys
@@ -134,19 +145,6 @@ for viejo, nuevo in (
 pathlib.Path(sys.argv[2]).write_text(src)
 PY
 afirmar "la copia anulada se pudo construir" 0 $?
-
-# La copia vive fuera de `.claude/scripts/`, y `agent_store.py` importa
-# `document_types` (el vocabulario proyectado del canon). Una copia de un
-# modulo necesita esa pieza: sin esto la copia muere en el import y el control
-# pasaria en falso — daria "no defecto" porque no llego a ejecutarse, que es el
-# sub-patron D de `metrica-decide-la-conclusion.md`.
-#
-# Desde la organizacion por clase (2026-08-27) ya NO son vecinos: `agent_store`
-# vive en `scripts/agents/` y `document_types` en `scripts/corpus/`. La ruta
-# se deriva de la raiz de `scripts/`, no del directorio del consumidor.
-mkdir -p "$TMP/espejo/.claude/scripts/corpus"
-cp "$(dirname "$(dirname "$STORE")")/corpus/document_types.py" \
-   "$TMP/espejo/src/corpus/"
 
 CLAUDE2="$TMP/.claude2/agent-results"
 python3 "$COPIA" init --claude-dir "$CLAUDE2" >/dev/null
