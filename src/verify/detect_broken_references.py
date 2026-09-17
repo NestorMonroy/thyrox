@@ -22,12 +22,18 @@ from collections import defaultdict
 from datetime import datetime, timezone
 
 
-#: Raiz de `.claude/`, DOS saltos arriba de `gates/`. Se deriva con un bucle
-#: explicito y no con una cadena de `.parent`: el conteo a mano es lo que se
-#: olvida al mudar un guion de carpeta.
-_CLAUDE_DIR = Path(__file__).resolve().parent      # el directorio `gates/`
-for _ in range(2):                      # gates/ -> scripts/ -> .claude/
-    _CLAUDE_DIR = _CLAUDE_DIR.parent
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from paths import reach  # noqa: E402
+
+#: Raiz de `.claude/` del arbol del guion, pedida a `reach` en vez de contada.
+#: El bucle que vivia aqui declaraba `gates/ -> scripts/ -> .claude/`, y el
+#: guion ya no vive en `gates/`: desde `src/verify/` los mismos DOS saltos
+#: aterrizaban en la raiz del arbol, asi que el reporte salia de
+#: `.claude/eventos/` sin que nada lo delatara. Su comentario elegia la
+#: defensa contra teclear mal el salto — no contra que DOS dejara de ser el
+#: numero correcto, que es la mitad por la que fallo (misma clase que
+#: H-THYROX-55).
+_CLAUDE_DIR = reach.thyrox_root() / ".claude"
 
 
 def destino_del_reporte():
