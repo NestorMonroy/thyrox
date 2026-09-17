@@ -45,16 +45,18 @@ if [[ -z "$_thyrox_root" ]]; then
     done
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+source "$_thyrox_root/src/lib/fixture.sh"
 RAIZ="$(thyrox_root)" || exit 2
 
 # El ledger se AÍSLA: sin esto la suite registra en el de la sesión viva y un
 # caso que deja un trabajo colgado bloquearía el turno de quien la corre.
-export THYROX_JOBS_DIR="$(mktemp -d)/ledger"
+_ledger_home="$(fixture_dir)"
+export THYROX_JOBS_DIR="$_ledger_home/ledger"
 BG="$RAIZ/src/session/bg.sh"
 POOL="$RAIZ/src/session/run-task-pool.sh"
 WAIT_JOBS="$RAIZ/src/session/wait-jobs.sh"
 OK=0; FALLA=0
-T="$(mktemp -d)"
+T="$(fixture_dir)"
 
 af() { # af <descripcion> <esperado> <obtenido>
     if [ "$2" = "$3" ]; then OK=$((OK+1)); printf '  ok   %s\n' "$1"
@@ -111,6 +113,7 @@ limpieza() {
     rm -rf "$T"
 }
 trap limpieza EXIT
+fixture_arm   # compone: `trap` reemplaza, no acumula
 
 echo "test-process-group:"
 

@@ -89,7 +89,13 @@ else
   LOCAL_SHA=$(git rev-parse HEAD)
 
   # Fetch latest remote state
-  git fetch origin "$CURRENT_BRANCH" &>/dev/null || true
+  #
+  # Un fallo mudo aqui NO deja el veredicto sin dato: lo deja midiendo la ref
+  # remota RANCIA que el clon ya tenia, y el gate puede publicar «sincronizado»
+  # sobre un remoto que nadie consulto. Es el sub-patron D con este gate como
+  # sujeto, asi que el fallo se anuncia aunque no aborte.
+  git fetch origin "$CURRENT_BRANCH" &>/dev/null \
+    || echo "AVISO: git fetch fallo — la comparacion usa la ref remota local" >&2
 
   REMOTE_SHA=$(git rev-parse origin/"$CURRENT_BRANCH" 2>/dev/null || echo "")
 

@@ -27,6 +27,7 @@ if [[ -z "$_thyrox_root" ]]; then
     done
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+source "$_thyrox_root/src/lib/fixture.sh"
 cd "$(thyrox_root)" || exit 1
 
 GUION=src/session/wait-jobs.sh
@@ -64,18 +65,18 @@ python3 -c "import ast; ast.parse(open('$STOP_GATE').read())"
 afirmar "stop_gate.py parsea" 0 $?
 
 echo "== 2. barrera positiva: N trabajos que terminan bien =="
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
 for i in 1 2; do
-    L=$(mktemp); nohup bash -c "sleep $i; echo EXIT=0" >"$L" 2>&1 & P=$!; disown $P
+    L=$(fixture_file); nohup bash -c "sleep $i; echo EXIT=0" >"$L" 2>&1 & P=$!; disown $P
     bash "$GUION" registrar "t$i" "$L" "$P" >/dev/null
 done
 bash "$GUION" esperar --timeout 30 >/dev/null; afirmar "N trabajos OK -> exit 0" 0 $?
 afirmar "ledger vacío tras recoger" "" "$(ls "$THYROX_JOBS_DIR")"
 
 echo "== 3. un trabajo muere sin marcador =="
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
-LA=$(mktemp); nohup bash -c "sleep 1; echo EXIT=0" >"$LA" 2>&1 & PA=$!; disown $PA
-LB=$(mktemp); nohup bash -c "echo arrancando; sleep 1; kill -9 \$\$" >"$LB" 2>&1 & PB=$!; disown $PB
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+LA=$(fixture_file); nohup bash -c "sleep 1; echo EXIT=0" >"$LA" 2>&1 & PA=$!; disown $PA
+LB=$(fixture_file); nohup bash -c "echo arrancando; sleep 1; kill -9 \$\$" >"$LB" 2>&1 & PB=$!; disown $PB
 bash "$GUION" registrar vivo "$LA" "$PA" >/dev/null
 bash "$GUION" registrar muerto "$LB" "$PB" >/dev/null
 SALIDA=$(bash "$GUION" esperar --timeout 30); COD=$?
@@ -85,8 +86,8 @@ grep -q '^OK     vivo'   <<<"$SALIDA"; afirmar "no arrastra al que sí terminó"
 
 echo "== 4. CONTROL POSITIVO — el episodio H-DOCS-155 =="
 # La suite TERMINA y escribe su marcador; nadie la recoge; el turno cierra.
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
-LS=$(mktemp); printf '7 failed, 3165 passed, 4 skipped\nEXIT=1\n' > "$LS"
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+LS=$(fixture_file); printf '7 failed, 3165 passed, 4 skipped\nEXIT=1\n' > "$LS"
 bash "$GUION" registrar suite-api "$LS" 999999 >/dev/null
 afirmar "terminado y SIN RECOGER -> el gate bloquea" "block" "$(decision_del_gate)"
 SALIDA=$(bash "$GUION" esperar --timeout 10)
@@ -94,9 +95,9 @@ grep -q '7 failed' <<<"$SALIDA"; afirmar "la recogida IMPRIME el resultado" 0 $?
 afirmar "tras recoger, el gate calla" "ninguna" "$(decision_del_gate)"
 
 echo "== 5. el gate no estorba ni reincide =="
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
 afirmar "sin trabajos -> no bloquea" "ninguna" "$(decision_del_gate)"
-LV=$(mktemp); nohup bash -c "sleep 300" >"$LV" 2>&1 & PV=$!; disown $PV
+LV=$(fixture_file); nohup bash -c "sleep 300" >"$LV" 2>&1 & PV=$!; disown $PV
 bash "$GUION" registrar largo "$LV" "$PV" >/dev/null
 afirmar "vivo sin marcador -> bloquea" "block" "$(decision_del_gate)"
 afirmar "stop_hook_active=true -> no reincide" "ninguna" \
@@ -107,9 +108,9 @@ afirmar "abandono declarado -> el gate lo suelta" "ninguna" "$(decision_del_gate
 kill $PV 2>/dev/null
 
 echo "== 6. archivar empaqueta el ledger en <id>.tar.gz (T-096) =="
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
-KX_TRABAJOS_ARCHIVO_DIR=$(mktemp -d); export KX_TRABAJOS_ARCHIVO_DIR
-LJ=$(mktemp); echo "EXIT=0" >"$LJ"
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+KX_TRABAJOS_ARCHIVO_DIR=$(fixture_dir); export KX_TRABAJOS_ARCHIVO_DIR
+LJ=$(fixture_file); echo "EXIT=0" >"$LJ"
 bash "$GUION" registrar demo "$LJ" 99999 >/dev/null
 bash "$GUION" archivar sesion-x >/dev/null
 afirmar "el .tar.gz existe" 0 "$( [ -f "$KX_TRABAJOS_ARCHIVO_DIR/sesion-x.tar.gz" ]; echo $? )"
@@ -123,9 +124,9 @@ echo "== 7. adopción de un huérfano real (TASK-DOCS-0377) =="
 # anotación y DEJA el proceso corriendo (lo dice su propio docstring), así que
 # tras él hay un trabajo vivo que ninguna herramienta ve. Ése es el episodio
 # que h-docs-1037 registró, y el control positivo que esta sección exige.
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
 MARCA="huerfano-$$-$RANDOM"
-LH=$(mktemp)
+LH=$(fixture_file)
 # La forma de lanzamiento es la de `run-task-pool.sh`, no una fabricada: el
 # shell EXTERIOR conserva su línea de comando (dos comandos, sin exec) y su
 # fd 1 apunta al log. Con `bash -c "cmd"` a secas, bash reemplaza su propia
@@ -142,7 +143,7 @@ afirmar "el .job registra proc_start=" 0 "$(grep -q '^proc_start=' "$THYROX_JOBS
 bash "$GUION" forget h1 2>/dev/null
 afirmar "tras forget el ledger queda vacío" 0 "$(find "$THYROX_JOBS_DIR" -name '*.job' | wc -l | tr -d ' ')"
 afirmar "pero el proceso sigue vivo (eso ES el huérfano)" 0 "$(kill -0 $PH 2>/dev/null; echo $?)"
-SALIDA_ADOPT=$(mktemp)
+SALIDA_ADOPT=$(fixture_file)
 bash "$GUION" adopt --match "$MARCA" >"$SALIDA_ADOPT" 2>&1
 afirmar "adopt anota la RAÍZ del árbol, no cada proceso" 1 \
     "$(grep -c '^adoptado:' "$SALIDA_ADOPT")"
@@ -158,8 +159,8 @@ afirmar "adopt no se auto-adopta" 0 \
 kill $PH 2>/dev/null
 
 echo "== 8. proc_start distingue un pid RECICLADO (control anulado) =="
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
-LR=$(mktemp); nohup bash -c "sleep 300" >"$LR" 2>&1 & PR=$!; disown $PR
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+LR=$(fixture_file); nohup bash -c "sleep 300" >"$LR" 2>&1 & PR=$!; disown $PR
 bash "$GUION" register r1 "$LR" "$PR" >/dev/null
 afirmar "con el proc_start real -> VIVO" "VIVO" "$(bash "$GUION" status | awk '$1=="r1"{print $2}')"
 # El guardia ANULADO: se falsea el proc_start guardado — es lo que el kernel
@@ -173,8 +174,8 @@ kill $PR 2>/dev/null
 # cablearlo ahí, un pid reciclado se lee VIVO y la barrera agota su timeout
 # esperando a un proceso ajeno — sale 3 en vez de 2, y el turno cierra creyendo
 # que el trabajo sigue en marcha.
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
-LW=$(mktemp); nohup bash -c "sleep 300" >"$LW" 2>&1 & PW=$!; disown $PW
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+LW=$(fixture_file); nohup bash -c "sleep 300" >"$LW" 2>&1 & PW=$!; disown $PW
 bash "$GUION" register w1 "$LW" "$PW" >/dev/null
 sed -i 's/^proc_start=.*/proc_start=1/' "$THYROX_JOBS_DIR/w1.job"
 bash "$GUION" wait --timeout 6 >/dev/null 2>&1
@@ -182,7 +183,7 @@ afirmar "wait consume el eje: reciclado -> exit 2, no timeout 3" 2 $?
 kill $PW 2>/dev/null
 
 echo "== 9. la salida de estado no arrastra el token del renombre (ERR-028) =="
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
 afirmar "el resumen dice 'estado:'" "estado:" "$(bash "$GUION" status | awk '{print $1}')"
 
 echo "== 10. status DISCRIMINA: un VIVO sano no es 'Exit code 1' (H-THYROX-04) =="
@@ -190,8 +191,8 @@ echo "== 10. status DISCRIMINA: un VIVO sano no es 'Exit code 1' (H-THYROX-04) =
 # "Exit code 1" en la UI del cliente -- indistinguible de un fallo real del
 # propio chequeo. `status` NO es `pending`: es la via informativa, y hasta
 # ahora devolvia 1 con CUALQUIER cosa en el ledger, VIVO incluido.
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
-LV10=$(mktemp); nohup bash -c "sleep 300" >"$LV10" 2>&1 & PV10=$!; disown $PV10
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+LV10=$(fixture_file); nohup bash -c "sleep 300" >"$LV10" 2>&1 & PV10=$!; disown $PV10
 bash "$GUION" registrar sano "$LV10" "$PV10" >/dev/null
 bash "$GUION" status >/dev/null; afirmar "un VIVO sano -> status exit 0" 0 $?
 kill $PV10 2>/dev/null; wait $PV10 2>/dev/null
@@ -199,8 +200,8 @@ kill $PV10 2>/dev/null; wait $PV10 2>/dev/null
 # Control REAL, no fabricado: un trabajo que muere sin dejar marcador cae en
 # BAIL -- ese si tiene que seguir siendo distinto de 0, porque de verdad pide
 # accion ('forget'/investigar).
-THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
-LB10=$(mktemp); nohup bash -c "kill -9 \$\$" >"$LB10" 2>&1 & PB10=$!; disown $PB10
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+LB10=$(fixture_file); nohup bash -c "kill -9 \$\$" >"$LB10" 2>&1 & PB10=$!; disown $PB10
 sleep 1
 bash "$GUION" registrar roto "$LB10" "$PB10" >/dev/null
 bash "$GUION" status >/dev/null; afirmar "un BAIL real -> status sigue en exit 1" 1 $?

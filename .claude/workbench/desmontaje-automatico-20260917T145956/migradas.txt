@@ -1,0 +1,6 @@
+tests/session/test-wait-jobs.sh
+tests/session/test-wait-jobs-dependencia.sh
+tests/session/test-run-task-pool-alcance.sh
+tests/session/test-process-group.sh
+tests/lib/test-toolchain-sh.sh
+tests/verify/test-verificar-premisa.sh

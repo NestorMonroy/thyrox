@@ -37,6 +37,7 @@ if [[ -z "$_thyrox_root" ]]; then
     done
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+source "$_thyrox_root/src/lib/fixture.sh"
 cd "$(thyrox_root)" || exit 1
 
 GUION=src/verify/verificar_premisa.py
@@ -54,7 +55,7 @@ echo "== 1. sintaxis =="
 python3 -c "import ast,pathlib; ast.parse(pathlib.Path('$GUION').read_text())"
 afirmar "verificar_premisa.py parsea" 0 $?
 
-U=$(mktemp -d)
+U=$(fixture_dir)
 escribir() {  # escribir <id> <status> <subject> <description>
     python3 - "$U" "$@" <<'PY'
 import json, sys, pathlib
@@ -132,7 +133,7 @@ python3 "$GUION" --tasks-dir "$U" 6 --strict >/dev/null 2>&1
 afirmar "sin senal sale 0" 0 $?
 
 echo "== 9. universo vacio: no revienta =="
-VACIO=$(mktemp -d)
+VACIO=$(fixture_dir)
 python3 "$GUION" --tasks-dir "$VACIO" >/dev/null 2>&1
 afirmar "directorio sin tareas sale 0" 0 $?
 
@@ -147,7 +148,7 @@ afirmar "el indice tiene simbolos (no 0)" "si" \
     "$( (( ${INDICE:-0} > 0 )) && echo si || echo no)"
 
 echo "== 11. --emit-premises: la senal se vuelve premisa declarada =="
-PREM=$(mktemp)
+PREM=$(fixture_file)
 python3 "$GUION" --tasks-dir "$U" --emit-premises "$PREM" >/dev/null 2>&1
 afirmar "el archivo emitido es JSON valido" 0 \
     "$(python3 -c "import json,sys; json.load(open('$PREM'))" >/dev/null 2>&1; echo $?)"
