@@ -248,10 +248,14 @@ export function requireProviderCostTracker(): {
 }
 
 /**
- * `currentLimits` — `@thyrox/provider/claudeAiLimits.js`. NO existe
- * todavía en `@thyrox/provider` a la fecha de este pase (514 líneas en la
- * fuente, fuera del recorte de este pase). Igual que
- * `requirePermissionFilesystem`: falla al LLAMARSE, no al importar.
+ * `currentLimits` — `@thyrox/provider/claudeAiLimits.js`. YA existe: el
+ * módulo se portó con TASK-THYROX-0069, y su suite ejerce este envoltorio por
+ * el mismo camino que usa aquí (el mapa `exports`, no una ruta relativa).
+ *
+ * El porte trajo el medidor Y el estado de cuota en el mismo pase, no por
+ * ensanchar alcance: con sólo el medidor este `require` habría resuelto y
+ * `currentLimits` habría quedado en `undefined` — el fallo pasa de ruidoso a
+ * silencioso, que es peor que el bloqueo que este docstring describía.
  */
 export function requireProviderClaudeAiLimits(): {
   currentLimits: { isUsingOverage: boolean }
