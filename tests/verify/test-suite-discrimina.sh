@@ -274,6 +274,194 @@ afirmar "--verificar sobre el arbol real sale 0" "0" "$codigo12"
 afirmar "el titular publica su alcance medido" "1" \
         "$(printf '%s' "$salida12" | grep -c 'alcance medido: [0-9]\+ archivos .py')"
 
+# ==============================================================================
+# LA COTA DEL BARRIDO — H-THYROX-33, TASK-THYROX-0064
+# ==============================================================================
+# El defecto: el bucle de `main()` recorre TODOS los candidatos sin techo. Medido
+# sobre el arbol real: 84 candidatos con suite, 612 corridas de suite, y a 180 s
+# de tope cada una son 91.8 h en el peor caso. Un barrido que no termina INVITA a
+# matarlo, y matarlo deja el mutante en el disco — ocurrio dos veces el mismo dia
+# (`reach.py::env_file_path` devolviendo None incondicional, H-THYROX-33).
+#
+# La cota se comprueba ENTRE candidatos, nunca a mitad de `judge()`: cortar ahi
+# dejaria el mutante escrito, que es exactamente el defecto que se cierra.
+#
+# El arbol sintetico tiene TRES candidatos, no dos: con dos, «juzga 1» y «juzga
+# la mitad» son la misma cifra y el control no discriminaria un tope de 2.
+
+_arbol_de_tres() {   # <destino>  -> un arbol con 3 candidatos y sus 3 suites
+    local raiz="$1" n
+    mkdir -p "$raiz/src" "$raiz/tests"
+    for n in uno dos tres; do
+        cat > "$raiz/src/sujeto_$n.py" <<EOF_SUJETO
+def veredicto_$n(x):
+    """Tres retornos del mismo literal: candidata por construccion."""
+    if x == 1:
+        return None
+    if x == 2:
+        return None
+    return None
+EOF_SUJETO
+        # La suite NOMBRA a su sujeto y lo EJERCE: sin ejercerlo el juez la
+        # reportaria sin cobertura y no mediria la cota.
+        cat > "$raiz/tests/test-sujeto-$n.sh" <<EOF_SUITE
+#!/usr/bin/env bash
+# ejerce sujeto_$n.py
+python3 -c "
+import sys; sys.path.insert(0, '$raiz/src')
+import sujeto_$n
+assert sujeto_$n.veredicto_$n(1) is None
+"
+EOF_SUITE
+    done
+}
+
+_juzgados() {   # <salida del gate>  -> el numero que su denominador declara
+    printf '%s' "$1" | sed -n 's/.*, \([0-9]\+\) mutada(s) dos veces.*/\1/p'
+}
+
+_lineas_json() {   # <ledger>  -> 1 si toda linea no vacia es un objeto JSON
+    python3 - "$1" <<'EOF_LINEAS'
+import json, pathlib, sys
+lineas = [l for l in pathlib.Path(sys.argv[1]).read_text().splitlines() if l.strip()]
+print(int(bool(lineas) and all(isinstance(json.loads(l), dict) for l in lineas)))
+EOF_LINEAS
+}
+
+_entero_no_json() {   # <ledger>  -> 1 si hay >=2 registros y el archivo no parsea
+    python3 - "$1" <<'EOF_ENTERO'
+import json, pathlib, sys
+crudo = pathlib.Path(sys.argv[1]).read_text()
+if len([l for l in crudo.splitlines() if l.strip()]) < 2:
+    print(0)                      # con un solo registro no discrimina
+else:
+    try:
+        json.loads(crudo); print(0)
+    except json.JSONDecodeError:
+        print(1)
+EOF_ENTERO
+}
+
+echo "== 15. --limit acota los candidatos por ejecucion =="
+COTA="$TMP/cota"; _arbol_de_tres "$COTA"
+LEDGER15="$TMP/ledger15.jsonl"
+salida15=$(SUITE_DISCRIMINA_ROOTS="$COTA/src" SUITE_DISCRIMINA_TESTS="$COTA/tests" \
+           SUITE_DISCRIMINA_LEDGER="$LEDGER15" \
+           timeout 180 python3 "$GATE" --limit 1 2>&1); codigo15=$?
+afirmar "con --limit 1 se juzga exactamente uno" "1" "$(_juzgados "$salida15")"
+# Exit 3, no 0 ni 1: un barrido truncado NO es completo, y publicar su veredicto
+# como si lo fuera es el sub-patron D. La forma la fija `bounded_scan.py`, que
+# ya declara su corte con 3.
+afirmar "el corte se declara con exit 3, no con un verde" "3" "$codigo15"
+afirmar "y el titular nombra la cota con su denominador" "1" \
+        "$(printf '%s' "$salida15" | grep -c 'cota alcanzada: 1 de 3')"
+# La mitad que hace util a la cota: al cortar, NADA queda en vuelo.
+afirmar "al cortar no queda ningun mutante en vuelo" "0" \
+        "$(SUITE_DISCRIMINA_ROOTS="$COTA/src" SUITE_DISCRIMINA_LEDGER="$LEDGER15" \
+           python3 "$GATE" --verificar >/dev/null 2>&1; echo $?)"
+
+echo "== 16. la segunda ejecucion AVANZA: no re-juzga lo ya juzgado =="
+# Sin cursor, cada ejecucion acotada re-juzga los mismos primeros N y el barrido
+# nunca progresa. El cursor es lo que convierte la cota en un barrido por tramos.
+primero16=$(printf '%s' "$salida15" | grep -oE 'sujeto_(uno|dos|tres)\.py' | head -1)
+salida16=$(SUITE_DISCRIMINA_ROOTS="$COTA/src" SUITE_DISCRIMINA_TESTS="$COTA/tests" \
+           SUITE_DISCRIMINA_LEDGER="$LEDGER15" \
+           timeout 180 python3 "$GATE" --limit 1 2>&1)
+segundo16=$(printf '%s' "$salida16" | grep -oE 'sujeto_(uno|dos|tres)\.py' | head -1)
+afirmar "la segunda tanda juzga OTRO candidato" "distinto" \
+        "$([[ -n "$primero16" && "$primero16" != "$segundo16" ]] \
+           && echo distinto || echo "igual:$primero16/$segundo16")"
+afirmar "y el titular sigue declarando el universo entero" "1" \
+        "$(printf '%s' "$salida16" | grep -c 'cota alcanzada: 1 de 3')"
+
+echo "== 17. ANULACION de la cota — sin tope, los tres en una tanda =="
+# El control que discrimina: si al retirar --limit el veredicto no cambiara, la
+# cota seria codigo muerto y el verde del caso 15 no informaria nada.
+LEDGER17="$TMP/ledger17.jsonl"
+salida17=$(SUITE_DISCRIMINA_ROOTS="$COTA/src" SUITE_DISCRIMINA_TESTS="$COTA/tests" \
+           SUITE_DISCRIMINA_LEDGER="$LEDGER17" \
+           timeout 300 python3 "$GATE" 2>&1); codigo17=$?
+afirmar "sin --limit se juzgan los tres" "3" "$(_juzgados "$salida17")"
+afirmar "y no se declara ningun corte" "0" \
+        "$(printf '%s' "$salida17" | grep -c 'cota alcanzada')"
+afirmar "el exit vuelve a ser el del veredicto, no el del corte" "0" "$codigo17"
+
+echo "== 18. el cursor CADUCA cuando el archivo cambia =="
+# Un veredicto que sobreviviera a la edicion de su archivo dejaria al gate ciego
+# justo sobre lo que acaba de cambiar — el sub-patron D con el cursor de sujeto.
+# El cursor se ancla al CONTENIDO, no a la ruta.
+#
+# El caso NO depende de la salida del 16: fija su propio sujeto. Un control que
+# se apoye en el grep de otro caso falla con un error de ruta en vez de con su
+# asercion, y entonces no informa de lo que dice medir.
+CURSOR="$TMP/cursor"; _arbol_de_tres "$CURSOR"
+LEDGER18="$TMP/ledger18.jsonl"
+SUITE_DISCRIMINA_ROOTS="$CURSOR/src" SUITE_DISCRIMINA_TESTS="$CURSOR/tests" \
+    SUITE_DISCRIMINA_LEDGER="$LEDGER18" timeout 300 python3 "$GATE" >/dev/null 2>&1
+# Con los tres ya juzgados y sin editar nada, una segunda tanda no juzga ninguno.
+salida18a=$(SUITE_DISCRIMINA_ROOTS="$CURSOR/src" SUITE_DISCRIMINA_TESTS="$CURSOR/tests" \
+            SUITE_DISCRIMINA_LEDGER="$LEDGER18" timeout 300 python3 "$GATE" 2>&1)
+afirmar "sin cambios, la segunda tanda no vuelve a juzgar" "0" "$(_juzgados "$salida18a")"
+# Y editado UNO, vuelve exactamente ese. Ni cero (cursor ciego a la edicion) ni
+# tres (cursor inerte): las dos cifras equivocadas son distintas de la correcta.
+printf '\n# una linea que cambia el contenido\n' >> "$CURSOR/src/sujeto_dos.py"
+salida18b=$(SUITE_DISCRIMINA_ROOTS="$CURSOR/src" SUITE_DISCRIMINA_TESTS="$CURSOR/tests" \
+            SUITE_DISCRIMINA_LEDGER="$LEDGER18" timeout 300 python3 "$GATE" 2>&1)
+afirmar "editado uno, vuelve exactamente ese" "1" "$(_juzgados "$salida18b")"
+afirmar "y es el editado, no otro" "1" \
+        "$(printf '%s' "$salida18b" | grep -c 'sujeto_dos\.py')"
+
+echo "== 19. --budget corta por reloj, y tampoco deja nada en vuelo =="
+# --limit acota los CANDIDATOS; no acota el reloj, porque un solo candidato puede
+# arrastrar 69 suites. El presupuesto es la cota que de verdad impide la muerte
+# por timeout del harness.
+LENTO="$TMP/lento"; _arbol_de_tres "$LENTO"
+for n in uno dos tres; do printf 'sleep 3\n' >> "$LENTO/tests/test-sujeto-$n.sh"; done
+LEDGER19="$TMP/ledger19.jsonl"
+salida19=$(SUITE_DISCRIMINA_ROOTS="$LENTO/src" SUITE_DISCRIMINA_TESTS="$LENTO/tests" \
+           SUITE_DISCRIMINA_LEDGER="$LEDGER19" \
+           timeout 300 python3 "$GATE" --budget 1 2>&1); codigo19=$?
+afirmar "el presupuesto agotado declara su corte con exit 3" "3" "$codigo19"
+afirmar "y nombra el reloj, no el conteo" "1" \
+        "$(printf '%s' "$salida19" | grep -c 'presupuesto agotado')"
+afirmar "tras el corte por reloj no queda nada en vuelo" "0" \
+        "$(SUITE_DISCRIMINA_ROOTS="$LENTO/src" SUITE_DISCRIMINA_LEDGER="$LEDGER19" \
+           python3 "$GATE" --verificar >/dev/null 2>&1; echo $?)"
+
+echo "== 20. el ledger es JSONL: se AÑADE, no se reescribe =="
+# La directiva de thyrox es JSONL, y aqui ademas es mas seguro que el arreglo
+# JSON: un append no puede pisar las entradas previas si el proceso muere a
+# mitad de la escritura, y ese es justo el modo de muerte que el ledger existe
+# para sobrevivir.
+afirmar "el ledger de una tanda existe" "1" "$([[ -f "$LEDGER17" ]] && echo 1 || echo 0)"
+afirmar "cada linea es un objeto JSON" "1" "$(_lineas_json "$LEDGER17")"
+afirmar "con mas de un registro, el archivo ENTERO no es JSON" "1" \
+        "$(_entero_no_json "$LEDGER17")"
+# El nombre heredado se sigue LEYENDO, como en los manifiestos: un ledger .json
+# de una sesion anterior no se pierde al actualizar el guion.
+afirmar "un ledger heredado en .json se sigue leyendo" "1" \
+        "$(SUITE_DISCRIMINA_ROOTS="$ARBOL" SUITE_DISCRIMINA_LEDGER="$TMP/ledger.json" \
+           python3 "$GATE" --verificar 2>&1 | grep -c 'VIVO .*api_error()')"
+
+echo "== 21. --solo IGNORA el cursor: es una peticion explicita =="
+# El defecto que este caso cierra lo destapo la anulacion de la cota, no una
+# relectura: con el cursor recien introducido, el control negativo del caso 6
+# paso de «3 BASELINE ROJO» a «0» en su SEGUNDA corrida, y su salida no decia
+# nada. Un gate que calla lo que se le pregunta por nombre es peor que uno lento.
+SOLO="$TMP/solo"; _arbol_de_tres "$SOLO"
+LEDGER21="$TMP/ledger21.jsonl"
+for _ in 1 2; do
+    salida21=$(SUITE_DISCRIMINA_ROOTS="$SOLO/src" SUITE_DISCRIMINA_TESTS="$SOLO/tests" \
+               SUITE_DISCRIMINA_LEDGER="$LEDGER21" \
+               timeout 180 python3 "$GATE" --solo sujeto_uno.py 2>&1)
+done
+afirmar "la SEGUNDA corrida de --solo vuelve a juzgar" "1" "$(_juzgados "$salida21")"
+# Y el control que discrimina: SIN --solo, el mismo candidato ya juzgado se salta.
+salida21b=$(SUITE_DISCRIMINA_ROOTS="$SOLO/src" SUITE_DISCRIMINA_TESTS="$SOLO/tests" \
+            SUITE_DISCRIMINA_LEDGER="$LEDGER21" timeout 300 python3 "$GATE" 2>&1)
+afirmar "sin --solo, ese mismo candidato si se salta" "1" \
+        "$(printf '%s' "$salida21b" | grep -c '1 ya juzgada(s) sin cambio')"
+
 echo
 printf '%d ok, %d fallos\n' "$OK" "$FALLO"
 exit $(( FALLO > 0 ))

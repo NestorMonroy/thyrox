@@ -51,6 +51,7 @@ from __future__ import annotations
 import argparse
 import ast
 import collections
+import hashlib
 import json
 import os
 import pathlib
@@ -59,6 +60,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from datetime import datetime, timezone
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -114,7 +116,20 @@ ROOTS = tuple(pathlib.Path(p) for p in
 _CLAUDE = ROOT
 LEDGER = pathlib.Path(os.environ.get(
     "SUITE_DISCRIMINA_LEDGER",
-    _CLAUDE / "agent-results" / "mutantes-en-vuelo.json"))
+    _CLAUDE / "agent-results" / "mutantes-en-vuelo.jsonl"))
+
+#: El nombre heredado. El ledger era un ARREGLO JSON reescrito entero en cada
+#: cambio, y eso es dos defectos en el archivo que existe para sobrevivir a la
+#: muerte del proceso: morir a mitad del `write_text` pierde las entradas
+#: previas, y la forma contradice la directiva de THYROX (JSONL). Hoy se AÑADE
+#: una linea por evento; el arreglo se sigue LEYENDO para no perder el ledger
+#: de una sesion anterior, igual que `manifest.py` hace con `manifest.json`.
+LEGACY_LEDGER_SUFFIX = ".json"
+
+#: Los tres tipos de registro del ledger. `open`/`close` son el par en vuelo que
+#: ya existia; `verdict` es el CURSOR, y sin el una ejecucion acotada volveria a
+#: juzgar los mismos primeros N para siempre — la cota seria un juguete.
+KIND_OPEN, KIND_CLOSE, KIND_VERDICT = "open", "close", "verdict"
 
 #: La marca **insertada**, que no es la que este archivo define. La mutación
 #: escribe ``<sangría><sentencia>  # MUTANTE``; una línea que sólo declare la
@@ -206,17 +221,152 @@ def suites_naming(path: pathlib.Path) -> list:
     return suites
 
 
-def ledger_read() -> list:
+#: Las claves que el ledger escribia en español. Una clave es un atributo, y los
+#: atributos van en ingles (`identificadores-en-ingles.md`). El ESCRITOR emite
+#: solo la forma inglesa; el LECTOR normaliza las dos, para no perder el ledger
+#: que una sesion anterior dejo a medias. Es la misma forma permanente que
+#: `workbench/manifest.py` adopto para el nombre del archivo.
+LEGACY_KEYS = {
+    "archivo": "file",
+    "funcion": "function",
+    "sentencia": "statement",
+    "desde": "since",
+}
+
+
+#: El mapa inverso, para devolver un ledger heredado a su forma al podarlo.
+ENGLISH_TO_LEGACY_KEYS = {value: key for key, value in LEGACY_KEYS.items()}
+
+
+def normalize_keys(record: dict) -> dict:
+    """Traduce las claves heredadas a su forma inglesa, sin tocar el resto."""
+    return {LEGACY_KEYS.get(key, key): value for key, value in record.items()}
+
+
+def denormalize_keys(record: dict) -> dict:
+    """La vuelta: sólo para reescribir un ledger que YA era heredado."""
+    return {ENGLISH_TO_LEGACY_KEYS.get(key, key): value
+            for key, value in record.items()}
+
+
+def ledger_records() -> list:
+    """Todos los registros, en orden de escritura. Despacha por SUFIJO.
+
+    ``.json`` declara un documento entero —el arreglo heredado, cuyos elementos
+    no llevan ``kind`` y son mutaciones abiertas por construccion—; ``.jsonl``
+    declara lineas. Un respaldo de documento dentro del lector de lineas
+    reintroduciria la trampa de n=1: ``json.loads`` acepta un JSONL de una sola
+    linea, asi que un lector que lo intentara pasaria sin ser lector de lineas.
+    """
     try:
-        return json.loads(LEDGER.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError):
+        raw = LEDGER.read_text(encoding="utf-8")
+    except FileNotFoundError:
         return []
+    if LEDGER.suffix == LEGACY_LEDGER_SUFFIX:
+        try:
+            entries = json.loads(raw) if raw.strip() else []
+        except json.JSONDecodeError:
+            return []
+        return [normalize_keys(dict(e, kind=e.get("kind", KIND_OPEN)))
+                for e in entries]
+    records = []
+    for line in raw.splitlines():
+        if not line.strip():
+            continue
+        try:
+            records.append(normalize_keys(json.loads(line)))
+        except json.JSONDecodeError:
+            continue           # una linea truncada por la muerte del proceso
+    return records
 
 
-def ledger_write(entries: list) -> None:
+def ledger_append(record: dict) -> None:
+    """Añade UN registro. El append es la mitad que hace seguro al ledger.
+
+    El arreglo JSON se reescribia entero: morir a mitad de esa escritura perdia
+    las entradas previas, que son justo el rastro que el ledger existe para
+    conservar. Un ``append`` sobre un archivo abierto en modo ``a`` no puede
+    pisar lo ya escrito — como mucho deja una ultima linea truncada, y
+    ``ledger_records`` la descarta sin perder las anteriores.
+    """
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
-    LEDGER.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n",
-                      encoding="utf-8")
+    with LEDGER.open("a", encoding="utf-8") as sink:
+        sink.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+def ledger_rewrite(records: list) -> None:
+    """Reescribe el ledger entero. SOLO para la poda, que no tiene otra forma.
+
+    Conserva la FORMA que el archivo ya tenia. Podar un ledger heredado
+    escribiendolo como lineas lo dejaria con nombre ``.json`` y contenido JSONL:
+    su propio lector volveria a leerlo como arreglo, fallaria el parseo y
+    devolveria la lista vacia — o sea, la poda habria BORRADO el ledger sin
+    emitir un byte de aviso.
+    """
+    LEDGER.parent.mkdir(parents=True, exist_ok=True)
+    if LEDGER.suffix == LEGACY_LEDGER_SUFFIX:
+        # El arreglo heredado no lleva `kind` y sus claves van en español: se
+        # escribe COMO ESTABA. Ascender las claves aqui dejaria un archivo con
+        # nombre heredado y contenido nuevo — una tercera forma que nadie
+        # declaro, y la promesa de esta funcion es justo la contraria.
+        plain = [denormalize_keys({k: v for k, v in r.items() if k != "kind"})
+                 for r in records]
+        LEDGER.write_text(json.dumps(plain, indent=2, ensure_ascii=False) + "\n",
+                          encoding="utf-8")
+        return
+    LEDGER.write_text(
+        "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in records),
+        encoding="utf-8")
+
+
+def ledger_read() -> list:
+    """Las mutaciones ABIERTAS: las que tienen ``open`` sin su ``close``.
+
+    Se pliega por ``(file, function)`` quedandose con el ultimo registro de
+    ese par. Un par cuyo ultimo evento es ``open`` sigue en vuelo; uno cuyo
+    ultimo evento es ``close`` ya se restauro.
+    """
+    last: dict = {}
+    for record in ledger_records():
+        kind = record.get("kind", KIND_OPEN)
+        if kind not in (KIND_OPEN, KIND_CLOSE):
+            continue
+        last[(record.get("file"), record.get("function"))] = record
+    return [r for r in last.values() if r.get("kind", KIND_OPEN) == KIND_OPEN]
+
+
+def fingerprint(path: pathlib.Path, suites: list) -> str:
+    """La huella de un candidato: su fuente MAS la de cada suite que lo juzga.
+
+    Anclar el cursor solo al sujeto dejaria al gate ciego a un cambio de SUITE,
+    y el veredicto depende de las dos: ``sin-cobertura`` pasa a ``ok`` en cuanto
+    una suite empieza a ejercer la funcion, sin que el sujeto cambie un byte.
+    Un cursor que no lo viera publicaria un veredicto caducado como vigente —
+    el sub-patron D con el propio cursor de sujeto.
+    """
+    digest = hashlib.sha256()
+    for source in [path] + sorted(suites):
+        try:
+            digest.update(source.read_bytes())
+        except OSError:
+            digest.update(b"<ilegible>")
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def judged_index() -> dict:
+    """``(file, function, literal) -> fingerprint`` de lo ya juzgado.
+
+    Es el CURSOR. Sin el, cada ejecucion acotada vuelve a juzgar los mismos
+    primeros N y el barrido no progresa nunca.
+    """
+    index: dict = {}
+    for record in ledger_records():
+        if record.get("kind") != KIND_VERDICT:
+            continue
+        index[(record.get("file"), record.get("function"),
+               record.get("literal"))] = record.get("fingerprint")
+    return index
 
 
 def ledger_open(path: pathlib.Path, fn_name: str, statement: str) -> None:
@@ -233,21 +383,41 @@ def ledger_open(path: pathlib.Path, fn_name: str, statement: str) -> None:
     escritura, sobra una entrada — ruido inofensivo que ``--verificar`` nombra
     como residual. Al revés faltaría el rastro, y el mutante quedaría ciego.
     """
-    entries = [e for e in ledger_read()
-               if not (e.get("archivo") == str(path) and e.get("funcion") == fn_name)]
-    entries.append({
-        "archivo": str(path),
-        "funcion": fn_name,
-        "sentencia": statement,
-        "desde": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+    ledger_append({
+        "kind": KIND_OPEN,
+        "file": str(path),
+        "function": fn_name,
+        "statement": statement,
+        "since": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
     })
-    ledger_write(entries)
 
 
 def ledger_close(path: pathlib.Path, fn_name: str) -> None:
-    ledger_write([e for e in ledger_read()
-                  if not (e.get("archivo") == str(path)
-                          and e.get("funcion") == fn_name)])
+    ledger_append({
+        "kind": KIND_CLOSE,
+        "file": str(path),
+        "function": fn_name,
+        "since": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+    })
+
+
+def ledger_verdict(path: pathlib.Path, fn_name: str, value: str,
+                   mark: str, verdict: str) -> None:
+    """Asienta el veredicto de un candidato YA restaurado. Es el cursor.
+
+    Se llama **despues** de que ``judge`` devuelva, nunca antes: un veredicto
+    escrito sobre un juicio interrumpido haria que la ejecucion siguiente
+    saltara un candidato que nadie midio.
+    """
+    ledger_append({
+        "kind": KIND_VERDICT,
+        "file": str(path),
+        "function": fn_name,
+        "literal": value,
+        "fingerprint": mark,
+        "verdict": verdict,
+        "since": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+    })
 
 
 def survivors() -> tuple[list, list, int]:
@@ -262,16 +432,16 @@ def survivors() -> tuple[list, list, int]:
 
     Un cero de uno solo no es un cero de supervivientes.
     """
-    declarados = ledger_read()
-    con_marca, medidos = [], 0
+    declared = ledger_read()
+    marked, measured = [], 0
     for root in ROOTS:
         for path in sorted(root.rglob("*.py")):
             if "tests" in path.parts:
                 continue
-            medidos += 1
+            measured += 1
             if INSERTADA.search(path.read_text(encoding="utf-8", errors="replace")):
-                con_marca.append(path)
-    return declarados, con_marca, medidos
+                marked.append(path)
+    return declared, marked, measured
 
 
 def ledger_prune_missing() -> int:
@@ -286,35 +456,40 @@ def ledger_prune_missing() -> int:
     ser el rastro de alguien que restauró a mano sin cerrar, y ahí el residual
     es información.
     """
-    entries = ledger_read()
-    vivas = [e for e in entries if pathlib.Path(e.get("archivo", "")).exists()]
-    if len(vivas) != len(entries):
-        ledger_write(vivas)
-    return len(entries) - len(vivas)
+    records = ledger_records()
+    alive = [r for r in records if pathlib.Path(r.get("file", "")).exists()]
+    if len(alive) != len(records):
+        ledger_rewrite(alive)
+    # El conteo es de MUTACIONES podadas, no de registros: un par open+close del
+    # mismo archivo ausente son dos registros y una sola entrada para quien lee
+    # el reporte. Contar registros publicaria el doble sin que nada lo delatara.
+    pruned = {(r.get("file"), r.get("function")) for r in records} \
+        - {(r.get("file"), r.get("function")) for r in alive}
+    return len(pruned)
 
 
 def report_survivors() -> int:
     """Imprime el veredicto de ``survivors()``; devuelve el número de sucios."""
-    podadas = ledger_prune_missing()
-    declarados, con_marca, medidos = survivors()
-    sucios = {str(p) for p in con_marca}
-    anotados = {e.get("archivo") for e in declarados}
+    pruned = ledger_prune_missing()
+    declared, marked, measured = survivors()
+    dirty = {str(p) for p in marked}
+    noted = {e.get("file") for e in declared}
 
-    print(f"check-suite-discrimina --verificar: {len(con_marca)} mutante(s) vivo(s) "
-          f"(alcance medido: {medidos} archivos .py bajo "
-          f"{', '.join(r.name for r in ROOTS)}; {len(declarados)} en el ledger)")
+    print(f"check-suite-discrimina --verificar: {len(marked)} mutante(s) vivo(s) "
+          f"(alcance medido: {measured} archivos .py bajo "
+          f"{', '.join(r.name for r in ROOTS)}; {len(declared)} en el ledger)")
 
-    for entry in declarados:
-        estado = "VIVO" if entry.get("archivo") in sucios else "residual"
-        print(f"  {estado:<8} {entry.get('archivo')} :: {entry.get('funcion')}() "
-              f"-> {entry.get('sentencia')}  desde {entry.get('desde')}")
-    for path in con_marca:
-        if str(path) not in anotados:
+    for entry in declared:
+        state = "VIVO" if entry.get("file") in dirty else "residual"
+        print(f"  {state:<8} {entry.get('file')} :: {entry.get('function')}() "
+              f"-> {entry.get('statement')}  desde {entry.get('since')}")
+    for path in marked:
+        if str(path) not in noted:
             print(f"  VIVO     {path}  SIN anotación — anterior al ledger, "
                   f"o su entrada se perdió")
-    if podadas:
-        print(f"  (podadas {podadas} entrada(s) de archivos que ya no existen)")
-    return len(con_marca)
+    if pruned:
+        print(f"  (podadas {pruned} entrada(s) de archivos que ya no existen)")
+    return len(marked)
 
 
 def mutate(path: pathlib.Path, fn_name: str, statement: str) -> bool:
@@ -365,17 +540,17 @@ def has_green_baseline(suite) -> bool:
     limpio, asi que las tres funciones de `classify_agents.py` se publicaban
     como `ok` sin que nadie las hubiera ejercido.
     """
-    clave = str(suite)
-    if clave not in _BASELINE_CACHE:
+    key = str(suite)
+    if key not in _BASELINE_CACHE:
         try:
             done = subprocess.run(["bash", str(suite)], capture_output=True,
                                   text=True, timeout=180)
             # Un timeout en el baseline no decide: la suite se descarta,
             # igual que en `any_suite_red` un timeout no cuenta como rojo.
-            _BASELINE_CACHE[clave] = done.returncode == 0
+            _BASELINE_CACHE[key] = done.returncode == 0
         except subprocess.TimeoutExpired:
-            _BASELINE_CACHE[clave] = False
-    return _BASELINE_CACHE[clave]
+            _BASELINE_CACHE[key] = False
+    return _BASELINE_CACHE[key]
 
 
 def any_suite_red(suites) -> bool:
@@ -421,6 +596,13 @@ def judge(path, fn_name, value, suites, backup_dir) -> str:
         ledger_close(path, fn_name)
 
 
+#: El codigo con que un barrido TRUNCADO declara su corte. No es 0 ni 1: un
+#: barrido que no recorrio su universo no sostiene ni un verde ni un rojo, y
+#: publicar cualquiera de los dos seria el sub-patron D con el propio barrido
+#: como sujeto. La forma la fija `bounded_scan.py`, que ya corta con 3.
+EXIT_TRUNCATED = 3
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -430,6 +612,12 @@ def main() -> int:
                         help="medir sólo las funciones de este archivo")
     parser.add_argument("--verificar", action="store_true",
                         help="no mutar: sólo reportar mutantes vivos en el árbol")
+    parser.add_argument("--limit", type=int, default=0, metavar="N",
+                        help="juzga como maximo N candidatos y declara su corte "
+                             "(0 = sin tope)")
+    parser.add_argument("--budget", type=float, default=0.0, metavar="SEGUNDOS",
+                        help="corta al agotar este presupuesto de reloj de pared "
+                             "(0 = sin tope)")
     args = parser.parse_args()
 
     if args.verificar:
@@ -439,53 +627,107 @@ def main() -> int:
     if args.solo:
         found = [c for c in found if c[0].name == args.solo]
 
-    sin_discriminar, sin_cobertura, sin_suite, red_baseline = [], [], [], []
-    medidos = 0
+    undiscriminated, uncovered, without_suite, red_baseline = [], [], [], []
+    measured = 0
+    judged = 0
+    skipped = 0
+    truncated = ""
+    cursor = judged_index()
+    deadline = time.monotonic() + args.budget if args.budget > 0 else None
     backup_dir = pathlib.Path(tempfile.mkdtemp(prefix="mutante-"))
     try:
         for path, fn_name, lineno, value, sites in found:
+            # LA COTA SE COMPRUEBA AQUI, ENTRE CANDIDATOS. Nunca a mitad de
+            # `judge()`: ahi el mutante ya esta escrito en el disco, y cortar
+            # dejaria exactamente el huerfano que esta cota existe para evitar
+            # (H-THYROX-33 — dos mutantes vivos el mismo dia, uno de ellos
+            # `reach.py::env_file_path` devolviendo None incondicional).
+            if args.limit and judged >= args.limit:
+                truncated = "cota"
+                break
+            if deadline is not None and time.monotonic() >= deadline:
+                truncated = "presupuesto"
+                break
+
             suites = suites_naming(path)
-            fila = (path.name, fn_name, lineno, value, sites,
-                    [s.name for s in suites])
+            row = (path.name, fn_name, lineno, value, sites,
+                   [s.name for s in suites])
             if not suites:
-                sin_suite.append(fila)
+                without_suite.append(row)
                 continue
-            veredicto = judge(path, fn_name, value, suites, backup_dir)
-            if veredicto == "red-baseline":
-                red_baseline.append(fila)
+
+            # El CURSOR: un candidato cuya huella no cambio ya se juzgo, y
+            # re-juzgarlo haria que toda ejecucion acotada volviera a empezar
+            # por el principio. La huella cubre el sujeto Y sus suites: el
+            # veredicto depende de las dos.
+            mark = fingerprint(path, suites)
+            # `--solo` es una peticion EXPLICITA de medir ESE archivo, asi que el
+            # cursor no la anula: saltarla en silencio porque una tanda anterior
+            # ya la juzgo convertiria al gate en un mentiroso justo cuando se le
+            # pregunta por algo concreto. Medido al introducir el cursor: el
+            # control negativo del caso 6 paso de «3 BASELINE ROJO» a «0» en su
+            # segunda corrida, sin que nada en su salida lo delatara.
+            if not args.solo and cursor.get((str(path), fn_name, value)) == mark:
+                skipped += 1
                 continue
-            medidos += 1
-            if veredicto == "sin-discriminar":
-                sin_discriminar.append(fila)
-            elif veredicto == "sin-cobertura":
-                sin_cobertura.append(fila)
+
+            verdict = judge(path, fn_name, value, suites, backup_dir)
+            judged += 1
+            # El veredicto se asienta DESPUES de que `judge` devuelva: el
+            # archivo ya esta restaurado, asi que el cursor nunca salta un
+            # candidato cuyo juicio se interrumpio.
+            ledger_verdict(path, fn_name, value, mark, verdict)
+            if verdict == "red-baseline":
+                red_baseline.append(row)
+                continue
+            measured += 1
+            if verdict == "sin-discriminar":
+                undiscriminated.append(row)
+            elif verdict == "sin-cobertura":
+                uncovered.append(row)
     finally:
         shutil.rmtree(backup_dir, ignore_errors=True)
 
-    print(f"check-suite-discrimina: {len(sin_discriminar)} sin discriminar, "
-          f"{len(sin_cobertura) + len(sin_suite)} sin cobertura, "
+    print(f"check-suite-discrimina: {len(undiscriminated)} sin discriminar, "
+          f"{len(uncovered) + len(without_suite)} sin cobertura, "
           f"{len(red_baseline)} con baseline rojo")
-    for nombre, fn_name, lineno, value, sites, suites in sin_discriminar:
-        print(f"  SIN DISCRIMINAR  {nombre}:{lineno} {fn_name}() -> {value} "
+    for name, fn_name, lineno, value, sites, suites in undiscriminated:
+        print(f"  SIN DISCRIMINAR  {name}:{lineno} {fn_name}() -> {value} "
               f"({sites} retornos); corre bajo {', '.join(suites)} y sigue en verde")
-    for nombre, fn_name, lineno, value, sites, suites in sin_cobertura:
-        print(f"  SIN COBERTURA    {nombre}:{lineno} {fn_name}(); "
+    for name, fn_name, lineno, value, sites, suites in uncovered:
+        print(f"  SIN COBERTURA    {name}:{lineno} {fn_name}(); "
               f"{', '.join(suites)} la nombra pero no la ejecuta")
-    for nombre, fn_name, lineno, value, sites, suites in sin_suite:
-        print(f"  SIN SUITE        {nombre}:{lineno} {fn_name}()")
-    for nombre, fn_name, lineno, value, sites, suites in red_baseline:
-        print(f"  BASELINE ROJO    {nombre}:{lineno} {fn_name}(); "
+    for name, fn_name, lineno, value, sites, suites in without_suite:
+        print(f"  SIN SUITE        {name}:{lineno} {fn_name}()")
+    for name, fn_name, lineno, value, sites, suites in red_baseline:
+        print(f"  BASELINE ROJO    {name}:{lineno} {fn_name}(); "
               f"{', '.join(suites)} ya sale roja SIN mutacion")
     print(f"  (alcance medido: {files} archivos .py, {functions} funciones, "
-          f"{len(found)} con literal ambiguo, {medidos} mutada(s) dos veces)")
+          f"{len(found)} con literal ambiguo, {measured} mutada(s) dos veces"
+          + (f", {skipped} ya juzgada(s) sin cambio" if skipped else "") + ")")
 
     # El instrumento se mide a sí mismo antes de devolver su veredicto: hasta
     # hoy nada comprobaba que el árbol quedara limpio, así que un mutante
     # sobreviviente salía con exit 0 y con la suite en verde.
-    vivos = report_survivors()
-    if vivos:
+    alive = report_survivors()
+    if alive:
+        # Un mutante vivo pesa MAS que un corte: el arbol esta sucio y hay que
+        # restaurarlo antes que nada. Por eso 1 gana a EXIT_TRUNCATED.
         return 1
-    return 1 if (args.strict and sin_discriminar) else 0
+    if truncated:
+        # El denominador es el universo ENTERO, no el tramo: sin el, «juzgadas
+        # 1» no distingue «quedan dos» de «era todo».
+        pending = len(found) - judged - skipped - len(without_suite)
+        if truncated == "cota":
+            print(f"  cota alcanzada: {judged} de {len(found)} juzgada(s) en este "
+                  f"tramo; quedan {pending} sin medir. El barrido NO es completo: "
+                  f"vuelve a invocarlo para continuar donde quedo.")
+        else:
+            print(f"  presupuesto agotado tras {args.budget:g} s: {judged} de "
+                  f"{len(found)} juzgada(s) en este tramo; quedan {pending} sin "
+                  f"medir. El barrido NO es completo.")
+        return EXIT_TRUNCATED
+    return 1 if (args.strict and undiscriminated) else 0
 
 
 if __name__ == "__main__":

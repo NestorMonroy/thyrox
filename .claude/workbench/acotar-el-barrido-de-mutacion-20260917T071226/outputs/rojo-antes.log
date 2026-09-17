@@ -1,0 +1,73 @@
+== 1. sintaxis ==
+  ok    check_suite_discrimina.py parsea
+== 2. CONTROL POSITIVO del detector — _verdict, la funcion de H-DOCS-224 ==
+  ok    _verdict: el literal sale de 3 sitios de retorno
+== 3. la mutacion va DESPUES del docstring, y el archivo sigue parseando ==
+  ok    la mutacion no pisa el docstring y el archivo parsea
+== 4. suites_naming es cota SUPERIOR: nombrar no es ejecutar ==
+  ok    una suite que solo MENCIONA el archivo entra en la cota superior
+== 5. el juez NO reporta lo que ya se cerro (register_agent_session) ==
+  ok    register_agent_session: 0 sin discriminar
+== 6. CONTROL NEGATIVO — el juez SI reporta un positivo real del repo ==
+  ok    classify_agents se reporta BASELINE ROJO (el juez puede fallar)
+  ok    el titular concuerda con las filas que imprime
+== 7. el barrido no deja mutantes: el arbol queda como estaba ==
+  ok    el barrido no cambia el estado del arbol
+  ok    ningun MUTANTE insertado sobrevive al barrido
+== 8. CONTROL ANULADO — se simula el proceso muerto de H-DOCS-307 ==
+  ok    un mutante vivo hace fallar a --verificar
+  ok    y lo nombra VIVO, con su fecha de insercion
+== 9. el barrido de la marca ve lo que el ledger no anoto ==
+  ok    sin entrada en el ledger, el barrido lo sigue viendo
+  ok    y declara que su anotacion falta
+== 10. una entrada sobre archivo limpio es residual, no un mutante vivo ==
+  ok    una entrada huerfana no hace fallar el gate
+  ok    y se reporta como residual
+== 11. la marca INSERTADA no es la DEFINICION del marcador ==
+  ok    declarar el marcador no cuenta como mutante
+== 12. la entrada de un archivo AUSENTE se poda; la de uno limpio no ==
+  ok    queda exactamente la entrada del archivo presente
+  ok    y la que sobrevive es la del archivo limpio
+== 14. CONTROL — una suite YA ROJA en arbol limpio no es control ==
+  ok    una suite ya roja se reporta BASELINE ROJO, no ok
+  ok    y el titular la cuenta aparte
+== 13. el arbol real esta limpio y publica su denominador ==
+  ok    --verificar sobre el arbol real sale 0
+  ok    el titular publica su alcance medido
+== 15. --limit acota los candidatos por ejecucion ==
+  FALLO con --limit 1 se juzga exactamente uno
+        esperado=[1] obtenido=[]
+  FALLO el corte se declara con exit 3, no con un verde
+        esperado=[3] obtenido=[2]
+  FALLO y el titular nombra la cota con su denominador
+        esperado=[1] obtenido=[0]
+  ok    al cortar no queda ningun mutante en vuelo
+== 16. la segunda ejecucion AVANZA: no re-juzga lo ya juzgado ==
+  FALLO la segunda tanda juzga OTRO candidato
+        esperado=[distinto] obtenido=[igual:/]
+  FALLO y el titular sigue declarando el universo entero
+        esperado=[1] obtenido=[0]
+== 17. ANULACION de la cota — sin tope, los tres en una tanda ==
+  ok    sin --limit se juzgan los tres
+  ok    y no se declara ningun corte
+  ok    el exit vuelve a ser el del veredicto, no el del corte
+== 18. el cursor CADUCA cuando el archivo cambia ==
+tests/verify/test-suite-discrimina.sh: line 393: /tmp/tmp.8aIwbFb5Rq/cota/src/: Is a directory
+  FALLO el archivo editado vuelve a entrar al barrido
+        esperado=[1] obtenido=[3]
+== 19. --budget corta por reloj, y tampoco deja nada en vuelo ==
+  FALLO el presupuesto agotado declara su corte con exit 3
+        esperado=[3] obtenido=[2]
+  FALLO y nombra el reloj, no el conteo
+        esperado=[1] obtenido=[0]
+  ok    tras el corte por reloj no queda nada en vuelo
+== 20. el ledger es JSONL: se AÑADE, no se reescribe ==
+  ok    el ledger de una tanda existe
+  FALLO cada linea es un objeto JSON
+        esperado=[1] obtenido=[0]
+  FALLO con mas de un registro, el archivo ENTERO no es JSON
+        esperado=[1] obtenido=[0]
+  ok    un ledger heredado en .json se sigue leyendo
+
+29 ok, 10 fallos
+EXIT=1

@@ -136,7 +136,16 @@ venv/
 # Estado de sesión del gate de mutación: qué mutación está EN VUELO ahora.
 # No es registro del proyecto — su contenido sólo vale dentro de la ejecución
 # que lo escribió, y versionarlo ensucia el árbol en cada corrida.
+#
+# Las DOS formas, y no es redundancia: el ledger se emite hoy como `.jsonl`
+# (un registro por línea, que sobrevive a la muerte del proceso porque un
+# append no puede pisar lo ya escrito), y el lector sigue aceptando el `.json`
+# heredado de forma permanente — un ledger escrito por una sesión anterior no
+# se convierte al leerse. Declarar sólo la forma nueva dejaría al heredado
+# fuera del ignore; declarar sólo la vieja fue el defecto que esta línea
+# corrige.
 agent-results/mutantes-en-vuelo.json
+agent-results/mutantes-en-vuelo.jsonl
 
 # El ledger de trabajos en segundo plano es POR SESIÓN
 # (.env.example: THYROX_JOBS_DIR/THYROX_JOBS_ARCHIVE_DIR) — dos sesiones que
