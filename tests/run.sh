@@ -202,7 +202,7 @@ if [ "$only" != "--ts-only" ] && [ "$only" != "--python-only" ]; then
   # `check_script_naming.py` y `tests/verify/test-pre-commit-docs.sh` usan
   # cuando falta su sujeto (el lexico, el clon hermano de kaupamex-docs).
   # Colapsarlo con el 1 hace que el corredor publique «la suite fallo» donde
-  # lo cierto es «no habia con que medir», que es el sub-paton D aplicado a
+  # lo cierto es «no habia con que medir», que es el sub-patron D aplicado a
   # este mismo archivo. Se cuentan aparte y NO suman a `failures`.
   while IFS= read -r suite; do
     count=$((count + 1))
