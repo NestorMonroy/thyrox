@@ -127,6 +127,29 @@ comprobar "sin --tasks-dir resuelve el tablero y no revienta" "0" "$RC"
 comprobar "y publica su alcance medido" \
     "si" "$(grep -qE 'alcance medido: [0-9]+ ficha' <<<"$SAL" && echo si || echo no)"
 
+echo "== el baseline es JSONL: un registro por linea"
+#
+# El control que discrimina NO es «el archivo parsea»: `json.load` acepta un
+# JSONL de una sola linea, asi que un lector de documento probado contra un
+# baseline de n=1 pasaria sin ser nunca un lector de LINEAS. Es el sub-patron D
+# con esta propia conversion como sujeto.
+#
+# Por eso el fixture tiene DOS fichas —el baseline sale con dos lineas— y la
+# asercion es que `json.load` sobre el archivo entero FALLE. Si pasara, el
+# archivo no seria JSONL.
+LINEAS=$(wc -l < "$TMP/base.json")
+comprobar "el baseline tiene una linea por ficha (2)" "2" "$LINEAS"
+python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$TMP/base.json" 2>/dev/null
+comprobar "json.load sobre el archivo entero FALLA: no es un documento unico" \
+    "si" "$([[ $? -ne 0 ]] && echo si || echo no)"
+comprobar "cada linea parsea por separado" "si" \
+    "$(python3 -c "
+import json, sys
+for linea in open(sys.argv[1]):
+    if linea.strip():
+        json.loads(linea)
+print('si')" "$TMP/base.json" 2>/dev/null || echo no)"
+
 echo "== guard: sin el directorio de fichas NO se emite cifra"
 "$SUT" --tasks-dir "$TMP/no-existe" --baseline "$TMP/base.json" >/dev/null 2>&1
 comprobar "exit 2 y sin conteo" "2" "$?"
