@@ -44,13 +44,14 @@ Ejecución::
 import glob
 import io
 import os
+import pathlib
 import sys
 import unittest
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 
 from docutils.core import publish_doctree                    # noqa: E402
-from unwrap_rst import unwrap                                # noqa: E402
+from docs.unwrap_rst import unwrap                                # noqa: E402
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

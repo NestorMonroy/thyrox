@@ -143,7 +143,7 @@ import sys
 #: Las tres carpetas que este generador cubre. Ampliarla es una decisión
 #: nueva, no un descuido — cada carpeta añadida necesita su propia medición
 #: de colisiones de nombre corto.
-SOURCE_DIRS: tuple[str, ...] = ("src/session", "src/verify", "src/agents")
+SOURCE_DIRS: tuple[str, ...] = ("src/session", "src/verify", "src/agents", "src/docs")
 
 #: La guarda que separa un módulo CLI de uno de biblioteca. Tolerante a
 #: comilla simple o doble — el defecto medido de la primera versión.
