@@ -1,0 +1,6 @@
+    703 api
+      9 db
+    360 docs
+     18 server
+    347 thyrox
+      3 ui

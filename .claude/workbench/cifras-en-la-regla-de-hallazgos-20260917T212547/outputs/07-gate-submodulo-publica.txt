@@ -1,0 +1,498 @@
+check-hallazgo-submodulo: 165 hallazgo(s) fuera de su submódulo, sin baseline
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1014-metadata-standards-cita-una-tarea-cerrada-como-pendiente.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1015-los-tests-del-harness-citan-la-tarea-propia-no-la-fuente-del-porte.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1016-el-triaje-de-destinos-mezclo-tres-veredictos-bajo-un-encabezado.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1017-el-harness-porto-fze-y-no-fte-su-llamador.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1018-el-instrumento-de-fidelidad-llamaba-fabricadas-a-seis-cifras-reales.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1019-doce-citas-al-conversor-en-su-ruta-anterior-a-la-mudanza.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1020-el-censo-de-guiones-quedo-ciego-a-las-subcarpetas-de-la-mudanza.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1023-git-flow-no-tiene-clausula-feature-a-feature.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1025-el-estado-compartido-viaja-como-binario-cuyo-merge-driver-no-esta-instalado.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1026-el-ordinal-de-tarea-no-es-la-colision-la-edicion-divergente-del-store-binario-si.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1027-dos-ramas-vivas-acunaron-el-mismo-h-docs-1025.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1028-la-fuente-del-ledger-de-coordinacion-era-git-binaria-por-un-nul.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1029-la-compactacion-preserva-el-texto-de-una-directiva-no-su-cumplimiento.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1031-taskupdate-omite-cinco-campos-y-el-tablero-no-es-el-plan.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1036-el-metodo-de-escritura-fabrica-un-timestamp-en-disco.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1037-olvidar-suelta-el-ledger-y-deja-el-proceso-huerfano.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1038-el-gate-de-idioma-solo-ve-la-morfologia-que-conoce.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1039-un-cambio-masivo-sin-banco-de-trabajo-no-deja-instrumento.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1040-una-asercion-la-protegia-un-guardia-distinto-del-que-nombra.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1041-dos-alias-un-arbol-la-triangulacion-contaba-dos-fuentes-como-tres.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1042-refrescar-tablero-reasigno-92-ids-de-cita-a-otro-sujeto.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1043-el-guard-publicaba-un-termino-que-no-leia.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1044-el-marcador-quedo-en-el-guion-y-el-defecto-en-el-hook.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1045-el-gate-de-deprecacion-mide-un-clon-y-su-cero-se-lee-del-monorepo.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1046-descarte-un-mecanismo-porque-su-nombre-sonaba-a-otra-cosa.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1047-publique-una-cifra-estimada-con-la-forma-de-una-medida.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1048-dos-instrumentos-que-publicaron-sin-poder-medir.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1049-dos-referentes-citaron-una-tarea-por-alcance-que-no-tenia.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1054-veintiuno-de-veintisiete-hooks-inertes.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1055-tres-guiones-homonimos-divergentes.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1056-linter-que-no-halla-su-arbol-y-sale-verde.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1057-linter-prohibe-el-model-que-la-regla-exige.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1058-guard-de-ref-que-no-puede-decir-que-no.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1059-el-gate-declarado-cableado-no-se-alcanzaba.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1060-878-ordinales-con-cita-de-sujeto-muerto.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1061-pushe-al-mismo-repo-y-el-amend-del-agente-reescribio-mi-commit.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1062-reporte-un-hueco-como-liveness-sin-medir-la-distribucion.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1063-cite-el-titular-del-harness-y-luego-usd-teniendo-equiv-cost.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1064-reconciliar-agentes-sin-vigilar-no-puede-decir-vivo.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1065-el-agente-congelo-como-heredada-la-deuda-de-hoy.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1066-la-mitad-antes-del-control-tdd-no-sobrevivio-a-la-compactacion.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1067-cite-el-ordinal-del-board-de-sesion-en-seis-documentos-versionados.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1068-el-gate-medio-un-tercio-del-corpus-porque-su-awk-reventaba.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1069-el-contrato-de-compatibilidad-tiene-dos-mitades.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1241-dos-gates-muertos-y-un-control-retirado-por-mala-clasificacion.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1242-tres-raices-de-referencia-no-resolvian-y-el-control-lo-avalaba.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1243-declared-wiring-se-escribio-sin-medir-la-capa-de-stub.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1244-la-clave-de-cache-se-invalida-por-valor-no-por-escritura.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1245-el-hook-cableado-dispara-medido-por-conducta.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1246-la-procedencia-del-tipo-se-pisa-sin-su-arrastre.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1247-el-cuerpo-del-hook-compone-el-destino-que-el-cableado-delega.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1248-el-control-de-alcanzabilidad-no-veia-el-objetivo-relativo.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1249-dos-escritores-del-cableado-con-topologias-contradictorias.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1250-la-regla-de-retencion-citaba-la-ruta-pre-mudanza-del-store.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1251-la-raiz-medida-no-viajaba-y-el-banco-se-congelo-como-deuda.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1252-la-atribucion-publicada-mezcla-una-medicion-con-un-contrafactual.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1253-la-regla-nombraba-la-clave-de-dict-y-el-recorrido-no-la-veia.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1254-el-eje-de-manifiesto-nacio-con-cuatro-defectos-que-su-propio-control-atrapo.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1255-el-eje-del-falso-amigo-solo-cubre-dos-de-once-candidatos.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1256-se-despacho-un-agente-donde-el-sustrato-ya-tenia-el-proceso.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1259-la-senal-iba-al-lider-y-el-grupo-sobrevivia.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1260-el-reconciliador-mide-el-board-y-concluye-sobre-el-store.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1261-el-censo-conto-su-propia-salida-como-prosa.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1262-el-vocabulario-de-estado-se-valida-en-un-lado-y-se-escribe-en-el-otro.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1263-el-gate-de-capa-perdio-su-baseline-en-la-mudanza.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1264-el-baseline-se-congelo-con-el-gate-viendo-un-tercio.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1274-el-limite-de-uso-no-expone-medidor.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1000-el-registro-de-agentes-queda-fijo-al-arrancar-la-sesion.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1002-el-emisor-cubria-1-de-30-agentes.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1003-el-extractor-del-catalogo-invertia-los-booleanos-minificados.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1004-reconciliar-agentes-marcaba-atascados-a-seis-subagentes-que-escribian.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1005-registry-ts-decia-gana-el-primero-y-el-cliente-deja-ganar-al-ultimo.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1006-lint-agents-prohibia-model-y-el-esquema-sombra-la-declara.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1007-dos-reglas-describian-el-tool-agent-como-una-cola-y-rechaza.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1008-equiv-cost-pondera-con-los-cocientes-de-un-tier-y-fable-5-1-los-rompe.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1009-la-regla-listaba-claude-effort-como-entrada-y-es-una-salida-del-cliente.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1010-los-hooks-del-store-no-disparan-con-el-repo-como-directorio-adicional.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1011-la-reanudacion-headless-reescribe-una-quinta-parte-del-contexto-y-el-cambio-de-modelo-no-anade-perdida.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1012-el-cambio-de-modelo-se-aplica-en-el-siguiente-turno-y-activar-el-advisor-rompio-la-cache.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1013-la-clave-de-cache-no-se-comparte-ni-entre-hermanos-de-familia.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1024-el-store-se-llena-por-reconciliacion-no-por-el-hook-y-no-es-todas-las-tablas.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1030-la-lista-vacia-afirmaba-que-nada-bloqueaba-la-tarea.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1033-el-hook-escribe-fila-vacia-y-fable-5-1-se-perdio.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-161-atomicidad-ledger-esperar-trabajos.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-162-el-gate-de-ids-no-corre-en-el-punto-del-merge.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-163-guarda-de-estado-terminal-en-agent-sessions.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-164-tool-wrapping-y-cierre-de-sesion-en-tencentdb.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-165-fallos-de-subprocess-en-hooks-descartados-en-silencio.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-166-hook-stop-refresca-tablero-desactualizado.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-167-subagentstart-stop-no-disparan-en-esta-sesion.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-168-columnas-de-uso-en-agent-sessions.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-169-revision-del-sweep-offload-costo-real-vs-titular.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-170-cierre-recomendaciones-h-docs-169.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-171-reset-de-cache-en-la-tanda-fallida.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-172-firma-de-estados-en-el-tablero-de-tareas.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-173-backfill-de-agent-sessions-y-findings-history.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-174-revision-completa-de-sqlite-ts-que-porta-y-que-no.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-175-el-id-de-tarea-no-es-unico-entre-contenedores.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-176-develop-de-docs-arranca-en-historia-huerfana.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-177-el-costo-de-un-subagente-lo-domina-lo-que-relee.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-178-el-tipo-del-subagente-nunca-se-leyo-del-sidecar.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-179-los-destilados-de-tencentdb-midieron-una-raiz-de-cinco.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-180-las-tareas-no-se-guardaban-en-ningun-sitio-durable.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-181-el-89-por-ciento-de-fallo-era-la-forma-del-canal-workflow.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-183-la-firma-de-disparo-era-ciega-al-texto-de-la-tarea.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-184-un-ausente-que-era-un-portado-con-otro-nombre.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-185-la-regla-de-atributos-de-clase-omitia-uno-por-encima-de-su-propio-umbral.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-186-el-libro-de-la-edicion-19-describe-un-mecanismo-que-19-ya-retiro.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-187-pase-numeros-de-linea-como-ids-de-tarea-en-el-prompt-de-un-subagente.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-188-dos-tareas-que-su-propia-evidencia-ya-contradice.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-189-tres-registros-describen-el-mismo-hueco-sin-citarse.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-190-el-cierre-del-subagente-no-podia-dar-de-alta-ni-leia-su-transcript.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-191-las-tres-firmas-de-estado-usaban-separadores-distintos.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-193-el-orquestador-barrio-el-hallazgo-de-otro-agente.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-194-la-lista-de-escribibles-fabrico-el-bloqueo.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-195-el-registro-solo-se-cerraba-al-arrancar-la-sesion.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-198-los-hooks-de-registro-no-disparan-en-la-sesion-multi-repo.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-208-el-store-no-registra-la-muerte-por-limite-de-sesion.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-209-el-reconciliador-cerro-a-cuatro-agentes-vivos.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-210-el-store-guardaba-el-costo-y-no-la-actividad.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-211-env-mide-asignacion-no-existencia.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-212-el-payload-trae-el-discriminador-que-el-hook-declaraba-ausente.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-217-el-registro-de-modelo-declara-el-coste-del-effort.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-218-el-precio-esta-declarado-lo-que-falta-es-el-modelo.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-219-el-modelo-se-toma-de-un-sidecar-que-falta-en-un-tercio.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-220-el-alias-del-modelo-no-determina-la-version.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-221-el-reconciliador-exigia-sidecar-para-reparar.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-222-el-transcript-declara-trece-senales-que-el-store-no-guarda.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-224-el-guard-de-frescura-enmascaraba-la-mitad-de-su-suite.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-225-el-corpus-de-hooks-responde-y-nada-lo-pone-delante.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-241-tres-funciones-nacidas-ayer-corrian-bajo-cuatro-suites-sin-que-ninguna-las-distinguiera.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-277-el-reconciliador-retoca-113-filas-por-ejecucion.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-279-el-snapshot-de-tareas-existia-y-nadie-lo-invocaba.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-280-el-gate-de-vocabulario-no-mide-los-guiones.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-281-la-reserva-enmascara-el-fallo-del-camino-principal.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-282-el-gate-del-tablero-nunca-disparo.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-283-el-enlace-simbolico-no-sostiene-la-sincronizacion.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-284-el-gate-de-vocabulario-marcaba-el-plural-de-una-palabra-que-el-atestigua.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-285-el-mecanismo-sondeaba-en-los-bordes-donde-la-plataforma-empuja.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-286-el-comando-de-hook-emitido-moria-en-el-parseo-de-argumentos.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-287-el-mecanismo-se-borraba-a-si-mismo-en-su-primer-disparo.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-288-dos-bloques-con-el-mismo-nombre-no-son-el-mismo-objeto.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-289-un-instante-del-turno-se-leyo-como-defecto-permanente.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-292-el-gate-de-coherencia-resolvia-su-raiz-por-el-cwd.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-293-un-clon-nuevo-no-recibe-ningun-hook-de-sesion.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-294-el-veredicto-descarto-el-archivo-no-el-directorio.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-295-dec-12-nombro-un-bloque-que-son-dos-objetos.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-409-el-store-guardaba-la-tarea-y-no-habia-como-consultarla.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-427-el-hook-escribe-la-fila-sin-tokens-y-el-costo-se-pierde.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-446-dos-columnas-que-el-esquema-declara-y-ningun-hook-escribe.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-475-la-bandera-nueva-descarto-a-su-hermana.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-476-el-copiador-existia-y-nadie-lo-nombraba.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-481-el-tipo-llega-vacio-desde-la-fuente.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-499-el-cliente-dejo-de-persistir-el-transcript.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-500-el-effort-se-declara-en-el-frontmatter-del-agente.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-501-el-agente-ya-es-ejecutable-le-faltaba-una-sola-llamada.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-502-el-sdk-no-es-necesario-la-via-json-es-un-flag-de-cli.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-503-el-contrato-salio-de-un-corpus-que-ya-no-existe.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-504-el-gate-se-eximia-de-su-propia-superficie.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-505-node-modules-entro-porque-docs-no-tenia-la-regla.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-506-el-esqueleto-de-porte-emite-la-quinta-parte-y-su-cabecera-yerra-en-el-71-por-ciento.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-507-el-resolvedor-de-referencia-miraba-una-de-las-dos-raices-de-community.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-509-una-nota-de-mecanismo-llevaba-forma-de-banner-y-el-caso-4-la-contaba-como-gate.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-510-el-grafo-bipartito-no-podia-tener-ciclos-y-el-pagerank-no-separaba.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-511-el-tablero-de-la-sesion-no-es-el-universo-de-tareas.rst
+      ID=docs  ·  :submodulo:=docs  ·  carpeta=pm/thyrox
+      → debe vivir en una iniciativa de pm/docs/iniciativas/
+  (alcance medido: 1440 hallazgo(s); 123 en baseline heredado)
+EXIT=0

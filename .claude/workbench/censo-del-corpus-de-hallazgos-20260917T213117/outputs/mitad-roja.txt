@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/hallazgo/test_census_findings.py", line 29, in <module>
+    from hallazgo import census_findings  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: cannot import name 'census_findings' from 'hallazgo' (/home/user/thyrox/src/hallazgo/__init__.py)
+EXIT=1

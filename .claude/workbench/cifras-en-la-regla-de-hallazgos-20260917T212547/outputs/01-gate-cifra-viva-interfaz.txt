@@ -1,0 +1,16 @@
+usage: check_cifra_de_artefacto_vivo.py [-h] [--strict] [--quiet]
+                                        [--no-baseline] [--write-baseline]
+                                        [raiz]
+
+Una cifra que es propiedad de un artefacto vivo no se transcribe a prosa.
+
+positional arguments:
+  raiz
+
+options:
+  -h, --help        show this help message and exit
+  --strict          exit 1 si hay nuevos
+  --quiet           sólo el conteo
+  --no-baseline     ignora el baseline — mide el universo entero
+  --write-baseline
+EXIT=0
