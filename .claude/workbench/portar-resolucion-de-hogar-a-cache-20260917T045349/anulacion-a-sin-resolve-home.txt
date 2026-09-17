@@ -1,0 +1,7 @@
+FAIL: test_a_relative_segment_composes_one_home_per_clone (__main__.CacheHomeResolution.test_a_relative_segment_composes_one_home_per_clone)
+FAIL: test_the_per_clone_key_also_resolves (__main__.CacheHomeResolution.test_the_per_clone_key_also_resolves)
+FAIL: test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='db')
+FAIL: test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='server')
+FAIL: test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='ui')
+Ran 9 tests in 0.046s
+FAILED (failures=5)

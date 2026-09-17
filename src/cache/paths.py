@@ -59,16 +59,56 @@ def cache_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     """
     anchor = pathlib.Path(start) if start else pathlib.Path.cwd()
 
+    # Import diferido, igual que en `workbench.workbench_dir` y por la misma
+    # razon: `paths.reach` importa de vuelta y al tope del modulo seria ciclo.
+    from paths.reach import (  # noqa: PLC0415
+        ConsumerUnknownError, consumer_root, resolve_home, root as repo_root,
+        thyrox_root,
+    )
+    from paths.declarations import record_fallback  # noqa: PLC0415
+
+    # La familia POR CLON gana sobre la global: la declaracion mas especifica
+    # manda, y es lo unico que impide que una variable exportada para un arbol
+    # se aplique a otro.
     repo = repo_of(anchor)
     if repo:
-        declared = env_value(cache_home_name(repo), anchor)
-        if declared:
-            return pathlib.Path(declared)
+        per_clone = env_value(cache_home_name(repo), anchor)
+        if per_clone:
+            return resolve_home(per_clone, repo_root(repo))
 
     declared = env_value(CACHE_DIR_VAR, anchor)
     if declared:
-        return pathlib.Path(declared)
+        # Ancla: la raiz del consumidor. Si no se puede saber cual es, una
+        # relativa no se puede componer — se devuelve cruda y el llamador ve
+        # la ruta que declaro, en vez de una compuesta contra un arbol que
+        # este modulo eligio por su cuenta.
+        try:
+            return resolve_home(declared, consumer_root(start=anchor))
+        except ConsumerUnknownError:
+            return pathlib.Path(declared)
 
-    # El compuesto: la zona de estado del arbol mas el segmento. No se inventa
-    # un arbol — se compone sobre el ancla que el llamador ya trajo.
-    return anchor / state_dir(anchor) / CACHE_DIR_DEFAULT
+    # El compuesto: la raiz del CONSUMIDOR mas la zona de estado mas el
+    # segmento. Antes se componia sobre el ancla que el llamador trajo, y eso
+    # es el defecto home-by-cwd de #284/#286: invocado desde un subdirectorio
+    # hondo el indice aterrizaba a media rama, un hogar distinto por cada
+    # cwd. Medido antes de cerrarlo: partiendo de
+    # `kaupamex-docs/source/gestion` daba `…/source/gestion/.claude/cache`.
+    try:
+        raiz = consumer_root(start=anchor)
+    except ConsumerUnknownError:
+        # El PROVEEDOR. `consumer_root` rehusa aqui —thyrox tambien lleva
+        # `.claude/`, asi que el marcador no lo distingue— y esta familia NO
+        # puede rehusar: su docstring lo declara, un indice es material
+        # reconstruible y un arbol sin declaracion no queda sin mecanismo. Se
+        # ancla en la raiz del proveedor, que es una DECISION explicita; lo
+        # prohibido era heredarla del cwd, no tener default.
+        raiz = thyrox_root()
+
+    home = raiz / state_dir(anchor) / CACHE_DIR_DEFAULT
+    record_fallback(
+        CACHE_DIR_VAR, home,
+        f"nadie lo declaro; sale de la raiz del arbol + la zona de estado + "
+        f"{CACHE_DIR_DEFAULT}. Declaralo en el archivo que nombra "
+        f"{CACHE_ENV_FILE_VAR} para ponerlo bajo tu control.",
+    )
+    return home
