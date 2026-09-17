@@ -67,8 +67,8 @@ El docstring del módulo citaba **cinco veces** la invocación
 la mudanza a thyrox — la misma premisa rancia que el baseline, en el mismo
 archivo. Repuntadas a `bash bin/census_scripts`, que es la forma que
 `trabajo-en-segundo-plano.md` fija: *«se invoca por el nombre corto, no por la
-ruta al fuente»*. Se paga al tocar el archivo, no en un barrido (#41 sigue
-abierta para el resto del árbol).
+ruta al fuente»*. Se paga al tocar el archivo, no en un barrido —
+**TASK-API-0023** sigue abierta para el resto del árbol.
 
 *Métrica:* existencia y entradas no-comentario de los dos candidatos, contra
 el hogar real de los catorce baselines; más el conteo que el gate publica.
