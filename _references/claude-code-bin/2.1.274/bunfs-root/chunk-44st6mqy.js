@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.274
+import{S}from"/$bunfs/root/chunk-6vt364z5.js";import{Y0}from"/$bunfs/root/chunk-57m0pjva.js";import{Ee}from"/$bunfs/root/chunk-964y2ne1.js";import{s,n,Rp,l6,Tl}from"/$bunfs/root/chunk-x41kazpn.js";import{e,r}from"/$bunfs/root/chunk-kd9k0apc.js";import{Kt,Me,fn,T,m,L}from"/$bunfs/root/chunk-s59wj17y.js";L();function e$({children:t,lock:o="always",restartKey:i}){let[p,{isVisible:u},O]=l6(),{rows:l,columns:d}=Ee(),h=T(null),[a,E]=m({minHeight:0,rows:l,columns:d,restartKey:i}),B=o==="always"&&(a.rows!==l||a.columns!==d||a.restartKey!==i),D=(o==="always"||!u)&&!B,R=T(0),M=Math.max(a.minHeight,R.current),V=Me(Y0)!==null;return fn(()=>{if(!h.current)return;let{height:k}=Tl(h.current),f=Math.min(k,l);if(B){E({minHeight:f,rows:l,columns:d,restartKey:i});return}if(k>M){if(V&&o==="offscreen"&&!D&&f>=a.minHeight&&O()){R.current=f;return}R.current=0,E((g)=>g.minHeight===f?g:{...g,minHeight:f})}}),e(s,{minHeight:D?M:void 0,ref:p,children:e(s,{ref:h,flexDirection:"column",children:t})})}L();L();function xe(ee){let H=S(11),{children:x,height:w,screenReaderLabel:y}=ee;if(Me(c)){return x}const C=y===void 0;let N;if(H[0]!==y||H[1]!==C)N=e(Rp,{fromLeftEdge:!0,flexShrink:0,children:r(n,{"aria-hidden":C,"aria-label":y,dimColor:!0,children:["  ","\u23BF \xA0"]})}),H[0]=y,H[1]=C,H[2]=N;else N=H[2];let P;if(H[3]!==x)P=e(s,{flexShrink:1,flexGrow:1,children:x}),H[3]=x,H[4]=P;else P=H[4];let z;if(H[5]!==w||H[6]!==N||H[7]!==P)z=e(v,{children:r(s,{flexDirection:"row",height:w,overflowY:"hidden",children:[N,P]})}),H[5]=w,H[6]=N,H[7]=P,H[8]=z;else z=H[8];let b=z;if(w!==void 0){return b}let G;if(H[9]!==b)G=e(e$,{lock:"offscreen",children:b}),H[9]=b,H[10]=G;else G=H[10];return G}var c=Kt(!1);function kIe(){return Me(c)}function v(te){let re=S(2),{children:F}=te,Y;if(re[0]!==F)Y=e(c.Provider,{value:!0,children:F}),re[0]=F,re[1]=Y;else Y=re[1];return Y}
+export{e$,xe,kIe};

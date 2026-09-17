@@ -1,0 +1,14 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.274
+import{ne}from"/$bunfs/root/chunk-q77993h4.js";import{K}from"/$bunfs/root/chunk-48qhkc6m.js";var HMn=["anyOf","oneOf","allOf"],BQt=/^[a-zA-Z0-9_.-]{1,64}$/,d=["$defs","definitions","$schema","additionalProperties","description","title"];function mPt(n,r){let t=n.$ref;if(typeof t!=="string")return n;let e=/^#\/(\$defs|definitions)\/([^/]+)$/.exec(t);if(e===null)return n;let a=r[e[1]];if(!ne(a))return n;let c=a[e[2]];return ne(c)?c:n}function m(n){if(!ne(n))return null;let r=n.required;if(Array.isArray(r)&&r.length>0&&r.every((e)=>typeof e==="string"))return r.join(", ");let t=n.properties;if(ne(t)){let e=Object.keys(t);if(e.length>0)return e.join(", ")}return null}function pSr(n){if(!ne(n))return{outcome:"unchanged"};let r=HMn.filter((t)=>(t in n));if(r.length===0)return{outcome:"unchanged"};try{let t=Object.create(null),e=(o)=>{if(!ne(o))return;for(let[i,f]of Object.entries(o))if(BQt.test(i)&&!(i in t)&&ne(f))t[i]=f};e(n.properties);for(let o of r){let i=n[o];if(!Array.isArray(i))return{outcome:"drop",reason:`input schema has top-level ${o} that is not an array`};for(let f of i)if(ne(f))e(mPt(f,n).properties)}let a=[],c=(o)=>{if(!Array.isArray(o))return;for(let i of o)if(typeof i==="string"&&i in t&&!a.includes(i))a.push(i)};c(n.required);let u=n.allOf;if(Array.isArray(u)){for(let o of u)if(ne(o))c(mPt(o,n).required)}let l=r.includes("anyOf")||r.includes("oneOf"),s={type:"object",properties:t,required:a};for(let o of d)if(o in n)s[o]=n[o];let p=g(r,n,l);return{outcome:"normalized",schema:s,note:p,combinators:r}}catch{return{outcome:"drop",reason:`input schema uses top-level ${r.join("/")} and could not be normalized`}}}function g(n,r,t){if(!t)return"Input constraint: all listed parameters apply together (flattened from a JSON Schema allOf).";let e=n.includes("oneOf")?"oneOf":"anyOf",a=r[e],c=Array.isArray(a)?K(a.map((s)=>m(ne(s)?mPt(s,r):s)).filter((s)=>s!==null)):[],u=e==="oneOf"?"Provide parameters for exactly one of":"Provide parameters for at least one of";if(c.length===0)return`Input constraint: ${u} the documented parameter groups (flattened from a JSON Schema ${e}).`;let l=c.map((s)=>`(${s})`).join(" or ");return`Input constraint: ${u}: ${l}.`}function PHe(n,r){return r?`${n}
+
+${r}`:n}
+export{HMn,BQt,mPt,pSr,PHe};
