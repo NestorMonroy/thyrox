@@ -1,0 +1,35 @@
+test_stop_reason_provenance:
+
+== 1. el reparto separa el DATO del HUECO ==
+  ok    el que trae valor no cuenta como NULL
+  ok    leido por el extractor actual, el transcript declaro nulo -> DATO
+  ok    leido por un extractor anterior a la lectura -> irrecuperable
+  ok    nunca medido (usage_source='no_medido') -> tiene procedencia
+  ok    sin clasificar todavia (usage_source NULL)
+
+== 2. los cubos PARTICIONAN el universo ==
+  ok    el total es el universo
+  ok    los cubos suman el total
+
+== 3. el huerfano se reporta, NO se suma a los medidos ==
+  ok    con valor y sin procedencia -> huerfano
+  ok    y NO entra en con_valor
+  ok    y NO entra en sin_clasificar
+  ok    los cubos siguen sumando el total
+
+== 4. client_version discrimina, y su ausencia NO se confunde ==
+  ok    tres leidos por el extractor actual
+  ok    dos leidos antes de la lectura
+  ok    ninguno cae en no_medido
+
+== 5. un store vacio da ceros, no revienta ==
+  ok    total 0
+  ok    y los cubos suman 0
+
+== 6. el barrido NO reclama una fila cuyo stop_reason ya se leyo ==
+  ok    la fila sana no se reclama
+  ok    stop_reason NULL leido por el extractor actual NO se reclama
+  ok    la que nunca se leyo si se reclama
+
+resultado: 19 de 19 aserciones en verde
+exit=0

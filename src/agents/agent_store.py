@@ -642,9 +642,39 @@ _SESSION_USAGE_COLUMNS: dict[str, str] = {
     #: que coinciden; eso es el control cruzado que
     #: ``metrica-decide-la-conclusion.md`` pide, no una redundancia que sobre.
     #:
-    #: SI entra en ``_ids_incompletos``: su ``NULL`` es deuda, no ausencia
-    #: legitima. Todo turno cerro de alguna forma; que el transcript no lo
-    #: declare (42 de 277) es el instrumento callando, no el hecho faltando.
+    #: SU ``NULL`` NO ES UNA SOLA COSA — corregido al medirlo (TASK-THYROX-0104).
+    #: Esta nota afirmaba: "su ``NULL`` es deuda, no ausencia legitima; todo
+    #: turno cerro de alguna forma, asi que el transcript callando es el
+    #: instrumento y no el hecho". La primera mitad es falsa: hay transcripts
+    #: que declaran ``"stop_reason": null`` de forma explicita, y ahi el NULL
+    #: ES el dato. Verificado por conducta sobre el unico transcript de ese
+    #: cubo que sigue en disco (``client_version`` 2.1.268, un mensaje
+    #: ``assistant`` con la clave presente y valor nulo).
+    #:
+    #: La procedencia la declara ``usage_source``, NO ``outcome_source`` —
+    #: aquella se puebla en el mismo recorrido que este campo
+    #: (``register_session.py``), y ``outcome_source`` se empareja con
+    #: ``status`` en los tres sitios que la reclaman
+    #: (``reconcile_store.py``). Por eso NO hay una cuarta columna ``_source``.
+    #:
+    #: El reparto con su denominador lo publica ``censo-stop-reason``, no esta
+    #: prosa: es propiedad de un store que crece
+    #: (``calibration-verified-numbers.md``). Sus cubos, y su remedio opuesto:
+    #:
+    #: * ``usage_source='transcript'`` + valor -> el transcript lo declaro.
+    #: * ``usage_source='transcript'`` + NULL + ``client_version`` -> el NULL
+    #:   es el DATO. NO entra en ``_ids_incompletos``: reintentarla releeria
+    #:   para siempre un transcript que ya se leyo bien.
+    #: * ``usage_source='transcript'`` + NULL + sin ``client_version`` -> se
+    #:   leyo ANTES de que este campo se leyera. Terminal: su transcript ya no
+    #:   esta en disco, asi que nadie podra rellenarla.
+    #: * ``usage_source='no_medido'`` -> transcript irrecuperable, terminal.
+    #: * ``usage_source`` NULL -> pendiente: nadie ha pasado todavia.
+    #:
+    #: ``client_version`` es el discriminador, y es perfecto en el store: cero
+    #: filas con ``client_version`` NULL y ``stop_reason`` con valor. La
+    #: hipotesis previa —que ``compactions`` marcaba la generacion vieja— se
+    #: REFUTO: 346 filas tienen ``stop_reason`` con ``compactions`` en NULL.
     "stop_reason": "TEXT",
     #: --- LA COMPACTACION (#601). ``compactMetadata`` vive en el nivel
     #: superior de la linea —medido: 3 eventos alli, 0 dentro de ``message``—,
@@ -2815,6 +2845,109 @@ def cmd_table_census(args: argparse.Namespace) -> None:
               f"(no fechables por este instrumento)")
 
 
+def stop_reason_provenance(conn: sqlite3.Connection) -> dict:
+    """Reparte las filas por la procedencia de ``stop_reason``, con denominador.
+
+    **La procedencia de ``stop_reason`` ya la declara ``usage_source``**, y ese
+    es el resultado que esta funcion hace legible. No hace falta una cuarta
+    columna ``_source``: el MISMO recorrido puebla ambos —
+    ``register_session.py:349-350`` lee ``message.stop_reason`` dentro del bucle
+    que suma ``usage``—, asi que una columna propia seria una segunda
+    declaracion de una sola lectura.
+
+    Lo que NO declara la procedencia de ``stop_reason`` es ``outcome_source``,
+    pese al parecido del nombre. Aquella parea con **``status``**: lo dicen
+    ``reconcile_store.py:486-487`` y ``:887``, y su vocabulario
+    (``hook``/``journal``/``api_error``/``sin_transcript``) nombra instrumentos
+    del desenlace. Suponer el pareo por el nombre es medir el significante y
+    concluir sobre el significado.
+
+    Los cubos, y por que sus remedios son OPUESTOS:
+
+    - ``con_valor``  — el transcript lo declaro. No hay nada que hacer.
+    - ``declarado_nulo`` — leida por el extractor actual (``client_version``
+      presente) y el transcript no declaro ningun cierre finalizado. **El NULL
+      es el dato**, no un hueco: un turno sin finalizar escribe
+      ``stop_reason: null``. PROVEN por conducta sobre el unico transcript de
+      este cubo que seguia en disco.
+    - ``extractor_sin_lectura`` — ``usage_source='transcript'`` y sin
+      ``client_version``. Leida por una generacion anterior a que este campo se
+      leyera, asi que el valor existio y su evidencia ya no. Terminal.
+      El discriminador esta medido: **0** filas del store tienen
+      ``client_version IS NULL`` con ``stop_reason IS NOT NULL``.
+    - ``no_medido``  — transcript irrecuperable. **Tiene procedencia
+      declarada**: dice «nadie podra ya». Contarla como hueco colapsa la
+      distincion que la columna existe para conservar.
+    - ``sin_clasificar`` — ``usage_source`` vacio: «nadie ha pasado todavia».
+      La resuelve el barrido, no una escritura.
+    - ``huerfano``  — valor escrito sin que nadie declare quien lo midio. Solo
+      puede venir de un escritor que no paso por el recorrido; se reporta en vez
+      de sumarse a los medidos.
+
+    Los seis PARTICIONAN el universo, y el test lo afirma: un censo cuyos cubos
+    no sumen el total deja una poblacion invisible cuyo silencio se lee como
+    cero.
+    """
+    def cuenta(donde: str) -> int:
+        return conn.execute(
+            f"SELECT COUNT(*) FROM agent_sessions WHERE {donde}").fetchone()[0]
+
+    leido = "usage_source = 'transcript'"
+    nulo = "stop_reason IS NULL"
+    return {
+        "total": cuenta("1"),
+        "con_valor": cuenta(f"{leido} AND stop_reason IS NOT NULL"),
+        "declarado_nulo": cuenta(
+            f"{leido} AND {nulo} AND client_version IS NOT NULL"),
+        "extractor_sin_lectura": cuenta(
+            f"{leido} AND {nulo} AND client_version IS NULL"),
+        "no_medido": cuenta("usage_source = 'no_medido'"),
+        "sin_clasificar": cuenta(f"usage_source IS NULL AND {nulo}"),
+        "huerfano": cuenta("usage_source IS NULL AND stop_reason IS NOT NULL"),
+    }
+
+
+def cmd_stop_reason_census(args: argparse.Namespace) -> None:
+    """Publica el reparto de ``stop_reason`` con su denominador.
+
+    Existe porque un ``SELECT COUNT(*) WHERE stop_reason IS NULL`` mezcla tres
+    poblaciones con remedios opuestos —dato, terminal y pendiente— y la cifra
+    resultante se lee como una sola deuda. Asi ocurrio: la tarjeta que abrio
+    este trabajo conto 1345 NULL como «sin procedencia declarada» cuando 1266
+    de ellas la tienen.
+    """
+    store_dir = resolve_store_dir(args)
+    with connect(store_dir) as conn:
+        r = stop_reason_provenance(conn)
+    total = r["total"]
+
+    def pct(n: int) -> str:
+        return f"{n * 100 // total if total else 0} %"
+
+    print(f"filas en agent_sessions: {total}")
+    print(f"  el transcript lo declaro (stop_reason con valor): "
+          f"{r['con_valor']} ({pct(r['con_valor'])})")
+    print(f"  DATO — leida por el extractor actual y el transcript declaro "
+          f"nulo: {r['declarado_nulo']} ({pct(r['declarado_nulo'])})")
+    print(f"  terminal — leida antes de que este campo se leyera "
+          f"(client_version vacio): {r['extractor_sin_lectura']}")
+    print(f"  terminal — transcript irrecuperable (usage_source='no_medido'): "
+          f"{r['no_medido']} ({pct(r['no_medido'])})")
+    print(f"  pendiente — sin clasificar todavia (usage_source vacio): "
+          f"{r['sin_clasificar']}")
+    if r["huerfano"]:
+        print(f"  ATENCION — con valor y sin procedencia declarada: "
+              f"{r['huerfano']}")
+    cubos = ("con_valor", "declarado_nulo", "extractor_sin_lectura",
+             "no_medido", "sin_clasificar", "huerfano")
+    suma = sum(r[c] for c in cubos)
+    print()
+    print(f"los cubos suman {suma} de {total}"
+          + ("" if suma == total else "  — ATENCION: hay poblacion sin cubo"))
+    print("la procedencia de stop_reason la declara usage_source, no "
+          "outcome_source (que parea con status)")
+
+
 def cmd_usage_census(args: argparse.Namespace) -> None:
     """Reparte las filas en sus cuatro estados de medición, con denominador.
 
@@ -3266,6 +3399,13 @@ def build_parser() -> argparse.ArgumentParser:
                             "tokens, y agregado con su denominador (h-docs-427)")
     add_target_args(p)
     p.set_defaults(func=cmd_usage_census)
+
+    p = sub.add_parser("censo-stop-reason",
+                       help="reparto de filas por procedencia de stop_reason, con "
+                            "su denominador; la declara usage_source, NO "
+                            "outcome_source (que se empareja con status)")
+    add_target_args(p)
+    p.set_defaults(func=cmd_stop_reason_census)
 
     p = sub.add_parser("censo-tablas",
                        help="filas, escrituras de hoy y ultima escritura por "

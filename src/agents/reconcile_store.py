@@ -385,20 +385,17 @@ def _ids_incompletos() -> set:
                                 # qué build corrió?», que es lo que #286
                                 # necesita antes de ponderar dinero.
                                 "effort", "client_version", "service_tier",
-                                # 2026-08-20, #601: cómo cerró el turno. Su
-                                # NULL es deuda, no ausencia legítima — todo
-                                # turno cerró de alguna forma, y que el
-                                # transcript no lo declare (42 de 277) es el
-                                # instrumento callando, no el hecho faltando.
+                                # `stop_reason` SALIÓ de esta lista: su NULL no
+                                # es de una sola clase, así que no se reclama
+                                # como NULL llano. Su predicado calificado está
+                                # abajo (TASK-THYROX-0104).
                                 #
-                                # `compactions`/`dropped_tokens` NO entran, y
-                                # es deliberado: su NULL es la ausencia real
+                                # `compactions`/`dropped_tokens` tampoco entran,
+                                # y es deliberado: su NULL es la ausencia real
                                 # —274 de 277 nunca se compactaron— y
                                 # listarlas haría que el barrido reintentara
-                                # filas sanas para siempre. Viajan igual, en
-                                # el mismo pase que `stop_reason`: si una
-                                # falta, faltan las tres.
-                                "stop_reason")
+                                # filas sanas para siempre.
+                                )
                       if c in cols]
         # Y las que NO traen el identificador canonico del registro: una fila
         # que dice ``opus`` a secas —o ``opus 5``, la forma derivada que este
@@ -415,6 +412,21 @@ def _ids_incompletos() -> set:
         if "outcome_source" in cols:
             faltantes.append("(status IN ('completed','failed') "
                              "AND outcome_source IS NULL)")
+        # `stop_reason` NO se reclama por NINGUNA vía (TASK-THYROX-0104), y el
+        # primer intento de arreglo fue calificarlo con `client_version`. Se
+        # midió y resultó CÓDIGO MUERTO: de las 1303 filas que el predicado
+        # calificado habría reclamado, **0** son filas que `client_version IS
+        # NULL` no reclame ya. Un guard que nunca puede ser el único motivo no
+        # discrimina, y su test pasaría con él y sin él — el sub-patrón D con
+        # el propio arreglo como sujeto.
+        #
+        # La partición es estructural, no una coincidencia del store de hoy:
+        # una fila leída por el extractor actual SIEMPRE trae `client_version`
+        # (medido: cero filas lo tienen NULL con `stop_reason` con valor), y
+        # ahí su NULL es el DATO —hay transcripts que declaran
+        # ``"stop_reason": null``— así que reclamarla la reintentaría para
+        # siempre. Una fila que no lo trae no fue leída por él, y ya entra por
+        # `client_version IS NULL`. No queda tercera clase que reclamar.
         return {r[0] for r in conn.execute(
             "SELECT agent_id FROM agent_sessions WHERE " + " OR ".join(faltantes))}
     finally:
