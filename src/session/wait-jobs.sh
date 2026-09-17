@@ -259,17 +259,28 @@ cmd_pending() {
 }
 
 cmd_wait() {
-    local timeout=1800 pattern="$DEFAULT_PATTERN"
+    # `--only <prefijo>` acota la espera a los trabajos cuya etiqueta empieza
+    # con ese prefijo. Sin el, la barrera globea TODO el ledger — que es
+    # correcto para quien espera a todos, y un interbloqueo para un pool que
+    # esta registrado en ese mismo ledger: se esperaria a si mismo. Ver
+    # TASK-THYROX-0083.
+    local timeout=1800 pattern="$DEFAULT_PATTERN" only=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --timeout) timeout="${2:?--timeout exige segundos}"; shift 2 ;;
             --pattern)  pattern="${2:?--pattern exige una expresión}"; shift 2 ;;
+            --only)     only="${2:?--only exige un prefijo}"; shift 2 ;;
             *) echo "argumento no reconocido: $1" >&2; exit 64 ;;
         esac
     done
 
     shopt -s nullglob
-    local jobs=("$LEDGER"/*.job)
+    local jobs
+    if [[ -n "$only" ]]; then
+        jobs=("$LEDGER/$only"-*.job)
+    else
+        jobs=("$LEDGER"/*.job)
+    fi
     shopt -u nullglob
     if [[ ${#jobs[@]} -eq 0 ]]; then
         echo "== sin trabajos registrados =="
@@ -291,7 +302,6 @@ cmd_wait() {
             local log pid ps0 v
             log=$(sed -n 's/^log=//p' "$f"); pid=$(sed -n 's/^pid=//p' "$f")
             mk=$(sed -n 's/^marker=//p' "$f")
-        mk=$(sed -n 's/^marker=//p' "$f")
             ps0=$(sed -n 's/^proc_start=//p' "$f")
             v=$(verdict "$log" "$pid" "$pattern" "$ps0" "$mk")
             if [[ "$v" != ESPERANDO ]]; then

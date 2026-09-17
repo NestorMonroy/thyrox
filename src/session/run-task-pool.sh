@@ -277,5 +277,9 @@ for cmd in "${COMMANDS[@]}"; do
     printf '  %-14s pid %-7s %s\n' "$LABEL" "$PID" "$cmd"
 done
 
+# `--only "$PREFIX"` acota la espera a los hijos de ESTE pool. Sin el, la
+# barrera globea todo el ledger — y cuando el pool se lanza a traves de
+# `bg.sh` esta registrado ahi, asi que se esperaba a si mismo: nunca asentaba
+# y agotaba su timeout entero con sus hijos ya terminados. TASK-THYROX-0083.
 echo "run-task-pool: lanzados $LAUNCHED de $N; esperando en PRIMER PLANO (timeout ${TIMEOUT}s)"
-"$WAIT_JOBS" wait --timeout "$TIMEOUT"
+"$WAIT_JOBS" wait --timeout "$TIMEOUT" --only "$PREFIX"
