@@ -7,10 +7,11 @@ ese fallo es el resultado que se persiste (ver el banco de evidencia).
 
 Qué cubre cada bloque, y por qué existe:
 
-1. **El árbol real, medido contra el baseline declarado.** Los dos únicos
-   incumplidores del árbol de hoy son EXACTAMENTE los que
-   ``path_arithmetic_baseline.txt`` congela, cada uno con su razón escrita en
-   el propio código. Es evidencia real, no fabricada.
+1. **El árbol real, medido contra el baseline declarado.** Los incumplidores
+   del árbol son EXACTAMENTE los que ``path_arithmetic_baseline.txt`` congela,
+   cada uno con su razón escrita en el propio código. Es evidencia real, no
+   fabricada, y el conjunto se DERIVA del baseline —no se transcribe aquí—,
+   asi que el caso sobrevive al triaje de la deuda sin editarlo.
 2. **El control positivo NO se fabrica.** Es la línea que
    ``tests/verify/test_byte_class_gate.py`` llevaba ANTES del arreglo de esta
    misma tarea — leída con ``git show HEAD~N`` — reproducida en un árbol
@@ -92,9 +93,13 @@ LINEA_ARREGLADA = (
 print("== 1. el árbol real, contra el baseline declarado ==")
 found, measured = gate.measure(reach.thyrox_root())
 check("midió archivos (un 0 aquí sería un verde ciego)", True, measured > 0)
-esperados = {"tests/verify/test_rst_gate_root.py:57",
-             "tests/legacy/test_error_catalog.py:49"}
-check("son EXACTAMENTE los dos del baseline declarado, ninguno más",
+# El conjunto esperado se DERIVA del baseline, no se transcribe. Estaba
+# escrito a mano como un par literal, y eso es la forma que
+# `calibration-verified-numbers.md` prohibe para una cifra, aplicada a un
+# conjunto: el baseline gana entradas al triarse la deuda y la copia de aqui
+# no se entera. Derivarlo hace que el caso sobreviva al triaje sin editarlo.
+esperados = gate.read_baseline(gate.BASELINE)
+check("son EXACTAMENTE los del baseline declarado, ninguno mas",
       esperados, set(found))
 
 print("\n2. CONTROL POSITIVO — la línea REAL que el árbol tenía antes de #228")
