@@ -1,0 +1,20 @@
+run-task-pool: 18 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/jobs/shell-triage-20260917T131530/bg
+  job-001        pid 15441   bash tests/agents/test-agent-store-compara-antes-de-escribir.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_agents_test-agent-store-compara-antes-de-escribir.sh.txt 2>&1
+  job-002        pid 15479   bash tests/agents/test-agent-store-reassignment-guard.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_agents_test-agent-store-reassignment-guard.sh.txt 2>&1
+  job-003        pid 15507   bash tests/agents/test-agent-store-render-tablero.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_agents_test-agent-store-render-tablero.sh.txt 2>&1
+  job-004        pid 15542   bash tests/agents/test-carrete-store.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_agents_test-carrete-store.sh.txt 2>&1
+  job-005        pid 15699   bash tests/agents/test-merge-sqlite-union.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_agents_test-merge-sqlite-union.sh.txt 2>&1
+  job-006        pid 15985   bash tests/lib/test-script-deprecated.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_lib_test-script-deprecated.sh.txt 2>&1
+  job-007        pid 16014   bash tests/session/test-evidencia-varada.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_session_test-evidencia-varada.sh.txt 2>&1
+  job-008        pid 16305   bash tests/session/test-instalar-config-usuario.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_session_test-instalar-config-usuario.sh.txt 2>&1
+  job-009        pid 16330   bash tests/verify/test-agent-artifacts.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_verify_test-agent-artifacts.sh.txt 2>&1
+  job-010        pid 16838   bash tests/verify/test-coordinator-sin-worktree.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_verify_test-coordinator-sin-worktree.sh.txt 2>&1
+  job-011        pid 16864   bash tests/verify/test-destino-del-reporte.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_verify_test-destino-del-reporte.sh.txt 2>&1
+  job-012        pid 16896   bash tests/verify/test-eventos-hook.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_verify_test-eventos-hook.sh.txt 2>&1
+  job-013        pid 16920   bash tests/verify/test-generator-determinism.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_verify_test-generator-determinism.sh.txt 2>&1
+  job-014        pid 17054   bash tests/verify/test-gitattributes.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_verify_test-gitattributes.sh.txt 2>&1
+  job-015        pid 17081   bash tests/verify/test-script-naming.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_verify_test-script-naming.sh.txt 2>&1
+  job-016        pid 17108   bash tests/verify/test-verificar-premisa.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_verify_test-verificar-premisa.sh.txt 2>&1
+  job-017        pid 17336   bash tests/verify/test-vocabulario-prosa.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_verify_test-vocabulario-prosa.sh.txt 2>&1
+  job-018        pid 17359   bash tests/verify/test_audit_delegates.sh > .claude/jobs/shell-triage-20260917T131530/outputs/tests_verify_test_audit_delegates.sh.txt 2>&1
+run-task-pool: lanzados 18 de 18; esperando en PRIMER PLANO (timeout 600s)

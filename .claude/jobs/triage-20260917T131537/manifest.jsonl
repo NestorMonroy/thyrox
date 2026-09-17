@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --timeout 600 .claude/jobs/shell-triage-20260917T131530/comandos.txt", "started_at": "2026-09-17T13:15:37+00:00"}

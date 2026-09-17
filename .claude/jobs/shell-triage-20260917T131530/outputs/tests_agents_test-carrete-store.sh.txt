@@ -1,0 +1,210 @@
+== caso 1: la escritura falla de verdad y el evento se encola ==
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+== caso 2: reparado el destino, el drenado reenvia y la fila aparece ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 77, in error_log
+    hooks = agents_paths.hooks_dir()
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 110, in hooks_dir
+    return consumer_root() / ".claude" / "hooks"
+           ^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 87, in consumer_root
+    return reach.consumer_root(start=Path.cwd())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 654, in consumer_root
+    raise ConsumerUnknownError(
+reach.ConsumerUnknownError: El ascenso desde /home/user/thyrox aterriza en el PROVEEDOR (/home/user/thyrox), no en un consumidor. El proveedor tambien lleva .claude/, asi que el marcador no lo distingue. Declara THYROX_CONSUMER con la raiz del clon, pasa `declared=`, o invoca desde dentro de el. NO se devuelve la raiz de thyrox: el llamador compondria un hogar dentro del proveedor que declarations.py no lista.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 206, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 192, in main
+    r = drain(dry_run=args.dry_run)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 140, in drain
+    registro = error_log()
+               ^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 79, in error_log
+    raise agents_paths.ConsumerUnknownError(
+reach.ConsumerUnknownError: No se resolvio el clon consumidor, asi que sus hooks no entraron en sys.path y `hook_error_log` no se encuentra. Declara THYROX_CONSUMER, o invoca desde dentro del clon.
+  FALLO: esperaba '1 reenviados', obtuve: 
+  FALLO: la fila no aterrizo en el store tras el reenvio
+  FALLO: el evento reenviado sigue en el carrete
+== caso 3: CONTROL ANULADO — sin carrete, el dato se pierde ==
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+  FALLO: sin spool=True no debe encolarse nada
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 77, in error_log
+    hooks = agents_paths.hooks_dir()
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 110, in hooks_dir
+    return consumer_root() / ".claude" / "hooks"
+           ^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 87, in consumer_root
+    return reach.consumer_root(start=Path.cwd())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 654, in consumer_root
+    raise ConsumerUnknownError(
+reach.ConsumerUnknownError: El ascenso desde /home/user/thyrox aterriza en el PROVEEDOR (/home/user/thyrox), no en un consumidor. El proveedor tambien lleva .claude/, asi que el marcador no lo distingue. Declara THYROX_CONSUMER con la raiz del clon, pasa `declared=`, o invoca desde dentro de el. NO se devuelve la raiz de thyrox: el llamador compondria un hogar dentro del proveedor que declarations.py no lista.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 206, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 192, in main
+    r = drain(dry_run=args.dry_run)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 140, in drain
+    registro = error_log()
+               ^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 79, in error_log
+    raise agents_paths.ConsumerUnknownError(
+reach.ConsumerUnknownError: No se resolvio el clon consumidor, asi que sus hooks no entraron en sys.path y `hook_error_log` no se encuentra. Declara THYROX_CONSUMER, o invoca desde dentro del clon.
+== caso 4: un evento irreenviable se abandona al agotar los intentos ==
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 77, in error_log
+    hooks = agents_paths.hooks_dir()
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 110, in hooks_dir
+    return consumer_root() / ".claude" / "hooks"
+           ^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 87, in consumer_root
+    return reach.consumer_root(start=Path.cwd())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 654, in consumer_root
+    raise ConsumerUnknownError(
+reach.ConsumerUnknownError: El ascenso desde /home/user/thyrox aterriza en el PROVEEDOR (/home/user/thyrox), no en un consumidor. El proveedor tambien lleva .claude/, asi que el marcador no lo distingue. Declara THYROX_CONSUMER con la raiz del clon, pasa `declared=`, o invoca desde dentro de el. NO se devuelve la raiz de thyrox: el llamador compondria un hogar dentro del proveedor que declarations.py no lista.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 206, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 192, in main
+    r = drain(dry_run=args.dry_run)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 140, in drain
+    registro = error_log()
+               ^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 79, in error_log
+    raise agents_paths.ConsumerUnknownError(
+reach.ConsumerUnknownError: No se resolvio el clon consumidor, asi que sus hooks no entraron en sys.path y `hook_error_log` no se encuentra. Declara THYROX_CONSUMER, o invoca desde dentro del clon.
+  FALLO: 1er drenado: esperaba 0 reenviados — 
+  FALLO: 1er drenado: el evento debe conservarse — 
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 77, in error_log
+    hooks = agents_paths.hooks_dir()
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 110, in hooks_dir
+    return consumer_root() / ".claude" / "hooks"
+           ^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 87, in consumer_root
+    return reach.consumer_root(start=Path.cwd())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 654, in consumer_root
+    raise ConsumerUnknownError(
+reach.ConsumerUnknownError: El ascenso desde /home/user/thyrox aterriza en el PROVEEDOR (/home/user/thyrox), no en un consumidor. El proveedor tambien lleva .claude/, asi que el marcador no lo distingue. Declara THYROX_CONSUMER con la raiz del clon, pasa `declared=`, o invoca desde dentro de el. NO se devuelve la raiz de thyrox: el llamador compondria un hogar dentro del proveedor que declarations.py no lista.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 206, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 192, in main
+    r = drain(dry_run=args.dry_run)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 140, in drain
+    registro = error_log()
+               ^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 79, in error_log
+    raise agents_paths.ConsumerUnknownError(
+reach.ConsumerUnknownError: No se resolvio el clon consumidor, asi que sus hooks no entraron en sys.path y `hook_error_log` no se encuentra. Declara THYROX_CONSUMER, o invoca desde dentro del clon.
+  FALLO: 2o drenado: esperaba 1 abandonado — 
+  FALLO: el evento abandonado sigue en el carrete
+== caso 5: el carrete no crece sin fin ==
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+== caso 6: una escritura que funciona NO encola nada ==
+== caso 7: CONTROL ANULADO — el hook real encola su propio fallo ==
+  FALLO: el hook no encolo su escritura fallida (cableado ausente)
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 77, in error_log
+    hooks = agents_paths.hooks_dir()
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 110, in hooks_dir
+    return consumer_root() / ".claude" / "hooks"
+           ^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 87, in consumer_root
+    return reach.consumer_root(start=Path.cwd())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 654, in consumer_root
+    raise ConsumerUnknownError(
+reach.ConsumerUnknownError: El ascenso desde /home/user/thyrox aterriza en el PROVEEDOR (/home/user/thyrox), no en un consumidor. El proveedor tambien lleva .claude/, asi que el marcador no lo distingue. Declara THYROX_CONSUMER con la raiz del clon, pasa `declared=`, o invoca desde dentro de el. NO se devuelve la raiz de thyrox: el llamador compondria un hogar dentro del proveedor que declarations.py no lista.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 206, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 192, in main
+    r = drain(dry_run=args.dry_run)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 140, in drain
+    registro = error_log()
+               ^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 79, in error_log
+    raise agents_paths.ConsumerUnknownError(
+reach.ConsumerUnknownError: No se resolvio el clon consumidor, asi que sus hooks no entraron en sys.path y `hook_error_log` no se encuentra. Declara THYROX_CONSUMER, o invoca desde dentro del clon.
+  FALLO: el evento del hook no se pudo reenviar
+== caso 8: una linea corrupta no tumba el drenado ==
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+  FALLO: la linea corrupta impidio el reenvio: Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 77, in error_log
+    hooks = agents_paths.hooks_dir()
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 110, in hooks_dir
+    return consumer_root() / ".claude" / "hooks"
+           ^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agents_paths.py", line 87, in consumer_root
+    return reach.consumer_root(start=Path.cwd())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 654, in consumer_root
+    raise ConsumerUnknownError(
+reach.ConsumerUnknownError: El ascenso desde /home/user/thyrox aterriza en el PROVEEDOR (/home/user/thyrox), no en un consumidor. El proveedor tambien lleva .claude/, asi que el marcador no lo distingue. Declara THYROX_CONSUMER con la raiz del clon, pasa `declared=`, o invoca desde dentro de el. NO se devuelve la raiz de thyrox: el llamador compondria un hogar dentro del proveedor que declarations.py no lista.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 206, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 192, in main
+    r = drain(dry_run=args.dry_run)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 140, in drain
+    registro = error_log()
+               ^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 79, in error_log
+    raise agents_paths.ConsumerUnknownError(
+reach.ConsumerUnknownError: No se resolvio el clon consumidor, asi que sus hooks no entraron en sys.path y `hook_error_log` no se encuentra. Declara THYROX_CONSUMER, o invoca desde dentro del clon.
+== caso 9: CONTROL ANULADO — el hook de CIERRE DE TURNO tambien drena ==
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+  FALLO: el hook de cierre no drena el carrete (cableado ausente)
+  FALLO: el evento sigue en el carrete tras el cierre de turno
+
+FALLO: 13 de 9 casos
