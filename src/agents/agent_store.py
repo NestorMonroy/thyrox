@@ -2485,7 +2485,18 @@ def cmd_render_tablero(args: argparse.Namespace) -> None:
     fuente = store_dir / DB_FILENAME
     try:
         fuente = fuente.relative_to(agents_paths.consumer_root())
-    except ValueError:
+    except (ValueError, agents_paths.reach.ConsumerUnknownError):
+        # Dos causas, un mismo desenlace: se deja absoluta. `ValueError` es el
+        # store que cae fuera del consumidor; `ConsumerUnknownError` es que no
+        # hay consumidor que determinar — el render se invoco desde el
+        # PROVEEDOR, y `reach.consumer_root` rehusa antes que componer un hogar
+        # dentro de thyrox (TASK-DOCS-0286).
+        #
+        # Hasta hoy solo se atrapaba la primera, y la segunda NO es su
+        # subclase: el render moria con un traceback. La relativizacion es
+        # cosmetica —evita que un artefacto versionado declare una ruta que
+        # cambia de maquina— y una cosmetica que aborta el comando entero mide
+        # el fenomeno equivocado.
         pass
 
     out = []
