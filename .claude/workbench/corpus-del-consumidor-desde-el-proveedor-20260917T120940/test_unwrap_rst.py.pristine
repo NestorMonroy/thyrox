@@ -38,12 +38,8 @@ Casos sobre el corpus real (los que dan confianza de verdad):
 
 Ejecución::
 
-   python3 tests/docs/test_unwrap_rst.py
-
-El bloque anterior mandaba correr desde ``kaupamex-docs`` con
-``unittest discover -s scripts``; las dos mitades caducaron con la mudanza
-—el módulo vive hoy en ``thyrox: src/docs/unwrap_rst.py``— y el corredor de
-este árbol invoca cada suite con ``python3`` pelado.
+   cd /home/user/kaupamex-docs
+   .venv/bin/python -m unittest discover -s scripts -p 'test_unwrap_rst.py'
 """
 import glob
 import io
@@ -55,19 +51,9 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 
 from docutils.core import publish_doctree                    # noqa: E402
-from docs.unwrap_rst import unwrap                           # noqa: E402
-from paths import reach                                      # noqa: E402
+from docs.unwrap_rst import unwrap                                # noqa: E402
 
-# Dos árboles, no uno. La suite componía un solo `REPO` por aritmética de ruta
-# y colgaba de él las DOS cosas: el módulo bajo prueba, que es del PROVEEDOR, y
-# el corpus de hallazgos, que es del CONSUMIDOR. Con cwd en thyrox eso resuelve
-# `thyrox/source/gestion/pm/`, que no existe ni debe existir, y el corpus salía
-# vacío. Es el mismo defecto que `tests/verify/test_error_catalog.py` ya cerró.
-#
-# `test_hay_corpus_que_medir` SÍ discriminaba —falla con 0— así que el rojo era
-# honesto: decía que no había con qué medir, y era cierto. Lo que faltaba no era
-# un control mejor sino separar los dos nombres.
-CONSUMER = reach.root('docs')
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def parse_errors(text):
@@ -151,7 +137,7 @@ class CorpusReal(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.paths = sorted(glob.glob(os.path.join(
-            str(CONSUMER), 'source/gestion/pm/*/iniciativas/*/hallazgos/*.rst')))
+            REPO, 'source/gestion/pm/*/iniciativas/*/hallazgos/*.rst')))
 
     def test_hay_corpus_que_medir(self):
         # Un universo vacío no prueba nada: la suite saldría verde sin medir.
