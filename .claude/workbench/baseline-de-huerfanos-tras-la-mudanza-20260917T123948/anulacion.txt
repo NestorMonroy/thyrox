@@ -1,0 +1,3 @@
+       el generador declara una ruta anterior a la mudanza; --huerfanos lee 0 en baseline
+
+resultado: 9 ok, 1 fallas
