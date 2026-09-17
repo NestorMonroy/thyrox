@@ -158,11 +158,33 @@ def log_path(run_dir: str | pathlib.Path) -> pathlib.Path:
     return pathlib.Path(run_dir) / "outputs" / LOG_FILE_NAME
 
 
+# La clave con que un run declara que sus salidas NO viven dentro de él, sino
+# en un hogar plano `<flat_home>/<slug>.log`. Existe porque `bg.sh --dir` tiene
+# dos consumidores con conocimiento asimétrico: quien LANZA sabe el hogar y
+# quien LEE —`status`, `log`, `register`— no tenía de dónde sacarlo, así que
+# respondía `unknown` sobre un trabajo terminado. El run es el puntero que
+# cierra esa asimetría; el log sigue siendo plano y citable, que es lo que
+# `build-logs.md` pide. Ver TASK-THYROX-0052.
+FLAT_HOME_KEY = "flat_home"
+
+
+def flat_home(run_dir: str | pathlib.Path) -> str:
+    """El hogar plano que este run declara, o cadena vacía si no declara ninguno.
+
+    La cadena vacía es el discriminador: distingue «este run guarda sus salidas
+    dentro» de «este run apunta afuera». Un default compuesto por aritmética
+    diría dónde *podría* estar el log, no dónde está.
+    """
+    valor = read_manifest(run_dir).get(FLAT_HOME_KEY)
+    return valor if isinstance(valor, str) else ""
+
+
 def scaffold_run(
     base_dir: str | pathlib.Path,
     slug: str,
     command: str | None = None,
     now: datetime | None = None,
+    flat_home: str | None = None,
 ) -> pathlib.Path:
     """Crea el run del trabajo y devuelve su ruta."""
     run_dir = pathlib.Path(base_dir) / run_id_for(slug, now)
@@ -177,6 +199,8 @@ def scaffold_run(
     # se puede inferir de la mtime del log, que mide la ULTIMA escritura y no el
     # arranque — un trabajo que calla al final se leeria como mas corto.
     manifiesto["started_at"] = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")
+    if flat_home:
+        manifiesto[FLAT_HOME_KEY] = str(flat_home)
     (run_dir / MANIFEST_FILE_NAME).write_text(
         json.dumps(manifiesto, indent=2) + "\n", encoding="utf-8")
 

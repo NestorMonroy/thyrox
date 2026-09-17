@@ -76,6 +76,49 @@ unset THYROX_BACKGROUND_LOG_DIR
 unset BG_DIR
 
 
+echo "== 4-quater. EL LECTOR no tiene que re-declarar el hogar que start ya sabia =="
+# EL QUE DISCRIMINA de TASK-THYROX-0052. El caso 4-ter de arriba pasa `BG_DIR`
+# a CADA lectura — eso no es la forma de uso, es el rodeo al defecto. Medido por
+# conducta antes de tocar nada: tras `start --dir D`, un `status` sin `BG_DIR`
+# respondia `unknown` y un `log` devolvia la cadena vacia. `unknown` es el
+# estado que el propio codigo documenta como «lo mataron o el log se perdio»:
+# un veredicto FALSO sobre un trabajo que termino bien, no un error.
+#
+# Que lo haria fallar: retirar la clave `flat_home` del manifiesto en
+# `cmd_start`, o su lectura en `_paths`. El 4-ter sobrevive a las dos, porque
+# declara `BG_DIR` explicitamente — y ese contraste es la prueba de que el
+# puntero carga su peso.
+unset BG_DIR
+export THYROX_BACKGROUND_LOG_DIR="$TMP/hogar-plano"
+$BG start cuatro --dir otro-slug -- bash -c 'exit 9' >/dev/null; sleep 1
+_es "log resuelve SIN BG_DIR" \
+   "$($BG log cuatro)" "$TMP/hogar-plano/otro-slug/cuatro.log"
+_es "status resuelve SIN BG_DIR" "$($BG status cuatro)" "done:9"
+_es "register resuelve SIN BG_DIR" \
+   "$($BG register cuatro >/dev/null 2>&1 && echo si || echo no)" "si"
+# Y el manifiesto del run asienta el codigo tambien para la forma plana: hoy
+# `settle` no disparaba nunca ahi, porque no habia run que asentar.
+_es "el run del trabajo plano asienta su exit_code" \
+   "$(python3 -c "
+import glob, json, sys
+runs = sorted(glob.glob('$THYROX_JOBS_DIR/cuatro-*'))
+print(json.load(open(runs[-1] + '/manifest.json')).get('exit_code') if runs else 'sin-run')")" "9"
+unset THYROX_BACKGROUND_LOG_DIR
+
+
+echo "== 4-quinquies. `status` SEPARA «no existe» de «murio sin marcador» =="
+# El sub-patron D aplicado al veredicto de `status`: un `unknown` que cubre los
+# dos casos manda a buscar un log que nunca existio. `wait` ya rehusaba con
+# exit 2 ante un nombre desconocido; `status` lo publicaba como si hubiera
+# medido. El caso 4 de arriba sigue siendo el control de que un trabajo REAL
+# sin marcador sigue dando `unknown` — la distincion es «no hay tarea», no
+# «no hay marcador».
+unset BG_DIR
+_es "un nombre que nunca se lanzo REHUSA, no publica unknown" \
+    "$($BG status jamas-lanzado 2>/dev/null || echo "rehuso:$?")" "rehuso:2"
+_es "y lo dice por stderr, nombrando la tarea" \
+    "$($BG status jamas-lanzado 2>&1 >/dev/null | grep -c "jamas-lanzado")" "1"
+
 echo "== 5. la democion: start no obliga a saber de antemano si es largo =="
 # La referencia (2.1.266) declara `ggo=120000` como default de
 # BASH_DEFAULT_TIMEOUT_MS y `hgo=600000` como maximo: el comando corre en
