@@ -11,15 +11,43 @@ Un `.json` versionado se convierte si y solo si el unico lector es thyrox. Si lo
 lee un tercero —`bun`, `tsc`, el cliente de Claude Code, `claude plugin eval`—
 su formato es un contrato ajeno y convertirlo lo rompe sin ganar nada.
 
-| Bucket | Que es | Archivos |
+Reparto **al abrir el censo, 2026-09-17** — evidencia fechada de ese momento,
+no el estado de hoy: el cubo B crece con cada conversion y C decrece.
+
+| Bucket | Que es | Archivos, al abrir |
 |---|---|---|
 | **A** | contrato de tercero — NO se convierte | 57 |
 | **B** | ya es JSONL | 3 |
 | **C** | propiedad de thyrox — candidato | 92 |
 | **D** | evidencia capturada — NO se convierte | 314 |
 
-El desglose vive en `censo-por-bucket.txt`; lo reproduce `python3 censo.py`
-desde la raiz de thyrox.
+**El reparto vigente lo publica el censo al correr, no esta tabla.** Copiarlo
+aqui seria transcribir a prosa una cifra que vive en codigo — el defecto que
+`calibration-verified-numbers.md` prohibe en su corolario. El desglose esta en
+`censo-por-bucket.txt`, que reproduce `python3 censo.py` desde la raiz.
+
+### Correccion 2026-09-17 — el cubo C tenia DOS mal clasificados
+
+El criterio del cubo D no es «vive en `outputs/`» ni «lo lee un tercero»: es
+**quien escribe la FORMA**. Esa pregunta no se contesta por el nombre del
+archivo ni por su directorio — hay que abrirlo. Dos vecinos del mismo
+directorio caen en cubos distintos:
+
+| Archivo | Quien escribe la forma | Cubo |
+|---|---|---|
+| `board_store_drift/card_369.json` | el cliente (`id`/`subject`/`blockedBy`) | D |
+| `board_store_drift/store_row_369.jsonl` | NOSOTROS, serializando una fila del store | C — convertido |
+| `hooks/fixtures/agent_dispatch_orm.json` | el cliente (`tool_name`/`tool_input`) | **D, reclasificado** |
+
+El tercero estaba en C y no debia: `tool_name` + `tool_input` es el sobre que
+el cliente pasa a un hook `PreToolUse`, y el fixture vale como control porque
+conserva ese sobre. Se corrigio en `censo.py`, no aqui: la lista declarada es
+el mecanismo y esta tabla es su lectura.
+
+Lo que el episodio deja medido, y es lo reusable: **el censo clasifico por
+basename y por directorio, y el criterio real solo se aplica leyendo cada
+archivo**. Los dos errores fueron en direcciones opuestas — uno de mas y uno
+de menos — asi que ningun sesgo sistematico los habria predicho.
 
 ## El cuarto bucket no estaba en el encuadre de partida, y es el mayor
 

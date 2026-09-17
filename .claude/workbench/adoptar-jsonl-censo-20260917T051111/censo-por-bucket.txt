@@ -10,21 +10,24 @@ censo-jsonl: 466 archivo(s) versionado(s) (alcance medido: git ls-files menos _r
     trigger-evals.json
     tsconfig.messages.json
 
-  bucket B — ya es JSONL: 3
+  bucket B — ya es JSONL: 5
+    premise_drift_baseline.jsonl
     agent-a163953c6da4980e2.jsonl
     agent-a29f8c2656ce8c9c3.jsonl
     agent-ab5a332fb0711f638.jsonl
+    store_row_369.jsonl
 
-  bucket D — evidencia capturada — NO se convierte: 314
+  bucket D — evidencia capturada — NO se convierte: 315
     .claude/workbench/session-task-dump-20260910T070654/outputs/  (297 archivo(s))
     .claude/workbench/audit-consumer-provider-scripts-20260913T231343/outputs/  (11 archivo(s))
     .claude/workbench/correr-connectionToolCompression-de-verdad-20260913T064445/outputs/  (2 archivo(s))
     .claude/workbench/audit-session-tools-20260913T213511/outputs/  (1 archivo(s))
     .claude/workbench/classify-unlabeled-task-layer-20260912T101557/outputs/  (1 archivo(s))
     .claude/workbench/verificar-hogares-de-sesion-thyrox-20260912T082046/outputs/  (1 archivo(s))
+    tests/hooks/fixtures/agent_dispatch_orm.json  (1 archivo(s))
     tests/task/fixtures/board_store_drift/card_369.json  (1 archivo(s))
 
-  bucket C — propiedad de thyrox — se convierte: 92
+  bucket C — propiedad de thyrox — se convierte: 89
     manifest.json                                (88 archivos)   nombran<=14
         src/packages/cli/__tests__/workbench.test.ts
         src/packages/config/dxt/helpers.ts
@@ -49,8 +52,3 @@ censo-jsonl: 466 archivo(s) versionado(s) (alcance medido: git ls-files menos _r
         src/packages/agent/models.ts
         tests/agents/test-model-catalog.sh
         tests/agents/test_model_catalog_paths.py
-    premise_drift_baseline.json                                  nombran<=1
-        src/verify/check_premise_drift.py
-    agent_dispatch_orm.json                                      nombran<=0
-    store_row_369.json                                           nombran<=1
-        tests/task/test_board_sync.py

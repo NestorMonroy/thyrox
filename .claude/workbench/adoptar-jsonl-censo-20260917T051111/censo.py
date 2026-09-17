@@ -64,11 +64,23 @@ THIRD_PARTY_PATH_SUFFIXES = (
 #: es marginal: medida al censar, es la MAYORIA del arbol.
 CAPTURED_SEGMENTS = ("/outputs/",)
 
-#: Sufijos de ruta de FIXTURE que modela una forma ajena. Convertirlo haria
-#: que deje de modelar lo que modela: una tarjeta del board del cliente es un
-#: `.json` porque el cliente la escribe asi.
+#: Rutas de FIXTURE que modelan una forma ajena. Convertirlas haria que dejen
+#: de modelar lo que modelan: una tarjeta del board es un `.json` porque el
+#: CLIENTE la escribe asi.
+#:
+#: El discriminador es QUIEN ESCRIBE LA FORMA, no quien lee el archivo ni en
+#: que directorio vive — y esa pregunta no se contesta por el nombre: hay que
+#: abrir el archivo. Dos vecinos del mismo directorio caen en cubos distintos:
+#:
+#:   card_369.json        el cliente escribe `id`/`subject`/`blockedBy`  -> D
+#:   store_row_369.jsonl  NOSOTROS serializamos una fila de nuestro store -> C
+#:
+#: `agent_dispatch_orm.json` entra por el mismo criterio: `tool_name` +
+#: `tool_input` es el sobre que el cliente pasa a un hook `PreToolUse`. Su
+#: valor como control es que conserva esa forma, no su contenido.
 FOREIGN_SHAPE_FIXTURES = (
     "tests/task/fixtures/board_store_drift/card_369.json",
+    "tests/hooks/fixtures/agent_dispatch_orm.json",
 )
 
 EXCLUDED_ROOTS = ("_references/", "_archived/")
