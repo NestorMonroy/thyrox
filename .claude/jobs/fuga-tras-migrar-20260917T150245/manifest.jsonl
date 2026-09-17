@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash src/repo/fixture_leak.sh --base .claude/workbench/desmontaje-automatico-20260917T145956/sondas --timeout 120 tests/session/test-wait-jobs.sh tests/session/test-wait-jobs-dependencia.sh tests/session/test-run-task-pool-alcance.sh tests/session/test-process-group.sh tests/lib/test-toolchain-sh.sh tests/verify/test-verificar-premisa.sh", "started_at": "2026-09-17T15:02:45+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-17T15:03:42+00:00", "duration_seconds": 57.184058}
