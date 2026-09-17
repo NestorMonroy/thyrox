@@ -82,7 +82,14 @@ board_dir = task_ids.board_dir
 #: Los eventos del cliente que CREAN una tarjeta. Es una tupla y no una cadena
 #: porque el acotamiento es el mecanismo entero de #159: fuera de esta lista no
 #: se acuña, y por tanto un renombre no puede fabricar una fila nueva.
-CREATION_EVENTS = ("TaskCreate",)
+#: `TaskCreated` es el EVENTO del cliente; `TaskCreate` es el nombre del TOOL.
+#: Los dos entran porque las dos superficies existen y nombran el mismo alta:
+#: un hook cableado a `hooks.TaskCreated` entrega `hook_event_name:"TaskCreated"`
+#: (medido en `_references/claude-code-bin/2.1.266`), mientras un `PostToolUse`
+#: entregaria `tool_name:"TaskCreate"`. Admitir solo el segundo dejaba el guard
+#: rechazando TODO acuñado del hook, y su silencio se leia como «no habia
+#: tarjetas nuevas» — el sub-patron D con el propio guard como sujeto.
+CREATION_EVENTS = ("TaskCreate", "TaskCreated")
 
 #: Los campos de la tarjeta que una sincronizacion escribe. NO incluye
 #: ``citation_id`` ni ``task_id``: eso es identidad, y reescribirla es el daño

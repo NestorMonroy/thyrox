@@ -140,6 +140,22 @@ def declared_wiring(root: Path | None = None,
                 cmd(f"{delta} --stop {repos} --results-dir {resultados}"),
                 cmd(f"{registro} --stop"),
             ]}],
+            # El ciclo de vida de una tarjeta. Son eventos DEDICADOS del
+            # cliente —no un `PostToolUse` con matcher— y su payload trae
+            # `task_id` y `task_subject` directamente; medido en
+            # `_references/claude-code-bin/2.1.266`, que lo declara verbatim:
+            # «Input to command is JSON with task_id, task_subject,
+            # task_description, teammate_name, and team_name».
+            #
+            # Sin esto, `mint_created_card` tenia CERO invocadores de
+            # produccion y la cita durable se acuñaba a mano y a posteriori,
+            # que es justo lo que TASK-DOCS-0404 existe para cerrar.
+            "TaskCreated": [{"hooks": [
+                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
+            ]}],
+            "TaskCompleted": [{"hooks": [
+                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
+            ]}],
         },
         "advisorModel": advisor or DEFAULT_ADVISOR,
     }

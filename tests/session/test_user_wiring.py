@@ -45,10 +45,20 @@ def check(etiqueta, esperado, obtenido):
         print(f"  FALLO {etiqueta}\n        esperado=[{esperado}]\n        obtenido=[{obtenido}]"); FALLOS += 1
 
 
+#: Los eventos que el cableado declara. Se nombran aqui UNA vez y las dos
+#: aserciones que los miden lo consumen: enumerarlos por separado en cada una
+#: fue lo que las dejo drifteando cuando el cableado crecio.
+#:
+#: `TaskCreated`/`TaskCompleted` entran con TASK-DOCS-0404: son eventos
+#: DEDICADOS del cliente, no un `PostToolUse` con matcher, y su payload trae
+#: `task_id` y `task_subject` (medido en `_references/claude-code-bin/2.1.266`).
+EVENTOS_DECLARADOS = ["PreModelSwitch", "SubagentStart", "SubagentStop",
+                      "TaskCompleted", "TaskCreated"]
+
 print("== 1. la declaracion existe y tiene la forma del settings del cliente ==")
 d = w.declared_wiring()
 check("es un settings con hooks", True, "hooks" in d)
-check("declara los tres eventos", ["PreModelSwitch", "SubagentStart", "SubagentStop"],
+check("declara sus eventos, todos y solo ellos", EVENTOS_DECLARADOS,
       sorted(d["hooks"]))
 
 print("== 2. el control VE una ruta que no existe ==")
@@ -114,7 +124,7 @@ _record = w.install(_live, w.declared_wiring(), _double, "SELLO", backups=_tmp,
 _final = _json.loads(_live.read_text())
 check("conserva permissions verbatim", _foreign["permissions"], _final["permissions"])
 check("sustituye advisorModel", "claude-fable-5-1", _final["advisorModel"])
-check("sustituye hooks por lo declarado", ["PreModelSwitch", "SubagentStart", "SubagentStop"],
+check("sustituye hooks por lo declarado", EVENTOS_DECLARADOS,
       sorted(_final["hooks"]))
 check("el acta nombra lo conservado", ["permissions"], _record["preserved"])
 
@@ -232,7 +242,8 @@ for _ev, _gs in w.declared_wiring()["hooks"].items():
             _m = _re.search(r"(?:python3|node|bun run)\s+(\S+)", _h["command"])
             if _m:
                 _ejecutables.append((_ev, _m.group(1)))
-check("los seis comandos nombran su ejecutable", 6, len(_ejecutables))
+_esperados = sum(len(_g["hooks"]) for _gs in d["hooks"].values() for _g in _gs)
+check("todo comando declarado nombra su ejecutable", _esperados, len(_ejecutables))
 _ajenos = [f"{ev}:{r}" for ev, r in _ejecutables if "/thyrox/" not in r]
 check("ninguno ejecuta desde el consumidor", [], _ajenos)
 check("y todos existen", [],
