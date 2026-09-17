@@ -31,6 +31,8 @@ Se corrigio, y tres veces:
 |---|---|
 | `probes/measure_permission_blockers.py` | resuelve cada specifier de cada modulo ausente contra el arbol de thyrox, en cuatro ejes: DEP, LINK, SIBLING, TREE |
 | `outputs/blockers.txt` | su salida, modulo por modulo |
+| `probes/census_sibling_links.py` | generaliza el eje LINK a los 28 paquetes |
+| `outputs/sibling-links.txt` | su salida: 24 paquetes, 78 aristas ausentes |
 
 ## Los resultados
 
@@ -52,3 +54,13 @@ importador lo ve (66 aristas LINK repartidas entre TREE y «resuelve»).
 
 El cuarto se destapo verificando por conducta **despues** de haber escrito la
 afirmacion contraria en el `package.json`. Se corrigio en el mismo pase.
+
+## Lo que el cuarto defecto generalizo
+
+El eje LINK no es de `permission`: **24 de 28 paquetes importan un hermano de
+workspace que no tienen enlazado**, 78 aristas. Cuatro enlazan **cero** y aun
+asi lo importan — `daemon`, `headless-sdk`, `output`, `context-compression`.
+
+Ningun gate lo ve porque el defecto vive en el manifiesto del **importador**,
+no del destino: falla en ejecucion con `Cannot find module`, no al validar
+manifiestos. Registrado como `H-THYROX-61` y `TASK-THYROX-0099`.
