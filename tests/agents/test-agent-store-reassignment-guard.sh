@@ -49,7 +49,14 @@ afirmar() {  # afirmar <descripción> <esperado> <obtenido>
     fi
 }
 
-cleanup() { [[ -n "${TMP:-}" ]] && rm -rf "$TMP"; }
+cleanup() {
+    [[ -n "${TMP:-}" ]] && rm -rf "$TMP"
+    # El mutante del caso 5d vive como HERMANO en el arbol real (ver alli por
+    # que), asi que su retirada va aqui: un segundo `trap ... EXIT` pisaria
+    # este y fugaria el TMP.
+    [[ -n "${MUTANT_PATH:-}" ]] && rm -f "$MUTANT_PATH"
+    return 0
+}
 trap cleanup EXIT
 TMP=$(mktemp -d)
 DIR="$TMP/store"; mkdir -p "$DIR"
@@ -190,31 +197,41 @@ afirmar "ninguna cita quedó duplicada" "2" \
 # y pasa a nombrar lo que hoy vive ahí. Se mide anulando la función que hace el
 # trabajo, sobre una COPIA del guion — el original no se toca. Un control que no
 # pudiera fallar no probaría nada (sub-patrón D).
-# El mutante NO puede vivir en cualquier sitio: `agent_store.py` resuelve su
-# hermano `corpus/document_types` con `Path(__file__).parents[1]`, así que
-# una copia suelta muere en el import y su silencio se leería como «la cita no
-# se movió» — un verde falso del propio control. Se replica la forma del árbol.
-MUT_RAIZ="$TMP/scripts_mut"; mkdir -p "$MUT_RAIZ/agents"
-ln -sfn "$PWD/.claude/scripts/corpus" "$MUT_RAIZ/corpus"
-MUTANTE="$MUT_RAIZ/agents/agent_store_mutante.py"
+# El mutante NO puede vivir en cualquier sitio, y la razon CAMBIO dos veces.
+# Decia: «`agent_store.py` resuelve su hermano `corpus/document_types` con
+# `Path(__file__).parents[1]`», y replicaba la forma del arbol con un symlink
+# a `.claude/scripts/corpus`. Las dos mitades caducaron:
+#
+#   1. `corpus` se mudo a `src/corpus` con el resto del ecosistema, asi que
+#      el symlink quedo colgando y el mutante moria en el import;
+#   2. `agent_store.py` ya NO cuenta `parents[N]` — asciende al marcador con
+#      `agents_paths` (su comentario :92 lo dice), que es el barrido de
+#      TASK-THYROX-0038. El andamio replicaba una forma que el mecanismo
+#      abandono.
+#
+# Medido por conducta, no leido: una copia suelta en `$TMP` sale 1 (asciende
+# desde TMP y no halla marcador); una copia HERMANA en `src/agents/` sale 0.
+# Por eso el mutante es hermano — y por eso `cleanup` lo retira: vive en el
+# arbol real, no en el fixture.
+MUTANT_PATH="$PWD/src/agents/_agent_store_mutant_$$.py"
 sed 's/^        reancladas = _reanchor_citations_by_subject(.*/        reancladas = 0/' \
-    "$STORE" > "$MUTANTE"
+    "$STORE" > "$MUTANT_PATH"
 afirmar "5d: el mutante SÍ anuló la línea (si no, el control no mide nada)" "1" \
-    "$(grep -c '^        reancladas = 0$' "$MUTANTE")"
+    "$(grep -c '^        reancladas = 0$' "$MUTANT_PATH")"
 afirmar "5d: y el mutante ARRANCA (si muriera en el import, su silencio mentiría)" "0" \
-    "$(python3 "$MUTANTE" --help >/dev/null 2>&1; echo $?)"
+    "$(python3 "$MUTANT_PATH" --help >/dev/null 2>&1; echo $?)"
 cp "$DB" "$DB.antes-del-mutante"
 rm -f "$VIVO5"/*.json
 ficha5 1 "otro que se colo en el ordinal uno"
 ficha5 2 "tarea nueva que se colo primero"
 ficha5 3 "primer sujeto"
-python3 "$MUTANTE" snapshot-tareas --claude-dir "$DIR" --tasks-dir "$VIVO5" \
+python3 "$MUTANT_PATH" snapshot-tareas --claude-dir "$DIR" --tasks-dir "$VIVO5" \
     --session-id "$SES5" --source mutante --permitir-reasignacion >/dev/null 2>&1
 afirmar "5d: sin re-anclaje la cita se queda en el ordinal y cambia de sujeto" \
     "tarea nueva que se colo primero" \
     "$(en5 subject "citation_id = 'TASK-Y-0001'")"
 mv "$DB.antes-del-mutante" "$DB"      # el mutante no sobrevive al caso
-rm -rf "$MUT_RAIZ"
+rm -f "$MUTANT_PATH"; MUTANT_PATH=""
 
 printf '\n%d ok · %d falla(s)\n' "$OK" "$FALLO"
 [[ "$FALLO" -eq 0 ]]
