@@ -1,0 +1,8 @@
+INTACTO                       : 0 fallo(s)
+ANULADA mitad 1 (literal)     : 1 fallo(s)
+ANULADA mitad 2 (cita marcada): 1 fallo(s)
+ANULADO re.M (el rojo de hoy) : 1 fallo(s)
+
+mitad 1 (literal): cae exactamente -> ['test_stays_silent_on_forbidden_form_inside_a_string_literal']
+mitad 2 (cita marcada): cae exactamente -> ['test_stays_silent_on_forbidden_form_marked_as_a_citation']
+re.M: cae exactamente -> ['test_warns_on_forbidden_form_in_a_comment']

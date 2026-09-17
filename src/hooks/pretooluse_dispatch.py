@@ -71,6 +71,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_topic_duplication",
     "detect_narrative_continuity",
     "detect_unbounded_traversal",
+    "detect_code_language",
 )
 
 
