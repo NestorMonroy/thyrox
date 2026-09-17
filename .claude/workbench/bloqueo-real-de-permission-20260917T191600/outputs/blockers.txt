@@ -1,0 +1,490 @@
+BLOQ  src/bypassPermissionsKillswitch.ts  (6 imports)
+        DEP      react                           react
+BLOQ  src/classifierApprovalsHook.ts  (2 imports)
+        DEP      react                           react
+BLOQ  src/classifierDecision.ts  (28 imports)
+        SIBLING  src/yoloClassifier              ./yoloClassifier.js
+        TREE     tool-registry ./tools/AskUserQuestionTool/prompt.js @claude-code-how-works/tool-registry/tools/AskUserQuestionTool/prompt.js
+        TREE     tool-registry ./tools/EnterPlanModeTool/constants.js @claude-code-how-works/tool-registry/tools/EnterPlanModeTool/constants.js
+        TREE     tool-registry ./tools/ExitPlanModeTool/constants.js @claude-code-how-works/tool-registry/tools/ExitPlanModeTool/constants.js
+        TREE     tool-registry ./tools/FileReadTool/prompt.js @claude-code-how-works/tool-registry/tools/FileReadTool/prompt.js
+        TREE     tool-registry ./tools/GlobTool/prompt.js @claude-code-how-works/tool-registry/tools/GlobTool/prompt.js
+        TREE     tool-registry ./tools/GrepTool/prompt.js @claude-code-how-works/tool-registry/tools/GrepTool/prompt.js
+        TREE     tool-registry ./tools/LSPTool/prompt.js @claude-code-how-works/tool-registry/tools/LSPTool/prompt.js
+        TREE     tool-registry ./tools/OverflowTestTool/OverflowTestTool.js @claude-code-how-works/tool-registry/tools/OverflowTestTool/OverflowTestTool.js
+        TREE     tool-registry ./tools/SendMessageTool/constants.js @claude-code-how-works/tool-registry/tools/SendMessageTool/constants.js
+        TREE     tool-registry ./tools/TaskCreateTool/constants.js @claude-code-how-works/tool-registry/tools/TaskCreateTool/constants.js
+        TREE     tool-registry ./tools/TaskOutputTool/constants.js @claude-code-how-works/tool-registry/tools/TaskOutputTool/constants.js
+        TREE     tool-registry ./tools/TaskStopTool/prompt.js @claude-code-how-works/tool-registry/tools/TaskStopTool/prompt.js
+        TREE     tool-registry ./tools/TaskUpdateTool/constants.js @claude-code-how-works/tool-registry/tools/TaskUpdateTool/constants.js
+        TREE     tool-registry ./tools/TeamCreateTool/constants.js @claude-code-how-works/tool-registry/tools/TeamCreateTool/constants.js
+        TREE     tool-registry ./tools/TeamDeleteTool/constants.js @claude-code-how-works/tool-registry/tools/TeamDeleteTool/constants.js
+        TREE     tool-registry ./tools/TerminalCaptureTool/prompt.js @claude-code-how-works/tool-registry/tools/TerminalCaptureTool/prompt.js
+        TREE     tool-registry ./tools/ToolSearchTool/prompt.js @claude-code-how-works/tool-registry/tools/ToolSearchTool/prompt.js
+        TREE     tool-registry ./tools/VerifyPlanExecutionTool/constants.js @claude-code-how-works/tool-registry/tools/VerifyPlanExecutionTool/constants.js
+        TREE     tool-registry ./tools/WorkflowTool/constants.js @claude-code-how-works/tool-registry/tools/WorkflowTool/constants.js
+BLOQ  src/classifierStallTracking.ts  (7 imports)
+        TREE     agent ./sideQuery.js            @claude-code-how-works/agent/sideQuery.js
+        TREE     provider ./antModels.js         @claude-code-how-works/provider/antModels.js
+BLOQ  src/commands/index.ts  (2 imports)
+        SIBLING  src/commands/permissions        ./permissions.js
+        LINK     @thyrox/command-runtime no enlazado en permission @claude-code-how-works/command-runtime/runtime
+BLOQ  src/commands/permissions.tsx  (4 imports)
+        SIBLING  src/components/rules/PermissionRuleList ../components/rules/PermissionRuleList.js
+        TREE     agent ./command.js              @claude-code-how-works/agent/command.js
+        DEP      react                           react
+BLOQ  src/components/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx  (22 imports)
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/QuestionView ./QuestionView.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/SubmitQuestionsView ./SubmitQuestionsView.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/use-multiple-choice-state ./use-multiple-choice-state.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/useQuestionAutoContinue ./useQuestionAutoContinue.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        TREE     output ./markdown.js            @claude-code-how-works/output/markdown.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/hooks/useSettings.js
+        TREE     tool-registry ./tools/AskUserQuestionTool/AskUserQuestionTool.js @claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js
+        DEP      react                           react
+BLOQ  src/components/AskUserQuestionPermissionRequest/PreviewBox.tsx  (6 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        TREE     output ./markdown.js            @claude-code-how-works/output/markdown.js
+        TREE     output ./utils/sliceAnsi.js     @claude-code-how-works/output/utils/sliceAnsi.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/hooks/useSettings.js
+        DEP      react                           react
+BLOQ  src/components/AskUserQuestionPermissionRequest/PreviewQuestionView.tsx  (14 imports)
+        SIBLING  src/components/PermissionRequestTitle ../PermissionRequestTitle.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/PreviewBox ./PreviewBox.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar ./QuestionNavigationBar.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/use-multiple-choice-state ./use-multiple-choice-state.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        LINK     @thyrox/ide no enlazado en permission @claude-code-how-works/ide/ide.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/TextInput.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/promptEditor.js
+        TREE     tool-registry ./tools/AskUserQuestionTool/AskUserQuestionTool.js @claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar.tsx  (5 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        TREE     output ./formatters/truncate.js @claude-code-how-works/output/formatters/truncate.js
+        TREE     tool-registry ./tools/AskUserQuestionTool/AskUserQuestionTool.js @claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/AskUserQuestionPermissionRequest/QuestionView.tsx  (16 imports)
+        SIBLING  src/components/PermissionRequestTitle ../PermissionRequestTitle.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/PreviewQuestionView ./PreviewQuestionView.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar ./QuestionNavigationBar.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/use-multiple-choice-state ./use-multiple-choice-state.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/ide no enlazado en permission @claude-code-how-works/ide/ide.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/index.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/FilePathLink.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/promptEditor.js
+        TREE     tool-registry ./tools/AskUserQuestionTool/AskUserQuestionTool.js @claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/AskUserQuestionPermissionRequest/SubmitQuestionsView.tsx  (9 imports)
+        SIBLING  src/components/PermissionRequestTitle ../PermissionRequestTitle.js
+        SIBLING  src/components/PermissionRuleExplanation ../PermissionRuleExplanation.js
+        SIBLING  src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar ./QuestionNavigationBar.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/index.js
+        TREE     tool-registry ./tools/AskUserQuestionTool/AskUserQuestionTool.js @claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/AskUserQuestionPermissionRequest/use-multiple-choice-state.ts  (1 imports)
+        DEP      react                           react
+BLOQ  src/components/AskUserQuestionPermissionRequest/useQuestionAutoContinue.ts  (2 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      react                           react
+BLOQ  src/components/BashPermissionRequest/BashPermissionRequest.tsx  (32 imports)
+        SIBLING  src/components/PermissionDecisionDebugInfo ../PermissionDecisionDebugInfo.js
+        SIBLING  src/components/PermissionDialog ../PermissionDialog.js
+        SIBLING  src/components/PermissionExplanation ../PermissionExplanation.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/PermissionRuleExplanation ../PermissionRuleExplanation.js
+        SIBLING  src/components/SedEditPermissionRequest/SedEditPermissionRequest ../SedEditPermissionRequest/SedEditPermissionRequest.js
+        SIBLING  src/components/hooks            ../hooks.js
+        SIBLING  src/components/useShellPermissionFeedback ../useShellPermissionFeedback.js
+        SIBLING  src/components/utils            ../utils.js
+        SIBLING  src/components/BashPermissionRequest/bashToolUseOptions ./bashToolUseOptions.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/Spinner/ShimmerChar.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/Spinner/useShimmerAnimation.js
+        TREE     shell ./bash/prefix.js          @claude-code-how-works/shell/bash/prefix.js
+        TREE     shell ./sandbox.js              @claude-code-how-works/shell/sandbox.js
+        TREE     tool-registry ./tools/BashTool/BashTool.js @claude-code-how-works/tool-registry/tools/BashTool/BashTool.js
+        TREE     tool-registry ./tools/BashTool/bashPermissions.js @claude-code-how-works/tool-registry/tools/BashTool/bashPermissions.js
+        TREE     tool-registry ./tools/BashTool/destructiveCommandWarning.js @claude-code-how-works/tool-registry/tools/BashTool/destructiveCommandWarning.js
+        TREE     tool-registry ./tools/BashTool/sedEditParser.js @claude-code-how-works/tool-registry/tools/BashTool/sedEditParser.js
+        TREE     tool-registry ./tools/BashTool/shouldUseSandbox.js @claude-code-how-works/tool-registry/tools/BashTool/shouldUseSandbox.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/BashPermissionRequest/bashToolUseOptions.tsx  (9 imports)
+        SIBLING  src/components/shellPermissionHelpers ../shellPermissionHelpers.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        TREE     shell ./bash/commands.js        @claude-code-how-works/shell/bash/commands.js
+        TREE     tool-registry ./tools/BashTool/toolName.js @claude-code-how-works/tool-registry/tools/BashTool/toolName.js
+BLOQ  src/components/ComputerUseApproval/ComputerUseApproval.tsx  (8 imports)
+        DEP      @ant/computer-use-mcp/sentinelApps @ant/computer-use-mcp/sentinelApps
+        DEP      @ant/computer-use-mcp/types     @ant/computer-use-mcp/types
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/EnterPlanModePermissionRequest/EnterPlanModePermissionRequest.tsx  (9 imports)
+        SIBLING  src/components/PermissionDialog ../PermissionDialog.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/index.js
+        DEP      react                           react
+BLOQ  src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx  (43 imports)
+        SIBLING  src/components/PermissionDialog ../PermissionDialog.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/PermissionRuleExplanation ../PermissionRuleExplanation.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        TREE     agent ./messageQueueManager.js  @claude-code-how-works/agent/messageQueueManager.js
+        LINK     @thyrox/ide no enlazado en permission @claude-code-how-works/ide/ide.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/index.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/Markdown.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/notifications.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/promptEditor.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/ultraplan.js
+        TREE     tool-registry ./tools/ExitPlanModeTool/ExitPlanModeV2Tool.js @claude-code-how-works/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js
+        TREE     tool-registry ./tools/ExitPlanModeTool/constants.js @claude-code-how-works/tool-registry/tools/ExitPlanModeTool/constants.js
+        TREE     tool-registry ./tools/TeamCreateTool/constants.js @claude-code-how-works/tool-registry/tools/TeamCreateTool/constants.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/FallbackPermissionRequest.tsx  (13 imports)
+        SIBLING  src/components/PermissionDialog ./PermissionDialog.js
+        SIBLING  src/components/PermissionPrompt ./PermissionPrompt.js
+        SIBLING  src/components/PermissionRequest ./PermissionRequest.js
+        SIBLING  src/components/PermissionRuleExplanation ./PermissionRuleExplanation.js
+        SIBLING  src/components/hooks            ./hooks.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      react                           react
+BLOQ  src/components/FileEditPermissionRequest/FileEditPermissionRequest.tsx  (10 imports)
+        SIBLING  src/components/FilePermissionDialog/FilePermissionDialog ../FilePermissionDialog/FilePermissionDialog.js
+        SIBLING  src/components/FilePermissionDialog/ideDiffConfig ../FilePermissionDialog/ideDiffConfig.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/FileEditToolDiff.js
+        TREE     tool-registry ./tools/FileEditTool/FileEditTool.js @claude-code-how-works/tool-registry/tools/FileEditTool/FileEditTool.js
+        DEP      react                           react
+BLOQ  src/components/FilePermissionDialog/FilePermissionDialog.tsx  (19 imports)
+        SIBLING  src/components/PermissionDialog ../PermissionDialog.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/WorkerBadge      ../WorkerBadge.js
+        SIBLING  src/components/hooks            ../hooks.js
+        SIBLING  src/components/FilePermissionDialog/ideDiffConfig ./ideDiffConfig.js
+        SIBLING  src/components/FilePermissionDialog/permissionOptions ./permissionOptions.js
+        SIBLING  src/components/FilePermissionDialog/useFilePermissionDialog ./useFilePermissionDialog.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/ide no enlazado en permission @claude-code-how-works/ide/hooks/useDiffInIDE.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/index.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/ShowInIDEPrompt.js
+        DEP      react                           react
+BLOQ  src/components/FilePermissionDialog/ideDiffConfig.ts  (1 imports)
+        SIBLING  src/components/FilePermissionDialog/useFilePermissionDialog ./useFilePermissionDialog.js
+BLOQ  src/components/FilePermissionDialog/permissionOptions.tsx  (10 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/keybindings/shortcutFormat.js
+        DEP      react                           react
+BLOQ  src/components/FilePermissionDialog/useFilePermissionDialog.ts  (10 imports)
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/FilePermissionDialog/permissionOptions ./permissionOptions.js
+        SIBLING  src/components/FilePermissionDialog/usePermissionHandler ./usePermissionHandler.js
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        DEP      react                           react
+BLOQ  src/components/FilePermissionDialog/usePermissionHandler.ts  (10 imports)
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/FilePermissionDialog/permissionOptions ./permissionOptions.js
+BLOQ  src/components/FileWritePermissionRequest/FileWritePermissionRequest.tsx  (12 imports)
+        SIBLING  src/components/FilePermissionDialog/FilePermissionDialog ../FilePermissionDialog/FilePermissionDialog.js
+        SIBLING  src/components/FilePermissionDialog/ideDiffConfig ../FilePermissionDialog/ideDiffConfig.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/FileWritePermissionRequest/FileWriteToolDiff ./FileWriteToolDiff.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        TREE     tool-registry ./tools/FileWriteTool/FileWriteTool.js @claude-code-how-works/tool-registry/tools/FileWriteTool/FileWriteTool.js
+        DEP      react                           react
+BLOQ  src/components/FileWritePermissionRequest/FileWriteToolDiff.tsx  (6 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/HighlightedCode.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/StructuredDiff.js
+        DEP      react                           react
+BLOQ  src/components/FilesystemPermissionRequest/FilesystemPermissionRequest.tsx  (6 imports)
+        SIBLING  src/components/FallbackPermissionRequest ../FallbackPermissionRequest.js
+        SIBLING  src/components/FilePermissionDialog/FilePermissionDialog ../FilePermissionDialog/FilePermissionDialog.js
+        SIBLING  src/components/FilePermissionDialog/useFilePermissionDialog ../FilePermissionDialog/useFilePermissionDialog.js
+        SIBLING  src/components/permissionRequestTypes ../permissionRequestTypes.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      react                           react
+LIBRE src/components/MonitorPermissionRequest/MonitorPermissionRequest.ts  (0 imports)
+BLOQ  src/components/NotebookEditPermissionRequest/NotebookEditPermissionRequest.tsx  (9 imports)
+        SIBLING  src/components/FilePermissionDialog/FilePermissionDialog ../FilePermissionDialog/FilePermissionDialog.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/NotebookEditPermissionRequest/NotebookEditToolDiff ./NotebookEditToolDiff.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        TREE     tool-registry ./tools/NotebookEditTool/NotebookEditTool.js @claude-code-how-works/tool-registry/tools/NotebookEditTool/NotebookEditTool.js
+        DEP      react                           react
+BLOQ  src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx  (12 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/HighlightedCode.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/StructuredDiff.js
+        TREE     tool-registry ./notebook.js     @claude-code-how-works/tool-registry/notebook.js
+        DEP      react                           react
+BLOQ  src/components/PermissionDecisionDebugInfo.tsx  (14 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        TREE     shell ./sandbox.js              @claude-code-how-works/shell/sandbox.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/PermissionDialog.tsx  (4 imports)
+        SIBLING  src/components/PermissionRequestTitle ./PermissionRequestTitle.js
+        SIBLING  src/components/WorkerBadge      ./WorkerBadge.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      react                           react
+BLOQ  src/components/PermissionExplanation.tsx  (8 imports)
+        SIBLING  src/permissionExplainer         ../permissionExplainer.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/Spinner/ShimmerChar.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/Spinner/useShimmerAnimation.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/keybindings/useShortcutDisplay.js
+        DEP      react                           react
+BLOQ  src/components/PermissionPrompt.tsx  (6 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        DEP      react                           react
+BLOQ  src/components/PermissionRequest.tsx  (42 imports)
+        SIBLING  src/components/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest ./AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.js
+        SIBLING  src/components/BashPermissionRequest/BashPermissionRequest ./BashPermissionRequest/BashPermissionRequest.js
+        SIBLING  src/components/EnterPlanModePermissionRequest/EnterPlanModePermissionRequest ./EnterPlanModePermissionRequest/EnterPlanModePermissionRequest.js
+        SIBLING  src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest ./ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.js
+        SIBLING  src/components/FallbackPermissionRequest ./FallbackPermissionRequest.js
+        SIBLING  src/components/FileEditPermissionRequest/FileEditPermissionRequest ./FileEditPermissionRequest/FileEditPermissionRequest.js
+        SIBLING  src/components/FileWritePermissionRequest/FileWritePermissionRequest ./FileWritePermissionRequest/FileWritePermissionRequest.js
+        SIBLING  src/components/FilesystemPermissionRequest/FilesystemPermissionRequest ./FilesystemPermissionRequest/FilesystemPermissionRequest.js
+        SIBLING  src/components/MonitorPermissionRequest/MonitorPermissionRequest ./MonitorPermissionRequest/MonitorPermissionRequest.js
+        SIBLING  src/components/NotebookEditPermissionRequest/NotebookEditPermissionRequest ./NotebookEditPermissionRequest/NotebookEditPermissionRequest.js
+        SIBLING  src/components/PowerShellPermissionRequest/PowerShellPermissionRequest ./PowerShellPermissionRequest/PowerShellPermissionRequest.js
+        SIBLING  src/components/ReviewArtifactPermissionRequest/ReviewArtifactPermissionRequest ./ReviewArtifactPermissionRequest/ReviewArtifactPermissionRequest.js
+        SIBLING  src/components/SkillPermissionRequest/SkillPermissionRequest ./SkillPermissionRequest/SkillPermissionRequest.js
+        SIBLING  src/components/WebFetchPermissionRequest/WebFetchPermissionRequest ./WebFetchPermissionRequest/WebFetchPermissionRequest.js
+        SIBLING  src/components/WorkerBadge      ./WorkerBadge.js
+        SIBLING  src/components/permissionRequestTypes ./permissionRequestTypes.js
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/hooks/useNotifyAfterTimeout.js
+        TREE     tool-registry ./tools/AskUserQuestionTool/AskUserQuestionTool.js @claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js
+        TREE     tool-registry ./tools/BashTool/BashTool.js @claude-code-how-works/tool-registry/tools/BashTool/BashTool.js
+        TREE     tool-registry ./tools/EnterPlanModeTool/EnterPlanModeTool.js @claude-code-how-works/tool-registry/tools/EnterPlanModeTool/EnterPlanModeTool.js
+        TREE     tool-registry ./tools/ExitPlanModeTool/ExitPlanModeV2Tool.js @claude-code-how-works/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js
+        TREE     tool-registry ./tools/FileEditTool/FileEditTool.js @claude-code-how-works/tool-registry/tools/FileEditTool/FileEditTool.js
+        TREE     tool-registry ./tools/FileReadTool/FileReadTool.js @claude-code-how-works/tool-registry/tools/FileReadTool/FileReadTool.js
+        TREE     tool-registry ./tools/FileWriteTool/FileWriteTool.js @claude-code-how-works/tool-registry/tools/FileWriteTool/FileWriteTool.js
+        TREE     tool-registry ./tools/GlobTool/GlobTool.js @claude-code-how-works/tool-registry/tools/GlobTool/GlobTool.js
+        TREE     tool-registry ./tools/GrepTool/GrepTool.js @claude-code-how-works/tool-registry/tools/GrepTool/GrepTool.js
+        TREE     tool-registry ./tools/MonitorTool/MonitorTool.js @claude-code-how-works/tool-registry/tools/MonitorTool/MonitorTool.js
+        TREE     tool-registry ./tools/NotebookEditTool/NotebookEditTool.js @claude-code-how-works/tool-registry/tools/NotebookEditTool/NotebookEditTool.js
+        TREE     tool-registry ./tools/PowerShellTool/PowerShellTool.js @claude-code-how-works/tool-registry/tools/PowerShellTool/PowerShellTool.js
+        TREE     tool-registry ./tools/ReviewArtifactTool/ReviewArtifactTool.js @claude-code-how-works/tool-registry/tools/ReviewArtifactTool/ReviewArtifactTool.js
+        TREE     tool-registry ./tools/SkillTool/SkillTool.js @claude-code-how-works/tool-registry/tools/SkillTool/SkillTool.js
+        TREE     tool-registry ./tools/WebFetchTool/WebFetchTool.js @claude-code-how-works/tool-registry/tools/WebFetchTool/WebFetchTool.js
+        TREE     tool-registry ./tools/WorkflowTool/WorkflowTool.js @claude-code-how-works/tool-registry/tools/WorkflowTool/WorkflowTool.js
+        DEP      react                           react
+BLOQ  src/components/PermissionRequestTitle.tsx  (3 imports)
+        SIBLING  src/components/WorkerBadge      ./WorkerBadge.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      react                           react
+BLOQ  src/components/PermissionRuleExplanation.tsx  (7 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      react                           react
+BLOQ  src/components/PowerShellPermissionRequest/PowerShellPermissionRequest.tsx  (20 imports)
+        SIBLING  src/components/PermissionDecisionDebugInfo ../PermissionDecisionDebugInfo.js
+        SIBLING  src/components/PermissionDialog ../PermissionDialog.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/PermissionRuleExplanation ../PermissionRuleExplanation.js
+        SIBLING  src/components/hooks            ../hooks.js
+        SIBLING  src/components/useShellPermissionFeedback ../useShellPermissionFeedback.js
+        SIBLING  src/components/utils            ../utils.js
+        SIBLING  src/components/PowerShellPermissionRequest/powershellToolUseOptions ./powershellToolUseOptions.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        TREE     shell ./powershell/staticPrefix.js @claude-code-how-works/shell/powershell/staticPrefix.js
+        TREE     tool-registry ./tools/PowerShellTool/PowerShellTool.js @claude-code-how-works/tool-registry/tools/PowerShellTool/PowerShellTool.js
+        TREE     tool-registry ./tools/PowerShellTool/destructiveCommandWarning.js @claude-code-how-works/tool-registry/tools/PowerShellTool/destructiveCommandWarning.js
+        TREE     tool-registry ./tools/PowerShellTool/readOnlyValidation.js @claude-code-how-works/tool-registry/tools/PowerShellTool/readOnlyValidation.js
+        DEP      react                           react
+BLOQ  src/components/PowerShellPermissionRequest/powershellToolUseOptions.tsx  (5 imports)
+        SIBLING  src/components/shellPermissionHelpers ../shellPermissionHelpers.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        TREE     tool-registry ./tools/PowerShellTool/toolName.js @claude-code-how-works/tool-registry/tools/PowerShellTool/toolName.js
+LIBRE src/components/ReviewArtifactPermissionRequest/ReviewArtifactPermissionRequest.ts  (0 imports)
+BLOQ  src/components/SandboxPermissionRequest.tsx  (7 imports)
+        SIBLING  src/components/PermissionDialog ./PermissionDialog.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        TREE     shell ./sandbox.js              @claude-code-how-works/shell/sandbox.js
+        DEP      react                           react
+BLOQ  src/components/SedEditPermissionRequest/SedEditPermissionRequest.tsx  (12 imports)
+        SIBLING  src/components/FilePermissionDialog/FilePermissionDialog ../FilePermissionDialog/FilePermissionDialog.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/FileEditToolDiff.js
+        TREE     tool-registry ./tools/BashTool/BashTool.js @claude-code-how-works/tool-registry/tools/BashTool/BashTool.js
+        TREE     tool-registry ./tools/BashTool/sedEditParser.js @claude-code-how-works/tool-registry/tools/BashTool/sedEditParser.js
+        DEP      react                           react
+BLOQ  src/components/SkillPermissionRequest/SkillPermissionRequest.tsx  (14 imports)
+        SIBLING  src/components/PermissionDialog ../PermissionDialog.js
+        SIBLING  src/components/PermissionPrompt ../PermissionPrompt.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/PermissionRuleExplanation ../PermissionRuleExplanation.js
+        SIBLING  src/components/hooks            ../hooks.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        TREE     tool-registry ./tools/SkillTool/SkillTool.js @claude-code-how-works/tool-registry/tools/SkillTool/SkillTool.js
+        TREE     tool-registry ./tools/SkillTool/constants.js @claude-code-how-works/tool-registry/tools/SkillTool/constants.js
+        DEP      react                           react
+BLOQ  src/components/WebFetchPermissionRequest/WebFetchPermissionRequest.tsx  (10 imports)
+        SIBLING  src/components/PermissionDialog ../PermissionDialog.js
+        SIBLING  src/components/PermissionRequest ../PermissionRequest.js
+        SIBLING  src/components/PermissionRuleExplanation ../PermissionRuleExplanation.js
+        SIBLING  src/components/hooks            ../hooks.js
+        SIBLING  src/components/utils            ../utils.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        TREE     tool-registry ./tools/WebFetchTool/WebFetchTool.js @claude-code-how-works/tool-registry/tools/WebFetchTool/WebFetchTool.js
+        DEP      react                           react
+BLOQ  src/components/WorkerBadge.tsx  (4 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        TREE     tool-registry ./utils/inkColor.js @claude-code-how-works/tool-registry/utils/inkColor.js
+        DEP      react                           react
+BLOQ  src/components/WorkerPendingPermission.tsx  (5 imports)
+        SIBLING  src/components/WorkerBadge      ./WorkerBadge.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/Spinner.js
+        LINK     @thyrox/swarm no enlazado en permission @claude-code-how-works/swarm/teammateState.js
+        DEP      react                           react
+BLOQ  src/components/hooks.ts  (16 imports)
+        SIBLING  src/components/PermissionRequest ./PermissionRequest.js
+        TREE     shell ./bash/commands.js        @claude-code-how-works/shell/bash/commands.js
+        TREE     shell ./sandbox.js              @claude-code-how-works/shell/sandbox.js
+        TREE     tool-registry ./tools/BashTool/BashTool.js @claude-code-how-works/tool-registry/tools/BashTool/BashTool.js
+        DEP      react                           react
+BLOQ  src/components/permissionRequestTypes.ts  (8 imports)
+        SIBLING  src/components/WorkerBadge      ./WorkerBadge.js
+        DEP      react                           react
+BLOQ  src/components/rules/AddPermissionRules.tsx  (13 imports)
+        SIBLING  src/components/rules/PermissionRuleDescription ./PermissionRuleDescription.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        TREE     shell ./sandbox.js              @claude-code-how-works/shell/sandbox.js
+        DEP      react                           react
+BLOQ  src/components/rules/AddWorkspaceDirectory.tsx  (12 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/ConfigurableShortcutHint.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/PromptInput/PromptInputFooterSuggestions.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/TextInput.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/utils/suggestions/directoryCompletion.js
+        DEP      figures                         figures
+        DEP      react                           react
+        DEP      usehooks-ts                     usehooks-ts
+BLOQ  src/components/rules/PermissionRuleDescription.tsx  (4 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        TREE     tool-registry ./tools/BashTool/BashTool.js @claude-code-how-works/tool-registry/tools/BashTool/BashTool.js
+        DEP      react                           react
+BLOQ  src/components/rules/PermissionRuleInput.tsx  (10 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/TextInput.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/hooks/useExitOnCtrlCDWithKeybindings.js
+        TREE     tool-registry ./tools/BashTool/BashTool.js @claude-code-how-works/tool-registry/tools/BashTool/BashTool.js
+        TREE     tool-registry ./tools/WebFetchTool/WebFetchTool.js @claude-code-how-works/tool-registry/tools/WebFetchTool/WebFetchTool.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/rules/PermissionRuleList.tsx  (26 imports)
+        SIBLING  src/components/rules/AddPermissionRules ./AddPermissionRules.js
+        SIBLING  src/components/rules/AddWorkspaceDirectory ./AddWorkspaceDirectory.js
+        SIBLING  src/components/rules/PermissionRuleDescription ./PermissionRuleDescription.js
+        SIBLING  src/components/rules/PermissionRuleInput ./PermissionRuleInput.js
+        SIBLING  src/components/rules/RecentDenialsTab ./RecentDenialsTab.js
+        SIBLING  src/components/rules/RemoveWorkspaceDirectory ./RemoveWorkspaceDirectory.js
+        SIBLING  src/components/rules/WorkspaceTab ./WorkspaceTab.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      @anthropic/ink/keybindings      @anthropic/ink/keybindings
+        DEP      @anthropic/ink/search           @anthropic/ink/search
+        LINK     @thyrox/command-runtime no enlazado en permission @claude-code-how-works/command-runtime/runtime
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/ui/option.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/hooks/useExitOnCtrlCDWithKeybindings.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/rules/RecentDenialsTab.tsx  (4 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        DEP      react                           react
+BLOQ  src/components/rules/RemoveWorkspaceDirectory.tsx  (5 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        DEP      react                           react
+BLOQ  src/components/rules/WorkspaceTab.tsx  (7 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/command-runtime no enlazado en permission @claude-code-how-works/command-runtime/runtime
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/components/CustomSelect/select.js
+        DEP      figures                         figures
+        DEP      react                           react
+BLOQ  src/components/shellPermissionHelpers.tsx  (6 imports)
+        DEP      @anthropic/ink                  @anthropic/ink
+        DEP      react                           react
+BLOQ  src/components/useShellPermissionFeedback.ts  (6 imports)
+        SIBLING  src/components/PermissionRequest ./PermissionRequest.js
+        SIBLING  src/components/utils            ./utils.js
+        DEP      react                           react
+BLOQ  src/components/utils.ts  (3 imports)
+        SIBLING  src/components/PermissionRequest ./PermissionRequest.js
+BLOQ  src/permissionExplainer.ts  (10 imports)
+        TREE     agent ./sideQuery.js            @claude-code-how-works/agent/sideQuery.js
+BLOQ  src/toolPermission/PermissionContext.ts  (19 imports)
+        SIBLING  src/components/PermissionRequest ../components/PermissionRequest.js
+        SIBLING  src/toolPermission/permissionLogging ./permissionLogging.js
+        TREE     tool-registry ./tools/BashTool/bashPermissions.js @claude-code-how-works/tool-registry/tools/BashTool/bashPermissions.js
+        TREE     tool-registry ./tools/BashTool/toolName.js @claude-code-how-works/tool-registry/tools/BashTool/toolName.js
+BLOQ  src/toolPermission/handlers/coordinatorHandler.ts  (6 imports)
+        SIBLING  src/toolPermission/PermissionContext ../PermissionContext.js
+BLOQ  src/toolPermission/handlers/interactiveHandler.ts  (17 imports)
+        SIBLING  src/toolPermission/PermissionContext ../PermissionContext.js
+        DEP      @anthropic/ink                  @anthropic/ink
+        LINK     @thyrox/bridge no enlazado en permission @claude-code-how-works/bridge/bridgePermissionCallbacks.js
+        LINK     @thyrox/mcp-runtime no enlazado en permission @claude-code-how-works/mcp-runtime/channelNotification.js
+        LINK     @thyrox/mcp-runtime no enlazado en permission @claude-code-how-works/mcp-runtime/channelPermissions.js
+        TREE     tool-registry ./tools/BashTool/bashPermissions.js @claude-code-how-works/tool-registry/tools/BashTool/bashPermissions.js
+        TREE     tool-registry ./tools/BashTool/toolName.js @claude-code-how-works/tool-registry/tools/BashTool/toolName.js
+BLOQ  src/toolPermission/handlers/swarmWorkerHandler.ts  (11 imports)
+        SIBLING  src/toolPermission/PermissionContext ../PermissionContext.js
+        LINK     @thyrox/repl no enlazado en permission @claude-code-how-works/repl/hooks/useSwarmPermissionPoller.js
+        LINK     @thyrox/swarm no enlazado en permission @claude-code-how-works/swarm
+BLOQ  src/toolPermission/permissionLogging.ts  (9 imports)
+        TREE     shell ./sandbox.js              @claude-code-how-works/shell/sandbox.js
+BLOQ  src/yoloClassifier.ts  (32 imports)
+        SIBLING  src/classifierStallTracking     ./classifierStallTracking.js
+        SIBLING  src/yoloSystemPrompt            ./yoloSystemPrompt.js
+        TREE     agent ./sideQuery.js            @claude-code-how-works/agent/sideQuery.js
+        TREE     agent ./tokens.js               @claude-code-how-works/agent/tokens.js
+        TREE     provider ./withRetry.js         @claude-code-how-works/provider/withRetry.js
+        TREE     tool-registry ./tools/AskUserQuestionTool/prompt.js @claude-code-how-works/tool-registry/tools/AskUserQuestionTool/prompt.js
+BLOQ  src/yoloSystemPrompt.ts  (12 imports)
+        SIBLING  src/yolo-classifier-prompts/auto_mode_system_prompt.txt ./yolo-classifier-prompts/auto_mode_system_prompt.txt
+        SIBLING  src/yolo-classifier-prompts/permissions_anthropic.txt ./yolo-classifier-prompts/permissions_anthropic.txt
+        SIBLING  src/yolo-classifier-prompts/permissions_external.txt ./yolo-classifier-prompts/permissions_external.txt
+        TREE     provider ./user.js              @claude-code-how-works/provider/user.js
+
+modulos ausentes: 69
+  DEP       121 aristas
+  LINK      66 aristas
+  SIBLING   133 aristas
+  TREE      95 aristas
