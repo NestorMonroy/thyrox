@@ -1,0 +1,3 @@
+ERROR — no se encontro /home/user/thyrox/.githooks/post-commit.
+  NO se emite un conteo: un 0 aqui seria un verde falso.
+exit=2 (2 = rehusa sin emitir conteo)
