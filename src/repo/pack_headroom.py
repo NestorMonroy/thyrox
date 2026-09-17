@@ -29,6 +29,11 @@ Un guion de dos salidas —«cabe / no cabe»— no separa la primera de la segu
 que es justo la decision que hacia falta tomar. Un verde que no discrimina es
 el sub-patron D de ``metrica-decide-la-conclusion.md``.
 
+**El codigo de salida es un veredicto, no un error.** Un ``1`` aqui significa
+«cabe el incremental», no «fallo algo»: bajo ``set -e`` aborta la cadena que lo
+invoque. Quien lo llame desde un guion compara el codigo explicitamente en vez
+de dejar que el shell lo interprete.
+
 *Métrica:* ``git count-objects -v`` (sueltos y su peso, paquetes y el suyo) y el
 disco libre del sistema de archivos donde vive el clon.
 
@@ -137,15 +142,24 @@ def _mib(value: float) -> str:
 
 def report(headroom: Headroom, advice: Advice,
            margin: float = SAFETY_MARGIN) -> str:
+    def _cabe(peak: int) -> str:
+        # El margen se aplica AQUI, en la comparacion — no al disco libre. La
+        # version anterior colgaba «(margen aplicado ×1.15)» de la linea del
+        # disco libre, y quien la leyera creeria que esa cifra ya venia
+        # descontada. La forma que no se puede malleer es mostrar la
+        # comparacion entera: el operando, el factor y el resultado.
+        exigido = peak * margin
+        return (f"{_mib(peak)} × {margin} = {_mib(exigido)}"
+                f"   → {'cabe' if headroom.free_bytes >= exigido else 'NO cabe'}")
+
     return "\n".join([
         f"objetos sueltos   {headroom.loose_objects}"
         f"   ({_mib(headroom.loose_bytes)})",
         f"empaquetados      {headroom.packed_objects}"
         f"   ({_mib(headroom.pack_bytes)})",
-        f"disco libre       {_mib(headroom.free_bytes)}"
-        f"   (margen aplicado ×{margin})",
-        f"pico completo     {_mib(headroom.full_peak)}"
-        f"   · pico incremental {_mib(headroom.loose_peak)}",
+        f"disco libre       {_mib(headroom.free_bytes)}   (crudo, sin margen)",
+        f"pico completo     {_cabe(headroom.full_peak)}",
+        f"pico incremental  {_cabe(headroom.loose_peak)}",
         f"VEREDICTO         {advice.value}",
         f"  lanzar: {advice.command}",
     ])

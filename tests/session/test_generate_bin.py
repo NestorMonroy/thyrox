@@ -421,6 +421,30 @@ def test_library_modules_are_silent_when_run_as_scripts() -> None:
           not ruidosos, f"hablan o fallan: {ruidosos}")
 
 
+def test_repo_family_reaches_bin() -> None:
+    """La familia ``src/repo`` tambien es superficie de invocacion.
+
+    ``SOURCE_DIRS`` enumeraba session/verify/agents/docs, y ``src/repo`` queda
+    fuera: sus entrypoints —``pack_headroom.py`` y los dos ``.sh`` de disco—
+    solo se alcanzan por ruta al fuente, que es justo lo que
+    ``trabajo-en-segundo-plano.md`` declara como la forma que NO exporta
+    ``PYTHONPATH``. Es TASK-THYROX-0051.
+
+    El control mide el arbol REAL, no uno sintetico: el sintetico se construye
+    desde ``SOURCE_DIRS``, asi que pasaria con la constante corta y con la
+    larga — no discriminaria (sub-patron D).
+    """
+    check("src/repo esta en SOURCE_DIRS", "src/repo" in gb.SOURCE_DIRS,
+          str(gb.SOURCE_DIRS))
+    plan = gb.planned_files(ROOT)
+    for esperado in ("pack_headroom", "disk-headroom", "disk-usage"):
+        check(f"bin/{esperado} esta en el plan", esperado in plan,
+              str(sorted(k for k in plan if "disk" in k or "pack" in k)))
+    bindir = ROOT / "bin"
+    for esperado in ("pack_headroom", "disk-headroom", "disk-usage"):
+        check(f"bin/{esperado} existe en el arbol", (bindir / esperado).exists())
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         base = pathlib.Path(tmp)
@@ -440,6 +464,7 @@ def main() -> int:
     test_builtin_collision_on_real_tree()
     test_cli_check_exit_code()
     test_library_modules_are_silent_when_run_as_scripts()
+    test_repo_family_reaches_bin()
 
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "
           f"(alcance medido: generate_bin.py)")
