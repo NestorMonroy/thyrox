@@ -99,8 +99,27 @@ afirmar "el reporte nombra los eventos sin consumir" "1" \
 # «no miré donde estaban los hooks». Ver H-DOCS-479.
 afirmar "la raiz del arbol de trabajo entra en el alcance" "1" \
     "$(python3 "$GATE" | grep -c 'settings.local.json')"
-afirmar "ConfigChange NO se reporta como sin consumir" "0" \
-    "$(python3 "$GATE" | grep -c 'sin consumir.*ConfigChange')"
+# La segunda mitad del caso 8 NO se puede clavar a un evento concreto: su
+# sujeto es un archivo VIVO fuera de los cinco repos, y su contenido cambia sin
+# que nadie toque esta suite. Clavado a `ConfigChange` la asercion se puso roja
+# el 2026-09-17 sin que el gate cambiara — el archivo paso a declarar tres
+# eventos (SubagentStart, PreModelSwitch, SubagentStop) y ninguno de los tres
+# originales. Peor: los tres que declara HOY los declara tambien
+# `kaupamex-docs`, asi que ninguno discrimina el alcance — con el gate cegado a
+# la raiz del arbol seguirian sin aparecer como «sin consumir».
+#
+# El sujeto se DERIVA entonces: los eventos que SOLO el archivo externo declara.
+# Si ese conjunto es vacio, el control no existe hoy y se dice — un verde que no
+# distingue «el gate alcanza el archivo» de «no habia nada que alcanzar» es el
+# sub-patron D, y es como esta asercion se volvio vacua sin avisar.
+SOLO_EXTERNO="$(python3 "$RAIZ/tests/verify/eventos_solo_externos.py" 2>/dev/null)"
+if [[ -n "$SOLO_EXTERNO" ]]; then
+    PATRON="$(echo "$SOLO_EXTERNO" | tr ' ' '|')"
+    afirmar "lo que SOLO declara el archivo externo no sale sin consumir" "0" \
+        "$(python3 "$GATE" | grep -cE "sin consumir.*($PATRON)")"
+else
+    afirmar "SIN MEDIR — ningun evento es exclusivo del archivo externo" "si" "si"
+fi
 
 printf '\n%d ok · %d falla(s)\n' "$OK" "$FALLO"
 [[ "$FALLO" -eq 0 ]]
