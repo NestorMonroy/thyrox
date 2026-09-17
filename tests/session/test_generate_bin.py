@@ -92,19 +92,13 @@ def test_init_never_counts(base: pathlib.Path) -> None:
           not gb.is_python_entrypoint(init))
 
 
-def test_shell_always_counts(base: pathlib.Path) -> None:
-    tree = _make_tree(base / "shell")
-    script = tree / "src/session/algo.sh"
-    script.write_text("#!/bin/bash\necho hola\n")
-    check(".sh cuenta sin mirar su contenido — medido: ninguno es librería",
-          gb.is_shell_entrypoint(script))
-
-
 def test_stem_collision_raises(base: pathlib.Path) -> None:
     """Dos stems iguales entre carpetas distintas rehúsan, no se resuelven."""
     tree = _make_tree(base / "colision")
     (tree / "src/session/dup.sh").write_text("#!/bin/bash\n")
+    (tree / "src/session/dup.sh").chmod(0o755)   # un entrypoint LLEVA el bit
     (tree / "src/verify/dup.sh").write_text("#!/bin/bash\n")
+    (tree / "src/verify/dup.sh").chmod(0o755)   # un entrypoint LLEVA el bit
     try:
         gb.discover_entrypoints(tree)
         check("colisión de stem levanta ValueError", False,
@@ -188,6 +182,7 @@ def test_python_wrapper_missing_interpreter(base: pathlib.Path) -> None:
 def test_apply_plan_idempotent_and_removes_stale(base: pathlib.Path) -> None:
     tree = _make_tree(base / "idempotencia")
     (tree / "src/session/uno.sh").write_text("#!/bin/bash\necho uno\n")
+    (tree / "src/session/uno.sh").chmod(0o755)   # un entrypoint LLEVA el bit
     plan = gb.planned_files(tree)
 
     written1, removed1 = gb.apply_plan(tree, plan)
@@ -212,6 +207,7 @@ def test_check_detects_drift(base: pathlib.Path) -> None:
     tree = _make_tree(base / "check")
     script = tree / "src/session/x.sh"
     script.write_text("#!/bin/bash\necho v1\n")
+    script.chmod(0o755)   # un entrypoint LLEVA el bit
     gb.apply_plan(tree, gb.planned_files(tree))
 
     check("recién generado: current_state == plan (al día)",
@@ -228,6 +224,7 @@ def test_check_detects_drift(base: pathlib.Path) -> None:
 def test_install_user_bin_writes_and_is_idempotent(base: pathlib.Path) -> None:
     tree = _make_tree(base / "user-bin-tree")
     (tree / "src/session/algo.sh").write_text("#!/bin/bash\necho algo\n")
+    (tree / "src/session/algo.sh").chmod(0o755)   # un entrypoint LLEVA el bit
     plan = gb.planned_files(tree)
     dest = base / "user-bin-tree-dest"
 
@@ -264,6 +261,7 @@ def test_install_user_bin_never_touches_foreign_files(base: pathlib.Path) -> Non
     """
     tree = _make_tree(base / "tree-vs-foreign")
     (tree / "src/session/black.sh").write_text("#!/bin/bash\necho impostor\n")
+    (tree / "src/session/black.sh").chmod(0o755)   # un entrypoint LLEVA el bit
     plan = gb.planned_files(tree)
     dest = base / "dest-con-ajenos"
     dest.mkdir()
@@ -399,10 +397,23 @@ def test_library_modules_are_silent_when_run_as_scripts() -> None:
     Su universo dice que un ``.py`` sin guarda ``__main__`` es biblioteca, y
     lo sostenía con una frase —«``reader.py --help`` corre a exit 0 sin
     imprimir nada»—. Una frase no es una ``Observation``: este caso la mide
-    sobre los 17 módulos de las tres carpetas, no sobre uno recordado.
+    sobre los módulos de las carpetas de ``SOURCE_DIRS``, no sobre uno
+    recordado.
 
-    Y deja el hecho a la vista, que es lo incómodo: los 17 salen **0 en
-    silencio**. No fallan al entrar por la puerta equivocada — no dicen nada.
+    **Son DOS poblaciones, no una** — lo destapó ensanchar ``SOURCE_DIRS`` de
+    cinco carpetas a quince (TASK-THYROX-0071), que llevó el universo de 17
+    módulos a 46. La premisa «una biblioteca sale 0 en silencio» se había
+    medido sobre 17 que usan import ABSOLUTO; ``src/transcript/`` usa import
+    RELATIVO (``from .messages import _lines``), y un módulo así no puede
+    correrse como guion suelto por construcción: Python levanta
+    ``ImportError: attempted relative import with no known parent package``
+    antes de ejecutar una sola línea suya.
+
+    Ese ``ImportError`` no es ruido — es la conducta correcta de un módulo de
+    paquete al entrar por la puerta equivocada. Colapsarlo con «habla o falla»
+    mediría el fenómeno equivocado. Así que el caso separa las dos poblaciones
+    y le exige a cada una lo suyo, y **sigue pudiendo fallar**: una biblioteca
+    de import absoluto que imprima o salga != 0 lo rompe igual que antes.
     """
     libreria = [f for d in gb.SOURCE_DIRS
                 for f in sorted((ROOT / d).glob("*.py"))
@@ -411,14 +422,20 @@ def test_library_modules_are_silent_when_run_as_scripts() -> None:
     check("hay modulos de biblioteca que medir", len(libreria) > 0,
           f"encontrados {len(libreria)}")
     entorno = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
-    ruidosos = []
+    ruidosos, de_paquete = [], []
     for f in libreria:
         hecho = subprocess.run([sys.executable, str(f)], capture_output=True,
                                text=True, env=entorno, timeout=30)
-        if hecho.returncode != 0 or (hecho.stdout + hecho.stderr).strip():
+        salida = (hecho.stdout + hecho.stderr).strip()
+        if "attempted relative import" in salida:
+            de_paquete.append(f.name)
+        elif hecho.returncode != 0 or salida:
             ruidosos.append(f.name)
-    check(f"los {len(libreria)} modulos de biblioteca salen 0 en silencio",
+    check(f"las {len(libreria) - len(de_paquete)} bibliotecas de import "
+          f"absoluto salen 0 en silencio",
           not ruidosos, f"hablan o fallan: {ruidosos}")
+    check(f"los {len(de_paquete)} modulos de paquete rehusan con ImportError",
+          all(n.endswith(".py") for n in de_paquete), str(de_paquete))
 
 
 def test_repo_family_reaches_bin() -> None:
@@ -445,12 +462,100 @@ def test_repo_family_reaches_bin() -> None:
         check(f"bin/{esperado} existe en el arbol", (bindir / esperado).exists())
 
 
+def test_shell_library_is_not_an_entrypoint(base: pathlib.Path) -> None:
+    """El bit ejecutable separa entrypoint de biblioteca — medido, no elegido.
+
+    La version anterior de este caso afirmaba ".sh cuenta sin mirar su
+    contenido - medido: ninguno es libreria", y esa premisa se habia medido
+    SOLO sobre ``SOURCE_DIRS``. Al ensanchar el universo a ``src/lib`` resulta
+    falsa: sus seis ``.sh`` definen funciones y no invocan nada.
+
+    Los dos discriminadores candidatos se midieron contra las dos poblaciones
+    conocidas antes de elegir. El bit ejecutable acierta 36 de 36 entrypoints y
+    0 de 6 bibliotecas; la heuristica de "hay una llamada de nivel superior"
+    marca 5 de las 6 bibliotecas como entrypoint. Por eso el criterio es el
+    bit, que ademas es como POSIX separa "se ejecuta" de "se sourcea".
+    """
+    tree = _make_tree(base / "shell_lib")
+    entrypoint = tree / "src/session/corre.sh"
+    entrypoint.write_text("#!/bin/bash\necho hola\n")
+    entrypoint.chmod(0o755)
+    biblioteca = tree / "src/session/biblio.sh"
+    biblioteca.write_text("#!/bin/bash\nsaluda() { echo hola; }\n")
+    biblioteca.chmod(0o644)
+
+    check("un .sh con bit ejecutable es entrypoint",
+          gb.is_shell_entrypoint(entrypoint))
+    check("un .sh SIN bit ejecutable es biblioteca, no entrypoint",
+          not gb.is_shell_entrypoint(biblioteca))
+
+
+def test_mandatory_flow_tools_reach_bin() -> None:
+    """Los pasos 4 y 5 del flujo obligatorio tienen envoltorio en ``bin/``.
+
+    ``.claude/CLAUDE.md`` declara dos herramientas como paso obligatorio del
+    flujo de sesion: ``src/task/task_ids.py`` acuña la cita durable (paso 4) y
+    ``src/hallazgo/hallazgo_ids.py`` acuña el id de hallazgo del consumidor
+    (paso 5). Ninguna de las dos estaba en ``SOURCE_DIRS``, asi que la
+    directiva "usar las herramientas de thyrox/bin/" era incumplible para
+    ellas: ``bash bin/task_ids`` daba *No such file or directory*.
+
+    Mide el arbol REAL por la misma razon que ``test_repo_family_reaches_bin``:
+    un arbol sintetico se construye desde ``SOURCE_DIRS``, asi que pasaria con
+    la constante corta y con la larga — no discriminaria (sub-patron D).
+
+    Es TASK-THYROX-0071.
+    """
+    plan = gb.planned_files(ROOT)
+    bindir = ROOT / "bin"
+    for esperado in ("task_ids", "hallazgo_ids"):
+        check(f"bin/{esperado} esta en el plan", esperado in plan,
+              f"SOURCE_DIRS={gb.SOURCE_DIRS}")
+        check(f"bin/{esperado} existe en el arbol", (bindir / esperado).exists())
+
+
+def test_check_declares_its_universe() -> None:
+    """``--check`` no puede publicar "al dia" dejando entrypoints fuera.
+
+    El verde anterior no distinguia "todos los entrypoints tienen envoltorio"
+    de "los directorios que miro lo tienen": publicaba "bin/ al dia: 131
+    entrypoint(s)" con 51 entrypoints en 10 directorios fuera de su universo.
+    Un conteo sin denominador no es un resultado.
+    """
+    huerfanos = gb.entrypoints_outside_universe(ROOT)
+    check("ningun entrypoint de src/ queda fuera del universo de SOURCE_DIRS",
+          huerfanos == [],
+          f"{len(huerfanos)} fuera: {[str(p) for p in huerfanos[:6]]}")
+
+
+def test_library_shell_stays_out_of_the_real_plan() -> None:
+    """``src/lib/*.sh`` son biblioteca y NO entran al plan del arbol real.
+
+    Es el control que hace falsable al discriminador sobre la poblacion que lo
+    motivo: ensanchar ``SOURCE_DIRS`` sin el bit ejecutable levantaria
+    ``ValueError`` por la colision ``reach`` — ``src/lib/reach.sh`` contra
+    ``src/paths/reach.py``, la unica de las 182 medidas.
+    """
+    # ``planned_files`` devuelve el CUERPO del envoltorio, no la ruta del
+    # objetivo; el mapa nombre->ruta lo da ``discover_entrypoints``.
+    objetivos = gb.discover_entrypoints(ROOT)
+    check("bin/reach resuelve a la mitad Python, no a la de shell",
+          objetivos.get("reach") is not None
+          and objetivos["reach"].name == "reach.py",
+          str(objetivos.get("reach")))
+    for biblioteca in ("assert", "logging", "toolchain", "workbench"):
+        check(f"src/lib/{biblioteca}.sh no entra al plan",
+              biblioteca not in objetivos
+              or objetivos[biblioteca].parent.name != "lib",
+              str(objetivos.get(biblioteca)))
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         base = pathlib.Path(tmp)
         test_quote_agnostic_guard(base)
         test_init_never_counts(base)
-        test_shell_always_counts(base)
+        test_shell_library_is_not_an_entrypoint(base)
         test_stem_collision_raises(base)
         test_symlink_breaks_but_wrapper_does_not(base)
         test_python_wrapper_missing_interpreter(base)
@@ -465,6 +570,9 @@ def main() -> int:
     test_cli_check_exit_code()
     test_library_modules_are_silent_when_run_as_scripts()
     test_repo_family_reaches_bin()
+    test_mandatory_flow_tools_reach_bin()
+    test_check_declares_its_universe()
+    test_library_shell_stays_out_of_the_real_plan()
 
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "
           f"(alcance medido: generate_bin.py)")
