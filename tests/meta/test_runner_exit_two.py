@@ -30,8 +30,15 @@ import sys
 import tempfile
 import unittest
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
-RUNNER = ROOT / 'tests' / 'run.sh'
+# La raiz se PIDE al localizador, no se compone contando directorios: la
+# aritmetica `parents[N]` caduca en cuanto el archivo se mueve un nivel, y el
+# gate de check_path_arithmetic la rechaza salvo cuando alimenta un
+# sys.path.insert —que es el unico caso en que no hay localizador todavia.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / 'src'))
+
+from paths import reach  # noqa: E402
+
+RUNNER = reach.thyrox_root() / 'tests' / 'run.sh'
 
 SUITES = {
     'test_green.py': 0,
