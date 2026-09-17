@@ -4,7 +4,7 @@
 # Lo que mide: que el precio salga del catálogo vendorizado y no de un peso
 # fijo; que sin catálogo REHÚSE sin cifra (exit 2); y que el alias resuelva al
 # identificador que el ejecutable declara. El control positivo es real del
-# repo: la fila de claude-fable-5-1 en src/models.json, cuyo cache_read (0.25)
+# repo: la fila de claude-fable-5-1 en src/models.jsonl, cuyo cache_read (0.25)
 # es lo que H-DOCS-1003 casi publicó al revés.
 set -uo pipefail
 # Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
@@ -42,11 +42,11 @@ check "escritura a 5m y 1h difieren (12.5 vs 20)" "$A/$B" "12.5000/20.0000"
 S="$(python3 "$MC" costo fable --cache-read 1 2>&1 | sed -n 's/^modelo: *//p')"
 check "alias fable → claude-fable-5-1 (con el alias entre paréntesis)" "$S" "claude-fable-5-1  (alias fable)"
 # 5. Sin catálogo: exit 2 y NINGUNA cifra en stdout
-OUT="$(KAUPAMEX_MODEL_CATALOG=/nonexistent/models.json python3 "$MC" costo claude-opus-5 --cache-read 1 2>/dev/null)"; RC=$?
+OUT="$(KAUPAMEX_MODEL_CATALOG=/nonexistent/models.jsonl python3 "$MC" costo claude-opus-5 --cache-read 1 2>/dev/null)"; RC=$?
 check "sin catálogo rehúsa con exit 2" "$RC" "2"
 check "sin catálogo no emite cifra" "${OUT:-vacio}" "vacio"
-ERR="$(KAUPAMEX_MODEL_CATALOG=/nonexistent/models.json python3 "$MC" costo claude-opus-5 --cache-read 1 2>&1 >/dev/null)"
-case "$ERR" in *"models.json"*"verde falso"*) N=nombra ;; *) N=no ;; esac
+ERR="$(KAUPAMEX_MODEL_CATALOG=/nonexistent/models.jsonl python3 "$MC" costo claude-opus-5 --cache-read 1 2>&1 >/dev/null)"
+case "$ERR" in *"models.jsonl"*"verde falso"*) N=nombra ;; *) N=no ;; esac
 check "sin catálogo el mensaje nombra el catálogo y el verde falso" "$N" "nombra"
 # 6. Modelo desconocido: exit 2
 python3 "$MC" costo claude-no-existe --cache-read 1 >/dev/null 2>&1; check "modelo desconocido rehúsa con exit 2" "$?" "2"

@@ -50,7 +50,7 @@ bun run bin/emit.ts      # escribe; --check para el gate
 > ni el tier de precio ni la ventana.
 
 `model` es una clave del frontmatter que el emisor escribe, y su valor sale del
-catálogo vendorizado (`src/models.json`). El registro rehúsa un alias con el
+catálogo vendorizado (`src/models.jsonl`). El registro rehúsa un alias con el
 literal `MODEL_MUST_BE_A_CATALOG_ID`. `inherit` es el valor para un agente que
 deba correr con el modelo de la sesión — se declara, no se omite.
 

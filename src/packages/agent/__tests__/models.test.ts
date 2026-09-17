@@ -13,8 +13,9 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const PACKAGE = join(HERE, '..')
 const REPO_ROOT = join(PACKAGE, '..', '..', '..')
 const DUMP = join(REPO_ROOT, '_references', 'claude-code-bin', '2.1.258', 'claude_strings.txt')
+const CATALOG_FILE = join(PACKAGE, 'models.jsonl')
 
-describe('src/models.json es derivado, no escrito a mano', () => {
+describe('src/models.jsonl es derivado, no escrito a mano', () => {
   /**
    * Control POSITIVO REAL: el JSON vendorizado tiene que ser byte a byte lo
    * que el extractor produce hoy desde el volcado. Si alguien edita el JSON,
@@ -28,13 +29,59 @@ describe('src/models.json es derivado, no escrito a mano', () => {
     ])
     expect(result.exitCode).toBe(0)
     const fresh = new TextDecoder().decode(result.stdout)
-    const vendored = readFileSync(join(PACKAGE, 'models.json'), 'utf8')
+    const vendored = readFileSync(CATALOG_FILE, 'utf8')
     expect(vendored).toBe(fresh)
+  })
+
+  /**
+   * El control que discrimina la conversión a JSONL, y NO es «el archivo
+   * parsea»: `JSON.parse` acepta un JSONL de UNA línea, así que un lector de
+   * documento probado contra n=1 pasaría sin ser nunca un lector de líneas.
+   * Con 28 registros el archivo entero NO es JSON válido, y esa es la
+   * aserción. Ver `.claude/workbench/adoptar-jsonl-censo-20260917T051111/
+   * forma-de-models-json.md`.
+   */
+  test('es JSONL: una línea por registro, y el archivo entero no es JSON', () => {
+    const raw = readFileSync(CATALOG_FILE, 'utf8')
+    const lines = raw.split('\n').filter((l) => l.trim() !== '')
+    expect(lines.length).toBeGreaterThan(1)
+    expect(() => JSON.parse(raw)).toThrow()
+    for (const line of lines) expect(() => JSON.parse(line)).not.toThrow()
+  })
+
+  /**
+   * Cada línea se clasifica por lo que DICE (`kind`), no por dónde está. Una
+   * cabecera por posición repetiría el defecto de H-THYROX-37 un nivel más
+   * abajo: clasificar por el sitio en vez de por el contenido.
+   */
+  test('cada registro declara su kind, y la meta no depende de su posición', () => {
+    const records = readFileSync(CATALOG_FILE, 'utf8')
+      .split('\n').filter((l) => l.trim() !== '').map((l) => JSON.parse(l))
+    for (const r of records) expect(typeof r.kind).toBe('string')
+    const kinds = records.map((r) => r.kind)
+    expect(kinds.filter((k) => k === 'meta').length).toBe(1)
+    expect(kinds.filter((k) => k === 'model').length).toBe(CATALOG.models.length)
+    expect(kinds.filter((k) => k === 'tier').length)
+      .toBe(Object.keys(CATALOG.pricing_tiers).length)
+  })
+
+  /**
+   * La propiedad que la conversión no puede romper: el objeto reconstruido es
+   * el mismo que el import estático producía — nueve claves de raíz, los 19
+   * modelos en su orden y los 8 tiers.
+   */
+  test('el catálogo reconstruido conserva sus nueve claves de raíz', () => {
+    expect(Object.keys(CATALOG).sort()).toEqual([
+      'alias_migration', 'aliases', 'best', 'defaults', 'fuente',
+      'latest_per_family', 'models', 'pricing_tiers', 'schema_version',
+    ])
+    expect(CATALOG.models.length).toBe(19)
+    expect(Object.keys(CATALOG.pricing_tiers).length).toBe(8)
   })
 
   test('declara su fuente y su forma', () => {
     expect(CATALOG.fuente).toContain('claude-code-bin/2.1.258/claude_strings.txt')
-    expect(CATALOG.schema_version).toBe(1)
+    expect(CATALOG.schema_version).toBe(2)
     expect(MODEL_IDS.length).toBe(CATALOG.models.length)
   })
 })

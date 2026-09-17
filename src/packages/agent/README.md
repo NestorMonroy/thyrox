@@ -60,15 +60,22 @@ Opus 4»*. El alias resuelve **según el proveedor** —`sonnet` es
 `claude-sonnet-4-5` (tier_3_15, 200 k) en Bedrock, Vertex, Foundry y
 Mantle—, así que una definición con alias no fija ni su tier ni su ventana.
 
-`src/models.ts` carga `src/models.json`, que **no se escribe a mano**: lo
+`src/models.ts` carga `src/models.jsonl`, que **no se escribe a mano**: lo
 deriva `bin/extract_model_registry.py --stdout` del volcado vendorizado
 (`_references/claude-code-bin/2.1.258/claude_strings.txt`), y la suite exige que el
 archivo vendorizado sea byte a byte lo que el extractor produce hoy. Ese es el
 control que faltó cuando el extractor leyó `!0` como `false` y publicó los 63
 booleanos del catálogo invertidos (H-DOCS-1003).
 
+Es **JSON Lines**: 28 registros etiquetados con `kind` — una `meta`, un `tier`
+por tier y un `model` por registro. Cada línea se clasifica por lo que DICE y
+no por dónde está; una cabecera por posición repetiría el defecto de
+`H-THYROX-37` un nivel más abajo. Por eso ni `models.ts` ni su gemelo Python
+`src/agents/model_catalog.py` pueden usar un cargador de documento único: los
+dos leen líneas y reconstruyen el catálogo de nueve claves.
+
 ```bash
-python3 bin/extract_model_registry.py ../../../_references/claude-code-bin/2.1.258/claude_strings.txt --stdout > src/models.json
+python3 bin/extract_model_registry.py ../../../_references/claude-code-bin/2.1.258/claude_strings.txt --stdout > models.jsonl
 ```
 
 Lo que expone: `MODELS` (19 registros con su tier resuelto a seis precios),
@@ -76,7 +83,9 @@ Lo que expone: `MODELS` (19 registros con su tier resuelto a seis precios),
 ttl)` y `effortCostIndex`. Y `registry.ts` **rehúsa** un `model` que no sea
 identificador del catálogo o `inherit`, nombrando a qué resolvería el alias.
 
-*Métrica:* igualdad byte a byte entre `src/models.json` y la extracción.
+*Métrica:* igualdad byte a byte entre `src/models.jsonl` y la extracción, más
+que `JSON.parse` del archivo entero **falle** — con una sola línea pasaría, y
+el lector nunca sería de líneas.
 *Ciega a:* si el cliente resuelve el identificador completo igual que el
 alias en cada proveedor — el catálogo declara `provider_ids`, no se ejercitó.
 
