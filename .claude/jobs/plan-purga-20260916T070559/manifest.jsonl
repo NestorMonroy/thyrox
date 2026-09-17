@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && bun run --silent -e \"\nimport { collectAllProjectsPurgeItems } from \\\"./src/packages/storage/src/projectPurge.ts\\\";\nconst plan = await collectAllProjectsPurgeItems();\nconsole.log(JSON.stringify(plan, null, 1).slice(0, 4000));\n\" 2>&1 | head -60", "started_at": "2026-09-16T07:05:59+00:00"}

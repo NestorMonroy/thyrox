@@ -1,7 +1,0 @@
-{
-  "question": "¿--connection realmente enciende compressToolResults a traves del binario real (src/entry/main.ts), no solo de una llamada directa a runLoop() en un test?",
-  "instrument": "probes/live-run-compress.ts (ejecución manual contra @thyrox/config activado de verdad) + src/packages/cli/__tests__/bin.test.ts, bloque '--connection activa @thyrox/config de verdad y decide compressToolResults (T-9)' (subproceso spawneado con Bun.spawnSync, --output-style json, tool_end.output leido del evento real)",
-  "metric": "contenido de tool_end.output (el mismo campo que devuelve ejecutar() en loop/index.ts:455-457, ya pasado por compressToolResult cuando corresponde) para tres ejecuciones: sin --connection, --connection sin providerSpecificData.compressToolResults, --connection con providerSpecificData.compressToolResults:true",
-  "blind_to": "el metodo NO mide si --connection dirige el ENDPOINT/auth del transporte -- eso providerFor() lo sigue resolviendo solo por --provider recorded|http, ignorando connection.endpoint por completo (gap declarado, no cerrado en este pase). Tampoco mide comportamiento contra el servicio real de Anthropic (--provider http nunca se ejercito con un socket real en este banco).",
-  "destination": "src/packages/cli/src/entry/main.ts (fix: activacion de @thyrox/config con installConfigHostBindings({})+enableConfigs() dentro de import.meta.main) + src/packages/cli/__tests__/bin.test.ts (regresion automatizada, con su propio control de anulacion)"
-}

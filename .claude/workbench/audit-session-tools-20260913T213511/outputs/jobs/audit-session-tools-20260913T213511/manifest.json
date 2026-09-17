@@ -1,7 +1,0 @@
-{
-  "instrument": "bash -c printf \"provider-session-ok\\\\n\"",
-  "started_at": "2026-09-13T21:35:11+00:00",
-  "exit_code": 0,
-  "finished_at": "2026-09-13T21:35:13+00:00",
-  "duration_seconds": 2.296961
-}

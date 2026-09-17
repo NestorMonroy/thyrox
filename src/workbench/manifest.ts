@@ -71,7 +71,62 @@ export const REQUIRED_KEYS = [
 export type RequiredKey = typeof REQUIRED_KEYS[number]
 
 /** El nombre del archivo del manifiesto. Uno, en inglés, como todo en THYROX. */
-export const MANIFEST_FILE_NAME = 'manifest.json'
+export const MANIFEST_FILE_NAME = 'manifest.jsonl'
+
+/**
+ * El nombre ANTERIOR, que el lector sigue aceptando y el escritor ya no emite.
+ *
+ * Este módulo es del PROVEEDOR y sus consumidores tienen sus propios
+ * manifiestos: renombrar la constante sin esto los vuelve ilegibles — el gate
+ * diría «falta manifest.jsonl» sobre un banco conforme. Gemelo de
+ * `LEGACY_MANIFEST_FILE_NAME` en `manifest.py`.
+ *
+ * **No lleva condición de retiro.** El consumidor ya declara DÓNDE viven sus
+ * manifiestos (`THYROX_WORKBENCH_<CLONE>`, `THYROX_JOBS_<CLONE>`,
+ * `THYROX_CACHE_<CLONE>`) — ése es el eje de LOCALIZACIÓN, legítimamente
+ * distinto por clon. El nombre del archivo es el eje de FORMATO, y no se
+ * parametriza por clon: dos consumidores que discrepen sobre qué es un
+ * manifiesto son la segunda fuente de verdad que este módulo prohíbe. El lector
+ * es tolerante de forma permanente y ningún consumidor convierte nada.
+ * Ver TASK-THYROX-0067.
+ */
+export const LEGACY_MANIFEST_FILE_NAME = 'manifest.json'
+
+/**
+ * La clave que clasifica cada registro. Una cabecera POR POSICIÓN repetiría el
+ * defecto de H-THYROX-37 un nivel más abajo: clasificar por el sitio en vez de
+ * por el contenido. Etiquetado, un registro sobrevive a la concatenación y al
+ * reordenamiento.
+ */
+export const KIND_KEY = 'kind'
+
+/**
+ * Funde los registros de un JSONL en el documento que el lector consume.
+ *
+ * **El gemelo de `read_manifest_lines` de `manifest.py`**, y la misma
+ * precedencia declarada: **orden de archivo, el registro POSTERIOR gana**. Es
+ * la semántica de un append — la última escritura manda, que es lo que la
+ * reescritura anterior hacía.
+ *
+ * Una línea en blanco no es un registro: un run recién andamiado no tiene
+ * ninguno, y eso no es un error.
+ */
+export function readManifestLines(raw: string): Record<string, unknown> {
+  const merged: Record<string, unknown> = {}
+  for (const line of raw.split('\n')) {
+    const trimmed = line.trim()
+    if (trimmed === '') continue
+    const record = JSON.parse(trimmed) as Record<string, unknown>
+    delete record[KIND_KEY]
+    Object.assign(merged, record)
+  }
+  return merged
+}
+
+/** Un registro etiquetado, serializado en UNA línea — sin sangrado. */
+export function manifestLine(kind: string, payload: Record<string, unknown>): string {
+  return JSON.stringify({ [KIND_KEY]: kind, ...payload })
+}
 
 /**
  * Las tres formas del banco, con sus valores en INGLÉS.
@@ -202,10 +257,38 @@ function missingInstrumentFiles(dir: string, declared: unknown): string[] {
   return named
 }
 
-/** La ruta del manifiesto, o `null` si no está. */
+/**
+ * La ruta del manifiesto, o `null` si no está.
+ *
+ * Prueba el JSONL y DESPUÉS el heredado, en ese orden: durante la ventana en
+ * que un run lleva los dos, manda el nuevo. Devuelve `null` en vez de componer
+ * la ruta que tendría — un consumidor con una ruta inexistente seguiría en
+ * verde apuntando al vacío.
+ */
 function manifestPath(dir: string): string | null {
-  const candidate = join(dir, MANIFEST_FILE_NAME)
-  return existsSync(candidate) ? candidate : null
+  for (const name of [MANIFEST_FILE_NAME, LEGACY_MANIFEST_FILE_NAME]) {
+    const candidate = join(dir, name)
+    if (existsSync(candidate)) return candidate
+  }
+  return null
+}
+
+/**
+ * El documento de un archivo de manifiesto, despachando por SUFIJO.
+ *
+ * Un `.json` declara un documento entero; un `.jsonl`, líneas. Probar primero
+ * como JSONL y caer al documento entero reintroduciría la trampa n=1 que la
+ * conversión existe para evitar: `JSON.parse` acepta un JSONL de una sola
+ * línea, así que el lector de líneas nunca se probaría como tal. Y el `.json`
+ * de un consumidor viene impreso en VARIAS líneas, con lo que el lector de
+ * líneas revienta con él. Gemelo de `read_manifest_file` en `manifest.py`.
+ */
+export function readManifestFile(path: string): Record<string, unknown> {
+  const raw = readFileSync(path, 'utf8')
+  if (basename(path) === LEGACY_MANIFEST_FILE_NAME) {
+    return raw.trim() === '' ? {} : (JSON.parse(raw) as Record<string, unknown>)
+  }
+  return readManifestLines(raw)
 }
 
 /**
@@ -221,7 +304,7 @@ export function checkWorkbench(dir: string): WorkbenchProblem[] {
   }
   let manifest: WorkbenchManifest
   try {
-    manifest = JSON.parse(readFileSync(path, 'utf8')) as WorkbenchManifest
+    manifest = readManifestFile(path) as WorkbenchManifest
   } catch (err) {
     return [{ problem: `${basename(path)} no parsea: ${(err as Error).message}` }]
   }
@@ -337,7 +420,10 @@ export function scaffoldWorkbench(baseDir: string, slug: string, now: Date = new
   mkdirSync(dir, { recursive: true })
   for (const sub of ['tests', 'outputs', 'probes']) mkdirSync(join(dir, sub), { recursive: true })
 
-  writeFileSync(join(dir, MANIFEST_FILE_NAME), `${JSON.stringify({}, null, 2)}\n`)
+  // Cero registros, no un `{}`. En JSONL «todavía no hay nada declarado» es un
+  // archivo vacío; un `{}` sería un registro sin etiqueta que el lector tendría
+  // que interpretar.
+  writeFileSync(join(dir, MANIFEST_FILE_NAME), '')
 
   writeFileSync(join(dir, 'README.md'), [
     `# ${slug}`, '',

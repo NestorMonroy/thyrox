@@ -30,10 +30,14 @@ import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 
 import {
+  LEGACY_MANIFEST_FILE_NAME,
+  MANIFEST_FILE_NAME,
   REQUIRED_KEYS,
   WORKBENCH_FORMS,
   checkWorkbench,
   latestRun,
+  manifestLine,
+  readManifestFile,
   runIdDate,
   runIdFor,
   runsFor,
@@ -189,7 +193,8 @@ describe('el gate reporta, no aborta', () => {
     const dir = makeWorkbench(ID, null)
     const ps = checkWorkbench(dir)
     expect(ps).toHaveLength(1)
-    expect(ps[0]!.problem).toContain('manifest.json')
+    // Idem: el literal viejo es SUBCADENA del nuevo, asi que no discrimina.
+    expect(ps[0]!.problem).toContain(MANIFEST_FILE_NAME)
   })
 
   test('un JSON roto se nombra sin lanzar', () => {
@@ -322,5 +327,92 @@ describe('runsFor / latestRun — encontrar un run, no sólo acuñarlo', () => {
   test('sin run devuelve null, no una ruta inventada', () => {
     expect(latestRun(base, 'nunca-creado')).toBeNull()
     expect(runsFor(join(base, 'no-existe'), 'probe')).toEqual([])
+  })
+})
+
+/**
+ * Los DOS nombres — y la mitad que faltaba por completo.
+ *
+ * **Medido antes de escribir este bloque, por anulacion:** retirado
+ * `MANIFEST_FILE_NAME` del resolutor, los 37 casos de arriba siguen en VERDE
+ * (37 pass, 0 fail); retirado el heredado, caen 21. O sea que todos sus
+ * fixtures escriben `manifest.json` y **ninguno** ejercitaba la forma nueva:
+ * el verde lo cargaba entera la rama que se esta retirando. Los de arriba se
+ * quedan como casos de la RUTA HEREDADA —que es lo que miden de verdad— y
+ * estos cubren la que se adopta.
+ */
+describe('el lector acepta los dos nombres; el escritor emite uno', () => {
+  const CONFORMING = {
+    question: '¿?', instrument: 'medir.py', metric: 'qué cuenta',
+    blind_to: 'qué no ve', destination: 'a dónde va',
+  }
+
+  /** Un run con su instrumento en disco, listo para recibir un manifiesto. */
+  function makeRun(): string {
+    const dir = join(mkdtempSync(join(tmpdir(), 'dual-')), 'x-20260906T000000')
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'medir.py'), '# instrumento\n')
+    return dir
+  }
+
+  test('el nombre heredado se declara, y no es el que se emite', () => {
+    expect(LEGACY_MANIFEST_FILE_NAME).toBe('manifest.json')
+    expect(MANIFEST_FILE_NAME).toBe('manifest.jsonl')
+  })
+
+  test('un banco en JSONL es conforme (LA FORMA QUE SE ADOPTA)', () => {
+    const dir = makeRun()
+    writeFileSync(join(dir, MANIFEST_FILE_NAME),
+      manifestLine('declaration', CONFORMING) + '\n')
+    expect(checkWorkbench(dir)).toEqual([])
+  })
+
+  test('VARIOS registros se funden: ninguno solo es conforme', () => {
+    const dir = makeRun()
+    // Partido a proposito en dos: con un lector que tomara el ULTIMO registro
+    // en vez de fundirlos, faltarian las tres primeras claves.
+    writeFileSync(join(dir, MANIFEST_FILE_NAME),
+      manifestLine('declaration', {
+        question: CONFORMING.question, instrument: CONFORMING.instrument,
+        metric: CONFORMING.metric,
+      }) + '\n' + manifestLine('settle', {
+        blind_to: CONFORMING.blind_to, destination: CONFORMING.destination,
+      }) + '\n')
+    expect(checkWorkbench(dir)).toEqual([])
+  })
+
+  test('con los DOS nombres manda el JSONL', () => {
+    const dir = makeRun()
+    // El heredado, INCONFORME: si ganara, el gate reportaria las cuatro
+    // ausentes. Es lo que hace real la asercion de precedencia.
+    writeFileSync(join(dir, LEGACY_MANIFEST_FILE_NAME),
+      JSON.stringify({ question: 'solo esta' }, null, 2))
+    writeFileSync(join(dir, MANIFEST_FILE_NAME),
+      manifestLine('declaration', CONFORMING) + '\n')
+    expect(checkWorkbench(dir)).toEqual([])
+  })
+
+  test('un .json MULTILINEA se lee entero (el lector de LINEAS revienta)', () => {
+    const dir = makeRun()
+    // La forma real del corpus del consumidor: impreso con sangrado. Un lector
+    // de lineas lo rechaza en la primera —`{` no es JSON— y el banco quedaria
+    // reportado como «no parsea» estando conforme.
+    const raw = JSON.stringify(CONFORMING, null, 2)
+    writeFileSync(join(dir, LEGACY_MANIFEST_FILE_NAME), raw)
+    expect(raw.split('\n').length).toBeGreaterThan(1)
+    expect(checkWorkbench(dir)).toEqual([])
+    expect(readManifestFile(join(dir, LEGACY_MANIFEST_FILE_NAME))).toEqual(CONFORMING)
+  })
+
+  test('el despacho es por SUFIJO, no por olfateo', () => {
+    const dir = makeRun()
+    // Un JSONL de UNA linea es JSON valido: si el lector probara primero el
+    // documento entero y cayera a lineas, este caso no lo distinguiria. La
+    // etiqueta `kind` sobreviviria al fundido, y por eso se afirma su ausencia.
+    writeFileSync(join(dir, MANIFEST_FILE_NAME),
+      manifestLine('declaration', CONFORMING) + '\n')
+    const read = readManifestFile(join(dir, MANIFEST_FILE_NAME))
+    expect(read).toEqual(CONFORMING)
+    expect(Object.keys(read)).not.toContain('kind')
   })
 })

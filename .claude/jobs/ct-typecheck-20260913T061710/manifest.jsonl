@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -lc cd /home/user/thyrox/src/packages/provider && tsc --noEmit -p tsconfig.json 2>&1 | grep -E \"connections\\.ts|connectionToolCompression\\.ts\" ; echo DONE", "started_at": "2026-09-13T06:17:10+00:00"}

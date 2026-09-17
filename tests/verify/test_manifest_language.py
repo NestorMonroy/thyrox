@@ -198,6 +198,92 @@ with tempfile.TemporaryDirectory() as tmp:
                           capture_output=True, text=True, env=env)
     check('y tras re-congelar sigue sin bloquear', done.returncode, 0)
 
+print('=== Caso 9: los DOS nombres, y el .json llega MULTILINEA ===')
+# El renombre de `MANIFEST_FILE_NAME` a `.jsonl` ciega al PROVEEDOR sobre los
+# manifiestos de sus consumidores por DOS vias independientes, y hacen falta
+# las dos aserciones porque cada una cae por su lado:
+#   1. el glob — un recorrido de un solo nombre no ve el `.json` heredado;
+#   2. el LECTOR — el `.json` de un consumidor viene impreso en varias lineas,
+#      y un lector de LINEAS revienta con el y lo salta en silencio.
+# Medido el dia que se escribio: los 42 manifiestos de docs son multilinea (de
+# 4 a 68 lineas), asi que la via 2 sola ya bastaba para publicar «0 claves en
+# español» sobre 42 archivos con deuda. Sub-patron D con el gate como sujeto.
+from workbench.manifest import (  # noqa: E402
+    LEGACY_MANIFEST_FILE_NAME, MANIFEST_FILE_NAME, render_manifest,
+)
+
+#: Un documento con una clave de lanzamiento y una espanola: el escritor lo
+#: reparte en DOS registros, asi que el archivo entero deja de ser JSON valido.
+#: Va como TEXTO por la misma razon que `SAMPLE_JSON`.
+JSONL_SOURCE = ('{"started_at": "2026-01-01T00:00:00+00:00", '
+                '"instrument": "pytest -q", "tarea": "espanol"}')
+
+with tempfile.TemporaryDirectory() as tmp:
+    tree = Path(tmp)
+    home = tree / '.claude' / 'workbench'
+
+    # El heredado: MULTILINEA, que es la forma real del corpus del consumidor.
+    legacy = home / 'heredado-20260101T000000'
+    legacy.mkdir(parents=True)
+    (legacy / LEGACY_MANIFEST_FILE_NAME).write_text(
+        json.dumps(json.loads(SYNTHETIC_MANIFEST), indent=2))
+    check('el sujeto heredado es multilinea (si no, el caso no discrimina)',
+          len((legacy / LEGACY_MANIFEST_FILE_NAME).read_text().splitlines()) > 1,
+          True)
+
+    # El nuevo: emitido por el ESCRITOR real, no a mano.
+    fresh = home / 'nuevo-20260101T000000'
+    fresh.mkdir(parents=True)
+    (fresh / MANIFEST_FILE_NAME).write_text(
+        render_manifest(json.loads(JSONL_SOURCE)))
+
+    # Los DOS hogares se pinchan al arbol temporal. `manifest_homes` devuelve
+    # banco Y ledger, y sin pinchar el segundo el escaneo arrastra los trabajos
+    # del PROVEEDOR: medido, el denominador salia 48 en vez de 2, asi que la
+    # anulacion habria comparado 47 contra 48 y no habria discriminado nada.
+    empty_jobs = tree / 'sin-trabajos'
+    empty_jobs.mkdir()
+    pinned = {'THYROX_WORKBENCH_DIR': str(home), 'THYROX_JOBS_DIR': str(empty_jobs)}
+    saved = {k: os.environ.get(k) for k in pinned}
+    os.environ.update(pinned)
+    try:
+        hits, total = gate.scan(tree, frozen=set())
+        check('mide los DOS runs', total, 2)
+        check('y ve la clave espanola de CADA forma',
+              sorted({Path(rel).parent.name for rel, _ in hits}),
+              ['heredado-20260101T000000', 'nuevo-20260101T000000'])
+
+        # Un run que lleve los dos nombres a la vez —la ventana entre escribir
+        # el JSONL y retirar el heredado— cuenta UNA vez, no dos.
+        (fresh / LEGACY_MANIFEST_FILE_NAME).write_text(SYNTHETIC_MANIFEST)
+        _, with_both = gate.scan(tree, frozen=set())
+        check('un run con los DOS nombres cuenta una vez', with_both, 2)
+        (fresh / LEGACY_MANIFEST_FILE_NAME).unlink()
+
+        # ANULACION de la rama heredada. El desplome del denominador ES el
+        # defecto contra el que guarda: sin ella el gate publica verde sobre
+        # un corpus entero que no miro.
+        original = gate.LEGACY_MANIFEST_FILE_NAME
+        gate.LEGACY_MANIFEST_FILE_NAME = MANIFEST_FILE_NAME
+        try:
+            crippled, measured = gate.scan(tree, frozen=set())
+            check('anulada, CAE: el heredado sale del universo', measured, 1)
+            check('anulada, CAE: su clave espanola desaparece',
+                  [rel for rel, _ in crippled
+                   if rel.startswith('heredado')], [])
+            check('anulada, NO cae: el JSONL sigue medido',
+                  sorted({Path(rel).parent.name for rel, _ in crippled}),
+                  ['nuevo-20260101T000000'])
+        finally:
+            gate.LEGACY_MANIFEST_FILE_NAME = original
+        check('la anulacion se deshizo', gate.scan(tree, frozen=set())[1], 2)
+    finally:
+        for key, previous in saved.items():
+            if previous is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = previous
+
 print()
 print(f'{ok} ok, {failures} fallos (alcance medido: {ok + failures} aserciones '
       f'sobre {GATE})')

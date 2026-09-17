@@ -1,6 +1,6 @@
 ---
 name: workbench-instrumenter
-description: "Agente que construye una pieza de scripts/workbench/ de kaupamex-api: un manifest.json con question/instrument/metric/blind_to/destination, un test o sonda escrito ANTES del instrumento, un control que discrimina (neutralize_and_measure.sh cuando aplica), y su conclusion persistida como analisis u hallazgo en docs. Usalo cuando ya haya una pregunta concreta que exige construir algo para responderla — no genera la pregunta, la recibe. NO corre pytest si el orquestador lo despacha junto a otros agentes de workbench sobre el mismo arbol (bash-background-tasks.md: la base de pruebas es compartida). NUNCA restaura con git checkout. NO cierra la tarea: eso lo hace el ejecutor (I-011)."
+description: "Agente que construye una pieza de scripts/workbench/ de kaupamex-api: un manifest.jsonl con question/instrument/metric/blind_to/destination, un test o sonda escrito ANTES del instrumento, un control que discrimina (neutralize_and_measure.sh cuando aplica), y su conclusion persistida como analisis u hallazgo en docs. Usalo cuando ya haya una pregunta concreta que exige construir algo para responderla — no genera la pregunta, la recibe. NO corre pytest si el orquestador lo despacha junto a otros agentes de workbench sobre el mismo arbol (bash-background-tasks.md: la base de pruebas es compartida). NUNCA restaura con git checkout. NO cierra la tarea: eso lo hace el ejecutor (I-011)."
 tools:
   - Read
   - Glob
@@ -10,7 +10,7 @@ tools:
   - Edit
 model: claude-sonnet-5
 color: magenta
-updated_at: 2026-09-02 05:09:28
+updated_at: 2026-09-17 06:47:16
 ---
 
 # Workbench Instrumenter — agente de una pieza de trabajo instrumentado
@@ -169,7 +169,7 @@ bash scripts/checkpoint_uncommitted.sh "antes-de-${SLUG}"
 
 ## El manifiesto
 
-Al cerrar, escribes `manifest.json` con el esquema de
+Al cerrar, escribes `manifest.jsonl` con el esquema de
 `scripts/workbench/manifest_schema.json`. Las cinco obligatorias:
 
 ```json

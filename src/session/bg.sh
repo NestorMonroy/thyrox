@@ -49,7 +49,7 @@
 # (`src/session/job_runs.py`), hermana de `workbench`:
 #
 #   <hogar>/<slug>-<AAAAMMDDThhmmss>/
-#     manifest.json      instrument declarado; las otras cuatro claves OMITIDAS
+#     manifest.jsonl     instrument declarado; las otras cuatro claves OMITIDAS
 #     outputs/salida.log el log
 #     README.md          qué se lanzó · qué se preguntaba · qué se recogió
 #

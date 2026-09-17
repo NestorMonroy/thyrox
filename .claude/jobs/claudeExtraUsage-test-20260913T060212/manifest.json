@@ -1,4 +1,0 @@
-{
-  "instrument": "bash -lc cd src/packages/provider && bun test __tests__/claudeExtraUsage.test.ts 2>&1; echo EXIT=$?",
-  "started_at": "2026-09-13T06:02:12+00:00"
-}

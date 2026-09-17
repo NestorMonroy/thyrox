@@ -155,7 +155,7 @@ bash scripts/checkpoint_uncommitted.sh "antes-de-${SLUG}"
 
 ## El manifiesto
 
-Al cerrar, escribes `manifest.json` con el esquema de
+Al cerrar, escribes `manifest.jsonl` con el esquema de
 `scripts/workbench/manifest_schema.json`. Las cinco obligatorias:
 
 ```json

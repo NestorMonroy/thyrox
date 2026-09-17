@@ -20,6 +20,18 @@ _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 export THYROX_JOBS_DIR="$TMP/jobs"
 
+# El LECTOR COMPARTIDO, no un `json.load` por fixture. Resuelve el nombre del
+# archivo y despacha por sufijo; un lector propio aquí es una segunda fuente de
+# verdad sobre qué es un manifiesto, y sólo una de las dos se entera el día que
+# la forma cambia. Medido: al pasar el manifiesto a JSONL, los cinco fixtures
+# que abrían `manifest.json` a mano quedaron rojos de golpe.
+_manifest_value() {   # <run-dir> <clave>  ->  el valor, o `sin-clave`
+  PYTHONPATH=src python3 -c "
+import sys
+from session.job_runs import read_manifest
+print(read_manifest(sys.argv[1]).get(sys.argv[2], 'sin-clave'))" "$1" "$2"
+}
+
 echo "== 1. la familia: el log nace DENTRO del run =="
 unset BG_DIR
 salida="$($BG start uno -- bash -c 'exit 5')"
@@ -30,17 +42,16 @@ _es "el log vive en outputs/ del run" "$(dirname "$log")" "$run/outputs"
 
 echo "== 2. el manifiesto declara el instrumento y OMITE lo que no consta =="
 sleep 1; $BG status uno >/dev/null
-man="$run/manifest.json"
-_es "declara instrument" "$(python3 -c "import json;print('si' if 'instrument' in json.load(open('$man')) else 'no')")" "si"
-_es "asienta el exit_code" "$(python3 -c "import json;print(json.load(open('$man')).get('exit_code'))")" "5"
+_es "declara instrument" \
+   "$([[ "$(_manifest_value "$run" instrument)" != "sin-clave" ]] && echo si || echo no)" "si"
+_es "asienta el exit_code" "$(_manifest_value "$run" exit_code)" "5"
 _es "OMITE question (un run sin recoger no es conforme)" \
-   "$(python3 -c "import json;print('si' if 'question' in json.load(open('$man')) else 'no')")" "no"
+   "$([[ "$(_manifest_value "$run" question)" != "sin-clave" ]] && echo si || echo no)" "no"
 
 echo "== 3. EL QUE DISCRIMINA: dos ejecuciones del mismo nombre =="
 $BG start uno -- bash -c 'exit 0' >/dev/null; sleep 1; $BG status uno >/dev/null
 _es "la familia conserva las DOS" "$(ls -d "$THYROX_JOBS_DIR"/uno-* | wc -l | tr -d ' ')" "2"
-_es "y el primer run conserva su 5" \
-   "$(python3 -c "import json;print(json.load(open('$man')).get('exit_code'))")" "5"
+_es "y el primer run conserva su 5" "$(_manifest_value "$run" exit_code)" "5"
 
 echo "== 4. CONTROL de retrocompatibilidad: BG_DIR declarado gana =="
 plano="$TMP/plano"
@@ -99,10 +110,11 @@ _es "register resuelve SIN BG_DIR" \
 # Y el manifiesto del run asienta el codigo tambien para la forma plana: hoy
 # `settle` no disparaba nunca ahi, porque no habia run que asentar.
 _es "el run del trabajo plano asienta su exit_code" \
-   "$(python3 -c "
-import glob, json, sys
-runs = sorted(glob.glob('$THYROX_JOBS_DIR/cuatro-*'))
-print(json.load(open(runs[-1] + '/manifest.json')).get('exit_code') if runs else 'sin-run')")" "9"
+   "$(PYTHONPATH=src python3 -c "
+import glob, sys
+from session.job_runs import read_manifest
+runs = sorted(glob.glob(sys.argv[1] + '/cuatro-*'))
+print(read_manifest(runs[-1]).get('exit_code') if runs else 'sin-run')" "$THYROX_JOBS_DIR")" "9"
 unset THYROX_BACKGROUND_LOG_DIR
 
 

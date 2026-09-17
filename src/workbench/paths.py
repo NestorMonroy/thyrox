@@ -7,7 +7,7 @@ no un modulo suelto por lenguaje.
 La separacion, confirmada por el ejecutor 2026-09-06::
 
     <hogar declarado por THYROX_WORKBENCH_DIR>/
-      <slug>-<ISO>/   manifest.json + instrumento + outputs/ + commits/
+      <slug>-<ISO>/   manifest.jsonl + instrumento + outputs/ + commits/
 
     .claude/eventos/
       <slug>-<ISO>/   rojo-de-partida · anulacion · verde

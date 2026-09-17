@@ -1,4 +1,0 @@
-{
-  "instrument": "bash src/verify/check-harness-typecheck.sh",
-  "started_at": "2026-09-16T10:19:57+00:00"
-}

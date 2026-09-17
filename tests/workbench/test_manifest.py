@@ -123,7 +123,13 @@ check("las cinco claves, en el orden del reporte",
       manifest.REQUIRED_KEYS)
 check("las tres formas, en ingles",
       ("corpus", "measurement", "transformation"), manifest.WORKBENCH_FORMS)
-check("el nombre del manifiesto", "manifest.json", manifest.MANIFEST_FILE_NAME)
+check("el nombre del manifiesto", "manifest.jsonl", manifest.MANIFEST_FILE_NAME)
+# El heredado sigue DECLARADO porque el lector lo acepta: el escritor emite
+# uno y el lector entiende dos. Sin esta asercion, retirar la constante se
+# leeria como limpieza y cegaria al proveedor sobre los manifiestos de sus
+# consumidores — que es el defecto que la puso ahi.
+check("y el heredado, que el lector sigue aceptando",
+      "manifest.json", manifest.LEGACY_MANIFEST_FILE_NAME)
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

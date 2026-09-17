@@ -1,7 +1,0 @@
-{
-  "instrument": "bun run --cwd src/packages/cli tsc --noEmit -p tsconfig.tests.json",
-  "started_at": "2026-09-13T01:35:29+00:00",
-  "exit_code": 0,
-  "finished_at": "2026-09-13T01:35:41+00:00",
-  "duration_seconds": 12.722908
-}

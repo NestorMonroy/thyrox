@@ -21,7 +21,7 @@ export const workbenchInstrumenter: AgentDefinition = {
   name: 'workbench-instrumenter',
   description:
     'Agente que construye una pieza de scripts/workbench/ de kaupamex-api: ' +
-    'un manifest.json con question/instrument/metric/blind_to/destination, ' +
+    'un manifest.jsonl con question/instrument/metric/blind_to/destination, ' +
     'un test o sonda escrito ANTES del instrumento, un control que ' +
     'discrimina (neutralize_and_measure.sh cuando aplica), y su conclusion ' +
     'persistida como analisis u hallazgo en docs. Usalo cuando ya haya una ' +
