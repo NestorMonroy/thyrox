@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/.claude/workbench/grifo-tmp-y-rojos-20260917T161117/entradas/census_cited_path_buckets.py", line 36, in <module>
+    import verificar_premisa as subject  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'verificar_premisa'
+__BG_EXIT__=1
