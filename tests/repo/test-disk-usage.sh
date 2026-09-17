@@ -95,5 +95,37 @@ echo "== 7. la anulacion NO afecta al recorrido completo =="
 bash "$MUTANT" "$TREE" --depth 1 >/dev/null 2>&1
 assert_equals "el caso sano sigue en 0 con y sin la guarda" 0 "$?"
 
+echo "== 8. el TOTAL es el de la raiz, no la suma de todas las lineas =="
+# `du --max-depth=N` imprime una linea por ANCESTRO cuyo tamaño YA contiene el
+# de sus descendientes. Sumarlas todas cuenta dos veces cada byte que vive en un
+# hijo. Medido sobre /tmp antes de escribir este caso: la raiz daba 1179.8 MiB y
+# el guion publicaba «2029.3 MiB en total» — un 72% de mas, sobre una cifra que
+# se consulta justo cuando el disco se llena.
+#
+# El esperado se DERIVA con un `du -s` independiente en vez de transcribirse: una
+# cifra copiada a la asercion envejece con el fixture.
+ESPERADO=$(du -sk -x --exclude=node_modules --exclude=.git "$TREE" \
+    | awk '{printf "%.1f", $1/1024}')
+OUT8=$(bash "$SCRIPT" "$TREE" --depth 1 2>&1)
+assert_equals "el total coincide con du -s de la raiz" \
+    "$ESPERADO" "$(awk '/entradas medidas/{print $4}' <<<"$OUT8")"
+assert_equals "cuenta los hijos, no la raiz" \
+    2 "$(awk '/entradas medidas/{print $1}' <<<"$OUT8")"
+# La comparacion es por ruta COMPLETA, no por subcadena: `$TREE` es prefijo de
+# `$TREE/gordo`, asi que un `grep -F` daba positivo sobre los hijos y acusaba al
+# guion de listar la raiz cuando no la listaba.
+assert_equals "la raiz no figura como entrada del listado" 0 \
+    "$(awk -F'MiB  ' -v raiz="$TREE" '$2 == raiz' <<<"$(listing "$OUT8")" | wc -l)"
+
+echo "== 9. ANULACION: sumando tambien la raiz, el total se infla =="
+MUTANT2="$TREE/mutante-total.sh"
+sed 's/^THYROX_TEST_ROOT_IS_TOTAL=1$/THYROX_TEST_ROOT_IS_TOTAL=0/' "$SCRIPT" > "$MUTANT2"
+assert_equals "la anulacion modifico el guion" 1 \
+    "$(diff -q "$SCRIPT" "$MUTANT2" >/dev/null; echo $?)"
+OUT9=$(bash "$MUTANT2" "$TREE" --depth 1 2>&1)
+INFLADO=$(awk '/entradas medidas/{print $4}' <<<"$OUT9")
+assert_equals "sin la guarda el total deja de coincidir" 1 \
+    "$([[ "$INFLADO" == "$ESPERADO" ]] && echo 0 || echo 1)"
+
 printf '\nok=%d fallo=%d\n' "$PASSED" "$FAILED"
 [[ $FAILED -eq 0 ]]

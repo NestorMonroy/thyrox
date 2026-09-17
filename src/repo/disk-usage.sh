@@ -40,6 +40,13 @@ set -uo pipefail
 
 REFUSAL=2
 
+#: `du --max-depth=N` imprime una linea por ANCESTRO cuyo tamaño YA contiene el
+#: de sus descendientes. La linea de la raiz ES el total; sumarla junto a sus
+#: hijos cuenta dos veces cada byte que vive en un hijo. Se declara como
+#: constante para que el control pueda **anularla**: sumando todas las lineas,
+#: el total deja de coincidir con `du -s` y cae exactamente el caso que lo mide.
+THYROX_TEST_ROOT_IS_TOTAL=1
+
 #: Declarar que el recorrido se corto es lo unico que separa «no hay nada» de
 #: «no dio tiempo a mirar». Se declara como constante para que el control pueda
 #: **anularla**: el caso del plazo vencido es el unico que la mide.
@@ -103,12 +110,28 @@ printf 'profundidad       %s   · plazo %ss   · mostrando los %s mayores\n' \
     "$depth" "$deadline" "$top"
 printf -- '---\n'
 
-sort -k1,1nr <<<"$raw" | head -n "$top" \
-    | awk '{ size=$1; $1=""; sub(/^ /,""); printf "%10.1f MiB  %s\n", size/1024, $0 }'
+# Las raices se marcan por su ruta exacta y se separan con el TABULADOR que
+# `du` emite, no por subcadena: una ruta con espacios sobrevive, y `/home` no
+# casa con `/homework`.
+# Las marcas viajan por el mismo flujo, con el tabulador que `du` ya emite: una
+# ruta con espacios sobrevive, y `/home` no casa con `/homework`.
+con_marcas() { printf '@ROOT@\t%s\n' "${present[@]}"; printf '%s\n' "$raw"; }
+
+con_marcas | awk -F'\t' -v solo_hijos="$THYROX_TEST_ROOT_IS_TOTAL" '
+        $1 == "@ROOT@" { es_raiz[$2] = 1; next }
+        { if (solo_hijos == "1" && ($2 in es_raiz)) next; print }' \
+    | sort -k1,1nr \
+    | head -n "$top" \
+    | awk -F'\t' '{ printf "%10.1f MiB  %s\n", $1/1024, $2 }'
 
 printf -- '---\n'
-sort -k1,1nr <<<"$raw" \
-    | awk '{ total+=$1; n++ } END { printf "%d entradas medidas, %.1f MiB en total\n", n, total/1024 }'
+con_marcas | awk -F'\t' -v raiz_es_total="$THYROX_TEST_ROOT_IS_TOTAL" '
+    $1 == "@ROOT@" { es_raiz[$2] = 1; next }
+    {
+        if (raiz_es_total == "1") { if ($2 in es_raiz) total += $1; else hijos++ }
+        else                      { total += $1; hijos++ }
+    }
+    END { printf "%d entradas medidas, %.1f MiB en total\n", hijos, total/1024 }'
 
 if [[ $cut_short -eq 1 && "$THYROX_TEST_DECLARE_CUT" == "1" ]]; then
     printf 'VEREDICTO         PARCIAL — el plazo de %ss vencio.\n' "$deadline"

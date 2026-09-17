@@ -1,0 +1,22 @@
+[
+  {
+    "id": "4",
+    "open": true,
+    "presupposes": [
+      {
+        "kind": "path-exists",
+        "path": "src/inexistente/fantasma.py"
+      }
+    ]
+  },
+  {
+    "id": "11",
+    "open": true,
+    "presupposes": [
+      {
+        "kind": "path-exists",
+        "path": "scripts/gates/verificar_premisa.py"
+      }
+    ]
+  }
+]

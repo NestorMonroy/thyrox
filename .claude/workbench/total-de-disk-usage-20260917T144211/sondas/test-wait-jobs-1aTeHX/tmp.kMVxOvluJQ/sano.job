@@ -1,0 +1,4 @@
+log=.claude/workbench/total-de-disk-usage-20260917T144211/sondas/test-wait-jobs-1aTeHX/tmp.fNgzSNBHcY
+pid=25176
+proc_start=4784827
+cmd=sleep 300 

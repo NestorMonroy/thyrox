@@ -1,0 +1,4 @@
+log=/home/user/thyrox/.claude/workbench/total-de-disk-usage-20260917T144211/sondas/test-wait-jobs-1aTeHX/tmp.6sUaddkBHE
+pid=24991
+proc_start=4784701
+cmd=bash -c bash -c "$1"; echo EXIT=$? _ echo huerfano-24487-24578; sleep 300; : 
