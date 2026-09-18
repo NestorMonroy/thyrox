@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-"""¿Cuanto varia la serie alrededor de su centro, y cuanto confiar en su media?
-
-Se llama por el fenomeno que mide —cuanto varia— y no por el mecanismo:
-«varianza» y «desviacion estandar» son COMO esta hecho, y viven dentro como
-nombres de funcion, que es donde el termino tecnico manda. Un modulo llamado
-por su categoria estadistica ata el nombre al procedimiento y no dice nada a
-quien lo busca (:ref:`h-thyrox-19`, la misma razon por la que ``trend`` no se
-llama «regresion por minimos cuadrados»).
+"""Cuanto se aparta el dato de su centro: el hueco, y si la media es fiable.
 
 El caso que lo fija, y por que le importa a este arbol
 ------------------------------------------------------
@@ -40,44 +33,6 @@ recorrerlas dos veces no es opcion. Algebraicamente identicas;
 resta dos numeros parecidos y pierde digitos significativos. La eleccion es de
 forma de acceso al dato, no de correccion — por eso ninguna sustituye a la
 otra.
-
-Por que el modulo no se llama `dispersion`, ni `stats`, ni `spread`
----------------------------------------------------------------------
-
-Los tres nombres se probaron y los tres fallan un criterio distinto, y vale
-dejarlo escrito porque el fallo se repitio dos veces en el mismo pase:
-
-* `stats` nombra la DISCIPLINA, no lo que el modulo responde, y ademas
-  duplicaba `measurement`, que ya existia y es donde vive esta familia.
-* `dispersion` nombra la CATEGORIA ESTADISTICA: es COMO esta hecho, el mismo
-  defecto que :ref:`h-thyrox-19` ya tenia registrado para `trend`.
-* `spread` si nombra el fenomeno, pero en ingles significa tambien propagarse
-  y extenderse: pide al lector elegir el sentido correcto, que es la asignacion
-  mental que el nombre deberia ahorrarle.
-
-`variability` nombra el eje —cuanto varia— sin ambiguedad de sentido y sin
-invertir la lectura de la cifra. `consistency` habria nombrado el POLO
-opuesto, y entonces un valor alto significaria poca consistencia: el nombre
-diria lo contrario que el numero.
-
-Por que las funciones no se llaman `variance` ni `standard_deviation`
-----------------------------------------------------------------------
-
-Porque nombran COMO esta hecho. Quien invoca `squared_gap` lee lo que
-obtiene —cuanto se aparta el dato de su centro, en unidades al cuadrado— sin
-traducir mentalmente un termino de estadistica; quien lee `variance` tiene
-que saber la definicion antes de saber si le sirve. Es el mismo criterio que
-puso el nombre del modulo: `trend` no se llama «regresion por minimos
-cuadrados».
-
-Los terminos tecnicos NO desaparecen: se quedan en ingles y en su sitio, que
-es el docstring de cada funcion, donde nombran el mecanismo. Cada una declara
-el suyo —esperanza, varianza, desviacion estandar— y su formula, asi que
-siguen siendo greppeables sin ocupar el nombre.
-
-El caso mas claro es `squared_gap_in_one_pass`: llamarla «from moments» habria
-nombrado el algebra que la consigue, cuando la diferencia que le importa al
-llamador es que no necesita dos recorridos.
 
 Significante contra significado: una muestra no es una distribucion
 --------------------------------------------------------------------

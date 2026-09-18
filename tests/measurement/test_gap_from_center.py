@@ -51,7 +51,7 @@ import sys
 HERE = pathlib.Path(__file__).resolve()
 ROOT = HERE.parent.parent.parent
 sys.path.insert(0, str(ROOT / "src/measurement"))
-import variability  # noqa: E402
+import gap_from_center  # noqa: E402
 
 passed = failed = 0
 
@@ -74,29 +74,29 @@ ERRATIC = [10, 20, 30, 40, 50]     # el que depende del trafico
 WEIGHTS = [0.1, 0.2, 0.4, 0.2, 0.1]
 
 print("== 1. el mismo centro para las dos distribuciones ==")
-check("centro del estable = 30.0", 30.0, variability.center(STEADY, WEIGHTS))
-check("centro del erratico = 30.0", 30.0, variability.center(ERRATIC, WEIGHTS))
+check("centro del estable = 30.0", 30.0, gap_from_center.center(STEADY, WEIGHTS))
+check("centro del erratico = 30.0", 30.0, gap_from_center.center(ERRATIC, WEIGHTS))
 
 print("== 2. el apartamiento SI las distingue — forma 1 ==")
-check("apartamiento del estable = 1.2", 1.2, variability.squared_gap(STEADY, WEIGHTS))
-check("apartamiento del erratico = 120.0", 120.0, variability.squared_gap(ERRATIC, WEIGHTS))
+check("apartamiento del estable = 1.2", 1.2, gap_from_center.squared_gap(STEADY, WEIGHTS))
+check("apartamiento del erratico = 120.0", 120.0, gap_from_center.squared_gap(ERRATIC, WEIGHTS))
 
 print("== 3. la desviacion estandar, en las unidades originales ==")
 check("apartamiento tipico del erratico ~ 10.954451150103322", 120.0 ** 0.5,
-      variability.typical_gap(ERRATIC, WEIGHTS))
+      gap_from_center.typical_gap(ERRATIC, WEIGHTS))
 
 print("== 4. la forma 2 da lo mismo, en una sola pasada ==")
-check("una pasada sobre el erratico", variability.squared_gap(ERRATIC, WEIGHTS),
-      variability.squared_gap_in_one_pass(ERRATIC, WEIGHTS))
-check("una pasada sobre el estable", variability.squared_gap(STEADY, WEIGHTS),
-      variability.squared_gap_in_one_pass(STEADY, WEIGHTS))
+check("una pasada sobre el erratico", gap_from_center.squared_gap(ERRATIC, WEIGHTS),
+      gap_from_center.squared_gap_in_one_pass(ERRATIC, WEIGHTS))
+check("una pasada sobre el estable", gap_from_center.squared_gap(STEADY, WEIGHTS),
+      gap_from_center.squared_gap_in_one_pass(STEADY, WEIGHTS))
 
 print("== 5. pesos que no suman 1: REHUSA, no publica cifra ==")
 _invalid = [0.1, 0.2, 0.4, 0.2, 0.2]   # suman 1.1
 _raised = "ninguna"
 try:
-    variability.squared_gap(ERRATIC, _invalid)
-except variability.NotADistribution:
+    gap_from_center.squared_gap(ERRATIC, _invalid)
+except gap_from_center.NotADistribution:
     _raised = "NotADistribution"
 except Exception as error:  # noqa: BLE001 — el tipo es el sujeto del caso
     _raised = type(error).__name__
@@ -105,18 +105,18 @@ check("NotADistribution", "NotADistribution", _raised)
 print("== 6. un peso por valor, o tampoco hay distribucion ==")
 _raised = "ninguna"
 try:
-    variability.center([1, 2], [0.5, 0.3, 0.2])
-except variability.NotADistribution:
+    gap_from_center.center([1, 2], [0.5, 0.3, 0.2])
+except gap_from_center.NotADistribution:
     _raised = "NotADistribution"
 except Exception as error:  # noqa: BLE001
     _raised = type(error).__name__
 check("NotADistribution", "NotADistribution", _raised)
 
 print("== 7. una MUESTRA no es una distribucion: se declara al convertirla ==")
-_values, _weights = variability.weigh_observations([10, 20, 30, 40, 50])
+_values, _weights = gap_from_center.weigh_observations([10, 20, 30, 40, 50])
 check("cinco pesos de 1/5", [0.2] * 5, _weights)
 check("la media muestral es la esperanza empirica", 30.0,
-      variability.center(_values, _weights))
+      gap_from_center.center(_values, _weights))
 
 print(f"\n{passed} ok, {failed} fallos")
 raise SystemExit(1 if failed else 0)
