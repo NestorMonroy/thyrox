@@ -1,0 +1,29 @@
+  ok    el guard y su sonda existen
+  ok    rehusa con exit 2 cuando el nombre no resuelve
+  FALLO no nombra THYROX_INSTALL_GAWK: 'thyrox_toolchain: 'thyrox-awk-que-no-existe-18293' resuelve, pero NO compila intervalos.
+                  Sonda: /a.{0,3}(x)/{print "MATCH"}
+                  Instalar gawk NO lo arregla: en Debian el nombre
+                  'awk' lo decide /etc/alternatives/awk, no el
+                  paquete. Las dos salidas son declarar
+                  THYROX_TOOLCHAIN_AWK_BIN=gawk para esta invocacion,
+                  o que el ejecutor decida el enlace del sistema con
+                  update-alternatives, que es mutacion global.'
+  FALLO el rechazo de presencia emite una cifra y no debe: 'thyrox_toolchain: '' resuelve, pero NO compila intervalos.
+                  Sonda: /a.{0,3}(x)/{print "MATCH"}
+                  Instalar gawk NO lo arregla: en Debian el nombre
+                  'awk' lo decide /etc/alternatives/awk, no el
+                  paquete. Las dos salidas son declarar
+                  THYROX_TOOLCHAIN_AWK_BIN=gawk para esta invocacion,
+                  o que el ejecutor decida el enlace del sistema con
+                  update-alternatives, que es mutacion global.'
+  ok    un instalador que miente NO se acepta: se re-comprueba el binario
+  ok    un awk PRESENTE que no compila intervalos rehusa igual
+  ok    el rechazo de conducta NO manda a instalar
+  ok    el rechazo de conducta nombra las dos salidas
+  ok    el rechazo de conducta no emite ningun conteo
+  ok    la sonda ve que mawk no compila el constructo
+  ok    la sonda ve que gawk SI compila el constructo
+  ok    el binario por defecto es 'awk': el eje es cual responde
+  ok    el awk de este arbol pasa los dos ejes
+
+13 casos: 11 ok, 2 fallos
