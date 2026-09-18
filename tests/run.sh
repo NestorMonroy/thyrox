@@ -24,6 +24,19 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
+# --- La raiz la declara el CORREDOR, no cada modulo ---------------------------
+#
+# `bin/` ya lo hacia (`export PYTHONPATH="$THYROX_ROOT/src"`) y este corredor no,
+# asi que cada suite tenia que abrirse el camino sola con un
+# `sys.path.insert(0, ... parents[N] / "src")`. Esa aritmetica es la que
+# `check_path_arithmetic.py` exime «cuando alimenta un sys.path.insert» — una
+# exencion que solo se sostenia mientras nadie declarara la raiz.
+#
+# Con la raiz declarada aqui, el insert deja de ser necesario y pasa a ser
+# deuda. NO se barren los 123 de `src/` en este pase: se paga al tocar, que es
+# el criterio prospectivo del arbol. Precondicion de TASK-THYROX-0018.
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+
 # --- El grifo de /tmp: un TMPDIR por ejecucion, retirado al salir -------------
 #
 # Medido antes de escribir esto: 105 715 directorios de fixture en /tmp, dejados

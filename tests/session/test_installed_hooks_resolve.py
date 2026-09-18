@@ -32,18 +32,19 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-from paths import reach  # noqa: E402
-from session.user_wiring import declared_wiring  # noqa: E402
+from paths import reach
+from session.user_wiring import declared_wiring
 
-#: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
-#: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale
-#: del localizador declarado (tarea #228).
+#: Ya no hay NINGUNA aritmetica de ruta: la raiz la declara `tests/run.sh` con
+#: `export PYTHONPATH="$PWD/src"`, la misma forma que `bin/` ya ejercia. El
+#: `sys.path.insert(0, ... parents[2] / "src")` que vivia aqui era el bootstrap
+#: que `check_path_arithmetic.py` exime — una exencion que solo se sostenia
+#: mientras nadie declarara la raiz. Todo lo demas sale del localizador
+#: declarado (TASK-DOCS-0504).
 ROOT = reach.thyrox_root()
 INSTALLER = ROOT / "src" / "session" / "instalar-hooks-sesion-multirepo.sh"
 
@@ -52,8 +53,16 @@ INSTALLER = ROOT / "src" / "session" / "instalar-hooks-sesion-multirepo.sh"
 CONSUMER = reach.root("docs")
 
 #: Los eventos que el cableado declara. Se afirma el conjunto para que un
-#: instalador mudo no pase.
-EXPECTED_EVENTS = {"SubagentStart", "PreModelSwitch", "SubagentStop"}
+#: instalador mudo no pase: si `declared_wiring` enmudeciera, la comparacion
+#: estructural de abajo seguiria verde comparando dos vacios.
+#:
+#: NO se deriva de `declared_wiring()` a proposito — derivarlo la volveria
+#: tautologia, que es el sub-patron D con este caso como sujeto. El precio es
+#: que la cifra caduca cuando el productor crece, y ya caduco una vez:
+#: `thyrox@6531f327` añadio el ciclo de vida de la tarjeta a las 23:53 y este
+#: conjunto quedo en los tres de las 12:54 del mismo dia.
+EXPECTED_EVENTS = {"SubagentStart", "PreModelSwitch", "SubagentStop",
+                   "TaskCreated", "TaskCompleted"}
 
 #: Intérprete -> en qué posición del comando va la ruta del archivo.
 INTERPRETERS = {"python3": 1, "node": 1, "bun": 2}  # `bun run <ruta>`
@@ -77,10 +86,20 @@ def missing_files(settings: dict) -> list[str]:
     return out
 
 
-#: La topologia CONTRARIA, verbatim como el instalador la componia hasta
-#: `thyrox@5862183f`: los seis comandos apuntando a los stubs del consumidor.
-#: No es un incumplidor fabricado — es el texto que estuvo vivo en el arbol, y
-#: ese TEXTO es lo que el control no toca.
+#: La topologia CONTRARIA: los ocho comandos apuntando a los stubs del
+#: consumidor. El reparto se declara porque las dos mitades NO tienen la misma
+#: procedencia, y colapsarlas seria presentar como verbatim lo que en parte no
+#: lo es:
+#:
+#: - los SEIS primeros son verbatim como el instalador los componia hasta
+#:   `thyrox@5862183f`. No es un incumplidor fabricado — es el texto que estuvo
+#:   vivo en el arbol, y ese TEXTO es lo que el control no toca.
+#: - los DOS del ciclo de vida de la tarjeta (`TaskCreated`/`TaskCompleted`)
+#:   nunca vivieron asi: el productor los añadio en `thyrox@6531f327`, ya
+#:   apuntando al proveedor. Aqui se compone su forma contraria con el MISMO
+#:   patron de stub que los seis, para que la mutacion siga siendo de UN SOLO
+#:   eje —la topologia— y no mezcle «apunta al consumidor» con «le faltan dos
+#:   eventos», que son dos causas distintas de un mismo rojo.
 #:
 #: Lo que si se materializa es el DESTINO: `h` apunta a un directorio que el
 #: propio control crea y puebla, no al `.claude/hooks/` del consumidor. La
@@ -104,14 +123,20 @@ TOPOLOGIA_CONTRARIA = """datos["hooks"] = {
         {"type": "command", "command": f"python3 {h}/medir_delta_subagente.py --stop"},
         {"type": "command", "command": f"python3 {h}/register_agent_session.py --stop"},
     ]}],
+    "TaskCreated": [{"hooks": [
+        {"type": "command", "command": f"python3 {h}/task_lifecycle.py"},
+    ]}],
+    "TaskCompleted": [{"hooks": [
+        {"type": "command", "command": f"python3 {h}/task_lifecycle.py"},
+    ]}],
 }"""
 
 
-#: Los tres nombres que `TOPOLOGIA_CONTRARIA` compone bajo `h`. El cuarto
-#: comando de esa topologia (`preModelSwitch.ts`) va por `THYROX_DIR`, no por
-#: `h`, y existe en el arbol del proveedor: no necesita stub.
+#: Los cuatro nombres que `TOPOLOGIA_CONTRARIA` compone bajo `h`. El unico
+#: comando de esa topologia que NO los usa (`preModelSwitch.ts`) va por
+#: `THYROX_DIR` y existe en el arbol del proveedor: no necesita stub.
 CONTRARY_TARGETS = ("medir_delta_subagente.py", "register_agent_session.py",
-                    "save-agent-result.mjs")
+                    "save-agent-result.mjs", "task_lifecycle.py")
 
 
 def stub_home(home: Path) -> Path:
@@ -182,7 +207,7 @@ class InstalledHooksResolve(unittest.TestCase):
         self.addCleanup(shutil.rmtree, self.target, True)
         self.settings = emitted_settings(self.target)
 
-    def test_it_emits_the_three_events(self) -> None:
+    def test_it_emits_the_declared_event_set(self) -> None:
         """Sin esto, un instalador que no escribiera nada daría verde."""
         self.assertEqual(set(self.settings.get("hooks", {})), EXPECTED_EVENTS)
 

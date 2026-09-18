@@ -44,9 +44,11 @@ import sys
 from pathlib import Path
 from typing import Protocol
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-from paths.reach import reach, thyrox_root  # noqa: E402
+# La raiz la declaran `bin/` (`export PYTHONPATH="$THYROX_ROOT/src"`) y
+# `tests/run.sh`, asi que este modulo NO se abre el camino solo. El
+# `sys.path.insert(0, ... parents[1])` que vivia aqui es la deuda de
+# TASK-THYROX-0018, y se paga al tocar el archivo.
+from paths.reach import reach, thyrox_root
 
 #: El archivo que el lanzador remoto carga. El cwd de la sesion es
 #: `/home/user`, no un clon, asi que este es el unico settings de proyecto que
