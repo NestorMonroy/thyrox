@@ -1,0 +1,24 @@
+# main_chain() devuelve [] sobre TODO transcript de subagente
+# fecha: 2026-09-18T03:37:02
+
+## el mecanismo (src/transcript/thread.py:121-124)
+    medible, no una configuración ambigua — el mismo criterio que
+    ``usage.accumulate`` ya declaró para su lista vacía.
+    """
+    rows, order = index_rows(lines)
+    for uuid in reversed(order):
+        if not rows[uuid].get(SIDECHAIN_FLAG):
+            return chain_from(rows, uuid)
+    return []
+
+
+## la poblacion real: TODA linea de un subagente lleva isSidechain
+transcripts de subagente medidos : 139
+lineas totales                   : 62356
+de ellas, isSidechain=True       : 62356  (100.00 %)
+lineas CON usage                 : 27928
+transcripts con main_chain == [] : 139 de 139
+
+## Metrica: isSidechain y usage por linea, sobre los transcripts de subagente de ESTA sesion.
+## Ciega a: si el cliente escribe alguna vez un subagente SIN la marca —no observado aqui—,
+##          y a los transcripts de otras sesiones, ya no alcanzables tras liberar el cache.
