@@ -4,30 +4,36 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 /**
- * Source-level pin for the auto-mode classifier's non-Anthropic provider
- * skip (`classifyYoloAction` guard in yoloClassifier.ts).
+ * Copia de `ccnmt: packages/permission/src/__tests__/classifierProviderSkip.behavior.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * Why source-level: `classifyYoloAction` makes a live sideQuery and its
- * skip branch is the very first thing it does — there's no exported pure
- * helper to unit-test, and bun:test runs with feature flags OFF
- * (TRANSCRIPT_CLASSIFIER gated), so the classifier path can't run live here.
- * We pin the SHAPE of the guard instead.
+ * Fijado a nivel de fuente del salto de proveedor no-Anthropic del
+ * clasificador de modo automático (la guarda de `classifyYoloAction` en
+ * `yoloClassifier.ts`).
  *
- * The guard exists because ccb adds multi-provider connections (openai /
- * gemini / codex) on top of ant's Anthropic-only world. The classifier
- * builds an Anthropic-protocol request (forced `tool_choice`,
- * `stop_sequences`) that those protocols can't honour:
- *   - openai / gemini route to their own SDK adapters (no Anthropic
- *     /v1/messages classifier body).
- *   - codex routes through the codex fetch-adapter which hard-codes
- *     `tool_choice: 'auto'` and drops `stop_sequences` — the forced
- *     `classify_result` call is downgraded so Codex often omits it,
- *     making every action spuriously `shouldBlock:true`.
+ * Por qué a nivel de fuente: `classifyYoloAction` hace un `sideQuery` en vivo
+ * y su rama de salto es lo primero que ejecuta — no hay un helper puro
+ * exportado que se pueda probar con un test unitario, y bun:test corre con
+ * las feature flags APAGADAS (TRANSCRIPT_CLASSIFIER está tras una puerta),
+ * así que aquí el camino del clasificador no puede correr en vivo. Lo que se
+ * fija es la FORMA de la guarda.
  *
- * Bug history: the guard originally listed only openai/gemini; codex slipped
- * through and broke auto-mode for ChatGPT-account users (each tool call
- * spuriously blocked). This pin locks all THREE non-Anthropic protocols into
- * the skip so a future edit can't drop one silently.
+ * La guarda existe porque ccb añade conexiones multi-proveedor (openai,
+ * gemini, codex) sobre el mundo sólo-Anthropic de ant. El clasificador
+ * construye una petición con el protocolo de Anthropic (`tool_choice`
+ * forzado, `stop_sequences`) que esos protocolos no pueden honrar:
+ *   - openai y gemini se enrutan a sus propios adaptadores de SDK (no hay un
+ *     cuerpo de clasificador de /v1/messages de Anthropic).
+ *   - codex se enruta por el adaptador de fetch de codex, que cablea
+ *     `tool_choice: 'auto'` y descarta `stop_sequences` — la llamada forzada
+ *     a `classify_result` queda degradada, así que Codex a menudo la omite y
+ *     toda acción sale espuriamente con `shouldBlock:true`.
+ *
+ * Historia del defecto: la guarda listaba al principio sólo openai y gemini;
+ * codex se coló y rompió el modo automático para quien usa cuenta de ChatGPT
+ * (cada llamada de herramienta quedaba bloqueada en falso). Este fijado deja
+ * los TRES protocolos no-Anthropic dentro del salto, para que una edición
+ * futura no pueda dejar caer uno en silencio.
  */
 describe('Auto-mode classifier non-Anthropic provider skip', () => {
   const source = readFileSync(
@@ -37,8 +43,9 @@ describe('Auto-mode classifier non-Anthropic provider skip', () => {
 
   const fnStart = source.indexOf('export async function classifyYoloAction')
   expect(fnStart).toBeGreaterThan(0)
-  // The guard is at the top of the function but preceded by a long
-  // explanatory comment; 2600 chars covers comment + guard body.
+  // La guarda está al principio de la función, pero precedida de un
+  // comentario explicativo largo; 2600 caracteres cubren el comentario y el
+  // cuerpo de la guarda.
   const guardSlice = source.slice(fnStart, fnStart + 2600)
 
   test('skips openai provider', () => {
@@ -54,17 +61,17 @@ describe('Auto-mode classifier non-Anthropic provider skip', () => {
   })
 
   test('all three non-Anthropic protocols are in the same skip condition', () => {
-    // One combined `if` so the skip is atomic — not three divergent branches
-    // that could disagree on the returned shape.
+    // Un solo `if` combinado, para que el salto sea atómico — no tres ramas
+    // divergentes que podrían discrepar sobre la forma devuelta.
     expect(guardSlice).toMatch(
       /provider === 'openai' \|\| provider === 'gemini' \|\| provider === 'codex'/,
     )
   })
 
   test('skip returns unavailable:true so the caller applies iron-gate policy', () => {
-    // unavailable:true is what routes to the fail-closed/fail-open decision
-    // in permissions.ts — NOT a bare shouldBlock:false that would silently
-    // allow. Pin both fields together.
+    // `unavailable:true` es lo que enruta a la decisión de fallar cerrado o
+    // fallar abierto de `permissions.ts` — NO un `shouldBlock:false` pelado,
+    // que permitiría en silencio. Se fijan los dos campos juntos.
     expect(guardSlice).toMatch(/shouldBlock: false/)
     expect(guardSlice).toMatch(/unavailable: true/)
   })

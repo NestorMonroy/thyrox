@@ -1,18 +1,22 @@
 /**
- * Permission Explainer
+ * Copia de `ccnmt: packages/permission/src/permissionExplainer.ts` con los
+ * comentarios traducidos; el cuerpo es el de la fuente.
  *
- * One-shot LLM call that explains a pending shell command in a permission
- * confirmation dialog: what it does (`explanation`), why the agent is running
- * it (`reasoning`, starts with "I"), what could go wrong (`risk`, < 15 words),
- * and a `riskLevel` (LOW / MEDIUM / HIGH).
+ * Explicador de permiso.
  *
- * Triggered by `ctrl+e` in the Confirmation context. Gated by the global config
- * `permissionExplainerEnabled` — default behaviour (config unset) is enabled,
- * matching ant (`!== false`).
+ * Llamada al LLM de un solo disparo que explica, dentro del diálogo de
+ * confirmación de permiso, un comando de shell pendiente: qué hace
+ * (`explanation`), por qué lo está ejecutando el agente (`reasoning`, que
+ * empieza por «I»), qué podría salir mal (`risk`, menos de 15 palabras) y un
+ * `riskLevel` (LOW / MEDIUM / HIGH).
  *
- * Ported from ant v2.1.150 (`PK4` / `E8q` in 5235.js, `eXO` schema + `rXO`
- * enum in 5236.js). The LLM call goes through `sideQuery` (ant `Zx`) with a
- * forced tool_choice, never a full AgentLoop.
+ * Lo dispara `ctrl+e` en el contexto de confirmación. Lo gobierna la config
+ * global `permissionExplainerEnabled` — el comportamiento por defecto (con la
+ * clave sin fijar) es habilitado, igual que en ant (`!== false`).
+ *
+ * Portado de ant v2.1.150 (`PK4` y `E8q` en 5235.js; el esquema `eXO` y el
+ * enum `rXO` en 5236.js). La llamada al LLM va por `sideQuery` (ant `Zx`) con
+ * un `tool_choice` forzado, nunca por un AgentLoop completo.
  */
 
 import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages.js'
@@ -29,10 +33,10 @@ import { logForDebugging } from '@claude-code-how-works/local-observability/debu
 const SYSTEM_PROMPT =
   'Analyze shell commands and explain what they do, why you\'re running them, and potential risks.'
 
-// ant rXO — risk level → numeric code for telemetry.
+// ant rXO — nivel de riesgo a código numérico, para la telemetría.
 const RISK_LEVEL_CODE = { LOW: 1, MEDIUM: 2, HIGH: 3 } as const
 
-// ant error_type codes (oXO / aXO / sXO).
+// Códigos de `error_type` de ant (oXO, aXO, sXO).
 const ERROR_TYPE_PARSE_FAILED = 1
 const ERROR_TYPE_ABORTED = 2
 const ERROR_TYPE_API_ERROR = 3
@@ -46,7 +50,7 @@ export type PermissionExplanation = {
   risk: string
 }
 
-// ant eXO — the forced-output tool schema.
+// ant eXO — el esquema de la herramienta de salida forzada.
 const EXPLAIN_COMMAND_TOOL: BetaToolUnion = {
   name: 'explain_command',
   description: 'Provide an explanation of a shell command',
@@ -74,7 +78,7 @@ const EXPLAIN_COMMAND_TOOL: BetaToolUnion = {
   },
 }
 
-// ant HPO — validates the tool_use input.
+// ant HPO — valida la entrada del `tool_use`.
 const explanationSchema = z.object({
   riskLevel: z.enum(['LOW', 'MEDIUM', 'HIGH']),
   explanation: z.string(),
@@ -83,13 +87,13 @@ const explanationSchema = z.object({
 })
 
 /**
- * ant E8q — gate. Default (config unset) is enabled.
+ * ant E8q — la puerta. Por defecto (con la clave sin fijar) está habilitada.
  */
 export function isPermissionExplainerEnabled(): boolean {
   return getGlobalConfig().permissionExplainerEnabled !== false
 }
 
-// ant _PO — serialize the tool input for the prompt.
+// ant _PO — serializa la entrada de la herramienta para el prompt.
 function serializeToolInput(input: unknown): string {
   if (typeof input === 'string') return input
   try {
@@ -99,10 +103,11 @@ function serializeToolInput(input: unknown): string {
   }
 }
 
-// ant qPO — build a short recent-conversation context from the last few
-// assistant text blocks (most recent first, capped at maxChars total).
-// ccb messages nest their content under `message.content` (vs ant's flat
-// MessageParam), so read the assistant turns through that shape.
+// ant qPO — construye un contexto breve de la conversación reciente a partir
+// de los últimos bloques de texto del asistente (el más reciente primero,
+// capado a `maxChars` en total). Los mensajes de ccb anidan su contenido bajo
+// `message.content` (en vez del `MessageParam` plano de ant), así que los
+// turnos del asistente se leen por esa forma.
 function buildRecentContext(messages: Message[], maxChars = 1000): string {
   const recentAssistant = messages
     .filter(m => m.type === 'assistant')
@@ -135,7 +140,8 @@ type GeneratePermissionExplanationParams = {
 }
 
 /**
- * ant PK4 — the one-shot LLM call. Returns null on any failure (never throws).
+ * ant PK4 — la llamada al LLM de un solo disparo. Devuelve null ante cualquier
+ * fallo; nunca lanza.
  */
 export async function generatePermissionExplanation({
   toolName,
@@ -220,7 +226,7 @@ Explain this command in context.`
   }
 }
 
-// ant OPO — risk level → theme color key.
+// ant OPO — nivel de riesgo a clave de color del tema.
 export function riskLevelColor(level: RiskLevel): 'success' | 'warning' | 'error' {
   switch (level) {
     case 'LOW':
@@ -232,7 +238,7 @@ export function riskLevelColor(level: RiskLevel): 'success' | 'warning' | 'error
   }
 }
 
-// ant TPO — risk level → short label.
+// ant TPO — nivel de riesgo a etiqueta corta.
 export function riskLevelLabel(level: RiskLevel): string {
   switch (level) {
     case 'LOW':

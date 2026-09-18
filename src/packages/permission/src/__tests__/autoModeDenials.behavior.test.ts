@@ -9,18 +9,22 @@ import {
 } from '../autoModeDenials.ts'
 
 /**
- * Pin `autoModeDenials.ts` — the in-memory ring buffer that powers the
- * RecentDenialsTab in /permissions.
+ * Copia de `ccnmt: packages/permission/src/__tests__/autoModeDenials.behavior.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * Note on test scope: bun:test runs with feature flags OFF (see
- * feedback_bun_test_feature_flags_off.md). TRANSCRIPT_CLASSIFIER is gated,
- * so recordAutoModeDenial is a no-op in this environment. We pin the
- * SHAPE behaviors that are still observable:
- *   1. getAutoModeDenials returns an array (NOT undefined).
- *   2. recordAutoModeDenial is a no-op under feature flag off (state
- *      unchanged after call).
- *   3. MAX_DENIALS cap = 20 in source.
- *   4. Feature gate name = 'TRANSCRIPT_CLASSIFIER' in source.
+ * Fija `autoModeDenials.ts` — el buffer circular en memoria que alimenta el
+ * `RecentDenialsTab` de /permissions.
+ *
+ * Nota sobre el alcance del test: bun:test corre con las feature flags
+ * APAGADAS (ver `feedback_bun_test_feature_flags_off.md`).
+ * TRANSCRIPT_CLASSIFIER está tras una puerta, así que en este entorno
+ * `recordAutoModeDenial` es un no-op. Lo que se fija son los comportamientos
+ * de FORMA que siguen siendo observables:
+ *   1. `getAutoModeDenials` devuelve un arreglo, NO `undefined`.
+ *   2. `recordAutoModeDenial` es un no-op con la feature flag apagada (el
+ *      estado no cambia tras la llamada).
+ *   3. El tope MAX_DENIALS vale 20 en la fuente.
+ *   4. El nombre de la puerta es 'TRANSCRIPT_CLASSIFIER' en la fuente.
  */
 describe('autoModeDenials — runtime', () => {
   test('getAutoModeDenials returns array (readonly)', () => {
@@ -29,8 +33,8 @@ describe('autoModeDenials — runtime', () => {
   })
 
   test('record under feature-flag-off (bun:test) is no-op', () => {
-    // bun:test → feature('TRANSCRIPT_CLASSIFIER') === false → recordAutoModeDenial
-    // returns without mutation.
+    // bun:test → `feature('TRANSCRIPT_CLASSIFIER') === false` →
+    // `recordAutoModeDenial` vuelve sin mutar nada.
     const before = getAutoModeDenials()
     recordAutoModeDenial({
       toolName: 'Bash',
@@ -39,17 +43,18 @@ describe('autoModeDenials — runtime', () => {
       timestamp: Date.now(),
     })
     const after = getAutoModeDenials()
-    // Both are the same reference (or at least same length).
+    // Las dos son la misma referencia (o al menos tienen la misma longitud).
     expect(after.length).toBe(before.length)
   })
 
   test('returned array is readonly (TypeScript)', () => {
-    // Pin: the return type is `readonly AutoModeDenial[]`. We can't
-    // enforce runtime read-only with Object.freeze, but we can pin that
-    // the result IS the live array (not a copy that costs N).
+    // Fijado: el tipo de retorno es `readonly AutoModeDenial[]`. No se puede
+    // imponer la sólo-lectura en tiempo de ejecución con `Object.freeze`,
+    // pero sí fijar que el resultado ES el arreglo vivo, no una copia que
+    // cuesta N.
     const a = getAutoModeDenials()
     const b = getAutoModeDenials()
-    // Same ref (no defensive copy).
+    // La misma referencia (sin copia defensiva).
     expect(a).toBe(b)
   })
 })
@@ -61,14 +66,16 @@ describe('autoModeDenials — source pins', () => {
   )
 
   test('MAX_DENIALS = 20 (ring buffer cap)', () => {
-    // Pin: the UI scroll budget. Raising would balloon memory if many
-    // denials happen quickly; lowering would hide history.
+    // Fijado: el presupuesto de scroll de la interfaz. Subirlo dispararía la
+    // memoria si se acumulan muchas denegaciones deprisa; bajarlo ocultaría
+    // historial.
     expect(source).toMatch(/MAX_DENIALS = 20/)
   })
 
   test('Feature gate name: TRANSCRIPT_CLASSIFIER', () => {
-    // Pin: must match scripts/default-features.ts and the feature flag
-    // registry. A typo would silently always-bypass.
+    // Fijado: tiene que coincidir con `scripts/default-features.ts` y con el
+    // registro de feature flags. Una errata haría que siempre se saltara, en
+    // silencio.
     expect(source).toMatch(/feature\('TRANSCRIPT_CLASSIFIER'\)/)
   })
 
@@ -79,16 +86,17 @@ describe('autoModeDenials — source pins', () => {
   })
 
   test('ring buffer uses prepend + slice (LIFO order)', () => {
-    // Pin: [newest, ...prev.slice(0, MAX_DENIALS - 1)]. UI shows newest
-    // at top. A regression to [...prev, newest] would push oldest first
-    // and either grow unbounded or drop newest.
+    // Fijado: `[newest, ...prev.slice(0, MAX_DENIALS - 1)]`. La interfaz
+    // muestra la más reciente arriba. Una regresión a `[...prev, newest]`
+    // pondría la más antigua primero y o crecería sin cota o dejaría caer la
+    // más reciente.
     expect(source).toMatch(
       /DENIALS = \[denial, \.\.\.DENIALS\.slice\(0, MAX_DENIALS - 1\)\]/,
     )
   })
 
   test('AutoModeDenial type has 4 fields: toolName, display, reason, timestamp', () => {
-    // Pin: wire format for the UI.
+    // Fijado: el formato de intercambio para la interfaz.
     expect(source).toMatch(/toolName: string/)
     expect(source).toMatch(/display: string/)
     expect(source).toMatch(/reason: string/)
@@ -96,9 +104,9 @@ describe('autoModeDenials — source pins', () => {
   })
 
   test('module-level DENIALS is `let` (not const) — required for ring buffer mutation', () => {
-    // Pin: const would prevent reassignment. The reassign-immutable
-    // pattern (new array each time) is correct; pinning `let` is the
-    // structural cue.
+    // Fijado: un `const` impediría la reasignación. El patrón de reasignar
+    // un inmutable (un arreglo nuevo cada vez) es el correcto; fijar `let` es
+    // la pista estructural de que se usa ese patrón.
     expect(source).toMatch(
       /let DENIALS: readonly AutoModeDenial\[\] = \[\]/,
     )
