@@ -24,8 +24,13 @@ import { YOLO_CLASSIFIER_TOOL_NAME } from './yoloClassifier.js'
 import type { PermissionDecisionReason } from './permissionTypes.js'
 import { readEnv } from '@claude-code-how-works/config/env'
 
-// Ant-only tool names: conditional require so Bun can DCE these in external builds.
-// Gates mirror tools.ts. Keeps the tool name strings out of cli.js.
+// Copia de `ccnmt: packages/permission/src/classifierDecision.ts` con los
+// comentarios traducidos; el cuerpo es el de la fuente.
+//
+// Nombres de herramienta exclusivos de ant: `require` condicional, para que Bun
+// pueda eliminarlos como codigo muerto en las builds externas. Las guardas
+// replican las de `tools.ts`. Mantiene las cadenas de nombre de herramienta
+// fuera de `cli.js`.
 /* eslint-disable @typescript-eslint/no-require-imports */
 const TERMINAL_CAPTURE_TOOL_NAME = feature('TERMINAL_PANEL')
   ? (
@@ -46,10 +51,11 @@ const VERIFY_PLAN_EXECUTION_TOOL_NAME =
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 /**
- * Tools that are safe and don't need any classifier checking.
- * Used by the auto mode classifier to skip unnecessary API calls.
- * Does NOT include write/edit tools — those are handled by the
- * acceptEdits fast path (allowed in CWD, classified outside CWD).
+ * Herramientas que son seguras y no necesitan que el clasificador las revise.
+ * El clasificador de modo automático las usa para saltarse llamadas al API
+ * innecesarias. NO incluye las herramientas de escritura y edición — de ésas
+ * se ocupa el camino rápido de `acceptEdits` (permitidas dentro del CWD,
+ * clasificadas fuera de él).
  */
 const SAFE_YOLO_ALLOWLISTED_TOOLS = new Set([
   // Read-only file operations
@@ -96,11 +102,12 @@ export function isAutoModeAllowlistedTool(toolName: string): boolean {
 }
 
 /**
- * Whether a permission decision is an explicit user-configured ask rule —
- * directly, or nested inside a Bash subcommandResults bundle. ant `FW6`
- * (4260.js). Auto mode must fall back to PROMPTING for these instead of
- * handing them to the classifier: the user deliberately said "ask me about
- * this", so the answer is the user's to give, not a weaker LLM's to guess.
+ * Si una decisión de permiso es una regla `ask` que el usuario configuró
+ * explícitamente — de forma directa, o anidada dentro de un paquete de
+ * `subcommandResults` de Bash. ant `FW6` (4260.js). Ante éstas el modo
+ * automático tiene que caer de vuelta al PROMPT en vez de entregárselas al
+ * clasificador: el usuario dijo deliberadamente «pregúntame sobre esto», así
+ * que la respuesta le toca a él darla, no a un LLM más débil adivinarla.
  */
 export function isAskRuleDecision(
   reason: PermissionDecisionReason | undefined,
@@ -119,9 +126,9 @@ export function isAskRuleDecision(
 }
 
 /**
- * Whether a decision is the plan-mode floor (ant `qMK`, 4260.js): plan mode
- * forces an approval prompt that auto mode must not auto-resolve via the
- * classifier.
+ * Si una decisión es el piso del modo plan (ant `qMK`, 4260.js): el modo plan
+ * fuerza un prompt de aprobación que el modo automático no puede resolver por
+ * su cuenta con el clasificador.
  */
 export function isPlanModeDecision(
   reason: PermissionDecisionReason | undefined,
@@ -130,16 +137,21 @@ export function isPlanModeDecision(
 }
 
 /**
- * Pure pre-classifier triage for auto mode (ant `xaH` 4260.js, the
- * `j||J||D||M||f` block). Decides whether a decision should bypass the
- * classifier entirely and prompt/deny the user instead. Returns:
- *   - 'deny-headless'        — a prompt-worthy reason but no prompt available
- *   - {reason}               — fall back to prompting (caller returns the 'ask'
- *                              result and logs tengu_auto_mode_fallback_to_ask)
- *   - null                   — proceed to the classifier
- * Side-effect-free so it lives here (no host bindings); the caller owns the
- * logEvent + return. `M` (MCP org ceiling) is omitted — ccb has no org ceiling.
- * sandboxOverride alone is NOT a fallback (ant's interactive cond is j||D||f).
+ * Triaje puro previo al clasificador para el modo automático (ant `xaH`
+ * 4260.js, el bloque `j||J||D||M||f`). Decide si una decisión debe saltarse el
+ * clasificador por completo y preguntarle o denegarle al usuario en su lugar.
+ * Devuelve:
+ *   - 'deny-headless'        — una razón que merece prompt, pero sin prompt
+ *                              disponible
+ *   - {reason}               — caer de vuelta al prompt (quien llama devuelve
+ *                              el resultado 'ask' y registra
+ *                              tengu_auto_mode_fallback_to_ask)
+ *   - null                   — seguir hacia el clasificador
+ * No tiene efectos secundarios, por eso vive aquí (sin ataduras al host); el
+ * `logEvent` y el retorno son de quien llama. `M` (el techo de organización de
+ * MCP) queda omitido — ccb no tiene techo de organización. `sandboxOverride`
+ * por sí solo NO es una caída de vuelta (la condición interactiva de ant es
+ * j||D||f).
  */
 export type AutoModeFallback =
   | 'deny-headless'
