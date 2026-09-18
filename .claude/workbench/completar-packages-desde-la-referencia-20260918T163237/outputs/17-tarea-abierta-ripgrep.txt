@@ -1,0 +1,6 @@
+--- en el puerto ---
+   5407744 bytes  /home/user/thyrox/src/packages/shell/vendor/ripgrep/x64-win32/rg.exe
+         0 bytes  /home/user/thyrox/src/packages/shell/vendor/ripgrep/arm64-win32/rg.exe
+--- en la fuente ---
+   5407744 bytes  /home/user/claude-code-nestor-monroy-tools/packages/shell/vendor/ripgrep/x64-win32/rg.exe
+         0 bytes  /home/user/claude-code-nestor-monroy-tools/packages/shell/vendor/ripgrep/arm64-win32/rg.exe
