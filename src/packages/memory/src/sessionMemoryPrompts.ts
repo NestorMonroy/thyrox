@@ -29,7 +29,7 @@ function roughTokenCountEstimation(text: string): number {
   if (bindings && typeof bindings === 'object' && typeof bindings.roughTokenCountEstimation === 'function') {
     return bindings.roughTokenCountEstimation(text)
   }
-  // Fallback: ~4 chars per token heuristic
+  // Respaldo: la heuristica de ~4 caracteres por token
   return Math.ceil(text.length / 4)
 }
 

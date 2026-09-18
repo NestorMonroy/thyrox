@@ -1,5 +1,5 @@
 /**
- * Tests for `detectBrewFormulaName` — port-correctness against ant
+ * Tests de `detectBrewFormulaName` — correccion del porte contra ant
  * v2.1.136 `Vw_` (3481.js):
  *
  *   function Vw_() {
@@ -7,9 +7,9 @@
  *       .match(/\/Caskroom\/([^/]+)\//)?.[1] ?? null
  *   }
  *
- * The function only inspects `process.execPath` so we can stub it
- * directly in each test case. Save/restore the original to keep
- * test isolation.
+ * La funcion solo inspecciona `process.execPath`, asi que se puede
+ * sustituir directamente en cada caso. El original se guarda y se restaura
+ * para mantener el aislamiento entre tests.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { detectBrewFormulaName } from '../packageManagers.js'
@@ -59,8 +59,9 @@ describe('detectBrewFormulaName (ant Vw_)', () => {
 
   test('returns null when path contains caskroom in lowercase only (case-sensitive)', () => {
     // Homebrew uses capital-C `Caskroom` (case-sensitive on Linux FS,
-    // case-insensitive on macOS HFS+ but the path is always cased that
-    // way). ant's regex is case-sensitive — we mirror that.
+    // insensible a mayusculas en HFS+ de macOS, pero la ruta siempre viene
+    // con esa caja). La expresion regular de ant SI distingue mayusculas, y
+    // aqui se replica.
     setExecPath('/opt/homebrew/caskroom/claude-code-how-works-how-works/2.1.136/claude')
     expect(detectBrewFormulaName()).toBeNull()
   })
@@ -72,8 +73,9 @@ describe('detectBrewFormulaName (ant Vw_)', () => {
 
   test('extracts only the FIRST Caskroom segment (no nesting)', () => {
     // Defensive: if a path somehow contains two /Caskroom/ markers
-    // (symlinks, weird homebrew setups), the regex captures the first
-    // hit (ant's `match()` returns the first match, not all).
+    // (symlinks, instalaciones raras de homebrew), la expresion regular
+    // captura el primer acierto: el `match()` de ant devuelve la primera
+    // coincidencia, no todas.
     setExecPath(
       '/opt/homebrew/Caskroom/outer/some/Caskroom/inner/2.1.136/claude',
     )

@@ -91,3 +91,28 @@ mitad de traduccion:
     server · local-observability · voice · permission · ide · teleport · bridge
 
 y su residuo declarado es «cita de simbolo», no deuda.
+
+================================================================================
+Tramo de traduccion: memory, updater, daemon
+================================================================================
+
+    paquete   antes  despues  residuo declarado
+    memory       14        1  un separador de seccion que cita
+                              `getFeatureValue_CACHED_MAY_BE_STALE`
+    updater      20        0  ninguno
+    daemon       27        5  los cinco de `classifier/patterns.ts`, que citan
+                              entre comillas la frase INGLESA que el patron
+                              busca — la frase es el DATO, no prosa
+
+Control por paquete, con `--ref-git HEAD` (el sujeto es el commit, no ccnmt):
+`divergentes=0` en los tres. Solo cambiaron comentarios.
+
+Paquetes cerrados en su mitad de traduccion, acumulado:
+
+    server · local-observability · voice · permission · ide · teleport ·
+    bridge · memory · updater · daemon
+
+Pendientes, por carga con el discriminador: headless-sdk 75 · swarm 109 ·
+app-host 184 · output 396 · storage 456 · mcp-runtime 929 ·
+command-runtime 1123 · provider 1734 · config 2139 · cli 2269 · agent 2439 ·
+shell 2928 · tool-registry 5820.

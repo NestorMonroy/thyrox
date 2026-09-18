@@ -28,9 +28,9 @@ describe('buildConsolidationPrompt — interpolation', () => {
 })
 
 describe('buildConsolidationPrompt — extra context', () => {
-  // Critical contract: extra is interpolated CONDITIONALLY. Empty extra
-  // must NOT produce the "## Additional context" header. Without this
-  // guard, every dream prompt would have a dangling empty header.
+  // Contrato critico: extra se interpola CONDICIONALMENTE. Un extra vacio
+  // NO tiene que producir el encabezado "## Additional context". Sin esta
+  // guarda, todo prompt de dream llevaria un encabezado vacio colgando.
 
   test('empty extra → no "Additional context" section', () => {
     const result = buildConsolidationPrompt('/m', '/t', '')
@@ -61,10 +61,10 @@ describe('buildConsolidationPrompt — extra context', () => {
 })
 
 describe('buildConsolidationPrompt — phase structure (contract anchor)', () => {
-  // The 4-phase structure is load-bearing: it tells the model how to
-  // approach memory consolidation. If a refactor accidentally drops
-  // a phase, future dreams would skip critical steps (e.g. dropping
-  // Phase 4 means the index never gets pruned).
+  // La estructura de 4 fases carga peso: le dice al modelo como abordar la
+  // consolidacion de la memoria. Si un refactor quita una fase sin querer,
+  // los dreams futuros se saltarian pasos criticos — quitar la Fase 4
+  // significa que el indice no se poda nunca.
 
   test('contains all 4 phases by name', () => {
     const result = buildConsolidationPrompt('/m', '/t', '')
@@ -86,7 +86,8 @@ describe('buildConsolidationPrompt — phase structure (contract anchor)', () =>
   })
 
   test('mentions the absolute-date-conversion contract', () => {
-    // Important for memory durability — relative dates expire silently.
+    // Importante para la durabilidad de la memoria: una fecha relativa
+    // caduca en silencio.
     expect(
       buildConsolidationPrompt('/m', '/t', ''),
     ).toMatch(/absolute dates/i)
@@ -99,8 +100,9 @@ describe('buildConsolidationPrompt — phase structure (contract anchor)', () =>
   })
 
   test('mentions "index" and "not a dump"', () => {
-    // Locks the entrypoint-discipline contract: entrypoint is an INDEX,
-    // not a content dump. Catches a refactor that softens this language.
+    // Fija el contrato de disciplina del entrypoint: el entrypoint es un
+    // INDICE, no un volcado de contenido. Atrapa un refactor que suavice
+    // esta redaccion.
     const result = buildConsolidationPrompt('/m', '/t', '')
     expect(result).toContain('index')
     expect(result).toContain('not a dump')

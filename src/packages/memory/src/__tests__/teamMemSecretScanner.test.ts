@@ -178,9 +178,10 @@ describe('scanForSecrets — privacy contract', () => {
     const matches = scanForSecrets(`token: ${key}`)
     expect(matches.length).toBeGreaterThan(0)
     for (const m of matches) {
-      // SecretMatch only exposes ruleId + label — never the secret itself
+      // SecretMatch expone solo ruleId y label: nunca el secreto mismo
       expect(Object.keys(m).sort()).toEqual(['label', 'ruleId'])
-      // Sanity: the literal key bytes must not appear in any field
+      // Comprobacion: los bytes literales de la clave no pueden aparecer
+    // en ningun campo
       expect(JSON.stringify(m)).not.toContain(key)
     }
   })
@@ -263,7 +264,8 @@ describe('redactSecrets', () => {
     const key = 'npm_' + 'A'.repeat(36)
     const input = `TOKEN="${key}";`
     const out = redactSecrets(input)
-    // Boundary chars survive — only the secret body is redacted
+    // Los caracteres de frontera sobreviven: solo se redacta el cuerpo
+    // del secreto
     expect(out).toContain('"')
     expect(out).toContain(';')
     expect(out).toContain('[REDACTED]')
@@ -292,7 +294,8 @@ describe('redactSecrets', () => {
     expect(out).not.toContain('A'.repeat(100))
   })
   test('redacts AWS key without capture group (uses full match)', () => {
-    // aws-access-token has a capture group; the boundary-survival rule still applies
+    // aws-access-token tiene un grupo de captura; la regla de supervivencia
+    // de la frontera sigue valiendo
     const key = 'AKIAIOSFODNN7EXAMPLE'
     expect(redactSecrets(`KEY=${key}`)).toContain('[REDACTED]')
   })

@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import { parseTagFromReleaseLocation } from '../githubReleases.js'
 
-// parseTagFromReleaseLocation extracts the tag from the `Location` header
-// that github.com returns on a 302 from `/releases/latest`. This is the
-// rate-limit-free path the auto-updater relies on (api.github.com's
-// unauthenticated 60/h budget is shared per-IP and routinely exhausted,
-// producing a 403 that silently disabled auto-update — the bug this
-// function exists to fix). Lock the parsing so a regression can't
-// re-break update resolution.
+// parseTagFromReleaseLocation extrae el tag de la cabecera `Location` que
+// github.com devuelve en el 302 de `/releases/latest`. Ese es el camino sin
+// rate limit del que depende el auto-updater: el presupuesto sin autenticar
+// de api.github.com, 60/h, se comparte por IP y se agota a menudo, y produce
+// un 403 que deshabilitaba el auto-update en silencio — el defecto que esta
+// funcion existe para corregir. Se fija el analisis para que una regresion
+// no pueda volver a romper la resolucion de la actualizacion.
 describe('parseTagFromReleaseLocation', () => {
   test('extracts tag from an absolute github.com redirect URL', () => {
     expect(
@@ -49,8 +49,9 @@ describe('parseTagFromReleaseLocation', () => {
   })
 
   test('decodes percent-encoded tag segments', () => {
-    // A tag containing an encoded char (defensive — ccb tags are plain,
-    // but GitHub percent-encodes unusual tag names in the Location).
+    // Un tag con un caracter codificado. Es defensivo: los tags de ccb son
+    // llanos, pero GitHub codifica en porcentaje los nombres de tag inusuales
+    // dentro del Location.
     expect(
       parseTagFromReleaseLocation(
         'https://github.com/o/r/releases/tag/v26.5.92%2Bbuild',
@@ -59,8 +60,8 @@ describe('parseTagFromReleaseLocation', () => {
   })
 
   test('returns null when the URL is the releases index (no /tag/)', () => {
-    // A repo with zero releases serves the index at 200 with no /tag/
-    // segment — the redirect path treats this as "no release".
+    // Un repo sin releases sirve el indice con 200 y sin segmento /tag/: el
+    // camino de redireccion lo trata como «no hay release».
     expect(
       parseTagFromReleaseLocation('https://github.com/o/r/releases'),
     ).toBeNull()
