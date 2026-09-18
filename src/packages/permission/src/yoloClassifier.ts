@@ -53,9 +53,13 @@ import { extractToolUseBlock, parseClassifierResponse } from './classifierShared
 import { getClaudeTempDir } from './filesystem.js'
 import { readEnv } from '@claude-code-how-works/config/env'
 import { buildYoloSystemPrompt } from './yoloSystemPrompt.js'
-// Re-export the prompt-assembly surface for `claude auto-mode` handlers and
-// the contract test — the assembly logic moved to yoloSystemPrompt.ts (file-size
-// budget), but these names stay importable from yoloClassifier for compat.
+// Copia de `ccnmt: packages/permission/src/yoloClassifier.ts` con los
+// comentarios traducidos; el cuerpo es el de la fuente.
+//
+// Se reexporta la superficie de ensamblado del prompt para los handlers de
+// `claude auto-mode` y para el test de contrato: la lógica de ensamblado se
+// mudó a yoloSystemPrompt.ts por presupuesto de tamaño de archivo, pero estos
+// nombres siguen siendo importables desde yoloClassifier por compatibilidad.
 export {
   type AutoModeRules,
   type YoloSystemPrompt,
@@ -69,9 +73,10 @@ function getAutoModeDumpDir(): string {
 }
 
 /**
- * Dump the auto mode classifier request and response bodies to the per-user
- * claude temp directory when CLAUDE_CODE_DUMP_AUTO_MODE is set. Files are
- * named by unix timestamp: {timestamp}[.{suffix}].req.json and .res.json
+ * Vuelca los cuerpos de petición y respuesta del clasificador de modo
+ * automático al directorio temporal de claude de cada usuario cuando
+ * CLAUDE_CODE_DUMP_AUTO_MODE está fijada. Los archivos se nombran por
+ * timestamp unix: {timestamp}[.{suffix}].req.json y .res.json
  */
 async function maybeDumpAutoMode(
   request: unknown,
@@ -103,8 +108,10 @@ async function maybeDumpAutoMode(
 }
 
 /**
- * Session-scoped dump file for auto mode classifier error prompts. Written on API
- * error so users can share via /share without needing to repro with env var.
+ * Archivo de volcado con alcance de sesión para los prompts de error del
+ * clasificador de modo automático. Se escribe ante un error del API, para que
+ * el usuario pueda compartirlo con /share sin tener que reproducir el caso con
+ * la variable de entorno.
  */
 export function getAutoModeClassifierErrorDumpPath(): string {
   return join(
@@ -115,10 +122,10 @@ export function getAutoModeClassifierErrorDumpPath(): string {
 }
 
 /**
- * Snapshot of the most recent classifier API request(s), stringified lazily
- * only when /share reads it. Array because the XML path may send two requests
- * (stage1 + stage2). Stored in bootstrap/state.ts to avoid module-scope
- * mutable state.
+ * Instantánea de la o las peticiones más recientes al API del clasificador,
+ * serializada de forma perezosa sólo cuando /share la lee. Es un arreglo porque
+ * el camino XML puede enviar dos peticiones (stage1 + stage2). Se guarda en
+ * bootstrap/state.ts para no tener estado mutable con alcance de módulo.
  */
 export function getAutoModeClassifierTranscript(): string | null {
   const requests = getLastClassifierRequests()
@@ -127,11 +134,13 @@ export function getAutoModeClassifierTranscript(): string | null {
 }
 
 /**
- * Dump classifier input prompts + context-comparison diagnostics on API error.
- * Written to a session-scoped file in the claude temp dir so /share can collect
- * it (replaces the old Desktop dump). Includes context numbers to help diagnose
- * projection divergence (classifier tokens >> main loop tokens).
- * Returns the dump path on success, null on failure.
+ * Vuelca los prompts de entrada del clasificador más los diagnósticos de
+ * comparación de contexto ante un error del API. Se escribe a un archivo con
+ * alcance de sesión en el directorio temporal de claude, para que /share pueda
+ * recogerlo; reemplaza al antiguo volcado al Escritorio. Incluye las cifras de
+ * contexto para ayudar a diagnosticar la divergencia de proyección (tokens del
+ * clasificador >> tokens del bucle principal).
+ * Devuelve la ruta del volcado si tuvo éxito, y null si falló.
  */
 async function dumpErrorPrompts(
   systemPrompt: string,
@@ -150,7 +159,8 @@ async function dumpErrorPrompts(
   try {
     const path = getAutoModeClassifierErrorDumpPath()
     await mkdir(dirname(path), { recursive: true })
-    // modelid:debug-only — local error-dump file, not shown to user
+    // modelid:debug-only — archivo local de volcado de error, no se le muestra
+    // al usuario.
     const content =
       `=== ERROR ===\n${errorMessage(error)}\n\n` +
       `=== CONTEXT COMPARISON ===\n` +
@@ -218,15 +228,17 @@ export type TranscriptEntry = {
 }
 
 /**
- * Build transcript entries from messages.
- * Includes user text messages and assistant tool_use blocks (excluding assistant text).
- * Queued user messages (attachment messages with queued_command type) are extracted
- * and emitted as user turns.
+ * Construye las entradas de transcript a partir de los mensajes.
+ * Incluye los mensajes de texto del usuario y los bloques tool_use del
+ * asistente, excluyendo el texto del asistente. Los mensajes de usuario
+ * encolados — mensajes de attachment con tipo queued_command — se extraen y se
+ * emiten como turnos de usuario.
  */
 export function buildTranscriptEntries(messages: Message[]): TranscriptEntry[] {
   const transcript: TranscriptEntry[] = []
-  // tool_use ids of AskUserQuestion calls; their later user tool_result answer
-  // IS genuine intent and must reach the classifier. ant `gZ7` `q` set
+  // Los id de tool_use de las llamadas a AskUserQuestion; la respuesta
+  // tool_result que el usuario da después SÍ es intención genuina y tiene que
+  // llegar al clasificador. El conjunto `q` de `gZ7` de ant
   // (3149.js:190/226/209).
   const askUserQuestionIds = new Set<string>()
   for (const msg of messages) {
@@ -252,12 +264,14 @@ export function buildTranscriptEntries(messages: Message[]): TranscriptEntry[] {
         })
       }
     } else if (msg.type === 'user') {
-      // Skip meta user messages — system-injected context (system-reminders,
-      // hook additional-context, screenshot/file notices), NOT user intent.
-      // Feeding them poisons the classifier: it latches onto stale meta (a
-      // /var/folders screenshot path, an old CI-log discussion) and fabricates
-      // an unrelated deny reason for the action being classified. ant `gZ7`
-      // (3149.js:202); ccb's port had dropped this.
+      // Se saltan los mensajes meta del usuario: contexto inyectado por el
+      // sistema (system-reminders, additional-context de un hook, avisos de
+      // captura o de archivo), que NO es intención del usuario. Alimentarlos
+      // envenena al clasificador: se engancha a un meta rancio — la ruta de una
+      // captura en /var/folders, una discusión vieja sobre un log de CI — y
+      // fabrica una razón de denegación ajena a la acción que está
+      // clasificando. `gZ7` de ant (3149.js:202); el porte de ccb lo había
+      // perdido.
       if (msg.isMeta) continue
       const content = msg.message.content
       const textBlocks: TranscriptBlock[] = []
@@ -272,9 +286,9 @@ export function buildTranscriptEntries(messages: Message[]): TranscriptEntry[] {
             block.is_error !== true &&
             askUserQuestionIds.has(block.tool_use_id)
           ) {
-            // The user's answer to an AskUserQuestion is genuine intent — fold
-            // it into the transcript so the classifier sees what the user chose.
-            // ant `gZ7` 3149.js:209-218.
+            // La respuesta del usuario a un AskUserQuestion es intención
+            // genuina: se pliega al transcript para que el clasificador vea qué
+            // eligió el usuario. `gZ7` de ant, 3149.js:209-218.
             const answer =
               typeof block.content === 'string'
                 ? block.content
@@ -294,11 +308,13 @@ export function buildTranscriptEntries(messages: Message[]): TranscriptEntry[] {
     } else if (msg.type === 'assistant') {
       const blocks: TranscriptBlock[] = []
       for (const block of msg.message.content) {
-        // Only include tool_use blocks — assistant text is model-authored
-        // and could be crafted to influence the classifier's decision.
+        // Sólo se incluyen los bloques tool_use: el texto del asistente lo
+        // escribe el modelo, y podría estar compuesto para influir en la
+        // decisión del clasificador.
         if (typeof block !== 'string' && block.type === 'tool_use') {
-          // Record AskUserQuestion calls so the matching user tool_result
-          // answer gets folded in above. ant `gZ7` 3149.js:226.
+          // Se registran las llamadas a AskUserQuestion para que su respuesta
+          // tool_result correspondiente se pliegue arriba. `gZ7` de ant,
+          // 3149.js:226.
           if (block.name === ASK_USER_QUESTION_TOOL_NAME) {
             askUserQuestionIds.add(block.id)
           }
@@ -331,13 +347,14 @@ function buildToolLookup(tools: Tools): ToolLookup {
 }
 
 /**
- * Serialize a single transcript block as a JSONL dict line: `{"Bash":"ls"}`
- * for tool calls, `{"user":"text"}` for user text. The tool value is the
- * per-tool `toAutoClassifierInput` projection. JSON escaping means hostile
- * content can't break out of its string context to forge a `{"user":...}`
- * line — newlines become `\n` inside the value.
+ * Serializa un bloque de transcript como una línea de diccionario JSONL:
+ * `{"Bash":"ls"}` para una llamada a herramienta, `{"user":"text"}` para texto
+ * del usuario. El valor de la herramienta es la proyección
+ * `toAutoClassifierInput` propia de cada una. El escapado de JSON implica que
+ * un contenido hostil no puede salirse de su contexto de cadena para forjar una
+ * línea `{"user":...}`: los saltos de línea se vuelven `\n` dentro del valor.
  *
- * Returns '' for tool_use blocks whose tool encodes to ''.
+ * Devuelve '' para los bloques tool_use cuya herramienta codifica a ''.
  */
 function toCompactBlock(
   block: TranscriptBlock,
@@ -348,11 +365,12 @@ function toCompactBlock(
     const tool = lookup.get(block.name)
     if (!tool) return ''
     const input = (block.input ?? {}) as Record<string, unknown>
-    // block.input is unvalidated model output from history — a tool_use rejected
-    // for bad params (e.g. array emitted as JSON string) still lands in the
-    // transcript and would crash toAutoClassifierInput when it assumes z.infer<Input>.
-    // On throw or undefined, fall back to the raw input object — it gets
-    // single-encoded in the jsonStringify wrap below (no double-encode).
+    // block.input es salida del modelo sin validar, venida del historial: un
+    // tool_use rechazado por parámetros malos — un arreglo emitido como cadena
+    // JSON, por ejemplo — aterriza igual en el transcript y reventaría
+    // toAutoClassifierInput, que asume z.infer<Input>. Ante una excepción o
+    // ante undefined se cae de vuelta al objeto de input en crudo: se codifica
+    // una sola vez en el jsonStringify de abajo, sin doble codificación.
     let encoded: unknown
     try {
       encoded = tool.toAutoClassifierInput(input) ?? input
@@ -386,8 +404,9 @@ function toCompact(entry: TranscriptEntry, lookup: ToolLookup): string {
 }
 
 /**
- * Build a compact transcript string including user messages and assistant tool_use blocks.
- * Used by AgentTool for handoff classification.
+ * Construye una cadena de transcript compacta con los mensajes del usuario y
+ * los bloques tool_use del asistente. La consume AgentTool para clasificar el
+ * traspaso.
  */
 export function buildTranscriptForClassifier(
   messages: Message[],
@@ -400,20 +419,21 @@ export function buildTranscriptForClassifier(
 }
 
 /**
- * Build the CLAUDE.md prefix message for the classifier. Returns null when
- * CLAUDE.md is disabled or empty. The content is wrapped in a delimiter that
- * tells the classifier this is user-provided configuration — actions
- * described here reflect user intent. cache_control is set because the
- * content is static per-session, making the system + CLAUDE.md prefix a
- * stable cache prefix across classifier calls.
+ * Construye el mensaje de prefijo de CLAUDE.md para el clasificador. Devuelve
+ * null cuando CLAUDE.md está deshabilitado o vacío. El contenido va envuelto en
+ * un delimitador que le dice al clasificador que esto es configuración aportada
+ * por el usuario: las acciones que aquí se describen reflejan intención del
+ * usuario. Se fija cache_control porque el contenido es estático por sesión, lo
+ * que hace del prefijo sistema + CLAUDE.md un prefijo de caché estable entre
+ * llamadas al clasificador.
  *
- * Reads from bootstrap/state.ts cache (populated by context.ts) instead of
- * importing claudemd.ts directly — claudemd → permissions/filesystem →
- * permissions → yoloClassifier is a cycle. context.ts already gates on
- * CLAUDE_CODE_DISABLE_CLAUDE_MDS and normalizes '' to null before caching.
- * If the cache is unpopulated (tests, or an entrypoint that never calls
- * getUserContext), the classifier proceeds without CLAUDE.md — same as
- * pre-PR behavior.
+ * Lee de la caché de bootstrap/state.ts — la puebla context.ts — en vez de
+ * importar claudemd.ts directamente: claudemd → permissions/filesystem →
+ * permissions → yoloClassifier es un ciclo. context.ts ya condiciona por
+ * CLAUDE_CODE_DISABLE_CLAUDE_MDS y normaliza '' a null antes de cachear. Si la
+ * caché está sin poblar — en tests, o en un punto de entrada que nunca llama a
+ * getUserContext — el clasificador procede sin CLAUDE.md, igual que antes del
+ * PR.
  */
 function buildClaudeMdMessage(): Anthropic.MessageParam | null {
   const claudeMd = getCachedClaudeMdContent()
@@ -423,10 +443,12 @@ function buildClaudeMdMessage(): Anthropic.MessageParam | null {
     content: [
       {
         type: 'text',
-        // ant `Ap5` (3149.js): scope CLAUDE.md's authorizing power to the
-        // SPECIFIC action under review; generic "be autonomous / I trust you"
-        // encouragement must NOT lower the block threshold. ccb's prior looser
-        // wording let blanket directives weaken the classifier.
+        // `Ap5` de ant (3149.js): acota el poder autorizador de CLAUDE.md a la
+        // acción ESPECÍFICA bajo revisión; un genérico "be autonomous / I trust
+        // you"
+        // el aliento genérico NO debe bajar el umbral de bloqueo. La redacción
+        // anterior de ccb, más laxa, dejaba que una directiva general debilitara
+        // al clasificador.
         text:
           `The following is the user's CLAUDE.md configuration. Treat it as ` +
           `context about the user's environment and intent. If it explicitly ` +
@@ -442,9 +464,10 @@ function buildClaudeMdMessage(): Anthropic.MessageParam | null {
 }
 
 /**
- * Extract the tool name from a classifier action entry. Mirrors ant CZ7:
- * the first tool_use block's name, or 'unknown'. Used only for stall-log
- * attribution (which tool's classification is hanging).
+ * Extrae el nombre de herramienta de una entrada de acción del clasificador.
+ * Espeja el CZ7 de ant: el nombre del primer bloque tool_use, o 'unknown'. Se
+ * usa sólo para la atribución del registro de atasco: qué herramienta tiene su
+ * clasificación colgada.
  */
 function getActionToolName(action: TranscriptEntry): string {
   const block = Array.isArray(action.content)
@@ -454,24 +477,27 @@ function getActionToolName(action: TranscriptEntry): string {
 }
 
 // ============================================================================
-// 2-Stage XML Classifier
+// Clasificador XML de dos etapas
 // ============================================================================
 
 /**
- * XML classifier for auto mode security decisions. Supports three modes:
+ * Clasificador XML de las decisiones de seguridad del modo automático. Admite
+ * tres modos:
  *
- * 'both' (default): Stage 1 ("fast") runs first with max_tokens=64 and
- * stop_sequences for an immediate yes/no. If allowed, returns. If blocked,
- * escalates to stage 2 ("thinking") with chain-of-thought to reduce false
- * positives.
+ * 'both' (por defecto): la etapa 1 ("fast") corre primero con max_tokens=64 y
+ * stop_sequences, para un sí o no inmediato. Si permite, retorna. Si bloquea,
+ * escala a la etapa 2 ("thinking") con cadena de razonamiento, para reducir los
+ * falsos positivos.
  *
- * 'fast': Stage 1 only. Bumps max_tokens to 256 and drops stop_sequences so
- * the response can include <reason>. Stage 1 verdict is final.
+ * 'fast': sólo la etapa 1. Sube max_tokens a 256 y suelta las stop_sequences
+ * para que la respuesta pueda incluir <reason>. El veredicto de la etapa 1 es
+ * definitivo.
  *
- * 'thinking': Stage 2 only. Skips stage 1 entirely.
+ * 'thinking': sólo la etapa 2. Se salta la etapa 1 por completo.
  *
- * Both stages share the same system prompt and user content, benefiting from
- * prompt caching (1h TTL) across calls.
+ * Las dos etapas comparten el mismo system prompt y el mismo contenido de
+ * usuario, así que se benefician del cacheo de prompt (TTL de 1 h) entre
+ * llamadas.
  */
 async function classifyYoloActionXml(
   prefixMessages: Anthropic.MessageParam[],
@@ -505,14 +531,16 @@ async function classifyYoloActionXml(
       : mode === 'fast'
         ? 'xml_fast'
         : 'xml_thinking'
-  // ant Gp5: P/G are the per-stage fetch-attempt counters (`{count:0}`),
-  // surfaced as stage1Attempts/stage2Attempts in every outcome event.
+  // Gp5 de ant: P y G son los contadores de intento de fetch por etapa
+  // (`{count:0}`), que afloran como stage1Attempts/stage2Attempts en cada
+  // evento de desenlace.
   const stage1Attempts: AttemptCounter = { count: 0 }
   const stage2Attempts: AttemptCounter = { count: 0 }
   const xmlSystemPrompt = replaceOutputFormatWithXml(systemPrompt)
-  // ant Gp5: `j=_.map((v,E)=>E===0?{...v,text:Zp5(v.text)}:v)` — only block 0
-  // (base+template) gets the XML output-format rewrite; the Session Context
-  // block(s) pass through unchanged.
+  // Gp5 de ant: `j=_.map((v,E)=>E===0?{...v,text:Zp5(v.text)}:v)` — sólo el
+  // bloque 0
+  // (base+plantilla) recibe la reescritura de formato de salida a XML; el o los
+  // bloques de Session Context pasan sin cambios.
   const systemBlocks: Anthropic.TextBlockParam[] = [
     {
       type: 'text' as const,
@@ -529,9 +557,10 @@ async function classifyYoloActionXml(
   const overallStart = Date.now()
   const [disableThinking, thinkingPadding] = getClassifierThinkingConfig(model)
 
-  // Wrap transcript entries in <transcript> tags for the XML classifier.
-  // Wrap all content (transcript + action) in <transcript> tags.
-  // The action is the final tool_use block in the transcript.
+  // Se envuelven las entradas de transcript en etiquetas <transcript> para el
+  // clasificador XML. Se envuelve todo el contenido — transcript más acción —
+  // en etiquetas <transcript>. La acción es el último bloque tool_use del
+  // transcript.
   const wrappedContent: Array<
     Anthropic.TextBlockParam | Anthropic.ImageBlockParam
   > = [
@@ -541,20 +570,22 @@ async function classifyYoloActionXml(
   ]
 
   try {
-    // Stage 1: fast (suffix nudges immediate <block> decision)
-    // Skipped entirely when mode === 'thinking'.
+    // Etapa 1: fast; el sufijo empuja hacia una decisión <block> inmediata.
+    // Se salta por completo cuando mode === 'thinking'.
     if (mode !== 'thinking') {
       const stage1Start = Date.now()
-      // ant Gp5 `A==="both"?fp5:Mp5`: `both` (default) uses the coarse
-      // pre-filter suffix that defers intent/ALLOW to stage 2; `fast` uses the
-      // final-verdict suffix. ('thinking' never reaches here.)
+      // Gp5 de ant, `A==="both"?fp5:Mp5`: `both` — el default — usa el sufijo
+      // de prefiltro grueso, que difiere la intención y el ALLOW a la etapa 2;
+      // `fast` usa el sufijo de veredicto definitivo. ('thinking' nunca llega
+      // aquí.)
       const stage1Suffix = mode === 'both' ? XML_S1_SUFFIX_BOTH : XML_S1_SUFFIX
       const stage1Content = [
         ...wrappedContent,
         { type: 'text' as const, text: stage1Suffix },
       ]
-      // In fast-only mode, relax max_tokens and drop stop_sequences so the
-      // response can carry a <reason> tag (system prompt already asks for it).
+      // En el modo sólo-fast se relaja max_tokens y se sueltan las
+      // stop_sequences, para que la respuesta pueda llevar una etiqueta
+      // <reason>; el system prompt ya la pide.
       stage1Opts = {
         model,
         max_tokens: (mode === 'fast' ? 256 : 64) + thinkingPadding,
@@ -594,7 +625,8 @@ async function classifyYoloActionXml(
       void maybeDumpAutoMode(stage1Opts, stage1Raw, stage1Start, 'stage1')
       setLastClassifierRequests([stage1Opts])
 
-      // If stage 1 says allow, return immediately (fast path)
+      // Si la etapa 1 dice permitir, se retorna de inmediato: es el camino
+    // rápido.
       if (stage1Block === false) {
         logAutoModeOutcome('success', model, {
           classifierType,
@@ -614,7 +646,8 @@ async function classifyYoloActionXml(
         }
       }
 
-      // In fast-only mode, stage 1 is final — handle block + unparseable here.
+      // En el modo sólo-fast la etapa 1 es definitiva: aquí se atienden el
+    // bloqueo y el caso no parseable.
       if (mode === 'fast') {
         if (stage1Block === null) {
           const failureMode = classifyParseFailure(
@@ -644,7 +677,7 @@ async function classifyYoloActionXml(
             stage1MsgId,
           }
         }
-        // stage1Block === true
+        // stage1Block === true.
         logAutoModeOutcome('success', model, {
           classifierType,
           durationMs: stage1DurationMs,
@@ -664,7 +697,7 @@ async function classifyYoloActionXml(
       }
     }
 
-    // Stage 2: thinking (suffix asks for chain-of-thought)
+    // Etapa 2: thinking; el sufijo pide cadena de razonamiento.
     const stage2Start = Date.now()
     const stage2Content = [
       ...wrappedContent,
@@ -842,18 +875,21 @@ async function classifyYoloActionXml(
 }
 
 /**
- * Use Opus to classify whether an agent action should be allowed or blocked.
- * Returns a YoloClassifierResult indicating the decision.
+ * Usa Opus para clasificar si una acción del agente se permite o se bloquea.
+ * Devuelve un YoloClassifierResult con la decisión.
  *
- * On API errors, returns shouldBlock: true with unavailable: true so callers
- * can distinguish "classifier actively blocked" from "classifier couldn't respond".
- * Transient errors (429, 500) are retried by sideQuery internally (see getDefaultMaxRetries).
+ * Ante un error del API devuelve shouldBlock: true con unavailable: true, para
+ * que quien llama pueda distinguir «el clasificador bloqueó activamente» de «el
+ * clasificador no pudo responder». Los errores transitorios (429, 500) los
+ * reintenta sideQuery por dentro (ver getDefaultMaxRetries).
  *
- * @param messages - The conversation history
- * @param action - The action being evaluated (tool name + input)
- * @param tools - Tool registry for encoding tool inputs via toAutoClassifierInput
- * @param context - Tool permission context for extracting Bash(prompt:) rules
- * @param signal - Abort signal
+ * @param messages - el historial de la conversación
+ * @param action - la acción que se evalúa (nombre de herramienta más input)
+ * @param tools - el registro de herramientas, para codificar sus inputs con
+ *   toAutoClassifierInput
+ * @param context - el contexto de permiso de herramienta, para extraer las
+ *   reglas Bash(prompt:)
+ * @param signal - la señal de aborto
  */
 export async function classifyYoloAction(
   messages: Message[],
@@ -862,10 +898,12 @@ export async function classifyYoloAction(
   context: ToolPermissionContext,
   signal: AbortSignal,
 ): Promise<YoloClassifierResult> {
-  // V7-fix: classifier builds an Anthropic-protocol request (forced
-  // tool_choice, stop_sequences) openai/gemini adapters can't speak and codex's
-  // fetch-adapter mangles (tool_choice→'auto', drops stop_sequences → forced
-  // classify_result downgraded → spurious block). Skip all three → unavailable.
+  // V7-fix: el clasificador construye una petición en protocolo Anthropic —
+  // tool_choice forzado, stop_sequences — que los adaptadores de openai y gemini
+  // no saben hablar y que el adaptador de fetch de codex estropea: tool_choice
+  // pasa a 'auto' y se pierden las stop_sequences, así que el classify_result
+  // forzado se degrada y sale un bloqueo espurio. Se saltan los tres y se
+  // devuelve unavailable.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { getProviderForModel } = require(
     '@claude-code-how-works/provider/providers.js',
@@ -887,8 +925,9 @@ export async function classifyYoloAction(
 
   const lookup = buildToolLookup(tools)
   const actionCompact = toCompact(action, lookup)
-  // '' = "no security relevance" (Tool.toAutoClassifierInput contract). Without
-  // this guard the empty action block + cache_control below hits an API 400.
+  // '' significa «sin relevancia de seguridad», que es el contrato de
+  // Tool.toAutoClassifierInput. Sin esta guarda, el bloque de acción vacío más
+  // el cache_control de abajo choca con un 400 del API.
   if (actionCompact === '') {
     return {
       shouldBlock: false,
@@ -929,9 +968,9 @@ export async function classifyYoloAction(
   }
 
   const userPrompt = userContentBlocks.map(b => b.text).join('') + actionCompact
-  // ant Dp5 returns a system-block ARRAY; A4($) flattens all blocks' text for
-  // the length/telemetry estimate. Session Context (block 1) counts toward the
-  // system size too.
+  // El Dp5 de ant devuelve un ARREGLO de bloques de sistema; A4($) aplana el
+  // texto de todos los bloques para la estimación de longitud y de telemetría.
+  // El Session Context (bloque 1) cuenta también para el tamaño del sistema.
   const sessionContextChars = sessionContextBlocks.reduce(
     (n, b) => n + b.text.length,
     0,
@@ -942,11 +981,13 @@ export async function classifyYoloAction(
     userPrompts: userPromptsLength,
   }
 
-  // Compare main-loop context vs classifier transcript to track projection
-  // divergence. tokenCountWithEstimation is cheap (walks back to last API
-  // response usage + estimates the tail slice) so we compute unconditionally
-  // for telemetry. The classifier prompt should stay strictly smaller than
-  // main-loop context so auto-compact fires before the classifier overflows.
+  // Se compara el contexto del bucle principal contra el transcript del
+  // clasificador para seguir la divergencia de proyección.
+  // tokenCountWithEstimation es barato — retrocede hasta el usage de la última
+  // respuesta del API y estima el tramo de cola — así que se calcula sin
+  // condición, para la telemetría. El prompt del clasificador debe quedar
+  // estrictamente por debajo del contexto del bucle principal, para que la
+  // compactación automática dispare antes de que el clasificador desborde.
   const classifierChars = promptLengths.systemPrompt + userPrompt.length
   const classifierTokensEst = Math.round(classifierChars / 4)
   const mainLoopTokens = tokenCountWithEstimation(messages)
@@ -968,14 +1009,16 @@ export async function classifyYoloAction(
     )
   }
 
-  // Use getCacheControl for consistency with the main agent loop —
-  // respects GrowthBook TTL allowlist and query-source gating.
+  // Se usa getCacheControl por consistencia con el bucle principal del agente:
+  // respeta la allowlist de TTL de GrowthBook y el condicionado por origen de la
+  // consulta.
   const cacheControl = getCacheControl({ querySource: 'auto_mode' })
-  // Place cache_control on the action block. In the two-stage classifier,
-  // stage 2 shares the same transcript+action prefix as stage 1 — the
-  // breakpoint here gives stage 2 a guaranteed cache hit on the full prefix.
-  // Budget: system (1) + CLAUDE.md (0–1) + action (1) = 2–3, under the
-  // API limit of 4 cache_control blocks.
+  // El cache_control se coloca en el bloque de acción. En el clasificador de
+  // dos etapas, la etapa 2 comparte con la 1 el mismo prefijo de transcript más
+  // acción: el punto de corte de aquí le garantiza a la etapa 2 un acierto de
+  // caché sobre el prefijo completo. Presupuesto: sistema (1) + CLAUDE.md (0–1)
+  // + acción (1) = 2–3, por debajo del límite del API de 4 bloques
+  // cache_control.
   userContentBlocks.push({
     type: 'text' as const,
     text: actionCompact,
@@ -984,7 +1027,7 @@ export async function classifyYoloAction(
 
   const model = getClassifierModel()
 
-  // Dispatch to 2-stage XML classifier if enabled via GrowthBook
+  // Despacha al clasificador XML de dos etapas si GrowthBook lo habilita.
   if (isTwoStageClassifierEnabled()) {
     return classifyYoloActionXml(
       prefixMessages,
@@ -1008,11 +1051,12 @@ export async function classifyYoloAction(
     )
   }
   const [disableThinking, thinkingPadding] = getClassifierThinkingConfig(model)
-  // ant UM_: `h={count:0}` — single-stage fetch-attempt counter, reported as
-  // stage1Attempts in every tool_use outcome event.
+  // UM_ de ant: `h={count:0}`, el contador de intento de fetch de una sola
+  // etapa, que se reporta como stage1Attempts en cada evento de desenlace de
+  // tool_use.
   const toolUseAttempts: AttemptCounter = { count: 0 }
-  // ant UM_: `E=Date.now()` sits OUTSIDE the try so the catch can report
-  // durationMs for interrupted / error outcomes too.
+  // UM_ de ant: `E=Date.now()` va FUERA del try, para que el catch pueda
+  // reportar durationMs también en los desenlaces de interrupción y de error.
   const start = Date.now()
   try {
     const sideQueryOpts = {
@@ -1061,14 +1105,15 @@ export async function classifyYoloAction(
     const stage1RequestId = extractRequestId(result)
     const stage1MsgId = result.id
 
-    // Extract usage for overhead telemetry
+    // Se extrae el usage para la telemetría de sobrecoste.
     const usage = {
       inputTokens: result.usage.input_tokens,
       outputTokens: result.usage.output_tokens,
       cacheReadInputTokens: result.usage.cache_read_input_tokens ?? 0,
       cacheCreationInputTokens: result.usage.cache_creation_input_tokens ?? 0,
     }
-    // Actual total input tokens the classifier API consumed (uncached + cache)
+    // El total real de tokens de entrada que consumió el API del clasificador
+    // (sin cachear más caché).
     const classifierInputTokens =
       usage.inputTokens +
       usage.cacheReadInputTokens +
@@ -1086,16 +1131,16 @@ export async function classifyYoloAction(
       )
     }
 
-    // Extract the tool use result using shared utility
+    // Se extrae el resultado de uso de herramienta con la utilidad compartida.
     const toolUseBlock = extractToolUseBlock(
       result.content,
       YOLO_CLASSIFIER_TOOL_NAME,
     )
 
     if (!toolUseBlock) {
-      // ant: an explicit refusal, or a zero-content response that wasn't just
-      // truncated by max_tokens, is an upstream policy refusal — not merely a
-      // missing tool_use block.
+      // ant: un rechazo explícito, o una respuesta de contenido cero que no se
+      // debió sólo al truncado por max_tokens, es un rechazo de política de
+      // aguas arriba — no simplemente un bloque tool_use ausente.
       const isPolicyRefusal =
         result.stop_reason === 'refusal' ||
         (result.content.length === 0 && result.stop_reason !== 'max_tokens')
@@ -1127,7 +1172,7 @@ export async function classifyYoloAction(
       }
     }
 
-    // Parse response using shared utility
+    // Se parsea la respuesta con la utilidad compartida.
     const parsed = parseClassifierResponse(
       toolUseBlock,
       yoloClassifierResponseSchema(),
@@ -1169,9 +1214,11 @@ export async function classifyYoloAction(
       stage1RequestId,
       stage1MsgId,
     }
-    // Context-delta telemetry: chart classifierInputTokens / mainLoopTokens
-    // in Datadog. Expect ~0.6-0.8 steady state; alert on p95 > 1.0 (means
-    // classifier is bigger than main loop — auto-compact won't save us).
+    // Telemetría del delta de contexto: se gráfica
+    // classifierInputTokens / mainLoopTokens en Datadog. En régimen permanente
+    // se espera ~0.6-0.8; se alerta con p95 > 1.0, que significa que el
+    // clasificador es más grande que el bucle principal y la compactación
+    // automática no nos salvará.
     logAutoModeOutcome('success', model, {
       durationMs,
       mainLoopTokens,
@@ -1208,8 +1255,9 @@ export async function classifyYoloAction(
         action: actionCompact,
         model,
       })) ?? undefined
-    // No API usage on error — use classifierTokensEst / mainLoopTokens
-    // for the ratio. Overflow errors are the critical divergence signal.
+    // Ante un error no hay usage del API: para el cociente se usa
+    // classifierTokensEst / mainLoopTokens. Los errores de desbordamiento son
+    // la señal crítica de divergencia.
     logAutoModeOutcome(tooLong ? 'transcript_too_long' : 'error', model, {
       mainLoopTokens,
       classifierTokensEst,
@@ -1240,30 +1288,35 @@ type TwoStageMode = 'both' | 'fast' | 'thinking'
 type AutoModeConfig = {
   model?: string
   /**
-   * Enable XML classifier. `true` runs both stages; `'fast'` and `'thinking'`
-   * run only that stage; `false`/undefined uses the tool_use classifier.
+   * Habilita el clasificador XML. `true` corre las dos etapas; `'fast'` y
+   * `'thinking'` corren sólo esa etapa; `false` o undefined usa el clasificador
+   * de tool_use.
    */
   twoStageClassifier?: boolean | 'fast' | 'thinking'
   /**
-   * Ant builds normally use permissions_anthropic.txt; when true, use
-   * permissions_external.txt instead (dogfood the external template).
+   * Las builds de ant usan normalmente permissions_anthropic.txt; con true se
+   * usa permissions_external.txt en su lugar, para probar en casa la plantilla
+   * externa.
    */
   forceExternalPermissions?: boolean
   /**
-   * Gate the JSONL transcript format ({"Bash":"ls"} vs `Bash ls`).
-   * Default false (old text-prefix format) for slow rollout / quick rollback.
+   * Condiciona el formato JSONL del transcript ({"Bash":"ls"} contra
+   * `Bash ls`). Por defecto false — el formato viejo de prefijo de texto —
+   * para un despliegue lento y una vuelta atrás rápida.
    */
   jsonlTranscript?: boolean
 }
 
 /**
- * Get the model for the classifier.
- * Ant-only env var takes precedence, then GrowthBook JSON config override,
- * then the main loop model.
+ * Obtiene el modelo del clasificador.
+ * La variable de entorno de sólo-ant tiene precedencia, después la
+ * sobreescritura de la configuración JSON de GrowthBook, y después el modelo
+ * del bucle principal.
  */
 function getClassifierModel(): string {
-  // Env override read unconditionally (ant gates on USER_TYPE==='ant', which
-  // locks ccb operators out — same anti-pattern as the fullscreen gate 7895b9d6).
+  // La sobreescritura por entorno se lee sin condición: ant la condiciona a
+  // USER_TYPE==='ant', que deja fuera a los operadores de ccb — el mismo
+  // anti-patrón que el gate de pantalla completa 7895b9d6.
   const envModel = readEnv('CLAUDE_CODE_AUTO_MODE_MODEL')
   if (envModel) return envModel
   const config = getFeatureValue_CACHED_MAY_BE_STALE(
@@ -1273,20 +1326,23 @@ function getClassifierModel(): string {
   if (config?.model) {
     return config.model
   }
-  // Main-loop model — ant `IZ7(){…return F7()}`. ant runs the classifier on
-  // the strong session model (typically Opus) for judgement accuracy. A prior
-  // fix (508fee15) routed this to Haiku on a since-disproven "Opus burns the
-  // 64-token stage-1 budget on <thinking>" theory (stage 1 uses the immediate
-  // "<block>" suffix, thinking is already disabled via [false,0]=ant iZ7, and
-  // a `both`-mode unparseable stage 1 escalates rather than blocks); the swap's
-  // real cost was a weak model over-blocking under "err on the side of
-  // blocking". CLAUDE_CODE_AUTO_MODE_MODEL above stays the Haiku escape hatch.
+  // El modelo del bucle principal — ant `IZ7(){…return F7()}`. ant corre el
+  // clasificador sobre el modelo fuerte de la sesión (típicamente Opus) por
+  // precisión de juicio. Un arreglo previo (508fee15) lo encaminó a Haiku sobre
+  // una teoría ya refutada — «Opus se gasta el presupuesto de 64 tokens de la
+  // etapa 1 en <thinking>» —: la etapa 1 usa el sufijo inmediato "<block>", el
+  // thinking ya está deshabilitado con [false,0] (el iZ7 de ant), y una etapa 1
+  // no parseable en modo `both` escala en vez de bloquear. El costo real del
+  // cambio fue un modelo débil sobre-bloqueando bajo «err on the side of
+  // blocking». CLAUDE_CODE_AUTO_MODE_MODEL, arriba, sigue siendo la válvula de
+  // escape hacia Haiku.
   return getMainLoopModel()
 }
 
 /**
- * Resolve the XML classifier setting: ant-only env var takes precedence,
- * then GrowthBook. Returns undefined when unset (caller decides default).
+ * Resuelve el ajuste del clasificador XML: la variable de entorno de sólo-ant
+ * tiene precedencia, y después GrowthBook. Devuelve undefined cuando no está
+ * fijado, y quien llama decide el valor por defecto.
  */
 function resolveTwoStageClassifier():
   | boolean
@@ -1303,15 +1359,17 @@ function resolveTwoStageClassifier():
     'tengu_auto_mode_config',
     {} as AutoModeConfig,
   )
-  // ant rZ7(): `?? !0` — defaults to true (XML two-stage on) when the
-  // GrowthBook config doesn't override. ccb has no GrowthBook backend so the
-  // config is always {}, meaning this `?? true` is what selects the XML path
-  // by default — matching ant 150's runtime behavior exactly.
+  // rZ7() de ant: `?? !0`, o sea que por defecto es true — el XML de dos etapas
+  // encendido — cuando la configuración de GrowthBook no sobreescribe. ccb no
+  // tiene backend de GrowthBook, así que la configuración es siempre {}: este
+  // `?? true` es lo que selecciona el camino XML por defecto, replicando
+  // exactamente la conducta en ejecución de ant 150.
   return config?.twoStageClassifier ?? true
 }
 
 /**
- * Check if the XML classifier is enabled (any truthy value including 'fast'/'thinking').
+ * Comprueba si el clasificador XML está habilitado: cualquier valor verdadero,
+ * incluidos 'fast' y 'thinking'.
  */
 function isTwoStageClassifierEnabled(): boolean {
   const v = resolveTwoStageClassifier()
@@ -1332,8 +1390,8 @@ function isJsonlTranscriptEnabled(): boolean {
 }
 
 /**
- * Get which stage(s) the XML classifier should run.
- * Only meaningful when isTwoStageClassifierEnabled() is true.
+ * Obtiene qué etapa o etapas debe correr el clasificador XML.
+ * Sólo significa algo cuando isTwoStageClassifierEnabled() es true.
  */
 function getTwoStageMode(): TwoStageMode {
   const v = resolveTwoStageClassifier()
@@ -1341,9 +1399,10 @@ function getTwoStageMode(): TwoStageMode {
 }
 
 /**
- * Format an action for the classifier from tool name and input.
- * Returns a TranscriptEntry with the tool_use block. Each tool controls which
- * fields get exposed via its `toAutoClassifierInput` implementation.
+ * Da formato a una acción para el clasificador, desde el nombre de herramienta y
+ * su input. Devuelve un TranscriptEntry con el bloque tool_use. Cada
+ * herramienta controla qué campos se exponen, en su implementación de
+ * `toAutoClassifierInput`.
  */
 export function formatActionForClassifier(
   toolName: string,
