@@ -30,14 +30,25 @@ Lo que la suite mide:
    sentido no dispara.
 """
 
-import pathlib
 import subprocess
 import sys
+from pathlib import Path
 
-RAIZ = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(RAIZ / "src"))
+# Bootstrap canonico (`paths.reach.BOOTSTRAP`): ascenso con deteccion hasta el
+# marcador, NO `parents[N]`. Un offset acierta a UNA profundidad y falla en
+# silencio al mover el archivo; el ascenso sobrevive el cambio de anidamiento.
+_AQUI = Path(__file__).resolve()
+_RAIZ = next((p for p in _AQUI.parents
+              if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _RAIZ is None:
+    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_AQUI}")
+sys.path.insert(0, str(_RAIZ / "src"))
 
+from paths import reach  # noqa: E402
 from verify import check_absence_claim as gate  # noqa: E402
+
+#: A partir de aqui la raiz sale del localizador declarado, no del bootstrap.
+RAIZ = reach.thyrox_root()
 
 OK = 0
 FAILED = 0
