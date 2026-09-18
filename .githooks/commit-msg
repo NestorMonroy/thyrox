@@ -7,8 +7,14 @@
 # el hook «NO valida el body». Medido al escribir esto: los cinco consumidores
 # llevan un `commit-msg` cada uno —cinco copias con cinco md5 distintos— y los
 # cinco validan sólo el asunto con `${#SUBJECT}`. El cuerpo no lo medía nadie
-# en ninguno de los seis repos, así que se comprobaba a mano con `awk`, y el
-# `awk` de esta máquina es mawk: cuenta octetos, no columnas.
+# en ninguno de los seis repos, así que se comprobaba a mano con `awk`, que
+# contaba octetos y no columnas.
+#
+# (Esta línea decía «el `awk` de esta máquina es mawk». Medido 2026-09-18:
+#  `awk` resuelve por /etc/alternatives/awk a **gawk**. El síntoma sigue,
+#  y su causa es el LOCALE, no el binario — el contenedor no declara
+#  ninguno, así que gawk también cuenta octetos: `áéí` da 6, y bajo
+#  LC_ALL=C.UTF-8 da 3. Ver la nota de src/verify/commit_message.py.)
 #
 # THYROX no tenía hook de `commit-msg`, así que aquí no hay conducta previa
 # que romper — por eso el mecanismo se estrena en el proveedor y su extensión
