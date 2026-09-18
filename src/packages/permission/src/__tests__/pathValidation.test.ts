@@ -8,12 +8,12 @@ import { homedir } from 'os'
 // isDangerousRemovalPath — son puros, pero el archivo importa dependencias de
 // otros paquetes que tocan el estado real del fs y del sandbox. Se mockean en
 // la frontera para que los auxiliares puros sigan siendo testeables.
-const realFsOps = await import('@claude-code-how-works/storage/fsOperations.js')
-const realSandbox = await import('@claude-code-how-works/shell/sandbox.js')
-mock.module('@claude-code-how-works/storage/fsOperations.js', () => ({
+const realFsOps = await import('@thyrox/storage/fsOperations.js')
+const realSandbox = await import('@thyrox/shell/sandbox.js')
+mock.module('@thyrox/storage/fsOperations.js', () => ({
   ...realFsOps,
 }))
-mock.module('@claude-code-how-works/shell/sandbox.js', () => ({
+mock.module('@thyrox/shell/sandbox.js', () => ({
   ...realSandbox,
   // Por defecto el sandbox queda deshabilitado, así que
   // isPathInSandboxWriteAllowlist devuelve false.

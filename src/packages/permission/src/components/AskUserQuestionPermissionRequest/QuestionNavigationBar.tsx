@@ -2,8 +2,8 @@ import figures from 'figures'
 import React, { useMemo } from 'react'
 import { useTerminalSize } from '@anthropic/ink'
 import { Box, Text, stringWidth } from '@anthropic/ink'
-import type { Question } from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
-import { truncateToWidth } from '@claude-code-how-works/output/formatters/truncate.js'
+import type { Question } from '@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
+import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 
 // Copia de `ccnmt: packages/permission/src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar.tsx` con los
 // comentarios traducidos; el cuerpo es el de la fuente.

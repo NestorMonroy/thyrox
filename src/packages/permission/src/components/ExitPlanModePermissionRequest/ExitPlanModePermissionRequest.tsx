@@ -9,11 +9,11 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useNotifications } from '@claude-code-how-works/repl/notifications.js'
+import { useNotifications } from '@thyrox/repl/notifications.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   useAppState,
   useAppStateStore,
@@ -26,30 +26,30 @@ import {
   setHasExitedPlanMode,
   setNeedsAutoModeExitAttachment,
   setNeedsPlanModeExitAttachment,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 import { generateSessionName } from '../../commands/rename/generateSessionName.js'
-import { launchUltraplan } from '@claude-code-how-works/repl/ultraplan.js'
+import { launchUltraplan } from '@thyrox/repl/ultraplan.js'
 import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
 type AppState = Record<string, unknown>
-import { AGENT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/AgentTool/constants.js'
-import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/ExitPlanModeTool/constants.js'
-import type { AllowedPrompt } from '@claude-code-how-works/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
-import { TEAM_CREATE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TeamCreateTool/constants.js'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
+import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
+import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
+import type { AllowedPrompt } from '@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
+import { TEAM_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamCreateTool/constants.js'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 import {
   calculateContextPercentages,
   getContextWindowForModel,
-} from '@claude-code-how-works/agent/context.js'
-import { getExternalEditor } from '@claude-code-how-works/storage/editor.js'
-import { getDisplayPath } from '@claude-code-how-works/storage/file.js'
-import { toIDEDisplayName } from '@claude-code-how-works/ide/ide.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { enqueuePendingNotification } from '@claude-code-how-works/agent/messageQueueManager.js'
-import { createUserMessage } from '@claude-code-how-works/agent/messages.js'
+} from '@thyrox/agent/context.js'
+import { getExternalEditor } from '@thyrox/storage/editor.js'
+import { getDisplayPath } from '@thyrox/storage/file.js'
+import { toIDEDisplayName } from '@thyrox/ide/ide.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { enqueuePendingNotification } from '@thyrox/agent/messageQueueManager.js'
+import { createUserMessage } from '@thyrox/agent/messages.js'
 import {
   getMainLoopModel,
   getRuntimeMainLoopModel,
-} from '@claude-code-how-works/provider/model.js'
+} from '@thyrox/provider/model.js'
 import {
   createPromptRuleContent,
   isClassifierPermissionsEnabled,
@@ -70,20 +70,20 @@ import {
   getPewterLedgerVariant,
   isPlanModeInterviewPhaseEnabled,
 } from '../../planModeV2.js'
-import { getPlan, getPlanFilePath } from '@claude-code-how-works/storage/plans.js'
+import { getPlan, getPlanFilePath } from '@thyrox/storage/plans.js'
 import {
   editFileInEditor,
   editPromptInEditor,
-} from '@claude-code-how-works/repl/promptEditor.js'
+} from '@thyrox/repl/promptEditor.js'
 import {
   getCurrentSessionTitle,
   getTranscriptPath,
   saveAgentName,
   saveCustomTitle,
-} from '@claude-code-how-works/storage/sessionStorage.js'
-import { getSettings, getUseAutoModeDuringPlan } from '@claude-code-how-works/config/settings'
-import { type OptionWithDescription, Select } from '@claude-code-how-works/repl/components/CustomSelect/index.js'
-import { Markdown } from '@claude-code-how-works/repl/components/Markdown.js'
+} from '@thyrox/storage/sessionStorage.js'
+import { getSettings, getUseAutoModeDuringPlan } from '@thyrox/config/settings'
+import { type OptionWithDescription, Select } from '@thyrox/repl/components/CustomSelect/index.js'
+import { Markdown } from '@thyrox/repl/components/Markdown.js'
 import { PermissionDialog } from '../PermissionDialog.js'
 import type { PermissionRequestProps } from '../PermissionRequest.js'
 import { PermissionRuleExplanation } from '../PermissionRuleExplanation.js'
@@ -98,10 +98,10 @@ import type {
   ImageBlockParam,
 } from '@anthropic-ai/sdk/resources/messages.mjs'
 /* eslint-enable @typescript-eslint/no-require-imports */
-import type { PastedContent } from '@claude-code-how-works/config'
-import type { ImageDimensions } from '@claude-code-how-works/storage/imageResizer.js'
-import { maybeResizeAndDownsampleImageBlock } from '@claude-code-how-works/storage/imageResizer.js'
-import { cacheImagePath, storeImage } from '@claude-code-how-works/tool-registry/imageStore.js'
+import type { PastedContent } from '@thyrox/config'
+import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'
+import { maybeResizeAndDownsampleImageBlock } from '@thyrox/storage/imageResizer.js'
+import { cacheImagePath, storeImage } from '@thyrox/tool-registry/imageStore.js'
 
 type ResponseValue =
   | 'yes-bypass-permissions'

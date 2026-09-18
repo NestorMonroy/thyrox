@@ -4,10 +4,10 @@ import { useKeybindings } from '@anthropic/ink/keybindings'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { sanitizeToolNameForAnalytics } from '@claude-code-how-works/agent/eventMetadata.js'
+} from '@thyrox/local-observability'
+import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
 import type { PermissionUpdate } from '../../PermissionUpdateSchema.js'
-import type { CompletionType } from '@claude-code-how-works/local-observability/logging'
+import type { CompletionType } from '@thyrox/local-observability/logging'
 import type { ToolUseConfirm } from '../PermissionRequest.js'
 import {
   type FileOperationType,

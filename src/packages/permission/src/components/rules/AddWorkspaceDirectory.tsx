@@ -6,18 +6,18 @@ import {
   addDirHelpMessage,
   validateDirectoryForWorkspace,
 } from '../../commands/add-dir/validation.js'
-import TextInput from '@claude-code-how-works/repl/components/TextInput.js'
+import TextInput from '@thyrox/repl/components/TextInput.js'
 import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
-import type { ToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { getDirectoryCompletions } from '@claude-code-how-works/repl/utils/suggestions/directoryCompletion.js'
-import { ConfigurableShortcutHint } from '@claude-code-how-works/repl/components/ConfigurableShortcutHint.js'
-import { Select } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+import { getDirectoryCompletions } from '@thyrox/repl/utils/suggestions/directoryCompletion.js'
+import { ConfigurableShortcutHint } from '@thyrox/repl/components/ConfigurableShortcutHint.js'
+import { Select } from '@thyrox/repl/components/CustomSelect/select.js'
 import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 import {
   PromptInputFooterSuggestions,
   type SuggestionItem,
-} from '@claude-code-how-works/repl/components/PromptInput/PromptInputFooterSuggestions.js'
+} from '@thyrox/repl/components/PromptInput/PromptInputFooterSuggestions.js'
 
 type Props = {
   onAddDirectory: (path: string, remember?: boolean) => void

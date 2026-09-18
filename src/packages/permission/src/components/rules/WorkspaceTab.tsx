@@ -1,11 +1,11 @@
 import figures from 'figures'
 import * as React from 'react'
 import { useCallback, useEffect } from 'react'
-import { getOriginalCwd } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import type { CommandResultDisplay } from '@claude-code-how-works/command-runtime/runtime'
-import { Select } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
+import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
+import { Select } from '@thyrox/repl/components/CustomSelect/select.js'
 import { Box, Text, useTabHeaderFocus } from '@anthropic/ink'
-import type { ToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 
 type Props = {
   onExit: (

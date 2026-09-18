@@ -3,10 +3,10 @@ import { useEffect, useRef } from 'react'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { sanitizeToolNameForAnalytics } from '@claude-code-how-works/agent/eventMetadata.js'
-import { BashTool } from '@claude-code-how-works/tool-registry/tools/BashTool/BashTool.js'
-import { splitCommand } from '@claude-code-how-works/shell/bash/commands.js'
+} from '@thyrox/local-observability'
+import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
+import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
+import { splitCommand } from '@thyrox/shell/bash/commands.js'
 import type {
   PermissionDecisionReason,
   PermissionResult,
@@ -16,13 +16,13 @@ import {
   hasRules,
 } from '../PermissionUpdate.js'
 import { permissionRuleValueToString } from '../permissionRuleParser.js'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
 import type { ToolUseConfirm } from './PermissionRequest.js'
 import { useSetAppState } from '../appStateHooks.js'
-import { env } from '@claude-code-how-works/config/env/paths'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { type CompletionType, logUnaryEvent } from '@claude-code-how-works/local-observability/logging'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { env } from '@thyrox/config/env/paths'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { type CompletionType, logUnaryEvent } from '@thyrox/local-observability/logging'
+import { readEnv } from '@thyrox/config/env'
 
 export type UnaryEvent = {
   completion_type: CompletionType

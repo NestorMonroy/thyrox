@@ -9,13 +9,13 @@ import { feature } from 'bun:bundle'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { sanitizeToolNameForAnalytics } from '@claude-code-how-works/agent/eventMetadata.js'
-import { getCodeEditToolDecisionCounter } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import type { Tool as ToolType, ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { getLanguageName } from '@claude-code-how-works/output/utils/cliHighlight.js'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
-import { logOTelEvent } from '@claude-code-how-works/local-observability/telemetryEvents.js'
+} from '@thyrox/local-observability'
+import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
+import { getCodeEditToolDecisionCounter } from '@thyrox/app-host/bootstrap/state.js'
+import type { Tool as ToolType, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import { getLanguageName } from '@thyrox/output/utils/cliHighlight.js'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
+import { logOTelEvent } from '@thyrox/local-observability/telemetryEvents.js'
 import type {
   PermissionApprovalSource,
   PermissionRejectionSource,

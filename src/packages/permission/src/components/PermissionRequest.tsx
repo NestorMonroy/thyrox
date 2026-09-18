@@ -1,22 +1,22 @@
 import { feature } from 'bun:bundle'
 import * as React from 'react'
-import { EnterPlanModeTool } from '@claude-code-how-works/tool-registry/tools/EnterPlanModeTool/EnterPlanModeTool.js'
-import { ExitPlanModeV2Tool } from '@claude-code-how-works/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
-import { useNotifyAfterTimeout } from '@claude-code-how-works/repl/hooks/useNotifyAfterTimeout.js'
+import { EnterPlanModeTool } from '@thyrox/tool-registry/tools/EnterPlanModeTool/EnterPlanModeTool.js'
+import { ExitPlanModeV2Tool } from '@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
+import { useNotifyAfterTimeout } from '@thyrox/repl/hooks/useNotifyAfterTimeout.js'
 import { useKeybinding } from '@anthropic/ink/keybindings'
-import type { AnyObject, Tool, ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { AskUserQuestionTool } from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
-import { BashTool } from '@claude-code-how-works/tool-registry/tools/BashTool/BashTool.js'
-import { FileEditTool } from '@claude-code-how-works/tool-registry/tools/FileEditTool/FileEditTool.js'
-import { FileReadTool } from '@claude-code-how-works/tool-registry/tools/FileReadTool/FileReadTool.js'
-import { FileWriteTool } from '@claude-code-how-works/tool-registry/tools/FileWriteTool/FileWriteTool.js'
-import { GlobTool } from '@claude-code-how-works/tool-registry/tools/GlobTool/GlobTool.js'
-import { GrepTool } from '@claude-code-how-works/tool-registry/tools/GrepTool/GrepTool.js'
-import { NotebookEditTool } from '@claude-code-how-works/tool-registry/tools/NotebookEditTool/NotebookEditTool.js'
-import { PowerShellTool } from '@claude-code-how-works/tool-registry/tools/PowerShellTool/PowerShellTool.js'
-import { SkillTool } from '@claude-code-how-works/tool-registry/tools/SkillTool/SkillTool.js'
-import { WebFetchTool } from '@claude-code-how-works/tool-registry/tools/WebFetchTool/WebFetchTool.js'
-import type { AssistantMessage } from '@claude-code-how-works/agent/messageShapes'
+import type { AnyObject, Tool, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import { AskUserQuestionTool } from '@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
+import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
+import { FileEditTool } from '@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js'
+import { FileReadTool } from '@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js'
+import { FileWriteTool } from '@thyrox/tool-registry/tools/FileWriteTool/FileWriteTool.js'
+import { GlobTool } from '@thyrox/tool-registry/tools/GlobTool/GlobTool.js'
+import { GrepTool } from '@thyrox/tool-registry/tools/GrepTool/GrepTool.js'
+import { NotebookEditTool } from '@thyrox/tool-registry/tools/NotebookEditTool/NotebookEditTool.js'
+import { PowerShellTool } from '@thyrox/tool-registry/tools/PowerShellTool/PowerShellTool.js'
+import { SkillTool } from '@thyrox/tool-registry/tools/SkillTool/SkillTool.js'
+import { WebFetchTool } from '@thyrox/tool-registry/tools/WebFetchTool/WebFetchTool.js'
+import type { AssistantMessage } from '@thyrox/agent/messageShapes'
 import type { PermissionDecision } from '../PermissionResult.js'
 import { AskUserQuestionPermissionRequest } from './AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.js'
 import { BashPermissionRequest } from './BashPermissionRequest/BashPermissionRequest.js'
@@ -34,7 +34,7 @@ import { WebFetchPermissionRequest } from './WebFetchPermissionRequest/WebFetchP
 /* eslint-disable @typescript-eslint/no-require-imports */
 const ReviewArtifactTool = feature('REVIEW_ARTIFACT')
   ? (
-      require('@claude-code-how-works/tool-registry/tools/ReviewArtifactTool/ReviewArtifactTool.js') as typeof import('@claude-code-how-works/tool-registry/tools/ReviewArtifactTool/ReviewArtifactTool.js')
+      require('@thyrox/tool-registry/tools/ReviewArtifactTool/ReviewArtifactTool.js') as typeof import('@thyrox/tool-registry/tools/ReviewArtifactTool/ReviewArtifactTool.js')
     ).ReviewArtifactTool
   : null
 
@@ -54,12 +54,12 @@ const ReviewArtifactPermissionRequest = feature('REVIEW_ARTIFACT')
 // el FallbackPermissionRequest genérico — así que no se importa el stub; ver
 // permissionComponentForTool más abajo.
 const WorkflowTool = (
-  require('@claude-code-how-works/tool-registry/tools/WorkflowTool/WorkflowTool.js') as typeof import('@claude-code-how-works/tool-registry/tools/WorkflowTool/WorkflowTool.js')
+  require('@thyrox/tool-registry/tools/WorkflowTool/WorkflowTool.js') as typeof import('@thyrox/tool-registry/tools/WorkflowTool/WorkflowTool.js')
 ).WorkflowTool
 
 const MonitorTool = feature('MONITOR_TOOL')
   ? (
-      require('@claude-code-how-works/tool-registry/tools/MonitorTool/MonitorTool.js') as typeof import('@claude-code-how-works/tool-registry/tools/MonitorTool/MonitorTool.js')
+      require('@thyrox/tool-registry/tools/MonitorTool/MonitorTool.js') as typeof import('@thyrox/tool-registry/tools/MonitorTool/MonitorTool.js')
     ).MonitorTool
   : null
 

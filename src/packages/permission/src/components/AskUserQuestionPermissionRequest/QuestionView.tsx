@@ -5,19 +5,19 @@ import { useAppState } from '../../appStateHooks.js'
 import type {
   Question,
   QuestionOption,
-} from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
-import type { PastedContent } from '@claude-code-how-works/config'
-import { getExternalEditor } from '@claude-code-how-works/storage/editor.js'
-import { toIDEDisplayName } from '@claude-code-how-works/ide/ide.js'
-import type { ImageDimensions } from '@claude-code-how-works/storage/imageResizer.js'
-import { editPromptInEditor } from '@claude-code-how-works/repl/promptEditor.js'
+} from '@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
+import type { PastedContent } from '@thyrox/config'
+import { getExternalEditor } from '@thyrox/storage/editor.js'
+import { toIDEDisplayName } from '@thyrox/ide/ide.js'
+import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'
+import { editPromptInEditor } from '@thyrox/repl/promptEditor.js'
 import {
   type OptionWithDescription,
   Select,
   SelectMulti,
-} from '@claude-code-how-works/repl/components/CustomSelect/index.js'
+} from '@thyrox/repl/components/CustomSelect/index.js'
 import { Divider } from '@anthropic/ink'
-import { FilePathLink } from '@claude-code-how-works/repl/components/FilePathLink.js'
+import { FilePathLink } from '@thyrox/repl/components/FilePathLink.js'
 
 import { PermissionRequestTitle } from '../PermissionRequestTitle.js'
 import { PreviewQuestionView } from './PreviewQuestionView.js'

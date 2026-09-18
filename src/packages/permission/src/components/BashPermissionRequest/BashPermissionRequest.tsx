@@ -3,22 +3,22 @@ import figures from 'figures'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Box, Text, useTheme } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { sanitizeToolNameForAnalytics } from '@claude-code-how-works/agent/eventMetadata.js'
+} from '@thyrox/local-observability'
+import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
 import { useAppState } from '../../appStateHooks.js'
-import { BashTool } from '@claude-code-how-works/tool-registry/tools/BashTool/BashTool.js'
+import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
 import {
   getFirstWordPrefix,
   getSimpleCommandPrefix,
-} from '@claude-code-how-works/tool-registry/tools/BashTool/bashPermissions.js'
-import { getDestructiveCommandWarning } from '@claude-code-how-works/tool-registry/tools/BashTool/destructiveCommandWarning.js'
-import { parseSedEditCommand } from '@claude-code-how-works/tool-registry/tools/BashTool/sedEditParser.js'
-import { shouldUseSandbox } from '@claude-code-how-works/tool-registry/tools/BashTool/shouldUseSandbox.js'
-import { getCompoundCommandPrefixesStatic } from '@claude-code-how-works/shell/bash/prefix.js'
+} from '@thyrox/tool-registry/tools/BashTool/bashPermissions.js'
+import { getDestructiveCommandWarning } from '@thyrox/tool-registry/tools/BashTool/destructiveCommandWarning.js'
+import { parseSedEditCommand } from '@thyrox/tool-registry/tools/BashTool/sedEditParser.js'
+import { shouldUseSandbox } from '@thyrox/tool-registry/tools/BashTool/shouldUseSandbox.js'
+import { getCompoundCommandPrefixesStatic } from '@thyrox/shell/bash/prefix.js'
 import {
   createPromptRuleContent,
   generateGenericDescription,
@@ -27,10 +27,10 @@ import {
 } from '../../bashClassifier.js'
 import { extractRules } from '../../PermissionUpdate.js'
 import type { PermissionUpdate } from '../../PermissionUpdateSchema.js'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
-import { Select } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
-import { ShimmerChar } from '@claude-code-how-works/repl/components/Spinner/ShimmerChar.js'
-import { useShimmerAnimation } from '@claude-code-how-works/repl/components/Spinner/useShimmerAnimation.js'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
+import { Select } from '@thyrox/repl/components/CustomSelect/select.js'
+import { ShimmerChar } from '@thyrox/repl/components/Spinner/ShimmerChar.js'
+import { useShimmerAnimation } from '@thyrox/repl/components/Spinner/useShimmerAnimation.js'
 import { type UnaryEvent, usePermissionRequestLogging } from '../hooks.js'
 import {
   PermissionExplanation,

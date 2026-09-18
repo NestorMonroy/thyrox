@@ -3,23 +3,23 @@ import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages.js
 import { mkdir, writeFile } from 'fs/promises'
 import { dirname, join } from 'path'
 import { z } from 'zod/v4'
-import { getCachedClaudeMdContent, getLastClassifierRequests, getSessionId, setLastClassifierRequests } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/agent/eventMetadata.js'
-import { getCacheControl, getExtraBodyParams } from '@claude-code-how-works/provider/claude.js'
-import { getDefaultMaxRetries } from '@claude-code-how-works/provider/withRetry.js'
-import type { Tool, ToolPermissionContext, Tools } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
+import { getCachedClaudeMdContent, getLastClassifierRequests, getSessionId, setLastClassifierRequests } from '@thyrox/app-host/bootstrap/state.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/agent/eventMetadata.js'
+import { getCacheControl, getExtraBodyParams } from '@thyrox/provider/claude.js'
+import { getDefaultMaxRetries } from '@thyrox/provider/withRetry.js'
+import type { Tool, ToolPermissionContext, Tools } from '@thyrox/tool-registry/Tool.js'
+import type { Message } from '@thyrox/agent/messageShapes'
 import type { ClassifierUsage, YoloClassifierResult } from './permissionTypes.js'
-import { isDebugMode, logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isEnvDefinedFalsy, isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { lazySchema } from '@claude-code-how-works/tool-registry/utils/lazySchema.js'
-import { extractTextContent } from '@claude-code-how-works/agent/messages.js'
-import { ASK_USER_QUESTION_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/prompt.js'
-import { getMainLoopModel } from '@claude-code-how-works/provider/model.js'
-import type { SideQueryOptions } from '@claude-code-how-works/agent/sideQuery.js'
+import { isDebugMode, logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvDefinedFalsy, isEnvTruthy } from '@thyrox/config/env/utils'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
+import { extractTextContent } from '@thyrox/agent/messages.js'
+import { ASK_USER_QUESTION_TOOL_NAME } from '@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js'
+import { getMainLoopModel } from '@thyrox/provider/model.js'
+import type { SideQueryOptions } from '@thyrox/agent/sideQuery.js'
 import {
   type AttemptCounter,
   CLASSIFIER_STAGE1_TIMEOUT_MS,
@@ -47,11 +47,11 @@ import {
   detectPromptTooLong,
   logAutoModeOutcome,
 } from './classifierTelemetry.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { tokenCountWithEstimation } from '@claude-code-how-works/agent/tokens.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { tokenCountWithEstimation } from '@thyrox/agent/tokens.js'
 import { extractToolUseBlock, parseClassifierResponse } from './classifierShared.js'
 import { getClaudeTempDir } from './filesystem.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 import { buildYoloSystemPrompt } from './yoloSystemPrompt.js'
 // Copia de `ccnmt: packages/permission/src/yoloClassifier.ts` con los
 // comentarios traducidos; el cuerpo es el de la fuente.
@@ -906,8 +906,8 @@ export async function classifyYoloAction(
   // devuelve unavailable.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { getProviderForModel } = require(
-    '@claude-code-how-works/provider/providers.js',
-  ) as typeof import('@claude-code-how-works/provider/providers.js')
+    '@thyrox/provider/providers.js',
+  ) as typeof import('@thyrox/provider/providers.js')
   const classifierModel = getClassifierModel()
   const provider = getProviderForModel(classifierModel)
   if (provider === 'openai' || provider === 'gemini' || provider === 'codex') {

@@ -1,5 +1,5 @@
-import { getHostPlatformForAnalytics } from '@claude-code-how-works/config/env/paths'
-import { type CompletionType, logUnaryEvent } from '@claude-code-how-works/local-observability/logging'
+import { getHostPlatformForAnalytics } from '@thyrox/config/env/paths'
+import { type CompletionType, logUnaryEvent } from '@thyrox/local-observability/logging'
 import type { ToolUseConfirm } from './PermissionRequest.js'
 
 export function logUnaryPermissionEvent(

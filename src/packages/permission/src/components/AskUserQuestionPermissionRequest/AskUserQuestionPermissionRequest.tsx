@@ -10,31 +10,31 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useSettings } from '@claude-code-how-works/repl/hooks/useSettings.js'
+import { useSettings } from '@thyrox/repl/hooks/useSettings.js'
 import { Text, useTerminalSize } from '@anthropic/ink'
 import { stringWidth, useTheme } from '@anthropic/ink'
 import { useKeybindings } from '@anthropic/ink/keybindings'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import { useAppState } from '../../appStateHooks.js'
-import type { Question } from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
-import { AskUserQuestionTool } from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
-import { getInitialSettings } from '@claude-code-how-works/config/settings'
+import type { Question } from '@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
+import { AskUserQuestionTool } from '@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
+import { getInitialSettings } from '@thyrox/config/settings'
 import { useQuestionAutoContinue } from './useQuestionAutoContinue.js'
 import {
   type CliHighlight,
   getCliHighlightPromise,
-} from '@claude-code-how-works/output/utils/cliHighlight.js'
-import type { PastedContent } from '@claude-code-how-works/config'
-import type { ImageDimensions } from '@claude-code-how-works/storage/imageResizer.js'
-import { maybeResizeAndDownsampleImageBlock } from '@claude-code-how-works/storage/imageResizer.js'
-import { cacheImagePath, storeImage } from '@claude-code-how-works/tool-registry/imageStore.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { applyMarkdown } from '@claude-code-how-works/output/markdown.js'
+} from '@thyrox/output/utils/cliHighlight.js'
+import type { PastedContent } from '@thyrox/config'
+import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'
+import { maybeResizeAndDownsampleImageBlock } from '@thyrox/storage/imageResizer.js'
+import { cacheImagePath, storeImage } from '@thyrox/tool-registry/imageStore.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { applyMarkdown } from '@thyrox/output/markdown.js'
 import { isPlanModeInterviewPhaseEnabled } from '../../planModeV2.js'
-import { getPlanFilePath } from '@claude-code-how-works/storage/plans.js'
+import { getPlanFilePath } from '@thyrox/storage/plans.js'
 import type { PermissionRequestProps } from '../PermissionRequest.js'
 import { QuestionView } from './QuestionView.js'
 import { SubmitQuestionsView } from './SubmitQuestionsView.js'

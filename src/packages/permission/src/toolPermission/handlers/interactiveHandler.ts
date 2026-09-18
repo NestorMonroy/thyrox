@@ -1,30 +1,30 @@
 import { feature } from 'bun:bundle'
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import { randomUUID } from 'crypto'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getAllowedChannels } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import type { BridgePermissionCallbacks } from '@claude-code-how-works/bridge/bridgePermissionCallbacks.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getAllowedChannels } from '@thyrox/app-host/bootstrap/state.js'
+import type { BridgePermissionCallbacks } from '@thyrox/bridge/bridgePermissionCallbacks.js'
 import { getTerminalFocused } from '@anthropic/ink'
 import {
   CHANNEL_PERMISSION_REQUEST_METHOD,
   type ChannelPermissionRequestParams,
   findChannelEntry,
-} from '@claude-code-how-works/mcp-runtime/channelNotification.js'
-import type { ChannelPermissionCallbacks } from '@claude-code-how-works/mcp-runtime/channelPermissions.js'
+} from '@thyrox/mcp-runtime/channelNotification.js'
+import type { ChannelPermissionCallbacks } from '@thyrox/mcp-runtime/channelPermissions.js'
 import {
   filterPermissionRelayClients,
   shortRequestId,
   truncateForPreview,
-} from '@claude-code-how-works/mcp-runtime/channelPermissions.js'
-import { executeAsyncClassifierCheck } from '@claude-code-how-works/tool-registry/tools/BashTool/bashPermissions.js'
-import { BASH_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/BashTool/toolName.js'
+} from '@thyrox/mcp-runtime/channelPermissions.js'
+import { executeAsyncClassifierCheck } from '@thyrox/tool-registry/tools/BashTool/bashPermissions.js'
+import { BASH_TOOL_NAME } from '@thyrox/tool-registry/tools/BashTool/toolName.js'
 import {
   clearClassifierChecking,
   setClassifierApproval,
   setClassifierChecking,
   setYoloClassifierApproval,
 } from '../../classifierApprovals.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import type { PermissionDecision } from '../../PermissionResult.js'
 import type { PermissionUpdate } from '../../PermissionUpdateSchema.js'
 import { hasPermissionsToUseTool } from '../../permissions.js'

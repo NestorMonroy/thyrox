@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react'
 import { Box, Text, useTheme } from '@anthropic/ink'
-import { WebFetchTool } from '@claude-code-how-works/tool-registry/tools/WebFetchTool/WebFetchTool.js'
+import { WebFetchTool } from '@thyrox/tool-registry/tools/WebFetchTool/WebFetchTool.js'
 import { shouldShowAlwaysAllowOptions } from '../../permissionsLoader.js'
 import {
   type OptionWithDescription,
   Select,
-} from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+} from '@thyrox/repl/components/CustomSelect/select.js'
 import { type UnaryEvent, usePermissionRequestLogging } from '../hooks.js'
 import { PermissionDialog } from '../PermissionDialog.js'
 import type { PermissionRequestProps } from '../PermissionRequest.js'

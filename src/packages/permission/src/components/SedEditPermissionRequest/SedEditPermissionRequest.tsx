@@ -1,16 +1,16 @@
 import { basename, relative } from 'path'
 import React, { Suspense, use, useMemo } from 'react'
-import { FileEditToolDiff } from '@claude-code-how-works/repl/components/FileEditToolDiff.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { isENOENT } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { detectEncodingForResolvedPath } from '@claude-code-how-works/storage/fileRead.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
+import { FileEditToolDiff } from '@thyrox/repl/components/FileEditToolDiff.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
+import { detectEncodingForResolvedPath } from '@thyrox/storage/fileRead.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { Text } from '@anthropic/ink'
-import { BashTool } from '@claude-code-how-works/tool-registry/tools/BashTool/BashTool.js'
+import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
 import {
   applySedSubstitution,
   type SedEditInfo,
-} from '@claude-code-how-works/tool-registry/tools/BashTool/sedEditParser.js'
+} from '@thyrox/tool-registry/tools/BashTool/sedEditParser.js'
 import { FilePermissionDialog } from '../FilePermissionDialog/FilePermissionDialog.js'
 import type { PermissionRequestProps } from '../PermissionRequest.js'
 

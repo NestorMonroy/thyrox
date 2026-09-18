@@ -1,16 +1,16 @@
 import { homedir } from 'os'
 import { basename, join, sep } from 'path'
 import React, { type ReactNode } from 'react'
-import { getOriginalCwd } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
 import { Text } from '@anthropic/ink'
-import { getShortcutDisplay } from '@claude-code-how-works/repl/keybindings/shortcutFormat.js'
-import type { ToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { expandPath, getDirectoryForPath } from '@claude-code-how-works/storage/path.js'
+import { getShortcutDisplay } from '@thyrox/repl/keybindings/shortcutFormat.js'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+import { expandPath, getDirectoryForPath } from '@thyrox/storage/path.js'
 import {
   normalizeCaseForComparison,
   pathInAllowedWorkingPath,
 } from '../../filesystem.js'
-import type { OptionWithDescription } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+import type { OptionWithDescription } from '@thyrox/repl/components/CustomSelect/select.js'
 /**
  * Copia de `ccnmt: packages/permission/src/components/FilePermissionDialog/permissionOptions.tsx`
  * con los comentarios traducidos; el cuerpo es el de la fuente.

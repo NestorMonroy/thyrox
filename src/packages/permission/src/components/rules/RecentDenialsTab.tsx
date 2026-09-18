@@ -6,7 +6,7 @@ import {
   type AutoModeDenial,
   getAutoModeDenials,
 } from '../../autoModeDenials.js'
-import { Select } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+import { Select } from '@thyrox/repl/components/CustomSelect/select.js'
 import { StatusIcon } from '@anthropic/ink'
 
 type Props = {

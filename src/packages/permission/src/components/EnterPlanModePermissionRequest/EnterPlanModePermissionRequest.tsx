@@ -1,13 +1,13 @@
 import React from 'react'
-import { handlePlanModeTransition } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { handlePlanModeTransition } from '@thyrox/app-host/bootstrap/state.js'
 import { Box, Text } from '@anthropic/ink'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import { useAppState } from '../../appStateHooks.js'
 import { isPlanModeInterviewPhaseEnabled } from '../../planModeV2.js'
-import { Select } from '@claude-code-how-works/repl/components/CustomSelect/index.js'
+import { Select } from '@thyrox/repl/components/CustomSelect/index.js'
 import { PermissionDialog } from '../PermissionDialog.js'
 import type { PermissionRequestProps } from '../PermissionRequest.js'
 

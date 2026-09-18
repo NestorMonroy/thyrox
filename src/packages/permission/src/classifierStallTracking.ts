@@ -1,10 +1,10 @@
 import type Anthropic from '@anthropic-ai/sdk'
 import { randomUUID } from 'crypto'
-import { sideQuery, type SideQueryOptions } from '@claude-code-how-works/agent/sideQuery.js'
-import { createCombinedAbortSignal } from '@claude-code-how-works/agent/combinedAbortSignal.js'
-import { isAbortError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { resolveAntModel } from '@claude-code-how-works/provider/antModels.js'
+import { sideQuery, type SideQueryOptions } from '@thyrox/agent/sideQuery.js'
+import { createCombinedAbortSignal } from '@thyrox/agent/combinedAbortSignal.js'
+import { isAbortError } from '@thyrox/local-observability/errorHelpers.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { resolveAntModel } from '@thyrox/provider/antModels.js'
 
 /**
  * Copia de `ccnmt: packages/permission/src/classifierStallTracking.ts` con los

@@ -1,28 +1,28 @@
 import { feature } from 'bun:bundle'
-import { ASK_USER_QUESTION_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/prompt.js'
-import { ENTER_PLAN_MODE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/EnterPlanModeTool/constants.js'
-import { EXIT_PLAN_MODE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/ExitPlanModeTool/constants.js'
-import { FILE_READ_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileReadTool/prompt.js'
-import { GLOB_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/GlobTool/prompt.js'
-import { GREP_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/GrepTool/prompt.js'
-import { LIST_MCP_RESOURCES_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/ListMcpResourcesTool/prompt.js'
-import { LSP_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/LSPTool/prompt.js'
-import { SEND_MESSAGE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/SendMessageTool/constants.js'
-import { SLEEP_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/SleepTool/prompt.js'
-import { TASK_CREATE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskCreateTool/constants.js'
-import { TASK_GET_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskGetTool/constants.js'
-import { TASK_LIST_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskListTool/constants.js'
-import { TASK_OUTPUT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskOutputTool/constants.js'
-import { TASK_STOP_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskStopTool/prompt.js'
-import { TASK_UPDATE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskUpdateTool/constants.js'
-import { TEAM_CREATE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TeamCreateTool/constants.js'
-import { TEAM_DELETE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TeamDeleteTool/constants.js'
-import { TODO_WRITE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TodoWriteTool/constants.js'
-import { TOOL_SEARCH_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/ToolSearchTool/prompt.js'
-import { WORKFLOW_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/WorkflowTool/constants.js'
+import { ASK_USER_QUESTION_TOOL_NAME } from '@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js'
+import { ENTER_PLAN_MODE_TOOL_NAME } from '@thyrox/tool-registry/tools/EnterPlanModeTool/constants.js'
+import { EXIT_PLAN_MODE_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
+import { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'
+import { GLOB_TOOL_NAME } from '@thyrox/tool-registry/tools/GlobTool/prompt.js'
+import { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'
+import { LIST_MCP_RESOURCES_TOOL_NAME } from '@thyrox/tool-registry/tools/ListMcpResourcesTool/prompt.js'
+import { LSP_TOOL_NAME } from '@thyrox/tool-registry/tools/LSPTool/prompt.js'
+import { SEND_MESSAGE_TOOL_NAME } from '@thyrox/tool-registry/tools/SendMessageTool/constants.js'
+import { SLEEP_TOOL_NAME } from '@thyrox/tool-registry/tools/SleepTool/prompt.js'
+import { TASK_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskCreateTool/constants.js'
+import { TASK_GET_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskGetTool/constants.js'
+import { TASK_LIST_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskListTool/constants.js'
+import { TASK_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskOutputTool/constants.js'
+import { TASK_STOP_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskStopTool/prompt.js'
+import { TASK_UPDATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskUpdateTool/constants.js'
+import { TEAM_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamCreateTool/constants.js'
+import { TEAM_DELETE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamDeleteTool/constants.js'
+import { TODO_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/TodoWriteTool/constants.js'
+import { TOOL_SEARCH_TOOL_NAME } from '@thyrox/tool-registry/tools/ToolSearchTool/prompt.js'
+import { WORKFLOW_TOOL_NAME } from '@thyrox/tool-registry/tools/WorkflowTool/constants.js'
 import { YOLO_CLASSIFIER_TOOL_NAME } from './yoloClassifier.js'
 import type { PermissionDecisionReason } from './permissionTypes.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 // Copia de `ccnmt: packages/permission/src/classifierDecision.ts` con los
 // comentarios traducidos; el cuerpo es el de la fuente.
@@ -34,18 +34,18 @@ import { readEnv } from '@claude-code-how-works/config/env'
 /* eslint-disable @typescript-eslint/no-require-imports */
 const TERMINAL_CAPTURE_TOOL_NAME = feature('TERMINAL_PANEL')
   ? (
-      require('@claude-code-how-works/tool-registry/tools/TerminalCaptureTool/prompt.js') as typeof import('@claude-code-how-works/tool-registry/tools/TerminalCaptureTool/prompt.js')
+      require('@thyrox/tool-registry/tools/TerminalCaptureTool/prompt.js') as typeof import('@thyrox/tool-registry/tools/TerminalCaptureTool/prompt.js')
     ).TERMINAL_CAPTURE_TOOL_NAME
   : null
 const OVERFLOW_TEST_TOOL_NAME = feature('OVERFLOW_TEST_TOOL')
   ? (
-      require('@claude-code-how-works/tool-registry/tools/OverflowTestTool/OverflowTestTool.js') as typeof import('@claude-code-how-works/tool-registry/tools/OverflowTestTool/OverflowTestTool.js')
+      require('@thyrox/tool-registry/tools/OverflowTestTool/OverflowTestTool.js') as typeof import('@thyrox/tool-registry/tools/OverflowTestTool/OverflowTestTool.js')
     ).OVERFLOW_TEST_TOOL_NAME
   : null
 const VERIFY_PLAN_EXECUTION_TOOL_NAME =
   process.env.USER_TYPE === 'ant'
     ? (
-        require('@claude-code-how-works/tool-registry/tools/VerifyPlanExecutionTool/constants.js') as typeof import('@claude-code-how-works/tool-registry/tools/VerifyPlanExecutionTool/constants.js')
+        require('@thyrox/tool-registry/tools/VerifyPlanExecutionTool/constants.js') as typeof import('@thyrox/tool-registry/tools/VerifyPlanExecutionTool/constants.js')
       ).VERIFY_PLAN_EXECUTION_TOOL_NAME
     : null
 /* eslint-enable @typescript-eslint/no-require-imports */

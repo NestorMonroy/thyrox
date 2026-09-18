@@ -4,8 +4,8 @@ import {
   getAgentName,
   getTeammateColor,
   getTeamName,
-} from '@claude-code-how-works/swarm/teammateState.js'
-import { Spinner } from '@claude-code-how-works/repl/components/Spinner.js'
+} from '@thyrox/swarm/teammateState.js'
+import { Spinner } from '@thyrox/repl/components/Spinner.js'
 import { WorkerBadge } from './WorkerBadge.js'
 
 type Props = {

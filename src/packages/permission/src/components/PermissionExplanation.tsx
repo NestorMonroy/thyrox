@@ -23,10 +23,10 @@
 import React, { Suspense, use, useCallback, useEffect, useRef, useState } from 'react'
 import { Box, Text } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { useShortcutDisplay } from '@claude-code-how-works/repl/keybindings/useShortcutDisplay.js'
-import { ShimmerChar } from '@claude-code-how-works/repl/components/Spinner/ShimmerChar.js'
-import { useShimmerAnimation } from '@claude-code-how-works/repl/components/Spinner/useShimmerAnimation.js'
+import { logEvent } from '@thyrox/local-observability'
+import { useShortcutDisplay } from '@thyrox/repl/keybindings/useShortcutDisplay.js'
+import { ShimmerChar } from '@thyrox/repl/components/Spinner/ShimmerChar.js'
+import { useShimmerAnimation } from '@thyrox/repl/components/Spinner/useShimmerAnimation.js'
 import {
   generatePermissionExplanation,
   isPermissionExplainerEnabled,

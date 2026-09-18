@@ -5,9 +5,9 @@ import { useKeybindings } from '@anthropic/ink/keybindings'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import { useSetAppState } from '../appStateHooks.js'
-import { type OptionWithDescription, Select } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+import { type OptionWithDescription, Select } from '@thyrox/repl/components/CustomSelect/select.js'
 
 export type FeedbackType = 'accept' | 'reject'
 

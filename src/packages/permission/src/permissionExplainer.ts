@@ -21,14 +21,14 @@
 
 import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages.js'
 import { z } from 'zod/v4'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
-import { getGlobalConfig } from '@claude-code-how-works/config'
-import { sideQuery } from '@claude-code-how-works/agent/sideQuery.js'
-import { sanitizeToolNameForAnalytics } from '@claude-code-how-works/agent/eventMetadata.js'
-import { getMainLoopModel } from '@claude-code-how-works/provider/model.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import type { Message } from '@thyrox/agent/messageShapes'
+import { getGlobalConfig } from '@thyrox/config'
+import { sideQuery } from '@thyrox/agent/sideQuery.js'
+import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
+import { getMainLoopModel } from '@thyrox/provider/model.js'
+import { logEvent } from '@thyrox/local-observability'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 const SYSTEM_PROMPT =
   'Analyze shell commands and explain what they do, why you\'re running them, and potential risks.'

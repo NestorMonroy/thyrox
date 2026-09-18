@@ -3,14 +3,14 @@ import { Box, Text } from '@anthropic/ink'
 import {
   type NetworkHostPattern,
   shouldAllowManagedSandboxDomainsOnly,
-} from '@claude-code-how-works/shell/sandbox.js'
+} from '@thyrox/shell/sandbox.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { Select } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+} from '@thyrox/local-observability'
+import { Select } from '@thyrox/repl/components/CustomSelect/select.js'
 import { PermissionDialog } from './PermissionDialog.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 export type SandboxPermissionRequestProps = {
   hostPattern: NetworkHostPattern

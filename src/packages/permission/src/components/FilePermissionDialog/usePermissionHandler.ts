@@ -1,21 +1,21 @@
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { sanitizeToolNameForAnalytics } from '@claude-code-how-works/agent/eventMetadata.js'
-import type { ToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
+} from '@thyrox/local-observability'
+import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import {
   CLAUDE_FOLDER_PERMISSION_PATTERN,
   FILE_EDIT_TOOL_NAME,
   GLOBAL_CLAUDE_FOLDER_PERMISSION_PATTERN,
-} from '@claude-code-how-works/tool-registry/tools/FileEditTool/constants.js'
-import { env } from '@claude-code-how-works/config/env/paths'
+} from '@thyrox/tool-registry/tools/FileEditTool/constants.js'
+import { env } from '@thyrox/config/env/paths'
 import { generateSuggestions } from '../../filesystem.js'
 import type { PermissionUpdate } from '../../PermissionUpdateSchema.js'
 import {
   type CompletionType,
   logUnaryEvent,
-} from '@claude-code-how-works/local-observability/logging'
+} from '@thyrox/local-observability/logging'
 import type { ToolUseConfirm } from '../PermissionRequest.js'
 import type {
   FileOperationType,

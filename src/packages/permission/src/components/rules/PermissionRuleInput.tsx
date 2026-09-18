@@ -1,13 +1,13 @@
 import figures from 'figures'
 import * as React from 'react'
 import { useState } from 'react'
-import TextInput from '@claude-code-how-works/repl/components/TextInput.js'
-import { useExitOnCtrlCDWithKeybindings } from '@claude-code-how-works/repl/hooks/useExitOnCtrlCDWithKeybindings.js'
+import TextInput from '@thyrox/repl/components/TextInput.js'
+import { useExitOnCtrlCDWithKeybindings } from '@thyrox/repl/hooks/useExitOnCtrlCDWithKeybindings.js'
 import { useTerminalSize } from '@anthropic/ink'
 import { Box, Newline, Text } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
-import { BashTool } from '@claude-code-how-works/tool-registry/tools/BashTool/BashTool.js'
-import { WebFetchTool } from '@claude-code-how-works/tool-registry/tools/WebFetchTool/WebFetchTool.js'
+import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
+import { WebFetchTool } from '@thyrox/tool-registry/tools/WebFetchTool/WebFetchTool.js'
 import type {
   PermissionBehavior,
   PermissionRuleValue,

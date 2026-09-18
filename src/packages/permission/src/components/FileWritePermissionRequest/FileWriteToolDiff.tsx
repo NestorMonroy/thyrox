@@ -2,10 +2,10 @@ import * as React from 'react'
 import { useMemo } from 'react'
 import { useTerminalSize } from '@anthropic/ink'
 import { Box, NoSelect, Text } from '@anthropic/ink'
-import { intersperse } from '@claude-code-how-works/tool-registry/utils/array.js'
-import { getPatchForDisplay } from '@claude-code-how-works/agent/diff.js'
-import { HighlightedCode } from '@claude-code-how-works/repl/components/HighlightedCode.js'
-import { StructuredDiff } from '@claude-code-how-works/repl/components/StructuredDiff.js'
+import { intersperse } from '@thyrox/tool-registry/utils/array.js'
+import { getPatchForDisplay } from '@thyrox/agent/diff.js'
+import { HighlightedCode } from '@thyrox/repl/components/HighlightedCode.js'
+import { StructuredDiff } from '@thyrox/repl/components/StructuredDiff.js'
 
 type Props = {
   file_path: string

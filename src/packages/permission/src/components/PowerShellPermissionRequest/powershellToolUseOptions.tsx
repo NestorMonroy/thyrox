@@ -1,7 +1,7 @@
-import { POWERSHELL_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/PowerShellTool/toolName.js'
+import { POWERSHELL_TOOL_NAME } from '@thyrox/tool-registry/tools/PowerShellTool/toolName.js'
 import type { PermissionUpdate } from '../../PermissionUpdateSchema.js'
 import { shouldShowAlwaysAllowOptions } from '../../permissionsLoader.js'
-import type { OptionWithDescription } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+import type { OptionWithDescription } from '@thyrox/repl/components/CustomSelect/select.js'
 import { generateShellSuggestionsLabel } from '../shellPermissionHelpers.js'
 
 type PowerShellToolUseOption =

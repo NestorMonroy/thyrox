@@ -6,8 +6,8 @@ import {
   useAppStateStore,
   useSetAppState,
 } from './appStateHooks.js'
-import type { ToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { getIsRemoteMode } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'
 import {
   createDisabledBypassPermissionsContext,
   shouldDisableBypassPermissions,

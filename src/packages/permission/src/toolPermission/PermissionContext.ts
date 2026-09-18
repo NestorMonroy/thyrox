@@ -13,17 +13,17 @@ import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { sanitizeToolNameForAnalytics } from '@claude-code-how-works/agent/eventMetadata.js'
+} from '@thyrox/local-observability'
+import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
 import type { ToolUseConfirm } from '../components/PermissionRequest.js'
 import type {
   ToolPermissionContext,
   Tool as ToolType,
   ToolUseContext,
-} from '@claude-code-how-works/tool-registry/Tool.js'
-import { awaitClassifierAutoApproval } from '@claude-code-how-works/tool-registry/tools/BashTool/bashPermissions.js'
-import { BASH_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/BashTool/toolName.js'
-import type { AssistantMessage } from '@claude-code-how-works/agent/messageShapes'
+} from '@thyrox/tool-registry/Tool.js'
+import { awaitClassifierAutoApproval } from '@thyrox/tool-registry/tools/BashTool/bashPermissions.js'
+import { BASH_TOOL_NAME } from '@thyrox/tool-registry/tools/BashTool/toolName.js'
+import type { AssistantMessage } from '@thyrox/agent/messageShapes'
 import type {
   PendingClassifierCheck,
   PermissionAllowDecision,
@@ -31,15 +31,15 @@ import type {
   PermissionDenyDecision,
 } from '../permissionTypes.js'
 import { setClassifierApproval } from '../classifierApprovals.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { executePermissionRequestHooks } from '@claude-code-how-works/agent/hooks.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { executePermissionRequestHooks } from '@thyrox/agent/hooks.js'
 import {
   REJECT_MESSAGE,
   REJECT_MESSAGE_WITH_REASON_PREFIX,
   SUBAGENT_REJECT_MESSAGE,
   SUBAGENT_REJECT_MESSAGE_WITH_REASON_PREFIX,
   withMemoryCorrectionHint,
-} from '@claude-code-how-works/agent/messages.js'
+} from '@thyrox/agent/messages.js'
 import type { PermissionDecision } from '../PermissionResult.js'
 import {
   applyPermissionUpdates,

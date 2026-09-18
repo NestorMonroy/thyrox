@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { BLACK_CIRCLE } from '@claude-code-how-works/output/constants/figures.js'
+import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
 import { Box, Text } from '@anthropic/ink'
-import { toInkColor } from '@claude-code-how-works/tool-registry/utils/inkColor.js'
+import { toInkColor } from '@thyrox/tool-registry/utils/inkColor.js'
 
 export type WorkerBadgeProps = {
   name: string

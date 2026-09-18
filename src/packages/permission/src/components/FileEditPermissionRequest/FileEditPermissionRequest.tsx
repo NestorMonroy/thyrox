@@ -1,10 +1,10 @@
 import { basename, relative } from 'path'
 import React from 'react'
-import { FileEditToolDiff } from '@claude-code-how-works/repl/components/FileEditToolDiff.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
+import { FileEditToolDiff } from '@thyrox/repl/components/FileEditToolDiff.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import type { z } from 'zod/v4'
 import { Text } from '@anthropic/ink'
-import { FileEditTool } from '@claude-code-how-works/tool-registry/tools/FileEditTool/FileEditTool.js'
+import { FileEditTool } from '@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js'
 import { FilePermissionDialog } from '../FilePermissionDialog/FilePermissionDialog.js'
 import {
   createSingleEditDiffConfig,

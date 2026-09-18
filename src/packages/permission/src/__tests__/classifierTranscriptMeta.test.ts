@@ -25,7 +25,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { buildTranscriptEntries } from '../yoloClassifier.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
+import type { Message } from '@thyrox/agent/messageShapes'
 
 function userMsg(text: string, isMeta = false): Message {
   return {

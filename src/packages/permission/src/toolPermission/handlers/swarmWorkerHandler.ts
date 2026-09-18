@@ -1,17 +1,17 @@
 import { feature } from 'bun:bundle'
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import type { PendingClassifierCheck } from '../../permissionTypes.js'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
 import type { PermissionDecision } from '../../PermissionResult.js'
 import type { PermissionUpdate } from '../../PermissionUpdateSchema.js'
 import {
   createPermissionRequest,
   isSwarmWorker,
   sendPermissionRequestViaMailbox,
-} from '@claude-code-how-works/swarm'
-import { registerPermissionCallback } from '@claude-code-how-works/repl/hooks/useSwarmPermissionPoller.js'
+} from '@thyrox/swarm'
+import { registerPermissionCallback } from '@thyrox/repl/hooks/useSwarmPermissionPoller.js'
 import type { PermissionContext } from '../PermissionContext.js'
 import { createResolveOnce } from '../PermissionContext.js'
 

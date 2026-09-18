@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { useCallback } from 'react'
-import { Select } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+import { Select } from '@thyrox/repl/components/CustomSelect/select.js'
 import { Box, Dialog, Text } from '@anthropic/ink'
-import type { ToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import type {
   PermissionBehavior,
   PermissionRule,
@@ -17,14 +17,14 @@ import {
   detectUnreachableRules,
   type UnreachableRule,
 } from '../../shadowedRuleDetection.js'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
 import {
   type EditableSettingSource,
   SOURCES,
-} from '@claude-code-how-works/config/constants'
-import { getRelativeSettingsFilePathForSource } from '@claude-code-how-works/config/settings'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
-import type { OptionWithDescription } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+} from '@thyrox/config/constants'
+import { getRelativeSettingsFilePathForSource } from '@thyrox/config/settings'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
+import type { OptionWithDescription } from '@thyrox/repl/components/CustomSelect/select.js'
 import { PermissionRuleDescription } from './PermissionRuleDescription.js'
 
 function optionForPermissionSaveDestination(

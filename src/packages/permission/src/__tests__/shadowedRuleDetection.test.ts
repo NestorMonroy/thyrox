@@ -24,7 +24,7 @@ import {
   detectUnreachableRules,
   isSharedSettingSource,
 } from '../shadowedRuleDetection.js'
-import type { ToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import type { PermissionRuleSource } from '../PermissionRule.js'
 
 describe('isSharedSettingSource', () => {

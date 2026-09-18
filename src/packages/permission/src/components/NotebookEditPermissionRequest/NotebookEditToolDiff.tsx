@@ -5,15 +5,15 @@ import { Box, NoSelect, Text } from '@anthropic/ink'
 import type {
   NotebookCellType,
   NotebookContent,
-} from '@claude-code-how-works/tool-registry/notebookTypes'
-import { intersperse } from '@claude-code-how-works/tool-registry/utils/array.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { getPatchForDisplay } from '@claude-code-how-works/agent/diff.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { safeParseJSON } from '@claude-code-how-works/storage/json.js'
-import { parseCellId } from '@claude-code-how-works/tool-registry/notebook.js'
-import { HighlightedCode } from '@claude-code-how-works/repl/components/HighlightedCode.js'
-import { StructuredDiff } from '@claude-code-how-works/repl/components/StructuredDiff.js'
+} from '@thyrox/tool-registry/notebookTypes'
+import { intersperse } from '@thyrox/tool-registry/utils/array.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { getPatchForDisplay } from '@thyrox/agent/diff.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { safeParseJSON } from '@thyrox/storage/json.js'
+import { parseCellId } from '@thyrox/tool-registry/notebook.js'
+import { HighlightedCode } from '@thyrox/repl/components/HighlightedCode.js'
+import { StructuredDiff } from '@thyrox/repl/components/StructuredDiff.js'
 
 type Props = {
   notebook_path: string

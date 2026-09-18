@@ -1,13 +1,13 @@
 import React, { Suspense, use, useMemo } from 'react'
-import { useSettings } from '@claude-code-how-works/repl/hooks/useSettings.js'
+import { useSettings } from '@thyrox/repl/hooks/useSettings.js'
 import { useTerminalSize } from '@anthropic/ink'
 import { Ansi, Box, Text, stringWidth, useTheme } from '@anthropic/ink'
 import {
   type CliHighlight,
   getCliHighlightPromise,
-} from '@claude-code-how-works/output/utils/cliHighlight.js'
-import { applyMarkdown } from '@claude-code-how-works/output/markdown.js'
-import sliceAnsi from '@claude-code-how-works/output/utils/sliceAnsi.js'
+} from '@thyrox/output/utils/cliHighlight.js'
+import { applyMarkdown } from '@thyrox/output/markdown.js'
+import sliceAnsi from '@thyrox/output/utils/sliceAnsi.js'
 
 type PreviewBoxProps = {
   /** Copia de `ccnmt: packages/permission/src/components/AskUserQuestionPermissionRequest/PreviewBox.tsx`

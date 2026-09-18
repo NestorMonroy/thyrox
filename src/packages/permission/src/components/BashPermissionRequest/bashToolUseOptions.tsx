@@ -1,12 +1,12 @@
-import { BASH_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/BashTool/toolName.js'
-import { extractOutputRedirections } from '@claude-code-how-works/shell/bash/commands.js'
+import { BASH_TOOL_NAME } from '@thyrox/tool-registry/tools/BashTool/toolName.js'
+import { extractOutputRedirections } from '@thyrox/shell/bash/commands.js'
 import { isClassifierPermissionsEnabled } from '../../bashClassifier.js'
 import type { PermissionDecisionReason } from '../../PermissionResult.js'
 import type { PermissionUpdate } from '../../PermissionUpdateSchema.js'
 import { shouldShowAlwaysAllowOptions } from '../../permissionsLoader.js'
-import type { OptionWithDescription } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+import type { OptionWithDescription } from '@thyrox/repl/components/CustomSelect/select.js'
 import { generateShellSuggestionsLabel } from '../shellPermissionHelpers.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 type BashToolUseOption =
   | 'yes'

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { getEmptyToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
+import { getEmptyToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import { buildYoloSystemPrompt } from '../yoloSystemPrompt.js'
 
 /**

@@ -1,4 +1,4 @@
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
+import type { Command } from '@thyrox/command-runtime/runtime'
 
 const permissions = {
   type: 'local-jsx',

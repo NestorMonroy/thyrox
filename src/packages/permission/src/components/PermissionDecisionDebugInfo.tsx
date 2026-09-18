@@ -14,8 +14,8 @@ import { extractRules } from '../PermissionUpdate.js'
 import type { PermissionUpdate } from '../PermissionUpdateSchema.js'
 import { permissionRuleValueToString } from '../permissionRuleParser.js'
 import { detectUnreachableRules } from '../shadowedRuleDetection.js'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
-import { getSettingSourceDisplayNameLowercase } from '@claude-code-how-works/config/constants'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
+import { getSettingSourceDisplayNameLowercase } from '@thyrox/config/constants'
 
 type PermissionDecisionInfoItemProps = {
   title?: string
