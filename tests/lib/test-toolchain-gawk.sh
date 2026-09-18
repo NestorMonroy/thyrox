@@ -184,4 +184,30 @@ else
   bad "el awk de este arbol NO pasa: $(thyrox_toolchain_require_gawk 2>&1 | head -2)"
 fi
 
+# Caso 14 — la sonda lleva `export -f`, que PROMETE que un hijo puede llamarla.
+# Un hijo hereda la funcion, NO las variables sin export: sin esto recibia el
+# programa vacio, corria `"$bin" ""` y devolvia 1 sobre gawk — un rechazo de
+# conducta FALSO, peor que no tener guard porque acusa al binario correcto.
+#
+# Se miden los DOS sentidos desde el hijo: uno solo no discrimina. Una sonda
+# rota a `return 1` incondicional pasaria el de mawk y fallaria este de gawk.
+if command -v gawk >/dev/null 2>&1; then
+  bash -c 'thyrox_toolchain_awk_supports_intervals gawk' 2>/dev/null; rc=$?
+  if [[ $rc -eq 0 ]]; then
+    ok "la sonda exportada funciona desde un proceso hijo"
+  else
+    bad "un hijo la llama y falla sobre gawk (exit $rc): faltan sus constantes"
+  fi
+  bash -c 'thyrox_toolchain_awk_supports_intervals mawk' 2>/dev/null; rc=$?
+  if [[ $rc -ne 0 ]] && command -v mawk >/dev/null 2>&1; then
+    ok "y desde el hijo sigue rechazando mawk"
+  elif ! command -v mawk >/dev/null 2>&1; then
+    bad "mawk ausente: el segundo sentido del caso 14 NO se pudo correr"
+  else
+    bad "desde el hijo acepta mawk: la sonda no discrimina ahi"
+  fi
+else
+  bad "gawk ausente: el caso 14 NO se pudo correr"
+fi
+
 thyrox_summary

@@ -248,7 +248,7 @@ THYROX_TOOLCHAIN_AWK_BIN="${THYROX_TOOLCHAIN_AWK_BIN:-awk}"
 # su hermano de parallel: un control necesita inyectar un instalador que
 # MIENTA —que salga cero sin instalar nada— para comprobar que el exito se
 # prueba re-comprobando el binario y no leyendo el exit del instalador.
-THYROX_TOOLCHAIN_GAWK_INSTALL_CMD="${THYROX_TOOLCHAIN_GAWK_INSTALL_CMD:-sudo apt-get install -y gawk}"
+export THYROX_TOOLCHAIN_GAWK_INSTALL_CMD="${THYROX_TOOLCHAIN_GAWK_INSTALL_CMD:-sudo apt-get install -y gawk}"
 
 # @description El programa que separa gawk de mawk por CONDUCTA.
 #
@@ -264,9 +264,19 @@ THYROX_TOOLCHAIN_GAWK_INSTALL_CMD="${THYROX_TOOLCHAIN_GAWK_INSTALL_CMD:-sudo apt
 # Se declara para que el control pueda citarlo sin transcribirlo: una copia en
 # la suite seria la segunda fuente de verdad que `bg.sh marker-pattern` existe
 # para evitar.
-THYROX_TOOLCHAIN_AWK_PROBE_PROGRAM='/a.{0,3}(x)/{print "MATCH"}'
-THYROX_TOOLCHAIN_AWK_PROBE_INPUT='aaax'
+export THYROX_TOOLCHAIN_AWK_PROBE_PROGRAM='/a.{0,3}(x)/{print "MATCH"}'
+export THYROX_TOOLCHAIN_AWK_PROBE_INPUT='aaax'
 
+# Las tres constantes de arriba van con `export` y no es simetria decorativa:
+# la sonda lleva `export -f`, que PROMETE que un hijo puede llamarla, y un hijo
+# que herede solo la funcion recibe el programa VACIO. Medido antes de
+# corregirlo: `bash -c 'thyrox_toolchain_awk_supports_intervals gawk'` daba
+# exit 1 sobre gawk — un rechazo de conducta FALSO, que es peor que no tener
+# guard, porque acusa al binario correcto. El caso 14 de la suite lo mide.
+#
+# No llevan `${VAR:-...}` a proposito: el constructo NO es parametro. Un
+# llamador que pudiera reemplazarlo podria desactivar el eje de conducta
+# entero pasando un programa que case con cualquier cosa.
 # @description Responde el awk dado al constructo de intervalo mas grupo.
 #
 # Mide CONDUCTA, no nombre ni version: un awk que no sea gawk pero compile el
