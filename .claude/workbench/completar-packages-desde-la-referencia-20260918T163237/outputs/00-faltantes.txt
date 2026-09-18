@@ -1,4 +1,3 @@
-daemon/src/__tests__/rvChannel.test.ts
 app-host/src/commands/initCommand.ts
 app-host/src/context/QueuedMessageContext.tsx
 app-host/src/runtime/commandRegistryRuntime.ts

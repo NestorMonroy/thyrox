@@ -1,0 +1,110 @@
+EL GATE DE cli SOLO CONOCE UN ALCANCE, Y LA COPIA TRAE OTRO
+============================================================
+fecha: 2026-09-18T16:49:06
+
+QUE PASO
+--------
+Al commitear los 1061 copiados, `check-cli-typecheck` bloqueo con
+«el paquete no compila»: 1134 errores TS2307 y 462 de otras clases.
+
+EL GATE TIENE EL DISCRIMINADOR CORRECTO, Y NO DISPARA
+-----------------------------------------------------
+`check-cli-typecheck.sh` distingue tres estados —OK, «no compila», y
+«workspace sin enlazar: NO hay veredicto sobre el codigo»— justo para no
+mandar arreglar un tipo que no esta roto. Pero su discriminador es de UN
+alcance:
+
+    | awk -F/ '$1 == "@thyrox" && NF == 2 {print $2}'
+
+Los archivos copiados importan `@claude-code-how-works/`, que es el
+alcance de la REFERENCIA: thyrox renombro el suyo a `@thyrox/*`
+(TASK-THYROX-0093) y la fuente conserva el de aguas arriba. Asi que
+`UNLINKED` sale vacio y el gate cae al segundo estado.
+
+LA MEDICION QUE LO DECIDE
+--------------------------
+De los 22 paquetes que los TS2307 nombran bajo `@claude-code-how-works/`,
+**21 EXISTEN** en `src/packages/` — agent, app-host, bridge, cli,
+command-runtime, config, daemon, headless-sdk, local-observability,
+mcp-runtime, memory, output, permission, provider, server, shell, storage,
+swarm, teleport, tool-registry, updater.
+
+**1 esta genuinamente ausente: `repl`**, que es el paquete que este arbol
+no ha portado (su porte es otra tarea).
+
+Por el propio criterio del gate —«un modulo ausente cuyo hermano tampoco
+existe NO es un workspace sin enlazar»— 21 de 22 caen del lado del
+workspace sin enlazar. El veredicto «no compila» mide otra cosa.
+
+LAS OTRAS CLASES DE ERROR SON CONSECUENCIA, NO CAUSA
+-----------------------------------------------------
+    1134  TS2307  Cannot find module
+     296  TS7006  parametro con any implicito
+      94  TS18046 valor de tipo unknown
+      22  TS6142  .tsx sin jsx habilitado
+      20  TS2339  propiedad inexistente
+
+Cuando un modulo no resuelve, sus tipos se degradan y el compilador emite
+implicit-any y unknown aguas abajo. No son defectos independientes.
+
+LA DECISION QUE ESTO ABRE, Y QUE NO SE TOMA AQUI
+-------------------------------------------------
+Un archivo copiado importa `@claude-code-how-works/x`. Hay dos lecturas y
+son excluyentes:
+
+  (a) es un ANCLA, como los simbolos de ant: se conserva verbatim porque
+      nombra la procedencia, y el enlace se resuelve con un alias.
+  (b) es DEUDA DE PORTE: el import debe reescribirse a `@thyrox/x`, que
+      es lo que TASK-THYROX-0093 hizo con el codigo propio del arbol.
+
+La directiva de esta fase es **solo copiar**. Reescribir 1134 imports no
+es copiar, y elegir entre (a) y (b) decide la forma del puerto entero.
+Queda como decision del ejecutor.
+
+*Metrica:* nombres de paquete extraidos de los TS2307 del gate, cruzados
+contra la existencia de `src/packages/<nombre>`.
+*Ciega a:* si el paquete que EXISTE exporta el subpath concreto que el
+import pide —mide el paquete, no el subpath—; y a los errores que
+quedarian tras resolver los modulos, que no se pueden ver hasta entonces.
+
+
+================================================================================
+RESUELTO — la directiva del ejecutor, verbatim, en tres mensajes del mismo turno
+================================================================================
+
+Fecha del cierre: 2026-09-18T17:03
+
+  «(b) es DEUDA DE PORTE: el import debe reescribirse a `@thyrox/x`, que es
+   lo que TASK-THYROX-0093 hizo con el codigo propio del arbol.»
+
+  «por el momento se pasa y se guarda con los errores»
+
+  «y mas que deuda, tienes que hacer el cambio ya que es lo que sigue
+   @claude-code-how-works/ -> @thyrox/»
+
+La tercera supersede a la segunda. El desenlace ejecutado:
+
+1. La copia se guardo verbatim, paquete por paquete. Once de los doce pasaron
+   TODOS sus gates sin excepcion; solo `cli` llevo --no-verify, con su razon
+   medida en el cuerpo del commit.
+
+2. El renombre se hizo en su propio commit, sobre 656 archivos y 4271
+   especificadores, con las dos condiciones y su control de anulacion
+   (ver 08-el-renombre-del-alcance.txt).
+
+La cita de TASK-THYROX-0093 NO aplicaba, y estaba sin verificar cuando se
+escribio este documento: el board #185 resuelve a «Renombrar el alcance
+@kaupamex/* a @thyrox/* en thyrox» — el codigo PROPIO del arbol, otro sujeto.
+Cita acunada para este trabajo: TASK-THYROX-0169.
+
+Falsificacion por conducta de la lectura (a):
+tras el renombre, `bun run typecheck` de cli da CERO errores que citen
+@claude-code-how-works. Los que quedan son de otra clase — TS2305 (el modulo
+resuelve y no exporta el simbolo: porte parcial real de los hermanos), TS6142
+(--jsx sin declarar en el tsconfig), y TS2307 de `sharp`, `lodash-es`,
+`image-processor-napi` y `@thyrox/repl`, que si estan genuinamente ausentes.
+El rojo cambio de naturaleza, que es lo que el renombre debia destapar.
+
+Hallazgo registrado: H-THYROX-89.
+Sucesores: TASK-THYROX-0170 (las 23 cadenas de mensaje),
+TASK-THYROX-0171 (los comentarios de base ausente, ya superados).
