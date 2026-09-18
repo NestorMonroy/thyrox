@@ -39,3 +39,37 @@ borrado y abierto 367.97 MiB   (espacio que no vuelve hasta cerrar el descriptor
 VEREDICTO         RESERVA_INALCANZABLE
   el montaje declara resv_strict, que cierra la reserva incluso a root.
   exit=3
+
+## pack_headroom.py — ¿cabe hoy un git gc? (lo que bajó el disco en TASK-THYROX-0372)
+objetos sueltos   2163   (165.62 MiB)
+empaquetados      38310   (171.10 MiB)
+disco libre       2642.72 MiB   (crudo, sin margen)
+pico completo     336.73 MiB × 1.15 = 387.23 MiB   → cabe
+pico incremental  165.62 MiB × 1.15 = 190.46 MiB   → cabe
+VEREDICTO         repack completo
+  lanzar: git gc  (= git repack -a -d)
+  exit=0
+
+## El repack, que es lo que bajo el disco en TASK-THYROX-0372
+pack_headroom.py decide si CABE antes de lanzarlo, y nombra el comando.
+
+| repo           | .git antes | .git despues | ganado |
+|----------------|-----------|--------------|--------|
+| thyrox         | 341 M     | 295 M        | 46 M   |
+| kaupamex-docs  | 602 M     | 589 M        | 13 M   |
+
+Disco raiz: 2.6 G -> 2.7 G libres; uso 94 % -> 93 %.
+Los dos gc corrieron en segundo plano con bin/thyrox-bg y se recogieron
+con la barrera: OK / __BG_EXIT__=0 en los dos.
+
+## El guion que el ejecutor recordaba: son DOS familias, no una
+
+  src/hooks/maintenance_chain.py  — la cadena de SessionStart/Stop. Es lo
+    que se siente como «reiniciar la sesion»: recorre pasos con su plazo
+    y nunca bloquea. NO libera disco por si misma — sus pasos son
+    parametro del consumidor (DEC-04).
+
+  src/repo/{disk-headroom,disk-usage}.sh + pack_headroom.py — la familia
+    que SI baja el disco, nacida de TASK-THYROX-0372 («git gc muere out
+    of disk en los dos repos»). disk-usage dice quien lo ocupa,
+    disk-headroom cual es el techo real, pack_headroom si cabe el repack.
