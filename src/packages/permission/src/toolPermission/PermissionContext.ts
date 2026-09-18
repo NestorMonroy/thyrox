@@ -1,9 +1,12 @@
 /**
- * PermissionContext — interactive permission prompt flow.
- * `suggestions as any` and `decision.updatedPermissions as any` casts
- * bridge structurally-identical types between this package and the
- * upstream PermissionUpdate / PermissionSuggestion shapes.
- * Runtime-binding pattern.
+ * Copia de `ccnmt: packages/permission/src/toolPermission/PermissionContext.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
+ *
+ * PermissionContext — el flujo del prompt de permiso interactivo.
+ * Los casts `suggestions as any` y `decision.updatedPermissions as any`
+ * puentean tipos estructuralmente idénticos entre este paquete y las formas
+ * `PermissionUpdate` / `PermissionSuggestion` de aguas arriba. Es el patrón
+ * de atadura en tiempo de ejecución.
  */
 import { feature } from 'bun:bundle'
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
@@ -54,8 +57,8 @@ import type {
   PermissionRejectionSource,
 } from './permissionSourceTypes.js'
 
-// Generic interface for permission queue operations, decoupled from React.
-// In the REPL, these are backed by React state.
+// Interfaz genérica de las operaciones sobre la cola de permisos,
+// desacoplada de React. En el REPL, su respaldo es estado de React.
 type PermissionQueueOps = {
   push(item: ToolUseConfirm): void
   remove(toolUseID: string): void
@@ -66,10 +69,11 @@ type ResolveOnce<T> = {
   resolve(value: T): void
   isResolved(): boolean
   /**
-   * Atomically check-and-mark as resolved. Returns true if this caller
-   * won the race (nobody else has resolved yet), false otherwise.
-   * Use this in async callbacks BEFORE awaiting, to close the window
-   * between the `isResolved()` check and the actual `resolve()` call.
+   * Comprueba y marca como resuelto de forma atómica. Devuelve true si quien
+   * llama ganó la carrera (nadie más ha resuelto todavía), y false en caso
+   * contrario. Se usa en los callbacks asíncronos ANTES de esperar, para
+   * cerrar la ventana entre la comprobación de `isResolved()` y la llamada
+   * real a `resolve()`.
    */
   claim(): boolean
 }
@@ -352,9 +356,9 @@ function createPermissionContext(
 type PermissionContext = ReturnType<typeof createPermissionContext>
 
 /**
- * Create a PermissionQueueOps backed by a React state setter.
- * This is the bridge between React's `setToolUseConfirmQueue` and the
- * generic queue interface used by PermissionContext.
+ * Crea un `PermissionQueueOps` respaldado por un setter de estado de React.
+ * Es el puente entre el `setToolUseConfirmQueue` de React y la interfaz de
+ * cola genérica que `PermissionContext` usa.
  */
 function createPermissionQueueOps(
   setToolUseConfirmQueue: React.Dispatch<

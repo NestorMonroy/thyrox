@@ -60,25 +60,30 @@ export function PowerShellPermissionRequest(
 
   const [showPermissionDebug, setShowPermissionDebug] = useState(false)
 
-  // Editable prefix — compute static prefix locally (no LLM call).
-  // Initialize synchronously to the raw command for single-line commands so
-  // the editable input renders immediately, then refine to the extracted prefix
-  // once the AST parser resolves. Multiline commands (`# comment\n...`,
-  // foreach loops) get undefined → powershellToolUseOptions:64 hides the
-  // "don't ask again" option — those literals are one-time-use (settings
-  // corpus shows 14 multiline rules, zero match twice). For compound commands,
-  // computes a prefix per subcommand, excluding subcommands that are already
-  // auto-allowed (read-only).
+  // Copia de `ccnmt: packages/permission/src/components/PowerShellPermissionRequest/PowerShellPermissionRequest.tsx`
+  // con los comentarios traducidos; el cuerpo es el de la fuente.
+  //
+  // Prefijo editable — el prefijo estático se calcula en local, sin llamar al
+  // LLM. Se inicializa de forma síncrona al comando en crudo cuando es de una
+  // sola línea, para que el campo editable se renderice de inmediato, y
+  // después se refina al prefijo extraído en cuanto el parser de AST resuelve.
+  // Un comando de varias líneas (`# comment\n...`, un bucle `foreach`) recibe
+  // `undefined` → `powershellToolUseOptions:64` oculta la opción de «no me lo
+  // vuelvas a preguntar»: esos literales son de un solo uso (el corpus de
+  // ajustes tiene 14 reglas de varias líneas y ninguna casa dos veces). En un
+  // comando compuesto calcula un prefijo por subcomando, excluyendo los que ya
+  // se auto-permiten por ser de sólo lectura.
   const [editablePrefix, setEditablePrefix] = useState<string | undefined>(
     command.includes('\n') ? undefined : command,
   )
   const hasUserEditedPrefix = useRef(false)
   useEffect(() => {
     let cancelled = false
-    // Filter receives ParsedCommandElement — isAllowlistedCommand works from
-    // element.name/nameType/args directly. isReadOnlyCommand(text) would need
-    // to reparse (pwsh.exe spawn per subcommand) and returns false without the
-    // full parsed AST, making the filter a no-op.
+    // El filtro recibe un `ParsedCommandElement` — `isAllowlistedCommand`
+    // trabaja directamente desde `element.name`, `nameType` y `args`.
+    // `isReadOnlyCommand(text)` tendría que volver a parsear (un `pwsh.exe`
+    // lanzado por subcomando) y devuelve false sin el AST completo, con lo que
+    // el filtro quedaría en un no-op.
     getCompoundCommandPrefixesStatic(command, element =>
       isAllowlistedCommand(element, element.text),
     )
@@ -130,7 +135,7 @@ export function PowerShellPermissionRequest(
     ],
   )
 
-  // Toggle permission debug info with keybinding
+  // Alternar la información de depuración de permiso con un atajo de teclado
   const handleToggleDebug = useCallback(() => {
     setShowPermissionDebug(prev => !prev)
   }, [])
@@ -139,7 +144,7 @@ export function PowerShellPermissionRequest(
   })
 
   function onSelect(value: string) {
-    // Map options to numeric values for analytics (strings not allowed in logEvent)
+    // Mapear las opciones a valores numéricos para la analítica (`logEvent` no admite cadenas)
     const optionIndex: Record<string, number> = {
       yes: 1,
       'yes-apply-suggestions': 2,
@@ -183,7 +188,7 @@ export function PowerShellPermissionRequest(
       case 'yes': {
         const trimmedFeedback = acceptFeedback.trim()
         logUnaryPermissionEvent('tool_use_single', toolUseConfirm, 'accept')
-        // Log accept submission with feedback context
+        // Registrar el envío de aceptación con el contexto del comentario
         logEvent('tengu_accept_submitted', {
           toolName: toolNameForAnalytics,
           isMcp: toolUseConfirm.tool.isMcp ?? false,
@@ -201,7 +206,7 @@ export function PowerShellPermissionRequest(
       }
       case 'yes-apply-suggestions': {
         logUnaryPermissionEvent('tool_use_single', toolUseConfirm, 'accept')
-        // Extract suggestions if present (works for both 'ask' and 'passthrough' behaviors)
+        // Extraer las sugerencias si las hay (sirve tanto para el comportamiento 'ask' como para el 'passthrough')
         const permissionUpdates =
           'suggestions' in toolUseConfirm.permissionResult
             ? toolUseConfirm.permissionResult.suggestions || []
@@ -213,7 +218,7 @@ export function PowerShellPermissionRequest(
       case 'no': {
         const trimmedFeedback = rejectFeedback.trim()
 
-        // Log reject submission with feedback context
+        // Registrar el envío de rechazo con el contexto del comentario
         logEvent('tengu_reject_submitted', {
           toolName: toolNameForAnalytics,
           isMcp: toolUseConfirm.tool.isMcp ?? false,
@@ -222,7 +227,7 @@ export function PowerShellPermissionRequest(
           entered_feedback_mode: noFeedbackModeEntered,
         })
 
-        // Process rejection (with or without feedback)
+        // Procesar el rechazo (con comentario o sin él)
         handleReject(trimmedFeedback || undefined)
         break
       }

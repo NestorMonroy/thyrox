@@ -96,22 +96,29 @@ function decisionReasonToString(
 }
 
 /**
- * Logs permission request events using analytics and unary logging.
- * Handles both the analytics event and the unary event logging.
+ * Copia de `ccnmt: packages/permission/src/components/hooks.ts` con los
+ * comentarios traducidos; el cuerpo es el de la fuente.
+ *
+ * Registra los eventos de petición de permiso con la analítica y con el
+ * registro unario. Se ocupa de los dos: del evento de analítica y del registro
+ * del evento unario.
  */
 export function usePermissionRequestLogging(
   toolUseConfirm: ToolUseConfirm,
   unaryEvent: UnaryEvent,
 ): void {
   const setAppState = useSetAppState()
-  // Guard against effect re-firing if toolUseConfirm's object reference
-  // changes during a single dialog's lifetime (e.g., parent re-renders with a
-  // fresh object). Without this, the unconditional setAppState below can
-  // cascade into an infinite microtask loop — each re-fire does another
-  // setAppState spread + (ant builds) splitCommand → shell-quote regex,
-  // pegging CPU at 100% and leaking ~500MB/min in JSRopeString/RegExp allocs.
-  // The component is keyed by toolUseID, so this ref resets on remount —
-  // we only need to dedupe re-fires WITHIN one dialog instance.
+  // Guarda contra que el efecto se vuelva a disparar si la referencia del
+  // objeto `toolUseConfirm` cambia durante la vida de un mismo diálogo (por
+  // ejemplo, si el padre re-renderiza con un objeto nuevo). Sin esto, el
+  // `setAppState` incondicional de abajo puede desatar un bucle infinito de
+  // microtareas: cada re-disparo hace otra expansión de `setAppState` y, en
+  // las builds de ant, un `splitCommand` con su expresión regular de
+  // `shell-quote`, clavando la CPU al 100 % y filtrando unos 500 MB por minuto
+  // en asignaciones de `JSRopeString` y `RegExp`. El componente lleva
+  // `toolUseID` como clave, así que esta ref se reinicia al remontar — sólo
+  // hace falta deduplicar los re-disparos DENTRO de una misma instancia del
+  // diálogo.
   const loggedToolUseID = useRef<string | null>(null)
 
   useEffect(() => {
@@ -120,7 +127,7 @@ export function usePermissionRequestLogging(
     }
     loggedToolUseID.current = toolUseConfirm.toolUseID
 
-    // Increment permission prompt count for attribution tracking
+    // Incrementar el conteo de prompts de permiso, para la atribución
     setAppState(prev => ({
       ...prev,
       attribution: {
@@ -129,7 +136,7 @@ export function usePermissionRequestLogging(
       },
     }))
 
-    // Log analytics event
+    // Registrar el evento de analítica
     logEvent('tengu_tool_use_show_permission_request', {
       messageID: toolUseConfirm.assistantMessage.message
         .id as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -147,7 +154,7 @@ export function usePermissionRequestLogging(
         permissionResult.behavior === 'ask' &&
         !hasRules(permissionResult.suggestions)
       ) {
-        // Log if no rule suggestions ("always allow") are provided
+        // Registrar si no se proveen sugerencias de regla («always allow»)
         logEvent('tengu_internal_tool_use_permission_request_no_always_allow', {
           messageID: toolUseConfirm.assistantMessage.message
             .id as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -157,7 +164,7 @@ export function usePermissionRequestLogging(
             'unknown') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           sandboxEnabled: SandboxManager.isSandboxingEnabled(),
 
-          // This DOES contain code/filepaths and should not be logged in the public build!
+          // ¡Esto SÍ contiene código y rutas de archivo, y no debe registrarse en la build pública!
           decisionReasonDetails: decisionReasonToString(
             permissionResult.decisionReason,
           ) as never,
@@ -165,8 +172,8 @@ export function usePermissionRequestLogging(
       }
     }
 
-    // [ANT-ONLY] Log bash tool calls, so we can categorize
-    // & burn down calls that should have been allowed
+    // [SÓLO-ANT] Registrar las llamadas a la herramienta bash, para poder
+    // categorizar y reducir las llamadas que deberían haberse permitido.
     if (process.env.USER_TYPE === 'ant') {
       const parsedInput = BashTool.inputSchema.safeParse(toolUseConfirm.input)
       if (
@@ -174,7 +181,7 @@ export function usePermissionRequestLogging(
         toolUseConfirm.permissionResult.behavior === 'ask' &&
         parsedInput.success
       ) {
-        // Note: All metadata fields in this event contain code/filepaths
+        // Nota: todos los campos de metadata de este evento contienen código y rutas de archivo
         let split = [parsedInput.data.command]
         try {
           split = splitCommand(parsedInput.data.command)

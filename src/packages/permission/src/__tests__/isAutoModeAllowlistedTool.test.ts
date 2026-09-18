@@ -1,18 +1,23 @@
 /**
- * Tests for isAutoModeAllowlistedTool — security-critical fast path
- * for the auto-mode classifier. Allowlisted tools bypass classifier
- * checks entirely (no LLM round-trip per call).
+ * Copia de `ccnmt: packages/permission/src/__tests__/isAutoModeAllowlistedTool.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * Wrong allowlist = either:
- *   - Adds an unsafe tool: classifier never sees it, real security
- *     decisions skipped (e.g., adding Bash here would let any command
- *     run unmonitored in auto mode)
- *   - Drops a safe tool: classifier hit on every call, drives up
- *     latency + token spend
+ * Tests de `isAutoModeAllowlistedTool` — el camino rápido, crítico para la
+ * seguridad, del clasificador de modo automático. Una herramienta en la lista
+ * de permitidos se salta por completo las comprobaciones del clasificador, sin
+ * ida y vuelta al LLM por llamada.
  *
- * The set is closed by design — a future tool added without explicit
- * intent should NOT appear here. Tests lock the membership so a
- * "simplify" refactor can't quietly broaden it.
+ * Una lista de permitidos equivocada produce una de dos cosas:
+ *   - Añade una herramienta insegura: el clasificador no la ve nunca y se
+ *     saltan decisiones de seguridad reales (añadir Bash aquí, por ejemplo,
+ *     dejaría correr cualquier comando sin vigilancia en modo automático).
+ *   - Deja caer una herramienta segura: el clasificador se consulta en cada
+ *     llamada, y eso dispara la latencia y el gasto de tokens.
+ *
+ * El conjunto es cerrado por diseño — una herramienta futura añadida sin
+ * intención explícita NO debe aparecer aquí. Los tests dejan bajo llave la
+ * pertenencia, para que un refactor de «simplificar» no la ensanche en
+ * silencio.
  */
 import { describe, expect, test } from 'bun:test'
 import { isAutoModeAllowlistedTool } from '../classifierDecision.js'
@@ -66,7 +71,7 @@ describe('isAutoModeAllowlistedTool — unknown / made-up names', () => {
   })
 
   test('case-sensitive: lowercase variants do NOT match', () => {
-    // Tool names are exact strings; lowercase doesn't match.
+    // Los nombres de herramienta son cadenas exactas; en minúscula no casan.
     expect(isAutoModeAllowlistedTool('grep')).toBe(false)
     expect(isAutoModeAllowlistedTool('todowrite')).toBe(false)
   })
@@ -76,7 +81,7 @@ describe('isAutoModeAllowlistedTool — unknown / made-up names', () => {
   })
 
   test('MCP tool with mcp__ prefix → false (not allowlisted)', () => {
-    // MCP tools are user-controlled, must go through classifier.
+    // Las herramientas de MCP las controla el usuario: tienen que pasar por el clasificador.
     expect(isAutoModeAllowlistedTool('mcp__github__list_issues')).toBe(false)
     expect(isAutoModeAllowlistedTool('mcp__filesystem__write_file')).toBe(false)
   })
@@ -84,7 +89,7 @@ describe('isAutoModeAllowlistedTool — unknown / made-up names', () => {
 
 describe('isAutoModeAllowlistedTool — boundary cases', () => {
   test('exact substring of allowlisted tool does NOT match', () => {
-    // 'Read' is allowlisted; 'ReadX' should not be.
+    // 'Read' está en la lista de permitidos; 'ReadX' no debería estarlo.
     expect(isAutoModeAllowlistedTool('ReadX')).toBe(false)
     expect(isAutoModeAllowlistedTool('XRead')).toBe(false)
   })

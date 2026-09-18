@@ -4,16 +4,23 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 /**
- * Source-level contract pins for the 2026-05-27 full alignment of ccb's
- * auto-mode classifier with ant v2.1.150. These four behaviours were silently
- * diverging and made auto mode "block too easily"; the pins keep a future edit
- * from regressing them. See
- * memory/project_automode_full_align_ant_2150_2026_05_27.md and ant source
- * bun-demincer/work/claude-code-how-works-how-works-2.1.150/resplit/{3149,4260}.js.
+ * Copia de `ccnmt: packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * Why source-level: bun:test runs with feature flags OFF (TRANSCRIPT_CLASSIFIER
- * gated) and the classifier path makes live sideQuery calls, so the assembled
- * prompt / decision flow can't be exercised at runtime here. We pin the SHAPE.
+ * Fijados de contrato a nivel de fuente de la alineación completa, del
+ * 2026-05-27, del clasificador de modo automático de ccb con ant v2.1.150.
+ * Estos cuatro comportamientos estaban divergiendo en silencio y hacían que el
+ * modo automático «bloqueara con demasiada facilidad»; los fijados impiden que
+ * una edición futura los haga regresar. Ver
+ * `memory/project_automode_full_align_ant_2150_2026_05_27.md` y la fuente de
+ * ant en
+ * `bun-demincer/work/claude-code-how-works-how-works-2.1.150/resplit/{3149,4260}.js`.
+ *
+ * Por qué a nivel de fuente: bun:test corre con las feature flags APAGADAS
+ * (TRANSCRIPT_CLASSIFIER está tras una puerta) y el camino del clasificador
+ * hace llamadas `sideQuery` en vivo, así que aquí no se pueden ejercitar en
+ * tiempo de ejecución ni el prompt ensamblado ni el flujo de decisión. Lo que
+ * se fija es la FORMA.
  */
 
 const yoloClassifier = readFileSync(
@@ -43,8 +50,8 @@ describe('auto-mode classifier model (ant IZ7→F7: main-loop, not Haiku)', () =
   })
 
   test('does NOT route the classifier to the small-fast model', () => {
-    // The 508fee15 Haiku swap is reverted — a weak model under an
-    // "err on the side of blocking" prompt over-blocks benign actions.
+    // El cambio a Haiku de 508fee15 queda revertido — un modelo débil bajo un
+    // prompt de «ante la duda, bloquea» bloquea de más acciones benignas.
     expect(fnSlice).not.toMatch(/return getSmallFastModel\(\)/)
   })
 
@@ -104,8 +111,9 @@ describe('fallback-to-ask paths (ant xaH) — prompt, do not run the classifier'
   })
 
   test('sandboxOverride ALONE falls through to the classifier (ant: no J in j||D||f)', () => {
-    // computeAutoModeFallback returns null for sandboxOverride-only so it
-    // reaches the classifier; the three prompt-worthy reasons return a reason.
+    // `computeAutoModeFallback` devuelve null cuando sólo hay
+    // `sandboxOverride`, para que llegue al clasificador; las tres razones que
+    // merecen prompt devuelven una razón.
     expect(classifierDecision).toMatch(/sandboxOverride alone/)
     expect(classifierDecision).toMatch(/isSandboxOverride/)
     expect(classifierDecision).toMatch(
@@ -115,8 +123,9 @@ describe('fallback-to-ask paths (ant xaH) — prompt, do not run the classifier'
 
   test('emits tengu_auto_mode_fallback_to_ask for every fallback reason', () => {
     expect(permissions).toMatch(/tengu_auto_mode_fallback_to_ask/)
-    // The triage reasons live in computeAutoModeFallback (classifierDecision);
-    // the gate-level fallbacks (interaction/too-long/fail-open) live inline.
+    // Las razones del triaje viven en `computeAutoModeFallback`
+    // (`classifierDecision`); las caídas de vuelta a nivel de puerta
+    // —interacción, demasiado largo, fallar abierto— viven en línea.
     for (const reason of ['safety_check', 'ask_rule', 'plan_mode_floor']) {
       expect(classifierDecision).toContain(`'${reason}'`)
     }
