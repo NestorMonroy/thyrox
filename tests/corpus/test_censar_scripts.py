@@ -20,7 +20,7 @@ import subprocess
 import sys
 import tempfile
 
-HERE = pathlib.Path(__file__).resolve().parents[2] / "src"
+HERE = reach.thyrox_root() / "src"
 sys.path.insert(0, str(HERE))
 
 from paths import reach  # noqa: E402

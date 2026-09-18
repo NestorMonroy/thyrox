@@ -36,7 +36,13 @@ import importlib.util
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
+# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
+# y la unica que el localizador no puede reemplazar: no se puede pedir
+# `reach.thyrox_root()` antes de que `import reach` funcione.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+HERE = reach.thyrox_root()
 spec = importlib.util.spec_from_file_location(
     "register_session", HERE / "src" / "agents" / "register_session.py")
 reg = importlib.util.module_from_spec(spec)

@@ -15,4 +15,36 @@
 # contaba como no-coincidente («2 declaradas, 1 congelada»), así que retirarla
 # no cambia ningún veredicto: cambia que el baseline deje de mentir sobre lo
 # que congela.
+#
+# ── Los 14 de `.claude/workbench/` — congelados 2026-09-18 (TASK-THYROX-0087) ──
+#
+# Un banco de evidencia es un artefacto FECHADO: registra COMO se midio algo un
+# dia concreto. Editar su guion para que use el localizador reescribiria el
+# registro — el guion commiteado dejaria de ser el que corrio. Por eso no se
+# arreglan como se arreglaron los 29 de `tests/`, que SI son codigo vivo.
+#
+# Dos de ellos lo hacen literal: `generate_bin.pristine.py` y
+# `test_censar_scripts.pristine.py` son copias PRISTINE — su razon de existir es
+# ser el original contra el que se compara un mutante. Editarlas destruye el
+# control.
+#
+# Si los bancos pertenecen o no al universo de un gate de codigo es una
+# decision abierta, no un descuido: TASK-THYROX-0075. El gate ya excluye
+# `_archived` por ser «el THYROX anterior, no vigente», y un banco es la misma
+# categoria — fechado, no vivo. Mientras esa decision no se tome, quedan
+# congelados aqui: una entrada listada no bloquea, una nueva si.
+.claude/workbench/adoptar-jsonl-censo-20260917T051111/censo.py:141
+.claude/workbench/adoptar-jsonl-en-manifiestos-20260917T061558/migrate_manifests.py:57
+.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:10
+.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:12
+.claude/workbench/bin-alcanza-flujo-obligatorio-20260917T110325/generate_bin.pristine.py:189
+.claude/workbench/bloqueo-real-de-permission-20260917T191600/probes/census_sibling_links.py:21
+.claude/workbench/frontera-tool-registry-simbolo/probe_chain.py:25
+.claude/workbench/port-nine-packages-20260918T202217/port_packages.py:29
+.claude/workbench/retirar-path-insert-de-src-20260918T194559/baseline_entrypoints.py:13
+.claude/workbench/retirar-path-insert-de-src-20260918T194559/plan_removal.py:19
+.claude/workbench/retirar-path-insert-de-src-20260918T194559/post_sweep_entrypoints.py:14
+.claude/workbench/retirar-path-insert-de-src-20260918T194559/remove_inserts.py:21
+.claude/workbench/session-task-dump-20260910T070654/dump_session_board.py:51
+.claude/workbench/triar-rojos-de-python-20260917T111331/test_censar_scripts.pristine.py:23
 tests/verify/test_rst_gate_root.py:57

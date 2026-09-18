@@ -16,7 +16,13 @@ from __future__ import annotations
 import importlib.util
 import pathlib
 
-_ROOT = pathlib.Path(__file__).resolve().parents[2]
+# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
+# y la unica que el localizador no puede reemplazar: no se puede pedir
+# `reach.thyrox_root()` antes de que `import reach` funcione.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+_ROOT = reach.thyrox_root()
 _MODULE = _ROOT / "src/hooks/detect_code_language.py"
 _spec = importlib.util.spec_from_file_location("_gate_code_language", _MODULE)
 gate = importlib.util.module_from_spec(_spec)

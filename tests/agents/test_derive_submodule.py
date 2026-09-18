@@ -50,7 +50,7 @@ import sys
 # El SUT vive un nivel arriba (``.claude/scripts/``), hermano de este
 # directorio. Se carga por ruta con importlib — mismo patron que
 # ``test_vecinos_de_tarea.py``.
-HERE = pathlib.Path(__file__).resolve().parents[2] / "src"
+HERE = reach.thyrox_root() / "src"
 spec = importlib.util.spec_from_file_location("agent_store", HERE / "agents" / "agent_store.py")
 store = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
@@ -189,7 +189,7 @@ _hecho = _sub.run(
      "import sys; sys.path.insert(0, %r);"
      "import agent_store as s;"
      "print(s.derive_submodule('Tocar src/addons/sale', '', {}))"
-     % str(Path(__file__).resolve().parents[2] / "src" / "agents")],
+     % str(reach.thyrox_root() / "src" / "agents")],
     capture_output=True, text=True, env=_sin)
 check("sin declaracion devuelve el hueco, no una capa adivinada",
       "(None, None)", _hecho.stdout.strip())

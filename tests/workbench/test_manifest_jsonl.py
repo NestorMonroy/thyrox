@@ -47,6 +47,12 @@ def check(label: str, expected, obtained) -> None:
 
 import tempfile  # noqa: E402
 
+# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
+# y la unica que el localizador no puede reemplazar: no se puede pedir
+# `reach.thyrox_root()` antes de que `import reach` funcione.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
 print("== 1. el nombre y la etiqueta ==")
 check("el manifiesto es JSONL", "manifest.jsonl", manifest.MANIFEST_FILE_NAME)
 check("la clave que etiqueta cada registro", "kind", manifest.KIND_KEY)
@@ -114,7 +120,7 @@ with tempfile.TemporaryDirectory() as tmp:
           merged.get("duration_seconds"))
 
 print("== 6. el arbol real, con su poblacion declarada ==")
-root = Path(__file__).resolve().parents[2]
+root = reach.thyrox_root()
 home = root / ".claude" / "jobs"
 settled_runs = []
 if home.is_dir():

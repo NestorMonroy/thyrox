@@ -21,7 +21,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
+HERE = reach.thyrox_root()
 sys.path.insert(0, str(HERE / "src"))
 from paths import reach  # noqa: E402
 

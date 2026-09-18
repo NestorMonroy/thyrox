@@ -31,12 +31,33 @@ en silencio, incluso cuando hoy resuelve por casualidad al lugar correcto.
 
 Qué NO marca, y es deliberado
 -----------------------------
-El bootstrap ``sys.path.insert(0, str(Path(__file__).resolve().parents[N] /
-'src'))`` —o su forma partida en dos líneas, variable y luego inserción— que
-es como TODO módulo de este árbol se hace a sí mismo importable antes de
-poder llamar a ``paths.reach``. Es la única aritmética que el propio
-localizador no puede reemplazar: no se puede pedir `reach.thyrox_root()`
-antes de que `import reach` funcione.
+El bootstrap de UNA línea ``sys.path.insert(0, str(Path(__file__).resolve()
+.parents[N] / 'src'))``, que es como TODO módulo de este árbol se hace a sí
+mismo importable antes de poder llamar a ``paths.reach``. Es la única
+aritmética que el propio localizador no puede reemplazar: no se puede pedir
+`reach.thyrox_root()` antes de que `import reach` funcione.
+
+Qué SÍ marca, contra lo que este docstring afirmaba
+---------------------------------------------------
+Hasta 2026-09-18 el párrafo de arriba decía «—o su forma partida en dos
+líneas, variable y luego inserción—». **Era falso**, y no por un matiz: el
+recorrido de ``feeds_path_insert`` sube por los ancestros del ``Subscript`` y
+se detiene en el ``ast.stmt`` que lo envuelve. En la forma partida ese
+statement es un ``Assign``, no la llamada, así que devuelve ``False`` — la
+inserción vive en la línea siguiente y el recorrido no la puede ver.
+
+No es un defecto del gate: el bloque 4 de ``tests/verify/test_path_arithmetic``
+afirma lo contrario del docstring, con su razón escrita —«ES el patrón que el
+barrido de TASK-DOCS-0504 reemplazó en la mayoría de los archivos que tocó;
+admitirlo aquí habría dejado esos sitios sin gate»—. La conducta y la suite
+coincidían; lo que discrepaba era esta prosa, heredada y nunca medida contra
+lo que el código hace.
+
+Medido al corregirla (TASK-THYROX-0087): de los 44 infractores del árbol, 11
+eran esa forma partida y 33 eran ``<var> = ...parents[N] / "ruta/al/archivo"``
+—la forma MUDA que el gate existe para ver—. Las 29 de ``tests/`` se
+resolvieron por localizador; las 14 de ``.claude/workbench/`` quedaron
+congeladas, con su razón, en el baseline.
 
 Sin ninguna de las tres raíces medibles bajo la raíz declarada, rehúsa con
 exit 2 y sin publicar conteo: un 0 ahí no distinguiría «no queda aritmética

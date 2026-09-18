@@ -28,7 +28,7 @@ import importlib.util
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
+HERE = reach.thyrox_root()
 spec = importlib.util.spec_from_file_location(
     "user_wiring", HERE / "src" / "session" / "user_wiring.py")
 w = importlib.util.module_from_spec(spec)
@@ -526,6 +526,12 @@ print("== 17-bis. CONTROL DE ANULACION: se retira la rama relativa ==")
 _sufijo_original = w._SCRIPT_SUFFIX
 _prefijos_original = w._BASE_PREFIXES
 import re as _re
+
+# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
+# y la unica que el localizador no puede reemplazar: no se puede pedir
+# `reach.thyrox_root()` antes de que `import reach` funcione.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
 w._SCRIPT_SUFFIX = _re.compile(r"(?!)")   # no casa con nada
 w._BASE_PREFIXES = ()
 try:
