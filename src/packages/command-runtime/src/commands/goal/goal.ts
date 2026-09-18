@@ -20,9 +20,9 @@
 import {
   getIsNonInteractiveSession,
   getSessionId,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { checkHasTrustDialogAccepted } from '@claude-code-how-works/config'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { checkHasTrustDialogAccepted } from '@thyrox/config'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import {
   addGoalStopHook,
   buildGoalMetaMessage,
@@ -33,12 +33,12 @@ import {
   pauseGoalStopHook,
   renderActiveGoalStatus,
   resumeGoalStopHook,
-} from '@claude-code-how-works/agent/goalStopHook.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
+} from '@thyrox/agent/goalStopHook.js'
+import type { Message } from '@thyrox/agent/messageShapes'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 
 export async function call(
   onDone: LocalJSXCommandOnDone,

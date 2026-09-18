@@ -3,20 +3,20 @@ import { useEffect, useRef, useState } from 'react'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { ConfigurableShortcutHint } from '@claude-code-how-works/repl/components/ConfigurableShortcutHint.js'
+} from '@thyrox/local-observability'
+import { ConfigurableShortcutHint } from '@thyrox/repl/components/ConfigurableShortcutHint.js'
 import { Byline, KeyboardShortcutHint } from '@anthropic/ink'
-import { Spinner } from '@claude-code-how-works/repl/components/Spinner.js'
-import TextInput from '@claude-code-how-works/repl/components/TextInput.js'
+import { Spinner } from '@thyrox/repl/components/Spinner.js'
+import TextInput from '@thyrox/repl/components/TextInput.js'
 import { Box, Text } from '@anthropic/ink'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { clearAllCaches } from '@claude-code-how-works/config/plugin/cacheUtils'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { clearAllCaches } from '@thyrox/config/plugin/cacheUtils'
 import {
   addMarketplaceSource,
   saveMarketplaceToSettings,
-} from '@claude-code-how-works/config/plugin/marketplaceManager'
-import { parseMarketplaceInput } from '@claude-code-how-works/config/plugin/parseMarketplaceInput'
+} from '@thyrox/config/plugin/marketplaceManager'
+import { parseMarketplaceInput } from '@thyrox/config/plugin/parseMarketplaceInput'
 import type { ViewState } from './types.js'
 
 type Props = {

@@ -1,5 +1,5 @@
 import type { Command } from '../../runtime.js'
-import { isClaudeAISubscriber } from '@claude-code-how-works/provider/authAlias.js'
+import { isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
 
 const rateLimitOptions = {
   type: 'local-jsx',

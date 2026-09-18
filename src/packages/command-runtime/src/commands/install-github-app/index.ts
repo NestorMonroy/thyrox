@@ -1,6 +1,6 @@
 import type { Command } from '../../runtime.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 const installGitHubApp = {
   type: 'local-jsx',

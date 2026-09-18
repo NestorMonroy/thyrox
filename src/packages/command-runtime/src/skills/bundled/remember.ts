@@ -1,4 +1,4 @@
-import { isAutoMemoryEnabled } from '@claude-code-how-works/memory'
+import { isAutoMemoryEnabled } from '@thyrox/memory'
 import { registerBundledSkill } from '../bundledSkills.js'
 
 export function registerRememberSkill(): void {

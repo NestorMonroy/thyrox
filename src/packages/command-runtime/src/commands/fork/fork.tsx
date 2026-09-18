@@ -17,28 +17,28 @@
  */
 
 import { feature } from 'bun:bundle'
-import type { Message as MessageType } from '@claude-code-how-works/agent/messageShapes'
-import { createUserMessage } from '@claude-code-how-works/agent/messages.js'
-import { asAgentId, type AgentId } from '@claude-code-how-works/agent/idTypes'
-import { createAgentId } from '@claude-code-how-works/agent/uuid.js'
-import { runWithAgentContext } from '@claude-code-how-works/agent/agentContext.js'
-import { registerAsyncAgent } from '@claude-code-how-works/agent/localAgentTask.js'
-import { getSystemPrompt } from '@claude-code-how-works/agent/prompts.js'
-import { buildEffectiveSystemPrompt } from '@claude-code-how-works/provider/systemPrompt.js'
-import { runWithCwdOverride } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import type { Message as MessageType } from '@thyrox/agent/messageShapes'
+import { createUserMessage } from '@thyrox/agent/messages.js'
+import { asAgentId, type AgentId } from '@thyrox/agent/idTypes'
+import { createAgentId } from '@thyrox/agent/uuid.js'
+import { runWithAgentContext } from '@thyrox/agent/agentContext.js'
+import { registerAsyncAgent } from '@thyrox/agent/localAgentTask.js'
+import { getSystemPrompt } from '@thyrox/agent/prompts.js'
+import { buildEffectiveSystemPrompt } from '@thyrox/provider/systemPrompt.js'
+import { runWithCwdOverride } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   FORK_AGENT,
   buildChildMessage,
   isInForkChild,
-} from '@claude-code-how-works/tool-registry/tools/AgentTool/forkSubagent.js'
-import { runAsyncAgentLifecycle } from '@claude-code-how-works/tool-registry/tools/AgentTool/agentToolUtils.js'
-import { runAgent } from '@claude-code-how-works/tool-registry/tools/AgentTool/runAgent.js'
-import { getParentSessionId } from '@claude-code-how-works/swarm/teammateState.js'
+} from '@thyrox/tool-registry/tools/AgentTool/forkSubagent.js'
+import { runAsyncAgentLifecycle } from '@thyrox/tool-registry/tools/AgentTool/agentToolUtils.js'
+import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
+import { getParentSessionId } from '@thyrox/swarm/teammateState.js'
 import {
   type LocalJSXCommandCall,
   type LocalJSXCommandContext,
@@ -239,7 +239,7 @@ export const call: LocalJSXCommandCall = async (onDone, rawContext, args) => {
   })
 
   // ant 4656.js:71 — capture parent agent id (nested-fork chain).
-  const { getAgentContext } = await import('@claude-code-how-works/agent/agentContext.js')
+  const { getAgentContext } = await import('@thyrox/agent/agentContext.js')
   const parentAgentId = getAgentContext()?.agentId
   const asyncAgentContext = {
     agentId,
@@ -264,7 +264,7 @@ export const call: LocalJSXCommandCall = async (onDone, rawContext, args) => {
   // ant 4656.js mJK lines 29-37 — pre-compute replHydration log so
   // it's available synchronously when runAgent is invoked.
   const { reconstructLog } = await import(
-    '@claude-code-how-works/agent/replHydration.js'
+    '@thyrox/agent/replHydration.js'
   )
   const forkReplLog = reconstructLog(toolUseContext.messages as MessageType[])
 

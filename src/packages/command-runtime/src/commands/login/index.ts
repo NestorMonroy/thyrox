@@ -1,7 +1,7 @@
 import type { Command } from '../../runtime.js'
-import { hasAnthropicApiKeyAuth } from '@claude-code-how-works/provider/authAlias.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { hasAnthropicApiKeyAuth } from '@thyrox/provider/authAlias.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { readEnv } from '@thyrox/config/env'
 
 export default () =>
   ({

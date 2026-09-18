@@ -2,33 +2,33 @@ import { feature } from 'bun:bundle'
 import { toString as qrToString } from 'qrcode'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { getBridgeAccessToken } from '@claude-code-how-works/bridge/bridgeConfig.js'
+import { getBridgeAccessToken } from '@thyrox/bridge/bridgeConfig.js'
 import {
   checkBridgeMinVersion,
   getBridgeDisabledReason,
   isEnvLessBridgeEnabled,
-} from '@claude-code-how-works/bridge/bridgeEnabled.js'
-import { checkEnvLessBridgeMinVersion } from '@claude-code-how-works/bridge/envLessBridgeConfig.js'
+} from '@thyrox/bridge/bridgeEnabled.js'
+import { checkEnvLessBridgeMinVersion } from '@thyrox/bridge/envLessBridgeConfig.js'
 import {
   BRIDGE_LOGIN_INSTRUCTION,
   REMOTE_CONTROL_DISCONNECTED_MSG,
-} from '@claude-code-how-works/bridge/types.js'
+} from '@thyrox/bridge/types.js'
 import { Dialog, ListItem } from '@anthropic/ink'
-import { shouldShowRemoteCallout } from '@claude-code-how-works/repl/components/RemoteCallout.js'
-import { useRegisterOverlay } from '@claude-code-how-works/repl/overlayContext.js'
+import { shouldShowRemoteCallout } from '@thyrox/repl/components/RemoteCallout.js'
+import { useRegisterOverlay } from '@thyrox/repl/overlayContext.js'
 import { Box, Text } from '@anthropic/ink'
 import { useKeybindings } from '@anthropic/ink/keybindings'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { useAppState, useSetAppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
+} from '@thyrox/local-observability'
+import { useAppState, useSetAppState } from '@thyrox/app-host/state/AppState.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 import type {
   LocalJSXCommandContext,
   LocalJSXCommandOnDone,
-} from '@claude-code-how-works/agent/command.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+} from '@thyrox/agent/command.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 type Props = {
   onDone: LocalJSXCommandOnDone
@@ -245,7 +245,7 @@ function BridgeDisconnectDialog({ onDone }: Props): React.ReactNode {
 async function checkBridgePrerequisites(): Promise<string | null> {
   // Check organization policy — remote control may be disabled
   const { waitForPolicyLimitsToLoad, isPolicyAllowed } = await import(
-    '@claude-code-how-works/provider/policyLimits/index.js'
+    '@thyrox/provider/policyLimits/index.js'
   )
   await waitForPolicyLimitsToLoad()
   if (!isPolicyAllowed('allow_remote_control')) {
@@ -263,7 +263,7 @@ async function checkBridgePrerequisites(): Promise<string | null> {
   // initReplBridge onto the v1 path — so the prerequisite check must match.
   let useV2 = isEnvLessBridgeEnabled()
   if (feature('KAIROS') && useV2) {
-    const { isAssistantMode } = await import('@claude-code-how-works/agent/assistant/index.js')
+    const { isAssistantMode } = await import('@thyrox/agent/assistant/index.js')
     if (isAssistantMode()) {
       useV2 = false
     }

@@ -3,9 +3,9 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { Box, Pane, Text } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
-import { useAppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { LocalJSXCommandCall } from '@claude-code-how-works/agent/command.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { useAppState } from '@thyrox/app-host/state/AppState.js'
+import type { LocalJSXCommandCall } from '@thyrox/agent/command.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 type Props = {
   onDone: () => void

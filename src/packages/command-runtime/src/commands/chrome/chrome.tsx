@@ -2,21 +2,21 @@ import React, { useState } from 'react'
 import {
   type OptionWithDescription,
   Select,
-} from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+} from '@thyrox/repl/components/CustomSelect/select.js'
 import { Dialog } from '@anthropic/ink'
 import { Box, Text } from '@anthropic/ink'
-import { useAppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import { isClaudeAISubscriber } from '@claude-code-how-works/provider/authAlias.js'
-import { openBrowser } from '@claude-code-how-works/storage/browser.js'
+import { useAppState } from '@thyrox/app-host/state/AppState.js'
+import { isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
+import { openBrowser } from '@thyrox/storage/browser.js'
 import {
   CLAUDE_IN_CHROME_MCP_SERVER_NAME,
   openInChrome,
-} from '@claude-code-how-works/agent/claudeInChrome/common.js'
-import { isChromeExtensionInstalled } from '@claude-code-how-works/agent/claudeInChrome/setup.js'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
-import { env } from '@claude-code-how-works/config/env/paths'
-import { isRunningOnHomespace } from '@claude-code-how-works/config/env/utils'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+} from '@thyrox/agent/claudeInChrome/common.js'
+import { isChromeExtensionInstalled } from '@thyrox/agent/claudeInChrome/setup.js'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { env } from '@thyrox/config/env/paths'
+import { isRunningOnHomespace } from '@thyrox/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 const CHROME_EXTENSION_URL = 'https://claude.ai/chrome'
 const CHROME_PERMISSIONS_URL = 'https://clau.de/chrome/permissions'

@@ -2,11 +2,11 @@ import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import { constants as fsConstants } from 'fs'
 import { mkdir, open } from 'fs/promises'
 import { dirname, isAbsolute, join, normalize, sep as pathSep } from 'path'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { Command } from '@claude-code-how-works/agent/command.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getBundledSkillsRoot } from '@claude-code-how-works/permission/filesystem'
-import type { HooksSettings } from '@claude-code-how-works/config/types'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { Command } from '@thyrox/agent/command.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getBundledSkillsRoot } from '@thyrox/permission/filesystem'
+import type { HooksSettings } from '@thyrox/config/types'
 
 /**
  * Definition for a bundled skill that ships with the CLI.

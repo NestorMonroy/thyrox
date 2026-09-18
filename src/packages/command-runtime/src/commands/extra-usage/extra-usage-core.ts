@@ -2,14 +2,14 @@ import {
   checkAdminRequestEligibility,
   createAdminRequest,
   getMyAdminRequests,
-} from '@claude-code-how-works/provider/adminRequests.js'
-import { invalidateOverageCreditGrantCache } from '@claude-code-how-works/provider/overageCreditGrant.js'
-import { type ExtraUsage, fetchUtilization } from '@claude-code-how-works/provider/usage.js'
-import { getSubscriptionType } from '@claude-code-how-works/provider/authAlias.js'
-import { hasClaudeAiBillingAccess } from '@claude-code-how-works/provider/billing.js'
-import { openBrowser } from '@claude-code-how-works/storage/browser.js'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+} from '@thyrox/provider/adminRequests.js'
+import { invalidateOverageCreditGrantCache } from '@thyrox/provider/overageCreditGrant.js'
+import { type ExtraUsage, fetchUtilization } from '@thyrox/provider/usage.js'
+import { getSubscriptionType } from '@thyrox/provider/authAlias.js'
+import { hasClaudeAiBillingAccess } from '@thyrox/provider/billing.js'
+import { openBrowser } from '@thyrox/storage/browser.js'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { logError } from '@thyrox/local-observability/log.js'
 
 type ExtraUsageResult =
   | { type: 'message'; value: string }

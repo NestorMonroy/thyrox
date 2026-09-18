@@ -1,7 +1,7 @@
 import figures from 'figures'
 import * as React from 'react'
 import { Box, Text } from '@anthropic/ink'
-import { getPluginTrustMessage } from '@claude-code-how-works/config/plugin/marketplaceHelpers'
+import { getPluginTrustMessage } from '@thyrox/config/plugin/marketplaceHelpers'
 
 export function PluginTrustWarning(): React.ReactNode {
   const customMessage = getPluginTrustMessage()

@@ -11,16 +11,16 @@
 // The cron-driven path replaces ccb's prior stop-hook-driven autoDream.
 
 import { feature } from 'bun:bundle'
-import { isAutoMemoryEnabled } from '@claude-code-how-works/memory'
-import { buildConsolidationPrompt, getAutoMemPath } from '@claude-code-how-works/memory'
-import { isTeamMemoryEnabled } from '@claude-code-how-works/memory'
-import { recordConsolidation } from '@claude-code-how-works/memory'
-import { getOriginalCwd } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getIsRemoteMode } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getProjectDir } from '@claude-code-how-works/storage/sessionStorage.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { DEFAULT_CRON_JITTER_CONFIG } from '@claude-code-how-works/agent/scheduler'
-import { CRON_CREATE_TOOL_NAME, CRON_DELETE_TOOL_NAME, CRON_LIST_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/ScheduleCronTool/prompt.js'
+import { isAutoMemoryEnabled } from '@thyrox/memory'
+import { buildConsolidationPrompt, getAutoMemPath } from '@thyrox/memory'
+import { isTeamMemoryEnabled } from '@thyrox/memory'
+import { recordConsolidation } from '@thyrox/memory'
+import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
+import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'
+import { getProjectDir } from '@thyrox/storage/sessionStorage.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { DEFAULT_CRON_JITTER_CONFIG } from '@thyrox/agent/scheduler'
+import { CRON_CREATE_TOOL_NAME, CRON_DELETE_TOOL_NAME, CRON_LIST_TOOL_NAME } from '@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js'
 import { registerBundledSkill } from '../bundledSkills.js'
 
 const DREAM_PROMPT_PREFIX = `# Dream: Memory Consolidation (manual run)

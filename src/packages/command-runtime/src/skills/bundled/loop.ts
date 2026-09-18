@@ -12,12 +12,12 @@ import {
   CRON_DELETE_TOOL_NAME,
   DEFAULT_MAX_AGE_DAYS,
   isKairosCronEnabled,
-} from '@claude-code-how-works/tool-registry/tools/ScheduleCronTool/prompt.js'
-import { isLoopDynamicEnabled } from '@claude-code-how-works/agent/scheduler'
+} from '@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js'
+import { isLoopDynamicEnabled } from '@thyrox/agent/scheduler'
 import {
   AUTONOMOUS_LOOP_DYNAMIC_SENTINEL,
   SCHEDULE_WAKEUP_TOOL_NAME,
-} from '@claude-code-how-works/tool-registry/tools/ScheduleWakeupTool/prompt.js'
+} from '@thyrox/tool-registry/tools/ScheduleWakeupTool/prompt.js'
 import { registerBundledSkill } from '../bundledSkills.js'
 
 const DEFAULT_INTERVAL = '10m'

@@ -14,29 +14,29 @@ import {
 import { tmpdir } from 'os'
 import { extname, join } from 'path'
 import type { Command } from '../../runtime.js'
-import { queryWithModel } from '@claude-code-how-works/provider/claude.js'
+import { queryWithModel } from '@thyrox/provider/claude.js'
 import {
   AGENT_TOOL_NAME,
   LEGACY_AGENT_TOOL_NAME,
-} from '@claude-code-how-works/tool-registry/tools/AgentTool/constants.js'
-import type { LogOption } from '@claude-code-how-works/agent/logsTypes.js'
-import { getClaudeConfigHomeDir } from '@claude-code-how-works/config/env/utils'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { execFileNoThrow } from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { extractTextContent } from '@claude-code-how-works/agent/messages.js'
-import { getDefaultOpusModel } from '@claude-code-how-works/provider/model.js'
+} from '@thyrox/tool-registry/tools/AgentTool/constants.js'
+import type { LogOption } from '@thyrox/agent/logsTypes.js'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { extractTextContent } from '@thyrox/agent/messages.js'
+import { getDefaultOpusModel } from '@thyrox/provider/model.js'
 import {
   getProjectsDir,
   getSessionFilesWithMtime,
   getSessionIdFromLog,
   loadAllLogsFromSessionFile,
-} from '@claude-code-how-works/storage/sessionStorage.js'
-import { jsonParse, jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { countCharInString } from '@claude-code-how-works/output/utils/stringUtils.js'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
-import { escapeXmlAttr as escapeHtml } from '@claude-code-how-works/output/xml'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+} from '@thyrox/storage/sessionStorage.js'
+import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { countCharInString } from '@thyrox/output/utils/stringUtils.js'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
+import { escapeXmlAttr as escapeHtml } from '@thyrox/output/xml'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // Model for facet extraction and summarization (Opus - best quality)
 function getAnalysisModel(): string {

@@ -4,18 +4,18 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ConfigurableShortcutHint } from '@claude-code-how-works/repl/components/ConfigurableShortcutHint.js'
+import { ConfigurableShortcutHint } from '@thyrox/repl/components/ConfigurableShortcutHint.js'
 import { Byline } from '@anthropic/ink'
-import { MCPRemoteServerMenu } from '@claude-code-how-works/repl/components/mcp/MCPRemoteServerMenu.js'
-import { MCPStdioServerMenu } from '@claude-code-how-works/repl/components/mcp/MCPStdioServerMenu.js'
-import { MCPToolDetailView } from '@claude-code-how-works/repl/components/mcp/MCPToolDetailView.js'
-import { MCPToolListView } from '@claude-code-how-works/repl/components/mcp/MCPToolListView.js'
+import { MCPRemoteServerMenu } from '@thyrox/repl/components/mcp/MCPRemoteServerMenu.js'
+import { MCPStdioServerMenu } from '@thyrox/repl/components/mcp/MCPStdioServerMenu.js'
+import { MCPToolDetailView } from '@thyrox/repl/components/mcp/MCPToolDetailView.js'
+import { MCPToolListView } from '@thyrox/repl/components/mcp/MCPToolListView.js'
 import type {
   ClaudeAIServerInfo,
   HTTPServerInfo,
   SSEServerInfo,
   StdioServerInfo,
-} from '@claude-code-how-works/repl/components/mcp/types.js'
+} from '@thyrox/repl/components/mcp/types.js'
 import { SearchBox } from '@anthropic/ink'
 import { useSearchInput } from '@anthropic/ink/search'
 import { useTerminalSize } from '@anthropic/ink'
@@ -25,16 +25,16 @@ import {
   useKeybinding,
   useKeybindings,
 } from '@anthropic/ink/keybindings'
-import { getBuiltinPluginDefinition } from '@claude-code-how-works/config/plugin/builtin'
-import { useMcpToggleEnabled } from '@claude-code-how-works/mcp-runtime/MCPConnectionManager.js'
+import { getBuiltinPluginDefinition } from '@thyrox/config/plugin/builtin'
+import { useMcpToggleEnabled } from '@thyrox/mcp-runtime/MCPConnectionManager.js'
 import type {
   MCPServerConnection,
   McpClaudeAIProxyServerConfig,
   McpHTTPServerConfig,
   McpSSEServerConfig,
   McpStdioServerConfig,
-} from '@claude-code-how-works/mcp-runtime/types.js'
-import { filterToolsByServer } from '@claude-code-how-works/mcp-runtime/utils.js'
+} from '@thyrox/mcp-runtime/types.js'
+import { filterToolsByServer } from '@thyrox/mcp-runtime/utils.js'
 import {
   disablePluginOp,
   enablePluginOp,
@@ -43,52 +43,52 @@ import {
   isPluginEnabledAtProjectScope,
   uninstallPluginOp,
   updatePluginOp,
-} from '@claude-code-how-works/config/plugin/pluginOperations'
-import { useAppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { Tool } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { LoadedPlugin, PluginError } from '@claude-code-how-works/config/plugin/types'
-import { count } from '@claude-code-how-works/tool-registry/utils/array.js'
-import { openBrowser } from '@claude-code-how-works/storage/browser.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage, toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { clearAllCaches } from '@claude-code-how-works/config/plugin/cacheUtils'
-import { loadInstalledPluginsV2 } from '@claude-code-how-works/config/plugin/installedPluginsManager'
-import { getMarketplace } from '@claude-code-how-works/config/plugin/marketplaceManager'
+} from '@thyrox/config/plugin/pluginOperations'
+import { useAppState } from '@thyrox/app-host/state/AppState.js'
+import type { Tool } from '@thyrox/tool-registry/Tool.js'
+import type { LoadedPlugin, PluginError } from '@thyrox/config/plugin/types'
+import { count } from '@thyrox/tool-registry/utils/array.js'
+import { openBrowser } from '@thyrox/storage/browser.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage, toError } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { clearAllCaches } from '@thyrox/config/plugin/cacheUtils'
+import { loadInstalledPluginsV2 } from '@thyrox/config/plugin/installedPluginsManager'
+import { getMarketplace } from '@thyrox/config/plugin/marketplaceManager'
 import {
   isMcpbSource,
   loadMcpbFile,
   type McpbNeedsConfigResult,
   type UserConfigValues,
-} from '@claude-code-how-works/config/plugin/mcpbHandler'
+} from '@thyrox/config/plugin/mcpbHandler'
 import {
   getPluginDataDirSize,
   pluginDataDirPath,
-} from '@claude-code-how-works/config/plugin/pluginDirectories'
+} from '@thyrox/config/plugin/pluginDirectories'
 import {
   getFlaggedPlugins,
   markFlaggedPluginsSeen,
   removeFlaggedPlugin,
-} from '@claude-code-how-works/config/plugin/pluginFlagging'
+} from '@thyrox/config/plugin/pluginFlagging'
 import {
   type PersistablePluginScope,
   parsePluginIdentifier,
-} from '@claude-code-how-works/config/plugin/pluginIdentifier'
-import { loadAllPlugins } from '@claude-code-how-works/config/plugin/pluginLoader'
+} from '@thyrox/config/plugin/pluginIdentifier'
+import { loadAllPlugins } from '@thyrox/config/plugin/pluginLoader'
 import {
   loadPluginOptions,
   type PluginOptionSchema,
   savePluginOptions,
-} from '@claude-code-how-works/config/plugin/pluginOptionsStorage'
-import { isPluginBlockedByPolicy } from '@claude-code-how-works/config/plugin/pluginPolicy'
-import { getPluginEditableScopes } from '@claude-code-how-works/config/plugin/pluginStartupCheck'
+} from '@thyrox/config/plugin/pluginOptionsStorage'
+import { isPluginBlockedByPolicy } from '@thyrox/config/plugin/pluginPolicy'
+import { getPluginEditableScopes } from '@thyrox/config/plugin/pluginStartupCheck'
 import {
   getSettings,
   getSettingsForSource,
   updateSettingsForSource,
-} from '@claude-code-how-works/config/settings'
-import { jsonParse } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
+} from '@thyrox/config/settings'
+import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { formatErrorMessage, getErrorGuidance } from './PluginErrors.js'
 import { PluginOptionsDialog } from './PluginOptionsDialog.js'
 import { PluginOptionsFlow } from './PluginOptionsFlow.js'

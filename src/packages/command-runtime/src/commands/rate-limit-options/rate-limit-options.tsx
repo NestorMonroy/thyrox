@@ -6,21 +6,21 @@ import type {
 import {
   type OptionWithDescription,
   Select,
-} from '@claude-code-how-works/repl/components/CustomSelect/select.js'
+} from '@thyrox/repl/components/CustomSelect/select.js'
 import { Dialog } from '@anthropic/ink'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { useClaudeAiLimits } from '@claude-code-how-works/provider/claudeAiLimitsHook.js'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { logEvent } from '@thyrox/local-observability'
+import { useClaudeAiLimits } from '@thyrox/provider/claudeAiLimitsHook.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import {
   getOauthAccountInfo,
   getRateLimitTier,
   getSubscriptionType,
-} from '@claude-code-how-works/provider/authAlias.js'
-import { hasClaudeAiBillingAccess } from '@claude-code-how-works/provider/billing.js'
+} from '@thyrox/provider/authAlias.js'
+import { hasClaudeAiBillingAccess } from '@thyrox/provider/billing.js'
 import { call as extraUsageCall } from '../extra-usage/extra-usage.js'
-import { extraUsage } from '@claude-code-how-works/repl/extraUsage.js'
+import { extraUsage } from '@thyrox/repl/extraUsage.js'
 import upgrade from '../upgrade/index.js'
 import { call as upgradeCall } from '../upgrade/upgrade.js'
 

@@ -1,13 +1,13 @@
 import { feature } from 'bun:bundle'
 import * as React from 'react'
 import type { LocalJSXCommandContext } from '../../runtime.js'
-import { ContextVisualization } from '@claude-code-how-works/repl/components/ContextVisualization.js'
-import { microcompactMessages } from '@claude-code-how-works/agent/compaction/microCompact.js'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
-import { analyzeContextUsage } from '@claude-code-how-works/agent/sessionTools/analyzeContext.js'
-import { getMessagesAfterCompactBoundary } from '@claude-code-how-works/agent/messages.js'
-import { renderToAnsiString } from '@claude-code-how-works/output/render'
+import { ContextVisualization } from '@thyrox/repl/components/ContextVisualization.js'
+import { microcompactMessages } from '@thyrox/agent/compaction/microCompact.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
+import type { Message } from '@thyrox/agent/messageShapes'
+import { analyzeContextUsage } from '@thyrox/agent/sessionTools/analyzeContext.js'
+import { getMessagesAfterCompactBoundary } from '@thyrox/agent/messages.js'
+import { renderToAnsiString } from '@thyrox/output/render'
 
 /**
  * Apply the same context transforms query.ts does before the API call, so
@@ -20,7 +20,7 @@ function toApiView(messages: Message[]): Message[] {
   if (feature('CONTEXT_COLLAPSE')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
     const { projectView } =
-      require('@claude-code-how-works/agent/contextCollapse/operations.js') as typeof import('@claude-code-how-works/agent/contextCollapse/operations.js')
+      require('@thyrox/agent/contextCollapse/operations.js') as typeof import('@thyrox/agent/contextCollapse/operations.js')
     /* eslint-enable @typescript-eslint/no-require-imports */
     view = projectView(view)
   }

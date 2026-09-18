@@ -10,26 +10,26 @@
  */
 
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { fetchUltrareviewQuota } from '@claude-code-how-works/provider/ultrareviewQuota.js'
-import { fetchUtilization } from '@claude-code-how-works/provider/usage.js'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
+} from '@thyrox/local-observability'
+import { fetchUltrareviewQuota } from '@thyrox/provider/ultrareviewQuota.js'
+import { fetchUtilization } from '@thyrox/provider/usage.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 import {
   checkRemoteAgentEligibility,
   formatPreconditionError,
   getRemoteTaskSessionUrl,
   registerRemoteAgentTask,
-} from '@claude-code-how-works/tool-registry/tasks/RemoteAgentTask.js'
-import { isEnterpriseSubscriber, isTeamSubscriber } from '@claude-code-how-works/provider/authAlias.js'
-import { detectCurrentRepositoryWithHost } from '@claude-code-how-works/storage/detectRepository.js'
-import { execFileNoThrow } from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { getDefaultBranch, gitExe } from '@claude-code-how-works/storage/git.js'
-import { teleportToRemote } from '@claude-code-how-works/tool-registry/teleport.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+} from '@thyrox/tool-registry/tasks/RemoteAgentTask.js'
+import { isEnterpriseSubscriber, isTeamSubscriber } from '@thyrox/provider/authAlias.js'
+import { detectCurrentRepositoryWithHost } from '@thyrox/storage/detectRepository.js'
+import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
+import { getDefaultBranch, gitExe } from '@thyrox/storage/git.js'
+import { teleportToRemote } from '@thyrox/tool-registry/teleport.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // One-time session flag: once the user confirms overage billing via the
 // dialog, all subsequent /ultrareview invocations in this session proceed

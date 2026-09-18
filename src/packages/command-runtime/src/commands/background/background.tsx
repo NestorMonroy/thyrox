@@ -16,12 +16,12 @@
 
 import * as React from 'react'
 
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
-import { isBgSession } from '@claude-code-how-works/agent/concurrentSessions.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
-import { gracefulShutdown } from '@claude-code-how-works/app-host/bootstrap/gracefulShutdown.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
+import { isBgSession } from '@thyrox/agent/concurrentSessions.js'
+import type { Message } from '@thyrox/agent/messageShapes'
+import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 
 /**
  * Derive an intent + assistant-detail snippet from the parent's
@@ -155,7 +155,7 @@ export async function call(
   const flags: string[] = []
   try {
     const { getSessionId } = await import(
-      '@claude-code-how-works/app-host/bootstrap/state.js'
+      '@thyrox/app-host/bootstrap/state.js'
     )
     const sessionId = getSessionId()
     if (sessionId) flags.push('--resume', String(sessionId), '--fork-session')
@@ -173,7 +173,7 @@ export async function call(
   let hadWorktree = false
   let handedOff = false
   try {
-    const { getCurrentWorktreeSession } = await import('@claude-code-how-works/swarm')
+    const { getCurrentWorktreeSession } = await import('@thyrox/swarm')
     const wt = getCurrentWorktreeSession()
     if (wt) {
       hadWorktree = true
@@ -195,7 +195,7 @@ export async function call(
 
   let short: string | undefined
   try {
-    const { spawnBgJob } = await import('@claude-code-how-works/cli/bg.js')
+    const { spawnBgJob } = await import('@thyrox/cli/bg.js')
     short = await spawnBgJob({
       flags,
       directive,

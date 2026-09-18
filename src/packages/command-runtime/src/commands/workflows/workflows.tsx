@@ -8,9 +8,9 @@
  * props so the dialog stays a pure presentation component.
  */
 import * as React from 'react'
-import { WorkflowsDialog } from '@claude-code-how-works/repl/components/tasks/WorkflowsDialog.js'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
+import { WorkflowsDialog } from '@thyrox/repl/components/tasks/WorkflowsDialog.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
+import type { Message } from '@thyrox/agent/messageShapes'
 
 // Signature MUST match LocalJSXCommandCall (onDone, context, args) — declaring
 // a narrowed `context` param breaks contravariant assignability against the

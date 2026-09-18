@@ -11,11 +11,11 @@
 
 import * as React from 'react'
 
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
-import { isBgSession } from '@claude-code-how-works/agent/concurrentSessions.js'
-import { gracefulShutdown } from '@claude-code-how-works/app-host/bootstrap/gracefulShutdown.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
+import { isBgSession } from '@thyrox/agent/concurrentSessions.js'
+import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 
 export async function call(
   onDone: LocalJSXCommandOnDone,
@@ -36,7 +36,7 @@ export async function call(
       // Route through @claude-code-how-works/cli/bg.js (which already depends on
       // daemon) instead of pulling daemon directly into command-runtime.
       // Stays under the cross-package-coupling budget.
-      const { markJobStopped } = await import('@claude-code-how-works/cli/bg.js')
+      const { markJobStopped } = await import('@thyrox/cli/bg.js')
       markJobStopped?.(short)
     } catch {
       // best-effort — fall through to graceful shutdown anyway.

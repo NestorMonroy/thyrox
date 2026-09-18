@@ -9,43 +9,43 @@ import {
   getOriginalCwd,
   getSessionId,
   regenerateSessionId,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import type { AppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import { isInProcessTeammateTask } from '@claude-code-how-works/swarm'
+} from '@thyrox/local-observability'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
+import { isInProcessTeammateTask } from '@thyrox/swarm'
 import {
   isLocalAgentTask,
   type LocalAgentTaskState,
-} from '@claude-code-how-works/agent/localAgentTask.js'
-import { isLocalShellTask } from '@claude-code-how-works/repl/localShellTaskGuards.js'
-import { asAgentId } from '@claude-code-how-works/agent/idTypes'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
-import { createEmptyAttributionState } from '@claude-code-how-works/agent/commitAttribution.js'
-import type { FileStateCache } from '@claude-code-how-works/tool-registry/fileStateCache'
+} from '@thyrox/agent/localAgentTask.js'
+import { isLocalShellTask } from '@thyrox/repl/localShellTaskGuards.js'
+import { asAgentId } from '@thyrox/agent/idTypes'
+import type { Message } from '@thyrox/agent/messageShapes'
+import { createEmptyAttributionState } from '@thyrox/agent/commitAttribution.js'
+import type { FileStateCache } from '@thyrox/tool-registry/fileStateCache'
 import {
   executeSessionEndHooks,
   getSessionEndHookTimeoutMs,
-} from '@claude-code-how-works/agent/hooks.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { clearAllPlanSlugs } from '@claude-code-how-works/storage/plans.js'
-import { setCwd } from '@claude-code-how-works/shell/Shell.js'
-import { processSessionStartHooks } from '@claude-code-how-works/storage/sessionStart.js'
+} from '@thyrox/agent/hooks.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { clearAllPlanSlugs } from '@thyrox/storage/plans.js'
+import { setCwd } from '@thyrox/shell/Shell.js'
+import { processSessionStartHooks } from '@thyrox/storage/sessionStart.js'
 import {
   clearSessionMetadata,
   getAgentTranscriptPath,
   resetSessionFilePointer,
   saveWorktreeState,
-} from '@claude-code-how-works/storage/sessionStorage.js'
+} from '@thyrox/storage/sessionStorage.js'
 import {
   evictTaskOutput,
   initTaskOutputAsSymlink,
-} from '@claude-code-how-works/storage/task/diskOutput.js'
-import { getCurrentWorktreeSession } from '@claude-code-how-works/swarm'
+} from '@thyrox/storage/task/diskOutput.js'
+import { getCurrentWorktreeSession } from '@thyrox/swarm'
 import { clearSessionCaches } from './caches.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 export async function clearConversation({
   setMessages,
@@ -112,7 +112,7 @@ export async function clearConversation({
   // Clear context-blocked flag so proactive ticks resume after /clear
   if (feature('PROACTIVE') || feature('KAIROS')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
-    const { setContextBlocked } = require('@claude-code-how-works/agent/proactive/index.js')
+    const { setContextBlocked } = require('@thyrox/agent/proactive/index.js')
     /* eslint-enable @typescript-eslint/no-require-imports */
     setContextBlocked(false)
   }
@@ -230,10 +230,10 @@ export async function clearConversation({
   // and (if applicable) the same worktree directory.
   if (feature('COORDINATOR_MODE')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
-    const { saveMode } = require('@claude-code-how-works/storage/sessionStorage.js')
+    const { saveMode } = require('@thyrox/storage/sessionStorage.js')
     const {
       isCoordinatorMode,
-    } = require('@claude-code-how-works/agent/coordinatorMode.js')
+    } = require('@thyrox/agent/coordinatorMode.js')
     /* eslint-enable @typescript-eslint/no-require-imports */
     saveMode(isCoordinatorMode() ? 'coordinator' : 'normal')
   }

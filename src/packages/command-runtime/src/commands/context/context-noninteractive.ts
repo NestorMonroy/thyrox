@@ -1,18 +1,18 @@
 import { feature } from 'bun:bundle'
-import { microcompactMessages } from '@claude-code-how-works/agent/compaction/microCompact.js'
-import type { AppState } from '@claude-code-how-works/app-host/state/AppStateStore.js'
-import type { Tools, ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { AgentDefinitionsResult } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
+import { microcompactMessages } from '@thyrox/agent/compaction/microCompact.js'
+import type { AppState } from '@thyrox/app-host/state/AppStateStore.js'
+import type { Tools, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import type { Message } from '@thyrox/agent/messageShapes'
 import {
   analyzeContextUsage,
   type ContextData,
-} from '@claude-code-how-works/agent/sessionTools/analyzeContext.js'
-import { formatTokens } from '@claude-code-how-works/output/formatters'
-import { getMessagesAfterCompactBoundary } from '@claude-code-how-works/agent/messages.js'
-import { getSourceDisplayName } from '@claude-code-how-works/config/constants'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+} from '@thyrox/agent/sessionTools/analyzeContext.js'
+import { formatTokens } from '@thyrox/output/formatters'
+import { getMessagesAfterCompactBoundary } from '@thyrox/agent/messages.js'
+import { getSourceDisplayName } from '@thyrox/config/constants'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 /**
  * Shared data-collection path for `/context` (slash command) and the SDK
@@ -51,7 +51,7 @@ export async function collectContextData(
   if (feature('CONTEXT_COLLAPSE')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
     const { projectView } =
-      require('@claude-code-how-works/agent/contextCollapse/operations.js') as typeof import('@claude-code-how-works/agent/contextCollapse/operations.js')
+      require('@thyrox/agent/contextCollapse/operations.js') as typeof import('@thyrox/agent/contextCollapse/operations.js')
     /* eslint-enable @typescript-eslint/no-require-imports */
     apiView = projectView(apiView)
   }
@@ -117,7 +117,7 @@ function formatContextAsMarkdownTable(data: ContextData): string {
   if (feature('CONTEXT_COLLAPSE')) {
     /* eslint-disable @typescript-eslint/no-require-imports */
     const { getStats, isContextCollapseEnabled } =
-      require('@claude-code-how-works/agent/contextCollapse/index.js') as typeof import('@claude-code-how-works/agent/contextCollapse/index.js')
+      require('@thyrox/agent/contextCollapse/index.js') as typeof import('@thyrox/agent/contextCollapse/index.js')
     /* eslint-enable @typescript-eslint/no-require-imports */
     if (isContextCollapseEnabled()) {
       const s = getStats()

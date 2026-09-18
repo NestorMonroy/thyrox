@@ -8,7 +8,7 @@ import { describe, expect, test, beforeEach, mock } from 'bun:test'
 // (Tasks 10–16) this file does not need updating.
 let mockConfig: { powerupsUnlocked?: string[] } = {}
 // MOCK_FULL_REPLACE: state.test isolates GlobalConfig persistence — getGlobalConfig and saveGlobalConfig are the only surface used; full-replace avoids disk I/O.
-mock.module('@claude-code-how-works/config', () => ({
+mock.module('@thyrox/config', () => ({
   getGlobalConfig: () => mockConfig,
   saveGlobalConfig: (updater: (c: any) => any) => {
     mockConfig = updater(mockConfig)

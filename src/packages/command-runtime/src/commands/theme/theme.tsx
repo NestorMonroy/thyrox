@@ -1,9 +1,9 @@
 import * as React from 'react'
 import type { CommandResultDisplay } from '../../runtime.js'
 import { Pane } from '@anthropic/ink'
-import { ThemePicker } from '@claude-code-how-works/repl/components/ThemePicker.js'
+import { ThemePicker } from '@thyrox/repl/components/ThemePicker.js'
 import { useTheme } from '@anthropic/ink'
-import type { LocalJSXCommandCall } from '@claude-code-how-works/agent/command.js'
+import type { LocalJSXCommandCall } from '@thyrox/agent/command.js'
 
 type Props = {
   onDone: (

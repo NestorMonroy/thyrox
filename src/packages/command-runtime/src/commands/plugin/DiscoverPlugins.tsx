@@ -1,7 +1,7 @@
 import figures from 'figures'
 import * as React from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ConfigurableShortcutHint } from '@claude-code-how-works/repl/components/ConfigurableShortcutHint.js'
+import { ConfigurableShortcutHint } from '@thyrox/repl/components/ConfigurableShortcutHint.js'
 import { SearchBox } from '@anthropic/ink'
 import { Byline } from '@anthropic/ink'
 import { useSearchInput } from '@anthropic/ink/search'
@@ -12,17 +12,17 @@ import {
   useKeybinding,
   useKeybindings,
 } from '@anthropic/ink/keybindings'
-import type { LoadedPlugin } from '@claude-code-how-works/config/plugin/types'
-import { count } from '@claude-code-how-works/tool-registry/utils/array.js'
-import { openBrowser } from '@claude-code-how-works/storage/browser.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { clearAllCaches } from '@claude-code-how-works/config/plugin/cacheUtils'
+import type { LoadedPlugin } from '@thyrox/config/plugin/types'
+import { count } from '@thyrox/tool-registry/utils/array.js'
+import { openBrowser } from '@thyrox/storage/browser.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { clearAllCaches } from '@thyrox/config/plugin/cacheUtils'
 import {
   formatInstallCount,
   getInstallCounts,
-} from '@claude-code-how-works/config/plugin/installCounts'
-import { isPluginGloballyInstalled } from '@claude-code-how-works/config/plugin/installedPluginsManager'
+} from '@thyrox/config/plugin/installCounts'
+import { isPluginGloballyInstalled } from '@thyrox/config/plugin/installedPluginsManager'
 import {
   createPluginId,
   detectEmptyMarketplaceReason,
@@ -30,13 +30,13 @@ import {
   formatFailureDetails,
   formatMarketplaceLoadingErrors,
   loadMarketplacesWithGracefulDegradation,
-} from '@claude-code-how-works/config/plugin/marketplaceHelpers'
-import { loadKnownMarketplacesConfig } from '@claude-code-how-works/config/plugin/marketplaceManager'
-import { OFFICIAL_MARKETPLACE_NAME } from '@claude-code-how-works/config/plugin/officialMarketplace'
-import { installPluginFromMarketplace } from '@claude-code-how-works/config/plugin/pluginInstallationHelpers'
-import { isPluginBlockedByPolicy } from '@claude-code-how-works/config/plugin/pluginPolicy'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
-import { truncateToWidth } from '@claude-code-how-works/output/formatters/truncate.js'
+} from '@thyrox/config/plugin/marketplaceHelpers'
+import { loadKnownMarketplacesConfig } from '@thyrox/config/plugin/marketplaceManager'
+import { OFFICIAL_MARKETPLACE_NAME } from '@thyrox/config/plugin/officialMarketplace'
+import { installPluginFromMarketplace } from '@thyrox/config/plugin/pluginInstallationHelpers'
+import { isPluginBlockedByPolicy } from '@thyrox/config/plugin/pluginPolicy'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
+import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 import {
   findPluginOptionsTarget,
   PluginOptionsFlow,

@@ -1,23 +1,23 @@
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import type { MCPServerConnection } from '@claude-code-how-works/mcp-runtime/types.js'
-import { isPolicyAllowed } from '@claude-code-how-works/provider/policyLimits/index.js'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { ASK_USER_QUESTION_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/prompt.js'
-import { REMOTE_TRIGGER_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/RemoteTriggerTool/prompt.js'
-import { getClaudeAIOAuthTokens } from '@claude-code-how-works/provider/authAlias.js'
-import { checkRepoForRemoteAccess } from '@claude-code-how-works/agent/background/preconditions.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
+import { isPolicyAllowed } from '@thyrox/provider/policyLimits/index.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import { ASK_USER_QUESTION_TOOL_NAME } from '@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js'
+import { REMOTE_TRIGGER_TOOL_NAME } from '@thyrox/tool-registry/tools/RemoteTriggerTool/prompt.js'
+import { getClaudeAIOAuthTokens } from '@thyrox/provider/authAlias.js'
+import { checkRepoForRemoteAccess } from '@thyrox/agent/background/preconditions.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   detectCurrentRepositoryWithHost,
   parseGitRemote,
-} from '@claude-code-how-works/storage/detectRepository.js'
-import { getRemoteUrl } from '@claude-code-how-works/storage/git.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/storage/detectRepository.js'
+import { getRemoteUrl } from '@thyrox/storage/git.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import {
   createDefaultCloudEnvironment,
   type EnvironmentResource,
   fetchEnvironments,
-} from '@claude-code-how-works/teleport/environments.js'
+} from '@thyrox/teleport/environments.js'
 import { registerBundledSkill } from '../bundledSkills.js'
 
 // Base58 alphabet (Bitcoin-style) used by the tagged ID system

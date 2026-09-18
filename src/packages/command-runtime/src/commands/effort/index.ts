@@ -1,5 +1,5 @@
 import type { Command } from '../../runtime.js'
-import { shouldInferenceConfigCommandBeImmediate } from '@claude-code-how-works/shell/immediateCommand.js'
+import { shouldInferenceConfigCommandBeImmediate } from '@thyrox/shell/immediateCommand.js'
 
 export default {
   type: 'local-jsx',

@@ -1,25 +1,25 @@
 import chalk from 'chalk'
 import * as path from 'path'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import type {
   CommandResultDisplay,
   LocalJSXCommandContext,
 } from '../../runtime.js'
-import { Select } from '@claude-code-how-works/repl/components/CustomSelect/index.js'
+import { Select } from '@thyrox/repl/components/CustomSelect/index.js'
 import { Dialog } from '@anthropic/ink'
 import {
   IdeAutoConnectDialog,
   IdeDisableAutoConnectDialog,
   shouldShowAutoConnectDialog,
   shouldShowDisableAutoConnectDialog,
-} from '@claude-code-how-works/repl/components/IdeAutoConnectDialog.js'
+} from '@thyrox/repl/components/IdeAutoConnectDialog.js'
 import { Box, Text } from '@anthropic/ink'
-import { clearServerCache } from '@claude-code-how-works/mcp-runtime/clientRuntime.js'
-import type { ScopedMcpServerConfig } from '@claude-code-how-works/mcp-runtime/types.js'
-import { useAppState, useSetAppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { execFileNoThrow } from '@claude-code-how-works/shell/execFileNoThrow.js'
+import { clearServerCache } from '@thyrox/mcp-runtime/clientRuntime.js'
+import type { ScopedMcpServerConfig } from '@thyrox/mcp-runtime/types.js'
+import { useAppState, useSetAppState } from '@thyrox/app-host/state/AppState.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import {
   type DetectedIDEInfo,
   detectIDEs,
@@ -29,8 +29,8 @@ import {
   isSupportedJetBrainsTerminal,
   isSupportedTerminal,
   toIDEDisplayName,
-} from '@claude-code-how-works/ide/ide.js'
-import { getCurrentWorktreeSession } from '@claude-code-how-works/swarm'
+} from '@thyrox/ide/ide.js'
+import { getCurrentWorktreeSession } from '@thyrox/swarm'
 
 type IDEScreenProps = {
   availableIDEs: DetectedIDEInfo[]

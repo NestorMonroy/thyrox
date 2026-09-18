@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react'
-import { MCPSettings } from '@claude-code-how-works/repl/components/mcp/index.js'
-import { MCPReconnect } from '@claude-code-how-works/repl/components/mcp/MCPReconnect.js'
-import { useMcpToggleEnabled } from '@claude-code-how-works/mcp-runtime/MCPConnectionManager.js'
-import { useAppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+import { MCPSettings } from '@thyrox/repl/components/mcp/index.js'
+import { MCPReconnect } from '@thyrox/repl/components/mcp/MCPReconnect.js'
+import { useMcpToggleEnabled } from '@thyrox/mcp-runtime/MCPConnectionManager.js'
+import { useAppState } from '@thyrox/app-host/state/AppState.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import { PluginSettings } from '../plugin/PluginSettings.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // TODO: This is a hack to get the context value from toggleMcpServer (useContext only works in a component)
 // Ideally, all MCP state and functions would be in global state.

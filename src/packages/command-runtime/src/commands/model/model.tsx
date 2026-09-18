@@ -1,36 +1,36 @@
 import chalk from 'chalk'
 import * as React from 'react'
 import type { CommandResultDisplay } from '../../runtime.js'
-import { ModelPicker } from '@claude-code-how-works/repl/components/ModelPicker.js'
+import { ModelPicker } from '@thyrox/repl/components/ModelPicker.js'
 import { COMMON_HELP_ARGS, COMMON_INFO_ARGS } from '../../xml.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { useAppState, useSetAppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { LocalJSXCommandCall } from '@claude-code-how-works/agent/command.js'
-import type { EffortLevel } from '@claude-code-how-works/agent/effort.js'
-import { isBilledAsExtraUsage } from '@claude-code-how-works/provider/extraUsage.js'
+} from '@thyrox/local-observability'
+import { useAppState, useSetAppState } from '@thyrox/app-host/state/AppState.js'
+import type { LocalJSXCommandCall } from '@thyrox/agent/command.js'
+import type { EffortLevel } from '@thyrox/agent/effort.js'
+import { isBilledAsExtraUsage } from '@thyrox/provider/extraUsage.js'
 import {
   clearFastModeCooldown,
   isFastModeAvailable,
   isFastModeEnabled,
   isFastModeSupportedByModel,
-} from '@claude-code-how-works/provider/fastMode.js'
-import { MODEL_ALIASES } from '@claude-code-how-works/provider/modelAliases.js'
+} from '@thyrox/provider/fastMode.js'
+import { MODEL_ALIASES } from '@thyrox/provider/modelAliases.js'
 import {
   checkOpus1mAccess,
   checkSonnet1mAccess,
-} from '@claude-code-how-works/provider/model/check1mAccess.js'
+} from '@thyrox/provider/model/check1mAccess.js'
 import {
   getDefaultMainLoopModelSetting,
   isOpus1mMergeEnabled,
   renderDefaultModelSetting,
-} from '@claude-code-how-works/provider/model.js'
-import { isModelAllowed } from '@claude-code-how-works/provider/model/modelAllowlist.js'
-import { validateModel } from '@claude-code-how-works/provider/validateModel.js'
-import { updateSettingsForSource } from '@claude-code-how-works/config/settings'
-import { unpackModelId } from '@claude-code-how-works/provider/connections.js'
+} from '@thyrox/provider/model.js'
+import { isModelAllowed } from '@thyrox/provider/model/modelAllowlist.js'
+import { validateModel } from '@thyrox/provider/validateModel.js'
+import { updateSettingsForSource } from '@thyrox/config/settings'
+import { unpackModelId } from '@thyrox/provider/connections.js'
 
 function ModelPickerWrapper({
   onDone,
@@ -395,8 +395,8 @@ function renderModelLabel(model: string | null): string {
   if (model !== null) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { unpackModelId, getConnections, prettyModelLabel } = require(
-      '@claude-code-how-works/provider/connections.js',
-    ) as typeof import('@claude-code-how-works/provider/connections.js')
+      '@thyrox/provider/connections.js',
+    ) as typeof import('@thyrox/provider/connections.js')
     const { connectionId, modelId } = unpackModelId(model)
     if (connectionId) {
       const conn = getConnections().find(c => c.id === connectionId)
@@ -413,8 +413,8 @@ function renderModelLabel(model: string | null): string {
   if (model === null) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { getEnabledConnections, prettyModelLabel } = require(
-      '@claude-code-how-works/provider/connections.js',
-    ) as typeof import('@claude-code-how-works/provider/connections.js')
+      '@thyrox/provider/connections.js',
+    ) as typeof import('@thyrox/provider/connections.js')
     const conn = getEnabledConnections()[0]
     const m = conn?.models[0]
     if (conn && m) {

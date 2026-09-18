@@ -1,6 +1,6 @@
 import type { Command } from '../../runtime.js'
-import { isPolicyAllowed } from '@claude-code-how-works/provider/policyLimits/index.js'
-import { isClaudeAISubscriber } from '@claude-code-how-works/provider/authAlias.js'
+import { isPolicyAllowed } from '@thyrox/provider/policyLimits/index.js'
+import { isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
 
 export default {
   type: 'local-jsx',

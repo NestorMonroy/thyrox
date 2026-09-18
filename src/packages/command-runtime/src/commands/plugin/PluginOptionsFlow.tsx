@@ -8,24 +8,24 @@
  */
 
 import * as React from 'react'
-import type { LoadedPlugin } from '@claude-code-how-works/config/plugin/types'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import type { LoadedPlugin } from '@thyrox/config/plugin/types'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import {
   loadMcpServerUserConfig,
   saveMcpServerUserConfig,
-} from '@claude-code-how-works/config/plugin/mcpbHandler'
+} from '@thyrox/config/plugin/mcpbHandler'
 import {
   getUnconfiguredChannels,
   type UnconfiguredChannel,
-} from '@claude-code-how-works/config/plugin/mcpPluginIntegration'
-import { loadAllPlugins } from '@claude-code-how-works/config/plugin/pluginLoader'
+} from '@thyrox/config/plugin/mcpPluginIntegration'
+import { loadAllPlugins } from '@thyrox/config/plugin/pluginLoader'
 import {
   getUnconfiguredOptions,
   loadPluginOptions,
   type PluginOptionSchema,
   type PluginOptionValues,
   savePluginOptions,
-} from '@claude-code-how-works/config/plugin/pluginOptionsStorage'
+} from '@thyrox/config/plugin/pluginOptionsStorage'
 import { PluginOptionsDialog } from './PluginOptionsDialog.js'
 
 /**

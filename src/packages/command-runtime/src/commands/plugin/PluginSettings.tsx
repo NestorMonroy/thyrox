@@ -1,29 +1,29 @@
 import figures from 'figures'
 import * as React from 'react'
 import { useCallback, useEffect, useState } from 'react'
-import { ConfigurableShortcutHint } from '@claude-code-how-works/repl/components/ConfigurableShortcutHint.js'
+import { ConfigurableShortcutHint } from '@thyrox/repl/components/ConfigurableShortcutHint.js'
 import { Byline, Pane, Tab, Tabs } from '@anthropic/ink'
-import { useExitOnCtrlCDWithKeybindings } from '@claude-code-how-works/repl/hooks/useExitOnCtrlCDWithKeybindings.js'
+import { useExitOnCtrlCDWithKeybindings } from '@thyrox/repl/hooks/useExitOnCtrlCDWithKeybindings.js'
 import { Box, Text } from '@anthropic/ink'
 import {
   useKeybinding,
   useKeybindings,
 } from '@anthropic/ink/keybindings'
-import { useAppState, useSetAppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { PluginError } from '@claude-code-how-works/config/plugin/types'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { clearAllCaches } from '@claude-code-how-works/config/plugin/cacheUtils'
-import { loadMarketplacesWithGracefulDegradation } from '@claude-code-how-works/config/plugin/marketplaceHelpers'
+import { useAppState, useSetAppState } from '@thyrox/app-host/state/AppState.js'
+import type { PluginError } from '@thyrox/config/plugin/types'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { clearAllCaches } from '@thyrox/config/plugin/cacheUtils'
+import { loadMarketplacesWithGracefulDegradation } from '@thyrox/config/plugin/marketplaceHelpers'
 import {
   loadKnownMarketplacesConfig,
   removeMarketplaceSource,
-} from '@claude-code-how-works/config/plugin/marketplaceManager'
-import { getPluginEditableScopes } from '@claude-code-how-works/config/plugin/pluginStartupCheck'
-import type { EditableSettingSource } from '@claude-code-how-works/config/constants'
+} from '@thyrox/config/plugin/marketplaceManager'
+import { getPluginEditableScopes } from '@thyrox/config/plugin/pluginStartupCheck'
+import type { EditableSettingSource } from '@thyrox/config/constants'
 import {
   getSettingsForSource,
   updateSettingsForSource,
-} from '@claude-code-how-works/config/settings'
+} from '@thyrox/config/settings'
 import { AddMarketplace } from './AddMarketplace.js'
 import { BrowseMarketplace } from './BrowseMarketplace.js'
 import { DiscoverPlugins } from './DiscoverPlugins.js'

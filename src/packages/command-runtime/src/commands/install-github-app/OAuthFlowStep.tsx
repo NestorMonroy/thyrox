@@ -2,16 +2,16 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import { KeyboardShortcutHint } from '@anthropic/ink'
-import { Spinner } from '@claude-code-how-works/repl/components/Spinner.js'
-import TextInput from '@claude-code-how-works/repl/components/TextInput.js'
+import { Spinner } from '@thyrox/repl/components/Spinner.js'
+import TextInput from '@thyrox/repl/components/TextInput.js'
 import { useTerminalSize } from '@anthropic/ink'
 import { type KeyboardEvent, setClipboard, Box, Link, Text } from '@anthropic/ink'
-import { OAuthService } from '@claude-code-how-works/provider/oauth/index.js'
-import { LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS } from '@claude-code-how-works/provider/oauthConstants.js'
-import { saveOAuthTokensIfNeeded } from '@claude-code-how-works/provider/authAlias.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+import { OAuthService } from '@thyrox/provider/oauth/index.js'
+import { LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS } from '@thyrox/provider/oauthConstants.js'
+import { saveOAuthTokensIfNeeded } from '@thyrox/provider/authAlias.js'
+import { logError } from '@thyrox/local-observability/log.js'
 
 interface OAuthFlowStepProps {
   onSuccess: (token: string) => void

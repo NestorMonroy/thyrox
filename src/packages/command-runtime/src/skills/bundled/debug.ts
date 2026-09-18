@@ -1,9 +1,9 @@
 import { open, stat } from 'fs/promises'
-import { CLAUDE_CODE_GUIDE_AGENT_TYPE } from '@claude-code-how-works/tool-registry/tools/AgentTool/built-in/claudeCodeGuideAgent.js'
-import { getSettingsFilePathForSource } from '@claude-code-how-works/config/settings'
-import { enableDebugLogging, getDebugLogPath } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage, isENOENT } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { formatFileSize } from '@claude-code-how-works/output/formatters'
+import { CLAUDE_CODE_GUIDE_AGENT_TYPE } from '@thyrox/tool-registry/tools/AgentTool/built-in/claudeCodeGuideAgent.js'
+import { getSettingsFilePathForSource } from '@thyrox/config/settings'
+import { enableDebugLogging, getDebugLogPath } from '@thyrox/local-observability/debug.js'
+import { errorMessage, isENOENT } from '@thyrox/local-observability/errorHelpers.js'
+import { formatFileSize } from '@thyrox/output/formatters'
 import { registerBundledSkill } from '../bundledSkills.js'
 
 const DEFAULT_DEBUG_LINES_READ = 20

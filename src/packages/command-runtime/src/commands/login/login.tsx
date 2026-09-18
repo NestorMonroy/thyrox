@@ -1,28 +1,28 @@
 import { feature } from 'bun:bundle'
 import * as React from 'react'
-import { resetCostState } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { resetCostState } from '@thyrox/app-host/bootstrap/state.js'
 import {
   clearTrustedDeviceToken,
   enrollTrustedDevice,
-} from '@claude-code-how-works/bridge/trustedDevice.js'
+} from '@thyrox/bridge/trustedDevice.js'
 import type { LocalJSXCommandContext } from '../../runtime.js'
-import { ConfigurableShortcutHint } from '@claude-code-how-works/repl/components/ConfigurableShortcutHint.js'
-import { ConsoleOAuthFlow } from '@claude-code-how-works/repl/components/ConsoleOAuthFlow.js'
+import { ConfigurableShortcutHint } from '@thyrox/repl/components/ConfigurableShortcutHint.js'
+import { ConsoleOAuthFlow } from '@thyrox/repl/components/ConsoleOAuthFlow.js'
 import { Dialog } from '@anthropic/ink'
-import { useMainLoopModel } from '@claude-code-how-works/repl/hooks/useMainLoopModel.js'
+import { useMainLoopModel } from '@thyrox/repl/hooks/useMainLoopModel.js'
 import { Text } from '@anthropic/ink'
-import { refreshGrowthBookAfterAuthChange } from '@claude-code-how-works/config/feature-flags'
-import { refreshPolicyLimits } from '@claude-code-how-works/provider/policyLimits/index.js'
-import { refreshRemoteManagedSettings } from '@claude-code-how-works/config/remote'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
-import { stripSignatureBlocks } from '@claude-code-how-works/agent/messages.js'
+import { refreshGrowthBookAfterAuthChange } from '@thyrox/config/feature-flags'
+import { refreshPolicyLimits } from '@thyrox/provider/policyLimits/index.js'
+import { refreshRemoteManagedSettings } from '@thyrox/config/remote'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
+import { stripSignatureBlocks } from '@thyrox/agent/messages.js'
 import {
   checkAndDisableAutoModeIfNeeded,
   checkAndDisableBypassPermissionsIfNeeded,
   resetAutoModeGateCheck,
   resetBypassPermissionsCheck,
-} from '@claude-code-how-works/permission/bypassPermissionsKillswitch.js'
-import { resetUserCache } from '@claude-code-how-works/provider/user.js'
+} from '@thyrox/permission/bypassPermissionsKillswitch.js'
+import { resetUserCache } from '@thyrox/provider/user.js'
 
 export async function call(
   onDone: LocalJSXCommandOnDone,
@@ -75,9 +75,9 @@ export async function call(
           // This runs after connections are saved so the check is accurate.
           try {
             const { updateSettingsForSource, getSettingsForSource } =
-              await import('@claude-code-how-works/config/settings')
+              await import('@thyrox/config/settings')
             const { getEnabledConnections, unpackModelId } = await import(
-              '@claude-code-how-works/provider/connections.js'
+              '@thyrox/provider/connections.js'
             )
             const mlm = (getSettingsForSource('userSettings') as {
               mainLoopModel?: string

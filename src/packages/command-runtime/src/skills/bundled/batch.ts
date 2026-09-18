@@ -1,9 +1,9 @@
-import { AGENT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/AgentTool/constants.js'
-import { ASK_USER_QUESTION_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/prompt.js'
-import { ENTER_PLAN_MODE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/EnterPlanModeTool/constants.js'
-import { EXIT_PLAN_MODE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/ExitPlanModeTool/constants.js'
-import { SKILL_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/SkillTool/constants.js'
-import { getIsGit } from '@claude-code-how-works/storage/git.js'
+import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
+import { ASK_USER_QUESTION_TOOL_NAME } from '@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js'
+import { ENTER_PLAN_MODE_TOOL_NAME } from '@thyrox/tool-registry/tools/EnterPlanModeTool/constants.js'
+import { EXIT_PLAN_MODE_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
+import { SKILL_TOOL_NAME } from '@thyrox/tool-registry/tools/SkillTool/constants.js'
+import { getIsGit } from '@thyrox/storage/git.js'
 import { registerBundledSkill } from '../bundledSkills.js'
 
 const MIN_AGENTS = 5

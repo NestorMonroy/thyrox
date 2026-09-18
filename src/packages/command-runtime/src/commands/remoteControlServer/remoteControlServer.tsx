@@ -2,17 +2,17 @@ import { spawn, type ChildProcess } from 'child_process';
 import { resolve } from 'path';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { getBridgeDisabledReason, isBridgeEnabled } from '@claude-code-how-works/bridge/bridgeEnabled.js';
-import { getBridgeAccessToken } from '@claude-code-how-works/bridge/bridgeConfig.js';
-import { BRIDGE_LOGIN_INSTRUCTION } from '@claude-code-how-works/bridge/types.js';
+import { getBridgeDisabledReason, isBridgeEnabled } from '@thyrox/bridge/bridgeEnabled.js';
+import { getBridgeAccessToken } from '@thyrox/bridge/bridgeConfig.js';
+import { BRIDGE_LOGIN_INSTRUCTION } from '@thyrox/bridge/types.js';
 import { Dialog } from '@anthropic/ink';
 import { ListItem } from '@anthropic/ink';
-import { useRegisterOverlay } from '@claude-code-how-works/repl/overlayContext.js';
+import { useRegisterOverlay } from '@thyrox/repl/overlayContext.js';
 import { Box, Text } from '@anthropic/ink';
 import { useKeybindings } from '@anthropic/ink/keybindings';
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js';
-import type { LocalJSXCommandContext, LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js';
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js';
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js';
+import type { LocalJSXCommandContext, LocalJSXCommandOnDone } from '@thyrox/agent/command.js';
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js';
 
 type ServerStatus = 'stopped' | 'starting' | 'running' | 'error';
 

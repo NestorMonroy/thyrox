@@ -3,7 +3,7 @@ import React from 'react'
 import type {
   LocalJSXCommandCall,
   LocalJSXCommandOnDone,
-} from '@claude-code-how-works/agent/command.js'
+} from '@thyrox/agent/command.js'
 import {
   checkOverageGate,
   confirmOverage,

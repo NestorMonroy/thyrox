@@ -1,6 +1,6 @@
 import { toJSONSchema } from 'zod/v4'
-import { SettingsSchema } from '@claude-code-how-works/config/types'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { SettingsSchema } from '@thyrox/config/types'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { registerBundledSkill } from '../bundledSkills.js'
 
 /**

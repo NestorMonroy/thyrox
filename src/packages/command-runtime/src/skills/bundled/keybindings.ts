@@ -1,17 +1,17 @@
-import { DEFAULT_BINDINGS } from '@claude-code-how-works/repl/keybindings/defaultBindings.js'
-import { isKeybindingCustomizationEnabled } from '@claude-code-how-works/repl/keybindings/loadUserBindings.js'
+import { DEFAULT_BINDINGS } from '@thyrox/repl/keybindings/defaultBindings.js'
+import { isKeybindingCustomizationEnabled } from '@thyrox/repl/keybindings/loadUserBindings.js'
 import {
   MACOS_RESERVED,
   NON_REBINDABLE,
   TERMINAL_RESERVED,
-} from '@claude-code-how-works/repl/keybindings/reservedShortcuts.js'
-import type { KeybindingsSchemaType } from '@claude-code-how-works/repl/keybindings/schema.js'
+} from '@thyrox/repl/keybindings/reservedShortcuts.js'
+import type { KeybindingsSchemaType } from '@thyrox/repl/keybindings/schema.js'
 import {
   KEYBINDING_ACTIONS,
   KEYBINDING_CONTEXT_DESCRIPTIONS,
   KEYBINDING_CONTEXTS,
-} from '@claude-code-how-works/repl/keybindings/schema.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/repl/keybindings/schema.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { registerBundledSkill } from '../bundledSkills.js'
 
 /**

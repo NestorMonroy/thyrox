@@ -11,7 +11,7 @@ import { describe, expect, test, beforeEach, mock } from 'bun:test'
 // later tasks won't break this file.
 let mockConfig: { powerupsUnlocked?: string[] } = {}
 // MOCK_FULL_REPLACE: screen test isolates GlobalConfig persistence — same pattern as state.test; full-replace avoids disk I/O.
-mock.module('@claude-code-how-works/config', () => ({
+mock.module('@thyrox/config', () => ({
   getGlobalConfig: () => mockConfig,
   saveGlobalConfig: (updater: (c: any) => any) => {
     mockConfig = updater(mockConfig)
@@ -19,7 +19,7 @@ mock.module('@claude-code-how-works/config', () => ({
 }))
 
 // MOCK_FULL_REPLACE: telemetry no-op for tests; logEvent is the only surface used.
-mock.module('@claude-code-how-works/local-observability', () => ({
+mock.module('@thyrox/local-observability', () => ({
   logEvent: () => {},
 }))
 
@@ -28,7 +28,7 @@ mock.module('@claude-code-how-works/local-observability', () => ({
 // that PowerupScreen *constructs* the right options and exposes the
 // `onChange` / `onCancel` callbacks.
 // MOCK_FULL_REPLACE: Select stub avoids needing the real Ink keyboard context, which bun:test cannot provide.
-mock.module('@claude-code-how-works/repl/components/CustomSelect/index.js', () => ({
+mock.module('@thyrox/repl/components/CustomSelect/index.js', () => ({
   Select: (props: unknown) => ({ props, _stub: 'select' }),
 }))
 

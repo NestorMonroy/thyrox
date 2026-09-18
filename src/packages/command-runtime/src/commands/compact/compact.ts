@@ -1,10 +1,10 @@
 import { feature } from 'bun:bundle'
 import chalk from 'chalk'
-import { markPostCompaction } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getSystemPrompt } from '@claude-code-how-works/agent/prompts.js'
-import { getSystemContext, getUserContext } from '@claude-code-how-works/provider/context.js'
-import { getShortcutDisplay } from '@claude-code-how-works/repl/keybindings/shortcutFormat.js'
-import { notifyCompaction } from '@claude-code-how-works/provider/promptCacheBreakDetection.js'
+import { markPostCompaction } from '@thyrox/app-host/bootstrap/state.js'
+import { getSystemPrompt } from '@thyrox/agent/prompts.js'
+import { getSystemContext, getUserContext } from '@thyrox/provider/context.js'
+import { getShortcutDisplay } from '@thyrox/repl/keybindings/shortcutFormat.js'
+import { notifyCompaction } from '@thyrox/provider/promptCacheBreakDetection.js'
 import {
   type CompactionResult,
   compactConversation,
@@ -12,28 +12,28 @@ import {
   ERROR_MESSAGE_NOT_ENOUGH_MESSAGES,
   ERROR_MESSAGE_USER_ABORT,
   mergeHookInstructions,
-} from '@claude-code-how-works/agent/compaction/compact.js'
-import { suppressCompactWarning } from '@claude-code-how-works/agent/compaction/compactWarningState.js'
-import { microcompactMessages } from '@claude-code-how-works/agent/compaction/microCompact.js'
-import { runPostCompactCleanup } from '@claude-code-how-works/agent/compaction/postCompactCleanup.js'
-import { trySessionMemoryCompaction } from '@claude-code-how-works/agent/compaction/sessionMemoryCompact.js'
-import { setLastSummarizedMessageId } from '@claude-code-how-works/agent/SessionMemory/sessionMemoryUtils.js'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { LocalCommandCall } from '@claude-code-how-works/agent/command.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
-import { hasExactErrorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { executePreCompactHooks } from '@claude-code-how-works/agent/hooks.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { getMessagesAfterCompactBoundary } from '@claude-code-how-works/agent/messages.js'
-import { getUpgradeMessage } from '@claude-code-how-works/provider/model/contextWindowUpgradeCheck.js'
+} from '@thyrox/agent/compaction/compact.js'
+import { suppressCompactWarning } from '@thyrox/agent/compaction/compactWarningState.js'
+import { microcompactMessages } from '@thyrox/agent/compaction/microCompact.js'
+import { runPostCompactCleanup } from '@thyrox/agent/compaction/postCompactCleanup.js'
+import { trySessionMemoryCompaction } from '@thyrox/agent/compaction/sessionMemoryCompact.js'
+import { setLastSummarizedMessageId } from '@thyrox/agent/SessionMemory/sessionMemoryUtils.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { LocalCommandCall } from '@thyrox/agent/command.js'
+import type { Message } from '@thyrox/agent/messageShapes'
+import { hasExactErrorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { executePreCompactHooks } from '@thyrox/agent/hooks.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { getMessagesAfterCompactBoundary } from '@thyrox/agent/messages.js'
+import { getUpgradeMessage } from '@thyrox/provider/model/contextWindowUpgradeCheck.js'
 import {
   buildEffectiveSystemPrompt,
   type SystemPrompt,
-} from '@claude-code-how-works/provider/systemPrompt.js'
+} from '@thyrox/provider/systemPrompt.js'
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const reactiveCompact = feature('REACTIVE_COMPACT')
-  ? (require('@claude-code-how-works/agent/compaction/reactiveCompact.js') as typeof import('@claude-code-how-works/agent/compaction/reactiveCompact.js'))
+  ? (require('@thyrox/agent/compaction/reactiveCompact.js') as typeof import('@thyrox/agent/compaction/reactiveCompact.js'))
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 

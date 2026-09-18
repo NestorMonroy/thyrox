@@ -1,4 +1,4 @@
-import { getPluginErrorMessage, type PluginError } from '@claude-code-how-works/config/plugin/types'
+import { getPluginErrorMessage, type PluginError } from '@thyrox/config/plugin/types'
 
 export function formatErrorMessage(error: PluginError): string {
   switch (error.type) {

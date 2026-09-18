@@ -1,5 +1,5 @@
 import type { Command } from '../../runtime.js'
-import { env } from '@claude-code-how-works/config/env/paths'
+import { env } from '@thyrox/config/env/paths'
 
 // Terminals that natively support CSI u / Kitty keyboard protocol
 const NATIVE_CSIU_TERMINALS: Record<string, string> = {
@@ -17,7 +17,7 @@ const terminalSetup = {
       ? 'Enable Option+Enter key binding for newlines and visual bell'
       : 'Install Shift+Enter key binding for newlines',
   isHidden: env.terminal !== null && env.terminal in NATIVE_CSIU_TERMINALS,
-  load: () => import('@claude-code-how-works/repl/terminalSetup.js'),
+  load: () => import('@thyrox/repl/terminalSetup.js'),
 } satisfies Command
 
 export default terminalSetup

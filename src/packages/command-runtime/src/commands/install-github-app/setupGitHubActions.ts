@@ -1,17 +1,17 @@
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { saveGlobalConfig } from '@claude-code-how-works/config'
+} from '@thyrox/local-observability'
+import { saveGlobalConfig } from '@thyrox/config'
 import {
   CODE_REVIEW_PLUGIN_WORKFLOW_CONTENT,
   PR_BODY,
   PR_TITLE,
   WORKFLOW_CONTENT,
-} from '@claude-code-how-works/agent/constants/github-app.js'
-import { openBrowser } from '@claude-code-how-works/storage/browser.js'
-import { execFileNoThrow } from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+} from '@thyrox/agent/constants/github-app.js'
+import { openBrowser } from '@thyrox/storage/browser.js'
+import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
+import { logError } from '@thyrox/local-observability/log.js'
 import type { Workflow } from './types.js'
 
 async function createWorkflowFile(

@@ -2,21 +2,21 @@ import chalk from 'chalk'
 import type { UUID } from 'crypto'
 import figures from 'figures'
 import * as React from 'react'
-import { getOriginalCwd, getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getOriginalCwd, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import type { CommandResultDisplay, ResumeEntrypoint } from '../../runtime.js'
-import { LogSelector } from '@claude-code-how-works/repl/components/LogSelector.js'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
-import { Spinner } from '@claude-code-how-works/repl/components/Spinner.js'
-import { useIsInsideModal } from '@claude-code-how-works/repl/modalContext.js'
+import { LogSelector } from '@thyrox/repl/components/LogSelector.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
+import { Spinner } from '@thyrox/repl/components/Spinner.js'
+import { useIsInsideModal } from '@thyrox/repl/modalContext.js'
 import { useTerminalSize } from '@anthropic/ink'
 import { setClipboard } from '@anthropic/ink'
 import { Box, Text } from '@anthropic/ink'
-import type { LocalJSXCommandCall } from '@claude-code-how-works/agent/command.js'
-import type { LogOption } from '@claude-code-how-works/agent/logsTypes.js'
-import { agenticSessionSearch } from '@claude-code-how-works/agent/sessionTools/agenticSessionSearch.js'
-import { checkCrossProjectResume } from '@claude-code-how-works/agent/sessionTools/crossProjectResume.js'
-import { getWorktreePaths } from '@claude-code-how-works/storage/getWorktreePaths.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+import type { LocalJSXCommandCall } from '@thyrox/agent/command.js'
+import type { LogOption } from '@thyrox/agent/logsTypes.js'
+import { agenticSessionSearch } from '@thyrox/agent/sessionTools/agenticSessionSearch.js'
+import { checkCrossProjectResume } from '@thyrox/agent/sessionTools/crossProjectResume.js'
+import { getWorktreePaths } from '@thyrox/storage/getWorktreePaths.js'
+import { logError } from '@thyrox/local-observability/log.js'
 import {
   getLastSessionLog,
   getSessionIdFromLog,
@@ -26,8 +26,8 @@ import {
   loadFullLog,
   loadSameRepoMessageLogs,
   searchSessionsByCustomTitle,
-} from '@claude-code-how-works/storage/sessionStorage.js'
-import { validateUuid } from '@claude-code-how-works/agent/uuid.js'
+} from '@thyrox/storage/sessionStorage.js'
+import { validateUuid } from '@thyrox/agent/uuid.js'
 
 type ResumeResult =
   | { resultType: 'sessionNotFound'; arg: string }

@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { ConfigurableShortcutHint } from '@claude-code-how-works/repl/components/ConfigurableShortcutHint.js'
+} from '@thyrox/local-observability'
+import { ConfigurableShortcutHint } from '@thyrox/repl/components/ConfigurableShortcutHint.js'
 import { Byline, KeyboardShortcutHint } from '@anthropic/ink'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- useInput needed for marketplace-specific u/r shortcuts and y/n confirmation not in keybinding schema
 import { Box, Text, useInput } from '@anthropic/ink'
@@ -13,31 +13,31 @@ import {
   useKeybinding,
   useKeybindings,
 } from '@anthropic/ink/keybindings'
-import type { LoadedPlugin } from '@claude-code-how-works/config/plugin/types'
-import { count } from '@claude-code-how-works/tool-registry/utils/array.js'
-import { shouldSkipPluginAutoupdate } from '@claude-code-how-works/config'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { clearAllCaches } from '@claude-code-how-works/config/plugin/cacheUtils'
+import type { LoadedPlugin } from '@thyrox/config/plugin/types'
+import { count } from '@thyrox/tool-registry/utils/array.js'
+import { shouldSkipPluginAutoupdate } from '@thyrox/config'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { clearAllCaches } from '@thyrox/config/plugin/cacheUtils'
 import {
   createPluginId,
   formatMarketplaceLoadingErrors,
   getMarketplaceSourceDisplay,
   loadMarketplacesWithGracefulDegradation,
-} from '@claude-code-how-works/config/plugin/marketplaceHelpers'
+} from '@thyrox/config/plugin/marketplaceHelpers'
 import {
   loadKnownMarketplacesConfig,
   refreshMarketplace,
   removeMarketplaceSource,
   setMarketplaceAutoUpdate,
-} from '@claude-code-how-works/config/plugin/marketplaceManager'
-import { updatePluginsForMarketplaces } from '@claude-code-how-works/config/plugin/pluginAutoupdate'
-import { loadAllPlugins } from '@claude-code-how-works/config/plugin/pluginLoader'
-import { isMarketplaceAutoUpdate } from '@claude-code-how-works/config/plugin/schemas'
+} from '@thyrox/config/plugin/marketplaceManager'
+import { updatePluginsForMarketplaces } from '@thyrox/config/plugin/pluginAutoupdate'
+import { loadAllPlugins } from '@thyrox/config/plugin/pluginLoader'
+import { isMarketplaceAutoUpdate } from '@thyrox/config/plugin/schemas'
 import {
   getSettingsForSource,
   updateSettingsForSource,
-} from '@claude-code-how-works/config/settings'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
+} from '@thyrox/config/settings'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
 import type { ViewState } from './types.js'
 
 type Props = {

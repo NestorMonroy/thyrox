@@ -1,21 +1,21 @@
 import type { UUID } from 'crypto'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import {
   getBridgeBaseUrlOverride,
   getBridgeTokenOverride,
-} from '@claude-code-how-works/bridge/bridgeConfig.js'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
+} from '@thyrox/bridge/bridgeConfig.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 import type {
   LocalJSXCommandContext,
   LocalJSXCommandOnDone,
-} from '@claude-code-how-works/agent/command.js'
-import { getMessagesAfterCompactBoundary } from '@claude-code-how-works/agent/messages.js'
+} from '@thyrox/agent/command.js'
+import { getMessagesAfterCompactBoundary } from '@thyrox/agent/messages.js'
 import {
   getTranscriptPath,
   saveAgentName,
   saveCustomTitle,
-} from '@claude-code-how-works/storage/sessionStorage.js'
-import { isTeammate } from '@claude-code-how-works/swarm/teammateState.js'
+} from '@thyrox/storage/sessionStorage.js'
+import { isTeammate } from '@thyrox/swarm/teammateState.js'
 import { generateSessionName } from './generateSessionName.js'
 
 export async function call(
@@ -63,7 +63,7 @@ export async function call(
   const bridgeSessionId = appState.replBridgeSessionId
   if (bridgeSessionId) {
     const tokenOverride = getBridgeTokenOverride()
-    void import('@claude-code-how-works/bridge/createSession.js').then(
+    void import('@thyrox/bridge/createSession.js').then(
       ({ updateBridgeSessionTitle }) =>
         updateBridgeSessionTitle(bridgeSessionId, newName, {
           baseUrl: getBridgeBaseUrlOverride(),

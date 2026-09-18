@@ -1,5 +1,5 @@
 import type { Command } from '../../runtime.js'
-import { isConsumerSubscriber } from '@claude-code-how-works/provider/authAlias.js'
+import { isConsumerSubscriber } from '@thyrox/provider/authAlias.js'
 
 const privacySettings = {
   type: 'local-jsx',

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type { LocalJSXCommandContext } from '../../runtime.js'
-import { Settings } from '@claude-code-how-works/repl/components/Settings/Settings.js'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+import { Settings } from '@thyrox/repl/components/Settings/Settings.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 
 export async function call(
   onDone: LocalJSXCommandOnDone,

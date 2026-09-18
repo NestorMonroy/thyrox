@@ -1,4 +1,4 @@
-import { isForkSubagentEnabled } from '@claude-code-how-works/tool-registry/tools/AgentTool/forkSubagent.js'
+import { isForkSubagentEnabled } from '@thyrox/tool-registry/tools/AgentTool/forkSubagent.js'
 import type { Command } from '../../runtime.js'
 
 /**

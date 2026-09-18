@@ -7,11 +7,11 @@ import {
   useKeybinding,
   useKeybindings,
 } from '@anthropic/ink/keybindings'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import type {
   PluginOptionSchema,
   PluginOptionValues,
-} from '@claude-code-how-works/config/plugin/pluginOptionsStorage'
+} from '@thyrox/config/plugin/pluginOptionsStorage'
 
 /**
  * Build the onSave payload from collected string inputs.

@@ -2,10 +2,10 @@ import figures from 'figures'
 import * as React from 'react'
 import { useEffect } from 'react'
 import { Box, Text } from '@anthropic/ink'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { validateManifest } from '@claude-code-how-works/config/plugin/validatePlugin'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { validateManifest } from '@thyrox/config/plugin/validatePlugin'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
 
 type Props = {
   onComplete: (result?: string) => void

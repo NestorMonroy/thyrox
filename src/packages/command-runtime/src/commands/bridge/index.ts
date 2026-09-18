@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import { isBridgeEnabled } from '@claude-code-how-works/bridge/bridgeEnabled.js'
+import { isBridgeEnabled } from '@thyrox/bridge/bridgeEnabled.js'
 import type { Command } from '../../runtime.js'
 
 function isEnabled(): boolean {

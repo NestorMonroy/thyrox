@@ -5,9 +5,9 @@
  */
 
 import * as React from 'react'
-import { ConfigurableShortcutHint } from '@claude-code-how-works/repl/components/ConfigurableShortcutHint.js'
+import { ConfigurableShortcutHint } from '@thyrox/repl/components/ConfigurableShortcutHint.js'
 import { Box, Byline, Text } from '@anthropic/ink'
-import type { PluginMarketplaceEntry } from '@claude-code-how-works/config/plugin/schemas'
+import type { PluginMarketplaceEntry } from '@thyrox/config/plugin/schemas'
 
 /**
  * Represents a plugin available for installation from a marketplace

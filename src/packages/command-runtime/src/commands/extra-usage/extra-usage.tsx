@@ -1,6 +1,6 @@
 import React from 'react'
 import type { LocalJSXCommandContext } from '../../runtime.js'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import { Login } from '../login/login.js'
 import { runExtraUsage } from './extra-usage-core.js'
 

@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { useState } from 'react'
 import { Box, Byline, KeyboardShortcutHint, Text } from '@anthropic/ink'
-import { Select } from '@claude-code-how-works/repl/components/CustomSelect/index.js'
+import { Select } from '@thyrox/repl/components/CustomSelect/index.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+} from '@thyrox/local-observability'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import { ProgressBar } from '@anthropic/ink'
 import { CelebrationShimmer } from './CelebrationShimmer.js'
 import { ALL_LESSONS } from './lessons/index.js'

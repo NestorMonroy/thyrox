@@ -2,22 +2,22 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import React, { useEffect, useState } from 'react'
 import type { CommandResultDisplay } from '../../runtime.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import { StatusIcon } from '@anthropic/ink'
 import { Box, wrappedRender as render, Text } from '@anthropic/ink'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { env } from '@claude-code-how-works/config/env/paths'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { env } from '@thyrox/config/env/paths'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import {
   checkInstall,
   cleanupNpmInstallations,
   cleanupShellAliases,
   installLatest,
-} from '@claude-code-how-works/updater/nativeInstaller/index.js'
+} from '@thyrox/updater/nativeInstaller/index.js'
 import {
   getInitialSettings,
   updateSettingsForSource,
-} from '@claude-code-how-works/config/settings'
+} from '@thyrox/config/settings'
 
 interface InstallProps {
   onDone: (result: string, options?: { display?: CommandResultDisplay }) => void

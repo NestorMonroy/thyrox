@@ -1,11 +1,11 @@
 import * as React from 'react'
-import { useMainLoopModel } from '@claude-code-how-works/repl/hooks/useMainLoopModel.js'
+import { useMainLoopModel } from '@thyrox/repl/hooks/useMainLoopModel.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { useAppState, useSetAppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+} from '@thyrox/local-observability'
+import { useAppState, useSetAppState } from '@thyrox/app-host/state/AppState.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import {
   type EffortLevel,
   type EffortValue,
@@ -14,10 +14,10 @@ import {
   getEffortValueDescription,
   isEffortLevel,
   toPersistableEffort,
-} from '@claude-code-how-works/agent/effort.js'
-import { updateSettingsForSource } from '@claude-code-how-works/config/settings'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
-import { EffortPicker } from '@claude-code-how-works/repl/components/EffortPicker.js'
+} from '@thyrox/agent/effort.js'
+import { updateSettingsForSource } from '@thyrox/config/settings'
+import { readEnv } from '@thyrox/config/env/utils'
+import { EffortPicker } from '@thyrox/repl/components/EffortPicker.js'
 
 const COMMON_HELP_ARGS = ['help', '-h', '--help']
 

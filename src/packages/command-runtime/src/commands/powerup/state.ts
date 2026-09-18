@@ -1,4 +1,4 @@
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { ALL_LESSONS } from './lessons/index.js'
 
 /**

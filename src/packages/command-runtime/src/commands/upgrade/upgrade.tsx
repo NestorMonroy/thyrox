@@ -1,13 +1,13 @@
 import * as React from 'react'
 import type { LocalJSXCommandContext } from '../../runtime.js'
-import { getOauthProfileFromOauthToken } from '@claude-code-how-works/provider/oauth/getOauthProfile.js'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+import { getOauthProfileFromOauthToken } from '@thyrox/provider/oauth/getOauthProfile.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import {
   getClaudeAIOAuthTokens,
   isClaudeAISubscriber,
-} from '@claude-code-how-works/provider/authAlias.js'
-import { openBrowser } from '@claude-code-how-works/storage/browser.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+} from '@thyrox/provider/authAlias.js'
+import { openBrowser } from '@thyrox/storage/browser.js'
+import { logError } from '@thyrox/local-observability/log.js'
 import { Login } from '../login/login.js'
 
 export async function call(

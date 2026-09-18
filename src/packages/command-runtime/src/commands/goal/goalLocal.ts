@@ -16,12 +16,12 @@
 import {
   getIsNonInteractiveSession,
   getSessionId,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { checkHasTrustDialogAccepted } from '@claude-code-how-works/config'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { checkHasTrustDialogAccepted } from '@thyrox/config'
 import type {
   LocalCommandCall,
   LocalCommandResult,
-} from '@claude-code-how-works/agent/command.js'
+} from '@thyrox/agent/command.js'
 import {
   addGoalStopHook,
   buildGoalMetaMessage,
@@ -32,11 +32,11 @@ import {
   isGoalClearKeyword,
   pauseGoalStopHook,
   resumeGoalStopHook,
-} from '@claude-code-how-works/agent/goalStopHook.js'
+} from '@thyrox/agent/goalStopHook.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 
 function plural(n: number, word: string): string {
   return n === 1 ? word : `${word}s`

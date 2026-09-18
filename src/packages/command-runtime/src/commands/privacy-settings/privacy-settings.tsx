@@ -3,17 +3,17 @@ import {
   type GroveDecision,
   GroveDialog,
   PrivacySettingsDialog,
-} from '@claude-code-how-works/repl/components/grove/Grove.js'
+} from '@thyrox/repl/components/grove/Grove.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   getGroveNoticeConfig,
   getGroveSettings,
   isQualifiedForGrove,
-} from '@claude-code-how-works/provider/grove.js'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+} from '@thyrox/provider/grove.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 
 const FALLBACK_MESSAGE =
   'Review and manage your privacy settings at https://claude.ai/settings/data-privacy-controls'

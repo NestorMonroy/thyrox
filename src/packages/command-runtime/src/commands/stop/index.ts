@@ -1,4 +1,4 @@
-import { isBgSession } from '@claude-code-how-works/agent/concurrentSessions.js'
+import { isBgSession } from '@thyrox/agent/concurrentSessions.js'
 import type { Command } from '../../runtime.js'
 
 /**

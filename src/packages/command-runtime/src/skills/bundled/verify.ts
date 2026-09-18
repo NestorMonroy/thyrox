@@ -1,4 +1,4 @@
-import { parseFrontmatter } from '@claude-code-how-works/agent/frontmatterParser.js'
+import { parseFrontmatter } from '@thyrox/agent/frontmatterParser.js'
 import { registerBundledSkill } from '../bundledSkills.js'
 import { SKILL_FILES, SKILL_MD } from './verifyContent.js'
 

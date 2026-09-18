@@ -1,4 +1,4 @@
-import { getIsRemoteMode } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'
 import type { Command } from '../../runtime.js'
 
 const session = {

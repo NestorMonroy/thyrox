@@ -5,19 +5,19 @@ import type {
   LocalJSXCommandContext,
 } from '../../runtime.js'
 import { Dialog } from '@anthropic/ink'
-import { FastIcon, getFastIconString } from '@claude-code-how-works/repl/components/FastIcon.js'
+import { FastIcon, getFastIconString } from '@thyrox/repl/components/FastIcon.js'
 import { Box, Link, Text } from '@anthropic/ink'
 import { useKeybindings } from '@anthropic/ink/keybindings'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   type AppState,
   useAppState,
   useSetAppState,
-} from '@claude-code-how-works/app-host/state/AppState.js'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+} from '@thyrox/app-host/state/AppState.js'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import {
   clearFastModeCooldown,
   FAST_MODE_MODEL_DISPLAY,
@@ -27,10 +27,10 @@ import {
   isFastModeEnabled,
   isFastModeSupportedByModel,
   prefetchFastModeStatus,
-} from '@claude-code-how-works/provider/fastMode.js'
-import { formatDuration } from '@claude-code-how-works/output/formatters'
-import { formatModelPricing, getOpus46CostTier } from '@claude-code-how-works/provider/modelCost.js'
-import { updateSettingsForSource } from '@claude-code-how-works/config/settings'
+} from '@thyrox/provider/fastMode.js'
+import { formatDuration } from '@thyrox/output/formatters'
+import { formatModelPricing, getOpus46CostTier } from '@thyrox/provider/modelCost.js'
+import { updateSettingsForSource } from '@thyrox/config/settings'
 
 function applyFastMode(
   enable: boolean,

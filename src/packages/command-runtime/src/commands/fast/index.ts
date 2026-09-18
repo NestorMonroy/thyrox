@@ -2,8 +2,8 @@ import type { Command } from '../../runtime.js'
 import {
   FAST_MODE_MODEL_DISPLAY,
   isFastModeEnabled,
-} from '@claude-code-how-works/provider/fastMode.js'
-import { shouldInferenceConfigCommandBeImmediate } from '@claude-code-how-works/shell/immediateCommand.js'
+} from '@thyrox/provider/fastMode.js'
+import { shouldInferenceConfigCommandBeImmediate } from '@thyrox/shell/immediateCommand.js'
 
 const fast = {
   type: 'local-jsx',

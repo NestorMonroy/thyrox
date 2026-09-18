@@ -1,15 +1,15 @@
-import { normalizeLanguageForSTT } from '@claude-code-how-works/voice/hooks/useVoice.js'
-import { getShortcutDisplay } from '@claude-code-how-works/repl/keybindings/shortcutFormat.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { LocalCommandCall } from '@claude-code-how-works/agent/command.js'
-import { isAnthropicAuthEnabled } from '@claude-code-how-works/provider/authAlias.js'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
-import { settingsChangeDetector } from '@claude-code-how-works/config/changeDetector'
+import { normalizeLanguageForSTT } from '@thyrox/voice/hooks/useVoice.js'
+import { getShortcutDisplay } from '@thyrox/repl/keybindings/shortcutFormat.js'
+import { logEvent } from '@thyrox/local-observability'
+import type { LocalCommandCall } from '@thyrox/agent/command.js'
+import { isAnthropicAuthEnabled } from '@thyrox/provider/authAlias.js'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { settingsChangeDetector } from '@thyrox/config/changeDetector'
 import {
   getInitialSettings,
   updateSettingsForSource,
-} from '@claude-code-how-works/config/settings'
-import { isVoiceModeEnabled } from '@claude-code-how-works/voice/voiceModeEnabled.js'
+} from '@thyrox/config/settings'
+import { isVoiceModeEnabled } from '@thyrox/voice/voiceModeEnabled.js'
 
 const LANG_HINT_MAX_SHOWS = 2
 
@@ -56,9 +56,9 @@ export const call: LocalCommandCall = async () => {
 
   // Toggle ON — run pre-flight checks first
   const { isVoiceStreamAvailable } = await import(
-    '@claude-code-how-works/voice/voiceStreamSTT.js'
+    '@thyrox/voice/voiceStreamSTT.js'
   )
-  const { checkRecordingAvailability } = await import('@claude-code-how-works/voice/voice.js')
+  const { checkRecordingAvailability } = await import('@thyrox/voice/voice.js')
 
   // Check recording availability (microphone access)
   const recording = await checkRecordingAvailability()
@@ -81,7 +81,7 @@ export const call: LocalCommandCall = async () => {
 
   // Check for recording tools
   const { checkVoiceDependencies, requestMicrophonePermission } = await import(
-    '@claude-code-how-works/voice/voice.js'
+    '@thyrox/voice/voice.js'
   )
   const deps = await checkVoiceDependencies()
   if (!deps.available) {
