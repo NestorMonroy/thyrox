@@ -40,36 +40,36 @@ import mapValues from 'lodash-es/mapValues.js'
 import memoize from 'lodash-es/memoize.js'
 import zipObject from 'lodash-es/zipObject.js'
 import pMap from 'p-map'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { listMcpRoots, registerRootsClient } from './roots.js'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
-import { getOauthConfig } from '@claude-code-how-works/provider/oauthConstants'
-import { PRODUCT_URL } from '@claude-code-how-works/config/product'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import type { Command } from '@thyrox/command-runtime/runtime'
+import { getOauthConfig } from '@thyrox/provider/oauthConstants'
+import { PRODUCT_URL } from '@thyrox/config/product'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import type { AppState } from './appStateHooks.js'
 import {
   type Tool,
   type ToolCallProgress,
   toolMatchesName,
-} from '@claude-code-how-works/tool-registry/Tool.js'
-import { ListMcpResourcesTool } from '@claude-code-how-works/tool-registry/tools/ListMcpResourcesTool/ListMcpResourcesTool.js'
-import { type MCPProgress, MCPTool } from '@claude-code-how-works/tool-registry/tools/MCPTool/MCPTool.js'
-import { createMcpAuthTool } from '@claude-code-how-works/tool-registry/tools/McpAuthTool/McpAuthTool.js'
-import { ReadMcpResourceTool } from '@claude-code-how-works/tool-registry/tools/ReadMcpResourceTool/ReadMcpResourceTool.js'
-import { createAbortController } from '@claude-code-how-works/agent/abortController.js'
-import { count } from '@claude-code-how-works/tool-registry/utils/array.js'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { detectCodeIndexingFromMcpServerName } from '@claude-code-how-works/tool-registry/codeIndexing.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isEnvDefinedFalsy, isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+} from '@thyrox/tool-registry/Tool.js'
+import { ListMcpResourcesTool } from '@thyrox/tool-registry/tools/ListMcpResourcesTool/ListMcpResourcesTool.js'
+import { type MCPProgress, MCPTool } from '@thyrox/tool-registry/tools/MCPTool/MCPTool.js'
+import { createMcpAuthTool } from '@thyrox/tool-registry/tools/McpAuthTool/McpAuthTool.js'
+import { ReadMcpResourceTool } from '@thyrox/tool-registry/tools/ReadMcpResourceTool/ReadMcpResourceTool.js'
+import { createAbortController } from '@thyrox/agent/abortController.js'
+import { count } from '@thyrox/tool-registry/utils/array.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { detectCodeIndexingFromMcpServerName } from '@thyrox/tool-registry/codeIndexing.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvDefinedFalsy, isEnvTruthy } from '@thyrox/config/env/utils'
 import {
   errorMessage,
   TelemetrySafeError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-} from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getMCPUserAgent } from '@claude-code-how-works/provider/http.js'
-import { maybeNotifyIDEConnected } from '@claude-code-how-works/ide/ide.js'
-import { maybeResizeAndDownsampleImageBuffer } from '@claude-code-how-works/storage/imageResizer.js'
-import { logMCPDebug, logMCPError } from '@claude-code-how-works/local-observability/logging'
+} from '@thyrox/local-observability/errorHelpers.js'
+import { getMCPUserAgent } from '@thyrox/provider/http.js'
+import { maybeNotifyIDEConnected } from '@thyrox/ide/ide.js'
+import { maybeResizeAndDownsampleImageBuffer } from '@thyrox/storage/imageResizer.js'
+import { logMCPDebug, logMCPError } from '@thyrox/local-observability/logging'
 import {
   getBinaryBlobSavedMessage,
   getFormatDescription,
@@ -83,24 +83,24 @@ import {
   truncateMcpContentIfNeeded,
 } from './mcpValidation.js'
 import { WebSocketTransport } from './mcpWebSocketTransport.js'
-import { memoizeWithLRU } from '@claude-code-how-works/config/memoize.js'
-import { getWebSocketTLSOptions } from '@claude-code-how-works/provider/mtls.js'
+import { memoizeWithLRU } from '@thyrox/config/memoize.js'
+import { getWebSocketTLSOptions } from '@thyrox/provider/mtls.js'
 import {
   getProxyFetchOptions,
   getWebSocketProxyAgent,
   getWebSocketProxyUrl,
-} from '@claude-code-how-works/provider/proxy.js'
+} from '@thyrox/provider/proxy.js'
 import { recursivelySanitizeUnicode } from './sanitization.js'
-import { getSessionIngressAuthToken } from '@claude-code-how-works/provider/sessionIngressAuth.js'
-import { subprocessEnv } from '@claude-code-how-works/shell/subprocessEnv.js'
+import { getSessionIngressAuthToken } from '@thyrox/provider/sessionIngressAuth.js'
+import { subprocessEnv } from '@thyrox/shell/subprocessEnv.js'
 import {
   isPersistError,
   persistToolResult,
-} from '@claude-code-how-works/storage/toolResultStorage.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
+} from '@thyrox/storage/toolResultStorage.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { logEvent } from '@thyrox/local-observability'
 import { emitMcpConnectionEvent } from './mcpConnectionTelemetry.js'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability/compat'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
 import {
   type ElicitationWaitingState,
   runElicitationHooks,
@@ -145,16 +145,16 @@ export {
 /* eslint-disable @typescript-eslint/no-require-imports */
 const fetchMcpSkillsForClient = feature('MCP_SKILLS')
   ? (
-      require('@claude-code-how-works/command-runtime/skills/mcpSkills.js') as typeof import('@claude-code-how-works/command-runtime/skills/mcpSkills.js')
+      require('@thyrox/command-runtime/skills/mcpSkills.js') as typeof import('@thyrox/command-runtime/skills/mcpSkills.js')
     ).fetchMcpSkillsForClient
   : null
 
 import { UnauthorizedError } from '@modelcontextprotocol/sdk/client/auth.js'
-import type { AssistantMessage } from '@claude-code-how-works/agent/messageShapes'
+import type { AssistantMessage } from '@thyrox/agent/messageShapes'
 /* eslint-enable @typescript-eslint/no-require-imports */
-import { classifyMcpToolForCollapse } from '@claude-code-how-works/tool-registry/tools/MCPTool/classifyForCollapse.js'
+import { classifyMcpToolForCollapse } from '@thyrox/tool-registry/tools/MCPTool/classifyForCollapse.js'
 import { clearKeychainCache } from './macOsKeychainHelpers.js'
-import { sleep } from '@claude-code-how-works/config/sleep'
+import { sleep } from '@thyrox/config/sleep'
 import {
   ClaudeAuthProvider,
   hasMcpDiscoveryButNoToken,
@@ -162,7 +162,7 @@ import {
 } from './auth.js'
 import { markClaudeAiMcpConnected } from './claudeai.js'
 import { getAllMcpConfigs, isMcpServerDisabled } from './config.js'
-import { getClaudeAIOAuthTokens } from '@claude-code-how-works/provider/authAlias.js'
+import { getClaudeAIOAuthTokens } from '@thyrox/provider/authAlias.js'
 import { getMcpServerHeaders } from './headersHelper.js'
 import { SdkControlClientTransport } from './SdkControlTransport.js'
 import type {
@@ -256,13 +256,13 @@ function getMcpToolTimeoutMs(): number {
   return parseInt(process.env.MCP_TOOL_TIMEOUT || '', 10) || DEFAULT_MCP_TOOL_TIMEOUT_MS
 }
 
-import { isClaudeInChromeMCPServer } from '@claude-code-how-works/agent/claudeInChromeCommon.js'
+import { isClaudeInChromeMCPServer } from '@thyrox/agent/claudeInChromeCommon.js'
 
 // Lazy: toolRendering.tsx pulls React/ink; only needed when Claude-in-Chrome MCP server is connected
 /* eslint-disable @typescript-eslint/no-require-imports */
 const claudeInChromeToolRendering =
-  (): typeof import('@claude-code-how-works/agent/claudeInChrome/toolRendering.js') =>
-    require('@claude-code-how-works/agent/claudeInChrome/toolRendering.js')
+  (): typeof import('@thyrox/agent/claudeInChrome/toolRendering.js') =>
+    require('@thyrox/agent/claudeInChrome/toolRendering.js')
 // Lazy: wrapper.tsx → hostAdapter.ts → executor.ts pulls both native modules
 // (@ant/computer-use-input + @ant/computer-use-swift). Runtime-gated by
 // GrowthBook tengu_malort_pedway (see gates.ts).
@@ -638,7 +638,7 @@ export const connectToServer = memoize(
       ) {
         // Run the Chrome MCP server in-process to avoid spawning a ~325 MB subprocess
         const { createChromeContext } = await import(
-          '@claude-code-how-works/agent/claudeInChrome/mcpServer.js'
+          '@thyrox/agent/claudeInChrome/mcpServer.js'
         )
         const { createClaudeForChromeMcpServer } = await import(
           '@ant/claude-for-chrome-mcp'

@@ -1,9 +1,9 @@
 import { feature } from 'bun:bundle'
 import { basename } from 'path'
 import { useCallback, useEffect, useRef } from 'react'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
-import type { Tool } from '@claude-code-how-works/tool-registry/Tool.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import type { Command } from '@thyrox/command-runtime/runtime'
+import type { Tool } from '@thyrox/tool-registry/Tool.js'
 import {
   clearServerCache,
   fetchCommandsForClient,
@@ -21,12 +21,12 @@ import type {
 /* eslint-disable @typescript-eslint/no-require-imports */
 const fetchMcpSkillsForClient = feature('MCP_SKILLS')
   ? (
-      require('@claude-code-how-works/command-runtime/skills/mcpSkills.js') as typeof import('@claude-code-how-works/command-runtime/skills/mcpSkills.js')
+      require('@thyrox/command-runtime/skills/mcpSkills.js') as typeof import('@thyrox/command-runtime/skills/mcpSkills.js')
     ).fetchMcpSkillsForClient
   : null
 const clearSkillIndexCache = feature('EXPERIMENTAL_SKILL_SEARCH')
   ? (
-      require('@claude-code-how-works/agent/skillSearch/localSearch.js') as typeof import('@claude-code-how-works/agent/skillSearch/localSearch.js')
+      require('@thyrox/agent/skillSearch/localSearch.js') as typeof import('@thyrox/agent/skillSearch/localSearch.js')
     ).clearSkillIndexCache
   : null
 
@@ -40,7 +40,7 @@ import reject from 'lodash-es/reject.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   dedupClaudeAiMcpServers,
   doesEnterpriseMcpConfigExist,
@@ -50,19 +50,19 @@ import {
   setMcpServerEnabled,
 } from './config.js'
 import type { AppState } from './appStateHooks.js'
-import type { PluginError } from '@claude-code-how-works/config/plugin/types'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getAllowedChannels } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { useNotifications } from '@claude-code-how-works/repl/notifications.js'
+import type { PluginError } from '@thyrox/config/plugin/types'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getAllowedChannels } from '@thyrox/app-host/bootstrap/state.js'
+import { useNotifications } from '@thyrox/repl/notifications.js'
 import {
   useAppState,
   useAppStateStore,
   useSetAppState,
 } from './appStateHooks.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 /* eslint-enable @typescript-eslint/no-require-imports */
-import { logMCPDebug, logMCPError } from '@claude-code-how-works/local-observability/logging'
-import { enqueue } from '@claude-code-how-works/agent/messageQueueManager.js'
+import { logMCPDebug, logMCPError } from '@thyrox/local-observability/logging'
+import { enqueue } from '@thyrox/agent/messageQueueManager.js'
 import {
   CHANNEL_PERMISSION_METHOD,
   ChannelMessageNotificationSchema,

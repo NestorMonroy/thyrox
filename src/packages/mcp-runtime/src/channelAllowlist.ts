@@ -16,9 +16,9 @@
  */
 
 import { z } from 'zod/v4'
-import { lazySchema } from '@claude-code-how-works/tool-registry/utils/lazySchema.js'
-import { parsePluginIdentifier } from '@claude-code-how-works/config/plugin/pluginIdentifier'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
+import { parsePluginIdentifier } from '@thyrox/config/plugin/pluginIdentifier'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 
 export type ChannelAllowlistEntry = {
   marketplace: string

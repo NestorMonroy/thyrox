@@ -3,41 +3,41 @@ import { chmod, open, rename, stat, unlink } from 'fs/promises'
 import mapValues from 'lodash-es/mapValues.js'
 import memoize from 'lodash-es/memoize.js'
 import { dirname, join, parse } from 'path'
-import { getPlatform } from '@claude-code-how-works/config/platform'
-import type { PluginError } from '@claude-code-how-works/config/plugin/types'
-import { getPluginErrorMessage } from '@claude-code-how-works/config/plugin/types'
+import { getPlatform } from '@thyrox/config/platform'
+import type { PluginError } from '@thyrox/config/plugin/types'
+import { getPluginErrorMessage } from '@thyrox/config/plugin/types'
 import { isReservedMcpServerName } from './reservedNames.js'
 import {
   getCurrentProjectConfig,
   getGlobalConfig,
   saveCurrentProjectConfig,
   saveGlobalConfig,
-} from '@claude-code-how-works/config'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getErrnoCode } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { safeParseJSON } from '@claude-code-how-works/storage/json.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { getPluginMcpServers } from '@claude-code-how-works/config/plugin/mcpPluginIntegration'
-import { loadAllPluginsCacheOnly } from '@claude-code-how-works/config/plugin/pluginLoader'
-import { isSettingSourceEnabled } from '@claude-code-how-works/config/constants'
-import { getManagedFilePath } from '@claude-code-how-works/config/managedPath'
-import { isRestrictedToPluginOnly } from '@claude-code-how-works/config/pluginOnlyPolicy'
+} from '@thyrox/config'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { safeParseJSON } from '@thyrox/storage/json.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { getPluginMcpServers } from '@thyrox/config/plugin/mcpPluginIntegration'
+import { loadAllPluginsCacheOnly } from '@thyrox/config/plugin/pluginLoader'
+import { isSettingSourceEnabled } from '@thyrox/config/constants'
+import { getManagedFilePath } from '@thyrox/config/managedPath'
+import { isRestrictedToPluginOnly } from '@thyrox/config/pluginOnlyPolicy'
 import {
   getInitialSettings,
   getSettingsForSource,
-} from '@claude-code-how-works/config/settings'
+} from '@thyrox/config/settings'
 import {
   isMcpServerCommandEntry,
   isMcpServerNameEntry,
   isMcpServerUrlEntry,
   type SettingsJson,
-} from '@claude-code-how-works/config/types'
-import type { ValidationError } from '@claude-code-how-works/config/validation'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability/compat'
+} from '@thyrox/config/types'
+import type { ValidationError } from '@thyrox/config/validation'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
 import { fetchClaudeAIMcpConfigsIfEligible } from './claudeai.js'
 import { expandEnvVarsInString } from './envExpansion.js'
 import {

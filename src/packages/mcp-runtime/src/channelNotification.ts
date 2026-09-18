@@ -18,16 +18,16 @@
 
 import type { ServerCapabilities } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod/v4'
-import { type ChannelEntry, getAllowedChannels } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { CHANNEL_TAG } from '@claude-code-how-works/command-runtime/xml.js'
+import { type ChannelEntry, getAllowedChannels } from '@thyrox/app-host/bootstrap/state.js'
+import { CHANNEL_TAG } from '@thyrox/command-runtime/xml.js'
 import {
   getClaudeAIOAuthTokens,
   getSubscriptionType,
-} from '@claude-code-how-works/provider/authAlias.js'
-import { lazySchema } from '@claude-code-how-works/tool-registry/utils/lazySchema.js'
-import { parsePluginIdentifier } from '@claude-code-how-works/config/plugin/pluginIdentifier'
-import { getSettingsForSource } from '@claude-code-how-works/config/settings'
-import { escapeXmlAttr } from '@claude-code-how-works/output/xml'
+} from '@thyrox/provider/authAlias.js'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
+import { parsePluginIdentifier } from '@thyrox/config/plugin/pluginIdentifier'
+import { getSettingsForSource } from '@thyrox/config/settings'
+import { escapeXmlAttr } from '@thyrox/output/xml'
 import {
   type ChannelAllowlistEntry,
   getChannelAllowlist,

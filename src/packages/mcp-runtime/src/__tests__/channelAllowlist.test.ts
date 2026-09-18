@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 
 // Mock the GrowthBook accessor before importing SUT.
-const realFeatureFlags = await import('@claude-code-how-works/config/feature-flags')
+const realFeatureFlags = await import('@thyrox/config/feature-flags')
 let featureValueOverride: Map<string, unknown> = new Map()
 
-mock.module('@claude-code-how-works/config/feature-flags', () => ({
+mock.module('@thyrox/config/feature-flags', () => ({
   ...realFeatureFlags,
   getFeatureValue_CACHED_MAY_BE_STALE: <T>(key: string, fallback: T): T => {
     if (featureValueOverride.has(key))

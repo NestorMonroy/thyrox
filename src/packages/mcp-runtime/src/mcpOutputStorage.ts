@@ -3,12 +3,12 @@ import { join } from 'path'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import type { MCPResultType } from './clientRuntime.js'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { formatFileSize } from '@claude-code-how-works/output/formatters'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { ensureToolResultsDir, getToolResultsDir } from '@claude-code-how-works/storage/toolResultStorage.js'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { formatFileSize } from '@thyrox/output/formatters'
+import { logError } from '@thyrox/local-observability/logging'
+import { ensureToolResultsDir, getToolResultsDir } from '@thyrox/storage/toolResultStorage.js'
 
 /**
  * Generates a format description string based on the MCP result type and schema.

@@ -5,7 +5,7 @@ import {
 import {
   handleMcpSetServers,
   reconcileMcpServers,
-} from '@claude-code-how-works/cli/mcpServersHandlers.js'
+} from '@thyrox/cli/mcpServersHandlers.js'
 import {
   ChannelMessageNotificationSchema,
   gateChannelServer,

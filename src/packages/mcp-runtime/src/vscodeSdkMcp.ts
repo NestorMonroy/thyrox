@@ -1,11 +1,11 @@
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { z } from 'zod/v4'
-import { lazySchema } from '@claude-code-how-works/tool-registry/utils/lazySchema.js'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 import {
   checkStatsigFeatureGate_CACHED_MAY_BE_STALE,
   getFeatureValue_CACHED_MAY_BE_STALE,
-} from '@claude-code-how-works/config/feature-flags'
-import { logEvent } from '@claude-code-how-works/local-observability'
+} from '@thyrox/config/feature-flags'
+import { logEvent } from '@thyrox/local-observability'
 import type { ConnectedMCPServer, MCPServerConnection } from './types.js'
 
 // Mirror of AutoModeEnabledState in permissionSetup.ts — inlined because that

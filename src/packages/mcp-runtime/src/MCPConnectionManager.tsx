@@ -4,8 +4,8 @@ import React, {
   useContext,
   useMemo,
 } from 'react'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
-import type { Tool } from '@claude-code-how-works/tool-registry/Tool.js'
+import type { Command } from '@thyrox/command-runtime/runtime'
+import type { Tool } from '@thyrox/tool-registry/Tool.js'
 import type {
   MCPServerConnection,
   ScopedMcpServerConfig,
