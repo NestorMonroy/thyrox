@@ -25,7 +25,7 @@ export function installConfigHostBindings(bindings: ConfigHostBindings): void {
 export function getConfigHostBindings(): ConfigHostBindings {
   if (!configHostBindings) {
     throw new HostBindingsError(
-      'Config host bindings have not been installed. Install host bindings before using @claude-code-how-works/config runtime APIs.',
+      'Config host bindings have not been installed. Install host bindings before using @thyrox/config runtime APIs.',
     )
   }
   return configHostBindings

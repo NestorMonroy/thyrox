@@ -15,7 +15,7 @@ function missingBinding(name: string): (...args: any[]) => never {
 function getBinding<T>(name: string): T {
   if (!uiBindings || !(name in uiBindings)) {
     throw new Error(
-      `Swarm UI binding "${name}" is unavailable. installSwarmAppUi() must run before using @claude-code-how-works/swarm UI helpers.`,
+      `Swarm UI binding "${name}" is unavailable. installSwarmAppUi() must run before using @thyrox/swarm UI helpers.`,
     )
   }
   return uiBindings[name] as T

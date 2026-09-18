@@ -15,7 +15,7 @@ export function getStructuredIO(
   const bindings = getCliHostBindings()
   if (!bindings.getStructuredIO) {
     throw new Error(
-      'CLI getStructuredIO binding not installed. Install root CLI host bindings before using @claude-code-how-works/cli transport APIs.',
+      'CLI getStructuredIO binding not installed. Install root CLI host bindings before using @thyrox/cli transport APIs.',
     )
   }
   return bindings.getStructuredIO(inputPrompt, options)

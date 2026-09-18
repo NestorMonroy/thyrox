@@ -91,7 +91,7 @@ export function installProviderHostBindings(
 export function getProviderHostBindings(): ProviderHostBindings {
   if (!state.bindings) {
     throw new HostBindingsError(
-      'Provider host bindings have not been installed. Install the application host bindings before using @claude-code-how-works/provider runtime APIs.',
+      'Provider host bindings have not been installed. Install the application host bindings before using @thyrox/provider runtime APIs.',
     )
   }
   return state.bindings

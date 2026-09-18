@@ -27,7 +27,7 @@ export type AgentDefinition = unknown
 export type ThinkingConfig = unknown
 
 // Re-export the agent-owned types so existing SDK consumers keep
-// `import { HeadlessStoreParams } from '@claude-code-how-works/cli'` working.
+// `import { HeadlessStoreParams } from '@thyrox/cli'` working.
 export type { HeadlessStoreParams, MCPServerConnection, McpCommand }
 
 export type HeadlessRunOptions = {
@@ -75,7 +75,7 @@ function getRequiredCliBindings() {
   const bindings = getCliHostBindings()
   if (!bindings.createHeadlessStore || !bindings.runHeadless) {
     throw new Error(
-      'CLI headless bindings are not installed. Install root CLI host bindings before using @claude-code-how-works/cli headless runtime APIs.',
+      'CLI headless bindings are not installed. Install root CLI host bindings before using @thyrox/cli headless runtime APIs.',
     )
   }
   return bindings as Required<

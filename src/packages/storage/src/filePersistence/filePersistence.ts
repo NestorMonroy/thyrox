@@ -22,11 +22,11 @@
  *    hace en cualquier build que no sea el de ant (la macro nunca
  *    evalúa a `true` fuera de ese build). `runFilePersistence` en sí NO
  *    depende de `feature()` — su lógica se porta y se testea igual.
- * 2. `logEvent`/`logError` (de `@claude-code-how-works/local-observability`)
+ * 2. `logEvent`/`logError` (de `@thyrox/local-observability`)
  *    — inyectables vía setter, default no-op. `errorMessage` se
  *    reimplementa localmente (una línea, `errorHelpers.ts:106-108`).
  * 3. `getSessionIngressAuthToken` (de
- *    `@claude-code-how-works/provider/sessionIngressAuth.js`) — ese
+ *    `@thyrox/provider/sessionIngressAuth.js`) — ese
  *    módulo depende TRANSITIVAMENTE de
  *    `app-host/bootstrap/state.js`, `./authFileDescriptor.js` y de
  *    `@thyrox/storage` mismo (`fsOperations.js` — ¡ciclo con este
@@ -34,7 +34,7 @@
  *    setter con default `() => null` (sin token ⇒ el llamador real ve
  *    "no autenticado", que es un resultado válido del contrato).
  * 4. `uploadSessionFiles`/`FilesApiConfig` (de
- *    `@claude-code-how-works/provider/filesApi.js`, 700+ líneas) — se
+ *    `@thyrox/provider/filesApi.js`, 700+ líneas) — se
  *    declaran los tipos mínimos que ESTE módulo consume (no el archivo
  *    entero) y se inyecta la función vía setter; el default devuelve
  *    TODOS los archivos como fallidos con un mensaje explícito — un
@@ -114,7 +114,7 @@ async function defaultUploadSessionFiles(
     success: false,
     path: f.path,
     error:
-      'uploadSessionFiles no está conectado: @claude-code-how-works/provider/filesApi.js ' +
+      'uploadSessionFiles no está conectado: @thyrox/provider/filesApi.js ' +
       'está ausente en este árbol (DEC-04); inyectar con setUploadSessionFilesFn().',
   }))
 }

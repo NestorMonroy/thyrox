@@ -9,7 +9,7 @@ export function installCliHostBindings(bindings: CliHostBindings): void {
 export function getCliHostBindings(): CliHostBindings {
   if (!cliHostBindings) {
     throw new Error(
-      'CLI host bindings have not been installed. Install host bindings before using @claude-code-how-works/cli runtime APIs.',
+      'CLI host bindings have not been installed. Install host bindings before using @thyrox/cli runtime APIs.',
     )
   }
   return cliHostBindings

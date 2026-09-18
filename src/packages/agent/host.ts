@@ -266,7 +266,7 @@ export function installAgentHostBindings(bindings: AgentHostBindings): void {
 export function getAgentHostBindings(): AgentHostBindings {
   if (!agentHostBindings) {
     throw new HostBindingsError(
-      'Agent host bindings have not been installed. Install host bindings before using @claude-code-how-works/agent runtime APIs.',
+      'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
     )
   }
   return agentHostBindings
