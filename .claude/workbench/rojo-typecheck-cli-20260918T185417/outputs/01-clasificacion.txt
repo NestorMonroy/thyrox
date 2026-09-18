@@ -1,0 +1,26 @@
+Clasificacion del rojo de check-cli-typecheck (medido 2026-09-18)
+
+EXIT=2 — el gate rehusa: "tsconfig.json FALLA"
+
+total lineas de error: 3518
+
+por codigo (top 12):
+    806 TS2307   Cannot find module
+    550 TS18046  'x' is of type 'unknown'
+    404 TS7006   implicitly has an 'any' type
+    386 TS2305   Module has no exported member
+    308 TS2339   Property does not exist
+    288 TS2345   Argument not assignable
+     96 TS2322 · 94 TS18048 · 82 TS7053 · 76 TS2349 · 58 TS2698 · 58 TS2554
+
+TS2307 que nombran un hermano @thyrox — 21 paquetes distintos, 572 hits:
+    122 tool-registry · 90 repl · 62 storage · 44 provider · 30 shell
+     30 command-runtime · 26 mcp-runtime · 26 config · 24 app-host
+     22 server · 18 swarm · 16 agent · 14 memory · 14 daemon
+     12 headless-sdk · 12 bridge · 10 permission · 10 output
+      6 ide · 2 updater · 2 teleport
+
+archivos afectados, por paquete hermano:
+    572 agent · 370 config · 298 provider · 276 tool-registry
+    260 mcp-runtime · 176 app-host · 140 shell · 46 ide
+     18 permission · 6 storage
