@@ -1,0 +1,8 @@
+sujeto	2.1.251
+crudo_bytes	47876164
+formato	bytes	cociente	segundos
+gzip-6	14135485	3.39	2
+xz-6-T4	10695488	4.48	9
+xz-9-T2	9914812	4.83	20
+7z-mx9	9915060	4.83	13
+__BG_EXIT__=0

@@ -1,0 +1,9 @@
+=== con la verificacion anulada ===
+== 4. no se declara archivado sin verificar la integridad ==
+  ok    el archivo existe
+  ok    la integridad se verifico
+  ok    y publica el sha256 de lo que escribio
+  FALLO un archivo corrupto NO pasa la verificacion
+        esperado=[False] obtenido=[True]
+
+9 ok, 1 fallos
