@@ -312,6 +312,12 @@ export -f thyrox_toolchain_awk_supports_intervals
 # incluido lo que no es de este arbol. La forma durable de un mecanismo que no
 # puede arreglar algo es rehusar nombrando las dos salidas, no mutar el
 # entorno de nadie por su cuenta.
+# CIEGO AL LOCALE, y es un eje hermano que este guard NO mide. El mismo
+# gawk cuenta octetos o code points segun `LC_CTYPE`: medido, `áéí` da 6
+# sin locale declarado y 3 bajo `LC_ALL=C.UTF-8` — y este contenedor no
+# declara ninguno. Un guion que mida ANCHURA con awk necesita ademas ese
+# eje; `src/verify/commit_message.py` lo evito usando Python, y su nota
+# lo razona. Pasar este guard NO autoriza a medir columnas con awk.
 # @noargs
 # @exitcode 0 El awk resuelto compila intervalos.
 # @exitcode 2 No resuelve, o resuelve a un awk que no los compila. REHUSA.
