@@ -1,0 +1,40 @@
+OK   daemon (1)
+OK   app-host (5)
+OK   swarm (9)
+OK   mcp-runtime (21)
+OK   output (22)
+OK   shell (35)
+OK   config (110)
+OK   command-runtime (148)
+OK   agent (156)
+OK   provider (173)
+OK   tool-registry (280)
+FALLA cli (101)
+     | src/transports/WorkerStateUploader.ts(1,23): error TS2307: Cannot find module '@claude-code-how-works/config/sleep' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(5,8): error TS2307: Cannot find module '@claude-code-how-works/headless-sdk/controlTypes.js' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(6,33): error TS2307: Cannot find module '@claude-code-how-works/bridge/jwtUtils.js' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(7,33): error TS2307: Cannot find module '@claude-code-how-works/local-observability/debug.js' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(8,40): error TS2307: Cannot find module '@claude-code-how-works/local-observability/logging' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(9,44): error TS2307: Cannot find module '@claude-code-how-works/local-observability/errorHelpers.js' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(10,37): error TS2307: Cannot find module '@claude-code-how-works/provider/proxy.js' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(14,8): error TS2307: Cannot find module '@claude-code-how-works/storage/sessionActivity.js' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(18,8): error TS2307: Cannot find module '@claude-code-how-works/provider/sessionIngressAuth.js' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(22,8): error TS2307: Cannot find module '@claude-code-how-works/storage/sessionState.js' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(23,23): error TS2307: Cannot find module '@claude-code-how-works/config/sleep' or its corresponding type declarations.
+     | src/transports/ccrClient.ts(24,40): error TS2307: Cannot find module '@claude-code-how-works/provider/userAgent.js' or its corresponding type declarations.
+     | src/transports/transportUtils.ts(2,29): error TS2307: Cannot find module '@claude-code-how-works/config/env/utils' or its corresponding type declarations.
+     | src/utils/warningHandler.ts(5,8): error TS2307: Cannot find module '@claude-code-how-works/local-observability' or its corresponding type declarations.
+     | src/utils/warningHandler.ts(6,33): error TS2307: Cannot find module '@claude-code-how-works/local-observability/debug.js' or its corresponding type declarations.
+     | src/utils/warningHandler.ts(7,29): error TS2307: Cannot find module '@claude-code-how-works/config/env/utils' or its corresponding type declarations.
+     | src/utils/warningHandler.ts(8,29): error TS2307: Cannot find module '@claude-code-how-works/config/platform' or its corresponding type declarations.
+     | 
+     | check-cli-typecheck: el paquete no compila.
+     | 
+     |   El arreglo es el tipo, no el bypass. Un `as any` que tape el error deja el
+     |   gate en verde midiendo otra cosa.
+     | 
+     |       cd src/packages/cli && bun run typecheck && bun run typecheck:tests
+     | check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 101 archivo(s) pedido(s))
+=== restante sin commitear ===
+101
+__BG_EXIT__=0

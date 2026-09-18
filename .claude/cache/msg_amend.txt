@@ -1,0 +1,26 @@
+Copiar los 101 archivos ausentes de permission
+
+La referencia declara 139 archivos regulares en packages/permission y el
+puerto tenia 38 de ellos. Los 101 restantes entran aqui BYTE A BYTE, sin
+adaptar: este commit es la frontera de procedencia, para que el diff de
+las traducciones que vienen despues sea auditable como «solo se movieron
+comentarios» contra un estado verificable.
+
+La copia la hizo un pool de 101 trabajos a anchura 4 con bin/run-task-pool,
+y el guion copiador se verifico POR CONDUCTA antes de correrlo — no por su
+docstring: assert_no_writes sobre strace muestra 6 intentos de mkdir, todos
+componentes de la ruta de destino y ninguno bajo la referencia, y el sha256
+del arbol entero de la referencia es identico antes y despues.
+
+El conteo NO sale del veredicto del pool. `OK` en la barrera significa que
+el trabajo asento su marcador, no `exit 0` (wait-jobs.sh:133), y de hecho
+dos salieron EXIT=3 por la guarda «YA EXISTE» y figuran como OK. Sale del
+hueco re-medido: faltan=0, sobran=28.
+
+Control que discrimina en las dos direcciones: sha256 de los 139 comunes da
+38 distintos, y esos 38 son EXACTAMENTE los que ya existian antes del pool
+— ni uno mas ni uno menos. Si la copia hubiera pisado un archivo adaptado,
+habria salido identico a la referencia y aparecido en la lista contraria.
+
+Refs: TASK-THYROX-0113
+
