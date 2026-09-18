@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 // el de la fuente.
 //
 // Se mockean las dependencias entre paquetes para que el test unitario se
-// mantenga centrado en la logica del ciclo.
+// mantenga centrado en la lógica del ciclo.
 const realPermissionSetup = await import('../permissionSetup.js')
 
 let isAutoModeGateEnabledStub = () => false
@@ -35,7 +35,7 @@ afterEach(() => {
   else process.env.USER_TYPE = ORIGINAL_USER_TYPE
 })
 
-// Fabrica minima de ctx, para no construir la forma completa de
+// Fabrica mínima de ctx, para no construir la forma completa de
 // ToolPermissionContext en cada test.
 function ctx(overrides: Record<string, unknown> = {}): any {
   return {
@@ -95,12 +95,12 @@ describe('getNextPermissionMode (ant user — auto mode replaces accept/plan)', 
     ).toBe('bypassPermissions')
   })
 
-  // Los tests de entrada al modo automatico necesitan que
+  // Los tests de entrada al modo automático necesitan que
   // feature('TRANSCRIPT_CLASSIFIER') sea true, pero el feature() de bun:bundle
-  // esta apagado bajo `bun test`: no se aplica ningun define de
-  // STABLE_FEATURES. El camino automatico es por tanto inalcanzable aqui, y
-  // todo sitio de llamada que habria devuelto 'auto' cae a 'default'. Se
-  // asevera esa caida para que el test signifique algo en el modo de ejecucion
+  // está apagado bajo `bun test`: no se aplica ningún define de
+  // STABLE_FEATURES. El camino automático es por tanto inalcanzable aquí, y
+  // todo sitio de llamada que habría devuelto 'auto' cae a 'default'. Se
+  // asevera esa caida para que el test signifique algo en el modo de ejecución
   // actual.
 
   test('default → default (ant, no bypass, auto path unreachable in test mode)', () => {

@@ -13,7 +13,7 @@ export type WorkerBadgeProps = {
  * comentarios traducidos; el cuerpo es el de la fuente.
  *
  * Renderiza un badge de color con el nombre del worker para los prompts de
- * permiso. Sirve para indicar que worker del swarm esta pidiendo el permiso.
+ * permiso. Sirve para indicar que worker del swarm está pidiendo el permiso.
  */
 export function WorkerBadge({
   name,

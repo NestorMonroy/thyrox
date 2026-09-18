@@ -30,16 +30,16 @@ export function SedEditPermissionRequest({
   // SedEditPermissionRequest/SedEditPermissionRequest.tsx` con los comentarios
   // traducidos; el cuerpo es el de la fuente.
   //
-  // El contenido del archivo se lee de forma asincrona para que el montaje no
-  // bloquee el commit de React con I/O de disco. Un archivo grande colgaria el
-  // dialogo antes de renderizarlo. Memoizado sobre filePath, para no releer en
+  // El contenido del archivo se lee de forma asíncrona para que el montaje no
+  // bloquee el commit de React con I/O de disco. Un archivo grande colgaría el
+  // diálogo antes de renderizarlo. Memoizado sobre filePath, para no releer en
   // cada render.
   const contentPromise = useMemo(
     () =>
       (async (): Promise<FileReadResult> => {
-        // Primero se detecta el encoding (lectura sincrona de 4KB,
+        // Primero se detecta el encoding (lectura síncrona de 4KB,
         // despreciable) para que un BOM UTF-16LE renderice correctamente. Es lo
-        // mismo que hacia readFileSync antes de la conversion a asincrono.
+        // mismo que hacia readFileSync antes de la conversión a asíncrono.
         const encoding = detectEncodingForResolvedPath(filePath)
         const raw = await getFsImplementation().readFile(filePath, { encoding })
         return {
@@ -74,12 +74,12 @@ function SedEditPermissionRequestInner({
   const { filePath } = sedInfo
   const { oldContent, fileExists } = use(contentPromise)
 
-  // Calcula el contenido nuevo aplicando la sustitucion de sed.
+  // Calcula el contenido nuevo aplicando la sustitución de sed.
   const newContent = useMemo(() => {
     return applySedSubstitution(oldContent, sedInfo)
   }, [oldContent, sedInfo])
 
-  // Construye la representacion de la edicion para el diff.
+  // Construye la representación de la edición para el diff.
   const edits = useMemo(() => {
     if (oldContent === newContent) {
       return []
@@ -102,7 +102,7 @@ function SedEditPermissionRequestInner({
   }, [fileExists])
 
   // Parsea el input y añade _simulatedSedEdit para garantizar que lo que el
-  // usuario previsualizo es exactamente lo que se escribe; asi no pesan las
+  // usuario previsualizo es exactamente lo que se escribe; así no pesan las
   // diferencias entre el regex de sed y el de JS.
   const parseInput = (input: unknown) => {
     const parsed = BashTool.inputSchema.parse(input)

@@ -15,7 +15,7 @@ mock.module('@claude-code-how-works/storage/fsOperations.js', () => ({
 }))
 mock.module('@claude-code-how-works/shell/sandbox.js', () => ({
   ...realSandbox,
-  // Por defecto el sandbox queda deshabilitado, asi que
+  // Por defecto el sandbox queda deshabilitado, así que
   // isPathInSandboxWriteAllowlist devuelve false.
   SandboxManager: {
     ...realSandbox.SandboxManager,

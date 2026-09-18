@@ -71,9 +71,9 @@ describe('shouldFallbackToPrompting', () => {
   })
   test('total limit triggers even after consecutive reset', () => {
     // El patron: denegar 3, tener exito (lo que reinicia el consecutivo),
-    // denegar 17 mas. total = 20, consecutive = 17: deberia caer de vuelta
-    // igualmente por el total. Pero maxConsecutive = 3, asi que consecutive=17
-    // TAMBIEN dispara; se busca alcanzar el total sin cruzar el consecutivo.
+    // denegar 17 más. total = 20, consecutive = 17: debería caer de vuelta
+    // igualmente por el total. Pero maxConsecutive = 3, así que consecutive=17
+    // También dispara; se busca alcanzar el total sin cruzar el consecutivo.
     let s = createDenialTrackingState()
     for (let cycle = 0; cycle < 10; cycle++) {
       // 2 denegaciones por ciclo y luego un exito: el consecutivo se queda
@@ -92,7 +92,7 @@ describe('shouldFallbackToPrompting', () => {
 describe('DENIAL_LIMITS', () => {
   test('declared as const (compile-time invariant)', () => {
     // Forma con const assertion: los valores quedan fijos al cargar el
-    // modulo.
+    // módulo.
     expect(DENIAL_LIMITS.maxConsecutive).toBeGreaterThan(0)
     expect(DENIAL_LIMITS.maxTotal).toBeGreaterThan(DENIAL_LIMITS.maxConsecutive)
   })

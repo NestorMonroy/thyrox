@@ -29,10 +29,10 @@ export function SandboxPermissionRequest({
     // SandboxPermissionRequest.tsx` con los comentarios traducidos; el cuerpo es
     // el de la fuente.
     //
-    // Convendria unificar mejor este dialogo con los demas dialogos de permiso y
-    // usar su registro, pero este es algo distinto y aqui no se tiene el
-    // contexto de la herramienta. Por ahora se usa un registro basico para datos
-    // basicos.
+    // Convendría unificar mejor este diálogo con los demás diálogos de permiso y
+    // usar su registro, pero este es algo distinto y aquí no se tiene el
+    // contexto de la herramienta. Por ahora se usa un registro básico para datos
+    // básicos.
     if (process.env.USER_TYPE === 'ant') {
       logEvent('tengu_sandbox_network_dialog_result', {
         host: host as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

@@ -23,7 +23,7 @@ export function QuestionNavigationBar({
 }: Props): React.ReactNode {
   const { columns } = useTerminalSize()
 
-  // Calcula el texto que muestra cada pestaña segun el ancho disponible.
+  // Calcula el texto que muestra cada pestaña según el ancho disponible.
   const tabDisplayTexts = useMemo(() => {
     // Los elementos de ancho fijo.
     const leftArrow = '← '
@@ -39,7 +39,7 @@ export function QuestionNavigationBar({
     const availableForTabs = columns - fixedWidth
 
     if (availableForTabs <= 0) {
-      // Terminal demasiado estrecha: se cae de vuelta a la vista minima.
+      // Terminal demasiado estrecha: se cae de vuelta a la vista mínima.
       return questions.map((q: Question, index: number) => {
         const header = q?.header || `Q${index + 1}`
         return index === currentQuestionIndex ? header.slice(0, 3) : ''
@@ -67,7 +67,7 @@ export function QuestionNavigationBar({
     const currentIdealWidth =
       checkboxWidth + paddingPerTab + stringWidth(currentHeader)
 
-    // Ancho minimo de las demas pestañas (checkbox + padding + 1 caracter +
+    // Ancho mínimo de las demás pestañas (checkbox + padding + 1 carácter +
     // puntos suspensivos).
     const minWidthPerTab = checkboxWidth + paddingPerTab + 2 // "X…"
 
@@ -75,7 +75,7 @@ export function QuestionNavigationBar({
     const currentTabWidth = Math.min(currentIdealWidth, availableForTabs / 2)
     const remainingWidth = availableForTabs - currentTabWidth
 
-    // El espacio de las demas pestañas.
+    // El espacio de las demás pestañas.
     const otherTabCount = questions.length - 1
     const widthPerOtherTab = Math.max(
       minWidthPerTab,
@@ -88,7 +88,7 @@ export function QuestionNavigationBar({
         const maxTextWidth = currentTabWidth - checkboxWidth - paddingPerTab
         return truncateToWidth(header, maxTextWidth)
       } else {
-        // Las demas pestañas se truncan hasta caber.
+        // Las demás pestañas se truncan hasta caber.
         const maxTextWidth = widthPerOtherTab - checkboxWidth - paddingPerTab
         return truncateToWidth(header, maxTextWidth)
       }

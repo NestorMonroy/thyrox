@@ -99,7 +99,7 @@ export function WebFetchPermissionRequest({
           ruleContent,
         }
 
-        // Pasa la actualizacion de permiso directamente a onAllow.
+        // Pasa la actualización de permiso directamente a onAllow.
         toolUseConfirm.onAllow(toolUseConfirm.input, [
           {
             type: 'addRules',

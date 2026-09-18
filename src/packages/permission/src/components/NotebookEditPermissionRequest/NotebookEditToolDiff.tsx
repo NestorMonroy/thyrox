@@ -42,7 +42,7 @@ export function NotebookEditToolDiff(props: Props): React.ReactNode {
   // traducidos; el cuerpo es el de la fuente.
   //
   // Se construye una promesa que nunca rechaza, para resolver los errores en
-  // linea. Memoizada sobre notebook_path, para no releer en cada render.
+  // línea. Memoizada sobre notebook_path, para no releer en cada render.
   const notebookDataPromise = useMemo(
     () =>
       getFsImplementation()
@@ -95,7 +95,7 @@ function NotebookEditToolDiffInner({
       return null
     }
     // Se construye un contenido de archivo "falso" solo con el fuente de la
-    // celda. Asi se puede usar el mecanismo de diff normal.
+    // celda. Así se puede usar el mecanismo de diff normal.
     return getPatchForDisplay({
       filePath: notebook_path,
       fileContents: oldSource,

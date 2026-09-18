@@ -2,7 +2,7 @@
 // permissionRequestTypes.ts` con los comentarios traducidos; el cuerpo es el
 // de la fuente.
 //
-// Modulo de tipos hoja: aloja PermissionRequestProps y ToolUseConfirm. Se
+// Módulo de tipos hoja: aloja PermissionRequestProps y ToolUseConfirm. Se
 // extrajo de PermissionRequest.tsx para que los componentes de permiso por
 // herramienta (FilesystemPermissionRequest, BashPermissionRequest, ...) puedan
 // importar estos tipos sin formar un ciclo con PermissionRequest.tsx, que los

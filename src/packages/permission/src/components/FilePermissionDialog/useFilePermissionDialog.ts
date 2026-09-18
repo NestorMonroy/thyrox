@@ -52,7 +52,7 @@ export type UseFilePermissionDialogResult<T> = {
  * useFilePermissionDialog.ts` con los comentarios traducidos; el cuerpo es el
  * de la fuente.
  *
- * Hook que resuelve los dialogos de permiso de archivo con la logica comun.
+ * Hook que resuelve los diálogos de permiso de archivo con la lógica común.
  */
 export function useFilePermissionDialog<T extends ToolInput>({
   filePath,
@@ -71,7 +71,7 @@ export function useFilePermissionDialog<T extends ToolInput>({
   const [yesInputMode, setYesInputMode] = useState(false)
   const [noInputMode, setNoInputMode] = useState(false)
   // Registra si el usuario llego a entrar en modo de feedback; persiste
-  // despues de colapsar.
+  // después de colapsar.
   const [yesFeedbackModeEntered, setYesFeedbackModeEntered] = useState(false)
   const [noFeedbackModeEntered, setNoFeedbackModeEntered] = useState(false)
 
@@ -90,7 +90,7 @@ export function useFilePermissionDialog<T extends ToolInput>({
     [filePath, toolPermissionContext, operationType, yesInputMode, noInputMode],
   )
 
-  // Resuelve la seleccion de opcion con los handlers compartidos.
+  // Resuelve la selección de opción con los handlers compartidos.
   const onChange = useCallback(
     (option: PermissionOption, input: T, feedback?: string) => {
       const params: PermissionHandlerParams = {
@@ -141,7 +141,7 @@ export function useFilePermissionDialog<T extends ToolInput>({
     ],
   )
 
-  // Handler de confirm:cycleMode: selecciona la opcion accept-session.
+  // Handler de confirm:cycleMode: selecciona la opción accept-session.
   const handleCycleMode = useCallback(() => {
     const sessionOption = options.find(o => o.option.type === 'accept-session')
     if (sessionOption) {
@@ -173,7 +173,7 @@ export function useFilePermissionDialog<T extends ToolInput>({
     [yesInputMode, noInputMode, acceptFeedback, rejectFeedback],
   )
 
-  // La tecla Tab alterna el modo de entrada de las opciones Si/No.
+  // La tecla Tab alterna el modo de entrada de las opciones Sí/No.
   const handleInputModeToggle = useCallback(
     (value: string) => {
       const analyticsProps = {

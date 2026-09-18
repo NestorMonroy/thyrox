@@ -28,7 +28,7 @@ import { readEnv } from '@claude-code-how-works/config/env'
 // comentarios traducidos; el cuerpo es el de la fuente.
 //
 // Nombres de herramienta exclusivos de ant: `require` condicional, para que Bun
-// pueda eliminarlos como codigo muerto en las builds externas. Las guardas
+// pueda eliminarlos como código muerto en las builds externas. Las guardas
 // replican las de `tools.ts`. Mantiene las cadenas de nombre de herramienta
 // fuera de `cli.js`.
 /* eslint-disable @typescript-eslint/no-require-imports */

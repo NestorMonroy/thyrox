@@ -166,7 +166,7 @@ export function AddWorkspaceDirectory({
   )
 
   // Esc cancela; Ctrl+C lo resuelven los keybindings globales. Se usa el
-  // contexto de Settings para que la tecla 'n' no cancele, y asi se pueda
+  // contexto de Settings para que la tecla 'n' no cancele, y así se pueda
   // teclear 'n' en el input.
   useKeybinding('confirm:no', onCancel, { context: 'Settings' })
 

@@ -61,8 +61,8 @@ export function FileWritePermissionRequest(
   // comentarios traducidos; el cuerpo es el de la fuente.
   //
   // Una sola lectura gobierna a la vez el texto de la UI ("Create" contra
-  // "Overwrite") y el diff que muestra FileWriteToolDiff. Asi se evita un stat
-  // redundante de existsSync, que bloquearia el commit del primer montaje sobre
+  // "Overwrite") y el diff que muestra FileWriteToolDiff. Así se evita un stat
+  // redundante de existsSync, que bloquearía el commit del primer montaje sobre
   // un filesystem lento o en red.
   const { fileExists, oldContent } = useMemo(() => {
     try {

@@ -13,7 +13,7 @@ import { logUnaryPermissionEvent } from './utils.js'
  * useShellPermissionFeedback.ts` con los comentarios traducidos; el cuerpo es
  * el de la fuente.
  *
- * El estado y los handlers del modo de feedback, compartidos por los dialogos
+ * El estado y los handlers del modo de feedback, compartidos por los diálogos
  * de permiso de shell (Bash, PowerShell). Encapsula el alternador del modo de
  * entrada si/no, el estado del texto de feedback, el seguimiento del foco y el
  * manejo del rechazo.
@@ -47,13 +47,13 @@ export function useShellPermissionFeedback({
   const [noInputMode, setNoInputMode] = useState(false)
   const [focusedOption, setFocusedOption] = useState('yes')
   // Registra si el usuario llego a entrar en modo de feedback; persiste
-  // despues de colapsar.
+  // después de colapsar.
   const [yesFeedbackModeEntered, setYesFeedbackModeEntered] = useState(false)
   const [noFeedbackModeEntered, setNoFeedbackModeEntered] = useState(false)
 
-  // La tecla Tab alterna el modo de entrada de las opciones Si/No.
+  // La tecla Tab alterna el modo de entrada de las opciones Sí/No.
   function handleInputModeToggle(option: string) {
-    // Avisa de que el usuario esta interactuando con el dialogo.
+    // Avisa de que el usuario está interactuando con el diálogo.
     toolUseConfirm.onUserInteraction()
     const analyticsProps = {
       toolName: sanitizeToolNameForAnalytics(
@@ -90,7 +90,7 @@ export function useShellPermissionFeedback({
     // Registra el escape si no hubo feedback: el usuario pulso ESC.
     if (!hasFeedback) {
       logEvent('tengu_permission_request_escape', {})
-      // Incrementa el conteo de escapes para el seguimiento de atribucion.
+      // Incrementa el conteo de escapes para el seguimiento de atribución.
       setAppState(prev => ({
         ...prev,
         attribution: {
@@ -118,7 +118,7 @@ export function useShellPermissionFeedback({
   }
 
   function handleFocus(value: string) {
-    // Avisa de que el usuario esta interactuando con el dialogo, solo si el
+    // Avisa de que el usuario está interactuando con el diálogo, solo si el
     // foco cambio. Esto evita dispararlo en el montaje o render inicial.
     if (value !== focusedOption) {
       toolUseConfirm.onUserInteraction()

@@ -79,12 +79,12 @@ describe('three flags are independent (no cross-contamination)', () => {
   // Copia de `ccnmt: packages/permission/src/__tests__/autoModeState.test.ts`
   // con los comentarios traducidos; el cuerpo es el de la fuente.
   //
-  // Critico: los tres flags son SEMANTICAMENTE distintos:
-  // - active: ¿estoy ahora mismo en modo automatico?
+  // Crítico: los tres flags son Semánticamente distintos:
+  // - active: ¿estoy ahora mismo en modo automático?
   // - flagCli: ¿el usuario me arranco con --auto?
-  // - circuitBroken: ¿GrowthBook deshabilito el modo automatico a mitad de
-  //   sesion?
-  // Un refactor que los colapse rompe la logica del gate en silencio.
+  // - circuitBroken: ¿GrowthBook deshabilito el modo automático a mitad de
+  //   sesión?
+  // Un refactor que los colapse rompe la lógica del gate en silencio.
 
   test('setting active does NOT change flagCli', () => {
     setAutoModeActive(true)

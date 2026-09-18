@@ -80,7 +80,7 @@ export function SkillPermissionRequest(
     // allowManagedPermissionRulesOnly no las restringe.
     const alwaysAllowOptions: PermissionPromptOption<SkillOptionValue>[] = []
     if (showAlwaysAllowOptions) {
-      // Añade la opcion de coincidencia exacta.
+      // Añade la opción de coincidencia exacta.
       alwaysAllowOptions.push({
         label: (
           <Text>
@@ -91,7 +91,7 @@ export function SkillPermissionRequest(
         value: 'yes-exact',
       })
 
-      // Añade la opcion de prefijo si el skill lleva argumentos.
+      // Añade la opción de prefijo si el skill lleva argumentos.
       const spaceIndex = skill.indexOf(' ')
       if (spaceIndex > 0) {
         const commandPrefix = skill.substring(0, spaceIndex)

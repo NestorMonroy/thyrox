@@ -291,7 +291,7 @@ export function PermissionDecisionDebugInfo({
       )
     }
 
-    // Respaldo: filtra por nombre de herramienta si se especifico.
+    // Respaldo: filtra por nombre de herramienta si se específico.
     if (toolName) {
       return all.filter(u => u.rule.ruleValue.toolName === toolName)
     }

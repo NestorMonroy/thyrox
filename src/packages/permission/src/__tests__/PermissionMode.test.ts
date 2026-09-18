@@ -193,7 +193,7 @@ describe("toExternalPermissionMode", () => {
 
 describe("isExternalPermissionMode", () => {
   test("returns true for external modes (non-ant)", () => {
-    // En los tests USER_TYPE no es 'ant', asi que siempre da true.
+    // En los tests USER_TYPE no es 'ant', así que siempre da true.
     expect(isExternalPermissionMode("default")).toBe(true);
     expect(isExternalPermissionMode("plan")).toBe(true);
   });

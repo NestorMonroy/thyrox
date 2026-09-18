@@ -105,7 +105,7 @@ function handleAcceptSession(
 
   logPermissionEvent('accept', completionType, languageName, messageId)
 
-  // En el ambito claude-folder se concede acceso de sesion a todos los
+  // En el ámbito claude-folder se concede acceso de sesión a todos los
   // archivos de .claude/.
   if (
     options?.scope === 'claude-folder' ||

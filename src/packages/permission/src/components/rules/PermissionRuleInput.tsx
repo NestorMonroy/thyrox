@@ -40,7 +40,7 @@ export function PermissionRuleInput({
   // la fuente.
   //
   // Se usa el keybinding configurable para que ESC cancele, y el contexto de
-  // Settings para que la tecla 'n' no cancele, y asi se pueda teclear 'n' en el
+  // Settings para que la tecla 'n' no cancele, y así se pueda teclear 'n' en el
   // input.
   useKeybinding('confirm:no', onCancel, { context: 'Settings' })
 

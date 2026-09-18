@@ -34,8 +34,8 @@ export function RecentDenialsTab({
   // fuente.
   //
   // Se toma la instantanea al montar: los Set de approved y retry indexan por
-  // posicion, y el store vivo antepone. Una denegacion concurrente desplazaria
-  // todos los indices a mitad de la edicion.
+  // posición, y el store vivo antepone. Una denegación concurrente desplazaria
+  // todos los índices a mitad de la edición.
   const [denials] = useState(() => getAutoModeDenials())
 
   const [approved, setApproved] = useState<Set<number>>(() => new Set())

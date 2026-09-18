@@ -41,14 +41,14 @@ export function FilesystemPermissionRequest({
   // FilesystemPermissionRequest/FilesystemPermissionRequest.tsx` con los
   // comentarios traducidos; el cuerpo es el de la fuente.
   //
-  // Se usa la forma singular simple: el detalle real de la operacion se muestra
+  // Se usa la forma singular simple: el detalle real de la operación se muestra
   // en el contenido.
   const title = `${userFacingReadOrEdit} file`
 
   // Parser de paso simple, porque no hace falta transformar el input.
   const parseInput = (input: unknown): ToolInput => input as ToolInput
 
-  // Se cae de vuelta a la peticion de permiso generica si no se halla ruta.
+  // Se cae de vuelta a la petición de permiso genérica si no se halla ruta.
   if (!path) {
     return (
       <FallbackPermissionRequest

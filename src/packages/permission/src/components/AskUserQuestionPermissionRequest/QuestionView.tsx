@@ -184,7 +184,7 @@ export function QuestionView({
         // Actualiza el estado interno del Select para que la UI reaccione de
         // inmediato.
         setValue(result.content)
-        // Actualiza tambien el estado de la pregunta, para que persista.
+        // Actualiza también el estado de la pregunta, para que persista.
         onUpdateQuestionState(
           questionText,
           { textInputValue: result.content },
@@ -212,8 +212,8 @@ export function QuestionView({
 
   const options = [...textOptions, otherOption]
 
-  // Comprueba si alguna opcion trae preview y la pregunta no es de seleccion
-  // multiple: el preview solo esta soportado en preguntas de seleccion
+  // Comprueba si alguna opción trae preview y la pregunta no es de selección
+  // multiple: el preview solo está soportado en preguntas de selección
   // simple.
   const hasAnyPreview =
     !question.multiSelect && question.options.some(opt => opt.preview)

@@ -18,8 +18,8 @@ type Props = {
  * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
  * Indicador visual que se muestra en los workers mientras esperan a que el
- * leader apruebe una peticion de permiso. Muestra la herramienta pendiente con
- * un spinner y la informacion de lo que se esta pidiendo.
+ * leader apruebe una petición de permiso. Muestra la herramienta pendiente con
+ * un spinner y la información de lo que se está pidiendo.
  */
 export function WorkerPendingPermission({
   toolName,

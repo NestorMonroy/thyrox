@@ -47,12 +47,12 @@ const ReviewArtifactPermissionRequest = feature('REVIEW_ARTIFACT')
 // Copia de `ccnmt: packages/permission/src/components/PermissionRequest.tsx`
 // con los comentarios traducidos; el cuerpo es el de la fuente.
 //
-// La herramienta Workflow se distribuye sin condicion, por paridad con ant: el
-// switch `case WorkflowTool:` compara identidad de objeto, asi que esto TIENE
+// La herramienta Workflow se distribuye sin condición, por paridad con ant: el
+// switch `case WorkflowTool:` compara identidad de objeto, así que esto TIENE
 // que ser el objeto de herramienta real. Todavia no hay un componente de
 // permiso dedicado a Workflow — el script y el conteo de agentes renderizan por
-// el FallbackPermissionRequest generico — asi que no se importa el stub; ver
-// permissionComponentForTool mas abajo.
+// el FallbackPermissionRequest genérico — así que no se importa el stub; ver
+// permissionComponentForTool más abajo.
 const WorkflowTool = (
   require('@claude-code-how-works/tool-registry/tools/WorkflowTool/WorkflowTool.js') as typeof import('@claude-code-how-works/tool-registry/tools/WorkflowTool/WorkflowTool.js')
 ).WorkflowTool

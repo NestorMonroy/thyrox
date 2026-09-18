@@ -10,7 +10,7 @@ import {
 
 // Copia de `ccnmt: packages/permission/src/__tests__/shellRuleMatching.test.ts`
 // con los comentarios traducidos; el cuerpo es el de la fuente. Los seis
-// encabezados de seccion nombran un simbolo, asi que quedan verbatim.
+// encabezados de sección nombran un símbolo, así que quedan verbatim.
 
 // ─── permissionRuleExtractPrefix ────────────────────────────────────────
 

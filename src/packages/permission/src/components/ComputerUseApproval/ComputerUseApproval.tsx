@@ -30,11 +30,11 @@ const DENY_ALL_RESPONSE: CuPermissionResponse = {
  * ComputerUseApproval.tsx` con los comentarios traducidos; el cuerpo es el de
  * la fuente.
  *
- * Despachador de dos paneles. Cuando `request.tccState` esta presente faltan
+ * Despachador de dos paneles. Cuando `request.tccState` está presente faltan
  * los permisos de macOS (Accessibility / Screen Recording) y la lista de
  * aplicaciones es irrelevante: se muestra un panel de TCC que abre System
  * Settings. En cualquier otro caso se muestra el panel de la allowlist de
- * aplicaciones mas los grant flags.
+ * aplicaciones más los grant flags.
  */
 export function ComputerUseApproval({
   request,
@@ -153,10 +153,10 @@ function ComputerUseAppListPanel({
   request,
   onDone,
 }: ComputerUseApprovalProps): React.ReactNode {
-  // Se premarca toda aplicacion resuelta que aun no este concedida. Los
-  // centinelas quedan marcados tambien: la señal es el texto de advertencia, no
+  // Se premarca toda aplicación resuelta que aún no esté concedida. Los
+  // centinelas quedan marcados también: la señal es el texto de advertencia, no
   // una casilla sin marcar. El alternador por elemento es trabajo posterior;
-  // por ahora toda aplicacion resuelta se concede cuando el usuario acepta.
+  // por ahora toda aplicación resuelta se concede cuando el usuario acepta.
   // `setChecked` queda sin uso hasta entonces.
   const [checked] = useState<ReadonlySet<string>>(
     () =>
