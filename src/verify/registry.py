@@ -22,12 +22,13 @@ Las cuatro capas salen de QUÉ mide cada gate, no de dónde vive su archivo:
 """
 from __future__ import annotations
 
-import pathlib
-import sys
-
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
-
-from verify.runner import Check  # noqa: E402
+#: NO hay aritmetica de ruta. La raiz la declara quien invoca —`tests/run.sh`
+#: con `export PYTHONPATH="$PWD/src"`, y los envoltorios de `bin/` desde su
+#: propia ubicacion— y este modulo NUNCA se ejecuta como guion: sus cuatro
+#: consumidores lo importan con `from verify import registry`, que ya exige
+#: `src` en la ruta. El `sys.path.insert(..., parent.parent)` que vivia aqui
+#: es la deuda de TASK-THYROX-0018, y se paga al tocar el archivo.
+from verify.runner import Check
 
 CHECKS: list[Check] = [
     # ── Prosa ───────────────────────────────────────────────────────────
@@ -94,6 +95,8 @@ CHECKS: list[Check] = [
           'DEC-ERR-01 — el catálogo de errores es la fuente, no el literal'),
     Check('premise-drift', 'Herramienta', 'premisa', 'check_premise_drift.py',
           'los veredictos de la cadena de premisas que CAMBIARON'),
+    Check('absence-claim', 'Herramienta', 'premisa', 'check_absence_claim.py',
+          'H-THYROX-93 — el comentario que afirma una ausencia, contra el árbol'),
     Check('python-surface', 'Herramienta', 'gate', 'check_python_surface.py',
           'H-DOCS-1089 — lo que un consumidor INVOCA contra la superficie declarada'),
     Check('consumer-anchor', 'Herramienta', 'gate', 'check_consumer_anchor.py',
