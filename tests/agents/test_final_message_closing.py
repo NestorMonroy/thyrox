@@ -53,7 +53,24 @@ import sys
 import tempfile
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
+def _thyrox_root() -> Path:
+    """La raiz por MARCADOR, no por `parents[N]`.
+
+    `parents[N]` cuenta niveles del arbol de ORIGEN: al mover el archivo, el
+    indice sigue resolviendo y apunta a otro sitio — falla en silencio. Este
+    arbol lo prohibe y lo barrio (`bin/check_path_arithmetic`). El marcador es
+    el mismo que `reach.THYROX_MARKER` declara; se repite aqui, y solo aqui,
+    porque este es el arranque: no se puede importar `reach` sin localizarlo.
+    """
+    aqui = Path(__file__).resolve()
+    marcador = Path("src") / "paths" / "reach.py"
+    for nivel in (aqui.parent, *aqui.parents):
+        if (nivel / marcador).is_file():
+            return nivel
+    raise RuntimeError(f"no se encontro la raiz de thyrox ascendiendo desde {aqui}")
+
+
+HERE = _thyrox_root()
 
 spec = importlib.util.spec_from_file_location(
     "register_session", HERE / "src" / "agents" / "register_session.py")
