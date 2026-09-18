@@ -1,13 +1,13 @@
 import { appendFile, rename } from 'fs/promises'
 import { basename, dirname, join } from 'path'
 
-import { getOriginalCwd, getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { sanitizePath } from '@claude-code-how-works/storage/path.js'
+import { getOriginalCwd, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { sanitizePath } from '@thyrox/storage/path.js'
 
 import { createBufferedWriter } from '../buffers/index.js'
 

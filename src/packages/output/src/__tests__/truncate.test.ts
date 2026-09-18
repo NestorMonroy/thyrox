@@ -64,7 +64,7 @@ describe('truncatePathMiddle', () => {
 
   test('truncates middle, keeps filename', () => {
     const result = truncatePathMiddle(
-      '@claude-code-how-works/repl/components/deeply/nested/folder/MyComponent.tsx',
+      '@thyrox/repl/components/deeply/nested/folder/MyComponent.tsx',
       30,
     )
     expect(result).toContain('…')

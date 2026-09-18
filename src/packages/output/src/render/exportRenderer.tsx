@@ -1,12 +1,12 @@
 import React, { useRef } from 'react'
 import stripAnsi from 'strip-ansi'
-import { Messages } from '@claude-code-how-works/repl/components/Messages.js'
+import { Messages } from '@thyrox/repl/components/Messages.js'
 import { KeybindingProvider } from '@anthropic/ink/keybindings'
-import { loadKeybindingsSyncWithWarnings } from '@claude-code-how-works/repl/keybindings/loadUserBindings.js'
+import { loadKeybindingsSyncWithWarnings } from '@thyrox/repl/keybindings/loadUserBindings.js'
 import type { KeybindingContextName } from '@anthropic/ink/keybindings'
-import type { Tools } from '@claude-code-how-works/tool-registry/Tool.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
 // eslint-disable-next-line no-restricted-imports
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
+import type { Message } from '@thyrox/agent/messageShapes'
 import { renderToAnsiString } from './static-render.js'
 
 // Lazy AppStateProvider access — avoids a static import from src/state/AppState.js
@@ -16,7 +16,7 @@ function getAppStateProvider(): React.ComponentType<{
   onChangeAppState?: (prev: unknown, next: unknown) => void
 }> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require('@claude-code-how-works/app-host/state/AppState.js') as {
+  const mod = require('@thyrox/app-host/state/AppState.js') as {
     AppStateProvider: React.ComponentType<{
       children?: React.ReactNode
       onChangeAppState?: (prev: unknown, next: unknown) => void

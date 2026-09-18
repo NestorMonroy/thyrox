@@ -6,9 +6,9 @@ import { BLOCKQUOTE_BAR } from './constants/figures.js'
 import { stringWidth, supportsHyperlinks } from '@anthropic/ink'
 import { createHyperlink } from './hyperlink.js'
 import type { CliHighlight } from './utils/cliHighlight.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
-import { stripPromptXMLTags } from '@claude-code-how-works/agent/messages.js'
+import { stripPromptXMLTags } from '@thyrox/agent/messages.js'
 import type { ThemeName } from '@anthropic/ink'
 
 // Use \n unconditionally — os.EOL is \r\n on Windows, and the extra \r
