@@ -1,0 +1,18 @@
+== 1. la REGLA no cambia: sigue publicando el ultimo NO NULO ==
+  ok    con el final parcial, la regla retrocede al turno anterior
+  ok    con el final reconciliado, la regla publica su cierre
+== 2. la columna NUEVA declara el cierre CRUDO del ultimo mensaje ==
+  ok    el final parcial no declaro cierre: la columna es nula
+  FALLO el final reconciliado si lo declaro
+        esperado=['end_turn'] obtenido=[None]
+== 3. y la clave EXISTE en los dos: nula no es ausente ==
+  FALLO la clave viaja en el dict del final parcial
+        esperado=[True] obtenido=[False]
+  FALLO y en el del reconciliado
+        esperado=[True] obtenido=[False]
+== 4. las dos cifras DISCREPAN en el grupo acusado y no en el otro ==
+  ok    discrepan con el final parcial
+  FALLO coinciden con el final reconciliado
+        esperado=[True] obtenido=[False]
+
+4 ok, 4 fallos

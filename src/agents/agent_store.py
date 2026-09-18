@@ -642,10 +642,21 @@ _SESSION_USAGE_COLUMNS: dict[str, str] = {
     #: ``five_hour``, y los 4 son SUBCONJUNTO de los 16 — no separan agentes
     #: nuevos, refinan el porque de 4 de los 9 que murieron por 429.
     "rate_limit_type": "TEXT",
-    #: --- EL CIERRE DEL TURNO (#601). El ULTIMO ``message.stop_reason`` del
-    #: transcript: como cerro el agente su ultimo turno. Medido sobre los 277
-    #: transcripts: ``tool_use`` 210 · (ninguno) 42 · ``stop_sequence`` 16 ·
-    #: ``end_turn`` 9.
+    #: --- EL CIERRE DEL TURNO (#601). El ultimo ``message.stop_reason`` NO
+    #: NULO del transcript. Medido sobre los 277 transcripts de entonces:
+    #: ``tool_use`` 210 · (ninguno) 42 · ``stop_sequence`` 16 · ``end_turn`` 9.
+    #:
+    #: **Decia «el ULTIMO», y es falso — corregido al medirlo
+    #: (TASK-THYROX-0155).** La regla de ``register_session.py`` es
+    #: ``if msg.get("stop_reason")``, o sea el ultimo NO NULO. La diferencia no
+    #: es de matiz: cuando el ultimo mensaje no declara cierre, esta columna
+    #: publica el de un turno ANTERIOR, y la fila dice que el agente cerro de
+    #: una forma que nunca ocurrio. Medido sobre los 109 transcripts
+    #: alcanzables de las 325 filas ``completed`` con ``tool_use``: los 109
+    #: divergen, y los 109 cierran con un bloque ``text`` — su reporte.
+    #:
+    #: Por eso ``last_stop_reason`` existe al lado, y por eso esta regla NO se
+    #: cambia: el control cruzado de abajo depende de ella.
     #:
     #: Su valor como discriminador esta medido, y es fuerte: los 16
     #: ``stop_sequence`` son EXACTAMENTE los 16 con ``api_error_status``, sin
@@ -688,6 +699,35 @@ _SESSION_USAGE_COLUMNS: dict[str, str] = {
     #: hipotesis previa —que ``compactions`` marcaba la generacion vieja— se
     #: REFUTO: 346 filas tienen ``stop_reason`` con ``compactions`` en NULL.
     "stop_reason": "TEXT",
+    #: --- EL CIERRE CRUDO (TASK-THYROX-0155). El ``message.stop_reason`` del
+    #: ULTIMO mensaje ``assistant``, sea o no nulo. Es la cifra que la columna
+    #: de arriba no puede dar, porque aquella aplica una regla y esta no.
+    #:
+    #: **Su NULL es el DATO, no un hueco.** Dice que el ultimo mensaje del
+    #: transcript no declaro cierre — y entonces ``stop_reason`` viene de un
+    #: turno anterior. Las dos juntas declaran la divergencia; una sola la
+    #: esconde.
+    #:
+    #: Por que el cliente lo deja en nulo, medido en el ejecutable (2.1.266):
+    #: emite DOS clases de linea ``assistant``. La de POR BLOQUE construye el
+    #: registro desde el mensaje PARCIAL —su guard se llama
+    #: ``partial_message_not_found``— y NO recompone ``usage``, asi que hereda
+    #: la del ``message_start``. La RECONCILIADA lleva
+    #: ``usage: K7(<delta>, <base>)``, con la contabilidad del evento terminal
+    #: y su ``stop_reason``. Cuando la ultima linea del transcript es de la
+    #: primera clase, el campo esta presente y vale nulo.
+    #:
+    #: Su firma separa las dos poblaciones sin solape: ``output_tokens`` 1..10
+    #: en el grupo que diverge contra 24..3429 en el que no, sobre cuerpos de
+    #: mediana 2736 y 2804 caracteres. Ese umbral NO se guarda aqui: es una
+    #: frontera medida sobre una poblacion, no un contrato, y quien la necesite
+    #: la deriva de las columnas crudas.
+    #:
+    #: **NO se rellena hacia atras.** De las 325 filas que la motivaron, 216 ya
+    #: no tienen transcript en disco: su cierre crudo no se puede re-derivar de
+    #: ninguna fuente, y escribir un NULL ahi no distinguiria «el transcript no
+    #: lo declaro» de «no pude medirlo». Quedan permanentemente ambiguas.
+    "last_stop_reason": "TEXT",
     #: --- LA COMPACTACION (#601). ``compactMetadata`` vive en el nivel
     #: superior de la linea —medido: 3 eventos alli, 0 dentro de ``message``—,
     #: asi que un recorrido que filtre por ``type == 'assistant'`` primero no

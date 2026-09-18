@@ -1,0 +1,6 @@
+=== CONSUMIDOR REAL: el extractor del catalogo de modelos ===
+{"kind": "meta", "fuente": "_references/claude-code-bin/2.1.258/claude_strings.txt", "schema_version": 2, "best": "fable", "aliases": {"fable": {"default": "claude-fable-5-1", "per_provider": {"gateway": "claude-fable-5"}}, "haiku": {"default": "claude-haiku-4-5"}, "opus": {"default": "claude-opus-5", "per_provider": {"anthropic_aws": "claude-opus-5", "bedrock": "claude-opus-5", "foundry": "claude
+---
+fuente declarada: _references/claude-code-bin/2.1.258/claude_strings.txt
+  2.1.266 -> 28 registros emitidos
+  2.1.275 -> 28 registros emitidos

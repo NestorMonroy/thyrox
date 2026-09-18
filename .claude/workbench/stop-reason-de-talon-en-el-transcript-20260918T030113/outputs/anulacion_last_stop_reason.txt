@@ -1,0 +1,14 @@
+=== 1. la columna migra sola en un store existente? ===
+  store nuevo : True
+  store EXISTENTE: antes=38 cols, despues=39 cols, migro=True
+
+=== 2. ANULACION del fix de 0155: se retira la clave del dict ===
+  FALLO el final reconciliado si lo declaro
+  FALLO la clave viaja en el dict del final parcial
+  FALLO y en el del reconciliado
+  FALLO coinciden con el final reconciliado
+  FALLO [final reconciliado] el cierre crudo coincide
+9 ok, 5 fallos
+
+=== 3. RESTAURADA ===
+14 ok, 0 fallos

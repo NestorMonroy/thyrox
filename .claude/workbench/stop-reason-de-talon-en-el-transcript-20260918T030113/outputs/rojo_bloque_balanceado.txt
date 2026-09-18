@@ -1,0 +1,12 @@
+== 1. la forma de asignacion: delimita y contiene su ancla ==
+  ok    devuelve un bloque
+  ok    y contiene el ancla
+  ok    es el registro de la asignacion, no el archivo entero
+== 2. la forma `return{`: REHUSA en vez de devolver el vecino ==
+  FALLO rehusa
+        esperado=[None] obtenido=['{alfa:1,beta:{anidado:2},gamma:"tres"}']
+== 3. el ancla ausente sigue rehusando (no se rompio lo que ya iba) ==
+  ok    ancla inexistente
+  ok    bloque que no cierra
+
+5 ok, 1 fallos
