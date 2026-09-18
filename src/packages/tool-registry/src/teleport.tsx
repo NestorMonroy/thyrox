@@ -2,61 +2,61 @@ import axios from 'axios'
 import chalk from 'chalk'
 import { randomUUID } from 'crypto'
 import React from 'react'
-import { getOriginalCwd, getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { checkGate_CACHED_OR_BLOCKING } from '@claude-code-how-works/config/feature-flags'
+import { getOriginalCwd, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import { checkGate_CACHED_OR_BLOCKING } from '@thyrox/config/feature-flags'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { isPolicyAllowed } from '@claude-code-how-works/provider/policyLimits/index.js'
+} from '@thyrox/local-observability'
+import { isPolicyAllowed } from '@thyrox/provider/policyLimits/index.js'
 import { z } from 'zod/v4'
 import {
   getTeleportErrors,
   TeleportError,
   type TeleportLocalErrorType,
-} from '@claude-code-how-works/repl/components/TeleportError.js'
-import { getOauthConfig } from '@claude-code-how-works/agent/constants/oauth.js'
-import type { SDKMessage } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
+} from '@thyrox/repl/components/TeleportError.js'
+import { getOauthConfig } from '@thyrox/agent/constants/oauth.js'
+import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { Root } from '@anthropic/ink'
-import { KeybindingSetup } from '@claude-code-how-works/repl/keybindings/KeybindingProviderSetup.js'
-import { queryHaiku } from '@claude-code-how-works/provider/claude.js'
+import { KeybindingSetup } from '@thyrox/repl/keybindings/KeybindingProviderSetup.js'
+import { queryHaiku } from '@thyrox/provider/claude.js'
 import {
   getSessionLogsViaOAuth,
   getTeleportEvents,
-} from '@claude-code-how-works/provider/sessionIngress.js'
-import { getOrganizationUUID } from '@claude-code-how-works/provider/oauth/client.js'
-import { AppStateProvider } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { Message, SystemMessage } from '@claude-code-how-works/repl/replTypes/message.js'
-import type { PermissionMode } from '@claude-code-how-works/repl/replTypes/permissions.js'
+} from '@thyrox/provider/sessionIngress.js'
+import { getOrganizationUUID } from '@thyrox/provider/oauth/client.js'
+import { AppStateProvider } from '@thyrox/app-host/state/AppState.js'
+import type { Message, SystemMessage } from '@thyrox/repl/replTypes/message.js'
+import type { PermissionMode } from '@thyrox/repl/replTypes/permissions.js'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
   getClaudeAIOAuthTokens,
-} from '@claude-code-how-works/provider/authAlias.js'
-import { checkGithubAppInstalled } from '@claude-code-how-works/agent/background/preconditions.js'
+} from '@thyrox/provider/authAlias.js'
+import { checkGithubAppInstalled } from '@thyrox/agent/background/preconditions.js'
 import {
   deserializeMessages,
   type TeleportRemoteResponse,
-} from '@claude-code-how-works/repl/conversationRecovery.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+} from '@thyrox/repl/conversationRecovery.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   detectCurrentRepositoryWithHost,
   parseGitHubRepository,
   parseGitRemote,
-} from '@claude-code-how-works/storage/detectRepository.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { TeleportOperationError, toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { execFileNoThrow } from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { truncateToWidth } from '@claude-code-how-works/output/formatters'
-import { findGitRoot, getDefaultBranch, getIsClean, gitExe } from '@claude-code-how-works/storage/git.js'
-import { safeParseJSON } from '@claude-code-how-works/storage/json.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { createSystemMessage, createUserMessage } from '@claude-code-how-works/agent/messages.js'
-import { getMainLoopModel } from '@claude-code-how-works/provider/model/model.js'
-import { isTranscriptMessage } from '@claude-code-how-works/storage/sessionStorage.js'
-import { getSettings } from '@claude-code-how-works/config/settings'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
+} from '@thyrox/storage/detectRepository.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { TeleportOperationError, toError } from '@thyrox/local-observability/errorHelpers.js'
+import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
+import { truncateToWidth } from '@thyrox/output/formatters'
+import { findGitRoot, getDefaultBranch, getIsClean, gitExe } from '@thyrox/storage/git.js'
+import { safeParseJSON } from '@thyrox/storage/json.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { createSystemMessage, createUserMessage } from '@thyrox/agent/messages.js'
+import { getMainLoopModel } from '@thyrox/provider/model/model.js'
+import { isTranscriptMessage } from '@thyrox/storage/sessionStorage.js'
+import { getSettings } from '@thyrox/config/settings'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import {
   fetchSession,
   type GitRepositoryOutcome,
@@ -64,9 +64,9 @@ import {
   getBranchFromSession,
   getOAuthHeaders,
   type SessionResource,
-} from '@claude-code-how-works/teleport/api.js'
-import { fetchEnvironments } from '@claude-code-how-works/teleport/environments.js'
-import { createAndUploadGitBundle } from '@claude-code-how-works/teleport/gitBundle.js'
+} from '@thyrox/teleport/api.js'
+import { fetchEnvironments } from '@thyrox/teleport/environments.js'
+import { createAndUploadGitBundle } from '@thyrox/teleport/gitBundle.js'
 
 export type TeleportResult = {
   messages: Message[]

@@ -2,17 +2,17 @@ import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:tes
 import { mkdir, mkdtemp, readFile, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { lock as realLock } from '@claude-code-how-works/storage/lockfile.js'
+import { lock as realLock } from '@thyrox/storage/lockfile.js'
 import {
   _test_resetSwarmAppRuntime,
   installSwarmAppRuntime,
-} from '@claude-code-how-works/swarm/adapters/appRuntime.js'
+} from '@thyrox/swarm/adapters/appRuntime.js'
 import {
   readTeamFileAsync,
   type TeamFile,
   updateTeamFileAsync,
   writeTeamFileAsync,
-} from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
 import { ensureTeamFile } from '../spawnMultiAgent.js'
 import type { AppState } from '../../../appStateTypes.js'
 

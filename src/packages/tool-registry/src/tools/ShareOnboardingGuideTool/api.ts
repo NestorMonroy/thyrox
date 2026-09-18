@@ -17,10 +17,10 @@
  *   anthropic-beta: <gw header>
  */
 import axios from 'axios'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { getOauthConfig, OAUTH_BETA_HEADER } from '@claude-code-how-works/provider/oauthConstants'
-import { getClaudeAIOAuthTokens } from '@claude-code-how-works/provider/authAlias.js'
-import { getOAuthHeaders } from '@claude-code-how-works/teleport/api.js'
+import { logEvent } from '@thyrox/local-observability'
+import { getOauthConfig, OAUTH_BETA_HEADER } from '@thyrox/provider/oauthConstants'
+import { getClaudeAIOAuthTokens } from '@thyrox/provider/authAlias.js'
+import { getOAuthHeaders } from '@thyrox/teleport/api.js'
 
 // ant _A6 = 1e4 (10 seconds) — share API calls bail at 10s rather than
 // the SDK default 30s; the model gets a clean failure rather than a

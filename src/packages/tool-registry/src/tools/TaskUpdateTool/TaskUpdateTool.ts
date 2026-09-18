@@ -1,12 +1,12 @@
 import { feature } from 'bun:bundle'
 import { z } from 'zod/v4'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 import {
   executeTaskCompletedHooks,
   getTaskCompletedHookMessage,
-} from '@claude-code-how-works/agent/hooks.js'
+} from '@thyrox/agent/hooks.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
   blockTask,
@@ -19,14 +19,14 @@ import {
   type TaskStatus,
   TaskStatusSchema,
   updateTask,
-} from '@claude-code-how-works/agent/tasks.js'
+} from '@thyrox/agent/tasks.js'
 import {
   getAgentId,
   getAgentName,
   getTeammateColor,
   getTeamName,
-} from '@claude-code-how-works/swarm/teammateState.js'
-import { readTeamFileAsync, writeToMailbox } from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm/teammateState.js'
+import { readTeamFileAsync, writeToMailbox } from '@thyrox/swarm'
 import { VERIFICATION_AGENT_TYPE } from '../AgentTool/constants.js'
 import { TASK_UPDATE_TOOL_NAME } from './constants.js'
 import { DESCRIPTION, PROMPT } from './prompt.js'

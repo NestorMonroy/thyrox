@@ -3,43 +3,43 @@ import type {
   ToolUseBlockParam,
 } from '@anthropic-ai/sdk/resources/index.mjs'
 import * as React from 'react'
-import { ConfigurableShortcutHint } from '@claude-code-how-works/repl/components/ConfigurableShortcutHint.js'
+import { ConfigurableShortcutHint } from '@thyrox/repl/components/ConfigurableShortcutHint.js'
 import {
   CtrlOToExpand,
   SubAgentProvider,
-} from '@claude-code-how-works/repl/components/CtrlOToExpand.js'
+} from '@thyrox/repl/components/CtrlOToExpand.js'
 import { Byline, KeyboardShortcutHint } from '@anthropic/ink'
 import type { z } from 'zod/v4'
-import { AgentProgressLine } from '@claude-code-how-works/repl/components/AgentProgressLine.js'
-import { FallbackToolUseErrorMessage } from '@claude-code-how-works/repl/components/FallbackToolUseErrorMessage.js'
-import { FallbackToolUseRejectedMessage } from '@claude-code-how-works/repl/components/FallbackToolUseRejectedMessage.js'
-import { Markdown } from '@claude-code-how-works/repl/components/Markdown.js'
-import { Message as MessageComponent } from '@claude-code-how-works/repl/components/Message.js'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
-import { ToolUseLoader } from '@claude-code-how-works/repl/components/ToolUseLoader.js'
+import { AgentProgressLine } from '@thyrox/repl/components/AgentProgressLine.js'
+import { FallbackToolUseErrorMessage } from '@thyrox/repl/components/FallbackToolUseErrorMessage.js'
+import { FallbackToolUseRejectedMessage } from '@thyrox/repl/components/FallbackToolUseRejectedMessage.js'
+import { Markdown } from '@thyrox/repl/components/Markdown.js'
+import { Message as MessageComponent } from '@thyrox/repl/components/Message.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
+import { ToolUseLoader } from '@thyrox/repl/components/ToolUseLoader.js'
 import { Box, Text } from '@anthropic/ink'
-import { getDumpPromptsPath } from '@claude-code-how-works/provider/dumpPrompts.js'
+import { getDumpPromptsPath } from '@thyrox/provider/dumpPrompts.js'
 import { findToolByName, type Tools } from '../../Tool.js'
-import type { Message, ProgressMessage } from '@claude-code-how-works/agent/messageShapes'
+import type { Message, ProgressMessage } from '@thyrox/agent/messageShapes'
 import type { AgentToolProgress } from '../../progressTypes.js'
 import { count } from '../../utils/array.js'
 import {
   getSearchOrReadFromContent,
   getSearchReadSummaryText,
 } from '../../collapseReadSearch.js'
-import { getDisplayPath } from '@claude-code-how-works/storage/file.js'
-import { formatDuration, formatNumber } from '@claude-code-how-works/output/formatters'
+import { getDisplayPath } from '@thyrox/storage/file.js'
+import { formatDuration, formatNumber } from '@thyrox/output/formatters'
 import {
   buildSubagentLookups,
   createAssistantMessage,
   EMPTY_LOOKUPS,
-} from '@claude-code-how-works/agent/messages.js'
-import type { ModelAlias } from '@claude-code-how-works/provider/modelAliases.js'
+} from '@thyrox/agent/messages.js'
+import type { ModelAlias } from '@thyrox/provider/modelAliases.js'
 import {
   getMainLoopModel,
   parseUserSpecifiedModel,
   renderModelName,
-} from '@claude-code-how-works/provider/model.js'
+} from '@thyrox/provider/model.js'
 import type { Theme, ThemeName } from '@anthropic/ink'
 import type {
   outputSchema,

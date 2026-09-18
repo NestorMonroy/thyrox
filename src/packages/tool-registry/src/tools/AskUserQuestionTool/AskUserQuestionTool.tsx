@@ -3,10 +3,10 @@ import * as React from 'react'
 import {
   getAllowedChannels,
   getQuestionPreviewFormat,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
-import { BLACK_CIRCLE } from '@claude-code-how-works/output/constants/figures.js'
-import { getModeColor } from '@claude-code-how-works/permission/PermissionMode'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
+import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
+import { getModeColor } from '@thyrox/permission/PermissionMode'
 import { z } from 'zod/v4'
 import { Box, Text } from '@anthropic/ink'
 import type { Tool } from '../../Tool.js'

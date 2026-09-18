@@ -1,6 +1,6 @@
 import { feature } from 'bun:bundle'
-import { getModelOptions } from '@claude-code-how-works/provider/modelOptions.js'
-import { isVoiceGrowthBookEnabled } from '@claude-code-how-works/voice/voiceModeEnabled.js'
+import { getModelOptions } from '@thyrox/provider/modelOptions.js'
+import { isVoiceGrowthBookEnabled } from '@thyrox/voice/voiceModeEnabled.js'
 import {
   getOptionsForSetting,
   SUPPORTED_SETTINGS,

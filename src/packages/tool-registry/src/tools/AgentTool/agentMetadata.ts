@@ -4,7 +4,7 @@
  * a single function call and the file-size ratchet doesn't drift.
  */
 
-import { parsePluginIdentifier } from '@claude-code-how-works/config/plugin/pluginIdentifier'
+import { parsePluginIdentifier } from '@thyrox/config/plugin/pluginIdentifier'
 import {
   type AgentDefinition,
   isBuiltInAgent,

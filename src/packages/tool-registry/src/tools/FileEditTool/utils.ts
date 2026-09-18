@@ -1,18 +1,18 @@
 import { type StructuredPatchHunk, structuredPatch } from 'diff'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { expandPath } from '@claude-code-how-works/storage/path.js'
-import { countCharInString } from '@claude-code-how-works/output/utils/stringUtils.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { expandPath } from '@thyrox/storage/path.js'
+import { countCharInString } from '@thyrox/output/utils/stringUtils.js'
 import {
   DIFF_TIMEOUT_MS,
   getPatchForDisplay,
   getPatchFromContents,
-} from '@claude-code-how-works/agent/diff.js'
-import { errorMessage, isENOENT } from '@claude-code-how-works/local-observability/errorHelpers.js'
+} from '@thyrox/agent/diff.js'
+import { errorMessage, isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import {
   addLineNumbers,
   convertLeadingTabsToSpaces,
   readFileSyncCached,
-} from '@claude-code-how-works/storage/file.js'
+} from '@thyrox/storage/file.js'
 import type { EditInput, FileEdit } from './types.js'
 
 // Claude can't output curly quotes, so we define them as constants here for Claude to use

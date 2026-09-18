@@ -10,7 +10,7 @@
 import * as React from 'react'
 import { z } from 'zod/v4'
 import { Box, Text } from '@anthropic/ink'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import {
   getIsRemoteMode,
   getLastInteractionTime,
@@ -18,9 +18,9 @@ import {
   isReplBridgeActive,
   isUserActiveForNotifications,
   NOTIF_ACTIVE_THRESHOLD_MS,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getGlobalConfig } from '@claude-code-how-works/config'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { getGlobalConfig } from '@thyrox/config'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { lazySchema } from '../../utils/lazySchema.js'
 import { buildTool, type Tool } from '../../Tool.js'
 import {

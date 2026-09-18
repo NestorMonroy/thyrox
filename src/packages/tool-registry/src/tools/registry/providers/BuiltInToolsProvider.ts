@@ -1,12 +1,12 @@
 import { feature } from 'bun:bundle'
 import type { Tool, Tools } from '../../../Tool.js'
-import { hasEmbeddedSearchTools } from '@claude-code-how-works/config/embeddedTools.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { isPowerShellToolEnabled } from '@claude-code-how-works/shell/legacy/shellToolUtils.js'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
-import { isWorktreeModeEnabled } from '@claude-code-how-works/agent/worktreeModeEnabled.js'
-import { isTodoV2Enabled } from '@claude-code-how-works/agent/tasks.js'
-import { isToolSearchEnabledOptimistic } from '@claude-code-how-works/agent/toolSearch.js'
+import { hasEmbeddedSearchTools } from '@thyrox/config/embeddedTools.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { isPowerShellToolEnabled } from '@thyrox/shell/legacy/shellToolUtils.js'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
+import { isWorktreeModeEnabled } from '@thyrox/agent/worktreeModeEnabled.js'
+import { isTodoV2Enabled } from '@thyrox/agent/tasks.js'
+import { isToolSearchEnabledOptimistic } from '@thyrox/agent/toolSearch.js'
 import type { ToolProvider } from '../types.js'
 
 // Static imports — always loaded
@@ -50,7 +50,7 @@ import { ExitWorktreeTool } from '../../ExitWorktreeTool/ExitWorktreeTool.js'
 // other tools) and boots clean. The vm engine + message-queue graph stay
 // deferred inside WorkflowTool.call() (see that file).
 import { WorkflowTool } from '../../WorkflowTool/WorkflowTool.js'
-import { initBundledWorkflows } from '@claude-code-how-works/tool-registry/tools/WorkflowTool/bundled/index.js'
+import { initBundledWorkflows } from '@thyrox/tool-registry/tools/WorkflowTool/bundled/index.js'
 
 // Lazy requires — conditional / feature-gated (preserving dead code elimination)
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -66,7 +66,7 @@ const getSuggestBackgroundPRTool = () =>
 
 const getSleepTool = () =>
   feature('PROACTIVE') || feature('KAIROS')
-    ? require('@claude-code-how-works/tool-registry/tools/SleepTool/SleepTool.js').SleepTool as Tool
+    ? require('@thyrox/tool-registry/tools/SleepTool/SleepTool.js').SleepTool as Tool
     : null
 
 const getCronTools = (): Tool[] => [
@@ -87,7 +87,7 @@ const getMonitorTool = () =>
 
 const getSendUserFileTool = () =>
   feature('KAIROS_SEND_USER_FILE')
-    ? require('@claude-code-how-works/tool-registry/tools/SendUserFileTool/SendUserFileTool.js').SendUserFileTool as Tool
+    ? require('@thyrox/tool-registry/tools/SendUserFileTool/SendUserFileTool.js').SendUserFileTool as Tool
     : null
 
 // PushNotificationTool: ported from upstream v2.1.123 (resplit/3871.js).
@@ -126,17 +126,17 @@ const getCtxInspectTool = () => null
 
 const getTerminalCaptureTool = () =>
   feature('TERMINAL_PANEL')
-    ? require('@claude-code-how-works/tool-registry/tools/TerminalCaptureTool/TerminalCaptureTool.js').TerminalCaptureTool as Tool
+    ? require('@thyrox/tool-registry/tools/TerminalCaptureTool/TerminalCaptureTool.js').TerminalCaptureTool as Tool
     : null
 
 const getWebBrowserTool = () =>
   feature('WEB_BROWSER_TOOL')
-    ? require('@claude-code-how-works/tool-registry/tools/WebBrowserTool/WebBrowserTool.js').WebBrowserTool as Tool
+    ? require('@thyrox/tool-registry/tools/WebBrowserTool/WebBrowserTool.js').WebBrowserTool as Tool
     : null
 
 const getSnipTool = () =>
   feature('HISTORY_SNIP')
-    ? require('@claude-code-how-works/tool-registry/tools/SnipTool/SnipTool.js').SnipTool as Tool
+    ? require('@thyrox/tool-registry/tools/SnipTool/SnipTool.js').SnipTool as Tool
     : null
 
 // ListPeersTool: src/ shim never replaced with canonical package. Feature

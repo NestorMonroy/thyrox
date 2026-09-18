@@ -1,11 +1,11 @@
 import React from 'react'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
 import { TOOL_SUMMARY_MAX_LENGTH } from '../../toolLimits.js'
 import { Box, Text } from '@anthropic/ink'
 import type { ToolProgressData } from '../../Tool.js'
-import type { ProgressMessage } from '@claude-code-how-works/agent/messageShapes'
-import { formatFileSize } from '@claude-code-how-works/output/formatters'
-import { truncate } from '@claude-code-how-works/output/formatters/truncate.js'
+import type { ProgressMessage } from '@thyrox/agent/messageShapes'
+import { formatFileSize } from '@thyrox/output/formatters'
+import { truncate } from '@thyrox/output/formatters/truncate.js'
 import type { Output } from './WebFetchTool.js'
 
 export function renderToolUseMessage(

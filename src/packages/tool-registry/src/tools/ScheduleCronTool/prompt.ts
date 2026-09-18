@@ -1,7 +1,7 @@
 import { feature } from 'bun:bundle'
-import { getFeatureValue_CACHED_WITH_REFRESH } from '@claude-code-how-works/config/feature-flags'
-import { DEFAULT_CRON_JITTER_CONFIG } from '@claude-code-how-works/agent/scheduler'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { getFeatureValue_CACHED_WITH_REFRESH } from '@thyrox/config/feature-flags'
+import { DEFAULT_CRON_JITTER_CONFIG } from '@thyrox/agent/scheduler'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 
 const KAIROS_CRON_REFRESH_MS = 5 * 60 * 1000
 

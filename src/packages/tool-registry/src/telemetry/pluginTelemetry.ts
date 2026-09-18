@@ -17,17 +17,17 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { logOTelEvent } from '@claude-code-how-works/local-observability/telemetry'
+} from '@thyrox/local-observability'
+import { logOTelEvent } from '@thyrox/local-observability/telemetry'
 import type {
   LoadedPlugin,
   PluginError,
   PluginManifest,
-} from '@claude-code-how-works/config/plugin/types'
+} from '@thyrox/config/plugin/types'
 import {
   isOfficialMarketplaceName,
   parsePluginIdentifier,
-} from '@claude-code-how-works/config/plugin/pluginIdentifier'
+} from '@thyrox/config/plugin/pluginIdentifier'
 
 // Redacted name string used when the plugin marketplace is NOT
 // Anthropic-controlled (ant 2643.js: `mu = "third-party"`).

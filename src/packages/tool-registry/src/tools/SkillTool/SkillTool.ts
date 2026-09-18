@@ -2,13 +2,13 @@ import { feature } from 'bun:bundle'
 import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import uniqBy from 'lodash-es/uniqBy.js'
 import { dirname } from 'path'
-import { getProjectRoot } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getProjectRoot } from '@thyrox/app-host/bootstrap/state.js'
 import {
   builtInCommandNames,
   findCommand,
   getCommands,
   type PromptCommand,
-} from '@claude-code-how-works/command-runtime/runtime'
+} from '@thyrox/command-runtime/runtime'
 import type {
   Tool,
   ToolCallProgress,
@@ -17,49 +17,49 @@ import type {
   ValidationResult,
 } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import type { Command } from '@claude-code-how-works/agent/command.js'
+import type { Command } from '@thyrox/agent/command.js'
 import type {
   AssistantMessage,
   AttachmentMessage,
   Message,
   SystemMessage,
   UserMessage,
-} from '@claude-code-how-works/agent/messageShapes'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import type { PermissionDecision } from '@claude-code-how-works/permission/PermissionResult'
-import { getRuleByContentsForTool } from '@claude-code-how-works/permission/permissions'
+} from '@thyrox/agent/messageShapes'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import type { PermissionDecision } from '@thyrox/permission/PermissionResult'
+import { getRuleByContentsForTool } from '@thyrox/permission/permissions'
 import {
   isOfficialMarketplaceName,
   parsePluginIdentifier,
-} from '@claude-code-how-works/config/plugin/pluginIdentifier'
+} from '@thyrox/config/plugin/pluginIdentifier'
 import { buildPluginCommandTelemetryFields } from '../../telemetry/pluginTelemetry.js'
 import { z } from 'zod/v4'
 import {
   addInvokedSkill,
   clearInvokedSkillsForAgent,
   getSessionId,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { COMMAND_MESSAGE_TAG } from '@claude-code-how-works/command-runtime/xml.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { COMMAND_MESSAGE_TAG } from '@thyrox/command-runtime/xml.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import { emitSkillActivated } from './skillActivatedTelemetry.js'
-import { getAgentContext } from '@claude-code-how-works/agent/agentContext.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { getAgentContext } from '@thyrox/agent/agentContext.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import {
   extractResultText,
   prepareForkedCommandContext,
-} from '@claude-code-how-works/agent/forkedAgent.js'
-import { parseFrontmatter } from '@claude-code-how-works/agent/frontmatterParser.js'
+} from '@thyrox/agent/forkedAgent.js'
+import { parseFrontmatter } from '@thyrox/agent/frontmatterParser.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { createUserMessage, normalizeMessages } from '@claude-code-how-works/agent/messages.js'
-import type { ModelAlias } from '@claude-code-how-works/provider/modelAliases.js'
-import { resolveSkillModelOverride } from '@claude-code-how-works/provider/model.js'
+import { createUserMessage, normalizeMessages } from '@thyrox/agent/messages.js'
+import type { ModelAlias } from '@thyrox/provider/modelAliases.js'
+import { resolveSkillModelOverride } from '@thyrox/provider/model.js'
 import { recordSkillUsage } from '../../suggestions/skillUsageTracking.js'
-import { createAgentId } from '@claude-code-how-works/agent/uuid.js'
+import { createAgentId } from '@thyrox/agent/uuid.js'
 import { runAgent } from '../AgentTool/runAgent.js'
 import {
   getToolUseIDFromParentMessage,
@@ -108,10 +108,10 @@ import type { SkillToolProgress as Progress } from '../../progressTypes.js'
 /* eslint-disable @typescript-eslint/no-require-imports */
 const remoteSkillModules = feature('EXPERIMENTAL_SKILL_SEARCH')
   ? {
-      ...(require('@claude-code-how-works/agent/skillSearch/remoteSkillState.js') as typeof import('@claude-code-how-works/agent/skillSearch/remoteSkillState.js')),
-      ...(require('@claude-code-how-works/agent/skillSearch/remoteSkillLoader.js') as typeof import('@claude-code-how-works/agent/skillSearch/remoteSkillLoader.js')),
-      ...(require('@claude-code-how-works/agent/skillSearch/telemetry.js') as typeof import('@claude-code-how-works/agent/skillSearch/telemetry.js')),
-      ...(require('@claude-code-how-works/command-runtime/skills/featureCheck.js') as typeof import('@claude-code-how-works/command-runtime/skills/featureCheck.js')),
+      ...(require('@thyrox/agent/skillSearch/remoteSkillState.js') as typeof import('@thyrox/agent/skillSearch/remoteSkillState.js')),
+      ...(require('@thyrox/agent/skillSearch/remoteSkillLoader.js') as typeof import('@thyrox/agent/skillSearch/remoteSkillLoader.js')),
+      ...(require('@thyrox/agent/skillSearch/telemetry.js') as typeof import('@thyrox/agent/skillSearch/telemetry.js')),
+      ...(require('@thyrox/command-runtime/skills/featureCheck.js') as typeof import('@thyrox/command-runtime/skills/featureCheck.js')),
     }
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
@@ -641,7 +641,7 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
 
     // Process the skill with optional args
     const { processPromptSlashCommand } = await import(
-      '@claude-code-how-works/repl/processUserInput/processSlashCommand.js'
+      '@thyrox/repl/processUserInput/processSlashCommand.js'
     )
     const processedCommand = await processPromptSlashCommand(
       commandName,

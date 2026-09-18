@@ -1,12 +1,12 @@
 import { feature } from 'bun:bundle'
-import { getRemoteControlAtStartup } from '@claude-code-how-works/config'
+import { getRemoteControlAtStartup } from '@thyrox/config'
 import {
   EDITOR_MODES,
   NOTIFICATION_CHANNELS,
   TEAMMATE_MODES,
-} from '@claude-code-how-works/config/configConstants.js'
-import { getModelOptions } from '@claude-code-how-works/provider/modelOptions.js'
-import { validateModel } from '@claude-code-how-works/provider/validateModel.js'
+} from '@thyrox/config/configConstants.js'
+import { getModelOptions } from '@thyrox/provider/modelOptions.js'
+import { validateModel } from '@thyrox/provider/validateModel.js'
 import { THEME_NAMES, THEME_SETTINGS } from '@anthropic/ink'
 
 /** AppState keys that can be synced for immediate UI effect */

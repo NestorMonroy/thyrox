@@ -9,7 +9,7 @@ import type {
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   extractMcpToolDetails,
   extractSkillName,
@@ -19,17 +19,17 @@ import {
   isToolDetailsLoggingEnabled,
   mcpToolDetailsForAnalytics,
   sanitizeToolNameForAnalytics,
-} from '@claude-code-how-works/agent/eventMetadata.js'
+} from '@thyrox/agent/eventMetadata.js'
 import {
   addToToolDuration,
   getCodeEditToolDecisionCounter,
   getStatsStore,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 import {
   buildCodeEditToolAttributes,
   isCodeEditingTool,
-} from '@claude-code-how-works/permission/toolPermission/permissionLogging.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+} from '@thyrox/permission/toolPermission/permissionLogging.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import {
   findToolByName,
   type Tool,
@@ -50,26 +50,26 @@ import {
   isDeferredTool,
   TOOL_SEARCH_TOOL_NAME,
 } from '../tools/ToolSearchTool/prompt.js'
-import type { HookProgress } from '@claude-code-how-works/agent/types/hooks.js'
+import type { HookProgress } from '@thyrox/agent/types/hooks.js'
 import type {
   AssistantMessage,
   AttachmentMessage,
   Message,
   ProgressMessage,
   StopHookInfo,
-} from '@claude-code-how-works/agent/messageShapes'
+} from '@thyrox/agent/messageShapes'
 import { count } from '../utils/array.js'
-import { createAttachmentMessage } from '@claude-code-how-works/agent/attachments.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { createAttachmentMessage } from '@thyrox/agent/attachments.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   AbortError,
   errorMessage,
   getErrnoCode,
   ShellError,
   TelemetrySafeError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-} from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { executePermissionDeniedHooks } from '@claude-code-how-works/agent/hooks.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+} from '@thyrox/local-observability/errorHelpers.js'
+import { executePermissionDeniedHooks } from '@thyrox/agent/hooks.js'
+import { logError } from '@thyrox/local-observability/logging'
 import {
   CANCEL_MESSAGE,
   createProgressMessage,
@@ -77,18 +77,18 @@ import {
   createToolResultStopMessage,
   createUserMessage,
   withMemoryCorrectionHint,
-} from '@claude-code-how-works/agent/messages.js'
+} from '@thyrox/agent/messages.js'
 import type {
   PermissionDecisionReason,
   PermissionResult,
-} from '@claude-code-how-works/permission/PermissionResult'
+} from '@thyrox/permission/PermissionResult'
 import {
   startSessionActivity,
   stopSessionActivity,
-} from '@claude-code-how-works/storage/sessionActivity.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { Stream } from '@claude-code-how-works/config/stream'
-import { logOTelEvent } from '@claude-code-how-works/local-observability/telemetryEvents.js'
+} from '@thyrox/storage/sessionActivity.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { Stream } from '@thyrox/config/stream'
+import { logOTelEvent } from '@thyrox/local-observability/telemetryEvents.js'
 import {
   addToolContentEvent,
   endToolBlockedOnUserSpan,
@@ -98,7 +98,7 @@ import {
   startToolBlockedOnUserSpan,
   startToolExecutionSpan,
   startToolSpan,
-} from '@claude-code-how-works/local-observability/spans'
+} from '@thyrox/local-observability/spans'
 import {
   formatError,
   formatZodValidationError,
@@ -106,24 +106,24 @@ import {
 import {
   processPreMappedToolResultBlock,
   processToolResultBlock,
-} from '@claude-code-how-works/storage/toolResultStorage.js'
+} from '@thyrox/storage/toolResultStorage.js'
 import {
   extractDiscoveredToolNames,
   isToolSearchEnabledOptimistic,
   isToolSearchToolAvailable,
-} from '@claude-code-how-works/agent/toolSearch.js'
+} from '@thyrox/agent/toolSearch.js'
 import {
   McpAuthError,
   McpToolCallError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-} from '@claude-code-how-works/mcp-runtime/clientRuntime.js'
-import { mcpInfoFromString } from '@claude-code-how-works/mcp-runtime/mcpStringUtils.js'
-import { normalizeNameForMCP } from '@claude-code-how-works/mcp-runtime/normalization.js'
-import type { MCPServerConnection } from '@claude-code-how-works/mcp-runtime/types.js'
+} from '@thyrox/mcp-runtime/clientRuntime.js'
+import { mcpInfoFromString } from '@thyrox/mcp-runtime/mcpStringUtils.js'
+import { normalizeNameForMCP } from '@thyrox/mcp-runtime/normalization.js'
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 import {
   getLoggingSafeMcpBaseUrl,
   getMcpServerScopeFromToolName,
   isMcpTool,
-} from '@claude-code-how-works/mcp-runtime/utils.js'
+} from '@thyrox/mcp-runtime/utils.js'
 import {
   resolveHookPermissionDecision,
   runPostToolUseFailureHooks,

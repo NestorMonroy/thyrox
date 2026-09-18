@@ -1,13 +1,13 @@
 import { feature } from 'bun:bundle'
 import { APIUserAbortError } from '@anthropic-ai/sdk'
 import type { z } from 'zod/v4'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import type { ToolPermissionContext, ToolUseContext } from '../../Tool.js'
-import type { PendingClassifierCheck } from '@claude-code-how-works/permission/permissionTypes'
+import type { PendingClassifierCheck } from '@thyrox/permission/permissionTypes'
 import { count } from '../../utils/array.js'
 import {
   checkSemantics,
@@ -16,45 +16,45 @@ import {
   parseForSecurityFromAst,
   type Redirect,
   type SimpleCommand,
-} from '@claude-code-how-works/shell/bash/ast-alias.js'
+} from '@thyrox/shell/bash/ast-alias.js'
 import {
   type CommandPrefixResult,
   extractOutputRedirections,
   getCommandSubcommandPrefix,
   splitCommand,
-} from '@claude-code-how-works/shell/bash/commands.js'
-import { parseCommandRaw } from '@claude-code-how-works/shell/bash/parser.js'
-import { tryParseShellCommand } from '@claude-code-how-works/shell/bash/shellQuote.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { AbortError } from '@claude-code-how-works/local-observability/errorHelpers.js'
+} from '@thyrox/shell/bash/commands.js'
+import { parseCommandRaw } from '@thyrox/shell/bash/parser.js'
+import { tryParseShellCommand } from '@thyrox/shell/bash/shellQuote.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { AbortError } from '@thyrox/local-observability/errorHelpers.js'
 import type {
   ClassifierBehavior,
   ClassifierResult,
-} from '@claude-code-how-works/permission/bashClassifier.js'
+} from '@thyrox/permission/bashClassifier.js'
 import {
   classifyBashCommand,
   getBashPromptAllowDescriptions,
   getBashPromptAskDescriptions,
   getBashPromptDenyDescriptions,
   isClassifierPermissionsEnabled,
-} from '@claude-code-how-works/permission/bashClassifier.js'
+} from '@thyrox/permission/bashClassifier.js'
 import type {
   PermissionDecisionReason,
   PermissionResult,
-} from '@claude-code-how-works/permission/PermissionResult'
+} from '@thyrox/permission/PermissionResult'
 import type {
   PermissionRule,
   PermissionRuleValue,
-} from '@claude-code-how-works/permission/PermissionRule'
-import { extractRules } from '@claude-code-how-works/permission/PermissionUpdate'
-import type { PermissionUpdate } from '@claude-code-how-works/permission/PermissionUpdateSchema'
-import { permissionRuleValueToString } from '@claude-code-how-works/permission/permissionRuleParser'
+} from '@thyrox/permission/PermissionRule'
+import { extractRules } from '@thyrox/permission/PermissionUpdate'
+import type { PermissionUpdate } from '@thyrox/permission/PermissionUpdateSchema'
+import { permissionRuleValueToString } from '@thyrox/permission/permissionRuleParser'
 import {
   createPermissionRequestMessage,
   getRuleByContentsForTool,
-} from '@claude-code-how-works/permission/permissions'
+} from '@thyrox/permission/permissions'
 import {
   parsePermissionRule,
   type ShellPermissionRule,
@@ -62,11 +62,11 @@ import {
   permissionRuleExtractPrefix as sharedPermissionRuleExtractPrefix,
   suggestionForExactCommand as sharedSuggestionForExactCommand,
   suggestionForPrefix as sharedSuggestionForPrefix,
-} from '@claude-code-how-works/permission/shellRuleMatching.js'
-import { getPlatform } from '@claude-code-how-works/config/platform'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { windowsPathToPosixPath } from '@claude-code-how-works/storage/windowsPaths.js'
+} from '@thyrox/permission/shellRuleMatching.js'
+import { getPlatform } from '@thyrox/config/platform'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { windowsPathToPosixPath } from '@thyrox/storage/windowsPaths.js'
 import { BashTool } from './BashTool.js'
 import { checkCommandOperatorPermissions } from './bashCommandHelpers.js'
 import {
@@ -77,7 +77,7 @@ import { checkPermissionMode } from './modeValidation.js'
 import { checkPathConstraints } from './pathValidation.js'
 import { checkSedConstraints } from './sedValidation.js'
 import { shouldUseSandbox } from './shouldUseSandbox.js'
-import { sanitizeUnicodeDashes } from '@claude-code-how-works/shell/bash/unicodeDashes.js'
+import { sanitizeUnicodeDashes } from '@thyrox/shell/bash/unicodeDashes.js'
 
 // Env-var assignment prefix (VAR=value). Shared across three while-loops that
 // skip safe env vars before extracting the command name.

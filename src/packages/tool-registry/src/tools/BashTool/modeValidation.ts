@@ -1,7 +1,7 @@
 import type { z } from 'zod/v4'
 import type { ToolPermissionContext } from '../../Tool.js'
-import { splitCommand } from '@claude-code-how-works/shell/bash/commands.js'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
+import { splitCommand } from '@thyrox/shell/bash/commands.js'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
 import type { BashTool } from './BashTool.js'
 
 const ACCEPT_EDITS_ALLOWED_COMMANDS = [

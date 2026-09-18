@@ -4,7 +4,7 @@ import { z } from 'zod/v4'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   buildTool,
   findToolByName,
@@ -12,10 +12,10 @@ import {
   type ToolDef,
   type Tools,
 } from '../../Tool.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { escapeRegExp } from '@claude-code-how-works/output/utils/stringUtils.js'
-import { isToolSearchEnabledOptimistic } from '@claude-code-how-works/agent/toolSearch.js'
+import { escapeRegExp } from '@thyrox/output/utils/stringUtils.js'
+import { isToolSearchEnabledOptimistic } from '@thyrox/agent/toolSearch.js'
 import { getPrompt, isDeferredTool, TOOL_SEARCH_TOOL_NAME } from './prompt.js'
 
 export const inputSchema = lazySchema(() =>
@@ -351,8 +351,8 @@ export const ToolSearchTool = buildTool({
     ): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { getFeatureValue_CACHED_MAY_BE_STALE } = require(
-        '@claude-code-how-works/config/feature-flags',
-      ) as typeof import('@claude-code-how-works/config/feature-flags')
+        '@thyrox/config/feature-flags',
+      ) as typeof import('@thyrox/config/feature-flags')
       if (!getFeatureValue_CACHED_MAY_BE_STALE('tengu_ashen_kelp', true)) {
         return
       }

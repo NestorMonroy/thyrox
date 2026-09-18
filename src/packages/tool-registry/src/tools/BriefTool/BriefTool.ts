@@ -1,13 +1,13 @@
 import { feature } from 'bun:bundle'
 import { z } from 'zod/v4'
-import { getKairosActive, getUserMsgOptIn } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getFeatureValue_CACHED_WITH_REFRESH } from '@claude-code-how-works/config/feature-flags'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { getKairosActive, getUserMsgOptIn } from '@thyrox/app-host/bootstrap/state.js'
+import { getFeatureValue_CACHED_WITH_REFRESH } from '@thyrox/config/feature-flags'
+import { logEvent } from '@thyrox/local-observability'
 import type { ValidationResult } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { resolveAttachments, validateAttachmentPaths } from './attachments.js'
 import {
   BRIEF_TOOL_NAME,

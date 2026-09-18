@@ -6,12 +6,12 @@
  * @dynamicRequire
  */
 import type { UUID } from 'crypto'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
-import type { ReplHydration } from '@claude-code-how-works/agent/replHydration.js'
-import type { AgentId } from '@claude-code-how-works/agent/idTypes'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logEvent } from '@thyrox/local-observability'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import type { Message } from '@thyrox/agent/messageShapes'
+import type { ReplHydration } from '@thyrox/agent/replHydration.js'
+import type { AgentId } from '@thyrox/agent/idTypes'
 
 interface MaybeRecordForkArgs {
   forkContextMessages: readonly Message[] | undefined
@@ -31,7 +31,7 @@ export async function maybeRecordForkContextRef(
   const parentLastUuid = a.forkContextMessages.at(-1)?.uuid
   if (parentLastUuid === undefined) return
   const { recordForkContextRef } = await import(
-    '@claude-code-how-works/storage/sessionStorage.js'
+    '@thyrox/storage/sessionStorage.js'
   )
   void recordForkContextRef({
     agentId: a.agentId,
@@ -51,8 +51,8 @@ export async function maybeRecordForkContextRef(
  */
 export async function runReplHydration(rh: ReplHydration): Promise<void> {
   try {
-    const { hydrateRepl } = await import('@claude-code-how-works/agent/replHydration.js')
-    const REPLToolModule = await import('@claude-code-how-works/tool-registry/tools/REPLTool/REPLTool.js')
+    const { hydrateRepl } = await import('@thyrox/agent/replHydration.js')
+    const REPLToolModule = await import('@thyrox/tool-registry/tools/REPLTool/REPLTool.js')
     const replTool = (REPLToolModule as { REPLTool?: { isEnabled?: () => boolean } }).REPLTool
     const isEnabled = (): boolean => {
       if (!replTool) return false

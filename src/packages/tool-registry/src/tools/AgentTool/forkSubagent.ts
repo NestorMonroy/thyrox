@@ -1,18 +1,18 @@
 import { feature } from 'bun:bundle'
 import type { BetaToolUseBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { randomUUID } from 'crypto'
-import { getIsNonInteractiveSession } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
 import {
   FORK_BOILERPLATE_TAG,
   FORK_DIRECTIVE_PREFIX,
-} from '@claude-code-how-works/command-runtime/xml.js'
-import { isEnvTruthy, readEnv } from '@claude-code-how-works/config/env/utils'
+} from '@thyrox/command-runtime/xml.js'
+import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 import type {
   AssistantMessage,
   Message as MessageType,
-} from '@claude-code-how-works/agent/messageShapes'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { createUserMessage } from '@claude-code-how-works/agent/messages.js'
+} from '@thyrox/agent/messageShapes'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { createUserMessage } from '@thyrox/agent/messages.js'
 import type { BuiltInAgentDefinition } from './loadAgentsDir.js'
 
 /**

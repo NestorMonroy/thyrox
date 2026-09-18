@@ -3,11 +3,11 @@
  * Used by both the CLI `claude agents` handler and the interactive `/agents` command.
  */
 
-import { getDefaultSubagentModel } from '@claude-code-how-works/provider/modelAgent.js'
+import { getDefaultSubagentModel } from '@thyrox/provider/modelAgent.js'
 import {
   getSourceDisplayName,
   type SettingSource,
-} from '@claude-code-how-works/config/constants'
+} from '@thyrox/config/constants'
 import type { AgentDefinition } from './loadAgentsDir.js'
 
 type AgentSource = SettingSource | 'built-in' | 'plugin'

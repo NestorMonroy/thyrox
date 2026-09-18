@@ -10,11 +10,11 @@ import { stat } from 'fs/promises'
 
 import type { ValidationResult } from '../../Tool.js'
 
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { getErrnoCode } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { IMAGE_EXTENSION_REGEX } from '@claude-code-how-works/repl/imagePaste.js'
-import { expandPath } from '@claude-code-how-works/storage/path.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
+import { IMAGE_EXTENSION_REGEX } from '@thyrox/repl/imagePaste.js'
+import { expandPath } from '@thyrox/storage/path.js'
 
 export type ResolvedAttachment = {
   path: string

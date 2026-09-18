@@ -1,34 +1,34 @@
 import { z } from 'zod/v4'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/agent/eventMetadata.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/agent/eventMetadata.js'
 import type { Tool } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { formatAgentId } from '@claude-code-how-works/agent/agentIdUtils'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
+import { formatAgentId } from '@thyrox/agent/agentIdUtils'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
   getDefaultMainLoopModel,
   parseUserSpecifiedModel,
-} from '@claude-code-how-works/provider/model.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { getResolvedTeammateMode } from '@claude-code-how-works/swarm'
-import { TEAM_LEAD_NAME } from '@claude-code-how-works/swarm'
-import type { TeamFile } from '@claude-code-how-works/swarm'
+} from '@thyrox/provider/model.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { getResolvedTeammateMode } from '@thyrox/swarm'
+import { TEAM_LEAD_NAME } from '@thyrox/swarm'
+import type { TeamFile } from '@thyrox/swarm'
 import {
   getTeamFilePath,
   readTeamFile,
   registerTeamForSessionCleanup,
   sanitizeName,
   writeTeamFileAsync,
-} from '@claude-code-how-works/swarm'
-import { assignTeammateColor } from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
+import { assignTeammateColor } from '@thyrox/swarm'
 import {
   ensureTasksDir,
   resetTaskList,
   setLeaderTeamName,
-} from '@claude-code-how-works/agent/tasks.js'
+} from '@thyrox/agent/tasks.js'
 import { generateWordSlug } from '../../words.js'
 import { TEAM_CREATE_TOOL_NAME } from './constants.js'
 import { getPrompt } from './prompt.js'

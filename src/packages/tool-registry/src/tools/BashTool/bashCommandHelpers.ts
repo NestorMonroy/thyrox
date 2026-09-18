@@ -2,16 +2,16 @@ import type { z } from 'zod/v4'
 import {
   isUnsafeCompoundCommand,
   splitCommand,
-} from '@claude-code-how-works/shell/bash/commands.js'
+} from '@thyrox/shell/bash/commands.js'
 import {
   buildParsedCommandFromRoot,
   type IParsedCommand,
   ParsedCommand,
-} from '@claude-code-how-works/shell/bash/ParsedCommand.js'
-import { type Node, PARSE_ABORTED } from '@claude-code-how-works/shell/bash/parser.js'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
-import type { PermissionUpdate } from '@claude-code-how-works/permission/PermissionUpdateSchema'
-import { createPermissionRequestMessage } from '@claude-code-how-works/permission/permissions'
+} from '@thyrox/shell/bash/ParsedCommand.js'
+import { type Node, PARSE_ABORTED } from '@thyrox/shell/bash/parser.js'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
+import type { PermissionUpdate } from '@thyrox/permission/PermissionUpdateSchema'
+import { createPermissionRequestMessage } from '@thyrox/permission/permissions'
 import { BashTool } from './BashTool.js'
 import { bashCommandIsSafeAsync } from './bashSecurity.js'
 

@@ -15,25 +15,25 @@
  * throw rather than return success (Phase C2 fix for the fixer-agent
  * "approved but still running" deadlock).
  */
-import { findTeammateTaskByAgentId } from '@claude-code-how-works/swarm'
-import { gracefulShutdown } from '@claude-code-how-works/app-host/bootstrap/gracefulShutdown.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { findTeammateTaskByAgentId } from '@thyrox/swarm'
+import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   createShutdownApprovedMessage,
   createShutdownRejectedMessage,
   readTeamFileAsync,
   TEAM_LEAD_NAME,
   writeToMailbox,
-} from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
 import {
   getAgentId,
   getAgentName,
   getTeammateColor,
   getTeamName,
   isTeamLead,
-} from '@claude-code-how-works/swarm/teammateState.js'
-import type { BackendType } from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm/teammateState.js'
+import type { BackendType } from '@thyrox/swarm'
 import type { ToolUseContext } from '../../Tool.js'
 
 import type { ResponseOutput } from './types.js'

@@ -10,7 +10,7 @@ import { Text } from '@anthropic/ink'
 import {
   isLoopDynamicEnabled,
   scheduleLoopWakeup,
-} from '@claude-code-how-works/agent/scheduler'
+} from '@thyrox/agent/scheduler'
 import { lazySchema } from '../../utils/lazySchema.js'
 import { buildTool, type Tool } from '../../Tool.js'
 import { DESCRIPTION, PROMPT, SCHEDULE_WAKEUP_TOOL_NAME } from './prompt.js'

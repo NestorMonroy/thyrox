@@ -7,39 +7,39 @@ import {
   PDF_AT_MENTION_INLINE_THRESHOLD,
   PDF_EXTRACT_SIZE_THRESHOLD,
   PDF_MAX_PAGES_PER_READ,
-} from '@claude-code-how-works/provider/apiLimits.js'
-import { hasBinaryExtension } from '@claude-code-how-works/provider/fileConstants.js'
-import { memoryFreshnessNote } from '@claude-code-how-works/memory/memoryAge'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { logEvent } from '@claude-code-how-works/local-observability'
+} from '@thyrox/provider/apiLimits.js'
+import { hasBinaryExtension } from '@thyrox/provider/fileConstants.js'
+import { memoryFreshnessNote } from '@thyrox/memory/memoryAge'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { logEvent } from '@thyrox/local-observability'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   getFileExtensionForAnalytics,
-} from '@claude-code-how-works/agent/eventMetadata.js'
+} from '@thyrox/agent/eventMetadata.js'
 import {
   countTokensWithAPI,
   roughTokenCountEstimationForFileType,
-} from '@claude-code-how-works/agent/tokenEstimation.js'
+} from '@thyrox/agent/tokenEstimation.js'
 import {
   activateConditionalSkillsForPaths,
   addSkillDirectories,
   discoverSkillDirsForPaths,
-} from '@claude-code-how-works/command-runtime/skills/loadSkillsDir.js'
+} from '@thyrox/command-runtime/skills/loadSkillsDir.js'
 import type { ToolUseContext } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { getErrnoCode, isENOENT } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { getErrnoCode, isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import {
   addLineNumbers,
   FILE_NOT_FOUND_CWD_NOTE,
   findSimilarFile,
   getFileModificationTimeAsync,
   suggestPathUnderCwd,
-} from '@claude-code-how-works/storage/file.js'
-import { logFileOperation } from '@claude-code-how-works/local-observability/fileOperationAnalytics'
-import { formatFileSize } from '@claude-code-how-works/output/formatters'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
+} from '@thyrox/storage/file.js'
+import { logFileOperation } from '@thyrox/local-observability/fileOperationAnalytics'
+import { formatFileSize } from '@thyrox/output/formatters'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import {
   compressImageBufferWithTokenLimit,
   createImageMetadataText,
@@ -47,31 +47,31 @@ import {
   type ImageDimensions,
   ImageResizeError,
   maybeResizeAndDownsampleImageBuffer,
-} from '@claude-code-how-works/storage/imageResizer.js'
+} from '@thyrox/storage/imageResizer.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { isAutoMemFile } from '@claude-code-how-works/memory/memoryFileDetection'
-import { createUserMessage } from '@claude-code-how-works/agent/messages.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { isAutoMemFile } from '@thyrox/memory/memoryFileDetection'
+import { createUserMessage } from '@thyrox/agent/messages.js'
 import {
   mapNotebookCellsToToolResult,
   readNotebook,
 } from '../../notebook.js'
-import { expandPath } from '@claude-code-how-works/storage/path.js'
+import { expandPath } from '@thyrox/storage/path.js'
 import { extractPDFPages, getPDFPageCount, readPDF } from '../../pdf.js'
 import {
   isPDFExtension,
   isPDFSupported,
   parsePDFPageRange,
-} from '@claude-code-how-works/storage/pdfUtils.js'
+} from '@thyrox/storage/pdfUtils.js'
 import {
   checkReadPermissionForTool,
   matchingRuleForInput,
-} from '@claude-code-how-works/permission/filesystem'
-import type { PermissionDecision } from '@claude-code-how-works/permission/PermissionResult'
-import { matchWildcardPattern } from '@claude-code-how-works/permission/shellRuleMatching.js'
-import { readFileInRange } from '@claude-code-how-works/repl/readFileInRange.js'
+} from '@thyrox/permission/filesystem'
+import type { PermissionDecision } from '@thyrox/permission/PermissionResult'
+import { matchWildcardPattern } from '@thyrox/permission/shellRuleMatching.js'
+import { readFileInRange } from '@thyrox/repl/readFileInRange.js'
 import { semanticNumber } from '../../utils/semanticNumber.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { BASH_TOOL_NAME } from '../BashTool/toolName.js'
 import { getDefaultFileReadingLimits } from './limits.js'
 import {

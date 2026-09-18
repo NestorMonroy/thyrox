@@ -2,11 +2,11 @@ import { mock, describe, expect, test } from "bun:test";
 
 // Spread real exports + override only what this test needs.
 // See feedback_bun_mock_module_global_scope.md.
-const realCwd = await import("@claude-code-how-works/app-host/bootstrap/cwd.js");
+const realCwd = await import("@thyrox/app-host/bootstrap/cwd.js");
 
 const mockCwd = "/Users/test/project";
 
-mock.module("@claude-code-how-works/app-host/bootstrap/cwd.js", () => ({
+mock.module("@thyrox/app-host/bootstrap/cwd.js", () => ({
   ...realCwd,
   getCwd: () => mockCwd,
 }));

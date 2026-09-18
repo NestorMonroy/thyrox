@@ -1,37 +1,37 @@
 import { feature } from 'bun:bundle'
 import { z } from 'zod/v4'
-import { isReplBridgeActive } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getReplBridgeHandle } from '@claude-code-how-works/bridge/replBridgeHandle.js'
+import { isReplBridgeActive } from '@thyrox/app-host/bootstrap/state.js'
+import { getReplBridgeHandle } from '@thyrox/bridge/replBridgeHandle.js'
 import type { Tool, ToolUseContext } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import {
   isLocalAgentTask,
   queuePendingMessage,
-} from '@claude-code-how-works/agent/localAgentTask.js'
-import { isMainSessionTask } from '@claude-code-how-works/agent/tasks/LocalMainSessionTask.js'
-import { toAgentId } from '@claude-code-how-works/agent/idTypes'
-import { generateRequestId } from '@claude-code-how-works/agent/agentIdUtils'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { truncate } from '@claude-code-how-works/output/formatters/truncate.js'
+} from '@thyrox/agent/localAgentTask.js'
+import { isMainSessionTask } from '@thyrox/agent/tasks/LocalMainSessionTask.js'
+import { toAgentId } from '@thyrox/agent/idTypes'
+import { generateRequestId } from '@thyrox/agent/agentIdUtils'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { truncate } from '@thyrox/output/formatters/truncate.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import { parseAddress } from '../../peerAddress.js'
 import { semanticBoolean } from '../../utils/semanticBoolean.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { TEAM_LEAD_NAME } from '@claude-code-how-works/swarm'
-import { readTeamFileAsync } from '@claude-code-how-works/swarm'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { TEAM_LEAD_NAME } from '@thyrox/swarm'
+import { readTeamFileAsync } from '@thyrox/swarm'
 import {
   getAgentId,
   getAgentName,
   getTeammateColor,
   getTeamName,
   isTeammate,
-} from '@claude-code-how-works/swarm/teammateState.js'
+} from '@thyrox/swarm/teammateState.js'
 import {
   createShutdownRequestMessage,
   writeToMailbox,
-} from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
 import { resumeAgentBackground } from '../AgentTool/resumeAgent.js'
 import { SEND_MESSAGE_TOOL_NAME } from './constants.js'
 import { DESCRIPTION, getPrompt } from './prompt.js'
@@ -526,7 +526,7 @@ export const SendMessageTool: Tool<InputSchema, SendMessageToolOutput> =
           }
           /* eslint-disable @typescript-eslint/no-require-imports */
           const { postInterClaudeMessage } =
-            require('@claude-code-how-works/bridge/peerSessions.js') as typeof import('@claude-code-how-works/bridge/peerSessions.js')
+            require('@thyrox/bridge/peerSessions.js') as typeof import('@thyrox/bridge/peerSessions.js')
           /* eslint-enable @typescript-eslint/no-require-imports */
           const result = await postInterClaudeMessage(
             addr.target,
@@ -545,7 +545,7 @@ export const SendMessageTool: Tool<InputSchema, SendMessageToolOutput> =
         if (addr.scheme === 'uds') {
           /* eslint-disable @typescript-eslint/no-require-imports */
           const { sendToUdsSocket } =
-            require('@claude-code-how-works/local-observability/uds/udsClient.js') as typeof import('@claude-code-how-works/local-observability/uds/udsClient.js')
+            require('@thyrox/local-observability/uds/udsClient.js') as typeof import('@thyrox/local-observability/uds/udsClient.js')
           /* eslint-enable @typescript-eslint/no-require-imports */
           try {
             await sendToUdsSocket(addr.target, input.message)

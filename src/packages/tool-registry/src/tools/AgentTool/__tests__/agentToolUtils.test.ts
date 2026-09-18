@@ -9,11 +9,11 @@ import { mock, describe, expect, test } from "bun:test";
 // exports first — bun:test mocks apply globally, so a partial mock would
 // silently shadow the real module for every other test in the suite.
 // See feedback_bun_mock_module_global_scope.md.
-const realLocalObs = await import("@claude-code-how-works/local-observability");
-const realLocalObsCompat = await import("@claude-code-how-works/local-observability/compat");
-const realDebug = await import("@claude-code-how-works/local-observability/debug.js");
-const realYoloClassifier = await import("@claude-code-how-works/permission/yoloClassifier.js");
-const realTokens = await import("@claude-code-how-works/agent/tokens.js");
+const realLocalObs = await import("@thyrox/local-observability");
+const realLocalObsCompat = await import("@thyrox/local-observability/compat");
+const realDebug = await import("@thyrox/local-observability/debug.js");
+const realYoloClassifier = await import("@thyrox/permission/yoloClassifier.js");
+const realTokens = await import("@thyrox/agent/tokens.js");
 
 const noop = () => {};
 
@@ -30,14 +30,14 @@ mock.module("src/services/AgentSummary/agentSummary.js", () => ({
   startAgentSummarization: noop,
 }));
 
-mock.module("@claude-code-how-works/local-observability", () => ({
+mock.module("@thyrox/local-observability", () => ({
   ...realLocalObs,
   logEvent: noop,
   logEventAsync: async () => {},
   shutdownLocalObservability: async () => {},
 }));
 
-mock.module("@claude-code-how-works/local-observability/compat", () => ({
+mock.module("@thyrox/local-observability/compat", () => ({
   ...realLocalObsCompat,
   stripProtoFields: (v: any) => v,
   attachAnalyticsSink: noop,
@@ -104,7 +104,7 @@ mock.module("src/tasks/LocalAgentTask/LocalAgentTask.js", () => ({
   LocalAgentTask: {},
 }));
 
-mock.module("@claude-code-how-works/local-observability/debug.js", () => ({
+mock.module("@thyrox/local-observability/debug.js", () => ({
   ...realDebug,
   // No-op overrides for the test boundary; real impls preserved otherwise.
   logForDebugging: noop,
@@ -133,7 +133,7 @@ mock.module("src/utils/errors.js", () => ({
 
 mock.module("src/utils/forkedAgent.js", () => ({}));
 
-mock.module("@claude-code-how-works/permission/yoloClassifier.js", () => ({
+mock.module("@thyrox/permission/yoloClassifier.js", () => ({
   ...realYoloClassifier,
   buildTranscriptForClassifier: () => "",
   classifyYoloAction: () => null,
@@ -143,7 +143,7 @@ mock.module("src/utils/task/sdkProgress.js", () => ({
   emitTaskProgress: noop,
 }));
 
-mock.module("@claude-code-how-works/agent/tokens.js", () => ({
+mock.module("@thyrox/agent/tokens.js", () => ({
   ...realTokens,
   getTokenCountFromUsage: () => 0,
 }));

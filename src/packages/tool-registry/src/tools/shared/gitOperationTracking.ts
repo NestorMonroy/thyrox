@@ -8,11 +8,11 @@
  * external binaries with the same argv syntax).
  */
 
-import { getCommitCounter, getPrCounter } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getCommitCounter, getPrCounter } from '@thyrox/app-host/bootstrap/state.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 
 /**
  * Build a regex that matches `git <subcmd>` while tolerating git's global
@@ -229,9 +229,9 @@ export function trackGitOperations(
       const prInfo = findPrInStdout(stdout)
       if (prInfo) {
         // Import is done dynamically to avoid circular dependency
-        void import('@claude-code-how-works/storage/sessionStorage.js').then(
+        void import('@thyrox/storage/sessionStorage.js').then(
           ({ linkSessionToPR }) => {
-            void import('@claude-code-how-works/app-host/bootstrap/state.js').then(({ getSessionId }) => {
+            void import('@thyrox/app-host/bootstrap/state.js').then(({ getSessionId }) => {
               const sessionId = getSessionId()
               if (sessionId) {
                 void linkSessionToPR(

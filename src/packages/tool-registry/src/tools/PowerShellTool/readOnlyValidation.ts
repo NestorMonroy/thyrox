@@ -7,26 +7,26 @@
 import type {
   ParsedCommandElement,
   ParsedPowerShellCommand,
-} from '@claude-code-how-works/shell/powershell/parser.js'
+} from '@thyrox/shell/powershell/parser.js'
 
 type ParsedStatement = ParsedPowerShellCommand['statements'][number]
 
-import { getPlatform } from '@claude-code-how-works/config/platform'
+import { getPlatform } from '@thyrox/config/platform'
 import {
   COMMON_ALIASES,
   deriveSecurityFlags,
   getPipelineSegments,
   isNullRedirectionTarget,
   isPowerShellParameter,
-} from '@claude-code-how-works/shell/powershell/parser.js'
-import type { ExternalCommandConfig } from '@claude-code-how-works/shell/legacy/readOnlyCommandValidation.js'
+} from '@thyrox/shell/powershell/parser.js'
+import type { ExternalCommandConfig } from '@thyrox/shell/legacy/readOnlyCommandValidation.js'
 import {
   DOCKER_READ_ONLY_COMMANDS,
   EXTERNAL_READONLY_COMMANDS,
   GH_READ_ONLY_COMMANDS,
   GIT_READ_ONLY_COMMANDS,
   validateFlags,
-} from '@claude-code-how-works/shell/legacy/readOnlyCommandValidation.js'
+} from '@thyrox/shell/legacy/readOnlyCommandValidation.js'
 import { COMMON_PARAMETERS } from './commonParameters.js'
 
 const DOTNET_READ_ONLY_FLAGS = new Set([

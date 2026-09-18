@@ -7,7 +7,7 @@
 import {
   listAllNamedWorkflows,
   registerBuiltinWorkflow,
-} from '@claude-code-how-works/agent/workflow/namedWorkflows.js'
+} from '@thyrox/agent/workflow/namedWorkflows.js'
 
 let initialized = false
 

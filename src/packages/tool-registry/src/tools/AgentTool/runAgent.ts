@@ -2,34 +2,34 @@ import { feature } from 'bun:bundle'
 import type { UUID } from 'crypto'
 import { randomUUID } from 'crypto'
 import uniqBy from 'lodash-es/uniqBy.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { emitReplHydrationTelemetry, emitSpawnedBySkillTelemetry, maybeRecordForkContextRef, runReplHydration } from './runAgentTelemetry.js'
-import { getProjectRoot, getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getCommand, getSkillToolCommands, hasCommand } from '@claude-code-how-works/command-runtime/runtime'
+import { getProjectRoot, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import { getCommand, getSkillToolCommands, hasCommand } from '@thyrox/command-runtime/runtime'
 import {
   DEFAULT_AGENT_PROMPT,
   enhanceSystemPromptWithEnvDetails,
-} from '@claude-code-how-works/agent/prompts.js'
-import type { QuerySource } from '@claude-code-how-works/agent/querySource'
-import { getSystemContext, getUserContext } from '@claude-code-how-works/provider/context.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
-import { query } from '@claude-code-how-works/agent/query'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { getDumpPromptsPath } from '@claude-code-how-works/provider/dumpPrompts.js'
-import { cleanupAgentTracking } from '@claude-code-how-works/provider/promptCacheBreakDetection.js'
+} from '@thyrox/agent/prompts.js'
+import type { QuerySource } from '@thyrox/agent/querySource'
+import { getSystemContext, getUserContext } from '@thyrox/provider/context.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
+import { query } from '@thyrox/agent/query'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { getDumpPromptsPath } from '@thyrox/provider/dumpPrompts.js'
+import { cleanupAgentTracking } from '@thyrox/provider/promptCacheBreakDetection.js'
 import {
   connectToServer,
   fetchToolsForClient,
-} from '@claude-code-how-works/mcp-runtime/clientRuntime.js'
-import { getMcpConfigByName } from '@claude-code-how-works/mcp-runtime/config.js'
+} from '@thyrox/mcp-runtime/clientRuntime.js'
+import { getMcpConfigByName } from '@thyrox/mcp-runtime/config.js'
 import type {
   MCPServerConnection,
   ScopedMcpServerConfig,
-} from '@claude-code-how-works/mcp-runtime/types.js'
+} from '@thyrox/mcp-runtime/types.js'
 import type { Tool, Tools, ToolUseContext } from '../../Tool.js'
-import { killShellTasksForAgent } from '@claude-code-how-works/agent/tasks/LocalShellTask/killShellTasks.js'
-import type { Command } from '@claude-code-how-works/agent/command.js'
-import type { AgentId } from '@claude-code-how-works/agent/idTypes'
+import { killShellTasksForAgent } from '@thyrox/agent/tasks/LocalShellTask/killShellTasks.js'
+import type { Command } from '@thyrox/agent/command.js'
+import type { AgentId } from '@thyrox/agent/idTypes'
 import type {
   AssistantMessage,
   Message,
@@ -40,10 +40,10 @@ import type {
   TombstoneMessage,
   ToolUseSummaryMessage,
   UserMessage,
-} from '@claude-code-how-works/agent/messageShapes'
-import { createAttachmentMessage } from '@claude-code-how-works/agent/attachments.js'
-import { AbortError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getDisplayPath } from '@claude-code-how-works/storage/file.js'
+} from '@thyrox/agent/messageShapes'
+import { createAttachmentMessage } from '@thyrox/agent/attachments.js'
+import { AbortError } from '@thyrox/local-observability/errorHelpers.js'
+import { getDisplayPath } from '@thyrox/storage/file.js'
 import {
   cloneFileStateCache,
   createFileStateCacheWithSizeLimit,
@@ -52,34 +52,34 @@ import {
 import {
   type CacheSafeParams,
   createSubagentContext,
-} from '@claude-code-how-works/agent/forkedAgent.js'
-import { registerFrontmatterHooks } from '@claude-code-how-works/agent/hooks/registerFrontmatterHooks.js'
-import { clearSessionHooks } from '@claude-code-how-works/agent/hooks/sessionHooks.js'
-import { executeSubagentStartHooks } from '@claude-code-how-works/agent/hooks.js'
-import { createUserMessage } from '@claude-code-how-works/agent/messages.js'
-import { getAgentModel } from '@claude-code-how-works/provider/modelAgent.js'
-import type { ModelAlias } from '@claude-code-how-works/provider/modelAliases.js'
+} from '@thyrox/agent/forkedAgent.js'
+import { registerFrontmatterHooks } from '@thyrox/agent/hooks/registerFrontmatterHooks.js'
+import { clearSessionHooks } from '@thyrox/agent/hooks/sessionHooks.js'
+import { executeSubagentStartHooks } from '@thyrox/agent/hooks.js'
+import { createUserMessage } from '@thyrox/agent/messages.js'
+import { getAgentModel } from '@thyrox/provider/modelAgent.js'
+import type { ModelAlias } from '@thyrox/provider/modelAliases.js'
 import {
   clearAgentTranscriptSubdir,
   recordSidechainTranscript,
   setAgentTranscriptSubdir,
   writeAgentMetadata,
-} from '@claude-code-how-works/storage/sessionStorage.js'
+} from '@thyrox/storage/sessionStorage.js'
 import {
   isRestrictedToPluginOnly,
   isSourceAdminTrusted,
-} from '@claude-code-how-works/config/pluginOnlyPolicy'
+} from '@thyrox/config/pluginOnlyPolicy'
 import {
   asSystemPrompt,
   type SystemPrompt,
-} from '@claude-code-how-works/provider/systemPromptType.js'
+} from '@thyrox/provider/systemPromptType.js'
 import {
   isPerfettoTracingEnabled,
   registerAgent as registerPerfettoAgent,
   unregisterAgent as unregisterPerfettoAgent,
-} from '@claude-code-how-works/local-observability/telemetry/perfettoTracing.js'
-import type { ContentReplacementState } from '@claude-code-how-works/storage/toolResultStorage.js'
-import { createAgentId } from '@claude-code-how-works/agent/uuid.js'
+} from '@thyrox/local-observability/telemetry/perfettoTracing.js'
+import type { ContentReplacementState } from '@thyrox/storage/toolResultStorage.js'
+import { createAgentId } from '@thyrox/agent/uuid.js'
 import { resolveAgentTools } from './agentToolUtils.js'
 import { type AgentDefinition, isBuiltInAgent } from './loadAgentsDir.js'
 
@@ -287,7 +287,7 @@ export async function* runAgent({
     systemPrompt?: SystemPrompt
     abortController?: AbortController
     agentId?: AgentId
-    replHydration?: import('@claude-code-how-works/agent/replHydration.js').ReplHydration
+    replHydration?: import('@thyrox/agent/replHydration.js').ReplHydration
   }
   model?: ModelAlias
   maxTurns?: number
@@ -601,7 +601,7 @@ export async function* runAgent({
     // formatSkillLoadingMetadata lives in command-runtime/xml — pulling it
     // from processSlashCommand was a 4-file cycle (V7 §11.2).
     const { formatSkillLoadingMetadata } = await import(
-      '@claude-code-how-works/command-runtime/xml.js'
+      '@thyrox/command-runtime/xml.js'
     )
     const loaded = await Promise.all(
       validSkills.map(async ({ skillName, skill }) => ({
@@ -827,7 +827,7 @@ export async function* runAgent({
     /* eslint-disable @typescript-eslint/no-require-imports */
     if (feature('MONITOR_TOOL')) {
       const mcpMod =
-        require('@claude-code-how-works/agent/tasks/MonitorMcpTask/MonitorMcpTask.js') as typeof import('@claude-code-how-works/agent/tasks/MonitorMcpTask/MonitorMcpTask.js')
+        require('@thyrox/agent/tasks/MonitorMcpTask/MonitorMcpTask.js') as typeof import('@thyrox/agent/tasks/MonitorMcpTask/MonitorMcpTask.js')
       mcpMod.killMonitorMcpTasksForAgent(
         agentId,
         toolUseContext.getAppState,

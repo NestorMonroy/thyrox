@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
-import { OutputLine } from '@claude-code-how-works/repl/components/shell/OutputLine.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
+import { OutputLine } from '@thyrox/repl/components/shell/OutputLine.js'
 import { Text } from '@anthropic/ink'
 import type { ToolProgressData } from '../../Tool.js'
-import type { ProgressMessage } from '@claude-code-how-works/agent/messageShapes'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import type { ProgressMessage } from '@thyrox/agent/messageShapes'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import type { Output } from './ListMcpResourcesTool.js'
 
 export function renderToolUseMessage(

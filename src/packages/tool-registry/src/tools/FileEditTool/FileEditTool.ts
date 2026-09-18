@@ -1,54 +1,54 @@
 import { dirname, isAbsolute, sep } from 'path'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { logEvent } from '@thyrox/local-observability'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { diagnosticTracker } from '../../diagnosticTracking.js'
-import { clearDeliveredDiagnosticsForFile } from '@claude-code-how-works/ide/lsp/LSPDiagnosticRegistry.js'
-import { getLspServerManager } from '@claude-code-how-works/ide/lsp/manager.js'
-import { notifyVscodeFileUpdated } from '@claude-code-how-works/mcp-runtime/vscodeSdkMcp.js'
-import { checkTeamMemSecrets } from '@claude-code-how-works/memory/teamMemSecretGuard'
+import { clearDeliveredDiagnosticsForFile } from '@thyrox/ide/lsp/LSPDiagnosticRegistry.js'
+import { getLspServerManager } from '@thyrox/ide/lsp/manager.js'
+import { notifyVscodeFileUpdated } from '@thyrox/mcp-runtime/vscodeSdkMcp.js'
+import { checkTeamMemSecrets } from '@thyrox/memory/teamMemSecretGuard'
 import {
   activateConditionalSkillsForPaths,
   addSkillDirectories,
   discoverSkillDirsForPaths,
-} from '@claude-code-how-works/command-runtime/skills/loadSkillsDir.js'
+} from '@thyrox/command-runtime/skills/loadSkillsDir.js'
 import type { ToolUseContext } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { countLinesChanged } from '@claude-code-how-works/agent/diff.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { isENOENT } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { countLinesChanged } from '@thyrox/agent/diff.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import {
   FILE_NOT_FOUND_CWD_NOTE,
   findSimilarFile,
   getFileModificationTime,
   suggestPathUnderCwd,
   writeTextContent,
-} from '@claude-code-how-works/storage/file.js'
+} from '@thyrox/storage/file.js'
 import {
   fileHistoryEnabled,
   fileHistoryTrackEdit,
-} from '@claude-code-how-works/agent/file-history'
-import { logFileOperation } from '@claude-code-how-works/local-observability/fileOperationAnalytics'
+} from '@thyrox/agent/file-history'
+import { logFileOperation } from '@thyrox/local-observability/fileOperationAnalytics'
 import {
   type LineEndingType,
   readFileSyncWithMetadata,
-} from '@claude-code-how-works/storage/fileRead.js'
-import { formatFileSize } from '@claude-code-how-works/output/formatters'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
+} from '@thyrox/storage/fileRead.js'
+import { formatFileSize } from '@thyrox/output/formatters'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import {
   fetchSingleFileGitDiff,
   type ToolUseDiff,
 } from '../../gitDiff.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { expandPath } from '@claude-code-how-works/storage/path.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { expandPath } from '@thyrox/storage/path.js'
 import {
   checkWritePermissionForTool,
   matchingRuleForInput,
-} from '@claude-code-how-works/permission/filesystem'
-import type { PermissionDecision } from '@claude-code-how-works/permission/PermissionResult'
-import { matchWildcardPattern } from '@claude-code-how-works/permission/shellRuleMatching.js'
-import { validateInputForSettingsFileEdit } from '@claude-code-how-works/config/settings/validateEditTool'
+} from '@thyrox/permission/filesystem'
+import type { PermissionDecision } from '@thyrox/permission/PermissionResult'
+import { matchWildcardPattern } from '@thyrox/permission/shellRuleMatching.js'
+import { validateInputForSettingsFileEdit } from '@thyrox/config/settings/validateEditTool'
 import { NOTEBOOK_EDIT_TOOL_NAME } from '../NotebookEditTool/constants.js'
 import {
   FILE_EDIT_TOOL_NAME,

@@ -24,12 +24,12 @@ import { z } from 'zod/v4'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { sleep } from '@claude-code-how-works/config/sleep'
-import { getMainLoopModel } from '@claude-code-how-works/provider/model.js'
-import { getMcpClientsFromAccessor } from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/local-observability'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { sleep } from '@thyrox/config/sleep'
+import { getMainLoopModel } from '@thyrox/provider/model.js'
+import { getMcpClientsFromAccessor } from '@thyrox/app-host/bootstrap/state.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {

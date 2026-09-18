@@ -1,7 +1,7 @@
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { splitCommand } from '@claude-code-how-works/shell/bash/commands.js'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
-import { getSettings } from '@claude-code-how-works/config/settings'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { splitCommand } from '@thyrox/shell/bash/commands.js'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
+import { getSettings } from '@thyrox/config/settings'
 import {
   BINARY_HIJACK_VARS,
   bashPermissionRule,

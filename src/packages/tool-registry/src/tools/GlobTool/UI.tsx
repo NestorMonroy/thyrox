@@ -1,12 +1,12 @@
 import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import React from 'react'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
-import { extractTag } from '@claude-code-how-works/agent/messages.js'
-import { FallbackToolUseErrorMessage } from '@claude-code-how-works/repl/components/FallbackToolUseErrorMessage.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
+import { extractTag } from '@thyrox/agent/messages.js'
+import { FallbackToolUseErrorMessage } from '@thyrox/repl/components/FallbackToolUseErrorMessage.js'
 import { TOOL_SUMMARY_MAX_LENGTH } from '../../toolLimits.js'
 import { Text } from '@anthropic/ink'
-import { FILE_NOT_FOUND_CWD_NOTE, getDisplayPath } from '@claude-code-how-works/storage/file.js'
-import { truncate } from '@claude-code-how-works/output/formatters/truncate.js'
+import { FILE_NOT_FOUND_CWD_NOTE, getDisplayPath } from '@thyrox/storage/file.js'
+import { truncate } from '@thyrox/output/formatters/truncate.js'
 import { GrepTool } from '../GrepTool/GrepTool.js'
 
 export function userFacingName(): string {

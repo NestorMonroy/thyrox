@@ -7,37 +7,37 @@ import {
   setHasExitedPlanMode,
   setNeedsAutoModeExitAttachment,
   setNeedsPlanModeExitAttachment,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/agent/eventMetadata.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/agent/eventMetadata.js'
 import {
   buildTool,
   type Tool,
   type ToolDef,
   toolMatchesName,
 } from '../../Tool.js'
-import { formatAgentId, generateRequestId } from '@claude-code-how-works/agent/agentIdUtils'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { formatAgentId, generateRequestId } from '@thyrox/agent/agentIdUtils'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   findInProcessTeammateTaskId,
   setAwaitingPlanApproval,
-} from '@claude-code-how-works/agent/inProcessTeammateHelpers.js'
+} from '@thyrox/agent/inProcessTeammateHelpers.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { logError } from '@thyrox/local-observability/logging'
 import {
   getPlan,
   getPlanFilePath,
   persistFileSnapshotIfRemote,
-} from '@claude-code-how-works/storage/plans.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/storage/plans.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import {
   getAgentName,
   getTeamName,
   isPlanModeRequired,
   isTeammate,
-} from '@claude-code-how-works/swarm/teammateState.js'
-import { writeToMailbox } from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm/teammateState.js'
+import { writeToMailbox } from '@thyrox/swarm'
 import { AGENT_TOOL_NAME } from '../AgentTool/constants.js'
 import { TEAM_CREATE_TOOL_NAME } from '../TeamCreateTool/constants.js'
 import { EXIT_PLAN_MODE_V2_TOOL_NAME } from './constants.js'
@@ -50,10 +50,10 @@ import {
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const autoModeStateModule = feature('TRANSCRIPT_CLASSIFIER')
-  ? (require('@claude-code-how-works/permission/autoModeState.js') as typeof import('@claude-code-how-works/permission/autoModeState.js'))
+  ? (require('@thyrox/permission/autoModeState.js') as typeof import('@thyrox/permission/autoModeState.js'))
   : null
 const permissionSetupModule = feature('TRANSCRIPT_CLASSIFIER')
-  ? (require('@claude-code-how-works/permission/permissionSetup') as typeof import('@claude-code-how-works/permission/permissionSetup'))
+  ? (require('@thyrox/permission/permissionSetup') as typeof import('@thyrox/permission/permissionSetup'))
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 

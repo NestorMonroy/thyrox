@@ -1,5 +1,5 @@
 import type { ToolUseBlock } from '@anthropic-ai/sdk/resources'
-import { getRemoteSessionUrl } from '@claude-code-how-works/agent/constants/product.js'
+import { getRemoteSessionUrl } from '@thyrox/agent/constants/product.js'
 import {
   OUTPUT_FILE_TAG,
   REMOTE_REVIEW_PROGRESS_TAG,
@@ -11,11 +11,11 @@ import {
   TASK_TYPE_TAG,
   TOOL_USE_ID_TAG,
   ULTRAPLAN_TAG,
-} from '@claude-code-how-works/command-runtime/xml.js'
+} from '@thyrox/command-runtime/xml.js'
 import type {
   SDKAssistantMessage,
   SDKMessage,
-} from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type {
   SetAppState,
   Task,
@@ -27,33 +27,33 @@ import { TodoWriteTool } from '../tools/TodoWriteTool/TodoWriteTool.js'
 import {
   type BackgroundRemoteSessionPrecondition,
   checkBackgroundRemoteSessionEligibility,
-} from '@claude-code-how-works/agent/background/remote/remoteSession.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { enqueuePendingNotification } from '@claude-code-how-works/agent/messageQueueManager.js'
-import { extractTag, extractTextContent } from '@claude-code-how-works/agent/messages.js'
-import { emitTaskTerminatedSdk } from '@claude-code-how-works/agent/sdkEventQueue.js'
+} from '@thyrox/agent/background/remote/remoteSession.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { enqueuePendingNotification } from '@thyrox/agent/messageQueueManager.js'
+import { extractTag, extractTextContent } from '@thyrox/agent/messages.js'
+import { emitTaskTerminatedSdk } from '@thyrox/agent/sdkEventQueue.js'
 import {
   deleteRemoteAgentMetadata,
   listRemoteAgentMetadata,
   type RemoteAgentMetadata,
   writeRemoteAgentMetadata,
-} from '@claude-code-how-works/storage/sessionStorage.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/storage/sessionStorage.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import {
   appendTaskOutput,
   evictTaskOutput,
   getTaskOutputPath,
   initTaskOutput,
-} from '@claude-code-how-works/storage/task/diskOutput.js'
-import { registerTask, updateTaskState } from '@claude-code-how-works/agent/task/framework.js'
-import { fetchSession } from '@claude-code-how-works/teleport/api.js'
+} from '@thyrox/storage/task/diskOutput.js'
+import { registerTask, updateTaskState } from '@thyrox/agent/task/framework.js'
+import { fetchSession } from '@thyrox/teleport/api.js'
 import {
   archiveRemoteSession,
   pollRemoteSessionEvents,
 } from '../teleport.js'
 import type { TodoList } from '../todo/types.js'
-import type { UltraplanPhase } from '@claude-code-how-works/repl/ultraplan/ccrSession.js'
+import type { UltraplanPhase } from '@thyrox/repl/ultraplan/ccrSession.js'
 
 export type RemoteAgentTaskState = TaskStateBase & {
   type: 'remote_agent'

@@ -1,6 +1,6 @@
 import { feature } from 'bun:bundle'
 import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
-import { sanitizeUnicodeDashes } from '@claude-code-how-works/shell/bash/unicodeDashes.js'
+import { sanitizeUnicodeDashes } from '@thyrox/shell/bash/unicodeDashes.js'
 import {
   copyFile,
   stat as fsStat,
@@ -8,15 +8,15 @@ import {
   link,
 } from 'fs/promises'
 import * as React from 'react'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { AppStateLike as AppState } from '../../contracts.js'
 import { z } from 'zod/v4'
-import { getKairosActive } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getKairosActive } from '@thyrox/app-host/bootstrap/state.js'
 import { TOOL_SUMMARY_MAX_LENGTH } from '../../toolLimits.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import type {
   SetToolJSXFn,
   Tool,
@@ -30,38 +30,38 @@ import {
   registerForeground,
   spawnShellTask,
   unregisterForeground,
-} from '@claude-code-how-works/agent/tasks/LocalShellTask.js'
-import type { AgentId } from '@claude-code-how-works/agent/idTypes'
-import type { AssistantMessage } from '@claude-code-how-works/agent/messageShapes'
+} from '@thyrox/agent/tasks/LocalShellTask.js'
+import type { AgentId } from '@thyrox/agent/idTypes'
+import type { AssistantMessage } from '@thyrox/agent/messageShapes'
 import { extractClaudeCodeHints } from '../../claudeCodeHints.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import {
   errorMessage as getErrorMessage,
   ShellError,
-} from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { truncate } from '@claude-code-how-works/output/formatters/truncate.js'
+} from '@thyrox/local-observability/errorHelpers.js'
+import { truncate } from '@thyrox/output/formatters/truncate.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
-import { getPlatform } from '@claude-code-how-works/config/platform'
-import { maybeRecordPluginHint } from '@claude-code-how-works/config/plugin/hintRecommendation'
-import { exec } from '@claude-code-how-works/shell/Shell.js'
-import type { ExecResult } from '@claude-code-how-works/shell/shellCommand.js'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
+import { logError } from '@thyrox/local-observability/logging'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
+import { getPlatform } from '@thyrox/config/platform'
+import { maybeRecordPluginHint } from '@thyrox/config/plugin/hintRecommendation'
+import { exec } from '@thyrox/shell/Shell.js'
+import type { ExecResult } from '@thyrox/shell/shellCommand.js'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
 import { semanticBoolean } from '../../utils/semanticBoolean.js'
 import { semanticNumber } from '../../utils/semanticNumber.js'
-import { getCachedPowerShellPath } from '@claude-code-how-works/shell/legacy/powershellDetection.js'
-import { EndTruncatingAccumulator } from '@claude-code-how-works/output/utils/stringUtils.js'
-import { getTaskOutputPath } from '@claude-code-how-works/storage/task/diskOutput.js'
+import { getCachedPowerShellPath } from '@thyrox/shell/legacy/powershellDetection.js'
+import { EndTruncatingAccumulator } from '@thyrox/output/utils/stringUtils.js'
+import { getTaskOutputPath } from '@thyrox/storage/task/diskOutput.js'
 import { TaskOutput } from '../../task/TaskOutput.js'
-import { isOutputLineTruncated } from '@claude-code-how-works/output/terminal.js'
+import { isOutputLineTruncated } from '@thyrox/output/terminal.js'
 import {
   buildLargeToolResultMessage,
   ensureToolResultsDir,
   generatePreview,
   getToolResultPath,
   PREVIEW_SIZE_BYTES,
-} from '@claude-code-how-works/storage/toolResultStorage.js'
+} from '@thyrox/storage/toolResultStorage.js'
 import { shouldUseSandbox } from '../BashTool/shouldUseSandbox.js'
 import { BackgroundHint } from '../BashTool/UI.js'
 import {

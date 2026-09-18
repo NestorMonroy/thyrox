@@ -4,26 +4,26 @@
  */
 
 import { resolve } from 'path'
-import { sanitizeUnicodeDashes } from '@claude-code-how-works/shell/bash/unicodeDashes.js'
+import { sanitizeUnicodeDashes } from '@thyrox/shell/bash/unicodeDashes.js'
 import type { ToolPermissionContext, ToolUseContext } from '../../Tool.js'
 import type {
   PermissionDecisionReason,
   PermissionResult,
-} from '@claude-code-how-works/permission/permissionTypes'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { isCurrentDirectoryBareGitRepo } from '@claude-code-how-works/storage/git.js'
-import type { PermissionRule } from '@claude-code-how-works/permission/PermissionRule'
-import type { PermissionUpdate } from '@claude-code-how-works/permission/PermissionUpdateSchema'
+} from '@thyrox/permission/permissionTypes'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { isCurrentDirectoryBareGitRepo } from '@thyrox/storage/git.js'
+import type { PermissionRule } from '@thyrox/permission/PermissionRule'
+import type { PermissionUpdate } from '@thyrox/permission/PermissionUpdateSchema'
 import {
   createPermissionRequestMessage,
   getRuleByContentsForToolName,
-} from '@claude-code-how-works/permission/permissions'
+} from '@thyrox/permission/permissions'
 import {
   matchWildcardPattern,
   parsePermissionRule,
   type ShellPermissionRule,
   suggestionForExactCommand as sharedSuggestionForExactCommand,
-} from '@claude-code-how-works/permission/shellRuleMatching.js'
+} from '@thyrox/permission/shellRuleMatching.js'
 import {
   classifyCommandName,
   deriveSecurityFlags,
@@ -34,8 +34,8 @@ import {
   PS_TOKENIZER_DASH_CHARS,
   parsePowerShellCommand,
   stripModulePrefix,
-} from '@claude-code-how-works/shell/powershell/parser.js'
-import { containsVulnerableUncPath } from '@claude-code-how-works/shell/legacy/readOnlyCommandValidation.js'
+} from '@thyrox/shell/powershell/parser.js'
+import { containsVulnerableUncPath } from '@thyrox/shell/legacy/readOnlyCommandValidation.js'
 import { isDotGitPathPS, isGitInternalPathPS } from './gitSafety.js'
 import {
   checkPermissionMode,

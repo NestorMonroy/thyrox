@@ -456,7 +456,7 @@ describe('BingSearchAdapter.search', () => {
     const controller = new AbortController()
     controller.abort()
 
-    const { AbortError } = await import('@claude-code-how-works/local-observability/errorHelpers.js')
+    const { AbortError } = await import('@thyrox/local-observability/errorHelpers.js')
     await expect(
       adapter.search('test', { signal: controller.signal }),
     ).rejects.toThrow(AbortError)

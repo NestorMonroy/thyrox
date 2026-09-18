@@ -12,9 +12,9 @@ import type {
   SymbolInformation,
   SymbolKind,
 } from 'vscode-languageserver-types'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
 
 /**
  * Formats a URI by converting it to a relative path if possible.

@@ -1,7 +1,7 @@
 import type { ToolPermissionContext } from '../../Tool.js'
-import { splitCommand } from '@claude-code-how-works/shell/bash/commands.js'
-import { tryParseShellCommand } from '@claude-code-how-works/shell/bash/shellQuote.js'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
+import { splitCommand } from '@thyrox/shell/bash/commands.js'
+import { tryParseShellCommand } from '@thyrox/shell/bash/shellQuote.js'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
 
 /**
  * Helper: Validate flags against an allowlist

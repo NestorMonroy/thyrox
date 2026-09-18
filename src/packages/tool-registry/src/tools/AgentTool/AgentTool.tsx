@@ -4,27 +4,27 @@ import { buildTool, type ToolDef, toolMatchesName } from '../../Tool.js'
 import type {
   Message as MessageType,
   NormalizedUserMessage,
-} from '@claude-code-how-works/agent/messageShapes'
-import { getQuerySourceForAgent } from '@claude-code-how-works/agent/promptCategory.js'
+} from '@thyrox/agent/messageShapes'
+import { getQuerySourceForAgent } from '@thyrox/agent/promptCategory.js'
 import { z } from 'zod/v4'
 import {
   clearInvokedSkillsForAgent,
   getSdkAgentProgressSummariesEnabled,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 import {
   enhanceSystemPromptWithEnvDetails,
   getSystemPrompt,
-} from '@claude-code-how-works/agent/prompts.js'
-import { isCoordinatorMode } from '@claude-code-how-works/agent/coordinatorMode.js'
-import { startAgentSummarization } from '@claude-code-how-works/agent/AgentSummary/agentSummary.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+} from '@thyrox/agent/prompts.js'
+import { isCoordinatorMode } from '@thyrox/agent/coordinatorMode.js'
+import { startAgentSummarization } from '@thyrox/agent/AgentSummary/agentSummary.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { buildAgentMetadata } from './agentMetadata.js'
 import { resolveSubagentTypeWithFuzzy } from './resolveSubagentType.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { clearDumpState } from '@claude-code-how-works/provider/dumpPrompts.js'
+} from '@thyrox/local-observability'
+import { clearDumpState } from '@thyrox/provider/dumpPrompts.js'
 import {
   completeAgentTask as completeAsyncAgent,
   createActivityDescriptionResolver,
@@ -40,7 +40,7 @@ import {
   unregisterAgentForeground,
   updateAgentProgress as updateAsyncAgentProgress,
   updateProgressFromMessage,
-} from '@claude-code-how-works/agent/localAgentTask.js'
+} from '@thyrox/agent/localAgentTask.js'
 import {
   checkRemoteAgentEligibility,
   formatPreconditionError,
@@ -48,44 +48,44 @@ import {
   registerRemoteAgentTask,
 } from '../../tasks/RemoteAgentTask.js'
 import { assembleToolPool } from '../../runtime.js'
-import { asAgentId } from '@claude-code-how-works/agent/idTypes'
-import { getAgentContext, runWithAgentContext } from '@claude-code-how-works/agent/agentContext.js'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
-import { getCwd, runWithCwdOverride } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { AbortError, errorMessage, toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import type { CacheSafeParams } from '@claude-code-how-works/agent/forkedAgent.js'
+import { asAgentId } from '@thyrox/agent/idTypes'
+import { getAgentContext, runWithAgentContext } from '@thyrox/agent/agentContext.js'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
+import { getCwd, runWithCwdOverride } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { AbortError, errorMessage, toError } from '@thyrox/local-observability/errorHelpers.js'
+import type { CacheSafeParams } from '@thyrox/agent/forkedAgent.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
   createUserMessage,
   extractTextContent,
   isSyntheticMessage,
   normalizeMessages,
-} from '@claude-code-how-works/agent/messages.js'
-import { getAgentModel } from '@claude-code-how-works/provider/modelAgent.js'
-import { permissionModeSchema } from '@claude-code-how-works/permission/PermissionMode'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
+} from '@thyrox/agent/messages.js'
+import { getAgentModel } from '@thyrox/provider/modelAgent.js'
+import { permissionModeSchema } from '@thyrox/permission/PermissionMode'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
 import {
   filterDeniedAgents,
   getDenyRuleForAgent,
-} from '@claude-code-how-works/permission/permissions'
-import { enqueueSdkEvent } from '@claude-code-how-works/agent/sdkEventQueue.js'
-import { writeAgentMetadata } from '@claude-code-how-works/storage/sessionStorage.js'
-import { sleep } from '@claude-code-how-works/config/sleep'
-import { buildEffectiveSystemPrompt } from '@claude-code-how-works/provider/systemPrompt.js'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
-import { getTaskOutputPath } from '@claude-code-how-works/storage/task/diskOutput.js'
-import { getParentSessionId, isTeammate } from '@claude-code-how-works/swarm/teammateState.js'
-import { isInProcessTeammate } from '@claude-code-how-works/swarm/teammateContext.js'
+} from '@thyrox/permission/permissions'
+import { enqueueSdkEvent } from '@thyrox/agent/sdkEventQueue.js'
+import { writeAgentMetadata } from '@thyrox/storage/sessionStorage.js'
+import { sleep } from '@thyrox/config/sleep'
+import { buildEffectiveSystemPrompt } from '@thyrox/provider/systemPrompt.js'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
+import { getTaskOutputPath } from '@thyrox/storage/task/diskOutput.js'
+import { getParentSessionId, isTeammate } from '@thyrox/swarm/teammateState.js'
+import { isInProcessTeammate } from '@thyrox/swarm/teammateContext.js'
 import { teleportToRemote } from '../../teleport.js'
-import { getAssistantMessageContentLength } from '@claude-code-how-works/agent/tokens.js'
-import { createAgentId } from '@claude-code-how-works/agent/uuid.js'
+import { getAssistantMessageContentLength } from '@thyrox/agent/tokens.js'
+import { createAgentId } from '@thyrox/agent/uuid.js'
 import {
   createAgentWorktree,
   hasWorktreeChanges,
   removeAgentWorktree,
-} from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
 import { BASH_TOOL_NAME } from '../BashTool/toolName.js'
 import { BackgroundHint } from '../BashTool/UI.js'
 import { FILE_READ_TOOL_NAME } from '../FileReadTool/prompt.js'
@@ -136,7 +136,7 @@ import {
 /* eslint-disable @typescript-eslint/no-require-imports */
 const proactiveModule =
   feature('PROACTIVE') || feature('KAIROS')
-    ? (require('@claude-code-how-works/agent/proactive/index.js') as typeof import('@claude-code-how-works/agent/proactive/index.js'))
+    ? (require('@thyrox/agent/proactive/index.js') as typeof import('@thyrox/agent/proactive/index.js'))
     : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -725,7 +725,7 @@ export const AgentTool = buildTool({
     // ant 4036.js fork override `replHydration:{kind:"fork",log:[...]}` — the
     // Agent-tool fork path must replay the parent REPL log like /fork does.
     let forkReplHydration:
-      | import('@claude-code-how-works/agent/replHydration.js').ReplHydration
+      | import('@thyrox/agent/replHydration.js').ReplHydration
       | undefined
 
     if (isForkPath) {
@@ -758,7 +758,7 @@ export const AgentTool = buildTool({
       }
       promptMessages = buildForkedMessages(prompt, assistantMessage)
       // ant 4656.js mJK:29-37 — pre-compute replHydration log synchronously.
-      const { reconstructLog } = await import('@claude-code-how-works/agent/replHydration.js')
+      const { reconstructLog } = await import('@thyrox/agent/replHydration.js')
       forkReplHydration = { kind: 'fork', log: reconstructLog(toolUseContext.messages) }
     } else {
       try {

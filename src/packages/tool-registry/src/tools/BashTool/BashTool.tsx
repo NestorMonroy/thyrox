@@ -7,16 +7,16 @@ import {
   link,
 } from 'fs/promises'
 import * as React from 'react'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { AppStateLike as AppState } from '../../contracts.js'
 import { z } from 'zod/v4'
-import { getKairosActive } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getKairosActive } from '@thyrox/app-host/bootstrap/state.js'
 import { TOOL_SUMMARY_MAX_LENGTH } from '../../toolLimits.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { notifyVscodeFileUpdated } from '@claude-code-how-works/mcp-runtime/vscodeSdkMcp.js'
+} from '@thyrox/local-observability'
+import { notifyVscodeFileUpdated } from '@thyrox/mcp-runtime/vscodeSdkMcp.js'
 import type {
   SetToolJSXFn,
   ToolCallProgress,
@@ -30,51 +30,51 @@ import {
   registerForeground,
   spawnShellTask,
   unregisterForeground,
-} from '@claude-code-how-works/agent/tasks/LocalShellTask.js'
-import type { AgentId } from '@claude-code-how-works/agent/idTypes'
-import type { AssistantMessage } from '@claude-code-how-works/agent/messageShapes'
-import * as effortModule from '@claude-code-how-works/agent/effort.js'
-import { parseForSecurity } from '@claude-code-how-works/shell/bash/ast-alias.js'
+} from '@thyrox/agent/tasks/LocalShellTask.js'
+import type { AgentId } from '@thyrox/agent/idTypes'
+import type { AssistantMessage } from '@thyrox/agent/messageShapes'
+import * as effortModule from '@thyrox/agent/effort.js'
+import { parseForSecurity } from '@thyrox/shell/bash/ast-alias.js'
 import {
   splitCommand,
   splitCommandWithOperators,
-} from '@claude-code-how-works/shell/bash/commands.js'
+} from '@thyrox/shell/bash/commands.js'
 import { extractClaudeCodeHints } from '../../claudeCodeHints.js'
 import { detectCodeIndexingFromCommand } from '../../codeIndexing.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { isENOENT, ShellError } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { isENOENT, ShellError } from '@thyrox/local-observability/errorHelpers.js'
 import {
   detectFileEncoding,
   detectLineEndings,
   getFileModificationTime,
   writeTextContent,
-} from '@claude-code-how-works/storage/file.js'
+} from '@thyrox/storage/file.js'
 import {
   fileHistoryEnabled,
   fileHistoryTrackEdit,
-} from '@claude-code-how-works/agent/file-history'
-import { truncate } from '@claude-code-how-works/output/formatters/truncate.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
+} from '@thyrox/agent/file-history'
+import { truncate } from '@thyrox/output/formatters/truncate.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { expandPath } from '@claude-code-how-works/storage/path.js'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
-import { maybeRecordPluginHint } from '@claude-code-how-works/config/plugin/hintRecommendation'
-import { exec } from '@claude-code-how-works/shell/Shell.js'
-import type { ExecResult } from '@claude-code-how-works/shell/shellCommand.js'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
+import { expandPath } from '@thyrox/storage/path.js'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
+import { maybeRecordPluginHint } from '@thyrox/config/plugin/hintRecommendation'
+import { exec } from '@thyrox/shell/Shell.js'
+import type { ExecResult } from '@thyrox/shell/shellCommand.js'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
 import { semanticBoolean } from '../../utils/semanticBoolean.js'
 import { semanticNumber } from '../../utils/semanticNumber.js'
-import { EndTruncatingAccumulator } from '@claude-code-how-works/output/utils/stringUtils.js'
-import { getTaskOutputPath } from '@claude-code-how-works/storage/task/diskOutput.js'
+import { EndTruncatingAccumulator } from '@thyrox/output/utils/stringUtils.js'
+import { getTaskOutputPath } from '@thyrox/storage/task/diskOutput.js'
 import { TaskOutput } from '../../task/TaskOutput.js'
-import { isOutputLineTruncated } from '@claude-code-how-works/output/terminal.js'
+import { isOutputLineTruncated } from '@thyrox/output/terminal.js'
 import {
   buildLargeToolResultMessage,
   ensureToolResultsDir,
   generatePreview,
   getToolResultPath,
   PREVIEW_SIZE_BYTES,
-} from '@claude-code-how-works/storage/toolResultStorage.js'
+} from '@thyrox/storage/toolResultStorage.js'
 import { userFacingName as fileEditUserFacingName } from '../FileEditTool/UI.js'
 import { trackGitOperations } from '../shared/gitOperationTracking.js'
 import {

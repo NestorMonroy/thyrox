@@ -17,20 +17,20 @@ import {
   getLspServerManager,
   isLspConnected,
   waitForInitialization,
-} from '@claude-code-how-works/ide/lsp/manager.js'
+} from '@thyrox/ide/lsp/manager.js'
 import type { ValidationResult } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { uniq } from '../../utils/array.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isENOENT, toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { execFileNoThrowWithCwd } from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isENOENT, toError } from '@thyrox/local-observability/errorHelpers.js'
+import { execFileNoThrowWithCwd } from '@thyrox/shell/execFileNoThrow.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { expandPath } from '@claude-code-how-works/storage/path.js'
-import { checkReadPermissionForTool } from '@claude-code-how-works/permission/filesystem'
-import type { PermissionDecision } from '@claude-code-how-works/permission/PermissionResult'
+import { logError } from '@thyrox/local-observability/logging'
+import { expandPath } from '@thyrox/storage/path.js'
+import { checkReadPermissionForTool } from '@thyrox/permission/filesystem'
+import type { PermissionDecision } from '@thyrox/permission/PermissionResult'
 import {
   formatDocumentSymbolResult,
   formatFindReferencesResult,

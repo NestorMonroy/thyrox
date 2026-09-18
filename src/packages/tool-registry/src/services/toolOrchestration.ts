@@ -1,8 +1,8 @@
 import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import { findToolByName, type ToolUseContext } from '../Tool.js'
-import type { AssistantMessage, Message } from '@claude-code-how-works/agent/messageShapes'
-import { all } from '@claude-code-how-works/config/generators'
+import type { AssistantMessage, Message } from '@thyrox/agent/messageShapes'
+import { all } from '@thyrox/config/generators'
 import { type MessageUpdateLazy, runToolUse } from './toolExecution.js'
 
 function getMaxToolUseConcurrency(): number {

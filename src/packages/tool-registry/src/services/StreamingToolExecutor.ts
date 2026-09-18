@@ -3,12 +3,12 @@ import {
   createUserMessage,
   REJECT_MESSAGE,
   withMemoryCorrectionHint,
-} from '@claude-code-how-works/agent/messages.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+} from '@thyrox/agent/messages.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import { findToolByName, type Tools, type ToolUseContext } from '../Tool.js'
 import { BASH_TOOL_NAME } from '../tools/BashTool/toolName.js'
-import type { AssistantMessage, Message } from '@claude-code-how-works/agent/messageShapes'
-import { createChildAbortController } from '@claude-code-how-works/agent/abortController.js'
+import type { AssistantMessage, Message } from '@thyrox/agent/messageShapes'
+import { createChildAbortController } from '@thyrox/agent/abortController.js'
 import { runToolUse } from './toolExecution.js'
 
 type MessageUpdate = {

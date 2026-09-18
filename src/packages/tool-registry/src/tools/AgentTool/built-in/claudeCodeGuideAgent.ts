@@ -5,9 +5,9 @@ import { GREP_TOOL_NAME } from '../../GrepTool/prompt.js'
 import { SEND_MESSAGE_TOOL_NAME } from '../../SendMessageTool/constants.js'
 import { WEB_FETCH_TOOL_NAME } from '../../WebFetchTool/prompt.js'
 import { WEB_SEARCH_TOOL_NAME } from '../../WebSearchTool/prompt.js'
-import { hasEmbeddedSearchTools } from '@claude-code-how-works/config/embeddedTools.js'
-import { getSettings } from '@claude-code-how-works/config/settings'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { hasEmbeddedSearchTools } from '@thyrox/config/embeddedTools.js'
+import { getSettings } from '@thyrox/config/settings'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import type {
   AgentDefinition,
   BuiltInAgentDefinition,

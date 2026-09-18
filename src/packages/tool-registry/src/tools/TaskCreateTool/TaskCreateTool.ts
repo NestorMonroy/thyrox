@@ -3,7 +3,7 @@ import { buildTool, type ToolDef } from '../../Tool.js'
 import {
   executeTaskCreatedHooks,
   getTaskCreatedHookMessage,
-} from '@claude-code-how-works/agent/hooks.js'
+} from '@thyrox/agent/hooks.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
   blockTask,
@@ -11,8 +11,8 @@ import {
   deleteTask,
   getTaskListId,
   isTodoV2Enabled,
-} from '@claude-code-how-works/agent/tasks.js'
-import { getAgentName, getTeamName } from '@claude-code-how-works/swarm/teammateState.js'
+} from '@thyrox/agent/tasks.js'
+import { getAgentName, getTeamName } from '@thyrox/swarm/teammateState.js'
 import { TASK_CREATE_TOOL_NAME } from './constants.js'
 import { DESCRIPTION, getPrompt } from './prompt.js'
 

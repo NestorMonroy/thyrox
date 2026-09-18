@@ -6,9 +6,9 @@ import { mock, describe, expect, test } from "bun:test";
 // (e.g., packages/shell/src/__test__/commands.test.ts) load directly. An
 // incomplete mock here previously shadowed the real exports for the entire
 // test process. See feedback_bun_mock_module_global_scope.md.
-const realCommands = await import("@claude-code-how-works/shell/bash/commands.js");
+const realCommands = await import("@thyrox/shell/bash/commands.js");
 
-mock.module("@claude-code-how-works/shell/bash/commands.js", () => ({
+mock.module("@thyrox/shell/bash/commands.js", () => ({
   ...realCommands,
   splitCommand: (cmd: string) =>
     cmd.split(/\s*(?:[|;&]+)\s*/).filter(Boolean),

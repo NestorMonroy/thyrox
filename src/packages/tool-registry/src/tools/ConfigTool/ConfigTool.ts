@@ -3,22 +3,22 @@ import { z } from 'zod/v4'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import {
   type GlobalConfig,
   getGlobalConfig,
   getRemoteControlAtStartup,
   saveGlobalConfig,
-} from '@claude-code-how-works/config'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+} from '@thyrox/config'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { logError } from '@thyrox/local-observability/logging'
 import {
   getInitialSettings,
   updateSettingsForSource,
-} from '@claude-code-how-works/config/settings'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/config/settings'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { CONFIG_TOOL_NAME } from './constants.js'
 import { DESCRIPTION, generatePrompt } from './prompt.js'
 import {
@@ -115,7 +115,7 @@ export const ConfigTool = buildTool({
     // voiceEnabled as an unknown setting so no voice-specific strings leak.
     if (feature('VOICE_MODE') && setting === 'voiceEnabled') {
       const { isVoiceGrowthBookEnabled } = await import(
-        '@claude-code-how-works/voice/voiceModeEnabled.js'
+        '@thyrox/voice/voiceModeEnabled.js'
       )
       if (!isVoiceGrowthBookEnabled()) {
         return {
@@ -235,10 +235,10 @@ export const ConfigTool = buildTool({
       finalValue === true
     ) {
       const { isVoiceModeEnabled } = await import(
-        '@claude-code-how-works/voice/voiceModeEnabled.js'
+        '@thyrox/voice/voiceModeEnabled.js'
       )
       if (!isVoiceModeEnabled()) {
-        const { isAnthropicAuthEnabled } = await import('@claude-code-how-works/provider/authAlias.js')
+        const { isAnthropicAuthEnabled } = await import('@thyrox/provider/authAlias.js')
         return {
           data: {
             success: false,
@@ -249,13 +249,13 @@ export const ConfigTool = buildTool({
         }
       }
       const { isVoiceStreamAvailable } = await import(
-        '@claude-code-how-works/voice/voiceStreamSTT.js'
+        '@thyrox/voice/voiceStreamSTT.js'
       )
       const {
         checkRecordingAvailability,
         checkVoiceDependencies,
         requestMicrophonePermission,
-      } = await import('@claude-code-how-works/voice/voice.js')
+      } = await import('@thyrox/voice/voice.js')
 
       const recording = await checkRecordingAvailability()
       if (!recording.available) {
@@ -347,7 +347,7 @@ export const ConfigTool = buildTool({
       // and the settings cache resets for the next /voice read.
       if (feature('VOICE_MODE') && setting === 'voiceEnabled') {
         const { settingsChangeDetector } = await import(
-          '@claude-code-how-works/config/settings/core/changeDetector.js'
+          '@thyrox/config/settings/core/changeDetector.js'
         )
         settingsChangeDetector.notifyChange('userSettings')
       }

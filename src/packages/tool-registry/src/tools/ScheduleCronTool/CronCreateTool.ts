@@ -1,17 +1,17 @@
 import { z } from 'zod/v4'
-import { setScheduledTasksEnabled } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { setScheduledTasksEnabled } from '@thyrox/app-host/bootstrap/state.js'
 import type { ValidationResult } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { cronToHuman, parseCronExpression } from '@claude-code-how-works/agent/scheduler'
+import { cronToHuman, parseCronExpression } from '@thyrox/agent/scheduler'
 import {
   addCronTask,
   getCronFilePath,
   listAllCronTasks,
   nextCronRunMs,
-} from '@claude-code-how-works/agent/scheduler'
+} from '@thyrox/agent/scheduler'
 import { lazySchema } from '../../utils/lazySchema.js'
 import { semanticBoolean } from '../../utils/semanticBoolean.js'
-import { getTeammateContext } from '@claude-code-how-works/swarm/teammateContext.js'
+import { getTeammateContext } from '@thyrox/swarm/teammateContext.js'
 import {
   buildCronCreateDescription,
   buildCronCreatePrompt,

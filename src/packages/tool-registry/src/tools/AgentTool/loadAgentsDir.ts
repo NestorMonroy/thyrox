@@ -1,28 +1,28 @@
 import { feature } from 'bun:bundle'
 import memoize from 'lodash-es/memoize.js'
 import { basename } from 'path'
-import { isAutoMemoryEnabled } from '@claude-code-how-works/memory'
-import type { SettingSource } from '@claude-code-how-works/config/constants'
+import { isAutoMemoryEnabled } from '@thyrox/memory'
+import type { SettingSource } from '@thyrox/config/constants'
 import { z } from 'zod/v4'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   type McpServerConfig,
   McpServerConfigSchema,
-} from '@claude-code-how-works/mcp-runtime/types.js'
+} from '@thyrox/mcp-runtime/types.js'
 import type { ToolUseContext } from '../../Tool.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   EFFORT_LEVELS,
   type EffortValue,
   parseEffortValue,
-} from '@claude-code-how-works/agent/effort.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { parsePositiveIntFromFrontmatter } from '@claude-code-how-works/agent/frontmatterParser.js'
+} from '@thyrox/agent/effort.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { parsePositiveIntFromFrontmatter } from '@thyrox/agent/frontmatterParser.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { logError } from '@thyrox/local-observability/logging'
 import {
   loadMarkdownFilesForSubdir,
   parseAgentToolsFromFrontmatter,
@@ -31,13 +31,13 @@ import {
 import {
   PERMISSION_MODES,
   type PermissionMode,
-} from '@claude-code-how-works/permission/PermissionMode'
+} from '@thyrox/permission/PermissionMode'
 import {
   clearPluginAgentCache,
   loadPluginAgents,
-} from '@claude-code-how-works/config/plugin/loadPluginAgentsAlias.js'
-import { HooksSchema, type HooksSettings } from '@claude-code-how-works/config/types'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/config/plugin/loadPluginAgentsAlias.js'
+import { HooksSchema, type HooksSettings } from '@thyrox/config/types'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { FILE_EDIT_TOOL_NAME } from '../FileEditTool/constants.js'
 import { FILE_READ_TOOL_NAME } from '../FileReadTool/constants.js'
 import { FILE_WRITE_TOOL_NAME } from '../FileWriteTool/constants.js'
@@ -46,7 +46,7 @@ import {
   type AgentColorName,
   setAgentColor,
 } from './agentColorManager.js'
-import { type AgentMemoryScope, loadAgentMemoryPrompt } from '@claude-code-how-works/memory/agentMemory'
+import { type AgentMemoryScope, loadAgentMemoryPrompt } from '@thyrox/memory/agentMemory'
 import {
   checkAgentMemorySnapshot,
   initializeFromSnapshot,

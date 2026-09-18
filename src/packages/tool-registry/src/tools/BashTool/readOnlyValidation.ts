@@ -1,15 +1,15 @@
 import type { z } from 'zod/v4'
-import { getOriginalCwd } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
 import {
   extractOutputRedirections,
   splitCommand,
-} from '@claude-code-how-works/shell/bash/commands.js'
-import { tryParseShellCommand } from '@claude-code-how-works/shell/bash/shellQuote.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { isCurrentDirectoryBareGitRepo } from '@claude-code-how-works/storage/git.js'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
-import { getPlatform } from '@claude-code-how-works/config/platform'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
+} from '@thyrox/shell/bash/commands.js'
+import { tryParseShellCommand } from '@thyrox/shell/bash/shellQuote.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { isCurrentDirectoryBareGitRepo } from '@thyrox/storage/git.js'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
+import { getPlatform } from '@thyrox/config/platform'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
 import {
   containsVulnerableUncPath,
   DOCKER_READ_ONLY_COMMANDS,
@@ -20,7 +20,7 @@ import {
   PYRIGHT_READ_ONLY_COMMANDS,
   RIPGREP_READ_ONLY_COMMANDS,
   validateFlags,
-} from '@claude-code-how-works/shell/legacy/readOnlyCommandValidation.js'
+} from '@thyrox/shell/legacy/readOnlyCommandValidation.js'
 import type { BashTool } from './BashTool.js'
 import { isNormalizedGitCommand } from './bashPermissions.js'
 import { bashCommandIsSafe } from './bashSecurity.js'

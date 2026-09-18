@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Box, Text } from '@anthropic/ink'
 import type { ToolProgressData } from '../../Tool.js'
-import type { ProgressMessage } from '@claude-code-how-works/agent/messageShapes'
+import type { ProgressMessage } from '@thyrox/agent/messageShapes'
 import type { ThemeName } from '@anthropic/ink'
 import type { Output } from './EnterWorktreeTool.js'
 

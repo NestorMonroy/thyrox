@@ -9,13 +9,13 @@ import { Text } from '@anthropic/ink'
 import { z } from 'zod/v4'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
-import type { PermissionRule } from '@claude-code-how-works/permission/PermissionRule'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
+import type { PermissionRule } from '@thyrox/permission/PermissionRule'
 import { generateTaskId } from '../../Task.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { WORKFLOW_TOOL_DESCRIPTION, WORKFLOW_TOOL_NAME } from './constants.js'
-import { isWorkflowsEnabled } from '@claude-code-how-works/agent/goalStopHook.js'
-import { getRuleByContentsForToolName } from '@claude-code-how-works/permission/permissions'
+import { isWorkflowsEnabled } from '@thyrox/agent/goalStopHook.js'
+import { getRuleByContentsForToolName } from '@thyrox/permission/permissions'
 // NOTE: metaParser / sandbox / engine each `import vm from 'node:vm'`. Importing
 // them statically here would pull node:vm onto the boot path the moment the tool
 // registry materializes this tool (BuiltInToolsProvider does so at REPL start).
@@ -26,14 +26,14 @@ import { getRuleByContentsForToolName } from '@claude-code-how-works/permission/
 // evaluate on first call. ccb is plain ESM (eager on import), so we replicate
 // ant's deferral explicitly: load the vm engine via dynamic import inside the
 // methods that need it (validateInput / call), keeping boot free of node:vm.
-import { FileWorkflowJournal } from '@claude-code-how-works/agent/workflow/journal.js'
+import { FileWorkflowJournal } from '@thyrox/agent/workflow/journal.js'
 import {
   getWorkflowRunDir,
   persistWorkflowScript,
   readWorkflowScriptFile,
   writeWorkflowSnapshot,
   MAX_WORKFLOW_SCRIPT_BYTES,
-} from '@claude-code-how-works/agent/workflow/paths.js'
+} from '@thyrox/agent/workflow/paths.js'
 // NOTE: LocalWorkflowTask transitively imports messageQueueManager → messages.ts
 // (the 5.6k-line message module). Static-importing it here pulls that whole graph
 // onto the boot path the moment BuiltInToolsProvider materializes this tool — and
@@ -43,8 +43,8 @@ import {
 // module is a lazy `R(()=>…)` initializer that only evaluates on first call. ccb
 // is eager ESM, so we replicate that deferral: the task helpers (all call-only)
 // are dynamically imported inside call(), keeping the message graph off boot.
-import type { WorkflowProgress } from '@claude-code-how-works/agent/workflow/types.js'
-import { getSettings } from '@claude-code-how-works/config/settings'
+import type { WorkflowProgress } from '@thyrox/agent/workflow/types.js'
+import { getSettings } from '@thyrox/config/settings'
 
 function workflowSizeGuidance(): string {
   const size = getSettings().dynamicWorkflowSize ?? 'medium'
@@ -130,7 +130,7 @@ async function resolveScript(input: {
     // ant dHK name branch → O0_ resolve from the merged builtin+user+project
     // registry. Dynamic import keeps this module's static graph minimal.
     const { resolveNamedWorkflow, listNamedWorkflowNames } = await import(
-      '@claude-code-how-works/agent/workflow/namedWorkflows.js'
+      '@thyrox/agent/workflow/namedWorkflows.js'
     )
     const resolved = await resolveNamedWorkflow(input.name)
     if (!resolved) {
@@ -191,7 +191,7 @@ export const WorkflowTool = buildTool({
       return { result: false, message: resolved.error, errorCode: 1 }
     }
     const { parseWorkflowScript } = await import(
-      '@claude-code-how-works/agent/workflow/metaParser.js'
+      '@thyrox/agent/workflow/metaParser.js'
     )
     const parsed = parseWorkflowScript(resolved.script)
     if ('error' in parsed) {
@@ -300,7 +300,7 @@ export const WorkflowTool = buildTool({
     if (input?.name) return `workflow: ${input.name}`
     if (!input?.script) return null
     const { parseWorkflowScript } =
-      require('@claude-code-how-works/agent/workflow/metaParser.js') as typeof import('@claude-code-how-works/agent/workflow/metaParser.js')
+      require('@thyrox/agent/workflow/metaParser.js') as typeof import('@thyrox/agent/workflow/metaParser.js')
     const parsed = parseWorkflowScript(input.script)
     if (!('error' in parsed)) return parsed.meta.description
     const firstLine = input.script.split('\n').find(l => l.trim()) ?? ''
@@ -324,13 +324,13 @@ export const WorkflowTool = buildTool({
       },
       { resolveNamedWorkflow, listNamedWorkflowNames },
     ] = await Promise.all([
-      import('@claude-code-how-works/agent/workflow/metaParser.js'),
-      import('@claude-code-how-works/agent/workflow/sandbox.js'),
-      import('@claude-code-how-works/agent/workflow/engine.js'),
+      import('@thyrox/agent/workflow/metaParser.js'),
+      import('@thyrox/agent/workflow/sandbox.js'),
+      import('@thyrox/agent/workflow/engine.js'),
       import(
-        '@claude-code-how-works/agent/tasks/LocalWorkflowTask/LocalWorkflowTask.js'
+        '@thyrox/agent/tasks/LocalWorkflowTask/LocalWorkflowTask.js'
       ),
-      import('@claude-code-how-works/agent/workflow/namedWorkflows.js'),
+      import('@thyrox/agent/workflow/namedWorkflows.js'),
     ])
     const resolved = await resolveScript(input)
     if ('error' in resolved) throw new Error(resolved.error)

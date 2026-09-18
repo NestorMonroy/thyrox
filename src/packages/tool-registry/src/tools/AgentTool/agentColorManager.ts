@@ -1,4 +1,4 @@
-import { getAgentColorMap } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getAgentColorMap } from '@thyrox/app-host/bootstrap/state.js'
 import type { Theme } from '@anthropic/ink'
 
 export type AgentColorName =

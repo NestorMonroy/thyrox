@@ -1,11 +1,11 @@
 import figures from 'figures'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { callIdeRpc } from '@claude-code-how-works/mcp-runtime/clientRuntime.js'
-import type { MCPServerConnection } from '@claude-code-how-works/mcp-runtime/types.js'
-import { ClaudeError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { normalizePathForComparison, pathsEqual } from '@claude-code-how-works/storage/file.js'
-import { getConnectedIdeClient } from '@claude-code-how-works/ide/ide.js'
-import { jsonParse } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { callIdeRpc } from '@thyrox/mcp-runtime/clientRuntime.js'
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
+import { ClaudeError } from '@thyrox/local-observability/errorHelpers.js'
+import { normalizePathForComparison, pathsEqual } from '@thyrox/storage/file.js'
+import { getConnectedIdeClient } from '@thyrox/ide/ide.js'
+import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 
 class DiagnosticsTrackingError extends ClaudeError {}
 

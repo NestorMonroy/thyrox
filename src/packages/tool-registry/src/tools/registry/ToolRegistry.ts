@@ -4,7 +4,7 @@ import {
   type ToolPermissionContext,
   type Tools,
 } from '../../Tool.js'
-import { getDenyRuleForTool } from '@claude-code-how-works/permission/permissions'
+import { getDenyRuleForTool } from '@thyrox/permission/permissions'
 import uniqBy from 'lodash-es/uniqBy.js'
 import type {
   ToolCategory,

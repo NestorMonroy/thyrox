@@ -1,9 +1,9 @@
 import React from 'react'
-import { removeSandboxViolationTags } from '@claude-code-how-works/shell/sandboxUiUtils.js'
+import { removeSandboxViolationTags } from '@thyrox/shell/sandboxUiUtils.js'
 import { KeyboardShortcutHint } from '@anthropic/ink'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
-import { OutputLine } from '@claude-code-how-works/repl/components/shell/OutputLine.js'
-import { ShellTimeDisplay } from '@claude-code-how-works/repl/components/shell/ShellTimeDisplay.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
+import { OutputLine } from '@thyrox/repl/components/shell/OutputLine.js'
+import { ShellTimeDisplay } from '@thyrox/repl/components/shell/ShellTimeDisplay.js'
 import { Box, Text } from '@anthropic/ink'
 import type { Out as BashOut } from './BashTool.js'
 

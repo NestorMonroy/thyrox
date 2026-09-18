@@ -1,16 +1,16 @@
 import { feature } from 'bun:bundle'
-import { prependBullets } from '@claude-code-how-works/agent/prompts.js'
-import { getAttributionTexts } from '@claude-code-how-works/agent/attribution.js'
-import { hasEmbeddedSearchTools } from '@claude-code-how-works/config/embeddedTools.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { shouldIncludeGitInstructions } from '@claude-code-how-works/config/env/git-settings'
-import { getClaudeTempDir } from '@claude-code-how-works/permission/filesystem'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { prependBullets } from '@thyrox/agent/prompts.js'
+import { getAttributionTexts } from '@thyrox/agent/attribution.js'
+import { hasEmbeddedSearchTools } from '@thyrox/config/embeddedTools.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { shouldIncludeGitInstructions } from '@thyrox/config/env/git-settings'
+import { getClaudeTempDir } from '@thyrox/permission/filesystem'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import {
   getDefaultBashTimeoutMs,
   getMaxBashTimeoutMs,
-} from '@claude-code-how-works/config/timeouts'
+} from '@thyrox/config/timeouts'
 import {
   getUndercoverInstructions,
   isUndercover,

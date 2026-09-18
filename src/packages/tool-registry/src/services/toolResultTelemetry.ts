@@ -11,10 +11,10 @@
 import {
   logOTelEvent,
   toolDetailsLoggingEnabled,
-} from '@claude-code-how-works/local-observability/telemetry'
+} from '@thyrox/local-observability/telemetry'
 
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { classifyToolError } from './classifyToolError.js'
 
 type ToolResultBase = {

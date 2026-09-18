@@ -10,24 +10,24 @@
 // `beforeEach` would clobber the integration mocks set up here.
 
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
-import type { ConnectionRecord } from '@claude-code-how-works/config'
+import type { ConnectionRecord } from '@thyrox/config'
 
-const realConfig = await import('@claude-code-how-works/config')
+const realConfig = await import('@thyrox/config')
 const config = { connections: [] as ConnectionRecord[] }
-mock.module('@claude-code-how-works/config', () => ({
+mock.module('@thyrox/config', () => ({
   ...realConfig,
   getGlobalConfig: () => config,
 }))
 
-const realSettings = await import('@claude-code-how-works/config/settings')
-mock.module('@claude-code-how-works/config/settings', () => ({
+const realSettings = await import('@thyrox/config/settings')
+mock.module('@thyrox/config/settings', () => ({
   ...realSettings,
   getInitialSettings: () => ({}),
 }))
 
-const realModel = await import('@claude-code-how-works/provider/model.js')
+const realModel = await import('@thyrox/provider/model.js')
 let currentMainLoopModel = 'claude-account:claude-opus-4-7'
-mock.module('@claude-code-how-works/provider/model.js', () => ({
+mock.module('@thyrox/provider/model.js', () => ({
   ...realModel,
   getMainLoopModel: () => currentMainLoopModel,
 }))

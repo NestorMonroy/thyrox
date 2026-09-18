@@ -7,23 +7,23 @@ import { dirname, join, resolve, sep } from 'path'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { getProjectRoot } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { isFsInaccessible } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { normalizePathForComparison } from '@claude-code-how-works/storage/file.js'
-import type { FrontmatterData } from '@claude-code-how-works/agent/frontmatterParser.js'
-import { parseFrontmatter } from '@claude-code-how-works/agent/frontmatterParser.js'
-import { findCanonicalGitRoot, findGitRoot } from '@claude-code-how-works/storage/git.js'
-import { parseToolListFromCLI } from '@claude-code-how-works/permission/permissionSetup'
+} from '@thyrox/local-observability'
+import { getProjectRoot } from '@thyrox/app-host/bootstrap/state.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
+import { normalizePathForComparison } from '@thyrox/storage/file.js'
+import type { FrontmatterData } from '@thyrox/agent/frontmatterParser.js'
+import { parseFrontmatter } from '@thyrox/agent/frontmatterParser.js'
+import { findCanonicalGitRoot, findGitRoot } from '@thyrox/storage/git.js'
+import { parseToolListFromCLI } from '@thyrox/permission/permissionSetup'
 import { ripGrep } from './ripgrep.js'
 import {
   isSettingSourceEnabled,
   type SettingSource,
-} from '@claude-code-how-works/config/constants'
-import { getManagedFilePath } from '@claude-code-how-works/config/managedPath'
-import { isRestrictedToPluginOnly } from '@claude-code-how-works/config/pluginOnlyPolicy'
+} from '@thyrox/config/constants'
+import { getManagedFilePath } from '@thyrox/config/managedPath'
+import { isRestrictedToPluginOnly } from '@thyrox/config/pluginOnlyPolicy'
 
 // Claude configuration directory names
 export const CLAUDE_CONFIG_DIRECTORIES = [
@@ -47,7 +47,7 @@ export type MarkdownFile = {
 
 // extractDescriptionFromMarkdown moved to @claude-code-how-works/config/utils/markdownDescription
 // to break the config → tool-registry cycle. Re-exported for back-compat.
-export { extractDescriptionFromMarkdown } from '@claude-code-how-works/config/utils/markdownDescription.js'
+export { extractDescriptionFromMarkdown } from '@thyrox/config/utils/markdownDescription.js'
 
 /**
  * Parses tools from frontmatter, supporting both string and array formats

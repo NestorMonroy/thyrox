@@ -6,7 +6,7 @@ import { FILE_WRITE_TOOL_NAME } from '../../FileWriteTool/constants.js'
 import { GLOB_TOOL_NAME } from '../../GlobTool/prompt.js'
 import { GREP_TOOL_NAME } from '../../GrepTool/prompt.js'
 import { NOTEBOOK_EDIT_TOOL_NAME } from '../../NotebookEditTool/constants.js'
-import { hasEmbeddedSearchTools } from '@claude-code-how-works/config/embeddedTools.js'
+import { hasEmbeddedSearchTools } from '@thyrox/config/embeddedTools.js'
 import { AGENT_TOOL_NAME } from '../constants.js'
 import type { BuiltInAgentDefinition } from '../loadAgentsDir.js'
 
@@ -59,7 +59,7 @@ Complete the user's search request efficiently and report your findings clearly.
 export const EXPLORE_AGENT_MIN_QUERIES = 3
 
 const EXPLORE_WHEN_TO_USE =
-  'Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. "@claude-code-how-works/repl/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about the codebase (eg. "how do API endpoints work?"). When calling this agent, specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions.'
+  'Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. "@thyrox/repl/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about the codebase (eg. "how do API endpoints work?"). When calling this agent, specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions.'
 
 export const EXPLORE_AGENT: BuiltInAgentDefinition = {
   agentType: 'Explore',

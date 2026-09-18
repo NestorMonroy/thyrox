@@ -1,9 +1,9 @@
 import { z } from 'zod/v4'
 import type { TaskStateBase } from '../../Task.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { stopTask } from '@claude-code-how-works/agent/tasks/stopTask.js'
+import { stopTask } from '@thyrox/agent/tasks/stopTask.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { DESCRIPTION, TASK_STOP_TOOL_NAME } from './prompt.js'
 import { renderToolResultMessage, renderToolUseMessage } from './UI.js'
 

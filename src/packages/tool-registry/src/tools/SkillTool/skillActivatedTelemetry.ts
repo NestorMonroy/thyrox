@@ -6,7 +6,7 @@
 import {
   logSkillActivatedEvent,
   toolDetailsLoggingEnabled,
-} from '@claude-code-how-works/local-observability/telemetry'
+} from '@thyrox/local-observability/telemetry'
 
 export function emitSkillActivated(args: {
   commandName: string

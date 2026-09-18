@@ -1,7 +1,7 @@
 import React from 'react'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
 import { Text } from '@anthropic/ink'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import type { Input, Output } from './ConfigTool.js'
 
 export function renderToolUseMessage(input: Partial<Input>): React.ReactNode {

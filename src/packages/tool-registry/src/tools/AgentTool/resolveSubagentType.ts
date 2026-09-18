@@ -20,7 +20,7 @@
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import type { AgentDefinition } from './loadAgentsDir.js'
 import { normalizeAgentType } from './normalizeAgentType.js'
 import { AGENT_TOOL_NAME } from './constants.js'

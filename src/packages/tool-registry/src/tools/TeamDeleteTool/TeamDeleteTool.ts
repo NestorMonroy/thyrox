@@ -1,19 +1,19 @@
 import { z } from 'zod/v4'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/agent/eventMetadata.js'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/agent/eventMetadata.js'
 import type { Tool } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { TEAM_LEAD_NAME } from '@claude-code-how-works/swarm'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { TEAM_LEAD_NAME } from '@thyrox/swarm'
 import {
   cleanupTeamDirectories,
   readTeamFile,
   unregisterTeamForSessionCleanup,
-} from '@claude-code-how-works/swarm'
-import { clearTeammateColors } from '@claude-code-how-works/swarm'
-import { clearLeaderTeamName } from '@claude-code-how-works/agent/tasks.js'
+} from '@thyrox/swarm'
+import { clearTeammateColors } from '@thyrox/swarm'
+import { clearLeaderTeamName } from '@thyrox/agent/tasks.js'
 import { TEAM_DELETE_TOOL_NAME } from './constants.js'
 import { getPrompt } from './prompt.js'
 import { renderToolResultMessage, renderToolUseMessage } from './UI.js'

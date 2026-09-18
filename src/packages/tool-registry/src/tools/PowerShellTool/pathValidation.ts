@@ -9,13 +9,13 @@
 import { homedir } from 'os'
 import { isAbsolute, resolve } from 'path'
 import type { ToolPermissionContext } from '../../Tool.js'
-import type { PermissionRule } from '@claude-code-how-works/permission/permissionTypes'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
+import type { PermissionRule } from '@thyrox/permission/permissionTypes'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import {
   getFsImplementation,
   safeResolvePath,
-} from '@claude-code-how-works/storage/fsOperations.js'
-import { containsPathTraversal, getDirectoryForPath } from '@claude-code-how-works/storage/path.js'
+} from '@thyrox/storage/fsOperations.js'
+import { containsPathTraversal, getDirectoryForPath } from '@thyrox/storage/path.js'
 import {
   allWorkingDirectories,
   checkEditableInternalPath,
@@ -23,23 +23,23 @@ import {
   checkReadableInternalPath,
   matchingRuleForInput,
   pathInAllowedWorkingPath,
-} from '@claude-code-how-works/permission/filesystem'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
-import { createReadRuleSuggestion } from '@claude-code-how-works/permission/PermissionUpdate'
-import type { PermissionUpdate } from '@claude-code-how-works/permission/PermissionUpdateSchema'
+} from '@thyrox/permission/filesystem'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
+import { createReadRuleSuggestion } from '@thyrox/permission/PermissionUpdate'
+import type { PermissionUpdate } from '@thyrox/permission/PermissionUpdateSchema'
 import {
   isDangerousRemovalPath,
   isPathInSandboxWriteAllowlist,
-} from '@claude-code-how-works/permission/pathValidation.js'
-import { getPlatform } from '@claude-code-how-works/config/platform'
+} from '@thyrox/permission/pathValidation.js'
+import { getPlatform } from '@thyrox/config/platform'
 import type {
   ParsedCommandElement,
   ParsedPowerShellCommand,
-} from '@claude-code-how-works/shell/powershell/parser.js'
+} from '@thyrox/shell/powershell/parser.js'
 import {
   isNullRedirectionTarget,
   isPowerShellParameter,
-} from '@claude-code-how-works/shell/powershell/parser.js'
+} from '@thyrox/shell/powershell/parser.js'
 import { COMMON_SWITCHES, COMMON_VALUE_PARAMS } from './commonParameters.js'
 import { resolveToCanonical } from './readOnlyValidation.js'
 
@@ -53,7 +53,7 @@ type FileOperationType = 'read' | 'write' | 'create'
 
 type PathCheckResult = {
   allowed: boolean
-  decisionReason?: import('@claude-code-how-works/permission/PermissionResult').PermissionDecisionReason
+  decisionReason?: import('@thyrox/permission/PermissionResult').PermissionDecisionReason
 }
 
 type ResolvedPathCheckResult = PathCheckResult & {

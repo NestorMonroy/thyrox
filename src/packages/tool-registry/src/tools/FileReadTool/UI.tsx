@@ -1,15 +1,15 @@
 import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import * as React from 'react'
-import { extractTag } from '@claude-code-how-works/agent/messages.js'
-import { FallbackToolUseErrorMessage } from '@claude-code-how-works/repl/components/FallbackToolUseErrorMessage.js'
+import { extractTag } from '@thyrox/agent/messages.js'
+import { FallbackToolUseErrorMessage } from '@thyrox/repl/components/FallbackToolUseErrorMessage.js'
 
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
 import { Text } from '@anthropic/ink'
-import { FilePathLink } from '@claude-code-how-works/repl/components/FilePathLink.js'
-import { FILE_NOT_FOUND_CWD_NOTE, getDisplayPath } from '@claude-code-how-works/storage/file.js'
-import { formatFileSize } from '@claude-code-how-works/output/formatters'
-import { getPlansDirectory } from '@claude-code-how-works/storage/plans.js'
-import { getTaskOutputDir } from '@claude-code-how-works/storage/task/diskOutput.js'
+import { FilePathLink } from '@thyrox/repl/components/FilePathLink.js'
+import { FILE_NOT_FOUND_CWD_NOTE, getDisplayPath } from '@thyrox/storage/file.js'
+import { formatFileSize } from '@thyrox/output/formatters'
+import { getPlansDirectory } from '@thyrox/storage/plans.js'
+import { getTaskOutputDir } from '@thyrox/storage/task/diskOutput.js'
 import type { Input, Output } from './FileReadTool.js'
 
 /**

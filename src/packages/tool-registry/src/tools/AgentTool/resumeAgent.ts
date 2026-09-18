@@ -1,36 +1,36 @@
 import { promises as fsp } from 'fs'
-import { getSdkAgentProgressSummariesEnabled } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getSystemPrompt } from '@claude-code-how-works/agent/prompts.js'
-import { isCoordinatorMode } from '@claude-code-how-works/agent/coordinatorMode.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+import { getSdkAgentProgressSummariesEnabled } from '@thyrox/app-host/bootstrap/state.js'
+import { getSystemPrompt } from '@thyrox/agent/prompts.js'
+import { isCoordinatorMode } from '@thyrox/agent/coordinatorMode.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { ToolUseContext } from '../../Tool.js'
-import { registerAsyncAgent } from '@claude-code-how-works/agent/localAgentTask.js'
+import { registerAsyncAgent } from '@thyrox/agent/localAgentTask.js'
 import { assembleToolPool } from '../../runtime.js'
-import { asAgentId } from '@claude-code-how-works/agent/idTypes'
-import { runWithAgentContext } from '@claude-code-how-works/agent/agentContext.js'
-import { runWithCwdOverride } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { asAgentId } from '@thyrox/agent/idTypes'
+import { runWithAgentContext } from '@thyrox/agent/agentContext.js'
+import { runWithCwdOverride } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   createUserMessage,
   filterOrphanedThinkingOnlyMessages,
   filterUnresolvedToolUses,
   filterWhitespaceOnlyAssistantMessages,
-} from '@claude-code-how-works/agent/messages.js'
-import { getAgentModel } from '@claude-code-how-works/provider/modelAgent.js'
-import { getQuerySourceForAgent } from '@claude-code-how-works/agent/promptCategory.js'
+} from '@thyrox/agent/messages.js'
+import { getAgentModel } from '@thyrox/provider/modelAgent.js'
+import { getQuerySourceForAgent } from '@thyrox/agent/promptCategory.js'
 import {
   getAgentTranscript,
   readAgentMetadata,
-} from '@claude-code-how-works/storage/sessionStorage.js'
-import { buildEffectiveSystemPrompt } from '@claude-code-how-works/provider/systemPrompt.js'
-import type { SystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
-import { getTaskOutputPath } from '@claude-code-how-works/storage/task/diskOutput.js'
-import { getParentSessionId } from '@claude-code-how-works/swarm/teammateState.js'
-import { reconstructForSubagentResume } from '@claude-code-how-works/storage/toolResultStorage.js'
+} from '@thyrox/storage/sessionStorage.js'
+import { buildEffectiveSystemPrompt } from '@thyrox/provider/systemPrompt.js'
+import type { SystemPrompt } from '@thyrox/provider/systemPromptType.js'
+import { getTaskOutputPath } from '@thyrox/storage/task/diskOutput.js'
+import { getParentSessionId } from '@thyrox/swarm/teammateState.js'
+import { reconstructForSubagentResume } from '@thyrox/storage/toolResultStorage.js'
 import { runAsyncAgentLifecycle } from './agentToolUtils.js'
 import { GENERAL_PURPOSE_AGENT } from './built-in/generalPurposeAgent.js'
 import { FORK_AGENT, isForkSubagentEnabled } from './forkSubagent.js'
@@ -232,7 +232,7 @@ export async function resumeAgentBackground({
 
   // ant 4656.js:71 — preserve parent agent id across resume.
   const { getAgentContext: _getCtx } = await import(
-    '@claude-code-how-works/agent/agentContext.js'
+    '@thyrox/agent/agentContext.js'
   )
   const parentAgentId = _getCtx()?.agentId
   const asyncAgentContext = {

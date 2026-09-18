@@ -5,9 +5,9 @@ import {
   getCronFilePath,
   listAllCronTasks,
   removeCronTasks,
-} from '@claude-code-how-works/agent/scheduler'
+} from '@thyrox/agent/scheduler'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { getTeammateContext } from '@claude-code-how-works/swarm/teammateContext.js'
+import { getTeammateContext } from '@thyrox/swarm/teammateContext.js'
 import {
   buildCronDeletePrompt,
   CRON_DELETE_DESCRIPTION,

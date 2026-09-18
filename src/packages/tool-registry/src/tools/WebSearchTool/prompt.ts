@@ -1,4 +1,4 @@
-import { getLocalMonthYear } from '@claude-code-how-works/config/commonConstants.js'
+import { getLocalMonthYear } from '@thyrox/config/commonConstants.js'
 
 export const WEB_SEARCH_TOOL_NAME = 'WebSearch'
 

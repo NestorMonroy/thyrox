@@ -13,9 +13,9 @@ import type {
   NotebookContent,
   NotebookOutputImage,
 } from './notebookTypes.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { expandPath } from '@claude-code-how-works/storage/path.js'
-import { jsonParse } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { expandPath } from '@thyrox/storage/path.js'
+import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 
 const LARGE_OUTPUT_THRESHOLD = 10000
 

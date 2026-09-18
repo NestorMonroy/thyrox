@@ -1,25 +1,25 @@
 import chokidar, { type FSWatcher } from 'chokidar'
 import * as platformPath from 'path'
-import { getAdditionalDirectoriesForClaudeMd } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getAdditionalDirectoriesForClaudeMd } from '@thyrox/app-host/bootstrap/state.js'
 import {
   clearCommandMemoizationCaches,
   clearCommandsCache,
-} from '@claude-code-how-works/command-runtime/runtime'
+} from '@thyrox/command-runtime/runtime'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   clearSkillCaches,
   getSkillsPath,
   onDynamicSkillsLoaded,
-} from '@claude-code-how-works/command-runtime/skills/loadSkillsDir.js'
-import { resetSentSkillNames } from '@claude-code-how-works/agent/attachments.js'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { executeConfigChangeHooks, hasBlockingResult } from '@claude-code-how-works/agent/hooks.js'
-import { createSignal } from '@claude-code-how-works/config/signal'
+} from '@thyrox/command-runtime/skills/loadSkillsDir.js'
+import { resetSentSkillNames } from '@thyrox/agent/attachments.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { executeConfigChangeHooks, hasBlockingResult } from '@thyrox/agent/hooks.js'
+import { createSignal } from '@thyrox/config/signal'
 
 /**
  * Time in milliseconds to wait for file writes to stabilize before processing.

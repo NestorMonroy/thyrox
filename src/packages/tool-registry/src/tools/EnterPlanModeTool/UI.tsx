@@ -1,9 +1,9 @@
 import * as React from 'react'
-import { BLACK_CIRCLE } from '@claude-code-how-works/output/constants/figures.js'
-import { getModeColor } from '@claude-code-how-works/permission/PermissionMode'
+import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
+import { getModeColor } from '@thyrox/permission/PermissionMode'
 import { Box, Text } from '@anthropic/ink'
 import type { ToolProgressData } from '../../Tool.js'
-import type { ProgressMessage } from '@claude-code-how-works/agent/messageShapes'
+import type { ProgressMessage } from '@thyrox/agent/messageShapes'
 import type { ThemeName } from '@anthropic/ink'
 import type { Output } from './EnterPlanModeTool.js'
 

@@ -2,7 +2,7 @@ import { feature } from 'bun:bundle'
 import partition from 'lodash-es/partition.js'
 import uniqBy from 'lodash-es/uniqBy.js'
 import { COORDINATOR_MODE_ALLOWED_TOOLS } from '../../toolConstants.js'
-import { isMcpTool } from '@claude-code-how-works/mcp-runtime/utils.js'
+import { isMcpTool } from '@thyrox/mcp-runtime/utils.js'
 import type { Tool, ToolPermissionContext, Tools } from '../../Tool.js'
 
 // MCP tool name suffixes for PR activity subscription. These are lightweight
@@ -20,7 +20,7 @@ export function isPrActivitySubscriptionTool(name: string): boolean {
 // Dead code elimination: conditional imports for feature-gated modules
 /* eslint-disable @typescript-eslint/no-require-imports */
 const coordinatorModeModule = feature('COORDINATOR_MODE')
-  ? (require('@claude-code-how-works/agent/coordinatorMode.js') as typeof import('@claude-code-how-works/agent/coordinatorMode.js'))
+  ? (require('@thyrox/agent/coordinatorMode.js') as typeof import('@thyrox/agent/coordinatorMode.js'))
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 

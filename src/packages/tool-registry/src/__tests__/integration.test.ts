@@ -20,7 +20,7 @@ function makeTool(name: string, enabled = true): ToolLike {
   }
 }
 
-describe('@claude-code-how-works/tool-registry integration', () => {
+describe('@thyrox/tool-registry integration', () => {
   beforeEach(() => {
     __resetToolRegistryForTests()
     installToolRegistryHostBindings({

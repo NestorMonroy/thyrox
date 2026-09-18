@@ -1,12 +1,12 @@
 import figures from 'figures'
 import React from 'react'
-import { Markdown } from '@claude-code-how-works/repl/components/Markdown.js'
-import { BLACK_CIRCLE } from '@claude-code-how-works/output/constants/figures.js'
+import { Markdown } from '@thyrox/repl/components/Markdown.js'
+import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
 import { Box, Text } from '@anthropic/ink'
-import type { ProgressMessage } from '@claude-code-how-works/agent/messageShapes'
-import { getDisplayPath } from '@claude-code-how-works/storage/file.js'
-import { formatFileSize } from '@claude-code-how-works/output/formatters'
-import { formatBriefTimestamp } from '@claude-code-how-works/output/formatters'
+import type { ProgressMessage } from '@thyrox/agent/messageShapes'
+import { getDisplayPath } from '@thyrox/storage/file.js'
+import { formatFileSize } from '@thyrox/output/formatters'
+import { formatBriefTimestamp } from '@thyrox/output/formatters'
 import type { Output } from './BriefTool.js'
 
 export function renderToolUseMessage(): React.ReactNode {

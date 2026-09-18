@@ -1,13 +1,13 @@
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { getMaxOutputLength } from '@claude-code-how-works/shell/legacy/outputLimits.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { getMaxOutputLength } from '@thyrox/shell/legacy/outputLimits.js'
 import {
   getPowerShellEdition,
   type PowerShellEdition,
-} from '@claude-code-how-works/shell/legacy/powershellDetection.js'
+} from '@thyrox/shell/legacy/powershellDetection.js'
 import {
   getDefaultBashTimeoutMs,
   getMaxBashTimeoutMs,
-} from '@claude-code-how-works/config/timeouts'
+} from '@thyrox/config/timeouts'
 import { FILE_EDIT_TOOL_NAME } from '../FileEditTool/constants.js'
 import { FILE_READ_TOOL_NAME } from '../FileReadTool/prompt.js'
 import { FILE_WRITE_TOOL_NAME } from '../FileWriteTool/prompt.js'

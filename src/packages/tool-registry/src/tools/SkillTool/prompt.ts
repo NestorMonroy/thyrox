@@ -1,21 +1,21 @@
 import { memoize } from 'lodash-es'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
+import type { Command } from '@thyrox/command-runtime/runtime'
 import {
   getCommandName,
   getSkillToolCommands,
   getSlashCommandToolSkills,
-} from '@claude-code-how-works/command-runtime/runtime'
-import { COMMAND_NAME_TAG } from '@claude-code-how-works/command-runtime/xml.js'
+} from '@thyrox/command-runtime/runtime'
+import { COMMAND_NAME_TAG } from '@thyrox/command-runtime/xml.js'
 import { stringWidth } from '@anthropic/ink'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import { count } from '../../utils/array.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { truncate } from '@claude-code-how-works/output/formatters/truncate.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { truncate } from '@thyrox/output/formatters/truncate.js'
+import { logError } from '@thyrox/local-observability/logging'
 
 // Skill listing gets 1% of the context window (in characters)
 export const SKILL_BUDGET_CONTEXT_PERCENT = 0.01

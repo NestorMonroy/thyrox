@@ -1,10 +1,10 @@
 import figures from 'figures'
 import React from 'react'
 import { Box, Text } from '@anthropic/ink'
-import type { ProgressMessage } from '@claude-code-how-works/agent/messageShapes'
-import { BLACK_CIRCLE } from '@claude-code-how-works/output/constants/figures.js'
-import { formatFileSize } from '@claude-code-how-works/output/formatters'
-import { getDisplayPath } from '@claude-code-how-works/storage/file.js'
+import type { ProgressMessage } from '@thyrox/agent/messageShapes'
+import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
+import { formatFileSize } from '@thyrox/output/formatters'
+import { getDisplayPath } from '@thyrox/storage/file.js'
 import type { Output } from './SendUserFileTool.js'
 
 export function renderToolUseMessage(): React.ReactNode {

@@ -1,13 +1,13 @@
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { extractHeredocs } from '@claude-code-how-works/shell/bash/heredoc.js'
-import { ParsedCommand } from '@claude-code-how-works/shell/bash/ParsedCommand.js'
+import { logEvent } from '@thyrox/local-observability'
+import { extractHeredocs } from '@thyrox/shell/bash/heredoc.js'
+import { ParsedCommand } from '@thyrox/shell/bash/ParsedCommand.js'
 import {
   hasMalformedTokens,
   hasShellQuoteSingleQuoteBug,
   tryParseShellCommand,
-} from '@claude-code-how-works/shell/bash/shellQuote.js'
-import type { TreeSitterAnalysis } from '@claude-code-how-works/shell/bash/treeSitterAnalysis.js'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
+} from '@thyrox/shell/bash/shellQuote.js'
+import type { TreeSitterAnalysis } from '@thyrox/shell/bash/treeSitterAnalysis.js'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
 
 const HEREDOC_IN_SUBSTITUTION = /\$\(.*<</
 

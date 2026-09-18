@@ -1,35 +1,35 @@
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { sanitizeToolNameForAnalytics } from '@claude-code-how-works/agent/eventMetadata.js'
+} from '@thyrox/local-observability'
+import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
 import type z from 'zod/v4'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { AnyObject, Tool, ToolUseContext } from '../Tool.js'
-import type { HookProgress } from '@claude-code-how-works/agent/types/hooks.js'
+import type { HookProgress } from '@thyrox/agent/types/hooks.js'
 import type {
   AssistantMessage,
   AttachmentMessage,
   ProgressMessage,
-} from '@claude-code-how-works/agent/messageShapes'
-import type { PermissionDecision } from '@claude-code-how-works/permission/permissionTypes'
-import { createAttachmentMessage } from '@claude-code-how-works/agent/attachments.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+} from '@thyrox/agent/messageShapes'
+import type { PermissionDecision } from '@thyrox/permission/permissionTypes'
+import { createAttachmentMessage } from '@thyrox/agent/attachments.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   executePostToolHooks,
   executePostToolUseFailureHooks,
   executePreToolHooks,
   getPreToolHookBlockingMessage,
-} from '@claude-code-how-works/agent/hooks.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+} from '@thyrox/agent/hooks.js'
+import { logError } from '@thyrox/local-observability/logging'
 import {
   getRuleBehaviorDescription,
   type PermissionDecisionReason,
   type PermissionResult,
-} from '@claude-code-how-works/permission/PermissionResult'
-import { checkRuleBasedPermissions } from '@claude-code-how-works/permission/permissions'
+} from '@thyrox/permission/PermissionResult'
+import { checkRuleBasedPermissions } from '@thyrox/permission/permissions'
 import { formatError } from '../toolErrors.js'
-import { isMcpTool } from '@claude-code-how-works/mcp-runtime/utils.js'
+import { isMcpTool } from '@thyrox/mcp-runtime/utils.js'
 import type { McpServerType, MessageUpdateLazy } from './toolExecution.js'
 
 export type PostToolUseHooksResult<Output> =

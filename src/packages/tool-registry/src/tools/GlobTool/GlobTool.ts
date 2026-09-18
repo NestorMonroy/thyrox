@@ -1,19 +1,19 @@
 import { z } from 'zod/v4'
 import type { ValidationResult } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { isENOENT } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import {
   FILE_NOT_FOUND_CWD_NOTE,
   suggestPathUnderCwd,
-} from '@claude-code-how-works/storage/file.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { glob } from '@claude-code-how-works/storage/glob.js'
+} from '@thyrox/storage/file.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { glob } from '@thyrox/storage/glob.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { expandPath, toRelativePath } from '@claude-code-how-works/storage/path.js'
-import { checkReadPermissionForTool } from '@claude-code-how-works/permission/filesystem'
-import type { PermissionDecision } from '@claude-code-how-works/permission/PermissionResult'
-import { matchWildcardPattern } from '@claude-code-how-works/permission/shellRuleMatching.js'
+import { expandPath, toRelativePath } from '@thyrox/storage/path.js'
+import { checkReadPermissionForTool } from '@thyrox/permission/filesystem'
+import type { PermissionDecision } from '@thyrox/permission/PermissionResult'
+import { matchWildcardPattern } from '@thyrox/permission/shellRuleMatching.js'
 import { DESCRIPTION, GLOB_TOOL_NAME } from './prompt.js'
 import {
   getToolUseSummary,

@@ -7,12 +7,12 @@ import type {
   BetaContentBlock,
   BetaWebSearchTool20250305,
 } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { queryModelWithStreaming } from '@claude-code-how-works/provider/claude.js'
-import { createUserMessage } from '@claude-code-how-works/agent/messages.js'
-import { getMainLoopModel, getSmallFastModel } from '@claude-code-how-works/provider/model.js'
-import { jsonParse } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { queryModelWithStreaming } from '@thyrox/provider/claude.js'
+import { createUserMessage } from '@thyrox/agent/messages.js'
+import { getMainLoopModel, getSmallFastModel } from '@thyrox/provider/model.js'
+import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import type { SearchResult, SearchOptions, WebSearchAdapter } from './types.js'
 
 function makeToolSchema(input: { allowedDomains?: string[]; blockedDomains?: string[] }): BetaWebSearchTool20250305 {

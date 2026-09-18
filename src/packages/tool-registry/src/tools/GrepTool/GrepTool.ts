@@ -1,27 +1,27 @@
 import { z } from 'zod/v4'
 import type { ValidationResult } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { isENOENT } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import {
   FILE_NOT_FOUND_CWD_NOTE,
   suggestPathUnderCwd,
-} from '@claude-code-how-works/storage/file.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
+} from '@thyrox/storage/file.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { expandPath, toRelativePath } from '@claude-code-how-works/storage/path.js'
+import { expandPath, toRelativePath } from '@thyrox/storage/path.js'
 import {
   checkReadPermissionForTool,
   getFileReadIgnorePatterns,
   normalizePatternsToPath,
-} from '@claude-code-how-works/permission/filesystem'
-import type { PermissionDecision } from '@claude-code-how-works/permission/PermissionResult'
-import { matchWildcardPattern } from '@claude-code-how-works/permission/shellRuleMatching.js'
-import { getGlobExclusionsForPluginCache } from '@claude-code-how-works/config/plugin/orphanedPluginFilter'
+} from '@thyrox/permission/filesystem'
+import type { PermissionDecision } from '@thyrox/permission/PermissionResult'
+import { matchWildcardPattern } from '@thyrox/permission/shellRuleMatching.js'
+import { getGlobExclusionsForPluginCache } from '@thyrox/config/plugin/orphanedPluginFilter'
 import { ripGrep } from '../../ripgrep.js'
 import { semanticBoolean } from '../../utils/semanticBoolean.js'
 import { semanticNumber } from '../../utils/semanticNumber.js'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { GREP_TOOL_NAME, getDescription } from './prompt.js'
 import {
   getToolUseSummary,

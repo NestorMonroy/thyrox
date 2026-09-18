@@ -22,11 +22,11 @@ import { z } from 'zod/v4'
 import {
   getBridgeAccessToken,
   getBridgeBaseUrlOverride,
-} from '@claude-code-how-works/bridge/bridgeConfig.js'
-import { getOauthConfig } from '@claude-code-how-works/provider/oauthConstants'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+} from '@thyrox/bridge/bridgeConfig.js'
+import { getOauthConfig } from '@thyrox/provider/oauthConstants'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 // Matches the private_api backend limit
 const MAX_UPLOAD_BYTES = 30 * 1024 * 1024

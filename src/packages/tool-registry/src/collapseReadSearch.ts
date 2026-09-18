@@ -22,7 +22,7 @@ import type {
   RenderableMessage,
   StopHookInfo,
   SystemStopHookSummaryMessage,
-} from '@claude-code-how-works/agent/messageShapes'
+} from '@thyrox/agent/messageShapes'
 
 /**
  * Safely get the first content item from a MessageContent value.
@@ -41,18 +41,18 @@ function getContentItems(content: MessageContent | undefined): ContentItem[] {
   if (!content || typeof content === 'string') return []
   return content
 }
-import { getDisplayPath } from '@claude-code-how-works/storage/file.js'
-import { isFullscreenEnvEnabled } from '@claude-code-how-works/repl/fullscreen.js'
+import { getDisplayPath } from '@thyrox/storage/file.js'
+import { isFullscreenEnvEnabled } from '@thyrox/repl/fullscreen.js'
 import {
   isAutoManagedMemoryFile,
   isAutoManagedMemoryPattern,
   isMemoryDirectory,
   isShellCommandTargetingMemory,
-} from '@claude-code-how-works/memory/memoryFileDetection'
+} from '@thyrox/memory/memoryFileDetection'
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const teamMemOps = feature('TEAMMEM')
-  ? (require('@claude-code-how-works/memory/teamMemoryOps') as typeof import('@claude-code-how-works/memory/teamMemoryOps'))
+  ? (require('@thyrox/memory/teamMemoryOps') as typeof import('@thyrox/memory/teamMemoryOps'))
   : null
 const SNIP_TOOL_NAME = feature('HISTORY_SNIP')
   ? (

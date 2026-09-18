@@ -1,45 +1,45 @@
 import { dirname, sep } from 'path'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import { z } from 'zod/v4'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { diagnosticTracker } from '../../diagnosticTracking.js'
-import { clearDeliveredDiagnosticsForFile } from '@claude-code-how-works/ide/lsp/LSPDiagnosticRegistry.js'
-import { getLspServerManager } from '@claude-code-how-works/ide/lsp/manager.js'
-import { notifyVscodeFileUpdated } from '@claude-code-how-works/mcp-runtime/vscodeSdkMcp.js'
-import { checkTeamMemSecrets } from '@claude-code-how-works/memory/teamMemSecretGuard'
+import { clearDeliveredDiagnosticsForFile } from '@thyrox/ide/lsp/LSPDiagnosticRegistry.js'
+import { getLspServerManager } from '@thyrox/ide/lsp/manager.js'
+import { notifyVscodeFileUpdated } from '@thyrox/mcp-runtime/vscodeSdkMcp.js'
+import { checkTeamMemSecrets } from '@thyrox/memory/teamMemSecretGuard'
 import {
   activateConditionalSkillsForPaths,
   addSkillDirectories,
   discoverSkillDirsForPaths,
-} from '@claude-code-how-works/command-runtime/skills/loadSkillsDir.js'
+} from '@thyrox/command-runtime/skills/loadSkillsDir.js'
 import type { ToolUseContext } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { countLinesChanged, getPatchForDisplay } from '@claude-code-how-works/agent/diff.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { isENOENT } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getFileModificationTime, writeTextContent } from '@claude-code-how-works/storage/file.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { countLinesChanged, getPatchForDisplay } from '@thyrox/agent/diff.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
+import { getFileModificationTime, writeTextContent } from '@thyrox/storage/file.js'
 import {
   fileHistoryEnabled,
   fileHistoryTrackEdit,
-} from '@claude-code-how-works/agent/file-history'
-import { logFileOperation } from '@claude-code-how-works/local-observability/fileOperationAnalytics'
-import { readFileSyncWithMetadata } from '@claude-code-how-works/storage/fileRead.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
+} from '@thyrox/agent/file-history'
+import { logFileOperation } from '@thyrox/local-observability/fileOperationAnalytics'
+import { readFileSyncWithMetadata } from '@thyrox/storage/fileRead.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import {
   fetchSingleFileGitDiff,
   type ToolUseDiff,
 } from '../../gitDiff.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { expandPath } from '@claude-code-how-works/storage/path.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { expandPath } from '@thyrox/storage/path.js'
 import {
   checkWritePermissionForTool,
   matchingRuleForInput,
-} from '@claude-code-how-works/permission/filesystem'
-import type { PermissionDecision } from '@claude-code-how-works/permission/PermissionResult'
-import { matchWildcardPattern } from '@claude-code-how-works/permission/shellRuleMatching.js'
+} from '@thyrox/permission/filesystem'
+import type { PermissionDecision } from '@thyrox/permission/PermissionResult'
+import { matchWildcardPattern } from '@thyrox/permission/shellRuleMatching.js'
 import { FILE_UNEXPECTEDLY_MODIFIED_ERROR } from '../FileEditTool/constants.js'
 import { gitDiffSchema, hunkSchema } from '../FileEditTool/types.js'
 import { FILE_WRITE_TOOL_NAME, getWriteToolDescription } from './prompt.js'

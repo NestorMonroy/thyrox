@@ -4,16 +4,16 @@ import type {
   ToolResultBlockParam,
 } from '@anthropic-ai/sdk/resources/index.mjs'
 import { readFile, stat } from 'fs/promises'
-import { getOriginalCwd } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
+import { logEvent } from '@thyrox/local-observability'
 import type { ToolPermissionContext } from '../../Tool.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { pathInAllowedWorkingPath } from '@claude-code-how-works/permission/filesystem'
-import { setCwd } from '@claude-code-how-works/shell/Shell.js'
-import { shouldMaintainProjectWorkingDir } from '@claude-code-how-works/config/env/utils'
-import { maybeResizeAndDownsampleImageBuffer } from '@claude-code-how-works/storage/imageResizer.js'
-import { getMaxOutputLength } from '@claude-code-how-works/shell/legacy/outputLimits.js'
-import { countCharInString, plural } from '@claude-code-how-works/output/utils/stringUtils.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { pathInAllowedWorkingPath } from '@thyrox/permission/filesystem'
+import { setCwd } from '@thyrox/shell/Shell.js'
+import { shouldMaintainProjectWorkingDir } from '@thyrox/config/env/utils'
+import { maybeResizeAndDownsampleImageBuffer } from '@thyrox/storage/imageResizer.js'
+import { getMaxOutputLength } from '@thyrox/shell/legacy/outputLimits.js'
+import { countCharInString, plural } from '@thyrox/output/utils/stringUtils.js'
 /**
  * Strips leading and trailing lines that contain only whitespace/newlines.
  * Unlike trim(), this preserves whitespace within content lines and only removes

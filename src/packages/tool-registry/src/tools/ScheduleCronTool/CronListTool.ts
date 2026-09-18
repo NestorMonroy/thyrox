@@ -1,10 +1,10 @@
 import { z } from 'zod/v4'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { cronToHuman } from '@claude-code-how-works/agent/scheduler'
-import { listAllCronTasks } from '@claude-code-how-works/agent/scheduler'
-import { truncate } from '@claude-code-how-works/output/formatters/truncate.js'
+import { cronToHuman } from '@thyrox/agent/scheduler'
+import { listAllCronTasks } from '@thyrox/agent/scheduler'
+import { truncate } from '@thyrox/output/formatters/truncate.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { getTeammateContext } from '@claude-code-how-works/swarm/teammateContext.js'
+import { getTeammateContext } from '@thyrox/swarm/teammateContext.js'
 import {
   buildCronListPrompt,
   CRON_LIST_DESCRIPTION,

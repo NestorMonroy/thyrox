@@ -20,9 +20,9 @@
  * Adapter is stateless so a fresh instance per call is fine.
  */
 
-import { readEnv } from '@claude-code-how-works/config/env/utils'
-import { getMainLoopModel } from '@claude-code-how-works/provider/model.js'
-import { supportsAnthropicServerWebSearch } from '@claude-code-how-works/provider/providers.js'
+import { readEnv } from '@thyrox/config/env/utils'
+import { getMainLoopModel } from '@thyrox/provider/model.js'
+import { supportsAnthropicServerWebSearch } from '@thyrox/provider/providers.js'
 import { ApiSearchAdapter } from './apiAdapter.js'
 import { BingSearchAdapter } from './bingAdapter.js'
 import type { WebSearchAdapter } from './types.js'

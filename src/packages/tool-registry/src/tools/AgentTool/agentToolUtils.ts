@@ -1,26 +1,26 @@
 import { feature } from 'bun:bundle'
 import { z } from 'zod/v4'
-import { clearInvokedSkillsForAgent } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { clearInvokedSkillsForAgent } from '@thyrox/app-host/bootstrap/state.js'
 import {
   ALL_AGENT_DISALLOWED_TOOLS,
   ASYNC_AGENT_ALLOWED_TOOLS,
   CUSTOM_AGENT_DISALLOWED_TOOLS,
   IN_PROCESS_TEAMMATE_ALLOWED_TOOLS,
 } from '../../toolConstants.js'
-import { startAgentSummarization } from '@claude-code-how-works/agent/AgentSummary/agentSummary.js'
+import { startAgentSummarization } from '@thyrox/agent/AgentSummary/agentSummary.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   logOTelEvent,
   toolDetailsLoggingEnabled,
-} from '@claude-code-how-works/local-observability/telemetry'
+} from '@thyrox/local-observability/telemetry'
 import {
   hashPluginId,
   getTelemetryPluginScope,
 } from '../../telemetry/pluginTelemetry.js'
-import { clearDumpState } from '@claude-code-how-works/provider/dumpPrompts.js'
+import { clearDumpState } from '@thyrox/provider/dumpPrompts.js'
 import type { AppStateLike as AppState } from '../../contracts.js'
 import type {
   Tool,
@@ -42,28 +42,28 @@ import {
   type ProgressTracker,
   updateAgentProgress as updateAsyncAgentProgress,
   updateProgressFromMessage,
-} from '@claude-code-how-works/agent/localAgentTask.js'
-import { asAgentId } from '@claude-code-how-works/agent/idTypes'
-import type { Message as MessageType, ContentItem } from '@claude-code-how-works/agent/messageShapes'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isInProtectedNamespace } from '@claude-code-how-works/config/env/utils'
-import { AbortError, errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import type { CacheSafeParams } from '@claude-code-how-works/agent/forkedAgent.js'
+} from '@thyrox/agent/localAgentTask.js'
+import { asAgentId } from '@thyrox/agent/idTypes'
+import type { Message as MessageType, ContentItem } from '@thyrox/agent/messageShapes'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isInProtectedNamespace } from '@thyrox/config/env/utils'
+import { AbortError, errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import type { CacheSafeParams } from '@thyrox/agent/forkedAgent.js'
 import { lazySchema } from '../../utils/lazySchema.js'
 import {
   extractTextContent,
   getLastAssistantMessage,
-} from '@claude-code-how-works/agent/messages.js'
-import type { PermissionMode } from '@claude-code-how-works/permission/PermissionMode'
-import { permissionRuleValueFromString } from '@claude-code-how-works/permission/permissionRuleParser'
+} from '@thyrox/agent/messages.js'
+import type { PermissionMode } from '@thyrox/permission/PermissionMode'
+import { permissionRuleValueFromString } from '@thyrox/permission/permissionRuleParser'
 import {
   buildTranscriptForClassifier,
   classifyYoloAction,
-} from '@claude-code-how-works/permission/yoloClassifier.js'
-import { emitTaskProgress as emitTaskProgressEvent } from '@claude-code-how-works/agent/sdkProgress.js'
-import { isInProcessTeammate } from '@claude-code-how-works/swarm/teammateContext.js'
-import { getTokenCountFromUsage } from '@claude-code-how-works/agent/tokens.js'
+} from '@thyrox/permission/yoloClassifier.js'
+import { emitTaskProgress as emitTaskProgressEvent } from '@thyrox/agent/sdkProgress.js'
+import { isInProcessTeammate } from '@thyrox/swarm/teammateContext.js'
+import { getTokenCountFromUsage } from '@thyrox/agent/tokens.js'
 import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '../ExitPlanModeTool/constants.js'
 import { AGENT_TOOL_NAME, LEGACY_AGENT_TOOL_NAME } from './constants.js'
 import type { AgentDefinition } from './loadAgentsDir.js'

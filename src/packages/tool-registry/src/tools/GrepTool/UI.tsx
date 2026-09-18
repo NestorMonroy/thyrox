@@ -1,15 +1,15 @@
 import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import React from 'react'
-import { CtrlOToExpand } from '@claude-code-how-works/repl/components/CtrlOToExpand.js'
-import { FallbackToolUseErrorMessage } from '@claude-code-how-works/repl/components/FallbackToolUseErrorMessage.js'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
+import { CtrlOToExpand } from '@thyrox/repl/components/CtrlOToExpand.js'
+import { FallbackToolUseErrorMessage } from '@thyrox/repl/components/FallbackToolUseErrorMessage.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
 import { TOOL_SUMMARY_MAX_LENGTH } from '../../toolLimits.js'
 import { Box, Text } from '@anthropic/ink'
 import type { ToolProgressData } from '../../Tool.js'
-import type { ProgressMessage } from '@claude-code-how-works/agent/messageShapes'
-import { FILE_NOT_FOUND_CWD_NOTE, getDisplayPath } from '@claude-code-how-works/storage/file.js'
-import { truncate } from '@claude-code-how-works/output/formatters/truncate.js'
-import { extractTag } from '@claude-code-how-works/agent/messages.js'
+import type { ProgressMessage } from '@thyrox/agent/messageShapes'
+import { FILE_NOT_FOUND_CWD_NOTE, getDisplayPath } from '@thyrox/storage/file.js'
+import { truncate } from '@thyrox/output/formatters/truncate.js'
+import { extractTag } from '@thyrox/agent/messages.js'
 
 // Reusable component for search result summaries
 function SearchResultSummary({

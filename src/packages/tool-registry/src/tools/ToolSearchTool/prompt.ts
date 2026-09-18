@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import { isReplBridgeActive } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { isReplBridgeActive } from '@thyrox/app-host/bootstrap/state.js'
 import type { Tool } from '../../Tool.js'
 import { AGENT_TOOL_NAME } from '../AgentTool/constants.js'
 

@@ -1,17 +1,17 @@
 import axios from 'axios'
 import { z } from 'zod/v4'
-import { getOauthConfig } from '@claude-code-how-works/provider/oauthConstants'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { getOrganizationUUID } from '@claude-code-how-works/provider/oauth/client.js'
-import { isPolicyAllowed } from '@claude-code-how-works/provider/policyLimits/index.js'
+import { getOauthConfig } from '@thyrox/provider/oauthConstants'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { getOrganizationUUID } from '@thyrox/provider/oauth/client.js'
+import { isPolicyAllowed } from '@thyrox/provider/policyLimits/index.js'
 import type { ToolUseContext } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
   getClaudeAIOAuthTokens,
-} from '@claude-code-how-works/provider/authAlias.js'
+} from '@thyrox/provider/authAlias.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { DESCRIPTION, PROMPT, REMOTE_TRIGGER_TOOL_NAME } from './prompt.js'
 import { renderToolResultMessage, renderToolUseMessage } from './UI.js'
 

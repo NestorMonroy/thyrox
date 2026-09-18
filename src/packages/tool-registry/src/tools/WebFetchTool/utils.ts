@@ -3,17 +3,17 @@ import { LRUCache } from 'lru-cache'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { queryHaiku } from '@claude-code-how-works/provider/claude.js'
-import { AbortError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getWebFetchUserAgent } from '@claude-code-how-works/provider/http.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+} from '@thyrox/local-observability'
+import { queryHaiku } from '@thyrox/provider/claude.js'
+import { AbortError } from '@thyrox/local-observability/errorHelpers.js'
+import { getWebFetchUserAgent } from '@thyrox/provider/http.js'
+import { logError } from '@thyrox/local-observability/logging'
 import {
   isBinaryContentType,
   persistBinaryContent,
-} from '@claude-code-how-works/mcp-runtime/mcpOutputStorage.js'
-import { getSettings } from '@claude-code-how-works/config/settings'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
+} from '@thyrox/mcp-runtime/mcpOutputStorage.js'
+import { getSettings } from '@thyrox/config/settings'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import { isPreapprovedHost } from './preapproved.js'
 import { makeSecondaryModelPrompt } from './prompt.js'
 

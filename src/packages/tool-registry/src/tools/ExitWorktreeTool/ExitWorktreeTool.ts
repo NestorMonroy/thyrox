@@ -4,25 +4,25 @@ import {
   getProjectRoot,
   setOriginalCwd,
   setProjectRoot,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { clearSystemPromptSections } from '@claude-code-how-works/provider/systemPromptSections'
-import { logEvent } from '@claude-code-how-works/local-observability'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { clearSystemPromptSections } from '@thyrox/provider/systemPromptSections'
+import { logEvent } from '@thyrox/local-observability'
 import type { Tool } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { count } from '../../utils/array.js'
-import { clearMemoryFileCaches } from '@claude-code-how-works/storage/claudemd.js'
-import { execFileNoThrow } from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { updateHooksConfigSnapshot } from '@claude-code-how-works/agent/hooksConfigSnapshot.js'
+import { clearMemoryFileCaches } from '@thyrox/storage/claudemd.js'
+import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
+import { updateHooksConfigSnapshot } from '@thyrox/agent/hooksConfigSnapshot.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { getPlansDirectory } from '@claude-code-how-works/storage/plans.js'
-import { setCwd } from '@claude-code-how-works/shell/Shell.js'
-import { saveWorktreeState } from '@claude-code-how-works/storage/sessionStorage.js'
+import { getPlansDirectory } from '@thyrox/storage/plans.js'
+import { setCwd } from '@thyrox/shell/Shell.js'
+import { saveWorktreeState } from '@thyrox/storage/sessionStorage.js'
 import {
   cleanupWorktree,
   getCurrentWorktreeSession,
   keepWorktree,
   killTmuxSession,
-} from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
 import { EXIT_WORKTREE_TOOL_NAME } from './constants.js'
 import { getExitWorktreeToolPrompt } from './prompt.js'
 import { renderToolResultMessage, renderToolUseMessage } from './UI.js'

@@ -2,10 +2,10 @@ import { Ajv } from 'ajv'
 import { z } from 'zod/v4'
 import type { Tool, ToolInputJSONSchema } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
-import { TelemetrySafeError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { TelemetrySafeError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/errorHelpers.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 // Allow any input object since the schema is provided dynamically
 const inputSchema = lazySchema(() => z.object({}).passthrough())

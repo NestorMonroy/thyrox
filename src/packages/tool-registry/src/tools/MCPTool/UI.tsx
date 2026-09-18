@@ -3,23 +3,23 @@ import figures from 'figures'
 import * as React from 'react'
 import type { z } from 'zod/v4'
 import { ProgressBar } from '@anthropic/ink'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
 import {
   linkifyUrlsInText,
   OutputLine,
-} from '@claude-code-how-works/repl/components/shell/OutputLine.js'
+} from '@thyrox/repl/components/shell/OutputLine.js'
 import { Ansi, Box, Text, stringWidth } from '@anthropic/ink'
-import { createHyperlink } from '@claude-code-how-works/output/hyperlink.js'
+import { createHyperlink } from '@thyrox/output/hyperlink.js'
 import type { ToolProgressData } from '../../Tool.js'
-import type { ProgressMessage } from '@claude-code-how-works/agent/messageShapes'
+import type { ProgressMessage } from '@thyrox/agent/messageShapes'
 import type { MCPProgress } from '../../progressTypes.js'
-import { formatNumber } from '@claude-code-how-works/output/formatters'
+import { formatNumber } from '@thyrox/output/formatters'
 
 import {
   getContentSizeEstimate,
   type MCPToolResult,
-} from '@claude-code-how-works/mcp-runtime/mcpValidation.js'
-import { jsonParse, jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/mcp-runtime/mcpValidation.js'
+import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import type { inputSchema } from './MCPTool.js'
 
 // Threshold for displaying warning about large MCP responses

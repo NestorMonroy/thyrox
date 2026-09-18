@@ -1,7 +1,7 @@
 import React from 'react'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
 import { Text } from '@anthropic/ink'
-import { countCharInString } from '@claude-code-how-works/output/utils/stringUtils.js'
+import { countCharInString } from '@thyrox/output/utils/stringUtils.js'
 import type { Input, Output } from './RemoteTriggerTool.js'
 
 export function renderToolUseMessage(input: Partial<Input>): React.ReactNode {

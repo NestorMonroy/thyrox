@@ -2,24 +2,24 @@ import { homedir } from 'os'
 import { isAbsolute, resolve } from 'path'
 import type { z } from 'zod/v4'
 import type { ToolPermissionContext } from '../../Tool.js'
-import type { Redirect, SimpleCommand } from '@claude-code-how-works/shell/bash/ast-alias.js'
+import type { Redirect, SimpleCommand } from '@thyrox/shell/bash/ast-alias.js'
 import {
   extractOutputRedirections,
   splitCommand,
-} from '@claude-code-how-works/shell/bash/commands.js'
-import { tryParseShellCommand } from '@claude-code-how-works/shell/bash/shellQuote.js'
-import { getDirectoryForPath } from '@claude-code-how-works/storage/path.js'
-import { allWorkingDirectories } from '@claude-code-how-works/permission/filesystem'
-import type { PermissionResult } from '@claude-code-how-works/permission/PermissionResult'
-import { createReadRuleSuggestion } from '@claude-code-how-works/permission/PermissionUpdate'
-import type { PermissionUpdate } from '@claude-code-how-works/permission/PermissionUpdateSchema'
+} from '@thyrox/shell/bash/commands.js'
+import { tryParseShellCommand } from '@thyrox/shell/bash/shellQuote.js'
+import { getDirectoryForPath } from '@thyrox/storage/path.js'
+import { allWorkingDirectories } from '@thyrox/permission/filesystem'
+import type { PermissionResult } from '@thyrox/permission/PermissionResult'
+import { createReadRuleSuggestion } from '@thyrox/permission/PermissionUpdate'
+import type { PermissionUpdate } from '@thyrox/permission/PermissionUpdateSchema'
 import {
   expandTilde,
   type FileOperationType,
   formatDirectoryList,
   isDangerousRemovalPath,
   validatePath,
-} from '@claude-code-how-works/permission/pathValidation.js'
+} from '@thyrox/permission/pathValidation.js'
 import type { BashTool } from './BashTool.js'
 import { stripSafeWrappers } from './bashPermissions.js'
 import { sedCommandIsAllowedByAllowlist } from './sedValidation.js'

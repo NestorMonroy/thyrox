@@ -1,4 +1,4 @@
-import { isPDFSupported } from '@claude-code-how-works/storage/pdfUtils.js'
+import { isPDFSupported } from '@thyrox/storage/pdfUtils.js'
 import { BASH_TOOL_NAME } from '../BashTool/toolName.js'
 import { FILE_READ_TOOL_NAME } from './constants.js'
 

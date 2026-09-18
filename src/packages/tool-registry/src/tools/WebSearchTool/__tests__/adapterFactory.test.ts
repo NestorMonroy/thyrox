@@ -25,8 +25,8 @@ beforeEach(async () => {
 
   // Wrap real `model.js` so transitive consumers still see every
   // other export, but `getMainLoopModel` becomes test-controllable.
-  const realModel = await import('@claude-code-how-works/provider/model.js')
-  mock.module('@claude-code-how-works/provider/model.js', () => ({
+  const realModel = await import('@thyrox/provider/model.js')
+  mock.module('@thyrox/provider/model.js', () => ({
     ...realModel,
     getMainLoopModel: () => {
       if (mockMainLoopModelThrows) {
@@ -38,8 +38,8 @@ beforeEach(async () => {
 
   // Same wrap-and-override for providers.js — preserves
   // `getAPIProvider`, `getProviderForModel`, etc. for other callers.
-  const realProviders = await import('@claude-code-how-works/provider/providers.js')
-  mock.module('@claude-code-how-works/provider/providers.js', () => ({
+  const realProviders = await import('@thyrox/provider/providers.js')
+  mock.module('@thyrox/provider/providers.js', () => ({
     ...realProviders,
     supportsAnthropicServerWebSearch: (modelId?: string) => {
       lastSupportsArg = modelId

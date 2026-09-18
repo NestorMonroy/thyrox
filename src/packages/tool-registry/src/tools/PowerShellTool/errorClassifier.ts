@@ -32,9 +32,9 @@
  * start. ccb's previous impl used `/i` (case-insensitive) which would
  * match e.g. `Wrapping XMSBUILD output to npm ERR!` — false-positive.
  */
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability'
+import { readEnv } from '@thyrox/config/env'
 
 export type PowerShellErrorClass =
   | 'ps5_chain_op'

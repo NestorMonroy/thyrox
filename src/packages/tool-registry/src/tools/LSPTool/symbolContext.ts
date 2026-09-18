@@ -1,7 +1,7 @@
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { truncate } from '@claude-code-how-works/output/formatters/truncate.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { expandPath } from '@claude-code-how-works/storage/path.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { truncate } from '@thyrox/output/formatters/truncate.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { expandPath } from '@thyrox/storage/path.js'
 
 const MAX_READ_BYTES = 64 * 1024
 

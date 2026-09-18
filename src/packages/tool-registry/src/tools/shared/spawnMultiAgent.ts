@@ -11,46 +11,46 @@ import {
   getMainLoopModelOverride,
   getSessionBypassPermissionsMode,
   getSessionId,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 import type { AppStateLike as AppState } from '../../contracts.js'
 import { createTaskStateBase, generateTaskId } from '../../Task.js'
 import type { ToolUseContext } from '../../Tool.js'
-import type { InProcessTeammateTaskState } from '@claude-code-how-works/swarm'
-import { formatAgentId } from '@claude-code-how-works/agent/agentIdUtils'
-import { quote } from '@claude-code-how-works/shell/bash/shellQuote.js'
-import { isInBundledMode } from '@claude-code-how-works/config/bundledMode'
-import { getGlobalConfig } from '@claude-code-how-works/config'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { execFileNoThrow } from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { parseUserSpecifiedModel } from '@claude-code-how-works/provider/model.js'
-import { composeModelId, unpackModelId } from '@claude-code-how-works/provider/connections.js'
-import type { PermissionMode } from '@claude-code-how-works/permission/PermissionMode'
-import { isTmuxAvailable } from '@claude-code-how-works/swarm'
+import type { InProcessTeammateTaskState } from '@thyrox/swarm'
+import { formatAgentId } from '@thyrox/agent/agentIdUtils'
+import { quote } from '@thyrox/shell/bash/shellQuote.js'
+import { isInBundledMode } from '@thyrox/config/bundledMode'
+import { getGlobalConfig } from '@thyrox/config'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
+import { parseUserSpecifiedModel } from '@thyrox/provider/model.js'
+import { composeModelId, unpackModelId } from '@thyrox/provider/connections.js'
+import type { PermissionMode } from '@thyrox/permission/PermissionMode'
+import { isTmuxAvailable } from '@thyrox/swarm'
 import {
   detectAndGetBackend,
   getBackendByType,
   isInProcessEnabled,
   markInProcessFallback,
   resetBackendDetection,
-} from '@claude-code-how-works/swarm'
-import { getTeammateModeFromSnapshot } from '@claude-code-how-works/swarm'
-import type { BackendType } from '@claude-code-how-works/swarm'
-import { isPaneBackend } from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
+import { getTeammateModeFromSnapshot } from '@thyrox/swarm'
+import type { BackendType } from '@thyrox/swarm'
+import { isPaneBackend } from '@thyrox/swarm'
 import {
   SWARM_SESSION_NAME,
   TEAM_LEAD_NAME,
   TEAMMATE_COMMAND_ENV_VAR,
   TMUX_COMMAND,
-} from '@claude-code-how-works/swarm'
-import { It2SetupPrompt } from '@claude-code-how-works/swarm'
-import { startInProcessTeammate } from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
+import { It2SetupPrompt } from '@thyrox/swarm'
+import { startInProcessTeammate } from '@thyrox/swarm'
 import {
   type InProcessSpawnConfig,
   spawnInProcessTeammate,
-} from '@claude-code-how-works/swarm'
-import { buildInheritedEnvVars } from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
+import { buildInheritedEnvVars } from '@thyrox/swarm'
 import {
   ensureTeamFileFromSnapshot,
   readTeamFileAsync,
@@ -58,17 +58,17 @@ import {
   sanitizeAgentName,
   sanitizeName,
   type TeamFile,
-} from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
 import {
   assignTeammateColor,
   createTeammatePaneInSwarmView,
   enablePaneBorderStatus,
   isInsideTmux,
   sendCommandToPane,
-} from '@claude-code-how-works/swarm'
-import { getHardcodedTeammateModelFallback } from '@claude-code-how-works/swarm'
-import { registerTask } from '@claude-code-how-works/agent/taskFramework.js'
-import { writeToMailbox } from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
+import { getHardcodedTeammateModelFallback } from '@thyrox/swarm'
+import { registerTask } from '@thyrox/agent/taskFramework.js'
+import { writeToMailbox } from '@thyrox/swarm'
 import type { CustomAgentDefinition } from '../AgentTool/loadAgentsDir.js'
 import { isCustomAgent } from '../AgentTool/loadAgentsDir.js'
 
