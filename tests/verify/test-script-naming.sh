@@ -47,13 +47,13 @@ afirmar "ve el control positivo real (clasificar-agentes.py)" "1" \
 # ---------------------------------------------------------------- caso 2
 # El reporte propone el nombre corregido, no sólo señala.
 afirmar "propone el nombre en snake" "1" \
-    "$(python3 "$GATE" "$TMP/arbol" | grep -c 'classify_agents\.py')"
+    "$(python3 "$GATE" "$TMP/arbol" | grep -c 'clasificar_agentes\.py')"
 
 # ---------------------------------------------------------------- caso 3
 # Control negativo — el mismo archivo ya corregido NO se marca. Sin este caso
 # el verde no distinguiría «no hay kebab» de «el instrumento no mira los .py».
 rm "$TMP/arbol/.claude/scripts/clasificar-agentes.py"
-: > "$TMP/arbol/src/agents/classify_agents.py"
+: > "$TMP/arbol/.claude/scripts/clasificar_agentes.py"
 afirmar "no marca el nombre correcto" "0" "$(python3 "$GATE" --quiet "$TMP/arbol")"
 
 # ---------------------------------------------------------------- caso 4
@@ -97,7 +97,7 @@ rm -rf "$TMP/arbol"
 mkdir -p "$TMP/arbol/.claude/scripts" "$TMP/arbol/scripts"
 
 # ---------------------------------------------------------------- caso 9
-# Control positivo REAL del arbol: `stop-gate-stranded-evidence.sh` y
+# Control positivo REAL del arbol: `stop-gate-evidencia-varada.sh` y
 # `check_rst_convenciones.py` son nombres vivos de este repo, no fabricados.
 : > "$TMP/arbol/.claude/scripts/check_rst_convenciones.py"
 afirmar "ve el nombre en espanol de un .py real del arbol" "1" \
@@ -106,7 +106,7 @@ afirmar "ve el nombre en espanol de un .py real del arbol" "1" \
 # ---------------------------------------------------------------- caso 10
 # El .sh SI entra en el eje de idioma, aunque su convencion de separador no
 # sea asunto de este gate. Son dos ejes distintos sobre el mismo nombre.
-: > "$TMP/arbol/scripts/stop-gate-stranded-evidence.sh"
+: > "$TMP/arbol/scripts/stop-gate-evidencia-varada.sh"
 afirmar "el eje de idioma tambien mide .sh" "2" \
     "$(python3 "$GATE" --idioma --quiet "$TMP/arbol")"
 
@@ -114,7 +114,7 @@ afirmar "el eje de idioma tambien mide .sh" "2" \
 # Control negativo DISCRIMINANTE: los dos mismos archivos ya traducidos. Sin
 # este caso el verde no distinguiria «no hay espanol» de «no miro el nombre».
 rm "$TMP/arbol/.claude/scripts/check_rst_convenciones.py" \
-   "$TMP/arbol/scripts/stop-gate-stranded-evidence.sh"
+   "$TMP/arbol/scripts/stop-gate-evidencia-varada.sh"
 : > "$TMP/arbol/.claude/scripts/check_rst_conventions.py"
 : > "$TMP/arbol/scripts/stop-gate-stranded-evidence.sh"
 afirmar "no marca el nombre ya traducido" "0" \
@@ -199,12 +199,26 @@ rm "$TMP/arbol/.claude/scripts/wait-for-marker.sh" \
 # ---------------------------------------------------------------- caso 16
 # EJE 3 --identifiers: el idioma de los SIMBOLOS declarados dentro del .py.
 # Es otro eje que el nombre del archivo: uno puede pasar y el otro fallar.
+#
+# La sonda declara DOS identificadores en espanol —el nombre de la funcion y
+# el de su parametro— y el gate cuenta los dos, no el archivo. La directiva
+# del ejecutor 2026-08-28 nombra explicitamente las «firmas de funciones»
+# junto a archivos, clases y funciones, y el recorrido AST del gate visita
+# `ast.arg`: la firma ya se medía sin que ninguna asercion lo dijera.
 cat > "$TMP/arbol/.claude/scripts/probe_identifiers.py" <<'PYEOF'
 def devuelve_el_valor(cantidad):
     return cantidad
 PYEOF
-afirmar "el eje de identificadores ve el simbolo en espanol" "1" \
+afirmar "el eje de identificadores ve el simbolo en espanol" "2" \
     "$(python3 "$GATE" --identifiers --quiet "$TMP/arbol")"
+# El conteo solo no discrimina CUAL de los dos vio. Sin estas dos aserciones,
+# un gate que viera el nombre dos veces y la firma ninguna publicaria el mismo
+# 2 (sub-patron D de metrica-decide-la-conclusion.md).
+IDENT_REPORT="$(python3 "$GATE" --identifiers "$TMP/arbol")"
+afirmar "nombra la funcion" "1" \
+    "$(printf '%s\n' "$IDENT_REPORT" | grep -c 'devuelve_el_valor')"
+afirmar "y nombra el PARAMETRO: la firma es parte del eje" "1" \
+    "$(printf '%s\n' "$IDENT_REPORT" | grep -c '  cantidad  ->')"
 afirmar "y el eje del NOMBRE de ese mismo archivo pasa" "0" \
     "$(python3 "$GATE" --idioma --quiet "$TMP/arbol")"
 
