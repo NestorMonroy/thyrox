@@ -1,0 +1,58 @@
+FASE 3 — LA SUITE DE permission, ROJA POR DISEÑO
+================================================
+
+La directiva desbloquea los tests sólo al cerrar la fase 2 (81/81). Se corrió
+como trabajo en segundo plano, no como agente: es un proceso determinista.
+
+    bash bin/thyrox-bg start permission-tests --dir <log> -- bun test
+
+RESULTADO
+---------
+    813 pass · 10 fail · 5 errors · 1435 expect() · 823 tests en 53 archivos
+    __BG_EXIT__=1
+
+EL CONTROL QUE DISCRIMINA: ¿rojo del sujeto o rojo heredado?
+-----------------------------------------------------------
+Los 10 `(fail)` salen de CINCO patrones `toMatch`, y cada uno asevera sobre el
+TEXTO FUENTE de un archivo. La pregunta es si la traducción de comentarios los
+rompió. Se mide por el archivo que cada aserción lee, no por el nombre del test:
+
+  patrón                                              lee            esta ventana
+  /Stub for external builds.+ANT-ONLY/i               bashClassifier.ts   INTACTO
+  /XML_S1_SUFFIX = '\nErr on the side of blocking…'/  classifierXmlFormat INTACTO
+  /computeAutoModeFallback\(/                         permissions.ts      INTACTO
+  /tengu_auto_mode_fallback_to_ask/                   permissions.ts      INTACTO
+  /tool\.name === REPL_TOOL_NAME/                     permissions.ts      INTACTO
+
+Los cuatro fuentes que el contract test lee son yoloClassifier, xmlFormat,
+permissions y classifierDecision. De ésos, esta ventana tocó DOS
+(classifierDecision, yoloClassifier) — y NINGUNA de las cinco aserciones que
+fallan los lee. El veredicto:
+
+    los 10 fail y los 5 errors son ROJO HEREDADO, no rojo del sujeto.
+
+Comando de la medición:
+
+    for f in classifierXmlFormat.ts permissions.ts classifierDecision.ts \
+             yoloClassifier.ts; do
+      git diff --quiet 3fc45ab7..HEAD -- src/packages/permission/src/$f \
+        && echo "INTACTO $f" || echo "TOCADO $f"
+    done
+
+LOS 5 ERRORS: hermanos de workspace sin enlazar
+-----------------------------------------------
+    Cannot find module '@claude-code-how-works/tool-registry/Tool.js'
+    Cannot find module '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/prompt.js'
+    Cannot find module '@claude-code-how-works/app-host/bootstrap/state.js'
+    Cannot find module '@claude-code-how-works/storage/fsOperations.js'
+
+No son defectos del puerto: son el alcance `@claude-code-how-works` que este
+árbol no enlaza. Es exactamente TASK-THYROX-0449 («Declarar los 78 hermanos de
+workspace que 24 paquetes importan y no enlazan») y TASK-THYROX-0448 («Izar las
+dependencias a la raíz del workspace, como la referencia»). No se tocan aquí.
+
+*Métrica:* `git diff --quiet <boundary>..HEAD` sobre cada archivo cuyo texto
+fuente asevera una aserción fallida.
+*Ciega a:* un fallo cuya causa esté en un archivo tocado pero cuya aserción lea
+otro; y a los 813 que pasan, que no prueban que la traducción sea fiel — prueban
+que no rompió el cuerpo, que es lo que ya mide only_comments_changed.
