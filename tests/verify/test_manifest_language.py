@@ -30,6 +30,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 GATE = ROOT / 'src' / 'verify' / 'check_manifest_language.py'
+SRC = ROOT / 'src'
 
 sys.path.insert(0, str(ROOT / 'src'))
 sys.path.insert(0, str(GATE.parent))
@@ -168,9 +169,15 @@ print('=== Caso 7: sin lexico REHUSA — no publica un cero ===')
 BLIND = tempfile.mkdtemp()
 Path(BLIND, 'spacy_lookups_data').mkdir()
 Path(BLIND, 'spacy_lookups_data', '__init__.py').write_text('')
+# El sombra va DELANTE de la raiz, no en su lugar. Reemplazar `PYTHONPATH`
+# entero ciega tambien los imports del propio gate (`paths.reach`), que muere
+# con `ModuleNotFoundError` en exit 1 sin llegar a su rehuse en exit 2 — y
+# ese 1 mediria «el gate no arranca», no «el gate no tiene lexico», que es
+# justo la confusion que el control del caso siguiente existe para descartar.
 done = subprocess.run([sys.executable, str(GATE), str(ROOT)],
                       capture_output=True, text=True,
-                      env=dict(os.environ, PYTHONPATH=BLIND))
+                      env=dict(os.environ,
+                               PYTHONPATH=BLIND + os.pathsep + str(SRC)))
 output = done.stdout + done.stderr
 check('rehusa con 2', done.returncode, 2)
 check('NO publica un conteo de manifiestos', 'manifiesto(s) medido' in output, False)

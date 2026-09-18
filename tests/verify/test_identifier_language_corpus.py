@@ -24,6 +24,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 GATE = HERE.parent.parent / 'src' / 'verify' / 'check_identifier_language.py'
+SRC = GATE.parent.parent
 
 sys.path.insert(0, str(GATE.parent))
 
@@ -139,9 +140,15 @@ print('=== Caso 9: sin lexico el gate REHUSA — no publica un cero ===')
 BLIND = tempfile.mkdtemp()
 Path(BLIND, 'spacy_lookups_data').mkdir()
 Path(BLIND, 'spacy_lookups_data', '__init__.py').write_text('')
+# El sombra va DELANTE de la raiz, no en su lugar: reemplazar `PYTHONPATH`
+# entero ciega tambien los imports del propio gate (`paths.reach`), que muere
+# con `ModuleNotFoundError` en exit 1 sin llegar a su rehuse en exit 2. El
+# control de tres lineas mas abajo —mismo archivo SIN cegar da 1, no 2— es
+# justo el que distingue los dos, y no discrimina si la ceguera rompe ambos.
+BLIND_PATH = BLIND + os.pathsep + str(SRC)
 
 rc, output = run_on('def bien():\n    limpio = 1\n    return limpio\n',
-                    extra_env={'PYTHONPATH': BLIND})
+                    extra_env={'PYTHONPATH': BLIND_PATH})
 check('rehusa con 2', rc, 2)
 check('nombra el remedio', 'uv sync' in output, True)
 check('NO publica un conteo de archivos medidos', 'archivos medidos' in output, False)
@@ -150,7 +157,7 @@ check('NO publica un conteo de archivos medidos', 'archivos medidos' in output, 
 # congela como «limpio» lo que el gate no supo ver — que es exactamente como
 # el baseline de api paso de 1268 a 3561 al volver el corpus.
 rc, output = run_on('def bien():\n    return 1\n',
-                    extra_env={'PYTHONPATH': BLIND},
+                    extra_env={'PYTHONPATH': BLIND_PATH},
                     extra_argv=['--write-baseline'])
 check('tampoco congela a ciegas', rc, 2)
 check('no dice haber escrito baseline', 'baseline escrita' in output, False)

@@ -451,7 +451,23 @@ def test_library_modules_are_silent_when_run_as_scripts() -> None:
                 and not gb.MAIN_GUARD.search(f.read_text(errors="ignore"))]
     check("hay modulos de biblioteca que medir", len(libreria) > 0,
           f"encontrados {len(libreria)}")
-    entorno = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
+    # `PYTHONSAFEPATH=1` retira el prepend automatico del directorio del
+    # guion a `sys.path`. Sin el, correr `src/<pkg>/paths.py` como guion pone
+    # `src/<pkg>/` en `sys.path[0]` y el propio archivo `paths.py` SOMBREA al
+    # paquete `paths` de `src/`: el modulo muere con «No module named
+    # 'paths.reach'; 'paths' is not a package» y el caso lo cuenta como
+    # ruidoso. Ese ruido es un artefacto de la PUERTA, no del modulo — medido
+    # por conducta: los tres (`cache`, `rules`, `workbench`) importan sin una
+    # queja como modulos de paquete (`from cache import paths`).
+    #
+    # Control de anulacion, medido sobre las 47 bibliotecas del universo:
+    #     PYTHONSAFEPATH=0 -> ruidosos=1 ['paths.py'] | de_paquete=2
+    #     PYTHONSAFEPATH=1 -> ruidosos=0 []           | de_paquete=2
+    # Cambia UN veredicto y ninguno mas, asi que la bandera no afloja el
+    # caso: lo hace mas estricto (retira una ruta de import que el modulo no
+    # deberia necesitar) y por construccion no puede enmascarar un defecto.
+    entorno = dict(os.environ, PYTHONPATH=str(ROOT / "src"),
+                   PYTHONSAFEPATH="1")
     ruidosos, de_paquete = [], []
     for f in libreria:
         hecho = subprocess.run([sys.executable, str(f)], capture_output=True,
