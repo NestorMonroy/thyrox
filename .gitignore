@@ -81,7 +81,15 @@ temp/
 *.rar
 *.zip
 *.tar.gz
-*.7z
+# `*.7z` RETIRADO 2026-09-18 por directiva del ejecutor. El corpus de builds
+# archivado (`_references/claude-code-bin/_archived/`) son nueve `.7z` que la
+# regla global se tragaba en silencio: en disco estaban, en git solo el
+# MANIFEST. No habia perdida —el crudo sigue en el historial, en el `head` que
+# el manifiesto declara— pero `_archived/` se leia como un manifiesto que
+# apunta a archivos inexistentes. Ver H-THYROX-80.
+#
+# Medido al retirarla: 9 `.7z` en el arbol, los 9 bajo `_archived/`. La regla
+# no retenia nada mas, asi que quitarla no admite nada que no sea el archivo.
 *.bmp
 *.psd
 *.tiff

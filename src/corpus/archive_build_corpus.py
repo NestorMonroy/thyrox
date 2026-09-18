@@ -66,6 +66,55 @@ ARCHIVE_DIR_NAME = "_archived"
 #: vez, que es lo que hace recuperable el crudo por la via de git ademas de
 #: por la del `.7z`.
 MANIFEST_NAME = "MANIFEST.tsv"
+README_NAME = "README.md"
+
+#: El `.7z` NO se versiona: `.gitignore` lleva un `*.7z` global. Eso no es un
+#: descuido que haya que revertir — es lo que hace que archivar NO añada peso al
+#: historial, que era el punto. Pero deja `_archived/` pareciendo un manifiesto
+#: que apunta a archivos que git no tiene, y quien lo mire concluye que el
+#: corpus se perdio. No se perdio: la columna `head` del manifiesto ES la clave
+#: de recuperacion, porque el archivado corre ANTES del commit que retira el
+#: crudo, asi que ese arbol todavia lo contiene.
+#:
+#: Este README lo declara. Sin el, la unica lectura posible de `_archived/` es
+#: la equivocada.
+README_TEMPLATE = """# Corpus de builds archivado
+
+Las versiones que `list_corpus_builds` ya no lista viven aqui como un `.7z`
+solido por version. **Los `.7z` NO estan versionados** — `.gitignore` lleva un
+`*.7z` global, y eso es deliberado: archivar no debe anadir peso al historial.
+
+Son una copia de CONVENIENCIA, tan durable como el contenedor. La copia durable
+es el historial de git.
+
+## Como se recupera una build archivada
+
+La columna `head` de `MANIFEST.tsv` es la clave: el archivado corre ANTES del
+commit que retira el crudo, asi que ese arbol todavia lo contiene.
+
+```bash
+HEAD_ARCHIVADO=$(awk 'NR==2 {{print $6}}' {manifiesto})
+git ls-tree -r --name-only "$HEAD_ARCHIVADO" -- _references/claude-code-bin/<version>/
+git show "$HEAD_ARCHIVADO:_references/claude-code-bin/<version>/claude_strings.txt" > /tmp/salida
+```
+
+Y si el `.7z` sigue en disco, sale mas barato:
+
+```bash
+7z t _references/claude-code-bin/_archived/<version>.7z    # integridad primero
+7z x _references/claude-code-bin/_archived/<version>.7z -o_references/claude-code-bin/
+```
+
+Las dos vias dan el mismo arbol. El `sha256` del manifiesto es del `.7z`, no del
+crudo: verifica el archivo, no lo que contiene.
+
+## Lo que este README NO resuelve
+
+Si un consumidor del arbol cita la ruta cruda de una build archivada, esa cita
+no resuelve. Es un rojo real y tiene su tarea: **TASK-THYROX-0163**.
+
+Generado por `src/corpus/archive_build_corpus.py` — no se edita a mano.
+"""
 MANIFEST_HEADER = "build\traw_bytes\tarchive_bytes\tratio\tsha256\thead\n"
 
 #: Cuantas builds se conservan desplegadas si nadie dice otra cosa.
@@ -220,6 +269,19 @@ def remove_raw(repository: pathlib.Path, build_dir: pathlib.Path) -> str:
         return "git rm"
     shutil.rmtree(build_dir)
     return "rmtree"
+
+
+def write_readme(destination: pathlib.Path) -> pathlib.Path:
+    """La ruta de recuperacion, escrita donde se busca.
+
+    Se emite SIEMPRE que se escribe el manifiesto, no solo la primera vez: es
+    generado, asi que reescribirlo es idempotente y evita que quede atras
+    cuando el manifiesto cambie de forma.
+    """
+    path = destination / README_NAME
+    path.write_text(README_TEMPLATE.format(manifiesto=MANIFEST_NAME),
+                    encoding="utf-8")
+    return path
 
 
 def write_manifest(destination: pathlib.Path, results: list[ArchiveResult],
