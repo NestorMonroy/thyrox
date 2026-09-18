@@ -1,0 +1,26 @@
+=== 2026-09-18T15:32:03 — el guion de copia NO escribe en la referencia ===
+Verificado POR CONDUCTA con strace (bin/assert_no_writes), no por el comentario
+del guion. Sujeto: una copia real de un archivo que falta.
+
+assert_no_writes: 6 escritura(s) intentada(s) (alcance medido: 178 linea(s) de traza, 8 proceso(s); subject_exit=0)
+  mkdir        /home 
+  mkdir        packages 
+  mkdir        permission 
+  mkdir        src 
+  mkdir        thyrox 
+  mkdir        user 
+exit=0
+
+--- lectura del resultado: las 6 son mkdir de COMPONENTES del destino ---
+    (/home, user, thyrox, src, packages, permission) — mkdir -p recorre la
+    ruta completa aunque ya exista. NINGUNA cae bajo la referencia.
+
+--- control que SI puede fallar: la referencia, byte a byte, antes y despues ---
+sha del arbol de la referencia ANTES : 4456622ced1900ff2ab7466de4173524a2821851cccab9b1364bc4ae16f53ac3  -
+copiado src/classifierStallTracking.ts (6640 B)
+sha del arbol de la referencia DESPUES: 4456622ced1900ff2ab7466de4173524a2821851cccab9b1364bc4ae16f53ac3  -
+VEREDICTO: la referencia NO cambio
+
+--- y el control de anulacion: un copiador con los argumentos invertidos ---
+    (no se ejecuta: escribiria en la referencia. Se declara la forma que
+     el control detectaria, que es lo que lo hace un control y no un adorno.)

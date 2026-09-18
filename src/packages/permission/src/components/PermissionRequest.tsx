@@ -1,0 +1,186 @@
+import { feature } from 'bun:bundle'
+import * as React from 'react'
+import { EnterPlanModeTool } from '@claude-code-how-works/tool-registry/tools/EnterPlanModeTool/EnterPlanModeTool.js'
+import { ExitPlanModeV2Tool } from '@claude-code-how-works/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
+import { useNotifyAfterTimeout } from '@claude-code-how-works/repl/hooks/useNotifyAfterTimeout.js'
+import { useKeybinding } from '@anthropic/ink/keybindings'
+import type { AnyObject, Tool, ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
+import { AskUserQuestionTool } from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
+import { BashTool } from '@claude-code-how-works/tool-registry/tools/BashTool/BashTool.js'
+import { FileEditTool } from '@claude-code-how-works/tool-registry/tools/FileEditTool/FileEditTool.js'
+import { FileReadTool } from '@claude-code-how-works/tool-registry/tools/FileReadTool/FileReadTool.js'
+import { FileWriteTool } from '@claude-code-how-works/tool-registry/tools/FileWriteTool/FileWriteTool.js'
+import { GlobTool } from '@claude-code-how-works/tool-registry/tools/GlobTool/GlobTool.js'
+import { GrepTool } from '@claude-code-how-works/tool-registry/tools/GrepTool/GrepTool.js'
+import { NotebookEditTool } from '@claude-code-how-works/tool-registry/tools/NotebookEditTool/NotebookEditTool.js'
+import { PowerShellTool } from '@claude-code-how-works/tool-registry/tools/PowerShellTool/PowerShellTool.js'
+import { SkillTool } from '@claude-code-how-works/tool-registry/tools/SkillTool/SkillTool.js'
+import { WebFetchTool } from '@claude-code-how-works/tool-registry/tools/WebFetchTool/WebFetchTool.js'
+import type { AssistantMessage } from '@claude-code-how-works/agent/messageShapes'
+import type { PermissionDecision } from '../PermissionResult.js'
+import { AskUserQuestionPermissionRequest } from './AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.js'
+import { BashPermissionRequest } from './BashPermissionRequest/BashPermissionRequest.js'
+import { EnterPlanModePermissionRequest } from './EnterPlanModePermissionRequest/EnterPlanModePermissionRequest.js'
+import { ExitPlanModePermissionRequest } from './ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.js'
+import { FallbackPermissionRequest } from './FallbackPermissionRequest.js'
+import { FileEditPermissionRequest } from './FileEditPermissionRequest/FileEditPermissionRequest.js'
+import { FilesystemPermissionRequest } from './FilesystemPermissionRequest/FilesystemPermissionRequest.js'
+import { FileWritePermissionRequest } from './FileWritePermissionRequest/FileWritePermissionRequest.js'
+import { NotebookEditPermissionRequest } from './NotebookEditPermissionRequest/NotebookEditPermissionRequest.js'
+import { PowerShellPermissionRequest } from './PowerShellPermissionRequest/PowerShellPermissionRequest.js'
+import { SkillPermissionRequest } from './SkillPermissionRequest/SkillPermissionRequest.js'
+import { WebFetchPermissionRequest } from './WebFetchPermissionRequest/WebFetchPermissionRequest.js'
+
+/* eslint-disable @typescript-eslint/no-require-imports */
+const ReviewArtifactTool = feature('REVIEW_ARTIFACT')
+  ? (
+      require('@claude-code-how-works/tool-registry/tools/ReviewArtifactTool/ReviewArtifactTool.js') as typeof import('@claude-code-how-works/tool-registry/tools/ReviewArtifactTool/ReviewArtifactTool.js')
+    ).ReviewArtifactTool
+  : null
+
+const ReviewArtifactPermissionRequest = feature('REVIEW_ARTIFACT')
+  ? (
+      require('./ReviewArtifactPermissionRequest/ReviewArtifactPermissionRequest.js') as typeof import('./ReviewArtifactPermissionRequest/ReviewArtifactPermissionRequest.js')
+    ).ReviewArtifactPermissionRequest
+  : null
+
+// Workflow tool ships unconditionally (ant parity) — the `case WorkflowTool:`
+// switch compares object identity, so this MUST be the real tool object.
+// There is no dedicated Workflow permission component yet (the script + agent
+// count render via the generic FallbackPermissionRequest), so we don't import
+// the stub — see permissionComponentForTool below.
+const WorkflowTool = (
+  require('@claude-code-how-works/tool-registry/tools/WorkflowTool/WorkflowTool.js') as typeof import('@claude-code-how-works/tool-registry/tools/WorkflowTool/WorkflowTool.js')
+).WorkflowTool
+
+const MonitorTool = feature('MONITOR_TOOL')
+  ? (
+      require('@claude-code-how-works/tool-registry/tools/MonitorTool/MonitorTool.js') as typeof import('@claude-code-how-works/tool-registry/tools/MonitorTool/MonitorTool.js')
+    ).MonitorTool
+  : null
+
+const MonitorPermissionRequest = feature('MONITOR_TOOL')
+  ? (
+      require('./MonitorPermissionRequest/MonitorPermissionRequest.js') as typeof import('./MonitorPermissionRequest/MonitorPermissionRequest.js')
+    ).MonitorPermissionRequest
+  : null
+
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
+/* eslint-enable @typescript-eslint/no-require-imports */
+import type { z } from 'zod/v4'
+import type { PermissionUpdate } from '../PermissionUpdateSchema.js'
+import type { WorkerBadgeProps } from './WorkerBadge.js'
+
+function permissionComponentForTool(
+  tool: Tool,
+): React.ComponentType<PermissionRequestProps> {
+  switch (tool) {
+    case FileEditTool:
+      return FileEditPermissionRequest
+    case FileWriteTool:
+      return FileWritePermissionRequest
+    case BashTool:
+      return BashPermissionRequest
+    case PowerShellTool:
+      return PowerShellPermissionRequest
+    case ReviewArtifactTool:
+      return ReviewArtifactPermissionRequest ?? FallbackPermissionRequest
+    case WebFetchTool:
+      return WebFetchPermissionRequest
+    case NotebookEditTool:
+      return NotebookEditPermissionRequest
+    case ExitPlanModeV2Tool:
+      return ExitPlanModePermissionRequest
+    case EnterPlanModeTool:
+      return EnterPlanModePermissionRequest
+    case SkillTool:
+      return SkillPermissionRequest
+    case AskUserQuestionTool:
+      return AskUserQuestionPermissionRequest
+    case WorkflowTool:
+      return FallbackPermissionRequest
+    case MonitorTool:
+      return MonitorPermissionRequest ?? FallbackPermissionRequest
+    case GlobTool:
+    case GrepTool:
+    case FileReadTool:
+      return FilesystemPermissionRequest
+    default:
+      return FallbackPermissionRequest
+  }
+}
+
+export type {
+  PermissionRequestProps,
+  ToolUseConfirm,
+} from './permissionRequestTypes.js'
+import type {
+  PermissionRequestProps,
+  ToolUseConfirm,
+} from './permissionRequestTypes.js'
+
+function getNotificationMessage(toolUseConfirm: ToolUseConfirm): string {
+  const toolName = toolUseConfirm.tool.userFacingName(
+    toolUseConfirm.input as never,
+  )
+
+  if (toolUseConfirm.tool === ExitPlanModeV2Tool) {
+    return 'Claude Code needs your approval for the plan'
+  }
+
+  if (toolUseConfirm.tool === EnterPlanModeTool) {
+    return 'Claude Code wants to enter plan mode'
+  }
+
+  if (
+    feature('REVIEW_ARTIFACT') &&
+    toolUseConfirm.tool === ReviewArtifactTool
+  ) {
+    return 'Claude needs your approval for a review artifact'
+  }
+
+  if (!toolName || toolName.trim() === '') {
+    return 'Claude Code needs your attention'
+  }
+
+  return `Claude needs your permission to use ${toolName}`
+}
+
+// TODO: Move this to Tool.renderPermissionRequest
+export function PermissionRequest({
+  toolUseConfirm,
+  toolUseContext,
+  onDone,
+  onReject,
+  verbose,
+  workerBadge,
+  setStickyFooter,
+}: PermissionRequestProps): React.ReactNode {
+  // Handle Ctrl+C (app:interrupt) to reject
+  useKeybinding(
+    'app:interrupt',
+    () => {
+      onDone()
+      onReject()
+      toolUseConfirm.onReject()
+    },
+    { context: 'Confirmation' },
+  )
+
+  const notificationMessage = getNotificationMessage(toolUseConfirm)
+  useNotifyAfterTimeout(notificationMessage, 'permission_prompt')
+
+  const PermissionComponent = permissionComponentForTool(toolUseConfirm.tool)
+
+  return (
+    <PermissionComponent
+      toolUseContext={toolUseContext}
+      toolUseConfirm={toolUseConfirm}
+      onDone={onDone}
+      onReject={onReject}
+      verbose={verbose}
+      workerBadge={workerBadge}
+      setStickyFooter={setStickyFooter}
+    />
+  )
+}
