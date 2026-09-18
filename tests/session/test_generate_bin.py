@@ -720,6 +720,13 @@ def test_exercise_separates_wiring_from_policy(base: pathlib.Path) -> None:
     tree = _make_tree(base / "ejercitar")
     (tree / "src/paths").mkdir(parents=True, exist_ok=True)
     (tree / "src/paths/reach.py").write_text("# marcador\n")
+    # `transcript` es un paquete REGULAR, no una porcion de namespace: asi lo
+    # declara el arbol real (`src/transcript/__init__.py` existe). Sin el
+    # `__init__.py` el fixture gana solo mientras `PYTHONPATH` este vacio —
+    # un paquete regular de otro arbol se impone sobre una porcion de
+    # namespace sea cual sea el orden de la ruta, asi que el sujeto acababa
+    # importando `transcript` del proveedor y no el del fixture.
+    (tree / "src/transcript/__init__.py").write_text("")
     (tree / "src/transcript/sibling.py").write_text("VALOR = 1\n")
     relativo = tree / "src/transcript/probe_needs_package.py"
     relativo.write_text("from . import sibling\n"
