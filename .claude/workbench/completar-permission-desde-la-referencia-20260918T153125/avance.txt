@@ -1,4 +1,4 @@
-# Avance del porte de permission — 2026-09-18T16:19:32
+# Avance del porte de permission — 2026-09-18T16:21:38
 # Regenerado por avance.sh. Ninguna cifra se escribe a mano.
 
 FASE 1 — COPIA
@@ -8,10 +8,9 @@ FASE 1 — COPIA
   sobran                28 (propios del puerto, no de la referencia)
 
 FASE 2 — TRADUCCION DE COMENTARIOS (universo: los 97 .ts/.tsx copiados)
-  traducidos=79  pendientes=2  lineas pendientes=395
+  traducidos=80  pendientes=1  lineas pendientes=228
 
   Pendientes por densidad (lineas de comentario, medidas por AST):
     228	src/yoloClassifier.ts
-    167	src/yoloSystemPrompt.ts
 
 FASE 3 — TESTS   bloqueada hasta que FASE 2 cierre (directiva del ejecutor)
