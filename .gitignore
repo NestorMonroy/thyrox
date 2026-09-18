@@ -153,3 +153,7 @@ agent-results/mutantes-en-vuelo.jsonl
 # vale mientras la sesión que lo escribió sigue viva; versionarlo ensucia el
 # árbol cada vez que un trabajo queda VIVO al cerrar el turno.
 .claude/jobs-ledger/
+
+# La cascara de store del proveedor: 0 filas de negocio, tracked sin el
+# driver de merge que .gitattributes da al store real. La retira TASK-THYROX-0153.
+.claude/agent-results/agent_store.sqlite3
