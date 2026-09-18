@@ -83,7 +83,22 @@ def bloque_balanceado(texto, ancla, abre='{', cierra='}'):
         elif c == cierra:
             profundidad -= 1
             if profundidad == 0:
-                return texto[inicio:i + 1]
+                bloque = texto[inicio:i + 1]
+                # POSTCONDICIÓN: el bloque tiene que contener al ancla.
+                #
+                # El retroceso de arriba reconoce la llave cuyo carácter previo
+                # está en `=(,[` — asignación, llamada, elemento de lista. Un
+                # `return{…}` no está en ese conjunto, así que sigue retrocediendo
+                # y aterriza en el registro ANTERIOR del texto. Medido sobre
+                # 2.1.266: con el ancla `input_tokens:n.input_tokens!==null`
+                # devolvía 1093 bytes del objeto de telemetría vecino.
+                #
+                # El arreglo no es enseñarle esa forma —eso ampliaría la
+                # heurística a una más y dejaría las siguientes igual de mudas—
+                # sino comprobar lo que este docstring ya promete. Devolver el
+                # registro equivocado es peor que rehusar: quien lo recibe no
+                # tiene cómo notar que mide otra cosa.
+                return bloque if ancla in bloque else None
     return None
 
 
