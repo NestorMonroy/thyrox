@@ -1,0 +1,22 @@
+== ANULACION: se retira el MECANISMO (deviation.typical_deviation -> 0.0),
+   conservando la FORMA de la tabla (cuatro columnas).
+
+Por que asi y no vaciando la columna: el primer intento la vacio, y
+cayeron las CINCO aserciones — el parseo del test exige cuatro campos
+por fila, asi que sin columna no ve ninguna fila. Ese control no
+discriminaba «el mecanismo no mide» de «el test no encuentra la tabla»,
+que es el sub-patron D con el propio control como sujeto.
+
+== 1. la media NO discrimina: los dos modelos dan la misma ==
+  ok    las dos filas estan en la tabla
+  ok    misma media en los dos modelos
+== 2. la desviacion tipica SI las distingue ==
+  FALLO el estable publica su desviacion
+        esperado=[7,071] obtenido=[0]
+  FALLO el erratico publica la suya, un orden mayor
+        esperado=[141,421] obtenido=[0]
+== 3. la cifra viaja con su denominador ==
+  ok    cada modelo declara su n
+
+3 ok, 2 fallos
+exit=1

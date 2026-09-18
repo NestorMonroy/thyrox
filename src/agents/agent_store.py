@@ -121,6 +121,15 @@ sys.path.insert(0, str(agents_paths.THYROX_ROOT / "src" / "task"))
 
 from task_ids import UNKNOWN_LAYER  # noqa: E402  — tras fijar sys.path
 
+# La dispersion NO se calcula aqui: la mide `measurement`, que no sabe de
+# agentes ni de tokens. Este modulo aporta las observaciones; aquel decide si
+# hay distribucion y cuanto se desvia. Misma frontera que con `model_catalog`:
+# el censo compone, no implementa.
+sys.path.insert(0, str(agents_paths.THYROX_ROOT / "src" / "measurement"))
+
+import deviation  # noqa: E402  — tras fijar sys.path
+import distribution  # noqa: E402  — tras fijar sys.path
+
 VALID_REPOS = reach_roots.REACH_ROOTS
 
 #: El arbol documental es de `docs` por construccion — ahi viven las
@@ -3096,6 +3105,58 @@ def cmd_usage_census(args: argparse.Namespace) -> None:
                 ("cache_read", "cache_creation", "output", "input", "equiv_cost"),
                 agregado[1:]):
             print(f"  {etiqueta:<16} {valor or 0:>16,}   media {(valor or 0) // n:>12,}")
+    # La MEDIA de arriba es ciega a la dispersion: dos modelos con el mismo
+    # consumo medio por turno pueden ser uno predecible y otro erratico, y la
+    # decision de despacho que se toma con esa cifra es distinta en cada caso.
+    # La desviacion tipica es la misma informacion en las unidades del dato,
+    # asi que se publica al lado de la media y no en su lugar.
+    #
+    # Las DOS columnas son de token, y son unidades distintas:
+    #   `equiv_cost`  el coste ponderado — de los tres tipos de costo que
+    #                 `calibration-verified-numbers.md` declara, el UNICO que
+    #                 se cita. Va primero porque es el que decide.
+    #   `cache_read`  un COMPONENTE del consumo, la unidad de capacidad. Domina
+    #                 el reparto (98 %) y por eso acompaña, pero publicarlo solo
+    #                 mediria el componente y se leeria como el costo.
+    # El dinero NO entra aqui: tiene su propio bloque, abajo, y mezclar las dos
+    # unidades bajo un mismo encabezado es el sub-patron A.
+    print()
+    with connect_readonly(store_dir) as conn:
+        _por_modelo = conn.execute(
+            "SELECT model, equiv_cost, cache_read_tokens, turns "
+            "FROM agent_sessions "
+            "WHERE usage_source = 'transcript' AND model LIKE 'claude-%' "
+            "AND turns > 0 AND cache_read_tokens IS NOT NULL "
+            "AND equiv_cost IS NOT NULL "
+            "ORDER BY model").fetchall()
+    _equivalentes: dict = {}
+    _capacidades: dict = {}
+    for _fila in _por_modelo:
+        _equivalentes.setdefault(_fila[0], []).append(_fila[1] / _fila[3])
+        _capacidades.setdefault(_fila[0], []).append(_fila[2] / _fila[3])
+    if not _equivalentes:
+        print("Dispersion por turno, por modelo, en tokens: SIN MEDIR — "
+              "ninguna fila declara modelo, turnos, equiv_cost y cache_read "
+              "a la vez")
+    else:
+        print("Dispersion por turno, por modelo, en TOKENS — la media Y su "
+              "desviacion tipica, que es lo que la media no dice:")
+        print(f"  {'modelo':<22} {'n':>4} {'equiv_cost media':>18}"
+              f" {'equiv_cost desv':>17} {'cache_read media':>18}"
+              f" {'cache_read desv':>17}")
+        for _modelo in sorted(_equivalentes):
+            _fila_texto = f"  {_modelo:<22} n={len(_equivalentes[_modelo]):<2}"
+            for _muestra, _ancho in ((_equivalentes[_modelo], 18),
+                                     (_capacidades[_modelo], 17)):
+                _valores, _pesos = distribution.from_sample(_muestra)
+                _fila_texto += (
+                    f" {deviation.center(_valores, _pesos):>{_ancho},.0f}"
+                    f" {deviation.typical_deviation(_valores, _pesos):>{_ancho},.0f}")
+            print(_fila_texto)
+        print("  (desviacion POBLACIONAL de la muestra: cada fila pesa 1/n. "
+              "Un modelo con n=1 declara desviacion 0, que significa «una sola "
+              "observacion», no «consistente»)")
+
     # USD por modelo, al precio del tier de cada uno (catálogo vendorizado del
     # paquete). `equiv_cost` de arriba pondera con los cocientes de UN tier y
     # Fable 5.1 los rompe (H-DOCS-1008); esta tabla no hereda ese sesgo.
