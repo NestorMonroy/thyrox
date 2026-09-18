@@ -141,7 +141,7 @@ function SuggestedRules({
 
 type Props = {
   permissionResult: PermissionDecision
-  toolName?: string // Filter unreachable rules to this tool
+  toolName?: string // Acota las reglas inalcanzables a esta herramienta
 }
 
 // Copia de `ccnmt: packages/permission/src/components/

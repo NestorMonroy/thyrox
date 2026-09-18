@@ -29,8 +29,8 @@ export function QuestionNavigationBar({
     const leftArrow = '← '
     const rightArrow = ' →'
     const submitText = hideSubmitTab ? '' : ` ${figures.tick} Submit `
-    const checkboxWidth = 2 // checkbox + space
-    const paddingPerTab = 2 // space before and after each tab text
+    const checkboxWidth = 2 // la casilla más su espacio
+    const paddingPerTab = 2 // espacio antes y después del texto de cada pestaña
 
     const fixedWidth =
       stringWidth(leftArrow) + stringWidth(rightArrow) + stringWidth(submitText)

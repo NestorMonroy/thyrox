@@ -23,7 +23,7 @@ type Props = {
   onAddDirectory: (path: string, remember?: boolean) => void
   onCancel: () => void
   permissionContext: ToolPermissionContext
-  directoryPath?: string // When directoryPath is provided, show selection options instead of input
+  directoryPath?: string // Con directoryPath presente, muestra opciones de selección en vez de entrada
 }
 
 type RememberDirectoryOption = 'yes-session' | 'yes-remember' | 'no'

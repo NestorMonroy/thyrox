@@ -1,0 +1,12 @@
+tool-registry	280 archivos	7849 tramos	6156 en ingles
+shell	35 archivos	4218 tramos	3023 en ingles
+agent	156 archivos	3117 tramos	2430 en ingles
+cli	101 archivos	2962 tramos	2387 en ingles
+config	110 archivos	2807 tramos	2257 en ingles
+provider	173 archivos	2294 tramos	1838 en ingles
+command-runtime	148 archivos	1558 tramos	1127 en ingles
+mcp-runtime	21 archivos	1072 tramos	889 en ingles
+output	22 archivos	392 tramos	308 en ingles
+app-host	5 archivos	197 tramos	150 en ingles
+swarm	9 archivos	56 tramos	42 en ingles
+daemon	1 archivos	23 tramos	23 en ingles

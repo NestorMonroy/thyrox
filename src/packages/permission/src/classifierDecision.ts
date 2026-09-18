@@ -58,16 +58,16 @@ const VERIFY_PLAN_EXECUTION_TOOL_NAME =
  * clasificadas fuera de él).
  */
 const SAFE_YOLO_ALLOWLISTED_TOOLS = new Set([
-  // Read-only file operations
+  // Operaciones de archivo de sólo lectura
   FILE_READ_TOOL_NAME,
-  // Search / read-only
+  // Búsqueda, de sólo lectura
   GREP_TOOL_NAME,
   GLOB_TOOL_NAME,
   LSP_TOOL_NAME,
   TOOL_SEARCH_TOOL_NAME,
   LIST_MCP_RESOURCES_TOOL_NAME,
-  'ReadMcpResourceTool', // no exported constant
-  // Task management (metadata only)
+  'ReadMcpResourceTool', // sin constante exportada
+  // Gestión de tareas (sólo metadata)
   TODO_WRITE_TOOL_NAME,
   TASK_CREATE_TOOL_NAME,
   TASK_GET_TOOL_NAME,
@@ -75,25 +75,26 @@ const SAFE_YOLO_ALLOWLISTED_TOOLS = new Set([
   TASK_LIST_TOOL_NAME,
   TASK_STOP_TOOL_NAME,
   TASK_OUTPUT_TOOL_NAME,
-  // Plan mode / UI
+  // Modo plan e interfaz
   ASK_USER_QUESTION_TOOL_NAME,
   ENTER_PLAN_MODE_TOOL_NAME,
   EXIT_PLAN_MODE_TOOL_NAME,
-  // Swarm coordination (internal mailbox/team state only — teammates have
-  // their own permission checks, so no actual security bypass).
+  // Coordinación del swarm (sólo buzón interno y estado de equipo — los
+  // pares llevan sus propias comprobaciones de permiso, así que no hay
+  // elusión de seguridad real).
   TEAM_CREATE_TOOL_NAME,
-  // Agent cleanup
+  // Limpieza de agentes
   TEAM_DELETE_TOOL_NAME,
   SEND_MESSAGE_TOOL_NAME,
-  // Workflow orchestration — subagents go through canUseTool individually
+  // Orquestación de workflow — cada subagente pasa por canUseTool
   WORKFLOW_TOOL_NAME,
-  // Misc safe
+  // Varios, seguros
   SLEEP_TOOL_NAME,
-  // Ant-only safe tools (gates mirror tools.ts)
+  // Herramientas seguras exclusivas de ant (las guardas replican tools.ts)
   ...(TERMINAL_CAPTURE_TOOL_NAME ? [TERMINAL_CAPTURE_TOOL_NAME] : []),
   ...(OVERFLOW_TEST_TOOL_NAME ? [OVERFLOW_TEST_TOOL_NAME] : []),
   ...(VERIFY_PLAN_EXECUTION_TOOL_NAME ? [VERIFY_PLAN_EXECUTION_TOOL_NAME] : []),
-  // Internal classifier tool
+  // Herramienta interna del clasificador
   YOLO_CLASSIFIER_TOOL_NAME,
 ])
 
@@ -179,6 +180,6 @@ export function computeAutoModeFallback(
   if (isNonApprovableSafetyCheck) return { reason: 'safety_check' }
   if (isAskRule) return { reason: 'ask_rule' }
   if (isPlanFloor) return { reason: 'plan_mode_floor' }
-  // sandboxOverride alone — fall through to the classifier.
+  // sandboxOverride por sí solo — cae hacia el clasificador.
   return null
 }
