@@ -12,32 +12,36 @@ import {
 } from '../../filesystem.js'
 import type { OptionWithDescription } from '@claude-code-how-works/repl/components/CustomSelect/select.js'
 /**
- * Check if a path is within the project's .claude/ folder.
- * This is used to determine whether to show the special ".claude folder" permission option.
+ * Copia de `ccnmt: packages/permission/src/components/FilePermissionDialog/permissionOptions.tsx`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
+ *
+ * Comprueba si una ruta cae dentro de la carpeta .claude/ del proyecto. Sirve
+ * para decidir si se muestra la opción de permiso especial de «.claude
+ * folder».
  */
 export function isInClaudeFolder(filePath: string): boolean {
   const absolutePath = expandPath(filePath)
   const claudeFolderPath = expandPath(`${getOriginalCwd()}/.claude`)
 
-  // Check if the path is within the project's .claude folder
+  // Comprobar si la ruta cae dentro de la carpeta .claude del proyecto
   const normalizedAbsolutePath = normalizeCaseForComparison(absolutePath)
   const normalizedClaudeFolderPath =
     normalizeCaseForComparison(claudeFolderPath)
 
-  // Path must start with the .claude folder path (and be inside it, not just the folder itself)
+  // La ruta tiene que empezar por la de la carpeta .claude, y estar dentro de ella, no ser la carpeta misma
   return (
     normalizedAbsolutePath.startsWith(
       normalizedClaudeFolderPath + sep.toLowerCase(),
     ) ||
-    // Also match case where sep is / on posix systems
+    // Casar también el caso en que el separador es / en los sistemas posix
     normalizedAbsolutePath.startsWith(normalizedClaudeFolderPath + '/')
   )
 }
 
 /**
- * Check if a path is within the global ~/.claude/ folder.
- * This is used to determine whether to show the special ".claude folder" permission option
- * for files in the user's home directory.
+ * Comprueba si una ruta cae dentro de la carpeta global ~/.claude/. Sirve para
+ * decidir si se muestra la opción de permiso especial de «.claude folder» en
+ * los archivos del directorio personal del usuario.
  */
 export function isInGlobalClaudeFolder(filePath: string): boolean {
   const absolutePath = expandPath(filePath)
@@ -91,7 +95,7 @@ export function getFilePermissionOptions({
     'shift+tab',
   )
 
-  // When in input mode, show input field
+  // En modo de entrada, mostrar el campo
   if (yesInputMode && onAcceptFeedbackChange) {
     options.push({
       type: 'input',
@@ -115,14 +119,16 @@ export function getFilePermissionOptions({
     toolPermissionContext,
   )
 
-  // Check if this is a .claude/ folder path (project or global)
+  // Comprobar si ésta es una ruta de carpeta .claude/, de proyecto o global
   const inClaudeFolder = isInClaudeFolder(filePath)
   const inGlobalClaudeFolder = isInGlobalClaudeFolder(filePath)
 
-  // Option 2: For .claude/ folder, show special option instead of generic session option
-  // Note: Session-level options are always shown since they only affect in-memory state,
-  // not persisted settings. The allowManagedPermissionRulesOnly setting only restricts
-  // persisted permission rules.
+  // Opción 2: para la carpeta .claude/, mostrar la opción especial en vez de
+  // la genérica de sesión.
+  // Nota: las opciones de nivel de sesión se muestran siempre, porque sólo
+  // afectan al estado en memoria, no a los ajustes persistidos. El ajuste
+  // `allowManagedPermissionRulesOnly` sólo restringe las reglas de permiso
+  // persistidas.
   if ((inClaudeFolder || inGlobalClaudeFolder) && operationType !== 'read') {
     options.push({
       label: 'Yes, and allow Claude to edit its own settings for this session',
@@ -133,11 +139,11 @@ export function getFilePermissionOptions({
       },
     })
   } else {
-    // Option 2: Allow all changes/reads during session
+    // Opción 2: permitir todos los cambios y lecturas durante la sesión
     let sessionLabel: ReactNode
 
     if (inAllowedPath) {
-      // Inside working directory
+      // Dentro del directorio de trabajo
       if (operationType === 'read') {
         sessionLabel = 'Yes, during this session'
       } else {
@@ -149,7 +155,7 @@ export function getFilePermissionOptions({
         )
       }
     } else {
-      // Outside working directory - include directory name
+      // Fuera del directorio de trabajo: incluir el nombre del directorio
       const dirPath = getDirectoryForPath(filePath)
       const dirName = basename(dirPath) || 'this directory'
 
@@ -177,7 +183,7 @@ export function getFilePermissionOptions({
     })
   }
 
-  // When in input mode, show input field for reject
+  // En modo de entrada, mostrar el campo para el rechazo
   if (noInputMode && onRejectFeedbackChange) {
     options.push({
       type: 'input',
@@ -189,7 +195,7 @@ export function getFilePermissionOptions({
       option: { type: 'reject' },
     })
   } else {
-    // Not in input mode - simple option
+    // Fuera del modo de entrada: opción simple
     options.push({
       label: 'No',
       value: 'no',

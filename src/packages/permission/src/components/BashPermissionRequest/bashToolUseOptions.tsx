@@ -16,8 +16,11 @@ type BashToolUseOption =
   | 'no'
 
 /**
- * Check if a description already exists in the allow list.
- * Compares lowercase and trailing-whitespace-trimmed versions.
+ * Copia de `ccnmt: packages/permission/src/components/BashPermissionRequest/bashToolUseOptions.tsx`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
+ *
+ * Comprueba si una descripción ya existe en la lista de permitidos. Compara
+ * las versiones en minúscula y sin espacios al final.
  */
 function descriptionAlreadyExists(
   description: string,
@@ -30,12 +33,13 @@ function descriptionAlreadyExists(
 }
 
 /**
- * Strip output redirections so filenames don't show as commands in the label.
+ * Retira las redirecciones de salida, para que un nombre de archivo no
+ * aparezca como si fuera un comando en la etiqueta.
  */
 function stripBashRedirections(command: string): string {
   const { commandWithoutRedirections, redirections } =
     extractOutputRedirections(command)
-  // Only use stripped version if there were actual redirections
+  // Usar la versión recortada sólo si de verdad había redirecciones
   return redirections.length > 0 ? commandWithoutRedirections : command
 }
 
@@ -59,14 +63,14 @@ export function bashToolUseOptions({
   onAcceptFeedbackChange: (value: string) => void
   onClassifierDescriptionChange?: (value: string) => void
   classifierDescription?: string
-  /** Whether the initial classifier description was empty. When true, hides the option. */
+  /** Si la descripción inicial del clasificador venía vacía. Con true, oculta la opción. */
   initialClassifierDescriptionEmpty?: boolean
   existingAllowDescriptions?: string[]
   yesInputMode?: boolean
   noInputMode?: boolean
-  /** Editable prefix rule content (e.g., "npm run:*"). When set, replaces Haiku-based suggestions. */
+  /** Contenido editable de la regla de prefijo (por ejemplo «npm run:*»). Si se fija, sustituye a las sugerencias de Haiku. */
   editablePrefix?: string
-  /** Callback when the user edits the prefix value. */
+  /** Callback para cuando el usuario edita el valor del prefijo. */
   onEditablePrefixChange?: (value: string) => void
 }): OptionWithDescription<BashToolUseOption>[] {
   const options: OptionWithDescription<BashToolUseOption>[] = []
@@ -87,12 +91,12 @@ export function bashToolUseOptions({
     })
   }
 
-  // Only show "always allow" options when not restricted by allowManagedPermissionRulesOnly
+  // Mostrar las opciones de «permitir siempre» sólo si `allowManagedPermissionRulesOnly` no lo restringe
   if (shouldShowAlwaysAllowOptions()) {
-    // Show an editable input for the prefix rule instead of the
-    // Haiku-generated suggestion label — but only when the suggestions
-    // don't contain non-Bash items (addDirectories, Read rules) that
-    // the editable prefix can't represent.
+    // Mostrar un campo editable para la regla de prefijo en vez de la
+    // etiqueta de sugerencia que genera Haiku — pero sólo cuando las
+    // sugerencias no traen elementos que no son de Bash (`addDirectories`,
+    // reglas de Read) y que el prefijo editable no puede representar.
     const hasNonBashSuggestions = suggestions.some(
       s =>
         s.type === 'addDirectories' ||
@@ -132,12 +136,14 @@ export function bashToolUseOptions({
       }
     }
 
-    // Add classifier-reviewed option if enabled, the initial description was
-    // non-empty, the description doesn't already exist in the allow list,
-    // and the decision reason is NOT a server-side classifier block
-    // (prompt-based rules don't help when the server-side classifier triggers first).
-    // Skip when the editable prefix option is already shown — they serve the
-    // same role and having two identical-looking "don't ask again" inputs is confusing.
+    // Añadir la opción revisada por el clasificador si está habilitada, si la
+    // descripción inicial no venía vacía, si esa descripción no existe ya en
+    // la lista de permitidos, y si la razón de la decisión NO es un bloqueo
+    // del clasificador del lado del servidor (una regla basada en prompt no
+    // ayuda cuando el clasificador del servidor se dispara antes).
+    // Saltársela cuando ya se está mostrando la opción de prefijo editable:
+    // cumplen el mismo papel, y tener dos campos de «no me lo vuelvas a
+    // preguntar» de aspecto idéntico confunde.
     const editablePrefixShown = options.some(
       o => o.value === 'yes-prefix-edited',
     )

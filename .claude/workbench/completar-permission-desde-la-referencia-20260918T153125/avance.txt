@@ -1,4 +1,4 @@
-# Avance del porte de permission — 2026-09-18T15:57:49
+# Avance del porte de permission — 2026-09-18T15:59:36
 # Regenerado por avance.sh. Ninguna cifra se escribe a mano.
 
 FASE 1 — COPIA
@@ -8,20 +8,20 @@ FASE 1 — COPIA
   sobran                28 (propios del puerto, no de la referencia)
 
 FASE 2 — TRADUCCION DE COMENTARIOS (universo: los 97 .ts/.tsx copiados)
-  traducidos=24  pendientes=57  lineas pendientes=955
+  traducidos=30  pendientes=51  lineas pendientes=827
 
   Pendientes por densidad (lineas de comentario, medidas por AST):
     228	src/yoloClassifier.ts
     167	src/yoloSystemPrompt.ts
-    23	src/components/FilePermissionDialog/permissionOptions.tsx
-    22	src/components/BashPermissionRequest/bashToolUseOptions.tsx
-    21	src/__tests__/permissionUpdatePure.test.ts
-    21	src/bypassPermissionsKillswitch.ts
-    21	src/components/FilePermissionDialog/FilePermissionDialog.tsx
-    20	src/__tests__/classifierTranscriptMeta.test.ts
     20	src/toolPermission/PermissionContext.ts
     20	src/toolPermission/permissionLogging.ts
     19	src/__tests__/isAutoModeAllowlistedTool.test.ts
     19	src/components/PowerShellPermissionRequest/PowerShellPermissionRequest.tsx
+    19	src/components/hooks.ts
+    18	src/__tests__/automodeAntAlignment.contract.test.ts
+    18	src/__tests__/classifierShared.test.ts
+    18	src/toolPermission/handlers/coordinatorHandler.ts
+    17	src/__tests__/dangerousPermissions.test.ts
+    16	src/__tests__/dangerousBashPermission.behavior.test.ts
 
 FASE 3 — TESTS   bloqueada hasta que FASE 2 cierre (directiva del ejecutor)

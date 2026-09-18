@@ -20,8 +20,12 @@ export async function checkAndDisableBypassPermissionsIfNeeded(
   toolPermissionContext: ToolPermissionContext,
   setAppState: (f: (prev: AppState) => AppState) => void,
 ): Promise<void> {
-  // Check if bypassPermissions should be disabled based on Statsig gate
-  // Do this only once, before the first query, to ensure we have the latest gate value
+  // Copia de `ccnmt: packages/permission/src/bypassPermissionsKillswitch.ts`
+  // con los comentarios traducidos; el cuerpo es el de la fuente.
+  //
+  // Comprobar si hay que deshabilitar `bypassPermissions` según la puerta de
+  // Statsig. Se hace una sola vez, antes de la primera consulta, para tener el
+  // valor de la puerta más reciente.
   if (bypassPermissionsCheckRan) {
     return
   }
@@ -47,8 +51,9 @@ export async function checkAndDisableBypassPermissionsIfNeeded(
 }
 
 /**
- * Reset the run-once flag for checkAndDisableBypassPermissionsIfNeeded.
- * Call this after /login so the gate check re-runs with the new org.
+ * Reinicia la bandera de correr-una-sola-vez de
+ * `checkAndDisableBypassPermissionsIfNeeded`. Se llama después de /login, para
+ * que la comprobación de la puerta se rehaga con la organización nueva.
  */
 export function resetBypassPermissionsCheck(): void {
   bypassPermissionsCheckRan = false
@@ -58,7 +63,7 @@ export function useKickOffCheckAndDisableBypassPermissionsIfNeeded(): void {
   const toolPermissionContext = useAppState(s => s.toolPermissionContext)
   const setAppState = useSetAppState()
 
-  // Run once, when the component mounts
+  // Correr una sola vez, al montar el componente
   useEffect(() => {
     if (getIsRemoteMode()) return
     void checkAndDisableBypassPermissionsIfNeeded(
@@ -87,10 +92,11 @@ export async function checkAndDisableAutoModeIfNeeded(
       fastMode,
     )
     setAppState(prev => {
-      // Apply the transform to CURRENT context, not the stale snapshot we
-      // passed to verifyAutoModeGateAccess. The async GrowthBook await inside
-      // can be outrun by a mid-turn shift-tab; spreading a stale context here
-      // would revert the user's mode change.
+      // Aplicar la transformación al contexto ACTUAL, no a la instantánea
+      // rancia que se le pasó a `verifyAutoModeGateAccess`. Un shift-tab a
+      // mitad de turno puede adelantar al `await` asíncrono de GrowthBook que
+      // hay dentro; expandir aquí un contexto rancio revertiría el cambio de
+      // modo del usuario.
       const nextCtx = updateContext(prev.toolPermissionContext)
       const newState =
         nextCtx === prev.toolPermissionContext
@@ -117,8 +123,9 @@ export async function checkAndDisableAutoModeIfNeeded(
 }
 
 /**
- * Reset the run-once flag for checkAndDisableAutoModeIfNeeded.
- * Call this after /login so the gate check re-runs with the new org.
+ * Reinicia la bandera de correr-una-sola-vez de
+ * `checkAndDisableAutoModeIfNeeded`. Se llama después de /login, para que la
+ * comprobación de la puerta se rehaga con la organización nueva.
  */
 export function resetAutoModeGateCheck(): void {
   autoModeCheckRan = false
@@ -132,12 +139,13 @@ export function useKickOffCheckAndDisableAutoModeIfNeeded(): void {
   const store = useAppStateStore()
   const isFirstRunRef = useRef(true)
 
-  // Runs on mount (startup check) AND whenever the model or fast mode changes
-  // (kick-out / carousel-restore). Watching both model fields covers /model,
-  // Cmd+P picker, /config, and bridge onSetModel paths; fastMode covers
-  // /fast on|off for the tengu_auto_mode_config.disableFastMode circuit
-  // breaker. The print.ts headless paths are covered by the sync
-  // isAutoModeGateEnabled() check.
+  // Corre al montar (la comprobación de arranque) Y cada vez que cambia el
+  // modelo o el modo rápido (expulsión o restauración del carrusel). Vigilar
+  // los dos campos de modelo cubre /model, el selector de Cmd+P, /config y los
+  // caminos de `onSetModel` del bridge; `fastMode` cubre `/fast on|off` para el
+  // cortacircuitos `tengu_auto_mode_config.disableFastMode`. De los caminos sin
+  // interfaz de `print.ts` se encarga la comprobación síncrona
+  // `isAutoModeGateEnabled()`.
   useEffect(() => {
     if (getIsRemoteMode()) return
     if (isFirstRunRef.current) {

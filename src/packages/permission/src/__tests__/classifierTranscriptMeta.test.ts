@@ -1,20 +1,26 @@
 /**
- * Contract: buildTranscriptEntries must EXCLUDE meta user messages from the
- * transcript fed to the auto-mode classifier.
+ * Copia de `ccnmt: packages/permission/src/__tests__/classifierTranscriptMeta.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * WHY THIS EXISTS — meta user messages (isMeta:true) are system-injected
- * context, not real user intent: system-reminders, UserPromptSubmit hook
- * additional-context, screenshot/file attachment notices, etc. (stamped
- * isMeta:true at creation; see messages.ts createUserMessage callers). When
- * they leaked into the classifier transcript, the model latched onto stale meta
- * content — a screenshot path under /var/folders, an earlier CI-log discussion —
- * and fabricated an unrelated deny reason for the action actually being
- * classified (e.g. denying `git status` with "reading CI failure log that may
- * contain sensitive information"). ant filters these in `gZ7` (2.1.150
- * 3149.js:202: `if (K.isMeta) continue`); ccb's port had dropped that line.
+ * Contrato: `buildTranscriptEntries` tiene que EXCLUIR los mensajes de usuario
+ * meta del transcript que se le pasa al clasificador de modo automático.
  *
- * Real (non-meta) user turns must still pass through — the classifier needs
- * genuine user intent to authorize actions. These assertions lock both sides.
+ * POR QUÉ EXISTE — un mensaje de usuario meta (`isMeta:true`) es contexto que
+ * el sistema inyecta, no intención real del usuario: system-reminders, el
+ * contexto adicional del hook `UserPromptSubmit`, los avisos de captura de
+ * pantalla o de archivo adjunto, etc. (se marcan `isMeta:true` al crearse; ver
+ * quién llama a `createUserMessage` en `messages.ts`). Cuando se colaban en el
+ * transcript del clasificador, el modelo se agarraba a contenido meta rancio
+ * —una ruta de captura bajo /var/folders, una discusión anterior sobre un
+ * registro de CI— y fabricaba una razón de denegación sin relación con la
+ * acción que de verdad estaba clasificando (por ejemplo, denegar `git status`
+ * con «reading CI failure log that may contain sensitive information»). ant
+ * los filtra en `gZ7` (2.1.150 3149.js:202: `if (K.isMeta) continue`); el
+ * porte de ccb había dejado caer esa línea.
+ *
+ * Los turnos de usuario reales, los que no son meta, tienen que seguir
+ * pasando — el clasificador necesita intención genuina del usuario para
+ * autorizar acciones. Estas aserciones dejan las dos mitades bajo llave.
  */
 import { describe, expect, test } from 'bun:test'
 
@@ -116,8 +122,9 @@ describe('buildTranscriptEntries — AskUserQuestion answers (ant gZ7 parity)', 
   })
 
   test('ignores a tool_result with no matching AskUserQuestion call', () => {
-    // Bare tool_result (e.g. a Bash result) is NOT a user answer — must not
-    // leak into the transcript as fake user intent.
+    // Un `tool_result` pelado (el resultado de un Bash, por ejemplo) NO es
+    // una respuesta del usuario — no debe colarse en el transcript como
+    // intención de usuario falsa.
     const entries = buildTranscriptEntries([
       answerMsg('toolu_unknown', 'some bash output'),
     ])

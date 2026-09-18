@@ -28,31 +28,34 @@ import {
 } from './useFilePermissionDialog.js'
 
 type FilePermissionDialogProps<T extends ToolInput = ToolInput> = {
-  // Required props from PermissionRequestProps
+  // Copia de `ccnmt: packages/permission/src/components/FilePermissionDialog/FilePermissionDialog.tsx`
+  // con los comentarios traducidos; el cuerpo es el de la fuente.
+  //
+  // Props obligatorias que vienen de `PermissionRequestProps`
   toolUseConfirm: ToolUseConfirm
   toolUseContext: ToolUseContext
   onDone: () => void
   onReject: () => void
 
-  // Dialog customization
+  // Personalización del diálogo
   title: string
   subtitle?: React.ReactNode
   question?: string | React.ReactNode
-  content?: React.ReactNode // Can be general content or diff component
+  content?: React.ReactNode // Puede ser contenido general o un componente de diff
 
-  // Logging
+  // Registro
   completionType?: CompletionType
-  languageName?: string // override — derived from path when omitted
+  languageName?: string // sobrescritura — si se omite, se deriva de la ruta
 
-  // File/directory operations
+  // Operaciones de archivo y de directorio
   path: string | null
   parseInput: (input: unknown) => T
   operationType?: FileOperationType
 
-  // IDE diff support
+  // Soporte de diff en el IDE
   ideDiffSupport?: IDEDiffSupport<T>
 
-  // Worker badge for teammate permission requests
+  // Insignia de trabajador para las peticiones de permiso de un compañero
   workerBadge: WorkerBadgeProps | undefined
 }
 
@@ -73,10 +76,11 @@ export function FilePermissionDialog<T extends ToolInput = ToolInput>({
   workerBadge,
   languageName: languageNameOverride,
 }: FilePermissionDialogProps<T>): React.ReactNode {
-  // Derive from path unless caller provided an explicit override (NotebookEdit
-  // passes 'python'/'markdown' from cell_type). getLanguageName is async;
-  // downstream UnaryEvent.language_name and logPermissionEvent already accept
-  // Promise<string>. useMemo keeps the promise stable across renders.
+  // Derivar de la ruta, salvo que quien llama pase una sobrescritura
+  // explícita (`NotebookEdit` pasa 'python' o 'markdown' según `cell_type`).
+  // `getLanguageName` es asíncrona; aguas abajo, `UnaryEvent.language_name` y
+  // `logPermissionEvent` ya aceptan `Promise<string>`. El `useMemo` mantiene
+  // la promesa estable entre renders.
   const languageName = useMemo(
     () => languageNameOverride ?? (path ? getLanguageName(path) : 'none'),
     [languageNameOverride, path],
@@ -114,7 +118,7 @@ export function FilePermissionDialog<T extends ToolInput = ToolInput>({
     operationType,
   })
 
-  // Use file dialog results for options
+  // Usar los resultados del diálogo de archivo para las opciones
   const {
     options,
     acceptFeedback,
@@ -126,13 +130,14 @@ export function FilePermissionDialog<T extends ToolInput = ToolInput>({
     noInputMode,
   } = fileDialogResult
 
-  // Parse input using the provided parser
+  // Parsear la entrada con el parser que se pase
   const parsedInput = parseInput(toolUseConfirm.input)
 
-  // Set up IDE diff support if enabled. Memoized: getConfig may do disk I/O
-  // (FileWrite's getConfig calls readFileSync for the old-content diff).
-  // Keyed on the raw input — parseInput is a pure Zod parse whose result
-  // depends only on toolUseConfirm.input.
+  // Montar el soporte de diff en el IDE si está habilitado. Memoizado:
+  // `getConfig` puede hacer entrada/salida de disco (el `getConfig` de
+  // `FileWrite` llama a `readFileSync` para el diff del contenido antiguo). La
+  // clave es la entrada en crudo — `parseInput` es un parseo Zod puro cuyo
+  // resultado sólo depende de `toolUseConfirm.input`.
   const ideDiffConfig = useMemo(
     () =>
       ideDiffSupport
@@ -141,7 +146,7 @@ export function FilePermissionDialog<T extends ToolInput = ToolInput>({
     [ideDiffSupport, toolUseConfirm.input],
   )
 
-  // Create diff params based on whether IDE diff is available
+  // Crear los parámetros del diff según si el diff del IDE está disponible
   const diffParams = ideDiffConfig
     ? {
         onChange: (
@@ -238,13 +243,13 @@ export function FilePermissionDialog<T extends ToolInput = ToolInput>({
             onChange={value => {
               const selected = options.find(opt => opt.value === value)
               if (selected) {
-                // For reject option
+                // Para la opción de rechazo
                 if (selected.option.type === 'reject') {
                   const trimmedFeedback = rejectFeedback.trim()
                   onChange(selected.option, trimmedFeedback || undefined)
                   return
                 }
-                // For accept-once option, pass accept feedback if present
+                // Para la opción de aceptar una vez, pasar el comentario de aceptación si lo hay
                 if (selected.option.type === 'accept-once') {
                   const trimmedFeedback = acceptFeedback.trim()
                   onChange(selected.option, trimmedFeedback || undefined)
