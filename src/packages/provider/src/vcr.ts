@@ -17,13 +17,13 @@ import type {
   StreamEvent,
   SystemAPIErrorMessage,
   UserMessage,
-} from '@claude-code-how-works/agent/messageShapes'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { env } from '@claude-code-how-works/config/env'
-import { getClaudeConfigHomeDir, isEnvTruthy, readEnv } from '@claude-code-how-works/config/env/utils'
-import { getErrnoCode } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { normalizeMessagesForAPI } from '@claude-code-how-works/agent/messages.js'
-import { jsonParse, jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/agent/messageShapes'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { env } from '@thyrox/config/env'
+import { getClaudeConfigHomeDir, isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
+import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
+import { normalizeMessagesForAPI } from '@thyrox/agent/messages.js'
+import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 function shouldUseVCR(): boolean {
   if (readEnv('NODE_ENV') === 'test') {

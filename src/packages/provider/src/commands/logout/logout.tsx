@@ -1,18 +1,18 @@
 import * as React from 'react'
-import { clearTrustedDeviceTokenCache } from '@claude-code-how-works/bridge/trustedDevice.js'
-import { refreshGrowthBookAfterAuthChange } from '@claude-code-how-works/config/feature-flags'
+import { clearTrustedDeviceTokenCache } from '@thyrox/bridge/trustedDevice.js'
+import { refreshGrowthBookAfterAuthChange } from '@thyrox/config/feature-flags'
 import {
   getGroveNoticeConfig,
   getGroveSettings,
 } from '../../grove.js'
 import { clearPolicyLimitsCache } from '../../policyLimits/index.js'
 // flushTelemetry is loaded lazily to avoid pulling in ~1.1MB of OpenTelemetry at startup
-import { clearRemoteManagedSettingsCache } from '@claude-code-how-works/config/remote'
+import { clearRemoteManagedSettingsCache } from '@thyrox/config/remote'
 import { getClaudeAIOAuthTokens, removeApiKey } from '../../authAlias.js'
 import { clearBetasCaches } from '../../betas.js'
-import { saveGlobalConfig } from '@claude-code-how-works/config'
-import { getSecureStorage } from '@claude-code-how-works/storage/secureStorage.js'
-import { clearToolSchemaCache } from '@claude-code-how-works/tool-registry/toolSchemaCache.js'
+import { saveGlobalConfig } from '@thyrox/config'
+import { getSecureStorage } from '@thyrox/storage/secureStorage.js'
+import { clearToolSchemaCache } from '@thyrox/tool-registry/toolSchemaCache.js'
 import { resetUserCache } from '../../user.js'
 
 export async function performLogout({
@@ -30,7 +30,7 @@ export async function performLogout({
 } = {}): Promise<void> {
   // Flush telemetry BEFORE clearing credentials to prevent org data leakage
   const { flushTelemetry } = await import(
-    '@claude-code-how-works/local-observability/telemetry'
+    '@thyrox/local-observability/telemetry'
   )
   await flushTelemetry()
 
@@ -39,11 +39,11 @@ export async function performLogout({
   // (CLAUDE_CODE_OAUTH_TOKEN headless login) doesn't lose its source mid-flow.
   if (!preserveInProcessTokens) {
     // V7 §8.6: core-domain package must go through config helper for env access.
-    const { deleteEnv } = await import('@claude-code-how-works/config/env/utils')
+    const { deleteEnv } = await import('@thyrox/config/env/utils')
     deleteEnv('CLAUDE_CODE_OAUTH_TOKEN')
     // Lazy import to avoid circular dep through app-host barrel.
     const { setOauthTokenFromFd } = await import(
-      '@claude-code-how-works/app-host/bootstrap/state.js'
+      '@thyrox/app-host/bootstrap/state.js'
     )
     setOauthTokenFromFd(null)
   }
@@ -97,7 +97,7 @@ export async function clearAuthRelatedCaches(): Promise<void> {
 }
 
 export async function call(
-  onDone: import('@claude-code-how-works/agent/command.js').LocalJSXCommandOnDone,
+  onDone: import('@thyrox/agent/command.js').LocalJSXCommandOnDone,
 ): Promise<React.ReactNode> {
   // V7 §11.6 — with connection-based multi-provider auth, "logout" is a
   // per-connection disconnect, not a global nuke. The picker shortcuts
@@ -107,7 +107,7 @@ export async function call(
   // performLogout() for the `ccb logout` CLI subcommand and disaster
   // recovery.
   const { LogoutPicker } = await import(
-    '@claude-code-how-works/repl/components/LogoutPicker.js'
+    '@thyrox/repl/components/LogoutPicker.js'
   )
   return React.createElement(LogoutPicker, {
     onDone: (message: string) => onDone(message),

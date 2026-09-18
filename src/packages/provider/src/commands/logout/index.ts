@@ -1,6 +1,6 @@
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { readEnv } from '@claude-code-how-works/config/env'
+import type { Command } from '@thyrox/command-runtime/runtime'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { readEnv } from '@thyrox/config/env'
 
 export default {
   type: 'local-jsx',

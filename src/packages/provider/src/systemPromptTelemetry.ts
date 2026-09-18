@@ -16,7 +16,7 @@ import { createHash } from 'crypto'
 import {
   logSystemPromptEvent,
   toolDetailsLoggingEnabled,
-} from '@claude-code-how-works/local-observability/telemetry'
+} from '@thyrox/local-observability/telemetry'
 
 const MAX_PROMPT_CONTENT = 61440 // ant wK5 (2911.js)
 const TRUNCATED_SUFFIX = '\n\n[TRUNCATED - Content exceeds 60KB limit]'

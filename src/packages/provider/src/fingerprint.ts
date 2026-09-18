@@ -1,5 +1,5 @@
 import { createHash } from 'crypto'
-import type { AssistantMessage, UserMessage } from '@claude-code-how-works/agent/messageShapes'
+import type { AssistantMessage, UserMessage } from '@thyrox/agent/messageShapes'
 
 declare const MACRO: { VERSION: string }
 

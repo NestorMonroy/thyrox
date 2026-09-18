@@ -3,7 +3,7 @@ import {
   getProviderForModel,
   isFirstPartyAnthropicEndpoint,
 } from '../providers.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 import { unpackModelId } from '../connections.js'
 
 export type ModelCapabilityOverride =

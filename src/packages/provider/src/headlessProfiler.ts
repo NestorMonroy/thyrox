@@ -1,6 +1,6 @@
-import { getIsNonInteractiveSession } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getPerformance } from '@claude-code-how-works/app-host/startup/profilerBase.js'
-import { isEnvTruthy, readEnv } from '@claude-code-how-works/config/env/utils'
+import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
+import { getPerformance } from '@thyrox/app-host/startup/profilerBase.js'
+import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 
 const DETAILED_PROFILING = isEnvTruthy(readEnv('CLAUDE_CODE_PROFILE_STARTUP'))
 const STATSIG_SAMPLE_RATE = 0.05

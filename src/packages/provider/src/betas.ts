@@ -3,11 +3,11 @@ import memoize from 'lodash-es/memoize.js'
 import {
   checkStatsigFeatureGate_CACHED_MAY_BE_STALE,
   getFeatureValue_CACHED_MAY_BE_STALE,
-} from '@claude-code-how-works/config/feature-flags'
+} from '@thyrox/config/feature-flags'
 import {
   getIsNonInteractiveSession,
   getSdkBetas,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 import {
   BEDROCK_EXTRA_PARAMS_HEADERS,
   CLAUDE_CODE_20250219_BETA_HEADER,
@@ -27,13 +27,13 @@ import {
 } from './betasConstants.js'
 import { OAUTH_BETA_HEADER } from './oauthConstants.js'
 import { isClaudeAISubscriber } from './authAlias.js'
-import { has1mContext } from '@claude-code-how-works/agent/context.js'
-import { isEnvDefinedFalsy, isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { has1mContext } from '@thyrox/agent/context.js'
+import { isEnvDefinedFalsy, isEnvTruthy } from '@thyrox/config/env/utils'
 import { getCanonicalName } from './model.js'
 import { get3PModelCapabilityOverride } from './model/modelSupportOverrides.js'
 import { getAPIProvider } from './providers.js'
-import { getInitialSettings } from '@claude-code-how-works/config/settings'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { getInitialSettings } from '@thyrox/config/settings'
+import { readEnv } from '@thyrox/config/env/utils'
 
 /**
  * SDK-provided betas that are allowed for API key users.

@@ -5,7 +5,7 @@
  * ant 2920.js:175 (api_error) and 2920.js:393 (api_request).
  */
 
-import { logOTelEvent } from '@claude-code-how-works/local-observability/telemetryEvents.js'
+import { logOTelEvent } from '@thyrox/local-observability/telemetryEvents.js'
 import { redactQuerySourceForTelemetry } from './querySourceTelemetry.js'
 
 export function emitApiErrorOTel(args: {

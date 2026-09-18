@@ -1,16 +1,16 @@
 import {
   getSessionIngressToken,
   setSessionIngressToken,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 import {
   CCR_SESSION_INGRESS_TOKEN_PATH,
   maybePersistTokenForSubprocesses,
   readTokenFromWellKnownFile,
 } from './authFileDescriptor.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 /**
  * Read token via file descriptor, falling back to well-known file.

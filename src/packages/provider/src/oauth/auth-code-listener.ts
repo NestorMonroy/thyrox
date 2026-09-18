@@ -1,9 +1,9 @@
 import type { IncomingMessage, ServerResponse } from 'http'
 import { createServer, type Server } from 'http'
 import type { AddressInfo } from 'net'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import { getOauthConfig } from '../oauthConstants.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { logError } from '@thyrox/local-observability/logging'
 import { shouldUseClaudeAIAuth } from './client.js'
 
 /**

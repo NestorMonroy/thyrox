@@ -1,14 +1,14 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import type { Theme } from '@anthropic/ink'
 import { feature } from 'bun:bundle'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { getCanonicalName } from './model.js'
 import { get3PModelCapabilityOverride } from './model/modelSupportOverrides.js'
 import { getAPIProvider, resolveConnectionForModel } from './providers.js'
 import { isFirstPartyAnthropicConnection } from './connections.js'
-import { getSettingsWithErrors } from '@claude-code-how-works/config/settings'
+import { getSettingsWithErrors } from '@thyrox/config/settings'
 import { resolveAntModel } from './antModels.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 /**
  * Mirrors ant 2.1.121's 2833.js schema: thinking config carries an

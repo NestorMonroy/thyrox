@@ -3,20 +3,20 @@ import memoize from 'lodash-es/memoize.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import { getOauthAccountInfo, isConsumerSubscriber } from './authAlias.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { gracefulShutdown } from '@claude-code-how-works/app-host/bootstrap/gracefulShutdown.js'
-import { isEssentialTrafficOnly } from '@claude-code-how-works/config/env/privacy-level'
-import { writeToStderr } from '@claude-code-how-works/shell/process.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
+import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
+import { writeToStderr } from '@thyrox/shell/process.js'
 import { getOauthConfig } from './oauthConstants.js'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import {
   getAuthHeaders,
   getUserAgent,
   withOAuth401Retry,
 } from './http.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { logError } from '@thyrox/local-observability/logging'
 import { getClaudeCodeUserAgent } from './userAgent.js'
 
 // Cache expiration: 24 hours

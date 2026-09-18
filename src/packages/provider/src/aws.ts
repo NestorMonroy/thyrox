@@ -1,4 +1,4 @@
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 /** AWS short-term credentials format. */
 type AwsCredentials = {

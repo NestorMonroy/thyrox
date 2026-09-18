@@ -137,7 +137,7 @@ function buildQueryArgs(fetchOverride: typeof fetch) {
   }
 }
 
-describe('@claude-code-how-works/provider integration', () => {
+describe('@thyrox/provider integration', () => {
   beforeEach(() => {
     installTestHostBindings()
     process.env.OPENAI_API_KEY = 'provider-test'

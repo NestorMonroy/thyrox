@@ -1,5 +1,5 @@
 import { isClaudeAISubscriber } from './authAlias.js'
-import { has1mContext } from '@claude-code-how-works/agent/context.js'
+import { has1mContext } from '@thyrox/agent/context.js'
 
 export function isBilledAsExtraUsage(
   model: string | null,

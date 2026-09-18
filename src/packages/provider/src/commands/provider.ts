@@ -1,10 +1,10 @@
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
-import type { LocalCommandCall } from '@claude-code-how-works/agent/command.js'
+import type { Command } from '@thyrox/command-runtime/runtime'
+import type { LocalCommandCall } from '@thyrox/agent/command.js'
 import { getAPIProvider } from '../providers.js'
-import { updateSettingsForSource } from '@claude-code-how-works/config/settings'
-import { getSettings } from '@claude-code-how-works/config/settings'
-import { applyConfigEnvironmentVariables } from '@claude-code-how-works/config/managedEnv.js'
-import { deleteEnv, getAllEnv, readEnv, setEnv } from '@claude-code-how-works/config/env'
+import { updateSettingsForSource } from '@thyrox/config/settings'
+import { getSettings } from '@thyrox/config/settings'
+import { applyConfigEnvironmentVariables } from '@thyrox/config/managedEnv.js'
+import { deleteEnv, getAllEnv, readEnv, setEnv } from '@thyrox/config/env'
 
 function getEnvVarForProvider(provider: string): string {
   switch (provider) {

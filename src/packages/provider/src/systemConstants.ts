@@ -1,12 +1,12 @@
 // Critical system constants extracted to break circular dependencies
 
 import { feature } from 'bun:bundle'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isEnvDefinedFalsy } from '@claude-code-how-works/config/env/utils'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvDefinedFalsy } from '@thyrox/config/env/utils'
 import { getAPIProvider } from './providers.js'
 import { getWorkload } from './workloadContext.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 declare const MACRO: { VERSION: string }
 

@@ -1,10 +1,10 @@
 import axios from 'axios'
 import { getOauthConfig } from './oauthConstants.js'
 import { getOauthAccountInfo } from './authAlias.js'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { isEssentialTrafficOnly } from '@claude-code-how-works/config/env/privacy-level'
-import { getOAuthHeaders, prepareApiRequest } from '@claude-code-how-works/teleport/api.js'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { logError } from '@thyrox/local-observability/logging'
+import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
+import { getOAuthHeaders, prepareApiRequest } from '@thyrox/teleport/api.js'
 
 export type OverageCreditGrantInfo = {
   available: boolean

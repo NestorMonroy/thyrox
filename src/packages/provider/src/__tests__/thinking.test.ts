@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
-import type { ConnectionRecord } from '@claude-code-how-works/config'
+import type { ConnectionRecord } from '@thyrox/config'
 
 // getGlobalConfig is still mocked because the test needs to feed in
 // arbitrary connection lists; replicating that via writable settings would
 // be heavier than the mock. envMap was previously another mock.module —
 // migrated to setEnv/restore below to remove process-wide env-utils
 // pollution (see feedback_self_audit_before_declaring_done.md).
-const realConfigModule = await import('@claude-code-how-works/config')
+const realConfigModule = await import('@thyrox/config')
 const config = {
   connections: [] as ConnectionRecord[],
 }
 
-mock.module('@claude-code-how-works/config', () => ({
+mock.module('@thyrox/config', () => ({
   ...realConfigModule,
   getGlobalConfig: () => config,
 }))

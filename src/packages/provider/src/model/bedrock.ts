@@ -1,9 +1,9 @@
 import memoize from 'lodash-es/memoize.js'
 import { refreshAndGetAwsCredentials } from '../authAlias.js'
-import { getAWSRegion, isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { getAWSRegion, isEnvTruthy } from '@thyrox/config/env/utils'
+import { logError } from '@thyrox/local-observability/logging'
 import { getAWSClientProxyConfig } from '../proxy.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 export const getBedrockInferenceProfiles = memoize(async function (): Promise<
   string[]

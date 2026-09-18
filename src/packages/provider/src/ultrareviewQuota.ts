@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { getOauthConfig } from './oauthConstants.js'
 import { isClaudeAISubscriber } from './authAlias.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getOAuthHeaders, prepareApiRequest } from '@claude-code-how-works/teleport/api.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getOAuthHeaders, prepareApiRequest } from '@thyrox/teleport/api.js'
 
 export type UltrareviewQuotaResponse = {
   reviews_used: number

@@ -10,7 +10,7 @@ import { getProviderNetworkLayer } from '../network.js'
 import { getClientPlatform } from '../systemConstants.js'
 import { randomUUID } from 'crypto'
 import type { GoogleAuth } from 'google-auth-library'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 /**
  * Environment variables for different client types:

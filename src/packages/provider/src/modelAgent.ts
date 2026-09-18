@@ -1,5 +1,5 @@
-import type { PermissionMode } from '@claude-code-how-works/permission/PermissionMode'
-import { capitalize } from '@claude-code-how-works/output/utils/stringUtils.js'
+import type { PermissionMode } from '@thyrox/permission/PermissionMode'
+import { capitalize } from '@thyrox/output/utils/stringUtils.js'
 import { MODEL_ALIASES, type ModelAlias } from './modelAliases.js'
 import {
   applyBedrockRegionPrefix,
@@ -15,7 +15,7 @@ import {
   resolveConnectionForModel,
 } from './providers.js'
 import { composeModelId, unpackModelId } from './connections.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 export const AGENT_MODEL_OPTIONS = [...MODEL_ALIASES, 'inherit'] as const
 export type AgentModelAlias = (typeof AGENT_MODEL_OPTIONS)[number]

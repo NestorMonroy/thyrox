@@ -14,7 +14,7 @@
  * used by the openclaw project.
  */
 import { createServer, type Server } from 'http'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import {
   CODEX_AUTHORIZE_URL,
   CODEX_CLIENT_ID,
@@ -23,8 +23,8 @@ import {
   CODEX_SCOPES,
   CODEX_TOKEN_URL,
 } from './codex-constants.js'
-import { openBrowser } from '@claude-code-how-works/storage/browser.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { openBrowser } from '@thyrox/storage/browser.js'
+import { logError } from '@thyrox/local-observability/logging'
 import { generateCodeChallenge, generateCodeVerifier, generateState } from './crypto.js'
 
 // ── Types ────────────────────────────────────────────────────────────────────

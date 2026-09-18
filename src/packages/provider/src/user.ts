@@ -1,16 +1,16 @@
 import { execa } from 'execa'
 import memoize from 'lodash-es/memoize.js'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import {
   getOauthAccountInfo,
   getRateLimitTier,
   getSubscriptionType,
 } from './authAlias.js'
-import { getGlobalConfig, getOrCreateUserID } from '@claude-code-how-works/config'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { type env, getHostPlatformForAnalytics } from '@claude-code-how-works/config/env/paths'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { getGlobalConfig, getOrCreateUserID } from '@thyrox/config'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { type env, getHostPlatformForAnalytics } from '@thyrox/config/env/paths'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // Cache for email fetched asynchronously at startup
 let cachedEmail: string | undefined | null = null // null means not fetched yet

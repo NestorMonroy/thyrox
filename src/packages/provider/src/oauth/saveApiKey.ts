@@ -24,18 +24,18 @@ import { execa } from 'execa'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { saveGlobalConfig } from '@claude-code-how-works/config'
-import { clearLegacyApiKeyPrefetch } from '@claude-code-how-works/storage/secureStorage/keychainPrefetch.js'
+} from '@thyrox/local-observability'
+import { saveGlobalConfig } from '@thyrox/config'
+import { clearLegacyApiKeyPrefetch } from '@thyrox/storage/secureStorage/keychainPrefetch.js'
 import {
   getMacOsKeychainStorageServiceName,
   getUsername,
-} from '@claude-code-how-works/storage/secureStorage/macOsKeychainHelpers.js'
+} from '@thyrox/storage/secureStorage/macOsKeychainHelpers.js'
 import {
   maybeRemoveApiKeyFromMacOSKeychainThrows,
   normalizeApiKeyForConfig,
 } from '../authPortable.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+import { logError } from '@thyrox/local-observability/log.js'
 
 function isValidApiKey(apiKey: string): boolean {
   // Only allow alphanumeric characters, dashes, and underscores

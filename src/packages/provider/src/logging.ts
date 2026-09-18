@@ -12,32 +12,32 @@ import {
   getTeleportedSessionInfo,
   markFirstTeleportMessageLogged,
   setLastApiCompletionTimestamp,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import type { QueryChainTracking } from '@claude-code-how-works/tool-registry/Tool.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import type { QueryChainTracking } from '@thyrox/tool-registry/Tool.js'
 import { isConnectorTextBlock } from './connectorTextTypes.js'
 import { emitApiErrorOTel, emitApiRequestOTel } from './apiOTelEmit.js'
-import type { AssistantMessage } from '@claude-code-how-works/agent/messageShapes'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import type { EffortLevel } from '@claude-code-how-works/agent/effort.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import type { AssistantMessage } from '@thyrox/agent/messageShapes'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import type { EffortLevel } from '@thyrox/agent/effort.js'
+import { logError } from '@thyrox/local-observability/logging'
 import { getAPIProviderForStatsig } from './providers.js'
-import type { PermissionMode } from '@claude-code-how-works/permission/PermissionMode'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { logOTelEvent } from '@claude-code-how-works/local-observability/telemetryEvents.js'
+import type { PermissionMode } from '@thyrox/permission/PermissionMode'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { logOTelEvent } from '@thyrox/local-observability/telemetryEvents.js'
 import {
   endLLMRequestSpan,
   isBetaTracingEnabled,
   type Span,
-} from '@claude-code-how-works/local-observability/spans'
-import type { NonNullableUsage } from '@claude-code-how-works/headless-sdk/sdkUtilityTypes.js'
-import { consumeInvokingRequestId } from '@claude-code-how-works/agent/agentContext.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability/compat'
-import { sanitizeToolNameForAnalytics } from '@claude-code-how-works/agent/eventMetadata.js'
+} from '@thyrox/local-observability/spans'
+import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
+import { consumeInvokingRequestId } from '@thyrox/agent/agentContext.js'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
+import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
 import { EMPTY_USAGE } from './emptyUsage.js'
 import { classifyAPIError } from './errors.js'
 import { extractConnectionErrorDetails } from './errorUtils.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 export type { NonNullableUsage }
 export { EMPTY_USAGE }

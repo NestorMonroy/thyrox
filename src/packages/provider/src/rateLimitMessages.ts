@@ -9,9 +9,9 @@ import {
   isOverageProvisioningAllowed,
 } from './authAlias.js'
 import { hasClaudeAiBillingAccess } from './billing.js'
-import { formatResetTime } from '@claude-code-how-works/output/formatters'
+import { formatResetTime } from '@thyrox/output/formatters'
 import type { ClaudeAILimits } from './claudeAiLimits.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 const FEEDBACK_CHANNEL_ANT = '#briarpatch-cc'
 

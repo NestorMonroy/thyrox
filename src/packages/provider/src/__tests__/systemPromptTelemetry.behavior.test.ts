@@ -4,11 +4,11 @@ import {
   __resetSystemPromptDedupForTest,
   maybeEmitSystemPromptEvent,
 } from '../systemPromptTelemetry.ts'
-import { __resetOTelEventStateForTest } from '@claude-code-how-works/local-observability/telemetry'
+import { __resetOTelEventStateForTest } from '@thyrox/local-observability/telemetry'
 import {
   getEventLogger,
   setEventLogger,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 
 /**
  * Pin port of ant D_7 (2911.js) — system_prompt OTel event with

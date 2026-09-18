@@ -4,11 +4,11 @@ import {
   getOauthTokenFromFd,
   setApiKeyFromFd,
   setOauthTokenFromFd,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isEnvTruthy, readEnv } from '@claude-code-how-works/config/env/utils'
-import { errorMessage, isENOENT } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
+import { errorMessage, isENOENT } from '@thyrox/local-observability/errorHelpers.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 
 /**
  * Well-known token file locations in CCR. The Go environment-manager creates

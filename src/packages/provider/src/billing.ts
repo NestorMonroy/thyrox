@@ -1,5 +1,5 @@
-import { getGlobalConfig } from '@claude-code-how-works/config'
-import { isEnvTruthy, readEnv } from '@claude-code-how-works/config/env/utils'
+import { getGlobalConfig } from '@thyrox/config'
+import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 import {
   getAnthropicApiKey,
   getAuthTokenSource,

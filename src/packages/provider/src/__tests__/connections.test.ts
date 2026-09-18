@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import type { ConnectionRecord } from '@claude-code-how-works/config'
+import type { ConnectionRecord } from '@thyrox/config'
 import {
   CLAUDE_AI_CONNECTION_ID,
   CODEX_CONNECTION_ID,

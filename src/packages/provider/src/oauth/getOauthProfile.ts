@@ -2,10 +2,10 @@ import axios from 'axios'
 import { getOauthConfig, OAUTH_BETA_HEADER } from '../oauthConstants.js'
 import type { OAuthProfileResponse } from './types.js'
 import { getAnthropicApiKey } from '../authAlias.js'
-import { getGlobalConfig } from '@claude-code-how-works/config'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { getGlobalConfig } from '@thyrox/config'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability'
+import { logError } from '@thyrox/local-observability/logging'
 
 export async function getOauthProfileFromApiKey(): Promise<
   OAuthProfileResponse | undefined

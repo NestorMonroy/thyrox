@@ -2,7 +2,7 @@
 import { MODEL_ALIASES } from './modelAliases.js'
 import { isModelAllowed } from './model/modelAllowlist.js'
 import { getAPIProvider } from './providers.js'
-import { sideQuery } from '@claude-code-how-works/agent/sideQuery.js'
+import { sideQuery } from '@thyrox/agent/sideQuery.js'
 import {
   NotFoundError,
   APIError,
@@ -10,7 +10,7 @@ import {
   AuthenticationError,
 } from '@anthropic-ai/sdk'
 import { getModelStrings } from './model/modelStrings.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // Cache valid models to avoid repeated API calls
 const validModelCache = new Map<string, boolean>()

@@ -1,12 +1,12 @@
 import { feature } from 'bun:bundle'
-import { readEnv, isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { readEnv, isEnvTruthy } from '@thyrox/config/env/utils'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { AgentDefinition } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import { isBuiltInAgent } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
+} from '@thyrox/local-observability'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { isBuiltInAgent } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { asSystemPrompt, type SystemPrompt } from './systemPromptType.js'
 
 export { asSystemPrompt, type SystemPrompt } from './systemPromptType.js'
@@ -19,7 +19,7 @@ export { asSystemPrompt, type SystemPrompt } from './systemPromptType.js'
 // eslint-disable-next-line no-restricted-imports
 const proactiveModule =
   feature('PROACTIVE') || feature('KAIROS')
-    ? (require('@claude-code-how-works/agent/proactive/index.js') as typeof import('@claude-code-how-works/agent/proactive/index.js'))
+    ? (require('@thyrox/agent/proactive/index.js') as typeof import('@thyrox/agent/proactive/index.js'))
     : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -67,7 +67,7 @@ export function buildEffectiveSystemPrompt({
   ) {
     const { getCoordinatorSystemPrompt } =
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      require('@claude-code-how-works/agent/coordinatorMode.js') as typeof import('@claude-code-how-works/agent/coordinatorMode.js')
+      require('@thyrox/agent/coordinatorMode.js') as typeof import('@thyrox/agent/coordinatorMode.js')
     return asSystemPrompt([
       getCoordinatorSystemPrompt(),
       ...(appendSystemPrompt ? [appendSystemPrompt] : []),

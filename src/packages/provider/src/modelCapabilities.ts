@@ -7,17 +7,17 @@ import { z } from 'zod/v4'
 import { OAUTH_BETA_HEADER } from './oauthConstants.js'
 import { getAnthropicClient } from './index.js'
 import { isClaudeAISubscriber } from './authAlias.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@claude-code-how-works/config/env/utils'
-import { safeParseJSON } from '@claude-code-how-works/storage/json.js'
-import { lazySchema } from '@claude-code-how-works/tool-registry/utils/lazySchema.js'
-import { isEssentialTrafficOnly } from '@claude-code-how-works/config/env/privacy-level'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { safeParseJSON } from '@thyrox/storage/json.js'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
+import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import {
   getAPIProvider,
   isFirstPartyAnthropicBaseUrl,
 } from './providers.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // .strip() — don't persist internal-only fields (mycro_deployments etc.) to disk
 const ModelCapabilitySchema = lazySchema(() =>

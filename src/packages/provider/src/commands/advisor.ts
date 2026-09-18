@@ -1,5 +1,5 @@
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
-import type { LocalCommandCall } from '@claude-code-how-works/agent/command.js'
+import type { Command } from '@thyrox/command-runtime/runtime'
+import type { LocalCommandCall } from '@thyrox/agent/command.js'
 import {
   canUserConfigureAdvisor,
   isValidAdvisorModel,
@@ -11,7 +11,7 @@ import {
   parseUserSpecifiedModel,
 } from '../model.js'
 import { validateModel } from '../validateModel.js'
-import { updateSettingsForSource } from '@claude-code-how-works/config/settings'
+import { updateSettingsForSource } from '@thyrox/config/settings'
 
 const call: LocalCommandCall = async (args, context) => {
   const arg = args.trim().toLowerCase()

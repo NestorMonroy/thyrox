@@ -1,8 +1,8 @@
 import memoize from 'lodash-es/memoize.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { hasNodeOption } from '@claude-code-how-works/config/env/utils'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { hasNodeOption } from '@thyrox/config/env/utils'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 /**
  * Load CA certificates for TLS connections.

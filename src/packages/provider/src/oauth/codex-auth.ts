@@ -6,7 +6,7 @@
  * servers. This is completely separate from Anthropic's claudeAiOauth
  * keychain entry.
  */
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import type { CodexTokens } from './codex-client.js'
 import { isOAuthTokenExpired } from './client.js'
 import { refreshCodexToken } from './codex-client.js'

@@ -1,7 +1,7 @@
 import type { BetaContentBlock, BetaMessage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { APIError } from '@anthropic-ai/sdk'
-import { createAssistantMessage } from '@claude-code-how-works/agent/messages.js'
-import type { AssistantMessage } from '@claude-code-how-works/agent/messageShapes.js'
+import { createAssistantMessage } from '@thyrox/agent/messages.js'
+import type { AssistantMessage } from '@thyrox/agent/messageShapes.js'
 import { is529Error } from './withRetry.js'
 
 export class PartialStreamRecovery {

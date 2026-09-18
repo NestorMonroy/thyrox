@@ -1,12 +1,12 @@
 import axios from 'axios'
 import { hasProfileScope, isClaudeAISubscriber } from './authAlias.js'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { getAuthHeaders, withOAuth401Retry } from './http.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { memoizeWithTTLAsync } from '@claude-code-how-works/config/memoize.js'
-import { isEssentialTrafficOnly } from '@claude-code-how-works/config/env/privacy-level'
+import { logError } from '@thyrox/local-observability/logging'
+import { memoizeWithTTLAsync } from '@thyrox/config/memoize.js'
+import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
 import { getClaudeCodeUserAgent } from './userAgent.js'
 
 type MetricsEnabledResponse = {

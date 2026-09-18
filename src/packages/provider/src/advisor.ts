@@ -1,7 +1,7 @@
 import type { BetaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { isEnvTruthy, readEnv } from '@claude-code-how-works/config/env/utils'
-import { getInitialSettings } from '@claude-code-how-works/config/settings'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
+import { getInitialSettings } from '@thyrox/config/settings'
 import { shouldIncludeFirstPartyOnlyBetas } from './betas.js'
 
 // The SDK does not yet have types for advisor blocks.

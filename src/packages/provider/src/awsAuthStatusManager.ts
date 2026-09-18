@@ -12,7 +12,7 @@
  * cli/sdk, repl/AwsAuthStatusBox) now import from this canonical location.
  */
 
-import { createSignal } from '@claude-code-how-works/config/signal'
+import { createSignal } from '@thyrox/config/signal'
 
 export type AwsAuthStatus = {
   isAuthenticating: boolean

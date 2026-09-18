@@ -5,12 +5,12 @@ import {
   APIError,
   APIUserAbortError,
 } from '@anthropic-ai/sdk'
-import type { QuerySource } from '@claude-code-how-works/agent/querySource'
-import type { SystemAPIErrorMessage } from '@claude-code-how-works/agent/messageShapes'
+import type { QuerySource } from '@thyrox/agent/querySource'
+import type { SystemAPIErrorMessage } from '@thyrox/agent/messageShapes'
 import { isAwsCredentialsProviderError } from './aws.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { createSystemAPIErrorMessage } from '@claude-code-how-works/agent/messages.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { createSystemAPIErrorMessage } from '@thyrox/agent/messages.js'
 import { getAPIProviderForStatsig } from './providers.js'
 import {
   clearApiKeyHelperCache,
@@ -21,8 +21,8 @@ import {
   isClaudeAISubscriber,
   isEnterpriseSubscriber,
 } from './authAlias.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import {
   type CooldownReason,
   handleFastModeOverageRejection,
@@ -33,18 +33,18 @@ import {
 } from './fastMode.js'
 import { isNonCustomOpusModel } from './model.js'
 import { disableKeepAlive } from './proxy.js'
-import { sleep } from '@claude-code-how-works/config/sleep'
+import { sleep } from '@thyrox/config/sleep'
 import type { ThinkingConfig } from './thinking.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability/compat'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
 import {
   checkMockRateLimitError,
   isMockRateLimitError,
 } from './rateLimitMocking.js'
 import { REPEATED_529_ERROR_MESSAGE } from './errors.js'
 import { extractConnectionErrorDetails } from './errorUtils.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 import { parseMediaBlockStripError } from './imageDimensionStrip.js'
 
 const abortError = () => new APIUserAbortError()

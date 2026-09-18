@@ -1,6 +1,6 @@
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
-import type { EffortLevel } from '@claude-code-how-works/agent/effort.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { readEnv } from '@thyrox/config/env/utils'
+import type { EffortLevel } from '@thyrox/agent/effort.js'
 
 export type AntModel = {
   alias: string

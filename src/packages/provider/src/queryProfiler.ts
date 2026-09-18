@@ -1,5 +1,5 @@
-import { getPerformance } from '@claude-code-how-works/app-host/startup/profilerBase.js'
-import { isEnvTruthy, readEnv } from '@claude-code-how-works/config/env/utils'
+import { getPerformance } from '@thyrox/app-host/startup/profilerBase.js'
+import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 
 const ENABLED = isEnvTruthy(readEnv('CLAUDE_CODE_PROFILE_QUERY'))
 let queryCount = 0

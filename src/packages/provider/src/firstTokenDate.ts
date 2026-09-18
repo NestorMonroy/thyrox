@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { getOauthConfig } from './oauthConstants.js'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { getAuthHeaders } from './http.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { logError } from '@thyrox/local-observability/logging'
 import { getClaudeCodeUserAgent } from './userAgent.js'
 
 /**

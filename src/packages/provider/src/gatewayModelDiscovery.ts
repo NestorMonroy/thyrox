@@ -48,12 +48,12 @@ import { join } from 'path'
 import {
   getClaudeConfigHomeDir,
   isEnvTruthy,
-} from '@claude-code-how-works/config/env/utils'
-import { readEnv } from '@claude-code-how-works/config/env'
-import { isEssentialTrafficOnly } from '@claude-code-how-works/config/env/privacy-level'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { safeParseJSON } from '@claude-code-how-works/storage/json.js'
+} from '@thyrox/config/env/utils'
+import { readEnv } from '@thyrox/config/env'
+import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { safeParseJSON } from '@thyrox/storage/json.js'
 import { getUserAgent } from './http.js'
 import { getAnthropicApiKey } from './authAlias.js'
 import {

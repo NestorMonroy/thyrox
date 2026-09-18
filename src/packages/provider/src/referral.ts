@@ -5,11 +5,11 @@ import {
   getSubscriptionType,
   isClaudeAISubscriber,
 } from './authAlias.js'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { isEssentialTrafficOnly } from '@claude-code-how-works/config/env/privacy-level'
-import { getOAuthHeaders, prepareApiRequest } from '@claude-code-how-works/teleport/api.js'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
+import { getOAuthHeaders, prepareApiRequest } from '@thyrox/teleport/api.js'
 import type {
   ReferralCampaign,
   ReferralEligibilityResponse,

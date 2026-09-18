@@ -1,10 +1,10 @@
 import {
   getModelStrings as getModelStringsState,
   setModelStrings as setModelStringsState,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { sequential } from '@claude-code-how-works/config/sequential'
-import { getInitialSettings } from '@claude-code-how-works/config/settings'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { sequential } from '@thyrox/config/sequential'
+import { getInitialSettings } from '@thyrox/config/settings'
 import { findFirstMatch, getBedrockInferenceProfiles } from './bedrock.js'
 import {
   ALL_MODEL_CONFIGS,

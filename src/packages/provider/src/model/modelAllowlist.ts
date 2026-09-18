@@ -1,4 +1,4 @@
-import { getSettings } from '@claude-code-how-works/config/settings'
+import { getSettings } from '@thyrox/config/settings'
 import { isModelAlias, isModelFamilyAlias } from '../modelAliases.js'
 import { parseUserSpecifiedModel } from '../model.js'
 import { resolveOverriddenModel } from './modelStrings.js'

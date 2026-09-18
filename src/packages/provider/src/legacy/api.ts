@@ -4,47 +4,47 @@ import type {
   BetaToolUnion,
 } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { createHash } from 'crypto'
-import { SYSTEM_PROMPT_DYNAMIC_BOUNDARY } from '@claude-code-how-works/agent/prompts.js'
-import { has1mContext } from '@claude-code-how-works/agent/context.js'
+import { SYSTEM_PROMPT_DYNAMIC_BOUNDARY } from '@thyrox/agent/prompts.js'
+import { has1mContext } from '@thyrox/agent/context.js'
 import { getSystemContext, getUserContext } from '../context.js'
-import { isAnalyticsDisabled } from '@claude-code-how-works/agent/services/privacyConfig.js'
+import { isAnalyticsDisabled } from '@thyrox/agent/services/privacyConfig.js'
 import {
   checkStatsigFeatureGate_CACHED_MAY_BE_STALE,
   getFeatureValue_CACHED_MAY_BE_STALE,
-} from '@claude-code-how-works/config/feature-flags'
+} from '@thyrox/config/feature-flags'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { prefetchAllMcpResources } from '@claude-code-how-works/mcp-runtime/clientRuntime.js'
-import type { ScopedMcpServerConfig } from '@claude-code-how-works/mcp-runtime/types.js'
-import { BashTool } from '@claude-code-how-works/tool-registry/tools/BashTool/BashTool.js'
-import { FileEditTool } from '@claude-code-how-works/tool-registry/tools/FileEditTool/FileEditTool.js'
+} from '@thyrox/local-observability'
+import { prefetchAllMcpResources } from '@thyrox/mcp-runtime/clientRuntime.js'
+import type { ScopedMcpServerConfig } from '@thyrox/mcp-runtime/types.js'
+import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
+import { FileEditTool } from '@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js'
 import {
   normalizeFileEditInput,
   stripTrailingWhitespace,
-} from '@claude-code-how-works/tool-registry/tools/FileEditTool/utils.js'
-import { FileWriteTool } from '@claude-code-how-works/tool-registry/tools/FileWriteTool/FileWriteTool.js'
-import { getTools } from '@claude-code-how-works/tool-registry/runtime'
-import type { AgentId } from '@claude-code-how-works/agent/idTypes'
+} from '@thyrox/tool-registry/tools/FileEditTool/utils.js'
+import { FileWriteTool } from '@thyrox/tool-registry/tools/FileWriteTool/FileWriteTool.js'
+import { getTools } from '@thyrox/tool-registry/runtime'
+import type { AgentId } from '@thyrox/agent/idTypes'
 import type { z } from 'zod/v4'
 import { CLI_SYSPROMPT_PREFIXES } from '../systemConstants.js'
-import { roughTokenCountEstimation } from '@claude-code-how-works/agent/tokenEstimation.js'
-import type { Tool, ToolPermissionContext, Tools } from '@claude-code-how-works/tool-registry/Tool.js'
-import { AGENT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/AgentTool/constants.js'
-import type { AgentDefinition } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/ExitPlanModeTool/constants.js'
-import { TASK_OUTPUT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskOutputTool/constants.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
+import { roughTokenCountEstimation } from '@thyrox/agent/tokenEstimation.js'
+import type { Tool, ToolPermissionContext, Tools } from '@thyrox/tool-registry/Tool.js'
+import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
+import { TASK_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskOutputTool/constants.js'
+import type { Message } from '@thyrox/agent/messageShapes'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 import {
   modelSupportsStructuredOutputs,
   shouldUseGlobalCacheScope,
 } from '../betas.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { createUserMessage } from '@claude-code-how-works/agent/messages.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { createUserMessage } from '@thyrox/agent/messages.js'
 import { isFirstPartyAnthropicEndpoint } from '../model/providers.js'
 import { getAPIProvider } from '../providers.js'
 import { getCanonicalName } from '../model.js'
@@ -100,20 +100,20 @@ function modelOptInForEagerStreaming(
 import {
   getFileReadIgnorePatterns,
   normalizePatternsToPath,
-} from '@claude-code-how-works/permission/filesystem'
+} from '@thyrox/permission/filesystem'
 import {
   getPlan,
   getPlanFilePath,
   persistFileSnapshotIfRemote,
-} from '@claude-code-how-works/storage/plans.js'
-import { getPlatform } from '@claude-code-how-works/config/platform'
-import { countFilesRoundedRg } from '@claude-code-how-works/tool-registry/ripgrep.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/storage/plans.js'
+import { getPlatform } from '@thyrox/config/platform'
+import { countFilesRoundedRg } from '@thyrox/tool-registry/ripgrep.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import type { SystemPrompt } from '../systemPromptType.js'
-import { getToolSchemaCache } from '@claude-code-how-works/tool-registry/toolSchemaCache.js'
-import { windowsPathToPosixPath } from '@claude-code-how-works/storage/windowsPaths.js'
-import { zodToJsonSchema } from '@claude-code-how-works/agent/zodSchema/zodToJsonSchema.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { getToolSchemaCache } from '@thyrox/tool-registry/toolSchemaCache.js'
+import { windowsPathToPosixPath } from '@thyrox/storage/windowsPaths.js'
+import { zodToJsonSchema } from '@thyrox/agent/zodSchema/zodToJsonSchema.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // Extended BetaTool type with strict mode and defer_loading support
 type BetaToolWithExtras = BetaTool & {

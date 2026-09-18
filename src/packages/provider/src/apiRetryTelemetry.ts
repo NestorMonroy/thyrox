@@ -6,7 +6,7 @@
 
 import { APIError } from '@anthropic-ai/sdk'
 
-import { logApiRetriesExhaustedEvent } from '@claude-code-how-works/local-observability/telemetry'
+import { logApiRetriesExhaustedEvent } from '@thyrox/local-observability/telemetry'
 
 export function emitApiRetriesExhausted(args: {
   error: unknown

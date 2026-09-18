@@ -8,7 +8,7 @@
 import type { SubscriptionType } from './oauth/types.js'
 import { setMockBillingAccessOverride } from './billing.js'
 import type { OverageDisabledReason } from './claudeAiLimits.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 type MockHeaders = {
   'anthropic-ratelimit-unified-status'?:

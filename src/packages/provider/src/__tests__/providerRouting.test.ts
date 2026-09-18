@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
-import type { ConnectionRecord } from '@claude-code-how-works/config'
+import type { ConnectionRecord } from '@thyrox/config'
 
-const realConfigModule = await import('@claude-code-how-works/config')
+const realConfigModule = await import('@thyrox/config')
 const config = {
   connections: [] as ConnectionRecord[],
 }
 
-mock.module('@claude-code-how-works/config', () => ({
+mock.module('@thyrox/config', () => ({
   ...realConfigModule,
   getGlobalConfig: () => config,
 }))
@@ -15,8 +15,8 @@ mock.module('@claude-code-how-works/config', () => ({
 // which requires host bindings to be installed at runtime. Tests don't
 // install bindings — stub a minimal settings object so the env-fallback
 // branches of getProviderForModel / isFirstPartyAnthropicEndpoint can run.
-const realSettingsModule = await import('@claude-code-how-works/config/settings')
-mock.module('@claude-code-how-works/config/settings', () => ({
+const realSettingsModule = await import('@thyrox/config/settings')
+mock.module('@thyrox/config/settings', () => ({
   ...realSettingsModule,
   getInitialSettings: () => ({}),
 }))

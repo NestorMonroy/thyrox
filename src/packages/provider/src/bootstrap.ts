@@ -7,13 +7,13 @@ import {
 } from './authAlias.js'
 import { z } from 'zod'
 import { getOauthConfig, OAUTH_BETA_HEADER } from './oauthConstants.js'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { withOAuth401Retry } from './http.js'
-import { lazySchema } from '@claude-code-how-works/tool-registry/utils/lazySchema.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
+import { logError } from '@thyrox/local-observability/logging'
 import { getAPIProvider } from './providers.js'
-import { isEssentialTrafficOnly } from '@claude-code-how-works/config/env/privacy-level'
+import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
 import { getClaudeCodeUserAgent } from './userAgent.js'
 
 const bootstrapResponseSchema = lazySchema(() =>

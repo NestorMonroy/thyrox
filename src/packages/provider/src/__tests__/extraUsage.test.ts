@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, mock, test } from 'bun:test'
 // modules so other consumers of the same path keep working — the local-mocks
 // only override the two functions we need to control.
 const realAuth = await import('../authAlias.js')
-const realContext = await import('@claude-code-how-works/agent/context.js')
+const realContext = await import('@thyrox/agent/context.js')
 
 let isSubscriberReturn = false
 let has1mContextReturn = false
@@ -14,7 +14,7 @@ mock.module('../authAlias.js', () => ({
   isClaudeAISubscriber: () => isSubscriberReturn,
 }))
 
-mock.module('@claude-code-how-works/agent/context.js', () => ({
+mock.module('@thyrox/agent/context.js', () => ({
   ...realContext,
   has1mContext: (_model: string) => has1mContextReturn,
 }))
