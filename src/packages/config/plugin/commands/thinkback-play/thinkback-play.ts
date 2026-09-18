@@ -1,5 +1,5 @@
 import { join } from 'path'
-import type { LocalCommandResult } from '@claude-code-how-works/command-runtime/runtime'
+import type { LocalCommandResult } from '@thyrox/command-runtime/runtime'
 import { loadInstalledPluginsV2 } from '../../installedPluginsManager.js'
 import { OFFICIAL_MARKETPLACE_NAME } from '../../officialMarketplace.js'
 import { playAnimation } from '../thinkback/thinkback.js'

@@ -1,7 +1,7 @@
 import { performBackgroundPluginInstallations } from '../PluginInstallationManager.js'
-import type { AppState } from '@claude-code-how-works/app-host/state/AppState.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import { checkHasTrustDialogAccepted } from '../../index.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   clearMarketplacesCache,
   registerSeedMarketplaces,

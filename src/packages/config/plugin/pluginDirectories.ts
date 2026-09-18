@@ -16,7 +16,7 @@ import { getUseCoworkPlugins } from './_deps.js'
 import { logForDebugging } from './_deps.js'
 import { getClaudeConfigHomeDir, isEnvTruthy } from '../env/utils.js'
 import { errorMessage, isFsInaccessible } from './_deps.js'
-import { formatFileSize } from '@claude-code-how-works/output/formatters'
+import { formatFileSize } from '@thyrox/output/formatters'
 import { expandTilde } from './_deps.js'
 
 const PLUGINS_DIR = 'plugins'

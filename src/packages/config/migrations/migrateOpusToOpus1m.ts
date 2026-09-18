@@ -1,9 +1,9 @@
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import {
   getDefaultMainLoopModelSetting,
   isOpus1mMergeEnabled,
   parseUserSpecifiedModel,
-} from '@claude-code-how-works/provider/model.js'
+} from '@thyrox/provider/model.js'
 import {
   getSettingsForSource,
   updateSettingsForSource,

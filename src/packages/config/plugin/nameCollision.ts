@@ -26,8 +26,8 @@
  *   Uc / Jn1 → buildPluginTelemetryFields (in pluginTelemetry.ts)
  */
 import { createHash } from 'crypto'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 
 // Inline ant `VF9` (2643.js) here — pluginTelemetry.ts already implements
 // the same hash as `hashPluginId`, but it lives in @claude-code-how-works/tool-registry

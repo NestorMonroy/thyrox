@@ -20,7 +20,7 @@ import {
   reconcileMarketplaces,
 } from './reconciler.js'
 import { refreshActivePlugins } from './refresh.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 
 type SetAppState = (f: (prevState: AppState) => AppState) => void
 

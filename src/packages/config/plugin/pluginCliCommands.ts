@@ -18,11 +18,11 @@ import {
   buildPluginTelemetryFields,
   classifyPluginCommandError,
 } from './_deps.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import type {
   AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
-} from '@claude-code-how-works/local-observability/compat'
+} from '@thyrox/local-observability/compat'
 import {
   disableAllPluginsOp,
   disablePluginOp,

@@ -1,4 +1,4 @@
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
+import type { Command } from '@thyrox/command-runtime/runtime'
 import { checkStatsigFeatureGate_CACHED_MAY_BE_STALE } from '../../../feature-flags.js'
 
 const thinkback = {

@@ -2,7 +2,7 @@
  * /reload-plugins — Layer-3 refresh. Applies pending plugin changes to the
  * running session. Implementation lazy-loaded.
  */
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
+import type { Command } from '@thyrox/command-runtime/runtime'
 
 const reloadPlugins = {
   type: 'local',

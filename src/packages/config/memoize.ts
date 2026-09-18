@@ -1,6 +1,6 @@
 import { LRUCache } from 'lru-cache'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 type CacheEntry<T> = {
   value: T

@@ -1,11 +1,11 @@
 import { feature } from 'bun:bundle'
-import { getIsRemoteMode } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'
 import { redownloadUserSettings } from '../../../sync/index.js'
-import type { LocalCommandCall } from '@claude-code-how-works/agent/command.js'
+import type { LocalCommandCall } from '@thyrox/agent/command.js'
 import { isEnvTruthy } from '../../../env/utils.js'
 import { refreshActivePlugins } from '../../refresh.js'
 import { settingsChangeDetector } from '../../../settings/changeDetector.js'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
 
 export const call: LocalCommandCall = async (_args, context) => {
   // CCR: re-pull user settings before the cache sweep so enabledPlugins /

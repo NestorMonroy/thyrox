@@ -9,7 +9,7 @@
  * ZIP creation on install and extraction on load transparently.
  */
 
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import { registerCleanup } from './_deps.js'
 import { logForDebugging } from './_deps.js'
 import { withDiagnosticsTiming } from './_deps.js'

@@ -11,7 +11,7 @@
  */
 
 import { extname } from 'path'
-import { isBinaryInstalled } from '@claude-code-how-works/updater/binaryCheck.js'
+import { isBinaryInstalled } from '@thyrox/updater/binaryCheck.js'
 import { getGlobalConfig, saveGlobalConfig } from '../index.js'
 import { logForDebugging } from './_deps.js'
 import { isPluginInstalled } from './installedPluginsManager.js'

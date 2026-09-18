@@ -10,7 +10,7 @@
 
 import { join } from 'path'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '../feature-flags.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import { getGlobalConfig, saveGlobalConfig } from '../index.js'
 import { logForDebugging } from './_deps.js'
 import { isEnvTruthy } from '../env/utils.js'

@@ -14,7 +14,7 @@
  * config → command-runtime cycle.
  */
 
-import { tryParseShellCommand } from '@claude-code-how-works/shell/bash/shellQuote.js'
+import { tryParseShellCommand } from '@thyrox/shell/bash/shellQuote.js'
 
 /**
  * Parse an arguments string into an array of individual arguments.

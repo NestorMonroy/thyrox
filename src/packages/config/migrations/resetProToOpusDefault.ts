@@ -1,7 +1,7 @@
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { isProSubscriber } from '@claude-code-how-works/provider/authAlias.js'
+import { logEvent } from '@thyrox/local-observability'
+import { isProSubscriber } from '@thyrox/provider/authAlias.js'
 import { getGlobalConfig, saveGlobalConfig } from '../index.js'
-import { getAPIProvider } from '@claude-code-how-works/provider/providers.js'
+import { getAPIProvider } from '@thyrox/provider/providers.js'
 import { getSettings } from '../settings/settings.js'
 
 export function resetProToOpusDefault(): void {

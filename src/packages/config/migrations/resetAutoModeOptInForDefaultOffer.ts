@@ -1,8 +1,8 @@
 import { feature } from 'bun:bundle'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import { getGlobalConfig, saveGlobalConfig } from '../index.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { getAutoModeEnabledState } from '@claude-code-how-works/permission/permissionSetup'
+import { logError } from '@thyrox/local-observability/log.js'
+import { getAutoModeEnabledState } from '@thyrox/permission/permissionSetup'
 import {
   getSettingsForSource,
   updateSettingsForSource,

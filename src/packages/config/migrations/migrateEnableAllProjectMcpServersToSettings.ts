@@ -1,9 +1,9 @@
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import {
   getCurrentProjectConfig,
   saveCurrentProjectConfig,
 } from '../index.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+import { logError } from '@thyrox/local-observability/log.js'
 import {
   getSettingsForSource,
   updateSettingsForSource,

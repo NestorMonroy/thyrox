@@ -9,7 +9,7 @@
  * various points during the V7 port; pin them so they can't regress.
  */
 import { describe, expect, mock, test, beforeEach } from 'bun:test'
-import * as realObs from '@claude-code-how-works/local-observability'
+import * as realObs from '@thyrox/local-observability'
 
 type EventPayload = Record<string, unknown>
 const events: { name: string; payload: EventPayload }[] = []
@@ -18,7 +18,7 @@ const events: { name: string; payload: EventPayload }[] = []
 // the test run, so failing to spread silently replaces the WHOLE module
 // for every test in the suite. Per feedback_bun_mock_module_global_scope.md
 // and the verify-mock-module-spread doctor rule.
-mock.module('@claude-code-how-works/local-observability', () => ({
+mock.module('@thyrox/local-observability', () => ({
   ...realObs,
   logEvent: (name: string, payload: EventPayload) => {
     events.push({ name, payload })

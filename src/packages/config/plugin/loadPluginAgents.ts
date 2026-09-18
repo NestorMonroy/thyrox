@@ -1,11 +1,11 @@
 import memoize from 'lodash-es/memoize.js'
 import { basename } from 'path'
-import { isAutoMemoryEnabled } from '@claude-code-how-works/memory'
+import { isAutoMemoryEnabled } from '@thyrox/memory'
 import type { AgentColorName } from './_deps.js'
 import {
   type AgentMemoryScope,
   loadAgentMemoryPrompt,
-} from '@claude-code-how-works/memory/agentMemory'
+} from '@thyrox/memory/agentMemory'
 import type { AgentDefinition } from './_deps.js'
 import { FILE_EDIT_TOOL_NAME } from './_deps.js'
 import { FILE_READ_TOOL_NAME } from './_deps.js'

@@ -1,10 +1,10 @@
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import { saveGlobalConfig } from '../index.js'
-import { isLegacyModelRemapEnabled } from '@claude-code-how-works/provider/model.js'
-import { getAPIProvider } from '@claude-code-how-works/provider/providers.js'
+import { isLegacyModelRemapEnabled } from '@thyrox/provider/model.js'
+import { getAPIProvider } from '@thyrox/provider/providers.js'
 import {
   getSettingsForSource,
   updateSettingsForSource,

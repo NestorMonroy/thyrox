@@ -1,14 +1,14 @@
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   isMaxSubscriber,
   isProSubscriber,
   isTeamPremiumSubscriber,
-} from '@claude-code-how-works/provider/authAlias.js'
+} from '@thyrox/provider/authAlias.js'
 import { getGlobalConfig, saveGlobalConfig } from '../index.js'
-import { getAPIProvider } from '@claude-code-how-works/provider/providers.js'
+import { getAPIProvider } from '@thyrox/provider/providers.js'
 import {
   getSettingsForSource,
   updateSettingsForSource,
