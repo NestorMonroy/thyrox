@@ -27,7 +27,7 @@
 import React from 'react'
 import type { Root } from '@anthropic/ink'
 import type { InteractiveHostSession } from './index.js'
-import type { Props as REPLProps } from '@claude-code-how-works/repl/screens/REPL.js'
+import type { Props as REPLProps } from '@thyrox/repl/screens/REPL.js'
 
 export type AppWrapperProps<TState, TStats, TFpsMetrics> = {
   getFpsMetrics: () => TFpsMetrics | undefined
@@ -50,8 +50,8 @@ export async function launchRepl<TState, TStats, TFpsMetrics>({
   replProps,
   renderAndRun,
 }: LaunchReplArgs<TState, TStats, TFpsMetrics>): Promise<void> {
-  const { App } = await import('@claude-code-how-works/repl/components/App.js')
-  const { REPL } = await import('@claude-code-how-works/repl/screens/REPL.js')
+  const { App } = await import('@thyrox/repl/components/App.js')
+  const { REPL } = await import('@thyrox/repl/screens/REPL.js')
 
   await renderAndRun(
     root,

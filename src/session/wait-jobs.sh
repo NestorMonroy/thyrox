@@ -97,7 +97,10 @@ _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
 # el barrido es la tarea #91.
 LEDGER="${THYROX_JOBS_DIR:-${KX_TRABAJOS_DIR:-$_ROOT/.claude/jobs-ledger/$_SESSION}}"
 _ARCHIVE_DIR="${THYROX_JOBS_ARCHIVE_DIR:-${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/jobs}}"
-DEFAULT_PATTERN='^EXIT=[0-9]+'
+# Las dos formas de la familia: `EXIT=` del envoltorio a mano y
+# `__BG_EXIT__=` de `bg.sh`. Ver marker_wait.MARKER_PATTERN, que las
+# declara con el episodio que las reconcilio (TASK-THYROX-0162).
+DEFAULT_PATTERN='^(__BG_EXIT__|EXIT)=[0-9]+'
 INTERVAL="${WAIT_JOBS_INTERVAL:-2}"
 
 mkdir -p "$LEDGER"
@@ -259,17 +262,44 @@ cmd_pending() {
 }
 
 cmd_wait() {
-    local timeout=1800 pattern="$DEFAULT_PATTERN"
+    # `--only <etiqueta>` acota la espera a DOS formas: la etiqueta exacta y su
+    # grupo `<etiqueta>-*`. Sin el, la barrera globea TODO el ledger — que es
+    # correcto para quien espera a todos, y un interbloqueo para un pool que
+    # esta registrado en ese mismo ledger: se esperaria a si mismo
+    # (TASK-THYROX-0083).
+    #
+    # Las dos formas, no una: el pool nombra a sus hijos `<prefijo>-NNN`, pero
+    # `bg.sh register <nombre>` produce etiquetas LLANAS. Con solo el glob del
+    # grupo, `wait --only pyreds` no veia `pyreds.job` y publicaba «sin
+    # trabajos registrados» saliendo 0 — un verde que no separa «no habia nada
+    # que esperar» de «el filtro no vio lo que si estaba». El guion del grupo
+    # se conserva en su glob para no ensanchar la colision de TASK-THYROX-0084:
+    # `pool` sigue sin ver a `pool2-001`.
+    #
+    # TERCERA forma: `<etiqueta>_*`. El ledger SANEA la barra al componer el
+    # nombre de archivo (`job_ledger._path_for`: `label.replace('/', '_')`),
+    # asi que una etiqueta jerarquica `<despacho>/<trabajo>` aterriza como
+    # `<despacho>_<trabajo>.job`. Sin esta forma el filtro es ciego a sus
+    # propios hijos y publica «sin trabajos registrados» saliendo 0 — el mismo
+    # verde falso que el parrafo de arriba describe, por otra via. El glob
+    # tiene que conocer el saneo que su propio escritor aplica.
+    local timeout=1800 pattern="$DEFAULT_PATTERN" only=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --timeout) timeout="${2:?--timeout exige segundos}"; shift 2 ;;
             --pattern)  pattern="${2:?--pattern exige una expresión}"; shift 2 ;;
+            --only)     only="${2:?--only exige una etiqueta}"; shift 2 ;;
             *) echo "argumento no reconocido: $1" >&2; exit 64 ;;
         esac
     done
 
     shopt -s nullglob
-    local jobs=("$LEDGER"/*.job)
+    local jobs
+    if [[ -n "$only" ]]; then
+        jobs=("$LEDGER/$only".job "$LEDGER/$only"-*.job "$LEDGER/$only"_*.job)
+    else
+        jobs=("$LEDGER"/*.job)
+    fi
     shopt -u nullglob
     if [[ ${#jobs[@]} -eq 0 ]]; then
         echo "== sin trabajos registrados =="
@@ -291,7 +321,6 @@ cmd_wait() {
             local log pid ps0 v
             log=$(sed -n 's/^log=//p' "$f"); pid=$(sed -n 's/^pid=//p' "$f")
             mk=$(sed -n 's/^marker=//p' "$f")
-        mk=$(sed -n 's/^marker=//p' "$f")
             ps0=$(sed -n 's/^proc_start=//p' "$f")
             v=$(verdict "$log" "$pid" "$pattern" "$ps0" "$mk")
             if [[ "$v" != ESPERANDO ]]; then
@@ -618,9 +647,31 @@ _selection() {
     local sel="${1:?uso: <label>|--todos}"
     if [[ "$sel" == "--todos" ]]; then
         shopt -s nullglob; printf '%s\n' "$LEDGER"/*.job; shopt -u nullglob
-    else
-        local f="$LEDGER/${sel//\//_}.job"
-        [[ -f "$f" ]] && echo "$f"
+        return
+    fi
+    # La etiqueta EXACTA manda. `job_ledger._path_for` sanea '/' a '_', asi que
+    # una etiqueta jerarquica se busca con el mismo saneo con que se escribio.
+    local f="$LEDGER/${sel//\//_}.job"
+    if [[ -f "$f" ]]; then echo "$f"; return; fi
+
+    # El NOMBRE CORTO, que es lo unico que el llamador escribio: el pool etiqueta
+    # `<despacho>/<nombre>` y genera el despacho por dentro (TASK-THYROX-0084).
+    # Sin esta rama, `matar job-001` dejo de seleccionar nada y el trabajo se
+    # quedaba vivo Y anotado — una capacidad perdida, no un cambio de forma.
+    #
+    # REHUSA ante ambiguedad en vez de elegir, y esa mitad es la que importa:
+    # dos despachos del mismo prefijo tienen los DOS un `job-001`, que es
+    # exactamente la colision que la etiqueta jerarquica existe para cerrar.
+    # Tomar el primero la reintroduciria por la puerta del kill.
+    shopt -s nullglob
+    local -a candidates=("$LEDGER"/*_"${sel//\//_}".job)
+    shopt -u nullglob
+    if [[ ${#candidates[@]} -eq 1 ]]; then
+        echo "${candidates[0]}"
+    elif [[ ${#candidates[@]} -gt 1 ]]; then
+        echo "«$sel» es ambiguo: ${#candidates[@]} trabajos lo llevan como nombre" >&2
+        printf '  %s\n' "${candidates[@]##*/}" >&2
+        echo "  pasa la etiqueta completa (<despacho>/<nombre>) para desambiguar" >&2
     fi
 }
 
@@ -817,6 +868,26 @@ cmd_adopt_external() {
         --ledger "$LEDGER" "$@"
 }
 
+cmd_ledger_home() {
+    # Publica el hogar POR SESION del ledger, para que un tercero no tenga que
+    # componerlo a mano. Es la forma que `bg.sh marker-pattern` ya tiene, y por
+    # la misma razon: quien lo copie a su propio archivo crea una segunda
+    # fuente de verdad que nadie sincroniza, y el dia que `LEDGER` cambie su
+    # composicion la copia sigue publicando la vieja sin emitir un byte.
+    #
+    # Lo que publica NO es «donde esta el ledger de esta sesion» sino «que
+    # directorio es, por construccion, estado por sesion»: el consumidor lo usa
+    # para decidir si un directorio ignorado lo esta con razon declarada. Por
+    # eso imprime el PADRE cuando el hogar lleva el identificador de sesion —
+    # un caso que comparase contra el hogar exacto solo eximiria a la sesion
+    # que corre el test, y fallaria sobre el ledger de cualquier otra.
+    local home="$LEDGER"
+    if [[ "$(basename "$home")" == "$_SESSION" ]]; then
+        home="$(dirname "$home")"
+    fi
+    printf '%s\n' "$home"
+}
+
 case "${1:-}" in
     register|registrar)  shift; cmd_register "$@" ;;
     wait|esperar)        shift; cmd_wait "$@" ;;
@@ -829,5 +900,6 @@ case "${1:-}" in
     adopt-external)      shift; cmd_adopt_external "$@" ;;
     dispatch|despachar)  shift; cmd_dispatch "$@" ;;
     archive|archivar)    shift; cmd_archive "$@" ;;
+    ledger-home)         shift; cmd_ledger_home "$@" ;;
     *) sed -n '/^# Uso/,/^# ===/p' "$0" | sed 's/^# \?//'; exit 64 ;;
 esac

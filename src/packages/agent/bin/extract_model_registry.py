@@ -1,4 +1,4 @@
-"""Delimita el catálogo de modelos del ejecutable vendorizado y lo emite como JSON.
+"""Delimita el catálogo de modelos del ejecutable vendorizado y lo emite como JSONL.
 
 El ejecutable está minificado, así que el catálogo llega como un **literal de
 objeto de JavaScript**, no como JSON: claves sin comillas, `!0`/`!1` en vez de
@@ -8,12 +8,17 @@ un recorte a distancia fija salta la frontera del registro y engancha el
 `pricing` del vecino: es el defecto de instrumento que :ref:`h-docs-218` midió
 con N=1400 contra N=2000.
 
+La salida es **JSON Lines**: un registro por línea, etiquetado con `kind`.
+Cada línea se clasifica por lo que DICE, no por dónde está — ver `KIND_KEY`.
+
 Salidas (en el directorio que se le indique):
 
-  model_registry.json  — los registros, con su tier de precio ya RESUELTO a los
-                         seis valores de `pricing_tiers`; claves ordenadas.
-  aliases.json         — `aliases` (con su mapa por proveedor), `defaults`,
-                         `best`, `latest_per_family` y `alias_migration`.
+  model_registry.jsonl — una `meta` + un `tier` por tier + un `model` por
+                         registro, con su tier de precio ya RESUELTO a los
+                         valores de `pricing_tiers`; claves ordenadas.
+  aliases.jsonl        — una `meta` con `aliases` (y su mapa por proveedor),
+                         `defaults`, `best`, `latest_per_family` y
+                         `alias_migration`.
 
 Uso:
     python3 extract_model_registry.py <ruta a claude_strings.txt> <dir salidas>
@@ -21,9 +26,9 @@ Uso:
 
 Promovido a ``bin/`` del paquete desde el evento
 ``catalogo-modelos-cache-20260902T045046`` (2026-09-02): el paquete lo consume
-para regenerar y verificar ``src/models.json``. El modo ``--stdout`` emite un
-solo JSON con registros, tiers y alias, que es lo que la suite compara contra
-el archivo vendorizado. El defecto de :ref:`h-docs-1003` (``!0`` leído como
+para regenerar y verificar ``src/models.jsonl``. El modo ``--stdout`` emite el
+catálogo combinado —meta, tiers y modelos— en JSONL, que es lo que la suite
+compara contra el archivo vendorizado. El defecto de :ref:`h-docs-1003` (``!0`` leído como
 ``false``) ya está corregido aquí.
 """
 import json
@@ -78,7 +83,22 @@ def bloque_balanceado(texto, ancla, abre='{', cierra='}'):
         elif c == cierra:
             profundidad -= 1
             if profundidad == 0:
-                return texto[inicio:i + 1]
+                bloque = texto[inicio:i + 1]
+                # POSTCONDICIÓN: el bloque tiene que contener al ancla.
+                #
+                # El retroceso de arriba reconoce la llave cuyo carácter previo
+                # está en `=(,[` — asignación, llamada, elemento de lista. Un
+                # `return{…}` no está en ese conjunto, así que sigue retrocediendo
+                # y aterriza en el registro ANTERIOR del texto. Medido sobre
+                # 2.1.266: con el ancla `input_tokens:n.input_tokens!==null`
+                # devolvía 1093 bytes del objeto de telemetría vecino.
+                #
+                # El arreglo no es enseñarle esa forma —eso ampliaría la
+                # heurística a una más y dejaría las siguientes igual de mudas—
+                # sino comprobar lo que este docstring ya promete. Devolver el
+                # registro equivocado es peor que rehusar: quien lo recibe no
+                # tiene cómo notar que mide otra cosa.
+                return bloque if ancla in bloque else None
     return None
 
 
@@ -142,6 +162,77 @@ def ordenar(valor):
     if isinstance(valor, list):
         return [ordenar(v) for v in valor]
     return valor
+
+
+#: El sobre de cada linea. Es NUESTRO, no una clave del catalogo del
+#: ejecutable: un lector que busque `kind` en el volcado del binario no lo
+#: encontrara. Lo anade este extractor para que cada linea se clasifique por lo
+#: que DICE y no por donde esta. Una cabecera por posicion —«la linea 1 es la
+#: meta»— repetiria un nivel mas abajo el defecto que :ref:`h-thyrox-37`
+#: registro: clasificar por el sitio en vez de por el contenido.
+KIND_KEY = 'kind'
+
+#: La version de NUESTRO contrato de salida, no la del catalogo horneado.
+#:
+#: Las dos convivian en la misma clave hasta la adopcion de JSONL, porque el
+#: valor se copiaba de `catalogo['schema_version']`. Ahora la clave tiene un
+#: solo referente —la forma en que ESTE extractor serializa— y la version de la
+#: fuente la fija el ANCLA: lleva `schema_version:1` literal, asi que un
+#: catalogo con otra version no casa y el extractor rehusa con exit 2 en vez de
+#: emitir un documento que dice ser de una fuente que no leyo.
+#:
+#: Bumpea a 2 con JSONL porque un lector de la v1 hace `json.load` del archivo
+#: entero y falla ante el nuevo: si la clave no cambiara, no podria discriminar
+#: las dos formas — el verde que no discrimina aplicado al propio contrato.
+OUTPUT_SCHEMA_VERSION = 2
+
+
+def tagged_records(models_output, alias_output):
+    """Las lineas JSONL del catalogo combinado: 1 `meta` + N `tier` + N `model`.
+
+    Una clave de raiz **expande** a una linea por elemento cuando cada elemento
+    es un registro con sentido propio; se queda dentro de `meta` cuando es una
+    tabla de consulta que solo significa entera.
+
+    - `models` expande: cada modelo se cita por su `id` y se lee solo.
+    - `pricing_tiers` expande: un modelo lo cita por nombre (`pricing_tier`) y
+      el tier existe sin el modelo.
+    - `aliases` y `latest_per_family` se quedan en `meta`: una entrada suelta
+      no dice a que proveedor pertenece sin su clave.
+    - `fuente`, `best`, `defaults` y `alias_migration` se quedan: escalares y
+      dicts vacios, cuya forma la decide su primer contenido.
+
+    Derivacion del criterio: `.claude/workbench/
+    adoptar-jsonl-censo-20260917T051111/forma-de-models-json.md`.
+    """
+    meta = {KIND_KEY: 'meta',
+            'fuente': models_output['fuente'],
+            'schema_version': OUTPUT_SCHEMA_VERSION,
+            'best': alias_output['best'],
+            'aliases': alias_output['aliases'],
+            'defaults': alias_output['defaults'],
+            'latest_per_family': alias_output['latest_per_family'],
+            'alias_migration': alias_output['alias_migration']}
+    registros = [meta]
+    # El orden de los tiers es el de `sorted()` que `ordenar` ya impuso, y el de
+    # los modelos es el del catalogo: los dos son estables entre ejecuciones,
+    # que es lo que la comparacion byte a byte de la suite exige.
+    for nombre, precios in models_output['pricing_tiers'].items():
+        registros.append({KIND_KEY: 'tier', 'name': nombre, 'pricing': precios})
+    for modelo in models_output['models']:
+        fila = {KIND_KEY: 'model'}
+        fila.update(modelo)
+        registros.append(fila)
+    return registros
+
+
+def jsonl(registros):
+    """Un registro por linea, sin sangria — es lo que hace legible el diff.
+
+    `ensure_ascii=False` por la misma razon que en el resto del extractor: un
+    identificador con acento se lee en el archivo, no como escape.
+    """
+    return ''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in registros)
 
 
 def main(argv):
@@ -218,22 +309,36 @@ def main(argv):
         'alias_migration': catalogo.get('alias_migration', {}),
     })
 
+    registros = tagged_records(salida_modelos, salida_alias)
+
     if a_stdout:
-        # Un solo documento, claves ordenadas donde el orden no significa nada
-        # (los registros conservan el del catálogo): es lo que `src/models.json`
-        # vendoriza y lo que la suite del paquete re-deriva para compararlo.
-        combinado = dict(salida_modelos)
-        combinado.update({k: salida_alias[k] for k in
-                          ('aliases', 'defaults', 'best', 'latest_per_family',
-                           'alias_migration')})
-        print(json.dumps(combinado, indent=2, ensure_ascii=False))
+        # Un registro por linea: es lo que `src/models.jsonl` vendoriza y lo
+        # que la suite del paquete re-deriva para compararlo byte a byte.
+        sys.stdout.write(jsonl(registros))
         return 0
 
-    (destino / 'model_registry.json').write_text(
-        json.dumps(salida_modelos, indent=2, ensure_ascii=False,
-                   sort_keys=False) + '\n')
-    (destino / 'aliases.json').write_text(
-        json.dumps(salida_alias, indent=2, ensure_ascii=False) + '\n')
+    # Los dos archivos son el MISMO catalogo repartido, asi que llevan los
+    # mismos registros etiquetados: el de modelos se queda con `meta` + tiers +
+    # modelos, y el de alias con una `meta` propia.
+    #
+    # Su `meta` es UNA linea porque ninguna de sus claves cumple el criterio de
+    # expansion: son tablas de consulta y escalares. La divergencia se declara
+    # en vez de omitirse — sobre un archivo de una sola linea `json.load` del
+    # entero pasa, asi que ese archivo NO sirve como control de que el lector
+    # lea lineas. El control vive en el combinado, que tiene 28.
+    meta_modelos = {KIND_KEY: 'meta',
+                    'fuente': salida_modelos['fuente'],
+                    'schema_version': OUTPUT_SCHEMA_VERSION}
+    meta_alias = {KIND_KEY: 'meta'}
+    meta_alias.update({k: salida_alias[k] for k in
+                       ('fuente', 'aliases', 'defaults', 'best',
+                        'latest_per_family', 'alias_migration')})
+    meta_alias['schema_version'] = OUTPUT_SCHEMA_VERSION
+
+    (destino / 'model_registry.jsonl').write_text(
+        jsonl([meta_modelos] + [r for r in registros
+                                if r[KIND_KEY] in ('tier', 'model')]))
+    (destino / 'aliases.jsonl').write_text(jsonl([meta_alias]))
 
     print(f'volcado: {ruta}')
     print(f'bloque:  {len(bloque)} caracteres, cerrado por balanceo')

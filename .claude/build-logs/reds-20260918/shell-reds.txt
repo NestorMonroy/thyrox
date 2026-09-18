@@ -1,0 +1,4 @@
+bash tests/agents/test-merge-sqlite-union.sh
+bash tests/agents/test-model-catalog.sh
+bash tests/verify/test-script-naming.sh
+bash tests/verify/test_package_root_resolution.sh

@@ -27,6 +27,28 @@ GATE="$RAIZ/src/verify/check-agent-artifacts.sh"
 fallos=0
 total=0
 
+# La SUPERFICIE se extrae del gate, no se transcribe. Citaba
+# `.claude/packages/agent` y `.claude/agents`, que es donde vivian antes de la
+# mudanza a `src/`: los tres controles positivos apuntaban FUERA de la
+# superficie, asi que el gate se eximia con razon y el caso leia esa exencion
+# como defecto. Preguntandole al gate por sus dos raices, la suite sobrevive a
+# la proxima mudanza.
+PAQUETE_REL="$(sed -n 's/^PAQUETE_REL="\([^"]*\)"/\1/p' "$GATE" | head -1)"
+AGENTES_REL="$(sed -n 's/^AGENTES_REL="\([^"]*\)"/\1/p' "$GATE" | head -1)"
+if [[ -z "$PAQUETE_REL" || -z "$AGENTES_REL" ]]; then
+    echo "SIN MEDIR: no pude extraer la superficie de $GATE" >&2
+    echo "  PAQUETE_REL='$PAQUETE_REL' AGENTES_REL='$AGENTES_REL'" >&2
+    exit 2
+fi
+# Un archivo REAL de cada mitad: un nombre inventado no distinguiria «fuera de
+# la superficie» de «no existe».
+ARCHIVO_PAQUETE="$(find "$RAIZ/$PAQUETE_REL" -maxdepth 1 -name '*.ts' | sort | head -1)"
+ARCHIVO_AGENTE="$(find "$RAIZ/$AGENTES_REL" -maxdepth 1 -name '*.md' | sort | head -1)"
+if [[ -z "$ARCHIVO_PAQUETE" || -z "$ARCHIVO_AGENTE" ]]; then
+    echo "SIN MEDIR: la superficie declarada no tiene archivos que medir" >&2
+    exit 2
+fi
+
 check() {
     total=$((total + 1))
     if [[ "$2" == "$3" ]]; then
@@ -39,7 +61,7 @@ check() {
 
 # CONTROL POSITIVO — ruta ABSOLUTA de la superficie, que es la forma en que el
 # pre-commit entrega sus archivos. El gate tiene que medir, no eximirse.
-SALIDA="$(bash "$GATE" "$RAIZ/.claude/packages/agent/schema.ts" 2>&1)"
+SALIDA="$(bash "$GATE" "$ARCHIVO_PAQUETE" 2>&1)"
 case "$SALIDA" in
     *"sin cambios en la superficie"*) VEREDICTO=eximido ;;
     *) VEREDICTO=medido ;;
@@ -47,7 +69,7 @@ esac
 check "ruta absoluta del paquete: el gate MIDE" "$VEREDICTO" "medido"
 
 # Ídem para la otra mitad de la superficie: el .md derivado.
-SALIDA="$(bash "$GATE" "$RAIZ/.claude/agents/migration-porter.md" 2>&1)"
+SALIDA="$(bash "$GATE" "$ARCHIVO_AGENTE" 2>&1)"
 case "$SALIDA" in
     *"sin cambios en la superficie"*) VEREDICTO=eximido ;;
     *) VEREDICTO=medido ;;
@@ -55,7 +77,7 @@ esac
 check "ruta absoluta del .md derivado: el gate MIDE" "$VEREDICTO" "medido"
 
 # La forma relativa tiene que seguir funcionando: es la de la línea de comandos.
-SALIDA="$(cd "$RAIZ" && bash "$GATE" .claude/packages/agent/schema.ts 2>&1)"
+SALIDA="$(cd "$RAIZ" && bash "$GATE" "${ARCHIVO_PAQUETE#"$RAIZ"/}" 2>&1)"
 case "$SALIDA" in
     *"sin cambios en la superficie"*) VEREDICTO=eximido ;;
     *) VEREDICTO=medido ;;
@@ -64,7 +86,7 @@ check "ruta relativa del paquete: el gate MIDE" "$VEREDICTO" "medido"
 
 # CONTROL NEGATIVO — un archivo FUERA de la superficie sí se exime. Sin este
 # caso, un gate que midiera siempre también pasaría los tres de arriba.
-SALIDA="$(cd "$RAIZ" && bash "$GATE" source/index.rst 2>&1)"
+SALIDA="$(cd "$RAIZ" && bash "$GATE" README.md 2>&1)"
 case "$SALIDA" in
     *"sin cambios en la superficie"*) VEREDICTO=eximido ;;
     *) VEREDICTO=medido ;;
@@ -79,7 +101,7 @@ check "archivo fuera de la superficie: el gate SE EXIME" "$VEREDICTO" "eximido"
 PKG_SIN_NODE_MODULES="$(mktemp -d)"
 trap 'rm -rf "$PKG_SIN_NODE_MODULES"' EXIT
 SALIDA="$(cd "$RAIZ" && CHECK_AGENT_ARTIFACTS_PKG_DIR="$PKG_SIN_NODE_MODULES" \
-    bash "$GATE" --strict .claude/packages/agent/schema.ts 2>&1)"
+    bash "$GATE" --strict "${ARCHIVO_PAQUETE#"$RAIZ"/}" 2>&1)"
 CODIGO=$?
 check "guard sin node_modules/zod: exit 2" "$CODIGO" "2"
 case "$SALIDA" in

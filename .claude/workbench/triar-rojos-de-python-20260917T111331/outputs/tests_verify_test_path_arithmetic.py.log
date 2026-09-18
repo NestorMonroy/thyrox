@@ -1,0 +1,33 @@
+== 1. el árbol real, contra el baseline declarado ==
+  ok    midió archivos (un 0 aquí sería un verde ciego)
+  FALLO son EXACTAMENTE los dos del baseline declarado, ninguno más
+        esperado=[{'tests/verify/test_rst_gate_root.py:57', 'tests/legacy/test_error_catalog.py:49'}] obtenido=[{'tests/hooks/test_detect_dedicated_tool_usage.py:13', 'tests/session/test_adopt_background.py:23', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:10', 'tests/agents/test_clasificar_agentes.py:38', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:12', '.claude/workbench/frontera-tool-registry-simbolo/probe_chain.py:25', 'tests/paths/test_consumer_root_refuses_provider.py:25', '.claude/workbench/adoptar-jsonl-censo-20260917T051111/censo.py:141', 'tests/agents/test_document_root_default.py:24', 'tests/agents/test_payload_sin_transcript.py:39', 'tests/hooks/test_detect_agent_dispatch.py:15', 'tests/corpus/test_censar_scripts.py:23', 'tests/agents/test_table_census.py:25', 'tests/task/test_layer_signals.py:49', 'tests/verify/test_symbol_home.py:34', 'tests/hooks/test_detect_topic_duplication.py:26', 'tests/workbench/test_manifest_jsonl.py:117', 'tests/agents/test_store_home.py:24', 'tests/task/test_layer_axis.py:132', 'tests/hooks/test_detect_ephemeral_citation.py:15', 'tests/session/test_probe_model_switch_cache.py:37', 'tests/verify/test_counterpart_body.py:38', '.claude/workbench/session-task-dump-20260910T070654/dump_session_board.py:51', 'src/hooks/detect_rst_validation.py:31', 'tests/agents/test_derive_submodule.py:192', 'tests/verify/test_error_catalog.py:49', 'src/session/generate_bin.py:189', 'tests/agents/test_store_dir_default.py:33', '.claude/workbench/adoptar-jsonl-en-manifiestos-20260917T061558/migrate_manifests.py:57', 'tests/agents/test_derive_submodule.py:53', 'tests/session/test_user_wiring.py:31', 'tests/verify/test_rst_gate_root.py:57', 'tests/verify/test_class_header.py:33', 'tests/hooks/test_detect_code_language.py:19', 'tests/hooks/test_detect_foreground_long_command.py:14', '.claude/workbench/bin-alcanza-flujo-obligatorio-20260917T110325/generate_bin.pristine.py:189'}]
+
+2. CONTROL POSITIVO — la línea REAL que el árbol tenía antes de #228
+  ok    marca la aritmética vieja
+
+3. El GEMELO — la misma línea, ya arreglada, NO se marca
+  ok    el bootstrap admitido no genera hallazgo
+
+4. El bootstrap partido en DOS líneas SÍ se marca
+  ok    variable-y-luego-insert SÍ genera hallazgo
+
+5. La mención en PROSA no es un uso
+  ok    el docstring que lo menciona no cuenta
+
+6. Denominador y rehúse
+  ok    publica su alcance medido
+  ok    exit 0 con sólo lo congelado
+  ok    sin ninguna raíz medible, exit 2
+  ok    y NO emite conteo en stdout
+
+7. --strict / baseline / --quiet
+  ok    sin --strict, un incumplidor nuevo NO bloquea
+  ok    pero se nombra en la salida
+  ok    con --strict, el incumplidor nuevo bloquea
+  ok    --write-baseline sale 0
+  ok    y congela la entrada
+  ok    congelada, la deuda heredada NO bloquea
+  ok    --quiet publica sólo el conteo, pelado
+
+resultado: 16 de 17 aserciones en verde

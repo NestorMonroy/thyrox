@@ -97,8 +97,8 @@ import sys
 # lazy: `.claude/scripts/` no es un paquete y varias suites cargan este archivo
 # con `spec_from_file_location`, vía por la que el directorio no queda en la
 # ruta de búsqueda. Es el criterio que `agent_store.py` ya documenta.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "paths"))
-import reach_roots  # noqa: E402
+from paths import reach_roots  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: Un identificador de tarea, en cualquiera de las formas medidas en el corpus:
 #: ``Sucesor: **#101**`` · ``Sucesores: #102`` · ``Sucesor: tarea **#103**`` ·
@@ -485,13 +485,24 @@ def rank_nodes(nodes, edges):
     return rows
 
 
-#: DEUDA DECLARADA: ruta RELATIVA, su resolucion depende del cwd. Apuntarla a
-#: `reach.agent_store_path()` es correcto y rompe las 12 casos de
-#: `test-closure-graph.sh`: sus fixtures de «sin store» se apoyan en que esta
-#: ruta NO resuelva, y con una absoluta que siempre existe ese caso desaparece.
-#: Medido: 0 fallos con la relativa, 17 con la absoluta. El arreglo exige
-#: rediseñar la fixture para pasar el store explicito, no cambiar esta linea.
-TASK_STORE = '.claude/agent-results/agent_store.sqlite3'
+#: El store de tareas, resuelto por ``reach.agent_store_path()`` — el mismo
+#: resolutor que usa el hermano ``task_ids.py``. Es ABSOLUTO, y por eso no
+#: depende del cwd.
+#:
+#: La forma anterior era la ruta RELATIVA ``.claude/agent-results/...``, y
+#: mentia en las dos direcciones sin avisar en ninguna: desde el arbol del
+#: proveedor resolvia a una cascara de 0 filas de negocio —y publicaba
+#: ``ambiguous: []`` sobre un universo vacio, que es un verde falso—, y desde
+#: cualquier otro cwd no resolvia a nada, con lo que el guard de
+#: :func:`task_ambiguity` devolvia ``None``: «no pude medir» sobre un store que
+#: SI existe.
+#:
+#: La deuda que este comentario declaraba —«las fixtures de *sin store* se
+#: apoyan en que esta ruta NO resuelva; medido: 17 fallos con la absoluta»— era
+#: falsa, y la medicion la refuto: el caso 12 de ``test-closure-graph.sh`` ya
+#: pasa su store explicito (``/no/existe/store.sqlite3``), asi que no depende
+#: del default. Era una afirmacion heredada que nadie habia vuelto a medir.
+TASK_STORE = str(reach.agent_store_path())
 
 
 def task_ambiguity(edges, store=TASK_STORE):

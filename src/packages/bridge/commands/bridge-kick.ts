@@ -163,7 +163,7 @@ const call: LocalCommandCall = async args => {
       return {
         type: 'text',
         value:
-          '@claude-code-how-works/bridge/reconnect calls will 404. doReconnect Strategy 1 falls through to Strategy 2.',
+          '@thyrox/bridge/reconnect calls will 404. doReconnect Strategy 1 falls through to Strategy 2.',
       }
     }
 

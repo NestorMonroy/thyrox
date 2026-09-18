@@ -1,4 +1,0 @@
-{
-  "instrument": "bash -lc bun test src/packages/agent/compaction src/packages/agent/__tests__/compaction 2>&1; echo EXIT=$?",
-  "started_at": "2026-09-13T05:49:42+00:00"
-}

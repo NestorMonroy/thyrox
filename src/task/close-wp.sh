@@ -47,4 +47,18 @@ if [ -n "$CONTEXTO_LINE" ]; then
 fi
 
 # A-6: sincronizar project-state.md
-bash "${PROJECT_ROOT}/.claude/scripts/task/update-state.sh" || true
+#
+# El `|| true` que habia aqui enterraba el fallo de un guion ENTERO, y medido
+# 2026-09-17 ese guion no existe: `.claude/scripts/task/update-state.sh` es la
+# ruta anterior a la mudanza a thyrox. Con la supresion muda, este paso llevaba
+# sin ejecutarse un tiempo indeterminado y nadie podia saberlo.
+#
+# Se conserva la tolerancia —cerrar el work package no debe abortar por esto—
+# pero el fallo se ANUNCIA, como hace `vvv: config/homebin/box-minimize.sh:8`
+# con su `dd`. Callar y tolerar no son la misma decision.
+_state_sync="${PROJECT_ROOT}/.claude/scripts/task/update-state.sh"
+if [[ -x "$_state_sync" ]]; then
+    bash "$_state_sync" || echo "AVISO: update-state.sh salio $? — se continua" >&2
+else
+    echo "AVISO: no hay sincronizador de estado en $_state_sync — paso omitido" >&2
+fi

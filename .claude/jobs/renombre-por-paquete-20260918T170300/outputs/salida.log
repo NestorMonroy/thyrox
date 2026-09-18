@@ -1,0 +1,25 @@
+OK   daemon (1)
+OK   app-host (9)
+OK   swarm (5)
+OK   mcp-runtime (13)
+OK   output (6)
+OK   shell (20)
+OK   config (31)
+OK   command-runtime (103)
+OK   agent (111)
+OK   provider (69)
+OK   tool-registry (158)
+FALLA cli (64)
+     | ../tool-registry/src/tools/GlobTool/GlobTool.ts(14,10): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'checkReadPermissionForTool'.
+     | ../tool-registry/src/tools/GlobTool/GlobTool.ts(24,8): error TS6142: Module './UI.js' was resolved to '/home/user/thyrox/src/packages/tool-registry/src/tools/GlobTool/UI.tsx', but '--jsx' is not set.
+     | ../tool-registry/src/tools/GrepTool/GrepTool.ts(14,3): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'checkReadPermissionForTool'.
+     | ../tool-registry/src/tools/GrepTool/GrepTool.ts(15,3): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'getFileReadIgnorePatterns'.
+     | ../tool-registry/src/tools/GrepTool/GrepTool.ts(16,3): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'normalizePatternsToPath'.
+     | ../tool-registry/src/tools/GrepTool/GrepTool.ts(31,8): error TS6142: Module './UI.js' was resolved to '/home/user/thyrox/src/packages/tool-registry/src/tools/GrepTool/UI.tsx', but '--jsx' is not set.
+     | check-cli-typecheck: workspace sin enlazar — NO hay veredicto sobre el codigo.
+     | check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 64 archivo(s) pedido(s))
+OK   permission (64)
+OK   bridge (2)
+=== restante sin commitear ===
+64
+__BG_EXIT__=0

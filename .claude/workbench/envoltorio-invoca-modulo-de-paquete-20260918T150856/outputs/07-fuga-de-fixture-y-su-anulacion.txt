@@ -1,0 +1,37 @@
+=== 2026-09-18T15:13:58 — la fuga de fixture, y su control de anulacion ===
+
+Los dos casos de --install-user-bin corren el generador REAL sin --check;
+main() llama a apply_plan ANTES de instalar, y apply_plan RETIRA lo que no
+este en el plan. Con cwd en la raiz, eso muta el bin/ del repo.
+
+--- intruso en el bin/ real, como control que puede fallar ---
+creado: bin/zz_intruso_de_control
+
+--- ANULADO: el generador como lo invocaba el test ANTES del arreglo ---
+bin/: 179 entrypoint(s) totales, 0 escrito(s)/actualizado(s), 1 retirado(s)
+/tmp/tmp.kDdjCO6kmE: 179 escrito(s)/actualizado(s), 0 retirado(s), 0 ajeno(s) preservado(s)
+  el intruso FUE RETIRADO — la fuga muta el arbol medido
+
+--- CON EL ARREGLO: la suite completa, con los dos casos aislados ---
+  ok   bin/manifest --help sale 0
+
+81 aprobada(s) · 2 fallida(s) (alcance medido: generate_bin.py)
+  el intruso SOBREVIVE — la suite ya no toca el bin/ real
+
+--- y el bin/ real sigue al dia tras todo esto ---
+bin/ al día: 179 entrypoint(s)
+exit=0
+ M bin/cache_probe
+ M bin/manifest
+?? bin/archive_build_corpus
+(vacio = bin/ intacto)
+
+--- los 2 fallidos de arriba eran MI intruso, no un defecto: --check lo veia
+    como «sobran». Suite limpia, sin intruso: ---
+
+83 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+
+--- git status de bin/ (solo los dos envoltorios del arreglo + el faltante) ---
+ M bin/cache_probe
+ M bin/manifest
+?? bin/archive_build_corpus

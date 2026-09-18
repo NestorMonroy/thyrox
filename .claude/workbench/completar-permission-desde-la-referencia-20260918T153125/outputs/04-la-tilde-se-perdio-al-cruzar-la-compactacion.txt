@@ -1,0 +1,45 @@
+Los archivos de permission traducidos ANTES de la compactación llevan tilde
+(classifierDecision.ts: 6 formas acentuadas, 0 sin acentuar;
+ExitPlanModePermissionRequest.tsx: 28/1). Los traducidos DESPUÉS, no
+(useShellPermissionFeedback.ts 0/2; autoModeState.test.ts 0/4). La convención
+no estaba en el resumen de compactación, así que derivó sin que nada lo
+delatara — la misma clase que H-DOCS-1029: el TEXTO de una directiva sobrevive
+a la compactación, su CUMPLIMIENTO no.
+
+No es estilo: tres de las formas son palabras distintas.
+  - «opciones Si/No» dice el «si» condicional donde toca el «sí» afirmativo.
+  - «esta presente» dice el demostrativo donde toca el verbo «está».
+  - «denegar 17 mas» dice la conjunción adversativa donde toca «más».
+
+El instrumento separa DOS clases y sólo sustituye una:
+  INEQUÍVOCA — la forma sin tilde no es palabra del español, así que la
+    sustitución no puede producir otra palabra (`sesion` -> `sesión`).
+  AMBIGUA    — la forma sin tilde SÍ es palabra, con otro significado
+    (`esta`, `mas`, `si`, `aun`, y los verbos `valida`/`invalida`). Se reporta
+    con su línea y se decide leyendo; nunca se sustituye en bloque.
+
+101 sustituciones automáticas (69 + 17 + 15) más 15 juicios manuales, sobre 32
+archivos.
+
+TRES defectos del propio instrumento, medidos al construirlo:
+  1. Siete entradas eran mapeos identidad (`sugerencia` -> `sugerencia`), que
+     publicaban un falso positivo cada vez que la palabra aparecía bien escrita.
+  2. Cinco colisionan con el inglés (`version`, `decision`, `revision`,
+     `division`, `multiple`) y habrían corrompido un comentario inglés
+     residual — el residuo que TASK-THYROX-0167 tiene abierto.
+  3. Borrar una entrada con `re.sub` sin frontera de palabra partió
+     `invalido:` dejando un `in` suelto que rompió la sintaxis del censo. Y el
+     censo roto publicaba CERO hits, que se lee como «no hay defectos»: el
+     sub-patrón D con el propio instrumento como sujeto.
+
+Métrica: formas de la tabla INEQUÍVOCA halladas dentro de un span de comentario
+que devuelve el AST (`getLeadingCommentRanges`/`getTrailingCommentRanges`),
+excluyendo comentarios de directiva.
+Ciega a: la palabra española cuya forma sin tilde también es inglesa (las cinco
+retiradas a mano); el texto dentro de un template literal, que no es comentario
+sino prompt del clasificador; y la fidelidad de la traducción, que es otro eje.
+
+El control que discrimina: `only_comments_changed.mjs` (transpileModule con
+removeComments). Si una sustitución tocara un identificador o un literal de
+cadena, el cuerpo emitido divergiría del de la referencia. 32 comparados, 0
+divergentes.

@@ -73,33 +73,34 @@ import sys
 _SCRIPTS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 for _sub in ('task', 'verify'):
     _ruta = os.path.join(_SCRIPTS_DIR, _sub)
-    if _ruta not in sys.path:
-        sys.path.insert(0, _ruta)
-import task_source  # noqa: E402
+from task import task_source  # noqa: E402
+from paths import reach  # noqa: E402
 
 DONE = 'completed'
 
-#: El árbol de clones hermanos, derivado de la posición de este guion
-#: (``<árbol>/kaupamex-docs/.claude/scripts/``) y NO de ``~``: el proceso del
-#: agente corre con un HOME distinto del dueño de los repos, así que
-#: ``expanduser`` apuntaba fuera del árbol. Se midió: con esa raíz el índice
-#: salía de cero símbolos y **todas** las rutas se declaraban fantasma — el
-#: guion habría reportado el defecto que persigue por padecerlo él mismo.
-#: Desde la organización por clase (2026-08-27) este guion vive un nivel más
-#: hondo (``.claude/scripts/gates/``), así que son CINCO saltos y no cuatro.
-#: Se deriva con un bucle y NO con dirname anidados: al mudarlo, el conteo a
-#: mano es justo lo que se olvida, y su fallo es el silencioso que este
-#: docstring describe — índice de cero símbolos y todas las rutas fantasma.
-TREE_ROOT = os.path.abspath(__file__)
-for _ in range(5):  # gates/ -> scripts/ -> .claude/ -> kaupamex-docs/ -> árbol
-    TREE_ROOT = os.path.dirname(TREE_ROOT)
+#: El arbol de clones hermanos y las raices de codigo se PIDEN a
+#: ``paths.reach``; no se derivan contando saltos ni se escriben como
+#: literales.
+#:
+#: Antes: ``TREE_ROOT`` salia de un bucle de CINCO ``dirname`` y los cinco
+#: clones se componian con ``f'kaupamex-{name}'``. Las dos formas se rompieron
+#: con la mudanza a ``thyrox/src/verify/``: a esa profundidad son TRES saltos,
+#: asi que cinco desbordaban a ``/home`` y el indice salia de cero simbolos con
+#: todas las rutas declaradas fantasma. El docstring de arriba PREDICE ese
+#: fallo exacto y el codigo lo padecia — un comentario no es una Observation.
+#:
+#: ``reach`` resuelve por marcador y por entorno (``THYROX_REACH_ROOT`` /
+#: ``KAUPAMEX_ROOT``), asi que sobrevive a la proxima mudanza; y ``roots()``
+#: devuelve los clones en vez de que este guion los enumere, que es el defecto
+#: de consumidor que TASK-THYROX-0170 nombra.
+TREE_ROOT = str(reach.tree_root())
 
-#: Dónde se buscan los símbolos declarados: el árbol de la aplicación. La
-#: referencia queda fuera a propósito — que un símbolo exista en la fuente no
-#: dice nada sobre si está portado.
+#: Donde se buscan los simbolos declarados: el arbol de la aplicacion. La
+#: referencia queda fuera a proposito — que un simbolo exista en la fuente no
+#: dice nada sobre si esta portado.
 CODE_ROOTS = (
-    os.path.join(TREE_ROOT, 'kaupamex-api', 'src'),
-    os.path.join(TREE_ROOT, 'kaupamex-api', 'addons'),
+    os.path.join(str(reach.root('api')), 'src'),
+    os.path.join(str(reach.root('api')), 'addons'),
 )
 
 #: Raíces contra las que se resuelve una ruta citada en la ficha.
@@ -112,9 +113,20 @@ CODE_ROOTS = (
 #: Añadir una raíz sólo puede convertir un falso positivo en silencio: una ruta
 #: que de verdad no existe sigue sin resolver bajo ninguna, así que el cambio no
 #: puede esconder una señal legítima.
+#: Donde se busca una ruta citada: los CONSUMIDORES mas el PROVEEDOR.
+#:
+#: `reach.roots()` devuelve los consumidores, y el arbol donde vive este gate
+#: NO esta entre ellos — es el proveedor, y `reach` lo expone aparte. Sin esa
+#: segunda mitad toda cita de codigo propio resolvia a None y S2 la publicaba
+#: como premisa envejecida. Medido sobre el tablero al declararlo: 143 de 239
+#: citas no resueltas SI existen en el proveedor (59.8 % de veredictos falsos
+#: sobre codigo vivo).
+#:
+#: Ninguna raiz se nombra: el proveedor servira arboles que no son los de hoy,
+#: y por eso las dos mitades se PIDEN en vez de enumerarse.
 PATH_ROOTS = tuple(
-    os.path.join(TREE_ROOT, f'kaupamex-{name}', *extra)
-    for name in ('api', 'ui', 'db', 'docs', 'server')
+    os.path.join(str(raiz), *extra)
+    for raiz in (*reach.roots().values(), reach.thyrox_root())
     for extra in ((), ('.claude',))
 )
 

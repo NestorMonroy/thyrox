@@ -1,0 +1,44 @@
+== 1. sintaxis ==
+  ok    verificar_premisa.py parsea
+== 2. S1: simbolo REAL del arbol dispara RE-ENCUADRAR ==
+  FALLO #1 pide re-encuadre
+        esperado=[1] obtenido=[0]
+  FALLO   … nombra el simbolo has_groups
+        esperado=[1] obtenido=[0]
+  FALLO   … y cita su file:line como evidencia
+        esperado=[1] obtenido=[0]
+== 3. control negativo: simbolo que el arbol NO declara ==
+  ok    #2 tiene premisa firme
+== 4. sin verbo de construccion no hay senal S1 ==
+  ok    #3 no dispara S1 pese a citar has_groups
+== 5. S2: ruta citada que no existe ==
+  ok    #4 reporta la ruta fantasma
+== 5-bis. S2: una ruta bajo .claude/ NO es fantasma ==
+  ok    #11 no declara fantasma una ruta que existe bajo .claude/
+== 6. S3: bloqueador citado que ya cerro ==
+  ok    #5 reporta que su bloqueador #9 ya cerro
+== 7. tarea cerrada: la senal es esperada y NO cuenta ==
+  FALLO #9 declara la senal como esperada
+        esperado=[1] obtenido=[0]
+  ok      … y no suma al conteo
+== 8. --strict: exit 1 con senal, exit 0 sin ella ==
+  FALLO con senal sale 1
+        esperado=[1] obtenido=[0]
+  ok    sin senal sale 0
+== 9. universo vacio: no revienta ==
+  ok    directorio sin tareas sale 0
+== 10. el indice de simbolos NO sale de cero ==
+  FALLO el indice tiene simbolos (no 0)
+        esperado=[si] obtenido=[no]
+== 11. --emit-premises: la senal se vuelve premisa declarada ==
+  ok    el archivo emitido es JSON valido
+  FALLO #1 emite una presuposicion symbol-absent
+        esperado=[1] obtenido=[0]
+  FALLO   … y su alcance es un glob, no el archivo donde se hallo
+        esperado=[1] obtenido=[0]
+  ok    #4 emite una presuposicion path-exists
+  ok    #5 (S3) no emite predicado: el evaluador no lee el tablero
+  ok    una ficha sin senal no aparece
+
+test-verificar-premisa.sh: 13 ok · 8 fallo(s)
+EXIT=1

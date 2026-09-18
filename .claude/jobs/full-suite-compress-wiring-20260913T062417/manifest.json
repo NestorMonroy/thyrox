@@ -1,4 +1,0 @@
-{
-  "instrument": "bash -lc bun test 2>&1; echo EXIT=$?",
-  "started_at": "2026-09-13T06:24:17+00:00"
-}

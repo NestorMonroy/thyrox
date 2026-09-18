@@ -1,0 +1,16 @@
+import { describe, expect, test } from 'bun:test'
+import { sanitizeBetaHeaders } from '@thyrox/provider/betas.js'
+
+describe('sanitizeBetaHeaders', () => {
+  test('strips empty beta values and whitespace', () => {
+    expect(
+      sanitizeBetaHeaders([
+        'claude-code-how-works-how-works-20250219',
+        '',
+        '   ',
+        'fast-mode-2026-02-01',
+        ' fast-mode-2026-02-01 ',
+      ]),
+    ).toEqual(['claude-code-how-works-how-works-20250219', 'fast-mode-2026-02-01'])
+  })
+})

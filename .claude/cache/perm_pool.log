@@ -1,0 +1,410 @@
+run-task-pool: 101 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260918T153537
+  job-20260918T153537/job-001 pid 7525    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh README.md
+  job-20260918T153537/job-002 pid 7547    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/PermissionMode.test.ts
+  job-20260918T153537/job-003 pid 7570    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/autoModeDenials.behavior.test.ts
+  job-20260918T153537/job-004 pid 7593    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/autoModeState.test.ts
+  job-20260918T153537/job-005 pid 7615    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/automodeAntAlignment.contract.test.ts
+  job-20260918T153537/job-006 pid 7637    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/bashClassifierStub.behavior.test.ts
+  job-20260918T153537/job-007 pid 7659    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/classifierOperatorModel.contract.test.ts
+  job-20260918T153537/job-008 pid 7681    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/classifierProtectedPaths.contract.test.ts
+  job-20260918T153537/job-009 pid 7703    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/classifierProviderSkip.behavior.test.ts
+  job-20260918T153537/job-010 pid 7725    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/classifierShared.test.ts
+  job-20260918T153537/job-011 pid 7747    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/classifierTranscriptMeta.test.ts
+  job-20260918T153537/job-012 pid 7769    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/dangerousBashPermission.behavior.test.ts
+  job-20260918T153537/job-013 pid 7791    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/dangerousPaths.behavior.test.ts
+  job-20260918T153537/job-014 pid 7813    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/dangerousPatterns.test.ts
+  job-20260918T153537/job-015 pid 7835    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/dangerousPermissions.test.ts
+  job-20260918T153537/job-016 pid 7857    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/denialTracking.test.ts
+  job-20260918T153537/job-017 pid 7879    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/getNextPermissionMode.test.ts
+  job-20260918T153537/job-018 pid 7901    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/getRuleBehaviorDescription.test.ts
+  job-20260918T153537/job-019 pid 7923    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/isAutoModeAllowlistedTool.test.ts
+  job-20260918T153537/job-020 pid 7945    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/parseToolListFromCLI.test.ts
+  job-20260918T153537/job-021 pid 7967    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/pathValidation.test.ts
+  job-20260918T153537/job-022 pid 7989    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/permissionErrors.behavior.test.ts
+  job-20260918T153537/job-023 pid 8011    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/permissionRuleParser.test.ts
+  job-20260918T153537/job-024 pid 8033    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/permissionSchemas.behavior.test.ts
+  job-20260918T153537/job-025 pid 8055    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/permissionUpdatePure.test.ts
+  job-20260918T153537/job-026 pid 8077    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/permissions.test.ts
+  job-20260918T153537/job-027 pid 8099    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/shadowedRuleDetection.test.ts
+  job-20260918T153537/job-028 pid 8121    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/shellRuleMatching-edge.test.ts
+  job-20260918T153537/job-029 pid 8143    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/__tests__/shellRuleMatching.test.ts
+  job-20260918T153537/job-030 pid 8165    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/bypassPermissionsKillswitch.ts
+  job-20260918T153537/job-031 pid 8187    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/classifierApprovalsHook.ts
+/home/user/thyrox/src/session/wait-jobs.sh: line 183: /proc/8209/cmdline: No such file or directory
+  job-20260918T153537/job-032 pid 8209    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/classifierDecision.ts
+  job-20260918T153537/job-033 pid 8222    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/classifierStallTracking.ts
+  job-20260918T153537/job-034 pid 8233    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/commands/index.ts
+  job-20260918T153537/job-035 pid 8255    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/commands/permissions.tsx
+  job-20260918T153537/job-036 pid 8277    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx
+  job-20260918T153537/job-037 pid 8299    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/AskUserQuestionPermissionRequest/PreviewBox.tsx
+  job-20260918T153537/job-038 pid 8323    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/AskUserQuestionPermissionRequest/PreviewQuestionView.tsx
+  job-20260918T153537/job-039 pid 8345    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar.tsx
+  job-20260918T153537/job-040 pid 8367    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/AskUserQuestionPermissionRequest/QuestionView.tsx
+  job-20260918T153537/job-041 pid 8389    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/AskUserQuestionPermissionRequest/SubmitQuestionsView.tsx
+  job-20260918T153537/job-042 pid 8411    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/AskUserQuestionPermissionRequest/use-multiple-choice-state.ts
+  job-20260918T153537/job-043 pid 8433    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/AskUserQuestionPermissionRequest/useQuestionAutoContinue.ts
+  job-20260918T153537/job-044 pid 8455    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/BashPermissionRequest/BashPermissionRequest.tsx
+  job-20260918T153537/job-045 pid 8477    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/BashPermissionRequest/bashToolUseOptions.tsx
+  job-20260918T153537/job-046 pid 8500    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/ComputerUseApproval/ComputerUseApproval.tsx
+  job-20260918T153537/job-047 pid 8522    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/EnterPlanModePermissionRequest/EnterPlanModePermissionRequest.tsx
+  job-20260918T153537/job-048 pid 8545    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx
+  job-20260918T153537/job-049 pid 8568    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/FallbackPermissionRequest.tsx
+  job-20260918T153537/job-050 pid 8591    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/FileEditPermissionRequest/FileEditPermissionRequest.tsx
+  job-20260918T153537/job-051 pid 8613    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/FilePermissionDialog/FilePermissionDialog.tsx
+  job-20260918T153537/job-052 pid 8636    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/FilePermissionDialog/ideDiffConfig.ts
+  job-20260918T153537/job-053 pid 8659    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/FilePermissionDialog/permissionOptions.tsx
+  job-20260918T153537/job-054 pid 8681    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/FilePermissionDialog/useFilePermissionDialog.ts
+  job-20260918T153537/job-055 pid 8703    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/FilePermissionDialog/usePermissionHandler.ts
+  job-20260918T153537/job-056 pid 8725    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/FileWritePermissionRequest/FileWritePermissionRequest.tsx
+  job-20260918T153537/job-057 pid 8748    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/FileWritePermissionRequest/FileWriteToolDiff.tsx
+  job-20260918T153537/job-058 pid 8770    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/FilesystemPermissionRequest/FilesystemPermissionRequest.tsx
+  job-20260918T153537/job-059 pid 8792    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/MonitorPermissionRequest/MonitorPermissionRequest.ts
+  job-20260918T153537/job-060 pid 8816    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/NotebookEditPermissionRequest/NotebookEditPermissionRequest.tsx
+  job-20260918T153537/job-061 pid 8838    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx
+  job-20260918T153537/job-062 pid 8861    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/PermissionDecisionDebugInfo.tsx
+  job-20260918T153537/job-063 pid 8883    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/PermissionDialog.tsx
+  job-20260918T153537/job-064 pid 8905    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/PermissionExplanation.tsx
+  job-20260918T153537/job-065 pid 8927    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/PermissionPrompt.tsx
+  job-20260918T153537/job-066 pid 8949    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/PermissionRequest.tsx
+  job-20260918T153537/job-067 pid 8971    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/PermissionRequestTitle.tsx
+  job-20260918T153537/job-068 pid 8993    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/PermissionRuleExplanation.tsx
+  job-20260918T153537/job-069 pid 9015    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/PowerShellPermissionRequest/PowerShellPermissionRequest.tsx
+  job-20260918T153537/job-070 pid 9037    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/PowerShellPermissionRequest/powershellToolUseOptions.tsx
+  job-20260918T153537/job-071 pid 9060    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/ReviewArtifactPermissionRequest/ReviewArtifactPermissionRequest.ts
+  job-20260918T153537/job-072 pid 9082    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/SandboxPermissionRequest.tsx
+  job-20260918T153537/job-073 pid 9105    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/SedEditPermissionRequest/SedEditPermissionRequest.tsx
+  job-20260918T153537/job-074 pid 9127    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/SkillPermissionRequest/SkillPermissionRequest.tsx
+  job-20260918T153537/job-075 pid 9151    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/WebFetchPermissionRequest/WebFetchPermissionRequest.tsx
+  job-20260918T153537/job-076 pid 9172    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/WorkerBadge.tsx
+  job-20260918T153537/job-077 pid 9196    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/WorkerPendingPermission.tsx
+  job-20260918T153537/job-078 pid 9218    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/hooks.ts
+  job-20260918T153537/job-079 pid 9240    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/permissionRequestTypes.ts
+  job-20260918T153537/job-080 pid 9262    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/rules/AddPermissionRules.tsx
+  job-20260918T153537/job-081 pid 9284    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/rules/AddWorkspaceDirectory.tsx
+  job-20260918T153537/job-082 pid 9307    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/rules/PermissionRuleDescription.tsx
+  job-20260918T153537/job-083 pid 9329    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/rules/PermissionRuleInput.tsx
+  job-20260918T153537/job-084 pid 9351    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/rules/PermissionRuleList.tsx
+  job-20260918T153537/job-085 pid 9373    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/rules/RecentDenialsTab.tsx
+  job-20260918T153537/job-086 pid 9395    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/rules/RemoveWorkspaceDirectory.tsx
+  job-20260918T153537/job-087 pid 9417    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/rules/WorkspaceTab.tsx
+  job-20260918T153537/job-088 pid 9439    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/shellPermissionHelpers.tsx
+  job-20260918T153537/job-089 pid 9461    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/useShellPermissionFeedback.ts
+  job-20260918T153537/job-090 pid 9483    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/components/utils.ts
+  job-20260918T153537/job-091 pid 9505    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/permissionExplainer.ts
+  job-20260918T153537/job-092 pid 9527    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/toolPermission/PermissionContext.ts
+  job-20260918T153537/job-093 pid 9549    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/toolPermission/handlers/coordinatorHandler.ts
+  job-20260918T153537/job-094 pid 9571    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/toolPermission/handlers/interactiveHandler.ts
+  job-20260918T153537/job-095 pid 9594    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/toolPermission/handlers/swarmWorkerHandler.ts
+  job-20260918T153537/job-096 pid 9616    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/toolPermission/permissionLogging.ts
+  job-20260918T153537/job-097 pid 9638    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/yolo-classifier-prompts/auto_mode_system_prompt.txt
+  job-20260918T153537/job-098 pid 9660    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/yolo-classifier-prompts/permissions_anthropic.txt
+  job-20260918T153537/job-099 pid 9683    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/yolo-classifier-prompts/permissions_external.txt
+  job-20260918T153537/job-100 pid 9705    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/yoloClassifier.ts
+  job-20260918T153537/job-101 pid 9727    bash /home/user/thyrox/.claude/workbench/completar-permission-desde-la-referencia-20260918T153125/probes/copy_missing_file.sh src/yoloSystemPrompt.ts
+run-task-pool: lanzados 101 de 101; esperando en PRIMER PLANO (timeout 1800s)
+== 102 trabajos asentados ==
+OLVIDADO job-20260918T153537
+       | (vacío — no emitió nada)
+OK     job-20260918T153537_job-001
+       | copiado README.md (1632 B)
+       | EXIT=0
+OK     job-20260918T153537_job-002
+       | copiado src/__tests__/PermissionMode.test.ts (8548 B)
+       | EXIT=0
+OK     job-20260918T153537_job-003
+       | copiado src/__tests__/autoModeDenials.behavior.test.ts (3833 B)
+       | EXIT=0
+OK     job-20260918T153537_job-004
+       | copiado src/__tests__/autoModeState.test.ts (4115 B)
+       | EXIT=0
+OK     job-20260918T153537_job-005
+       | copiado src/__tests__/automodeAntAlignment.contract.test.ts (5393 B)
+       | EXIT=0
+OK     job-20260918T153537_job-006
+       | copiado src/__tests__/bashClassifierStub.behavior.test.ts (5616 B)
+       | EXIT=0
+OK     job-20260918T153537_job-007
+       | copiado src/__tests__/classifierOperatorModel.contract.test.ts (3586 B)
+       | EXIT=0
+OK     job-20260918T153537_job-008
+       | copiado src/__tests__/classifierProtectedPaths.contract.test.ts (7965 B)
+       | EXIT=0
+OK     job-20260918T153537_job-009
+       | copiado src/__tests__/classifierProviderSkip.behavior.test.ts (3251 B)
+       | EXIT=0
+OK     job-20260918T153537_job-010
+       | copiado src/__tests__/classifierShared.test.ts (5910 B)
+       | EXIT=0
+OK     job-20260918T153537_job-011
+       | copiado src/__tests__/classifierTranscriptMeta.test.ts (4786 B)
+       | EXIT=0
+OK     job-20260918T153537_job-012
+       | copiado src/__tests__/dangerousBashPermission.behavior.test.ts (3572 B)
+       | EXIT=0
+OK     job-20260918T153537_job-013
+       | copiado src/__tests__/dangerousPaths.behavior.test.ts (4081 B)
+       | EXIT=0
+OK     job-20260918T153537_job-014
+       | copiado src/__tests__/dangerousPatterns.test.ts (2661 B)
+       | EXIT=0
+OK     job-20260918T153537_job-015
+       | copiado src/__tests__/dangerousPermissions.test.ts (8125 B)
+       | EXIT=0
+OK     job-20260918T153537_job-016
+       | copiado src/__tests__/denialTracking.test.ts (3299 B)
+       | EXIT=0
+OK     job-20260918T153537_job-017
+       | copiado src/__tests__/getNextPermissionMode.test.ts (4718 B)
+       | EXIT=0
+OK     job-20260918T153537_job-018
+       | copiado src/__tests__/getRuleBehaviorDescription.test.ts (1499 B)
+       | EXIT=0
+OK     job-20260918T153537_job-019
+       | copiado src/__tests__/isAutoModeAllowlistedTool.test.ts (3772 B)
+       | EXIT=0
+OK     job-20260918T153537_job-020
+       | copiado src/__tests__/parseToolListFromCLI.test.ts (4143 B)
+       | EXIT=0
+OK     job-20260918T153537_job-021
+       | copiado src/__tests__/pathValidation.test.ts (5028 B)
+       | EXIT=0
+OK     job-20260918T153537_job-022
+       | copiado src/__tests__/permissionErrors.behavior.test.ts (5888 B)
+       | EXIT=0
+OK     job-20260918T153537_job-023
+       | copiado src/__tests__/permissionRuleParser.test.ts (4401 B)
+       | EXIT=0
+OK     job-20260918T153537_job-024
+       | copiado src/__tests__/permissionSchemas.behavior.test.ts (7177 B)
+       | EXIT=0
+OK     job-20260918T153537_job-025
+       | copiado src/__tests__/permissionUpdatePure.test.ts (7356 B)
+       | EXIT=0
+OK     job-20260918T153537_job-026
+       | copiado src/__tests__/permissions.test.ts (6029 B)
+       | EXIT=0
+OK     job-20260918T153537_job-027
+       | copiado src/__tests__/shadowedRuleDetection.test.ts (9461 B)
+       | EXIT=0
+OK     job-20260918T153537_job-028
+       | copiado src/__tests__/shellRuleMatching-edge.test.ts (10248 B)
+       | EXIT=0
+OK     job-20260918T153537_job-029
+       | copiado src/__tests__/shellRuleMatching.test.ts (5224 B)
+       | EXIT=0
+OK     job-20260918T153537_job-030
+       | copiado src/bypassPermissionsKillswitch.ts (4895 B)
+       | EXIT=0
+OK     job-20260918T153537_job-031
+       | copiado src/classifierApprovalsHook.ts (531 B)
+       | EXIT=0
+OK     job-20260918T153537_job-032
+       | YA EXISTE, no se pisa: src/classifierDecision.ts
+       | EXIT=3
+OK     job-20260918T153537_job-033
+       | YA EXISTE, no se pisa: src/classifierStallTracking.ts
+       | EXIT=3
+OK     job-20260918T153537_job-034
+       | copiado src/commands/index.ts (325 B)
+       | EXIT=0
+OK     job-20260918T153537_job-035
+       | copiado src/commands/permissions.tsx (585 B)
+       | EXIT=0
+OK     job-20260918T153537_job-036
+       | copiado src/components/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx (21270 B)
+       | EXIT=0
+OK     job-20260918T153537_job-037
+       | copiado src/components/AskUserQuestionPermissionRequest/PreviewBox.tsx (5796 B)
+       | EXIT=0
+OK     job-20260918T153537_job-038
+       | copiado src/components/AskUserQuestionPermissionRequest/PreviewQuestionView.tsx (15539 B)
+       | EXIT=0
+OK     job-20260918T153537_job-039
+       | copiado src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar.tsx (5076 B)
+       | EXIT=0
+OK     job-20260918T153537_job-040
+       | copiado src/components/AskUserQuestionPermissionRequest/QuestionView.tsx (12507 B)
+       | EXIT=0
+OK     job-20260918T153537_job-041
+       | copiado src/components/AskUserQuestionPermissionRequest/SubmitQuestionsView.tsx (3528 B)
+       | EXIT=0
+OK     job-20260918T153537_job-042
+       | copiado src/components/AskUserQuestionPermissionRequest/use-multiple-choice-state.ts (4142 B)
+       | EXIT=0
+OK     job-20260918T153537_job-043
+       | copiado src/components/AskUserQuestionPermissionRequest/useQuestionAutoContinue.ts (954 B)
+       | EXIT=0
+OK     job-20260918T153537_job-044
+       | copiado src/components/BashPermissionRequest/BashPermissionRequest.tsx (21743 B)
+       | EXIT=0
+OK     job-20260918T153537_job-045
+       | copiado src/components/BashPermissionRequest/bashToolUseOptions.tsx (6370 B)
+       | EXIT=0
+OK     job-20260918T153537_job-046
+       | copiado src/components/ComputerUseApproval/ComputerUseApproval.tsx (9585 B)
+       | EXIT=0
+OK     job-20260918T153537_job-047
+       | copiado src/components/EnterPlanModePermissionRequest/EnterPlanModePermissionRequest.tsx (2725 B)
+       | EXIT=0
+OK     job-20260918T153537_job-048
+       | copiado src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx (36659 B)
+       | EXIT=0
+OK     job-20260918T153537_job-049
+       | copiado src/components/FallbackPermissionRequest.tsx (5996 B)
+       | EXIT=0
+OK     job-20260918T153537_job-050
+       | copiado src/components/FileEditPermissionRequest/FileEditPermissionRequest.tsx (2449 B)
+       | EXIT=0
+OK     job-20260918T153537_job-051
+       | copiado src/components/FilePermissionDialog/FilePermissionDialog.tsx (8693 B)
+       | EXIT=0
+OK     job-20260918T153537_job-052
+       | copiado src/components/FilePermissionDialog/ideDiffConfig.ts (858 B)
+       | EXIT=0
+OK     job-20260918T153537_job-053
+       | copiado src/components/FilePermissionDialog/permissionOptions.tsx (6500 B)
+       | EXIT=0
+OK     job-20260918T153537_job-054
+       | copiado src/components/FilePermissionDialog/useFilePermissionDialog.ts (6810 B)
+       | EXIT=0
+OK     job-20260918T153537_job-055
+       | copiado src/components/FilePermissionDialog/usePermissionHandler.ts (5169 B)
+       | EXIT=0
+OK     job-20260918T153537_job-056
+       | copiado src/components/FileWritePermissionRequest/FileWritePermissionRequest.tsx (3250 B)
+       | EXIT=0
+OK     job-20260918T153537_job-057
+       | copiado src/components/FileWritePermissionRequest/FileWriteToolDiff.tsx (2168 B)
+       | EXIT=0
+OK     job-20260918T153537_job-058
+       | copiado src/components/FilesystemPermissionRequest/FilesystemPermissionRequest.tsx (2534 B)
+       | EXIT=0
+OK     job-20260918T153537_job-059
+       | copiado src/components/MonitorPermissionRequest/MonitorPermissionRequest.ts (165 B)
+       | EXIT=0
+OK     job-20260918T153537_job-060
+       | copiado src/components/NotebookEditPermissionRequest/NotebookEditPermissionRequest.tsx (2448 B)
+       | EXIT=0
+OK     job-20260918T153537_job-061
+       | copiado src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx (5297 B)
+       | EXIT=0
+OK     job-20260918T153537_job-062
+       | copiado src/components/PermissionDecisionDebugInfo.tsx (10738 B)
+       | EXIT=0
+OK     job-20260918T153537_job-063
+       | copiado src/components/PermissionDialog.tsx (1285 B)
+       | EXIT=0
+OK     job-20260918T153537_job-064
+       | copiado src/components/PermissionExplanation.tsx (5746 B)
+       | EXIT=0
+OK     job-20260918T153537_job-065
+       | copiado src/components/PermissionPrompt.tsx (8723 B)
+       | EXIT=0
+OK     job-20260918T153537_job-066
+       | copiado src/components/PermissionRequest.tsx (8136 B)
+       | EXIT=0
+OK     job-20260918T153537_job-067
+       | copiado src/components/PermissionRequestTitle.tsx (929 B)
+       | EXIT=0
+OK     job-20260918T153537_job-068
+       | copiado src/components/PermissionRuleExplanation.tsx (3502 B)
+       | EXIT=0
+OK     job-20260918T153537_job-069
+       | copiado src/components/PowerShellPermissionRequest/PowerShellPermissionRequest.tsx (10483 B)
+       | EXIT=0
+OK     job-20260918T153537_job-070
+       | copiado src/components/PowerShellPermissionRequest/powershellToolUseOptions.tsx (3407 B)
+       | EXIT=0
+OK     job-20260918T153537_job-071
+       | copiado src/components/ReviewArtifactPermissionRequest/ReviewArtifactPermissionRequest.ts (172 B)
+       | EXIT=0
+OK     job-20260918T153537_job-072
+       | copiado src/components/SandboxPermissionRequest.tsx (3325 B)
+       | EXIT=0
+OK     job-20260918T153537_job-073
+       | copiado src/components/SedEditPermissionRequest/SedEditPermissionRequest.tsx (4432 B)
+       | EXIT=0
+OK     job-20260918T153537_job-074
+       | copiado src/components/SkillPermissionRequest/SkillPermissionRequest.tsx (8087 B)
+       | EXIT=0
+OK     job-20260918T153537_job-075
+       | copiado src/components/WebFetchPermissionRequest/WebFetchPermissionRequest.tsx (4389 B)
+       | EXIT=0
+OK     job-20260918T153537_job-076
+       | copiado src/components/WorkerBadge.tsx (745 B)
+       | EXIT=0
+OK     job-20260918T153537_job-077
+       | copiado src/components/WorkerPendingPermission.tsx (1653 B)
+       | EXIT=0
+OK     job-20260918T153537_job-078
+       | copiado src/components/hooks.ts (8555 B)
+       | EXIT=0
+OK     job-20260918T153537_job-079
+       | copiado src/components/permissionRequestTypes.ts (2088 B)
+       | EXIT=0
+OK     job-20260918T153537_job-080
+       | copiado src/components/rules/AddPermissionRules.tsx (5135 B)
+       | EXIT=0
+OK     job-20260918T153537_job-081
+       | copiado src/components/rules/AddWorkspaceDirectory.tsx (8587 B)
+       | EXIT=0
+OK     job-20260918T153537_job-082
+       | copiado src/components/rules/PermissionRuleDescription.tsx (1242 B)
+       | EXIT=0
+OK     job-20260918T153537_job-083
+       | copiado src/components/rules/PermissionRuleInput.tsx (3473 B)
+       | EXIT=0
+OK     job-20260918T153537_job-084
+       | copiado src/components/rules/PermissionRuleList.tsx (24377 B)
+       | EXIT=0
+OK     job-20260918T153537_job-085
+       | copiado src/components/rules/RecentDenialsTab.tsx (3430 B)
+       | EXIT=0
+OK     job-20260918T153537_job-086
+       | copiado src/components/rules/RemoveWorkspaceDirectory.tsx (1836 B)
+       | EXIT=0
+OK     job-20260918T153537_job-087
+       | copiado src/components/rules/WorkspaceTab.tsx (3151 B)
+       | EXIT=0
+OK     job-20260918T153537_job-088
+       | copiado src/components/shellPermissionHelpers.tsx (6036 B)
+       | EXIT=0
+OK     job-20260918T153537_job-089
+       | copiado src/components/useShellPermissionFeedback.ts (4519 B)
+       | EXIT=0
+OK     job-20260918T153537_job-090
+       | copiado src/components/utils.ts (704 B)
+       | EXIT=0
+OK     job-20260918T153537_job-091
+       | copiado src/permissionExplainer.ts (8226 B)
+       | EXIT=0
+OK     job-20260918T153537_job-092
+       | copiado src/toolPermission/PermissionContext.ts (13012 B)
+       | EXIT=0
+OK     job-20260918T153537_job-093
+       | copiado src/toolPermission/handlers/coordinatorHandler.ts (2356 B)
+       | EXIT=0
+OK     job-20260918T153537_job-094
+       | copiado src/toolPermission/handlers/interactiveHandler.ts (20299 B)
+       | EXIT=0
+OK     job-20260918T153537_job-095
+       | copiado src/toolPermission/handlers/swarmWorkerHandler.ts (5585 B)
+       | EXIT=0
+OK     job-20260918T153537_job-096
+       | copiado src/toolPermission/permissionLogging.ts (7498 B)
+       | EXIT=0
+OK     job-20260918T153537_job-097
+       | copiado src/yolo-classifier-prompts/auto_mode_system_prompt.txt (15585 B)
+       | EXIT=0
+OK     job-20260918T153537_job-098
+       | copiado src/yolo-classifier-prompts/permissions_anthropic.txt (18156 B)
+       | EXIT=0
+OK     job-20260918T153537_job-099
+       | copiado src/yolo-classifier-prompts/permissions_external.txt (18156 B)
+       | EXIT=0
+OK     job-20260918T153537_job-100
+       | copiado src/yoloClassifier.ts (48415 B)
+       | EXIT=0
+OK     job-20260918T153537_job-101
+       | copiado src/yoloSystemPrompt.ts (21518 B)
+       | EXIT=0

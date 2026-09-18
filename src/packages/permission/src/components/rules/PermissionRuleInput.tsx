@@ -1,0 +1,112 @@
+import figures from 'figures'
+import * as React from 'react'
+import { useState } from 'react'
+import TextInput from '@thyrox/repl/components/TextInput.js'
+import { useExitOnCtrlCDWithKeybindings } from '@thyrox/repl/hooks/useExitOnCtrlCDWithKeybindings.js'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box, Newline, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
+import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
+import { WebFetchTool } from '@thyrox/tool-registry/tools/WebFetchTool/WebFetchTool.js'
+import type {
+  PermissionBehavior,
+  PermissionRuleValue,
+} from '../../PermissionRule.js'
+import {
+  permissionRuleValueFromString,
+  permissionRuleValueToString,
+} from '../../permissionRuleParser.js'
+
+type PermissionRuleInputProps = {
+  onCancel: () => void
+  onSubmit: (
+    ruleValue: PermissionRuleValue,
+    ruleBehavior: PermissionBehavior,
+  ) => void
+  ruleBehavior: PermissionBehavior
+}
+
+export function PermissionRuleInput({
+  onCancel,
+  onSubmit,
+  ruleBehavior,
+}: PermissionRuleInputProps): React.ReactNode {
+  const [inputValue, setInputValue] = useState('')
+  const [cursorOffset, setCursorOffset] = useState(0)
+  const exitState = useExitOnCtrlCDWithKeybindings()
+
+  // Copia de `ccnmt: packages/permission/src/components/rules/
+  // PermissionRuleInput.tsx` con los comentarios traducidos; el cuerpo es el de
+  // la fuente.
+  //
+  // Se usa el keybinding configurable para que ESC cancele, y el contexto de
+  // Settings para que la tecla 'n' no cancele, y así se pueda teclear 'n' en el
+  // input.
+  useKeybinding('confirm:no', onCancel, { context: 'Settings' })
+
+  const { columns } = useTerminalSize()
+  const textInputColumns = columns - 6
+
+  const handleSubmit = (value: string) => {
+    const trimmedValue = value.trim()
+    if (trimmedValue.length === 0) {
+      return
+    }
+    const ruleValue = permissionRuleValueFromString(trimmedValue)
+    onSubmit(ruleValue, ruleBehavior)
+  }
+
+  return (
+    <>
+      <Box
+        flexDirection="column"
+        gap={1}
+        borderStyle="round"
+        paddingLeft={1}
+        paddingRight={1}
+        borderColor="permission"
+      >
+        <Text bold color="permission">
+          Add {ruleBehavior} permission rule
+        </Text>
+        <Box flexDirection="column">
+          <Text>
+            Permission rules are a tool name, optionally followed by a specifier
+            in parentheses.
+            <Newline />
+            e.g.,{' '}
+            <Text bold>
+              {permissionRuleValueToString({ toolName: WebFetchTool.name })}
+            </Text>
+            <Text bold={false}> or </Text>
+            <Text bold>
+              {permissionRuleValueToString({
+                toolName: BashTool.name,
+                ruleContent: 'ls:*',
+              })}
+            </Text>
+          </Text>
+          <Box borderDimColor borderStyle="round" marginY={1} paddingLeft={1}>
+            <TextInput
+              showCursor
+              value={inputValue}
+              onChange={setInputValue}
+              onSubmit={handleSubmit}
+              placeholder={`Enter permission rule${figures.ellipsis}`}
+              columns={textInputColumns}
+              cursorOffset={cursorOffset}
+              onChangeCursorOffset={setCursorOffset}
+            />
+          </Box>
+        </Box>
+      </Box>
+      <Box marginLeft={3}>
+        {exitState.pending ? (
+          <Text dimColor>Press {exitState.keyName} again to exit</Text>
+        ) : (
+          <Text dimColor>Enter to submit · Esc to cancel</Text>
+        )}
+      </Box>
+    </>
+  )
+}

@@ -1,0 +1,11 @@
+# Avance del porte de permission — 2026-09-18T15:37:19
+# Fuente de las cifras: comm/sha256 sobre los listados find, NO el veredicto del pool.
+
+FASE 1 — COPIA          101 de 101   COMPLETA   (faltan=0, sobran=28)
+  referencia            139 archivos
+  puerto                167 archivos  (139 de la referencia + 28 propios)
+  copiados en este pase 101 archivos  (byte a byte idénticos: 101/101)
+  ya existían            38 archivos  (los 38 que difieren: adaptados antes)
+
+FASE 2 — TRADUCCION     0 de ?       PENDIENTE
+FASE 3 — TESTS          bloqueada hasta que FASE 2 cierre (directiva del ejecutor)

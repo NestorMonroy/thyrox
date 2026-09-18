@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# THYROX — post-commit. Sincroniza el indice tras un commit POR PATHSPEC.
+#
+# El defecto que cierra, medido por conducta
+# (`.claude/workbench/indice-rancio-por-commit-de-pathspec-*`)
+# ---------------------------------------------------------------------------
+# `git commit -- <ruta>` NO usa `.git/index`: construye un indice TEMPORAL
+# (`next-index-<pid>.lock`) con HEAD mas las rutas nombradas, y corre el
+# `pre-commit` con `GIT_INDEX_FILE` apuntando ahi. Medido en git 2.43.0:
+#
+#     GIT_INDEX_FILE visto por el hook: .../.git/next-index-30638.lock
+#
+# El `git add` del `pre-commit` —que es NECESARIO: sin el, la reconciliacion
+# que el propio hook acaba de escribir en disco NO viaja en el commit (caso C
+# de la sonda: worktree adelante, HEAD sin la mutacion)— escribe en ESE indice.
+# El indice REAL se queda con la instantanea previa al hook, asi que `git
+# status` publica `MM` de forma permanente con HEAD y worktree identicos byte a
+# byte:
+#
+#     HEAD     626799f0…   worktree 626799f0…   index 45b2285c…   ->  MM
+#
+# Ese `MM` es lo que el gate de `Stop` lee como trabajo sin publicar, y el
+# remedio obvio —volver a commitear— reproduce el bucle.
+#
+# Por que aqui y no en el `pre-commit`
+# ---------------------------------------------------------------------------
+# Porque ahi el indice real esta TOMADO por el `git commit` en curso. Medido:
+#
+#     fatal: Unable to create '.../.git/index.lock': File exists.   EXIT=128
+#
+# El `post-commit` corre cuando ese lock ya se solto.
+#
+# La guarda, que es lo que lo hace seguro
+# ---------------------------------------------------------------------------
+# Sincroniza SOLO cuando el blob del disco coincide con el que HEAD acaba de
+# registrar. Con esa igualdad el `reset` no puede ocultar nada: no hay trabajo
+# que perder, solo una entrada de indice que quedo un blob atras. Si alguien
+# escribio el archivo despues del commit, HEAD y disco difieren y el hook se
+# abstiene.
+#
+# No falla nunca el commit: el commit ya ocurrio, y el codigo de salida de un
+# `post-commit` no lo revierte. Sale 0 siempre.
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+[ -n "$ROOT" ] || exit 0
+
+STORE_REL="agent-results/agent_store.sqlite3"
+
+# Solo las rutas que ESTE commit registro. Es la condicion correcta y no «lo
+# que el usuario nombro en la linea de comando»: medido, un `git add` del
+# pre-commit sobre una ruta FUERA del pathspec tambien aterriza en el commit,
+# asi que el pathspec no describe el contenido del commit.
+tocadas="$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null)" || exit 0
+
+case "$tocadas" in
+*"$STORE_REL"*) ;;
+*) exit 0 ;;
+esac
+
+[ -f "$ROOT/$STORE_REL" ] || exit 0
+
+en_head="$(git rev-parse "HEAD:$STORE_REL" 2>/dev/null)" || exit 0
+en_disco="$(git hash-object "$ROOT/$STORE_REL" 2>/dev/null)" || exit 0
+
+# La guarda. Sin esta igualdad el `reset` despreparia trabajo real.
+[ "$en_head" = "$en_disco" ] || exit 0
+
+en_indice="$(git ls-files -s -- "$STORE_REL" 2>/dev/null | awk '{print $2}')"
+[ "$en_indice" = "$en_head" ] && exit 0   # ya sincronizado: nada que hacer
+
+git reset -q -- "$STORE_REL" 2>/dev/null || true
+exit 0

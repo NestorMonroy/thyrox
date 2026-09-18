@@ -1,0 +1,20 @@
+== 1. el mismo centro para las dos distribuciones ==
+  ok    centro del estable = 30.0
+  ok    centro del erratico = 30.0
+== 2. el apartamiento SI las distingue — forma 1 ==
+  ok    apartamiento del estable = 1.2
+  ok    apartamiento del erratico = 120.0
+== 3. la desviacion estandar, en las unidades originales ==
+  ok    apartamiento tipico del erratico ~ 10.954451150103322
+== 4. la forma 2 da lo mismo, en una sola pasada ==
+  ok    una pasada sobre el erratico
+  ok    una pasada sobre el estable
+== 5. pesos que no suman 1: REHUSA, no publica cifra ==
+  ok    NotADistribution
+== 6. un peso por valor, o tampoco hay distribucion ==
+  ok    NotADistribution
+== 7. una MUESTRA no es una distribucion: se declara al convertirla ==
+  ok    cinco pesos de 1/5
+  ok    la media muestral es la esperanza empirica
+
+11 ok, 0 fallos

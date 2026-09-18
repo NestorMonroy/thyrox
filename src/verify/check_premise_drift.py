@@ -23,12 +23,18 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 import importlib.util
-import json
 import sys
 from pathlib import Path
 
+
+from lib.jsonl import read_records, write_records  # noqa: E402
+
 HERE = Path(__file__).resolve().parent
-DEFAULT_BASELINE = HERE / 'premise_drift_baseline.json'
+#: JSONL: un registro por ficha. La forma la fija TASK-THYROX-0066, y aqui
+#: encaja por contenido y no solo por directiva — el baseline ES una coleccion
+#: de registros (una ficha, un veredicto), asi que el diff de un cambio es una
+#: linea en vez de todas las llaves del documento.
+DEFAULT_BASELINE = HERE / 'premise_drift_baseline.jsonl'
 EXIT_GUARD = 2
 
 
@@ -98,7 +104,9 @@ def main() -> int:
     resumen = ' · '.join(f'{k}: {n}' for k, n in sorted(reparto.items()))
 
     if args.write_baseline:
-        baseline_path.write_text(json.dumps(ahora, indent=1, sort_keys=True) + '\n')
+        write_records(baseline_path, (
+            {'task_id': task_id, 'verdict': ahora[task_id]}
+            for task_id in sorted(ahora, key=int)))
         print(f'baseline escrito: {len(ahora)} ficha(s) en {baseline_path}')
         # El reparto se PUBLICA al escribir y al comparar. Sin él, congelar el
         # baseline dejaría invisible cuántas fichas entran ya marcadas
@@ -118,7 +126,8 @@ def main() -> int:
               f'escríbelo con --write-baseline.', file=sys.stderr)
         return EXIT_GUARD
 
-    antes = json.loads(baseline_path.read_text())
+    antes = {record['task_id']: record['verdict']
+             for record in read_records(baseline_path)}
     cambios = {k: (antes[k], v) for k, v in ahora.items() if k in antes and antes[k] != v}
     nuevas = [k for k in ahora if k not in antes]
     idas = [k for k in antes if k not in ahora]

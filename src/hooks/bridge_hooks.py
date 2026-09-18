@@ -71,8 +71,7 @@ signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 # este `insert` se quedó apuntando al propio directorio del hook. Sus cuatro
 # hermanos ya resuelven por `parents[1]` — `closure_graph.py` con esta misma
 # forma, porque importa el módulo por su nombre desnudo.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "paths"))
-import reach_roots  # noqa: E402
+from paths import reach_roots  # noqa: E402
 
 LAUNCHERS = ("python3", "python", "node", "bash", "sh", "bun run", "bun")
 

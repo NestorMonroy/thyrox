@@ -12,7 +12,13 @@ import importlib.util
 import pathlib
 import sys
 
-_MODULE = pathlib.Path(__file__).resolve().parents[2] / "src/hooks/detect_ephemeral_citation.py"
+# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
+# y la unica que el localizador no puede reemplazar: no se puede pedir
+# `reach.thyrox_root()` antes de que `import reach` funcione.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+_MODULE = reach.thyrox_root() / "src/hooks/detect_ephemeral_citation.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
 gate = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)

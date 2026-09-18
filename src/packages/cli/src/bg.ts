@@ -1,0 +1,926 @@
+/**
+ * OS-level background sessions for ccb. Mirrors the user-facing surface
+ * of ant v2.1.131 4649.js (NJK) — daemon-less Phase B implementation.
+ *
+ * ant runs a long-lived daemon supervising jobs over a Unix socket;
+ * ccb supports both detached file-backed jobs and PTY jobs supervised over
+ * Unix sockets. The verb commands (ps/logs/stop/etc.) read
+ * `~/.claude/jobs/<short>/` directly; PTY attach uses attachClient.ts.
+ *
+ * Subcommand surface (verb names mirror ant for muscle memory):
+ *   --bg "<directive>"        spawn a backgrounded -p run
+ *   ps                        list active + recent sessions
+ *   logs <short>              tail stdout/stderr (-f follow, --tail N)
+ *   stop <short>              SIGTERM; --force / kill aliases SIGKILL
+ *   attach <short>            bidirectional for PTY jobs; logs for detached jobs
+ *   rm <short>                remove a stopped job's dir
+ *   respawn <short>|--all     re-launch with same directive + flags
+ */
+
+import { spawn, type SpawnOptions } from 'node:child_process'
+import { randomBytes } from 'node:crypto'
+import chalk from 'chalk'
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readdirSync,
+  readFileSync,
+  readSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
+import { homedir } from 'node:os'
+import { join, resolve } from 'node:path'
+import {
+  hasAutoModeOptIn,
+  hasSkipDangerousModePermissionPrompt,
+} from '@thyrox/config/settings'
+import { splitBgArgs } from './bg/argParse.js'
+import {
+  formatRelativeTime,
+  isProcessRunning,
+  truncate,
+} from './bg/jobUtil.js'
+import { extractRespawnArgs } from './bg/respawnArgs.js'
+import { tailFile } from './bg/tailFile.js'
+
+import { getDefaultLauncher } from '@thyrox/repl/relaunch.js'
+
+interface JobMeta {
+  short: string
+  pid: number
+  cmd: readonly string[]
+  cwd: string
+  startedAt: number
+  /**
+   * Last observed status. Updated by ps when reconciling against the
+   * live PID list. The on-disk value is authoritative when the process
+   * isn't running anymore (running → exited transition is recorded
+   * lazily — there's no daemon watching).
+   *
+   * `stopped` = graceful SIGTERM via `ccb stop`. `killed` = SIGKILL via
+   * `ccb stop --force` / `ccb kill`. `exited` = natural termination.
+   */
+  status: 'running' | 'exited' | 'stopped' | 'killed' | 'failed' | 'unknown'
+  /** Set when `ccb stop`/`ccb kill` runs. Distinct from natural exit. */
+  killedAt?: number
+  /** Set the first time ps reconciles `running → exited`. */
+  exitedAt?: number
+  exitCode?: number
+  /**
+   * Human-readable reason explaining a non-natural terminal status.
+   * Populated when the daemon's adopt sweep observes the worker is gone
+   * mid-flight ("process gone while supervisor was down" — ant 5166 UB8)
+   * or when the worker crashes too many times to respawn.
+   */
+  failedReason?: string
+  /** Spawn mode. 'detached' = headless `-p` run (default); 'pty' =
+   *  `--bg-pty-host` interactive REPL. Undefined ⇒ 'detached' (back-compat). */
+  mode?: 'detached' | 'pty'
+  /** Path to the PTY host's Unix socket. Set iff mode==='pty'. */
+  ptySocket?: string
+  /** Rendezvous (control) socket `<jobDir>/rv.sock` (ant rendezvousSock); daemon rv client connects here. Set iff mode==='pty'. */
+  rendezvousSocket?: string
+  /** procStart timestamp from /proc or ps; defeats PID-recycle false alives. */
+  procStart?: number
+  /** ccb version that spawned this worker; daemon adopt compares for upgrade. */
+  cliVersion?: string
+  /** Count of attach-stall-triggered respawns. ant 5164.js wF3. */
+  attachStallRespawns?: number
+}
+
+const JOB_SHORT_LENGTH = 8
+
+function getJobsRoot(): string {
+  // CLAUDE_CONFIG_HOME env override mirrors the rest of the CLI's
+  // config-dir convention; default to ~/.claude.
+  const root = process.env.CLAUDE_CONFIG_HOME
+  return root ? resolve(root, 'jobs') : join(homedir(), '.claude', 'jobs')
+}
+
+function ensureJobsRoot(): string {
+  const root = getJobsRoot()
+  if (!existsSync(root)) mkdirSync(root, { recursive: true })
+  return root
+}
+
+function generateShortId(): string {
+  return randomBytes(Math.ceil(JOB_SHORT_LENGTH / 2))
+    .toString('hex')
+    .slice(0, JOB_SHORT_LENGTH)
+}
+
+function getJobDir(short: string): string {
+  return join(getJobsRoot(), short)
+}
+
+function readJobMeta(short: string): JobMeta | null {
+  const path = join(getJobDir(short), 'meta.json')
+  if (!existsSync(path)) return null
+  try {
+    return JSON.parse(readFileSync(path, 'utf8')) as JobMeta
+  } catch {
+    return null
+  }
+}
+
+function writeJobMeta(meta: JobMeta): void {
+  const dir = getJobDir(meta.short)
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+  writeFileSync(join(dir, 'meta.json'), JSON.stringify(meta, null, 2) + '\n')
+}
+
+/**
+ * Write a minimal optimistic FleetView state.json for a freshly-spawned
+ * pty session. Mirrors ant `iP6` (4774.js:93-148) — without this, the
+ * FleetView polling tick wouldn't see the row until the child REPL
+ * boots far enough to write its own state.json.
+ *
+ * The optimistic state is overwritten as soon as the child writes its
+ * real state, so any divergence (e.g. derived `name` from `intent`) is
+ * self-healing.
+ */
+async function writeOptimisticFleetState(
+  short: string,
+  opts: { directive: string; cwd: string },
+): Promise<void> {
+  const { writeJobState } = await import(
+    '@thyrox/agent/background/fleet/fleetStore.js'
+  )
+  const now = new Date().toISOString()
+  // `label` → `detail` only. `name`/`nameSource` left undefined — namer
+  // (generateJobName.ts, mirrors ant 3991.js Vq3) fills them after the
+  // first classify. Pre-setting `name` early-exits the namer.
+  const label = opts.directive.split(/\r?\n/)[0]!.slice(0, 60).trim() || 'session'
+  await writeJobState(getJobDir(short), {
+    state: 'working',
+    tempo: 'active',
+    detail: label,
+    output: null,
+    children: null,
+    linkScanOffset: 0,
+    template: 'bg',
+    respawnFlags: [],
+    intent: opts.directive,
+    initialPrompt: opts.directive,
+    sessionId: '',
+    daemonShort: short,
+    cwd: opts.cwd,
+    createdAt: now,
+    updatedAt: now,
+    firstTerminalAt: null,
+    backend: 'daemon',
+  })
+}
+
+/**
+ * Mark a job's meta.json status='stopped'. Used by the in-bg `/stop`
+ * slash command (mirrors ant 4652.js _j6) — writes intent immediately
+ * so `ccb ps` and the tasks panel reflect the user's stop request
+ * before the daemon's adopt sweep observes the worker exiting.
+ *
+ * No-op if no meta.json exists (e.g. unrelated --bg-pty path missed it).
+ *
+ * @dynamicRequire
+ */
+export function markJobStopped(short: string): void {
+  const meta = readJobMeta(short)
+  if (!meta) return
+  writeJobMeta({ ...meta, status: 'stopped', exitedAt: Date.now() })
+}
+
+function reconcileMeta(meta: JobMeta): JobMeta {
+  if (meta.status === 'running' && !isProcessRunning(meta.pid)) {
+    const updated: JobMeta = { ...meta, status: 'exited', exitedAt: Date.now() }
+    writeJobMeta(updated)
+    return updated
+  }
+  return meta
+}
+
+function listJobs(): JobMeta[] {
+  const root = getJobsRoot()
+  if (!existsSync(root)) return []
+  const result: JobMeta[] = []
+  for (const short of readdirSync(root)) {
+    const dir = join(root, short)
+    try {
+      if (!statSync(dir).isDirectory()) continue
+    } catch {
+      continue
+    }
+    const meta = readJobMeta(short)
+    if (meta) result.push(reconcileMeta(meta))
+  }
+  result.sort((a, b) => b.startedAt - a.startedAt)
+  return result
+}
+
+export type JobLookupResult =
+  | { job: JobMeta }
+  | { error: 'none' }
+  | { error: 'ambiguous'; matches: JobMeta[] }
+
+/**
+ * Resolve a user-typed short id (or unique prefix) to exactly one job.
+ * Ambiguous prefixes are an error — silently picking the first match
+ * lets `ccb stop a` kill the wrong job when multiple jobs share that
+ * prefix. Mirrors ant 4649.js ZC8 (which errors on >1 match).
+ *
+ * Pure helper over an explicit `jobs` list so tests don't need a
+ * filesystem fixture; production callers should pass `listJobs()`.
+ *
+ * @dynamicRequire
+ */
+export function resolveJobShort(
+  prefix: string,
+  jobs: readonly JobMeta[],
+): JobLookupResult {
+  if (!prefix) return { error: 'none' }
+  const exact = jobs.find(j => j.short === prefix)
+  if (exact) return { job: exact }
+  const prefixMatches = jobs.filter(j => j.short.startsWith(prefix))
+  if (prefixMatches.length === 0) return { error: 'none' }
+  if (prefixMatches.length === 1) return { job: prefixMatches[0]! }
+  return { error: 'ambiguous', matches: [...prefixMatches] }
+}
+
+function findJobByPrefix(prefix: string): JobLookupResult {
+  return resolveJobShort(prefix, listJobs())
+}
+
+/**
+ * Helper for handlers that need a job-or-exit path. Prints the
+ * appropriate error to stderr and exits with code 1, or returns the
+ * matched job.
+ */
+function resolveJobOrExit(short: string): JobMeta {
+  const result = findJobByPrefix(short)
+  if ('job' in result) return result.job
+  if (result.error === 'none') {
+    process.stderr.write(`No job matching "${short}".\n`)
+    process.exit(1)
+  }
+  process.stderr.write(
+    `Ambiguous prefix "${short}", matches: ${result.matches.map(j => j.short).join(', ')}\n`,
+  )
+  process.exit(1)
+}
+
+// ─── handlers ───────────────────────────────────────────────────────
+
+/** Cap on piped-stdin embedded into the bg directive (ant 4649.js fC8). */
+const BG_STDIN_BYTE_CAP = 1024 * 1024
+
+/**
+ * Read piped stdin (non-TTY) up to BG_STDIN_BYTE_CAP. Returns '' if
+ * stdin is a TTY or no data arrives within the timeout. Mirrors ant's
+ * `ZJK` — used by `--bg` to let `cat task.md | ccb --bg "summarize"`
+ * embed the file content into the directive.
+ */
+async function readBgStdin(timeoutMs = 3000): Promise<string> {
+  if (process.stdin.isTTY) return ''
+  process.stdin.setEncoding('utf8')
+  let buf = ''
+  let truncated = false
+  const onData = (chunk: string): void => {
+    if (truncated) return
+    if (buf.length + chunk.length > BG_STDIN_BYTE_CAP) {
+      buf += chunk.slice(0, BG_STDIN_BYTE_CAP - buf.length)
+      truncated = true
+      return
+    }
+    buf += chunk
+  }
+  process.stdin.on('data', onData)
+  const timedOut = await new Promise<boolean>(resolve => {
+    const timer = setTimeout(() => resolve(true), timeoutMs)
+    process.stdin.once('end', () => {
+      clearTimeout(timer)
+      resolve(false)
+    })
+    process.stdin.once('error', () => {
+      clearTimeout(timer)
+      resolve(false)
+    })
+  })
+  process.stdin.off('data', onData)
+  if (timedOut) return ''
+  if (truncated) {
+    process.stderr.write(
+      `warning: piped stdin exceeds ${BG_STDIN_BYTE_CAP} bytes, truncated\n`,
+    )
+  }
+  return buf.replace(/\r?\n$/, '')
+}
+
+/**
+ * Pre-flight check: disallow `--bg` with bypass-permissions or auto
+ * mode unless the user has previously accepted the corresponding
+ * disclaimer in an interactive session. Mirrors ant 4649.js qf3.
+ *
+ * Returns null if OK, an error message if blocked. The check protects
+ * against a fresh-install user typing `ccb --bg --dangerously-skip-permissions
+ * "..."` without ever seeing the warning interactively — `--bg`
+ * detaches before any TUI dialog could surface.
+ */
+function checkBgPermissionGate(args: readonly string[]): string | null {
+  const beforeDoubleDash = (() => {
+    const i = args.indexOf('--')
+    return i >= 0 ? args.slice(0, i) : args
+  })()
+  const permModeIdx = beforeDoubleDash.indexOf('--permission-mode')
+  const permMode = permModeIdx >= 0 ? beforeDoubleDash[permModeIdx + 1] : undefined
+  const wantsBypass =
+    permMode === 'bypassPermissions' ||
+    beforeDoubleDash.includes('--dangerously-skip-permissions') ||
+    beforeDoubleDash.includes('--allow-dangerously-skip-permissions')
+  if (wantsBypass && !hasSkipDangerousModePermissionPrompt()) {
+    return '--bg with bypassPermissions requires accepting the disclaimer first. Run `ccb --dangerously-skip-permissions` once interactively.'
+  }
+  if (permMode === 'auto' && !hasAutoModeOptIn()) {
+    return '--bg with auto mode requires opting in first. Run `ccb --permission-mode auto` once interactively.'
+  }
+  return null
+}
+
+/** Spawn a background task after stripping recursive --bg flags. @dynamicRequire */
+export async function handleBgFlag(args: readonly string[]): Promise<void> {
+  if (args.includes('--print') || args.includes('-p')) {
+    process.stderr.write('Error: --bg cannot be combined with --print/-p\n')
+    process.exit(1)
+  }
+  const gateError = checkBgPermissionGate(args)
+  if (gateError) {
+    process.stderr.write(`${gateError}\n`)
+    process.exit(1)
+  }
+
+  ensureJobsRoot()
+
+  const { flags: forwardedFlags, directive: argvDirective } = splitBgArgs(args)
+  let directive = argvDirective
+
+  // Piped stdin support — `cat plan.md | ccb --bg "review this"` should
+  // embed the file content alongside the argv directive. Mirrors ant
+  // 4649.js iM3 → ZJK + RJK.
+  const piped = await readBgStdin()
+  if (piped) {
+    directive = directive ? `${directive}\n${piped}` : piped
+  }
+
+  if (!directive) {
+    process.stderr.write(
+      'Usage: ccb --bg "<directive>"  (the prompt becomes the background task)\n',
+    )
+    process.exit(1)
+  }
+
+  // ant v2.1.131 `--bg` defaults to PTY mode (bidirectional attach
+  // available out of the box). ccb mirrors: `--bg-pty` and
+  // `--bg-interactive` are still supported as legacy aliases; the new
+  // `--bg-detached` opt-out routes the old detached `-p` path for
+  // cases where a true headless run is preferred (e.g. CI, log-only
+  // pipelines that don't need attach).
+  const explicitDetached = args.includes('--bg-detached')
+  const explicitPty =
+    args.includes('--bg-pty') || args.includes('--bg-interactive')
+  const usePty = explicitPty || !explicitDetached
+
+  if (usePty) {
+    const { spawnPtyHost } = await import('./bg/spawnPty.js')
+    const short = generateShortId()
+    const r = spawnPtyHost({ short, jobDir: getJobDir(short), flags: forwardedFlags, directive, cwd: process.cwd() })
+    writeJobMeta({ ...r, ptySocket: r.socketPath, rendezvousSocket: r.rendezvousSocketPath, status: 'running' })
+    { const m = await import('./bg/agentActionEvent.js'); m.emitAgentAction('spawn', short, { mode: 'pty' }); m.emitAgentDispatch(short, directive) }
+    // Opportunistically ensure daemon is up so subsequent stop/respawn
+    // route through RPC. Fire-and-forget.
+    void import('./bg/daemonAdapter.js').then(async ({ isDaemonAlive, ensureDaemon }) => {
+      if (!(await isDaemonAlive())) await ensureDaemon().catch(() => false)
+    }).catch(() => {})
+    return
+  }
+
+  await spawnBgJob({ flags: forwardedFlags, directive, cwd: process.cwd() })
+}
+
+/**
+ * High-level "spawn a PTY-mode bg job" — mirrors the `--bg-pty` branch
+ * of handleBgFlag above. Generates a short id, calls spawnPtyHost,
+ * writes meta.json with the pty socket path, fires the agent_dispatch
+ * telemetry, and opportunistically ensures the daemon is up. Returns
+ * the short id so callers (like FleetView dispatch) can immediately
+ * focus / attach the new row.
+ *
+ * @dynamicRequire
+ */
+export async function spawnBgPty(opts: {
+  flags?: readonly string[]
+  directive: string
+  cwd: string
+  /** Wait (ms) for pty.sock to appear so callers can attach right away. */
+  waitForSocketMs?: number
+  /** Suppress stdout banner — used by FleetView, which owns the screen. */
+  quiet?: boolean
+  /**
+   * Pre-allocated short id. Source: ant 5092.js dispatch path —
+   * `r4 = R1.slice(0,8)` is passed to `kvK(OK, jk, r4)` so the
+   * optimistic row id, follow id, and the worker's job dir all use
+   * the same id. Without this, FleetView's optimistic row carries
+   * a temp id that doesn't match the actual on-disk job dir, so
+   * right-arrow attach on the optimistic row hits the wrong place.
+   */
+  short?: string
+  /**
+   * Mark as a spare-pool worker (ant `i1O` mode "spare"). Explicit —
+   * NOT inferred from `directive === ''`, because the left-arrow resume
+   * path also spawns with an empty directive but is a real REPL that
+   * inherits its transcript via --resume + --fork-session. Only
+   * ensureSpare passes spare:true. See spawnPtyHost's `spare` doc.
+   */
+  spare?: boolean
+}): Promise<{ short: string; socketPath: string }> {
+  const { spawnPtyHost } = await import('./bg/spawnPty.js')
+  const short = opts.short ?? generateShortId()
+  const r = spawnPtyHost({
+    short,
+    jobDir: getJobDir(short),
+    flags: opts.flags ?? [],
+    directive: opts.directive,
+    cwd: opts.cwd,
+    quiet: opts.quiet,
+    spare: opts.spare,
+  })
+  writeJobMeta({ ...r, ptySocket: r.socketPath, rendezvousSocket: r.rendezvousSocketPath, status: 'running' })
+
+  // Optimistic state.json — mirrors ant `iP6` (4774.js:93-148) which
+  // writes state.json synchronously at dispatch time so the FleetView
+  // polling tick surfaces the new row in the Working section
+  // immediately. Without this, the row would only appear once the
+  // child REPL boots far enough to write its own state.json, which
+  // can be 1-2s of "where did my session go" delay.
+  //
+  // Skip when directive is empty: that's the spare-pool path (worker
+  // idles at empty prompt waiting for a CTRL `claim` frame). The
+  // FleetView must NOT show this as a row until the user actually
+  // dispatches into it; the claim handler will rewrite state.json
+  // with the real intent. Source: ant `m_H(..., "spare", ...)` skips
+  // the user-visible state.json write — spares are tracked via the
+  // s1H singleton and `w.source !== "spare"` filtering in the
+  // daemon-roster join.
+  if (opts.quiet === true && opts.directive !== '') {
+    void writeOptimisticFleetState(short, {
+      directive: opts.directive,
+      cwd: opts.cwd,
+    }).catch(() => {})
+  }
+
+  {
+    const m = await import('./bg/agentActionEvent.js')
+    m.emitAgentAction('spawn', short, { mode: 'pty' })
+    m.emitAgentDispatch(short, opts.directive)
+  }
+  void import('./bg/daemonAdapter.js')
+    .then(async ({ isDaemonAlive, ensureDaemon }) => {
+      if (!(await isDaemonAlive())) await ensureDaemon().catch(() => false)
+    })
+    .catch(() => {})
+
+  // Poll for pty.sock so callers (e.g. FleetView dispatch) can attach
+  // immediately without racing the host-process socket creation.
+  const budget = opts.waitForSocketMs ?? 5000
+  if (budget > 0) {
+    const deadline = Date.now() + budget
+    while (Date.now() < deadline) {
+      if (existsSync(r.socketPath)) break
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+  }
+  return { short, socketPath: r.socketPath }
+}
+
+/**
+ * Spawn a single backgrounded ccb child + write its meta.json. Shared
+ * between `--bg` (fresh) and `respawn` (re-launch from stored cmd).
+ * Returns the new short id; on spawn failure exits with the OS-level
+ * reason included.
+ */
+/**
+ * Spawn a backgrounded `ccb -p "<directive>"`. Used by `--bg` argv
+ * handler and by the `/background` slash command (in-REPL conversion).
+ *
+ * @dynamicRequire
+ */
+export async function spawnBgJob(opts: {
+  flags: readonly string[]
+  directive: string
+  cwd: string
+}): Promise<string> {
+  const short = generateShortId()
+  const jobDir = getJobDir(short)
+  mkdirSync(jobDir, { recursive: true })
+
+  const stdoutFd = openSync(join(jobDir, 'stdout.log'), 'a')
+  const stderrFd = openSync(join(jobDir, 'stderr.log'), 'a')
+
+  // Resolve our own binary so the child runs the same ccb. Forward the
+  // user's flags through (--model, --permission-mode, etc) so
+  // `ccb --bg --model X "task"` doesn't lose model selection.
+  //
+  // Use getDefaultLauncher (ccb's `Pb`) which mirrors ant 5286.js uKO:
+  // standalone binary → [execPath], script mode → [execPath, argv[1]].
+  // The previous `process.argv0.endsWith('bun')` heuristic was wrong for
+  // standalone binaries — see packages/cli/src/bg/spawnPty.ts for the
+  // full incident write-up.
+  const childArgs = [...opts.flags, '-p', opts.directive]
+  const launcher = getDefaultLauncher({ pinToCurrentBinary: true })
+  const cmd = launcher.cmd
+  const nodeArgs = [...launcher.prefixArgs, ...childArgs]
+  const fullCmd = [cmd, ...nodeArgs]
+
+  // Marker env (parity with ant 4706.js xXK):
+  // - CLAUDE_CODE_SESSION_KIND/CLAUDE_CODE_BG_JOB_SHORT: read by
+  //   concurrentSessions.isBgSession() and by ps reconciliation.
+  // - FORCE_COLOR/COLORTERM/BROWSER: child stdio is wired to a file fd
+  //   (non-TTY), so chalk would strip colors and any "open in browser"
+  //   path would try to spawn a browser. Force colors on, browser off.
+  // - CLAUDE_JOB_DIR: ant compat marker recording the job's on-disk
+  //   directory so future tooling can find it without re-deriving.
+  // ant 4706.js xXK env. BG_BACKEND='detached' (ant 'daemon') = daemon-less.
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    CLAUDE_CODE_SESSION_KIND: 'bg', CLAUDE_CODE_BG_JOB_SHORT: short,
+    FORCE_COLOR: '3', COLORTERM: 'truecolor', BROWSER: 'true',
+    CLAUDE_JOB_DIR: jobDir, CLAUDE_BG_BACKEND: 'detached',
+    CLAUDE_BG_SOURCE: 'cli', CLAUDE_ENABLE_STREAM_WATCHDOG: '1',
+    CLAUDE_CODE_SESSION_NAME: short,
+  }
+
+  const spawnOpts: SpawnOptions = {
+    cwd: opts.cwd,
+    env,
+    detached: true,
+    stdio: ['ignore', stdoutFd, stderrFd],
+  }
+
+  const child = spawn(cmd, nodeArgs, spawnOpts)
+  child.unref()
+
+  // Spawn failure (child.pid === undefined) means the kernel rejected
+  // the exec — bad binary path, missing dir, etc. Clean up the half-
+  // written job dir + print the underlying error rather than leaving
+  // an orphaned `unknown`-status entry that ps will keep showing.
+  if (child.pid === undefined) {
+    rmSync(getJobDir(short), { recursive: true, force: true })
+    const reason = await new Promise<string>(resolve => {
+      const timer = setTimeout(() => resolve('spawn failed (no error event)'), 200)
+      child.once('error', (err: Error) => {
+        clearTimeout(timer)
+        resolve(err.message)
+      })
+    })
+    process.stderr.write(
+      `Failed to background ccb child: ${reason}\n  cmd: ${fullCmd.join(' ')}\n`,
+    )
+    process.exit(1)
+  }
+
+  const { readProcStart } = await import('@thyrox/daemon/bgWorkerRegistry.js')
+  const meta: JobMeta = {
+    short, pid: child.pid, cmd: fullCmd, cwd: opts.cwd,
+    startedAt: Date.now(), status: 'running',
+    procStart: readProcStart(child.pid) || undefined,
+    cliVersion: MACRO.VERSION,
+  }
+  writeJobMeta(meta)
+
+  // Pretty hint output: cyan short, dim hints (ant 4649.js tw6).
+  const d = (l: string, r: string) => chalk.dim(`  ${l.padEnd(26)}${r}`)
+  process.stdout.write(
+    [
+      `backgrounded · ${chalk.cyan(short)}`,
+      d('ccb ps', 'list sessions'),
+      d(`ccb logs ${short}`, 'show recent output'),
+      d(`ccb logs ${short} -f`, 'follow output live'),
+      d(`ccb stop ${short}`, 'stop this session (SIGTERM)'),
+      d(`ccb rm   ${short}`, 'remove the job directory'),
+      '',
+    ].join('\n'),
+  )
+  return short
+}
+
+/** @dynamicRequire */
+export async function psHandler(args: readonly string[]): Promise<void> {
+  if (args.includes('--help') || args.includes('-h')) {
+    process.stdout.write(
+      `Usage: ccb ps\n\n  List active and recently-exited background sessions from ~/.claude/jobs/.\n  Reconciles status against live PIDs on each invocation.\n`,
+    )
+    return
+  }
+  const jobs = listJobs()
+  if (jobs.length === 0) {
+    process.stdout.write('No background jobs.\n')
+    return
+  }
+  const header = ['SHORT'.padEnd(JOB_SHORT_LENGTH + 2), 'STATUS  ', 'PID    ', 'AGE      ', 'CMD'].join('  ')
+  process.stdout.write(header + '\n')
+  for (const j of jobs) {
+    const cmdSummary = truncate(
+      // ant 5166.js UB8 — failed jobs surface their reason inline so
+      // the user sees WHY the supervisor gave up without having to
+      // open meta.json.
+      j.status === 'failed' && j.failedReason
+        ? `(${j.failedReason}) ${j.cmd.length > 2 ? j.cmd.slice(2).join(' ') : j.cmd.join(' ')}`
+        : j.cmd.length > 2 ? j.cmd.slice(2).join(' ') : j.cmd.join(' '),
+      60,
+    )
+    process.stdout.write(
+      [
+        j.short.padEnd(JOB_SHORT_LENGTH + 2),
+        j.status.padEnd(8),
+        String(j.pid).padEnd(7),
+        formatRelativeTime(j.startedAt).padEnd(9),
+        cmdSummary,
+      ].join('  ') + '\n',
+    )
+  }
+}
+
+/** @dynamicRequire */
+export async function logsHandler(args: readonly string[]): Promise<void> {
+  if (args.includes('--help') || args.includes('-h')) {
+    process.stdout.write(
+      `Usage: ccb logs <short> [-f|--follow] [--tail N|-n N]\n\n  Print the background session's stdout and stderr from ~/.claude/jobs/.\n  -f / --follow   Stream new output as it appears (200ms poll).\n  --tail N        Limit to the last N lines (caps follow-mode backlog seed).\n`,
+    )
+    return
+  }
+  const positional = args.filter(a => !a.startsWith('-'))
+  const short = positional[0]
+  if (!short) {
+    process.stderr.write(
+      'Usage: ccb logs <short> [-f|--follow] [--tail N]\n',
+    )
+    process.exit(1)
+  }
+  const job = resolveJobOrExit(short)
+  const stdoutPath = join(getJobDir(job.short), 'stdout.log')
+  const stderrPath = join(getJobDir(job.short), 'stderr.log')
+  const follow = args.includes('-f') || args.includes('--follow')
+
+  // --tail N: print only the last N lines and exit (or seed the follow
+  // stream so a long-running job doesn't dump megabytes of backlog).
+  let tailLines: number | undefined
+  const tailIdx = args.findIndex(a => a === '--tail' || a === '-n')
+  if (tailIdx >= 0) {
+    const v = args[tailIdx + 1]
+    if (!v) {
+      process.stderr.write('--tail requires a numeric argument (e.g. --tail 200)\n')
+      process.exit(1)
+    }
+    const parsed = Number.parseInt(v, 10)
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      process.stderr.write(`--tail value "${v}" is not a positive integer\n`)
+      process.exit(1)
+    }
+    tailLines = parsed
+  }
+
+  if (follow) {
+    // pty-mode + daemon alive → subscribe to live ring stream.
+    if (job.mode === 'pty' && job.status === 'running') {
+      const { isDaemonAlive } = await import('./bg/daemonAdapter.js')
+      if (await isDaemonAlive()) {
+        const { followLogsViaDaemon } = await import('./bg/logsSubscribe.js')
+        followLogsViaDaemon({
+          short: job.short,
+          pollStatus: () => reconcileMeta(readJobMeta(job.short) ?? job).status,
+        })
+        return
+      }
+    }
+    // Simple polling tail (fallback). Bun's spawn isn't quite the right
+    // primitive here (no `tail -F` upstream); a 200ms poll keeps the
+    // implementation self-contained and platform-portable.
+    let stdoutPos = 0
+    let stderrPos = 0
+    const writeNew = (path: string, lastPos: number, sink: NodeJS.WriteStream): number => {
+      try {
+        const stat = statSync(path)
+        if (stat.size <= lastPos) return lastPos
+        const fd = openSync(path, 'r')
+        const buf = Buffer.alloc(stat.size - lastPos)
+        readSync(fd, buf, 0, buf.length, lastPos)
+        closeSync(fd)
+        sink.write(buf.toString('utf8'))
+        return stat.size
+      } catch {
+        return lastPos
+      }
+    }
+    // Initial seed: --tail N caps the backlog; otherwise dump everything.
+    if (tailLines !== undefined) {
+      if (existsSync(stdoutPath)) {
+        process.stdout.write(tailFile(stdoutPath, tailLines))
+        stdoutPos = statSync(stdoutPath).size
+      }
+      if (existsSync(stderrPath)) {
+        process.stderr.write(tailFile(stderrPath, tailLines))
+        stderrPos = statSync(stderrPath).size
+      }
+    } else {
+      if (existsSync(stdoutPath)) stdoutPos = writeNew(stdoutPath, 0, process.stdout)
+      if (existsSync(stderrPath)) stderrPos = writeNew(stderrPath, 0, process.stderr)
+    }
+
+    const tick = (): void => {
+      if (existsSync(stdoutPath)) stdoutPos = writeNew(stdoutPath, stdoutPos, process.stdout)
+      if (existsSync(stderrPath)) stderrPos = writeNew(stderrPath, stderrPos, process.stderr)
+      const fresh = reconcileMeta(readJobMeta(job.short) ?? job)
+      if (fresh.status !== 'running') {
+        process.stdout.write(`\n[job ${fresh.short} ${fresh.status}]\n`)
+        process.exit(0)
+      }
+    }
+    setInterval(tick, 200).unref()
+    // Keep the process alive on follow.
+    setInterval(() => {}, 1 << 30).unref()
+    return
+  }
+
+  // Non-follow: dump (or tail) both streams.
+  if (tailLines !== undefined) {
+    if (existsSync(stdoutPath)) {
+      process.stdout.write(tailFile(stdoutPath, tailLines))
+    }
+    if (existsSync(stderrPath)) {
+      const tail = tailFile(stderrPath, tailLines)
+      if (tail.length > 0) process.stderr.write(tail)
+    }
+  } else {
+    if (existsSync(stdoutPath)) {
+      process.stdout.write(readFileSync(stdoutPath, 'utf8'))
+    }
+    if (existsSync(stderrPath)) {
+      const errBytes = readFileSync(stderrPath)
+      if (errBytes.byteLength > 0) {
+        process.stderr.write(errBytes)
+      }
+    }
+  }
+}
+
+/** Thin delegating wrapper to bg/stopJob.ts (extracted for LOC budget). */
+async function stopJob(
+  job: JobMeta,
+  opts: { force: boolean; verbLabel: string; finalStatus: 'stopped' | 'killed' },
+): Promise<void> {
+  const { stopJob: doStopJob } = await import('./bg/stopJob.js')
+  await doStopJob(job, opts, patch =>
+    writeJobMeta({ ...job, ...patch } as JobMeta),
+  )
+}
+
+/** @dynamicRequire */
+export async function stopHandler(args: readonly string[]): Promise<void> {
+  if (args.includes('--help') || args.includes('-h')) {
+    process.stdout.write(`Usage: ccb stop <short> [--force | --detach]\n\n  Stop a running background session. SIGTERM by default; --force / -9 → SIGKILL;\n  --detach: leave worker running, daemon stops supervising (re-attach with ccb attach).\n`); return
+  }
+  const positional = args.filter(a => !a.startsWith('-'))
+  const short = positional[0]
+  const force = args.includes('--force') || args.includes('-9')
+  const detach = args.includes('--detach')
+  if (!short) { process.stderr.write('Usage: ccb stop <short> [--force | --detach]\n'); process.exit(1) }
+  const job = resolveJobOrExit(short)
+  if (detach) {
+    const { isDaemonAlive, daemonDetach } = await import('./bg/daemonAdapter.js')
+    if (await isDaemonAlive()) {
+      const r = await daemonDetach(job.short)
+      if (r.ok) {
+        ;(await import('./bg/agentActionEvent.js')).emitAgentAction('stop', job.short, { detach: 'true' })
+        process.stdout.write(`Detached ${job.short} (worker still running)\n`); return
+      }
+      process.stderr.write(`detach failed (${r.code}); falling back to graceful stop\n`)
+    } else process.stderr.write(`detach requires daemon; falling back to graceful stop\n`)
+  }
+  ;(await import('./bg/agentActionEvent.js')).emitAgentAction(force ? 'kill' : 'stop', job.short)
+  await stopJob(job, { force, verbLabel: force ? 'Killed' : 'Stopped', finalStatus: force ? 'killed' : 'stopped' })
+}
+
+/** Alias for `stop --force`. @dynamicRequire */
+export async function killHandler(args: readonly string[]): Promise<void> {
+  if (args.includes('--help') || args.includes('-h')) {
+    process.stdout.write(`Usage: ccb kill <short>\n\n  Alias for \`ccb stop --force\` — sends SIGKILL immediately.\n`); return
+  }
+  const short = args.filter(a => !a.startsWith('-'))[0]
+  if (!short) { process.stderr.write('Usage: ccb kill <short>   (alias of `ccb stop --force`)\n'); process.exit(1) }
+  const job = resolveJobOrExit(short)
+  ;(await import('./bg/agentActionEvent.js')).emitAgentAction('kill', job.short)
+  await stopJob(job, { force: true, verbLabel: 'Killed', finalStatus: 'killed' })
+}
+
+/** @dynamicRequire */
+export async function rmHandler(args: readonly string[]): Promise<void> {
+  if (args.includes('--help') || args.includes('-h')) {
+    process.stdout.write(
+      `Usage: ccb rm <short>\n\n  Remove a stopped background session's job directory (meta.json + log files).\n  Refuses to act on a still-running job — \`ccb stop\` it first.\n`,
+    )
+    return
+  }
+  const short = args[0]
+  if (!short) {
+    process.stderr.write('Usage: ccb rm <short>\n')
+    process.exit(1)
+  }
+  const job = resolveJobOrExit(short)
+  if (job.status === 'running') {
+    process.stderr.write(
+      `Job ${job.short} is still running. Run "ccb kill ${job.short}" first.\n`,
+    )
+    process.exit(1)
+  }
+  ;(await import('./bg/agentActionEvent.js')).emitAgentAction('rm', job.short)
+  rmSync(getJobDir(job.short), { recursive: true, force: true })
+  process.stdout.write(`Removed ${job.short}.\n`)
+}
+
+/** @dynamicRequire */
+export async function attachHandler(args: readonly string[]): Promise<void> {
+  if (args.includes('--help') || args.includes('-h')) {
+    process.stdout.write(
+      `Usage: ccb attach <short>\n  pty-mode: bidirectional (Ctrl+Q detach). detached-mode: logs --follow.\n`,
+    )
+    return
+  }
+  const positional = args.filter(a => !a.startsWith('-'))
+  if (!positional[0]) {
+    process.stderr.write('Usage: ccb attach <short>\n')
+    process.exit(1)
+  }
+  const job = resolveJobOrExit(positional[0]!)
+  ;(await import('./bg/agentActionEvent.js')).emitAgentAction('attach', job.short, { mode: job.mode ?? 'detached' })
+  if (job.mode === 'pty' && job.ptySocket) {
+    const { runAttach } = await import('./bg/attachClient.js')
+    await runAttach(job.ptySocket, job.short)
+    return
+  }
+  // detached-mode is non-PTY: log + fall through to logs --follow.
+  ;(await import('./bg/agentActionEvent.js')).emitAgentActionRaw('tengu_bg_attach_legacy_autorespawn', { short: job.short, mode: job.mode ?? 'detached' })
+  process.stderr.write(`attach: detached-mode job — streaming read-only. Use --bg-pty for bidirectional.\n`)
+  await logsHandler([job.short, '--follow', '--tail', '200'])
+}
+
+/**
+ * `ccb respawn <short>|--all` — restart a bg job (or all live ones)
+ * using the same directive + flags. Mirrors ant 4649.js sM3, daemon-
+ * less: stop+rm the old job and spawn fresh. New short id is issued
+ * (ant preserves the id via daemon — not feasible without one). Exit
+ * 0 if all respawns succeeded, 1 if any failed.
+ *
+ * @dynamicRequire
+ */
+export async function respawnHandler(args: readonly string[]): Promise<void> {
+  const positional = args.filter(a => !a.startsWith('-'))
+  const arg = args[0]
+  if (arg === '--help' || arg === '-h') {
+    process.stdout.write(
+      `Usage: ccb respawn <short>|--all\n\n  Restart a background session (or all live ones) using the original directive + flags.\n  Issued a new short id; the old job dir is removed.\n`,
+    )
+    return
+  }
+
+  const helpers = { getJobDir, generateShortId, spawnBgJob, writeJobMeta }
+
+  if (args.includes('--all')) {
+    const { respawnSingle } = await import('./bg/respawnJob.js')
+    const targets = listJobs().filter(j => j.status === 'running')
+    if (targets.length === 0) {
+      process.stdout.write('no live jobs to respawn\n')
+      return
+    }
+    let okCount = 0
+    for (const j of targets) {
+      const restarted = await respawnSingle(j, helpers)
+      if (restarted) okCount++
+    }
+    if (okCount < targets.length) process.exit(1)
+    return
+  }
+
+  const short = positional[0]
+  if (!short) {
+    process.stderr.write('Usage: ccb respawn <short>|--all\n')
+    process.exit(1)
+  }
+  const job = resolveJobOrExit(short)
+  ;(await import('./bg/agentActionEvent.js')).emitAgentAction('respawn', job.short)
+  const { respawnSingle } = await import('./bg/respawnJob.js')
+  const ok = await respawnSingle(job, helpers)
+  if (!ok) process.exit(1)
+}
+
+export { extractRespawnArgs, splitBgArgs, tailFile }
+export { runPtyHost } from './bg/ptyHost.js'

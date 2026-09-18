@@ -210,9 +210,21 @@ afirmar "gate: publica el desglose por raiz aunque el total sea cero" \
 
 # 3. La PRECONDICION: una raiz ausente rehusa con codigo propio y SIN cifra.
 #    Un conjunto corto medido en silencio publicaria un conteo que parece sano
-#    (H-API-335). El control positivo es real: KAUPAMEX_ROOT a un padre que no
-#    existe hace faltar las cinco.
-KAUPAMEX_ROOT=/nonexistent python3 "$GATE" >"$TMP/precond.txt" 2>&1
+#    (H-API-335). El control positivo apunta un padre que no existe, y con eso
+#    faltan las cinco.
+#
+#    La VARIABLE se DERIVA, no se transcribe. Citaba `KAUPAMEX_ROOT`, que es la
+#    SEGUNDA de `TREE_ROOT_VARS`: desde que el `.env` de este arbol declara la
+#    primera, la segunda ya no gana y el control media un arbol intacto — verde
+#    sin poder fallar, que es el sub-patron D con el propio control como sujeto.
+#    Preguntandole el nombre a `reach`, el caso sobrevive a que la tupla cambie
+#    de primera.
+VAR_RAIZ=$(python3 -c "
+import sys; sys.path.insert(0, '$RAIZ/src')
+from paths import reach
+print(reach.TREE_ROOT_VARS[0])
+")
+env "$VAR_RAIZ=/nonexistent" python3 "$GATE" >"$TMP/precond.txt" 2>&1
 afirmar "gate: una raiz ausente rehusa con 2" "2" "$?"
 afirmar "gate: al rehusar NO emite cifra de infractores" "0" \
     "$(grep -c 'declaración(es) de deprecación' "$TMP/precond.txt")"

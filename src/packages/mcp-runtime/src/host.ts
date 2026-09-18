@@ -53,7 +53,7 @@ export function getMcpRuntimeHostBindings<
 > {
   if (!mcpRuntimeHostBindings) {
     throw new HostBindingsError(
-      'MCP runtime host bindings have not been installed. Install host bindings before using @claude-code-how-works/mcp-runtime runtime APIs.',
+      'MCP runtime host bindings have not been installed. Install host bindings before using @thyrox/mcp-runtime runtime APIs.',
     )
   }
   return mcpRuntimeHostBindings as McpRuntimeHostBindings<

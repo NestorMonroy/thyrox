@@ -11,7 +11,6 @@ segundo acuñador daría dos gramáticas de fecha que nadie sincroniza.
 """
 from __future__ import annotations
 
-import json
 import pathlib
 import sys
 import tempfile
@@ -55,7 +54,7 @@ def test_the_manifest_declares_the_instrument_and_OMITS_what_it_cannot_know():
     """
     with tempfile.TemporaryDirectory() as base:
         run = job_runs.scaffold_run(base, "suite", command="bash tests/run.sh")
-        m = json.loads((run / wb.MANIFEST_FILE_NAME).read_text())
+        m = job_runs.read_manifest(run)
         assert m["instrument"] == "bash tests/run.sh"
         ausentes = [k for k in wb.REQUIRED_KEYS if k not in m]
         assert ausentes == ["question", "metric", "blind_to", "destination"]
@@ -72,7 +71,7 @@ def test_settle_records_the_exit_code_where_the_manifest_can_be_read():
     with tempfile.TemporaryDirectory() as base:
         run = job_runs.scaffold_run(base, "suite", command="x")
         job_runs.settle(run, 3)
-        m = json.loads((run / wb.MANIFEST_FILE_NAME).read_text())
+        m = job_runs.read_manifest(run)
         assert m["exit_code"] == 3
 
 
@@ -101,7 +100,7 @@ def test_latest_run_finds_the_most_recent_of_a_slug():
 def test_scaffold_records_when_the_job_started():
     with tempfile.TemporaryDirectory() as base:
         run = job_runs.scaffold_run(base, "suite", command="x")
-        m = json.loads((run / wb.MANIFEST_FILE_NAME).read_text())
+        m = job_runs.read_manifest(run)
         assert "started_at" in m
 
 
@@ -109,7 +108,7 @@ def test_settle_records_the_duration_not_only_the_exit_code():
     with tempfile.TemporaryDirectory() as base:
         run = job_runs.scaffold_run(base, "suite", command="x")
         job_runs.settle(run, 0)
-        m = json.loads((run / wb.MANIFEST_FILE_NAME).read_text())
+        m = job_runs.read_manifest(run)
         assert "finished_at" in m
         assert isinstance(m.get("duration_seconds"), (int, float))
         assert m["duration_seconds"] >= 0

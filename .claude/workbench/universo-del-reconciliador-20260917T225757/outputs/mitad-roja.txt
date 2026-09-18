@@ -1,0 +1,11 @@
+100 aserciones
+  FALLA — 12a: declara las filas del store de la sesion (3), no solo las pareadas
+  FALLA — 12b: la fila que ninguna tarjeta nombra cae en unpaired_rows
+  FALLA — 12c: y separa la ABIERTA de la cerrada — 614 de 888 es el dato que decide
+  FALLA — 12f: con todo pareado el cubo esta PRESENTE y vacio, no ausente
+  FALLA — 12g: y el denominador sigue publicandose
+  FALLA — 12h: el CLI publica las filas del store fuera del universo del board
+  FALLA — 12i: y cuantas de ellas estan abiertas, que es el dato accionable
+  FALLA — 12j: reconcile_all_sessions agrega las huerfanas de sus sesiones
+  FALLA — 12k: y agrega cuantas estan abiertas
+exit=1

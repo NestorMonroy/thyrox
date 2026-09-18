@@ -186,7 +186,12 @@ comprobar "4c. tabla sin clave primaria: aborta con exit 1" "1" \
 # --- Caso 5: POSITIVO REAL — el esquema del store de verdad ----------------
 # No lo inventa la prueba: se copia agent_store.sqlite3 y se le anade una fila
 # por lado en su tabla mas poblada.
-STORE="$DOCS_ROOT/.claude/agent-results/agent_store.sqlite3"
+# El store NO vive bajo `.claude/`: su hogar se decidio en TASK-DOCS-0435 y la
+# cascara del proveedor se retiro en TASK-THYROX-0153. La ruta se PIDE al
+# localizador en vez de componerse a mano — componerla es como esta linea quedo
+# apuntando a un archivo que ya no existe, y el caso 5 dejo de medir en silencio
+# (el AVISO salia, pero nadie lo leyo como rojo hasta que el corredor lo alcanzo).
+STORE="$(cd "$DOCS_ROOT" && PYTHONPATH=src python3 -c 'from paths import reach; print(reach.agent_store_path())')"
 if [[ ! -f "$STORE" ]]; then
     printf 'AVISO: no existe %s — el caso 5 no midio nada\n' "$STORE" >&2
     FALLOS=$((FALLOS + 1))

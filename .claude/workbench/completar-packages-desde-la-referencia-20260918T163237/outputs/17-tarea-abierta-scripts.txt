@@ -1,0 +1,4 @@
+ccnmt/scripts          127 archivos
+thyrox/scripts       presente
+ccnmt/bun-demincer      37 archivos
+thyrox/bun-demincer  AUSENTE

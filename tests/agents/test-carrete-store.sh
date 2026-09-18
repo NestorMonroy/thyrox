@@ -16,8 +16,16 @@
 # retiran la pieza y comprueban que el dato se pierde, que es la unica forma
 # de demostrar que el carrete es lo que lo salva.
 #
-# LA PRUEBA NO TOCA NINGUN ARTEFACTO COMPARTIDO. Store, carrete y raiz de
-# transcripts se desvian a un mktemp -d; ver el caso 9 para por que los tres.
+# LA PRUEBA NO TOCA NINGUN ARTEFACTO COMPARTIDO. Store, carrete, registro de
+# prosa y raiz de transcripts se desvian a un mktemp -d; ver el caso 9 para por
+# que los primeros.
+#
+# LOS SUJETOS DE LOS CASOS 7 Y 9 VIVEN EN EL CONSUMIDOR, no aqui. Lo que
+# prueban es el CABLEADO del hook que el cliente dispara, y ese hook es el
+# stub que `settings.json` cita por ruta — el mecanismo que delega vive en
+# thyrox, pero el cableado que se mide es el del clon. Citaban
+# `$RAIZ/hooks/`, un directorio que no existe en el proveedor, y dos nombres
+# que el barrido de identificadores-en-ingles renombro.
 set -uo pipefail
 
 # Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
@@ -48,6 +56,36 @@ caso()   { casos=$((casos + 1)); }
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 export HOOK_SPOOL_PATH="$TMP/carrete.jsonl"
+
+# El SUJETO drena el carrete del CONSUMIDOR y esta suite corre desde el
+# PROVEEDOR. `drain_spool.error_log()` compone `<consumidor>/.claude/hooks`
+# para importar `hook_error_log`, y sin consumidor declarado
+# `reach.consumer_root` REHUSA — hace bien: componerlo dentro de thyrox daria
+# una raiz que `declarations.py` no lista. Es la misma costura que
+# TASK-THYROX-0055 cerro para otras cuatro suites.
+#
+# Y si no hay consumidor al que apuntar, la suite lo DICE en vez de publicar
+# rojos que no son del sujeto: un fallo por consumidor ausente no distingue
+# «el drenador esta roto» de «no habia arbol del que tomar los hooks».
+CONSUMER="${THYROX_CONSUMER:-/home/user/kaupamex-docs}"
+if [[ ! -f "$CONSUMER/.claude/hooks/hook_error_log.py" ]]; then
+  echo "== SIN MEDIR: no hay consumidor con .claude/hooks/hook_error_log.py en $CONSUMER"
+  echo "   declara THYROX_CONSUMER con la raiz de un clon consumidor"
+  echo "OK: 0 de 0 casos — SIN MEDIR"
+  exit 0
+fi
+export THYROX_CONSUMER="$CONSUMER"
+
+# El directorio de salida va al TMP, no al del consumidor. `run_and_log`
+# escribe ademas del carrete un registro de prosa, y su destino sale de
+# `RESULTS_DIR_VARS`, cuyo primer nombre es este: declararlo aqui es lo que
+# hace cierta la promesa de la cabecera —«la prueba no toca ningun artefacto
+# compartido»— para el cuarto artefacto, que hasta hoy no estaba desviado.
+export THYROX_RESULTS_DIR="$TMP/results"
+
+# Importar los hooks del consumidor dejaria `__pycache__` en SU arbol. La
+# promesa de arriba tambien cubre eso.
+export PYTHONDONTWRITEBYTECODE=1
 
 # Un destino de store propio: la prueba jamas escribe en el store real.
 DESTINO="$TMP/claude"
@@ -86,6 +124,25 @@ except sqlite3.OperationalError:
     print(0)
 PY
 }
+
+echo "== caso 0: el registro de prosa NO cae en el arbol del consumidor =="
+# Sin este caso, `THYROX_RESULTS_DIR` seria una pieza sin control: medido por
+# anulacion, retirarla dejaba la suite en 9 de 9 verde mientras
+# `errores-hooks.md` aterrizaba en el `agent-results/` REAL del consumidor.
+# Un verde que no distingue «no escribe fuera» de «nadie lo mira» es el
+# sub-patron D con la propia promesa de la cabecera como sujeto.
+caso
+destino_log="$(python3 - "$RAIZ" <<'PY'
+import sys
+sys.path.insert(0, f"{sys.argv[1]}/src")
+from hooks import error_log
+print(error_log.log_path())
+PY
+)"
+case "$destino_log" in
+  "$TMP"/*) ;;
+  *) fallar "el registro de prosa sale del TMP: $destino_log" ;;
+esac
 
 echo "== caso 1: la escritura falla de verdad y el evento se encola =="
 # Falla si: el store roto NO produce exit != 0 (entonces la prueba mide un
@@ -177,7 +234,7 @@ rm -f "$HOOK_SPOOL_PATH"
 romper
 printf '{"agent_id":"ahook555","agent_type":"general-purpose","session_id":"s1"}' \
   | AGENT_STORE_CLAUDE_DIR="$DESTINO" HOOK_SPOOL_PATH="$HOOK_SPOOL_PATH" \
-    python3 "$RAIZ/hooks/register_agent_session.py" --stop >/dev/null 2>&1
+    python3 "$CONSUMER/.claude/hooks/register_agent_session.py" --stop >/dev/null 2>&1
 n="$(lineas_carrete)"
 [[ "$n" -ge 1 ]] || fallar "el hook no encolo su escritura fallida (cableado ausente)"
 reparar
@@ -218,7 +275,7 @@ escribir acierre777 spool
 reparar
 HOOK_SPOOL_PATH="$HOOK_SPOOL_PATH" \
   AGENT_STORE_CLAUDE_DIR="$DESTINO" AGENT_STORE_PROJECTS_DIR="$TMP/proyectos" \
-  bash "$RAIZ/hooks/reconciliar-store-al-cerrar.sh" >/dev/null 2>&1
+  bash "$CONSUMER/.claude/hooks/reconcile-store-on-stop.sh" >/dev/null 2>&1
 [[ "$(en_store acierre777)" == "1" ]] || fallar "el hook de cierre no drena el carrete (cableado ausente)"
 [[ "$(lineas_carrete)" == "0" ]] || fallar "el evento sigue en el carrete tras el cierre de turno"
 

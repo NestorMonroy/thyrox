@@ -22,12 +22,13 @@ Las cuatro capas salen de QUÉ mide cada gate, no de dónde vive su archivo:
 """
 from __future__ import annotations
 
-import pathlib
-import sys
-
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
-
-from verify.runner import Check  # noqa: E402
+#: NO hay aritmetica de ruta. La raiz la declara quien invoca —`tests/run.sh`
+#: con `export PYTHONPATH="$PWD/src"`, y los envoltorios de `bin/` desde su
+#: propia ubicacion— y este modulo NUNCA se ejecuta como guion: sus cuatro
+#: consumidores lo importan con `from verify import registry`, que ya exige
+#: `src` en la ruta. El `sys.path.insert(..., parent.parent)` que vivia aqui
+#: es la deuda de TASK-THYROX-0018, y se paga al tocar el archivo.
+from verify.runner import Check
 
 CHECKS: list[Check] = [
     # ── Prosa ───────────────────────────────────────────────────────────
@@ -37,6 +38,8 @@ CHECKS: list[Check] = [
           'auto-audit-before-writing.md — autoría canónica y list-table'),
     Check('rst-referencias', 'Prosa', 'rst', 'check_rst_referencias.py',
           ':ref:`h-docs-92` — un :ref: sin etiqueta resuelve al vacío'),
+    Check('doc-citations', 'Prosa', 'rst', 'check_doc_citations.py',
+          'TASK-DOCS-0546 — un :doc: que no resuelve contra el árbol de hoy'),
     Check('vocabulario-prosa', 'Prosa', 'lexico', 'check_vocabulario_prosa.py',
           'redaccion-tecnica-es.md — forma vetada y sustantivo inventado'),
     Check('hallazgos-index', 'Prosa', 'hallazgo', 'check_hallazgos_index.py',
@@ -45,6 +48,8 @@ CHECKS: list[Check] = [
           'H-DOCS-226 — la capa se declara tres veces y las tres coinciden'),
     Check('hallazgo-sucesor', 'Prosa', 'hallazgo', 'check-hallazgo-sucesor.sh',
           'hallazgo-abierto-genera-sucesor.md — alcance abierto sin dueño'),
+    Check('finding-id-unique', 'Prosa', 'hallazgo', 'check_finding_id_unique.py',
+          'H-THYROX-26 — un número, un hallazgo, un .rst: el store es su índice'),
     Check('ids-duplicados', 'Prosa', 'identidad', 'check-ids-duplicados.sh',
           'H-DOCS-119 — dos etiquetas iguales: el :ref: resuelve al equivocado'),
     Check('ids-entre-ramas', 'Prosa', 'identidad', 'check_ids_entre_ramas.py',
@@ -57,6 +62,8 @@ CHECKS: list[Check] = [
           'calibration-verified-numbers.md — una cifra que vive en código no se transcribe'),
     Check('unreachable-rules', 'Prosa', 'gobierno', 'check_unreachable_rules.py',
           'H-DOCS-479 — una regla que ninguna sesión carga es capacidad muerta'),
+    Check('rule-divergence', 'Prosa', 'gobierno', 'check_rule_divergence.py',
+          'la regla homónima en varios consumidores: quién manda y quién se quedó atrás'),
     Check('evidence-tracked', 'Prosa', 'evidencia', 'check_evidence_tracked.py',
           'H-DOCS-120 — la evidencia citada existe y está versionada'),
 
@@ -88,6 +95,8 @@ CHECKS: list[Check] = [
           'DEC-ERR-01 — el catálogo de errores es la fuente, no el literal'),
     Check('premise-drift', 'Herramienta', 'premisa', 'check_premise_drift.py',
           'los veredictos de la cadena de premisas que CAMBIARON'),
+    Check('absence-claim', 'Herramienta', 'premisa', 'check_absence_claim.py',
+          'H-THYROX-93 — el comentario que afirma una ausencia, contra el árbol'),
     Check('python-surface', 'Herramienta', 'gate', 'check_python_surface.py',
           'H-DOCS-1089 — lo que un consumidor INVOCA contra la superficie declarada'),
     Check('consumer-anchor', 'Herramienta', 'gate', 'check_consumer_anchor.py',
@@ -134,7 +143,9 @@ CHECKS: list[Check] = [
           'el .md de un agente es DERIVADO — mismo criterio que makemigrations --check'),
     Check('agent-isolation', 'Paquete', 'agent', 'check_agent_isolation.py',
           'H-DOCS-311 — el aislamiento del working tree entre agentes'),
-    Check('harness-typecheck', 'Paquete', 'cli', 'check-harness-typecheck.sh',
+    Check('cross-model-read', 'Paquete', 'agent', 'check-cross-model-read.sh',
+          'la clave de caché lleva el modelo: nadie relee lo que otro escribió'),
+    Check('cli-typecheck', 'Paquete', 'cli', 'check-cli-typecheck.sh',
           'el paquete typechequea antes de publicarse'),
     Check('i001-prewrite', 'Paquete', 'thyrox', 'check-i001-prewrite.sh',
           'I-001 — DISCOVER antes de planificar'),

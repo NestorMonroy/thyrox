@@ -67,7 +67,19 @@ import sys
 from pathlib import Path
 
 #: Las llamadas que cuentan como «leer una fuente de configuracion».
-FUENTES = {'get_secret', 'get_secret_str', 'getenv', 'get'}
+#:
+#: `env_value` es el lector de ESTE arbol, y su ausencia dejaba al auditor
+#: ciego a su propio mecanismo. Medido en `src/paths/reach.py`: de las siete
+#: ligaduras de `declared`, el auditor veia UNA —la que llama a
+#: `os.environ.get` directamente— y las seis que pasan por `env_value` eran
+#: invisibles. El resultado no era «no hay cadena» sino «no vi ninguna
+#: lectura», y las dos publican el mismo `[]`.
+#:
+#: La ceguera empieza en `8ea1d652`, que retiro el `from_process =
+#: os.environ.get(name)` de `env_value` al declararle su puerto conducido. Es
+#: el sub-patron C de `metrica-decide-la-conclusion.md`: se medía el literal
+#: `getenv` y se concluía sobre precedencia de configuracion.
+FUENTES = {'get_secret', 'get_secret_str', 'getenv', 'get', 'env_value'}
 
 #: Directorios que no son sujeto: dependencia, artefacto y evidencia.
 SKIP_DIRS = {'.git', 'node_modules', '.venv', 'build', 'dist', '__pycache__',
@@ -76,7 +88,6 @@ SKIP_DIRS = {'.git', 'node_modules', '.venv', 'build', 'dist', '__pycache__',
 # El banco se reconoce por el PAR `.claude/<nombre>`, no por el nombre suelto:
 # La evidencia por el PAR `.claude/eventos` y el banco por su hogar
 # DECLARADO: el nombre suelto de un directorio casa tambien con producto.
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from workbench.paths import is_measurement_artifact  # noqa: E402
 
 

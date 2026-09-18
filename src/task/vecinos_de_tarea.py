@@ -50,9 +50,7 @@ from collections import Counter
 # El lector único vive junto a este guion; se resuelve por __file__ y no por
 # CWD, porque los tests cargan estos módulos por ruta con importlib.
 _SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
-if _SCRIPTS_DIR not in sys.path:
-    sys.path.insert(0, _SCRIPTS_DIR)
-import task_source  # noqa: E402
+from task import task_source  # noqa: E402
 
 #: Métricas admitidas por cada algoritmo — ≙ ``VALID_METRICS`` de la fuente.
 #: El coseno SÓLO existe en fuerza bruta: es la condición que decide este caso.

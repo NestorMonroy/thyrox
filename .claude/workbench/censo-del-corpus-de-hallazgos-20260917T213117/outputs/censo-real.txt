@@ -1,0 +1,27 @@
+censo del corpus de hallazgos — raiz: source/gestion/pm
+  total: 1440 hallazgo(s) bajo un directorio hallazgos/
+  por prefijo del ID:
+    API         703  (48 % de 1440)
+    DOCS        648  (45 % de 1440)
+    THYROX       59  (4 % de 1440)
+    SERVER       18  (1 % de 1440)
+    DB            9  (0 % de 1440)
+    UI            3  (0 % de 1440)
+  por raiz de trabajo (segmento de la ruta):
+    api         703  (48 % de 1440)
+    docs        360  (25 % de 1440)
+    thyrox      347  (24 % de 1440)
+    server       18  (1 % de 1440)
+    db            9  (0 % de 1440)
+    ui            3  (0 % de 1440)
+  triple declaracion coherente: 1152 de 1440  (80 %)
+  incoherentes: 288 de 1440
+  mediana de lineas por hallazgo: 122  (n = 1440)
+  monolitos (hallazgos-*.rst fuera de un hallazgos/): 222
+       488130 B  source/gestion/pm/api/audits/hallazgos-adaptar-familias-odoo-monolito-modular.rst
+       302103 B  source/gestion/pm/api/audits/hallazgos-implementar-o2c-catalogo-a-venta.rst
+       158269 B  source/gestion/pm/api/iniciativas/corregir-hallazgos-buyer-compra-end-to-end/hallazgos-enumerados-buyer-compra-end-to-end.rst
+        38406 B  source/gestion/pm/docs/audits/hallazgos-integrar-ramas-a-develop.rst
+        34876 B  source/gestion/pm/docs/audits/hallazgos-saneo-planes-objetivo-addons.rst
+  hallazgos fuera de un hallazgos/: 0
+EXIT=0

@@ -15,7 +15,7 @@ esperar este resultado); recogido despues con `bg.sh wait`.
 
 ## Qué se preguntaba
 
-Ver `manifest.json` -- ¿sigue en verde la suite completa de thyrox tras el
+Ver `manifest.jsonl` -- ¿sigue en verde la suite completa de thyrox tras el
 fix de exports maps en 12 paquetes hermanos (commits `74386266`, `a303ac90`)?
 
 ## Qué se recogió

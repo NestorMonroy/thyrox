@@ -1,0 +1,2 @@
+VERDE tests/verify/test-mutante-en-staging.sh
+EXIT=0

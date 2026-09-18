@@ -1,0 +1,46 @@
+# 09 — La carga de traduccion por paquete, medida tras la copia
+
+Fecha: 2026-09-18T17:14:15
+
+Metrica: tramos de comentario REAL (por AST, no por regex de linea) cuyo
+texto contiene una palabra del lexico ingles, descontadas las directivas
+(eslint-disable, ts-expect-error, ...). Por paquete, sobre todos sus .ts y
+.tsx fuera de node_modules.
+
+Ciega a: un comentario en ingles cuyas palabras no esten en el lexico
+(nombres propios, siglas, una frase de tres palabras cortas); y a un
+comentario ya en español que CITE una frase inglesa — ese cuenta como
+ingles y no lo es. El lexico se depuro de `no`, `use`, `has` y `via`,
+que son tambien palabras españolas y hacian que el medidor nunca
+llegara a 0 sobre nuestra propia prosa.
+
+Invocacion (la base va como argv[2], las rutas son RELATIVAS a ella):
+
+    cd src/packages/<p> && find . -name "*.ts" -printf "%P\n" \
+      | xargs node probes/comment_burden.mjs "$PWD"
+
+| tramos en ingles | paquete | archivos | con ingles | tramos |
+|---|---|---|---|---|
+| 3 | server | 23 | 3 | 304 |
+| 7 | teleport | 12 | 1 | 109 |
+| 8 | ide | 23 | 5 | 692 |
+| 12 | voice | 15 | 3 | 404 |
+| 16 | local-observability | 63 | 12 | 655 |
+| 29 | updater | 26 | 9 | 604 |
+| 31 | memory | 40 | 14 | 525 |
+| 37 | daemon | 39 | 10 | 674 |
+| 38 | permission | 160 | 24 | 2426 |
+| 57 | bridge | 51 | 20 | 2307 |
+| 79 | headless-sdk | 17 | 6 | 216 |
+| 120 | swarm | 89 | 20 | 1661 |
+| 212 | app-host | 86 | 30 | 1538 |
+| 409 | output | 61 | 38 | 794 |
+| 499 | storage | 137 | 58 | 1940 |
+| 955 | mcp-runtime | 71 | 38 | 1573 |
+| 1158 | command-runtime | 207 | 110 | 1914 |
+| 1801 | provider | 292 | 186 | 3611 |
+| 2222 | config | 207 | 122 | 4477 |
+| 2319 | cli | 148 | 99 | 3442 |
+| 2558 | agent | 475 | 181 | 6696 |
+| 3027 | shell | 95 | 44 | 4736 |
+| 5977 | tool-registry | 381 | 237 | 9048 |

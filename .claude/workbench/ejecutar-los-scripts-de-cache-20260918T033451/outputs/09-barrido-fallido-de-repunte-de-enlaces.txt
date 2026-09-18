@@ -1,0 +1,48 @@
+# Un barrido de repunte de enlaces corrompio 513 archivos — 2026-09-18T03:51:46
+
+Lo destapo el Stop hook pidiendo el arbol limpio. NO se commitea: es
+corrupcion sin commitear, y el original esta en HEAD.
+
+## Reparto de los 516 modificados
+
+| n   | que                                    | veredicto |
+|-----|----------------------------------------|-----------|
+| 495 | inyectan `_archived/` en un enlace      | DESCARTAR |
+|  18 | `src/agents/definitions/*.md` acortados | DESCARTAR |
+|   3 | `.claude/jobs/*` de esta ventana        | COMMITEAR |
+
+## La firma, y por que es corrupcion y no trabajo
+
+1. **Aplica la sustitucion DOS VECES.** En el corpus de solo lectura:
+   `"$d"/.claude/skills/*/SKILL.md` quedo como
+   `"$d"/.claude/skills/*/../../../../_archived/.claude/skills/pm-planning/
+   ../../../../_archived/.claude/skills/pm-planning/SKILL.md`
+   — el segmento se repite, asi que ni siquiera es un repunte mal
+   dirigido: es el mismo reemplazo encadenado sobre su propia salida.
+
+2. **Reescribio dentro de un bloque de codigo bash.** Ese literal era un
+   GLOB de un comando, no un enlace de prosa. El instrumento no separa
+   `[texto](ruta)` de una ruta dentro de un `code-block`.
+
+3. **Toco dos arboles declarados intocables.** `_references/` es el corpus
+   vendorizado (9 archivos en 2.1.266, .274 y .275) y `_archived/` es el
+   THYROX anterior, congelado por DEC-02 — 460 archivos.
+
+4. **Los 18 de `src/agents/definitions/` PIERDEN contenido.** El de HEAD
+   dice «De solo lectura o planificacion: apto para invocarse con
+   background, su entregable se recoge al terminar»; el del arbol lo
+   suelta. La version corta es la del arbol, no la de HEAD.
+
+## Cuando
+
+mtime 03:31:25 – 03:32:00, todos en el mismo minuto. La compactacion con
+que arranco esta ventana cayo a las 03:32:24 (el enlace roto que
+cache_probe midio), asi que el barrido corrio JUSTO antes, en la ventana
+anterior, y nadie lo commiteo ni lo reviso.
+
+## Metrica y ceguera
+
+*Metrica:* `git diff` por archivo, buscando `_archived/` en el lado +.
+*Ciega a:* un archivo que el barrido haya tocado SIN inyectar esa cadena y
+que ademas no este en los otros dos cubos — por eso los 18 se clasifican
+leyendo su diff, no por la firma.

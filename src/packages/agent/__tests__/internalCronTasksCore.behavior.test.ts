@@ -19,16 +19,17 @@
  *  5. Tope: oneShotJittered NO DEBE devolver una hora anterior a `fromMs`
  *     (una tarea no puede disparar antes de haber sido creada).
  *
- * Porte PARCIAL declarado: el bloque "pines a nivel de fuente" de la fuente
- * trae diez pines contra el archivo de origen. Ocho referencian mecanismos
- * de archivo (`getCronFilePath`, `readCronTasks`, `writeCronTasks`,
- * `addCronTask`, `removeCronTasks`, `listAllCronTasks`) que dependen de
- * `getAgentHostBindings()` (`ccnmt: packages/agent/host.ts`), inexistente en
- * este árbol — en vez de pinear código ausente (lo que sería fabricarlo),
- * cada uno verifica que el docstring de `cronTasksCore.ts` siga declarando
- * la exclusión. Los otros dos (`jitterFrac` y el chequeo
- * `getMinutes() % oneShotMinuteMod`) pertenecen a la superficie pura y se
- * pinean contra su mecanismo real, activos.
+ * PORTE COMPLETO desde que `internal/cronTasksCore.ts` cerró sus ocho
+ * funciones de E/S. El bloque "pines a nivel de fuente" trae los diez pines
+ * de la fuente, todos contra su mecanismo real.
+ *
+ * Mientras el porte fue parcial, ocho de esos diez estaban INVERTIDOS:
+ * afirmaban que el docstring del módulo siguiera declarando la exclusión,
+ * porque su premisa era que `getAgentHostBindings()` no existía aquí. Medido,
+ * es falsa —`host.ts:266` lo exporta— y los cuatro miembros de cron que esas
+ * funciones consultan los declara `contracts.ts:56,68,69,70`, no `host.ts`.
+ * Un pin sobre prosa no separa «el mecanismo funciona» de «el mecanismo no
+ * existe»; los diez vuelven a medir conducta del archivo.
  */
 import { describe, expect, test } from 'bun:test'
 
@@ -276,25 +277,29 @@ describe('internal/cronTasksCore', () => {
       'utf-8',
     )
 
-    // Los ocho siguientes fijan, en la fuente, mecanismos de archivo que
-    // dependen de `getAgentHostBindings()` (`ccnmt: packages/agent/host.ts`),
-    // ausente en este árbol. No se pueden pinear contra código que no existe
-    // aquí sin fabricarlo — eso sería un porte parcial silencioso. En su
-    // lugar cada uno verifica que el docstring del módulo declare
-    // explícitamente la función excluida y la razón: el pin pasa a proteger
-    // que la declaración de recorte no desaparezca en un edit futuro, en vez
-    // de proteger un mecanismo que no está.
-    test('CRON_FILE_REL/getCronFilePath no se porta — declarado excluido por host.ts ausente', () => {
-      expect(source).toMatch(/`getCronFilePath`/)
-      expect(source).toMatch(/getAgentHostBindings/)
+    // Los diez fijan invariantes REALES del módulo, que es lo que la fuente
+    // pinea. Mientras el porte fue parcial estaban invertidos —afirmaban que
+    // el docstring declarara la exclusión— y eso es un verde que no separa
+    // «el mecanismo funciona» de «el mecanismo no existe». Con las ocho
+    // funciones de E/S portadas vuelven a su forma.
+    test('CRON_FILE_REL fijo a .claude/scheduled_tasks.json', () => {
+      // Pin: la ruta de disco crítica. Si derivara, cada sesión en curso
+      // perdería sus tareas en la siguiente lectura.
+      expect(source).toMatch(
+        /CRON_FILE_REL = join\('\.claude', 'scheduled_tasks\.json'\)/,
+      )
     })
 
-    test('addCronTask (randomUUID().slice(0, 8)) no se porta — declarado excluido por host.ts ausente', () => {
-      expect(source).toMatch(/`addCronTask`/)
+    test('addCronTask usa randomUUID().slice(0, 8) — id corto de 8 caracteres', () => {
+      // Pin: el id corto es compartido entre la interfaz y el disco. La capa
+      // de herramienta se lo muestra al usuario; una forma más larga no cabe.
+      expect(source).toMatch(/randomUUID\(\)\.slice\(0, 8\)/)
     })
 
-    test('writeCronTasks (descarta el flag durable de runtime) no se porta — declarado excluido por host.ts ausente', () => {
-      expect(source).toMatch(/`writeCronTasks`/)
+    test('writeCronTasks retira el flag `durable`, que sólo vive en runtime', () => {
+      // Pin: el formato en disco es { id, cron, prompt, createdAt, … }.
+      // `durable: false` significa sólo-sesión y NUNCA debe llegar al disco.
+      expect(source).toMatch(/\{ durable: _durable, \.\.\.rest \}/)
     })
 
     test('jitterFrac parsea los primeros 8 caracteres hex / 0x_1_0000_0000', () => {
@@ -313,25 +318,36 @@ describe('internal/cronTasksCore', () => {
       )
     })
 
-    test('writeCronTasks (mkdir recursive en .claude) no se porta — declarado excluido por host.ts ausente', () => {
-      expect(source).toMatch(/`writeCronTasks`/)
+    test('writeCronTasks crea .claude con recursive: true', () => {
+      // Pin: creación idempotente del directorio; no revienta en la segunda
+      // llamada.
+      expect(source).toMatch(
+        /mkdir\(join\(root, '\.claude'\), \{ recursive: true \}\)/,
+      )
     })
 
-    test('listAllCronTasks (merge de sesión sólo cuando dir es undefined) no se porta — declarado excluido por host.ts ausente', () => {
-      expect(source).toMatch(/`listAllCronTasks`/)
+    test('listAllCronTasks SÓLO mezcla las de sesión cuando dir es undefined', () => {
+      // Pin: quien llama desde el daemon pasa `dir` explícito y no tiene
+      // almacén de sesión. La guarda impide que el estado de bootstrap se
+      // filtre por ese camino.
+      expect(source).toMatch(/if \(dir !== undefined\) return fileTasks/)
     })
 
-    test('removeCronTasks (corte cuando ids está vacío) no se porta — declarado excluido por host.ts ausente', () => {
-      expect(source).toMatch(/`removeCronTasks`/)
+    test('removeCronTasks corta cuando ids está vacío', () => {
+      expect(source).toMatch(
+        /removeCronTasks[\s\S]+?if \(ids\.length === 0\) return/,
+      )
     })
 
-    test('readCronTasks (descarte silencioso de cron inválido) no se porta — declarado excluido por host.ts ausente', () => {
-      expect(source).toMatch(/`readCronTasks`/)
+    test('readCronTasks descarta en silencio las cadenas cron inválidas', () => {
+      // Pin: una sola tarea mala no puede bloquear el archivo entero.
+      expect(source).toMatch(
+        /\[ScheduledTasks\] skipping task \$\{t\.id\} with invalid cron/,
+      )
     })
 
-    test('readCronTasks (descarte silencioso de tarea malformada) no se porta — declarado excluido por host.ts ausente', () => {
-      expect(source).toMatch(/`readCronTasks`/)
-      expect(source).toMatch(/inexistente en este árbol/)
+    test('readCronTasks registra a nivel debug las entradas malformadas', () => {
+      expect(source).toMatch(/\[ScheduledTasks\] skipping malformed task/)
     })
   })
 })

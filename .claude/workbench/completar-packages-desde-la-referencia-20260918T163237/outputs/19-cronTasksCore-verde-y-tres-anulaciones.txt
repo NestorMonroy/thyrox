@@ -1,0 +1,102 @@
+# cronTasksCore — la mitad verde y sus tres controles de anulacion
+#
+# Fecha: 2026-09-18T18:20:08
+# Tareas durables (dos mitades, dos sujetos — resueltos contra el store,
+# no padeando el ordinal del board):
+#   TASK-THYROX-0168  Copiar los 1061 ausentes de los 12 paquetes y traducir
+#                     sus comentarios          <- el porte de los 8 exports
+#   TASK-THYROX-0171  Triar los comentarios que afirman «cuya base no existe
+#                     en este árbol»           <- el bloqueo declarado falso
+# Modulo:  src/packages/agent/internal/cronTasksCore.ts
+# Suite:   src/packages/agent/__tests__/internalCronTasksCore.behavior.test.ts
+
+## 1. El bloqueo declarado era falso de nacimiento
+
+La cabecera declaraba «Porte PARCIAL» y nombraba UN bloqueo, verbatim:
+
+    Recorte declarado: la fuente trae ademas ocho funciones de E/S de
+    archivo [...] que dependen de `getAgentHostBindings()`
+    (`ccnmt: packages/agent/host.ts`), inexistente en este arbol.
+
+Medido: `getAgentHostBindings` existe en
+`src/packages/agent/host.ts:266`.
+
+Y no quedo rancio — fue falso al escribirse. Los dos commits son del
+mismo dia y el orden esta medido:
+
+    6e3bafc2  2026-09-06 03:52:37  Port runtimeSignals host delegates
+              -> aterriza getAgentHostBindings en host.ts
+    4e5f1733  2026-09-06 03:56:44  Port cron task jitter scheduling
+              -> escribe la cabecera que lo declara inexistente
+
+    $ git merge-base --is-ancestor 6e3bafc2 4e5f1733   # exit 0
+
+Cuatro minutos de diferencia, el simbolo primero.
+
+### El instrumento con que YO lo verifique tampoco discriminaba
+
+Los cuatro bindings de cron —`getProjectRoot`, `getSessionCronTasks`,
+`addSessionCronTask`, `removeSessionCronTasks`— declaran su firma en
+`contracts.ts`, no en `host.ts`. Mi primera comprobacion los grepeo
+sobre `host.ts`: da 0 en LOS DOS arboles, asi que habria "confirmado"
+la ausencia tanto si existian como si no. Un control que no discrimina
+(sub-patron D) — mio, no de la cabecera.
+
+### Y el sondeo que debia detectar la declaracion tampoco la vio
+
+`measure_open_task.sh cron` cierra con:
+
+    grep -nE 'no existe en este .rbol|PORTE PARCIAL|ausente' "$PORT"
+
+La cabecera dice `inexistente en este arbol` y `Porte PARCIAL` (caja
+mixta). Ninguno de los tres literales matchea, asi que
+`17-tarea-abierta-cron.txt` publico la seccion «lo que el puerto
+declara ausente» VACIA mientras la cabecera lo declaraba tres lineas
+mas arriba. El sondeo NO se reescribe: es evidencia fechada de como
+corrio el pase; la ceguera queda anotada aqui.
+
+Ese mismo grep sin match es la causa del `EXIT=1` de los trabajos 1
+(cron) y 2 (collisions): `set -uo pipefail` propaga el 1 del grep. No
+es defecto del pool — los otros cuatro salen 0, y coincide exactamente
+con el exit de cada rama corrida en directo.
+
+Censo de exports tras el porte: `comm -3` entre el set de la fuente y
+el nuestro sale VACIO (conjuntos identicos, 8 funciones portadas).
+
+## 2. Los pines de prosa no discriminaban
+
+La suite traia 8 pines de la forma:
+
+    expect(source).toMatch(/PORTE PARCIAL declarado/)
+
+Un pin asi es verde tanto si el mecanismo funciona como si el mecanismo NO
+EXISTE: mide la cadena del comentario, no la conducta. Se reemplazaron por los
+10 pines reales de la fuente.
+
+## 3. Los tres controles de anulacion
+
+Cada anulacion retira UNA causa y tiene que hacer caer EXACTAMENTE las
+aserciones que dependen de ella — ni una mas.
+
+| # | Anulacion aplicada                                              | Veredicto      | Cae                            |
+|---|-----------------------------------------------------------------|----------------|--------------------------------|
+| 1 | `CRON_FILE_REL` -> `'ANULADO.json'`                             | 34 pass 1 fail | el pin de CRON_FILE_REL        |
+| 2 | `tasks: tasks.map(({durable: _d, ...rest}) => rest)` -> `tasks,` | 34 pass 1 fail | el pin del strip de `durable`  |
+| 3 | `if (dir !== undefined) return fileTasks` -> comentario          | 34 pass 1 fail | el pin de la guarda de `dir`   |
+
+Los tres discriminan: 1 de 35 cae en cada caso, y es siempre la aserción que
+mide esa causa.
+
+## 4. Estado tras restaurar
+
+    $ cp -p outputs/cronTasksCore.INTACTO.ts.bak src/packages/agent/internal/cronTasksCore.ts
+    $ diff -q <modulo> <backup>        # vacio
+    $ bun test src/packages/agent/__tests__/internalCronTasksCore.behavior.test.ts
+     35 pass
+     0 fail
+     39 expect() calls
+
+## 5. Lo que este banco NO cierra
+
+El `.bak` del modulo intacto esta gitignored (`.gitignore:72  *.bak`), asi que
+la evidencia durable es este archivo, no el respaldo.

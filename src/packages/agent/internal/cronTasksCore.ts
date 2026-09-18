@@ -1,5 +1,5 @@
 /**
- * Porte PARCIAL de `ccnmt: packages/agent/internal/cronTasksCore.ts`.
+ * Porte COMPLETO de `ccnmt: packages/agent/internal/cronTasksCore.ts`.
  *
  * Tareas agendadas, guardadas en `<proyecto>/.claude/scheduled_tasks.json`.
  * Vienen en dos sabores: one-shot (`recurring: false`/`undefined`) —
@@ -8,20 +8,33 @@
  * borrado explícito o auto-expiración pasado
  * `DEFAULT_CRON_JITTER_CONFIG.recurringMaxAgeMs`.
  *
- * Recorte declarado: la fuente trae además ocho funciones de E/S de
- * archivo — `getCronFilePath`, `readCronTasks`, `hasCronTasksSync`,
- * `writeCronTasks`, `addCronTask`, `removeCronTasks`, `markCronTasksFired`,
- * `listAllCronTasks` — que dependen de `getAgentHostBindings()`
- * (`ccnmt: packages/agent/host.ts`), inexistente en este árbol. Ninguna
- * entra aquí; el porte se limita a la superficie PURA que
- * `__tests__/cronTasksJitter.test.ts` y
- * `__tests__/internalCronTasksCore.behavior.test.ts` ejercitan sin tocar el
- * disco: el tipo `CronTask`, `CronJitterConfig` con su valor por defecto,
- * `nextCronRunMs`, `jitteredNextCronRunMs`, `oneShotJitteredNextCronRunMs`
- * y `findMissedTasks`.
+ * Antes era un porte PARCIAL, y su premisa era una sola: las ocho funciones
+ * de E/S dependen de `getAgentHostBindings()`, «inexistente en este árbol».
+ * Hoy es falsa — `host.ts:266` lo exporta.
+ *
+ * Y la pregunta que de verdad importaba no era si el símbolo existe sino si
+ * da los miembros que esas ocho consultan. Los cinco están, y **ninguno vive
+ * en `host.ts`**, que es donde el docstring anterior los buscaba: cuatro los
+ * declara `contracts.ts` —`getProjectRoot`, `getSessionCronTasks`,
+ * `addSessionCronTask`, `removeSessionCronTasks`— y `logDebug` es de
+ * `host.ts`. Un grep sobre `host.ts` da cero para los cuatro **en los dos
+ * árboles**: el instrumento equivocado habría confirmado el bloqueo.
+ *
+ * Los cinco son opcionales y se consultan con encadenado opcional más
+ * respaldo, así que el porte no exige que el anfitrión los instale.
  */
 
+import { randomUUID } from 'crypto'
+import { readFileSync } from 'fs'
+import { mkdir, writeFile } from 'fs/promises'
+import { join } from 'path'
 import { computeNextCronRun, parseCronExpression } from './cronCore.js'
+import { getAgentHostBindings } from '../host.js'
+import {
+  isFsInaccessible,
+  jsonStringify,
+  safeParseJSON,
+} from '../internalUtils.js'
 
 export type CronTask = {
   id: string
@@ -62,6 +75,241 @@ export type CronTask = {
    * disco.
    */
   agentId?: string
+}
+
+type CronFile = { tasks: CronTask[] }
+
+const CRON_FILE_REL = join('.claude', 'scheduled_tasks.json')
+
+/**
+ * Ruta del archivo de cron. `dir` cae por defecto a `getProjectRoot()` — se
+ * pasa explicito desde contextos que no arrancan por `main.tsx` (por ejemplo
+ * el daemon del SDK de agentes, que no tiene estado de bootstrap).
+ */
+export function getCronFilePath(dir?: string): string {
+  return join(dir ?? getAgentHostBindings().getProjectRoot?.() ?? process.cwd(), CRON_FILE_REL)
+}
+
+/**
+ * Lee y analiza `.claude/scheduled_tasks.json`. Devuelve una lista vacia si el
+ * archivo falta, esta vacio o esta malformado. Las tareas con una cadena cron
+ * invalida se descartan en silencio —se registran a nivel debug— para que una
+ * sola entrada mala nunca bloquee el archivo entero.
+ */
+export async function readCronTasks(dir?: string): Promise<CronTask[]> {
+  const bindings = getAgentHostBindings()
+  const fs = bindings.getFsImplementation?.() ?? { readFile: async (p: string, opts: { encoding: BufferEncoding }) => { const { readFile: fsReadFile } = await import('fs/promises'); return fsReadFile(p, opts) } }
+  let raw: string
+  try {
+    raw = await fs.readFile(getCronFilePath(dir), { encoding: 'utf-8' })
+  } catch (e: unknown) {
+    if (isFsInaccessible(e)) return []
+    bindings.logError?.(e)
+    return []
+  }
+
+  const parsed = safeParseJSON(raw, false)
+  if (!parsed || typeof parsed !== 'object') return []
+  const file = parsed as Partial<CronFile>
+  if (!Array.isArray(file.tasks)) return []
+
+  const out: CronTask[] = []
+  for (const t of file.tasks) {
+    if (
+      !t ||
+      typeof t.id !== 'string' ||
+      typeof t.cron !== 'string' ||
+      typeof t.prompt !== 'string' ||
+      typeof t.createdAt !== 'number'
+    ) {
+      getAgentHostBindings().logDebug?.(
+        `[ScheduledTasks] skipping malformed task: ${jsonStringify(t)}`,
+      )
+      continue
+    }
+    if (!parseCronExpression(t.cron)) {
+      getAgentHostBindings().logDebug?.(
+        `[ScheduledTasks] skipping task ${t.id} with invalid cron '${t.cron}'`,
+      )
+      continue
+    }
+    out.push({
+      id: t.id,
+      cron: t.cron,
+      prompt: t.prompt,
+      createdAt: t.createdAt,
+      ...(typeof t.lastFiredAt === 'number'
+        ? { lastFiredAt: t.lastFiredAt }
+        : {}),
+      ...(t.recurring ? { recurring: true } : {}),
+      ...(t.permanent ? { permanent: true } : {}),
+    })
+  }
+  return out
+}
+
+/**
+ * Comprobacion sincrona de si el archivo de cron tiene alguna tarea valida. La
+ * usa `cronScheduler.start()` para decidir si auto-habilitarse. Una sola
+ * lectura de archivo.
+ */
+export function hasCronTasksSync(dir?: string): boolean {
+  let raw: string
+  try {
+    // eslint-disable-next-line custom-rules/no-sync-fs -- se llama una vez desde cronScheduler.start()
+    raw = readFileSync(getCronFilePath(dir), 'utf-8')
+  } catch {
+    return false
+  }
+  const parsed = safeParseJSON(raw, false)
+  if (!parsed || typeof parsed !== 'object') return false
+  const tasks = (parsed as Partial<CronFile>).tasks
+  return Array.isArray(tasks) && tasks.length > 0
+}
+
+/**
+ * Sobreescribe `.claude/scheduled_tasks.json` con las tareas dadas. Crea
+ * `.claude/` si falta. Una lista vacia escribe un archivo vacio —en vez de
+ * borrarlo— para que el observador de archivos vea un evento de cambio al
+ * retirarse la ultima tarea.
+ */
+export async function writeCronTasks(
+  tasks: CronTask[],
+  dir?: string,
+): Promise<void> {
+  const root = dir ?? getAgentHostBindings().getProjectRoot?.() ?? process.cwd()
+  await mkdir(join(root, '.claude'), { recursive: true })
+  // Se retira la bandera `durable`, que solo vive en tiempo de ejecucion: todo
+  // lo que esta en disco es durable por definicion, y dejarla fuera hace que
+  // `readCronTasks()` devuelva `durable: undefined` sin tener que fijarlo.
+  const body: CronFile = {
+    tasks: tasks.map(({ durable: _durable, ...rest }) => rest),
+  }
+  await writeFile(
+    getCronFilePath(root),
+    jsonStringify(body, null, 2) + '\n',
+    'utf-8',
+  )
+}
+
+/**
+ * Agrega una tarea al final. Devuelve el id generado. Quien llama es
+ * responsable de haber validado ya la cadena cron (la herramienta lo hace con
+ * `validateInput`).
+ *
+ * Cuando `durable` es `false` la tarea se guarda solo en memoria del proceso
+ * (`bootstrap/state.ts`): dispara segun agenda en esta sesion, nunca se
+ * escribe en `.claude/scheduled_tasks.json` y muere con el proceso. El
+ * planificador mezcla las tareas de sesion en su bucle directamente, asi que
+ * no hace falta ningun evento de cambio de archivo.
+ */
+export async function addCronTask(
+  cron: string,
+  prompt: string,
+  recurring: boolean,
+  durable: boolean,
+  agentId?: string,
+): Promise<string> {
+  // Id corto — 8 caracteres hexadecimales sobran para MAX_JOBS=50, y evitan
+  // el malabarismo de recorte y prefijo entre la capa de herramienta —que
+  // muestra ids cortos— y el disco.
+  const id = randomUUID().slice(0, 8)
+  const task = {
+    id,
+    cron,
+    prompt,
+    createdAt: Date.now(),
+    ...(recurring ? { recurring: true } : {}),
+  }
+  if (!durable) {
+    getAgentHostBindings().addSessionCronTask?.({ ...task, ...(agentId ? { agentId } : {}) })
+    return id
+  }
+  const tasks = await readCronTasks()
+  tasks.push(task)
+  await writeCronTasks(tasks)
+  return id
+}
+
+/**
+ * Retira tareas por id. No hace nada si ninguna coincide (por ejemplo, otra
+ * sesion se adelanto). Se usa tanto para la limpieza de las de un solo disparo
+ * como para un `CronDelete` explicito.
+ *
+ * Con `dir` sin definir —el camino del REPL— barre ademas el almacen de sesion
+ * en memoria: quien llama no sabe en cual de los dos vive un id. El daemon pasa
+ * `dir` explicito; no tiene sesion, y la guarda `dir !== undefined` impide que
+ * esta funcion toque el estado de bootstrap por ese camino (los tests lo
+ * exigen).
+ */
+export async function removeCronTasks(
+  ids: string[],
+  dir?: string,
+): Promise<void> {
+  if (ids.length === 0) return
+  // Primero se barre el almacen de sesion. Si todos los ids quedaron cubiertos
+  // ahi, se termina — se salta la lectura del archivo por completo.
+  // `removeSessionCronTasks` no hace nada (devuelve 0) cuando no acierta, asi
+  // que los caminos previos de borrado durable caen sin reservar memoria.
+  if (dir === undefined && (getAgentHostBindings().removeSessionCronTasks?.(ids) ?? 0) === ids.length) {
+    return
+  }
+  const idSet = new Set(ids)
+  const tasks = await readCronTasks(dir)
+  const remaining = tasks.filter(t => !idSet.has(t.id))
+  if (remaining.length === tasks.length) return
+  await writeCronTasks(remaining, dir)
+}
+
+/**
+ * Sella `lastFiredAt` en las tareas recurrentes dadas y las vuelve a escribir.
+ * Va por lotes, para que N disparos en un mismo tic del planificador sean una
+ * lectura-modificacion-escritura y no N. Solo toca las tareas respaldadas por
+ * archivo: las de sesion mueren con el proceso y no tiene sentido persistir su
+ * hora de disparo. No hace nada si ninguno de los ids coincide —la tarea se
+ * borro entre el disparo y la escritura, por ejemplo con un `CronDelete` a
+ * mitad del tic.
+ *
+ * El cerrojo del planificador garantiza que a lo sumo un proceso llame aqui;
+ * chokidar recoge la escritura y dispara una recarga que vuelve a sembrar
+ * `nextFireAt` desde el `lastFiredAt` recien escrito — idempotente (mismo
+ * computo, misma respuesta).
+ */
+export async function markCronTasksFired(
+  ids: string[],
+  firedAt: number,
+  dir?: string,
+): Promise<void> {
+  if (ids.length === 0) return
+  const idSet = new Set(ids)
+  const tasks = await readCronTasks(dir)
+  let changed = false
+  for (const t of tasks) {
+    if (idSet.has(t.id)) {
+      t.lastFiredAt = firedAt
+      changed = true
+    }
+  }
+  if (!changed) return
+  await writeCronTasks(tasks, dir)
+}
+
+/**
+ * Las tareas respaldadas por archivo mas las de solo sesion, mezcladas. Las de
+ * sesion reciben `durable: false` para que quien llama pueda distinguirlas; las
+ * de archivo se devuelven tal cual (`durable` sin definir, que es verdadero).
+ *
+ * Solo mezcla cuando `dir` esta sin definir: quien llama con `dir` explicito
+ * —el daemon— no tiene almacen de sesion con el que mezclar.
+ */
+export async function listAllCronTasks(dir?: string): Promise<CronTask[]> {
+  const fileTasks = await readCronTasks(dir)
+  if (dir !== undefined) return fileTasks
+  const sessionTasks = (getAgentHostBindings().getSessionCronTasks?.() ?? []).map(t => ({
+    ...t,
+    durable: false as const,
+  }))
+  return [...fileTasks, ...sessionTasks]
 }
 
 /**

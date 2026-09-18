@@ -1,4 +1,0 @@
-{
-  "instrument": "bash -lc cd /home/user/thyrox/src/packages/cli && tsc --noEmit -p tsconfig.json 2>&1; echo EXIT=$?",
-  "started_at": "2026-09-13T06:22:37+00:00"
-}

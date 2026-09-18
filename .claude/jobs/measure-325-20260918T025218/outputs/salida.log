@@ -1,0 +1,10 @@
+medidos 109 de 325 (el resto ya no esta en disco)
+
+ultimo           ultimo NO nulo    filas   divergen?
+----------------------------------------------------------
+None             tool_use            109   SI
+
+  ejemplo ad80beb418a3e0f92: ultimo=None declarado=tool_use bloques=['text'] mensajes=108
+  ejemplo a24adbaa810a25cd9: ultimo=None declarado=tool_use bloques=['text'] mensajes=116
+  ejemplo a27d210b8d16b2a6f: ultimo=None declarado=tool_use bloques=['text'] mensajes=163
+__BG_EXIT__=0

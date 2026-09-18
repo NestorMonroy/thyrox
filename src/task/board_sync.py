@@ -70,8 +70,7 @@ import sys
 # `sys.path` a nivel de modulo —no lazy— porque las suites cargan este archivo
 # con `spec_from_file_location`, via por la que su directorio no queda en la
 # ruta de busqueda. Mismo criterio que `closure_graph.py` documenta.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import task_ids  # noqa: E402
+from task import task_ids  # noqa: E402
 
 #: El hogar del board se declara UNA vez, en ``task_ids``. Aqui se reexporta y
 #: no se vuelve a declarar: dos constantes con el mismo proposito son dos
@@ -82,7 +81,14 @@ board_dir = task_ids.board_dir
 #: Los eventos del cliente que CREAN una tarjeta. Es una tupla y no una cadena
 #: porque el acotamiento es el mecanismo entero de #159: fuera de esta lista no
 #: se acuña, y por tanto un renombre no puede fabricar una fila nueva.
-CREATION_EVENTS = ("TaskCreate",)
+#: `TaskCreated` es el EVENTO del cliente; `TaskCreate` es el nombre del TOOL.
+#: Los dos entran porque las dos superficies existen y nombran el mismo alta:
+#: un hook cableado a `hooks.TaskCreated` entrega `hook_event_name:"TaskCreated"`
+#: (medido en `_references/claude-code-bin/2.1.266`), mientras un `PostToolUse`
+#: entregaria `tool_name:"TaskCreate"`. Admitir solo el segundo dejaba el guard
+#: rechazando TODO acuñado del hook, y su silencio se leia como «no habia
+#: tarjetas nuevas» — el sub-patron D con el propio guard como sujeto.
+CREATION_EVENTS = ("TaskCreate", "TaskCreated")
 
 #: Los campos de la tarjeta que una sincronizacion escribe. NO incluye
 #: ``citation_id`` ni ``task_id``: eso es identidad, y reescribirla es el daño
@@ -127,6 +133,12 @@ PRIMARY_RECONCILED_FIELD = RECONCILED_FIELDS[0]
 #: reporte publica; contarlos por separado en cada sitio fue lo que hizo que
 #: el modo seco anunciara «1 fila» cuando la escritura tocaba 38.
 DRIFT_BUCKETS = ("status_drift", "field_drift")
+
+#: El unico estado que cierra una tarea. Sale del vocabulario que la tabla hace
+#: cumplir desde TASK-THYROX-0023 (`agent_store.TASK_STATUSES`); se nombra aqui
+#: para que «abierta» signifique «no cerrada» y no una segunda lista que
+#: driftearia sin que nada lo delate.
+CLOSED_STATUS = "completed"
 
 #: Las columnas que el SELECT del pareo trae, en orden. Las dos de los
 #: extremos son identidad —con que fila se aparea y por que cita se escribe—;
@@ -353,6 +365,28 @@ def reconcile_status(store_path, session_id, *, board_dir=None,
                     entrada[f"store_{name}"] = fila[name]
                 buckets[target].append(entrada)
 
+        # Las filas que NINGUNA tarjeta nombra. No se pueden reconciliar —a una
+        # fila sin tarjeta no hay fuente desde la que propagar— pero callarlas
+        # hace que los cubos de arriba se lean como el estado del store entero,
+        # cuando son el estado del board. Medido al declararlo sobre la sesion
+        # viva: los cubos cubrian 412 de 1300 filas, el 32 %.
+        subjects_on_board = {card.get("subject") for card in cards.values()}
+        store_rows = 0
+        unpaired_rows = []
+        for subject, filas in by_subject.items():
+            store_rows += len(filas)
+            if subject in subjects_on_board:
+                continue
+            for fila in filas:
+                unpaired_rows.append(
+                    {"task_id": fila["task_id"], "subject": subject,
+                     "citation": fila["citation_id"], "status": fila["status"]})
+        # «Abierta» es el dato que decide si la cifra importa: 614 de 888 lo
+        # estaban. Se deriva del vocabulario que la tabla ya hace cumplir, no
+        # de una segunda lista.
+        open_unpaired = sum(1 for e in unpaired_rows
+                            if e["status"] != CLOSED_STATUS)
+
         written = 0
         pendientes = [e for name in DRIFT_BUCKETS for e in buckets[name]]
         if apply_changes and pendientes:
@@ -376,6 +410,8 @@ def reconcile_status(store_path, session_id, *, board_dir=None,
     finally:
         conn.close()
     return {"buckets": buckets, "total_cards": len(cards),
+            "store_rows": store_rows, "unpaired_rows": unpaired_rows,
+            "open_unpaired": open_unpaired,
             "written": written, "applied": bool(apply_changes)}
 
 
@@ -440,6 +476,14 @@ def reconcile_all_sessions(store_path, *, board_root=None,
             apply_changes=apply_changes)
     return {"root": str(root), "sessions": sessions, "skipped": skipped,
             "written": sum(r["written"] for r in sessions.values()),
+            # Nombre PROPIO, no el de la sesion: alli `unpaired_rows` es la
+            # lista con su detalle y aqui es un entero. Un mismo rotulo sobre
+            # dos metricas es el sub-patron A.
+            "store_rows_total": sum(r["store_rows"] for r in sessions.values()),
+            "unpaired_total": sum(len(r["unpaired_rows"])
+                                  for r in sessions.values()),
+            "open_unpaired_total": sum(r["open_unpaired"]
+                                       for r in sessions.values()),
             "applied": bool(apply_changes)}
 
 
@@ -457,6 +501,11 @@ def _cmd_reconcile_status(args: argparse.Namespace) -> int:
         # El descuadre se publica, no se calla: si los cubos no cubren el
         # universo, el conteo de arriba no se puede leer.
         print(f"  ATENCION: los cubos suman {covered} y el universo es {total}")
+    # El denominador del OTRO lado. Sin el, los cubos de arriba se leen como el
+    # estado del store y son el del board.
+    print(f"  del store: {result['store_rows']} fila(s) en la sesion, "
+          f"{len(result['unpaired_rows'])} sin tarjeta que las nombre "
+          f"({result['open_unpaired']} abierta(s)) — fuera de los cubos")
     pendientes = [e for name in DRIFT_BUCKETS for e in buckets[name]]
     for entry in sorted(pendientes, key=lambda e: int(e["ordinal"])):
         # La flecha va del store al board: es la direccion de la escritura,
@@ -490,6 +539,9 @@ def _cmd_reconcile_all(args: argparse.Namespace) -> int:
         if cuantas:
             print(f"    {sesion}  {cuantas} fila(s) con deriva "
                   f"de {uno['total_cards']} tarjeta(s)")
+    print(f"  del store: {result['store_rows_total']} fila(s), "
+          f"{result['unpaired_total']} sin tarjeta que las nombre "
+          f"({result['open_unpaired_total']} abierta(s)) — fuera de los cubos")
     if result["applied"]:
         print(f"  escritas: {result['written']} fila(s)")
     else:

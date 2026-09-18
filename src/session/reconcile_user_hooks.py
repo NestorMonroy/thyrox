@@ -36,8 +36,7 @@ import sys
 #: lleva ``THYROX_ENV_FILE``, que es lo que ``env_value`` resuelve.
 USER_CLAUDE_DIR_VAR = "THYROX_USER_CLAUDE_DIR"
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 
 @dataclasses.dataclass(frozen=True)

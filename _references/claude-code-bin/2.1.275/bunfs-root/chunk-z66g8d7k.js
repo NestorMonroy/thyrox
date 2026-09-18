@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.275
+import{p}from"/$bunfs/root/chunk-dtjhjxgx.js";import{J}from"/$bunfs/root/chunk-4bbpt7sc.js";import{o,ae,fe}from"/$bunfs/root/chunk-nfxfp8ap.js";var Y7r='<wake reason="external-event"';function X7r(n){return n.startsWith(Y7r)}var O=/^[a-z0-9-]{1,32}$/,y=/^[a-z0-9_.-]{1,64}$/,_=2048,c=/([a-z][a-z-]*)="([^"\s]{0,256})"/g,b=new Set(["reason","current-time"]),w=new Set(["source","kind","from","trust","untrusted-keys"]),R=p(()=>fe(o(),ae()));function r(n){return n.trim()===""}function GFn(n){if(!X7r(n))return null;let s=n.indexOf(">");if(s===-1||s>_)return null;let k=n.slice(5,s);if(!r(k.replace(c," ")))return null;for(let e of k.matchAll(c))if(!b.has(e[1]))return null;let l=n.indexOf("<event ",s+1);if(l===-1||!r(n.slice(s+1,l)))return null;let i=n.indexOf(">",l);if(i===-1||i-l>_)return null;let f=n.indexOf("</event>",i+1);if(f===-1)return null;let T=f+8,d=n.indexOf("</wake>",T);if(d===-1||!r(n.slice(T,d)))return null;if(!r(n.slice(d+7)))return null;let u=new Map,h=n.slice(l+6,i);if(!r(h.replace(c," ")))return null;for(let e of h.matchAll(c)){if(!w.has(e[1]))return null;let S=e[1];if(!u.has(S))u.set(S,e[2])}let E=u.get("source"),m=u.get("kind");if(E===void 0||m===void 0||!O.test(E)||!y.test(m))return null;let t=n.slice(i+1,f),g=t.indexOf("<!--");if(g!==-1){if(!r(t.slice(0,g)))return null;let e=t.indexOf("-->",g+4);if(e===-1)return null;t=t.slice(e+3)}let A=t.trim();if(!A.startsWith("{"))return null;let a;try{a=J(A)}catch{return null}if(typeof a!=="object"||a===null||Array.isArray(a))return null;let v=R().safeParse(a);if(!v.success)return null;let x=(u.get("untrusted-keys")??"").split(",").filter((e)=>e!=="");return{source:E,kind:m,data:v.data,untrustedKeys:x}}function Mit(n){return n.source==="session-inbox"&&n.kind==="message.received"}
+export{Y7r,X7r,GFn,Mit};

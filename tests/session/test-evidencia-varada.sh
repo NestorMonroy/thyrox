@@ -123,7 +123,21 @@ desmontar
 # esta sesion. Su censo esta versionado; se toma UN nombre real de ahi y se
 # comprueba que el patron lo ve. Un incumplidor fabricado por quien escribio
 # el patron heredaria su encuadre y confirmaria el instrumento.
-CENSO=$(ls -d "$RAIZ"/.claude/eventos/triaje-artefactos-varados-*/censo.tsv 2>/dev/null | head -1)
+# El censo NO vive en el proveedor: es un banco de evidencia, y los once
+# bancos se mudaron al arbol del CONSUMIDOR (TASK-THYROX-0019). Buscarlo bajo
+# `thyrox_root` era la premisa del arbol anterior a esa mudanza, y su rojo no
+# decia que era del instrumento — decia «no existe el control positivo».
+#
+# La raiz de busqueda es el arbol que hospeda a los clones, con cota de
+# profundidad: el censo esta a `<clon>/.claude/eventos/<banco>/censo.tsv`.
+ARBOL="$(thyrox_tree_root)"
+CENSO=$(find "$ARBOL" -maxdepth 4 -type d -name '.claude' -prune -o \
+    -maxdepth 5 -type f -path '*/triaje-artefactos-varados-*/censo.tsv' -print \
+    2>/dev/null | head -1)
+if [[ -z "$CENSO" ]]; then
+    CENSO=$(ls -d "$ARBOL"/*/.claude/eventos/triaje-artefactos-varados-*/censo.tsv \
+        2>/dev/null | head -1)
+fi
 if [[ -n "$CENSO" && -f "$CENSO" ]]; then
     REAL=$(awk -F'\t' 'NR>1 && $1 ~ /\.py$/ {n=split($1,p,"/"); print p[n]; exit}' "$CENSO")
     montar
@@ -136,7 +150,10 @@ if [[ -n "$CENSO" && -f "$CENSO" ]]; then
     fi
     desmontar
 else
-    afirmar "9. existe el censo de #858 como control positivo" "si" "no"
+    # Sin censo el caso queda SIN MEDIR, no en verde: un control positivo que
+    # no se ejercita no distingue «el patron ve» de «no habia que ver».
+    echo "  SIN MEDIR 9. no hay censo de artefactos varados en $ARBOL"
+    echo "            (el control positivo vive en el banco de un consumidor)"
 fi
 
 echo ""

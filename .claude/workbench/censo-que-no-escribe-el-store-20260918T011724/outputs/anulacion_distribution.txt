@@ -1,0 +1,13 @@
+=== ANULACION B: sin el rehuse por suma (distribution) ===
+== 1. pesos que no suman 1: REHUSA, no publica cifra ==
+  FALLO NotADistribution
+        esperado=[NotADistribution] obtenido=[ninguna]
+== 2. un peso por valor, o tampoco hay distribucion ==
+  ok    NotADistribution
+== 3. un peso negativo: la suma podria dar 1 y aun asi no serlo ==
+  ok    NotADistribution pese a sumar 1
+== 4. una MUESTRA no es una distribucion: se declara al convertirla ==
+  ok    cinco pesos de 1/5
+  ok    los valores viajan intactos
+
+4 ok, 1 fallos

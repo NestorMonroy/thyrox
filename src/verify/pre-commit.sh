@@ -16,7 +16,7 @@
 # minutos.
 #
 # Lo que este mecanismo NO trae del hook anterior, y es deliberado: los dos
-# gates de PAQUETE —`check-agent-artifacts.sh` y `check-harness-typecheck.sh`—.
+# gates de PAQUETE —`check-agent-artifacts.sh` y `check-cli-typecheck.sh`—.
 # Sus superficies (`.claude/packages/{agent,harness}` y `.claude/agents`) se
 # mudaron a THYROX en TASK-DOCS-0449, asi que en el consumidor no existen: sus
 # bloques imprimian «la superficie del paquete no cambia en este commit» en
@@ -32,6 +32,18 @@ CONSUMER="${1:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GATES="${THYROX_ROOT:+$THYROX_ROOT/src/verify}"
 GATES="${GATES:-$HERE}"
+# El invariante del arbol: un modulo de `src/` se importa con `src` en el
+# path. `GATES` es `<thyrox>/src/verify`, asi que su padre ES esa raiz — y
+# se compone del PROVEEDOR, nunca del consumidor, porque los gates son
+# mecanismo de thyrox aunque el sujeto medido sea de kaupamex-*.
+#
+# Sin esto, `check_rst_sintaxis.py` y `check_rst_convenciones.py` morian en
+# su `from paths import reach` con ModuleNotFoundError. Python da exit 1 a
+# toda excepcion no capturada, y 1 es «el gate encontro un defecto»: el hook
+# bloqueaba el commit imprimiendo la receta de arreglar la prosa sobre dos
+# tracebacks. Los cinco consumidores delegan aqui, asi que el defecto era
+# de los cinco.
+export PYTHONPATH="$(dirname "$GATES")${PYTHONPATH:+:$PYTHONPATH}"
 CODE=0
 
 # Rehusar en vez de omitir, y ANTES de medir nada. Un gate declarado que no

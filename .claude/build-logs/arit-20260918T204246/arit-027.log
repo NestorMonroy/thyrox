@@ -1,0 +1,36 @@
+
+1. index_reference — el lado sale del clasificador que se pasa
+  ok    el addon dentro del nucleo cuenta como addons
+  ok    una clase del nucleo cuenta como core
+  ok    Serialized lo declara la region de extension
+  ok    un nombre en los dos lados trae los dos
+
+2. own_symbols — solo nivel superior, y solo con lado
+  ok    la clase anidada NO entra
+  ok    lo que no tiene lado tampoco
+  ok    las cinco con lado si
+
+3. compare_homes — cuatro desenlaces, no dos
+  ok    3.1 Serialized sale fuera de sitio
+  ok    y dice los dos lados
+  ok    el que la fuente no declara: sin contraparte
+  ok    el declarado en dos lados: ambigua
+  ok    el nombre impuesto no entra al denominador
+  ok    y el denominador decidible descuenta ambas clases
+
+4. CONTROL — el clasificador ingenuo produce el falso positivo
+  ok    4.1 con el ingenuo, ResDevice sale fuera de sitio (FALSO)
+  ok    4.2 con el correcto, NO sale
+
+5. el trinquete: una ubicacion aceptada no bloquea
+  ok    no queda fuera de sitio
+  ok    pero SI se cuenta como aceptada
+
+6. CONTROL — el lector es PARAMETRO, no esta cableado a Python
+  ok    6.1 el indice ve la clase de TypeScript
+  ok    6.2 y el arbol propio tambien
+  ok    6.3 el desacuerdo de lado sale igual que en Python
+  ok    6.4 el lector de Python no indexa nada ahi
+
+21 ok, 0 fallos
+EXIT=0

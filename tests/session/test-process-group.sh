@@ -45,16 +45,18 @@ if [[ -z "$_thyrox_root" ]]; then
     done
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+source "$_thyrox_root/src/lib/fixture.sh"
 RAIZ="$(thyrox_root)" || exit 2
 
 # El ledger se AÍSLA: sin esto la suite registra en el de la sesión viva y un
 # caso que deja un trabajo colgado bloquearía el turno de quien la corre.
-export THYROX_JOBS_DIR="$(mktemp -d)/ledger"
+_ledger_home="$(fixture_dir)"
+export THYROX_JOBS_DIR="$_ledger_home/ledger"
 BG="$RAIZ/src/session/bg.sh"
 POOL="$RAIZ/src/session/run-task-pool.sh"
 WAIT_JOBS="$RAIZ/src/session/wait-jobs.sh"
 OK=0; FALLA=0
-T="$(mktemp -d)"
+T="$(fixture_dir)"
 
 af() { # af <descripcion> <esperado> <obtenido>
     if [ "$2" = "$3" ]; then OK=$((OK+1)); printf '  ok   %s\n' "$1"
@@ -111,6 +113,7 @@ limpieza() {
     rm -rf "$T"
 }
 trap limpieza EXIT
+fixture_arm   # compone: `trap` reemplaza, no acumula
 
 echo "test-process-group:"
 
@@ -132,7 +135,7 @@ kill -KILL "$BG_PID" 2>/dev/null || true
 # -----------------------------------------------------------------------------
 printf '%s\n' "bash $T/forker.sh $T/kids-pool" \
     | bash "$POOL" - --width 1 --timeout 2 --dir "$T/pool" --prefix grp >/dev/null 2>&1
-POOL_PID="$(sed -n 's/^pid=//p' "$THYROX_JOBS_DIR"/grp-001.job 2>/dev/null)"
+POOL_PID="$(sed -n 's/^pid=//p' "$THYROX_JOBS_DIR"/*grp-001.job 2>/dev/null)"
 echo "$POOL_PID" >> "$T/leaders"
 af "run-task-pool: el trabajo es lider de su grupo (pgid==pid)" "$POOL_PID" "$(group_of "$POOL_PID")"
 

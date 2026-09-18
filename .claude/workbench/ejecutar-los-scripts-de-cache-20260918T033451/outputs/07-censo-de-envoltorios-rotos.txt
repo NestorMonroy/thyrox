@@ -1,0 +1,23 @@
+# Censo de envoltorios de bin/ que mueren al invocarse — 2026-09-18T03:42:16
+
+## Conductual: --help sobre los 178, ultima linea = excepcion
+cache_probe   rc=1 | ImportError: attempted relative import with no known parent package
+manifest      rc=1 | ImportError: attempted relative import with no known parent package
+
+## Estatico: modulos de src/ con import relativo QUE ADEMAS tienen envoltorio
+cache_probe -> src/transcript/cache_probe.py   (from .thread import main_chain_of)
+manifest    -> src/workbench/manifest.py       (from . import paths)
+
+Los dos ejes coinciden en 2. El universo lo fija el ESTATICO: el conductual es
+ciego a un import relativo en una rama que --help no alcanza.
+
+## La causa, en el generador
+generate_bin.py:356 emite  exec "$INTERPRETER" "$THYROX_ROOT/<ruta>.py" "$@"
+Un modulo con import relativo solo corre como  python -m <paquete>.<modulo>.
+No se arregla en el modulo: sus tests lo importan como paquete
+(tests/workbench/test_manifest.py:24  from workbench import manifest).
+
+## Lo que este censo NO cierra
+generate_bin.py --check publica «al dia» sobre los dos envoltorios muertos:
+mide que el texto emitido coincide con el plan, no que el envoltorio corra.
+Sucesor: TASK-THYROX-0164.

@@ -154,11 +154,30 @@ class WorkbenchHomeResolution(unittest.TestCase):
         Se comparan las dos porque son el MISMO mecanismo repetido: si una
         deriva, el consumidor tiene que recordar cuál de sus dos claves admite
         un segmento y cuál no.
+
+        La población se filtra por LAS DOS familias, no por `workbench` sola:
+        `_sin_clave_por_clon` es POR FAMILIA, y un caso que cruza familias
+        heredándola mide la PRECEDENCIA de la otra en vez de su composición.
+        Hoy pasaría igual sin este filtro —los cinco clones miden
+        `rules_por_clon=False`—, así que el verde no discriminaba entre «las
+        dos componen igual» y «la otra familia no tiene con qué diferir»: el
+        sub-patrón D con esta suite como sujeto (:ref:`h-thyrox-36`).
+
+        Qué lo haría fallar, medido antes de escribirlo: declarando
+        `THYROX_RULES_DB` sin este filtro cae exactamente el subtest de `db`
+        —los otros cuatro sobreviven— acusando al mecanismo de componer
+        distinto cuando lo que difiere es qué clave responde.
         """
         sys.path.insert(0, str(_RAIZ / "src"))
         from rules import paths as rules  # noqa: PLC0415
 
-        roots = _sin_clave_por_clon()
+        roots = {repo: root for repo, root in _sin_clave_por_clon().items()
+                 if not reach.env_value(rules.rules_home_name(repo), root)}
+        self.assertGreaterEqual(
+            len(roots), 2,
+            "sin dos clones sin clave por clon en NINGUNA de las dos familias, "
+            "«las dos resuelven igual» no se puede afirmar",
+        )
         with _Declared(rules.RULES_DIR_VAR, "mismo-segmento"), \
              _Declared(workbench.WORKBENCH_DIR_VAR, "mismo-segmento"):
             for repo, root in roots.items():

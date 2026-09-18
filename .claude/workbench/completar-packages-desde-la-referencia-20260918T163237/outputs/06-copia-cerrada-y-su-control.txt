@@ -1,0 +1,48 @@
+0	daemon
+0	app-host
+0	swarm
+0	mcp-runtime
+0	output
+0	shell
+0	cli
+0	config
+0	command-runtime
+0	agent
+0	provider
+0	tool-registry
+
+LA COPIA, CERRADA
+=================
+fecha: 2026-09-18T16:47:18
+
+1060 archivos copiados en 6.6 s, 0 errores — mas el que el control de
+conducta copio antes, 1061 en total. Es un PROCESO: cuesta cero tokens, y
+por eso no se despacho ningun agente.
+
+CONTROL 1 — ausentes por paquete tras la copia: 0 en los doce.
+
+CONTROL 2 — los 803 archivos COMUNES a referencia y puerto conservan su
+sha256. Es el control que discrimina: «los archivos existen» no separa
+«se copio lo que faltaba» de «se piso lo que ya estaba adaptado». El
+copiador rehusa con exit 3 ante un destino existente, y la medicion lo
+confirma por conducta.
+
+CONTROL 3 — la referencia no se toco. Verificado con `assert_no_writes`,
+que lee la traza del nucleo y no el fuente: sobre una copia real
+(`subject_exit=0`) las 7 escrituras intentadas son `mkdir` de componentes
+de ruta BAJO EL PUERTO. Ninguna cae en la referencia.
+
+  El primer intento de este control salio verde con `subject_exit=2`: el
+  copiador habia rehusado antes de copiar, asi que el verde no
+  discriminaba. Se repitio contra un archivo que si existe.
+
+  Y el chequeo `git status` sobre la referencia NO vale como evidencia:
+  ccnmt no es un repo git, asi que el comando falla y su salida vacia se
+  lee como «limpio». Un verde de un comando que no corrio.
+
+*Metrica:* `comm -23` entre los listados `find` de referencia y puerto, por
+paquete; sha256 de los comunes antes y despues; traza de `strace` del
+copiador.
+*Ciega a:* si lo copiado compila o resuelve sus imports —no se corre
+ninguna suite, por directiva—; los archivos que no son .ts/.tsx; y la
+FIDELIDAD de lo copiado, que es byte a byte por construccion.

@@ -81,7 +81,15 @@ temp/
 *.rar
 *.zip
 *.tar.gz
-*.7z
+# `*.7z` RETIRADO 2026-09-18 por directiva del ejecutor. El corpus de builds
+# archivado (`_references/claude-code-bin/_archived/`) son nueve `.7z` que la
+# regla global se tragaba en silencio: en disco estaban, en git solo el
+# MANIFEST. No habia perdida —el crudo sigue en el historial, en el `head` que
+# el manifiesto declara— pero `_archived/` se leia como un manifiesto que
+# apunta a archivos inexistentes. Ver H-THYROX-80.
+#
+# Medido al retirarla: 9 `.7z` en el arbol, los 9 bajo `_archived/`. La regla
+# no retenia nada mas, asi que quitarla no admite nada que no sea el archivo.
 *.bmp
 *.psd
 *.tiff
@@ -132,11 +140,25 @@ venv/
 # contenido: versionarlo produce el churn por turno de #151. El banco SÍ se
 # versiona; su puntero, no.
 .claude/workbench/.ultimo-banco
+# El renombre a inglés de `identificadores-en-ingles.md` dejó esta entrada
+# apuntando al nombre muerto: el puntero vivo es `.last-bank`, que quedó
+# sin ignorar y aparecía como `??` en cada turno. Se conservan los dos
+# nombres porque el viejo sigue en el árbol de trabajo de este clon.
+.claude/workbench/.last-bank
 
 # Estado de sesión del gate de mutación: qué mutación está EN VUELO ahora.
 # No es registro del proyecto — su contenido sólo vale dentro de la ejecución
 # que lo escribió, y versionarlo ensucia el árbol en cada corrida.
+#
+# Las DOS formas, y no es redundancia: el ledger se emite hoy como `.jsonl`
+# (un registro por línea, que sobrevive a la muerte del proceso porque un
+# append no puede pisar lo ya escrito), y el lector sigue aceptando el `.json`
+# heredado de forma permanente — un ledger escrito por una sesión anterior no
+# se convierte al leerse. Declarar sólo la forma nueva dejaría al heredado
+# fuera del ignore; declarar sólo la vieja fue el defecto que esta línea
+# corrige.
 agent-results/mutantes-en-vuelo.json
+agent-results/mutantes-en-vuelo.jsonl
 
 # El ledger de trabajos en segundo plano es POR SESIÓN
 # (.env.example: THYROX_JOBS_DIR/THYROX_JOBS_ARCHIVE_DIR) — dos sesiones que
@@ -144,3 +166,7 @@ agent-results/mutantes-en-vuelo.json
 # vale mientras la sesión que lo escribió sigue viva; versionarlo ensucia el
 # árbol cada vez que un trabajo queda VIVO al cerrar el turno.
 .claude/jobs-ledger/
+
+# La cascara de store del proveedor: 0 filas de negocio, tracked sin el
+# driver de merge que .gitattributes da al store real. La retira TASK-THYROX-0153.
+.claude/agent-results/agent_store.sqlite3

@@ -63,8 +63,7 @@ import re
 import subprocess
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: `parents[3] / 'source'` daba `/home/user/source`, que no existe. Medido con
 #: el control de anulación: el gate NO rehusaba — publicaba

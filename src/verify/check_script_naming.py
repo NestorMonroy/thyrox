@@ -90,7 +90,6 @@ EXCLUIR = ('node_modules', '.venv', 'venv', '__pycache__', 'build', 'dist',
 # evidencia por el PAR `.claude/eventos` y el banco por su hogar DECLARADO. El
 # nombre suelto de un directorio no basta — `eventos` y `workbench` nombran
 # tambien producto. Ver `workbench/paths.py`.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from workbench.paths import is_measurement_artifact  # noqa: E402
 from paths.reach import env_value  # noqa: E402
 

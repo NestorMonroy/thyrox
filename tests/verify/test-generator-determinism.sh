@@ -49,6 +49,23 @@ check() {
 
 cd "$REPO"
 
+# El SUJETO mide el CONSUMIDOR y esta suite corre desde el PROVEEDOR. Sin
+# declararlo, `reach.consumer_root()` REHUSA —y hace bien: componer un hogar
+# dentro de thyrox daria una raiz que `declarations.py` no lista—. La misma
+# costura que TASK-THYROX-0055 ya cerro para otras cuatro suites.
+#
+# Y si no hay consumidor al que apuntar, la suite lo DICE en vez de publicar
+# rojos que no son del sujeto: un fallo por consumidor ausente no distingue
+# «el gate esta roto» de «no habia arbol que medir».
+CONSUMER="${THYROX_CONSUMER:-/home/user/kaupamex-docs}"
+if [[ ! -d "$CONSUMER/.claude/eventos" ]]; then
+  echo "== SIN MEDIR: no hay consumidor con .claude/eventos en $CONSUMER"
+  echo "   declara THYROX_CONSUMER con la raiz de un clon consumidor"
+  printf '\n%s: %d ok · %d falla(s) — SIN MEDIR\n' "$(basename "$0")" 0 0
+  exit 0
+fi
+export THYROX_CONSUMER="$CONSUMER"
+
 echo "== caso 1: el árbol limpio pasa, y publica su denominador"
 OUTPUT="$(python3 "$SUT" 2>&1)"; EXIT=$?
 check "exit 0" "$EXIT" "0"
@@ -67,10 +84,20 @@ python3 "$SUT" --strict >/dev/null 2>&1
 check "exit 0 con --strict" "$?" "0"
 
 echo "== caso 4: CONTROL POSITIVO — la forma real que vive en el repo"
-SOURCE_FORM="$(grep -rln 'datetime.now(timezone.utc)' .claude/eventos --include='*.py' | head -1)"
+# El grep y la victima van al CONSUMIDOR, que es donde el gate mide. Miraban
+# `.claude/eventos` del PROVEEDOR, y los bancos se mudaron al consumidor
+# (TASK-THYROX-0054): el control positivo quedo vacio y la victima aterrizaba
+# en un arbol que el sujeto no recorre — dos rojos de premisa rancia, no del
+# gate.
+SOURCE_FORM="$(grep -rln 'datetime.now(timezone.utc)' \
+  "$CONSUMER/.claude/eventos" --include='*.py' | head -1)"
 check "la forma existe en el repo (no es fabricada)" \
   "$([[ -n "$SOURCE_FORM" ]] && echo si || echo no)" "si"
-VICTIM="$(mktemp -d "$REPO/.claude/eventos/prueba-gate-XXXXXX")"
+VICTIM="$(mktemp -d "$CONSUMER/.claude/eventos/prueba-gate-XXXXXX")"
+# La victima se retira AUNQUE la suite aborte: sin trap, un rojo a mitad deja
+# el fixture plantado en el arbol del consumidor — medido, habia uno varado de
+# una corrida previa. Es la clase de TASK-THYROX-0059.
+trap 'rm -rf "$VICTIM"' EXIT
 cat > "$VICTIM/gen.py" <<'PY'
 import pathlib
 from datetime import datetime, timezone

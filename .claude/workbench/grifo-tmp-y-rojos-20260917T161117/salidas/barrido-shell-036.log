@@ -1,0 +1,2 @@
+VERDE tests/lib/test-toolchain-sh.sh
+EXIT=0

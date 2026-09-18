@@ -40,8 +40,28 @@ EXIT_OK = 0
 EXIT_COLISION = 1
 EXIT_GUARD = 2
 
-RE_ETIQUETA = re.compile(r'^\.\. _h-(?:api|docs|ui|db|server)-[0-9]+:')
-PATRON_GREP = r'^\.\. _h-(api|docs|ui|db|server)-[0-9]+:'
+#: Las SEIS raices de trabajo que `hallazgos-documentacion-obligatoria.md`
+#: declara, en minuscula porque asi viven en la etiqueta RST (`.. _h-docs-42:`).
+#:
+#: Se declara UNA vez y las dos expresiones de abajo se derivan de ella. Antes
+#: eran tres literales independientes —el `re.compile`, el patron de `git grep`
+#: y la guarda de `--disponible`— y los tres enumeraban CINCO: `thyrox` no
+#: estaba en ninguno. La regla se corrigio a seis el 2026-09-17 y este mecanismo
+#: se quedo atras, que es la forma inversa de lo que esa misma regla documenta
+#: sobre si misma («el mecanismo ya era de N raices; la prosa enumeraba cinco»).
+#:
+#: Lo que el rehuse escondia no era el rehuse: era que la guarda de colision que
+#: `H-THYROX-26` impone —dos hallazgos bajo un numero, el segundo pisando al
+#: primero sin emitir un byte— no cubria la capa cuyo corpus vive en ESTE arbol.
+#:
+#: NO se importa el `--capa` de `task_ids.py`: aquel enumera capas de TAREA e
+#: incluye `gen`, que no es prefijo de ningun hallazgo. Compartir el literal
+#: acoplaria este gate a un universo distinto del que mide.
+LAYERS: tuple[str, ...] = ('api', 'db', 'docs', 'server', 'thyrox', 'ui')
+
+_ALTERNATION = '|'.join(LAYERS)
+RE_ETIQUETA = re.compile(rf'^\.\. _h-(?:{_ALTERNATION})-[0-9]+:')
+PATRON_GREP = rf'^\.\. _h-({_ALTERNATION})-[0-9]+:'
 
 
 def git(*args):
@@ -135,7 +155,7 @@ def main(argv=None):
 
     if args.disponible:
         capa, numero = args.disponible
-        if capa not in ('api', 'docs', 'ui', 'db', 'server') or not numero.isdigit():
+        if capa not in LAYERS or not numero.isdigit():
             print('ERROR — --disponible requiere CAPA conocida y NUMERO entero.',
                   file=sys.stderr)
             return EXIT_GUARD

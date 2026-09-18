@@ -1,0 +1,13 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.275
+import{fh}from"/$bunfs/root/chunk-q7rz8cer.js";import{Oe}from"/$bunfs/root/chunk-aw1peprz.js";import{Mm,wkt,bur,Rpr}from"/$bunfs/root/chunk-4qqe0nh4.js";import{J,mp,aur}from"/$bunfs/root/chunk-4bbpt7sc.js";import{KG,Znr,vJe,zSt,uye}from"/$bunfs/root/chunk-xbd48fav.js";import{xp}from"/$bunfs/root/chunk-g8rhxhbp.js";import{ta,d6t,p6t,BBe}from"/$bunfs/root/chunk-q8sknw7e.js";import{D2}from"/$bunfs/root/chunk-2m8hwn4j.js";import{d3t}from"/$bunfs/root/chunk-8syy9k0k.js";import{AS,cX}from"/$bunfs/root/chunk-mfr7w3xb.js";import{DP}from"/$bunfs/root/chunk-grv4vgbv.js";import{wQn}from"/$bunfs/root/chunk-e7wwzed3.js";import{vBr}from"/$bunfs/root/chunk-06a01q6m.js";import{Sgr}from"/$bunfs/root/chunk-s2nbmv3k.js";import{EG}from"/$bunfs/root/chunk-cpcwqyn4.js";import{createServer as f}from"net";function IAt(e,m,o){return new Promise((n,c)=>{let t=(r)=>{i.close(),c(r)},i=f((r)=>{let a="";r.setEncoding("utf8"),r.on("data",(d)=>{if(a+=d,o&&a.length>8388608){r.destroy();return}let p=a.indexOf(`
+`);if(p<0)return;if(o){let s;try{s=J(a.slice(0,p))}catch{s=void 0}if(!s||!DP(s.auth,o)){r.destroy();return}i.close(),n(s);return}i.close();try{n(J(a.slice(0,p)))}catch(s){c(s)}}),r.on("error",o?()=>r.destroy():t)});if(i.on("error",t),m)i.once("listening",()=>{try{m()}catch(r){t(r)}});i.listen(e)})}async function PAt(e,m){let o=await xp(e.cwd,void 0);mp(o);let n={originalCwd:o,projectRoot:o,cwd:o};if(e.sessionId)Mm(fh(e.sessionId),"spare_claim",null,n);else wkt(n);if(ta(),uye(),zSt(),bur(),vBr(),D2({warm_spare_claimed:1}),Oe(e.env.CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST)){for(let t of Object.keys(process.env))if(d6t(t)||t==="ANTHROPIC_CUSTOM_HEADERS"||p6t(t)||BBe(t))delete process.env[t]}delete process.env.ANTHROPIC_AUTH_TOKEN,delete process.env.ANTHROPIC_API_KEY,delete process.env.CLAUDE_CODE_OAUTH_TOKEN,Object.assign(process.env,e.env),process.argv=[process.argv[0],process.argv[1],...e.argv],aur(),await Sgr(e.argv),Rpr(),Znr(),d3t(),EG(),vJe({preservePendingExposures:!0,preserveLoggedExposures:!0}),KG(),wQn(),cX(),AS();let{main:c}=await m;await c()}
+export{IAt,PAt};

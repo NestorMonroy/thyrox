@@ -189,6 +189,35 @@ print(cg.task_ambiguity({'h-x': ['#1']}, store='/no/existe/store.sqlite3'))
 [ "$SIN_STORE" = "None" ] \
   || fallo "sin store devolvio '$SIN_STORE' en vez de None: un 0 seria verde falso"
 
+# --- el default del store NO se compone por cwd -----------------------------
+# `TASK_STORE` era una ruta RELATIVA. Desde el arbol del proveedor resolvia a
+# `.claude/agent-results/agent_store.sqlite3` — una cascara de 0 filas de
+# negocio — y desde cualquier otro cwd no resolvia a nada, con lo que
+# `task_ambiguity` devolvia None: «no pude medir» sobre un store que SI existe.
+# Las dos lecturas son falsas y ninguna avisa. El resolutor canonico es
+# `reach.agent_store_path()`, que es absoluto.
+caso "el default del store es absoluto y no depende del cwd"
+ABS=$(python3 -c "
+import sys; sys.path.insert(0, 'src/task')
+import closure_graph as cg
+from pathlib import Path
+print(Path(cg.TASK_STORE).is_absolute())
+" 2>/dev/null)
+[ "$ABS" = "True" ] \
+  || fallo "TASK_STORE no es absoluta ($ABS): su resolucion depende del cwd"
+
+# El control que discrimina: desde OTRO cwd el default tiene que seguir
+# midiendo el store real. Con la ruta relativa aqui salia None.
+RAIZ_TASK=$PWD/src/task   # capturada ANTES del cd: dentro del subshell $PWD ya es /
+DESDE_FUERA=$(cd / && python3 -c "
+import sys; sys.path.insert(0, '$RAIZ_TASK')
+import closure_graph as cg
+r = cg.task_ambiguity({'h-x': ['#1']})
+print('MIDIO' if isinstance(r, dict) else r)
+" 2>/dev/null)
+[ "$DESDE_FUERA" = "MIDIO" ] \
+  || fallo "desde otro cwd el default devolvio '$DESDE_FUERA': mide por cwd"
+
 echo
 if [ $fallos -eq 0 ]; then
   echo "OK: $casos casos, 0 fallos (alcance medido: 5 fixtures)"

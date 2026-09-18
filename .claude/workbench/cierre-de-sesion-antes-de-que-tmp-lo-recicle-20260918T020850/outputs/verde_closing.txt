@@ -1,0 +1,16 @@
+== 1. las dos cifras COINCIDEN: el ultimo mensaje declara su cierre ==
+  ok    el cierre del ULTIMO mensaje
+  ok    el ultimo NO NULO, que es la regla del extractor
+  ok    y el registro lo declara: no difieren
+  ok    los tipos de bloque del ultimo, sin su cuerpo
+  ok    el denominador viaja
+== 2. DIFIEREN: el ultimo no declara cierre y la regla arrastra ==
+  ok    el ultimo mensaje no declara cierre
+  ok    la regla publica el de un mensaje ANTERIOR
+  ok    y el registro lo DECLARA en vez de esconderlo
+== 3. un transcript sin mensajes assistant no se inventa un cierre ==
+  ok    sin cierre, y el denominador en 0
+== 4. un transcript ausente REHUSA, no publica un cierre vacio ==
+  ok    rehusa con TranscriptNotFound
+
+10 ok, 0 fallos

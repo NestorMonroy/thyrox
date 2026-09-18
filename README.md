@@ -220,18 +220,41 @@ python3 src/session/generate_bin.py --install-user-bin   # + copia a ~/.local/bi
 python3 src/session/generate_bin.py --check      # ¿bin/ sigue al día?
 ```
 
-Verificado en este árbol al escribir esta sección: **117 entrypoints**,
-`bin/` al día. Cubre exactamente lo que se cita en `long-running-commands.md`
-de los consumidores por su ruta completa — `write-env`, `wait-jobs`,
-`run-task-pool`, `thyrox-bg` (`bg` a secas colisiona con el builtin de
-bash, de ahí el prefijo) — y el resto de los 117, con el mismo mecanismo.
-Detalle completo: `kaupamex-docs: source/gestion/pm/thyrox/iniciativas/
-agregar-entrypoints-cortos-thyrox/` (`TASK-THYROX-0017`).
+**`bin/` está versionado** — los envoltorios vienen en el clon, no se
+generan. Un clon recién bajado invoca `bash bin/<nombre>` sin ningún paso
+previo; `generate_bin.py` es para **regenerarlo** cuando `src/session`,
+`src/verify` o `src/agents` ganan un entrypoint, y `--check` publica si está
+al día. **El conteo no se transcribe aquí**: es propiedad de un árbol que
+crece, y ya se quedó atrás dos veces. Lo publica el comando.
 
-**Lo que este mecanismo NO cierra todavía:** los ejemplos de
-`long-running-commands.md`/`bash-background-tasks.md` en los cinco
-consumidores siguen enseñando la ruta completa (`bash src/session/bg.sh`),
-no el nombre corto — sucesor abierto, `TASK-THYROX-0018`.
+Cubre lo que los consumidores citaban por su ruta completa — `write-env`,
+`wait-jobs`, `run-task-pool`, `marker_wait`, `thyrox-bg` (`bg` a secas
+colisiona con el builtin de bash, de ahí el prefijo) — y el resto, con el
+mismo mecanismo. Detalle: `kaupamex-docs: source/gestion/pm/thyrox/
+iniciativas/agregar-entrypoints-cortos-thyrox/` (`TASK-THYROX-0017`).
+
+**`TASK-THYROX-0028` cerrado.** Los ejemplos ejecutables de
+`long-running-commands.md`/`bash-background-tasks.md` enseñaban la ruta
+completa (`bash src/session/bg.sh`) en reglas que cargan en **cada** sesión,
+mientras el nombre corto vivía sólo aquí — la forma de ERR-063: lo correcto
+donde se lee una vez, lo superado donde siempre gobierna. Reescritas las 14
+citas **ejecutables** de los cuatro repos que las tenían; las que **nombran
+dónde vive** el mecanismo (columna de tabla, encabezado de sección) se
+conservan, porque ahí la ruta al fuente es la definición y no una invocación.
+
+Tres cosas que el cierre midió y la tarea suponía:
+
+- **Cuatro repos, no seis.** `kaupamex-db` y `kaupamex-server` no tienen
+  ninguna de las dos reglas: 0 citas. El alcance real era 14 líneas en 5
+  archivos.
+- **La cita de este párrafo estaba mal, y era anterior.** Decía
+  `TASK-THYROX-0018`, que en el store nombra otro sujeto vivo —barrer los 84
+  `sys.path.insert`, `pending`—. El correcto es `TASK-THYROX-0028`, cuya
+  descripción es literalmente este trabajo. Un `TASK-<CAPA>-NNNN` resuelve
+  siempre al mismo sujeto; transcribirlo a prosa de memoria, no.
+- **0028 figuraba `completed` desde el 2026-09-15** con sus 24 citas en pie.
+  El estado declarado no envejece solo y ningún gate lo mide: ése es el
+  sujeto de `TASK-THYROX-0050`, que sigue abierta.
 
 ## El alcance por variable
 

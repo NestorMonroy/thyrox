@@ -40,13 +40,10 @@ import os
 import sys
 from pathlib import Path
 
-if __package__ in (None, ""):  # invocación directa como guion
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from hooks.error_log import run_and_log  # noqa: E402
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import agents_paths  # noqa: E402 — el localizador del hogar del store
+from agents import agents_paths  # noqa: E402
 
 #: El store es el hermano de este módulo — aritmética DENTRO de thyrox, que es
 #: legítima: el archivo y su vecino se mudan juntos. Lo que no sería legítimo es
@@ -308,6 +305,22 @@ def _extract_usage(transcript_path: str) -> dict:
     compactaciones = 0
     tokens_tirados = 0
     ultimo_cierre: str | None = None
+    # La OTRA cifra de cierre (TASK-THYROX-0155). `ultimo_cierre` es el ultimo
+    # NO NULO —una regla—; esta es el valor CRUDO del ultimo mensaje, sea o no
+    # nulo. Con una sola, la divergencia entre las dos es invisible: el store
+    # publicaba `tool_use` en 325 filas cuyos agentes habian entregado su
+    # reporte, y nada en la fila lo delataba.
+    #
+    # Se computa en ESTE recorrido y no importando `closing.read()`, que es el
+    # destilador que responde la misma pregunta. La razon es el coste: un
+    # transcript pesa 2.0 MB de mediana, y delegar aqui seria un SEGUNDO
+    # recorrido completo del archivo por agente para obtener una variable que
+    # este bucle ya tiene delante. Lo que evita que las dos derivaciones
+    # divijan no es compartir el codigo sino el control cruzado: la suite
+    # comprueba que `closing.read()` y este extractor publican lo mismo sobre
+    # el mismo transcript (`tests/agents/test_final_message_closing.py`). Dos
+    # instrumentos independientes que coinciden es evidencia; uno solo, no.
+    ultimo_cierre_crudo: str | None = None
     # El DENOMINADOR del recorrido (:ref:`h-docs-427`, tarea #899). Sin el, la
     # suma no dice sobre cuantos mensajes se computo, y un transcript truncado
     # publica la misma cifra que uno completo. Son DOS contadores y no uno
@@ -346,6 +359,10 @@ def _extract_usage(transcript_path: str) -> dict:
                 # ANTES del guard de ``usage``: un mensaje puede declarar como
                 # cerro el turno sin traer contabilidad, y leerlo despues del
                 # guard lo perderia en silencio.
+                # El crudo se sobreescribe SIEMPRE —incluido a None—, que es
+                # justo lo que lo hace distinto del de abajo: su nulo es el dato.
+                crudo = msg.get("stop_reason")
+                ultimo_cierre_crudo = str(crudo) if crudo else None
                 if msg.get("stop_reason"):
                     ultimo_cierre = str(msg["stop_reason"])
                 usage = msg.get("usage")
@@ -441,6 +458,21 @@ def _extract_usage(transcript_path: str) -> dict:
         # vistos porque el campo ya es acumulado: con dos compactaciones, la
         # segunda incluye a la primera, y sumarlas contaria dos veces.
         "stop_reason": ultimo_cierre,
+        # El cierre CRUDO del ultimo mensaje. Su nulo NO es un hueco: dice que
+        # el ultimo mensaje del transcript no declaro cierre, y entonces el
+        # valor de `stop_reason` viene de un turno anterior. Medido sobre los
+        # 109 transcripts alcanzables de las 325 filas de TASK-THYROX-0155: los
+        # 109 divergen, los 109 cierran con un bloque `text`, y ninguno paro en
+        # una herramienta.
+        #
+        # Por que el cliente deja el campo en nulo: emite DOS clases de linea
+        # `assistant` —una POR BLOQUE desde el mensaje parcial, sin recomponer
+        # `usage`, y una RECONCILIADA con la contabilidad del evento terminal—.
+        # Cuando la ultima linea es de la primera clase, el campo esta presente
+        # y vale nulo, y su `output_tokens` es el del `message_start`. Medido
+        # sin solape: 1..10 en el grupo que diverge contra 24..3429 en el que
+        # no, sobre cuerpos de mediana 2736 y 2804 caracteres.
+        "last_stop_reason": ultimo_cierre_crudo,
         "compactions": compactaciones or None,
         "dropped_tokens": tokens_tirados or None,
         "perfil": {

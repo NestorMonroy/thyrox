@@ -16,11 +16,14 @@ cita, para que el catálogo no pueda mentir sobre un consumidor que ya no existe
 
 Uso
 ---
-    python3 .claude/scripts/corpus/census_scripts.py             # regenera el catálogo
-    python3 .claude/scripts/corpus/census_scripts.py --verificar # exit 1 si difiere
-    python3 .claude/scripts/corpus/census_scripts.py --huerfanos # gate: sin citantes
-    python3 .claude/scripts/corpus/census_scripts.py --huerfanos --strict
-    python3 .claude/scripts/corpus/census_scripts.py --write-baseline
+    bash bin/census_scripts             # regenera el catálogo
+    bash bin/census_scripts --verificar # exit 1 si difiere
+    bash bin/census_scripts --huerfanos # gate: sin citantes
+    bash bin/census_scripts --huerfanos --strict
+    bash bin/census_scripts --write-baseline
+
+Se invoca desde la raíz del CONSUMIDOR: `consumer_root()` asciende desde el
+directorio de invocación y rehúsa si aterriza en el proveedor.
 """
 import argparse
 import collections
@@ -28,8 +31,7 @@ import pathlib
 import subprocess
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: El árbol MEDIDO es el del consumidor, no el del proveedor. `parents[3]`
 #: describía `kaupamex-docs/.claude/scripts/corpus/`; desde `thyrox/src/corpus/`
@@ -66,7 +68,12 @@ def baseline_path():
     modulo. Diferir la constante y seguir leyendola desnuda deja un
     `NameError` en tiempo de ejecucion que ningun import delata.
     """
-    return reach.consumer_root() / '.claude/scripts/corpus/scripts_huerfanos_baseline.txt'
+    # El hogar es `.claude/baselines/`, no el `.claude/scripts/corpus/` anterior
+    # a la mudanza de `.claude/scripts` a thyrox: el archivo viajo con sus trece
+    # hermanos y este literal se quedo atras. Medido — la ruta anterior no existe
+    # y aporta 0 entradas; la real aporta 5. El baseline se queda en el CONSUMIDOR
+    # porque es el parametro de ESTE corpus, no del mecanismo (DEC-04).
+    return reach.consumer_root() / '.claude/baselines/scripts_huerfanos_baseline.txt'
 
 def __getattr__(name: str):
     """`ROOT`, `CATALOGUE` y `BASELINE` se resuelven al LEERLOS, no al importar el modulo.

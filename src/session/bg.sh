@@ -49,7 +49,7 @@
 # (`src/session/job_runs.py`), hermana de `workbench`:
 #
 #   <hogar>/<slug>-<AAAAMMDDThhmmss>/
-#     manifest.json      instrument declarado; las otras cuatro claves OMITIDAS
+#     manifest.jsonl     instrument declarado; las otras cuatro claves OMITIDAS
 #     outputs/salida.log el log
 #     README.md          qué se lanzó · qué se preguntaba · qué se recogió
 #
@@ -100,7 +100,13 @@ op = sys.argv[1]
 if op == 'home':
     print(job_runs.jobs_dir())
 elif op == 'scaffold':
-    print(job_runs.scaffold_run(job_runs.jobs_dir(), sys.argv[2], command=sys.argv[3]))
+    # El cuarto argumento es el hogar PLANO, cuando lo hay. Vacio = el run
+    # guarda sus salidas dentro, que es la forma por defecto.
+    plano = sys.argv[4] if len(sys.argv) > 4 else ''
+    print(job_runs.scaffold_run(job_runs.jobs_dir(), sys.argv[2],
+                                command=sys.argv[3], flat_home=plano or None))
+elif op == 'flat-home':
+    print(job_runs.flat_home(sys.argv[2]))
 elif op == 'latest':
     run = job_runs.latest_run(job_runs.jobs_dir(), sys.argv[2])
     print(run if run else '')
@@ -171,6 +177,17 @@ _paths() {
     # nombre ya no se pisan — conviven, y `wait` habla de la última.
     RUN="$(_family latest "$name")"
     [[ -n "$RUN" ]] || { LOG=""; PIDF=""; return; }
+    # El run puede APUNTAR a un hogar plano en vez de guardar dentro. Es lo que
+    # cierra TASK-THYROX-0052: quien lee no tiene que re-declarar el `--dir` con
+    # que se lanzó. La composición es la MISMA que usa `cmd_start`, y por eso
+    # vive aquí sola — dos sitios componiendo `<hogar>/<nombre>.log` es la
+    # segunda fuente de verdad que ya costó este defecto.
+    local plano; plano="$(_family flat-home "$RUN")"
+    if [[ -n "$plano" ]]; then
+        LOG="${plano}/${name}.log"
+        PIDF="${plano}/${name}.pid"
+        return
+    fi
     LOG="${RUN}/outputs/salida.log"
     PIDF="${RUN}/outputs/pid"
 }
@@ -209,6 +226,11 @@ cmd_start() {
     if [[ -n "$BG_DIR" ]]; then
         _paths "$name"
         mkdir -p "$BG_DIR"
+        # El run-puntero. No mueve el log —sigue plano y citable— pero deja en
+        # la familia de dónde colgarlo, que es lo único que al lector le
+        # faltaba. Con él, `settle` también asienta el código de la forma
+        # plana: antes no disparaba nunca ahí, porque no había run que asentar.
+        RUN="$(_family scaffold "$name" "$*" "$BG_DIR")"
     else
         RUN="$(_family scaffold "$name" "$*")"
         LOG="${RUN}/outputs/salida.log"
@@ -295,6 +317,15 @@ cmd_wait() {
 
 cmd_status() {
     local name="$1"; _paths "$name"
+    # TERCER ESTADO. Sin log resuelto no hay nada que medir: el trabajo nunca
+    # se lanzo con este nombre, o su familia desaparecio. Publicar `unknown`
+    # aqui colapsaba ese caso con el de un trabajo REAL muerto sin marcador, y
+    # manda a buscar un log que nunca existio. `wait` ya rehusaba asi; `status`
+    # emitia un veredicto sobre una medicion que no ocurrio.
+    if [[ -z "$LOG" ]]; then
+        echo "bg.sh status: no hay tarea '$name' — nada que medir." >&2
+        exit 2
+    fi
     if grep -q "^${_MARK}" "$LOG" 2>/dev/null; then
         local code; code="$(grep "^${_MARK}" "$LOG" | tail -1 | cut -d= -f2)"
         # El manifiesto asienta el codigo: un lector no deberia tener que abrir

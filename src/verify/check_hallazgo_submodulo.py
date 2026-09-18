@@ -9,8 +9,12 @@ Un hallazgo declara su capa **tres veces** y las tres tienen que coincidir:
    ``source/gestion/pm/<submodulo>/iniciativas/<slug>/hallazgos/``
 
 ``hallazgos-documentacion-obligatoria.md`` lo fija en una frase: *"«<submodulo>»
-sigue determinado por la capa del hallazgo (api / ui / server / db / docs), **no
-por dónde se descubrió**"*. Un hallazgo de capa ``docs`` producido mientras se
+sigue determinado por la **raíz de trabajo** del hallazgo (api / db / docs /
+server / ui / thyrox), **no por dónde se descubrió**"*. Son **seis**: ``thyrox``
+es el proveedor de metodología, no una capa del producto, y aloja hallazgos
+propios. Este gate nunca las enumeró —extrae el prefijo con ``[A-Z]+`` y compara
+los tres signos entre sí— así que es agnóstico al número por construcción; quien
+listaba cinco era la prosa de la regla, corregida el 2026-09-17. Un hallazgo de capa ``docs`` producido mientras se
 trabajaba una iniciativa de ``api`` va a una iniciativa de ``docs``; la de ``api``
 lo cruza con ``:ref:``.
 
@@ -34,8 +38,7 @@ import pathlib
 import re
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import check_vocabulario_prosa as _parametro  # noqa: E402
+from verify import check_vocabulario_prosa as _parametro  # noqa: E402
 
 RAIZ_PM = pathlib.Path('source/gestion/pm')
 

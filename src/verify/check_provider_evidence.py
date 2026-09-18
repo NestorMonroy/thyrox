@@ -42,12 +42,24 @@ import os
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from workbench.paths import (  # noqa: E402
-    WorkbenchHomeError, evidence_dir, state_dir, workbench_dir,
-)
-from paths.reach import ConsumerUnknownError  # noqa: E402
+# El import se captura para que «no pude medir» tenga codigo PROPIO. Sin esto,
+# un `ModuleNotFoundError` sale con el exit 1 que Python da a toda excepcion no
+# capturada — y 1 es el «hay bancos» de este mismo gate. Quien lo invoca no
+# puede separar los dos, y el hook imprimia la receta de mover el banco sobre
+# un traceback. Es el sub-patron D de `metrica-decide-la-conclusion.md` con el
+# codigo de salida como instrumento: un veredicto que no discrimina su causa.
+try:
+    from workbench.paths import (  # noqa: E402
+        WorkbenchHomeError, evidence_dir, state_dir, workbench_dir,
+    )
+    from paths.reach import ConsumerUnknownError  # noqa: E402
+except ImportError as _err:  # pragma: no cover - se ejercita por subproceso
+    print(f"check-provider-evidence: no se pudo importar el mecanismo ({_err}). "
+          "Invoca con `src` en PYTHONPATH — es el invariante del arbol, y lo "
+          "exportan los envoltorios de bin/. NO se emite conteo: un cero aqui "
+          "no distinguiria «no hay bancos» de «no pude medir».", file=sys.stderr)
+    raise SystemExit(2) from _err
 
 #: El marcador por el que se reconoce la raiz propia. Constante con su entrada
 #: de entorno (DEC-04): cablearlo le quitaria al consumidor la decision de como

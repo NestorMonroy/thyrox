@@ -1,0 +1,40 @@
+
+1. container_attributes — la familia sale del PRIMER nombre invocado
+  ok    los rastreados son los del vocabulario
+  ok    el objeto de tabla cae en su propia familia
+  ok    una constante de modulo en mayusculas no es ninguna de las dos
+  ok    una clase anidada no es contenedor de nivel superior
+
+2. compare_headers — sale lo ausente, no lo presente
+  ok    dos hallazgos
+  ok    y son el rastreado ausente y el objeto de tabla
+  ok    con la linea de la FUENTE, que es donde se lee el contrato
+  ok    la clase sin contraparte NO entra al denominador
+  ok    el denominador de atributos es el de la fuente
+  ok    un archivo recorrido, uno con contraparte
+
+3. CONTROL — `relocated` es PARAMETRO, y decide en los dos sentidos
+  ok    3.1 sin reubicacion, el objeto de tabla es hallazgo
+  ok    3.2 con reubicacion declarada, se descuenta
+  ok    3.3 y lo recibe con el atributo y NUESTRO contenedor
+
+4. CONTROL — el vocabulario es PARAMETRO, no esta cableado
+  ok    4.1 sin vocabulario no hay hallazgo rastreado
+  ok    4.2 y el denominador de atributos cae con el
+
+5. CONTROL — el localizador es PARAMETRO, no esta cableado
+  ok    5.1 sin localizador no hay contraparte
+  ok    5.2 y por tanto no hay hallazgos
+  ok    5.3 pero el recorrido SI se declara
+
+6. CONTROL — `selects` es PARAMETRO: decide que nombre es candidato
+  ok    6.1 con el default, un nombre sin guion bajo no es candidato
+  ok    6.2 con un `selects` propio, el mismo par SI da hallazgo
+
+7. CONTROL — el lector es PARAMETRO, no esta cableado a Python
+  ok    7.1 con otro lector, el contenedor de otro lenguaje se compara
+  ok    7.2 y salen las dos familias, como en Python
+  ok    7.3 el lector de Python NO ve contenedores ahi
+
+23 ok, 0 fallos
+EXIT=0

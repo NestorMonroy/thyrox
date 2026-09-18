@@ -53,36 +53,36 @@ import {
   getToolsForDefaultPreset as getToolsForDefaultPresetFromPackage,
   installToolRegistryHostBindings,
   parseToolPreset as parseToolPresetFromPackage,
-} from '@claude-code-how-works/tool-registry'
-import { toolMatchesName, type Tool, type ToolPermissionContext, type Tools } from '@claude-code-how-works/tool-registry/Tool.js'
+} from '@thyrox/tool-registry'
+import { toolMatchesName, type Tool, type ToolPermissionContext, type Tools } from '@thyrox/tool-registry/Tool.js'
 import {
   ALL_AGENT_DISALLOWED_TOOLS,
   CUSTOM_AGENT_DISALLOWED_TOOLS,
   ASYNC_AGENT_ALLOWED_TOOLS,
   COORDINATOR_MODE_ALLOWED_TOOLS,
-} from '@claude-code-how-works/tool-registry/toolConstants'
-import { AgentTool } from '@claude-code-how-works/tool-registry/tools/AgentTool/AgentTool.js'
-import { BashTool } from '@claude-code-how-works/tool-registry/tools/BashTool/BashTool.js'
-import { FileEditTool } from '@claude-code-how-works/tool-registry/tools/FileEditTool/FileEditTool.js'
-import { FileReadTool } from '@claude-code-how-works/tool-registry/tools/FileReadTool/FileReadTool.js'
+} from '@thyrox/tool-registry/toolConstants'
+import { AgentTool } from '@thyrox/tool-registry/tools/AgentTool/AgentTool.js'
+import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
+import { FileEditTool } from '@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js'
+import { FileReadTool } from '@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js'
 import {
   REPL_TOOL_NAME,
   REPL_ONLY_TOOLS,
   isReplModeEnabled,
-} from '@claude-code-how-works/tool-registry/tools/REPLTool/constants.js'
-import { BuiltInToolsProvider } from '@claude-code-how-works/tool-registry/tools/registry/providers/BuiltInToolsProvider.js'
-import { ReadMcpResourceTool } from '@claude-code-how-works/tool-registry/tools/ReadMcpResourceTool/ReadMcpResourceTool.js'
-import { SendMessageTool } from '@claude-code-how-works/tool-registry/tools/SendMessageTool/SendMessageTool.js'
-import { SYNTHETIC_OUTPUT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
-import { TaskStopTool } from '@claude-code-how-works/tool-registry/tools/TaskStopTool/TaskStopTool.js'
-import { ListMcpResourcesTool } from '@claude-code-how-works/tool-registry/tools/ListMcpResourcesTool/ListMcpResourcesTool.js'
+} from '@thyrox/tool-registry/tools/REPLTool/constants.js'
+import { BuiltInToolsProvider } from '@thyrox/tool-registry/tools/registry/providers/BuiltInToolsProvider.js'
+import { ReadMcpResourceTool } from '@thyrox/tool-registry/tools/ReadMcpResourceTool/ReadMcpResourceTool.js'
+import { SendMessageTool } from '@thyrox/tool-registry/tools/SendMessageTool/SendMessageTool.js'
+import { SYNTHETIC_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
+import { TaskStopTool } from '@thyrox/tool-registry/tools/TaskStopTool/TaskStopTool.js'
+import { ListMcpResourcesTool } from '@thyrox/tool-registry/tools/ListMcpResourcesTool/ListMcpResourcesTool.js'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getDenyRuleForTool } from '@thyrox/permission/permissions'
 
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 const REPLTool =
   process.env.USER_TYPE === 'ant'
-    ? require('@claude-code-how-works/tool-registry/tools/REPLTool/REPLTool.js').REPLTool
+    ? require('@thyrox/tool-registry/tools/REPLTool/REPLTool.js').REPLTool
     : null
 const coordinatorModeModule = feature('COORDINATOR_MODE')
   ? (require('@thyrox/agent/coordinatorMode.js') as typeof import('@thyrox/agent/coordinatorMode.js'))

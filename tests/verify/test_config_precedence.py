@@ -188,11 +188,31 @@ check('un parametro homonimo no entra en la cadena',
 #     Y aqui el auditor declara su limite en vez de fingir cobertura: la
 #     precedencia de `thyrox_root` tiene TRES pasos —variable, ascenso,
 #     hermano— y los dos ultimos son `for ...: if ...: return`, no guardas de
-#     primer nivel. El auditor ve UNA guarda, que no es cadena. Un `> 0`
-#     habria pasado igual y no habria discriminado.
+#     primer nivel. De todo `reach.py` el auditor recupera UNA cadena, la de
+#     `clone_prefix`, y de ella UN nombre: el otro paso (`derive_clone_prefix`)
+#     no es una lectura de configuracion. Un `> 0` habria pasado igual y no
+#     habria discriminado.
+#
+#     El nombre era `from_process` hasta `8ea1d652`, que declaro el puerto
+#     conducido de `env_value` y retiro su `os.environ.get` directo. Con el se
+#     fue la unica lectura que el auditor sabia ver dentro del mecanismo: hasta
+#     que `env_value` entro en `FUENTES`, esto daba `[]` — y `[]` no distingue
+#     «vi una guarda, no es cadena» de «no vi ninguna lectura».
 reach = RAIZ / 'src' / 'paths' / 'reach.py'
+texto_reach = reach.read_text(encoding='utf-8')
 check('el auditor NO cubre la precedencia por bucle de thyrox_root',
-      ['from_process'], mod.branch_order(reach.read_text(encoding='utf-8')))
+      ['del_entorno'], mod.branch_order(texto_reach))
+
+# --- 6-bis. y el discriminador: que VEA las lecturas, no que calle ---------
+#     La asercion de arriba, sola, no separa sus dos causas posibles. Este
+#     control fija la otra mitad: el auditor tiene que reconocer `env_value`,
+#     el lector de ESTE arbol. Medido antes de ensancharlo `FUENTES`:
+#     `assignment_order` devolvia ['declared'] —la unica ligadura que llama a
+#     `os.environ.get` directamente— y las SEIS que pasan por `env_value` eran
+#     invisibles.
+check('el auditor ve las lecturas que pasan por env_value',
+      True, len(mod.assignment_order(texto_reach)) > 1)
+check('y env_value cuenta como fuente', True, 'env_value' in mod.FUENTES)
 
 # --- 7. denominador y rehuse ------------------------------------------------
 r = correr('--root', str(RAIZ))

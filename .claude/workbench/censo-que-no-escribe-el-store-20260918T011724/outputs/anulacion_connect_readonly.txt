@@ -1,0 +1,36 @@
+== 1. store ausente: REHUSA, y no fabrica nada ==
+  FALLO rehusa con StoreNotFound
+        esperado=[StoreNotFound] obtenido=[no levanto nada]
+  FALLO no creo el directorio
+        esperado=[False] obtenido=[True]
+  FALLO no creo el padre
+        esperado=[False] obtenido=[True]
+== 2. store presente: sabe leer ==
+  ok    cuenta las filas que hay
+== 3. la conexion RECHAZA escribir ==
+  FALLO SQLite rechaza el INSERT
+        esperado=[OperationalError] obtenido=[el INSERT paso]
+== 4. el censo enrutado: rehusa sobre un store ausente ==
+store: /tmp/tmp6t2nk10z/censo-sin-store/agent-results/agent_store.sqlite3
+tabla                               filas    hoy  ultima escritura      fechada por
+agent_sessions                          0      0  -                     started_at,updated_at,timeout_at
+documents                               0      0  -                     updated_at,declared_at,commit_at
+findings_fts                            0      ?  -                     -
+findings_fts_config                     1      -  -                     (sombra FTS5)
+findings_fts_data                       2      -  -                     (sombra FTS5)
+findings_fts_docsize                    0      -  -                     (sombra FTS5)
+findings_fts_idx                        0      -  -                     (sombra FTS5)
+findings_history                        0      0  -                     created_at,updated_at
+tasks                                   0      0  -                     created_at,updated_at,opened_at
+
+9 tablas (4 de sombra FTS5) | 7 vacias | 1 sin columna de fecha (no fechables por este instrumento)
+  FALLO exit 2 — no midio, no publica conteo
+        esperado=[2] obtenido=[None]
+  FALLO el mensaje nombra el store ausente
+        esperado=[True] obtenido=[False]
+  FALLO el censo no fabrico el store
+        esperado=[False] obtenido=[True]
+  FALLO el censo no fabrico ni el hogar
+        esperado=[False] obtenido=[True]
+
+1 ok, 8 fallos

@@ -7,8 +7,14 @@
 # el hook «NO valida el body». Medido al escribir esto: los cinco consumidores
 # llevan un `commit-msg` cada uno —cinco copias con cinco md5 distintos— y los
 # cinco validan sólo el asunto con `${#SUBJECT}`. El cuerpo no lo medía nadie
-# en ninguno de los seis repos, así que se comprobaba a mano con `awk`, y el
-# `awk` de esta máquina es mawk: cuenta octetos, no columnas.
+# en ninguno de los seis repos, así que se comprobaba a mano con `awk`, que
+# contaba octetos y no columnas.
+#
+# (Esta línea decía «el `awk` de esta máquina es mawk». Medido 2026-09-18:
+#  `awk` resuelve por /etc/alternatives/awk a **gawk**. El síntoma sigue,
+#  y su causa es el LOCALE, no el binario — el contenedor no declara
+#  ninguno, así que gawk también cuenta octetos: `áéí` da 6, y bajo
+#  LC_ALL=C.UTF-8 da 3. Ver la nota de src/verify/commit_message.py.)
 #
 # THYROX no tenía hook de `commit-msg`, así que aquí no hay conducta previa
 # que romper — por eso el mecanismo se estrena en el proveedor y su extensión
@@ -43,4 +49,31 @@ if ! command -v python3 >/dev/null 2>&1; then
 fi
 
 python3 "$GATE" "$1" || true   # avisa; el veredicto no detiene el commit
+
+# Segundo eje: la cita durable RESUELVE, no solo tiene la FORMA
+# -------------------------------------------------------------
+# El septimo detector de PreToolUse mide la FORMA —que un `board #N` venga con
+# un `TASK-<CAPA>-NNNN`— y no puede medir el REFERENTE: es puro por construccion
+# y bajo este harness ni dispara (H-DOCS-1010). Medir la forma y concluir sobre
+# el referente es el sub-patron C, y ya costo un commit publicado: `4acece94`
+# cita `TASK-THYROX-0445`, forma impecable y ningun sujeto.
+#
+# LA POLITICA NO VIVE AQUI: vive en el envoltorio, que sale 0 o 2 y nunca 1.
+# Este hook y los cinco de los consumidores lo invocan por igual, asi que la
+# graduacion —retirar el aviso cuando `citation_resolution --history 50`
+# sostenga 0 sin resolver— es UNA linea en UN archivo. Replicarla aqui la
+# volveria dos, que es lo que «derivar, no transcribir» prohibe.
+#
+# Se invoca por `bin/`, no por la ruta al fuente: el envoltorio generado resuelve
+# el interprete del proveedor y exporta PYTHONPATH, que una invocacion por ruta
+# no hace.
+ENVOLTORIO="$ROOT/bin/commit-msg-citation"
+if [[ ! -x "$ENVOLTORIO" ]]; then
+    echo "commit-msg REHUSADO — no se encontro $ENVOLTORIO" >&2
+    echo "  Generalo con: python3 src/session/generate_bin.py" >&2
+    exit 2
+fi
+CODIGO=0
+bash "$ENVOLTORIO" "$1" || CODIGO=$?
+[[ "$CODIGO" -eq 0 ]] || exit 2
 exit 0

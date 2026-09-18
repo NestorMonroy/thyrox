@@ -1,0 +1,2 @@
+VERDE tests/verify/test-hooks-timeout.sh
+EXIT=0

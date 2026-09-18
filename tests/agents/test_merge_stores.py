@@ -134,5 +134,51 @@ class TestUnion(unittest.TestCase):
         self.assertEqual(gana["updated_at"], "T9")
 
 
+    def test_10_la_tabla_que_solo_esta_en_el_origen_se_reporta_con_sus_filas(self):
+        """CONTROL POSITIVO del defecto: `merge` recorria `_real_tables(target)`,
+        asi que una tabla presente SOLO en el origen no se visitaba, no se
+        fusionaba y **no aparecia en el informe** — perdida silenciosa de dato en
+        una herramienta cuyo trabajo declarado es «union, nunca sobrescritura
+        ciega». Falla si el informe no la nombra con su conteo de filas.
+
+        Se reporta y NO se crea: el DDL esta fuera del alcance de `merge`, que
+        fusiona filas. Lo que el defecto impedia no era crear la tabla — era
+        que el llamador supiera que hay dato que no se puede traer."""
+        origen = self.raiz / "o.sqlite3"
+        destino = self.raiz / "d.sqlite3"
+        _store(origen, filas_sesion=[("a1", "m", "T1")])
+        _store(destino)
+        c = sqlite3.connect(origen)
+        c.executescript(
+            "CREATE TABLE findings (finding_id TEXT PRIMARY KEY, body TEXT);"
+            "INSERT INTO findings VALUES ('H-THYROX-1','x'),('H-THYROX-2','y');")
+        c.commit()
+        c.close()
+
+        informe = merge(origen, destino, dry_run=True)
+        solo_origen = [f for f in informe if f["tabla"] == "findings"]
+        self.assertEqual(len(solo_origen), 1, "la tabla del origen no aparece en el informe")
+        self.assertEqual(solo_origen[0]["omitida"], "no existe en el destino")
+        self.assertEqual(solo_origen[0]["filas_en_el_origen"], 2)
+
+    def test_11_la_tabla_que_solo_esta_en_el_destino_sigue_reportandose(self):
+        """El par que hace discriminar al caso 10: recorrer la UNION no puede
+        perder la direccion que ya funcionaba. Falla si al ensanchar el recorrido
+        se deja de reportar la tabla que solo tiene el destino."""
+        origen = self.raiz / "o.sqlite3"
+        destino = self.raiz / "d.sqlite3"
+        _store(origen)
+        _store(destino)
+        c = sqlite3.connect(destino)
+        c.executescript("CREATE TABLE solo_destino (id TEXT PRIMARY KEY);")
+        c.commit()
+        c.close()
+
+        informe = merge(origen, destino, dry_run=True)
+        solo = [f for f in informe if f["tabla"] == "solo_destino"]
+        self.assertEqual(len(solo), 1)
+        self.assertEqual(solo[0]["omitida"], "no existe en el origen")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

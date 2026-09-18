@@ -1,0 +1,11 @@
+# Control de atribucion — los 7 que escriben al importarse
+# Fecha: 2026-09-18T19:55:29
+# Pregunta: ¿el barrido de sys.path.insert causo la escritura al importar?
+# Metodo: worktree detached en HEAD (pre-barrido) + assert_no_writes sobre 3 de los 7.
+# Resultado: los 3 dan exit=1 con el MISMO mkdir ANTES del barrido -> no lo causa el barrido.
+# Causa: DEFAULT_STORE = agent_store_path() a nivel de modulo (src/task/task_source.py:153),
+#        y agent_store_path(create=True) materializa <thyrox>/agent-results/ (paths/reach.py:525).
+
+task.task_source	pre=1	post=1
+task.closure_graph	pre=1	post=1
+verify.verificar_premisa	pre=1	post=1

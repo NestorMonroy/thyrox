@@ -1,0 +1,2 @@
+El hogar de los logs de segundo plano no esta declarado. Es una decision del consumidor, no de THYROX: declara THYROX_BACKGROUND_LOG_DIR en el proceso, o en el archivo que nombra THYROX_ENV_FILE (por defecto el .env del arbol). Tambien se puede pasar `log_dir=` explicito. NO se emite un hogar por defecto.
+__BG_EXIT__=4

@@ -230,3 +230,131 @@ function thyrox_toolchain_require_parallel() {
   return 0
 }
 export -f thyrox_toolchain_require_parallel
+
+# @description El binario de `awk` que los guiones de este arbol invocan.
+#
+# El eje NO es si gawk esta instalado: es CUAL awk responde. En Debian `awk`
+# resuelve por `/etc/alternatives/awk`, asi que gawk puede estar presente y el
+# nombre `awk` seguir apuntando a mawk. `command -v gawk` por si solo mide el
+# fenomeno equivocado — es el sub-patron C de `metrica-decide-la-conclusion.md`
+# aplicado a la cadena de herramientas.
+#
+# Declarado —y no fijo a `gawk`— porque lo que hay que proteger es el nombre
+# que los guiones ESCRIBEN, y porque un control necesita poder apuntarlo a un
+# awk concreto sin mutar el sistema.
+THYROX_TOOLCHAIN_AWK_BIN="${THYROX_TOOLCHAIN_AWK_BIN:-awk}"
+
+# @description El comando que instala gawk. Declarado por la misma razon que
+# su hermano de parallel: un control necesita inyectar un instalador que
+# MIENTA —que salga cero sin instalar nada— para comprobar que el exito se
+# prueba re-comprobando el binario y no leyendo el exit del instalador.
+export THYROX_TOOLCHAIN_GAWK_INSTALL_CMD="${THYROX_TOOLCHAIN_GAWK_INSTALL_CMD:-sudo apt-get install -y gawk}"
+
+# @description El programa que separa gawk de mawk por CONDUCTA.
+#
+# No es un constructo inventado para la sonda: es el que ya costo un episodio
+# medido. `check-hallazgo-sucesor.sh` llevaba un cuantificador de intervalo
+# seguido de un grupo en una de sus ocho alternativas; bajo mawk 1.3.4 eso
+# revienta el compilador de expresiones regulares —exit 100, `REcompile() -
+# panic`— y mata la rama de prosa entera. El gate publicaba «6 incumplidores
+# sobre 377 archivos» cuando la medicion real era «13 sobre 1002»: una cifra
+# sana sobre un tercio del corpus, que es el modo de fallo mas caro porque no
+# parece un fallo (h-docs-1068).
+#
+# Se declara para que el control pueda citarlo sin transcribirlo: una copia en
+# la suite seria la segunda fuente de verdad que `bg.sh marker-pattern` existe
+# para evitar.
+export THYROX_TOOLCHAIN_AWK_PROBE_PROGRAM='/a.{0,3}(x)/{print "MATCH"}'
+export THYROX_TOOLCHAIN_AWK_PROBE_INPUT='aaax'
+
+# Las tres constantes de arriba van con `export` y no es simetria decorativa:
+# la sonda lleva `export -f`, que PROMETE que un hijo puede llamarla, y un hijo
+# que herede solo la funcion recibe el programa VACIO. Medido antes de
+# corregirlo: `bash -c 'thyrox_toolchain_awk_supports_intervals gawk'` daba
+# exit 1 sobre gawk — un rechazo de conducta FALSO, que es peor que no tener
+# guard, porque acusa al binario correcto. El caso 14 de la suite lo mide.
+#
+# No llevan `${VAR:-...}` a proposito: el constructo NO es parametro. Un
+# llamador que pudiera reemplazarlo podria desactivar el eje de conducta
+# entero pasando un programa que case con cualquier cosa.
+# @description Responde el awk dado al constructo de intervalo mas grupo.
+#
+# Mide CONDUCTA, no nombre ni version: un awk que no sea gawk pero compile el
+# constructo pasa, y debe pasar — lo que el arbol necesita es que la expresion
+# no reviente, no que el binario se llame de una manera.
+# @arg $1 string El binario a sondear. Por defecto, THYROX_TOOLCHAIN_AWK_BIN.
+# @exitcode 0 El constructo compila y casa.
+# @exitcode 1 No compila, no casa, o el binario no se pudo invocar.
+function thyrox_toolchain_awk_supports_intervals() {
+  local bin="${1:-${THYROX_TOOLCHAIN_AWK_BIN:-awk}}"
+  local out
+  out="$(printf '%s\n' "$THYROX_TOOLCHAIN_AWK_PROBE_INPUT" \
+         | "$bin" "$THYROX_TOOLCHAIN_AWK_PROBE_PROGRAM" 2>/dev/null)" || return 1
+  [[ "$out" == "MATCH" ]]
+}
+export -f thyrox_toolchain_awk_supports_intervals
+
+# @description Asegura un `awk` que compile intervalos, con DOS ejes y dos
+# rechazos distintos.
+#
+# La forma es la de `require_parallel` —check-then-act, instalacion opt-in,
+# exito probado re-comprobando y no leyendo el exit del instalador— con una
+# diferencia que no es cosmetica: aqui la presencia NO basta.
+#
+#   1. PRESENCIA — que el nombre resuelva a algo ejecutable. Su remedio es
+#      instalar, y por eso es opt-in.
+#   2. CONDUCTA — que ESE binario compile el constructo. Su remedio NO es
+#      instalar: gawk puede estar ya instalado y `awk` seguir siendo mawk.
+#
+# Por que el rechazo del eje 2 no intenta arreglarlo solo: flipar el enlace
+# con `update-alternatives --set awk gawk` es una mutacion GLOBAL del sistema
+# que exige root y cambia el comportamiento de todo lo que corra en la maquina,
+# incluido lo que no es de este arbol. La forma durable de un mecanismo que no
+# puede arreglar algo es rehusar nombrando las dos salidas, no mutar el
+# entorno de nadie por su cuenta.
+# CIEGO AL LOCALE, y es un eje hermano que este guard NO mide. El mismo
+# gawk cuenta octetos o code points segun `LC_CTYPE`: medido, `áéí` da 6
+# sin locale declarado y 3 bajo `LC_ALL=C.UTF-8` — y este contenedor no
+# declara ninguno. Un guion que mida ANCHURA con awk necesita ademas ese
+# eje; `src/verify/commit_message.py` lo evito usando Python, y su nota
+# lo razona. Pasar este guard NO autoriza a medir columnas con awk.
+# @noargs
+# @exitcode 0 El awk resuelto compila intervalos.
+# @exitcode 2 No resuelve, o resuelve a un awk que no los compila. REHUSA.
+function thyrox_toolchain_require_gawk() {
+  local bin="${THYROX_TOOLCHAIN_AWK_BIN:-awk}"
+
+  # Eje 1 — PRESENCIA.
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    if [[ "${THYROX_INSTALL_GAWK:-}" != "1" ]]; then
+      echo "thyrox_toolchain: '$bin' no resuelve y la instalacion es opt-in." >&2
+      echo "                  Reintenta con THYROX_INSTALL_GAWK=1." >&2
+      echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+      echo "                  «no hay» de «no pude medir»." >&2
+      return 2
+    fi
+    # El codigo de salida del instalador NO decide: puede instalar en otro
+    # prefijo, o el proxy puede devolver algo que no es el paquete.
+    $THYROX_TOOLCHAIN_GAWK_INSTALL_CMD >&2 2>&1 || true
+    if ! command -v "$bin" >/dev/null 2>&1; then
+      echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
+      echo "                  Se re-comprueba el binario, no se lee su exit." >&2
+      return 2
+    fi
+  fi
+
+  # Eje 2 — CONDUCTA. Es el que la presencia no puede ver.
+  if ! thyrox_toolchain_awk_supports_intervals "$bin"; then
+    echo "thyrox_toolchain: '$bin' resuelve, pero NO compila intervalos." >&2
+    echo "                  Sonda: $THYROX_TOOLCHAIN_AWK_PROBE_PROGRAM" >&2
+    echo "                  Instalar gawk NO lo arregla: en Debian el nombre" >&2
+    echo "                  'awk' lo decide /etc/alternatives/awk, no el" >&2
+    echo "                  paquete. Las dos salidas son declarar" >&2
+    echo "                  THYROX_TOOLCHAIN_AWK_BIN=gawk para esta invocacion," >&2
+    echo "                  o que el ejecutor decida el enlace del sistema con" >&2
+    echo "                  update-alternatives, que es mutacion global." >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_gawk

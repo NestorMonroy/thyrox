@@ -5,8 +5,21 @@ Por qué este mecanismo existe y no es un `awk`
 ----------------------------------------------
 La regla Tim Pope fija el cuerpo a 72. Hasta este módulo, ningún hook de los
 seis repos lo medía —los cinco `commit-msg` de los consumidores validan el
-subject y nada más— así que se comprobaba a mano, y el `awk` de esta máquina
-es **mawk**, que no es UTF-8 aware: su `length()` cuenta octetos. Una línea de
+subject y nada más— así que se comprobaba a mano con `awk`, cuyo `length()`
+contaba octetos y no code points.
+
+.. note:: La versión anterior de este párrafo decía «el `awk` de esta
+   máquina es **mawk**». Medido 2026-09-18 al construir
+   ``thyrox_toolchain_require_gawk``: `awk` resuelve por
+   ``/etc/alternatives/awk`` a **gawk**, no a mawk. Pero el defecto
+   persiste, y su causa es OTRA — el contenedor no declara locale
+   (``LANG``, ``LC_ALL`` y ``LC_CTYPE`` vacías), así que gawk también
+   cuenta octetos. Medido: ``áéí`` da 6 en los dos; bajo
+   ``LC_ALL=C.UTF-8`` gawk da **3** y mawk sigue dando **6**.
+
+   O sea que el eje NO es el binario sino el **locale**, que es
+   exactamente lo que la sección de abajo ya razonaba. La decisión de
+   usar Python no cambia; lo que estaba mal era la causa nombrada. Una línea de
 prosa española con dos em-dashes se reporta cuatro «caracteres» más larga de
 lo que es, y la corrección que induce es recortar texto que cabía.
 
@@ -101,6 +114,23 @@ def overlong_lines(
     ]
 
 
+def significant_lines(text: str) -> str:
+    """El mensaje sin lo que ``git commit`` descarta: las líneas de comentario.
+
+    Se blanquean en vez de borrarse para que el número de línea del informe
+    siga siendo el del archivo que el autor tiene delante.
+
+    Vive aquí y no en cada consumidor porque el sujeto es el mismo artefacto —un
+    mensaje de commit— y dos copias de la regla podrían divergir. Su segundo
+    consumidor es ``citation_resolution.py``: ``git commit -v`` mete el diff
+    entero en líneas ``#``, así que una cita rota citada ahí no está en el
+    commit resultante y medirla reportaría un defecto que no existe.
+    """
+    return "\n".join(
+        "" if line.startswith("#") else line for line in text.splitlines()
+    )
+
+
 def check_commit_message(
     text: str, limit: int = DEFAULT_LIMIT, measure: str = "columns"
 ) -> list[tuple[int, int, str]]:
@@ -111,10 +141,7 @@ def check_commit_message(
     en el commit resultante — el instrumento mediría el archivo y se concluiría
     sobre el mensaje.
     """
-    significant = "\n".join(
-        "" if line.startswith("#") else line for line in text.splitlines()
-    )
-    return overlong_lines(significant, limit=limit, measure=measure)
+    return overlong_lines(significant_lines(text), limit=limit, measure=measure)
 
 
 #: La etiqueta del aviso. NO dice ERROR a proposito: el hook lo invoca con

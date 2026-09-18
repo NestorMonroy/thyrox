@@ -54,9 +54,26 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 
 import { tmpdir } from 'node:os'
 import { join, basename } from 'node:path'
 import {
-  REQUIRED_KEYS, WORKBENCH_FORMS, MANIFEST_FILE_NAME,
+  REQUIRED_KEYS, WORKBENCH_FORMS, MANIFEST_FILE_NAME, LEGACY_MANIFEST_FILE_NAME,
   runIdDate, runIdFor, checkWorkbench, scaffoldWorkbench,
+  manifestLine, readManifestFile,
 } from '../../../workbench/manifest.ts'
+
+/**
+ * Leer y escribir el manifiesto por el MECANISMO, no con un `JSON.parse` a mano.
+ *
+ * Medido al convertir a JSONL: cuatro fixtures de este archivo escribian
+ * `JSON.stringify(m)` —sin sangrado— y seguian en verde, porque un JSON de UNA
+ * linea tambien es un JSONL valido. Pasaban por coincidencia, no porque midieran
+ * la forma: es la trampa n=1 que la conversion existe para evitar, aqui dentro.
+ */
+function readManifest(dir: string): Record<string, unknown> {
+  return readManifestFile(join(dir, MANIFEST_FILE_NAME))
+}
+
+function writeManifest(dir: string, m: Record<string, unknown>): void {
+  writeFileSync(join(dir, MANIFEST_FILE_NAME), manifestLine('declaration', m) + '\n')
+}
 
 const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
 
@@ -67,13 +84,13 @@ function conformingWorkbench(base: string, id = 'measure-something-20260904T1200
   const dir = join(base, id)
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, 'measure_something.py'), '# el instrumento\n')
-  writeFileSync(join(dir, MANIFEST_FILE_NAME), JSON.stringify({
+  writeManifest(dir, {
     question: 'cuantos archivos declaran la clave',
     instrument: 'measure_something.py',
     metric: 'archivos con la clave, sobre source/',
     blind_to: 'un documento que la declare en prosa',
     destination: 'el hallazgo que la cita',
-  }, null, 2))
+  })
   return dir
 }
 
@@ -88,8 +105,15 @@ describe('el contrato del sucesor, no el del modulo superado (#266)', () => {
     }
   })
 
-  test('el archivo del manifiesto es manifest.json', () => {
-    expect(MANIFEST_FILE_NAME).toBe('manifest.json')
+  test('el archivo del manifiesto es manifest.jsonl', () => {
+    expect(MANIFEST_FILE_NAME).toBe('manifest.jsonl')
+  })
+
+  // El heredado sigue DECLARADO porque el lector lo acepta: el escritor emite
+  // uno y el lector entiende dos. Retirar la constante se leeria como limpieza
+  // y cegaria al proveedor sobre los manifiestos de sus consumidores.
+  test('y el heredado, que el lector sigue aceptando', () => {
+    expect(LEGACY_MANIFEST_FILE_NAME).toBe('manifest.json')
   })
 
   test('las tres formas van en ingles; corpus ya lo estaba y no se rebautiza', () => {
@@ -122,15 +146,17 @@ describe('checkWorkbench — el gate', () => {
     mkdirSync(dir, { recursive: true })
     const ps = checkWorkbench(dir)
     expect(ps).toHaveLength(1)
-    expect(ps[0]!.problem).toContain('manifest.json')
+    // `'manifest.jsonl'.includes('manifest.json')` es TRUE: con el literal
+    // viejo esta asercion pasaba con LOS DOS nombres y no distinguia nada.
+    expect(ps[0]!.problem).toContain(MANIFEST_FILE_NAME)
   })
 
   test('una clave ausente se nombra; una vacia tambien', () => {
     const dir = conformingWorkbench(root())
-    const m = JSON.parse(readFileSync(join(dir, MANIFEST_FILE_NAME), 'utf8'))
+    const m = readManifest(dir)
     delete m.metric
     m.blind_to = '   '
-    writeFileSync(join(dir, MANIFEST_FILE_NAME), JSON.stringify(m))
+    writeManifest(dir, m)
     expect(checkWorkbench(dir).map(p => p.key).sort()).toEqual(['blind_to', 'metric'])
   })
 
@@ -141,9 +167,9 @@ describe('checkWorkbench — el gate', () => {
 
   test('un instrumento que NO existe se nombra', () => {
     const dir = conformingWorkbench(root())
-    const m = JSON.parse(readFileSync(join(dir, MANIFEST_FILE_NAME), 'utf8'))
+    const m = readManifest(dir)
     m.instrument = 'no_existe.py'
-    writeFileSync(join(dir, MANIFEST_FILE_NAME), JSON.stringify(m))
+    writeManifest(dir, m)
     expect(checkWorkbench(dir).map(p => p.key)).toEqual(['instrument'])
   })
 
@@ -152,18 +178,18 @@ describe('checkWorkbench — el gate', () => {
   // corpus que el gate dice gobernar.
   test('un comando declarado como instrumento NO se exige en disco', () => {
     const dir = conformingWorkbench(root())
-    const m = JSON.parse(readFileSync(join(dir, MANIFEST_FILE_NAME), 'utf8'))
+    const m = readManifest(dir)
     m.instrument = 'uv run pytest -n 4 --reuse-db'
-    writeFileSync(join(dir, MANIFEST_FILE_NAME), JSON.stringify(m))
+    writeManifest(dir, m)
     expect(checkWorkbench(dir)).toEqual([])
   })
 
   test('una forma inventada se rechaza; las tres validas no', () => {
     const conForma = (form: string) => {
       const dir = conformingWorkbench(root())
-      const m = JSON.parse(readFileSync(join(dir, MANIFEST_FILE_NAME), 'utf8'))
+      const m = readManifest(dir)
       m.form = form
-      writeFileSync(join(dir, MANIFEST_FILE_NAME), JSON.stringify(m))
+      writeManifest(dir, m)
       return dir
     }
     expect(checkWorkbench(conForma('invented')).map(p => p.key)).toEqual(['form'])
@@ -196,7 +222,7 @@ describe('scaffoldWorkbench — el andamiaje', () => {
   // banco recien andamiado NO es conforme, y ese es el estado correcto.
   test('siembra un manifiesto vacio, y el gate reclama las cinco', () => {
     const dir = scaffoldWorkbench(root(), 'measure-something', nine)
-    expect(JSON.parse(readFileSync(join(dir, MANIFEST_FILE_NAME), 'utf8'))).toEqual({})
+    expect(readManifest(dir)).toEqual({})
     expect(checkWorkbench(dir).map(p => p.key)).toEqual([...REQUIRED_KEYS])
   })
 

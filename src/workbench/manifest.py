@@ -37,6 +37,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Iterable
 
 from . import paths
 
@@ -46,7 +47,51 @@ REQUIRED_KEYS: tuple[str, ...] = (
 )
 
 #: El nombre del archivo del manifiesto. Uno, en ingles, como todo en THYROX.
-MANIFEST_FILE_NAME = "manifest.json"
+#: Es JSONL: un registro por linea, cada uno etiquetado por lo que DICE.
+MANIFEST_FILE_NAME = "manifest.jsonl"
+
+#: La clave que clasifica cada registro. Una cabecera POR POSICION repetiria el
+#: defecto de H-THYROX-37 un nivel mas abajo: clasificar por el sitio en vez de
+#: por el contenido. Etiquetado, un registro sobrevive a la concatenacion y al
+#: reordenamiento.
+KIND_KEY = "kind"
+
+#: El nombre ANTERIOR, que el lector sigue aceptando y el escritor ya no emite.
+#: Existe porque este modulo es del PROVEEDOR y sus consumidores tienen sus
+#: propios manifiestos: renombrar la constante sin esto los vuelve ilegibles
+#: — `read_manifest` devolveria `{}` y `bg.sh status` diria `unknown` sobre un
+#: trabajo terminado, que es el defecto de H-THYROX-35 reabierto.
+#:
+#: **No lleva condicion de retiro, y la distincion es de EJE.** El consumidor ya
+#: declara DONDE viven sus manifiestos —`THYROX_WORKBENCH_<CLONE>`,
+#: `THYROX_JOBS_<CLONE>`, `THYROX_CACHE_<CLONE>`, cada una resuelta por
+#: `workbench.paths`, `session.job_runs` y `cache.paths`—. Ese eje es
+#: LOCALIZACION y es legitimamente distinto por clon: cada arbol tiene el suyo.
+#:
+#: El nombre del archivo es otro eje: FORMATO. No se parametriza por clon
+#: precisamente porque dos consumidores no pueden discrepar sobre que es un
+#: manifiesto sin crear la segunda fuente de verdad que este modulo prohibe. Asi
+#: que el lector es tolerante de forma PERMANENTE —dos nombres, despachados por
+#: sufijo— y ningun consumidor tiene que convertir nada: su `manifest.json`
+#: sigue siendo legible sin tocarlo.
+#:
+#: Lo unico que un consumidor gana convirtiendo es el eje TEMPORAL del JSONL (el
+#: `settle` que añade en vez de reescribir). `settle` lo asciende solo, al
+#: asentar, que es el unico momento en que ya esta escribiendo ahi. Ver
+#: TASK-THYROX-0067.
+LEGACY_MANIFEST_FILE_NAME = "manifest.json"
+
+#: El reparto por clave, derivado de lo que el mecanismo ESCRIBE. Vive aqui y no
+#: en el guion de migracion porque es la regla, y una regla alojada en evidencia
+#: fechada es una segunda fuente de verdad que nadie sincroniza.
+LAUNCH_KEYS = ("started_at", "flat_home")
+SETTLE_KEYS = ("exit_code", "finished_at", "duration_seconds")
+
+#: `instrument` nombra dos cosas segun quien la escriba: en un trabajo es el
+#: COMANDO lanzado y en un banco es el instrumento de medicion. `started_at` es
+#: el discriminador porque `scaffold_run` siempre lo escribe.
+CONDITIONAL_LAUNCH_KEY = "instrument"
+LAUNCH_DISCRIMINATOR = "started_at"
 
 #: Las tres formas del banco, con sus valores en INGLES.
 WORKBENCH_FORMS: tuple[str, ...] = ("corpus", "measurement", "transformation")
@@ -62,6 +107,115 @@ _BASIC_ISO = re.compile(r"(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$")
 # tiene que ser EXACTAMENTE el sufijo, o `a-b-<ISO>` se listaria bajo el slug
 # `a` — un run ajeno devuelto como propio.
 _EXACT_BASIC_ISO = re.compile(r"^\d{8}T\d{6}$")
+
+
+def manifest_line(kind: str, payload: dict) -> str:
+    """Un registro etiquetado, serializado en UNA linea.
+
+    Sin `indent`: el sangrado mete saltos de linea, y en JSONL un salto de linea
+    ES el separador de registros. Un manifiesto "bonito" seria un manifiesto de
+    N registros rotos.
+    """
+    return json.dumps({KIND_KEY: kind, **payload}, ensure_ascii=False)
+
+
+def split_into_records(document: dict) -> list[tuple[str, dict]]:
+    """Reparte un documento entero en `(kind, payload)`, sin perder ni duplicar.
+
+    Es la inversa de `read_manifest_lines`: lo que este reparto emite, aquel
+    lector funde de vuelta al documento original. Esa ida y vuelta es la
+    propiedad que su control mide, y la unica que el reparto no puede romper.
+
+    Conserva el orden de insercion dentro de cada registro: asi convertir un
+    documento es una re-particion pura y su diff se lee como tal.
+    """
+    launch_keys = set(LAUNCH_KEYS)
+    if LAUNCH_DISCRIMINATOR in document:
+        launch_keys.add(CONDITIONAL_LAUNCH_KEY)
+    settle_keys = set(SETTLE_KEYS)
+
+    buckets: dict[str, dict] = {"launch": {}, "settle": {}, "declaration": {}}
+    for key, value in document.items():
+        if key in launch_keys:
+            buckets["launch"][key] = value
+        elif key in settle_keys:
+            buckets["settle"][key] = value
+        else:
+            buckets["declaration"][key] = value
+
+    # Un registro vacio no se emite: en JSONL «no hubo lanzamiento» es la
+    # ausencia de la linea, no una linea con un objeto vacio.
+    return [(kind, payload) for kind, payload in buckets.items() if payload]
+
+
+def render_manifest(document: dict) -> str:
+    """El documento entero, ya repartido en sus registros etiquetados."""
+    # El salto va aqui y no en `manifest_line`, que emite UN registro: sin el,
+    # los N registros se concatenarian en una linea y el archivo volveria a ser
+    # un documento — la conversion deshecha en silencio.
+    return "".join(manifest_line(kind, payload) + "\n"
+                   for kind, payload in split_into_records(document))
+
+
+def read_manifest_lines(lines: Iterable[str]) -> dict:
+    """Funde los registros en el documento que el lector consume.
+
+    **El lector compartido.** Lo usan `session.job_runs.read_manifest`,
+    `verify.check_manifest_language.scan` y el gemelo `manifest.ts`. Que sea uno
+    es lo que permite que un manifiesto de workbench —que tiene UN registro— lo
+    lea un lector ya probado sobre `jobs`, que tiene dos. Con un lector por
+    consumidor, el de workbench se probaria contra n=1 y nunca seria un lector
+    de lineas: el sub-patron D con la propia conversion como sujeto.
+
+    **Precedencia: el orden del archivo, y el registro POSTERIOR gana.** Es la
+    semantica de un append — la ultima escritura manda, que es exactamente lo
+    que la reescritura anterior hacia. Se declara aqui porque un merge sin
+    precedencia declarada es un empate resuelto por accidente de iteracion.
+
+    Una linea en blanco no es un registro y se salta: un archivo recien
+    andamiado no tiene ninguno, y eso no es un error.
+    """
+    merged: dict = {}
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        record = json.loads(line)
+        record.pop(KIND_KEY, None)
+        merged.update(record)
+    return merged
+
+
+def read_manifest_file(path: str | Path) -> dict:
+    """El documento de un archivo, o `{}` si no existe.
+
+    **Despacha por SUFIJO, no por olfateo.** Un `.json` declara un documento
+    entero; un `.jsonl`, lineas. Probar primero como JSONL y caer al documento
+    entero reintroduciria la trampa n=1 que la conversion existe para evitar:
+    `json.loads` acepta un JSONL de una sola linea, asi que el lector de lineas
+    nunca se probaria como tal.
+    """
+    path = Path(path)
+    if not path.is_file():
+        return {}
+    raw = path.read_text(encoding="utf-8")
+    if path.name == LEGACY_MANIFEST_FILE_NAME:
+        return json.loads(raw) if raw.strip() else {}
+    return read_manifest_lines(raw.splitlines())
+
+
+def resolve_manifest(run_dir: str | Path) -> Path | None:
+    """El manifiesto de un run: el JSONL si existe, si no el heredado.
+
+    Devuelve `None` en vez de componer la ruta que tendria: un consumidor que
+    recibiera una ruta inexistente seguiria en verde apuntando al vacio.
+    """
+    home = Path(run_dir)
+    for name in (MANIFEST_FILE_NAME, LEGACY_MANIFEST_FILE_NAME):
+        candidate = home / name
+        if candidate.is_file():
+            return candidate
+    return None
 
 
 class RunIdError(ValueError):
@@ -147,8 +301,10 @@ def scaffold_workbench(
     for sub in SCAFFOLD_SUBDIRS:
         (run_dir / sub).mkdir(exist_ok=True)
 
-    (run_dir / MANIFEST_FILE_NAME).write_text(
-        json.dumps({}, indent=2) + "\n", encoding="utf-8")
+    # Cero registros, no un `{}`. En JSONL "todavia no hay nada declarado" es un
+    # archivo vacio; un `{}` seria un registro sin etiqueta que el lector tendria
+    # que interpretar.
+    (run_dir / MANIFEST_FILE_NAME).write_text("", encoding="utf-8")
     (run_dir / "README.md").write_text("\n".join([
         f"# {slug}", "",
         "## El encargo", "", "<!-- verbatim, sin parafrasear -->", "",

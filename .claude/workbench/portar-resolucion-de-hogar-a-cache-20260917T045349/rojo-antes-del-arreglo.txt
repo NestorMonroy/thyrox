@@ -1,0 +1,107 @@
+test_a_relative_segment_composes_one_home_per_clone (__main__.CacheHomeResolution.test_a_relative_segment_composes_one_home_per_clone) ... FAIL
+test_an_absolute_DOES_collide_and_that_is_correct (__main__.CacheHomeResolution.test_an_absolute_DOES_collide_and_that_is_correct)
+Quien escribe una absoluta nombra un sitio, no un patron. ... ok
+test_the_composed_default_anchors_at_the_consumer_root (__main__.CacheHomeResolution.test_the_composed_default_anchors_at_the_consumer_root)
+DEFECTO 1: hoy compone sobre el ancla que el llamador trajo. ... FAIL
+test_the_default_is_recorded_not_silent (__main__.CacheHomeResolution.test_the_default_is_recorded_not_silent) ... FAIL
+test_the_measurable_population_supports_the_claim (__main__.CacheHomeResolution.test_the_measurable_population_supports_the_claim)
+Sin al menos dos clones, «un hogar POR CLON» no se puede observar. ... ok
+test_the_per_clone_key_also_resolves (__main__.CacheHomeResolution.test_the_per_clone_key_also_resolves) ... FAIL
+test_the_provider_default_is_decided_not_inherited (__main__.CacheHomeResolution.test_the_provider_default_is_decided_not_inherited)
+Ahi ``consumer_root`` rehusa y esta familia no puede rehusar. ... FAIL
+test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike)
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria. ... 
+  test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='db')
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria. ... FAIL
+  test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='docs')
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria. ... FAIL
+  test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='server')
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria. ... FAIL
+  test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='ui')
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria. ... FAIL
+test_without_a_resolvable_root_the_relative_is_returned_raw (__main__.CacheHomeResolution.test_without_a_resolvable_root_the_relative_is_returned_raw)
+CONTROL DE ANULACION del caso 2. ... ok
+
+======================================================================
+FAIL: test_a_relative_segment_composes_one_home_per_clone (__main__.CacheHomeResolution.test_a_relative_segment_composes_one_home_per_clone)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 118, in test_a_relative_segment_composes_one_home_per_clone
+    self.assertEqual(
+AssertionError: 1 != 4 : la clave de familia colapso los hogares: {'db': PosixPath('indice-relativo'), 'docs': PosixPath('indice-relativo'), 'server': PosixPath('indice-relativo'), 'ui': PosixPath('indice-relativo')}
+
+======================================================================
+FAIL: test_the_composed_default_anchors_at_the_consumer_root (__main__.CacheHomeResolution.test_the_composed_default_anchors_at_the_consumer_root)
+DEFECTO 1: hoy compone sobre el ancla que el llamador trajo.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 146, in test_the_composed_default_anchors_at_the_consumer_root
+    self.assertEqual(
+AssertionError: PosixPath('/home/user/kaupamex-docs/source/gestion/.claude/cache') != PosixPath('/home/user/kaupamex-docs/.claude/cache') : el default heredo el ancla honda en vez de la raiz del consumidor
+
+======================================================================
+FAIL: test_the_default_is_recorded_not_silent (__main__.CacheHomeResolution.test_the_default_is_recorded_not_silent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 181, in test_the_default_is_recorded_not_silent
+    self.assertIn(cache.CACHE_DIR_VAR, declared)
+AssertionError: 'THYROX_CACHE_DIR' not found in set()
+
+======================================================================
+FAIL: test_the_per_clone_key_also_resolves (__main__.CacheHomeResolution.test_the_per_clone_key_also_resolves)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 130, in test_the_per_clone_key_also_resolves
+    self.assertEqual(home, roots[target] / "indice-del-clon")
+AssertionError: PosixPath('indice-del-clon') != PosixPath('/home/user/kaupamex-db/indice-del-clon')
+
+======================================================================
+FAIL: test_the_provider_default_is_decided_not_inherited (__main__.CacheHomeResolution.test_the_provider_default_is_decided_not_inherited)
+Ahi ``consumer_root`` rehusa y esta familia no puede rehusar.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 157, in test_the_provider_default_is_decided_not_inherited
+    self.assertEqual(
+AssertionError: PosixPath('/home/user/thyrox/src/paths/.claude/cache') != PosixPath('/home/user/thyrox/.claude/cache')
+
+======================================================================
+FAIL: test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='db')
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 193, in test_the_three_families_compose_the_same_segment_alike
+    self.assertEqual(cache.cache_dir(root),
+AssertionError: PosixPath('mismo-segmento') != PosixPath('/home/user/kaupamex-db/mismo-segmento')
+
+======================================================================
+FAIL: test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='docs')
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 193, in test_the_three_families_compose_the_same_segment_alike
+    self.assertEqual(cache.cache_dir(root),
+AssertionError: PosixPath('mismo-segmento') != PosixPath('/home/user/kaupamex-docs/mismo-segmento')
+
+======================================================================
+FAIL: test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='server')
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 193, in test_the_three_families_compose_the_same_segment_alike
+    self.assertEqual(cache.cache_dir(root),
+AssertionError: PosixPath('mismo-segmento') != PosixPath('/home/user/kaupamex-server/mismo-segmento')
+
+======================================================================
+FAIL: test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike) (repo='ui')
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 193, in test_the_three_families_compose_the_same_segment_alike
+    self.assertEqual(cache.cache_dir(root),
+AssertionError: PosixPath('mismo-segmento') != PosixPath('/home/user/kaupamex-ui/mismo-segmento')
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.046s
+
+FAILED (failures=9)
+EXIT=1

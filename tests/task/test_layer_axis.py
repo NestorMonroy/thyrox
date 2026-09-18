@@ -23,6 +23,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from task import task_ids  # noqa: E402
 
+# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
+# y la unica que el localizador no puede reemplazar: no se puede pedir
+# `reach.thyrox_root()` antes de que `import reach` funcione.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
 
 class TestEjeDelIdentificador(unittest.TestCase):
     def test_1_thyrox_es_un_repo_admitido(self):
@@ -129,7 +135,7 @@ def _crear_store(directorio: Path):
     """
     import importlib.util
 
-    ruta = Path(__file__).resolve().parents[2] / "src" / "agents" / "agent_store.py"
+    ruta = reach.thyrox_root() / "src" / "agents" / "agent_store.py"
     spec = importlib.util.spec_from_file_location("agent_store_para_el_control", ruta)
     modulo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modulo)

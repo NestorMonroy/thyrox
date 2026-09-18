@@ -1,11 +1,18 @@
 /**
  * El catálogo de modelos que el ejecutable vendorizado declara, tipado.
  *
- * La fuente es `src/models.json`, que `bin/extract_model_registry.py --stdout`
+ * La fuente es `src/models.jsonl`, que `bin/extract_model_registry.py --stdout`
  * deriva del volcado `_references/claude-code-bin/<versión>/claude_strings.txt`. No
  * se escribe a mano: la suite lo re-deriva y exige igualdad byte a byte, que
  * es el control que faltó cuando el extractor publicó los 63 booleanos del
  * catálogo invertidos (H-DOCS-1003).
+ *
+ * Es **JSON Lines**: 28 registros etiquetados con `kind` — una `meta`, un
+ * `tier` por tier y un `model` por registro. Cada línea se clasifica por lo
+ * que DICE, no por dónde está: una cabecera por posición repetiría el defecto
+ * de :ref:`h-thyrox-37` un nivel más abajo. Por eso el módulo NO puede usar
+ * el cargador JSON de bun (`import … with { type: 'json' }`), que exige un
+ * documento único: lee el archivo y reconstruye el catálogo línea a línea.
  *
  * Por qué el paquete lo necesita (directiva del ejecutor 2026-09-02): un agente
  * NO se nombra por alias, porque el alias resuelve a tiers distintos según el
@@ -14,7 +21,9 @@
  * identificador completo el tier, la ventana y el coste quedan fijados en la
  * definición y no en quién sirva la petición.
  */
-import registry from './models.json' with { type: 'json' }
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 /** Los seis precios de un tier, en USD por millón de tokens. */
 export type PricingTier = {
@@ -60,7 +69,53 @@ type Catalog = {
   alias_migration: Record<string, unknown>
 }
 
-export const CATALOG = registry as unknown as Catalog
+/** El sobre que el extractor añade a cada línea; no es una clave del catálogo. */
+type TaggedRecord = { kind: 'meta' | 'tier' | 'model'; [otra: string]: unknown }
+
+/**
+ * Reconstruye el catálogo de nueve claves desde los registros etiquetados.
+ *
+ * La propiedad que esto no puede romper: el objeto resultante es **igual** al
+ * que producía el import estático — mismas nueve claves de raíz, mismos
+ * modelos en el mismo orden, mismos tiers. Esa igualdad es el control, no
+ * «el archivo parsea».
+ *
+ * `kind` se retira de cada registro: es nuestro sobre de transporte, y dejarlo
+ * dentro haría que un `ModelRecord` declarara un campo que el ejecutable
+ * vendorizado nunca emitió.
+ */
+function readCatalog(file: string): Catalog {
+  const records = readFileSync(file, 'utf8')
+    .split('\n')
+    .filter((line) => line.trim() !== '')
+    .map((line) => JSON.parse(line) as TaggedRecord)
+
+  const meta = records.find((r) => r.kind === 'meta')
+  if (!meta) {
+    // Rehusar, no devolver un catálogo vacío: un catálogo sin meta se leería
+    // como «no hay modelos» en vez de «no pude leer el archivo».
+    throw new Error(`${file}: ningún registro declara kind "meta"`)
+  }
+
+  const pricing_tiers: Record<string, PricingTier> = {}
+  for (const r of records) {
+    if (r.kind === 'tier') pricing_tiers[r.name as string] = r.pricing as PricingTier
+  }
+
+  const models: ModelRecord[] = []
+  for (const r of records) {
+    if (r.kind !== 'model') continue
+    const { kind: _kind, ...fila } = r
+    models.push(fila as unknown as ModelRecord)
+  }
+
+  const { kind: _k, ...resto } = meta
+  return { ...resto, pricing_tiers, models } as unknown as Catalog
+}
+
+const HERE = dirname(fileURLToPath(import.meta.url))
+
+export const CATALOG = readCatalog(join(HERE, 'models.jsonl'))
 
 /** Los identificadores que el ejecutable vendorizado declara, en su orden. */
 export const MODEL_IDS = CATALOG.models.map((m) => m.id) as readonly string[]

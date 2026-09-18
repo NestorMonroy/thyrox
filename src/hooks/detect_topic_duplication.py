@@ -69,10 +69,7 @@ from __future__ import annotations
 
 import pathlib
 import re
-import sys
 
-# ``sys.path[0]`` es ``src/hooks``; ``verify`` no resolvería desde ahí.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from verify.check_hallazgo_submodulo import RAIZ_PM  # noqa: E402
 

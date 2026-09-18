@@ -1,0 +1,2 @@
+-rw-r--r-- 1 root root 488130 Sep  2 03:45 source/gestion/pm/api/audits/hallazgos-adaptar-familias-odoo-monolito-modular.rst
+8470 source/gestion/pm/api/audits/hallazgos-adaptar-familias-odoo-monolito-modular.rst

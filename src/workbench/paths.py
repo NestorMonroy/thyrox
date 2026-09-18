@@ -7,7 +7,7 @@ no un modulo suelto por lenguaje.
 La separacion, confirmada por el ejecutor 2026-09-06::
 
     <hogar declarado por THYROX_WORKBENCH_DIR>/
-      <slug>-<ISO>/   manifest.json + instrumento + outputs/ + commits/
+      <slug>-<ISO>/   manifest.jsonl + instrumento + outputs/ + commits/
 
     .claude/eventos/
       <slug>-<ISO>/   rojo-de-partida · anulacion · verde
@@ -61,12 +61,11 @@ un dato unico. Una decide para esta invocacion, la otra para el arbol.
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
+from paths.reach import creates_home  # noqa: E402 — reach no importa nada del proyecto al tope
 
 #: Entrada 1 de la zona de estado — el valor.
 STATE_DIR_VAR = "THYROX_STATE_DIR"
@@ -195,6 +194,7 @@ class WorkbenchHomeError(Exception):
     """
 
 
+@creates_home
 def workbench_dir(start: str | Path | None = None) -> Path:
     """El hogar del banco: el declarado, o el que THYROX resuelve por ti.
 

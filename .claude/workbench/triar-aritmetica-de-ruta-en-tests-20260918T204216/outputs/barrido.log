@@ -1,0 +1,55 @@
+infractores totales=44 (alcance medido: 458 archivos)
+bajo tests/: 29 en 28 archivo(s)
+  test_clasificar_agentes.py:38 asignacion -> reach.thyrox_root()
+  test_clasificar_agentes.py: bootstrap de una linea + import reach anadidos
+  test_derive_submodule.py:53 asignacion -> reach.thyrox_root()
+  test_derive_submodule.py:192 incrustada -> reach.thyrox_root()
+  test_document_root_default.py:24 asignacion -> reach.thyrox_root()
+  test_payload_sin_transcript.py:39 asignacion -> reach.thyrox_root()
+  test_payload_sin_transcript.py: bootstrap de una linea + import reach anadidos
+  test_readonly_connection.py:60 asignacion -> reach.thyrox_root()
+  test_readonly_connection.py: bootstrap de una linea + import reach anadidos
+  test_store_dir_default.py:33 asignacion -> reach.thyrox_root()
+  test_store_home.py:24 asignacion -> reach.thyrox_root()
+  test_store_home.py: bootstrap de una linea + import reach anadidos
+  test_table_census.py:25 asignacion -> reach.thyrox_root()
+  test_table_census.py: bootstrap de una linea + import reach anadidos
+  test_usage_census_deviation.py:40 asignacion -> reach.thyrox_root()
+  test_usage_census_deviation.py: bootstrap de una linea + import reach anadidos
+  test_archive_build_corpus.py:51 asignacion -> reach.thyrox_root()
+  test_archive_build_corpus.py: bootstrap de una linea + import reach anadidos
+  test_censar_scripts.py:23 asignacion -> reach.thyrox_root()
+  test_detect_agent_dispatch.py:15 asignacion -> reach.thyrox_root()
+  test_detect_agent_dispatch.py: bootstrap de una linea + import reach anadidos
+  test_detect_code_language.py:19 asignacion -> reach.thyrox_root()
+  test_detect_code_language.py: bootstrap de una linea + import reach anadidos
+  test_detect_dedicated_tool_usage.py:13 asignacion -> reach.thyrox_root()
+  test_detect_dedicated_tool_usage.py: bootstrap de una linea + import reach anadidos
+  test_detect_ephemeral_citation.py:15 asignacion -> reach.thyrox_root()
+  test_detect_ephemeral_citation.py: bootstrap de una linea + import reach anadidos
+  test_detect_foreground_long_command.py:14 asignacion -> reach.thyrox_root()
+  test_detect_foreground_long_command.py: bootstrap de una linea + import reach anadidos
+  test_detect_topic_duplication.py:26 asignacion -> reach.thyrox_root()
+  test_detect_topic_duplication.py: bootstrap de una linea + import reach anadidos
+  test_consumer_root_refuses_provider.py:25 asignacion -> reach.thyrox_root()
+  test_adopt_background.py:23 incrustada -> reach.thyrox_root()
+  test_adopt_background.py: bootstrap de una linea + import reach anadidos
+  test_probe_model_switch_cache.py:37 asignacion -> reach.thyrox_root()
+  test_probe_model_switch_cache.py: bootstrap de una linea + import reach anadidos
+  test_user_wiring.py:31 asignacion -> reach.thyrox_root()
+  test_user_wiring.py: bootstrap de una linea + import reach anadidos
+  test_layer_axis.py:132 asignacion -> reach.thyrox_root()
+  test_layer_axis.py: bootstrap de una linea + import reach anadidos
+  test_layer_signals.py:49 asignacion -> reach.thyrox_root()
+  test_layer_signals.py: bootstrap de una linea + import reach anadidos
+  test_closing.py:35 asignacion -> reach.thyrox_root()
+  test_closing.py: bootstrap de una linea + import reach anadidos
+  test_class_header.py:33 asignacion -> reach.thyrox_root()
+  test_class_header.py: bootstrap de una linea + import reach anadidos
+  test_counterpart_body.py:38 asignacion -> reach.thyrox_root()
+  test_counterpart_body.py: bootstrap de una linea + import reach anadidos
+  test_symbol_home.py:34 asignacion -> reach.thyrox_root()
+  test_symbol_home.py: bootstrap de una linea + import reach anadidos
+  test_manifest_jsonl.py:117 asignacion -> reach.thyrox_root()
+  test_manifest_jsonl.py: bootstrap de una linea + import reach anadidos
+archivos reescritos: 28

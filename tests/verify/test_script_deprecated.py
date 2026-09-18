@@ -171,7 +171,14 @@ with tempfile.TemporaryDirectory() as tmp:
     env_roto = subprocess.run(
         [sys.executable, str(MODULE)],
         capture_output=True, text=True,
-        env={"PATH": "/usr/bin:/bin", "THYROX_REACH_ROOT": str(pathlib.Path(tmp) / "vacio")},
+        # `PYTHONPATH` va explicito porque el entorno se compone de CERO:
+        # el modulo importa `paths.reach` por import absoluto, y sin la raiz
+        # de `src/` muere con `ModuleNotFoundError` (exit 1) ANTES de llegar
+        # a su propio rehuse (exit 2). Ese 1 no es el rehuse que este caso
+        # mide — es el modulo sin poder arrancar, que es otro fenomeno.
+        env={"PATH": "/usr/bin:/bin",
+             "PYTHONPATH": str(reach.thyrox_root() / "src"),
+             "THYROX_REACH_ROOT": str(pathlib.Path(tmp) / "vacio")},
     )
     check("con un árbol sin clones REHÚSA con código propio",
           2, env_roto.returncode)

@@ -24,7 +24,6 @@ Dos universos, y no se mezclan:
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 #: El mismo marcador que `reach.THYROX_MARKER`. Se repite aquí y sólo aquí
@@ -48,10 +47,8 @@ PATHS_DIR = THYROX_ROOT / "src" / "paths"
 CORPUS_DIR = THYROX_ROOT / "src" / "corpus"
 LIB_DIR = THYROX_ROOT / "src" / "lib"
 
-if str(PATHS_DIR) not in sys.path:
-    sys.path.insert(0, str(PATHS_DIR))
 
-import reach  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
+from paths import reach  # noqa: E402
 
 #: Reexportada, no redeclarada: la excepcion vive en el mecanismo desde
 #: TASK-DOCS-0286. `drain_spool` la captura por este nombre, y dos clases con
@@ -120,12 +117,17 @@ def agent_results_dir() -> Path:
     return consumer_root() / ".claude" / "agent-results"
 
 
-def agent_store_path() -> Path:
+def agent_store_path(create: bool = True) -> Path:
     """El store, por el localizador declarado. Delega, no compone.
 
     Componerlo aqui como `agent_results_dir() / "agent_store.sqlite3"` lo ataba
     al consumidor, y desde el 2026-09-07 el store vive en thyrox salvo que
     `THYROX_AGENT_STORE` diga otra cosa. Dos composiciones de la misma ruta son
     dos fuentes de verdad que nadie sincroniza.
+
+    ``create`` viaja al localizador sin interpretarse aqui: este modulo delega
+    la ubicacion, y tambien delega la decision de materializarla. Un envoltorio
+    que fijara el valor seria la segunda fuente de verdad que su propio
+    docstring prohibe.
     """
-    return reach.agent_store_path()
+    return reach.agent_store_path(create=create)

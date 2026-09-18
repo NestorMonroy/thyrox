@@ -1,0 +1,4 @@
+ERROR — falta el ancla real del control: /home/user/thyrox/source/gestion/pm/docs/iniciativas/catalogar-y-registrar-errores/errores/error-ERR-021-el-camino-barato-no-tenia-registro.rst
+NO se emite conteo: sin positivo real no hay prueba.
+ANULADA (proveedor y consumidor colapsados): exit=2
+RESTAURADA (dos arboles separados)         : exit=0

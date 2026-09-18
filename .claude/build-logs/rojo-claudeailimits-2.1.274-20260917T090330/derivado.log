@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+ 691 pass
+ 0 fail
+ 1457 expect() calls
+Ran 691 tests across 43 files. [500.00ms]
+--- typecheck del paquete provider ---
+src/packages/local-observability/src/log.ts(115,5): error TS2322: Type 'Dirent<string>[]' is not assignable to type 'Dirent<NonSharedBuffer>[]'.
+  Type 'Dirent<string>' is not assignable to type 'Dirent<NonSharedBuffer>'.
+    Type 'string' is not assignable to type 'NonSharedBuffer'.
+src/packages/provider/src/adapters.ts(66,5): error TS2322: Type '(args: ProviderQueryArgs) => Promise<ProviderStreamEvent>' is not assignable to type 'ProviderQueryFn'.
+  Type 'Promise<ProviderStreamEvent>' is not assignable to type 'Promise<ProviderAssistantMessage>'.
+    Type 'ProviderStreamEvent' is not assignable to type 'ProviderAssistantMessage'.
+      Property 'uuid' is missing in type 'ProviderStreamEvent' but required in type 'ProviderMessage'.
+src/packages/provider/src/authAlias.ts(46,21): error TS7016: Could not find a declaration file for module 'lodash-es/memoize.js'. '/home/user/thyrox/src/packages/node_modules/.bun/lodash-es@4.18.1/node_modules/lodash-es/memoize.js' implicitly has an 'any' type.
+  If the 'lodash-es' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/lodash-es'
+src/packages/provider/src/authAlias.ts(971,67): error TS2339: Property 'subscriptionType' does not exist on type '{}'.
+src/packages/provider/src/authAlias.ts(972,61): error TS2339: Property 'rateLimitTier' does not exist on type '{}'.
+src/packages/provider/src/claudeLegacy.ts(64,43): error TS2339: Property 'output' does not exist on type 'MessageCreateParamsBase'.
+src/packages/provider/src/claudeLegacy.ts(139,41): error TS2339: Property 'output' does not exist on type 'MessageCreateParamsBase'.
+src/packages/provider/src/claudeLegacy.ts(185,72): error TS2355: A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
+src/packages/provider/src/context.ts(27,21): error TS7016: Could not find a declaration file for module 'lodash-es/memoize.js'. '/home/user/thyrox/src/packages/node_modules/.bun/lodash-es@4.18.1/node_modules/lodash-es/memoize.js' implicitly has an 'any' type.
+  If the 'lodash-es' package actually exposes this module, consider sending a pull request to amend 'https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/lodash-es'
+src/packages/provider/src/fastMode.ts(65,3): error TS1484: 'AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/packages/provider/src/fastMode.ts(328,24): error TS2693: 'AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS' only refers to a type, but is being used as a value here.
+src/packages/provider/src/fastMode.ts(403,28): error TS2693: 'AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS' only refers to a type, but is being used as a value here.
+src/packages/provider/src/gemini/convertMessages.ts(59,32): error TS18048: 'msg.message' is possibly 'undefined'.

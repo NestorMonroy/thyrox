@@ -16,7 +16,6 @@ La mitad TypeScript (``src/rules/paths.ts``) declara las mismas dos constantes;
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 # Bootstrap canónico (`paths.reach.BOOTSTRAP`): ascenso con detección hasta
@@ -29,7 +28,6 @@ _RAIZ = next((p for p in _AQUI.parents
               if (p / "src" / "paths" / "reach.py").is_file()), None)
 if _RAIZ is None:
     raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_AQUI}")
-sys.path.insert(0, str(_RAIZ / "src"))
 
 from paths.reach import env_value, resolve_home  # noqa: E402
 from workbench.paths import repo_of, state_dir  # noqa: E402

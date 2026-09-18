@@ -1,0 +1,375 @@
+#!/usr/bin/env bun
+import { feature } from 'bun:bundle'
+
+// Runtime fallback for MACRO.* when not injected by build/dev defines.
+// This happens when running cli.tsx directly (not via `bun run dev` or built dist/).
+type MacroShape = Record<
+  | 'VERSION'
+  | 'BUILD_TIME'
+  | 'FEEDBACK_CHANNEL'
+  | 'ISSUES_EXPLAINER'
+  | 'NATIVE_PACKAGE_URL'
+  | 'PACKAGE_URL'
+  | 'VERSION_CHANGELOG',
+  string
+>
+const macroSlot = globalThis as typeof globalThis & { MACRO?: MacroShape }
+if (typeof macroSlot.MACRO === 'undefined') {
+  macroSlot.MACRO = {
+    VERSION: process.env.CLAUDE_CODE_VERSION || '1.carus.000',
+    BUILD_TIME: new Date().toISOString(),
+    FEEDBACK_CHANNEL: '',
+    ISSUES_EXPLAINER: '',
+    NATIVE_PACKAGE_URL: '',
+    PACKAGE_URL: '',
+    VERSION_CHANGELOG: '',
+  }
+}
+
+// Bugfix for corepack auto-pinning, which adds yarnpkg to peoples' package.jsons
+// eslint-disable-next-line custom-rules/no-top-level-side-effects
+process.env.COREPACK_ENABLE_AUTO_PIN = '0'
+
+// Set max heap size for child processes in CCR environments (containers have 16GB)
+// eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level, custom-rules/safe-env-boolean-check
+if (process.env.CLAUDE_CODE_REMOTE === 'true') {
+  // eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level
+  const existing = process.env.NODE_OPTIONS || ''
+  // eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level
+  process.env.NODE_OPTIONS = existing
+    ? `${existing} --max-old-space-size=8192`
+    : '--max-old-space-size=8192'
+}
+
+// Harness-science L0 ablation baseline. Inlined here (not init.ts) because
+// BashTool/AgentTool/PowerShellTool capture DISABLE_BACKGROUND_TASKS into
+// module-level consts at import time — init() runs too late. feature() gate
+// DCEs this entire block from external builds.
+// eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level
+if (feature('ABLATION_BASELINE') && process.env.CLAUDE_CODE_ABLATION_BASELINE) {
+  for (const k of [
+    'CLAUDE_CODE_SIMPLE',
+    'CLAUDE_CODE_DISABLE_THINKING',
+    'DISABLE_INTERLEAVED_THINKING',
+    'DISABLE_COMPACT',
+    'DISABLE_AUTO_COMPACT',
+    'CLAUDE_CODE_DISABLE_AUTO_MEMORY',
+    'CLAUDE_CODE_DISABLE_BACKGROUND_TASKS',
+  ]) {
+    // eslint-disable-next-line custom-rules/no-top-level-side-effects, custom-rules/no-process-env-top-level
+    process.env[k] ??= '1'
+  }
+}
+
+/**
+ * Bootstrap entrypoint - checks for special flags before loading the full CLI.
+ * All imports are dynamic to minimize module evaluation for fast paths.
+ * Fast-path for --version has zero imports beyond this file.
+ */
+async function main(): Promise<void> {
+  const args = process.argv.slice(2)
+
+  // Fast-path for --version/-v: zero module loading needed
+  if (
+    args.length === 1 &&
+    (args[0] === '--version' || args[0] === '-v' || args[0] === '-V')
+  ) {
+    // MACRO.VERSION is inlined at build time
+    console.log(`${MACRO.VERSION} (Claude Code)`)
+    return
+  }
+
+  // For all other paths, load the startup profiler
+  const { profileCheckpoint } = await import('@thyrox/app-host/startup/startupProfiler.js')
+  profileCheckpoint('cli_entry')
+
+  // Fast-path for --dump-system-prompt: output the rendered system prompt and exit.
+  // Used by prompt sensitivity evals to extract the system prompt at a specific commit.
+  // Ant-only: eliminated from external builds via feature flag.
+  if (feature('DUMP_SYSTEM_PROMPT') && args[0] === '--dump-system-prompt') {
+    profileCheckpoint('cli_dump_system_prompt_path')
+    const { enableConfigs } = await import('@thyrox/config')
+    enableConfigs()
+    const { getMainLoopModel } = await import('@thyrox/provider/model.js')
+    const modelIdx = args.indexOf('--model')
+    const model = (modelIdx !== -1 && args[modelIdx + 1]) || getMainLoopModel()
+    const { getSystemPrompt } = await import('@thyrox/agent/constants/prompts.js')
+    const prompt = await getSystemPrompt([], model)
+    console.log(prompt.join('\n'))
+    return
+  }
+
+  // Fast-path for `ccb --bg-pty-host <sock> <cols> <rows> -- <cmd> [args...]`.
+  // This is the daemon-supervised PTY host runtime — spawned by the bg
+  // dispatcher (ccb side) or by an external daemon. It opens a Bun.Terminal,
+  // spawns the requested child inside it, and bridges the PTY ↔ Unix socket
+  // bidirectionally. Mirrors ant 5173.js:103-106 + 4702.js DW3.
+  if (
+    feature('BG_SESSIONS') &&
+    args[0] === '--bg-pty-host'
+  ) {
+    profileCheckpoint('cli_bg_pty_host_path')
+    const { runPtyHost } = await import('../bg/ptyHost.js')
+    await runPtyHost(args.slice(1))
+    return
+  }
+
+  if (process.argv[2] === '--claude-in-chrome-mcp') {
+    profileCheckpoint('cli_claude_in_chrome_mcp_path')
+    const { runClaudeInChromeMcpServer } = await import(
+      '@thyrox/agent/claudeInChrome/mcpServer.js'
+    )
+    await runClaudeInChromeMcpServer()
+    return
+  } else if (process.argv[2] === '--chrome-native-host') {
+    profileCheckpoint('cli_chrome_native_host_path')
+    const { runChromeNativeHost } = await import(
+      '@thyrox/agent/claudeInChrome/chromeNativeHost.js'
+    )
+    await runChromeNativeHost()
+    return
+  } else if (
+    feature('CHICAGO_MCP') &&
+    process.argv[2] === '--computer-use-mcp'
+  ) {
+    profileCheckpoint('cli_computer_use_mcp_path')
+    const { runComputerUseMcpServer } = await import(
+      '@ant/computer-use-mcp/legacy/mcpServer.js'
+    )
+    await runComputerUseMcpServer()
+    return
+  }
+
+  // Fast-path for `--daemon-worker=<kind>` (internal — supervisor spawns this).
+  // Must come before the daemon subcommand check: spawned per-worker, so
+  // perf-sensitive. No enableConfigs(), no analytics sinks at this layer —
+  // workers are lean. If a worker kind needs configs/auth (assistant will),
+  // it calls them inside its run() fn.
+  if (feature('DAEMON') && args[0] === '--daemon-worker') {
+    const { runDaemonWorker } = await import('@thyrox/daemon/workerRegistry.js')
+    await runDaemonWorker(args[1])
+    return
+  }
+
+  // Fast-path for `claude remote-control` (also accepts legacy `claude remote` / `claude sync` / `claude bridge`):
+  // serve local machine as bridge environment.
+  // feature() must stay inline for build-time dead code elimination;
+  // isBridgeEnabled() checks the runtime GrowthBook gate.
+  if (
+    feature('BRIDGE_MODE') &&
+    (args[0] === 'remote-control' ||
+      args[0] === 'rc' ||
+      args[0] === 'remote' ||
+      args[0] === 'sync' ||
+      args[0] === 'bridge')
+  ) {
+    profileCheckpoint('cli_bridge_path')
+    const { enableConfigs } = await import('@thyrox/config')
+    enableConfigs()
+
+    const { getBridgeDisabledReason, checkBridgeMinVersion } = await import(
+      '@thyrox/bridge/bridgeEnabled.js'
+    )
+    const { BRIDGE_LOGIN_ERROR } = await import('@thyrox/bridge/types.js')
+    const { bridgeMain } = await import('@thyrox/bridge/bridgeMain.js')
+    const { exitWithError } = await import('@thyrox/shell/process.js')
+
+    // Auth check must come before the GrowthBook gate check — without auth,
+    // GrowthBook has no user context and would return a stale/default false.
+    // getBridgeDisabledReason awaits GB init, so the returned value is fresh
+    // (not the stale disk cache), but init still needs auth headers to work.
+    const { getClaudeAIOAuthTokens } = await import('@thyrox/provider/authAlias.js')
+    if (!getClaudeAIOAuthTokens()?.accessToken) {
+      exitWithError(BRIDGE_LOGIN_ERROR)
+    }
+    const disabledReason = await getBridgeDisabledReason()
+    if (disabledReason) {
+      exitWithError(`Error: ${disabledReason}`)
+    }
+    const versionError = checkBridgeMinVersion()
+    if (versionError) {
+      exitWithError(versionError)
+    }
+
+    // Bridge is a remote control feature - check policy limits
+    const { waitForPolicyLimitsToLoad, isPolicyAllowed } = await import(
+      '@thyrox/provider/policyLimits/index.js'
+    )
+    await waitForPolicyLimitsToLoad()
+    if (!isPolicyAllowed('allow_remote_control')) {
+      exitWithError(
+        "Error: Remote Control is disabled by your organization's policy.",
+      )
+    }
+
+    await bridgeMain(args.slice(1))
+    return
+  }
+
+  // Fast-path for `claude daemon [subcommand]`: long-running supervisor.
+  if (feature('DAEMON') && args[0] === 'daemon') {
+    profileCheckpoint('cli_daemon_path')
+    // Install host bindings before settings/config reads (mirrors bg path).
+    await import('@thyrox/app-host/runtime/bootstrap.js')
+    const { enableConfigs } = await import('@thyrox/config')
+    enableConfigs()
+    const { initSinks } = await import('@thyrox/local-observability/sinks.js')
+    initSinks()
+    const { daemonMain } = await import('@thyrox/daemon/main.js')
+    await daemonMain(args.slice(1))
+    return
+  }
+
+  // Fast-path for `claude ps|logs|attach|kill|rm` and `--bg`/`--background`.
+  // OS-level background sessions backed by `~/.claude/jobs/<short>/`.
+  // Detached spawn — child outlives the parent terminal closing.
+  // PTY-mode jobs support bidirectional attach; detached jobs fall back to
+  // read-only log streaming because they do not own a reconnectable PTY.
+  if (
+    feature('BG_SESSIONS') &&
+    (args[0] === 'ps' ||
+      args[0] === 'logs' ||
+      args[0] === 'attach' ||
+      args[0] === 'stop' ||
+      args[0] === 'kill' ||
+      args[0] === 'rm' ||
+      args[0] === 'respawn' ||
+      args.includes('--bg') ||
+      args.includes('--bg-pty') ||
+      args.includes('--bg-interactive') ||
+      args.includes('--bg-detached') ||
+      args.includes('--background'))
+  ) {
+    profileCheckpoint('cli_bg_path')
+    // The handlers read settings (`hasSkipDangerousModePermissionPrompt`)
+    // for the --bg permission gate; settings reads before enableConfigs()
+    // print a warning + return null. Importing the runtime bootstrap
+    // installs host bindings as a side effect; then enableConfigs() can
+    // run.
+    await import('@thyrox/app-host/runtime/bootstrap.js')
+    const { enableConfigs } = await import('@thyrox/config')
+    enableConfigs()
+    // Apply settings.json env vars (ANTHROPIC_BASE_URL, OTEL_*, etc.)
+    // into process.env BEFORE spawning the bg child, so the detached
+    // process inherits the same env the foreground REPL would have.
+    // Mirrors ant 5173.js: applySafeConfigEnvironmentVariables() runs
+    // before the bg dispatch.
+    const { applySafeConfigEnvironmentVariables } = await import(
+      '@thyrox/config/managedEnv.js'
+    )
+    applySafeConfigEnvironmentVariables()
+    const bg = await import('../bg.js')
+    const sub = args[0]
+    if (sub === 'ps') return await bg.psHandler(args.slice(1))
+    if (sub === 'logs') return await bg.logsHandler(args.slice(1))
+    if (sub === 'attach') return await bg.attachHandler(args.slice(1))
+    if (sub === 'stop') return await bg.stopHandler(args.slice(1))
+    if (sub === 'kill') return await bg.killHandler(args.slice(1))
+    if (sub === 'rm') return await bg.rmHandler(args.slice(1))
+    if (sub === 'respawn') return await bg.respawnHandler(args.slice(1))
+    return await bg.handleBgFlag(args)
+  }
+
+  // Fast-path for template job commands.
+  if (
+    feature('TEMPLATES') &&
+    (args[0] === 'new' || args[0] === 'list' || args[0] === 'reply')
+  ) {
+    profileCheckpoint('cli_templates_path')
+    const { templatesMain } = await import('../handlers/templateJobs.js')
+    await templatesMain(args)
+    // process.exit (not return) — mountFleetView's Ink TUI can leave event
+    // loop handles that prevent natural exit.
+    // eslint-disable-next-line custom-rules/no-process-exit
+    process.exit(0)
+  }
+
+  // Fast-path for `claude environment-runner`: headless BYOC runner.
+  // feature() must stay inline for build-time dead code elimination.
+  if (feature('BYOC_ENVIRONMENT_RUNNER') && args[0] === 'environment-runner') {
+    // BYOC_ENVIRONMENT_RUNNER feature is off and the canonical
+    // environment-runner module was deleted in #129 — feature gate above
+    // guards this whole branch.
+    console.error('environment-runner is not enabled in this build.')
+    process.exit(2)
+  }
+
+  // Fast-path for `claude self-hosted-runner`: headless self-hosted-runner
+  // targeting the SelfHostedRunnerWorkerService API (register + poll; poll IS
+  // heartbeat). feature() must stay inline for build-time dead code elimination.
+  if (feature('SELF_HOSTED_RUNNER') && args[0] === 'self-hosted-runner') {
+    // SELF_HOSTED_RUNNER feature is off and the canonical module was
+    // deleted in #129 — feature gate above guards this whole branch.
+    console.error('self-hosted-runner is not enabled in this build.')
+    process.exit(2)
+  }
+
+  // Fast-path for --worktree --tmux: exec into tmux before loading full CLI
+  const hasTmuxFlag = args.includes('--tmux') || args.includes('--tmux=classic')
+  if (
+    hasTmuxFlag &&
+    (args.includes('-w') ||
+      args.includes('--worktree') ||
+      args.some(a => a.startsWith('--worktree=')))
+  ) {
+    profileCheckpoint('cli_tmux_worktree_fast_path')
+    const { enableConfigs } = await import('@thyrox/config')
+    enableConfigs()
+    const { isWorktreeModeEnabled } = await import(
+      '@thyrox/agent/worktreeModeEnabled.js'
+    )
+    if (isWorktreeModeEnabled()) {
+      const { execIntoTmuxWorktree } = await import('@thyrox/swarm')
+      const result = await execIntoTmuxWorktree(args)
+      if (result.handled) {
+        return
+      }
+      // If not handled (e.g., error), fall through to normal CLI
+      if (result.error) {
+        const { exitWithError } = await import('@thyrox/shell/process.js')
+        exitWithError(result.error)
+      }
+    }
+  }
+
+  // Redirect common update flag mistakes to the update subcommand
+  if (
+    args.length === 1 &&
+    (args[0] === '--update' || args[0] === '--upgrade')
+  ) {
+    process.argv = [process.argv[0]!, process.argv[1]!, 'update']
+  }
+
+  // --safe-mode is the public spelling of the existing bare bootstrap path.
+  if (args.includes('--safe-mode')) {
+    process.argv = process.argv.map(arg =>
+      arg === '--safe-mode' ? '--bare' : arg,
+    )
+    args.splice(0, args.length, ...process.argv.slice(2))
+  }
+
+  if (args.includes('--ax-screen-reader')) {
+    process.env.CLAUDE_CODE_AX_SCREEN_READER = '1'
+    process.env.CLAUDE_CODE_ACCESSIBILITY = '1'
+    process.argv = process.argv.filter(arg => arg !== '--ax-screen-reader')
+    args.splice(0, args.length, ...process.argv.slice(2))
+  }
+
+  // --bare: set SIMPLE early so gates fire during module eval / commander
+  // option building (not just inside the action handler).
+  if (args.includes('--bare')) {
+    process.env.CLAUDE_CODE_SIMPLE = '1'
+  }
+
+  // No special flags detected, load and run the full CLI
+  const { startCapturingEarlyInput } = await import('@thyrox/repl/earlyInput.js')
+  startCapturingEarlyInput()
+  profileCheckpoint('cli_before_main_import')
+  const { main: cliMain } = await import('./main.jsx')
+  profileCheckpoint('cli_after_main_import')
+  await cliMain()
+  profileCheckpoint('cli_after_main_complete')
+}
+
+// eslint-disable-next-line custom-rules/no-top-level-side-effects
+void main()

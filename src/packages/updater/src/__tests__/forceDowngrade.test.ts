@@ -1,11 +1,11 @@
 /**
- * Tests for force-downgrade helpers — port-correctness against ant
- * v2.1.136 `Lw_` (3480.js) + `UK6` (3480.js).
+ * Tests de los ayudantes de force-downgrade — correccion del porte contra
+ * ant v2.1.136 `Lw_` (3480.js) y `UK6` (3480.js).
  *
- * The async `getMaxVersionConfig` path goes through GrowthBook (which
- * isn't mockable cleanly in bun:test). These unit tests pin the pure
- * semver-decision contract of `shouldForceDowngradeNow`, which is the
- * decision center for both AutoUpdater and the native installer.
+ * El camino asincrono de `getMaxVersionConfig` pasa por GrowthBook, que no
+ * se puede mockear limpiamente en bun:test. Estos tests unitarios fijan el
+ * contrato de decision puro de `shouldForceDowngradeNow`, que es el centro
+ * de decision tanto del AutoUpdater como del instalador nativo.
  */
 import { describe, expect, test } from 'bun:test'
 import { shouldForceDowngradeNow } from '../autoUpdater.js'
@@ -49,7 +49,7 @@ describe('shouldForceDowngradeNow (ant UK6)', () => {
 
   test('CalVer-style versions compare correctly', () => {
     // ccb uses v<year>.<month>.<N> calver. Verify "26.5.99 > 26.4.99"
-    // (same year, later month wins).
+    // (mismo año: gana el mes posterior).
     expect(shouldForceDowngradeNow('26.5.99', '26.4.99', 'auto_updater')).toBe(
       true,
     )
@@ -68,7 +68,8 @@ describe('shouldForceDowngradeNow (ant UK6)', () => {
   })
 
   test('unparseable current version → false (ant parse returns null)', () => {
-    // semver `gt()` returns false for unparseable input, matching ant
+    // el `gt()` de semver devuelve false ante una entrada que no analiza, y
+    // eso coincide con ant
     // `parse(currentVersion)?.compare(...) ?? false`.
     expect(shouldForceDowngradeNow('not-a-version', '26.4.5', 'auto_updater')).toBe(
       false,
@@ -82,7 +83,7 @@ describe('shouldForceDowngradeNow (ant UK6)', () => {
   })
 
   test('build metadata is ignored by comparison (semver)', () => {
-    // 26.5.10+abc1234 === 26.5.10+def5678 for ordering purposes.
+    // 26.5.10+abc1234 === 26.5.10+def5678 a efectos de orden.
     expect(
       shouldForceDowngradeNow(
         '26.5.10+abc1234',

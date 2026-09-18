@@ -26,8 +26,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'paths'))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: El store lo resuelve el localizador: la constante declarada si la hay, y si
 #: no la de thyrox, creada e idempotente. NO se deriva de ``__file__`` — ver

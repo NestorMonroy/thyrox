@@ -52,12 +52,19 @@ ABIERTO_ESTADO='^[[:space:]]*:estado:[[:space:]]*(documentado|parcialmente_cerra
 #
 # OCTAVO defecto de instrumento, y el más caro de los ocho porque no publicaba
 # una cifra equivocada: **mataba la mitad del universo en silencio**. El `awk`
-# de este contenedor es mawk 1.3.4, y su compilador de expresiones revienta con
-# un cuantificador de intervalo seguido de un grupo entre paréntesis:
+# que resolvía entonces era mawk 1.3.4, cuyo compilador de expresiones
+# revienta con un cuantificador de intervalo seguido de un grupo entre
+# paréntesis:
 #
 #     $ echo abcx | awk '{ if ($0 ~ /a.{0,3}(x)/) print "M" }'
 #     REcompile() - panic:  values still on machine stack for a.{0,3}(x)   (exit 100)
 #     $ echo abcd | awk '{ if ($0 ~ /a.{0,3}d/)   print "M" }'   ->  M      (exit 0)
+#
+# (Medido 2026-09-18: hoy `awk` resuelve a **gawk** y el patrón vivo de
+#  abajo usa intervalo SIN grupo, que mawk sí compila — o sea que este
+#  guion no está roto bajo ninguno de los dos. Lo que no se puede dar por
+#  cerrado es el eje: cuál awk responde lo decide /etc/alternatives, y por
+#  eso existe `thyrox_toolchain_require_gawk`, que lo mide por CONDUCTA.)
 #
 # El intervalo solo compila; el grupo solo compila; los dos juntos, no. De las
 # ocho alternativas de este patrón sólo una tenía esa forma —`queda[n]?.{0,12}

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash tests/run.sh", "started_at": "2026-09-18T21:53:17+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-09-18T22:03:58+00:00", "duration_seconds": 641.890631}

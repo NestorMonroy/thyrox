@@ -1,0 +1,15 @@
+  YA EXISTE src/packages/ink — se omite, no se pisa
+  @ant/claude-for-chrome-mcp       -> src/packages/claude-for-chrome-mcp      10 archivo(s) ·   1 con alcance reescrito (1 cambio(s)) ·   1 copiado(s) sin tocar · name: @thyrox/claude-for-chrome-mcp
+  @ant/computer-use-input          -> src/packages/computer-use-input          7 archivo(s) ·   2 con alcance reescrito (2 cambio(s)) ·   1 copiado(s) sin tocar · name: @thyrox/computer-use-input
+  @ant/computer-use-mcp            -> src/packages/computer-use-mcp           50 archivo(s) ·  18 con alcance reescrito (61 cambio(s)) ·   2 copiado(s) sin tocar · name: @thyrox/computer-use-mcp
+  @ant/computer-use-swift          -> src/packages/computer-use-swift          7 archivo(s) ·   3 con alcance reescrito (9 cambio(s)) ·   1 copiado(s) sin tocar · name: @thyrox/computer-use-swift
+  audio-capture-napi               -> src/packages/audio-capture-napi          8 archivo(s) ·   1 con alcance reescrito (1 cambio(s)) ·   6 copiado(s) sin tocar · name: @thyrox/audio-capture-napi
+  color-diff-napi                  -> src/packages/color-diff-napi             4 archivo(s) ·   1 con alcance reescrito (1 cambio(s)) ·   1 copiado(s) sin tocar · name: @thyrox/color-diff-napi
+  image-processor-napi             -> src/packages/image-processor-napi        9 archivo(s) ·   1 con alcance reescrito (1 cambio(s)) ·   7 copiado(s) sin tocar · name: @thyrox/image-processor-napi
+  modifiers-napi                   -> src/packages/modifiers-napi              3 archivo(s) ·   1 con alcance reescrito (1 cambio(s)) ·   1 copiado(s) sin tocar · name: @thyrox/modifiers-napi
+  ripgrep-napi                     -> src/packages/ripgrep-napi               16 archivo(s) ·   1 con alcance reescrito (1 cambio(s)) ·  13 copiado(s) sin tocar · name: @thyrox/ripgrep-napi
+  stdin-napi                       -> src/packages/stdin-napi                 19 archivo(s) ·   1 con alcance reescrito (1 cambio(s)) ·  16 copiado(s) sin tocar · name: @thyrox/stdin-napi
+  url-handler-napi                 -> src/packages/url-handler-napi            3 archivo(s) ·   1 con alcance reescrito (1 cambio(s)) ·   1 copiado(s) sin tocar · name: @thyrox/url-handler-napi
+  repl                             -> src/packages/repl                      706 archivo(s) · 605 con alcance reescrito (2996 cambio(s)) ·   2 copiado(s) sin tocar · name: @thyrox/repl
+manifiesto raiz: 12 workspace(s) nuevo(s)
+port-packages: 12 portado(s) (alcance medido: 13 pedido(s) de 13)

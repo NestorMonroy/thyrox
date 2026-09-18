@@ -1,0 +1,29 @@
+  ok   rehúsa sin declaración (exit 3)
+  ok   y NO ejecuta el cuerpo
+  ok   corre con la declaración (exit 0)
+  ok   y ejecuta el cuerpo
+  ok   la declaración de OTRO script no vale
+  ok   el aviso no contamina stdout
+  ok   el aviso sale por stderr
+  ok   el aviso nombra al sucesor
+  ok   el aviso cita el hallazgo
+  ok   gate: no marca el bien formado
+  ok   gate: ve la cabecera sin guard
+  ok   gate: nombra el archivo
+  ok   gate: ve el guard sin cabecera
+  ok   gate: ve la cabecera sin SUCESOR
+  ok   gate: un script sin marcadores no es infractor
+  ok   --strict sale 0 sin infractores
+  ok   --strict sale 1 con un infractor
+  ok   el reporte declara el alcance medido
+  ok   el repo real no tiene infractores
+  ok   guard .py: rehusa por omision
+  ok   guard .py: corre con la declaracion
+  ok   gate: la declaracion .py completa no es infractora
+  ok   gate: ve la cabecera .py sin HALLAZGO
+  ok   gate: sin argumentos mide TODAS las raices del alcance
+  ok   gate: publica el desglose por raiz aunque el total sea cero
+  FALLA gate: una raiz ausente rehusa con 2 — esperado [2] obtenido [0]
+  FALLA gate: al rehusar NO emite cifra de infractores — esperado [0] obtenido [1]
+
+25 ok · 2 falla(s)

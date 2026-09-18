@@ -93,8 +93,6 @@ import sys
 # ``paths`` no resolvería. La composición va ANTES del import a propósito; el
 # import sigue siendo de nivel de módulo, que es lo que ``no-lazy-imports.md``
 # exige.
-if __package__ in (None, ""):  # sólo en invocación directa
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from paths import reach  # noqa: E402  (la ruta se compone arriba, a propósito)
 

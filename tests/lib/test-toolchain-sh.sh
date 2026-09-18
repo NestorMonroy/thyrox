@@ -23,6 +23,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 SUBJECT="$ROOT/src/lib/toolchain.sh"
 source "$ROOT/src/lib/assert.sh"
+source "$ROOT/src/lib/fixture.sh"
 ok()  { thyrox_ok "$*"; }
 bad() { thyrox_fail "$*" || true; }
 
@@ -41,7 +42,8 @@ fi
 
 # Caso 3 — sin entorno del proveedor REHUSA, y nombra el remedio. No cae a
 # `python3`: un fallback silencioso reintroduce exactamente la divergencia.
-salida="$(THYROX_ROOT="$(mktemp -d)" thyrox_toolchain_provider_python 2>&1)"; codigo=$?
+_root_vacia="$(fixture_dir)"
+salida="$(THYROX_ROOT="$_root_vacia" thyrox_toolchain_provider_python 2>&1)"; codigo=$?
 if [[ $codigo -ne 0 && "$salida" == *"uv sync"* ]]; then
   ok "sin entorno rehusa y nombra uv sync"
 else

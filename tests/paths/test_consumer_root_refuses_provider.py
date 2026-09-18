@@ -22,7 +22,7 @@ import sys
 import unittest
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parents[2]
+RAIZ = reach.thyrox_root()
 sys.path.insert(0, str(RAIZ / "src"))
 
 from paths import reach  # noqa: E402

@@ -91,8 +91,6 @@ def _load_owner():
     """
     path = _owner_path()
     src = str(path.parent.parent)          # …/thyrox/src
-    if src not in sys.path:
-        sys.path.insert(0, src)
     from paths import reach                # noqa: PLC0415 — la ruta se compone arriba
     return reach
 

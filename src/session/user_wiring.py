@@ -44,9 +44,11 @@ import sys
 from pathlib import Path
 from typing import Protocol
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-from paths.reach import reach, thyrox_root  # noqa: E402
+# La raiz la declaran `bin/` (`export PYTHONPATH="$THYROX_ROOT/src"`) y
+# `tests/run.sh`, asi que este modulo NO se abre el camino solo. El
+# `sys.path.insert(0, ... parents[1])` que vivia aqui es la deuda de
+# TASK-THYROX-0018, y se paga al tocar el archivo.
+from paths.reach import reach, thyrox_root
 
 #: El archivo que el lanzador remoto carga. El cwd de la sesion es
 #: `/home/user`, no un clon, asi que este es el unico settings de proyecto que
@@ -139,6 +141,22 @@ def declared_wiring(root: Path | None = None,
                 cmd(f"node {agentes}/save_result.mjs --log-dir {resultados}"),
                 cmd(f"{delta} --stop {repos} --results-dir {resultados}"),
                 cmd(f"{registro} --stop"),
+            ]}],
+            # El ciclo de vida de una tarjeta. Son eventos DEDICADOS del
+            # cliente —no un `PostToolUse` con matcher— y su payload trae
+            # `task_id` y `task_subject` directamente; medido en
+            # `_references/claude-code-bin/2.1.266`, que lo declara verbatim:
+            # «Input to command is JSON with task_id, task_subject,
+            # task_description, teammate_name, and team_name».
+            #
+            # Sin esto, `mint_created_card` tenia CERO invocadores de
+            # produccion y la cita durable se acuñaba a mano y a posteriori,
+            # que es justo lo que TASK-DOCS-0404 existe para cerrar.
+            "TaskCreated": [{"hooks": [
+                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
+            ]}],
+            "TaskCompleted": [{"hooks": [
+                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
             ]}],
         },
         "advisorModel": advisor or DEFAULT_ADVISOR,

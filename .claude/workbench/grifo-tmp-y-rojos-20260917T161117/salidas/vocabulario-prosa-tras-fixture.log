@@ -1,0 +1,29 @@
+  ok   guard de librería: exit 2, no 0
+  ok   guard de librería: no emite cifra
+  ok   guard de librería: nombra la librería
+  ok   el detector ve el control positivo real (democión)
+  ok   el baseline del fixture tiene una entrada
+  ok   el baseline silencia lo congelado
+  ok   no marca la palabra real (degradación)
+  ok   --strict sale 1 con un inventado
+  ok   --strict sale 0 sin inventados
+  ok   mide el arbol real del consumidor (0 o 1, no 2)
+  ok   el reporte declara el alcance medido
+  ok   y el denominador cuenta archivos, no hallazgos
+  ok   ve corrida y tanda en prosa nueva
+  ok   NO veta guion ni lote — su sentido legítimo domina
+  ok   ruta absoluta: lo congelado sigue congelado
+  ok   ruta relativa a la raiz: mismo veredicto
+  ok   ruta con ./ delante: mismo veredicto
+  ok   ruta con .. desde otro directorio: mismo veredicto
+  ok   un archivo nuevo SI reporta, por ruta absoluta
+  FALLA un archivo nuevo SI reporta, por ruta relativa — esperado [1] obtenido [0]
+  ok   guard del lexico: los 3 desenlaces, ninguno termina en cero
+  ok   load_forbidden separa forma y sustituto
+  ok   el gate ve el falso amigo real (librería)
+  ok   el reporte publica el sustituto
+  ok   el gate ve el segundo falso amigo real (removido)
+  ok   la palabra correcta NO se marca
+  ok   una forma sin flecha sigue casando
+
+26 ok · 1 falla(s)

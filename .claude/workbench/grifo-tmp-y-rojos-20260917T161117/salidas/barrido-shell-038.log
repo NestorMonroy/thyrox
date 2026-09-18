@@ -1,0 +1,2 @@
+VERDE tests/repo/test-disk-headroom.sh
+EXIT=0

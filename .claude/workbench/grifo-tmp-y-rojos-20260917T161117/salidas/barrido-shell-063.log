@@ -1,0 +1,2 @@
+VERDE tests/verify/test-cifra-de-artefacto-vivo.sh
+EXIT=0

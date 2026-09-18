@@ -38,9 +38,18 @@ hueco en el mismo pase que este módulo, porque sin ellos no había qué leer.
 """
 from __future__ import annotations
 
+import argparse
 import pathlib
 import re
+import sys
 from datetime import datetime, timezone
+
+from docs import initiative_placement as ip  # noqa: E402
+from paths import reach  # noqa: E402
+
+#: Codigos de salida del guion, alineados con los de ``bounded_scan``.
+EXIT_OK = 0
+EXIT_REFUSED = 2
 
 #: Único submódulo que usa Template A (IACT verbose). El resto usa Template B.
 TEMPLATE_A_SUBMODULES = frozenset({"docs"})
@@ -148,7 +157,9 @@ def scaffold_initiative(
     plantillas_dir = pathlib.Path(consumer_root) / "source" / "normativa" / "estandares" / "plantillas"
     destino = (pathlib.Path(consumer_root) / "source" / "gestion" / "pm"
                / submodule / "iniciativas" / slug)
-    if destino.exists():
+
+    veredicto = _placement_verdict(consumer_root, submodule, slug)
+    if veredicto.verdict == ip.IN_PLACE:
         raise FileExistsError(f"la iniciativa ya existe: {destino}")
     destino.mkdir(parents=True)
 
@@ -157,4 +168,68 @@ def scaffold_initiative(
     for pieza in piezas:
         _write_piece(plantillas_dir, destino, kind, pieza,
                      submodule=submodule, slug=slug, title=title, now=momento)
+
+    if veredicto.verdict == ip.ELSEWHERE:
+        _append_extension_note(destino, veredicto)
     return destino
+
+
+def _append_extension_note(destino: pathlib.Path, veredicto) -> None:
+    """Apenda al ``index`` la mencion de la raiz de la que se extiende.
+
+    Va en el ``index`` y no en el ``alcance`` porque el ``index`` es el unico
+    artefacto que DEC-AM-01 exige siempre: una iniciativa recien nacida puede
+    no tener alcance todavia, y la mencion no puede depender de eso.
+    """
+    indice = destino / OUTPUT_FILE_NAMES["index"]
+    with indice.open("a", encoding="utf-8") as manija:
+        manija.write("\n" + ip.extension_note(veredicto))
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Punto de entrada. ``generate_bin`` lo descubre por el guard ``__main__``."""
+    parser = argparse.ArgumentParser(
+        description="Materializa pm/<submodulo>/iniciativas/<slug>/ tras verificar "
+                    "que el slug no existe en NINGUNA raiz de source/gestion/.")
+    parser.add_argument("submodule", help="la raiz de trabajo: api|db|docs|server|ui|thyrox")
+    parser.add_argument("slug", help="el slug kebab-case, estable (I-004)")
+    parser.add_argument("title", help="el titulo descriptivo de la iniciativa")
+    parser.add_argument("--with-tareas", action="store_true",
+                        help="ademas del set minimo, materializa tareas-<slug>.rst")
+    parser.add_argument("--consumer", default=None,
+                        help="raiz del clon consumidor (por defecto, la que reach resuelva)")
+    args = parser.parse_args(argv)
+
+    raiz = pathlib.Path(args.consumer) if args.consumer else reach.consumer_root()
+    try:
+        destino = scaffold_initiative(
+            raiz, args.submodule, args.slug, args.title, with_tareas=args.with_tareas)
+    except ip.SurveyTruncatedError as corte:
+        print(f"REHUSA: {corte}", file=sys.stderr)
+        return EXIT_REFUSED
+    except FileExistsError as existe:
+        print(f"REHUSA: {existe}", file=sys.stderr)
+        return EXIT_REFUSED
+
+    print(destino)
+    return EXIT_OK
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+
+def _placement_verdict(consumer_root, submodule: str, slug: str):
+    """El veredicto de ubicacion, con el arbol sin ``source/gestion/`` declarado.
+
+    Un consumidor sin ``source/gestion/`` no es una ceguera del instrumento:
+    es un arbol que no contiene NINGUNA iniciativa, asi que la ausencia es
+    cierta. Se distingue del recorrido truncado —que SI es ceguera y por eso
+    sube como excepcion— porque colapsarlos devolveria el defecto que
+    ``initiative_placement`` existe para cerrar.
+    """
+    try:
+        survey = ip.survey_initiative(consumer_root, slug)
+    except ip.GestionRootError:
+        survey = ip.SurveyResult(slug=slug, hits=(), truncated=False)
+    return ip.decide_placement(survey, submodule)

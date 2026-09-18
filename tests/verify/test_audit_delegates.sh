@@ -31,6 +31,26 @@ AUDIT="$THYROX/src/verify/thyrox-audit.sh"
 
 [ -f "$AUDIT" ] || { echo "ERROR — no existe $AUDIT. NO se emite un conteo." >&2; exit 2; }
 
+# El caso 5 invoca `runner.py`, y el runner mide un CONSUMIDOR. Esta suite
+# corre desde el PROVEEDOR, asi que `reach.consumer_root()` REHUSA —y hace
+# bien: el proveedor tambien lleva `.claude/`, de modo que el marcador no lo
+# distingue, y componer un hogar dentro de thyrox daria una raiz que
+# `declarations.py` no lista. Es TASK-DOCS-0286 funcionando como se diseno.
+#
+# Sin declararlo, el runner muere con ConsumerUnknownError, su salida no es
+# JSON y el caso 5 cae por una premisa rancia, no por el sujeto: la misma
+# costura que TASK-THYROX-0421 cerro para otras cuatro suites.
+#
+# El marcador es `source/`, no la mera existencia del directorio: el gate
+# `rst-referencias` mide `.rst`, asi que un consumidor que exista y no lo tenga
+# mata al runner igual y el FALLO volveria a no discriminar.
+#
+# Y si no hay consumidor al que apuntar, el caso lo DICE en vez de publicar un
+# rojo: un fallo por consumidor ausente no distingue «la delegacion lee una
+# clave que no existe» de «no habia arbol que medir».
+CONSUMER="${THYROX_CONSUMER:-/home/user/kaupamex-docs}"
+export THYROX_CONSUMER="$CONSUMER"
+
 ok=0; fallo=0
 afirmar() {
     local nombre="$1" esperado="$2" real="$3"
@@ -92,9 +112,13 @@ afirmar "el corredor alcanza los gates que el registro declara" "$DECLARADOS" "$
 # Ciega a: que las cifras de esa clave sean CORRECTAS; sólo mide que la clave
 # exista. El caso 4 cubre el alcance, que es la otra mitad.
 CLAVE="$(grep -oE 'get\("[a-z]+", \{\}\)' "$AUDIT" | head -1 | grep -oE '"[a-z]+"' | tr -d '"')"
-EMITE="$(cd "$THYROX" && timeout 100 python3 src/verify/runner.py --json --only rst-referencias 2>/dev/null \
-    | python3 -c "import json,sys; print('si' if '${CLAVE:-_}' in json.load(sys.stdin) else 'no')")"
-afirmar "la delegacion lee una clave que el corredor emite (${CLAVE:-ninguna})" si "$EMITE"
+if [ ! -d "$CONSUMER/source" ]; then
+    printf '  SIN MEDIR  no hay consumidor con source/ en %s; declara THYROX_CONSUMER\n' "$CONSUMER"
+else
+    EMITE="$(cd "$THYROX" && timeout 150 python3 src/verify/runner.py --json --only rst-referencias 2>/dev/null \
+        | python3 -c "import json,sys; print('si' if '${CLAVE:-_}' in json.load(sys.stdin) else 'no')" 2>/dev/null)"
+    afirmar "la delegacion lee una clave que el corredor emite (${CLAVE:-ninguna})" si "$EMITE"
+fi
 
 printf '\ntest-audit-delegates: %d ok, %d falla\n' "$ok" "$fallo"
 [[ "$fallo" -eq 0 ]]

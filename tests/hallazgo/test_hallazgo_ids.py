@@ -82,7 +82,8 @@ check("DOCS ve sólo el 9", [9], sorted(numeros_docs))
 print("== 4. sin ninguna cita del prefijo, el siguiente es H-<PREFIJO>-1 ==")
 (TMP / "cuatro").mkdir()
 (TMP / "cuatro" / "a.rst").write_text("nada que ver aquí\n", encoding="utf-8")
-check("nace en 1, con relleno", "H-UI-01", hallazgo_ids.next_id(TMP / "cuatro", "UI"))
+check("nace en 1, con relleno", "H-UI-01",
+      hallazgo_ids.next_id(TMP / "cuatro", "UI", store_path=hallazgo_ids.NO_STORE))
 
 # --- 5. un binario no aborta el escaneo --------------------------------------
 print("== 5. CONTROL: un archivo no-UTF-8 se salta, no revienta el escaneo ==")
@@ -96,11 +97,14 @@ check("el binario no se cuenta y el escaneo no revienta", [1], sorted(numeros))
 print("== 6. is_free concuerda con next_id ==")
 (TMP / "seis").mkdir()
 (TMP / "seis" / "a.rst").write_text("H-API-5\nH-API-6\n", encoding="utf-8")
-siguiente = hallazgo_ids.next_id(TMP / "seis", "API")
+siguiente = hallazgo_ids.next_id(TMP / "seis", "API",
+                                 store_path=hallazgo_ids.NO_STORE)
 check("el siguiente propuesto está libre", True,
-      hallazgo_ids.is_free(TMP / "seis", siguiente))
+      hallazgo_ids.is_free(TMP / "seis", siguiente,
+                           store_path=hallazgo_ids.NO_STORE))
 check("el máximo ya usado NO está libre", False,
-      hallazgo_ids.is_free(TMP / "seis", "H-API-6"))
+      hallazgo_ids.is_free(TMP / "seis", "H-API-6",
+                           store_path=hallazgo_ids.NO_STORE))
 
 # --- 7. ANULACIÓN: sin el ancla de prefijo, DOCS contamina a API -------------
 print("== 7. ANULACIÓN: un patrón sin ancla de prefijo mezcla los dos ==")
@@ -135,13 +139,105 @@ print("== 8. bajo 10 lleva cero de relleno, igual que el arbol real "
       "(H-API-01..H-API-09, H-API-10 sin relleno) ==")
 (TMP / "ocho").mkdir()
 check("un solo digito nace como '01'", "H-UI-01",
-      hallazgo_ids.next_id(TMP / "ocho", "UI"))
+      hallazgo_ids.next_id(TMP / "ocho", "UI",
+                           store_path=hallazgo_ids.NO_STORE))
 (TMP / "ocho" / "a.rst").write_text("H-UI-08\n", encoding="utf-8")
 check("el 9 tambien lleva el cero", "H-UI-09",
-      hallazgo_ids.next_id(TMP / "ocho", "UI"))
+      hallazgo_ids.next_id(TMP / "ocho", "UI",
+                           store_path=hallazgo_ids.NO_STORE))
 (TMP / "ocho" / "a.rst").write_text("H-UI-09\n", encoding="utf-8")
 check("el 10 YA NO lleva relleno — el arbol real lo escribe 'H-API-10', no "
-      "'H-API-010'", "H-UI-10", hallazgo_ids.next_id(TMP / "ocho", "UI"))
+      "'H-API-010'", "H-UI-10",
+      hallazgo_ids.next_id(TMP / "ocho", "UI",
+                           store_path=hallazgo_ids.NO_STORE))
+
+# --- 9. el DEFAULT consulta el store; el opt-out es explicito ---------------
+print("== 9. el default une arbol + store — el opt-out mide solo el arbol ==")
+import sqlite3 as _sqlite3  # noqa: E402  -- sólo para el store sintético
+
+(TMP / "nueve").mkdir()
+(TMP / "nueve" / "a.rst").write_text("H-TESTDEF-04\n", encoding="utf-8")
+_STORE = TMP / "nueve" / "store.sqlite3"
+_conn = _sqlite3.connect(_STORE)
+_conn.execute("CREATE TABLE findings_history (finding_id TEXT)")
+_conn.execute("INSERT INTO findings_history VALUES ('H-TESTDEF-09')")
+_conn.commit()
+_conn.close()
+
+check("con el opt-out, sólo ve el .rst y propone el 5", "H-TESTDEF-05",
+      hallazgo_ids.next_id(TMP / "nueve", "TESTDEF",
+                           store_path=hallazgo_ids.NO_STORE))
+check("con el store declarado, ve la fila 09 y propone el 10", "H-TESTDEF-10",
+      hallazgo_ids.next_id(TMP / "nueve", "TESTDEF", store_path=_STORE))
+check("is_free dice NO libre sobre un número que sólo existe como fila", False,
+      hallazgo_ids.is_free(TMP / "nueve", "H-TESTDEF-9", store_path=_STORE))
+check("y el mismo número SÍ está libre si se declara el opt-out — el control "
+      "DISCRIMINA las dos fuentes", True,
+      hallazgo_ids.is_free(TMP / "nueve", "H-TESTDEF-9",
+                           store_path=hallazgo_ids.NO_STORE))
+check("el DEFAULT no es el opt-out: RESOLVE_STORE es el valor por omisión",
+      hallazgo_ids.RESOLVE_STORE,
+      hallazgo_ids.next_id.__defaults__[0])
+
+# La aserción de arriba mide el CENTINELA; ésta mide la CONDUCTA. Sin las dos,
+# un default que apunta a RESOLVE_STORE y no resuelve nada pasaría igual — el
+# sub-patrón C aplicado al propio control. `env_value` declara que el proceso
+# gana sobre el .env, así que exportar la variable redirige la resolución real.
+import os as _os  # noqa: E402
+
+_previo = _os.environ.get("THYROX_AGENT_STORE")
+_os.environ["THYROX_AGENT_STORE"] = str(_STORE)
+try:
+    check("SIN declarar store_path, el default resuelve y ve la fila 09",
+          "H-TESTDEF-10", hallazgo_ids.next_id(TMP / "nueve", "TESTDEF"))
+finally:
+    if _previo is None:
+        _os.environ.pop("THYROX_AGENT_STORE", None)
+    else:
+        _os.environ["THYROX_AGENT_STORE"] = _previo
+
+
+# --- 10. el prefijo se VALIDA: el acuñador antepone `H-`, no lo acepta -------
+# Medido por conducta 2026-09-17 al acuñar H-THYROX-73: `acunar H-THYROX`
+# devolvia `H-H-THYROX-01` — un id malformado que entra al corpus si nadie lo
+# mira. El argumento correcto es la capa desnuda; el guion lo tiene que decir
+# en vez de componer el doble prefijo.
+print("\n== 10. el prefijo malformado se rehusa, no se compone ==")
+(TMP / "diez").mkdir()
+
+
+def _refuses(prefix):
+    """(rehuso, lo_que_devolvio) — SystemExit cuenta como rehuso."""
+    try:
+        return False, hallazgo_ids.next_id(TMP / "diez", prefix,
+                                           store_path=hallazgo_ids.NO_STORE)
+    except SystemExit as exc:
+        return True, str(exc)
+
+
+_rehuso, _devuelto = _refuses("H-THYROX")
+check("`H-THYROX` (prefijo ya con H-) se rehusa", True, _rehuso)
+check("y NO devuelve el doble prefijo", False, str(_devuelto).startswith("H-H-"))
+check("el mensaje nombra el argumento correcto", True,
+      _rehuso and "THYROX" in str(_devuelto))
+
+# Control positivo: la capa desnuda sigue acuñando. Sin esta asercion, un guard
+# que rehusara SIEMPRE pasaria las tres de arriba — el sub-patron D.
+check("`THYROX` desnudo sigue acuñando", "H-THYROX-01",
+      hallazgo_ids.next_id(TMP / "diez", "THYROX",
+                           store_path=hallazgo_ids.NO_STORE))
+check("y la minuscula tambien, como antes", "H-THYROX-01",
+      hallazgo_ids.next_id(TMP / "diez", "thyrox",
+                           store_path=hallazgo_ids.NO_STORE))
+
+# El prefijo no es `[A-Za-z]+`: la misma forma que `is_free` ya rehusa para el
+# id completo, aplicada al argumento del acuñador.
+_rehuso_raro, _ = _refuses("API-2")
+check("un prefijo con no-letras se rehusa", True, _rehuso_raro)
+
+# ANULACION: retirando `validated_prefix` de `next_id`, caen exactamente las
+# cuatro aserciones de rehuso (H-THYROX x3 y API-2) y NINGUNA de las dos de
+# control positivo — medido al escribirlas.
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

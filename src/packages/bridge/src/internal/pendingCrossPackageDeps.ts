@@ -30,7 +30,7 @@ import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { execFile as execFileCb } from 'node:child_process'
 import { promisify } from 'node:util'
-import type { NonNullableUsage } from '@claude-code-how-works/headless-sdk/sdkUtilityTypes.js'
+import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
 import { toCompatSessionId } from '../sessionIdCompat.js'
 
 /**

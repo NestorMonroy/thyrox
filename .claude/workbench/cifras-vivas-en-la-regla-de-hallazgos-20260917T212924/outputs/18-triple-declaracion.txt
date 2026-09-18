@@ -1,0 +1,6 @@
+grep: source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-191-las-tres-firmas-de-estado-usaban-separadores-distintos.rst: binary file matches
+   1152 COHERENTE
+      1 INCOHERENTE source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-511-el-tablero-de-la-sesion-no-es-el-universo-de-tareas.rst pre=docs meta=docs ruta=thyrox
+      1 INCOHERENTE source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-510-el-grafo-bipartito-no-podia-tener-ciclos-y-el-pagerank-no-separaba.rst pre=docs meta=docs ruta=thyrox
+      1 INCOHERENTE source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-509-una-nota-de-mecanismo-llevaba-forma-de-banner-y-el-caso-4-la-contaba-como-gate.rst pre=docs meta=docs ruta=thyrox
+      1 INCOHERENTE source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-507-el-resolvedor-de-referencia-miraba-una-de-las-dos-raices-de-community.rst pre=docs meta=docs ruta=thyrox

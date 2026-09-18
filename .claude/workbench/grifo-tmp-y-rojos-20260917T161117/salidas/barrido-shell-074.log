@@ -1,0 +1,2 @@
+VERDE tests/verify/test-hook-script-token.sh
+EXIT=0

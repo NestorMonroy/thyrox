@@ -1,0 +1,39 @@
+== 1. el literal se reconoce con límite de palabra en los dos extremos ==
+  ok    sólo el 7 cuenta
+== 2. un monolito con varios números en el mismo archivo, todos cuentan ==
+  ok    los tres números del monolito, ninguno en el nombre del archivo
+== 3. H-DOCS-9 no cuenta para el prefijo API ==
+  ok    API ve 3 y 4, no el 9 de DOCS
+  ok    DOCS ve sólo el 9
+== 4. sin ninguna cita del prefijo, el siguiente es H-<PREFIJO>-1 ==
+  ok    nace en 1, con relleno
+== 5. CONTROL: un archivo no-UTF-8 se salta, no revienta el escaneo ==
+  ok    el binario no se cuenta y el escaneo no revienta
+== 6. is_free concuerda con next_id ==
+  ok    el siguiente propuesto está libre
+  ok    el máximo ya usado NO está libre
+== 7. ANULACIÓN: un patrón sin ancla de prefijo mezcla los dos ==
+  ok    SIN el ancla de prefijo, API se contamina con el 9 de DOCS
+  ok    y con el ancla (caso 3), el 9 no aparece — el control DISCRIMINA
+== 8. bajo 10 lleva cero de relleno, igual que el arbol real (H-API-01..H-API-09, H-API-10 sin relleno) ==
+  ok    un solo digito nace como '01'
+  ok    el 9 tambien lleva el cero
+  ok    el 10 YA NO lleva relleno — el arbol real lo escribe 'H-API-10', no 'H-API-010'
+== 9. el default une arbol + store — el opt-out mide solo el arbol ==
+  ok    con el opt-out, sólo ve el .rst y propone el 5
+  ok    con el store declarado, ve la fila 09 y propone el 10
+  ok    is_free dice NO libre sobre un número que sólo existe como fila
+  ok    y el mismo número SÍ está libre si se declara el opt-out — el control DISCRIMINA las dos fuentes
+  ok    el DEFAULT no es el opt-out: RESOLVE_STORE es el valor por omisión
+  ok    SIN declarar store_path, el default resuelve y ve la fila 09
+
+== 10. el prefijo malformado se rehusa, no se compone ==
+  ok    `H-THYROX` (prefijo ya con H-) se rehusa
+  ok    y NO devuelve el doble prefijo
+  ok    el mensaje nombra el argumento correcto
+  ok    `THYROX` desnudo sigue acuñando
+  ok    y la minuscula tambien, como antes
+  ok    un prefijo con no-letras se rehusa
+
+25 ok, 0 fallos
+EXIT=0

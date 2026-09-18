@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_user_wiring.py", line 31, in <module>
+    HERE = reach.thyrox_root()
+           ^^^^^
+NameError: name 'reach' is not defined
+EXIT=1

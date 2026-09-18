@@ -1,0 +1,2 @@
+ROJO tests/repo/test-fixture-leak.sh
+EXIT=0

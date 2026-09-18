@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.274
+import{Ge}from"/$bunfs/root/chunk-ja309z9r.js";import{lW}from"/$bunfs/root/chunk-gaq6ksb9.js";function EDr(n,e){return n!==void 0&&n.mode==="poll-event"&&n.pollEvent?.wake===!0&&!e}function odn(n){return n==="prompt"||n==="orphaned-permission"||n==="task-notification"||n==="poll-event"}function gd(n){return n.agentId===Ge()}var kDr={kind:"task-notification",source:"goal-checkin"};function f1t(n){return n.origin?.kind==="task-notification"&&n.origin.source==="goal-checkin"}var ADr={kind:"task-notification",source:"worker-checkin"};function VDe(n){return n.origin?.kind==="task-notification"&&(n.origin.source==="goal-checkin"||n.origin.source==="worker-checkin")}function m1t(n){return gd(n)&&n.mode==="task-notification"}function ise(n,e){return lW(n)??(e==="task-notification"?{kind:"task-notification"}:void 0)}function udt(n){let e=n.queueOrigin??n.origin;return VDe({origin:e})?lW(e):e}function EVn(n){return n.queueMode??t(udt(n))}function f3e(n){return n.queueSkipAttachments===!0||EVn(n)==="task-notification"?!0:void 0}function t(n){return n?.kind==="task-notification"?"task-notification":"prompt"}import{AsyncLocalStorage as o}from"async_hooks";var m3e="X-CCR-Turn-Id",u=128,d=/^[\x21-\x7e]+$/,r=new o;function TDr(n,e){return r.run({id:n},e)}function ddt(){return r.getStore()?.id}function pdt(){let n=r.getStore();if(n)n.id=void 0}function g3e(n){let e=ddt();if(e===void 0)return;if(n.some((i)=>i.ccrTurnId!==e))pdt()}function CDr(n,{isRelayHuman:e}){if(!e)return;if(typeof n!=="object"||n===null||!("turn_id"in n))return;let i=n.turn_id;if(typeof i!=="string"||i===""||i.length>u||!d.test(i))return;return i}function fdt(n){if(n.length>0)pdt()}function RDr(n){let e=n[0]?.ccrTurnId;return n.every((i)=>i.ccrTurnId===e)?e:void 0}
+export{EDr,odn,gd,kDr,f1t,ADr,VDe,m1t,ise,udt,EVn,f3e,m3e,TDr,ddt,pdt,g3e,CDr,fdt,RDr};

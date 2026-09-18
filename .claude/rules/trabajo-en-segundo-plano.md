@@ -5,14 +5,32 @@ primer plano ni se delega a un subagente**: se lanza como proceso y se recoge
 con la barrera. El mecanismo ya está construido en este árbol y tiene tres
 piezas, una por forma del problema:
 
-| Forma | Pieza | Qué hace |
-|---|---|---|
-| un trabajo | `src/session/bg.sh` | `start` lo lanza detached con log e id · `wait` bloquea · `status` da `running`/`done:<exit>` |
-| N trabajos con anchura acotada | `src/session/run-task-pool.sh` | una línea = un comando; registra cada uno en el ledger |
-| la barrera de N | `src/session/wait-jobs.sh` | bloquea hasta que **todos** se asienten, con veredicto por trabajo |
+| Forma | Pieza (dónde vive) | Se invoca | Qué hace |
+|---|---|---|---|
+| un trabajo | `src/session/bg.sh` | `bin/thyrox-bg` | `start` lo lanza detached con log e id · `wait` bloquea · `status` da `running`/`done:<exit>` |
+| N trabajos con anchura acotada | `src/session/run-task-pool.sh` | `bin/run-task-pool` | una línea = un comando; registra cada uno en el ledger |
+| la barrera de N | `src/session/wait-jobs.sh` | `bin/wait-jobs` | bloquea hasta que **todos** se asienten, con veredicto por trabajo |
 
 Debajo están los primitivos: `background.spawn_detached`, `job_ledger`,
 `marker_wait` y `task_pool`.
+
+**Se invoca por el nombre corto, no por la ruta al fuente.** `bin/` está
+**versionado** —no se genera al clonar—, así que `bash "$T/bin/<nombre>"`
+funciona en un clon recién bajado sin ningún paso previo. La ruta a
+`src/session/**` es la **definición**; el envoltorio resuelve `THYROX_ROOT`
+desde su propia ubicación y exporta `PYTHONPATH`, que es justo lo que una
+invocación por ruta no hace: `python3 src/session/job_runs.py` muere con
+`ModuleNotFoundError` porque `job_runs` es **biblioteca** —la consume `bg.sh`—
+y ni siquiera tiene superficie de CLI.
+
+Dos precondiciones, declaradas porque su ausencia es ruidosa y no silenciosa:
+un envoltorio de un `.py` exige el entorno del proveedor y **rehúsa con exit 2
+nombrando `uv sync`** si falta; y `bg` a secas colisiona con el builtin de
+bash, de ahí `thyrox-bg`. `bin/` **no** está en `PATH` por defecto: se invoca
+con ruta relativa a la raíz de thyrox, o se copia a `~/.local/bin` con
+`python3 src/session/generate_bin.py --install-user-bin` —conveniencia para un
+shell interactivo, nunca precondición—. Que `bin/` esté al día lo publica
+`python3 src/session/generate_bin.py --check`.
 
 ## Por qué un subagente NO es «segundo plano»
 
@@ -70,8 +88,8 @@ convierte el segundo plano en un primer plano lento.
 lanzar** y el primer plano queda libre — la forma de `qsub -W depend=afterok`:
 
 ```bash
-bash src/session/wait-jobs.sh register b "$LOG_B" --after-ok a --run "<comando>"
-bash src/session/wait-jobs.sh dispatch     # mueve la cadena; no bloquea
+bash bin/wait-jobs register b "$LOG_B" --after-ok a --run "<comando>"
+bash bin/wait-jobs dispatch     # mueve la cadena; no bloquea
 ```
 
 `register --after-ok <pred> --run <cmd>` **no lanza nada**: escribe la arista en
@@ -108,7 +126,7 @@ Además nace **fuera del ledger**: el Stop gate no lo ve, así que es huérfano 
 construcción. La salida es adoptarlo por su identificador, no re-lanzarlo:
 
 ```bash
-bash src/session/wait-jobs.sh adopt-external --id <task-id> --log <ruta>
+bash bin/wait-jobs adopt-external --id <task-id> --log <ruta>
 ```
 
 `adopt-external` engancha el marcador que el propio cliente escribe
@@ -132,9 +150,9 @@ corrección es que `bg.sh` mismo componga el `--marker`, con dos subcomandos
 que no existían hasta TASK-THYROX-0028:
 
 ```bash
-bash src/session/bg.sh start suite --grace 0 -- <comando-largo>
-bash src/session/bg.sh register suite      # compone el --marker correcto solo
-bash src/session/wait-jobs.sh wait --timeout 1800
+bash bin/thyrox-bg start suite --grace 0 -- <comando-largo>
+bash bin/thyrox-bg register suite      # compone el --marker correcto solo
+bash bin/wait-jobs wait --timeout 1800
 ```
 
 `bg.sh register <nombre>` resuelve el log y el pid del trabajo ya lanzado
@@ -203,6 +221,123 @@ de `H-DOCS-1010`: bajo el harness remoto, con cwd en `/home/user`, un
 `settings.json` de directorio adicional aporta `CLAUDE.md` y `.claude/rules/`,
 **no hooks**. Mientras eso siga así el detector existe y no dispara — la regla
 sigue siendo la que gobierna, y este párrafo es su declaración de inercia.
+
+## El tercer gate: el recorrido tiene COTA — y es otro eje
+
+Los dos gates de arriba miden el **despacho**: uno pregunta «¿primer plano o
+segundo plano?» y el otro «¿proceso o agente?». Ninguno ve un tercer defecto de
+la misma familia, que no es *largo* sino **sin final**: un recorrido recursivo
+sin cota —`glob.glob('/home/user/thyrox/**/*.sqlite3', recursive=True)`— sobre
+una raíz pesada.
+
+Esa forma **no falla: gira**. Agota el tiempo de primer plano, el cliente la
+**promueve** a segundo plano —con lo que además nace fuera del ledger, por la
+sección de arriba— y ahí queda, sin resultado, sin error y sin final. Lo caro
+no es el proceso, que cuesta cero tokens: son los turnos de quien lo descubre,
+lo diagnostica y lo mata.
+
+`detect_foreground_long_command` calla con razón: pelado a su programa, ese
+comando es `-` —la forma vive dentro de un heredoc, no en posición de comando—
+y ninguna familia larga coincide. Es otro eje, no un hueco de aquél.
+
+### El mecanismo: `src/session/bounded_scan.py`
+
+```bash
+bash bin/bounded_scan /home/user/thyrox --name '*.sqlite3'
+```
+
+Poda `.git`, `node_modules` y los cachés de build; tiene tope de entradas y
+plazo de pared; y **declara su corte** por `exit 3` más un aviso por stderr, en
+vez de imprimir una salida parcial que se lea como completa.
+
+**No poda `.cache` ni `_references`**, y las dos exclusiones son deliberadas:
+el `.claude/.cache` del cliente es telemetría que se analiza, y `_references`
+son los corpus vendorizados contra los que se construye. Los dos son **sujeto**
+de análisis, no volumen que estorbe — un instrumento que los salta por defecto
+queda ciego justo a lo que se le pregunta. Quien necesite saltarlos lo pide con
+`--prune`.
+
+El piso siempre disponible, para cuando el recorrido tiene que ser ése:
+anteponer **`timeout 60`**. Es coreutils, está siempre, y funciona aunque
+ningún hook cargue.
+
+### El gate
+
+`src/hooks/detect_unbounded_traversal.py`, décimo detector de
+`pretooluse_dispatch`. **Mide dos familias, y sus condiciones NO son las
+mismas** — h-thyrox-29 las separó midiendo, después de que el detector las
+tratara como una sola bajo el rótulo «sin cota» (el sub-patrón A de
+`metrica-decide-la-conclusion.md`, con este gate como sujeto).
+
+| Familia | Formas | Condición para avisar |
+|---|---|---|
+| **1 — coste LINEAL** en el tamaño del subárbol | `rglob`, `os.walk`, `grep -r`, `find` sin profundidad, `ls -R` | la forma **y** una raíz pesada |
+| **2 — coste COMBINATORIO** por el grafo de enlaces | `glob(…, recursive=True)`, `walk(…, followlinks=True)`, `find -L`, `grep -R`, `rg -L`, `du -L`, `tar -h` | **la forma sola** |
+
+**La familia 1 exige las dos condiciones, y sigue siendo lo correcto para
+ella:** con la forma sola el aviso saldría sobre `src/**/*.py` —milisegundos—
+y un aviso que sale siempre se aprende a ignorar; con la raíz sola saldría
+sobre un `cat`. Un `grep -r` sobre `odoo-tools` —861 555 entradas— es un
+timeout real, y ahí el peso de la raíz **sí** discrimina.
+
+**La familia 2 avisa sin condición de raíz, porque el peso de la raíz no
+discrimina ese fenómeno.** Medido: `src/packages/agent` tiene **369 entradas**
+—la raíz más ligera del árbol— y `glob(…, recursive=True)` **no termina en
+30 s** sobre ella, mientras `odoo-tools` con **861 555** termina en **15.51 s**.
+Lo que explota es el abanico de enlaces —844 symlinks bajo `src/`, 137 de
+workspace en 21 paquetes, abanico hasta 18—, acotado por `ELOOP` a los 41
+saltos: explosión combinatoria, no bucle infinito. Aplicarle la condición de
+raíz era un **falso negativo medido**: el comando que gira sobre una raíz
+ligera pasaba en silencio.
+
+**Cuál sigue enlaces y cuál no está medido por conducta, no supuesto.** Sobre
+un árbol con un enlace a directorio: `grep -r` da 0 hits y `grep -R` da 1;
+`find` 0 y `find -L` 1; `rg` 0 y `rg -L` 1. De ahí que `-r` viva en la familia
+lineal y `-R` en la de giro, que a simple vista parecen la misma bandera.
+
+Los **descuentos** callan lo ya acotado, y sólo aplican a la familia 1:
+`--include`, `--exclude-dir`, `-maxdepth`, `-prune`, el índice de git, la poda
+in situ de `os.walk`, y `timeout N`.
+
+**`rg` cuenta como acotado, y eso está medido, no supuesto.** Respeta
+`.gitignore` y salta los ocultos por defecto: en este árbol visita **14 067**
+archivos contra **50 190** con `--no-ignore --hidden` — una cota real de 3.6×
+que no hay que pedir. Por eso es descuento y no ceguera. Pero **el descuento se
+retira** cuando el comando desactiva la cota: `rg --no-ignore` recorre lo mismo
+que un `grep -r` pelado, y tratarlo como acotado sería confiar en el nombre del
+programa en vez de en lo que el comando hace. Y `rg -L` **no** lo recibe: sigue
+enlaces, así que entra por la familia 2 antes de llegar al descuento.
+
+La familia de **proceso** que este árbol prescribe —`awk`, `sort`, `uniq`,
+`comm`, `cut`, `paste`, `xargs`, `wc`— **no lleva patrón propio, y es
+deliberado**: ninguno recorre un árbol. Lo que los vuelve caros es de dónde les
+llega la entrada, y esa entrada es siempre una de las formas de arriba. Marcar
+el literal `awk` no separaría `awk '{s+=$1}' censo.tsv` —instantáneo— de `awk`
+alimentado por `find /` —que no termina—, y eso sería medir el consumidor para
+concluir sobre el productor.
+
+```bash
+python3 tests/hooks/test_detect_unbounded_traversal.py
+python3 tests/session/test_bounded_scan.py
+```
+
+**Sus cuatro guardas se probaron por anulación** —el eje de raíz, la familia de
+enlaces, el descuento y el descuento de `timeout`—, y cada una carga su peso:
+al retirarla caen **exactamente** los casos que dependen de ella, ni uno más.
+Qué casos son lo publica la suite al correr, no esta prosa: es propiedad de un
+artefacto que crece (`calibration-verified-numbers.md`). Los controles
+positivos **no son fabricados**: el de la familia 1 es el comando real del
+episodio citado verbatim, y el de la familia 2 es el `glob` sobre
+`src/packages/agent` que h-thyrox-29 midió sin terminar.
+
+**Avisa, no bloquea**, como sus hermanos: un patrón léxico no distingue un
+`os.walk` con poda escrita tres líneas más abajo de uno sin ella.
+
+**Y hereda la misma inercia declarada que su hermano quinto.** Medido en esta
+sesión: `/home/user/.claude/settings.local.json` declara `SubagentStart`,
+`PreModelSwitch` y `SubagentStop` — **ningún `PreToolUse`**. Así que hoy este
+detector existe y **no dispara aquí**. La capa que sí protege sin hooks es el
+mecanismo y el `timeout`, y por eso el aviso nombra los dos.
 
 ## Por qué esta regla vive aquí
 

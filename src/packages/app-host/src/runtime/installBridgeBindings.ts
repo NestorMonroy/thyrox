@@ -22,4 +22,4 @@
 // `installProviderBindings.ts` e `installToolRegistryBindings.ts`, los
 // tres ya portados en este directorio sin suite.
 
-import '@claude-code-how-works/bridge/runtimeHostSetup.js'
+import '@thyrox/bridge/runtimeHostSetup.js'

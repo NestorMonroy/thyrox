@@ -1,0 +1,4 @@
+base                 13 ok, 0 fallos
+sin eje 2 (conducta)  9 ok, 4 fallos   <- casos 6,7,8,9
+sin eje 1 (presencia) 11 ok, 2 fallos  <- casos 3,4
+restaurado           13 ok, 0 fallos   (cmp identico al pristine)

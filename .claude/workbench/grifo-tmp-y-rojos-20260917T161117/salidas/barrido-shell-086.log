@@ -1,0 +1,2 @@
+VERDE tests/verify/test-vocabulario-baseline-resolucion.sh
+EXIT=0

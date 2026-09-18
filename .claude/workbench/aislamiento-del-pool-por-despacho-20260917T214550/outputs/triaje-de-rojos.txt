@@ -1,0 +1,53 @@
+TRIAJE DE LOS 8 ROJOS QUE APARECIERON TRAS EL CAMBIO
+=====================================================
+Medido por conducta, no leido del diff.
+
+LA RAIZ ES UNA SOLA: el cambio movio dos cosas de sitio.
+  antes:  $DIR/<prefijo>-NNN.log        etiqueta: <prefijo>-NNN
+  ahora:  $DIR/<despacho>/<nombre>.log  etiqueta: <despacho>/<nombre>
+Observado:
+  /tmp/tmp.wL8YodKIAN/g/mix-20260917T215235/mix-001.log
+  /tmp/tmp.wL8YodKIAN/g/mix-20260917T215235/mix-002.log
+
+Pero tiene DOS consecuencias con veredictos OPUESTOS, y colapsarlas seria
+tratar una regresion real como si fuera premisa rancia.
+
+-------------------------------------------------------------------
+CLASE 1 — ROJO DE PREMISA RANCIA (6): el test transcribe la ruta vieja
+-------------------------------------------------------------------
+test-run-task-pool.sh
+  :115  grep -h '^EXIT=' "$T"/f/*.log          -> el log esta un nivel mas hondo
+  :120  ls "$T"/g/*.log | wc -l                -> idem
+  :186  ls "$T"/relee/*.log | wc -l            -> idem
+  :205  ls "$T"/drena/*.log | wc -l            -> idem
+  :239  ls "$T"/cap/*.log | wc -l              -> idem
+test-process-group.sh
+  :138  sed -n 's/^pid=//p' "$THYROX_JOBS_DIR"/grp-001.job
+        -> el .job ahora se llama grp-<ISO>_grp-001.job (job_ledger._path_for
+           sanea '/' a '_'), asi que POOL_PID sale VACIO.
+Veredicto: el sujeto hace lo correcto; el instrumento mide la forma vieja.
+Arreglo: el test.
+
+-------------------------------------------------------------------
+CLASE 2 — REGRESION REAL DEL SUJETO (2): la direccionabilidad se perdio
+-------------------------------------------------------------------
+test-run-task-pool.sh:110   matar suelta el ledger        esperado no, obtenido si
+test-process-group.sh:156   kill barre el GRUPO           esperado 0, obtenido 2
+
+Causa, leida del codigo y no supuesta — wait-jobs.sh::_selection:
+    local f="$LEDGER/${sel//\//_}.job"
+    [[ -f "$f" ]] && echo "$f"
+Resuelve la etiqueta EXACTA. Con la etiqueta jerarquica, `kill grp-001` ya no
+selecciona nada: cmd_kill recorre cero archivos, devuelve falso, y el trabajo
+se queda vivo y anotado.
+
+Por que es regresion y no premisa rancia: el nombre corto es lo UNICO que el
+llamador conoce. El despacho lo genera el pool por dentro; exigir que el
+llamador parsee el mensaje de arranque para poder matar su propio trabajo es
+perder una capacidad que existia.
+
+NOTA sobre el control de :148 (esperado 3, obtenido 2): NO es un tercer rojo
+independiente. `alive_among "" $KIDS` cuenta 2 porque POOL_PID va vacio por la
+clase 1. Es el mismo defecto contado dos veces — y es exactamente para lo que
+ese control existe: sin el, el :156 daria 0 supervivientes sobre un conjunto
+mal formado y pasaria en verde sin medir nada.

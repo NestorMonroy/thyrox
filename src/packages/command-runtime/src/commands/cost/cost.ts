@@ -10,8 +10,8 @@
  * a `agent`, que otro agente está portando en paralelo en esta sesión.
  * `formatTotalCost`/`currentLimits`/`isClaudeAISubscriber` pasan por
  * `internal/pendingCrossPackageDeps.ts`; `currentLimits`
- * (`claudeAiLimits.js`) no existe todavía en `@thyrox/provider` — ver el
- * docstring de ese envoltorio.
+ * (`claudeAiLimits.js`) YA existe en `@thyrox/provider` desde
+ * TASK-THYROX-0069 — ver el docstring de ese envoltorio.
  */
 import type { LocalCommandCall } from '../../types.js'
 import {

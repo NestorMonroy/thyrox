@@ -3,7 +3,8 @@
 
 ``identificadores-en-ingles.md`` enumera «claves de manifiesto —una clave es un
 atributo—», y esa superficie no la alcanzaba nadie: el eje de identificadores
-recorre AST de Python (:ref:`h-docs-1253`) y un ``manifest.json`` no pasa por
+recorre AST de Python (:ref:`h-docs-1253`) y un manifiesto —``.jsonl`` hoy,
+``.json`` en los consumidores sin migrar— no pasa por
 ahi. La regla nombraba una forma que ningun instrumento podia ver.
 
 **Por que un eje aparte y NO dentro de ``checkWorkbench``.** El docstring de
@@ -28,18 +29,21 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
-import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from check_identifier_language import (  # noqa: E402
+from verify.check_identifier_language import (  # noqa: E402
     corpus_available,
     refuse_without_corpus,
     spanish_words_in,
 )
-from check_script_naming import _consumer_baseline  # noqa: E402
+from verify.check_script_naming import _consumer_baseline  # noqa: E402
 from session.job_runs import jobs_dir  # noqa: E402
-from workbench.manifest import MANIFEST_FILE_NAME  # noqa: E402
+from workbench.manifest import (  # noqa: E402
+    LEGACY_MANIFEST_FILE_NAME,
+    MANIFEST_FILE_NAME,
+    read_manifest_file,
+    resolve_manifest,
+)
 from workbench.paths import workbench_dir  # noqa: E402
 
 #: El parametro del consumidor, igual que los baselines de sus dos hermanos:
@@ -127,10 +131,27 @@ def scan(root: pathlib.Path,
     offenders: list[tuple[str, str]] = []
     measured = 0
     for home in manifest_homes(root):
-        for path in sorted(home.rglob(MANIFEST_FILE_NAME)):
+        # Los DOS nombres, y agrupados por run: un run que lleve los dos
+        # —la ventana entre escribir el JSONL y retirar el heredado— cuenta
+        # UNA vez, no dos. Recorrer sólo `MANIFEST_FILE_NAME` es lo que dejó
+        # este gate midiendo 0 sobre los 42 manifiestos de docs y publicando
+        # verde: el sub-patrón D con el propio gate como sujeto.
+        runs = {path.parent
+                for name in (MANIFEST_FILE_NAME, LEGACY_MANIFEST_FILE_NAME)
+                for path in home.rglob(name)}
+        for run in sorted(runs):
+            path = resolve_manifest(run)
+            if path is None:                        # pragma: no cover
+                continue
             measured += 1
             try:
-                data = json.loads(path.read_text())
+                # El lector COMPARTIDO, no un `json.loads` propio: un segundo
+                # lector es una segunda fuente de verdad sobre qué es un
+                # manifiesto, y sólo uno de los dos se entera del día que la
+                # forma cambie. Despacha por SUFIJO — un `.json` de consumidor
+                # viene impreso en varias líneas y un lector de líneas revienta
+                # con él.
+                data = read_manifest_file(path)
             except (OSError, json.JSONDecodeError):
                 # Un manifiesto ilegible es trabajo de `checkWorkbench`, que es
                 # el juez de conformidad. Este eje mide idioma: no duplica ese

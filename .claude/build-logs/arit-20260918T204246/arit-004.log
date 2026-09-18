@@ -1,0 +1,18 @@
+== 1. con transcript presente NO se anaden hechos de respaldo ==
+  ok    vacio cuando el transcript existe
+== 2. sin transcript, se guardan los hechos de la ejecucion ==
+  ok    effort
+  ok    permission_mode
+== 3. del mensaje final se guarda la LONGITUD, nunca el texto ==
+  ok    longitud
+  ok    el texto NO aparece en ningun valor
+== 4. lo ausente no se inventa ==
+  ok    sin effort no hay clave effort
+  ok    sin mensaje, longitud 0 declarada
+== 5. se guarda hook_event_name: es EL discriminador que faltaba ==
+  ok    hook_event_name
+  ok    tambien con transcript
+  ok    y nada mas con transcript
+
+10 ok, 0 fallos
+EXIT=0

@@ -82,14 +82,28 @@ F="$(find "$D/rules" -maxdepth 1 -name '*.md' 2>/dev/null | head -1)"
                          || bad "--link no produjo enlace: ${F:-(nada)}"
 
 echo "=== Caso 7 (EL QUE DISCRIMINA, H-DOCS-469b): colision con contenido distinto ==="
-D="$TMP/d7"; mkdir -p "$D/rules"
-AJENO="$D/rules/commit-conventions.md"
-printf 'ARCHIVO AJENO QUE SOLO COMPARTE EL NOMBRE\n' > "$AJENO"
-ANTES="$(cat "$AJENO")"
-bash "$GUION" --path "$D" --class rules >/dev/null 2>&1; RC=$?
-DESPUES="$(cat "$AJENO")"
-if [[ $RC -ne 0 && "$ANTES" == "$DESPUES" ]]; then ok "rehusa (rc=$RC) y no sobreescribe"
-else bad "rc=$RC · contenido $( [[ "$ANTES" == "$DESPUES" ]] && echo intacto || echo SOBREESCRITO )"; fi
+# El nombre del archivo ajeno se DERIVA de lo que la clase instala, no se
+# transcribe. Citaba `commit-conventions.md`, que ya no vive en las reglas de
+# thyrox —su juego se reescribio y `git.md` ocupa ese deber—: el fixture
+# plantaba un nombre que no colisiona con nada, asi que no habia colision que
+# rehusar y el caso salia verde con rc=0. Un control que no puede fallar es el
+# sub-patron D con el propio control como sujeto.
+#
+# Se instala una vez para saber QUE nombres escribe la clase, y se ensucia uno
+# de ellos. Asi el caso sobrevive a que el juego de reglas vuelva a cambiar.
+D="$TMP/d7"; mkdir -p "$D"
+bash "$GUION" --path "$D" --class rules >/dev/null 2>&1
+AJENO="$(find "$D/rules" -type f -name '*.md' | sort | head -1)"
+if [[ -z "$AJENO" ]]; then
+    bad "la clase rules no instalo ningun archivo: no hay colision que provocar"
+else
+    printf 'ARCHIVO AJENO QUE SOLO COMPARTE EL NOMBRE\n' > "$AJENO"
+    ANTES="$(cat "$AJENO")"
+    bash "$GUION" --path "$D" --class rules >/dev/null 2>&1; RC=$?
+    DESPUES="$(cat "$AJENO")"
+    if [[ $RC -ne 0 && "$ANTES" == "$DESPUES" ]]; then ok "rehusa (rc=$RC) y no sobreescribe"
+    else bad "rc=$RC · contenido $( [[ "$ANTES" == "$DESPUES" ]] && echo intacto || echo SOBREESCRITO )"; fi
+fi
 
 echo "=== Caso 8: colision con contenido IDENTICO no rehusa (idempotente) ==="
 D="$TMP/d8"; mkdir -p "$D"

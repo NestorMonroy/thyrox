@@ -1,0 +1,1 @@
+archivos=97  lineas de comentario real=1923

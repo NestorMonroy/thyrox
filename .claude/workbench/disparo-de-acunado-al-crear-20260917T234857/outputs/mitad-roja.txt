@@ -1,0 +1,23 @@
+test_task_lifecycle:
+
+== 1. el guard admite el EVENTO del hook, no solo el nombre del tool ==
+  FALLA `TaskCreated` (el evento) esta en CREATION_EVENTS
+        esperado=[True] obtenido=[False]
+  ok    `TaskCreate` (el tool) sigue estando
+
+== 2. la OTRA mitad: lo que no crea sigue rechazado ==
+  ok    `TaskCompleted` NO acuña
+  ok    `TaskUpdate` NO acuña
+
+== 3. el hook lee el payload del cliente y acuña ==
+  FALLA sale 0
+        esperado=[0] obtenido=[2]
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/hooks/test_task_lifecycle.py", line 147, in <module>
+    filas = citas(store)
+            ^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/hooks/test_task_lifecycle.py", line 120, in citas
+    filas = conn.execute("SELECT citation_id, subject FROM tasks").fetchall()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: citation_id
+exit=1

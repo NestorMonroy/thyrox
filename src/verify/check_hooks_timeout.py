@@ -21,7 +21,6 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent))
 from paths import reach  # noqa: E402
 
 # El `settings.json` que se mide es el del CONSUMIDOR. Era `parents[3]`,

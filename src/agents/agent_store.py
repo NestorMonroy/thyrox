@@ -73,9 +73,8 @@ import sys
 
 # El catálogo de modelos del paquete, leído desde Python (H-DOCS-1008): el USD
 # sale de ahí, nunca de un peso fijo. Hermano en este mismo directorio.
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
-    import model_catalog  # noqa: E402
+    from agents import model_catalog  # noqa: E402
 except ImportError:  # copiado a otro directorio (así lo cargan varias suites)
     model_catalog = None
 import textwrap
@@ -91,11 +90,9 @@ from pathlib import Path, PurePosixPath
 # El arranque: un módulo siempre sabe su propio directorio, y desde ahí
 # `agents_paths` asciende al marcador. Sustituye la aritmética `parents[N]`,
 # que contaba niveles del árbol de ORIGEN y quedó rota en la mudanza.
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
-sys.path.insert(0, str(agents_paths.CORPUS_DIR))
+from agents import agents_paths  # noqa: E402
 
-from document_types import (  # noqa: E402  — vocabulario proyectado del canon
+from corpus.document_types import (  # noqa: E402
     DOCUMENT_TYPES,
     DOCUMENT_TYPE_UNKNOWN,
     document_type as _document_type_projected,
@@ -108,18 +105,24 @@ SCRIPT_PATH = Path(__file__).resolve()
 # Antes este modulo componia su propia raiz (``DOCS_ROOT.parent``) y su propio
 # prefijo (``kaupamex-<repo>``) — dos copias de una verdad que ya vivia en otro
 # sitio, y que ningun ``.env`` podia redirigir. Ver H-DOCS-1074.
-sys.path.insert(0, str(agents_paths.PATHS_DIR))
 
-import reach_roots  # noqa: E402  — statement a nivel de modulo tras fijar sys.path
+from paths import reach_roots  # noqa: E402
 
 # La capa por defecto de una fila de `tasks` se IMPORTA de su dueno canonico y
 # no se copia: `task_ids` declara el vocabulario de capas y su valor de
 # respaldo, asi que un literal "gen" aqui seria la segunda fuente de verdad que
 # `calibration-verified-numbers.md` prohibe — y la que nadie sincroniza el dia
 # que el vocabulario cambie.
-sys.path.insert(0, str(agents_paths.THYROX_ROOT / "src" / "task"))
 
-from task_ids import UNKNOWN_LAYER  # noqa: E402  — tras fijar sys.path
+from task.task_ids import UNKNOWN_LAYER  # noqa: E402
+
+# La dispersion NO se calcula aqui: la mide `measurement`, que no sabe de
+# agentes ni de tokens. Este modulo aporta las observaciones; aquel decide si
+# hay distribucion y cuanto se desvia. Misma frontera que con `model_catalog`:
+# el censo compone, no implementa.
+
+from measurement import deviation  # noqa: E402
+from measurement import distribution  # noqa: E402
 
 VALID_REPOS = reach_roots.REACH_ROOTS
 
@@ -131,6 +134,28 @@ DOCS_CONSUMER = "docs"
 
 DB_FILENAME = "agent_store.sqlite3"
 
+#: El vocabulario de estado que el tablero PERSISTE. Se declara aqui porque
+#: aqui vive la tabla que lo consume: el `CHECK` de ``tasks`` lo interpola, asi
+#: que la lista y la restriccion no pueden desincronizarse.
+#:
+#: ``deleted`` NO esta, y su ausencia es el punto: ``src/task/schema.ts:35``
+#: lo declara *orden* de borrar la fila, no estado que se guarde. Admitirlo
+#: aqui convertiria la orden en un estado persistible.
+#:
+#: Su gemelo en la otra lengua es ``src/task/schema.ts::TASK_STATUSES``, y la
+#: suite cruzada (``tests/task/schema.test.ts``) exige que los dos declaren lo
+#: mismo — dos lenguas, un vocabulario.
+TASK_STATUSES = ("pending", "in_progress", "completed")
+
+#: El predicado del ``CHECK``, derivado de la tupla de arriba. Se compone una
+#: vez y lo consumen las DOS vias: el DDL de ``CORE_SCHEMA`` (base nueva) y
+#: ``_migrate_tasks_status_check`` (base que ya existia). Escribirlo dos veces
+#: seria la segunda fuente de verdad que una base migrada y una nueva podrian
+#: desmentirse entre si.
+_TASK_STATUS_CHECK = "CHECK (status IN ({}))".format(
+    ", ".join(f"'{estado}'" for estado in TASK_STATUSES)
+)
+
 #: Tablas nucleo — SIEMPRE se crean, sin try/except. Si esto falla (disco
 #: lleno, archivo corrupto) el CLI debe abortar con traceback visible: es
 #: una herramienta de un solo comando, no un servicio de larga duracion, y
@@ -139,7 +164,7 @@ DB_FILENAME = "agent_store.sqlite3"
 #: de ``VectorStore`` completo — ese patron existe alla porque el store
 #: vive embebido en un plugin que nunca debe tumbar el host; aqui el CLI
 #: fallando ruidosamente es el comportamiento correcto.
-CORE_SCHEMA = """
+CORE_SCHEMA = f"""
 CREATE TABLE IF NOT EXISTS agent_sessions (
     agent_id      TEXT PRIMARY KEY,
     subagent_type TEXT NOT NULL,
@@ -162,6 +187,10 @@ CREATE TABLE IF NOT EXISTS findings_history (
     summary       TEXT NOT NULL,
     content       TEXT NOT NULL,
     source_ref    TEXT,
+    -- Enriquecimiento OPCIONAL. Su escritor y su superficie existen
+    -- —`agregar-hallazgo --metadata-json`, verificado por conducta— y
+    -- esta vacia en todas las filas porque nadie la ha pasado, no
+    -- porque falte quien la escriba. No es un hueco (TASK-THYROX-0102).
     metadata_json TEXT,
     session_id    TEXT,
     created_at    TEXT NOT NULL,
@@ -209,7 +238,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     task_id       TEXT NOT NULL,
     subject       TEXT NOT NULL,
     description   TEXT,
-    status        TEXT NOT NULL,
+    status        TEXT NOT NULL {_TASK_STATUS_CHECK},
     active_form   TEXT,
     owner         TEXT,
     blocks_json   TEXT,
@@ -275,10 +304,14 @@ CREATE TABLE IF NOT EXISTS documents (
     section           TEXT,   -- primer segmento bajo `source/`
     series            TEXT,   -- `<section>/<tipo>` — la unidad compuesta
     -- El PLAZO no se deriva ni se inventa: declararlo es autoridad archivistica
-    -- y no la tiene este guion. Queda NULO hasta que #760 lo resuelva; un
+    -- y no la tiene este guion. Queda NULO hasta que TASK-DOCS-0245 lo
+    -- resuelva; un
     -- numero puesto aqui por completitud se leeria igual que uno decidido.
-    retention_years   INTEGER,
-    scanned_at        TEXT NOT NULL
+    retention_years   INTEGER
+    -- `scanned_at` NO vive aqui. Era la marca de cuando el barrido leyo el
+    -- archivo, y esa es una propiedad del CACHE, no del registro: con el arbol
+    -- intacto entre dos barridos se movian 5689 filas y ninguna cambiaba de
+    -- dato. La migracion 8 la retira. Ver TASK-THYROX-0149.
 );
 
 CREATE INDEX IF NOT EXISTS idx_documents_updated ON documents(updated_at);
@@ -406,8 +439,8 @@ def document_root(args: argparse.Namespace) -> Path:
     return reach_roots.root(DOCS_CONSUMER)
 
 
-def resolve_store_dir(args: argparse.Namespace) -> Path:
-    """Dónde escribir, de lo más específico a lo menos.
+def resolve_store_dir(args: argparse.Namespace, create: bool = True) -> Path:
+    """Dónde escribir —o, con ``create=False``, dónde LEER sin materializar.
 
     1. ``--claude-dir`` — la ruta, sin resolver nada. Es lo que usa una prueba
        para no contaminar el store real.
@@ -437,7 +470,7 @@ def resolve_store_dir(args: argparse.Namespace) -> Path:
         return store_dir
 
     if getattr(args, "repo", None) is None:
-        return agents_paths.agent_store_path().parent
+        return agents_paths.agent_store_path(create=create).parent
 
     if args.repo not in VALID_REPOS:
         raise ValueError(f"repo invalido: {args.repo!r} (validos: {VALID_REPOS})")
@@ -603,10 +636,21 @@ _SESSION_USAGE_COLUMNS: dict[str, str] = {
     #: ``five_hour``, y los 4 son SUBCONJUNTO de los 16 — no separan agentes
     #: nuevos, refinan el porque de 4 de los 9 que murieron por 429.
     "rate_limit_type": "TEXT",
-    #: --- EL CIERRE DEL TURNO (#601). El ULTIMO ``message.stop_reason`` del
-    #: transcript: como cerro el agente su ultimo turno. Medido sobre los 277
-    #: transcripts: ``tool_use`` 210 · (ninguno) 42 · ``stop_sequence`` 16 ·
-    #: ``end_turn`` 9.
+    #: --- EL CIERRE DEL TURNO (#601). El ultimo ``message.stop_reason`` NO
+    #: NULO del transcript. Medido sobre los 277 transcripts de entonces:
+    #: ``tool_use`` 210 · (ninguno) 42 · ``stop_sequence`` 16 · ``end_turn`` 9.
+    #:
+    #: **Decia «el ULTIMO», y es falso — corregido al medirlo
+    #: (TASK-THYROX-0155).** La regla de ``register_session.py`` es
+    #: ``if msg.get("stop_reason")``, o sea el ultimo NO NULO. La diferencia no
+    #: es de matiz: cuando el ultimo mensaje no declara cierre, esta columna
+    #: publica el de un turno ANTERIOR, y la fila dice que el agente cerro de
+    #: una forma que nunca ocurrio. Medido sobre los 109 transcripts
+    #: alcanzables de las 325 filas ``completed`` con ``tool_use``: los 109
+    #: divergen, y los 109 cierran con un bloque ``text`` — su reporte.
+    #:
+    #: Por eso ``last_stop_reason`` existe al lado, y por eso esta regla NO se
+    #: cambia: el control cruzado de abajo depende de ella.
     #:
     #: Su valor como discriminador esta medido, y es fuerte: los 16
     #: ``stop_sequence`` son EXACTAMENTE los 16 con ``api_error_status``, sin
@@ -615,10 +659,69 @@ _SESSION_USAGE_COLUMNS: dict[str, str] = {
     #: que coinciden; eso es el control cruzado que
     #: ``metrica-decide-la-conclusion.md`` pide, no una redundancia que sobre.
     #:
-    #: SI entra en ``_ids_incompletos``: su ``NULL`` es deuda, no ausencia
-    #: legitima. Todo turno cerro de alguna forma; que el transcript no lo
-    #: declare (42 de 277) es el instrumento callando, no el hecho faltando.
+    #: SU ``NULL`` NO ES UNA SOLA COSA — corregido al medirlo (TASK-THYROX-0104).
+    #: Esta nota afirmaba: "su ``NULL`` es deuda, no ausencia legitima; todo
+    #: turno cerro de alguna forma, asi que el transcript callando es el
+    #: instrumento y no el hecho". La primera mitad es falsa: hay transcripts
+    #: que declaran ``"stop_reason": null`` de forma explicita, y ahi el NULL
+    #: ES el dato. Verificado por conducta sobre el unico transcript de ese
+    #: cubo que sigue en disco (``client_version`` 2.1.268, un mensaje
+    #: ``assistant`` con la clave presente y valor nulo).
+    #:
+    #: La procedencia la declara ``usage_source``, NO ``outcome_source`` —
+    #: aquella se puebla en el mismo recorrido que este campo
+    #: (``register_session.py``), y ``outcome_source`` se empareja con
+    #: ``status`` en los tres sitios que la reclaman
+    #: (``reconcile_store.py``). Por eso NO hay una cuarta columna ``_source``.
+    #:
+    #: El reparto con su denominador lo publica ``censo-stop-reason``, no esta
+    #: prosa: es propiedad de un store que crece
+    #: (``calibration-verified-numbers.md``). Sus cubos, y su remedio opuesto:
+    #:
+    #: * ``usage_source='transcript'`` + valor -> el transcript lo declaro.
+    #: * ``usage_source='transcript'`` + NULL + ``client_version`` -> el NULL
+    #:   es el DATO. NO entra en ``_ids_incompletos``: reintentarla releeria
+    #:   para siempre un transcript que ya se leyo bien.
+    #: * ``usage_source='transcript'`` + NULL + sin ``client_version`` -> se
+    #:   leyo ANTES de que este campo se leyera. Terminal: su transcript ya no
+    #:   esta en disco, asi que nadie podra rellenarla.
+    #: * ``usage_source='no_medido'`` -> transcript irrecuperable, terminal.
+    #: * ``usage_source`` NULL -> pendiente: nadie ha pasado todavia.
+    #:
+    #: ``client_version`` es el discriminador, y es perfecto en el store: cero
+    #: filas con ``client_version`` NULL y ``stop_reason`` con valor. La
+    #: hipotesis previa —que ``compactions`` marcaba la generacion vieja— se
+    #: REFUTO: 346 filas tienen ``stop_reason`` con ``compactions`` en NULL.
     "stop_reason": "TEXT",
+    #: --- EL CIERRE CRUDO (TASK-THYROX-0155). El ``message.stop_reason`` del
+    #: ULTIMO mensaje ``assistant``, sea o no nulo. Es la cifra que la columna
+    #: de arriba no puede dar, porque aquella aplica una regla y esta no.
+    #:
+    #: **Su NULL es el DATO, no un hueco.** Dice que el ultimo mensaje del
+    #: transcript no declaro cierre — y entonces ``stop_reason`` viene de un
+    #: turno anterior. Las dos juntas declaran la divergencia; una sola la
+    #: esconde.
+    #:
+    #: Por que el cliente lo deja en nulo, medido en el ejecutable (2.1.266):
+    #: emite DOS clases de linea ``assistant``. La de POR BLOQUE construye el
+    #: registro desde el mensaje PARCIAL —su guard se llama
+    #: ``partial_message_not_found``— y NO recompone ``usage``, asi que hereda
+    #: la del ``message_start``. La RECONCILIADA lleva
+    #: ``usage: K7(<delta>, <base>)``, con la contabilidad del evento terminal
+    #: y su ``stop_reason``. Cuando la ultima linea del transcript es de la
+    #: primera clase, el campo esta presente y vale nulo.
+    #:
+    #: Su firma separa las dos poblaciones sin solape: ``output_tokens`` 1..10
+    #: en el grupo que diverge contra 24..3429 en el que no, sobre cuerpos de
+    #: mediana 2736 y 2804 caracteres. Ese umbral NO se guarda aqui: es una
+    #: frontera medida sobre una poblacion, no un contrato, y quien la necesite
+    #: la deriva de las columnas crudas.
+    #:
+    #: **NO se rellena hacia atras.** De las 325 filas que la motivaron, 216 ya
+    #: no tienen transcript en disco: su cierre crudo no se puede re-derivar de
+    #: ninguna fuente, y escribir un NULL ahi no distinguiria «el transcript no
+    #: lo declaro» de «no pude medirlo». Quedan permanentemente ambiguas.
+    "last_stop_reason": "TEXT",
     #: --- LA COMPACTACION (#601). ``compactMetadata`` vive en el nivel
     #: superior de la linea —medido: 3 eventos alli, 0 dentro de ``message``—,
     #: asi que un recorrido que filtre por ``type == 'assistant'`` primero no
@@ -925,6 +1028,29 @@ def _migrate_documents_series_columns(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
+def _migrate_documents_drop_scanned_at(conn: sqlite3.Connection) -> None:
+    """Retira ``scanned_at`` de ``documents`` — era del cache, no del registro.
+
+    Medido antes de escribir esto
+    (``.claude/workbench/churn-de-documents-20260918T000003/``): en un segundo
+    barrido con el arbol INTACTO entre los dos, 5689 filas quedaban TOCADAS y
+    **0** MOVIDAS. Las otras cuatro columnas de fecha no se movian; la unica
+    que cambiaba era ``scanned_at``, que el barrido estampaba con la hora
+    actual sin condicion. O sea: el 100 % de la reescritura la producia una
+    columna que nadie lee — medido, ``scanned_at`` tiene **0** consumidores
+    fuera de este archivo.
+
+    ``ALTER TABLE ... DROP COLUMN`` existe desde sqlite 3.35 y este entorno
+    corre 3.45.1, asi que no hace falta recrear la tabla. La columna se retira
+    sin transformar dato alguno: no hay nada que preservar.
+    """
+    existentes = {row[1] for row in conn.execute("PRAGMA table_info(documents)")}
+    if "scanned_at" not in existentes:
+        return                      # ya retirada, o la tabla aun no existe
+    conn.execute("ALTER TABLE documents DROP COLUMN scanned_at")
+    conn.commit()
+
+
 def _migrate_tasks_composite_pk(conn: sqlite3.Connection) -> None:
     """Lleva ``tasks`` de PK ``task_id`` a PK ``(session_id, task_id)``.
 
@@ -980,6 +1106,92 @@ def _migrate_tasks_composite_pk(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
+def _migrate_tasks_status_check(conn: sqlite3.Connection) -> None:
+    """Lleva ``tasks`` a tener el ``CHECK`` de ``TASK_STATUSES``.
+
+    Por que en la TABLA y no en cada escritor: hay cuatro sitios de insercion
+    en tres modulos y dos lenguas — este archivo, ``src/task/task_ids.py`` y
+    dos en ``src/packages/tools/src/tasks.ts``. Un guard por escritor es un
+    contrato que cada escritor nuevo tiene que recordar; el ``CHECK`` lo
+    hereda por construccion, porque es el unico punto que los cuatro
+    comparten. La forma no se inventa aqui: ``agent_sessions`` ya declara la
+    suya en ``CORE_SCHEMA`` (``:169``) desde el primer dia.
+
+    SQLite no tiene ``ALTER TABLE ... ADD CONSTRAINT``, asi que la unica via
+    es reconstruir — el mismo patron que ``_migrate_tasks_composite_pk`` ya
+    establece para la clave. Corre DESPUES de las migraciones de columna, y
+    por eso NO transcribe el DDL: lo deriva de ``PRAGMA table_info`` para que
+    una base a medio migrar no pierda las columnas que aquellas anadieron.
+    Un DDL copiado aqui seria la segunda fuente de verdad que caduca en
+    cuanto alguien anada la columna diecinueve.
+
+    Idempotente por la condicion de entrada: si el DDL vigente ya nombra el
+    predicado, no hace nada. ``connect()`` la invoca en CADA apertura, asi
+    que la segunda pasada es el caso normal.
+
+    Ante una fila FUERA del vocabulario **rehusa nombrandola** en vez de
+    reconstruir: un ``INSERT ... SELECT`` que la deje fuera perderia datos en
+    silencio, y el silencio es exactamente lo que este ``CHECK`` existe para
+    cerrar. Medido en el store real al escribir esto: 1750 filas, las tres
+    canonicas, cero fuera — la rama es defensa, no trabajo esperado.
+    """
+    columnas = list(conn.execute("PRAGMA table_info(tasks)"))
+    if not columnas:
+        return                      # la tabla aun no existe; CORE_SCHEMA la crea bien
+
+    ddl = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'"
+    ).fetchone()
+    if ddl and _TASK_STATUS_CHECK.replace(" ", "") in (ddl[0] or "").replace(" ", ""):
+        return                      # ya migrada
+
+    fuera = [
+        (fila[0], fila[1])
+        for fila in conn.execute(
+            "SELECT status, COUNT(*) FROM tasks WHERE status NOT IN ({}) "
+            "GROUP BY status".format(", ".join("?" * len(TASK_STATUSES))),
+            TASK_STATUSES,
+        )
+    ]
+    if fuera:
+        detalle = ", ".join(f"{estado!r}: {cuantas}" for estado, cuantas in fuera)
+        raise ValueError(
+            "tasks tiene filas fuera de TASK_STATUSES y migrarlas las "
+            f"perderia en silencio — {detalle}. Reconciliarlas antes de "
+            "volver a abrir el store."
+        )
+
+    #: El DDL se DERIVA de la tabla viva, columna a columna, para que la
+    #: reconstruccion no dependa de que esta funcion conozca el esquema de hoy.
+    #: `fila` es (cid, name, type, notnull, dflt_value, pk).
+    definiciones = []
+    for _, nombre, tipo, notnull, defecto, _pk in columnas:
+        pieza = f"{nombre} {tipo}" if tipo else str(nombre)
+        if defecto is not None:
+            pieza += f" DEFAULT {defecto}"
+        if notnull:
+            pieza += " NOT NULL"
+        if nombre == "status":
+            pieza += f" {_TASK_STATUS_CHECK}"
+        definiciones.append(pieza)
+
+    clave = [fila[1] for fila in sorted(columnas, key=lambda f: f[5]) if fila[5]]
+    if clave:
+        definiciones.append(f"PRIMARY KEY ({', '.join(clave)})")
+
+    nombres = ", ".join(fila[1] for fila in columnas)
+    conn.executescript(
+        "CREATE TABLE tasks_con_check (\n    {}\n);\n"
+        "INSERT INTO tasks_con_check ({nombres}) SELECT {nombres} FROM tasks;\n"
+        "DROP TABLE tasks;\n"
+        "ALTER TABLE tasks_con_check RENAME TO tasks;\n"
+        "CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);\n"
+        "CREATE INDEX IF NOT EXISTS idx_tasks_session ON tasks(session_id);\n"
+        .format(",\n    ".join(definiciones), nombres=nombres)
+    )
+    conn.commit()
+
+
 def connect(store_dir: Path) -> sqlite3.Connection:
     """Abre el store, listo para escribir desde procesos concurrentes.
 
@@ -1005,8 +1217,53 @@ def connect(store_dir: Path) -> sqlite3.Connection:
     _migrate_tasks_layer_columns(conn)
     _migrate_tasks_opening_columns(conn)
     _migrate_tasks_citation_columns(conn)
+    _migrate_tasks_status_check(conn)
     _migrate_documents_series_columns(conn)
+    _migrate_documents_drop_scanned_at(conn)
     _resync_fts(conn)
+    return conn
+
+
+class StoreNotFound(FileNotFoundError):
+    """El store no existe donde se pidio leerlo.
+
+    Es el tercer desenlace que ``check_veredicto_de_gate.py`` exige, y la
+    razon de que exista una clase propia: ``connect()`` colapsaba «no hay
+    store» con «ya lo cree por ti», y un censo que fabrica su sujeto publica
+    un cero que no distingue «vacio» de «recien inventado».
+    """
+
+
+def connect_readonly(store_dir: Path) -> sqlite3.Connection:
+    """Abre el store para LEER: sin crearlo, sin DDL y sin migraciones.
+
+    ``connect()`` es el camino de ESCRITURA y hace cuatro cosas que una
+    lectura no debe hacer: ``mkdir`` del hogar, abrir el archivo con
+    ``O_CREAT``, correr el schema con sus siete migraciones, y resincronizar
+    el indice FTS. Medido por conducta sobre el store real con
+    ``bin/assert_no_writes``, un ``censo-tablas`` intentaba **seis**
+    escrituras. Las tres consecuencias estan en el docstring de
+    ``tests/agents/test_readonly_connection.py``; la mas cara es que reabre
+    por la via del MODO el grifo de la cascara que TASK-THYROX-0153 y 0156
+    cerraron por la via de la RUTA.
+
+    *Metrica:* aperturas con intencion de escritura que el nucleo ve.
+    *Ciega a:* las dos aperturas de ``-shm`` y ``-wal``, que SQLite exige
+    para leer una base en modo WAL aunque la conexion sea ``mode=ro``.
+    Medido: con ``mode=ro`` caen 4 de las 6. ``immutable=1`` quitaria esas
+    dos y afirmaria que nadie mas escribe el archivo, que aqui es falso —
+    el hook de sesion y el reconciliador escriben en el mismo store.
+    """
+    ruta = store_dir / DB_FILENAME
+    if not ruta.exists():
+        raise StoreNotFound(
+            f"el store no existe: {ruta} — no se mide y no se crea")
+    conn = sqlite3.connect(f"file:{ruta}?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    # ``busy_timeout`` tambien en lectura: un lector puede toparse con el
+    # lock de un escritor concurrente, y esperar unos milisegundos es
+    # preferible a publicar «database is locked» como si fuera el dato.
+    conn.execute("PRAGMA busy_timeout = 5000")
     return conn
 
 
@@ -1960,8 +2217,8 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
         raise SystemExit(2)
 
     commits = _last_commit_dates(repo, args.subtree)
-    ahora = now_iso()
     conn = None if args.dry_run else connect(resolve_store_dir(args))
+    escritas_antes = conn.total_changes if conn is not None else 0
 
     universo = por_fuente = 0
     conteo = collections.Counter()
@@ -1999,19 +2256,29 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
             conteo[fuente] += 1
             por_fuente += 1
         if conn is not None:
+            # El `WHERE` es lo que separa MOVER de REESCRIBIR. Sin el, una fila
+            # cuyo dato no cambio se reescribe igual: la pagina se ensucia y
+            # `total_changes` la cuenta. `IS NOT` — no `!=` — porque las cuatro
+            # columnas admiten NULO, y `NULL != NULL` es NULO, o sea falso: con
+            # `!=` una fila que pasa de NULO a NULO tampoco se detecta como
+            # igual y se reescribiria de todas formas.
             conn.execute(
                 "INSERT INTO documents "
-                "  (path, updated_at, updated_at_source, declared_at, commit_at, scanned_at) "
-                "VALUES (?, ?, ?, ?, ?, ?) "
+                "  (path, updated_at, updated_at_source, declared_at, commit_at) "
+                "VALUES (?, ?, ?, ?, ?) "
                 "ON CONFLICT(path) DO UPDATE SET "
                 "  updated_at = excluded.updated_at, "
                 "  updated_at_source = excluded.updated_at_source, "
                 "  declared_at = excluded.declared_at, "
-                "  commit_at = excluded.commit_at, "
-                "  scanned_at = excluded.scanned_at",
-                (rel, valor, fuente, crudo, crudo_commit, ahora),
+                "  commit_at = excluded.commit_at "
+                "WHERE documents.updated_at        IS NOT excluded.updated_at "
+                "   OR documents.updated_at_source IS NOT excluded.updated_at_source "
+                "   OR documents.declared_at       IS NOT excluded.declared_at "
+                "   OR documents.commit_at         IS NOT excluded.commit_at",
+                (rel, valor, fuente, crudo, crudo_commit),
             )
 
+    escritas = conn.total_changes - escritas_antes if conn is not None else 0
     if conn is not None:
         conn.commit()
 
@@ -2023,6 +2290,11 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
           f"{sin_cota} sin ninguna cota")
     print(f"  (alcance medido: {universo} documento(s) .rst bajo {args.subtree}/ "
           f"en {repo})")
+    # `total_changes` es el unico observable de «filas que de verdad se
+    # escribieron»: cuenta las que el motor toco, no las que el bucle recorrio.
+    # Cruza la frontera del subproceso porque se publica aqui — un test que
+    # midiera el bucle desde fuera no podria distinguir mover de reescribir.
+    print(f"  filas escritas: {escritas} de {universo} recorrida(s)")
 
 
 def _document_section(rel: str, subtree: str):
@@ -2054,7 +2326,7 @@ def _document_type(rel: str) -> str:
 def cmd_classify_documents(args: argparse.Namespace) -> None:
     """Asigna a cada documento su SERIE — la unidad de conservacion.
 
-    Pieza 3 del eje temporal (#872). Un catalogo de disposicion documental no
+    Pieza 3 del eje temporal (TASK-GEN-0136). Un catalogo de disposicion documental no
     clasifica archivos sueltos: clasifica series. La unidad es **compuesta**
     —``<seccion>/<tipo>``— porque ninguno de los cuatro ejes simples medidos
     particiona el fondo (evento `unidad-de-conservacion-*`): la iniciativa deja
@@ -2066,7 +2338,7 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
     ya usa — seccion (la funcion) -> serie (el tipo documental dentro de ella).
 
     El PLAZO **no** se escribe aqui. Declararlo es autoridad archivistica y
-    este guion no la tiene; queda bloqueado por #760.
+    este guion no la tiene; queda bloqueado por TASK-DOCS-0245.
     """
     repo = document_root(args)
     raiz = repo / args.subtree
@@ -2074,8 +2346,8 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
         print(f"ERROR — no existe {raiz}", file=sys.stderr)
         raise SystemExit(2)
 
-    ahora = now_iso()
     conn = None if args.dry_run else connect(resolve_store_dir(args))
+    escritas_antes = conn.total_changes if conn is not None else 0
 
     universo = sin_seccion = 0
     series = collections.Counter()
@@ -2098,16 +2370,20 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
             # Solo las columnas de la unidad. `updated_at` y sus cotas las
             # escribe `fechar-documentos`, y pisarlas aqui borraria el
             # disparador cada vez que se reclasifica.
+            # El `WHERE` del hermano `fechar-documentos`, por la misma razon:
+            # una reclasificacion que no cambia la unidad no reescribe la fila.
             conn.execute(
-                "INSERT INTO documents (path, section, series, scanned_at) "
-                "VALUES (?, ?, ?, ?) "
+                "INSERT INTO documents (path, section, series) "
+                "VALUES (?, ?, ?) "
                 "ON CONFLICT(path) DO UPDATE SET "
                 "  section = excluded.section, "
-                "  series = excluded.series, "
-                "  scanned_at = excluded.scanned_at",
-                (rel, seccion, serie, ahora),
+                "  series = excluded.series "
+                "WHERE documents.section IS NOT excluded.section "
+                "   OR documents.series  IS NOT excluded.series",
+                (rel, seccion, serie),
             )
 
+    escritas = conn.total_changes - escritas_antes if conn is not None else 0
     if conn is not None:
         conn.commit()
 
@@ -2120,6 +2396,7 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
           f"({DOCUMENT_TYPE_UNKNOWN}) · {sin_seccion} en la raiz del subarbol")
     print(f"  (alcance medido: {universo} documento(s) .rst bajo {args.subtree}/ "
           f"en {repo})")
+    print(f"  filas escritas: {escritas} de {universo} recorrida(s)")
 
 
 def cmd_search_tasks(args: argparse.Namespace) -> None:
@@ -2485,7 +2762,18 @@ def cmd_render_tablero(args: argparse.Namespace) -> None:
     fuente = store_dir / DB_FILENAME
     try:
         fuente = fuente.relative_to(agents_paths.consumer_root())
-    except ValueError:
+    except (ValueError, agents_paths.reach.ConsumerUnknownError):
+        # Dos causas, un mismo desenlace: se deja absoluta. `ValueError` es el
+        # store que cae fuera del consumidor; `ConsumerUnknownError` es que no
+        # hay consumidor que determinar — el render se invoco desde el
+        # PROVEEDOR, y `reach.consumer_root` rehusa antes que componer un hogar
+        # dentro de thyrox (TASK-DOCS-0286).
+        #
+        # Hasta hoy solo se atrapaba la primera, y la segunda NO es su
+        # subclase: el render moria con un traceback. La relativizacion es
+        # cosmetica —evita que un artefacto versionado declare una ruta que
+        # cambia de maquina— y una cosmetica que aborta el comando entero mide
+        # el fenomeno equivocado.
         pass
 
     out = []
@@ -2642,9 +2930,9 @@ def cmd_table_census(args: argparse.Namespace) -> None:
     sin columna de fecha sale como `-`, y eso se lee «este instrumento no la
     puede fechar», nunca «esta muerta».
     """
-    store_dir = resolve_store_dir(args)
+    store_dir = resolve_store_dir(args, create=False)
     hoy = now_iso()[:10]
-    with connect(store_dir) as conn:
+    with connect_readonly(store_dir) as conn:
         filas_maestro = conn.execute(
             "SELECT name, sql FROM sqlite_master WHERE type = 'table' "
             "AND name NOT LIKE 'sqlite_%' ORDER BY name").fetchall()
@@ -2690,6 +2978,109 @@ def cmd_table_census(args: argparse.Namespace) -> None:
               f"(no fechables por este instrumento)")
 
 
+def stop_reason_provenance(conn: sqlite3.Connection) -> dict:
+    """Reparte las filas por la procedencia de ``stop_reason``, con denominador.
+
+    **La procedencia de ``stop_reason`` ya la declara ``usage_source``**, y ese
+    es el resultado que esta funcion hace legible. No hace falta una cuarta
+    columna ``_source``: el MISMO recorrido puebla ambos —
+    ``register_session.py:349-350`` lee ``message.stop_reason`` dentro del bucle
+    que suma ``usage``—, asi que una columna propia seria una segunda
+    declaracion de una sola lectura.
+
+    Lo que NO declara la procedencia de ``stop_reason`` es ``outcome_source``,
+    pese al parecido del nombre. Aquella parea con **``status``**: lo dicen
+    ``reconcile_store.py:486-487`` y ``:887``, y su vocabulario
+    (``hook``/``journal``/``api_error``/``sin_transcript``) nombra instrumentos
+    del desenlace. Suponer el pareo por el nombre es medir el significante y
+    concluir sobre el significado.
+
+    Los cubos, y por que sus remedios son OPUESTOS:
+
+    - ``con_valor``  — el transcript lo declaro. No hay nada que hacer.
+    - ``declarado_nulo`` — leida por el extractor actual (``client_version``
+      presente) y el transcript no declaro ningun cierre finalizado. **El NULL
+      es el dato**, no un hueco: un turno sin finalizar escribe
+      ``stop_reason: null``. PROVEN por conducta sobre el unico transcript de
+      este cubo que seguia en disco.
+    - ``extractor_sin_lectura`` — ``usage_source='transcript'`` y sin
+      ``client_version``. Leida por una generacion anterior a que este campo se
+      leyera, asi que el valor existio y su evidencia ya no. Terminal.
+      El discriminador esta medido: **0** filas del store tienen
+      ``client_version IS NULL`` con ``stop_reason IS NOT NULL``.
+    - ``no_medido``  — transcript irrecuperable. **Tiene procedencia
+      declarada**: dice «nadie podra ya». Contarla como hueco colapsa la
+      distincion que la columna existe para conservar.
+    - ``sin_clasificar`` — ``usage_source`` vacio: «nadie ha pasado todavia».
+      La resuelve el barrido, no una escritura.
+    - ``huerfano``  — valor escrito sin que nadie declare quien lo midio. Solo
+      puede venir de un escritor que no paso por el recorrido; se reporta en vez
+      de sumarse a los medidos.
+
+    Los seis PARTICIONAN el universo, y el test lo afirma: un censo cuyos cubos
+    no sumen el total deja una poblacion invisible cuyo silencio se lee como
+    cero.
+    """
+    def cuenta(donde: str) -> int:
+        return conn.execute(
+            f"SELECT COUNT(*) FROM agent_sessions WHERE {donde}").fetchone()[0]
+
+    leido = "usage_source = 'transcript'"
+    nulo = "stop_reason IS NULL"
+    return {
+        "total": cuenta("1"),
+        "con_valor": cuenta(f"{leido} AND stop_reason IS NOT NULL"),
+        "declarado_nulo": cuenta(
+            f"{leido} AND {nulo} AND client_version IS NOT NULL"),
+        "extractor_sin_lectura": cuenta(
+            f"{leido} AND {nulo} AND client_version IS NULL"),
+        "no_medido": cuenta("usage_source = 'no_medido'"),
+        "sin_clasificar": cuenta(f"usage_source IS NULL AND {nulo}"),
+        "huerfano": cuenta("usage_source IS NULL AND stop_reason IS NOT NULL"),
+    }
+
+
+def cmd_stop_reason_census(args: argparse.Namespace) -> None:
+    """Publica el reparto de ``stop_reason`` con su denominador.
+
+    Existe porque un ``SELECT COUNT(*) WHERE stop_reason IS NULL`` mezcla tres
+    poblaciones con remedios opuestos —dato, terminal y pendiente— y la cifra
+    resultante se lee como una sola deuda. Asi ocurrio: la tarjeta que abrio
+    este trabajo conto 1345 NULL como «sin procedencia declarada» cuando 1266
+    de ellas la tienen.
+    """
+    store_dir = resolve_store_dir(args, create=False)
+    with connect_readonly(store_dir) as conn:
+        r = stop_reason_provenance(conn)
+    total = r["total"]
+
+    def pct(n: int) -> str:
+        return f"{n * 100 // total if total else 0} %"
+
+    print(f"filas en agent_sessions: {total}")
+    print(f"  el transcript lo declaro (stop_reason con valor): "
+          f"{r['con_valor']} ({pct(r['con_valor'])})")
+    print(f"  DATO — leida por el extractor actual y el transcript declaro "
+          f"nulo: {r['declarado_nulo']} ({pct(r['declarado_nulo'])})")
+    print(f"  terminal — leida antes de que este campo se leyera "
+          f"(client_version vacio): {r['extractor_sin_lectura']}")
+    print(f"  terminal — transcript irrecuperable (usage_source='no_medido'): "
+          f"{r['no_medido']} ({pct(r['no_medido'])})")
+    print(f"  pendiente — sin clasificar todavia (usage_source vacio): "
+          f"{r['sin_clasificar']}")
+    if r["huerfano"]:
+        print(f"  ATENCION — con valor y sin procedencia declarada: "
+              f"{r['huerfano']}")
+    cubos = ("con_valor", "declarado_nulo", "extractor_sin_lectura",
+             "no_medido", "sin_clasificar", "huerfano")
+    suma = sum(r[c] for c in cubos)
+    print()
+    print(f"los cubos suman {suma} de {total}"
+          + ("" if suma == total else "  — ATENCION: hay poblacion sin cubo"))
+    print("la procedencia de stop_reason la declara usage_source, no "
+          "outcome_source (que parea con status)")
+
+
 def cmd_usage_census(args: argparse.Namespace) -> None:
     """Reparte las filas en sus cuatro estados de medición, con denominador.
 
@@ -2704,9 +3095,9 @@ def cmd_usage_census(args: argparse.Namespace) -> None:
     Por eso la salida **empieza** por el reparto y sólo después da el
     agregado, siempre acompañado del `n` sobre el que se calculó.
     """
-    store_dir = resolve_store_dir(args)
+    store_dir = resolve_store_dir(args, create=False)
     sin_medir = " AND ".join(f"{c} IS NULL" for c in _COLUMNAS_DE_USO)
-    with connect(store_dir) as conn:
+    with connect_readonly(store_dir) as conn:
         total = conn.execute("SELECT COUNT(*) FROM agent_sessions").fetchone()[0]
         medidos = conn.execute(
             "SELECT COUNT(*) FROM agent_sessions "
@@ -2748,6 +3139,58 @@ def cmd_usage_census(args: argparse.Namespace) -> None:
                 ("cache_read", "cache_creation", "output", "input", "equiv_cost"),
                 agregado[1:]):
             print(f"  {etiqueta:<16} {valor or 0:>16,}   media {(valor or 0) // n:>12,}")
+    # La MEDIA de arriba es ciega a la dispersion: dos modelos con el mismo
+    # consumo medio por turno pueden ser uno predecible y otro erratico, y la
+    # decision de despacho que se toma con esa cifra es distinta en cada caso.
+    # La desviacion tipica es la misma informacion en las unidades del dato,
+    # asi que se publica al lado de la media y no en su lugar.
+    #
+    # Las DOS columnas son de token, y son unidades distintas:
+    #   `equiv_cost`  el coste ponderado — de los tres tipos de costo que
+    #                 `calibration-verified-numbers.md` declara, el UNICO que
+    #                 se cita. Va primero porque es el que decide.
+    #   `cache_read`  un COMPONENTE del consumo, la unidad de capacidad. Domina
+    #                 el reparto (98 %) y por eso acompaña, pero publicarlo solo
+    #                 mediria el componente y se leeria como el costo.
+    # El dinero NO entra aqui: tiene su propio bloque, abajo, y mezclar las dos
+    # unidades bajo un mismo encabezado es el sub-patron A.
+    print()
+    with connect_readonly(store_dir) as conn:
+        _por_modelo = conn.execute(
+            "SELECT model, equiv_cost, cache_read_tokens, turns "
+            "FROM agent_sessions "
+            "WHERE usage_source = 'transcript' AND model LIKE 'claude-%' "
+            "AND turns > 0 AND cache_read_tokens IS NOT NULL "
+            "AND equiv_cost IS NOT NULL "
+            "ORDER BY model").fetchall()
+    _equivalentes: dict = {}
+    _capacidades: dict = {}
+    for _fila in _por_modelo:
+        _equivalentes.setdefault(_fila[0], []).append(_fila[1] / _fila[3])
+        _capacidades.setdefault(_fila[0], []).append(_fila[2] / _fila[3])
+    if not _equivalentes:
+        print("Dispersion por turno, por modelo, en tokens: SIN MEDIR — "
+              "ninguna fila declara modelo, turnos, equiv_cost y cache_read "
+              "a la vez")
+    else:
+        print("Dispersion por turno, por modelo, en TOKENS — la media Y su "
+              "desviacion tipica, que es lo que la media no dice:")
+        print(f"  {'modelo':<22} {'n':>4} {'equiv_cost media':>18}"
+              f" {'equiv_cost desv':>17} {'cache_read media':>18}"
+              f" {'cache_read desv':>17}")
+        for _modelo in sorted(_equivalentes):
+            _fila_texto = f"  {_modelo:<22} n={len(_equivalentes[_modelo]):<2}"
+            for _muestra, _ancho in ((_equivalentes[_modelo], 18),
+                                     (_capacidades[_modelo], 17)):
+                _valores, _pesos = distribution.from_sample(_muestra)
+                _fila_texto += (
+                    f" {deviation.center(_valores, _pesos):>{_ancho},.0f}"
+                    f" {deviation.typical_deviation(_valores, _pesos):>{_ancho},.0f}")
+            print(_fila_texto)
+        print("  (desviacion POBLACIONAL de la muestra: cada fila pesa 1/n. "
+              "Un modelo con n=1 declara desviacion 0, que significa «una sola "
+              "observacion», no «consistente»)")
+
     # USD por modelo, al precio del tier de cada uno (catálogo vendorizado del
     # paquete). `equiv_cost` de arriba pondera con los cocientes de UN tier y
     # Fable 5.1 los rompe (H-DOCS-1008); esta tabla no hereda ese sesgo.
@@ -2760,7 +3203,7 @@ def cmd_usage_census(args: argparse.Namespace) -> None:
     if catalogo is None:
         print(f"USD por modelo: SIN MEDIR — {motivo}")
     else:
-        with connect(store_dir) as conn:
+        with connect_readonly(store_dir) as conn:
             por_modelo = conn.execute(
                 "SELECT model, COUNT(*), SUM(turns), SUM(input_tokens), "
                 "SUM(cache_creation_tokens), SUM(cache_read_tokens), SUM(output_tokens) "
@@ -2813,6 +3256,22 @@ def cmd_list_sessions(args: argparse.Namespace) -> None:
     print(f"Total: {len(rows)} ({store_dir / DB_FILENAME})")
 
 
+def existing_finding_summary(conn: sqlite3.Connection,
+                             finding_id: str) -> str | None:
+    """El ``summary`` ya registrado para ese id, o None si esta libre.
+
+    Separada de ``cmd_add_finding`` porque es la pregunta que el rehuse
+    necesita responder, y quien consuma el store como biblioteca tambien.
+    """
+    try:
+        row = conn.execute(
+            "SELECT summary FROM findings_history WHERE finding_id = ?",
+            (finding_id,)).fetchone()
+    except sqlite3.OperationalError:
+        return None                      # store recien creado, sin tabla aun
+    return row[0] if row else None
+
+
 def cmd_add_finding(args: argparse.Namespace) -> None:
     """Indexa un hallazgo/tarea/decision/reporte YA escrito como RST.
 
@@ -2826,6 +3285,20 @@ def cmd_add_finding(args: argparse.Namespace) -> None:
     ts = now_iso()
     created_at = args.date or ts
     with connect(store_dir) as conn:
+        existing = existing_finding_summary(conn, args.finding_id)
+        if existing is not None and not getattr(args, "force", False):
+            # El UPSERT de abajo actualiza en silencio. Un id repetido casi
+            # siempre es una COLISION del acunador —que escanea los .rst del
+            # consumidor y no ve estas filas—, no una correccion deliberada:
+            # medido dos veces en la misma sesion (H-THYROX-26), y el hallazgo
+            # pisado solo se recupero del transcript. Rehusar es la mitad que
+            # discrimina: detiene el pisado aunque el acunador siga colisionando.
+            print(f"agent_store: {args.finding_id} YA EXISTE — «{existing}».\n"
+                  f"  No se sobreescribe. Para corregir ese hallazgo, repite con "
+                  f"--force;\n  para registrar uno NUEVO, acuna otro id.",
+                  file=sys.stderr)
+            raise SystemExit(2)
+
         conn.execute(
             """
             INSERT INTO findings_history
@@ -3112,6 +3585,13 @@ def build_parser() -> argparse.ArgumentParser:
     add_target_args(p)
     p.set_defaults(func=cmd_usage_census)
 
+    p = sub.add_parser("censo-stop-reason",
+                       help="reparto de filas por procedencia de stop_reason, con "
+                            "su denominador; la declara usage_source, NO "
+                            "outcome_source (que se empareja con status)")
+    add_target_args(p)
+    p.set_defaults(func=cmd_stop_reason_census)
+
     p = sub.add_parser("censo-tablas",
                        help="filas, escrituras de hoy y ultima escritura por "
                             "tabla; la columna de fecha se DERIVA del esquema")
@@ -3175,6 +3655,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     add_target_args(p)
     p.add_argument("--finding-id", required=True, help="ej. H-API-625, T-106, DEC-03")
+    p.add_argument("--force", action="store_true",
+                   help="actualiza un finding-id que ya existe; sin ella se rehusa")
     p.add_argument("--submodule", required=True)
     p.add_argument("--initiative", required=True)
     p.add_argument(
@@ -3230,8 +3712,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser(
         "clasificar-documentos",
-        help="asignar a cada documento su SERIE (seccion/tipo) — la unidad de "
-        "conservacion del catalogo (#872). El plazo NO se escribe: #760",
+        help="asignar a cada documento su SERIE (seccion/tipo) — la unidad "
+        "de conservacion del catalogo (TASK-GEN-0136). El plazo NO se "
+        "escribe: lo bloquea TASK-DOCS-0245",
     )
     add_target_args(p)
     # Misma razon que en `fechar-documentos`: `--repo` ya esta tomado por
@@ -3287,10 +3770,24 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> None:
+def main(argv: "list[str] | None" = None) -> None:
+    """Punto de entrada. ``argv`` explicito para que una prueba lo ejercite.
+
+    Sin el parametro, la unica forma de probar el enrutado de un subcomando
+    era lanzar un proceso hijo, y entonces el caso mide el envoltorio en vez
+    del despacho. Es la forma del contrato parametrizado de la referencia
+    (``TencentDB Agent Memory: src/core/store/__contract__/``), donde la misma
+    suite corre contra cada backend por inyeccion en vez de por proceso.
+    """
     parser = build_parser()
-    args = parser.parse_args()
-    args.func(args)
+    args = parser.parse_args(argv)
+    try:
+        args.func(args)
+    except StoreNotFound as ausente:
+        # Exit 2 y SIN conteo: quien colapsa «rehuso» con «midio y salio 0»
+        # publica un PASS sobre una medicion que nunca ocurrio.
+        print(f"ERROR: {ausente}", file=sys.stderr)
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

@@ -11,13 +11,14 @@
  * angosto de ant, y `resetAutonomousLoopDelivered()` de verdad resetea
  * el estado del módulo.
  *
- * PORTE PARCIAL declarado (ver `internal/loopSentinelCore.ts`): el
- * bloque `readLoopFile` de la fuente importa
- * `getCwdState`/`setCwdState` directamente de
- * `@claude-code-how-works/app-host/bootstrap/state.js`, ausente en
- * este árbol. Sus cinco casos se reproponen abajo como pines de fuente
- * que verifican que la exclusión está documentada — no se fabrica el
- * mecanismo de cwd/config-home ausente en silencio.
+ * PORTE COMPLETO desde que `internal/loopSentinelCore.ts` cerró sus 17
+ * símbolos: el bloque `readLoopFile` de la fuente importa
+ * `getCwdState`/`setCwdState` de `@thyrox/app-host/bootstrap/state.js`,
+ * que hoy resuelve —medido con `Bun.resolveSync`— a
+ * `src/packages/app-host/src/bootstrap/state.ts`. Sus cinco casos, que
+ * mientras duró el recorte eran pines de PROSA sobre el docstring del
+ * módulo, vuelven a medir CONDUCTA: un pin de prosa no discrimina «el
+ * mecanismo funciona» de «el mecanismo no existe».
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import {
@@ -164,56 +165,95 @@ describe('resetAutonomousLoopDelivered', () => {
   })
 })
 
-// ─── readLoopFile (ant $67) — PORTE PARCIAL, ver el docstring del módulo ──
+// ─── readLoopFile (ant $67) — el fallback al config home de Claude ────────
 //
-// Los cinco casos de la fuente fijaban el fix CRÍTICO: el segundo
-// candidato de ant es `~/.claude/loop.md` (vía `getClaudeConfigHomeDir()`),
-// NO `~/loop.md` (vía `homedir()`). No se pueden pinear contra un
-// mecanismo que no existe aquí sin fabricarlo — eso sería un porte
-// parcial silencioso. En su lugar cada uno verifica que el docstring
-// del módulo declare explícitamente `readLoopFile` como excluido y su
-// razón (app-host/config-env ausentes): el pin pasa a proteger que la
-// declaración de recorte no desaparezca en un edit futuro, en vez de
-// proteger un mecanismo que no está.
+// Fijan el fix CRITICO: el segundo candidato de ant es `~/.claude/loop.md`
+// (via `getClaudeConfigHomeDir()`), NO `~/loop.md` (via `homedir()`). La
+// implementacion previa de ccb tenia la base equivocada y perdia el archivo
+// en silencio cuando `CLAUDE_CONFIG_DIR` estaba sobreescrito.
+//
+// Hasta el porte completo del modulo estos cinco casos eran pines de FUENTE
+// —verificaban que el recorte estuviera declarado en el docstring— porque
+// `readLoopFile` no se habia portado. Hoy el mecanismo esta, asi que miden
+// conducta: los pines de prosa no discriminaban «el mecanismo funciona» de
+// «el mecanismo no existe».
 
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
+import { getCwdState, setCwdState } from '@thyrox/app-host/bootstrap/state.js'
+import { readLoopFile } from '../internal/loopSentinelCore.js'
 
-describe('readLoopFile (ant $67) — pines de fuente sobre la exclusión declarada', () => {
-  const source = readFileSync(
-    resolve(__dirname, '..', 'internal', 'loopSentinelCore.ts'),
-    'utf-8',
-  )
+describe('readLoopFile (ant $67) — fallback al config home de Claude', () => {
+  let homeDir: string
+  let cwdBackup: string
+  let projectCwd: string
 
-  test('readLoopFile no se porta — declarado excluido por app-host ausente', () => {
-    expect(source).toMatch(/`readLoopFile`/)
-    expect(source).toMatch(/getCwd\(\)/)
-    expect(source).toMatch(/PORTE PARCIAL declarado/)
+  beforeEach(() => {
+    homeDir = mkdtempSync(join(tmpdir(), 'thyrox-loop-home-'))
+    process.env.CLAUDE_CONFIG_DIR = homeDir
+    // `readLoopFile` resuelve el cwd con el `getCwd` de app-host, que lee
+    // STATE.cwd y no `process.cwd`. Se guarda el cwd del estado y se
+    // sobreescribe con el directorio temporal de la prueba.
+    cwdBackup = getCwdState()
+    projectCwd = mkdtempSync(join(tmpdir(), 'thyrox-loop-project-'))
+    setCwdState(projectCwd)
   })
 
-  test('el candidato de proyecto (.claude\\/loop.md) no se porta — mismo motivo', () => {
-    expect(source).toMatch(/@claude-code-how-works\/app-host\/bootstrap\/cwd\.js/)
-    expect(source).toMatch(/monorepo de 32 paquetes/)
+  afterEach(() => {
+    setCwdState(cwdBackup)
+    rmSync(projectCwd, { recursive: true, force: true })
+    rmSync(homeDir, { recursive: true, force: true })
+    delete process.env.CLAUDE_CONFIG_DIR
   })
 
-  test('el fallback ~\\/.claude\\/loop.md (vía getClaudeConfigHomeDir, NO homedir) no se porta', () => {
-    // Pin de la declaración misma del fix crítico que el test de origen
-    // fijaba: el candidato es getClaudeConfigHomeDir(), no homedir().
-    expect(source).toMatch(/getClaudeConfigHomeDir/)
-    expect(source).toMatch(/@claude-code-how-works\/config\/env\/utils/)
-    expect(source).not.toMatch(/homedir\(\)/)
+  test('devuelve null cuando no existe ninguno de los dos candidatos', () => {
+    expect(readLoopFile()).toBeNull()
   })
 
-  test('el descarte de archivo vacío (post-trim) no se porta — mismo motivo', () => {
-    expect(source).toMatch(/getCwdState`\/`setCwdState`/)
-    expect(source).toMatch(
-      /@claude-code-how-works\/app-host\/bootstrap\/state\.js/,
+  test('lee primero el .claude/loop.md del proyecto', () => {
+    mkdirSync(join(projectCwd, '.claude'), { recursive: true })
+    writeFileSync(
+      join(projectCwd, '.claude', 'loop.md'),
+      'task 1\ntask 2',
+      'utf8',
     )
+    const got = readLoopFile()
+    expect(got).not.toBeNull()
+    expect(got!.content).toBe('task 1\ntask 2')
+    expect(got!.path.endsWith('/.claude/loop.md')).toBe(true)
   })
 
-  test('el truncado a LOOP_FILE_MAX_BYTES con footer WARNING no se porta — mismo motivo', () => {
-    expect(source).toMatch(/`truncateLoopFile`, `LOOP_FILE_MAX_BYTES`/)
-    expect(source).toMatch(/PORTE PARCIAL declarado/)
-    expect(source).toMatch(/LOOP_FALLBACK_PREAMBLE_SENTINEL/)
+  test('cae a ~/.claude/loop.md (NO a ~/loop.md)', () => {
+    // El pin del fix critico: la base del segundo candidato es el config
+    // home de Claude —que `CLAUDE_CONFIG_DIR` sobreescribe al temporal de
+    // la prueba—, no `os.homedir()`.
+    writeFileSync(join(homeDir, 'loop.md'), 'fallback content', 'utf8')
+    const got = readLoopFile()
+    expect(got).not.toBeNull()
+    expect(got!.content).toBe('fallback content')
+    expect(got!.path).toBe(join(homeDir, 'loop.md'))
+  })
+
+  test('un archivo vacio tras el trim salta al siguiente candidato', () => {
+    mkdirSync(join(projectCwd, '.claude'), { recursive: true })
+    writeFileSync(
+      join(projectCwd, '.claude', 'loop.md'),
+      '   \n\t\n   ',
+      'utf8',
+    )
+    writeFileSync(join(homeDir, 'loop.md'), 'real content', 'utf8')
+    const got = readLoopFile()
+    expect(got!.content).toBe('real content')
+  })
+
+  test('trunca un loop.md de mas de 25000 bytes con el footer WARNING', () => {
+    const big = ('a'.repeat(100) + '\n').repeat(300) // ~30 KB
+    mkdirSync(join(projectCwd, '.claude'), { recursive: true })
+    writeFileSync(join(projectCwd, '.claude', 'loop.md'), big, 'utf8')
+    const got = readLoopFile()
+    expect(got).not.toBeNull()
+    expect(got!.content.length).toBeLessThan(big.length)
+    expect(got!.content).toContain('WARNING: loop.md was truncated')
   })
 })

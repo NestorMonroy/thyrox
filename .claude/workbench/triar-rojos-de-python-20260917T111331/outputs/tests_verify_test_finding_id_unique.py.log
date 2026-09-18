@@ -1,0 +1,14 @@
+  ok   la fila sin .rst se reporta
+  ok   y --strict sale 1
+  ok   la fila CON .rst no se reporta
+  ok   el par 5/05 se reporta como colisión
+  ok   6 y 7 no son colisión
+  ok   la entrada congelada no bloquea
+  ok   y el denominador se publica igual
+  ok   rehúsa con exit 2
+  ok   y no emite ningún conteo
+  ok   el gate ve los 3 pares de relleno reales del corpus
+  ok   no aparecen archivos nuevos en el árbol
+  ok   no cambia ningún archivo del árbol
+
+12 aprobada(s) · 0 fallida(s) (alcance medido: check_finding_id_unique, sus dos mitades)

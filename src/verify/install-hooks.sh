@@ -72,8 +72,12 @@ HOOKS_DIR="$TARGET/.githooks"
 if [[ ! -d "$HOOKS_DIR" ]]; then
     echo "OMITIDO: $HOOKS_DIR no existe — este clon no versiona githooks"
 else
-    # git no corre un hook que no sea ejecutable.
-    chmod +x "$HOOKS_DIR"/* 2>/dev/null || true
+    # git no corre un hook que no sea ejecutable, asi que un `chmod` fallido
+    # deja la instalacion aparentemente hecha y de hecho inerte. Es el mismo
+    # defecto que la linea 138 de este guion ya documenta para su propio caso:
+    # alli un `|| true` convertia «cero hooks» en un pase falso.
+    chmod +x "$HOOKS_DIR"/* 2>/dev/null \
+        || echo "AVISO: chmod +x fallo — git no correra hooks no ejecutables" >&2
 
     CURRENT="$(git -C "$TARGET" config --get core.hooksPath 2>/dev/null || true)"
     if [[ "$CURRENT" == ".githooks" ]]; then

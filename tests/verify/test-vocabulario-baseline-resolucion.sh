@@ -104,36 +104,49 @@ else
   falla "respaldo al cwd" "rehuso teniendo el baseline del consumidor en el cwd"
 fi
 
-# ── caso 7: la LISTA DE FORMAS VETADAS se resuelve como el baseline
-# `FORBIDDEN = HERE / 'vocabulario_prohibido.txt'` miraba SOLO el hogar del
-# proveedor, y `load_forbidden()` devolvia [] en silencio si no estaba. thyrox
-# no la tiene —es parametro del consumidor, igual que el baseline— asi que el
-# detector `prohibido` corria con CERO formas contra las que comparar y
-# publicaba «0 hallazgos» como si el texto estuviera limpio.
+# ── caso 7: la LISTA DE FORMAS VETADAS resuelve en el PROVEEDOR
+# Estos dos casos median la resolucion de la lista contra el consumidor, y esa
+# premisa cambio: la lista es politica de vocabulario —51 de 51 formas son
+# español tecnico generico— y vive en `src/verify/` junto al mecanismo. El
+# consumidor conserva su baseline, que si es deuda de un corpus concreto.
+#
+# Reescribirlos no era opcional: con el archivo en `HERE`, `propio.is_file()`
+# corta antes del ascenso, asi que el caso 7 anterior seguia verde por la razon
+# equivocada —la lista del proveedor tambien declara `corrida`— y el 8 solo
+# podia dispararse borrando el archivo del proveedor. Un verde que no discrimina
+# es el sub-patron D con la propia suite como sujeto.
+#
+# Lo que este caso mide ahora: el ascenso al consumidor NO se consulta. Se
+# declara en el consumidor una forma que la lista canonica no tiene; si el gate
+# la marcara, estaria leyendo el archivo equivocado.
 caso
 unset VOCAB_GATE_FORBIDDEN
-printf 'corrida\n' > "$TMP/consumidor/.claude/baselines/vocabulario_prohibido.txt"
-printf 'Sujeto\n======\n\nLa primera corrida del generador fallo.\n' > "$TMP/consumidor/source/vetada.rst"
-SALIDA7="$( (cd "$TMP/consumidor" && python3 "$GATE" --strict "source/vetada.rst") 2>&1 )"
+printf 'zzforma-que-solo-el-consumidor-declara\n' \
+  > "$TMP/consumidor/.claude/baselines/vocabulario_prohibido.txt"
+printf 'Sujeto\n======\n\nUna zzforma-que-solo-el-consumidor-declara y una corrida del generador.\n' \
+  > "$TMP/consumidor/source/vetada.rst"
+SALIDA7="$( (cd "$TMP/consumidor" && python3 "$GATE" --strict --no-baseline "source/vetada.rst") 2>&1 )"
 CODIGO7=$?
-if [ "$CODIGO7" -eq 1 ] && printf '%s' "$SALIDA7" | grep -q 'corrida'; then
-  ok "encuentra la lista de vetadas del consumidor y bloquea"
+if [ "$CODIGO7" -eq 1 ] \
+   && printf '%s' "$SALIDA7" | grep -q 'corrida' \
+   && ! printf '%s' "$SALIDA7" | grep -q 'zzforma-que-solo-el-consumidor-declara'; then
+  ok "usa la lista canonica del proveedor e ignora la copia del consumidor"
 else
-  falla "lista de vetadas" "exit=$CODIGO7 — con 0 formas cargadas todo texto pasa"
+  falla "lista del proveedor" "exit=$CODIGO7 — marco la forma del consumidor, o no vio la canonica"
 fi
 
-# ── caso 8: sin lista de vetadas en ninguna parte REHUSA
-# Mismo criterio que el baseline: un cero no distingue «no hay formas vetadas»
-# de «no encontre la lista». La diferencia importa — la lista es la MITAD del
-# gate, y su ausencia lo deja midiendo un solo eje sin decirlo.
+# ── caso 8: la lista DECLARADA y ausente REHUSA
+# El rehuso sigue siendo la conducta correcta y su premisa se estrecha: ya no
+# se alcanza por «no esta en ninguna parte» —el proveedor siempre la trae—
+# sino por una ruta declarada que no existe, que es como un consumidor se
+# equivoca al redirigirla. Un cero aqui no distinguiria «no hay formas vetadas»
+# de «no encontre la lista», y la lista es la MITAD del gate.
 caso
-mkdir -p "$TMP/sinlista/.claude/baselines" "$TMP/sinlista/source"
-printf '# vacio\n' > "$TMP/sinlista/.claude/baselines/vocabulario_prosa_baseline.txt"
-cp "$PROSA" "$TMP/sinlista/source/sujeto.rst"
-SALIDA8="$( (cd "$TMP/sinlista" && python3 "$GATE" "source/sujeto.rst") 2>&1 )"
+SALIDA8="$( VOCAB_GATE_FORBIDDEN="$TMP/no-existe/vetadas.txt" \
+  python3 "$GATE" --no-baseline "$PROSA" 2>&1 )"
 CODIGO8=$?
 if [ "$CODIGO8" -eq 2 ] && printf '%s' "$SALIDA8" | grep -q "vocabulario_prohibido"; then
-  ok "rehusa sin la lista de vetadas y la nombra"
+  ok "rehusa con la lista declarada y ausente, y la nombra"
 else
   falla "rehuso sin lista" "exit=$CODIGO8 — un conteo aqui mediria un solo eje"
 fi
@@ -145,9 +158,15 @@ fi
 # empareja con las 620 entradas congeladas, que dicen `source/x.rst::forma`.
 # La deuda heredada se publicaria entera como nueva — el defecto de h-docs-1107
 # por otra puerta.
+#
+# Su sujeto es la CLAVE, no la lista: por eso declara la suya por variable,
+# como los casos 1-6. Sin eso heredaba el `unset` del caso 7 y resolvia contra
+# la lista canonica del proveedor — acoplamiento de estado que hacia caer este
+# caso al anular aquel, midiendo dos cosas con una asercion.
 caso
 printf 'source/vetada.rst::corrida\n' > "$TMP/consumidor/.claude/baselines/vocabulario_prosa_baseline.txt"
-if (cd "$TMP/consumidor" && python3 "$GATE" --strict "$TMP/consumidor/source/vetada.rst") >/dev/null 2>&1; then
+if (cd "$TMP/consumidor" && VOCAB_GATE_FORBIDDEN="$TMP/vetadas.txt" \
+      python3 "$GATE" --strict "$TMP/consumidor/source/vetada.rst") >/dev/null 2>&1; then
   ok "la clave es relativa al consumidor y el baseline la absorbe"
 else
   falla "clave relativa" "la clave no emparejo con la entrada del baseline"

@@ -27,7 +27,6 @@ import pathlib
 import re
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from paths import reach, surface  # noqa: E402
 
 EXIT_OK, EXIT_VIOLATIONS, EXIT_GUARD = 0, 1, 2

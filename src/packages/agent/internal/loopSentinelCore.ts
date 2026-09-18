@@ -3,92 +3,91 @@
  * `ccnmt: packages/agent/internal/loopSentinelCore.ts` (port de ant
  * v2.1.136, módulo `xFH` — 2924.js + 2925.js).
  *
- * El scheduler de cron emite `task.prompt` verbatim al disparar un
- * wakeup. Para loops autónomos y loops guiados por `loop.md`,
- * `resolveLoopDefaultFire` sustituye ese prompt por una instrucción más
- * rica al momento del disparo (el preámbulo de steward/persistente en
- * el primer disparo; un recordatorio corto de "tick" en los siguientes)
- * en vez de dejar pasar el string literal `<<autonomous-loop>>`. La
- * propia fuente declara: *"The fire-resolution path is integration
- * (depends on env vars, feature flags, and global config that don't
- * survive bun:test mocking). These unit tests pin the structural
- * invariants"* — es decir, la fuente NUNCA testea unitariamente esa
- * ruta de disparo; sólo fija sentinels, preámbulos y el reset de
- * estado. Este porte sigue esa misma frontera.
+ * El scheduler de cron emite `task.prompt` verbatim al disparar un wakeup.
+ * Para loops autónomos y loops guiados por `loop.md`,
+ * `resolveLoopDefaultFire` sustituye ese prompt por una instrucción más rica
+ * al momento del disparo —el preámbulo de steward/persistente en el primer
+ * disparo; un recordatorio corto de «tick» en los siguientes— en vez de
+ * dejar pasar el string literal `<<autonomous-loop>>`.
  *
- * PORTE PARCIAL declarado — mismo criterio que
- * `internal/cronTasksCore.ts` (ver su docstring): se porta lo que el
- * test ejercita; lo que depende de un paquete ausente y NO está
- * ejercitado se omite, con la razón documentada aquí, y su pin de
- * origen se repropone en el test para verificar esta misma declaración
- * (no fabricar el mecanismo ausente en silencio).
+ * PORTE COMPLETO: 17 de 17 símbolos exportados, medido con el censo por AST
+ * contra la fuente.
  *
- * Símbolos de la fuente OMITIDOS, y por qué:
+ * Antes era un PORTE PARCIAL declarado, y su premisa era una sola: «ninguno
+ * de los dos paquetes vive en este árbol». Hoy es falsa — los siete símbolos
+ * que la fuente importa resuelven:
  *
- *   - `readLoopFile` — resuelve `.claude/loop.md` contra el cwd real
- *     vía `getCwd()` (`@claude-code-how-works/app-host/bootstrap/cwd.js`)
- *     y el fallback `~/.claude/loop.md` vía `getClaudeConfigHomeDir()`
- *     (`@claude-code-how-works/config/env/utils`). El propio test de
- *     origen (`__tests__/loopSentinelCore.test.ts`) importa
- *     `getCwdState`/`setCwdState` DIRECTAMENTE de
- *     `@claude-code-how-works/app-host/bootstrap/state.js` para poder
- *     sobreescribir el cwd por test — ninguno de los dos paquetes vive
- *     en este árbol (monorepo de 32 paquetes, fuera de alcance de este
- *     porte).
- *   - `truncateLoopFile`, `LOOP_FILE_MAX_BYTES`,
- *     `LOOP_FALLBACK_PREAMBLE_SENTINEL` — sólo los consume
- *     `readLoopFile`/`resolveLoopFileFire`.
- *   - `isLoopDefaultPromptEnabled`, `logAutonomousLoopActivation` — sólo
- *     los consume la ruta de disparo (`resolveAutonomousLoopFire` /
- *     `resolveLoopFileFire`), que el test de origen declara fuera de
- *     su propio alcance unitario (ver arriba).
- *   - `isPushNotifEnabled` — depende de `getInitialSettings`
- *     (`@claude-code-how-works/config/settings`) y `getGlobalConfig`
- *     (`@claude-code-how-works/config`), ausentes.
- *   - `buildPushNotifPacingHint`, `SCHEDULE_WAKEUP_HEARTBEAT_HINT`,
- *     `autonomousLoopTickCron`, `autonomousLoopTickDynamic`,
- *     `loopFileTickCron`, `loopFileTickDynamic`,
- *     `loopFileTickAbsentDynamic`, `SCHEDULE_WAKEUP_TOOL_NAME`,
- *     `MONITOR_MCP_TOOL_NAME`, `PUSH_NOTIFICATION_TOOL_NAME`,
- *     `TASK_STOP_TOOL_NAME` — sólo los consume la ruta de disparo.
- *   - `resolveAutonomousLoopFire`, `resolveLoopFileFire`,
- *     `resolveLoopDefaultFire` — la ruta de integración completa; el
- *     test de origen no la ejercita (ver la cita de arriba) y depende
- *     transitivamente de `readLoopFile`, ya omitido.
+ *   getCwd                              app-host/src/bootstrap/cwd.ts
+ *   getCwdState / setCwdState           app-host/src/bootstrap/state.ts
+ *   getFeatureValue_CACHED_MAY_BE_STALE config/feature-flags.ts
+ *   readEnv / getClaudeConfigHomeDir    config/env/utils.ts
+ *   logEvent                            local-observability/src/core.ts
+ *   getInitialSettings                  config/settings/settings.ts
+ *   getGlobalConfig                     config/global/config.ts
  *
- * Se PORTAN, con divergencia declarada en sus propias funciones:
- * `isLoopPersistentPreambleEnabled` (lee `CLAUDE_CODE_LOOP_PERSISTENT`
- * con `process.env` directo — `readEnv` de
- * `@claude-code-how-works/config/env` es, verificado contra la fuente,
- * exactamente `process.env[name]` sin transformación,
- * `ccnmt: packages/config/env/utils.ts:198`, re-exportado por
- * `packages/config/env/index.ts` — y usa un stand-in local para
- * `getFeatureValue_CACHED_MAY_BE_STALE` que siempre devuelve el
- * `defaultValue`: sin overrides ni `LOCAL_GATE_DEFAULTS`, que viven en
- * `@claude-code-how-works/config/feature-flags`, ausente).
+ * Con eso caen los seis exportados que faltaban —`readLoopFile`,
+ * `isLoopDefaultPromptEnabled`, `logAutonomousLoopActivation`,
+ * `resolveAutonomousLoopFire`, `resolveLoopFileFire`,
+ * `resolveLoopDefaultFire`— y con ellos sus auxiliares privados
+ * (`truncateLoopFile`, `LOOP_FILE_MAX_BYTES`, `isPushNotifEnabled`, los
+ * seis generadores de «tick» y los cuatro nombres de herramienta).
+ *
+ * Caen también los DOS stand-in locales que el porte parcial necesitaba:
+ * `readEnv` —que era `process.env[name]` a mano— y
+ * `getFeatureValue_CACHED_MAY_BE_STALE` —que devolvía siempre el
+ * `defaultValue`, sin overrides ni `LOCAL_GATE_DEFAULTS`—. Ahora los dos son
+ * el import real, así que el comportamiento de las banderas deja de ser un
+ * sustituto y pasa a ser el de la fuente.
+ *
+ * Lo que la fuente NO testea unitariamente sigue sin testearse aquí, y esa
+ * frontera es suya, no nuestra: *"The fire-resolution path is integration
+ * (depends on env vars, feature flags, and global config that don't survive
+ * bun:test mocking). These unit tests pin the structural invariants"*.
  */
+
+import { existsSync, readFileSync } from 'fs'
+import { join } from 'path'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { readEnv } from '@thyrox/config/env'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability'
+import { getInitialSettings } from '@thyrox/config/settings'
+import { getGlobalConfig } from '@thyrox/config'
+
+// SCHEDULE_WAKEUP_TOOL_NAME / MONITOR_MCP_TOOL_NAME / PUSH_NOTIFICATION
+// tool names referenced inside prompts. Kept inline to avoid an
+// agent→tools→agent import cycle. Names match the tool registrations.
+const SCHEDULE_WAKEUP_TOOL_NAME = 'ScheduleWakeup'
+const MONITOR_MCP_TOOL_NAME = 'MonitorMcp'
+const PUSH_NOTIFICATION_TOOL_NAME = 'PushNotification'
+const TASK_STOP_TOOL_NAME = 'TaskStop'
 
 export const AUTONOMOUS_LOOP_SENTINEL = '<<autonomous-loop>>'
 export const AUTONOMOUS_LOOP_DYNAMIC_SENTINEL = '<<autonomous-loop-dynamic>>'
 export const LOOP_FILE_SENTINEL = '<<loop.md>>'
 export const LOOP_FILE_DYNAMIC_SENTINEL = '<<loop.md-dynamic>>'
 
-/** Stand-in local, declarado arriba: `process.env[name]` sin transformar. */
-function readEnv(name: string): string | undefined {
-  return process.env[name]
-}
-
-/** Stand-in local, declarado arriba: siempre el `defaultValue`. */
-function getFeatureValue_CACHED_MAY_BE_STALE<T>(
-  _feature: string,
-  defaultValue?: T,
-): T {
-  return defaultValue as T
-}
+/**
+ * Ant `H66` — soft cap on loop.md bytes. Larger files get the tail
+ * truncated to the last newline ≤ this byte boundary and a WARNING
+ * footer.
+ */
+const LOOP_FILE_MAX_BYTES = 25_000
 
 /**
- * Ant `EY8` — preámbulo default / steward. Se usa cuando `_66()` es
- * false. Verbatim de ant v2.1.136 2924.js.
+ * Ant `K67` — placeholder string stored in `loopFileLastContent` when
+ * the loop.md path falls through to the autonomous-loop preamble. The
+ * sentinel value lets us cheaply detect "fallback preamble already
+ * delivered, don't re-prepend" without storing the whole multi-KB
+ * preamble in the equality slot.
+ */
+const LOOP_FALLBACK_PREAMBLE_SENTINEL = '__autonomous_preamble__'
+
+/**
+ * Ant `EY8` — default / steward preamble. Used when `_66()` is false.
+ * Verbatim from ant v2.1.136 2924.js.
  */
 export const AUTONOMOUS_LOOP_PREAMBLE = `# Autonomous loop check
 
@@ -116,16 +115,16 @@ Read and analyze freely — understanding the state of things has no blast radiu
 `
 
 /**
- * Ant `q67` — preámbulo del modo persistente. La cabecera es LA MISMA
- * que la default ("# Autonomous loop check"); las diferencias son:
- *   - framing explícito de reversibilidad ("For irreversible
- *     actions... For reversible actions, bias toward acting...")
- *   - "keep the loop alive" en la rama quieta (en vez de "say so in
- *     one sentence and stop")
- *   - "broaden scope once before considering stopping" en vez de "do
- *     one quick CI/threads check and stop"
+ * Ant `q67` — persistent-mode preamble. The header is the SAME as the
+ * default ("# Autonomous loop check"); the differences are:
+ *   - explicit reversibility framing ("For irreversible actions...
+ *     For reversible actions, bias toward acting...")
+ *   - "keep the loop alive" at the quiet branch (instead of
+ *     "say so in one sentence and stop")
+ *   - "broaden scope once before considering stopping" instead of
+ *     "do one quick CI/threads check and stop"
  *
- * Verbatim de ant v2.1.136 2924.js.
+ * Verbatim from ant v2.1.136 2924.js.
  */
 const AUTONOMOUS_LOOP_PREAMBLE_PERSISTENT = `# Autonomous loop check
 
@@ -152,8 +151,8 @@ If you see earlier autonomous checks in this conversation, adjust your scope acc
 Read and analyze freely — understanding the state of things has no blast radius. Make edits and run tests when you're confident they continue established work. Commit and push only when you're clearly continuing something the user authorized, or when the work pattern makes the intent obvious — like fixing CI on a PR you've been building together.
 `
 
-// Estado por sesión — a nivel de módulo. Se resetea al cambiar de
-// sesión vía `resetAutonomousLoopDelivered`.
+// Per-session state — module-level. Reset on session switch via
+// `resetAutonomousLoopDelivered`.
 let loopPreambleDelivered = false
 let loopFileLastContent: string | null = null
 
@@ -180,13 +179,21 @@ export function isLoopDefaultSentinel(prompt: string): boolean {
 }
 
 /**
- * Ant `_66` (verbatim). La variable de entorno gana a la bandera.
- *   - `CLAUDE_CODE_LOOP_PERSISTENT` truthy seteada → persistente
- *   - si no, la bandera `tengu_kairos_loop_persistent` → persistente
- *   - si no, default (steward)
+ * Ant `xY8`. Gate for the entire loop-prompt resolution path. When off,
+ * sentinels are returned to the caller as-is (the model sees the
+ * literal `<<autonomous-loop>>` string — useful for debugging).
+ */
+export function isLoopDefaultPromptEnabled(): boolean {
+  return getFeatureValue_CACHED_MAY_BE_STALE('tengu_kairos_loop_prompt', false)
+}
+
+/**
+ * Ant `_66` (verbatim). Env var beats the flag.
+ *   - `CLAUDE_CODE_LOOP_PERSISTENT` set truthy → persistent
+ *   - else `tengu_kairos_loop_persistent` feature flag → persistent
+ *   - else default (steward)
  *
- * Pública para que la telemetría de activación pueda reportar la
- * variante resuelta.
+ * Public so the activation telemetry can report the resolved variant.
  */
 export function isLoopPersistentPreambleEnabled(): boolean {
   const env = readEnv('CLAUDE_CODE_LOOP_PERSISTENT')
@@ -199,11 +206,253 @@ export function isLoopPersistentPreambleEnabled(): boolean {
 }
 
 /**
- * Ant `CY8`. Devuelve el preámbulo correcto para la sesión/entorno
- * actual.
+ * Ant `CY8`. Returns the right preamble for the current session/env.
  */
 export function getAutonomousLoopPreamble(): string {
   return isLoopPersistentPreambleEnabled()
     ? AUTONOMOUS_LOOP_PREAMBLE_PERSISTENT
     : AUTONOMOUS_LOOP_PREAMBLE
+}
+
+/**
+ * Ant `IY8`. Fires `tengu_kairos_loop_persistent_activated` with a
+ * `variant` boolean indicating whether the persistent preamble is
+ * active. Called from `resolveAutonomousLoopFire` and the loop.md
+ * fall-through path. NOT once-per-session — fires every time the loop
+ * fires, so we can sample population behaviour.
+ */
+export function logAutonomousLoopActivation(): void {
+  logEvent('tengu_kairos_loop_persistent_activated', {
+    variant: String(
+      isLoopPersistentPreambleEnabled(),
+    ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  })
+}
+
+/**
+ * Ant `AzH` (2592.js). Push-notification feature gate — both the
+ * GrowthBook flag AND the per-user opt-in must be set. The pacing
+ * hint that mentions `${PushNotification}` is only emitted when this
+ * returns true; otherwise the user can't act on it.
+ *
+ * Critical: ant reads the opt-in via `H3('agentPushNotifEnabled',!1).value`,
+ * which is a *layered* settings lookup that walks user / project /
+ * local / flag / policy sources in reverse precedence order, then
+ * falls back to the legacy globalConfig key for promoted keys. ccb
+ * mirrors that by checking the merged settings first (covers user /
+ * project / local overrides) then falling back to globalConfig for
+ * sessions that haven't migrated the legacy key yet.
+ */
+function isPushNotifEnabled(): boolean {
+  if (
+    !getFeatureValue_CACHED_MAY_BE_STALE(
+      'tengu_kairos_push_notifications',
+      false,
+    )
+  ) {
+    return false
+  }
+  try {
+    const fromSettings = getInitialSettings()?.agentPushNotifEnabled
+    if (typeof fromSettings === 'boolean') return fromSettings
+    return getGlobalConfig().agentPushNotifEnabled === true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Ant `iz_(isLoopFile = false)`. Pacing-aware hint appended to every
+ * tick prompt. Returns empty string when push-notifs are off
+ * (sending one wouldn't reach the user). The wording differs slightly
+ * for the persistent variant ("third straight tick" trigger is
+ * suppressed for persistent loops since they don't quit easily).
+ */
+function buildPushNotifPacingHint(isLoopFile = false): string {
+  if (!isPushNotifEnabled()) return ''
+  const persistent = !isLoopFile && isLoopPersistentPreambleEnabled()
+  const triggers = persistent
+    ? "newly blocked on a decision you won't make alone, you're ending the loop"
+    : "newly blocked on a decision you won't make alone, third straight tick with nothing to do, you're ending the loop"
+  return `
+
+Use ${PUSH_NOTIFICATION_TOOL_NAME} when the loop can't move further without the user, or when something landed that they'd want to act on now: ${triggers}, or a major update arrived (CI went red, a review changes the plan). Progress you made yourself isn't a trigger — the transcript covers that. One ping per state, not per tick.`
+}
+
+/**
+ * Ant `bY8` — heartbeat pacing reminder appended to dynamic-mode
+ * ticks. Tells the model to use a 1200-1800s delay when MonitorMcp
+ * is armed so the wake signal is the monitor, not the heartbeat.
+ */
+const SCHEDULE_WAKEUP_HEARTBEAT_HINT = `
+
+If a ${MONITOR_MCP_TOOL_NAME} is armed (check ${TASK_STOP_TOOL_NAME}), keep \`delaySeconds\` at 1200–1800s — the ${MONITOR_MCP_TOOL_NAME} is the wake signal and this is only the fallback heartbeat. If you were woken by a \`<task-notification>\`, handle the event before rescheduling. To stop the loop, also ${TASK_STOP_TOOL_NAME} the monitor (use ${TASK_STOP_TOOL_NAME} to find its task ID if no longer in context).`
+
+function autonomousLoopTickCron(): string {
+  return `# Autonomous loop tick
+
+Run the autonomous check using the loop instructions established earlier in this conversation. If you cannot find them, treat this as a no-op tick. The recurring cron will fire the next tick automatically — do not call ${SCHEDULE_WAKEUP_TOOL_NAME} from this tick.${buildPushNotifPacingHint()}`
+}
+
+function autonomousLoopTickDynamic(): string {
+  return `# Autonomous loop tick (dynamic pacing)
+
+Run the autonomous check using the loop instructions established earlier in this conversation. If you cannot find them, treat this as a no-op tick.
+
+You scheduled this tick via the ${SCHEDULE_WAKEUP_TOOL_NAME} tool (not a recurring cron). To keep the loop alive, call ${SCHEDULE_WAKEUP_TOOL_NAME} again at the end of this turn with \`prompt\` set to the literal sentinel \`${AUTONOMOUS_LOOP_DYNAMIC_SENTINEL}\` — otherwise the loop ends after this tick.${SCHEDULE_WAKEUP_HEARTBEAT_HINT}${buildPushNotifPacingHint()}`
+}
+
+function loopFileTickCron(): string {
+  return `# /loop tick — loop.md tasks
+
+Work the tasks from the loop.md contents established earlier in this conversation. If you cannot find them, treat this as a no-op tick. The recurring cron will fire the next tick automatically — do not call ${SCHEDULE_WAKEUP_TOOL_NAME} from this tick.${buildPushNotifPacingHint(true)}`
+}
+
+function loopFileTickDynamic(): string {
+  return `# /loop tick — loop.md tasks (dynamic pacing)
+
+Work the tasks from the loop.md contents established earlier in this conversation. If you cannot find them, treat this as a no-op tick.
+
+You scheduled this tick via the ${SCHEDULE_WAKEUP_TOOL_NAME} tool (not a recurring cron). To keep the loop alive, call ${SCHEDULE_WAKEUP_TOOL_NAME} again at the end of this turn with \`prompt\` set to the literal sentinel \`${LOOP_FILE_DYNAMIC_SENTINEL}\` — otherwise the loop ends after this tick.${SCHEDULE_WAKEUP_HEARTBEAT_HINT}${buildPushNotifPacingHint(true)}`
+}
+
+function loopFileTickAbsentDynamic(): string {
+  return `# /loop tick — loop.md absent (dynamic pacing)
+
+loop.md is not currently present. Run the autonomous check using the loop instructions established earlier in this conversation.
+
+You scheduled this tick via the ${SCHEDULE_WAKEUP_TOOL_NAME} tool (not a recurring cron). To keep the loop alive — and to pick up loop.md if it is recreated — call ${SCHEDULE_WAKEUP_TOOL_NAME} again at the end of this turn with \`prompt\` set to the literal sentinel \`${LOOP_FILE_DYNAMIC_SENTINEL}\` — otherwise the loop ends after this tick.${SCHEDULE_WAKEUP_HEARTBEAT_HINT}${buildPushNotifPacingHint()}`
+}
+
+function truncateLoopFile(content: string): string {
+  if (content.length <= LOOP_FILE_MAX_BYTES) return content
+  const cutAt = content.lastIndexOf('\n', LOOP_FILE_MAX_BYTES)
+  const head = content.slice(0, cutAt > 0 ? cutAt : LOOP_FILE_MAX_BYTES)
+  return `${head}\n\n> WARNING: loop.md was truncated to ${LOOP_FILE_MAX_BYTES} bytes. Keep the task list concise.`
+}
+
+/**
+ * Ant `$67` — find a loop.md to use. Project-local takes priority over
+ * the Claude config home (NOT $HOME — ant explicitly resolves the
+ * fallback via `n6()`, i.e. `getClaudeConfigHomeDir()` so users with
+ * `CLAUDE_CONFIG_DIR` set get the right base. Returns null if neither
+ * path exists or both are empty after trim.
+ *
+ * Critical: ant's second candidate is `~/.claude/loop.md`, NOT
+ * `~/loop.md`. The prior ccb impl used `homedir()` which would
+ * silently miss the file for anyone with `CLAUDE_CONFIG_DIR` set, and
+ * also write to / read from a different path than the rest of the
+ * Claude state tree.
+ */
+export function readLoopFile(): { path: string; content: string } | null {
+  const candidates = [
+    join(getCwd(), '.claude', 'loop.md'),
+    join(getClaudeConfigHomeDir(), 'loop.md'),
+  ]
+  for (const path of candidates) {
+    if (!existsSync(path)) continue
+    let raw: string
+    try {
+      raw = readFileSync(path, 'utf-8')
+    } catch {
+      continue
+    }
+    const trimmed = raw.trim()
+    if (trimmed.length === 0) continue
+    return { path, content: truncateLoopFile(trimmed) }
+  }
+  return null
+}
+
+/**
+ * Ant `A67`. Resolve `<<autonomous-loop>>` / `<<autonomous-loop-dynamic>>`
+ * to the real tick prompt. First fire of the session prepends the
+ * appropriate preamble; later fires return only the short tick string.
+ *
+ * Telemetry: `tengu_kairos_loop_persistent_activated` fires on every
+ * autonomous fire (ant IY8) so we can sample which variant is active
+ * across the population. The first-fire guard only suppresses the
+ * heavy preamble, not the telemetry.
+ */
+export function resolveAutonomousLoopFire(prompt: string): string | null {
+  if (!isAutonomousLoopSentinel(prompt)) return null
+  if (!isLoopDefaultPromptEnabled()) return null
+  logAutonomousLoopActivation()
+  const tick =
+    prompt === AUTONOMOUS_LOOP_DYNAMIC_SENTINEL
+      ? autonomousLoopTickDynamic()
+      : autonomousLoopTickCron()
+  if (loopPreambleDelivered || loopFileLastContent !== null) return tick
+  loopPreambleDelivered = true
+  return `${getAutonomousLoopPreamble()}
+
+---
+
+${tick}`
+}
+
+/**
+ * Ant `Y67`. Resolve `<<loop.md>>` / `<<loop.md-dynamic>>` against the
+ * on-disk file. If the file content matches the previous fire, only
+ * the short tick is returned. If it changed (or is the first fire),
+ * full context is repeated.
+ *
+ * When loop.md is missing, falls through to the autonomous-loop
+ * preamble — using `LOOP_FALLBACK_PREAMBLE_SENTINEL` as the equality
+ * key so we don't store the whole preamble in the cache slot.
+ */
+export function resolveLoopFileFire(prompt: string): string | null {
+  if (!isLoopFileSentinel(prompt)) return null
+  if (!isLoopDefaultPromptEnabled()) return null
+  const isDynamic = prompt === LOOP_FILE_DYNAMIC_SENTINEL
+  const file = readLoopFile()
+  if (file !== null) {
+    const tick = isDynamic ? loopFileTickDynamic() : loopFileTickCron()
+    if (loopFileLastContent === file.content) return tick
+    loopFileLastContent = file.content
+    return `# /loop tick — tasks from ${file.path}
+
+The user configured a loop-tasks file. Work through the tasks defined below; these are the instructions for this tick and every subsequent tick (the reminder on later fires refers back to this message).
+
+---
+
+${file.content}
+
+---
+
+${tick}`
+  }
+  // No loop.md present — fall through to the autonomous tick. ant Y67
+  // calls IY8() before deciding to prepend, so the telemetry fires on
+  // every loop.md fallthrough tick regardless of whether the preamble
+  // is rendered.
+  logAutonomousLoopActivation()
+  const tick = isDynamic ? loopFileTickAbsentDynamic() : autonomousLoopTickCron()
+  if (
+    loopFileLastContent === LOOP_FALLBACK_PREAMBLE_SENTINEL ||
+    loopPreambleDelivered
+  ) {
+    return tick
+  }
+  loopFileLastContent = LOOP_FALLBACK_PREAMBLE_SENTINEL
+  loopPreambleDelivered = true
+  return `${getAutonomousLoopPreamble()}
+
+---
+
+${tick}`
+}
+
+/**
+ * Default fire-prompt resolver. Try autonomous-loop sentinels first,
+ * then loop.md sentinels, fall through to the original prompt. The
+ * cron tick fire path calls this on every prompt before queueing it
+ * for the model.
+ */
+export function resolveLoopDefaultFire(prompt: string): string {
+  return (
+    resolveAutonomousLoopFire(prompt) ??
+    resolveLoopFileFire(prompt) ??
+    prompt
+  )
 }

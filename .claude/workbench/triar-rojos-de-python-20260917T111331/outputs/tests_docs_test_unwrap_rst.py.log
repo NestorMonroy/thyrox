@@ -1,0 +1,28 @@
+test_directive_content (__main__.ConstructosIntactos.test_directive_content) ... ok
+test_doctest_block (__main__.ConstructosIntactos.test_doctest_block) ... ok
+test_enumerators (__main__.ConstructosIntactos.test_enumerators) ... ok
+test_field_list (__main__.ConstructosIntactos.test_field_list) ... ok
+test_grid_table (__main__.ConstructosIntactos.test_grid_table) ... ok
+test_literal_block (__main__.ConstructosIntactos.test_literal_block) ... ok
+test_option_list (__main__.ConstructosIntactos.test_option_list) ... ok
+test_unicode_bullets (__main__.ConstructosIntactos.test_unicode_bullets) ... ok
+test_hay_corpus_que_medir (__main__.CorpusReal.test_hay_corpus_que_medir) ... FAIL
+test_preserva_el_parseo_y_es_idempotente (__main__.CorpusReal.test_preserva_el_parseo_y_es_idempotente) ... ok
+test_list_item_body (__main__.ProsaUnida.test_list_item_body) ... ok
+test_paragraph_before_title_is_not_swallowed (__main__.ProsaUnida.test_paragraph_before_title_is_not_swallowed) ... ok
+test_role_at_paragraph_start_is_prose (__main__.ProsaUnida.test_role_at_paragraph_start_is_prose) ... ok
+test_title_keeps_its_underline (__main__.ProsaUnida.test_title_keeps_its_underline) ... ok
+test_wrapped_paragraph (__main__.ProsaUnida.test_wrapped_paragraph) ... ok
+
+======================================================================
+FAIL: test_hay_corpus_que_medir (__main__.CorpusReal.test_hay_corpus_que_medir)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/docs/test_unwrap_rst.py", line 144, in test_hay_corpus_que_medir
+    self.assertGreater(len(self.paths), 20,
+AssertionError: 0 not greater than 20 : el corpus de hallazgos no se encontró
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.001s
+
+FAILED (failures=1)

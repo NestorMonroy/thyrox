@@ -50,7 +50,6 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent))
 from paths import reach  # noqa: E402
 
 BASELINE = HERE / "rule_divergence_baseline.txt"

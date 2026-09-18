@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/hooks/test_detect_agent_dispatch.py", line 18, in <module>
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+    ^^^
+NameError: name 'sys' is not defined
+EXIT=1

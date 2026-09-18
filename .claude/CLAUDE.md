@@ -49,12 +49,31 @@ si describe cómo funciona una pieza, va en la cabecera de la pieza.
    documenta *qué se aprendió* y es lo único que queda indexado y buscable
    entre sesiones (`agent_store.py buscar-hallazgos`). No todo trabajo
    produce uno — sólo el que corrige algo que alguien podría volver a asumir.
-   **Cuando el hallazgo es del consumidor** (un ``H-<PREFIJO>-NNNN`` que va a
-   vivir como ``.rst`` en `kaupamex-docs`, no una fila de este store) el
-   número se acuña con `src/hallazgo/hallazgo_ids.py acunar <PREFIJO>` —
-   nunca a mano con un `ls`/`grep` acotado a una sola iniciativa. Ese acotado
-   fue exactamente el error que originó este mecanismo: `H-API-1112`
-   documenta el episodio.
+   **Cuando el hallazgo es del consumidor** —un ``H-<PREFIJO>-NNNN`` que vive
+   como ``.rst`` en `kaupamex-docs`— el número se acuña con
+   `src/hallazgo/hallazgo_ids.py acunar <PREFIJO>`, nunca a mano con un
+   `ls`/`grep` acotado a una sola iniciativa. Ese acotado fue exactamente el
+   error que originó este mecanismo: `H-API-1112` documenta el episodio.
+
+   **Y ese hallazgo tiene DOS caras, no una — cuál gobierna está declarado.**
+   La redacción anterior decía *«no una fila de este store»*, y esa
+   disyunción es falsa: el hallazgo del consumidor es a la vez su ``.rst`` y
+   su fila. Lo que hay entre las dos no es competencia sino dirección, medida
+   antes de declararla — de los seis prefijos del corpus, los números que
+   vivían **sólo** como fila eran cero en cinco y tres en el sexto:
+
+   - **el ``.rst`` es el artefacto de gobierno** — lleva el cuerpo, su
+     etiqueta ``:ref:`` y su fila en el índice de la iniciativa;
+   - **la fila es su índice de búsqueda** entre sesiones, y no lo sustituye;
+   - **la ventana entre registrar la fila y escribir el archivo es legítima
+     mientras dura.** Por eso el acuñador consulta las dos fuentes por
+     defecto: un número libre en los ``.rst`` puede estar ocupado por una
+     fila escrita hace un minuto. Congelada, esa ventana es deuda, y quien la
+     mide es `src/verify/check_finding_id_unique.py`.
+
+   El episodio que lo obligó a declararse es ``H-THYROX-26``: dos hallazgos
+   distintos acabaron bajo el mismo número y el segundo pisó al primero **sin
+   emitir un byte**.
 6. Commitear por pathspec y publicar. El árbol no se deja sucio entre turnos.
 
 Los pasos 4 y 5 no estaban aquí hasta que su ausencia costó un episodio real:

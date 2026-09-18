@@ -1,0 +1,2 @@
+VERDE tests/graph/test-graph-metrics.sh
+EXIT=0

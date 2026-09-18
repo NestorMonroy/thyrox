@@ -1,0 +1,3 @@
+  @ant/ink                         -> src/packages/ink                       165 archivo(s) ·  12 con alcance reescrito (16 cambio(s)) ·   1 copiado(s) sin tocar · name: @thyrox/ink
+manifiesto raiz: 1 workspace(s) nuevo(s)
+port-packages: 1 portado(s) (alcance medido: 1 pedido(s) de 13)

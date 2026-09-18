@@ -1,0 +1,26 @@
+== shell (bash) ==
+-- ROJO tests/agents/test-agent-store-compara-antes-de-escribir.sh
+-- ROJO tests/agents/test-agent-store-reassignment-guard.sh
+-- ROJO tests/agents/test-agent-store-render-tablero.sh
+-- ROJO tests/agents/test-carrete-store.sh
+-- ROJO tests/agents/test-merge-sqlite-union.sh
+-- ROJO tests/lib/test-script-deprecated.sh
+-- ROJO tests/session/test-evidencia-varada.sh
+-- ROJO tests/session/test-instalar-config-usuario.sh
+-- ROJO tests/verify/test-agent-artifacts.sh
+-- ROJO tests/verify/test-coordinator-sin-worktree.sh
+-- ROJO tests/verify/test-destino-del-reporte.sh
+-- ROJO tests/verify/test-eventos-hook.sh
+-- ROJO tests/verify/test-generator-determinism.sh
+-- ROJO tests/verify/test-gitattributes.sh
+-- ROJO tests/verify/test-script-naming.sh
+-- ROJO tests/verify/test-verificar-premisa.sh
+-- ROJO tests/verify/test-vocabulario-prosa.sh
+-- ROJO tests/verify/test_audit_delegates.sh
+  (87 suite(s) de shell, 18 en rojo, 0 sin medir)
+
+== alcance ==
+  shell: 87 suite(s), 18 en rojo, 0 sin medir
+
+FALLA: 1 lengua(s) en rojo
+__BG_EXIT__=1

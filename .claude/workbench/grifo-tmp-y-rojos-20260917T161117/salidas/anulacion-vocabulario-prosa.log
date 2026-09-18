@@ -1,0 +1,15 @@
+== anulacion A: el baseline del fixture no se escribe (caso 3 debe caer) ==
+  FALLA el baseline del fixture tiene una entrada — esperado [1] obtenido []
+  FALLA el baseline silencia lo congelado — esperado [0] obtenido []
+  FALLA el reporte declara el alcance medido — esperado [1] obtenido [0]
+  FALLA y el denominador cuenta archivos, no hallazgos — esperado [1] obtenido [0]
+23 ok · 4 falla(s)
+
+== anulacion B: el baseline de caso 8 no se escribe (sus 4 formas deben caer) ==
+27 ok · 0 falla(s)
+== anulacion B (re-hecha): sin el baseline del caso 8, sus 4 formas deben caer ==
+  FALLA ruta absoluta: lo congelado sigue congelado — esperado [0] obtenido [1]
+  FALLA ruta relativa a la raiz: mismo veredicto — esperado [0] obtenido [1]
+  FALLA ruta con ./ delante: mismo veredicto — esperado [0] obtenido [1]
+  FALLA ruta con .. desde otro directorio: mismo veredicto — esperado [0] obtenido [1]
+23 ok · 4 falla(s)

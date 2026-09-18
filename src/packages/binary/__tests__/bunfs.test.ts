@@ -45,6 +45,12 @@ const MEASURED: Record<string, { entries: number; tableBytes: number; extractedB
   // 1 159 533 B -- tras la baja de 2.1.266, confirma que las dos direcciones
   // ocurren y no hay correlacion fija entre entradas y bytes de contenido.
   '2.1.270': { entries: 1864, tableBytes: 96_928, extractedBytes: 38_892_807 },
+  // Medida el 2026-09-17T19:09:01 con `binary info` sobre la build viva. Es el
+  // salto MAS grande del corpus: 194 entradas mas, contra 16, 9 y 37 de las
+  // tres anteriores — un orden de magnitud. El paso invariante lo confirma:
+  // 194 * 52 = 10 088 B, exactamente lo que crece la tabla (107 016 - 96 928).
+  // El contenido sube 2 200 889 B, la segunda subida seguida.
+  '2.1.274': { entries: 2058, tableBytes: 107_016, extractedBytes: 41_093_696 },
 }
 
 const bytes = existsSync(BINARY) ? readFileSync(BINARY) : null

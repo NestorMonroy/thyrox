@@ -23,10 +23,7 @@ el despachador lo cuenta como ausente y lo nombra en su stderr.
 """
 
 import pathlib
-import sys
 
-# ``sys.path[0]`` es ``src/hooks`` y ``verify`` no resolvería desde ahí.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from verify import check_vocabulario_prosa as gate  # noqa: E402
 
@@ -79,9 +76,13 @@ def detect(payload):
         return not any(a <= start and end <= b for a, b in spans)
 
     # --- Eje 1: formas vetadas. Lista cerrada, sin léxico, instantáneo. -----
-    # La lista es PARÁMETRO del consumidor (DEC-04), no del proveedor: por eso
-    # ``load_forbidden`` exige su ruta y ``resolve_forbidden`` la deriva del
-    # archivo medido, que ancla al clon correcto.
+    # La lista es POLÍTICA DE VOCABULARIO y vive en el PROVEEDOR
+    # (``thyrox: src/verify/vocabulario_prohibido.txt``): sus 51 formas son
+    # español técnico genérico y ningún consumidor las particulariza. Se pide
+    # igual por ``resolve_forbidden`` —no por una ruta fija— porque
+    # ``VOCAB_GATE_FORBIDDEN`` sigue pudiendo redirigirla, que es como la
+    # suite la ejercita. ``load_forbidden`` exige la ruta para que su ausencia
+    # rehúse en vez de comparar contra cero formas.
     forbidden = []
     forbidden_list = gate.resolve_forbidden(measured)
     for form, pattern in gate.compile_forbidden(gate.load_forbidden(forbidden_list)):

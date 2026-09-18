@@ -81,7 +81,6 @@ import re
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent))
 from paths import reach  # noqa: E402
 
 #: Destinos que Sphinx crea por su cuenta: no se declaran en el árbol.

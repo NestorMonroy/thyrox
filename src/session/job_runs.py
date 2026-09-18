@@ -37,13 +37,20 @@ from datetime import datetime, timezone
 
 from workbench import paths as wb_paths
 from workbench.manifest import (  # noqa: F401  (se reexportan a propósito)
+    LEGACY_MANIFEST_FILE_NAME,
     MANIFEST_FILE_NAME,
+    manifest_line,
+    read_manifest_file,
+    read_manifest_lines,
+    render_manifest,
+    resolve_manifest,
     REQUIRED_KEYS,
     latest_run,
     run_id_date,
     run_id_for,
     runs_for,
 )
+from paths.reach import creates_home  # noqa: E402 — reach no importa nada del proyecto al tope
 
 #: El hogar declarado directamente, cuando el consumidor lo decide.
 #:
@@ -96,6 +103,7 @@ def jobs_home_name(repo: str) -> str:
     return f"{JOBS_CLONE_PREFIX}{repo.upper().replace('-', '_')}"
 
 
+@creates_home
 def jobs_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     """El hogar de la familia: el declarado por clon, el global, o el hermano.
 
@@ -158,11 +166,33 @@ def log_path(run_dir: str | pathlib.Path) -> pathlib.Path:
     return pathlib.Path(run_dir) / "outputs" / LOG_FILE_NAME
 
 
+# La clave con que un run declara que sus salidas NO viven dentro de él, sino
+# en un hogar plano `<flat_home>/<slug>.log`. Existe porque `bg.sh --dir` tiene
+# dos consumidores con conocimiento asimétrico: quien LANZA sabe el hogar y
+# quien LEE —`status`, `log`, `register`— no tenía de dónde sacarlo, así que
+# respondía `unknown` sobre un trabajo terminado. El run es el puntero que
+# cierra esa asimetría; el log sigue siendo plano y citable, que es lo que
+# `build-logs.md` pide. Ver TASK-THYROX-0052.
+FLAT_HOME_KEY = "flat_home"
+
+
+def flat_home(run_dir: str | pathlib.Path) -> str:
+    """El hogar plano que este run declara, o cadena vacía si no declara ninguno.
+
+    La cadena vacía es el discriminador: distingue «este run guarda sus salidas
+    dentro» de «este run apunta afuera». Un default compuesto por aritmética
+    diría dónde *podría* estar el log, no dónde está.
+    """
+    valor = read_manifest(run_dir).get(FLAT_HOME_KEY)
+    return valor if isinstance(valor, str) else ""
+
+
 def scaffold_run(
     base_dir: str | pathlib.Path,
     slug: str,
     command: str | None = None,
     now: datetime | None = None,
+    flat_home: str | None = None,
 ) -> pathlib.Path:
     """Crea el run del trabajo y devuelve su ruta."""
     run_dir = pathlib.Path(base_dir) / run_id_for(slug, now)
@@ -177,8 +207,10 @@ def scaffold_run(
     # se puede inferir de la mtime del log, que mide la ULTIMA escritura y no el
     # arranque — un trabajo que calla al final se leeria como mas corto.
     manifiesto["started_at"] = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")
+    if flat_home:
+        manifiesto[FLAT_HOME_KEY] = str(flat_home)
     (run_dir / MANIFEST_FILE_NAME).write_text(
-        json.dumps(manifiesto, indent=2) + "\n", encoding="utf-8")
+        manifest_line("launch", manifiesto) + "\n", encoding="utf-8")
 
     (run_dir / "README.md").write_text("\n".join([
         f"# {slug}", "",
@@ -192,10 +224,16 @@ def scaffold_run(
 
 
 def read_manifest(run_dir: str | pathlib.Path) -> dict:
-    ruta = pathlib.Path(run_dir) / MANIFEST_FILE_NAME
-    if not ruta.exists():
-        return {}
-    return json.loads(ruta.read_text(encoding="utf-8"))
+    """El documento del run, sea cual sea de los dos nombres que lleve.
+
+    **Lee los dos, escribe uno.** El nombre heredado sigue siendo legible porque
+    este modulo es del PROVEEDOR: los consumidores tienen runs suyos que nadie
+    ha convertido, y un lector que solo viera el nombre nuevo les devolveria
+    `{}` — `bg.sh status` diria `unknown` sobre un trabajo terminado, que es el
+    defecto de H-THYROX-35 reabierto por un renombre de constante.
+    """
+    ruta = resolve_manifest(run_dir)
+    return read_manifest_file(ruta) if ruta is not None else {}
 
 
 def missing_keys(run_dir: str | pathlib.Path) -> list[str]:
@@ -217,18 +255,35 @@ def settle(run_dir: str | pathlib.Path, exit_code: int,
     trabajo terminó bien.
     """
     ruta = pathlib.Path(run_dir) / MANIFEST_FILE_NAME
-    manifiesto = read_manifest(run_dir)
-    manifiesto["exit_code"] = exit_code
+    legacy_file = pathlib.Path(run_dir) / LEGACY_MANIFEST_FILE_NAME
+    settlement: dict[str, object] = {"exit_code": exit_code}
     fin = now or datetime.now(timezone.utc)
-    manifiesto["finished_at"] = fin.isoformat(timespec="seconds")
-    inicio = manifiesto.get("started_at")
+    settlement["finished_at"] = fin.isoformat(timespec="seconds")
+    # Se LEE para derivar la duración, pero no se reescribe: el registro de
+    # lanzamiento ya está en el archivo y ahí se queda, byte a byte.
+    inicio = read_manifest(run_dir).get("started_at")
     if isinstance(inicio, str):
         # Un run andamiado antes de que `started_at` existiera no tiene con qué
         # restar: se omite la clave en vez de escribir un 0, que no distinguiría
         # «tardó nada» de «no se midió».
-        manifiesto["duration_seconds"] = max(
+        settlement["duration_seconds"] = max(
             0.0, (fin - datetime.fromisoformat(inicio)).total_seconds())
-    ruta.write_text(json.dumps(manifiesto, indent=2) + "\n", encoding="utf-8")
+    # Un run que todavía lleva el nombre heredado se ASCIENDE aquí, no en un
+    # barrido: el documento entero se reparte en sus registros y el archivo
+    # viejo se retira. Es el único momento en que el mecanismo ya está
+    # escribiendo en ese run, así que convertirlo no añade una escritura que
+    # nadie pidió — y dejar los dos archivos crearía una segunda fuente de
+    # verdad sobre el mismo run.
+    if not ruta.exists() and legacy_file.is_file():
+        ruta.write_text(render_manifest(read_manifest(run_dir)), encoding="utf-8")
+        legacy_file.unlink()
+
+    # AÑADE, no reescribe. Es la propiedad que la conversión a JSONL compra y
+    # que un renombre de extensión no daría: `run-task-pool` corre N
+    # trabajadores, y una lectura-modificación-reescritura por trabajo es una
+    # carrera esperando a ocurrir.
+    with ruta.open("a", encoding="utf-8") as sink:
+        sink.write(manifest_line("settle", settlement) + "\n")
     return ruta
 
 

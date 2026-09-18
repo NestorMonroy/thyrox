@@ -3,7 +3,7 @@
 model_catalog.py — el catálogo de modelos del paquete, leído desde Python.
 
 La única fuente de precios, tiers, ventanas y esfuerzo es
-``.claude/packages/agent/models.json``, que ``bin/extract_model_registry.py``
+``src/packages/agent/models.jsonl``, que ``bin/extract_model_registry.py``
 deriva del ejecutable vendorizado (``_references/claude-code-bin/<build>/``) y cuya
 suite exige igualdad byte a byte con una extracción fresca. Este módulo lo lee;
 no lo copia. Es el gemelo en Python de ``src/models.ts`` — misma función de
@@ -37,7 +37,6 @@ import sqlite3
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from paths.reach import env_value, thyrox_root  # noqa: E402
 
 # El catalogo es PRODUCTO de thyrox: se resuelve con su localizador, que
@@ -53,7 +52,7 @@ RAIZ = thyrox_root()
 CATALOG_PATH = Path(
     env_value("THYROX_MODEL_CATALOG")
     or env_value("KAUPAMEX_MODEL_CATALOG")
-    or RAIZ / "src" / "packages" / "agent" / "models.json")
+    or RAIZ / "src" / "packages" / "agent" / "models.jsonl")
 
 # El store es PARAMETRO del consumidor: vive en el clon que despacha, no aqui.
 # Sin declararlo no hay ruta que suponer — `None` es el veredicto, no un
@@ -64,16 +63,52 @@ TTLS = ("5m", "1h")
 EFFORT_LEVELS = ("low", "medium", "high", "xhigh", "max")
 
 
+def read_catalog_lines(lines) -> dict:
+    """Reconstruye el catálogo de nueve claves desde los registros etiquetados.
+
+    El archivo es **JSON Lines**: una `meta`, un `tier` por tier y un `model`
+    por registro. Cada línea se clasifica por su `kind` —lo que DICE— y no por
+    su posición: una cabecera por número de línea repetiría el defecto de
+    :ref:`h-thyrox-37` un nivel más abajo.
+
+    Es el gemelo de `readCatalog` en `src/packages/agent/models.ts`, y la
+    propiedad que ninguno de los dos puede romper es la misma: el diccionario
+    resultante es igual al que producía `json.load` del documento único.
+
+    Rehúsa con `ValueError` si falta la `meta`: un catálogo sin ella se leería
+    como «no hay modelos» en vez de «no pude leer el archivo».
+    """
+    meta = None
+    tiers: dict = {}
+    modelos: list = []
+    for linea in lines:
+        if not linea.strip():
+            continue
+        registro = json.loads(linea)
+        kind = registro.pop("kind", None)
+        if kind == "meta":
+            meta = registro
+        elif kind == "tier":
+            tiers[registro["name"]] = registro["pricing"]
+        elif kind == "model":
+            modelos.append(registro)
+        else:
+            raise ValueError(f"registro con kind desconocido: {kind!r}")
+    if meta is None:
+        raise ValueError("ningún registro declara kind \"meta\"")
+    return {**meta, "pricing_tiers": tiers, "models": modelos}
+
+
 def try_catalog(path: Path = CATALOG_PATH) -> tuple[dict | None, str | None]:
     """Carga el catálogo; devuelve (catálogo, None) o (None, motivo). No sale."""
     try:
         with open(path, encoding="utf-8") as fh:
-            data = json.load(fh)
-    except (OSError, json.JSONDecodeError) as exc:
+            data = read_catalog_lines(fh)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
         return None, (f"no se puede leer el catálogo de modelos en {path}: {exc}. "
-                      "Regenéralo con `python3 .claude/packages/agent/bin/extract_model_registry.py "
+                      "Regenéralo con `python3 src/packages/agent/bin/extract_model_registry.py "
                       "_references/claude-code-bin/<build>/claude_strings.txt --stdout > "
-                      ".claude/packages/agent/models.json`")
+                      "src/packages/agent/models.jsonl`")
     if "models" not in data or "pricing_tiers" not in data:
         return None, f"{path} no tiene la forma esperada (faltan `models` o `pricing_tiers`)"
     return data, None

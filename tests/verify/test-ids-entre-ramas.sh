@@ -90,6 +90,23 @@ ocupado="$(python3 "$GATE" --disponible docs 101 2>&1)"; rc=$?
 [[ $rc -eq 1 ]] && ok "docs-101 ocupado sale 1" || bad "docs-101 deberia salir 1, dio $rc"
 grep -q 'feature/a' <<<"$ocupado" && ok "el ocupado nombra al dueño" || bad "el ocupado no nombra al dueño"
 
+echo "=== Caso 3d: thyrox es la SEXTA raiz, no una capa desconocida ==="
+# `hallazgos-documentacion-obligatoria.md` declara SEIS raices desde 2026-09-17
+# —api, db, docs, server, ui y thyrox— y este gate enumeraba cinco. Con eso
+# rehusaba con exit 2 sobre la unica capa cuyo corpus vive en ESTE arbol, y
+# arrastraba a `documentation_preflight`, que lo invoca para validar el id: un
+# hallazgo H-THYROX no se podia pre-volar. Peor que el rehuse es lo que el
+# rehuse esconde: la guarda de colision que H-THYROX-26 existe para imponer
+# —dos hallazgos bajo el mismo numero, el segundo pisando al primero sin
+# emitir un byte— no cubria la capa con 45 hallazgos.
+python3 "$GATE" --disponible thyrox 99999 >/dev/null 2>&1
+rc=$?
+[[ $rc -ne 2 ]] && ok "thyrox NO se rehusa como capa desconocida (exit $rc)" \
+                || bad "thyrox rehusado con exit 2: el gate enumera cinco raices"
+desconocida="$(python3 "$GATE" --disponible inventada 1 2>&1)"; rc=$?
+[[ $rc -eq 2 ]] && ok "una capa inventada SI se rehusa" \
+                || bad "una capa inventada deberia rehusarse, dio $rc"
+
 echo "=== Caso 4 (positivo real): la colision medida en kaupamex-docs ==="
 cd "$RAIZ"
 n="$(python3 "$GATE" --quiet 2>/dev/null)"

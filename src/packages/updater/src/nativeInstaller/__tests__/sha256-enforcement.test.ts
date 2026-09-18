@@ -1,10 +1,11 @@
 /**
- * Unit-tests the modern-tag regex used by downloadVersionFromGithubReleases
- * to gate "missing .sha256 = refuse to install".
+ * Test unitario de la expresion regular de tag moderno que
+ * downloadVersionFromGithubReleases usa para imponer «sin .sha256 = no se
+ * instala».
  *
- * Mirrors the pattern at download.ts:528. If you change the regex there,
- * update both. Pre-flight audit (2026-05-04): 107 releases, only v1.carus.000
- * lacks .sha256 — every modern (v26+) release has it.
+ * Replica el patron de download.ts:528. Al cambiar la expresion alli, hay
+ * que actualizar las dos. Auditoria previa (2026-05-04): 107 releases, y
+ * solo v1.carus.000 no lleva .sha256 — toda release moderna (v26+) la tiene.
  */
 import { describe, expect, test } from 'bun:test'
 
@@ -12,12 +13,12 @@ const MODERN_TAG_RE = /^v(?:[1-9]\d+|\d{3,})\./
 
 describe('sha256-enforcement modern-tag regex', () => {
   test.each([
-    ['v26.5.17', true], // current series
+    ['v26.5.17', true], // la serie actual
     ['v26.4.80', true],
     ['v26.5.1', true],
-    ['v25.1.1', true], // future-proof if year wraps
-    ['v10.1.1', true], // boundary — 2-digit major
-    ['v100.1.1', true], // 3-digit major
+    ['v25.1.1', true], // resiste el cambio de año
+    ['v10.1.1', true], // frontera: mayor de 2 digitos
+    ['v100.1.1', true], // mayor de 3 digitos
     ['v999.9.9', true],
   ])('modern tag %s → enforced', (tag, expected) => {
     expect(MODERN_TAG_RE.test(tag)).toBe(expected)

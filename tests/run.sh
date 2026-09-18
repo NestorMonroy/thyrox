@@ -24,6 +24,45 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
+# --- La raiz la declara el CORREDOR, no cada modulo ---------------------------
+#
+# `bin/` ya lo hacia (`export PYTHONPATH="$THYROX_ROOT/src"`) y este corredor no,
+# asi que cada suite tenia que abrirse el camino sola con un
+# `sys.path.insert(0, ... parents[N] / "src")`. Esa aritmetica es la que
+# `check_path_arithmetic.py` exime «cuando alimenta un sys.path.insert» — una
+# exencion que solo se sostenia mientras nadie declarara la raiz.
+#
+# Con la raiz declarada aqui, el insert deja de ser necesario y pasa a ser
+# deuda. NO se barren los 123 de `src/` en este pase: se paga al tocar, que es
+# el criterio prospectivo del arbol. Precondicion de TASK-THYROX-0018.
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+
+# --- El grifo de /tmp: un TMPDIR por ejecucion, retirado al salir -------------
+#
+# Medido antes de escribir esto: 105 715 directorios de fixture en /tmp, dejados
+# por nuestras propias suites — 115 archivos `.ts` crean con `mkdtemp` y 56 no
+# retiran nunca. La correccion NO edita esos 56: redirige `TMPDIR`, que
+# `os.tmpdir()` de bun, `mkdtempSync` de `node:fs` y `mktemp -d` de coreutils
+# honran los tres (medido por conducta, no leido de una descripcion). El bypass
+# esta medido en CERO: ningun `.ts`, `.py` ni `.sh` del arbol crea bajo un
+# literal `/tmp/`.
+#
+# `THYROX_TEST_TMPDIR` declara que el directorio es de esta ejecucion. El preload
+# de `bunfig.toml` lo hereda y NO lo retira — sin esa guarda, cada `bun test`
+# borraria el directorio de los demas mientras corren.
+#
+# El trap retira SOLO lo que este guion creo, y re-comprueba el prefijo antes de
+# borrar: la variable la puede fijar cualquiera, el nombre del directorio no.
+THYROX_TEST_TMPDIR="$(mktemp -d "${TMPDIR:-/tmp}/thyrox-tests-XXXXXX")"
+export THYROX_TEST_TMPDIR
+export TMPDIR="$THYROX_TEST_TMPDIR"
+retirar_tmpdir() {
+  case "$THYROX_TEST_TMPDIR" in
+    */thyrox-tests-*) rm -rf "$THYROX_TEST_TMPDIR" ;;
+  esac
+}
+trap retirar_tmpdir EXIT
+
 # `node_modules` trae tests de terceros —198 de zod, medidos— que no son
 # nuestros: incluirlos inflaria el denominador con material que no mantenemos.
 descubrir_ts()     { find src tests -name '*.test.ts' -not -path '*/node_modules/*' | sort; }
@@ -140,14 +179,30 @@ if [ "$only" != "--ts-only" ] && [ "$only" != "--shell-only" ]; then
   echo "== Python (stdlib) =="
   count=0
   rojos_py=0
+  sin_medir_py=0
+  # Exit 2 NO es rojo, aqui tampoco: es «rehuso, no emito veredicto». La mitad
+  # de shell lo separa desde su primera version y esta lo colapsaba con el 1
+  # (`python3 "$suite" || ROJO`), asi que el corredor publicaba «la suite fallo»
+  # donde lo cierto era «no habia con que medir» — y ese rojo entraba al conteo
+  # que decide si la ejecucion entera falla. Las dos mitades miden el mismo
+  # contrato; que una lo honre y la otra no es el sub-patron D con el corredor
+  # como instrumento. Se cuentan aparte y NO suman a `failures`.
   while IFS= read -r suite; do
     count=$((count + 1))
-    echo "-- $suite"
-    python3 "$suite" || rojos_py=$((rojos_py + 1))
+    # La mitad shell marca `-- ROJO <suite>` y esta sólo publicaba el conteo:
+    # once rojos sin nombre no se pueden triar. Misma forma que «un conteo sin
+    # denominador no es un resultado», un nivel más abajo.
+    echo "-- $suite"          # ANTES de correr: un cuelgue se atribuye
+    python3 "$suite"
+    case $? in
+      0) ;;
+      2) sin_medir_py=$((sin_medir_py + 1)); echo "-- SIN MEDIR (exit 2) $suite" ;;
+      *) rojos_py=$((rojos_py + 1));         echo "-- ROJO $suite" ;;
+    esac
   done < <(descubrir_python)
   [ "$rojos_py" -gt 0 ] && failures=$((failures + 1))
-  resumen+=("Python: $count suite(s), $rojos_py en rojo")
-  echo "  ($count suite(s) de Python, $rojos_py en rojo)"
+  resumen+=("Python: $count suite(s), $rojos_py en rojo, $sin_medir_py sin medir")
+  echo "  ($count suite(s) de Python, $rojos_py en rojo, $sin_medir_py sin medir)"
   echo
 fi
 
@@ -160,7 +215,7 @@ if [ "$only" != "--ts-only" ] && [ "$only" != "--python-only" ]; then
   # `check_script_naming.py` y `tests/verify/test-pre-commit-docs.sh` usan
   # cuando falta su sujeto (el lexico, el clon hermano de kaupamex-docs).
   # Colapsarlo con el 1 hace que el corredor publique «la suite fallo» donde
-  # lo cierto es «no habia con que medir», que es el sub-paton D aplicado a
+  # lo cierto es «no habia con que medir», que es el sub-patron D aplicado a
   # este mismo archivo. Se cuentan aparte y NO suman a `failures`.
   while IFS= read -r suite; do
     count=$((count + 1))

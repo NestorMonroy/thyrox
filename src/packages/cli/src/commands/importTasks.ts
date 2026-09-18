@@ -5,10 +5,26 @@
  * docstring de `commands/checkPremises.ts` para la forma del reparto.
  */
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { parseRstTasks } from '../../../../task/rst.ts'
 import { taskTools } from '@thyrox/tools/tasks'
+import { storePath } from '@thyrox/observability/store'
 import { flag, hasFlag } from '../entry/flags.ts'
+
+/**
+ * Dónde escribe el puente — por el localizador, nunca por `cwd`.
+ *
+ * H-THYROX-41. Componía `join(cwd, '.claude', 'agent-results', …)`, que no
+ * pasa por ninguna de las cuatro precedencias declaradas y apunta al hogar
+ * que `LEGACY_CONSUMER_STORE_DIR` dice NO ser destino de escritura. Y como
+ * `connect()` hace `mkdir` sin condición, un `cwd` equivocado no falla: crea
+ * una cáscara vacía y la deja en el árbol.
+ *
+ * `cwd` sigue en la firma porque el comando lo recibe, y porque declararlo y
+ * NO usarlo es lo que hace verificable que ya no gobierna.
+ */
+export function resolveTaskStore(declared: string | undefined, _cwd: string): string {
+  return storePath(declared)
+}
 
 export async function importTasksCommand(argv: string[], cwd: string): Promise<number> {
   const rst = flag(argv, 'rst')
@@ -19,7 +35,7 @@ export async function importTasksCommand(argv: string[], cwd: string): Promise<n
     )
     return 2
   }
-  const db = flag(argv, 'db') ?? join(cwd, '.claude', 'agent-results', 'agent_store.sqlite3')
+  const db = resolveTaskStore(flag(argv, 'db'), cwd)
   let texto: string
   try {
     texto = readFileSync(rst, 'utf8')

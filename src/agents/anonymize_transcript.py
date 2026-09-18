@@ -73,10 +73,27 @@ import tempfile
 # `agents_paths` asciende al marcador. Antes `parents[2]` resolvía
 # `thyrox/hooks/`, que nunca existió — y como es una constante y no un
 # import, ningún control de import podía verlo.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
+from agents import agents_paths  # noqa: E402
 
-HOOK = agents_paths.hooks_dir() / "register_agent_session.py"
+
+
+def hook_path() -> pathlib.Path:
+    """El hook del CONSUMIDOR que este modulo carga por ruta.
+
+    Era la constante ``HOOK``, resuelta al importar. El hogar de los hooks es
+    del consumidor y ``consumer_root()`` rehusa desde el proveedor, asi que el
+    import moria antes de la primera linea util — y el modulo se importa desde
+    thyrox para medirlo (``tests/agents/test_agents_module_paths.py``), donde no
+    hay consumidor que resolver ni hace falta uno.
+
+    Se difiere a la llamada. No se usa ``__getattr__`` de modulo (PEP 562):
+    medido, nadie sustituye ``anonymize_transcript.HOOK`` desde fuera, asi que
+    una funcion basta y no introduce la trampa de ERR-065 al reves — con la
+    constante diferida, una sustitucion externa del atributo quedaria inerte
+    porque los lectores internos no pasan por el.
+    """
+    return agents_paths.hooks_dir() / "register_agent_session.py"
+
 
 # Nivel superior: lo que el instrumento lee. Todo lo demas se descarta.
 TOP_KEPT = frozenset({
@@ -89,7 +106,7 @@ EPOCH = "2026-01-01T00:00:00.000Z"
 
 def load_instrument():
     """El hook, cargado por ruta — es la única fuente de las tres extracciones."""
-    spec = importlib.util.spec_from_file_location("ras", HOOK)
+    spec = importlib.util.spec_from_file_location("ras", hook_path())
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

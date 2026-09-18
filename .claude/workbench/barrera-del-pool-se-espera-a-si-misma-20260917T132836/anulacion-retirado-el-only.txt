@@ -1,0 +1,13 @@
+== 1. CONTROL — con un tercero vivo en el ledger, el pool NO lo espera ==
+  FALLO el pool asienta sus dos trabajos y sale 0
+        esperado=[0] obtenido=[3]
+  FALLO y no agota el timeout esperando al tercero
+        esperado=[rapido] obtenido=[agotado]
+== 2. el tercero SIGUE en el ledger — el pool no lo recogio ni lo retiro ==
+  ok    sentinel sigue registrado tras el pool
+  FALLO pero los del pool ya no estan (los recogio)
+        esperado=[1] obtenido=[0]
+== 3. sin --only, la barrera SIGUE viendo todo el ledger ==
+  ok    wait sin filtro se topa con el sentinel y sale 3 (timeout)
+
+resumen: 2 ok, 3 fallo(s)

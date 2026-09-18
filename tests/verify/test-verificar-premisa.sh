@@ -37,6 +37,7 @@ if [[ -z "$_thyrox_root" ]]; then
     done
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+source "$_thyrox_root/src/lib/fixture.sh"
 cd "$(thyrox_root)" || exit 1
 
 GUION=src/verify/verificar_premisa.py
@@ -54,7 +55,7 @@ echo "== 1. sintaxis =="
 python3 -c "import ast,pathlib; ast.parse(pathlib.Path('$GUION').read_text())"
 afirmar "verificar_premisa.py parsea" 0 $?
 
-U=$(mktemp -d)
+U=$(fixture_dir)
 escribir() {  # escribir <id> <status> <subject> <description>
     python3 - "$U" "$@" <<'PY'
 import json, sys, pathlib
@@ -78,7 +79,23 @@ escribir 4 pending 'Portar algo de src/inexistente/fantasma.py' 'ruta que no exi
 # Control positivo REAL del falso positivo medido: la ruta existe, pero bajo
 # `.claude/`. Antes de anadir esa raiz, el guion la declaraba fantasma — y lo
 # hizo sobre su PROPIA ficha, que es como se descubrio.
-escribir 11 pending 'Portar scripts/gates/verificar_premisa.py' 'ruta real bajo .claude/'
+#
+# La ficha citaba `scripts/gates/verificar_premisa.py`, que era ese mismo
+# guion antes de mudarse a `thyrox/src/verify/`. Con la mudanza esa ruta dejo
+# de existir bajo ninguna raiz, asi que el gate la declaraba fantasma con
+# razon: rojo de PREMISA RANCIA, no del sujeto.
+#
+# El repunte tiene DOS condiciones, y la segunda no es obvia: la ruta tiene
+# que (a) existir SOLO bajo `.claude/` —si existiera tambien en la raiz del
+# clon, el caso pasaria sin ejercitar la raiz que mide— y (b) empezar por un
+# segmento que `FILE_PATH` reconozca. Un primer repunte a
+# `hooks/measure_subagent_delta.py` cumplia (a) y no (b): `hooks` no esta en
+# la lista cerrada del patron, asi que no se extraia ninguna ruta y el caso
+# pasaba en verde sin medir nada — sub-patron D con este caso como sujeto.
+# Medido: `scripts/check-i001-prewrite.sh` existe bajo `.claude/` en api y ui
+# y en NINGUNA raiz de clon; anulando las raices `.claude/` de `PATH_ROOTS`,
+# S2 dispara.
+escribir 11 pending 'Portar scripts/check-i001-prewrite.sh' 'ruta real bajo .claude/'
 escribir 5 pending 'Portar otra cosa' 'esta tarea esta bloqueada por #9 desde hace tiempo'
 escribir 6 pending 'Sin senal de ninguna clase' 'prosa sin simbolo ni ruta'
 escribir 9 completed 'Portar has_groups ya cerrada' 'su senal es esperada'
@@ -132,7 +149,7 @@ python3 "$GUION" --tasks-dir "$U" 6 --strict >/dev/null 2>&1
 afirmar "sin senal sale 0" 0 $?
 
 echo "== 9. universo vacio: no revienta =="
-VACIO=$(mktemp -d)
+VACIO=$(fixture_dir)
 python3 "$GUION" --tasks-dir "$VACIO" >/dev/null 2>&1
 afirmar "directorio sin tareas sale 0" 0 $?
 
@@ -147,7 +164,7 @@ afirmar "el indice tiene simbolos (no 0)" "si" \
     "$( (( ${INDICE:-0} > 0 )) && echo si || echo no)"
 
 echo "== 11. --emit-premises: la senal se vuelve premisa declarada =="
-PREM=$(mktemp)
+PREM=$(fixture_file)
 python3 "$GUION" --tasks-dir "$U" --emit-premises "$PREM" >/dev/null 2>&1
 afirmar "el archivo emitido es JSON valido" 0 \
     "$(python3 -c "import json,sys; json.load(open('$PREM'))" >/dev/null 2>&1; echo $?)"
@@ -191,6 +208,32 @@ import json
 print(sum(1 for t in json.load(open('$PREM')) if not t.get('presupposes')))
 ")"
 
+# --- El PROVEEDOR entra en el universo de resolucion -----------------------
+# `PATH_ROOTS` se componia de `reach.roots()`, que son los CONSUMIDORES. El
+# arbol donde vive este gate quedaba fuera, asi que toda cita de codigo propio
+# resolvia a None y S2 la publicaba como premisa envejecida. Medido sobre el
+# tablero real al declararlo: 143 de 239 citas no resueltas SI existen en el
+# proveedor — 59.8 % de veredictos falsos sobre codigo vivo.
+#
+# El sujeto es un archivo REAL del proveedor, no uno fabricado: el localizador
+# que el propio arbol declara. Fabricar uno mediria el fixture, no el universo.
+afirmar "el proveedor entra en PATH_ROOTS" "si" \
+    "$(python3 -c "
+import sys
+sys.path.insert(0, 'src/verify'); sys.path.insert(0, '.')
+import verificar_premisa as s
+print('si' if s.resolve_path('src/paths/reach.py') else 'no')
+")"
+# Y la mitad que lo hace ABSTRACTO: la COMPOSICION no nombra a nadie. El
+# proveedor servira arboles que no son los de hoy, asi que las raices se piden.
+#
+# El sujeto es el bloque de `PATH_ROOTS`, no el archivo: medir el archivo
+# entero contaba tambien un comentario que CITA la forma rota historica —
+# evidencia legitima— y un `EMIT_SYMBOL_SCOPE` que si cablea el producto pero
+# es otro defecto, de la clase de TASK-THYROX-0093.
+afirmar "la composicion de PATH_ROOTS no nombra ninguna raiz" 0 \
+    "$(sed -n '/^PATH_ROOTS = tuple(/,/^)/p' src/verify/verificar_premisa.py \
+        | grep -cE "kaupamex|/home/user")"
 
 rm -rf "$U" "$VACIO"
 printf '\n%s: %d ok · %d fallo(s)\n' "$(basename "$0")" "$OK" "$FALLO"

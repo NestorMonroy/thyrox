@@ -72,12 +72,12 @@ from typing import Mapping, Sequence
 # Este modulo se invoca TAMBIEN como guion (`python3 src/session/background.py`,
 # y asi lo ejercita su suite): sin esto, `paths` no resuelve y muere en el
 # import. Es el mismo control que `hooks/stop_tests` lleva por haberlo pagado.
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
 from session.job_ledger import Job, JobLedger  # noqa: E402
 from session.parallel import width_cap  # noqa: E402
 from session.task_pool import run as pool_run  # noqa: E402
+from paths.reach import creates_home  # noqa: E402 — reach no importa nada del proyecto al tope
 
 #: Entrada 1 — el valor: el hogar de los logs, declarado directamente.
 LOG_DIR_VAR = "THYROX_BACKGROUND_LOG_DIR"
@@ -122,6 +122,7 @@ def log_home_name(repo: str) -> str:
     return f"{LOG_DIR_CLONE_PREFIX}{repo.upper().replace('-', '_')}"
 
 
+@creates_home
 def log_dir(start: str | Path | None = None) -> Path:
     """El hogar declarado de los logs: el del clon, el global, o rehusar.
 

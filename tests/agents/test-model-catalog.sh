@@ -4,7 +4,7 @@
 # Lo que mide: que el precio salga del catálogo vendorizado y no de un peso
 # fijo; que sin catálogo REHÚSE sin cifra (exit 2); y que el alias resuelva al
 # identificador que el ejecutable declara. El control positivo es real del
-# repo: la fila de claude-fable-5-1 en src/models.json, cuyo cache_read (0.25)
+# repo: la fila de claude-fable-5-1 en src/models.jsonl, cuyo cache_read (0.25)
 # es lo que H-DOCS-1003 casi publicó al revés.
 set -uo pipefail
 # Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
@@ -42,11 +42,11 @@ check "escritura a 5m y 1h difieren (12.5 vs 20)" "$A/$B" "12.5000/20.0000"
 S="$(python3 "$MC" costo fable --cache-read 1 2>&1 | sed -n 's/^modelo: *//p')"
 check "alias fable → claude-fable-5-1 (con el alias entre paréntesis)" "$S" "claude-fable-5-1  (alias fable)"
 # 5. Sin catálogo: exit 2 y NINGUNA cifra en stdout
-OUT="$(KAUPAMEX_MODEL_CATALOG=/nonexistent/models.json python3 "$MC" costo claude-opus-5 --cache-read 1 2>/dev/null)"; RC=$?
+OUT="$(KAUPAMEX_MODEL_CATALOG=/nonexistent/models.jsonl python3 "$MC" costo claude-opus-5 --cache-read 1 2>/dev/null)"; RC=$?
 check "sin catálogo rehúsa con exit 2" "$RC" "2"
 check "sin catálogo no emite cifra" "${OUT:-vacio}" "vacio"
-ERR="$(KAUPAMEX_MODEL_CATALOG=/nonexistent/models.json python3 "$MC" costo claude-opus-5 --cache-read 1 2>&1 >/dev/null)"
-case "$ERR" in *"models.json"*"verde falso"*) N=nombra ;; *) N=no ;; esac
+ERR="$(KAUPAMEX_MODEL_CATALOG=/nonexistent/models.jsonl python3 "$MC" costo claude-opus-5 --cache-read 1 2>&1 >/dev/null)"
+case "$ERR" in *"models.jsonl"*"verde falso"*) N=nombra ;; *) N=no ;; esac
 check "sin catálogo el mensaje nombra el catálogo y el verde falso" "$N" "nombra"
 # 6. Modelo desconocido: exit 2
 python3 "$MC" costo claude-no-existe --cache-read 1 >/dev/null 2>&1; check "modelo desconocido rehúsa con exit 2" "$?" "2"
@@ -56,8 +56,13 @@ python3 "$MC" costo claude-no-existe --cache-read 1 >/dev/null 2>&1; check "mode
 USD="$(python3 "$MC" costo claude-fable-5-1 --cache-read 1000000 --ttl 5m | sed -n 's/^usd: *//p')"
 INP="$(python3 "$MC" costo claude-fable-5-1 --input 100000 --ttl 5m | sed -n 's/^usd: *//p')"
 check "peso fijo 0.1x sobrevalora 4x la caché leída de fable-5-1" "$(python3 -c "print(round($INP/$USD))")" "4"
-# 8. por-modelo publica su denominador
-S="$(python3 "$MC" por-modelo --ttl 1h 2>&1 | tail -1)"
+# 8. por-modelo publica su denominador — con el store DADO. Desde que el store
+#    es parametro del consumidor y ya no se compone por cwd, invocarlo sin
+#    `--store` rehusa a proposito: esa es la primera asercion, y sin ella la
+#    segunda no distinguiria "publica el denominador" de "el default lo compuso".
+python3 "$MC" por-modelo --ttl 1h >/dev/null 2>&1
+check "por-modelo sin --store rehusa en vez de componer un default" "$?" "2"
+S="$(python3 "$MC" por-modelo --ttl 1h --store "$RAIZ/agent-results/agent_store.sqlite3" 2>&1 | tail -1)"
 case "$S" in *"alcance medido:"*"de "*"en agent_sessions"*) D=si ;; *) D=no ;; esac
 check "por-modelo publica alcance medido con universo" "$D" "si"
 
@@ -91,10 +96,78 @@ rm -rf "$FX"
 #    test-agent-store-compara-antes-de-escribir.sh: agent_store.py deriva la
 #    raíz y a su vecino document_types por Path(__file__), y una copia
 #    suelta moriría antes por otra causa (IndexError / document_types).
-FX="$(mktemp -d)"; mkdir -p "$FX/.claude/scripts/agents" "$FX/.claude/scripts/corpus"
+#    El espejo se DERIVA, no se transcribe: la lista a mano ya caduco dos
+#    veces (agents_paths aparecio despues de escribirla, y el marcador de raiz
+#    nunca estuvo), y cada vez el fixture murio por una causa DISTINTA de la
+#    medida — un rojo que no discrimina "el censo no declara SIN MEDIR" de "el
+#    espejo esta incompleto". Se derivan los vecinos del AST y el marcador del
+#    modulo que lo declara. `model_catalog` se excluye a proposito: su ausencia
+#    ES el sujeto del caso.
+FX="$(mktemp -d)"
+# `PYTHONPATH=src` es el invariante del arbol (TASK-THYROX-0018): `agents_paths`
+# importa `from paths import reach`, asi que poner solo `src/agents` en la ruta
+# —como hacia este bloque— deja el import a medias y la derivacion muere sin
+# imprimir el marcador. Se importa como MODULO DE PAQUETE, que es como lo
+# consume el resto del arbol.
+# La derivacion resuelve PAQUETE o modulo suelto, no solo lo segundo. Su forma
+# anterior hacia `rglob(m + ".py")`, que es ciega a un paquete: `agents`,
+# `paths`, `corpus`, `measurement` y `task` son DIRECTORIOS con `__init__.py`,
+# y el glob o no encontraba nada o acertaba al archivo equivocado — medido:
+# para `paths` devolvia `src/workbench/paths.py`, que es otro modulo con el
+# mismo nombre de archivo. El espejo quedaba incompleto y el caso moria en
+# ModuleNotFoundError (exit 2) sin llegar a declarar SIN MEDIR, que es otro
+# fenomeno del que el caso afirma medir.
+ESPEJO="$(cd "$RAIZ" && PYTHONPATH=src python3 -c "
+import ast, pathlib, sys
+mods = set()
+for n in ast.walk(ast.parse(pathlib.Path('src/agents/agent_store.py').read_text())):
+    if isinstance(n, ast.Import):
+        mods |= {a.name.split('.')[0] for a in n.names}
+    elif isinstance(n, ast.ImportFrom) and n.level == 0 and n.module:
+        mods.add(n.module.split('.')[0])
+# La biblioteca estandar se descuenta por su ORIGEN, no por una lista a mano:
+# lo que no cuelga de src/ no es nuestro y el interprete ya lo resuelve.
+for m in sorted(mods - {'model_catalog'}):
+    paquete = pathlib.Path('src') / m
+    if (paquete / '__init__.py').is_file():
+        print(paquete)
+        continue
+    suelto = [h for h in pathlib.Path('src').rglob(m + '.py') if h.parent.name != m]
+    if suelto:
+        print(suelto[0])
+")"
+mkdir -p "$FX/src/agents"
 cp "$RAIZ/src/agents/agent_store.py" "$FX/src/agents/"
-cp "$RAIZ/src/corpus/document_types.py" "$FX/src/corpus/"
-S="$(cd "$RAIZ" && python3 "$FX/src/agents/agent_store.py" censo-medicion --claude-dir "$RAIZ/.claude" 2>&1)"; RC=$?
+for v in $ESPEJO; do
+    mkdir -p "$FX/$(dirname "$v")"
+    if [[ -d "$RAIZ/$v" ]]; then
+        cp -r "$RAIZ/$v" "$FX/$(dirname "$v")/"
+    else
+        cp "$RAIZ/$v" "$FX/$v"
+    fi
+done
+# `model_catalog.py` se RETIRA del espejo: su ausencia es el sujeto del caso, y
+# el paquete `agents` lo trae por ser un directorio. La guarda de abajo lo mide.
+rm -f "$FX/src/agents/model_catalog.py"
+# Guarda del propio control: si un dia el espejo copiara model_catalog.py, el
+# caso pasaria por la razon equivocada y nadie lo notaria (sub-patron D).
+check "el espejo NO lleva model_catalog.py, que es el sujeto del caso" \
+    "$([[ -e "$FX/src/agents/model_catalog.py" ]] && echo si || echo no)" "no"
+# THYROX_ROOT es parametro declarado, no conveniencia: reach_roots es un stub
+# que rehusa sin dueno canonico, y ese rehuse es de OTRO mecanismo (H-API-335).
+# `PYTHONPATH` apunta al `src` DEL ESPEJO, no al del arbol: es lo que hace que
+# `agent_store.py` resuelva sus hermanos desde la copia — y que `model_catalog`
+# este genuinamente ausente, que es el sujeto del caso. Con el del arbol, el
+# espejo cargaria el `model_catalog.py` real y el caso pasaria por la razon
+# equivocada; sin ninguno, muere en `ModuleNotFoundError: agents` (exit 2) sin
+# llegar a declarar SIN MEDIR, que es otro fenomeno.
+# El directorio del store se PIDE al localizador. Componerlo como
+# `$RAIZ/.claude` es premisa rancia: el hogar se decidio en TASK-DOCS-0435 y la
+# cascara del proveedor se retiro en TASK-THYROX-0153, asi que hoy vive en
+# `agent-results/` de la raiz. Con la ruta vieja el censo rehusa por «el store
+# no existe» (exit 2) — que NO es el fenomeno que este caso mide.
+STORE_DIR="$(cd "$RAIZ" && PYTHONPATH=src python3 -c 'from paths import reach; print(reach.agent_store_path().parent)')"
+S="$(cd "$RAIZ" && THYROX_ROOT="$RAIZ" PYTHONPATH="$FX/src" python3 "$FX/src/agents/agent_store.py" censo-medicion --claude-dir "$STORE_DIR" 2>&1)"; RC=$?
 case "$S" in *"USD por modelo: SIN MEDIR"*) D=si ;; *) D=no ;; esac
 check "agent_store sin model_catalog al lado: censo corre (exit 0) y declara SIN MEDIR" "$RC/$D" "0/si"
 rm -rf "$FX"

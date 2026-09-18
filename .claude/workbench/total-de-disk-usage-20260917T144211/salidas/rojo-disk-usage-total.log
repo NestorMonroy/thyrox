@@ -1,0 +1,35 @@
+== 1. recorrido completo: exit 0 y el mayor primero ==
+  ok    exit 0 en recorrido completo
+  ok    lista el directorio mayor
+  ok    lista el menor
+== 2. las raices de ruido se podan por defecto ==
+  ok    node_modules NO aparece
+  ok    .git NO aparece
+== 3. --prune añade una poda propia ==
+  ok    la raiz podada desaparece
+  ok    y la otra sigue
+== 4. rehusa SIN cifra ante una ruta inexistente ==
+  ok    exit 2 al rehusar
+  ok    no emite cifra
+== 5. CORTE: el plazo vencido sale 3 y lo DECLARA ==
+  ok    exit 3 cuando el plazo vence
+  ok    declara el corte
+== 6. ANULACION: retirada la declaracion, el corte se vuelve invisible ==
+  ok    la anulacion modifico el guion
+  ok    sin la declaracion, el corte se publica como completo
+== 7. la anulacion NO afecta al recorrido completo ==
+  ok    el caso sano sigue en 0 con y sin la guarda
+== 8. el TOTAL es el de la raiz, no la suma de todas las lineas ==
+  FALLO el total coincide con du -s de la raiz
+        esperado=[4.0] obtenido=[8.0]
+  FALLO cuenta los hijos, no la raiz
+        esperado=[2] obtenido=[3]
+  FALLO la raiz no figura como entrada del listado
+        assert_contains [  /tmp/tmp.lk82lHLOOF]
+== 9. ANULACION: sumando tambien la raiz, el total se infla ==
+  FALLO la anulacion modifico el guion
+        esperado=[1] obtenido=[0]
+  ok    sin la guarda el total deja de coincidir
+
+ok=15 fallo=4
+EXIT=1

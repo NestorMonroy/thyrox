@@ -31,8 +31,6 @@ import sys
 
 # `src/` a la ruta de busqueda: varias suites cargan este archivo con
 # `spec_from_file_location`, via por la que su directorio no queda en
-# `sys.path`. Es el criterio que `closure_graph.py` ya documenta.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from paths.reach import agent_store_path  # noqa: E402
 
 #: La convención de CLI para «leer de stdin», compartida por los consumidores.

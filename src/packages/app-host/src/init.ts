@@ -73,7 +73,7 @@ import memoize from 'lodash-es/memoize.js'
 import { getIsNonInteractiveSession } from './bootstrap/state.js'
 import type { AttributedCounter } from './bootstrap/state.js'
 import { getSessionCounter, setMeter } from './bootstrap/state.js'
-import { shutdownLspServerManager } from '@claude-code-how-works/ide/lsp/manager.js'
+import { shutdownLspServerManager } from '@thyrox/ide/lsp/manager.js'
 import { populateOAuthAccountInfoIfNeeded } from '@thyrox/provider/oauth/client.js'
 import {
   initializePolicyLimitsLoadingPromise,
@@ -306,7 +306,7 @@ export const init = memoize(async (): Promise<void> => {
     if (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)) {
       try {
         const { initUpstreamProxy, getUpstreamProxyEnv } = await import(
-          '@claude-code-how-works/server/upstreamproxy/upstreamproxy.js'
+          '@thyrox/server/upstreamproxy/upstreamproxy.js'
         )
         const { registerUpstreamProxyEnvFn } = await import(
           '@thyrox/shell/subprocessEnv.js'
@@ -392,7 +392,7 @@ export const init = memoize(async (): Promise<void> => {
       }
 
       // Muestra el diálogo de config inválida con el objeto de error y espera a que termine
-      return import('@claude-code-how-works/repl/components/InvalidConfigDialog.js').then(m =>
+      return import('@thyrox/repl/components/InvalidConfigDialog.js').then(m =>
         m.showInvalidConfigDialog({ error }),
       )
       // El diálogo mismo maneja process.exit, así que no hace falta cleanup adicional aquí

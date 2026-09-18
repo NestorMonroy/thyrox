@@ -1,0 +1,140 @@
+/**
+ * Shared utilities for displaying task status across different task types.
+ */
+
+import figures from 'figures'
+import type { InProcessTeammateTaskState } from '@thyrox/swarm'
+import type { TaskStatus } from '@thyrox/tool-registry/Task.js'
+import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
+import { isPanelAgentTask } from '@thyrox/agent/localAgentTask.js'
+import { isBackgroundTask, type TaskState } from '../../tasksTypes.js'
+import type { DeepImmutable } from '@thyrox/tool-registry/genericTypeUtils'
+import { summarizeRecentActivities } from '@thyrox/tool-registry/collapseReadSearch.js'
+
+/**
+ * Whether the steerable background-agent panel (CoordinatorTaskPanel) is the
+ * surface for `local_agent` tasks (panel + steerable transcript view) rather
+ * than the read-only summary pill. ant gates this via `F6H()` (3973.js):
+ * `!nonInteractive && (env CLAUDE_CODE_FORK_SUBAGENT || GrowthBook
+ * tengu_copper_fox)`; the decompiler rendered every `F6H()` as
+ * `USER_TYPE === 'ant'`, pinning it OFF for ccb (same class as the fullscreen
+ * `j9` gate). ant renders the panel UNCONDITIONALLY and self-gates on empty.
+ *
+ * ccb (solo operator, no GrowthBook rollout) treats the flag arm as always-on,
+ * so this reduces to ant's `!nonInteractive` guard — the panel is the surface
+ * for every interactive session. Headless `-p` runs through AgentLoop and never
+ * renders this tree, so the guard is belt-and-suspenders, but it keeps intent
+ * explicit. Lives in this dependency-free leaf so every panel/pill filter
+ * shares one chokepoint without an import cycle.
+ */
+export function isBgAgentPanelEnabled(): boolean {
+  return !getIsNonInteractiveSession()
+}
+
+/**
+ * Returns true if the given task status represents a terminal (finished) state.
+ */
+export function isTerminalStatus(status: TaskStatus): boolean {
+  return status === 'completed' || status === 'failed' || status === 'killed'
+}
+
+/**
+ * Returns the appropriate icon for a task based on status and state flags.
+ */
+export function getTaskStatusIcon(
+  status: TaskStatus,
+  options?: {
+    isIdle?: boolean
+    awaitingApproval?: boolean
+    hasError?: boolean
+    shutdownRequested?: boolean
+  },
+): string {
+  const { isIdle, awaitingApproval, hasError, shutdownRequested } =
+    options ?? {}
+
+  if (hasError) return figures.cross
+  if (awaitingApproval) return figures.questionMarkPrefix
+  if (shutdownRequested) return figures.warning
+
+  if (status === 'running') {
+    if (isIdle) return figures.ellipsis
+    return figures.play
+  }
+  if (status === 'completed') return figures.tick
+  if (status === 'failed' || status === 'killed') return figures.cross
+  return figures.bullet
+}
+
+/**
+ * Returns the appropriate semantic color for a task based on status and state flags.
+ */
+export function getTaskStatusColor(
+  status: TaskStatus,
+  options?: {
+    isIdle?: boolean
+    awaitingApproval?: boolean
+    hasError?: boolean
+    shutdownRequested?: boolean
+  },
+): 'success' | 'error' | 'warning' | 'background' {
+  const { isIdle, awaitingApproval, hasError, shutdownRequested } =
+    options ?? {}
+
+  if (hasError) return 'error'
+  if (awaitingApproval) return 'warning'
+  if (shutdownRequested) return 'warning'
+  if (isIdle) return 'background'
+
+  if (status === 'completed') return 'success'
+  if (status === 'failed') return 'error'
+  if (status === 'killed') return 'warning'
+  return 'background'
+}
+
+/**
+ * Derives a human-readable activity string for an in-process teammate,
+ * accounting for shutdown/approval/idle states and falling back through
+ * recent-activity summary → last activity description → 'working'.
+ */
+export function describeTeammateActivity(
+  t: DeepImmutable<InProcessTeammateTaskState>,
+): string {
+  if (t.shutdownRequested) return 'stopping'
+  if (t.awaitingPlanApproval) return 'awaiting approval'
+  if (t.isIdle) return 'idle'
+  return (
+    (t.progress?.recentActivities &&
+      summarizeRecentActivities(t.progress.recentActivities)) ??
+    t.progress?.lastActivity?.activityDescription ??
+    'working'
+  )
+}
+
+/**
+ * Returns true when BackgroundTaskStatus would render nothing because the
+ * spinner tree is active and every visible background task is an in-process
+ * teammate (teammates are shown in the spinner tree instead).
+ *
+ * Uses the same task filtering as BackgroundTaskStatus: `isBackgroundTask()`
+ * plus exclusion of panel-managed agent tasks when the steerable panel is
+ * active (those are shown by CoordinatorTaskPanel).
+ */
+export function shouldHideTasksFooter(
+  tasks: { [taskId: string]: TaskState },
+  showSpinnerTree: boolean,
+): boolean {
+  if (!showSpinnerTree) return false
+  let hasVisibleTask = false
+  for (const t of Object.values(tasks) as TaskState[]) {
+    if (
+      !isBackgroundTask(t) ||
+      (isBgAgentPanelEnabled() && isPanelAgentTask(t))
+    ) {
+      continue
+    }
+    hasVisibleTask = true
+    if (t.type !== 'in_process_teammate') return false
+  }
+  return hasVisibleTask
+}

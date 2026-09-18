@@ -9,9 +9,16 @@ agente, y un aviso que sale siempre se aprende a ignorar.
 from __future__ import annotations
 
 import importlib.util
+import json
 import pathlib
 
-_MODULE = pathlib.Path(__file__).resolve().parents[2] / "src/hooks/detect_agent_dispatch.py"
+# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
+# y la unica que el localizador no puede reemplazar: no se puede pedir
+# `reach.thyrox_root()` antes de que `import reach` funcione.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+_MODULE = reach.thyrox_root() / "src/hooks/detect_agent_dispatch.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
 gate = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
@@ -55,6 +62,33 @@ def test_the_judgment_half_carries_its_own_weight():
     deterministic = "Corre `bash tests/run.sh` y reporta el conteo final."
     assert _detect(deterministic) is not None
     assert _detect(deterministic + " Evalúa qué rojos son regresión.") is None
+
+
+def test_the_real_captured_payload_stays_silent():
+    """El unico caso cuyo texto NO lo escribio quien escribio el patron.
+
+    `fixtures/agent_dispatch_orm.json` es el payload REAL de un despacho,
+    guardado en `32026b27` con esta razon en su propio cuerpo: *"Its positive
+    control must be the real payload of the dispatch that motivated it, not
+    one written by whoever writes the pattern"*. La suite que lo siguio
+    fabrica sus siete casos y **nunca lo lee**, asi que la exigencia que ese
+    commit declaro no llego a ejercerse.
+
+    Y al leerlo se ve que NO es un control positivo: el detector calla sobre
+    el, y calla **bien** — el prompt pide sintetizar, derivar un orden y
+    declarar DESCONOCIDO, que es juicio. Es un control NEGATIVO, y vale mas
+    que el fabricado de arriba porque sus verbos de juicio van enterrados en
+    un prompt real que ademas nombra trabajo mecanico (`python3 -c`, censos,
+    el pre-commit). Un detector que midiera solo las familias deterministas
+    avisaria aqui.
+    """
+    payload = json.loads(
+        (pathlib.Path(__file__).resolve().parent
+         / "fixtures/agent_dispatch_orm.json").read_text(encoding="utf-8"))
+    assert gate.detect(payload) is None
+    # Y que su silencio lo produce la mitad de juicio, no la ausencia de
+    # familias: el texto SI nombra trabajo determinista.
+    assert gate.needs_judgment(gate.dispatched_text(payload["tool_input"]))
 
 
 def test_stays_silent_on_a_payload_without_prompt():

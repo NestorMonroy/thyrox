@@ -112,12 +112,12 @@ af "matar suelta el ledger" no "$(contiene "$PEND2" 'ctl-001')"
 # 6. camino feliz: el codigo de salida de cada trabajo llega al log
 printf 'exit 7\n' > "$T/siete.txt"
 BG_DIR="$T/f" bash "$POOL" --width 1 --timeout 30 --prefix sal "$T/siete.txt" >/dev/null 2>&1
-af "el marcador conserva el codigo real del trabajo" "EXIT=7" "$(grep -h '^EXIT=' "$T"/f/*.log 2>/dev/null | head -1)"
+af "el marcador conserva el codigo real del trabajo" "EXIT=7" "$(grep -h '^EXIT=' "$T"/f/*/*.log 2>/dev/null | head -1)"
 
 # 7. los comentarios y las lineas vacias no se lanzan
 printf '# comentario\n\ntrue\n' > "$T/mix.txt"
 BG_DIR="$T/g" bash "$POOL" --width 1 --timeout 30 --prefix mix "$T/mix.txt" >/dev/null 2>&1
-af "solo se lanza el comando real" 1 "$(ls "$T"/g/*.log 2>/dev/null | wc -l)"
+af "solo se lanza el comando real" 1 "$(ls "$T"/g/*/*.log 2>/dev/null | wc -l)"
 
 # =============================================================================
 # TASK-THYROX-0013 — las dos formas de `--jobs` que la referencia admite
@@ -183,7 +183,7 @@ wait "$_SUBIDOR" 2>/dev/null
 # El reloj SOLO no discrimina: si el guion rehusa la ruta, no lanza nada y el
 # lapso es 0 — verde por no haber medido. Se exige TAMBIEN que los cuatro
 # trabajos existan, que es lo que separa «rapido» de «no corrio».
-af "los cuatro trabajos se lanzaron" 4 "$(ls "$T"/relee/*.log 2>/dev/null | wc -l)"
+af "los cuatro trabajos se lanzaron" 4 "$(ls "$T"/relee/*/*.log 2>/dev/null | wc -l)"
 af "releer el archivo admite los cuatro en menos de 3 vueltas" si \
    "$([ "$_LAPSO" -lt 6 ] && echo si || echo no)"
 
@@ -201,11 +201,11 @@ printf 'sleep 2\nsleep 2\nsleep 2\nsleep 2\nsleep 2\nsleep 2\n' > "$T/seis.txt"
 _DRENADOR=$!
 BG_DIR="$T/drena" bash "$POOL" --width "$T/drena.conf" --timeout 30 --prefix dre "$T/seis.txt" >/dev/null 2>&1
 wait "$_DRENADOR" 2>/dev/null
-_LANZADOS="$(ls "$T"/drena/*.log 2>/dev/null | wc -l)"
+_LANZADOS="$(ls "$T"/drena/*/*.log 2>/dev/null | wc -l)"
 af "el drenaje corta antes de los seis" si \
    "$([ "$_LANZADOS" -ge 1 ] && [ "$_LANZADOS" -lt 6 ] && echo si || echo no)"
 af "y los vivos llegaron a su marcador" "$_LANZADOS" \
-   "$(grep -l '^EXIT=' "$T"/drena/*.log 2>/dev/null | wc -l)"
+   "$(grep -l '^EXIT=' "$T"/drena/*/*.log 2>/dev/null | wc -l)"
 
 # =============================================================================
 # TASK-THYROX #328 — la anchura publicada es la EFECTIVA: min(WIDTH, N)
@@ -236,7 +236,7 @@ af "con 6 trabajos y --width 2 publica 2, no 6" si \
    "$(contiene "$SALIDA_SIN_CAP" '6 trabajo\(s\), anchura 2')"
 
 # Y la cota es de REPORTE: no recorta lo que se lanza. Los dos trabajos salen.
-af "capar no deja trabajos sin lanzar" 2 "$(ls "$T"/cap/*.log 2>/dev/null | wc -l)"
+af "capar no deja trabajos sin lanzar" 2 "$(ls "$T"/cap/*/*.log 2>/dev/null | wc -l)"
 
 echo "test-run-task-pool: $((OK+FALLA)) aserciones — $OK ok, $FALLA falla(s)"
 [ "$FALLA" -eq 0 ]

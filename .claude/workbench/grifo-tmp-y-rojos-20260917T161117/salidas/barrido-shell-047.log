@@ -1,0 +1,2 @@
+VERDE tests/session/test-process-group.sh
+EXIT=0

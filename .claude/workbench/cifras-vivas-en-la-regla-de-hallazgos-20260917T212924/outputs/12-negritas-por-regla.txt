@@ -1,0 +1,16 @@
+24 model-selection-subagents.md
+8 redaccion-tecnica-es.md
+7 referencia-odoo-gobierna-las-decisiones.md
+4 niveles-de-retencion.md
+4 atributos-de-clase-de-modelo.md
+3 hallazgos-documentacion-obligatoria.md
+2 test-execution-protocol.md
+2 convention-naming.md
+2 calibration-verified-numbers.md
+2 artefactos-minimos-iniciativa.md
+1 porte-completo-no-parcial.md
+1 metrica-decide-la-conclusion.md
+1 identificadores-en-ingles.md
+1 contenedor-corre-db-api-tests.md
+1 build-logs.md
+1 bash-background-tasks.md

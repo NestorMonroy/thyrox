@@ -1,0 +1,36 @@
+== 1. una cita que resuelve pasa, y publica el sujeto ==
+  FALLA exit 0
+        esperado=0 obtenido=2
+  FALLA nombra el sujeto de la cita que resuelve
+        esperado=True obtenido=False
+== 2. un mensaje SIN citas pasa, y no inventa conteo ==
+  FALLA exit 0
+        esperado=0 obtenido=2
+== 3. CONTROL POSITIVO REAL — el cuerpo del commit 4acece94 ==
+  ok    el commit existe en el repo (no es fabricado)
+  ok    y cita la forma que no resuelve
+  FALLA exit 1 ante la cita que no resuelve
+        esperado=1 obtenido=2
+  FALLA nombra la cita rota
+        esperado=True obtenido=False
+== 4. EL GEMELO — el mismo mensaje con la cita correcta pasa ==
+  FALLA exit 0: el gate discrimina el REFERENTE, no la mera forma
+        esperado=0 obtenido=2
+== 5. las lineas de comentario de git no cuentan ==
+  FALLA exit 0: la cita rota vive en un comentario
+        esperado=0 obtenido=2
+== 6. REFUSAL — sin store no se emite conteo ==
+  ok    exit 2 al rehusar
+  ok    NO emite veredicto de citas
+  FALLA nombra el store ausente
+        esperado=True obtenido=False
+== 7. REFUSAL — sin archivo de mensaje tampoco ==
+  ok    exit 2 al rehusar
+== 8. --history mide el corpus, que es OTRA superficie ==
+  FALLA exit 0: medir no es juzgar
+        esperado=0 obtenido=2
+  FALLA publica su denominador
+        esperado=True obtenido=False
+
+resultado: 5 de 15 aserciones en verde
+exit=1

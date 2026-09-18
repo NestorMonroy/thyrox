@@ -1,0 +1,9 @@
+ANTES  filas: 1750
+ANTES  estados: {'completed': 763, 'in_progress': 50, 'pending': 937}
+ANTES  DDL lleva CHECK: True
+DESPUES filas: 1750
+DESPUES estados: {'completed': 763, 'in_progress': 50, 'pending': 937}
+DESPUES DDL lleva CHECK: True
+columnas: 18
+clave: ['task_id', 'session_id']
+RECHAZA fuera del vocabulario: SI — CHECK constraint failed: status IN ('pending', 'in_progress', 'completed')

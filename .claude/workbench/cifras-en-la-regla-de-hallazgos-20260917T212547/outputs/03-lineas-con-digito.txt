@@ -1,0 +1,78 @@
+4:version: 1.2.1
+5:created_at: 2026-05-28T22:46:19
+6:updated_at: 2026-09-12T19:03:49
+7:applies_to: kaupamex v1.0.0+
+8:origen: directiva ejecutor 2026-05-28T22:46:19; ampliada 2026-07-08 (pasadas de analisis)
+13:> Cargado automaticamente en cada sesion (I-009).
+26:> Ampliacion 2026-07-08 (directiva ejecutor).
+50:**Precedente:** H-CBK-01..04 (drift de contracargos detectado al analizar
+51:``GET /v1/chargebacks/{id}``) quedaron primero solo en el analisis; se
+57:> **Cambio 2026-08-03 (directiva del ejecutor).** Hasta hoy la regla mandaba un
+60:> con **199 hallazgos en 8369 lineas / 472 KB**, y
+61:> `hallazgos-implementar-o2c-catalogo-a-venta.rst` con 295 KB — mientras el
+62:> tercer archivo mas grande baja a 37 KB (medido sobre los 189 `hallazgos-*.rst`
+63:> del repo). La mediana por hallazgo es de **32 lineas**: leer 472 KB para
+64:> recuperar 32 es el costo que esta regla ahora elimina.
+71:├── hallazgo-H-API-259-<slug-corto>.rst
+72:└── hallazgo-H-UI-07-<slug-corto>.rst
+89:> Anadido 2026-08-20 (:ref:`h-docs-227`). La frase de arriba —*"no por donde se
+96:1. el **prefijo del ID** en el nombre del archivo — `hallazgo-H-DOCS-226-…`
+97:2. la clave `:submodulo:` de su bloque `.. meta::`
+98:3. el segmento `<submodulo>` de su **ruta**
+100:Medido sobre 511 hallazgos: **448 (88 %)** ya lo cumplen — es la convencion
+108:> **MUDADO 2026-09-05 (H-DOCS-1094), corregido aqui 2026-09-12.** El gate salio
+117:> parametro de ESTE corpus, no del mecanismo (DEC-04).
+127:> | 1 | vivio en `docs: .claude/scripts/tests/test-hallazgo-submodulo.sh` | `d566c1801`, `7c71b57bc` |
+128:> | 2 | salio de docs con el ecosistema | `docs@2b8f52284` |
+129:> | 3 | aterrizo en `thyrox: tests/legacy/test-hallazgo-submodulo.sh` | `thyrox@b8323330` |
+130:> | 4 | quedo **retirada** en el reparto de `tests/legacy` | `thyrox@9928ed54` |
+134:> (`thyrox@dd929373`). Son dos suites distintas, no una con dos nombres.
+143:python3 "$T/src/verify/check_hallazgo_submodulo.py"            # reporte
+144:python3 "$T/src/verify/check_hallazgo_submodulo.py" --strict   # exit 1 si hay nuevos
+155:mover ya se hizo tres veces. Barrido de las heredadas: tarea **#632**; los 4
+156:con incoherencia interna (ID contra meta): **#633**.
+166:romperia mas de 100 referencias vivas por un beneficio que solo aplica hacia
+167:adelante. Mismo criterio prospectivo ya fijado por DEC-R-01 (`:flow:`) y
+168:DEC-SM-01 (`:estado:`).
+178:.. _h-api-259:
+182:8000 lineas.
+200:> Reescrita 2026-09-17T02:14:22 ante la pregunta del ejecutor —*«porque solo estas
+206:hallazgos por raiz     api 697 · docs 643 · THYROX 31 · server 18 · db 9 · ui 1
+208:los 31 H-THYROX        0 incoherentes (sus tres declaraciones coinciden)
+209:denominador del gate   1399  ->  los 31 SIEMPRE estuvieron dentro
+222:pagarla ahi (tarea #169). Esta regla heredaba el mismo nombre y, a diferencia de
+244:  (:ref:`h-thyrox-31` lo estrena).
+248:  aloja **67** hallazgos de esa clase. Ya no es la unica: ver la contradiccion
+251:> **CONTRADICCION ABIERTA — declarada 2026-09-17T03:38:36, no resuelta.** Esta
+252:> linea decia *«de `pm/docs/`»* y **66**. Las dos cifras caducaron el mismo dia:
+254:> —su entregable es el proveedor, medido **50 citas a `thyrox:` contra 3 a
+255:> `kaupamex-docs:`**— y el conteo real es **67**, no 66.
+257:> El movimiento deja a sus **67 hallazgos `H-DOCS`** incumpliendo la triple
+259:> · ruta `pm/thyrox`. **No se toco ninguno de los 67**, y el `:submodulo:` se
+260:> volteo SOLO en los 37 archivos de fuera de `hallazgos/`.
+266:> | re-prefijar los 67 a `H-THYROX` | reescribe evidencia fechada citada por `:ref:` desde reglas siempre-cargadas |
+267:> | meterlos al baseline del gate | usa el mecanismo de deuda **heredada** para un defecto creado hoy — justo lo que TASK-DOCS-0120 tiene abierto |
+271:> cita durable: **TASK-DOCS-0562**.
+274:> 2026-09-17T21:33:02.** Esta linea citaba `TASK-DOCS-0410`, que en el store
+275:> nombra *«Construir el canal consumidor»*: alguien relleno el ordinal `#410`
+281:> Y los `67` son de su episodio, no del arbol: dos mudanzas posteriores
+288:>   | awk -F/ '{print $6}' | sort | uniq -c
+297:(:ref:`h-docs-1274`, antes `H-API-390`).
+303:**Y el prefijo NO se inventa por dominio.** Medido 2026-09-17T02:06:51: el arbol tiene ocho
+305:prefijo `H-E2E` que ningun gate mide — ese si es inventado por dominio, no por
+306:raiz de trabajo. Su triaje es **TASK-DOCS-0554**; hasta que se decida, un
+311:`<slug>/hallazgos/hallazgo-H-API-259-<slug-corto>.rst`:
+321:.. _h-api-259:
+323:H-API-259 — descripcion corta
+328:- **Archivo:** ``src/addons/modulo/archivo.py:42``
+332:- **Estado:** RESUELTO en ``api@abc1234``  |  DOCUMENTADO (sin fix inmediato)
+337:alias del arbol si la cifra viene de la referencia (`odoo19c:` …), por
+353:   :header-rows: 1
+358:   * - :ref:`h-api-259`
+363:   :maxdepth: 1
+365:   hallazgo-H-API-259-<slug-corto>
+372:1. Commit en `<repo>` (api/ui/server): la implementacion + fixes
+373:2. Commit en `kaupamex-docs`: el archivo de hallazgos
+374:3. Push de ambos
+386:**NUNCA** escribir segundos como `:00` manualmente — siempre usar el
+EXIT=0

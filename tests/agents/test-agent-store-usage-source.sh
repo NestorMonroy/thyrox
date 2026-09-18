@@ -99,8 +99,13 @@ PY
 # «ya no», así que el fixture lo declara explícitamente en vez de suponerlo.
 echo '{}' > "$PROJECTS/agent-medible.jsonl"
 
-# Cualquier subcomando dispara el migrado; `censo-medicion` además lo lee.
-python3 "$STORE" censo-medicion --claude-dir "$CLAUDE_DIR" >/dev/null 2>&1
+# El migrado lo dispara `init`, que es el camino de ESCRITURA declarado.
+# Antes esta linea invocaba `censo-medicion`, con el comentario «cualquier
+# subcomando dispara el migrado». Era cierto y dejo de serlo: los tres censos
+# abren en modo lectura desde TASK-THYROX-0037, asi que un censo ya no migra
+# —ni debe—. Un censo que escribe en el store que mide no puede publicar un
+# conteo del que nadie sospeche.
+python3 "$STORE" init --claude-dir "$CLAUDE_DIR" >/dev/null 2>&1
 afirmar "la columna usage_source existe tras el migrado" \
     "1" "$(consulta "SELECT COUNT(*) FROM pragma_table_info('agent_sessions') WHERE name='usage_source'")"
 
@@ -148,6 +153,11 @@ import sqlite3
 c = sqlite3.connect('$DB')
 c.execute('UPDATE agent_sessions SET usage_source = NULL')
 c.commit()"
+# El relleno es ESCRITURA, asi que lo dispara `init`; el censo solo observa.
+# Separarlos no debilita el control: lo que el caso mide es que `transcript`
+# se reconstruye desde los tokens y `no_medido` no, y esa asimetria es del
+# relleno, no de quien la imprime.
+python3 "$STORE" init --claude-dir "$CLAUDE_DIR" >/dev/null 2>&1
 CENSO_CIEGO=$(python3 "$STORE" censo-medicion --claude-dir "$CLAUDE_DIR")
 afirmar "anulado, el relleno reconstruye 'transcript' desde los tokens" \
     "1" "$(grep -c 'n = 2 de 5' <<<"$CENSO_CIEGO")"

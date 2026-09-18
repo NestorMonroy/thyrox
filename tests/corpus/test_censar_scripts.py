@@ -20,7 +20,36 @@ import subprocess
 import sys
 import tempfile
 
-HERE = pathlib.Path(__file__).resolve().parents[2] / "src"
+HERE = reach.thyrox_root() / "src"
+sys.path.insert(0, str(HERE))
+
+from paths import reach  # noqa: E402
+
+#: El consumidor cuyo corpus mide esta suite, NOMBRADO.
+#:
+#: `censar.ROOT` cuelga de `reach.consumer_root()`, que pregunta «el consumidor
+#: dentro del que estoy». Corriendo desde el PROVEEDOR no hay ninguno, y el
+#: localizador rehusa con `ConsumerUnknownError` en vez de componer un hogar
+#: dentro de thyrox — conducta correcta suya, no defecto.
+#:
+#: El defecto era de la suite: dejaba propagar ese rehuse como traza y moria en
+#: rojo. Y el rojo no decia nada del sujeto, porque el sujeto ni se habia
+#: mirado. Rehusar con exit 2 tampoco habria servido: seria FALSO, porque esta
+#: suite SI sabe de que consumidor habla. Es la tercera vez en el mismo pase
+#: que aparece esa forma — ver :ref:`h-thyrox-45`.
+CONSUMER = reach.root('docs')
+
+# Y se DECLARA para el proceso, no solo para una de las tres constantes.
+#
+# `censar` difiere ROOT, CATALOGUE y BASELINE por PEP 562, y cada una llama a
+# `consumer_root()` por su cuenta: fijar `censar.ROOT` a mano deja a las otras
+# dos rehusando igual. La declaracion es la via que el propio localizador
+# nombra en su mensaje de rehuse, y es de PROCESO, asi que alcanza a las tres
+# sin que la suite tenga que conocer cuantas son.
+#
+# Declararlo aqui NO decide el cableado del consumidor (DEC-04): esto vale solo
+# dentro de este proceso de prueba, que es quien sabe de que corpus habla.
+os.environ.setdefault('THYROX_CONSUMER', str(CONSUMER))
 spec = importlib.util.spec_from_file_location("censar", HERE / "corpus" / "census_scripts.py")
 censar = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
@@ -68,12 +97,12 @@ def synthetic_repo() -> pathlib.Path:
 
 print("== census_scripts.py — descubrimiento sobre el fondo agrupado por clase ==")
 repo = synthetic_repo()
-real_root = censar.ROOT
-censar.ROOT = repo
+real_root_dir = censar.root_dir
+censar.root_dir = lambda: repo
 try:
     paths = {r["path"] for r in censar.survey()}
 finally:
-    censar.ROOT = real_root
+    censar.root_dir = real_root_dir
 
 check(".claude/scripts/gates/check_something.py" in paths,
       "ve un guion en una subcarpeta de clase (gates/)", f"paths={sorted(paths)}")
@@ -91,11 +120,11 @@ check(not any("__pycache__" in p for p in paths),
       "CONTROL — __pycache__ nunca es un guion")
 
 print("== la clase se deriva del citante también con la ruta anidada ==")
-censar.ROOT = repo
+censar.root_dir = lambda: repo
 try:
     rows = {r["path"]: r for r in censar.survey()}
 finally:
-    censar.ROOT = real_root
+    censar.root_dir = real_root_dir
 check(rows.get(".claude/scripts/gates/check_something.py", {}).get("class") == "gate-de-reporte",
       "gates/check_something.py citado desde docs → gate-de-reporte",
       f"class={rows.get('.claude/scripts/gates/check_something.py', {}).get('class')}")
@@ -104,7 +133,7 @@ check(rows.get(".claude/scripts/agents/nested/deep_tool.py", {}).get("class") ==
 
 print("== el baseline de huérfanos apunta a un archivo que EXISTE en el repo real ==")
 check(censar.BASELINE.exists(),
-      f"BASELINE existe: {censar.BASELINE.relative_to(real_root)}",
+      f"BASELINE existe: {censar.BASELINE.relative_to(CONSUMER)}",
       "el generador declara una ruta anterior a la mudanza; --huerfanos lee 0 en baseline")
 
 print(f"\nresultado: {PASS} ok, {FAIL} fallas")

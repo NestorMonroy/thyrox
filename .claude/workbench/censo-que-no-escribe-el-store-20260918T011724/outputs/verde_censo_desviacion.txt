@@ -1,0 +1,17 @@
+== 1. la media NO discrimina: los dos modelos dan la misma ==
+  ok    las dos filas estan en la tabla
+  ok    misma media en los dos modelos
+== 2. la desviacion tipica SI las distingue ==
+  ok    el estable publica su desviacion
+  ok    el erratico publica la suya, un orden mayor
+== 3. la cifra viaja con su denominador ==
+  ok    cada modelo declara su n
+== 4. la unidad se declara: el bloque es de TOKENS, no de dinero ==
+  ok    el bloque nombra su unidad
+  ok    y NO mezcla dinero en el mismo bloque
+== 5. publica equiv_cost, que es la unidad de coste que SE CITA ==
+  ok    el estable publica la desviacion de su equiv_cost
+  ok    el erratico publica la suya, un orden mayor
+  ok    misma media de equiv_cost: tampoco ahi discrimina
+
+10 ok, 0 fallos

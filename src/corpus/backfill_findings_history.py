@@ -50,8 +50,7 @@ HERE = Path(__file__).resolve().parent  # thyrox/src/corpus
 # el mecanismo de alcance, que lee la variable declarada, el `.env` y solo
 # entonces deriva. El guard se conserva: sigue siendo el unico control que
 # puede fallar si la resolucion devuelve algo que no es kaupamex-docs.
-sys.path.insert(0, str(HERE.parent / "paths"))
-import reach  # noqa: E402  (la ruta se compone arriba, a proposito)
+from paths import reach  # noqa: E402  (la ruta se compone arriba, a proposito)
 
 from agents import agents_paths
 

@@ -1,0 +1,150 @@
+import { feature } from 'bun:bundle'
+import * as React from 'react'
+import { resetCostState } from '@thyrox/app-host/bootstrap/state.js'
+import {
+  clearTrustedDeviceToken,
+  enrollTrustedDevice,
+} from '@thyrox/bridge/trustedDevice.js'
+import type { LocalJSXCommandContext } from '../../runtime.js'
+import { ConfigurableShortcutHint } from '@thyrox/repl/components/ConfigurableShortcutHint.js'
+import { ConsoleOAuthFlow } from '@thyrox/repl/components/ConsoleOAuthFlow.js'
+import { Dialog } from '@anthropic/ink'
+import { useMainLoopModel } from '@thyrox/repl/hooks/useMainLoopModel.js'
+import { Text } from '@anthropic/ink'
+import { refreshGrowthBookAfterAuthChange } from '@thyrox/config/feature-flags'
+import { refreshPolicyLimits } from '@thyrox/provider/policyLimits/index.js'
+import { refreshRemoteManagedSettings } from '@thyrox/config/remote'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
+import { stripSignatureBlocks } from '@thyrox/agent/messages.js'
+import {
+  checkAndDisableAutoModeIfNeeded,
+  checkAndDisableBypassPermissionsIfNeeded,
+  resetAutoModeGateCheck,
+  resetBypassPermissionsCheck,
+} from '@thyrox/permission/bypassPermissionsKillswitch.js'
+import { resetUserCache } from '@thyrox/provider/user.js'
+
+export async function call(
+  onDone: LocalJSXCommandOnDone,
+  context: LocalJSXCommandContext,
+): Promise<React.ReactNode> {
+  return (
+    <Login
+      onDone={async success => {
+        context.onChangeAPIKey()
+        // Signature-bearing blocks (thinking, connector_text) are bound to the API key —
+        // strip them so the new key doesn't reject stale signatures.
+        context.setMessages(stripSignatureBlocks)
+        if (success) {
+          // Post-login refresh logic. Keep in sync with onboarding in src/interactiveHelpers.tsx
+          // Reset cost state when switching accounts
+          resetCostState()
+          // Refresh remotely managed settings after login (non-blocking)
+          void refreshRemoteManagedSettings()
+          // Refresh policy limits after login (non-blocking)
+          void refreshPolicyLimits()
+          // Clear user data cache BEFORE GrowthBook refresh so it picks up fresh credentials
+          resetUserCache()
+          // Refresh GrowthBook after login to get updated feature flags (e.g., for claude.ai MCPs)
+          refreshGrowthBookAfterAuthChange()
+          // Clear any stale trusted device token from a previous account before
+          // re-enrolling — prevents sending the old token on bridge calls while
+          // the async enrollTrustedDevice() is in-flight.
+          clearTrustedDeviceToken()
+          // Enroll as a trusted device for Remote Control (10-min fresh-session window)
+          void enrollTrustedDevice()
+          // Reset killswitch gate checks and re-run with new org
+          resetBypassPermissionsCheck()
+          const appState = context.getAppState()
+          void checkAndDisableBypassPermissionsIfNeeded(
+            appState.toolPermissionContext,
+            context.setAppState,
+          )
+          if (feature('TRANSCRIPT_CLASSIFIER')) {
+            resetAutoModeGateCheck()
+            void checkAndDisableAutoModeIfNeeded(
+              appState.toolPermissionContext,
+              context.setAppState,
+              appState.fastMode,
+            )
+          }
+          // Clear stale mainLoopModel if it's a bare model id that doesn't
+          // belong to any current connection. Without this, the header shows
+          // a leftover model from a previous session (e.g. "Sonnet 4.5")
+          // even though the user is now on a fresh Claude Account login.
+          // This runs after connections are saved so the check is accurate.
+          try {
+            const { updateSettingsForSource, getSettingsForSource } =
+              await import('@thyrox/config/settings')
+            const { getEnabledConnections, unpackModelId } = await import(
+              '@thyrox/provider/connections.js'
+            )
+            const mlm = (getSettingsForSource('userSettings') as {
+              mainLoopModel?: string
+            })?.mainLoopModel
+            if (mlm && typeof mlm === 'string') {
+              const { connectionId, modelId } = unpackModelId(mlm)
+              // Bare id with no connection prefix — check if it matches any
+              // current connection model. If not, it's stale.
+              if (!connectionId) {
+                const allIds = getEnabledConnections().flatMap(c =>
+                  c.models.map(m => m.id),
+                )
+                if (!allIds.includes(modelId)) {
+                  updateSettingsForSource('userSettings', {
+                    mainLoopModel: undefined,
+                  } as never)
+                  // Also clear from AppState so the header re-renders immediately.
+                  context.setAppState(prev => ({
+                    ...prev,
+                    mainLoopModel: null,
+                  }))
+                }
+              }
+            }
+          } catch {
+            // Best-effort; never block login completion.
+          }
+          // Increment authVersion to trigger re-fetching of auth-dependent data in hooks (e.g., MCP servers)
+          context.setAppState(prev => ({
+            ...prev,
+            authVersion: prev.authVersion + 1,
+          }))
+        }
+        onDone(success ? 'Login successful' : 'Login interrupted')
+      }}
+    />
+  )
+}
+
+export function Login(props: {
+  onDone: (success: boolean, mainLoopModel: string) => void
+  startingMessage?: string
+}): React.ReactNode {
+  const mainLoopModel = useMainLoopModel()
+
+  return (
+    <Dialog
+      title="Login"
+      onCancel={() => props.onDone(false, mainLoopModel)}
+      color="permission"
+      inputGuide={exitState =>
+        exitState.pending ? (
+          <Text>Press {exitState.keyName} again to exit</Text>
+        ) : (
+          <ConfigurableShortcutHint
+            action="confirm:no"
+            context="Confirmation"
+            fallback="Esc"
+            description="cancel"
+          />
+        )
+      }
+    >
+      <ConsoleOAuthFlow
+        onDone={() => props.onDone(true, mainLoopModel)}
+        startingMessage={props.startingMessage}
+      />
+    </Dialog>
+  )
+}

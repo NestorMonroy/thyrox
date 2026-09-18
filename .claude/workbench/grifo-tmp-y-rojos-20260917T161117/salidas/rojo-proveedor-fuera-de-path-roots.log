@@ -1,0 +1,7 @@
+  ok    una ficha sin senal no aparece
+  FALLO el proveedor entra en PATH_ROOTS
+        esperado=[si] obtenido=[no]
+  FALLO PATH_ROOTS no cablea el nombre de ningun consumidor
+        esperado=[0] obtenido=[2]
+
+test-verificar-premisa.sh: 21 ok · 2 fallo(s)

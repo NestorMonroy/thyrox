@@ -36,8 +36,8 @@ if [[ -z "$_thyrox_root" ]]; then
     done
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
-DOCS_ROOT="$(thyrox_root)" || exit 2
-GATE="$DOCS_ROOT/src/verify/check_gitattributes.py"
+PROVIDER_ROOT="$(thyrox_root)" || exit 2
+GATE="$PROVIDER_ROOT/src/verify/check_gitattributes.py"
 OK=0
 FALLOS=0
 
@@ -165,15 +165,24 @@ fi
 # Ningun caso de esta suite lo veia, porque todos median el ARCHIVO y ninguno
 # preguntaba a git si el atributo resuelve. Lo destapo el aviso del propio git
 # al commitear. Esta asercion cierra ese hueco: el veredicto lo da git.
-if [[ -f "$DOCS_ROOT/.gitattributes" ]]; then
-    ATTR="$(git -C "$DOCS_ROOT" check-attr merge -- \
-                .claude/agent-results/agent_store.sqlite3 2>&1)"
+# La ruta del store NO se transcribe: se deriva del mecanismo. La transcrita
+# era `.claude/agent-results/agent_store.sqlite3`, el hogar PRE-mudanza; el
+# store vive hoy en `agent-results/` del proveedor (TASK-THYROX-0027), asi que
+# `check-attr` respondia `unspecified` sobre una ruta que ya no se versiona y
+# el rojo no decia que era del instrumento.
+STORE_REL="$(python3 -c "
+import sys; sys.path.insert(0, '$PROVIDER_ROOT/src/agents')
+import agents_paths
+print(agents_paths.agent_store_path().relative_to(agents_paths.THYROX_ROOT))
+" 2>/dev/null)"
+if [[ -f "$PROVIDER_ROOT/.gitattributes" && -n "$STORE_REL" ]]; then
+    ATTR="$(git -C "$PROVIDER_ROOT" check-attr merge -- "$STORE_REL" 2>&1)"
     comprobar "5c. git resuelve el atributo declarado (no 'unspecified')" "si" \
         "$(grep -q 'merge: sqlite-union' <<<"$ATTR" && echo si || echo no)"
     comprobar "5d. git no rechaza ninguna linea del archivo" "no" \
         "$(grep -q 'is not a valid attribute name' <<<"$ATTR" && echo si || echo no)"
 else
-    printf 'AVISO: no hay .gitattributes en %s — 5c/5d no midieron nada\n' "$DOCS_ROOT" >&2
+    printf 'AVISO: sin .gitattributes o sin ruta de store derivable en %s — 5c/5d no midieron nada\n' "$PROVIDER_ROOT" >&2
     FALLOS=$((FALLOS + 2))
 fi
 

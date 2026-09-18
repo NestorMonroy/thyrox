@@ -1,0 +1,38 @@
+git 2.43.0
+
+  exit del commit A: 0
+=== A  hook muta+add · commit POR PATHSPEC   (la forma que git.md manda)
+  GIT_INDEX_FILE visto por el hook: /tmp/claude-0/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/scratchpad/fixture_indice/a/.git/next-index-30638.lock
+  HEAD     626799f0f85326a8c1fc522db584e86cdfccd51f
+  index    45b2285cbce0e5ae2be0e22742c331af445d7caa
+  worktree 626799f0f85326a8c1fc522db584e86cdfccd51f
+  status   [MM f.bin]
+  veredicto: indice RANCIO (HEAD==worktree, index atras)
+
+  intento de forzar el indice real desde el hook:
+    fatal: Unable to create '/tmp/claude-0/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/scratchpad/fixture_indice/a/.git/index.lock': File exists.
+    
+    Another git process seems to be running in this repository, e.g.
+    an editor opened by 'git commit'. Please make sure all processes
+    are terminated then try again. If it still fails, a git process
+    may have crashed in this repository earlier:
+    remove the file manually to continue.
+    EXIT=128
+
+=== B  hook muta+add · commit PLANO          (control: aisla el pathspec)
+  GIT_INDEX_FILE visto por el hook: .git/index
+  HEAD     626799f0f85326a8c1fc522db584e86cdfccd51f
+  index    626799f0f85326a8c1fc522db584e86cdfccd51f
+  worktree 626799f0f85326a8c1fc522db584e86cdfccd51f
+  status   [limpio]
+  veredicto: los tres coinciden — limpio
+
+  exit del commit C: 0
+=== C  hook muta SIN add · commit POR PATHSPEC (anulacion del git add)
+  GIT_INDEX_FILE visto por el hook: /tmp/claude-0/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/scratchpad/fixture_indice/c/.git/next-index-30737.lock
+  HEAD     b4eaa8704a6a6e0ac9f36c9edc8466ab982b54c7
+  index    b4eaa8704a6a6e0ac9f36c9edc8466ab982b54c7
+  worktree 626799f0f85326a8c1fc522db584e86cdfccd51f
+  status   [ M f.bin]
+  veredicto: worktree adelante — el commit NO llevo la mutacion
+

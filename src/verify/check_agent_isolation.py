@@ -31,8 +31,7 @@ import pathlib
 import re
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 # --- constantes de forma -----------------------------------------------------
 DIR_AGENTES = pathlib.Path(".claude") / "agents"
@@ -97,8 +96,17 @@ def main(argv=None):
     args = p.parse_args(argv)
 
     # El consumidor, no el proveedor: los agentes que se miden son los suyos.
-    raiz = reach.consumer_root()
-    directorios = args.dir or [str(raiz / DIR_AGENTES)]
+    #
+    # La resolucion se DIFIERE a cuando hace falta. Se pedia siempre, incluso
+    # con `--dir` dado, y entonces el rehuse de `consumer_root` —correcto: el
+    # proveedor tambien lleva `.claude/`, asi que el marcador no lo distingue—
+    # mataba al gate con un traceback. `--dir` es justo la via por la que un
+    # llamador declara su universo sin que haya consumidor que deducir; exigirle
+    # uno la cerraba.
+    if args.dir:
+        directorios = args.dir
+    else:
+        directorios = [str(reach.consumer_root() / DIR_AGENTES)]
     medidos, declaran, incoherentes = revisar(directorios)
 
     if args.quiet:

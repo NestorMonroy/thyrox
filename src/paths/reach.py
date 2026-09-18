@@ -86,6 +86,7 @@ analizador NO expande.
 """
 from __future__ import annotations
 
+import functools
 import os
 import sys
 from pathlib import Path
@@ -493,6 +494,57 @@ def resolve_home(declared: str | Path, root: str | Path) -> Path:
     return Path(root) / path
 
 
+def ensure_home(path: str | Path) -> Path:
+    """Un hogar DECLARADO se crea si falta — nunca se inventa uno.
+
+    La frontera es la de DEC-04, y la separa una sola palabra: **declarado**.
+    Que el consumidor elija DONDE vive su hogar es una decision suya, y por eso
+    un hogar sin declarar sigue rehusando (``LogHomeError``,
+    ``WorkbenchHomeError``). Que ese hogar EXISTA en disco no es una decision:
+    es una precondicion, y satisfacerla es trabajo del mecanismo — igual que
+    ``spawn_detached`` ya crea el padre del log antes de abrirlo.
+
+    Lo que cierra, medido por conducta antes de escribir esto: los cuatro
+    resolutores devolvian la ruta sin crearla, asi que un listado sobre un
+    hogar ausente daba **cero entradas** en vez de un error. Ese cero no
+    distingue «el hogar esta vacio» de «el hogar no existe» — el sub-patron D
+    de ``metrica-decide-la-conclusion.md`` aplicado al propio hogar. Creado,
+    el cero pasa a ser verdad.
+
+    Idempotente por ``exist_ok=True``: resolver dos veces no falla, que es la
+    conducta que un resolutor consultado en cada llamada necesita.
+
+    Metrica: la existencia del directorio tras resolverlo.
+    Ciega a: sus PERMISOS —crearlo no prueba que se pueda escribir en el— y al
+    caso en que la ruta exista como ARCHIVO, donde ``mkdir`` propaga su
+    ``FileExistsError`` en vez de enmascararlo, que es lo correcto: un hogar
+    que es un archivo es un defecto de declaracion, no una precondicion que el
+    mecanismo pueda satisfacer.
+    """
+    home = Path(path)
+    home.mkdir(parents=True, exist_ok=True)
+    return home
+
+
+def creates_home(resolver):
+    """Decorador: el hogar que `resolver` devuelve EXISTE al volver.
+
+    Se aplica al resolutor y no a cada `return` por dos razones medidas. La
+    primera es de cobertura: los cuatro tienen entre dos y cuatro puntos de
+    salida —familia por clon, clave global, compuesto, cruda—, y envolver cada
+    uno deja la garantia a merced de que nadie anada un quinto. La segunda es
+    de control: retirar el decorador es UNA linea, asi que la anulacion que
+    prueba que el mecanismo carga su peso es exacta.
+
+    No cambia la firma: `functools.wraps` conserva nombre y docstring, que es
+    lo que leen los tests de superficie.
+    """
+    @functools.wraps(resolver)
+    def wrapped(*args, **kwargs):
+        return ensure_home(resolver(*args, **kwargs))
+    return wrapped
+
+
 def tree_root(start: Path | None = None) -> Path:
     """El padre de los clones, por variable declarada o por ascenso.
 
@@ -697,8 +749,8 @@ AGENT_STORE_DIR = Path("agent-results")
 AGENT_STORE_NAME = "agent_store.sqlite3"
 
 
-def agent_store_path(start: Path | None = None) -> Path:
-    """La ruta del store, **con su directorio creado**. Nunca una ruta supuesta.
+def agent_store_path(start: Path | None = None, create: bool = True) -> Path:
+    """La ruta del store. Con ``create``, ademas materializa su directorio.
 
     Dos desenlaces, y el segundo no es un rehuse:
 
@@ -719,6 +771,15 @@ def agent_store_path(start: Path | None = None) -> Path:
     El **esquema** no es cosa de este módulo: lo crea ``agent_store.connect``,
     que ya usa ``CREATE TABLE IF NOT EXISTS``. Aquí vive la ubicación y nada
     más — el localizador no conoce tablas.
+
+    ``create=False`` es para el camino de LECTURA, y no deroga el argumento de
+    arriba: lo acota al camino de ESCRITURA, que es donde vale. Un lector que
+    materializa el hogar reabre por la vía del MODO la creación de cáscara que
+    TASK-THYROX-0153 y 0156 cerraron por la vía de la RUTA — medido por
+    conducta, ``censo-tablas`` hacía ``mkdir`` del hogar antes de leer nada.
+    Y la distinción que el ``mkdir`` protegía —«no hay datos» contra «no pude
+    medir»— la da mejor ``agent_store.connect_readonly``, que la declara por su
+    nombre (``StoreNotFound``) en vez de taparla creando el directorio.
     """
     declared = env_value(AGENT_STORE_VAR, start) or env_value(
         AGENT_STORE_COMPAT_VAR, start)
@@ -726,7 +787,8 @@ def agent_store_path(start: Path | None = None) -> Path:
         path = Path(declared).expanduser()
     else:
         path = thyrox_root(start) / AGENT_STORE_DIR / AGENT_STORE_NAME
-    path.parent.mkdir(parents=True, exist_ok=True)
+    if create:
+        path.parent.mkdir(parents=True, exist_ok=True)
     return path
 
 

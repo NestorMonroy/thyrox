@@ -20,7 +20,7 @@ from session.adopt_background import (  # noqa: E402
 )
 from session.job_ledger import JobLedger  # noqa: E402
 
-MODULE = str(Path(__file__).resolve().parents[2] / "src" / "session"
+MODULE = str(reach.thyrox_root() / "src" / "session"
              / "adopt_background.py")
 OK = FAILED = 0
 
@@ -135,6 +135,12 @@ print("== 5. la ruta se DERIVA de la convencion: es como lo hace la referencia =
 # identificador es lo unico que un anuncio garantiza. Control: la ruta real de
 # esta sesion cumple la convencion.
 import os as _os2
+
+# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
+# y la unica que el localizador no puede reemplazar: no se puede pedir
+# `reach.thyrox_root()` antes de que `import reach` funcione.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
 check("5.1 compone <raiz>/<sesion>/tasks/<id>.output",
       "/r/s7/tasks/j1.output", str(derived_output("j1", "/r", "s7")))
 check("5.2 sin raiz declarada, None", None, derived_output("j1", None, "s7"))

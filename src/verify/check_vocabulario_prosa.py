@@ -171,25 +171,37 @@ FORBIDDEN_VAR = 'VOCAB_GATE_FORBIDDEN'
 
 
 def resolve_parameter(name, var, measured=()):
-    """Localiza un parametro del consumidor: variable, hogar propio, o el arbol.
+    """Localiza un parametro: variable, hogar propio del proveedor, o el arbol.
 
-    Sirve al baseline y a la lista de formas vetadas, que son el MISMO
-    problema: los dos congelan o declaran algo de un arbol concreto, y thyrox
-    -el proveedor- no los tiene. Tenerlo escrito dos veces es como divergen:
-    el baseline se arreglo en h-docs-1107 y la lista se quedo con la ruta fija
-    `HERE / <nombre>`, asi que el detector `prohibido` corria con CERO formas
-    y publicaba «0 hallazgos» sobre un texto que no habia comparado con nada.
+    El mecanismo es uno y sus DOS consumidores NO son el mismo problema. Esta
+    docstring afirmaba que si —«los dos congelan o declaran algo de un arbol
+    concreto»— y esa premisa es falsa, medida al preguntarla:
 
-    El baseline es **parametro del consumidor**, no mecanismo de thyrox:
-    congela la deuda de un arbol concreto, y un segundo consumidor tendria la
-    suya. Por eso el gate lo BUSCA en vez de codificar una ruta.
+    - **el baseline** congela la deuda heredada de UN corpus. Es parametro del
+      consumidor (DEC-04): un segundo consumidor tendria la suya, y por eso el
+      gate lo BUSCA en `<consumidor>/.claude/baselines/` en vez de codificarlo.
+    - **la lista de formas vetadas** es POLITICA DE VOCABULARIO, derivada de
+      `redaccion-tecnica-es.md`. Medido: 51 de 51 formas son español tecnico
+      generico —`regla de oro`, `chamba`, `corrida`, `libreria`— y **ninguna**
+      nombra kaupamex, Odoo, L0/L1 ni tenant. Ningun consumidor la
+      particulariza, asi que vive en el PROVEEDOR (`HERE`), junto al mecanismo
+      que la lee y junto a su regla hermana del mismo eje, que ya vivia en
+      `thyrox/.claude/rules/identificadores-en-ingles.md`.
+
+    El coste de haberla tenido en el consumidor estaba medido por conducta, no
+    supuesto: con solo thyrox en alcance el gate rehusaba con exit 2 y no podia
+    medir — la forma de ERR-063, una directiva que solo vive donde no gobierna.
+    Tras el movimiento, el mismo sujeto da exit 1 nombrando `corrida`.
 
     Origen (h-docs-1107): con la ruta fija `HERE / <nombre>` la mudanza a
     thyrox dejo 638 entradas congeladas invisibles, y el pre-commit --strict
-    empezo a bloquear deuda historica como si fuera nueva.
+    empezo a bloquear deuda historica como si fuera nueva. El orden de
+    resolucion que quedo de ahi —variable, `HERE`, ascenso— sirve a los dos
+    consumidores con el reparto invertido: la lista acierta en `HERE` y el
+    baseline sigue de largo hasta el arbol.
 
-    Donde vive el baseline de forma definitiva es la tarea #162; esta funcion
-    no la adelanta — admite las tres ubicaciones sin mover el archivo.
+    El veredicto POR ARCHIVO de los diez parametros es TASK-DOCS-0407; este
+    cierra el de la lista de vetadas y deja abiertos los otros nueve.
     """
     declarado = os.environ.get(var, '').strip()
     if declarado:
@@ -248,7 +260,20 @@ def resolve_baseline(measured=()):
 
 
 def resolve_forbidden(measured=()):
-    """La lista de formas vetadas de este consumidor."""
+    """La lista canonica de formas vetadas, que vive en el PROVEEDOR.
+
+    Resuelve en `HERE` por el orden de `resolve_parameter`, asi que la rama de
+    ascenso al consumidor queda inalcanzable para ella mientras el archivo este
+    aqui. Eso es deliberado: la politica de vocabulario es una, no una por clon.
+
+    Lo que hoy NO se puede: **extender** la lista desde un consumidor.
+    `VOCAB_GATE_FORBIDDEN` la **reemplaza** entera, asi que un clon que declare
+    una forma propia pierde las 51 canonicas. No se construye la union porque
+    la poblacion que la necesita es vacia —51 de 51 formas son genericas— y
+    cambiar la firma tocaria tres consumidores y dos suites por un caso que no
+    existe. Condicion de cierre del sucesor: el primer consumidor que necesite
+    una forma de su dominio.
+    """
     return resolve_parameter(FORBIDDEN_NAME, FORBIDDEN_VAR, measured)
 
 

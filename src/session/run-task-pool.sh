@@ -184,12 +184,75 @@ DIR="$(python3 "$HERE/background.py" --log-home "$DIR")" || exit 4
 
 mkdir -p "$DIR"
 
+# ---------------------------------------------------------------------------
+# UN DIRECTORIO POR DESPACHO — la etiqueta plana pisaba la evidencia
+# ---------------------------------------------------------------------------
+# El defecto, medido por conducta: la etiqueta era `<prefijo>-<ordinal>` y el
+# log `$DIR/<etiqueta>.log`, los dos PLANOS en el hogar global. Dos despachos
+# que compartieran `--prefix` reusaban `cifras-001`, y el segundo SOBREESCRIBIA
+# el log del primero sin un byte de aviso. Y la etiqueta es la CLAVE del ledger
+# (`job_ledger._path_for`), cuyo `register` «sobrescribe si la etiqueta ya
+# existia»: la colision no era del archivo, era de la IDENTIDAD del trabajo.
+#
+# La forma sale de dos precedentes MEDIDOS, no de una preferencia:
+#   - el cliente organiza por DIRECTORIO POR SUJETO (`projects/<slug>/<uuid>/`,
+#     `tasks/<uuid>/`), nunca por ordinal plano;
+#   - este arbol ya lo ejerce en `.claude/build-logs/rojo-…-20260917T090330/`,
+#     con nombres DESCRIPTIVOS dentro.
+# Y `convention-naming.md` prohibe el prefijo numerico: un ordinal fabrica un
+# orden que no existe y no dice que contiene el archivo.
+#
+# El sufijo es ISO-8601 compacto para que ordene cronologicamente por nombre.
+# Dos despachos dentro del mismo segundo se desempatan con un contador: sin el,
+# la colision volveria por la puerta de atras en una tanda rapida.
+# La marca temporal tiene granularidad de SEGUNDO, asi que dos pools lanzados
+# a la vez la comparten. Comprobar-luego-crear no cierra esa ventana: los dos
+# ven el directorio ausente, los dos eligen el mismo nombre, y vuelve la
+# colision de etiqueta que esta tarea existe para cerrar — medido, 5 de 5
+# vueltas con dos pools concurrentes (sonda del banco).
+#
+# `mkdir` SIN `-p` es la primitiva que lo cierra: falla con EEXIST y esa
+# comprobacion es atomica en el kernel, asi que exactamente un pool se lleva
+# cada nombre. El desempate es un ordinal, no un reintento del reloj: dentro
+# del mismo segundo el reloj devolveria el mismo valor y el bucle no avanzaria.
+_suffix=1
+DISPATCH="$PREFIX-$(date -u +%Y%m%dT%H%M%S)"
+RUN_DIR="$DIR/$DISPATCH"
+until mkdir "$RUN_DIR" 2>/dev/null; do
+    _suffix=$((_suffix + 1))
+    if [ "$_suffix" -gt 1000 ]; then
+        echo "run-task-pool: no se pudo abrir un despacho unico bajo $DIR" >&2
+        exit 4
+    fi
+    DISPATCH="$PREFIX-$(date -u +%Y%m%dT%H%M%S)-$_suffix"
+    RUN_DIR="$DIR/$DISPATCH"
+done
+
 # Los comandos, sin vacías ni comentarios.
+#
+# Cada linea admite `nombre<TAB>comando`. El nombre es DESCRIPTIVO y sustituye
+# al ordinal; sin el, se cae al ordinal, que dentro de su propio directorio ya
+# es inambiguo. El primer campo se toma como nombre SOLO si parece un nombre
+# —sin espacios ni barras— para no partir un comando que lleve un tabulador
+# dentro (`awk '{print $1"\t"$2}'`), que lo dejaria lanzando la mitad del
+# cuerpo.
 if [ "$INPUT" = "-" ]; then mapfile -t RAW; else mapfile -t RAW < "$INPUT"; fi
 COMMANDS=()
+NAMES=()
 for c in "${RAW[@]}"; do
     case "$c" in ''|'#'*) continue ;; esac
+    _nombre=""
+    case "$c" in
+        *$'\t'*)
+            _cand="${c%%$'\t'*}"
+            case "$_cand" in
+                ''|*[[:space:]]*|*/*) : ;;   # no parece un nombre: la linea es el comando
+                *) _nombre="$_cand"; c="${c#*$'\t'}" ;;
+            esac
+            ;;
+    esac
     COMMANDS+=("$c")
+    NAMES+=("$_nombre")
 done
 N=${#COMMANDS[@]}
 [ "$N" -gt 0 ] || { echo "run-task-pool: 0 comandos que lanzar — nada que medir" >&2; exit 4; }
@@ -199,7 +262,7 @@ N=${#COMMANDS[@]}
 SERIE=""
 [ "$WIDTH" -eq 1 ] && SERIE=" (en serie)"
 
-echo "run-task-pool: $N trabajo(s), anchura ${WIDTH}${SERIE}, logs en $DIR"
+echo "run-task-pool: $N trabajo(s), anchura ${WIDTH}${SERIE}, logs en $RUN_DIR"
 
 ALIVE=()
 DRAINING=0
@@ -254,8 +317,13 @@ for cmd in "${COMMANDS[@]}"; do
         echo "run-task-pool: sin lanzar ($((N - LAUNCHED))): $cmd" >&2
         continue
     fi
-    LABEL="$(printf '%s-%03d' "$PREFIX" "$i")"
-    LOG="$DIR/$LABEL.log"
+    # El nombre: el declarado, o el ordinal dentro de ESTE despacho.
+    _nombre="${NAMES[$((i - 1))]}"
+    [ -n "$_nombre" ] || _nombre="$(printf '%s-%03d' "$PREFIX" "$i")"
+    # La etiqueta lleva el despacho: es la clave del ledger, y sin el
+    # discriminante dos despachos se pisaban la fila.
+    LABEL="$DISPATCH/$_nombre"
+    LOG="$RUN_DIR/$_nombre.log"
     # El marcador `EXIT=` es lo que hace decidible la muerte: sin él,
     # `wait-jobs.sh` no distingue "sigue corriendo" de "murió callado".
     #
@@ -277,5 +345,12 @@ for cmd in "${COMMANDS[@]}"; do
     printf '  %-14s pid %-7s %s\n' "$LABEL" "$PID" "$cmd"
 done
 
+# `--only "$DISPATCH"` acota la espera a los hijos de ESTE despacho. Con
+# `$PREFIX` a secas —como estaba— dos pools que compartieran prefijo se
+# esperaban mutuamente, que es la mitad de TASK-THYROX-0084 que da nombre a
+# la tarea. Sin ninguno, la
+# barrera globea todo el ledger — y cuando el pool se lanza a traves de
+# `bg.sh` esta registrado ahi, asi que se esperaba a si mismo: nunca asentaba
+# y agotaba su timeout entero con sus hijos ya terminados. TASK-THYROX-0083.
 echo "run-task-pool: lanzados $LAUNCHED de $N; esperando en PRIMER PLANO (timeout ${TIMEOUT}s)"
-"$WAIT_JOBS" wait --timeout "$TIMEOUT"
+"$WAIT_JOBS" wait --timeout "$TIMEOUT" --only "$DISPATCH"

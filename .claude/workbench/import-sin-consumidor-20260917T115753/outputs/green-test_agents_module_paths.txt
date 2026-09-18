@@ -1,0 +1,10 @@
+test_every_agents_module_resolves_its_paths (__main__.AgentsModulePaths.test_every_agents_module_resolves_its_paths) ... ok
+test_no_module_constant_points_at_nothing (__main__.AgentsModulePaths.test_no_module_constant_points_at_nothing) ... ok
+test_the_census_is_not_empty (__main__.AgentsModulePaths.test_the_census_is_not_empty)
+Sin esto un directorio vacío daría verde: no discriminaría. ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.923s
+
+OK
+EXIT=0

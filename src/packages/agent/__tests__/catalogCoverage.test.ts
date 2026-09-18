@@ -2,7 +2,7 @@
  * Cobertura del catálogo: cada modelo de `MODELS` cruza umbral, ventana efectiva
  * y coste por turno sin hueco.
  *
- * Fuente del porte: el catálogo `@thyrox/agent` (`src/models.json`), extraído
+ * Fuente del porte: el catálogo `@thyrox/agent` (`src/models.jsonl`), extraído
  * del ejecutable — aquí no se transcribe ninguna cifra. El test es una red
  * contra un modelo nuevo cuyo registro entre sin que las tres piezas lo cubran.
  */

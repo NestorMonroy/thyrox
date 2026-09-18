@@ -1,0 +1,43 @@
+== 1. el universo son los hallazgos bajo un `hallazgos/` ==
+  ok    total cuenta los 4 de un hallazgos/, no los sueltos
+  ok    el suelto se cuenta aparte, no se pierde
+
+== 2. el prefijo se DERIVA del nombre, sin lista cerrada ==
+  FALLO el prefijo inedito aparece
+        esperado=1 obtenido=None
+  ok    y los conocidos tambien
+  ok    DOCS cuenta por su PREFIJO, no por su carpeta
+
+== 3. la raiz se DERIVA de la ruta, no del prefijo ==
+  ok    la raiz de la ruta es thyrox aunque el prefijo diga DOCS
+  FALLO y la raiz inedita aparece
+        esperado=1 obtenido=None
+
+== 4. la triple declaracion, con su denominador ==
+  FALLO coherentes
+        esperado=3 obtenido=2
+  FALLO incoherentes
+        esperado=1 obtenido=2
+  ok    y el incoherente se NOMBRA, no solo se cuenta
+
+== 5. la mediana de lineas por hallazgo ==
+  ok    mediana sobre los 4 medidos
+
+== 6. los monolitos, por tamano descendente ==
+  ok    dos monolitos
+  ok    el mayor primero
+  ok    y su nombre es el real
+
+== 7. el render publica el DENOMINADOR, no un conteo pelado ==
+  ok    el total aparece
+  FALLO la coherencia va con su denominador
+        esperado=True obtenido=False
+  FALLO y el prefijo inedito llega al texto
+        esperado=True obtenido=False
+
+== 8. un corpus vacio NO publica un cero mudo ==
+  ok    total 0
+  ok    y la mediana declara que no hay poblacion
+
+resultado: 13 de 19 aserciones en verde
+EXIT=1

@@ -1,0 +1,15 @@
+caso 1: el guion existe y responde --help
+caso 2: extrae la arista en las seis formas de declarar sucesor
+caso 3: no confunde una cita de tarea con una declaracion de sucesor
+caso 4: el ranking publica cuantos nodos midio
+caso 5: un ciclo termina, y da el mismo resultado dos veces
+caso 6: sin arista de vuelta, el reporte declara que el cero no es evidencia
+caso 7: con arista de vuelta, el reporte publica su cobertura
+caso 8: ordena por lo que desbloquea, no por el numero de la tarea
+caso 9: un DESCONOCIDO va antes que un pendiente comun del mismo peso
+caso 10: un nodo aislado recibe masa, que es lo que hace el reparto del sumidero
+caso 11: ordena por alcanzabilidad cuando el rango dice lo contrario
+caso 12: publica la ambiguedad del id de tarea, y sin store dice que no pudo
+caso 13: el default del store es absoluto y no depende del cwd
+
+OK: 13 casos, 0 fallos (alcance medido: 5 fixtures)

@@ -1,0 +1,309 @@
+import * as React from 'react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  logEvent,
+} from '@thyrox/local-observability'
+import { useInterval } from 'usehooks-ts'
+import { useUpdateNotification } from '../hooks/useUpdateNotification.js'
+import { Box, Text } from '@thyrox/ink'
+import {
+  type AutoUpdaterResult,
+  getLatestVersion,
+  getMaxVersionAndForceDowngrade,
+  type InstallStatus,
+  installGlobalPackage,
+  shouldForceDowngradeNow,
+  shouldSkipVersion,
+} from '@thyrox/updater/autoUpdater.js'
+import { getGlobalConfig, isAutoUpdaterDisabled } from '@thyrox/config'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { readEnv } from '@thyrox/config/env'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getCurrentInstallationType } from '../doctorDiagnostic.js'
+import {
+  installOrUpdateClaudePackage,
+  localInstallationExists,
+} from '../localInstaller.js'
+import { removeInstalledSymlink } from '@thyrox/updater/nativeInstaller/index.js'
+import { gt, gte } from '@thyrox/config/semver'
+import { getInitialSettings } from '@thyrox/config/settings'
+
+type Props = {
+  isUpdating: boolean
+  onChangeIsUpdating: (isUpdating: boolean) => void
+  onAutoUpdaterResult: (autoUpdaterResult: AutoUpdaterResult | null) => void
+  autoUpdaterResult: AutoUpdaterResult | null
+  showSuccessMessage: boolean
+  verbose: boolean
+}
+
+export function AutoUpdater({
+  isUpdating,
+  onChangeIsUpdating,
+  onAutoUpdaterResult,
+  autoUpdaterResult,
+  showSuccessMessage,
+  verbose,
+}: Props): React.ReactNode {
+  const [versions, setVersions] = useState<{
+    global?: string | null
+    latest?: string | null
+  }>({})
+  const [hasLocalInstall, setHasLocalInstall] = useState(false)
+  const updateSemver = useUpdateNotification(autoUpdaterResult?.version)
+
+  useEffect(() => {
+    void localInstallationExists().then(setHasLocalInstall)
+  }, [])
+
+  // Track latest isUpdating value in a ref so the memoized checkForUpdates
+  // callback always sees the current value. Without this, the 30-minute
+  // interval fires with a stale closure where isUpdating is false, allowing
+  // a concurrent installGlobalPackage() to run while one is already in
+  // progress.
+  const isUpdatingRef = useRef(isUpdating)
+  isUpdatingRef.current = isUpdating
+
+  const checkForUpdates = React.useCallback(async () => {
+    if (isUpdatingRef.current) {
+      return
+    }
+
+    if (
+      process.env.NODE_ENV === 'test' ||
+      process.env.NODE_ENV === 'development'
+    ) {
+      logForDebugging(
+        'AutoUpdater: Skipping update check in test/dev environment',
+      )
+      return
+    }
+
+    const currentVersion = MACRO.VERSION
+    const channel = getInitialSettings()?.autoUpdatesChannel ?? 'latest'
+    const latestVersion = await getLatestVersion(channel)
+    const isDisabled = isAutoUpdaterDisabled()
+
+    // Port of ant v2.1.136 `TyK` (4908.js). Target-selection flow:
+    //   1. Fetch {maxVersion, forceDowngradeEnabled} from the single
+    //      tengu_max_version_config GrowthBook entry.
+    //   2. If both flags are present, ask `shouldForceDowngradeNow`
+    //      (ant `UK6`): current > target ⇒ force-downgrade target,
+    //      else flag is a no-op (take normal upgrade path).
+    //   3. Otherwise: if maxVersion caps the latest, pin to maxVersion
+    //      (skip when already at-or-above); else use latestVersion.
+    //   4. Fire `tengu_auto_updater_forced_downgrade` only when the
+    //      force-downgrade actually fires (matches ant — fires once
+    //      per chosen-target decision, not on every flag-on check).
+    const { maxVersion, forceDowngradeEnabled } =
+      await getMaxVersionAndForceDowngrade()
+    let target: string | null = null
+    let isForceDowngrade = false
+    if (forceDowngradeEnabled && maxVersion) {
+      isForceDowngrade = shouldForceDowngradeNow(
+        currentVersion,
+        maxVersion,
+        'auto_updater',
+      )
+      if (isForceDowngrade) {
+        target = maxVersion
+      }
+    }
+    if (!target && latestVersion) {
+      if (maxVersion && gt(latestVersion, maxVersion)) {
+        logForDebugging(
+          `AutoUpdater: maxVersion ${maxVersion} is set, capping update from ${latestVersion} to ${maxVersion}`,
+        )
+        if (gt(maxVersion, currentVersion)) {
+          target = maxVersion
+        } else {
+          logForDebugging(
+            `AutoUpdater: current version ${currentVersion} is already at or above maxVersion ${maxVersion}, skipping update`,
+          )
+        }
+      } else if (gt(latestVersion, currentVersion)) {
+        target = latestVersion
+      }
+    }
+
+    setVersions({ global: currentVersion, latest: target ?? latestVersion })
+
+    if (!target || shouldSkipVersion(target)) {
+      return
+    }
+
+    if (isForceDowngrade) {
+      logEvent('tengu_auto_updater_forced_downgrade', {
+        from_version: currentVersion,
+        to_version: target,
+      })
+    }
+
+    // Check if update needed and perform update
+    if (
+      !isDisabled &&
+      currentVersion &&
+      target &&
+      !gte(currentVersion, target) &&
+      !shouldSkipVersion(target)
+    ) {
+      const startTime = Date.now()
+      onChangeIsUpdating(true)
+
+      // Remove native installer symlink since we're using JS-based updates
+      // But only if user hasn't migrated to native installation AND
+      // `DISABLE_INSTALLATION_CHECKS` isn't set (ant TyK escape hatch —
+      // pinned for test harnesses + sandboxed installs where the
+      // symlink path is itself the install root).
+      const config = getGlobalConfig()
+      if (
+        config.installMethod !== 'native' &&
+        !isEnvTruthy(readEnv('DISABLE_INSTALLATION_CHECKS'))
+      ) {
+        await removeInstalledSymlink()
+      }
+
+      // Detect actual running installation type
+      const installationType = await getCurrentInstallationType()
+      logForDebugging(
+        `AutoUpdater: Detected installation type: ${installationType}`,
+      )
+
+      // Skip update for development builds
+      if (installationType === 'development') {
+        logForDebugging('AutoUpdater: Cannot auto-update development build')
+        onChangeIsUpdating(false)
+        return
+      }
+
+      // Choose the appropriate update method based on what's actually running
+      let installStatus: InstallStatus
+      let updateMethod: 'local' | 'global'
+
+      if (installationType === 'npm-local') {
+        // Use local update for local installations
+        logForDebugging('AutoUpdater: Using local update method')
+        updateMethod = 'local'
+        installStatus = await installOrUpdateClaudePackage(channel)
+      } else if (installationType === 'npm-global') {
+        // Use global update for global installations
+        logForDebugging('AutoUpdater: Using global update method')
+        updateMethod = 'global'
+        installStatus = await installGlobalPackage()
+      } else if (installationType === 'native') {
+        // This shouldn't happen - native should use NativeAutoUpdater
+        logForDebugging(
+          'AutoUpdater: Unexpected native installation in non-native updater',
+        )
+        onChangeIsUpdating(false)
+        return
+      } else {
+        // Fallback to config-based detection for unknown types
+        logForDebugging(
+          `AutoUpdater: Unknown installation type, falling back to config`,
+        )
+        const isMigrated = config.installMethod === 'local'
+        updateMethod = isMigrated ? 'local' : 'global'
+
+        if (isMigrated) {
+          installStatus = await installOrUpdateClaudePackage(channel)
+        } else {
+          installStatus = await installGlobalPackage()
+        }
+      }
+
+      onChangeIsUpdating(false)
+
+      if (installStatus === 'success') {
+        logEvent('tengu_auto_updater_success', {
+          fromVersion:
+            currentVersion as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+          toVersion:
+            target as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+          durationMs: Date.now() - startTime,
+          wasMigrated: updateMethod === 'local',
+          installationType:
+            installationType as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+        })
+      } else {
+        logEvent('tengu_auto_updater_fail', {
+          fromVersion:
+            currentVersion as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+          attemptedVersion:
+            target as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+          status:
+            installStatus as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+          durationMs: Date.now() - startTime,
+          wasMigrated: updateMethod === 'local',
+          installationType:
+            installationType as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+        })
+      }
+
+      onAutoUpdaterResult({
+        version: target,
+        status: installStatus,
+      })
+    }
+    // isUpdating intentionally omitted from deps; we read isUpdatingRef
+    // instead so the guard is always current without changing callback
+    // identity (which would re-trigger the initial-check useEffect below).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onAutoUpdaterResult])
+
+  // Initial check
+  useEffect(() => {
+    void checkForUpdates()
+  }, [checkForUpdates])
+
+  // Check every 30 minutes
+  useInterval(checkForUpdates, 30 * 60 * 1000)
+
+  if (!autoUpdaterResult?.version && (!versions.global || !versions.latest)) {
+    return null
+  }
+
+  if (!autoUpdaterResult?.version && !isUpdating) {
+    return null
+  }
+
+  return (
+    <Box flexDirection="row" gap={1}>
+      {verbose && (
+        <Text dimColor wrap="truncate">
+          globalVersion: {versions.global} &middot; latestVersion:{' '}
+          {versions.latest}
+        </Text>
+      )}
+      {isUpdating ? (
+        <>
+          <Box>
+            <Text color="text" dimColor wrap="truncate">
+              Auto-updating…
+            </Text>
+          </Box>
+        </>
+      ) : (
+        autoUpdaterResult?.status === 'success' &&
+        showSuccessMessage &&
+        updateSemver && (
+          <Text color="success" wrap="truncate">
+            ✓ Update installed · Restart to apply
+          </Text>
+        )
+      )}
+      {(autoUpdaterResult?.status === 'install_failed' ||
+        autoUpdaterResult?.status === 'no_permissions') && (
+        <Text color="error" wrap="truncate">
+          ✗ Auto-update failed &middot; Try <Text bold>claude doctor</Text> or{' '}
+          <Text bold>
+            {hasLocalInstall
+              ? `cd ~/.claude/local && npm update ${MACRO.PACKAGE_URL}`
+              : `npm i -g ${MACRO.PACKAGE_URL}`}
+          </Text>
+        </Text>
+      )}
+    </Box>
+  )
+}

@@ -1,0 +1,9 @@
+  ok   el audit no enumera ningun gate registrado
+  ok   el audit invoca al corredor del registro
+  ok   los bloques que ningun gate cubre siguen en el audit
+  ok   el corredor alcanza los gates que el registro declara
+  FALLO la delegacion lee una clave que el corredor emite (summary)
+       esperado: si
+       obtenido: 
+
+test-audit-delegates: 4 ok, 1 falla
