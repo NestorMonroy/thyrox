@@ -1,0 +1,487 @@
+/**
+ * `ccb --bg-pty-host <sock> <cols> <rows> -- <cmd> [args...]`
+ *
+ * 1:1 port of ant 4702.js DW3 (PTY host runtime). Spawned by ccb's
+ * BG layer (or by an external daemon supervisor) when the user
+ * requests an interactive backgrounded REPL. This process:
+ *
+ *   1. Opens a PTY pair via `new Bun.Terminal({cols, rows, data})`.
+ *   2. Spawns the requested child (typically a fresh `ccb` REPL)
+ *      inside that PTY via `Bun.spawn(..., {terminal})`.
+ *   3. Binds a Unix domain socket at `<sock>` and accepts attach
+ *      clients. Each client gets a hello frame, a replay of the
+ *      ring buffer, then a `live` frame, then live PTY output via
+ *      length-prefixed data frames. Inbound data frames flow back
+ *      into the PTY.
+ *   4. On child exit, broadcasts an `exit` frame and tears down.
+ *
+ * Backpressure: per-client `writableLength > 1 MiB` ⇒ destroy that
+ * client (mirrors ant's JW3=1048576). Ring buffer caps replay at 256
+ * KiB. Frame cap is 1 MiB.
+ *
+ * @dynamicRequire
+ */
+
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { unlink } from 'node:fs/promises'
+import {
+  type Server,
+  type Socket,
+  createServer,
+} from 'node:net'
+import { setPriority, getPriority } from 'node:os'
+import { dirname } from 'node:path'
+
+import { logEvent } from '@claude-code-how-works/local-observability'
+
+import {
+  createFrameDecoder,
+  CTRL_TAG,
+  DATA_TAG,
+  encodeCtrlFrame,
+  encodeDataFrame,
+  RING_BUFFER_BYTES,
+} from './ptyFrame.js'
+import { createRing } from './ptyRing.js'
+
+/** Per-client writable backpressure cap; matches ant JW3. */
+const CLIENT_BACKPRESSURE_BYTES = 1024 * 1024
+/**
+ * APC detach sentinel — ant 4176.js `aNH = "\x1b_cc-daemon-detach\x1b\\"`.
+ * Must be stripped from the ring buffer so replays to new attach
+ * clients don't trigger spurious detach. Source: ant 4835.js
+ * WorkerVm.wirePty `pushRing(q.replaceAll(aNH, ""))`.
+ */
+const DETACH_APC_STR = '\x1b_cc-daemon-detach\x1b\\'
+const DETACH_APC_BUF = Buffer.from(DETACH_APC_STR)
+/** SIGTERM → SIGKILL escalation delay; matches ant 4702.js:91. */
+const SIGTERM_GRACE_MS = 5000
+
+/** Compute the breadcrumb path for socket `sock`. ant 4137.js:114-116. */
+function breadcrumbPath(sock: string): string {
+  if (process.platform === 'win32') {
+    // Windows uses a separate dir; we mirror Unix-only behavior here
+    // (ccb has no daemon yet, the Win path is only relevant to it).
+    return `${sock}.err`
+  }
+  return `${sock}.err`
+}
+
+/** Best-effort breadcrumb write + exit(1). Mirrors ant $P_. */
+function writeBreadcrumbAndExit(sock: string | undefined, msg: string): never {
+  if (sock) {
+    try {
+      const p = breadcrumbPath(sock)
+      mkdirSync(dirname(p), { recursive: true })
+      writeFileSync(p, `${new Date().toISOString()} ${msg}\n`)
+    } catch {
+      // best-effort
+    }
+  }
+  // ant 4138.js / 5172.js tengu_bg_ptyhost_crash on host bring-up failure.
+  try {
+    logEvent('tengu_bg_ptyhost_crash', { msg })
+  } catch {
+    // best-effort — telemetry must never block exit
+  }
+  process.exit(1)
+}
+
+/**
+ * Entry point. Receives argv tail starting with the socket path.
+ * Caller (cli.tsx fast-path) strips the `--bg-pty-host` flag itself.
+ *
+ *   args = [sock, cols, rows, '--', cmd, ...cmdArgs]
+ *
+ * @dynamicRequire
+ */
+export async function runPtyHost(args: readonly string[]): Promise<void> {
+  const dashDash = args.indexOf('--')
+  if (dashDash < 3 || dashDash === args.length - 1) {
+    writeBreadcrumbAndExit(
+      undefined,
+      'bad argv: --bg-pty-host <sock> <cols> <rows> -- <cmd> [args...]',
+    )
+  }
+  const sock = args[0]!
+  process.on('uncaughtException', err =>
+    writeBreadcrumbAndExit(
+      sock,
+      `uncaught: ${err instanceof Error ? err.stack ?? String(err) : String(err)}`,
+    ),
+  )
+  process.on('unhandledRejection', err =>
+    writeBreadcrumbAndExit(
+      sock,
+      `unhandledRejection: ${err instanceof Error ? err.stack ?? String(err) : String(err)}`,
+    ),
+  )
+
+  // Live PTY dimensions. Spawn-time argv seeds the INITIAL size, but every
+  // client resize ctrl frame mutates these (see handleCtrl 'resize'). Source:
+  // ant 5017.js WorkerVm — `ptyCols`/`ptyRows` are mutable instance state, NOT
+  // frozen at spawn. `resize()` writes both, and `resizeForRepaint()` compares
+  // against the CURRENT values, so a repaint never reverts the PTY to the
+  // spawn-time width. ccb previously froze these as `const`, so the attach
+  // repaint-jiggle below re-applied the STALE spawn-time cols — clobbering the
+  // fresh size the client just sent after a terminal resize, leaving the inner
+  // REPL rendering at the wrong width (the FleetView→attach overlap bug).
+  let cols = Number(args[1]) || 200
+  let rows = Number(args[2]) || 50
+  const cmd = args[dashDash + 1]!
+  const cmdArgs = args.slice(dashDash + 2)
+
+  // Niceness +5 to keep the host out of the way of the parent shell;
+  // ant 4702.js:28-31. Skip on Windows (no setpriority).
+  if (process.platform !== 'win32') {
+    try {
+      setPriority(0, Math.min(getPriority(0) + 5, 19))
+    } catch {
+      // best-effort
+    }
+  }
+
+  const ring = createRing(RING_BUFFER_BYTES)
+  const clients = new Set<Socket>()
+  let exited = false
+  let exitCode = 0
+  let exitSignal: string | undefined
+
+  /** Fan-out a buffer to all connected clients with backpressure check. */
+  function broadcast(buf: Buffer): void {
+    for (const c of clients) {
+      if (c.destroyed) {
+        clients.delete(c)
+        continue
+      }
+      if (c.writableLength > CLIENT_BACKPRESSURE_BYTES) {
+        c.destroy()
+        clients.delete(c)
+        continue
+      }
+      c.write(buf)
+    }
+  }
+
+  /** Safe write helper — skip destroyed sockets. */
+  function safeWrite(c: Socket, buf: Buffer): void {
+    if (!c.destroyed) c.write(buf)
+  }
+
+  /** Handle a control frame from an attach client. */
+  function handleCtrl(
+    terminal: Bun.Terminal,
+    child: { kill: (sig: NodeJS.Signals) => void; pid: number | null },
+    frame: { t: string } & Record<string, unknown>,
+  ): void {
+    switch (frame.t) {
+      case 'resize': {
+        const c = Number(frame['cols'])
+        const r = Number(frame['rows'])
+        if (c > 0 && c <= 10000 && r > 0 && r <= 10000 && !exited) {
+          // Track the live size so the attach repaint-jiggle (and any later
+          // repaint) uses THIS width, not the stale spawn-time argv. ant
+          // 5017.js WorkerVm.resize does the same: writes ptyCols/ptyRows
+          // before resizing the pty.
+          cols = c
+          rows = r
+          // Bun.Terminal.resize sets the PTY winsize (TIOCSWINSZ) but does
+          // NOT raise SIGWINCH on the child — empirically verified: a child
+          // spawned with {terminal} sees its updated stdout.rows ONLY after
+          // an explicit SIGWINCH (probe 2026-05-25). Without the signal the
+          // worker's @ant/ink handleResize never fires, so a worker spawned
+          // at the spare-pool default 200x50 keeps rendering at 50 rows after
+          // an 80x24 attach — its absolute CUP (CSI 50;1H / 47;6H) lands off
+          // the bottom of the 24-row client, clamping rows and desyncing the
+          // cursor by exactly the row-count delta (the "input box one row off
+          // + ghost prompt + smear" bug). The signal MUST target child.pid,
+          // NOT `-process.pid`: the child is not in the host's process group
+          // (a `kill(-child.pid)` returns ESRCH — it's not a group leader
+          // either), so the old group-signal never reached it.
+          terminal.resize(c, r)
+          signalWorkerWinch()
+        }
+        return
+      }
+      case 'kill': {
+        const sig: NodeJS.Signals =
+          frame['sig'] === 'SIGKILL' ? 'SIGKILL' : 'SIGTERM'
+        try {
+          child.kill(sig)
+        } catch {
+          // best-effort
+        }
+        if (sig === 'SIGTERM') {
+          setTimeout(() => {
+            if (!exited) {
+              try {
+                child.kill('SIGKILL')
+              } catch {
+                // best-effort
+              }
+            }
+          }, SIGTERM_GRACE_MS).unref()
+        }
+        return
+      }
+      case 'detach': {
+        // Source: ant 4835.js WorkerVm.rv `case "detach-request":
+        //   this.onStream.emit(w_H(H.msg))` — the daemon receives a
+        // detach-request RPC from the inner REPL and emits the APC
+        // sentinel through onStream to all subscribed attachers.
+        //
+        // ccb has no daemon, so ptyHost plays this role: when the
+        // inner REPL writes APC to stdout, Bun.Terminal MAY parse and
+        // consume it (APC is a recognized terminal control sequence),
+        // so the bytes never reach the `data` callback → never reach
+        // attached clients. The robust path: the inner connects to
+        // pty.sock from inside the spawned process (which it can do
+        // because it knows CLAUDE_JOB_DIR), sends a 'detach' frame,
+        // and we broadcast the APC frame directly to all attach
+        // clients via the data-frame channel — bypassing the PTY
+        // entirely. attachClient's handleLivePaint scans for the
+        // sentinel and detaches.
+        if (clients.size > 0) broadcast(encodeDataFrame(DETACH_APC_BUF))
+        return
+      }
+      case 'reply':
+      case 'claim': {
+        // Inject text as if user typed it. Source: ant 4835.js WorkerVm.reply:
+        //
+        //   this.replyChain = this.replyChain.then(() => new Promise((q) => {
+        //     this.pty?.write(`\x1B[200~${H}\x1B[201~`)   // bracketed paste
+        //     setTimeout((K) => {
+        //       this.pty?.write("\r")                     // CR (Enter)
+        //       K()
+        //     }, 10, q)
+        //   }))
+        //
+        // Two critical details ccb previously got wrong:
+        //   1. Wrap in bracketed paste \x1B[200~…\x1B[201~ so the REPL's
+        //      paste-mode handler buffers the whole intent as one unit
+        //      (otherwise embedded newlines could trigger early submit /
+        //      partial processing).
+        //   2. Use \r (CR), NOT \n, as the Enter keystroke. ccb's
+        //      PromptInput key handler binds to `return` which Ink maps
+        //      from CR — writing \n alone left the text typed but never
+        //      submitted, hence the "empty REPL prompt" bug.
+        //   3. 10 ms delay BETWEEN paste body and \r so the REPL has time
+        //      to fully ingest the pasted text before the Enter key
+        //      triggers submit.
+        const text = String(frame['text'] ?? frame['intent'] ?? '')
+        if (text && !exited) {
+          try {
+            terminal.write(`\x1b[200~${text}\x1b[201~`)
+            // ant 4835.js verbatim: 10ms between paste body and \r.
+            // ccb aligns by making usePasteHandler commit bracketed
+            // paste synchronously (no debounce when isFromPaste=true).
+            setTimeout(() => {
+              if (!exited) {
+                try {
+                  terminal.write('\r')
+                } catch {
+                  // best-effort
+                }
+              }
+            }, 10)
+          } catch {
+            // best-effort
+          }
+        }
+        return
+      }
+      default:
+        return
+    }
+  }
+
+  // Open PTY + spawn child. ant 4702.js:51-65.
+  let terminal: Bun.Terminal
+  let child: ReturnType<typeof Bun.spawn>
+  try {
+    terminal = new Bun.Terminal({
+      cols,
+      rows,
+      data(_term: unknown, data: Buffer | Uint8Array): void {
+        const buf = Buffer.from(data)
+        // Strip APC detach sentinels from the ring so a NEW attach
+        // client that replays the ring does NOT see a stale detach
+        // and immediately disconnect. The live broadcast still sends
+        // the original bytes so currently-attached clients can react.
+        // Source: ant 4835.js WorkerVm.wirePty:
+        //   this.pushRing(q.includes(aNH) ? q.replaceAll(aNH, "") : q)
+        //   this.onStream.emit(q)
+        const ringBuf = buf.includes(DETACH_APC_BUF)
+          ? Buffer.from(buf.toString('binary').replaceAll(DETACH_APC_STR, ''), 'binary')
+          : buf
+        ring.push(ringBuf)
+        if (clients.size > 0) broadcast(encodeDataFrame(buf))
+      },
+    })
+    child = Bun.spawn([cmd, ...cmdArgs], {
+      cwd: process.cwd(),
+      env: { ...process.env, TERM: 'xterm-256color' },
+      terminal,
+      windowsHide: true,
+      detached: false,
+    })
+  } catch (err) {
+    writeBreadcrumbAndExit(sock, `spawn failed: ${String(err)}`)
+  }
+
+  /**
+   * Raise SIGWINCH on the worker so its @ant/ink picks up a fresh PTY
+   * winsize. Bun.Terminal.resize sets TIOCSWINSZ but does NOT signal the
+   * child (verified 2026-05-25), and the child is NOT in this host's process
+   * group, so the signal must target child.pid directly (a group signal
+   * `-child.pid` returns ESRCH — the child isn't a group leader). No-op on
+   * win32 (no SIGWINCH) and when the pid is unknown/exited.
+   */
+  function signalWorkerWinch(): void {
+    if (process.platform === 'win32' || exited) return
+    const pid = child.pid
+    if (pid === null || pid === undefined) return
+    try {
+      process.kill(pid, 'SIGWINCH')
+    } catch {
+      // best-effort — child may have exited between the check and the signal
+    }
+  }
+
+  // Pre-clean any stale socket file at this path. ant 4702.js:103.
+  if (existsSync(sock)) {
+    await unlink(sock).catch(() => {})
+  }
+
+  const server: Server = createServer(socket => {
+    socket.on('error', () => socket.destroy())
+    socket.once('close', () => clients.delete(socket))
+    // Hello frame. ant 4702.js:107-123.
+    safeWrite(
+      socket,
+      encodeCtrlFrame({
+        t: 'hello',
+        replPid: child.pid ?? -1,
+        version: process.env.CLAUDE_CODE_VERSION ?? 'dev',
+      }),
+    )
+    // Ring buffer replay.
+    for (const chunk of ring.chunks) safeWrite(socket, encodeDataFrame(chunk))
+    safeWrite(socket, encodeCtrlFrame({ t: 'live' }))
+    if (exited) {
+      safeWrite(
+        socket,
+        encodeCtrlFrame({ t: 'exit', code: exitCode, signal: exitSignal }),
+      )
+      socket.end()
+      return
+    }
+    clients.add(socket)
+    const decoder = createFrameDecoder(
+      f => {
+        if (f.kind === DATA_TAG) {
+          if (!exited) terminal.write(f.payload)
+        } else if (f.kind === CTRL_TAG) {
+          handleCtrl(terminal, child, f.ctrl)
+        }
+      },
+      () => socket.destroy(),
+    )
+    socket.on('data', decoder)
+
+    // Force the inner REPL to repaint on attach. The ring replay above shows
+    // whatever the worker last emitted, but an IDLE worker (sitting at its
+    // prompt, "send a prompt to start") emits nothing new after boot — so a
+    // fresh attach would otherwise see a stale/blank screen and (before the
+    // client watchdog was removed) get misjudged as stalled. ant forces a
+    // redraw on every attach (5473.js resizeForRepaint → worker forceRedraw);
+    // we don't have a worker control channel, so we nudge the pty: a
+    // resize-jiggle (cols-1 then back) makes the inner @ant/ink reassert
+    // terminal modes + repaint a full frame via its handleResize handler.
+    //
+    // The two resizes MUST be separated by a real delay and each followed by
+    // a SIGWINCH. ant 5017.js resizeForRepaint uses a 30ms gap for the same
+    // reason: a back-to-back cols-1→cols collapses at the kernel TIOCSWINSZ
+    // level, so the worker's winsize only ever reads the final cols (== the
+    // size the client already sent) and handleResize early-returns on
+    // same-dimensions — no repaint. The gap makes the intermediate cols-1
+    // observable. And SIGWINCH MUST be raised explicitly: Bun.Terminal.resize
+    // sets TIOCSWINSZ but does NOT signal the child (verified 2026-05-25), so
+    // without signalWorkerWinch() the resize is invisible to @ant/ink.
+    if (!exited && cols > 1) {
+      setTimeout(() => {
+        if (exited) return
+        const targetCols = cols
+        const targetRows = rows
+        try {
+          terminal.resize(Math.max(2, targetCols - 1), targetRows)
+          signalWorkerWinch()
+        } catch {
+          // best-effort repaint nudge
+        }
+        setTimeout(() => {
+          if (exited) return
+          try {
+            terminal.resize(cols, rows)
+            signalWorkerWinch()
+          } catch {
+            // best-effort repaint nudge
+          }
+        }, 30).unref()
+      }, 50)
+    }
+  })
+  server.on('error', err => {
+    try {
+      child.kill('SIGTERM')
+    } catch {
+      // best-effort
+    }
+    writeBreadcrumbAndExit(sock, `server error: ${String(err)}`)
+  })
+  server.listen(sock)
+  server.unref()
+
+  // ant heartbeat — broadcast a 'heartbeat' ctrl-frame every 5s while
+  // child is alive. Daemon-side adopter routes this to WorkerVm.noteHeartbeat
+  // so the stalled-watchdog (STALLED_THRESHOLD_MS) doesn't false-positive
+  // on long-running but legitimate workers (e.g. waiting for big test
+  // suite output where ring is silent).
+  const heartbeatTimer = setInterval(() => {
+    if (exited) return
+    if (clients.size === 0) return // no listeners
+    broadcast(encodeCtrlFrame({ t: 'heartbeat', ts: Date.now() }))
+  }, 5000)
+  heartbeatTimer.unref()
+
+  // Forward signals from the wrapping shell to the child.
+  for (const sig of ['SIGTERM', 'SIGINT', 'SIGHUP'] as const) {
+    process.on(sig, () => {
+      try {
+        child.kill(sig === 'SIGHUP' ? 'SIGTERM' : sig)
+      } catch {
+        // best-effort
+      }
+    })
+  }
+
+  // Wait for child exit; broadcast exit frame; tear down.
+  exitCode = await child.exited
+  exitSignal = child.signalCode ?? undefined
+  exited = true
+  clearInterval(heartbeatTimer)
+  terminal.close()
+  broadcast(
+    encodeCtrlFrame({ t: 'exit', code: exitCode, signal: exitSignal }),
+  )
+  for (const c of clients) c.end()
+  // Server.close has a 2s timeout (ant 4702.js:159-161).
+  await Promise.race([
+    new Promise<void>(resolve => server.close(() => resolve())),
+    new Promise<void>(resolve => setTimeout(() => resolve(), 2000).unref()),
+  ])
+  if (process.platform !== 'win32') {
+    await unlink(sock).catch(() => {})
+  }
+  process.exit(exitCode)
+}
