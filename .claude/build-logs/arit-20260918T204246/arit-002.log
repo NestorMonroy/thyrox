@@ -1,0 +1,32 @@
+== 1. precedencia: el registro de hallazgos gana al prefijo ==
+  ok    H-SERVER-16 resuelve a la capa del REGISTRO, no a la del prefijo
+  ok    ...y declara que lo supo del registro
+  ok    H-API-557 resuelve a docs aunque su prefijo diga api
+
+== 2. el control que puede fallar: mismo caso, registro VACIO ==
+  ok    sin registro, H-SERVER-16 CAE al prefijo
+  ok    ...y lo declara: hallazgo_prefijo
+  ok    el veredicto CAMBIA al vaciar el registro (el control discrimina)
+  ok    sin registro, H-API-557 cae a api (su prefijo)
+
+== 3. la description tambien cuenta, no solo el subject ==
+  ok    una marca solo en la description SI se lee
+  ok    ...con la misma procedencia de prefijo
+
+== 4. senal de ruta: solo cuando es inequivoca ==
+  ok    un token de src/addons resuelve a api
+  ok    ...y declara que fue por ruta, no por hallazgo
+  ok    el nombre de un modelo NO basta como senal (cota inferior)
+  ok    dos capas nombradas a la vez NO deciden
+  ok    ...y no fabrican procedencia
+  ok    un texto sin ninguna senal devuelve None
+
+== 5. el valor y su procedencia viajan juntos ==
+  ok    procedencia de «Cerrar H-SERVER-16»
+  ok    procedencia de «Cerrar H-UI-07»
+  ok    procedencia de «Tocar src/addons/sale»
+  ok    procedencia de «Sin senal alguna»
+  ok    sin declaracion devuelve el hueco, no una capa adivinada
+
+resultado: 20 de 20 aserciones en verde
+EXIT=0

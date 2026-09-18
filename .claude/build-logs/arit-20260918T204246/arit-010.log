@@ -1,0 +1,17 @@
+== 1. quedarse con las ultimas N versiones base ==
+  ok    las tres ultimas se conservan en crudo
+  ok    el resto se archiva
+== 2. una variante sigue la suerte de su version base ==
+  ok    la variante no consume un hueco de los N
+  ok    y se archiva con su nombre literal, no con el de su base
+== 3. idempotente: con keep >= builds no hay nada que archivar ==
+  ok    nada que archivar
+  ok    y todo se conserva
+== 4. no se declara archivado sin verificar la integridad ==
+  ok    el archivo existe
+  ok    la integridad se verifico
+  ok    y publica el sha256 de lo que escribio
+  ok    un archivo corrupto NO pasa la verificacion
+
+10 ok, 0 fallos
+EXIT=0

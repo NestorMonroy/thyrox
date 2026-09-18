@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/corpus/test_censar_scripts.py", line 23, in <module>
+    HERE = reach.thyrox_root() / "src"
+           ^^^^^
+NameError: name 'reach' is not defined
+EXIT=1

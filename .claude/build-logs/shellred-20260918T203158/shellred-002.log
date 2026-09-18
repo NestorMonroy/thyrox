@@ -1,0 +1,19 @@
+OK   fable-5-1: 1 Mtok de caché leída cuesta 0.25
+OK   opus-5: 1 Mtok de caché leída cuesta 0.50
+OK   escritura a 5m y 1h difieren (12.5 vs 20)
+OK   alias fable → claude-fable-5-1 (con el alias entre paréntesis)
+OK   sin catálogo rehúsa con exit 2
+OK   sin catálogo no emite cifra
+OK   sin catálogo el mensaje nombra el catálogo y el verde falso
+OK   modelo desconocido rehúsa con exit 2
+OK   peso fijo 0.1x sobrevalora 4x la caché leída de fable-5-1
+OK   por-modelo sin --store rehusa en vez de componer un default
+OK   por-modelo publica alcance medido con universo
+OK   sesion deduplica por message.id (2 turnos)
+OK   sesion valora la escritura al TTL real (1h) y la lectura a 0.25
+OK   sesion estima el coste de reescribir el contexto en el destino
+OK   sesion sin transcript: exit 2 y stdout vacío
+OK   el espejo NO lleva model_catalog.py, que es el sujeto del caso
+FALLA agent_store sin model_catalog al lado: censo corre (exit 0) y declara SIN MEDIR — esperado '0/si', obtenido '2/no'
+test-model-catalog: 16 ok, 1 fallos (alcance medido: 17 aserciones)
+EXIT=1

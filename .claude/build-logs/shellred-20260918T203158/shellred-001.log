@@ -1,0 +1,3 @@
+AVISO: no existe /home/user/thyrox/.claude/agent-results/agent_store.sqlite3 — el caso 5 no midio nada
+test-merge-sqlite-union: 12 de 13 aserciones en verde
+EXIT=1
