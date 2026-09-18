@@ -102,6 +102,17 @@ PRESENT = 0
 BAILED = 2
 TIMED_OUT = 3
 
+#: Las salidas de la espera por PID (``wait_for_pid``), que es el OTRO eje.
+#:
+#: Comparten numero con las de arriba a proposito: quien las lee desde un guion
+#: ya trata 0 como «siguio bien», 2 como «no hay resultado que recoger» y 3 como
+#: «no termino». Lo que NO comparten es significado, y por eso llevan nombre
+#: propio: ``BAILED`` afirma que el trabajo MURIO sin escribir su marcador —una
+#: afirmacion sobre el trabajo—, mientras ``UNDECIDABLE`` afirma que no se puede
+#: saber nada —una afirmacion sobre el instrumento—.
+ENDED = 0
+UNDECIDABLE = 2
+
 
 @dataclass
 class MarkerWaitResult:
@@ -200,17 +211,115 @@ def wait_for_marker(
         sleep(interval)
 
 
+@dataclass
+class PidWaitResult:
+    """El veredicto de una espera por PID y por que se emitio.
+
+    No lleva ``tail``: un proceso ajeno no tiene log nuestro que leer. Ese es
+    justo el motivo de que este eje exista aparte y no como una bandera de
+    ``wait_for_marker``.
+    """
+
+    code: int
+    reason: str
+
+    @property
+    def ended(self) -> bool:
+        return self.code == ENDED
+
+
+def wait_for_pid(
+    pid: int,
+    *,
+    timeout: float = DEFAULT_TIMEOUT,
+    interval: float = DEFAULT_INTERVAL,
+    is_alive: Callable[[int], bool] = pid_is_alive,
+    require_alive_at_start: bool = True,
+    clock: Callable[[], float] = time.monotonic,
+    sleep: Callable[[float], None] = time.sleep,
+) -> PidWaitResult:
+    """Esperar a que un proceso AJENO deje de correr, observando su pid.
+
+    Es el eje que ``wait_for_marker`` no cubre. Aquella exige un ``log`` y un
+    marcador porque su sujeto es un trabajo que nosotros lanzamos; un proceso
+    ajeno —o uno que el cliente promovio a segundo plano despues de fijar su
+    linea de comando— no tiene ninguno de los dos que enganchar.
+
+    Sin esta forma sancionada, la mano alcanza el ``until ! pgrep -f <literal>``,
+    y ese bucle **se casa a si mismo**: ``pgrep -f`` compara contra la linea de
+    comando COMPLETA, asi que la del propio bucle, que contiene el literal,
+    coincide con el patron y la espera no termina nunca (``H-THYROX-103``). Aqui
+    el sujeto es un entero, y un entero no puede aparecer en su propia
+    coincidencia.
+
+    ``require_alive_at_start`` existe para poder ANULARLO en la suite: con
+    ``False`` un pid que no corre publica ``ENDED``, que es el verde falso que la
+    comprobacion inicial impide. Un control que no puede fallar no mide nada.
+    """
+    start = clock()
+
+    if require_alive_at_start and not is_alive(pid):
+        return PidWaitResult(
+            UNDECIDABLE,
+            f"INDECIDIBLE — el proceso {pid} no corre al arrancar la espera. "
+            f"Eso NO es «ya termino»: el sistema reutiliza los pid, asi que un "
+            f"pid que no corre puede ser uno que acaba de terminar, uno que "
+            f"termino hace dias, o uno que nunca existio. Declararlo terminado "
+            f"seria afirmar sobre un trabajo del que no se sabe nada.",
+        )
+
+    while True:
+        if not is_alive(pid):
+            return PidWaitResult(
+                ENDED,
+                f"TERMINADO — el proceso {pid} dejo de correr tras "
+                f"{clock() - start:.1f}s. Su codigo de salida NO se conoce: no "
+                f"somos su padre, asi que nadie lo cosecho aqui.",
+            )
+
+        if clock() - start >= timeout:
+            return PidWaitResult(
+                TIMED_OUT,
+                f"TIMEOUT — {timeout:g}s y el proceso {pid} sigue vivo. El "
+                f"trabajo no termino; repetir la espera con mas plazo, o "
+                f"decidir que se abandona.",
+            )
+
+        sleep(interval)
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="marker_wait",
         description="Esperar el marcador terminal de un trabajo; abortar con el error real.",
     )
-    parser.add_argument("log", help="el archivo de log del trabajo")
+    parser.add_argument("log", nargs="?", default=None,
+                        help="el archivo de log del trabajo (no aplica con --pid-only)")
     parser.add_argument("--pid", type=int, default=None, help="pid del trabajo (decide BAIL vs TIMEOUT)")
+    parser.add_argument("--pid-only", action="store_true",
+                        help="esperar a un proceso AJENO por su pid, sin log ni marcador")
     parser.add_argument("--pattern", default=MARKER_PATTERN, help="expresion del marcador")
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT, help="plazo en segundos")
     parser.add_argument("--interval", type=float, default=DEFAULT_INTERVAL, help="segundos entre sondeos")
     args = parser.parse_args(argv)
+
+    if args.pid_only:
+        # Se rehusa NOMBRANDO lo que falta: el codigo de salida por si solo no
+        # discrimina — argparse tambien sale 2 ante cualquier argumento invalido.
+        if args.pid is None:
+            parser.error("--pid-only exige --pid: sin pid no hay nada que observar")
+        if args.log is not None:
+            parser.error("--pid-only no admite un log: su sujeto es el proceso, no un archivo")
+        pid_result = wait_for_pid(
+            args.pid,
+            timeout=args.timeout,
+            interval=args.interval,
+        )
+        print(f"== {pid_result.reason} ==")
+        return pid_result.code
+
+    if args.log is None:
+        parser.error("falta el log del trabajo (o usar --pid-only para un proceso ajeno)")
 
     resultado = wait_for_marker(
         args.log,
