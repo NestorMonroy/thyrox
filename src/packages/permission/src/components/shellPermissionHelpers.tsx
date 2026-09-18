@@ -28,7 +28,10 @@ function commandListDisplay(commands: string[]): ReactNode {
 }
 
 function commandListDisplayTruncated(commands: string[]): ReactNode {
-  // Check if the plain text representation would be too long
+  // Copia de `ccnmt: packages/permission/src/components/shellPermissionHelpers.tsx`
+  // con los comentarios traducidos; el cuerpo es el de la fuente.
+  //
+  // Comprobar si la representación en texto llano quedaría demasiado larga
   const plainText = commands.join(', ')
   if (plainText.length > 50) {
     return 'similar'
@@ -39,7 +42,7 @@ function commandListDisplayTruncated(commands: string[]): ReactNode {
 function formatPathList(paths: string[]): ReactNode {
   if (paths.length === 0) return ''
 
-  // Extract directory names from paths
+  // Extraer los nombres de directorio de las rutas
   const names = paths.map(p => basename(p) || p)
 
   if (names.length === 1) {
@@ -60,7 +63,7 @@ function formatPathList(paths: string[]): ReactNode {
     )
   }
 
-  // For 3+, show first two with "and N more"
+  // Con 3 o más, mostrar los dos primeros y «and N more»
   return (
     <Text>
       <Text bold>{names[0]}</Text>
@@ -71,36 +74,37 @@ function formatPathList(paths: string[]): ReactNode {
 }
 
 /**
- * Generate the label for the "Yes, and apply suggestions" option in shell
- * permission dialogs (Bash, PowerShell). Parametrized by the shell tool name
- * and an optional command transform (e.g., Bash strips output redirections so
- * filenames don't show as commands).
+ * Genera la etiqueta de la opción «Yes, and apply suggestions» de los diálogos
+ * de permiso de shell (Bash, PowerShell). Se parametriza con el nombre de la
+ * herramienta de shell y con una transformación opcional del comando (Bash,
+ * por ejemplo, retira las redirecciones de salida para que un nombre de
+ * archivo no aparezca como si fuera un comando).
  */
 export function generateShellSuggestionsLabel(
   suggestions: PermissionUpdate[],
   shellToolName: string,
   commandTransform?: (command: string) => string,
 ): ReactNode | null {
-  // Collect all rules for display
+  // Recoger todas las reglas para mostrarlas
   const allRules = suggestions
     .filter(s => s.type === 'addRules')
     .flatMap(s => s.rules || [])
 
-  // Separate Read rules from shell rules
+  // Separar las reglas de Read de las de shell
   const readRules = allRules.filter(r => r.toolName === 'Read')
   const shellRules = allRules.filter(r => r.toolName === shellToolName)
 
-  // Get directory info
+  // Obtener la información de directorio
   const directories = suggestions
     .filter(s => s.type === 'addDirectories')
     .flatMap(s => s.directories || [])
 
-  // Extract paths from Read rules (keep separate from directories)
+  // Extraer las rutas de las reglas de Read (aparte de los directorios)
   const readPaths = readRules
     .map(r => r.ruleContent?.replace('/**', '') || '')
     .filter(p => p)
 
-  // Extract shell command prefixes, optionally transforming for display
+  // Extraer los prefijos de comando de shell, transformándolos si hace falta para mostrarlos
   const shellCommands = [
     ...new Set(
       shellRules.flatMap(rule => {
@@ -112,14 +116,14 @@ export function generateShellSuggestionsLabel(
     ),
   ]
 
-  // Check what we have
+  // Comprobar con qué se cuenta
   const hasDirectories = directories.length > 0
   const hasReadPaths = readPaths.length > 0
   const hasCommands = shellCommands.length > 0
 
-  // Handle single type cases
+  // Atender los casos de un solo tipo
   if (hasReadPaths && !hasDirectories && !hasCommands) {
-    // Only Read rules - use "reading from" language
+    // Sólo reglas de Read: usar el lenguaje de «reading from»
     if (readPaths.length === 1) {
       const firstPath = readPaths[0]!
       const dirName = basename(firstPath) || firstPath
@@ -131,7 +135,7 @@ export function generateShellSuggestionsLabel(
       )
     }
 
-    // Multiple read paths
+    // Varias rutas de lectura
     return (
       <Text>
         Yes, allow reading from {formatPathList(readPaths)} from this project
@@ -140,7 +144,7 @@ export function generateShellSuggestionsLabel(
   }
 
   if (hasDirectories && !hasReadPaths && !hasCommands) {
-    // Only directory permissions - use "access to" language
+    // Sólo permisos de directorio: usar el lenguaje de «access to»
     if (directories.length === 1) {
       const firstDir = directories[0]!
       const dirName = basename(firstDir) || firstDir
@@ -152,7 +156,7 @@ export function generateShellSuggestionsLabel(
       )
     }
 
-    // Multiple directories
+    // Varios directorios
     return (
       <Text>
         Yes, and always allow access to {formatPathList(directories)} from this
@@ -162,7 +166,7 @@ export function generateShellSuggestionsLabel(
   }
 
   if (hasCommands && !hasDirectories && !hasReadPaths) {
-    // Only shell command permissions
+    // Sólo permisos de comando de shell
     return (
       <Text>
         {"Yes, and don't ask again for "}
@@ -172,12 +176,12 @@ export function generateShellSuggestionsLabel(
     )
   }
 
-  // Handle mixed cases
+  // Atender los casos mixtos
   if ((hasDirectories || hasReadPaths) && !hasCommands) {
-    // Combine directories and read paths since they're both path access
+    // Combinar directorios y rutas de lectura, porque los dos son acceso a una ruta
     const allPaths = [...directories, ...readPaths]
     if (hasDirectories && hasReadPaths) {
-      // Mixed - use generic "access to"
+      // Mixto: usar el «access to» genérico
       return (
         <Text>
           Yes, and always allow access to {formatPathList(allPaths)} from this
@@ -188,10 +192,10 @@ export function generateShellSuggestionsLabel(
   }
 
   if ((hasDirectories || hasReadPaths) && hasCommands) {
-    // Build descriptive message for both types
+    // Construir un mensaje descriptivo para los dos tipos
     const allPaths = [...directories, ...readPaths]
 
-    // Keep it concise but informative
+    // Que quede conciso pero informativo
     if (allPaths.length === 1 && shellCommands.length === 1) {
       return (
         <Text>

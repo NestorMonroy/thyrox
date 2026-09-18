@@ -40,14 +40,18 @@ const DEFAULT_PLACEHOLDERS: Record<FeedbackType, string> = {
 }
 
 /**
- * Shared component for permission prompts with optional feedback input.
+ * Copia de `ccnmt: packages/permission/src/components/PermissionPrompt.tsx`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * Handles:
- * - "Do you want to proceed?" question with optional Tab hint
- * - Feature flag check for feedback capability
- * - Input mode toggling (Tab to expand feedback input)
- * - Analytics events for feedback interactions
- * - Transforming options to Select-compatible format
+ * Componente compartido de los prompts de permiso, con campo de comentario
+ * opcional.
+ *
+ * Se encarga de:
+ * - La pregunta «Do you want to proceed?» con su pista opcional de Tab.
+ * - La comprobación de la feature flag de la capacidad de comentar.
+ * - Alternar el modo de entrada (Tab para desplegar el campo de comentario).
+ * - Los eventos de analítica de las interacciones con el comentario.
+ * - Transformar las opciones al formato que `Select` admite.
  */
 export function PermissionPrompt<T extends string>({
   options,
@@ -62,27 +66,27 @@ export function PermissionPrompt<T extends string>({
   const [acceptInputMode, setAcceptInputMode] = useState(false)
   const [rejectInputMode, setRejectInputMode] = useState(false)
   const [focusedValue, setFocusedValue] = useState<T | null>(null)
-  // Track whether user ever entered feedback mode (persists after collapse)
+  // Seguir si el usuario llegó a entrar al modo de comentario (se conserva tras plegarlo)
   const [acceptFeedbackModeEntered, setAcceptFeedbackModeEntered] =
     useState(false)
   const [rejectFeedbackModeEntered, setRejectFeedbackModeEntered] =
     useState(false)
 
-  // Find which option is focused and whether it has feedback config
+  // Localizar qué opción tiene el foco y si trae configuración de comentario
   const focusedOption = options.find(opt => opt.value === focusedValue)
   const focusedFeedbackType = focusedOption?.feedbackConfig?.type
 
-  // Show Tab hint when focused on a feedback-enabled option that's not already in input mode
+  // Mostrar la pista de Tab con el foco en una opción que admite comentario y no está ya en modo de entrada
   const showTabHint =
     (focusedFeedbackType === 'accept' && !acceptInputMode) ||
     (focusedFeedbackType === 'reject' && !rejectInputMode)
 
-  // Transform options to Select-compatible format
+  // Transformar las opciones al formato que `Select` admite
   const selectOptions = useMemo((): OptionWithDescription<T>[] => {
     return options.map(opt => {
       const { value, label, feedbackConfig } = opt
 
-      // No feedback config = simple option
+      // Sin configuración de comentario, es una opción simple
       if (!feedbackConfig) {
         return {
           label,
@@ -95,7 +99,7 @@ export function PermissionPrompt<T extends string>({
       const onChange = type === 'accept' ? setAcceptFeedback : setRejectFeedback
       const defaultPlaceholder = DEFAULT_PLACEHOLDERS[type]
 
-      // When in input mode, show input field
+      // En modo de entrada, mostrar el campo
       if (isInputMode) {
         return {
           type: 'input' as const,
@@ -107,7 +111,7 @@ export function PermissionPrompt<T extends string>({
         }
       }
 
-      // Not in input mode - show simple option
+      // Fuera del modo de entrada, mostrar la opción simple
       return {
         label,
         value,
@@ -115,7 +119,7 @@ export function PermissionPrompt<T extends string>({
     })
   }, [options, acceptInputMode, rejectInputMode])
 
-  // Handle Tab key to toggle input mode
+  // Atender la tecla Tab para alternar el modo de entrada
   const handleInputModeToggle = useCallback(
     (value: T) => {
       const option = options.find(opt => opt.value === value)
@@ -151,13 +155,13 @@ export function PermissionPrompt<T extends string>({
     [options, acceptInputMode, rejectInputMode, toolAnalyticsContext],
   )
 
-  // Handle selection
+  // Atender la selección
   const handleSelect = useCallback(
     (value: T) => {
       const option = options.find(opt => opt.value === value)
       if (!option) return
 
-      // Get feedback if applicable
+      // Obtener el comentario si aplica
       let feedback: string | undefined
       if (option.feedbackConfig) {
         const rawFeedback =
@@ -170,7 +174,7 @@ export function PermissionPrompt<T extends string>({
           feedback = trimmedFeedback
         }
 
-        // Log accept/reject submission with feedback context
+        // Registrar el envío de aceptación o rechazo con el contexto del comentario
         const analyticsProps = {
           toolName:
             toolAnalyticsContext?.toolName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -203,7 +207,7 @@ export function PermissionPrompt<T extends string>({
     ],
   )
 
-  // Register keybinding handlers for options that have a keybinding set
+  // Registrar los manejadores de atajo de las opciones que tienen uno fijado
   const keybindingHandlers = useMemo(() => {
     const handlers: Record<string, () => void> = {}
     for (const opt of options) {
@@ -216,10 +220,10 @@ export function PermissionPrompt<T extends string>({
 
   useKeybindings(keybindingHandlers, { context: 'Confirmation' })
 
-  // Handle cancel (Esc)
+  // Atender la cancelación (Esc)
   const handleCancel = useCallback(() => {
     logEvent('tengu_permission_request_escape', {})
-    // Increment escape count for attribution tracking
+    // Incrementar el conteo de escapes, para la atribución
     setAppState(prev => ({
       ...prev,
       attribution: {
@@ -239,7 +243,7 @@ export function PermissionPrompt<T extends string>({
         onChange={handleSelect}
         onCancel={handleCancel}
         onFocus={value => {
-          // Reset input mode when navigating away, but only if no text typed
+          // Reiniciar el modo de entrada al navegar fuera, pero sólo si no se ha escrito texto
           const newOption = options.find(opt => opt.value === value)
           if (
             newOption?.feedbackConfig?.type !== 'accept' &&

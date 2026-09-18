@@ -10,21 +10,27 @@ import {
 } from '../errors.ts'
 
 /**
- * Pin V7 §6.5 PermissionError namespace. The codes are checked by
- * callers (catch blocks across the codebase): a regression that changes
- * code strings or class hierarchy breaks every catch block silently.
+ * Copia de `ccnmt: packages/permission/src/__tests__/permissionErrors.behavior.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * Invariants:
- *  1. All 5 subclasses extend PermissionBaseError (NOT Error directly).
- *  2. Code strings are exact:
+ * Fija el espacio de nombres `PermissionError` de la V7 §6.5. Quien llama
+ * comprueba los códigos en sus bloques `catch`, repartidos por toda la base
+ * de código: una regresión que cambie las cadenas de código o la jerarquía de
+ * clases rompe todos esos bloques en silencio.
+ *
+ * Invariantes:
+ *  1. Las 5 subclases extienden `PermissionBaseError`, NO `Error`
+ *     directamente.
+ *  2. Las cadenas de código son exactas:
  *     - DeniedError: PERMISSION_DENIED
  *     - AskRequiredError: PERMISSION_ASK_REQUIRED
  *     - ContextError: PERMISSION_CONTEXT_ERROR
  *     - AbortError: PERMISSION_ABORTED
  *     - HostBindingsError: PERMISSION_HOST_BINDINGS_ERROR
- *  3. Class .name property is the specific subclass name (NOT the parent).
- *  4. AbortError has a default message "Permission request aborted".
- *  5. ErrorOptions (cause) flows through to base Error.
+ *  3. La propiedad `.name` de la clase es el nombre de la subclase concreta,
+ *     NO el del padre.
+ *  4. `AbortError` trae el mensaje por defecto «Permission request aborted».
+ *  5. Las `ErrorOptions` (la `cause`) llegan hasta el `Error` base.
  */
 describe('permission errors namespace', () => {
   describe('PermissionBaseError (the trunk class)', () => {
@@ -54,7 +60,7 @@ describe('permission errors namespace', () => {
 
   describe('DeniedError', () => {
     test('code = "PERMISSION_DENIED" (exact, caller-checked)', () => {
-      // Pin: catch (e) { if (e.code === 'PERMISSION_DENIED') ... }
+      // Fijado: catch (e) { if (e.code === 'PERMISSION_DENIED') ... }
       const e = new DeniedError('user said no')
       expect(e.code).toBe('PERMISSION_DENIED')
     })
@@ -73,7 +79,7 @@ describe('permission errors namespace', () => {
 
   describe('AskRequiredError', () => {
     test('code = "PERMISSION_ASK_REQUIRED"', () => {
-      // Pin: caller toggles "show approval prompt" on this exact code.
+      // Fijado: quien llama activa «mostrar el prompt de aprobación» con este código exacto.
       const e = new AskRequiredError('needs ask')
       expect(e.code).toBe('PERMISSION_ASK_REQUIRED')
     })
@@ -103,8 +109,9 @@ describe('permission errors namespace', () => {
     })
 
     test('default message = "Permission request aborted"', () => {
-      // Pin: the default — caller doesn't have to pass one. A regression
-      // to empty default would lose informative error text.
+      // Fijado: el valor por defecto — quien llama no tiene por qué pasar
+      // uno. Una regresión a un defecto vacío perdería un texto de error
+      // informativo.
       const e = new AbortError()
       expect(e.message).toBe('Permission request aborted')
     })
@@ -134,7 +141,7 @@ describe('permission errors namespace', () => {
 
   describe('Cross-class invariants', () => {
     test('All 5 subclasses are catchable via PermissionBaseError', () => {
-      // Pin: structural — a single catch block can handle all kinds.
+      // Fijado: estructural — un solo bloque `catch` puede atender todos los tipos.
       const errors = [
         new DeniedError('x'),
         new AskRequiredError('x'),
@@ -160,7 +167,7 @@ describe('permission errors namespace', () => {
     })
 
     test('All codes start with PERMISSION_ prefix (namespace marker)', () => {
-      // Pin: cross-package error code search relies on this prefix.
+      // Fijado: la búsqueda de códigos de error entre paquetes se apoya en este prefijo.
       const codes = [
         new DeniedError('x').code,
         new AskRequiredError('x').code,

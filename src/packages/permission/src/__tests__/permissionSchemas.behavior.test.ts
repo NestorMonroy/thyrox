@@ -10,20 +10,25 @@ import {
 } from '../PermissionUpdateSchema.ts'
 
 /**
- * Pin Zod schemas for permission rules and updates. These are the
- * wire format for settings files (`.claude/settings.json`) and CLI
- * args. A regression that widens or narrows the enum silently breaks
- * forwards/backwards compat with shipped settings files.
+ * Copia de `ccnmt: packages/permission/src/__tests__/permissionSchemas.behavior.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * Pinned invariants:
- *  1. permissionBehaviorSchema accepts EXACTLY 'allow' | 'deny' | 'ask'
- *     (no 'prompt' or 'manual' even though both have been considered).
- *  2. permissionRuleValueSchema requires toolName, ruleContent optional.
- *  3. permissionUpdateDestinationSchema accepts EXACTLY 5 destinations.
- *  4. permissionUpdateSchema discriminates on `type` over 6 update kinds.
- *  5. addRules/replaceRules/removeRules carry `behavior` + `rules`.
- *  6. setMode carries `mode` (external permission mode).
- *  7. addDirectories/removeDirectories carry `directories` (string[]).
+ * Fija los esquemas Zod de las reglas y las actualizaciones de permiso. Son
+ * el formato de intercambio de los archivos de ajustes
+ * (`.claude/settings.json`) y de los argumentos de la CLI. Una regresión que
+ * ensanche o estreche el enum rompe en silencio la compatibilidad, hacia
+ * adelante y hacia atrás, con los archivos de ajustes ya distribuidos.
+ *
+ * Invariantes fijados:
+ *  1. `permissionBehaviorSchema` acepta EXACTAMENTE 'allow' | 'deny' | 'ask'
+ *     (ni 'prompt' ni 'manual', aunque los dos se han considerado).
+ *  2. `permissionRuleValueSchema` exige `toolName`; `ruleContent` es opcional.
+ *  3. `permissionUpdateDestinationSchema` acepta EXACTAMENTE 5 destinos.
+ *  4. `permissionUpdateSchema` discrimina por `type` entre 6 tipos de
+ *     actualización.
+ *  5. `addRules`, `replaceRules` y `removeRules` llevan `behavior` y `rules`.
+ *  6. `setMode` lleva `mode` (el modo de permiso externo).
+ *  7. `addDirectories` y `removeDirectories` llevan `directories` (string[]).
  */
 describe('permission schemas (Zod wire-format pins)', () => {
   describe('permissionBehaviorSchema', () => {
@@ -34,8 +39,8 @@ describe('permission schemas (Zod wire-format pins)', () => {
     })
 
     test('rejects "prompt" (commonly considered alias — must use "ask")', () => {
-      // Pin: prompt is NOT a behavior. A regression that accepts it
-      // would let invalid settings files load silently.
+      // Fijado: 'prompt' NO es un comportamiento. Una regresión que lo
+      // aceptara dejaría cargar en silencio archivos de ajustes inválidos.
       expect(() => permissionBehaviorSchema().parse('prompt')).toThrow()
     })
 
@@ -47,7 +52,7 @@ describe('permission schemas (Zod wire-format pins)', () => {
     })
 
     test('case-sensitive: ALLOW / Allow rejected', () => {
-      // Pin: settings file MUST be exact lowercase.
+      // Fijado: en el archivo de ajustes TIENE que ir en minúscula exacta.
       expect(() => permissionBehaviorSchema().parse('ALLOW')).toThrow()
       expect(() => permissionBehaviorSchema().parse('Allow')).toThrow()
     })
@@ -61,8 +66,8 @@ describe('permission schemas (Zod wire-format pins)', () => {
     })
 
     test('ruleContent optional (toolName-only rule passes)', () => {
-      // Pin: a bare "Bash" rule matches every Bash invocation; this is
-      // the common case. ruleContent narrows.
+      // Fijado: una regla «Bash» a secas casa con toda invocación de Bash;
+      // es el caso corriente. `ruleContent` la estrecha.
       const result = permissionRuleValueSchema().parse({ toolName: 'Bash' })
       expect(result.toolName).toBe('Bash')
       expect(result.ruleContent).toBeUndefined()
@@ -85,7 +90,7 @@ describe('permission schemas (Zod wire-format pins)', () => {
 
   describe('permissionUpdateDestinationSchema', () => {
     test('accepts exactly 5 destinations', () => {
-      // Pin: the 5 known scopes. Settings layering hardcodes this.
+      // Fijado: los 5 ámbitos conocidos. El apilamiento de ajustes los lleva cableados.
       const destinations = [
         'userSettings',
         'projectSettings',
@@ -99,7 +104,7 @@ describe('permission schemas (Zod wire-format pins)', () => {
     })
 
     test('rejects "global" / "remote" / typos', () => {
-      // Pin: "global" is a common typo for "userSettings".
+      // Fijado: «global» es una errata frecuente por «userSettings».
       expect(() =>
         permissionUpdateDestinationSchema().parse('global'),
       ).toThrow()
@@ -144,9 +149,9 @@ describe('permission schemas (Zod wire-format pins)', () => {
     })
 
     test('setMode update carries `mode` (NOT `behavior`)', () => {
-      // Pin: setMode is structurally different — it sets the runtime
-      // permission mode (default/plan/acceptEdits/bypassPermissions),
-      // not a rule behavior.
+      // Fijado: `setMode` es estructuralmente distinto — fija el modo de
+      // permiso en tiempo de ejecución (default, plan, acceptEdits,
+      // bypassPermissions), no el comportamiento de una regla.
       const result = permissionUpdateSchema().parse({
         type: 'setMode',
         mode: 'plan',
