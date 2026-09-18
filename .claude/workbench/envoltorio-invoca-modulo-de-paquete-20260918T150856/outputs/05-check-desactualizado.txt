@@ -1,0 +1,6 @@
+=== 2026-09-18T15:11:39 — --check ANTES de regenerar, ya con el generador corregido ===
+
+bin/ DESACTUALIZADO respecto a src/session, src/verify, src/agents:
+  contenido distinto: cache_probe, manifest
+  corre: python3 src/session/generate_bin.py
+exit=1

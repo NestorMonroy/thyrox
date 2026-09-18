@@ -350,6 +350,33 @@ def test_cli_check_exit_code() -> None:
           r.stderr.strip() == "", r.stderr)
 
 
+def _synthetic_root(base: pathlib.Path) -> pathlib.Path:
+    """Un árbol sintético COMPLETO: ``SOURCE_DIRS`` + el marcador + un entrypoint.
+
+    Existe porque los dos casos de ``--install-user-bin`` corren el generador
+    REAL sin ``--check`` ni ``--dry-run``, y ``main()`` llama a ``apply_plan``
+    ANTES de instalar en el destino de prueba. Con ``cwd`` en la raíz del repo
+    eso regeneraba el ``bin/`` de verdad —y ``apply_plan`` además **retira** lo
+    que no esté en el plan—: un caso de prueba que muta el árbol que mide.
+
+    Medido cuando se destapó: ``bin/archive_build_corpus`` apareció como
+    untracked tras una corrida de esta suite, cerrando en silencio una deriva
+    real que ``--check`` había reportado un minuto antes.
+
+    ``THYROX_ROOT`` apuntado aquí es lo que lo aísla: ``reach.thyrox_root()``
+    da precedencia a la variable del proceso sobre el ascenso por marcador, y
+    el marcador se escribe igual para que el árbol sea válido por las dos vías.
+    """
+    for rel in gb.SOURCE_DIRS:
+        (base / rel).mkdir(parents=True, exist_ok=True)
+    marcador = base / "src/paths/reach.py"
+    marcador.parent.mkdir(parents=True, exist_ok=True)
+    marcador.write_text("# marcador de raíz para el árbol sintético\n")
+    entrypoint = base / "src/verify/check_sintetico.py"
+    entrypoint.write_text("if __name__ == '__main__':\n    pass\n")
+    return base
+
+
 def test_install_user_bin_warns_when_dir_is_not_on_path(base: pathlib.Path) -> None:
     """Instalar en un directorio fuera de ``PATH`` y NO decirlo es un verde mudo.
 
@@ -360,7 +387,8 @@ def test_install_user_bin_warns_when_dir_is_not_on_path(base: pathlib.Path) -> N
     suelto. Medido antes de escribir esto: 0 menciones de PATH en la salida.
     """
     destino = base / "xbin-fuera-de-path"
-    entorno = dict(os.environ, PATH="/usr/bin:/bin")
+    arbol = _synthetic_root(base / "arbol-aviso-de-path")
+    entorno = dict(os.environ, PATH="/usr/bin:/bin", THYROX_ROOT=str(arbol))
     hecho = subprocess.run(
         [sys.executable, str(ROOT / "src/session/generate_bin.py"),
          "--install-user-bin", str(destino)],
@@ -381,7 +409,9 @@ def test_install_user_bin_stays_quiet_when_dir_is_on_path(base: pathlib.Path) ->
     """
     destino = base / "xbin-dentro-de-path"
     destino.mkdir(parents=True, exist_ok=True)
-    entorno = dict(os.environ, PATH=f"{destino}:/usr/bin:/bin")
+    arbol = _synthetic_root(base / "arbol-silencio-de-path")
+    entorno = dict(os.environ, PATH=f"{destino}:/usr/bin:/bin",
+                   THYROX_ROOT=str(arbol))
     hecho = subprocess.run(
         [sys.executable, str(ROOT / "src/session/generate_bin.py"),
          "--install-user-bin", str(destino)],
@@ -550,6 +580,190 @@ def test_library_shell_stays_out_of_the_real_plan() -> None:
               str(objetivos.get(biblioteca)))
 
 
+def test_package_context_is_detected_and_narrow(base: pathlib.Path) -> None:
+    """Caso central 3 — el criterio que decide ``-m``, con su anulación.
+
+    Un módulo con ``from . import x`` NO puede invocarse por ruta: CPython no
+    le da paquete padre y muere con ``ImportError``. El envoltorio tiene que
+    entrar por ``-m paquete.modulo``.
+
+    El criterio es ESTRECHO a propósito, y la anulación de abajo es lo que lo
+    sostiene: emitir ``-m`` para todos rompería a los que importan un hermano
+    por nombre plano (``import clone``), porque ``-m`` sustituye el directorio
+    del guion por el cwd en ``sys.path[0]``. Medido sobre el árbol real:
+    2 de 137 entrypoints ``.py`` llevan import relativo, y los 4 de nombre
+    plano pasan de exit 0 a exit 1 bajo la forma universal.
+    """
+    tree = _make_tree(base / "contexto-de-paquete")
+    relativo = tree / "src/transcript/probe_relative.py"
+    relativo.write_text("from . import sibling\n"
+                        "if __name__ == '__main__':\n    pass\n")
+    plano = tree / "src/transcript/probe_flat.py"
+    plano.write_text("import sibling\n"
+                     "if __name__ == '__main__':\n    pass\n")
+
+    check("un import relativo exige contexto de paquete",
+          gb.needs_package_context(relativo))
+    check("un import plano NO lo exige",
+          not gb.needs_package_context(plano))
+
+    punteado = gb.module_dotted_name(relativo, tree)
+    check("el nombre punteado se deriva contra src/, no contra la raíz",
+          punteado == "transcript.probe_relative", f"dio {punteado!r}")
+
+    cuerpo_rel = gb.wrapper_body(relativo, tree, "probe_relative")
+    cuerpo_plano = gb.wrapper_body(plano, tree, "probe_flat")
+    check("el envoltorio del relativo entra por -m",
+          "-m transcript.probe_relative" in cuerpo_rel, cuerpo_rel)
+    check("y NO por la ruta del archivo",
+          "src/transcript/probe_relative.py" not in cuerpo_rel, cuerpo_rel)
+    check("el del plano sigue entrando por ruta",
+          "src/transcript/probe_flat.py" in cuerpo_plano, cuerpo_plano)
+    check("y NO lleva -m",
+          " -m " not in cuerpo_plano, cuerpo_plano)
+
+    # --- anulación: cegar el detector de contexto de paquete ---------------
+    # Si el control no discrimina, el envoltorio del relativo seguiría
+    # llevando -m y esta prueba no probaría nada.
+    original = gb.needs_package_context
+    try:
+        gb.needs_package_context = lambda path: False
+        ciego_rel = gb.wrapper_body(relativo, tree, "probe_relative")
+        ciego_plano = gb.wrapper_body(plano, tree, "probe_flat")
+        check("anulado: el relativo cae a la forma de ruta — cae exactamente él",
+              "src/transcript/probe_relative.py" in ciego_rel)
+        check("anulado: el plano no se mueve",
+              ciego_plano == cuerpo_plano)
+    finally:
+        gb.needs_package_context = original
+    check("restaurado: el relativo vuelve a -m",
+          "-m transcript.probe_relative" in gb.wrapper_body(relativo, tree,
+                                                            "probe_relative"))
+
+
+def test_dotted_name_refuses_outside_src(base: pathlib.Path) -> None:
+    """Un objetivo fuera de ``src/`` rehúsa, no compone un módulo inventado.
+
+    Sin la guarda, ``module_dotted_name`` emitiría un nombre punteado que no
+    resuelve y el envoltorio moriría con ``No module named`` — un fallo más
+    lejos de su causa que el que este arreglo cierra.
+    """
+    tree = _make_tree(base / "fuera-de-src")
+    fuera = tree / "herramienta.py"
+    fuera.write_text("if __name__ == '__main__':\n    pass\n")
+    try:
+        nombre = gb.module_dotted_name(fuera, tree)
+        check("un objetivo fuera de src/ levanta ValueError", False,
+              f"devolvió {nombre!r} en vez de rehusar")
+    except ValueError as exc:
+        check("un objetivo fuera de src/ levanta ValueError", True)
+        check("y el mensaje nombra la ruta", "herramienta.py" in str(exc))
+
+
+def test_relative_import_entrypoints_reach_bin_on_real_tree() -> None:
+    """Conducta sobre el árbol REAL: los envoltorios con ``-m`` corren.
+
+    El defecto que este caso existe para no repetir: ``bin/cache_probe`` y
+    ``bin/manifest`` morían con ``ImportError: attempted relative import with
+    no known parent package`` — el envoltorio los invocaba como guion.
+
+    El universo no se transcribe: se deriva del árbol por AST en cada corrida,
+    así que un entrypoint nuevo con import relativo entra solo.
+    """
+    import ast
+
+    entrypoints = gb.discover_entrypoints(ROOT)
+    con_relativo = []
+    for stem, target in sorted(entrypoints.items()):
+        if target.suffix != ".py":
+            continue
+        try:
+            arbol = ast.parse(target.read_text(encoding="utf-8", errors="replace"))
+        except SyntaxError:
+            continue
+        if any(isinstance(n, ast.ImportFrom) and (n.level or 0) > 0
+               for n in ast.walk(arbol)):
+            con_relativo.append((stem, target))
+
+    check("el árbol tiene al menos un entrypoint con import relativo",
+          bool(con_relativo),
+          "población vacía — el caso no podría fallar y no discriminaría")
+
+    for stem, _target in con_relativo:
+        nombre = gb.resolve_bin_name(stem)
+        envoltorio = ROOT / "bin" / nombre
+        if not envoltorio.exists():
+            check(f"bin/{nombre} existe", False, "no hay envoltorio")
+            continue
+        proceso = subprocess.run([str(envoltorio), "--help"],
+                                 capture_output=True, text=True, timeout=120,
+                                 cwd=str(ROOT))
+        cola = (proceso.stderr.strip().splitlines() or [""])[-1][:90]
+        check(f"bin/{nombre} --help sale 0", proceso.returncode == 0,
+              f"exit={proceso.returncode} · {cola}")
+
+
+def test_exercise_separates_wiring_from_policy(base: pathlib.Path) -> None:
+    """``--exercise`` ve lo que ``--check`` no puede ver, y no confunde rehúso.
+
+    ``--check`` compara ``bin/`` contra el PLAN. Si el plan está mal, los dos
+    coinciden y publica verde: es estructuralmente ciego a «el envoltorio no
+    funciona» — el defecto que ``bin/cache_probe`` y ``bin/manifest`` tuvieron
+    mientras ``--check`` decía «al día».
+
+    El discriminador NO es una lista de excepciones: es la CLASE de la
+    excepción. Un ``ImportError`` dice que el módulo no llegó a cargar — eso es
+    cableado. Cualquier otra cosa dice que cargó y luego decidió rehusar
+    (``SystemExit`` de una guarda ``DEPRECATED``, un error de dominio) — eso es
+    política del módulo, no del envoltorio, y no se reporta.
+    """
+    tree = _make_tree(base / "ejercitar")
+    (tree / "src/paths").mkdir(parents=True, exist_ok=True)
+    (tree / "src/paths/reach.py").write_text("# marcador\n")
+    (tree / "src/transcript/sibling.py").write_text("VALOR = 1\n")
+    relativo = tree / "src/transcript/probe_needs_package.py"
+    relativo.write_text("from . import sibling\n"
+                        "if __name__ == '__main__':\n    pass\n")
+    rehusa = tree / "src/verify/probe_refuses_on_purpose.py"
+    rehusa.write_text("import sys\n"
+                      "sys.exit(3)   # guarda de politica, como DEPRECATED\n"
+                      "if __name__ == '__main__':\n    pass\n")
+
+    fallos = dict(gb.exercise_entrypoints(tree))
+    check("con el plan correcto, el de import relativo NO falla",
+          "probe_needs_package" not in fallos, str(fallos))
+    check("y el que rehusa por politica TAMPOCO se reporta",
+          "probe_refuses_on_purpose" not in fallos, str(fallos))
+
+    # --- anulación: forzar la forma de ruta sobre el que exige paquete ------
+    original = gb.needs_package_context
+    try:
+        gb.needs_package_context = lambda path: False
+        fallos_ciego = dict(gb.exercise_entrypoints(tree))
+        check("anulado: el de import relativo SI falla — cae exactamente el",
+              "probe_needs_package" in fallos_ciego, str(fallos_ciego))
+        check("anulado: y el ImportError es la razon reportada",
+              "ImportError" in fallos_ciego.get("probe_needs_package", ""),
+              str(fallos_ciego))
+        check("anulado: el que rehusa por politica sigue sin reportarse",
+              "probe_refuses_on_purpose" not in fallos_ciego,
+              str(fallos_ciego))
+    finally:
+        gb.needs_package_context = original
+
+
+def test_exercise_on_real_tree_is_green() -> None:
+    """El árbol real, ejercitado: ningún envoltorio ``.py`` falla al cargar.
+
+    Es el mismo eje que el caso de conducta de arriba, con el universo entero
+    en vez de sólo la familia de import relativo — así un defecto de cableado
+    en cualquier otro entrypoint también cae aquí.
+    """
+    fallos = gb.exercise_entrypoints(ROOT)
+    check("0 envoltorios .py fallan al cargar en el arbol real",
+          not fallos, "; ".join(f"{s}: {e}" for s, e in fallos))
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         base = pathlib.Path(tmp)
@@ -566,6 +780,9 @@ def main() -> int:
         test_resolve_bin_name_prefixes_builtin_collisions(base)
         test_install_user_bin_warns_when_dir_is_not_on_path(base)
         test_install_user_bin_stays_quiet_when_dir_is_on_path(base)
+        test_package_context_is_detected_and_narrow(base)
+        test_dotted_name_refuses_outside_src(base)
+        test_exercise_separates_wiring_from_policy(base)
     test_builtin_collision_on_real_tree()
     test_cli_check_exit_code()
     test_library_modules_are_silent_when_run_as_scripts()
@@ -573,6 +790,8 @@ def main() -> int:
     test_mandatory_flow_tools_reach_bin()
     test_check_declares_its_universe()
     test_library_shell_stays_out_of_the_real_plan()
+    test_relative_import_entrypoints_reach_bin_on_real_tree()
+    test_exercise_on_real_tree_is_green()
 
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "
           f"(alcance medido: generate_bin.py)")

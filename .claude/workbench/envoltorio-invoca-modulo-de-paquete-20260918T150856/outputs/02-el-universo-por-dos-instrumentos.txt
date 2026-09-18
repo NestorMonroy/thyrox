@@ -1,0 +1,18 @@
+=== 2026-09-18T15:09:41 — el universo, por dos instrumentos ===
+
+--- eje ESTATICO: ImportFrom con level>0, por AST ---
+entrypoints .py: 137   con import relativo: 2
+  cache_probe    src/transcript/cache_probe.py      level=[1, 1]
+  manifest       src/workbench/manifest.py          level=[1]
+
+--- eje de CONDUCTA: probes/probe_import_by_path.py sobre los 137 ---
+entrypoints .py medidos: 137   fallan al importar por ruta: 4
+  backfill_agent_sessions  src/agents/backfill_agent_sessions.py    SystemExit: 3
+  cache_probe              src/transcript/cache_probe.py            ImportError: attempted relative import with no known parent package
+  check_rst_referencias    src/verify/check_rst_referencias.py      ConsumerUnknownError: El ascenso desde /home/user/thyrox aterriza en el PROVEEDOR (/home/user/th
+  manifest                 src/workbench/manifest.py                ImportError: attempted relative import with no known parent package
+
+Los 4 rojos de conducta son TRES clases:
+  2  import relativo          -> este arreglo (TASK-THYROX-0161)
+  1  backfill_agent_sessions  -> su guarda DEPRECATED, rehusa a proposito
+  1  check_rst_referencias    -> mide un CONSUMIDOR; rehusa desde el proveedor

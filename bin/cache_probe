@@ -8,4 +8,4 @@ if [ ! -x "$INTERPRETER" ]; then
   exit 2
 fi
 export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
-exec "$INTERPRETER" "$THYROX_ROOT/src/transcript/cache_probe.py" "$@"
+exec "$INTERPRETER" -m transcript.cache_probe "$@"

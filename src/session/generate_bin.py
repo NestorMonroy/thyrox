@@ -135,9 +135,11 @@ Uso::
 from __future__ import annotations
 
 import argparse
+import ast
 import os
 import pathlib
 import re
+import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
@@ -302,6 +304,69 @@ def resolve_bin_name(stem: str) -> str:
     return f"thyrox-{stem}" if stem in BASH_BUILTINS else stem
 
 
+def needs_package_context(path: pathlib.Path) -> bool:
+    """¿El módulo exige entrar como PAQUETE (``-m``) y no como guion?
+
+    El discriminador es un ``ImportFrom`` con ``level > 0`` —``from . import x``,
+    ``from .thread import y``—. CPython no le da paquete padre a un archivo
+    invocado por ruta, así que el módulo muere en el import con
+    ``ImportError: attempted relative import with no known parent package``.
+
+    **El criterio es ESTRECHO a propósito, y eso está medido en las dos
+    direcciones** (banco ``envoltorio-invoca-modulo-de-paquete-20260918T150856``):
+
+    ================================================  =========  =========
+    Sobre los 137 entrypoints ``.py`` del árbol       por ruta   con ``-m``
+    ================================================  =========  =========
+    los **2** con import relativo                     exit 1     exit 0
+    los **4** que importan un hermano por nombre      exit 0     exit 1
+    plano (``import clone``, ``import task_ids``)
+    ================================================  =========  =========
+
+    Por eso NO se emite ``-m`` para todos: ``-m`` sustituye el directorio del
+    guion por el cwd en ``sys.path[0]``, y esos cuatro viven de que
+    ``sys.path[0]`` sea su propio directorio. La forma universal arregla dos y
+    rompe cuatro.
+
+    Un archivo ilegible o con sintaxis rota devuelve ``False`` —la misma
+    tolerancia que ``is_python_entrypoint``—: la clasificación no es el sitio
+    donde reventar por un archivo roto.
+    """
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return False
+    return any(isinstance(node, ast.ImportFrom) and (node.level or 0) > 0
+               for node in ast.walk(tree))
+
+
+def module_dotted_name(target: pathlib.Path, root: pathlib.Path) -> str:
+    """``src/transcript/cache_probe.py`` -> ``transcript.cache_probe``.
+
+    Se deriva contra ``root/src`` y no contra ``root`` porque ``src`` es lo que
+    el envoltorio pone en ``PYTHONPATH``: el nombre punteado tiene que ser
+    relativo a la raíz de importación, no a la del repositorio.
+
+    **Rehúsa** si el objetivo no cuelga de ``src/``, en vez de componer un
+    nombre inventado. Sin la guarda, el envoltorio moriría con
+    ``No module named`` — un fallo más lejos de su causa que el que este
+    mecanismo cierra.
+    """
+    try:
+        relative = target.relative_to(root / "src")
+    except ValueError:
+        raise ValueError(
+            f"module_dotted_name: {target} no cuelga de {root / 'src'} — "
+            f"no hay nombre de módulo que componer, y componerlo a ciegas "
+            f"produciría un envoltorio que muere con 'No module named'"
+        ) from None
+    return ".".join(relative.with_suffix("").parts)
+
+
 def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None = None) -> str:
     """El cuerpo del guion envoltorio para UN objetivo.
 
@@ -341,6 +406,14 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None 
     display_name = bin_name if bin_name is not None else target.stem
     relative_target = target.relative_to(root)
     if target.suffix == ".py":
+        # La puerta de entrada la decide el módulo, no el generador: con import
+        # relativo entra como paquete; sin él, por su ruta real (ver
+        # ``needs_package_context`` para la medición de las dos direcciones).
+        if needs_package_context(target):
+            invocation = (f'exec "$INTERPRETER" -m '
+                          f'{module_dotted_name(target, root)} "$@"\n')
+        else:
+            invocation = f'exec "$INTERPRETER" "$THYROX_ROOT/{relative_target}" "$@"\n'
         return (
             "#!/usr/bin/env bash\n"
             f"{GENERATED_MARKER}\n"
@@ -353,7 +426,7 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None 
             '  exit 2\n'
             'fi\n'
             'export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"\n'
-            f'exec "$INTERPRETER" "$THYROX_ROOT/{relative_target}" "$@"\n'
+            + invocation
         )
     return (
         "#!/usr/bin/env bash\n"
@@ -466,6 +539,80 @@ def planned_files(root: pathlib.Path) -> dict[str, str]:
     return plan
 
 
+#: El programa que ejercita UN entrypoint: lo importa por la misma puerta que
+#: su envoltorio y nada más. ``runpy.run_path`` fija ``__name__`` a
+#: ``'<run_path>'`` e ``import_module`` a su nombre punteado: en los dos casos
+#: la guarda de ``__main__`` NO dispara, así que corre el nivel de módulo
+#: (imports, defs) y **no** ``main()``. Ejercitar con ``--help`` habría
+#: ejecutado el trabajo de cualquier entrypoint que no use ``argparse``.
+EXERCISE_PROGRAM = """
+import importlib, os, runpy, sys
+forma, objetivo = sys.argv[1], sys.argv[2]
+try:
+    if forma == 'module':
+        importlib.import_module(objetivo)
+    else:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(objetivo)))
+        sys.argv = [objetivo]
+        runpy.run_path(objetivo)
+except ImportError as exc:
+    print(f'{type(exc).__name__}: {exc}', file=sys.stderr)
+    raise SystemExit(3)
+except BaseException:
+    # Cargó y luego decidió rehusar: política del módulo, no del envoltorio.
+    raise SystemExit(0)
+raise SystemExit(0)
+"""
+
+
+def exercise_entrypoints(root: pathlib.Path,
+                         interpreter: str | None = None
+                         ) -> list[tuple[str, str]]:
+    """Carga cada entrypoint ``.py`` por la puerta que su envoltorio usa.
+
+    ``--check`` compara ``bin/`` contra el PLAN, así que un plan equivocado
+    coincide consigo mismo y publica verde: es **estructuralmente** ciego a
+    «el envoltorio no funciona». Fue lo que pasó — ``bin/cache_probe`` y
+    ``bin/manifest`` morían con ``ImportError`` mientras ``--check`` decía
+    «al día: 171 entrypoint(s)». Sub-patrón D con ``--check`` de instrumento.
+
+    **El discriminador es la CLASE de la excepción, no una lista de
+    excepciones.** Un ``ImportError`` dice que el módulo no llegó a cargar: eso
+    es cableado, y es lo que este eje mide. Cualquier otra cosa dice que cargó
+    y luego rehusó por su propia política —la guarda ``DEPRECATED`` de
+    ``backfill_agent_sessions``, el rehúso de ``check_rst_referencias`` al
+    medir un consumidor desde el proveedor— y no se reporta. Sin esa
+    distinción haría falta un baseline de excepciones por nombre, que envejece;
+    con ella el criterio se deriva del fenómeno.
+
+    Coste medido sobre los 137 entrypoints ``.py`` de este árbol: **5.1 s** en
+    serie. Por eso es opt-in (``--exercise``) y no parte de ``--check``, que un
+    gate corre en cada sesión.
+
+    Devuelve los pares ``(nombre_corto, primera_linea_del_error)``; lista vacía
+    es el estado sano.
+    """
+    interpreter = interpreter or sys.executable
+    fallos: list[tuple[str, str]] = []
+    entorno = dict(os.environ)
+    entorno["PYTHONPATH"] = os.pathsep.join(
+        [str(root / "src")] + ([entorno["PYTHONPATH"]] if entorno.get("PYTHONPATH") else []))
+    for stem, target in sorted(discover_entrypoints(root).items()):
+        if target.suffix != ".py":
+            continue
+        if needs_package_context(target):
+            forma, objetivo = "module", module_dotted_name(target, root)
+        else:
+            forma, objetivo = "path", str(target)
+        hecho = subprocess.run([interpreter, "-c", EXERCISE_PROGRAM, forma, objetivo],
+                               capture_output=True, text=True, timeout=120,
+                               env=entorno, cwd=str(root))
+        if hecho.returncode != 0:
+            razon = (hecho.stderr.strip().splitlines() or ["sin salida"])[-1]
+            fallos.append((resolve_bin_name(stem), razon[:160]))
+    return fallos
+
+
 def apply_plan(root: pathlib.Path, plan: dict[str, str]) -> tuple[list[str], list[str]]:
     """Escribe el plan en ``bin/``. Devuelve (escritos, retirados)."""
     bin_dir = root / "bin"
@@ -503,6 +650,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="no escribe; sale 1 si bin/ difiere del plan")
     parser.add_argument("--dry-run", action="store_true",
                         help="imprime el plan sin escribir")
+    parser.add_argument("--exercise", action="store_true",
+                        help="carga cada entrypoint .py por la puerta de su "
+                             "envoltorio y sale 1 si alguno no llega a cargar; "
+                             "ve lo que --check no puede ver (~5 s)")
     parser.add_argument("--install-user-bin", nargs="?", const=str(DEFAULT_USER_BIN_DIR),
                         metavar="DIR", default=None,
                         help="además, copia envoltorios de segundo salto a DIR "
@@ -521,6 +672,20 @@ def main(argv: list[str] | None = None) -> int:
               f"chocando con builtins de bash ({', '.join(shadowed)}) pese "
               "a resolve_bin_name(); revisar generate_bin.py.",
               file=sys.stderr)
+
+    if args.exercise:
+        fallos = exercise_entrypoints(root)
+        total = sum(1 for objetivo in discover_entrypoints(root).values()
+                    if objetivo.suffix == ".py")
+        if fallos:
+            print(f"bin/: {len(fallos)} de {total} entrypoint(s) .py NO cargan "
+                  f"por la puerta de su envoltorio:", file=sys.stderr)
+            for nombre, razon in fallos:
+                print(f"  bin/{nombre}: {razon}", file=sys.stderr)
+            return 1
+        print(f"bin/ ejercitado: {total} entrypoint(s) .py cargan")
+        if not args.check:
+            return 0
 
     if args.check:
         live = current_state(root)

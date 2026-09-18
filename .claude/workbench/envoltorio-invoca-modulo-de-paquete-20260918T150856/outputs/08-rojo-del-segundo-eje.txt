@@ -1,0 +1,7 @@
+=== 2026-09-18T15:16:32 — ROJO del segundo eje: --exercise no existe ===
+  File "/home/user/thyrox/tests/session/test_generate_bin.py", line 785, in main
+    test_exercise_separates_wiring_from_policy(base)
+  File "/home/user/thyrox/tests/session/test_generate_bin.py", line 732, in test_exercise_separates_wiring_from_policy
+    fallos = dict(gb.exercise_entrypoints(tree))
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'generate_bin' has no attribute 'exercise_entrypoints'. Did you mean: 'discover_entrypoints'?
