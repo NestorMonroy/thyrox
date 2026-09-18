@@ -1,60 +1,60 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
-import addDir, { cd } from '@claude-code-how-works/repl/commands/add-dir/index.js'
-import { installCommandRegistryHostBindings } from '@claude-code-how-works/command-runtime'
-import autofixPr from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import backfillSessions from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import btw from '@claude-code-how-works/command-runtime/commands/btw/index.js'
-import goalJsx, { goalLocalCommand as goalLocal } from '@claude-code-how-works/command-runtime/commands/goal/index.js'
-import goodClaude from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import issue from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import clear from '@claude-code-how-works/command-runtime/commands/clear/index.js'
-import color from '@claude-code-how-works/repl/commands/color/index.js'
-import commit from '@claude-code-how-works/agent/commands/commit.js'
-import copy from '@claude-code-how-works/command-runtime/commands/copy/index.js'
-import desktop from '@claude-code-how-works/repl/commands/desktop/index.js'
-import commitPushPr from '@claude-code-how-works/agent/commands/commit-push-pr.js'
-import compact from '@claude-code-how-works/command-runtime/commands/compact/index.js'
-import config from '@claude-code-how-works/repl/commands/config/index.js'
-import { context, contextNonInteractive } from '@claude-code-how-works/command-runtime/commands/context/index.js'
-import cost from '@claude-code-how-works/command-runtime/commands/cost/index.js'
-import diff from '@claude-code-how-works/repl/commands/diff/index.js'
-import ctx_viz from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import doctor from '@claude-code-how-works/repl/commands/doctor/index.js'
-import memory from '@claude-code-how-works/command-runtime/commands/memory/index.js'
-import help from '@claude-code-how-works/repl/commands/help/index.js'
-import ide from '@claude-code-how-works/command-runtime/commands/ide/index.js'
+import addDir, { cd } from '@thyrox/repl/commands/add-dir/index.js'
+import { installCommandRegistryHostBindings } from '@thyrox/command-runtime'
+import autofixPr from '@thyrox/command-runtime/stubs/stubCommand.js'
+import backfillSessions from '@thyrox/command-runtime/stubs/stubCommand.js'
+import btw from '@thyrox/command-runtime/commands/btw/index.js'
+import goalJsx, { goalLocalCommand as goalLocal } from '@thyrox/command-runtime/commands/goal/index.js'
+import goodClaude from '@thyrox/command-runtime/stubs/stubCommand.js'
+import issue from '@thyrox/command-runtime/stubs/stubCommand.js'
+import clear from '@thyrox/command-runtime/commands/clear/index.js'
+import color from '@thyrox/repl/commands/color/index.js'
+import commit from '@thyrox/agent/commands/commit.js'
+import copy from '@thyrox/command-runtime/commands/copy/index.js'
+import desktop from '@thyrox/repl/commands/desktop/index.js'
+import commitPushPr from '@thyrox/agent/commands/commit-push-pr.js'
+import compact from '@thyrox/command-runtime/commands/compact/index.js'
+import config from '@thyrox/repl/commands/config/index.js'
+import { context, contextNonInteractive } from '@thyrox/command-runtime/commands/context/index.js'
+import cost from '@thyrox/command-runtime/commands/cost/index.js'
+import diff from '@thyrox/repl/commands/diff/index.js'
+import ctx_viz from '@thyrox/command-runtime/stubs/stubCommand.js'
+import doctor from '@thyrox/repl/commands/doctor/index.js'
+import memory from '@thyrox/command-runtime/commands/memory/index.js'
+import help from '@thyrox/repl/commands/help/index.js'
+import ide from '@thyrox/command-runtime/commands/ide/index.js'
 import init from '../commands/initCommand.js'
 import initVerifiers from '../commands/init-verifiers.js'
-import keybindings from '@claude-code-how-works/repl/commands/keybindings/index.js'
-import login from '@claude-code-how-works/command-runtime/commands/login/index.js'
-import logout from '@claude-code-how-works/provider/commands/logout/index.js'
-import installGitHubApp from '@claude-code-how-works/command-runtime/commands/install-github-app/index.js'
-import installSlackApp from '@claude-code-how-works/repl/commands/install-slack-app/index.js'
-import breakCache from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import mcp from '@claude-code-how-works/command-runtime/commands/mcp/index.js'
-import mobile from '@claude-code-how-works/repl/commands/mobile/index.js'
-import onboarding from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import pr_comments from '@claude-code-how-works/agent/commands/pr_comments/index.js'
-import rename from '@claude-code-how-works/command-runtime/commands/rename/index.js'
-import resume from '@claude-code-how-works/command-runtime/commands/resume/index.js'
-import review, { ultrareview } from '@claude-code-how-works/command-runtime/commands/review/review.js'
-import session from '@claude-code-how-works/command-runtime/commands/session/index.js'
-import share from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import skills from '@claude-code-how-works/command-runtime/commands/skills/index.js'
-import status from '@claude-code-how-works/command-runtime/commands/status/index.js'
-import tasks from '@claude-code-how-works/agent/commands/tasks/index.js'
-import teleport from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
+import keybindings from '@thyrox/repl/commands/keybindings/index.js'
+import login from '@thyrox/command-runtime/commands/login/index.js'
+import logout from '@thyrox/provider/commands/logout/index.js'
+import installGitHubApp from '@thyrox/command-runtime/commands/install-github-app/index.js'
+import installSlackApp from '@thyrox/repl/commands/install-slack-app/index.js'
+import breakCache from '@thyrox/command-runtime/stubs/stubCommand.js'
+import mcp from '@thyrox/command-runtime/commands/mcp/index.js'
+import mobile from '@thyrox/repl/commands/mobile/index.js'
+import onboarding from '@thyrox/command-runtime/stubs/stubCommand.js'
+import pr_comments from '@thyrox/agent/commands/pr_comments/index.js'
+import rename from '@thyrox/command-runtime/commands/rename/index.js'
+import resume from '@thyrox/command-runtime/commands/resume/index.js'
+import review, { ultrareview } from '@thyrox/command-runtime/commands/review/review.js'
+import session from '@thyrox/command-runtime/commands/session/index.js'
+import share from '@thyrox/command-runtime/stubs/stubCommand.js'
+import skills from '@thyrox/command-runtime/commands/skills/index.js'
+import status from '@thyrox/command-runtime/commands/status/index.js'
+import tasks from '@thyrox/agent/commands/tasks/index.js'
+import teleport from '@thyrox/command-runtime/stubs/stubCommand.js'
 /* eslint-disable @typescript-eslint/no-require-imports */
 // agents-platform was an ant-internal command not present in this build; the
 // shim was deleted with the rest of src/commands/. Treat as absent.
 const agentsPlatform = null
 /* eslint-enable @typescript-eslint/no-require-imports */
-import securityReview from '@claude-code-how-works/agent/commands/security-review.js'
-import bughunter from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import terminalSetup from '@claude-code-how-works/command-runtime/commands/terminalSetup/index.js'
-import usage from '@claude-code-how-works/repl/commands/usage/index.js'
-import theme from '@claude-code-how-works/command-runtime/commands/theme/index.js'
-import vim from '@claude-code-how-works/repl/commands/vim/index.js'
+import securityReview from '@thyrox/agent/commands/security-review.js'
+import bughunter from '@thyrox/command-runtime/stubs/stubCommand.js'
+import terminalSetup from '@thyrox/command-runtime/commands/terminalSetup/index.js'
+import usage from '@thyrox/repl/commands/usage/index.js'
+import theme from '@thyrox/command-runtime/commands/theme/index.js'
+import vim from '@thyrox/repl/commands/vim/index.js'
 import { feature } from 'bun:bundle'
 // Dead code elimination: conditional imports
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -62,50 +62,50 @@ import { feature } from 'bun:bundle'
 const proactive = null
 const briefCommand =
   feature('KAIROS') || feature('KAIROS_BRIEF')
-    ? require('@claude-code-how-works/agent/commands/brief.js').default
+    ? require('@thyrox/agent/commands/brief.js').default
     : null
 const assistantCommand = feature('KAIROS')
-  ? require('@claude-code-how-works/repl/commands/assistant/index.js').default
+  ? require('@thyrox/repl/commands/assistant/index.js').default
   : null
 const bridge = feature('BRIDGE_MODE')
-  ? require('@claude-code-how-works/command-runtime/commands/bridge/index.js').default
+  ? require('@thyrox/command-runtime/commands/bridge/index.js').default
   : null
 const remoteControlServerCommand =
   feature('DAEMON') && feature('BRIDGE_MODE')
-    ? require('@claude-code-how-works/command-runtime/commands/remoteControlServer/index.js').default
+    ? require('@thyrox/command-runtime/commands/remoteControlServer/index.js').default
     : null
 const voiceCommand = feature('VOICE_MODE')
-  ? require('@claude-code-how-works/command-runtime/commands/voice/index.js').default
+  ? require('@thyrox/command-runtime/commands/voice/index.js').default
   : null
 // force-snip shim deleted — HISTORY_SNIP feature absent in this build.
 const forceSnip = null
 const webCmd = feature('CCR_REMOTE_SETUP')
   ? (
-      require('@claude-code-how-works/teleport/remote-setup/index.js') as typeof import('@claude-code-how-works/teleport/remote-setup/index.js')
+      require('@thyrox/teleport/remote-setup/index.js') as typeof import('@thyrox/teleport/remote-setup/index.js')
     ).default
   : null
 const clearSkillIndexCache = feature('EXPERIMENTAL_SKILL_SEARCH')
   ? (
-      require('@claude-code-how-works/agent/skillSearch/localSearch.js') as typeof import('@claude-code-how-works/agent/skillSearch/localSearch.js')
+      require('@thyrox/agent/skillSearch/localSearch.js') as typeof import('@thyrox/agent/skillSearch/localSearch.js')
     ).clearSkillIndexCache
   : null
 // subscribe-pr shim deleted — KAIROS_GITHUB_WEBHOOKS feature absent.
 const subscribePr = null
 const ultraplan = feature('ULTRAPLAN')
-  ? require('@claude-code-how-works/repl/ultraplan.js').default
+  ? require('@thyrox/repl/ultraplan.js').default
   : null
 // `/workflows` — browse workflow + goal-run history (running + completed).
 // ant v2.1.150 4938.js NlK. Unconditionally registered (ant ships the command
 // in every build); visibility is the command's own runtime `isEnabled` →
 // isWorkflowsEnabled() (ant `bp()`), so DCE must NOT strip it.
 const workflowsCommand = (
-  require('@claude-code-how-works/command-runtime/commands/workflows/index.js') as typeof import('@claude-code-how-works/command-runtime/commands/workflows/index.js')
+  require('@thyrox/command-runtime/commands/workflows/index.js') as typeof import('@thyrox/command-runtime/commands/workflows/index.js')
 ).default
 // torch shim deleted — TORCH feature absent.
 const torch = null
 const peersCmd = feature('UDS_INBOX')
   ? (
-      require('@claude-code-how-works/command-runtime/stubs/emptyCommandStub.js') as typeof import('@claude-code-how-works/command-runtime/stubs/emptyCommandStub.js')
+      require('@thyrox/command-runtime/stubs/emptyCommandStub.js') as typeof import('@thyrox/command-runtime/stubs/emptyCommandStub.js')
     ).default
   : null
 // `/fork <directive>` — spawn an in-process background agent that inherits
@@ -115,80 +115,80 @@ const peersCmd = feature('UDS_INBOX')
 // branch, isInForkChild guard) only ships when the slash command is wired.
 const forkCmd = feature('FORK_SUBAGENT')
   ? (
-      require('@claude-code-how-works/command-runtime/commands/fork/index.js') as typeof import('@claude-code-how-works/command-runtime/commands/fork/index.js')
+      require('@thyrox/command-runtime/commands/fork/index.js') as typeof import('@thyrox/command-runtime/commands/fork/index.js')
     ).default
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
-import stop from '@claude-code-how-works/command-runtime/commands/stop/index.js'
-import background from '@claude-code-how-works/command-runtime/commands/background/index.js'
-import thinkback from '@claude-code-how-works/config/plugin/commands/thinkback/index.js'
-import thinkbackPlay from '@claude-code-how-works/config/plugin/commands/thinkback-play/index.js'
-import permissions from '@claude-code-how-works/permission/commands/index.js'
-import plan from '@claude-code-how-works/repl/commands/plan/index.js'
-import fast from '@claude-code-how-works/command-runtime/commands/fast/index.js'
-import passes from '@claude-code-how-works/repl/commands/passes/index.js'
-import privacySettings from '@claude-code-how-works/command-runtime/commands/privacy-settings/index.js'
-import hooks from '@claude-code-how-works/repl/commands/hooks/index.js'
-import files from '@claude-code-how-works/repl/commands/files/index.js'
-import branch from '@claude-code-how-works/swarm/commands/branch/index.js'
-import agents from '@claude-code-how-works/swarm/commands/agents/index.js'
-import plugin from '@claude-code-how-works/command-runtime/commands/plugin/index.js'
-import powerup from '@claude-code-how-works/command-runtime/commands/powerup/index.js'
-import reloadPlugins from '@claude-code-how-works/config/plugin/commands/reload-plugins/index.js'
-import rewind from '@claude-code-how-works/repl/commands/rewind/index.js'
-import heapDump from '@claude-code-how-works/repl/commands/heapdump/index.js'
-import tui from '@claude-code-how-works/repl/commands/tui/index.js'
-import mockLimits from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import bridgeKick from '@claude-code-how-works/bridge/commands/bridge-kick.js'
-import version from '@claude-code-how-works/cli/commands/version.js'
-import summary from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
+import stop from '@thyrox/command-runtime/commands/stop/index.js'
+import background from '@thyrox/command-runtime/commands/background/index.js'
+import thinkback from '@thyrox/config/plugin/commands/thinkback/index.js'
+import thinkbackPlay from '@thyrox/config/plugin/commands/thinkback-play/index.js'
+import permissions from '@thyrox/permission/commands/index.js'
+import plan from '@thyrox/repl/commands/plan/index.js'
+import fast from '@thyrox/command-runtime/commands/fast/index.js'
+import passes from '@thyrox/repl/commands/passes/index.js'
+import privacySettings from '@thyrox/command-runtime/commands/privacy-settings/index.js'
+import hooks from '@thyrox/repl/commands/hooks/index.js'
+import files from '@thyrox/repl/commands/files/index.js'
+import branch from '@thyrox/swarm/commands/branch/index.js'
+import agents from '@thyrox/swarm/commands/agents/index.js'
+import plugin from '@thyrox/command-runtime/commands/plugin/index.js'
+import powerup from '@thyrox/command-runtime/commands/powerup/index.js'
+import reloadPlugins from '@thyrox/config/plugin/commands/reload-plugins/index.js'
+import rewind from '@thyrox/repl/commands/rewind/index.js'
+import heapDump from '@thyrox/repl/commands/heapdump/index.js'
+import tui from '@thyrox/repl/commands/tui/index.js'
+import mockLimits from '@thyrox/command-runtime/stubs/stubCommand.js'
+import bridgeKick from '@thyrox/bridge/commands/bridge-kick.js'
+import version from '@thyrox/cli/commands/version.js'
+import summary from '@thyrox/command-runtime/stubs/stubCommand.js'
 import {
   resetLimits,
   resetLimitsNonInteractive,
-} from '@claude-code-how-works/command-runtime/stubs/resetLimitsStub.js'
-import antTrace from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import perfIssue from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import sandboxToggle from '@claude-code-how-works/repl/commands/sandbox-toggle/index.js'
-import chrome from '@claude-code-how-works/command-runtime/commands/chrome/index.js'
-import stickers from '@claude-code-how-works/repl/commands/stickers/index.js'
-import advisor from '@claude-code-how-works/provider/commands/advisor.js'
-import provider from '@claude-code-how-works/provider/commands/provider.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+} from '@thyrox/command-runtime/stubs/resetLimitsStub.js'
+import antTrace from '@thyrox/command-runtime/stubs/stubCommand.js'
+import perfIssue from '@thyrox/command-runtime/stubs/stubCommand.js'
+import sandboxToggle from '@thyrox/repl/commands/sandbox-toggle/index.js'
+import chrome from '@thyrox/command-runtime/commands/chrome/index.js'
+import stickers from '@thyrox/repl/commands/stickers/index.js'
+import advisor from '@thyrox/provider/commands/advisor.js'
+import provider from '@thyrox/provider/commands/provider.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   getSkillDirCommands,
   clearSkillCaches,
   getDynamicSkills,
-} from '@claude-code-how-works/command-runtime/skills/loadSkillsDir.js'
-import { getBundledSkills } from '@claude-code-how-works/command-runtime/skills/bundledSkills.js'
-import { getBuiltinPluginSkillCommands } from '@claude-code-how-works/config/plugin/builtin'
+} from '@thyrox/command-runtime/skills/loadSkillsDir.js'
+import { getBundledSkills } from '@thyrox/command-runtime/skills/bundledSkills.js'
+import { getBuiltinPluginSkillCommands } from '@thyrox/config/plugin/builtin'
 import {
   getPluginCommands,
   clearPluginCommandCache,
   getPluginSkills,
   clearPluginSkillsCache,
-} from '@claude-code-how-works/config/plugin/loadPluginCommands'
+} from '@thyrox/config/plugin/loadPluginCommands'
 import memoize from 'lodash-es/memoize.js'
-import { isUsing3PServices, isClaudeAISubscriber } from '@claude-code-how-works/provider/authAlias.js'
-import { isFirstPartyAnthropicBaseUrl } from '@claude-code-how-works/provider/providers.js'
-import env from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import exit from '@claude-code-how-works/repl/commands/exit/index.js'
-import exportCommand from '@claude-code-how-works/repl/commands/export/index.js'
-import model from '@claude-code-how-works/command-runtime/commands/model/index.js'
-import tag from '@claude-code-how-works/repl/commands/tag/index.js'
-import outputStyle from '@claude-code-how-works/repl/commands/output-style/index.js'
-import remoteEnv from '@claude-code-how-works/command-runtime/commands/remote-env/index.js'
-import upgrade from '@claude-code-how-works/command-runtime/commands/upgrade/index.js'
+import { isUsing3PServices, isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
+import { isFirstPartyAnthropicBaseUrl } from '@thyrox/provider/providers.js'
+import env from '@thyrox/command-runtime/stubs/stubCommand.js'
+import exit from '@thyrox/repl/commands/exit/index.js'
+import exportCommand from '@thyrox/repl/commands/export/index.js'
+import model from '@thyrox/command-runtime/commands/model/index.js'
+import tag from '@thyrox/repl/commands/tag/index.js'
+import outputStyle from '@thyrox/repl/commands/output-style/index.js'
+import remoteEnv from '@thyrox/command-runtime/commands/remote-env/index.js'
+import upgrade from '@thyrox/command-runtime/commands/upgrade/index.js'
 import {
   extraUsage,
   extraUsageNonInteractive,
-} from '@claude-code-how-works/repl/extraUsage.js'
-import rateLimitOptions from '@claude-code-how-works/command-runtime/commands/rate-limit-options/index.js'
-import recap from '@claude-code-how-works/command-runtime/commands/recap/index.js'
-import statusline from '@claude-code-how-works/repl/commands/statusline.js'
-import effort from '@claude-code-how-works/command-runtime/commands/effort/index.js'
-import stats from '@claude-code-how-works/repl/commands/stats/index.js'
+} from '@thyrox/repl/extraUsage.js'
+import rateLimitOptions from '@thyrox/command-runtime/commands/rate-limit-options/index.js'
+import recap from '@thyrox/command-runtime/commands/recap/index.js'
+import statusline from '@thyrox/repl/commands/statusline.js'
+import effort from '@thyrox/command-runtime/commands/effort/index.js'
+import stats from '@thyrox/repl/commands/stats/index.js'
 // insights.ts is 113KB (3200 lines, includes diffLines/html rendering). Lazy
 // shim defers the heavy module until /insights is actually invoked.
 const usageReport: Command = {
@@ -199,19 +199,19 @@ const usageReport: Command = {
   progressMessage: 'analyzing your sessions',
   source: 'builtin',
   async getPromptForCommand(args, context) {
-    const real = (await import('@claude-code-how-works/command-runtime/commands/insights/insights.js')).default
+    const real = (await import('@thyrox/command-runtime/commands/insights/insights.js')).default
     if (real.type !== 'prompt') throw new Error('unreachable')
     return real.getPromptForCommand(args, context)
   },
 }
-import oauthRefresh from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import debugToolCall from '@claude-code-how-works/command-runtime/stubs/stubCommand.js'
-import { getSettingSourceName } from '@claude-code-how-works/config/constants'
+import oauthRefresh from '@thyrox/command-runtime/stubs/stubCommand.js'
+import debugToolCall from '@thyrox/command-runtime/stubs/stubCommand.js'
+import { getSettingSourceName } from '@thyrox/config/constants'
 import {
   type Command,
   getCommandName,
   isCommandEnabled,
-} from '@claude-code-how-works/agent/command.js'
+} from '@thyrox/agent/command.js'
 
 // Re-export types from the centralized location
 export type {
@@ -222,8 +222,8 @@ export type {
   LocalJSXCommandContext,
   PromptCommand,
   ResumeEntrypoint,
-} from '@claude-code-how-works/agent/command.js'
-export { getCommandName, isCommandEnabled } from '@claude-code-how-works/agent/command.js'
+} from '@thyrox/agent/command.js'
+export { getCommandName, isCommandEnabled } from '@thyrox/agent/command.js'
 
 // Commands that get eliminated from the external build
 export const INTERNAL_ONLY_COMMANDS = [

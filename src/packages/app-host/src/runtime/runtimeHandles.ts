@@ -15,26 +15,26 @@ import type {
   PluginRuntimeSnapshot,
   RuntimeHandles,
 } from '../index.js'
-import type { HeadlessStoreParams } from '@claude-code-how-works/cli'
+import type { HeadlessStoreParams } from '@thyrox/cli'
 import {
   applyPermissionUpdates,
   persistPermissionUpdates,
-} from '@claude-code-how-works/permission/PermissionUpdate'
-import type { PermissionUpdate } from '@claude-code-how-works/permission/PermissionUpdateSchema'
-import type { ToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { getEmptyToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
+} from '@thyrox/permission/PermissionUpdate'
+import type { PermissionUpdate } from '@thyrox/permission/PermissionUpdateSchema'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+import { getEmptyToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import type { AppState } from './appStateCompatShim.js'
 import { getDefaultAppState } from './appStateCompatShim.js'
-import { createHeadlessSessionStore } from '@claude-code-how-works/agent/sessionStores.js'
-import { createStore, type Store } from '@claude-code-how-works/repl/stateStore.js'
-import type { AgentDefinitionsResult } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import type { LoadedPlugin, PluginError } from '@claude-code-how-works/config/plugin/types'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
+import { createHeadlessSessionStore } from '@thyrox/agent/sessionStores.js'
+import { createStore, type Store } from '@thyrox/repl/stateStore.js'
+import type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import type { LoadedPlugin, PluginError } from '@thyrox/config/plugin/types'
+import type { Command } from '@thyrox/command-runtime/runtime'
 import type {
   MCPServerConnection,
   ScopedMcpServerConfig,
   ServerResource,
-} from '@claude-code-how-works/mcp-runtime/types.js'
+} from '@thyrox/mcp-runtime/types.js'
 
 type SnapshotStore<T> = Store<T>
 

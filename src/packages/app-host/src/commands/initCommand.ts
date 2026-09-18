@@ -1,7 +1,7 @@
 import { feature } from 'bun:bundle'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
-import { maybeMarkProjectOnboardingComplete } from '@claude-code-how-works/repl/projectOnboardingState.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import type { Command } from '@thyrox/command-runtime/runtime'
+import { maybeMarkProjectOnboardingComplete } from '@thyrox/repl/projectOnboardingState.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 
 const OLD_INIT_PROMPT = `Please analyze this codebase and create a CLAUDE.md file, which will be given to future instances of Claude Code to operate in this repository.
 

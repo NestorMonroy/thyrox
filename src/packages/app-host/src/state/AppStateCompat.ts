@@ -1,42 +1,42 @@
-import { getGlobalConfig } from '@claude-code-how-works/config'
-import { getInitialSettings } from '@claude-code-how-works/config/settings'
-import type { SettingsJson } from '@claude-code-how-works/config/types'
-import type { DenialTrackingState } from '@claude-code-how-works/permission/denialTracking'
-import type { PermissionMode } from '@claude-code-how-works/permission/PermissionMode'
+import { getGlobalConfig } from '@thyrox/config'
+import { getInitialSettings } from '@thyrox/config/settings'
+import type { SettingsJson } from '@thyrox/config/types'
+import type { DenialTrackingState } from '@thyrox/permission/denialTracking'
+import type { PermissionMode } from '@thyrox/permission/PermissionMode'
 import type { Notification } from '../context/notifications.js'
-import type { TodoList } from '@claude-code-how-works/tool-registry/todo/types.js'
-import type { BridgePermissionCallbacks } from '@claude-code-how-works/bridge/bridgePermissionCallbacks.js'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
-import type { ChannelPermissionCallbacks } from '@claude-code-how-works/mcp-runtime/channelPermissions.js'
-import type { ElicitationRequestEvent } from '@claude-code-how-works/mcp-runtime/elicitationHandler.js'
+import type { TodoList } from '@thyrox/tool-registry/todo/types.js'
+import type { BridgePermissionCallbacks } from '@thyrox/bridge/bridgePermissionCallbacks.js'
+import type { Command } from '@thyrox/command-runtime/runtime'
+import type { ChannelPermissionCallbacks } from '@thyrox/mcp-runtime/channelPermissions.js'
+import type { ElicitationRequestEvent } from '@thyrox/mcp-runtime/elicitationHandler.js'
 import type {
   MCPServerConnection,
   ServerResource,
-} from '@claude-code-how-works/mcp-runtime/types.js'
-import { shouldEnablePromptSuggestion } from '@claude-code-how-works/repl/promptSuggestion.js'
+} from '@thyrox/mcp-runtime/types.js'
+import { shouldEnablePromptSuggestion } from '@thyrox/repl/promptSuggestion.js'
 import {
   getEmptyToolPermissionContext,
   type Tool,
   type ToolPermissionContext,
-} from '@claude-code-how-works/tool-registry/Tool.js'
-import type { TaskState } from '@claude-code-how-works/repl/tasksTypes.js'
-import type { AgentColorName } from '@claude-code-how-works/tool-registry/tools/AgentTool/agentColorManager.js'
-import type { AgentDefinitionsResult } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import type { AllowedPrompt } from '@claude-code-how-works/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
-import type { AgentId } from '@claude-code-how-works/agent/idTypes'
-import type { Message, UserMessage } from '@claude-code-how-works/agent/messageShapes'
-import type { LoadedPlugin, PluginError } from '@claude-code-how-works/config/plugin/types'
-import type { DeepImmutable } from '@claude-code-how-works/tool-registry/genericTypeUtils'
+} from '@thyrox/tool-registry/Tool.js'
+import type { TaskState } from '@thyrox/repl/tasksTypes.js'
+import type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
+import type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import type { AllowedPrompt } from '@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
+import type { AgentId } from '@thyrox/agent/idTypes'
+import type { Message, UserMessage } from '@thyrox/agent/messageShapes'
+import type { LoadedPlugin, PluginError } from '@thyrox/config/plugin/types'
+import type { DeepImmutable } from '@thyrox/tool-registry/genericTypeUtils'
 import {
   type AttributionState,
   createEmptyAttributionState,
-} from '@claude-code-how-works/agent/commitAttribution.js'
-import type { EffortValue } from '@claude-code-how-works/agent/effort.js'
-import type { FileHistoryState } from '@claude-code-how-works/agent/file-history'
-import type { REPLHookContext } from '@claude-code-how-works/agent/postSamplingHooks.js'
-import type { SessionHooksState } from '@claude-code-how-works/agent/hooks/sessionHooks.js'
-import type { ModelSetting } from '@claude-code-how-works/provider/model.js'
-import { shouldEnableThinkingByDefault } from '@claude-code-how-works/provider/thinking.js'
+} from '@thyrox/agent/commitAttribution.js'
+import type { EffortValue } from '@thyrox/agent/effort.js'
+import type { FileHistoryState } from '@thyrox/agent/file-history'
+import type { REPLHookContext } from '@thyrox/agent/postSamplingHooks.js'
+import type { SessionHooksState } from '@thyrox/agent/hooks/sessionHooks.js'
+import type { ModelSetting } from '@thyrox/provider/model.js'
+import { shouldEnableThinkingByDefault } from '@thyrox/provider/thinking.js'
 import type { Store } from './store.js'
 
 export type CompletionBoundary =
@@ -461,7 +461,7 @@ export function getDefaultAppState(): AppState {
   // Use lazy require to avoid circular dependency with teammate.ts
   /* eslint-disable @typescript-eslint/no-require-imports */
   const teammateUtils =
-    require('@claude-code-how-works/swarm/teammateState.js') as typeof import('@claude-code-how-works/swarm/teammateState.js')
+    require('@thyrox/swarm/teammateState.js') as typeof import('@thyrox/swarm/teammateState.js')
   /* eslint-enable @typescript-eslint/no-require-imports */
   const initialMode: PermissionMode =
     teammateUtils.isTeammate() && teammateUtils.isPlanModeRequired()

@@ -190,7 +190,7 @@ import { isSettingSourceEnabled } from '@thyrox/config/constants'
 import {
   buildPluginTelemetryFields,
   classifyPluginCommandError,
-} from '@claude-code-how-works/tool-registry/telemetry/pluginTelemetry.js'
+} from '@thyrox/tool-registry/telemetry/pluginTelemetry.js'
 
 let installed = false
 
@@ -235,7 +235,7 @@ export function installPluginBindings(): void {
   //     host durante su propia inicialización.
   setRipGrepFn(async (...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { ripGrep } = require('@claude-code-how-works/tool-registry/ripgrep.js')
+    const { ripGrep } = require('@thyrox/tool-registry/ripgrep.js')
     return ripGrep(...args)
   })
   setUnzipFileFn((zipPath, destDir) => {
@@ -290,7 +290,7 @@ export function installPluginBindings(): void {
   })
   setClearAgentDefinitionsCacheFn(() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { clearAgentDefinitionsCache } = require('@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js')
+    const { clearAgentDefinitionsCache } = require('@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js')
     clearAgentDefinitionsCache()
   })
   setClearAllOutputStylesCacheFn(() => {
@@ -305,7 +305,7 @@ export function installPluginBindings(): void {
   })
   setClearPromptCacheFn(() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { clearPromptCache } = require('@claude-code-how-works/tool-registry/tools/SkillTool/prompt.js')
+    const { clearPromptCache } = require('@thyrox/tool-registry/tools/SkillTool/prompt.js')
     clearPromptCache()
   })
   setParseEffortValueFn((v: unknown) => {
@@ -330,7 +330,7 @@ export function installPluginBindings(): void {
   })
   setGetAgentDefinitionsWithOverridesFn(async (...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getAgentDefinitionsWithOverrides } = require('@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js')
+    const { getAgentDefinitionsWithOverrides } = require('@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js')
     return getAgentDefinitionsWithOverrides(...args)
   })
 
@@ -347,7 +347,7 @@ export function installPluginBindings(): void {
   })
   setExtractDescriptionFromMarkdownFn((text: string, def: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { extractDescriptionFromMarkdown } = require('@claude-code-how-works/tool-registry/markdownConfigLoader.js')
+    const { extractDescriptionFromMarkdown } = require('@thyrox/tool-registry/markdownConfigLoader.js')
     return extractDescriptionFromMarkdown(text, def)
   })
   setExpandTildeFn((p: string) => {
@@ -372,12 +372,12 @@ export function installPluginBindings(): void {
   })
   setParseAgentToolsFromFrontmatterFn((...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseAgentToolsFromFrontmatter } = require('@claude-code-how-works/tool-registry/markdownConfigLoader.js')
+    const { parseAgentToolsFromFrontmatter } = require('@thyrox/tool-registry/markdownConfigLoader.js')
     return parseAgentToolsFromFrontmatter(...args)
   })
   setParseSlashCommandToolsFromFrontmatterFn((...args: unknown[]) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { parseSlashCommandToolsFromFrontmatter } = require('@claude-code-how-works/tool-registry/markdownConfigLoader.js')
+    const { parseSlashCommandToolsFromFrontmatter } = require('@thyrox/tool-registry/markdownConfigLoader.js')
     return parseSlashCommandToolsFromFrontmatter(...args)
   })
   setParseShellFrontmatterFn((...args: unknown[]) => {
@@ -412,17 +412,17 @@ export function installPluginBindings(): void {
   })
   setHasShownHintThisSessionFn(() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { hasShownHintThisSession } = require('@claude-code-how-works/tool-registry/claudeCodeHints.js')
+    const { hasShownHintThisSession } = require('@thyrox/tool-registry/claudeCodeHints.js')
     return hasShownHintThisSession()
   })
   setSetPendingHintFn((hint: unknown) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { setPendingHint } = require('@claude-code-how-works/tool-registry/claudeCodeHints.js')
+    const { setPendingHint } = require('@thyrox/tool-registry/claudeCodeHints.js')
     setPendingHint(hint)
   })
   setReinitializeLspServerManagerFn(async () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { reinitializeLspServerManager } = require('@claude-code-how-works/ide/lsp/manager.js')
+    const { reinitializeLspServerManager } = require('@thyrox/ide/lsp/manager.js')
     return reinitializeLspServerManager()
   })
   setWaitForScrollIdleFn(async () => {
@@ -540,7 +540,7 @@ export function installPluginBindings(): void {
   setRgPathFn(() => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const mod = require('@claude-code-how-works/tool-registry/ripgrep.js')
+      const mod = require('@thyrox/tool-registry/ripgrep.js')
       return mod.rgPath?.() ?? null
     } catch {
       return null
@@ -573,14 +573,14 @@ export function installPluginBindings(): void {
   })
   setWalkMarkdownFilesFn(async dir => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('@claude-code-how-works/tool-registry/markdownConfigLoader.js')
+    const mod = require('@thyrox/tool-registry/markdownConfigLoader.js')
     return mod.walkMarkdownFiles
       ? ((await mod.walkMarkdownFiles(dir)) as string[])
       : []
   })
   setLoadMarkdownConfigFn(path => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('@claude-code-how-works/tool-registry/markdownConfigLoader.js')
+    const mod = require('@thyrox/tool-registry/markdownConfigLoader.js')
     return mod.loadMarkdownConfig ? mod.loadMarkdownConfig(path) : null
   })
   // --- plugins builtin (basado en setter porque los originales son const arrays)
@@ -614,7 +614,7 @@ export function installPluginBindings(): void {
   }
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const hintMod = require('@claude-code-how-works/tool-registry/claudeCodeHints.js')
+    const hintMod = require('@thyrox/tool-registry/claudeCodeHints.js')
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { setGetHintsProviderFn: _gh } = require(
       '@thyrox/config/plugin/_deps',
