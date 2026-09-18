@@ -38,8 +38,7 @@ import pathlib
 import re
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import check_vocabulario_prosa as _parametro  # noqa: E402
+from verify import check_vocabulario_prosa as _parametro  # noqa: E402
 
 RAIZ_PM = pathlib.Path('source/gestion/pm')
 

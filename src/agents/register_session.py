@@ -40,13 +40,10 @@ import os
 import sys
 from pathlib import Path
 
-if __package__ in (None, ""):  # invocación directa como guion
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from hooks.error_log import run_and_log  # noqa: E402
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import agents_paths  # noqa: E402 — el localizador del hogar del store
+from agents import agents_paths  # noqa: E402
 
 #: El store es el hermano de este módulo — aritmética DENTRO de thyrox, que es
 #: legítima: el archivo y su vecino se mudan juntos. Lo que no sería legítimo es

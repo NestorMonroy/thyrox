@@ -43,7 +43,6 @@ cerraría el turno con trabajo sin publicar.
 """
 from __future__ import annotations
 
-import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -51,8 +50,6 @@ from pathlib import Path
 # El módulo se importa como ``repo.pending_work`` (con ``src`` en la ruta) y
 # también puede ejecutarse como guion. La composición va ANTES del import a
 # propósito; el import sigue siendo de nivel de módulo.
-if __package__ in (None, ""):  # sólo en invocación directa
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from hooks.process import run_guarded  # noqa: E402
 

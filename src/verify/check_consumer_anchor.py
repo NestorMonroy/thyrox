@@ -32,8 +32,7 @@ import sys
 
 #: La raíz propia. Se deriva del marcador, no de `parents[N]` — un gate que
 #: cometiera el defecto que mide no podría publicar un veredicto creíble.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 BASELINE = pathlib.Path(__file__).with_name("consumer_anchor_baseline.txt")
 

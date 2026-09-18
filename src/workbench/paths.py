@@ -61,10 +61,8 @@ un dato unico. Una decide para esta invocacion, la otra para el arbol.
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
 from paths.reach import creates_home  # noqa: E402 — reach no importa nada del proyecto al tope

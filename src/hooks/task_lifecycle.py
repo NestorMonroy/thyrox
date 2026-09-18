@@ -48,7 +48,6 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agents import agents_paths  # noqa: E402
 from task import board_sync  # noqa: E402

@@ -36,9 +36,8 @@ def require_mutador():
     `metrica-decide-la-conclusion.md`, y la convencion de guard de
     `redaccion-tecnica-es.md`.
     """
-    sys.path.insert(0, str(GATES))
     try:
-        import check_suite_discrimina as mutador
+        from verify import check_suite_discrimina as mutador
     except Exception as exc:  # noqa: BLE001 — cualquier fallo de import cuenta
         print(
             f"ERROR — no se pudo importar check_suite_discrimina: {exc}\n"

@@ -41,12 +41,11 @@ import re
 import statistics  # noqa: F401  (documenta por que NO se usa: ver median_lines)
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "verify"))
 
 #: La extraccion de la clave declarada se REUSA del gate hermano, no se copia:
 #: dos regex para la misma clave son dos fuentes de verdad que nadie sincroniza.
 try:  # pragma: no cover - el gate hermano puede no estar en el sys.path del test
-    from check_hallazgo_submodulo import PATRON_META  # type: ignore
+    from verify.check_hallazgo_submodulo import PATRON_META  # type: ignore
 except Exception:  # pragma: no cover
     PATRON_META = re.compile(r'^\s*:submodulo:\s*(\S+)', re.M)
 

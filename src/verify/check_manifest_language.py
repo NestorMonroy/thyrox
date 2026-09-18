@@ -29,16 +29,14 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
-import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from check_identifier_language import (  # noqa: E402
+from verify.check_identifier_language import (  # noqa: E402
     corpus_available,
     refuse_without_corpus,
     spanish_words_in,
 )
-from check_script_naming import _consumer_baseline  # noqa: E402
+from verify.check_script_naming import _consumer_baseline  # noqa: E402
 from session.job_runs import jobs_dir  # noqa: E402
 from workbench.manifest import (  # noqa: E402
     LEGACY_MANIFEST_FILE_NAME,

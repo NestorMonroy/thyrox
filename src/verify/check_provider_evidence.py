@@ -42,7 +42,6 @@ import os
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from workbench.paths import (  # noqa: E402
     WorkbenchHomeError, evidence_dir, state_dir, workbench_dir,

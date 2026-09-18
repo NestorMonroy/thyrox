@@ -73,8 +73,7 @@ import tempfile
 # `agents_paths` asciende al marcador. Antes `parents[2]` resolvía
 # `thyrox/hooks/`, que nunca existió — y como es una constante y no un
 # import, ningún control de import podía verlo.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
+from agents import agents_paths  # noqa: E402
 
 
 

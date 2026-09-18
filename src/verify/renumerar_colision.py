@@ -30,8 +30,7 @@ import re
 import subprocess
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from check_ids_entre_ramas import PATRON_GREP, declaraciones  # noqa: E402
+from verify.check_ids_entre_ramas import PATRON_GREP, declaraciones  # noqa: E402
 
 CAPAS = ('api', 'docs', 'ui', 'db', 'server')
 RE_LABEL = re.compile(r'\.\. _h-(api|docs|ui|db|server)-(\d+):')

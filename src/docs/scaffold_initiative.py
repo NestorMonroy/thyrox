@@ -44,7 +44,6 @@ import re
 import sys
 from datetime import datetime, timezone
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from docs import initiative_placement as ip  # noqa: E402
 from paths import reach  # noqa: E402
 

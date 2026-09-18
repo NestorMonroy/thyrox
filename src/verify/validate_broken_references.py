@@ -16,8 +16,7 @@ import sys
 from pathlib import Path
 
 # Importar la clase compartida
-sys.path.insert(0, str(Path(__file__).parent))
-from detect_broken_references import ReferenceValidator
+from verify.detect_broken_references import ReferenceValidator
 
 
 def main():

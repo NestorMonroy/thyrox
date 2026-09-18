@@ -64,8 +64,6 @@ def _source_root() -> Path:
     raise SystemExit(2)
 
 
-if str(_source_root()) not in sys.path:
-    sys.path.insert(0, str(_source_root()))
 
 from paths import reach  # noqa: E402
 from peer_mailbox import envelope  # noqa: E402

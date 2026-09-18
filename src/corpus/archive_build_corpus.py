@@ -51,7 +51,6 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from corpus.list_corpus_builds import (  # noqa: E402
     BuildEntry, DEFAULT_ROOT_RELATIVE, human_size, scan_root, version_sort_key,

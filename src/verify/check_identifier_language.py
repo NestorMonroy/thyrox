@@ -107,7 +107,6 @@ import pathlib
 import re
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
 
 #: Entrada 1 (VALOR) — dónde vive la deuda heredada de ESTE consumidor.

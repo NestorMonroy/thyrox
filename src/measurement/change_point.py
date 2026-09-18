@@ -52,7 +52,7 @@ import dataclasses
 import enum
 import random
 
-import series as series_mod
+from measurement import series as series_mod
 
 MIN_POINTS = 8
 DEFAULT_ITERATIONS = 1000

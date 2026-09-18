@@ -49,9 +49,7 @@ import sqlite3
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(HERE.parent))
-import check_vocabulario_prosa as _parameter  # noqa: E402
+from verify import check_vocabulario_prosa as _parameter  # noqa: E402
 
 PM_ROOT = pathlib.Path('source/gestion/pm')
 

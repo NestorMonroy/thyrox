@@ -15,9 +15,7 @@ ahorro por una declaracion que casi ningun arbol necesita cambiar.
 from __future__ import annotations
 
 import pathlib
-import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
 from workbench.paths import repo_of, state_dir  # noqa: E402

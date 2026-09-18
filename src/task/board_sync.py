@@ -70,8 +70,7 @@ import sys
 # `sys.path` a nivel de modulo —no lazy— porque las suites cargan este archivo
 # con `spec_from_file_location`, via por la que su directorio no queda en la
 # ruta de busqueda. Mismo criterio que `closure_graph.py` documenta.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import task_ids  # noqa: E402
+from task import task_ids  # noqa: E402
 
 #: El hogar del board se declara UNA vez, en ``task_ids``. Aqui se reexporta y
 #: no se vuelve a declarar: dos constantes con el mismo proposito son dos

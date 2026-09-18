@@ -52,8 +52,7 @@ import json
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: El clon que arranca es el CONSUMIDOR. Se llamaba `CONSUMER_ROOT` porque el
 #: guion vivía en `kaupamex-docs`: el parámetro se había filtrado al nombre del

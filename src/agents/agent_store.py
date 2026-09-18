@@ -73,9 +73,8 @@ import sys
 
 # El catálogo de modelos del paquete, leído desde Python (H-DOCS-1008): el USD
 # sale de ahí, nunca de un peso fijo. Hermano en este mismo directorio.
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
-    import model_catalog  # noqa: E402
+    from agents import model_catalog  # noqa: E402
 except ImportError:  # copiado a otro directorio (así lo cargan varias suites)
     model_catalog = None
 import textwrap
@@ -91,11 +90,9 @@ from pathlib import Path, PurePosixPath
 # El arranque: un módulo siempre sabe su propio directorio, y desde ahí
 # `agents_paths` asciende al marcador. Sustituye la aritmética `parents[N]`,
 # que contaba niveles del árbol de ORIGEN y quedó rota en la mudanza.
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
-sys.path.insert(0, str(agents_paths.CORPUS_DIR))
+from agents import agents_paths  # noqa: E402
 
-from document_types import (  # noqa: E402  — vocabulario proyectado del canon
+from corpus.document_types import (  # noqa: E402
     DOCUMENT_TYPES,
     DOCUMENT_TYPE_UNKNOWN,
     document_type as _document_type_projected,
@@ -108,27 +105,24 @@ SCRIPT_PATH = Path(__file__).resolve()
 # Antes este modulo componia su propia raiz (``DOCS_ROOT.parent``) y su propio
 # prefijo (``kaupamex-<repo>``) — dos copias de una verdad que ya vivia en otro
 # sitio, y que ningun ``.env`` podia redirigir. Ver H-DOCS-1074.
-sys.path.insert(0, str(agents_paths.PATHS_DIR))
 
-import reach_roots  # noqa: E402  — statement a nivel de modulo tras fijar sys.path
+from paths import reach_roots  # noqa: E402
 
 # La capa por defecto de una fila de `tasks` se IMPORTA de su dueno canonico y
 # no se copia: `task_ids` declara el vocabulario de capas y su valor de
 # respaldo, asi que un literal "gen" aqui seria la segunda fuente de verdad que
 # `calibration-verified-numbers.md` prohibe — y la que nadie sincroniza el dia
 # que el vocabulario cambie.
-sys.path.insert(0, str(agents_paths.THYROX_ROOT / "src" / "task"))
 
-from task_ids import UNKNOWN_LAYER  # noqa: E402  — tras fijar sys.path
+from task.task_ids import UNKNOWN_LAYER  # noqa: E402
 
 # La dispersion NO se calcula aqui: la mide `measurement`, que no sabe de
 # agentes ni de tokens. Este modulo aporta las observaciones; aquel decide si
 # hay distribucion y cuanto se desvia. Misma frontera que con `model_catalog`:
 # el censo compone, no implementa.
-sys.path.insert(0, str(agents_paths.THYROX_ROOT / "src" / "measurement"))
 
-import deviation  # noqa: E402  — tras fijar sys.path
-import distribution  # noqa: E402  — tras fijar sys.path
+from measurement import deviation  # noqa: E402
+from measurement import distribution  # noqa: E402
 
 VALID_REPOS = reach_roots.REACH_ROOTS
 

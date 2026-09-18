@@ -27,8 +27,6 @@ import shutil
 import subprocess
 import sys
 
-if __package__ in (None, ""):  # sólo en invocación directa
-    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from paths import reach  # noqa: E402
 

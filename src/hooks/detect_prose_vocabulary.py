@@ -23,10 +23,7 @@ el despachador lo cuenta como ausente y lo nombra en su stderr.
 """
 
 import pathlib
-import sys
 
-# ``sys.path[0]`` es ``src/hooks`` y ``verify`` no resolvería desde ahí.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from verify import check_vocabulario_prosa as gate  # noqa: E402
 

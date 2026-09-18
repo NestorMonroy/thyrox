@@ -88,7 +88,6 @@ SKIP_DIRS = {'.git', 'node_modules', '.venv', 'build', 'dist', '__pycache__',
 # El banco se reconoce por el PAR `.claude/<nombre>`, no por el nombre suelto:
 # La evidencia por el PAR `.claude/eventos` y el banco por su hogar
 # DECLARADO: el nombre suelto de un directorio casa tambien con producto.
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from workbench.paths import is_measurement_artifact  # noqa: E402
 
 

@@ -29,8 +29,7 @@ import pathlib
 import subprocess
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: Un segmento de ruta que marca **evidencia fechada**: describe un episodio que
 #: ocurrió, no un mecanismo vigente. Su cita conserva el nombre viejo.

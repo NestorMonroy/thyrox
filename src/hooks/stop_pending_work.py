@@ -29,8 +29,6 @@ from pathlib import Path
 # El módulo se importa como ``hooks.stop_pending_work`` (con ``src`` en la
 # ruta) y también se ejecuta como guion —así lo invoca el stub—, donde
 # ``sys.path[0]`` es ``src/hooks`` y ``hooks`` no resolvería.
-if __package__ in (None, ""):  # sólo en invocación directa
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from hooks.stop_gate import Gate  # noqa: E402
 from repo.pending_work import FIELDS  # noqa: E402

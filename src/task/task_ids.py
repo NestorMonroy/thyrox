@@ -116,8 +116,7 @@ import sys
 # —no lazy— porque varias suites cargan este archivo con
 # `spec_from_file_location`, via por la que su directorio no queda en la ruta
 # de busqueda. Es el mismo criterio que `closure_graph.py` ya documenta.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: Los REPOS del multi-repo donde un trabajo puede aterrizar.
 #:

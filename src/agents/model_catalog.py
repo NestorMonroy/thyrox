@@ -37,7 +37,6 @@ import sqlite3
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from paths.reach import env_value, thyrox_root  # noqa: E402
 
 # El catalogo es PRODUCTO de thyrox: se resuelve con su localizador, que

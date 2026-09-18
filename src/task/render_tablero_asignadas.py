@@ -25,11 +25,9 @@ import sqlite3
 import sys
 
 AQUI = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(AQUI))
-import asignadas  # noqa: E402
+from task import asignadas  # noqa: E402
 
-sys.path.insert(0, str(AQUI.parent / 'paths'))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: Las dos rutas se declaran en vez de derivarse. El ``RAIZ = AQUI.parents[2]``
 #: anterior describia el arbol de `docs`, donde este guion vivia; desde

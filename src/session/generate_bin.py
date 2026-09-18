@@ -142,8 +142,7 @@ import re
 import subprocess
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: Las carpetas que este generador cubre. Ampliarla es una decisión nueva, no
 #: un descuido — cada carpeta añadida necesita su propia medición de colisiones

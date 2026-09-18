@@ -48,7 +48,6 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent))
 from paths import reach  # noqa: E402
 # La evidencia por el PAR `.claude/eventos` y el banco por su hogar
 # DECLARADO: el nombre suelto de un directorio casa tambien con producto.

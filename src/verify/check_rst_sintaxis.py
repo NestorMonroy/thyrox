@@ -81,7 +81,6 @@ import tempfile
 # El sustituto es el mecanismo de alcance, que asciende detectando el clon en
 # vez de contar niveles: sobrevive a un refactor de anidamiento, que es
 # exactamente lo que aqui fallo.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from paths import reach  # noqa: E402
 
 RAIZ = reach.root('docs')

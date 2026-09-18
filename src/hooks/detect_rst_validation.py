@@ -25,10 +25,8 @@ el defecto era **mudo** porque el aviso sólo CITA el comando sin ejecutarlo.
 
 import pathlib
 import re
-import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: El gate real, resuelto por el localizador y no por aritmética de ruta.
 #: ``parents[1]`` acertaba hoy y fallaba **en silencio** al mover el archivo:

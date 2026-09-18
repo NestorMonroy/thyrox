@@ -73,8 +73,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent  # thyrox/src/hallazgo
-sys.path.insert(0, str(HERE.parent / "paths"))
-import reach  # noqa: E402  (la ruta se compone arriba, a propósito)
+from paths import reach  # noqa: E402  (la ruta se compone arriba, a propósito)
 
 #: Toda cita de un hallazgo, en cualquier forma en que el árbol la escriba:
 #: el nombre del archivo (``hallazgo-H-API-259-...rst``), la etiqueta ancla

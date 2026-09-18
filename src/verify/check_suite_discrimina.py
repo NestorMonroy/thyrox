@@ -72,8 +72,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 #: `HERE.parent / "tests"` daba `src/tests` (no existe) y
 #: `HERE.parent.parent / "hooks"` daba `<raíz>/hooks` (tampoco). Un gate que
 #: comete el defecto que mide no puede publicar un veredicto creíble.
-sys.path.insert(0, str(HERE.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 ROOT = reach.thyrox_root()
 

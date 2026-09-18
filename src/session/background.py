@@ -72,7 +72,6 @@ from typing import Mapping, Sequence
 # Este modulo se invoca TAMBIEN como guion (`python3 src/session/background.py`,
 # y asi lo ejercita su suite): sin esto, `paths` no resuelve y muere en el
 # import. Es el mismo control que `hooks/stop_tests` lleva por haberlo pagado.
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
 from session.job_ledger import Job, JobLedger  # noqa: E402

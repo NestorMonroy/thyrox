@@ -31,8 +31,7 @@ import pathlib
 import subprocess
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: El árbol MEDIDO es el del consumidor, no el del proveedor. `parents[3]`
 #: describía `kaupamex-docs/.claude/scripts/corpus/`; desde `thyrox/src/corpus/`

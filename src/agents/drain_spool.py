@@ -42,8 +42,7 @@ import sys
 # El arranque: un módulo siempre sabe su propio directorio, y desde ahí
 # `agents_paths` asciende al marcador. Sustituye la aritmética `parents[N]`,
 # que contaba niveles del árbol de ORIGEN y quedó rota en la mudanza.
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import agents_paths  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
+from agents import agents_paths  # noqa: E402
 
 # El hogar de los hooks es del CONSUMIDOR, y desde el 2026-09-07
 # `consumer_root()` rehusa en vez de devolver la raiz del proveedor cuando no
@@ -82,6 +81,10 @@ def error_log():
             f"{agents_paths.reach.CONSUMER_ROOT_VAR}, o invoca desde dentro del "
             f"clon."
         ) from err
+    # NO cae bajo el barrido de TASK-THYROX-0018: `hooks` es el
+    # `<consumidor>/.claude/hooks`, que esta FUERA de `$THYROX_ROOT/src` y por
+    # tanto `PYTHONPATH=src` no lo cubre. El invariante que hace redundante a
+    # los demas inserts no alcanza a este.
     if str(hooks) not in sys.path:
         sys.path.insert(0, str(hooks))
     import hook_error_log

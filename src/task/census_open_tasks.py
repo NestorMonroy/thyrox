@@ -67,10 +67,9 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from paths import reach  # noqa: E402
-import task_ids  # noqa: E402
+from task import task_ids  # noqa: E402
 
 #: Las capas admitidas son las que el eje declara, más el cubo de lo que cruza
 #: repos. NO se enumeran aquí: `task_ids` es su fuente.

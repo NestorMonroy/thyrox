@@ -50,8 +50,7 @@ import pathlib
 import re
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: El árbol medido por defecto es el del consumidor; `--raiz` lo sobreescribe.
 def default_root():

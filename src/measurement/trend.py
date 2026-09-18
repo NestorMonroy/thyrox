@@ -43,7 +43,7 @@ import dataclasses
 import enum
 import math
 
-import series as series_mod
+from measurement import series as series_mod
 
 DAY = 86400.0
 

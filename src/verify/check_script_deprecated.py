@@ -24,8 +24,7 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 SCRIPT_PATH = Path(__file__).resolve()
 OWNER_CLONE = "thyrox"
@@ -76,8 +75,6 @@ def _load_owner():
             f"        NO se emite un conteo: un 0 aquí sería un verde falso."
         )
     src = str(path.parent.parent)          # …/thyrox/src
-    if src not in sys.path:
-        sys.path.insert(0, src)
     from verify import script_deprecated
     return script_deprecated
 

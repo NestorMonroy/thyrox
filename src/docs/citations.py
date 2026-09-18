@@ -38,7 +38,6 @@ from __future__ import annotations
 
 import posixpath
 import re
-import sys
 from pathlib import Path
 
 _HERE = Path(__file__).resolve()
@@ -46,7 +45,6 @@ _ROOT = next((p for p in _HERE.parents
               if (p / "src" / "paths" / "reach.py").is_file()), None)
 if _ROOT is None:  # pragma: no cover — el clon esta roto si esto ocurre
     raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_HERE}")
-sys.path.insert(0, str(_ROOT / "src"))
 
 from verify import check_vocabulario_prosa as _prosa  # noqa: E402
 

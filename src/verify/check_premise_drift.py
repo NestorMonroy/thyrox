@@ -26,7 +26,6 @@ import importlib.util
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from lib.jsonl import read_records, write_records  # noqa: E402
 

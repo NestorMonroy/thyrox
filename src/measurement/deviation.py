@@ -56,7 +56,7 @@ from __future__ import annotations
 import math
 from typing import Sequence
 
-import distribution
+from measurement import distribution
 
 
 def center(values: Sequence[float], weights: Sequence[float]) -> float:

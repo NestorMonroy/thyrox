@@ -55,7 +55,6 @@ import pathlib
 import sys
 from dataclasses import dataclass
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from session import bounded_scan  # noqa: E402
 
 #: La rama del consumidor que se recorre entera. No es ``pm/`` a propósito:
@@ -261,7 +260,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.consumer:
         raiz = pathlib.Path(args.consumer)
     else:
-        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
         from paths import reach  # noqa: PLC0415 — sólo lo necesita el camino sin --consumer
         raiz = reach.consumer_root()
 

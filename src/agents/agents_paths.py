@@ -24,7 +24,6 @@ Dos universos, y no se mezclan:
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 #: El mismo marcador que `reach.THYROX_MARKER`. Se repite aquí y sólo aquí
@@ -48,10 +47,8 @@ PATHS_DIR = THYROX_ROOT / "src" / "paths"
 CORPUS_DIR = THYROX_ROOT / "src" / "corpus"
 LIB_DIR = THYROX_ROOT / "src" / "lib"
 
-if str(PATHS_DIR) not in sys.path:
-    sys.path.insert(0, str(PATHS_DIR))
 
-import reach  # noqa: E402  — statement a nivel de módulo tras fijar sys.path
+from paths import reach  # noqa: E402
 
 #: Reexportada, no redeclarada: la excepcion vive en el mecanismo desde
 #: TASK-DOCS-0286. `drain_spool` la captura por este nombre, y dos clases con

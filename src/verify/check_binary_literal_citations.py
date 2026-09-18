@@ -43,7 +43,6 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent))
 from paths import reach  # noqa: E402
 
 # El arbol y los clones se PIDEN, no se componen ni se enumeran.

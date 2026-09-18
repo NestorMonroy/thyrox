@@ -31,8 +31,7 @@ import pathlib
 import re
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "paths"))
-import reach  # noqa: E402
+from paths import reach  # noqa: E402
 
 # --- constantes de forma -----------------------------------------------------
 DIR_AGENTES = pathlib.Path(".claude") / "agents"

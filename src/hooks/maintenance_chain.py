@@ -64,8 +64,6 @@ from pathlib import Path
 # ``sys.path[0]`` es ``src/hooks`` y ``hooks`` no resolvería. La composición va
 # ANTES del import a propósito; el import sigue siendo de nivel de módulo, que
 # es lo que ``no-lazy-imports.md`` exige.
-if __package__ in (None, ""):  # sólo en invocación directa
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from hooks.process import NOT_FOUND_EXIT, TIMEOUT_EXIT, run_guarded  # noqa: E402
 

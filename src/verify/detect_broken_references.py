@@ -22,7 +22,6 @@ from collections import defaultdict
 from datetime import datetime, timezone
 
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from paths import reach  # noqa: E402
 
 #: Raiz de `.claude/` del arbol del guion, pedida a `reach` en vez de contada.

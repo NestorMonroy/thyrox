@@ -50,7 +50,6 @@ import re
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent))
 from paths import reach  # noqa: E402
 
 # El instante o el azar tomados del entorno. Las formas salen de medir el árbol,

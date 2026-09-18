@@ -140,7 +140,6 @@ def _cli() -> int:
     """
     import sys
 
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from paths.reach import clone_names, thyrox_root, tree_root
 
     # `clone_names()` da los consumidores CON su prefijo; `reach_roots()` da

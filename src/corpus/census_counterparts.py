@@ -28,7 +28,6 @@ import argparse
 import pathlib
 import sys
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from paths.reach import (  # noqa: E402
     ENV_FILE_VAR, EXTRA_ROOTS_VARS, env_value, reach, root,

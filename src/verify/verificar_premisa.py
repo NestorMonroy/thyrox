@@ -73,11 +73,7 @@ import sys
 _SCRIPTS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 for _sub in ('task', 'verify'):
     _ruta = os.path.join(_SCRIPTS_DIR, _sub)
-    if _ruta not in sys.path:
-        sys.path.insert(0, _ruta)
-if _SCRIPTS_DIR not in sys.path:
-    sys.path.insert(0, _SCRIPTS_DIR)
-import task_source  # noqa: E402
+from task import task_source  # noqa: E402
 from paths import reach  # noqa: E402
 
 DONE = 'completed'
