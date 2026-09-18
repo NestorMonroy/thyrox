@@ -101,8 +101,6 @@ if [[ $rc_parallel -eq 0 ]]; then
 else
   bad "parallel ausente dio exit $rc_parallel, esperaba 0; salida: $only_parallel"
 fi
-only_parallel_strict="$(run_subject THYROX_TOOLCHAIN_PARALLEL_BIN="$MISSING_BIN" \
-                   bash "$SUBJECT" --strict 2>&1)"
 rc_parallel_strict=$(env -i PATH="$PATH" HOME="$HOME" \
   THYROX_TOOLCHAIN_PARALLEL_BIN="$MISSING_BIN" bash "$SUBJECT" --strict \
   >/dev/null 2>&1; echo $?)
@@ -138,6 +136,21 @@ if command -v mawk >/dev/null 2>&1; then
   fi
 else
   bad "mawk no esta instalado: el control positivo del eje de conducta no se pudo ejercer"
+fi
+
+# Caso 8 — la FORMA del valor de la clave. `.env.example` la declara relativa
+# —`THYROX_LIB_TOOLCHAIN=src/lib/toolchain.sh`, como su hermana
+# `THYROX_LIB_REACH`— y el corredor invoca cada gate con el cwd puesto en un
+# CONSUMIDOR. Consumir el valor tal cual lo resolveria contra ese cwd y el gate
+# saldria 2 sobre un arbol sano: «no pude medir» por la forma de su propia
+# clave. Se ejercita desde un cwd que NO es la raiz del proveedor.
+relative_form="$(cd /tmp && env -i PATH="$PATH" HOME="$HOME" \
+    THYROX_LIB_TOOLCHAIN=src/lib/toolchain.sh bash "$SUBJECT" 2>&1)"
+rc_relative=$?
+if [[ $rc_relative -ne 2 ]]; then
+  ok "la forma relativa de la clave se resuelve contra la raiz, no contra el cwd"
+else
+  bad "con la forma de .env.example dio exit 2 desde otro cwd: $relative_form"
 fi
 
 thyrox_summary

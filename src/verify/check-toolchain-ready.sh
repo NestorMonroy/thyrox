@@ -83,7 +83,18 @@ done
 # exit 2 y SIN conteo. Un 0 aqui no distinguiria «la cadena esta sana» de «no
 # la pude interrogar».
 # --------------------------------------------------------------------------
-LIB="${THYROX_LIB_TOOLCHAIN:-$ROOT/src/lib/toolchain.sh}"
+# El VALOR de la clave es relativo a la raiz, como el de `THYROX_LIB_REACH` en
+# sus cuatro consumidores: `source "$_thyrox_root/${THYROX_LIB_REACH:-...}"`.
+# Aqui se admiten las dos formas —absoluta y relativa— porque el control de la
+# precondicion necesita apuntar a una ruta que no exista, y una absoluta es la
+# unica que no depende del cwd. Consumir el valor tal cual resolveria la forma
+# relativa contra el cwd, que bajo el corredor es un CONSUMIDOR: el gate saldria
+# 2 sobre un arbol sano.
+LIB="${THYROX_LIB_TOOLCHAIN:-src/lib/toolchain.sh}"
+case "$LIB" in
+  /*) : ;;
+  *)  LIB="$ROOT/$LIB" ;;
+esac
 if [[ ! -r "$LIB" ]]; then
   echo "check-toolchain-ready: no alcanza la biblioteca de la cadena en $LIB." >&2
   echo "                       Declara THYROX_LIB_TOOLCHAIN o corre este guion" >&2
