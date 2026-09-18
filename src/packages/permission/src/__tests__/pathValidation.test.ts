@@ -1,9 +1,13 @@
 import { afterEach, beforeAll, describe, expect, mock, test } from 'bun:test'
 import { homedir } from 'os'
 
-// Some helpers (formatDirectoryList, getGlobBaseDirectory, isDangerousRemovalPath)
-// are pure but the file imports cross-package deps that hit real fs/sandbox
-// state. Mock those at the boundary so the pure helpers stay testable.
+// Copia de `ccnmt: packages/permission/src/__tests__/pathValidation.test.ts`
+// con los comentarios traducidos; el cuerpo es el de la fuente.
+//
+// Algunos auxiliares — formatDirectoryList, getGlobBaseDirectory,
+// isDangerousRemovalPath — son puros, pero el archivo importa dependencias de
+// otros paquetes que tocan el estado real del fs y del sandbox. Se mockean en
+// la frontera para que los auxiliares puros sigan siendo testeables.
 const realFsOps = await import('@claude-code-how-works/storage/fsOperations.js')
 const realSandbox = await import('@claude-code-how-works/shell/sandbox.js')
 mock.module('@claude-code-how-works/storage/fsOperations.js', () => ({
@@ -11,7 +15,8 @@ mock.module('@claude-code-how-works/storage/fsOperations.js', () => ({
 }))
 mock.module('@claude-code-how-works/shell/sandbox.js', () => ({
   ...realSandbox,
-  // Default: sandbox disabled so isPathInSandboxWriteAllowlist returns false.
+  // Por defecto el sandbox queda deshabilitado, asi que
+  // isPathInSandboxWriteAllowlist devuelve false.
   SandboxManager: {
     ...realSandbox.SandboxManager,
     isSandboxingEnabled: () => false,
@@ -117,7 +122,8 @@ describe('isDangerousRemovalPath', () => {
     expect(isDangerousRemovalPath('C:\\Users\\me')).toBe(false)
   })
   test('double-backslash collapses (security regression check)', () => {
-    // PowerShell can produce C:\\Windows; collapse should still flag it.
+    // PowerShell puede producir C:\\Windows; el colapso tiene que marcarlo
+    // igualmente.
     expect(isDangerousRemovalPath('C:\\\\Windows')).toBe(true)
   })
   test('relative path that is not glob is not flagged', () => {

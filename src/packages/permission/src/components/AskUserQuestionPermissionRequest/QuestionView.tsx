@@ -111,7 +111,11 @@ export function QuestionView({
     setIsFooterFocused(false)
   }, [])
 
-  // Handle keyboard input when footer is focused
+  // Copia de `ccnmt: packages/permission/src/components/
+  // AskUserQuestionPermissionRequest/QuestionView.tsx` con los comentarios
+  // traducidos; el cuerpo es el de la fuente.
+  //
+  // Resuelve la entrada de teclado cuando el footer tiene el foco.
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!isFooterFocused) return
@@ -177,9 +181,10 @@ export function QuestionView({
       const result = await editPromptInEditor(currentValue)
 
       if (result.content !== null && result.content !== currentValue) {
-        // Update the Select's internal state for immediate UI update
+        // Actualiza el estado interno del Select para que la UI reaccione de
+        // inmediato.
         setValue(result.content)
-        // Also update the question state for persistence
+        // Actualiza tambien el estado de la pregunta, para que persista.
         onUpdateQuestionState(
           questionText,
           { textInputValue: result.content },
@@ -207,12 +212,13 @@ export function QuestionView({
 
   const options = [...textOptions, otherOption]
 
-  // Check if any option has a preview and it's not multi-select
-  // Previews only supported for single-select questions
+  // Comprueba si alguna opcion trae preview y la pregunta no es de seleccion
+  // multiple: el preview solo esta soportado en preguntas de seleccion
+  // simple.
   const hasAnyPreview =
     !question.multiSelect && question.options.some(opt => opt.preview)
 
-  // Delegate to PreviewQuestionView for carousel-style preview mode
+  // Delega en PreviewQuestionView para el modo de preview tipo carrusel.
   if (hasAnyPreview) {
     return (
       <PreviewQuestionView

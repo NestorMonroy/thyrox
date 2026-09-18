@@ -34,10 +34,14 @@ export function WebFetchPermissionRequest({
   workerBadge,
 }: PermissionRequestProps): React.ReactNode {
   const [theme] = useTheme()
-  // url is already validated by the input schema
+  // Copia de `ccnmt: packages/permission/src/components/
+  // WebFetchPermissionRequest/WebFetchPermissionRequest.tsx` con los comentarios
+  // traducidos; el cuerpo es el de la fuente.
+  //
+  // El esquema de input ya valido la url.
   const { url } = toolUseConfirm.input as { url: string }
 
-  // Extract hostname from URL
+  // Extrae el hostname de la URL.
   const hostname = new URL(url).hostname
 
   const unaryEvent = useMemo<UnaryEvent>(
@@ -47,7 +51,7 @@ export function WebFetchPermissionRequest({
 
   usePermissionRequestLogging(toolUseConfirm, unaryEvent)
 
-  // Generate permission options specific to domains
+  // Genera las opciones de permiso propias de los dominios.
   const showAlwaysAllowOptions = shouldShowAlwaysAllowOptions()
   const options = useMemo((): OptionWithDescription<string>[] => {
     const result: OptionWithDescription<string>[] = [
@@ -95,7 +99,7 @@ export function WebFetchPermissionRequest({
           ruleContent,
         }
 
-        // Pass permission update directly to onAllow
+        // Pasa la actualizacion de permiso directamente a onAllow.
         toolUseConfirm.onAllow(toolUseConfirm.input, [
           {
             type: 'addRules',

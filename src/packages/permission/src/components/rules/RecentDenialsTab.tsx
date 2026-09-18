@@ -11,7 +11,8 @@ import { StatusIcon } from '@anthropic/ink'
 
 type Props = {
   onHeaderFocusChange?: (focused: boolean) => void
-  /** Called when approved/retry state changes so parent can act on exit */
+  /** Se llama cuando cambia el estado de approved/retry, para que el padre pueda
+   * actuar al salir. */
   onStateChange: (state: {
     approved: Set<number>
     retry: Set<number>
@@ -28,8 +29,13 @@ export function RecentDenialsTab({
     onHeaderFocusChange?.(headerFocused)
   }, [headerFocused, onHeaderFocusChange])
 
-  // Snapshot on mount — approved/retry Sets key by index, and the live store
-  // prepends. A concurrent denial would shift all indices mid-edit.
+  // Copia de `ccnmt: packages/permission/src/components/rules/
+  // RecentDenialsTab.tsx` con los comentarios traducidos; el cuerpo es el de la
+  // fuente.
+  //
+  // Se toma la instantanea al montar: los Set de approved y retry indexan por
+  // posicion, y el store vivo antepone. Una denegacion concurrente desplazaria
+  // todos los indices a mitad de la edicion.
   const [denials] = useState(() => getAutoModeDenials())
 
   const [approved, setApproved] = useState<Set<number>>(() => new Set())
@@ -63,7 +69,7 @@ export function RecentDenialsTab({
           else next.add(focusedIdx)
           return next
         })
-        // Retry implies approve
+        // Retry implica approve.
         setApproved(prev => {
           if (prev.has(focusedIdx)) return prev
           const next = new Set(prev)

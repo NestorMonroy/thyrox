@@ -2,10 +2,14 @@ import { describe, expect, test } from 'bun:test'
 import { getRuleBehaviorDescription } from '../PermissionResult.js'
 
 describe('getRuleBehaviorDescription', () => {
-  // Used in user-facing permission dialogs and event log messages.
-  // Critical that the past-tense verb matches the behavior — wrong
-  // wording (e.g., "allowed" for a deny) silently mis-reports security
-  // state to the user.
+  // Copia de `ccnmt: packages/permission/src/__tests__/
+  // getRuleBehaviorDescription.test.ts` con los comentarios traducidos; el
+  // cuerpo es el de la fuente.
+  //
+  // Se usa en los dialogos de permiso que ve el usuario y en los mensajes del
+  // registro de eventos. Es critico que el verbo en pasado case con la
+  // conducta: una redaccion equivocada — "allowed" para una denegacion — le
+  // reporta al usuario un estado de seguridad falso, y en silencio.
 
   test('"allow" → "allowed"', () => {
     expect(getRuleBehaviorDescription('allow')).toBe('allowed')
@@ -20,9 +24,9 @@ describe('getRuleBehaviorDescription', () => {
   })
 
   test('any other value (default branch) → "asked for confirmation for"', () => {
-    // Default is the "ask" wording — fail-safe: if a new behavior
-    // type is added without updating this function, it falls into
-    // "ask" rather than "allow".
+    // El default es la redaccion de "ask", que es fail-safe: si se añade un
+    // tipo de conducta nuevo sin actualizar esta funcion, cae en "ask" y no en
+    // "allow".
     expect(
       getRuleBehaviorDescription('passthrough' as never),
     ).toBe('asked for confirmation for')

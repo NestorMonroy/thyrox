@@ -44,11 +44,15 @@ const ReviewArtifactPermissionRequest = feature('REVIEW_ARTIFACT')
     ).ReviewArtifactPermissionRequest
   : null
 
-// Workflow tool ships unconditionally (ant parity) — the `case WorkflowTool:`
-// switch compares object identity, so this MUST be the real tool object.
-// There is no dedicated Workflow permission component yet (the script + agent
-// count render via the generic FallbackPermissionRequest), so we don't import
-// the stub — see permissionComponentForTool below.
+// Copia de `ccnmt: packages/permission/src/components/PermissionRequest.tsx`
+// con los comentarios traducidos; el cuerpo es el de la fuente.
+//
+// La herramienta Workflow se distribuye sin condicion, por paridad con ant: el
+// switch `case WorkflowTool:` compara identidad de objeto, asi que esto TIENE
+// que ser el objeto de herramienta real. Todavia no hay un componente de
+// permiso dedicado a Workflow — el script y el conteo de agentes renderizan por
+// el FallbackPermissionRequest generico — asi que no se importa el stub; ver
+// permissionComponentForTool mas abajo.
 const WorkflowTool = (
   require('@claude-code-how-works/tool-registry/tools/WorkflowTool/WorkflowTool.js') as typeof import('@claude-code-how-works/tool-registry/tools/WorkflowTool/WorkflowTool.js')
 ).WorkflowTool
@@ -146,7 +150,7 @@ function getNotificationMessage(toolUseConfirm: ToolUseConfirm): string {
   return `Claude needs your permission to use ${toolName}`
 }
 
-// TODO: Move this to Tool.renderPermissionRequest
+// TODO: mover esto a Tool.renderPermissionRequest.
 export function PermissionRequest({
   toolUseConfirm,
   toolUseContext,
@@ -156,7 +160,7 @@ export function PermissionRequest({
   workerBadge,
   setStickyFooter,
 }: PermissionRequestProps): React.ReactNode {
-  // Handle Ctrl+C (app:interrupt) to reject
+  // Ctrl+C (app:interrupt) rechaza.
   useKeybinding(
     'app:interrupt',
     () => {

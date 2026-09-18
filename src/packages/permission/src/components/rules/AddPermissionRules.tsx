@@ -86,7 +86,11 @@ export function AddPermissionRules({
           destination,
         })
 
-        // Persist to settings
+        // Copia de `ccnmt: packages/permission/src/components/rules/
+        // AddPermissionRules.tsx` con los comentarios traducidos; el cuerpo es
+        // el de la fuente.
+        //
+        // Persiste en settings.
         persistPermissionUpdate({
           type: 'addRules',
           rules: ruleValues,
@@ -102,7 +106,7 @@ export function AddPermissionRules({
           source: destination,
         }))
 
-        // Check for unreachable rules among the ones we just added
+        // Busca reglas inalcanzables entre las que se acaban de añadir.
         const sandboxAutoAllowEnabled =
           SandboxManager.isSandboxingEnabled() &&
           SandboxManager.isAutoAllowBashIfSandboxedEnabled()
@@ -110,7 +114,7 @@ export function AddPermissionRules({
           sandboxAutoAllowEnabled,
         })
 
-        // Filter to only rules we just added
+        // Filtra solo a las reglas que se acaban de añadir.
         const newUnreachable = allUnreachable.filter(u =>
           ruleValues.some(
             rv =>

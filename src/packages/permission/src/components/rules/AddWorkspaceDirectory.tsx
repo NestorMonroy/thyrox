@@ -119,7 +119,11 @@ export function AddWorkspaceDirectory({
   const [selectedSuggestion, setSelectedSuggestion] = useState(0)
   const options = useMemo(() => REMEMBER_DIRECTORY_OPTIONS, [])
 
-  // Fetch directory completions
+  // Copia de `ccnmt: packages/permission/src/components/rules/
+  // AddWorkspaceDirectory.tsx` con los comentarios traducidos; el cuerpo es el
+  // de la fuente.
+  //
+  // Pide los completados de directorio.
   const fetchSuggestions = useCallback(async (path: string) => {
     if (!path) {
       setSuggestions([])
@@ -141,10 +145,10 @@ export function AddWorkspaceDirectory({
     const newPath = suggestion.id + '/'
     setDirectoryInput(newPath)
     setError(null)
-    // Suggestions will update via the useEffect
+    // Las sugerencias se actualizan por el useEffect.
   }, [])
 
-  // Handle directory submission from input
+  // Resuelve el envio del directorio desde el input.
   const handleSubmit = useCallback(
     async (newPath: string) => {
       const result = await validateDirectoryForWorkspace(
@@ -161,14 +165,16 @@ export function AddWorkspaceDirectory({
     [permissionContext, onAddDirectory],
   )
 
-  // Handle Esc to cancel (Ctrl+C handled by global keybindings)
-  // Use Settings context so 'n' key doesn't cancel (allows typing 'n' in input)
+  // Esc cancela; Ctrl+C lo resuelven los keybindings globales. Se usa el
+  // contexto de Settings para que la tecla 'n' no cancele, y asi se pueda
+  // teclear 'n' en el input.
   useKeybinding('confirm:no', onCancel, { context: 'Settings' })
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (suggestions.length > 0) {
-        // Tab: accept selected suggestion and continue (for drilling into subdirs)
+        // Tab: acepta la sugerencia seleccionada y continua, para bajar a los
+        // subdirectorios.
         if (e.key === 'tab') {
           e.preventDefault()
           const suggestion = suggestions[selectedSuggestion]
@@ -178,7 +184,7 @@ export function AddWorkspaceDirectory({
           return
         }
 
-        // Enter: apply selected suggestion and submit
+        // Enter: aplica la sugerencia seleccionada y envia.
         if (e.key === 'return') {
           e.preventDefault()
           const suggestion = suggestions[selectedSuggestion]

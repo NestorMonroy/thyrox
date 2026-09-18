@@ -37,8 +37,12 @@ type InnerProps = {
 }
 
 export function NotebookEditToolDiff(props: Props): React.ReactNode {
-  // Create a promise that never rejects so we can handle errors inline.
-  // Memoized on notebook_path so we don't re-read on every render.
+  // Copia de `ccnmt: packages/permission/src/components/
+  // NotebookEditPermissionRequest/NotebookEditToolDiff.tsx` con los comentarios
+  // traducidos; el cuerpo es el de la fuente.
+  //
+  // Se construye una promesa que nunca rechaza, para resolver los errores en
+  // linea. Memoizada sobre notebook_path, para no releer en cada render.
   const notebookDataPromise = useMemo(
     () =>
       getFsImplementation()
@@ -90,8 +94,8 @@ function NotebookEditToolDiffInner({
     if (!notebookData || edit_mode === 'insert' || edit_mode === 'delete') {
       return null
     }
-    // Create a "fake" file content with just the cell source
-    // This allows us to use the regular diff mechanism
+    // Se construye un contenido de archivo "falso" solo con el fuente de la
+    // celda. Asi se puede usar el mecanismo de diff normal.
     return getPatchForDisplay({
       filePath: notebook_path,
       fileContents: oldSource,

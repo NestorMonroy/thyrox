@@ -35,8 +35,13 @@ export function PermissionRuleInput({
   const [cursorOffset, setCursorOffset] = useState(0)
   const exitState = useExitOnCtrlCDWithKeybindings()
 
-  // Use configurable keybinding for ESC to cancel
-  // Use Settings context so 'n' key doesn't cancel (allows typing 'n' in input)
+  // Copia de `ccnmt: packages/permission/src/components/rules/
+  // PermissionRuleInput.tsx` con los comentarios traducidos; el cuerpo es el de
+  // la fuente.
+  //
+  // Se usa el keybinding configurable para que ESC cancele, y el contexto de
+  // Settings para que la tecla 'n' no cancele, y asi se pueda teclear 'n' en el
+  // input.
   useKeybinding('confirm:no', onCancel, { context: 'Settings' })
 
   const { columns } = useTerminalSize()

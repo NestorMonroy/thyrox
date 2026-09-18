@@ -25,9 +25,14 @@ export function SandboxPermissionRequest({
   onUserResponse,
 }: SandboxPermissionRequestProps): React.ReactNode {
   function onSelect(value: string) {
-    // We may want to better unify this dialog with other permission dialogs
-    // and use their logging, but this is slightly different and we don't have
-    // the tool context here. For now, just use basic logging for basic data.
+    // Copia de `ccnmt: packages/permission/src/components/
+    // SandboxPermissionRequest.tsx` con los comentarios traducidos; el cuerpo es
+    // el de la fuente.
+    //
+    // Convendria unificar mejor este dialogo con los demas dialogos de permiso y
+    // usar su registro, pero este es algo distinto y aqui no se tiene el
+    // contexto de la herramienta. Por ahora se usa un registro basico para datos
+    // basicos.
     if (process.env.USER_TYPE === 'ant') {
       logEvent('tengu_sandbox_network_dialog_result', {
         host: host as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

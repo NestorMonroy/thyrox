@@ -144,7 +144,11 @@ type Props = {
   toolName?: string // Filter unreachable rules to this tool
 }
 
-// Helper function to extract directories from permission updates
+// Copia de `ccnmt: packages/permission/src/components/
+// PermissionDecisionDebugInfo.tsx` con los comentarios traducidos; el cuerpo es
+// el de la fuente.
+//
+// Auxiliar que extrae los directorios de las actualizaciones de permiso.
 function extractDirectories(updates: PermissionUpdate[] | undefined): string[] {
   if (!updates) return []
 
@@ -158,7 +162,7 @@ function extractDirectories(updates: PermissionUpdate[] | undefined): string[] {
   })
 }
 
-// Helper function to extract mode from permission updates
+// Auxiliar que extrae el modo de las actualizaciones de permiso.
 function extractMode(
   updates: PermissionUpdate[] | undefined,
 ): PermissionMode | undefined {
@@ -189,7 +193,7 @@ function SuggestionDisplay({
   const directories = extractDirectories(suggestions)
   const mode = extractMode(suggestions)
 
-  // If nothing to display, show None
+  // Si no hay nada que mostrar, se muestra None.
   if (rules.length === 0 && directories.length === 0 && !mode) {
     return (
       <Box flexDirection="row">
@@ -272,11 +276,11 @@ export function PermissionDecisionDebugInfo({
       sandboxAutoAllowEnabled,
     })
 
-    // Get the suggested rules from the permission result
+    // Toma las reglas sugeridas del resultado de permiso.
     const suggestedRules = extractRules(suggestions)
 
-    // Filter to rules that match any of the suggested rules
-    // A rule matches if it has the same toolName and ruleContent
+    // Filtra a las reglas que casan con alguna de las sugeridas. Una regla
+    // casa si tiene el mismo toolName y el mismo ruleContent.
     if (suggestedRules.length > 0) {
       return all.filter(u =>
         suggestedRules.some(
@@ -287,7 +291,7 @@ export function PermissionDecisionDebugInfo({
       )
     }
 
-    // Fallback: filter by tool name if specified
+    // Respaldo: filtra por nombre de herramienta si se especifico.
     if (toolName) {
       return all.filter(u => u.rule.ruleValue.toolName === toolName)
     }
