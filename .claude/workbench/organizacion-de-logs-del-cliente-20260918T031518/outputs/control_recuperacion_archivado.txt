@@ -1,0 +1,11 @@
+=== CONTROL DE RECUPERACION: se recupera un archivo del crudo archivado? ===
+No se infiere de que el commit exista: se extrae y se compara.
+  archivo: _references/claude-code-bin/2.1.258/claude_strings.txt
+  bytes en el historial : 46250263
+  sha256 del historial  : 738c3a68963e0f31
+  en el arbol de trabajo: AUSENTE
+
+=== y el .7z: integro pero NO versionado ===
+  7z t 2.1.258.7z -> Everything is Ok
+  git lo ve       -> 1 archivo(s): MANIFEST.tsv 
+  lo ignora       -> .gitignore:84:*.7z
