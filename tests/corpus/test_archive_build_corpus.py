@@ -4,7 +4,7 @@
 Mitad ROJA. `_references/claude-code-bin/` acumula una build por extraccion y
 ninguna se retira nunca. Medido al abrir TASK-THYROX-0160: 737 MB sobre un
 disco con 2.2 GB libres (95 % ocupado), que es la misma condicion que ya mato
-un `git gc` (TASK-THYROX-0046).
+un `git gc` (TASK-THYROX-0044).
 
 El eje que decide el formato NO es el contenedor sino si el archivado es
 SOLIDO. Medido sobre el `bunfs-root` de 2.1.274, 1800 archivos:

@@ -4,7 +4,7 @@
 `_references/claude-code-bin/` gana una build por extraccion y no pierde
 ninguna. Medido al abrir TASK-THYROX-0160: 737 MB sobre un disco con 2.2 GB
 libres (95 % ocupado) — la misma condicion que ya mato un `git gc`
-(TASK-THYROX-0046). El corpus no se puede retirar: es el material contra el que
+(TASK-THYROX-0044). El corpus no se puede retirar: es el material contra el que
 se construye. Lo que si se puede es dejar de tenerlo desplegado entero.
 
 Por que `.7z` SOLIDO, y no lo que parece obvio
