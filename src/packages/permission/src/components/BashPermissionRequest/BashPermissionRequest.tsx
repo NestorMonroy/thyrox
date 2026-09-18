@@ -47,12 +47,17 @@ import { bashToolUseOptions } from './bashToolUseOptions.js'
 
 const CHECKING_TEXT = 'Attempting to auto-approve\u2026'
 
-// Isolates the 20fps shimmer clock from BashPermissionRequestInner. Before this
-// extraction, useShimmerAnimation lived inside the 535-line Inner body, so every
-// 50ms clock tick re-rendered the entire dialog (PermissionDialog + Select +
-// all children) for the ~1-3 seconds the classifier typically takes. Inner also
-// has a Compiler bailout (see below), so nothing was auto-memoized — the full
-// JSX tree was reconstructed 20-60 times per classifier check.
+// Copia de `ccnmt: packages/permission/src/components/BashPermissionRequest/BashPermissionRequest.tsx`
+// con los comentarios traducidos; el cuerpo es el de la fuente.
+//
+// Aísla el reloj del shimmer a 20 fps de `BashPermissionRequestInner`. Antes de
+// esta extracción `useShimmerAnimation` vivía dentro del cuerpo de 535 líneas
+// de `Inner`, así que cada tic de 50 ms re-renderizaba el diálogo entero
+// (`PermissionDialog` + `Select` + todos los hijos) durante el segundo a tres
+// que el clasificador suele tardar. `Inner` además tiene una salida del
+// Compiler (ver abajo), así que nada quedaba memoizado de forma automática —
+// el árbol JSX completo se reconstruía entre 20 y 60 veces por comprobación
+// del clasificador.
 function ClassifierCheckingSubtitle(): React.ReactNode {
   const [ref, glimmerIndex] = useShimmerAnimation(
     'requesting',
@@ -93,8 +98,9 @@ export function BashPermissionRequest(
     toolUseConfirm.input,
   )
 
-  // Detect sed in-place edit commands and delegate to SedEditPermissionRequest
-  // This renders sed edits like file edits with a diff view
+  // Detectar los comandos de edición en sitio de sed y delegar en
+  // `SedEditPermissionRequest`, que los renderiza como una edición de archivo,
+  // con vista de diff.
   const sedInfo = parseSedEditCommand(command)
 
   if (sedInfo) {
@@ -111,7 +117,7 @@ export function BashPermissionRequest(
     )
   }
 
-  // Regular bash command - render with hooks
+  // Comando de bash corriente: renderizar con hooks
   return (
     <BashPermissionRequestInner
       toolUseConfirm={toolUseConfirm}
@@ -126,7 +132,7 @@ export function BashPermissionRequest(
   )
 }
 
-// Inner component that uses hooks - only called for non-MCP CLI commands
+// Componente interior que usa hooks: sólo se llama para comandos de CLI que no son de MCP
 function BashPermissionRequestInner({
   toolUseConfirm,
   toolUseContext,
@@ -164,14 +170,15 @@ function BashPermissionRequestInner({
   const [classifierDescription, setClassifierDescription] = useState(
     description || '',
   )
-  // Track whether the initial description (from prop or async generation) was empty.
-  // Once we receive a non-empty description, this stays false.
+  // Seguir si la descripción inicial (la de la prop o la generada de forma
+  // asíncrona) venía vacía. En cuanto llega una no vacía, esto se queda en
+  // false.
   const [
     initialClassifierDescriptionEmpty,
     setInitialClassifierDescriptionEmpty,
   ] = useState(!description?.trim())
 
-  // Asynchronously generate a generic description for the classifier
+  // Generar de forma asíncrona una descripción genérica para el clasificador
   useEffect(() => {
     if (!isClassifierPermissionsEnabled()) return
 
@@ -183,41 +190,46 @@ function BashPermissionRequestInner({
           setInitialClassifierDescriptionEmpty(false)
         }
       })
-      .catch(() => {}) // Keep original on error
+      .catch(() => {}) // Conservar la original si hay error
     return () => abortController.abort()
   }, [command, description])
 
-  // GH#11380: For compound commands (cd src && git status && npm test), the
-  // backend already computed correct per-subcommand suggestions via tree-sitter
-  // split + per-subcommand permission checks. decisionReason.type ===
-  // 'subcommandResults' marks this path. The sync prefix heuristics below
-  // (getSimpleCommandPrefix/getFirstWordPrefix) operate on the FULL compound
-  // string and pick the first two words — producing dead rules like
-  // `Bash(cd src:*)` or `Bash(./script.sh && npm test)` that never match again.
-  // Users accumulate 150+ of these in settings.local.json.
+  // GH#11380: para un comando compuesto (`cd src && git status && npm test`),
+  // el backend ya calculó las sugerencias correctas por subcomando, partiendo
+  // con tree-sitter y comprobando permiso subcomando a subcomando.
+  // `decisionReason.type === 'subcommandResults'` marca ese camino. Las
+  // heurísticas síncronas de prefijo de abajo (`getSimpleCommandPrefix` y
+  // `getFirstWordPrefix`) operan sobre la cadena compuesta ENTERA y toman las
+  // dos primeras palabras — produciendo reglas muertas como `Bash(cd src:*)` o
+  // `Bash(./script.sh && npm test)` que ya nunca vuelven a coincidir. Los
+  // usuarios acumulan más de 150 de ésas en `settings.local.json`.
   //
-  // When compound with exactly one Bash rule (e.g. `cd src && npm test` where
-  // cd is read-only → only npm test needs approval), seed the editable input
-  // from the backend rule. When compound with 2+ rules, editablePrefix stays
-  // undefined so bashToolUseOptions falls through to yes-apply-suggestions,
-  // which saves all per-subcommand rules atomically.
+  // Cuando el compuesto tiene exactamente una regla de Bash (por ejemplo
+  // `cd src && npm test`, donde `cd` es de sólo lectura y sólo `npm test`
+  // necesita aprobación), se siembra el campo editable con la regla del
+  // backend. Cuando tiene dos o más, `editablePrefix` se queda en `undefined`
+  // para que `bashToolUseOptions` caiga a `yes-apply-suggestions`, que guarda
+  // todas las reglas por subcomando de forma atómica.
   const isCompound =
     toolUseConfirm.permissionResult.decisionReason?.type === 'subcommandResults'
 
-  // Editable prefix — initialize synchronously with the best prefix we can
-  // extract without tree-sitter, then refine via tree-sitter for compound
-  // commands. The sync path matters because TREE_SITTER_BASH is gated
-  // ant-only: in external builds the async refinement below always resolves
-  // to [] and this initial value is what the user sees.
+  // Prefijo editable — se inicializa de forma síncrona con el mejor prefijo
+  // que se pueda extraer sin tree-sitter, y después se refina con tree-sitter
+  // para los comandos compuestos. El camino síncrono importa porque
+  // TREE_SITTER_BASH está tras una puerta de sólo-ant: en las builds externas
+  // el refinamiento asíncrono de abajo siempre resuelve a [] y este valor
+  // inicial es lo que el usuario ve.
   //
-  // Lazy initializer: this runs regex + split on every render if left in
-  // the render body; it's only needed for initial state.
+  // Inicializador perezoso: dejado en el cuerpo del render, esto corre una
+  // expresión regular y un `split` en cada render; sólo hace falta para el
+  // estado inicial.
   const [editablePrefix, setEditablePrefix] = useState<string | undefined>(
     () => {
       if (isCompound) {
-        // Backend suggestion is the source of truth for compound commands.
-        // Single rule → seed the editable input so the user can refine it.
-        // Multiple/zero rules → undefined → yes-apply-suggestions handles it.
+        // Para un comando compuesto, la sugerencia del backend es la fuente
+        // de verdad. Una sola regla → sembrar el campo editable para que el
+        // usuario la refine. Varias o ninguna → `undefined` → de eso se
+        // encarga `yes-apply-suggestions`.
         const backendBashRules = extractRules(
           'suggestions' in toolUseConfirm.permissionResult
             ? toolUseConfirm.permissionResult.suggestions
@@ -240,8 +252,9 @@ function BashPermissionRequestInner({
     setEditablePrefix(value)
   }, [])
   useEffect(() => {
-    // Skip async refinement for compound commands — the backend already ran
-    // the full per-subcommand analysis and its suggestion is correct.
+    // Saltarse el refinamiento asíncrono en los comandos compuestos — el
+    // backend ya corrió el análisis completo por subcomando y su sugerencia
+    // es correcta.
     if (isCompound) return
     let cancelled = false
     getCompoundCommandPrefixesStatic(command, subcmd =>
@@ -253,29 +266,33 @@ function BashPermissionRequestInner({
           setEditablePrefix(`${prefixes[0]}:*`)
         }
       })
-      .catch(() => {}) // Keep sync prefix on tree-sitter failure
+      .catch(() => {}) // Conservar el prefijo síncrono si tree-sitter falla
     return () => {
       cancelled = true
     }
   }, [command, isCompound])
 
-  // Track whether classifier check was ever in progress (persists after completion).
-  // classifierCheckInProgress is set once at queue-push time (interactiveHandler)
-  // and only ever transitions true→false, so capturing the mount-time value is
-  // sufficient — no latch/ref needed. The feature() ternary keeps the property
-  // read out of external builds (forbidden-string check).
+  // Seguir si la comprobación del clasificador llegó a estar en marcha (se
+  // conserva tras terminar). `classifierCheckInProgress` se fija una sola vez,
+  // al empujar a la cola (`interactiveHandler`), y sólo transita de true a
+  // false, así que capturar el valor del montaje basta — no hace falta un
+  // cerrojo ni una ref. El ternario de `feature()` mantiene la lectura de la
+  // propiedad fuera de las builds externas (la comprobación de cadenas
+  // prohibidas).
   const [classifierWasChecking] = useState(
     feature('BASH_CLASSIFIER')
       ? !!toolUseConfirm.classifierCheckInProgress
       : false,
   )
 
-  // These derive solely from the tool input (fixed for the dialog lifetime).
-  // The shimmer clock used to live in this component and re-render it at 20fps
-  // while the classifier ran (see ClassifierCheckingSubtitle above for the
-  // extraction). React Compiler can't auto-memoize imported functions (can't
-  // prove side-effect freedom), so this useMemo still guards against any
-  // re-render source (e.g. Inner state updates). Same pattern as PR#20730.
+  // Éstos se derivan sólo de la entrada de la herramienta (fija durante toda
+  // la vida del diálogo). El reloj del shimmer vivía en este componente y lo
+  // re-renderizaba a 20 fps mientras el clasificador corría (ver
+  // `ClassifierCheckingSubtitle` arriba, donde se extrajo). El React Compiler
+  // no puede memoizar de forma automática una función importada (no puede
+  // probar que no tiene efectos secundarios), así que este `useMemo` sigue
+  // protegiendo contra cualquier fuente de re-render (una actualización de
+  // estado de `Inner`, por ejemplo). Mismo patrón que el PR#20730.
   const { destructiveWarning, sandboxingEnabled, isSandboxed } = useMemo(() => {
     const destructiveWarning = getFeatureValue_CACHED_MAY_BE_STALE(
       'tengu_destructive_command_warning',
@@ -334,7 +351,7 @@ function BashPermissionRequestInner({
     ],
   )
 
-  // Toggle permission debug info with keybinding
+  // Alternar la información de depuración de permiso con un atajo de teclado
   const handleToggleDebug = useCallback(() => {
     setShowPermissionDebug(prev => !prev)
   }, [])
@@ -342,7 +359,7 @@ function BashPermissionRequestInner({
     context: 'Confirmation',
   })
 
-  // ctrl+e — one-shot LLM explainer for the pending command.
+  // ctrl+e — explicador por LLM, de un solo disparo, del comando pendiente.
   const explainer = usePermissionExplainer({
     toolName: toolUseConfirm.tool.name,
     toolInput: toolUseConfirm.input,
@@ -350,7 +367,7 @@ function BashPermissionRequestInner({
     messages: toolUseContext.messages,
   })
 
-  // Allow Esc to dismiss the checkmark after auto-approval
+  // Permitir que Esc descarte el checkmark tras la auto-aprobación
   const handleDismissCheckmark = useCallback(() => {
     toolUseConfirm.onDismissCheckmark?.()
   }, [toolUseConfirm])
@@ -362,7 +379,7 @@ function BashPermissionRequestInner({
   })
 
   function onSelect(value: string) {
-    // Map options to numeric values for analytics (strings not allowed in logEvent)
+    // Mapear las opciones a valores numéricos para la analítica (`logEvent` no admite cadenas)
     let optionIndex: Record<string, number> = {
       yes: 1,
       'yes-apply-suggestions': 2,
@@ -440,7 +457,7 @@ function BashPermissionRequestInner({
       case 'yes': {
         const trimmedFeedback = acceptFeedback.trim()
         logUnaryPermissionEvent('tool_use_single', toolUseConfirm, 'accept')
-        // Log accept submission with feedback context
+        // Registrar el envío de aceptación con el contexto del comentario
         logEvent('tengu_accept_submitted', {
           toolName: toolNameForAnalytics,
           isMcp: toolUseConfirm.tool.isMcp ?? false,
@@ -458,7 +475,7 @@ function BashPermissionRequestInner({
       }
       case 'yes-apply-suggestions': {
         logUnaryPermissionEvent('tool_use_single', toolUseConfirm, 'accept')
-        // Extract suggestions if present (works for both 'ask' and 'passthrough' behaviors)
+        // Extraer las sugerencias si las hay (sirve tanto para el comportamiento 'ask' como para el 'passthrough')
         const permissionUpdates =
           'suggestions' in toolUseConfirm.permissionResult
             ? toolUseConfirm.permissionResult.suggestions || []
@@ -470,7 +487,7 @@ function BashPermissionRequestInner({
       case 'no': {
         const trimmedFeedback = rejectFeedback.trim()
 
-        // Log reject submission with feedback context
+        // Registrar el envío de rechazo con el contexto del comentario
         logEvent('tengu_reject_submitted', {
           toolName: toolNameForAnalytics,
           isMcp: toolUseConfirm.tool.isMcp ?? false,
@@ -479,7 +496,7 @@ function BashPermissionRequestInner({
           entered_feedback_mode: noFeedbackModeEntered,
         })
 
-        // Process rejection (with or without feedback)
+        // Procesar el rechazo (con comentario o sin él)
         handleReject(trimmedFeedback || undefined)
         break
       }

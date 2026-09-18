@@ -114,8 +114,12 @@ type ResponseValue =
   | 'no'
 
 /**
- * Build permission updates for plan approval, including prompt-based rules if provided.
- * Prompt-based rules are only added when classifier permissions are enabled (Ant-only).
+ * Copia de `ccnmt: packages/permission/src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
+ *
+ * Construye las actualizaciones de permiso para la aprobación de un plan,
+ * incluidas las reglas basadas en prompt si se pasan. Esas reglas sólo se
+ * añaden cuando los permisos del clasificador están habilitados (sólo en Ant).
  */
 export function buildPermissionUpdates(
   mode: PermissionMode,
@@ -129,7 +133,7 @@ export function buildPermissionUpdates(
     },
   ]
 
-  // Add prompt-based permission rules if provided (Ant-only feature)
+  // Añadir las reglas de permiso basadas en prompt si se pasan (sólo en Ant)
   if (
     isClassifierPermissionsEnabled() &&
     allowedPrompts &&
@@ -150,9 +154,10 @@ export function buildPermissionUpdates(
 }
 
 /**
- * Auto-name the session from the plan content when the user accepts a plan,
- * if they haven't already named it via /rename or --name. Fire-and-forget.
- * Mirrors /rename: kebab-case name, updates the prompt-border badge.
+ * Nombra la sesión automáticamente a partir del contenido del plan cuando el
+ * usuario lo acepta, si no la había nombrado ya con /rename o --name. Dispara
+ * y olvida. Replica a /rename: nombre en kebab-case, y actualiza la insignia
+ * del borde del prompt.
  */
 export function autoNameSessionFromPlan(
   plan: string,
@@ -165,21 +170,25 @@ export function autoNameSessionFromPlan(
   ) {
     return
   }
-  // On clear-context, the current session is about to be abandoned — its
-  // title (which may have been set by a PRIOR auto-name) is irrelevant.
-  // Checking it would make the feature self-defeating after first use.
+  // Al limpiar el contexto, la sesión actual está a punto de abandonarse —
+  // su título (que pudo fijarlo un auto-nombrado ANTERIOR) es irrelevante.
+  // Comprobarlo haría que la funcionalidad se anulara a sí misma tras el
+  // primer uso.
   if (!isClearContext && getCurrentSessionTitle(getSessionId())) return
   void generateSessionName(
-    // generateSessionName tail-slices to the last 1000 chars (correct for
-    // conversations, where recency matters). Plans front-load the goal and
-    // end with testing steps — head-slice so Haiku sees the summary.
+    // `generateSessionName` recorta por la cola, a los últimos 1000
+    // caracteres (lo correcto para una conversación, donde lo reciente es lo
+    // que importa). Un plan pone el objetivo al principio y termina con los
+    // pasos de prueba — así que aquí se recorta por la cabeza, para que Haiku
+    // vea el resumen.
     [createUserMessage({ content: plan.slice(0, 1000) })],
     new AbortController().signal,
   )
     .then(async name => {
-      // On clear-context acceptance, regenerateSessionId() has run by now —
-      // this intentionally names the NEW execution session. Do not "fix" by
-      // capturing sessionId once; that would name the abandoned planning session.
+      // Al aceptar con limpieza de contexto, `regenerateSessionId()` ya ha
+      // corrido a estas alturas — esto nombra a propósito la sesión NUEVA, la
+      // de ejecución. No «arreglarlo» capturando `sessionId` una sola vez:
+      // eso nombraría la sesión de planificación abandonada.
       if (!name || getCurrentSessionTitle(getSessionId())) return
       const sessionId = getSessionId() as UUID
       const fullPath = getTranscriptPath()
@@ -207,9 +216,10 @@ export function ExitPlanModePermissionRequest({
   const setAppState = useSetAppState()
   const store = useAppStateStore()
   const { addNotification } = useNotifications()
-  // Feedback text from the 'No' option's input. Threaded through onAllow as
-  // acceptFeedback when the user approves — lets users annotate the plan
-  // ("also update the README") without a reject+re-plan round-trip.
+  // El texto de comentario del campo de la opción 'No'. Se enhebra por
+  // `onAllow` como `acceptFeedback` cuando el usuario aprueba — permite
+  // anotar el plan («actualiza también el README») sin la ida y vuelta de
+  // rechazar y volver a planificar.
   const [planFeedback, setPlanFeedback] = useState('')
   const [pastedContents, setPastedContents] = useState<
     Record<number, PastedContent>
@@ -220,10 +230,12 @@ export function ExitPlanModePermissionRequest({
     useAppState(s => s.settings.showClearContextOnPlanAccept) ?? false
   const ultraplanSessionUrl = useAppState(s => s.ultraplanSessionUrl)
   const ultraplanLaunching = useAppState(s => s.ultraplanLaunching)
-  // Hide the Ultraplan button while a session is active or launching —
-  // selecting it would dismiss the dialog and reject locally before
-  // launchUltraplan can notice the session exists and return "already polling".
-  // feature() must sit directly in an if/ternary (bun:bundle DCE constraint).
+  // Ocultar el botón de Ultraplan mientras hay una sesión activa o
+  // arrancando — seleccionarlo descartaría el diálogo y rechazaría en local
+  // antes de que `launchUltraplan` pudiera notar que la sesión existe y
+  // devolver «already polling». `feature()` tiene que ir directamente en un
+  // `if` o en un ternario (restricción de la eliminación de código muerto de
+  // bun:bundle).
   const showUltraplan = feature('ULTRAPLAN')
     ? !ultraplanSessionUrl && !ultraplanLaunching
     : false
@@ -290,29 +302,30 @@ export function ExitPlanModePermissionRequest({
   )
   const hasImages = imageAttachments.length > 0
 
-  // TODO: Delete the branch after moving to V2
-  // Use tool name to detect V2 instead of checking input.plan, because PR #10394
-  // injects plan content into input.plan for hooks/SDK, which broke the old detection
-  // (see issue #10878)
+  // TODO: borrar la rama cuando se pase del todo a V2.
+  // Se detecta V2 por el nombre de la herramienta en vez de comprobar
+  // `input.plan`, porque el PR #10394 inyecta el contenido del plan en
+  // `input.plan` para los hooks y el SDK, y eso rompió la detección vieja
+  // (ver la incidencia #10878).
   const isV2 = toolUseConfirm.tool.name === EXIT_PLAN_MODE_V2_TOOL_NAME
   const inputPlan = isV2
     ? undefined
     : (toolUseConfirm.input.plan as string | undefined)
   const planFilePath = isV2 ? getPlanFilePath() : undefined
 
-  // Extract allowed prompts requested by the plan (Ant-only feature)
+  // Extraer los prompts permitidos que el plan pide (sólo en Ant)
   const allowedPrompts = toolUseConfirm.input.allowedPrompts as
     | AllowedPrompt[]
     | undefined
 
-  // Get the raw plan to check if it's empty
+  // Obtener el plan en crudo para comprobar si está vacío
   const rawPlan = inputPlan ?? getPlan()
   const isEmpty = !rawPlan || rawPlan.trim() === ''
 
-  // Capture the variant once on mount. GrowthBook reads from a disk cache
-  // so the value is stable across a single planning session. undefined =
-  // control arm. The variant is a fixed 3-value enum of short literals,
-  // not user input.
+  // Capturar la variante una sola vez al montar. GrowthBook lee de una caché
+  // en disco, así que el valor es estable a lo largo de una misma sesión de
+  // planificación. `undefined` es el brazo de control. La variante es un enum
+  // fijo de tres literales cortos, no entrada del usuario.
   const [planStructureVariant] = useState(
     () =>
       (getPewterLedgerVariant() ??
@@ -327,12 +340,13 @@ export function ExitPlanModePermissionRequest({
     )
   })
   const [showSaveMessage, setShowSaveMessage] = useState(false)
-  // Track Ctrl+G local edits so updatedInput can include the plan (the tool
-  // only echoes the plan in tool_result when input.plan is set — otherwise
-  // the model already has it in context from writing the plan file).
+  // Seguir las ediciones locales de Ctrl+G para que `updatedInput` pueda
+  // incluir el plan (la herramienta sólo devuelve el plan en `tool_result`
+  // cuando `input.plan` está fijado — si no, el modelo ya lo tiene en
+  // contexto de haber escrito el archivo del plan).
   const [planEditedLocally, setPlanEditedLocally] = useState(false)
 
-  // Auto-hide save message after 5 seconds
+  // Ocultar el mensaje de guardado a los 5 segundos
   useEffect(() => {
     if (showSaveMessage) {
       const timer = setTimeout(setShowSaveMessage, 5000, false)
@@ -340,7 +354,7 @@ export function ExitPlanModePermissionRequest({
     }
   }, [showSaveMessage])
 
-  // Handle Ctrl+G to edit plan in $EDITOR, Shift+Tab for auto-accept edits
+  // Atender Ctrl+G para editar el plan en $EDITOR, y Shift+Tab para aceptar ediciones de forma automática
   const handleKeyDown = (e: KeyboardEvent): void => {
     if (e.ctrl && e.key === 'g') {
       e.preventDefault()
@@ -381,7 +395,7 @@ export function ExitPlanModePermissionRequest({
       return
     }
 
-    // Shift+Tab immediately selects "auto-accept edits"
+    // Shift+Tab selecciona de inmediato «auto-accept edits»
     if (e.shift && e.key === 'tab') {
       e.preventDefault()
       void handleResponse(
@@ -395,9 +409,10 @@ export function ExitPlanModePermissionRequest({
     const trimmedFeedback = planFeedback.trim()
     const acceptFeedback = trimmedFeedback || undefined
 
-    // Ultraplan: reject locally, teleport the plan to CCR as a seed draft.
-    // Dialog dismisses immediately so the query loop unblocks; the teleport
-    // runs detached and its launch message lands via the command queue.
+    // Ultraplan: rechazar en local y teletransportar el plan a CCR como
+    // borrador semilla. El diálogo se descarta de inmediato para que el bucle
+    // de consulta se desbloquee; el teletransporte corre desprendido y su
+    // mensaje de arranque aterriza por la cola de comandos.
     if (value === 'ultraplan') {
       logEvent('tengu_plan_exit', {
         planLengthChars: currentPlan.length,
@@ -425,21 +440,25 @@ export function ExitPlanModePermissionRequest({
       return
     }
 
-    // V1: pass plan in input. V2: plan is on disk, but if the user edited it
-    // via Ctrl+G we pass it through so the tool echoes the edit in tool_result
-    // (otherwise the model never sees the user's changes).
+    // V1: el plan va en `input`. V2: el plan está en disco, pero si el
+    // usuario lo editó con Ctrl+G se pasa igual, para que la herramienta
+    // devuelva la edición en `tool_result` (si no, el modelo nunca ve los
+    // cambios del usuario).
     const updatedInput = isV2 && !planEditedLocally ? {} : { plan: currentPlan }
 
-    // If auto was active during plan (from auto mode or opt-in) and NOT going
-    // to auto, deactivate auto + restore permissions + fire exit attachment.
+    // Si el modo automático estuvo activo durante el plan (por el propio
+    // modo automático o porque el usuario lo pidió) y NO se va a automático,
+    // desactivarlo, restaurar los permisos y disparar el attachment de
+    // salida.
     if (feature('TRANSCRIPT_CLASSIFIER')) {
       const goingToAuto =
         (value === 'yes-resume-auto-mode' ||
           value === 'yes-auto-clear-context') &&
         isAutoModeGateEnabled()
-      // isAutoModeActive() is the authoritative signal — prePlanMode/
-      // strippedDangerousRules are stale after transitionPlanAutoMode
-      // deactivates mid-plan (would cause duplicate exit attachment).
+      // `isAutoModeActive()` es la señal autoritativa — `prePlanMode` y
+      // `strippedDangerousRules` quedan rancios después de que
+      // `transitionPlanAutoMode` desactive a mitad de plan (produciría un
+      // attachment de salida duplicado).
       const autoWasUsedDuringPlan =
         autoModeStateModule?.isAutoModeActive() ?? false
       if (value !== 'no' && !goingToAuto && autoWasUsedDuringPlan) {
@@ -455,9 +474,10 @@ export function ExitPlanModePermissionRequest({
       }
     }
 
-    // Clear-context options: set pending plan implementation and reject the dialog
-    // The REPL will handle context clear and trigger a fresh query
-    // Keep-context options skip this block and go through the normal flow below
+    // Opciones con limpieza de contexto: dejar pendiente la implementación
+    // del plan y rechazar el diálogo. El REPL se encarga de limpiar el
+    // contexto y de disparar una consulta nueva. Las opciones que conservan
+    // el contexto se saltan este bloque y van por el flujo normal de abajo.
     const isResumeAutoOption = feature('TRANSCRIPT_CLASSIFIER')
       ? value === 'yes-resume-auto-mode'
       : false
@@ -471,7 +491,7 @@ export function ExitPlanModePermissionRequest({
     }
 
     if (value !== 'no' && !isKeepContextOption) {
-      // Determine the permission mode based on the selected option
+      // Determinar el modo de permiso a partir de la opción elegida
       let mode: PermissionMode = 'default'
       if (value === 'yes-bypass-permissions') {
         mode = 'bypassPermissions'
@@ -482,13 +502,14 @@ export function ExitPlanModePermissionRequest({
         value === 'yes-auto-clear-context' &&
         isAutoModeGateEnabled()
       ) {
-        // REPL's processInitialMessage handles stripDangerousPermissions + mode,
-        // but does NOT set autoModeActive. Gate-off falls through to 'default'.
+        // El `processInitialMessage` del REPL se encarga de
+        // `stripDangerousPermissions` y del modo, pero NO fija
+        // `autoModeActive`. Con la puerta cerrada, cae a 'default'.
         mode = 'auto'
         autoModeStateModule?.setAutoModeActive(true)
       }
 
-      // Log plan exit event
+      // Registrar el evento de salida del plan
       logEvent('tengu_plan_exit', {
         planLengthChars: currentPlan.length,
         outcome:
@@ -499,15 +520,18 @@ export function ExitPlanModePermissionRequest({
         hasFeedback: !!acceptFeedback,
       })
 
-      // Set initial message - REPL will handle context clear and fresh query
-      // Add verification instruction if the feature is enabled
-      // Dead code elimination: CLAUDE_CODE_VERIFY_PLAN='false' in external builds, so === 'true' check allows Bun to eliminate the string
+      // Fijar el mensaje inicial: el REPL se encargará de limpiar el
+      // contexto y de la consulta nueva. Añadir la instrucción de
+      // verificación si la funcionalidad está habilitada.
+      // Eliminación de código muerto: en las builds externas
+      // CLAUDE_CODE_VERIFY_PLAN vale 'false', así que la comparación
+      // === 'true' le permite a Bun eliminar la cadena.
       const verificationInstruction =
         undefined === 'true'
           ? `\n\nIMPORTANT: When you have finished implementing the plan, you MUST call the "VerifyPlanExecution" tool directly (NOT the ${AGENT_TOOL_NAME} tool or an agent) to trigger background verification.`
           : ''
 
-      // Capture the transcript path before context is cleared (session ID will be regenerated)
+      // Capturar la ruta del transcript antes de que se limpie el contexto (el ID de sesión se va a regenerar)
       const transcriptPath = getTranscriptPath()
       const transcriptHint = `\n\nIf you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: ${transcriptPath}`
 
@@ -537,15 +561,17 @@ export function ExitPlanModePermissionRequest({
       setHasExitedPlanMode(true)
       onDone()
       onReject()
-      // Reject the tool use to unblock the query loop
-      // The REPL will see pendingInitialQuery and trigger fresh query
+      // Rechazar el uso de la herramienta para desbloquear el bucle de
+      // consulta. El REPL verá `pendingInitialQuery` y disparará una consulta
+      // nueva.
       toolUseConfirm.onReject()
       return
     }
 
-    // Handle auto keep-context option — needs special handling because
-    // buildPermissionUpdates maps auto to 'default' via toExternalPermissionMode.
-    // We set the mode directly via setAppState and sync the bootstrap state.
+    // Atender la opción de automático conservando el contexto — necesita
+    // trato aparte porque `buildPermissionUpdates` mapea automático a
+    // 'default' por `toExternalPermissionMode`. Aquí el modo se fija
+    // directamente con `setAppState` y se sincroniza el estado de arranque.
     if (
       feature('TRANSCRIPT_CLASSIFIER') &&
       value === 'yes-resume-auto-mode' &&
@@ -576,11 +602,12 @@ export function ExitPlanModePermissionRequest({
       return
     }
 
-    // Handle keep-context options (goes through normal onAllow flow)
-    // yes-resume-auto-mode falls through here when the auto mode gate is
-    // disabled (e.g. circuit breaker fired after the dialog rendered).
-    // Without this fallback the function would return without resolving the
-    // dialog, leaving the query loop blocked and safety state corrupted.
+    // Atender las opciones que conservan el contexto (van por el flujo
+    // normal de `onAllow`). `yes-resume-auto-mode` cae aquí cuando la puerta
+    // del modo automático está cerrada (por ejemplo, si el cortacircuitos
+    // saltó después de que el diálogo se renderizara). Sin esta caída de
+    // vuelta la función volvería sin resolver el diálogo, dejando el bucle de
+    // consulta bloqueado y el estado de seguridad corrompido.
     const keepContextModes: Record<string, PermissionMode> = {
       'yes-accept-edits-keep-context':
         toolPermissionContext.isBypassPermissionsModeAvailable
@@ -613,7 +640,7 @@ export function ExitPlanModePermissionRequest({
       return
     }
 
-    // Handle standard approval options
+    // Atender las opciones de aprobación estándar
     const standardModes: Record<string, PermissionMode> = {
       'yes-bypass-permissions': 'bypassPermissions',
       'yes-accept-edits': 'acceptEdits',
@@ -639,10 +666,10 @@ export function ExitPlanModePermissionRequest({
       return
     }
 
-    // Handle 'no' - stay in plan mode
+    // Atender el 'no': quedarse en modo plan
     if (value === 'no') {
       if (!trimmedFeedback && !hasImages) {
-        // No feedback yet - user is still on the input field
+        // Todavía no hay comentario: el usuario sigue en el campo de entrada
         return
       }
 
@@ -654,7 +681,7 @@ export function ExitPlanModePermissionRequest({
         planStructureVariant,
       })
 
-      // Convert pasted images to ImageBlockParam[] with resizing
+      // Convertir las imágenes pegadas a ImageBlockParam[], redimensionándolas
       let imageBlocks: ImageBlockParam[] | undefined
       if (hasImages) {
         imageBlocks = await Promise.all(
@@ -686,12 +713,14 @@ export function ExitPlanModePermissionRequest({
   const editor = getExternalEditor()
   const editorName = editor ? toIDEDisplayName(editor) : null
 
-  // Sticky footer: when setStickyFooter is provided (fullscreen mode), the
-  // Select options render in FullscreenLayout's `bottom` slot so they stay
-  // visible while the user scrolls through a long plan. handleResponse is
-  // wrapped in a ref so the JSX (set once per options/images change) can call
-  // the latest closure without re-registering on every keystroke. React
-  // reconciles the sticky-footer Select by type, preserving focus/input state.
+  // Pie pegajoso: cuando se pasa `setStickyFooter` (modo de pantalla
+  // completa), las opciones del `Select` se renderizan en la ranura `bottom`
+  // de `FullscreenLayout`, para que sigan visibles mientras el usuario
+  // recorre un plan largo. `handleResponse` va envuelto en una ref para que
+  // el JSX (que se fija una vez por cambio de opciones o de imágenes) pueda
+  // llamar a la clausura más reciente sin volver a registrarse en cada
+  // pulsación. React reconcilia el `Select` del pie pegajoso por tipo, y así
+  // conserva el foco y el estado del campo.
   const handleResponseRef = useRef(handleResponse)
   handleResponseRef.current = handleResponse
   const handleCancelRef = useRef<() => void>(undefined)
@@ -764,7 +793,7 @@ export function ExitPlanModePermissionRequest({
     showSaveMessage,
   ])
 
-  // Simplified UI for empty plans
+  // Interfaz simplificada para los planes vacíos
   if (isEmpty) {
     function handleEmptyPlanResponse(value: 'yes' | 'no'): void {
       if (value === 'yes') {
@@ -869,7 +898,7 @@ export function ExitPlanModePermissionRequest({
             borderRight={false}
             paddingX={1}
             marginBottom={1}
-            // Necessary for Windows Terminal to render properly
+            // Necesario para que Windows Terminal renderice bien
             overflow="hidden"
           >
             <Markdown>{currentPlan}</Markdown>
@@ -935,7 +964,7 @@ export function ExitPlanModePermissionRequest({
   )
 }
 
-/** @internal Exported for testing. */
+/** @internal Exportado para los tests. */
 export function buildPlanApprovalOptions({
   showClearContext,
   showUltraplan,
@@ -973,7 +1002,7 @@ export function buildPlanApprovalOptions({
     }
   }
 
-  // Slot 2: keep-context with elevated mode (same priority: auto > bypass > edits).
+  // Ranura 2: conservar el contexto con el modo elevado (misma prioridad: auto > bypass > edits).
   if (feature('TRANSCRIPT_CLASSIFIER') && isAutoModeAvailable) {
     options.push({
       label: 'Yes, and use auto mode',
