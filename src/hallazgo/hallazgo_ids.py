@@ -190,6 +190,39 @@ def store_numbers(store_path: Path, prefix: str) -> list[int]:
     return numbers
 
 
+#: El acuñador ANTEPONE ``H-``: su argumento es la capa DESNUDA. Medido por
+#: conducta 2026-09-17 al acuñar ``H-THYROX-73`` — ``acunar H-THYROX`` devolvía
+#: ``H-H-THYROX-01``, un id malformado que entra al corpus si nadie lo mira.
+_BARE_PREFIX_RE = re.compile(r'[A-Za-z]+')
+
+
+def validated_prefix(prefix: str) -> str:
+    """La capa desnuda, o rehúsa nombrando el argumento correcto.
+
+    Rehúsa en vez de componer, por la misma razón que :func:`is_free` rehúsa
+    un id sin forma: un guion que no puede medir no publica un resultado. Un
+    ``H-H-THYROX-01`` devuelto como si fuera válido es peor que un error —
+    nadie lo mira, y el corpus se queda con él.
+
+    Dos formas, medidas las dos:
+
+    * el argumento ya trae el ``H-`` que este módulo antepone;
+    * el argumento no es ``[A-Za-z]+`` — la misma exigencia que
+      :func:`is_free` ya hace sobre el id completo.
+    """
+    candidate = prefix.strip()
+    if candidate[:2].upper() == 'H-':
+        raise SystemExit(
+            f"hallazgo_ids.py: '{prefix}' ya trae el prefijo 'H-'. El "
+            f"acuñador lo antepone, así que el argumento es la capa "
+            f"desnuda: '{candidate[2:]}'")
+    if not _BARE_PREFIX_RE.fullmatch(candidate):
+        raise SystemExit(
+            f"hallazgo_ids.py: '{prefix}' no tiene la forma de una capa "
+            f"([A-Za-z]+) — p. ej. API, DOCS, THYROX")
+    return candidate
+
+
 def next_id(source_root: Path, prefix: str,
             store_path: Path | _StoreSentinel | None = RESOLVE_STORE) -> str:
     """``H-<PREFIJO>-N``, con ``N`` uno más que el máximo ya usado — o 1 si
@@ -202,6 +235,7 @@ def next_id(source_root: Path, prefix: str,
     adelante NO hay relleno — el árbol real escribe ``H-API-10``, no
     ``H-API-010`` — así que el formato es ``:02d}``, no un ancho fijo.
     """
+    prefix = validated_prefix(prefix)
     numbers = used_numbers(source_root, prefix)
     resolved = _resolved_store(store_path)
     if resolved is not None:

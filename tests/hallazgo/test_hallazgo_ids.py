@@ -196,5 +196,48 @@ finally:
     else:
         _os.environ["THYROX_AGENT_STORE"] = _previo
 
+
+# --- 10. el prefijo se VALIDA: el acuñador antepone `H-`, no lo acepta -------
+# Medido por conducta 2026-09-17 al acuñar H-THYROX-73: `acunar H-THYROX`
+# devolvia `H-H-THYROX-01` — un id malformado que entra al corpus si nadie lo
+# mira. El argumento correcto es la capa desnuda; el guion lo tiene que decir
+# en vez de componer el doble prefijo.
+print("\n== 10. el prefijo malformado se rehusa, no se compone ==")
+(TMP / "diez").mkdir()
+
+
+def _refuses(prefix):
+    """(rehuso, lo_que_devolvio) — SystemExit cuenta como rehuso."""
+    try:
+        return False, hallazgo_ids.next_id(TMP / "diez", prefix,
+                                           store_path=hallazgo_ids.NO_STORE)
+    except SystemExit as exc:
+        return True, str(exc)
+
+
+_rehuso, _devuelto = _refuses("H-THYROX")
+check("`H-THYROX` (prefijo ya con H-) se rehusa", True, _rehuso)
+check("y NO devuelve el doble prefijo", False, str(_devuelto).startswith("H-H-"))
+check("el mensaje nombra el argumento correcto", True,
+      _rehuso and "THYROX" in str(_devuelto))
+
+# Control positivo: la capa desnuda sigue acuñando. Sin esta asercion, un guard
+# que rehusara SIEMPRE pasaria las tres de arriba — el sub-patron D.
+check("`THYROX` desnudo sigue acuñando", "H-THYROX-01",
+      hallazgo_ids.next_id(TMP / "diez", "THYROX",
+                           store_path=hallazgo_ids.NO_STORE))
+check("y la minuscula tambien, como antes", "H-THYROX-01",
+      hallazgo_ids.next_id(TMP / "diez", "thyrox",
+                           store_path=hallazgo_ids.NO_STORE))
+
+# El prefijo no es `[A-Za-z]+`: la misma forma que `is_free` ya rehusa para el
+# id completo, aplicada al argumento del acuñador.
+_rehuso_raro, _ = _refuses("API-2")
+check("un prefijo con no-letras se rehusa", True, _rehuso_raro)
+
+# ANULACION: retirando `validated_prefix` de `next_id`, caen exactamente las
+# cuatro aserciones de rehuso (H-THYROX x3 y API-2) y NINGUNA de las dos de
+# control positivo — medido al escribirlas.
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
