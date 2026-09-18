@@ -1,0 +1,13 @@
+import { getIsNonInteractiveSession } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import type { Command } from '../../runtime.js'
+
+const command: Command = {
+  name: 'chrome',
+  description: 'Claude in Chrome (Beta) settings',
+  availability: [],
+  isEnabled: () => !getIsNonInteractiveSession(),
+  type: 'local-jsx',
+  load: () => import('./chrome.js'),
+}
+
+export default command

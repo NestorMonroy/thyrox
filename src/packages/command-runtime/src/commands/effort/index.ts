@@ -1,0 +1,13 @@
+import type { Command } from '../../runtime.js'
+import { shouldInferenceConfigCommandBeImmediate } from '@claude-code-how-works/shell/immediateCommand.js'
+
+export default {
+  type: 'local-jsx',
+  name: 'effort',
+  description: 'Set effort level for model usage',
+  argumentHint: '[none|low|medium|high|xhigh|max|auto] | save',
+  get immediate() {
+    return shouldInferenceConfigCommandBeImmediate()
+  },
+  load: () => import('./effort.js'),
+} satisfies Command
