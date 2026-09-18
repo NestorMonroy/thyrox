@@ -1,14 +1,17 @@
 /**
- * Tests for parseToolListFromCLI — used to parse the --allowed-tools
- * and --disallowed-tools CLI flags. Wrong parsing means user sees
- * "Bash(ls)" working but "Bash(ls, -la)" falling apart, or comma-
- * containing rules getting split incorrectly.
+ * Copia de `ccnmt: packages/permission/src/__tests__/parseToolListFromCLI.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * The parser handles:
- *   - whitespace and comma separators OUTSIDE parens
- *   - commas INSIDE parens are part of the rule, not separators
- *   - multiple input strings each parsed independently
- *   - empty strings filtered
+ * Tests de `parseToolListFromCLI` — el que parsea las banderas de CLI
+ * `--allowed-tools` y `--disallowed-tools`. Parsear mal hace que el usuario
+ * vea funcionar «Bash(ls)» y desarmarse «Bash(ls, -la)», o que una regla con
+ * comas se parta donde no debe.
+ *
+ * El parser se ocupa de:
+ *   - los separadores de espacio y coma que van FUERA de los paréntesis
+ *   - las comas que van DENTRO son parte de la regla, no separadores
+ *   - cada cadena de entrada se parsea de forma independiente
+ *   - las cadenas vacías se descartan
  */
 import { describe, expect, test } from 'bun:test'
 import { parseToolListFromCLI } from '../permissionSetup.js'
@@ -55,7 +58,7 @@ describe('parseToolListFromCLI — paren-wrapped rules (commas preserved)', () =
   })
 
   test('comma inside parens is NOT a separator', () => {
-    // Bash(rm, -rf) is one rule, not [Bash(rm, -rf)] split into two.
+    // `Bash(rm, -rf)` es una sola regla, no `[Bash(rm, -rf)]` partida en dos.
     expect(parseToolListFromCLI(['Bash(rm, -rf)'])).toEqual(['Bash(rm, -rf)'])
   })
 
@@ -78,7 +81,7 @@ describe('parseToolListFromCLI — paren-wrapped rules (commas preserved)', () =
   })
 
   test('nested-looking content (no real nesting) still works', () => {
-    // Outer parens close the wrap, inner are part of the rule.
+    // Los paréntesis exteriores cierran la envoltura; los interiores son parte de la regla.
     expect(parseToolListFromCLI(['Bash(echo "(hi)")'])).toEqual([
       'Bash(echo "(hi)")',
     ])

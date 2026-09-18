@@ -5,14 +5,19 @@ import { isDangerousBashPermission } from '../permissionSetup.ts'
 const BASH = 'Bash'
 
 /**
- * Pin isDangerousBashPermission — the auto-mode safety gate. Marks
- * allow-rules that would auto-execute arbitrary code (python, ruby, perl,
- * shell wrappers, etc.) without classifier review.
+ * Copia de `ccnmt: packages/permission/src/__tests__/dangerousBashPermission.behavior.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * False negative → user enables auto-mode with `Bash(python:*)` allow,
- *   model can run arbitrary Python → arbitrary code execution
- * False positive → user's legitimate `Bash(git:*)` gets stripped from
- *   auto-mode, friction
+ * Fija `isDangerousBashPermission` — la puerta de seguridad del modo
+ * automático. Marca las reglas de allow que auto-ejecutarían código arbitrario
+ * (python, ruby, perl, envoltorios de shell, etc.) sin que el clasificador lo
+ * revise.
+ *
+ * Un falso negativo → el usuario habilita el modo automático con un allow de
+ *   `Bash(python:*)`, el modelo puede correr Python arbitrario → ejecución de
+ *   código arbitrario.
+ * Un falso positivo → el `Bash(git:*)` legítimo del usuario se retira del modo
+ *   automático: fricción.
  */
 describe('isDangerousBashPermission (auto-mode safety gate)', () => {
   test('Non-Bash tool → always false', () => {
@@ -21,7 +26,7 @@ describe('isDangerousBashPermission (auto-mode safety gate)', () => {
   })
 
   test('Bash with no content (tool-level allow) → DANGEROUS', () => {
-    // `Bash` rule with no content matches every command.
+    // Una regla `Bash` sin contenido casa con todos los comandos.
     expect(isDangerousBashPermission(BASH, undefined)).toBe(true)
     expect(isDangerousBashPermission(BASH, '')).toBe(true)
   })
@@ -56,12 +61,12 @@ describe('isDangerousBashPermission (auto-mode safety gate)', () => {
   })
 
   test('Whitespace-only rule trimmed and treated as bare dangerous-pattern check', () => {
-    // After trim → "" → matches no dangerous pattern
+    // Tras el trim queda "" → no casa con ningún patrón peligroso
     expect(isDangerousBashPermission(BASH, '   ')).toBe(false)
   })
 
   test('SAFE: explicit pinned command (e.g. "python script.py") → false', () => {
-    // Pinned to a specific command file, not a class of operations.
+    // Fijado a un archivo de comando concreto, no a una clase de operaciones.
     expect(isDangerousBashPermission(BASH, 'python script.py')).toBe(false)
   })
 
@@ -77,9 +82,10 @@ describe('isDangerousBashPermission (auto-mode safety gate)', () => {
   })
 
   test('SAFE: npm/yarn/bun/pnpm package managers (specific tools)', () => {
-    // Package managers ARE NOT in the dangerous-pattern list because
-    // they have their own permission scoping and don't directly execute
-    // arbitrary user code paths the way `python -c` does.
+    // Los gestores de paquetes NO están en la lista de patrones peligrosos
+    // porque tienen su propio acotamiento de permisos y no ejecutan
+    // directamente caminos de código arbitrario del usuario, como sí hace
+    // `python -c`.
     expect(isDangerousBashPermission(BASH, 'npm install')).toBe(false)
     expect(isDangerousBashPermission(BASH, 'bun:*')).toBe(false)
   })

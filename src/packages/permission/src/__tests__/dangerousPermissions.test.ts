@@ -1,13 +1,16 @@
 /**
- * Tests for dangerous-permission detection — gates auto-mode rule
- * registration. Wrong detection either:
- *   - blocks legitimate rules (UX papercut)
- *   - lets dangerous rules through (auto-allows code execution → user
- *     loses sandbox protection)
+ * Copia de `ccnmt: packages/permission/src/__tests__/dangerousPermissions.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * isDangerousBashPermission and isDangerousPowerShellPermission
- * specifically check rules that would let the agent run arbitrary
- * interpreted code (python:*, node:*, etc.) bypassing the classifier.
+ * Tests de la detección de permisos peligrosos — la puerta del registro de
+ * reglas del modo automático. Detectar mal produce una de dos cosas:
+ *   - bloquea reglas legítimas (un roce de experiencia de uso)
+ *   - deja pasar reglas peligrosas (auto-permite la ejecución de código, y el
+ *     usuario pierde la protección del sandbox)
+ *
+ * `isDangerousBashPermission` e `isDangerousPowerShellPermission` comprueban
+ * en concreto las reglas que dejarían al agente correr código interpretado
+ * arbitrario (`python:*`, `node:*`, etc.) saltándose el clasificador.
  */
 import { describe, expect, test } from 'bun:test'
 import {
@@ -38,7 +41,7 @@ describe('isDangerousBashPermission — non-Bash tools', () => {
   })
 
   test('Lowercase "bash" is NOT recognized (toolName check is exact)', () => {
-    // Documented: only exact match for 'Bash'.
+    // Documentado: sólo casa exactamente con 'Bash'.
     expect(isDangerousBashPermission('bash', undefined)).toBe(false)
   })
 })
@@ -65,7 +68,7 @@ describe('isDangerousBashPermission — interpreter prefix patterns', () => {
   })
 
   test('python -* (any flagged invocation) → dangerous', () => {
-    // Documented: blocks `python -c 'code'`-style allows.
+    // Documentado: bloquea los permisos del estilo `python -c 'code'`.
     expect(isDangerousBashPermission('Bash', 'python -c*')).toBe(true)
   })
 })
@@ -147,7 +150,7 @@ describe('isDangerousPowerShellPermission — non-PowerShell tools', () => {
   })
 
   test('lowercase "powershell" tool name → false', () => {
-    // Exact match for 'PowerShell'.
+    // Coincidencia exacta con 'PowerShell'.
     expect(isDangerousPowerShellPermission('powershell', undefined)).toBe(false)
   })
 })
@@ -204,9 +207,10 @@ describe('isOverlyBroadBashAllowRule — tool-level Bash allow detection', () =>
   })
 
   test('Bash with empty string ruleContent → NOT overly broad (only undefined counts)', () => {
-    // Documented strict-undefined check: '' fails the === undefined
-    // test. This means a rule "Bash()" parsed to ruleContent: '' is
-    // treated differently from "Bash" parsed to ruleContent: undefined.
+    // Comprobación estricta contra `undefined`, documentada: '' no pasa el
+    // test `=== undefined`. Es decir, una regla «Bash()» parseada a
+    // `ruleContent: ''` recibe un trato distinto que «Bash» parseada a
+    // `ruleContent: undefined`.
     expect(
       isOverlyBroadBashAllowRule({
         toolName: 'Bash',
