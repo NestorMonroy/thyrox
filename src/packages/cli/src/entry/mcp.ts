@@ -7,26 +7,26 @@ import {
   type ListToolsResult,
   type Tool,
 } from '@modelcontextprotocol/sdk/types.js'
-import '@claude-code-how-works/tool-registry/runtime'
-import { getDefaultAppState } from '@claude-code-how-works/app-host/state/AppStateStore.js'
-import review from '@claude-code-how-works/command-runtime/commands/review/review.js'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
+import '@thyrox/tool-registry/runtime'
+import { getDefaultAppState } from '@thyrox/app-host/state/AppStateStore.js'
+import review from '@thyrox/command-runtime/commands/review/review.js'
+import type { Command } from '@thyrox/command-runtime/runtime'
 import {
   findToolByName,
   getEmptyToolPermissionContext,
   type ToolUseContext,
-} from '@claude-code-how-works/tool-registry/Tool.js'
-import { getTools } from '@claude-code-how-works/tool-registry'
-import { createAbortController } from '@claude-code-how-works/agent/abortController.js'
-import { createFileStateCacheWithSizeLimit } from '@claude-code-how-works/tool-registry/fileStateCache'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { createAssistantMessage } from '@claude-code-how-works/agent/messages.js'
-import { getMainLoopModel } from '@claude-code-how-works/provider/model.js'
-import { hasPermissionsToUseTool } from '@claude-code-how-works/permission/permissions'
-import { setCwd } from '@claude-code-how-works/shell/Shell.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { getErrorParts } from '@claude-code-how-works/tool-registry/toolErrors.js'
-import { zodToJsonSchema } from '@claude-code-how-works/agent/zodSchema/zodToJsonSchema.js'
+} from '@thyrox/tool-registry/Tool.js'
+import { getTools } from '@thyrox/tool-registry'
+import { createAbortController } from '@thyrox/agent/abortController.js'
+import { createFileStateCacheWithSizeLimit } from '@thyrox/tool-registry/fileStateCache'
+import { logError } from '@thyrox/local-observability/log.js'
+import { createAssistantMessage } from '@thyrox/agent/messages.js'
+import { getMainLoopModel } from '@thyrox/provider/model.js'
+import { hasPermissionsToUseTool } from '@thyrox/permission/permissions'
+import { setCwd } from '@thyrox/shell/Shell.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { getErrorParts } from '@thyrox/tool-registry/toolErrors.js'
+import { zodToJsonSchema } from '@thyrox/agent/zodSchema/zodToJsonSchema.js'
 
 type ToolInput = Tool['inputSchema']
 type ToolOutput = Tool['outputSchema']

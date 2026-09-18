@@ -7,7 +7,7 @@
  *
  * @dynamicRequire
  */
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 
 export type AgentAction = 'stop' | 'kill' | 'respawn' | 'attach' | 'rm' | 'spawn'
 

@@ -12,7 +12,7 @@ import {
   InvalidArgumentError,
   Option,
 } from '@commander-js/extra-typings'
-import { PERMISSION_MODES } from '@claude-code-how-works/permission/PermissionMode'
+import { PERMISSION_MODES } from '@thyrox/permission/PermissionMode'
 
 /**
  * Creates help configuration that sorts subcommands and options alphabetically.

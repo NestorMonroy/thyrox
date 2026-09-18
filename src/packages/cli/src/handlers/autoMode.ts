@@ -3,19 +3,19 @@
  * critique user-written rules. Dynamically imported when `claude auto-mode ...` runs.
  */
 
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import {
   getMainLoopModel,
   parseUserSpecifiedModel,
-} from '@claude-code-how-works/provider/model.js'
+} from '@thyrox/provider/model.js'
 import {
   type AutoModeRules,
   buildDefaultExternalSystemPrompt,
   getDefaultExternalAutoModeRules,
-} from '@claude-code-how-works/permission/yoloClassifier.js'
-import { getAutoModeConfig } from '@claude-code-how-works/config/settings'
-import { sideQuery } from '@claude-code-how-works/agent/sideQuery.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/permission/yoloClassifier.js'
+import { getAutoModeConfig } from '@thyrox/config/settings'
+import { sideQuery } from '@thyrox/agent/sideQuery.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 function writeRules(rules: AutoModeRules): void {
   process.stdout.write(jsonStringify(rules, null, 2) + '\n')

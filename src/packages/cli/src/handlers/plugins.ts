@@ -5,12 +5,12 @@
 /* eslint-disable custom-rules/no-process-exit -- CLI subcommand handlers intentionally exit */
 import figures from 'figures'
 import { basename, dirname } from 'path'
-import { setUseCoworkPlugins } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { setUseCoworkPlugins } from '@thyrox/app-host/bootstrap/state.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   disableAllPlugins,
   disablePlugin,
@@ -20,20 +20,20 @@ import {
   updatePluginCli,
   VALID_INSTALLABLE_SCOPES,
   VALID_UPDATE_SCOPES,
-} from '@claude-code-how-works/config/plugin/pluginCliCommands'
-import { getPluginErrorMessage } from '@claude-code-how-works/config/plugin/types'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { clearAllCaches } from '@claude-code-how-works/config/plugin/cacheUtils'
-import { getInstallCounts } from '@claude-code-how-works/config/plugin/installCounts'
+} from '@thyrox/config/plugin/pluginCliCommands'
+import { getPluginErrorMessage } from '@thyrox/config/plugin/types'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { clearAllCaches } from '@thyrox/config/plugin/cacheUtils'
+import { getInstallCounts } from '@thyrox/config/plugin/installCounts'
 import {
   isPluginInstalled,
   loadInstalledPluginsV2,
-} from '@claude-code-how-works/config/plugin/installedPluginsManager'
+} from '@thyrox/config/plugin/installedPluginsManager'
 import {
   createPluginId,
   loadMarketplacesWithGracefulDegradation,
-} from '@claude-code-how-works/config/plugin/marketplaceHelpers'
+} from '@thyrox/config/plugin/marketplaceHelpers'
 import {
   addMarketplaceSource,
   loadKnownMarketplacesConfig,
@@ -41,22 +41,22 @@ import {
   refreshMarketplace,
   removeMarketplaceSource,
   saveMarketplaceToSettings,
-} from '@claude-code-how-works/config/plugin/marketplaceManager'
-import { loadPluginMcpServers } from '@claude-code-how-works/config/plugin/mcpPluginIntegration'
-import { parseMarketplaceInput } from '@claude-code-how-works/config/plugin/parseMarketplaceInput'
+} from '@thyrox/config/plugin/marketplaceManager'
+import { loadPluginMcpServers } from '@thyrox/config/plugin/mcpPluginIntegration'
+import { parseMarketplaceInput } from '@thyrox/config/plugin/parseMarketplaceInput'
 import {
   parsePluginIdentifier,
   scopeToSettingSource,
-} from '@claude-code-how-works/config/plugin/pluginIdentifier'
-import { loadAllPlugins } from '@claude-code-how-works/config/plugin/pluginLoader'
-import type { PluginSource } from '@claude-code-how-works/config/plugin/schemas'
+} from '@thyrox/config/plugin/pluginIdentifier'
+import { loadAllPlugins } from '@thyrox/config/plugin/pluginLoader'
+import type { PluginSource } from '@thyrox/config/plugin/schemas'
 import {
   type ValidationResult,
   validateManifest,
   validatePluginContents,
-} from '@claude-code-how-works/config/plugin/validatePlugin'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { plural } from '@claude-code-how-works/output/utils/stringUtils.js'
+} from '@thyrox/config/plugin/validatePlugin'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { cliError, cliOk } from '../exit.js'
 
 // Re-export for main.tsx to reference in option definitions
@@ -154,7 +154,7 @@ export async function pluginListHandler(options: {
 
   const installedData = loadInstalledPluginsV2()
   const { getPluginEditableScopes } = await import(
-    '@claude-code-how-works/config/plugin/pluginStartupCheck'
+    '@thyrox/config/plugin/pluginStartupCheck'
   )
   const enabledPlugins = getPluginEditableScopes()
 

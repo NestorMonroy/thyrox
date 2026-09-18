@@ -4,25 +4,25 @@ import { createInterface } from 'node:readline/promises'
 import {
   clearAuthRelatedCaches,
   performLogout,
-} from '@claude-code-how-works/provider/commands/logout/logout.js'
+} from '@thyrox/provider/commands/logout/logout.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { logAuthEvent } from '@claude-code-how-works/local-observability/telemetry'
-import { getSSLErrorHint } from '@claude-code-how-works/provider/errorUtils.js'
-import { fetchAndStoreClaudeCodeFirstTokenDate } from '@claude-code-how-works/provider/firstTokenDate.js'
+} from '@thyrox/local-observability'
+import { logAuthEvent } from '@thyrox/local-observability/telemetry'
+import { getSSLErrorHint } from '@thyrox/provider/errorUtils.js'
+import { fetchAndStoreClaudeCodeFirstTokenDate } from '@thyrox/provider/firstTokenDate.js'
 import {
   createAndStoreApiKey,
   fetchAndStoreUserRoles,
   refreshOAuthToken,
   shouldUseClaudeAIAuth,
   storeOAuthAccountInfo,
-} from '@claude-code-how-works/provider/oauth/client.js'
-import { getOauthProfileFromOauthToken } from '@claude-code-how-works/provider/oauth/getOauthProfile.js'
-import { OAuthService } from '@claude-code-how-works/provider/oauth/index.js'
-import type { OAuthTokens } from '@claude-code-how-works/provider/oauth/types.js'
-import { LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS } from '@claude-code-how-works/provider/oauthConstants.js'
+} from '@thyrox/provider/oauth/client.js'
+import { getOauthProfileFromOauthToken } from '@thyrox/provider/oauth/getOauthProfile.js'
+import { OAuthService } from '@thyrox/provider/oauth/index.js'
+import type { OAuthTokens } from '@thyrox/provider/oauth/types.js'
+import { LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS } from '@thyrox/provider/oauthConstants.js'
 import {
   clearOAuthTokenCache,
   getAnthropicApiKeyWithSource,
@@ -32,24 +32,24 @@ import {
   isUsing3PServices,
   saveOAuthTokensIfNeeded,
   validateForceLoginOrg,
-} from '@claude-code-how-works/provider/authAlias.js'
-import { saveGlobalConfig } from '@claude-code-how-works/config'
+} from '@thyrox/provider/authAlias.js'
+import { saveGlobalConfig } from '@thyrox/config'
 import {
   CLAUDE_AI_CONNECTION_ID,
   getDefaultModelsForProtocol,
   saveConnection,
-} from '@claude-code-how-works/provider/connections.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isRunningOnHomespace } from '@claude-code-how-works/config/env/utils'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { getAPIProvider } from '@claude-code-how-works/provider/providers.js'
-import { getInitialSettings } from '@claude-code-how-works/config/settings'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/provider/connections.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isRunningOnHomespace } from '@thyrox/config/env/utils'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { getAPIProvider } from '@thyrox/provider/providers.js'
+import { getInitialSettings } from '@thyrox/config/settings'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import {
   buildAccountProperties,
   buildAPIProviderProperties,
-} from '@claude-code-how-works/agent/statusAlias.js'
+} from '@thyrox/agent/statusAlias.js'
 
 /**
  * Shared post-token-acquisition logic. Saves tokens, fetches profile/roles,
@@ -174,7 +174,7 @@ export async function installOAuthTokens(tokens: OAuthTokens): Promise<void> {
   // Same logic for FD-loaded token: only update if a prior FD token exists.
   // BsH() returns the cached value; A_H(null|token) replaces it.
   const { getOauthTokenFromFd, setOauthTokenFromFd } = await import(
-    '@claude-code-how-works/app-host/bootstrap/state.js'
+    '@thyrox/app-host/bootstrap/state.js'
   )
   if (getOauthTokenFromFd()) {
     setOauthTokenFromFd(storageResult.success ? null : tokensView.accessToken)

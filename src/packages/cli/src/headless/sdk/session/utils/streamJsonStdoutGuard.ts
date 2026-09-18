@@ -1,5 +1,5 @@
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 /**
  * Sentinel written to stderr ahead of any diverted non-JSON line, so that

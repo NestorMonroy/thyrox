@@ -30,7 +30,7 @@ import { feature } from 'bun:bundle'
 // (a dynamic import would read as unused). Mirrors openAgentsFromRepl.ts.
 import { pinFd0Raw, unpinFd0Raw } from 'stdin-napi'
 
-import { stopCapturingEarlyInput } from '@claude-code-how-works/repl/earlyInput.js'
+import { stopCapturingEarlyInput } from '@thyrox/repl/earlyInput.js'
 
 import { agentsHandler as plainTextHandler } from './agents.js'
 import { appendFleetCompletionPolicy } from '../bg/fleetCompletionPolicy.js'
@@ -115,16 +115,16 @@ async function runFleetLoop(): Promise<void> {
   // "blank window" the user complained about. Pre-warming the module
   // graph here pays its cost during ccb agents boot instead.
   const [{ mountFleetView }, { createRoot }] = await Promise.all([
-    import('@claude-code-how-works/repl/screens/agentFleet/mountFleetView.js'),
+    import('@thyrox/repl/screens/agentFleet/mountFleetView.js'),
     import('@anthropic/ink'),
   ])
-  const { spawnBgPty } = await import('@claude-code-how-works/cli/bg.js')
+  const { spawnBgPty } = await import('@thyrox/cli/bg.js')
   const { fleetAttach, waitForWorkerFirstFrame } = await import(
     './agentFleetAttach.js'
   )
   await import('../bg/attachClient.js')
   await import('../bg/ptyAdopter.js')
-  const { getCwd } = await import('@claude-code-how-works/app-host/bootstrap/cwd.js')
+  const { getCwd } = await import('@thyrox/app-host/bootstrap/cwd.js')
   // Spare-pool wiring. Source: ant 4774.js rP6/yvK + 5092.js useEffect
   // that calls `rP6(m, true, A)` on FleetView mount. ccb fires ensure
   // here at handler start (one process == one FleetView lifetime in

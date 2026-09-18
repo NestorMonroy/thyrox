@@ -24,22 +24,22 @@
 import { randomUUID } from 'node:crypto'
 import { existsSync } from 'node:fs'
 
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import {
   getSessionId,
   isSessionPersistenceDisabled,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { markHasUsedAgentsFleet } from '@claude-code-how-works/config'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { markHasUsedAgentsFleet } from '@thyrox/config'
 import {
   flushSessionStorage,
   getTranscriptPath,
-} from '@claude-code-how-works/storage/sessionStorage.js'
+} from '@thyrox/storage/sessionStorage.js'
 import {
   buildReplForkFlags,
   deriveReplSeed,
   preSeedReplBgJob,
-} from '@claude-code-how-works/agent/background/fleet/replBridgeSeed.js'
-import type { Message } from '@claude-code-how-works/agent/messageShapes.js'
+} from '@thyrox/agent/background/fleet/replBridgeSeed.js'
+import type { Message } from '@thyrox/agent/messageShapes.js'
 // Static import (not `await import`): this whole module is itself lazily
 // imported by REPLView only on the left-arrow press, so pulling stdin-napi in
 // statically here does NOT touch the REPL boot path, and it keeps the
@@ -156,7 +156,7 @@ export async function openAgentsFromReplLeftArrow(
       waitForSocketMs: 0,
     }).catch(err => {
       // Rollback on spawn failure (ant o14: rm jobDir + log).
-      void import('@claude-code-how-works/agent/background/fleet/fleetStore.js')
+      void import('@thyrox/agent/background/fleet/fleetStore.js')
         .then(({ deleteJobDir }) => deleteJobDir(short))
         .catch(() => {})
       process.stderr.write(

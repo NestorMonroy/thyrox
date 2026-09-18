@@ -1,15 +1,15 @@
 import { feature } from 'bun:bundle'
 import { getCliHostBindings } from './host.js'
 import type { HeadlessStateStore } from './contracts.js'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
+import type { Command } from '@thyrox/command-runtime/runtime'
 import type {
   Tools,
-} from '@claude-code-how-works/tool-registry/runtime'
+} from '@thyrox/tool-registry/runtime'
 import {
   type HeadlessStoreParams,
   type MCPServerConnection,
   type McpCommand,
-} from '@claude-code-how-works/agent/sessionStores.js'
+} from '@thyrox/agent/sessionStores.js'
 
 /**
  * V7 §7.2 SDK boundary placeholder types. Internal headless flow uses

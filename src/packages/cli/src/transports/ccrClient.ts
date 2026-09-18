@@ -2,26 +2,26 @@ import { randomUUID } from 'crypto'
 import type {
   SDKPartialAssistantMessage,
   StdoutMessage,
-} from '@claude-code-how-works/headless-sdk/controlTypes.js'
-import { decodeJwtExpiry } from '@claude-code-how-works/bridge/jwtUtils.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logForDiagnosticsNoPII } from '@claude-code-how-works/local-observability/logging'
-import { errorMessage, getErrnoCode } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { createAxiosInstance } from '@claude-code-how-works/provider/proxy.js'
+} from '@thyrox/headless-sdk/controlTypes.js'
+import { decodeJwtExpiry } from '@thyrox/bridge/jwtUtils.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
+import { errorMessage, getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
+import { createAxiosInstance } from '@thyrox/provider/proxy.js'
 import {
   registerSessionActivityCallback,
   unregisterSessionActivityCallback,
-} from '@claude-code-how-works/storage/sessionActivity.js'
+} from '@thyrox/storage/sessionActivity.js'
 import {
   getSessionIngressAuthHeaders,
   getSessionIngressAuthToken,
-} from '@claude-code-how-works/provider/sessionIngressAuth.js'
+} from '@thyrox/provider/sessionIngressAuth.js'
 import type {
   RequiresActionDetails,
   SessionState,
-} from '@claude-code-how-works/storage/sessionState.js'
-import { sleep } from '@claude-code-how-works/config/sleep'
-import { getClaudeCodeUserAgent } from '@claude-code-how-works/provider/userAgent.js'
+} from '@thyrox/storage/sessionState.js'
+import { sleep } from '@thyrox/config/sleep'
+import { getClaudeCodeUserAgent } from '@thyrox/provider/userAgent.js'
 import {
   RetryableError,
   SerialBatchEventUploader,

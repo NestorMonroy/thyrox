@@ -8,7 +8,7 @@
 // named this `isProcessRunning` but its semantics match `isPidAlive`
 // (EPERM → still alive). Re-export under both names so callers don't
 // have to migrate their import sites en-masse.
-export { isPidAlive as isProcessRunning } from '@claude-code-how-works/shell/genericProcessUtils.js'
+export { isPidAlive as isProcessRunning } from '@thyrox/shell/genericProcessUtils.js'
 
 /** Format ms-timestamp delta as a humane "Xs/m/h/d ago" string. */
 export function formatRelativeTime(ms: number): string {

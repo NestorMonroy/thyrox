@@ -1,7 +1,7 @@
 // Auto-generated stub — replace with real implementation
-import type { SDKMessage } from '@claude-code-how-works/headless-sdk/coreTypes.js'
-import type { PermissionUpdate } from '@claude-code-how-works/repl/replTypes/permissions.js'
-import type { RemoteMessageContent } from '@claude-code-how-works/teleport/api.js'
+import type { SDKMessage } from '@thyrox/headless-sdk/coreTypes.js'
+import type { PermissionUpdate } from '@thyrox/repl/replTypes/permissions.js'
+import type { RemoteMessageContent } from '@thyrox/teleport/api.js'
 
 export interface SSHSessionManagerOptions {
   onMessage: (sdkMessage: SDKMessage) => void

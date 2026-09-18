@@ -7,18 +7,18 @@
  */
 
 import { SHOW_CURSOR } from '@anthropic/ink'
-import { isRunningWithBun } from '@claude-code-how-works/config/bundledMode'
+import { isRunningWithBun } from '@thyrox/config/bundledMode'
 import {
   getManagedSettingsKeysForLogging,
   getSettingsForSource,
-} from '@claude-code-how-works/config/settings'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability/compat'
+} from '@thyrox/config/settings'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
 
 // Lazy require to avoid circular dependency: teammate.ts -> AppState.tsx -> ... -> main.tsx
 /* eslint-disable @typescript-eslint/no-require-imports */
 export const getTeammateModeSnapshot = () =>
-  require('@claude-code-how-works/swarm') as typeof import('@claude-code-how-works/swarm')
+  require('@thyrox/swarm') as typeof import('@thyrox/swarm')
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 /**

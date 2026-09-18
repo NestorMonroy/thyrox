@@ -1,4 +1,4 @@
-import type { StdoutMessage } from '@claude-code-how-works/headless-sdk/controlTypes.js'
+import type { StdoutMessage } from '@thyrox/headless-sdk/controlTypes.js'
 
 export type Transport = {
   connect(): Promise<void>

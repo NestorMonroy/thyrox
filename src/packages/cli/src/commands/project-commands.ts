@@ -24,8 +24,8 @@ import {
   executePurgeItem,
   type PurgeItem,
   type PurgePlan,
-} from '@claude-code-how-works/storage/projectPurge.js'
-import { getClaudeConfigHomeDir } from '@claude-code-how-works/config/env/utils'
+} from '@thyrox/storage/projectPurge.js'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
 
 interface PurgeOptions {
   dryRun?: boolean

@@ -6,23 +6,23 @@
 
 import { cwd } from 'process'
 import React from 'react'
-import { WelcomeV2 } from '@claude-code-how-works/repl/components/LogoV2/WelcomeV2.js'
-import { useManagePlugins } from '@claude-code-how-works/repl/hooks/useManagePlugins.js'
+import { WelcomeV2 } from '@thyrox/repl/components/LogoV2/WelcomeV2.js'
+import { useManagePlugins } from '@thyrox/repl/hooks/useManagePlugins.js'
 import type { Root } from '@anthropic/ink'
 import { Box, Text } from '@anthropic/ink'
-import { KeybindingSetup } from '@claude-code-how-works/repl/keybindings/KeybindingProviderSetup.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { MCPConnectionManager } from '@claude-code-how-works/mcp-runtime/MCPConnectionManager.js'
+import { KeybindingSetup } from '@thyrox/repl/keybindings/KeybindingProviderSetup.js'
+import { logEvent } from '@thyrox/local-observability'
+import { MCPConnectionManager } from '@thyrox/mcp-runtime/MCPConnectionManager.js'
 import { AppStateProvider } from '../appStateShim.js'
-import { onChangeAppState } from '@claude-code-how-works/repl/onChangeAppState.js'
-import { isAnthropicAuthEnabled } from '@claude-code-how-works/provider/authAlias.js'
+import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
+import { isAnthropicAuthEnabled } from '@thyrox/provider/authAlias.js'
 
 export async function setupTokenHandler(root: Root): Promise<void> {
   logEvent('tengu_setup_token_command', {})
 
   const showAuthWarning = !isAnthropicAuthEnabled()
   const { ConsoleOAuthFlow } = await import(
-    '@claude-code-how-works/repl/components/ConsoleOAuthFlow.js'
+    '@thyrox/repl/components/ConsoleOAuthFlow.js'
   )
   await new Promise<void>(resolve => {
     root.render(
@@ -60,7 +60,7 @@ export async function setupTokenHandler(root: Root): Promise<void> {
 
 // DoctorWithPlugins wrapper + doctor handler
 const DoctorLazy = React.lazy(() =>
-  import('@claude-code-how-works/repl/screens/Doctor.js').then(m => ({ default: m.Doctor })),
+  import('@thyrox/repl/screens/Doctor.js').then(m => ({ default: m.Doctor })),
 )
 
 function DoctorWithPlugins({
@@ -108,7 +108,7 @@ export async function installHandler(
 ): Promise<void> {
   const { setup } = await import('../setup/setup.js')
   await setup(cwd(), 'default', false, false, undefined, false)
-  const { install } = await import('@claude-code-how-works/command-runtime/commands/install/install.js')
+  const { install } = await import('@thyrox/command-runtime/commands/install/install.js')
   await new Promise<void>(resolve => {
     const args: string[] = []
     if (target) args.push(target)

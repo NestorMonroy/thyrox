@@ -1,5 +1,5 @@
 import { URL } from 'url'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { HybridTransport } from './HybridTransport.js'
 import { SSETransport } from './SSETransport.js'
 import type { Transport } from './Transport.js'

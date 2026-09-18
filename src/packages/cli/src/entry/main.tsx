@@ -6,12 +6,12 @@
 //    key) in parallel — isRemoteManagedSettingsEligible() otherwise reads them
 //    sequentially via sync spawn inside applySafeConfigEnvironmentVariables()
 //    (~65ms on every macOS startup)
-import { profileCheckpoint } from "@claude-code-how-works/app-host/startup/startupProfiler.js";
+import { profileCheckpoint } from "@thyrox/app-host/startup/startupProfiler.js";
 
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
 profileCheckpoint("main_tsx_entry");
 
-import { startMdmRawRead } from "@claude-code-how-works/config/settings/mdm/rawRead";
+import { startMdmRawRead } from "@thyrox/config/settings/mdm/rawRead";
 
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
 startMdmRawRead();
@@ -21,15 +21,15 @@ import { startKeychainPrefetch } from "../secureStorage/keychainPrefetch.js";
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
 startKeychainPrefetch();
 
-import '@claude-code-how-works/app-host/runtime/bootstrap.js'
+import '@thyrox/app-host/runtime/bootstrap.js'
 
-import type { RuntimeHandles } from '@claude-code-how-works/app-host'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
+import type { RuntimeHandles } from '@thyrox/app-host'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { setThemeConfigCallbacks } from '@anthropic/ink'
-import { runClaudeCode } from '@claude-code-how-works/cli'
+import { runClaudeCode } from '@thyrox/cli'
 
-import { createRuntimeHandles } from '@claude-code-how-works/app-host/runtime/runtimeHandles.js'
-import { startDeferredPrefetches } from '@claude-code-how-works/app-host/main/startup/context.js'
+import { createRuntimeHandles } from '@thyrox/app-host/runtime/runtimeHandles.js'
+import { startDeferredPrefetches } from '@thyrox/app-host/main/startup/context.js'
 
 export { startDeferredPrefetches };
 

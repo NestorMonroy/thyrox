@@ -8,7 +8,7 @@ import {
   canBatchWith,
   joinPromptValues,
 } from '../headless/sdk/session/prompt-utils.js'
-import type { QueuedCommand } from '@claude-code-how-works/repl/textInputTypes.js'
+import type { QueuedCommand } from '@thyrox/repl/textInputTypes.js'
 
 describe('joinPromptValues — single value passthrough', () => {
   test('single string returns the string', () => {

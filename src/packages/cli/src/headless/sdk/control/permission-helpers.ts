@@ -1,17 +1,17 @@
-import { hasPermissionsToUseTool } from '@claude-code-how-works/permission'
+import { hasPermissionsToUseTool } from '@thyrox/permission'
 import {
   outputSchema as permissionToolOutputSchema,
   permissionPromptToolResultToPermissionDecision,
-} from '@claude-code-how-works/permission/PermissionPromptToolResultSchema'
-import type { Tool } from '@claude-code-how-works/tool-registry/Tool.js'
-import { toolMatchesName } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+} from '@thyrox/permission/PermissionPromptToolResultSchema'
+import type { Tool } from '@thyrox/tool-registry/Tool.js'
+import { toolMatchesName } from '@thyrox/tool-registry/Tool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import { StructuredIO } from '../../../structuredIO.js'
-import type { RequiresActionDetails } from '@claude-code-how-works/storage/sessionState.js'
-import { gracefulShutdownSync } from '@claude-code-how-works/app-host/bootstrap/gracefulShutdown.js'
-import { safeParseJSON } from '@claude-code-how-works/storage/json.js'
-import { createCombinedAbortSignal } from '@claude-code-how-works/agent/combinedAbortSignal.js'
-import type { PermissionPromptTool } from '@claude-code-how-works/repl/queryHelpers.js'
+import type { RequiresActionDetails } from '@thyrox/storage/sessionState.js'
+import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
+import { safeParseJSON } from '@thyrox/storage/json.js'
+import { createCombinedAbortSignal } from '@thyrox/agent/combinedAbortSignal.js'
+import type { PermissionPromptTool } from '@thyrox/repl/queryHelpers.js'
 
 /**
  * Creates a CanUseToolFn that incorporates a custom permission prompt tool.

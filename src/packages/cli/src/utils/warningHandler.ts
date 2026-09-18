@@ -2,10 +2,10 @@ import { posix, win32 } from 'path'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { getPlatform } from '@claude-code-how-works/config/platform'
+} from '@thyrox/local-observability'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { getPlatform } from '@thyrox/config/platform'
 
 // Track warnings to avoid spam — bounded to prevent unbounded memory growth
 const MAX_WARNING_KEYS = 1000

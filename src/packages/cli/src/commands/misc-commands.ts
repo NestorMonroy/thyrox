@@ -1,16 +1,16 @@
 import type { Command } from '@commander-js/extra-typings'
 import { Option } from '@commander-js/extra-typings'
 import { feature } from 'bun:bundle'
-import { bridgeMain } from '@claude-code-how-works/bridge'
+import { bridgeMain } from '@thyrox/bridge'
 import { createSortedHelpConfig } from '../entry/commander.js'
 import {
   VALID_INSTALLABLE_SCOPES,
   VALID_UPDATE_SCOPES,
-} from '@claude-code-how-works/config/plugin/pluginCliCommands'
-import { getAutoModeEnabledStateIfCached } from '@claude-code-how-works/permission/permissionSetup'
-import { getBaseRenderOptions } from '@claude-code-how-works/output/render-options'
-import { validateUuid } from '@claude-code-how-works/agent/uuid.js'
-import { TASK_STATUSES } from '@claude-code-how-works/agent/tasks.js'
+} from '@thyrox/config/plugin/pluginCliCommands'
+import { getAutoModeEnabledStateIfCached } from '@thyrox/permission/permissionSetup'
+import { getBaseRenderOptions } from '@thyrox/output/render-options'
+import { validateUuid } from '@thyrox/agent/uuid.js'
+import { TASK_STATUSES } from '@thyrox/agent/tasks.js'
 
 export function registerMiscCommands(program: Command): void {
   // Background session subcommands. The actual handlers run in the

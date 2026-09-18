@@ -5,39 +5,39 @@ import {
   isAutoModeGateEnabled,
   isBypassPermissionsModeDisabled,
   transitionPermissionMode,
-} from '@claude-code-how-works/permission'
+} from '@thyrox/permission'
 import {
   getSettings,
-} from '@claude-code-how-works/config/settings'
+} from '@thyrox/config/settings'
 import {
   ChannelMessageNotificationSchema,
   findChannelEntry,
   gateChannelServer,
   type MCPServerConnection,
   wrapChannelMessage,
-} from '@claude-code-how-works/mcp-runtime'
-import type { ToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { Stream } from '@claude-code-how-works/config/stream'
+} from '@thyrox/mcp-runtime'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+import type { Stream } from '@thyrox/config/stream'
 import type {
   StdoutMessage,
   SDKControlInitializeRequest,
   SDKControlInitializeResponse,
-} from '@claude-code-how-works/headless-sdk/controlTypes.js'
+} from '@thyrox/headless-sdk/controlTypes.js'
 import type {
   AgentDefinition,
-} from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import { isBuiltInAgent, parseAgentsFromJson } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
+} from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { isBuiltInAgent, parseAgentsFromJson } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import type { Command } from '@thyrox/command-runtime/runtime'
 import {
   formatDescriptionWithSource,
   getCommandName,
-} from '@claude-code-how-works/command-runtime/runtime'
-import type { ModelInfo } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import type { HookCallbackMatcher } from '@claude-code-how-works/agent/types/hooks.js'
-import type { HookEvent } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import type { PermissionMode as InternalPermissionMode } from '@claude-code-how-works/permission/permissionTypes'
+} from '@thyrox/command-runtime/runtime'
+import type { ModelInfo } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { HookCallbackMatcher } from '@thyrox/agent/types/hooks.js'
+import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { PermissionMode as InternalPermissionMode } from '@thyrox/permission/permissionTypes'
 import type { AppStateLike as AppState } from '../../../contracts.js'
-import { parsePluginIdentifier } from '@claude-code-how-works/config/plugin/pluginIdentifier'
+import { parsePluginIdentifier } from '@thyrox/config/plugin/pluginIdentifier'
 import {
   getSessionId,
   setMainLoopModelOverride,
@@ -48,25 +48,25 @@ import {
   type ChannelEntry,
   registerHookCallbacks,
   setInitJsonSchema,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 import {
   DEFAULT_OUTPUT_STYLE_NAME,
   getAllOutputStyles,
-} from '@claude-code-how-works/config/outputStyles.js'
-import { getAccountInformation } from '@claude-code-how-works/provider/authAlias.js'
-import { getAPIProvider } from '@claude-code-how-works/provider/providers.js'
+} from '@thyrox/config/outputStyles.js'
+import { getAccountInformation } from '@thyrox/provider/authAlias.js'
+import { getAPIProvider } from '@thyrox/provider/providers.js'
 import {
   isFastModeEnabled,
   isFastModeAvailable,
   getFastModeState,
-} from '@claude-code-how-works/repl/fastMode.js'
-import { AwsAuthStatusManager } from '@claude-code-how-works/provider/awsAuthStatusManager.js'
-import { parseUserSpecifiedModel } from '@claude-code-how-works/provider/model.js'
-import { logMCPDebug } from '@claude-code-how-works/local-observability/log.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability/compat'
-import { enqueue } from '@claude-code-how-works/agent/messageQueueManager.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
+} from '@thyrox/repl/fastMode.js'
+import { AwsAuthStatusManager } from '@thyrox/provider/awsAuthStatusManager.js'
+import { parseUserSpecifiedModel } from '@thyrox/provider/model.js'
+import { logMCPDebug } from '@thyrox/local-observability/log.js'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
+import { enqueue } from '@thyrox/agent/messageQueueManager.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { randomUUID } from 'crypto'
 import { StructuredIO } from '../../../structuredIO.js'
 

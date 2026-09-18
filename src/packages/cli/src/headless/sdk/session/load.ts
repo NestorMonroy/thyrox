@@ -1,49 +1,49 @@
 import { feature } from 'bun:bundle'
 import { dirname } from 'path'
 import { randomUUID } from 'crypto'
-import type { Message, NormalizedUserMessage } from '@claude-code-how-works/agent/messageShapes'
+import type { Message, NormalizedUserMessage } from '@thyrox/agent/messageShapes'
 import type { AppStateLike as AppState } from '../../../contracts.js'
-import type { SessionExternalMetadata } from '@claude-code-how-works/storage/sessionState.js'
+import type { SessionExternalMetadata } from '@thyrox/storage/sessionState.js'
 import {
   loadConversationForResume,
   type TurnInterruptionState,
-} from '@claude-code-how-works/repl/conversationRecovery.js'
+} from '@thyrox/repl/conversationRecovery.js'
 import {
   hydrateRemoteSession,
   hydrateFromCCRv2InternalEvents,
   resetSessionFilePointer,
   restoreSessionMetadata,
   saveMode,
-} from '@claude-code-how-works/storage/sessionStorage.js'
+} from '@thyrox/storage/sessionStorage.js'
 import {
   restoreSessionStateFromLog,
-} from '@claude-code-how-works/storage/sessionRestore.js'
+} from '@thyrox/storage/sessionRestore.js'
 import {
   getSessionId,
   setMainLoopModelOverride,
   switchSession,
   isSessionPersistenceDisabled,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { EMPTY_USAGE } from '@claude-code-how-works/provider/logging.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { EMPTY_USAGE } from '@thyrox/provider/logging.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { logEvent } from '@thyrox/local-observability'
+import { logError } from '@thyrox/local-observability/log.js'
 import {
   gracefulShutdownSync,
-} from '@claude-code-how-works/app-host/bootstrap/gracefulShutdown.js'
-import { isPolicyAllowed } from '@claude-code-how-works/provider/policyLimits/index.js'
-import { parseSessionIdentifier } from '@claude-code-how-works/agent/sessionUrl.js'
+} from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
+import { isPolicyAllowed } from '@thyrox/provider/policyLimits/index.js'
+import { parseSessionIdentifier } from '@thyrox/agent/sessionUrl.js'
 import {
   processSessionStartHooks,
-} from '@claude-code-how-works/storage/sessionStart.js'
-import { externalMetadataToAppState } from '@claude-code-how-works/repl/onChangeAppState.js'
-import { asSessionId } from '@claude-code-how-works/agent/idTypes'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+} from '@thyrox/storage/sessionStart.js'
+import { externalMetadataToAppState } from '@thyrox/repl/onChangeAppState.js'
+import { asSessionId } from '@thyrox/agent/idTypes'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const coordinatorModeModule = feature('COORDINATOR_MODE')
-  ? (require('@claude-code-how-works/agent/coordinatorMode.js') as typeof import('@claude-code-how-works/agent/coordinatorMode.js'))
+  ? (require('@thyrox/agent/coordinatorMode.js') as typeof import('@thyrox/agent/coordinatorMode.js'))
   : null
 
 /**
@@ -137,7 +137,7 @@ export async function loadInitialMessages(
               getActiveAgentsFromList,
             } =
               // eslint-disable-next-line @typescript-eslint/no-require-imports
-              require('@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js') as typeof import('@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js')
+              require('@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js') as typeof import('@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js')
             getAgentDefinitionsWithOverrides.cache.clear?.()
             const freshAgentDefs = await getAgentDefinitionsWithOverrides(
               getCwd(),
@@ -217,7 +217,7 @@ export async function loadInitialMessages(
         processMessagesForTeleportResume,
         teleportResumeCodeSession,
         validateGitState,
-      } = await import('@claude-code-how-works/tool-registry/teleport.js')
+      } = await import('@thyrox/tool-registry/teleport.js')
       await validateGitState()
       const teleportResult = await teleportResumeCodeSession(options.teleport)
       const { branchError } = await checkOutTeleportedSessionBranch(
@@ -339,7 +339,7 @@ export async function loadInitialMessages(
           // Refresh agent definitions to reflect the mode switch
           const { getAgentDefinitionsWithOverrides, getActiveAgentsFromList } =
             // eslint-disable-next-line @typescript-eslint/no-require-imports
-            require('@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js') as typeof import('@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js')
+            require('@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js') as typeof import('@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js')
           getAgentDefinitionsWithOverrides.cache.clear?.()
           const freshAgentDefs = await getAgentDefinitionsWithOverrides(
             getCwd(),

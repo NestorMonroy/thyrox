@@ -21,8 +21,8 @@ declare namespace MACRO {
 // These are referenced inside `MACRO(() => ...)` or `false && ...` blocks.
 
 // Model resolution (internal)
-declare function resolveAntModel(model: string): import('@claude-code-how-works/provider/model/antModels.js').AntModel | undefined
-declare function getAntModels(): import('@claude-code-how-works/provider/model/antModels.js').AntModel[]
+declare function resolveAntModel(model: string): import('@thyrox/provider/model/antModels.js').AntModel | undefined
+declare function getAntModels(): import('@thyrox/provider/model/antModels.js').AntModel[]
 declare function getAntModelOverrideConfig(): {
   defaultSystemPromptSuffix?: string
   [key: string]: unknown

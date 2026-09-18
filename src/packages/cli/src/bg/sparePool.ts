@@ -52,13 +52,13 @@
 import { connect } from 'node:net'
 import { existsSync } from 'node:fs'
 
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 import {
   invalidateCache,
   readJobState,
   writeJobState,
-} from '@claude-code-how-works/agent/background/fleet/fleetStore.js'
-import type { FleetJobState } from '@claude-code-how-works/agent/background/fleet/fleetTypes.js'
+} from '@thyrox/agent/background/fleet/fleetStore.js'
+import type { FleetJobState } from '@thyrox/agent/background/fleet/fleetTypes.js'
 
 import { encodeCtrlFrame } from './ptyFrame.js'
 
@@ -111,7 +111,7 @@ async function killSpareWorker(short: string): Promise<void> {
   const { daemonKill } = await import('./daemonAdapter.js')
   await daemonKill({ short }).catch(() => undefined)
   const { deleteJobDir } = await import(
-    '@claude-code-how-works/agent/background/fleet/fleetStore.js'
+    '@thyrox/agent/background/fleet/fleetStore.js'
   )
   await deleteJobDir(short).catch(() => undefined)
 }
@@ -163,7 +163,7 @@ export async function ensureSpare(cwd: string): Promise<void> {
       // attach" bug.
       const { join } = await import('node:path')
       const { getJobDir } = await import(
-        '@claude-code-how-works/agent/background/fleet/fleetStore.js'
+        '@thyrox/agent/background/fleet/fleetStore.js'
       )
       const markerPath = join(getJobDir(r.short), 'spare-ready.flag')
       const readyDeadline = Date.now() + 10_000

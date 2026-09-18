@@ -4,55 +4,55 @@ import type {
   JSONRPCMessage,
 } from '@modelcontextprotocol/sdk/types.js'
 import { randomUUID } from 'crypto'
-import type { AssistantMessage } from '@claude-code-how-works/agent/messageShapes.js'
+import type { AssistantMessage } from '@thyrox/agent/messageShapes.js'
 import type {
   HookInput,
   HookJSONOutput,
   PermissionUpdate as SDKPermissionUpdate,
   SDKMessage,
   SDKUserMessage,
-} from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import { SDKControlElicitationResponseSchema } from '@claude-code-how-works/agent/sdkControlSchemas.js'
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
+import { SDKControlElicitationResponseSchema } from '@thyrox/agent/sdkControlSchemas.js'
 import type {
   SDKControlRequest,
   SDKControlResponse,
   StdinMessage,
   StdoutMessage,
-} from '@claude-code-how-works/headless-sdk/controlTypes.js'
-import type { PermissionUpdate as InternalPermissionUpdate } from '@claude-code-how-works/permission/permissionTypes'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
-import type { Tool, ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { type HookCallback, hookJSONOutputSchema } from '@claude-code-how-works/agent/types/hooks.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logForDiagnosticsNoPII } from '@claude-code-how-works/local-observability/logging'
-import { AbortError } from '@claude-code-how-works/local-observability/errorHelpers.js'
+} from '@thyrox/headless-sdk/controlTypes.js'
+import type { PermissionUpdate as InternalPermissionUpdate } from '@thyrox/permission/permissionTypes'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
+import type { Tool, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import { type HookCallback, hookJSONOutputSchema } from '@thyrox/agent/types/hooks.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
+import { AbortError } from '@thyrox/local-observability/errorHelpers.js'
 import {
   type Output as PermissionToolOutput,
   permissionPromptToolResultToPermissionDecision,
   outputSchema as permissionToolOutputSchema,
-} from '@claude-code-how-works/permission/PermissionPromptToolResultSchema'
+} from '@thyrox/permission/PermissionPromptToolResultSchema'
 import type {
   PermissionDecision,
   PermissionDecisionReason,
-} from '@claude-code-how-works/permission/PermissionResult'
-import { hasPermissionsToUseTool } from '@claude-code-how-works/permission/permissions'
-import { writeToStdout } from '@claude-code-how-works/shell/process.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/permission/PermissionResult'
+import { hasPermissionsToUseTool } from '@thyrox/permission/permissions'
+import { writeToStdout } from '@thyrox/shell/process.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { z } from 'zod/v4'
-import { notifyCommandLifecycle } from '@claude-code-how-works/shell/commandLifecycle.js'
-import { normalizeControlMessageKeys } from '@claude-code-how-works/headless-sdk/controlMessageCompat'
-import { executePermissionRequestHooks } from '@claude-code-how-works/agent/hooks.js'
+import { notifyCommandLifecycle } from '@thyrox/shell/commandLifecycle.js'
+import { normalizeControlMessageKeys } from '@thyrox/headless-sdk/controlMessageCompat'
+import { executePermissionRequestHooks } from '@thyrox/agent/hooks.js'
 import {
   applyPermissionUpdates,
   persistPermissionUpdates,
-} from '@claude-code-how-works/permission/PermissionUpdate'
+} from '@thyrox/permission/PermissionUpdate'
 import {
   notifySessionStateChanged,
   type RequiresActionDetails,
   type SessionExternalMetadata,
-} from '@claude-code-how-works/storage/sessionState.js'
-import { jsonParse } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { Stream } from '@claude-code-how-works/config/stream'
+} from '@thyrox/storage/sessionState.js'
+import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
+import { Stream } from '@thyrox/config/stream'
 import { ndjsonSafeStringify } from './ndjsonSafeStringify.js'
 
 /**

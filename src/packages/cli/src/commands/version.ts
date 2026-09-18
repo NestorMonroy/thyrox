@@ -1,4 +1,4 @@
-import type { Command, LocalCommandCall } from '@claude-code-how-works/agent/command.js'
+import type { Command, LocalCommandCall } from '@thyrox/agent/command.js'
 
 const call: LocalCommandCall = async () => {
   return {

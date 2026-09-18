@@ -17,9 +17,9 @@ import {
   issuerKey,
   saveIdpClientSecret,
   saveIdpIdTokenFromJwt,
-} from '@claude-code-how-works/mcp-runtime/xaaIdpLogin.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { updateSettingsForSource } from '@claude-code-how-works/config/settings'
+} from '@thyrox/mcp-runtime/xaaIdpLogin.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { updateSettingsForSource } from '@thyrox/config/settings'
 
 export function registerMcpXaaIdpCommand(mcp: Command): void {
   const xaaIdp = mcp

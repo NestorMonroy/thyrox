@@ -5,10 +5,10 @@ import chalk from 'chalk'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { setCwd } from '@claude-code-how-works/shell/Shell.js'
-import { initSinks } from '@claude-code-how-works/local-observability/sinks.js'
+} from '@thyrox/local-observability'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { setCwd } from '@thyrox/shell/Shell.js'
+import { initSinks } from '@thyrox/local-observability/sinks.js'
 import {
   getIsNonInteractiveSession,
   getProjectRoot,
@@ -16,41 +16,41 @@ import {
   setOriginalCwd,
   setProjectRoot,
   switchSession,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getCommands } from '@claude-code-how-works/command-runtime/runtime'
-import { initSessionMemory } from '@claude-code-how-works/agent/SessionMemory/sessionMemory.js'
-import { asSessionId } from '@claude-code-how-works/repl/replTypes/ids.js'
-import { isAgentSwarmsEnabled } from '@claude-code-how-works/agent/agentSwarmsEnabled.js'
-import { checkAndRestoreTerminalBackup } from '@claude-code-how-works/shell/terminal/appleTerminalBackup.js'
-import { prefetchApiKeyFromApiKeyHelperIfSafe } from '@claude-code-how-works/provider/authAlias.js'
-import { clearMemoryFileCaches } from '@claude-code-how-works/storage/claudemd.js'
-import { getCurrentProjectConfig } from '@claude-code-how-works/config'
-import { logForDiagnosticsNoPII } from '@claude-code-how-works/local-observability/logging'
-import { env } from '@claude-code-how-works/config/env/paths'
-import { envDynamic } from '@claude-code-how-works/config/env/dynamic'
-import { isBareMode, isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { findCanonicalGitRoot, findGitRoot, getIsGit } from '@claude-code-how-works/storage/git.js'
-import { initializeFileChangedWatcher } from '@claude-code-how-works/agent/hooks/fileChangedWatcher.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { getCommands } from '@thyrox/command-runtime/runtime'
+import { initSessionMemory } from '@thyrox/agent/SessionMemory/sessionMemory.js'
+import { asSessionId } from '@thyrox/repl/replTypes/ids.js'
+import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
+import { checkAndRestoreTerminalBackup } from '@thyrox/shell/terminal/appleTerminalBackup.js'
+import { prefetchApiKeyFromApiKeyHelperIfSafe } from '@thyrox/provider/authAlias.js'
+import { clearMemoryFileCaches } from '@thyrox/storage/claudemd.js'
+import { getCurrentProjectConfig } from '@thyrox/config'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
+import { env } from '@thyrox/config/env/paths'
+import { envDynamic } from '@thyrox/config/env/dynamic'
+import { isBareMode, isEnvTruthy } from '@thyrox/config/env/utils'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { findCanonicalGitRoot, findGitRoot, getIsGit } from '@thyrox/storage/git.js'
+import { initializeFileChangedWatcher } from '@thyrox/agent/hooks/fileChangedWatcher.js'
 import {
   captureHooksConfigSnapshot,
   updateHooksConfigSnapshot,
-} from '@claude-code-how-works/agent/hooks/hooksConfigSnapshot.js'
-import { hasWorktreeCreateHook } from '@claude-code-how-works/agent/hooks.js'
-import { checkAndRestoreITerm2Backup } from '@claude-code-how-works/shell/terminal/iTermBackup.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { getRecentActivity } from '@claude-code-how-works/repl/uiHelpers/logoV2Utils.js'
-import { lockCurrentVersion } from '@claude-code-how-works/updater/nativeInstaller/index.js'
-import type { PermissionMode } from '@claude-code-how-works/permission/PermissionMode'
-import { getPlanSlug } from '@claude-code-how-works/storage/plans.js'
-import { saveWorktreeState } from '@claude-code-how-works/storage/sessionStorage.js'
-import { profileCheckpoint } from '@claude-code-how-works/app-host/startup/startupProfiler.js'
+} from '@thyrox/agent/hooks/hooksConfigSnapshot.js'
+import { hasWorktreeCreateHook } from '@thyrox/agent/hooks.js'
+import { checkAndRestoreITerm2Backup } from '@thyrox/shell/terminal/iTermBackup.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { getRecentActivity } from '@thyrox/repl/uiHelpers/logoV2Utils.js'
+import { lockCurrentVersion } from '@thyrox/updater/nativeInstaller/index.js'
+import type { PermissionMode } from '@thyrox/permission/PermissionMode'
+import { getPlanSlug } from '@thyrox/storage/plans.js'
+import { saveWorktreeState } from '@thyrox/storage/sessionStorage.js'
+import { profileCheckpoint } from '@thyrox/app-host/startup/startupProfiler.js'
 import {
   createTmuxSessionForWorktree,
   createWorktreeForSession,
   generateTmuxSessionName,
   worktreeBranchName,
-} from '@claude-code-how-works/swarm'
+} from '@thyrox/swarm'
 
 export async function setup(
   cwd: string,
@@ -63,7 +63,7 @@ export async function setup(
   worktreePRNumber?: number,
   messagingSocketPath?: string,
 ): Promise<void> {
-  const { installSwarmHost } = await import('@claude-code-how-works/swarm/install/installSwarmHost.js')
+  const { installSwarmHost } = await import('@thyrox/swarm/install/installSwarmHost.js')
   installSwarmHost()
 
   logForDiagnosticsNoPII('info', 'setup_started')
@@ -94,7 +94,7 @@ export async function setup(
     // and $CLAUDE_CODE_MESSAGING_SOCKET is exported before any hook
     // (SessionStart in particular) can spawn and snapshot process.env.
     if (feature('UDS_INBOX')) {
-      const m = await import('@claude-code-how-works/local-observability/uds/udsMessaging.js')
+      const m = await import('@thyrox/local-observability/uds/udsMessaging.js')
       await m.startUdsMessaging(
         messagingSocketPath ?? m.getDefaultUdsSocketPath(),
         { isExplicit: messagingSocketPath !== undefined },
@@ -105,7 +105,7 @@ export async function setup(
   // Teammate snapshot — SIMPLE-only gate (no escape hatch, swarm not used in bare)
   if (!isBareMode() && isAgentSwarmsEnabled()) {
     const { captureTeammateModeSnapshot } = await import(
-      '@claude-code-how-works/swarm'
+      '@thyrox/swarm'
     )
     captureTeammateModeSnapshot()
   }
@@ -290,7 +290,7 @@ export async function setup(
     if (feature('CONTEXT_COLLAPSE')) {
       /* eslint-disable @typescript-eslint/no-require-imports */
       ;(
-        require('@claude-code-how-works/agent/contextCollapse/index.js') as typeof import('@claude-code-how-works/agent/contextCollapse/index.js')
+        require('@thyrox/agent/contextCollapse/index.js') as typeof import('@thyrox/agent/contextCollapse/index.js')
       ).initContextCollapse()
       /* eslint-enable @typescript-eslint/no-require-imports */
     }
@@ -316,7 +316,7 @@ export async function setup(
   if (!skipPluginPrefetch) {
     void getCommands(getProjectRoot())
   }
-  void import('@claude-code-how-works/config/plugin/core/loadPluginHooks.js').then(m => {
+  void import('@thyrox/config/plugin/core/loadPluginHooks.js').then(m => {
     if (!skipPluginPrefetch) {
       void m.loadPluginHooks() // Pre-load plugin hooks (consumed by processSessionStartHooks before render)
       m.setupPluginHookHotReload() // Set up hot reload for plugin hooks when settings change
@@ -333,10 +333,10 @@ export async function setup(
       // Prime repo classification cache for auto-undercover mode. Default is
       // undercover ON until proven internal; if this resolves to internal, clear
       // the prompt cache so the next turn picks up the OFF state.
-      void import('@claude-code-how-works/agent/commitAttribution.js').then(async m => {
+      void import('@thyrox/agent/commitAttribution.js').then(async m => {
         if (await m.isInternalModelRepo()) {
           const { clearSystemPromptSections } = await import(
-            '@claude-code-how-works/agent/constants/systemPromptSections.js'
+            '@thyrox/agent/constants/systemPromptSections.js'
           )
           clearSystemPromptSections()
         }
@@ -347,18 +347,18 @@ export async function setup(
       // Defer to next tick so the git subprocess spawn runs after first render
       // rather than during the setup() microtask window.
       setImmediate(() => {
-        void import('@claude-code-how-works/agent/hooks/attributionHooks.js').then(
+        void import('@thyrox/agent/hooks/attributionHooks.js').then(
           ({ registerAttributionHooks }) => {
             registerAttributionHooks() // Register attribution tracking hooks (ant-only feature)
           },
         )
       })
     }
-    void import('@claude-code-how-works/agent/sessionFileAccessHooks.js').then(m =>
+    void import('@thyrox/agent/sessionFileAccessHooks.js').then(m =>
       m.registerSessionFileAccessHooks(),
     ) // Register session file access analytics hooks
     if (feature('TEAMMEM')) {
-      void import('@claude-code-how-works/memory/teamMemorySyncWatcher').then(m =>
+      void import('@thyrox/memory/teamMemorySyncWatcher').then(m =>
         m.startTeamMemoryWatcher(),
       ) // Start team memory sync watcher
     }

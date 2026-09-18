@@ -8,28 +8,28 @@ import type {
   DynamicMcpState as DynamicMcpStateBase,
   McpSetServersResult as McpSetServersResultBase,
   SdkMcpState as SdkMcpStateBase,
-} from '@claude-code-how-works/mcp-runtime'
-import { toScopedConfig } from '@claude-code-how-works/mcp-runtime'
+} from '@thyrox/mcp-runtime'
+import { toScopedConfig } from '@thyrox/mcp-runtime'
 import type {
   McpServerConfigForProcessTransport,
   McpSdkServerConfig,
-} from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import type { SDKControlMcpSetServersResponse } from '@claude-code-how-works/headless-sdk/controlTypes.js'
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { SDKControlMcpSetServersResponse } from '@thyrox/headless-sdk/controlTypes.js'
 import {
   areMcpConfigsEqual,
   clearServerCache,
   connectToServer,
   fetchToolsForClient,
-} from '@claude-code-how-works/mcp-runtime/clientRuntime.js'
-import { filterMcpServersByPolicy } from '@claude-code-how-works/mcp-runtime/config.js'
+} from '@thyrox/mcp-runtime/clientRuntime.js'
+import { filterMcpServersByPolicy } from '@thyrox/mcp-runtime/config.js'
 import type {
   MCPServerConnection,
   ScopedMcpServerConfig,
-} from '@claude-code-how-works/mcp-runtime/types.js'
+} from '@thyrox/mcp-runtime/types.js'
 import type { AppState } from './appStateShim.js'
-import type { Tools } from '@claude-code-how-works/tool-registry/Tool.js'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
 
 export type DynamicMcpState = DynamicMcpStateBase<
   MCPServerConnection,

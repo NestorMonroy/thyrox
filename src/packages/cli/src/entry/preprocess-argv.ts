@@ -12,7 +12,7 @@
  */
 
 import { feature } from 'bun:bundle'
-import { gracefulShutdownSync } from '@claude-code-how-works/app-host/bootstrap/gracefulShutdown.js'
+import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 import type {
   PendingAssistantChat,
   PendingConnect,
@@ -74,7 +74,7 @@ export async function preprocessCliArgv(pendings: PendingHandles): Promise<void>
     if (ccIdx !== -1 && pendingConnect) {
       const ccUrl = rawCliArgs[ccIdx]!
       const { parseConnectUrl } = await import(
-        '@claude-code-how-works/server/parseConnectUrl.js'
+        '@thyrox/server/parseConnectUrl.js'
       )
       const parsed = parseConnectUrl(ccUrl)
       pendingConnect.dangerouslySkipPermissions = rawCliArgs.includes(
@@ -109,11 +109,11 @@ export async function preprocessCliArgv(pendings: PendingHandles): Promise<void>
   if (feature('LODESTONE')) {
     const handleUriIdx = process.argv.indexOf('--handle-uri')
     if (handleUriIdx !== -1 && process.argv[handleUriIdx + 1]) {
-      const { enableConfigs } = await import('@claude-code-how-works/config')
+      const { enableConfigs } = await import('@thyrox/config')
       enableConfigs()
       const uri = process.argv[handleUriIdx + 1]!
       const { handleDeepLinkUri } = await import(
-        '@claude-code-how-works/repl/deepLink/protocolHandler.js'
+        '@thyrox/repl/deepLink/protocolHandler.js'
       )
       const exitCode = await handleDeepLinkUri(uri)
       process.exit(exitCode)
@@ -127,10 +127,10 @@ export async function preprocessCliArgv(pendings: PendingHandles): Promise<void>
       process.platform === 'darwin' &&
       process.env.__CFBundleIdentifier === 'com.anthropic.claude-code-how-works-how-works-url-handler'
     ) {
-      const { enableConfigs } = await import('@claude-code-how-works/config')
+      const { enableConfigs } = await import('@thyrox/config')
       enableConfigs()
       const { handleUrlSchemeLaunch } = await import(
-        '@claude-code-how-works/repl/deepLink/protocolHandler.js'
+        '@thyrox/repl/deepLink/protocolHandler.js'
       )
       const urlSchemeResult = await handleUrlSchemeLaunch()
       process.exit(urlSchemeResult ?? 1)

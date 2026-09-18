@@ -86,7 +86,7 @@ export async function stopJob(
         await new Promise(res => setTimeout(res, 100))
       }
       if (alive) {
-        const { logEvent } = await import('@claude-code-how-works/local-observability')
+        const { logEvent } = await import('@thyrox/local-observability')
         logEvent('tengu_bg_killjob_ctrl_fallback', { ctrlSent: 'false' })
         try {
           if (job.mode === 'pty') {

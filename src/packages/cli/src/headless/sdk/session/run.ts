@@ -1,28 +1,28 @@
 import { feature } from 'bun:bundle'
 import { randomUUID } from 'crypto'
 import type { UUID } from 'crypto'
-import type { McpSdkServerConfig } from '@claude-code-how-works/mcp-runtime'
+import type { McpSdkServerConfig } from '@thyrox/mcp-runtime'
 import type { AppStateLike as AppState } from '../../../contracts.js'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
-import type { Tools } from '@claude-code-how-works/tool-registry/Tool.js'
-import { toolMatchesName } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { AgentDefinition } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import { isBuiltInAgent } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import type { ThinkingConfig } from '@claude-code-how-works/provider/thinking.js'
-import type { SDKMessage, SDKStatus } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import type { StdoutMessage } from '@claude-code-how-works/headless-sdk/controlTypes.js'
+import type { Command } from '@thyrox/command-runtime/runtime'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import { toolMatchesName } from '@thyrox/tool-registry/Tool.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { isBuiltInAgent } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import type { ThinkingConfig } from '@thyrox/provider/thinking.js'
+import type { SDKMessage, SDKStatus } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { StdoutMessage } from '@thyrox/headless-sdk/controlTypes.js'
 import {
   recordRssSample,
   scheduleSdkMemorySummary,
-} from '@claude-code-how-works/headless-sdk/sdkMemorySummary.js'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import type { RequiresActionDetails } from '@claude-code-how-works/storage/sessionState.js'
+} from '@thyrox/headless-sdk/sdkMemorySummary.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import type { RequiresActionDetails } from '@thyrox/storage/sessionState.js'
 import type { StructuredIO } from '../../../structuredIO.js'
-import type { processSessionStartHooks } from '@claude-code-how-works/storage/sessionStart.js'
-import { applySettingsChange } from '@claude-code-how-works/config/applySettingsChange'
-import { settingsChangeDetector } from '@claude-code-how-works/config/changeDetector'
-import { filterToolsByDenyRules } from '@claude-code-how-works/tool-registry'
-import { isExtractModeActive } from '@claude-code-how-works/memory/paths'
+import type { processSessionStartHooks } from '@thyrox/storage/sessionStart.js'
+import { applySettingsChange } from '@thyrox/config/applySettingsChange'
+import { settingsChangeDetector } from '@thyrox/config/changeDetector'
+import { filterToolsByDenyRules } from '@thyrox/tool-registry'
+import { isExtractModeActive } from '@thyrox/memory/paths'
 // Direct paths instead of '../../../index.js' (cli barrel) to avoid
 // same-package circular re-export (V7 §11.2 cli-internal SCC).
 import { getStructuredIO } from '../../../transport.js'
@@ -30,52 +30,52 @@ import { getCanUseToolFn } from '../control/permission-helpers.js'
 import { loadInitialMessages } from './load.js'
 import {
   downloadUserSettings,
-} from '@claude-code-how-works/config/sync'
+} from '@thyrox/config/sync'
 import {
   getIsRemoteMode,
   getSessionId,
   getMainThreadAgentType,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 import {
   isFastModeEnabled,
-} from '@claude-code-how-works/repl/fastMode.js'
+} from '@thyrox/repl/fastMode.js'
 import {
   headlessProfilerStartTurn,
   headlessProfilerCheckpoint,
   logHeadlessProfilerTurn,
-} from '@claude-code-how-works/local-observability/aggregates/headlessProfiler.js'
+} from '@thyrox/local-observability/aggregates/headlessProfiler.js'
 import {
   isQualifiedForGrove,
   checkGroveForNonInteractive,
-} from '@claude-code-how-works/provider/grove.js'
-import { initializeGrowthBook } from '@claude-code-how-works/config/feature-flags'
+} from '@thyrox/provider/grove.js'
+import { initializeGrowthBook } from '@thyrox/config/feature-flags'
 import {
   gracefulShutdownSync,
-} from '@claude-code-how-works/app-host/bootstrap/gracefulShutdown.js'
-import { validateUuid } from '@claude-code-how-works/agent/uuid.js'
+} from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
+import { validateUuid } from '@thyrox/agent/uuid.js'
 import { installStreamJsonStdoutGuard } from './utils/streamJsonStdoutGuard.js'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { registerHookEventHandler } from '@claude-code-how-works/repl/hookEvents.js'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { registerHookEventHandler } from '@thyrox/repl/hookEvents.js'
 import {
   processSetupHooks,
   takeInitialUserMessage,
-} from '@claude-code-how-works/storage/sessionStart.js'
+} from '@thyrox/storage/sessionStart.js'
 import {
   restoreAgentFromSession,
-} from '@claude-code-how-works/storage/sessionRestore.js'
+} from '@thyrox/storage/sessionRestore.js'
 import {
   saveAgentSetting,
-} from '@claude-code-how-works/storage/sessionStorage.js'
-import { notifySessionStateChanged } from '@claude-code-how-works/storage/sessionState.js'
+} from '@thyrox/storage/sessionStorage.js'
+import { notifySessionStateChanged } from '@thyrox/storage/sessionState.js'
 import {
   registerProcessOutputErrorHandlers,
   writeToStdout,
-} from '@claude-code-how-works/shell/process.js'
-import { ensureModelStringsInitialized } from '@claude-code-how-works/provider/modelStrings.js'
+} from '@thyrox/shell/process.js'
+import { ensureModelStringsInitialized } from '@thyrox/provider/modelStrings.js'
 import { createStreamlinedTransformer } from './utils/streamlinedTransform.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import {
   runHeadlessStreaming,
   handleRewindFiles,
@@ -85,10 +85,10 @@ import {
 /* eslint-disable @typescript-eslint/no-require-imports */
 const proactiveModule =
   feature('PROACTIVE') || feature('KAIROS')
-    ? (require('@claude-code-how-works/agent/proactive/index.js') as typeof import('@claude-code-how-works/agent/proactive/index.js'))
+    ? (require('@thyrox/agent/proactive/index.js') as typeof import('@thyrox/agent/proactive/index.js'))
     : null
 const extractMemoriesModule = feature('EXTRACT_MEMORIES')
-  ? (require('@claude-code-how-works/memory/extractMemories') as typeof import('@claude-code-how-works/memory/extractMemories'))
+  ? (require('@thyrox/memory/extractMemories') as typeof import('@thyrox/memory/extractMemories'))
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 

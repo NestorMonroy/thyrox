@@ -80,7 +80,7 @@ async function main(): Promise<void> {
   }
 
   // For all other paths, load the startup profiler
-  const { profileCheckpoint } = await import('@claude-code-how-works/app-host/startup/startupProfiler.js')
+  const { profileCheckpoint } = await import('@thyrox/app-host/startup/startupProfiler.js')
   profileCheckpoint('cli_entry')
 
   // Fast-path for --dump-system-prompt: output the rendered system prompt and exit.
@@ -88,12 +88,12 @@ async function main(): Promise<void> {
   // Ant-only: eliminated from external builds via feature flag.
   if (feature('DUMP_SYSTEM_PROMPT') && args[0] === '--dump-system-prompt') {
     profileCheckpoint('cli_dump_system_prompt_path')
-    const { enableConfigs } = await import('@claude-code-how-works/config')
+    const { enableConfigs } = await import('@thyrox/config')
     enableConfigs()
-    const { getMainLoopModel } = await import('@claude-code-how-works/provider/model.js')
+    const { getMainLoopModel } = await import('@thyrox/provider/model.js')
     const modelIdx = args.indexOf('--model')
     const model = (modelIdx !== -1 && args[modelIdx + 1]) || getMainLoopModel()
-    const { getSystemPrompt } = await import('@claude-code-how-works/agent/constants/prompts.js')
+    const { getSystemPrompt } = await import('@thyrox/agent/constants/prompts.js')
     const prompt = await getSystemPrompt([], model)
     console.log(prompt.join('\n'))
     return
@@ -117,14 +117,14 @@ async function main(): Promise<void> {
   if (process.argv[2] === '--claude-in-chrome-mcp') {
     profileCheckpoint('cli_claude_in_chrome_mcp_path')
     const { runClaudeInChromeMcpServer } = await import(
-      '@claude-code-how-works/agent/claudeInChrome/mcpServer.js'
+      '@thyrox/agent/claudeInChrome/mcpServer.js'
     )
     await runClaudeInChromeMcpServer()
     return
   } else if (process.argv[2] === '--chrome-native-host') {
     profileCheckpoint('cli_chrome_native_host_path')
     const { runChromeNativeHost } = await import(
-      '@claude-code-how-works/agent/claudeInChrome/chromeNativeHost.js'
+      '@thyrox/agent/claudeInChrome/chromeNativeHost.js'
     )
     await runChromeNativeHost()
     return
@@ -146,7 +146,7 @@ async function main(): Promise<void> {
   // workers are lean. If a worker kind needs configs/auth (assistant will),
   // it calls them inside its run() fn.
   if (feature('DAEMON') && args[0] === '--daemon-worker') {
-    const { runDaemonWorker } = await import('@claude-code-how-works/daemon/workerRegistry.js')
+    const { runDaemonWorker } = await import('@thyrox/daemon/workerRegistry.js')
     await runDaemonWorker(args[1])
     return
   }
@@ -164,21 +164,21 @@ async function main(): Promise<void> {
       args[0] === 'bridge')
   ) {
     profileCheckpoint('cli_bridge_path')
-    const { enableConfigs } = await import('@claude-code-how-works/config')
+    const { enableConfigs } = await import('@thyrox/config')
     enableConfigs()
 
     const { getBridgeDisabledReason, checkBridgeMinVersion } = await import(
-      '@claude-code-how-works/bridge/bridgeEnabled.js'
+      '@thyrox/bridge/bridgeEnabled.js'
     )
-    const { BRIDGE_LOGIN_ERROR } = await import('@claude-code-how-works/bridge/types.js')
-    const { bridgeMain } = await import('@claude-code-how-works/bridge/bridgeMain.js')
-    const { exitWithError } = await import('@claude-code-how-works/shell/process.js')
+    const { BRIDGE_LOGIN_ERROR } = await import('@thyrox/bridge/types.js')
+    const { bridgeMain } = await import('@thyrox/bridge/bridgeMain.js')
+    const { exitWithError } = await import('@thyrox/shell/process.js')
 
     // Auth check must come before the GrowthBook gate check — without auth,
     // GrowthBook has no user context and would return a stale/default false.
     // getBridgeDisabledReason awaits GB init, so the returned value is fresh
     // (not the stale disk cache), but init still needs auth headers to work.
-    const { getClaudeAIOAuthTokens } = await import('@claude-code-how-works/provider/authAlias.js')
+    const { getClaudeAIOAuthTokens } = await import('@thyrox/provider/authAlias.js')
     if (!getClaudeAIOAuthTokens()?.accessToken) {
       exitWithError(BRIDGE_LOGIN_ERROR)
     }
@@ -193,7 +193,7 @@ async function main(): Promise<void> {
 
     // Bridge is a remote control feature - check policy limits
     const { waitForPolicyLimitsToLoad, isPolicyAllowed } = await import(
-      '@claude-code-how-works/provider/policyLimits/index.js'
+      '@thyrox/provider/policyLimits/index.js'
     )
     await waitForPolicyLimitsToLoad()
     if (!isPolicyAllowed('allow_remote_control')) {
@@ -210,12 +210,12 @@ async function main(): Promise<void> {
   if (feature('DAEMON') && args[0] === 'daemon') {
     profileCheckpoint('cli_daemon_path')
     // Install host bindings before settings/config reads (mirrors bg path).
-    await import('@claude-code-how-works/app-host/runtime/bootstrap.js')
-    const { enableConfigs } = await import('@claude-code-how-works/config')
+    await import('@thyrox/app-host/runtime/bootstrap.js')
+    const { enableConfigs } = await import('@thyrox/config')
     enableConfigs()
-    const { initSinks } = await import('@claude-code-how-works/local-observability/sinks.js')
+    const { initSinks } = await import('@thyrox/local-observability/sinks.js')
     initSinks()
-    const { daemonMain } = await import('@claude-code-how-works/daemon/main.js')
+    const { daemonMain } = await import('@thyrox/daemon/main.js')
     await daemonMain(args.slice(1))
     return
   }
@@ -246,8 +246,8 @@ async function main(): Promise<void> {
     // print a warning + return null. Importing the runtime bootstrap
     // installs host bindings as a side effect; then enableConfigs() can
     // run.
-    await import('@claude-code-how-works/app-host/runtime/bootstrap.js')
-    const { enableConfigs } = await import('@claude-code-how-works/config')
+    await import('@thyrox/app-host/runtime/bootstrap.js')
+    const { enableConfigs } = await import('@thyrox/config')
     enableConfigs()
     // Apply settings.json env vars (ANTHROPIC_BASE_URL, OTEL_*, etc.)
     // into process.env BEFORE spawning the bg child, so the detached
@@ -255,7 +255,7 @@ async function main(): Promise<void> {
     // Mirrors ant 5173.js: applySafeConfigEnvironmentVariables() runs
     // before the bg dispatch.
     const { applySafeConfigEnvironmentVariables } = await import(
-      '@claude-code-how-works/config/managedEnv.js'
+      '@thyrox/config/managedEnv.js'
     )
     applySafeConfigEnvironmentVariables()
     const bg = await import('../bg.js')
@@ -313,20 +313,20 @@ async function main(): Promise<void> {
       args.some(a => a.startsWith('--worktree=')))
   ) {
     profileCheckpoint('cli_tmux_worktree_fast_path')
-    const { enableConfigs } = await import('@claude-code-how-works/config')
+    const { enableConfigs } = await import('@thyrox/config')
     enableConfigs()
     const { isWorktreeModeEnabled } = await import(
-      '@claude-code-how-works/agent/worktreeModeEnabled.js'
+      '@thyrox/agent/worktreeModeEnabled.js'
     )
     if (isWorktreeModeEnabled()) {
-      const { execIntoTmuxWorktree } = await import('@claude-code-how-works/swarm')
+      const { execIntoTmuxWorktree } = await import('@thyrox/swarm')
       const result = await execIntoTmuxWorktree(args)
       if (result.handled) {
         return
       }
       // If not handled (e.g., error), fall through to normal CLI
       if (result.error) {
-        const { exitWithError } = await import('@claude-code-how-works/shell/process.js')
+        const { exitWithError } = await import('@thyrox/shell/process.js')
         exitWithError(result.error)
       }
     }
@@ -362,7 +362,7 @@ async function main(): Promise<void> {
   }
 
   // No special flags detected, load and run the full CLI
-  const { startCapturingEarlyInput } = await import('@claude-code-how-works/repl/earlyInput.js')
+  const { startCapturingEarlyInput } = await import('@thyrox/repl/earlyInput.js')
   startCapturingEarlyInput()
   profileCheckpoint('cli_before_main_import')
   const { main: cliMain } = await import('./main.jsx')

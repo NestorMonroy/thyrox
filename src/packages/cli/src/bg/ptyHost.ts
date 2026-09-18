@@ -32,7 +32,7 @@ import {
 import { setPriority, getPriority } from 'node:os'
 import { dirname } from 'node:path'
 
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 
 import {
   createFrameDecoder,

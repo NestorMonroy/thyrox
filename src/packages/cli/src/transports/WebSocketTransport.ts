@@ -4,23 +4,23 @@
  * narrow per branch to either Bun's native WebSocket or Node's `ws`
  * package WebSocket. Runtime-binding pattern.
  */
-import type { StdoutMessage } from '@claude-code-how-works/headless-sdk/controlTypes.js'
+import type { StdoutMessage } from '@thyrox/headless-sdk/controlTypes.js'
 import type WsWebSocket from 'ws'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { CircularBuffer } from '@claude-code-how-works/output/buffers'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logForDiagnosticsNoPII } from '@claude-code-how-works/local-observability/logging'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { getWebSocketTLSOptions } from '@claude-code-how-works/provider/mtls.js'
+import { logEvent } from '@thyrox/local-observability'
+import { CircularBuffer } from '@thyrox/output/buffers'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { getWebSocketTLSOptions } from '@thyrox/provider/mtls.js'
 import {
   getWebSocketProxyAgent,
   getWebSocketProxyUrl,
-} from '@claude-code-how-works/provider/proxy.js'
+} from '@thyrox/provider/proxy.js'
 import {
   registerSessionActivityCallback,
   unregisterSessionActivityCallback,
-} from '@claude-code-how-works/storage/sessionActivity.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/storage/sessionActivity.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import type { Transport } from './Transport.js'
 
 const KEEP_ALIVE_FRAME = '{"type":"keep_alive"}\n'

@@ -1,4 +1,4 @@
-import { sleep } from '@claude-code-how-works/config/sleep'
+import { sleep } from '@thyrox/config/sleep'
 
 /**
  * Coalescing uploader for PUT /worker (session state + metadata).

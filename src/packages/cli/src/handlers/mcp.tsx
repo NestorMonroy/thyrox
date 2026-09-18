@@ -7,50 +7,50 @@ import { stat } from 'fs/promises'
 import pMap from 'p-map'
 import { cwd } from 'process'
 import React from 'react'
-import { MCPServerDesktopImportDialog } from '@claude-code-how-works/repl/components/MCPServerDesktopImportDialog.js'
+import { MCPServerDesktopImportDialog } from '@thyrox/repl/components/MCPServerDesktopImportDialog.js'
 import { wrappedRender as render } from '@anthropic/ink'
-import { KeybindingSetup } from '@claude-code-how-works/repl/keybindings/KeybindingProviderSetup.js'
+import { KeybindingSetup } from '@thyrox/repl/keybindings/KeybindingProviderSetup.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   clearMcpClientConfig,
   clearServerTokensFromLocalStorage,
   getMcpClientConfig,
   readClientSecret,
   saveMcpClientSecret,
-} from '@claude-code-how-works/mcp-runtime/auth.js'
+} from '@thyrox/mcp-runtime/auth.js'
 import {
   connectToServer,
   getMcpServerConnectionBatchSize,
-} from '@claude-code-how-works/mcp-runtime/clientRuntime.js'
+} from '@thyrox/mcp-runtime/clientRuntime.js'
 import {
   addMcpConfig,
   getAllMcpConfigs,
   getMcpConfigByName,
   getMcpConfigsByScope,
   removeMcpConfig,
-} from '@claude-code-how-works/mcp-runtime/config.js'
+} from '@thyrox/mcp-runtime/config.js'
 import type {
   ConfigScope,
   ScopedMcpServerConfig,
-} from '@claude-code-how-works/mcp-runtime/types.js'
+} from '@thyrox/mcp-runtime/types.js'
 import {
   describeMcpConfigFilePath,
   ensureConfigScope,
   getScopeLabel,
-} from '@claude-code-how-works/mcp-runtime/utils.js'
+} from '@thyrox/mcp-runtime/utils.js'
 import { AppStateProvider } from '../appStateShim.js'
 import {
   getCurrentProjectConfig,
   getGlobalConfig,
   saveCurrentProjectConfig,
-} from '@claude-code-how-works/config'
-import { isFsInaccessible } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { gracefulShutdown } from '@claude-code-how-works/app-host/bootstrap/gracefulShutdown.js'
-import { safeParseJSON } from '@claude-code-how-works/storage/json.js'
-import { getPlatform } from '@claude-code-how-works/config/platform'
+} from '@thyrox/config'
+import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
+import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
+import { safeParseJSON } from '@thyrox/storage/json.js'
+import { getPlatform } from '@thyrox/config/platform'
 import { cliError, cliOk } from '../exit.js'
 
 async function checkMcpServerHealth(
@@ -59,7 +59,7 @@ async function checkMcpServerHealth(
 ): Promise<string> {
   if (server.scope === 'project') {
     const { getProjectMcpServerStatus } = await import(
-      '@claude-code-how-works/mcp-runtime/utils.js'
+      '@thyrox/mcp-runtime/utils.js'
     )
     if (getProjectMcpServerStatus(name) === 'pending') {
       return '⏸ Pending approval (run `claude` to approve)'
@@ -244,7 +244,7 @@ export async function mcpGetHandler(name: string): Promise<void> {
   })
   let server = getMcpConfigByName(name)
   if (!server) {
-    const { getMcpConfigsByScope } = await import('@claude-code-how-works/mcp-runtime/config.js')
+    const { getMcpConfigsByScope } = await import('@thyrox/mcp-runtime/config.js')
     server = getMcpConfigsByScope('project').servers[name] ?? null
   }
   if (!server) {
@@ -399,7 +399,7 @@ export async function mcpAddFromDesktopHandler(options: {
     })
 
     const { readClaudeDesktopMcpServers } = await import(
-      '@claude-code-how-works/repl/diagnostics/claudeDesktop.js'
+      '@thyrox/repl/diagnostics/claudeDesktop.js'
     )
     const servers = await readClaudeDesktopMcpServers()
 

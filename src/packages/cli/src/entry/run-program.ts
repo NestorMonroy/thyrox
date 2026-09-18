@@ -14,22 +14,22 @@
 import type { Command as CommanderCommand } from '@commander-js/extra-typings'
 import { Option } from '@commander-js/extra-typings'
 import { feature } from 'bun:bundle'
-import type { RuntimeHandles } from '@claude-code-how-works/app-host'
+import type { RuntimeHandles } from '@thyrox/app-host'
 
-import { init } from '@claude-code-how-works/app-host/init.js'
-import { loadPolicyLimits } from '@claude-code-how-works/provider/policyLimits/index.js'
+import { init } from '@thyrox/app-host/init.js'
+import { loadPolicyLimits } from '@thyrox/provider/policyLimits/index.js'
 import { loadRemoteManagedSettings } from '../remoteManagedSettings.js'
-import { setInlinePlugins } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { setInlinePlugins } from '@thyrox/app-host/bootstrap/state.js'
 import { clearPluginCache } from '../pluginLoader.js'
-import { runMigrations } from '@claude-code-how-works/app-host/main/startup/settings.js'
-import { canUserConfigureAdvisor } from '@claude-code-how-works/provider/advisor.js'
-import { ensureMdmSettingsLoaded } from '@claude-code-how-works/config/settings/mdm/settings'
+import { runMigrations } from '@thyrox/app-host/main/startup/settings.js'
+import { canUserConfigureAdvisor } from '@thyrox/provider/advisor.js'
+import { ensureMdmSettingsLoaded } from '@thyrox/config/settings/mdm/settings'
 import { ensureKeychainPrefetchCompleted } from '../secureStorage/keychainPrefetch.js'
 import {
   profileCheckpoint,
   profileReport,
-} from '@claude-code-how-works/app-host/startup/startupProfiler.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+} from '@thyrox/app-host/startup/startupProfiler.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 
 import { createMainProgram } from './commander.js'
 import { runModeDispatch } from './mode-dispatch.js'
@@ -80,7 +80,7 @@ function attachPreActionHook(program: CommanderCommand): void {
     // a sink attaches. setup() attaches sinks for the default command, but
     // subcommands (doctor, mcp, plugin, auth) never call setup() and would
     // silently drop events on process.exit(). Both inits are idempotent.
-    const { initSinks } = await import('@claude-code-how-works/local-observability/sinks.js')
+    const { initSinks } = await import('@thyrox/local-observability/sinks.js')
     initSinks()
     profileCheckpoint('preAction_after_sinks')
 
@@ -127,7 +127,7 @@ function attachPreActionHook(program: CommanderCommand): void {
     void (async () => {
       try {
         const { refreshGatewayModels, isGatewayModelDiscoveryEnabled } =
-          await import('@claude-code-how-works/provider/gatewayModelDiscovery.js')
+          await import('@thyrox/provider/gatewayModelDiscovery.js')
         if (isGatewayModelDiscoveryEnabled()) {
           await refreshGatewayModels()
         }
@@ -142,7 +142,7 @@ function attachPreActionHook(program: CommanderCommand): void {
     // Load settings sync (non-blocking, fail-open)
     // CLI: uploads local settings to remote (CCR download is handled by print.ts)
     if (feature('UPLOAD_USER_SETTINGS')) {
-      void import('@claude-code-how-works/config/sync').then(m =>
+      void import('@thyrox/config/sync').then(m =>
         m.uploadUserSettingsInBackground(),
       )
     }

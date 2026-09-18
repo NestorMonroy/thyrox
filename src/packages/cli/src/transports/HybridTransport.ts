@@ -1,8 +1,8 @@
 import axios, { type AxiosError } from 'axios'
-import type { StdoutMessage } from '@claude-code-how-works/headless-sdk/controlTypes.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logForDiagnosticsNoPII } from '@claude-code-how-works/local-observability/logging'
-import { getSessionIngressAuthToken } from '@claude-code-how-works/provider/sessionIngressAuth.js'
+import type { StdoutMessage } from '@thyrox/headless-sdk/controlTypes.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
+import { getSessionIngressAuthToken } from '@thyrox/provider/sessionIngressAuth.js'
 import { SerialBatchEventUploader } from './SerialBatchEventUploader.js'
 import {
   WebSocketTransport,

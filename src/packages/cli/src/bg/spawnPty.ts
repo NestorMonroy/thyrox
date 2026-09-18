@@ -17,7 +17,7 @@ import { join } from 'node:path'
 
 import chalk from 'chalk'
 
-import { getDefaultLauncher } from '@claude-code-how-works/repl/relaunch.js'
+import { getDefaultLauncher } from '@thyrox/repl/relaunch.js'
 
 export interface SpawnPtyResult {
   short: string
@@ -201,7 +201,7 @@ export function spawnPtyHost(opts: {
   // readProcStart is sync (reads /proc or runs ps); cheap enough at spawn time.
   // Imported lazily to avoid pulling daemon package into a path this file
   // could be called from without daemon present.
-  const { readProcStart } = require('@claude-code-how-works/daemon/bgWorkerRegistry.js') as typeof import('@claude-code-how-works/daemon/bgWorkerRegistry.js')
+  const { readProcStart } = require('@thyrox/daemon/bgWorkerRegistry.js') as typeof import('@thyrox/daemon/bgWorkerRegistry.js')
   return {
     short: opts.short,
     pid: child.pid,

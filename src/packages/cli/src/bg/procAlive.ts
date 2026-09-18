@@ -12,7 +12,7 @@
  * @dynamicRequire
  */
 
-import { readProcStart } from '@claude-code-how-works/daemon/bgWorkerRegistry.js'
+import { readProcStart } from '@thyrox/daemon/bgWorkerRegistry.js'
 
 export function procAliveSamePid(
   pid: number,

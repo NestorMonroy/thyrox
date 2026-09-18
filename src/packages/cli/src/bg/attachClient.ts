@@ -18,7 +18,7 @@
  * @dynamicRequire
  */
 
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import { createDecModeTracker } from './decModeTracker.js'
 import { createPtyAdopter, type PtyAdopter } from './ptyAdopter.js'
 

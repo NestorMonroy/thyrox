@@ -8,21 +8,21 @@
  * - Strips tool list and model info from init messages
  */
 
-import type { SDKAssistantMessage } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import type { StdoutMessage } from '@claude-code-how-works/headless-sdk/controlTypes.js'
-import { FILE_EDIT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileEditTool/constants.js'
-import { FILE_READ_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileReadTool/prompt.js'
-import { FILE_WRITE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileWriteTool/prompt.js'
-import { GLOB_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/GlobTool/prompt.js'
-import { GREP_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/GrepTool/prompt.js'
-import { LIST_MCP_RESOURCES_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/ListMcpResourcesTool/prompt.js'
-import { LSP_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/LSPTool/prompt.js'
-import { NOTEBOOK_EDIT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/NotebookEditTool/constants.js'
-import { TASK_STOP_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskStopTool/prompt.js'
-import { WEB_SEARCH_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/WebSearchTool/prompt.js'
-import { extractTextContent } from '@claude-code-how-works/agent/messages.js'
-import { SHELL_TOOL_NAMES } from '@claude-code-how-works/shell/legacy/shellToolUtils.js'
-import { capitalize } from '@claude-code-how-works/output/utils/stringUtils.js'
+import type { SDKAssistantMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { StdoutMessage } from '@thyrox/headless-sdk/controlTypes.js'
+import { FILE_EDIT_TOOL_NAME } from '@thyrox/tool-registry/tools/FileEditTool/constants.js'
+import { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'
+import { FILE_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/FileWriteTool/prompt.js'
+import { GLOB_TOOL_NAME } from '@thyrox/tool-registry/tools/GlobTool/prompt.js'
+import { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'
+import { LIST_MCP_RESOURCES_TOOL_NAME } from '@thyrox/tool-registry/tools/ListMcpResourcesTool/prompt.js'
+import { LSP_TOOL_NAME } from '@thyrox/tool-registry/tools/LSPTool/prompt.js'
+import { NOTEBOOK_EDIT_TOOL_NAME } from '@thyrox/tool-registry/tools/NotebookEditTool/constants.js'
+import { TASK_STOP_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskStopTool/prompt.js'
+import { WEB_SEARCH_TOOL_NAME } from '@thyrox/tool-registry/tools/WebSearchTool/prompt.js'
+import { extractTextContent } from '@thyrox/agent/messages.js'
+import { SHELL_TOOL_NAMES } from '@thyrox/shell/legacy/shellToolUtils.js'
+import { capitalize } from '@thyrox/output/utils/stringUtils.js'
 
 type ToolCounts = {
   searches: number

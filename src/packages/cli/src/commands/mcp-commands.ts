@@ -1,6 +1,6 @@
 import type { Command } from '@commander-js/extra-typings'
 import { feature } from 'bun:bundle'
-import { isXaaEnabled } from '@claude-code-how-works/mcp-runtime'
+import { isXaaEnabled } from '@thyrox/mcp-runtime'
 import { createSortedHelpConfig } from '../entry/commander.js'
 import { registerMcpAddCommand } from './mcp/addCommand.js'
 import { registerMcpXaaIdpCommand } from './mcp/xaaIdpCommand.js'
@@ -9,11 +9,11 @@ import {
   setOriginalCwd,
   setCwdState,
   setDirectConnectServerUrl,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
+} from '@thyrox/app-host/bootstrap/state.js'
 import {
   createDirectConnectSession,
   DirectConnectError,
-} from '@claude-code-how-works/server/createDirectConnectSession.js'
+} from '@thyrox/server/createDirectConnectSession.js'
 
 interface PendingConnect {
   url: string | undefined
@@ -162,13 +162,13 @@ export function registerMcpCommands(
           maxSessions: string
         }) => {
           const { randomBytes } = await import('crypto')
-          const { startServer } = await import('@claude-code-how-works/server/server.js')
-          const { SessionManager } = await import('@claude-code-how-works/server/sessionManager.js')
-          const { DangerousBackend } = await import('@claude-code-how-works/server/backends/dangerousBackend.js')
-          const { printBanner } = await import('@claude-code-how-works/server/serverBanner.js')
-          const { createServerLogger } = await import('@claude-code-how-works/server/serverLog.js')
+          const { startServer } = await import('@thyrox/server/server.js')
+          const { SessionManager } = await import('@thyrox/server/sessionManager.js')
+          const { DangerousBackend } = await import('@thyrox/server/backends/dangerousBackend.js')
+          const { printBanner } = await import('@thyrox/server/serverBanner.js')
+          const { createServerLogger } = await import('@thyrox/server/serverLog.js')
           const { writeServerLock, removeServerLock, probeRunningServer } = await import(
-            '@claude-code-how-works/server/lockfile.js'
+            '@thyrox/server/lockfile.js'
           )
 
           const existing = await probeRunningServer()
@@ -282,7 +282,7 @@ export function registerMcpCommands(
             outputFormat: string
           },
         ) => {
-          const { parseConnectUrl } = await import('@claude-code-how-works/server/parseConnectUrl.js')
+          const { parseConnectUrl } = await import('@thyrox/server/parseConnectUrl.js')
           const { serverUrl, authToken } = parseConnectUrl(ccUrl)
 
           let connectConfig
@@ -304,7 +304,7 @@ export function registerMcpCommands(
             process.exit(1)
           }
 
-          const { runConnectHeadless } = await import('@claude-code-how-works/server/connectHeadless.js')
+          const { runConnectHeadless } = await import('@thyrox/server/connectHeadless.js')
 
           const prompt = typeof opts.print === 'string' ? opts.print : ''
           const interactive = opts.print === true

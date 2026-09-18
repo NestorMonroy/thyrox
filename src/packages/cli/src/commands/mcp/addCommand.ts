@@ -8,24 +8,24 @@ import { cliError, cliOk } from '../../exit.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
+} from '@thyrox/local-observability'
 import {
   readClientSecret,
   saveMcpClientSecret,
-} from '@claude-code-how-works/mcp-runtime/auth.js'
-import { addMcpConfig } from '@claude-code-how-works/mcp-runtime/config.js'
+} from '@thyrox/mcp-runtime/auth.js'
+import { addMcpConfig } from '@thyrox/mcp-runtime/config.js'
 import {
   describeMcpConfigFilePath,
   ensureConfigScope,
   ensureTransport,
   parseHeaders,
-} from '@claude-code-how-works/mcp-runtime/utils.js'
+} from '@thyrox/mcp-runtime/utils.js'
 import {
   getXaaIdpSettings,
   isXaaEnabled,
-} from '@claude-code-how-works/mcp-runtime/xaaIdpLogin.js'
-import { parseEnvVars } from '@claude-code-how-works/config/env/utils'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/mcp-runtime/xaaIdpLogin.js'
+import { parseEnvVars } from '@thyrox/config/env/utils'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 /**
  * Registers the `mcp add` subcommand on the given Commander command.

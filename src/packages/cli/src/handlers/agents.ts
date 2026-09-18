@@ -10,12 +10,12 @@ import {
   type ResolvedAgent,
   resolveAgentModelDisplay,
   resolveAgentOverrides,
-} from '@claude-code-how-works/tool-registry/tools/AgentTool/agentDisplay.js'
+} from '@thyrox/tool-registry/tools/AgentTool/agentDisplay.js'
 import {
   getActiveAgentsFromList,
   getAgentDefinitionsWithOverrides,
-} from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
+} from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 
 function formatAgent(agent: ResolvedAgent): string {
   const model = resolveAgentModelDisplay(agent)

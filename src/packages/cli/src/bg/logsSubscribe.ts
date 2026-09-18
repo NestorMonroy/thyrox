@@ -14,7 +14,7 @@
  * @dynamicRequire
  */
 
-import { daemonSubscribe } from '@claude-code-how-works/daemon/daemonClient.js'
+import { daemonSubscribe } from '@thyrox/daemon/daemonClient.js'
 
 interface LogsSubscribeOpts {
   short: string

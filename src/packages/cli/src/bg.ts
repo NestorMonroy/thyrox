@@ -37,7 +37,7 @@ import { join, resolve } from 'node:path'
 import {
   hasAutoModeOptIn,
   hasSkipDangerousModePermissionPrompt,
-} from '@claude-code-how-works/config/settings'
+} from '@thyrox/config/settings'
 import { splitBgArgs } from './bg/argParse.js'
 import {
   formatRelativeTime,
@@ -47,7 +47,7 @@ import {
 import { extractRespawnArgs } from './bg/respawnArgs.js'
 import { tailFile } from './bg/tailFile.js'
 
-import { getDefaultLauncher } from '@claude-code-how-works/repl/relaunch.js'
+import { getDefaultLauncher } from '@thyrox/repl/relaunch.js'
 
 interface JobMeta {
   short: string
@@ -148,7 +148,7 @@ async function writeOptimisticFleetState(
   opts: { directive: string; cwd: string },
 ): Promise<void> {
   const { writeJobState } = await import(
-    '@claude-code-how-works/agent/background/fleet/fleetStore.js'
+    '@thyrox/agent/background/fleet/fleetStore.js'
   )
   const now = new Date().toISOString()
   // `label` → `detail` only. `name`/`nameSource` left undefined — namer
@@ -588,7 +588,7 @@ export async function spawnBgJob(opts: {
     process.exit(1)
   }
 
-  const { readProcStart } = await import('@claude-code-how-works/daemon/bgWorkerRegistry.js')
+  const { readProcStart } = await import('@thyrox/daemon/bgWorkerRegistry.js')
   const meta: JobMeta = {
     short, pid: child.pid, cmd: fullCmd, cwd: opts.cwd,
     startedAt: Date.now(), status: 'running',

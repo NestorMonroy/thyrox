@@ -5,6 +5,6 @@ export type { AppStateLike as AppState } from './contracts.js'
 
 export function getIdleSpeculationState(): unknown {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require('@claude-code-how-works/app-host/state/AppStateStore.js') as { IDLE_SPECULATION_STATE: unknown }
+  const mod = require('@thyrox/app-host/state/AppStateStore.js') as { IDLE_SPECULATION_STATE: unknown }
   return mod.IDLE_SPECULATION_STATE
 }

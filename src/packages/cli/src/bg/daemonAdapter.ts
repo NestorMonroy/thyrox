@@ -18,12 +18,12 @@
 
 import { spawn } from 'node:child_process'
 
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import {
   daemonRequest,
   type Response as DaemonResponse,
-} from '@claude-code-how-works/daemon/daemonClient.js'
-import { getDefaultLauncher } from '@claude-code-how-works/repl/relaunch.js'
+} from '@thyrox/daemon/daemonClient.js'
+import { getDefaultLauncher } from '@thyrox/repl/relaunch.js'
 
 const PING_TIMEOUT_MS = 1000
 // ant v2.1.140 4722.js:78 — service-install path waits 5s for the
@@ -272,7 +272,7 @@ export async function ensureDaemonInteractive(): Promise<boolean> {
   if (answer === 'yes') {
     const { homedir } = await import('node:os')
     const { join } = await import('node:path')
-    const { installLaunchAgent, isLaunchAgentStale } = await import('@claude-code-how-works/daemon/launchAgent.js')
+    const { installLaunchAgent, isLaunchAgentStale } = await import('@thyrox/daemon/launchAgent.js')
     // ant 4639.js: detect stale plist (deleted binary path) before install.
     if (await isLaunchAgentStale()) {
       logEvent('tengu_bg_daemon_service_stale_exec', {})
@@ -549,7 +549,7 @@ export async function submitDispatchToSpool(payload: {
   d: Record<string, unknown>
   nonce?: string
 }): Promise<string> {
-  const { writeSpoolEnvelope } = await import('@claude-code-how-works/daemon/dispatchSpool.js')
+  const { writeSpoolEnvelope } = await import('@thyrox/daemon/dispatchSpool.js')
   return writeSpoolEnvelope({
     createdAt: Date.now(),
     op: payload.op,

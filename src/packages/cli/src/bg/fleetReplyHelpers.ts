@@ -23,8 +23,8 @@ import { connect } from 'node:net'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
-import { readEnv } from '@claude-code-how-works/config/env'
-import { getJobDir, readJobState } from '@claude-code-how-works/agent/background/fleet/fleetStore.js'
+import { readEnv } from '@thyrox/config/env'
+import { getJobDir, readJobState } from '@thyrox/agent/background/fleet/fleetStore.js'
 
 import { spawnBgPty } from '../bg.js'
 import { encodeCtrlFrame } from './ptyFrame.js'
