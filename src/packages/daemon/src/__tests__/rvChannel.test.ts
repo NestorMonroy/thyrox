@@ -30,7 +30,7 @@ import {
   pushRvState,
   isRendezvousServerRunning,
   type RvServerHost,
-} from '@claude-code-how-works/agent/background/fleet/rvServer.js'
+} from '@thyrox/agent/background/fleet/rvServer.js'
 
 const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-rv-test-'))
 const ORIGINAL_CONFIG_HOME = process.env.CLAUDE_CONFIG_HOME
@@ -332,7 +332,7 @@ describe('rv channel — state + done persist to disk', () => {
     process.env.CLAUDE_JOB_DIR = jobDir
     // Seed a baseline state.json so pushRvState has something to merge.
     const { writeJobState, readJobState } = await import(
-      '@claude-code-how-works/agent/background/fleet/fleetStore.js'
+      '@thyrox/agent/background/fleet/fleetStore.js'
     )
     const now = new Date().toISOString()
     await writeJobState(jobDir, {
