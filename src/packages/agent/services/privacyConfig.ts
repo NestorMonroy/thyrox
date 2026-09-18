@@ -7,10 +7,10 @@
  * happens inside the installer.
  */
 
-import { setIsTelemetryDisabledFn } from '@claude-code-how-works/config/env/privacy'
-import { isTelemetryDisabled } from '@claude-code-how-works/config/env/privacy-level'
+import { setIsTelemetryDisabledFn } from '@thyrox/config/env/privacy'
+import { isTelemetryDisabled } from '@thyrox/config/env/privacy-level'
 
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
 setIsTelemetryDisabledFn(() => isTelemetryDisabled())
 
-export { isAnalyticsDisabled } from '@claude-code-how-works/config/env/privacy'
+export { isAnalyticsDisabled } from '@thyrox/config/env/privacy'

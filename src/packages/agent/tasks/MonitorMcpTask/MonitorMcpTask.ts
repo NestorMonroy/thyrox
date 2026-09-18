@@ -1,5 +1,5 @@
 // Auto-generated stub — replace with real implementation
-import type { TaskStateBase, SetAppState } from '@claude-code-how-works/tool-registry/Task.js';
+import type { TaskStateBase, SetAppState } from '@thyrox/tool-registry/Task.js';
 import type { AppState } from '../../state/AppState.js';
 import type { AgentId } from '../../types/ids.js';
 

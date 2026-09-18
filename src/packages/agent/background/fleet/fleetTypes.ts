@@ -19,7 +19,7 @@
  *   - FleetPrSummary           → daemon PR status rollup, shape from M$6 readers
  */
 
-import type { AgentColorName } from '@claude-code-how-works/tool-registry/tools/AgentTool/agentColorManager.js'
+import type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
 
 /**
  * Per-row outcome rollup. Drives row glyph + label color in the Working /

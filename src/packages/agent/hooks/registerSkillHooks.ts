@@ -1,7 +1,7 @@
-import { HOOK_EVENTS } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import type { AppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import type { HooksSettings } from '@claude-code-how-works/config/types'
+import { HOOK_EVENTS } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import type { HooksSettings } from '@thyrox/config/types'
 import { addSessionHook, removeSessionHook } from './sessionHooks.js'
 
 /**

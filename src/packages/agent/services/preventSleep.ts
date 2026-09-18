@@ -13,8 +13,8 @@
  * Only runs on macOS - no-op on other platforms.
  */
 import { type ChildProcess, spawn } from 'child_process'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 // Caffeinate timeout in seconds. Process auto-exits after this duration.
 // We restart it before expiry to maintain continuous sleep prevention.

@@ -18,36 +18,36 @@ import {
   TASK_ID_TAG,
   TASK_NOTIFICATION_TAG,
   TOOL_USE_ID_TAG,
-} from '@claude-code-how-works/command-runtime/xml.js'
+} from '@thyrox/command-runtime/xml.js'
 import { type QueryParams, query } from '../query.js'
 import { roughTokenCountEstimation } from '../tokenEstimation.js'
-import type { SetAppState } from '@claude-code-how-works/tool-registry/Task.js'
-import { createTaskStateBase } from '@claude-code-how-works/tool-registry/Task.js'
+import type { SetAppState } from '@thyrox/tool-registry/Task.js'
+import { createTaskStateBase } from '@thyrox/tool-registry/Task.js'
 import type {
   AgentDefinition,
   CustomAgentDefinition,
-} from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import { asAgentId } from '@claude-code-how-works/repl/replTypes/ids.js'
-import type { Message } from '@claude-code-how-works/repl/replTypes/message.js'
+} from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { asAgentId } from '@thyrox/repl/replTypes/ids.js'
+import type { Message } from '@thyrox/repl/replTypes/message.js'
 import { createAbortController } from '../abortController.js'
 import {
   runWithAgentContext,
   type SubagentContext,
 } from '../agentContext.js'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logError } from '@thyrox/local-observability/log.js'
 import { enqueuePendingNotification } from '../messageQueueManager.js'
 import { emitTaskTerminatedSdk } from '../sdkEventQueue.js'
 import {
   getAgentTranscriptPath,
   recordSidechainTranscript,
-} from '@claude-code-how-works/storage/sessionStorage.js'
+} from '@thyrox/storage/sessionStorage.js'
 import {
   evictTaskOutput,
   getTaskOutputPath,
   initTaskOutputAsSymlink,
-} from '@claude-code-how-works/storage/task/diskOutput.js'
+} from '@thyrox/storage/task/diskOutput.js'
 import { registerTask, updateTaskState } from '../task/framework.js'
 import type { LocalAgentTaskState } from '../localAgentTask.js'
 

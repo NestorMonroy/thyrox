@@ -1,10 +1,10 @@
 import { sep } from 'path'
-import { getOriginalCwd } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import type { LogOption } from '@claude-code-how-works/repl/replTypes/logs.js'
-import { quote } from '@claude-code-how-works/shell/bash/shellQuote.js'
-import { getSessionIdFromLog } from '@claude-code-how-works/storage/sessionStorage.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
-import { getInvokedBinaryName } from '@claude-code-how-works/config'
+import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
+import type { LogOption } from '@thyrox/repl/replTypes/logs.js'
+import { quote } from '@thyrox/shell/bash/shellQuote.js'
+import { getSessionIdFromLog } from '@thyrox/storage/sessionStorage.js'
+import { readEnv } from '@thyrox/config/env/utils'
+import { getInvokedBinaryName } from '@thyrox/config'
 
 export type CrossProjectResumeResult =
   | {

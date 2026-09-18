@@ -1,6 +1,6 @@
-import { readEnv } from '@claude-code-how-works/config/env/utils'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { gracefulShutdownSync } from '@claude-code-how-works/app-host/bootstrap/gracefulShutdown.js'
+import { readEnv } from '@thyrox/config/env/utils'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 
 /**
  * Creates an idle timeout manager for SDK mode.

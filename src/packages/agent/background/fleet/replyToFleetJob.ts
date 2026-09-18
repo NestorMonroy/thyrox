@@ -11,7 +11,7 @@
  * reply reports ENOCONN (PTY-only deployment without daemon).
  */
 
-import { daemonRequest } from '@claude-code-how-works/daemon/daemonClient.js'
+import { daemonRequest } from '@thyrox/daemon/daemonClient.js'
 
 const REPLY_RETRY_MAX = 10
 const REPLY_RETRY_DELAY_MS = 200

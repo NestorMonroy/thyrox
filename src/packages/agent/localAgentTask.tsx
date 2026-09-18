@@ -1,4 +1,4 @@
-import { getSdkAgentProgressSummariesEnabled } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getSdkAgentProgressSummariesEnabled } from '@thyrox/app-host/bootstrap/state.js'
 import {
   OUTPUT_FILE_TAG,
   STATUS_TAG,
@@ -9,38 +9,38 @@ import {
   WORKTREE_BRANCH_TAG,
   WORKTREE_PATH_TAG,
   WORKTREE_TAG,
-} from '@claude-code-how-works/command-runtime/xml.js'
-import { abortSpeculation } from '@claude-code-how-works/repl/promptSuggestionSpeculation.js'
-import type { AppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { SetAppState, Task, TaskStateBase } from '@claude-code-how-works/tool-registry/Task.js'
-import { createTaskStateBase } from '@claude-code-how-works/tool-registry/Task.js'
-import type { Tools } from '@claude-code-how-works/tool-registry/Tool.js'
-import { findToolByName } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { AgentToolResult } from '@claude-code-how-works/tool-registry/tools/AgentTool/agentToolUtils.js'
-import type { AgentDefinition } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import { SYNTHETIC_OUTPUT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
-import { asAgentId } from '@claude-code-how-works/repl/replTypes/ids.js'
-import type { Message } from '@claude-code-how-works/repl/replTypes/message.js'
+} from '@thyrox/command-runtime/xml.js'
+import { abortSpeculation } from '@thyrox/repl/promptSuggestionSpeculation.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
+import type { SetAppState, Task, TaskStateBase } from '@thyrox/tool-registry/Task.js'
+import { createTaskStateBase } from '@thyrox/tool-registry/Task.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import { findToolByName } from '@thyrox/tool-registry/Tool.js'
+import type { AgentToolResult } from '@thyrox/tool-registry/tools/AgentTool/agentToolUtils.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { SYNTHETIC_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
+import { asAgentId } from '@thyrox/repl/replTypes/ids.js'
+import type { Message } from '@thyrox/repl/replTypes/message.js'
 import {
   createAbortController,
   createChildAbortController,
 } from './abortController.js'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { getToolSearchOrReadInfo } from '@claude-code-how-works/tool-registry/collapseReadSearch.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { getToolSearchOrReadInfo } from '@thyrox/tool-registry/collapseReadSearch.js'
 import { enqueuePendingNotification } from './messageQueueManager.js'
-import { getAgentTranscriptPath } from '@claude-code-how-works/storage/sessionStorage.js'
+import { getAgentTranscriptPath } from '@thyrox/storage/sessionStorage.js'
 import {
   evictTaskOutput,
   getTaskOutputPath,
   initTaskOutputAsSymlink,
-} from '@claude-code-how-works/storage/task/diskOutput.js'
+} from '@thyrox/storage/task/diskOutput.js'
 import {
   PANEL_GRACE_MS,
   registerTask,
   updateTaskState,
 } from './task/framework.js'
 import { emitTaskProgress } from './sdkProgress.js'
-import type { TaskState } from '@claude-code-how-works/repl/tasksTypes.js'
+import type { TaskState } from '@thyrox/repl/tasksTypes.js'
 
 export type ToolActivity = {
   toolName: string

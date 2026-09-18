@@ -2,47 +2,47 @@ import chalk from 'chalk'
 import figures from 'figures'
 import * as React from 'react'
 import { color, Text } from '@anthropic/ink'
-import type { MCPServerConnection } from '@claude-code-how-works/mcp-runtime/types.js'
-import { getAccountInformation, isClaudeAISubscriber } from '@claude-code-how-works/provider/authAlias.js'
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
+import { getAccountInformation, isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
 import {
   getLargeMemoryFiles,
   getMemoryFiles,
   MAX_MEMORY_CHARACTER_COUNT,
-} from '@claude-code-how-works/storage/claudemd.js'
-import { getDoctorDiagnostic } from '@claude-code-how-works/repl/doctorDiagnostic.js'
+} from '@thyrox/storage/claudemd.js'
+import { getDoctorDiagnostic } from '@thyrox/repl/doctorDiagnostic.js'
 import {
   getAWSRegion,
   getDefaultVertexRegion,
   isEnvTruthy,
   readEnv,
-} from '@claude-code-how-works/config/env/utils'
-import { getDisplayPath } from '@claude-code-how-works/storage/file.js'
-import { formatNumber } from '@claude-code-how-works/output/formatters'
+} from '@thyrox/config/env/utils'
+import { getDisplayPath } from '@thyrox/storage/file.js'
+import { formatNumber } from '@thyrox/output/formatters'
 import {
   getIdeClientName,
   type IDEExtensionInstallationStatus,
   isJetBrainsIde,
   toIDEDisplayName,
-} from '@claude-code-how-works/ide/ide.js'
+} from '@thyrox/ide/ide.js'
 import {
   getClaudeAiUserDefaultModelDescription,
   modelDisplayString,
-} from '@claude-code-how-works/provider/model/model.js'
-import { getAPIProvider } from '@claude-code-how-works/provider/model/providers.js'
-import { getMTLSConfig } from '@claude-code-how-works/provider/mtls.js'
-import { checkInstall } from '@claude-code-how-works/updater/nativeInstaller/index.js'
-import { getProxyUrl } from '@claude-code-how-works/provider/proxy.js'
-import { SandboxManager } from '@claude-code-how-works/shell/sandbox/sandbox-adapter.js'
-import { getSettingsWithAllErrors } from '@claude-code-how-works/config/settings/core/allErrors.js'
+} from '@thyrox/provider/model/model.js'
+import { getAPIProvider } from '@thyrox/provider/model/providers.js'
+import { getMTLSConfig } from '@thyrox/provider/mtls.js'
+import { checkInstall } from '@thyrox/updater/nativeInstaller/index.js'
+import { getProxyUrl } from '@thyrox/provider/proxy.js'
+import { SandboxManager } from '@thyrox/shell/sandbox/sandbox-adapter.js'
+import { getSettingsWithAllErrors } from '@thyrox/config/settings/core/allErrors.js'
 import {
   getEnabledSettingSources,
   getSettingSourceDisplayNameCapitalized,
-} from '@claude-code-how-works/config/settings/core/constants.js'
+} from '@thyrox/config/settings/core/constants.js'
 import {
   getManagedFileSettingsPresence,
   getPolicySettingsOrigin,
   getSettingsForSource,
-} from '@claude-code-how-works/config/settings'
+} from '@thyrox/config/settings'
 import type { ThemeName } from '@anthropic/ink'
 
 export type Property = {

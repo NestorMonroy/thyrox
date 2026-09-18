@@ -1,10 +1,10 @@
-import { BASH_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/BashTool/toolName.js'
-import { FILE_READ_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileReadTool/prompt.js'
-import { GREP_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/GrepTool/prompt.js'
-import { WEB_FETCH_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/WebFetchTool/prompt.js'
+import { BASH_TOOL_NAME } from '@thyrox/tool-registry/tools/BashTool/toolName.js'
+import { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'
+import { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'
+import { WEB_FETCH_TOOL_NAME } from '@thyrox/tool-registry/tools/WebFetchTool/prompt.js'
 import type { ContextData } from './analyzeContext.js'
-import { getDisplayPath } from '@claude-code-how-works/storage/file.js'
-import { formatTokens } from '@claude-code-how-works/output/formatters'
+import { getDisplayPath } from '@thyrox/storage/file.js'
+import { formatTokens } from '@thyrox/output/formatters'
 
 // --
 

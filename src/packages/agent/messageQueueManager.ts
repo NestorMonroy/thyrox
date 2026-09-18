@@ -1,7 +1,7 @@
 import { feature } from 'bun:bundle'
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
-import type { Permutations } from '@claude-code-how-works/tool-registry/genericTypeUtils'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import type { Permutations } from '@thyrox/tool-registry/genericTypeUtils'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 type AppState = unknown
 import type {
   QueueOperation,
@@ -12,12 +12,12 @@ import type {
   PromptInputMode,
   QueuedCommand,
   QueuePriority,
-} from '@claude-code-how-works/repl/textInputTypes.js'
-import type { PastedContent } from '@claude-code-how-works/config'
+} from '@thyrox/repl/textInputTypes.js'
+import type { PastedContent } from '@thyrox/config'
 import { extractTextContent } from './messages.js'
-import { objectGroupBy } from '@claude-code-how-works/tool-registry/utils/objectGroupBy.js'
-import { recordQueueOperation } from '@claude-code-how-works/storage/sessionStorage.js'
-import { createSignal } from '@claude-code-how-works/config/signal'
+import { objectGroupBy } from '@thyrox/tool-registry/utils/objectGroupBy.js'
+import { recordQueueOperation } from '@thyrox/storage/sessionStorage.js'
+import { createSignal } from '@thyrox/config/signal'
 
 export type SetAppState = (f: (prev: AppState) => AppState) => void
 

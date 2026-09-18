@@ -1,11 +1,11 @@
 import React from 'react'
-import { MCPServerApprovalDialog } from '@claude-code-how-works/repl/components/MCPServerApprovalDialog.js'
-import { MCPServerMultiselectDialog } from '@claude-code-how-works/repl/components/MCPServerMultiselectDialog.js'
+import { MCPServerApprovalDialog } from '@thyrox/repl/components/MCPServerApprovalDialog.js'
+import { MCPServerMultiselectDialog } from '@thyrox/repl/components/MCPServerMultiselectDialog.js'
 import type { Root } from '@anthropic/ink'
-import { KeybindingSetup } from '@claude-code-how-works/repl/keybindings/KeybindingProviderSetup.js'
-import { AppStateProvider } from '@claude-code-how-works/app-host/state/AppState.js'
-import { getMcpConfigsByScope } from '@claude-code-how-works/mcp-runtime/config.js'
-import { getProjectMcpServerStatus } from '@claude-code-how-works/mcp-runtime/utils.js'
+import { KeybindingSetup } from '@thyrox/repl/keybindings/KeybindingProviderSetup.js'
+import { AppStateProvider } from '@thyrox/app-host/state/AppState.js'
+import { getMcpConfigsByScope } from '@thyrox/mcp-runtime/config.js'
+import { getProjectMcpServerStatus } from '@thyrox/mcp-runtime/utils.js'
 
 /**
  * Show MCP server approval dialogs for pending project servers.

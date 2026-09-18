@@ -3,7 +3,7 @@ import type {
   ToolResultBlockParam,
   ToolUseBlock,
 } from '@anthropic-ai/sdk/resources/index.mjs'
-import { findToolByName } from '@claude-code-how-works/tool-registry'
+import { findToolByName } from '@thyrox/tool-registry'
 import {
   getCommandsByMaxPriority,
   isSlashCommand,
@@ -11,7 +11,7 @@ import {
 } from './internal/commandQueue.js'
 import {
   getFeatureValue_CACHED_MAY_BE_STALE,
-} from '@claude-code-how-works/config/feature-flags'
+} from '@thyrox/config/feature-flags'
 import {
   buildPostCompactMessages,
 } from './compaction/index.js'
@@ -27,7 +27,7 @@ import { executePostToolBatchHooks } from './hooks.js'
 // extends the partial with extra method slots (readFileState etc) that
 // query.ts doesn't model. The cast bridges the two views — runtime is the
 // same toolUseContext object either way.
-import type { ToolUseContext as CanonicalToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
+import type { ToolUseContext as CanonicalToolUseContext } from '@thyrox/tool-registry/Tool.js'
 import { productionDeps, type QueryDeps } from './internal/queryDeps.js'
 import {
   buildQueryConfig,
@@ -126,7 +126,7 @@ import {
   tryReactiveCompact,
   type StreamingToolExecutorLike,
 } from './internal/queryRuntime.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 const SLEEP_TOOL_NAME = 'Sleep'
 type CanUseToolFn = (...args: unknown[]) => Promise<{

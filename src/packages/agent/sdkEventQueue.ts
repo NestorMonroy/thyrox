@@ -1,7 +1,7 @@
 import type { UUID } from 'crypto'
 import { randomUUID } from 'crypto'
-import { getIsNonInteractiveSession, getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import type { SdkWorkflowProgress } from '@claude-code-how-works/tool-registry/progressTypes'
+import { getIsNonInteractiveSession, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import type { SdkWorkflowProgress } from '@thyrox/tool-registry/progressTypes'
 
 type TaskStartedEvent = {
   type: 'system'

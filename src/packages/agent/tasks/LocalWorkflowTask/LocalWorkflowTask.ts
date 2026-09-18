@@ -3,8 +3,8 @@
 // adapted to ccb's setAppState/AppState.tasks idiom (ant uses a taskRegistry
 // object; ccb uses framework functions — same effect).
 
-import type { SetAppState, Task, TaskStateBase } from '@claude-code-how-works/tool-registry/Task.js'
-import { isTerminalTaskStatus } from '@claude-code-how-works/tool-registry/Task.js'
+import type { SetAppState, Task, TaskStateBase } from '@thyrox/tool-registry/Task.js'
+import { isTerminalTaskStatus } from '@thyrox/tool-registry/Task.js'
 import {
   evictTerminalTask,
   registerTask,

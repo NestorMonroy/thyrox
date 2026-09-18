@@ -1,4 +1,4 @@
-import type { SdkWorkflowProgress } from '@claude-code-how-works/tool-registry/progressTypes'
+import type { SdkWorkflowProgress } from '@thyrox/tool-registry/progressTypes'
 import { enqueueSdkEvent } from './sdkEventQueue.js'
 
 /**

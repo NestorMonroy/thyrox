@@ -1,23 +1,23 @@
 import { feature } from 'bun:bundle'
-import { initExtractMemories } from '@claude-code-how-works/memory'
+import { initExtractMemories } from '@thyrox/memory'
 import { initMagicDocs } from '../MagicDocs/magicDocs.js'
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const registerProtocolModule = feature('LODESTONE')
-  ? (require('@claude-code-how-works/repl/deepLink/registerProtocol.js') as typeof import('@claude-code-how-works/repl/deepLink/registerProtocol.js'))
+  ? (require('@thyrox/repl/deepLink/registerProtocol.js') as typeof import('@thyrox/repl/deepLink/registerProtocol.js'))
   : null
 
 /* eslint-enable @typescript-eslint/no-require-imports */
 
-import { getIsInteractive, getLastInteractionTime } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getIsInteractive, getLastInteractionTime } from '@thyrox/app-host/bootstrap/state.js'
 import {
   cleanupNpmCacheForAnthropicPackages,
   cleanupOldMessageFilesInBackground,
   cleanupOldVersionsThrottled,
-} from '@claude-code-how-works/local-observability/aggregates/cleanup.js'
-import { cleanupOldVersions } from '@claude-code-how-works/updater/nativeInstaller/index.js'
-import { autoUpdateMarketplacesAndPluginsInBackground } from '@claude-code-how-works/config/plugin/core/pluginAutoupdate.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+} from '@thyrox/local-observability/aggregates/cleanup.js'
+import { cleanupOldVersions } from '@thyrox/updater/nativeInstaller/index.js'
+import { autoUpdateMarketplacesAndPluginsInBackground } from '@thyrox/config/plugin/core/pluginAutoupdate.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // 24 hours in milliseconds
 const RECURRING_CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000

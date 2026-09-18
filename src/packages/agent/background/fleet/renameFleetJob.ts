@@ -13,8 +13,8 @@
  * user-set name, the rename is a no-op (don't overwrite manual edits).
  */
 
-import { readEnv } from '@claude-code-how-works/config/env'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { readEnv } from '@thyrox/config/env'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getJobDir, invalidateCache, readJobState, writeJobState } from './fleetStore.js'
 import type { FleetNameSource } from './fleetTypes.js'
 

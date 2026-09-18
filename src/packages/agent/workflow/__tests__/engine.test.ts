@@ -26,7 +26,7 @@ function installRunAgentMock(
   // plus the two symbols other loaded modules re-export from this path
   // (filterIncompleteToolCalls, isRecordableMessage).
   mock.module(
-    '@claude-code-how-works/tool-registry/tools/AgentTool/runAgent.js',
+    '@thyrox/tool-registry/tools/AgentTool/runAgent.js',
     () => ({
       // Re-exported by other modules in the load graph (e.g.
       // AgentSummary/agentSummary.ts). Provide a stub so a bare mock (no real
@@ -59,7 +59,7 @@ function installRunAgentMock(
 }
 
 function fakeCtx(): {
-  toolUseContext: import('@claude-code-how-works/tool-registry/Tool.js').ToolUseContext
+  toolUseContext: import('@thyrox/tool-registry/Tool.js').ToolUseContext
 } {
   const abortController = new AbortController()
   const toolUseContext = {
@@ -72,14 +72,14 @@ function fakeCtx(): {
     abortController,
     getAppState: () => ({ tasks: {}, toolPermissionContext: { mode: 'default' } }),
     setAppState: () => {},
-  } as unknown as import('@claude-code-how-works/tool-registry/Tool.js').ToolUseContext
+  } as unknown as import('@thyrox/tool-registry/Tool.js').ToolUseContext
   return { toolUseContext }
 }
 
 const noopCanUseTool = (async () => ({
   behavior: 'allow',
   updatedInput: {},
-})) as unknown as import('@claude-code-how-works/repl/hooks/useCanUseTool.js').CanUseToolFn
+})) as unknown as import('@thyrox/repl/hooks/useCanUseTool.js').CanUseToolFn
 
 describe('runWorkflow (engine integration)', () => {
   afterEach(() => {

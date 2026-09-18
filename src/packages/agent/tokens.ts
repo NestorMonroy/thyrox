@@ -2,7 +2,7 @@ import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messag
 import { roughTokenCountEstimationForMessages } from './tokenEstimation.js'
 import type { AssistantMessage, ContentItem, Message } from './messageShapes.js'
 import { SYNTHETIC_MESSAGES, SYNTHETIC_MODEL } from './messages.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
 export function getTokenUsage(message: Message): Usage | undefined {
   if (

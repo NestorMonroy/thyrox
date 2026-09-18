@@ -1,11 +1,11 @@
-import type { LogOption, SerializedMessage } from '@claude-code-how-works/repl/replTypes/logs.js'
-import { count } from '@claude-code-how-works/tool-registry/utils/array.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getLogDisplayTitle, logError } from '@claude-code-how-works/local-observability/log.js'
-import { getSmallFastModel } from '@claude-code-how-works/provider/model/model.js'
-import { isLiteLog, loadFullLog } from '@claude-code-how-works/storage/sessionStorage.js'
+import type { LogOption, SerializedMessage } from '@thyrox/repl/replTypes/logs.js'
+import { count } from '@thyrox/tool-registry/utils/array.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getLogDisplayTitle, logError } from '@thyrox/local-observability/log.js'
+import { getSmallFastModel } from '@thyrox/provider/model/model.js'
+import { isLiteLog, loadFullLog } from '@thyrox/storage/sessionStorage.js'
 import { sideQuery } from '../sideQuery.js'
-import { jsonParse } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 
 // Limits for transcript extraction
 const MAX_TRANSCRIPT_CHARS = 2000 // Max chars of transcript per session

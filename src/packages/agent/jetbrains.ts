@@ -1,8 +1,8 @@
 import { homedir, platform } from 'os'
 import { join } from 'path'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import type { IdeType } from '@claude-code-how-works/ide/ide.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import type { IdeType } from '@thyrox/ide/ide.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 const PLUGIN_PREFIX = 'claude-code-how-works-how-works-jetbrains-plugin'
 

@@ -1,18 +1,18 @@
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { UUID } from 'crypto'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { CompactionResult } from './compaction/compact.js'
-import type { ScopedMcpServerConfig } from '@claude-code-how-works/mcp-runtime/types.js'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { EffortLevel } from '@claude-code-how-works/headless-sdk/runtimeTypes.js'
+import type { ScopedMcpServerConfig } from '@thyrox/mcp-runtime/types.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { EffortLevel } from '@thyrox/headless-sdk/runtimeTypes.js'
 type EffortValue = EffortLevel | number
-import type { IDEExtensionInstallationStatus, IdeType } from '@claude-code-how-works/ide/ide.js'
-import type { SettingSource } from '@claude-code-how-works/config/constants'
-import type { HooksSettings } from '@claude-code-how-works/config/types'
+import type { IDEExtensionInstallationStatus, IdeType } from '@thyrox/ide/ide.js'
+import type { SettingSource } from '@thyrox/config/constants'
+import type { HooksSettings } from '@thyrox/config/types'
 import type { ThemeName } from '@anthropic/ink'
 import type { LogOption } from './logsTypes.js'
 import type { Message } from './messageShapes.js'
-import type { PluginManifest } from '@claude-code-how-works/config/plugin/types'
+import type { PluginManifest } from '@thyrox/config/plugin/types'
 
 export type LocalCommandResult =
   | { type: 'text'; value: string }

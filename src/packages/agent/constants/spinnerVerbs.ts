@@ -1,4 +1,4 @@
-import { getInitialSettings } from '@claude-code-how-works/config/settings/core/settings.js'
+import { getInitialSettings } from '@thyrox/config/settings/core/settings.js'
 
 export function getSpinnerVerbs(): string[] {
   const settings = getInitialSettings()

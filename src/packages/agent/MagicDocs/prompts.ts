@@ -1,6 +1,6 @@
 import { join } from 'path'
-import { getClaudeConfigHomeDir } from '@claude-code-how-works/config/env/utils'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 
 /**
  * Get the Magic Docs update prompt template

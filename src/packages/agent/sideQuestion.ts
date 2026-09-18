@@ -6,8 +6,8 @@
  * while keeping the side question response separate from main conversation.
  */
 
-import { formatAPIError } from '@claude-code-how-works/provider/errorUtils.js'
-import type { NonNullableUsage } from '@claude-code-how-works/provider/logging.js'
+import { formatAPIError } from '@thyrox/provider/errorUtils.js'
+import type { NonNullableUsage } from '@thyrox/provider/logging.js'
 import type { Message, SystemAPIErrorMessage } from './messageShapes.js'
 import { type CacheSafeParams, runForkedAgent } from './forkedAgent.js'
 import { createUserMessage, extractTextContent } from './messages.js'

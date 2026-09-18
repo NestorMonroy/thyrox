@@ -13,11 +13,11 @@
 import { readFile } from 'fs/promises'
 import { join } from 'path'
 
-import { getTeamsDir } from '@claude-code-how-works/config/env/utils'
-import { errorMessage, getErrnoCode } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { jsonParse } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { uniq } from '@claude-code-how-works/tool-registry/utils/array.js'
+import { getTeamsDir } from '@thyrox/config/env/utils'
+import { errorMessage, getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
+import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { uniq } from '@thyrox/tool-registry/utils/array.js'
 
 import { listTasks, updateTask } from './tasks.js'
 

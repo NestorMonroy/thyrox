@@ -4,23 +4,23 @@ import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages.js
 import {
   getLastApiCompletionTimestamp,
   setLastApiCompletionTimestamp,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { STRUCTURED_OUTPUTS_BETA_HEADER } from '@claude-code-how-works/provider/betasConstants.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { STRUCTURED_OUTPUTS_BETA_HEADER } from '@thyrox/provider/betasConstants.js'
 import type { QuerySource } from './querySource.js'
 import {
   getAttributionHeader,
   getCLISyspromptPrefix,
-} from '@claude-code-how-works/provider/systemConstants.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
+} from '@thyrox/provider/systemConstants.js'
+import { logEvent } from '@thyrox/local-observability'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from './eventMetadata.js'
-import { getAPIMetadata } from '@claude-code-how-works/provider/claude.js'
-import { getAnthropicClient } from '@claude-code-how-works/provider'
+import { getAPIMetadata } from '@thyrox/provider/claude.js'
+import { getAnthropicClient } from '@thyrox/provider'
 import {
   getModelBetas,
   modelSupportsStructuredOutputs,
-} from '@claude-code-how-works/provider/betas.js'
-import { computeFingerprint } from '@claude-code-how-works/provider/fingerprint.js'
-import { normalizeModelStringForAPI } from '@claude-code-how-works/provider/model.js'
+} from '@thyrox/provider/betas.js'
+import { computeFingerprint } from '@thyrox/provider/fingerprint.js'
+import { normalizeModelStringForAPI } from '@thyrox/provider/model.js'
 
 declare const MACRO: { VERSION: string }
 

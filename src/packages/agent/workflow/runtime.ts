@@ -19,8 +19,8 @@ import {
 } from './sandbox.js'
 import { parseWorkflowScript } from './metaParser.js'
 import { readWorkflowScriptFile } from './paths.js'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type {
   FrozenBudget,
   JournalState,

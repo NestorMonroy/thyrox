@@ -9,24 +9,24 @@
  * import from here (QueryEngine.ts, cli/print.ts).
  */
 
-import { getProviderContextPipeline } from '@claude-code-how-works/provider'
-import '@claude-code-how-works/app-host/providerHostSetup.js'
-import type { Command } from '@claude-code-how-works/command-runtime/types'
+import { getProviderContextPipeline } from '@thyrox/provider'
+import '@thyrox/app-host/providerHostSetup.js'
+import type { Command } from '@thyrox/command-runtime/types'
 import { getSystemPrompt } from './prompts.js'
-import type { MCPServerConnection } from '@claude-code-how-works/mcp-runtime/types.js'
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 type AppState = any
-import type { Tools, ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { AgentDefinition } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import type { Tools, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import type { Message } from './messageShapes.js'
 import { createAbortController } from './abortController.js'
-import type { FileStateCache } from '@claude-code-how-works/tool-registry/fileStateCache'
+import type { FileStateCache } from '@thyrox/tool-registry/fileStateCache'
 import type { CacheSafeParams } from './forkedAgent.js'
-import { getMainLoopModel } from '@claude-code-how-works/provider/model.js'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
+import { getMainLoopModel } from '@thyrox/provider/model.js'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import {
   shouldEnableThinkingByDefault,
   type ThinkingConfig,
-} from '@claude-code-how-works/provider/thinking.js'
+} from '@thyrox/provider/thinking.js'
 
 /**
  * Fetch the three context pieces that form the API cache-key prefix:

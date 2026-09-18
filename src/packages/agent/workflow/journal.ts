@@ -13,7 +13,7 @@
 import { createHash } from 'node:crypto'
 import { mkdir, appendFile, readFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getWorkflowRunDir } from './paths.js'
 import type {
   AgentHookOpts,

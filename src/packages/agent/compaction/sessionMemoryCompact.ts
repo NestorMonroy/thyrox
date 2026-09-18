@@ -4,25 +4,25 @@
 
 import type { AgentId } from '../idTypes.js'
 import type { HookResultMessage, Message } from '../messageShapes.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import {
   createCompactBoundaryMessage,
   createUserMessage,
   isCompactBoundaryMessage,
 } from '../messages.js'
-import { getMainLoopModel } from '@claude-code-how-works/provider/model.js'
-import { getSessionMemoryPath } from '@claude-code-how-works/permission/filesystem'
-import { processSessionStartHooks } from '@claude-code-how-works/storage/sessionStart.js'
-import { getTranscriptPath } from '@claude-code-how-works/storage/sessionStorage.js'
+import { getMainLoopModel } from '@thyrox/provider/model.js'
+import { getSessionMemoryPath } from '@thyrox/permission/filesystem'
+import { processSessionStartHooks } from '@thyrox/storage/sessionStart.js'
+import { getTranscriptPath } from '@thyrox/storage/sessionStorage.js'
 import { tokenCountFromLastAPIResponse } from '../tokens.js'
 import { extractDiscoveredToolNames } from '../toolSearch.js'
 import {
   getDynamicConfig_BLOCKS_ON_INIT,
   getFeatureValue_CACHED_MAY_BE_STALE,
-} from '@claude-code-how-works/config/feature-flags'
-import { logEvent } from '@claude-code-how-works/local-observability'
+} from '@thyrox/config/feature-flags'
+import { logEvent } from '@thyrox/local-observability'
 import {
   isSessionMemoryEmpty,
   truncateSessionMemoryForCompact,
@@ -40,7 +40,7 @@ import {
 } from './compact.js'
 import { estimateMessageTokens } from './microCompact.js'
 import { getCompactUserSummaryMessage } from './prompt.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 /**
  * Configuration for session memory compaction thresholds

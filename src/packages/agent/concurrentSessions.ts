@@ -1,20 +1,20 @@
 import { feature } from 'bun:bundle'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 import { chmod, mkdir, readdir, readFile, unlink, writeFile } from 'fs/promises'
 import { join } from 'path'
 import {
   getOriginalCwd,
   getSessionId,
   onSessionSwitch,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@claude-code-how-works/config/env/utils'
-import { errorMessage, isFsInaccessible } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { isProcessRunning } from '@claude-code-how-works/shell/genericProcessUtils.js'
-import { getPlatform } from '@claude-code-how-works/config/platform'
-import { jsonParse, jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { getAgentId } from '@claude-code-how-works/swarm/teammateState.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { errorMessage, isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
+import { isProcessRunning } from '@thyrox/shell/genericProcessUtils.js'
+import { getPlatform } from '@thyrox/config/platform'
+import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { getAgentId } from '@thyrox/swarm/teammateState.js'
 
 export type SessionKind = 'interactive' | 'bg' | 'daemon' | 'daemon-worker'
 export type SessionStatus = 'busy' | 'idle' | 'waiting'

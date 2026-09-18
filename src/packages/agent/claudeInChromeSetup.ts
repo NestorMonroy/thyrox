@@ -1,5 +1,5 @@
 import { BROWSER_TOOLS } from '@ant/claude-for-chrome-mcp'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 import { chmod, mkdir, readFile, writeFile } from 'fs/promises'
 import { homedir } from 'os'
 import { join } from 'path'
@@ -8,20 +8,20 @@ import {
   getIsInteractive,
   getIsNonInteractiveSession,
   getSessionBypassPermissionsMode,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import type { ScopedMcpServerConfig } from '@claude-code-how-works/mcp-runtime/types.js'
-import { isInBundledMode } from '@claude-code-how-works/config/bundledMode'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import type { ScopedMcpServerConfig } from '@thyrox/mcp-runtime/types.js'
+import { isInBundledMode } from '@thyrox/config/bundledMode'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   getClaudeConfigHomeDir,
   isEnvDefinedFalsy,
   isEnvTruthy,
-} from '@claude-code-how-works/config/env/utils'
-import { execFileNoThrowWithCwd } from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { getPlatform } from '@claude-code-how-works/config/platform'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/config/env/utils'
+import { execFileNoThrowWithCwd } from '@thyrox/shell/execFileNoThrow.js'
+import { getPlatform } from '@thyrox/config/platform'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import {
   CLAUDE_IN_CHROME_MCP_SERVER_NAME,
   getAllBrowserDataPaths,

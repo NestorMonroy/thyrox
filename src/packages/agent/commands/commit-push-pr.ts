@@ -1,12 +1,12 @@
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
+import type { Command } from '@thyrox/command-runtime/runtime'
 import {
   getAttributionTexts,
   getEnhancedPRAttribution,
 } from '../attribution.js'
-import { getDefaultBranch } from '@claude-code-how-works/storage/git.js'
-import { executeShellCommandsInPrompt } from '@claude-code-how-works/command-runtime/promptShellExecution.js'
-import { getUndercoverInstructions, isUndercover } from '@claude-code-how-works/tool-registry/undercover.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { getDefaultBranch } from '@thyrox/storage/git.js'
+import { executeShellCommandsInPrompt } from '@thyrox/command-runtime/promptShellExecution.js'
+import { getUndercoverInstructions, isUndercover } from '@thyrox/tool-registry/undercover.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 const ALLOWED_TOOLS = [
   'Bash(git checkout --branch:*)',

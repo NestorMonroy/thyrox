@@ -1,19 +1,19 @@
 import axios from 'axios'
-import { getOauthConfig } from '@claude-code-how-works/provider/oauthConstants'
-import { getOrganizationUUID } from '@claude-code-how-works/provider/oauth/client.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { getOauthConfig } from '@thyrox/provider/oauthConstants'
+import { getOrganizationUUID } from '@thyrox/provider/oauth/client.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
   getClaudeAIOAuthTokens,
   isClaudeAISubscriber,
-} from '@claude-code-how-works/provider/authAlias.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { detectCurrentRepository } from '@claude-code-how-works/storage/detectRepository.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { findGitRoot, getIsClean } from '@claude-code-how-works/storage/git.js'
-import { getOAuthHeaders } from '@claude-code-how-works/teleport/api.js'
-import { fetchEnvironments } from '@claude-code-how-works/teleport/environments.js'
+} from '@thyrox/provider/authAlias.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { detectCurrentRepository } from '@thyrox/storage/detectRepository.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { findGitRoot, getIsClean } from '@thyrox/storage/git.js'
+import { getOAuthHeaders } from '@thyrox/teleport/api.js'
+import { fetchEnvironments } from '@thyrox/teleport/environments.js'
 
 /**
  * Checks if user needs to log in with Claude.ai

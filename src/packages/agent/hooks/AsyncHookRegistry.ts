@@ -2,18 +2,18 @@ import type {
   AsyncHookJSONOutput,
   HookEvent,
   SyncHookJSONOutput,
-} from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import type { ShellCommand } from '@claude-code-how-works/shell/shellCommand.js'
-import { invalidateSessionEnvCache } from '@claude-code-how-works/storage/sessionEnvironment.js'
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import type { ShellCommand } from '@thyrox/shell/shellCommand.js'
+import { invalidateSessionEnvCache } from '@thyrox/storage/sessionEnvironment.js'
 import {
   jsonParse,
   jsonStringify,
-} from '@claude-code-how-works/local-observability/slowOperations.js'
+} from '@thyrox/local-observability/slowOperations.js'
 import {
   emitHookResponse,
   startHookProgressInterval,
-} from '@claude-code-how-works/repl/hookEvents.js'
+} from '@thyrox/repl/hookEvents.js'
 
 export type PendingAsyncHook = {
   processId: string

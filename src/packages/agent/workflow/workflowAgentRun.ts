@@ -8,19 +8,19 @@
 // in hooks.ts execAgent; this module is a single attempt.
 
 import { createUserMessage } from '../messages.js'
-import { runAgent } from '@claude-code-how-works/tool-registry/tools/AgentTool/runAgent.js'
-import { runWithCwdOverride } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import type { ToolUseContext, Tools } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
-import type { ModelAlias } from '@claude-code-how-works/provider/modelAliases.js'
-import type { AgentDefinition } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
+import { runWithCwdOverride } from '@thyrox/app-host/bootstrap/cwd.js'
+import type { ToolUseContext, Tools } from '@thyrox/tool-registry/Tool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
+import type { ModelAlias } from '@thyrox/provider/modelAliases.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { createAgentId } from '../uuid.js'
 import type {
   AgentExecResult,
   AgentHookOpts,
   WorkflowProgressEvent,
 } from './types.js'
-import { logOTelEvent } from '@claude-code-how-works/local-observability/telemetry'
+import { logOTelEvent } from '@thyrox/local-observability/telemetry'
 
 // The slice of createWorkflowHooks' closure a single attempt needs. Passed once
 // per attempt rather than recaptured — keeps the function pure-ish + testable.

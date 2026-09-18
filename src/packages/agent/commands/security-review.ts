@@ -1,7 +1,7 @@
 import { parseFrontmatter } from '../frontmatterParser.js'
-import { parseSlashCommandToolsFromFrontmatter } from '@claude-code-how-works/tool-registry/markdownConfigLoader.js'
-import { executeShellCommandsInPrompt } from '@claude-code-how-works/command-runtime/promptShellExecution.js'
-import { createMovedToPluginCommand } from '@claude-code-how-works/command-runtime/createMovedToPluginCommand.js'
+import { parseSlashCommandToolsFromFrontmatter } from '@thyrox/tool-registry/markdownConfigLoader.js'
+import { executeShellCommandsInPrompt } from '@thyrox/command-runtime/promptShellExecution.js'
+import { createMovedToPluginCommand } from '@thyrox/command-runtime/createMovedToPluginCommand.js'
 
 const SECURITY_REVIEW_MARKDOWN = `---
 allowed-tools: Bash(git diff:*), Bash(git status:*), Bash(git log:*), Bash(git show:*), Bash(git remote show:*), Read, Glob, Grep, LS, Task

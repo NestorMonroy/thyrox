@@ -79,7 +79,7 @@ import { parseEffortValue, toPersistableEffort } from './effort.js'
 // `Tool`/`ToolPermissionContext`: el paquete tool-registry está ausente por
 // completo; `import type` se borra en runtime, así que se deja sin traducir.
 // biome-ignore-all assist/source/organizeImports: import type sin resolver a propósito (ver docstring)
-import type { Tool, ToolPermissionContext } from '@claude-code-how-works/tool-registry/runtime'
+import type { Tool, ToolPermissionContext } from '@thyrox/tool-registry/runtime'
 
 /**
  * V7 §7.2 SDK boundary placeholder types — narrowed inputs that
@@ -132,7 +132,7 @@ export function createInteractiveSessionStore(
     createStore: <T>(initial: T, onChange: (state: T) => void) => Store<T>
   }
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { onChangeAppState } = require('@claude-code-how-works/repl/onChangeAppState.js') as {
+  const { onChangeAppState } = require('@thyrox/repl/onChangeAppState.js') as {
     onChangeAppState: (state: AppState) => void
   }
   return createStore<AppState>(
@@ -209,7 +209,7 @@ export function createHeadlessSessionStore(
     createStore: <T>(initial: T, onChange: (state: T) => void) => Store<T>
   }
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { onChangeAppState } = require('@claude-code-how-works/repl/onChangeAppState.js') as {
+  const { onChangeAppState } = require('@thyrox/repl/onChangeAppState.js') as {
     onChangeAppState: (state: AppState) => void
   }
   return createStore<AppState>(buildHeadlessCompatState(params), onChangeAppState)

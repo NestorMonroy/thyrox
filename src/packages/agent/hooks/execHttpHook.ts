@@ -1,13 +1,13 @@
 import axios from 'axios'
-import type { HookEvent } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
+import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import { createCombinedAbortSignal } from '../combinedAbortSignal.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getProxyUrl, shouldBypassProxy } from '@claude-code-how-works/provider/proxy.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { getProxyUrl, shouldBypassProxy } from '@thyrox/provider/proxy.js'
+import { readEnv } from '@thyrox/config/env/utils'
 // Import as namespace so spyOn works in tests (direct imports bypass spies)
-import * as settingsModule from '@claude-code-how-works/config/settings'
-import type { HttpHook } from '@claude-code-how-works/config/types'
+import * as settingsModule from '@thyrox/config/settings'
+import type { HttpHook } from '@thyrox/config/types'
 import { ssrfGuardedLookup } from './ssrfGuard.js'
 
 const DEFAULT_HTTP_HOOK_TIMEOUT_MS = 10 * 60 * 1000 // 10 minutes (matches TOOL_HOOK_EXECUTION_TIMEOUT_MS)
@@ -22,7 +22,7 @@ const DEFAULT_HTTP_HOOK_TIMEOUT_MS = 10 * 60 * 1000 // 10 minutes (matches TOOL_
 async function getSandboxProxyConfig(): Promise<
   { host: string; port: number; protocol: string } | undefined
 > {
-  const { SandboxManager } = await import('@claude-code-how-works/shell/sandbox/sandbox-adapter.js')
+  const { SandboxManager } = await import('@thyrox/shell/sandbox/sandbox-adapter.js')
 
   if (!SandboxManager.isSandboxingEnabled()) {
     return undefined

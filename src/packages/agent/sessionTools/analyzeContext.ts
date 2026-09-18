@@ -4,10 +4,10 @@ import {
   SYSTEM_PROMPT_DYNAMIC_BOUNDARY,
 } from '../prompts.js'
 import { microcompactMessages } from '../compaction/microCompact.js'
-import { getSdkBetas } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getCommandName } from '@claude-code-how-works/command-runtime/runtime'
-import { getSystemContext } from '@claude-code-how-works/provider/context.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { getSdkBetas } from '@thyrox/app-host/bootstrap/state.js'
+import { getCommandName } from '@thyrox/command-runtime/runtime'
+import { getSystemContext } from '@thyrox/provider/context.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import {
   AUTOCOMPACT_BUFFER_TOKENS,
   getEffectiveContextWindowSize,
@@ -17,7 +17,7 @@ import {
 import {
   roughTokenCountEstimation,
 } from '../tokenEstimation.js'
-import { estimateSkillFrontmatterTokens } from '@claude-code-how-works/command-runtime/skills/loadSkillsDir.js'
+import { estimateSkillFrontmatterTokens } from '@thyrox/command-runtime/skills/loadSkillsDir.js'
 import {
   findToolByName,
   type Tool,
@@ -25,16 +25,16 @@ import {
   type Tools,
   type ToolUseContext,
   toolMatchesName,
-} from '@claude-code-how-works/tool-registry/Tool.js'
+} from '@thyrox/tool-registry/Tool.js'
 import type {
   AgentDefinition,
   AgentDefinitionsResult,
-} from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import { SKILL_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/SkillTool/constants.js'
+} from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { SKILL_TOOL_NAME } from '@thyrox/tool-registry/tools/SkillTool/constants.js'
 import {
   getLimitedSkillToolCommands,
   getSkillToolInfo as getSlashCommandInfo,
-} from '@claude-code-how-works/tool-registry/tools/SkillTool/prompt.js'
+} from '@thyrox/tool-registry/tools/SkillTool/prompt.js'
 import type {
   AssistantMessage,
   AttachmentMessage,
@@ -42,25 +42,25 @@ import type {
   NormalizedAssistantMessage,
   NormalizedUserMessage,
   UserMessage,
-} from '@claude-code-how-works/repl/replTypes/message.js'
-import { toolToAPISchema } from '@claude-code-how-works/provider/legacy/api.js'
-import { filterInjectedMemoryFiles, getMemoryFiles } from '@claude-code-how-works/storage/claudemd.js'
+} from '@thyrox/repl/replTypes/message.js'
+import { toolToAPISchema } from '@thyrox/provider/legacy/api.js'
+import { filterInjectedMemoryFiles, getMemoryFiles } from '@thyrox/storage/claudemd.js'
 import { getContextWindowForModel } from '../context.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/log.js'
 import {
   getRuntimeMainLoopModel,
   renderModelSetting,
-} from '@claude-code-how-works/provider/model/model.js'
-import type { SettingSource } from '@claude-code-how-works/config/settings/core/constants.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { buildEffectiveSystemPrompt } from '@claude-code-how-works/provider/systemPrompt.js'
+} from '@thyrox/provider/model/model.js'
+import type { SettingSource } from '@thyrox/config/settings/core/constants.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { buildEffectiveSystemPrompt } from '@thyrox/provider/systemPrompt.js'
 import type { Theme } from '@anthropic/ink'
 import { getCurrentUsage } from '../tokens.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 const RESERVED_CATEGORY_NAME = 'Autocompact buffer'
 const MANUAL_COMPACT_BUFFER_NAME = 'Compact buffer'
@@ -356,7 +356,7 @@ async function countBuiltInToolTokens(
 
   // Check if tool search is enabled
   const { isToolSearchEnabled } = await import('../toolSearch.js')
-  const { isDeferredTool } = await import('@claude-code-how-works/tool-registry/tools/ToolSearchTool/prompt.js')
+  const { isDeferredTool } = await import('@thyrox/tool-registry/tools/ToolSearchTool/prompt.js')
   const isDeferred = await isToolSearchEnabled(
     model ?? '',
     tools,
@@ -631,7 +631,7 @@ export async function countMcpToolTokens(
   // Check if tool search is enabled - if so, MCP tools are deferred
   // isToolSearchEnabled handles threshold calculation internally for TstAuto mode
   const { isToolSearchEnabled } = await import('../toolSearch.js')
-  const { isDeferredTool } = await import('@claude-code-how-works/tool-registry/tools/ToolSearchTool/prompt.js')
+  const { isDeferredTool } = await import('@thyrox/tool-registry/tools/ToolSearchTool/prompt.js')
 
   const isDeferred = await isToolSearchEnabled(
     model,

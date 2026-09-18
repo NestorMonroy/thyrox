@@ -1,10 +1,10 @@
-import type { SDKMessage } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
-import { checkGate_CACHED_OR_BLOCKING } from '@claude-code-how-works/config/feature-flags'
-import { isPolicyAllowed } from '@claude-code-how-works/provider/policyLimits/index.js'
-import { detectCurrentRepositoryWithHost } from '@claude-code-how-works/storage/detectRepository.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
-import type { TodoList } from '@claude-code-how-works/tool-registry/todo/types.js'
+import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import { readEnv } from '@thyrox/config/env/utils'
+import { checkGate_CACHED_OR_BLOCKING } from '@thyrox/config/feature-flags'
+import { isPolicyAllowed } from '@thyrox/provider/policyLimits/index.js'
+import { detectCurrentRepositoryWithHost } from '@thyrox/storage/detectRepository.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import type { TodoList } from '@thyrox/tool-registry/todo/types.js'
 import {
   checkGithubAppInstalled,
   checkHasRemoteEnvironment,

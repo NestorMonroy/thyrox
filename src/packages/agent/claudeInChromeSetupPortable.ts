@@ -1,8 +1,8 @@
 import { readdir } from 'fs/promises'
 import { homedir } from 'os'
 import { join } from 'path'
-import { isFsInaccessible } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // Production extension ID
 const PROD_EXTENSION_ID = 'fcoeoabgfenejglbffodgkkbkcdhcgfn'

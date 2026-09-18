@@ -7,12 +7,12 @@
 import { feature } from 'bun:bundle'
 import { AgentCore } from './core/AgentCore.js'
 import './internal/macroFallback.js'
-import { getGlobalConfig } from '@claude-code-how-works/config'
+import { getGlobalConfig } from '@thyrox/config'
 import {
   hasAutoMemPathOverride,
   loadMemoryPrompt,
-} from '@claude-code-how-works/memory'
-import { getScratchpadDir, isScratchpadEnabled } from '@claude-code-how-works/permission/filesystem'
+} from '@thyrox/memory'
+import { getScratchpadDir, isScratchpadEnabled } from '@thyrox/permission/filesystem'
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import { randomUUID } from 'crypto'
 import last from 'lodash-es/last.js'
@@ -24,18 +24,18 @@ import {
   setCwdState,
 } from './internal/sessionRuntime.js'
 import type { BetaMessageDeltaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import { accumulateUsage, updateUsage } from '@claude-code-how-works/provider/claudeLegacy'
+import { accumulateUsage, updateUsage } from '@thyrox/provider/claudeLegacy'
 import stripAnsi from 'strip-ansi'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
-import { getSlashCommandToolSkills } from '@claude-code-how-works/command-runtime/runtime'
-import type { ProviderThinkingConfig as ThinkingConfig } from '@claude-code-how-works/provider'
+import type { Command } from '@thyrox/command-runtime/runtime'
+import { getSlashCommandToolSkills } from '@thyrox/command-runtime/runtime'
+import type { ProviderThinkingConfig as ThinkingConfig } from '@thyrox/provider'
 import {
   createProductionDeps,
   fromAgentEvent,
   fromCoreMessages,
   toCoreMessages,
 } from './createDeps.js'
-import { toolMatchesName } from '@claude-code-how-works/tool-registry'
+import { toolMatchesName } from '@thyrox/tool-registry'
 import type { APIError } from '@anthropic-ai/sdk'
 import {
   type FileHistoryState,
@@ -87,7 +87,7 @@ import {
   localCommandOutputToSDKAssistantMessage,
   toSDKCompactMetadata,
 } from './internal/sdkMappers.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 type PermissionMode = string
 type SDKCompactBoundaryMessage = { type: string; [key: string]: unknown }

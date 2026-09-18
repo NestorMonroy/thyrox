@@ -20,11 +20,11 @@
 import { join } from 'node:path'
 import {
   getAdditionalDirectoriesForClaudeMd,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getClaudeConfigHomeDir } from '@claude-code-how-works/config/env/utils'
-import { isSettingSourceEnabled } from '@claude-code-how-works/config/constants'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { isSettingSourceEnabled } from '@thyrox/config/constants'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { parseWorkflowScript } from './metaParser.js'
 import { MAX_WORKFLOW_SCRIPT_BYTES } from './paths.js'
 

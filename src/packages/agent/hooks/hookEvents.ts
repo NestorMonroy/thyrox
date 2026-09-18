@@ -1,2 +1,2 @@
 // Canonical owner is @claude-code-how-works/repl/hookEvents.
-export * from '@claude-code-how-works/repl/hookEvents.js'
+export * from '@thyrox/repl/hookEvents.js'

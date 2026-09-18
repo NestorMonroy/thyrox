@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { getOauthConfig } from '../constants/oauth.js'
-import type { SDKMessage } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getOAuthHeaders, prepareApiRequest } from '@claude-code-how-works/teleport/api.js'
+import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getOAuthHeaders, prepareApiRequest } from '@thyrox/teleport/api.js'
 
 export const HISTORY_PAGE_SIZE = 100
 

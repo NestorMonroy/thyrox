@@ -12,7 +12,7 @@ import {
 } from 'fs/promises'
 import { dirname, isAbsolute, join, relative } from 'path'
 import { inspect } from 'util'
-import { getGlobalConfig } from '@claude-code-how-works/config'
+import { getGlobalConfig } from '@thyrox/config'
 import { StateError } from '../errors.js'
 import { getAgentHostBindings } from '../host.js'
 import type { AgentLogOption } from '../internalTypes.js'
@@ -22,7 +22,7 @@ import {
   isEnvTruthy,
   pathExists,
 } from '../internalUtils.js'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 
 type BackupFileName = string | null // The null value means the file does not exist in this version
 

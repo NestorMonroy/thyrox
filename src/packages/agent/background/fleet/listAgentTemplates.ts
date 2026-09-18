@@ -9,7 +9,7 @@
 import {
   getActiveAgentsFromList,
   getAgentDefinitionsWithOverrides,
-} from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
+} from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 
 export interface FleetAgentTemplate {
   /** Template name as it appears in `state.template` / `a:NAME` filter. */

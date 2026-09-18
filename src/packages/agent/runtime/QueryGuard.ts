@@ -24,7 +24,7 @@
  *     queryGuard.getSnapshot,
  *   )
  */
-import { createSignal } from '@claude-code-how-works/config/signal'
+import { createSignal } from '@thyrox/config/signal'
 
 export class QueryGuard {
   private _status: 'idle' | 'dispatching' | 'running' = 'idle'

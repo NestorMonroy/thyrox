@@ -17,9 +17,9 @@ import {
   getOriginalCwd,
   getSessionId,
   getSessionProjectDir,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getProjectDir } from '@claude-code-how-works/storage/sessionStorage.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { getProjectDir } from '@thyrox/storage/sessionStorage.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 // ant Mp — max workflow script size.
 export const MAX_WORKFLOW_SCRIPT_BYTES = 524_288

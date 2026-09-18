@@ -1,15 +1,15 @@
 import { feature } from 'bun:bundle'
-import { readEnv } from '@claude-code-how-works/config/env'
+import { readEnv } from '@thyrox/config/env'
 import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { QuerySource } from '../querySource.js'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 import type { Message } from '../messageShapes.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getMainLoopModel } from '@claude-code-how-works/provider/model.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@claude-code-how-works/local-observability/compat'
-import { notifyCacheDeletion } from '@claude-code-how-works/provider/promptCacheBreakDetection.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getMainLoopModel } from '@thyrox/provider/model.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { logEvent } from '@thyrox/local-observability'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
+import { notifyCacheDeletion } from '@thyrox/provider/promptCacheBreakDetection.js'
 import { roughTokenCountEstimation } from '../tokenEstimation.js'
 import {
   clearCompactWarningSuppression,
@@ -272,7 +272,7 @@ export async function microcompactMessages(
     const mod = await getCachedMCModule()
     const model = toolUseContext?.options.mainLoopModel ?? getMainLoopModel()
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const featureFlags = require('@claude-code-how-works/config/feature-flags') as typeof import('@claude-code-how-works/config/feature-flags')
+    const featureFlags = require('@thyrox/config/feature-flags') as typeof import('@thyrox/config/feature-flags')
     const cachedMCConfig = (await import('./cachedMCConfig.js')).getCachedMCConfig({
       getEnv: key => readEnv(key),
       getFeatureValue: featureFlags.getFeatureValue_CACHED_MAY_BE_STALE,
@@ -310,7 +310,7 @@ async function cachedMicrocompactPath(
   const mod = await getCachedMCModule()
   const state = ensureCachedMCState()
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const featureFlags = require('@claude-code-how-works/config/feature-flags') as typeof import('@claude-code-how-works/config/feature-flags')
+  const featureFlags = require('@thyrox/config/feature-flags') as typeof import('@thyrox/config/feature-flags')
   const config = (await import('./cachedMCConfig.js')).getCachedMCConfig({
     getEnv: key => readEnv(key),
     getFeatureValue: featureFlags.getFeatureValue_CACHED_MAY_BE_STALE,
@@ -431,7 +431,7 @@ export function evaluateTimeBasedTrigger(
 ): { gapMinutes: number; config: TimeBasedMCConfig } | null {
   const config = getTimeBasedMCConfig({
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    getFeatureValue: (require('@claude-code-how-works/config/feature-flags') as typeof import('@claude-code-how-works/config/feature-flags')).getFeatureValue_CACHED_MAY_BE_STALE,
+    getFeatureValue: (require('@thyrox/config/feature-flags') as typeof import('@thyrox/config/feature-flags')).getFeatureValue_CACHED_MAY_BE_STALE,
   })
   // Require an explicit main-thread querySource. isMainThreadSource treats
   // undefined as main-thread (for cached-MC backward-compat), but several

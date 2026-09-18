@@ -7,29 +7,29 @@ import {
   TASK_ID_TAG,
   TASK_NOTIFICATION_TAG,
   TOOL_USE_ID_TAG,
-} from '@claude-code-how-works/command-runtime/xml.js'
-import { abortSpeculation } from '@claude-code-how-works/repl/promptSuggestionSpeculation.js'
-import type { AppState } from '@claude-code-how-works/app-host/state/AppState.js'
+} from '@thyrox/command-runtime/xml.js'
+import { abortSpeculation } from '@thyrox/repl/promptSuggestionSpeculation.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import type {
   LocalShellSpawnInput,
   SetAppState,
   Task,
   TaskContext,
   TaskHandle,
-} from '@claude-code-how-works/tool-registry/Task.js'
-import { createTaskStateBase } from '@claude-code-how-works/tool-registry/Task.js'
-import type { AgentId } from '@claude-code-how-works/repl/replTypes/ids.js'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { tailFile } from '@claude-code-how-works/storage/fsOperations.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+} from '@thyrox/tool-registry/Task.js'
+import { createTaskStateBase } from '@thyrox/tool-registry/Task.js'
+import type { AgentId } from '@thyrox/repl/replTypes/ids.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { tailFile } from '@thyrox/storage/fsOperations.js'
+import { logError } from '@thyrox/local-observability/log.js'
 import { enqueuePendingNotification } from '../messageQueueManager.js'
-import type { ShellCommand } from '@claude-code-how-works/shell/terminal/ShellCommand.js'
+import type { ShellCommand } from '@thyrox/shell/terminal/ShellCommand.js'
 import {
   evictTaskOutput,
   getTaskOutputPath,
-} from '@claude-code-how-works/storage/task/diskOutput.js'
+} from '@thyrox/storage/task/diskOutput.js'
 import { registerTask, updateTaskState } from '../task/framework.js'
-import { escapeXml } from '@claude-code-how-works/output/xml'
+import { escapeXml } from '@thyrox/output/xml'
 import {
   backgroundAgentTask,
   isLocalAgentTask,
@@ -39,7 +39,7 @@ import {
   type BashTaskKind,
   isLocalShellTask,
   type LocalShellTaskState,
-} from '@claude-code-how-works/repl/localShellTaskGuards.js'
+} from '@thyrox/repl/localShellTaskGuards.js'
 import { killTask } from './LocalShellTask/killShellTasks.js'
 
 /** Prefix that identifies a LocalShellTask summary to the UI collapse transform. */

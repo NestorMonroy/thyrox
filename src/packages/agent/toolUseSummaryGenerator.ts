@@ -5,12 +5,12 @@
  * Used by the SDK to provide high-level progress updates to clients.
  */
 
-import { E_TOOL_USE_SUMMARY_GENERATION_FAILED } from '@claude-code-how-works/local-observability/errorIds.js'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
-import { queryHaiku } from '@claude-code-how-works/provider/claude.js'
+import { E_TOOL_USE_SUMMARY_GENERATION_FAILED } from '@thyrox/local-observability/errorIds.js'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
+import { queryHaiku } from '@thyrox/provider/claude.js'
 
 const TOOL_USE_SUMMARY_SYSTEM_PROMPT = `Write a short summary label describing what these tool calls accomplished. It appears as a single-line row in a mobile app and truncates around 30 characters, so think git-commit-subject, not sentence.
 

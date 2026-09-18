@@ -3,7 +3,7 @@
  * from compact.ts so the call sites stay one-liners.
  */
 
-import { logCompactionEvent } from '@claude-code-how-works/local-observability/telemetry'
+import { logCompactionEvent } from '@thyrox/local-observability/telemetry'
 
 export function emitCompactionSuccess(
   trigger: string,

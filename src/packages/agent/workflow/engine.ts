@@ -12,7 +12,7 @@ import {
   assembleWorkflowContext,
   type AssembleContextOptions,
 } from './runtime.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import type { WorkflowJournal, WorkflowRunResult } from './types.js'
 
 // ant _J3 — max narrator log lines retained in the result.

@@ -3,8 +3,8 @@
 // the footer pill and Shift+Down dialog. The dream agent itself is
 // unchanged — this is pure UI surfacing via the existing task registry.
 
-import type { SetAppState, Task, TaskStateBase } from '@claude-code-how-works/tool-registry/Task.js'
-import { createTaskStateBase, generateTaskId } from '@claude-code-how-works/tool-registry/Task.js'
+import type { SetAppState, Task, TaskStateBase } from '@thyrox/tool-registry/Task.js'
+import { createTaskStateBase, generateTaskId } from '@thyrox/tool-registry/Task.js'
 import { registerTask, updateTaskState } from '../../task/framework.js'
 
 // Keep only the N most recent turns for live display.

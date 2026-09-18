@@ -10,37 +10,37 @@
 
 import type { UUID } from 'crypto'
 import { randomUUID } from 'crypto'
-import type { PromptCommand } from '@claude-code-how-works/command-runtime/runtime'
+import type { PromptCommand } from '@thyrox/command-runtime/runtime'
 import type { QuerySource } from './querySource.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import { query } from './query.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { accumulateUsage, updateUsage } from '@claude-code-how-works/provider/claude.js'
-import { EMPTY_USAGE, type NonNullableUsage } from '@claude-code-how-works/provider/logging.js'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { AgentDefinition } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
+} from '@thyrox/local-observability'
+import { accumulateUsage, updateUsage } from '@thyrox/provider/claude.js'
+import { EMPTY_USAGE, type NonNullableUsage } from '@thyrox/provider/logging.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import type { AgentId } from './idTypes.js'
 import type { Message } from './messageShapes.js'
 import { createChildAbortController } from './abortController.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { cloneFileStateCache } from '@claude-code-how-works/tool-registry/fileStateCache'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { cloneFileStateCache } from '@thyrox/tool-registry/fileStateCache'
 import type { REPLHookContext } from './postSamplingHooks.js'
 import {
   createUserMessage,
   extractTextContent,
   getLastAssistantMessage,
 } from './messages.js'
-import { createDenialTrackingState } from '@claude-code-how-works/permission/denialTracking'
-import { parseToolListFromCLI } from '@claude-code-how-works/permission/permissionSetup'
-import { recordSidechainTranscript } from '@claude-code-how-works/storage/sessionStorage.js'
-import type { SystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
+import { createDenialTrackingState } from '@thyrox/permission/denialTracking'
+import { parseToolListFromCLI } from '@thyrox/permission/permissionSetup'
+import { recordSidechainTranscript } from '@thyrox/storage/sessionStorage.js'
+import type { SystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import {
   type ContentReplacementState,
   cloneContentReplacementState,
-} from '@claude-code-how-works/storage/toolResultStorage.js'
+} from '@thyrox/storage/toolResultStorage.js'
 import { createAgentId } from './uuid.js'
 
 /**

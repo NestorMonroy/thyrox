@@ -58,7 +58,7 @@
  */
 
 import { APIUserAbortError } from '@anthropic-ai/sdk'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import { listFleetJobs } from './listFleetJobs.js'
 import {
   getJobDir,
@@ -177,10 +177,10 @@ function buildPrompt(
 
 async function callModel(prompt: string): Promise<string | null> {
   try {
-    const provider = await import('@claude-code-how-works/provider/claude.js')
-    const model = await import('@claude-code-how-works/provider/model.js')
-    const provSp = await import('@claude-code-how-works/provider/systemPromptType.js')
-    const tool = await import('@claude-code-how-works/tool-registry/Tool.js')
+    const provider = await import('@thyrox/provider/claude.js')
+    const model = await import('@thyrox/provider/model.js')
+    const provSp = await import('@thyrox/provider/systemPromptType.js')
+    const tool = await import('@thyrox/tool-registry/Tool.js')
     const messages = await import('../../messages.js')
     const userMsg = messages.createUserMessage({ content: prompt })
     const response = await provider.queryModelWithoutStreaming({

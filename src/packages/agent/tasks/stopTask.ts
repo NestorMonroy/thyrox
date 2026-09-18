@@ -1,11 +1,11 @@
 // Shared logic for stopping a running task.
 // Used by TaskStopTool (LLM-invoked) and SDK stop_task control request.
 
-import type { AppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { TaskStateBase } from '@claude-code-how-works/tool-registry/Task.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
+import type { TaskStateBase } from '@thyrox/tool-registry/Task.js'
 import { getTaskByType } from './registry.js'
 import { emitTaskTerminatedSdk } from '../sdkEventQueue.js'
-import { isLocalShellTask } from '@claude-code-how-works/repl/localShellTaskGuards.js'
+import { isLocalShellTask } from '@thyrox/repl/localShellTaskGuards.js'
 
 export class StopTaskError extends Error {
   constructor(

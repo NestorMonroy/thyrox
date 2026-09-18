@@ -26,8 +26,8 @@ import {
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
-import { readEnv } from '@claude-code-how-works/config/env'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { readEnv } from '@thyrox/config/env'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import type {
   FleetJob,
   FleetJobState,

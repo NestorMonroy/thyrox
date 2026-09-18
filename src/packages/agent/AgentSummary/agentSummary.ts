@@ -10,18 +10,18 @@
  * key matching but denied via canUseTool callback.
  */
 
-import type { TaskContext } from '@claude-code-how-works/tool-registry/Task.js'
+import type { TaskContext } from '@thyrox/tool-registry/Task.js'
 import { updateAgentSummary } from '../localAgentTask.js'
-import { filterIncompleteToolCalls } from '@claude-code-how-works/tool-registry/tools/AgentTool/runAgent.js'
+import { filterIncompleteToolCalls } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
 import type { AgentId } from '../idTypes.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   type CacheSafeParams,
   runForkedAgent,
 } from '../forkedAgent.js'
-import { logError } from '@claude-code-how-works/local-observability/logging'
+import { logError } from '@thyrox/local-observability/logging'
 import { createUserMessage } from '../messages.js'
-import { getAgentTranscript } from '@claude-code-how-works/storage/sessionStorage.js'
+import { getAgentTranscript } from '@thyrox/storage/sessionStorage.js'
 
 const SUMMARY_INTERVAL_MS = 30_000
 

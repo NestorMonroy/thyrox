@@ -2,14 +2,14 @@
 // Extracted so runAgent.ts can kill agent-scoped bash tasks without pulling
 // React/Ink into its module graph (same rationale as guards.ts).
 
-import type { AppState } from '@claude-code-how-works/app-host/state/AppState.js'
-import type { AgentId } from '@claude-code-how-works/repl/replTypes/ids.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
+import type { AgentId } from '@thyrox/repl/replTypes/ids.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logError } from '@thyrox/local-observability/log.js'
 import { dequeueAllMatching } from '../../messageQueueManager.js'
-import { evictTaskOutput } from '@claude-code-how-works/storage/task/diskOutput.js'
+import { evictTaskOutput } from '@thyrox/storage/task/diskOutput.js'
 import { updateTaskState } from '../../task/framework.js'
-import { isLocalShellTask } from '@claude-code-how-works/repl/localShellTaskGuards.js'
+import { isLocalShellTask } from '@thyrox/repl/localShellTaskGuards.js'
 
 type SetAppStateFn = (updater: (prev: AppState) => AppState) => void
 

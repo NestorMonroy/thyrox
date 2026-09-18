@@ -12,8 +12,8 @@ import {
   createAgentWorktree,
   hasWorktreeChanges,
   removeAgentWorktree,
-} from '@claude-code-how-works/swarm'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+} from '@thyrox/swarm'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 // ant ElH(1, RyH) — worktree creation is serialized through a concurrency-1
 // semaphore. Two `git worktree add` racing in the same repo corrupt each

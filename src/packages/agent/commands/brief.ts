@@ -1,20 +1,20 @@
 import { feature } from 'bun:bundle'
 import { z } from 'zod/v4'
-import { getKairosActive, setUserMsgOptIn } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import { getKairosActive, setUserMsgOptIn } from '@thyrox/app-host/bootstrap/state.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { isBriefEntitled } from '@claude-code-how-works/tool-registry/tools/BriefTool/BriefTool.js'
-import { BRIEF_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/BriefTool/prompt.js'
+} from '@thyrox/local-observability'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import { isBriefEntitled } from '@thyrox/tool-registry/tools/BriefTool/BriefTool.js'
+import { BRIEF_TOOL_NAME } from '@thyrox/tool-registry/tools/BriefTool/prompt.js'
 import type {
   Command,
   LocalJSXCommandContext,
   LocalJSXCommandOnDone,
 } from '../types/command.js'
-import { lazySchema } from '@claude-code-how-works/tool-registry/utils/lazySchema.js'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 
 // Zod guards against fat-fingered GB pushes (same pattern as pollConfig.ts /
 // cronScheduler.ts). A malformed config falls back to DEFAULT_BRIEF_CONFIG

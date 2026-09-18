@@ -1,12 +1,12 @@
 import { randomUUID } from 'crypto'
 import type { QuerySource } from '../querySource.js'
-import { queryModelWithoutStreaming } from '@claude-code-how-works/provider/claude.js'
+import { queryModelWithoutStreaming } from '@thyrox/provider/claude.js'
 import type { Message } from '../messageShapes.js'
 import { createAbortController } from '../abortController.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
 import { extractTextContent } from '../messages.js'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import type { REPLHookContext } from './postSamplingHooks.js'
 
 export type ApiQueryHookContext = REPLHookContext & {

@@ -6,17 +6,17 @@
  * See docs/magic-docs.md for more information.
  */
 
-import type { Tool, ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { BuiltInAgentDefinition } from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import { runAgent } from '@claude-code-how-works/tool-registry/tools/AgentTool/runAgent.js'
-import { FILE_EDIT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileEditTool/constants.js'
+import type { Tool, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { BuiltInAgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
+import { FILE_EDIT_TOOL_NAME } from '@thyrox/tool-registry/tools/FileEditTool/constants.js'
 import {
   FileReadTool,
   type Output as FileReadToolOutput,
   registerFileReadListener,
-} from '@claude-code-how-works/tool-registry/tools/FileReadTool/FileReadTool.js'
-import { isFsInaccessible } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { cloneFileStateCache } from '@claude-code-how-works/tool-registry/fileStateCache'
+} from '@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js'
+import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
+import { cloneFileStateCache } from '@thyrox/tool-registry/fileStateCache'
 import {
   type REPLHookContext,
   registerPostSamplingHook,
@@ -25,9 +25,9 @@ import {
   createUserMessage,
   hasToolCallsInLastAssistantTurn,
 } from '../messages.js'
-import { sequential } from '@claude-code-how-works/config/sequential'
+import { sequential } from '@thyrox/config/sequential'
 import { buildMagicDocsUpdatePrompt } from './prompts.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // Magic Doc header pattern: # MAGIC DOC: [title]
 // Matches at the start of the file (first line)

@@ -1,4 +1,4 @@
-import type { QueuedCommand } from '@claude-code-how-works/repl/textInputTypes.js'
+import type { QueuedCommand } from '@thyrox/repl/textInputTypes.js'
 import {
   dequeue,
   dequeueAllMatching,

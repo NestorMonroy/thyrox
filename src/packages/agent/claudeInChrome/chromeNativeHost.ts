@@ -19,10 +19,10 @@ import { createServer, type Server, type Socket } from 'net'
 import { homedir, platform } from 'os'
 import { join } from 'path'
 import { z } from 'zod'
-import { lazySchema } from '@claude-code-how-works/tool-registry/utils/lazySchema.js'
-import { jsonParse, jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
+import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { getSecureSocketPath, getSocketDir } from './common.js'
-import { readEnv } from '@claude-code-how-works/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 
 const VERSION = '1.0.0'
 const MAX_MESSAGE_SIZE = 1024 * 1024 // 1MB - Max message size that can be sent to Chrome

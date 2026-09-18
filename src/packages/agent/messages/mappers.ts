@@ -1,29 +1,29 @@
 import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { UUID } from 'crypto'
 import { randomUUID } from 'crypto'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import {
   LOCAL_COMMAND_STDERR_TAG,
   LOCAL_COMMAND_STDOUT_TAG,
-} from '@claude-code-how-works/command-runtime/xml.js'
+} from '@thyrox/command-runtime/xml.js'
 import type {
   SDKAssistantMessage,
   SDKCompactBoundaryMessage,
   SDKMessage,
   SDKRateLimitInfo,
-} from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
-import type { ClaudeAILimits } from '@claude-code-how-works/provider/claudeAiLimits.js'
-import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/ExitPlanModeTool/constants.js'
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { ClaudeAILimits } from '@thyrox/provider/claudeAiLimits.js'
+import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
 import type {
   AssistantMessage,
   CompactMetadata,
   Message,
   MessageContent,
 } from '../messageShapes.js'
-import type { DeepImmutable } from '@claude-code-how-works/tool-registry/genericTypeUtils'
+import type { DeepImmutable } from '@thyrox/tool-registry/genericTypeUtils'
 import stripAnsi from 'strip-ansi'
 import { createAssistantMessage } from '../messages.js'
-import { getPlan } from '@claude-code-how-works/storage/plans.js'
+import { getPlan } from '@thyrox/storage/plans.js'
 
 export function toInternalMessages(
   messages: readonly DeepImmutable<SDKMessage>[],

@@ -7,8 +7,8 @@
  * persisted state.
  */
 
-import type { Response as DaemonResponse } from '@claude-code-how-works/daemon/daemonClient.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import type { Response as DaemonResponse } from '@thyrox/daemon/daemonClient.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import type {
   FleetDaemonWorker,
   FleetJob,

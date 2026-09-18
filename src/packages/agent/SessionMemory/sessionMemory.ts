@@ -6,24 +6,24 @@
 
 import { writeFile } from 'fs/promises'
 import memoize from 'lodash-es/memoize.js'
-import { getIsRemoteMode } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'
 import { getSystemPrompt } from '../prompts.js'
-import { getSystemContext, getUserContext } from '@claude-code-how-works/provider/context.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
-import type { Tool, ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { FILE_EDIT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileEditTool/constants.js'
+import { getSystemContext, getUserContext } from '@thyrox/provider/context.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
+import type { Tool, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import { FILE_EDIT_TOOL_NAME } from '@thyrox/tool-registry/tools/FileEditTool/constants.js'
 import {
   FileReadTool,
   type Output as FileReadToolOutput,
-} from '@claude-code-how-works/tool-registry/tools/FileReadTool/FileReadTool.js'
+} from '@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js'
 import type { Message } from '../messageShapes.js'
-import { count } from '@claude-code-how-works/tool-registry/utils/array.js'
+import { count } from '@thyrox/tool-registry/utils/array.js'
 import {
   createCacheSafeParams,
   createSubagentContext,
   runForkedAgent,
 } from '../forkedAgent.js'
-import { getFsImplementation } from '@claude-code-how-works/storage/fsOperations.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import {
   type REPLHookContext,
   registerPostSamplingHook,
@@ -35,11 +35,11 @@ import {
 import {
   getSessionMemoryDir,
   getSessionMemoryPath,
-} from '@claude-code-how-works/permission/filesystem'
-import { sequential } from '@claude-code-how-works/config/sequential'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
+} from '@thyrox/permission/filesystem'
+import { sequential } from '@thyrox/config/sequential'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import { getTokenUsage, tokenCountWithEstimation } from '../tokens.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
+import { logEvent } from '@thyrox/local-observability'
 import { isAutoCompactEnabled } from '../compaction/autoCompact.js'
 import {
   buildSessionMemoryUpdatePrompt,
@@ -67,12 +67,12 @@ import {
 // These functions return cached values from disk immediately without blocking
 // on GrowthBook initialization. Values may be stale but are updated in background.
 
-import { errorMessage, getErrnoCode } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { errorMessage, getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import {
   getDynamicConfig_CACHED_MAY_BE_STALE,
   getFeatureValue_CACHED_MAY_BE_STALE,
-} from '@claude-code-how-works/config/feature-flags'
-import { readEnv } from '@claude-code-how-works/config/env'
+} from '@thyrox/config/feature-flags'
+import { readEnv } from '@thyrox/config/env'
 
 /**
  * Check if session memory feature is enabled.

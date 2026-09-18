@@ -8,7 +8,7 @@
  */
 
 type AppState = unknown // V7-EXEMPT: legacy state shape, see app-host/state for canonical
-import { getTeamName } from '@claude-code-how-works/swarm/teammateState.js'
+import { getTeamName } from '@thyrox/swarm/teammateState.js'
 
 /**
  * Returns the standalone agent name if set and not a swarm teammate.

@@ -50,12 +50,12 @@
 import { type Server, type Socket, createServer } from 'node:net'
 import { unlink } from 'node:fs/promises'
 
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { deleteEnv, readEnv } from '@claude-code-how-works/config/env'
+import { logEvent } from '@thyrox/local-observability'
+import { deleteEnv, readEnv } from '@thyrox/config/env'
 import {
   createLineDecoder,
   encodeFrame,
-} from '@claude-code-how-works/daemon/socketProto.js'
+} from '@thyrox/daemon/socketProto.js'
 
 import type { FleetJobState } from './fleetTypes.js'
 import { readJobState, writeJobState } from './fleetStore.js'

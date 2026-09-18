@@ -4,39 +4,39 @@
  * Also tracks memdir file access via Read, Grep, Glob, Edit, and Write tools.
  */
 import { feature } from 'bun:bundle'
-import { registerHookCallbacks } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import type { HookInput, HookJSONOutput } from '@claude-code-how-works/headless-sdk/agentSdkTypes.js'
+import { registerHookCallbacks } from '@thyrox/app-host/bootstrap/state.js'
+import type { HookInput, HookJSONOutput } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { FILE_EDIT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileEditTool/constants.js'
-import { inputSchema as editInputSchema } from '@claude-code-how-works/tool-registry/tools/FileEditTool/types.js'
-import { FileReadTool } from '@claude-code-how-works/tool-registry/tools/FileReadTool/FileReadTool.js'
-import { FILE_READ_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileReadTool/prompt.js'
-import { FileWriteTool } from '@claude-code-how-works/tool-registry/tools/FileWriteTool/FileWriteTool.js'
-import { FILE_WRITE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileWriteTool/prompt.js'
-import { GlobTool } from '@claude-code-how-works/tool-registry/tools/GlobTool/GlobTool.js'
-import { GLOB_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/GlobTool/prompt.js'
-import { GrepTool } from '@claude-code-how-works/tool-registry/tools/GrepTool/GrepTool.js'
-import { GREP_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/GrepTool/prompt.js'
+} from '@thyrox/local-observability'
+import { FILE_EDIT_TOOL_NAME } from '@thyrox/tool-registry/tools/FileEditTool/constants.js'
+import { inputSchema as editInputSchema } from '@thyrox/tool-registry/tools/FileEditTool/types.js'
+import { FileReadTool } from '@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js'
+import { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'
+import { FileWriteTool } from '@thyrox/tool-registry/tools/FileWriteTool/FileWriteTool.js'
+import { FILE_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/FileWriteTool/prompt.js'
+import { GlobTool } from '@thyrox/tool-registry/tools/GlobTool/GlobTool.js'
+import { GLOB_TOOL_NAME } from '@thyrox/tool-registry/tools/GlobTool/prompt.js'
+import { GrepTool } from '@thyrox/tool-registry/tools/GrepTool/GrepTool.js'
+import { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'
 import type { HookCallback } from './types/hooks.js'
 import {
   detectSessionFileType,
   detectSessionPatternType,
   isAutoMemFile,
   memoryScopeForPath,
-} from '@claude-code-how-works/memory/memoryFileDetection'
+} from '@thyrox/memory/memoryFileDetection'
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const teamMemPaths = feature('TEAMMEM')
-  ? (require('@claude-code-how-works/memory/teamMemPaths') as typeof import('@claude-code-how-works/memory/teamMemPaths'))
+  ? (require('@thyrox/memory/teamMemPaths') as typeof import('@thyrox/memory/teamMemPaths'))
   : null
 const teamMemWatcher = feature('TEAMMEM')
-  ? (require('@claude-code-how-works/memory/teamMemorySyncWatcher') as typeof import('@claude-code-how-works/memory/teamMemorySyncWatcher'))
+  ? (require('@thyrox/memory/teamMemorySyncWatcher') as typeof import('@thyrox/memory/teamMemorySyncWatcher'))
   : null
 const memoryShapeTelemetry = feature('MEMORY_SHAPE_TELEMETRY')
-  ? (require('@claude-code-how-works/memory/memoryShapeTelemetry') as typeof import('@claude-code-how-works/memory/memoryShapeTelemetry'))
+  ? (require('@thyrox/memory/memoryShapeTelemetry') as typeof import('@thyrox/memory/memoryShapeTelemetry'))
   : null
 
 /* eslint-enable @typescript-eslint/no-require-imports */

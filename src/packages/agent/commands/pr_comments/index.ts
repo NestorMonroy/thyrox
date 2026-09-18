@@ -1,4 +1,4 @@
-import { createMovedToPluginCommand } from '@claude-code-how-works/command-runtime/createMovedToPluginCommand.js'
+import { createMovedToPluginCommand } from '@thyrox/command-runtime/createMovedToPluginCommand.js'
 
 export default createMovedToPluginCommand({
   name: 'pr-comments',

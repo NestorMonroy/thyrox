@@ -1,11 +1,11 @@
 import { z } from 'zod/v4'
-import type { Tool } from '@claude-code-how-works/tool-registry/Tool.js'
+import type { Tool } from '@thyrox/tool-registry/Tool.js'
 import {
   SYNTHETIC_OUTPUT_TOOL_NAME,
   SyntheticOutputTool,
-} from '@claude-code-how-works/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
-import { substituteArguments } from '@claude-code-how-works/command-runtime/argumentSubstitution.js'
-import { lazySchema } from '@claude-code-how-works/config/lazySchema.js'
+} from '@thyrox/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
+import { substituteArguments } from '@thyrox/command-runtime/argumentSubstitution.js'
+import { lazySchema } from '@thyrox/config/lazySchema.js'
 import type { SetAppState } from '../messageQueueManager.js'
 import { hasSuccessfulToolCall } from '../messages.js'
 import { addFunctionHook } from './sessionHooks.js'

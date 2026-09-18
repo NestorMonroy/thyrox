@@ -13,9 +13,9 @@
 // ant exactly; only the innermost "spawn one subagent" call differs.
 
 import { availableParallelism } from 'node:os'
-import type { ToolUseContext, Tools } from '@claude-code-how-works/tool-registry/Tool.js'
-import type { CanUseToolFn } from '@claude-code-how-works/repl/hooks/useCanUseTool.js'
-import type { AgentId } from '@claude-code-how-works/agent/idTypes'
+import type { ToolUseContext, Tools } from '@thyrox/tool-registry/Tool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
+import type { AgentId } from '@thyrox/agent/idTypes'
 import { createAgentId } from '../uuid.js'
 import { runAgentAttempt } from './workflowAgentRun.js'
 import {
@@ -25,12 +25,12 @@ import {
 import {
   createSyntheticOutputTool,
   SYNTHETIC_OUTPUT_TOOL_NAME,
-} from '@claude-code-how-works/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
+} from '@thyrox/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
 import type {
   AgentDefinition,
   BuiltInAgentDefinition,
-} from '@claude-code-how-works/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+} from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { stripPrototype } from './sandbox.js'
 import { computeAgentCacheKey } from './journal.js'
 import type {

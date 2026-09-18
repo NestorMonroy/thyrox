@@ -9,11 +9,11 @@
  * to preserve the existing API.
  */
 
-import type { ToolPermissionContext } from '@claude-code-how-works/tool-registry/Tool.js'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import {
   getContainerId,
   logPermissionContextForAnts as _logPermissionContextForAnts,
-} from '@claude-code-how-works/local-observability/logging'
+} from '@thyrox/local-observability/logging'
 
 export { getContainerId }
 

@@ -1,9 +1,9 @@
 import { feature } from 'bun:bundle'
-import type { Task, TaskType } from '@claude-code-how-works/tool-registry/Task.js'
+import type { Task, TaskType } from '@thyrox/tool-registry/Task.js'
 import { DreamTask } from './DreamTask/DreamTask.js'
 import { LocalAgentTask } from '../localAgentTask.js'
 import { LocalShellTask } from './LocalShellTask.js'
-import { RemoteAgentTask } from '@claude-code-how-works/tool-registry/tasks/RemoteAgentTask.js'
+import { RemoteAgentTask } from '@thyrox/tool-registry/tasks/RemoteAgentTask.js'
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 // Workflow background-task type ships unconditionally (ant parity); the

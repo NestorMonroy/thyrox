@@ -7,10 +7,10 @@
 import {
   calculateTokenWarningState as calculateTokenWarningStateCore,
 } from '../compaction/index.js'
-import { checkStatsigFeatureGate_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { getGlobalConfig } from '@claude-code-how-works/config'
-import { readEnv } from '@claude-code-how-works/config/env'
-import { getMaxOutputTokensForModel } from '@claude-code-how-works/provider/claudeLegacy'
+import { checkStatsigFeatureGate_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { getGlobalConfig } from '@thyrox/config'
+import { readEnv } from '@thyrox/config/env'
+import { getMaxOutputTokensForModel } from '@thyrox/provider/claudeLegacy'
 import { getSdkBetas, getSessionId } from './sessionRuntime.js'
 import { getContextWindowForModel } from './queryRuntime.js'
 import { isEnvTruthy } from '../internalUtils.js'

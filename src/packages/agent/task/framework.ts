@@ -6,17 +6,17 @@ import {
   TASK_NOTIFICATION_TAG,
   TASK_TYPE_TAG,
   TOOL_USE_ID_TAG,
-} from '@claude-code-how-works/command-runtime/xml.js'
+} from '@thyrox/command-runtime/xml.js'
 type AppState = { tasks: Record<string, unknown> }
 import {
   isTerminalTaskStatus,
   type TaskStatus,
   type TaskType,
-} from '@claude-code-how-works/tool-registry/Task.js'
+} from '@thyrox/tool-registry/Task.js'
 type TaskState = { id: string; type: string; status: string; [key: string]: unknown }
 import { enqueuePendingNotification } from '../messageQueueManager.js'
 import { enqueueSdkEvent } from '../sdkEventQueue.js'
-import { getTaskOutputDelta, getTaskOutputPath } from '@claude-code-how-works/storage/task/diskOutput.js'
+import { getTaskOutputDelta, getTaskOutputPath } from '@thyrox/storage/task/diskOutput.js'
 
 // Standard polling interval for all tasks
 export const POLL_INTERVAL_MS = 1000
