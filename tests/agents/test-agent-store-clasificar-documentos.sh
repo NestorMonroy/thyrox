@@ -138,5 +138,24 @@ afirmar "9b publica cuantas series salieron" "0" "$?"
 afirmar "10 el plazo queda NULO (bloqueado por #760)" "NULO" \
         "$(leer source/gestion/pm/docs/iniciativas/x/analisis-uno.rst retention_years)"
 
+# --- 11 · reclasificar un arbol intacto NO reescribe la fila ---------------
+# El hermano de 13a en `test-agent-store-fecha-documento.sh`, por el mismo
+# defecto: `clasificar-documentos` estampaba `scanned_at` con la hora actual en
+# cada barrido, asi que recorrer sin cambiar nada reescribia el registro entero.
+# El discriminador es el SEGUNDO barrido — el primero mezcla movimiento real
+# con reescritura y por eso no separa las dos cosas.
+python3 "$STORE" clasificar-documentos --claude-dir "$CLAUDE_DIR" \
+    --repo-docs "$REPO" >/dev/null 2>&1
+ESCRITAS=$(python3 "$STORE" clasificar-documentos --claude-dir "$CLAUDE_DIR" \
+    --repo-docs "$REPO" 2>&1 | sed -n 's/.*filas escritas: \([0-9]*\) .*/\1/p')
+afirmar "11a reclasificar un arbol intacto no escribe" "0" "$ESCRITAS"
+
+# Control positivo del mismo instrumento: si la unidad SI cambia, la escribe.
+# Sin el, un `WHERE` que rechazara toda escritura pasaria 11a en silencio.
+doc "gestion/pm/docs/iniciativas/x/hallazgos/hallazgo-H-X-1-nuevo.rst"
+ESCRITAS=$(python3 "$STORE" clasificar-documentos --claude-dir "$CLAUDE_DIR" \
+    --repo-docs "$REPO" 2>&1 | sed -n 's/.*filas escritas: \([0-9]*\) .*/\1/p')
+afirmar "11b un documento nuevo SI se escribe"        "1" "$ESCRITAS"
+
 echo; echo "  $OK ok · $FALLO fallas"
 [[ $FALLO -eq 0 ]]

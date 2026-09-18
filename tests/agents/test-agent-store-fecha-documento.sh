@@ -199,6 +199,74 @@ except sqlite3.OperationalError:
 " "$DB")
 afirmar "12 --dry-run no escribe filas"          "0"              "$VACIO"
 
+# --- 13 · el barrido NO reescribe la fila que no se movio -------------------
+# El defecto que esta seccion cierra: `scanned_at` se estampaba con `now()` en
+# CADA barrido, asi que recorrer un arbol intacto reescribia el registro entero.
+# Medido sobre el store vivo antes del arreglo (banco
+# `churn-de-documents-20260918T000003`): segundo barrido con el arbol intacto,
+# 5689 filas TOCADAS y 0 MOVIDAS — el 100 % del churn era esa columna.
+#
+# El control discrimina porque el barrido publica ahora cuantas filas ESCRIBIO,
+# no cuantas recorrio. Sin la guarda `WHERE` del upsert, un UPDATE con valores
+# identicos sigue contando como escritura y esta asercion cae.
+# El caso 12 borro el store, asi que el PRIMER barrido de aqui vuelve a
+# sembrar las seis filas — y ese primero no discrimina: mezcla movimiento real
+# con reescritura. El discriminador es el SEGUNDO, con el arbol intacto entre
+# los dos. Confundirlos fue el defecto que la tarjeta de #373 tenia escrito.
+python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" \
+    --repo-docs "$REPO" >/dev/null 2>&1
+ESCRITAS=$(python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" \
+    --repo-docs "$REPO" 2>&1 | sed -n 's/.*filas escritas: \([0-9]*\) .*/\1/p')
+afirmar "13a un barrido sobre arbol intacto no escribe" "0" "$ESCRITAS"
+
+# Control positivo del mismo instrumento: si algo SI se movio, lo escribe. Sin
+# el, un `WHERE` que rechazara toda escritura publicaria el mismo 0 y 13a no
+# distinguiria «no habia nada que escribir» de «el barrido dejo de escribir».
+doc "g-nueva.rst" "2026-07-07T00:00:00" "G"
+ESCRITAS=$(python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" \
+    --repo-docs "$REPO" 2>&1 | sed -n 's/.*filas escritas: \([0-9]*\) .*/\1/p')
+afirmar "13b un documento nuevo SI se escribe"        "1" "$ESCRITAS"
+
+# --- 14 · `scanned_at` no es del registro: es del cache ---------------------
+# «cuando mire» no es dato del documento, y es la UNICA columna incompatible
+# con 13a: su valor cambia por definicion en cada recorrido, asi que conservarla
+# y no reescribir la fila intacta son dos cosas que no pueden coexistir.
+# Medido al retirarla: 0 lectores fuera de `agent_store.py` en src/, tests/ y bin/.
+TIENE_SCANNED=$(python3 -c "
+import sqlite3,sys
+c=sqlite3.connect(sys.argv[1])
+print(1 if any(r[1]=='scanned_at' for r in c.execute('PRAGMA table_info(documents)')) else 0)
+" "$DB")
+afirmar "14 scanned_at ya no es columna de documents"  "0" "$TIENE_SCANNED"
+
+# --- 15 · CONTROL DE LA MIGRACION, no del esquema ---------------------------
+# El caso 14 mide un store NACIDO de CORE_SCHEMA, donde la columna ya no se
+# declara: nunca ejercita la migracion. Un store ANTERIOR si la tiene, y es el
+# unico sujeto que puede distinguir «el esquema cambio» de «los stores que ya
+# existian se migran». Sin este caso, retirar la migracion deja la suite verde.
+VIEJO="$TMP/viejo/agent-results"
+mkdir -p "$VIEJO"
+python3 -c "
+import sqlite3,sys
+c=sqlite3.connect(sys.argv[1] + '/agent_store.sqlite3')
+c.execute('CREATE TABLE documents (path TEXT PRIMARY KEY, updated_at TEXT, '
+          'updated_at_source TEXT, declared_at TEXT, commit_at TEXT, '
+          'scanned_at TEXT NOT NULL)')
+c.execute(\"INSERT INTO documents VALUES ('source/v.rst','2026-01-01','git-commit',NULL,'2026-01-01','2026-01-01')\")
+c.commit()" "$VIEJO"
+python3 "$STORE" init --claude-dir "$VIEJO" >/dev/null 2>&1
+MIGRADA=$(python3 -c "
+import sqlite3,sys
+c=sqlite3.connect(sys.argv[1] + '/agent_store.sqlite3')
+print(1 if any(r[1]=='scanned_at' for r in c.execute('PRAGMA table_info(documents)')) else 0)" "$VIEJO")
+afirmar "15a la migracion retira la columna de un store previo" "0" "$MIGRADA"
+# Y NO se lleva la fila por delante: retirar una columna no es vaciar la tabla.
+SOBREVIVE=$(python3 -c "
+import sqlite3,sys
+c=sqlite3.connect(sys.argv[1] + '/agent_store.sqlite3')
+print(list(c.execute(\"select updated_at_source from documents where path='source/v.rst'\"))[0][0])" "$VIEJO")
+afirmar "15b la fila previa sobrevive a la migracion" "git-commit" "$SOBREVIVE"
+
 echo
 echo "  $OK ok · $FALLO fallas"
 [[ $FALLO -eq 0 ]]

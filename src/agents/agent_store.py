@@ -304,8 +304,11 @@ CREATE TABLE IF NOT EXISTS documents (
     -- y no la tiene este guion. Queda NULO hasta que TASK-DOCS-0245 lo
     -- resuelva; un
     -- numero puesto aqui por completitud se leeria igual que uno decidido.
-    retention_years   INTEGER,
-    scanned_at        TEXT NOT NULL
+    retention_years   INTEGER
+    -- `scanned_at` NO vive aqui. Era la marca de cuando el barrido leyo el
+    -- archivo, y esa es una propiedad del CACHE, no del registro: con el arbol
+    -- intacto entre dos barridos se movian 5689 filas y ninguna cambiaba de
+    -- dato. La migracion 8 la retira. Ver TASK-THYROX-0149.
 );
 
 CREATE INDEX IF NOT EXISTS idx_documents_updated ON documents(updated_at);
@@ -982,6 +985,29 @@ def _migrate_documents_series_columns(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
+def _migrate_documents_drop_scanned_at(conn: sqlite3.Connection) -> None:
+    """Retira ``scanned_at`` de ``documents`` — era del cache, no del registro.
+
+    Medido antes de escribir esto
+    (``.claude/workbench/churn-de-documents-20260918T000003/``): en un segundo
+    barrido con el arbol INTACTO entre los dos, 5689 filas quedaban TOCADAS y
+    **0** MOVIDAS. Las otras cuatro columnas de fecha no se movian; la unica
+    que cambiaba era ``scanned_at``, que el barrido estampaba con la hora
+    actual sin condicion. O sea: el 100 % de la reescritura la producia una
+    columna que nadie lee — medido, ``scanned_at`` tiene **0** consumidores
+    fuera de este archivo.
+
+    ``ALTER TABLE ... DROP COLUMN`` existe desde sqlite 3.35 y este entorno
+    corre 3.45.1, asi que no hace falta recrear la tabla. La columna se retira
+    sin transformar dato alguno: no hay nada que preservar.
+    """
+    existentes = {row[1] for row in conn.execute("PRAGMA table_info(documents)")}
+    if "scanned_at" not in existentes:
+        return                      # ya retirada, o la tabla aun no existe
+    conn.execute("ALTER TABLE documents DROP COLUMN scanned_at")
+    conn.commit()
+
+
 def _migrate_tasks_composite_pk(conn: sqlite3.Connection) -> None:
     """Lleva ``tasks`` de PK ``task_id`` a PK ``(session_id, task_id)``.
 
@@ -1150,6 +1176,7 @@ def connect(store_dir: Path) -> sqlite3.Connection:
     _migrate_tasks_citation_columns(conn)
     _migrate_tasks_status_check(conn)
     _migrate_documents_series_columns(conn)
+    _migrate_documents_drop_scanned_at(conn)
     _resync_fts(conn)
     return conn
 
@@ -2104,8 +2131,8 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
         raise SystemExit(2)
 
     commits = _last_commit_dates(repo, args.subtree)
-    ahora = now_iso()
     conn = None if args.dry_run else connect(resolve_store_dir(args))
+    escritas_antes = conn.total_changes if conn is not None else 0
 
     universo = por_fuente = 0
     conteo = collections.Counter()
@@ -2143,19 +2170,29 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
             conteo[fuente] += 1
             por_fuente += 1
         if conn is not None:
+            # El `WHERE` es lo que separa MOVER de REESCRIBIR. Sin el, una fila
+            # cuyo dato no cambio se reescribe igual: la pagina se ensucia y
+            # `total_changes` la cuenta. `IS NOT` — no `!=` — porque las cuatro
+            # columnas admiten NULO, y `NULL != NULL` es NULO, o sea falso: con
+            # `!=` una fila que pasa de NULO a NULO tampoco se detecta como
+            # igual y se reescribiria de todas formas.
             conn.execute(
                 "INSERT INTO documents "
-                "  (path, updated_at, updated_at_source, declared_at, commit_at, scanned_at) "
-                "VALUES (?, ?, ?, ?, ?, ?) "
+                "  (path, updated_at, updated_at_source, declared_at, commit_at) "
+                "VALUES (?, ?, ?, ?, ?) "
                 "ON CONFLICT(path) DO UPDATE SET "
                 "  updated_at = excluded.updated_at, "
                 "  updated_at_source = excluded.updated_at_source, "
                 "  declared_at = excluded.declared_at, "
-                "  commit_at = excluded.commit_at, "
-                "  scanned_at = excluded.scanned_at",
-                (rel, valor, fuente, crudo, crudo_commit, ahora),
+                "  commit_at = excluded.commit_at "
+                "WHERE documents.updated_at        IS NOT excluded.updated_at "
+                "   OR documents.updated_at_source IS NOT excluded.updated_at_source "
+                "   OR documents.declared_at       IS NOT excluded.declared_at "
+                "   OR documents.commit_at         IS NOT excluded.commit_at",
+                (rel, valor, fuente, crudo, crudo_commit),
             )
 
+    escritas = conn.total_changes - escritas_antes if conn is not None else 0
     if conn is not None:
         conn.commit()
 
@@ -2167,6 +2204,11 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
           f"{sin_cota} sin ninguna cota")
     print(f"  (alcance medido: {universo} documento(s) .rst bajo {args.subtree}/ "
           f"en {repo})")
+    # `total_changes` es el unico observable de «filas que de verdad se
+    # escribieron»: cuenta las que el motor toco, no las que el bucle recorrio.
+    # Cruza la frontera del subproceso porque se publica aqui — un test que
+    # midiera el bucle desde fuera no podria distinguir mover de reescribir.
+    print(f"  filas escritas: {escritas} de {universo} recorrida(s)")
 
 
 def _document_section(rel: str, subtree: str):
@@ -2218,8 +2260,8 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
         print(f"ERROR — no existe {raiz}", file=sys.stderr)
         raise SystemExit(2)
 
-    ahora = now_iso()
     conn = None if args.dry_run else connect(resolve_store_dir(args))
+    escritas_antes = conn.total_changes if conn is not None else 0
 
     universo = sin_seccion = 0
     series = collections.Counter()
@@ -2242,16 +2284,20 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
             # Solo las columnas de la unidad. `updated_at` y sus cotas las
             # escribe `fechar-documentos`, y pisarlas aqui borraria el
             # disparador cada vez que se reclasifica.
+            # El `WHERE` del hermano `fechar-documentos`, por la misma razon:
+            # una reclasificacion que no cambia la unidad no reescribe la fila.
             conn.execute(
-                "INSERT INTO documents (path, section, series, scanned_at) "
-                "VALUES (?, ?, ?, ?) "
+                "INSERT INTO documents (path, section, series) "
+                "VALUES (?, ?, ?) "
                 "ON CONFLICT(path) DO UPDATE SET "
                 "  section = excluded.section, "
-                "  series = excluded.series, "
-                "  scanned_at = excluded.scanned_at",
-                (rel, seccion, serie, ahora),
+                "  series = excluded.series "
+                "WHERE documents.section IS NOT excluded.section "
+                "   OR documents.series  IS NOT excluded.series",
+                (rel, seccion, serie),
             )
 
+    escritas = conn.total_changes - escritas_antes if conn is not None else 0
     if conn is not None:
         conn.commit()
 
@@ -2264,6 +2310,7 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
           f"({DOCUMENT_TYPE_UNKNOWN}) · {sin_seccion} en la raiz del subarbol")
     print(f"  (alcance medido: {universo} documento(s) .rst bajo {args.subtree}/ "
           f"en {repo})")
+    print(f"  filas escritas: {escritas} de {universo} recorrida(s)")
 
 
 def cmd_search_tasks(args: argparse.Namespace) -> None:
