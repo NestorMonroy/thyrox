@@ -97,7 +97,10 @@ _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
 # el barrido es la tarea #91.
 LEDGER="${THYROX_JOBS_DIR:-${KX_TRABAJOS_DIR:-$_ROOT/.claude/jobs-ledger/$_SESSION}}"
 _ARCHIVE_DIR="${THYROX_JOBS_ARCHIVE_DIR:-${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/jobs}}"
-DEFAULT_PATTERN='^EXIT=[0-9]+'
+# Las dos formas de la familia: `EXIT=` del envoltorio a mano y
+# `__BG_EXIT__=` de `bg.sh`. Ver marker_wait.MARKER_PATTERN, que las
+# declara con el episodio que las reconcilio (TASK-THYROX-0162).
+DEFAULT_PATTERN='^(__BG_EXIT__|EXIT)=[0-9]+'
 INTERVAL="${WAIT_JOBS_INTERVAL:-2}"
 
 mkdir -p "$LEDGER"

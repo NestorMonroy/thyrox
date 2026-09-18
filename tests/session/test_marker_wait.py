@@ -185,5 +185,49 @@ proc = subprocess.run(
     capture_output=True, text=True)
 check("log inexistente y sin pid -> 3, no una traza", TIMED_OUT, proc.returncode)
 
+
+
+# ---------------------------------------------------------------------------
+# El marcador de `bg.sh` no era el que este guion esperaba (TASK-THYROX-0162)
+# ---------------------------------------------------------------------------
+# Mitad ROJA, medida por conducta en la sesion del 2026-09-18: un trabajo
+# lanzado con `bin/thyrox-bg start` termino y escribio su `__BG_EXIT__=0`, y
+# `bin/marker_wait <log> --timeout 900` siguio girando ocho minutos hasta que
+# se le mato a mano. La causa era un desacuerdo de literal entre dos guiones
+# de la MISMA familia:
+#
+#     marker_wait.py   MARKER_PATTERN = r"^EXIT=[0-9]+"
+#     bg.sh            _MARK='__BG_EXIT__='
+#
+# Y el timeout MIENTE: `TIMED_OUT` significa «sigue vivo», cuando el trabajo
+# habia terminado. El instrumento no distinguia «no termino» de «termino con
+# el otro marcador» — el sub-patron D con la propia espera como sujeto.
+#
+# CONTROL DE ANULACION: si el patron por defecto volviera a ver SOLO una de
+# las dos formas, cae la asercion de la forma que deje de ver — y solo esa.
+# La tercera, la del renglon que no es marcador, sobrevive a las dos
+# anulaciones: es la que impide que el arreglo sea «aceptar cualquier cosa».
+
+print("== el patron por defecto ve las DOS formas de marcador ==")
+for etiqueta, linea in (
+    ("la que escribe el envoltorio a mano", "EXIT=0"),
+    ("la que escribe bg.sh", "__BG_EXIT__=0"),
+):
+    with tempfile.TemporaryDirectory() as tmp:
+        log = Path(tmp) / "salida.log"
+        log.write_text(f"trabajo hecho\n{linea}\n", encoding="utf-8")
+        resultado = marker_wait.wait_for_marker(log, timeout=2, interval=0.05)
+        check(f"{etiqueta}: {linea}", marker_wait.PRESENT, resultado.code)
+
+print("== y NO acepta un renglon que solo se le parece ==")
+with tempfile.TemporaryDirectory() as tmp:
+    log = Path(tmp) / "salida.log"
+    # `EXIT=` sin digito, y un `EXIT=0` que NO abre renglon: si el arreglo
+    # hubiera ensanchado el patron a «cualquier cosa con EXIT», los dos
+    # pasarian y la espera declararia terminado un trabajo que sigue vivo.
+    log.write_text("EXIT=\nel proceso dijo EXIT=0 en mitad de la frase\n",
+                   encoding="utf-8")
+    resultado = marker_wait.wait_for_marker(log, timeout=1, interval=0.05)
+    check("un renglon parecido no es un marcador", marker_wait.TIMED_OUT, resultado.code)
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

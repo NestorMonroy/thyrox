@@ -72,8 +72,26 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from session.background import pid_is_alive  # noqa: E402
 
-#: El marcador que el envoltorio de ``background.spawn_detached`` escribe.
-MARKER_PATTERN = r"^EXIT=[0-9]+"
+#: Las DOS formas de marcador que esta familia escribe, y es una sola
+#: alternancia a proposito.
+#:
+#: ``background.spawn_detached`` y el patron a mano de
+#: ``long-running-commands.md`` R-2.0 escriben ``EXIT=``; ``bg.sh`` escribe
+#: ``__BG_EXIT__=`` (su ``_MARK``). Hasta TASK-THYROX-0162 este modulo veia
+#: solo la primera, asi que la composicion mas natural de la familia —lanzar
+#: con ``thyrox-bg`` y esperar aqui— giraba hasta el plazo entero.
+#:
+#: Y el plazo MIENTE cuando eso pasa: ``TIMED_OUT`` significa «sigue vivo», y
+#: el trabajo habia terminado. El instrumento no distinguia «no termino» de
+#: «termino con el otro marcador» — la ceguera que
+#: ``evidencia-antes-de-afirmar.md`` describe, con la propia espera de sujeto.
+#: Medido: ocho minutos girando sobre un log que ya tenia su ``__BG_EXIT__=0``.
+#:
+#: Lo que NO se ensancho: sigue anclado a inicio de renglon y sigue exigiendo
+#: al menos un digito. Un ``EXIT=`` pelado, o un ``EXIT=0`` en mitad de una
+#: frase, NO son marcadores — si lo fueran, la espera declararia terminado un
+#: trabajo que solo menciono la palabra.
+MARKER_PATTERN = r"^(?:__BG_EXIT__|EXIT)=[0-9]+"
 
 #: Segundos entre sondeos. Es politica del consumidor, no del mecanismo.
 DEFAULT_INTERVAL = 2
