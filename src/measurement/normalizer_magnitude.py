@@ -54,6 +54,37 @@ Por eso el modulo expone las dos constantes: la que el brief nombra y la que
 de verdad gobierna el underflow. Colapsarlas seria publicar un umbral que se
 equivoca por 38 ordenes de magnitud.
 
+Un mismo ``log Z``, DOS referentes — y el modulo modela uno
+-------------------------------------------------------------
+
+``alpha * (log Z)^2`` se aplica en la literatura a dos softmax distintos, y
+la formula identica esconde que ``Z`` no es la misma cantidad:
+
+* **el softmax de vocabulario** — ``Z`` suma sobre los tokens posibles. Es el
+  que este modulo modela, y el unico que sus vectores de prueba ejercitan.
+* **el softmax del ROUTER de un MoE** — ``Z`` suma sobre los expertos, no
+  sobre tokens. Decide que experto procesa cada token, no que token se emite.
+
+Es significante contra significado: ``log Z`` se lee igual en los dos y
+nombra normalizadores de poblaciones distintas. Un control escrito sobre
+vectores de vocabulario **no dice nada** del router, porque el numero de
+expertos es de otro orden que el del vocabulario y la traza de ``log Z`` que
+uno produce no acota la del otro.
+
+**Procedencia, NO medicion nuestra.** El ``alpha`` de PaLM y la adopcion
+posterior (OLMo, DCLM, Baichuan 2) son atribucion de la tecnica. Lo mismo
+vale para lo que se reporta del router: que retirar su z-loss en OLMoE
+produjo picos en la perdida de validacion y una caida en HellaSwag, y que
+DeepSeek V3 usa balanceo por sesgos como alternativa parcial. **Nada de eso
+se midio en este arbol** — no hay aqui ni entrenamiento ni MoE que ejercitar,
+asi que se declara como procedencia y no como resultado. Afirmarlo como
+propio seria exactamente la racionalizacion que este modulo evita en su
+cabecera.
+
+Lo que si esta medido aqui: la mecanica del normalizador —desbordamiento,
+underflow, la penalizacion cuadratica y el signo del gradiente— sobre los
+vectores del brief, con sus dos correcciones.
+
 Que NO hace
 -------------
 

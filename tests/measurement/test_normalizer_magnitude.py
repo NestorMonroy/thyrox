@@ -34,13 +34,21 @@ Lo que tiene que poder fallar:
 from __future__ import annotations
 
 import math
-import pathlib
+import subprocess
 import sys
 
-HERE = pathlib.Path(__file__).resolve()
-ROOT = HERE.parent.parent.parent
-sys.path.insert(0, str(ROOT / "src/measurement"))
-import normalizer_magnitude as nm  # noqa: E402
+#: NO hay aritmetica de ruta: la raiz la declara `tests/run.sh` con
+#: `export PYTHONPATH="$PWD/src"`, la misma forma que `bin/` ya ejercia. El
+#: `sys.path.insert(0, ... parent.parent.parent)` que vivia aqui es la deuda
+#: de TASK-THYROX-0018, y se paga al tocar el archivo.
+from measurement import normalizer_magnitude as nm
+from paths import reach
+
+ROOT = reach.thyrox_root()
+
+#: El sujeto como ARCHIVO — el caso 8 lo ejecuta bajo el tracer, asi que
+#: necesita su ruta, no su modulo ya importado.
+SUBJECT = ROOT / "src" / "measurement" / "normalizer_magnitude.py"
 
 passed = failed = 0
 
@@ -153,6 +161,32 @@ check("log Z baja tras el paso", True, after < before)
 # El producto lr*alpha es lo unico identificable desde la traza: con 50 * 1e-4
 # el primer paso reproduce el 29.7110 del brief.
 close("y reproduce el primer valor de la traza", 29.7110, after, 5e-3)
+
+print()
+print("== 8. el modulo NO escribe — medido por CONDUCTA, no por docstring ==")
+# El docstring del sujeto declara «no toca disco». Eso es un comentario, y un
+# comentario no es una Observation: se mide ejecutandolo bajo el tracer.
+#
+# El veredicto de `assert_no_writes` tiene TRES estados y los tres se
+# consumen aqui: 0 = midio y no hubo escritura · 1 = hubo · 2 = NO se pudo
+# medir. Colapsar el 2 con el 0 publicaria un verde sobre una medicion que
+# nunca ocurrio, que es el sub-patron D con este caso como sujeto.
+#
+# Control de anulacion (2026-09-18): inyectada UNA escritura al sujeto, el
+# tracer paso de «OK — 0 escrituras» a «1 escritura(s) intentada(s)» con
+# exit 1, nombrando la ruta y sus flags; restaurado, vuelve a 0 y exit 0.
+tracer = ROOT / "bin" / "assert_no_writes"
+verdict = subprocess.run(
+    ["bash", str(tracer), "--", sys.executable, str(SUBJECT)],
+    capture_output=True, text=True)
+if verdict.returncode == 2:
+    # Rehusa: no se emite aserción. Un entorno sin `strace` —o sin permiso de
+    # `ptrace`— no puede sostener ni «escribe» ni «no escribe».
+    print(f"  SIN MEDIR  el tracer rehuso: {verdict.stderr.strip().splitlines()[-1:]}")
+else:
+    check("el sujeto no intenta ninguna escritura", 0, verdict.returncode)
+    check("y el tracer publica su alcance medido", True,
+          "alcance medido" in verdict.stdout)
 
 print()
 print(f"resultado: {passed} de {passed + failed} aserciones en verde")
