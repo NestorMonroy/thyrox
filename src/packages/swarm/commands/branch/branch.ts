@@ -1,17 +1,17 @@
 import { randomUUID, type UUID } from 'crypto'
 import { mkdir, readFile, writeFile } from 'fs/promises'
-import { getOriginalCwd, getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import type { LocalJSXCommandContext } from '@claude-code-how-works/command-runtime/runtime'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import type { LocalJSXCommandOnDone } from '@claude-code-how-works/agent/command.js'
+import { getOriginalCwd, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import type { LocalJSXCommandContext } from '@thyrox/command-runtime/runtime'
+import { logEvent } from '@thyrox/local-observability'
+import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import type {
   ContentReplacementEntry,
   Entry,
   LogOption,
   SerializedMessage,
   TranscriptMessage,
-} from '@claude-code-how-works/agent/logsTypes.js'
-import { parseJSONL } from '@claude-code-how-works/storage/json.js'
+} from '@thyrox/agent/logsTypes.js'
+import { parseJSONL } from '@thyrox/storage/json.js'
 import {
   getProjectDir,
   getTranscriptPath,
@@ -19,9 +19,9 @@ import {
   isTranscriptMessage,
   saveCustomTitle,
   searchSessionsByCustomTitle,
-} from '@claude-code-how-works/storage/sessionStorage.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { escapeRegExp } from '@claude-code-how-works/output/utils/stringUtils.js'
+} from '@thyrox/storage/sessionStorage.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { escapeRegExp } from '@thyrox/output/utils/stringUtils.js'
 
 type TranscriptEntry = TranscriptMessage & {
   forkedFrom?: {

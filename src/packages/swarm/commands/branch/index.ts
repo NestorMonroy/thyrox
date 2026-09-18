@@ -1,5 +1,5 @@
 import { feature } from 'bun:bundle'
-import type { Command } from '@claude-code-how-works/command-runtime/runtime'
+import type { Command } from '@thyrox/command-runtime/runtime'
 
 const branch = {
   type: 'local-jsx',

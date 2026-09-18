@@ -1,79 +1,79 @@
 import { installSwarmAppRuntime } from '../adapters/appRuntime.js'
 import { installSwarmAppUi } from '../adapters/appUi.js'
-import { TEAMMATE_MESSAGE_TAG } from '@claude-code-how-works/command-runtime/xml.js'
+import { TEAMMATE_MESSAGE_TAG } from '@thyrox/command-runtime/xml.js'
 import {
   processMailboxPermissionResponse,
   registerPermissionCallback,
   unregisterPermissionCallback,
-} from '@claude-code-how-works/repl/hooks/useSwarmPermissionPoller.js'
-import { useExitOnCtrlCDWithKeybindings } from '@claude-code-how-works/repl/hooks/useExitOnCtrlCDWithKeybindings.js'
-import { Spinner } from '@claude-code-how-works/repl/components/Spinner.js'
+} from '@thyrox/repl/hooks/useSwarmPermissionPoller.js'
+import { useExitOnCtrlCDWithKeybindings } from '@thyrox/repl/hooks/useExitOnCtrlCDWithKeybindings.js'
+import { Spinner } from '@thyrox/repl/components/Spinner.js'
 import {
   type OptionWithDescription,
   Select,
-} from '@claude-code-how-works/repl/components/CustomSelect/index.js'
-import { logEvent } from '@claude-code-how-works/local-observability'
-import { getAutoCompactThreshold } from '@claude-code-how-works/agent/compaction/autoCompact.js'
+} from '@thyrox/repl/components/CustomSelect/index.js'
+import { logEvent } from '@thyrox/local-observability'
+import { getAutoCompactThreshold } from '@thyrox/agent/compaction/autoCompact.js'
 import {
   buildPostCompactMessages,
   compactConversation,
   ERROR_MESSAGE_USER_ABORT,
-} from '@claude-code-how-works/agent/compaction/compact.js'
-import { resetMicrocompactState } from '@claude-code-how-works/agent/compaction/microCompact.js'
+} from '@thyrox/agent/compaction/compact.js'
+import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js'
 import {
   createTaskStateBase,
   generateTaskId,
   isTerminalTaskStatus,
-} from '@claude-code-how-works/tool-registry/Task.js'
+} from '@thyrox/tool-registry/Task.js'
 import {
   createActivityDescriptionResolver,
   createProgressTracker,
   getProgressUpdate,
   updateProgressFromMessage,
-} from '@claude-code-how-works/agent/localAgentTask.js'
-import { AGENT_COLORS } from '@claude-code-how-works/tool-registry/tools/AgentTool/agentColorManager.js'
-import { runAgent } from '@claude-code-how-works/tool-registry/tools/AgentTool/runAgent.js'
-import { awaitClassifierAutoApproval } from '@claude-code-how-works/tool-registry/tools/BashTool/bashPermissions.js'
-import { BASH_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/BashTool/toolName.js'
-import { SEND_MESSAGE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/SendMessageTool/constants.js'
-import { TASK_CREATE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskCreateTool/constants.js'
-import { TASK_GET_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskGetTool/constants.js'
-import { TASK_LIST_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskListTool/constants.js'
-import { TASK_UPDATE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TaskUpdateTool/constants.js'
-import { TEAM_CREATE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TeamCreateTool/constants.js'
-import { TEAM_DELETE_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/TeamDeleteTool/constants.js'
-import { getSpinnerVerbs } from '@claude-code-how-works/agent/constants/spinnerVerbs.js'
-import { TURN_COMPLETION_VERBS } from '@claude-code-how-works/agent/constants/turnCompletionVerbs.js'
+} from '@thyrox/agent/localAgentTask.js'
+import { AGENT_COLORS } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
+import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
+import { awaitClassifierAutoApproval } from '@thyrox/tool-registry/tools/BashTool/bashPermissions.js'
+import { BASH_TOOL_NAME } from '@thyrox/tool-registry/tools/BashTool/toolName.js'
+import { SEND_MESSAGE_TOOL_NAME } from '@thyrox/tool-registry/tools/SendMessageTool/constants.js'
+import { TASK_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskCreateTool/constants.js'
+import { TASK_GET_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskGetTool/constants.js'
+import { TASK_LIST_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskListTool/constants.js'
+import { TASK_UPDATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskUpdateTool/constants.js'
+import { TEAM_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamCreateTool/constants.js'
+import { TEAM_DELETE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamDeleteTool/constants.js'
+import { getSpinnerVerbs } from '@thyrox/agent/constants/spinnerVerbs.js'
+import { TURN_COMPLETION_VERBS } from '@thyrox/agent/constants/turnCompletionVerbs.js'
 import {
   createAssistantAPIErrorMessage,
   createUserMessage,
   SUBAGENT_REJECT_MESSAGE,
   SUBAGENT_REJECT_MESSAGE_WITH_REASON_PREFIX,
-} from '@claude-code-how-works/agent/messages.js'
-import { evictTaskOutput } from '@claude-code-how-works/storage/task/diskOutput.js'
+} from '@thyrox/agent/messages.js'
+import { evictTaskOutput } from '@thyrox/storage/task/diskOutput.js'
 import {
   evictTerminalTask,
   registerTask,
   STOPPED_DISPLAY_MS,
   updateTaskState,
-} from '@claude-code-how-works/agent/task/framework.js'
-import { tokenCountWithEstimation } from '@claude-code-how-works/agent/tokens.js'
-import { createAbortController } from '@claude-code-how-works/agent/abortController.js'
-import { runWithAgentContext } from '@claude-code-how-works/agent/agentContext.js'
-import { count } from '@claude-code-how-works/tool-registry/utils/array.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { cloneFileStateCache } from '@claude-code-how-works/tool-registry/fileStateCache'
+} from '@thyrox/agent/task/framework.js'
+import { tokenCountWithEstimation } from '@thyrox/agent/tokens.js'
+import { createAbortController } from '@thyrox/agent/abortController.js'
+import { runWithAgentContext } from '@thyrox/agent/agentContext.js'
+import { count } from '@thyrox/tool-registry/utils/array.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logError } from '@thyrox/local-observability/log.js'
+import { cloneFileStateCache } from '@thyrox/tool-registry/fileStateCache'
 import {
   applyPermissionUpdate,
   applyPermissionUpdates,
   persistPermissionUpdates,
-} from '@claude-code-how-works/permission/PermissionUpdate'
-import { hasPermissionsToUseTool } from '@claude-code-how-works/permission/permissions'
-import { emitTaskTerminatedSdk } from '@claude-code-how-works/agent/sdkEventQueue.js'
-import { sleep } from '@claude-code-how-works/config/sleep'
-import { jsonParse, jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
+} from '@thyrox/permission/PermissionUpdate'
+import { hasPermissionsToUseTool } from '@thyrox/permission/permissions'
+import { emitTaskTerminatedSdk } from '@thyrox/agent/sdkEventQueue.js'
+import { sleep } from '@thyrox/config/sleep'
+import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import {
   claimTask,
   listTasks,
@@ -81,8 +81,8 @@ import {
   sanitizePathComponent,
   getTasksDir,
   notifyTasksUpdated,
-} from '@claude-code-how-works/agent/tasks.js'
-import { PermissionModeSchema } from '@claude-code-how-works/headless-sdk/coreSchemas.js'
+} from '@thyrox/agent/tasks.js'
+import { PermissionModeSchema } from '@thyrox/headless-sdk/coreSchemas.js'
 import {
   createTeammateContext,
   runWithTeammateContext,
@@ -99,14 +99,14 @@ import {
   isPerfettoTracingEnabled,
   registerAgent,
   unregisterAgent,
-} from '@claude-code-how-works/local-observability/telemetry/perfettoTracing.js'
-import { createContentReplacementState } from '@claude-code-how-works/storage/toolResultStorage.js'
+} from '@thyrox/local-observability/telemetry/perfettoTracing.js'
+import { createContentReplacementState } from '@thyrox/storage/toolResultStorage.js'
 import {
   formatAgentId,
   generateRequestId,
   parseAgentId,
-} from '@claude-code-how-works/agent/agentIdUtils'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
+} from '@thyrox/agent/agentIdUtils'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import {
   getChromeFlagOverride,
   getFlagSettingsPath,
@@ -116,52 +116,52 @@ import {
   getSessionBypassPermissionsMode,
   getSessionCreatedTeams,
   getSessionId,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { quote } from '@claude-code-how-works/shell/bash/shellQuote.js'
-import { isInBundledMode } from '@claude-code-how-works/config/bundledMode'
-import { getPlatform } from '@claude-code-how-works/config/platform'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { quote } from '@thyrox/shell/bash/shellQuote.js'
+import { isInBundledMode } from '@thyrox/config/bundledMode'
+import { getPlatform } from '@thyrox/config/platform'
 import {
   getGlobalConfig,
   saveCurrentProjectConfig,
   saveGlobalConfig,
-} from '@claude-code-how-works/config'
-import { env } from '@claude-code-how-works/config/env/paths'
+} from '@thyrox/config'
+import { env } from '@thyrox/config/env/paths'
 import {
   execFileNoThrow,
   execFileNoThrowWithCwd,
-} from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { getTeamsDir } from '@claude-code-how-works/config/env/utils'
-import { errorMessage, getErrnoCode } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { lazySchema } from '@claude-code-how-works/tool-registry/utils/lazySchema.js'
-import { check, lock, lockSync, unlock } from '@claude-code-how-works/storage/lockfile.js'
+} from '@thyrox/shell/execFileNoThrow.js'
+import { getTeamsDir } from '@thyrox/config/env/utils'
+import { errorMessage, getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
+import { check, lock, lockSync, unlock } from '@thyrox/storage/lockfile.js'
 import {
   findCanonicalGitRoot,
   findGitRoot,
   getBranch,
   getDefaultBranch,
   gitExe,
-} from '@claude-code-how-works/storage/git.js'
-import { parseGitConfigValue } from '@claude-code-how-works/agent/git/gitConfigParser.js'
+} from '@thyrox/storage/git.js'
+import { parseGitConfigValue } from '@thyrox/agent/git/gitConfigParser.js'
 import {
   getCommonDir,
   readWorktreeHeadSha,
   resolveGitDir,
   resolveRef,
-} from '@claude-code-how-works/agent/git/gitFilesystem.js'
+} from '@thyrox/agent/git/gitFilesystem.js'
 import {
   executeWorktreeCreateHook,
   executeWorktreeRemoveHook,
   hasWorktreeCreateHook,
-} from '@claude-code-how-works/agent/hooks.js'
-import { addFunctionHook } from '@claude-code-how-works/agent/hooks/sessionHooks.js'
-import { containsPathTraversal } from '@claude-code-how-works/storage/path.js'
+} from '@thyrox/agent/hooks.js'
+import { addFunctionHook } from '@thyrox/agent/hooks/sessionHooks.js'
+import { containsPathTraversal } from '@thyrox/storage/path.js'
 import {
   getInitialSettings,
   getRelativeSettingsFilePathForSource,
-} from '@claude-code-how-works/config/settings/core/settings.js'
-import { getCwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { CLAUDE_OPUS_4_7_CONFIG } from '@claude-code-how-works/provider/model/configs.js'
-import { getAPIProvider } from '@claude-code-how-works/provider/model/providers.js'
+} from '@thyrox/config/settings/core/settings.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { CLAUDE_OPUS_4_7_CONFIG } from '@thyrox/provider/model/configs.js'
+import { getAPIProvider } from '@thyrox/provider/model/providers.js'
 
 let installed = false
 
@@ -172,7 +172,7 @@ export function installSwarmHost(): void {
 
   installSwarmAppRuntime({
     async getSystemPrompt(...args: any[]) {
-      const mod = await import('@claude-code-how-works/agent/constants/prompts.js')
+      const mod = await import('@thyrox/agent/constants/prompts.js')
       return mod.getSystemPrompt(...args)
     },
     TEAMMATE_MESSAGE_TAG,
