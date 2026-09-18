@@ -120,12 +120,17 @@ def agent_results_dir() -> Path:
     return consumer_root() / ".claude" / "agent-results"
 
 
-def agent_store_path() -> Path:
+def agent_store_path(create: bool = True) -> Path:
     """El store, por el localizador declarado. Delega, no compone.
 
     Componerlo aqui como `agent_results_dir() / "agent_store.sqlite3"` lo ataba
     al consumidor, y desde el 2026-09-07 el store vive en thyrox salvo que
     `THYROX_AGENT_STORE` diga otra cosa. Dos composiciones de la misma ruta son
     dos fuentes de verdad que nadie sincroniza.
+
+    ``create`` viaja al localizador sin interpretarse aqui: este modulo delega
+    la ubicacion, y tambien delega la decision de materializarla. Un envoltorio
+    que fijara el valor seria la segunda fuente de verdad que su propio
+    docstring prohibe.
     """
-    return reach.agent_store_path()
+    return reach.agent_store_path(create=create)

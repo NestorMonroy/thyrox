@@ -1,0 +1,14 @@
+== 1. store ausente: REHUSA, y no fabrica nada ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/agents/test_readonly_connection.py", line 82, in <module>
+    store.connect_readonly(ausente)
+    ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'agent_store' has no attribute 'connect_readonly'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/agents/test_readonly_connection.py", line 84, in <module>
+    except store.StoreNotFound:
+           ^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'agent_store' has no attribute 'StoreNotFound'

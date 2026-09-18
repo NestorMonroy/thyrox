@@ -1,0 +1,48 @@
+--- ANULACION 1: sin el cuadrado ---
+== 1. la misma esperanza para las dos distribuciones ==
+  ok    E[estable] = 30.0
+  ok    E[erratico] = 30.0
+== 2. el apartamiento SI las distingue — forma 1 ==
+  FALLO Var[estable] = 1.2
+        esperado=[1.2] obtenido=[0.0]
+  FALLO Var[erratico] = 120.0
+        esperado=[120.0] obtenido=[0.0]
+== 3. la desviacion estandar, en las unidades originales ==
+  FALLO sd[erratico] ~ 10.954451150103322
+        esperado=[10.954451150103322] obtenido=[0.0]
+== 4. la forma 2 da lo mismo, en una sola pasada ==
+  FALLO E[X^2]-E[X]^2 sobre el erratico
+        esperado=[0.0] obtenido=[120.0]
+  FALLO E[X^2]-E[X]^2 sobre el estable
+        esperado=[0.0] obtenido=[1.2000000000000455]
+== 5. pesos que no suman 1: REHUSA, no publica cifra ==
+  ok    NotADistribution
+== 6. un peso por valor, o tampoco hay distribucion ==
+  ok    NotADistribution
+== 7. una MUESTRA no es una distribucion: se declara al convertirla ==
+  ok    cinco pesos de 1/5
+  ok    la media muestral es la esperanza empirica
+
+6 ok, 5 fallos
+--- ANULACION 2: sin el rehuse por suma ---
+== 1. la misma esperanza para las dos distribuciones ==
+  ok    E[estable] = 30.0
+  ok    E[erratico] = 30.0
+== 2. el apartamiento SI las distingue — forma 1 ==
+  ok    Var[estable] = 1.2
+  ok    Var[erratico] = 120.0
+== 3. la desviacion estandar, en las unidades originales ==
+  ok    sd[erratico] ~ 10.954451150103322
+== 4. la forma 2 da lo mismo, en una sola pasada ==
+  ok    E[X^2]-E[X]^2 sobre el erratico
+  ok    E[X^2]-E[X]^2 sobre el estable
+== 5. pesos que no suman 1: REHUSA, no publica cifra ==
+  FALLO NotADistribution
+        esperado=[NotADistribution] obtenido=[ninguna]
+== 6. un peso por valor, o tampoco hay distribucion ==
+  ok    NotADistribution
+== 7. una MUESTRA no es una distribucion: se declara al convertirla ==
+  ok    cinco pesos de 1/5
+  ok    la media muestral es la esperanza empirica
+
+10 ok, 1 fallos

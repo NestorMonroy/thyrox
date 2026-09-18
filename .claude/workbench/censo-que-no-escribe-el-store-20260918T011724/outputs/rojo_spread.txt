@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/measurement/test_spread.py", line 54, in <module>
+    import spread  # noqa: E402
+    ^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'spread'

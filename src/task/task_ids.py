@@ -186,7 +186,15 @@ FORMAT_VERSION = 1
 #: describia el arbol de `docs`, donde este guion vivia, y desde
 #: ``thyrox/src/task/`` apuntaba a un directorio que nadie creaba nunca. Fallaba
 #: **en silencio**: el llamador leia «la ruta no existe» como «no hay tareas».
-DEFAULT_STORE_PATH = reach.agent_store_path()
+#:
+#: ``create=False`` porque esto se evalua **al importar**, y un import que
+#: materializa un directorio lo hace para todo consumidor y para todo comando,
+#: incluido ``--help``. Medido por conducta con ``bin/assert_no_writes``: un
+#: ``censo-tablas`` —lectura pura— hacia ``mkdir`` del hogar por esta linea,
+#: porque ``agent_store.py`` importa ``task_ids``. El hogar lo sigue creando
+#: quien ESCRIBE (``agent_store.connect``, TASK-THYROX-0457), que es donde la
+#: creacion idempotente vale; quien LEE rehusa por nombre con ``StoreNotFound``.
+DEFAULT_STORE_PATH = reach.agent_store_path(create=False)
 
 
 def resolve_store(declared=None):

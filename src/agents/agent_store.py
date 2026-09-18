@@ -436,8 +436,8 @@ def document_root(args: argparse.Namespace) -> Path:
     return reach_roots.root(DOCS_CONSUMER)
 
 
-def resolve_store_dir(args: argparse.Namespace) -> Path:
-    """Dónde escribir, de lo más específico a lo menos.
+def resolve_store_dir(args: argparse.Namespace, create: bool = True) -> Path:
+    """Dónde escribir —o, con ``create=False``, dónde LEER sin materializar.
 
     1. ``--claude-dir`` — la ruta, sin resolver nada. Es lo que usa una prueba
        para no contaminar el store real.
@@ -467,7 +467,7 @@ def resolve_store_dir(args: argparse.Namespace) -> Path:
         return store_dir
 
     if getattr(args, "repo", None) is None:
-        return agents_paths.agent_store_path().parent
+        return agents_paths.agent_store_path(create=create).parent
 
     if args.repo not in VALID_REPOS:
         raise ValueError(f"repo invalido: {args.repo!r} (validos: {VALID_REPOS})")
@@ -1178,6 +1178,49 @@ def connect(store_dir: Path) -> sqlite3.Connection:
     _migrate_documents_series_columns(conn)
     _migrate_documents_drop_scanned_at(conn)
     _resync_fts(conn)
+    return conn
+
+
+class StoreNotFound(FileNotFoundError):
+    """El store no existe donde se pidio leerlo.
+
+    Es el tercer desenlace que ``check_veredicto_de_gate.py`` exige, y la
+    razon de que exista una clase propia: ``connect()`` colapsaba «no hay
+    store» con «ya lo cree por ti», y un censo que fabrica su sujeto publica
+    un cero que no distingue «vacio» de «recien inventado».
+    """
+
+
+def connect_readonly(store_dir: Path) -> sqlite3.Connection:
+    """Abre el store para LEER: sin crearlo, sin DDL y sin migraciones.
+
+    ``connect()`` es el camino de ESCRITURA y hace cuatro cosas que una
+    lectura no debe hacer: ``mkdir`` del hogar, abrir el archivo con
+    ``O_CREAT``, correr el schema con sus siete migraciones, y resincronizar
+    el indice FTS. Medido por conducta sobre el store real con
+    ``bin/assert_no_writes``, un ``censo-tablas`` intentaba **seis**
+    escrituras. Las tres consecuencias estan en el docstring de
+    ``tests/agents/test_readonly_connection.py``; la mas cara es que reabre
+    por la via del MODO el grifo de la cascara que TASK-THYROX-0153 y 0156
+    cerraron por la via de la RUTA.
+
+    *Metrica:* aperturas con intencion de escritura que el nucleo ve.
+    *Ciega a:* las dos aperturas de ``-shm`` y ``-wal``, que SQLite exige
+    para leer una base en modo WAL aunque la conexion sea ``mode=ro``.
+    Medido: con ``mode=ro`` caen 4 de las 6. ``immutable=1`` quitaria esas
+    dos y afirmaria que nadie mas escribe el archivo, que aqui es falso —
+    el hook de sesion y el reconciliador escriben en el mismo store.
+    """
+    ruta = store_dir / DB_FILENAME
+    if not ruta.exists():
+        raise StoreNotFound(
+            f"el store no existe: {ruta} — no se mide y no se crea")
+    conn = sqlite3.connect(f"file:{ruta}?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    # ``busy_timeout`` tambien en lectura: un lector puede toparse con el
+    # lock de un escritor concurrente, y esperar unos milisegundos es
+    # preferible a publicar «database is locked» como si fuera el dato.
+    conn.execute("PRAGMA busy_timeout = 5000")
     return conn
 
 
@@ -2844,9 +2887,9 @@ def cmd_table_census(args: argparse.Namespace) -> None:
     sin columna de fecha sale como `-`, y eso se lee «este instrumento no la
     puede fechar», nunca «esta muerta».
     """
-    store_dir = resolve_store_dir(args)
+    store_dir = resolve_store_dir(args, create=False)
     hoy = now_iso()[:10]
-    with connect(store_dir) as conn:
+    with connect_readonly(store_dir) as conn:
         filas_maestro = conn.execute(
             "SELECT name, sql FROM sqlite_master WHERE type = 'table' "
             "AND name NOT LIKE 'sqlite_%' ORDER BY name").fetchall()
@@ -2963,8 +3006,8 @@ def cmd_stop_reason_census(args: argparse.Namespace) -> None:
     este trabajo conto 1345 NULL como «sin procedencia declarada» cuando 1266
     de ellas la tienen.
     """
-    store_dir = resolve_store_dir(args)
-    with connect(store_dir) as conn:
+    store_dir = resolve_store_dir(args, create=False)
+    with connect_readonly(store_dir) as conn:
         r = stop_reason_provenance(conn)
     total = r["total"]
 
@@ -3009,9 +3052,9 @@ def cmd_usage_census(args: argparse.Namespace) -> None:
     Por eso la salida **empieza** por el reparto y sólo después da el
     agregado, siempre acompañado del `n` sobre el que se calculó.
     """
-    store_dir = resolve_store_dir(args)
+    store_dir = resolve_store_dir(args, create=False)
     sin_medir = " AND ".join(f"{c} IS NULL" for c in _COLUMNAS_DE_USO)
-    with connect(store_dir) as conn:
+    with connect_readonly(store_dir) as conn:
         total = conn.execute("SELECT COUNT(*) FROM agent_sessions").fetchone()[0]
         medidos = conn.execute(
             "SELECT COUNT(*) FROM agent_sessions "
@@ -3065,7 +3108,7 @@ def cmd_usage_census(args: argparse.Namespace) -> None:
     if catalogo is None:
         print(f"USD por modelo: SIN MEDIR — {motivo}")
     else:
-        with connect(store_dir) as conn:
+        with connect_readonly(store_dir) as conn:
             por_modelo = conn.execute(
                 "SELECT model, COUNT(*), SUM(turns), SUM(input_tokens), "
                 "SUM(cache_creation_tokens), SUM(cache_read_tokens), SUM(output_tokens) "
@@ -3632,10 +3675,24 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> None:
+def main(argv: "list[str] | None" = None) -> None:
+    """Punto de entrada. ``argv`` explicito para que una prueba lo ejercite.
+
+    Sin el parametro, la unica forma de probar el enrutado de un subcomando
+    era lanzar un proceso hijo, y entonces el caso mide el envoltorio en vez
+    del despacho. Es la forma del contrato parametrizado de la referencia
+    (``TencentDB Agent Memory: src/core/store/__contract__/``), donde la misma
+    suite corre contra cada backend por inyeccion en vez de por proceso.
+    """
     parser = build_parser()
-    args = parser.parse_args()
-    args.func(args)
+    args = parser.parse_args(argv)
+    try:
+        args.func(args)
+    except StoreNotFound as ausente:
+        # Exit 2 y SIN conteo: quien colapsa «rehuso» con «midio y salio 0»
+        # publica un PASS sobre una medicion que nunca ocurrio.
+        print(f"ERROR: {ausente}", file=sys.stderr)
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

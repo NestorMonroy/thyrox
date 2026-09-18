@@ -749,8 +749,8 @@ AGENT_STORE_DIR = Path("agent-results")
 AGENT_STORE_NAME = "agent_store.sqlite3"
 
 
-def agent_store_path(start: Path | None = None) -> Path:
-    """La ruta del store, **con su directorio creado**. Nunca una ruta supuesta.
+def agent_store_path(start: Path | None = None, create: bool = True) -> Path:
+    """La ruta del store. Con ``create``, ademas materializa su directorio.
 
     Dos desenlaces, y el segundo no es un rehuse:
 
@@ -771,6 +771,15 @@ def agent_store_path(start: Path | None = None) -> Path:
     El **esquema** no es cosa de este módulo: lo crea ``agent_store.connect``,
     que ya usa ``CREATE TABLE IF NOT EXISTS``. Aquí vive la ubicación y nada
     más — el localizador no conoce tablas.
+
+    ``create=False`` es para el camino de LECTURA, y no deroga el argumento de
+    arriba: lo acota al camino de ESCRITURA, que es donde vale. Un lector que
+    materializa el hogar reabre por la vía del MODO la creación de cáscara que
+    TASK-THYROX-0153 y 0156 cerraron por la vía de la RUTA — medido por
+    conducta, ``censo-tablas`` hacía ``mkdir`` del hogar antes de leer nada.
+    Y la distinción que el ``mkdir`` protegía —«no hay datos» contra «no pude
+    medir»— la da mejor ``agent_store.connect_readonly``, que la declara por su
+    nombre (``StoreNotFound``) en vez de taparla creando el directorio.
     """
     declared = env_value(AGENT_STORE_VAR, start) or env_value(
         AGENT_STORE_COMPAT_VAR, start)
@@ -778,7 +787,8 @@ def agent_store_path(start: Path | None = None) -> Path:
         path = Path(declared).expanduser()
     else:
         path = thyrox_root(start) / AGENT_STORE_DIR / AGENT_STORE_NAME
-    path.parent.mkdir(parents=True, exist_ok=True)
+    if create:
+        path.parent.mkdir(parents=True, exist_ok=True)
     return path
 
 
