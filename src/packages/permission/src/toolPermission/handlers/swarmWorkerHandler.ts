@@ -24,18 +24,21 @@ type SwarmWorkerPermissionParams = {
 }
 
 /**
- * Handles the swarm worker permission flow.
+ * Copia de `ccnmt: packages/permission/src/toolPermission/handlers/swarmWorkerHandler.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * When running as a swarm worker:
- * 1. Tries classifier auto-approval for bash commands
- * 2. Forwards the permission request to the leader via mailbox
- * 3. Registers callbacks for when the leader responds
- * 4. Sets the pending indicator while waiting
+ * Atiende el flujo de permiso de un trabajador de swarm.
  *
- * Returns a PermissionDecision if the classifier auto-approves,
- * or a Promise that resolves when the leader responds.
- * Returns null if swarms are not enabled or this is not a swarm worker,
- * so the caller can fall through to interactive handling.
+ * Cuando se corre como trabajador de un swarm:
+ * 1. Intenta la auto-aprobación del clasificador para los comandos de bash.
+ * 2. Reenvía la petición de permiso al líder por el buzón.
+ * 3. Registra los callbacks para cuando el líder responda.
+ * 4. Fija el indicador de pendiente mientras espera.
+ *
+ * Devuelve una `PermissionDecision` si el clasificador auto-aprueba, o una
+ * promesa que resuelve cuando el líder responde. Devuelve null si los swarms
+ * no están habilitados o si esto no es un trabajador de swarm, para que quien
+ * llame caiga al manejo interactivo.
  */
 async function handleSwarmWorkerPermission(
   params: SwarmWorkerPermissionParams,
@@ -46,9 +49,10 @@ async function handleSwarmWorkerPermission(
 
   const { ctx, description, updatedInput, suggestions } = params
 
-  // For bash commands, try classifier auto-approval before forwarding to
-  // the leader. Agents await the classifier result (rather than racing it
-  // against user interaction like the main agent).
+  // Para los comandos de bash, intentar la auto-aprobación del clasificador
+  // antes de reenviar al líder. Los agentes esperan el resultado del
+  // clasificador, en vez de hacerlo competir contra la interacción del
+  // usuario como hace el agente principal.
   const classifierResult = feature('BASH_CLASSIFIER')
     ? await ctx.tryClassifier?.(params.pendingClassifierCheck, updatedInput)
     : null
@@ -56,7 +60,7 @@ async function handleSwarmWorkerPermission(
     return classifierResult
   }
 
-  // Forward permission request to the leader via mailbox
+  // Reenviar la petición de permiso al líder por el buzón
   try {
     const clearPendingRequest = (): void =>
       ctx.toolUseContext.setAppState(prev => ({
@@ -67,7 +71,7 @@ async function handleSwarmWorkerPermission(
     const decision = await new Promise<PermissionDecision>(resolve => {
       const { resolve: resolveOnce, claim } = createResolveOnce(resolve)
 
-      // Create the permission request
+      // Crear la petición de permiso
       const request = createPermissionRequest({
         toolName: ctx.tool.name,
         toolUseId: ctx.toolUseID,
@@ -76,8 +80,9 @@ async function handleSwarmWorkerPermission(
         permissionSuggestions: suggestions,
       })
 
-      // Register callback BEFORE sending the request to avoid race condition
-      // where leader responds before callback is registered
+      // Registrar el callback ANTES de enviar la petición, para evitar la
+      // carrera en la que el líder responde antes de que el callback esté
+      // registrado.
       registerPermissionCallback({
         requestId: request.id,
         toolUseId: ctx.toolUseID,
@@ -87,10 +92,10 @@ async function handleSwarmWorkerPermission(
           feedback?: string,
           contentBlocks?: ContentBlockParam[],
         ) {
-          if (!claim()) return // atomic check-and-mark before await
+          if (!claim()) return // comprobar-y-marcar atómico antes del await
           clearPendingRequest()
 
-          // Merge the updated input with the original input
+          // Fundir la entrada actualizada con la original
           const finalInput =
             allowedInput && Object.keys(allowedInput).length > 0
               ? allowedInput
@@ -119,10 +124,10 @@ async function handleSwarmWorkerPermission(
         },
       })
 
-      // Now that callback is registered, send the request to the leader
+      // Con el callback ya registrado, enviar la petición al líder
       void sendPermissionRequestViaMailbox(request)
 
-      // Show visual indicator that we're waiting for leader approval
+      // Mostrar el indicador visual de que se está esperando la aprobación del líder
       ctx.toolUseContext.setAppState(prev => ({
         ...prev,
         pendingWorkerRequest: {
@@ -132,8 +137,9 @@ async function handleSwarmWorkerPermission(
         },
       }))
 
-      // If the abort signal fires while waiting for the leader response,
-      // resolve the promise with a cancel decision so it does not hang.
+      // Si la abort signal se dispara mientras se espera la respuesta del
+      // líder, resolver la promesa con una decisión de cancelar para que no
+      // se quede colgada.
       ctx.toolUseContext.abortController.signal.addEventListener(
         'abort',
         () => {
@@ -148,9 +154,9 @@ async function handleSwarmWorkerPermission(
 
     return decision
   } catch (error) {
-    // If swarm permission submission fails, fall back to local handling
+    // Si el envío del permiso al swarm falla, caer al manejo local
     logError(toError(error))
-    // Continue to local UI handling below
+    // Continuar al manejo de la interfaz local, abajo
     return null
   }
 }

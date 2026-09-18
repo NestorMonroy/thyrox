@@ -3,26 +3,33 @@ import { getEmptyToolPermissionContext } from '@claude-code-how-works/tool-regis
 import { buildYoloSystemPrompt } from '../yoloSystemPrompt.js'
 
 /**
- * Contract test — ccb operator-model Session Context injection.
+ * Copia de `ccnmt: packages/permission/src/__tests__/classifierOperatorModel.contract.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * The upstream (ant) auto-mode classifier template inherits a multi-tenant
- * threat model. One rule — SOFT BLOCK "Git Push to Default Branch ...
- * bypasses pull request review" — is simply false for ccb: ccb is
- * solo-maintained, its documented release flow IS commit + push directly to
- * main, and there is no PR-review gate. Left uncorrected, the classifier (a
- * separate LLM that never sees CYBER_RISK_INSTRUCTION) blocks the operator's
- * normal release workflow, and latches onto a blocked push to also block
- * subsequent READ-ONLY git (`git fetch`/`status`/`rev-parse`).
+ * Test de contrato — la inyección del Session Context del modelo de operador
+ * de ccb.
  *
- * buildSessionContextLines (yoloSystemPrompt.ts) corrects this in CODE — not
- * in the upstream-synced .txt templates — by appending operator-model facts
- * to the classifier's Session Context block. These assertions pin that the
- * correction is present and correctly SCOPED, so a future edit can't silently
- * drop it OR widen it into a real-exfil loophole.
+ * La plantilla del clasificador de modo automático que viene de aguas arriba
+ * (ant) hereda un modelo de amenaza multi-inquilino. Una de sus reglas —el
+ * SOFT BLOCK «Git Push to Default Branch … bypasses pull request review»— es
+ * sencillamente falsa para ccb: ccb lo mantiene una sola persona, su flujo de
+ * publicación documentado ES commitear y empujar directamente a main, y no
+ * hay ninguna puerta de revisión por PR. Sin corregir, el clasificador —que
+ * es otro LLM y nunca ve CYBER_RISK_INSTRUCTION— bloquea el flujo normal de
+ * publicación del operador, y se agarra a un push bloqueado para bloquear
+ * también el git de SÓLO LECTURA que venga después (`git fetch`, `status`,
+ * `rev-parse`).
  *
- * Text-presence, not behavioural (the classifier decision is an LLM call —
- * see feedback_llm_bugs_no_unit_test). What we lock is that the facts the
- * model reads are still there and still scoped.
+ * `buildSessionContextLines` (`yoloSystemPrompt.ts`) corrige esto en CÓDIGO
+ * —no en las plantillas .txt que se sincronizan con aguas arriba— añadiendo
+ * los hechos del modelo de operador al bloque de Session Context del
+ * clasificador. Estas aserciones fijan que la corrección está presente y
+ * correctamente ACOTADA, para que una edición futura no pueda ni dejarla caer
+ * en silencio ni ensancharla hasta volverla un resquicio de exfiltración real.
+ *
+ * Es presencia de texto, no comportamiento (la decisión del clasificador es
+ * una llamada a un LLM — ver `feedback_llm_bugs_no_unit_test`). Lo que queda
+ * bajo llave es que los hechos que el modelo lee siguen ahí y siguen acotados.
  */
 describe('classifier Session Context — ccb operator model', () => {
   async function sessionContextText(): Promise<string> {
@@ -36,7 +43,7 @@ describe('classifier Session Context — ccb operator model', () => {
     const text = await sessionContextText()
     expect(text).toContain('Operator model')
     expect(text).toMatch(/self-hosted|single-operator|solo/i)
-    // The whole point: NOT a shared/multi-tenant environment.
+    // El sentido entero: NO es un entorno compartido ni multi-inquilino.
     expect(text).toMatch(/NOT a shared|multi-tenant/i)
   })
 
@@ -44,17 +51,18 @@ describe('classifier Session Context — ccb operator model', () => {
     const text = await sessionContextText()
     expect(text).toContain('Release flow')
     expect(text).toMatch(/default[ -]branch/i)
-    // Must explicitly neutralize the upstream "Git Push to Default Branch"
-    // soft block — otherwise the rule still fires.
+    // Tiene que neutralizar explícitamente el soft block «Git Push to
+    // Default Branch» de aguas arriba — si no, la regla se sigue disparando.
     expect(text).toContain('Git Push to Default Branch')
   })
 
   test('keeps default-branch authorization SCOPED — does not open an exfil hole', async () => {
     const text = await sessionContextText()
-    // The authorization must stay scoped to the working-dir repo's own remote.
-    // Pushing to an OUTSIDE repo must remain Data Exfiltration (hard block),
-    // and destructive git must remain blocked. If a future edit drops these
-    // qualifiers, this test fails — the scope is the safety boundary.
+    // La autorización tiene que seguir acotada al remoto del propio repo del
+    // directorio de trabajo. Empujar a un repo DE FUERA tiene que seguir
+    // siendo Data Exfiltration (hard block), y el git destructivo tiene que
+    // seguir bloqueado. Si una edición futura deja caer esos calificadores,
+    // este test falla — el acotamiento es la frontera de seguridad.
     expect(text).toMatch(/own remote|working-dir repo/i)
     expect(text).toContain('Data Exfiltration')
     expect(text).toMatch(/force-push|Git Destructive/i)
@@ -65,8 +73,9 @@ describe('classifier Session Context — ccb operator model', () => {
     expect(text).toMatch(/Read-only git|read-only \/|fetch-only/i)
     expect(text).toContain('git status')
     expect(text).toContain('git fetch')
-    // The context-poisoning guard: a prior blocked push must not turn a later
-    // read-only query into a "retry".
+    // La guarda contra el envenenamiento de contexto: un push bloqueado antes
+    // no debe convertir una consulta de sólo lectura posterior en un
+    // «reintento».
     expect(text).toMatch(/prior blocked push|not make a later read-only/i)
   })
 })

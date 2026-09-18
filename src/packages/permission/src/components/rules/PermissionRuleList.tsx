@@ -57,7 +57,10 @@ function RuleSourceText({ rule }: RuleSourceTextProps): React.ReactNode {
   )
 }
 
-// Helper function to get the appropriate label for rule behavior
+// Copia de `ccnmt: packages/permission/src/components/rules/PermissionRuleList.tsx`
+// con los comentarios traducidos; el cuerpo es el de la fuente.
+//
+// Función auxiliar que da la etiqueta adecuada para cada comportamiento de regla
 function getRuleBehaviorLabel(ruleBehavior: PermissionBehavior): string {
   switch (ruleBehavior) {
     case 'allow':
@@ -69,7 +72,7 @@ function getRuleBehaviorLabel(ruleBehavior: PermissionBehavior): string {
   }
 }
 
-// Component for showing tool details and managing the interactive deletion workflow
+// Componente que muestra el detalle de una herramienta y gestiona el flujo interactivo de borrado
 function RuleDetails({
   rule,
   onDelete,
@@ -80,7 +83,7 @@ function RuleDetails({
   onCancel: () => void
 }): React.ReactNode {
   const exitState = useExitOnCtrlCDWithKeybindings()
-  // Use configurable keybinding for ESC to cancel
+  // Usar el atajo configurable de ESC para cancelar
   useKeybinding('confirm:no', onCancel, { context: 'Confirmation' })
 
   const ruleDescription = (
@@ -101,7 +104,7 @@ function RuleDetails({
     </Box>
   )
 
-  // Managed settings can't be edited
+  // Los ajustes gestionados no se pueden editar
   if (rule.source === 'policySettings') {
     return (
       <>
@@ -169,7 +172,7 @@ type RulesTabContentProps = {
   onHeaderFocusChange?: (focused: boolean) => void
 }
 
-// Component for rendering rules tab content with full width support
+// Componente que renderiza el contenido de la pestaña de reglas, con soporte de ancho completo
 function RulesTabContent(props: RulesTabContentProps): React.ReactNode {
   const {
     options,
@@ -214,7 +217,7 @@ function RulesTabContent(props: RulesTabContentProps): React.ReactNode {
   )
 }
 
-// Composes the subtitle + search + Select for a single allow/ask/deny tab.
+// Compone el subtítulo, la búsqueda y el `Select` de una sola pestaña de allow, ask o deny.
 function PermissionRulesTab({
   tab,
   getRulesOptions,
@@ -270,9 +273,10 @@ export function PermissionRuleList({
   const setAppState = useSetAppState()
   const isTerminalFocused = useTerminalFocus()
 
-  // Ref not state: RecentDenialsTab updates don't need to trigger parent
-  // re-render (only read on exit), and re-renders trip the modal ScrollBox
-  // collapse bug from #23592 in fullscreen.
+  // Una ref, no estado: las actualizaciones de `RecentDenialsTab` no tienen
+  // por qué disparar un re-render del padre (sólo se leen al salir), y los
+  // re-renders disparan el defecto de colapso del `ScrollBox` modal del
+  // #23592 en pantalla completa.
   const denialStateRef = useRef<{
     approved: Set<number>
     retry: Set<number>
@@ -286,7 +290,7 @@ export function PermissionRuleList({
   )
 
   const [selectedRule, setSelectedRule] = useState<PermissionRule | undefined>()
-  // Track the key of the last focused rule to restore position after deletion
+  // Seguir la clave de la última regla con el foco, para restaurar la posición tras borrar
   const [lastFocusedRuleKey, setLastFocusedRuleKey] = useState<
     string | undefined
   >()
@@ -348,7 +352,7 @@ export function PermissionRuleList({
 
       const options: Option[] = []
 
-      // Only show "Add a new rule" for allow and deny tabs (and not when searching)
+      // Mostrar «Add a new rule» sólo en las pestañas de allow y deny (y no mientras se busca)
       if (tab !== 'workspace' && tab !== 'recent' && !query) {
         options.push({
           label: `Add a new rule${figures.ellipsis}`,
@@ -356,7 +360,7 @@ export function PermissionRuleList({
         })
       }
 
-      // Get all rule keys and sort them alphabetically based on rule's formatted value
+      // Tomar todas las claves de regla y ordenarlas alfabéticamente por el valor formateado de la regla
       const sortedRuleKeys = Array.from(rulesByKey.keys()).sort((a, b) => {
         const ruleA = rulesByKey.get(a)
         const ruleB = rulesByKey.get(b)
@@ -372,13 +376,13 @@ export function PermissionRuleList({
         return 0
       })
 
-      // Build options from sorted keys, filtering by search query
+      // Construir las opciones desde las claves ordenadas, filtrando por la consulta de búsqueda
       const lowerQuery = query.toLowerCase()
       for (const ruleKey of sortedRuleKeys) {
         const rule = rulesByKey.get(ruleKey)
         if (rule) {
           const ruleString = permissionRuleValueToString(rule.ruleValue)
-          // Filter by search query if provided
+          // Filtrar por la consulta de búsqueda, si la hay
           if (query && !ruleString.toLowerCase().includes(lowerQuery)) {
             continue
           }
@@ -414,24 +418,25 @@ export function PermissionRuleList({
     },
   })
 
-  // Handle entering search mode
+  // Atender la entrada al modo de búsqueda
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!isSearchModeActive) return
       if (isSearchMode) return
       if (e.ctrl || e.meta) return
 
-      // Enter search mode with '/' or any printable character.
-      // e.key.length === 1 filters out special keys (down, return, escape,
-      // etc.) — previously the raw escape sequence leaked through and
-      // triggered search mode with garbage on arrow-key press.
+      // Entrar al modo de búsqueda con '/' o con cualquier carácter
+      // imprimible. `e.key.length === 1` descarta las teclas especiales
+      // (abajo, return, escape, etc.) — antes la secuencia de escape en crudo
+      // se colaba y activaba el modo de búsqueda con basura al pulsar una
+      // flecha.
       if (e.key === '/') {
         e.preventDefault()
         setIsSearchMode(true)
         setSearchQuery('')
       } else if (
         e.key.length === 1 &&
-        // Don't enter search mode for vim-nav / space / retry key
+        // No entrar al modo de búsqueda con las teclas de navegación de vim, el espacio o la de reintentar
         e.key !== 'j' &&
         e.key !== 'k' &&
         e.key !== 'm' &&
@@ -483,7 +488,7 @@ export function PermissionRuleList({
         ])
       }
 
-      // Show warnings for any unreachable rules we just added
+      // Avisar de cualquier regla inalcanzable que se acabe de añadir
       if (unreachable && unreachable.length > 0) {
         for (const u of unreachable) {
           const severity = u.shadowType === 'deny' ? 'blocked' : 'shadowed'
@@ -549,9 +554,9 @@ export function PermissionRuleList({
     }
   }, [changes, onExit, onRetryDenials])
 
-  // Handle Escape at the top level so it works even when header is focused
-  // (which disables the Select component and its select:cancel keybinding).
-  // Mirrors the pattern in Settings.tsx.
+  // Atender Escape en el nivel superior, para que funcione incluso con el
+  // foco en la cabecera (que deshabilita el componente `Select` y su atajo
+  // `select:cancel`). Replica el patrón de `Settings.tsx`.
   useKeybinding('confirm:no', handleRulesCancel, {
     context: 'Settings',
     isActive: isSearchModeActive && !isSearchMode,
@@ -560,7 +565,7 @@ export function PermissionRuleList({
   const handleDeleteRule = () => {
     if (!selectedRule) return
 
-    // Find the adjacent rule to focus on after deletion
+    // Localizar la regla contigua a la que dar el foco tras borrar
     const { options } = getRulesOptions(selectedRule.ruleBehavior as TabType)
     const selectedKey = jsonStringify(selectedRule)
     const ruleKeys = options
@@ -568,14 +573,14 @@ export function PermissionRuleList({
       .map(opt => opt.value)
     const currentIndex = ruleKeys.indexOf(selectedKey)
 
-    // Try to focus on the next rule, or the previous if deleting the last one
+    // Intentar dar el foco a la regla siguiente, o a la anterior si se está borrando la última
     let nextFocusKey: string | undefined
     if (currentIndex !== -1) {
       if (currentIndex < ruleKeys.length - 1) {
-        // Focus on the next rule
+        // Dar el foco a la regla siguiente
         nextFocusKey = ruleKeys[currentIndex + 1]
       } else if (currentIndex > 0) {
-        // Focus on the previous rule (we're deleting the last one)
+        // Dar el foco a la regla anterior (se está borrando la última)
         nextFocusKey = ruleKeys[currentIndex - 1]
       }
     }
@@ -645,7 +650,7 @@ export function PermissionRuleList({
     return (
       <AddWorkspaceDirectory
         onAddDirectory={(path, remember) => {
-          // Apply the permission update to add the directory
+          // Aplicar la actualización de permiso que añade el directorio
           const destination: PermissionUpdateDestination = remember
             ? 'localSettings'
             : 'session'
@@ -665,7 +670,7 @@ export function PermissionRuleList({
             toolPermissionContext: updatedContext,
           }))
 
-          // Persist if remember is true
+          // Persistir si `remember` es true
           if (remember) {
             persistPermissionUpdate(permissionUpdate)
           }

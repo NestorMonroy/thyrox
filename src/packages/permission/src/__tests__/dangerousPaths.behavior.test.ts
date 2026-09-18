@@ -7,21 +7,26 @@ import {
 } from '../filesystem.ts'
 
 /**
- * Pin DANGEROUS_FILES and DANGEROUS_DIRECTORIES lists. These get
- * special-cased permission gating to prevent auto-editing of files that
- * could:
- *   - Execute code on next shell launch (.bashrc, .zshrc, .profile, etc.)
- *   - Exfiltrate via git remote redirection (.gitconfig, .gitmodules)
- *   - Override project safety rails (.mcp.json, .claude.json)
- *   - Tamper with system state (.git, .claude directories)
+ * Copia de `ccnmt: packages/permission/src/__tests__/dangerousPaths.behavior.test.ts`
+ * con los comentarios traducidos; el cuerpo es el de la fuente.
  *
- * Drift here is a SECURITY regression — pin the whole list.
+ * Fija las listas DANGEROUS_FILES y DANGEROUS_DIRECTORIES. Éstas reciben un
+ * trato de permiso aparte, para impedir la edición automática de archivos que
+ * podrían:
+ *   - Ejecutar código en el siguiente arranque del shell (.bashrc, .zshrc,
+ *     .profile, etc.)
+ *   - Exfiltrar redirigiendo un remoto de git (.gitconfig, .gitmodules)
+ *   - Anular las barreras de seguridad del proyecto (.mcp.json, .claude.json)
+ *   - Manipular el estado del sistema (los directorios .git y .claude)
+ *
+ * Una deriva aquí es una regresión de SEGURIDAD — se fija la lista entera.
  */
 describe('dangerous-file/dir lists (auto-edit gating)', () => {
   describe('DANGEROUS_FILES', () => {
     test('contains shell init files (.bashrc, .zshrc, .profile, etc.)', () => {
-      // Shell init files execute on every new shell. Auto-editing them
-      // is a privilege escalation vector.
+      // Los archivos de inicio del shell se ejecutan en cada shell nuevo.
+      // Editarlos de forma automática es un vector de escalada de
+      // privilegios.
       expect([...DANGEROUS_FILES]).toEqual(
         expect.arrayContaining([
           '.bashrc',
@@ -34,26 +39,27 @@ describe('dangerous-file/dir lists (auto-edit gating)', () => {
     })
 
     test('contains git config files (.gitconfig, .gitmodules)', () => {
-      // .gitconfig can redirect remote URLs (data exfiltration).
-      // .gitmodules can declare malicious submodule sources.
+      // .gitconfig puede redirigir las URL de los remotos (exfiltración de
+      // datos). .gitmodules puede declarar fuentes de submódulo maliciosas.
       expect([...DANGEROUS_FILES]).toEqual(
         expect.arrayContaining(['.gitconfig', '.gitmodules']),
       )
     })
 
     test('contains .ripgreprc (controls rg search behavior / file include)', () => {
-      // .ripgreprc can redirect search to read sensitive paths.
+      // .ripgreprc puede redirigir la búsqueda para leer rutas sensibles.
       expect([...DANGEROUS_FILES]).toContain('.ripgreprc')
     })
 
     test('contains .mcp.json (MCP server config — code execution surface)', () => {
-      // Editing .mcp.json without trust prompt would let untrusted code
-      // register an MCP server that executes arbitrary commands.
+      // Editar .mcp.json sin el prompt de confianza dejaría que código no
+      // confiable registrara un servidor MCP que ejecuta comandos
+      // arbitrarios.
       expect([...DANGEROUS_FILES]).toContain('.mcp.json')
     })
 
     test('contains .claude.json (project settings, including hooks)', () => {
-      // .claude.json contains apiKeyHelper and hooks — direct CE vectors.
+      // .claude.json contiene `apiKeyHelper` y los hooks — vectores directos de ejecución de código.
       expect([...DANGEROUS_FILES]).toContain('.claude.json')
     })
 
@@ -62,8 +68,8 @@ describe('dangerous-file/dir lists (auto-edit gating)', () => {
     })
 
     test('all entries are leaf filenames (no path separators)', () => {
-      // Path-separator entries would be matched differently — pin so the
-      // list stays leaf-name-only.
+      // Las entradas con separador de ruta se compararían de otra forma — se
+      // fija para que la lista siga siendo sólo de nombres de hoja.
       for (const file of DANGEROUS_FILES) {
         expect(file).not.toContain('/')
         expect(file).not.toContain('\\')
@@ -91,8 +97,9 @@ describe('dangerous-file/dir lists (auto-edit gating)', () => {
 
   describe('normalizeCaseForComparison', () => {
     test('always lowercases (regardless of platform)', () => {
-      // Critical: case-insensitive filesystems (macOS/Windows) could
-      // bypass `.claude` check via `.CLaude` — universal lowercase prevents this.
+      // Crítico: un sistema de archivos que no distingue mayúsculas (macOS,
+      // Windows) podría saltarse la comprobación de `.claude` con `.CLaude` —
+      // pasar todo a minúscula lo impide.
       expect(normalizeCaseForComparison('.CLaude/Settings.locaL.json')).toBe(
         '.claude/settings.local.json',
       )
@@ -102,9 +109,10 @@ describe('dangerous-file/dir lists (auto-edit gating)', () => {
     })
 
     test('NOT platform-conditional (Linux paths also lowercased)', () => {
-      // Pin against a refactor that says "Linux is case-sensitive so we
-      // can skip normalization there" — that would create a divergence
-      // where the same path matches on macOS but bypasses on Linux.
+      // Fijado contra un refactor que diga «Linux distingue mayúsculas, así
+      // que ahí nos podemos saltar la normalización» — eso crearía una
+      // divergencia en la que la misma ruta casa en macOS y se cuela en
+      // Linux.
       const original = '/etc/Profile'
       expect(normalizeCaseForComparison(original)).toBe('/etc/profile')
     })
