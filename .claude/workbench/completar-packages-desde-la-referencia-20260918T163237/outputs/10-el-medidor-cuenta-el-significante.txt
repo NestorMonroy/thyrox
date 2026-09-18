@@ -1,0 +1,74 @@
+# 10 — El medidor de carga cuenta el SIGNIFICANTE, no el idioma
+
+Fecha: 2026-09-18T17:15:18
+
+Al ir a traducir los cuatro paquetes mas ligeros —server 3, teleport 7,
+ide 8, voice 12: 30 tramos— se listaron uno a uno con show_english.mjs.
+De los 30, la prosa REALMENTE en ingles son 7, y los 7 estan en un solo
+archivo: voice/src/hooks/__tests__/useVoiceHelpers.behavior.test.ts.
+
+Los otros 23 son comentarios YA EN ESPAÑOL que el lexico marca porque
+citan algo que se escribe en ingles:
+
+| palabra | lo que realmente cita | ejemplo |
+|---|---|---|
+| `all` | una BANDERA de comando | «Bundle --all -> HEAD -> squashed-root» |
+| `and` | un TERMINO TECNICO | «son fire-and-forget» |
+| `which`| un NOMBRE DE PROGRAMA | «cross-spawn/which», «`which cmd`» |
+| `this` | un IDENTIFICADOR | «cerrar y anular this.ws» |
+| `from` | un SIMBOLO DE API | «`Buffer.from()` hace una copia» |
+| `then` | un SIMBOLO DE API | «antes de que el .then() de finalize» |
+| `not`  | un MENSAJE LITERAL citado | «falla con "You do not have the initial commit yet"» |
+| `used` | una URL | «directories-used-by-the-...» |
+
+Es el sub-patron C de `metrica-decide-la-conclusion.md` con el medidor
+como sujeto: cuenta la PALABRA (significante) y la conclusion que se le
+pedia era sobre el IDIOMA DEL COMENTARIO (significado). La regla de
+identificadores manda exactamente lo contrario de lo que el medidor
+penaliza — «los terminos tecnicos en ingles cuando el termino es el
+nombre de la cosa (harness, scaffold, script, commit)».
+
+## Que invalida, y que no
+
+INVALIDA el criterio de cierre «0 tramos en ingles por paquete»: con este
+medidor es inalcanzable por construccion. Un comentario en español
+perfecto que diga «fire-and-forget» cuenta como ingles para siempre.
+
+NO invalida el ORDEN de la tabla 09 como cota superior ni como reparto
+relativo — pero la cifra de cada fila es «tramos que citan una palabra
+inglesa», no «tramos en ingles», y la proporcion entre las dos no es
+constante: depende de cuanto codigo cite el comentario.
+
+*Metrica:* 30 tramos listados uno a uno en 4 paquetes, clasificados a mano.
+*Ciega a:* si la proporcion 7/30 se sostiene en los paquetes grandes — un
+paquete con mas prosa y menos citas de simbolo tendra otra. No se
+extrapola.
+
+================================================================================
+El control de «solo comentarios» cambia de SUJETO tras el renombre
+================================================================================
+
+`only_comments_changed.mjs` compara el cuerpo emitido del puerto contra el de
+`ccnmt`. Eso valia mientras el puerto era copia verbatim. Tras el renombre del
+alcance ya NO vale para los 14 paquetes tocados: un `import` es codigo, no
+comentario, asi que el cuerpo emitido diverge POR CONSTRUCCION en todo archivo
+con import — y el control publicaria DIVERGE en todos, midiendo el renombre en
+vez de la traduccion.
+
+El sujeto correcto pasa a ser el COMMIT DE COPIA, que es el estado verbatim
+congelado en git:
+
+    git show <commit-de-copia>:<ruta> > /tmp/... && comparar
+
+o, para un paquete entero, el commit de renombre de ese paquete: comparar el
+arbol de trabajo contra ese commit mide exactamente «que cambio desde que el
+alcance quedo bien», que es la traduccion y nada mas.
+
+Por eso este commit ademas PARAMETRIZA el guion: nacio con la base de
+`permission` codificada y ahora sirve a los doce paquetes. `PACKAGE=voice`
+fija el paquete; `REF_BASE`/`PORT_BASE` lo sobreescriben entero.
+
+Ejercitado sobre voice: el archivo traducido en este pase da `divergentes=0`
+—solo cambiaron comentarios— y `src/voice.ts`, que NO se toco, da DIVERGE.
+Ese contraste es el control: si los dos dieran lo mismo, el instrumento no
+estaria midiendo la traduccion.

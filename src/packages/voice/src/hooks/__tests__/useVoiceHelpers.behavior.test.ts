@@ -7,11 +7,16 @@ import {
 } from '../useVoice.ts'
 
 /**
- * Pin voice mode helpers — audio amplitude calc and STT language
- * normalization. Wrong values affect the recording UX directly:
- *   - computeLevel: wrong → waveform visualizer flatlines or saturates
- *   - normalizeLanguageForSTT: wrong → STT requests sent with garbage
- *     language code, transcription falls back to English silently
+ * Copia de `ccnmt: packages/voice/src/hooks/__tests__/
+ * useVoiceHelpers.behavior.test.ts` con los comentarios traducidos; el cuerpo
+ * es el de la fuente.
+ *
+ * Fija los ayudantes del modo de voz — el cálculo de amplitud del audio y la
+ * normalización del idioma de STT. Un valor equivocado afecta directamente a
+ * la experiencia de grabación:
+ *   - computeLevel: si falla → el visualizador de waveform se aplana o satura
+ *   - normalizeLanguageForSTT: si falla → las peticiones de STT salen con un
+ *     código de idioma basura, y la transcripción cae a inglés en silencio
  */
 describe('useVoice helpers (voice-mode UX invariants)', () => {
   describe('computeLevel (RMS amplitude → 0..1 with sqrt curve)', () => {
@@ -25,8 +30,8 @@ describe('useVoice helpers (voice-mode UX invariants)', () => {
     })
 
     test('positive 16-bit samples produce non-zero level', () => {
-      // 16 samples × 32 bytes? Each sample is 2 bytes.
-      // Fill with value 5000 (well below max 32767)
+      // 16 muestras × 32 bytes? Cada muestra son 2 bytes.
+      // Se rellena con el valor 5000 (muy por debajo del máximo 32767)
       const buf = Buffer.alloc(64)
       for (let i = 0; i < 32; i++) {
         buf.writeInt16LE(5000, i * 2)
@@ -47,7 +52,8 @@ describe('useVoice helpers (voice-mode UX invariants)', () => {
     })
 
     test('handles negative samples (16-bit signed sign extension)', () => {
-      // Samples at -16000 should produce same level as +16000 (squared).
+      // Una muestra a -16000 tiene que dar el mismo nivel que +16000: se
+      // eleva al cuadrado.
       const buf = Buffer.alloc(64)
       for (let i = 0; i < 32; i++) {
         buf.writeInt16LE(-16000, i * 2)
@@ -64,7 +70,7 @@ describe('useVoice helpers (voice-mode UX invariants)', () => {
     })
 
     test('returns 0..1 range (never NaN, never > 1)', () => {
-      // Test a variety of inputs — random buffer
+      // Se prueba con entradas variadas — un buffer aleatorio
       for (let trial = 0; trial < 10; trial++) {
         const buf = Buffer.alloc(64)
         for (let i = 0; i < 32; i++) {
@@ -82,7 +88,7 @@ describe('useVoice helpers (voice-mode UX invariants)', () => {
     test('undefined/empty → default STT language (no fellBackFrom)', () => {
       expect(normalizeLanguageForSTT(undefined).code).toBeTruthy()
       expect(normalizeLanguageForSTT('').code).toBeTruthy()
-      // Empty/undefined are "no preference", not a fallback
+      // Vacío o undefined significan «sin preferencia», no un fallback
       expect(normalizeLanguageForSTT(undefined).fellBackFrom).toBeUndefined()
     })
 
@@ -110,16 +116,17 @@ describe('useVoice helpers (voice-mode UX invariants)', () => {
     test('unknown language → default WITH fellBackFrom recording original', () => {
       const result = normalizeLanguageForSTT('klingon')
       expect(result.fellBackFrom).toBe('klingon')
-      // code falls back to whatever DEFAULT_STT_LANGUAGE is
+      // el código cae a lo que valga DEFAULT_STT_LANGUAGE
       expect(result.code).toBeTruthy()
     })
   })
 
   describe('timing constants', () => {
     test('FIRST_PRESS_FALLBACK_MS = 2000 (covers macOS "Long" key repeat delay)', () => {
-      // macOS key repeat slider at "Long" can have initial delay ~2s.
-      // Setting this too short → recording stops before user's auto-repeat
-      // arrives → tap-and-release loses the recording.
+      // El deslizador de key repeat de macOS en «Long» puede tener un
+      // retardo inicial de ~2 s. Fijar esto demasiado corto → la grabación
+      // se detiene antes de que llegue el auto-repeat → un tap-and-release
+      // pierde la grabación.
       expect(FIRST_PRESS_FALLBACK_MS).toBe(2000)
     })
   })

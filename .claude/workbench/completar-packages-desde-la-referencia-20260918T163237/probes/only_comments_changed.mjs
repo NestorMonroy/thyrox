@@ -10,10 +10,16 @@ import ts from '/home/user/thyrox/node_modules/typescript/lib/typescript.js'
 import { readFileSync } from 'node:fs'
 import { argv, exit } from 'node:process'
 
-const REFERENCE = process.env.PERMISSION_REF
-  ?? '/home/user/claude-code-nestor-monroy-tools/packages/permission'
-const PORT = process.env.PERMISSION_PORT
-  ?? '/home/user/thyrox/src/packages/permission'
+// Las dos bases son parametro, no constante: este control nacio para
+// `permission` y ahora sirve a los doce paquetes. `PACKAGE` fija el paquete
+// de una vez; `REF_BASE`/`PORT_BASE` lo sobreescriben entero cuando hace
+// falta comparar contra otro arbol. Los nombres viejos siguen valiendo para
+// no romper una invocacion ya escrita.
+const PACKAGE = process.env.PACKAGE ?? 'permission'
+const REFERENCE = process.env.REF_BASE ?? process.env.PERMISSION_REF
+  ?? `/home/user/claude-code-nestor-monroy-tools/packages/${PACKAGE}`
+const PORT = process.env.PORT_BASE ?? process.env.PERMISSION_PORT
+  ?? `/home/user/thyrox/src/packages/${PACKAGE}`
 
 function stripComments (path) {
   const source = readFileSync(path, 'utf8')
