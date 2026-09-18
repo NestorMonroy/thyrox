@@ -592,7 +592,16 @@ def exercise_entrypoints(root: pathlib.Path,
     Devuelve los pares ``(nombre_corto, primera_linea_del_error)``; lista vacía
     es el estado sano.
     """
-    interpreter = interpreter or sys.executable
+    # El envoltorio ejecuta SIEMPRE `$THYROX_ROOT/.venv/bin/python`, así que
+    # ejercitar con `sys.executable` mediría otra puerta. Medido al cerrarlo:
+    # hoy los dos intérpretes dan 137/137, así que la divergencia es LATENTE y
+    # no viva — pero un módulo que importe una dependencia del entorno del
+    # proveedor al nivel de módulo caería como `ImportError` bajo el intérprete
+    # del sistema, y el discriminador lo leería como cableado. `sys.executable`
+    # queda de respaldo para un árbol sin `.venv` generado.
+    if interpreter is None:
+        del_proveedor = root / ".venv" / "bin" / "python"
+        interpreter = str(del_proveedor) if del_proveedor.is_file() else sys.executable
     fallos: list[tuple[str, str]] = []
     entorno = dict(os.environ)
     entorno["PYTHONPATH"] = os.pathsep.join(

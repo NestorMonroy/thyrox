@@ -763,6 +763,20 @@ def test_exercise_on_real_tree_is_green() -> None:
     check("0 envoltorios .py fallan al cargar en el arbol real",
           not fallos, "; ".join(f"{s}: {e}" for s, e in fallos))
 
+    # El envoltorio ejecuta `$THYROX_ROOT/.venv/bin/python`. Si el ejercicio
+    # usara `sys.executable`, mediría otra puerta: un módulo que importe una
+    # dependencia del entorno del proveedor caería como ImportError bajo el
+    # intérprete del sistema y el discriminador lo leería como cableado.
+    del_proveedor = ROOT / ".venv" / "bin" / "python"
+    if del_proveedor.is_file():
+        envoltorio = (ROOT / "bin" / "census_findings").read_text()
+        check("el envoltorio ejecuta el interprete del proveedor",
+              ".venv/bin/python" in envoltorio, envoltorio)
+        marcado = gb.exercise_entrypoints(ROOT, interpreter="/bin/false")
+        check("y el ejercicio USA el interprete que se le pasa",
+              len(marcado) > 0,
+              "con /bin/false no fallo ninguno — no esta ejercitando nada")
+
 
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
