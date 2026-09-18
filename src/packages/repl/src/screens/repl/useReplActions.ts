@@ -1,0 +1,46 @@
+import { useEffect } from 'react'
+import { useIdeLogging } from '@thyrox/ide/hooks/useIdeLogging.js'
+import type { IDESelection } from '@thyrox/ide/hooks/useIdeSelection.js'
+import { useIdeSelection } from '@thyrox/ide/hooks/useIdeSelection.js'
+import { useManagePlugins } from '../../hooks/useManagePlugins.js'
+import { usePromptsFromClaudeInChrome } from '../../hooks/usePromptsFromClaudeInChrome.js'
+import { useSwarmInitialization } from '../../hooks/useSwarmInitialization.js'
+import type { AppState } from '../../appStateHooks.js'
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
+import { performStartupChecks } from '@thyrox/config/plugin/core/performStartupChecks.js'
+import type { Message } from '@thyrox/agent/messageShapes'
+import type { PermissionMode } from '@thyrox/permission/permissionTypes'
+
+type SetAppState = (f: (prevState: AppState) => AppState) => void
+
+type Args = {
+  initialMessages: Message[] | undefined
+  isRemoteSession: boolean
+  mcpClients: MCPServerConnection[]
+  setAppState: SetAppState
+  setIDESelection: (selection: IDESelection | undefined) => void
+  toolPermissionMode: PermissionMode
+}
+
+export function useReplActions({
+  initialMessages,
+  isRemoteSession,
+  mcpClients,
+  setAppState,
+  setIDESelection,
+  toolPermissionMode,
+}: Args): void {
+  useManagePlugins({ enabled: !isRemoteSession })
+
+  useEffect(() => {
+    if (isRemoteSession) return
+    void performStartupChecks(setAppState)
+  }, [isRemoteSession, setAppState])
+
+  usePromptsFromClaudeInChrome(mcpClients, toolPermissionMode)
+  useSwarmInitialization(setAppState, initialMessages, {
+    enabled: !isRemoteSession,
+  })
+  useIdeLogging(mcpClients)
+  useIdeSelection(mcpClients, selection => setIDESelection(selection))
+}

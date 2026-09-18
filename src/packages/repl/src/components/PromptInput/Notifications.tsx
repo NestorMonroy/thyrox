@@ -1,0 +1,409 @@
+import { feature } from 'bun:bundle'
+import * as React from 'react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import {
+  type Notification,
+  useNotifications,
+} from '../../notifications.js'
+import { logEvent } from '@thyrox/local-observability'
+import { useAppState } from '../../appStateHooks.js'
+import { useVoiceState } from '@thyrox/voice/voiceContext.js'
+import type { VerificationStatus } from '../../hooks/useApiKeyVerification.js'
+import { useIdeConnectionStatus } from '@thyrox/ide/hooks/useIdeConnectionStatus.js'
+import type { IDESelection } from '@thyrox/ide/hooks/useIdeSelection.js'
+import { useMainLoopModel } from '../../hooks/useMainLoopModel.js'
+import { useVoiceEnabled } from '@thyrox/voice/hooks/useVoiceEnabled.js'
+import { Box, Text } from '@thyrox/ink'
+import { useClaudeAiLimits } from '@thyrox/provider/claudeAiLimitsHook.js'
+import { calculateTokenWarningState } from '@thyrox/agent/compaction/autoCompact.js'
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
+import type { Message } from '@thyrox/agent/messageShapes'
+import {
+  getApiKeyHelperElapsedMs,
+  getConfiguredApiKeyHelper,
+  getSubscriptionType,
+} from '@thyrox/provider/authAlias.js'
+import type { AutoUpdaterResult } from '@thyrox/updater/autoUpdater.js'
+import { getExternalEditor } from '@thyrox/storage/editor.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { formatDuration } from '@thyrox/output/formatters'
+import { setEnvHookNotifier } from '@thyrox/agent/fileChangedWatcher.js'
+import { toIDEDisplayName } from '@thyrox/ide/ide.js'
+import { getMessagesAfterCompactBoundary } from '@thyrox/agent/messages.js'
+import { tokenCountFromLastAPIResponse } from '@thyrox/agent/tokens.js'
+import { AutoUpdaterWrapper } from '../AutoUpdaterWrapper.js'
+import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
+import { IdeStatusIndicator } from '../IdeStatusIndicator.js'
+import { MemoryUsageIndicator } from '../MemoryUsageIndicator.js'
+import { SentryErrorBoundary } from '../SentryErrorBoundary.js'
+import { TokenWarning } from '../TokenWarning.js'
+import { SandboxPromptFooterHint } from './SandboxPromptFooterHint.js'
+
+/* eslint-disable @typescript-eslint/no-require-imports */
+const VoiceIndicator: typeof import('./VoiceIndicator.js').VoiceIndicator =
+  feature('VOICE_MODE')
+    ? require('./VoiceIndicator.js').VoiceIndicator
+    : () => null
+/* eslint-enable @typescript-eslint/no-require-imports */
+
+export const FOOTER_TEMPORARY_STATUS_TIMEOUT = 5000
+
+/**
+ * Ant `o = Boolean(G || I || m && !x || q==='invalid' || q==='missing' || K || T || O)`
+ * (v2.1.143 4930.js QW6). Returns true when the right-side notification
+ * stack is rendering any visible content. The `/goal active` indicator
+ * uses this to decide whether to prefix itself with " · " — otherwise
+ * the separator dangles on its own when no other right-side content is
+ * visible (the leading "·" bug).
+ */
+export function useNotificationsVisible(args: {
+  apiKeyStatus: VerificationStatus
+  autoUpdaterResult: AutoUpdaterResult | null
+  isAutoUpdating: boolean
+  debug: boolean
+  verbose: boolean
+  ideSelection: IDESelection | undefined
+  mcpClients?: MCPServerConnection[]
+}): boolean {
+  const { status: ideStatus } = useIdeConnectionStatus(args.mcpClients)
+  const notificationCurrent = useAppState(s => s.notifications.current)
+  const claudeAiLimits = useClaudeAiLimits()
+
+  const subscriptionType = getSubscriptionType()
+  const isTeamOrEnterprise =
+    subscriptionType === 'team' || subscriptionType === 'enterprise'
+  const isInOverageMode = claudeAiLimits.isUsingOverage ?? false
+
+  const shouldShowIdeSelection = Boolean(
+    ideStatus === 'connected' &&
+      (args.ideSelection?.filePath ||
+        (args.ideSelection?.text && args.ideSelection.lineCount > 0)),
+  )
+
+  // ant 4930.js QW6 — `O = isAutoUpdating`. We DON'T include
+  // autoUpdaterResult?.status==='success' here even though that flashes
+  // a banner: ant doesn't include it either, matching ant byte-for-byte.
+  return Boolean(
+    notificationCurrent !== null ||
+      shouldShowIdeSelection ||
+      (isInOverageMode && !isTeamOrEnterprise) ||
+      args.apiKeyStatus === 'invalid' ||
+      args.apiKeyStatus === 'missing' ||
+      args.debug ||
+      args.verbose ||
+      args.isAutoUpdating,
+  )
+}
+
+type Props = {
+  apiKeyStatus: VerificationStatus
+  autoUpdaterResult: AutoUpdaterResult | null
+  isAutoUpdating: boolean
+  debug: boolean
+  verbose: boolean
+  messages: Message[]
+  onAutoUpdaterResult: (result: AutoUpdaterResult) => void
+  onChangeIsUpdating: (isUpdating: boolean) => void
+  ideSelection: IDESelection | undefined
+  mcpClients?: MCPServerConnection[]
+  isInputWrapped?: boolean
+  isNarrow?: boolean
+}
+
+export function Notifications({
+  apiKeyStatus,
+  autoUpdaterResult,
+  debug,
+  isAutoUpdating,
+  verbose,
+  messages,
+  onAutoUpdaterResult,
+  onChangeIsUpdating,
+  ideSelection,
+  mcpClients,
+  isInputWrapped = false,
+  isNarrow = false,
+}: Props): ReactNode {
+  const tokenUsage = useMemo(() => {
+    const messagesForTokenCount = getMessagesAfterCompactBoundary(messages)
+    return tokenCountFromLastAPIResponse(messagesForTokenCount)
+  }, [messages])
+
+  // AppState-sourced model — same source as API requests. getMainLoopModel()
+  // re-reads settings.json on every call, so another session's /model write
+  // would leak into this session's display (anthropics/claude-code-how-works-how-works#37596).
+  const mainLoopModel = useMainLoopModel()
+  const isShowingCompactMessage = calculateTokenWarningState(
+    tokenUsage,
+    mainLoopModel,
+  ).isAboveWarningThreshold
+  const { status: ideStatus } = useIdeConnectionStatus(mcpClients)
+  const notifications = useAppState(s => s.notifications)
+  const { addNotification, removeNotification } = useNotifications()
+  const claudeAiLimits = useClaudeAiLimits()
+
+  // Register env hook notifier for CwdChanged/FileChanged feedback
+  useEffect(() => {
+    setEnvHookNotifier((text, isError) => {
+      addNotification({
+        key: 'env-hook',
+        text,
+        color: isError ? 'error' : undefined,
+        priority: isError ? 'medium' : 'low',
+        timeoutMs: isError ? 8000 : 5000,
+      })
+    })
+    return () => setEnvHookNotifier(null)
+  }, [addNotification])
+
+  // Check if we should show the IDE selection indicator
+  const shouldShowIdeSelection =
+    ideStatus === 'connected' &&
+    (ideSelection?.filePath ||
+      (ideSelection?.text && ideSelection.lineCount > 0))
+
+  // Hide update installed message when showing IDE selection
+  const shouldShowAutoUpdater =
+    !shouldShowIdeSelection ||
+    isAutoUpdating ||
+    autoUpdaterResult?.status !== 'success'
+
+  // Check if we're in overage mode for UI indicators
+  const isInOverageMode = claudeAiLimits.isUsingOverage
+  const subscriptionType = getSubscriptionType()
+  const isTeamOrEnterprise =
+    subscriptionType === 'team' || subscriptionType === 'enterprise'
+
+  // Check if the external editor hint should be shown
+  const editor = getExternalEditor()
+  const shouldShowExternalEditorHint =
+    isInputWrapped &&
+    !isShowingCompactMessage &&
+    apiKeyStatus !== 'invalid' &&
+    apiKeyStatus !== 'missing' &&
+    editor !== undefined
+
+  // Show external editor hint as notification when input is wrapped
+  useEffect(() => {
+    if (shouldShowExternalEditorHint && editor) {
+      logEvent('tengu_external_editor_hint_shown', {})
+      addNotification({
+        key: 'external-editor-hint',
+        jsx: (
+          <Text dimColor>
+            <ConfigurableShortcutHint
+              action="chat:externalEditor"
+              context="Chat"
+              fallback="ctrl+g"
+              description={`edit in ${toIDEDisplayName(editor)}`}
+            />
+          </Text>
+        ),
+        priority: 'immediate',
+        timeoutMs: 5000,
+      })
+    } else {
+      removeNotification('external-editor-hint')
+    }
+  }, [
+    shouldShowExternalEditorHint,
+    editor,
+    addNotification,
+    removeNotification,
+  ])
+
+  return (
+    <SentryErrorBoundary>
+      <Box
+        flexDirection="column"
+        alignItems={isNarrow ? 'flex-start' : 'flex-end'}
+        flexShrink={0}
+        overflowX="hidden"
+      >
+        <NotificationContent
+          ideSelection={ideSelection}
+          mcpClients={mcpClients}
+          notifications={notifications}
+          isInOverageMode={isInOverageMode ?? false}
+          isTeamOrEnterprise={isTeamOrEnterprise}
+          apiKeyStatus={apiKeyStatus}
+          debug={debug}
+          verbose={verbose}
+          tokenUsage={tokenUsage}
+          mainLoopModel={mainLoopModel}
+          shouldShowAutoUpdater={shouldShowAutoUpdater}
+          autoUpdaterResult={autoUpdaterResult}
+          isAutoUpdating={isAutoUpdating}
+          isShowingCompactMessage={isShowingCompactMessage}
+          onAutoUpdaterResult={onAutoUpdaterResult}
+          onChangeIsUpdating={onChangeIsUpdating}
+        />
+      </Box>
+    </SentryErrorBoundary>
+  )
+}
+
+function NotificationContent({
+  ideSelection,
+  mcpClients,
+  notifications,
+  isInOverageMode,
+  isTeamOrEnterprise,
+  apiKeyStatus,
+  debug,
+  verbose,
+  tokenUsage,
+  mainLoopModel,
+  shouldShowAutoUpdater,
+  autoUpdaterResult,
+  isAutoUpdating,
+  isShowingCompactMessage,
+  onAutoUpdaterResult,
+  onChangeIsUpdating,
+}: {
+  ideSelection: IDESelection | undefined
+  mcpClients?: MCPServerConnection[]
+  notifications: {
+    current: Notification | null
+    queue: Notification[]
+  }
+  isInOverageMode: boolean
+  isTeamOrEnterprise: boolean
+  apiKeyStatus: VerificationStatus
+  debug: boolean
+  verbose: boolean
+  tokenUsage: number
+  mainLoopModel: string
+  shouldShowAutoUpdater: boolean
+  autoUpdaterResult: AutoUpdaterResult | null
+  isAutoUpdating: boolean
+  isShowingCompactMessage: boolean
+  onAutoUpdaterResult: (result: AutoUpdaterResult) => void
+  onChangeIsUpdating: (isUpdating: boolean) => void
+}): ReactNode {
+  // Poll apiKeyHelper inflight state to show slow-helper notice.
+  // Gated on configuration — most users never set apiKeyHelper, so the
+  // effect is a no-op for them (no interval allocated).
+  const [apiKeyHelperSlow, setApiKeyHelperSlow] = useState<string | null>(null)
+  useEffect(() => {
+    if (!getConfiguredApiKeyHelper()) return
+    const interval = setInterval(
+      (setSlow: React.Dispatch<React.SetStateAction<string | null>>) => {
+        const ms = getApiKeyHelperElapsedMs()
+        const next = ms >= 10_000 ? formatDuration(ms) : null
+        setSlow(prev => (next === prev ? prev : next))
+      },
+      1000,
+      setApiKeyHelperSlow,
+    )
+    return () => clearInterval(interval)
+  }, [])
+
+  // Voice state (VOICE_MODE builds only, runtime-gated by GrowthBook)
+  const voiceState = feature('VOICE_MODE')
+    ? useVoiceState(s => s.voiceState)
+    : ('idle' as const)
+  const voiceEnabled = feature('VOICE_MODE') ? useVoiceEnabled() : false
+  const voiceError = feature('VOICE_MODE')
+    ? useVoiceState(s => s.voiceError)
+    : null
+  const isBriefOnly =
+    feature('KAIROS') || feature('KAIROS_BRIEF')
+      ? useAppState(s => s.isBriefOnly)
+      : false
+
+  // When voice is actively recording or processing, replace all
+  // notifications with just the voice indicator.
+  if (
+    feature('VOICE_MODE') &&
+    voiceEnabled &&
+    (voiceState === 'recording' || voiceState === 'processing')
+  ) {
+    return <VoiceIndicator voiceState={voiceState} />
+  }
+
+  return (
+    <>
+      <IdeStatusIndicator ideSelection={ideSelection} mcpClients={mcpClients} />
+      {notifications.current &&
+        ('jsx' in notifications.current ? (
+          <Text wrap="truncate" key={notifications.current.key}>
+            {notifications.current.jsx}
+          </Text>
+        ) : (
+          <Text
+            color={notifications.current.color}
+            dimColor={!notifications.current.color}
+            wrap="truncate"
+          >
+            {notifications.current.text}
+          </Text>
+        ))}
+      {isInOverageMode && !isTeamOrEnterprise && (
+        <Box>
+          <Text dimColor wrap="truncate">
+            Now using extra usage
+          </Text>
+        </Box>
+      )}
+      {apiKeyHelperSlow && (
+        <Box>
+          <Text color="warning" wrap="truncate">
+            apiKeyHelper is taking a while{' '}
+          </Text>
+          <Text dimColor wrap="truncate">
+            ({apiKeyHelperSlow})
+          </Text>
+        </Box>
+      )}
+      {(apiKeyStatus === 'invalid' || apiKeyStatus === 'missing') && (
+        <Box>
+          <Text color="error" wrap="truncate">
+            {isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)
+              ? 'Authentication error · Try again'
+              : 'Not logged in · Run /login'}
+          </Text>
+        </Box>
+      )}
+      {debug && (
+        <Box>
+          <Text color="warning" wrap="truncate">
+            Debug mode
+          </Text>
+        </Box>
+      )}
+      {apiKeyStatus !== 'invalid' && apiKeyStatus !== 'missing' && verbose && (
+        <Box>
+          <Text dimColor wrap="truncate">
+            {tokenUsage} tokens
+          </Text>
+        </Box>
+      )}
+      {!isBriefOnly && (
+        <TokenWarning tokenUsage={tokenUsage} model={mainLoopModel} />
+      )}
+      {shouldShowAutoUpdater && (
+        <AutoUpdaterWrapper
+          isUpdating={isAutoUpdating}
+          onChangeIsUpdating={onChangeIsUpdating}
+          autoUpdaterResult={autoUpdaterResult}
+          onAutoUpdaterResult={onAutoUpdaterResult}
+          showSuccessMessage={!isShowingCompactMessage}
+          verbose={verbose}
+        />
+      )}
+      {feature('VOICE_MODE')
+        ? voiceEnabled &&
+          voiceError && (
+            <Box>
+              <Text color="error" wrap="truncate">
+                {voiceError}
+              </Text>
+            </Box>
+          )
+        : null}
+      <MemoryUsageIndicator />
+      <SandboxPromptFooterHint />
+    </>
+  )
+}
