@@ -5,6 +5,9 @@ import { Box, Text, stringWidth } from '@anthropic/ink'
 import type { Question } from '@claude-code-how-works/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
 import { truncateToWidth } from '@claude-code-how-works/output/formatters/truncate.js'
 
+// Copia de `ccnmt: packages/permission/src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar.tsx` con los
+// comentarios traducidos; el cuerpo es el de la fuente.
+
 type Props = {
   questions: Question[]
   currentQuestionIndex: number
@@ -20,9 +23,9 @@ export function QuestionNavigationBar({
 }: Props): React.ReactNode {
   const { columns } = useTerminalSize()
 
-  // Calculate the display text for each tab based on available width
+  // Calcula el texto que muestra cada pestaña segun el ancho disponible.
   const tabDisplayTexts = useMemo(() => {
-    // Calculate fixed width elements
+    // Los elementos de ancho fijo.
     const leftArrow = '← '
     const rightArrow = ' →'
     const submitText = hideSubmitTab ? '' : ` ${figures.tick} Submit `
@@ -32,18 +35,18 @@ export function QuestionNavigationBar({
     const fixedWidth =
       stringWidth(leftArrow) + stringWidth(rightArrow) + stringWidth(submitText)
 
-    // Available width for all question tabs
+    // El ancho disponible para todas las pestañas de pregunta.
     const availableForTabs = columns - fixedWidth
 
     if (availableForTabs <= 0) {
-      // Terminal too narrow, fallback to minimal display
+      // Terminal demasiado estrecha: se cae de vuelta a la vista minima.
       return questions.map((q: Question, index: number) => {
         const header = q?.header || `Q${index + 1}`
         return index === currentQuestionIndex ? header.slice(0, 3) : ''
       })
     }
 
-    // Calculate ideal width for each tab (checkbox + padding + text)
+    // El ancho ideal de cada pestaña (checkbox + padding + texto).
     const tabHeaders = questions.map(
       (q: Question, index: number) => q?.header || `Q${index + 1}`,
     )
@@ -51,27 +54,28 @@ export function QuestionNavigationBar({
       header => checkboxWidth + paddingPerTab + stringWidth(header),
     )
 
-    // Calculate total ideal width
+    // El ancho ideal total.
     const totalIdealWidth = idealWidths.reduce((sum, w) => sum + w, 0)
 
-    // If everything fits, use full headers
+    // Si todo cabe, se usan los encabezados completos.
     if (totalIdealWidth <= availableForTabs) {
       return tabHeaders
     }
 
-    // Need to truncate - prioritize current tab
+    // Hay que truncar: la pestaña actual tiene prioridad.
     const currentHeader = tabHeaders[currentQuestionIndex] || ''
     const currentIdealWidth =
       checkboxWidth + paddingPerTab + stringWidth(currentHeader)
 
-    // Minimum width for other tabs (checkbox + padding + 1 char + ellipsis)
+    // Ancho minimo de las demas pestañas (checkbox + padding + 1 caracter +
+    // puntos suspensivos).
     const minWidthPerTab = checkboxWidth + paddingPerTab + 2 // "X…"
 
-    // Calculate space for current tab (try to show full text)
+    // El espacio de la pestaña actual: se intenta mostrar el texto completo.
     const currentTabWidth = Math.min(currentIdealWidth, availableForTabs / 2)
     const remainingWidth = availableForTabs - currentTabWidth
 
-    // Calculate space for other tabs
+    // El espacio de las demas pestañas.
     const otherTabCount = questions.length - 1
     const widthPerOtherTab = Math.max(
       minWidthPerTab,
@@ -80,11 +84,11 @@ export function QuestionNavigationBar({
 
     return tabHeaders.map((header, index) => {
       if (index === currentQuestionIndex) {
-        // Current tab - show as much as possible
+        // Pestaña actual: se muestra todo lo que quepa.
         const maxTextWidth = currentTabWidth - checkboxWidth - paddingPerTab
         return truncateToWidth(header, maxTextWidth)
       } else {
-        // Other tabs - truncate to fit
+        // Las demas pestañas se truncan hasta caber.
         const maxTextWidth = widthPerOtherTab - checkboxWidth - paddingPerTab
         return truncateToWidth(header, maxTextWidth)
       }

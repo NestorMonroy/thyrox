@@ -1,7 +1,11 @@
 import { mock, describe, expect, test, beforeEach, afterEach } from "bun:test";
 
-// Mock slowOperations to cut bootstrap/state dependency chain
-// (figures.js → env.js → fsOperations.js → slowOperations.js → bootstrap/state.js)
+// Copia de `ccnmt: packages/permission/src/__tests__/PermissionMode.test.ts`
+// con los comentarios traducidos; el cuerpo es el de la fuente.
+//
+// Se mockea slowOperations para cortar la cadena de dependencias de
+// bootstrap/state
+// (figures.js → env.js → fsOperations.js → slowOperations.js → bootstrap/state.js).
 mock.module("src/utils/slowOperations.ts", () => ({
   jsonStringify: JSON.stringify,
   jsonParse: JSON.parse,
@@ -189,7 +193,7 @@ describe("toExternalPermissionMode", () => {
 
 describe("isExternalPermissionMode", () => {
   test("returns true for external modes (non-ant)", () => {
-    // USER_TYPE is not 'ant' in tests, so always true
+    // En los tests USER_TYPE no es 'ant', asi que siempre da true.
     expect(isExternalPermissionMode("default")).toBe(true);
     expect(isExternalPermissionMode("plan")).toBe(true);
   });

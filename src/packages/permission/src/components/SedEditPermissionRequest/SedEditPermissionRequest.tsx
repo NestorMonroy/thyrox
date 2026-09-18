@@ -26,15 +26,20 @@ export function SedEditPermissionRequest({
 }: SedEditPermissionRequestProps): React.ReactNode {
   const { filePath } = sedInfo
 
-  // Read file content async so mount doesn't block React commit on disk I/O.
-  // Large files would otherwise hang the dialog before it renders.
-  // Memoized on filePath so we don't re-read on every render.
+  // Copia de `ccnmt: packages/permission/src/components/
+  // SedEditPermissionRequest/SedEditPermissionRequest.tsx` con los comentarios
+  // traducidos; el cuerpo es el de la fuente.
+  //
+  // El contenido del archivo se lee de forma asincrona para que el montaje no
+  // bloquee el commit de React con I/O de disco. Un archivo grande colgaria el
+  // dialogo antes de renderizarlo. Memoizado sobre filePath, para no releer en
+  // cada render.
   const contentPromise = useMemo(
     () =>
       (async (): Promise<FileReadResult> => {
-        // Detect encoding first (sync 4KB read — negligible) so UTF-16LE BOMs
-        // render correctly. This matches what readFileSync did before the
-        // async conversion.
+        // Primero se detecta el encoding (lectura sincrona de 4KB,
+        // despreciable) para que un BOM UTF-16LE renderice correctamente. Es lo
+        // mismo que hacia readFileSync antes de la conversion a asincrono.
         const encoding = detectEncodingForResolvedPath(filePath)
         const raw = await getFsImplementation().readFile(filePath, { encoding })
         return {
@@ -69,12 +74,12 @@ function SedEditPermissionRequestInner({
   const { filePath } = sedInfo
   const { oldContent, fileExists } = use(contentPromise)
 
-  // Compute the new content by applying the sed substitution
+  // Calcula el contenido nuevo aplicando la sustitucion de sed.
   const newContent = useMemo(() => {
     return applySedSubstitution(oldContent, sedInfo)
   }, [oldContent, sedInfo])
 
-  // Create the edit representation for the diff
+  // Construye la representacion de la edicion para el diff.
   const edits = useMemo(() => {
     if (oldContent === newContent) {
       return []
@@ -88,7 +93,7 @@ function SedEditPermissionRequestInner({
     ]
   }, [oldContent, newContent])
 
-  // Determine appropriate message when no changes
+  // Determina el mensaje adecuado cuando no hay cambios.
   const noChangesMessage = useMemo(() => {
     if (!fileExists) {
       return 'File does not exist'
@@ -96,8 +101,9 @@ function SedEditPermissionRequestInner({
     return 'Pattern did not match any content'
   }, [fileExists])
 
-  // Parse input and add _simulatedSedEdit to ensure what user previewed
-  // is exactly what gets written (prevents sed/JS regex differences)
+  // Parsea el input y añade _simulatedSedEdit para garantizar que lo que el
+  // usuario previsualizo es exactamente lo que se escribe; asi no pesan las
+  // diferencias entre el regex de sed y el de JS.
   const parseInput = (input: unknown) => {
     const parsed = BashTool.inputSchema.parse(input)
     return {

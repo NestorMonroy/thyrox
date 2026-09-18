@@ -48,7 +48,11 @@ export type UseFilePermissionDialogResult<T> = {
 }
 
 /**
- * Hook for handling file permission dialogs with common logic
+ * Copia de `ccnmt: packages/permission/src/components/FilePermissionDialog/
+ * useFilePermissionDialog.ts` con los comentarios traducidos; el cuerpo es el
+ * de la fuente.
+ *
+ * Hook que resuelve los dialogos de permiso de archivo con la logica comun.
  */
 export function useFilePermissionDialog<T extends ToolInput>({
   filePath,
@@ -66,11 +70,12 @@ export function useFilePermissionDialog<T extends ToolInput>({
   const [focusedOption, setFocusedOption] = useState('yes')
   const [yesInputMode, setYesInputMode] = useState(false)
   const [noInputMode, setNoInputMode] = useState(false)
-  // Track whether user ever entered feedback mode (persists after collapse)
+  // Registra si el usuario llego a entrar en modo de feedback; persiste
+  // despues de colapsar.
   const [yesFeedbackModeEntered, setYesFeedbackModeEntered] = useState(false)
   const [noFeedbackModeEntered, setNoFeedbackModeEntered] = useState(false)
 
-  // Generate options based on context
+  // Genera las opciones a partir del contexto.
   const options = useMemo(
     () =>
       getFilePermissionOptions({
@@ -85,7 +90,7 @@ export function useFilePermissionDialog<T extends ToolInput>({
     [filePath, toolPermissionContext, operationType, yesInputMode, noInputMode],
   )
 
-  // Handle option selection using shared handlers
+  // Resuelve la seleccion de opcion con los handlers compartidos.
   const onChange = useCallback(
     (option: PermissionOption, input: T, feedback?: string) => {
       const params: PermissionHandlerParams = {
@@ -100,7 +105,8 @@ export function useFilePermissionDialog<T extends ToolInput>({
         operationType,
       }
 
-      // Override the input in toolUseConfirm to pass the parsed input
+      // Sobreescribe el input de toolUseConfirm para pasar el input ya
+      // parseado.
       const originalOnAllow = toolUseConfirm.onAllow
       toolUseConfirm.onAllow = (
         _input: unknown,
@@ -135,7 +141,7 @@ export function useFilePermissionDialog<T extends ToolInput>({
     ],
   )
 
-  // Handler for confirm:cycleMode - select accept-session option
+  // Handler de confirm:cycleMode: selecciona la opcion accept-session.
   const handleCycleMode = useCallback(() => {
     const sessionOption = options.find(o => o.option.type === 'accept-session')
     if (sessionOption) {
@@ -144,16 +150,18 @@ export function useFilePermissionDialog<T extends ToolInput>({
     }
   }, [options, parseInput, toolUseConfirm.input, onChange])
 
-  // Register keyboard shortcut handler via keybindings system
+  // Registra el handler del atajo de teclado por el sistema de keybindings.
   useKeybindings(
     { 'confirm:cycleMode': handleCycleMode },
     { context: 'Confirmation' },
   )
 
-  // Wrap setFocusedOption and reset input mode when navigating away
+  // Envuelve setFocusedOption y reinicia el modo de entrada al salir
+  // navegando.
   const handleFocusedOptionChange = useCallback(
     (value: string) => {
-      // Reset input mode when navigating away, but only if no text typed
+      // Reinicia el modo de entrada al salir navegando, pero solo si no se
+      // tecleo texto.
       if (value !== 'yes' && yesInputMode && !acceptFeedback.trim()) {
         setYesInputMode(false)
       }
@@ -165,7 +173,7 @@ export function useFilePermissionDialog<T extends ToolInput>({
     [yesInputMode, noInputMode, acceptFeedback, rejectFeedback],
   )
 
-  // Handle Tab key toggling input mode for Yes/No options
+  // La tecla Tab alterna el modo de entrada de las opciones Si/No.
   const handleInputModeToggle = useCallback(
     (value: string) => {
       const analyticsProps = {

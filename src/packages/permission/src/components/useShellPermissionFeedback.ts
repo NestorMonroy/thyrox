@@ -9,9 +9,14 @@ import type { ToolUseConfirm } from './PermissionRequest.js'
 import { logUnaryPermissionEvent } from './utils.js'
 
 /**
- * Shared feedback-mode state + handlers for shell permission dialogs (Bash,
- * PowerShell). Encapsulates the yes/no input-mode toggle, feedback text state,
- * focus tracking, and reject handling.
+ * Copia de `ccnmt: packages/permission/src/components/
+ * useShellPermissionFeedback.ts` con los comentarios traducidos; el cuerpo es
+ * el de la fuente.
+ *
+ * El estado y los handlers del modo de feedback, compartidos por los dialogos
+ * de permiso de shell (Bash, PowerShell). Encapsula el alternador del modo de
+ * entrada si/no, el estado del texto de feedback, el seguimiento del foco y el
+ * manejo del rechazo.
  */
 export function useShellPermissionFeedback({
   toolUseConfirm,
@@ -41,13 +46,14 @@ export function useShellPermissionFeedback({
   const [yesInputMode, setYesInputMode] = useState(false)
   const [noInputMode, setNoInputMode] = useState(false)
   const [focusedOption, setFocusedOption] = useState('yes')
-  // Track whether user ever entered feedback mode (persists after collapse)
+  // Registra si el usuario llego a entrar en modo de feedback; persiste
+  // despues de colapsar.
   const [yesFeedbackModeEntered, setYesFeedbackModeEntered] = useState(false)
   const [noFeedbackModeEntered, setNoFeedbackModeEntered] = useState(false)
 
-  // Handle Tab key toggling input mode for Yes/No options
+  // La tecla Tab alterna el modo de entrada de las opciones Si/No.
   function handleInputModeToggle(option: string) {
-    // Notify that user is interacting with the dialog
+    // Avisa de que el usuario esta interactuando con el dialogo.
     toolUseConfirm.onUserInteraction()
     const analyticsProps = {
       toolName: sanitizeToolNameForAnalytics(
@@ -81,10 +87,10 @@ export function useShellPermissionFeedback({
     const trimmedFeedback = feedback?.trim()
     const hasFeedback = !!trimmedFeedback
 
-    // Log escape if no feedback was provided (user pressed ESC)
+    // Registra el escape si no hubo feedback: el usuario pulso ESC.
     if (!hasFeedback) {
       logEvent('tengu_permission_request_escape', {})
-      // Increment escape count for attribution tracking
+      // Incrementa el conteo de escapes para el seguimiento de atribucion.
       setAppState(prev => ({
         ...prev,
         attribution: {
@@ -112,12 +118,13 @@ export function useShellPermissionFeedback({
   }
 
   function handleFocus(value: string) {
-    // Notify that user is interacting with the dialog (only if focus changed)
-    // This prevents triggering on the initial mount/render
+    // Avisa de que el usuario esta interactuando con el dialogo, solo si el
+    // foco cambio. Esto evita dispararlo en el montaje o render inicial.
     if (value !== focusedOption) {
       toolUseConfirm.onUserInteraction()
     }
-    // Reset input mode when navigating away, but only if no text typed
+    // Reinicia el modo de entrada al salir navegando, pero solo si no se
+    // tecleo texto.
     if (value !== 'yes' && yesInputMode && !acceptFeedback.trim()) {
       setYesInputMode(false)
     }

@@ -1,8 +1,12 @@
-// Leaf type module: holds PermissionRequestProps + ToolUseConfirm.
-// Extracted from PermissionRequest.tsx so per-tool permission components
-// (FilesystemPermissionRequest, BashPermissionRequest, ...) can import
-// these types without forming a cycle with PermissionRequest.tsx (which
-// imports them as concrete components).
+// Copia de `ccnmt: packages/permission/src/components/
+// permissionRequestTypes.ts` con los comentarios traducidos; el cuerpo es el
+// de la fuente.
+//
+// Modulo de tipos hoja: aloja PermissionRequestProps y ToolUseConfirm. Se
+// extrajo de PermissionRequest.tsx para que los componentes de permiso por
+// herramienta (FilesystemPermissionRequest, BashPermissionRequest, ...) puedan
+// importar estos tipos sin formar un ciclo con PermissionRequest.tsx, que los
+// importa como componentes concretos.
 
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import type * as React from 'react'
@@ -21,8 +25,9 @@ export type PermissionRequestProps<Input extends AnyObject = AnyObject> = {
   verbose: boolean
   workerBadge: WorkerBadgeProps | undefined
   /**
-   * Register JSX to render in a sticky footer below the scrollable area.
-   * Fullscreen mode only. Call with null to clear.
+   * Registra el JSX que se renderiza en un footer fijo bajo el area
+   * desplazable. Solo en modo de pantalla completa. Se llama con null para
+   * limpiarlo.
    */
   setStickyFooter?: (jsx: React.ReactNode | null) => void
 }

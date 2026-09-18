@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 
-// Mock cross-package deps so the unit test stays focused on cycle logic.
+// Copia de `ccnmt: packages/permission/src/__tests__/
+// getNextPermissionMode.test.ts` con los comentarios traducidos; el cuerpo es
+// el de la fuente.
+//
+// Se mockean las dependencias entre paquetes para que el test unitario se
+// mantenga centrado en la logica del ciclo.
 const realPermissionSetup = await import('../permissionSetup.js')
 
 let isAutoModeGateEnabledStub = () => false
@@ -8,7 +13,8 @@ mock.module('../permissionSetup.js', () => ({
   ...realPermissionSetup,
   isAutoModeGateEnabled: () => isAutoModeGateEnabledStub(),
   getAutoModeUnavailableReason: () => null,
-  // transitionPermissionMode pass-through (returns input ctx unchanged for these tests)
+  // transitionPermissionMode de paso: en estos tests devuelve el ctx de
+  // entrada sin cambios.
   transitionPermissionMode: (
     _from: string,
     _to: string,
@@ -29,8 +35,8 @@ afterEach(() => {
   else process.env.USER_TYPE = ORIGINAL_USER_TYPE
 })
 
-// Minimal ctx factory so we don't have to construct the full
-// ToolPermissionContext shape every test.
+// Fabrica minima de ctx, para no construir la forma completa de
+// ToolPermissionContext en cada test.
 function ctx(overrides: Record<string, unknown> = {}): any {
   return {
     mode: 'default',
@@ -89,12 +95,13 @@ describe('getNextPermissionMode (ant user — auto mode replaces accept/plan)', 
     ).toBe('bypassPermissions')
   })
 
-  // Auto-mode entry tests need feature('TRANSCRIPT_CLASSIFIER') to be true,
-  // but bun:bundle's feature() is off in `bun test` (no STABLE_FEATURES
-  // defines applied). The auto path is therefore unreachable here — any
-  // call site that would have returned 'auto' falls through to 'default'.
-  // We assert that fall-through behavior so the test is meaningful in the
-  // current runtime mode.
+  // Los tests de entrada al modo automatico necesitan que
+  // feature('TRANSCRIPT_CLASSIFIER') sea true, pero el feature() de bun:bundle
+  // esta apagado bajo `bun test`: no se aplica ningun define de
+  // STABLE_FEATURES. El camino automatico es por tanto inalcanzable aqui, y
+  // todo sitio de llamada que habria devuelto 'auto' cae a 'default'. Se
+  // asevera esa caida para que el test signifique algo en el modo de ejecucion
+  // actual.
 
   test('default → default (ant, no bypass, auto path unreachable in test mode)', () => {
     isAutoModeGateEnabledStub = () => true
