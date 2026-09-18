@@ -16,11 +16,11 @@
  */
 
 import { spawn, spawnSync } from 'child_process'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { instances } from '@anthropic/ink'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { pwd } from '@claude-code-how-works/app-host/bootstrap/cwd.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { pwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 const TMUX_SESSION = 'panel'
 

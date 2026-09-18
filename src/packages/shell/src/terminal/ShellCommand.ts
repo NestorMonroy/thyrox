@@ -2,13 +2,13 @@ import type { ChildProcess } from 'child_process'
 import { stat } from 'fs/promises'
 import type { Readable } from 'stream'
 import { killProcessTree } from '../genericProcessUtils.js'
-import { generateTaskId } from '@claude-code-how-works/tool-registry/Task.js'
-import { formatDuration } from '@claude-code-how-works/output/formatters'
+import { generateTaskId } from '@thyrox/tool-registry/Task.js'
+import { formatDuration } from '@thyrox/output/formatters'
 import {
   MAX_TASK_OUTPUT_BYTES,
   MAX_TASK_OUTPUT_BYTES_DISPLAY,
-} from '@claude-code-how-works/storage/task/diskOutput.js'
-import { TaskOutput } from '@claude-code-how-works/tool-registry/task/TaskOutput.js'
+} from '@thyrox/storage/task/diskOutput.js'
+import { TaskOutput } from '@thyrox/tool-registry/task/TaskOutput.js'
 
 export type ExecResult = {
   stdout: string

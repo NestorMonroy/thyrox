@@ -2,14 +2,14 @@ import {
   STATUS_TAG,
   SUMMARY_TAG,
   TASK_NOTIFICATION_TAG,
-} from '@claude-code-how-works/command-runtime/xml.js'
-import { BACKGROUND_BASH_SUMMARY_PREFIX } from '@claude-code-how-works/agent/tasks/LocalShellTask.js'
+} from '@thyrox/command-runtime/xml.js'
+import { BACKGROUND_BASH_SUMMARY_PREFIX } from '@thyrox/agent/tasks/LocalShellTask.js'
 import type {
   NormalizedUserMessage,
   RenderableMessage,
-} from '@claude-code-how-works/agent/messageShapes'
-import { isFullscreenEnvEnabled } from '@claude-code-how-works/repl/fullscreen.js'
-import { extractTag } from '@claude-code-how-works/agent/messages.js'
+} from '@thyrox/agent/messageShapes'
+import { isFullscreenEnvEnabled } from '@thyrox/repl/fullscreen.js'
+import { extractTag } from '@thyrox/agent/messages.js'
 
 function isCompletedBackgroundBash(
   msg: RenderableMessage,

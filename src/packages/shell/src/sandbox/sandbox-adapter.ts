@@ -28,13 +28,13 @@ import {
   getAdditionalDirectoriesForClaudeMd,
   getCwdState,
   getOriginalCwd,
-} from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { expandPath } from '@claude-code-how-works/storage/path.js'
-import { getPlatform, type Platform } from '@claude-code-how-works/config/platform.js'
-import { settingsChangeDetector } from '@claude-code-how-works/config/changeDetector'
-import { SETTING_SOURCES, type SettingSource } from '@claude-code-how-works/config/constants'
-import { getManagedSettingsDropInDir } from '@claude-code-how-works/config/managedPath'
+} from '@thyrox/app-host/bootstrap/state.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { expandPath } from '@thyrox/storage/path.js'
+import { getPlatform, type Platform } from '@thyrox/config/platform.js'
+import { settingsChangeDetector } from '@thyrox/config/changeDetector'
+import { SETTING_SOURCES, type SettingSource } from '@thyrox/config/constants'
+import { getManagedSettingsDropInDir } from '@thyrox/config/managedPath'
 import {
   getInitialSettings,
   getSettings,
@@ -42,20 +42,20 @@ import {
   getSettingsForSource,
   getSettingsRootPathForSource,
   updateSettingsForSource,
-} from '@claude-code-how-works/config/settings'
-import type { SettingsJson } from '@claude-code-how-works/config/types'
+} from '@thyrox/config/settings'
+import type { SettingsJson } from '@thyrox/config/types'
 
 // ============================================================================
 // Settings Converter
 // ============================================================================
 
-import { BASH_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/BashTool/toolName.js'
-import { FILE_EDIT_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileEditTool/constants.js'
-import { FILE_READ_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/FileReadTool/prompt.js'
-import { WEB_FETCH_TOOL_NAME } from '@claude-code-how-works/tool-registry/tools/WebFetchTool/prompt.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getClaudeTempDir } from '@claude-code-how-works/permission/filesystem'
-import type { PermissionRuleValue } from '@claude-code-how-works/permission/PermissionRule'
+import { BASH_TOOL_NAME } from '@thyrox/tool-registry/tools/BashTool/toolName.js'
+import { FILE_EDIT_TOOL_NAME } from '@thyrox/tool-registry/tools/FileEditTool/constants.js'
+import { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'
+import { WEB_FETCH_TOOL_NAME } from '@thyrox/tool-registry/tools/WebFetchTool/prompt.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { getClaudeTempDir } from '@thyrox/permission/filesystem'
+import type { PermissionRuleValue } from '@thyrox/permission/PermissionRule'
 import { getSandboxRipgrep } from './sandboxRipgrepResolver.js'
 
 // Local copies to avoid circular dependency
@@ -776,8 +776,8 @@ async function initialize(
       try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { getSandboxBinaryPath } = require(
-          '@claude-code-how-works/config/settings',
-        ) as typeof import('@claude-code-how-works/config/settings')
+          '@thyrox/config/settings',
+        ) as typeof import('@thyrox/config/settings')
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const path = require('node:path') as typeof import('node:path')
         const extraDirs: string[] = []

@@ -12,16 +12,16 @@ import {
   rewriteWindowsNullRedirect,
   shouldAddStdinRedirect,
 } from '../bash/shellQuoting.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getPlatform } from '@claude-code-how-works/config/platform'
-import { getSessionEnvironmentScript } from '@claude-code-how-works/storage/sessionEnvironment.js'
-import { getSessionEnvVars } from '@claude-code-how-works/storage/sessionEnvVars.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getPlatform } from '@thyrox/config/platform'
+import { getSessionEnvironmentScript } from '@thyrox/storage/sessionEnvironment.js'
+import { getSessionEnvVars } from '@thyrox/storage/sessionEnvVars.js'
 import {
   ensureSocketInitialized,
   getClaudeTmuxEnv,
   hasTmuxToolBeenUsed,
 } from '../terminal/tmuxSocket.js'
-import { windowsPathToPosixPath } from '@claude-code-how-works/storage/windowsPaths.js'
+import { windowsPathToPosixPath } from '@thyrox/storage/windowsPaths.js'
 import type { ShellProvider } from './shellProvider.js'
 
 /**

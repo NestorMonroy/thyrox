@@ -1,8 +1,8 @@
 import { execa } from 'execa'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { memoizeWithLRU } from '@claude-code-how-works/config/memoize.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { memoizeWithLRU } from '@thyrox/config/memoize.js'
 import { getCachedPowerShellPath } from '../legacy/powershellDetection.js'
-import { jsonParse } from '@claude-code-how-works/local-observability/slowOperations.js'
+import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 
 // ---------------------------------------------------------------------------
 // Public types describing the parsed output returned to callers.

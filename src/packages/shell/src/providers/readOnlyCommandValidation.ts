@@ -9,7 +9,7 @@
  * - outputLimits are in outputLimits.ts
  */
 
-import { getPlatform } from '@claude-code-how-works/config/platform'
+import { getPlatform } from '@thyrox/config/platform'
 
 // ---------------------------------------------------------------------------
 // Types

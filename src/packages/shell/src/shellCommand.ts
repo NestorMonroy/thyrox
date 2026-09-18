@@ -7,7 +7,7 @@ import type { Readable } from 'stream'
 import { killProcessTree } from './genericProcessUtils.js'
 import type { ExecResult, ShellCommand } from './types.js'
 import type { TaskOutputPort } from './taskOutputPort.js'
-import { generateTaskId } from '@claude-code-how-works/tool-registry/Task.js'
+import { generateTaskId } from '@thyrox/tool-registry/Task.js'
 
 export type { ExecResult, ShellCommand } from './types.js'
 

@@ -8,17 +8,17 @@
  */
 
 import chalk from 'chalk'
-import type { QuerySource } from '@claude-code-how-works/agent/querySource'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
+import type { QuerySource } from '@thyrox/agent/querySource'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
-} from '@claude-code-how-works/local-observability'
-import { queryHaiku } from '@claude-code-how-works/provider/claude.js'
-import { startsWithApiErrorPrefix } from '@claude-code-how-works/provider/errors.js'
-import { memoizeWithLRU } from '@claude-code-how-works/config/memoize.js'
-import { jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { asSystemPrompt } from '@claude-code-how-works/provider/systemPromptType.js'
+} from '@thyrox/local-observability'
+import { queryHaiku } from '@thyrox/provider/claude.js'
+import { startsWithApiErrorPrefix } from '@thyrox/provider/errors.js'
+import { memoizeWithLRU } from '@thyrox/config/memoize.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 
 /**
  * Shell executables that must never be accepted as bare prefixes.

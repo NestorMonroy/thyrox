@@ -1,11 +1,11 @@
-import type { SuggestionItem } from '@claude-code-how-works/repl/components/PromptInput/PromptInputFooterSuggestions.js'
+import type { SuggestionItem } from '@thyrox/repl/components/PromptInput/PromptInputFooterSuggestions.js'
 import {
   type ParseEntry,
   quote,
   tryParseShellCommand,
 } from './shellQuote.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getShellType } from '@claude-code-how-works/repl/localInstaller.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getShellType } from '@thyrox/repl/localInstaller.js'
 import * as Shell from '../Shell.js'
 
 // Constants

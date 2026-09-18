@@ -6,8 +6,8 @@
 import { open, readFile, stat } from 'fs/promises'
 import { homedir as osHomedir } from 'os'
 import { join } from 'path'
-import { isFsInaccessible } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { getLocalClaudePath } from '@claude-code-how-works/repl/localInstaller.js'
+import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
+import { getLocalClaudePath } from '@thyrox/repl/localInstaller.js'
 
 export const CLAUDE_ALIAS_REGEX = /^\s*alias\s+claude\s*=/
 

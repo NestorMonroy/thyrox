@@ -24,12 +24,12 @@
  */
 
 import { posix } from 'path'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { toError } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
 import { execFileNoThrow } from '../execFileNoThrow.js'
-import { logError } from '@claude-code-how-works/local-observability/log.js'
-import { getPlatform } from '@claude-code-how-works/config/platform'
+import { logError } from '@thyrox/local-observability/log.js'
+import { getPlatform } from '@thyrox/config/platform'
 
 // Constants for tmux socket management
 const TMUX_COMMAND = 'tmux'

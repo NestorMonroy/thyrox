@@ -105,7 +105,7 @@ import type {
   ExternalCommandConfig,
 } from '../index.js'
 
-describe('@claude-code-how-works/shell import verification', () => {
+describe('@thyrox/shell import verification', () => {
 
   test('shellQuote: quote and parse functions exist', () => {
     expect(typeof quote).toBe('function')

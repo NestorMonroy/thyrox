@@ -16,9 +16,9 @@ import {
   shouldAddStdinRedirect,
 } from '../bash/shellQuoting.js'
 import type { ShellExecContext } from '../context.js'
-import { getPlatform } from '@claude-code-how-works/config/platform'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { windowsPathToPosixPath } from '@claude-code-how-works/storage/windowsPaths.js'
+import { getPlatform } from '@thyrox/config/platform'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { windowsPathToPosixPath } from '@thyrox/storage/windowsPaths.js'
 import type { ShellProvider } from './shellProvider.js'
 
 /**

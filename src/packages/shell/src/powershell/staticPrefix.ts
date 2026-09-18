@@ -14,7 +14,7 @@
 
 import { getCommandSpec } from '../bash/registry.js'
 import { buildPrefix, DEPTH_RULES } from '../legacy/specPrefix.js'
-import { countCharInString } from '@claude-code-how-works/output/utils/stringUtils.js'
+import { countCharInString } from '@thyrox/output/utils/stringUtils.js'
 import { NEVER_SUGGEST } from './dangerousCmdlets.js'
 import {
   getAllCommands,
