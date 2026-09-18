@@ -68,7 +68,59 @@ Por eso este commit ademas PARAMETRIZA el guion: nacio con la base de
 `permission` codificada y ahora sirve a los doce paquetes. `PACKAGE=voice`
 fija el paquete; `REF_BASE`/`PORT_BASE` lo sobreescriben entero.
 
-Ejercitado sobre voice: el archivo traducido en este pase da `divergentes=0`
-—solo cambiaron comentarios— y `src/voice.ts`, que NO se toco, da DIVERGE.
-Ese contraste es el control: si los dos dieran lo mismo, el instrumento no
-estaria midiendo la traduccion.
+CORREGIDO en el mismo pase. Esta linea decia: «el archivo traducido da
+divergentes=0 y src/voice.ts, que NO se toco, da DIVERGE; ese contraste es el
+control». Es falso, y es el sub-patron D con el propio control como sujeto:
+`voice.ts` diverge porque un porte ANTERIOR (`b91d4903`) ya reescribio sus
+imports a `@thyrox/*` — nada que ver con esta traduccion. El contraste prueba
+que el instrumento ve cambios de codigo, no que vea que MI traduccion no
+toco codigo.
+
+El control que SI discrimina es el mismo archivo antes y despues, y esta
+medido abajo.
+
+================================================================================
+El discriminador nuevo: EN contra ES, y sus DOS controles
+================================================================================
+
+`probes/comment_language.mjs`. Un tramo es ingles cuando su lexico ingles pesa
+MAS que el español (`en > 0 && en > es`). Una cita suelta de simbolo no gana a
+la prosa que la rodea; una frase inglesa entera no tiene lexico español que la
+equilibre. Bandera de anulacion: `--sin-espanol` retira la mitad castellana y
+devuelve el criterio viejo.
+
+CONTROL NEGATIVO — server + teleport + ide, cuyos tramos marcados son, todos,
+comentarios ya en español (clasificados a mano arriba):
+
+    criterio VIEJO   en_ingles=18   sobre 1079 tramos
+    criterio NUEVO   en_ingles=2
+
+De 18 falsos positivos quedan 2, y los dos son los casos limite que la
+clasificacion a mano ya habia anotado:
+
+    teleport/src/gitBundle.ts:214  en=3 es=1  español que CITA un mensaje
+                                              literal de git ("You do not
+                                              have the initial commit yet")
+    ide/src/ide.ts:1115            en=1 es=0  frase corta en español cuyo
+                                              lexico no cubre («fuerza a
+                                              saltarse»), con `which` dentro
+
+CONTROL POSITIVO — el mismo archivo antes y despues de traducirlo
+(`voice/src/hooks/__tests__/useVoiceHelpers.behavior.test.ts`, via `git show`):
+
+    |          | criterio nuevo | criterio viejo |
+    |----------|----------------|----------------|
+    | ANTES    |        8       |       8        |
+    | DESPUES  |        0       |       1        |
+
+El nuevo NO pierde sensibilidad —ve los 8 tramos ingleses reales, igual que el
+viejo— y gana especificidad: da 0 tras traducir, mientras el viejo deja 1
+(`tap-and-release`, termino tecnico que la regla manda conservar). Con el
+criterio viejo el cierre «0 tramos en ingles» era inalcanzable por
+construccion.
+
+DEFECTO ADICIONAL DE LA TABLA 09, medido al montar el control: `ide` figuraba
+con 8 y el criterio viejo bien aplicado da 111. La diferencia es
+`node_modules`: aquella medicion recorrio 23 archivos y el paquete tiene 114
+fuentes propias mas dependencias vendorizadas con `.ts` dentro. Toda medicion
+de carga excluye `node_modules`.
