@@ -75,6 +75,18 @@ COMPILER_OPTIONS = {
     "allowImportingTsExtensions": True,
     "jsx": "react-jsx",
     "types": ["bun"],
+    # El hermano se resuelve por `node_modules/@thyrox/<x>`, que es un enlace
+    # al paquete. Sin esta bandera tsc sigue el enlace hasta su ruta REAL,
+    # dentro del arbol, y trata sus modulos como archivos del PROYECTO: quedan
+    # fuera del `rootDir` y su declaracion aterriza junto a la fuente ajena.
+    # Con ella el hermano es una DEPENDENCIA — no se emite, no derrama.
+    #
+    # Medido sobre `storage`: 1863 escapes sin la bandera, 0 con ella. Y NO
+    # silencia el escape real: un import relativo que sube por encima del
+    # paquete no pasa por ningun enlace, asi que se sigue viendo. Eso es lo
+    # que la hace un discriminador y no un silenciador — el control de
+    # `make_escaping_package` lo mide, y sigue en rojo si se retira la guarda.
+    "preserveSymlinks": True,
     # `noUnusedLocals` y sus hermanos NO viajan: son higiene de fuente y no
     # cambian ni un byte de la declaracion emitida. Incluirlos solo inflaria
     # el conteo que el veredicto publica con errores que no son del contrato.
@@ -97,8 +109,16 @@ class EmitResult:
     emitted: bool
     errors: int
     output: str
+    #: Los archivos del programa que quedan FUERA del `rootDir` del paquete.
+    #: No es un detalle del error: es el unico estado en que emitir ensucia el
+    #: arbol, porque la ruta de salida es `outDir + relativa-a-rootDir` y una
+    #: relativa con `..` aterriza fuera de `dist/`.
+    escaping: tuple = ()
 
     def verdict(self) -> str:
+        if self.escaping:
+            return (f"{self.package}: NO EMITIO — {len(self.escaping)} import(s) "
+                    f"salen de su rootDir: {', '.join(self.escaping)}")
         if not self.emitted:
             return f"{self.package}: NO EMITIO — no hay veredicto sobre su declaracion"
         if self.errors == 0:
@@ -127,6 +147,114 @@ def _read_manifest(package_dir: Path) -> dict:
     return json.loads((package_dir / "package.json").read_text(encoding="utf8"))
 
 
+#: El proyecto sintetico del gate. Nombre distinto del de emision para que un
+#: `--check` y una emision concurrentes no se pisen el archivo.
+CHECK_FILE = "tsconfig.check.json"
+
+
+def _write_project(package_dir: Path, filename: str, options: dict, include: list) -> Path:
+    project = package_dir / filename
+    project.write_text(json.dumps({"compilerOptions": options, "include": include},
+                                  indent=2) + "\n", encoding="utf8")
+    return project
+
+
+def _project_shape(package_dir: Path):
+    """El `rootDir` y el `include` que le corresponden a un paquete.
+
+    Se extrae de `emit_package` porque el gate necesita EXACTAMENTE el mismo
+    programa: si el gate compusiera su propio alcance, mediria otro sujeto y
+    su conteo no seria el del paquete que se emite.
+    """
+    manifest = _read_manifest(package_dir)
+    source_dir = entry_directory(manifest.get("main") or manifest.get("types") or "")
+    root_dir = source_dir or "."
+    include = [f"{source_dir}/**/*" if source_dir else "*.ts"]
+    return root_dir, include
+
+
+def escaping_files(package_dir: Path) -> tuple:
+    """Los archivos del programa que quedan FUERA del `rootDir` del paquete.
+
+    Se mide ANTES de emitir, con `--listFilesOnly`, y no leyendo el TS6059 de
+    la salida: para cuando ese error se imprime la declaracion ya esta escrita
+    junto a la fuente ajena, y limpiarla despues es tratar el sintoma.
+
+    El `include` NO evita el derrame, y ese fue el defecto medido: tsc sigue
+    los imports al programa pase lo que pase. Lo que el `include` acota es de
+    donde ARRANCA el programa, no hasta donde llega.
+
+    Se descartan los `.d.ts` y todo lo de `node_modules`: son las dependencias
+    y los tipos ambientales, que el programa carga por diseño y para los que
+    tsc no emite nada.
+    """
+    package_dir = Path(package_dir)
+    root_dir, include = _project_shape(package_dir)
+    options = dict(COMPILER_OPTIONS)
+    options["noEmit"] = True
+    options.pop("declaration", None)
+    options.pop("emitDeclarationOnly", None)
+    project = _write_project(package_dir, CHECK_FILE, options, include)
+    try:
+        completed = subprocess.run(
+            ["bunx", "tsc", "--listFilesOnly", "-p", CHECK_FILE],
+            cwd=package_dir, capture_output=True, text=True, timeout=900)
+    except (OSError, subprocess.TimeoutExpired):
+        return ()
+    finally:
+        project.unlink(missing_ok=True)
+
+    anchor = (package_dir / root_dir).resolve()
+    escaping = []
+    for line in (completed.stdout or "").splitlines():
+        path = line.strip()
+        if not path or path.endswith(".d.ts") or "node_modules" in path:
+            continue
+        # `--listFilesOnly` escribe sus DIAGNOSTICOS en el mismo stdout que la
+        # lista, asi que una linea no es un archivo por estar ahi. Medido: con
+        # `types: ["bun"]` sin resolver, el TS2688 y sus dos lineas de contexto
+        # se colaban como tres rutas inventadas, y el paquete limpio quedaba
+        # rehusado por «tres imports que escapan» que no existen. El
+        # discriminador es el disco: un archivo del programa existe.
+        candidate = Path(path)
+        if not candidate.is_absolute() or not candidate.is_file():
+            continue
+        resolved = candidate.resolve()
+        if anchor not in resolved.parents and resolved != anchor:
+            escaping.append(os.path.relpath(str(resolved), str(package_dir)))
+    return tuple(sorted(set(escaping)))
+
+
+def check_package(package_dir: Path) -> EmitResult:
+    """Cuenta los errores de UN paquete sin emitir ni tocar su manifiesto.
+
+    Es el gate que hace que repuntar los 42 no sea lavanderia: sin el, sacar
+    los errores del hermano del typecheck del consumidor los deja sin dueño.
+    `EmitResult.errors` ya era el conteo por paquete; lo que faltaba era una
+    superficie que lo publique.
+
+    NO muta (ERR-066): `noEmit`, sin `outDir`, sin reescribir `package.json`,
+    y su proyecto temporal se retira en `finally`.
+    """
+    package_dir = Path(package_dir)
+    _, include = _project_shape(package_dir)
+    options = dict(COMPILER_OPTIONS)
+    options["noEmit"] = True
+    options.pop("declaration", None)
+    options.pop("emitDeclarationOnly", None)
+    project = _write_project(package_dir, CHECK_FILE, options, include)
+    try:
+        completed = subprocess.run(
+            ["bunx", "tsc", "-p", CHECK_FILE],
+            cwd=package_dir, capture_output=True, text=True, timeout=900)
+        output = (completed.stdout or "") + (completed.stderr or "")
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return EmitResult(package_dir.name, False, 0, f"{type(exc).__name__}: {exc}")
+    finally:
+        project.unlink(missing_ok=True)
+    return EmitResult(package_dir.name, True, len(_ERROR_LINE.findall(output)), output)
+
+
 def emit_package(package_dir: Path) -> EmitResult:
     """Emite la declaracion de un paquete y devuelve su veredicto.
 
@@ -136,17 +264,20 @@ def emit_package(package_dir: Path) -> EmitResult:
     real derramo dos declaraciones dentro de `bin/` y ensucio el repositorio.
     """
     package_dir = Path(package_dir)
-    manifest = _read_manifest(package_dir)
-    source_dir = entry_directory(manifest.get("main") or manifest.get("types") or "")
-    root_dir = source_dir or "."
-    include = [f"{source_dir}/**/*" if source_dir else "*.ts"]
+    root_dir, include = _project_shape(package_dir)
+
+    # Preflight: un import que sale del `rootDir` derrama su `.d.ts` FUERA de
+    # `dist/`, junto a la fuente ajena. Se rehusa ANTES de escribir nada —
+    # leer el TS6059 despues seria tratar el sintoma con el archivo ya puesto.
+    escaping = escaping_files(package_dir)
+    if escaping:
+        detalle = "\n".join(f"  escapa del rootDir: {f}" for f in escaping)
+        return EmitResult(package_dir.name, False, 0, detalle, escaping)
 
     options = dict(COMPILER_OPTIONS)
     options["rootDir"] = root_dir
     options["outDir"] = OUTPUT_DIR
-    project = package_dir / PROJECT_FILE
-    project.write_text(json.dumps({"compilerOptions": options, "include": include},
-                                  indent=2) + "\n", encoding="utf8")
+    project = _write_project(package_dir, PROJECT_FILE, options, include)
     try:
         completed = subprocess.run(
             ["bunx", "tsc", "-p", PROJECT_FILE],

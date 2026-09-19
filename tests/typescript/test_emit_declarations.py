@@ -81,6 +81,36 @@ def make_package(root, name, main_dir):
     return pkg
 
 
+def make_escaping_package(root, name, main_dir="src"):
+    """Un paquete cuyo codigo importa FUERA de su propio directorio.
+
+    Es el control que el fixture original no podia dar: sin una arista que
+    escape, la asercion «no derrama fuera de dist/» pasa por construccion.
+    En el arbol real 7 de 42 paquetes tienen esta forma — importan el
+    `src/paths`, `src/task` o `src/store` del proveedor, o la fuente interna
+    de un hermano.
+
+    El derrame NO lo causa el `include`: tsc sigue los imports al programa
+    pase lo que pase, y la ruta de salida es `outDir + relativa-a-rootDir`.
+    Un import que sube por encima de `rootDir` produce una relativa con `..`,
+    asi que su `.d.ts` aterriza FUERA de `dist/`, junto a la fuente ajena.
+    """
+    shared = root / "shared.ts"
+    shared.write_text("export const shared = (n: number) => n + 1\n", encoding="utf8")
+    pkg = root / name
+    src = pkg / main_dir if main_dir else pkg
+    src.mkdir(parents=True, exist_ok=True)
+    (pkg / "package.json").write_text(json.dumps({
+        "name": name, "version": "0.1.0", "private": True,
+        "main": f"./{main_dir}/index.ts" if main_dir else "./index.ts",
+        "exports": {".": f"./{main_dir}/index.ts" if main_dir else "./index.ts"},
+    }) + "\n", encoding="utf8")
+    (src / "index.ts").write_text(
+        "import { shared } from '../../shared.ts'\n"
+        "export const use = (n: number): number => shared(n)\n")
+    return pkg
+
+
 def main():
     from typescript import emit_declarations as mod
 
@@ -174,6 +204,42 @@ def main():
         mod.repoint_manifest(pkg)
         again = json.loads((pkg / "package.json").read_text())["exports"]["."]
         check("repuntar dos veces no cambia el resultado", entry, again)
+
+
+    # --- el escape de rootDir: refusa en vez de derramar -------------------
+    #
+    # Caso que DISCRIMINA. El fixture original nunca sale de su directorio,
+    # asi que su asercion «no derrama» no podia fallar — sub-patron D con
+    # este propio control como sujeto, la segunda vez en este mecanismo.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = make_escaping_package(root, "escapa")
+        result = mod.emit_package(pkg)
+        check("un import que escapa NO EMITE", False, result.emitted)
+        check("y su veredicto nombra el escape", True,
+              "escapa" in result.verdict() and "rootDir" in result.verdict())
+        check("nombra el archivo que se escapa", True, "shared.ts" in result.output)
+        derrame = [str(f.relative_to(root)) for f in root.rglob("*.d.ts")
+                   if "dist" not in f.parts]
+        check("y NO deja una declaracion fuera de dist/", [], derrame)
+
+    # --- el gate por paquete: mide sin mutar -------------------------------
+    #
+    # `EmitResult.errors` ya ES el conteo por paquete; lo que faltaba era una
+    # superficie que lo publique SIN emitir ni tocar el manifiesto. Sin ella,
+    # repuntar los 42 saca los errores del gate del consumidor y no los deja
+    # en ningun sitio — que es lavanderia, no arreglo.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = make_package(root, "medido", "src")
+        antes = (pkg / "package.json").read_text(encoding="utf8")
+        result = mod.check_package(pkg)
+        check("check_package cuenta el error del paquete", True, result.errors > 0)
+        check("NO escribe dist/", False, (pkg / "dist").exists())
+        check("NO toca el manifiesto", antes,
+              (pkg / "package.json").read_text(encoding="utf8"))
+        sobrantes = [f.name for f in pkg.glob("tsconfig*.json")]
+        check("retira su proyecto temporal", [], sobrantes)
 
     print(f"\ntest_emit_declarations: {ok_count} ok, {fail_count} falla")
     return 1 if fail_count else 0
