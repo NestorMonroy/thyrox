@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/repl/src/__tests__/isNonSpacePrintable.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getCurrentProjectConfig' not found in module '/home/user/thyrox/src/packages/config/index.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts:
+error: Cannot find package 'ajv' from '/home/user/thyrox/src/packages/tool-registry/src/tools/SyntheticOutputTool/SyntheticOutputTool.ts'
+(fail) isBgAgentPanelEnabled — ant F6H alignment > true in an interactive session (panel is the local_agent surface) [45.37ms]
+(fail) isBgAgentPanelEnabled — ant F6H alignment > false in a non-interactive (headless) session — ant !nonInteractive guard [0.82ms]
+(fail) shouldHideTasksFooter — panel-agent exclusion > panel-agent is excluded from the footer when the panel is active [0.71ms]
+(fail) shouldHideTasksFooter — panel-agent exclusion > teammate task keeps the footer logic engaged (not a panel agent) [0.55ms]
+
+ 504 pass
+ 5 fail
+ 1 error
+ 1218 expect() calls
+Ran 509 tests across 29 files. [1259.00ms]
+__BG_EXIT__=1
