@@ -34,8 +34,8 @@
  * de la fuente; queda restaurado.
  */
 
-// V7 §7.2 — lazy require() shim so voice package does not import
-// src/state/AppState directly at top level.
+// V7 §7.2 — shim con `require()` diferido para que el paquete voice no
+// importe `src/state/AppState` de forma directa en el nivel superior.
 
 // `import type` se borra al compilar: no emite `require` ni `import`, así
 // que no rompe el diferimiento que este shim existe para dar.
