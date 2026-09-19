@@ -1,0 +1,23 @@
+# CONTROL DE ANULACION: se revierte repl/package.json a HEAD y se reinstala.
+# Que deberia pasar si la causa es la declaracion ausente: vuelve el rojo de
+# 'Cannot find package' y el conteo baja de 504 pass a ~373.
+# medido: 2026-09-19T08:24:49
+
+
+Checked 386 installs across 348 packages (no changes) [27.00ms]
+
+# Unhandled error between tests
+ 504 pass
+ 5 fail
+ 1 error
+
+# El primer intento NO discrimino: 504 pass con y sin la declaracion.
+# Causa medida: bun install publica «no changes» y NO poda el enlace de un
+# paquete cuyo manifiesto ya no lo declara. Revertir el manifiesto solo no
+# es una anulacion valida de un cambio de DECLARACION.
+#
+# Anulacion valida = revertir el manifiesto Y borrar el node_modules del
+# paquete. Asi si:
+#   con la declaracion:  504 pass,  5 fail, 1 error
+#   sin la declaracion:  373 pass,  9 fail, 5 errors  (+ Cannot find package
+#                                                       chalk y figures)

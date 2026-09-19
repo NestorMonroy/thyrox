@@ -192,6 +192,9 @@
     "./testing": "./testing/index.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
+    "@anthropic/ink": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@thyrox/agent": "workspace:*",
     "@thyrox/app-host": "workspace:*",
     "@thyrox/bridge": "workspace:*",
@@ -202,7 +205,6 @@
     "@thyrox/headless-sdk": "workspace:*",
     "@thyrox/ide": "workspace:*",
     "@thyrox/image-processor-napi": "workspace:*",
-    "@anthropic/ink": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/mcp-runtime": "workspace:*",
     "@thyrox/memory": "workspace:*",
@@ -217,6 +219,23 @@
     "@thyrox/tool-registry": "workspace:*",
     "@thyrox/updater": "workspace:*",
     "@thyrox/url-handler-napi": "workspace:*",
-    "@thyrox/voice": "workspace:*"
+    "@thyrox/voice": "workspace:*",
+    "asciichart": "^1.5.25",
+    "chalk": "^5.6.2",
+    "chokidar": "^5.0.0",
+    "diff": "^7.0.0",
+    "execa": "^9.0.0",
+    "figures": "^6.1.0",
+    "fuse.js": "^7.1.0",
+    "ignore": "^7.0.8",
+    "lodash-es": "^4.18.1",
+    "lru-cache": "^11.0.0",
+    "marked": "^17.0.5",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "semver": "^7.6.0",
+    "strip-ansi": "^7.2.0",
+    "usehooks-ts": "^3.1.1",
+    "zod": "^4.3.6"
   }
 }
