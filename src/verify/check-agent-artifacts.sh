@@ -77,17 +77,12 @@ fi
 # un walk-up del lockfile pegaría primero en `src/packages/` y rechazaría un
 # árbol correcto. Qué fija cada una lo publica el comando, no esta prosa:
 #     grep -E '^\s*"zod": \[' bun.lock src/packages/bun.lock
-ZOD_HALLADA=""
-_dir="$PAQUETE"
-while [[ "$_dir" != "/" && -n "$_dir" ]]; do
-    if [[ -f "$_dir/node_modules/zod/package.json" ]]; then
-        ZOD_HALLADA="$_dir/node_modules/zod"
-        break
-    fi
-    _dir="$(dirname "$_dir")"
-done
+# El ascenso vive en el modulo, no aqui: su hermano `check-cross-model-read.sh`
+# necesita el mismo, y dos copias del mismo recorrido divergen.
+# shellcheck source=/dev/null
+source "$RAIZ/src/lib/node_resolution.sh"
 
-if [[ -z "$ZOD_HALLADA" ]]; then
+if ! ZOD_HALLADA="$(resolved_package_dir "$PAQUETE" zod)"; then
     echo "ERROR — no hay \`node_modules/zod\` en la cadena de resolución de $PAQUETE." >&2
     echo "  Node sube desde el paquete hasta la raíz del workspace; ahí no hay ninguna." >&2
     echo "  Sin ella, el --check corre sobre lo que el runtime de Bun auto-instale" >&2

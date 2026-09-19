@@ -1,0 +1,11 @@
+# Control de anulacion — se retira el ASCENSO de node_resolution.sh
+# fecha: 2026-09-19T16:01:19
+
+FALLA sube desde un nieto al node_modules del abuelo — esperado '/tmp/tmp.8GM9tzZ7IY', obtenido ''
+FALLA el node_modules mas cercano gana — esperado '/tmp/tmp.8GM9tzZ7IY/a', obtenido ''
+OK   sin node_modules en la cadena: exit 1
+OK   sin node_modules en la cadena: no emite ruta
+FALLA resuelve el directorio del paquete — esperado '/tmp/tmp.8GM9tzZ7IY/node_modules/zod', obtenido ''
+FALLA arbol real: desde src/packages/agent el duenyo es la raiz — esperado '/home/user/thyrox', obtenido ''
+
+aserciones: 2 de 6 · fallos: 4
