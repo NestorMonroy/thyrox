@@ -296,6 +296,39 @@ def main():
                    if "dist" not in f.parts and "node_modules" not in f.parts]
         check("y NO deja una declaracion fuera de dist/", [], derrame)
 
+    # --- el escape DENTRO del paquete se amplia, no se rehusa --------------
+    #
+    # EL PAR QUE DISCRIMINA. Un escape fuera del paquete produce una ruta de
+    # salida con `..` y su `.d.ts` aterriza junto a la fuente ajena: ese es el
+    # defecto. Uno que cae dentro del propio paquete no lo produce — subir el
+    # `rootDir` a la raiz lo cubre y la emision sigue entera en `dist/`.
+    #
+    # Medido en el barrido de los 42: de los 6 que rehusaban, 5 escapan a
+    # `src/paths`, `src/store`, `src/task`, `src/coordination` o
+    # `src/workbench`, y solo `permission` escapaba a su propio
+    # `internal/lazySchema.ts`. Tratarlos igual le costaba su declaracion.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_types_stub(root)
+        pkg = root / "interno"
+        (pkg / "src").mkdir(parents=True)
+        (pkg / "internal").mkdir(parents=True)
+        (pkg / "package.json").write_text(json.dumps({
+            "name": "@probe/interno", "version": "0.1.0", "private": True,
+            "main": "./src/index.ts", "types": "./src/index.ts",
+            "exports": {".": "./src/index.ts"},
+        }) + "\n", encoding="utf8")
+        (pkg / "internal" / "helper.ts").write_text(
+            "export const helps = (n: number): number => n + 1\n", encoding="utf8")
+        (pkg / "src" / "index.ts").write_text(
+            "import { helps } from '../internal/helper.ts'\n"
+            "export const use = (n: number): number => helps(n)\n", encoding="utf8")
+        resultado = mod.emit_package(pkg)
+        check("un escape DENTRO del paquete emite igual", True, resultado.emitted)
+        fuera = [str(p.relative_to(pkg)) for p in pkg.rglob("*.d.ts")
+                 if "dist" not in p.parts and "node_modules" not in p.parts]
+        check("y su declaracion no sale de dist/", [], fuera)
+
     # --- el gate por paquete: mide sin mutar -------------------------------
     #
     # `EmitResult.errors` ya ES el conteo por paquete; lo que faltaba era una

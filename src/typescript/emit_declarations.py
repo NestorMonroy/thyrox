@@ -323,7 +323,7 @@ def _project_shape(package_dir: Path):
     return raiz, [f"{raiz}/**/*"]
 
 
-def escaping_files(package_dir: Path) -> tuple:
+def escaping_files(package_dir: Path, root_dir=None, include=None) -> tuple:
     """Los archivos del programa que quedan FUERA del `rootDir` del paquete.
 
     Se mide ANTES de emitir, con `--listFilesOnly`, y no leyendo el TS6059 de
@@ -339,7 +339,11 @@ def escaping_files(package_dir: Path) -> tuple:
     tsc no emite nada.
     """
     package_dir = Path(package_dir)
-    root_dir, include = _project_shape(package_dir)
+    # `root_dir`/`include` se pueden imponer: el reintento con la raiz del
+    # paquete ampliada necesita medir EXACTAMENTE el programa que va a emitir,
+    # no el que `_project_shape` deriva del manifiesto.
+    if root_dir is None or include is None:
+        root_dir, include = _project_shape(package_dir)
     options = dict(COMPILER_OPTIONS)
     options["noEmit"] = True
     options.pop("declaration", None)
@@ -430,8 +434,33 @@ def emit_package(package_dir: Path) -> EmitResult:
     # leer el TS6059 despues seria tratar el sintoma con el archivo ya puesto.
     escaping = escaping_files(package_dir)
     if escaping:
-        detalle = "\n".join(f"  escapa del rootDir: {f}" for f in escaping)
-        return EmitResult(package_dir.name, False, 0, detalle, escaping)
+        # Un escape que cae DENTRO del propio paquete no es el defecto que la
+        # rehusa existe para atajar. El defecto es una ruta de salida con `..`,
+        # y eso solo pasa cuando el archivo esta fuera del paquete: si esta
+        # dentro, subir el `rootDir` a la raiz del paquete lo cubre y la
+        # emision sigue aterrizando entera en `dist/`.
+        #
+        # Medido en el barrido de los 42: de los 6 que rehusaban, 5 escapan a
+        # `src/paths`, `src/store`, `src/task`, `src/coordination` o
+        # `src/workbench` —fuera del paquete, irreparable por aqui— y solo
+        # `permission` escapaba a su propio `internal/lazySchema.ts`, que su
+        # `exports` no declara. Rehusarlo era tratar las dos formas como una.
+        # `escaping_files` devuelve la ruta RELATIVA al paquete, asi que hay
+        # que componerla antes de preguntar si cae dentro. Sin eso el `dentro`
+        # sale vacio siempre y el reintento no se toma nunca — el arreglo
+        # existiria y no dispararia, que es peor que no tenerlo.
+        raiz = os.path.realpath(str(package_dir))
+        dentro = [f for f in escaping
+                  if os.path.normpath(os.path.join(raiz, f)).startswith(raiz + os.sep)]
+        if len(dentro) == len(escaping):
+            extra = sorted({f.split(os.sep)[0] for f in dentro
+                            if os.sep in f})
+            root_dir = "."
+            include = sorted(set(include) | {f"{d}/**/*" for d in extra if d != "."})
+            escaping = escaping_files(package_dir, root_dir, include)
+        if escaping:
+            detalle = "\n".join(f"  escapa del rootDir: {f}" for f in escaping)
+            return EmitResult(package_dir.name, False, 0, detalle, escaping)
 
     options = dict(COMPILER_OPTIONS)
     options["rootDir"] = root_dir
