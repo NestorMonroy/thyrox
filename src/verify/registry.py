@@ -106,6 +106,10 @@ CHECKS: list[Check] = [
           'aritmética de ruta que sale de thyrox y aterriza en un árbol ajeno'),
     Check('path-arithmetic', 'Herramienta', 'gate', 'check_path_arithmetic.py',
           'tarea #228 — parents[N] que no alimenta un sys.path.insert'),
+    Check('stale-divergence', 'Herramienta', 'puerto',
+          'check_stale_divergence.py',
+          'una divergencia declarada por AUSENCIA caduca cuando el referente '
+          'vuelve a resolver — y el comentario no se entera'),
     Check('pushed-branch', 'Herramienta', 'gate', 'check_pushed_branch.py',
           'H-DOCS-1128 — la rama que se publica contra la que tiene trabajo'),
     Check('pathspec-commit', 'Herramienta', 'gate', 'check_pathspec_commit.py',

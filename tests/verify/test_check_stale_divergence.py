@@ -8,9 +8,13 @@ incumplidor inventado por quien escribe el patron hereda su encuadre.
 import pathlib
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+# El `parents[2]` alimenta el bootstrap de `sys.path` y NADA mas: es la forma
+# que `check_path_arithmetic` admite. La raiz que el CUERPO usa sale del
+# localizador, porque ahi cruza la distribucion — una ruta compuesta por
+# aritmetica caduca en cuanto el archivo se mueve (tarea #228).
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 
+from paths.reach import thyrox_root  # noqa: E402
 from verify.check_stale_divergence import (  # noqa: E402
     Verdict,
     classify_block,
@@ -18,6 +22,8 @@ from verify.check_stale_divergence import (  # noqa: E402
     extract_referents,
     resolves_today,
 )
+
+ROOT = thyrox_root()
 
 failures = []
 
