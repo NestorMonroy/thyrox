@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && PYTHONPATH=src python3 src/verify/check_package_typecheck.py --write-baseline --jobs 4", "started_at": "2026-09-19T22:34:08+00:00"}
