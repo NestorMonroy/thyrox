@@ -1,0 +1,14 @@
+bun test v1.3.11 (af24e281)
+
+.claude/workbench/porte-mitad-de-proyecto-config-20260919T084755/probes/probe_project_config.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '@thyrox/config' from '/home/user/thyrox/.claude/workbench/porte-mitad-de-proyecto-config-20260919T084755/probes/probe_project_config.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [29.00ms]
