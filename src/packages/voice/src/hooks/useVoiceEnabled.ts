@@ -20,15 +20,21 @@ import {
 } from '../voiceModeEnabled.js'
 
 /**
- * Combines user intent (settings.voiceEnabled) with auth + GB kill-switch.
- * Only the auth half is memoized on authVersion — it's the expensive one
- * (cold getClaudeAIOAuthTokens memoize → sync `security` spawn, ~60ms/call,
- * ~180ms total in profile v5 when token refresh cleared the cache mid-session).
- * GB is a cheap cached-map lookup and stays outside the memo so a mid-session
- * kill-switch flip still takes effect on the next render.
+ * Combina la intención del usuario (`settings.voiceEnabled`) con el auth y el
+ * kill-switch de GrowthBook.
  *
- * authVersion bumps on /login only. Background token refresh leaves it alone
- * (user is still authed), so the auth memo stays correct without re-eval.
+ * Sólo la mitad de auth se memoiza contra `authVersion`, porque es la cara:
+ * el memoize en frío de `getClaudeAIOAuthTokens` dispara un spawn síncrono de
+ * `security` —~60 ms por llamada, ~180 ms en total en el profile v5 cuando un
+ * token refresh vació la caché a mitad de sesión.
+ *
+ * GrowthBook es una consulta barata a un mapa ya cacheado y se queda FUERA del
+ * memo a propósito: así un cambio del kill-switch a mitad de sesión surte
+ * efecto en el render siguiente en vez de quedar congelado.
+ *
+ * `authVersion` sólo avanza con `/login`. Un token refresh en segundo plano no
+ * lo toca —el usuario sigue autenticado—, así que el memo de auth sigue siendo
+ * correcto sin re-evaluarse.
  */
 export function useVoiceEnabled(): boolean {
   const userIntent = useAppState(s => s.settings.voiceEnabled === true)

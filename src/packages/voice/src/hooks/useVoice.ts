@@ -30,13 +30,14 @@
  * —ver H-THYROX-116—, sin que nadie tocara este archivo: la forma exacta
  * que `evidencia-antes-de-afirmar.md` prohíbe tratar como Observation.
  */
-// React hook for hold-to-talk voice input using Anthropic voice_stream STT.
+// Hook de React para entrada de voz hold-to-talk contra el STT de
+// voice_stream de Anthropic.
 //
-// Hold the keybinding to record; release to stop and submit.  Auto-repeat
-// key events reset an internal timer — when no keypress arrives within
-// RELEASE_TIMEOUT_MS the recording stops automatically.  Uses the native
-// audio module (macOS) or SoX for recording, and Anthropic's voice_stream
-// endpoint (conversation_engine) for STT.
+// Se mantiene pulsado el keybinding para grabar; al soltarlo se detiene y se
+// envía. Los eventos de auto-repeat reinician un timer interno: si no llega
+// ninguna pulsación dentro de RELEASE_TIMEOUT_MS, la grabación se detiene
+// sola. Graba con el módulo de audio nativo (macOS) o con SoX, y transcribe
+// contra el endpoint voice_stream (conversation_engine) de Anthropic.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSetVoiceState } from '../voiceContext.js'
@@ -59,18 +60,20 @@ import { logError } from '@thyrox/local-observability/logging'
 import { getInitialSettings } from '@thyrox/config/settings'
 import { sleep } from '@thyrox/config/sleep'
 
-// ─── Language normalization ─────────────────────────────────────────────
+// ─── Normalización de idioma ────────────────────────────────────────────
 
 const DEFAULT_STT_LANGUAGE = 'en'
 
-// Maps language names (English and native) to BCP-47 codes supported by
-// the voice_stream Deepgram backend.  Keys must be lowercase.
+// Mapea nombres de idioma —en inglés y en su forma nativa— a códigos BCP-47
+// que el backend Deepgram de voice_stream admite. Las claves van en minúscula.
 //
-// This list must be a SUBSET of the server-side supported_language_codes
-// allowlist (GrowthBook: speech_to_text_voice_stream_config).
-// If the CLI sends a code the server rejects, the WebSocket closes with
-// 1008 "Unsupported language" and voice breaks.  Unsupported languages
-// fall back to DEFAULT_STT_LANGUAGE so recording still works.
+// Esta lista tiene que ser un SUBCONJUNTO del allowlist
+// supported_language_codes del servidor (GrowthBook:
+// speech_to_text_voice_stream_config).
+//
+// Si el CLI manda un código que el servidor rechaza, el WebSocket cierra con
+// 1008 «Unsupported language» y la voz deja de funcionar. Un idioma no
+// admitido cae a DEFAULT_STT_LANGUAGE, así que la grabación sigue sirviendo.
 const LANGUAGE_NAME_TO_CODE: Record<string, string> = {
   english: 'en',
   spanish: 'es',
@@ -120,8 +123,8 @@ const LANGUAGE_NAME_TO_CODE: Record<string, string> = {
   norsk: 'no',
 }
 
-// Subset of the GrowthBook speech_to_text_voice_stream_config allowlist.
-// Sending a code not in the server allowlist closes the connection.
+// Subconjunto del allowlist speech_to_text_voice_stream_config de GrowthBook.
+// Mandar un código que no esté en el allowlist del servidor cierra la conexión.
 const SUPPORTED_LANGUAGE_CODES = new Set([
   'en',
   'es',
@@ -145,11 +148,12 @@ const SUPPORTED_LANGUAGE_CODES = new Set([
   'no',
 ])
 
-// Normalize a language preference string (from settings.language) to a
-// BCP-47 code supported by the voice_stream endpoint.  Returns the
-// default language if the input cannot be resolved.  When the input is
-// non-empty but unsupported, fellBackFrom is set to the original input so
-// callers can surface a warning.
+// Normaliza la preferencia de idioma (de `settings.language`) a un código
+// BCP-47 que el endpoint voice_stream admita. Devuelve el idioma por defecto
+// cuando la entrada no se puede resolver.
+//
+// Si la entrada no está vacía pero no está admitida, `fellBackFrom` conserva
+// el valor original para que quien llama pueda avisar al usuario.
 export function normalizeLanguageForSTT(language: string | undefined): {
   code: string
   fellBackFrom?: string
@@ -165,10 +169,13 @@ export function normalizeLanguageForSTT(language: string | undefined): {
   return { code: DEFAULT_STT_LANGUAGE, fellBackFrom: language }
 }
 
-// Lazy-loaded voice module. We defer importing voice.ts (and its native
-// audio-capture-napi dependency) until voice input is actually activated.
-// On macOS, loading the native audio module can trigger a TCC microphone
-// permission prompt — we must avoid that until voice input is actually enabled.
+// El módulo de voice se carga de forma diferida: no se importa `voice.ts` —ni
+// su dependencia nativa `audio-capture-napi`— hasta que la entrada de voz se
+// activa de verdad.
+//
+// La razón es de conducta observable en macOS: cargar el módulo de audio
+// nativo puede disparar el prompt de permiso de micrófono de TCC, y eso no
+// debe ocurrir mientras el usuario no haya habilitado la voz.
 type VoiceModule = typeof import('../voice.js')
 let voiceModule: VoiceModule | null = null
 
@@ -186,40 +193,43 @@ type UseVoiceReturn = {
   handleKeyEvent: (fallbackMs?: number) => void
 }
 
-// Gap (ms) between auto-repeat key events that signals key release.
-// Terminal auto-repeat typically fires every 30-80ms; 200ms comfortably
-// covers jitter while still feeling responsive.
+// Hueco (ms) entre eventos de auto-repeat que se interpreta como que la tecla
+// se soltó. El auto-repeat de la terminal suele disparar cada 30-80 ms; 200 ms
+// absorbe el jitter con holgura y sigue sintiéndose responsivo.
 const RELEASE_TIMEOUT_MS = 200
 
-// Fallback (ms) to arm the release timer if no auto-repeat is seen.
-// macOS default key repeat delay is ~500ms; 600ms gives headroom.
-// If the user tapped and released before auto-repeat started, this
-// ensures the release timer gets armed and recording stops.
+// Respaldo (ms) para armar el timer de liberación cuando no se ve ningún
+// auto-repeat. El delay de repetición por defecto de macOS es de ~500 ms;
+// 600 ms deja margen. Cubre el caso de que el usuario pulse y suelte ANTES de
+// que arranque el auto-repeat: sin esto el timer nunca se armaría y la
+// grabación no se detendría.
 //
-// For modifier-combo first-press activation (handleKeyEvent called at
-// t=0, before any auto-repeat), callers should pass FIRST_PRESS_FALLBACK_MS
-// instead — the gap to the next keypress is the OS initial repeat *delay*
-// (up to ~2s on macOS with slider at "Long"), not the repeat *rate*.
+// Para la activación por primera pulsación de un combo con modificador
+// —`handleKeyEvent` llamado en t=0, antes de cualquier auto-repeat— quien
+// llama debe pasar FIRST_PRESS_FALLBACK_MS en su lugar: ahí el hueco hasta la
+// siguiente pulsación es el *delay* inicial de repetición del sistema
+// operativo (hasta ~2 s en macOS con el slider en «Long»), no su *rate*.
 const REPEAT_FALLBACK_MS = 600
 export const FIRST_PRESS_FALLBACK_MS = 2000
 
-// How long (ms) to keep a focus-mode session alive without any speech
-// before tearing it down to free the WebSocket connection. Re-arms on
-// the next focus cycle (blur → refocus).
+// Cuánto (ms) se mantiene viva una sesión en modo focus sin que llegue habla,
+// antes de desmontarla para liberar la conexión WebSocket. Se vuelve a armar
+// en el ciclo de focus siguiente (blur → refocus).
 const FOCUS_SILENCE_TIMEOUT_MS = 5_000
 
-// Number of bars shown in the recording waveform visualizer.
+// Número de barras del visualizador de waveform durante la grabación.
 const AUDIO_LEVEL_BARS = 16
 
-// Compute RMS amplitude from a 16-bit signed PCM buffer and return a
-// normalized 0-1 value. A sqrt curve spreads quieter levels across more
-// of the visual range so the waveform uses the full set of block heights.
+// Calcula la amplitud RMS de un buffer PCM de 16 bits con signo y devuelve un
+// valor normalizado entre 0 y 1. La curva de raíz cuadrada reparte los niveles
+// bajos sobre más rango visual, para que el waveform use toda la escala de
+// alturas de bloque en vez de quedarse pegado al suelo.
 export function computeLevel(chunk: Buffer): number {
   const samples = chunk.length >> 1 // 16-bit = 2 bytes per sample
   if (samples === 0) return 0
   let sumSq = 0
   for (let i = 0; i < chunk.length - 1; i += 2) {
-    // Read 16-bit signed little-endian
+    // Lee 16 bits con signo, little-endian
     const sample = ((chunk[i]! | (chunk[i + 1]! << 8)) << 16) >> 16
     sumSq += sample * sample
   }
@@ -242,65 +252,74 @@ export function useVoice({
   const onErrorRef = useRef(onError)
   const cleanupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const releaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  // True once we've seen a second keypress (auto-repeat) while recording.
-  // The OS key repeat delay (~500ms on macOS) means the first keypress is
-  // solo — arming the release timer before auto-repeat starts would cause
-  // a false release.
+  // Pasa a true en cuanto se ve una SEGUNDA pulsación (auto-repeat) durante la
+  // grabación. El delay de repetición del sistema operativo —~500 ms en macOS—
+  // hace que la primera pulsación llegue sola: armar el timer de liberación
+  // antes de que arranque el auto-repeat produciría una liberación falsa.
   const seenRepeatRef = useRef(false)
   const repeatFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
-  // True when the current recording session was started by terminal focus
-  // (not by a keypress). Focus-driven sessions end on blur, not key release.
+  // True cuando la sesión de grabación en curso la inició el focus de la
+  // terminal, no una pulsación. Una sesión dirigida por focus termina con el
+  // blur, no al soltar la tecla.
   const focusTriggeredRef = useRef(false)
-  // Timer that tears down the session after prolonged silence in focus mode.
+  // Timer que desmonta la sesión tras un silencio prolongado en modo focus.
   const focusSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
-  // Set when a focus-mode session is torn down due to silence. Prevents
-  // the focus effect from immediately restarting. Cleared on blur so the
-  // next focus cycle re-arms recording.
+  // Se fija cuando una sesión en modo focus se desmonta por silencio. Impide
+  // que el efecto de focus la reinicie de inmediato. Se limpia con el blur,
+  // para que el ciclo de focus siguiente vuelva a armar la grabación.
   const silenceTimedOutRef = useRef(false)
   const recordingStartRef = useRef(0)
-  // Incremented on each startRecordingSession(). Callbacks capture their
-  // generation and bail if a newer session has started — prevents a zombie
-  // slow-connecting WS from an abandoned session from overwriting
-  // connectionRef mid-way through the next session.
+  // Se incrementa en cada `startRecordingSession()`. Cada callback captura su
+  // generación y se retira si ya arrancó una sesión más nueva. Es lo que impide
+  // que un WebSocket zombi de conexión lenta, perteneciente a una sesión
+  // abandonada, sobreescriba `connectionRef` a mitad de la sesión siguiente.
   const sessionGenRef = useRef(0)
-  // True if the early-error retry fired during this session.
-  // Tracked for the tengu_voice_recording_completed analytics event.
+  // True si el reintento por error temprano disparó durante esta sesión.
+  // Se registra para el evento de analítica `tengu_voice_recording_completed`.
   const retryUsedRef = useRef(false)
-  // Full audio captured this session, kept for silent-drop replay. ~1% of
-  // sessions get a sticky-broken CE pod that accepts audio but returns zero
-  // transcripts (anthropics/anthropic#287008 session-sticky variant); when
-  // finalize() resolves via no_data_timeout with hadAudioSignal=true, we
-  // replay the buffer on a fresh WS once. Bounded: 32KB/s × ~60s max ≈ 2MB.
+  // Todo el audio capturado en esta sesión, conservado para el replay ante un
+  // silent-drop. Alrededor del 1 % de las sesiones caen en un pod de CE roto
+  // de forma pegajosa, que acepta el audio y devuelve cero transcripciones
+  // (variante session-sticky de anthropics/anthropic#287008).
+  //
+  // Cuando `finalize()` resuelve por `no_data_timeout` con
+  // `hadAudioSignal=true`, el buffer se reproduce UNA vez sobre un WebSocket
+  // nuevo. Está acotado: 32 KB/s × ~60 s como máximo ≈ 2 MB.
   const fullAudioRef = useRef<Buffer[]>([])
   const silentDropRetriedRef = useRef(false)
-  // Bumped when the early-error retry is scheduled. Captured per
-  // attemptConnect — onError swallows stale-gen events (conn 1's
-  // trailing close-error) but surfaces current-gen ones (conn 2's
-  // genuine failure). Same shape as sessionGenRef, one level down.
+  // Avanza cuando se programa el reintento por error temprano. Se captura por
+  // cada `attemptConnect`: así `onError` se traga los eventos de generación
+  // rancia —el close-error de cola de la conexión 1— y sí expone los de la
+  // generación vigente —el fallo genuino de la conexión 2—. Misma forma que
+  // `sessionGenRef`, un nivel más abajo.
   const attemptGenRef = useRef(0)
-  // Running total of chars flushed in focus mode (each final transcript is
-  // injected immediately and accumulatedRef reset). Added to transcriptChars
-  // in the completed event so focus-mode sessions don't false-positive as
-  // silent-drops (transcriptChars=0 despite successful transcription).
+  // Acumulado de caracteres volcados en modo focus: cada transcripción final se
+  // inyecta de inmediato y `accumulatedRef` se reinicia. Se suma a
+  // `transcriptChars` en el evento de completado para que una sesión en modo
+  // focus no dé un falso positivo de silent-drop —`transcriptChars=0` pese a
+  // haber transcrito bien.
   const focusFlushedCharsRef = useRef(0)
-  // True if at least one audio chunk with non-trivial signal was received.
-  // Used to distinguish "microphone is silent/inaccessible" from "speech not detected".
+  // True si llegó al menos un chunk de audio con señal no trivial. Es lo que
+  // distingue «el micrófono está mudo o inaccesible» de «no se detectó habla».
   const hasAudioSignalRef = useRef(false)
-  // True once onReady fired for the current session. Unlike connectionRef
-  // (which cleanup() nulls), this survives effect-order races where Effect 3
-  // cleanup runs before Effect 2's finishRecording() — e.g. /voice toggled
-  // off mid-recording in focus mode. Used for the wsConnected analytics
-  // dimension and error-message branching. Reset in startRecordingSession.
+  // Pasa a true en cuanto `onReady` dispara para la sesión en curso. A
+  // diferencia de `connectionRef`, que `cleanup()` pone a null, éste sobrevive
+  // a las carreras de orden entre efectos en las que el cleanup del efecto 3
+  // corre antes del `finishRecording()` del efecto 2 — por ejemplo al apagar
+  // `/voice` a mitad de grabación en modo focus.
+  //
+  // Alimenta la dimensión de analítica `wsConnected` y la ramificación del
+  // mensaje de error. Se reinicia en `startRecordingSession`.
   const everConnectedRef = useRef(false)
   const audioLevelsRef = useRef<number[]>([])
   const isFocused = useTerminalFocus()
   const setVoiceState = useSetVoiceState()
 
-  // Keep callback refs current without triggering re-renders
+  // Mantiene al día las refs de callback sin disparar re-renders
   onTranscriptRef.current = onTranscript
   onErrorRef.current = onError
 
@@ -314,10 +333,11 @@ export function useVoice({
   }
 
   const cleanup = useCallback((): void => {
-    // Stale any in-flight session (main connection isStale(), replay
-    // isStale(), finishRecording continuation). Without this, disabling
-    // voice during the replay window lets the stale replay open a WS,
-    // accumulate transcript, and inject it after voice was torn down.
+    // Marca como rancia cualquier sesión en vuelo: la conexión principal por
+    // `isStale()`, el replay por `isStale()`, y la continuación de
+    // `finishRecording`. Sin esto, apagar la voz durante la ventana de replay
+    // deja que el replay rancio abra un WebSocket, acumule transcripción y la
+    // inyecte DESPUÉS de que la voz ya se desmontó.
     sessionGenRef.current++
     if (cleanupTimerRef.current) {
       clearTimeout(cleanupTimerRef.current)
@@ -355,9 +375,10 @@ export function useVoice({
     logForDebugging(
       '[voice] finishRecording: stopping recording, transitioning to processing',
     )
-    // Session ending — stale any in-flight attempt so its late onError
-    // (conn 2 responding after user released key) doesn't double-fire on
-    // top of the "check network" message below.
+    // La sesión está terminando: se marcan como rancios los intentos en vuelo
+    // para que su `onError` tardío —la conexión 2 respondiendo después de que
+    // el usuario soltó la tecla— no dispare por segunda vez encima del mensaje
+    // de «check network» de abajo.
     attemptGenRef.current++
     // Capture focusTriggered BEFORE clearing it — needed as an event dimension
     // so BigQuery can filter out passive focus-mode auto-recordings (user focused

@@ -53,8 +53,9 @@ type Props = {
 }
 
 export function VoiceProvider({ children }: Props): React.ReactNode {
-  // Store is created once — stable context value means the provider never
-  // triggers re-renders. Consumers subscribe to slices via useVoiceState.
+  // El store se crea UNA vez: al ser estable el context value, el provider
+  // nunca dispara re-renders por sí mismo. Los consumidores se suscriben a
+  // slices con `useVoiceState`, que es donde vive la granularidad.
   const [store] = useState(() => createStore<VoiceState>(DEFAULT_STATE))
   return <VoiceContext.Provider value={store}>{children}</VoiceContext.Provider>
 }
@@ -68,8 +69,8 @@ function useVoiceStore(): VoiceStore {
 }
 
 /**
- * Subscribe to a slice of voice state. Only re-renders when the selected
- * value changes (compared via Object.is).
+ * Se suscribe a un slice del estado de voice. Sólo re-renderiza cuando cambia
+ * el valor seleccionado, comparado con `Object.is`.
  */
 export function useVoiceState<T>(selector: (state: VoiceState) => T): T {
   const store = useVoiceStore()
@@ -78,9 +79,12 @@ export function useVoiceState<T>(selector: (state: VoiceState) => T): T {
 }
 
 /**
- * Get the voice state setter. Stable reference — never causes re-renders.
- * store.setState is synchronous: callers can read getVoiceState() immediately
- * after to observe the new value (VoiceKeybindingHandler relies on this).
+ * Devuelve el setter del estado de voice. La referencia es estable, así que
+ * nunca provoca un re-render.
+ *
+ * `store.setState` es SÍNCRONO: quien lo llama puede leer `getVoiceState()`
+ * inmediatamente después y observar ya el valor nuevo. `VoiceKeybindingHandler`
+ * depende de esa sincronía.
  */
 export function useSetVoiceState(): (
   updater: (prev: VoiceState) => VoiceState,
@@ -89,9 +93,10 @@ export function useSetVoiceState(): (
 }
 
 /**
- * Get a synchronous reader for fresh state inside callbacks. Unlike
- * useVoiceState (which subscribes), this doesn't cause re-renders — use
- * inside event handlers that need to read state set earlier in the same tick.
+ * Devuelve un lector síncrono del estado fresco para usar dentro de callbacks.
+ * A diferencia de `useVoiceState`, que se suscribe, éste no provoca re-renders:
+ * es para event handlers que necesitan leer un estado fijado antes en el MISMO
+ * tick.
  */
 export function useGetVoiceState(): () => VoiceState {
   return useVoiceStore().getState
