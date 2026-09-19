@@ -153,8 +153,13 @@ def drain(dry_run: bool = False) -> dict:
             continue
         cmd = [str(c) for c in evento["cmd"]]
         try:
+            # El mismo `env` que el emisor: un evento encolado se reenvia con
+            # las condiciones en que deberia haber corrido, no con las del
+            # drenador. Sin esto los eventos de `register_session` fallan en
+            # cada reintento y se abandonan al tercero (TASK-THYROX-0216).
             resultado = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=30)
+                cmd, capture_output=True, text=True, timeout=30,
+                env=agents_paths.reach.child_env())
             ok, detalle = resultado.returncode == 0, resultado.stderr
         except Exception as exc:
             ok, detalle = False, str(exc)

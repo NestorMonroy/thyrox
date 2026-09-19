@@ -671,6 +671,49 @@ CONSUMER_ROOT_VAR = "THYROX_CONSUMER"
 CONSUMER_MARKER = ".claude"
 
 
+#: La variable con que un proceso hijo alcanza ``src/`` de este arbol.
+#:
+#: No es una eleccion: es el nombre que el intérprete de Python lee al
+#: arrancar, y el mismo que los envoltorios de ``bin/`` exportan
+#: (``generate_bin.py``: ``export PYTHONPATH="$THYROX_ROOT/src..."``).
+CHILD_PATH_VAR = "PYTHONPATH"
+
+
+def child_env(base: dict[str, str] | None = None,
+              start: Path | None = None) -> dict[str, str]:
+    """El entorno con que un SUBPROCESO alcanza este arbol.
+
+    ``sys.path`` es estado del PROCESO: un modulo que se hace importable
+    insertando en ``sys.path`` no deja nada al hijo que lanza. La unica via
+    que cruza la frontera del proceso es el entorno, y su nombre es
+    ``PYTHONPATH`` — el mismo que ``bin/`` ya exporta, por eso aqui se
+    compone y no se inventa otro mecanismo.
+
+    El episodio que lo obliga (``TASK-THYROX-0216``) es el peor modo de
+    fallo posible: el stub del consumidor pone ``<thyrox>/src`` en su
+    ``sys.path``, ``register_session.py`` importa sin problema, y su
+    subproceso ``agent_store.py`` muere con ``ModuleNotFoundError``. Como
+    ``run_and_log(spool=True)`` encola y no lanza, el hook cierra con exit 0,
+    sin stdout y sin stderr, habiendo escrito **cero filas**. Un fallo que no
+    emite un byte no se descubre: se descubre la ausencia de datos, semanas
+    despues.
+
+    ``base`` es un parametro y no ``os.environ`` directo por la misma razon
+    que ``start`` en ``thyrox_root``: un mecanismo comprobable con cualquier
+    entorno, no uno que solo se puede medir contra el del proceso que corre.
+
+    Es **idempotente**: componer sobre un entorno ya compuesto no duplica la
+    entrada. Un hijo que lanza a su vez otro hijo heredaria la raiz repetida
+    una vez por nivel, y esa lista crece sin que nadie la vea.
+    """
+    env = dict(os.environ if base is None else base)
+    tree = str(thyrox_root(start) / "src")
+    previous = [p for p in env.get(CHILD_PATH_VAR, "").split(os.pathsep) if p]
+    env[CHILD_PATH_VAR] = os.pathsep.join(
+        [tree] + [p for p in previous if p != tree])
+    return env
+
+
 def consumer_root(declared: str | Path | None = None,
                   start: Path | None = None) -> Path:
     """La raíz del árbol MEDIDO, que no es la del proveedor.

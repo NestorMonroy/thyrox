@@ -44,6 +44,7 @@ from pathlib import Path
 from hooks.error_log import run_and_log  # noqa: E402
 
 from agents import agents_paths  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: El store es el hermano de este módulo — aritmética DENTRO de thyrox, que es
 #: legítima: el archivo y su vecino se mudan juntos. Lo que no sería legítimo es
@@ -1039,7 +1040,13 @@ def main() -> None:
     # `heng: part7/ch29.md` §29.3). Los dos comandos que este hook emite son
     # idempotentes —resuelven con COALESCE sobre la misma clave— asi que
     # reenviar uno ya aplicado no cambia la fila.
-    run_and_log(f"register_agent_session.py --{mode}", cmd, timeout=10, spool=True)
+    # `env` y no la herencia: el llamador puede haberse hecho importable
+    # insertando en su `sys.path`, que es estado del PROCESO y no viaja al
+    # hijo. El stub del consumidor hace exactamente eso, y sin esta linea
+    # `agent_store.py` muere con ModuleNotFoundError — encolado por
+    # `spool=True`, con exit 0 y sin un byte por stderr (TASK-THYROX-0216).
+    run_and_log(f"register_agent_session.py --{mode}", cmd, timeout=10,
+                spool=True, env=reach.child_env())
 
 
 if __name__ == "__main__":
