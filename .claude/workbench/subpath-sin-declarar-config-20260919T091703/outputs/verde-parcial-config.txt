@@ -1,0 +1,15 @@
+specifiers distintos medidos: 136
+sin resolver: 13
+  @thyrox/config/applySettingsChange.js  (1 import(s)) — resuelve a ./applySettingsChange.ts, que no existe
+  @thyrox/config/env/dynamic.ts  (1 import(s)) — resuelve a ./env/dynamic.ts.ts, que no existe
+  @thyrox/config/env/utils.ts  (9 import(s)) — resuelve a ./env/utils.ts.ts, que no existe
+  @thyrox/config/feature-flags.ts  (2 import(s)) — resuelve a ./feature-flags.ts.ts, que no existe
+  @thyrox/config/global/config.ts  (1 import(s)) — resuelve a ./global/config.ts.ts, que no existe
+  @thyrox/config/index.ts  (1 import(s)) — resuelve a ./index.ts.ts, que no existe
+  @thyrox/config/lazySchema.js  (1 import(s)) — resuelve a ./lazySchema.ts, que no existe
+  @thyrox/config/platform.ts  (2 import(s)) — resuelve a ./platform.ts.ts, que no existe
+  @thyrox/config/semver.ts  (1 import(s)) — resuelve a ./semver.ts.ts, que no existe
+  @thyrox/config/settings/types.ts  (3 import(s)) — resuelve a ./settings/types.ts.ts, que no existe
+  @thyrox/config/utils/envExpansion.ts  (1 import(s)) — resuelve a ./utils/envExpansion.ts.ts, que no existe
+  @thyrox/config/utils/expandTilde.ts  (2 import(s)) — resuelve a ./utils/expandTilde.ts.ts, que no existe
+  @thyrox/config/utils/markdownDescription.ts  (1 import(s)) — resuelve a ./utils/markdownDescription.ts.ts, que no existe

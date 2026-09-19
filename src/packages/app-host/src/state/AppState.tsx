@@ -92,7 +92,7 @@ function applySettingsChangeSafe(
 ): void {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('@thyrox/config/applySettingsChange.js') as {
+    const mod = require('@thyrox/config/applySettingsChange') as {
       applySettingsChange: typeof applySettingsChangeSafe
     }
     mod.applySettingsChange(source, setState)
