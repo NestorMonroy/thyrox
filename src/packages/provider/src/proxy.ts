@@ -54,6 +54,82 @@ export function getNoProxy(env: EnvLike = getAllEnv()): string | undefined {
   return env.no_proxy || env.NO_PROXY
 }
 
+/**
+ * ¿El nombre de host casa un patrón con comodín?
+ *
+ * Escaneo lineal, no `RegExp` compuesto: un patrón de `NO_PROXY` es entrada
+ * no confiable, y componer una expresión regular desde ella admite ReDoS. La
+ * forma se adapta de `omniroute: open-sse/utils/proxyFetch.ts:449` (MIT), que
+ * declara esa misma razón en su comentario.
+ */
+function matchesGlobPattern(hostname: string, pattern: string): boolean {
+  const segments = pattern.split('*')
+  if (!hostname.startsWith(segments[0]!)) return false
+
+  let cursor = segments[0]!.length
+  for (let index = 1; index < segments.length; index++) {
+    const segment = segments[index]!
+    if (index === segments.length - 1) {
+      // El último segmento ancla al final; vacío significa «cualquier cola».
+      if (segment === '') return true
+      return hostname.endsWith(segment) && hostname.length - segment.length >= cursor
+    }
+    const found = segment ? hostname.indexOf(segment, cursor) : cursor
+    if (found === -1) return false
+    cursor = found + segment.length
+  }
+  return true
+}
+
+/** Convierte una dirección IPv4 punteada a su entero de 32 bits, o `null`. */
+function parseIpv4ToInteger(address: string): number | null {
+  const octets = address.split('.')
+  if (octets.length !== 4) return null
+
+  let accumulator = 0
+  for (const octet of octets) {
+    if (!/^\d{1,3}$/.test(octet)) return null
+    const value = Number(octet)
+    if (value > 255) return null
+    accumulator = accumulator * 256 + value
+  }
+  return accumulator
+}
+
+/**
+ * ¿La dirección cae dentro del bloque CIDR declarado?
+ *
+ * **Divergencia declarada frente a la referencia.** Ni
+ * `ccnmt: packages/provider/src/proxy.ts` ni
+ * `omniroute: open-sse/utils/proxyFetch.ts:422` leen CIDR: aquélla lo ignora,
+ * y ésta cubre los rangos privados con una lista paralela codificada a mano
+ * (`isLocalAddress`, `:480`). Esa lista es un segundo significante para el
+ * mismo significado y puede divergir de lo que el entorno declaró; aquí se lee
+ * el bloque tal como viene en `NO_PROXY`.
+ *
+ * **Ciega a IPv6.** Un bloque como `fc00::/7` devuelve `false`, no un error:
+ * la lista de este entorno declara `::1` y `::` como hosts literales, que el
+ * camino de host exacto ya cubre. Su cierre es TASK-THYROX-0186.
+ */
+function matchesCidrBlock(hostname: string, pattern: string): boolean {
+  const slashAt = pattern.indexOf('/')
+  if (slashAt === -1) return false
+
+  const blockAddress = pattern.slice(0, slashAt)
+  const prefixLength = Number(pattern.slice(slashAt + 1))
+  if (!Number.isInteger(prefixLength) || prefixLength < 0 || prefixLength > 32) return false
+
+  const blockInteger = parseIpv4ToInteger(blockAddress)
+  const hostInteger = parseIpv4ToInteger(hostname)
+  if (blockInteger === null || hostInteger === null) return false
+
+  if (prefixLength === 0) return true
+  // `>>> 0` fuerza el resultado a entero sin signo: el desplazamiento de bits
+  // de JavaScript opera sobre enteros de 32 bits CON signo.
+  const mask = (0xffffffff << (32 - prefixLength)) >>> 0
+  return ((hostInteger & mask) >>> 0) === ((blockInteger & mask) >>> 0)
+}
+
 /** ¿Una URL debe saltarse el proxy según NO_PROXY? */
 export function shouldBypassProxy(urlString: string, noProxy: string | undefined = getNoProxy()): boolean {
   if (!noProxy) return false
@@ -69,13 +145,26 @@ export function shouldBypassProxy(urlString: string, noProxy: string | undefined
 
     return noProxyList.some(rawPattern => {
       const pattern = rawPattern.toLowerCase().trim()
+
+      // El CIDR se resuelve ANTES que el par `host:puerto`: un bloque IPv6
+      // lleva dos puntos y la rama de puerto lo leería como un host.
+      if (pattern.includes('/')) {
+        return matchesCidrBlock(hostname, pattern)
+      }
       if (pattern.includes(':')) {
         return hostWithPort === pattern
+      }
+      if (pattern.includes('*')) {
+        return matchesGlobPattern(hostname, pattern)
       }
       if (pattern.startsWith('.')) {
         return hostname === pattern.substring(1) || hostname.endsWith(pattern)
       }
-      return hostname === pattern
+      // Un patrón desnudo cubre el dominio y todo lo que cuelgue de él, que es
+      // la convención de curl y de `golang.org/x/net/http/httpproxy`. La
+      // referencia exigía igualdad exacta, así que `example.com` no cubría
+      // `api.example.com`: divergencia declarada, no porte parcial.
+      return hostname === pattern || hostname.endsWith(`.${pattern}`)
     })
   } catch {
     return false
