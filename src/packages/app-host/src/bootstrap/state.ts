@@ -94,6 +94,33 @@ import { randomUUID } from 'node:crypto'
 import type { SessionId } from '@thyrox/agent/idTypes'
 import { realpathSync } from 'fs'
 import { cwd } from 'process'
+import type { ModelSetting } from '@thyrox/provider/model.js'
+import type { ModelStrings } from '@thyrox/provider/modelStrings.js'
+import type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
+import type { HookEvent } from '@thyrox/agent/types/hooks.js'
+import type { HookCallbackMatcher } from '@thyrox/agent/types/hooks.js'
+import type { PluginHookMatcher } from '@thyrox/config/settings/types.js'
+import { resetSettingsCache } from '@thyrox/config/settings/settingsCache.js'
+import { notifyAdditionalDirectories } from './additionalDirectories.js'
+export { subscribeAdditionalDirectories } from './additionalDirectories.js'
+
+// La fuente reexporta los dos desde `config/allowedSourcesState`; en este arbol
+// el modulo vive en `config/internal/allowedSourcesState.ts`. El simbolo y el
+// contrato son los mismos: un unico valor de `allowedSettingSources` por
+// proceso. Se reexporta desde el subpath dedicado, no desde el barril del
+// paquete, para no arrastrar el arbol entero de config al cargar bootstrap.
+export {
+  getAllowedSettingSources,
+  setAllowedSettingSources,
+} from '@thyrox/config/internal/allowedSourcesState.js'
+
+/**
+ * Un matcher de hook, venga del registro interno o de un plugin. Misma
+ * union que la fuente (`ccnmt: packages/app-host/src/bootstrap/state.ts:27`);
+ * el discriminador entre las dos ramas es la presencia de `pluginRoot`, que
+ * `clearRegisteredPluginHooks` usa mas abajo.
+ */
+type RegisteredHookMatcher = HookCallbackMatcher | PluginHookMatcher
 
 // DO NOT ADD MORE STATE HERE — BE JUDICIOUS WITH GLOBAL STATE (heredado de
 // la fuente; el resto del array de campos vive fuera de este porte parcial).
@@ -163,6 +190,94 @@ type State = {
   cwd: string
   // Slice G — sesión interactiva
   isInteractive: boolean
+  // Slice H — reloj de coste y de turno
+  totalAPIDuration: number
+  totalAPIDurationWithoutRetries: number
+  totalToolDuration: number
+  turnHookDurationMs: number
+  turnToolDurationMs: number
+  turnClassifierDurationMs: number
+  turnToolCount: number
+  turnHookCount: number
+  turnClassifierCount: number
+  startTime: number
+  lastInteractionTime: number
+  totalLinesAdded: number
+  totalLinesRemoved: number
+  hasUnknownModelCost: boolean
+  promptId: string | null
+  // Slice I — modelo del bucle principal
+  mainLoopModelOverride: ModelSetting | undefined
+  initialMainLoopModel: ModelSetting
+  modelStrings: ModelStrings | null
+  sdkBetas: string[] | undefined
+  mainThreadAgentType: string | undefined
+  // Slice J — postura declarada del cliente y de la sesion
+  kairosActive: boolean
+  strictToolResultPairing: boolean
+  sdkAgentProgressSummariesEnabled: boolean
+  userMsgOptIn: boolean
+  clientType: string
+  sessionSource: string | undefined
+  questionPreviewFormat: 'markdown' | 'html' | undefined
+  isRemoteMode: boolean
+  directConnectServerUrl: string | undefined
+  // Slice K — credenciales y settings declarados por bandera
+  flagSettingsPath: string | undefined
+  flagSettingsInline: Record<string, unknown> | null
+  sessionIngressToken: string | null | undefined
+  oauthTokenFromFd: string | null | undefined
+  apiKeyFromFd: string | null | undefined
+  // Slice L — color de agente
+  agentColorMap: Map<string, AgentColorName>
+  agentColorIndex: number
+  // Slice M — diagnostico en memoria
+  inMemoryErrorLog: Array<{ error: string; timestamp: string }>
+  slowOperations: Array<{
+    operation: string
+    durationMs: number
+    timestamp: number
+  }>
+  // Slice N — plugins y canales declarados
+  inlinePlugins: Array<string>
+  chromeFlagOverride: boolean | undefined
+  useCoworkPlugins: boolean
+  allowedChannels: ChannelEntry[]
+  hasDevChannels: boolean
+  // Slice O — tareas programadas de sesion
+  scheduledTasksEnabled: boolean
+  sessionCronTasks: SessionCronTask[]
+  loopChainStartedAt: Record<string, LoopChainEntry>
+  // Slice P — equipos, confianza y persistencia de sesion
+  sessionCreatedTeams: Set<string>
+  sessionTrustAccepted: boolean
+  sessionPersistenceDisabled: boolean
+  teleportedSessionInfo: {
+    isTeleported: boolean
+    hasLoggedFirstMessage: boolean
+    sessionId: string | null
+  } | null
+  // Slice Q — modo plan y modo auto
+  hasExitedPlanMode: boolean
+  needsPlanModeExitAttachment: boolean
+  needsAutoModeExitAttachment: boolean
+  lspRecommendationShownThisSession: boolean
+  initJsonSchema: Record<string, unknown> | null
+  // Slice R — hooks registrados
+  registeredHooks: Partial<Record<HookEvent, RegisteredHookMatcher[]>> | null
+  // Slice S — skills invocadas (se preservan al compactar)
+  invokedSkills: Map<string, InvokedSkillInfo>
+  // Slice T — caches y latches de cabecera
+  systemPromptSectionCache: Map<string, string | null>
+  lastEmittedDate: string | null
+  additionalDirectoriesForClaudeMd: string[]
+  promptCache1hAllowlist: string[] | null
+  promptCache1hEligible: boolean | null
+  afkModeHeaderLatched: boolean | null
+  fastModeHeaderLatched: boolean | null
+  cacheEditingHeaderLatched: boolean | null
+  cacheDiagnosisHeaderLatched: boolean | null
+  thinkingClearLatched: boolean | null
 }
 
 // ALSO HERE — THINK THRICE BEFORE MODIFYING (heredado de la fuente).
@@ -220,6 +335,75 @@ function getInitialState(): State {
     originalCwd: resolvedCwd,
     projectRoot: resolvedCwd,
     cwd: resolvedCwd,
+    totalAPIDuration: 0,
+    totalAPIDurationWithoutRetries: 0,
+    totalToolDuration: 0,
+    turnHookDurationMs: 0,
+    turnToolDurationMs: 0,
+    turnClassifierDurationMs: 0,
+    turnToolCount: 0,
+    turnHookCount: 0,
+    turnClassifierCount: 0,
+    startTime: Date.now(),
+    lastInteractionTime: Date.now(),
+    totalLinesAdded: 0,
+    totalLinesRemoved: 0,
+    hasUnknownModelCost: false,
+    promptId: null,
+    mainLoopModelOverride: undefined,
+    initialMainLoopModel: null,
+    modelStrings: null,
+    sdkBetas: undefined,
+    mainThreadAgentType: undefined,
+    kairosActive: false,
+    strictToolResultPairing: false,
+    sdkAgentProgressSummariesEnabled: false,
+    userMsgOptIn: false,
+    clientType: 'cli',
+    sessionSource: undefined,
+    questionPreviewFormat: undefined,
+    isRemoteMode: false,
+    directConnectServerUrl: undefined,
+    flagSettingsPath: undefined,
+    flagSettingsInline: null,
+    sessionIngressToken: undefined,
+    oauthTokenFromFd: undefined,
+    apiKeyFromFd: undefined,
+    agentColorMap: new Map(),
+    agentColorIndex: 0,
+    inMemoryErrorLog: [],
+    slowOperations: [],
+    inlinePlugins: [],
+    chromeFlagOverride: undefined,
+    useCoworkPlugins: false,
+    allowedChannels: [],
+    hasDevChannels: false,
+    scheduledTasksEnabled: false,
+    sessionCronTasks: [],
+    // `Object.create(null)` y no `{}`: la clave es un promptId arbitrario y un
+    // objeto con prototipo admitiria `__proto__` como entrada.
+    loopChainStartedAt: Object.create(null),
+    sessionCreatedTeams: new Set(),
+    sessionTrustAccepted: false,
+    sessionPersistenceDisabled: false,
+    teleportedSessionInfo: null,
+    hasExitedPlanMode: false,
+    needsPlanModeExitAttachment: false,
+    needsAutoModeExitAttachment: false,
+    lspRecommendationShownThisSession: false,
+    initJsonSchema: null,
+    registeredHooks: null,
+    invokedSkills: new Map(),
+    systemPromptSectionCache: new Map(),
+    lastEmittedDate: null,
+    additionalDirectoriesForClaudeMd: [],
+    promptCache1hAllowlist: null,
+    promptCache1hEligible: null,
+    afkModeHeaderLatched: null,
+    fastModeHeaderLatched: null,
+    cacheEditingHeaderLatched: null,
+    cacheDiagnosisHeaderLatched: null,
+    thinkingClearLatched: null,
   }
 }
 
@@ -659,4 +843,1079 @@ export function getIsNonInteractiveSession(): boolean {
 
 export function setIsInteractive(value: boolean): void {
   STATE.isInteractive = value
+}
+
+// ---------------------------------------------------------------------------
+// Slice H — reloj de coste y de turno
+//
+// Reimplementacion del contrato de `ccnmt: packages/app-host/src/bootstrap/
+// state.ts`. ccnmt declara `UNLICENSED`, asi que se porta el patron y el
+// contrato —mismo nombre, misma firma, mismo comportamiento— sin pegar el
+// cuerpo de la fuente.
+// ---------------------------------------------------------------------------
+
+export function addToTotalDurationState(
+  duration: number,
+  durationWithoutRetries: number,
+): void {
+  STATE.totalAPIDuration += duration
+  STATE.totalAPIDurationWithoutRetries += durationWithoutRetries
+}
+
+export function resetTotalDurationStateAndCost_FOR_TESTS_ONLY(): void {
+  STATE.totalAPIDuration = 0
+  STATE.totalAPIDurationWithoutRetries = 0
+  STATE.totalCostUSD = 0
+}
+
+export function getTotalAPIDuration(): number {
+  return STATE.totalAPIDuration
+}
+
+/** Reloj de pared de la sesion, no suma de llamadas. */
+export function getTotalDuration(): number {
+  return Date.now() - STATE.startTime
+}
+
+export function getTotalAPIDurationWithoutRetries(): number {
+  return STATE.totalAPIDurationWithoutRetries
+}
+
+export function getTotalToolDuration(): number {
+  return STATE.totalToolDuration
+}
+
+/** Acumula en el total de la sesion Y en el del turno, con su contador. */
+export function addToToolDuration(duration: number): void {
+  STATE.totalToolDuration += duration
+  STATE.turnToolDurationMs += duration
+  STATE.turnToolCount++
+}
+
+export function getTurnHookDurationMs(): number {
+  return STATE.turnHookDurationMs
+}
+
+export function addToTurnHookDuration(duration: number): void {
+  STATE.turnHookDurationMs += duration
+  STATE.turnHookCount++
+}
+
+export function resetTurnHookDuration(): void {
+  STATE.turnHookDurationMs = 0
+  STATE.turnHookCount = 0
+}
+
+export function getTurnHookCount(): number {
+  return STATE.turnHookCount
+}
+
+export function getTurnToolDurationMs(): number {
+  return STATE.turnToolDurationMs
+}
+
+export function resetTurnToolDuration(): void {
+  STATE.turnToolDurationMs = 0
+  STATE.turnToolCount = 0
+}
+
+export function getTurnToolCount(): number {
+  return STATE.turnToolCount
+}
+
+export function getTurnClassifierDurationMs(): number {
+  return STATE.turnClassifierDurationMs
+}
+
+export function addToTurnClassifierDuration(duration: number): void {
+  STATE.turnClassifierDurationMs += duration
+  STATE.turnClassifierCount++
+}
+
+export function resetTurnClassifierDuration(): void {
+  STATE.turnClassifierDurationMs = 0
+  STATE.turnClassifierCount = 0
+}
+
+export function getTurnClassifierCount(): number {
+  return STATE.turnClassifierCount
+}
+
+// El sello de ultima interaccion se agrupa: muchas pulsaciones de tecla
+// colapsan en una sola llamada a `Date.now()`, que la vuelca el ciclo de
+// render antes de pintar.
+let interactionTimeDirty = false
+
+function flushInteractionTimeInner(): void {
+  STATE.lastInteractionTime = Date.now()
+  interactionTimeDirty = false
+}
+
+export function updateLastInteractionTime(immediate?: boolean): void {
+  if (immediate) {
+    flushInteractionTimeInner()
+  } else {
+    interactionTimeDirty = true
+  }
+}
+
+/** Vuelca el sello si hubo interaccion desde el ultimo volcado. */
+export function flushInteractionTime(): void {
+  if (interactionTimeDirty) {
+    flushInteractionTimeInner()
+  }
+}
+
+export function getLastInteractionTime(): number {
+  return STATE.lastInteractionTime
+}
+
+export function addToTotalLinesChanged(added: number, removed: number): void {
+  STATE.totalLinesAdded += added
+  STATE.totalLinesRemoved += removed
+}
+
+export function getTotalLinesAdded(): number {
+  return STATE.totalLinesAdded
+}
+
+export function getTotalLinesRemoved(): number {
+  return STATE.totalLinesRemoved
+}
+
+export function setHasUnknownModelCost(): void {
+  STATE.hasUnknownModelCost = true
+}
+
+export function hasUnknownModelCost(): boolean {
+  return STATE.hasUnknownModelCost
+}
+
+export function resetCostState(): void {
+  STATE.totalCostUSD = 0
+  STATE.totalAPIDuration = 0
+  STATE.totalAPIDurationWithoutRetries = 0
+  STATE.totalToolDuration = 0
+  STATE.startTime = Date.now()
+  STATE.totalLinesAdded = 0
+  STATE.totalLinesRemoved = 0
+  STATE.hasUnknownModelCost = false
+  STATE.modelUsage = {}
+  STATE.promptId = null
+}
+
+/**
+ * Restaura el coste al reanudar una sesion. `lastDuration` NO se guarda: se
+ * retrocede `startTime` para que el reloj de pared siga acumulando.
+ */
+export function setCostStateForRestore({
+  totalCostUSD,
+  totalAPIDuration,
+  totalAPIDurationWithoutRetries,
+  totalToolDuration,
+  totalLinesAdded,
+  totalLinesRemoved,
+  lastDuration,
+  modelUsage,
+}: {
+  totalCostUSD: number
+  totalAPIDuration: number
+  totalAPIDurationWithoutRetries: number
+  totalToolDuration: number
+  totalLinesAdded: number
+  totalLinesRemoved: number
+  lastDuration: number | undefined
+  modelUsage: { [modelName: string]: ModelUsage } | undefined
+}): void {
+  STATE.totalCostUSD = totalCostUSD
+  STATE.totalAPIDuration = totalAPIDuration
+  STATE.totalAPIDurationWithoutRetries = totalAPIDurationWithoutRetries
+  STATE.totalToolDuration = totalToolDuration
+  STATE.totalLinesAdded = totalLinesAdded
+  STATE.totalLinesRemoved = totalLinesRemoved
+  if (modelUsage) {
+    STATE.modelUsage = modelUsage
+  }
+  if (lastDuration) {
+    STATE.startTime = Date.now() - lastDuration
+  }
+}
+
+export function getPromptId(): string | null {
+  return STATE.promptId
+}
+
+export function setPromptId(promptId: string | null): void {
+  STATE.promptId = promptId
+}
+
+// Presupuesto de token por turno. Vive en ambito de modulo y no en `State`:
+// es estado efimero del turno en curso, no de la sesion.
+let outputTokensAtTurnStart = 0
+let currentTurnTokenBudget: number | null = null
+let budgetContinuationCount = 0
+
+export function getTurnOutputTokens(): number {
+  return getTotalOutputTokens() - outputTokensAtTurnStart
+}
+
+export function getCurrentTurnTokenBudget(): number | null {
+  return currentTurnTokenBudget
+}
+
+export function snapshotOutputTokensForTurn(budget: number | null): void {
+  outputTokensAtTurnStart = getTotalOutputTokens()
+  currentTurnTokenBudget = budget
+  budgetContinuationCount = 0
+}
+
+export function getBudgetContinuationCount(): number {
+  return budgetContinuationCount
+}
+
+export function incrementBudgetContinuationCount(): void {
+  budgetContinuationCount++
+}
+
+/**
+ * Umbral de «el usuario sigue delante de esta terminal» — lo consulta
+ * PushNotificationTool para no notificar lo que ya se esta viendo.
+ */
+export const NOTIF_ACTIVE_THRESHOLD_MS = 60_000
+
+let terminalFocus: boolean | undefined
+
+export function getTerminalFocus(): boolean | undefined {
+  return terminalFocus
+}
+
+export function setTerminalFocusForState(value: boolean | undefined): void {
+  terminalFocus = value
+}
+
+/**
+ * «¿Esta el usuario aqui ahora mismo?» — cierto si la terminal declara foco,
+ * o si hubo una pulsacion dentro de NOTIF_ACTIVE_THRESHOLD_MS. Cae a la
+ * heuristica de pulsacion cuando el foco es desconocido (terminales que no
+ * implementan DECSET 1004).
+ */
+export function isUserActiveForNotifications(): boolean {
+  const focus = terminalFocus
+  if (focus !== undefined) return focus
+  return Date.now() - STATE.lastInteractionTime < NOTIF_ACTIVE_THRESHOLD_MS
+}
+
+// Suspension por arrastre de scroll: los intervalos de fondo consultan esto
+// antes de trabajar para no competir con los cuadros de scroll por el bucle
+// de eventos. Ambito de modulo, no `State`: bandera efimera de camino
+// caliente, y el temporizador se limpia solo.
+let scrollDraining = false
+let scrollDrainTimer: ReturnType<typeof setTimeout> | undefined
+const SCROLL_DRAIN_IDLE_MS = 150
+
+/** Declara que acaba de ocurrir un evento de scroll. */
+export function markScrollActivity(): void {
+  scrollDraining = true
+  if (scrollDrainTimer) clearTimeout(scrollDrainTimer)
+  scrollDrainTimer = setTimeout(() => {
+    scrollDraining = false
+    scrollDrainTimer = undefined
+  }, SCROLL_DRAIN_IDLE_MS)
+  scrollDrainTimer.unref?.()
+}
+
+/** Cierto mientras el scroll drena (dentro de los 150 ms del ultimo evento). */
+export function getIsScrollDraining(): boolean {
+  return scrollDraining
+}
+
+/** Espera a que el scroll se asiente antes de seguir. */
+export async function waitForScrollIdle(): Promise<void> {
+  while (scrollDraining) {
+    await new Promise(r => setTimeout(r, SCROLL_DRAIN_IDLE_MS).unref?.())
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Slice I — modelo del bucle principal y betas del SDK
+// ---------------------------------------------------------------------------
+
+export function getMainLoopModelOverride(): ModelSetting | undefined {
+  return STATE.mainLoopModelOverride
+}
+
+export function getInitialMainLoopModel(): ModelSetting {
+  return STATE.initialMainLoopModel
+}
+
+export function setMainLoopModelOverride(
+  model: ModelSetting | undefined,
+): void {
+  STATE.mainLoopModelOverride = model
+}
+
+export function setInitialMainLoopModel(model: ModelSetting): void {
+  STATE.initialMainLoopModel = model
+}
+
+export function getModelStrings(): ModelStrings | null {
+  return STATE.modelStrings
+}
+
+export function setModelStrings(modelStrings: ModelStrings): void {
+  STATE.modelStrings = modelStrings
+}
+
+export function resetModelStringsForTestingOnly(): void {
+  STATE.modelStrings = null
+}
+
+export function getSdkBetas(): string[] | undefined {
+  return STATE.sdkBetas
+}
+
+export function setSdkBetas(betas: string[] | undefined): void {
+  STATE.sdkBetas = betas
+}
+
+export function getMainThreadAgentType(): string | undefined {
+  return STATE.mainThreadAgentType
+}
+
+export function setMainThreadAgentType(agentType: string | undefined): void {
+  STATE.mainThreadAgentType = agentType
+}
+
+// ---------------------------------------------------------------------------
+// Slice J — postura declarada del cliente y de la sesion
+// ---------------------------------------------------------------------------
+
+export function getClientType(): string {
+  return STATE.clientType
+}
+
+export function setClientType(type: string): void {
+  STATE.clientType = type
+}
+
+export function getSdkAgentProgressSummariesEnabled(): boolean {
+  return STATE.sdkAgentProgressSummariesEnabled
+}
+
+export function setSdkAgentProgressSummariesEnabled(value: boolean): void {
+  STATE.sdkAgentProgressSummariesEnabled = value
+}
+
+export function getKairosActive(): boolean {
+  return STATE.kairosActive
+}
+
+export function setKairosActive(value: boolean): void {
+  STATE.kairosActive = value
+}
+
+/**
+ * Con esto puesto, el emparejado de resultados de herramienta LANZA ante un
+ * desajuste en vez de repararlo con marcadores sinteticos: la trayectoria
+ * falla pronto en vez de condicionar al modelo con resultados falsos.
+ */
+export function getStrictToolResultPairing(): boolean {
+  return STATE.strictToolResultPairing
+}
+
+export function setStrictToolResultPairing(value: boolean): void {
+  STATE.strictToolResultPairing = value
+}
+
+export function getUserMsgOptIn(): boolean {
+  return STATE.userMsgOptIn
+}
+
+export function setUserMsgOptIn(value: boolean): void {
+  STATE.userMsgOptIn = value
+}
+
+export function getSessionSource(): string | undefined {
+  return STATE.sessionSource
+}
+
+export function setSessionSource(source: string): void {
+  STATE.sessionSource = source
+}
+
+export function getQuestionPreviewFormat(): 'markdown' | 'html' | undefined {
+  return STATE.questionPreviewFormat
+}
+
+export function setQuestionPreviewFormat(format: 'markdown' | 'html'): void {
+  STATE.questionPreviewFormat = format
+}
+
+export function getIsRemoteMode(): boolean {
+  return STATE.isRemoteMode
+}
+
+export function setIsRemoteMode(value: boolean): void {
+  STATE.isRemoteMode = value
+}
+
+export function getDirectConnectServerUrl(): string | undefined {
+  return STATE.directConnectServerUrl
+}
+
+export function setDirectConnectServerUrl(url: string): void {
+  STATE.directConnectServerUrl = url
+}
+
+/**
+ * Una sesion no interactiva que no venga del cliente de VS Code prefiere la
+ * autenticacion de tercero.
+ */
+export function preferThirdPartyAuthentication(): boolean {
+  return getIsNonInteractiveSession() && STATE.clientType !== 'claude-vscode'
+}
+
+// ---------------------------------------------------------------------------
+// Slice K — credenciales y settings declarados por bandera
+// ---------------------------------------------------------------------------
+
+export function getFlagSettingsPath(): string | undefined {
+  return STATE.flagSettingsPath
+}
+
+export function setFlagSettingsPath(path: string | undefined): void {
+  STATE.flagSettingsPath = path
+}
+
+export function getFlagSettingsInline(): Record<string, unknown> | null {
+  return STATE.flagSettingsInline
+}
+
+export function setFlagSettingsInline(
+  settings: Record<string, unknown> | null,
+): void {
+  STATE.flagSettingsInline = settings
+}
+
+export function getSessionIngressToken(): string | null | undefined {
+  return STATE.sessionIngressToken
+}
+
+export function setSessionIngressToken(token: string | null): void {
+  STATE.sessionIngressToken = token
+}
+
+export function getOauthTokenFromFd(): string | null | undefined {
+  return STATE.oauthTokenFromFd
+}
+
+export function setOauthTokenFromFd(token: string | null): void {
+  STATE.oauthTokenFromFd = token
+}
+
+export function getApiKeyFromFd(): string | null | undefined {
+  return STATE.apiKeyFromFd
+}
+
+export function setApiKeyFromFd(key: string | null): void {
+  STATE.apiKeyFromFd = key
+}
+
+// ---------------------------------------------------------------------------
+// Slice L — color de agente
+// ---------------------------------------------------------------------------
+
+export function getAgentColorMap(): Map<string, AgentColorName> {
+  return STATE.agentColorMap
+}
+
+
+// ---------------------------------------------------------------------------
+// Slice M — diagnostico en memoria
+// ---------------------------------------------------------------------------
+
+/** El carrete es acotado: la entrada mas vieja sale cuando llega la 101. */
+export function addToInMemoryErrorLog(errorInfo: {
+  error: string
+  timestamp: string
+}): void {
+  const MAX_IN_MEMORY_ERRORS = 100
+  if (STATE.inMemoryErrorLog.length >= MAX_IN_MEMORY_ERRORS) {
+    STATE.inMemoryErrorLog.shift()
+  }
+  STATE.inMemoryErrorLog.push(errorInfo)
+}
+
+
+// El carrete de operaciones lentas es acotado Y caduco: 10 entradas y 10 s.
+const MAX_SLOW_OPERATIONS = 10
+const SLOW_OPERATION_TTL_MS = 10_000
+
+/**
+ * Solo registra bajo `USER_TYPE=ant`, y descarta el propio `exec` del prompt
+ * —medirse a si mismo llenaria el carrete con ruido.
+ */
+export function addSlowOperation(operation: string, durationMs: number): void {
+  if (process.env.USER_TYPE !== 'ant') return
+  if (operation.includes('exec') && operation.includes('claude-prompt-')) {
+    return
+  }
+  const now = Date.now()
+  STATE.slowOperations = STATE.slowOperations.filter(
+    op => now - op.timestamp < SLOW_OPERATION_TTL_MS,
+  )
+  STATE.slowOperations.push({ operation, durationMs, timestamp: now })
+  if (STATE.slowOperations.length > MAX_SLOW_OPERATIONS) {
+    STATE.slowOperations = STATE.slowOperations.slice(-MAX_SLOW_OPERATIONS)
+  }
+}
+
+// Una sola instancia vacia compartida: el lector corre en cada render y
+// devolver un arreglo nuevo forzaria a re-renderizar sin que nada cambie.
+const EMPTY_SLOW_OPERATIONS: ReadonlyArray<{
+  operation: string
+  durationMs: number
+  timestamp: number
+}> = []
+
+export function getSlowOperations(): ReadonlyArray<{
+  operation: string
+  durationMs: number
+  timestamp: number
+}> {
+  if (STATE.slowOperations.length === 0) {
+    return EMPTY_SLOW_OPERATIONS
+  }
+  const now = Date.now()
+  if (
+    STATE.slowOperations.some(op => now - op.timestamp >= SLOW_OPERATION_TTL_MS)
+  ) {
+    STATE.slowOperations = STATE.slowOperations.filter(
+      op => now - op.timestamp < SLOW_OPERATION_TTL_MS,
+    )
+    if (STATE.slowOperations.length === 0) {
+      return EMPTY_SLOW_OPERATIONS
+    }
+  }
+  return STATE.slowOperations
+}
+
+// ---------------------------------------------------------------------------
+// Slice N — plugins y canales declarados
+// ---------------------------------------------------------------------------
+
+export function setInlinePlugins(plugins: Array<string>): void {
+  STATE.inlinePlugins = plugins
+}
+
+export function getInlinePlugins(): Array<string> {
+  return STATE.inlinePlugins
+}
+
+export function setChromeFlagOverride(value: boolean | undefined): void {
+  STATE.chromeFlagOverride = value
+}
+
+export function getChromeFlagOverride(): boolean | undefined {
+  return STATE.chromeFlagOverride
+}
+
+/** Cambiar la postura de plugins invalida la cache de settings. */
+export function setUseCoworkPlugins(value: boolean): void {
+  STATE.useCoworkPlugins = value
+  resetSettingsCache()
+}
+
+export function getUseCoworkPlugins(): boolean {
+  return STATE.useCoworkPlugins
+}
+
+export type ChannelEntry =
+  | { kind: 'plugin'; name: string; marketplace: string; dev?: boolean }
+  | { kind: 'server'; name: string; dev?: boolean }
+
+export function getAllowedChannels(): ChannelEntry[] {
+  return STATE.allowedChannels
+}
+
+export function setAllowedChannels(entries: ChannelEntry[]): void {
+  STATE.allowedChannels = entries
+}
+
+export function setHasDevChannels(value: boolean): void {
+  STATE.hasDevChannels = value
+}
+
+export function getHasDevChannels(): boolean {
+  return STATE.hasDevChannels
+}
+
+// ---------------------------------------------------------------------------
+// Slice O — tareas programadas de sesion
+// ---------------------------------------------------------------------------
+
+export type SessionCronTask = {
+  id: string
+  cron: string
+  prompt: string
+  createdAt: number
+  recurring?: boolean
+  /**
+   * Presente cuando la creo un companero en proceso, no el lider. El
+   * planificador encola el disparo en SU cola de mensajes pendientes, no en
+   * la del REPL principal. Solo de sesion — nunca se escribe a disco.
+   */
+  agentId?: string
+  /**
+   * Etiqueta de clase. `loop` marca un cron de sesion creado por
+   * ScheduleWakeup; el camino de aborto la usa para barrerlos de una pasada.
+   */
+  kind?: 'loop'
+}
+
+export type LoopChainEntry = {
+  startedAt: number
+  lastScheduledFor: number
+  agedOut?: boolean
+}
+
+export function setScheduledTasksEnabled(enabled: boolean): void {
+  STATE.scheduledTasksEnabled = enabled
+}
+
+export function getScheduledTasksEnabled(): boolean {
+  return STATE.scheduledTasksEnabled
+}
+
+export function getLoopChainStartedAt(
+  prompt: string,
+): LoopChainEntry | undefined {
+  return STATE.loopChainStartedAt[prompt]
+}
+
+export function setLoopChainStartedAt(
+  prompt: string,
+  entry: LoopChainEntry,
+): void {
+  STATE.loopChainStartedAt[prompt] = entry
+}
+
+export function deleteLoopChainStartedAt(prompt: string): void {
+  delete STATE.loopChainStartedAt[prompt]
+}
+
+export function getSessionCronTasks(): SessionCronTask[] {
+  return STATE.sessionCronTasks
+}
+
+export function addSessionCronTask(task: SessionCronTask): void {
+  STATE.sessionCronTasks.push(task)
+}
+
+/** Devuelve cuantas retiro, para que el llamador pueda distinguir el no-op. */
+export function removeSessionCronTasks(ids: readonly string[]): number {
+  if (ids.length === 0) return 0
+  const idSet = new Set(ids)
+  const remaining = STATE.sessionCronTasks.filter(t => !idSet.has(t.id))
+  const removed = STATE.sessionCronTasks.length - remaining.length
+  if (removed === 0) return 0
+  STATE.sessionCronTasks = remaining
+  return removed
+}
+
+// ---------------------------------------------------------------------------
+// Slice P — equipos, confianza, persistencia y teletransporte de sesion
+// ---------------------------------------------------------------------------
+
+export function getSessionCreatedTeams(): Set<string> {
+  return STATE.sessionCreatedTeams
+}
+
+export function setSessionTrustAccepted(accepted: boolean): void {
+  STATE.sessionTrustAccepted = accepted
+}
+
+export function getSessionTrustAccepted(): boolean {
+  return STATE.sessionTrustAccepted
+}
+
+export function setSessionPersistenceDisabled(disabled: boolean): void {
+  STATE.sessionPersistenceDisabled = disabled
+}
+
+export function isSessionPersistenceDisabled(): boolean {
+  return STATE.sessionPersistenceDisabled
+}
+
+export function setTeleportedSessionInfo(info: {
+  sessionId: string | null
+}): void {
+  STATE.teleportedSessionInfo = {
+    isTeleported: true,
+    hasLoggedFirstMessage: false,
+    sessionId: info.sessionId,
+  }
+}
+
+export function getTeleportedSessionInfo(): {
+  isTeleported: boolean
+  hasLoggedFirstMessage: boolean
+  sessionId: string | null
+} | null {
+  return STATE.teleportedSessionInfo
+}
+
+export function markFirstTeleportMessageLogged(): void {
+  if (STATE.teleportedSessionInfo) {
+    STATE.teleportedSessionInfo.hasLoggedFirstMessage = true
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Slice Q — modo plan y modo auto
+// ---------------------------------------------------------------------------
+
+export function hasExitedPlanModeInSession(): boolean {
+  return STATE.hasExitedPlanMode
+}
+
+export function setHasExitedPlanMode(value: boolean): void {
+  STATE.hasExitedPlanMode = value
+}
+
+export function needsPlanModeExitAttachment(): boolean {
+  return STATE.needsPlanModeExitAttachment
+}
+
+export function setNeedsPlanModeExitAttachment(value: boolean): void {
+  STATE.needsPlanModeExitAttachment = value
+}
+
+/**
+ * Entrar a plan LIMPIA la marca de salida; salir de plan la PONE. El adjunto
+ * lo consume el siguiente turno, que es quien la vuelve a limpiar.
+ */
+export function handlePlanModeTransition(
+  fromMode: string,
+  toMode: string,
+): void {
+  if (toMode === 'plan' && fromMode !== 'plan') {
+    STATE.needsPlanModeExitAttachment = false
+  }
+  if (fromMode === 'plan' && toMode !== 'plan') {
+    STATE.needsPlanModeExitAttachment = true
+  }
+}
+
+export function needsAutoModeExitAttachment(): boolean {
+  return STATE.needsAutoModeExitAttachment
+}
+
+export function setNeedsAutoModeExitAttachment(value: boolean): void {
+  STATE.needsAutoModeExitAttachment = value
+}
+
+/**
+ * Misma forma que la transicion de plan, con una excepcion: el trayecto
+ * auto<->plan NO toca la marca — son dos modos declarados y pasar de uno al
+ * otro no es «salir de auto» a efectos del adjunto.
+ */
+export function handleAutoModeTransition(
+  fromMode: string,
+  toMode: string,
+): void {
+  if (
+    (fromMode === 'auto' && toMode === 'plan') ||
+    (fromMode === 'plan' && toMode === 'auto')
+  ) {
+    return
+  }
+  const fromIsAuto = fromMode === 'auto'
+  const toIsAuto = toMode === 'auto'
+  if (toIsAuto && !fromIsAuto) {
+    STATE.needsAutoModeExitAttachment = false
+  }
+  if (fromIsAuto && !toIsAuto) {
+    STATE.needsAutoModeExitAttachment = true
+  }
+}
+
+export function hasShownLspRecommendationThisSession(): boolean {
+  return STATE.lspRecommendationShownThisSession
+}
+
+export function setLspRecommendationShownThisSession(value: boolean): void {
+  STATE.lspRecommendationShownThisSession = value
+}
+
+// ---------------------------------------------------------------------------
+// Slice R — esquema de init y hooks registrados por el SDK
+// ---------------------------------------------------------------------------
+
+export function setInitJsonSchema(schema: Record<string, unknown>): void {
+  STATE.initJsonSchema = schema
+}
+
+export function getInitJsonSchema(): Record<string, unknown> | null {
+  return STATE.initJsonSchema
+}
+
+/** Acumula: registrar dos veces el mismo evento NO reemplaza, concatena. */
+export function registerHookCallbacks(
+  hooks: Partial<Record<HookEvent, RegisteredHookMatcher[]>>,
+): void {
+  if (!STATE.registeredHooks) {
+    STATE.registeredHooks = {}
+  }
+  for (const [event, matchers] of Object.entries(hooks)) {
+    const eventKey = event as HookEvent
+    if (!STATE.registeredHooks[eventKey]) {
+      STATE.registeredHooks[eventKey] = []
+    }
+    STATE.registeredHooks[eventKey]!.push(...matchers)
+  }
+}
+
+export function getRegisteredHooks(): Partial<
+  Record<HookEvent, RegisteredHookMatcher[]>
+> | null {
+  return STATE.registeredHooks
+}
+
+export function clearRegisteredHooks(): void {
+  STATE.registeredHooks = null
+}
+
+/**
+ * Retira SOLO los matchers de plugin — el discriminador es `pluginRoot`, que
+ * unicamente `PluginHookMatcher` declara. Si no queda ninguno, el registro
+ * vuelve a `null` y no a un objeto vacio: los dos se leen distinto.
+ */
+export function clearRegisteredPluginHooks(): void {
+  if (!STATE.registeredHooks) {
+    return
+  }
+  const filtered: Partial<Record<HookEvent, RegisteredHookMatcher[]>> = {}
+  for (const [event, matchers] of Object.entries(STATE.registeredHooks)) {
+    const callbackHooks = matchers.filter(m => !('pluginRoot' in m))
+    if (callbackHooks.length > 0) {
+      filtered[event as HookEvent] = callbackHooks
+    }
+  }
+  STATE.registeredHooks = Object.keys(filtered).length > 0 ? filtered : null
+}
+
+export function resetSdkInitState(): void {
+  STATE.initJsonSchema = null
+  STATE.registeredHooks = null
+}
+
+// ---------------------------------------------------------------------------
+// Slice S — skills invocadas, que se preservan al compactar
+// ---------------------------------------------------------------------------
+
+export type InvokedSkillInfo = {
+  skillName: string
+  skillPath: string
+  content: string
+  invokedAt: number
+  agentId: string | null
+}
+
+/**
+ * La clave es COMPUESTA —`${agentId ?? ''}:${skillName}`— para que dos
+ * agentes que invoquen la misma skill no se sobreescriban.
+ */
+export function addInvokedSkill(
+  skillName: string,
+  skillPath: string,
+  content: string,
+  agentId: string | null = null,
+): void {
+  const key = `${agentId ?? ''}:${skillName}`
+  STATE.invokedSkills.set(key, {
+    skillName,
+    skillPath,
+    content,
+    invokedAt: Date.now(),
+    agentId,
+  })
+}
+
+export function getInvokedSkills(): Map<string, InvokedSkillInfo> {
+  return STATE.invokedSkills
+}
+
+export function getInvokedSkillsForAgent(
+  agentId: string | undefined | null,
+): Map<string, InvokedSkillInfo> {
+  const normalizedId = agentId ?? null
+  const filtered = new Map<string, InvokedSkillInfo>()
+  for (const [key, skill] of STATE.invokedSkills) {
+    if (skill.agentId === normalizedId) {
+      filtered.set(key, skill)
+    }
+  }
+  return filtered
+}
+
+/**
+ * Sin conjunto de preservados vacia todo. Con el, conserva SOLO las de esos
+ * agentes: las del hilo principal (`agentId === null`) tambien caen.
+ */
+export function clearInvokedSkills(
+  preservedAgentIds?: ReadonlySet<string>,
+): void {
+  if (!preservedAgentIds || preservedAgentIds.size === 0) {
+    STATE.invokedSkills.clear()
+    return
+  }
+  for (const [key, skill] of STATE.invokedSkills) {
+    if (skill.agentId === null || !preservedAgentIds.has(skill.agentId)) {
+      STATE.invokedSkills.delete(key)
+    }
+  }
+}
+
+export function clearInvokedSkillsForAgent(agentId: string): void {
+  for (const [key, skill] of STATE.invokedSkills) {
+    if (skill.agentId === agentId) {
+      STATE.invokedSkills.delete(key)
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Slice T — accesor de clientes MCP, caches y latches de cabecera
+// ---------------------------------------------------------------------------
+
+export type McpClientSnapshotEntry = {
+  name: string
+  type: 'connected' | 'failed' | 'pending' | 'needs-auth' | 'disabled' | string
+}
+
+// Un ACCESOR, no una copia: el registro de clientes vive en otro paquete y
+// guardar aqui una instantanea la dejaria rancia en el primer reintento.
+let mcpClientsAccessor: (() => readonly McpClientSnapshotEntry[]) | null = null
+
+export function setMcpClientsAccessor(
+  accessor: (() => readonly McpClientSnapshotEntry[]) | null,
+): void {
+  mcpClientsAccessor = accessor
+}
+
+export function getMcpClientsFromAccessor():
+  | readonly McpClientSnapshotEntry[]
+  | null {
+  return mcpClientsAccessor?.() ?? null
+}
+
+export function getSystemPromptSectionCache(): Map<string, string | null> {
+  return STATE.systemPromptSectionCache
+}
+
+export function setSystemPromptSectionCacheEntry(
+  name: string,
+  value: string | null,
+): void {
+  STATE.systemPromptSectionCache.set(name, value)
+}
+
+export function clearSystemPromptSectionState(): void {
+  STATE.systemPromptSectionCache.clear()
+}
+
+export function getLastEmittedDate(): string | null {
+  return STATE.lastEmittedDate
+}
+
+export function setLastEmittedDate(date: string | null): void {
+  STATE.lastEmittedDate = date
+}
+
+export function getAdditionalDirectoriesForClaudeMd(): string[] {
+  return STATE.additionalDirectoriesForClaudeMd
+}
+
+/** Notifica a los suscriptores: el cargador de CLAUDE.md depende de esto. */
+export function setAdditionalDirectoriesForClaudeMd(
+  directories: string[],
+): void {
+  STATE.additionalDirectoriesForClaudeMd = directories
+  notifyAdditionalDirectories(directories)
+}
+
+export function getPromptCache1hAllowlist(): string[] | null {
+  return STATE.promptCache1hAllowlist
+}
+
+export function setPromptCache1hAllowlist(allowlist: string[] | null): void {
+  STATE.promptCache1hAllowlist = allowlist
+}
+
+export function getPromptCache1hEligible(): boolean | null {
+  return STATE.promptCache1hEligible
+}
+
+export function setPromptCache1hEligible(eligible: boolean | null): void {
+  STATE.promptCache1hEligible = eligible
+}
+
+// Los latches de cabecera beta son TRI-estado: `null` es «no se ha decidido»
+// y no es lo mismo que `false`.
+export function getAfkModeHeaderLatched(): boolean | null {
+  return STATE.afkModeHeaderLatched
+}
+
+export function setAfkModeHeaderLatched(v: boolean): void {
+  STATE.afkModeHeaderLatched = v
+}
+
+export function getFastModeHeaderLatched(): boolean | null {
+  return STATE.fastModeHeaderLatched
+}
+
+export function setFastModeHeaderLatched(v: boolean): void {
+  STATE.fastModeHeaderLatched = v
+}
+
+export function getCacheEditingHeaderLatched(): boolean | null {
+  return STATE.cacheEditingHeaderLatched
+}
+
+export function setCacheEditingHeaderLatched(v: boolean): void {
+  STATE.cacheEditingHeaderLatched = v
+}
+
+export function getCacheDiagnosisHeaderLatched(): boolean | null {
+  return STATE.cacheDiagnosisHeaderLatched
+}
+
+export function setCacheDiagnosisHeaderLatched(v: boolean): void {
+  STATE.cacheDiagnosisHeaderLatched = v
+}
+
+export function getThinkingClearLatched(): boolean | null {
+  return STATE.thinkingClearLatched
+}
+
+export function setThinkingClearLatched(v: boolean): void {
+  STATE.thinkingClearLatched = v
+}
+
+export function clearBetaHeaderLatches(): void {
+  STATE.afkModeHeaderLatched = null
+  STATE.fastModeHeaderLatched = null
+  STATE.cacheEditingHeaderLatched = null
+  STATE.cacheDiagnosisHeaderLatched = null
+  STATE.thinkingClearLatched = null
+}
+
+/**
+ * El puente del REPL no esta cableado en este arbol; la fuente tampoco lo
+ * consulta desde aqui para otra cosa que el prompt de ToolSearchTool.
+ * Devuelve `false` con la misma firma, no se inventa un mecanismo.
+ */
+export function isReplBridgeActive(): boolean {
+  return false
 }
