@@ -43,6 +43,28 @@ mkdir -p "$T/src/verify"
 cp "$THYROX/src/verify/check-agent-artifacts.sh" "$T/src/verify/"
 cp "$THYROX/src/verify/check-cli-typecheck.sh" "$T/src/verify/"
 
+# Y lo que esos gates SOURCEAN, DERIVADO del gate, no transcrito. El arbol
+# sintetico imita la forma de thyrox, asi que tiene que incluir la biblioteca
+# que el gate carga; sin ella el gate muere en el `source` ANTES de resolver
+# nada, y el caso lee ese exit 1 como «resolvio otra ruta» — que es una
+# conclusion sobre un fenomeno que el instrumento nunca midio.
+#
+# Se DERIVA porque una lista transcrita aqui es una segunda fuente de verdad:
+# el dia que un gate sourcee otra biblioteca, la lista se queda atras y el caso
+# vuelve a publicar «otra» sin que nadie toque este archivo. Es el defecto que
+# TASK-THYROX-0235 corrige, y la forma que #370 ya nombro para el pre-commit.
+for g in "$T"/src/verify/*.sh; do
+    while IFS= read -r rel; do
+        [ -n "$rel" ] || continue
+        mkdir -p "$T/$(dirname "$rel")"
+        cp "$THYROX/$rel" "$T/$rel" 2>/dev/null || {
+            echo "ERROR — $g sourcea \`$rel\`, que no existe en $THYROX." >&2
+            echo "  NO se emite un conteo: el arbol sintetico seria incompleto." >&2
+            exit 2
+        }
+    done < <(sed -n 's|^[[:space:]]*source "\$RAIZ/\([^"]*\)".*|\1|p' "$g")
+done
+
 # --- agent-artifacts --------------------------------------------------------
 SAL="$(cd "$T" && bash src/verify/check-agent-artifacts.sh 2>&1)"
 case "$SAL" in
@@ -82,6 +104,16 @@ case "$SAL" in
     *"NO ENCONTRADO"*) VISTO=rehusa ;;
     *) VISTO=otra ;;
 esac
+#
+# ESTOS DOS ESTAN ROJOS HOY, y su causa esta medida y nombrada:
+# TASK-THYROX-0236. NO es la que el remedio generico del gate sugiere
+# (`bun install`): los errores no son de modulo sin resolver, son de MODO
+# ESTRICTO en los 5 paquetes `@ant/*` que TASK-THYROX-0487 trajo enteros. Es la
+# misma pared que 0228 y 0233 cruzaron simbolo a simbolo, ahora a escala de
+# paquete — la fuente compila con `strict: false` y esta raiz con `strict:
+# true`. Se dejan ROJOS a proposito: un caso desactivado publicaria verde sobre
+# una medicion que nunca ocurre, que es el sub-patron D con esta suite como
+# sujeto.
 afirmar "cli-typecheck mide los dos proyectos del paquete" mide "$VISTO"
 afirmar "cli-typecheck sale 0 sobre el arbol limpio" 0 "$COD"
 
