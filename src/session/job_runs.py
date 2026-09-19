@@ -247,13 +247,34 @@ def missing_keys(run_dir: str | pathlib.Path) -> list[str]:
 
 
 def settle(run_dir: str | pathlib.Path, exit_code: int,
-           now: datetime | None = None) -> pathlib.Path:
+           now: datetime | None = None, force: bool = False) -> pathlib.Path:
     """Asienta el código de salida donde el manifiesto se lee.
 
     El `__BG_EXIT__` del log sigue estando —es lo que la barrera consume— pero
     un lector del manifiesto no debería tener que abrir el log para saber si el
     trabajo terminó bien.
+
+    **Idempotente por defecto (TASK-THYROX-0234).** `bg.sh status` asienta cada
+    vez que ve el marcador en el log, y el marcador no se borra: se llamaba una
+    vez por LECTURA, no una por trabajo. Cada llamada apendaba otra fila, y su
+    `duration_seconds` se deriva de `now - started_at`, así que cada una
+    publicaba una duración mayor — medido sobre un trabajo de ~1 s: 2.2, 5.35,
+    8.51. El eje del JSONL es temporal y la última fila gana, así que quien
+    preguntara «cuánto tardó» leía la peor de todas, y la respuesta crecía con
+    cuánta gente hubiera preguntado.
+
+    La guarda LEE, pero no rompe la propiedad que el JSONL compra: sigue sin
+    haber lectura-modificación-reescritura, sólo un append que a veces se
+    omite. Dos escritores concurrentes pueden colarse los dos — la ventana es
+    la misma que hoy, y su peor caso es la fila duplicada que ya existía.
+
+    `force` es la rama alterna, y no es decorado: un run ADOPTADO después
+    (`wait-jobs adopt-external`) puede necesitar corregir su código, y ahí la
+    segunda fila es deliberada. Una guarda sin escape convierte un defecto de
+    duplicado en uno de dato congelado.
     """
+    if not force and "exit_code" in read_manifest(run_dir):
+        return resolve_manifest(run_dir) or pathlib.Path(run_dir) / MANIFEST_FILE_NAME
     ruta = pathlib.Path(run_dir) / MANIFEST_FILE_NAME
     legacy_file = pathlib.Path(run_dir) / LEGACY_MANIFEST_FILE_NAME
     settlement: dict[str, object] = {"exit_code": exit_code}

@@ -1,0 +1,74 @@
+# MITAD ROJA de TASK-THYROX-0234, persistida al producirse
+# Fecha: 2026-09-19T17:18:17
+
+## Como se destapo: el hook Stop, no una relectura
+Tras commitear los tres jobs, git volvio a marcar UNO como modificado.
+El diff era una SEGUNDA fila settle en el mismo run:
+  {"kind": "settle", "exit_code": 2, "finished_at": "...17:13:38", "duration_seconds": 138.169902}
+  {"kind": "settle", "exit_code": 2, "finished_at": "...17:16:16", "duration_seconds": 296.764872}
+El proceso termino UNA vez. La segunda duracion no mide el trabajo:
+mide el tiempo desde el lanzamiento hasta que alguien pregunto.
+
+## Sonda de conducta — reproducible, trabajo de ~1 s
+  status #1 -> 1 fila settle   duration 2.20
+  status #2 -> 2 filas settle  duration 5.35
+  status #3 -> 3 filas settle  duration 8.51
+Cada LECTURA apenda una fila y publica una duracion mayor.
+
+## Por que importa, y no es cosmetico
+El eje del JSONL es temporal: read_manifest colapsa las filas y la
+ULTIMA gana. Un consumidor que preguntara «cuanto tardo» leia siempre
+la PEOR de todas, y la respuesta crecia con cuanta gente preguntara.
+Es el sub-patron A de metrica-decide-la-conclusion aplicado al reloj:
+una clave llamada duration_seconds que, de la segunda fila en adelante,
+mide otro fenomeno.
+
+## La mitad roja
+  ok    test_a_scaffolded_run_is_NOT_conformant_yet
+  ok    test_an_empty_population_refuses_instead_of_publishing_a_zero
+  ok    test_latest_run_finds_the_most_recent_of_a_slug
+  ok    test_opposite_dispersion_with_the_SAME_total_gives_a_different_verdict
+  ok    test_reuses_the_workbench_required_keys
+  ok    test_reuses_the_workbench_run_id_grammar
+  ok    test_scaffold_creates_one_directory_per_run
+  ok    test_scaffold_records_when_the_job_started
+  FALLO test_settle_forced_reasserts_and_says_so
+  FALLO test_settle_is_idempotent_and_its_duration_does_not_grow
+  ok    test_settle_records_the_duration_not_only_the_exit_code
+  ok    test_settle_records_the_exit_code_where_the_manifest_can_be_read
+  ok    test_the_distribution_publishes_its_operands_not_only_the_total
+  ok    test_the_log_lives_inside_its_run_not_beside_it
+  ok    test_the_manifest_declares_the_instrument_and_OMITS_what_it_cannot_know
+resumen: 2 fallo(s)
+
+=======================================================================
+CONTROL DE ANULACION — 2026-09-19T17:24 (TASK-THYROX-0234)
+=======================================================================
+Dos guardas, dos anulaciones. Cada una tiene que hacer caer EXACTAMENTE
+las aserciones que dependen de ella, ni una mas.
+
+--- Anulacion 1: la guarda de idempotencia nunca se cumple -------------
+  sed: `if not force and ...` -> `if False and not force and ...`
+
+  FALLO test_settle_is_idempotent_and_its_duration_does_not_grow
+  resumen: 1 fallo(s)
+
+  Cae 1. El otro caso SOBREVIVE, y es correcto: `force=True` re-asienta
+  igual con la guarda anulada, asi que no depende de ella.
+
+--- Anulacion 2: la guarda SIN escape (el defecto que `force` evita) ---
+  sed: `if not force and "exit_code" in ...` -> `if "exit_code" in ...`
+
+  FALLO test_settle_forced_reasserts_and_says_so
+  resumen: 1 fallo(s)
+
+  Cae 1, y es el OTRO. El caso de idempotencia sobrevive, porque una
+  guarda sin escape sigue siendo idempotente — es mas estricta, no menos.
+
+--- Lectura -----------------------------------------------------------
+Las dos mitades cargan su peso y ninguna cubre a la otra: cada anulacion
+hace caer un caso distinto. Un solo caso habria dejado la mitad `force`
+sin medir, y su verde no habria distinguido «la guarda tiene escape» de
+«la guarda no existe».
+
+Restaurado: `grep -c 'if not force and "exit_code" in read_manifest'` -> 1
