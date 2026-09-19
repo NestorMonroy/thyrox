@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Generado por src/session/generate_bin.py — no editar a mano.
+THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LIB="$THYROX_ROOT/src/lib/toolchain.sh"
+if [ ! -r "$LIB" ]; then
+  echo "bin/config-settings: no alcanza $LIB — el arbol esta incompleto." >&2
+  exit 2
+fi
+# shellcheck source=/dev/null
+source "$LIB"
+thyrox_toolchain_require_bun || exit 2
+exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$THYROX_ROOT/src/packages/config/bin/settings.ts" "$@"
