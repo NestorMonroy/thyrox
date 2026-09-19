@@ -84,7 +84,18 @@ export type AssistantMessage = Message & {
     [key: string]: unknown
   }
 }
-export type AttachmentMessage<T = unknown> = Message & { type: 'attachment'; attachment: { type: string; [key: string]: unknown } }
+/**
+ * El parametro de tipo lleva guion bajo, y es DIVERGENCIA DE IDENTIFICADOR, no
+ * de forma: la fuente lo llama `T` y no lo usa en el cuerpo del alias. Aqui la
+ * raiz declara `noUnusedParameters: true`, asi que `T` dispara TS6133 — medido
+ * por sonda, `_T` no, y un consumidor sigue pudiendo escribir
+ * `AttachmentMessage<AgentMentionAttachment>` porque el parametro se pasa por
+ * POSICION, no por nombre. Retirarlo del todo SI romperia: hay tres
+ * consumidores que lo parametrizan, en este arbol y en la fuente
+ * (`repl/src/uiHelpers/groupToolUses.ts`,
+ * `repl/src/processUserInput/processUserInput.ts`).
+ */
+export type AttachmentMessage<_T = unknown> = Message & { type: 'attachment'; attachment: { type: string; [key: string]: unknown } }
 export type ProgressMessage<T = unknown> = Message & { type: 'progress'; data: T }
 export type SystemLocalCommandMessage = Message & { type: 'system' }
 export type SystemMessage = Message & { type: 'system' }
@@ -121,7 +132,7 @@ export type MessageOrigin = string
 export type CompactMetadata = Record<string, unknown>
 export type SystemAPIErrorMessage = Message & { type: 'system' }
 export type SystemFileSnapshotMessage = Message & { type: 'system' }
-export type NormalizedAssistantMessage<T = unknown> = AssistantMessage
+export type NormalizedAssistantMessage<_T = unknown> = AssistantMessage
 export type NormalizedMessage = Message
 export type PartialCompactDirection = string
 

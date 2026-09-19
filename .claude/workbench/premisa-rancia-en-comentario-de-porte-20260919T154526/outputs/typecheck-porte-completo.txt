@@ -1,0 +1,27 @@
+# Porte de messageShapes: 9 -> 44 exports
+# Fecha: 2026-09-19T17:07:45
+# Comando: npx tsc --noEmit -p src/packages/agent/tsconfig.json | grep -E '^src/packages/agent/'
+
+## Conteo
+pristine (porte minimo de 9 exports): 172
+porte completo (44 exports):          165
+
+## Cerrados por el porte (comm -23)
+src/packages/agent/compaction/sessionMemoryCompact.ts(295,33): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+src/packages/agent/compaction/sessionMemoryCompact.ts(306,33): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+src/packages/agent/compaction/sessionMemoryCompact.ts(480,7): error TS2353: Object literal may only specify known properties, and 'isCompactSummary' does not exist in type '{ content: string | unknown[]; isMeta?: true | undefined; uuid?: string | undefined; timestamp?: string | undefined; }'.
+src/packages/agent/compaction/sessionMemoryCompact.ts(6,15): error TS2305: Module '"../messageShapes.js"' has no exported member 'HookResultMessage'.
+src/packages/agent/forkedAgent.ts(537,5): error TS2322: Type 'unknown' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | null'.
+src/packages/agent/forkedAgent.ts(597,11): error TS2322: Type 'unknown' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | null'.
+src/packages/agent/tokens.ts(3,33): error TS2305: Module '"./messageShapes.js"' has no exported member 'ContentItem'.
+src/packages/agent/tokens.ts(36,5): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+
+## Introducidos (comm -13)
+src/packages/agent/compaction/sessionMemoryCompact.ts(480,7): error TS2353: Object literal may only specify known properties, and 'isCompactSummary' does not exist in type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; uuid?: string | undefined; timestamp?: string | undefined; }'.
+
+## Por que el unico 'introducido' NO es una regresion
+Es el MISMO error del pristine — mismo archivo, misma linea, misma regla,
+misma causa. Solo cambia el texto del tipo que el compilador imprime,
+porque la firma de createUserMessage volvio a la forma de la fuente.
+Linea del pristine, verbatim:
+src/packages/agent/compaction/sessionMemoryCompact.ts(480,7): error TS2353: Object literal may only specify known properties, and 'isCompactSummary' does not exist in type '{ content: string | unknown[]; isMeta?: true | undefined; uuid?: string | undefined; timestamp?: string | undefined; }'.

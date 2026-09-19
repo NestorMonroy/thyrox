@@ -42,6 +42,7 @@
  * duplica aquí en vez de importarse — el shim de este paquete
  * (`./internal/pendingCrossPackageDeps.ts`) no lo exporta.
  */
+import { randomUUID } from 'node:crypto'
 import { logForDebugging } from './internal/pendingCrossPackageDeps.js'
 import { logError } from './logging.js'
 
@@ -154,14 +155,24 @@ function createAttachmentMessageStub(input: {
   toolUseID: string
   hookEvent: string
 }): HookResultMessage {
-  // El cast es del SUSTITUTO, no del tipo: `createAttachmentMessage` vive en
+  // El stub sigue siendo stub —`createAttachmentMessage` vive en
   // `agent/attachments.js` y sigue en la lista de ausentes del docstring de
-  // cabecera. Este stub devuelve su entrada tal cual, que NO es un `Message`
-  // —le falta `uuid` y su `type` es `string`, no `MessageType`—, y el tipo
-  // real lo publica ahora como TS2741 en vez de tragarlo. Se declara el cast
-  // aqui para que el rojo nombre lo que falta (el subsistema) y no el tipo,
-  // que es el correcto. Su desenlace es el de los otros siete stubs.
-  return input as unknown as HookResultMessage
+  // cabecera—, pero AHORA devuelve una forma conforme en vez de su entrada
+  // cruda. Antes devolvia `input` tal cual, que no es un `Message`: le falta
+  // `uuid` y su `type` es `string`, no `MessageType`. Con el tipo laxo eso
+  // pasaba callado; con el real es TS2741.
+  //
+  // Un cast lo habria silenciado igual y habria dejado el defecto EN TIEMPO
+  // DE EJECUCION para quien leyera `uuid`. La forma la fija la fuente
+  // (`ccnmt: packages/agent/attachments.ts:3302`): `type: 'attachment'`,
+  // `uuid: randomUUID()`, `timestamp`. Lo que falta sigue siendo el
+  // subsistema —el `Attachment` real—, no la envoltura.
+  return {
+    ...input,
+    type: 'attachment',
+    uuid: randomUUID(),
+    timestamp: new Date().toISOString(),
+  }
 }
 let _createAttachmentMessage = createAttachmentMessageStub
 export function setCreateAttachmentMessageFn(
