@@ -62,18 +62,31 @@ if ! NODE_MODULES_OWNER="$(node_modules_owner "$PAQUETE")"; then
     exit 2
 fi
 
-# Y el duenyo tiene que ser $RAIZ, no cualquiera de la cadena. Hay DOS raices
-# de workspace anidadas —la raiz y `src/packages`— y sus lockfiles NO fijan las
-# mismas resoluciones; hoy solo la de $RAIZ esta materializada, asi que ambas
-# condiciones coinciden y un control que no lo exigiera pasaria igual. El dia
-# que `src/packages/node_modules` se materialice, el gate correria contra el
-# grafo del lockfile equivocado y su verde seria falso.
-if [[ "$NODE_MODULES_OWNER" != "$RAIZ" ]]; then
-    echo "check-cross-model-read: REHUSA — el node_modules que resuelve no es el" >&2
-    echo "      de la raiz del workspace." >&2
-    echo "      resuelto: $NODE_MODULES_OWNER/node_modules" >&2
-    echo "      esperado: $RAIZ/node_modules" >&2
+# Y el grafo tiene que estar anclado al lockfile de $RAIZ. Hay DOS raices de
+# workspace anidadas —la raiz y `src/packages`— y sus lockfiles NO fijan las
+# mismas resoluciones; si el gate corriera contra el grafo de la anidada, su
+# verde seria falso.
+#
+# Esto NO se mide comparando `duenyo == $RAIZ`. Esa comparacion mide la RUTA
+# del duenyo para concluir sobre el LOCKFILE, y las dos propiedades solo
+# coinciden bajo el linker izado. Con el aislado —el que un `bun install` sin
+# `linker` declarado materializa en este arbol— cada paquete tiene jardin
+# propio cuyas entradas resuelven dentro de `$RAIZ/node_modules/.bun/`: el
+# grafo sigue siendo el de la raiz y la comparacion de ruta rehusaba igual,
+# sobre cada archivo de la superficie con un arbol correcto. Es el sub-patron
+# C de `metrica-decide-la-conclusion.md`, con este gate como sujeto.
+#
+# `anchored_to_root_store` mide a donde RESUELVEN las entradas, que es la
+# propiedad sobre la que se concluye, y acepta los DOS linkers. Cual de los dos
+# gobierna es TASK-THYROX-0098, del ejecutor; este gate no lo decide.
+if ! anchored_to_root_store "$NODE_MODULES_OWNER" "$RAIZ"; then
+    echo "check-cross-model-read: REHUSA — el grafo resuelto no esta anclado al" >&2
+    echo "      lockfile de la raiz del workspace." >&2
+    echo "      duenyo:   $NODE_MODULES_OWNER/node_modules" >&2
+    echo "      esperado: sus entradas externas resuelven bajo" >&2
+    echo "                $RAIZ/node_modules/.bun/" >&2
     echo "      bun run correria contra el grafo de otro lockfile." >&2
+    echo "      (cd $RAIZ && bun install --frozen-lockfile)" >&2
     exit 2
 fi
 

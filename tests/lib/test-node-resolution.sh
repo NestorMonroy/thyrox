@@ -68,10 +68,80 @@ check "resuelve el directorio del paquete" \
     "$(resolved_package_dir "$TMP/a/b" zod)" "$TMP/node_modules/zod"
 
 # 5 — CONTROL POSITIVO REAL, no sintetico: desde el paquete agent de este
-# arbol, el duenyo es la raiz de thyrox. Es el caso que el gate de artefactos
-# necesitaba y su premisa vieja no veia.
-check "arbol real: desde src/packages/agent el duenyo es la raiz" \
-    "$(node_modules_owner "$RAIZ/src/packages/agent")" "$RAIZ"
+# arbol, el duenyo es ALCANZABLE. La asercion NO puede ser «es la raiz»: eso
+# codificaba el linker IZADO como premisa, y un `bun install` sin `linker`
+# declarado en `bunfig.toml` materializa el AISLADO —medido: 30 paquetes de
+# `src/packages` con `node_modules` propio—, con lo que la asercion se volvia
+# roja sin que nada estuviera mal. Cual de los dos gobierna es
+# TASK-THYROX-0098, del ejecutor; esta suite no lo decide.
+DUENYO_REAL="$(node_modules_owner "$RAIZ/src/packages/agent")"
+CODIGO=$?
+check "arbol real: el duenyo es alcanzable desde src/packages/agent" "$CODIGO" "0"
+check "arbol real: el duenyo esta anclado al store de la raiz" \
+    "$(anchored_to_root_store "$DUENYO_REAL" "$RAIZ" && echo anclado || echo no)" \
+    "anclado"
+
+# --- anchored_to_root_store: el eje que la comparacion de ruta no medi­a ---
+
+# 6 — linker IZADO: el duenyo ES la raiz. Acepta por definicion, sin mirar
+# ninguna entrada: su lockfile es el que gobierna.
+IZADO="$(mktemp -d)"
+mkdir -p "$IZADO/node_modules/.bun/zod@1.0.0/node_modules/zod"
+check "izado: el duenyo es la raiz, acepta" \
+    "$(anchored_to_root_store "$IZADO" "$IZADO" && echo anclado || echo no)" \
+    "anclado"
+
+# 7 — linker AISLADO bien formado: el paquete tiene jardin propio y sus
+# entradas resuelven dentro del store de la RAIZ. Acepta.
+AIS="$(mktemp -d)"
+mkdir -p "$AIS/node_modules/.bun/zod@1.0.0/node_modules/zod"
+mkdir -p "$AIS/src/packages/agent/node_modules"
+ln -s ../../../../node_modules/.bun/zod@1.0.0/node_modules/zod \
+    "$AIS/src/packages/agent/node_modules/zod"
+check "aislado que ancla en la raiz: acepta" \
+    "$(anchored_to_root_store "$AIS/src/packages/agent" "$AIS" && echo anclado || echo no)" \
+    "anclado"
+
+# 8 — EL CASO QUE DISCRIMINA. Mismo jardin aislado, pero sus entradas
+# resuelven dentro del store de una raiz ANIDADA (`src/packages`), cuyo
+# lockfile no fija las mismas resoluciones. `bun run` correria contra el grafo
+# equivocado y su verde seria falso. REHUSA.
+#
+# Es el caso que la comparacion `duenyo == raiz` no podia separar del 7: los
+# dos tienen el mismo duenyo y la misma forma; lo unico que cambia es A DONDE
+# resuelven, que es la propiedad sobre la que el gate concluye. Retirada la
+# comprobacion de ancla, este caso —y solo este— pasa a verde falso.
+ANID="$(mktemp -d)"
+mkdir -p "$ANID/node_modules/.bun/zod@1.0.0/node_modules/zod"
+mkdir -p "$ANID/src/packages/node_modules/.bun/zod@9.9.9/node_modules/zod"
+mkdir -p "$ANID/src/packages/agent/node_modules"
+ln -s ../../node_modules/.bun/zod@9.9.9/node_modules/zod \
+    "$ANID/src/packages/agent/node_modules/zod"
+check "aislado que ancla en la raiz ANIDADA: rehusa" \
+    "$(anchored_to_root_store "$ANID/src/packages/agent" "$ANID" && echo anclado || echo no)" \
+    "no"
+
+# 9 — cero entradas medibles: REHUSA en vez de publicar un cero. Un `anclado`
+# aqui no distinguiria «todas anclan» de «no habia ninguna que mirar».
+VACIO_NM="$(mktemp -d)"
+mkdir -p "$VACIO_NM/node_modules/.bun"
+mkdir -p "$VACIO_NM/src/packages/agent/node_modules"
+check "jardin sin entradas: rehusa, no publica un cero" \
+    "$(anchored_to_root_store "$VACIO_NM/src/packages/agent" "$VACIO_NM" && echo anclado || echo no)" \
+    "no"
+
+# 10 — un hermano del workspace NO cuenta como entrada del store: es un enlace
+# relativo a otro paquete del arbol y no dice nada sobre que lockfile gobierna.
+# Sin entradas reales ademas del hermano, el veredicto es el del caso 9.
+HERM="$(mktemp -d)"
+mkdir -p "$HERM/node_modules/.bun" "$HERM/src/packages/output"
+mkdir -p "$HERM/src/packages/agent/node_modules/@thyrox"
+ln -s ../../../output "$HERM/src/packages/agent/node_modules/@thyrox/output"
+check "solo hermanos de workspace: rehusa (no son entradas del store)" \
+    "$(anchored_to_root_store "$HERM/src/packages/agent" "$HERM" && echo anclado || echo no)" \
+    "no"
+
+rm -rf "$IZADO" "$AIS" "$ANID" "$VACIO_NM" "$HERM"
 
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"
