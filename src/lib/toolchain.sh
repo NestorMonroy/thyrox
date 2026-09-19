@@ -44,6 +44,7 @@ source "$_THYROX_TOOLCHAIN_HERE/reach.sh"
 # fuente de verdad que `calibration-verified-numbers.md` prohibe para una cifra
 # y vale igual para una ruta.
 THYROX_TOOLCHAIN_INTERPRETER_PATH="${THYROX_TOOLCHAIN_INTERPRETER_PATH:-.venv/bin/python}"
+export THYROX_TOOLCHAIN_INTERPRETER_PATH
 
 # @description La raiz del proveedor: la variable declarada, o la que resuelve
 # el localizador. La variable gana porque quien la exporta para UNA invocacion
@@ -135,12 +136,14 @@ export -f thyrox_toolchain_declare
 # control necesita poder apuntar la busqueda a un nombre ausente sin vaciar el
 # PATH, que romperia todo lo demas de la funcion.
 THYROX_TOOLCHAIN_PARALLEL_BIN="${THYROX_TOOLCHAIN_PARALLEL_BIN:-parallel}"
+export THYROX_TOOLCHAIN_PARALLEL_BIN
 
 # @description El comando que lo instala. Declarado por la misma razon: un
 # control necesita inyectar un instalador que MIENTA —que salga cero sin
 # instalar nada— para comprobar que el exito se prueba re-comprobando el
 # binario y no leyendo el codigo de salida del instalador.
 THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD="${THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD:-sudo apt-get install -y parallel}"
+export THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD
 
 # @description El hogar de estado de GNU parallel: hermano de `.venv`, en la
 # RAIZ del proveedor.
@@ -243,6 +246,7 @@ export -f thyrox_toolchain_require_parallel
 # que los guiones ESCRIBEN, y porque un control necesita poder apuntarlo a un
 # awk concreto sin mutar el sistema.
 THYROX_TOOLCHAIN_AWK_BIN="${THYROX_TOOLCHAIN_AWK_BIN:-awk}"
+export THYROX_TOOLCHAIN_AWK_BIN
 
 # @description El comando que instala gawk. Declarado por la misma razon que
 # su hermano de parallel: un control necesita inyectar un instalador que
@@ -530,6 +534,7 @@ export -f thyrox_toolchain_degraded_notice
 # `THYROX_TOOLCHAIN_AWK_BIN`: un control necesita apuntar la sonda a un
 # interprete ausente sin romper todo lo demas.
 THYROX_TOOLCHAIN_PYTHON_BIN="${THYROX_TOOLCHAIN_PYTHON_BIN:-}"
+export THYROX_TOOLCHAIN_PYTHON_BIN
 
 # @description ¿Se puede LEER el store? El sujeto es la capacidad, no el CLI.
 #
@@ -591,10 +596,12 @@ export -f thyrox_toolchain_require_sqlite_reader
 # @description El binario de bun. Declarado por la razon de siempre: el
 # control necesita apuntar a un nombre ausente.
 THYROX_TOOLCHAIN_BUN_BIN="${THYROX_TOOLCHAIN_BUN_BIN:-bun}"
+export THYROX_TOOLCHAIN_BUN_BIN
 
 # @description El hogar de dependencias instaladas. Su ausencia es el eje 2 y
 # no se deduce del eje 1: bun puede estar y `bun install` no haberse corrido.
 THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-}"
+export THYROX_TOOLCHAIN_NODE_MODULES_HOME
 
 # @description ¿Se puede correr la mitad TypeScript? DOS ejes, como awk.
 #
@@ -646,3 +653,188 @@ function thyrox_toolchain_require_bun() {
   return 0
 }
 export -f thyrox_toolchain_require_bun
+
+# ---------------------------------------------------------------------------
+# Los MANIFIESTOS. El eje que las seis sondas anteriores no miran.
+#
+# Las seis miden EFECTO —responde el interprete, esta poblado `node_modules`,
+# compila el awk— y ninguna mira el SIGNIFICANTE que lo declara. Un clon donde
+# `pyproject.toml` falte o este corrupto publica «error · python-proveedor» y
+# manda a correr `uv sync`, que fallara por otra causa y con otro mensaje: el
+# operador persigue el sintoma. Medir el efecto y concluir sobre su causa
+# declarada es el sub-patron C de `metrica-decide-la-conclusion.md`.
+#
+# Las DOS clases no son severidad estetica, y su frontera es la misma que
+# `check-toolchain-ready` ya ejerce:
+#
+#   ERROR  pyproject.toml, package.json, tsconfig.json — DECLARACIONES. Sin
+#          ellas no hay que instalar ni con que compilar; su ausencia no se
+#          repara sola.
+#   AVISO  uv.lock, bun.lock, bunfig.toml — RESOLUCIONES. Se regeneran desde
+#          las declaraciones. Un clon sin `bun.lock` es perfectamente
+#          instalable, y bloquearlo trataria los seis igual.
+#
+# Se mide `-r` y no `-e`: un manifiesto PRESENTE e ILEGIBLE deja el arbol
+# igual de roto, y una sonda de existencia pasa en verde sobre el.
+#
+# Ciega a: que el contenido PARSEE. La sonda mide que el archivo este y se
+# pueda leer, no que su TOML o su JSON sean validos — eso lo dira la
+# herramienta que lo consuma, con su propio mensaje, y duplicarlo aqui seria
+# una segunda fuente de verdad sobre la sintaxis de un formato ajeno.
+# ---------------------------------------------------------------------------
+
+# @description Los manifiestos de clase ERROR, separados por espacio. Se
+# declaran como variable y no dentro de la funcion por la misma razon que
+# `THYROX_TOOLCHAIN_AWK_BIN`: un control necesita variar el universo sin
+# editar el cuerpo.
+THYROX_TOOLCHAIN_MANIFESTS_REQUIRED="${THYROX_TOOLCHAIN_MANIFESTS_REQUIRED:-pyproject.toml package.json tsconfig.json}"
+export THYROX_TOOLCHAIN_MANIFESTS_REQUIRED
+
+# @description Los manifiestos de clase AVISO: resoluciones regenerables.
+THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL="${THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL:-uv.lock bun.lock bunfig.toml}"
+export THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL
+
+# @description La precondicion que regenera cada manifiesto regenerable.
+# @arg $1 string El nombre del manifiesto.
+# @stdout El remedio accionable, sin ruta: quien lo lee ya esta en la raiz.
+function thyrox_toolchain_manifest_remedy() {
+  case "${1:-}" in
+    uv.lock)      printf 'correr uv lock' ;;
+    bun.lock)     printf 'correr bun install' ;;
+    bunfig.toml)  printf 'restaurar bunfig.toml desde el repositorio' ;;
+    *)            printf 'restaurar %s desde el repositorio' "${1:-el manifiesto}" ;;
+  esac
+}
+export -f thyrox_toolchain_manifest_remedy
+
+# @description ¿Estan los manifiestos del arbol, y se pueden leer?
+# @noargs
+# @exitcode 0 Todas las declaraciones estan. Puede haber avisos por una
+#   resolucion ausente, que se nombra igual en vez de pasar en silencio.
+# @exitcode 2 Falta o es ilegible al menos una DECLARACION. REHUSA y la
+#   nombra: el codigo de salida por si solo no dice cual de las tres es, y
+#   mandar a mirar «los manifiestos» no es un remedio.
+#
+#   El rechazo NO emite conteo ni ruta. Sin conteo porque un cero aqui seria
+#   un verde falso; sin ruta porque quien lee el remedio ya esta en la raiz y
+#   una ruta absoluta en el mensaje lo ata a un arbol concreto.
+function thyrox_toolchain_require_manifests() {
+  local root; root="$(thyrox_toolchain_provider_root 2>/dev/null)" || {
+    echo "thyrox_toolchain: no resuelve la raiz del proveedor." >&2
+    echo "                  NO se emite conteo." >&2
+    return 2
+  }
+
+  local name broken=0
+
+  for name in $THYROX_TOOLCHAIN_MANIFESTS_REQUIRED; do
+    [[ -r "$root/$name" ]] && continue
+    echo "thyrox_toolchain: manifiesto obligatorio ausente o ilegible: $name" >&2
+    echo "                  Es una DECLARACION: sin ella no hay que instalar" >&2
+    echo "                  ni con que compilar, y no se regenera sola." >&2
+    broken=1
+  done
+
+  for name in $THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL; do
+    [[ -r "$root/$name" ]] && continue
+    # Se nombra aunque no bloquee. Una resolucion ausente que pasara en
+    # silencio deja al que clona sin saber por que su instalacion no es
+    # reproducible.
+    thyrox_toolchain_degraded_notice \
+      "la resolucion reproducible que declara $name" \
+      "$(thyrox_toolchain_manifest_remedy "$name")" >&2
+  done
+
+  (( broken == 0 )) || return 2
+  return 0
+}
+export -f thyrox_toolchain_require_manifests
+
+# @description Normaliza un nombre de paquete Python segun PEP 503: minusculas
+# y toda corrida de `-`, `_` o `.` colapsada a un solo guion medio.
+#
+# Sin esta normalizacion, una comparacion de cadena cruda publica «no
+# declarado» sobre un paquete que SI lo esta: `spacy_lookups_data` y
+# `spacy-lookups-data` son el mismo paquete para `uv` y para el indice. Es el
+# falso positivo que el censo de imports de este arbol produjo, con el propio
+# instrumento como sujeto.
+# @arg $1 string El nombre tal como lo escribio quien pregunta.
+# @stdout El nombre normalizado.
+function thyrox_toolchain_normalize_package_name() {
+  printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[-_.]+/-/g'
+}
+export -f thyrox_toolchain_normalize_package_name
+
+# @description ¿Esta un paquete DECLARADO en la mitad Python del proveedor?
+#
+# Es otra pregunta que «esta instalado», y confundirlas fue un episodio real:
+# se publico «numpy no esta instalado» sin medir que no esta DECLARADO. Solo
+# la segunda explica la primera, y solo la segunda se arregla editando un
+# archivo del arbol.
+#
+# El universo son los arrays de dependencias de `pyproject.toml`: el de
+# `[project]` y los de `[dependency-groups]`. No se mira el entorno: un
+# paquete que este en `.venv` sin declararse es justo el defecto que esta
+# sonda existe para ver.
+# @arg $1 string El nombre del paquete, en cualquiera de sus formas PEP 503.
+# @exitcode 0 Declarado.
+# @exitcode 1 No declarado.
+# @exitcode 2 NO SE PUDO MEDIR: el manifiesto no se puede leer. Responder «no
+#   declarado» aqui no distinguiria «no esta» de «no pude mirar», que es el
+#   sub-patron D con esta sonda como sujeto.
+function thyrox_toolchain_python_package_declared() {
+  local wanted="${1:-}"
+  if [[ -z "$wanted" ]]; then
+    echo "thyrox_toolchain_python_package_declared: falta <paquete>." >&2
+    return 2
+  fi
+
+  local root; root="$(thyrox_toolchain_provider_root 2>/dev/null)" || {
+    echo "thyrox_toolchain: no resuelve la raiz del proveedor." >&2
+    return 2
+  }
+
+  local manifest="$root/pyproject.toml"
+  if [[ ! -r "$manifest" ]]; then
+    echo "thyrox_toolchain: no se puede leer $manifest." >&2
+    echo "                  NO se responde «no declarado»: seria confundir" >&2
+    echo "                  la ausencia con la imposibilidad de medir." >&2
+    return 2
+  fi
+
+  wanted="$(thyrox_toolchain_normalize_package_name "$wanted")"
+
+  local declared
+  declared="$(awk '
+    # Cabecera de tabla. Reinicia el estado: un array nunca cruza tablas.
+    /^\[/ { in_group = ($0 ~ /^\[dependency-groups\]/); in_arr = 0; next }
+
+    # Apertura de un array de dependencias. Bajo [dependency-groups] toda
+    # clave lo es; fuera, solo las que terminan en «dependencies».
+    !in_arr && /^[[:space:]]*[A-Za-z0-9_.-]+[[:space:]]*=[[:space:]]*\[/ {
+      key = $0; sub(/[[:space:]]*=.*/, "", key); gsub(/[[:space:]]/, "", key)
+      if (in_group || key ~ /dependencies$/) in_arr = 1
+    }
+
+    in_arr {
+      line = $0
+      while (match(line, /"[^"]+"/)) {
+        spec = substr(line, RSTART + 1, RLENGTH - 2)
+        # El nombre es el prefijo hasta el primer caracter que no le
+        # pertenece: un marcador, un extra o un especificador de version.
+        if (match(spec, /^[A-Za-z0-9._-]+/)) print substr(spec, RSTART, RLENGTH)
+        line = substr(line, RSTART + RLENGTH)
+      }
+      if ($0 ~ /\]/) in_arr = 0
+    }
+  ' "$manifest")"
+
+  local candidate
+  while IFS= read -r candidate; do
+    [[ -n "$candidate" ]] || continue
+    [[ "$(thyrox_toolchain_normalize_package_name "$candidate")" == "$wanted" ]] \
+      && return 0
+  done <<<"$declared"
+  return 1
+}
+export -f thyrox_toolchain_python_package_declared

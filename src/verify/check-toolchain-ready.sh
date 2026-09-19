@@ -122,6 +122,13 @@ fi
 # `thyrox-audit.sh` ya ejerce con sus `tick`.
 # --------------------------------------------------------------------------
 PROBES=(
+  # Los MANIFIESTOS van PRIMERO, y no por orden alfabetico: son la capa de
+  # DECLARACION y su hueco explica el de las demas. Un clon sin
+  # `pyproject.toml` publica «error · python-proveedor» y manda a `uv sync`,
+  # que fallara por otra causa y con otro mensaje; el operador persigue el
+  # sintoma. Leida en este orden, la salida nombra la causa antes que su
+  # efecto.
+  "manifiestos|error|thyrox_toolchain_require_manifests"
   "awk|error|thyrox_toolchain_require_gawk"
   "parallel|aviso|thyrox_toolchain_require_parallel"
   "python-proveedor|error|thyrox_toolchain_provider_python"
