@@ -106,6 +106,25 @@ _ERROR_LINE = re.compile(r"error TS[0-9]+")
 _LOCATED_ERROR = re.compile(r"^(?P<file>[^(\n]+)\(\d+,\d+\): error TS[0-9]+", re.M)
 
 
+#: Errores de CONFIGURACION del compilador: no describen el codigo del paquete
+#: sino que el programa no se pudo formar. `TS18003` es «no inputs were found»
+#: —el `include` no caso ningun archivo— y `TS2688` es una biblioteca de tipos
+#: irresoluble. Los dos dejan el conteo semantico en cero, asi que un paquete
+#: que los emita publica «0 errores» sin haber medido nada. Medido: `plan` daba
+#: TS18003 por no declarar `main`, y el fixture de la suite daba TS2688 sin su
+#: `@types/bun` — los tres controles de `check_package` estaban verdes por ese
+#: segundo error, no por el error de tipo que el fixture escribe.
+UNMEASURABLE_CODES = ("TS18003", "TS2688")
+
+
+def unmeasurable_reason(output: str):
+    """El codigo de configuracion que impidio medir, o `None` si se midio."""
+    for code in UNMEASURABLE_CODES:
+        if f"error {code}:" in output:
+            return code
+    return None
+
+
 def classify_errors(output: str, package_dir) -> dict:
     """Reparte los errores de tsc en propios, de hermano y escapados.
 
@@ -175,7 +194,19 @@ class EmitResult:
     #: escribio un byte — el significante de una operacion que no ocurrio.
     checked: bool = False
 
+    @property
+    def unmeasurable(self):
+        """El codigo de configuracion que impidio medir, o `None`.
+
+        Se deriva de la salida en vez de guardarse: la salida es la evidencia y
+        un campo aparte podria quedar desincronizado de ella.
+        """
+        return unmeasurable_reason(self.output)
+
     def verdict(self) -> str:
+        if self.unmeasurable:
+            return (f"{self.package}: SIN MEDIR — {self.unmeasurable}, el programa "
+                    f"no se formo. Su conteo no distingue «sin errores» de «sin medir»")
         if self.escaping:
             return (f"{self.package}: NO EMITIO — {len(self.escaping)} import(s) "
                     f"salen de su rootDir: {', '.join(self.escaping)}")
@@ -225,18 +256,71 @@ def _write_project(package_dir: Path, filename: str, options: dict, include: lis
     return project
 
 
+def export_targets(manifest: dict):
+    """Cada ruta relativa que el manifiesto declara como destino.
+
+    Recorre `main`, `types` y TODOS los valores de `exports` — cadena llana,
+    diccionario de condiciones y subpath con comodin. Es la misma poblacion que
+    `repoint_manifest` reescribe, y por eso se deriva aqui en vez de mirar solo
+    `main`: hay paquetes cuyo unico destino declarado vive en `exports`.
+    """
+    destinos = []
+
+    def recolectar(valor):
+        if isinstance(valor, str):
+            destinos.append(valor)
+        elif isinstance(valor, dict):
+            for anidado in valor.values():
+                recolectar(anidado)
+
+    for clave in ("main", "types"):
+        recolectar(manifest.get(clave))
+    recolectar(manifest.get("exports"))
+    return destinos
+
+
 def _project_shape(package_dir: Path):
     """El `rootDir` y el `include` que le corresponden a un paquete.
 
     Se extrae de `emit_package` porque el gate necesita EXACTAMENTE el mismo
     programa: si el gate compusiera su propio alcance, mediria otro sujeto y
     su conteo no seria el del paquete que se emite.
+
+    El directorio de entrada se deriva de TODO lo que el manifiesto declara, no
+    solo de `main`. El defecto que eso cierra esta medido: `plan` no declara
+    `main` ni `types` —su superficie entera vive en `exports`, apuntando a
+    `./src/*.ts`— asi que la version anterior caia al default `./index.ts`,
+    componia `include: ["*.ts"]` sobre una raiz sin `.ts` y tsc rehusaba con
+    **TS18003**, «No inputs were found». El paquete se publicaba con 1 error
+    total y 0 propios: un veredicto que no distingue «no tiene errores» de «no
+    se midio».
     """
     manifest = _read_manifest(package_dir)
-    source_dir = entry_directory(manifest.get("main") or manifest.get("types") or "")
-    root_dir = source_dir or "."
-    include = [f"{source_dir}/**/*" if source_dir else "*.ts"]
-    return root_dir, include
+    directorios = []
+    for destino in export_targets(manifest):
+        directorio = entry_directory(destino)
+        if directorio and directorio not in directorios:
+            directorios.append(directorio)
+    if not directorios:
+        return ".", ["*.ts"]
+    # El `rootDir` es el ANCESTRO COMUN de los directorios declarados, no el
+    # primero ni la raiz del paquete. `storage` declara `src` y `src/testing`:
+    # elegir la raiz subiria el `rootDir` un nivel de mas y desplazaria TODA su
+    # emision dentro de `dist/`. `headless-sdk` declara `src` y `testing`, que
+    # no se anidan, y ahi el ancestro comun si es el paquete.
+    raiz = os.path.commonpath(directorios) if len(directorios) > 1 else directorios[0]
+    if raiz in ("", "."):
+        # Un directorio ANIDADO en otro ya lo cubre el comodin del ancestro; se
+        # descarta para no declarar el mismo archivo dos veces. `repl` declara
+        # 58 destinos, 57 de ellos bajo `src`: sin este colapso el `include`
+        # lista los 58 y describe el mismo programa con 58 veces mas ruido.
+        cubiertos = [d for d in directorios
+                     if not any(o != d and (d + os.sep).startswith(o + os.sep)
+                                for o in directorios)]
+        return ".", [f"{d}/**/*" for d in cubiertos]
+    # Un directorio que cae DENTRO de la raiz comun ya lo cubre su comodin; se
+    # descarta para no declarar el mismo archivo dos veces.
+    return raiz, [f"{raiz}/**/*"]
 
 
 def escaping_files(package_dir: Path) -> tuple:
