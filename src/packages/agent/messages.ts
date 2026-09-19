@@ -301,9 +301,16 @@ export function createUserMessage({
   uuid,
   timestamp,
 }: {
-  content: string | unknown[]
+  content: string | ContentBlockParam[]
   isMeta?: true
-  uuid?: string
+  /**
+   * La fuente lo declara `UUID | string` y castea al construir
+   * (`ccnmt: packages/agent/messages.ts`): el llamador puede traer un
+   * identificador ya formado o una cadena suelta, y el tipo plantilla de
+   * `node:crypto` no la admite sin el cast. Se porta la forma entera —
+   * declaracion y cast— porque la mitad sola no compila.
+   */
+  uuid?: UUID | string
   timestamp?: string
 }): UserMessage {
   const m: UserMessage = {
@@ -313,7 +320,7 @@ export function createUserMessage({
       content: content || NO_CONTENT_MESSAGE,
     },
     isMeta,
-    uuid: uuid || randomUUID(),
+    uuid: (uuid as UUID | undefined) || randomUUID(),
     timestamp: timestamp ?? new Date().toISOString(),
   }
   return m
@@ -499,17 +506,16 @@ export function extractTag(html: string, tagName: string): string | null {
  * Un bloque de contenido generico — texto, imagen, tool_use, tool_result u
  * otro.
  *
- * DIVERGENCIA DECLARADA: la fuente tipa esto con `ContentBlockParam` del
- * SDK de Anthropic (`@anthropic-ai/sdk`), ausente de este arbol. Se declara
- * aqui la forma estructural minima —el discriminante `type`, el `text`
- * opcional que consumen los ayudantes de texto, y un indice para el resto
- * de campos— en vez de arrastrar el SDK entero por un tipo.
+ * PREMISA RANCIA RETIRADA (TASK-THYROX-0233): esto era una forma estructural
+ * propia, y su bloqueo declarado decia que el SDK de Anthropic estaba
+ * «ausente de este arbol». Medido, es falso: `@anthropic-ai/sdk` lo declara
+ * el manifiesto de este paquete (^0.124.0) y esta materializado en la raiz
+ * izada del workspace. El sustituto laxo (`type: string` mas indice) no
+ * unificaba con el `MessageContent` de `messageShapes`, que si toma el tipo
+ * del SDK — de ahi el TS2322 al construir un `UserMessage`.
  */
-export type ContentBlockParam = {
-  type: string
-  text?: string
-  [key: string]: unknown
-}
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+export type { ContentBlockParam }
 
 /**
  * Verdadero si `message` TIENE contenido — lo contrario del centinela de
@@ -638,7 +644,7 @@ export function isToolUseResultMessage(
  * cualquier variante de solo lectura via tipado estructural.
  */
 export function extractTextContent(
-  blocks: readonly { readonly type: string; readonly [key: string]: unknown }[],
+  blocks: readonly { readonly type: string }[],
   separator = '',
 ): string {
   return blocks

@@ -14,9 +14,9 @@
  *   - `loadPluginHooks` (`config/plugin/loadPluginHooks.js`) — el
  *     sistema de plugins completo.
  *   - `withDiagnosticsTiming`/`logError` (`local-observability/logging`).
- *   - `HookResultMessage` (`agent/messageShapes`) — tipo del paquete
- *     `agent` (agent ya importa de storage; la dirección inversa
- *     reabriría el ciclo).
+ *   - `HookResultMessage` (`agent/messageShapes`) — RETIRADO de esta lista
+ *     en TASK-THYROX-0233: ya se importa del paquete real. Su bloqueo
+ *     declarado (el ciclo) era premisa rancia; ver su docstring abajo.
  *
  * Ninguno de los ocho se reimplementa con lógica real — son no-ops o
  * valores por defecto seguros (generador async vacío, función que no
@@ -57,7 +57,25 @@ function isEnvTruthy(envVar: string | boolean | undefined): boolean {
 // Tipos mínimos — ver docstring del archivo.
 // ---------------------------------------------------------------------------
 
-export type HookResultMessage = Record<string, unknown>
+/**
+ * PREMISA RANCIA RETIRADA (TASK-THYROX-0233): esto era
+ * `Record<string, unknown>`, un sustituto cuyo bloqueo declarado decia que
+ * la direccion storage -> agent «reabriria el ciclo». Medido, las dos
+ * mitades de esa premisa son falsas hoy:
+ *
+ *   - la REFERENCIA hace exactamente este import
+ *     (`ccnmt: packages/storage/src/sessionStart.ts:2`), asi que no es un
+ *     ciclo que ella evite;
+ *   - es un `import type`, que TypeScript borra al emitir: no hay arista
+ *     en tiempo de ejecucion que cerrar.
+ *
+ * Y el manifiesto de este paquete YA declara `@thyrox/agent` (`workspace:*`,
+ * enlazado en la raiz izada). El sustituto no ahorraba una dependencia: la
+ * tenia declarada y la ignoraba, y su tipo laxo enmascaraba el desajuste que
+ * `agent/compaction/sessionMemoryCompact.ts` publicaba como TS2345.
+ */
+import type { HookResultMessage } from '@thyrox/agent/messageShapes'
+export type { HookResultMessage }
 
 type SessionStartHooksOptions = {
   sessionId?: string
@@ -136,7 +154,14 @@ function createAttachmentMessageStub(input: {
   toolUseID: string
   hookEvent: string
 }): HookResultMessage {
-  return input
+  // El cast es del SUSTITUTO, no del tipo: `createAttachmentMessage` vive en
+  // `agent/attachments.js` y sigue en la lista de ausentes del docstring de
+  // cabecera. Este stub devuelve su entrada tal cual, que NO es un `Message`
+  // —le falta `uuid` y su `type` es `string`, no `MessageType`—, y el tipo
+  // real lo publica ahora como TS2741 en vez de tragarlo. Se declara el cast
+  // aqui para que el rojo nombre lo que falta (el subsistema) y no el tipo,
+  // que es el correcto. Su desenlace es el de los otros siete stubs.
+  return input as unknown as HookResultMessage
 }
 let _createAttachmentMessage = createAttachmentMessageStub
 export function setCreateAttachmentMessageFn(
