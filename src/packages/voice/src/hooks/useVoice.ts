@@ -380,41 +380,49 @@ export function useVoice({
     // el usuario soltó la tecla— no dispare por segunda vez encima del mensaje
     // de «check network» de abajo.
     attemptGenRef.current++
-    // Capture focusTriggered BEFORE clearing it — needed as an event dimension
-    // so BigQuery can filter out passive focus-mode auto-recordings (user focused
-    // terminal without speaking → ambient noise sets hadAudioSignal=true → false
-    // silent-drop signature). focusFlushedCharsRef fixes transcriptChars accuracy
-    // for sessions WITH speech; focusTriggered enables filtering sessions WITHOUT.
+    // Se captura `focusTriggered` ANTES de limpiarlo: hace falta como dimensión
+    // del evento para que BigQuery pueda filtrar las auto-grabaciones pasivas
+    // del modo focus. El usuario enfoca la terminal sin hablar, el ruido
+    // ambiente pone `hadAudioSignal=true`, y sale una firma FALSA de
+    // silent-drop.
+    //
+    // `focusFlushedCharsRef` arregla la exactitud de `transcriptChars` en las
+    // sesiones CON habla; `focusTriggered` permite filtrar las que NO la
+    // tuvieron.
     const focusTriggered = focusTriggeredRef.current
     focusTriggeredRef.current = false
     updateState('processing')
     voiceModule?.stopRecording()
-    // Capture duration BEFORE the finalize round-trip so that the WebSocket
-    // wait time is not included (otherwise a quick tap looks like > 2s).
-    // All ref-backed values are captured here, BEFORE the async boundary —
-    // a keypress during the finalize wait can start a new session and reset
-    // these refs (e.g. focusFlushedCharsRef = 0 in startRecordingSession),
-    // reproducing the silent-drop false-positive this ref exists to prevent.
+    // La duración se captura ANTES del viaje de ida y vuelta de `finalize`,
+    // para que la espera del WebSocket no cuente: si no, un toque rápido
+    // aparenta durar más de 2 s.
+    //
+    // TODOS los valores respaldados por ref se capturan aquí, antes de la
+    // frontera asíncrona. Una pulsación durante la espera de `finalize` puede
+    // arrancar una sesión nueva y reiniciar estas refs —por ejemplo
+    // `focusFlushedCharsRef = 0` en `startRecordingSession`—, reproduciendo
+    // justo el falso positivo de silent-drop que esta ref existe para evitar.
     const recordingDurationMs = Date.now() - recordingStartRef.current
     const hadAudioSignal = hasAudioSignalRef.current
     const retried = retryUsedRef.current
     const focusFlushedChars = focusFlushedCharsRef.current
-    // wsConnected distinguishes "backend received audio but dropped it" (the
-    // bug backend PR #287008 fixes) from "WS handshake never completed" —
-    // in the latter case audio is still in audioBuffer, never reached the
-    // server, but hasAudioSignalRef is already true from ambient noise.
+    // `wsConnected` distingue «el backend recibió el audio y lo tiró» —el bug
+    // que arregla el PR de backend #287008— de «el handshake del WebSocket
+    // nunca se completó». En el segundo caso el audio sigue en `audioBuffer`
+    // y jamás llegó al servidor, pero `hasAudioSignalRef` ya está en true por
+    // el ruido ambiente.
     const wsConnected = everConnectedRef.current
-    // Capture generation BEFORE the .then() — if a new session starts during
-    // the finalize wait, sessionGenRef has already advanced by the time the
-    // continuation runs, so capturing inside the .then() would yield the new
-    // session's gen and every staleness check would be a no-op.
+    // La generación se captura ANTES del `.then()`. Si arranca una sesión nueva
+    // durante la espera de `finalize`, `sessionGenRef` ya avanzó cuando corre
+    // la continuación: capturarla DENTRO del `.then()` daría la generación de
+    // la sesión nueva y todo control de rancidez sería un no-op.
     const myGen = sessionGenRef.current
     const isStale = () => sessionGenRef.current !== myGen
     logForDebugging('[voice] Recording stopped')
 
-    // Send finalize and wait for the WebSocket to close before reading the
-    // accumulated transcript.  The close handler promotes any unreported
-    // interim text to final, so we must wait for it to fire.
+    // Se manda `finalize` y se espera al cierre del WebSocket antes de leer la
+    // transcripción acumulada. El handler de cierre promueve a final cualquier
+    // texto interim sin reportar, así que hay que esperar a que dispare.
     const finalizePromise: Promise<FinalizeSource | undefined> =
       connectionRef.current
         ? connectionRef.current.finalize()
@@ -423,12 +431,15 @@ export function useVoice({
     void finalizePromise
       .then(async finalizeSource => {
         if (isStale()) return
-        // Silent-drop replay: when the server accepted audio (wsConnected),
-        // the mic captured real signal (hadAudioSignal), but finalize timed
-        // out with zero transcript — the ~1% session-sticky CE-pod bug.
-        // Replay the buffered audio on a fresh connection once. A 250ms
-        // backoff clears the same-pod rapid-reconnect race (same gap as the
-        // early-error retry path below).
+        // Replay ante silent-drop: el servidor aceptó el audio
+        // (`wsConnected`), el micrófono capturó señal real
+        // (`hadAudioSignal`), y aun así `finalize` venció con cero
+        // transcripción — el bug del ~1 % de pods de CE pegajosos.
+        //
+        // El audio en buffer se reproduce UNA vez sobre una conexión nueva. El
+        // backoff de 250 ms despeja la carrera de reconexión rápida contra el
+        // mismo pod; es el mismo hueco que usa el reintento por error temprano
+        // de abajo.
         if (
           finalizeSource === 'no_data_timeout' &&
           hadAudioSignal &&
@@ -512,15 +523,20 @@ export function useVoice({
           `[voice] Final transcript assembled (${String(text.length)} chars): "${text.slice(0, 200)}"`,
         )
 
-        // Tracks silent-drop rate: transcriptChars=0 + hadAudioSignal=true
-        // + recordingDurationMs>2000 = the bug backend PR #287008 fixes.
-        // focusFlushedCharsRef makes transcriptChars accurate for focus mode
-        // (where each final is injected immediately and accumulatedRef reset).
+        // Mide la tasa de silent-drop: `transcriptChars=0` +
+        // `hadAudioSignal=true` + `recordingDurationMs>2000` es la firma del
+        // bug que arregla el PR de backend #287008.
         //
-        // NOTE: this fires only on the finishRecording() path. The onError
-        // fallthrough and !conn (no-OAuth) paths bypass this → don't compute
-        // COUNT(completed)/COUNT(started) as a success rate; the silent-drop
-        // denominator (completed events only) is internally consistent.
+        // `focusFlushedCharsRef` hace exacto a `transcriptChars` en modo focus,
+        // donde cada final se inyecta de inmediato y `accumulatedRef` se
+        // reinicia.
+        //
+        // OJO: esto sólo dispara por el camino de `finishRecording()`. El
+        // camino de caída de `onError` y el de `!conn` —sin OAuth— lo
+        // esquivan, así que NO se puede calcular
+        // `COUNT(completed)/COUNT(started)` como tasa de éxito. El
+        // denominador del silent-drop —sólo eventos completed— sí es
+        // internamente consistente.
         logEvent('tengu_voice_recording_completed', {
           transcriptChars: text.length + focusFlushedChars,
           recordingDurationMs,
@@ -542,17 +558,19 @@ export function useVoice({
           )
           onTranscriptRef.current(text)
         } else if (focusFlushedChars === 0 && recordingDurationMs > 2000) {
-          // Only warn about empty transcript if nothing was flushed in focus
-          // mode either, and recording was > 2s (short recordings = accidental
-          // taps → silently return to idle).
+          // Sólo se avisa de transcripción vacía si tampoco se volcó nada en
+          // modo focus y la grabación duró más de 2 s. Una grabación corta es
+          // un toque accidental: se vuelve a idle en silencio.
           if (!wsConnected) {
-            // WS never connected → audio never reached backend. Not a silent
-            // drop; a connection failure (slow OAuth refresh, network, etc).
+            // El WebSocket nunca conectó, así que el audio no llegó al
+            // backend. No es un silent-drop sino un fallo de conexión:
+            // refresh de OAuth lento, red, etc.
             onErrorRef.current?.(
               'Voice connection failed. Check your network and try again.',
             )
           } else if (!hadAudioSignal) {
-            // Distinguish silent mic (capture issue) from speech not recognized.
+            // Distingue un micrófono mudo —problema de captura— de un habla
+            // que no se reconoció.
             onErrorRef.current?.(
               'No audio detected from microphone. Check that the correct input device is selected and that Claude Code has microphone access.',
             )
@@ -574,12 +592,15 @@ export function useVoice({
       })
   }
 
-  // When voice is enabled, lazy-import voice.ts so checkRecordingAvailability
-  // et al. are ready when the user presses the voice key. Do NOT preload the
-  // native module — require('audio-capture.node') is a synchronous dlopen of
-  // CoreAudio/AudioUnit that blocks the event loop for ~1s (warm) to ~8s
-  // (cold coreaudiod). setImmediate doesn't help: it yields one tick, then the
-  // dlopen still blocks. The first voice keypress pays the dlopen cost instead.
+  // Con la voz habilitada se importa `voice.ts` de forma diferida, para que
+  // `checkRecordingAvailability` y compañía estén listos cuando el usuario
+  // pulse la tecla de voz.
+  //
+  // NO se precarga el módulo nativo: `require('audio-capture.node')` es un
+  // `dlopen` SÍNCRONO de CoreAudio/AudioUnit que bloquea el event loop entre
+  // ~1 s en caliente y ~8 s con `coreaudiod` en frío. `setImmediate` no
+  // ayuda —cede un tick y el `dlopen` sigue bloqueando—. El coste lo paga la
+  // primera pulsación de voz.
   useEffect(() => {
     if (enabled && !voiceModule) {
       void import('../voice.js').then(mod => {
@@ -588,10 +609,10 @@ export function useVoice({
     }
   }, [enabled])
 
-  // ── Focus silence timer ────────────────────────────────────────────
-  // Arms (or resets) a timer that tears down the focus-mode session
-  // after FOCUS_SILENCE_TIMEOUT_MS of no speech. Called when a session
-  // starts and after each flushed transcript.
+  // ── Timer de silencio en modo focus ────────────────────────────────
+  // Arma —o reinicia— un timer que desmonta la sesión en modo focus tras
+  // FOCUS_SILENCE_TIMEOUT_MS sin habla. Se llama al arrancar una sesión y
+  // después de cada transcripción volcada.
   function armFocusSilenceTimer(): void {
     if (focusSilenceTimerRef.current) {
       clearTimeout(focusSilenceTimerRef.current)
@@ -622,14 +643,16 @@ export function useVoice({
     )
   }
 
-  // ── Focus-driven recording ──────────────────────────────────────────
-  // In focus mode, start recording when the terminal gains focus and
-  // stop when it loses focus. This enables a "multi-clauding army"
-  // workflow where voice input follows window focus.
+  // ── Grabación dirigida por focus ────────────────────────────────────
+  // En modo focus, la grabación arranca cuando la terminal gana el focus y
+  // se detiene cuando lo pierde. Habilita el flujo de trabajo de varias
+  // instancias en paralelo, donde la entrada de voz sigue al focus de la
+  // ventana.
   useEffect(() => {
     if (!enabled || !focusMode) {
-      // Focus mode was disabled while a focus-driven recording was active —
-      // stop the recording so it doesn't linger until the silence timer fires.
+      // El modo focus se deshabilitó con una grabación dirigida por focus
+      // activa: se detiene para que no quede colgando hasta que dispare el
+      // timer de silencio.
       if (focusTriggeredRef.current && stateRef.current === 'recording') {
         logForDebugging(
           '[voice] Focus mode disabled during recording, finishing',
@@ -645,8 +668,9 @@ export function useVoice({
       !silenceTimedOutRef.current
     ) {
       const beginFocusRecording = (): void => {
-        // Re-check conditions — state or enabled/focusMode may have changed
-        // during the await (effect cleanup sets cancelled).
+        // Se revisan las condiciones otra vez: el estado, `enabled` o
+        // `focusMode` pueden haber cambiado durante el await —el cleanup del
+        // efecto fija `cancelled`.
         if (
           cancelled ||
           stateRef.current !== 'idle' ||
@@ -661,16 +685,17 @@ export function useVoice({
       if (voiceModule) {
         beginFocusRecording()
       } else {
-        // Voice module is loading (async import resolves from cache as a
-        // microtask). Wait for it before starting the recording session.
+        // El módulo de voice se está cargando: el import asíncrono resuelve
+        // desde caché como microtask. Hay que esperarlo antes de arrancar la
+        // sesión de grabación.
         void import('../voice.js').then(mod => {
           voiceModule = mod
           beginFocusRecording()
         })
       }
     } else if (!isFocused) {
-      // Clear the silence timeout flag on blur so the next focus
-      // cycle re-arms recording.
+      // Se limpia la bandera de timeout por silencio en el blur, para que el
+      // ciclo de focus siguiente vuelva a armar la grabación.
       silenceTimedOutRef.current = false
       if (stateRef.current === 'recording') {
         logForDebugging('[voice] Focus lost, finishing recording')
@@ -682,7 +707,7 @@ export function useVoice({
     }
   }, [enabled, focusMode, isFocused])
 
-  // ── Start a new recording session (voice_stream connect + audio) ──
+  // ── Arranca una sesión de grabación (connect a voice_stream + audio) ──
   async function startRecordingSession(): Promise<void> {
     if (!voiceModule) {
       onErrorRef.current?.(
@@ -691,13 +716,19 @@ export function useVoice({
       return
     }
 
-    // Transition to 'recording' synchronously, BEFORE any await. Callers
-    // read state synchronously right after `void startRecordingSession()`:
-    // - useVoiceIntegration.tsx space-hold guard reads voiceState from the
-    //   store immediately — if it sees 'idle' it clears isSpaceHoldActiveRef
-    //   and space auto-repeat leaks into the text input (100% repro)
-    // - handleKeyEvent's `currentState === 'idle'` re-entry check below
-    // If an await runs first, both see stale 'idle'. See PR #20873 review.
+    // La transición a 'recording' es SÍNCRONA y va antes de cualquier await,
+    // porque quien llama lee el estado justo después de
+    // `void startRecordingSession()`:
+    //
+    // - la guarda de space-hold de `useVoiceIntegration.tsx` lee `voiceState`
+    //   del store de inmediato; si ve 'idle' limpia `isSpaceHoldActiveRef` y
+    //   el auto-repeat del espacio se fuga al input de texto (reproducible el
+    //   100 % de las veces);
+    // - el control de reentrada `currentState === 'idle'` de `handleKeyEvent`,
+    //   más abajo.
+    //
+    // Con un await por delante, los dos verían un 'idle' rancio. Ver la
+    // revisión del PR #20873.
     updateState('recording')
     recordingStartRef.current = Date.now()
     accumulatedRef.current = ''
@@ -710,7 +741,7 @@ export function useVoice({
     everConnectedRef.current = false
     const myGen = ++sessionGenRef.current
 
-    // ── Pre-check: can we actually record audio? ──────────────
+    // ── Comprobación previa: ¿se puede grabar audio de verdad? ─────────
     const availability = await voiceModule.checkRecordingAvailability()
     if (!availability.available) {
       logForDebugging(
@@ -727,29 +758,33 @@ export function useVoice({
     logForDebugging(
       '[voice] Starting recording session, connecting voice stream',
     )
-    // Clear any previous error
+    // Limpia cualquier error anterior
     setVoiceState(prev => {
       if (!prev.voiceError) return prev
       return { ...prev, voiceError: null }
     })
 
-    // Buffer audio chunks while the WebSocket connects. Once the connection
-    // is ready (onReady fires), buffered chunks are flushed and subsequent
-    // chunks are sent directly.
+    // Los chunks de audio se acumulan en buffer mientras el WebSocket conecta.
+    // En cuanto la conexión está lista —dispara `onReady`— se vuelca el buffer
+    // y los chunks siguientes se mandan directos.
     const audioBuffer: Buffer[] = []
 
-    // Start recording IMMEDIATELY — audio is buffered until the WebSocket
-    // opens, eliminating the 1-2s latency from waiting for OAuth + WS connect.
+    // La grabación arranca de INMEDIATO: el audio queda en buffer hasta que el
+    // WebSocket abre, lo que elimina la latencia de 1-2 s de esperar al OAuth
+    // y a la conexión.
     logForDebugging(
       '[voice] startRecording: buffering audio while WebSocket connects',
     )
     audioLevelsRef.current = []
     const started = await voiceModule.startRecording(
       (chunk: Buffer) => {
-        // Copy for fullAudioRef replay buffer. send() in voiceStreamSTT
-        // copies again defensively — acceptable overhead at audio rates.
-        // Skip buffering in focus mode — replay is gated on !focusTriggered
-        // so the buffer is dead weight (up to ~20MB for a 10min session).
+        // Se copia para el buffer de replay de `fullAudioRef`. El `send()` de
+        // `voiceStreamSTT` vuelve a copiar por defensa: es un sobrecoste
+        // aceptable a las tasas del audio.
+        //
+        // En modo focus no se acumula: el replay está condicionado a
+        // `!focusTriggered`, así que el buffer sería peso muerto —hasta unos
+        // 20 MB en una sesión de 10 minutos.
         const owned = Buffer.from(chunk)
         if (!focusTriggeredRef.current) {
           fullAudioRef.current.push(owned)
@@ -759,7 +794,7 @@ export function useVoice({
         } else {
           audioBuffer.push(owned)
         }
-        // Update audio level histogram for the recording visualizer
+        // Actualiza el histograma de nivel de audio del visualizador
         const level = computeLevel(chunk)
         if (!hasAudioSignalRef.current && level > 0.01) {
           hasAudioSignalRef.current = true
@@ -769,13 +804,14 @@ export function useVoice({
           levels.shift()
         }
         levels.push(level)
-        // Copy the array so React sees a new reference
+        // Se copia el array para que React vea una referencia nueva
         const snapshot = [...levels]
         audioLevelsRef.current = snapshot
         setVoiceState(prev => ({ ...prev, voiceAudioLevels: snapshot }))
       },
       () => {
-        // External end (e.g. device error) - treat as stop
+        // Fin externo —por ejemplo un error del dispositivo—: se trata como
+        // una detención
         if (stateRef.current === 'recording') {
           finishRecording()
         }
@@ -805,28 +841,34 @@ export function useVoice({
         stt.code as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       sttLanguageIsDefault: !rawLanguage?.trim(),
       sttLanguageFellBack: stt.fellBackFrom !== undefined,
-      // ISO 639 subtag from Intl (bounded set, never user text). undefined if
-      // Intl failed — omitted from the payload, no retry cost (cached).
+      // Subetiqueta ISO 639 que viene de `Intl`: conjunto acotado, nunca texto
+      // del usuario. Queda `undefined` si `Intl` falló, en cuyo caso se omite
+      // del payload sin coste de reintento, porque está cacheado.
       systemLocaleLanguage:
         getSystemLocaleLanguage() as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
 
-    // Retry once if the connection errors before delivering any transcript.
-    // The conversation-engine proxy can reject rapid reconnects (~1/N_pods
-    // same-pod collision) or CE's Deepgram upstream can fail during its own
-    // teardown window (anthropics/anthropic#287008 surfaces this as
-    // TranscriptError instead of silent-drop). A 250ms backoff clears both.
-    // Audio captured during the retry window routes to audioBuffer (via the
-    // connectionRef.current null check in the recording callback above) and
-    // is flushed by the second onReady.
+    // Se reintenta UNA vez si la conexión da error antes de entregar ninguna
+    // transcripción. El proxy de conversation-engine puede rechazar
+    // reconexiones rápidas —colisión contra el mismo pod, ~1/N_pods— o el
+    // upstream de Deepgram de CE puede fallar durante su propia ventana de
+    // desmontaje; anthropics/anthropic#287008 lo expone como `TranscriptError`
+    // en vez de como silent-drop. Un backoff de 250 ms despeja los dos casos.
+    //
+    // El audio capturado durante la ventana de reintento se encamina a
+    // `audioBuffer` —por el control de `connectionRef.current` a null en el
+    // callback de grabación de arriba— y lo vuelca el segundo `onReady`.
     let sawTranscript = false
 
-    // Connect WebSocket in parallel with audio recording.
-    // Gather keyterms first (async but fast — no model calls), then connect.
-    // Bail from callbacks if a newer session has started. Prevents a
-    // slow-connecting zombie WS (e.g. user released, pressed again, first
-    // WS still handshaking) from firing onReady/onError into the new
-    // session and corrupting its connectionRef / triggering a bogus retry.
+    // El WebSocket conecta en paralelo con la grabación de audio: primero se
+    // reúnen los keyterms —asíncrono pero rápido, sin llamadas a ningún
+    // modelo— y luego se conecta.
+    //
+    // Los callbacks se retiran si ya arrancó una sesión más nueva. Eso impide
+    // que un WebSocket zombi de conexión lenta —el usuario soltó, volvió a
+    // pulsar, y el primero sigue en handshake— dispare `onReady`/`onError`
+    // dentro de la sesión nueva, corrompiendo su `connectionRef` o lanzando un
+    // reintento espurio.
     const isStale = () => sessionGenRef.current !== myGen
 
     const attemptConnect = (keyterms: string[]): void => {
@@ -841,9 +883,9 @@ export function useVoice({
             )
             if (isFinal && text.trim()) {
               if (focusTriggeredRef.current) {
-                // Focus mode: flush each final transcript immediately and
-                // keep recording. This gives continuous transcription while
-                // the terminal is focused.
+                // Modo focus: cada transcripción final se vuelca de
+                // inmediato y la grabación sigue. Da transcripción continua
+                // mientras la terminal tenga el focus.
                 logForDebugging(
                   `[voice] Focus mode: flushing final transcript immediately: "${text.trim()}"`,
                 )
@@ -854,10 +896,11 @@ export function useVoice({
                   return { ...prev, voiceInterimTranscript: '' }
                 })
                 accumulatedRef.current = ''
-                // User is actively speaking — reset the silence timer.
+                // El usuario está hablando: se reinicia el timer de silencio.
                 armFocusSilenceTimer()
               } else {
-                // Hold-to-talk: accumulate final transcripts separated by spaces
+                // Hold-to-talk: las transcripciones finales se acumulan
+                // separadas por espacios
                 if (accumulatedRef.current) {
                   accumulatedRef.current += ' '
                 }
@@ -865,7 +908,7 @@ export function useVoice({
                 logForDebugging(
                   `[voice] Accumulated final transcript: "${accumulatedRef.current}"`,
                 )
-                // Clear interim since final supersedes it
+                // Se limpia el interim: el final lo sustituye
                 setVoiceState(prev => {
                   const preview = accumulatedRef.current
                   if (prev.voiceInterimTranscript === preview) return prev
@@ -873,14 +916,16 @@ export function useVoice({
                 })
               }
             } else if (!isFinal) {
-              // Active interim speech resets the focus silence timer.
-              // Nova 3 disables auto-finalize so isFinal is never true
-              // mid-stream — without this, the 5s timer fires during
-              // active speech and tears down the session.
+              // El habla interim activa reinicia el timer de silencio del
+              // modo focus. Nova 3 deshabilita el auto-finalize, así que
+              // `isFinal` nunca es true a mitad de stream: sin esto, el timer
+              // de 5 s dispararía mientras el usuario habla y desmontaría la
+              // sesión.
               if (focusTriggeredRef.current) {
                 armFocusSilenceTimer()
               }
-              // Show accumulated finals + current interim as live preview
+              // Muestra los finales acumulados más el interim actual como
+              // vista previa en vivo
               const interim = text.trim()
               const preview = accumulatedRef.current
                 ? accumulatedRef.current + (interim ? ' ' + interim : '')
@@ -898,24 +943,28 @@ export function useVoice({
               )
               return
             }
-            // Swallow errors from superseded attempts. Covers conn 1's
-            // trailing close after retry is scheduled, AND the current
-            // conn's ws close event after its ws error already surfaced
-            // below (gen bumped at surface).
+            // Se tragan los errores de los intentos ya sustituidos. Cubre el
+            // cierre de cola de la conexión 1 después de programar el
+            // reintento, Y el evento de cierre de la conexión actual cuando su
+            // error ya salió a la superficie abajo —la generación avanza al
+            // exponerlo.
             if (attemptGenRef.current !== myAttemptGen) {
               logForDebugging(
                 `[voice] ignoring stale onError from superseded attempt: ${error}`,
               )
               return
             }
-            // Early-failure retry: server error before any transcript =
-            // likely a transient upstream race (CE rejection, Deepgram
-            // not ready). Clear connectionRef so audio re-buffers, back
-            // off, reconnect. Skip if the user has already released the
-            // key (state left 'recording') — no point retrying a session
-            // they've ended. Fatal errors (Cloudflare bot challenge, auth
-            // rejection) are the same failure on every retry attempt, so
-            // fall through to surface the message.
+            // Reintento por fallo temprano: un error del servidor antes de
+            // cualquier transcripción suele ser una carrera transitoria del
+            // upstream —rechazo de CE, Deepgram no listo—. Se limpia
+            // `connectionRef` para que el audio vuelva al buffer, se espera el
+            // backoff y se reconecta.
+            //
+            // Se omite si el usuario ya soltó la tecla —el estado dejó de ser
+            // 'recording'—: no tiene sentido reintentar una sesión que él
+            // terminó. Un error fatal —el bot challenge de Cloudflare, un
+            // rechazo de auth— da el mismo fallo en cada intento, así que cae
+            // hasta abajo para exponer el mensaje.
             if (
               !opts?.fatal &&
               !sawTranscript &&
@@ -943,41 +992,46 @@ export function useVoice({
                 return
               }
             }
-            // Surfacing — bump gen so this conn's trailing close-error
-            // (ws fires error then close 1006) is swallowed above.
+            // Al exponerlo se avanza la generación, para que el close-error
+            // de cola de esta conexión —el WebSocket dispara error y luego
+            // close 1006— se lo trague la rama de arriba.
             attemptGenRef.current++
             logError(new Error(`[voice] voice_stream error: ${error}`))
             onErrorRef.current?.(`Voice stream error: ${error}`)
-            // Clear the audio buffer on error to avoid memory leaks
+            // El buffer de audio se limpia ante un error, para no filtrar
+            // memoria
             audioBuffer.length = 0
             focusTriggeredRef.current = false
             cleanup()
             updateState('idle')
           },
           onClose: () => {
-            // no-op; lifecycle handled by cleanup()
+            // no-op; del ciclo de vida se encarga `cleanup()`
           },
           onReady: conn => {
-            // Only proceed if we're still in recording state AND this is
-            // still the current session. A zombie late-connecting WS from
-            // an abandoned session can pass the 'recording' check if the
-            // user has since started a new session.
+            // Sólo se sigue si el estado aún es 'recording' Y ésta sigue
+            // siendo la sesión vigente. Un WebSocket zombi de conexión tardía,
+            // de una sesión abandonada, puede pasar el control de 'recording'
+            // si el usuario arrancó otra sesión mientras tanto.
             if (isStale() || stateRef.current !== 'recording') {
               conn.close()
               return
             }
 
-            // The WebSocket is now truly open — assign connectionRef so
-            // subsequent audio callbacks send directly instead of buffering.
+            // El WebSocket ya está abierto de verdad: se asigna
+            // `connectionRef` para que los callbacks de audio siguientes
+            // manden directo en vez de acumular en buffer.
             connectionRef.current = conn
             everConnectedRef.current = true
 
-            // Flush all audio chunks that were buffered while the WebSocket
-            // was connecting.  This is safe because onReady fires from the
-            // WebSocket 'open' event, guaranteeing send() will not be dropped.
+            // Se vuelcan todos los chunks acumulados mientras el WebSocket
+            // conectaba. Es seguro porque `onReady` dispara desde el evento
+            // 'open' del WebSocket, lo que garantiza que `send()` no se
+            // descarta.
             //
-            // Coalesce into ~1s slices rather than one ws.send per chunk
-            // — fewer WS frames means less overhead on both ends.
+            // Se agrupan en porciones de ~1 s en vez de un `ws.send` por
+            // chunk: menos frames de WebSocket es menos sobrecoste en los dos
+            // extremos.
             const SLICE_TARGET_BYTES = 32_000 // ~1s at 16kHz/16-bit/mono
             if (audioBuffer.length > 0) {
               let totalBytes = 0
@@ -1004,10 +1058,10 @@ export function useVoice({
             }
             audioBuffer.length = 0
 
-            // Reset the release timer now that the WebSocket is ready.
-            // Only arm it if auto-repeat has been seen — otherwise the OS
-            // key repeat delay (~500ms) hasn't elapsed yet and the timer
-            // would fire prematurely.
+            // Se reinicia el timer de liberación ahora que el WebSocket está
+            // listo. Sólo se arma si ya se vio auto-repeat: de lo contrario el
+            // delay de repetición del sistema operativo —~500 ms— todavía no
+            // transcurrió y el timer dispararía antes de tiempo.
             if (releaseTimerRef.current) {
               clearTimeout(releaseTimerRef.current)
             }
@@ -1043,15 +1097,16 @@ export function useVoice({
           onErrorRef.current?.(
             'Voice mode requires a Claude.ai account. Please run /login to sign in.',
           )
-          // Clear the audio buffer on failure
+          // El buffer de audio se limpia ante el fallo
           audioBuffer.length = 0
           cleanup()
           updateState('idle')
           return
         }
 
-        // Safety check: if the user released the key before connectVoiceStream
-        // resolved (but after onReady already ran), close the connection.
+        // Control de seguridad: si el usuario soltó la tecla antes de que
+        // `connectVoiceStream` resolviera —pero después de que `onReady` ya
+        // corriera—, se cierra la conexión.
         if (stateRef.current !== 'recording') {
           audioBuffer.length = 0
           conn.close()
@@ -1063,28 +1118,31 @@ export function useVoice({
     void getVoiceKeyterms().then(attemptConnect)
   }
 
-  // ── Hold-to-talk handler ────────────────────────────────────────────
-  // Called on every keypress (including terminal auto-repeats while
-  // the key is held).  A gap longer than RELEASE_TIMEOUT_MS between
-  // events is interpreted as key release.
+  // ── Handler de hold-to-talk ─────────────────────────────────────────
+  // Se llama en cada pulsación, incluidos los auto-repeats de la terminal
+  // mientras la tecla sigue pulsada. Un hueco entre eventos mayor que
+  // RELEASE_TIMEOUT_MS se interpreta como que la tecla se soltó.
   //
-  // Recording starts immediately on the first keypress to eliminate
-  // startup delay.  The release timer is only armed after auto-repeat
-  // is detected (to avoid false releases during the OS key repeat
-  // delay of ~500ms on macOS).
+  // La grabación arranca de inmediato con la primera pulsación, para
+  // eliminar el retardo de arranque. El timer de liberación sólo se arma
+  // cuando se detecta auto-repeat, y así se evitan liberaciones falsas
+  // durante el delay de repetición del sistema operativo, de ~500 ms en
+  // macOS.
   const handleKeyEvent = useCallback(
     (fallbackMs = REPEAT_FALLBACK_MS): void => {
       if (!enabled || !isVoiceStreamAvailable()) {
         return
       }
 
-      // In focus mode, recording is driven by terminal focus, not keypresses.
+      // En modo focus la grabación la dirige el focus de la terminal, no las
+      // pulsaciones.
       if (focusTriggeredRef.current) {
-        // Active focus recording — ignore key events (session ends on blur).
+        // Grabación por focus activa: se ignoran los eventos de tecla, porque
+        // la sesión termina con el blur.
         return
       }
       if (focusMode && silenceTimedOutRef.current) {
-        // Focus session timed out due to silence — keypress re-arms it.
+        // La sesión de focus venció por silencio: una pulsación la rearma.
         logForDebugging(
           '[voice] Re-arming focus recording after silence timeout',
         )
@@ -1097,7 +1155,7 @@ export function useVoice({
 
       const currentState = stateRef.current
 
-      // Ignore keypresses while processing
+      // Se ignoran las pulsaciones mientras se procesa
       if (currentState === 'processing') {
         return
       }
@@ -1107,8 +1165,9 @@ export function useVoice({
           '[voice] handleKeyEvent: idle, starting recording session immediately',
         )
         void startRecordingSession()
-        // Fallback: if no auto-repeat arrives within REPEAT_FALLBACK_MS,
-        // arm the release timer anyway (the user likely tapped and released).
+        // Respaldo: si no llega ningún auto-repeat dentro de
+        // REPEAT_FALLBACK_MS, el timer de liberación se arma igualmente —lo
+        // más probable es que el usuario pulsara y soltara.
         repeatFallbackTimerRef.current = setTimeout(
           (
             repeatFallbackTimerRef,
@@ -1145,7 +1204,8 @@ export function useVoice({
           finishRecording,
         )
       } else if (currentState === 'recording') {
-        // Second+ keypress while recording — auto-repeat has started.
+        // Segunda pulsación o posterior durante la grabación: el auto-repeat
+        // ya arrancó.
         seenRepeatRef.current = true
         if (repeatFallbackTimerRef.current) {
           clearTimeout(repeatFallbackTimerRef.current)
@@ -1153,14 +1213,16 @@ export function useVoice({
         }
       }
 
-      // Reset the release timer on every keypress (including auto-repeats)
+      // El timer de liberación se reinicia en cada pulsación, auto-repeats
+      // incluidos
       if (releaseTimerRef.current) {
         clearTimeout(releaseTimerRef.current)
       }
 
-      // Only arm the release timer once auto-repeat has been seen.
-      // The OS key repeat delay is ~500ms on macOS; without this gate
-      // the 200ms timer fires before repeat starts, causing a false release.
+      // El timer de liberación sólo se arma cuando ya se vio auto-repeat. El
+      // delay de repetición del sistema operativo es de ~500 ms en macOS: sin
+      // esta guarda, el timer de 200 ms dispararía antes de que arrancara la
+      // repetición y produciría una liberación falsa.
       if (stateRef.current === 'recording' && seenRepeatRef.current) {
         releaseTimerRef.current = setTimeout(
           (releaseTimerRef, stateRef, finishRecording) => {
@@ -1179,7 +1241,8 @@ export function useVoice({
     [enabled, focusMode, cleanup],
   )
 
-  // Cleanup only when disabled or unmounted - NOT on state changes
+  // El cleanup corre sólo al deshabilitar o desmontar, NO ante cambios de
+  // estado
   useEffect(() => {
     if (!enabled && stateRef.current !== 'idle') {
       cleanup()
