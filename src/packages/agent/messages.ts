@@ -806,3 +806,495 @@ export function isCompactBoundaryMessage(
 ): message is SystemCompactBoundaryMessage {
   return message?.type === 'system' && message.subtype === 'compact_boundary'
 }
+
+// ===========================================================================
+// TRAMO 1 de TASK-THYROX-0212 — la familia `create*`: 18 exports de los 66
+// que faltaban, mas el unico ayudante interno que invocan.
+// ===========================================================================
+// El orden del porte NO es arbitrario ni por tamano: sale del grafo de
+// dependencia medido entre los 66 ausentes. 42 son HOJAS —no llaman a ningun
+// otro de los 66— y `create*` es la familia mas uniforme de ellas. El cubo
+// con dependencia queda para los tramos siguientes, empezando por los de una
+// sola arista y terminando en `normalizeMessagesForAPI`, que tiene nueve.
+//
+// `baseCreateAssistantMessage` es el UNICO simbolo no exportado que la
+// familia necesita, medido recorriendo los 42 internos de la fuente: la
+// extraccion por frontera de `export` no lo veia, y sin el las dos primeras
+// funciones no compilan. Se porta con ellas y sigue sin exportarse, como en
+// la fuente.
+//
+// La COBERTURA del archivo no se transcribe aqui: es propiedad de un artefacto
+// que crece, y una cifra en prosa caduca sin que nadie toque el comentario. La
+// publica el comando, comparando los dos arboles por simbolo exportado:
+//
+//   cuenta() { awk '/^export (type )?\{/ { l=$0; sub(/.*\{/,"",l); sub(/\}.*/,"",l)
+//       n=split(l,xs,","); for(i=1;i<=n;i++){ gsub(/^[ \t]+|[ \t]+$/,"",xs[i])
+//       if(xs[i]!="") print xs[i] } ; next }
+//     /^export / { if ($2 ~ /^(type|const|class|interface|enum|let|function)$/) n=$3
+//       else if ($2=="async"||$2=="abstract") n=$4; else next
+//       gsub(/[(<:={].*/,"",n); if(n!="") print n }' "$1" | sort -u ; }
+//   comm -13 <(cuenta src/packages/agent/messages.ts) \
+//            <(cuenta "$CCNMT/packages/agent/messages.ts") | wc -l
+//
+// Metrica: simbolos EXPORTADOS por nombre, incluida la re-exportacion entre
+// llaves —que un patron de `^export <palabra>` no ve y aporta dos por lado—.
+// Ciega a: si el cuerpo del simbolo hace lo mismo que el de la fuente; el
+// conteo mide presencia del nombre, no equivalencia de conducta.
+import type { APIError } from '@anthropic-ai/sdk'
+import type {
+  BetaContentBlock,
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { ContentBlock } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { SDKAssistantMessageError } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import { SYNTHETIC_MODEL } from './messagesConstants.ts'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { formatTokens } from '@thyrox/output/formatters'
+import type {
+  MessageType,
+  StopHookInfo,
+  SystemAPIErrorMessage,
+  SystemAgentsKilledMessage,
+  SystemApiMetricsMessage,
+  SystemAwaySummaryMessage,
+  SystemBridgeStatusMessage,
+  SystemInformationalMessage,
+  SystemLocalCommandMessage,
+  SystemMemorySavedMessage,
+  SystemMessageLevel,
+  SystemMicrocompactBoundaryMessage,
+  SystemPermissionRetryMessage,
+  SystemScheduledTaskFireMessage,
+  SystemStopHookSummaryMessage,
+  SystemTurnDurationMessage,
+  ToolUseSummaryMessage,
+} from './messageShapes.ts'
+function baseCreateAssistantMessage({
+  content,
+  isApiErrorMessage = false,
+  apiError,
+  error,
+  errorDetails,
+  isVirtual,
+  usage = {
+    input_tokens: 0,
+    output_tokens: 0,
+    cache_creation_input_tokens: 0,
+    cache_read_input_tokens: 0,
+    server_tool_use: { web_search_requests: 0, web_fetch_requests: 0 },
+    service_tier: null,
+    cache_creation: {
+      ephemeral_1h_input_tokens: 0,
+      ephemeral_5m_input_tokens: 0,
+    },
+    inference_geo: null,
+    iterations: null, speed: null, output_tokens_details: null,
+  },
+}: {
+  content: BetaContentBlock[]
+  isApiErrorMessage?: boolean
+  apiError?: AssistantMessage['apiError']
+  error?: SDKAssistantMessageError
+  errorDetails?: string
+  isVirtual?: true
+  usage?: Usage
+}): AssistantMessage {
+  return {
+    type: 'assistant',
+    uuid: randomUUID(),
+    timestamp: new Date().toISOString(),
+    message: {
+      id: randomUUID(),
+      container: null,
+      model: SYNTHETIC_MODEL,
+      role: 'assistant',
+      stop_reason: 'stop_sequence',
+      stop_sequence: '',
+      type: 'message',
+      usage,
+      content: content as ContentBlock[],
+      context_management: null,
+    },
+    requestId: undefined,
+    apiError,
+    error,
+    errorDetails,
+    isApiErrorMessage,
+    isVirtual,
+  }
+}
+
+export function createAssistantMessage({
+  content,
+  usage,
+  isVirtual,
+}: {
+  content: string | BetaContentBlock[]
+  usage?: Usage
+  isVirtual?: true
+}): AssistantMessage {
+  return baseCreateAssistantMessage({
+    content:
+      typeof content === 'string'
+        ? [
+            {
+              type: 'text' as const,
+              text: content === '' ? NO_CONTENT_MESSAGE : content,
+            } as BetaContentBlock, // NOTE: citations field is not supported in Bedrock API
+          ]
+        : content,
+    usage,
+    isVirtual,
+  })
+}
+
+export function createAssistantAPIErrorMessage({
+  content,
+  apiError,
+  error,
+  errorDetails,
+}: {
+  content: string
+  apiError?: AssistantMessage['apiError']
+  error?: SDKAssistantMessageError
+  errorDetails?: string
+}): AssistantMessage {
+  return baseCreateAssistantMessage({
+    content: [
+      {
+        type: 'text' as const,
+        text: content === '' ? NO_CONTENT_MESSAGE : content,
+      } as BetaContentBlock, // NOTE: citations field is not supported in Bedrock API
+    ],
+    isApiErrorMessage: true,
+    apiError,
+    error,
+    errorDetails,
+  })
+}
+
+export function createUserInterruptionMessage({
+  toolUse = false,
+}: {
+  toolUse?: boolean
+}): UserMessage {
+  const content = toolUse ? INTERRUPT_MESSAGE_FOR_TOOL_USE : INTERRUPT_MESSAGE
+
+  return createUserMessage({
+    content: [
+      {
+        type: 'text',
+        text: content,
+      },
+    ],
+  })
+}
+
+/**
+ * Creates a new synthetic user caveat message for local commands (eg. bash, slash).
+ * We need to create a new message each time because messages must have unique uuids.
+ */
+
+export function createSystemMessage(
+  content: string,
+  level: SystemMessageLevel,
+  toolUseID?: string,
+  preventContinuation?: boolean,
+): SystemInformationalMessage {
+  return {
+    type: 'system',
+    subtype: 'informational',
+    content,
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    toolUseID,
+    level,
+    ...(preventContinuation && { preventContinuation }),
+  }
+}
+
+export function createPermissionRetryMessage(
+  commands: string[],
+): SystemPermissionRetryMessage {
+  return {
+    type: 'system',
+    subtype: 'permission_retry',
+    content: `Allowed ${commands.join(', ')}`,
+    commands,
+    level: 'info',
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+  }
+}
+
+export function createBridgeStatusMessage(
+  url: string,
+  upgradeNudge?: string,
+): SystemBridgeStatusMessage {
+  return {
+    type: 'system',
+    subtype: 'bridge_status',
+    content: `/remote-control is active. Code in CLI or at ${url}`,
+    url,
+    upgradeNudge,
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+  }
+}
+
+export function createScheduledTaskFireMessage(
+  content: string,
+): SystemScheduledTaskFireMessage {
+  return {
+    type: 'system',
+    subtype: 'scheduled_task_fire',
+    content,
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+  }
+}
+
+export function createStopHookSummaryMessage(
+  hookCount: number,
+  hookInfos: StopHookInfo[],
+  hookErrors: string[],
+  preventedContinuation: boolean,
+  stopReason: string | undefined,
+  hasOutput: boolean,
+  level: SystemMessageLevel,
+  toolUseID?: string,
+  hookLabel?: string,
+  totalDurationMs?: number,
+): SystemStopHookSummaryMessage {
+  return {
+    type: 'system',
+    subtype: 'stop_hook_summary',
+    hookCount,
+    hookInfos,
+    hookErrors,
+    preventedContinuation,
+    stopReason,
+    hasOutput,
+    level,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    toolUseID,
+    hookLabel,
+    totalDurationMs,
+  }
+}
+
+export function createTurnDurationMessage(
+  durationMs: number,
+  budget?: { tokens: number; limit: number; nudges: number },
+  messageCount?: number,
+): SystemTurnDurationMessage {
+  return {
+    type: 'system',
+    subtype: 'turn_duration',
+    durationMs,
+    budgetTokens: budget?.tokens,
+    budgetLimit: budget?.limit,
+    budgetNudges: budget?.nudges,
+    messageCount,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createAwaySummaryMessage(
+  content: string,
+): SystemAwaySummaryMessage {
+  return {
+    type: 'system',
+    subtype: 'away_summary',
+    content,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createMemorySavedMessage(
+  writtenPaths: string[],
+): SystemMemorySavedMessage {
+  return {
+    type: 'system',
+    subtype: 'memory_saved',
+    writtenPaths,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createAgentsKilledMessage(): SystemAgentsKilledMessage {
+  return {
+    type: 'system',
+    subtype: 'agents_killed',
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createApiMetricsMessage(metrics: {
+  ttftMs: number
+  otps: number
+  isP50?: boolean
+  hookDurationMs?: number
+  turnDurationMs?: number
+  toolDurationMs?: number
+  classifierDurationMs?: number
+  toolCount?: number
+  hookCount?: number
+  classifierCount?: number
+  configWriteCount?: number
+}): SystemApiMetricsMessage {
+  return {
+    type: 'system',
+    subtype: 'api_metrics',
+    ttftMs: metrics.ttftMs,
+    otps: metrics.otps,
+    isP50: metrics.isP50,
+    hookDurationMs: metrics.hookDurationMs,
+    turnDurationMs: metrics.turnDurationMs,
+    toolDurationMs: metrics.toolDurationMs,
+    classifierDurationMs: metrics.classifierDurationMs,
+    toolCount: metrics.toolCount,
+    hookCount: metrics.hookCount,
+    classifierCount: metrics.classifierCount,
+    configWriteCount: metrics.configWriteCount,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createCommandInputMessage(
+  content: string,
+): SystemLocalCommandMessage {
+  return {
+    type: 'system',
+    subtype: 'local_command',
+    content,
+    level: 'info',
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createCompactBoundaryMessage(
+  trigger: 'manual' | 'auto',
+  preTokens: number,
+  lastPreCompactMessageUuid?: UUID,
+  userContext?: string,
+  messagesSummarized?: number,
+): SystemCompactBoundaryMessage {
+  return {
+    type: 'system',
+    subtype: 'compact_boundary',
+    content: `Conversation compacted`,
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    level: 'info',
+    compactMetadata: {
+      trigger,
+      preTokens,
+      userContext,
+      messagesSummarized,
+    },
+    ...(lastPreCompactMessageUuid && {
+      logicalParentUuid: lastPreCompactMessageUuid,
+    }),
+  }
+}
+
+export function createMicrocompactBoundaryMessage(
+  trigger: 'auto',
+  preTokens: number,
+  tokensSaved: number,
+  compactedToolIds: string[],
+  clearedAttachmentUUIDs: string[],
+): SystemMicrocompactBoundaryMessage {
+  logForDebugging(
+    `[microcompact] saved ~${formatTokens(tokensSaved)} tokens (cleared ${compactedToolIds.length} tool results)`,
+  )
+  return {
+    type: 'system',
+    subtype: 'microcompact_boundary',
+    content: 'Context microcompacted',
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    level: 'info',
+    microcompactMetadata: {
+      trigger,
+      preTokens,
+      tokensSaved,
+      compactedToolIds,
+      clearedAttachmentUUIDs,
+    },
+  }
+}
+
+export function createSystemAPIErrorMessage(
+  error: APIError,
+  retryInMs: number,
+  retryAttempt: number,
+  maxRetries: number,
+): SystemAPIErrorMessage {
+  return {
+    type: 'system',
+    subtype: 'api_error',
+    level: 'error',
+    cause: error.cause instanceof Error ? error.cause : undefined,
+    error,
+    retryInMs,
+    retryAttempt,
+    maxRetries,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+  }
+}
+
+/**
+ * Checks if a message is a compact boundary marker
+ */
+
+export function createToolUseSummaryMessage(
+  summary: string,
+  precedingToolUseIds: string[],
+): ToolUseSummaryMessage {
+  return {
+    type: 'tool_use_summary' as MessageType,
+    summary,
+    precedingToolUseIds,
+    uuid: randomUUID(),
+    timestamp: new Date().toISOString(),
+  }
+}
+
+/**
+ * Defensive validation: ensure tool_use/tool_result pairing is correct.
+ *
+ * Handles both directions:
+ * - Forward: inserts synthetic error tool_result blocks for tool_use blocks missing results
+ * - Reverse: strips orphaned tool_result blocks referencing non-existent tool_use blocks
+ *
+ * Logs when this activates to help identify the root cause.
+ *
+ * Strict mode: when getStrictToolResultPairing() is true (HFI opts in at
+ * startup), any mismatch throws instead of repairing. For training-data
+ * collection, a model response conditioned on synthetic placeholders is
+ * tainted — fail the trajectory rather than waste labeler time on a turn
+ * that will be rejected at submission anyway.
+ */
+

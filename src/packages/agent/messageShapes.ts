@@ -153,10 +153,27 @@ export type SystemMicrocompactBoundaryMessage = Message & { type: 'system' }
 export type SystemPermissionRetryMessage = Message & { type: 'system' }
 export type SystemScheduledTaskFireMessage = Message & { type: 'system' }
 
+/**
+ * DIVERGENCIA DECLARADA, y la causa es el TOOLCHAIN — misma clase que
+ * `AssistantMessage` de arriba (TASK-THYROX-0228/0233), pero en la direccion
+ * CONTRARIA: alla se estrecho a requerido, aqui se ensancha a opcional.
+ *
+ * La fuente se contradice a si misma y `strict: false` se lo tolera: declara
+ * `hookLabel: string` REQUERIDO en esta forma, y su unico constructor
+ * (`createStopHookSummaryMessage`) lo recibe `hookLabel?: string` OPCIONAL y
+ * lo asigna tal cual. Bajo `strict: true` eso es TS2322 en el propio puerto.
+ *
+ * La direccion la decide el codigo, no la preferencia: los SEIS consumidores
+ * del campo ya lo guardan —`!message.hookLabel`, `?? 'stop'`, `?? 'Stop'`, y
+ * sobre todo `collapseHookSummaries.ts:12`, que declara el type guard
+ * `msg.hookLabel !== undefined`—. Ese guard seria codigo muerto si el campo
+ * fuera requerido. El protocolo NO garantiza el rotulo: un hook sin etiqueta
+ * es un caso real que el constructor admite.
+ */
 export type SystemStopHookSummaryMessage = Message & {
   type: 'system'
   subtype: string
-  hookLabel: string
+  hookLabel?: string
   hookCount: number
   totalDurationMs?: number
   hookInfos: StopHookInfo[]
