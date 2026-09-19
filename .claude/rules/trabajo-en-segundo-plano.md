@@ -49,6 +49,57 @@ ancho y exige juicio**. Una suite, un gate, un censo, un barrido determinista �
 cualquier cosa cuyo resultado no dependa de decidir nada— es un proceso, y
 despachar un agente para eso es pagar una conversación por un `exit code`.
 
+## Antes de elegir el instrumento de espera: ¿cómo se lanzó?
+
+> Añadida por el ejecutor 2026-09-18, que la formuló como la pregunta que
+> faltaba: *«¿por qué no te haces esta pregunta: cómo ejecutaste el
+> proceso?»*. Medido antes de escribirla: esta regla mencionaba `pgrep` cero
+> veces y `wait "$pid"` cero veces, y las tres reglas de espera de los
+> consumidores tampoco — así que quien las lee no tiene cómo saber que el
+> caso más simple existe.
+
+La procedencia decide el instrumento, y decide **antes** de escribir ningún
+patrón:
+
+| Cómo se lanzó | Instrumento | Da el código de salida | Puede auto-casar |
+|---|---|---|---|
+| lo lanzó **el shell que espera** | `wait "$pid"` | **sí** — es su valor de retorno | no: no hay patrón |
+| lo lanzó **un pool propio** | `run-task-pool` / `wait-jobs wait` bloquean solos | sí, por trabajo | no |
+| es **ajeno**, u otro turno | `marker_wait --pid-only`, o `pgrep '[p]atron'` | **no** — de ahí el marcador | sí, si el patrón va desnudo |
+
+**El discriminador NO es `nohup`/`disown`.** Medido en tres invocaciones:
+
+```text
+sleep 1 & pid=$!; wait "$pid"                    -> exit=0   (hijo)
+wait 5910   # lo lanzó otro shell                -> «pid 5910 is not a child
+                                                    of this shell», exit=127
+nohup sleep 2 & pid=$!; disown $pid; wait "$pid" -> exit=0   (sigue siendo hijo)
+```
+
+`disown` no rompe `wait`: el shell sigue cosechando a su hijo. Lo que lo rompe
+es el cruce de **proceso** — que espere un shell distinto del que lanzó. Y ése
+es exactamente el diseño de este árbol: el trabajo sobrevive al turno, así que
+el shell que lanzó ya no existe cuando alguien pregunta.
+
+De ahí la razón de ser del marcador que `bg.sh` escribe, que hasta ahora se
+usaba sin declararla: **es el sustituto en espacio de usuario del código de
+salida que `wait` habría dado**. Un `wait_for_pid` que observa `/proc` puede
+decir *terminó* y nunca *cómo*; eso no es una carencia de su implementación,
+es la frontera del tercer caso.
+
+**Y en el tercero, el patrón NUNCA va desnudo.** `pgrep -f` compara contra la
+línea de comando **completa**, y el `bash -c` que ejecuta la espera lleva el
+patrón como argumento propio: casa consigo mismo y el bucle no termina nunca.
+La clase de corchetes es la forma canónica del oficio —`'[p]atron'` casa el
+texto `patron` y no el texto `[p]atron`, que es lo que la propia línea
+lleva—. El gate que lo ataja es `src/hooks/detect_self_matching_pgrep.py`;
+el episodio, `H-THYROX-103`.
+
+*Métrica:* código de salida y stderr de `wait` en las tres formas, en
+invocaciones separadas.
+*Ciega a:* si el shell que lanzó sigue vivo cuando alguien pregunta — la
+condición que decide entre la fila 1 y la 3, y que no se lee del pid.
+
 ## La barrera no es opcional
 
 Un trabajo lanzado y no recogido es peor que uno no lanzado: el turno cierra
