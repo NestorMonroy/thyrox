@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bunx tsc --noEmit", "started_at": "2026-09-19T02:20:57+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-19T02:23:20+00:00", "duration_seconds": 143.051593}

@@ -180,12 +180,25 @@ export type HookCommand = BashCommandHook | PromptHook | HttpHook | AgentHook
 export type HookInput = { hook_event_name: string; [key: string]: unknown }
 
 /**
- * DIVERGENCIA HEREDADA, no introducida: la fuente declara este alias como
- * `type AppState = unknown` en este mismo archivo
- * (`ccnmt: packages/agent/types/hooks.ts:19`), en vez de importar el tipo
- * real de `app-host`. Se porta con su forma, no con la que "deberia"
- * tener: cambiarla aqui haria que el contrato de `HookCallbackContext`
- * divergiera del de la fuente.
+ * SHIM DE SOLO-TIPO, heredado y DELIBERADO — no un accidente del porte.
+ *
+ * La referencia declara este alias como `unknown` en este mismo archivo
+ * (`ccnmt: packages/agent/types/hooks.ts:19`) en vez de importar el tipo
+ * real, y lo hace en 8 sitios mas del arbol: son archivos con nombre de
+ * shim (`appStateCompatShim`, `appStateShim`, `AppStateCompat`) cuyo
+ * docstring cita la misma decision de particion, para que un paquete no
+ * importe `state/AppState` a nivel de modulo. El tipo real existe y esta
+ * portado, byte a byte, en `app-host/src/state/AppStateCompat.ts:89`.
+ *
+ * La version anterior de este comentario decia que la forma de `unknown`
+ * era «la que la fuente declara», sin mas. Es cierto de la referencia
+ * inmediata y no del original, que si importa el tipo real — el analisis
+ * esta en `.claude/workbench/appstate-shim-leak-20260919T024500/`.
+ *
+ * No se estrecha aqui por el umbral que la propia referencia declara y
+ * midio: estrechar un shim solo rinde sobre consumidores de patron ACCESS
+ * (`x.campo`), y `HookCallbackContext` tiene CERO consumidores en los tres
+ * arboles medidos. El triaje de los 9 shims es TASK-THYROX-0203.
  */
 type AppState = unknown
 
