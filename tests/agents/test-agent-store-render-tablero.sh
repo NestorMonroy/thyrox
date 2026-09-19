@@ -175,8 +175,20 @@ echo "== 5-bis. CONTROL — el mismo exit 0 con CERO archivos revisados =="
 # distingue «reviso y esta limpio» de «no reviso nada». Esa ruta no es
 # alcanzable por CLI con una ruta suelta (`sueltos` siempre deja `rutas` no
 # vacia), asi que se ejercita en proceso sustituyendo el descubridor.
-PY_GATE=python3
-python3 -c 'import sphinx' 2>/dev/null || PY_GATE=.venv/bin/python
+# El interprete lo DERIVA el propio gate, no se elige por «¿hay Sphinx?».
+# Ese era el discriminador viejo, y :ref:`h-thyrox-133` lo retiro: Sphinx
+# importable es el significante; lo que decide es si el interprete puede
+# cargar el `conf.py` del CONSUMIDOR. Bajo cualquier otro, `main()` se
+# re-lanza con `os.execv` — y esa llamada reemplaza el proceso, con lo que la
+# sustitucion en memoria de `archivos_nuevos` se pierde y el caso mide el
+# arbol real en vez de la rama «nada que revisar».
+PY_GATE="$(python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('crs', '$GATE_RST')
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+print(m._consumer_interpreter())
+" 2>/dev/null)"
+[[ -x "$PY_GATE" ]] || PY_GATE=python3
 vacio=$("$PY_GATE" - "$GATE_RST" <<'PY' 2>&1
 import importlib.util, sys
 spec = importlib.util.spec_from_file_location("crs", sys.argv[1])
