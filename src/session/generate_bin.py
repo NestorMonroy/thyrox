@@ -155,7 +155,7 @@ from paths import reach  # noqa: E402
 #: ``src/lib/reach.sh`` y ``src/paths/reach.py``. La resuelve el bit ejecutable
 #: de ``is_shell_entrypoint``, no una excepción por nombre.
 SOURCE_DIRS: tuple[str, ...] = (
-    "src/agents", "src/corpus", "src/docs", "src/graph", "src/hallazgo",
+    "src/agents", "src/typescript", "src/corpus", "src/docs", "src/graph", "src/hallazgo",
     "src/hooks", "src/lib", "src/paths", "src/peer_mailbox", "src/repo",
     "src/measurement",
     "src/session", "src/task", "src/transcript", "src/verify", "src/workbench",

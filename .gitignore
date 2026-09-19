@@ -42,6 +42,11 @@ yarn-error.log*
 
 # Build outputs
 dist/
+#   ^ cubre tambien `src/packages/*/dist/`, que es donde
+#     `src/typescript/emit_declarations.py` emite las declaraciones de hermano.
+#     No se versionan: un clon sin ellas cae al `default` del exports —la
+#     fuente— y compila como hoy, asi que construir es una precondicion
+#     declarada y no un requisito para que el arbol funcione.
 build/
 .next/
 out/
