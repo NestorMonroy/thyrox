@@ -1,3 +1,24 @@
+// El puente al anfitrion, que la fuente pone al FRENTE del barril
+// (`ccnmt: packages/config/index.ts:1-2`) y este puerto omitia. `host.ts` ya
+// declaraba los tres simbolos; lo que faltaba era dejarlos entrar al paquete.
+//
+// Medido: cuatro consumidores lo importaban del barril —dos suites, el
+// `packageHostSetup` de app-host, y el docstring de `cli/src/entry/main.ts`—
+// y los cuatro morian con `Export named 'installConfigHostBindings' not
+// found`. Es una ausencia de EXPORT, no de puerto.
+//
+// `tryGetConfigHostBindings` SI es de la fuente —lo declara su `host.ts` y lo
+// consume su `global/config.ts:15`—; lo que diverge es que su barril no lo
+// re-exporta y el nuestro si. Es divergencia de SUPERFICIE, no de porte, y
+// entra porque `global/config.ts` lo consume igual que a sus dos hermanos.
+//
+// La primera version de este comentario afirmaba que el simbolo era NUESTRO y
+// que «la fuente no lo declara». Era falso, y se midio despues de escribirlo:
+// `grep tryGetConfigHostBindings` sobre `ccnmt: packages/` da tres hits. La
+// forma del error es la de `metrica-decide-la-conclusion.md` —se comprobo que
+// el BARRIL de la fuente no lo lleva y se concluyo sobre el PAQUETE—.
+export type { ConfigHostBindings } from './contracts.ts'
+export { installConfigHostBindings, getConfigHostBindings, tryGetConfigHostBindings } from './host.ts'
 export { SETTING_SOURCES, EDITABLE_SOURCES, precedence, sourceDisplayName, parseSettingSourcesFlag, type SettingSource } from './settings/constants.ts'
 export { SettingsSchema, PermissionsSchema, EnvironmentVariablesSchema, HooksSchema, HookMatcherSchema, HookCommandSchema, HOOK_EVENTS, type Settings, type Permissions, type HookEvent } from './settings/types.ts'
 export { formatZodError, validateSettingsFileContent, filterInvalidPermissionRules, type SettingsError, type ValidationResult } from './settings/validation.ts'
