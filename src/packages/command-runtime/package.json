@@ -35,11 +35,21 @@
     "@anthropic-ai/sdk": "^0.124.0",
     "@thyrox/agent": "workspace:*",
     "@thyrox/app-host": "workspace:*",
+    "@thyrox/bridge": "workspace:*",
     "@thyrox/config": "workspace:*",
+    "@thyrox/ide": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/memory": "workspace:*",
+    "@thyrox/output": "workspace:*",
     "@thyrox/permission": "workspace:*",
     "@thyrox/provider": "workspace:*",
+    "@thyrox/repl": "workspace:*",
     "@thyrox/shell": "workspace:*",
-    "@thyrox/storage": "workspace:*"
+    "@thyrox/storage": "workspace:*",
+    "@thyrox/swarm": "workspace:*",
+    "@thyrox/teleport": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*",
+    "@thyrox/voice": "workspace:*"
   }
 }

@@ -190,5 +190,32 @@
     ".": "./src/index.ts",
     "./contracts": "./src/contracts.ts",
     "./testing": "./testing/index.ts"
+  },
+  "dependencies": {
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/app-host": "workspace:*",
+    "@thyrox/bridge": "workspace:*",
+    "@thyrox/cli": "workspace:*",
+    "@thyrox/color-diff-napi": "workspace:*",
+    "@thyrox/command-runtime": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/headless-sdk": "workspace:*",
+    "@thyrox/ide": "workspace:*",
+    "@thyrox/image-processor-napi": "workspace:*",
+    "@thyrox/ink": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/memory": "workspace:*",
+    "@thyrox/output": "workspace:*",
+    "@thyrox/permission": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/server": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/storage": "workspace:*",
+    "@thyrox/swarm": "workspace:*",
+    "@thyrox/teleport": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*",
+    "@thyrox/updater": "workspace:*",
+    "@thyrox/url-handler-napi": "workspace:*"
   }
 }

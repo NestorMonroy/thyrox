@@ -28,6 +28,7 @@
     "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/permission": "workspace:*",
     "@thyrox/shell": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",

@@ -34,14 +34,27 @@
   "dependencies": {
     "@thyrox/agent": "workspace:*",
     "@thyrox/app-host": "workspace:*",
+    "@thyrox/bridge": "workspace:*",
+    "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",
+    "@thyrox/daemon": "workspace:*",
     "@thyrox/headless-sdk": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/memory": "workspace:*",
     "@thyrox/observability": "workspace:*",
+    "@thyrox/output": "workspace:*",
     "@thyrox/permission": "workspace:*",
     "@thyrox/provider": "workspace:*",
+    "@thyrox/repl": "workspace:*",
+    "@thyrox/server": "workspace:*",
+    "@thyrox/shell": "workspace:*",
     "@thyrox/skills": "workspace:*",
-    "@thyrox/tools": "workspace:*"
+    "@thyrox/storage": "workspace:*",
+    "@thyrox/swarm": "workspace:*",
+    "@thyrox/teleport": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*",
+    "@thyrox/tools": "workspace:*",
+    "@thyrox/updater": "workspace:*"
   }
 }

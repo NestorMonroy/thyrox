@@ -17,5 +17,16 @@
     "./legacy/wrapper.js": "./src/legacy/wrapper.tsx",
     "./legacy/win32/windowEnum.js": "./src/legacy/win32/windowEnum.ts",
     "./legacy/win32/windowCapture.js": "./src/legacy/win32/windowCapture.ts"
+  },
+  "dependencies": {
+    "@thyrox/app-host": "workspace:*",
+    "@thyrox/computer-use-input": "workspace:*",
+    "@thyrox/computer-use-swift": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*"
   }
 }

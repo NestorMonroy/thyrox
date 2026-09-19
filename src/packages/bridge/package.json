@@ -18,6 +18,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
     "@thyrox/agent": "workspace:*",
+    "@thyrox/cli": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",
     "@thyrox/headless-sdk": "workspace:*",
     "@thyrox/local-observability": "workspace:*",

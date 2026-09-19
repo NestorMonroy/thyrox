@@ -37,6 +37,12 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@thyrox/agent": "workspace:*",
+    "@thyrox/app-host": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/repl": "workspace:*",
+    "@thyrox/storage": "workspace:*",
     "cli-highlight": "^2.1.11",
     "highlight.js": "^11.11.1"
   }

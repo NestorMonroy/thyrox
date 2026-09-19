@@ -57,9 +57,15 @@
     "shell": "bun run bin/shell.ts"
   },
   "dependencies": {
+    "@thyrox/agent": "workspace:*",
     "@thyrox/app-host": "workspace:*",
+    "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/output": "workspace:*",
+    "@thyrox/permission": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/repl": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "@thyrox/tool-registry": "workspace:*"
   }
