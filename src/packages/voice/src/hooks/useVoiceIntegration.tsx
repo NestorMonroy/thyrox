@@ -34,18 +34,21 @@ import {
   useVoiceState,
 } from '../voiceContext.js'
 import { KeyboardEvent, useInput } from '@anthropic/ink'
-// backward-compat bridge until REPL wires handleKeyDown to <Box onKeyDown>
+// Puente de retrocompatibilidad hasta que el REPL cablee `handleKeyDown` a
+// `<Box onKeyDown>`
 import { useOptionalKeybindingContext } from '@anthropic/ink/keybindings'
 import { keystrokesEqual } from '@anthropic/ink/keybindings'
 import type { ParsedKeystroke } from '@anthropic/ink/keybindings'
 import { normalizeFullWidthSpace } from '@thyrox/output/utils/stringUtils.js'
 import { useVoiceEnabled } from './useVoiceEnabled.js'
 
-// Dead code elimination: conditional import for voice input hook.
+// Eliminación de código muerto: el import del hook de entrada de voz es
+// condicional.
 /* eslint-disable @typescript-eslint/no-require-imports */
-// Capture the module namespace, not the function: spyOn() mutates the module
-// object, so `voiceNs.useVoice(...)` resolves to the spy even if this module
-// was loaded before the spy was installed (test ordering independence).
+// Se captura el NAMESPACE del módulo, no la función: `spyOn()` muta el objeto
+// del módulo, así que `voiceNs.useVoice(...)` resuelve al spy aunque este
+// módulo se hubiera cargado antes de instalarlo. Eso da independencia del
+// orden de los tests.
 const voiceNs: { useVoice: typeof import('./useVoice.js').useVoice } = feature(
   'VOICE_MODE',
 )
@@ -63,53 +66,66 @@ const voiceNs: { useVoice: typeof import('./useVoice.js').useVoice } = feature(
     }
 /* eslint-enable @typescript-eslint/no-require-imports */
 
-// Maximum gap (ms) between key presses to count as held (auto-repeat).
-// Terminal auto-repeat fires every 30-80ms; 120ms covers jitter while
-// excluding normal typing speed (100-300ms between keystrokes).
+// Hueco máximo (ms) entre pulsaciones para contarlas como tecla mantenida,
+// es decir auto-repeat. El auto-repeat de la terminal dispara cada 30-80 ms;
+// 120 ms absorbe el jitter y deja fuera la velocidad normal de tecleo, que
+// está entre 100 y 300 ms por pulsación.
 const RAPID_KEY_GAP_MS = 120
 
-// Fallback (ms) for modifier-combo first-press activation. Must match
-// FIRST_PRESS_FALLBACK_MS in useVoice.ts. Covers the max OS initial
-// key-repeat delay (~2s on macOS with slider at "Long") so holding a
-// modifier combo doesn't fragment into two sessions when the first
-// auto-repeat arrives after the default 600ms REPEAT_FALLBACK_MS.
+// Respaldo (ms) para la activación por primera pulsación de un combo con
+// modificador. Tiene que coincidir con FIRST_PRESS_FALLBACK_MS de
+// `useVoice.ts`.
+//
+// Cubre el delay inicial máximo de repetición del sistema operativo —~2 s en
+// macOS con el slider en «Long»— para que mantener un combo no se fragmente
+// en dos sesiones cuando el primer auto-repeat llega después de los 600 ms
+// por defecto de REPEAT_FALLBACK_MS.
 const MODIFIER_FIRST_PRESS_FALLBACK_MS = 2000
 
-// Number of rapid consecutive key events required to activate voice.
-// Only applies to bare-char bindings (space, v, etc.) where a single press
-// could be normal typing. Modifier combos activate on the first press.
+// Cuántos eventos de tecla rápidos y consecutivos hacen falta para activar la
+// voz. Sólo aplica a los bindings de carácter desnudo —espacio, v, etc.—
+// donde una sola pulsación podría ser tecleo normal. Un combo con modificador
+// activa en la primera.
 const HOLD_THRESHOLD = 5
 
-// Number of rapid key events to start showing warmup feedback.
+// Cuántos eventos rápidos bastan para empezar a mostrar el feedback de
+// warmup.
 const WARMUP_THRESHOLD = 2
 
-// Match a KeyboardEvent against a ParsedKeystroke. Replaces the legacy
-// matchesKeystroke(input, Key, ...) path which assumed useInput's raw
-// `input` arg — KeyboardEvent.key holds normalized names (e.g. 'space',
-// 'f9') that getKeyName() didn't handle, so modifier combos and f-keys
-// silently failed to match after the onKeyDown migration (#23524).
+// Empareja un `KeyboardEvent` con un `ParsedKeystroke`. Sustituye al camino
+// legacy `matchesKeystroke(input, Key, ...)`, que asumía el argumento `input`
+// crudo de `useInput`.
+//
+// `KeyboardEvent.key` lleva nombres normalizados —'space', 'f9'— que
+// `getKeyName()` no manejaba, así que los combos con modificador y las teclas
+// de función dejaron de emparejar EN SILENCIO tras la migración a `onKeyDown`
+// (#23524).
 function matchesKeyboardEvent(
   e: KeyboardEvent,
   target: ParsedKeystroke,
 ): boolean {
-  // KeyboardEvent stores key names; ParsedKeystroke stores ' ' for space
-  // and 'enter' for return (see parser.ts case 'space'/'return').
+  // `KeyboardEvent` guarda nombres de tecla; `ParsedKeystroke` guarda ' ' para
+  // el espacio y 'enter' para el retorno (ver los casos 'space'/'return' de
+  // `parser.ts`).
   const key =
     e.key === 'space' ? ' ' : e.key === 'return' ? 'enter' : e.key.toLowerCase()
   if (key !== target.key) return false
   if (e.ctrl !== target.ctrl) return false
   if (e.shift !== target.shift) return false
-  // KeyboardEvent.meta folds alt|option (terminal limitation — esc-prefix);
-  // ParsedKeystroke has both alt and meta as aliases for the same thing.
+  // `KeyboardEvent.meta` colapsa alt y option —limitación de la terminal, que
+  // los manda con prefijo esc—; en `ParsedKeystroke`, alt y meta son alias de
+  // lo mismo.
   if (e.meta !== (target.alt || target.meta)) return false
   if (e.superKey !== target.super) return false
   return true
 }
 
-// Hardcoded default for when there's no KeybindingProvider at all (e.g.
-// headless/test contexts). NOT used when the provider exists and the
-// lookup returns null — that means the user null-unbound or reassigned
-// space, and falling back to space would pick a dead or conflicting key.
+// Valor por defecto fijo para cuando no hay ningún `KeybindingProvider` —
+// contextos headless o de test.
+//
+// NO se usa cuando el provider existe y la consulta devuelve null: eso
+// significa que el usuario desligó la tecla o reasignó el espacio, y caer al
+// espacio elegiría una tecla muerta o en conflicto.
 const DEFAULT_VOICE_KEYSTROKE: ParsedKeystroke = {
   key: ' ',
   ctrl: false,
@@ -134,19 +150,21 @@ type UseVoiceIntegrationArgs = {
 type InterimRange = { start: number; end: number }
 
 type StripOpts = {
-  // Which char to strip (the configured hold key). Defaults to space.
+  // Qué carácter se retira: la tecla de mantener configurada. Por defecto, el
+  // espacio.
   char?: string
-  // Capture the voice prefix/suffix anchor at the stripped position.
+  // Captura el ancla de prefijo y sufijo de voz en la posición retirada.
   anchor?: boolean
-  // Minimum trailing count to leave behind — prevents stripping the
-  // intentional warmup chars when defensively cleaning up leaks.
+  // Mínimo de caracteres finales que hay que dejar: impide retirar los
+  // caracteres de warmup intencionales al limpiar fugas de forma defensiva.
   floor?: number
 }
 
 type UseVoiceIntegrationResult = {
-  // Returns the number of trailing chars remaining after stripping.
+  // Devuelve cuántos caracteres finales quedan tras el retiro.
   stripTrailing: (maxStrip: number, opts?: StripOpts) => number
-  // Undo the gap space and reset anchor refs after a failed voice activation.
+  // Deshace el espacio de hueco y reinicia las refs de ancla tras una
+  // activación de voz fallida.
   resetAnchor: () => void
   handleKeyEvent: (fallbackMs?: number) => void
   interimRange: InterimRange | null
@@ -159,31 +177,34 @@ export function useVoiceIntegration({
 }: UseVoiceIntegrationArgs): UseVoiceIntegrationResult {
   const { addNotification } = useNotifications()
 
-  // Tracks the input content before/after the cursor when voice starts,
-  // so interim transcripts can be inserted at the cursor position without
-  // clobbering surrounding user text.
+  // Registra el contenido del input antes y después del cursor cuando arranca
+  // la voz, para poder insertar las transcripciones interim en la posición del
+  // cursor sin pisar el texto que el usuario tiene alrededor.
   const voicePrefixRef = useRef<string | null>(null)
   const voiceSuffixRef = useRef<string>('')
-  // Tracks the last input value this hook wrote (via anchor, interim effect,
-  // or handleVoiceTranscript). If inputValueRef.current diverges, the user
-  // submitted or edited — both write paths bail to avoid clobbering. This is
-  // the only guard that correctly handles empty-prefix-empty-suffix: a
-  // startsWith('')/endsWith('') check vacuously passes, and a length check
-  // can't distinguish a cleared input from a never-set one.
+  // Registra el último valor de input que ESTE hook escribió, sea por el
+  // ancla, por el efecto de interim o por `handleVoiceTranscript`. Si
+  // `inputValueRef.current` diverge, el usuario envió o editó, y los dos
+  // caminos de escritura se retiran para no pisarlo.
+  //
+  // Es la única guarda que maneja bien el caso de prefijo y sufijo vacíos: un
+  // control con `startsWith('')`/`endsWith('')` pasa de forma vacua, y uno de
+  // longitud no distingue un input que se limpió de uno que nunca se fijó.
   const lastSetInputRef = useRef<string | null>(null)
 
-  // Strip trailing hold-key chars (and optionally capture the voice
-  // anchor). Called during warmup (to clean up chars that leaked past
-  // stopImmediatePropagation — listener order is not guaranteed) and
-  // on activation (with anchor=true to capture the prefix/suffix around
-  // the cursor for interim transcript placement). The caller passes the
-  // exact count it expects to strip so pre-existing chars at the
-  // boundary are preserved (e.g. the "v" in "hav" when hold-key is "v").
-  // The floor option sets a minimum trailing count to leave behind
-  // (during warmup this is the count we intentionally let through, so
-  // defensive cleanup only removes leaks). Returns the number of
-  // trailing chars remaining after stripping. When nothing changes, no
-  // state update is performed.
+  // Retira los caracteres de la hold-key que quedan al final (y, si se pide,
+  // captura el anchor de voz). Se llama durante el warmup —para limpiar los
+  // caracteres que se colaron pese a `stopImmediatePropagation`, porque el
+  // orden de los listeners no está garantizado— y en la activación (con
+  // `anchor=true`, para capturar el prefijo y el sufijo alrededor del cursor
+  // donde se colocará el interim transcript). Quien llama pasa el conteo
+  // exacto que espera retirar, de modo que los caracteres preexistentes en el
+  // límite se conservan (p. ej. la «v» de «hav» cuando la hold-key es «v»).
+  // La opción `floor` fija un mínimo de caracteres finales que se dejan
+  // (durante el warmup es el conteo que se deja pasar a propósito, así que la
+  // limpieza defensiva sólo retira lo que se filtró). Devuelve cuántos
+  // caracteres finales quedan tras retirar. Si nada cambia, no se actualiza
+  // el estado.
   const stripTrailing = useCallback(
     (
       maxStrip: number,
@@ -193,9 +214,10 @@ export function useVoiceIntegration({
       const offset = insertTextRef.current?.cursorOffset ?? prev.length
       const beforeCursor = prev.slice(0, offset)
       const afterCursor = prev.slice(offset)
-      // When the hold key is space, also count full-width spaces (U+3000)
-      // that a CJK IME may have inserted for the same physical key.
-      // U+3000 is BMP single-code-unit so indices align with beforeCursor.
+      // Cuando la hold-key es el espacio, cuenta también los espacios de
+      // ancho completo (U+3000) que un IME CJK pudo insertar por la misma
+      // tecla física. U+3000 está en el BMP y ocupa una sola unidad de
+      // código, así que los índices siguen alineados con `beforeCursor`.
       const scan =
         char === ' ' ? normalizeFullWidthSpace(beforeCursor) : beforeCursor
       let trailing = 0
@@ -208,15 +230,17 @@ export function useVoiceIntegration({
       const stripCount = Math.max(0, Math.min(trailing - floor, maxStrip))
       const remaining = trailing - stripCount
       const stripped = beforeCursor.slice(0, beforeCursor.length - stripCount)
-      // When anchoring with a non-space suffix, insert a gap space so the
-      // waveform cursor sits on the gap instead of covering the first
-      // suffix letter. The interim transcript effect maintains this same
-      // structure (prefix + leading + interim + trailing + suffix), so
-      // the gap is seamless once transcript text arrives.
-      // Always overwrite on anchor — if a prior activation failed to start
-      // voice (voiceState stayed 'idle'), the cleanup effect didn't fire and
-      // the old anchor is stale. anchor=true is only passed on the single
-      // activation call, never during recording, so overwrite is safe.
+      // Al anclar con un sufijo que no empieza por espacio, se inserta un
+      // espacio de separación para que el cursor del waveform se pose sobre
+      // él en vez de tapar la primera letra del sufijo. El efecto del interim
+      // transcript mantiene esta misma estructura (prefijo + inicio + interim
+      // + final + sufijo), así que la separación es continua en cuanto llega
+      // el texto transcrito.
+      // Al anclar se sobreescribe siempre: si una activación previa no logró
+      // arrancar la voz (`voiceState` se quedó en 'idle'), el efecto de
+      // limpieza no disparó y el anchor viejo quedó obsoleto. `anchor=true`
+      // sólo se pasa en la única llamada de activación, nunca durante la
+      // grabación, así que sobreescribir es seguro.
       let gap = ''
       if (anchor) {
         voicePrefixRef.current = stripped
@@ -238,12 +262,13 @@ export function useVoiceIntegration({
     [setInputValueRaw, inputValueRef, insertTextRef],
   )
 
-  // Undo the gap space inserted by stripTrailing(..., {anchor:true}) and
-  // reset the voice prefix/suffix refs. Called when voice activation fails
-  // (voiceState stays 'idle' after voiceHandleKeyEvent), so the cleanup
-  // effect (voiceState useEffect below) — which only fires on voiceState transitions — can't
-  // reach the stale anchor. Without this, the gap space and stale refs
-  // persist in the input.
+  // Deshace el espacio de separación que insertó `stripTrailing(...,
+  // {anchor:true})` y reinicia las refs de prefijo y sufijo de voz. Se llama
+  // cuando la activación de voz falla (`voiceState` se queda en 'idle' tras
+  // `voiceHandleKeyEvent`), porque el efecto de limpieza (el `useEffect` de
+  // `voiceState` de más abajo) —que sólo dispara en una transición de
+  // `voiceState`— no alcanza al anchor obsoleto. Sin esto, el espacio de
+  // separación y las refs viejas se quedan en el input.
   const resetAnchor = useCallback(() => {
     const prefix = voicePrefixRef.current
     if (prefix === null) return
@@ -258,9 +283,10 @@ export function useVoiceIntegration({
     }
   }, [setInputValueRaw, insertTextRef])
 
-  // Voice state selectors. useVoiceEnabled = user intent (settings) +
-  // auth + GB kill-switch, with the auth half memoized on authVersion so
-  // render loops never hit a cold keychain spawn.
+  // Selectores del estado de voz. `useVoiceEnabled` = intención del usuario
+  // (settings) + auth + kill-switch de GrowthBook, con la mitad de auth
+  // memoizada sobre `authVersion` para que un bucle de render nunca dispare
+  // un arranque en frío del keychain.
   const voiceEnabled = feature('VOICE_MODE') ? useVoiceEnabled() : false
   const voiceState = feature('VOICE_MODE')
     ?
@@ -271,8 +297,9 @@ export function useVoiceIntegration({
       useVoiceState(s => s.voiceInterimTranscript)
     : ''
 
-  // Set the voice anchor for focus mode (where recording starts via terminal
-  // focus, not key hold). Key-hold sets the anchor in stripTrailing.
+  // Fija el anchor de voz para el focus mode, donde la grabación arranca por
+  // el focus del terminal y no por mantener la tecla. Con hold-key el anchor
+  // lo fija `stripTrailing`.
   useEffect(() => {
     if (!feature('VOICE_MODE')) return
     if (voiceState === 'recording' && voicePrefixRef.current === null) {
@@ -289,33 +316,34 @@ export function useVoiceIntegration({
     }
   }, [voiceState, inputValueRef, insertTextRef])
 
-  // Live-update the prompt input with the interim transcript as voice
-  // transcribes speech. The prefix (user-typed text before the cursor) is
-  // preserved and the transcript is inserted between prefix and suffix.
+  // Actualiza el input del prompt en vivo con el interim transcript conforme
+  // la voz transcribe. El prefijo —lo que el usuario escribió antes del
+  // cursor— se conserva, y lo transcrito se inserta entre prefijo y sufijo.
   useEffect(() => {
     if (!feature('VOICE_MODE')) return
     if (voicePrefixRef.current === null) return
     const prefix = voicePrefixRef.current
     const suffix = voiceSuffixRef.current
-    // Submit race: if the input isn't what this hook last set it to, the
-    // user submitted (clearing it) or edited it. voicePrefixRef is only
-    // cleared on voiceState→idle, so it's still set during the 'processing'
-    // window between CloseStream and WS close — this catches refined
-    // TranscriptText arriving then and re-filling a cleared input.
+    // Carrera con el submit: si el input no es lo último que este hook fijó,
+    // el usuario lo envió (dejándolo vacío) o lo editó. `voicePrefixRef` sólo
+    // se limpia en la transición `voiceState`→idle, así que sigue asignada
+    // durante la ventana de 'processing' entre `CloseStream` y el cierre del
+    // WebSocket: esto ataja un `TranscriptText` refinado que llegue entonces
+    // y vuelva a llenar un input ya vaciado.
     if (inputValueRef.current !== lastSetInputRef.current) return
     const needsSpace =
       prefix.length > 0 &&
       !/\s$/.test(prefix) &&
       voiceInterimTranscript.length > 0
-    // Don't gate on voiceInterimTranscript.length -- when interim clears to ''
-    // after handleVoiceTranscript sets the final text, the trailing space
-    // between prefix and suffix must still be preserved.
+    // No se condiciona a `voiceInterimTranscript.length`: cuando el interim se
+    // vacía a '' después de que `handleVoiceTranscript` fija el texto final,
+    // el espacio entre prefijo y sufijo tiene que conservarse igual.
     const needsTrailingSpace = suffix.length > 0 && !/^\s/.test(suffix)
     const leadingSpace = needsSpace ? ' ' : ''
     const trailingSpace = needsTrailingSpace ? ' ' : ''
     const newValue =
       prefix + leadingSpace + voiceInterimTranscript + trailingSpace + suffix
-    // Position cursor after the transcribed text (before suffix)
+    // Coloca el cursor después del texto transcrito, antes del sufijo
     const cursorPos =
       prefix.length + leadingSpace.length + voiceInterimTranscript.length
     if (insertTextRef.current) {
@@ -330,15 +358,17 @@ export function useVoiceIntegration({
     (text: string) => {
       if (!feature('VOICE_MODE')) return
       const prefix = voicePrefixRef.current
-      // No voice anchor — voice was reset (or never started). Nothing to do.
+      // Sin anchor de voz: la voz se reinició, o nunca arrancó. Nada que hacer.
       if (prefix === null) return
       const suffix = voiceSuffixRef.current
-      // Submit race: finishRecording() → user presses Enter (input cleared)
-      // → WebSocket close → this callback fires with stale prefix/suffix.
-      // If the input isn't what this hook last set (via the interim effect
-      // or anchor), the user submitted or edited — don't re-fill. Comparing
-      // against `text.length` would false-positive when the final is longer
-      // than the interim (ASR routinely adds punctuation/corrections).
+      // Carrera con el submit: `finishRecording()` → el usuario pulsa Enter
+      // (el input queda vacío) → cierra el WebSocket → este callback dispara
+      // con un prefijo y un sufijo ya obsoletos. Si el input no es lo último
+      // que este hook fijó (por el efecto del interim o por el anchor), el
+      // usuario envió o editó: no se vuelve a llenar. Comparar contra
+      // `text.length` daría un falso positivo cuando el final es más largo
+      // que el interim, cosa que el ASR hace de rutina al añadir puntuación
+      // o correcciones.
       if (inputValueRef.current !== lastSetInputRef.current) return
       const needsSpace =
         prefix.length > 0 && !/\s$/.test(prefix) && text.length > 0
@@ -347,7 +377,7 @@ export function useVoiceIntegration({
       const leadingSpace = needsSpace ? ' ' : ''
       const trailingSpace = needsTrailingSpace ? ' ' : ''
       const newInput = prefix + leadingSpace + text + trailingSpace + suffix
-      // Position cursor after the transcribed text (before suffix)
+      // Coloca el cursor después del texto transcrito, antes del sufijo
       const cursorPos = prefix.length + leadingSpace.length + text.length
       if (insertTextRef.current) {
         insertTextRef.current.setInputWithCursor(newInput, cursorPos)
@@ -355,8 +385,8 @@ export function useVoiceIntegration({
         setInputValueRaw(newInput)
       }
       lastSetInputRef.current = newInput
-      // Update the prefix to include this chunk so focus mode can continue
-      // appending subsequent transcripts after it.
+      // Extiende el prefijo con este fragmento para que el focus mode pueda
+      // seguir añadiendo los transcripts siguientes a continuación.
       voicePrefixRef.current = prefix + leadingSpace + text
     },
     [setInputValueRaw, inputValueRef, insertTextRef],
@@ -377,8 +407,8 @@ export function useVoiceIntegration({
     focusMode: false,
   })
 
-  // Compute the character range of interim (not-yet-finalized) transcript
-  // text in the input value, so the UI can dim it.
+  // Calcula el rango de caracteres que ocupa el interim transcript —el texto
+  // aún no finalizado— dentro del valor del input, para que la UI lo atenúe.
   const interimRange = useMemo((): InterimRange | null => {
     if (!feature('VOICE_MODE')) return null
     if (voicePrefixRef.current === null) return null
@@ -402,28 +432,32 @@ export function useVoiceIntegration({
 }
 
 /**
- * Component that handles hold-to-talk voice activation.
+ * Componente que gobierna la activación de voz en hold-to-talk.
  *
- * The activation key is configurable via keybindings (voice:pushToTalk,
- * default: space). Hold detection depends on OS auto-repeat delivering a
- * stream of events at 30-80ms intervals. Two binding types work:
+ * La tecla de activación se configura por keybinding (`voice:pushToTalk`,
+ * espacio por defecto). Detectar que la tecla se mantiene depende de que el
+ * auto-repeat del sistema operativo entregue un flujo de eventos cada 30-80
+ * ms. Funcionan dos tipos de binding:
  *
- * **Modifier + letter (meta+k, ctrl+x, alt+v):** Cleanest. Activates on
- * the first press — a modifier combo is unambiguous intent (can't be
- * typed accidentally), so no hold threshold applies. The letter part
- * auto-repeats while held, feeding release detection in useVoice.ts.
- * No flow-through, no stripping.
+ * **Modificador + letra (meta+k, ctrl+x, alt+v):** el caso más limpio.
+ * Activa en la primera pulsación, porque una combinación con modificador es
+ * intención inequívoca —no se teclea por accidente— y por eso no aplica
+ * ningún umbral de hold. La parte de letra hace auto-repeat mientras se
+ * mantiene, que es lo que alimenta la detección de release en `useVoice.ts`.
+ * Ni flow-through ni retirada de caracteres.
  *
- * **Bare chars (space, v, x):** Require HOLD_THRESHOLD rapid presses to
- * activate (a single space could be normal typing). The first
- * WARMUP_THRESHOLD presses flow into the input so a single press types
- * normally. Past that, rapid presses are swallowed; on activation the
- * flow-through chars are stripped. Binding "v" doesn't make "v"
- * untypable — normal typing (>120ms between keystrokes) flows through;
- * only rapid auto-repeat from a held key triggers activation.
+ * **Caracteres sueltos (space, v, x):** exigen `HOLD_THRESHOLD` pulsaciones
+ * rápidas para activar, porque un solo espacio podría ser escritura normal.
+ * Las primeras `WARMUP_THRESHOLD` pulsaciones pasan al input (flow-through)
+ * para que una pulsación suelta escriba como siempre. A partir de ahí las
+ * pulsaciones rápidas se tragan, y al activar se retiran los caracteres que
+ * pasaron. Enlazar «v» no vuelve la «v» intecleable: la escritura normal
+ * —más de 120 ms entre pulsaciones— pasa igual, y sólo el auto-repeat rápido
+ * de una tecla mantenida dispara la activación.
  *
- * Known broken: modifier+space (NUL → parsed as ctrl+backtick), chords
- * (discrete sequences, no hold). Validation warns on these.
+ * Casos rotos conocidos: modificador+espacio (NUL, que se analiza como
+ * ctrl+backtick) y los acordes (secuencias discretas, sin hold). La
+ * validación avisa de ambos.
  */
 export function useVoiceKeybindingHandler({
   voiceHandleKeyEvent,
@@ -446,15 +480,16 @@ export function useVoiceKeybindingHandler({
       useVoiceState(s => s.voiceState)
     : 'idle'
 
-  // Find the configured key for voice:pushToTalk from keybinding context.
-  // Forward iteration with last-wins (matching the resolver): if a later
-  // Chat binding overrides the same chord with null or a different
-  // action, the voice binding is discarded and null is returned — the
-  // user explicitly disabled hold-to-talk via binding override, so
-  // don't second-guess them with a fallback. The DEFAULT is only used
-  // when there's no provider at all. Context filter is required — space
-  // is also bound in Settings/Confirmation/Plugin (select:accept etc.);
-  // without the filter those would null out the default.
+  // Busca en el contexto de keybindings la tecla configurada para
+  // `voice:pushToTalk`. El recorrido va hacia delante y gana el último, igual
+  // que el resolver: si un binding de Chat posterior sobreescribe el mismo
+  // acorde con null o con otra acción, el binding de voz se descarta y se
+  // devuelve null — el usuario deshabilitó el hold-to-talk de forma explícita
+  // con esa sobreescritura, así que no se le contradice con un respaldo. El
+  // DEFAULT sólo se usa cuando no hay provider en absoluto. El filtro por
+  // contexto es obligatorio: el espacio también está enlazado en
+  // Settings/Confirmation/Plugin (`select:accept` y demás), y sin el filtro
+  // ésos anularían el default.
   const voiceKeystroke = useMemo((): ParsedKeystroke | null => {
     if (!keybindingContext) return DEFAULT_VOICE_KEYSTROKE
     let result: ParsedKeystroke | null = null
@@ -466,19 +501,21 @@ export function useVoiceKeybindingHandler({
       if (binding.action === 'voice:pushToTalk') {
         result = ks
       } else if (result !== null && keystrokesEqual(ks, result)) {
-        // A later binding overrides this chord (null unbind or reassignment)
+        // Un binding posterior sobreescribe este acorde (desenlace con null
+        // o reasignación)
         result = null
       }
     }
     return result
   }, [keybindingContext])
 
-  // If the binding is a bare (unmodified) single printable char, terminal
-  // auto-repeat may batch N keystrokes into one input event (e.g. "vvv"),
-  // and the char flows into the text input — we need flow-through + strip.
-  // Modifier combos (meta+k, ctrl+x) also auto-repeat (the letter part
-  // repeats) but don't insert text, so they're swallowed from the first
-  // press with no stripping needed. matchesKeyboardEvent handles those.
+  // Si el binding es un único carácter imprimible suelto, sin modificador, el
+  // auto-repeat del terminal puede agrupar N pulsaciones en un solo evento de
+  // entrada (p. ej. «vvv») y el carácter pasa al input de texto: hacen falta
+  // flow-through y retirada. Las combinaciones con modificador (meta+k,
+  // ctrl+x) también hacen auto-repeat —repite la parte de letra— pero no
+  // insertan texto, así que se tragan desde la primera pulsación y no hay
+  // nada que retirar. De ésas se encarga `matchesKeyboardEvent`.
   const bareChar =
     voiceKeystroke !== null &&
     voiceKeystroke.key.length === 1 &&
@@ -491,28 +528,29 @@ export function useVoiceKeybindingHandler({
       : null
 
   const rapidCountRef = useRef(0)
-  // How many rapid chars we intentionally let through to the text
-  // input (the first WARMUP_THRESHOLD). The activation strip removes
-  // up to this many + the activation event's potential leak. For the
-  // default (space) this is precise — pre-existing trailing spaces are
-  // rare. For letter bindings (validation warns) this may over-strip
-  // one pre-existing char if the input already ended in the bound
-  // letter (e.g. "hav" + hold "v" → "ha"). We don't track that
-  // boundary — it's best-effort and the warning says so.
+  // Cuántos caracteres rápidos se dejan pasar a propósito al input de texto
+  // (los primeros `WARMUP_THRESHOLD`). La retirada de la activación quita
+  // hasta esa cantidad más la posible fuga del evento que activó. Con el
+  // default —el espacio— la cuenta es precisa, porque es raro que el texto ya
+  // terminara en espacios. Con un binding de letra (la validación avisa) puede
+  // retirar de más un carácter preexistente si el input ya terminaba en la
+  // letra enlazada (p. ej. «hav» + mantener «v» → «ha»). Ese límite no se
+  // rastrea: es lo mejor que se puede hacer, y el aviso lo declara.
   const charsInInputRef = useRef(0)
-  // Trailing-char count remaining after the activation strip — these
-  // belong to the user's anchored prefix and must be preserved during
-  // recording's defensive leak cleanup.
+  // Cuántos caracteres finales quedan tras la retirada de la activación:
+  // pertenecen al prefijo anclado del usuario y hay que conservarlos durante
+  // la limpieza defensiva de fugas de la grabación.
   const recordingFloorRef = useRef(0)
-  // True when the current recording was started by key-hold (not focus).
-  // Used to avoid swallowing keypresses during focus-mode recording.
+  // Verdadero cuando la grabación en curso arrancó manteniendo la tecla, no
+  // por focus. Sirve para no tragarse las pulsaciones durante una grabación
+  // en focus mode.
   const isHoldActiveRef = useRef(false)
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Reset hold state as soon as we leave 'recording'. The physical hold
-  // ends when key-repeat stops (state → 'processing'); keeping the ref
-  // set through 'processing' swallows new space presses the user types
-  // while the transcript finalizes.
+  // Reinicia el estado del hold en cuanto se sale de 'recording'. El hold
+  // físico termina cuando cesa el auto-repeat (estado → 'processing'), y dejar
+  // la ref asignada durante 'processing' se tragaría los espacios nuevos que
+  // el usuario teclee mientras se finaliza el transcript.
   useEffect(() => {
     if (voiceState !== 'recording') {
       isHoldActiveRef.current = false
@@ -529,35 +567,40 @@ export function useVoiceKeybindingHandler({
   const handleKeyDown = (e: KeyboardEvent): void => {
     if (!voiceEnabled) return
 
-    // PromptInput is not a valid transcript target — let the hold key
-    // flow through instead of swallowing it into stale refs (#33556).
-    // Two distinct unmount/unfocus paths (both needed):
-    //   - !isActive: local-jsx command hid PromptInput (shouldHidePromptInput)
-    //     without registering an overlay — e.g. /install-github-app,
-    //     /plugin. Mirrors CommandKeybindingHandlers' isActive gate.
-    //   - isModalOverlayActive: overlay (permission dialog, Select with
-    //     onCancel) has focus; PromptInput is mounted but focus=false.
+    // `PromptInput` no es un destino válido para el transcript: la hold-key
+    // pasa de largo en vez de tragarse hacia refs obsoletas (#33556).
+    // Son dos caminos distintos de desmontaje o pérdida de focus, y hacen
+    // falta los dos:
+    //   - `!isActive`: un comando local-jsx ocultó `PromptInput`
+    //     (`shouldHidePromptInput`) sin registrar un overlay — p. ej.
+    //     /install-github-app, /plugin. Refleja la guarda `isActive` de
+    //     `CommandKeybindingHandlers`.
+    //   - `isModalOverlayActive`: un overlay (diálogo de permiso, `Select` con
+    //     `onCancel`) tiene el focus; `PromptInput` está montado pero con
+    //     `focus=false`.
     if (!isActive || isModalOverlayActive) return
 
-    // null means the user overrode the default (null-unbind/reassign) —
-    // hold-to-talk is disabled via binding. To toggle the feature
-    // itself, use /voice.
+    // null significa que el usuario sobreescribió el default (desenlace con
+    // null o reasignación): el hold-to-talk está deshabilitado por binding.
+    // Para activar o desactivar la funcionalidad misma se usa /voice.
     if (voiceKeystroke === null) return
 
-    // Match the configured key. Bare chars match by content (handles
-    // batched auto-repeat like "vvv") with a modifier reject so e.g.
-    // ctrl+v doesn't trip a "v" binding. Modifier combos go through
-    // matchesKeyboardEvent (one event per repeat, no batching).
+    // Compara contra la tecla configurada. Un carácter suelto se compara por
+    // contenido —así cubre el auto-repeat agrupado tipo «vvv»— y se rechaza si
+    // trae modificador, para que ctrl+v no dispare un binding de «v». Las
+    // combinaciones con modificador pasan por `matchesKeyboardEvent`, que
+    // recibe un evento por repetición y sin agrupar.
     let repeatCount: number
     if (bareChar !== null) {
       if (e.ctrl || e.meta || e.shift) return
-      // When bound to space, also accept U+3000 (full-width space) —
-      // CJK IMEs emit it for the same physical key.
+      // Con el espacio enlazado se acepta también U+3000, el espacio de ancho
+      // completo que los IME CJK emiten por la misma tecla física.
       const normalized =
         bareChar === ' ' ? normalizeFullWidthSpace(e.key) : e.key
-      // Fast-path: normal typing (any char that isn't the bound one)
-      // bails here without allocating. The repeat() check only matters
-      // for batched auto-repeat (input.length > 1) which is rare.
+      // Camino rápido: la escritura normal —cualquier carácter que no sea el
+      // enlazado— sale aquí sin reservar memoria. El control con `repeat()`
+      // sólo importa para el auto-repeat agrupado (`input.length > 1`), que
+      // es raro.
       if (normalized[0] !== bareChar) return
       if (
         normalized.length > 1 &&
@@ -570,20 +613,22 @@ export function useVoiceKeybindingHandler({
       repeatCount = 1
     }
 
-    // Guard: only swallow keypresses when recording was triggered by
-    // key-hold. Focus-mode recording also sets voiceState to 'recording',
-    // but keypresses should flow through normally (voiceHandleKeyEvent
-    // returns early for focus-triggered sessions). We also check voiceState
-    // from the store so that if voiceHandleKeyEvent() fails to transition
-    // state (module not loaded, stream unavailable) we don't permanently
-    // swallow keypresses.
+    // Guarda: sólo se tragan las pulsaciones cuando la grabación arrancó
+    // manteniendo la tecla. La grabación en focus mode también pone
+    // `voiceState` en 'recording', pero ahí las pulsaciones tienen que pasar
+    // con normalidad (`voiceHandleKeyEvent` sale temprano en las sesiones que
+    // arrancan por focus). Se consulta además `voiceState` en el store para
+    // que, si `voiceHandleKeyEvent()` no logra la transición —módulo sin
+    // cargar, stream no disponible—, no se traguen las pulsaciones para
+    // siempre.
     const currentVoiceState = getVoiceState().voiceState
     if (isHoldActiveRef.current && currentVoiceState !== 'idle') {
-      // Already recording — swallow continued keypresses and forward
-      // to voice for release detection. For bare chars, defensively
-      // strip in case the text input handler fired before this one
-      // (listener order is not guaranteed). Modifier combos don't
-      // insert text, so nothing to strip.
+      // Ya está grabando: se tragan las pulsaciones que siguen y se
+      // reenvían a la voz para detectar el release. Con caracteres sueltos
+      // se retira de forma defensiva, por si el handler del input de texto
+      // disparó antes que éste — el orden de los listeners no está
+      // garantizado. Las combinaciones con modificador no insertan texto,
+      // así que no hay nada que retirar.
       e.stopImmediatePropagation()
       if (bareChar !== null) {
         stripTrailing(repeatCount, {
@@ -595,12 +640,14 @@ export function useVoiceKeybindingHandler({
       return
     }
 
-    // Non-hold recording (focus-mode) or processing is active.
-    // Modifier combos must not re-activate: stripTrailing(0,{anchor:true})
-    // would overwrite voicePrefixRef with interim text and duplicate the
-    // transcript on the next interim update. Pre-#22144, a single tap
-    // hit the warmup else-branch (swallow only). Bare chars flow through
-    // unconditionally — user may be typing during focus-recording.
+    // Hay una grabación que no viene de hold (focus mode), o un
+    // 'processing' en curso. Las combinaciones con modificador no deben
+    // reactivar: `stripTrailing(0,{anchor:true})` sobreescribiría
+    // `voicePrefixRef` con texto del interim y duplicaría el transcript en la
+    // siguiente actualización. Antes de #22144, una pulsación suelta caía en
+    // la rama `else` del warmup, que sólo traga. Los caracteres sueltos pasan
+    // sin condición: el usuario puede estar escribiendo mientras graba por
+    // focus.
     if (currentVoiceState !== 'idle') {
       if (bareChar === null) e.stopImmediatePropagation()
       return
@@ -609,13 +656,14 @@ export function useVoiceKeybindingHandler({
     const countBefore = rapidCountRef.current
     rapidCountRef.current += repeatCount
 
-    // ── Activation ────────────────────────────────────────────
-    // Handled first so the warmup branch below does NOT also run
-    // on this event — two strip calls in the same tick would both
-    // read the stale inputValueRef and the second would under-strip.
-    // Modifier combos activate on the first press — they can't be
-    // typed accidentally, so the hold threshold (which exists to
-    // distinguish typing a space from holding space) doesn't apply.
+    // ── Activación ────────────────────────────────────────────
+    // Va primero para que la rama de warmup de más abajo NO corra también
+    // en este evento: dos llamadas a la retirada en el mismo tick leerían
+    // las dos el `inputValueRef` ya obsoleto, y la segunda retiraría de
+    // menos. Las combinaciones con modificador activan en la primera
+    // pulsación, porque no se teclean por accidente, así que no aplica el
+    // umbral de hold —que existe para distinguir teclear un espacio de
+    // mantenerlo pulsado—.
     if (bareChar === null || rapidCountRef.current >= HOLD_THRESHOLD) {
       e.stopImmediatePropagation()
       if (resetTimerRef.current) {
@@ -629,11 +677,11 @@ export function useVoiceKeybindingHandler({
         return { ...prev, voiceWarmingUp: false }
       })
       if (bareChar !== null) {
-        // Strip the intentional warmup chars plus this event's leak
-        // (if text input fired first). Cap covers both; min(trailing)
-        // handles the no-leak case. Anchor the voice prefix here.
-        // The return value (remaining) becomes the floor for
-        // recording-time leak cleanup.
+        // Retira los caracteres del warmup que se dejaron pasar a propósito
+        // más la fuga de este evento, si el input de texto disparó antes. El
+        // tope cubre ambos, y el `min(trailing)` cubre el caso sin fuga. Aquí
+        // se ancla el prefijo de voz. Lo que devuelve —los que quedan— pasa a
+        // ser el `floor` de la limpieza de fugas durante la grabación.
         recordingFloorRef.current = stripTrailing(
           charsInInputRef.current + repeatCount,
           { char: bareChar, anchor: true },
@@ -641,20 +689,21 @@ export function useVoiceKeybindingHandler({
         charsInInputRef.current = 0
         voiceHandleKeyEvent()
       } else {
-        // Modifier combo: nothing inserted, nothing to strip. Just
-        // anchor the voice prefix at the current cursor position.
-        // Longer fallback: this call is at t=0 (before auto-repeat),
-        // so the gap to the next keypress is the OS initial repeat
-        // *delay* (up to ~2s), not the repeat *rate* (~30-80ms).
+        // Combinación con modificador: no insertó nada, no hay nada que
+        // retirar. Sólo se ancla el prefijo de voz en la posición actual del
+        // cursor. El respaldo es más largo porque esta llamada ocurre en t=0,
+        // antes del auto-repeat: el hueco hasta la siguiente pulsación es el
+        // *retardo* inicial de repetición del sistema operativo (hasta ~2 s),
+        // no la *frecuencia* de repetición (~30-80 ms).
         stripTrailing(0, { anchor: true })
         voiceHandleKeyEvent(MODIFIER_FIRST_PRESS_FALLBACK_MS)
       }
-      // If voice failed to transition (module not loaded, stream
-      // unavailable, stale enabled), clear the ref so a later
-      // focus-mode recording doesn't inherit stale hold state
-      // and swallow keypresses. Store is synchronous — the check is
-      // immediate. The anchor set by stripTrailing above will
-      // be overwritten on retry (anchor always overwrites now).
+      // Si la voz no logró la transición —módulo sin cargar, stream no
+      // disponible, `enabled` obsoleto— se limpia la ref para que una
+      // grabación posterior en focus mode no herede un estado de hold viejo
+      // y se trague las pulsaciones. El store es síncrono, así que la
+      // comprobación es inmediata. El anchor que fijó `stripTrailing` arriba
+      // se sobreescribe en el reintento: anclar ahora sobreescribe siempre.
       if (getVoiceState().voiceState === 'idle') {
         isHoldActiveRef.current = false
         resetAnchor()
@@ -662,15 +711,16 @@ export function useVoiceKeybindingHandler({
       return
     }
 
-    // ── Warmup (bare-char only; modifier combos activated above) ──
-    // First WARMUP_THRESHOLD chars flow to the text input so normal
-    // typing has zero latency (a single press types normally).
-    // Subsequent rapid chars are swallowed so the input stays aligned
-    // with the warmup UI. Strip defensively (listener order is not
-    // guaranteed — text input may have already added the char). The
-    // floor preserves the intentional warmup chars; the strip is a
-    // no-op when nothing leaked. Check countBefore so the event that
-    // crosses the threshold still flows through (terminal batching).
+    // ── Warmup (sólo carácter suelto; las combinaciones activaron arriba) ──
+    // Los primeros `WARMUP_THRESHOLD` caracteres pasan al input de texto para
+    // que la escritura normal tenga latencia cero: una pulsación suelta
+    // escribe como siempre. Los caracteres rápidos que siguen se tragan, para
+    // que el input quede alineado con la UI del warmup. La retirada es
+    // defensiva —el orden de los listeners no está garantizado, y el input de
+    // texto pudo añadir ya el carácter—. El `floor` conserva los caracteres
+    // del warmup dejados pasar a propósito, y la retirada es un no-op si no
+    // se filtró nada. Se consulta `countBefore` para que el evento que cruza
+    // el umbral siga pasando, porque el terminal agrupa.
     if (countBefore >= WARMUP_THRESHOLD) {
       e.stopImmediatePropagation()
       stripTrailing(repeatCount, {
@@ -681,7 +731,7 @@ export function useVoiceKeybindingHandler({
       charsInInputRef.current += repeatCount
     }
 
-    // Show warmup feedback once we detect a hold pattern
+    // Muestra la señal del warmup en cuanto se detecta un patrón de hold
     if (rapidCountRef.current >= WARMUP_THRESHOLD) {
       setVoiceState(prev => {
         if (prev.voiceWarmingUp) return prev
@@ -710,17 +760,19 @@ export function useVoiceKeybindingHandler({
     )
   }
 
-  // Backward-compat bridge: REPL.tsx doesn't yet wire handleKeyDown to
-  // <Box onKeyDown>. Subscribe via useInput and adapt InputEvent →
-  // KeyboardEvent until the consumer is migrated (separate PR).
-  // TODO(onKeyDown-migration): remove once REPL passes handleKeyDown.
+  // Puente de compatibilidad hacia atrás: `REPL.tsx` todavía no cablea
+  // `handleKeyDown` a `<Box onKeyDown>`. Se suscribe con `useInput` y adapta
+  // `InputEvent` → `KeyboardEvent` hasta que el consumidor se migre (en un PR
+  // aparte).
+  // TODO(onKeyDown-migration): retirar cuando REPL pase `handleKeyDown`.
   useInput(
     (_input, _key, event) => {
       const kbEvent = new KeyboardEvent(event.keypress)
       handleKeyDown(kbEvent)
-      // handleKeyDown stopped the adapter event, not the InputEvent the
-      // emitter actually checks — forward it so the text input's useInput
-      // listener is skipped and held spaces don't leak into the prompt.
+      // `handleKeyDown` detuvo el evento del adaptador, no el `InputEvent`
+      // que el emisor consulta de verdad: hay que reenviarlo para que el
+      // listener `useInput` del input de texto se salte y los espacios
+      // mantenidos no se filtren al prompt.
       if (kbEvent.didStopImmediatePropagation()) {
         event.stopImmediatePropagation()
       }
@@ -731,9 +783,9 @@ export function useVoiceKeybindingHandler({
   return { handleKeyDown }
 }
 
-// TODO(onKeyDown-migration): temporary shim so existing JSX callers
-// (<VoiceKeybindingHandler .../>) keep compiling. Remove once REPL.tsx
-// wires handleKeyDown directly.
+// TODO(onKeyDown-migration): shim temporal para que los consumidores JSX
+// que ya existen (`<VoiceKeybindingHandler .../>`) sigan compilando. Retirar
+// cuando `REPL.tsx` cablee `handleKeyDown` de forma directa.
 export function VoiceKeybindingHandler(props: {
   voiceHandleKeyEvent: (fallbackMs?: number) => void
   stripTrailing: (maxStrip: number, opts?: StripOpts) => number
