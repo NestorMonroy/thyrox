@@ -210,7 +210,23 @@ _GRACE_MAX=600
 _RC_DEMOTED=125
 
 cmd_start() {
-    local name="$1"; shift
+    local name="${1:-}"; shift
+    # El nombre se toma de `$1` ANTES del bucle de banderas, asi que una
+    # bandera en esa posicion se convierte en nombre sin que nadie lo note: el
+    # run queda como `--label-<ISO>` y el resto de la linea se ejecuta como
+    # comando. Medido por conducta dos veces (2026-09-18 y 2026-09-19); los dos
+    # runs huerfanos quedaron versionados.
+    #
+    # Se rehusa en vez de reinterpretar: `start` NO puede adivinar si quien
+    # escribio `--label X` queria llamar al trabajo `X` o pasar `--label` al
+    # comando. Y un nombre que empieza por guion es hostil aguas abajo — todo
+    # consumidor que lo pase a un comando lo lee como bandera.
+    if [[ "$name" == -* ]]; then
+        echo "bg.sh start: '$name' es una bandera, no un nombre de trabajo." >&2
+        echo "  uso: start <nombre> [--grace N] [--dir D] -- <comando...>" >&2
+        echo "  banderas admitidas aqui: --grace, --dir. '--label' no existe." >&2
+        exit 2
+    fi
     local grace="$_GRACE_DEFAULT"
     while [[ "${1:-}" == --* ]]; do
         case "$1" in
