@@ -73,6 +73,7 @@ envoltorio de app-host esconde la misma pregunta (ver «Lo que no cierra»).
 | 2 | las tres claves de `SettingsChangeTarget` + firma de índice | pasa |
 | 3 | sólo las dos **requeridas** + firma de índice | pasa |
 | 4 | las dos requeridas, **sin** firma de índice | **pasa** |
+| 5 | las dos requeridas en un tipo **mapeado**, sin firma de índice | **pasa** |
 
 **El caso 4 corrigió la premisa con la que escribí la sonda.** Lo declaré como
 fallo esperado —razonando que el contrato exige `[key: string]: unknown`— y el
@@ -81,7 +82,22 @@ concede firma de índice **implícita** a un alias de tipo de objeto, así que s
 ausencia no bloquea nada.
 
 Consecuencia: lo único que bloqueaba al caso 1 eran las **dos propiedades
-requeridas ausentes**, y el caso 3 es por tanto el arreglo mínimo. Se adoptan
+requeridas ausentes**, y el caso 3 es por tanto el arreglo mínimo.
+
+**El caso 5 la corrigió una segunda vez, y se añadió después** (al cerrar
+`TASK-THYROX-0229`). Su premisa: la firma de índice implícita se concede a un
+alias de objeto literal pero **no** a un tipo mapeado, y el `AppState` real de
+app-host es mapeado (`DeepImmutable<{...}>`). Medido: `TS2578` otra vez — un
+tipo mapeado simple también la recibe.
+
+Así que la **forma** del tipo no es lo que bloquea el import estático de
+`applySettingsChange`. Lo que lo bloquea es la **regla de tipo débil** —un
+objetivo cuyas propiedades son todas opcionales rechaza una fuente sin ninguna
+propiedad en común—, medido en
+`.claude/workbench/divergencia-effortlevel-20260919T095642/`. Los dos
+`@ts-expect-error` de los casos 4 y 5 se retiraron: dejar escrita una premisa
+que la medición contradijo es peor que el `TS2578` que produce
+(`outputs/verde-sonda-caso5.txt`). Se adoptan
 las tres de `SettingsChangeTarget` porque `effortValue?` es opcional y no añade
 restricción, y copiar el contrato entero es más honesto que copiar dos tercios.
 

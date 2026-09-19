@@ -211,6 +211,13 @@ export const SettingsSchema = z
     terminalTitleFromRename: z.boolean().optional(),
     prefersReducedMotion: z.boolean().optional(),
     alwaysThinkingEnabled: z.boolean().optional(),
+    // `ccnmt: packages/config/settings/types.ts:744`. Se porta con el
+    // `.catch(undefined)` de la fuente: un valor de disco fuera del enum
+    // degrada a ausente en vez de invalidar el objeto de settings entero.
+    effortLevel: z
+      .enum(['none', 'low', 'medium', 'high', 'xhigh', 'max'])
+      .optional()
+      .catch(undefined),
     showThinkingSummaries: z.boolean().optional(),
     fastMode: z.unknown().optional(),
     fastModePerSessionOptIn: z.boolean().optional(),

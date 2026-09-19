@@ -72,3 +72,32 @@ declare const noIndexSetter: SetAppState<NoIndexSignature>
 const caso4: SetAppState<SettingsChangeTarget> = noIndexSetter
 
 export { caso1, caso2, caso3, caso4 }
+
+// -- caso 5: un tipo MAPEADO, que es la forma del `AppState` real -----------
+//   Refina el caso 4. La premisa con que se escribió: la firma de índice
+//   implícita que TypeScript concede a un alias de objeto literal **no** se
+//   concedería a un tipo MAPEADO, y `AppState` de app-host es mapeado
+//   (`DeepImmutable<{...}>`), así que ahí la firma sí bloquearía.
+type DeepImmutableProbe<T> = { readonly [K in keyof T]: T[K] }
+type MappedState = DeepImmutableProbe<{
+  toolPermissionContext: unknown
+  settings: { effortLevel?: unknown }
+}>
+declare const mappedSetter: SetAppState<MappedState>
+//   MEDIDO: PASA, igual que el caso 4. La premisa era FALSA por segunda vez —
+//   un tipo mapeado simple también recibe la firma de índice implícita.
+//   Declarado como fallo esperado, el compilador respondió otra vez
+//   `TS2578: Unused '@ts-expect-error' directive`.
+//
+//   Así que la forma del tipo NO es lo que bloquea el import estático de
+//   `applySettingsChange` en app-host. Lo que bloquea, medido en
+//   `.claude/workbench/divergencia-effortlevel-20260919T095642/`, es la
+//   **regla de tipo débil**: con el argumento de tipo explícito, TypeScript
+//   emite `TS2344: Type 'AppState' does not satisfy the constraint
+//   'SettingsChangeTarget'` — un objetivo cuyas propiedades son todas
+//   opcionales rechaza una fuente sin ninguna propiedad en común. Y sin el
+//   argumento explícito, la inferencia cae al límite y el error es el
+//   `TS2345` de covarianza del retorno.
+const caso5: SetAppState<SettingsChangeTarget> = mappedSetter
+
+export { caso5 }
