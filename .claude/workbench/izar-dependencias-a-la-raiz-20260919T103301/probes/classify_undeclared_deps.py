@@ -44,6 +44,7 @@ por resolucion, que es la señal que discrimina.
 """
 
 import json
+import os
 import pathlib
 import re
 import subprocess
@@ -128,8 +129,30 @@ def reference_declares(reference_root: pathlib.Path, package: str, name: str) ->
     return '+'.join(places) or 'ninguno'
 
 
+# La raiz NO se cuenta por niveles. `parents[4]` acierta desde donde su autor
+# lo escribio y falla EN SILENCIO al mover el archivo — el defecto que
+# H-DOCS-1103 midio y que `check_path_arithmetic` existe para ver. Se asciende
+# hasta el marcador del arbol, que es lo que `paths.reach.thyrox_root` hace;
+# aqui se reimplementa en seis lineas porque una sonda de banco se invoca
+# suelta, sin PYTHONPATH que alcance `src/`.
+THYROX_MARKER = pathlib.Path('src') / 'paths' / 'reach.py'
+
+
+def thyrox_root() -> pathlib.Path:
+    declared = os.environ.get('THYROX_ROOT')
+    if declared:
+        return pathlib.Path(declared)
+    here = pathlib.Path(__file__).resolve().parent
+    for level in (here, *here.parents):
+        if (level / THYROX_MARKER).is_file():
+            return level
+    raise SystemExit('REHUSA: no se encontro la raiz de thyrox — '
+                     'declarar THYROX_ROOT. No se emite medicion: un arbol '
+                     'equivocado publicaria un cero que nadie podria leer.')
+
+
 def main() -> int:
-    root = pathlib.Path(__file__).resolve().parents[4]
+    root = thyrox_root()
     packages_dir = root / 'src' / 'packages'
     reference_root = pathlib.Path('/home/user/claude-code-nestor-monroy-tools')
     measure_resolution = '--sin-resolucion' not in sys.argv

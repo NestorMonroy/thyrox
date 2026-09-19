@@ -19,6 +19,7 @@ Cinco clases, leidas del cruce censo x referencia:
 
 import argparse
 import json
+import os
 import pathlib
 import re
 import sys
@@ -50,6 +51,28 @@ def workspace_members(packages_dir: pathlib.Path) -> dict[str, pathlib.Path]:
     return members
 
 
+# La raiz NO se cuenta por niveles. `parents[4]` acierta desde donde su autor
+# lo escribio y falla EN SILENCIO al mover el archivo — el defecto que
+# H-DOCS-1103 midio y que `check_path_arithmetic` existe para ver. Se asciende
+# hasta el marcador del arbol, que es lo que `paths.reach.thyrox_root` hace;
+# aqui se reimplementa en seis lineas porque una sonda de banco se invoca
+# suelta, sin PYTHONPATH que alcance `src/`.
+THYROX_MARKER = pathlib.Path('src') / 'paths' / 'reach.py'
+
+
+def thyrox_root() -> pathlib.Path:
+    declared = os.environ.get('THYROX_ROOT')
+    if declared:
+        return pathlib.Path(declared)
+    here = pathlib.Path(__file__).resolve().parent
+    for level in (here, *here.parents):
+        if (level / THYROX_MARKER).is_file():
+            return level
+    raise SystemExit('REHUSA: no se encontro la raiz de thyrox — '
+                     'declarar THYROX_ROOT. No se emite medicion: un arbol '
+                     'equivocado publicaria un cero que nadie podria leer.')
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--aplicar', action='store_true')
@@ -57,7 +80,7 @@ def main() -> int:
     parser.add_argument('--siblings', default='', help='pares paquete=hermano, separados por coma')
     args = parser.parse_args()
 
-    root = pathlib.Path(__file__).resolve().parents[4]
+    root = thyrox_root()
     packages_dir = root / 'src' / 'packages'
     reference = pathlib.Path('/home/user/claude-code-nestor-monroy-tools')
 
