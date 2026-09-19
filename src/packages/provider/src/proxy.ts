@@ -109,7 +109,7 @@ function parseIpv4ToInteger(address: string): number | null {
  *
  * **Ciega a IPv6.** Un bloque como `fc00::/7` devuelve `false`, no un error:
  * la lista de este entorno declara `::1` y `::` como hosts literales, que el
- * camino de host exacto ya cubre. Su cierre es TASK-THYROX-0186.
+ * camino de host exacto ya cubre. Su cierre es TASK-THYROX-0188.
  */
 function matchesCidrBlock(hostname: string, pattern: string): boolean {
   const slashAt = pattern.indexOf('/')
