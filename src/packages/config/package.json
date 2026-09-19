@@ -17,7 +17,8 @@
     "./env/utils": "./env/utils.ts",
     "./remote": "./remote/index.ts",
     "./*": "./*.ts",
-    "./*.js": "./*.ts"
+    "./*.js": "./*.ts",
+    "./plugin/core/performStartupChecks.js": "./plugin/core/performStartupChecks.tsx"
   },
   "scripts": {
     "test": "bun test",

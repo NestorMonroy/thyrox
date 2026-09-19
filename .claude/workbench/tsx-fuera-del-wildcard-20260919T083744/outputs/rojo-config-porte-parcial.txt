@@ -1,0 +1,27 @@
+== premisa falsificada 1: getCurrentProjectConfig NO es un hueco de declaracion
+-- definicion en NUESTRO arbol:
+   (ninguna — solo aparece en un docstring, config/global/config.ts:28)
+-- en la fuente:
+1659:export function getCurrentProjectConfig(): ProjectConfig {
+
+-- config/global/config.ts es PORTE PARCIAL:
+   nuestro: 903 lineas
+   fuente:  1883 lineas
+-- 17 simbolos exportados SOLO en la fuente:
+_getConfigForTesting
+_wouldLoseAuthStateForTesting
+formatAutoUpdaterDisabledReason
+getAutoUpdaterDisabledReason
+getCurrentProjectConfig
+getCustomApiKeyStatus
+getManagedClaudeRulesDir
+getMemoryPath
+getOrCreateUserID
+getProjectPathForConfig
+getRemoteControlAtStartup
+getUserClaudeRulesDir
+isAutoUpdaterDisabled
+markHasUsedAgentsFleet
+recordFirstStartTime
+saveCurrentProjectConfig
+shouldSkipPluginAutoupdate

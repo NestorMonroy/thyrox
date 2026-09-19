@@ -16,7 +16,8 @@
     "./policyLimits": "./src/policyLimits/index.ts",
     "./cost/*": "./src/cost/*.ts",
     "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    "./*.js": "./src/*.ts",
+    "./commands/logout/logout.js": "./src/commands/logout/logout.tsx"
   },
   "scripts": {
     "test": "bun test",

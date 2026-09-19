@@ -69,7 +69,8 @@
     "./context/stats.js": "./src/context/stats.tsx",
     "./launchRepl.js": "./src/launchRepl.tsx",
     "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    "./*.js": "./src/*.ts",
+    "./context/QueuedMessageContext.js": "./src/context/QueuedMessageContext.tsx"
   },
   "scripts": {
     "test": "bun test"

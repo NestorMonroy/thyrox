@@ -1,0 +1,17 @@
+@thyrox/agent/claudeInChrome/toolRendering.js	FALLA Export named 'truncateToWidth' not found in module '/home/us
+@thyrox/agent/localAgentTask.js	FALLA Cannot find package 'ajv' from '/home/user/thyrox/src/packag
+@thyrox/agent/services/mcpServerApproval.js	FALLA Cannot find module '@thyrox/config/managedPath' from '/home/
+@thyrox/agent/statusAlias.js	FALLA Cannot find package 'chalk' from '/home/user/thyrox/src/pack
+@thyrox/agent/tasks/LocalMainSessionTask.js	FALLA Export named 'executePostToolBatchHooks' not found in module
+@thyrox/agent/tasks/LocalShellTask.js	FALLA Cannot find package 'ajv' from '/home/user/thyrox/src/packag
+@thyrox/app-host/context/QueuedMessageContext.js	OK 2
+@thyrox/config/plugin/core/performStartupChecks.js	FALLA Cannot find package 'chokidar' from '/home/user/thyrox/src/p
+@thyrox/permission/components/ComputerUseApproval/ComputerUseApproval.js	FALLA Cannot find package 'figures' from '/home/user/thyrox/src/pa
+@thyrox/permission/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.js	FALLA Cannot find package 'figures' from '/home/user/thyrox/src/pa
+@thyrox/permission/components/FilePermissionDialog/permissionOptions.js	OK 3
+@thyrox/permission/components/PermissionDialog.js	OK 1
+@thyrox/permission/components/PermissionRequest.js	FALLA Cannot find module '@thyrox/tool-registry/tools/AskUserQuest
+@thyrox/permission/components/SandboxPermissionRequest.js	FALLA Cannot find module '@anthropic-ai/sandbox-runtime' from '/ho
+@thyrox/permission/components/WorkerPendingPermission.js	FALLA Cannot find module '@thyrox/agent/file-history' from '/home/
+@thyrox/permission/components/rules/AddWorkspaceDirectory.js	FALLA Cannot find package 'figures' from '/home/user/thyrox/src/pa
+@thyrox/provider/commands/logout/logout.js	FALLA Cannot find package 'execa' from '/home/user/thyrox/src/pack

@@ -44,7 +44,13 @@
     "./sessionStores": "./sessionStores.ts",
     "./yaml": "./yaml.ts",
     "./*": "./*.ts",
-    "./*.js": "./*.ts"
+    "./*.js": "./*.ts",
+    "./claudeInChrome/toolRendering.js": "./claudeInChrome/toolRendering.tsx",
+    "./localAgentTask.js": "./localAgentTask.tsx",
+    "./services/mcpServerApproval.js": "./services/mcpServerApproval.tsx",
+    "./statusAlias.js": "./statusAlias.tsx",
+    "./tasks/LocalMainSessionTask.js": "./tasks/LocalMainSessionTask.tsx",
+    "./tasks/LocalShellTask.js": "./tasks/LocalShellTask.tsx"
   },
   "scripts": {
     "emit": "bun run bin/emit.ts",
