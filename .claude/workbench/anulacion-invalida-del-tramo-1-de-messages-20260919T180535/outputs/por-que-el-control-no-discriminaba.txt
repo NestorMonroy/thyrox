@@ -1,0 +1,57 @@
+EL CONTROL DE ANULACION QUE 2a6ccafc CITA NO MIDE LO QUE EL COMMIT DICE
+=======================================================================
+
+El cuerpo de `thyrox@2a6ccafc` afirma:
+
+  "El subconjunto derivado (3 suites, por grep de los simbolos tocados) da
+   12 pass / 2 fail identico CON y SIN el tramo -control por anulacion-,
+   asi que sus dos rojos son premisa rancia y no sujeto"
+
+Las dos mitades del control eran la MISMA cosa, medido:
+
+  pre-fix:   1282 lineas   <- el respaldo que llame "SIN el tramo"
+  post-fix:  1300 lineas
+  HEAD~1:     808 lineas   <- el estado que SI es "sin el tramo"
+  HEAD:      1300 lineas
+
+El respaldo se tomo DESPUES de apendar el tramo, justo antes de corregir
+los seis errores de import. Asi que la comparacion fue:
+
+  "tramo con imports rotos"  contra  "tramo con imports arreglados"
+
+y no "con tramo" contra "sin tramo". Las dos ramas llevan el tramo, asi
+que ninguna de las dos puede discriminar si el tramo causa los rojos.
+
+LA SEGUNDA CEGUERA, MAS GRAVE QUE LA PRIMERA
+--------------------------------------------
+Aunque el respaldo hubiera sido el correcto, el control seguiria sin
+discriminar: el grafo de modulos muere en `proper-lockfile` ANTES de que
+se ejecute una linea de `messages.ts`. Con el import roto, ninguno de los
+dos brazos ejercita el tramo. Es el sub-patron D con el propio control
+como sujeto -un verde (o un rojo identico) que no separa "el mecanismo no
+causa el fallo" de "el instrumento no llega a preguntar".
+
+QUE SIGUE SIENDO CIERTO, Y CON QUE EVIDENCIA
+---------------------------------------------
+  - 0 errores de typecheck en los dos archivos: eso lo midio `tsc`, que
+    NO depende del grafo de ejecucion. Sigue en pie.
+  - La direccion del estrechamiento de `hookLabel`: la sostienen los seis
+    consumidores medidos por grep, no la suite.
+
+QUE QUEDA SIN MEDIR
+-------------------
+  - Si el tramo 1 introduce o no un rojo de ejecucion. DESCONOCIDO hasta
+    que `proper-lockfile` este materializado.
+
+CONDICION DE CIERRE
+-------------------
+Con `proper-lockfile` resuelto, correr las 3 suites derivadas contra
+`git show HEAD~1:src/packages/agent/messages.ts` y contra HEAD, y exigir
+que la diferencia entre las dos sea exactamente lo que el tramo aporta.
+El resultado va al cuerpo del siguiente commit CON la correccion de esta
+afirmacion -la historia publicada no se enmienda-.
+
+Metrica: conteo de lineas de cada version del archivo, y pass/fail del
+subconjunto derivado en cada brazo.
+Ciega a: si los dos brazos ejercitan de verdad el codigo del tramo -eso
+solo se sabe cuando el grafo de modulos resuelve entero-.

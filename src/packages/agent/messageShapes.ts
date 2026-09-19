@@ -99,7 +99,25 @@ export type AttachmentMessage<_T = unknown> = Message & { type: 'attachment'; at
 export type ProgressMessage<T = unknown> = Message & { type: 'progress'; data: T }
 export type SystemLocalCommandMessage = Message & { type: 'system' }
 export type SystemMessage = Message & { type: 'system' }
-export type UserMessage = Message & { type: 'user' }
+/**
+ * DIVERGENCIA DECLARADA, misma clase y misma direccion que `AssistantMessage`
+ * de arriba (TASK-THYROX-0228/0233): la fuente deja `message` opcional porque
+ * su raiz compila con `strict: false`, y sus propios consumidores leen
+ * `userMessage.message.content` sin guarda — `normalizeMessages` lo hace tres
+ * veces. Un mensaje de usuario SIEMPRE lleva `message`: es su carga util, y el
+ * unico sitio que lo construye (`createUserMessage`) lo asigna incondicional.
+ * Se estrecha a requerido en vez de sembrar `?.` en cada consumidor.
+ */
+export type UserMessage = Message & {
+  type: 'user'
+  message: {
+    role?: string
+    id?: string
+    content?: MessageContent
+    usage?: BetaUsage | Record<string, unknown>
+    [key: string]: unknown
+  }
+}
 export type NormalizedUserMessage = UserMessage
 export type RequestStartEvent = { type: string; [key: string]: unknown }
 export type StreamEvent = { type: string; [key: string]: unknown }

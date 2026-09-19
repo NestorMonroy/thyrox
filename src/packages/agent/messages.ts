@@ -36,7 +36,7 @@ export function isEmptyMessageText(text: string): boolean {
   )
 }
 
-import type { AssistantMessage, Message } from './messageShapes.ts'
+import type { AssistantMessage, ContentItem, Message } from './messageShapes.ts'
 
 /**
  * El ultimo mensaje de asistente del historial, o `undefined` si no hay.
@@ -298,30 +298,72 @@ import type {
 export function createUserMessage({
   content,
   isMeta,
+  isVisibleInTranscriptOnly,
+  isVirtual,
+  isCompactSummary,
+  summarizeMetadata,
+  toolUseResult,
+  mcpMeta,
   uuid,
   timestamp,
+  imagePasteIds,
+  sourceToolAssistantUUID,
+  permissionMode,
+  origin,
 }: {
   content: string | ContentBlockParam[]
   isMeta?: true
+  isVisibleInTranscriptOnly?: true
+  isVirtual?: true
+  isCompactSummary?: true
+  /** Coincide con el tipo `Output` de la herramienta que lo produjo. */
+  toolUseResult?: unknown
+  /** Metadata del protocolo MCP, que se pasa al consumidor del SDK y NUNCA al modelo. */
+  mcpMeta?: {
+    _meta?: Record<string, unknown>
+    structuredContent?: Record<string, unknown>
+  }
   /**
-   * La fuente lo declara `UUID | string` y castea al construir
-   * (`ccnmt: packages/agent/messages.ts`): el llamador puede traer un
-   * identificador ya formado o una cadena suelta, y el tipo plantilla de
-   * `node:crypto` no la admite sin el cast. Se porta la forma entera —
-   * declaracion y cast— porque la mitad sola no compila.
+   * La fuente lo declara `UUID | string` y castea al construir: el llamador
+   * puede traer un identificador ya formado o una cadena suelta, y el tipo
+   * plantilla de `node:crypto` no la admite sin el cast. Se porta la forma
+   * entera —declaracion y cast— porque la mitad sola no compila.
    */
   uuid?: UUID | string
   timestamp?: string
+  imagePasteIds?: number[]
+  /** En un mensaje de `tool_result`: el UUID del assistant con el `tool_use` par. */
+  sourceToolAssistantUUID?: UUID
+  /** Modo de permiso vigente al enviarlo, para restaurar al rebobinar. */
+  permissionMode?: PermissionMode
+  summarizeMetadata?: {
+    messagesSummarized: number
+    userContext?: string
+    direction?: PartialCompactDirection
+  }
+  /** Procedencia del mensaje. `undefined` = humano (teclado). */
+  origin?: MessageOrigin
 }): UserMessage {
   const m: UserMessage = {
     type: 'user',
     message: {
       role: 'user',
+      // Asegura que no se envie un mensaje vacio.
       content: content || NO_CONTENT_MESSAGE,
     },
     isMeta,
+    isVisibleInTranscriptOnly,
+    isVirtual,
+    isCompactSummary,
+    summarizeMetadata,
     uuid: (uuid as UUID | undefined) || randomUUID(),
     timestamp: timestamp ?? new Date().toISOString(),
+    toolUseResult,
+    mcpMeta,
+    imagePasteIds,
+    sourceToolAssistantUUID,
+    permissionMode,
+    origin,
   }
   return m
 }
@@ -847,11 +889,15 @@ import type {
 import type { ContentBlock } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { SDKAssistantMessageError } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { PermissionMode } from './types.ts'
 import { SYNTHETIC_MODEL } from './messagesConstants.ts'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { formatTokens } from '@thyrox/output/formatters'
 import type {
+  MessageOrigin,
   MessageType,
+  NormalizedAssistantMessage,
+  PartialCompactDirection,
   StopHookInfo,
   SystemAPIErrorMessage,
   SystemAgentsKilledMessage,
@@ -889,6 +935,10 @@ function baseCreateAssistantMessage({
     },
     inference_geo: null,
     iterations: null, speed: null, output_tokens_details: null,
+    // `fallback_credit` es REQUERIDO en `BetaUsage` del SDK 0.110.0 y la
+    // fuente lo omite, porque su raiz no se lo exige. Se declara nulo, que
+    // es la forma vacia que el propio tipo admite.
+    fallback_credit: null,
   },
 }: {
   content: BetaContentBlock[]
@@ -1297,4 +1347,164 @@ export function createToolUseSummaryMessage(
  * tainted — fail the trajectory rather than waste labeler time on a turn
  * that will be rejected at submission anyway.
  */
+
+
+// ===========================================================================
+// TRAMO 2 de TASK-THYROX-0212 — los dos simbolos que desbloquean la suite
+// ===========================================================================
+// El tramo NO se eligio por tamano: se DERIVO de los dos rojos que el
+// subconjunto publicaba. Con `proper-lockfile` materializado, el error real
+// salio a la luz y contradijo la atribucion del tramo 1:
+//
+//   message-pipeline.test.ts -> Export named 'normalizeMessages' not found
+//   messages.test.ts         -> Export named 'prepareUserContent' not found
+//
+// Los dos rojos eran del SUJETO -el porte incompleto-, no premisa rancia.
+// El `Cannot find package 'proper-lockfile'` los enmascaraba: el grafo de
+// modulos moria antes de llegar a preguntar por el export.
+//
+// El cierre transitivo decide el corte, medido sobre la fuente:
+//
+//   normalizeMessages        cierre= 3   falta 1    ~84 lineas
+//   prepareUserContent       cierre= 1   falta 1    ~19 lineas
+//   normalizeMessagesForAPI  cierre=56   faltan 54  ~2766 lineas
+//
+// Los dos primeros entran aqui y cierran `message-pipeline.test.ts` entero
+// -su unico ausente era `normalizeMessages`-. El hub queda para el tramo 3;
+// `messages.test.ts` no puede cerrar antes, porque lo importa.
+export function prepareUserContent({
+  inputString,
+  precedingInputBlocks,
+}: {
+  inputString: string
+  precedingInputBlocks: ContentBlockParam[]
+}): string | ContentBlockParam[] {
+  if (precedingInputBlocks.length === 0) {
+    return inputString
+  }
+
+  return [
+    ...precedingInputBlocks,
+    {
+      text: inputString,
+      type: 'text',
+    },
+  ]
+}
+
+export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
+  // isNewChain tracks whether we need to generate new UUIDs for messages when normalizing.
+  // When a message has multiple content blocks, we split it into multiple messages,
+  // each with a single content block. When this happens, we need to generate new UUIDs
+  // for all subsequent messages to maintain proper ordering and prevent duplicate UUIDs.
+  // This flag is set to true once we encounter a message with multiple content blocks,
+  // and remains true for all subsequent messages in the normalization process.
+  let isNewChain = false
+  return messages.flatMap(message => {
+    switch (message.type) {
+      case 'assistant': {
+        // El `switch` NO estrecha: `Message.type` esta declarado `MessageType`
+        // y no como literal discriminante, asi que TypeScript no deduce el
+        // subtipo por rama. La rama SI lo garantiza, asi que se declara con un
+        // cast en vez de sembrar `?.` en cada uno de los nueve accesos.
+        const am = message as AssistantMessage
+        // `content` sigue opcional dentro de `message` —la fuente lo lee sin
+        // guarda bajo `strict: false`—, y el arreglo se estrecha a `ContentItem[]`
+        // para que `.map` resuelva: una union `A[] | B[]` no ofrece una firma
+        // de `map` compatible, y `ContentItem` es el elemento que
+        // `messageShapes.ts` exporta para exactamente esto.
+        const assistantContent = (Array.isArray(am.message.content)
+          ? am.message.content
+          : []) as ContentItem[]
+        isNewChain = isNewChain || assistantContent.length > 1
+        return assistantContent.map((_, index) => {
+          const uuid = isNewChain
+            ? deriveUUID(am.uuid, index)
+            : am.uuid
+          return {
+            type: 'assistant' as const,
+            timestamp: am.timestamp,
+            message: {
+              ...am.message,
+              content: [_],
+              context_management: am.message.context_management ?? null,
+            },
+            isMeta: am.isMeta,
+            isVirtual: am.isVirtual,
+            requestId: am.requestId,
+            uuid,
+            error: am.error,
+            isApiErrorMessage: am.isApiErrorMessage,
+            advisorModel: am.advisorModel,
+          } as NormalizedAssistantMessage
+        })
+      }
+      case 'attachment':
+        return [message]
+      case 'progress':
+        return [message]
+      case 'system':
+        return [message]
+      case 'user': {
+        // Mismo cast y misma razon que la rama `assistant`. `UserMessage`
+        // declara `message` requerido —DIVERGENCIA declarada en
+        // `messageShapes.ts`, misma clase que `AssistantMessage`— pero su
+        // `content` sigue opcional, asi que se estrecha una sola vez a una
+        // variable local en lugar de en los siete accesos de la rama.
+        const um = message as UserMessage
+        const userContent = (um.message.content ?? []) as string | ContentItem[]
+        if (typeof userContent === 'string') {
+          const uuid = isNewChain ? deriveUUID(um.uuid, 0) : um.uuid
+          return [
+            {
+              ...um,
+              uuid,
+              message: {
+                ...um.message,
+                content: [{ type: 'text', text: userContent }],
+              },
+            } as NormalizedMessage,
+          ]
+        }
+        isNewChain = isNewChain || userContent.length > 1
+        // `imagePasteIds` no esta declarado en `Message`: llega por su firma de
+        // indice, o sea `unknown`. Indexarlo sin estrechar es TS18046 —el mismo
+        // acceso que la fuente hace legalmente bajo `strict: false`—.
+        const imagePasteIds = um.imagePasteIds as number[] | undefined
+        let imageIndex = 0
+        return userContent.map((_, index) => {
+          const isImage = _.type === 'image'
+          // For image content blocks, extract just the ID for this image
+          const imageId =
+            isImage && imagePasteIds ? imagePasteIds[imageIndex] : undefined
+          if (isImage) imageIndex++
+          return {
+            ...createUserMessage({
+              content: [_],
+              toolUseResult: um.toolUseResult,
+              mcpMeta: um.mcpMeta as { _meta?: Record<string, unknown>; structuredContent?: Record<string, unknown> },
+              isMeta: um.isMeta === true ? true : undefined,
+              isVisibleInTranscriptOnly: um.isVisibleInTranscriptOnly === true ? true : undefined,
+              isVirtual: (um.isVirtual as boolean | undefined) === true ? true : undefined,
+              timestamp: um.timestamp as string | undefined,
+              imagePasteIds: imageId !== undefined ? [imageId] : undefined,
+              origin: um.origin as MessageOrigin | undefined,
+            }),
+            uuid: isNewChain ? deriveUUID(um.uuid, index) : um.uuid,
+          } as NormalizedMessage
+        })
+      }
+      // DIVERGENCIA DECLARADA de TOOLCHAIN: la fuente cubre 5 de los 7 miembros
+      // de `MessageType` y deja que `grouped_tool_use` y `collapsed_read_search`
+      // caigan por el borde devolviendo `undefined`, que `strict: false` le
+      // tolera. Aqui el tipo de retorno seria `(Message | undefined)[]`. El
+      // `default` declara el paso a traves, que es la conducta que la fuente ya
+      // tiene de hecho para esos dos casos. Va al FINAL del `switch`, no en
+      // medio: un `default` intercalado es legal y se lee como si cortara las
+      // ramas que le siguen.
+      default:
+        return [message]
+    }
+  })
+}
 
