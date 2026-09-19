@@ -280,5 +280,42 @@ af "el ledger se suelta: el turno no queda bloqueado por un cadaver" "no" \
 kill -TERM "$ZPADRE" 2>/dev/null || true
 bash "$WAIT_JOBS" forget zombi-001 >/dev/null 2>&1 || true
 
+# -----------------------------------------------------------------------------
+# El tercer sitio de lanzamiento: `dispatch`. La arista `--after-ok` lanza el
+# trabajo dependiente cuando su predecesor asienta OK, y ese lanzamiento NO
+# pasaba por `setsid` — quedaba en el grupo de quien corrio `dispatch`, asi
+# que una senal dirigida al grupo lo alcanzaba. Es el caso de uso que la
+# arista existe para cubrir: sobrevivir mientras el primer plano sigue.
+#
+# Por que este caso hacia falta: `test-wait-jobs-dependencia.sh` mide que
+# `dispatch` LANZA, no que lo lanzado SOBREVIVA. Pasaba en verde con el
+# defecto presente — el sub-patron D con la suite hermana como sujeto.
+# -----------------------------------------------------------------------------
+: > "$T/pred.log"; printf '__BG_EXIT__=0\n' > "$T/pred.log"
+bash "$WAIT_JOBS" register disp-pred "$T/pred.log" 1 >/dev/null 2>&1
+bash "$WAIT_JOBS" register disp-hijo "$T/hijo.log" \
+    --after-ok disp-pred --run 'sleep 30' >/dev/null 2>&1
+bash "$WAIT_JOBS" dispatch >/dev/null 2>&1
+DISP_PID="$(sed -n 's/^pid=//p' "$THYROX_JOBS_DIR/disp-hijo.job" 2>/dev/null)"
+echo "$DISP_PID" >> "$T/leaders"
+af "dispatch: el dependiente es lider de su grupo (pgid==pid)" \
+    "$DISP_PID" "$(group_of "$DISP_PID")"
+
+# El pgid es un PROXY, no el fenomeno. Con `setsid` puesto y la clave duplicada
+# el trabajo seguia asentando BAIL: `register` escribe `proc_start=` y `cmd=`
+# vacios al declarar la arista, y la reescritura de `dispatch` no los retiraba,
+# asi que el `.job` quedaba con la clave DOS veces. `verdict` la lee con
+# `sed -n s///p` —dos lineas— y la comparacion de vivacidad falla contra un
+# valor de dos lineas: el trabajo VIVO se lee como muerto.
+#
+# Este es el caso que separa «el grupo es correcto» de «la barrera lo ve vivo».
+af "dispatch: el .job no repite proc_start" 1 \
+    "$(grep -c '^proc_start=' "$THYROX_JOBS_DIR/disp-hijo.job" 2>/dev/null || echo 0)"
+af "dispatch: el .job no repite cmd" 1 \
+    "$(grep -c '^cmd=' "$THYROX_JOBS_DIR/disp-hijo.job" 2>/dev/null || echo 0)"
+kill -KILL "$DISP_PID" 2>/dev/null || true
+bash "$WAIT_JOBS" forget disp-hijo >/dev/null 2>&1 || true
+bash "$WAIT_JOBS" forget disp-pred >/dev/null 2>&1 || true
+
 echo "test-process-group: $((OK+FALLA)) aserciones — $OK ok, $FALLA falla(s)"
 [ "$FALLA" -eq 0 ]

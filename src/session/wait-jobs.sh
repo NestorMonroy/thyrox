@@ -552,10 +552,23 @@ cmd_dispatch() {
             OK)
                 run=$(sed -n 's/^run=//p' "$f")
                 local dlog; dlog=$(sed -n 's/^log=//p' "$f")
-                nohup bash -c "$run; echo EXIT=\$?" > "$dlog" 2>&1 &
+                # `setsid`, por la misma razon que `bg.sh:257`: hace al trabajo
+                # LIDER de su propia sesion y grupo. Sin el queda en el grupo de
+                # quien corrio `dispatch`, y una senal dirigida al grupo lo
+                # alcanza — lo que anula el caso de uso de la arista, que es
+                # sobrevivir mientras el primer plano sigue. `disown` retira el
+                # trabajo de la tabla de jobs del shell; NO lo saca del grupo.
+                # Medido por conducta: sin `setsid`, pgid == pgid del lanzador.
+                nohup setsid bash -c "$run; echo EXIT=\$?" > "$dlog" 2>&1 &
                 local dpid=$!; disown "$dpid" 2>/dev/null || true
                 local tmp="$f.tmp.$$"
-                grep -v '^after_ok=\|^run=\|^pid=' "$f" > "$tmp"
+                # Se retiran TAMBIEN `proc_start=` y `cmd=`: `register` los
+                # escribe vacios al declarar la arista, y sin quitarlos la
+                # reescritura deja la clave DOS veces. `verdict` lee
+                # `proc_start` con `sed -n s///p`, que devuelve las dos lineas,
+                # y la comparacion de vivacidad falla contra un valor de dos
+                # lineas — el trabajo vivo se lee como muerto y asienta BAIL.
+                grep -v '^after_ok=\|^run=\|^pid=\|^proc_start=\|^cmd=' "$f" > "$tmp"
                 printf 'pid=%s\nproc_start=%s\ncmd=%s\n' \
                     "$dpid" "$(read_proc_start "$dpid")" "$run" >> "$tmp"
                 mv -f "$tmp" "$f"
