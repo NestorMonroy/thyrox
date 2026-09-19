@@ -436,24 +436,24 @@ function thyrox_toolchain_probe_proxy() {
     return 0
   fi
 
-  local entry family sin_ca=()
+  local entry family missing missing_ca=()
   for entry in "${THYROX_TOOLCHAIN_CA_FAMILIES[@]}"; do
     family="${entry%%:*}"
-    thyrox_toolchain_family_has_ca "$entry" || sin_ca+=("$family")
+    thyrox_toolchain_family_has_ca "$entry" || missing_ca+=("$family")
   done
 
-  if [[ ${#sin_ca[@]} -eq 0 ]]; then
+  if [[ ${#missing_ca[@]} -eq 0 ]]; then
     return 0
   fi
 
   # El aviso NOMBRA la familia y su clave: decir solo «falta CA» manda al
   # operador a averiguar cual de las tres, que es el trabajo que la sonda
   # acaba de hacer.
-  echo "thyrox_toolchain: hay proxy declarado y ${#sin_ca[@]} familia(s) sin CA legible." >&2
+  echo "thyrox_toolchain: hay proxy declarado y ${#missing_ca[@]} familia(s) sin CA legible." >&2
   for entry in "${THYROX_TOOLCHAIN_CA_FAMILIES[@]}"; do
     family="${entry%%:*}"
-    for f in "${sin_ca[@]}"; do
-      [[ "$f" == "$family" ]] && \
+    for missing in "${missing_ca[@]}"; do
+      [[ "$missing" == "$family" ]] && \
         echo "                  $family -> declarar ${entry#*:}" >&2
     done
   done

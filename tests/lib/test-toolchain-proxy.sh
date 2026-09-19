@@ -40,16 +40,16 @@ source "$SUBJECT" 2>/dev/null || true
 # Un CA que EXISTE, para que el caso positivo no pase por la ausencia del
 # archivo. `metrica-decide-la-conclusion.md` sub-patron D: un test negativo
 # que apunta a algo inexistente lo rechaza la ausencia, no la guarda.
-CA_REAL="$(mktemp)"; printf -- '-----BEGIN CERTIFICATE-----\n' > "$CA_REAL"
-CA_AUSENTE="/no/existe/este/ca.crt"
-trap 'rm -f "$CA_REAL"' EXIT
+CA_PRESENT="$(mktemp)"; printf -- '-----BEGIN CERTIFICATE-----\n' > "$CA_PRESENT"
+CA_MISSING="/no/existe/este/ca.crt"
+trap 'rm -f "$CA_PRESENT"' EXIT
 
 # Corre la sonda con un entorno declarado, sin heredar el de esta sesion.
-correr() {
+run_probe() {
   env -i PATH="$PATH" HOME="$HOME" "$@" \
     bash -c 'source "$0" 2>/dev/null; thyrox_toolchain_probe_proxy' "$SUBJECT" 2>&1
 }
-codigo() {
+exit_code_of() {
   env -i PATH="$PATH" HOME="$HOME" "$@" \
     bash -c 'source "$0" 2>/dev/null; thyrox_toolchain_probe_proxy' "$SUBJECT" >/dev/null 2>&1
   echo $?
@@ -71,32 +71,32 @@ else
 fi
 
 # Caso 3 — proxy declarado CON un CA legible: pasa.
-if [[ "$(codigo https_proxy=http://p:8080 SSL_CERT_FILE="$CA_REAL" \
-                NODE_EXTRA_CA_CERTS="$CA_REAL" CURL_CA_BUNDLE="$CA_REAL")" == "0" ]]; then
+if [[ "$(exit_code_of https_proxy=http://p:8080 SSL_CERT_FILE="$CA_PRESENT" \
+                NODE_EXTRA_CA_CERTS="$CA_PRESENT" CURL_CA_BUNDLE="$CA_PRESENT")" == "0" ]]; then
   ok "caso 3: proxy + CA legible en las tres familias -> exit 0"
 else
   bad "caso 3: proxy + CA legible deberia salir 0"
 fi
 
 # Caso 4 — EL QUE DISCRIMINA. Proxy declarado, ninguna clave de CA: avisa.
-salida4="$(correr https_proxy=http://p:8080)"
-if [[ "$(codigo https_proxy=http://p:8080)" == "1" ]]; then
+output4="$(run_probe https_proxy=http://p:8080)"
+if [[ "$(exit_code_of https_proxy=http://p:8080)" == "1" ]]; then
   ok "caso 4: proxy sin ningun CA declarado -> exit 1"
 else
-  bad "caso 4: proxy sin CA deberia salir 1, salio $(codigo https_proxy=http://p:8080)"
+  bad "caso 4: proxy sin CA deberia salir 1, salio $(exit_code_of https_proxy=http://p:8080)"
 fi
 
 # Caso 5 — el aviso NOMBRA la familia sin CA. Un aviso que solo dijera «falta
 # CA» manda a buscar cual de las tres claves, que es el trabajo que la sonda
 # ya hizo.
-if [[ "$salida4" == *"node"* && "$salida4" == *"python"* && "$salida4" == *"curl"* ]]; then
+if [[ "$output4" == *"node"* && "$output4" == *"python"* && "$output4" == *"curl"* ]]; then
   ok "caso 5: el aviso nombra las tres familias sin CA"
 else
-  bad "caso 5: el aviso no nombra las tres familias — salida: $salida4"
+  bad "caso 5: el aviso no nombra las tres familias — salida: $output4"
 fi
 
 # Caso 6 — SIN proxy declarado el veredicto es ok, no aviso.
-if [[ "$(codigo)" == "0" ]]; then
+if [[ "$(exit_code_of)" == "0" ]]; then
   ok "caso 6: sin proxy declarado -> exit 0, nunca aviso"
 else
   bad "caso 6: sin proxy declarado deberia salir 0"
@@ -104,20 +104,20 @@ fi
 
 # Caso 7 — las familias son INDEPENDIENTES: node con CA y python sin el avisa,
 # y el aviso nombra python sin nombrar node.
-salida7="$(correr https_proxy=http://p:8080 NODE_EXTRA_CA_CERTS="$CA_REAL" CURL_CA_BUNDLE="$CA_REAL")"
-if [[ "$(codigo https_proxy=http://p:8080 NODE_EXTRA_CA_CERTS="$CA_REAL" \
-                CURL_CA_BUNDLE="$CA_REAL")" == "1" \
-      && "$salida7" == *"python"* && "$salida7" != *"node"* ]]; then
+output7="$(run_probe https_proxy=http://p:8080 NODE_EXTRA_CA_CERTS="$CA_PRESENT" CURL_CA_BUNDLE="$CA_PRESENT")"
+if [[ "$(exit_code_of https_proxy=http://p:8080 NODE_EXTRA_CA_CERTS="$CA_PRESENT" \
+                CURL_CA_BUNDLE="$CA_PRESENT")" == "1" \
+      && "$output7" == *"python"* && "$output7" != *"node"* ]]; then
   ok "caso 7: una familia con CA y otra sin el se separan"
 else
-  bad "caso 7: las familias no se separan — salida: $salida7"
+  bad "caso 7: las familias no se separan — salida: $output7"
 fi
 
 # Caso 8 — el CA declarado pero AUSENTE en disco cuenta como sin CA. Declarar
 # una ruta no es tenerla: es la misma distincion significante/significado que
 # el resto del arbol aplica a una cifra.
-if [[ "$(codigo https_proxy=http://p:8080 SSL_CERT_FILE="$CA_AUSENTE" \
-                NODE_EXTRA_CA_CERTS="$CA_AUSENTE" CURL_CA_BUNDLE="$CA_AUSENTE")" == "1" ]]; then
+if [[ "$(exit_code_of https_proxy=http://p:8080 SSL_CERT_FILE="$CA_MISSING" \
+                NODE_EXTRA_CA_CERTS="$CA_MISSING" CURL_CA_BUNDLE="$CA_MISSING")" == "1" ]]; then
   ok "caso 8: un CA declarado que no existe en disco no cuenta"
 else
   bad "caso 8: un CA inexistente deberia avisar igual"
@@ -125,17 +125,17 @@ fi
 
 # Caso 9 — las cuatro formas de declarar proxy disparan la sonda, no solo
 # https_proxy. La minuscula y la MAYUSCULA son dos cajas distintas.
-for clave in https_proxy HTTPS_PROXY http_proxy HTTP_PROXY; do
-  if [[ "$(codigo "$clave"=http://p:8080)" == "1" ]]; then
-    ok "caso 9/$clave: dispara la sonda"
+for key in https_proxy HTTPS_PROXY http_proxy HTTP_PROXY; do
+  if [[ "$(exit_code_of "$key"=http://p:8080)" == "1" ]]; then
+    ok "caso 9/$key: dispara la sonda"
   else
-    bad "caso 9/$clave: NO dispara la sonda"
+    bad "caso 9/$key: NO dispara la sonda"
   fi
 done
 
 # Caso 10 — python admite DOS claves, y cualquiera de las dos basta.
-if [[ "$(codigo https_proxy=http://p:8080 REQUESTS_CA_BUNDLE="$CA_REAL" \
-                NODE_EXTRA_CA_CERTS="$CA_REAL" CURL_CA_BUNDLE="$CA_REAL")" == "0" ]]; then
+if [[ "$(exit_code_of https_proxy=http://p:8080 REQUESTS_CA_BUNDLE="$CA_PRESENT" \
+                NODE_EXTRA_CA_CERTS="$CA_PRESENT" CURL_CA_BUNDLE="$CA_PRESENT")" == "0" ]]; then
   ok "caso 10: REQUESTS_CA_BUNDLE basta para python"
 else
   bad "caso 10: REQUESTS_CA_BUNDLE deberia bastar para python"
