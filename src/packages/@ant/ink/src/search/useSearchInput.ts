@@ -12,7 +12,7 @@ import {
   resetYankState,
   updateYankLength,
   yankPop,
-} from '@claude-code-how-works/repl/Cursor.js'
+} from '@thyrox/repl/Cursor.js'
 
 type UseSearchInputOptions = {
   isActive: boolean

@@ -1,54 +1,48 @@
+/**
+ * Porte COMPLETO por fusion de `ccnmt: packages/storage/src/path.ts`.
+ * La version anterior portaba 4 de 6 exports, y los suyos eran
+ * subconjunto ESTRICTO de la fuente: cero simbolos propios que perder.
+ * Divergencia frente a la fuente: ninguna, salvo el alcance
+ * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169).
+ * Refs: TASK-THYROX-0199.
+ */
+
 import { homedir } from 'os'
-import { isAbsolute, join, normalize, relative, resolve } from 'path'
-import { getCwd, getPlatform } from './internal/pendingCrossPackageDeps.js'
+import { dirname, isAbsolute, join, normalize, relative, resolve } from 'path'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { getFsImplementation } from './fsOperations.js'
+import { getPlatform } from '@thyrox/config/platform'
 import { posixPathToWindowsPath } from './windowsPaths.js'
 
 /**
- * Porte PARCIAL de `ccnmt: packages/storage/src/path.ts` — sólo los cuatro
- * símbolos que ejercita `path.test.ts`: `expandPath`, `toRelativePath`,
- * `containsPathTraversal`, `normalizePathForConfigKey`.
+ * Expands a path that may contain tilde notation (~) to an absolute path.
  *
- * Dos símbolos de la fuente NO se portan:
+ * On Windows, POSIX-style paths (e.g., `/c/Users/...`) are automatically converted
+ * to Windows format (e.g., `C:\Users\...`). The function always returns paths in
+ * the native format for the current platform.
  *
- * - `getDirectoryForPath` — depende de `getFsImplementation()` de
- *   `./fsOperations.js`. Ese archivo no tiene test propio en este pase y
- *   no está entre los seis que este porte cubre; se declara pendiente en
- *   vez de inventar un stub sin test que lo respalde.
- * - `export { sanitizePath } from './sessionStoragePortable.js'` — ese
- *   módulo es la pieza "god-class" que el README del paquete describe
- *   (4500+ LOC), fuera del alcance de este agente (otro agente porta
- *   `sessionStorage`/`sessionStoragePortable` en esta misma tanda).
+ * @param path - The path to expand, may contain:
+ *   - `~` - expands to user's home directory
+ *   - `~/path` - expands to path within user's home directory
+ *   - absolute paths - returned normalized
+ *   - relative paths - resolved relative to baseDir
+ *   - POSIX paths on Windows - converted to Windows format
+ * @param baseDir - The base directory for resolving relative paths (defaults to current working directory)
+ * @returns The expanded absolute path in the native format for the current platform
  *
- * `getCwd`/`getPlatform` sustituyen a `@claude-code-how-works/app-host` y
- * `@claude-code-how-works/config` (ver `./internal/pendingCrossPackageDeps.ts`).
- */
-
-/**
- * Expande una ruta que puede contener notación de tilde (~) a una ruta
- * absoluta.
+ * @throws {Error} If path is invalid
  *
- * En Windows, las rutas estilo POSIX (p. ej. `/c/Users/...`) se convierten
- * automáticamente a formato Windows (p. ej. `C:\Users\...`). La función
- * siempre retorna rutas en el formato nativo de la plataforma actual.
- *
- * @param path - La ruta a expandir, puede contener:
- *   - `~` - expande al directorio home del usuario
- *   - `~/path` - expande a una ruta dentro del directorio home
- *   - rutas absolutas - se retornan normalizadas
- *   - rutas relativas - se resuelven respecto a baseDir
- *   - rutas POSIX en Windows - se convierten a formato Windows
- * @param baseDir - El directorio base para resolver rutas relativas (por
- *   defecto el directorio de trabajo actual)
- * @returns La ruta absoluta expandida en el formato nativo de la plataforma
- *   actual
- *
- * @throws {Error} Si la ruta es inválida
+ * @example
+ * expandPath('~') // '/home/user'
+ * expandPath('~/Documents') // '/home/user/Documents'
+ * expandPath('./src', '/project') // '/project/src'
+ * expandPath('/absolute/path') // '/absolute/path'
  */
 export function expandPath(path: string, baseDir?: string): string {
-  // Fija el baseDir por defecto a getCwd() si no se provee.
-  const actualBaseDir = baseDir ?? getCwd()
+  // Set default baseDir to getCwd() if not provided
+  const actualBaseDir = baseDir ?? getCwd() ?? getFsImplementation().cwd()
 
-  // Validación de entrada.
+  // Input validation
   if (typeof path !== 'string') {
     throw new TypeError(`Path must be a string, received ${typeof path}`)
   }
@@ -59,18 +53,18 @@ export function expandPath(path: string, baseDir?: string): string {
     )
   }
 
-  // Seguridad: revisa bytes nulos.
+  // Security: Check for null bytes
   if (path.includes('\0') || actualBaseDir.includes('\0')) {
     throw new Error('Path contains null bytes')
   }
 
-  // Maneja rutas vacías o sólo con espacios.
+  // Handle empty or whitespace-only paths
   const trimmedPath = path.trim()
   if (!trimmedPath) {
     return normalize(actualBaseDir).normalize('NFC')
   }
 
-  // Maneja la notación de directorio home.
+  // Handle home directory notation
   if (trimmedPath === '~') {
     return homedir().normalize('NFC')
   }
@@ -79,71 +73,92 @@ export function expandPath(path: string, baseDir?: string): string {
     return join(homedir(), trimmedPath.slice(2)).normalize('NFC')
   }
 
-  // En Windows, convierte rutas estilo POSIX (p. ej. /c/Users/...) a
-  // formato Windows.
+  // On Windows, convert POSIX-style paths (e.g., /c/Users/...) to Windows format
   let processedPath = trimmedPath
   if (getPlatform() === 'windows' && trimmedPath.match(/^\/[a-z]\//i)) {
     try {
       processedPath = posixPathToWindowsPath(trimmedPath)
     } catch {
-      // Si la conversión falla, usa la ruta original.
+      // If conversion fails, use original path
       processedPath = trimmedPath
     }
   }
 
-  // Maneja rutas absolutas.
+  // Handle absolute paths
   if (isAbsolute(processedPath)) {
     return normalize(processedPath).normalize('NFC')
   }
 
-  // Maneja rutas relativas.
+  // Handle relative paths
   return resolve(actualBaseDir, processedPath).normalize('NFC')
 }
 
 /**
- * Convierte una ruta absoluta a una ruta relativa desde cwd, para ahorrar
- * tokens en la salida de herramientas. Si la ruta está fuera de cwd (la
- * ruta relativa empezaría con ..), retorna la ruta absoluta sin cambios
- * para que quede sin ambigüedad.
+ * Converts an absolute path to a relative path from cwd, to save tokens in
+ * tool output. If the path is outside cwd (relative path would start with ..),
+ * returns the absolute path unchanged so it stays unambiguous.
  *
- * @param absolutePath - La ruta absoluta a relativizar
- * @returns Ruta relativa si está bajo cwd, si no la ruta absoluta original
+ * @param absolutePath - The absolute path to relativize
+ * @returns Relative path if under cwd, otherwise the original absolute path
  */
 export function toRelativePath(absolutePath: string): string {
   const relativePath = relative(getCwd(), absolutePath)
-  // Si la ruta relativa saliera fuera de cwd (empieza con ..), conserva la
-  // absoluta.
+  // If the relative path would go outside cwd (starts with ..), keep absolute
   return relativePath.startsWith('..') ? absolutePath : relativePath
 }
 
 /**
- * Revisa si una ruta contiene patrones de traversal de directorio que
- * navegan a directorios padre.
+ * Gets the directory path for a given file or directory path.
+ * If the path is a directory, returns the path itself.
+ * If the path is a file or doesn't exist, returns the parent directory.
  *
- * @param path - La ruta a revisar por patrones de traversal
- * @returns true si la ruta contiene traversal (p. ej. '../', '..\', o
- *   termina en '..')
+ * @param path - The file or directory path
+ * @returns The directory path
+ */
+export function getDirectoryForPath(path: string): string {
+  const absolutePath = expandPath(path)
+  // SECURITY: Skip filesystem operations for UNC paths to prevent NTLM credential leaks.
+  if (absolutePath.startsWith('\\\\') || absolutePath.startsWith('//')) {
+    return dirname(absolutePath)
+  }
+  try {
+    const stats = getFsImplementation().statSync(absolutePath)
+    if (stats.isDirectory()) {
+      return absolutePath
+    }
+  } catch {
+    // Path doesn't exist or can't be accessed
+  }
+  // If it's not a directory or doesn't exist, return the parent directory
+  return dirname(absolutePath)
+}
+
+/**
+ * Checks if a path contains directory traversal patterns that navigate to parent directories.
+ *
+ * @param path - The path to check for traversal patterns
+ * @returns true if the path contains traversal (e.g., '../', '..\', or ends with '..')
  */
 export function containsPathTraversal(path: string): boolean {
   return /(?:^|[\\/])\.\.(?:[\\/]|$)/.test(path)
 }
 
+// Re-export from the shared zero-dep source.
+export { sanitizePath } from './sessionStoragePortable.js'
+
 /**
- * Normaliza una ruta para usarla como llave de configuración JSON.
- * En Windows, las rutas pueden tener separadores inconsistentes (C:\path
- * vs C:/path) según vengan de git, las APIs de Node.js, o entrada del
- * usuario. Esto normaliza a barras hacia adelante para una serialización
- * JSON consistente.
+ * Normalizes a path for use as a JSON config key.
+ * On Windows, paths can have inconsistent separators (C:\path vs C:/path)
+ * depending on whether they come from git, Node.js APIs, or user input.
+ * This normalizes to forward slashes for consistent JSON serialization.
  *
- * @param path - La ruta a normalizar
- * @returns La ruta normalizada con barras hacia adelante consistentes
+ * @param path - The path to normalize
+ * @returns The normalized path with consistent forward slashes
  */
 export function normalizePathForConfigKey(path: string): string {
-  // Primero usa normalize de Node para resolver segmentos . y ..
+  // First use Node's normalize to resolve . and .. segments
   const normalized = normalize(path)
-  // Luego convierte todas las barras invertidas a barras hacia adelante
-  // para llaves JSON consistentes. Es seguro porque las barras hacia
-  // adelante funcionan en rutas de Windows para la mayoría de
-  // operaciones.
+  // Then convert all backslashes to forward slashes for consistent JSON keys
+  // This is safe because forward slashes work in Windows paths for most operations
   return normalized.replace(/\\/g, '/')
 }

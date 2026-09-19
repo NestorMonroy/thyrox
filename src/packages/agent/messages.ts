@@ -269,6 +269,7 @@ import {
 import type {
   NormalizedMessage,
   ProgressMessage,
+  SystemCompactBoundaryMessage,
   ToolResultBlockParam,
   ToolUseBlock,
   UserMessage,
@@ -805,4 +806,29 @@ export function getToolResultIDs(
       return [[block.tool_use_id, block.is_error ?? false]]
     }),
   )
+}
+
+/**
+ * Distingue el marcador de frontera de compactacion del resto de mensajes.
+ *
+ * Porte de `ccnmt: packages/agent/messages.ts:4699`, verbatim en su cuerpo.
+ * Su consumidor es `storage/sessionStorage.ts`, que sin el **no carga**.
+ *
+ * BRECHA DECLARADA de este modulo, medida y no cerrada aqui: la fuente tiene
+ * **108 exports** y este archivo **43**, o sea 66 ausentes. Completarlo arrastra
+ * el subsistema de compactacion entero (`compaction/`, `QueryEngine`), que tiene
+ * su propia tarea — **TASK-THYROX-0212**. Lo que se porta aqui es el unico
+ * simbolo que la cadena de carga exige, no una muestra arbitraria: el criterio
+ * es el import real, no el juicio.
+ *
+ * Metrica: nombres exportados, contando formas de declaracion y re-export.
+ * Ciega a: un export por default, y a si un nombre presente en las dos listas
+ * hace lo mismo en ambas — el censo compara nombres, no cuerpos.
+ *
+ * Refs: TASK-DOCS-0475.
+ */
+export function isCompactBoundaryMessage(
+  message: Message | NormalizedMessage,
+): message is SystemCompactBoundaryMessage {
+  return message?.type === 'system' && message.subtype === 'compact_boundary'
 }

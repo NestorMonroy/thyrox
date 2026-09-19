@@ -1,6 +1,6 @@
-import { Cursor } from '@claude-code-how-works/repl/Cursor.js'
-import { firstGrapheme, lastGrapheme } from '@claude-code-how-works/output/utils/intl.js'
-import { countCharInString } from '@claude-code-how-works/output/utils/stringUtils.js'
+import { Cursor } from '@thyrox/repl/Cursor.js'
+import { firstGrapheme, lastGrapheme } from '@thyrox/output/utils/intl.js'
+import { countCharInString } from '@thyrox/output/utils/stringUtils.js'
 import {
   isInclusiveMotion,
   isLinewiseMotion,

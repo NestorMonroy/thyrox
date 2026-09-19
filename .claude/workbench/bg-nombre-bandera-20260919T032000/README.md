@@ -40,9 +40,18 @@ Caen **exactamente** las 4 aserciones que dependen de ella. El **caso 4** —un
 nombre legitimo arranca, y su run NO empieza por guion— sobrevive en los dos,
 y es lo que prueba que la guarda no esta rechazando todo.
 
-## Cita
+## Cita durable: TASK-THYROX-0199
 
-`task_ids cita 508` rehusa: el ordinal **colisiona** con `task_id 508` del
-store (`TASK-API-0294`, otro sujeto). Es el defecto que el paso 4 de
-`CLAUDE.md` describe, observado aqui. El commit cita el ordinal **y** el
-sujeto verbatim, que es lo unico que resuelve sin cita durable.
+`task_ids cita 508` rehusa porque el **numero** es ambiguo: nombra a la vez
+`task_id 508` del store (`TASK-API-0294`) y la tarjeta 508 del board, con
+sujetos distintos. El propio mensaje de rechazo dice como salir — *«si lo que
+se tiene es el ORDINAL, su cita se resuelve por el SUJETO, no por el numero»*.
+
+Resuelto asi, el sujeto ya estaba en el store con su cita acunada:
+
+    task_id 1400 | TASK-THYROX-0199 | bg.sh start acepta una bandera como nombre...
+
+Por eso `ingerir-board` publico «0 citas acunadas»: no fallo, no habia nada
+que acunar. El commit que implementa esto (`303bba91`) cita solo el ordinal,
+porque la resolucion por sujeto se hizo despues; queda aqui para que el
+ordinal sea recuperable.

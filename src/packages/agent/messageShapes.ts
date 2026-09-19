@@ -1,3 +1,5 @@
+import type { UUID } from 'node:crypto'
+
 /**
  * Porte MINIMO de `ccnmt: packages/agent/messageShapes.ts`, acotado a los
  * campos que consume `messagePredicates.ts` (`isHumanTurn`).
@@ -91,4 +93,28 @@ export type ToolUseBlock = {
   type: 'tool_use'
   id: string
   [key: string]: unknown
+}
+
+/**
+ * Marcador de frontera de compactacion en el transcript.
+ *
+ * Porte de `ccnmt: packages/agent/messageShapes.ts:61`. Es un `system` con
+ * `compactMetadata`, y su `preservedSegment` nombra los tres extremos del
+ * tramo que la compactacion conserva: cabeza, cola y ancla. Lo consume
+ * `isCompactBoundaryMessage` en `messages.ts`, que a su vez consume
+ * `storage/sessionStorage.ts` para no volver a compactar lo ya compactado.
+ *
+ * Refs: TASK-THYROX-0199.
+ */
+export type SystemCompactBoundaryMessage = Message & {
+  type: 'system'
+  compactMetadata: {
+    preservedSegment?: {
+      headUuid: UUID
+      tailUuid: UUID
+      anchorUuid: UUID
+      [key: string]: unknown
+    }
+    [key: string]: unknown
+  }
 }

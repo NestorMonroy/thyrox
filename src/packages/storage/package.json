@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Persistencia en disco: rutas, archivos temporales, XDG y conversion Windows/POSIX. Adaptacion de @claude-code-how-works/storage (ccnmt) — porte parcial, ver docstrings por modulo.",
+  "description": "Persistencia en disco: rutas, archivos temporales, XDG y conversion Windows/POSIX. Adaptacion de @claude-code-how-works/storage (ccnmt) \u2014 porte parcial, ver docstrings por modulo.",
   "exports": {
     ".": "./src/index.ts",
     "./cache-paths": "./src/cache-paths.ts",
@@ -35,6 +35,7 @@
     "env-paths": "^4.0.0",
     "ignore": "^7.0.8",
     "jsonc-parser": "^3.3.1",
+    "lodash-es": "^4.18.1",
     "picomatch": "^4.0.7",
     "proper-lockfile": "^4.1.2"
   },

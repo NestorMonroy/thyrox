@@ -2,8 +2,8 @@ import {
   isVimPunctuation,
   isVimWhitespace,
   isVimWordChar,
-} from '@claude-code-how-works/repl/Cursor.js'
-import { getGraphemeSegmenter } from '@claude-code-how-works/output/utils/intl.js'
+} from '@thyrox/repl/Cursor.js'
+import { getGraphemeSegmenter } from '@thyrox/output/utils/intl.js'
 
 export type TextObjectRange = { start: number; end: number } | null
 

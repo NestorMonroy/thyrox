@@ -11,13 +11,34 @@
  * declara `@thyrox/agent`, y `toolResultStorage.ts:47-48` ya lo importa. El
  * bloqueo no existia; lo que existia era la falta de medicion.
  *
- * Divergencia declarada, la unica: la fuente importa `bun:bundle`, que no es
- * un modulo de Node sino una capacidad del runtime de Bun. Se conserva el
- * import verbatim porque este arbol corre sus tests con Bun; un consumidor
- * que ejecute con Node tiene que resolverlo.
+ * Divergencias declaradas — CORREGIDO 2026-09-19: este parrafo decia «la
+ * unica», y era falso. Medirlo por conducta destapo que el modulo NO CARGABA,
+ * y que el typecheck agregado no podia verlo: el arbol ya tenia 787 TS2307, asi
+ * que cinco nuevos quedaron dentro del ruido mientras la cifra mejoraba.
+ *
+ * 1. `bun:bundle` — la fuente lo importa y NO es un modulo de Node sino una
+ *    capacidad del runtime de Bun. Medido por conducta: `import('bun:bundle')`
+ *    da `Cannot find package 'bundle'` en ESTE Bun, asi que la divergencia es
+ *    real. Se conserva el import verbatim; un consumidor que ejecute con Node
+ *    —o con este Bun— tiene que resolverlo.
+ * 2. `@thyrox/agent/fileHistory.js` — la fuente nombra el modulo
+ *    `file-history`; aqui el archivo se llama `fileHistory.ts` y es donde vive
+ *    `FileHistorySnapshot`. Es un repunte de specifier, no un recorte.
+ * 3. El sustituto por inyeccion de `builtInCommandNames` se RETIRO. Era
+ *    andamiaje del porte parcial: el porte completo importa el simbolo real de
+ *    `@thyrox/command-runtime/runtime` (:54), asi que mantener los dos era una
+ *    colision de declaracion —enmascarada solo mientras el TS2307 impedia que
+ *    el import resolviera—. Su unico consumidor era un test, que ahora mockea
+ *    el subpath, que es lo que la fuente ya hacia.
+ *
+ * Lo que este modulo NO cierra, medido y con sucesor: cargarlo exige el grafo
+ * transitivo, y ahi habia OCHO bloqueos en tres clases —manifiesto sin
+ * declarar (TASK-THYROX-0208), alcance inexistente (TASK-THYROX-0209) y porte
+ * parcial—. Los ocho se cerraron en este pase salvo la brecha de
+ * `agent/messages.ts` (43 de 108 exports), que tiene la suya: TASK-THYROX-0212.
  *
  * El alcance de los imports se reescribio `@claude-code-how-works/*` ->
- * `@thyrox/*` con el mismo criterio que TASK-THYROX-0478 aplico a
+ * `@thyrox/*` con el mismo criterio que TASK-THYROX-0169 aplico a
  * `src/packages`.
  */
 import { feature } from 'bun:bundle'
@@ -92,7 +113,7 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
 import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
-import type { FileHistorySnapshot } from '@thyrox/agent/file-history'
+import type { FileHistorySnapshot } from '@thyrox/agent/fileHistory.js'
 import { formatFileSize } from '@thyrox/output/formatters'
 import { getFsImplementation } from './fsOperations.js'
 import { getWorktreePaths } from './getWorktreePaths.js'
@@ -4628,17 +4649,13 @@ export async function enrichLogs(
 // paquete no enlaza. Los otros tres son tipos que acotan la firma de los dos
 // simbolos compartidos, y que la fuente resuelve con tipos mas anchos.
 
-/** Ver docstring del módulo — sustituto DI de `builtInCommandNames`. */
-let _builtInCommandNames: () => Set<string> = () =>
-  new Set(['model', 'clear', 'help', 'exit', 'compact'])
-
-export function setBuiltInCommandNamesFn(fn: () => Set<string>): void {
-  _builtInCommandNames = fn
-}
-
-function builtInCommandNames(): Set<string> {
-  return _builtInCommandNames()
-}
+// El sustituto por inyeccion de `builtInCommandNames` se RETIRA aqui, y no se
+// conserva como «simbolo propio»: era andamiaje del porte parcial. El porte
+// completo importa el simbolo real de `@thyrox/command-runtime/runtime`
+// (:54), que existe en `runtime.ts:111`, asi que mantener los dos era una
+// COLISION de declaracion — enmascarada solo mientras el TS2307 impedia que
+// el import resolviera. Al declarar la dependencia en `package.json` quedo a
+// la vista. Su unico consumidor era un test, reapuntado en el mismo pase.
 
 /** El subconjunto de `Message` que `getFirstMeaningfulUserMessageTextContent` lee. */
 export interface FirstPromptMessage {
