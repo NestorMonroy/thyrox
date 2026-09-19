@@ -56,3 +56,32 @@ config: repunte INERTE — 2 destino(s) de types no existen:
 De los 739 que quedan, **ninguno es de un paquete repuntado**: 416 son de cli
 y 323 de `agent`, que rehusa emitir porque escapa a `src/paths`, `src/store` y
 `src/task` — fuera de su propio paquete, irreparable por ensanche.
+
+## Segunda vuelta: el propio de `agent` +1102, y su hipotesis falsificada
+
+Los dos baselines congelados (el pre-barrido NO se sobreescribio) dan el
+contraste que `predicciones.md` anticipaba — «el own de algun paquete CAMBIA»:
+
+    repl            2052 ->  2051   (-1)
+    agent            463 ->  1565   (+1102)
+    config           517 ->   831   (+314)
+    tool-registry   1035 ->  1036   (+1)
+
+La hipotesis con que se abrio H-THYROX-151 fue **«la declaracion no lleva lo
+que el compilador infirio de la fuente»**. Se midio y es FALSA. Histograma de
+codigos TS de los propios de `agent`:
+
+    573 TS2307   'bun:test' 158 · 'node:path' 89 · 'node:fs' 78
+    533 TS2591   'process' / 'Buffer'
+    152 TS2339
+
+**151 de los 158 `bun:test` viven en un directorio `__tests__`.** La causa es
+el arreglo del comodin de raiz: declara el paquete entero como superficie y
+arrastra sus tests, que solo compilan con `@types/bun`. Cerrado con
+`TEST_EXCLUDE`.
+
+Y eso destapo dos ceguerass de la verificacion que el INERTE de `config`
+habia tapado — **acerto por otra razon**: su `glob` no cruzaba `/` (la
+especificacion de `exports` si), asi que los 5 de `config/plugin/` nunca se
+midieron; y `dist/` entraba en el glob de fuentes porque un `.d.ts` termina
+en `.ts`.

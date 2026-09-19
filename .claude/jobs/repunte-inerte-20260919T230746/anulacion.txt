@@ -10,3 +10,19 @@ test_emit_declarations: 36 ok, 3 falla
 
 === RESTAURADO:
 test_emit_declarations: 39 ok, 0 falla
+=== ANULACION 3: se retira el exclude de tests
+  FALLO pero la del test NO
+  FALLO y el test no aporta errores propios
+test_emit_declarations: 41 ok, 2 falla
+=== restaurado:
+test_emit_declarations: 43 ok, 0 falla
+test_package_typecheck: 16 ok, 0 falla
+
+=== ANULACION 4: el comodin vuelve a NO cruzar /
+  FALLO el comodin ve el archivo ANIDADO, no solo el de raiz
+test_emit_declarations: 45 ok, 1 falla
+=== ANULACION 5: se retira el descuento de tests en la verificacion
+  FALLO un test sin declaracion no hace rehusar
+test_emit_declarations: 45 ok, 1 falla
+=== restaurado:
+test_emit_declarations: 46 ok, 0 falla

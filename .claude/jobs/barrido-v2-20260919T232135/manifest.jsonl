@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash bin/emit_declarations --all --repoint", "started_at": "2026-09-19T23:21:35+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-19T23:24:27+00:00", "duration_seconds": 172.481329}
