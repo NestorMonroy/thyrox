@@ -1,7 +1,34 @@
 # La mitad de PROYECTO del registro de config: un porte parcial con las dos razones rancias
 
-**Cita durable:** TASK-THYROX-0223 (el sujeto de `repl`). Hallazgo hermano:
-**H-THYROX-123**, que registra la premisa falsificada.
+**Cita durable:** TASK-THYROX-0225 — «Cerrar los 3 typecheck del porte de
+config». Hallazgos hermanos: **H-THYROX-123** (la premisa falsificada),
+**H-THYROX-124** (el porte que declara bien su parcialidad con una razón
+rancia) y **H-THYROX-125** (el gate que bloqueó la enmienda).
+
+> **Corregido 2026-09-19.** Esta línea citaba `TASK-THYROX-0223` y añadía,
+> entre paréntesis, «el sujeto de `repl`» — o sea, se escribió sabiendo que
+> el sujeto no era éste. `0223` resuelve: nombra «Declarar las 19
+> dependencias externas que repl importa», que es el sujeto del banco
+> hermano `deps-sin-declarar-repl-20260919T082130`, donde la cita **sí** es
+> correcta.
+>
+> Ésa es la forma que un gate de FORMA no puede ver. `check-cita-resolucion`
+> mide que el id EXISTA en el store, y aquí existía; lo que no coincidía era
+> el sujeto. El eje que sí lo ve es el que TASK-DOCS-0434 tiene abierto
+> («Medir cuántas de las 1989 citas durables del árbol resuelven a su
+> sujeto»).
+>
+> **Los tres commits `14d97a01`, `beca2674` y `781d2f7b` la conservan**: están
+> publicados y no se enmiendan. Este banco es el artefacto que sí se puede
+> corregir, y es donde alguien busca la cita dentro de un mes — un mensaje de
+> commit no es el índice de nada.
+>
+> *Métrica:* `task_ids cita` y la fila del store por `citation_id`, contra el
+> sujeto que el banco describe.
+> *Ciega a:* si el `0223` original salió de rellenar el ordinal `#223` a
+> cuatro dígitos. Es plausible —el board tiene un `#223`— y no se midió: la
+> intención de un turno pasado no está en el árbol. Lo que sí consta es que
+> resuelve y nombra otra cosa.
 
 ## Qué se preguntaba
 
