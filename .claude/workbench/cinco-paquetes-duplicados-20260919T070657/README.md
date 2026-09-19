@@ -87,6 +87,45 @@ specifier sin paquete que lo declare.
 *Ciega a:* dos copias con basename distinto; un specifier de **otro** alcance
 que tampoco resuelva —el ajeno que `@ant/ink` importa queda fuera por
 construccion, TASK-THYROX-0198—; un subpath inexistente dentro de un paquete
-que si existe; y **el eje de RESOLUCION**, que esto no toca: `node_modules`
-sigue con **0** enlaces de workspace en los tres alcances, asi que el veredicto
-del typecheck no cambia y no debe leerse como que cambio.
+que si existe; y, sobre el eje de RESOLUCION, ver la correccion de abajo.
+
+## Correccion: la afirmacion de «0 enlaces» era falsa
+
+Este README y el mensaje de `1b9bb97c` afirmaron que `node_modules` sigue con
+**0** enlaces de workspace, y que por tanto el veredicto del typecheck no
+cambia. **Las dos mitades estaban mal, y la segunda se sigue de la primera.**
+
+Lo que se midio fue `ls node_modules/@thyrox | wc -l` — el `node_modules` de la
+**raiz**. Bun no enlaza los workspaces ahi: los enlaza en el `node_modules` de
+**cada paquete**. Medido correctamente:
+
+| alcance | raiz | por paquete |
+|---|---|---|
+| `@thyrox` | 0 | **296** |
+| `@ant` | 0 | **9** |
+| `@anthropic` | 0 | **13** |
+
+Y por conducta, no por conteo:
+
+```
+src/packages/repl/node_modules/@anthropic/ink -> ../../../@ant/ink
+```
+
+`@anthropic/ink` **si resuelve** desde su consumidor. Es el sub-patron C de
+`metrica-decide-la-conclusion.md` con este banco como sujeto: se midio el
+significante —un directorio que no es donde vive el fenomeno— y se concluyo
+sobre el significado. Y el veredicto real, medido en
+`.claude/jobs/tscli3-20260919T072043/`: **3942 → 3768** errores (−174), con
+**TS2307 322 → 268** y los que nombran a los cinco paquetes **62 → 24**. El
+paquete sigue sin compilar, pero la retirada **no fue neutra**: es exactamente
+lo contrario de lo que la afirmacion corregida decia.
+
+Lo destapo un residuo, no una relectura: `src/packages/computer-use-mcp` y
+`computer-use-swift` sobrevivieron al `git rm` como cascaras con solo su
+`node_modules` dentro —gitignorado, por eso `git status` salia limpio— y ese
+`node_modules` es precisamente el que la medicion de la raiz no veia.
+
+*Metrica:* enlaces bajo `src/packages/*/node_modules/<alcance>/` y el destino
+real del symlink, contra `ls` de la raiz.
+*Ciega a:* si el enlace apunta a un paquete cuyo `exports` declare el subpath
+que el importador pide — eso es TS2305, otro eje.
