@@ -57,6 +57,7 @@
     "shell": "bun run bin/shell.ts"
   },
   "dependencies": {
+    "@anthropic/ink": "workspace:*",
     "@thyrox/agent": "workspace:*",
     "@thyrox/app-host": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",

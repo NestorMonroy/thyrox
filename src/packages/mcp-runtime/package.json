@@ -48,6 +48,8 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@ant/claude-for-chrome-mcp": "workspace:*",
+    "@ant/computer-use-mcp": "workspace:*",
     "@anthropic-ai/sdk": "^0.124.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@thyrox/agent": "workspace:*",

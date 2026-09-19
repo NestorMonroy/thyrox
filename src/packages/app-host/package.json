@@ -7,6 +7,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
+    "@anthropic/ink": "workspace:*",
     "@thyrox/agent": "workspace:*",
     "@thyrox/bridge": "workspace:*",
     "@thyrox/cli": "workspace:*",

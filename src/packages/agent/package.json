@@ -56,7 +56,9 @@
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
   },
   "dependencies": {
+    "@ant/claude-for-chrome-mcp": "workspace:*",
     "@anthropic-ai/sdk": "^0.124.0",
+    "@anthropic/ink": "workspace:*",
     "@thyrox/app-host": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",

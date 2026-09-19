@@ -23,9 +23,13 @@
     "@thyrox/computer-use-input": "workspace:*",
     "@thyrox/computer-use-swift": "workspace:*",
     "@thyrox/config": "workspace:*",
+    "@thyrox/ink": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/output": "workspace:*",
+    "@thyrox/permission": "workspace:*",
     "@thyrox/provider": "workspace:*",
+    "@thyrox/repl": "workspace:*",
     "@thyrox/shell": "workspace:*",
     "@thyrox/tool-registry": "workspace:*"
   }

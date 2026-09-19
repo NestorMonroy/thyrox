@@ -17,5 +17,10 @@
     "./legacy/wrapper.js": "./src/legacy/wrapper.tsx",
     "./legacy/win32/windowEnum.js": "./src/legacy/win32/windowEnum.ts",
     "./legacy/win32/windowCapture.js": "./src/legacy/win32/windowCapture.ts"
+  },
+  "dependencies": {
+    "@ant/computer-use-input": "workspace:*",
+    "@ant/computer-use-swift": "workspace:*",
+    "@anthropic/ink": "workspace:*"
   }
 }

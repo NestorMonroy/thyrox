@@ -28,8 +28,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
+    "@anthropic/ink": "workspace:*",
     "@thyrox/agent": "workspace:*",
     "@thyrox/app-host": "workspace:*",
+    "@thyrox/bridge": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/headless-sdk": "workspace:*",
@@ -37,6 +39,7 @@
     "@thyrox/mcp-runtime": "workspace:*",
     "@thyrox/output": "workspace:*",
     "@thyrox/permission": "workspace:*",
+    "@thyrox/repl": "workspace:*",
     "@thyrox/shell": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "@thyrox/teleport": "workspace:*",

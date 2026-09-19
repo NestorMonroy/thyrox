@@ -216,6 +216,7 @@
     "@thyrox/teleport": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",
     "@thyrox/updater": "workspace:*",
-    "@thyrox/url-handler-napi": "workspace:*"
+    "@thyrox/url-handler-napi": "workspace:*",
+    "@thyrox/voice": "workspace:*"
   }
 }
