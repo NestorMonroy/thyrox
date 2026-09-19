@@ -1,0 +1,14 @@
+Salida verbatim de tests/session/test_generate_bin.py tras el barrido
+(corrida py-verify-20260919T143902, tras cerrar los cinco rojos del barrido):
+
+  FAIL bin/ real está al día tras la última generación (exit 0) — stdout='' stderr='bin/ DESACTUALIZADO respecto a src/session, src/verify, src/agents:\n  faltan: check-toolchain-ready, check_key_rename_symmetry, detect_self_matching_pgrep\n  corre: python3 src/session/generate_bin.py\n'
+  FAIL y NO avisa de ningún choque con builtins — ya resuelto en el plan — bin/ DESACTUALIZADO respecto a src/session, src/verify, src/agents:
+  faltan: check-toolchain-ready, check_key_rename_symmetry, detect_self_matching_pgrep
+  corre: python3 src/session/generate_bin.py
+
+  89 aprobada(s) · 2 fallida(s) (alcance medido: generate_bin.py)
+
+Procedencia de cada uno de los tres:
+  src/verify/check_key_rename_symmetry.py  -> 9dd3c9ff (creado por el barrido)
+  src/hooks/detect_self_matching_pgrep.py  -> 9dd3c9ff (renombrado por el barrido)
+  src/verify/check-toolchain-ready.sh      -> 32c0dadd (anterior al barrido)
